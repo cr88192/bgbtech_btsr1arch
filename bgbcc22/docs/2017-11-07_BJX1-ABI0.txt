@@ -1,0 +1,309 @@
+BJX1 ABIs
+* The ABI will come in 32-bit and 64-bit variants.
+** The 32-bit ABI will be equivalent to the SHx ABI.
+** The 64-bit ABI will assume 64-bit operation and registers.
+* 64-bit members will have 32-bit alignment in 32 bit mode.
+
+
+Code may exist in one of several address modes:
+* Absolute: Code is to be loaded at an absolute address.
+** Loading at a different address will require rebasing.
+* PIC: Code may be loaded at an arbitrary address, and linkage is via a GOT.
+* Base Relocatable:
+** May be loaded at a default base address, and relocated as-needed.
+** Code structure is the same as absolute mode.
+** If loaded at the default address, it is equivalent to absolute addressing.
+* Base Relocatable + PBO:
+** Similar to base-relocatable, but with separate handling of code and data sections.
+** Mutable global variables and data will be accessed relative to a PBO register.
+** This will be to facilitate multiple logical programs existing within a shared address space.
+* FDPIC:
+** Variant of PIC, except that the GOT will contain explicit GOTs for called functions.
+** Calling a function will thus imply also loading its associated GOT into the GOT register.
+
+Executable Format:
+* PE/COFF or ELF.
+* PE/COFF images will be Base Relocatable or Relocatable+PBO.
+* ELF images will be Absolute, PIC, or FDPIC.
+
+
+=== BJX1-32 ABI ===
+
+BGBCC SHx ABI (32-bit)
+* Will be similar to the standard SH ABI, but may deviate on some points.
+* 64-bit members will have 32-bit alignment.
+* All in-frame structures will also have a 32-bit alignment.
+
+Register Use:
+* R0/R1: Scratch, Return Value A/B
+* R2: Scratch, Return Struct Address
+* R3: Scratch, or Preserve (FDPIC)
+* R4.. R7: Scratch, Function Arg A/B/C/D
+* R8..R11: Preserve
+* R12: Preserve, or Context Pointer / GOT (FDPIC)
+* R13: Preserve
+* R14: Preserve or Frame Pointer
+* R15: Stack Pointer
+
+* FR0/FR1: Scratch, Float Return
+* FR2/FR3: Scratch
+* FR4 ..FR11: Scratch, Float Arguments
+* FR12..FR15: Preserve
+* FPSCR: Preserve
+* GBR: Will be used for process or thread local state.
+** Contents will consist of TLS variables and virtual registers.
+** One such register will be PBO.
+
+Argument Passing
+* If a 64 bit argument is passed, it will use a pair of registers.
+* If not enough registers exist for a 64-bit member, it is passed on the stack.
+** It will be passed entirely on the stack if only one register remains.
+* Stack arguments will be passed with the first non-register argument.
+* FPU registers will only be used on targets with native FPU.
+** Non-FPU cases will pass floating-point arguments in integer registers.
+
+Structure Passing
+* Specifics here will differ from the normal SH ABI.
+* Structs will be passed either in registers or by reference.
+* If it fits within 8 bytes, it will be passed in registers.
+** If it fits within 4 bytes, it will use a single register.
+** As with other arguments, will be passed on the stack as-needed.
+* Mixed or integer only structs are passed in integer registers.
+* Float or double only structs are passed in float registers.
+* If it is over 8 bytes, it will be passed by reference.
+** Any structure passed/returned to a function is to have a minimum alignment of 32-bits.
+
+Structure Return
+* If a structure fits in 4 bytes, it is returned in R0 or FR0
+* If a structure fits in 8 bytes, it is returned in (R0, R1) or (FR0, FR1)
+* For other structures, a return address will be passed in R2.
+** This address will be filled in by the called function.
+
+
+=== BJX1-64A/64C ABI ===
+
+General
+* The 64-bit ABI will be similar to the 32-bit ABI.
+* Registers will be 64-bit, and register pairs may pass 128 bits.
+* Data may be either big-endian or little-endian.
+* 64-bit structure members will have 64-bit alignment.
+* In other cases, only 32-bit alignment is required for 64-bit values.
+* The stack frame is to have a 128-bit alignment.
+* SR.DQ will be Clear on function entry and return.
+** Note that 64C doesn't support the DQ flag.
+
+Register Use:
+* R0/R1: Scratch, Return Value A/B
+* R2: Scratch, Return Struct Address
+* R3: Scratch, or Preserve (FDPIC)
+* R4.. R7: Scratch, Function Arguments A/B/C/D
+* R8..R11: Preserve
+* R12: Preserve, or Context Pointer / GOT (FDPIC)
+* R13: Preserve
+* R14: Preserve or Frame Pointer
+* R15: Stack Pointer
+* R16..R19: BJX1-64, Scratch
+* R20..R23: BJX1-64, Function Arguments E/F/G/H
+* R24..R31: Preserve
+
+* FR0/FR1: Scratch, Float Return
+* FR2/FR3: Scratch
+* FR4 ..FR11: Scratch, Float Arguments
+* FR12..FR15: Preserve
+* XF0..XF11: Scratch
+* XF12..XF15: Preserve
+* FPSCR: Preserve
+* GBR: Will be used for process or thread local state.
+** Contents will consist of TLS variables and virtual registers.
+** One such register will be PBO.
+
+Argument Passing
+* Arguments will be either 32 or 64 bit aligned.
+** Small Integer and Float arguments will use 32-bit alignment.
+** Long and Double arguments will use 64-bit alignment.
+* If a 128 bit argument is passed, it will use a pair of registers.
+* If not enough registers exist, a structure is passed on the stack.
+** On stack, it will have a 64-bit alignment.
+
+Structure Passing
+* If a structure fits within 4 bytes, it is passed as a 32-bit GPR or FPR.
+* / If a structure fits within 8 bytes, it is passed as a 64-bit GPR or FPR pair.
+* If a structure fits within 8 bytes, it is passed as a 64-bit GPR.
+* If a structure fits within 16 bytes, it is passed as a GPR pair.
+* If a structure is over 16 bytes, it is passed by reference.
+
+Structure Return
+* If a structure fits in 4 bytes, it is returned in R0 or FR0
+* / If a structure fits in 8 bytes, it is returned in R0 or (FR0, FR1)
+* If a structure fits in 8 bytes, it is returned in R0
+* If a structure fits in 16 bytes, it is returned in (R0, R1)
+* For other structures, a return address will be passed in R2.
+
+
+=== BJX1-64u/64B/64V ABI ===
+
+BJX1-64u will be a subset of BJX1-64.
+* Only R0..R15 are supported.
+** Register use will be similar to the 32-bit ABI.
+* Only 16-bit instruction forms are allowed in BJX1-64u.
+* FPU is optional.
+* SR.DQ will be Clear on function entry and return.
+** SR.DQ is unsupported on 64V.
+* Otherwise it is similar to the 64-bit ABI.
+
+SoftFPU:
+* FPU ops are not used.
+* Floating point values are passed in GPRs.
+* Runtime calls used for FPU operations.
+** Ex: "__sfp_fadd_f32", ...
+
+LiteFPU:
+* Only a subset of single-precision FPU ops are used.
+** FADD, FSUB, FMUL, FCMP/EQ, FCMP/GT, FMOV, FMOV.S, FABS, FNEG
+* Floating-point values are passed in FPU registers.
+* Runtime calls used for other operations.
+** Ex: "__lfp_fadd_f64", ...
+
+
+=== FDPIC ABI ===
+
+FDPIC will reserve R12 as a GOT or Context Pointer.
+* Code using the FDPIC ABI may not directly compute GOT values.
+* R12 will be saved and restored as part of the function call sequence.
+* The R3 register will have callee preserve status in FDPIC.
+
+GOT entries for functions will consist of a register pair:
+* The address of the function to be called.
+* The address to be loaded into the called function's GOT.
+
+A local function which does not use a GOT may be called using a relative call, however non-local calls will require using the GOT.
+
+
+=== PBO ABI ===
+
+PBO will be an alternate strategy:
+* Global variables are accessed via the PBO Context Register.
+* The value for this virtual register will be held relative to GBR.
+* Normal code is not allowed to modify GBR.
+* The value for the PBO index is to be fixed up by the loader.
+
+Example Variable Load (SH):
+* MOV.L @(GBR, pbo_index), R0	//load PBO register
+* MOV.L @(PC, disp), R1		//load relative displacement
+* MOV.L @(R0, R1), R9			//indirect load.
+* Alternately, the PBO address may be cached in another register.
+
+Example Variable Load (BJX1-64):
+* MOV.Q @(GBR, pbo_index), R1	//load PBO register
+* MOVI24 #disp24, R0			//load displacement
+* MOV.Q @(R1, R0), R9			//indirect load
+
+
+== Extended ABI ==
+
+Extended Types:
+* int128, passed the same as a 16-byte struct.
+* float128, passed the same as a 16-byte struct.
+* variant, passed the same as a 64-bit long.
+
+NameID:
+* GUID, Will consist of a 128-bit value following UUID/GUID encoding rules.
+** To be used for dynamically-generated names.
+* SIXTEENCC, Will consist of up to 16 ASCII characters.
+** A valid SIXTEENCC consists solely of values between 0x20 and 0x7E.
+** The trailing spaces may be omitted from Name strings.
+*** The Name is padded with spaces, which may be stripped off.
+** These will be used for "well known names".
+*** Names for types will follow the pattern "_typename_t".
+
+
+=== Variant ===
+
+Variant:
+* 64-bit tagged reference with tag in the high 4 bits.
+** 0: Object Reference / Pointer
+** 1: Small Tagged Types
+** 2: Reserved
+** 3: Reserved
+** 4..7: Fixint/Fixlong
+** 8..B: Flonum
+** C: TagArray
+** D: Vec2F
+** E: TypeTag Pointer
+** F: Raw Pointer (60 bit)
+
+Object Reference:
+* Low 32 or 48 bits hold address.
+* Bits 48-59: Object Type ID.
+** 0 means an untagged object.
+** Others values will be assigned at runtime.
+** Generally, will map to a NameID.
+* Will generally be assumed to point to a heap object or similar.
+
+Fixlong:
+* Consists of a 62-bit integer value.
+* A 32-bit Fixint sub-case exists which is sign-extended to 62 bits.
+
+Flonum:
+* Consists of a Double shifted right by 2 bits.
+
+TarArray:
+* Low 32 bits encode pointer or Object ID.
+* Bits 32-59 encode base-offset.
+
+Vec2F:
+* Encodes a pair of 30-bit float values.
+
+TypeTag Pointer:
+* Low 32 or 48 bits hold address.
+* Bits 48-59: Type Tag.
+** 0 means "void *".
+** Other values are assigned by the runtime.
+* This is mostly intended for casting primitive pointers to variant.
+
+Raw Pointer:
+* Consists simply as a 60-bit address to somewhere in the address space.
+** Address may be sign-extended to 64 bits.
+* No further assumptions may be made about the contents of the address.
+
+
+=== Class/Instance Objects ===
+
+POD and Non-POD:
+* Objects may be classified as POD and Non-POD
+* An object following POD rules will use the same layout as a struct.
+* Other objects will be Non-POD, and will use an object layout.
+* Restrictions on POD types:
+** May not use inheritance.
+** May not have virtual methods.
+** May not have interfaces.
+
+Object Layout:
+* Pointer to the VTable
+* Pointer to the first Interface pointer.
+* Two reserved pointers (Runtime).
+* Object payload data, variable sized.
+** This will depend on the contents of the class definition.
+* Interface Pointers
+** NULL terminated list to each interface VTable implemented by this class.
+
+VTable Layout:
+* Pointer to Class Info
+* Address Adjustment
+** Offset added to Interface pointer to recover Object pointer.
+** This holds 0 for the Base Class VTable.
+* Two reserved pointers (Runtime).
+* Virtual Method Pointers
+** A pointer for each virtual method implemented by the class.
+
+
+Object Pointer:
+* Will point to the VTable pointer for the object.
+* NameID: "_classobj_t".
+
+Interface Pointer:
+* Will consist of a pointer to the interface VTable Pointer for the object.
+* NameID: "_ifaceobj_t".
+
+Tagged Reference:
+* Will be encoded as an Object Reference with the appropriate types.

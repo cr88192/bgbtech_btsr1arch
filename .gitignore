@@ -1,0 +1,31 @@
+#test
+
+*_log.txt
+
+randbits.txt
+
+*.o
+*.a
+*.obj
+*.pdn
+*.suo
+*.pdb
+*.ilk
+*.exp
+*.lib
+*.db
+*.opendb
+*.sln
+*logpc.txt
+*.vhd
+*.hd
+
+*.tga
+*.png
+*.jpg
+*.wav
+
+vlcore/obj_dir/*
+# bjx1core32/obj_dir/*
+# smalltst/compdec/obj_dir/*
+# bjx1c32b/obj_dir/*

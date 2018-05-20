@@ -1,0 +1,40 @@
+/*"stdio.h"5*/ int printf(char*str,...);
+/*7*/ int strcpy(char*dst,char*src);
+int strcmp(char*dst,char*src);
+/*"tests/primecnt.c"22*/ int primes[1000],sieve[1000];
+int nSieve=0;
+/*25*/ int countPrimes()
+{
+primes[0]=2;sieve[0]=4;++nSieve;
+int nPrimes=1,trial=3,sqr=2;
+int i;
+/*31*/ while(1){
+while(sqr*sqr<=trial)++sqr;
+--sqr;
+for(i=0;i<nSieve;++i){
+if(primes[i]>sqr)goto found_prime;
+while(sieve[i]<trial)sieve[i]+=primes[i];
+if(sieve[i]==trial)goto try_next;
+}
+break;
+found_prime:
+if(nSieve<1000){
+/*43*/ primes[nSieve]=trial;
+sieve[nSieve]=trial*trial;
+++nSieve;
+}
+++nPrimes;
+try_next:
+++trial;
+}
+return nPrimes;
+}
+/*54*/ int main()
+{
+int res;
+printf("start=%d %d\n",time(((void*)0)),clock());
+res=countPrimes();
+printf("%d primes found\n",res);
+printf("end=%d %d\n",time(((void*)0)),clock());
+return 0;
+}

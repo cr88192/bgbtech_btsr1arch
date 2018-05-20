@@ -1,0 +1,76 @@
+UBEX
+* Small Base-Relocatable Executable
+* Goal is to be a fairly minimalist executable format.
+
+RVA: Relative Virtual Address
+* Encodes a virtual address relative to the image base.
+* In this format, RVA is equivalent to file offset.
+
+struct UBEX_Head_s {
+	byte pad[64];		//pad bytes (context)
+
+	u32 magic;			//0040: 'uBEX'
+	u16 arch;			//0044: CPU arch
+	u16 flag;			//0046: image flags
+
+	u32 rva_start;		//0048: RVA of entry point
+	u32 lva_base;		//004C: logical virtual address of image base.
+
+	u32 rva_text;		//0050: RVA of .text segment start
+	u32 sz_text;		//0054: size of .text segment
+	u32 rva_data;		//0058: RVA of .data segment start
+	u32 sz_data;		//005C: size of .data segment start
+	u32 rva_bss;		//0060: RVA of .bss segment start (logical)
+	u32 sz_bss;			//0064: size of .bss segment (logical)
+	u32 rva_tables;		//0068: RVA of tables segment
+	u32 sz_tables;		//006C: size of tables segment
+
+	u32 rva_imports;	//0070: RVA of imports table
+	u32 rva_exports;	//0074: RVA of exports table
+	u32 rva_relocs;		//0078: RVA of relocs table
+	u32 rva_strings;	//007C: RVA of strings table
+}
+
+The .text and .data segments are loaded into the process.
+
+The .bss segment's contents are not loaded, but its RVA and size indicate what address ranges are expected to hold its contents following load.
+
+The tables segment holds data needed to load the image. Its contents are not loaded, and may overlap with the .bss segment.
+
+The .text, .data, and .bss sections will require a 4kB page alignment.
+
+
+Relocs:
+* Will consist of a series of 16-bit entries.
+** Will be relative to a "current position", which starts at the image base.
+* 0xxx: Advance current position by 'xxx' pages
+** 0000: End of Table
+** 0001..03FF: Advance position by 1..1023 pages (4MB).
+** 0400..07FF: Advance position by 16..16384 pages (64MB).
+** Values between 0800 and 0FFF are reserved.
+* 1xxx: Apply a 32-bit fixup
+** Encodes the position within the page.
+** Target holds the LVA.
+* 2xxx: Apply a 16-bit fixup (low 16 bits of address)
+** Encodes the position within the page.
+* 3xxx: Apply a 16-bit fixup (high 16 bits of address)
+** Encodes the position within the page.
+
+Exports:
+* u32 rva_name;
+** RVA of imported symbol name.
+* u32 rva_expaddr;
+** RVA of exported address.
+
+Imports:
+* u32 rva_name;
+** RVA of imported library-image name.
+* u32 rva_impaddr;
+** RVA of relocs giving the import addresses.
+** This has the same basic format as the relocations table.
+** Each reloc entry encodes the position of an import address.
+
+Import Addresses:
+* 0xxxxxxx: RVA of import name.
+** This pointer is overwritten with the address of the imported symbol.
+

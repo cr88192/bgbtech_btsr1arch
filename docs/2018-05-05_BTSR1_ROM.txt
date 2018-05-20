@@ -1,0 +1,60 @@
+BTSR VM:
+Will use direct linking and assume a non-modifiable program space.
+
+Base Memory Map:
+0000..7FFF: ROM
+8000..BFFF: (Reserved)
+C000..DFFF: RAM
+E000..FFFF: MMIO
+
+Addresses above FFFF will be off-limits for now.
+Results are undefined if the high order bits are not set to zeroes.
+
+
+On boot, VBR will be initialized to the start of ROM.
+Entry point will also be at the start of ROM.
+
+VBR will contain several Vectors:
+  VBR+0x00: Boot/Reset
+  VBR+0x08: Runtime Exception
+  VBR+0x10: Hardware Interrupt
+  VBR+0x18: (Reserved)
+
+On an interrupt, control will be transferred to an address relative to VBR. This address may then encode a branch to wherever is the start of the ISR.
+
+
+MMIO Space:
+
+* E000 (R): 1MHz Timer Low
+* E004 (R): 1MHz Timer High
+
+* E008(R): PIT Current Value (Clock Cycles)
+** Counts down and then triggers an interrupt once it reaches zero.
+* E00C(R/W): PIT Reset Value (Clock Cycles)
+** Value which is loaded into the counter when the interrupt fires.
+
+* E010(R): Debug Uart RX
+* E014(W): Debug Uart TX
+* E018(R): Debug Uart Status
+** Bit 0: Input Ready
+** Bit 1: Input Buffer Full
+** Bit 2: Output Buffer Empty
+** Bit 3: Output Buffer Full
+** Bit 4: Interrupt Status
+** Bit 5: Buffer Overrun
+** Bit 6: Frame Error
+** Bit 7: Parity Error
+* E01C(W): Debug Uart Control
+** Bit 0: Clear Transmit
+** Bit 1: Clear Recieve
+** Bit 4: Enable Interrupt
+
+* E020(W): SPI Control
+* E024(R/W): SPI Data
+
+* E100(R): GPIO In
+* E104(R/W): GPIO Out
+* E108(R/W): GPIO Direction
+* E110(W): GPIO Set (Out=Out|Val)
+* E114(W): GPIO Clear (Out=Out&(~Val))
+

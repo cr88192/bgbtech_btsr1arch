@@ -1,0 +1,715 @@
+== Instructions Organized by Name with Descriptions ==
+
+=== ADC ===
+
+* 12nm ADC		Rm, Rn
+* 31n2 ADC		DLR, Rn
+
+Add with Carry, Rn=Rn+Rm+SR.T, with SR.T being updated to reflect the carry-out bit.
+
+
+=== ADD ===
+
+* 10nm ADD		Rm, Rn
+* 31n0 ADD		DLR, Rn
+* 36nC ADD		Rn, DLR
+* 49nj ADD		DLR_i4, Rn
+* Cnii ADD		#imm8s, Rn
+
+Add the source and destination values and store the result in the destination register.
+
+
+=== AND ===
+
+* 15nm AND		Rm, Rn
+* 31n5 AND		DLR, Rn
+
+Perform a bitwise AND of the source and destination values and store the result in the destination register.
+
+
+=== BF ===
+
+* 23dd BF		(PC, disp8s)
+* 3032 BF		(PC, DLR)
+* 32n3 BF		Rn
+* 45Fj BF		(PC, DLR_i4)
+
+Branch if False (SR.T is 0).
+The target address is computed and PC is updated to the new address if the condition is met.
+
+
+=== BRA ===
+* 20dd BRA		(PC, disp8s)
+* 3002 BRA		(PC, DLR)
+* 32n0 BRA		Rn
+* 36n8 BRA		(PC, Rn)
+* 40Fj BRA		(PC, DLR_i4)
+* 42Fj BRA		(DLR_i4)
+
+Branch to Address.
+The target address is computed and PC is updated to the new address.
+
+
+=== BREAK ===
+
+* 3030 BREAK
+
+Trigger a Breakpoint exception.
+
+
+=== BSR ===
+
+* 21dd BSR		(PC, disp8s)
+* 3012 BSR		(PC, DLR)
+* 32n1 BSR		Rn
+* 36n9 BSR		(PC, Rn)
+* 41Fj BSR		(PC, DLR_i4)
+* 43Fj BSR		(DLR_i4)
+
+Branch to subroutine.
+The target address is computed and PC is updated to the new address, with the prior value for PC being stored in LR.
+
+
+=== BT ===
+
+* 22dd BT		(PC, disp8s)		//Branch True
+* 3022 BT		(PC, DLR)			//Branch True to PC+(DLR*2)
+* 32n2 BT		Rn
+* 44Fj BT		(PC, DLR_i4)		//Rn==15
+
+Branch if True (SR.T is 1).
+The target address is computed and PC is updated to the new address if the condition is met.
+
+
+=== CLRS ===
+
+* 3060 CLRS
+
+Clear the SR.S flag.
+
+
+=== CLRT ===
+
+* 3040 CLRT
+
+Clear the SR.T flag.
+
+
+=== CMPEQ ===
+
+* 1Cnm CMPEQ	Rm, Rn
+* 2Cnj CMPEQ	#imm4u, Rn
+* 2Dnj CMPEQ	#imm4n, Rn
+* 31nC CMPEQ	DLR, Rn
+
+Compare if source and destination are Equal.
+
+This provides both zero and one extended immediates, allowing a direct immediate to express values ranging between -16 and 15.
+
+
+This updates SR.T based on the result of the comparison.
+
+
+=== CMPGE ===
+
+* 2Fnj CMPGE	#imm4u, Rn
+* 36nE CMPGE	DLR, Rn
+
+Compare if Rn is Greater or Equal to the immediate.
+
+Only exists for immediates because this can be easily emulated for the two-register forms via swapping the registers and inverting the branch condition.
+
+This updates SR.T based on the result of the comparison.
+
+
+=== CMPGT ===
+
+* 1Enm CMPGT	Rm, Rn
+* 2Enj CMPGT	#imm4u, Rn
+* 31nE CMPGT	DLR, Rn
+
+Signed Rn GT Rm.
+
+Compare if destination is greater than the source using a signed comparison.
+
+This updates SR.T based on the result of the comparison.
+
+
+=== CMPHI ===
+
+* 1Dnm CMPHI	Rm, Rn
+* 31nD CMPHI	DLR, Rn
+
+Unsigned Rn GT Rm.
+
+Compare if destination is greater than the source using an unsigned comparison.
+
+This updates SR.T based on the result of the comparison.
+
+
+=== CMPHS ===
+
+* 36nD CMPHS	DLR, Rn
+
+Unsigned (Rn GE DLR)
+
+Compare if destination is greater than or equal to the source using an unsigned comparison.
+
+This updates SR.T based on the result of the comparison.
+
+
+=== CMPPL ===
+
+* 31n8 CMPPL	Rn
+
+SR.T=(Rn GT 0)
+
+Compare if the value is greater than zero (Signed).
+
+This operation is specific to the use of signed values.
+For the unsigned case, this decates to comparing that the value is not equal to zero.
+
+This updates SR.T based on the result of the comparison.
+
+
+=== CMPPZ ===
+
+* 31n9 CMPPZ	Rn
+
+SR.T=(Rn GE 0)
+
+Compare if the value is greater than equal to zero.
+
+This operation is specific to the use of signed values.
+For the unsigned case, the result would always be true.
+
+This updates SR.T based on the result of the comparison.
+
+
+=== EXTS.B ===
+
+* 32n6 EXTS.B	Rn
+
+Sign extend the value in the low 8 bits of the register to the width of the register.
+
+
+=== EXTS.W ===
+
+* 32n7 EXTS.W	Rn
+
+Sign extend the value in the low 16 bits of the register to the width of the register.
+
+=== EXTU.B ===
+
+* 32n4 EXTU.B	Rn
+
+Zero extend the value in the low 8 bits of the register to the width of the register.
+
+=== EXTU.W ===
+
+* 32n5 EXTU.W	Rn
+
+Zero extend the value in the low 16 bits of the register to the width of the register.
+
+
+=== LEA.B ===
+
+* 31nF LEA.B	(PC, DLR), Rn
+* 32nC LEA.B	(GBR, DLR), Rn
+* 32nE LEA.B	(TBR, DLR), Rn
+* 3Fnj LEA.B	(PC, DLR_i4), Rn
+* 4Cnm LEA.B	(Rm, DLR), Rn
+
+Load the effective address of the Base register added to the displacement and store the result into the destination register.
+
+This will use a scale factor of 1.
+
+
+=== LEA.L ===
+
+* 31nB LEA.L	(PC, DLR), Rn
+* 4Enm LEA.L	(Rm, DLR), Rn
+
+Load the effective address of the Base register added to the scaled displacement and store the result into the destination register.
+
+This will use a scale factor of 4.
+
+
+=== LEA.Q ===
+
+* 4Fnm LEA.Q	(Rm, DLR), Rn
+
+Load the effective address of the Base register added to the scaled displacement and store the result into the destination register.
+
+This will use a scale factor of 8.
+
+
+=== LEA.W ===
+
+* 31nA LEA.W	(PC, DLR), Rn
+* 32nD LEA.W	(GBR, DLR), Rn
+* 32nF LEA.W	(TBR, DLR), Rn
+* 4Dnm LEA.W	(Rm, DLR), Rn
+
+Load the effective address of the Base register added to the scaled displacement and store the result into the destination register.
+
+This will use a scale factor of 2.
+
+
+=== LDIN / LDIZ ===
+
+* 24jj LDIZ		#imm8u, DLR
+* 25jj LDIN		#imm8u, DLR
+* Ajjj LDIZ		#imm12u, DLR
+* Bjjj LDIN		#imm12u, DLR
+
+Load an 8 or 12 bit value into DLR.
+
+LDIZ will zero extend the value up to the size of the register.
+
+LDIN will extend the value with ones up to the size of the register.
+
+
+=== LDISH ===
+
+* 26jj LDISH	#imm8u, DLR
+
+Load Immediate with Shift.
+
+The value in DLR is shifted left 8 bits, and the immediate value is coppied into the low bits.
+
+
+=== LDISH16 ===
+
+* 30A0 LDISH16	#0x0000, DLR
+* 30B0 LDISH16	#0xFFFF, DLR
+
+Load Immediate with Shift.
+
+The value in DLR is shifted left 16 bits, and the low bits are set according to the pattern value given.
+
+
+=== MOV ===
+
+* 18nm MOV		Rm, Rn
+* 1Anm MOV		Rm, Cn
+* 1Bnm MOV		Cm, Rn
+* 48nj MOV		DLR_i4, Rn
+* 4Anm MOV		Rm, Sn
+* 4Bnm MOV		Sm, Rn
+* Enii MOV		#imm8s, Rn	//Rn=Imm8
+
+Move a value from the source to the destination register.
+
+
+=== MOV.B ===
+
+* 00nm MOV.B	Rm, (Rn)
+* 04nm MOV.B	Rm, (Rn, DLR)
+* 08nm MOV.B	(Rm), Rn
+* 0Cnm MOV.B	(Rm, DLR), Rn
+* 30n4 MOV.B	Rn, (PC, DLR)
+* 30nC MOV.B	(PC, DLR), Rn
+* 35n0 MOV.B	Rn, (DLR)
+* 35n4 MOV.B	Rn, (GBR, DLR)
+* 35n8 MOV.B	(DLR), Rn
+* 35nC MOV.B	(GBR, DLR), Rn
+* 40nj MOV.B	Rn, (PC, DLR_i4)
+* 44nj MOV.B	(PC, DLR_i4), Rn
+
+Load or store a Byte to/from memory.
+The byte is sign extended to the size of the register.
+
+
+=== MOV.L ===
+
+* 02nm MOV.L	Rm, (Rn)
+* 06nm MOV.L	Rm, (Rn, DLR)
+* 0Anm MOV.L	(Rm), Rn
+* 0Enm MOV.L	(Rm, DLR), Rn
+* 28nd MOV.L	Rn, (SP, disp4u)	//Stack-Relative Store
+* 2And MOV.L	(SP, disp4u), Rn	//Stack-Relative Load
+* 30n6 MOV.L	Rn, (PC, DLR)
+* 30nE MOV.L	(PC, DLR), Rn
+* 32n8 MOV.L	Rn, (TBR, DLR)
+* 32nA MOV.L	(TBR, DLR), Rn
+* 35n2 MOV.L	Rn, (DLR)
+* 35n6 MOV.L	Rn, (GBR, DLR)
+* 35nA MOV.L	(DLR), Rn
+* 35nE MOV.L	(GBR, DLR), Rn
+* 42nj MOV.L	Rn, (PC, DLR_i4)	//Rn!=R15
+* 46nj MOV.L	(PC, DLR_i4), Rn	//Rn!=R15
+
+Load or store a DWord to/from memory.
+
+
+=== MOV.W ===
+
+* 01nm MOV.W	Rm, (Rn)
+* 05nm MOV.W	Rm, (Rn, DLR)
+* 09nm MOV.W	(Rm), Rn
+* 0Dnm MOV.W	(Rm, DLR), Rn
+* 29nd MOV.W	Rn, (SP, disp4u)
+* 2Bnd MOV.W	(SP, disp4u), Rn
+* 30n5 MOV.W	Rn, (PC, DLR)
+* 30nD MOV.W	(PC, DLR), Rn
+* 32n9 MOV.W	Rn, (TBR, DLR)
+* 32nB MOV.W	(TBR, DLR), Rn
+* 35n1 MOV.W	Rn, (DLR)
+* 35n5 MOV.W	Rn, (GBR, DLR)
+* 35n9 MOV.W	(DLR), Rn
+* 35nD MOV.W	(GBR, DLR), Rn
+* 41nj MOV.W	Rn, (PC, DLR_i4)
+* 45nj MOV.W	(PC, DLR_i4), Rn
+
+Load or store a Word to/from memory.
+The Word value is sign extended to the size of the register.
+
+
+=== MOVU.B ===
+
+* 03nm MOVU.B	(Rm), Rn
+* 07nm MOVU.B	(Rm, DLR), Rn
+* 30n7 MOVU.B	(PC, DLR), Rn
+* 35n3 MOVU.B	(DLR), Rn
+* 35n7 MOVU.B	(GBR, DLR), Rn
+* 43nj MOVU.B	(PC, DLR_i4), Rn
+
+Load or store a Byte to/from memory.
+The byte is zero extended to the size of the register.
+
+Note that these instruction forms will be specific to the 32-bit ISA.
+
+
+=== MOVU.W ===
+
+* 0Bnm MOVU.W	(Rm), Rn
+* 0Fnm MOVU.W	(Rm, DLR), Rn
+* 30nF MOVU.W	(PC, DLR), Rn
+* 35nB MOVU.W	(DLR), Rn
+* 35nF MOVU.W	(GBR, DLR), Rn
+* 47nj MOVU.W	(PC, DLR_i4), Rn
+
+Load or store a Word to/from memory.
+The word is zero extended to the size of the register.
+
+Note that these instruction forms will be specific to the 32-bit ISA.
+
+
+=== MULS ===
+
+* 19nm MULS	Rm, Rn
+
+(DHR,DLR)=Rm*Rn (Signed Result).
+
+Perform a signed multiply storing the result of the multiplication in the DHR,DLR pair.
+
+
+=== MULU ===
+
+* 1Fnm MULU	Rm, Rn
+
+(DHR,DLR)=Rm*Rn (Unsigned Result).
+
+Perform an unsigned multiply storing the result of the multiplication in the DHR,DLR pair.
+
+
+=== NEG ===
+
+* 33n1	NEG		Rn
+
+Rn=(~Rn)+1
+
+Negate the value in Rn.
+
+
+=== NEGC ===
+
+* 33n2	NEGC	Rn
+
+Rn=(~Rn)+(!SR.T).
+
+Negate value in Rn and subtract the SR.T flag.
+The value of SR.T is updated to reflect the borrow status of the bit.
+
+
+=== NOP ===
+
+* 3000 NOP
+
+Does Nothing.
+
+
+=== NOT ===
+
+* 33n0	NOT		Rn
+
+Rn=~Rn
+
+Perform a bitwise NOT of the value in Rn.
+
+
+=== NOTS ===
+
+* 3090 NOTS
+
+SR.S=!SR.S
+
+Invert the SR.S flag.
+
+
+=== NOTT ===
+
+* 3080 NOTT
+
+SR.T=!SR.T
+
+Invert the SR.T flag.
+
+=== OR ===
+
+* 16nm OR		Rm, Rn
+* 31n6 OR		DLR, Rn
+
+Perform a bitwise OR of the source and destination, storing the result in the destination.
+
+
+=== POP ===
+
+* 30nA POP		Rn
+* 30nB POP		Cn
+
+Load the value from the top of the stack into the destination register and increment the stack position.
+
+For a 32-bit architecture, this will add 4 to the value of SP.
+
+Note that POP into PC will be treated as a special case "RET" instruction.
+
+
+=== PUSH ===
+
+* 30n8 PUSH	Rn
+* 30n9 PUSH	Cn
+
+Decrement the stack position and store the value from the register to this location.
+
+
+=== RET ===
+
+* 300B RET
+
+Load the value from the top of the stack into PC and increment the stack position.
+
+Note that this is an alias for "POP PC".
+
+
+=== ROTCL ===
+
+* 33n6	ROTCL	Rn
+
+Rn'=(Rn SHL 1)|SR.T; SR.T=Rn.31
+
+Rotate the value in Rn left by 1 bit, pulling SR.T into the LSB, and putting the shifted out bit into SR.T.
+
+
+=== ROTCR ===
+
+* 33n7	ROTCR	Rn
+
+Rotate the value in Rn right by 1 bit, pulling SR.T into the MSB, and putting the shifted out bit into SR.T.
+
+
+=== ROTL ===
+
+* 33n4	ROTL	Rn
+
+Rn=(Rn SHL 1)|(Rn SHR 31)
+
+Rotate the value in Rn left by 1 bit.
+
+
+=== ROTR ===
+** 33n5	ROTR	Rn
+
+Rn=(Rn SHR 1)|(Rn SHL 31)
+
+Rotate the value in Rn right by 1 bit.
+
+
+=== RTE ===
+
+* 30C0 RTE
+
+Return from exception.
+
+Initiates the behavior for returning from an exception handler (described elsewhere).
+
+
+=== RTS ===
+
+* 3010 RTS
+
+Return from Subroutine.
+This effectively restores the value from LR into PC, transferring control back to LR.
+
+
+=== SBB ===
+
+* 13nm SBB		Rm, Rn
+* 31n3 SBB		DLR, Rn
+
+Rn=Rn+(~Rm)+(!SR.T)
+
+Subtract with Borrow.
+SR.T is updated with the borrow result of this operation.
+
+
+=== SETS ===
+
+* 3070 SETS
+
+Set the SR.S flag.
+
+=== SETT ===
+
+* 3050 SETT
+
+Set the SR.T flag.
+
+
+=== SHAR ===
+
+* 33nA SHAR	Rn
+
+Rn'=(Rn SAR 1); SR.T=Rn.0
+
+Shift Arithmetic Right by 1 bit.
+This updates SR.T with the bit shifted out of the LSB.
+
+
+=== SHARx ===
+
+* 34n8 SHAR1	Rn
+* 34n9 SHAR2	Rn
+* 34nA SHAR4	Rn
+* 34nB SHAR8	Rn
+* 34nE SHAR16	Rn
+
+Rn=Rn SAR x;
+
+Perform an arithmetic shift right by the given number of bits.
+These may be combined to form a shift by a different number of bits.
+
+
+=== SHLL ===
+
+* 33n8 SHLL	Rn
+
+Rn'=(Rn SHL 1); SR.T=Rn.31
+
+Shift Logical Left by 1 bit.
+This updates SR.T with the bit shifted out of the MSB.
+
+
+=== SHLLx ===
+
+* 34n0 SHLL1	Rn
+* 34n1 SHLL2	Rn
+* 34n2 SHLL4	Rn
+* 34n3 SHLL8	Rn
+* 34nC SHLL16	Rn
+
+Rn=Rn SHL x;
+
+Perform an logical shift left by the given number of bits.
+These may be combined to form a shift by a different number of bits.
+
+
+=== SHLR ===
+
+* 33n9 SHLR	Rn
+
+Rn'=(Rn SHR 1); SR.T=Rn.0
+
+Shift Logical Right by 1 bit.
+This updates SR.T with the bit shifted out of the LSB.
+
+
+=== SHLRx ===
+
+* 34n4 SHLR1	Rn
+* 34n5 SHLR2	Rn
+* 34n6 SHLR4	Rn
+* 34n7 SHLR8	Rn
+* 34nD SHLR16	Rn
+
+Rn=Rn SHR x;
+
+Perform an logical shift right by the given number of bits.
+These may be combined to form a shift by a different number of bits.
+
+
+=== SLEEP ===
+
+* 3020 SLEEP
+
+Causes the processor to sleep until the next interrupt.
+
+May generate an fault if used in a context where this would halt the processor indefinitely.
+
+
+=== SUB ===
+
+* 11nm SUB		Rm, Rn
+* 31n1 SUB		DLR, Rn
+
+Rn=Rn-Rm
+
+Subtract the source from the destination, storing the result in the destination register.
+
+
+=== SWAP.B ===
+
+* 36nA SWAPB	Rn
+
+Rn'=((Rn AND 0xFF00FF00) SHR 8) OR ((Rn AND 0x00FF00FF) SHL 8);
+
+Swap the Bytes within Rn.
+
+
+
+=== SWAP.B ===
+
+* 36nB SWAPW	Rn
+
+Rn'=((Rn AND 0xFFFF0000) SHR 16) OR ((Rn AND 0x0000FFFF) SHL 8);
+
+Swap the Words within Rn.
+
+
+=== TRAP ===
+
+* 36j3 TRAP	#imm4u
+
+Generate an Interrupt, using the bits from the immediate as part of the bit-pattern for EXSR (0xC08j).
+
+
+=== TST ===
+
+* 14nm TST		Rm, Rn
+* 31n4 TST		DLR, Rn
+
+SR.T=!(Rm AND Rn)
+
+Perform a bitwise AND of the source and destination registers, updating SR.T based on whether the result of this operation is equal to zero.
+
+A zero result will cause SR.T to be set, and a nonzero result will cause SR.T to be cleared.
+
+
+=== XOR ===
+
+* 17nm XOR		Rm, Rn
+* 31n7 XOR		DLR, Rn
+
+Perform a bitwise XOR of the source and destination registers, storing the result in the destination.
+

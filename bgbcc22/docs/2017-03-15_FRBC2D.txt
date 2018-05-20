@@ -1,0 +1,36 @@
+Simplified FRBC intended mostly as a 3AC IR for object files.
+
+VLI:
+*     0..  127	0xxxxxxx
+*   128..16383	10xxxxxx xxxxxxxx
+* 16384..   2M	110xxxxx xxxxxxxx xxxxxxxx
+*    2M.. 256M	1110xxxx xxxxxxxx xxxxxxxx xxxxxxxx
+* ...
+
+
+Register:
+* VLI Value, Low 2 bits as a tag
+** 0=Temporary
+** 1=Arg
+** 2=Local
+** 3=Global/Immediate
+* Above the tag will be a sequence number:
+** Encoded as an inline Rice(2)
+* Above the sequence number will be the register ID number.
+** The ID will use the remaining bits
+
+The sequence number will indicate which version of a given register is used.
+* Assigning to a register gives it a new sequence value.
+* A block where multiple paths converge may also increment a registers' sequence.
+** This will be known as a 'phi' operation.
+
+
+Sequence Numbering will not be used with gloabals or immediates, instead an Rice(2) tag will indicate the type of value.
+* 0: Imm Int
+* 1: Imm Long
+* 2: Imm Float
+* 3: Imm Double
+* 4: Imm String
+* 5: Imm WString
+* 6: Literal ID
+* 7: Global ID

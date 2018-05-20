@@ -1,0 +1,215 @@
+Another idea for an executable format.
+* This one will be structurally similar to a WAD variant, and organized as lumps.
+* However, many lumps will be order dependent.
+** Lumps will be organized in the order in which they are applied.
+** For compressed lumps, this also indicates the decode order.
+** Decode order matters so that lumps don't stomp other lump's data.
+* Format is to be optimized for a "load and fixup in-place" usage.
+** Offset==RVA will be assumed.
+
+RVA: Relative Virtual Address
+* Address in image relative to the start of the image in memory.
+
+LVA: Logical Virtual Address
+* Address of the image in-memory following loading.
+* This may change if the image is rebased.
+
+
+== Header ==
+
+Header
+
+ WEX_Header {
+ u32 magic;			//00, WEX0
+ u16 arch;			//04, Arch or ImageType magic
+ u16 flags;			//06, image flags
+ u32 ofs_dir;		//08, offset of directory (relative to image base)
+ u32 sz_dir;		//0C, size of directory (entries)
+ u32 lva_imgbase;	//10, default virtual address of image base
+ u32 lva_start;		//14, default LVA of entry point (executables)
+ u32 sz_imgread;	//18, amount of image that needs to be read into memory
+ u32 sz_imgsize;	//1C, logical size of image in memory after loading
+ u32 sz_imgldsz;	//20, size needed to successfully complete loading
+ u32 rva_bss;		//24, start of bss region
+ u32 rva_text;		//28, start of text region
+ u32 rva_data;		//2C, start of data region
+ }
+
+Arch:
+* Identifies the machine architecture.
+* The endianess of the arch word also identifies the endianess of the image.
+** The endianess of the image is to match that of the target machine.
+
+Read-In:
+* 0..sz_imgread
+** Will be loaded and resident in memory following load
+** Is assumed to contain the text and data sections.
+** This area will also contain any data needed for loading.
+
+Layout:
+* 0..rva_text: Will be headers/etc.
+* rva_text..rva_data: Will be code and constant data.
+* rva_data..rva_bss: Will be initialized data.
+* rva_bss..sz_imgsize: bss/etc
+* Note: Unpacked sections are not allowed to cross these boundaries.
+
+Load-time structures will overlap with ".bss", and may be variable.
+* sz_imgldsz<=sz_imgsize
+** Memory for the full image will be reserved.
+** Image will be read in up to rva_imgldsz
+* sz_imgldsz>sz_imgsize
+** Extra space may be needed to be added onto the image.
+** Image is read in.
+** After loading, this space may be reclaimed.
+** Alternately, the loader may use an alternate location at load-time.
+
+(?) After completing loading, the loader is to zero the memory between rva_imgread and rva_imgsize.
+
+
+== Directory ==
+
+DirEnt
+
+ WEX_DirEnt {
+ byte name[8];		//00, Name, inline or escaped
+ byte resv[4];		//08, Reserved
+ byte type;			//0C, File/Entry Type
+ byte method;		//0D, Compression Method
+ u16 flags;			//0E, Special flags
+ u32 drva_data;		//10, RVA of uncompressed data
+ u32 crva_data;		//14, RVA of compressed data
+ u32 dsz_data;		//18, Uncompressed Size of Data (or in-memory)
+ u32 csz_data;		//1C, Compressed Size of Data (or in-file)
+ }
+
+Names:
+* Sections will begin with '.'
+* Commands will begin with '$'
+** The following characters will identify the command.
+* Names beginning with alphanumeric characters will be non-loaded data.
+** These entries are required to have unique names.
+* Names beginning with ' ' will indicate escape-coded names.
+** Bytes 4..7 will encode the RVA of the name.
+** Note: requires string table to be declared/unpacked in a prior entry.
+
+
+Entry Type:
+* 00, Generic/Unknown Entry
+** The loader will not take any action for these.
+* 01, Normal Section (Unpaked during load)
+** If compressed, they are to be unpacked to the target.
+** These will use an in-place unpacking strategy.
+* 02, Stop/Command
+** This entry encodes a command for the loader.
+** May also signal the end of the loaders' action.
+*** Any directory entries past this point are to be ignored by the loader.
+* 03, Command Section
+** Describes a section to be used for a load-time action.
+
+Method:
+* 00: Store
+* 04: LZ4
+* 05: FeLZ32
+* 08: Deflate (!)
+* 09: Deflate64 (!)
+* 0A: BTLZH (!)
+** !: These will be defined but are not required to be supported by the loader.
+
+
+General Loading Order:
+* Load-time strings table.
+* Unpack load-time structures.
+* Unpack ".data" section
+* Unpack ".text" section
+* Apply base-relocations (if applicable)
+* Set-up exports.
+* Apply imports.
+* Zero ".bss" section.
+* Jump to entry point (if applicable)
+
+
+== Section Unpacking ==
+
+In-Place Unpacking ( (csz_data!=0) && (dsz_data!=0) ):
+* Compressed data is copied from crva_data to (drva_data+dsz_data-csz_data).
+* Data is unpacked from this address to drva_data.
+* Unpacking will overwrite the compressed data.
+** Unpacking will also overwrite anything else which happens to exist here.
+** Unpacking will work from higher-address to lower-address sections.
+
+Zeroing ( (csz_data==0) && (dsz_data!=0) ):
+* The region starting at drva_data is zeroed.
+ 
+
+== Base Relocations ==
+
+Reloc Data (".reloc", 1):
+* Will consist of a series of 16-bit entries.
+** Will be relative to a "current position", which starts at the image base.
+* 0xxx: Advance current position by 'xxx' pages
+** 0000: End of Table
+** 0001..03FF: Advance position by 1..1023 pages (4MB).
+** 0400..07FF: Advance position by 16..16384 pages (64MB).
+** Values between 0800 and 0FFF are reserved.
+* 1xxx: Apply a 32-bit fixup
+** Encodes the position within the page.
+** Target holds the LVA.
+* 2xxx: Apply a 16-bit fixup (low 16 bits of address)
+** Encodes the position within the page.
+* 3xxx: Apply a 16-bit fixup (high 16 bits of address)
+** Encodes the position within the page.
+
+Reloc Command ("$reloc", 3):
+* Applies relocations.
+* (csz_data!=0) && (dsz_data!=0)
+** Unpack and apply relocations.
+** No ".reloc" section is given in this case.
+* (csz_data==0) && (dsz_data!=0)
+** Relocations were previously unpacked, apply them now.
+
+
+== Exports ==
+
+Export
+
+ WEX_Export {
+ u32 rva_name;		//RVA of export name
+ u32 rva_expaddr;	//RVA of exported address
+ }
+
+Exports (".exptab", 1):
+* Contains a list of exports.
+* A NULL name terminates the list of exports.
+* Names may exist either in a strings section, or following the table.
+
+Reloc Command ("$exptab", 3):
+* Apply Exports.
+
+
+== Imports ==
+
+Import
+ WEX_Import {
+ u32 rva_name;		//RVA of import name
+ u32 rva_impaddr;	//RVA of imported address list
+ }
+
+Imports (".imptab", 1):
+* u32 rva_name;
+** RVA of imported library-image name.
+** A null name terminates the list of imports.
+* u32 rva_impaddr;
+** 0xxxxxxx: Address List
+*** RVA of address list for the import addresses.
+*** Each reloc entry encodes the position of an import address.
+*** A NULL entry terminates the list of addresses.
+** 2xxxxxxx: Reloc List
+*** Encoded using the same format as a reloc table.
+
+Import Addresses:
+* 0xxxxxxx: RVA of import name.
+** This pointer is overwritten with the address of the imported symbol.
+** Will be 64-bits if the target is 64 bits.
+
+Reloc Command ("$imptab", 3):
+* Apply Imports

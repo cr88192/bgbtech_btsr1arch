@@ -1,0 +1,152 @@
+; this is a list of keywords and other tokens to be
+; treated as ordinals
+;
+; syntax is:
+; token [index] [langs]
+;	index should be absent or "-"
+;	constant indices are not recommended
+;
+;langs:
+;	A:	AST
+;	B:	BGBScript
+;	C:	C
+;	P:	C++
+;	J:	Java
+;	S:	C#
+;	E:	ECMAScript
+;
+;	t:	Built-in Type
+;	m:	Type Modifier
+;	s:	statement
+;	e:	Expression
+;	b:	Binary Operator
+;	k:	Keyword (internal)
+;	v:	Special Value
+
+auto			- CPm
+abstract		- PJSm
+as			- S
+base			- Sv
+bool			- PSt
+boolean		- JEt
+break			- CPJSEs
+byte			- St
+case			- CPJSEs
+catch			- PJSEs
+char			- CPJSEt
+checked		- S
+class			- PJSEs
+const			- CPJSEm
+continue		- CPJSEs
+decimal		- St
+default		- CPJSEs
+delegate		- Ss
+do			- CPJSEs
+double		- CPJSEt
+else			- CPJSEk
+enum			- CPJSEs
+event			- Sm
+explicit		- Sm
+extends		- JEk
+extern		- CPJSEm
+false			- Sv
+final			- JEm
+finally		- PJSEk
+fixed			- Sm
+float			- CPJSEt
+for			- CPJSEs
+foreach		- Ss
+goto			- CPJSEs
+if			- CPJSEs
+implements		- JEk
+implicit		- Sm
+import		- JEs
+in			- JEk
+inline		- CPm
+instanceof		- JEb
+int			- CPJSEt
+interface		- JSEs
+internal		- Sm
+is			- Sb
+lock			- Sm
+long			- CPJSEt
+namespace		- PSs
+native		- JEm
+new			- PJSEme
+null			- JSEv
+object		- St
+operator		- PSk
+out			- Sm
+override		- Sm
+package		- JEs
+params		- S
+private		- PJSEm
+protected		- PJSEm
+public		- PJSEm
+readonly		- Sm
+ref			- Sm
+register		- CPm
+restrict		- CPm
+return		- CPJSEs
+sbyte			- St
+sealed		- Sm
+short			- CPJSEt
+signed		- CPm
+sizeof		- CPSe
+stackalloc		- Se
+static		- CPJSEm
+string		- St
+struct		- CPSk
+super			- Jv
+synchronized	- Jm
+switch		- CPJSEs
+this			- PJSEv
+throw			- PJSEs
+throws		- JEk
+transient		- JEm
+true			- Sv
+try			- PJSEs
+typedef		- CPs
+typeof		- PJSEe
+uint			- St
+ulong			- St
+unchecked		- S
+union			- CPk
+unsafe		- S
+unsigned		- CPm
+ushort		- St
+using			- Ss
+virtual		- PSm
+void			- CPJSEt
+volatile		- CPJSEm
+while			- CPJSEs
+
+_Bool			- Ct
+_Complex		- Cm
+_Imaginary		- Cm
+
+
+__inline		- CPm
+__forceinline	- CPm
+
+__stdcall		- CPm
+__cdecl		- CPm
+__proxy		- CPm
+__w64			- CPm
+__ptr64		- CPm
+__ptr32		- CPm
+__win64		- CPm
+__amd64		- CPm
+__xcall		- CPm
+__packed		- CPm
+__gc			- CPm
+__nogc		- CPm
+__wide		- CPm
+
+__public		- Cm
+__private		- Cm
+__protected		- Cm
+__final		- Cm
+__virtual		- Cm
+__native		- Cm
+__abstract		- Cm

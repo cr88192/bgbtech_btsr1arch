@@ -1,0 +1,81 @@
+BGBCC SHx ABI (32-bit)
+* Will be similar to the standard SH ABI, but may deviate on some points.
+* 64-bit members will have 32-bit alignment.
+* All in-frame structures will also have a 32-bit alignment.
+
+BJX1 ABIs
+* The ABI will come in several variants: 32-bit, 64-bit, and 32/64.
+** The 32-bit ABI will be equivalent to the SHx ABI.
+** The 64-bit ABI will assume 64-bit operation and registers.
+** The 32/64 bit ABI, will be done as in the 32-bit ABI, but with indeterminate register size.
+*** Code is to be generated to deal with operating either in 32 or 64 bit mode.
+* 64-bit members will have 32-bit alignment in 32 and 32/64 mode.
+** The compiler may warn in 32/64 mode if alignment results in a different layout from 64-bit mode.
+
+BJX1 ABI (64-bit)
+* The 64-bit ABI will be very similar to the SHx 32-bit ABI.
+* Registers will be 64-bit, and register pairs may pass 128 bits.
+* Data may be either big-endian or little-endian.
+* 64-bit structure members will have 64-bit alignment.
+* In other cases, only 32-bit alignment is required for 64-bit values.
+
+Register Use:
+* R0/R1: Scratch, Return Value A/B
+* R2: Scratch, Return Struct Address
+* R3: Scratch
+* R4.. R7: Scratch, Function Arg A/B/C/D
+* R8..R11: Preserve
+* R12: Context Pointer (GOT)
+* R13: Preserve
+* R14: Preserve, Frame Pointer
+* R15: Stack Pointer
+* FR0/FR1: Scratch, Float Return
+* FR2/FR3: SH: Scratch, BJX1: Preserve
+* FR4 ..FR11: Scratch, Float Arguments
+* FR12..FR15: Preserve
+* XR0 .. XR7: If available, will be treated as Scratch
+* XR8 .. XR15: If available, will be treated as Preserve
+* GBR: Will be used for process or thread local state.
+** Contents will consist of TLS variables and virtual registers.
+** One such register will be PBO.
+
+Argument Passing:
+* If a 64 bit member is passed, it will use a pair of registers.
+* If not enough registers exist for a 64-bit member, it is passed on the stack.
+** It will be passed entirely on the stack if only one register remains.
+* Stack arguments will be passed with the first non-register argument.
+* FPU registers will only be used on targets with native FPU.
+** Non-FPU cases will pass floating-point arguments in integer registers.
+
+Structure Passing
+* Specifics here will differ from the normal SH ABI.
+* Structs will be passed either in registers or by reference.
+* If it fits within 8 bytes, it will be passed in registers.
+** If it fits within 4 bytes, it will use a single register.
+** As with other arguments, will be passed on the stack as-needed.
+* If it is over 8 bytes, it will be passed by reference.
+** Any structure passed/returned to a function is to have a minimum alignment of 32-bits.
+* Mixed or integer only structs are passed in integer registers.
+* Float or double only structs are passed in float registers.
+
+
+Code may exist in one of several address modes:
+* Absolute: Code is to be loaded at an absolute address.
+** Loading at a different address will require rebasing.
+* PIC: Code may be loaded at an arbitrary address, and linkage is via a GOT.
+* Base Relocatable:
+** May be loaded at a default base address, and relocated as-needed.
+** Code structure is the same as absolute mode.
+** If loaded at the default address, it is equivalent to absolute addressing.
+* Base Relocatable + PBO:
+** Similar to base-relocatable, but with separate handling of code and data sections.
+** Mutable global variables and data will be accessed relative to a PBO register.
+** This will be to facilitate multiple logical programs existing within a shared address space.
+* FDPIC:
+** Variant of PIC, except that the GOT will contain explicit GOTs for called functions.
+** Calling a function will thus imply also loading its associated GOT into the GOT register.
+
+Executable Format:
+* Likely either modified PE/COFF (uPE) or ELF.
+** uPE images will be Base Relocatable or Relocatable+PBO.
+* Nominal will be ELF.

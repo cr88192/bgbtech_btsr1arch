@@ -1,0 +1,12 @@
+/*"fibtst.c"15*/ int fib(int x)
+{
+if(x>2)return(fib(x-1)+fib(x-2));
+return(1);
+}
+/*57*/ int hash_str(char*s)
+{
+int i;
+/*61*/ i=0;
+while(*s)i=i*251+(*s++);
+return(i&0xFFF);
+}

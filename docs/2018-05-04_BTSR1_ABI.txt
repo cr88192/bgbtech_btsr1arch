@@ -1,0 +1,17 @@
+Basic C ABI:
+* R0..R7: Scratch
+* R8..R14: Preserved
+* R0/R1: Return Value
+* R2: Struct Return Address
+* R4..R7: Register Arguments
+** Structures are passed in 1 or 2 registers if they fit.
+** Otherwise, structures are passed by reference.
+
+C ABI, Hard FPU:
+* FR0..FR7: Scratch
+* FR8..FR15: Preserve
+* FR4..FR7: Float Arguments
+
+C ABI, Soft FPU:
+* Float/Double values are passed in GPRs.
+
