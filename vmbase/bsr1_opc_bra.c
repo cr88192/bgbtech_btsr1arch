@@ -20,6 +20,13 @@ void BTSR1_Op_BT_PcDisp(BTSR1_Context *ctx, BTSR1_Opcode *op)
 	}
 }
 
+void BTSR1_Op_BSR_PcDisp2(BTSR1_Context *ctx, BTSR1_Opcode *op)
+{
+	ctx->regs[BTSR1_REG_LR]=op->pc+4;
+	ctx->regs[BTSR1_REG_PC]=(op->pc+2)+(op->imm*2);
+	ctx->tr_rnxt=ctx->tr_rjmp;
+}
+
 void BTSR1_Op_BF_PcDisp(BTSR1_Context *ctx, BTSR1_Opcode *op)
 {
 	if(!(ctx->regs[BTSR1_REG_SR]&1))
@@ -27,6 +34,19 @@ void BTSR1_Op_BF_PcDisp(BTSR1_Context *ctx, BTSR1_Opcode *op)
 		ctx->regs[BTSR1_REG_PC]=(op->pc+2)+(op->imm*2);
 		ctx->tr_rnxt=ctx->tr_rjmp;
 	}
+}
+
+void BTSR1_Op_BRA_PcReg(BTSR1_Context *ctx, BTSR1_Opcode *op)
+{
+	ctx->regs[BTSR1_REG_PC]=(op->pc+2)+(ctx->regs[op->rn]*2);
+	ctx->tr_rnxt=NULL;
+}
+
+void BTSR1_Op_BSR_PcReg(BTSR1_Context *ctx, BTSR1_Opcode *op)
+{
+	ctx->regs[BTSR1_REG_LR]=op->pc+2;
+	ctx->regs[BTSR1_REG_PC]=(op->pc+2)+(ctx->regs[op->rn]*2);
+	ctx->tr_rnxt=NULL;
 }
 
 void BTSR1_JumpUpdatePredicted(BTSR1_Context *ctx)

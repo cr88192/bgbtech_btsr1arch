@@ -180,7 +180,8 @@ ccxl_status BGBCC_BSRC_FlattenImageROM(BGBCC_TransState *ctx,
 
 	ct=obuf;
 
-	if(ofs_sdat<16)
+//	if(ofs_sdat<16)
+	if(1)
 	{
 //		bgbcc_setu16en(ct+0, en, 0xE000|(va_strt>>16)&255);
 //		bgbcc_setu16en(ct+2, en, 0xD000|(va_strt>> 8)&255);
@@ -194,11 +195,11 @@ ccxl_status BGBCC_BSRC_FlattenImageROM(BGBCC_TransState *ctx,
 		bgbcc_setu16en(ct+6, en, 0x40F0|(i>> 0)&  15);
 	}else
 	{
-		bgbcc_setu16en(ct+0, en, 0xE000|(va_strt>>24)&255);
-		bgbcc_setu16en(ct+2, en, 0xD000|(va_strt>>16)&255);
-		bgbcc_setu16en(ct+4, en, 0xD000|(va_strt>> 8)&255);
-		bgbcc_setu16en(ct+6, en, 0xD000|(va_strt>> 0)&255);
-		bgbcc_setu16en(ct+8, en, 0x3200);
+//		bgbcc_setu16en(ct+0, en, 0xE000|(va_strt>>24)&255);
+//		bgbcc_setu16en(ct+2, en, 0xD000|(va_strt>>16)&255);
+//		bgbcc_setu16en(ct+4, en, 0xD000|(va_strt>> 8)&255);
+//		bgbcc_setu16en(ct+6, en, 0xD000|(va_strt>> 0)&255);
+//		bgbcc_setu16en(ct+8, en, 0x3200);
 	}
 
 //	bgbcc_setu16en(ct+0, en, 0xD001);	//load entry point

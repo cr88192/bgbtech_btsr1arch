@@ -568,6 +568,12 @@ int BTSR1_DecodeTraceForAddr(BTSR1_Context *ctx,
 //		ncyc++;
 		ncyc+=op->cyc;
 		pc+=2;
+		if(op->fl&BTSR1_OPFL_TWOWORD)
+		{
+			ncyc++;
+			pc+=2;
+		}
+
 		if(op->fl&BTSR1_OPFL_CTRLF)
 		{
 			if(op->nmid!=BTSR1_NMID_BRA)
@@ -579,7 +585,9 @@ int BTSR1_DecodeTraceForAddr(BTSR1_Context *ctx,
 				(op->nmid==BTSR1_NMID_BF)	)
 			{
 				if(op->fmid==BTSR1_FMID_PCDISP)
-					{ jpc=(op->pc+2)+(op->imm*2); }
+				{ 
+					jpc=(op->pc+2)+(op->imm*2);
+				}
 				if(vdrl && (op->fmid==BTSR1_FMID_PCDR4))
 				{
 					jpc=(op->pc+2)+(ldrl*32)+(op->imm*2);

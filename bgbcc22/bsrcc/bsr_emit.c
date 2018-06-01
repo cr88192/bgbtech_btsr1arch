@@ -30,6 +30,11 @@ int BGBCC_BSR_EmitCheckRegBaseGPR(BGBCC_BSR_Context *ctx, int reg)
 		return(1);
 	}
 
+	if((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_LR0)
+	{
+		return(1);
+	}
+
 	return(0);
 }
 
@@ -51,6 +56,7 @@ int BGBCC_BSR_EmitLoadDrImm(
 {
 	int opw1, opw2, opw3;
 
+#if 0
 	if((imm&255)==imm)
 	{
 		opw1=0x2400|(imm&255);
@@ -64,7 +70,9 @@ int BGBCC_BSR_EmitLoadDrImm(
 		BGBCC_BSR_EmitWord(ctx, opw1);
 		return(1);
 	}
-	
+#endif
+
+#if 1
 	if(1)
 	{
 		if((imm&4095)==imm)
@@ -81,6 +89,59 @@ int BGBCC_BSR_EmitLoadDrImm(
 			return(1);
 		}
 	}
+#endif
+
+#if 0
+	if((imm&0xFFFFF)==0x00000)
+	{
+		opw1=0x30A2;
+		BGBCC_BSR_EmitLoadDrImm(ctx, imm>>20);
+		BGBCC_BSR_EmitWord(ctx, opw1);
+		return(1);
+	}
+
+	if((imm&0xFFFFF)==0xFFFFF)
+	{
+		opw1=0x30B2;
+		BGBCC_BSR_EmitLoadDrImm(ctx, imm>>20);
+		BGBCC_BSR_EmitWord(ctx, opw1);
+		return(1);
+	}
+#endif
+	
+	if((imm&0xFFFF)==0x0000)
+	{
+		opw1=0x30A0;
+		BGBCC_BSR_EmitLoadDrImm(ctx, imm>>16);
+		BGBCC_BSR_EmitWord(ctx, opw1);
+		return(1);
+	}
+
+	if((imm&0xFFFF)==0xFFFF)
+	{
+		opw1=0x30B0;
+		BGBCC_BSR_EmitLoadDrImm(ctx, imm>>16);
+		BGBCC_BSR_EmitWord(ctx, opw1);
+		return(1);
+	}
+
+#if 0
+	if((imm&0xFFF)==0x000)
+	{
+		opw1=0x3082;
+		BGBCC_BSR_EmitLoadDrImm(ctx, imm>>12);
+		BGBCC_BSR_EmitWord(ctx, opw1);
+		return(1);
+	}
+
+	if((imm&0xFFF)==0xFFF)
+	{
+		opw1=0x3092;
+		BGBCC_BSR_EmitLoadDrImm(ctx, imm>>12);
+		BGBCC_BSR_EmitWord(ctx, opw1);
+		return(1);
+	}
+#endif
 
 	opw1=0x2600|(imm&255);
 	BGBCC_BSR_EmitLoadDrImm(ctx, imm>>8);
@@ -119,6 +180,13 @@ int BGBCC_BSR_EmitLoadRegImm(
 int BGBCC_BSR_EmitLoadRegImm64P(
 	BGBCC_BSR_Context *ctx, int reg, s64 imm)
 {
+	s32 lo, hi;
+	if(BGBCC_BSRC_EmitRegIsLpReg(NULL, ctx, reg))
+	{
+		lo=imm;		hi=imm>>32;
+		return(BGBCC_BSR_EmitLoadRegImmPair32(ctx, reg, lo, hi));
+	}
+
 	BGBCC_DBGBREAK
 //	BGBCC_CCXL_StubError(ctx);
 	return(0);
@@ -127,6 +195,16 @@ int BGBCC_BSR_EmitLoadRegImm64P(
 int BGBCC_BSR_EmitLoadRegImmPair32(
 	BGBCC_BSR_Context *ctx, int reg, s32 imma, s32 immb)
 {
+	int reg2;
+
+	if(BGBCC_BSRC_EmitRegIsLpReg(NULL, ctx, reg))
+	{
+		reg2=BGBCC_SH_REG_R0+(reg&15);
+		BGBCC_BSR_EmitLoadRegImm(ctx, 0, reg2+0, imma);
+		BGBCC_BSR_EmitLoadRegImm(ctx, 0, reg2+1, immb);
+		return(1);
+	}
+
 	BGBCC_DBGBREAK
 //	BGBCC_CCXL_StubError(ctx);
 	return(0);
@@ -263,7 +341,7 @@ int BGBCC_BSR_EmitLoadRegLabelVarRel24(
 	if(opw1>=0)
 	{
 		if(rlty>0)
-			{ BGBCC_SHX_EmitRelocTy(ctx, lbl, rlty); }
+			{ BGBCC_BSR_EmitRelocTy(ctx, lbl, rlty); }
 		BGBCC_BSR_EmitWord(ctx, opw1);
 		if(opw2>=0)
 			BGBCC_BSR_EmitWord(ctx, opw2);
@@ -340,7 +418,7 @@ int BGBCC_BSR_EmitStoreRegLabelVarRel24(
 	if(opw1>=0)
 	{
 		if(rlty>0)
-			{ BGBCC_SHX_EmitRelocTy(ctx, lbl, rlty); }
+			{ BGBCC_BSR_EmitRelocTy(ctx, lbl, rlty); }
 		BGBCC_BSR_EmitWord(ctx, opw1);
 		if(opw2>=0)
 			BGBCC_BSR_EmitWord(ctx, opw2);

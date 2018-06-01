@@ -49,6 +49,20 @@ typedef signed long long s64;
 typedef volatile u32 vol_u32;
 
 
+typedef unsigned char uint8_t;
+typedef signed char int8_t;
+typedef unsigned short uint16_t;
+typedef signed short int16_t;
+typedef unsigned int uint32_t;
+typedef signed int int32_t;
+typedef unsigned long long uint64_t;
+typedef signed long long int64_t;
+
+#include "tkcl_softdiv.c"
+#include "tkcl_softfpu.c"
+#include "tkcl_opr_lli.c"
+
+
 void __halt(void);
 
 
@@ -152,9 +166,13 @@ char *async_gets(char *buf)
 void print_hex(u32 v)
 {
 	static char *chrs="0123456789ABCDEF";
+//	int i;
 
 //	char *chrs;
 //	chrs="0123456789ABCDEF";
+
+//	i=chrs[(v>>28)&15];
+//	__debugbreak();
 
 	putc(chrs[(v>>28)&15]);
 	putc(chrs[(v>>24)&15]);
@@ -164,6 +182,12 @@ void print_hex(u32 v)
 	putc(chrs[(v>> 8)&15]);
 	putc(chrs[(v>> 4)&15]);
 	putc(chrs[(v    )&15]);
+}
+
+void print_hex_u64(u64 v)
+{
+	print_hex(v>>32);
+	print_hex(v);
 }
 
 void print_hex_n(u32 v, int n)
@@ -262,8 +286,18 @@ void print_decimal_n(int val, int num)
 int __udivsi3_asm(int x, int y);
 
 int __udivsi3(int x, int y)
-	{ return(__udivsi3_asm(x, y)); }
+{
+	puts("ud A/B ");
+	print_hex(x);
+	puts(" ");
+	print_hex(y);
+	puts("\n");
 
+//	return(__udivsi3_asm(x, y));
+	return(tkcl_div_ui(x, y));
+}
+
+#if 0
 int __sdivsi3(int x, int y)
 {
 	int sg, v, x1, y1;
@@ -271,10 +305,35 @@ int __sdivsi3(int x, int y)
 	else		{ x1=x; sg=0; }
 	if(y<0)		{ y1=-y; sg^=1; }
 	else		{ y1=y; }
-	v=__udivsi3_asm(x1, y1);
+
+	puts("sd A/B ");
+	print_hex(x);
+	puts(" ");
+	print_hex(y);
+	puts("\n");
+
+
+//	v=__udivsi3_asm(x1, y1);
+	v=tkcl_div_ui(x1, y1);
 	if(sg)v=-v;
 	return(v);
 }
+#endif
+
+#if 1
+int32_t __sdivsi3(int32_t x, int32_t y)
+{
+	int32_t x1, y1, dq, dr;
+	int sg;
+	if(x<0)		{ x1=-x; sg=1; }
+	else		{ x1=x; sg=0; }
+	if(y<0)		{ y1=-y; sg^=1; }
+	else		{ y1=y; }
+	tkcl_softdiv_u(x1, y1, &dq, &dr);
+	if(sg)dq=-dq;
+	return(dq);
+}
+#endif
 
 void __debugbreak(void);
 
@@ -441,6 +500,9 @@ void __start()
 {
 	char tb[256];
 	char *s0;
+	
+	u64 lx0, ly0, lz0;
+	float fx0, fy0, fz0;
 
 	int x0, y0, z0;
 	int *px0, *py0;
@@ -478,7 +540,162 @@ void __start()
 	z0=x0<<5;
 	if(z0!=96)	__debugbreak();
 
+	z0=x0<<y0;
+	if(z0!=48)	__debugbreak();
+
+	*(u64 *)(&lx0)=0x31415927000ULL;
+	*(u64 *)(&ly0)=0x27182829000ULL;
+	lz0=lx0;
+	
+	if(lx0==ly0)
+		__debugbreak();
+	if(lx0!=lz0)
+		__debugbreak();
+	if(lx0<lz0)
+		__debugbreak();
+	if(lx0>lz0)
+		__debugbreak();
+
+	if(lx0<ly0)
+		__debugbreak();
+	if(ly0>lz0)
+		__debugbreak();
+	if(lx0<=ly0)
+		__debugbreak();
+	if(ly0>=lz0)
+		__debugbreak();
+
+
+	*(u64 *)(&lx0)=0x3141592712345678ULL;
+	*(u64 *)(&ly0)=0x2718282912345678ULL;
+	lz0=lx0;
+	
+	if(lx0==ly0)
+		__debugbreak();
+	if(lx0!=lz0)
+		__debugbreak();
+	if(lx0<lz0)
+		__debugbreak();
+	if(lx0>lz0)
+		__debugbreak();
+
+	if(!(lx0<=lz0))
+		__debugbreak();
+	if(!(lx0>=lz0))
+		__debugbreak();
+
+	if(lx0<ly0)
+		__debugbreak();
+	if(ly0>lz0)
+		__debugbreak();
+	if(lx0<=ly0)
+		__debugbreak();
+	if(ly0>=lz0)
+		__debugbreak();
+
+
+	x0=0x31415927U;
+	y0=69;
+
+	px0=&x0;	py0=&y0;	x0=*px0;	y0=*py0;
+
+	z0=x0/y0;
+	if(z0!=0xB6BE82)
+		__debugbreak();
+
 	puts("Tst 1\n");
+
+
+	lx0=0x31415927U;
+	ly0=0x27182829U;
+
+//	lx0=0x3141592727182829ULL;
+//	ly0=0x2718282931415927ULL;
+	*(u64 *)(&lx0)=0x3141592727182829ULL;
+	*(u64 *)(&ly0)=0x2718282931415927ULL;
+
+
+	lz0=lx0>>1;
+	if(lz0!=0x18A0AC93938C1414ULL)
+		__debugbreak();
+
+//	lx0=x0;
+//	ly0=y0;
+	lz0=lx0+ly0;
+
+	puts("u64 + ");
+	print_hex_u64(lx0);
+	puts(" ");
+	print_hex_u64(ly0);
+	puts(" ");
+	print_hex_u64(lz0);
+	puts("\n");
+
+	lz0=lx0-ly0;
+
+	puts("- ");
+	print_hex_u64(lz0);
+	puts("\n");
+
+	lz0=lx0*ly0;
+
+	puts("* ");
+	print_hex_u64(lz0);
+	puts("\n");
+
+	lz0=lx0&ly0;
+
+	puts("& ");
+	print_hex_u64(lz0);
+	puts("\n");
+
+	lz0=lx0|ly0;
+
+	puts("| ");
+	print_hex_u64(lz0);
+	puts("\n");
+
+	lz0=lx0^ly0;
+	puts("^ ");
+	print_hex_u64(lz0);
+	puts("\n");
+
+	lz0=lx0<<5;
+	puts("<<5 ");
+	print_hex_u64(lz0);
+	puts("\n");
+
+	lz0=lx0>>9;
+	puts(">>9 ");
+	print_hex_u64(lz0);
+	puts("\n");
+
+	print_hex(0x12345678);
+	puts("\n");
+
+#if 1
+	*(u32 *)(&fx0)=0x40490FD0;
+	*(u32 *)(&fy0)=0x402DF854;
+//	fx0=x0;
+//	fy0=y0;
+	fz0=fx0+fy0;
+	fz0=fx0-fy0;
+	fz0=fx0*fy0;
+
+#if 1
+	print_hex(*(u32 *)(&fx0));
+	puts(" ");
+	print_hex(*(u32 *)(&fy0));
+	puts(" ");
+	print_hex(*(u32 *)(&fz0));
+	puts("\n");
+#endif
+
+	fz0=fx0/fy0;
+	fz0=-fx0;
+#endif
+
+	puts("Tst 2\n");
 
 
 	spi_in=0;

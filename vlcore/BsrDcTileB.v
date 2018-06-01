@@ -49,14 +49,17 @@ output[ 19:0]	memPcAddr;		//memory address
 output[  4:0]	memPcOpm;		//memory output-enable
 
 reg[31:0]		tRegOutData;	//output PC value
+reg[31:0]		tRegOutData2;	//output PC value
+
 reg[ 1:0]		tRegOutOK;	//set if we have a valid value.
+reg[ 1:0]		tRegOutOK2;	//set if we have a valid value.
 
 reg[ 19: 0]		tMemPcAddr;		//memory PC address
 reg[127: 0]		tMemPcDataO;	//memory data in
 reg[  4: 0]		tMemPcOpm;		//memory PC output-enable
 
-assign	regOutData	= tRegOutData;
-assign	regOutOK	= tRegOutOK;
+assign	regOutData	= tRegOutData2;
+assign	regOutOK	= tRegOutOK2;
 
 assign	memPcAddr	= tMemPcAddr;
 assign	memPcDataO	= tMemPcDataO;
@@ -76,6 +79,7 @@ reg[ 16:0]		icReqAddr;		//Request Address
 reg[31:0]		tRegTmpData;
 reg[31:0]		tRegTmpDataSt;
 reg				tIcBlkStore;
+reg				tIcBlkStoreB;
 
 always @*
 begin
@@ -94,11 +98,22 @@ begin
 		icReqAddr	= 0;
 	end
 
-	tIcBlkStore = 0;
+//	tIcBlkStore = 0;
+	tIcBlkStore = tIcBlkStoreB;
 	tRegOutOK = UMEM_OK_READY;
 	
-	if(!icBlkMiss && !icBlkBypass && icBlkReady)
+	if(regInOpm!=0)
 	begin
+//		$display("BsrDcTile A=%X O=%X D=%X acc=%d",
+//			regInAddr, regInOpm, regInData,
+//			{ icBlkMiss, icBlkBypass, icBlkReady} );
+	end
+	
+	if(!icBlkMiss && !icBlkBypass && icBlkReady &&
+		(regInOpm[4:3]!=0))
+	begin
+		tIcBlkStore = 0;
+
 		if(regInOpm[4:3]!=0)
 			tRegOutOK = UMEM_OK_OK;
 
@@ -163,6 +178,17 @@ begin
 			end
 		endcase
 
+		if(regInOpm[3])
+		begin
+//			$display("BsrDcTile, A=%X Get=%X", regInAddr, tRegOutData);
+		end
+
+		if(regInOpm[4])
+		begin
+//			$display("BsrDcTile, A=%X Set=%X", regInAddr, tRegTmpDataSt);
+			tIcBlkStore = 1;
+		end
+
 		icBlkDataSt=icBlkData;
 		case({1'b0, regInAddr[2:0]})
 			4'b0000: icBlkDataSt[ 31:  0]=tRegTmpDataSt;
@@ -182,6 +208,9 @@ begin
 			4'b1110: icBlkDataSt[143:112]=tRegTmpDataSt;
 			4'b1111: icBlkDataSt[151:120]=tRegTmpDataSt;
 		endcase
+		
+//		$display("BsrDcTile: icBlkData=%X", icBlkData);
+//		$display("BsrDcTile: icBlkDataSt=%X", icBlkDataSt);
 		
 		tIcBlkStore = regInOpm[4];
 	end
@@ -207,11 +236,19 @@ end
 
 always @ (posedge clock)
 begin
+	tIcBlkStoreB	<= tIcBlkStore;
+
+	tRegOutOK2		<=	tRegOutOK;
+	tRegOutData2	<=	tRegOutData;
+
 	if(icBlkBypass)
 	begin
+//		$display("DcTile Bypass %X %X %X",
+//			regInAddr, regInOpm, regInData);
 		tMemPcAddr	<= regInAddr[19:0];
 		tMemPcDataO	<= { UV96_XX, regInData };
-		tMemPcOpm	<= tMemPcOpm;
+		tMemPcOpm	<= regInOpm;
+		tIcBlkStoreB	<= 0;
 	end
 	else
 	if(icBlkMiss)
@@ -225,6 +262,10 @@ begin
 				tMemPcOpm			<= 5'b00000;
 				icBlkDirty			<= 0;
 				icBlkReady			<= 0;
+
+//				$display("BsrDcTile(A): icBlkData=%X_%X_%X_%X",
+//					icBlkData[127:96], icBlkData[95:64],
+//					icBlkData[63:32], icBlkData[31:0]);
 			end
 			else
 			begin
@@ -232,25 +273,39 @@ begin
 				tMemPcDataO			<= UV128_XX;
 				tMemPcOpm			<= 5'b00000;
 				icBlkData[127:  0]	<= memPcDataI[127:0];
-				icBlkData[159:128]	<= UV32_XX;
+				icBlkData[159:128]	<= UV32_FF;
 				icBlkAddr[16:0]		<= icReqAddr[16:0];
 				icBlkDirty			<= 0;
 				icBlkReady			<= 1;
+
+//				$display("BsrDcTile(B): Addr=%X", tMemPcAddr);
+//				$display("BsrDcTile(B): icBlkData=%X", icBlkData);
+//				$display("BsrDcTile(B): icBlkData=%X_%X_%X_%X",
+//					icBlkData[127:96], icBlkData[95:64],
+//					icBlkData[63:32], icBlkData[31:0]);
+//				$display("BsrDcTile(B): memPcDataI=%X_%X_%X_%X",
+//					memPcDataI[127:96], memPcDataI[95:64],
+//					memPcDataI[63:32], memPcDataI[31:0]);
 			end
 		end
 		else
 		begin
+
+//			$display("BsrDcTile(B-1): icBlkData=%X", icBlkData);
+
 			if(icBlkDirty)
 			begin
 				tMemPcAddr			<= { icBlkAddr[16:0], 3'h0 };
 				tMemPcDataO[127:0]	<= icBlkData[127:0];
 				tMemPcOpm			<= 5'b10111;
+				icBlkReady			<= 0;
 			end
 			else
 			begin
 				tMemPcAddr			<= { icReqAddr[16:0], 3'h0 };
 				tMemPcDataO			<= UV128_XX;
 				tMemPcOpm			<= 5'b01111;
+				icBlkReady			<= 0;
 			end
 		end
 	end
@@ -262,9 +317,16 @@ begin
 		
 		if(tIcBlkStore)
 		begin
-			icBlkData	<= icBlkDataSt;
-			icBlkDirty	<= 1;
-			icBlkReady	<= 1;
+			icBlkData		<= icBlkDataSt;
+			icBlkDirty		<= 1;
+			icBlkReady		<= 1;
+			tIcBlkStoreB	<= 0;
+
+//			$display("BsrDcTile(C): icBlkData=%X", icBlkData);
+		end
+		else
+		begin
+//			$display("BsrDcTile(C-1): icBlkData=%X", icBlkData);
 		end
 	end
 end

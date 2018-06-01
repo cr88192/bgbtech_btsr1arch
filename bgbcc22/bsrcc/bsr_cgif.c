@@ -92,6 +92,22 @@ ccxl_status BGBCC_BSRC_SetupContextForArch(BGBCC_TransState *ctx)
 	return(0);
 }
 
+bool BGBCC_BSRC_TypeShortRegP(BGBCC_TransState *ctx, ccxl_type ty)
+{
+	BGBCC_BSR_Context *sctx;
+
+	sctx=ctx->uctx;
+	if(sctx->is_addr64)
+		return(false);
+	
+//	if(BGBCC_CCXL_TypeSgByteP(ctx, ty))
+//		return(true);
+//	if(BGBCC_CCXL_TypeSignedShortP(ctx, ty))
+//		return(true);
+
+	return(false);
+}
+
 bool BGBCC_BSRC_TypeIntRegP(BGBCC_TransState *ctx, ccxl_type ty)
 {
 	BGBCC_BSR_Context *sctx;
@@ -193,6 +209,9 @@ int BGBCC_BSRC_TypeGetRegClassP(BGBCC_TransState *ctx, ccxl_type ty)
 		return(BGBCC_SH_REGCLS_AR_REF);
 	}
 
+	if(BGBCC_BSRC_TypeShortRegP(ctx, ty))
+		return(BGBCC_SH_REGCLS_WGR);
+
 	if(BGBCC_BSRC_TypeIntRegP(ctx, ty))
 		return(BGBCC_SH_REGCLS_GR);
 	if(BGBCC_BSRC_TypeInt2RegP(ctx, ty))
@@ -272,6 +291,7 @@ int BGBCC_BSRC_EmitVaArg(
 	case BGBCC_SH_REGCLS_GR:
 	case BGBCC_SH_REGCLS_VO_GR:
 	case BGBCC_SH_REGCLS_VO_REF:
+	case BGBCC_SH_REGCLS_WGR:
 		if(sctx->is_addr64)
 			BGBCC_BSRC_EmitCallName(ctx, sctx, "__va64_arg_i");
 		else
@@ -1073,10 +1093,10 @@ ccxl_status BGBCC_BSRC_BuildFunction(BGBCC_TransState *ctx,
 //		bo=BGBCC_BSR_EmitGetOffs(sctx);
 
 		BGBCC_BSR_EmitLabel(sctx, l0);
-		BGBCC_BSR_EmitWord(sctx, 0xD301);
-		BGBCC_BSR_EmitWord(sctx, 0x6332);
-		BGBCC_BSR_EmitWord(sctx, 0x432B);
-		BGBCC_BSR_EmitWord(sctx, 0x0009);
+//		BGBCC_BSR_EmitWord(sctx, 0xD301);
+//		BGBCC_BSR_EmitWord(sctx, 0x6332);
+//		BGBCC_BSR_EmitWord(sctx, 0x432B);
+//		BGBCC_BSR_EmitWord(sctx, 0x0009);
 		BGBCC_BSR_EmitLabel(sctx, l1);
 		BGBCC_BSR_EmitDWord(sctx, 0);
 
@@ -2027,13 +2047,27 @@ int BGBCC_BSRC_LookupLabelImgVA(
 {
 	int i, j, k;
 	
+	
 	j=BGBCC_BSRC_LookupLabelIndex(ctx, sctx, lblid);
+
+	if(sctx->lbl_sec[j]==BGBCC_SH_CSEG_ABS)
+		return(sctx->lbl_ofs[j]);
+
 	k=sctx->sec_lva[sctx->lbl_sec[j]]+sctx->lbl_ofs[j];
 	return(k);
 }
 
 extern char *bgbcc_shx_srcidx[256];
 extern int bgbcc_shx_nsrcidx;
+
+void bgbcc_bsrcc_setu16en(byte *ct, int en, u16 v)
+{
+//	if(((v>>12)&15)==0xD)
+//	{
+//		BGBCC_DBGBREAK
+//	}
+	bgbcc_setu16en(ct, en, v);
+}
 
 ccxl_status BGBCC_BSRC_ApplyImageRelocs(
 	BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx,
@@ -2153,7 +2187,7 @@ ccxl_status BGBCC_BSRC_ApplyImageRelocs(
 			d1=b1+((d-4)>>1);
 			if((((s32)(d1<<20))>>20)!=d1)
 				__debugbreak();
-			bgbcc_setu16en(ctr, en, (b&0xF000)|(d1&0x0FFF));
+			bgbcc_bsrcc_setu16en(ctr, en, (b&0xF000)|(d1&0x0FFF));
 			break;
 		case BGBCC_SH_RLC_RELW8:
 			b=bgbcc_getu16en(ctr, en);
@@ -2162,7 +2196,7 @@ ccxl_status BGBCC_BSRC_ApplyImageRelocs(
 			d1=b1+((d-4)>>1);
 			if((((s32)(d1<<24))>>24)!=d1)
 				__debugbreak();
-			bgbcc_setu16en(ctr, en, (b&0xFF00)|(d1&0x00FF));
+			bgbcc_bsrcc_setu16en(ctr, en, (b&0xFF00)|(d1&0x00FF));
 			break;
 		case BGBCC_SH_RLC_RELW12L:
 			b=bgbcc_getu16en(ctr, en);
@@ -2172,7 +2206,7 @@ ccxl_status BGBCC_BSRC_ApplyImageRelocs(
 //			if(((d1<<20)>>20)!=d1)
 			if((d1&4095)!=d1)
 				__debugbreak();
-			bgbcc_setu16en(ctr, en, (b&0xF000)|(d1&0x0FFF));
+			bgbcc_bsrcc_setu16en(ctr, en, (b&0xF000)|(d1&0x0FFF));
 			break;
 		case BGBCC_SH_RLC_RELW8L:
 			b=bgbcc_getu16en(ctr, en);
@@ -2182,7 +2216,7 @@ ccxl_status BGBCC_BSRC_ApplyImageRelocs(
 //			if(((d1<<24)>>24)!=d1)
 			if((d1&255)!=d1)
 				__debugbreak();
-			bgbcc_setu16en(ctr, en, (b&0xFF00)|(d1&0x00FF));
+			bgbcc_bsrcc_setu16en(ctr, en, (b&0xFF00)|(d1&0x00FF));
 			break;
 
 		case BGBCC_SH_RLC_RELW16_BJX:
@@ -2203,8 +2237,8 @@ ccxl_status BGBCC_BSRC_ApplyImageRelocs(
 				
 			w0=(w0&0xFF00)|((d1>>8)&0x00FF);
 			w1=(w1&0xFF00)|((d1   )&0x00FF);
-			bgbcc_setu16en(ctr+0, en, w0);
-			bgbcc_setu16en(ctr+2, en, w1);
+			bgbcc_bsrcc_setu16en(ctr+0, en, w0);
+			bgbcc_bsrcc_setu16en(ctr+2, en, w1);
 			break;
 
 		case BGBCC_SH_RLC_RELW20_BJX:
@@ -2225,8 +2259,8 @@ ccxl_status BGBCC_BSRC_ApplyImageRelocs(
 
 			w0=(w0&0xFF00)|((d1>>12)&0x00FF);
 			w1=(w1&0xF000)|((d1    )&0x0FFF);
-			bgbcc_setu16en(ctr+0, en, w0);
-			bgbcc_setu16en(ctr+2, en, w1);
+			bgbcc_bsrcc_setu16en(ctr+0, en, w0);
+			bgbcc_bsrcc_setu16en(ctr+2, en, w1);
 			break;
 
 		case BGBCC_SH_RLC_REL24_BJX:
@@ -2239,8 +2273,8 @@ ccxl_status BGBCC_BSRC_ApplyImageRelocs(
 				__debugbreak();
 			w0=(w0&0xFF00)|((d1>>16)&0x00FF);
 			w1=d1&0xFFFF;
-			bgbcc_setu16en(ctr+0, en, w0);
-			bgbcc_setu16en(ctr+2, en, w1);
+			bgbcc_bsrcc_setu16en(ctr+0, en, w0);
+			bgbcc_bsrcc_setu16en(ctr+2, en, w1);
 			break;
 		case BGBCC_SH_RLC_REL24B_BJX:
 			w0=bgbcc_getu16en(ctr+0, en);
@@ -2252,8 +2286,8 @@ ccxl_status BGBCC_BSRC_ApplyImageRelocs(
 				__debugbreak();
 			w0=(w0&0xFF00)|((d1>>16)&0x00FF);
 			w1=d1&0xFFFF;
-			bgbcc_setu16en(ctr+0, en, w0);
-			bgbcc_setu16en(ctr+2, en, w1);
+			bgbcc_bsrcc_setu16en(ctr+0, en, w0);
+			bgbcc_bsrcc_setu16en(ctr+2, en, w1);
 			break;
 
 
@@ -2269,7 +2303,7 @@ ccxl_status BGBCC_BSRC_ApplyImageRelocs(
 			else
 				w0=(w0&0xFF00)|(d1&0x00FF);
 //			if(((w0&0xFF00)==0x2400) && (d1&0x100))w0^=0x0100;
-			bgbcc_setu16en(ctr, en, w0);
+			bgbcc_bsrcc_setu16en(ctr, en, w0);
 			break;
 
 		case BGBCC_SH_RLC_RELW16_BSR:
@@ -2288,8 +2322,8 @@ ccxl_status BGBCC_BSRC_ApplyImageRelocs(
 				w0=(w0&0xFF00)|((d1>>8)&0x00FF);
 			w1=(w1&0xFF00)|((d1   )&0x00FF);
 //			if(((w0&0xFF00)==0x2400) && (d1&0x10000))w0^=0x0100;
-			bgbcc_setu16en(ctr+0, en, w0);
-			bgbcc_setu16en(ctr+2, en, w1);
+			bgbcc_bsrcc_setu16en(ctr+0, en, w0);
+			bgbcc_bsrcc_setu16en(ctr+2, en, w1);
 			break;
 
 		case BGBCC_SH_RLC_RELW16C_BSR:
@@ -2306,8 +2340,8 @@ ccxl_status BGBCC_BSRC_ApplyImageRelocs(
 				w0=(w0&0xFF00)|((d1>>8)&0x00FF);
 			w1=(w1&0xFF00)|((d1   )&0x00FF);
 //			if(((w0&0xFF00)==0x2400) && (d1&0x10000))w0^=0x0100;
-			bgbcc_setu16en(ctr+0, en, w0);
-			bgbcc_setu16en(ctr+2, en, w1);
+			bgbcc_bsrcc_setu16en(ctr+0, en, w0);
+			bgbcc_bsrcc_setu16en(ctr+2, en, w1);
 			break;
 
 		case BGBCC_SH_RLC_RELW16D_BSR:
@@ -2325,8 +2359,8 @@ ccxl_status BGBCC_BSRC_ApplyImageRelocs(
 			else
 				w0=(w0&0xF000)|((d1>>4)&0x0FFF);
 			w1=(w1&0xFFF0)|((d1   )&0x000F);
-			bgbcc_setu16en(ctr+0, en, w0);
-			bgbcc_setu16en(ctr+2, en, w1);
+			bgbcc_bsrcc_setu16en(ctr+0, en, w0);
+			bgbcc_bsrcc_setu16en(ctr+2, en, w1);
 			break;
 
 		case BGBCC_SH_RLC_RELW16A_BSR:
@@ -2341,8 +2375,8 @@ ccxl_status BGBCC_BSRC_ApplyImageRelocs(
 					sctx->stat_ovlbl8++;
 			w0=(w0&0xE000)|((d1>>4)&0x1FFF);
 			w1=(w1&0xFFF0)|((d1   )&0x000F);
-			bgbcc_setu16en(ctr+0, en, w0);
-			bgbcc_setu16en(ctr+2, en, w1);
+			bgbcc_bsrcc_setu16en(ctr+0, en, w0);
+			bgbcc_bsrcc_setu16en(ctr+2, en, w1);
 			break;
 
 		case BGBCC_SH_RLC_RELW24_BSR:
@@ -2363,9 +2397,9 @@ ccxl_status BGBCC_BSRC_ApplyImageRelocs(
 			w1=(w0&0xFF00)|((d1>> 8)&0x00FF);
 			w2=(w1&0xFF00)|((d1    )&0x00FF);
 //			if(((w0&0xFF00)==0x2400) && (d1&0x1000000))w0^=0x0100;
-			bgbcc_setu16en(ctr+0, en, w0);
-			bgbcc_setu16en(ctr+2, en, w1);
-			bgbcc_setu16en(ctr+4, en, w2);
+			bgbcc_bsrcc_setu16en(ctr+0, en, w0);
+			bgbcc_bsrcc_setu16en(ctr+2, en, w1);
+			bgbcc_bsrcc_setu16en(ctr+4, en, w2);
 			break;
 
 		case BGBCC_SH_RLC_RELW24C_BSR:
@@ -2384,9 +2418,9 @@ ccxl_status BGBCC_BSRC_ApplyImageRelocs(
 			w1=(w0&0xFF00)|((d1>> 8)&0x00FF);
 			w2=(w1&0xFF00)|((d1    )&0x00FF);
 //			if(((w0&0xFF00)==0x2400) && (d1&0x1000000))w0^=0x0100;
-			bgbcc_setu16en(ctr+0, en, w0);
-			bgbcc_setu16en(ctr+2, en, w1);
-			bgbcc_setu16en(ctr+4, en, w2);
+			bgbcc_bsrcc_setu16en(ctr+0, en, w0);
+			bgbcc_bsrcc_setu16en(ctr+2, en, w1);
+			bgbcc_bsrcc_setu16en(ctr+4, en, w2);
 			break;
 
 		case BGBCC_SH_RLC_RELW24D_BSR:
@@ -2403,9 +2437,9 @@ ccxl_status BGBCC_BSRC_ApplyImageRelocs(
 			w0=(w0&0xE000)|((d1>>12)&0x1FFF);
 			w1=(w1&0xFF00)|((d1>> 4)&0x00FF);
 			w2=(w2&0xFFF0)|((d1    )&0x000F);
-			bgbcc_setu16en(ctr+0, en, w0);
-			bgbcc_setu16en(ctr+2, en, w1);
-			bgbcc_setu16en(ctr+4, en, w2);
+			bgbcc_bsrcc_setu16en(ctr+0, en, w0);
+			bgbcc_bsrcc_setu16en(ctr+2, en, w1);
+			bgbcc_bsrcc_setu16en(ctr+4, en, w2);
 			break;
 		case BGBCC_SH_RLC_RELW32D_BSR:
 			w0=bgbcc_getu16en(ctr+0, en);
@@ -2424,10 +2458,10 @@ ccxl_status BGBCC_BSRC_ApplyImageRelocs(
 			w1=(w1&0xFF00)|((d1>>12)&0x00FF);
 			w2=(w2&0xFF00)|((d1>> 4)&0x00FF);
 			w3=(w3&0xFFF0)|((d1    )&0x000F);
-			bgbcc_setu16en(ctr+0, en, w0);
-			bgbcc_setu16en(ctr+2, en, w1);
-			bgbcc_setu16en(ctr+4, en, w2);
-			bgbcc_setu16en(ctr+6, en, w3);
+			bgbcc_bsrcc_setu16en(ctr+0, en, w0);
+			bgbcc_bsrcc_setu16en(ctr+2, en, w1);
+			bgbcc_bsrcc_setu16en(ctr+4, en, w2);
+			bgbcc_bsrcc_setu16en(ctr+6, en, w3);
 			break;
 
 		case BGBCC_SH_RLC_RELW24A_BSR:
@@ -2444,9 +2478,9 @@ ccxl_status BGBCC_BSRC_ApplyImageRelocs(
 			w0=(w0&0xE000)|((d1>>12)&0x1FFF);
 			w1=(w1&0xFF00)|((d1>> 4)&0x00FF);
 			w2=(w2&0xFFF0)|((d1    )&0x000F);
-			bgbcc_setu16en(ctr+0, en, w0);
-			bgbcc_setu16en(ctr+2, en, w1);
-			bgbcc_setu16en(ctr+4, en, w2);
+			bgbcc_bsrcc_setu16en(ctr+0, en, w0);
+			bgbcc_bsrcc_setu16en(ctr+2, en, w1);
+			bgbcc_bsrcc_setu16en(ctr+4, en, w2);
 			break;
 		case BGBCC_SH_RLC_RELW32A_BSR:
 			w0=bgbcc_getu16en(ctr+0, en);
@@ -2465,10 +2499,10 @@ ccxl_status BGBCC_BSRC_ApplyImageRelocs(
 			w1=(w1&0xFF00)|((d1>>12)&0x00FF);
 			w1=(w1&0xFF00)|((d1>> 4)&0x00FF);
 			w2=(w2&0xFFF0)|((d1    )&0x000F);
-			bgbcc_setu16en(ctr+0, en, w0);
-			bgbcc_setu16en(ctr+2, en, w1);
-			bgbcc_setu16en(ctr+4, en, w2);
-			bgbcc_setu16en(ctr+6, en, w2);
+			bgbcc_bsrcc_setu16en(ctr+0, en, w0);
+			bgbcc_bsrcc_setu16en(ctr+2, en, w1);
+			bgbcc_bsrcc_setu16en(ctr+4, en, w2);
+			bgbcc_bsrcc_setu16en(ctr+6, en, w2);
 			break;
 
 		case BGBCC_SH_RLC_ABSW16A_BSR:
@@ -2482,8 +2516,8 @@ ccxl_status BGBCC_BSRC_ApplyImageRelocs(
 				__debugbreak();
 			w0=(w0&0xFF00)|((d1>>8)&0x00FF);
 			w1=(w1&0xFF00)|((d1   )&0x00FF);
-			bgbcc_setu16en(ctr+0, en, w0);
-			bgbcc_setu16en(ctr+2, en, w1);
+			bgbcc_bsrcc_setu16en(ctr+0, en, w0);
+			bgbcc_bsrcc_setu16en(ctr+2, en, w1);
 			break;
 
 		case BGBCC_SH_RLC_ABSW24A_BSR:
@@ -2499,9 +2533,9 @@ ccxl_status BGBCC_BSRC_ApplyImageRelocs(
 			w0=(w0&0xFF00)|((d1>>16)&0x00FF);
 			w1=(w1&0xFF00)|((d1>> 8)&0x00FF);
 			w2=(w2&0xFF00)|((d1    )&0x00FF);
-			bgbcc_setu16en(ctr+0, en, w0);
-			bgbcc_setu16en(ctr+2, en, w1);
-			bgbcc_setu16en(ctr+4, en, w2);
+			bgbcc_bsrcc_setu16en(ctr+0, en, w0);
+			bgbcc_bsrcc_setu16en(ctr+2, en, w1);
+			bgbcc_bsrcc_setu16en(ctr+4, en, w2);
 			break;
 
 		case BGBCC_SH_RLC_ABSW32A_BSR:
@@ -2517,10 +2551,10 @@ ccxl_status BGBCC_BSRC_ApplyImageRelocs(
 			w1=(w1&0xFF00)|((d1>>16)&0x00FF);
 			w2=(w2&0xFF00)|((d1>> 8)&0x00FF);
 			w3=(w3&0xFF00)|((d1    )&0x00FF);
-			bgbcc_setu16en(ctr+0, en, w0);
-			bgbcc_setu16en(ctr+2, en, w1);
-			bgbcc_setu16en(ctr+4, en, w2);
-			bgbcc_setu16en(ctr+6, en, w3);
+			bgbcc_bsrcc_setu16en(ctr+0, en, w0);
+			bgbcc_bsrcc_setu16en(ctr+2, en, w1);
+			bgbcc_bsrcc_setu16en(ctr+4, en, w2);
+			bgbcc_bsrcc_setu16en(ctr+6, en, w3);
 			break;
 
 		case BGBCC_SH_RLC_ABSW16B_BSR:
@@ -2534,8 +2568,8 @@ ccxl_status BGBCC_BSRC_ApplyImageRelocs(
 				__debugbreak();
 			w0=(w0&0xF000)|((d1>>4)&0x0FFF);
 			w1=(w1&0xFFF0)|((d1   )&0x000F);
-			bgbcc_setu16en(ctr+0, en, w0);
-			bgbcc_setu16en(ctr+2, en, w1);
+			bgbcc_bsrcc_setu16en(ctr+0, en, w0);
+			bgbcc_bsrcc_setu16en(ctr+2, en, w1);
 			break;
 		case BGBCC_SH_RLC_ABSW24B_BSR:
 			w0=bgbcc_getu16en(ctr+0, en);
@@ -2550,9 +2584,9 @@ ccxl_status BGBCC_BSRC_ApplyImageRelocs(
 			w0=(w0&0xF000)|((d1>>12)&0x0FFF);
 			w1=(w1&0xFF00)|((d1>> 4)&0x00FF);
 			w2=(w2&0xFFF0)|((d1    )&0x000F);
-			bgbcc_setu16en(ctr+0, en, w0);
-			bgbcc_setu16en(ctr+2, en, w1);
-			bgbcc_setu16en(ctr+4, en, w2);
+			bgbcc_bsrcc_setu16en(ctr+0, en, w0);
+			bgbcc_bsrcc_setu16en(ctr+2, en, w1);
+			bgbcc_bsrcc_setu16en(ctr+4, en, w2);
 			break;
 		case BGBCC_SH_RLC_ABSW32B_BSR:
 			w0=bgbcc_getu16en(ctr+0, en);
@@ -2569,10 +2603,10 @@ ccxl_status BGBCC_BSRC_ApplyImageRelocs(
 			w1=(w1&0xFF00)|((d1>>12)&0x00FF);
 			w2=(w2&0xFF00)|((d1>> 4)&0x00FF);
 			w3=(w3&0xFFF0)|((d1    )&0x000F);
-			bgbcc_setu16en(ctr+0, en, w0);
-			bgbcc_setu16en(ctr+2, en, w1);
-			bgbcc_setu16en(ctr+4, en, w2);
-			bgbcc_setu16en(ctr+6, en, w3);
+			bgbcc_bsrcc_setu16en(ctr+0, en, w0);
+			bgbcc_bsrcc_setu16en(ctr+2, en, w1);
+			bgbcc_bsrcc_setu16en(ctr+4, en, w2);
+			bgbcc_bsrcc_setu16en(ctr+6, en, w3);
 			break;
 
 		default:

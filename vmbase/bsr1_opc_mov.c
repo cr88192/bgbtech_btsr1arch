@@ -215,6 +215,18 @@ void BTSR1_Op_MOVD_LdRegDispReg(BTSR1_Context *ctx, BTSR1_Opcode *op)
 		ctx->regs[op->rm]+(op->imm*4));
 }
 
+void BTSR1_Op_MOVUB_LdRegDispReg(BTSR1_Context *ctx, BTSR1_Opcode *op)
+{
+	ctx->regs[op->rn]=(byte)BTSR1_MemGetByte(ctx,
+		ctx->regs[op->rm]+(op->imm*1));
+}
+
+void BTSR1_Op_MOVUW_LdRegDispReg(BTSR1_Context *ctx, BTSR1_Opcode *op)
+{
+	ctx->regs[op->rn]=(u16)BTSR1_MemGetWord(ctx,
+		ctx->regs[op->rm]+(op->imm*2));
+}
+
 
 void BTSR1_Op_MOVB_RegStDrAbs(BTSR1_Context *ctx, BTSR1_Opcode *op)
 	{ BTSR1_MemSetByte(ctx, ctx->regs[BTSR1_REG_DR], ctx->regs[op->rn]); }
@@ -233,6 +245,60 @@ void BTSR1_Op_MOVUB_LdDrAbsReg(BTSR1_Context *ctx, BTSR1_Opcode *op)
 	{ ctx->regs[op->rn]=(byte)BTSR1_MemGetByte(ctx, ctx->regs[BTSR1_REG_DR]); }
 void BTSR1_Op_MOVUW_LdDrAbsReg(BTSR1_Context *ctx, BTSR1_Opcode *op)
 	{ ctx->regs[op->rn]=(u16)BTSR1_MemGetWord(ctx, ctx->regs[BTSR1_REG_DR]); }
+
+
+#if 1
+void BTSR1_Op_MOVB_RegStPcDisp(BTSR1_Context *ctx, BTSR1_Opcode *op)
+{
+	BTSR1_MemSetByte(ctx,
+		(op->pc+2)+(op->imm),
+		ctx->regs[op->rn]);
+}
+
+void BTSR1_Op_MOVB_LdPcDispReg(BTSR1_Context *ctx, BTSR1_Opcode *op)
+{
+	ctx->regs[op->rn]=(sbyte)BTSR1_MemGetByte(ctx,
+		(op->pc+2)+(op->imm));
+}
+
+void BTSR1_Op_MOVW_RegStPcDisp(BTSR1_Context *ctx, BTSR1_Opcode *op)
+{
+	BTSR1_MemSetWord(ctx,
+		(op->pc+2)+(op->imm),
+		ctx->regs[op->rn]);
+}
+
+void BTSR1_Op_MOVW_LdPcDispReg(BTSR1_Context *ctx, BTSR1_Opcode *op)
+{
+	ctx->regs[op->rn]=(s16)BTSR1_MemGetWord(ctx,
+		(op->pc+2)+(op->imm));
+}
+
+void BTSR1_Op_MOVD_RegStPcDisp(BTSR1_Context *ctx, BTSR1_Opcode *op)
+{
+	BTSR1_MemSetDWord(ctx,
+		(op->pc+2)+(op->imm),
+		ctx->regs[op->rn]);
+}
+
+void BTSR1_Op_MOVD_LdPcDispReg(BTSR1_Context *ctx, BTSR1_Opcode *op)
+{
+	ctx->regs[op->rn]=(s32)BTSR1_MemGetDWord(ctx,
+		(op->pc+2)+(op->imm));
+}
+
+void BTSR1_Op_MOVUB_LdPcDispReg(BTSR1_Context *ctx, BTSR1_Opcode *op)
+{
+	ctx->regs[op->rn]=(byte)BTSR1_MemGetByte(ctx,
+		(op->pc+2)+(op->imm));
+}
+
+void BTSR1_Op_MOVUW_LdPcDispReg(BTSR1_Context *ctx, BTSR1_Opcode *op)
+{
+	ctx->regs[op->rn]=(u16)BTSR1_MemGetWord(ctx,
+		(op->pc+2)+(op->imm));
+}
+#endif
 
 
 void BTSR1_Op_PUSH_Reg(BTSR1_Context *ctx, BTSR1_Opcode *op)

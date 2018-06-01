@@ -250,6 +250,22 @@ s32 BTSR1_MemGetDWord(BTSR1_Context *ctx, btsr1_addr addr)
 	return(sp->GetDWord(ctx, sp, addr));
 }
 
+s64 BTSR1_MemGetQWord(BTSR1_Context *ctx, btsr1_addr addr)
+{
+	BTSR1_MemSpan *sp;
+	s64 t;
+	sp=BTSR1_MemSpanForAddr(ctx, addr);
+	if(!sp)
+	{
+		ctx->regs[BTSR1_REG_TEA]=addr;
+		BTSR1_ThrowFaultStatus(ctx, BTSR1_FLT_INVADDR);
+		return(0);
+	}
+	t=sp->GetDWord(ctx, sp, addr+4);
+	t=(t<<32)|((u32)(sp->GetDWord(ctx, sp, addr+0)));
+	return(t);
+}
+
 int BTSR1_MemSetByte(BTSR1_Context *ctx, btsr1_addr addr, int val)
 {
 	BTSR1_MemSpan *sp;
@@ -286,5 +302,19 @@ int BTSR1_MemSetDWord(BTSR1_Context *ctx, btsr1_addr addr, s32 val)
 		BTSR1_ThrowFaultStatus(ctx, BTSR1_FLT_INVADDR);
 		return(0);
 	}
+	return(sp->SetDWord(ctx, sp, addr, val));
+}
+
+int BTSR1_MemSetQWord(BTSR1_Context *ctx, btsr1_addr addr, s64 val)
+{
+	BTSR1_MemSpan *sp;
+	sp=BTSR1_MemSpanForAddr(ctx, addr);
+	if(!sp)
+	{
+		ctx->regs[BTSR1_REG_TEA]=addr;
+		BTSR1_ThrowFaultStatus(ctx, BTSR1_FLT_INVADDR);
+		return(0);
+	}
+	sp->SetDWord(ctx, sp, addr+4, val>>32);
 	return(sp->SetDWord(ctx, sp, addr, val));
 }

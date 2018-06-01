@@ -43,6 +43,11 @@ reg[5:0]	opRegO_Dfl;
 reg[5:0]	opRegN_Dfl;
 reg[5:0]	opRegM_Dfl;
 
+reg[5:0]	opRegN_Cr;
+reg[5:0]	opRegM_Cr;
+reg[5:0]	opRegN_Sr;
+reg[5:0]	opRegM_Sr;
+
 reg[4:0]	opFmid;
 reg[2:0]	opBty;
 
@@ -54,6 +59,10 @@ begin
 	opRegO_Dfl	= {2'b00, istrWord[11:8]};
 	opRegN_Dfl	= {2'b00, istrWord[ 7:4]};
 	opRegM_Dfl	= {2'b00, istrWord[ 3:0]};
+	opRegN_Cr	= {2'b01, istrWord[ 7:4]};
+	opRegM_Cr	= {2'b01, istrWord[ 3:0]};
+	opRegN_Sr	= {2'b10, istrWord[ 7:4]};
+	opRegM_Sr	= {2'b10, istrWord[ 3:0]};
 
 	opUCmd		= BSR_UCMD_INVOP;
 	opRegN		= BSR_REG_ZZR;
@@ -62,6 +71,7 @@ begin
 	opFmid		= BSR_FMID_INV;
 	opUIxt		= 0;
 	opUCmdIx	= 0;
+	opBty		= 0;
 
 	casez(istrWord)
 
@@ -191,6 +201,17 @@ begin
 			opFmid	= BSR_FMID_REGREG;
 		end
 
+		16'h1Azz: begin
+			opUCmd	= BSR_UCMD_MOV_RR;
+			opFmid	= BSR_FMID_REGREG;
+			opBty	= BSR_BTY_UB;
+		end
+		16'h1Bzz: begin
+			opUCmd	= BSR_UCMD_MOV_RR;
+			opFmid	= BSR_FMID_REGREG;
+			opBty	= BSR_BTY_UW;
+		end
+
 		16'h1Czz: begin
 			opUCmd	= BSR_UCMD_ALU_CMPEQ;
 			opFmid	= BSR_FMID_REGREG;
@@ -247,9 +268,9 @@ begin
 			opBty	= BSR_BTY_SL;
 		end
 		16'h29zz: begin
-			opUCmd	= BSR_UCMD_MOVW_RM;
+			opUCmd	= BSR_UCMD_MOVL_RM;
 			opFmid	= BSR_FMID_REGSTDI4SP;
-			opBty	= BSR_BTY_SW;
+			opBty	= BSR_BTY_UL;
 		end
 		16'h2Azz: begin
 			opUCmd	= BSR_UCMD_MOVL_MR;
@@ -257,9 +278,9 @@ begin
 			opBty	= BSR_BTY_SL;
 		end
 		16'h2Bzz: begin
-			opUCmd	= BSR_UCMD_MOVW_MR;
+			opUCmd	= BSR_UCMD_MOVL_MR;
 			opFmid	= BSR_FMID_LDDI4SPREG;
-			opBty	= BSR_BTY_SW;
+			opBty	= BSR_BTY_UL;
 		end
 		16'h2Czz: begin
 			opUCmd	= BSR_UCMD_ALU_CMPEQ;
@@ -328,6 +349,17 @@ begin
 			opUCmdIx	= BSR_UCMD_IX_NOTS;
 		end
 
+		16'h30A0: begin
+			opUCmd	= BSR_UCMD_ALU_LDISH16;
+			opFmid	= BSR_FMID_Z;
+			opImm	= 32'h00000000;
+		end
+		16'h30B0: begin
+			opUCmd	= BSR_UCMD_ALU_LDISH16;
+			opFmid	= BSR_FMID_Z;
+			opImm	= 32'h0000FFFF;
+		end
+
 		16'h30C0: begin
 			opUCmd		= BSR_UCMD_OP_IXT;
 			opFmid		= BSR_FMID_Z;
@@ -364,34 +396,38 @@ begin
 		16'h30z5: begin
 			opUCmd	= BSR_UCMD_MOVW_RM;
 			opFmid	= BSR_FMID_REGSTDRPC;
-			opBty	= BSR_BTY_SW;
+			opBty	= BSR_BTY_SB;
 		end
 		16'h30z6: begin
 			opUCmd	= BSR_UCMD_MOVL_RM;
 			opFmid	= BSR_FMID_REGSTDRPC;
-			opBty	= BSR_BTY_SL;
+			opBty	= BSR_BTY_SB;
 		end
 		16'h30z7: begin
 			opUCmd	= BSR_UCMD_MOVUB_MR;
 			opFmid	= BSR_FMID_LDDRPCREG;
-			opBty	= BSR_BTY_UB;
+			opBty	= BSR_BTY_SB;
 		end
 
 		16'h30z8: begin
 			opUCmd	= BSR_UCMD_MOV_PUSH;
 			opFmid	= BSR_FMID_REG;
+			opBty	= BSR_BTY_SL;
 		end
 		16'h30z9: begin
-			opUCmd	= BSR_UCMD_MOV_PUSHC;
+			opUCmd	= BSR_UCMD_MOV_PUSH;
 			opFmid	= BSR_FMID_REG;
+			opBty	= BSR_BTY_UB;
 		end
 		16'h30zA: begin
 			opUCmd	= BSR_UCMD_MOV_POP;
 			opFmid	= BSR_FMID_REG;
+			opBty	= BSR_BTY_SL;
 		end
 		16'h30zB: begin
-			opUCmd	= BSR_UCMD_MOV_POPC;
+			opUCmd	= BSR_UCMD_MOV_POP;
 			opFmid	= BSR_FMID_REG;
+			opBty	= BSR_BTY_UB;
 		end
 
 		16'h30zC: begin
@@ -402,17 +438,17 @@ begin
 		16'h30zD: begin
 			opUCmd	= BSR_UCMD_MOVW_MR;
 			opFmid	= BSR_FMID_LDDRPCREG;
-			opBty	= BSR_BTY_SW;
+			opBty	= BSR_BTY_SB;
 		end
 		16'h30zE: begin
 			opUCmd	= BSR_UCMD_MOVL_MR;
 			opFmid	= BSR_FMID_LDDRPCREG;
-			opBty	= BSR_BTY_SL;
+			opBty	= BSR_BTY_SB;
 		end
 		16'h30zF: begin
 			opUCmd	= BSR_UCMD_MOVUW_MR;
 			opFmid	= BSR_FMID_LDDRPCREG;
-			opBty	= BSR_BTY_UW;
+			opBty	= BSR_BTY_SB;
 		end
 
 		16'h31z0: begin
@@ -679,6 +715,12 @@ begin
 			opUCmdIx	= 16;
 		end
 
+		16'h34zF: begin
+			opUCmd		= BSR_UCMD_ALU_SHARSX;
+			opFmid		= BSR_FMID_REG;
+			opUCmdIx	= 31;
+		end
+
 
 		16'h35z0: begin
 			opUCmd	= BSR_UCMD_MOVB_RM;
@@ -700,6 +742,8 @@ begin
 			opFmid	= BSR_FMID_REGSTDLR;
 			opBty	= BSR_BTY_SB;
 		end
+
+/*
 		16'h35z4: begin
 			opUCmd	= BSR_UCMD_MOVB_RM;
 			opFmid	= BSR_FMID_REGSTDRGBR;
@@ -720,6 +764,8 @@ begin
 			opFmid	= BSR_FMID_LDDRGBRREG;
 			opBty	= BSR_BTY_SB;
 		end
+*/
+
 		16'h35z8: begin
 			opUCmd	= BSR_UCMD_MOVB_MR;
 			opFmid	= BSR_FMID_LDDLRREG;
@@ -740,6 +786,8 @@ begin
 			opFmid	= BSR_FMID_LDDLRREG;
 			opBty	= BSR_BTY_SW;
 		end
+
+/*
 		16'h35zC: begin
 			opUCmd	= BSR_UCMD_MOVB_MR;
 			opFmid	= BSR_FMID_LDDRGBRREG;
@@ -759,6 +807,19 @@ begin
 			opUCmd	= BSR_UCMD_MOVUW_MR;
 			opFmid	= BSR_FMID_LDDRGBRREG;
 			opBty	= BSR_BTY_SW;
+		end
+*/
+
+		16'h36zC: begin
+			opUCmd	= BSR_UCMD_ALU_ADD;
+			opFmid	= BSR_FMID_DRREG;
+			opBty	= BSR_BTY_UL;
+		end
+
+		16'h3Fzz: begin
+			opUCmd	= BSR_UCMD_LEA_MR;
+			opFmid	= BSR_FMID_LDDR4PCREG;
+			opBty	= BSR_BTY_SB;
 		end
 
 
@@ -787,7 +848,7 @@ begin
 			begin
 				opUCmd	= BSR_UCMD_MOVW_RM;
 				opFmid	= BSR_FMID_REGSTDR4PC;
-				opBty	= BSR_BTY_SW;
+				opBty	= BSR_BTY_SB;
 			end
 		end
 		16'h42zz: begin
@@ -801,7 +862,7 @@ begin
 			begin
 				opUCmd	= BSR_UCMD_MOVL_RM;
 				opFmid	= BSR_FMID_REGSTDR4PC;
-				opBty	= BSR_BTY_SL;
+				opBty	= BSR_BTY_SB;
 			end
 		end
 		16'h43zz: begin
@@ -815,7 +876,7 @@ begin
 			begin
 				opUCmd	= BSR_UCMD_MOVUB_MR;
 				opFmid	= BSR_FMID_LDDR4PCREG;
-				opBty	= BSR_BTY_UB;
+				opBty	= BSR_BTY_SB;
 			end
 		end
 		16'h44zz: begin
@@ -843,7 +904,7 @@ begin
 			begin
 				opUCmd	= BSR_UCMD_MOVW_MR;
 				opFmid	= BSR_FMID_LDDR4PCREG;
-				opBty	= BSR_BTY_SW;
+				opBty	= BSR_BTY_SB;
 			end
 		end
 		16'h46zz: begin
@@ -857,7 +918,7 @@ begin
 			begin
 				opUCmd	= BSR_UCMD_MOVL_MR;
 				opFmid	= BSR_FMID_LDDR4PCREG;
-				opBty	= BSR_BTY_SL;
+				opBty	= BSR_BTY_SB;
 			end
 		end
 		16'h47zz: begin
@@ -871,7 +932,7 @@ begin
 			begin
 				opUCmd	= BSR_UCMD_MOVUW_MR;
 				opFmid	= BSR_FMID_LDDR4PCREG;
-				opBty	= BSR_BTY_UW;
+				opBty	= BSR_BTY_SB;
 			end
 		end
 
@@ -883,6 +944,17 @@ begin
 		16'h49zz: begin
 			opUCmd	= BSR_UCMD_LEA_MR;
 			opFmid	= BSR_FMID_LDDR4PCREG;
+			opBty	= BSR_BTY_UQ;
+		end
+
+		16'h4Azz: begin
+			opUCmd	= BSR_UCMD_MOV_RR;
+			opFmid	= BSR_FMID_REGREG;
+			opBty	= BSR_BTY_UL;
+		end
+		16'h4Bzz: begin
+			opUCmd	= BSR_UCMD_MOV_RR;
+			opFmid	= BSR_FMID_REGREG;
 			opBty	= BSR_BTY_UQ;
 		end
 
@@ -905,6 +977,27 @@ begin
 			opUCmd	= BSR_UCMD_LEA_MR;
 			opFmid	= BSR_FMID_LDDRREGREG;
 			opBty	= BSR_BTY_SQ;
+		end
+
+		16'h58zz: begin
+			opUCmd	= BSR_UCMD_ALU_ADD2;
+			opFmid	= BSR_FMID_REGREG;
+		end
+		16'h59zz: begin
+			opUCmd	= BSR_UCMD_ALU_SUB2;
+			opFmid	= BSR_FMID_REGREG;
+		end
+		16'h5Azz: begin
+			opUCmd	= BSR_UCMD_ALU_AND2;
+			opFmid	= BSR_FMID_REGREG;
+		end
+		16'h5Bzz: begin
+			opUCmd	= BSR_UCMD_ALU_OR2;
+			opFmid	= BSR_FMID_REGREG;
+		end
+		16'h5Czz: begin
+			opUCmd	= BSR_UCMD_ALU_XOR2;
+			opFmid	= BSR_FMID_REGREG;
 		end
 
 		16'h8zzz: begin
@@ -950,6 +1043,7 @@ begin
 	
 	case(opFmid)
 		BSR_FMID_INV: begin
+			$display("BsrDecOp: Inv %x", istrWord);
 		end
 
 		BSR_FMID_Z: begin
@@ -960,8 +1054,20 @@ begin
 		end
 
 		BSR_FMID_REG: begin
-			opRegN	= opRegN_Dfl;
-			opRegM	= BSR_REG_ZZR;
+			case(opBty)
+				BSR_BTY_UB: begin
+					opRegN	= opRegN_Cr;
+					opRegM	= BSR_REG_ZZR;
+				end
+				BSR_BTY_UL: begin
+					opRegN	= opRegN_Sr;
+					opRegM	= BSR_REG_ZZR;
+				end
+				default: begin
+					opRegN	= opRegN_Dfl;
+					opRegM	= BSR_REG_ZZR;
+				end
+			endcase
 			opUIxt	= opUCmdIx;
 		end
 		BSR_FMID_IMM8: begin
@@ -969,8 +1075,30 @@ begin
 			opRegN	= BSR_REG_DLR;
 		end
 		BSR_FMID_REGREG: begin
-			opRegN	= opRegN_Dfl;
-			opRegM	= opRegM_Dfl;
+			case(opBty)
+			
+			BSR_BTY_UB: begin
+				opRegN	= opRegN_Cr;
+				opRegM	= opRegM_Dfl;
+			end
+			BSR_BTY_UW: begin
+				opRegN	= opRegN_Dfl;
+				opRegM	= opRegM_Cr;
+			end
+			BSR_BTY_UL: begin
+				opRegN	= opRegN_Sr;
+				opRegM	= opRegM_Dfl;
+			end
+			BSR_BTY_UQ: begin
+				opRegN	= opRegN_Dfl;
+				opRegM	= opRegM_Sr;
+			end
+			
+			default: begin
+				opRegN	= opRegN_Dfl;
+				opRegM	= opRegM_Dfl;
+			end
+			endcase
 		end
 		BSR_FMID_IMM8REG: begin
 			opImm	= {istrWord[7]?UV24_FF:UV24_00, istrWord[7:0]};
@@ -1071,6 +1199,19 @@ begin
 			opUIxt	= {BSR_IXT_RDL, 1'b1, opBty};
 		end
 
+		BSR_FMID_DRREG: begin
+			case(opBty)
+				BSR_BTY_UL: begin
+					opRegM	= opRegN_Dfl;
+					opRegN	= BSR_REG_DLR;
+				end
+				default: begin
+					opRegN	= opRegN_Dfl;
+					opRegM	= BSR_REG_DLR;
+				end
+			endcase
+		end
+
 		BSR_FMID_PCDISP8: begin
 			opRegN	= BSR_REG_DLR;
 			opRegM	= BSR_REG_PC;
@@ -1089,6 +1230,18 @@ begin
 			opRegM	= BSR_REG_IMM;
 		end
 
+		BSR_FMID_REGSTDLR: begin
+			opRegM	= opRegN_Dfl;
+			opRegN	= BSR_REG_DLR;
+			opUIxt	= {BSR_IXT_REG, 1'b0, opBty};
+		end
+		
+		BSR_FMID_LDDLRREG: begin
+			opRegM	= BSR_REG_DLR;
+			opRegN	= opRegN_Dfl;
+			opUIxt	= {BSR_IXT_REG, 1'b1, opBty};
+		end
+
 		BSR_FMID_REGSTDRGBR: begin
 			opRegN	= opBty[2] ? BSR_REG_TBR: BSR_REG_GBR;
 			opRegM	= opRegN_Dfl;
@@ -1104,6 +1257,7 @@ begin
 			opRegN	= BSR_REG_PC;
 			opRegM	= opRegN_Dfl;
 			opUIxt	= {BSR_IXT_RD4, 1'b0, opBty};
+//			opUIxt	= {BSR_IXT_RD4, 1'b0, 3'b000};
 			opImm	= {UV28_00, istrWord[3:0]};
 		end
 		BSR_FMID_LDDR4PCREG: begin
@@ -1124,21 +1278,23 @@ begin
 					opRegN	= opRegN_Dfl;
 					opRegM	= BSR_REG_PC;
 					opUIxt	= {BSR_IXT_RD4, 1'b1, opBty};
+//					opUIxt	= {BSR_IXT_RD4, 1'b1, 3'b000};
 					opImm	= {UV28_00, istrWord[3:0]};
 				end
 			endcase
 		end
+
 		BSR_FMID_REGSTDI4SP: begin
 			opRegN	= BSR_REG_SP;
 			opRegM	= opRegN_Dfl;
 			opUIxt	= {BSR_IXT_RDI, 1'b0, opBty};
-			opImm	= {UV28_00, istrWord[3:0]};
+			opImm	= {UV24_00, 3'b0, opBty[2], istrWord[3:0]};
 		end
 		BSR_FMID_LDDI4SPREG: begin
 			opRegN	= opRegN_Dfl;
 			opRegM	= BSR_REG_SP;
 			opUIxt	= {BSR_IXT_RDI, 1'b1, opBty};
-			opImm	= {UV28_00, istrWord[3:0]};
+			opImm	= {UV24_00, 3'b0, opBty[2], istrWord[3:0]};
 		end
 		
 		default: begin

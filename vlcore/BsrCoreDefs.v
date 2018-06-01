@@ -90,6 +90,8 @@ parameter[1:0] UMEM_OK_FAULT	= 2'h3;		//FAULT (Request Failed)
 
 parameter[4:0] UMEM_OPM_READY	= 5'b00000;		//Ready/Idle
 
+parameter[4:0] UMEM_OPM_CTRLF	= 5'b00010;		//Control Flow
+
 parameter[4:0] UMEM_OPM_RD_SB	= 5'b01000;		//Read Byte
 parameter[4:0] UMEM_OPM_RD_SW	= 5'b01001;		//Read Word
 parameter[4:0] UMEM_OPM_RD_SL	= 5'b01010;		//Read DWord
@@ -243,7 +245,7 @@ parameter[7:0] BSR_UCMD_ALU_EXTSW	= 8'h2F;
 parameter[7:0] BSR_UCMD_ALU_NOT		= 8'h30;
 parameter[7:0] BSR_UCMD_ALU_NEG		= 8'h31;
 parameter[7:0] BSR_UCMD_ALU_NEGC	= 8'h32;
-
+parameter[7:0] BSR_UCMD_ALU_SHARSX	= 8'h33;
 parameter[7:0] BSR_UCMD_ALU_ROTL	= 8'h34;
 parameter[7:0] BSR_UCMD_ALU_ROTR	= 8'h35;
 parameter[7:0] BSR_UCMD_ALU_ROTCL	= 8'h36;
@@ -256,6 +258,14 @@ parameter[7:0] BSR_UCMD_ALU_SHLLN	= 8'h3C;
 parameter[7:0] BSR_UCMD_ALU_SHLRN	= 8'h3D;
 parameter[7:0] BSR_UCMD_ALU_SHARN	= 8'h3E;
 parameter[7:0] BSR_UCMD_ALU_SHLD	= 8'h3F;
+
+parameter[7:0] BSR_UCMD_ALU_ADD2	= 8'h40;	//Rn=Rm+DLR
+parameter[7:0] BSR_UCMD_ALU_SUB2	= 8'h41;	//Rn=Rm-DLR
+parameter[7:0] BSR_UCMD_ALU_AND2	= 8'h42;	//Rn=Rm&DLR
+parameter[7:0] BSR_UCMD_ALU_OR2		= 8'h43;	//Rn=Rm|DLR
+parameter[7:0] BSR_UCMD_ALU_XOR2	= 8'h44;	//Rn=Rm^DLR
+
+parameter[7:0] BSR_UCMD_ALU_LDISH16	= 8'h45;	//
 
 
 parameter[7:0] BSR_UCMD_IX_NOP		= 8'h00;

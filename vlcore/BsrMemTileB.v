@@ -86,10 +86,16 @@ reg[1:0]		tmpMmioOK;			//mmio OK
 (* ram_style="block" *) reg[31:0]		sramTileC[511:0];		//SRAM
 (* ram_style="block" *) reg[31:0]		sramTileD[511:0];		//SRAM
 
+//(* ram_style="block" *) reg[31:0]		sramTileA[255:0];		//SRAM
+//(* ram_style="block" *) reg[31:0]		sramTileB[255:0];		//SRAM
+//(* ram_style="block" *) reg[31:0]		sramTileC[255:0];		//SRAM
+//(* ram_style="block" *) reg[31:0]		sramTileD[255:0];		//SRAM
+
 reg[127:0]		tRomTile;
 reg[127:0]		tRamTile;
 reg[127:0]		tSRamTile;
-reg[11:0]		tAccTileIx;
+reg[11:0]		tAccTileIxA;
+reg[11:0]		tAccTileIxB;
 
 reg[127:0]		tMemTile;
 reg[127:0]		tOutData;
@@ -119,6 +125,11 @@ wire		addrIsRom;
 assign		addrIsRom =
 	(regInAddr[19:0] <= 20'h08000) &&
 	(regInAddr[14] == 0);
+
+wire		addrIsMmio;
+assign		addrIsMmio =
+	(regInAddr[19:0] >= 20'h0E000) &&
+	(regInAddr[19:0] <  20'h0F800) ;
 
 //wire			addrIsSRam;
 //assign		addrIsSRam =
@@ -192,7 +203,7 @@ begin
 			end
 
 			tNextTile = tRomTile;
-			tRegOutOK = (tAccTileIx == tRegTileIxA) ?
+			tRegOutOK = (tAccTileIxA == tRegTileIxA) ?
 				UMEM_OK_OK : UMEM_OK_HOLD;
 			
 //			$display("Rom: %X", tMemTile);
@@ -214,6 +225,16 @@ begin
 		else
 		if(addrIsRam || addrIsSRam)
 		begin
+			tSRamTile[ 31:  0] = sramTileA[tAccTileIxA[9:1]];
+			tSRamTile[ 63: 32] = sramTileB[tAccTileIxA[9:1]];
+			tSRamTile[ 95: 64] = sramTileC[tAccTileIxB[9:1]];
+			tSRamTile[127: 96] = sramTileD[tAccTileIxB[9:1]];
+
+//			tSRamTile[ 31:  0] = sramTileA[tAccTileIxA[8:1]];
+//			tSRamTile[ 63: 32] = sramTileB[tAccTileIxA[8:1]];
+//			tSRamTile[ 95: 64] = sramTileC[tAccTileIxB[8:1]];
+//			tSRamTile[127: 96] = sramTileD[tAccTileIxB[8:1]];
+
 			if(regInAddr[3])
 			begin
 				tMemTile[ 63:  0] = tSRamTile[127: 64];
@@ -229,9 +250,12 @@ begin
 //			tMemTile = addrIsSRam ? tSRamTile : tRamTile;
 //			tNextTile = tMemTile;
 //			tRegOutOK = 1;
-			tRegOutOK = (tAccTileIx == tRegTileIxA) ?
+			tRegOutOK = (tAccTileIxA == tRegTileIxA) ?
 				UMEM_OK_OK : UMEM_OK_HOLD;
 
+			tOutData=tMemTile;
+
+/*
 			case(regInOpm[1:0])
 				2'b10: begin
 					tOutData=tMemTile;
@@ -243,13 +267,24 @@ begin
 				default:
 					tOutData=tMemTile;
 			endcase
+*/
+
+			if(regInOE)
+			begin
+//				$display("SRam: A=%X Out=%X", regInAddr, tOutData);
+			end
 		
 			if(regInWR)
 			begin
+//				$display("BsrMemTile: Store A=%X D=%X",
+//					regInAddr, regInData);
+
 //				tNextTileIx = tRegTileIx;
 //				tNextTileSt = 1;
 				tNextTileSt = addrIsRam;
 				tNextTileSrSt = addrIsSRam;
+
+/*
 				case(regInOpm[1:0])
 					2'b10:
 						if(regInAddr[2])
@@ -259,6 +294,9 @@ begin
 					default:
 						tNextTileA[127:0]=regInData;
 				endcase
+*/
+
+				tNextTileA[127:0]=regInData;
 
 				if(regInAddr[3])
 				begin
@@ -268,6 +306,11 @@ begin
 					tNextTile[ 63: 0] = tNextTileA[ 63: 0];
 					tNextTile[127:64] = tNextTileA[127:64];
 				end
+
+//				sramTileA[tRegTileIxA[9:1]] = tNextTile[ 31:  0];
+//				sramTileB[tRegTileIxA[9:1]] = tNextTile[ 63: 32];
+//				sramTileC[tRegTileIxB[9:1]] = tNextTile[ 95: 64];
+//				sramTileD[tRegTileIxB[9:1]] = tNextTile[127: 96];
 			end
 		end
 		else
@@ -285,6 +328,12 @@ begin
 
 			tRegOutOK		= tmpMmioOK;
 			tOutData		= { 96'h0, tmpMmioInData[31:0] };
+
+			if((tMmioOpm!=0) && (tmpMmioOK!=3))
+			begin
+//				$display("DcTile2 Bypass A=%X O=%X DO=%X DI=%X",
+//					regInAddr, tMmioOpm, regInData[31:0], tOutData[31:0]);
+			end
 		end
 
 	end
@@ -317,17 +366,18 @@ begin
 	tRomTile[ 95: 64] <= romTileC[tRegTileIxB[11:1]];
 	tRomTile[127: 96] <= romTileD[tRegTileIxB[11:1]];
 
-	tSRamTile[ 31:  0] <= sramTileA[tRegTileIxA[9:1]];
-	tSRamTile[ 63: 32] <= sramTileB[tRegTileIxA[9:1]];
-	tSRamTile[ 95: 64] <= sramTileC[tRegTileIxB[9:1]];
-	tSRamTile[127: 96] <= sramTileD[tRegTileIxB[9:1]];
+//	tSRamTile[ 31:  0] <= sramTileA[tRegTileIxA[9:1]];
+//	tSRamTile[ 63: 32] <= sramTileB[tRegTileIxA[9:1]];
+//	tSRamTile[ 95: 64] <= sramTileC[tRegTileIxB[9:1]];
+//	tSRamTile[127: 96] <= sramTileD[tRegTileIxB[9:1]];
 
 //	tRamTile[ 31: 0] <= memTileA[tRegTileIx];
 //	tRamTile[ 63:32] <= memTileB[tRegTileIx];
 //	tRamTile[ 95:64] <= memTileC[tRegTileIx];
 //	tRamTile[127:96] <= memTileD[tRegTileIx];
 
-	tAccTileIx		<= tRegTileIxA;
+	tAccTileIxA		<= tRegTileIxA;
+	tAccTileIxB		<= tRegTileIxB;
 
 //	if(tNextTileSt)
 //	begin
@@ -340,10 +390,18 @@ begin
 
 	if(tNextTileSrSt)
 	begin
+//		$display("BsrMemTile: Store Tile A=%X D=%X",
+//			regInAddr, tNextTile);
+	
 		sramTileA[tRegTileIxA[9:1]] <= tNextTile[ 31:  0];
 		sramTileB[tRegTileIxA[9:1]] <= tNextTile[ 63: 32];
 		sramTileC[tRegTileIxB[9:1]] <= tNextTile[ 95: 64];
 		sramTileD[tRegTileIxB[9:1]] <= tNextTile[127: 96];
+
+//		sramTileA[tRegTileIxA[8:1]] <= tNextTile[ 31:  0];
+//		sramTileB[tRegTileIxA[8:1]] <= tNextTile[ 63: 32];
+//		sramTileC[tRegTileIxB[8:1]] <= tNextTile[ 95: 64];
+//		sramTileD[tRegTileIxB[8:1]] <= tNextTile[127: 96];
 	end
 end
 

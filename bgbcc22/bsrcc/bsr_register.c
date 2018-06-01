@@ -328,7 +328,8 @@ int BGBCC_BSRC_ScratchAllocReg(
 		(cls==BGBCC_SH_REGCLS_QGR) ||
 		(cls==BGBCC_SH_REGCLS_VO_QGR) ||
 		(cls==BGBCC_SH_REGCLS_VO_REF) ||
-		(cls==BGBCC_SH_REGCLS_AR_REF))
+		(cls==BGBCC_SH_REGCLS_AR_REF) ||
+		(cls==BGBCC_SH_REGCLS_WGR))
 	{
 //		for(i=1; i<8; i++)
 		for(i=7; i>=0; i--)
@@ -362,7 +363,8 @@ int BGBCC_BSRC_ScratchAllocReg(
 
 	if(!cls ||
 		(cls==BGBCC_SH_REGCLS_GR) ||
-		(cls==BGBCC_SH_REGCLS_VO_GR))
+		(cls==BGBCC_SH_REGCLS_VO_GR) ||
+		(cls==BGBCC_SH_REGCLS_WGR))
 	{
 //		for(i=1; i<8; i++)
 		for(i=7; i>=0; i--)

@@ -5,6 +5,13 @@ Reads from Rm and Rn.
 Writes to Ro.
 
 GPRs will be 16x 32b
+
+SPRs will be 16x 32b.
+With relevant registers piped to the outside.
+
+Will have 16 shadow registers.
+	R0A..R7A swap with R0B..R7B
+	7 of the SPRs also swap with shadow regs.
  */
 
 `include "BsrCoreDefs.v"
@@ -159,17 +166,23 @@ begin
 		BSR_REG_R12:	tRegValRm = regGprR12 ;
 		BSR_REG_R13:	tRegValRm = regGprR13 ;
 		BSR_REG_R14:	tRegValRm = regGprR14 ;
-		BSR_REG_R15:	tRegValRm = regSp     ;
+//		BSR_REG_R15:	tRegValRm = regSp     ;
+		BSR_REG_R15:	tRegValRm = exNextSp2 ;
 
 //		BSR_REG_PC:		tRegValRm = idValPc   ;
 		BSR_REG_PC:		tRegValRm = idValPc+2 ;
 		BSR_REG_LR:		tRegValRm = regPr     ;
 		BSR_REG_SR:		tRegValRm = regSr     ;
 		BSR_REG_VBR:	tRegValRm = regVbr    ;
-		BSR_REG_DLR:	tRegValRm = regDlr    ;
-		BSR_REG_DHR:	tRegValRm = regDhr    ;
-		BSR_REG_GBR:	tRegValRm = regGbr    ;
-		BSR_REG_TBR:	tRegValRm = regTbr    ;
+//		BSR_REG_DLR:	tRegValRm = regDlr    ;
+//		BSR_REG_DHR:	tRegValRm = regDhr    ;
+//		BSR_REG_GBR:	tRegValRm = regGbr    ;
+//		BSR_REG_TBR:	tRegValRm = regTbr    ;
+
+		BSR_REG_DLR:	tRegValRm = exNextDlr2 ;
+		BSR_REG_DHR:	tRegValRm = exNextDhr2 ;
+		BSR_REG_GBR:	tRegValRm = exNextGbr2 ;
+		BSR_REG_TBR:	tRegValRm = exNextTbr2 ;
 
 		BSR_REG_R0B:	tRegValRm = regGprR0B ;
 		BSR_REG_R1B:	tRegValRm = regGprR1B ;
@@ -212,11 +225,23 @@ begin
 		BSR_REG_R12:	tRegValRn = regGprR12 ;
 		BSR_REG_R13:	tRegValRn = regGprR13 ;
 		BSR_REG_R14:	tRegValRn = regGprR14 ;
-		BSR_REG_R15:	tRegValRn = regSp     ;
+//		BSR_REG_R15:	tRegValRn = regSp     ;
+		BSR_REG_R15:	tRegValRn = exNextSp2 ;
 
 		BSR_REG_PC:		tRegValRn = idValPc+2 ;
-		BSR_REG_GBR:	tRegValRn = regGbr    ;
-		BSR_REG_TBR:	tRegValRn = regTbr    ;
+		BSR_REG_LR:		tRegValRn = regPr     ;
+		BSR_REG_SR:		tRegValRn = regSr     ;
+		BSR_REG_VBR:	tRegValRn = regVbr    ;
+//		BSR_REG_DLR:	tRegValRn = regDlr    ;
+//		BSR_REG_DHR:	tRegValRn = regDhr    ;
+//		BSR_REG_GBR:	tRegValRn = regGbr    ;
+//		BSR_REG_TBR:	tRegValRn = regTbr    ;
+
+		BSR_REG_DLR:	tRegValRn = exNextDlr2 ;
+		BSR_REG_DHR:	tRegValRn = exNextDhr2 ;
+		BSR_REG_GBR:	tRegValRn = exNextGbr2 ;
+		BSR_REG_TBR:	tRegValRn = exNextTbr2 ;
+
 		default:		tRegValRn = UV32_XX   ;
 	endcase
 	
@@ -231,7 +256,8 @@ begin
 
 	regSrRB		<= nxtRegSrRB;
 
-	if(regSrRB^nxtRegSrRB)
+//	if(regSrRB^nxtRegSrRB)
+	if(0)
 	begin
 		regGprR0A <= (regIdRo==BSR_REG_R0) ? regValRo[31:0] : regGprR0B;
 		regGprR1A <= (regIdRo==BSR_REG_R1) ? regValRo[31:0] : regGprR1B;
@@ -309,7 +335,8 @@ begin
 	begin
 		regVbr	<= (regIdRo==BSR_REG_VBR ) ? regValRo[31:0] : exNextVbr2;
 
-		if(regSrRB^nxtRegSrRB)
+//		if(regSrRB^nxtRegSrRB)
+		if(0)
 		begin
 			regSp	<= (regIdRo==BSR_REG_R15 ) ? regValRo[31:0] : regSSp;
 			regPc	<= (regIdRo==BSR_REG_PC  ) ? regValRo[31:0] : regSPc;

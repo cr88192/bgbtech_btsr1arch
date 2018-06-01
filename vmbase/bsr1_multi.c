@@ -13,6 +13,7 @@
 #include "bsr1_opc_arith.c"
 #include "bsr1_opc_bra.c"
 #include "bsr1_opc_mov.c"
+#include "bsr1_opc_fpari.c"
 
 #include "bsr1_dec_op.c"
 #include "bsr1_dec_tr.c"

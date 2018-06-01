@@ -194,6 +194,7 @@ reg[7:0]		exRegIdIxt;		//ALU Index / Opcode Extension
 reg[5:0]		exRegIdRm;
 reg[5:0]		exRegIdRn;
 reg [15:0]		exIstrWord;
+reg[31:0]		exIdCurPc;		//PC to current instruction
 
 reg[31:0]		exRegValRm;		//Rm input value
 reg[31:0]		exRegValRn;		//Rn input value
@@ -275,6 +276,17 @@ begin
 	if(icRegOutPcOK==UMEM_OK_HOLD)
 		exHold		= 1;
 
+//	if((exMemOpm==0) &&
+//				((exMemDataOK==UMEM_OK_OK) ||
+//				(dcRegOutOK==UMEM_OK_OK)))
+//		exHold		= 1;
+
+	exMemDataLd		= dcRegOutData;
+	exMemDataOK		= dcRegOutOK;
+	dcRegInAddr		= exMemAddr;
+	dcRegInOpm		= exMemOpm;
+	dcRegInData		= exMemData;
+
 	icMemPcOK		= UMEM_OK_HOLD;
 	dcMemPcOK		= UMEM_OK_HOLD;
 	icMemPcData		= memRegOutData;
@@ -351,8 +363,8 @@ begin
 	
 	if(exHold)
 	begin
-		$display("BsrExUnit: Hold %d %d %d",
-			exRegOutOK, dcRegOutOK, icRegOutPcOK);
+//		$display("BsrExUnit: Hold Ex=%d Dc=%d Ic=%d",
+//			exRegOutOK, dcRegOutOK, icRegOutPcOK);
 	end
 	else
 	begin
@@ -364,7 +376,7 @@ begin
 		decRegPc		<= icRegInPc;
 		decIstrWord		<= exBranchFlush ? 16'h3000 : icRegOutPcVal;
 //		decIstrWord		<= icRegOutPcVal;
-		$display("ID1 %X %X", decRegPc, decIstrWord);
+//		$display("ID1 %X %X", decRegPc, decIstrWord);
 
 	/* ID2 */
 		gprRegIdRm		<= decIdRegM;
@@ -377,11 +389,11 @@ begin
 		gprIdUCmd		<= decIdUCmd;
 		gprIdUIxt		<= decIdUIxt;
 
-		$display("ID2 %X %X %X-%X Rm=%X(%X) Rn=%X(%X) Imm=%X",
-			gprIdValPc, gprIstrWord,
-			gprIdUCmd, gprIdUIxt,
-			gprRegIdRm, gprRegValRm, gprRegIdRn, gprRegValRn,
-			gprIdImm);
+//		$display("ID2 %X %X %X-%X Rm=%X(%X) Rn=%X(%X) Imm=%X",
+//			gprIdValPc, gprIstrWord,
+//			gprIdUCmd, gprIdUIxt,
+//			gprRegIdRm, gprRegValRm, gprRegIdRn, gprRegValRn,
+//			gprIdImm);
 
 	/* EX */
 //		exOpCmd			<= exBranchFlush ? BSR_UCMD_NOP: gprIdUCmd;
@@ -389,23 +401,29 @@ begin
 		exRegIdIxt		<= gprIdUIxt;
 		exRegIdRm		<= gprRegIdRm;
 		exRegIdRn		<= gprRegIdRn;
+		exIdCurPc		<= gprIdValPc;
 
 		exRegValRm		<= gprRegValRm;
 		exRegValRn		<= gprRegValRn;
 		exImmValRi		<= gprIdImm;
-		exIdInGenPc		<= gprIdValPc;
+		exIdInGenPc		<= (gprIdValPc+2);
 		exIstrWord		<= gprIstrWord;
 
 //		exBranchFlush	<= (exCtlOutPc!=exCtlInPc);
 //		exBranchFlush	<= 0;
 
-		$display("EX %X %X %X-%X DLR=%X->%X",
-			exIdInGenPc, exIstrWord,
-			exOpCmd, exRegIdIxt, gprOregDlr, exCtlInDlr);
+//		$display("EX %X %X %X-%X DLR=%X Rm=%X(%X) Rn=%X(%X) Ro=%X(%X)",
+//			exIdCurPc[19:0], exIstrWord,
+//			exOpCmd, exRegIdIxt, exCtlInDlr,
+//			exRegIdRm, exRegValRm,
+//			exRegIdRn, exRegValRn,
+//			exRegOutId, exRegOutVal);
 
-		if(exCtlOutPc!=exCtlInPc)
+//		if((exCtlOutPc!=exCtlInPc) ||
+//			(exMemOpm==UMEM_OPM_CTRLF))
+		if(exMemOpm==UMEM_OPM_CTRLF)
 		begin
-			$display("BRA Flush %X %X", exCtlOutPc, exCtlInPc);
+//			$display("BRA Flush %X %X", exCtlOutPc, exCtlInPc);
 			exBranchFlush	<= 1;
 //			regCurPc		<= exCtlOutPc;
 
@@ -420,16 +438,16 @@ begin
 			exBranchFlush	<= 0;
 		end
 
-		/* MA */
-
-		exMemDataLd		<= dcRegOutData;
-		exMemDataOK		<= dcRegOutOK;
-
-		dcRegInAddr		<= exMemAddr;
-		dcRegInOpm		<= exMemOpm;
-		dcRegInData		<= exMemData;
-
 	end
+
+	/* MA */
+
+//	exMemDataLd		<= dcRegOutData;
+//	exMemDataOK		<= dcRegOutOK;
+
+//	dcRegInAddr		<= exMemAddr;
+//	dcRegInOpm		<= exMemOpm;
+//	dcRegInData		<= exMemData;
 
 end
 

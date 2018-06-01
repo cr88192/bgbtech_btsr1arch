@@ -328,8 +328,14 @@ ccxl_status BGBCC_CCXL_EmitConv(BGBCC_TransState *ctx,
 		BGBCC_CCXL_IsRegDoubleP(ctx, src))
 			{ BGBCC_DBGBREAK }
 
-	if((dtype.val==408) && (stype.val==0))
-		{ BGBCC_DBGBREAK }
+	if(BGBCC_CCXL_TypeFloatP(ctx, stype) ||
+		BGBCC_CCXL_TypeFloatP(ctx, dtype))
+	{
+		ctx->ccxl_tyc_seen|=BGBCC_TYCSEEN_FLOAT_FPU;
+	}
+
+//	if((dtype.val==408) && (stype.val==0))
+//		{ BGBCC_DBGBREAK }
 	
 	op=BGBCC_CCXL_AllocVirtOp(ctx);
 	op->opn=CCXL_VOP_CONV;
@@ -387,6 +393,11 @@ ccxl_status BGBCC_CCXL_EmitBinaryOp(BGBCC_TransState *ctx,
 		}
 		if(opr==CCXL_BINOP_SHRR)
 			ctx->ccxl_tyc_seen|=BGBCC_TYCSEEN_ISHR_VAR;
+	}
+	
+	if(BGBCC_CCXL_TypeFloatP(ctx, type))
+	{
+		ctx->ccxl_tyc_seen|=BGBCC_TYCSEEN_FLOAT_FPU;
 	}
 
 	op=BGBCC_CCXL_AllocVirtOp(ctx);

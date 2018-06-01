@@ -188,6 +188,11 @@ int BGBCC_BSR_EmitStatWord(BGBCC_BSR_Context *ctx, int val)
 		ctx->opcnt_3xx[i]++;
 		ctx->n_opcnt_3xx++;
 	}
+
+//	if((val>>12)==0xD)
+//	{
+//		BGBCC_DBGBREAK
+//	}
 	
 	ctx->stat_opc_tot++;
 	

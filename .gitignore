@@ -17,6 +17,7 @@ randbits.txt
 *.opendb
 *.sln
 *logpc.txt
+*log.txt
 *.vhd
 *.hd
 
@@ -24,6 +25,8 @@ randbits.txt
 *.png
 *.jpg
 *.wav
+
+*/*log.txt
 
 vlcore/obj_dir/*
 # bjx1core32/obj_dir/*

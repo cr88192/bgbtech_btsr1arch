@@ -1,6 +1,6 @@
 /*
 
-Transfers are in terms of 160 bit tiles, which map to 128 bits logical.
+Transfers are in terms of 256 bit tiles, which map to 128 bits logical.
 Each tile will contain part of the following tile.
 
 Memory Map:

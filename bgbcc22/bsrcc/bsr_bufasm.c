@@ -421,8 +421,12 @@ int BGBCC_BSRA_ParseOperand(char **rcs, BGBCC_BSR_OpcodeArg *opv)
 //					opv->rb=BGBCC_BSRA_GetRegId(tk0+1);
 //					opv->ri=BGBCC_BSRA_GetRegId(tk1+1);
 
-					opv->ireg=BGBCC_BSRA_GetRegId(tk0+1);
-					opv->breg=BGBCC_BSRA_GetRegId(tk1+1);
+//					opv->ireg=BGBCC_BSRA_GetRegId(tk0+1);
+//					opv->breg=BGBCC_BSRA_GetRegId(tk1+1);
+
+					opv->breg=BGBCC_BSRA_GetRegId(tk0+1);
+					opv->ireg=BGBCC_BSRA_GetRegId(tk1+1);
+
 					*rcs=cs;
 					return(1);
 				}

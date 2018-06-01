@@ -362,11 +362,47 @@ char *BTSR1_DbgPrintNameForReg(BTSR1_Context *ctx, int reg)
 
 int BTSR1_DbgPrintOp(BTSR1_Context *ctx, BTSR1_Opcode *op)
 {
-	int msc;
+	int msc, psc;
 
-	printf("%05X  %04X %-8s ", op->pc, op->opn,
-		BTSR1_DbgPrintNameForNmid(ctx, op->nmid));
+//	printf("%05X  %04X %-8s ", op->pc, op->opn,
+//		BTSR1_DbgPrintNameForNmid(ctx, op->nmid));
+
+	if(op->fl&BTSR1_OPFL_TWOWORD)
+	{
+		printf("%05X  %04X_%04X %-8s ", op->pc, op->opn, op->opn2,
+			BTSR1_DbgPrintNameForNmid(ctx, op->nmid));
+	}else
+	{
+		printf("%05X  %04X      %-8s ", op->pc, op->opn,
+			BTSR1_DbgPrintNameForNmid(ctx, op->nmid));
+	}
+
 	msc=1;
+	psc=1;
+	switch(op->nmid)
+	{
+	case BTSR1_NMID_BRA:
+	case BTSR1_NMID_BSR:
+	case BTSR1_NMID_BT:
+	case BTSR1_NMID_BF:
+		psc=2;	break;
+	case BTSR1_NMID_MOVB:
+	case BTSR1_NMID_MOVUB:
+		msc=1;	break;
+	case BTSR1_NMID_MOVW:
+	case BTSR1_NMID_MOVUW:
+		msc=2;	break;
+	case BTSR1_NMID_MOVD:
+		msc=4;	break;
+	case BTSR1_NMID_LEAB:
+		msc=1;	psc=1;	break;
+	case BTSR1_NMID_LEAW:
+		msc=2;	psc=2;	break;
+	case BTSR1_NMID_LEAD:
+		msc=4;	psc=4;	break;
+	case BTSR1_NMID_LEAQ:
+		msc=8;	psc=8;	break;
+	}
 
 	switch(op->fmid)
 	{
@@ -387,7 +423,13 @@ int BTSR1_DbgPrintOp(BTSR1_Context *ctx, BTSR1_Opcode *op)
 		printf("#%d", op->imm);
 		break;
 	case BTSR1_FMID_PCDISP:
-		printf("(PC, %d)", op->imm);
+		if(op->imm>256)
+		{
+			printf("(PC, 0x%X)", op->imm*psc);
+		}else
+		{
+			printf("(PC, %d)", op->imm*psc);
+		}
 		break;
 	case BTSR1_FMID_LDREGREG:
 		printf("(%s), %s",
@@ -422,6 +464,12 @@ int BTSR1_DbgPrintOp(BTSR1_Context *ctx, BTSR1_Opcode *op)
 			(op->imm*msc));
 		break;
 
+	case BTSR1_FMID_REGDRREG:
+		printf("%s, DLR, %s",
+			BTSR1_DbgPrintNameForReg(ctx, op->rm),
+			BTSR1_DbgPrintNameForReg(ctx, op->rn));
+		break;
+
 	case BTSR1_FMID_PCDR:
 		printf("(PC, DLR)");
 		break;
@@ -435,8 +483,15 @@ int BTSR1_DbgPrintOp(BTSR1_Context *ctx, BTSR1_Opcode *op)
 			BTSR1_DbgPrintNameForReg(ctx, op->rn));
 		break;
 	case BTSR1_FMID_IMMREG:
-		printf("#%d, %s", op->imm,
-			BTSR1_DbgPrintNameForReg(ctx, op->rn));
+		if(op->imm>256)
+		{
+			printf("#0x%X, %s", op->imm,
+				BTSR1_DbgPrintNameForReg(ctx, op->rn));
+		}else
+		{
+			printf("#%d, %s", op->imm,
+				BTSR1_DbgPrintNameForReg(ctx, op->rn));
+		}
 		break;
 
 	case BTSR1_FMID_LDDRABSREG:
@@ -462,6 +517,33 @@ int BTSR1_DbgPrintOp(BTSR1_Context *ctx, BTSR1_Opcode *op)
 	case BTSR1_FMID_DR4REG:
 		printf("DLR:%d, %s",
 			op->imm, BTSR1_DbgPrintNameForReg(ctx, op->rn));
+		break;
+
+	case BTSR1_FMID_LDPCDISPREG:
+		if(op->imm>256)
+		{
+			printf("(PC, 0x%X), %s",
+				(op->imm*psc),
+				BTSR1_DbgPrintNameForReg(ctx, op->rn));
+		}else
+		{
+			printf("(PC, %d), %s",
+				(op->imm*psc),
+				BTSR1_DbgPrintNameForReg(ctx, op->rn));
+		}
+		break;
+	case BTSR1_FMID_REGSTPCDISP:
+		if(op->imm>256)
+		{
+			printf("%s, (PC, 0x%X)",
+				BTSR1_DbgPrintNameForReg(ctx, op->rn),
+				(op->imm*psc));
+		}else
+		{
+			printf("%s, (PC, %d)",
+				BTSR1_DbgPrintNameForReg(ctx, op->rn),
+				(op->imm*psc));
+		}
 		break;
 
 	default:

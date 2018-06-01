@@ -70,6 +70,7 @@ Will use direct linking and assume a non-modifiable program space.
 #define BTSR1_FLT_TIMER		0xC001		//kHz timer
 
 #define BTSR1_OPFL_CTRLF	0x01		//Control-Flow Opcode
+#define BTSR1_OPFL_TWOWORD	0x02		//Uses two instruction words
 
 #define BTSR1_NMID_NONE		0x00		//
 #define BTSR1_NMID_MOVB		0x01		//
@@ -136,6 +137,33 @@ Will use direct linking and assume a non-modifiable program space.
 #define BTSR1_NMID_ROTCL	0x3E		//
 #define BTSR1_NMID_ROTCR	0x3F		//
 #define BTSR1_NMID_RET		0x40		//
+#define BTSR1_NMID_MOVT		0x41		//
+#define BTSR1_NMID_LDISH12	0x42		//
+#define BTSR1_NMID_LDISH20	0x43		//
+#define BTSR1_NMID_SHAD		0x44		//
+#define BTSR1_NMID_SHLD		0x45		//
+#define BTSR1_NMID_SWAPB	0x46		//
+#define BTSR1_NMID_SWAPW	0x47		//
+
+#define BTSR1_NMID_FADD		0x48		//
+#define BTSR1_NMID_FSUB		0x49		//
+#define BTSR1_NMID_FMUL		0x4A		//
+#define BTSR1_NMID_FDIV		0x4B		//
+#define BTSR1_NMID_FCMPEQ	0x4C		//
+#define BTSR1_NMID_FCMPGT	0x4D		//
+#define BTSR1_NMID_FMOVS	0x4E		//
+#define BTSR1_NMID_FMOVD	0x4F		//
+#define BTSR1_NMID_FMOV		0x50		//
+#define BTSR1_NMID_FNEG		0x51		//
+#define BTSR1_NMID_FLDCF	0x52		//
+#define BTSR1_NMID_FSTCF	0x53		//
+#define BTSR1_NMID_FLDCI	0x54		//
+#define BTSR1_NMID_FSTCI	0x55		//
+#define BTSR1_NMID_FLDCH	0x56		//
+#define BTSR1_NMID_FSTCH	0x57		//
+#define BTSR1_NMID_FLDCD	0x58		//
+#define BTSR1_NMID_FSTCD	0x59		//
+#define BTSR1_NMID_FABS		0x5A		//
 
 #define BTSR1_FMID_NONE			0x00		//?
 #define BTSR1_FMID_REG			0x01		//Rn
@@ -159,6 +187,10 @@ Will use direct linking and assume a non-modifiable program space.
 #define BTSR1_FMID_LDDR4PCREG	0x13		//(PC, DLR_i4), Rn
 #define BTSR1_FMID_REGSTDR4PC	0x14		//Rm, (PC, DLR_i4)
 #define BTSR1_FMID_DR4REG		0x15		//DLR_i4, Rn
+#define BTSR1_FMID_LDPCDISPREG	0x16		//(PC, Disp), Rn
+#define BTSR1_FMID_REGSTPCDISP	0x17		//Rm, (PC, Disp)
+#define BTSR1_FMID_REGDRREG		0x18		//Rm, DLR, Rn
+#define BTSR1_FMID_PCREG		0x19		//(PC, Reg)
 
 typedef unsigned char byte;
 typedef signed char sbyte;
@@ -179,6 +211,7 @@ typedef struct BTSR1_MemSpan_s BTSR1_MemSpan;
 
 struct BTSR1_Context_s {
 u32 regs[64];				//GPRs and CRs
+u64 fpreg[16];				//FPRs
 
 BTSR1_Trace *trhash[1024];
 BTSR1_Trace *trcur;			//cached trace for interpreter loop.
@@ -217,12 +250,13 @@ u16 rcp_mhz;				//reciprocal MHz
 
 struct BTSR1_Opcode_s {
 u16 opn;		//Opcode Value
+u16 opn2;		//Opcode Value
 byte nmid;		//Opcode Number
 byte fmid;		//Form ID
 byte rn;		//Dest Register
 byte rm;		//Source Register
 byte fl;		//Opcodde Flags
-s16 imm;		//Immediate
+s32 imm;		//Immediate
 
 sbyte cyc;		//Clock Cycles
 btsr1_addr pc;

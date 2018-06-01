@@ -20,6 +20,8 @@ _start:
 //	mov STACK_BASE, sp
 	mov STACK_BASE_USR, sp
 
+	bsr copy_data
+
 	bsr zero_bss
 
 	mov STACK_BASE_ISR, r0
@@ -47,6 +49,19 @@ zero_bss:
 	bt .L0
 	rts
 	bra _exit
+
+copy_data:
+	mov __rom_data_start, r2
+	mov __rom_data_end, r3
+	mov __data_start, r1
+.L1:
+	mov.l @r2, r4
+	mov.l r4, @r1
+	add #4, r1
+	add #4, r2
+	cmp/hi r2, r3
+	bt .L1
+	rts
 
 isr_except:
 	break
@@ -245,6 +260,7 @@ X(__ashlsi3):
 	mov ashl_list, r1
 	lea.w (r1, r2), r1
 	mov r4, r0
+//	break
 	jmp r1
 
 ashl_list:

@@ -428,6 +428,7 @@
 #define BGBCC_SH_NMID_BRK			0x6F	//
 #define BGBCC_SH_NMID_MOVRT			0x70	//
 #define BGBCC_SH_NMID_MOVCAL		0x71	//
+
 #define BGBCC_SH_NMID_PUSH			0x72	//
 #define BGBCC_SH_NMID_POP			0x73	//
 #define BGBCC_SH_NMID_ICLRMD		0x74	//
@@ -442,6 +443,7 @@
 #define BGBCC_SH_NMID_CSELT			0x7D	//
 #define BGBCC_SH_NMID_EXTUL			0x7E	//
 #define BGBCC_SH_NMID_EXTSL			0x7F	//
+
 #define BGBCC_SH_NMID_FABS			0x80	//
 #define BGBCC_SH_NMID_FADD			0x81	//
 #define BGBCC_SH_NMID_FCMPEQ		0x82	//
@@ -535,6 +537,7 @@
 #define BGBCC_SH_NMID_SHAR32		0xF0	//
 #define BGBCC_SH_NMID_LDSH8			0xF1	//SUB
 #define BGBCC_SH_NMID_BRA8B			0xF2	//SUB
+#define BGBCC_SH_NMID_SHARX			0xF3	//SUB
 
 
 
@@ -701,10 +704,11 @@
 #define BGBCC_SH_REGCLS_VO_GR	6	//value object pass in GPR
 #define BGBCC_SH_REGCLS_VO_GR2	7	//value object pass in GPR pair
 #define BGBCC_SH_REGCLS_AR_REF	8	//array object, pass by-ref
-#define BGBCC_SH_REGCLS_PTR		9	//Pointer
+// #define BGBCC_SH_REGCLS_PTR		9	//Pointer
 #define BGBCC_SH_REGCLS_QGR		9	//Quad GPR
 #define BGBCC_SH_REGCLS_VO_QGR	10	//value object pass in Quad GPR
 #define BGBCC_SH_REGCLS_VO_QGR2	11	//value object pass in Quad GPR pair
+#define BGBCC_SH_REGCLS_WGR		12	//Uses GPR, 16-bit storage
 
 
 #define BGBCC_SH_FPSCR_DN		0x00040000	//

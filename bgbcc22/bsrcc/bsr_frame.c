@@ -27,6 +27,10 @@ int BGBCC_BSRC_EmitLoadFrameOfsReg(
 	}
 
 	nmid=BGBCC_SH_NMID_MOVL;
+
+	if(((dreg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_RD0) && !sctx->is_addr64)
+		nmid=BGBCC_SH_NMID_MOVW;
+
 	if(BGBCC_BSR_EmitCheckRegQuad(sctx, dreg))
 	{
 		BGBCC_BSRC_CheckSetModeDqSet(ctx, sctx);
@@ -66,6 +70,10 @@ int BGBCC_BSRC_EmitStoreFrameOfsReg(
 	}
 
 	nmid=BGBCC_SH_NMID_MOVL;
+
+	if(((dreg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_RD0) && !sctx->is_addr64)
+		nmid=BGBCC_SH_NMID_MOVW;
+
 	if(BGBCC_BSR_EmitCheckRegQuad(sctx, dreg))
 	{
 		BGBCC_BSRC_CheckSetModeDqSet(ctx, sctx);
@@ -895,6 +903,9 @@ int BGBCC_BSRC_EmitLoadFrameVRegByValReg(
 			(rcls!=BGBCC_SH_REGCLS_VO_QGR2) &&
 			(rcls!=BGBCC_SH_REGCLS_VO_QGR))
 		{
+			if((rcls==BGBCC_SH_REGCLS_WGR) && !sctx->is_addr64)
+				dreg=BGBCC_SH_REG_RD0|(dreg&15);
+
 			p0=BGBCC_BSRC_EmitLoadFrameVRegReg(ctx, sctx, sreg, dreg);
 			return(p0);
 		}
@@ -915,6 +926,9 @@ int BGBCC_BSRC_EmitLoadFrameVRegByValReg(
 			(rcls!=BGBCC_SH_REGCLS_VO_QGR2) &&
 			(rcls!=BGBCC_SH_REGCLS_VO_QGR))
 		{
+			if((rcls==BGBCC_SH_REGCLS_WGR) && !sctx->is_addr64)
+				dreg=BGBCC_SH_REG_RD0|(dreg&15);
+
 			p0=BGBCC_BSRC_EmitLoadFrameVRegReg(ctx, sctx, sreg, dreg);
 			return(p0);
 		}
@@ -941,6 +955,9 @@ int BGBCC_BSRC_EmitLoadFrameVRegByValReg(
 			(rcls!=BGBCC_SH_REGCLS_VO_QGR2) &&
 			(rcls!=BGBCC_SH_REGCLS_VO_QGR))
 		{
+			if((rcls==BGBCC_SH_REGCLS_WGR) && !sctx->is_addr64)
+				dreg=BGBCC_SH_REG_RD0|(dreg&15);
+
 			p0=BGBCC_BSRC_EmitLoadFrameVRegReg(ctx, sctx, sreg, dreg);
 			return(p0);
 		}
@@ -986,6 +1003,9 @@ int BGBCC_BSRC_EmitStoreFrameVRegByValReg(
 			(rcls!=BGBCC_SH_REGCLS_VO_QGR2) &&
 			(rcls!=BGBCC_SH_REGCLS_VO_QGR))
 		{
+			if((rcls==BGBCC_SH_REGCLS_WGR) && !sctx->is_addr64)
+				dreg=BGBCC_SH_REG_RD0|(dreg&15);
+
 			p0=BGBCC_BSRC_EmitStoreFrameVRegReg(ctx, sctx, sreg, dreg);
 			return(p0);
 		}
@@ -1006,6 +1026,9 @@ int BGBCC_BSRC_EmitStoreFrameVRegByValReg(
 			(rcls!=BGBCC_SH_REGCLS_VO_QGR2) &&
 			(rcls!=BGBCC_SH_REGCLS_VO_QGR))
 		{
+			if((rcls==BGBCC_SH_REGCLS_WGR) && !sctx->is_addr64)
+				dreg=BGBCC_SH_REG_RD0|(dreg&15);
+
 			p0=BGBCC_BSRC_EmitStoreFrameVRegReg(ctx, sctx, sreg, dreg);
 			return(p0);
 		}
@@ -1032,6 +1055,9 @@ int BGBCC_BSRC_EmitStoreFrameVRegByValReg(
 			(rcls!=BGBCC_SH_REGCLS_VO_QGR2) &&
 			(rcls!=BGBCC_SH_REGCLS_VO_QGR))
 		{
+			if((rcls==BGBCC_SH_REGCLS_WGR) && !sctx->is_addr64)
+				dreg=BGBCC_SH_REG_RD0|(dreg&15);
+
 			p0=BGBCC_BSRC_EmitStoreFrameVRegReg(ctx, sctx, sreg, dreg);
 			return(p0);
 		}
@@ -1056,7 +1082,7 @@ int BGBCC_BSRC_EmitLoadFrameVRegReg(
 	double f, g;
 	float sf;
 	s64 li, lj;
-	int dreg2, treg;
+	int dreg2, treg, rcls;
 	int nm1, nm2, nm3;
 	int p0, p1;
 	int i, j, k;
@@ -1089,6 +1115,8 @@ int BGBCC_BSRC_EmitLoadFrameVRegReg(
 			return(i);
 		}
 
+		rcls=ctx->cur_func->locals[j]->regcls;
+
 		if((ctx->cur_func->locals[j]->regcls==BGBCC_SH_REGCLS_VO_GR) ||
 			(ctx->cur_func->locals[j]->regcls==BGBCC_SH_REGCLS_VO_GR2) ||
 			(ctx->cur_func->locals[j]->regcls==BGBCC_SH_REGCLS_VO_QGR2) ||
@@ -1119,6 +1147,9 @@ int BGBCC_BSRC_EmitLoadFrameVRegReg(
 		}
 #endif
 
+		if((rcls==BGBCC_SH_REGCLS_WGR) && !sctx->is_addr64)
+			dreg=BGBCC_SH_REG_RD0|(dreg&15);
+
 //		k=sctx->frm_offs_lcl+j*4;
 		k=ctx->cur_func->locals[j]->fxoffs;
 		i=BGBCC_BSRC_EmitLoadFrameOfsReg(ctx, sctx, k, dreg);
@@ -1134,6 +1165,10 @@ int BGBCC_BSRC_EmitLoadFrameVRegReg(
 		{
 			k=1;
 		}
+
+		rcls=ctx->cur_func->regs[j]->regcls;
+		if((rcls==BGBCC_SH_REGCLS_WGR) && !sctx->is_addr64)
+			dreg=BGBCC_SH_REG_RD0|(dreg&15);
 
 		j=sreg.val&CCXL_REGID_BASEMASK;
 //		k=sctx->frm_offs_tmp+j*4;
@@ -1169,6 +1204,10 @@ int BGBCC_BSRC_EmitLoadFrameVRegReg(
 			return(1);
 		}
 #endif
+
+		rcls=ctx->cur_func->args[j]->regcls;
+		if((rcls==BGBCC_SH_REGCLS_WGR) && !sctx->is_addr64)
+			dreg=BGBCC_SH_REG_RD0|(dreg&15);
 
 //		k=sctx->frm_offs_tmp+j*4;
 		k=ctx->cur_func->args[j]->fxoffs;
@@ -1662,7 +1701,7 @@ int BGBCC_BSRC_EmitStoreFrameVRegReg(
 	ccxl_register dreg, int sreg)
 {
 	ccxl_type tty;
-	int cdreg, treg, tsz, nm1;
+	int cdreg, treg, tsz, nm1, rcls;
 	int p0, p1;
 	int i, j, k;
 
@@ -1698,6 +1737,10 @@ int BGBCC_BSRC_EmitStoreFrameVRegReg(
 			return(i);
 		}
 
+		rcls=ctx->cur_func->locals[j]->regcls;
+		if((rcls==BGBCC_SH_REGCLS_WGR) && !sctx->is_addr64)
+			sreg=BGBCC_SH_REG_RD0|(sreg&15);
+
 		k=ctx->cur_func->locals[j]->fxoffs;
 		i=BGBCC_BSRC_EmitStoreFrameOfsReg(ctx, sctx, k, sreg);
 		return(i);
@@ -1711,6 +1754,10 @@ int BGBCC_BSRC_EmitStoreFrameVRegReg(
 //		if(BGBCC_CCXL_TypePointerP(ctx, ctx->cur_func->regs[j]->type))
 //			BGBCC_BSR_EmitOpMReg(sctx, BGBCC_SH_NMID_PREF, sreg);
 #endif
+
+		rcls=ctx->cur_func->regs[j]->regcls;
+		if((rcls==BGBCC_SH_REGCLS_WGR) && !sctx->is_addr64)
+			sreg=BGBCC_SH_REG_RD0|(sreg&15);
 
 		k=ctx->cur_func->regs[j]->fxoffs;
 		i=BGBCC_BSRC_EmitStoreFrameOfsReg(ctx, sctx, k, sreg);
@@ -1727,6 +1774,10 @@ int BGBCC_BSRC_EmitStoreFrameVRegReg(
 		BGBCC_BSRC_EmitDebugCheckReg(ctx, sctx,
 			ctx->cur_func->args[j]->type, sreg);
 #endif
+
+		rcls=ctx->cur_func->args[j]->regcls;
+		if((rcls==BGBCC_SH_REGCLS_WGR) && !sctx->is_addr64)
+			sreg=BGBCC_SH_REG_RD0|(sreg&15);
 
 		k=ctx->cur_func->args[j]->fxoffs;
 		i=BGBCC_BSRC_EmitStoreFrameOfsReg(ctx, sctx, k, sreg);
@@ -2336,6 +2387,7 @@ int BGBCC_BSRC_SetupFrameLayout(BGBCC_TransState *ctx,
 		case BGBCC_SH_REGCLS_VO_QGR:
 		case BGBCC_SH_REGCLS_VO_QGR2:
 		case BGBCC_SH_REGCLS_QGR:
+		case BGBCC_SH_REGCLS_WGR:
 			break;
 
 		default:
@@ -2381,6 +2433,7 @@ int BGBCC_BSRC_SetupFrameLayout(BGBCC_TransState *ctx,
 		case BGBCC_SH_REGCLS_VO_QGR:
 		case BGBCC_SH_REGCLS_VO_QGR2:
 		case BGBCC_SH_REGCLS_QGR:
+		case BGBCC_SH_REGCLS_WGR:
 			break;
 
 		default:
@@ -2415,6 +2468,9 @@ int BGBCC_BSRC_SetupFrameLayout(BGBCC_TransState *ctx,
 			{ sctx->is_vararg=1; }
 
 		rcls=BGBCC_BSRC_TypeGetRegClassP(ctx, obj->args[i]->type);
+		if(rcls==BGBCC_SH_REGCLS_WGR)
+			rcls=BGBCC_SH_REGCLS_GR;
+
 		obj->args[i]->regcls=rcls;
 
 		switch(rcls)
@@ -2427,6 +2483,7 @@ int BGBCC_BSRC_SetupFrameLayout(BGBCC_TransState *ctx,
 		case BGBCC_SH_REGCLS_VO_GR:
 		case BGBCC_SH_REGCLS_VO_GR2:
 		case BGBCC_SH_REGCLS_VO_QGR2:
+		case BGBCC_SH_REGCLS_WGR:
 			break;
 		case BGBCC_SH_REGCLS_VO_REF:
 		case BGBCC_SH_REGCLS_AR_REF:
@@ -2470,19 +2527,23 @@ int BGBCC_BSRC_SetupFrameLayout(BGBCC_TransState *ctx,
 	for(i=0; i<obj->n_args; i++)
 	{
 		rcls=BGBCC_BSRC_TypeGetRegClassP(ctx, obj->args[i]->type);
+		if(rcls==BGBCC_SH_REGCLS_WGR)
+			rcls=BGBCC_SH_REGCLS_GR;
+
 		switch(rcls)
 		{
 		case BGBCC_SH_REGCLS_GR:
 		case BGBCC_SH_REGCLS_VO_GR:
+		case BGBCC_SH_REGCLS_WGR:
 //			if(sctx->is_addr64)
 			if(sctx->has_bjx1egpr)
 			{
-				if(ni<8)	{ k-=4; obj->args[i]->fxoffs=k; ni++; }
+				if(ni<8)	{ k&=~3; k-=4; obj->args[i]->fxoffs=k; ni++; }
 				else		{ obj->args[i]->fxoffs=ka; ka+=4; }
 				break;
 			}
 		
-			if(ni<4)	{ k-=4; obj->args[i]->fxoffs=k; ni++; }
+			if(ni<4)	{ k&=~3; k-=4; obj->args[i]->fxoffs=k; ni++; }
 			else		{ obj->args[i]->fxoffs=ka; ka+=4; }
 			break;
 
@@ -2506,7 +2567,7 @@ int BGBCC_BSRC_SetupFrameLayout(BGBCC_TransState *ctx,
 				break;
 			}
 
-			if(ni<4)	{ k-=4; obj->args[i]->fxoffs=k; ni++; }
+			if(ni<4)	{ k&=~3; k-=4; obj->args[i]->fxoffs=k; ni++; }
 			else		{ obj->args[i]->fxoffs=ka; ka+=4; }
 			break;
 
@@ -2528,11 +2589,11 @@ int BGBCC_BSRC_SetupFrameLayout(BGBCC_TransState *ctx,
 				}
 				break;
 			}
-			if(ni<3)	{ k-=8; obj->args[i]->fxoffs=k; ni+=2; }
+			if(ni<3)	{ k&=~3; k-=8; obj->args[i]->fxoffs=k; ni+=2; }
 			else		{ obj->args[i]->fxoffs=ka; ka+=8; }
 			break;
 		case BGBCC_SH_REGCLS_FR:
-			if(nf<8)	{ k-=4; obj->args[i]->fxoffs=k; nf++; }
+			if(nf<8)	{ k&=~3; k-=4; obj->args[i]->fxoffs=k; nf++; }
 			else		{ obj->args[i]->fxoffs=ka; ka+=4; }
 			sctx->use_fpr=1;
 			break;
@@ -2557,7 +2618,7 @@ int BGBCC_BSRC_SetupFrameLayout(BGBCC_TransState *ctx,
 			}
 
 			nf+=nf&1;
-			if(nf<7)	{ k-=8; obj->args[i]->fxoffs=k; nf+=2; }
+			if(nf<7)	{ k&=~3; k-=8; obj->args[i]->fxoffs=k; nf+=2; }
 			else		{ obj->args[i]->fxoffs=ka; ka+=8; }
 			sctx->use_fpr=1;
 			sctx->use_dbr=1;
@@ -2591,27 +2652,29 @@ int BGBCC_BSRC_SetupFrameLayout(BGBCC_TransState *ctx,
 		{
 		case BGBCC_SH_REGCLS_GR:
 		case BGBCC_SH_REGCLS_VO_GR:
-			k-=4;	break;
+			k&=~3; k-=4;	break;
+		case BGBCC_SH_REGCLS_GR:
+			k&=~1; k-=2;	break;
 		case BGBCC_SH_REGCLS_VO_REF:
 		case BGBCC_SH_REGCLS_AR_REF:
 		case BGBCC_SH_REGCLS_VO_QGR:
 		case BGBCC_SH_REGCLS_QGR:
 			if(sctx->is_addr64)
 				{ k-=8;	break; }
-			k-=4;	break;
+			k&=~3; k-=4;	break;
 		case BGBCC_SH_REGCLS_GR2:
 		case BGBCC_SH_REGCLS_VO_GR2:
 		case BGBCC_SH_REGCLS_VO_QGR2:
 			if(sctx->is_addr64)
 				{ k-=16;	break; }
-			k-=8;	break;
+			k&=~3; k-=8;	break;
 		case BGBCC_SH_REGCLS_FR:
 			sctx->use_fpr=1;
-			k-=4;	break;
+			k&=~3; k-=4;	break;
 		case BGBCC_SH_REGCLS_FR2:
 			sctx->use_fpr=1;
 			sctx->use_dbr=1;
-			k-=8;	break;
+			k&=~3; k-=8;	break;
 		default:
 			BGBCC_DBGBREAK
 			break;
@@ -2639,7 +2702,11 @@ int BGBCC_BSRC_SetupFrameLayout(BGBCC_TransState *ctx,
 		{
 		case BGBCC_SH_REGCLS_GR:
 		case BGBCC_SH_REGCLS_VO_GR:
-			k-=4; obj->locals[i]->fxoffs=k;
+			k&=~3; k-=4; obj->locals[i]->fxoffs=k;
+			break;
+
+		case BGBCC_SH_REGCLS_WGR:
+			k&=~1; k-=2; obj->locals[i]->fxoffs=k;
 			break;
 
 		case BGBCC_SH_REGCLS_VO_REF:
@@ -2648,26 +2715,26 @@ int BGBCC_BSRC_SetupFrameLayout(BGBCC_TransState *ctx,
 		case BGBCC_SH_REGCLS_QGR:
 			if(sctx->is_addr64)
 				{ k&=~7; k-=8; obj->locals[i]->fxoffs=k; break; }
-			k-=4; obj->locals[i]->fxoffs=k;
+			k&=~3; k-=4; obj->locals[i]->fxoffs=k;
 			break;
 		case BGBCC_SH_REGCLS_GR2:
 		case BGBCC_SH_REGCLS_VO_GR2:
 		case BGBCC_SH_REGCLS_VO_QGR2:
 			if(sctx->is_addr64)
 				{ k&=~7; k-=16; obj->locals[i]->fxoffs=k; break; }
-			k-=8; obj->locals[i]->fxoffs=k;
+			k&=~3; k-=8; obj->locals[i]->fxoffs=k;
 			break;
 
 		case BGBCC_SH_REGCLS_FR:
 			sctx->use_fpr=1;
-			k-=4; obj->locals[i]->fxoffs=k;
+			k&=~3; k-=4; obj->locals[i]->fxoffs=k;
 			break;
 		case BGBCC_SH_REGCLS_FR2:
 			sctx->use_fpr=1;
 			sctx->use_dbr=1;
 			if(sctx->is_addr64)
 				{ k&=~7; }
-			k-=8; obj->locals[i]->fxoffs=k;
+			k&=~3; k-=8; obj->locals[i]->fxoffs=k;
 			break;
 
 		default:
@@ -2684,7 +2751,11 @@ int BGBCC_BSRC_SetupFrameLayout(BGBCC_TransState *ctx,
 		{
 		case BGBCC_SH_REGCLS_GR:
 		case BGBCC_SH_REGCLS_VO_GR:
-			k-=4; obj->regs[i]->fxoffs=k;
+			k&=~3; k-=4; obj->regs[i]->fxoffs=k;
+			break;
+
+		case BGBCC_SH_REGCLS_WGR:
+			k&=~1; k-=2; obj->regs[i]->fxoffs=k;
 			break;
 
 		case BGBCC_SH_REGCLS_VO_REF:
@@ -2693,7 +2764,7 @@ int BGBCC_BSRC_SetupFrameLayout(BGBCC_TransState *ctx,
 		case BGBCC_SH_REGCLS_QGR:
 			if(sctx->is_addr64)
 				{ k&=~7; k-=8; obj->regs[i]->fxoffs=k; break; }
-			k-=4; obj->regs[i]->fxoffs=k;
+			k&=~3; k-=4; obj->regs[i]->fxoffs=k;
 			break;
 
 		case BGBCC_SH_REGCLS_GR2:
@@ -2701,19 +2772,19 @@ int BGBCC_BSRC_SetupFrameLayout(BGBCC_TransState *ctx,
 		case BGBCC_SH_REGCLS_VO_QGR2:
 			if(sctx->is_addr64)
 				{ k&=~7; k-=16; obj->regs[i]->fxoffs=k; break; }
-			k-=8; obj->regs[i]->fxoffs=k;
+			k&=~3; k-=8; obj->regs[i]->fxoffs=k;
 			break;
 
 		case BGBCC_SH_REGCLS_FR:
 			sctx->use_fpr=1;
-			k-=4; obj->regs[i]->fxoffs=k;
+			k&=~3; k-=4; obj->regs[i]->fxoffs=k;
 			break;
 		case BGBCC_SH_REGCLS_FR2:
 			sctx->use_fpr=1;
 			sctx->use_dbr=1;
 			if(sctx->is_addr64)
 				{ k&=~7; }
-			k-=8; obj->regs[i]->fxoffs=k;
+			k&=~3; k-=8; obj->regs[i]->fxoffs=k;
 			break;
 		default:
 			BGBCC_DBGBREAK
@@ -2733,7 +2804,8 @@ int BGBCC_BSRC_SetupFrameLayout(BGBCC_TransState *ctx,
 //	k&=~15;
 //	k&=~3;
 
-	if(sctx->is_addr64)
+//	if(sctx->is_addr64)
+	if(1)
 		{ k&=~15; }
 
 	if((-k)>=60)

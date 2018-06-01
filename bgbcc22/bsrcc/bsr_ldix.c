@@ -1339,6 +1339,12 @@ int BGBCC_BSRC_EmitLeaSarRegImm(
 	}
 #endif
 
+	if(shl>=31)
+	{
+		BGBCC_BSR_EmitOpReg(sctx, BGBCC_SH_NMID_SHARX, dreg);
+		return(1);
+	}
+
 	if(shl>16)
 	{
 		BGBCC_BSR_EmitOpReg(sctx, BGBCC_SH_NMID_SHAR16, dreg);

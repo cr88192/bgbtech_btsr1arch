@@ -1559,6 +1559,7 @@ int BGBCC_BSRC_AssembleBuffer(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ch
 int BGBCC_BSRC_InitIface();
 ccxl_status BGBCC_BSRC_LoadBufferDLL(BGBCC_TransState *ctx,byte *buf, int sz);
 ccxl_status BGBCC_BSRC_SetupContextForArch(BGBCC_TransState *ctx);
+bool BGBCC_BSRC_TypeShortRegP(BGBCC_TransState *ctx, ccxl_type ty);
 bool BGBCC_BSRC_TypeIntRegP(BGBCC_TransState *ctx, ccxl_type ty);
 bool BGBCC_BSRC_TypeInt2RegP(BGBCC_TransState *ctx, ccxl_type ty);
 bool BGBCC_BSRC_TypeFloatRegP(BGBCC_TransState *ctx, ccxl_type ty);
@@ -1581,6 +1582,7 @@ ccxl_status BGBCC_BSRC_BuildAsmBlob(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInf
 int BGBCC_BSRC_LookupLabelIndex(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int lblid);
 int BGBCC_BSRC_LookupLabelImgOffs(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int lblid);
 int BGBCC_BSRC_LookupLabelImgVA(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int lblid);
+void bgbcc_bsrcc_setu16en(byte *ct, int en, u16 v);
 ccxl_status BGBCC_BSRC_ApplyImageRelocs(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, byte *imgbase);
 ccxl_status BGBCC_BSRC_FlattenImage(BGBCC_TransState *ctx,byte *obuf, int *rosz, fourcc imgfmt);
 //AHSRC:bsrcc/bsr_conv.c
@@ -1800,6 +1802,8 @@ int BGBCC_BSRC_EmitTryGetLpRegister(BGBCC_TransState *ctx, BGBCC_BSR_Context *sc
 int BGBCC_BSRC_EmitGetLpRegister(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register reg, int fl);
 int BGBCC_BSRC_EmitReleaseLpRegister(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register reg);
 int BGBCC_BSRC_StompLpRegisterIndex(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int rgidx);
+int BGBCC_BSRC_ConvLpRegisterNarrowing(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, ccxl_register sreg, ccxl_register dreg);
+int BGBCC_BSRC_ConvLpRegisterWiden(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type stype, ccxl_register sreg, ccxl_register dreg);
 //AHSRC:bsrcc/bsr_lvarith.c
 int BGBCC_BSRC_EmitBinaryVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
 int BGBCC_BSRC_EmitBinaryVRegVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);

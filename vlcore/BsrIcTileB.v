@@ -25,6 +25,9 @@ output[  4:0]	memPcOpm;		//memory PC output-enable
 reg[31:0]		tRegOutPcVal;	//output PC value
 reg[ 1:0]		tRegOutPcOK;	//set if we have a valid value.
 
+reg[31:0]		tRegOutPcVal2;	//output PC value
+reg[ 1:0]		tRegOutPcOK2;	//set if we have a valid value.
+
 reg[19:0]		tMemPcAddr;		//memory PC address
 reg[ 4:0]		tMemPcOpm;		//memory PC output-enable
 
@@ -69,7 +72,7 @@ begin
 			3'b111: tRegOutPcVal=icBlkData[143:112];
 		endcase
 		
-		$display("BsrIcTile %X %X", regInPc, tRegOutPcVal);
+//		$display("BsrIcTile %X %X", regInPc, tRegOutPcVal);
 	end
 	else
 	begin
@@ -79,6 +82,9 @@ end
 
 always @ (posedge clock)
 begin
+//	tRegOutPcVal2	<= tRegOutPcVal;
+//	tRegOutPcOK2	<= tRegOutPcOK;
+
 	if(icBlkMiss)
 	begin
 		if(memPcOK==UMEM_OK_OK)

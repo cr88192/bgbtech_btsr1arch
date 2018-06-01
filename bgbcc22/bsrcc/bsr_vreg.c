@@ -429,7 +429,8 @@ int BGBCC_BSRC_EmitMovVRegVReg(
 	rcls=BGBCC_BSRC_TypeGetRegClassP(ctx, type);
 	if((rcls==BGBCC_SH_REGCLS_VO_GR) || (rcls==BGBCC_SH_REGCLS_VO_GR2) ||
 		(rcls==BGBCC_SH_REGCLS_VO_QGR) ||
-		(rcls==BGBCC_SH_REGCLS_VO_QGR2))
+		(rcls==BGBCC_SH_REGCLS_VO_QGR2) ||
+		(rcls==BGBCC_SH_REGCLS_WGR))
 	{
 
 		if((BGBCC_CCXL_IsRegLocalP(ctx, sreg) ||

@@ -239,9 +239,12 @@ Prefixes:
 ** Compiler will be expected to only emit I-Forms appropriate for the target.
 ** An instruction need not be marked optional if the parent block is optional.
 *** Instead, this will denote that the instruction is optional within the block.
+* ??, Don't know if it will be implemented.
+** Instruction space may likely be reserved but unimplemented.
+* ?/, May drop.
 
 Instruction Space
-* 0zzz
+* 0zzz (Basic MOV.x Block)
 ** 00nm MOV.B	Rm, (Rn)
 ** 01nm MOV.W	Rm, (Rn)
 ** 02nm MOV.L	Rm, (Rn)
@@ -259,7 +262,7 @@ Instruction Space
 ** 0Enm MOV.L	(Rm, DLR), Rn
 ** 0Fnm MOVU.W	(Rm, DLR), Rn		//Only exists if 32-bit
 
-* 1zzz
+* 1zzz (Basic Arith Block)
 ** 10nm ADD		Rm, Rn				//Rn=Rn+Rm
 ** 11nm SUB		Rm, Rn				//Rn=Rn-Rm
 ** 12nm ADC		Rm, Rn				//Add with Carry, Rn=Rn+Rm+SR.T
@@ -282,14 +285,16 @@ Instruction Space
 ** 21dd BSR		(PC, disp8s)		//Branch Subroutine
 ** 22dd BT		(PC, disp8s)		//Branch True
 ** 23dd BF		(PC, disp8s)		//Branch False
-** 24jj LDIZ	#imm8u, DLR			//DLR=Imm8 (Zero Extend)
-** 25jj LDIN	#imm8u, DLR			//DLR=Imm8 (One Extend)
+** 24jj ? LDIZ	#imm8u, DLR			//DLR=Imm8 (Zero Extend)
+** 25jj ? LDIN	#imm8u, DLR			//DLR=Imm8 (One Extend)
 ** 26jj LDISH	#imm8u, DLR			//DLR=(DLR SHL 8)|Imm8u
 ** 27dd -
 ** 28nd MOV.L	Rn, (SP, disp4u)	//Stack-Relative Store
-** 29nd MOV.W	Rn, (SP, disp4u)	//Stack-Relative Store
+** 29nd / MOV.W	Rn, (SP, disp4u)	//Stack-Relative Store
+** 29nd ? MOV.L	Rn, (SP, disp4u)	//Stack-Relative Store (16..31, 32b)
 ** 2And MOV.L	(SP, disp4u), Rn	//Stack-Relative Load
-** 2Bnd MOV.W	(SP, disp4u), Rn	//Stack-Relative Load
+** 2Bnd / MOV.W	(SP, disp4u), Rn	//Stack-Relative Load
+** 2Bnd ? MOV.L	(SP, disp4u), Rn	//Stack-Relative Load (16..31, 32b)
 ** 2Cnj CMPEQ	#imm4u, Rn			//Rn==Imm4, Zero Extend
 ** 2Dnj CMPEQ	#imm4n, Rn			//Rn==Imm4, One Extend
 ** 2Enj CMPGT	#imm4u, Rn			//Rn==Imm4, Zero Extend
@@ -318,6 +323,11 @@ Instruction Space
 ** 3012 BSR		(PC, DLR)			//Branch Subroutine to PC+(DLR*2)
 ** 3022 BT		(PC, DLR)			//Branch True to PC+(DLR*2)
 ** 3032 BF		(PC, DLR)			//Branch False to PC+(DLR*2)
+
+** 3082 ? LDISH12	#0x000, DLR		//DLR=(DLR SHL 12)|0x000
+** 3092 ? LDISH12	#0xFFF, DLR		//DLR=(DLR SHL 12)|0xFFF
+** 30A2 ? LDISH20	#0x00000, DLR	//DLR=(DLR SHL 20)|0x00000
+** 30B2 ? LDISH20	#0xFFFFF, DLR	//DLR=(DLR SHL 20)|0xFFFFF
 
 ** 30z3 -
 
@@ -359,19 +369,19 @@ Instruction Space
 ** 32n5 EXTU.W	Rn
 ** 32n6 EXTS.B	Rn
 ** 32n7 EXTS.W	Rn
-** 32n8 MOV.L	Rn, (TBR, DLR)
-** 32n9 MOV.W	Rn, (TBR, DLR)
-** 32nA MOV.L	(TBR, DLR), Rn
-** 32nB MOV.W	(TBR, DLR), Rn
-** 32nC LEA.B	(GBR, DLR), Rn
-** 32nD LEA.W	(GBR, DLR), Rn
-** 32nE LEA.B	(TBR, DLR), Rn
-** 32nF LEA.W	(TBR, DLR), Rn
+** 32n8 / MOV.L	Rn, (TBR, DLR)
+** 32n9 / MOV.W	Rn, (TBR, DLR)
+** 32nA / MOV.L	(TBR, DLR), Rn
+** 32nB / MOV.W	(TBR, DLR), Rn
+** 32nC / LEA.B	(GBR, DLR), Rn
+** 32nD / LEA.W	(GBR, DLR), Rn
+** 32nE / LEA.B	(TBR, DLR), Rn
+** 32nF / LEA.W	(TBR, DLR), Rn
 
 ** 33n0	NOT		Rn					//Rn=~Rn
 ** 33n1	NEG		Rn					//Rn=(~Rn)+1
 ** 33n2	NEGC	Rn					//Rn=(~Rn)+(~SR.T)
-** 33n3 -
+** 33n3 MOVNT	Rn					//Rn=!SR.T
 ** 33n4	ROTL	Rn					//Rn=(Rn SHL 1)|(Rn SHR 31)
 ** 33n5	ROTR	Rn					//Rn=(Rn SHR 1)|(Rn SHL 31)
 ** 33n6	ROTCL	Rn					//Rn'=(Rn SHL 1)|SR.T; SR.T=Rn.31
@@ -379,7 +389,7 @@ Instruction Space
 ** 33n8 SHLL	Rn					//Rn'=(Rn SHL 1); SR.T=Rn.31
 ** 33n9 SHLR	Rn					//Rn'=(Rn SHR 1); SR.T=Rn.0
 ** 33nA SHAR	Rn					//Rn'=(Rn SAR 1); SR.T=Rn.0
-** 33nB -
+** 33nB ADD		Cn, DLR				//DLR=DLR+Cn
 ** 33nC -
 ** 33nD -
 ** 33nE -
@@ -400,24 +410,24 @@ Instruction Space
 ** 34nC SHLL16	Rn					//Rn=Rn SHL 16
 ** 34nD SHLR16	Rn					//Rn=Rn SHR 16, Logical
 ** 34nE SHAR16	Rn					//Rn=Rn SAR 16, Arithmetic
-** 34nF -
+** 34nF SHARSX	Rn					//Copy sign bit to all other bits.
 
 ** 35n0 MOV.B	Rn, (DLR)			//DLR used as an absolute address
 ** 35n1 MOV.W	Rn, (DLR)
 ** 35n2 MOV.L	Rn, (DLR)
 ** 35n3 MOVU.B	(DLR), Rn			//32-bit Only
-** 35n4 MOV.B	Rn, (GBR, DLR)
-** 35n5 MOV.W	Rn, (GBR, DLR)
-** 35n6 MOV.L	Rn, (GBR, DLR)
-** 35n7 MOVU.B	(GBR, DLR), Rn		//32-bit only
+** 35n4 / MOV.B	Rn, (GBR, DLR)
+** 35n5 / MOV.W	Rn, (GBR, DLR)
+** 35n6 / MOV.L	Rn, (GBR, DLR)
+** 35n7 / MOVU.B	(GBR, DLR), Rn		//32-bit only
 ** 35n8 MOV.B	(DLR), Rn			//DLR used as an absolute address
 ** 35n9 MOV.W	(DLR), Rn
 ** 35nA MOV.L	(DLR), Rn
 ** 35nB MOVU.W	(DLR), Rn			//32-bit only
-** 35nC MOV.B	(GBR, DLR), Rn
-** 35nD MOV.W	(GBR, DLR), Rn
-** 35nE MOV.L	(GBR, DLR), Rn
-** 35nF MOVU.W	(GBR, DLR), Rn		//32-bit only
+** 35nC / MOV.B	(GBR, DLR), Rn
+** 35nD / MOV.W	(GBR, DLR), Rn
+** 35nE / MOV.L	(GBR, DLR), Rn
+** 35nF / MOVU.W	(GBR, DLR), Rn	//32-bit only
 
 ** 36n0 ? SHLL32	Rn					//Rn=Rn SHL 32 (N/A)
 ** 36n1 ? SHLR32	Rn					//Rn=Rn SHR 32, Logical (N/A)
@@ -425,8 +435,8 @@ Instruction Space
 ** 36j3 TRAP	#imm4u				//Generate an Interrupt
 ** 36n4 ? EXTU.L	Rn					//Zero Extend DWord to QWord (N/A)
 ** 36n5 ? EXTS.L	Rn					//Sign Extend DWord to QWord (N/A)
-** 36n6 SHLD	DLR, Rn				//Barrel Shift, Logical
-** 36n7 SHAD	DLR, Rn				//Barrel Shift, Arithmetic
+** 36n6 ? SHLD	DLR, Rn				//Barrel Shift, Logical
+** 36n7 ? SHAD	DLR, Rn				//Barrel Shift, Arithmetic
 ** 36n8 BRA		(PC, Rn)			//Branch to address given in (PC, Rn)
 ** 36n9 BSR		(PC, Rn)			//Branch Subroutine given by (PC, Rn)
 ** 36nA SWAPB	Rn					//Swap Bytes
@@ -436,12 +446,29 @@ Instruction Space
 ** 36nE CMPGE	DLR, Rn				//Signed (Rn GE DLR)
 ** 36nF MOVT	Rn					//Rn=SR.T
 
-** 37zz -
+** 37n0 ?? CMOVT.L	Rn, (DLR)		//Store DWord if SR.T is Set
+** 37n1 ?? CMOVF.L	Rn, (DLR)		//Store DWord if SR.T is Clear
+** 37n2 ?? CMOVT.L	(DLR), Rn		//Load DWord if SR.T is Set
+** 37n3 ?? CMOVF.L	(DLR), Rn		//Load DWord if SR.T is Clear
+** 37n4 ?? CMOVT.L	Rn, (PC, DLR)	//Store DWord if SR.T is Set
+** 37n5 ?? CMOVF.L	Rn, (PC, DLR)	//Store DWord if SR.T is Clear
+** 37n6 ?? CMOVT.L	(PC, DLR), Rn	//Load DWord if SR.T is Set
+** 37n7 ?? CMOVF.L	(PC, DLR), Rn	//Load DWord if SR.T is Clear
+** 37n8 ?? CMOVT	DLR, Rn			//MOV to Rn if SR.T is Set
+** 37n9 ?? CMOVF	DLR, Rn			//MOV to Rn if SR.T is Clear
+** 37nA -
+** 37nB -
+** 37nC -
+** 37nD -
+** 37nE -
+** 37nF -
+
 ** 38zz -
 ** 39zz -
 ** 3Azz -
 ** 3Bzz -
 ** 3Czz -
+
 ** 3Dzz -
 ** 3Ezz -
 ** 3Fnj ? LEA.B		(PC, DLR_i4), Rn
@@ -472,7 +499,24 @@ Instruction Space
 ** 4Enm LEA.L		(Rm, DLR), Rn
 ** 4Fnm LEA.Q		(Rm, DLR), Rn
 
-* 5zzz (Reserved, Binary Arith Ops)
+* 5zzz (Binary Ops)
+** 50zz	-
+** 51zz	-
+** 52zz	-
+** 53zz	-
+** 54zz	-
+** 55zz	-
+** 56zz	-
+** 57zz	-
+** 58nm ? ADD	Rm, DLR, Rn			//Rn=Rm+DLR
+** 59nm ? SUB	Rm, DLR, Rn
+** 5Anm ? AND	Rm, DLR, Rn
+** 5Bnm ? OR	Rm, DLR, Rn
+** 5Cnm ? XOR	Rm, DLR, Rn
+** 5Dzz	-
+** 5Ezz	-
+** 5Fzz	-
+
 * 6zzz (Reserved, 8-bit Ops)
 * 7zzz (Reserved, Single-Arg ops)
 
@@ -507,18 +551,18 @@ Instruction Space
 ** 99nm FSUB	FRm, FRn			//FRn=FRn-FRm
 ** 9Anm FMUL	FRm, FRn			//FRn=FRn*FRm
 ** 9Bnm FDIV	FRm, FRn			//FRn=FRn/FRm
-** 9Cnm FCMPEQ	FRm, FRn			//SR.T=(FRn==FRm)
-** 9Dnm FCMPGT	FRm, FRn			//SR.T=(FRn>FRm)
+** 9Cnm FCMPEQ	FRm, FRn			//SR.T=(FRn EQ FRm)
+** 9Dnm FCMPGT	FRm, FRn			//SR.T=(FRn GT FRm)
 ** 9Enm FMOV	FRm, FRn			//FRn=FRm
 ** 9Fnz -
 *** 9Fn0 FLDCF	DLR, FRn			//Float Load Convert Float32
-*** 9Fn1 FSTCF	FRn, DLR			//Float Store Convert Float32
+*** 9Fn1 FLDCD	DLR, FRn			//Float Load Convert Double (DHR:DLR)
 *** 9Fn2 FLDCI	DLR, FRn			//Float Load Convert Int
-*** 9Fn3 FSTCI	FRn, DLR			//Float Store Convert Int
-*** 9Fn4 FLDCH	DLR, FRn			//Float Load Convert Half (DLR, Low16)
-*** 9Fn5 FSTCH	FRn, DLR			//Float Store Convert Half (DLR, Low16)
-*** 9Fn6 FLDCD	DLR, FRn			//Float Load Convert Double (DHR:DLR)
-*** 9Fn7 FSTCD	FRn, DLR			//Float Store Convert Double (DHR:DLR)
+*** 9Fn3 FLDCH	DLR, FRn			//Float Load Convert Half (DLR, Low16)
+*** 9Fn4 FSTCF	FRn, DLR			//Float Store Convert Float32
+*** 9Fn5 FSTCD	FRn, DLR			//Float Store Convert Double (DHR:DLR)
+*** 9Fn6 FSTCI	FRn, DLR			//Float Store Convert Int
+*** 9Fn7 FSTCH	FRn, DLR			//Float Store Convert Half (DLR, Low16)
 *** 9Fn8 FNEG	FRn					//Negate
 *** 9Fn9 FABS	FRn					//Absolute
 *** 9FnA FRCPA	FRn					//Reciprocal (Approximate)

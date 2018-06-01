@@ -1,0 +1,102 @@
+BJX2
+* Variable-Length Instructions (16/32)
+* R0..R31, 64-bit
+* FR0..FR31, 64-bit
+* Superset of BtSR1
+** Little-Endian
+** Instructions as a sequence of 16-bit words.
+
+Notation:
+* e: qnmi
+** q=Quadword Operation
+*** Selects between MOV.L and MOVU.L
+*** Selects between MOVU.B and MOV.Q
+*** Selects between CMPxx and CMPQxx
+** n=Bit4 of Rn
+** m=Bit4 of Rm
+** i=Context Dependent bit
+* f: qnii
+
+* G/g: 1nmi / 0nmi
+* H/h: 1nii / 0nii
+
+Instruction Blocks:
+
+** F0g0_0nmd  MOV.B		Rm, (Rn, disp5)
+** F0g0_1nmd  MOV.W		Rm, (Rn, disp5)
+** F0g0_2nmd  MOV.L		Rm, (Rn, disp5)
+** F0g0_3nmd  MOVU.B	(Rm, disp5), Rn		//Q=0
+** F0G0_3nmd  MOV.Q		Rm, (Rn, disp5)		//Q=1
+** F0g0_4nmd  MOV.B		Rm, (Rn, DLR_i4)
+** F0g0_5nmd  MOV.W		Rm, (Rn, DLR_i4)
+** F0g0_6nmd  MOV.L		Rm, (Rn, DLR_i4)
+** F0g0_7nmd  MOVU.B	(Rm, DLR_i4), Rn	//Q=0
+** F0G0_7nmd  MOV.Q		Rm, (Rn, DLR_i4)	//Q=1
+** F0g0_8nmd  MOV.B		(Rm, disp5), Rn
+** F0g0_9nmd  MOV.W		(Rm, disp5), Rn
+** F0g0_Anmd  MOV.L		(Rm, disp5), Rn		//Q=0
+** F0G0_Anmd  MOVU.L	(Rm, disp5), Rn		//Q=1
+** F0g0_Bnmd  MOVU.W	(Rm, disp5), Rn		//Q=0
+** F0G0_Bnmd  MOV.Q		(Rm, disp5), Rn		//Q=1
+** F0g0_Cnmd  MOV.B		(Rm, DLR_i4), Rn
+** F0g0_Dnmd  MOV.W		(Rm, DLR_i4), Rn
+** F0g0_Enmd  MOV.L		(Rm, DLR_i4), Rn	//Q=0
+** F0G0_Enmd  MOVU.L	(Rm, DLR_i4), Rn	//Q=1
+** F0g0_Fnmd  MOVU.W	(Rm, DLR_i4), Rn	//Q=0
+** F0G0_Fnmd  MOV.Q		(Rm, DLR_i4), Rn	//Q=1
+
+** F0e1_0nmo  ADD		Rm, Ro, Rn				//Rn=Rn+Rm
+** F0e1_1nmo  SUB		Rm, Ro, Rn				//Rn=Rn-Rm
+** F0e1_2nmo  -
+** F0e1_3nmo  -
+** F0e1_4nmo  -
+** F0e1_5nmo  AND		Rm, Ro, Rn
+** F0e1_6nmo  OR		Rm, Ro, Rn
+** F0e1_7nmo  XOR		Rm, Ro, Rn
+** F0e1_8nmo  -
+** F0e1_9nmo  -
+** F0e1_Anmo  -
+** F0e1_Bnmo  -
+** F0e1_Cnmo  -
+** F0e1_Dnmo  -
+** F0e1_Enmo  -
+** F0e1_Fnmo  -
+
+
+** F0e2_8ndd  MOV.L		Rn, (SP, disp8u)	//Stack-Relative Store
+** F0e2_9ndd  MOV.Q		Rn, (SP, disp8u)	//Stack-Relative Store
+** F0e2_Andd  MOV.L		(SP, disp8u), Rn	//Stack-Relative Load
+** F0e2_Bndd  MOV.Q		(SP, disp8u), Rn	//Stack-Relative Load
+** F0e2_Cnjj  CMPEQ		#imm8u, Rn			//Rn==Imm4, Zero Extend
+** F0e2_Dnjj  CMPEQ		#imm8n, Rn			//Rn==Imm4, One Extend
+** F0e2_Enjj  CMPGT		#imm8u, Rn			//Rn==Imm4, Zero Extend
+** F0e2_Fnjj  CMPGE		#imm8u, Rn			//Rn==Imm4, Zero Extend
+
+** F0e4_0ndd  MOV.B		Rn, (PC, DLR_i8)	//
+** F0e4_1ndd  MOV.W		Rn, (PC, DLR_i8)	//
+** F0e4_2ndd  MOV.L		Rn, (PC, DLR_i8)	//
+** F0e4_3ndd  MOV.Q		Rn, (PC, DLR_i8)	//
+** F0e4_4ndd  MOV.B		(PC, DLR_i8), Rn	//
+** F0e4_5ndd  MOV.W		(PC, DLR_i8), Rn	//
+** F0e4_6ndd  MOV.L		(PC, DLR_i8), Rn	//
+** F0e4_7ndd  MOV.Q		(PC, DLR_i8), Rn	//
+** F0e4_8ndd  MOV.B		Rn, (DLR_i8)		//
+** F0e4_9ndd  MOV.W		Rn, (DLR_i8)		//
+** F0e4_Andd  MOV.L		Rn, (DLR_i8)		//
+** F0e4_Bndd  MOV.Q		Rn, (DLR_i8)		//
+** F0e4_Cndd  MOV.B		(DLR_i8), Rn		//
+** F0e4_Dndd  MOV.W		(DLR_i8), Rn		//
+** F0e4_Endd  MOV.L		(DLR_i8), Rn		//
+** F0e4_Fndd  MOV.Q		(DLR_i8), Rn		//
+
+
+
+* FAjj_jjjj	 LDIZ	#imm24u, DLR
+* FBjj_jjjj	 LDIN	#imm24u, DLR
+* FCnf_iiii	 ADD	#imm16s, Rn
+* FDnj_jjjj	 LDISH	#imm24u, DLR	//DLR=(DLR<<24)|Imm24u
+* FEnf_iiii	 MOV*	#imm16s, Rn     //f=0n00
+** FEnf_iiii	 MOVZ	#imm16u, Rn     //f=0n00
+** FEnf_iiii	 MOVN	#imm16u, Rn     //f=0n01
+** FEnf_iiii	 LDISH	#imm16u, Rn     //f=0n10
+* FFzz_zzzz  (Reserved)

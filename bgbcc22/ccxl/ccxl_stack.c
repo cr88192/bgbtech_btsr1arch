@@ -1203,7 +1203,7 @@ ccxl_status BGBCC_CCXL_StackBinaryOp(BGBCC_TransState *ctx, char *op)
 	ccxl_register sreg, treg, dreg, sreg2, treg2, dreg2;
 	ccxl_type sty, tty, dty, bty, pty;
 	double f, g;
-	int opr;
+	int opr, is_shl;
 	int i, j, k;
 
 	opr=-1;
@@ -1479,7 +1479,8 @@ ccxl_status BGBCC_CCXL_StackBinaryOp(BGBCC_TransState *ctx, char *op)
 			{
 				dty=sty; tty=sty;
 
-				if((opr!=CCXL_BINOP_SHL) && (opr!=CCXL_BINOP_SHR))
+				if((opr!=CCXL_BINOP_SHL) && (opr!=CCXL_BINOP_SHR) &&
+					(opr!=CCXL_BINOP_SHRR))
 				{
 					BGBCC_CCXL_ConvImm(ctx, dty, tty, treg, &treg);
 				}
@@ -1487,10 +1488,20 @@ ccxl_status BGBCC_CCXL_StackBinaryOp(BGBCC_TransState *ctx, char *op)
 		}
 #endif
 
+		is_shl=0;
+		if(BGBCC_CCXL_IsRegImmIntP(ctx, treg))
+		{
+			if(	(opr==CCXL_BINOP_SHL) ||
+				(opr==CCXL_BINOP_SHR) ||
+				(opr==CCXL_BINOP_SHRR))
+					is_shl=1;
+		}
+
+
 //		if(BGBCC_CCXL_TypeEqualP(ctx, dty, sty) &&
 //			BGBCC_CCXL_TypeEqualP(ctx, dty, tty))
 		if(BGBCC_CCXL_TypeCompatibleP(ctx, dty, sty) &&
-			BGBCC_CCXL_TypeCompatibleP(ctx, dty, tty))
+			(BGBCC_CCXL_TypeCompatibleP(ctx, dty, tty) || is_shl))
 		{
 			BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &dreg);
 			BGBCC_CCXL_EmitBinaryOp(ctx, dty, opr, dreg, sreg, treg);
@@ -1504,7 +1515,7 @@ ccxl_status BGBCC_CCXL_StackBinaryOp(BGBCC_TransState *ctx, char *op)
 //		if((dty.val!=sty.val) && (dty.val!=tty.val))
 //		if(1)
 		if(!BGBCC_CCXL_TypeCompatibleP(ctx, dty, sty) &&
-			!BGBCC_CCXL_TypeCompatibleP(ctx, dty, tty))
+			!(BGBCC_CCXL_TypeCompatibleP(ctx, dty, tty) || is_shl))
 		{
 			BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &sreg2);
 			BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &treg2);
@@ -1530,7 +1541,7 @@ ccxl_status BGBCC_CCXL_StackBinaryOp(BGBCC_TransState *ctx, char *op)
 
 //			if(dty.val!=tty.val)
 //			if(1)
-			if(!BGBCC_CCXL_TypeCompatibleP(ctx, dty, tty))
+			if(!(BGBCC_CCXL_TypeCompatibleP(ctx, dty, tty) || is_shl))
 			{
 //				BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &treg2);
 				if((opr!=CCXL_BINOP_SHL) && (opr!=CCXL_BINOP_SHR))
@@ -1717,7 +1728,7 @@ ccxl_status BGBCC_CCXL_StackBinaryOpStore(BGBCC_TransState *ctx,
 	ccxl_register sreg, treg, dreg, sreg2, treg2, dreg2;
 	ccxl_type sty, tty, dty, dty2, bty;
 	double f, g;
-	int opr;
+	int opr, is_shl;
 	int i, j, k;
 
 //	BGBCC_CCXL_DebugPrintStackLLn(ctx, "BinaryOpStore", __FILE__, __LINE__);
@@ -1898,13 +1909,26 @@ ccxl_status BGBCC_CCXL_StackBinaryOpStore(BGBCC_TransState *ctx,
 			{
 				dty2=sty; tty=sty;
 
-				if((opr!=CCXL_BINOP_SHL) && (opr!=CCXL_BINOP_SHR))
+				if(	(opr!=CCXL_BINOP_SHL) &&
+					(opr!=CCXL_BINOP_SHR) &&
+					(opr!=CCXL_BINOP_SHRR))
 				{
 					BGBCC_CCXL_ConvImm(ctx, dty2, tty, treg, &treg);
 				}
 			}
 		}
 #endif
+
+		is_shl=0;
+		if(BGBCC_CCXL_IsRegImmIntP(ctx, treg))
+		{
+			if(	(opr==CCXL_BINOP_SHL) ||
+				(opr==CCXL_BINOP_SHR) ||
+				(opr==CCXL_BINOP_SHRR))
+			{
+				is_shl=1;
+			}
+		}
 
 		if(opr==CCXL_BINOP_SHR)
 		{
@@ -1920,11 +1944,21 @@ ccxl_status BGBCC_CCXL_StackBinaryOpStore(BGBCC_TransState *ctx,
 		{
 			BGBCC_CCXL_RegisterAllocTemporary(ctx, dty2, &dreg2);
 			BGBCC_CCXL_RegisterAllocTemporary(ctx, dty2, &sreg2);
-			BGBCC_CCXL_RegisterAllocTemporary(ctx, dty2, &treg2);
+//			BGBCC_CCXL_RegisterAllocTemporary(ctx, dty2, &treg2);
 			BGBCC_CCXL_EmitConv(ctx, dty2, sty, sreg2, sreg);
-			BGBCC_CCXL_EmitConv(ctx, dty2, tty, treg2, treg);
+//			BGBCC_CCXL_EmitConv(ctx, dty2, tty, treg2, treg);
 			BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
-			BGBCC_CCXL_RegisterCheckRelease(ctx, treg);
+//			BGBCC_CCXL_RegisterCheckRelease(ctx, treg);
+			
+			if(!is_shl)
+			{
+				BGBCC_CCXL_RegisterAllocTemporary(ctx, dty2, &treg2);
+				BGBCC_CCXL_EmitConv(ctx, dty2, tty, treg2, treg);
+				BGBCC_CCXL_RegisterCheckRelease(ctx, treg);
+			}else
+			{
+				treg2=treg;
+			}
 
 			BGBCC_CCXL_EmitBinaryOp(ctx, dty2, opr, dreg2, sreg2, treg2);
 			BGBCC_CCXL_EmitConv(ctx, dty, dty2, dreg, dreg2);
@@ -1951,11 +1985,21 @@ ccxl_status BGBCC_CCXL_StackBinaryOpStore(BGBCC_TransState *ctx,
 
 //		BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &dreg);
 		BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &sreg2);
-		BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &treg2);
+//		BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &treg2);
 		BGBCC_CCXL_EmitConv(ctx, dty, sty, sreg2, sreg);
-		BGBCC_CCXL_EmitConv(ctx, dty, tty, treg2, treg);
+//		BGBCC_CCXL_EmitConv(ctx, dty, tty, treg2, treg);
 		BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
-		BGBCC_CCXL_RegisterCheckRelease(ctx, treg);
+//		BGBCC_CCXL_RegisterCheckRelease(ctx, treg);
+
+		if(!is_shl)
+		{
+			BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &treg2);
+			BGBCC_CCXL_EmitConv(ctx, dty, tty, treg2, treg);
+			BGBCC_CCXL_RegisterCheckRelease(ctx, treg);
+		}else
+		{
+			treg2=treg;
+		}
 
 		BGBCC_CCXL_EmitBinaryOp(ctx, dty, opr, dreg, sreg2, treg2);
 		BGBCC_CCXL_RegisterCheckRelease(ctx, sreg2);

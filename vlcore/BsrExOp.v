@@ -226,24 +226,52 @@ begin
 		tRegOutId	= regIdRn;
 	end
 
-	BSR_UCMD_MOVX_WB: begin
-		tRegOutVal	= memDataLd;
-		tRegOutId	= regIdRn;
-	end
+//	BSR_UCMD_MOVX_WB: begin
+//		tRegOutVal	= memDataLd;
+//		tRegOutId	= regIdRn;
+//	end
 	BSR_UCMD_MOVB_RM: begin
 		tMemAddr	= regMaAddr;
 		tMemData	= regValRm;
 		tMemOpm		= UMEM_OPM_WR_SB;
+		if(memDataOK!=UMEM_OK_OK)
+		begin
+			tRegOutOK	= UMEM_OK_HOLD;
+		end
+		else
+		begin
+			tMemOpm		= UMEM_OPM_READY;
+		end
+//		$display("MOV.B %X, (%X)", regValRm, regMaAddr);
 	end
 	BSR_UCMD_MOVW_RM: begin
 		tMemAddr	= regMaAddr;
 		tMemData	= regValRm;
 		tMemOpm		= UMEM_OPM_WR_SW;
+		if(memDataOK!=UMEM_OK_OK)
+		begin
+			tRegOutOK	= UMEM_OK_HOLD;
+		end
+		else
+		begin
+			tMemOpm		= UMEM_OPM_READY;
+		end
+//		$display("MOV.W %X, (%X)", regValRm, regMaAddr);
 	end
 	BSR_UCMD_MOVL_RM: begin
 		tMemAddr	= regMaAddr;
 		tMemData	= regValRm;
 		tMemOpm		= UMEM_OPM_WR_SL;
+		if(memDataOK!=UMEM_OK_OK)
+		begin
+			tRegOutOK	= UMEM_OK_HOLD;
+		end
+		else
+		begin
+			tMemOpm		= UMEM_OPM_READY;
+		end
+
+//		$display("MOV.L %X, (%X)", regValRm, regMaAddr);
 	end
 
 	BSR_UCMD_MOVB_MR: begin
@@ -251,46 +279,140 @@ begin
 		tMemOpm		= UMEM_OPM_RD_SB;
 //		tMemOpCmd2	= BSR_UCMD_MOVX_WB;
 		if(memDataOK!=UMEM_OK_OK)
+		begin
 			tRegOutOK	= UMEM_OK_HOLD;
+		end
+		else
+		begin
+			tMemOpm		= UMEM_OPM_READY;
+		end
 		tRegOutVal	= memDataLd;
 		tRegOutId	= regIdRn;
+//		$display("MOV.B (%X), %X", regMaAddr, memDataLd);
 	end
 	BSR_UCMD_MOVW_MR: begin
 		tMemAddr	= regMaAddr;
 		tMemOpm		= UMEM_OPM_RD_SW;
 //		tMemOpCmd2	= BSR_UCMD_MOVX_WB;
 		if(memDataOK!=UMEM_OK_OK)
+		begin
 			tRegOutOK	= UMEM_OK_HOLD;
+		end
+		else
+		begin
+			tMemOpm		= UMEM_OPM_READY;
+		end
 		tRegOutVal	= memDataLd;
 		tRegOutId	= regIdRn;
+//		$display("MOV.W (%X), %X", regMaAddr, memDataLd);
 	end
 	BSR_UCMD_MOVL_MR: begin
 		tMemAddr	= regMaAddr;
 		tMemOpm		= UMEM_OPM_RD_SL;
 //		tMemOpCmd2	= BSR_UCMD_MOVX_WB;
 		if(memDataOK!=UMEM_OK_OK)
+		begin
 			tRegOutOK	= UMEM_OK_HOLD;
+		end
+		else
+		begin
+			tMemOpm		= UMEM_OPM_READY;
+		end
 		tRegOutVal	= memDataLd;
 		tRegOutId	= regIdRn;
+
+//		$display("MOV.L (%X), %X", regMaAddr, memDataLd);
 	end
 	BSR_UCMD_MOVUB_MR: begin
 		tMemAddr	= regMaAddr;
 		tMemOpm		= UMEM_OPM_RD_UB;
 //		tMemOpCmd2	= BSR_UCMD_MOVX_WB;
 		if(memDataOK!=UMEM_OK_OK)
+		begin
 			tRegOutOK	= UMEM_OK_HOLD;
+		end
+		else
+		begin
+			tMemOpm		= UMEM_OPM_READY;
+		end
 		tRegOutVal	= memDataLd;
 		tRegOutId	= regIdRn;
+//		$display("MOVU.B (%X), %X", regMaAddr, memDataLd);
 	end
 	BSR_UCMD_MOVUW_MR: begin
 		tMemAddr	= regMaAddr;
 		tMemOpm		= UMEM_OPM_RD_UW;
 //		tMemOpCmd2	= BSR_UCMD_MOVX_WB;
 		if(memDataOK!=UMEM_OK_OK)
+		begin
 			tRegOutOK	= UMEM_OK_HOLD;
+		end
+		else
+		begin
+			tMemOpm		= UMEM_OPM_READY;
+		end
 		tRegOutVal	= memDataLd;
 		tRegOutId	= regIdRn;
+//		$display("MOVU.W (%X), %X", regMaAddr, memDataLd);
 	end
+
+
+	BSR_UCMD_MOV_PUSH: begin
+//		$display("PUSH %X %X", ctlInSp-4, regValRn);
+		tCtlOutSp	= ctlInSp-4;
+		tMemAddr	= tCtlOutSp;
+		tMemData	= regValRn;
+		tMemOpm		= UMEM_OPM_WR_SL;
+		if(memDataOK!=UMEM_OK_OK)
+		begin
+			tRegOutOK	= UMEM_OK_HOLD;
+		end
+		else
+		begin
+			tMemOpm		= UMEM_OPM_READY;
+		end
+	end
+
+	BSR_UCMD_MOV_POP: begin
+		tCtlOutSp	= ctlInSp+4;
+		tMemAddr	= ctlInSp;
+		tMemOpm		= UMEM_OPM_RD_SL;
+		if(memDataOK!=UMEM_OK_OK)
+		begin
+			tRegOutOK	= UMEM_OK_HOLD;
+		end
+		else
+		begin
+			tMemOpm		= UMEM_OPM_READY;
+		end
+
+//		$display("POP %X %X", ctlInSp, memDataLd);
+
+		if(regIdRn==BSR_REG_PC)
+		begin
+//			$display("RET %X", regMaAddr);
+			tCtlOutPc	= memDataLd;
+
+			if(memDataOK==UMEM_OK_OK)
+				tMemOpm		= UMEM_OPM_CTRLF;
+			
+			if(memDataLd==0)
+			begin
+				tRegOutOK	= UMEM_OK_HOLD;
+			end
+			else
+			begin
+//				$display("RET %X", memDataLd);
+			end
+		end
+		else
+		begin
+//			$display("POP %X %X", ctlInSp, memDataLd);
+			tRegOutVal	= memDataLd;
+			tRegOutId	= regIdRn;
+		end
+	end
+
 
 	BSR_UCMD_ALU_ADD: begin
 		tRegOutVal	= regValRn + regValRm;
@@ -330,15 +452,55 @@ begin
 		tRegOutId	= regIdRn;
 	end
 
+	BSR_UCMD_ALU_ADD2: begin
+		tRegOutVal	= regValRm + ctlInDlr;
+		tRegOutId	= regIdRn;
+	end
+	BSR_UCMD_ALU_SUB2: begin
+		tRegOutVal	= regValRm - ctlInDlr;
+		tRegOutId	= regIdRn;
+	end
+	BSR_UCMD_ALU_AND2: begin
+		tRegOutVal	= regValRm & ctlInDlr;
+		tRegOutId	= regIdRn;
+	end
+	BSR_UCMD_ALU_OR2: begin
+		tRegOutVal	= regValRm | ctlInDlr;
+		tRegOutId	= regIdRn;
+	end
+	BSR_UCMD_ALU_XOR2: begin
+		tRegOutVal	= regValRm ^ ctlInDlr;
+		tRegOutId	= regIdRn;
+	end
+
 	BSR_UCMD_ALU_MULU: begin
 		regMulA		= regValRn;
 		regMulB		= regValRm;
 		regMulOp	= 2'h1;
+		tCtlOutDlr	= regMulDlr;
+		tCtlOutDhr	= regMulDhr;
+
+		if(regMulOpDr!=regMulOp)
+			tRegOutOK	= UMEM_OK_HOLD;
+
 	end
+
 	BSR_UCMD_ALU_MULS: begin
 		regMulA		= regValRn;
 		regMulB		= regValRm;
 		regMulOp	= 2'h2;
+		tCtlOutDlr	= regMulDlr;
+		tCtlOutDhr	= regMulDhr;
+		
+		if(regMulOpDr!=regMulOp)
+		begin
+			tRegOutOK	= UMEM_OK_HOLD;
+		end
+		else
+		begin
+//			$display("MULS %X:%X", tCtlOutDhr, tCtlOutDlr);
+		end
+
 	end
 	
 	BSR_UCMD_ALU_LDIX: begin
@@ -348,61 +510,83 @@ begin
 		tCtlOutDlr	= { ctlInDlr[23:0], immValRi[7:0] };
 	end
 
+	BSR_UCMD_ALU_LDISH16: begin
+		tCtlOutDlr	= { ctlInDlr[15:0], immValRi[15:0] };
+	end
+
 	BSR_UCMD_ALU_CMPEQ: begin
 		tCtlOutSr[0] = (regValRn == regValRm);
+//		$display("CMPEQ %X %X %X", regValRn, regValRm, tCtlOutSr[0]);
 	end
 	BSR_UCMD_ALU_CMPHI: begin
 		tCtlOutSr[0] = (regValRn > regValRm);
+//		$display("CMPHI %X %X %X", regValRn, regValRm, tCtlOutSr[0]);
 	end
 	BSR_UCMD_ALU_CMPGT: begin
 		tCtlOutSr[0] = (regValRn > regValRm) ^
 			(regValRn[31] ^ regValRm[31]);
+//		$display("CMPGT %X %X %X", regValRn, regValRm, tCtlOutSr[0]);
 	end
 	BSR_UCMD_ALU_CMPGE: begin
 		tCtlOutSr[0] = (regValRn >= regValRm) ^
 			(regValRn[31] ^ regValRm[31]);
+//		$display("CMPGE %X %X %X", regValRn, regValRm, tCtlOutSr[0]);
 	end
 
 	BSR_UCMD_CF_BRA: begin
-		$display("BRA %X", regMaAddr);
+//		$display("BRA %X", regMaAddr);
 		tCtlOutPc	= regMaAddr;
+		tMemOpm		= UMEM_OPM_CTRLF;
 	end
 	BSR_UCMD_CF_BSR: begin
-		$display("BSR %X", regMaAddr);
+//		$display("BSR %X", regMaAddr);
 		tCtlOutPr	= idInGenPc;
 		tCtlOutPc	= regMaAddr;
+		tMemOpm		= UMEM_OPM_CTRLF;
 	end
 	BSR_UCMD_CF_BT: begin
+//		$display("BT %X %X", regMaAddr, ctlInSr[0]);
 		if(ctlInSr[0])
 		begin
-			$display("BT %X", regMaAddr);
+//			$display("BT %X", regMaAddr);
 			tCtlOutPc	= regMaAddr;
+			tMemOpm		= UMEM_OPM_CTRLF;
 		end
 	end
 	BSR_UCMD_CF_BF: begin
+//		$display("BF %X %X", regMaAddr, ctlInSr[0]);
 		if(!ctlInSr[0])
 		begin
-			$display("BF %X", regMaAddr);
+//			$display("BF %X", regMaAddr);
 			tCtlOutPc	= regMaAddr;
+			tMemOpm		= UMEM_OPM_CTRLF;
 		end
 	end
 
 	BSR_UCMD_CF_JMP: begin
-		$display("JMP %X", regMaAddr);
+//		$display("JMP %X", regMaAddr);
 		tCtlOutPc	= regValRn;
+		tMemOpm		= UMEM_OPM_CTRLF;
 	end
 	BSR_UCMD_CF_JSR: begin
-		$display("JSR %X", regMaAddr);
+//		$display("JSR %X", regMaAddr);
 		tCtlOutPr	= idInGenPc;
 		tCtlOutPc	= regValRn;
+		tMemOpm		= UMEM_OPM_CTRLF;
 	end
 	BSR_UCMD_CF_JT: begin
 		if(ctlInSr[0])
+		begin
 			tCtlOutPc	= regValRn;
+			tMemOpm		= UMEM_OPM_CTRLF;
+		end
 	end
 	BSR_UCMD_CF_JF: begin
 		if(!ctlInSr[0])
+		begin
 			tCtlOutPc	= regValRn;
+			tMemOpm		= UMEM_OPM_CTRLF;
+		end
 	end
 
 	BSR_UCMD_ALU_EXTUB: begin
@@ -505,6 +689,11 @@ begin
 		endcase
 	end
 
+	BSR_UCMD_ALU_SHARSX: begin
+		tRegOutId		= regIdRn;
+		tRegOutVal		= regRnSxt;
+	end
+
 	BSR_UCMD_OP_IXT: begin
 		case(regIdIxt[7:0])
 			BSR_UCMD_IX_NOP: begin
@@ -512,6 +701,12 @@ begin
 
 			BSR_UCMD_IX_RTS: begin
 				tCtlOutPc	= ctlInPr;
+				tMemOpm		= UMEM_OPM_CTRLF;
+			end
+
+			BSR_UCMD_IX_BREAK: begin
+//				tCtlOutPc	= ctlInPr;
+				tRegOutOK	= UMEM_OK_HOLD;
 			end
 
 			BSR_UCMD_IX_CLRT: begin
@@ -535,11 +730,20 @@ begin
 			end
 
 			default: begin
+			$display("BsrExOp: Missing %X-%X", opCmd, regIdIxt);
+			tRegOutOK	= UMEM_OK_HOLD;
 			end
 		endcase
 	end
 
 	default: begin
+//		$display("BsrExOp: Missing %X", opCmd);
+		tRegOutOK	= UMEM_OK_HOLD;
+		regMulOp	= 1;
+		if(regMulOpDr != regMulOp)
+		begin
+			$display("BsrExOp: Missing %X", opCmd);
+		end
 	end
 
 	endcase
@@ -589,6 +793,8 @@ always @ (posedge clock)
 begin
 	case(regMulOp)
 		2'h0: begin
+			regMulOpPp	<= 0;
+			regMulOpDr	<= 0;
 		end
 
 		2'h1: begin
@@ -613,9 +819,18 @@ begin
 			regMulDlr	<= regMulPqA;
 			regMulDhr	<= regMulPqB;
 			regMulOpDr	<= regMulOpPq;
+			
+//			$display("BsrExOp: Mul A: %X %X", regMulA, regMulB);
+//			$display("BsrExOp: Mul B: %X %X %X %X",
+//				regMulPpA, regMulPpB,
+//				regMulPpC, regMulPpD);
+//			$display("BsrExOp: Mul C: %X %X", regMulDlr, regMulDhr);
+			
 		end
 
 		2'h3: begin
+			regMulOpPp	<= 0;
+			regMulOpDr	<= 0;
 		end
 	endcase
 end
