@@ -1,0 +1,37 @@
+BJX2 General C ABI.
+
+Basic C ABI:
+* R0..R7, R16..R23: Scratch
+* R8..R14: Callee Preserved
+* R15: Stack Pointer
+* R0/R1: Return Value
+* R2: Struct Return Address
+* R4..R7, R20..R23: Register Arguments
+** Structures are passed in 1 or 2 registers if they fit.
+** Otherwise, structures are passed by reference.
+* (Hard FPU) FR0..FR7: Scratch
+* (Hard FPU) FR8..FR15: Callee Preserve
+* (Hard FPU) FR4..FR7: Float Arguments
+** For Soft-FPU, Float and Double arguments will be passed in GPRs.
+* DLR: Volatile/Scratch
+* DHR: Volatile/Scratch
+* GBR: Callee Preserve
+** GBR may be used to access memory, and is treated as a callee preserve register.
+* TBR: System
+** TBR will be a System register, and should not be modified by normal code.
+** The use of TBR is outside the scope of the basic C ABI.
+
+If insufficient free registers exist to pass an argument, it and any following arguments of the same class will be passed on the stack. The stack will not have any spill space.
+
+Items on the stack will have a 8-byte alignment, with the size of stack frames for non-leaf functions kept to a 16-byte alignment. The creation of a stack frame is optional for leaf functions.
+
+
+Structure Passing by value:
+* General structures between 1 and 8 bytes will be passed in a GPR.
+** Or in 8 bytes on-stack if no GPRs remain.
+* General structures between 9 and 16 bytes will be passed as a GPR pair.
+** Or in 16 bytes on-stack if no GPRs remain.
+* Structures larger than 16 bytes will be passed by reference.
+** This reference may be either in a register or on the stack.
+
+When passing and returning structures by value, the structure will be padded up to a multiple of 8 bytes. Structures on-stack will have a nominal 8-byte alignment.

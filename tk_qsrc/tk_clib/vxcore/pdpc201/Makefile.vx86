@@ -1,0 +1,49 @@
+# This is the makefile for Win32 to build pdpclib using
+# the gcc compiler.
+#
+# The makefile uses spaces, which are normal for Windows
+# users, and Borland make, Microsoft nmake and others are
+# happy to accept them. If you are using Cygwin or a make
+# that unfortunately requires tabs, then simply edit this
+# file, change all spaces to tabs, and it will work, even
+# if the resultant file looks a bit silly.
+
+CC=gcc
+# COPTS= -g -c -O2 -D__VX86__ -D__PDPCLIB_DLL -I. -I../include -I../../include
+COPTS= -g -c -D__VX86__ -D__PDPCLIB_DLL -I. -I../include -I../../include
+
+OBJS = \
+	stdio.o string.o stdlib.o \
+	start.o time.o errno.o assert.o signal.o \
+	locale.o ctype.o setjmp.o math.o __memmgr.o \
+	vx86supa.o \
+	winsupb.obj
+
+all: pdptest.exe
+
+includes:
+libs: libpdpclib.a crt0.o
+apps: pdptest.exe
+
+libpdpclib.a: $(OBJS)
+#	gcc -s -nostdlib -shared -o pdpclib.dll $(OBJS) \
+#		-Wl,--out-implib,libpdpclib.a -L.. -lvxcore
+	ar -cr libpdpclib.a $(OBJS)
+
+# w32start.o: w32start.c
+#	gcc -c -nostdlib -o w32start.o w32start.c $(COPTS)
+
+crt0.o: w32start.o
+	cp $< $@
+
+pdptest.exe: libpdpclib.a pdptest.o crt0.o
+	gcc -s -nostdlib -o pdptest.exe pdptest.o crt0.o -L.. -lvxcore
+
+# libpdpclib.a
+
+.c.o:
+	$(CC) $(COPTS) $<
+
+%.obj: %.asm
+	nasm -f win32 -o $@ $<
+

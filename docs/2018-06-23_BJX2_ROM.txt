@@ -1,0 +1,92 @@
+BJX2 for now will use a 32-bit address space sign-extended to 64 bits.
+
+
+Base Physical Memory Map (32-bit):
+00000000 .. 00007FFF: Boot ROM
+00008000 .. 0000BFFF: (Reserved)
+0000C000 .. 0000DFFF: Boot SRAM
+0000E000 .. 0000FFFF: Reserved
+00010000 .. 000FFFFF: Reserved
+00100000 .. 00FFFFFF: Reserved
+01000000 .. 7FFFFFFF: DRAM
+80000000 .. 9FFFFFFF: System (Repeats 00000000..1FFFFFFF)
+A0000000 .. BFFFFFFF: MMIO (No MMU, Bypass)
+C0000000 .. DFFFFFFF: System (No MMU, Repeats 00000000..1FFFFFFF)
+E0000000 .. FFFFFFFF: Reserved for Processor/Chipset
+
+Logical Memory Map (32-bit):
+00000000 .. 7FFFFFFF: Userland (MMU)
+80000000 .. 9FFFFFFF: System (MMU)
+A0000000 .. BFFFFFFF: MMIO (No MMU, Bypass)
+C0000000 .. DFFFFFFF: System (No MMU, Repeats 00000000..1FFFFFFF)
+E0000000 .. FFFFFFFF: Reserved for Processor/Chipset
+
+Addresses in the MMIO ranges will "bypass" the normal memory access mechanisms and go directly to the MMIO Bus.
+
+Addresses in the MMIO range will be masked to 29 bits, which will be used as the corresponding address on the MMIO Bus.
+
+
+Extended 64-bit Memory Map
+00000000_00000000 .. 00000000_7FFFFFFF: Userland (MMU, Low 2GB)
+00000000_80000000 .. 00007FFF_FFFFFFFF: Userland (MMU, Extended)
+00008000_00000000 .. 7FFFFFFF_FFFFFFFF: Reserved (No Man's Land)
+80000000_00000000 .. FFFF7FFF_FFFFFFFF: Reserved (No Man's Land)
+FFFF8000_00000000 .. FFFF9FFF_FFFFFFFF: System (MMU, Extended)
+FFFFA000_00000000 .. FFFFBFFF_FFFFFFFF: Extended MMIO (Bypass)
+FFFFC000_00000000 .. FFFFDFFF_FFFFFFFF: System (No MMU, Repeats Low 48)
+FFFFE000_00000000 .. FFFFFFFF_7FFFFFFF: Reserved (Processor/Chipset)
+FFFFFFFF_80000000 .. FFFFFFFF_FFFFFFFF: Maps to Base Physical Map
+
+
+On boot, VBR will be initialized to the start of ROM.
+Entry point will also be at the start of ROM.
+
+VBR will contain several Vectors:
+  VBR+0x00: Boot/Reset
+  VBR+0x08: Runtime Exception
+  VBR+0x10: Hardware Interrupt
+  VBR+0x18: MMU Page/TLB Fault
+  VBR+0x20: Syscall
+
+On an interrupt, control will be transferred to an address relative to VBR. This address may then encode a branch to wherever is the start of the ISR.
+
+
+MMIO Space:
+
+* 0000E000 (R): 1MHz Timer Low
+* 0000E004 (R): 1MHz Timer High
+
+* 0000E008(R): PIT Current Value (Clock Cycles)
+** Counts down and then triggers an interrupt once it reaches zero.
+* 0000E00C(R/W): PIT Reset Value (Clock Cycles)
+** Value which is loaded into the counter when the interrupt fires.
+
+* 0000E010(R): Debug Uart RX
+* 0000E014(W): Debug Uart TX
+* 0000E018(R): Debug Uart Status
+** Bit 0: Input Ready
+** Bit 1: Input Buffer Full
+** Bit 2: Output Buffer Empty
+** Bit 3: Output Buffer Full
+** Bit 4: Interrupt Status
+** Bit 5: Buffer Overrun
+** Bit 6: Frame Error
+** Bit 7: Parity Error
+* E01C(W): Debug Uart Control
+** Bit 0: Clear Transmit
+** Bit 1: Clear Recieve
+** Bit 4: Enable Interrupt
+
+* 0000E020(R/W): SPI Slave Data
+* 0000E024(W): SPI Slave Control
+
+* 0000E030(R/W): SPI Master Data
+* 0000E034(W): SPI Master Control
+
+* 0000E100(R): GPIO In
+* 0000E104(R/W): GPIO Out
+* 0000E108(R/W): GPIO Direction
+* 0000E110(W): GPIO Set (Out=Out|Val)
+* 0000E114(W): GPIO Clear (Out=Out&(~Val))
+
+* 000A0000 .. 000BFFFF: Reserved for Display Memory (Bypass)

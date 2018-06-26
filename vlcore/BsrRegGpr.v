@@ -113,6 +113,7 @@ reg[31:0]	regGprR5A;
 reg[31:0]	regGprR6A;
 reg[31:0]	regGprR7A;
 
+/*
 reg[31:0]	regGprR0B;
 reg[31:0]	regGprR1B;
 reg[31:0]	regGprR2B;
@@ -121,6 +122,7 @@ reg[31:0]	regGprR4B;
 reg[31:0]	regGprR5B;
 reg[31:0]	regGprR6B;
 reg[31:0]	regGprR7B;
+*/
 
 reg[31:0]	regGprR8;
 reg[31:0]	regGprR9;
@@ -184,6 +186,7 @@ begin
 		BSR_REG_GBR:	tRegValRm = exNextGbr2 ;
 		BSR_REG_TBR:	tRegValRm = exNextTbr2 ;
 
+/*
 		BSR_REG_R0B:	tRegValRm = regGprR0B ;
 		BSR_REG_R1B:	tRegValRm = regGprR1B ;
 		BSR_REG_R2B:	tRegValRm = regGprR2B ;
@@ -200,6 +203,7 @@ begin
 		BSR_REG_SDH:	tRegValRm = regSDh    ;
 		BSR_REG_SGB:	tRegValRm = regSGb    ;
 		BSR_REG_STB:	tRegValRm = regSTb    ;
+*/
 
 //		BSR_REG_PCW:	tRegValRm = idValPc + {idImmHi, idImm[30:0], 1'b0} ;
 
@@ -259,6 +263,7 @@ begin
 //	if(regSrRB^nxtRegSrRB)
 	if(0)
 	begin
+/*
 		regGprR0A <= (regIdRo==BSR_REG_R0) ? regValRo[31:0] : regGprR0B;
 		regGprR1A <= (regIdRo==BSR_REG_R1) ? regValRo[31:0] : regGprR1B;
 		regGprR2A <= (regIdRo==BSR_REG_R2) ? regValRo[31:0] : regGprR2B;
@@ -276,6 +281,7 @@ begin
 		regGprR5B <= (regIdRo==BSR_REG_R5B) ? regValRo[31:0] : regGprR5A;
 		regGprR6B <= (regIdRo==BSR_REG_R6B) ? regValRo[31:0] : regGprR6A;
 		regGprR7B <= (regIdRo==BSR_REG_R7B) ? regValRo[31:0] : regGprR7A;
+*/
 	end
 	else
 	begin
@@ -288,6 +294,7 @@ begin
 		regGprR6A <= (regIdRo==BSR_REG_R6) ? regValRo[31:0] : regGprR6A;
 		regGprR7A <= (regIdRo==BSR_REG_R7) ? regValRo[31:0] : regGprR7A;
 
+/*
 		regGprR0B <= (regIdRo==BSR_REG_R0B) ? regValRo[31:0] : regGprR0B;
 		regGprR1B <= (regIdRo==BSR_REG_R1B) ? regValRo[31:0] : regGprR1B;
 		regGprR2B <= (regIdRo==BSR_REG_R2B) ? regValRo[31:0] : regGprR2B;
@@ -296,6 +303,7 @@ begin
 		regGprR5B <= (regIdRo==BSR_REG_R5B) ? regValRo[31:0] : regGprR5B;
 		regGprR6B <= (regIdRo==BSR_REG_R6B) ? regValRo[31:0] : regGprR6B;
 		regGprR7B <= (regIdRo==BSR_REG_R7B) ? regValRo[31:0] : regGprR7B;
+*/
 	end
 
 	regGprR8  <= (regIdRo==BSR_REG_R8 ) ? regValRo[31:0] : regGprR8 ;
@@ -319,6 +327,7 @@ begin
 		regGbr	<= 0;
 		regTbr	<= 0;
 
+/*
 		regSPc	<= 0;
 		regSPr	<= 0;
 		regSSr	<= 0;
@@ -327,6 +336,7 @@ begin
 		regSDh	<= 0;
 		regSGb	<= 0;
 		regSTb	<= 0;
+*/
 	end
 
 	else
@@ -338,6 +348,7 @@ begin
 //		if(regSrRB^nxtRegSrRB)
 		if(0)
 		begin
+/*
 			regSp	<= (regIdRo==BSR_REG_R15 ) ? regValRo[31:0] : regSSp;
 			regPc	<= (regIdRo==BSR_REG_PC  ) ? regValRo[31:0] : regSPc;
 			regPr	<= (regIdRo==BSR_REG_LR  ) ? regValRo[31:0] : regSPr;
@@ -354,6 +365,7 @@ begin
 			regSDh	<= (regIdRo==BSR_REG_SDH ) ? regValRo[31:0] : exNextDhr2;
 			regSGb	<= (regIdRo==BSR_REG_SGB ) ? regValRo[31:0] : exNextGbr2;
 			regSTb	<= (regIdRo==BSR_REG_STB ) ? regValRo[31:0] : exNextTbr2;
+*/
 		end		else	begin
 			regSp	<= (regIdRo==BSR_REG_R15 ) ? regValRo[31:0] : exNextSp2;
 			regPc	<= (regIdRo==BSR_REG_PC  ) ? regValRo[31:0] : exNextPc2;
@@ -363,6 +375,8 @@ begin
 			regDhr	<= (regIdRo==BSR_REG_DHR ) ? regValRo[31:0] : exNextDhr2;
 			regGbr	<= (regIdRo==BSR_REG_GBR ) ? regValRo[31:0] : exNextGbr2;
 			regTbr	<= (regIdRo==BSR_REG_TBR ) ? regValRo[31:0] : exNextTbr2;
+
+/*
 			regSPc	<= (regIdRo==BSR_REG_SPC ) ? regValRo[31:0] : regSPc;
 			regSPr	<= (regIdRo==BSR_REG_SLR ) ? regValRo[31:0] : regSPr;
 			regSSr	<= (regIdRo==BSR_REG_SSR ) ? regValRo[31:0] : regSSr;
@@ -371,6 +385,7 @@ begin
 			regSDh	<= (regIdRo==BSR_REG_SDH ) ? regValRo[31:0] : regSDh;
 			regSGb	<= (regIdRo==BSR_REG_SGB ) ? regValRo[31:0] : regSGb;
 			regSTb	<= (regIdRo==BSR_REG_STB ) ? regValRo[31:0] : regSTb;
+*/
 		end
 	end
 end

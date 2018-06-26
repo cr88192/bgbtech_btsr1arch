@@ -1,0 +1,596 @@
+#include <vx_kernel32.h>
+
+WINBASEAPI BOOL WINAPI AreFileApisANSI(void)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI LONG WINAPI CompareFileTime(CONST FILETIME *s0, CONST FILETIME *s1)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI CopyFileA(LPCSTR s0, LPCSTR s1, BOOL b0)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI CopyFileW(LPCWSTR s0, LPCWSTR s1, BOOL b0)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI CopyFileExA(
+	LPCSTR s0, LPCSTR s1, LPPROGRESS_ROUTINE c0,
+	LPVOID p0, LPBOOL b0, DWORD w0)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI CopyFileExW(
+	LPCWSTR s0, LPCWSTR s1, LPPROGRESS_ROUTINE c0,
+	LPVOID p0, LPBOOL b0, DWORD w0)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI HANDLE WINAPI CreateFileA(
+	LPCSTR s0, DWORD w1, DWORD w2, LPSECURITY_ATTRIBUTES a3,
+	DWORD w4, DWORD w5, HANDLE h6)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI HANDLE WINAPI CreateFileW(
+	LPCWSTR s0, DWORD w1, DWORD w2, LPSECURITY_ATTRIBUTES a3,
+	DWORD w4, DWORD w5, HANDLE h6)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI HANDLE WINAPI CreateFileMappingA(
+	HANDLE h0, LPSECURITY_ATTRIBUTES a1,
+	DWORD w2, DWORD w3, DWORD w4, LPCSTR s5)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI HANDLE WINAPI CreateFileMappingW(
+	HANDLE h0, LPSECURITY_ATTRIBUTES a1,
+	DWORD w2, DWORD w3, DWORD w4, LPCWSTR s5)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI CreateHardLinkA(
+	LPCSTR s0, LPCSTR s1, LPSECURITY_ATTRIBUTES a2)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI CreateHardLinkW(
+	LPCWSTR s0, LPCWSTR s1, LPSECURITY_ATTRIBUTES a2)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+
+WINBASEAPI BOOL WINAPI DeleteFileA(LPCSTR s0)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI DeleteFileW(LPCWSTR s0)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI DosDateTimeToFileTime(
+	WORD w0, WORD w1, LPFILETIME t2)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI EncryptFileA(LPCSTR s0)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI EncryptFileW(LPCWSTR s0)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI FileEncryptionStatusA(LPCSTR s0, LPDWORD w1)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI FileEncryptionStatusW(LPCWSTR s0, LPDWORD w1)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI FileTimeToDosDateTime(
+	CONST FILETIME *t0, LPWORD w1, LPWORD w2)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI FileTimeToLocalFileTime(
+	CONST FILETIME *t0, LPFILETIME t1)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI FileTimeToSystemTime(
+	CONST FILETIME *t0, LPSYSTEMTIME t1)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI HANDLE WINAPI FindFirstFileA(
+	LPCSTR s0, LPWIN32_FIND_DATAA a1)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI HANDLE WINAPI FindFirstFileW(
+	LPCWSTR s0, LPWIN32_FIND_DATAW a1)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI HANDLE WINAPI FindFirstFileExA(
+	LPCSTR s0, FINDEX_INFO_LEVELS a1, PVOID p2,
+	FINDEX_SEARCH_OPS a3, PVOID p4, DWORD w5)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI HANDLE WINAPI FindFirstFileExW(
+	LPCWSTR s0, FINDEX_INFO_LEVELS a1, PVOID p2,
+	FINDEX_SEARCH_OPS a3, PVOID p4, DWORD w5)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI FindNextFileA(
+	HANDLE h0, LPWIN32_FIND_DATAA a1)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI FindNextFileW(
+	HANDLE h0, LPWIN32_FIND_DATAW a1)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI FindNextVolumeA(
+	HANDLE h0, LPCSTR s1, DWORD w2)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI FindNextVolumeW(
+	HANDLE h0, LPWSTR s1, DWORD w2)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI FindNextVolumeMountPointA(
+	HANDLE h0, LPSTR s1, DWORD w2)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI FindNextVolumeMountPointW(
+	HANDLE h0, LPWSTR s1, DWORD w2)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI FindVolumeClose(HANDLE h0)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI FindVolumeMountPointClose(HANDLE h0)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI FlushFileBuffers(HANDLE h0)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI FlushViewOfFile(PCVOID p0, DWORD w0)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI DWORD WINAPI GetCompressedFileSizeA(LPCSTR s0, PDWORD w0)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI DWORD WINAPI GetCompressedFileSizeW(LPCWSTR s0, PDWORD w0)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI DWORD WINAPI GetFileAttributesA(LPCSTR s0)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI DWORD WINAPI GetFileAttributesW(LPCWSTR s0)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI GetFileAttributesExA(
+	LPCSTR s0, GET_FILEEX_INFO_LEVELS a0, PVOID p0)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI GetFileAttributesExW(
+	LPCWSTR s0, GET_FILEEX_INFO_LEVELS a0, PVOID p0)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI GetFileInformationByHandle(
+	HANDLE h0, LPBY_HANDLE_FILE_INFORMATION a0)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+#if (_WIN32_WINNT >= 0x0600)
+//WINBASEAPI BOOL WINAPI GetFileInformationByHandleEx(HANDLE h0, 
+//	FILE_INFO_BY_HANDLE_CLASS, LPVOID p0, DWORD w0)
+#endif
+WINBASEAPI BOOL WINAPI GetFileSecurityA(
+	LPCSTR s0, SECURITY_INFORMATION a1, PSECURITY_DESCRIPTOR a2,
+	DWORD w3, PDWORD w4)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI GetFileSecurityW(
+	LPCWSTR s0, SECURITY_INFORMATION a1, PSECURITY_DESCRIPTOR a2,
+	DWORD w3, PDWORD w4)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+
+WINBASEAPI DWORD WINAPI GetFileSize(
+	HANDLE h0, PDWORD w1)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI GetFileSizeEx(HANDLE h0, PLARGE_INTEGER a1)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI GetFileTime(
+	HANDLE h0, LPFILETIME t0, LPFILETIME t1, LPFILETIME t2)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI DWORD WINAPI GetFileType(HANDLE h0)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI void WINAPI GetSystemTimeAsFileTime(LPFILETIME a0)
+{
+	((FILETIME *)a0)->dwLowDateTime=0;
+	((FILETIME *)a0)->dwHighDateTime=0;
+//	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI UINT WINAPI GetTempFileNameA(
+	LPCSTR s0, LPCSTR s1, UINT w2, LPSTR s3)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI UINT WINAPI GetTempFileNameW(
+	LPCWSTR s0, LPCWSTR s1, UINT w2, LPWSTR s3)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI LockFile(
+	HANDLE h0, DWORD w1, DWORD w2, DWORD w3, DWORD w4)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI LockFileEx(
+	HANDLE h0, DWORD w1, DWORD w2, DWORD w3,
+	DWORD w4, LPOVERLAPPED l5)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI PVOID WINAPI MapViewOfFile(
+	HANDLE h0, DWORD w1, DWORD w2, DWORD w3, DWORD w4)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI PVOID WINAPI MapViewOfFileEx(
+	HANDLE h0, DWORD w1, DWORD w2, DWORD w3, DWORD w4, PVOID p5)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI MoveFileA(LPCSTR s0, LPCSTR s1)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI MoveFileExA(LPCSTR s0, LPCSTR s1, DWORD w2)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI MoveFileExW(LPCWSTR s0, LPCWSTR s1, DWORD w2)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI MoveFileW(LPCWSTR s0, LPCWSTR s1)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+#if (_WIN32_WINNT >= 0x0500)
+WINBASEAPI BOOL WINAPI MoveFileWithProgressA(
+	LPCSTR s0, LPCSTR s1, LPPROGRESS_ROUTINE p2, LPVOID p3, DWORD w4)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI MoveFileWithProgressW(
+	LPCWSTR s0, LPCWSTR s1, LPPROGRESS_ROUTINE p2, LPVOID p3, DWORD w4)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+#endif
+
+WINBASEAPI HFILE WINAPI OpenFile(LPCSTR s0, LPOFSTRUCT a1, UINT w2)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI HANDLE WINAPI OpenFileMappingA(DWORD w0, BOOL b1, LPCSTR s2)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI HANDLE WINAPI OpenFileMappingW(DWORD w0, BOOL b1, LPCWSTR s2)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+
+WINBASEAPI BOOL WINAPI ReadFile(
+	HANDLE h0, PVOID p1, DWORD w2, PDWORD w3, LPOVERLAPPED a4)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI ReadFileEx(
+	HANDLE h0, PVOID p1, DWORD w2, LPOVERLAPPED a3, 
+	LPOVERLAPPED_COMPLETION_ROUTINE a4)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI ReadFileScatter(
+	HANDLE h0, FILE_SEGMENT_ELEMENT *a1,
+	DWORD w2, LPDWORD w3, LPOVERLAPPED a4)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+
+#if (_WIN32_WINNT >= 0x0502)
+WINBASEAPI HANDLE WINAPI ReOpenFile(HANDLE h0, DWORD w1, DWORD w2, DWORD w3)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+#endif
+
+#if (_WIN32_WINNT >= 0x0500)
+WINBASEAPI BOOL WINAPI ReplaceFileA(
+	LPCSTR s0, LPCSTR s1, LPCSTR s2, DWORD w3, LPVOID p4, LPVOID p5)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI ReplaceFileW(
+	LPCWSTR s0, LPCWSTR s1, LPCWSTR s2, DWORD w3, LPVOID p4, LPVOID p5)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+#endif
+
+WINBASEAPI BOOL WINAPI SetEndOfFile(HANDLE h0)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+
+WINBASEAPI VOID WINAPI SetFileApisToANSI(void)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI VOID WINAPI SetFileApisToOEM(void)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI SetFileAttributesA(
+	LPCSTR s0, DWORD w1)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI SetFileAttributesW(
+	LPCWSTR s0, DWORD w1)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI DWORD WINAPI SetFilePointer(
+	HANDLE h0, LONG w1, PLONG w2, DWORD w3)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI SetFilePointerEx(
+	HANDLE h0, LARGE_INTEGER w1, PLARGE_INTEGER w2, DWORD w3)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI SetFileSecurityA(
+	LPCSTR s0, SECURITY_INFORMATION a1, PSECURITY_DESCRIPTOR a2)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI SetFileSecurityW(
+	LPCWSTR s0,
+	SECURITY_INFORMATION a1, PSECURITY_DESCRIPTOR a2)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+#if (_WIN32_WINNT >= 0x0501)
+WINBASEAPI BOOL WINAPI SetFileShortNameA(HANDLE h0, LPCSTR s1)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI SetFileShortNameW(HANDLE h0, LPCWSTR s1)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+#endif
+
+WINBASEAPI BOOL WINAPI SetFileTime(
+	HANDLE h0, const FILETIME *h1, const FILETIME *h2, const FILETIME *h3)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+
+#if (_WIN32_WINNT >= 0x0501)
+WINBASEAPI BOOL WINAPI SetFileValidData(HANDLE h0, LONGLONG w1)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+#endif
+
+WINBASEAPI BOOL WINAPI SystemTimeToFileTime(
+	const SYSTEMTIME *h0, LPFILETIME h1)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+
+WINBASEAPI BOOL WINAPI UnlockFile(
+	HANDLE h0, DWORD w1, DWORD w2, DWORD w3, DWORD w4)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI UnlockFileEx(
+	HANDLE h0, DWORD w1, DWORD w2, DWORD w3, LPOVERLAPPED w4)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+
+WINBASEAPI BOOL WINAPI UnmapViewOfFile(LPCVOID p0)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+
+WINBASEAPI BOOL WINAPI WriteFile(
+	HANDLE h0, PCVOID p1, DWORD w2, PDWORD w3, LPOVERLAPPED a4)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI WriteFileEx(
+	HANDLE h0, PCVOID p1, DWORD w2,
+	LPOVERLAPPED a3, LPOVERLAPPED_COMPLETION_ROUTINE a4)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI WriteFileGather(
+	HANDLE h0, FILE_SEGMENT_ELEMENT *h1,
+	DWORD w2, LPDWORD w3, LPOVERLAPPED a4)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI long WINAPI _hread(HFILE a0,  LPVOID a1,  long a2)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI long WINAPI _hwrite(HFILE a0, LPCSTR a1, long a2)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI HFILE WINAPI _lclose(HFILE a0)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI HFILE WINAPI _lcreat(LPCSTR a0, int a1)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI LONG WINAPI _llseek(HFILE a0, LONG a1, int a2)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI HFILE WINAPI _lopen(LPCSTR a0, int a1)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI UINT WINAPI _lread(HFILE a0, LPVOID a1, UINT a2)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI UINT WINAPI _lwrite(HFILE a0, LPCSTR a1, UINT a2)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+

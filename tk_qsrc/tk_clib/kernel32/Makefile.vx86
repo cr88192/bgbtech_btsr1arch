@@ -1,0 +1,75 @@
+# This is the makefile for Win32 to build pdpclib using
+# the gcc compiler.
+#
+# The makefile uses spaces, which are normal for Windows
+# users, and Borland make, Microsoft nmake and others are
+# happy to accept them. If you are using Cygwin or a make
+# that unfortunately requires tabs, then simply edit this
+# file, change all spaces to tabs, and it will work, even
+# if the resultant file looks a bit silly.
+
+CC=gcc
+# COPTS= -g -c -O2 -D__VX86__ -D__PDPCLIB_DLL -I. -I../include -I../../include
+COPTS= -g -Iinclude -I. -I../include -I../../include
+# LDOPTS=-Wl,--out-implib,libkernel32.a -Wl,--export-all-symbols \
+#		-L.. -lvxcore
+LDOPTS=-Wl,--out-implib,libkernel32.a -Wl,--enable-stdcall-fixup \
+		-L.. -lvxcore
+# LDOPTS=-Wl,--out-implib,libkernel32.a \
+#		-L.. -lvxcore
+
+SRCS = \
+	basestub/k32_api.c \
+	basestub/k32_api2.c \
+	basestub/k32_api2_c.c \
+	basestub/k32_api2_d.c \
+	basestub/k32_api2_e.c \
+	basestub/k32_api2_f.c \
+	basestub/k32_api2_g.c \
+	basestub/k32_api2_i.c \
+	basestub/k32_api2_l.c \
+	basestub/k32_api2_mn.c \
+	basestub/k32_api2_o.c \
+	basestub/k32_api2_pq.c \
+	basestub/k32_api2_r.c \
+	basestub/k32_api2_s.c \
+	basestub/k32_console.c \
+	basestub/k32_directory.c \
+	basestub/k32_file.c \
+	basestub/k32_global.c \
+	basestub/k32_heap.c \
+	basestub/k32_local.c \
+	basestub/k32_lstr.c \
+	basestub/k32_module.c \
+	basestub/k32_mutex.c \
+	basestub/k32_thread.c \
+	basestub/k32_toolhelp.c \
+	basestub/k32_winnls.c \
+	basestub/k32_winver.c \
+	basestub/k32_virtualalloc.c \
+	\
+	kernel32.def
+
+all: includes libs apps
+
+includes:
+libs: kernel32.dll
+apps: 
+
+kernel32.dll: $(SRCS)
+	gcc -s -nostdlib -shared -o kernel32.dll $(SRCS) \
+		 $(COPTS) $(LDOPTS)
+#	ar -cr libpdpclib.a $(OBJS)
+
+# w32start.o: w32start.c
+#	gcc -c -nostdlib -o w32start.o w32start.c $(COPTS)
+
+# pdptest.exe: libpdpclib.a pdptest.o crt0.o
+#	gcc -s -nostdlib -o pdptest.exe pdptest.o crt0.o -L.. -lvxcore
+
+.c.o:
+	$(CC) $(COPTS) $<
+
+%.obj: %.asm
+	nasm -f win32 -o $@ $<
+

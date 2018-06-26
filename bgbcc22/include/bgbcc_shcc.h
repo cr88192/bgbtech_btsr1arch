@@ -486,6 +486,18 @@
 #define BGBCC_SH_NMID_CMOVFL		0xA6	//CMOVF.L
 #define BGBCC_SH_NMID_CMOVFQ		0xA7	//CMOVF.Q
 
+#define BGBCC_SH_NMID_FLDCF			0xA8	//
+#define BGBCC_SH_NMID_FLDCD			0xA9	//
+#define BGBCC_SH_NMID_FLDCI			0xAA	//
+#define BGBCC_SH_NMID_FLDCH			0xAB	//
+#define BGBCC_SH_NMID_FSTCF			0xAC	//
+#define BGBCC_SH_NMID_FSTCD			0xAD	//
+#define BGBCC_SH_NMID_FSTCI			0xAE	//
+#define BGBCC_SH_NMID_FSTCH			0xAF	//
+#define BGBCC_SH_NMID_FRCPA			0xB0	//
+#define BGBCC_SH_NMID_FSQRTA		0xB1	//
+#define BGBCC_SH_NMID_FRCP			0xB2	//
+
 #define BGBCC_SH_NMID_MOVI			0xC0	//
 #define BGBCC_SH_NMID_MOVIV			0xC1	//
 #define BGBCC_SH_NMID_PREF			0xC2	//
@@ -638,7 +650,9 @@
 											//OOxx_OOxx
 #define BGBCC_SH_RLC_RELW20_BJX		0x0F	//Relative 20 bit (WORD, BJX1)
 #define BGBCC_SH_RLC_REL24_BJX		0x10	//Relative 24 bit (BYTE, BJX1)
+											//OOxx_xxxx
 #define BGBCC_SH_RLC_REL24B_BJX		0x11	//Relative 24 bit (BYTE, BJX1, Rev)
+											//OOxx_xxxx
 #define BGBCC_SH_RLC_RVA32			0x12	//RVA (DWORD)
 #define BGBCC_SH_RLC_RELW24_BJX		0x13	//Relative 24 bit (WORD, BJX1)
 											//OOxx_xxxx
@@ -663,6 +677,9 @@
 											//Oxxx_OOxx_OOOx
 #define BGBCC_SH_RLC_RELW32D_BSR	0x22	//Relative 24 bit (WORD, BSR1)
 											//Oxxx_OOxx_OOxx_OOOx
+
+#define BGBCC_SH_RLC_RELW32C_BSR	0x23	//Relative 32 bit (BYTE, BSR1)
+											//OOxx_OOxx_OOxx_OOxx
 
 #define BGBCC_SH_RLC_ABSW16B_BSR	0x24	//Absolute BYTE
 											//Oxxx_OOOx
@@ -709,6 +726,8 @@
 #define BGBCC_SH_REGCLS_VO_QGR	10	//value object pass in Quad GPR
 #define BGBCC_SH_REGCLS_VO_QGR2	11	//value object pass in Quad GPR pair
 #define BGBCC_SH_REGCLS_WGR		12	//Uses GPR, 16-bit storage
+
+#define BGBCC_SH_REGCLS_DR		13	//uses a FR
 
 
 #define BGBCC_SH_FPSCR_DN		0x00040000	//
@@ -764,7 +783,7 @@
 /*
 Memory Models
 Default:
-	Text/Data/BSS range: 24b (+/- 8MB)
+	Text/Data/BSS range: 16MB
 	Address Space: Full 32/64
 
 Tiny16:
@@ -773,12 +792,28 @@ Tiny16:
 
 Small24:
 	Assume Text/Data/BSS range of 64kB.
+	Data/BSS range is 24 bits,
 	Address Space: 24 bit
+
+Medium24:
+	Assume Text/Data/BSS range of 16MB.
+	Address Space: 24 bit
+
+Medium32:
+	Assume Text/Data/BSS range of 16MB.
+	Address Space: 32 bit
+
+Large32:
+	Assume Text/Data/BSS range of 4GB.
+	Address Space: 32 bit.
 */
 
 #define BGBCC_MEMMDL_DEFAULT		0	//Default
-#define BGBCC_MEMMDL_TINY16			1	//64K
-#define BGBCC_MEMMDL_SMALL24		2	//64K+16MB
+#define BGBCC_MEMMDL_TINY16			1	//64KB
+#define BGBCC_MEMMDL_SMALL24		2	//64KB+16MB, 16MB
+#define BGBCC_MEMMDL_MEDIUM24		3	//16MB+16MB, 16MB
+#define BGBCC_MEMMDL_MEDIUM32		4	//16MB+16MB, 4GB
+#define BGBCC_MEMMDL_LARGE32		4	//4GB+4GB, 4GB
 
 #define BGBCC_SHX_GenLabelTemp(ctx)		\
 	BGBCC_SHX_GenLabelTempLLn(ctx, __FILE__, __LINE__)
@@ -1032,6 +1067,9 @@ int eprhash_lbl[1024];
 int opcnt_hi8[256];
 int opcnt_3xx[256];
 int n_opcnt_3xx;
+
+int opcnt_f0xx[256];
+int opcnt_opw1;
 };
 
 /*

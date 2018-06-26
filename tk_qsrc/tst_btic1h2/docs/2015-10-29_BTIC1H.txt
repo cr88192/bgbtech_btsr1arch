@@ -1,0 +1,938 @@
+General idea here is that encoder will work with blocks of 16 pixels at a time, likely using some internal variables and a state-machine to determine what to emit, as well as memory for up to N intermediate blocks (though, working a single block at a time would be possible, and a decoder should not need a multi-block memory for static images or I-frames).
+
+Note that it should be possible to drive most of the block encoding choices with arithmetic-based heuristics.
+
+For encoding or decoding video, it will be necessary to keep a block-buffer for the current and prior frames.
+
+
+It is blocky VQ mapped to a bitstream, and encoding values as adaptive rice-coded deltas.
+A linear quantizer will be used.
+
+Will reuse the same packaging from other BTIC variants ([[BTIC_CTLV]]):
+* 0xE1, len:Word24, data:byte[len] (Image Data)
+
+Standalone image files may use a DIB/BMP header with biCompression set to 'bt1h', but the frames will still contain at least the Image Data marker.
+
+Similar goes for embedding in AVI.
+
+Embedding in [[BTEMP]] will use 'VS1H'.
+* Possibly allow AVI stream to have a series of 'VS1H' chunks, making it easier to direct-record from robot stream.
+* Alternately, repack blocks from current MB2 buffer.
+
+Currently, BTIC1H will not define use of an Alpha channel, but this may be added as a future extension.
+
+
+== Basic TLV Format ==
+
+For the top-level structure, a TLV format will be used.
+This may be used for headers or extensions or other things.
+
+Lengths are big-endian, and will include the length of the chunk header.
+
+Tag Bytes:
+* 0xE0: End-Of-Image Marker
+* 0xE1: len=Word24, Image Data
+* 0xE2: len=Byte, Image Data
+* 0xE3: len=Word24, tag=TWOCC
+* 0xE4: len=Word24, tag=FOURCC
+* 0xE5: len=Byte, tag=TWOCC
+* 0xE6: len=Word56, tag=FOURCC
+
+Change:
+* E1 and E2 will be encode an image in the current ImageMode.
+** Image mode will default to 0, and may be specified for I-Frames.
+* E3 and E5,'I#', where # is 0-9, gives an image as an image mode.
+** Encoding an I-Frame in this mode will change the current mode.
+*** This is undefined for P-Frames.
+** I0 is the default mode.
+** I1 uses extended sub-headers and SMTF-only commands.
+*** Image mode 1 may be either a raw bitstream or a range-coded bitstream.
+
+
+For Image Mode 1, extended sub headers are used prior to beginning the bitstream.
+
+This consists of a small 8-bit init header.
+* X-NNN-TTTT
+* X indicates if extended headers follow.
+* NNN: Depends on TTTT (MBZ for Type=0)
+* TTTT: Gives the type of bitstream.
+** 0: Raw bitstream with SMTF-only commands.
+** 1: Use a bitwise range coder.
+
+If extended headers follow, the format is used:
+* X-LLL-TTTT
+** X=More tags follow.
+** LLL=Length of header (1-7 bytes)
+** TTTT=Header Tag (1-15)
+
+For extended headers, both length and tag of 0 are escape codes, and a VLI length or tag will follow. Extended headers are reserved for cases that relate to the format of the bitstream, and as such will depend on the type of bitstream used. As such, an unrecognized extended header means the frame should be rejected.
+
+If both an explicit length and tag are used, then the length will precede the tag.
+
+The length encodes the full size of the header (includes tag byte, as well as the explicit tag and length fields, in addition to any payload data).
+
+
+Ext Header 1:
+* Sliced Image
+* Contents are a VLI encoding the number of scanlines per slice.
+* If zero or absent, slices are not used, and the whole image is a single bitstream.
+* The value is stored divided by 4. As such, the value is required to be a multiple of 4.
+
+Ext Header 2:
+* Colorspace
+* Bits 0-2: Color Transform
+** 0=Default/YCbCr
+** 1=CheapYUV
+** 2=GDbDr
+* Bits 3-5: Bit depth
+** 0=8-bit LDR
+** 1=10-bit LDR
+** 2=12-bit LDR
+** 3=16-bit HDR
+
+
+VLI (Unsigned, 32-bit)
+ 00-7F         00000000-0000007F
+ 80-BF XX      00000080-00003FFF
+ C0-DF XX(x2)  00004000-001FFFFF
+ E0-EF XX(x3)  00200000-0FFFFFFF
+ F0    XX(x4)  10000000-FFFFFFFF
+
+Overlong encodings are allowed in most cases.
+
+
+== Bitstream ==
+
+Bitstream will be encoded in MSB first order.
+
+
+AdRice:
+* Will have a unary prefix (Q) of zero or more 1 bits, terminated by a 0 bit.
+* This will be followed by a k bit suffix (j).
+** Value=(Q SHL k)|j;
+* Q will adjust k:
+** 0: if(k GT 0)k=k-1;
+** 1: k is unchanged.
+** 2+: k=k+log2(Q).
+
+Here, AdRice contexts will start with an initial Rk value of 2 unless otherwise specified.
+Rk will have a maximum value of 15, and a minimum value of 0.
+
+Signed Rice values (AdSRice) will have the sign folded into the LSB (0, -1, 1, -2, 2, ...).
+
+
+=== Color Points ===
+
+Colorspaces:
+* YCbCr, with sample-points ranging from 0 to 255.
+* CheapYUV:
+** Y=(2*G+B+R) SHR 2
+** U=((B-Y) SHR 1)+128
+** V=((R-Y) SHR 1)+128
+** B'=Y+((U-128) SHL 1)
+** R'=Y+((V-128) SHL 1)
+** G'=(4*Y-B-R) SHR 1
+* GDbDr:
+** Y=G
+** U=((B-G) SHR 1)+128
+** V=((R-G) SHR 1)+128
+** B'=Y+((U-128) SHL 1)
+** G'=Y
+** R'=Y+((V-128) SHL 1)
+
+
+Color-points are represented mostly as YUVD, YUV encoding the center color, and D the difference between the brightest and darkest colors along the Y axis:
+* Ya=Y-(D SHR 1), Yb=Yb+D
+* ColorA=(Ya, U, V)
+* ColorB=(Yb, U, V)
+
+Secondary color points could encode a full set of YUV deltas:
+* Ya=Y-(Dy SHR 1), Yb=Yb+Dy
+* Ua=U-(Du SHR 1), Ub=Ub+Du
+* Va=V-(Dv SHR 1), Vb=Vb+Dv
+* ColorA=(Ya, Ua, Va)
+* ColorB=(Yb, Ub, Vb)
+
+
+As part of decoding a block:
+* YUVD:
+** Y'=Y+(DeltaY*QfDeltaY)
+** U'=U+(DeltaU*QfDeltaUV)
+** V'=V+(DeltaV*QfDeltaUV)
+** D'=D+(DeltaD*QfDeltaD)
+* YUVDyuv:
+** Y'=Y+(DeltaY*QfDeltaY)
+** U'=U+(DeltaU*QfDeltaUV)
+** V'=V+(DeltaV*QfDeltaUV)
+** Dy'=Dy+(DeltaDy*QfDeltaDy)
+** Du'=Du+(DeltaDu*QfDeltaDuv)
+** Dv'=Dv+(DeltaDv*QfDeltaDuv)
+
+YUVD will have an allowed range of 0 to 255.
+An encoder may not allowed these values to go outside this range.
+
+Dyuv will have an allowed range of -256 .. 255, but with the requirement that the resultant YUV values (after calculating the color endpoints) are required to fall in the range of 0 to 255.
+
+The valid ranges will be different for HDR.
+
+
+The results of going out of range are undefined.
+* A decoder may, but is not required to, implement range clamping.
+* An encoder may not assume the use of modular arithmetic here.
+* Likewise, out of gamut colors are not allowed.
+
+The use of YUVD or YUVDyuv will be two separate color sub-modes. Blocks which use one or another will change the current sub-mode, and may effect the subsequent interpretation of certain block types. Raw YUV will be neutral, and will not effect the current mode. YUVD will be the default mode.
+
+
+Delta Color:
+* DeltaYUV: 3 AdSRice coded deltas (dY, dU, dV).
+* DeltaYUVD: 4 AdSRice coded deltas (dY, dU, dV, dD).
+* DeltaYUVDyuv: 6 AdSRice coded deltas (dY, dU, dV, dDy, dDu, dDv).
+* Deltas will be sign-folded, so good old: 0, -1, 1, -2, 2, ... sequence.
+
+Absolute Color:
+* AbsYUV: AdSRice coded YUV
+* AbsYUVD: AdSRice coded YUVD
+* AbsYUVDyuv: AdSRice coded YUVDyuv
+* Absolute colors YUV will be stored as a signed value relative to 128.
+* Absolute D, and Dyuv values will be stored as a signed value relative to 0.
+
+Quantization Factors:
+* QfDeltaYUVD: 3 AdRice quantization factors (QfDeltaY, QfDeltaUV, QfDeltaD)
+* QfDeltaYUVDyuv: 4 AdRice quantization factors (QfDeltaY, QfDeltaUV, QfDeltaDy, QfDeltaDuv)
+* QfAbsYUV*: Similar, but for the absolute quantization factors (QfAbs)
+
+
+HDR:
+* HDR will use a 16-bit Half-Float space.
+* The value range for HDR will be +/- 32768 for YUV.
+* D and Dyuv will have a range of +/- 65536.
+* Positive values will map to 0..32767
+* Negative values will map to -32768..-1 (ones complement).
+* Values over +/- 31744 will be in the Inf/NaN space.
+** NaN values will be used for escape codes.
+
+LDR-12:
+* Will use the same block format as HDR
+* Values will be represented as signed twos complement integer values.
+** Will map 0.0 maps to 0, and 1.0 maps to 32767.
+* LDR-10 and LDR-12 will be for the most part treated as equivalent.
+** Low-order bits are discarded from the result to fit the value in range.
+
+
+=== Pixel Blocks ===
+
+BTIC1H is essentially an advanced case of Color Cell Compression.
+
+Pixel-blocks will be represented as XxY pixels, which would typically be 2 bits each, ex:
+* 00=ColorA
+* 01=2/3 ColorA + 1/3 ColorB
+* 10=1/3 ColorA + 2/3 ColorB
+* 11=ColorB
+
+With 2bpp block formats:
+* PixelBlock2x2: grid of 2x2 pixels, 8 bits
+* PixelBlock2x1: grid of 2x1 pixels (left, right), 4 bits
+* PixelBlock1x2: grid of 1x2 pixels (up, down), 4 bits
+* PixelBlock4x4: grid of 4x4 pixels, 32 bits
+* PixelBlock4x2: grid of 4x2 pixels (reduced vertical), 16 bits
+* PixelBlock2x4: grid of 2x4 pixels (reduced horizontal), 16 bits
+* PixelBlock4x4_UV2x2: grid of 4x4 pixels + 2x 2x2, 48 bits
+* PixelBlock4x4_UV2x4: grid of 4x4 pixels + 2x 2x4, 64 bits
+
+
+A 1bpp case will exist:
+* 0=ColorA
+* 1=ColorB
+* PixelBlock2x2x1: grid of 4 1bpp pixels, 4 bits
+* PixelBlock4x4x1: grid of 16 1bpp pixels, 16 bits
+
+A 3bpp case will also exist:
+* 0=ColorA
+* 1=6/7 ColorA + 1/7 ColorB
+* 2=5/7 ColorA + 2/7 ColorB
+* 3=4/7 ColorA + 3/7 ColorB
+* 4=3/7 ColorA + 4/7 ColorB
+* 5=2/7 ColorA + 5/7 ColorB
+* 6=1/7 ColorA + 6/7 ColorB
+* 7=ColorB
+
+The 4x4x3 block type will require 48 bits for pixel data.
+* PixelBlock4x4x3: grid of 4x4x3 pixels, 48 bits
+* PixelBlock4x4x3_UV2x2: grid of 4x4x3 pixels + 2x 2x2, 64 bits
+* PixelBlock4x4x3_UV2x4: grid of 4x4x3 pixels + 2x 2x4, 80 bits
+* PixelBlock4x4x3_UV4x4: grid of 4x4x3 pixels + 2x 4x4, 112 bits
+
+
+A few blocks will use Hilbert Order:
+ 4x4:
+  0  1  2  3
+  4  5  6  7
+  8  9 10 11
+ 12 13 14 15
+ Becomes: 0, 1, 5, 4, 8, 12, 13, 9, 10, 14, 15, 11, 7, 6, 2, 3
+
+ 2x2:
+ 0 1
+ 2 3
+ Becomes: 0 2 3 1
+
+
+=== Initial State ===
+
+Most Rice k factors will be per-variable (with initial values):
+*  AdRice,Rk(CmdRIdx)=2 (Command Indices)
+*  AdRice,Rk(CmdAbs)=4 (Absolute Commands)
+*  AdRice,Rk(CmdCnt)=2 (RunCount)
+*  AdRice,Rk(MaskIdx)=2 (Mask Index)
+*  AdSRice,Rk(ParmXY)=2 (X/Y Offset)
+*  AdSRice,Rk(ParmVar)=2 (Parameter Variable, Feature ID)
+*  AdSRice,Rk(ParmVal)=2 (Parameter Value)
+*  Ad*Rice,Rk(ParmIx)=2 (Parameter Value-Count, Index)
+*  AdSRice,Rk(DeltaY)=2 (Delta Y)
+*  AdSRice,Rk(DeltaUV)=2 (Delta U and V)
+*  AdSRice,Rk(DeltaDy)=2 (Delta D and Dy)
+*  AdSRice,Rk(DeltaDuv)=2 (Delta Du and Dv)
+*  AdSRice,Rk(AbsY)=5 (Absolute Y)
+*  AdSRice,Rk(AbsUV)=5 (Absolute U and V)
+*  AdSRice,Rk(AbsDy)=5 (Absolute D and Dy)
+*  AdSRice,Rk(AbsDuv)=5 (Absolute Du and Dv)
+*  AdSRice,Rk(QfY)=3 (Quantization Factor, Y)
+*  AdSRice,Rk(QfUV)=3 (Quantization Factor, UV)
+*  AdSRice,Rk(QfDy)=3 (Quantization Factor, Dy)
+*  AdSRice,Rk(QfDuv)=3 (Quantization Factor, Duv)
+
+Initial color values will be 0.
+Initial Qf values will be 1.
+
+ParmIx: AdSRice for ParmIndex, AdRice for ParmCount.
+
+The command table will start with its contents initially undefined.
+
+
+=== Commands ===
+
+C(XX), expresses a logical command number in Hex.
+
+Image Mode 0:
+* CmdRIdx encoded as AdRice
+** 0: Followed by CmdAbs, which encodes an absolute command number.
+** 1..256: Repeat a prior command (encodes RIdx 0..255).
+
+The RIdx is an index into a 256-entry rotating table of commands:
+* RIdx=0: Use command at index 0, table is unchanged.
+* (Drop) RIdx=1..255: Use command at entry RIdx, Swap entries RIdx and RIdx-1.
+* (New) RIdx=1..31: Use command at entry RIdx, Swap entries RIdx and RIdx-1.
+* (New) RIdx=32..255: Rotate back one place and swap new 0 and old RIdx.
+
+CmdAbs (Image Mode 0 Only):
+* Table rotates back 1 place, command added to front of table.
+* Initial contents of the table are undefined and may not be used.
+* If the command exists at a prior location in the table, a hole is created.
+** A value may fall off the end, but is swapped into the hole.
+
+RunCount will be AdRice, with 0 as a reserved value.
+
+
+In ImageMode 1, A different command coding will be used (SMTF).
+* 0..255 will give RIdx
+* Only RIdx will be used (CmdAbs may not be encoded).
+
+
+Commands:
+* C(00) DeltaYUV
+** delta flat-color block.
+
+* C(01) DeltaYUVD, Pixblock2x2
+** Delta 2x2 block.
+
+* C(02) DeltaYUVD, Pixblock2x1
+* C(03) DeltaYUVD, Pixblock1x2
+** 2x1 and 1x2 blocks.
+
+* C(04) QfDeltaYUVD
+** Update delta quantization factors.
+
+* C(05) DeltaYUVD, Pixblock4x4
+* C(06) DeltaYUVD, Pixblock4x2
+* C(07) DeltaYUVD, Pixblock2x4
+** color and pixel-blocks
+
+* C(08) QfDeltaYUVDyuv
+** Update delta quantization factors.
+
+* C(09) DeltaYUVDyuv, Pixblock4x4
+* C(0A) DeltaYUVDyuv, Pixblock4x2
+* C(0B) DeltaYUVDyuv, Pixblock2x4
+** Color and pixel-blocks (but with more endpoints)
+
+* C(0C) AbsYUVD, Pixblock2x2 (Deprecated)
+* C(0D) AbsYUVD, Pixblock4x4 (Deprecated)
+* C(0E) AbsYUVDyuv, Pixblock2x2 (Deprecated)
+* C(0F) AbsYUVDyuv, Pixblock4x4 (Deprecated)
+** AbsYUV blocks.
+** This case is to be replaced by explicit Abs color points.
+
+* C(10) RunCount
+** Run of blocks repeating a single color.
+
+* C(11) RunCount, PixelBlock2x2*RunCount
+* C(12) RunCount, PixelBlock2x1*RunCount
+* C(13) RunCount, PixelBlock1x2*RunCount
+** Run of blocks with reusing prior color.
+** Note: YUVD or YUVDyuv depending on prior block.
+
+* C(14) QfAbsYUVD
+** Update absolute quantization factors.
+
+* C(15) RunCount, PixelBlock4x4*RunCount
+* C(16) RunCount, PixelBlock4x2*RunCount
+* C(17) RunCount, PixelBlock2x4*RunCount
+** Run of blocks with reusing prior color.
+** Note: YUVD or YUVDyuv depending on prior block.
+
+* C(18) QfAbsYUVDyuv
+** Update absolute quantization factors.
+
+* C(19) RunCount, PixelBlock2x2x1*RunCount
+* C(1A) RunCount, PixelBlock4x4x1*RunCount
+** Run of blocks with reusing prior color (1bpp).
+
+* C(1B) RunCount, DeltaYUV*RunCount
+** Run of flat-color blocks.
+
+* C(1C) DeltaYUV*4 (Deprecated)
+**  Logical 4:2:0, 2x2 with 1 color per pixel
+**  Colors are encoded in Hilbert(2x2) order
+* C(1D) DeltaYUVD*4, Pixblock4x4 (Deprecated)
+**  Logical 4:2:0, 4x4 consisting of 2x2 sub-blocks
+**  Colors are encoded in Hilbert(2x2) order
+* C(1E) DeltaYUV*16 (Deprecated)
+**  Logical 4:4:4, 4x4 with 1 color per pixel
+**  Pixels are encoded in Hilbert(4x4) order
+**  Note: Non-Alpha Only
+* C(1F) AbsYUV*16 (Deprecated)
+**  Logical 4:4:4, 4x4 with 1 color per pixel
+**  Pixels are encoded in Hilbert(4x4) order
+**  Note: Non-Alpha Only
+
+* C(20) End Of Data
+** Logical end of bitstream data. For multi-segment images, indicates the end of the current segment.
+** Any subsequent data in the message lump is to be ignored.
+
+* C(21) RunCount
+** Skip, Blocks are copied from the prior frame
+* C(22) RunCount, XOffset, YOffset
+** Skip+Translate, Blocks are copied from the prior frame.
+** Offsets indicate the source position in blocks relative to the current block.
+** Referenced blocks may not fall outside the bounds of the current image frame.
+** Blocks will be seen as they were in the previous frame.
+
+
+* C(23), Var, Val
+** Set Parameter (Signed Integer)
+* C(24), Var, IxB, ParmCount, Val[ParmCount]
+** Set Parameter (Signed Int Vector)
+* C(25), Reserved
+
+* C(26), FlagID
+** Enable Feature Flag
+* C(27), FlagID
+** Disable Feature Flag
+
+* C(28) RunCount, (DeltaYUVD, Pixblock2x2)*RunCount
+* C(29) RunCount, (DeltaYUVDyuv, Pixblock2x2)*RunCount
+** Delta 2x2 gradient blocks.
+** Pixel blocks give values at the corners, with the intermediate pixels being interpolated.
+
+* C(2A) DeltaYUVD, PixelBlock4x4x1
+* C(2B) DeltaYUVD, PixelBlock2x2x1
+** 2x2x1 and 4x4x1 blocks.
+
+* C(2C) DeltaYUVD, Pixblock4x4x3
+** Pixel Block 4x4x3
+* C(2D) DeltaYUVDyuv, Pixblock4x4x3
+** Pixel Block 4x4x3
+
+* C(2E) DeltaY*16, DeltaUV*4
+**  Logical 4:2:0, Pixels are delta-coded, with Y and UV in Hilbert order.
+**  Note: Non-Alpha Only
+**  Deprecate?
+* C(2F) AbsY*16, AbsUV*4
+**  Logical 4:2:0, Pixels are absolute, with Y and UV in Hilbert order.
+**  Note: Non-Alpha Only
+**  Deprecate?
+
+* C(30) DeltaYUVDyuv, Pixblock4x4_UV2x2
+**  Logical 4:2:0, 4x4 Y block followed by 2x2 U and V sub-blocks
+**  Y, U, and V are interpolated separately.
+* C(31) DeltaYUVDyuv, Pixblock4x4x3_UV4x4
+**  Logical 4:4:4, 4x4x3 Y block followed by 4x4x2 U and V sub-blocks
+**  Y, U, and V are interpolated separately.
+* C(32) DeltaYUVDyuv, Pixblock4x4x3_UV2x2
+**  Logical 4:2:0, 4x4x3 Y block followed by 2x2 U and V sub-blocks
+**  Y, U, and V are interpolated separately.
+* C(33) DeltaYUVDyuv, Pixblock2x2_UV2x2
+**  Logical 4:2:0, 2x2 Y block followed by 2x2 U and V sub-blocks
+**  Y, U, and V are interpolated separately.
+
+* C(34) RunCount, PixelBlock4x4_UV2x2*RunCount
+** Separately interpolated YUV.
+** YUVDyuv only.
+* C(35) RunCount, PixelBlock4x4x3_UV4x4*RunCount
+** Separately interpolated YUV.
+** YUVDyuv only.
+* C(36) RunCount, PixelBlock4x4x3_UV2x2*RunCount
+** Separately interpolated YUV.
+** YUVDyuv only.
+* C(37) RunCount, PixelBlock2x2_UV2x2*RunCount
+** Separately interpolated YUV.
+** YUVDyuv only.
+
+* C(38) DeltaYUVDyuv, Pixblock4x4_UV2x4
+**  Logical 4:2:2, 4x4 Y block followed by 2x4 U and V sub-blocks
+* C(39) DeltaYUVDyuv, Pixblock4x4x3_UV2x4
+**  Logical 4:2:2, 4x4x3 Y block followed by 2x4x2 U and V sub-blocks
+* C(3A) DeltaYUVDyuv, Pixblock4x4x3_UV2x4x3
+**  Logical 4:2:2, 4x4x3 Y block followed by 2x4x3 U and V sub-blocks
+* C(3B)
+
+* C(3C) RunCount, PixelBlock4x4_UV2x4*RunCount
+** Separately interpolated YUV.
+** YUVDyuv only.
+* C(3D) RunCount, PixelBlock4x4x3_UV2x4*RunCount
+** Separately interpolated YUV.
+** YUVDyuv only.
+* C(3E) RunCount, PixelBlock4x4x3_UV2x4x3*RunCount
+** Separately interpolated YUV.
+** YUVDyuv only.
+* C(3F)
+
+* C(40) AbsYUVD
+* C(41) AbsYUVDyuv
+** Absolute Color Point
+
+
+=== Parameters and Feature Flags ===
+
+ParmVar and FlagID:
+* Values greater than 0 are optional / hints.
+** An unknown value here is ignored.
+* Values less than 0 indicate features which change the bitstream.
+** An unrecognized value here will abort decoding.
+
+ParmVar(-1)
+* Stream Version (0)
+* Indicates the major version of the bitstream.
+
+ParmVar(-2)
+* YUVD Color Delta Predictor
+* 0: Default, Use last color.
+* -1: Use half-linear prediction.
+** P=(3A-B)>>1;
+* -2: Use linear prediction.
+** P=2A-B;
+* When changing from mode 0, the last color will be assigned to B.
+* Absolute color points will set both the current and last color.
+
+FlagID(-1): Enable DeltaYUV, DeltaYUVD, and DeltaYUVDyuv update masks.
+* If enabled, a mask update may precede color-point delta updates.
+** Enabling the mask initially sets all components active.
+** It is no-op if already enabled.
+** This mask indicates which of the encoded components are encoded.
+* If disabled, no mask update is encoded, and components are always encoded.
+
+FlagID(-2): Enable AbsYUV, AbsYUVD, and AbsYUVDyuv update masks.
+* Basically the same, but applies to Abs events.
+** Will share the same mask table state as Delta events.
+** However, it will have its own mask state.
+* If disabled, no mask update is encoded, and components are always encoded.
+
+
+=== Component Update Mask ===
+
+DeltaYUV, DeltaYUVD, and DeltaYUVDyuv update masks.
+* If enabled, may also apply to AbsYUV, AbsYUVD, and AbsYUVDyuv.
+* Does not apply to DeltaY, DeltaUV, AbsY, or AbsUV.
+
+Enables or disables which components are updated in Delta or Abs events.
+
+A disabled component is treated as 0 for Delta, and thus remains unchanged when a color-point is updated.
+For an Abs event, the prior component value is unchanged.
+
+
+The mask is encoded as an AdRice value:
+* 0, Reuses the current mask value.
+* 1..256: Pull a value from the mask table (Index of 0 to 255).
+
+The mask table works similar to that for Command Codes.
+* If an index is greater than 1, it is swapped with the prior index.
+* Initial table state is values counting down from 255 to 0.
+** Unlike the command-table, there are no absolute masks or holes.
+
+The mask values are laid out as 'xvuD-VUYs'
+* s: Sticky
+** 0=Mask only applies for this color-point.
+** 1=Mask replaces the currently active mask value.
+* YUV: Indicates whether each component is enabled.
+* D: Applies to both the D and Dy components.
+* uv: Applies to Du and Dv
+** 0=Component is Disabled
+** 1=Component is Enabled
+* x: Reserved, currently must be 1.
+
+
+
+=== Alpha Channel ===
+
+Alpha(A) and Diff-Alpha(Da) are the main variables, and work similarly to Y and D.
+
+They will be stored in a separate chunk:
+* TWOCC('AX')
+** Will follow immediately after the Image Data (0xE1) tag.
+
+Note that only Non-Alpha blocks may be used with Raw YUV block formats.
+
+
+Commands:
+* C(00) DeltaA
+** Delta flat-alpha block.
+
+* C(01) DeltaAD, Pixblock2x2
+** Delta 2x2 block.
+
+* C(02) DeltaAD, Pixblock4x4
+** Pixel Block 4x4x2
+
+* C(03) DeltaAD, Pixblock4x4x3
+** Pixel Block 4x4x3
+
+* C(04) QfDeltaAD
+** Update delta quantization factors.
+
+* C(05) DeltaYUVD, PixelBlock4x4x1
+** 4x4x1 blocks.
+
+* C(06) AbsAD, Pixblock2x2
+* C(07) AbsAD, Pixblock4x4
+** Absolute Pixel Block
+
+* C(08) QfAbsAD
+** Update absolute quantization factors.
+
+* C(09) DeltaYUVD, PixelBlock2x2x1
+** 2x2x1 blocks.
+
+* C(0A)
+** Non-Alpha Block
+** A non-alpha block is for a block which does not have an alpha channel.
+** If used with a block which may have an alpha channel, it is interpreted as an opaque block.
+
+* C(0B) RunCount
+** Run of Non-Alpha blocks.
+
+* C(0C) RunCount
+** Run of blocks repeating a single value.
+
+* C(0D) RunCount, PixelBlock2x2*RunCount
+** Run of blocks with reusing prior alpha.
+
+* C(0E) RunCount, PixelBlock4x4*RunCount
+** Run of blocks with reusing prior alpha.
+
+* C(0F) RunCount, PixelBlock4x4x1*RunCount
+** Run of blocks with reusing prior alpha.
+
+* C(10) Reserved
+
+* C(11)
+** Transparent Block
+** Block is fully transparent
+
+* C(12) RunCount
+** Run of transparent blocks.
+
+* C(20) End Of Data
+** Logical end of bitstream data. For multi-segment images, indicates the end of the current segment.
+** Any subsequent data in the message lump is to be ignored.
+* C(21) RunCount
+** Skip, Blocks are copied from the prior frame
+* C(22) RunCount, XOffset, YOffset
+** Skip+Translate, Blocks are copied from the prior frame.
+** Offsets indicate the source position in blocks relative to the current block.
+
+
+=== (Side Info) Metablock2 ===
+
+Metablock is the block representation used internally by the codec.
+It represents an intermediate step between the internal bitstream Encode/Decode process, and the Input/Output framebuffer.
+
+Addition of HDR Mode:
+* Frames may only be HDR or LDR
+* Different blocks will be used between them.
+
+
+Reserve 256 bits.
+
+ A:  Y, U, V, D, Pa,Pb,Pc,Pd,  x, x, x, x,  x, x, x, x,
+     y, y, y, y,  y, y, y, y,  a, a, a, a,  a, a, a, a
+ B:  Y, U, V, 0,  M,Dy,Pc,Pd, Du,Dv,Qe,Qf, Qa,Qb,Qc,Qd,
+     y, y, y, y,  y, y, y, y,  a, a, a, a,  a, a, a, a
+ C:  Y, U, V, 0,  M, D,Pn, x, Y1,U1,V1,d1, Qa,Qb,Qc,Qd,
+    Y2,U2,V2,D2, Y3,U3,V3,D3,  a, a, a, a,  a, a, a, a  
+ D:  Y, U, V, 0,  M, D,Pn, x, U0,U1,U2,U3, V0,V1,V2,V2,
+    Y0,Y1,Y2,Y3, Y4,Y5,Y6,Y7, Y8,Y9,Ya,Yb, Yc,Yd,Ye,Yf
+ E:  Y, U, V, 0,  M,Dy,Pc,Pd, Du,Dv,Qe,Qf, Qa,Qb,Qc,Qd,
+    Sa,Sb,Sc,Sd, Ta,Tb,Tc,Td,  a, a, a, a,  a, a, a, a
+
+ Y,U,V,D: YUV and Diff (Primary Color, 0)
+ Dy/D, Du, Dv: YUV differential values.
+ Yn,Un,Vn,Dn: YUV and Diff (Secondary Color n)
+ Pa,Pb,Pc,Pd: Pixel Data (Primary)
+     Pc, Pd: Pixel Data (4x2, 2x4, 2x2, and 4x4x1 modes).
+ Qe,Qf,Qa,Qb,Qc,Qd: Pixel Data (Secondary)
+ Sa,Sb,Sc,Sd: Pixel Data (Alternate U)
+ Ta,Tb,Tc,Td: Pixel Data (Alternate V)
+ Pn: Partition Number
+ x/y: reserved, MBZ
+ a,a,a,a: alpha block
+
+ d!=0: 4x4x2bpp (A)
+ d==0: Flat or Special
+  M==0: Flat
+  M==1: 2x2x2bpp (B)
+    Pc=Pixel Bits
+  M==2: 4x4x1bpp (B)
+    Pc/Pd=Pixel Bits
+  M==3: Skip (No Translate)
+  M==4: Skip+Translate
+    Pc=Y Offset
+    Pd=X Offset
+
+  M==5: 2x2x1bpp (B)
+    Pc=Pixel Bits
+  M==6: 4x4x3bpp (YUVD, B)
+    Qe/Qf/Qa/Qb/Qc/Qd=Pixel Bits
+  M==7: YUV 4:2:0 (D)
+    Y0..Y15 (16..31), U0..U3 (8..11), V0..V3 (12..15)
+  M==8: 2x1x2bpp (B)
+  M==9: 1x2x2bpp (B)
+    Pc=Pixel Bits
+
+  M==10: 4x2x2bpp (B)
+  M==11: 2x4x2bpp (B)
+    Pc/Pd=Pixel Bits
+  M==12: 4x2x2bpp (YUVDyuv, B)
+  M==13: 2x4x2bpp
+    Pc/Pd=Pixel Bits
+  M==14: 4x4x2bpp (YUVDyuv, B)
+    Qa/Qb/Qc/Qd=Pixel Bits
+  M==15: 4x4x3bpp (YUVDyuv, B)
+    Qa/Qb/Qc/Qd/Qe/Qf=Pixel Bits
+
+  M==16: 4x4x2bpp (YUVDx2, C)
+    Pn=1(Horz), 2(Vert)
+    Qa/Qb/Qc/Qd=Pixel Bits
+  M==17: 4x4x2bpp (YUVDx4, C)
+    Qa/Qb/Qc/Qd=Pixel Bits
+  M==18: 2x2x2bpp (Gradient, B)
+  M==19: 2x2x2bpp (YUVDyuv, B)
+
+  M==20: 4x4x2bpp 4:2:0 (YUVDyuv, B/E)
+    Qa/Qb/Qc/Qd=Pixel Bits (Y, 4x4x2)
+    Qe=Pixel Bits (U, 2x2x2)
+    Qf=Pixel Bits (V, 2x2x2)
+  M==21: 4x4x3bpp 4:4:4 (YUVDyuv, E)
+    Qe/Qf/Qa/Qb/Qc/Qd=Pixel Bits (Y, 4x4x3)
+    Sa/Sb/Sc/Sd=Pixel Bits (U, 4x4x2)
+    Ta/Tb/Tc/Td=Pixel Bits (V, 4x4x2)
+  M==22: 4x4x3bpp 4:2:0 (YUVDyuv, B/E)
+    Qe/Qf/Qa/Qb/Qc/Qd=Pixel Bits (Y, 4x4x3)
+    Pc=Pixel Bits (U, 2x2x2)
+    Pd=Pixel Bits (V, 2x2x2)
+  M==23: 2x2x2bpp 4:2:0 (YUVDyuv, B/E)
+    Pc=Pixel Bits (Y, 2x2x2)
+    Qe=Pixel Bits (U, 2x2x2)
+    Qf=Pixel Bits (V, 2x2x2)
+
+  M==24: 4x4x2bpp 4:2:2 (YUVDyuv, E)
+    Qa/Qb/Qc/Qd=Pixel Bits (Y, 4x4x2)
+    Sa/Sb=Pixel Bits (U, 2x4x2)
+    Ta/Tb=Pixel Bits (V, 2x4x2)
+  M==25: 4x4x3bpp 4:2:2 (YUVDyuv, E)
+    Qe/Qf/Qa/Qb/Qc/Qd=Pixel Bits (Y, 4x4x3)
+    Sa/Sb=Pixel Bits (U, 2x4x2)
+    Ta/Tb=Pixel Bits (V, 2x4x2)
+  M==26: 4x4x3bpp 4:2:2 (YUVDyuv, E)
+    Qe/Qf/Qa/Qb/Qc/Qd=Pixel Bits (Y, 4x4x3)
+    Sb/Sc/Sd=Pixel Bits (U, 2x4x3)
+    Tb/Tc/Td=Pixel Bits (V, 2x4x3)
+  M==27: 4x4x2bpp 4:4:4 (YUVDyuv, E)
+    Qa/Qb/Qc/Qd=Pixel Bits (Y, 4x4x2)
+    Sa/Sb/Sc/Sd=Pixel Bits (U, 4x4x2)
+    Ta/Tb/Tc/Td=Pixel Bits (V, 4x4x2)
+
+
+Alpha Block
+ A: A,D,Pe,Pf, Pa,Pb,Pc,Pd (A-E)
+ B: A,0, D, M, Pa,Pb,Pc,Pd (A-E)
+
+ A=(A0+A1) SHR 1
+ D=A1-A0
+
+ Default mode encodes alpha at 3 bits/pixel.
+  M==0: Non-Alpha
+  M==1: 2x2x2bpp
+    Pc=Pixel Bits
+  M==2: 4x4x1bpp
+    Pc/Pd=Pixel Bits
+  M==3: Skip (No Translate)
+  M==4: Skip+Translate
+    Pc=Y Offset
+    Pd=X Offset
+  M==5: 2x2x1bpp
+    Pb=Diff
+    Pc=Pixel Bits
+  M==6: 4x4x2bpp
+    Pb=Diff
+    Pc=Pixel Bits
+  M==7: Flat
+
+
+HDR Pixel Blocks
+ HA: CY-Cy,DY-Dy, CU-Cu,DU-Du, CV-Cv,DV-Dv, Sa,Sb,Sc,Ta,
+     Tb,Tc,Qe,Qf, Qa,Qb,Qc,Qd,  a, a, a, a,  a, a, a, a
+ HB:  Z- M,CY-Cy, DY-Dy,CU,Cu, DU,Du,CV,Cv, DV,Dv,Sa,Sb,
+     Ta,Tb,Qe,Qf, Qa,Qb,Qc,Qd,  a, a, a, a,  a, a, a, a
+ HC:  Z- M,CY-Cy, DY-Dy,CU-Cu, DU-Du,CV-Cv, DV-Dv,Pc,Pd,
+     Qg,Qh,Qe,Qf, Qa,Qb,Qc,Qd, Sa,Sb,Sc,Sd, Ta,Tb,Tc,Td
+ CY-Cy, ...: 16-bit Half-Float Component (HDR).
+ Z-M: Z+Mode, High 8 bits encode 0x87 (-NaN)
+
+  Default: 4x4x3bpp 4:2:2 (Y4x4x3+UV2x4x3)
+ 
+  M==0: Flat (YUV, HB)
+  M==1: 2x2x2bpp (YUVD, HB)
+  M==2: 4x2x2bpp (YUVD, HB)
+  M==3: 2x4x2bpp (YUVD, HB)
+  M==4: 4x4x2bpp (YUVD, HB)
+    Qa/Qb/Qc/Qd=Pixel Bits
+  M==5: 4x4x2bpp (YUVDyuv, HB)
+    Qa/Qb/Qc/Qd=Pixel Bits
+  M==6: 4x4x3bpp (YUVD, HB)
+    Qe/Qf/Qa/Qb/Qc/Qd=Pixel Bits
+  M==7: 4x4x3bpp (YUVDyuv, HB)
+    Qe/Qf/Qa/Qb/Qc/Qd=Pixel Bits
+
+  M==16: 4x4x2bpp 4:2:0 (YUVDyuv, HB)
+    Qa/Qb/Qc/Qd=Pixel Bits (Y, 4x4x2)
+    Sa=Pixel Bits (U, 2x2x2)
+    Ta=Pixel Bits (V, 2x2x2)
+  M==17: 4x4x2bpp 4:2:2 (YUVDyuv, HB)
+    Qa/Qb/Qc/Qd=Pixel Bits (Y, 4x4x2)
+    Sa/Sb=Pixel Bits (U, 2x4x2)
+    Ta/Tb=Pixel Bits (V, 2x4x2)
+  M==18: 4x4x3bpp 4:2:0 (YUVDyuv, HB)
+    Qe/Qf/Qa/Qb/Qc/Qd=Pixel Bits (Y, 4x4x3)
+    Sa=Pixel Bits (U, 2x2x2)
+    Ta=Pixel Bits (V, 2x2x2)
+  M==19: 4x4x3bpp 4:2:2 (YUVDyuv, HB)
+    Qe/Qf/Qa/Qb/Qc/Qd=Pixel Bits (Y, 4x4x3)
+    Sa/Sb=Pixel Bits (U, 2x4x2)
+    Ta/Tb=Pixel Bits (V, 2x4x2)
+  M==20: 4x4x3bpp 4:4:4 (YUVDyuv, HC)
+    Qe/Qf/Qa/Qb/Qc/Qd=Pixel Bits (Y, 4x4x3)
+    Sa/Sb/Sc/Sd=Pixel Bits (U, 4x4x2)
+    Ta/Tb/Tc/Td=Pixel Bits (V, 4x4x2)
+
+HDR Alpha Block
+ HA: A-a, D- d, Pa,Pb,Pc,Pd (F/G)
+ HB: Z,M, A- a, D-  d,Pc,Pd (F/G)
+
+
+=== Mini-Mode ===
+
+Mini-Mode will be a BTIC1H subset.
+* Will use a 64-bit metablock, and only use block-types which can be encoded in 64 bits.
+* Will only have block types: Flat, 2x2x2, 4x4x1, 4x4x2.
+* Will only use DeltaYUV and DeltaYUVD.
+* Does not support update masks.
+* Command Index Table is limited to 16 entries.
+
+
+=== (Optional) Sliced Coding ===
+
+In sliced images, the images will be divided up into slices each of a given number of scanlines (required to be a multiple of 4).
+Each slice is encoded with its own bitstream.
+The slices may be encoded or decoded independently and in any order.
+
+The slices are packed end-to-end in the frame, each prefixed with a VLI giving its coded length in bytes.
+
+While the slice only encodes blocks within a certain range, note that motion compensation may still refer to blocks outside of the range controlled by this slice. The contents of skip blocks will be seen as they were in the previous frame.
+
+
+== (Optional) Range Coder ==
+
+Will use a bitwise range coder.
+This will be considered a non-core feature, and future decodability of range-coded video is not assured.
+
+Basically, it uses a bit-at-a-time encoder, with a variable context size. Rather than bit patterns written directly into a bitstream, they are fed into the range coder, which may in turn derive some additional compression over a raw bitstream.
+
+The context consists of the last N preceding bits, which is used as an index into a probabilities table. After encoding each bit, the context is shifted left 1 bit and the encoded bit is added to the LSB.
+
+This context is masked by the context-size, namely ((1 SHL n)-1), when accessing the model weights.
+
+The RC data starts with a small header.
+
+* X-NNN-TTTT
+* X=Extended Headers Follow
+* NNN: Size of Context (8..15 bits)
+* TTTT: RC Mode
+** 0: No RC used.
+** 1: Basic bitwise Range Coder.
+** 2-15 Reserved.
+
+
+In the basic range-coding mode, a pair of models will be used, each sharing the same context bits.
+
+A main model will be used for uncategorized bits. This includes pixel data. 
+
+A secondary model will be used for Rice-code bits. This will be used for all bits within the Rice coded symbol.
+A symbol will be emitted as 2 bit sequences, one for the unary prefix, and another for the suffix.
+
+
+=== Range and Weights ===
+
+Logically, there will be several values in use:
+* min: Lower bound of the coder range (init=0x00000000)
+* max: Upper bound of the coder range (init=0xFFFFFFFF)
+* range=max-min: Difference between the lower and upper bounds
+* val: Encoded value stream (decode)
+
+An 8-bit model weight value will be used. Weights will be initialized to 128.
+
+A division bound will be calculated from the weight as:
+* bound=(range SHR 8)*weight.
+* Values above this point (rval GT dval) will correspond to a logical 1 bit
+** min=bound+1;
+** weight=weight-(w SHR 5);
+* Values less than or equal to this value will be interpreted as 0
+** max=bound;
+** weight=weight+((256-w) SHR 5);
+** Weights will be clamped to the range of 32..223
+*** This is to attempt to prevent premature range collapse.
+
+
+Normalization happens when the high 8 bits of min and max become equal.
+Normalization may emit 8 or 16 bits at a time.
+
+For encoding:
+* Write the high 8 bits to the output;
+** WriteByte(min SHR 24);
+* min=(min SHL 8); max=(max SHL 8)|255;
+* Repeat again if high 8 bits of min and max are still equal.
+
+For decoding:
+* min=(min SHL 8); max=(max SHL 8)|255;
+* val=(val SHL 8)|ReadByte();
+* Repeat again if high 8 bits of min and max are still equal.

@@ -1,0 +1,22 @@
+BUILD=.
+MKSUF=.msvc
+LIBSUF=.lib
+DLLSUF=.dll
+EXESUF=.exe
+BINSUF=.exe
+OBJSUF=.obj
+DLLPF=
+
+CC_OUTEXE=cl /Fe
+CC_OUTDLL=cl /LD /Fe
+CC_OUTOBJ=cl /c /Fo
+CC_OUTTOOL=cl /Fe
+
+# CFLAGS=/Iinclude /Zi
+CFLAGS=/Iinclude /O2 /Zi /arch:SSE2
+DLL_CFLAGS=$(CFLAGS) /DBGBRASW_DLL
+LDFLAGS=bgbrasw.lib rasw_opengl32.lib
+DLL_LDFLAGS=gdi32.lib
+
+include Makefile.inc
+

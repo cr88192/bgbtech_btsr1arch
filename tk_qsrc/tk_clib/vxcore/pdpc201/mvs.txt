@@ -1,0 +1,79 @@
+Design of MVS i/o routines
+
+in/out function rec-type mode   method
+in     fread    fixed    bin    loop reading, remember remainder
+in     fread    fixed    text   loop reading + truncing, remember rem
+in     fread    var      bin    loop reading (+ len), remember remainder
+in     fread    var      text   loop reading (+ len), remember remainder
+in     fgets    fixed    bin    read, scan, remember remainder
+in     fgets    fixed    text   read, trunc, remember remainder
+in     fgets    var      bin    read, scan, rr
+in     fgets    var      text   read, rr
+in     fgetc    fixed    bin    read, rr
+in     fgetc    fixed    text   read, trunc, rr
+in     fgetc    var      bin    read, rr
+in     fgetc    var      text   read, rr
+
+out    fwrite   fixed    bin    loop doing put, rr
+out    fwrite   fixed    text   search newline, copy + pad, put, rr
+out    fwrite   var      bin    if nelem != 1 copy to max lrecl
+out    fwrite   var      text   loop search nl, put, rr 
+out    fputs    fixed    bin    loop doing put, rr
+out    fputs    fixed    text   search newline, copy + pad, put, rr
+out    fputs    var      bin    put
+out    fputs    var      text   search newline, put, copy rem
+out    fputc    fixed    bin    copy to rr until rr == lrecl
+out    fputc    fixed    text   copy to rr until newline, then pad
+out    fputc    var      bin    copy to rr until rr == lrecl
+out    fputc    var      text   copy to rr until newline
+
+optimize for fread on binary files (read matching record length),
+especially fixed block files, and fgets on text files, especially
+variable blocked files.
+
+binary, variable block files are not a file type supported by this
+library as part of the conforming implementation.  Instead, they
+are considered to be record-oriented processing, similar to unix
+systems reading data from a pipe, where you can read less bytes
+than requested, without reaching EOF.  ISO 7.9.8.1 doesn't give you
+the flexibility of calling either of these things conforming.
+Basically, the C standard doesn't have a concept of operating
+system maintained length binary records, you have to do that
+yourself, e.g. by writing out the lengths yourself.  You can do
+this in a fixed block dataset on MVS, and if you're concerned
+about null-padding at the end of your data, use a lrecl of 1
+(and suffer the consequences!).  You could argue that this
+non-conformance should only be initiated if fopen has a parameter 
+including ",type=record" or whatever.  Another option would
+be to make VB binary records include the record size as part of
+the stream.  Hmmm, sounds like that's the go actually.
+
+fread: if quickbin, if read elem size == lrecl, doit
+fgets: if variable record + no remainder
+       if buffer > record size, copy + add newline
+
+char *fgets(char *buf, size_t szbuf, FILE *stream)
+{
+    char *dptr;
+    size_t len;
+    
+    if (stream->quickText)
+    {
+        if (szbuf > (stream->lrecl + 1))
+        {
+            __aread(&dptr, &len, stream->hfile);
+            memcpy(buf, dptr, len);
+            memcpy(buf + len, "\n", 2);
+        }
+    }
+    return (buf);
+}
+
+char *fputs(char *buf, FILE *stream)
+{
+    char *p;
+    
+    p = strchr(buf, '\n');
+    __awrite(buf, p - buf, stream->hfile);
+    return (buf);
+}

@@ -1,0 +1,163 @@
+#include <vx_kernel32.h>
+
+WINBASEAPI BOOL WINAPI ObjectCloseAuditAlarmA(
+	LPCSTR a0, PVOID a1, BOOL a2)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI ObjectCloseAuditAlarmW(
+	LPCWSTR a0, PVOID a1, BOOL a2)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI ObjectDeleteAuditAlarmA(
+	LPCSTR a0, PVOID a1, BOOL a2)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI ObjectDeleteAuditAlarmW(
+	LPCWSTR a0, PVOID a1, BOOL a2)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI ObjectOpenAuditAlarmA(
+	LPCSTR a0, PVOID a1, LPSTR a2, LPSTR a3, PSECURITY_DESCRIPTOR a4,
+	HANDLE a5, DWORD a6, DWORD a7, PPRIVILEGE_SET a8, BOOL a9,
+	BOOL a10, PBOOL a11)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI ObjectOpenAuditAlarmW(
+	LPCWSTR a0, PVOID a1, LPWSTR a2, LPWSTR a3, PSECURITY_DESCRIPTOR a4,
+	HANDLE a5, DWORD a6, DWORD a7, PPRIVILEGE_SET a8, BOOL a9,
+	BOOL a10, PBOOL a11)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI ObjectPrivilegeAuditAlarmA(
+	LPCSTR a0, PVOID a1, HANDLE a2, DWORD a3, PPRIVILEGE_SET a4,
+	BOOL a5)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI ObjectPrivilegeAuditAlarmW(
+	LPCWSTR a0, PVOID a1, HANDLE a2, DWORD a3, PPRIVILEGE_SET a4,
+	BOOL a5)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI HANDLE WINAPI OpenBackupEventLogA(
+	LPCSTR a0, LPCSTR a1)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI HANDLE WINAPI OpenBackupEventLogW(
+	LPCWSTR a0, LPCWSTR a1)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI HANDLE WINAPI OpenEventA(
+	DWORD a0, BOOL a1, LPCSTR a2)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI HANDLE WINAPI OpenEventLogA(
+	LPCSTR a0, LPCSTR a1)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI HANDLE WINAPI OpenEventLogW(
+	LPCWSTR a0, LPCWSTR a1)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI HANDLE WINAPI OpenEventW(
+	DWORD a0, BOOL a1, LPCWSTR a2)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI HANDLE WINAPI OpenMutexA(
+	DWORD a0, BOOL a1, LPCSTR a2)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI HANDLE WINAPI OpenMutexW(
+	DWORD a0, BOOL a1, LPCWSTR a2)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI HANDLE WINAPI OpenProcess(
+	DWORD a0, BOOL a1, DWORD a2)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI OpenProcessToken(
+	HANDLE a0, DWORD a1, PHANDLE a2)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI HANDLE WINAPI OpenSemaphoreA(
+	DWORD a0, BOOL a1, LPCSTR a2)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI HANDLE WINAPI OpenSemaphoreW(
+	DWORD a0, BOOL a1, LPCWSTR a2)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI HANDLE WINAPI OpenThread(
+	DWORD a0, BOOL a1, DWORD a2)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI OpenThreadToken(
+	HANDLE a0, DWORD a1, BOOL a2, PHANDLE a3)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI HANDLE WINAPI OpenWaitableTimerA(
+	DWORD a0, BOOL a1, LPCSTR a2)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI HANDLE WINAPI OpenWaitableTimerW(
+	DWORD a0, BOOL a1, LPCWSTR a2)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI void WINAPI OutputDebugStringA(
+	LPCSTR a0)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI void WINAPI OutputDebugStringW(
+	LPCWSTR a0)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}

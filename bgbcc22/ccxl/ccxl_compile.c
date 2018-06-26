@@ -1748,6 +1748,7 @@ void BGBCC_CCXL_EmitVar(BGBCC_TransState *ctx,
 	char *name, BCCX_Node *ty, BCCX_Node *v)
 {
 	char *s, *s1, *s2;
+	s64 li;
 	int i;
 
 	if(!v && BGBCC_CCXL_CheckDefinedContextName(ctx,
@@ -1759,6 +1760,7 @@ void BGBCC_CCXL_EmitVar(BGBCC_TransState *ctx,
 	s=BGBCC_CCXL_VarImageTypeString(ctx, ty);
 	s1=name;
 	s2=BGBCC_CCXL_VarTypeFlagsString(ctx, ty);
+	li=BCCX_GetIntCst(ty, &bgbcc_rcst_flags, "flags");
 
 	if(!s)s="v";
 
@@ -1769,6 +1771,7 @@ void BGBCC_CCXL_EmitVar(BGBCC_TransState *ctx,
 	BGBCC_CCXL_AttribStr(ctx, CCXL_ATTR_NAME, s1);
 	BGBCC_CCXL_AttribStr(ctx, CCXL_ATTR_SIG, s);
 	BGBCC_CCXL_AttribStr(ctx, CCXL_ATTR_FLAGS, s2);
+	BGBCC_CCXL_AttribLong(ctx, CCXL_ATTR_FLAGS, li);
 
 	if(v)
 	{
@@ -1785,6 +1788,7 @@ void BGBCC_CCXL_EmitVar2(BGBCC_TransState *ctx,
 {
 	char tb[256];
 	char *s, *s1, *s2;
+	s64 li;
 	int i, op;
 
 	if(!v && BGBCC_CCXL_CheckDefinedContextName(ctx,
@@ -1808,12 +1812,16 @@ void BGBCC_CCXL_EmitVar2(BGBCC_TransState *ctx,
 	if(i&BGBCC_TYFL_STATIC)
 		op=CCXL_CMD_STATICVARDECL;
 
+	li=BCCX_GetIntCst(ty, &bgbcc_rcst_flags, "flags");
+
 	BGBCC_CCXL_BeginName(ctx, op, s1);
 	BGBCC_CCXL_AttribStr(ctx, CCXL_ATTR_NAME, s1);
 	BGBCC_CCXL_AttribStr(ctx, CCXL_ATTR_SIG, s);
 
 	s2=BGBCC_CCXL_VarTypeFlagsString(ctx, ty);
 	BGBCC_CCXL_AttribStr(ctx, CCXL_ATTR_FLAGS, s2);
+
+	BGBCC_CCXL_AttribLong(ctx, CCXL_ATTR_FLAGS, li);
 
 	if(ctx->cur_structdef &&
 		BCCX_TagIsCstP(ctx->cur_structdef,
@@ -3246,6 +3254,7 @@ void BGBCC_CCXL_EmitTopVar(BGBCC_TransState *ctx,
 {
 	char *s, *s1, *s2;
 	BCCX_Node *c;
+	s64 li;
 	int i, j;
 
 	i=BCCX_GetIntCst(ty, &bgbcc_rcst_flags, "flags");
@@ -3261,7 +3270,7 @@ void BGBCC_CCXL_EmitTopVar(BGBCC_TransState *ctx,
 		return;
 	}
 
-	i=BCCX_GetIntCst(ty, &bgbcc_rcst_flags, "flags");
+	li=BCCX_GetIntCst(ty, &bgbcc_rcst_flags, "flags");
 //	BGBCC_CCXL_BindVarSig(ctx, s1, s);
 //	if(s2 && (*s2))
 //			BGBCC_CCXL_BindVarInfo(ctx, s1, "flagstr", s2);
@@ -3274,6 +3283,7 @@ void BGBCC_CCXL_EmitTopVar(BGBCC_TransState *ctx,
 	BGBCC_CCXL_AttribStr(ctx, CCXL_ATTR_NAME, s1);
 	BGBCC_CCXL_AttribStr(ctx, CCXL_ATTR_SIG, s);
 	BGBCC_CCXL_AttribStr(ctx, CCXL_ATTR_FLAGS, s2);
+	BGBCC_CCXL_AttribLong(ctx, CCXL_ATTR_FLAGS, li);
 
 	if(v)
 	{

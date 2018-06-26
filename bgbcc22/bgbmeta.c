@@ -587,6 +587,7 @@ int BGBCC_LoadCSourcesCCXL(
 	ctx->arch=bgbcc_arch;
 	ctx->sub_arch=bgbcc_subarch;
 	ctx->imgbasename=dllname;
+	ctx->imgname=bgbcc_strdup(bgbcc_imgname);
 
 	BGBCC_CCXL_SetupContextForArch(ctx);
 
@@ -1267,6 +1268,7 @@ int main(int argc, char *argv[], char **env)
 
 	BGBCC_SHXC_InitIface();
 	BGBCC_BSRC_InitIface();
+	BGBCC_JX2C_InitIface();
 
 	metafn=NULL;
 	wadfn=NULL;

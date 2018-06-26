@@ -329,3 +329,4 @@ BTSR1_Opcode *BTSR1_ContextAllocOpcode(BTSR1_Context *ctx);
 BTSR1_Trace *BTSR1_ContextAllocTrace(BTSR1_Context *ctx);
 BTSR1_Trace *BTSR1_GetTraceForAddr(BTSR1_Context *ctx, btsr1_addr addr);
 
+BTSR1_MemSpan *BTSR1_MemAllocSpan(BTSR1_Context *ctx);

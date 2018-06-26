@@ -770,17 +770,17 @@ int BTSR1_DecodeOpcodeForAddr(BTSR1_Context *ctx,
 			case 0xC:	/* 30zC */
 				op->nmid=BTSR1_NMID_MOVB;
 				op->fmid=BTSR1_FMID_LDDRPCREG;
-				op->Run=BTSR1_Op_MOVB_RegStDrPc;
+				op->Run=BTSR1_Op_MOVB_LdDrPcReg;
 				break;
 			case 0xD:	/* 30zD */
 				op->nmid=BTSR1_NMID_MOVW;
 				op->fmid=BTSR1_FMID_LDDRPCREG;
-				op->Run=BTSR1_Op_MOVW_RegStDrPc;
+				op->Run=BTSR1_Op_MOVW_LdDrPcReg;
 				break;
 			case 0xE:	/* 30zE */
 				op->nmid=BTSR1_NMID_MOVD;
 				op->fmid=BTSR1_FMID_LDDRPCREG;
-				op->Run=BTSR1_Op_MOVD_RegStDrPc;
+				op->Run=BTSR1_Op_MOVD_LdDrPcReg;
 				break;
 			case 0xF:	/* 30zF */
 				op->nmid=BTSR1_NMID_MOVUW;

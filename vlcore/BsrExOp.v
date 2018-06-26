@@ -758,13 +758,24 @@ reg[31:0]	regMulPiBB;
 reg[31:0]	regMulPiAC;
 reg[31:0]	regMulPiBC;
 
+// reg[31:0]	regMulPiD;
+
 reg[1:0]	regMulOpPi;
+reg[1:0]	regMulOpPj;
 
 reg[31:0]	regMulPpA;
 reg[31:0]	regMulPpB;
 reg[31:0]	regMulPpC;
 reg[31:0]	regMulPpD;
+reg[31:0]	regMulPpE;
+
 reg[1:0]	regMulOpPp;
+
+reg[31:0]	regMulPpA1;
+reg[31:0]	regMulPpB1;
+reg[31:0]	regMulPpC1;
+reg[31:0]	regMulPpD1;
+
 
 reg[31:0]	regMulPqA;
 reg[31:0]	regMulPqB;
@@ -772,25 +783,48 @@ reg[1:0]	regMulOpPq;
 
 always @*
 begin
+// / *
 	regMulPiAA	= { 16'h0, regMulA[15: 0] };
 	regMulPiAB	= { 16'h0, regMulA[31:16] };
 	regMulPiBA	= { 16'h0, regMulB[15: 0] };
 	regMulPiBB	= { 16'h0, regMulB[31:16] };
 
-	regMulPiAC	= { regMulA[31]?16'hFFFF:16'h0000, regMulA[31:16] };
-	regMulPiBC	= { regMulB[31]?16'hFFFF:16'h0000, regMulB[31:16] };
+//	regMulPiAC	= { regMulA[31]?16'hFFFF:16'h0000, regMulA[31:16] };
+//	regMulPiBC	= { regMulB[31]?16'hFFFF:16'h0000, regMulB[31:16] };
+// * /
+
+	regMulPiAC	= regMulA[31]?(-regMulB):UV32_00;
+	regMulPiBC	= regMulB[31]?(-regMulA):UV32_00;
+
+//	regMulPpA1	= regMulPiAA * regMulPiBA;
+//	regMulPpB1	= regMulPiAA * regMulPiBB;
+//	regMulPpC1	= regMulPiAB * regMulPiBA;
+//	regMulPpD1	= regMulPiAB * regMulPiBB;
+
 	regMulOpPi	= regMulOp;
 
 	{ regMulPqB, regMulPqA } =
 		{UV32_00, regMulPpA} +
 		{UV16_00, regMulPpB, UV16_00} +
 		{UV16_00, regMulPpC, UV16_00} +
-		{regMulPpD, UV32_00};
+		{regMulPpD, UV32_00} +
+		{regMulPpE, UV32_00};
+
 	regMulOpPq = regMulOpPp;
 end
 
 always @ (posedge clock)
 begin
+//	regMulPiAA	<= { 16'h0, regMulA[15: 0] };
+//	regMulPiAB	<= { 16'h0, regMulA[31:16] };
+//	regMulPiBA	<= { 16'h0, regMulB[15: 0] };
+//	regMulPiBB	<= { 16'h0, regMulB[31:16] };
+
+	regMulPpA	<= regMulPiAA * regMulPiBA;
+	regMulPpB	<= regMulPiAA * regMulPiBB;
+	regMulPpC	<= regMulPiAB * regMulPiBA;
+	regMulPpD	<= regMulPiAB * regMulPiBB;
+
 	case(regMulOp)
 		2'h0: begin
 			regMulOpPp	<= 0;
@@ -798,11 +832,23 @@ begin
 		end
 
 		2'h1: begin
+/*
 			regMulPpA	<= regMulPiAA * regMulPiBA;
 			regMulPpB	<= regMulPiAA * regMulPiBB;
 			regMulPpC	<= regMulPiAB * regMulPiBA;
 			regMulPpD	<= regMulPiAB * regMulPiBB;
+*/
+//			regMulPpA	<= regMulPpA1;
+//			regMulPpB	<= regMulPpB1;
+//			regMulPpC	<= regMulPpC1;
+//			regMulPpD	<= regMulPpD1;
+
+			regMulPpE	<= 0;
+
 			regMulOpPp	<= regMulOpPi;
+
+//			regMulOpPj	<= regMulOpPi;
+//			regMulOpPp	<= regMulOpPj;
 
 			regMulDlr	<= regMulPqA;
 			regMulDhr	<= regMulPqB;
@@ -810,21 +856,34 @@ begin
 		end
 
 		2'h2: begin
+/*
 			regMulPpA	<= regMulPiAA * regMulPiBA;
 			regMulPpB	<= regMulPiAA * regMulPiBB;
 			regMulPpC	<= regMulPiAB * regMulPiBA;
 			regMulPpD	<= regMulPiAC * regMulPiBC;
+*/
+
+//			regMulPpA	<= regMulPpA1;
+//			regMulPpB	<= regMulPpB1;
+//			regMulPpC	<= regMulPpC1;
+//			regMulPpD	<= regMulPpD1;
+
+			regMulPpE	<= regMulPiAC + regMulPiBC;
+
 			regMulOpPp	<= regMulOpPi;
+
+//			regMulOpPj	<= regMulOpPi;
+//			regMulOpPp	<= regMulOpPj;
 
 			regMulDlr	<= regMulPqA;
 			regMulDhr	<= regMulPqB;
 			regMulOpDr	<= regMulOpPq;
 			
-//			$display("BsrExOp: Mul A: %X %X", regMulA, regMulB);
-//			$display("BsrExOp: Mul B: %X %X %X %X",
-//				regMulPpA, regMulPpB,
-//				regMulPpC, regMulPpD);
-//			$display("BsrExOp: Mul C: %X %X", regMulDlr, regMulDhr);
+			$display("BsrExOp: Mul A: %X %X", regMulA, regMulB);
+			$display("BsrExOp: Mul B: %X %X %X %X",
+				regMulPpA, regMulPpB,
+				regMulPpC, regMulPpD);
+			$display("BsrExOp: Mul C: %X %X", regMulDlr, regMulDhr);
 			
 		end
 

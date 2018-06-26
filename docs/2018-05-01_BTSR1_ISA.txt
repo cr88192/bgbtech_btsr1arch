@@ -177,8 +177,8 @@ Addressing Modes (Real):
 * (DLR), Direct/Absolute Address
 * (PC, Disp8s), PC with scaled 8-bit displacement.
 * (SP, Disp4u), SP with scaled 4-bit displacement.
-* (GBR, DLR), GBR used with scaled Displacement Register.
-* (TBR, DLR), TBR used with scaled Displacement Register.
+* / (GBR, DLR), GBR used with scaled Displacement Register.
+* / (TBR, DLR), TBR used with scaled Displacement Register.
 * (PC, DLR_i4), PC used with scaled Displacement.
 ** The displacement is encoded as ((DLR SHL 4)|Imm4u).
 

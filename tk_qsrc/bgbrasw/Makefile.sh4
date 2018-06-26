@@ -1,0 +1,56 @@
+BUILD = .
+PATH := $(BUILD):$(PATH)
+
+TK_CFL=-nostdinc -nostdlib -nostartfiles -fno-builtin \
+	-DARCH_SH4 -DARCH_SH4LE -O3 -I../tk_clib/include
+TK_LDFL= $TK_CFL \
+	-Wl,-nostdlib -Wl,-e,_start -Wl,-T,sh4elf.x
+
+TOOLPATH=/opt/cross/bin/
+
+CC=$(TOOLPATH)sh4-gcc
+AR=$(TOOLPATH)sh4-ar
+AS=$(TOOLPATH)sh4-as
+
+COPTS= -g -c -O2 -Iinclude $(TK_CFL) -DBGBRASW_DLL
+
+SRCS_CLIB = \
+	raswgl/ragl_begin.c \
+	raswgl/ragl_clip.c \
+	raswgl/ragl_gldrv.c \
+	raswgl/ragl_glw.c \
+	raswgl/ragl_light.c \
+	raswgl/ragl_raswprim.c \
+	raswgl/ragl_teximage.c \
+	raswgl/ragl_transform.c \
+	raswgl/ragl_vertexarray.c \
+	\
+	vecmath/math_clip.c \
+	vecmath/math_hullf.c \
+	vecmath/math_m3.c \
+	vecmath/math_m4.c \
+	vecmath/math_mf.c \
+	vecmath/math_n.c \
+	vecmath/math_plane.c \
+	vecmath/math_quat.c \
+	vecmath/math_solid.c \
+	vecmath/math_v3f.c \
+	vecmath/math_vecnf.c \
+	vecmath/math_vnf.c \
+	vecmath/mathlib_d.c \
+	vecmath/mathlib_f.c \
+
+
+all: includes libs apps
+
+includes: FORCE
+
+libs: libraswgl.a
+
+apps: FORCE
+
+libraswgl.a: $(SRCS_CLIB)
+	$(CC) -o raswgl.o raswgl_multi.c $(COPTS)
+	$(AR) -r libraswgl.a raswgl.o
+
+FORCE:

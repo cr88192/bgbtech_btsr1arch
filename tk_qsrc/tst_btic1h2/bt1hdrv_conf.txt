@@ -1,0 +1,26 @@
+# this file is copied to the users' home directory and gives settings
+# for the codec.
+#
+# useLog true/false
+#   Indicates whether the codec should write a debug log.
+# workerThreads <num>
+#   Gives the number of threads that should be used for multithreaded tasks.
+#   0 means to run single-threaded.
+# encoderFlags <flags*>
+#   Gives flags for encoder behavior.
+#   rangecoder      Use range coding.
+#   rangecoder66    Use range coding if quality is < 66%.
+#   slice           Encode frame as slices (multi-threaded).
+#   gdbgr           Use GDbDr colorspace (faster than YCbCr).
+
+useLog true
+# workerThreads 4
+workerThreads 8
+
+# encoderFlags rangecoder66
+encoderFlags slice gdbdr
+
+# debugFlags clearskip
+
+# defaultCodec bt1h
+defaultCodec bt4b

@@ -7,6 +7,12 @@
 
 #include "bsr1_interp.h"
 
+#include "gfxdrv_keys.h"
+#include "gfxdrv_w32.c"
+#include "gfxdrv_input.c"
+
+#include "bsr1_gfxcon.c"
+
 #include "bsr1_mem.c"
 #include "bsr1_ldrom.c"
 

@@ -1,0 +1,38 @@
+VXCORE_API void *vxNativeSwizBuf(void *buf, long sz);
+VXCORE_API void *vxNativeSwizData(void *buf, char *sig, long sz);
+VXCORE_API void *vxNativeSwizBufRd(void *buf, long sz);
+VXCORE_API void *vxNativeSwizDataRd(void *buf, char *sig, long sz);
+
+Swizzle a buffer into a form usable from the native host.
+Code should not assume that the returned pointer necessarily resides within addressable memory.
+
+SwizBuf will simply attempt to swizzle a raw data buffer, and so will not perform any type conversions.
+
+SwizData will make use of a signature, which will indicate the structure of the data to be swizzled. This will allow passing data of types which may be in a different form on the host.
+
+SwizBufRd and SwizDataRd will assume data is being read from the host, and so will not copy from client space into host space.
+
+
+VXCORE_API void vxNativeUnSwiz(void *hdl);
+VXCORE_API void vxNativeDropSwiz(void *hdl);
+
+These will attempt to revert the status of a swizzled buffer, and will be given the pointer returned from SwizBuf or SwizData.
+
+UnSwiz will synchronize the buffers, transferring the buffer contents back into the original buffer.
+
+DropSwiz will not bother with restoring the buffer contents.
+
+
+VXCORE_API void *vxNativeCall(char *name, char *sig, void *args);
+
+	Perform a native call, where name identifies the function, and sig indicates the argument types. The args argument points to a buffer holding the function arguments (laid out as if they were on the stack).
+	This returns a pointer to a buffer holding the return value (which may be the same buffer as used for the arguments). If the native call failed, NULL is returned.
+
+
+VXCORE_API int vxNativeCalli(char *name, char *sig, ...);
+VXCORE_API int64_t vxNativeCalll(char *name, char *sig, ...);
+VXCORE_API float vxNativeCallf(char *name, char *sig, ...);
+VXCORE_API double vxNativeCalld(char *name, char *sig, ...);
+VXCORE_API void *vxNativeCallp(char *name, char *sig, ...);
+VXCORE_API void *vxNativeCallr(char *name, char *sig, ...);
+VXCORE_API void vxNativeCallv(char *name, char *sig, ...);

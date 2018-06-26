@@ -1,0 +1,75 @@
+BUILD = .
+PATH := $(BUILD):$(PATH)
+
+TK_CFL=-nostdinc -nostdlib -nostartfiles -fno-builtin \
+	-DARCH_SH4 -DARCH_SH4LE
+TK_LDFL= $TK_CFL \
+	-Wl,-nostdlib -Wl,-e,_start -Wl,-T,sh4elf.x
+
+TOOLPATH=/opt/cross/bin/
+
+CC=$(TOOLPATH)sh4-gcc
+AR=$(TOOLPATH)sh4-ar
+AS=$(TOOLPATH)sh4-as
+
+# COPTS= -g -c -O2 -Iinclude $(TK_CFL)
+COPTS= -c -Os -Iinclude $(TK_CFL)
+
+SRCS_CLIB = \
+	pdpc201/stdio.c \
+	pdpc201/string.c \
+	pdpc201/stdlib.c \
+	pdpc201/start.c \
+	pdpc201/time.c \
+	pdpc201/errno.c \
+	pdpc201/assert.c \
+	pdpc201/signal.c \
+	pdpc201/locale.c \
+	pdpc201/ctype.c \
+	pdpc201/setjmp.c \
+	pdpc201/math.c \
+	pdpc201/__memmgr.c \
+	pdpc201/btshx_supa.c \
+	\
+	tk_core/tk_clib.c \
+	tk_core/tk_fat.c \
+	tk_core/tk_mmllist.c \
+	tk_core/tk_mmpage.c \
+	tk_core/tk_spi.c \
+	tk_core/tk_vf_fat.c \
+	tk_core/tk_vf_ird.c \
+	tk_core/tk_vfile.c \
+	\
+	inttypes.c \
+	wchar.c \
+	wctype.c \
+
+	
+
+all: includes libs apps
+
+includes: FORCE
+#	make -C pdpc201 -f Makefile.sh4 includes
+#	cp -rf pdpc201/*.h	$(BUILD)/include
+
+libs2: FORCE
+#	make -C pdpc201 -f Makefile.sh4 libs
+#	cp pdpc201/*.a		$(BUILD)
+#	cp pdpc201/crt0.o	$(BUILD)
+
+libs: libs2 libvxcore.a
+
+apps: FORCE
+#	make -C pdpc201 -f Makefile.vx86 apps
+#	cp pdpc201/*.exe	$(BUILD)
+
+libvxcore.a: $(SRCS_CLIB) e_testkern.S
+	$(CC) -o vxcore.o vxcore_multi.c $(COPTS)
+	$(AR) -r libvxcore.a vxcore.o
+	$(CC) -o crt0.o e_testkern.S $(COPTS)
+
+FORCE:
+
+.c.o:
+	$(CC) $(COPTS) $<
+

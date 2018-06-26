@@ -309,6 +309,9 @@ extern "C" {
 #define BGBCC_ARCH_BSR		BGBCC_FOURCC('B', 'S', 'R', ' ')
 #define BGBCC_ARCH_BSR_BS1A	BGBCC_FOURCC('B', 'S', '1', 'A')
 
+#define BGBCC_ARCH_BJX2			BGBCC_FOURCC('B', 'J', 'X', '2')
+#define BGBCC_ARCH_BJX2_JX2A	BGBCC_FOURCC('J', 'X', '2', 'A')
+
 
 //output formats.
 //format specifics depend on target.
@@ -549,6 +552,7 @@ int cur_objstackpos;
 BGBCC_CCXL_VirtOp *virtop_free;
 BGBCC_CCXL_VirtTr *virttr_free;
 
+char *imgname;
 char *imgbasename;
 
 BGBCC_CCXL_BackendFuncs_vt *back_vt;

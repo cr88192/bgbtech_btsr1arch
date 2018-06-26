@@ -81,6 +81,32 @@ SRCS=\
 	bsrcc/bsr_softfpu.c \
 	bsrcc/bsr_struct.c \
 	bsrcc/bsr_vreg.c \
+	\
+	jx2cc/jx2_binop.c \
+	jx2cc/jx2_bufasm.c \
+	jx2cc/jx2_cgif.c \
+	jx2cc/jx2_conv.c \
+	jx2cc/jx2_emit.c \
+	jx2cc/jx2_emit_bra.c \
+	jx2cc/jx2_emit_lbl.c \
+	jx2cc/jx2_emit_mov.c \
+	jx2cc/jx2_emit_opc.c \
+	jx2cc/jx2_emit_sec.c \
+	jx2cc/jx2_fltrom.c \
+	jx2cc/jx2_fparith.c \
+	jx2cc/jx2_fpreg2x.c \
+	jx2cc/jx2_fpstub.c \
+	jx2cc/jx2_frame.c \
+	jx2cc/jx2_ldix.c \
+	jx2cc/jx2_lparith.c \
+	jx2cc/jx2_lpreg.c \
+	jx2cc/jx2_lvarith.c \
+	jx2cc/jx2_lxarith.c \
+	jx2cc/jx2_pecoff.c \
+	jx2cc/jx2_register.c \
+	jx2cc/jx2_softfpu.c \
+	jx2cc/jx2_struct.c \
+	jx2cc/jx2_vreg.c \
 
 
 META_SRCS = \

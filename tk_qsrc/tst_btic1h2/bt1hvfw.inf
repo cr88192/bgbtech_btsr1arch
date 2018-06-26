@@ -1,0 +1,115 @@
+; BGBTech Image Codec install
+
+[Version]
+Signature = "$CHICAGO$"
+Class = MEDIA
+
+[SourceDisksNames]
+1="BGBTech Image Codec Install Disk",, 0001
+
+[SourceDisksFiles]
+bt1h_vfwdrv.dll=1
+btic1hvfw.inf=1
+
+[Installable.Drivers]
+BT1H = 1:bt1hvfw.dll, "vidc.BT1H", "BTIC1H" , , ,
+BA1C = 1:bt1hvfw.dll, "audc.BA1C", "BTAC1C" , , ,
+
+[DefaultInstall]
+CopyFiles=MPEG4.Copy.Inf,MPEG4.Copy
+Updateinis = MPEG4.Updateini
+DelReg = MPEG4.DelConfig
+addreg = MPEG4.AddReg,MPEG4.AddReg9x,MPEG4.DoReg
+MediaType = SOFTWARE
+
+[DefaultInstall.ntx86]
+CopyFiles=MPEG4.Copy.Inf,MPEG4.Copy
+DelReg = MPEG4.DelConfig
+addreg = MPEG4.AddReg,MPEG4.AddRegNT,MPEG4.DoReg
+MediaType = SOFTWARE
+
+; [DefaultInstall.ntamd64]
+; CopyFiles=MPEG4.Copy.Inf,MPEG4.Copy
+; DelReg = MPEG4.DelConfig
+; addreg = MPEG4.AddReg,MPEG4.AddRegNT,MPEG4.DoReg
+; MediaType = SOFTWARE
+
+[Remove_BT1H]
+AddReg = MPEG4.Unregister
+DelReg = MPEG4.DelReg
+DelFiles = MPEG4.Copy,MPEG4.Copy.Inf
+UpdateInis = MPEG4.DelIni
+
+[MPEG4.Copy]
+bt1hvfw.dll
+
+[MPEG4.Copy.Inf]
+bt1hvfw.inf
+
+[MPEG4.UpdateIni]
+system.ini, drivers32,,"vidc.BT1H=bt1hvfw.dll"
+system.ini, drivers32,,"msacm.btac1c=bt1hvfw.dll"
+
+[MPEG4.DelIni]
+system.ini, drivers32,"vidc.BT1H=bt1hvfw.dll",
+system.ini, drivers32,"msacm.btac1c=bt1hvfw.dll",
+
+[MPEG4.AddReg]
+
+[MPEG4.AddReg9x]
+HKLM,SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.BT1H,Description,,%BT1H%
+HKLM,SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.BT1H,Driver,,bgbtjvfw.dll
+HKLM,SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.BT1H,FriendlyName,,"BT1H"
+
+; HKLM,SYSTEM\CurrentControlSet\Control\MediaResources\acm\audc.BA1C,Description,,%BA1C%
+; HKLM,SYSTEM\CurrentControlSet\Control\MediaResources\acm\audc.BA1C,Driver,,bgbtjvfw.dll
+; HKLM,SYSTEM\CurrentControlSet\Control\MediaResources\acm\audc.BA1C,FriendlyName,,"BA1C"
+
+HKLM,%UnInstallPath%,DisplayName,,%BT1H%
+HKLM,%UnInstallPath%,UninstallString,,"%10%\rundll.exe setupx.dll,InstallHinfSection Remove_BT1H 132 %17%\%InfFile%"
+
+[MPEG4.AddRegNT]
+HKLM,SOFTWARE\Microsoft\Windows NT\CurrentVersion\drivers.desc,bt1hvfw.dll,,%BT1H%
+HKLM,SOFTWARE\Microsoft\Windows NT\CurrentVersion\drivers32,vidc.BT1H,,bt1hvfw.dll
+
+; HKLM,SOFTWARE\Microsoft\Windows NT\CurrentVersion\drivers.desc,bt1hvfw.dll,,%BA1C%
+HKLM,SOFTWARE\Microsoft\Windows NT\CurrentVersion\drivers32,msacm.btac1c,,bt1hvfw.dll
+
+HKLM,%UnInstallPath%,DisplayName,,%BT1H%
+HKLM,%UnInstallPath%,DisplayIcon,,"%11%\bt1hvfw.dll,0"
+HKLM,%UnInstallPath%,Publisher,,%mfgname%
+HKLM,%UnInstallPath%,HelpLink,,%Website%
+HKLM,%UnInstallPath%,NoModify,%REG_DWORD%,1
+HKLM,%UnInstallPath%,NoRepair,%REG_DWORD%,1
+HKLM,%UnInstallPath%,UninstallString,,"%11%\rundll32.exe setupapi,InstallHinfSection Remove_BT1H 132 %17%\%InfFile%"
+
+[MPEG4.DoReg]
+
+[MPEG4.DelReg]
+HKLM,SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.BT1H
+HKLM,SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.bt1h
+
+; HKLM,SYSTEM\CurrentControlSet\Control\MediaResources\acm\vidc.BT1H
+; HKLM,SYSTEM\CurrentControlSet\Control\MediaResources\acm\vidc.bt1h
+
+HKLM,SOFTWARE\Microsoft\Windows NT\CurrentVersion\drivers.desc,bt1hvfw.dll,,""
+HKLM,%UnInstallPath%
+
+[MPEG4.Unregister]
+
+[MPEG4.DelConfig]
+HKCU,Software\BGBTech\BT1H
+
+[DestinationDirs]
+DefaultDestDir = 11	; LDID_SYS
+MPEG4.Copy = 11
+MPEG4.Copy.Inf = 17
+
+[Strings]
+BT1H="BGBTech BTIC1H"
+InfFile="bt1hvfw.inf"
+UnInstallPath="Software\Microsoft\Windows\CurrentVersion\Uninstall\bt1h"
+MediaClassName="Media Devices"
+mfgname="Brendan G Bohannon"
+Website="http://cr88192.mooo.com:8080/"
+REG_DWORD=0x00010001

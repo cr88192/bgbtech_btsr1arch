@@ -1,0 +1,28 @@
+BUILD = .
+PATH := $(BUILD):$(PATH)
+
+EXE = .elf
+BIN = .bin
+O = .o
+A = .a
+
+all: FORCE build
+
+FORCE:
+
+includes: FORCE
+	make -C vxcore -f Makefile.sh4bcc includes
+	cp -rf vxcore/include/*	$(BUILD)/include
+
+libs: FORCE
+	make -C vxcore -f Makefile.sh4bcc libs
+	cp vxcore/*.ril		$(BUILD)
+
+apps: libs FORCE
+	make -C vxcore -f Makefile.sh4bcc apps
+
+build: includes libs apps FORCE
+
+clean: FORCE
+clean2: FORCE
+

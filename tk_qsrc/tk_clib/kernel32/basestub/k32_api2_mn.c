@@ -1,0 +1,33 @@
+#include <vx_kernel32.h>
+
+WINBASEAPI BOOL WINAPI MakeAbsoluteSD(
+	PSECURITY_DESCRIPTOR a0, PSECURITY_DESCRIPTOR a1, PDWORD a2, PACL a3,
+	PDWORD a4, PACL a5, PDWORD a6, PSID a7, PDWORD a8, PSID a9, PDWORD a10)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI MakeSelfRelativeSD(
+	PSECURITY_DESCRIPTOR a0, PSECURITY_DESCRIPTOR a1, PDWORD a2)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI VOID WINAPI MapGenericMask(
+	PDWORD a0, PGENERIC_MAPPING a1)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI int WINAPI MulDiv(
+	int a0, int a1, int a2)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+
+WINBASEAPI BOOL WINAPI NotifyChangeEventLog(
+	HANDLE a0, HANDLE a1)
+{
+	VxStubFault(__FILE__, __LINE__, __FUNCTION__);
+}
+

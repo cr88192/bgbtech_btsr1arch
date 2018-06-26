@@ -1,0 +1,370 @@
+            Public Domain C runtime library
+            -------------------------------
+            
+Version : 2.01
+Released: 2009-09-26
+
+Written by Paul Edwards.
+Released to the public domain.
+You may use this entire package for any purpose whatsoever without
+restriction.
+            
+            
+            
+INTRODUCTION
+------------
+            
+This project is to create a public domain runtime library which 
+conforms to ISO/IEC 9899:1990.  Although originally intended
+to be OS-specific (based on the principle that it is the C
+library's job to do unportable but fast processing rather than
+the application developer), but not compiler-specific, an enormous
+amount of the C library turned out to be sharable, with the
+notable exception that the I/O is mostly divided into mainframe
+and non-mainframe versions.
+
+Anyone wishing to contribute to this project, please contact 
+Paul Edwards at fight.subjugation@gmail.com.
+
+The official method for obtaining PDPCLIB is to download it from:
+http://pdos.sourceforge.net
+
+
+
+MAIN DESIGN GOALS
+-----------------
+
+1. Application developers should not have to resort to DosOpen, open et al 
+   in order to get better performance for binary files.
+   
+2. Application developers should not have to resort to using binary mode to
+   get better performance for fgets in text mode.
+
+
+
+CURRENT STATUS
+--------------
+
+All routines have been implemented according to the
+ISO C90 standard on all environments, although there 
+are restrictions on some operations, such as opening 
+a file for update or append. However, these restrictions 
+do not prevent it from being a conforming implementation.
+I believe the DOS version doesn't do full long arithmetic
+so that environment is possibly non-conforming.
+
+
+The following environments have been used:
+
+Win32 for:
+gcc 3.4.4
+
+DOS for:
+Turbo C++ 1.01
+Open Watcom 1.6
+
+MVS for:
+IBM C/370 v2r1m0
+GCCMVS 3.2.3
+
+CMS for:
+GCCCMS 3.2.3
+
+OS/2 for:
+EMX 0.9b
+Watcom C++ 10.0b
+IBM CSET++ 2.0
+Borland C++ 1.5
+
+PDOS for:
+EMX 0.9d
+
+
+
+WHO WANTS IT?
+-------------
+
+It is expected that this archive will interest the following groups of
+people:
+
+1. People who have a commercial compiler, such as IBM CSET (OS/2), 
+but would like to have the source code to the C runtime library, 
+so that they can have control over it.
+
+2. People who have a commercial compiler, such as Borland, where
+although they have the runtime source, Borland have some restrictions
+on the use of their object code, saying that the resultant executable
+must have either their copyright notice on it, or yours, or some such
+rubbish.
+
+3. People who have EMX 0.9d, but would like to be able to modify the
+runtime library code without being bound by any of EMX's licensing
+restrictions on doing that.
+
+4. People who are interested in the internal workings of a runtime
+library, and would like unrestricted use of any useful code they
+may find whilst investigating that.
+
+5. Someone who wants to write their own commercial C compiler and
+library, and wants something to use as a base.  This at least gives
+you the library, there are no public domain C compilers available
+to the best of my knowledge, on any platform.
+
+6. People who have ISO text-processing programs that want a significant
+speed improvement.
+
+7. Mainframe users who don't have any other choice to use with GCC.
+
+
+
+USAGE
+-----
+
+There are makefiles for all the different compilers supported.  Choose
+the one you want, and compile it, creating a library if you want, and
+then compiling your programs in the same way that the "pdptest" program
+is compiled.  Note that code that refers to __32BIT__ is for compiling
+programs using EMX 0.9d for DOS.
+
+For 16-bit DOS, the default is to use the free C Turbo C++ 1.01
+(in order to get the C compiler) and the free Open Watcom 1.6
+(in order to get the assembler), so that you have a totally free
+16-bit DOS development system. Just type "compile" to use this
+combination.
+
+For 32-bit Windows (pdpclib-win32), the default is to use 
+the (free) gcc compiler and the (free) jwasm as the assembler.
+Use a decent "make" that doesn't need tabs (e.g. Borland's make
+or Microsoft's nmake) and then go "make -f makefile.w32".
+
+
+
+PERFORMANCE
+-----------
+
+A long time ago I did performance testing (of version 0.07 of 
+PDPCLIB) of the stated objectives, using perf*.c as the testing 
+tool, and got the following results (on OS/2):
+
+                fgets on text files
+                -------------------
+                
+bcc - 12.98 12.98 13.10
+gcc - 12.59 12.51 12.45
+icc - 7.84 7.72 7.76
+wcc - 23.38 23.36 23.34
+pbcc - 4.87 4.84 4.85
+pgcc - 4.42 4.52 4.50
+picc - 4.87 4.96 4.85
+pwcc - 4.87 4.85 4.87
+
+summary - cset has the best library, watcom the worst.  pdpclib
+creams the lot.  gcc is the best compiler.
+                                
+                                
+                large freads on binary files
+                ----------------------------
+                
+bcc - 2.10 2.01 1.98
+gcc - 2.71 2.70 2.64
+icc - 3.87 3.88 3.93
+wcc - 2.18 2.18 2.18
+pbcc - 1.83 1.85 1.87
+pgcc - 1.89 1.83 1.87
+picc - 1.87 1.84 1.85
+pwcc - 1.85 1.83 1.86
+
+summary - Borland has the best library, cset has the worst.
+pdpclib creams the lot.  The compilers are equal.
+
+
+                small freads on binary files
+                ----------------------------
+
+bcc - 8.13 8.27 8.42
+gcc - 3.98 3.92 3.91
+icc - 4.54 4.64 4.68
+wcc - 3.89 3.95 3.93
+pbcc - 3.24 3.22 3.19
+pgcc - 3.41 3.43 3.41
+picc - 3.24 3.24 3.21
+pwcc - 3.21 3.20 3.21
+
+summary - Borland has the worst library, gcc has the best. pdpclib,
+as usual, beats the lot.  The compilers are basically equal,
+except that gcc is slightly worse, as it doesn't generate an 
+inline memcpy() for the situation I am using it in.  The main 
+reason for gcc having the best library is that it has a default 
+buffer size of 5120 compared to the others at 4096.  Note - in
+other tests I did, gcc was coming out ahead of wcc, by about 5%,
+so I don't know why this particular set of tests had them level.
+
+
+Information:
+I used a 486DX33 with a RAM disk in order to perform these tests,
+in an effort to concentrate the stats on the library itself rather
+than the physical hard disk.
+bcc = Borland C++ 1.5 
+gcc = EMX 0.9a
+icc = CSET++/2 2.0
+wcc = Watcom 10.0b
+p* = PDPCLIB compiled with one of the above compilers.
+
+
+Sorry I don't have up-to-date stats or mainframe stats.
+I wouldn't expect pdpclib on the mainframe to be better 
+than the commercial compilers because it does record reads
+rather than block reads. Hopefully one day this will be
+rectified.
+
+
+
+HISTORY
+-------
+
+0.01  A lot of stuff has been implemented, and a lot of stuff has
+      not.  However, there has been sufficient amount of work done
+      to make it at least interesting reading.
+
+0.02  Further down the track, but not enough to go bananas about.
+      Main work was done in fopen(), which is far more robust now.
+
+0.03  Got it working on Watcom, CSET + GNU.  
+
+0.04  Miscellaneous additions
+
+0.05  There is a function for every single function except those in
+      the math library, but there are still holes in the system,
+      especially with the File I/O.  But now I have all of the
+      fundamental design in place.
+      
+0.06  Much more robust file i/o.
+
+0.07  Many bug fixes and enhancements.
+
+0.50  DOS support, and various bug fixes.
+
+0.51  General tidy up.
+
+0.52  Bug fixes for problems found whilst doing PDOS work.
+
+0.60  Added MVS support, since I suddenly had an MVS machine available
+      and had always wondered how on earth C was able to be implemented
+      on that environment.  Now I know some of the answers.
+
+0.61  Implemented a stub function required for some situations under
+      MSDOS.
+
+0.70  Added PDOS support.
+
+0.71  Completed PDOS and fixed DOS bug.
+
+0.73  Revamped interface to PDOS.
+
+0.80  Many changes to work with GCC (MVS port).
+
+0.81  Now works for CMS as well, and both CMS and MVS
+      have a working setjmp/longjmp.
+
+0.82  Made __CMS__ independent of __MVS__. Also fixed
+      a bug.
+
+0.83  Whitespace change required to avoid assembly error.
+
+0.84  All math functions have been implemented, meaning
+      every function has now been implemented, although
+      some still have limitations. Also, Win32 support has been
+      added so you can use PDPCLIB in combination with gcc to
+      create console mode applications. Also, MVS has been
+      significantly enhanced so that it can read PDS
+      concatenations. Also, MVS executables are now 31-bit.
+
+0.85  Support for S/380, bug fixes, memmgr option.
+
+0.86  Bug fixes to do with floating point. On MVS, null variable
+      length records have a single blank as data, as per ISPF and
+      as IEBCOMPR expects. Macros are now provided for the different
+      compile environments (370, 380 and 390).
+
+1.00  Supports VM/380, writing to variable-blocked datasets,
+      reading and writing RECFM=U on MVS, rename and remove
+      on MVS, scanf has been updated to support all formats.
+      There is now no longer anything I know of that hasn't
+      been implemented. It would require going through the
+      ISO standard to check that, which I haven't done. Since
+      I don't know of anything that hasn't been implemented,
+      this is now version 1.00, after 15 years! If you see
+      anything that isn't implemented, let me know and I'll
+      check the standard and try to add it. Or better yet,
+      submit the code fix with the bug report. :-) Note that
+      opening files for update isn't implemented yet, but I
+      think that it's still conformant without that facility,
+      so long as an error is returned on open. It just means
+      that it's usability is downgraded. Similar to it not
+      being able to open VSAM datasets.
+
+1.50  setjmp & longjmp implemented properly for all PC environments,
+      making them compliant too. setjmp & longjmp revamped on MVS
+      and CMS to stop saving the entire stack. Several bug fixes.
+      And hack for MVS taken out now that the compiler bug has
+      been fixed.
+
+2.00  Linux version added. Some missing functionality in CMS
+      added. Some bugs fixed. Some parameters unclumped.
+
+2.01  Bug fixes and minor enhancements, mainly for MVS.
+
+
+FUTURE DIRECTION
+----------------
+
+VM/CMS port that uses native CMS macros instead of OS emulation.
+Get DD overrides implemented for MVS the same way that SMP calls
+  IEBCOPY etc and perhaps detect more environments such as CICS
+  and check the general interface.
+Stack checking at least for stack overwrite on termination.
+Check buffer sizes in AOPEN are not excessive.
+Check IBM's use of CRAB/DSA prior to getting code reentrant again.
+Get the latest version working under MUSIC/SP again.
+Get it working (again) with other MVS C compilers such as C/370.
+Add code on MVS to detect a real terminal and do appropriate
+  flushing for use on interactive programs.
+Under TSO as a CP, PUTLINE etc shold be used.
+Read/write blocks instead of records on mainframe.
+Allow open for update and append on various environments.
+long arithmetic to be implemented on MSDOS.
+A port to DOS/VS(E).
+Ports to some of the more obscure mainframe environments such as TSS.
+A port to z/TPF.
+
+
+
+CREDITS
+-------
+
+Dave Wade for doing the CMS port, the maths functions
+  and getting floating point supported and various other
+  enhancements and bug fixes along the way.
+Dave Edwards (RIP) for various bug fixes/enhancements.
+Phil Roberts for helping to debug the MVS port.
+Gerhard Postpischil for various assembler mods, and for
+  his extremely important work on MVS/380 too.
+Robert O'Hara for getting EPLIST support working in CMS
+  and for making the mods to CMS (in VM/380) to support 
+  a 31-bit environment for PDPCLIB to use.
+Ray Gardner for making his date routines public domain, plus
+  the original qsort routine (since replaced with libnix).
+Jim Nutt and Rob Duff for releasing strftime to the public domain.
+Rowan Crowe for some mods to memcpy.
+Matthew Parker for getting the program name under MSDOS.
+And last but not least, my wife, for putting up with me in 
+  the many many man-days it took me to write this, when I should 
+  have been doing family-related things.
+
+Also, I have used a small amount of code from libnix,
+another public domain C runtime library available here:
+http://sourceforge.net/projects/libnix
+which was only known to me after pdpclib was mostly written.
+
+Also in the past I used some code from pdclib, available here:
+http://sourceforge.net/projects/pdclib

@@ -1,0 +1,52 @@
+Has 4|8kB of display memory, organized as 32-bit cells.
+* 15:0,	Char or Pixel Bits
+* 29:16, Color or Effect Bits
+* 31:30, Cell Mode
+** 00, Text Cell, 8x8, uses Font Memory
+** 01, Graphics Cell, 4x4x1
+
+Mode 0/1:
+* 21,16: ColorA
+* 27,22: ColorB
+** Colors: rrggbb
+** 0, 85, 170, 255
+
+Text Cell:
+*  7:0, Glyph
+*  9:8, Font
+* 15:10, Effect
+** Strike, Underline
+
+If pixiel bit is set, will select ColorA.
+
+
+[31:30]=Cell Type Tag (CelTag)
+  00: Cells are a text-cell, with a 10-bit font space.
+    [9:8] Font
+    [7:0] Glyph
+    [15:10], Attr Flags (if not RGB data)
+  01: Cells are a bitmap cell, 4x4x1
+    [15:0], 4x4x1 Bitmap bits.
+  10: Cells are a bitmap cell:
+    [127:64] 8x8x1 Luma (Y)
+    [ 63:48] 4x4x1 Chroma (U)
+    [ 47:32] 4x4x1 Chroma (V)
+    ClrTag: 00
+    Low 28 bits: 2x YUV444
+
+[29:28]=Color Type Tag (ClrTag)
+  00: 2x 6-bit RGB endpoints (64 colors).
+    [27:22]=ColorB
+    [21:16]=ColorA
+  10: 2x 9-bit RGB endpoints (512 colors).
+    [27:19]=ColorB
+    [18:10]=ColorA
+
+
+6-bpp bitmap cells:
+* CelTag=11, ClrTag=00/01
+** ClrTag will select between Row/Col
+* Store 4x4x6 bpp
+* Each 32-bit word holds 4 pixels, each 6 bits.
+** Pixel data is held in the low 24 bits.
+** [127:120], [95:88] = Currently Ignored

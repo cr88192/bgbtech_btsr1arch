@@ -1,0 +1,162 @@
+#
+# Quake Makefile for Linux 2.0
+#
+# Aug '98 by Zoid <zoid@idsoftware.com>
+#
+# ELF only
+#
+
+BASEVERSION=1.09
+VERSION=$(BASEVERSION)$(GLIBC)
+
+ifneq (,$(findstring alpha,$(shell uname -m)))
+ARCH=axp
+else
+ARCH=i386
+endif
+NOARCH=noarch
+
+BUILD_DEBUG_DIR=debug$(ARCH)$(GLIBC)
+BUILD_RELEASE_DIR=release$(ARCH)$(GLIBC)
+
+
+TOOLPATH=
+
+CC=$(TOOLPATH)cl
+OBJDUMP=$(TOOLPATH)
+
+TK_CFL=
+TK_LDFL= $(TK_CFL)
+
+# BASE_CFLAGS=-Dstricmp=strcasecmp
+# BASE_CFLAGS=/Zi
+BASE_CFLAGS=/Os /MD
+
+CFLAGS=$(TK_CFL) $(BASE_CFLAGS)
+LDFLAGS=$(TK_LDFL) opengl32.lib gdi32.lib user32.lib \
+	winmm.lib kernel32.lib ole32.lib ws2_32.lib
+
+all: targets
+
+targets: quake$(ARCH).exe
+
+SQUAKE_SRCS = \
+	q1base/cl_demo.c \
+	q1base/cl_input.c \
+	q1base/cl_main.c \
+	q1base/cl_parse.c \
+	q1base/cl_tent.c \
+	q1base/chase.c \
+	q1base/cmd.c \
+	q1base/common.c \
+	q1base/console.c \
+	q1base/crc.c \
+	q1base/cvar.c \
+	q1base/draw.c \
+	q1base/d_edge.c \
+	q1base/d_init.c \
+	q1base/d_modech.c \
+	q1base/d_part.c \
+	q1base/d_polyse.c \
+	q1base/d_scan.c \
+	q1base/d_sky.c \
+	q1base/d_sprite.c \
+	q1base/d_surf.c \
+	q1base/d_vars.c \
+	q1base/d_zpoint.c \
+	q1base/host.c \
+	q1base/host_cmd.c \
+	q1base/keys.c \
+	q1base/menu.c \
+	q1base/mathlib.c \
+	q1base/model.c \
+	q1base/net_loop.c \
+	q1base/net_main.c \
+	q1base/net_vcr.c \
+	q1base/net_none.c \
+	q1base/nonintel.c \
+	q1base/pr_cmds.c \
+	q1base/pr_edict.c \
+	q1base/pr_exec.c \
+	q1base/r_aclip.c \
+	q1base/r_alias.c \
+	q1base/r_bsp.c \
+	q1base/r_light.c \
+	q1base/r_draw.c \
+	q1base/r_efrag.c \
+	q1base/r_edge.c \
+	q1base/r_misc.c \
+	q1base/r_main.c \
+	q1base/r_sky.c \
+	q1base/r_sprite.c \
+	q1base/r_surf.c \
+	q1base/r_part.c \
+	q1base/r_vars.c \
+	q1base/screen.c \
+	q1base/sbar.c \
+	q1base/sv_main.c \
+	q1base/sv_phys.c \
+	q1base/sv_move.c \
+	q1base/sv_user.c \
+	q1base/zone.c	\
+	q1base/view.c	\
+	q1base/wad.c \
+	q1base/world.c \
+	q1base/cd_null.c \
+	\
+	q1base/in_win.c \
+	q1base/sys_win.c \
+	q1base/vid_win.c \
+	q1base/snd_dma.c \
+	q1base/snd_mem.c \
+	q1base/snd_mix.c \
+	q1base/snd_win.c \
+
+SKIP_SRCS=\
+	q1base/d_fill.c \
+	q1base/snd_null.c \
+	q1base/net_dgrm.c \
+	q1base/net_bsd.c \
+	q1base/sys_linux.c \
+	q1base/net_udp.c \
+	q1base/cd_linux.c \
+	q1base/vid_svgalib.c \
+	\
+	q1base/snd_dma.c \
+	q1base/snd_mem.c \
+	q1base/snd_mix.c \
+	q1base/snd_linux.c \
+	\
+	q1base/d_draw.c \
+	q1base/d_draw16.c \
+	q1base/d_parta.c \
+	q1base/d_polysa.c \
+	q1base/d_scana.c \
+	q1base/d_spr8.c \
+	q1base/d_varsa.c \
+	q1base/math.c \
+	q1base/r_aliasa.c \
+	q1base/r_drawa.c \
+	q1base/r_edgea.c \
+	q1base/r_varsa.c \
+	q1base/surf16.c \
+	q1base/surf8.c \
+	q1base/worlda.c \
+	q1base/r_aclipa.c \
+	q1base/snd_mixa.c \
+	q1base/sys_dosa.o
+
+quake$(ARCH).exe: $(SQUAKE_SRCS)
+	cl /Fe$@ $(SQUAKE_SRCS) $(CFLAGS) $(LDFLAGS)
+
+####
+
+
+clean: clean-debug clean-release
+
+clean-debug:
+
+clean-release:
+
+clean2:
+

@@ -53,6 +53,8 @@ reg[2:0]	opBty;
 
 reg[7:0]	opUCmdIx;
 
+// reg opIs32;
+
 always @*
 begin
 
@@ -72,6 +74,8 @@ begin
 	opUIxt		= 0;
 	opUCmdIx	= 0;
 	opBty		= 0;
+
+//	opIs32 = (istrWord[15:8] == 8'b1z001110);
 
 	casez(istrWord)
 

@@ -69,7 +69,8 @@ begin
 			3'b100: tRegOutPcVal=icBlkData[ 95: 64];
 			3'b101: tRegOutPcVal=icBlkData[111: 80];
 			3'b110: tRegOutPcVal=icBlkData[127: 96];
-			3'b111: tRegOutPcVal=icBlkData[143:112];
+//			3'b111: tRegOutPcVal=icBlkData[143:112];
+			3'b111: tRegOutPcVal={16'hxxxx, icBlkData[127:112]};
 		endcase
 		
 //		$display("BsrIcTile %X %X", regInPc, tRegOutPcVal);

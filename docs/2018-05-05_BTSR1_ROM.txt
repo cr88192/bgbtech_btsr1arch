@@ -58,3 +58,10 @@ MMIO Space:
 * E110(W): GPIO Set (Out=Out|Val)
 * E114(W): GPIO Clear (Out=Out&(~Val))
 
+
+Expanded (20 bit space)
+
+10000 .. 7FFFF: More RAM/ROM
+A0000 .. EFFFF: More MMIO
+
+A0000 .. BFFFF: Reserved for Display Memory
