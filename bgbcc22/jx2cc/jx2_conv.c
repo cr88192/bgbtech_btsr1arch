@@ -684,6 +684,13 @@ int BGBCC_JX2C_EmitConvVRegVReg(
 		if((st==CCXL_TY_UB) || (st==CCXL_TY_US) ||
 			(st==CCXL_TY_UI) || ((st==CCXL_TY_UNL) && !sctx->is_addr64))
 		{
+			if(sctx->has_bjx1egpr)
+			{
+				return(BGBCC_JX2C_EmitOpNmidVRegVReg(ctx, sctx, dtype,
+					nm1, dreg, sreg));
+			}
+
+#if 1
 			tr1=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 
 				BGBCC_SH_REGCLS_QGR);
 			tr0=BGBCC_SH_REG_RD0+(tr1&31);
@@ -695,12 +702,14 @@ int BGBCC_JX2C_EmitConvVRegVReg(
 			BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, tr1);
 			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr1);
 			return(1);
+#endif
 		}
 
 		if((st==CCXL_TY_SB) || (st==CCXL_TY_SS) || (st==CCXL_TY_I))
 		{
-#if 0
+#if 1
 			if(sctx->has_bjx1egpr)
+//			if(sctx->has_bjx1egpr && (st!=CCXL_TY_I))	//EXTS.L bug?
 			{
 				return(BGBCC_JX2C_EmitOpNmidVRegVReg(ctx, sctx, dtype,
 					nm1, dreg, sreg));

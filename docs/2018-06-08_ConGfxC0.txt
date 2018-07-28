@@ -32,7 +32,13 @@ If pixiel bit is set, will select ColorA.
     [ 63:48] 4x4x1 Chroma (U)
     [ 47:32] 4x4x1 Chroma (V)
     ClrTag: 00
-    Low 28 bits: 2x YUV444
+      Low 28 bits: 2x YUV644
+      CyB[27:22]
+      CyA[21:16]
+      CuB[15:12]
+      CuA[11: 8]
+      CvB[ 7: 4]
+      CvA[ 3: 0]
 
 [29:28]=Color Type Tag (ClrTag)
   00: 2x 6-bit RGB endpoints (64 colors).

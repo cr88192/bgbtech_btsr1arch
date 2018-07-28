@@ -2545,7 +2545,20 @@ int BGBCC_SHXC_SetupFrameLayout(BGBCC_TransState *ctx,
 
 	for(i=0; i<obj->n_regs; i++)
 	{
-		rcls=BGBCC_SHXC_TypeGetRegClassP(ctx, obj->regs[i]->type);
+		rcls=BGBCC_SHXC_TypeGetRegClassP(ctx, 
+			BGBCC_CCXL_TypeWrapBasicType(obj->regs[i]->type_zb));
+//		rcls=BGBCC_SHXC_TypeGetRegClassP(ctx, obj->regs[i]->type);
+
+#if 0		
+		if(obj->regs[i]->type_zb==4)
+		{
+			if(sctx->is_addr64)
+				rcls=BGBCC_SH_REGCLS_QGR;
+			else
+				rcls=BGBCC_SH_REGCLS_GR;
+		}
+#endif
+		
 		obj->regs[i]->regcls=rcls;
 
 		switch(rcls)
@@ -2865,7 +2878,9 @@ int BGBCC_SHXC_SetupFrameLayout(BGBCC_TransState *ctx,
 
 	for(i=0; i<obj->n_regs; i++)
 	{
-		rcls=BGBCC_SHXC_TypeGetRegClassP(ctx, obj->regs[i]->type);
+		rcls=BGBCC_SHXC_TypeGetRegClassP(ctx, 
+			BGBCC_CCXL_TypeWrapBasicType(obj->regs[i]->type_zb));
+//		rcls=BGBCC_SHXC_TypeGetRegClassP(ctx, obj->regs[i]->type);
 		switch(rcls)
 		{
 		case BGBCC_SH_REGCLS_GR:

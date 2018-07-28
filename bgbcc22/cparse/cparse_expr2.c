@@ -85,8 +85,9 @@ BCCX_Node *BGBCP_Number(BGBCP_ParseState *ctx, char *str)
 
 BCCX_Node *BGBCP_ExpressionLit(BGBCP_ParseState *ctx, char **str)
 {
+	static char stbuf[16384];
 	char b[256], b2[256];
-	char *s, *t;
+	char *s, *t, *s1, *t1;
 	char *suf;
 	int ty, ty2;
 	BCCX_Node *n, *n1, *n2;
@@ -260,16 +261,24 @@ BCCX_Node *BGBCP_ExpressionLit(BGBCP_ParseState *ctx, char **str)
 
 	if(ty==BTK_STRING)
 	{
+		t1=stbuf;
+		strcpy(t1, b);
+		t1+=strlen(t1);
+
 		BGBCP_Token(s, b2, &ty2);
 		while(ty2==BTK_STRING)
 		{
 			s=BGBCP_Token(s, b2, &ty2);
-			strcat(b, b2);
+//			strcat(b, b2);
+			strcpy(t1, b2);
+			t1+=strlen(t1);
+			
 			BGBCP_Token(s, b2, &ty2);
 		}
 
 		n=BCCX_NewCst(&bgbcc_rcst_string, "string");
-		BCCX_SetCst(n, &bgbcc_rcst_value, "value", b);
+//		BCCX_SetCst(n, &bgbcc_rcst_value, "value", b);
+		BCCX_SetCst(n, &bgbcc_rcst_value, "value", stbuf);
 
 		*str=s;
 		return(n);

@@ -386,7 +386,8 @@ void	VID_Init (unsigned char *palette)
 //	D_InitCaches (surfcache, 512*1024);
 	D_InitCaches (surfcache, BASEWIDTH*BASEHEIGHT*3*2);
 
-#ifndef CONGFX
+// #ifndef CONGFX
+#if 0
 	vid_vreg=(u32 *)0xA05F8000;
 	vid_vreg[(0x44/4)]=0x000D;
 //	vid_vreg[(0x5C/4)]=320|(240<<10)|(320<<20);
@@ -417,7 +418,8 @@ void	VID_Init (unsigned char *palette)
 	vid.colormap16 = host_colormap16;
 #endif
 
-#ifndef CONGFX
+//#ifndef CONGFX
+#if 0
 
 #if 1
 //	vid_vreg[(0x44/4)]=0x0005;
@@ -478,7 +480,8 @@ void	VID_Shutdown (void)
 {
 }
 
-#ifdef CONGFX
+// #ifdef CONGFX
+#if 1
 
 u16 VID_ConGfx_EncBlock16_YuvToRGB555(u16 clra)
 {
@@ -586,19 +589,22 @@ u16 VID_ConGfx_EncBlock16_YuvToRGB444(u16 clra)
 	return(clrb);
 }
 
-void	VID_ConGfx_EncBlock16(u16 *src, u32 *dsta, u32 *dstb)
+#if 0
+void	VID_ConGfx_EncBlock16(u16 *src,
+	u32 *dsta, u32 *dstb,
+	u32 *dstc, u32 *dstd)
 {
 	const sbyte idxtab[8]={0,0, 0,1,2,3, 3,3};
-	u16 tpxb[16];
+	u16 tpxb[64];
 	u16 *cs, *cs1, *ct;
 	u16 px, px1;
 	int cmin, cmax, cavg;
 	u16 clra, clrb;
 	u32 clrc, clrd;
-	u32 px2;
+	u64 px2;
 	u32 dxa, dxb;
 	int cy, cu, cv;
-	int cy0, cy1, cu0, cu1, cv0, cv1;
+	int cy0, cy1, cu0, cu1, cv0, cv1, cu2, cv2;
 	int cr, cg, cb, cd;
 	int l0, l0b;
 	int x, y;
@@ -606,100 +612,185 @@ void	VID_ConGfx_EncBlock16(u16 *src, u32 *dsta, u32 *dstb)
 
 	cmin=65536;
 	cmax=-1;
-//	ct=tpxb+16;
 	ct=tpxb; cs=src;
-	for(y=0; y<4; y++)
+	for(y=0; y<8; y++)
 	{
-//		cs1=src+y*BASEWIDTH;
 		cs1=cs;
 		cs+=BASEWIDTH;
-		for(x=0; x<4; x++)
+#if 0
+		for(x=0; x<8; x++)
 		{
 			px=*cs1++;
-//			*(--ct)=px;
 			*ct++=px;
 
-//			px1=px;
 			px1=px&0xFC00;
 
 			if(px1<cmin)cmin=px;
 			if(px1>cmax)cmax=px;
 		}
+#endif
+
+#if 1
+		k=cs1[0];	ct[0]=k;
+		cmin=__int_min(cmin, k);	cmax=__int_max(cmax, k);
+		k=cs1[1];	ct[1]=k;
+		cmin=__int_min(cmin, k);	cmax=__int_max(cmax, k);
+		k=cs1[2];	ct[2]=k;
+		cmin=__int_min(cmin, k);	cmax=__int_max(cmax, k);
+		k=cs1[3];	ct[3]=k;
+		cmin=__int_min(cmin, k);	cmax=__int_max(cmax, k);
+
+		k=cs1[4];	ct[4]=k;
+		cmin=__int_min(cmin, k);	cmax=__int_max(cmax, k);
+		k=cs1[5];	ct[5]=k;
+		cmin=__int_min(cmin, k);	cmax=__int_max(cmax, k);
+		k=cs1[6];	ct[6]=k;
+		cmin=__int_min(cmin, k);	cmax=__int_max(cmax, k);
+		k=cs1[7];	ct[7]=k;
+		cmin=__int_min(cmin, k);	cmax=__int_max(cmax, k);
+
+		ct+=8;
+#endif
 	}
-	
-//	cmin=0x7FFF;
-//	cmax=0x7FFF;
 	
 	cavg=(cmin+cmax)/2;
 	
-#if 1
+#if 0
 	l0=(2*16777216)/(cmax-cavg+1);
 	l0b=(4*16777216);
 	ct=tpxb; px1=0; px2=0;
-	for(i=0; i<16; i++)
+	for(i=0; i<64; i++)
 	{
 		px=*ct++;
-		j=idxtab[((px-cavg)*l0+l0b)>>24];
+//		j=idxtab[((px-cavg)*l0+l0b)>>24];
 		px2=(px2<<2)|j;
 		px1=(px1<<1)|(px>cavg);
 	}
-	
-//	px2=0xC33CC33C;
 #endif
 
 #if 0
-	ct=tpxb; px1=0;
-	for(i=0; i<16; i++)
+	ct=tpxb; px2=0;
+	for(i=0; i<64; i++)
 	{
 		px=*ct++;
-		px1=px1<<1;
-		if(px>cavg)
-			px1|=1;
+//		px2=px2<<1;
+//		if(px>cavg)
+//			px2|=1;
+		px2=(px2<<1)|(px>cavg);
 	}
 #endif
 
-//	px1&=0xFFFF;
-//	px1=0;
+#if 1
+	ct=tpxb; px2=0;
+	for(i=0; i<8; i++)
+	{
+		k=ct[0];	px2=(px2<<1)|(k>cavg);
+		k=ct[1];	px2=(px2<<1)|(k>cavg);
+		k=ct[2];	px2=(px2<<1)|(k>cavg);
+		k=ct[3];	px2=(px2<<1)|(k>cavg);
+		k=ct[4];	px2=(px2<<1)|(k>cavg);
+		k=ct[5];	px2=(px2<<1)|(k>cavg);
+		k=ct[6];	px2=(px2<<1)|(k>cavg);
+		k=ct[7];	px2=(px2<<1)|(k>cavg);
+		ct+=8;
+	}
+#endif
 
-
-//	conbufa[by2*80+bx]=0x30550000|px1;
-//	conbufb[by2*80+bx]=(clrb<<16)|clra;
-
-	cy0=cmin>>10;	cv0=(cmin>> 5)&31;	cu0=(cmin    )&31;
-	cy1=cmax>>10;	cv1=(cmax>> 5)&31;	cu1=(cmax    )&31;
+	cy0=(cmin>>10)&63;	cv0=(cmin>> 5)&31;	cu0=(cmin    )&31;
+	cy1=(cmax>>10)&63;	cv1=(cmax>> 5)&31;	cu1=(cmax    )&31;
 	cy=(cy0+cy1)>>1;
+//	cu=(cu0+cu1)>>1;
+//	cv=(cv0+cv1)>>1;
 	cu=cu0+cu1;
 	cv=cv0+cv1;
 
+//	cu0=(2*cu0+cu)>>2;	cv0=(2*cv0+cv)>>2;
+//	cu1=(2*cu1+cu)>>2;	cv1=(2*cv1+cv)>>2;
+
+#if 1
+	cu2=(cu-32)<<1;	cv2=(cv-32)<<1;
+
+	cu2=(cu0-16)<<2;	cv2=(cv0-16)<<2;
+	cg=cy0-((cu2+cv2)>>1);
+	cb=cg+cu2;	cr=cg+cv2;
+	cr=(cr+1)>>1;	cg=(cg+1)>>1;	cb=(cb+1)>>1;
+	if((cr|cg|cb)&(~31))
+	{
+//		if(cr<0)cr=0;
+//		if(cg<0)cg=0;
+//		if(cb<0)cb=0;
+//		if(cr>31)cr=31;
+//		if(cg>31)cg=31;
+//		if(cb>31)cb=31;
+		cr=__int_clamp(cr, 0, 31);
+		cg=__int_clamp(cg, 0, 31);
+		cb=__int_clamp(cb, 0, 31);
+	}
+	clrb=(cr<<10)|(cg<<5)|cb;
+
+	cu2=(cu1-16)<<2;	cv2=(cv1-16)<<2;
+	cg=cy1-((cu2+cv2)>>1);
+	cb=cg+cu2;	cr=cg+cv2;
+	cr=(cr+1)>>1;	cg=(cg+1)>>1;	cb=(cb+1)>>1;
+	if((cr|cg|cb)&(~31))
+	{
+//		if(cr<0)cr=0;
+//		if(cg<0)cg=0;
+//		if(cb<0)cb=0;
+//		if(cr>31)cr=31;
+//		if(cg>31)cg=31;
+//		if(cb>31)cb=31;
+		cr=__int_clamp(cr, 0, 31);
+		cg=__int_clamp(cg, 0, 31);
+		cb=__int_clamp(cb, 0, 31);
+	}
+	clra=(cr<<10)|(cg<<5)|cb;
+
+	dxa=0x90000000;
+	dxb=(clrb<<16)|clra;
+#endif
+
+#if 0
+	cu2=(cu-32)<<1;	cv2=(cv-32)<<1;
+
+//	cu2=(cu0-16)<<2;	cv2=(cv0-16)<<2;
+	cg=cy0-((cu2+cv2)>>1);
+	cb=cg+cu2;	cr=cg+cv2;
+	cr=(cr+4)>>3;	cg=(cg+4)>>3;	cb=(cb+4)>>3;
+	if((cr|cg|cb)&(~31))
+	{
+		if(cr<0)cr=0;
+		if(cg<0)cg=0;
+		if(cb<0)cb=0;
+		if(cr>7)cr=7;
+		if(cg>7)cg=7;
+		if(cb>7)cb=7;
+	}
+	clrb=(cr<<6)|(cg<<3)|cb;
+
+//	cu2=(cu1-16)<<2;	cv2=(cv1-16)<<2;
+	cg=cy1-((cu2+cv2)>>1);
+	cb=cg+cu2;	cr=cg+cv2;
+	cr=(cr+4)>>3;	cg=(cg+4)>>3;	cb=(cb+4)>>3;
+	if((cr|cg|cb)&(~31))
+	{
+		if(cr<0)cr=0;
+		if(cg<0)cg=0;
+		if(cb<0)cb=0;
+		if(cr>7)cr=7;
+		if(cg>7)cg=7;
+		if(cb>7)cb=7;
+	}
+	clra=(cr<<6)|(cg<<3)|cb;
+
+	dxa=0xA0000000|(clrb<<19)|(clra<<10);
+#endif
+
+#if 0
 	j=(cu0-cu1); j=j^(j>>31);
 	k=(cv0-cv1); k=k^(k>>31);
 
-//	if((j+k)>8)
-//	if((j+k)>4)
-//	if((j+k)>12)
-//	if(1)
-	if(0)
-	{
-		clrb=VID_ConGfx_EncBlock16_YuvToRGB444(cmin);
-		clra=VID_ConGfx_EncBlock16_YuvToRGB444(cmax);
-		clrc=(clrb<<12)|clra;
-		dxa=0x07000000|clrc;
-		dxb=px2;
-
-//		clrb=VID_ConGfx_EncBlock16_YuvToRGB555(cmin);
-//		clra=VID_ConGfx_EncBlock16_YuvToRGB555(cmax);
-//		dxa=0x00550000|px1;
-//		dxb=(clrb<<16)|clra;
-//		if(!dxb)dxb|=1;
-		*dsta=dxa;
-		*dstb=dxb;
-		return;
-	}
-
-//	cu1=cu-32;	cv1=cv-32;	
 	cu1=(cu-32)<<1;	cv1=(cv-32)<<1;
-//	cg=cy;
-//	cg=(4*cy-cu1-cv1)>>1;
 	cg=cy-((cu1+cv1)>>1);
 	cb=cg+cu1;	cr=cg+cv1;
 	cd=cy1-cy0;
@@ -715,293 +806,351 @@ void	VID_ConGfx_EncBlock16(u16 *src, u32 *dsta, u32 *dstb)
 		if(cb>63)cb=63;
 		if(cd>63)cd=63;
 	}
-	
-	clrc=cr|(cg<<6)|(cb<<12)|(cd<<18);
-	dxa=0x03000000|clrc;
-	dxb=px2;
-	if(!dxb)dxb|=1;
+#endif
 
-//	clrb=VID_ConGfx_EncBlock16_YuvToRGB555(cmin);
-//	clra=VID_ConGfx_EncBlock16_YuvToRGB555(cmax);
-//	dxa=0x00550000|px1;
-//	dxb=(clrb<<16)|clra;
-//	if(!dxb)dxb|=1;
+#if 0
+//	cu0>>=1;	cv0>>=1;
+//	cu1>>=1;	cv1>>=1;
+
+	cu>>=1;
+	cv>>=1;
+
+//	cu0=(cu0+1)>>1;		cv0=(cv0+1)>>1;
+//	cu1=(cu1+1)>>1;		cv1=(cv1+1)>>1;
+	cu0=(cu+0)>>1;		cv0=(cv+0)>>1;
+	cu1=(cu+1)>>1;		cv1=(cv+1)>>1;
+	if((cu0|cv0|cu1|cv1)&(~15))
+	{
+		if(cu0>15)cu0=15;
+		if(cv0>15)cv0=15;
+		if(cu1>15)cu1=15;
+		if(cv1>15)cv1=15;
+	}
+
+//	cu0=8;	cv0=8;
+//	cu1=8;	cv1=8;
+	
+	dxa=0x80000000|(cy0<<22)|(cy1<<16)|
+		(cu0<<12)|(cv0<<8)|(cu1<<4)|(cv1<<0);
+	dxb=0x5A5A5A5A;
+#endif
+
+
 	*dsta=dxa;
 	*dstb=dxb;
+	*dstc=(u32)px2;
+	*dstd=(u32)(px2>>32);
 }
+#endif
+
+#if 0
+void	VID_ConGfx_EncBlock16P(u16 *src, u32 *rdsta, u32 *rdstb)
+{
+	u16 tpxb[16];
+	u16 *cs, *ct;
+	int cmin, cmax, cavg, calo, cahi;
+	int clra, clrb;
+	u32 px2;
+	u32 dxa, dxb;
+	int cy, cu, cv, cu2, cv2;
+	int cr, cg, cb;
+	int i, j, k;
+
+	__hint_use_egpr();
+
+	cmin=65536;
+	cmax=-1;
+	ct=tpxb; cs=src;
+
+	for(i=0; i<4; i++)
+	{
+		k=cs[0];	ct[0]=k;
+		cmin=__int_min(cmin, k);	cmax=__int_max(cmax, k);
+		k=cs[1];	ct[1]=k;
+		cmin=__int_min(cmin, k);	cmax=__int_max(cmax, k);
+		k=cs[2];	ct[2]=k;
+		cmin=__int_min(cmin, k);	cmax=__int_max(cmax, k);
+		k=cs[3];	ct[3]=k;
+		cmin=__int_min(cmin, k);	cmax=__int_max(cmax, k);
+		cs+=BASEWIDTH;
+		ct+=4;
+	}
+	
+	cavg=(cmin+cmax)>>1;
+	calo=(cmin+cavg)>>1;
+	cahi=(cmax+cavg)>>1;
+
+#if 1
+	ct=tpxb; px2=0;
+	for(i=0; i<4; i++)
+	{
+		k=ct[0];
+		px2=(px2<<2)|((k>cavg)<<1);
+		px2|=(k>cahi)|(calo>k);
+
+		k=ct[1];
+		px2=(px2<<2)|((k>cavg)<<1);
+		px2|=(k>cahi)|(calo>k);
+
+		k=ct[2];
+		px2=(px2<<2)|((k>cavg)<<1);
+		px2|=(k>cahi)|(calo>k);
+
+		k=ct[3];
+		px2=(px2<<2)|((k>cavg)<<1);
+		px2|=(k>cahi)|(calo>k);
+
+		ct+=4;
+	}
+	px2=px2^((~(px2>>1))&0x55555555);
+#endif
+
+#if 1
+	cy=(cmin>>11)&31;	cv=(cmin>> 5)&31;	cu=(cmin    )&31;
+	cu2=(cu-16)<<1;	cv2=(cv-16)<<1;
+	cg=cy-((cu2+cv2)>>1);
+	cb=cg+cu2;	cr=cg+cv2;
+
+	if((cr|cg|cb)&(~31))
+	{
+		cr=__int_clamp(cr, 0, 31);
+		cg=__int_clamp(cg, 0, 31);
+		cb=__int_clamp(cb, 0, 31);
+	}
+	clrb=(cr<<10)|(cg<<5)|cb;
+
+	cy=(cmax>>11)&31;	cv=(cmax>> 5)&31;	cu=(cmax    )&31;
+	cu2=(cu-16)<<1;	cv2=(cv-16)<<1;
+	cg=cy-((cu2+cv2)>>1);
+	cb=cg+cu2;	cr=cg+cv2;
+
+	if((cr|cg|cb)&(~31))
+	{
+		cr=__int_clamp(cr, 0, 31);
+		cg=__int_clamp(cg, 0, 31);
+		cb=__int_clamp(cb, 0, 31);
+	}
+	clra=(cr<<10)|(cg<<5)|cb;
+
+	dxa=0xC0000000|(clrb<<15)|clra;
+	dxb=px2;
+#endif
+
+	*rdsta=dxa;
+	*rdstb=dxb;
+}
+#endif
+
+#if 1
+void	VID_ConGfx_EncBlock16P(u16 *src, u32 *rdsta, u32 *rdstb)
+{
+	u16 tpxb[16];
+	u16 *cs, *ct;
+	int cmin, cmax;
+	register int cavg, calo, cahi;
+	int clra, clrb;
+	u32 px2;
+	u32 dxa, dxb;
+	int cy, cu, cv, cu2, cv2;
+	int cr, cg, cb;
+	register int k0, k1;
+//	register int k2, k3;
+	int i, j, k;
+
+	__hint_use_egpr();
+
+	calo=65536;	cahi=-1;
+	ct=tpxb; cs=src;
+
+	for(i=0; i<4; i++)
+	{
+		k0=cs[0];
+		k1=cs[1];
+		ct[0]=k0;
+		calo=__int_min(calo, k0);
+		cahi=__int_max(cahi, k0);
+		k0=cs[2];
+		ct[1]=k1;
+		calo=__int_min(calo, k1);
+		cahi=__int_max(cahi, k1);
+		k1=cs[3];
+		ct[2]=k0;
+		calo=__int_min(calo, k0);
+		cahi=__int_max(cahi, k0);
+		ct[3]=k1;
+		calo=__int_min(calo, k1);
+		cahi=__int_max(cahi, k1);
+		cs+=BASEWIDTH;
+		ct+=4;
+	}
+	
+	cmin=calo;
+	cmax=cahi;
+	
+	cavg=(cmin+cmax)>>1;
+	calo=(cmin+cavg)>>1;
+	cahi=(cmax+cavg)>>1;
+
+#if 1
+	ct=tpxb; px2=0;
+	for(i=0; i<4; i++)
+	{
+		k0=ct[0];
+		k1=ct[1];
+
+		px2=(px2<<2)|((k0>cavg)<<1);
+		px2|=(k0>cahi)|(calo>k0);
+
+		k0=ct[2];
+
+		px2=(px2<<2)|((k1>cavg)<<1);
+		px2|=(k1>cahi)|(calo>k1);
+
+		k1=ct[3];
+
+		px2=(px2<<2)|((k0>cavg)<<1);
+		px2|=(k0>cahi)|(calo>k0);
+
+		px2=(px2<<2)|((k1>cavg)<<1);
+		px2|=(k1>cahi)|(calo>k1);
+
+		ct+=4;
+	}
+	px2=px2^((~(px2>>1))&0x55555555);
+#endif
+
+#if 0
+	cy=(cmin>>11)&31;	cv=(cmin>> 5)&31;	cu=(cmin    )&31;
+	cu2=(cu-16)<<1;	cv2=(cv-16)<<1;
+	cg=cy-((cu2+cv2)>>1);
+	cb=cg+cu2;	cr=cg+cv2;
+
+	if((cr|cg|cb)&(~31))
+	{
+		cr=__int_clamp(cr, 0, 31);
+		cg=__int_clamp(cg, 0, 31);
+		cb=__int_clamp(cb, 0, 31);
+	}
+	clrb=(cr<<10)|(cg<<5)|cb;
+
+	cy=(cmax>>11)&31;	cv=(cmax>> 5)&31;	cu=(cmax    )&31;
+	cu2=(cu-16)<<1;	cv2=(cv-16)<<1;
+	cg=cy-((cu2+cv2)>>1);
+	cb=cg+cu2;	cr=cg+cv2;
+
+	if((cr|cg|cb)&(~31))
+	{
+		cr=__int_clamp(cr, 0, 31);
+		cg=__int_clamp(cg, 0, 31);
+		cb=__int_clamp(cb, 0, 31);
+	}
+	clra=(cr<<10)|(cg<<5)|cb;
+
+	dxa=0xC0000000|(clrb<<15)|clra;
+	dxb=px2;
+#endif
+
+#if 1
+	clrb=cmin>>1;
+	clra=cmax>>1;
+
+	dxa=0xC0000000|(clrb<<15)|clra;
+	dxb=px2;
+#endif
+
+	*rdsta=dxa;
+	*rdstb=dxb;
+}
+
+void	VID_ConGfx_EncBlock16Q(u16 *src, u32 *rdst)
+{
+	u16 *cs1, *cs2;
+	
+	cs1=src;
+	cs2=src+(BASEWIDTH<<2);
+	VID_ConGfx_EncBlock16P(cs1+0, rdst+0, rdst+4);
+	VID_ConGfx_EncBlock16P(cs1+4, rdst+1, rdst+5);
+	VID_ConGfx_EncBlock16P(cs2+0, rdst+2, rdst+6);
+	VID_ConGfx_EncBlock16P(cs2+4, rdst+3, rdst+7);
+}
+#endif
+
 #endif
 
 void tk_putc(int val);
 int tk_puts(char *msg);
 
-void	VID_ConGfx_SendB85_32(u32 bits)
-{
-	int v, v0, v1, v2, v3, v4;
-	
-	v=bits;
-//	v4=v%85; v=v/85;
-//	v3=v%85; v=v/85;
-//	v2=v%85; v=v/85;
-//	v1=v%85; v=v/85;
-//	v0=v%85;
-
-#if 0
-	v4=v;
-	v3=v4/85;
-	v2=v3/85;
-	v1=v2/85;
-	v0=v1/85;
-	v4-=v3*85;
-	v3-=v2*85;
-	v2-=v1*85;
-	v1-=v0*85;
-	
-	tk_putc('!'+v0);
-	tk_putc('!'+v1);
-	tk_putc('!'+v2);
-	tk_putc('!'+v3);
-	tk_putc('!'+v4);
-#endif
-
-#if 1
-	v4=v;
-	v3=v4>>7;
-	v2=v3>>7;
-	v1=v2>>7;
-	v0=v1>>7;
-	
-	tk_putc(0x80+(v0&127));
-	tk_putc(0x80+(v1&127));
-	tk_putc(0x80+(v2&127));
-	tk_putc(0x80+(v3&127));
-	tk_putc(0x80+(v4&127));
-#endif
-
-}
+int vid_frnum;
 
 void	VID_Update (vrect_t *rects)
 {
-#ifdef CONGFX
 	u32 *conbufa, *conbufb;
 	int bx, by, by2;
-#endif
 
 	byte *ics;
 	u16 *ict16, *ics16, *ics16b;
 	u16 *icz16;
 	u32 *ict;
-	u32 bxa, bxb;
-	int pix;
+	u32 bxa, bxb, bxc, bxd;
+	int pix, bn;
 	int i, j, k;
 
-#ifdef CONGFX
-	conbufa=(u32 *)0xA0FF0000;
-	conbufb=conbufa+(80*61);
+	conbufa=(u32 *)0xA00A0000;
+//	conbufb=conbufa+(80*61);
 
-	tk_puts("\x1B[1;1H");
-//	tk_putc(0x1B);
-//	tk_putc('$');
+	vid_frnum++;
 
 	if(host_colormap16)
 	{
 		r_pixbytes=2;
+		bn=0;
 
-		tk_putc(0x1F);
 		ics16=(u16 *)vid.buffer;
-		for(by=0; by<50; by++)
-		{
-			tk_putc(0x1F);
+		ict=conbufa;
 
+#if 0		
+		if(vid_frnum&1)
+		{
+			ics16+=8*BASEWIDTH;
+			ict+=8*40;
+		}
+#endif
+		
+		for(by=0; by<25; by++)
+//		for(by=0; by<25; by+=2)
+		{
 			ics16b=ics16;
-			for(bx=0; bx<80; bx++)
+			for(bx=0; bx<40; bx++)
 			{
 				by2=by;
 
 //				k=by2*80+bx;
 //				VID_ConGfx_EncBlock16(ics16b, conbufa+k, conbufb+k);
 
-				VID_ConGfx_EncBlock16(ics16b, &bxa, &bxb);
-				if(bxb)
-				{
-					k=0x30000000;
-//					if((bx+1)>=80)
-//						k=0x20000000;
-					VID_ConGfx_SendB85_32(bxa|k);
-					VID_ConGfx_SendB85_32(bxb);
-				}else
-				{
-					k=0x10000000;
-//					if((bx+1)>=80)
-//						k=0;
-					VID_ConGfx_SendB85_32(bxa|k);
-				}
+				VID_ConGfx_EncBlock16Q(ics16b, ict);
+				
+//				ict[0]=bxa;		ict[1]=bxb;
+//				ict[2]=bxc;		ict[3]=bxd;
+//				ict+=4;
+				ict+=8;
 
-				ics16b+=4;
+//				conbufa[bn+0]=bxa;
+//				conbufa[bn+1]=bxb;
+//				conbufa[bn+2]=bxc;
+//				conbufa[bn+3]=bxd;
+//				bn+=4;
+
+				ics16b+=8;
 			}
-			ics16+=4*BASEWIDTH;
+			ics16+=8*BASEWIDTH;
+
+//			ics16+=16*BASEWIDTH;
+//			ict+=8*40;
 		}
-	}
-#endif
-
-#ifndef CONGFX
-
-	if(host_colormap16)
-	{
-		r_pixbytes=2;
-
-		if(vid_blendp)
-		{
-			ics16=(u16 *)vid.buffer;
-			ict16=(u16 *)vid_vram;
-			for(i=0; i<BASEHEIGHT; i++)
-			{
-				ict16=((u16 *)vid_vram)+(i*DISPWIDTH);
-
-#if 0
-				for(j=0; j<BASEWIDTH; j++)
-				{
-					pix=*ics16++;
-					pix=VID_BlendRatio16(pix, vid_blendv, vid_blendp);
-					*ict16++=pix;
-				}
-#endif
-
-#if 1
-				VID_ScanBlendRatio16(
-					ict16, ics16, BASEWIDTH,
-					vid_blendv, vid_blendp);
-				ics16+=BASEWIDTH;
-#endif
-			}
-		}else
-		{
-			if(BASEWIDTH!=DISPWIDTH)
-			{
-				ics16=(u16 *)vid.buffer;
-				ict16=(u16 *)vid_vram;
-				icz16=(u16 *)d_pzbuffer;
-
-				for(i=0; i<BASEHEIGHT; i++)
-				{
-#if 0
-					ict16=((u16 *)vid_vram)+(i*DISPWIDTH);
-					for(j=0; j<BASEWIDTH; j++)
-					{
-						pix=*ics16++;
-						*ict16++=pix;
-					}
-#endif
-
-#ifdef SCRZBUF
-					for(j=0; j<BASEWIDTH; j++)
-					{
-						pix=icz16[j];
-						
-						if(pix>=0x4000)
-						{
-							pix=0xFFFF;
-						}else if(pix>=0x2000)
-						{
-							pix=((pix<<1)&0x3FFF)|0xC000;
-						}else if(pix>=0x1000)
-						{
-							pix=((pix<<2)&0x3FFF)|0x8000;
-						}else if(pix>=0x0800)
-						{
-							pix=((pix<<3)&0x3FFF)|0x4000;
-						}else
-						{
-//							pix=((pix<<4)&0x3FFF);
-							pix=(pix<<4);
-						}
-						
-//						if(pix<0x4000)pix<<=1;
-//						if(pix<0x1000)pix<<=1;
-//						if(pix<0x0400)pix<<=1;
-//						if(pix<0x0100)pix<<=1;
-//						pix=((pix<<6)&0xFFFFFC00)+0x0210;
-//						pix=((pix<<2)&0xFFFFFC00)+0x0210;
-						pix=((pix<<4)&0xFFFFFC00)+0x0210;
-						if(pix<0x0210)pix=0x0210;
-						if(pix>0xFE10)pix=0xFE10;
-						ict16[BASEWIDTH+j]=pix;
-					}
-
-//					Q_memcpy(ict16+BASEWIDTH, icz16, BASEWIDTH*2);
-					icz16+=BASEWIDTH;
-#endif
-
-					Q_memcpy(ict16, ics16, BASEWIDTH*2);
-					ict16+=DISPWIDTH;
-					ics16+=BASEWIDTH;
-				}
-
-				return;
-			}
-		
-			Q_memcpy(vid_vram, vid.buffer, BASEWIDTH*BASEHEIGHT*2);
-//			memcpy(vid_vram, vid.buffer, BASEWIDTH*BASEHEIGHT*2);
-
-//			__debugbreak();
-		}
-		return;
 	}
 	
-//	return;
-
-#if 1
-	ics=vid.buffer;
-	ict16=(u16 *)vid_vram;
-	for(i=0; i<BASEHEIGHT; i++)
-	{
-		ict16=((u16 *)vid_vram)+(i*DISPWIDTH);
-		for(j=0; j<BASEWIDTH; j+=8)
-		{
-			ict16[0]=d_8to16table[ics[0]];
-			ict16[1]=d_8to16table[ics[1]];
-			ict16[2]=d_8to16table[ics[2]];
-			ict16[3]=d_8to16table[ics[3]];
-			ict16[4]=d_8to16table[ics[4]];
-			ict16[5]=d_8to16table[ics[5]];
-			ict16[6]=d_8to16table[ics[6]];
-			ict16[7]=d_8to16table[ics[7]];
-			ict16+=8; ics+=8;
-		}
-	}
-
-#endif
-
-#if 0
-	ics=vid.buffer;
-	ict=vid_vram;
-	for(i=0; i<BASEHEIGHT; i++)
-	{
-//		for(j=0; j<BASEWIDTH; j++)
-		for(j=0; j<BASEWIDTH; j+=8)
-		{
-//			ict[j]=d_8to24table[ics[j]];
-//			*ict++=d_8to24table[*ics++];
-
-			ict[0]=d2d_8to24table[ics[0]];
-			ict[1]=d2d_8to24table[ics[1]];
-			ict[2]=d2d_8to24table[ics[2]];
-			ict[3]=d2d_8to24table[ics[3]];
-			ict[4]=d2d_8to24table[ics[4]];
-			ict[5]=d2d_8to24table[ics[5]];
-			ict[6]=d2d_8to24table[ics[6]];
-			ict[7]=d2d_8to24table[ics[7]];
-			ict+=8; ics+=8;
-		}
-	}
-
-#endif
-
-//	for(j=0; j<256; j++)
-//	{
-//		*ict++=d_8to24table[j];
-//	}
-#endif
-
+//	memset(vid.buffer, 0, 320*200*2);
+//	memset(zbuffer, 0, 320*200*2);
 }
 
 /*

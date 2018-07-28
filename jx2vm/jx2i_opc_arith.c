@@ -426,6 +426,11 @@ void BJX2_Op_LEAD_LdRegDispReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=ctx->regs[op->rm]+(op->imm*4);
 }
 
+void BJX2_Op_LEAQ_LdRegDispReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[op->rn]=ctx->regs[op->rm]+(op->imm*8);
+}
+
 void BJX2_Op_LEAB_LdDrRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	ctx->regs[op->rn]=ctx->regs[op->rm]+(ctx->regs[BJX2_REG_DR]*1);
@@ -470,6 +475,32 @@ void BJX2_Op_LEAB_LdDr4PcReg(BJX2_Context *ctx, BJX2_Opcode *op)
 void BJX2_Op_LEAW_LdDr4PcReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	ctx->regs[op->rn]=(op->pc+2)+(ctx->regs[BJX2_REG_DR]*32)+(op->imm*2);
+}
+
+
+void BJX2_Op_LEAB_LdReg2Reg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[op->rn]=ctx->regs[op->rm]+(ctx->regs[op->ro]*1);
+}
+
+void BJX2_Op_LEAW_LdReg2Reg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[op->rn]=ctx->regs[op->rm]+(ctx->regs[op->ro]*2);
+}
+
+void BJX2_Op_LEAD_LdReg2Reg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[op->rn]=ctx->regs[op->rm]+(ctx->regs[op->ro]*4);
+}
+
+void BJX2_Op_LEAQ_LdReg2Reg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[op->rn]=ctx->regs[op->rm]+(ctx->regs[op->ro]*8);
+}
+
+void BJX2_Op_LEAB_LdPcDispReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[op->rn]=(op->pc2)+op->imm;
 }
 
 
@@ -692,6 +723,11 @@ void BJX2_Op_MOVT_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=(ctx->regs[BJX2_REG_SR]&1);
 }
 
+void BJX2_Op_MOVNT_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[op->rn]=!(ctx->regs[BJX2_REG_SR]&1);
+}
+
 void BJX2_Op_SWAPB_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	ctx->regs[op->rn]=
@@ -836,4 +872,76 @@ void BJX2_Op_SHLDQ_RegDrReg(BJX2_Context *ctx, BJX2_Opcode *op)
 		ctx->regs[op->rn]=
 			((u64)ctx->regs[op->rm])>>((-shl)&63);
 	}
+}
+
+void BJX2_Op_SHAD_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	int shl;
+	
+	shl=(sbyte)(op->imm);
+	if(shl>=0)
+	{
+		ctx->regs[op->rn]=
+			((s32)ctx->regs[op->rm])<<(shl&31);
+	}else
+	{
+		ctx->regs[op->rn]=
+			((s32)ctx->regs[op->rm])>>((-shl)&31);
+	}
+}
+
+void BJX2_Op_SHLD_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	int shl;
+	
+	shl=(sbyte)(op->imm);
+	if(shl>=0)
+	{
+		ctx->regs[op->rn]=
+			((u32)ctx->regs[op->rm])<<(shl&31);
+	}else
+	{
+		ctx->regs[op->rn]=
+			((u32)ctx->regs[op->rm])>>((-shl)&31);
+	}
+}
+
+void BJX2_Op_SHADQ_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	int shl;
+	
+	shl=(sbyte)(op->imm);
+	if(shl>=0)
+	{
+		ctx->regs[op->rn]=
+			ctx->regs[op->rm]<<(shl&63);
+	}else
+	{
+		ctx->regs[op->rn]=
+			((s64)ctx->regs[op->rm])>>((-shl)&63);
+	}
+}
+
+void BJX2_Op_SHLDQ_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	int shl;
+	
+	shl=(sbyte)(op->imm);
+	if(shl>=0)
+	{
+		ctx->regs[op->rn]=
+			ctx->regs[op->rm]<<(shl&63);
+	}else
+	{
+		ctx->regs[op->rn]=
+			((u64)ctx->regs[op->rm])>>((-shl)&63);
+	}
+}
+
+void BJX2_Op_CSELT_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[op->rn]=
+		(ctx->regs[BJX2_REG_SR]&1)?
+			ctx->regs[op->rm]:
+			ctx->regs[op->ro];
 }

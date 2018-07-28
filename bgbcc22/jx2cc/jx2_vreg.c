@@ -875,6 +875,12 @@ int BGBCC_JX2C_EmitFpConvVRegVReg(
 		(	BGBCC_JX2C_EmitRegIsFpReg(ctx, sctx, cdreg) ||
 			BGBCC_JX2C_EmitRegIsDpReg(ctx, sctx, cdreg)	) )
 	{
+		if(!BGBCC_JX2_EmitCheckRegQuad(sctx, csreg))
+		{
+			BGBCC_JX2C_EmitOpReg(ctx, sctx,
+				BGBCC_SH_NMID_EXTSL, csreg);
+		}
+	
 		BGBCC_JX2C_EmitOpRegReg(ctx, sctx,
 			BGBCC_SH_NMID_MOV, csreg, BGBCC_SH_REG_DLR);
 		BGBCC_JX2C_EmitOpReg(ctx, sctx,

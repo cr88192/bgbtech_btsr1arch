@@ -138,6 +138,12 @@
 #define BGBCC_SH_REG_FPSCR		0x76
 #define BGBCC_SH_REG_PC			0x77
 
+
+#define BGBCC_SH_REG_TTB		0x78
+#define BGBCC_SH_REG_TEA		0x79
+#define BGBCC_SH_REG_MMCR		0x7A
+#define BGBCC_SH_REG_EXSR		0x7B
+
 #define BGBCC_SH_REG_DBR		0x7F
 
 /* 80-9F: FPR DR0-DR15, 64 */
@@ -498,6 +504,9 @@
 #define BGBCC_SH_NMID_FSQRTA		0xB1	//
 #define BGBCC_SH_NMID_FRCP			0xB2	//
 
+#define BGBCC_SH_NMID_PUSHX2		0xBE	//
+#define BGBCC_SH_NMID_POPX2			0xBF	//
+
 #define BGBCC_SH_NMID_MOVI			0xC0	//
 #define BGBCC_SH_NMID_MOVIV			0xC1	//
 #define BGBCC_SH_NMID_PREF			0xC2	//
@@ -550,6 +559,7 @@
 #define BGBCC_SH_NMID_LDSH8			0xF1	//SUB
 #define BGBCC_SH_NMID_BRA8B			0xF2	//SUB
 #define BGBCC_SH_NMID_SHARX			0xF3	//SUB
+#define BGBCC_SH_NMID_MOVNT			0xF4	//
 
 
 
@@ -861,6 +871,7 @@ byte is_leaf;		//function is a leaf function
 byte is_rom;		//building a ROM image
 byte is_betav;		//uses BetaVe tweaks.
 byte is_mergece;	//merge CC0e/CC3e into CExx
+byte is_tr_leaf;	//given trace is a leaf
 
 byte no_fpu;		//no hardware FPU instructions
 byte no_ext32;		//no 32-bit instruction forms
@@ -880,8 +891,10 @@ byte has_bjx1r3mov;	//has BJX1 Reg3 ops
 
 byte use_egpr;		//enable use of extended GPRs
 byte maxreg_gpr;	//current number of GPR register-slots
+byte maxreg_gpr_lf;	//current number of GPR register-slots (leaf)
 
 byte use_memmdl;	//use memory model
+byte csrv_skip;		//skip a CSRV operation
 
 byte use_emitqueue;	//use emit queue
 
@@ -989,12 +1002,15 @@ byte nofs_s32tab;
 
 int jitfl;
 
-ccxl_register regalc_map[16];
-byte regalc_ltcnt[16];	//lifetime count (who to evict)
-byte regalc_utcnt[16];	//current use count (0=unused)
-u16 regalc_save;		//register has been saved and may hold a value
-u16 regalc_live;		//register is currently holding a value
-u16 regalc_dirty;
+const byte *jcachereg;
+const byte *qcachereg;
+
+ccxl_register regalc_map[32];
+byte regalc_ltcnt[32];	//lifetime count (who to evict)
+byte regalc_utcnt[32];	//current use count (0=unused)
+u32 regalc_save;		//register has been saved and may hold a value
+u32 regalc_live;		//register is currently holding a value
+u32 regalc_dirty;
 
 ccxl_register fregalc_map[16];
 byte fregalc_ltcnt[16];	//lifetime count (who to evict)

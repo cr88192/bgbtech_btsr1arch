@@ -343,6 +343,12 @@ int BGBCC_CCXL_InferExpr(BGBCC_TransState *ctx,
 	{
 		t=BCCX_Fetch(l, "array");
 		i0=BGBCC_CCXL_InferExpr(ctx, t, &tty);
+		
+		if(tty.val==0x200961)	//Debug
+		{
+			i0=BGBCC_CCXL_InferExpr(ctx, t, &tty);
+		}
+		
 		if(!i0)
 			return(0);
 		BGBCC_CCXL_TypeDerefType(ctx, tty, &bty);

@@ -638,10 +638,18 @@ void R_DrawSurfaceBlock16 (void)
 #if 1
 void R_DrawSurfaceBlock16_mipN (int mip)
 {
-	int				v, i, b, l, d, lightstep, lighttemp, light;
-	unsigned char	*psource;
-	unsigned short *prowdest;
-	int pix, pixa, pixb, shr0, shp2, shp2n1;
+	int				v, i, b, l, d;
+	int				lighttemp;
+
+	register int lightstep, light;
+	register unsigned char	*psource;
+	register unsigned short *prowdest;
+	register unsigned short *cmap16;
+	register int pix;
+
+	int pixa, pixb, shr0, shp2, shp2n1;
+
+	__hint_use_egpr();
 
 	psource = pbasesource;
 	prowdest = prowdestbase;
@@ -660,32 +668,10 @@ void R_DrawSurfaceBlock16_mipN (int mip)
 	shr0=4-mip;
 	shp2=1<<shr0;
 	shp2n1=shp2-1;
+	cmap16=vid.colormap16;
 
 	for (v=0 ; v<r_numvblocks ; v++)
 	{
-
-//		if(r_source>=r_sourcemax)
-//			break;
-
-#if 0
-		if(psource<r_source)
-		{
-			while(psource<r_source)
-				psource+=(r_sourcemax-r_source);
-
-//			break;
-//			__debugbreak();
-		}
-		if(psource>r_sourcemax)
-		{
-			while(psource>=r_sourcemax)
-				psource-=(r_sourcemax-r_source);
-
-//			break;
-//			__debugbreak();
-		}
-#endif
-
 	// FIXME: make these locals?
 	// FIXME: use delta rather than both right and left, like ASM?
 		lightleft = r_lightptr[0];
@@ -703,53 +689,9 @@ void R_DrawSurfaceBlock16_mipN (int mip)
 
 			for (b=shp2n1; b>=0; b--)
 			{
-#ifdef _WIN32
-// #if 1
-#if 0
-//				l = light;
-//				d = ((l+(l>>2)) & 0xFC00);
-//				d = (l & 0xFC00);
-
-				pix = d_8to16table[psource[b]];
-				pix = VID_ColorMap16(pix, light);
-//				pix= pix - d;
-//				if(pix<0)pix=0x01EF;
-				prowdest[b] = pix;
-#endif
-
-#if 1
-				pix = d_8to16table[psource[b]];
-				pix = VID_ColorMap16(pix, light);
-				prowdest[b] = pix;
-#endif
-
-#if 0
-				pixa = vid.colormap16[(light & 0xFF00) + psource[b]];
-				pixb = d_8to16table[psource[b]];
-				pixb = VID_ColorMap16(pixb, light);
-				pix = VID_BlendEven16(pixa, pixb);
-//				pix=(pixa+pixb)>>1;
-//				pix=((pixa&0xFBDF)+(pixb&0xFBDF))>>1;
-
-				prowdest[b] = pix;
-#endif
-
-//				pix = psource[b];
-//				prowdest[b] = vid.colormap16[(light & 0xFF00) + pix];
-
-#else
 				pix = psource[b];
-				prowdest[b] = vid.colormap16[(light & 0xFF00) + pix];
-#endif
-
-#if 0
-				if((b^i)&1)
-				{
-//					prowdest[b]=0x7FFF;
-					prowdest[b]^=0x0800;
-				}
-#endif
-
+//				prowdest[b] = vid.colormap16[(light & 0xFF00) + pix];
+				prowdest[b] = cmap16[(light & 0xFF00) + pix];
 				light += lightstep;
 			}
 	
@@ -771,9 +713,159 @@ void R_DrawSurfaceBlock16_mipN (int mip)
 
 
 void R_DrawSurfaceBlock16_mip0 (void)
-	{ R_DrawSurfaceBlock16_mipN(0); }
+{
+	int				v, i, b, l, d;
+	int				lighttemp;
+
+	register int lightstep, light;
+	register unsigned char	*psource;
+	register unsigned short *prowdest;
+	register unsigned short *cmap16;
+	register int pix;
+
+	int pixa, pixb;
+//	 shr0, shp2, shp2n1;
+
+	__hint_use_egpr();
+
+	psource = pbasesource;
+	prowdest = prowdestbase;
+
+//	shr0=4;
+//	shp2=16;
+//	shp2n1=15;
+	cmap16=vid.colormap16;
+
+	for (v=0 ; v<r_numvblocks ; v++)
+	{
+		lightleft = r_lightptr[0];
+		lightright = r_lightptr[1];
+		r_lightptr += r_lightwidth;
+		lightleftstep = (r_lightptr[0] - lightleft) >> 4;
+		lightrightstep = (r_lightptr[1] - lightright) >> 4;
+
+		for (i=0 ; i<16; i++)
+		{
+			lighttemp = lightleft - lightright;
+			lightstep = lighttemp >> 4;
+			light = lightright;
+
+#if 0
+			for (b=15; b>=0; b--)
+			{
+				pix = psource[b];
+				prowdest[b] = cmap16[(light & 0xFF00) + pix];
+				light += lightstep;
+			}
+#endif
+
+#if 1
+//			for (b=15; b>=0; )
+			for (b=15; b>0; )
+			{
+				pix = psource[b];
+				pix = cmap16[(light & 0xFF00) + pix];
+				light += lightstep;
+				prowdest[b] = pix;	b--;
+
+				pix = psource[b];
+				pix = cmap16[(light & 0xFF00) + pix];
+				light += lightstep;
+				prowdest[b] = pix;	b--;
+
+				pix = psource[b];
+				pix = cmap16[(light & 0xFF00) + pix];
+				light += lightstep;
+				prowdest[b] = pix;	b--;
+
+				pix = psource[b];
+				pix = cmap16[(light & 0xFF00) + pix];
+				light += lightstep;
+				prowdest[b] = pix;	b--;
+			}
+#endif
+	
+			psource += sourcetstep;
+			lightright += lightrightstep;
+			lightleft += lightleftstep;
+			prowdest += surfrowbytes/2;
+		}
+
+		if (psource >= r_sourcemax)
+			{ psource -= r_stepback; }
+	}
+}
+
 void R_DrawSurfaceBlock16_mip1 (void)
-	{ R_DrawSurfaceBlock16_mipN(1); }
+{
+	int				v, i, b, l, d;
+	int				lighttemp;
+
+	register int lightstep, light;
+	register unsigned char	*psource;
+	register unsigned short *prowdest;
+	register unsigned short *cmap16;
+	register int pix;
+
+	int pixa, pixb;
+//	int shr0, shp2, shp2n1;
+
+	__hint_use_egpr();
+
+	psource = pbasesource;
+	prowdest = prowdestbase;
+
+//	shr0=3;
+//	shp2=8;
+//	shp2n1=7;
+	cmap16=vid.colormap16;
+
+	for (v=0 ; v<r_numvblocks ; v++)
+	{
+		lightleft = r_lightptr[0];
+		lightright = r_lightptr[1];
+		r_lightptr += r_lightwidth;
+		lightleftstep = (r_lightptr[0] - lightleft) >> 3;
+		lightrightstep = (r_lightptr[1] - lightright) >> 3;
+
+		for (i=0 ; i<8; i++)
+		{
+			lighttemp = lightleft - lightright;
+			lightstep = lighttemp >> 3;
+
+			light = lightright;
+
+//			for (b=7; b>=0; )
+			for (b=7; b>0; )
+			{
+				pix = psource[b];
+				pix = cmap16[(light & 0xFF00) + pix];
+				light += lightstep;
+				prowdest[b] = pix;
+				b--;
+
+				pix = psource[b];
+				pix = cmap16[(light & 0xFF00) + pix];
+				light += lightstep;
+				prowdest[b] = pix;
+				b--;
+			}
+	
+			psource += sourcetstep;
+			lightright += lightrightstep;
+			lightleft += lightleftstep;
+			prowdest += surfrowbytes/2;
+		}
+
+		if (psource >= r_sourcemax)
+			{ psource -= r_stepback; }
+	}
+}
+
+//void R_DrawSurfaceBlock16_mip0 (void)
+//	{ R_DrawSurfaceBlock16_mipN(0); }
+//void R_DrawSurfaceBlock16_mip1 (void)
+//	{ R_DrawSurfaceBlock16_mipN(1); }
 void R_DrawSurfaceBlock16_mip2 (void)
 	{ R_DrawSurfaceBlock16_mipN(2); }
 void R_DrawSurfaceBlock16_mip3 (void)

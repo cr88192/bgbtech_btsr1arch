@@ -666,8 +666,8 @@ int BGBCC_CCXL_StackGetConvCallArgs(BGBCC_TransState *ctx,
 				if((sty.val==2) && (dty.val&0xF000))
 					{ BGBCC_DBGBREAK }
 			
-				if(dty.val==0x1008)
-					{ BGBCC_DBGBREAK }
+//				if(dty.val==0x1008)
+//					{ BGBCC_DBGBREAK }
 			
 				BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &treg);
 				BGBCC_CCXL_EmitConv(ctx, dty, sty, treg, dreg);
@@ -1791,6 +1791,24 @@ ccxl_status BGBCC_CCXL_StackBinaryOpStore(BGBCC_TransState *ctx,
 		dty=BGBCC_CCXL_GetRegType(ctx, dreg);
 		BGBCC_CCXL_GetTypeBinaryDest(ctx, opr, sty, tty, &dty2);
 
+		if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, sty) &&
+			BGBCC_CCXL_TypeArrayOrPointerP(ctx, tty) &&
+			(opr==CCXL_BINOP_SUB))
+		{
+//			pty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_I);
+//			BGBCC_CCXL_RegisterAllocTemporary(ctx, pty, &dreg);
+
+			BGBCC_CCXL_TypeDerefType(ctx, sty, &bty);
+			BGBCC_CCXL_EmitDiffPtr(ctx, bty, dreg, sreg, treg);
+
+			BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
+			BGBCC_CCXL_RegisterCheckRelease(ctx, treg);
+			BGBCC_CCXL_RegisterCheckRelease(ctx, dreg);
+
+//			BGBCC_CCXL_PushRegister(ctx, dreg);
+			return(CCXL_STATUS_YES);
+		}
+
 //		if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, sty) &&
 //			BGBCC_CCXL_TypeIntP(ctx, tty))
 		if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, sty) &&
@@ -2299,13 +2317,28 @@ ccxl_status BGBCC_CCXL_StackUnaryOpStore(BGBCC_TransState *ctx,
 		{
 			BGBCC_CCXL_TypeDerefType(ctx, sty, &bty);
 			k=(opr==CCXL_UNOP_INC)?(1):(-1);
-			BGBCC_CCXL_RegisterAllocTemporary(ctx, sty, &dreg);
+//			BGBCC_CCXL_RegisterAllocTemporary(ctx, sty, &dreg);
 			
 			if(BGBCC_CCXL_RegisterIdentEqualP(ctx, dreg, sreg))
 				__debugbreak();
 			
 			BGBCC_CCXL_EmitLeaImm(ctx, bty, dreg, sreg, k);
 //			BGBCC_CCXL_PushRegister(ctx, dreg);
+
+			if(cnv)
+			{
+				BGBCC_CCXL_EmitConv(ctx, dty, sty, dreg2, dreg);
+				BGBCC_CCXL_RegisterCheckRelease(ctx, dreg2);
+			}
+
+			BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
+			BGBCC_CCXL_RegisterCheckRelease(ctx, dreg);
+			return(CCXL_STATUS_YES);
+		}
+		
+		if(opr==CCXL_UNOP_LNOT)
+		{
+			BGBCC_CCXL_EmitUnaryOp(ctx, sty, opr, dreg, sreg);
 
 			if(cnv)
 			{

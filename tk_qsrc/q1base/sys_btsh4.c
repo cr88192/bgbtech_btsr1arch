@@ -169,6 +169,8 @@ void Sys_Error (char *error, ...)
 //	char tb[1024];
 	va_list         argptr;
 
+	__debugbreak();
+
 	tk_printf("Sys_Error: ");   
 	va_start(argptr, error);
 //	vfprintf(stdout, error, argptr);
@@ -177,8 +179,10 @@ void Sys_Error (char *error, ...)
 	va_end(argptr);
 //	printf("%s\n", tb);
 
+	__debugbreak();
+
 //	exit(1);
-	*(int *)-1=-1;
+//	*(int *)-1=-1;
 }
 
 void Sys_Printf (char *fmt, ...)
@@ -350,6 +354,11 @@ void Sys_CheckSanity(void)
 		tk_printf("Q Flt 5-2: %f\n", newtime);
 		newtime=time-oldtime;
 		tk_printf("Q Flt 5-3: %f\n", newtime);
+
+		newtime=time*oldtime;
+		tk_printf("Q Flt 5-4: %f\n", newtime);
+		newtime=newtime/oldtime;
+		tk_printf("Q Flt 5-5: %f\n", newtime);
 		
 		time=Q_atof("3.14159");
 	//	*(int *)-1=-1;
@@ -642,7 +651,7 @@ void Sys_CheckSanity(void)
 	{
 		i=3; j=4; k=5;
 		f=7.0; g=8.0; h=9.0;
-		ff=1.1;	gf=2.2;	hf=3.3;
+		ff=1.1f;	gf=2.2f;	hf=3.3f;
 	}else
 	{
 		i=3; j=4; k=5;
@@ -690,11 +699,11 @@ void Sys_CheckSanity(void)
 
 		tk_puts("Check for: Float Stomp\n");
 
-		if(ff!=1.1)
+		if(ff!=1.1f)
 			__debugbreak();
-		if(gf!=2.2)
+		if(gf!=2.2f)
 			__debugbreak();
-		if(hf!=3.3)
+		if(hf!=3.3f)
 			__debugbreak();
 	}else
 	{
@@ -913,6 +922,10 @@ int main (int argc, char **argv)
 	COM_InitEndianSwap();
 
 	Sys_CheckSanity();
+
+	tk_puts("Q A0-0\n");
+
+//	__debugbreak();
 
 //	parms.memsize = 8*1024*1024;
 	parms.memsize = 24*1024*1024;

@@ -77,7 +77,8 @@ int BGBCC_JX2C_EmitLdix_FillSzNmTy(
 
 	if(BGBCC_CCXL_TypeValueObjectP(ctx, type))
 	{
-		sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, type);
+//		sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, type);
+		sz=BGBCC_CCXL_TypeGetLogicalPadSize(ctx, type);
 		nm1=BGBCC_SH_NMID_MOVL; nm2=-1;
 	}
 	
@@ -126,10 +127,11 @@ int BGBCC_JX2C_EmitLdixVRegVRegImm(
 		
 		nm1=BGBCC_SH_NMID_MOVL;
 //		sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, tty);
-		sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, type);
+//		sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, type);
+		sz=BGBCC_CCXL_TypeGetLogicalPadSize(ctx, type);
 		
-		if(BGBCC_CCXL_TypeValueObjectP(ctx, type) && (sz&3))
-			{ BGBCC_DBGBREAK }
+//		if(BGBCC_CCXL_TypeValueObjectP(ctx, type) && (sz&3))
+//			{ BGBCC_DBGBREAK }
 		
 		BGBCC_JX2C_EmitLeaBRegOfsReg(ctx, sctx,
 			nm1, csreg, imm*sz, cdreg);
@@ -236,7 +238,8 @@ int BGBCC_JX2C_EmitLdixVRegVRegVReg(
 			cdreg=BGBCC_JX2C_EmitGetRegisterDirty(ctx, sctx, dreg);
 			
 			nm1=BGBCC_SH_NMID_MOVL;
-			sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, type);
+//			sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, type);
+			sz=BGBCC_CCXL_TypeGetLogicalPadSize(ctx, type);
 			BGBCC_JX2C_EmitLeaBRegIRegScReg(ctx, sctx,
 				nm1, cdreg, ctreg, sz, cdreg);
 
@@ -251,7 +254,8 @@ int BGBCC_JX2C_EmitLdixVRegVRegVReg(
 		
 		nm1=BGBCC_SH_NMID_MOVL;
 //		sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, tty);
-		sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, type);
+//		sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, type);
+		sz=BGBCC_CCXL_TypeGetLogicalPadSize(ctx, type);
 		BGBCC_JX2C_EmitLeaBRegIRegScReg(ctx, sctx,
 			nm1, csreg, ctreg, sz, cdreg);
 
@@ -389,7 +393,8 @@ int BGBCC_JX2C_EmitLdixVRegVRegVRegImm(
 			cdreg=BGBCC_JX2C_EmitGetRegisterDirty(ctx, sctx, dreg);
 			
 			nm1=BGBCC_SH_NMID_MOVL;
-			sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, type);
+//			sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, type);
+			sz=BGBCC_CCXL_TypeGetLogicalPadSize(ctx, type);
 			BGBCC_JX2C_EmitLeaBRegIRegScReg(ctx, sctx,
 				nm1, cdreg, ctreg, sz, cdreg);
 
@@ -404,7 +409,8 @@ int BGBCC_JX2C_EmitLdixVRegVRegVRegImm(
 		
 		nm1=BGBCC_SH_NMID_MOVL;
 //		sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, tty);
-		sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, type);
+//		sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, type);
+		sz=BGBCC_CCXL_TypeGetLogicalPadSize(ctx, type);
 		BGBCC_JX2C_EmitLeaBRegIRegScReg(ctx, sctx,
 			nm1, csreg, ctreg, sz, cdreg);
 
@@ -515,7 +521,8 @@ int BGBCC_JX2C_EmitStixVRegVRegImm(
 	if(BGBCC_CCXL_TypeValueObjectP(ctx, type) ||
 		BGBCC_CCXL_TypeArrayP(ctx, type))
 	{
-		sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, type);
+//		sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, type);
+		sz=BGBCC_CCXL_TypeGetLogicalPadSize(ctx, type);
 		nm1=BGBCC_SH_NMID_MOVL; nm2=-1;
 
 		cdreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, dreg);
@@ -626,7 +633,8 @@ int BGBCC_JX2C_EmitStixVRegVRegVReg(
 	if(BGBCC_CCXL_TypeValueObjectP(ctx, type) ||
 		BGBCC_CCXL_TypeArrayP(ctx, type))
 	{
-		sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, type);
+//		sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, type);
+		sz=BGBCC_CCXL_TypeGetLogicalPadSize(ctx, type);
 		nm1=BGBCC_SH_NMID_MOVL; nm2=-1;
 
 		al=4;
@@ -748,7 +756,8 @@ int BGBCC_JX2C_EmitStixVRegVRegVRegImm(
 	if(BGBCC_CCXL_TypeValueObjectP(ctx, type) ||
 		BGBCC_CCXL_TypeArrayP(ctx, type))
 	{
-		sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, type);
+//		sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, type);
+		sz=BGBCC_CCXL_TypeGetLogicalPadSize(ctx, type);
 		nm1=BGBCC_SH_NMID_MOVL; nm2=-1;
 
 		al=4;
@@ -842,10 +851,11 @@ int BGBCC_JX2C_EmitLeaVRegVRegImm(
 		BGBCC_CCXL_TypeValueObjectP(ctx, type))
 	{
 		nm1=BGBCC_SH_NMID_MOVL;
-		sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, type);
+//		sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, type);
+		sz=BGBCC_CCXL_TypeGetLogicalPadSize(ctx, type);
 		
-		if(BGBCC_CCXL_TypeValueObjectP(ctx, type) && (sz&3))
-			{ BGBCC_DBGBREAK }
+//		if(BGBCC_CCXL_TypeValueObjectP(ctx, type) && (sz&3))
+//			{ BGBCC_DBGBREAK }
 			
 		if(BGBCC_CCXL_RegisterIdentEqualP(ctx, dreg, sreg))
 		{
@@ -932,7 +942,8 @@ int BGBCC_JX2C_EmitLeaVRegVRegVReg(
 			cdreg=BGBCC_JX2C_EmitGetRegisterDirty(ctx, sctx, dreg);
 			
 			nm1=BGBCC_SH_NMID_MOVL;
-			sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, type);
+//			sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, type);
+			sz=BGBCC_CCXL_TypeGetLogicalPadSize(ctx, type);
 			BGBCC_JX2C_EmitLeaBRegIRegScReg(ctx, sctx,
 				nm1, cdreg, ctreg, sz, cdreg);
 
@@ -950,7 +961,8 @@ int BGBCC_JX2C_EmitLeaVRegVRegVReg(
 		cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dreg);
 		
 		nm1=BGBCC_SH_NMID_MOVL;
-		sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, type);
+//		sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, type);
+		sz=BGBCC_CCXL_TypeGetLogicalPadSize(ctx, type);
 		BGBCC_JX2C_EmitLeaBRegIRegScReg(ctx, sctx,
 			nm1, csreg, ctreg, sz, cdreg);
 
@@ -1195,7 +1207,8 @@ int BGBCC_JX2C_EmitDiffPtrVRegVRegVReg(
 		return(1);
 	}
 	
-	sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, type);
+//	sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, type);
+	sz=BGBCC_CCXL_TypeGetLogicalPadSize(ctx, type);
 	if(sz<=0)
 	{
 		BGBCC_DBGBREAK
@@ -2027,7 +2040,7 @@ int BGBCC_JX2C_EmitLeaBRegIRegScReg(
 			}
 		}
 
-#if 1
+#if 0
 		if(sctx->has_bjx1ari && sctx->has_bjx1egpr)
 		{
 			BGBCC_JX2_EmitLoadRegImm(sctx, BGBCC_SH_NMID_MOV,
@@ -2041,6 +2054,8 @@ int BGBCC_JX2C_EmitLeaBRegIRegScReg(
 			return(1);
 		}
 #endif
+
+//		BGBCC_DBGBREAK
 
 		BGBCC_JX2C_SetModeDqClear(ctx, sctx);
 		BGBCC_JX2_EmitLoadRegImm(sctx, BGBCC_SH_NMID_MOV,

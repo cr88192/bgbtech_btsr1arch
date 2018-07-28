@@ -857,6 +857,8 @@ void R_ScanEdges (void)
 	edge_sentinel.prev = &edge_aftertail;
 	edge_sentinel.next = NULL;
 
+//	__debugbreak();
+
 //	
 // process all scan lines
 //
@@ -866,6 +868,8 @@ void R_ScanEdges (void)
 	{
 		current_iv = iv;
 		r_edge_fv = (float)iv;
+
+//		__debugbreak();
 
 	// mark that the head (background start) span is pre-included
 		surfaces[1].spanstate = 1;
@@ -888,10 +892,12 @@ void R_ScanEdges (void)
 			if (r_drawculledpolys)
 			{
 				R_DrawCulledPolys ();
+//				__debugbreak();
 			}
 			else
 			{
 				D_DrawSurfaces ();
+//				__debugbreak();
 			}
 
 		// clear the surface span pointers
@@ -908,6 +914,8 @@ void R_ScanEdges (void)
 			R_StepActiveU (edge_head.next);
 	}
 
+//	__debugbreak();
+
 // do the last scan (no need to step or sort or remove on the last scan)
 
 	current_iv = iv;
@@ -923,9 +931,15 @@ void R_ScanEdges (void)
 
 // draw whatever's left in the span list
 	if (r_drawculledpolys)
+	{
 		R_DrawCulledPolys ();
+//		__debugbreak();
+	}
 	else
+	{
 		D_DrawSurfaces ();
+//		__debugbreak();
+	}
 }
 
 

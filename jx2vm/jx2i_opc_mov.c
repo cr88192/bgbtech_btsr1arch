@@ -378,6 +378,13 @@ void BJX2_Op_MOVUW_LdRegDispReg(BJX2_Context *ctx, BJX2_Opcode *op)
 		ctx->regs[op->rm]+(op->imm*2));
 }
 
+void BJX2_Op_MOVUL_LdRegDispReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->trapc=op->pc;
+	ctx->regs[op->rn]=(u32)BJX2_MemGetDWord(ctx,
+		ctx->regs[op->rm]+(op->imm*4));
+}
+
 void BJX2_Op_MOVB_RegStDrAbs(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	ctx->trapc=op->pc;

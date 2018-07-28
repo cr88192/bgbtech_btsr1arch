@@ -162,6 +162,11 @@ char *seg_base;
 //u32 seg_id[256];
 JX2R_TKFAT_SegmentInfo *seg[256];
 int seg_n;
+
+int cl_rov;			//cluster rover
+int walk_clid;		//walk starting cluster
+int walk_clofs;		//walk cluster offset
+int walk_clcur;		//walk cluster current
 };
 
 struct JX2R_TKFAT_SegmentInfo_s {

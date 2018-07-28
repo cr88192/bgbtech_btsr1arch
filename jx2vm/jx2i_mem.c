@@ -104,7 +104,9 @@ int BJX2_MemDefineRAM(BJX2_Context *ctx,
 	sp->name=name;
 	sp->addr_base=base;
 	sp->addr_lim=lim;
+	sp->addr_sz=lim-base;
 	sp->data=malloc((lim-base)+8);
+	sp->simple_mem=3;
 	
 	sp->GetByte=BJX2_MemRamCb_GetByte;
 	sp->GetWord=BJX2_MemRamCb_GetWord;
@@ -130,7 +132,9 @@ int BJX2_MemDefineROM(BJX2_Context *ctx,
 	sp->name=name;
 	sp->addr_base=base;
 	sp->addr_lim=lim;
+	sp->addr_sz=lim-base;
 	sp->data=malloc((lim-base)+8);
+	sp->simple_mem=1;
 	
 	sp->GetByte=BJX2_MemRamCb_GetByte;
 	sp->GetWord=BJX2_MemRamCb_GetWord;
@@ -186,11 +190,13 @@ BJX2_MemSpan *BJX2_MemSpanForAddr(BJX2_Context *ctx, bjx2_addr addr)
 	int nc, nb, nr;
 
 	sp=ctx->span_pr0;
-	if(sp && (addr>=sp->addr_base) && (addr<=sp->addr_lim))
+//	if(sp && (addr>=sp->addr_base) && (addr<=sp->addr_lim))
+	if(sp && (((bjx2_addru)(addr-sp->addr_base))<(sp->addr_sz)))
 		return(sp);
 
 	sp=ctx->span_pr1;
-	if(sp && (addr>=sp->addr_base) && (addr<=sp->addr_lim))
+//	if(sp && (addr>=sp->addr_base) && (addr<=sp->addr_lim))
+	if(sp && (((bjx2_addru)(addr-sp->addr_base))<(sp->addr_sz)))
 	{
 		ctx->span_pr1=ctx->span_pr0;
 		ctx->span_pr0=sp;
@@ -242,9 +248,132 @@ BJX2_MemSpan *BJX2_MemSpanForAddr(BJX2_Context *ctx, bjx2_addr addr)
 	return(NULL);
 }
 
-int BJX2_MemGetByte(BJX2_Context *ctx, bjx2_addr addr)
+int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr)
+{
+#if 1
+	bjx2_addr t0, t1;
+	int h;
+	
+	h=(addr>>4)&63;
+
+#if 0
+	if((addr>>4)==ctx->mem_l1h4k[(h<<2)|0])
+		return(0);
+	if((addr>>4)==ctx->mem_l1h4k[(h<<2)|1])
+		return(0);
+	if((addr>>4)==ctx->mem_l1h4k[(h<<2)|2])
+		return(0);
+	if((addr>>4)==ctx->mem_l1h4k[(h<<2)|3])
+		return(0);
+#endif
+
+	if((addr>>4)==ctx->mem_l1h4k[(h<<2)|0])
+		return(0);
+
+	if((addr>>4)==ctx->mem_l1h4k[(h<<2)|1])
+	{
+		t0=ctx->mem_l1h4k[(h<<2)|0];
+		t1=ctx->mem_l1h4k[(h<<2)|1];
+		ctx->mem_l1h4k[(h<<2)|0]=t1;
+		ctx->mem_l1h4k[(h<<2)|1]=t0;
+		return(0);
+	}
+	if((addr>>4)==ctx->mem_l1h4k[(h<<2)|2])
+	{
+		t0=ctx->mem_l1h4k[(h<<2)|1];
+		t1=ctx->mem_l1h4k[(h<<2)|2];
+		ctx->mem_l1h4k[(h<<2)|1]=t1;
+		ctx->mem_l1h4k[(h<<2)|2]=t0;
+		return(0);
+	}
+	if((addr>>4)==ctx->mem_l1h4k[(h<<2)|3])
+	{
+		t0=ctx->mem_l1h4k[(h<<2)|2];
+		t1=ctx->mem_l1h4k[(h<<2)|3];
+		ctx->mem_l1h4k[(h<<2)|2]=t1;
+		ctx->mem_l1h4k[(h<<2)|3]=t0;
+		return(0);
+	}
+
+	ctx->miss_cyc+=3;
+	if(ctx->tr_cur)
+		ctx->tr_cur->acc_pencyc+=3;
+
+	ctx->mem_l1h4k[(h<<2)|3]=ctx->mem_l1h4k[(h<<2)|2];
+	ctx->mem_l1h4k[(h<<2)|2]=ctx->mem_l1h4k[(h<<2)|1];
+	ctx->mem_l1h4k[(h<<2)|1]=ctx->mem_l1h4k[(h<<2)|0];
+	ctx->mem_l1h4k[(h<<2)|0]=addr>>4;
+
+	/* L2 Cache */
+
+//	h=(addr>>4)&1023;
+	h=(addr>>4)&2047;
+
+	if((addr>>4)==ctx->mem_l2h32k[(h<<1)|0])
+		return(0);
+
+	if((addr>>4)==ctx->mem_l2h32k[(h<<1)|1])
+	{
+		t0=ctx->mem_l2h32k[(h<<1)|0];
+		t1=ctx->mem_l2h32k[(h<<1)|1];
+		ctx->mem_l2h32k[(h<<1)|0]=t1;
+		ctx->mem_l2h32k[(h<<1)|1]=t0;
+		return(0);
+	}
+
+	ctx->mem_l2h32k[(h<<1)|1]=ctx->mem_l2h32k[(h<<1)|0];
+	ctx->mem_l2h32k[(h<<1)|0]=addr>>4;
+
+	/* Main RAM */
+
+	ctx->miss_cyc+=24;
+	if(ctx->tr_cur)
+		ctx->tr_cur->acc_pencyc+=24;
+#endif
+
+#if 0
+
+#if 0
+	if((addr>>3)==ctx->mem_l1addr1)
+		return(0);
+	if((addr>>3)==ctx->mem_l1addr2)
+		return(0);
+	if((addr>>3)==ctx->mem_l1addr3)
+		return(0);
+	if((addr>>3)==ctx->mem_l1addr4)
+		return(0);
+#endif
+
+#if 1
+	if((addr>>4)==ctx->mem_l1addr1)
+		return(0);
+	if((addr>>4)==ctx->mem_l1addr2)
+		return(0);
+	if((addr>>4)==ctx->mem_l1addr3)
+		return(0);
+	if((addr>>4)==ctx->mem_l1addr4)
+		return(0);
+#endif
+
+	ctx->miss_cyc+=3;
+	if(ctx->tr_cur)
+		ctx->tr_cur->acc_pencyc+=3;
+
+	ctx->mem_l1addr4=ctx->mem_l1addr3;
+	ctx->mem_l1addr3=ctx->mem_l1addr2;
+	ctx->mem_l1addr2=ctx->mem_l1addr1;
+//	ctx->mem_l1addr1=addr>>3;
+	ctx->mem_l1addr1=addr>>4;
+#endif
+
+	return(1);
+}
+
+force_inline int BJX2_MemGetByte(BJX2_Context *ctx, bjx2_addr addr)
 {
 	BJX2_MemSpan *sp;
+	int ra;
+
 	sp=BJX2_MemSpanForAddr(ctx, addr);
 	if(!sp)
 	{
@@ -253,12 +382,25 @@ int BJX2_MemGetByte(BJX2_Context *ctx, bjx2_addr addr)
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		return(0);
 	}
+
+	BJX2_MemSimAddrL1(ctx, addr);
+
+#if 1
+	if(sp->simple_mem)
+	{
+		ra=addr-sp->addr_base;
+		return(BJX2_PtrGetSByteOfsLe(sp->data, ra));
+	}
+#endif
+
 	return(sp->GetByte(ctx, sp, addr));
 }
 
-int BJX2_MemGetWord(BJX2_Context *ctx, bjx2_addr addr)
+force_inline int BJX2_MemGetWord(BJX2_Context *ctx, bjx2_addr addr)
 {
 	BJX2_MemSpan *sp;
+	int ra;
+
 	sp=BJX2_MemSpanForAddr(ctx, addr);
 	if(!sp)
 	{
@@ -267,12 +409,38 @@ int BJX2_MemGetWord(BJX2_Context *ctx, bjx2_addr addr)
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		return(0);
 	}
+
+	BJX2_MemSimAddrL1(ctx, addr);
+
+#if 1
+	if(sp->simple_mem)
+	{
+		ra=addr-sp->addr_base;
+		return(BJX2_PtrGetSWordOfsLe(sp->data, ra));
+	}
+#endif
+
 	return(sp->GetWord(ctx, sp, addr));
 }
 
-s32 BJX2_MemGetDWord(BJX2_Context *ctx, bjx2_addr addr)
+force_inline s32 BJX2_MemGetDWord(BJX2_Context *ctx, bjx2_addr addr)
 {
 	BJX2_MemSpan *sp;
+	int ra;
+
+	sp=ctx->span_pr0;
+	if(sp && (((bjx2_addru)(addr-sp->addr_base))<(sp->addr_sz)))
+	{
+		BJX2_MemSimAddrL1(ctx, addr);
+
+		if(sp->simple_mem)
+		{
+			ra=addr-sp->addr_base;
+			return(BJX2_PtrGetSDWordOfsLe(sp->data, ra));
+		}
+		return(sp->GetDWord(ctx, sp, addr));
+	}
+
 	sp=BJX2_MemSpanForAddr(ctx, addr);
 	if(!sp)
 	{
@@ -281,13 +449,39 @@ s32 BJX2_MemGetDWord(BJX2_Context *ctx, bjx2_addr addr)
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		return(0);
 	}
+
+	BJX2_MemSimAddrL1(ctx, addr);
+
+#if 1
+	if(sp->simple_mem)
+	{
+		ra=addr-sp->addr_base;
+		return(BJX2_PtrGetSDWordOfsLe(sp->data, ra));
+	}
+#endif
+
 	return(sp->GetDWord(ctx, sp, addr));
 }
 
-s64 BJX2_MemGetQWord(BJX2_Context *ctx, bjx2_addr addr)
+force_inline s64 BJX2_MemGetQWord(BJX2_Context *ctx, bjx2_addr addr)
 {
 	BJX2_MemSpan *sp;
 	s64 t;
+	int ra;
+
+	sp=ctx->span_pr0;
+	if(sp && (((bjx2_addru)(addr-sp->addr_base))<(sp->addr_sz)))
+	{
+		BJX2_MemSimAddrL1(ctx, addr);
+
+		if(sp->simple_mem)
+		{
+			ra=addr-sp->addr_base;
+			return(BJX2_PtrGetSQWordOfsLe(sp->data, ra));
+		}
+		return(sp->GetDWord(ctx, sp, addr));
+	}
+
 	sp=BJX2_MemSpanForAddr(ctx, addr);
 	if(!sp)
 	{
@@ -296,6 +490,17 @@ s64 BJX2_MemGetQWord(BJX2_Context *ctx, bjx2_addr addr)
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		return(0);
 	}
+
+	BJX2_MemSimAddrL1(ctx, addr);
+
+#if 1
+	if(sp->simple_mem)
+	{
+		ra=addr-sp->addr_base;
+		return(BJX2_PtrGetSQWordOfsLe(sp->data, ra));
+	}
+#endif
+
 	t=sp->GetQWord(ctx, sp, addr);
 //	t=sp->GetDWord(ctx, sp, addr+4);
 //	t=(t<<32)|((u32)(sp->GetDWord(ctx, sp, addr+0)));
@@ -313,12 +518,17 @@ int BJX2_MemSetByte(BJX2_Context *ctx, bjx2_addr addr, int val)
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		return(0);
 	}
+
+	BJX2_MemSimAddrL1(ctx, addr);
+
 	return(sp->SetByte(ctx, sp, addr, val));
 }
 
 int BJX2_MemSetWord(BJX2_Context *ctx, bjx2_addr addr, int val)
 {
 	BJX2_MemSpan *sp;
+	int ra;
+
 	sp=BJX2_MemSpanForAddr(ctx, addr);
 	if(!sp)
 	{
@@ -327,12 +537,40 @@ int BJX2_MemSetWord(BJX2_Context *ctx, bjx2_addr addr, int val)
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		return(0);
 	}
+
+	BJX2_MemSimAddrL1(ctx, addr);
+
+#if 1
+	if(sp->simple_mem&2)
+	{
+		ra=addr-sp->addr_base;
+		BJX2_PtrSetWordOfsLe(sp->data, ra, val);
+		return(0);
+	}
+#endif
+
 	return(sp->SetWord(ctx, sp, addr, val));
 }
 
 int BJX2_MemSetDWord(BJX2_Context *ctx, bjx2_addr addr, s32 val)
 {
 	BJX2_MemSpan *sp;
+	int ra;
+
+	sp=ctx->span_pr0;
+	if(sp && (((bjx2_addru)(addr-sp->addr_base))<(sp->addr_sz)))
+	{
+		BJX2_MemSimAddrL1(ctx, addr);
+
+		if(sp->simple_mem&2)
+		{
+			ra=addr-sp->addr_base;
+			BJX2_PtrSetDWordOfsLe(sp->data, ra, val);
+			return(0);
+		}
+		return(sp->SetDWord(ctx, sp, addr, val));
+	}
+
 	sp=BJX2_MemSpanForAddr(ctx, addr);
 	if(!sp)
 	{
@@ -341,12 +579,40 @@ int BJX2_MemSetDWord(BJX2_Context *ctx, bjx2_addr addr, s32 val)
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		return(0);
 	}
+
+	BJX2_MemSimAddrL1(ctx, addr);
+
+#if 1
+	if(sp->simple_mem&2)
+	{
+		ra=addr-sp->addr_base;
+		BJX2_PtrSetDWordOfsLe(sp->data, ra, val);
+		return(0);
+	}
+#endif
+
 	return(sp->SetDWord(ctx, sp, addr, val));
 }
 
 int BJX2_MemSetQWord(BJX2_Context *ctx, bjx2_addr addr, s64 val)
 {
 	BJX2_MemSpan *sp;
+	int ra;
+
+	sp=ctx->span_pr0;
+	if(sp && (((bjx2_addru)(addr-sp->addr_base))<(sp->addr_sz)))
+	{
+		BJX2_MemSimAddrL1(ctx, addr);
+
+		if(sp->simple_mem&2)
+		{
+			ra=addr-sp->addr_base;
+			BJX2_PtrSetQWordOfsLe(sp->data, ra, val);
+			return(0);
+		}
+		return(sp->SetQWord(ctx, sp, addr, val));
+	}
+
 	sp=BJX2_MemSpanForAddr(ctx, addr);
 	if(!sp)
 	{
@@ -355,6 +621,18 @@ int BJX2_MemSetQWord(BJX2_Context *ctx, bjx2_addr addr, s64 val)
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		return(0);
 	}
+
+	BJX2_MemSimAddrL1(ctx, addr);
+
+#if 1
+	if(sp->simple_mem&2)
+	{
+		ra=addr-sp->addr_base;
+		BJX2_PtrSetQWordOfsLe(sp->data, ra, val);
+		return(0);
+	}
+#endif
+
 	sp->SetQWord(ctx, sp, addr, val);
 //	sp->SetDWord(ctx, sp, addr+4, val>>32);
 //	return(sp->SetDWord(ctx, sp, addr, val));

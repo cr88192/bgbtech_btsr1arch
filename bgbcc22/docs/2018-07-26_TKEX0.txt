@@ -1,0 +1,34 @@
+Thoughts:
+* Sort of similar to PE/COFF and WEX.
+* Will use LZ compressed sections.
+
+LZ Scheme:
+* Try to be fast while also compressing acceptably.
+** Will use byte-oriented data, but some DWORD structures.
+** Designed around BJX2 having unaligned access, but high per-access cost
+* Will use 32-bit Match Records
+
+
+Match records will be a 16 or 32 bits, with the low 2 bits as a tag.
+* Tag=00: Normal Match
+** Bits 31..16: Match Distance (Byte, 1..65536)
+** Bits 15..8: Match Length (Byte, 4..259)
+** Bits 7..2: Raw Length (Byte, 0..63)
+
+* Tag=10: Short Match (16-bit)
+** 15..8: Distance (1..256)
+** 7..4: Length (4..17)
+** 3..2: Raw (Byte, 0..3)
+
+* Tag=11: PP Match (16-bit)
+** Bits 3..2: TagB
+** TagB=00: Raw Data (No Match)
+*** Bits 15..4: Raw Length (1..4096)
+** TagB=01: Predicted Length and Distance
+*** Bits 15..4: Raw Length
+** TagB=10: Predicted Distance
+*** Bits 15..8: Match Length
+*** Bits 7..4: Raw Length
+** TagB=11: Predicted Length
+*** Bits 15..8: Match Distance
+*** Bits 7..4: Raw Length

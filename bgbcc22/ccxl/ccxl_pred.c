@@ -1635,6 +1635,9 @@ int BGBCC_CCXL_GetTypeOperationZ(
 	
 	if(i==CCXL_TY_VARIANT)
 		return(CCXL_TY_V);
+
+	if(i==CCXL_TY_F16)
+		return(CCXL_TY_F);
 	
 	return(-1);
 //	return(CCXL_TY_UNDEF_I);
@@ -1689,6 +1692,10 @@ int BGBCC_CCXL_GetTypeOperationBaseZ(
 		z1=z; break;
 	case CCXL_TY_P:		case CCXL_TY_S:
 		z1=CCXL_TY_P; break;
+	
+	case CCXL_TY_F16:
+		z1=CCXL_TY_F; break;
+	
 	default:
 		z1=CCXL_TY_P; break;
 //		z1=z; break;

@@ -34,6 +34,7 @@ SRCS_CLIB = \
 	pdpc201/btshx_xlf.c \
 	\
 	tk_core/tk_clib.c \
+	tk_core/tk_divi.c \
 	tk_core/tk_fat.c \
 	tk_core/tk_mmllist.c \
 	tk_core/tk_mmpage.c \
@@ -45,6 +46,8 @@ SRCS_CLIB = \
 	inttypes.c \
 	wchar.c \
 	wctype.c \
+	\
+	tk_encblock.S
 
 	
 
@@ -69,7 +72,7 @@ libvxcore.ril: $(SRCS_CLIB) e_bsr_start.S
 	$(CC) -o libvxcore.ril vxcore_multi.c e_bsr_start.S $(COPTS)
 
 libvxcore64.ril: $(SRCS_CLIB) e_bsr_start.S
-	$(CC) -o libvxcore64.ril vxcore_multi.c e_bsr_start.S $(COPTS64)
+	$(CC) -o libvxcore64.ril vxcore_multi.c e_bsr_start.S tk_encblock.S $(COPTS64)
 
 FORCE:
 

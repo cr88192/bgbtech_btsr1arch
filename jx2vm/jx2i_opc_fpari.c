@@ -212,7 +212,7 @@ void BJX2_Op_FSTCF_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_FLDCI_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	u32 v;
+	u64 v;
 	v=ctx->regs[BJX2_REG_DR];
 	((double *)ctx->fpreg)[op->rn]=(s64)v;
 }

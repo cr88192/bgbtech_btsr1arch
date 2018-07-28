@@ -45,8 +45,8 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_REG_LR		33
 #define BJX2_REG_SR		34
 #define BJX2_REG_VBR	35
-#define BJX2_REG_DLR	36
-#define BJX2_REG_DHR	37
+// #define BJX2_REG_DLR	36
+// #define BJX2_REG_DHR	37
 #define BJX2_REG_GBR	38
 #define BJX2_REG_TBR	39
 
@@ -54,6 +54,9 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_REG_TEA	41
 #define BJX2_REG_MMCR	42
 #define BJX2_REG_EXSR	43
+
+#define BJX2_REG_DLR	0
+#define BJX2_REG_DHR	1
 
 #define BJX2_REG_DR	BJX2_REG_DLR
 
@@ -96,6 +99,8 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_FLT_PCMISH		0x8801		//PC doesn't match trace addr
 
 #define BJX2_FLT_TIMER		0xC001		//kHz timer
+#define BJX2_FLT_IOPOKE		0xC002		//IO Poke
+#define BJX2_FLT_SCRPOKE	0xC003		//Screen Poke
 
 #define BJX2_OPFL_CTRLF		0x01		//Control-Flow Opcode
 #define BJX2_OPFL_TWOWORD	0x02		//Uses two instruction words
@@ -117,6 +122,7 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_LEAW		0x0D		//
 #define BJX2_NMID_LEAD		0x0E		//
 #define BJX2_NMID_LEAQ		0x0F		//
+
 #define BJX2_NMID_ADD		0x10		//
 #define BJX2_NMID_SUB		0x11		//
 #define BJX2_NMID_ADC		0x12		//
@@ -133,6 +139,7 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_CMPHI		0x1D		//
 #define BJX2_NMID_CMPGT		0x1E		//
 #define BJX2_NMID_RTS		0x1F		//
+
 #define BJX2_NMID_EXTUB		0x20		//
 #define BJX2_NMID_EXTUW		0x21		//
 #define BJX2_NMID_EXTSB		0x22		//
@@ -149,6 +156,7 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_POP		0x2D		//
 #define BJX2_NMID_CMPPL		0x2E		//
 #define BJX2_NMID_CMPPZ		0x2F		//
+
 #define BJX2_NMID_SHLL		0x30		//
 #define BJX2_NMID_SHLR		0x31		//
 #define BJX2_NMID_SHAR		0x32		//
@@ -165,6 +173,7 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_ROTR		0x3D		//
 #define BJX2_NMID_ROTCL		0x3E		//
 #define BJX2_NMID_ROTCR		0x3F		//
+
 #define BJX2_NMID_RET		0x40		//
 #define BJX2_NMID_MOVT		0x41		//
 #define BJX2_NMID_LDISH12	0x42		//
@@ -173,7 +182,6 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_SHLD		0x45		//
 #define BJX2_NMID_SWAPB		0x46		//
 #define BJX2_NMID_SWAPW		0x47		//
-
 #define BJX2_NMID_FADD		0x48		//
 #define BJX2_NMID_FSUB		0x49		//
 #define BJX2_NMID_FMUL		0x4A		//
@@ -182,6 +190,7 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_FCMPGT	0x4D		//
 #define BJX2_NMID_FMOVS		0x4E		//
 #define BJX2_NMID_FMOVD		0x4F		//
+
 #define BJX2_NMID_FMOV		0x50		//
 #define BJX2_NMID_FNEG		0x51		//
 #define BJX2_NMID_FLDCF		0x52		//
@@ -193,12 +202,12 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_FLDCD		0x58		//
 #define BJX2_NMID_FSTCD		0x59		//
 #define BJX2_NMID_FABS		0x5A		//
-
 #define BJX2_NMID_INV		0x5B		//
 #define BJX2_NMID_MOVUL		0x5C		//
 #define BJX2_NMID_EXTUL		0x5D		//
 #define BJX2_NMID_EXTSL		0x5E		//
 #define BJX2_NMID_LDISH32	0x5F		//
+
 #define BJX2_NMID_SHADQ		0x60		//
 #define BJX2_NMID_SHLDQ		0x61		//
 #define BJX2_NMID_TSTQ		0x62		//
@@ -207,9 +216,10 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_CMPQHI	0x65		//
 #define BJX2_NMID_CMPQGE	0x66		//
 #define BJX2_NMID_CMPQHS	0x67		//
-
 #define BJX2_NMID_FPUSH		0x68		//
 #define BJX2_NMID_FPOP		0x69		//
+#define BJX2_NMID_CSELT		0x6A		//
+#define BJX2_NMID_MOVNT		0x6B		//
 
 
 #define BJX2_FMID_NONE			0x00		//?
@@ -257,8 +267,28 @@ typedef unsigned long long u64;
 typedef signed long long s64;
 
 typedef s64 bjx2_addr;
+typedef u64 bjx2_addru;
 
 typedef unsigned char jx2_bool;
+
+#ifdef _MSC_VER
+#ifndef default_inline
+#define default_inline __inline
+#define force_inline __forceinline
+#endif
+#endif
+
+#ifdef __GNUC__
+#ifndef default_inline
+#define default_inline inline
+#define force_inline inline
+#endif
+#endif
+
+#ifndef default_inline
+#define default_inline
+#define force_inline
+#endif
 
 #ifndef false
 #define false 0
@@ -315,7 +345,18 @@ s64 tot_cyc;
 s64 tot_ops;
 s16 tgt_mhz;				//target MHz
 u16 rcp_mhz;				//reciprocal MHz
+int iodel_cyc;				//IO delay cycles
 
+int nttick_irq;				//number of timer-tick IRQs
+int miss_cyc;				//cache miss cycles
+
+bjx2_addr mem_l1addr1;		//L1 addr
+bjx2_addr mem_l1addr2;		//L1 addr
+bjx2_addr mem_l1addr3;		//L1 addr
+bjx2_addr mem_l1addr4;		//L1 addr
+
+bjx2_addr mem_l1h4k[256];		//L1 addr (4kB)
+bjx2_addr mem_l2h32k[4096];		//L2 addr (32/64kB)
 
 bjx2_addr *map_addr;
 char **map_name;
@@ -345,6 +386,8 @@ struct BJX2_Trace_s {
 BJX2_Opcode *ops[BJX2_TR_MAXOP];
 int n_ops;
 int n_cyc;
+s64 runcnt;
+s64 acc_pencyc;			//accumulated penalty cycles
 
 bjx2_addr addr;
 bjx2_addr addr_nxt;
@@ -358,10 +401,12 @@ BJX2_Trace *(*Run)(BJX2_Context *ctx, BJX2_Trace *tr);
 
 struct BJX2_MemSpan_s {
 bjx2_addr addr_base;	//lower address
-bjx2_addr addr_lim;	//upper address
+bjx2_addr addr_lim;		//upper address
+bjx2_addru addr_sz;		//address-space size
 
 char *name;				//helpful name
 void *data;				//raw data pointer
+byte simple_mem;		//simple memory read
 
 int (*GetByte)(BJX2_Context *ctx,
 	BJX2_MemSpan *sp, bjx2_addr addr);

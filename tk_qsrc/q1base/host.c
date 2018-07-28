@@ -648,8 +648,12 @@ void _Host_Frame (float time)
 	static double		time3 = 0;
 	int			pass1, pass2, pass3;
 
+//	printf("_Host_Frame: A-0 t=%f\n", host_time);
+
 	if (setjmp (host_abortserver) )
 		return;			// something bad happened, or the server disconnected
+
+//	printf("_Host_Frame: A-1 t=%f\n", host_time);
 
 // keep the random time dependent
 	rand ();
@@ -659,6 +663,7 @@ void _Host_Frame (float time)
 		return;			// don't run too fast, or packets will flood out
 	
 //	printf("_Host_Frame: A %f\n", host_frametime);
+//	printf("_Host_Frame: A t=%f\n", host_time);
 	
 // get new key events
 	Sys_SendKeyEvents ();
@@ -676,6 +681,7 @@ void _Host_Frame (float time)
 		CL_SendCmd ();
 
 //	printf("_Host_Frame: B %f\n", host_frametime);
+//	printf("_Host_Frame: B t=%f\n", host_time);
 	
 //-------------------
 //
@@ -701,6 +707,7 @@ void _Host_Frame (float time)
 		CL_SendCmd ();
 
 //	printf("_Host_Frame: C %f\n", host_frametime);
+//	printf("_Host_Frame: C t=%f\n", host_time);
 
 //	printf("host_time: B %f %f\n", host_time, host_frametime);
 
@@ -755,7 +762,7 @@ void Host_Frame (float time)
 	static int		timecount;
 	int		i, c, m;
 
-//	printf("Host_Frame: frame=%d time=%f dt=%f time2=%f\r",
+//	printf("Host_Frame: frame=%d time=%f dt=%f time2=%f\n",
 //		host_framecount, host_time, time, realtime);
 
 	if (!serverprofile.value)
@@ -763,18 +770,26 @@ void Host_Frame (float time)
 //		timetotal+=time;
 		_Host_Frame (time);
 
+//		printf("Host_Frame: B1 T=%f\n", host_time);
+
 		if(host_time>realtime)
 			host_time=realtime;
 
+//		printf("Host_Frame: C1 T=%f\n", host_time);
+
 		return;
 	}
-	
+
+//	printf("Host_Frame: B T=%f\n", host_time);
+
 	time1 = Sys_FloatTime ();
 	_Host_Frame (time);
 	time2 = Sys_FloatTime ();	
 	
 	timetotal += time2 - time1;
 	timecount++;
+
+//	printf("Host_Frame: C T=%f\n", host_time);
 	
 	if (timecount < 1000)
 		return;
@@ -788,6 +803,8 @@ void Host_Frame (float time)
 		if (svs.clients[i].active)
 			c++;
 	}
+
+//	printf("Host_Frame: D T=%f\n", host_time);
 
 	Con_Printf ("serverprofile: %2i clients %2i msec\n",  c,  m);
 }

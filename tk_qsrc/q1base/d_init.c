@@ -85,6 +85,8 @@ void D_Init (void)
 
 	r_drawpolys = false;
 //	r_drawpolys = true;
+	r_drawculledpolys = false;
+
 	r_worldpolysbacktofront = false;
 	r_recursiveaffinetriangles = true;
 //	r_recursiveaffinetriangles = false;

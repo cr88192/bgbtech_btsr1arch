@@ -100,6 +100,7 @@ SRCS=\
 	jx2cc/jx2_ldix.c \
 	jx2cc/jx2_lparith.c \
 	jx2cc/jx2_lpreg.c \
+	jx2cc/jx2_lqarith.c \
 	jx2cc/jx2_lvarith.c \
 	jx2cc/jx2_lxarith.c \
 	jx2cc/jx2_pecoff.c \

@@ -132,8 +132,23 @@ int BJX2_ThrowFaultStatus(BJX2_Context *ctx, int status)
 {
 	int i;
 
+	if(status==BJX2_FLT_IOPOKE)
+	{
+		ctx->tr_rnxt=NULL;
+		ctx->tr_rjmp=NULL;
+		return(0);
+	}
+
 	if(ctx->status)
 		return(0);
+
+	if(status==BJX2_FLT_SCRPOKE)
+	{
+		ctx->tr_rnxt=NULL;
+		ctx->tr_rjmp=NULL;
+		ctx->status=status;
+		return(0);
+	}
 
 #if 1
 	if((status&0xF000)==0x8000)
@@ -399,6 +414,9 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_FPUSH:		s0="FPUSH";		break;
 	case BJX2_NMID_FPOP:		s0="FPOP";		break;
 
+	case BJX2_NMID_MOVNT:		s0="MOVNT";		break;
+	case BJX2_NMID_CSELT:		s0="CSELT";		break;
+
 	default:
 		sprintf(tb, "?NM%02X", nmid);
 		s0=tb;
@@ -414,8 +432,8 @@ char *BJX2_DbgPrintNameForReg(BJX2_Context *ctx, int reg)
 
 	switch(reg)
 	{
-	case BJX2_REG_R0:		s="R0";		break;
-	case BJX2_REG_R1:		s="R1";		break;
+//	case BJX2_REG_R0:		s="R0";		break;
+//	case BJX2_REG_R1:		s="R1";		break;
 	case BJX2_REG_R2:		s="R2";		break;
 	case BJX2_REG_R3:		s="R3";		break;
 	case BJX2_REG_R4:		s="R4";		break;
@@ -452,15 +470,17 @@ char *BJX2_DbgPrintNameForReg(BJX2_Context *ctx, int reg)
 	case BJX2_REG_LR:		s="LR";		break;
 	case BJX2_REG_SR:		s="SR";		break;
 	case BJX2_REG_VBR:		s="VBR";	break;
+
 	case BJX2_REG_DLR:		s="DLR";	break;
 	case BJX2_REG_DHR:		s="DHR";	break;
+
 	case BJX2_REG_GBR:		s="GBR";	break;
 	case BJX2_REG_TBR:		s="TBR";	break;
 
 	case BJX2_REG_TTB:		s="TTB";	break;
 	case BJX2_REG_TEA:		s="TEA";	break;
-	case BJX2_REG_MMCR:	s="MMCR";	break;
-	case BJX2_REG_EXSR:	s="EXSR";	break;
+	case BJX2_REG_MMCR:		s="MMCR";	break;
+	case BJX2_REG_EXSR:		s="EXSR";	break;
 
 
 	case BJX2_REG_R0B:		s="R0B";	break;
@@ -525,7 +545,7 @@ char *BJX2_DbgPrintNameForFReg(BJX2_Context *ctx, int reg)
 	return(s);
 }
 
-int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op)
+int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 {
 	int msc, psc, brpc;
 
@@ -534,25 +554,43 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op)
 
 	if(op->fl&BJX2_OPFL_TRIWORD)
 	{
-		printf("%08X  %04X_%04X_%04X %-8s ",
-			(u32)op->pc,
+		printf("%08X  (%2d) %04X_%04X_%04X %-8s ",
+			(u32)op->pc, op->cyc,
 			op->opn, op->opn2, op->opn3,
 			BJX2_DbgPrintNameForNmid(ctx, op->nmid));
 		brpc=op->pc+6;
 	}else
 	if(op->fl&BJX2_OPFL_TWOWORD)
 	{
-		printf("%08X  %04X_%04X      %-8s ",
-			(u32)op->pc,
-			op->opn, op->opn2,
-			BJX2_DbgPrintNameForNmid(ctx, op->nmid));
+		if(fl&2)
+		{
+			printf("%08X  (%2d) %04X_%04X      %-8s ",
+				(u32)op->pc, op->cyc,
+				op->opn, op->opn2,
+				BJX2_DbgPrintNameForNmid(ctx, op->nmid));
+		}else
+		{
+			printf("%08X  (%2d) %04X_%04X %-8s ",
+				(u32)op->pc, op->cyc,
+				op->opn, op->opn2,
+				BJX2_DbgPrintNameForNmid(ctx, op->nmid));
+		}
 		brpc=op->pc+4;
 	}else
 	{
-		printf("%08X  %04X           %-8s ",
-			(u32)op->pc,
-			op->opn,
-			BJX2_DbgPrintNameForNmid(ctx, op->nmid));
+		if(fl&2)
+		{
+			printf("%08X  (%2d) %04X           %-8s ",
+				(u32)op->pc, op->cyc,
+				op->opn,
+				BJX2_DbgPrintNameForNmid(ctx, op->nmid));
+		}else
+		{
+			printf("%08X  (%2d) %04X      %-8s ",
+				(u32)op->pc, op->cyc,
+				op->opn,
+				BJX2_DbgPrintNameForNmid(ctx, op->nmid));
+		}
 		brpc=op->pc+2;
 	}
 
@@ -808,6 +846,28 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op)
 	return(0);
 }
 
+int BJX2_DbgPrintTraceOps(BJX2_Context *ctx, BJX2_Trace *tr)
+{
+	BJX2_Opcode *op;
+	bjx2_addr ba2;
+	char *bn2;
+	int i, fl;
+
+	fl=0;
+	for(i=0; i<tr->n_ops; i++)
+	{
+		op=tr->ops[i];
+		if(op->fl&BJX2_OPFL_TRIWORD) fl|=2;
+		if(op->fl&BJX2_OPFL_TWOWORD) fl|=1;
+	}
+
+	for(i=0; i<tr->n_ops; i++)
+	{
+		BJX2_DbgPrintOp(ctx, tr->ops[i], fl);
+	}
+	return(0);
+}
+
 int BJX2_DbgPrintTrace(BJX2_Context *ctx, BJX2_Trace *tr)
 {
 	bjx2_addr ba2;
@@ -825,10 +885,11 @@ int BJX2_DbgPrintTrace(BJX2_Context *ctx, BJX2_Trace *tr)
 		printf("PC @ %08X\n", (u32)(tr->addr));
 	}
 	
-	for(i=0; i<tr->n_ops; i++)
-	{
-		BJX2_DbgPrintOp(ctx, tr->ops[i]);
-	}
+	BJX2_DbgPrintTraceOps(ctx, tr);
+//	for(i=0; i<tr->n_ops; i++)
+//	{
+//		BJX2_DbgPrintOp(ctx, tr->ops[i]);
+//	}
 	return(0);
 }
 
@@ -913,6 +974,109 @@ int BJX2_DbgPrintFpRegs(BJX2_Context *ctx)
 	return(0);
 }
 
+int BJX2_DbgTopTraces(BJX2_Context *ctx)
+{
+	BJX2_Trace *tra[65536];
+	s64 cyc_nmid[256];
+	BJX2_Trace *trcur;
+	bjx2_addr ba2;
+	s64 cyc;
+	double pcnt;
+	char *bn2;
+	int trn;
+	int i, j;
+
+	for(i=0; i<256; i++)
+	{
+		cyc_nmid[i]=0;
+	}
+
+	trn=0;
+	for(i=0; i<1024; i++)
+	{
+		trcur=ctx->trhash[i];
+		while(trcur && (trn<65536))
+		{
+			tra[trn++]=trcur;
+			trcur=trcur->hnext;
+		}
+	}
+
+	for(i=0; i<trn; i++)
+	{
+		trcur=tra[i];
+		for(j=0; j<trcur->n_ops; j++)
+		{
+			cyc_nmid[trcur->ops[j]->nmid]+=
+				trcur->ops[j]->cyc*tra[i]->runcnt;
+		}
+	}
+	
+	for(i=0; i<trn; i++)
+		for(j=i+1; j<trn; j++)
+	{
+//		if(tra[j]->runcnt>tra[i]->runcnt)
+		if(	(tra[j]->runcnt*tra[j]->n_cyc+tra[j]->acc_pencyc) >
+			(tra[i]->runcnt*tra[i]->n_cyc+tra[i]->acc_pencyc))
+		{
+			trcur=tra[i];
+			tra[i]=tra[j];
+			tra[j]=trcur;
+		}
+	}
+	
+	printf("Top Traces:\n");
+	for(i=0; i<16; i++)
+	{
+		trcur=tra[15-i];
+//		trcur=tra[i];
+		bn2=BJX2_DbgNameForAddr(ctx, trcur->addr, &ba2);
+
+		cyc=trcur->runcnt*trcur->n_cyc+trcur->acc_pencyc;
+		pcnt=(100.0*cyc)/(ctx->tot_cyc);
+
+		if(bn2)
+		{
+			printf("PC @ %08X (%-28s+%5d) "
+				"Cyc=%5lldM(p=%lldM %.2f%%) %.2f%%\n",
+				(u32)(trcur->addr), bn2,
+				(int)(trcur->addr-ba2),
+				cyc>>20, trcur->acc_pencyc>>20,
+				(100.0*trcur->acc_pencyc)/cyc,
+				pcnt);
+		}else
+		{
+			printf("PC @ %08X Cyc=%5lldM %.2f%%\n",
+				(u32)(trcur->addr), cyc>>20, pcnt);
+		}
+
+		BJX2_DbgPrintTraceOps(ctx, trcur);
+
+#if 0
+		for(j=0; j<trcur->n_ops; j++)
+		{
+			BJX2_DbgPrintOp(ctx, trcur->ops[j]);
+		}
+#endif
+	}
+
+#if 1
+	printf("Cyc/Nmid:\n");
+	for(i=0; i<64; i++)
+	{
+		printf("%2X ", i*2);
+		for(j=0; j<2; j++)
+		{
+			printf("%8s(%10lld) ",
+				BJX2_DbgPrintNameForNmid(ctx, i*2+j),
+				cyc_nmid[i*2+j]);
+		}
+		printf("\n");
+	}
+#endif
+}
+
+
 int BJX2_DbgDump(BJX2_Context *ctx)
 {
 	BJX2_Trace *cur;
@@ -928,6 +1092,11 @@ int BJX2_DbgDump(BJX2_Context *ctx)
 
 	BJX2_DbgPrintRegs(ctx);
 	BJX2_DbgPrintFpRegs(ctx);
+	
+	if(!ctx->status)
+	{
+		BJX2_DbgTopTraces(ctx);
+	}
 	return(0);
 }
 
@@ -946,6 +1115,12 @@ int BJX2_UpdateForStatus(BJX2_Context *ctx)
 
 	if(ctx->status==BJX2_FLT_INVOP)
 		return(0);
+
+	if(ctx->status==BJX2_FLT_SCRPOKE)
+	{
+		ctx->status=0;
+		return(0);
+	}
 
 	if(BJX2_FaultEnterInterrupt(ctx)>0)
 		return(1);
@@ -990,6 +1165,10 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 		cn1=cn;
 		if(cn1>=ctx->ttick_hk)
 			cn1=ctx->ttick_hk;
+//		if(cn1>=2048)
+//			cn1=2048;
+		if((ctx->iodel_cyc>0) && (cn1>=ctx->iodel_cyc))
+			cn1=ctx->iodel_cyc;
 		cn0=cn1;
 		
 		no=0;
@@ -1027,6 +1206,13 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 
 
 		nc=(cn0-cn1);
+
+//		nc+=ctx->iodel_cyc;
+//		ctx->iodel_cyc=0;
+
+		nc+=ctx->miss_cyc;
+		ctx->miss_cyc=0;
+		
 		ctx->tot_cyc+=nc;
 		ctx->tot_ops+=no;
 		ctx->ttick_hk-=nc;
@@ -1036,6 +1222,7 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 
 		if(ctx->ttick_hk<=0)
 		{
+			ctx->nttick_irq++;
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_TIMER);
 			while(ctx->ttick_hk<=0)
 				ctx->ttick_hk+=ctx->ttick_rst;

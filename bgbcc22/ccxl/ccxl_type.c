@@ -1288,6 +1288,29 @@ int BGBCC_CCXL_TypeGetLogicalAlign(
 	return(al);
 }
 
+int BGBCC_CCXL_TypeGetLogicalPadSize(
+	BGBCC_TransState *ctx, ccxl_type ty)
+{
+	int sz, sz1, al;
+	
+	sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, ty);
+	al=BGBCC_CCXL_TypeGetLogicalAlign(ctx, ty);
+	
+	if(al>ctx->arch_align_max)
+		al=ctx->arch_align_max;
+	
+	sz1=sz;
+	
+	if(sz&(al-1))
+	{
+		BGBCC_DBGBREAK
+	}
+	
+	if(al>1)
+		sz1=(sz+(al-1))&(~(al-1));
+	return(sz1);
+}
+
 ccxl_status BGBCC_CCXL_TypeDerefType(
 	BGBCC_TransState *ctx,
 	ccxl_type sty, ccxl_type *rdty)
@@ -1307,6 +1330,8 @@ ccxl_status BGBCC_CCXL_TypeDerefType(
 		{	
 			tty.val=sty.val&(CCXL_TY_BASEMASK|CCXL_TY_PTRMASK);
 			BGBCC_CCXL_TypeGetTypedefType(ctx, tty, &tty);
+			if(tty.val==0x961)
+				k=1;
 			*rdty=tty;
 			return(CCXL_STATUS_YES);
 		}
@@ -1315,6 +1340,8 @@ ccxl_status BGBCC_CCXL_TypeDerefType(
 		{
 			tty.val=sty.val-CCXL_TY_PTRIDX1;
 			BGBCC_CCXL_TypeGetTypedefType(ctx, tty, &tty);
+			if(tty.val==0x961)
+				k=1;
 			*rdty=tty;
 			return(CCXL_STATUS_YES);
 		}

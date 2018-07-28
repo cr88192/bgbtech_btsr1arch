@@ -207,12 +207,22 @@ int JX2R_TKFAT_ReadSectors(JX2R_TKFAT_ImageInfo *img,
 	int i, j, k;
 
 	if(num<1)
+	{
+		printf("JX2R_TKFAT_ReadSectors: Bad Count %d\n", num);
 		return(-1);
+	}
 
 	if(lba<0)
+	{
+		printf("JX2R_TKFAT_ReadSectors: Bad LBA %llX\n", lba);
 		return(-1);
+	}
 	if((lba+num)>img->nImgBlks)
+	{
+		printf("JX2R_TKFAT_ReadSectors: Bad LBA+Count %llX\n",
+			(lba+num));
 		return(-1);
+	}
 
 	if(img->pImgData)
 	{
@@ -366,9 +376,9 @@ byte *JX2R_TKFAT_GetSectorTempBuffer(JX2R_TKFAT_ImageInfo *img,
 			img->tbc_buf[i]=img->tbc_buf[j];
 			img->tbc_lba[i]=img->tbc_lba[j];
 			img->tbc_lbn[i]=img->tbc_lbn[j];
-			img->tbc_buf[i]=tbd;
-			img->tbc_lba[i]=tba;
-			img->tbc_lbn[i]=tbn;
+			img->tbc_buf[j]=tbd;
+			img->tbc_lba[j]=tba;
+			img->tbc_lbn[j]=tbn;
 			return(tbd);
 		}
 	}
@@ -978,14 +988,21 @@ int JX2R_TKFAT_AllocFreeCluster(JX2R_TKFAT_ImageInfo *img)
 	int n;
 	int i, j, k;
 	
-	n=(img->lba_count-img->lba_data)/img->szclust;
+//	n=(img->lba_count-img->lba_data)/img->szclust;
+	n=img->tot_clust;
 	
-	for(i=2; i<n; i++)
+	i=img->cl_rov;
+	if((i<2) || i>=n)
+		i=2;
+	
+//	for(i=2; i<n; i++)
+	for(; i<n; i++)
 	{
 		j=JX2R_TKFAT_GetFatEntry(img, i);
 		if(!j)
 		{
 			JX2R_TKFAT_SetFatEntry(img, i, 0xFFFFFFFF);
+			img->cl_rov=i+1;
 			return(i);
 		}
 	}
@@ -1005,7 +1022,16 @@ int JX2R_TKFAT_GetWalkCluster(
 	if(!clid)
 		return(-1);
 
-	i=clid; n=cloffs;
+	if((img->walk_clid==clid) &&
+		(cloffs>=img->walk_clofs))
+	{
+		i=img->walk_clcur;
+		n=cloffs-img->walk_clofs;
+	}else
+	{
+		i=clid; n=cloffs;
+	}
+
 	while(n>0)
 	{
 		j=JX2R_TKFAT_GetFatEntry(img, i);
@@ -1023,6 +1049,11 @@ int JX2R_TKFAT_GetWalkCluster(
 		i=j;
 		n--;
 	}
+	
+	img->walk_clid=clid;
+	img->walk_clofs=cloffs;
+	img->walk_clcur=i;
+	
 	return(i);
 }
 

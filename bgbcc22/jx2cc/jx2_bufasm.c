@@ -249,6 +249,8 @@ int BGBCC_JX2A_GetRegId(char *str)
 			return(BGBCC_SH_REG_MACH);
 		if(!bgbcc_stricmp(str, "macl"))
 			return(BGBCC_SH_REG_MACL);
+		if(!bgbcc_stricmp(str, "mmcr"))
+			return(BGBCC_SH_REG_MMCR);
 		break;
 	case 'P':	case 'p':
 		if(!bgbcc_stricmp(str, "pr"))
@@ -314,14 +316,25 @@ int BGBCC_JX2A_GetRegId(char *str)
 		if(!bgbcc_stricmp(str, "spc"))
 			return(BGBCC_SH_REG_SPC);
 
+		if(!bgbcc_stricmp(str, "ttb"))
+			return(BGBCC_SH_REG_TTB);
+		if(!bgbcc_stricmp(str, "tea"))
+			return(BGBCC_SH_REG_TEA);
+
+		if(!bgbcc_stricmp(str, "exsr"))
+			return(BGBCC_SH_REG_EXSR);
+
 		break;
 	}
 
 	return(-1);
 }
 
+static char *bgbcc_jx2a_lastlbl;
+
 int BGBCC_JX2A_ParseOperand(char **rcs, BGBCC_JX2_OpcodeArg *opv)
 {
+	char tb0[256];
 	char *tk0, *tk1;
 	char *cs, *cs1, *cs2;
 	int i;
@@ -497,14 +510,32 @@ int BGBCC_JX2A_ParseOperand(char **rcs, BGBCC_JX2_OpcodeArg *opv)
 			return(1);
 		}
 
-		opv->ty=BGBCC_SH_OPVTY_NAME;
-		if(strlen(tk0+1)<8)
+		if((tk0[1]=='.') && bgbcc_jx2a_lastlbl)
 		{
-			opv->name=(char *)(&opv->disp);
-			strncpy(opv->name, tk0+1, 7);
+			sprintf(tb0, "%s%s", bgbcc_jx2a_lastlbl, tk0+1);
+
+			opv->ty=BGBCC_SH_OPVTY_NAME;
+			if(strlen(tb0)<8)
+			{
+				opv->name=(char *)(&opv->disp);
+				strncpy(opv->name, tb0, 7);
+			}else
+			{
+				opv->name=bgbcc_strdup(tb0);
+			}
 		}else
 		{
-			opv->name=bgbcc_strdup(tk0+1);
+//			bgbcc_jx2a_lastlbl=bgbcc_strdup(tk0+1);
+		
+			opv->ty=BGBCC_SH_OPVTY_NAME;
+			if(strlen(tk0+1)<8)
+			{
+				opv->name=(char *)(&opv->disp);
+				strncpy(opv->name, tk0+1, 7);
+			}else
+			{
+				opv->name=bgbcc_strdup(tk0+1);
+			}
 		}
 		*rcs=cs1;
 		return(1);
@@ -541,6 +572,18 @@ int nmid;
 {"cmpq/eq",	BGBCC_SH_NMID_CMPQEQ},
 {"cmpq/ge",	BGBCC_SH_NMID_CMPQGE},
 {"cmpq/gt",	BGBCC_SH_NMID_CMPQGT},
+
+{"cmphs",	BGBCC_SH_NMID_CMPHS},
+{"cmphi",	BGBCC_SH_NMID_CMPHI},
+{"cmpeq",	BGBCC_SH_NMID_CMPEQ},
+{"cmpge",	BGBCC_SH_NMID_CMPGE},
+{"cmpgt",	BGBCC_SH_NMID_CMPGT},
+{"cmpqhs",	BGBCC_SH_NMID_CMPQHS},
+{"cmpqhi",	BGBCC_SH_NMID_CMPQHI},
+{"cmpqeq",	BGBCC_SH_NMID_CMPQEQ},
+{"cmpqge",	BGBCC_SH_NMID_CMPQGE},
+{"cmpqgt",	BGBCC_SH_NMID_CMPQGT},
+
 {"jmp",		BGBCC_SH_NMID_JMP},
 {"jsr",		BGBCC_SH_NMID_JSR},
 {"bra",		BGBCC_SH_NMID_BRA},
@@ -606,6 +649,8 @@ int nmid;
 {"shll32",	BGBCC_SH_NMID_SHLL32},
 {"shlr32",	BGBCC_SH_NMID_SHLR32},
 {"shar32",	BGBCC_SH_NMID_SHAR32},
+{"movnt",	BGBCC_SH_NMID_MOVNT},
+{"cselt",	BGBCC_SH_NMID_CSELT},
 
 {"mac.w",	BGBCC_SH_NMID_MACW},
 {"not",		BGBCC_SH_NMID_NOT},
@@ -890,6 +935,7 @@ int BGBCC_JX2A_LookupOpcodeFmid(
 			}
 			break;
 		}
+		return(fm);
 	}
 
 	return(0);
@@ -942,6 +988,16 @@ int BGBCC_JX2A_TryAssembleOpcode(
 		rt=BGBCC_JX2_TryEmitOpImmReg(ctx,
 			nmid, arg0->disp, arg1->breg);
 		break;
+
+	case BGBCC_SH_FMID_REGREGREG:
+		rt=BGBCC_JX2_TryEmitOpRegRegReg(ctx,
+			nmid, arg0->breg, arg1->breg, arg2->breg);
+		break;
+	case BGBCC_SH_FMID_REGIMMREG:
+		rt=BGBCC_JX2_TryEmitOpRegImmReg(ctx,
+			nmid, arg0->breg, arg1->disp, arg2->breg);
+		break;
+
 	case BGBCC_SH_FMID_REGST:
 		rt=BGBCC_JX2_TryEmitOpRegStReg(ctx,
 			nmid, arg0->breg, arg1->breg);
@@ -1058,6 +1114,7 @@ int BGBCC_JX2A_ParseCheckFeature(BGBCC_JX2_Context *ctx, char *sym)
 int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 {
 	BGBCC_JX2_OpcodeArg arg[4];
+	char tb0[256];
 //	BTSHAS_ListingOp *op;
 	char *tk0, *tk1;
 	char *cs, *cs1, *cs2;
@@ -1080,8 +1137,17 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 				return(1);
 			}
 			
-			BGBCC_JX2_EmitNamedLabel(ctx, tk0+1);
-			BGBCC_JX2C_ResetModeDqUnknown(NULL, ctx);
+			if((tk0[1]=='.') && bgbcc_jx2a_lastlbl)
+			{
+				sprintf(tb0, "%s%s", bgbcc_jx2a_lastlbl, tk0+1);
+				BGBCC_JX2_EmitNamedLabel(ctx, tb0);
+				BGBCC_JX2C_ResetModeDqUnknown(NULL, ctx);
+			}else
+			{
+				bgbcc_jx2a_lastlbl=bgbcc_strdup(tk0+1);
+				BGBCC_JX2_EmitNamedLabel(ctx, tk0+1);
+				BGBCC_JX2C_ResetModeDqUnknown(NULL, ctx);
+			}
 			*rcs=cs1+1;
 			return(1);
 		}
@@ -1647,6 +1713,8 @@ int BGBCC_JX2C_AssembleBuffer(
 
 	sctx->iflvl_f=0;
 	sctx->iflvl_t=0;
+
+	bgbcc_jx2a_lastlbl=NULL;
 
 	sctx->is_rawasm=1;
 	cs=text;

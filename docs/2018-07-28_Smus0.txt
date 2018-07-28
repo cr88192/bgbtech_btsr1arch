@@ -1,0 +1,168 @@
+Simple Music
+* Several Programmable Waveforms
+* 5 Main Voices, 5 Sub Voices
+** 0..3, 7, 8..11, 15
+** Voices 4..6 and 12..14 are reserved.
+
+
+Registers:
+* A0081800 .. A0081FFF: SMUS Registers
+** A0081800: Voice Control Register A, Voice  0
+** A0081804: Voice Control Register B, Voice  0
+** A0081808: Voice Control Register C, Voice  0
+** A008180C: Voice Status Register,    Voice  0
+** A0081810: Voice Control Register A, Voice  1
+** ...
+** A00818FC: Voice Status Register,    Voice 15
+* A0081900: Master Control Register A
+
+
+
+Control Register A:
+* Each voice will have a 32-bit control register.
+** Setting this register to zero cause the voice to reset.
+** The voice will stay in reset and not produce any output when set to 0.
+* 19.. 0: Clocked Accumulator Step
+** Interpreted as a phase angle that is accumulated at ~ 62.5kHz.
+*** May be driven at 1MHz internally, but shifted right by 4 bits.
+*** Some variation may exist as to what is the exact frequency.
+* 20: -
+* 21: Pair-Link
+* 27..22: Volume
+* 31..28: Waveform
+
+Voice Control Register B and C:
+* Reserved for future expansion.
+
+Accumulator:
+* Interpreted as a normalized value in the range of 0 to 2PI.
+** Where, logically the waveform cycles for each 2PI.
+** Or, alternatively, each time the value wraps, the cycle repeats.
+
+Voise Status Register:
+* 19.. 0: Accumulator Position
+* 31..20: Status Flags
+** Gives the current phase position of the accumulator.
+
+
+Pair Link Flag
+* A paired sub-voice may be used as a modulator.
+** 0..7, Will use Voice 8..15 as a Modulator
+** 0: Unpaired, Each voice plays independently
+** 1: Paired, Sub-Voice used as a modulator.
+
+MIDI Mapping (Nominal):
+* Channel 1..8: Voice 0..7
+* Channel 9: Voice 15
+** Using Channel 9 will implicitly force unpairing Voice 7.
+* Channel 10..15: Voice 8..14
+** Using these will unpair Voices 0..6.
+
+When a channel is forced to be unpaired, it will probably fall back to Triangle or Sawtooth.
+
+The MIDI playback driver will be responsible for managing the voices at the appropriate times.
+
+
+Volume(4-bit):
+* Will be a non-linear attenuation applied to a voice's output.
+** 4b0000: 1.0000
+** 4b0001: 0.8750
+** 4b0010: 0.7500
+** 4b0011: 0.6250
+** 4b0100: 0.5000
+** 4b0101: 0.4375
+** 4b0110: 0.3750
+** 4b0111: 0.3125
+** 4b1000: 0.2500
+** 4b1001: 0.2188
+** 4b1010: 0.1875
+** 4b1011: 0.1563
+** 4b1100: 0.1250
+** 4b1101: 0.1094
+** 4b1110: 0.0938
+** 4b1111: 0.0782
+
+Volume(6-bit):
+* Will be a non-linear attenuation applied to a voice's output.
+** 6b000000: 1.0000, Vo=Vi
+** 6b000001: 0.9375, Vo=Vi-(Vi>>3)
+** 6b000010: 0.8750, Vo=Vi-(Vi>>2)
+** 6b000011: 0.8125, Vo=Vi-(Vi>>2)-(Vi>>3)
+** 6b000100: 0.7500, Vo=Vi-(Vi>>1)
+** 6b000101: 0.6875, Vo=Vi-(Vi>>1)-(Vi>>3)
+** 6b000110: 0.6250, Vo=Vi-(Vi>>1)-(Vi>>2)
+** 6b000111: 0.5625, Vo=Vi-(Vi>>1)-(Vi>>2)-(Vi>>3)
+* Only evens (pattern not hard to figure out):
+** 6b001000: 0.5000
+** 6b001010: 0.4375
+** 6b001100: 0.3750
+** 6b001110: 0.3125
+** 6b010000: 0.2500
+** 6b010010: 0.2188
+** 6b010100: 0.1875
+** 6b010110: 0.1563
+** 6b011000: 0.1250
+** 6b011010: 0.1094
+** 6b011100: 0.0938
+** 6b011110: 0.0782
+** ...
+** 6b111111: 0.0
+* Or, in effect, it is a 3.3 microfloat.
+** First step is to scale by mantissa.
+** Then value is shifted right by the exponent.
+
+
+Waveforms:
+* 0: Full Triangle
+** Acc(23:22):
+***	2b00: Acc(22:15)
+***	2b01: Acc(22:15)
+*** 2b10: ~Acc(22:15)
+*** 2b11: ~Acc(22:15)
+
+* 1: Half-Triangle (Positive Only)
+** Acc(23:22):
+*** 2b00: 8x80
+*** 2b01: Acc(22:15)
+*** 2b10: ~Acc(22:15)
+*** 2b11: 8x80
+
+* 2: Absolute-Triangle (Mirrored Along axis)
+** Acc(23:22):
+*** 2b00: ~Acc(22:15)
+*** 2b01: Acc(22:15)
+*** 2b10: ~Acc(22:15)
+*** 2b11: Acc(22:15)
+
+* 3: Quarter-Triangle (Rising Edges)
+** Acc(23:22):
+*** 2b00: 8x80
+*** 2b01: Acc(22:15)
+*** 2b10: 8x80
+*** 2b11: Acc(22:15)
+
+* 4: Alternating Triangle
+** Acc(23:22):
+***	2b00: Acc(21:14)
+***	2b01: ~Acc(21:14)
+*** 2b10: 8x80
+*** 2b11: 8x80
+
+* 5: Sawtooth
+** Acc(23:22):
+***	2b00: Acc(22:15)
+***	2b01: Acc(22:15)
+*** 2b10: Acc(22:15)
+*** 2b11: Acc(22:15)
+
+* 6: Square Wave
+** Acc(23:22):
+*** 2b00: 0xFF
+*** 2b01: 0xFF
+*** 2b10: 0x00
+*** 2b11: 0x00
+
+* 7: Noise
+** Psuedo-random noise pattern.
+** Will probably flip and XOR some of the accumulator bits.
+

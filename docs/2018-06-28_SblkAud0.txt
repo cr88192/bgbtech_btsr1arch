@@ -1,0 +1,103 @@
+Small Block Audio
+
+MMIO Has a 4kB loop buffer, representing 0.25 seconds.
+Audio blocks are Center/Side.
+
+* A0080000 .. A0080FFF: Audio Loop Buffer
+* A0081000 .. A0081FFF: Audio Registers
+** A0081000 .. A00817FF: ADPCM Registers
+** A0081800 .. A0081FFF: SMUS Registers
+
+Audio Data (B):
+* 512 bit block size, 128 samples.
+* 4x 3-bit Center Samples per 1x 3-bit Side Samples
+** 32-bit Header
+** 96 bits: Side Data
+** 384 bits: Center Data (Densely Packed)
+
+
+Header:
+* Center Predictor
+** (L+R)/2
+* Side Predictor
+** (L-R)/2
+* Predictor:
+** (15:7) = Predictor Value, 9-bit (S.E3.F5)
+** (6:1) = Predictor Step, 6-bit
+** (0) = Tag
+*** C=0, S=0: Joint Stereo
+*** C=0, S=1: Split Mono
+
+Predictor Value Exponent (S.E3.F5):
+* E=7: 16k..32k (01vvvvv000000000)
+* E=6:  8k..16k (001vvvvv00000000)
+* E=5:  4k.. 8k (0001vvvvv0000000)
+* E=4:  2k.. 4k (00001vvvvv000000)
+* E=3:  1k.. 2k (000001vvvvv00000)
+* E=2: 512.. 1k (0000001vvvvv0000)
+* E=1: 256..512 (00000001vvvvv000)
+* E=0: 128..256 (00000000vvvvv000)
+
+While it would be more effective to identity map small values, this would be more complicated for hardware.
+
+The predictor step will be interpreted as a similar E4.F2 value encoding a step range.
+
+Samples:
+* 000: +1/7 * Range, Pred--
+* 001: +3/7 * Range, Pred
+* 010: +5/7 * Range, Pred
+* 011: +7/7 * Range, Pred+=2
+* 100: -1/7 * Range, Pred--
+* 101: -3/7 * Range, Pred
+* 110: -5/7 * Range, Pred
+* 111: -7/7 * Range, Pred+=2
+
+* / 000: +1/4 * Range, Pred--
+* / 001: +2/4 * Range, Pred
+* / 010: +3/4 * Range, Pred
+* / 011: +4/4 * Range, Pred++
+* / 100: -1/4 * Range, Pred--
+* / 101: -2/4 * Range, Pred
+* / 110: -3/4 * Range, Pred
+* / 111: -4/4 * Range, Pred++
+
+During decoding, the samples will exist in an 18-bit space (or larger), but will represent a signed 16-bit value range on the output. This extra range is effectively "overflow space", with the final output being clamped to range.
+
+Step Range (Decimal)
+  E=15: 65536, 81920, 98304, -
+  E=14: 32768, 40960, 49152, 61440
+  E=13: 16384, 20480, 24576, 30720
+  E=12:  8192, 10240, 12288, 15360
+  E=11:  4096,  5120,  6144,  7680
+  E=10:  2048,  2560,  3072,  3840
+  E= 9:  1024,  1280,  1536,  1920
+  E= 8:   512,   640,   768,   960
+  E= 7:   256,   320,   384,   448
+  E= 6:   128,   160,   192,   224 
+  E= 5:    64,    80,    96,   112
+  E= 4:    32,    40,    48,    56
+  E= 3:    16,    20,    24,    28
+  E= 2:     8,    10,    12,    14
+  E= 1:     4,     5,     6,     7
+  E= 0:     0,     1,     2,     3
+
+Step Range (Hex)
+  E=15: 10000, 14000, 18000, 1C000
+  E=14: 08000, 0A000, 0C000, 0E000
+  E=13: 04000, 05000, 06000, 07000
+  E=12: 02000, 02800, 03000, 03800
+  E=11: 01000, 01400, 01800, 01C00
+  E=10: 00800, 00A00, 00C00, 00E00
+  E= 9: 00400, 00500, 00600, 00700
+  E= 8: 00200, 00280, 00300, 00380
+  E= 7: 00100, 00140, 00180, 001C0
+  E= 6: 00080, 000A0, 000C0, 000E0 
+  E= 5: 00040, 00050, 00060, 00070
+  E= 4: 00020, 00028, 00030, 00038
+  E= 3: 00010, 00014, 00018, 0001C
+  E= 2: 00008, 0000A, 0000C, 0000E
+  E= 1: 00004, 00005, 00006, 00007
+  E= 0: 00000, 00001, 00002, 00003
+ 
+ 
+ For Split-Mono mode, Center and Side will be instead interpreted as High-Pass and Low-Pass samples, 

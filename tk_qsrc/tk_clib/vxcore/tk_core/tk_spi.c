@@ -75,6 +75,7 @@ byte TKSPI_XchByte(byte c)
 	while(v&SPICTRL_BUSY) 
 		v=P_SPI_CTRL;
 	v=P_SPI_DATA;
+//	__debugbreak();
 //	printf("%02XX%02X ", c, v&255);
 	return(v&0xFF);
 }
@@ -121,7 +122,7 @@ int TKSPI_ReadData(byte *buf, u32 len)
 	}
 	if(rv!=0xFE)
 	{
-		printf("Err %02X\n", rv);
+		printf("TKSPI: Err %02X\n", rv);
 		return(-1);
 	}
 
@@ -151,6 +152,7 @@ int TKSPI_WaitReady(void)
 	while(count>0)
 	{
 		rv=TKSPI_XchByte(0xFF);
+//		__debugbreak();
 		if(rv==0xFF) {
 		       	return(1);
 		}
@@ -216,8 +218,12 @@ int TKSPI_Select(void)
 {
 	TKSPI_ChipSel(0);
 	if (TKSPI_WaitReady())
+	{
+//		puts("TKSPI_Select: 1\n");
 		return(1);
+	}
 	TKSPI_Deselect();
+//	puts("TKSPI_Select: 0\n");
 	return(0);
 }
 
@@ -276,6 +282,9 @@ int TKSPI_ReadSectors(byte *buf, s64 lba, int cnt)
 	u64 la;
 	int n, h;
 
+//	tk_printf("TKSPI_ReadSectors: %d %d\n", lba, cnt);
+
+#if 1
 	if(cnt>1)
 	{
 		ct=buf; la=lba; n=cnt;
@@ -296,8 +305,9 @@ int TKSPI_ReadSectors(byte *buf, s64 lba, int cnt)
 		TKSPI_SendCmd(MMC_CMD17, la);
 		TKSPI_ReadData(ct, 512);
 	}
+#endif
 
-#if 0
+#if 1
 	ct=buf; la=lba; n=cnt;
 	while(n>0)
 	{
@@ -335,9 +345,13 @@ int TKSPI_WriteSectors(byte *buf, s64 lba, int cnt)
 int TKSPI_InitDevice(void)
 {
 	static const char *hexchars="0123456789ABCDEF";
+	static int init=0;
 	byte ocr[4];
 	byte s, cmd, ty;
 	u32 n, count;
+	
+	if(init!=1)return(0);
+	init=1;
 
 	TKSPI_SetSpeed(0);
 	TKSPI_SendCmd(MMC_CMD52, 1);

@@ -1,0 +1,4 @@
+Idea for DCT-like blocks:
+
+48x3=144 bits, HAC Coeff, Signed
+8x6=48 bits, LAC Coeff, Signed

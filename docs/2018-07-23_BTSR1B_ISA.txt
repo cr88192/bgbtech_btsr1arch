@@ -1,0 +1,606 @@
+Simple Register ISA
+* ( Preliminary Spec Only )
+
+Goals:
+* Simple Register ISA
+* Concievably useful for microcontroller tasks.
+* Takes some inspiration from SH and MSP430.
+
+Changes from BSR1A:
+* DLR/DHR merged into R0/R1 (like in BJX2)
+* ABI changed to use R2 as return value (also like BJX2)
+* Drop instruction forms specific to DLR wrangling.
+
+
+=== Overview ===
+
+Basic Design:
+* Fixed width 16-bit instructions.
+* 16 General Purpose Registers.
+** R0..R15, 32 bit
+* 16 Special Registers.
+** C0..C15, But given other names.
+* 16 Shadow Registers
+** S0..S15, Map to R0..R7, C0..C2, R15, and C4..C7
+* Will be little-endian with unaligned memory access.
+
+Register Aliases:
+* R0: DLR (Displacement/Low Register)
+* R1: DHR (Displacement/High Register)
+* R15: SP
+** R15 will exist in GPR space but will be essentially an SPR in the arch.
+* C0: PC (Program Counter)
+* C1: LR (Link Register)
+** BSR will save PC to LR.
+** RET will copy LR to PC.
+*** For non-leaf functions, LR is saved manually.
+* C2: SR (Status Register)
+** Uses a T bit, which is a True/False Status.
+** The T bit also serves as a Carry Bit.
+* C3: VBR (Interrupt Vector Base Register)
+* C4: -
+* C5: -
+* C6: GBR (Global Base Register)
+* C7: TBR (Thread Base Register)
+* C8: TTB (Reserved for MMU, Page Table Base)
+* C9: TEA (Address which generated an access fault).
+* C10: MMCR (Reserved for MMU, MMU Control Register)
+* C11: EXSR (Exception Status Register)
+
+FPU (Optional):
+* FR0..FR15, FPU Registers
+** Nominally 64-bit Double Precision
+** Values are converted on Load/Store.
+
+Barrel Shift (Optional)
+* Shifts register by a certain amount.
+* Immed is interpreted as a signed 8 bit number:
+** Positive: Shift Left, Modulo
+** Negative: Shift Right, Modulo
+
+Arch Notes:
+* No Delay-Slot
+** Not really worth the hassle.
+* Does not use PC relative constant loads.
+** Generally painful and problematic for code generation.
+** Overall, don't save much space over LDSH or similar.
+* Neither SR.T nor DLR will be preserved across branches.
+** Following any branch, their contents are undefined.
+* DLR will depend on the context in which it is used.
+** Used for constructing immediates and displacements.
+** Branches: Will be scaled by 2.
+** MOV.x: Will be scaled by the size of the base type.
+** Will be used for constructing psuedo-ops.
+** May be thrashed or otherwise become undefined in certain cases:
+*** A MOV.x operation.
+*** Any operation which uses the value from DLR.
+*** Branches (conditional or otherwise).
+* DHR will be an operation-specific register.
+** Will have similar restrictions as DLR.
+** May be used as the high part of multiply results.
+* The LDIx imm12 and DLR_i4 forms are mostly intended for code-density.
+** Combined, they allow expressing S16 and U16 immediates in a 32-bit pair.
+** These may be considered an optional 'DLR_i4' feature.
+
+* When Read, PC will point to the following instruction.
+** PC will always be 16-bit aligned (setting the LSB is undefined).
+* GBR may be used to hold a DATA/BSS pointer by the program.
+** Will be Preserve
+* TBR may be used for Thread/Process State
+** Intended to facilitate thread-local storage and similar.
+
+SR Bits:
+* 0: T, Used as a True/False status, or Carry for ADC/SBB.
+* 1: S, Special Status Flag.
+* 3/2: Interrupt Priority Level
+** 00: Interrupts Disabled.
+** 01: High Priority Only (System/Fault).
+** 10: Medium Priority Only (Timers, ...).
+** 11: All Interrupts Enabled.
+* Most operations will not change the contents of SR.
+* 28: BL, Block Interrupts
+* 29: RB, Encodes the ISR register bank.
+** Set when interrupt occurs.
+** Cleared when interrupt returns.
+* 30: MD, User/Supervisor.
+* 31: JQ, Reserved for possible 64-bit extension.
+
+Mnonics:
+* MOV.B, Load/Store Byte, Sign Extend
+* MOV.W, Load/Store Word, Sign Extend
+* MOV.L, Load/Store DWord, Sign Extend
+* MOVU.B, Load Byte, Zero Extend
+* MOVU.W, Load Word, Zero Extend
+
+Operand Types:
+* Rn, Destination GPR
+* Rm, Source GPR
+* Cn, Control Register
+* Sn, Shadow Register
+* In, Immediate Table (Drop?)
+* DLR_i4, DLR shifted left 4 bits and or'ed with 4-bit immediate.
+
+
+=== Interrupts ===
+
+
+On an interrupt:
+* The registers will be swapped with their shadow-register counterparts.
+* SR.RB, SR.BL, and SR.MD will be set.
+* The status code for the interrupt will be loaded into EXSR.
+* An displacement will be added to VBR and the result will be loaded into PC.
+
+VBR Displacements:
+* VBR+0x00: Reset Vector
+* VBR+0x08: General Fault
+* VBR+0x10: IRQ, Hardware Interrupt, or TRAP instruction
+* VBR+0x18: Reserved for MMU (Page Fault).
+
+EXSR Codes:
+* Holds a numeric status code for the exception.
+* Bits 15..12:
+** 0x8: General Fault
+** 0xC: IRQ or Software Interrupt
+* General Faults:
+** 0x8000: Invalid Address
+** 0x8001: Invalid Read (Address lacks read access)
+** 0x8002: Invalid Write (Address lacks write access)
+** 0x8003: Invalid Execute (Address lacks execute access)
+** 0x8004: BREAK instruction used.
+** 0x8005: Invalid use of a SLEEP instruction.
+* Interrupts:
+** 0xC000: General Interrupt
+** 0xC001: Interval Timer
+** 0xC002: Debug UART
+** 0xC003: SPI Interrupt
+** 0xC08x: TRAP #x
+
+
+Shadow Registers:
+* S0..S15: R0B..R7B, C0B..C7B
+* The main and shadow registers will be swapped during an interrupt.
+** R0..R7 swapped with R0B..R7B
+** C0..C7 swapped with C0B..C7B, where Cn!=C3
+*** C0B: SPC
+*** C1B: SLR
+*** C2B: SSR
+*** C3B: SSP (Shadow R15/SP)
+*** C4B: -
+*** C5B: -
+*** C6B: SGB
+*** C7B: STB
+** R15 will be swapped with C3B.
+** Registers will not be swapped if SR.RB is set upon entering an interrupt.
+*** Registers will swap and SR.RB will be clear upon returning from an interrupt.
+
+
+=== Addressing Modes ===
+
+Addressing Modes (Real):
+* (Rn), Register used as an address.
+* (Rn, DLR), Register used with scaled Displacement Register.
+** MOV.x, Scale is size of base type.
+* (PC, DLR), PC used with scaled Displacement Register.
+* (PC, Disp8s), PC with scaled 8-bit displacement.
+* (SP, Disp4u), SP with scaled 4-bit displacement.
+* (PC, DLR_i4), PC used with scaled Displacement.
+** The displacement is encoded as ((DLR SHL 4)|Imm4u).
+
+Displacement Scale:
+* MOV.x will depend on the base register:
+** If using a GPR, will be scaled based on the size of the type.
+** If using PC, a scale of 1 is used for MOV.x forms.
+** GBR and TBR, will be scaled using the size of the base type.
+* Branches will use a scale of 2.
+* LEA.x will always be scaled by the size of the base type.
+
+Addressing Modes (Synthetic):
+* (Rn, Ri)
+* (Rn, Disp9s)
+** 24xx_OOnm
+* (Rn, Disp13s)
+** Axxx_OOnm
+* (Rn, Disp17s)
+** Axxx_OOnx
+* (PC, Disp17s)
+** Axxx_OOnx
+* (PC, Disp25s)
+** Axxx_26xx_OOnx
+* (Abs16)
+** 24xx_26xx_OOnO
+** Axxx_OOnx
+* (Abs32)
+** 24xx_26xx_26xx_26xx_OOnO
+** Axxx_26xx_26xx_OOnx
+
+For PC relative addresses, the address will be calculated relative to the start of the following instruction.
+
+Architectural memory access will be unaligned for types less than or equal to 32 bits. Types larger than 32-bits may have an implied 32-bit alignment. 
+
+Integer values will be little endian two's complement.
+
+
+=== Opcode Map ===
+
+Notation:
+* 0..9, A..F: Literal hex bits
+* n: Destination Register, Typically bits 7..4
+* m: Source Register, Typically bits 3..0
+* i: Signed immediate bits
+* j: Unsigned immediate bits
+* d: Displacement bits
+** 4 bit displacements will generally be unsigned.
+** 8 bit displacements will generally be signed.
+* x: First Value Placeholder bits.
+* y: Second Value Placeholder bits.
+* z: Undefined/Pattern/Third Value, Placeholder bits.
+** Will typically be defined later or in a sub-pattern.
+
+Prefixes:
+* / Indicates forms which have been dropped.
+* ? Indicates forms which may or may not be supported (Optional).
+** If unsupported, the encoding space is a placeholder.
+** Compiler will be expected to only emit I-Forms appropriate for the target.
+** An instruction need not be marked optional if the parent block is optional.
+*** Instead, this will denote that the instruction is optional within the block.
+* ??, Don't know if it will be implemented.
+** Instruction space may likely be reserved but unimplemented.
+* ?/, May drop.
+
+Instruction Space
+* 0zzz (Basic MOV.x Block)
+** 00nm MOV.B	Rm, (Rn)
+** 01nm MOV.W	Rm, (Rn)
+** 02nm MOV.L	Rm, (Rn)
+** 03nm MOVU.B	(Rm), Rn			//Only exists if 32-bit
+** 04nm MOV.B	Rm, (Rn, DLR)		//Use DLR as Scaled Index
+** 05nm MOV.W	Rm, (Rn, DLR)
+** 06nm MOV.L	Rm, (Rn, DLR)
+** 07nm MOVU.B	(Rm, DLR), Rn		//Only exists if 32-bit
+** 08nm MOV.B	(Rm), Rn
+** 09nm MOV.W	(Rm), Rn
+** 0Anm MOV.L	(Rm), Rn
+** 0Bnm MOVU.W	(Rm), Rn			//Only exists if 32-bit
+** 0Cnm MOV.B	(Rm, DLR), Rn		//Use DLR as Scaled Index
+** 0Dnm MOV.W	(Rm, DLR), Rn
+** 0Enm MOV.L	(Rm, DLR), Rn
+** 0Fnm MOVU.W	(Rm, DLR), Rn		//Only exists if 32-bit
+
+* 1zzz (Basic Arith Block)
+** 10nm ADD		Rm, Rn				//Rn=Rn+Rm
+** 11nm SUB		Rm, Rn				//Rn=Rn-Rm
+** 12nm ADC		Rm, Rn				//Add with Carry, Rn=Rn+Rm+SR.T
+** 13nm SBB		Rm, Rn				//Subtract with Borrow, Rn=Rn+(~Rm)+(!SR.T)
+** 14nm TST		Rm, Rn				//SR.T=!(Rm&Rn)
+** 15nm AND		Rm, Rn
+** 16nm OR		Rm, Rn
+** 17nm XOR		Rm, Rn
+** 18nm MOV		Rm, Rn				//Rn=Rm
+** 19nm MULS	Rm, Rn				//(DHR,DLR)=Rm*Rn (Signed Result)
+** 1Anm MOV		Rm, Cn				//Cn=Rm
+** 1Bnm MOV		Cm, Rn				//Rn=Cm
+** 1Cnm CMPEQ	Rm, Rn				//Rn==Rm
+** 1Dnm CMPHI	Rm, Rn				//Unsigned Rn GT Rm
+** 1Enm CMPGT	Rm, Rn				//Signed Rn GT Rm
+** 1Fnm MULU	Rm, Rn				//(DHR,DLR)=Rm*Rn (Unsigned Result)
+
+* 2zzz
+** 20dd BRA		(PC, disp8s)		//Branch, PC=PC+(disp8s*2)
+** 21dd BSR		(PC, disp8s)		//Branch Subroutine
+** 22dd BT		(PC, disp8s)		//Branch True
+** 23dd BF		(PC, disp8s)		//Branch False
+** 24jj LDIZ	#imm8u, DLR			//DLR=Imm8 (Zero Extend)
+** 25jj LDIN	#imm8u, DLR			//DLR=Imm8 (One Extend)
+** 26jj LDISH	#imm8u, DLR			//DLR=(DLR SHL 8)|Imm8u
+** 27dd -
+** 28nd MOV.L	Rn, (SP, disp4u)	//Stack-Relative Store
+** 29nd MOV.L	Rn, (SP, disp4u)	//Stack-Relative Store (16..31, 32b)
+** 2And MOV.L	(SP, disp4u), Rn	//Stack-Relative Load
+** 2Bnd MOV.L	(SP, disp4u), Rn	//Stack-Relative Load (16..31, 32b)
+** 2Cnj CMPEQ	#imm4u, Rn			//Rn==Imm4, Zero Extend
+** 2Dnj CMPEQ	#imm4n, Rn			//Rn==Imm4, One Extend
+** 2Enj CMPGT	#imm4u, Rn			//Rn==Imm4, Zero Extend
+** 2Fnj CMPGE	#imm4u, Rn			//Rn==Imm4, Zero Extend
+
+* 3zzz
+** 3000 NOP							//Do Nothing
+** 3010 RTS							//PC=LR
+** 3020 SLEEP						//Sleep
+** 3030 BREAK						//Breakpoint
+** 3040 CLRT						//Clear SR.T
+** 3050 SETT						//Set SR.T
+** 3060 CLRS						//Clear SR.S
+** 3070 SETS						//Set SR.S
+** 3080 NOTT						//SR.T=!SR.T
+** 3090 NOTS						//SR.S=!SR.S
+** 30A0 LDISH16	#0x0000, DLR		//DLR=(DLR SHL 16)|0x0000
+** 30B0 LDISH16	#0xFFFF, DLR		//DLR=(DLR SHL 16)|0xFFFF
+** 30C0 RTE							//Return from exception
+** 30D0 ? DIV0						//Setup SR for divide
+** 30E0 ? DIV1						//Divide Step (Uses R5, R4)
+
+** 30z1 -
+
+** 3002 BRA		(PC, DLR)			//Branch to PC+(DLR*2)
+** 3012 BSR		(PC, DLR)			//Branch Subroutine to PC+(DLR*2)
+** 3022 BT		(PC, DLR)			//Branch True to PC+(DLR*2)
+** 3032 BF		(PC, DLR)			//Branch False to PC+(DLR*2)
+
+** 3082 ? LDISH12	#0x000, DLR		//DLR=(DLR SHL 12)|0x000
+** 3092 ? LDISH12	#0xFFF, DLR		//DLR=(DLR SHL 12)|0xFFF
+** 30A2 ? LDISH20	#0x00000, DLR	//DLR=(DLR SHL 20)|0x00000
+** 30B2 ? LDISH20	#0xFFFFF, DLR	//DLR=(DLR SHL 20)|0xFFFFF
+
+** 30z3 -
+
+** 30n4 MOV.B	Rn, (PC, DLR)
+** 30n5 MOV.W	Rn, (PC, DLR)
+** 30n6 MOV.L	Rn, (PC, DLR)
+** 30n7 MOVU.B	(PC, DLR), Rn
+** 30n8 PUSH	Rn
+** 30n9 PUSH	Cn
+** 30nA POP		Rn
+** 30nB POP		Cn
+** 30nC MOV.B	(PC, DLR), Rn
+** 30nD MOV.W	(PC, DLR), Rn
+** 30nE MOV.L	(PC, DLR), Rn
+** 30nF MOVU.W	(PC, DLR), Rn
+
+** 31n0 / ADD		DLR, Rn				//Rn=Rn+DLR
+** 31n1 / SUB		DLR, Rn
+** 31n2 / ADC		DLR, Rn
+** 31n3 / SBB		DLR, Rn
+** 31n4 / TST		DLR, Rn
+** 31n5 / AND		DLR, Rn
+** 31n6 / OR		DLR, Rn
+** 31n7 / XOR		DLR, Rn
+** 31n8 CMPPL	Rn					//SR.T=(Rn GT 0)
+** 31n9 CMPPZ	Rn					//SR.T=(Rn GE 0)
+** 31nA LEA.W	(PC, DLR), Rn
+** 31nB LEA.L	(PC, DLR), Rn
+** 31nC / CMPEQ	DLR, Rn				//Rn==DLR
+** 31nD / CMPHI	DLR, Rn				//Unsigned Rn GT DLR
+** 31nE / CMPGT	DLR, Rn				//Signed Rn GT DLR
+** 31nF LEA.B	(PC, DLR), Rn
+
+** 32n0 BRA		Rn					//Branch to address given in Rn
+** 32n1 BSR		Rn					//Branch Subroutine given by Rn
+** 32n2 BT		Rn
+** 32n3 BF		Rn
+** 32n4 EXTU.B	Rn
+** 32n5 EXTU.W	Rn
+** 32n6 EXTS.B	Rn
+** 32n7 EXTS.W	Rn
+** 32n8 / MOV.L	Rn, (TBR, DLR)
+** 32n9 / MOV.W	Rn, (TBR, DLR)
+** 32nA / MOV.L	(TBR, DLR), Rn
+** 32nB / MOV.W	(TBR, DLR), Rn
+** 32nC / LEA.B	(GBR, DLR), Rn
+** 32nD / LEA.W	(GBR, DLR), Rn
+** 32nE / LEA.B	(TBR, DLR), Rn
+** 32nF / LEA.W	(TBR, DLR), Rn
+
+** 33n0	NOT		Rn					//Rn=~Rn
+** 33n1	NEG		Rn					//Rn=(~Rn)+1
+** 33n2	NEGC	Rn					//Rn=(~Rn)+(~SR.T)
+** 33n3 MOVNT	Rn					//Rn=!SR.T
+** 33n4	ROTL	Rn					//Rn=(Rn SHL 1)|(Rn SHR 31)
+** 33n5	ROTR	Rn					//Rn=(Rn SHR 1)|(Rn SHL 31)
+** 33n6	ROTCL	Rn					//Rn'=(Rn SHL 1)|SR.T; SR.T=Rn.31
+** 33n7	ROTCR	Rn
+** 33n8 SHLL	Rn					//Rn'=(Rn SHL 1); SR.T=Rn.31
+** 33n9 SHLR	Rn					//Rn'=(Rn SHR 1); SR.T=Rn.0
+** 33nA SHAR	Rn					//Rn'=(Rn SAR 1); SR.T=Rn.0
+** 33nB ADD		Cn, DLR				//DLR=DLR+Cn
+** 33nC -
+** 33nD -
+** 33nE -
+** 33nF -
+
+** 34n0 SHLL1	Rn					//Rn=Rn SHL 1
+** 34n1 SHLL2	Rn					//Rn=Rn SHL 2
+** 34n2 SHLL4	Rn
+** 34n3 SHLL8	Rn
+** 34n4 SHLR1	Rn					//Rn=Rn SHR 1, Logical
+** 34n5 SHLR2	Rn					//Rn=Rn SHR 2, Logical
+** 34n6 SHLR4	Rn
+** 34n7 SHLR8	Rn
+** 34n8 SHAR1	Rn					//Rn=Rn SAR 1, Arithmetic
+** 34n9 SHAR2	Rn					//Rn=Rn SAR 2, Arithmetic
+** 34nA SHAR4	Rn
+** 34nB SHAR8	Rn
+** 34nC SHLL16	Rn					//Rn=Rn SHL 16
+** 34nD SHLR16	Rn					//Rn=Rn SHR 16, Logical
+** 34nE SHAR16	Rn					//Rn=Rn SAR 16, Arithmetic
+** 34nF SHARSX	Rn					//Copy sign bit to all other bits.
+
+** 35n0 / MOV.B	Rn, (DLR)			//DLR used as an absolute address
+** 35n1 / MOV.W	Rn, (DLR)
+** 35n2 / MOV.L	Rn, (DLR)
+** 35n3 / MOVU.B	(DLR), Rn			//32-bit Only
+** 35n4 / MOV.B	Rn, (GBR, DLR)
+** 35n5 / MOV.W	Rn, (GBR, DLR)
+** 35n6 / MOV.L	Rn, (GBR, DLR)
+** 35n7 / MOVU.B	(GBR, DLR), Rn		//32-bit only
+** 35n8 / MOV.B	(DLR), Rn			//DLR used as an absolute address
+** 35n9 / MOV.W	(DLR), Rn
+** 35nA / MOV.L	(DLR), Rn
+** 35nB / MOVU.W	(DLR), Rn			//32-bit only
+** 35nC / MOV.B	(GBR, DLR), Rn
+** 35nD / MOV.W	(GBR, DLR), Rn
+** 35nE / MOV.L	(GBR, DLR), Rn
+** 35nF / MOVU.W	(GBR, DLR), Rn	//32-bit only
+
+** 36n0 -
+** 36n1 -
+** 36n2 -
+** 36j3 TRAP	#imm4u				//Generate an Interrupt
+** 36n4 -
+** 36n5 -
+** 36n6 SHLD	DLR, Rn				//Barrel Shift, Logical
+** 36n7 SHAD	DLR, Rn				//Barrel Shift, Arithmetic
+** 36n8 BRA		(PC, Rn)			//Branch to address given in (PC, Rn)
+** 36n9 BSR		(PC, Rn)			//Branch Subroutine given by (PC, Rn)
+** 36nA SWAPB	Rn					//Swap Bytes
+** 36nB SWAPW	Rn					//Swap Words
+** 36nC ADD		Rn, DLR				//DLR=DLR+Rn
+** 36nD CMPHS	DLR, Rn				//Unsigned (Rn GE DLR)
+** 36nE CMPGE	DLR, Rn				//Signed (Rn GE DLR)
+** 36nF MOVT	Rn					//Rn=SR.T
+
+** 37n0 ?? CMOVT.L	Rn, (DLR)		//Store DWord if SR.T is Set
+** 37n1 ?? CMOVF.L	Rn, (DLR)		//Store DWord if SR.T is Clear
+** 37n2 ?? CMOVT.L	(DLR), Rn		//Load DWord if SR.T is Set
+** 37n3 ?? CMOVF.L	(DLR), Rn		//Load DWord if SR.T is Clear
+** 37n4 ?? CMOVT.L	Rn, (PC, DLR)	//Store DWord if SR.T is Set
+** 37n5 ?? CMOVF.L	Rn, (PC, DLR)	//Store DWord if SR.T is Clear
+** 37n6 ?? CMOVT.L	(PC, DLR), Rn	//Load DWord if SR.T is Set
+** 37n7 ?? CMOVF.L	(PC, DLR), Rn	//Load DWord if SR.T is Clear
+** 37n8 ?? CMOVT	DLR, Rn			//MOV to Rn if SR.T is Set
+** 37n9 ?? CMOVF	DLR, Rn			//MOV to Rn if SR.T is Clear
+** 37nA -
+** 37nB -
+** 37nC -
+** 37nD -
+** 37nE -
+** 37nF -
+
+** 38zz -
+** 39zz -
+** 3Azz -
+** 3Bzz -
+** 3Czz -
+
+** 3Dzz -
+** 3Ezz -
+** 3Fnj ? LEA.B		(PC, DLR_i4), Rn
+
+* 4zzz
+** 40nj ? MOV.B		Rn, (PC, DLR_i4)	//Rn!=R15
+*** 40Fj ? BRA		(PC, DLR_i4)		//Rn==15
+** 41nj ? MOV.W		Rn, (PC, DLR_i4)	//Rn!=R15
+*** 41Fj ? BSR		(PC, DLR_i4)		//Rn==15
+** 42nj ? MOV.L		Rn, (PC, DLR_i4)	//Rn!=R15
+*** 42Fj ? BRA		(DLR_i4)			//Rn==15
+** 43nj ? MOVU.B	(PC, DLR_i4), Rn	//Rn!=R15
+*** 43Fj ? BSR		(DLR_i4)			//Rn==15
+** 44nj ? MOV.B		(PC, DLR_i4), Rn	//Rn!=R15
+*** 44Fj ? BT		(PC, DLR_i4)		//Rn==15
+** 45nj ? MOV.W		(PC, DLR_i4), Rn	//Rn!=R15
+*** 45Fj ? BF		(PC, DLR_i4)		//Rn==15
+** 46nj ? MOV.L		(PC, DLR_i4), Rn	//Rn!=R15
+*** 46Fj -
+** 47nj ? MOVU.W	(PC, DLR_i4), Rn	//Rn!=R15
+*** 47Fj -
+** 48nj ? MOV		DLR_i4, Rn
+** 49nj ? ADD		DLR_i4, Rn
+** 4Anm  MOV		Rm, Sn				//Store to Shadow Register
+** 4Bnm  MOV		Sm, Rn				//Load from Shadow Register
+** 4Cnm  LEA.B		(Rm, DLR), Rn
+** 4Dnm  LEA.W		(Rm, DLR), Rn
+** 4Enm  LEA.L		(Rm, DLR), Rn
+** 4Fnm  LEA.Q		(Rm, DLR), Rn
+
+* 5zzz (Binary Ops)
+** 50zz	-
+** 51zz	-
+** 52zz	-
+** 53zz	-
+** 54zz	-
+** 55zz	-
+** 56zz	-
+** 57zz	-
+** 58nm  ADD	Rm, DLR, Rn			//Rn=Rm+DLR
+** 59nm  SUB	Rm, DLR, Rn
+** 5Anm  AND	Rm, DLR, Rn
+** 5Bnm  OR	Rm, DLR, Rn
+** 5Cnm  XOR	Rm, DLR, Rn
+** 5Dzz	-
+** 5Ezz	-
+** 5Fzz	-
+
+* 6zzz (Reserved, 8-bit Ops)
+* 7zzz (Reserved, Single-Arg ops)
+
+* 8zzz ? ( MOV.L 1000-rddd-nnnn-mmmm, r=Store/Load )
+** 80nm -
+** 81nm	? MOV.L	Rm, (Rn,  4)
+** 82nm	? MOV.L	Rm, (Rn,  8)
+** 83nm	? MOV.L	Rm, (Rn, 12)
+** 84nm	? MOV.L	Rm, (Rn, 16)
+** 85nm	? MOV.L	Rm, (Rn, 20)
+** 86nm	? MOV.L	Rm, (Rn, 24)
+** 87nm	? MOV.L	Rm, (Rn, 28)
+** 88nm -
+** 89nm	? MOV.L	(Rm,  4), Rn
+** 8Anm	? MOV.L	(Rm,  8), Rn
+** 8Bnm	? MOV.L	(Rm, 12), Rn
+** 8Cnm	? MOV.L	(Rm, 16), Rn
+** 8Dnm	? MOV.L	(Rm, 20), Rn
+** 8Enm	? MOV.L	(Rm, 24), Rn
+** 8Fnm	? MOV.L	(Rm, 28), Rn
+
+* 9zzz ? (FPU Block, Optional)
+** 90nm FMOV.S	FRm, (Rm)
+** 91nm FMOV.D	FRm, (Rm)
+** 92nm FMOV.S	FRm, (Rm, DLR)
+** 93nm FMOV.S	FRm, (Rm, DLR)
+** 94nm FMOV.S	(Rm), FRn
+** 95nm FMOV.D	(Rm), FRn
+** 96nm FMOV.S	(Rm, DLR), FRn
+** 97nm FMOV.D	(Rm, DLR), FRn
+** 98nm FADD	FRm, FRn			//FRn=FRn+FRm
+** 99nm FSUB	FRm, FRn			//FRn=FRn-FRm
+** 9Anm FMUL	FRm, FRn			//FRn=FRn*FRm
+** 9Bnm FDIV	FRm, FRn			//FRn=FRn/FRm
+** 9Cnm FCMPEQ	FRm, FRn			//SR.T=(FRn EQ FRm)
+** 9Dnm FCMPGT	FRm, FRn			//SR.T=(FRn GT FRm)
+** 9Enm FMOV	FRm, FRn			//FRn=FRm
+** 9Fnz -
+*** 9Fn0 FLDCF	DLR, FRn			//Float Load Convert Float32
+*** 9Fn1 FLDCD	DLR, FRn			//Float Load Convert Double (DHR:DLR)
+*** 9Fn2 FLDCI	DLR, FRn			//Float Load Convert Int
+*** 9Fn3 FLDCH	DLR, FRn			//Float Load Convert Half (DLR, Low16)
+*** 9Fn4 FSTCF	FRn, DLR			//Float Store Convert Float32
+*** 9Fn5 FSTCD	FRn, DLR			//Float Store Convert Double (DHR:DLR)
+*** 9Fn6 FSTCI	FRn, DLR			//Float Store Convert Int
+*** 9Fn7 FSTCH	FRn, DLR			//Float Store Convert Half (DLR, Low16)
+*** 9Fn8 FNEG	FRn					//Negate
+*** 9Fn9 FABS	FRn					//Absolute
+*** 9FnA FRCPA	FRn					//Reciprocal (Approximate)
+*** 9FnB FSQRTA	FRn					//Square Root (Approximate)
+*** 9FnC -
+*** 9FnD -
+*** 9FnE -
+*** 9FnF -
+
+* Ajjj LDIZ		#imm12u, DLR	//Load 12 bit value into DLR (Zero Extend)
+* Bjjj LDIN		#imm12u, DLR	//Load 12 bit value into DLR (One Extend)
+* Cnii ADD		#imm8s, Rn	//Rn=Rn+Imm8
+* Dnjj -
+* Enii MOV		#imm8s, Rn	//Rn=Imm8
+
+* Fxxx_xxxx (Reserved for 32-bit Instruction Forms)
+
+
+Pseudo-Ops:
+* MOV.x @(Rm, disp9s), Rn
+** LDIx #disp, DLR
+** MOV.x @(Rm, DLR), Rn
+* MOV.x Rm, @(Rn, disp9s)
+** LDIx #disp, DLR
+** MOV.x Rm, @(Rn, DLR)
+* MOV.x Rm, @(Rn, disp17s)
+** LDIx #disp, DLR
+** LDISH #disp, DLR
+** MOV.x Rm, @(Rn, DLR)
+* ...
+* BRA	disp17s
+** Axxx_40Fx
+* BSR	disp17s
+** Axxx_41Fx
+* BRA8B disp32s
+** Branch specifically sized to be 8 bytes.
+** Has a 32-bit displacement with DLR_i4.
+** Axxx_26xx_26xx_40Fx
+

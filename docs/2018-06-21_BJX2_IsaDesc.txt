@@ -1,9 +1,14 @@
 == Instructions Organized by Name with Descriptions ==
 
+Register Aliases:
+* DLR will be an alias for R0.
+* DHR will be an alias for R1.
+* SP will be an alias for R15.
+
+
 === ADC ===
 
 * 12nm ADC		Rm, Rn
-* 31n2 ADC		DLR, Rn
 
 Add with Carry, Rn=Rn+Rm+SR.T, with SR.T being updated to reflect the carry-out bit.
 
@@ -11,10 +16,7 @@ Add with Carry, Rn=Rn+Rm+SR.T, with SR.T being updated to reflect the carry-out 
 === ADD ===
 
 * 10nm            ADD		Rm, Rn
-* 31n0            ADD		DLR, Rn
 * 33nB            ADD		Cn, DLR
-* 36nC            ADD		Rn, DLR
-* 49nj            ADD		DLR_i4, Rn
 * 58nm            ADD		Rm, DLR, Rn			//Rn=Rm+DLR
 * Cnii            ADD		#imm8s, Rn
 * F0eo_10nm       ADD		Rm, Ro, Rn			//Rn=Rm+Ro, Q=0
@@ -31,7 +33,6 @@ Add the source and destination values and store the result in the destination re
 === AND ===
 
 * 15nm       AND		Rm, Rn
-* 31n5       AND		DLR, Rn
 * 5Anm       AND		Rm, DLR, Rn
 * F0eo_15nm  AND		Rm, Ro, Rn				//Rn=Rm AND Ro, Q=0
 * F0e5_19nm  AND		Rm, Rn
@@ -42,10 +43,11 @@ Perform a bitwise AND of the source and destination values and store the result 
 
 === BF ===
 
-* 23dd BF		(PC, disp8s)
-* 3032 BF		(PC, DLR)
-* 32n3 BF		Rn
-* 45Fj BF		(PC, DLR_i4)
+* 23dd            BF		(PC, disp8s)
+* 3032            BF		(PC, DLR)
+* 32n3            BF		Rn
+* F0dd_23dd       BF		(PC, disp16s)
+* FC23_dddd_dddd  BF		(PC, disp32s)
 
 Branch if False (SR.T is 0).
 The target address is computed and PC is updated to the new address if the condition is met.
@@ -53,12 +55,12 @@ The target address is computed and PC is updated to the new address if the condi
 
 === BRA ===
 
-* 20dd BRA		(PC, disp8s)
-* 3002 BRA		(PC, DLR)
-* 32n0 BRA		Rn
-* 36n8 BRA		(PC, Rn)
-* 40Fj BRA		(PC, DLR_i4)
-* 42Fj BRA		(DLR_i4)
+* 20dd            BRA		(PC, disp8s)
+* 3002            BRA		(PC, DLR)
+* 32n0            BRA		Rn
+* 36n8            BRA		(PC, Rn)
+* F0dd_20dd       BRA		(PC, disp16s)
+* FC20_dddd_dddd  BRA		(PC, disp32s)
 
 Branch to Address.
 The target address is computed and PC is updated to the new address.
@@ -73,12 +75,12 @@ Trigger a Breakpoint exception.
 
 === BSR ===
 
-* 21dd BSR		(PC, disp8s)
-* 3012 BSR		(PC, DLR)
-* 32n1 BSR		Rn
-* 36n9 BSR		(PC, Rn)
-* 41Fj BSR		(PC, DLR_i4)
-* 43Fj BSR		(DLR_i4)
+* 21dd            BSR		(PC, disp8s)
+* 3012            BSR		(PC, DLR)
+* 32n1            BSR		Rn
+* 36n9            BSR		(PC, Rn)
+* F0dd_21dd       BSR		(PC, disp16s)
+* FC21_dddd_dddd  BSR		(PC, disp32s)
 
 Branch to subroutine.
 The target address is computed and PC is updated to the new address, with the prior value for PC being stored in LR.
@@ -86,10 +88,11 @@ The target address is computed and PC is updated to the new address, with the pr
 
 === BT ===
 
-* 22dd BT		(PC, disp8s)		//Branch True
-* 3022 BT		(PC, DLR)			//Branch True to PC+(DLR*2)
-* 32n2 BT		Rn
-* 44Fj BT		(PC, DLR_i4)		//Rn==15
+* 22dd            BT		(PC, disp8s)		//Branch True
+* 3022            BT		(PC, DLR)			//Branch True to PC+(DLR*2)
+* 32n2            BT		Rn
+* F0dd_22dd       BT		(PC, disp16s)
+* FC22_dddd_dddd  BT		(PC, disp32s)
 
 Branch if True (SR.T is 1).
 The target address is computed and PC is updated to the new address if the condition is met.
@@ -114,7 +117,6 @@ Clear the SR.T flag.
 * 1Cnm CMPEQ	Rm, Rn
 * 2Cnj CMPEQ	#imm4u, Rn
 * 2Dnj CMPEQ	#imm4n, Rn
-* 31nC CMPEQ	DLR, Rn
 
 Compare if source and destination are Equal.
 
@@ -140,7 +142,6 @@ This updates SR.T based on the result of the comparison.
 
 * 1Enm CMPGT	Rm, Rn
 * 2Enj CMPGT	#imm4u, Rn
-* 31nE CMPGT	DLR, Rn
 
 Signed Rn GT Rm.
 
@@ -152,7 +153,6 @@ This updates SR.T based on the result of the comparison.
 === CMPHI ===
 
 * 1Dnm CMPHI	Rm, Rn
-* 31nD CMPHI	DLR, Rn
 
 Unsigned Rn GT Rm.
 
@@ -203,7 +203,6 @@ This updates SR.T based on the result of the comparison.
 === CMPQEQ ===
 
 * 5Fnm CMPQEQ	Rm, Rn
-* 38nA CMPQEQ	DLR, Rn
 
 Compare if source and destination are Equal.
 
@@ -227,7 +226,6 @@ This updates SR.T based on the result of the comparison.
 === CMPQGT ===
 
 * 5Enm CMPQGT	Rm, Rn
-* 38nC CMPQGT	DLR, Rn
 
 Signed Rn GT Rm.
 
@@ -239,7 +237,6 @@ This updates SR.T based on the result of the comparison.
 === CMPQHI ===
 
 * 5Dnm CMPQHI	Rm, Rn
-* 38nB CMPQHI	DLR, Rn
 
 Unsigned Rn GT Rm.
 
@@ -304,7 +301,6 @@ Zero extend the value in the low 16 bits of the register to the width of the reg
 === LEA.B ===
 
 * 31nF LEA.B	(PC, DLR), Rn
-* 3Fnj LEA.B	(PC, DLR_i4), Rn
 * 4Cnm LEA.B	(Rm, DLR), Rn
 
 Load the effective address of the Base register added to the displacement and store the result into the destination register.
@@ -378,29 +374,20 @@ The value in DLR is shifted left 16 bits, and the low bits are set according to 
 
 MOV, GPR
 * 18nm            MOV		Rm, Rn
-* 55zz            MOV		Rj, Rn
-* 56zz            MOV		Rm, Rk
-* 57zz            MOV		Rj, Rk
+* 19zz            MOV		Rj, Rn
+* 1Azz            MOV		Rm, Rk
+* 1Bzz            MOV		Rj, Rk
 * F0e8_19nm       MOV		Rm, Rn				//Rn=Rm
 
 MOV, Control Register
-* 1Anm            MOV		Rm, Cn
-* 1Bnm            MOV		Cm, Rn
+* 48nm            MOV		Rm, Cn
+* 49nm            MOV		Cm, Rn
 * 4Anm            MOV		Rm, Sn
 * 4Bnm            MOV		Sm, Rn
 * F0eA_19nm       MOV		Rm, Cn				//Cn=Rm
 * F0eB_19nm       MOV		Cm, Rn				//Rn=Cm
 * F0eA_1Cnm       MOV		Rm, Sn				//Cn=Rm
 * F0eB_1Cnm       MOV		Sm, Rn				//Rn=Cm
-
-MOV, DLR
-* 32nC            MOV		Rk, DLR
-* 32nD            MOV		DLR, Rk
-* 32nE            MOV		Ck, DLR
-* 32nF            MOV		DLR, Ck
-* 33nE            MOV		Cn, DLR
-* 33nF            MOV		DLR, Cn
-* 48nj            MOV		DLR_i4, Rn
 
 MOV, Constant
 * Enii            MOV		#imm8s, Rn	//Rn=Imm8
@@ -416,16 +403,16 @@ Move a value from the source to the destination register.
 
 === MOV.B ===
 
-* 00nm  MOV.B	Rm, (Rn)
-* 04nm  MOV.B	Rm, (Rn, DLR)
-* 08nm  MOV.B	(Rm), Rn
-* 0Cnm  MOV.B	(Rm, DLR), Rn
-* 30n4  MOV.B	Rn, (PC, DLR)
-* 30nC  MOV.B	(PC, DLR), Rn
-* 35n0  MOV.B	Rn, (DLR)
-* 35n8  MOV.B	(DLR), Rn
-* 40nj  MOV.B	Rn, (PC, DLR_i4)
-* 44nj  MOV.B	(PC, DLR_i4), Rn
+* 00nm       MOV.B	Rm, (Rn)
+* 04nm       MOV.B	Rm, (Rn, DLR)
+* 08nm       MOV.B	(Rm), Rn
+* 0Cnm       MOV.B	(Rm, DLR), Rn
+* 30n4       MOV.B	Rn, (PC, DLR)
+* 30nC       MOV.B	(PC, DLR), Rn
+* F0gd_00nm  MOV.B	Rm, (Rn, disp5)		//Q=0
+* F0go_04nm  MOV.B	Rm, (Rn, Ro)		//Q=0
+* F0gd_08nm  MOV.B	(Rm, disp5), Rn		//Q=0
+* F0go_0Cnm  MOV.B	(Rm, Ro), Rn		//Q=0
 
 Load or store a Byte to/from memory.
 The byte is sign extended to the size of the register.
@@ -433,50 +420,56 @@ The byte is sign extended to the size of the register.
 
 === MOV.L ===
 
-* 02nm  MOV.L	Rm, (Rn)
-* 06nm  MOV.L	Rm, (Rn, DLR)
-* 0Anm  MOV.L	(Rm), Rn
-* 0Enm  MOV.L	(Rm, DLR), Rn
-* 28nd  MOV.L	Rn, (SP, disp4u)	//Stack-Relative Store
-* 2And  MOV.L	(SP, disp4u), Rn	//Stack-Relative Load
-* 30n6  MOV.L	Rn, (PC, DLR)
-* 30nE  MOV.L	(PC, DLR), Rn
-* 35n2  MOV.L	Rn, (DLR)
-* 35nA  MOV.L	(DLR), Rn
-* 42nj  MOV.L	Rn, (PC, DLR_i4)	//Rn!=R15
-* 46nj  MOV.L	(PC, DLR_i4), Rn	//Rn!=R15
+* 02nm       MOV.L	Rm, (Rn)
+* 06nm       MOV.L	Rm, (Rn, DLR)
+* 0Anm       MOV.L	(Rm), Rn
+* 0Enm       MOV.L	(Rm, DLR), Rn
+* 28nd       MOV.L	Rn, (SP, disp4u)	//Stack-Relative Store
+* 2And       MOV.L	(SP, disp4u), Rn	//Stack-Relative Load
+* 30n6       MOV.L	Rn, (PC, DLR)
+* 30nE       MOV.L	(PC, DLR), Rn
+* F0gd_02nm  MOV.L	Rm, (Rn, disp5)
+* F0go_06nm  MOV.L	Rm, (Rn, Ro)
+* F0gd_0Anm  MOV.L	(Rm, disp5), Rn
+* F0go_0Enm  MOV.L	(Rm, Ro), Rn
+* F0hn_28dd  MOV.L	Rn, (SP, disp10u)	//Stack-Relative Store
+* F0hn_2Add  MOV.L	(SP, disp10u), Rn	//Stack-Relative Load
 
 Load or store a DWord to/from memory.
 
 
 === MOV.Q ===
 
-* 03nm  MOV.Q	Rm, (Rn)
-* 07nm  MOV.Q	Rm, (Rn, DLR)
-* 0Bnm  MOV.Q	(Rm), Rn
-* 0Fnm  MOV.Q	(Rm, DLR), Rn
-* 29nd  MOV.Q	Rn, (SP, disp4u)	//Stack-Relative Store
-* 2Bnd  MOV.Q	(SP, disp4u), Rn	//Stack-Relative Load
-* 30n7  MOV.Q	Rn, (PC, DLR)
-* 30nF  MOV.Q	(PC, DLR), Rn
-* 35n3  MOV.Q	Rn, (DLR)
-* 35nB  MOV.Q	(DLR), Rn
+* 03nm       MOV.Q	Rm, (Rn)
+* 07nm       MOV.Q	Rm, (Rn, DLR)
+* 0Bnm       MOV.Q	(Rm), Rn
+* 0Fnm       MOV.Q	(Rm, DLR), Rn
+* 29nd       MOV.Q	Rn, (SP, disp4u)	//Stack-Relative Store
+* 2Bnd       MOV.Q	(SP, disp4u), Rn	//Stack-Relative Load
+* 30n7       MOV.Q	Rn, (PC, DLR)
+* 30nF       MOV.Q	(PC, DLR), Rn
+* F0gd_03nm  MOV.Q	Rm, (Rn, disp5)		//Q=0
+* F0go_07nm  MOV.Q	Rm, (Rn, Ro)		//Q=0
+* F0gd_0Bnm  MOV.Q	(Rm, disp5), Rn		//Q=0
+* F0go_0Fnm  MOV.Q	(Rm, Ro), Rn		//Q=0
+* F0hn_29dd  MOV.Q	Rn, (SP, disp10u)	//Stack-Relative Store
+* F0hn_2Bdd  MOV.Q	(SP, disp10u), Rn	//Stack-Relative Load
 
 Load or store a QWord to/from memory.
 
 
 === MOV.W ===
 
-* 01nm  MOV.W	Rm, (Rn)
-* 05nm  MOV.W	Rm, (Rn, DLR)
-* 09nm  MOV.W	(Rm), Rn
-* 0Dnm  MOV.W	(Rm, DLR), Rn
-* 30n5  MOV.W	Rn, (PC, DLR)
-* 30nD  MOV.W	(PC, DLR), Rn
-* 35n1  MOV.W	Rn, (DLR)
-* 35n9  MOV.W	(DLR), Rn
-* 41nj  MOV.W	Rn, (PC, DLR_i4)
-* 45nj  MOV.W	(PC, DLR_i4), Rn
+* 01nm       MOV.W	Rm, (Rn)
+* 05nm       MOV.W	Rm, (Rn, DLR)
+* 09nm       MOV.W	(Rm), Rn
+* 0Dnm       MOV.W	(Rm, DLR), Rn
+* 30n5       MOV.W	Rn, (PC, DLR)
+* 30nD       MOV.W	(PC, DLR), Rn
+* F0gd_01nm  MOV.W	Rm, (Rn, disp5)		//Q=0
+* F0go_05nm  MOV.W	Rm, (Rn, Ro)		//Q=0
+* F0gd_09nm  MOV.W	(Rm, disp5), Rn		//Q=0
+* F0go_0Dnm  MOV.W	(Rm, Ro), Rn		//Q=0
 
 Load or store a Word to/from memory.
 The Word value is sign extended to the size of the register.
@@ -484,10 +477,11 @@ The Word value is sign extended to the size of the register.
 
 === MOVU.B ===
 
-* 50nm  MOVU.B	(Rm), Rn
-* 52nm  MOVU.B	(Rm, DLR), Rn
-* 35n4  MOVU.B	(PC, DLR), Rn
-* 35nC  MOVU.B	(DLR), Rn
+* 50nm       MOVU.B		(Rm), Rn
+* 52nm       MOVU.B		(Rm, DLR), Rn
+* 35n4       MOVU.B		(PC, DLR), Rn
+* F0Gd_08nm  MOVU.B		(Rm, disp5), Rn
+* F0Go_0Cnm  MOVU.B		(Rm, Ro), Rn
 
 Load or store a Byte to/from memory.
 The byte is zero extended to the size of the register.
@@ -497,10 +491,11 @@ Note that these instruction forms will be specific to the 32-bit ISA.
 
 === MOVU.L ===
 
-* 80nm  MOVU.L	(Rm), Rn
-* 88nm  MOVU.L	(Rm, DLR), Rn
-* 35n6  MOVU.L	(PC, DLR), Rn
-* 35nE  MOVU.L	(DLR), Rn
+* 80nm       MOVU.L		(Rm), Rn
+* 88nm       MOVU.L		(Rm, DLR), Rn
+* 35n6       MOVU.L		(PC, DLR), Rn
+* F0Gd_0Anm  MOVU.L		(Rm, disp5), Rn
+* F0Go_0Enm  MOVU.L		(Rm, Ro), Rn
 
 Load or store a Byte to/from memory.
 The byte is zero extended to the size of the register.
@@ -510,10 +505,11 @@ Note that these instruction forms will be specific to the 32-bit ISA.
 
 === MOVU.W ===
 
-* 51nm  MOVU.W	(Rm), Rn
-* 53nm  MOVU.W	(Rm, DLR), Rn
-* 35n5  MOVU.W	(PC, DLR), Rn
-* 35nD  MOVU.W	(DLR), Rn
+* 51nm       MOVU.W		(Rm), Rn
+* 53nm       MOVU.W		(Rm, DLR), Rn
+* 35n5       MOVU.W		(PC, DLR), Rn
+* F0Gd_09nm  MOVU.W		(Rm, disp5), Rn
+* F0Go_0Dnm  MOVU.W		(Rm, Ro), Rn
 
 Load or store a Word to/from memory.
 The word is zero extended to the size of the register.
@@ -523,7 +519,7 @@ Note that these instruction forms will be specific to the 32-bit ISA.
 
 === MULS ===
 
-* 19nm MULS	Rm, Rn
+* 56nm MULS	Rm, Rn
 
 (DHR,DLR)=Rm*Rn (Signed Result).
 
@@ -532,7 +528,7 @@ Perform a signed multiply storing the result of the multiplication in the DHR,DL
 
 === MULU ===
 
-* 1Fnm MULU	Rm, Rn
+* 57nm MULU	Rm, Rn
 
 (DHR,DLR)=Rm*Rn (Unsigned Result).
 
@@ -542,6 +538,8 @@ Perform an unsigned multiply storing the result of the multiplication in the DHR
 === NEG ===
 
 * 33n1	NEG		Rn
+* 33nC	NEG		Rn, DLR
+* 33nD	NEG		Rk, DLR
 
 Rn=(~Rn)+1
 
@@ -594,7 +592,6 @@ Invert the SR.T flag.
 === OR ===
 
 * 16nm       OR		Rm, Rn
-* 31n6       OR		DLR, Rn
 * 5Bnm       OR		Rm, DLR, Rn
 * F0eo_16nm  OR		Rm, Ro, Rn				//Rn=Rm OR  Ro, Q=0
 * F0e6_19nm  OR		Rm, Rn
@@ -607,6 +604,8 @@ Perform a bitwise OR of the source and destination, storing the result in the de
 
 * 30nA POP		Rn
 * 30nB POP		Cn
+* 32nA POP		Rk					//R16..R31
+* 32nB POP		Ck					//C16..C31
 
 Load the value from the top of the stack into the destination register and increment the stack position.
 
@@ -617,8 +616,10 @@ Note that POP into PC will be treated as a special case "RET" instruction.
 
 === PUSH ===
 
-* 30n8 PUSH	Rn
-* 30n9 PUSH	Cn
+* 30n8 PUSH		Rn
+* 30n9 PUSH		Cn
+* 32n8 PUSH		Rk					//R16..R31
+* 32n9 PUSH		Ck					//C16..C31
 
 Decrement the stack position and store the value from the register to this location.
 
@@ -658,7 +659,8 @@ Rotate the value in Rn left by 1 bit.
 
 
 === ROTR ===
-** 33n5	ROTR	Rn
+
+* 33n5	ROTR	Rn
 
 Rn=(Rn SHR 1)|(Rn SHL 31)
 
@@ -685,7 +687,6 @@ This effectively restores the value from LR into PC, transferring control back t
 === SBB ===
 
 * 13nm SBB		Rm, Rn
-* 31n3 SBB		DLR, Rn
 
 Rn=Rn+(~Rm)+(!SR.T)
 
@@ -790,7 +791,6 @@ May generate an fault if used in a context where this would halt the processor i
 === SUB ===
 
 * 11nm SUB		Rm, Rn
-* 31n1 SUB		DLR, Rn
 
 Rn=Rn-Rm
 
@@ -801,7 +801,7 @@ Subtract the source from the destination, storing the result in the destination 
 
 * 36nA SWAPB	Rn
 
-Rn'=((Rn AND 0xFF00FF00) SHR 8) OR ((Rn AND 0x00FF00FF) SHL 8);
+Rn'=((Rn AND 0xFF00FF00FF00FF00) SHR 8) OR ((Rn AND 0x00FF00FF00FF00FF) SHL 8);
 
 Swap the Bytes within Rn.
 
@@ -811,7 +811,7 @@ Swap the Bytes within Rn.
 
 * 36nB SWAPW	Rn
 
-Rn'=((Rn AND 0xFFFF0000) SHR 16) OR ((Rn AND 0x0000FFFF) SHL 8);
+Rn'=((Rn AND 0xFFFF0000FFFF0000) SHR 16) OR ((Rn AND 0x0000FFFF0000FFFF) SHL 8);
 
 Swap the Words within Rn.
 
@@ -826,31 +826,32 @@ Generate an Interrupt, using the bits from the immediate as part of the bit-patt
 === TST ===
 
 * 14nm TST		Rm, Rn
-* 31n4 TST		DLR, Rn
 
 SR.T=!(Rm AND Rn)
 
 Perform a bitwise AND of the source and destination registers, updating SR.T based on whether the result of this operation is equal to zero.
 
 A zero result will cause SR.T to be set, and a nonzero result will cause SR.T to be cleared.
+
+This operation will only test the low 32 bits.
 
 
 === TSTQ ===
 
-* 38nF TST		DLR, Rn
-* 54nm TST		Rm, Rn
+* 54nm TSTQ		Rm, Rn
 
 SR.T=!(Rm AND Rn)
 
 Perform a bitwise AND of the source and destination registers, updating SR.T based on whether the result of this operation is equal to zero.
 
 A zero result will cause SR.T to be set, and a nonzero result will cause SR.T to be cleared.
+
+This operation will test all 64 bits.
 
 
 === XOR ===
 
 * 17nm       XOR		Rm, Rn
-* 31n7       XOR		DLR, Rn
 * 5Cnm       XOR		Rm, DLR, Rn
 * F0eo_17nm  XOR		Rm, Ro, Rn				//Rn=Rm XOR Ro, Q=0
 * F0e7_19nm  XOR		Rm, Rn
@@ -881,7 +882,7 @@ Perform a bitwise XOR of the source and destination registers, storing the resul
 
 === FDIV ===
 
-* 9Bnm ? FDIV		FRm, FRn			//FRn=FRn/FRm
+* 9Bnm FDIV		FRm, FRn			//FRn=FRn/FRm
 
 
 === FLDCx ===

@@ -84,6 +84,7 @@ void *TKMM_PageToPointer(int n)
 {
 	byte *ptr;
 	ptr=((byte *)TKMM_PAGEBASE)+(n<<12);
+//	__debugbreak();
 	return(ptr);
 }
 
@@ -148,7 +149,7 @@ void *TKMM_Malloc(int sz)
 		ptr=TKMM_MMList_Malloc(sz);
 
 		if(!ptr)
-			printf("TKMM_Malloc: failed A %d\n", sz);
+			tk_printf("TKMM_Malloc: failed A %d\n", sz);
 
 		return(ptr);
 	}
@@ -157,7 +158,7 @@ void *TKMM_Malloc(int sz)
 	pg=TKMM_AllocPages(np);
 	if(pg<0)
 	{
-		printf("TKMM_Malloc: failed B %d\n", sz);
+		tk_printf("TKMM_Malloc: failed B %d\n", sz);
 		return(NULL);
 	}
 	ptr=TKMM_PageToPointer(pg);
@@ -166,7 +167,7 @@ void *TKMM_Malloc(int sz)
 	
 	if(!ptr)
 	{
-		printf("TKMM_Malloc: failed C %d\n", sz);
+		tk_printf("TKMM_Malloc: failed C %d\n", sz);
 		return(NULL);
 	}
 	
@@ -179,7 +180,10 @@ void *TKMM_Malloc(int sz)
 
 //	__debugbreak();
 
-	printf("TKMM_Malloc: pass D %X %X %d\n",
+	if(((s64)ptr)&0xFFF)
+		__debugbreak();
+
+	tk_printf("TKMM_Malloc: pass D %X %X %d\n",
 		obj, obj->data, sz);
 
 	return((byte *)obj->data);

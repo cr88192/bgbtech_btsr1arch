@@ -277,8 +277,16 @@ s64 __sdivlli(s64 a, s64 b)
 #endif
 
 #if 1
+u64 __udivdi3(u64 n, u64 d);
+s64 __sdivdi3(s64 a, s64 b);
+
+
 u64 __udivsq(u64 a, u64 b)
 {
+
+	return(__udivdi3(a, b));
+
+#if 0
 	u64_obj_t c, d, e;
 	u64 v, t;
 
@@ -303,10 +311,14 @@ u64 __udivsq(u64 a, u64 b)
 //	*(u64_obj_t *)(&v)=__udivlli(c, d);
 	v=*(u64 *)(&e);
 	return(v);
+#endif
 }
 
 s64 __sdivsq(s64 a, s64 b)
 {
+	return(__sdivdi3(a, b));
+
+#if 0
 #if 1
 	if((((s32)a)==a) && (((s32)b)==b))
 	{
@@ -315,6 +327,7 @@ s64 __sdivsq(s64 a, s64 b)
 #endif
 	
 	return(__sdivlli(a, b));
+#endif
 }
 
 u64 __umodsq(u64 a, u64 b)
@@ -513,11 +526,19 @@ void __exita(int status)
 u32 TK_GetTimeMs(void)
 {
 	u32 *sreg;
+	u32 us_lo, us_hi;
+	u64 us;
 	int ms;
 
-	sreg=(int *)0x007F8000;
+	sreg=(int *)0xA000E000;
+	us_lo=sreg[0];
+	us_hi=sreg[1];
+	us=(((u64)us_hi)<<32)|us_lo;
+	ms=us>>10;
+
+//	sreg=(int *)0x007F8000;
 //	ms=(P_AIC_RTC_NSEC>>20)|(P_AIC_RTC_SEC_LO*1000);
-	ms=sreg[4];
+//	ms=sreg[4];
 	return(ms);
 }
 
@@ -560,7 +581,7 @@ void __allocmem(size_t size, void **rptr)
 	void *ptr;
 //	*ptr=(void *)vx_malloc(size);
 	ptr=TKMM_Malloc(size);
-	tk_printf("__allocmem: %p..%p %d\n", ptr, ptr+size, size);
+//	tk_printf("__allocmem: %p..%p %d\n", ptr, ptr+size, size);
 	*rptr=ptr;
 //	*ptr=TKMM_MMList_AllocBrk(size);
 }
@@ -1166,4 +1187,28 @@ void tk_sprintf(char *dst, char *str, ...)
 	va_start(lst, str);	
 	tk_vsprintf(dst, str, lst);
 	va_end(lst);
+}
+
+static int (*irq_timer[16])();
+static int n_irq_timer=0;
+
+int irq_addTimerIrq(void *fcn)
+{
+	irq_timer[n_irq_timer++]=fcn;
+}
+
+int __isr_interrupt(int irq)
+{
+	int i;
+
+	if(((u16)irq)==0xC001)
+	{
+		for(i=0; i<n_irq_timer; i++)
+			irq_timer[i]();
+		return(0);
+	}
+
+	tk_printf("IRQ %X?\n", irq);
+
+	return(0);
 }

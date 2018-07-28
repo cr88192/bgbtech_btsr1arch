@@ -473,6 +473,8 @@ void SCR_SetUpToDrawConsole (void)
 		
 // decide on the height of the console
 	con_forcedup = !cl.worldmodel || cls.signon != SIGNONS;
+//	con_forcedup = !cl.worldmodel;
+//	con_forcedup = (cl.worldmodel==NULL);
 
 	if (con_forcedup)
 	{
@@ -480,7 +482,12 @@ void SCR_SetUpToDrawConsole (void)
 		scr_con_current = scr_conlines;
 	}
 	else if (key_dest == key_console)
+	{
+//		__hint_cc_dbgbreak();
 		scr_conlines = vid.height/2;	// half screen
+//		scr_conlines = vid.height/2.0;	// half screen
+//		__debugbreak();
+	}
 	else
 		scr_conlines = 0;				// none visible
 	
@@ -523,6 +530,8 @@ void SCR_DrawConsole (void)
 {
 	if (scr_con_current)
 	{
+//		tk_printf("SCR_DrawConsole: %f\n", scr_con_current);
+	
 		scr_copyeverything = 1;
 		Con_DrawConsole (scr_con_current, true);
 		clearconsole = 0;

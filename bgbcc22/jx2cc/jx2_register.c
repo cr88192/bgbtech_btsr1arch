@@ -77,12 +77,17 @@ int BGBCC_JX2C_ScratchSafeStompReg(
 		((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_RD0) ||
 		((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_RQ0))
 	{
+		if((reg&15)>=2)
+			sctx->is_leaf&=(~4);
+
 		if((reg&15)>=8)
 			{ BGBCC_DBGBREAK }
 		if(sctx->sreg_live&(1<<(reg&15)))
 			{ BGBCC_DBGBREAK }
 		return(BGBCC_JX2C_ScratchStompReg(ctx, sctx, reg));
 	}
+
+	sctx->is_leaf&=(~4);
 
 	if(((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_R16) ||
 		((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_RD16) ||
@@ -129,11 +134,16 @@ int BGBCC_JX2C_ScratchStompReg(
 		((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_RD0) ||
 		((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_RQ0))
 	{
+		if((reg&15)>=2)
+			sctx->is_leaf&=(~4);
+
 		if((reg&15)>=8)
 			{ BGBCC_DBGBREAK }
 		sctx->sreg_live|=1<<(reg&15);
 		return(1);
 	}
+
+	sctx->is_leaf&=(~4);
 
 	if(((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_R16) ||
 		((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_RD16) ||
@@ -210,11 +220,16 @@ int BGBCC_JX2C_ScratchHoldReg(
 		((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_RD0) ||
 		((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_RQ0))
 	{
+		if((reg&15)>=2)
+			sctx->is_leaf&=(~4);
+
 		if((reg&15)>=8)
 			{ BGBCC_DBGBREAK }
 		sctx->sreg_held|=1<<(reg&15);
 		return(1);
 	}
+
+	sctx->is_leaf&=(~4);
 
 	if(((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_R16) ||
 		((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_RD16) ||
@@ -368,12 +383,34 @@ int BGBCC_JX2C_ScratchReleaseReg(
 	return(0);
 }
 
+int BGBCC_JX2C_ScratchAllocTsReg(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	int cls)
+{
+	int i;
+
+	i=1;
+	if(!(sctx->sreg_live&(1<<i)))
+	{
+		sctx->sreg_live|=(1<<i);
+		if(sctx->is_addr64)
+			return(BGBCC_SH_REG_RQ0+i);
+		return(BGBCC_SH_REG_R0+i);
+	}
+	
+	i=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, cls);
+	return(i);
+}
+
 int BGBCC_JX2C_ScratchAllocReg(
 	BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx,
 	int cls)
 {
 	int i;
+
+	sctx->is_leaf&=(~4);
 
 	if(!cls ||
 //		(cls==BGBCC_SH_REGCLS_GR) ||
@@ -385,7 +422,7 @@ int BGBCC_JX2C_ScratchAllocReg(
 		(cls==BGBCC_SH_REGCLS_WGR))
 	{
 //		for(i=1; i<8; i++)
-		for(i=7; i>=0; i--)
+		for(i=7; i>=2; i--)
 		{
 			if(!(sctx->sreg_live&(1<<i)))
 			{
@@ -420,7 +457,7 @@ int BGBCC_JX2C_ScratchAllocReg(
 		(cls==BGBCC_SH_REGCLS_WGR))
 	{
 //		for(i=1; i<8; i++)
-		for(i=7; i>=0; i--)
+		for(i=7; i>=2; i--)
 		{
 			if(!(sctx->sreg_live&(1<<i)))
 			{
@@ -482,7 +519,7 @@ int BGBCC_JX2C_ScratchAllocReg(
 		(cls==BGBCC_SH_REGCLS_VO_QGR2))
 	{
 //		for(i=1; i<7; i++)
-		for(i=6; i>=0; i--)
+		for(i=6; i>=2; i--)
 		{
 			if(!(sctx->sreg_live&(3<<i)))
 			{
@@ -716,7 +753,7 @@ const byte bgbcc_jx2_qcachereg[8]={
 const byte bgbcc_jx2_maxreg=7;
 #endif
 
-#if 1
+#if 0
 // const byte bgbcc_jx2_cachereg[6]={ 13, 11, 10, 9, 8, 255 };
 // const byte bgbcc_jx2_cachereg[8]={ 14, 13, 12, 11, 10, 9, 8, 255 };
 const byte bgbcc_jx2_cachereg[16]={
@@ -753,6 +790,67 @@ const byte bgbcc_jx2_maxreg=7;
 const byte bgbcc_jx2_maxreg_egpr=15;
 #endif
 
+
+#if 1
+const byte bgbcc_jx2_jcachereg[16]={
+	BGBCC_SH_REG_RD14, BGBCC_SH_REG_RD13,
+	BGBCC_SH_REG_RD12, BGBCC_SH_REG_RD11,
+	BGBCC_SH_REG_RD10, BGBCC_SH_REG_RD9,
+	BGBCC_SH_REG_RD8,
+	BGBCC_SH_REG_RD7, BGBCC_SH_REG_RD6,
+	BGBCC_SH_REG_RD5, BGBCC_SH_REG_RD4,
+	BGBCC_SH_REG_RD3, BGBCC_SH_REG_RD2,
+	BGBCC_SH_REG_ZZR };
+const byte bgbcc_jx2_qcachereg[16]={
+	BGBCC_SH_REG_RQ14, BGBCC_SH_REG_RQ13,
+	BGBCC_SH_REG_RQ12, BGBCC_SH_REG_RQ11,
+	BGBCC_SH_REG_RQ10, BGBCC_SH_REG_RQ9,
+	BGBCC_SH_REG_RQ8,
+	BGBCC_SH_REG_RQ7, BGBCC_SH_REG_RQ6,
+	BGBCC_SH_REG_RQ5, BGBCC_SH_REG_RQ4,
+	BGBCC_SH_REG_RQ3, BGBCC_SH_REG_RQ2,
+	BGBCC_SH_REG_ZZR };
+
+const byte bgbcc_jx2_jcachereg_egpr[32]={
+	BGBCC_SH_REG_RD14, BGBCC_SH_REG_RD13,
+	BGBCC_SH_REG_RD12, BGBCC_SH_REG_RD11,
+	BGBCC_SH_REG_RD10, BGBCC_SH_REG_RD9,
+	BGBCC_SH_REG_RD8,
+	BGBCC_SH_REG_RD31, BGBCC_SH_REG_RD30,
+	BGBCC_SH_REG_RD29, BGBCC_SH_REG_RD28,
+	BGBCC_SH_REG_RD27, BGBCC_SH_REG_RD26,
+	BGBCC_SH_REG_RD25, BGBCC_SH_REG_RD24, 
+	BGBCC_SH_REG_RD7,  BGBCC_SH_REG_RD6,
+	BGBCC_SH_REG_RD5,  BGBCC_SH_REG_RD4,
+	BGBCC_SH_REG_RD3,  BGBCC_SH_REG_RD2,
+	BGBCC_SH_REG_RD23, BGBCC_SH_REG_RD22,
+	BGBCC_SH_REG_RD21, BGBCC_SH_REG_RD20,
+	BGBCC_SH_REG_RD19, BGBCC_SH_REG_RD18,
+	BGBCC_SH_REG_RD17, BGBCC_SH_REG_RD16, 
+	BGBCC_SH_REG_ZZR };
+const byte bgbcc_jx2_qcachereg_egpr[32]={
+	BGBCC_SH_REG_RQ14, BGBCC_SH_REG_RQ13,
+	BGBCC_SH_REG_RQ12, BGBCC_SH_REG_RQ11,
+	BGBCC_SH_REG_RQ10, BGBCC_SH_REG_RQ9,
+	BGBCC_SH_REG_RQ8,
+	BGBCC_SH_REG_RQ31, BGBCC_SH_REG_RQ30,
+	BGBCC_SH_REG_RQ29, BGBCC_SH_REG_RQ28,
+	BGBCC_SH_REG_RQ27, BGBCC_SH_REG_RQ26,
+	BGBCC_SH_REG_RQ25, BGBCC_SH_REG_RQ24, 
+	BGBCC_SH_REG_RQ7,  BGBCC_SH_REG_RQ6,
+	BGBCC_SH_REG_RQ5,  BGBCC_SH_REG_RQ4,
+	BGBCC_SH_REG_RQ3,  BGBCC_SH_REG_RQ2,
+	BGBCC_SH_REG_RQ23, BGBCC_SH_REG_RQ22,
+	BGBCC_SH_REG_RQ21, BGBCC_SH_REG_RQ20,
+	BGBCC_SH_REG_RQ19, BGBCC_SH_REG_RQ18,
+	BGBCC_SH_REG_RQ17, BGBCC_SH_REG_RQ16, 
+	BGBCC_SH_REG_ZZR };
+const byte bgbcc_jx2_maxreg=7;
+const byte bgbcc_jx2_maxreg_egpr=15;
+const byte bgbcc_jx2_maxreg_lf=13;
+const byte bgbcc_jx2_maxreg_egpr_lf=29;
+#endif
+
 /* Try to get Variable as register.
  * Will return a value as a register if possible, but may fail.
  * Returns ZZR if it is unable to do so.
@@ -765,6 +863,7 @@ int BGBCC_JX2C_EmitTryGetRegister(
 	static int rchk=0;
 	ccxl_register reg1;
 	ccxl_type tty;
+	int maxreg, vrsave;
 	int creg, excl, nsv, userq, rcls;
 	int pr0, pr1;
 	int i, bi;
@@ -840,11 +939,17 @@ int BGBCC_JX2C_EmitTryGetRegister(
 	if(sctx->is_pic)
 		excl|=4;
 
+	maxreg=sctx->maxreg_gpr;
+	if(sctx->is_tr_leaf&1)
+		maxreg=sctx->maxreg_gpr_lf;
+	vrsave=0x00FF00FC;
+
 #if 1
 	/* value already in a register? */
 //	for(i=0; i<5; i++)
 //	for(i=0; i<bgbcc_jx2_maxreg; i++)
-	for(i=0; i<sctx->maxreg_gpr; i++)
+//	for(i=0; i<sctx->maxreg_gpr; i++)
+	for(i=0; i<maxreg; i++)
 	{
 		if(excl&(1<<i))
 			continue;
@@ -867,11 +972,15 @@ int BGBCC_JX2C_EmitTryGetRegister(
 			if(sctx->regalc_ltcnt[i]>0)
 				sctx->regalc_ltcnt[i]--;
 			sctx->regalc_utcnt[i]++;
-			creg=bgbcc_jx2_cachereg[i];
+//			creg=bgbcc_jx2_cachereg[i];
+//			if(userq)
+//				creg=bgbcc_jx2_qcachereg[i];
+//			else if(sctx->is_addr64)
+//				creg=bgbcc_jx2_jcachereg[i];
 			if(userq)
-				creg=bgbcc_jx2_qcachereg[i];
-			else if(sctx->is_addr64)
-				creg=bgbcc_jx2_jcachereg[i];
+				creg=sctx->qcachereg[i];
+			else
+				creg=sctx->jcachereg[i];
 			return(creg);
 		}
 	}
@@ -888,7 +997,8 @@ int BGBCC_JX2C_EmitTryGetRegister(
 		/* Check for registers not holding a live value. */
 //		for(i=0; i<5; i++)
 //		for(i=0; i<bgbcc_jx2_maxreg; i++)
-		for(i=0; i<sctx->maxreg_gpr; i++)
+//		for(i=0; i<sctx->maxreg_gpr; i++)
+		for(i=0; i<maxreg; i++)
 		{
 			if(excl&(1<<i))
 				continue;
@@ -901,9 +1011,11 @@ int BGBCC_JX2C_EmitTryGetRegister(
 
 			if(!((sctx->regalc_save)&(1<<i)))
 			{
-				creg=bgbcc_jx2_cachereg[i];
+//				creg=bgbcc_jx2_cachereg[i];
+				creg=sctx->jcachereg[i];
 //				if(sctx->reg_save&(1<<(creg&15)))
-				if(sctx->reg_save&(1<<(creg&31)))
+//				if(sctx->reg_save&(1<<(creg&31)))
+				if((sctx->reg_save|vrsave)&(1<<(creg&31)))
 					{ bi=i; break; }
 
 				nsv++;
@@ -966,11 +1078,15 @@ int BGBCC_JX2C_EmitTryGetRegister(
 			sctx->regalc_live|=1<<i;
 			if(fl&1)
 				{ sctx->regalc_dirty|=1<<i; }
-			creg=bgbcc_jx2_cachereg[i];
+//			creg=bgbcc_jx2_cachereg[i];
+//			if(userq)
+//				creg=bgbcc_jx2_qcachereg[i];
+//			else if(sctx->is_addr64)
+//				creg=bgbcc_jx2_jcachereg[i];
 			if(userq)
-				creg=bgbcc_jx2_qcachereg[i];
-			else if(sctx->is_addr64)
-				creg=bgbcc_jx2_jcachereg[i];
+				creg=sctx->qcachereg[i];
+			else
+				creg=sctx->jcachereg[i];
 			BGBCC_JX2C_EmitSaveFrameReg(ctx, sctx, creg);
 //			if(fl&2)
 //				{ BGBCC_JX2C_EmitLoadFrameVRegReg(ctx, sctx, reg, creg); }
@@ -993,6 +1109,7 @@ int BGBCC_JX2C_EmitGetRegister(
 	static int rchk=0;
 	ccxl_register reg1;
 	ccxl_type tty;
+	int maxreg, vrsave;
 	int creg, lng, excl, bi, nsv, userq, rcls;
 	int pr0, pr1;
 	int i;
@@ -1060,9 +1177,15 @@ int BGBCC_JX2C_EmitGetRegister(
 	if(sctx->is_pic)
 		excl|=4;
 
+	maxreg=sctx->maxreg_gpr;
+	if(sctx->is_tr_leaf&1)
+		maxreg=sctx->maxreg_gpr_lf;
+	vrsave=0x00FF00FC;
+
 //	for(i=0; i<5; i++)
 //	for(i=0; i<bgbcc_jx2_maxreg; i++)
-	for(i=0; i<sctx->maxreg_gpr; i++)
+//	for(i=0; i<sctx->maxreg_gpr; i++)
+	for(i=0; i<maxreg; i++)
 		if(sctx->regalc_ltcnt[i]<255)
 			sctx->regalc_ltcnt[i]++;
 
@@ -1071,7 +1194,8 @@ int BGBCC_JX2C_EmitGetRegister(
 	/* Check for registers not holding a live value. */
 //	for(i=0; i<5; i++)
 //	for(i=0; i<bgbcc_jx2_maxreg; i++)
-	for(i=0; i<sctx->maxreg_gpr; i++)
+//	for(i=0; i<sctx->maxreg_gpr; i++)
+	for(i=0; i<maxreg; i++)
 	{
 		if(excl&(1<<i))
 			continue;
@@ -1084,9 +1208,11 @@ int BGBCC_JX2C_EmitGetRegister(
 
 		if(!((sctx->regalc_save)&(1<<i)))
 		{
-			creg=bgbcc_jx2_cachereg[i];
+//			creg=bgbcc_jx2_cachereg[i];
+			creg=sctx->jcachereg[i];
 //			if(sctx->reg_save&(1<<(creg&15)))
-			if(sctx->reg_save&(1<<(creg&31)))
+//			if(sctx->reg_save&(1<<(creg&31)))
+			if((sctx->reg_save|vrsave)&(1<<(creg&31)))
 				{ bi=i; break; }
 
 			nsv++;
@@ -1120,7 +1246,8 @@ int BGBCC_JX2C_EmitGetRegister(
 	if(bi<0)
 	{
 //		for(i=0; i<bgbcc_jx2_maxreg; i++)
-		for(i=0; i<sctx->maxreg_gpr; i++)
+//		for(i=0; i<sctx->maxreg_gpr; i++)
+		for(i=0; i<maxreg; i++)
 		{
 			if(excl&(1<<i))
 				continue;
@@ -1183,11 +1310,15 @@ int BGBCC_JX2C_EmitGetRegister(
 		sctx->regalc_live|=1<<i;
 		if(fl&1)
 			sctx->regalc_dirty|=1<<i;
-		creg=bgbcc_jx2_cachereg[i];
+//		creg=bgbcc_jx2_cachereg[i];
+//		if(userq)
+//			creg=bgbcc_jx2_qcachereg[i];
+//		else if(sctx->is_addr64)
+//			creg=bgbcc_jx2_jcachereg[i];
 		if(userq)
-			creg=bgbcc_jx2_qcachereg[i];
-		else if(sctx->is_addr64)
-			creg=bgbcc_jx2_jcachereg[i];
+			creg=sctx->qcachereg[i];
+		else
+			creg=sctx->jcachereg[i];
 		BGBCC_JX2C_EmitSaveFrameReg(ctx, sctx, creg);
 //		if(fl&2)
 		if((fl&2) && (i>=sctx->vsp_rsv))
@@ -1199,7 +1330,8 @@ int BGBCC_JX2C_EmitGetRegister(
 	/* Check for unallocated registers. */
 //	for(i=0; i<5; i++)
 //	for(i=0; i<bgbcc_jx2_maxreg; i++)
-	for(i=0; i<sctx->maxreg_gpr; i++)
+//	for(i=0; i<sctx->maxreg_gpr; i++)
+	for(i=0; i<maxreg; i++)
 	{
 		if(excl&(1<<i))
 			continue;
@@ -1221,11 +1353,15 @@ int BGBCC_JX2C_EmitGetRegister(
 		if(fl&1)
 			sctx->regalc_dirty|=1<<i;
 
-		creg=bgbcc_jx2_cachereg[i];		
+//		creg=bgbcc_jx2_cachereg[i];		
+//		if(userq)
+//			creg=bgbcc_jx2_qcachereg[i];
+//		else if(sctx->is_addr64)
+//			creg=bgbcc_jx2_jcachereg[i];
 		if(userq)
-			creg=bgbcc_jx2_qcachereg[i];
-		else if(sctx->is_addr64)
-			creg=bgbcc_jx2_jcachereg[i];
+			creg=sctx->qcachereg[i];
+		else
+			creg=sctx->jcachereg[i];
 		BGBCC_JX2C_EmitSaveFrameReg(ctx, sctx, creg);
 //		if(fl&2)
 //		if((fl&2) && (i>=sctx->vsp_rsv))
@@ -1482,7 +1618,8 @@ int BGBCC_JX2C_EmitReleaseRegister(
 	/* value in register? */
 //	for(i=0; i<5; i++)
 //	for(i=0; i<bgbcc_jx2_maxreg; i++)
-	for(i=0; i<sctx->maxreg_gpr; i++)
+//	for(i=0; i<sctx->maxreg_gpr; i++)
+	for(i=0; i<sctx->maxreg_gpr_lf; i++)
 	{
 		if(!((sctx->regalc_save)&(1<<i)))
 			continue;
@@ -1580,12 +1717,16 @@ int BGBCC_JX2C_EmitSyncRegisterIndex2(
 	if(((sctx->regalc_dirty)&(1<<i)) && (sfl&1))
 	{
 		reg=sctx->regalc_map[i];
-		creg=bgbcc_jx2_cachereg[i];		
 
+//		creg=bgbcc_jx2_cachereg[i];
+//		if(userq)
+//			creg=bgbcc_jx2_qcachereg[i];
+//		else if(sctx->is_addr64)
+//			creg=bgbcc_jx2_jcachereg[i];
 		if(userq)
-			creg=bgbcc_jx2_qcachereg[i];
-		else if(sctx->is_addr64)
-			creg=bgbcc_jx2_jcachereg[i];
+			creg=sctx->qcachereg[i];
+		else
+			creg=sctx->jcachereg[i];
 
 		if((reg.val&CCXL_REGID_REGMASK)==CCXL_REGID_REGMASK)
 			return(0);
@@ -1665,12 +1806,13 @@ int BGBCC_JX2C_EmitSyncRegisters(
 {
 	int i;
 
-//	BGBCC_JX2C_EmitSyncFpRegisters(ctx, sctx);
+	BGBCC_JX2C_EmitSyncFpRegisters(ctx, sctx);
 
 	/* value in register? */
 //	for(i=0; i<5; i++)
 //	for(i=0; i<bgbcc_jx2_maxreg; i++)
-	for(i=0; i<sctx->maxreg_gpr; i++)
+//	for(i=0; i<sctx->maxreg_gpr; i++)
+	for(i=0; i<sctx->maxreg_gpr_lf; i++)
 	{
 		BGBCC_JX2C_EmitSyncRegisterIndex(ctx, sctx, i);
 		sctx->regalc_utcnt[i]=0;
@@ -1686,15 +1828,25 @@ int BGBCC_JX2C_EmitLabelFlushRegisters(
 {
 	int i;
 
-//	BGBCC_JX2C_EmitLabelFlushFpRegisters(ctx, sctx);
+	BGBCC_JX2C_EmitLabelFlushFpRegisters(ctx, sctx);
 
+	sctx->jcachereg=bgbcc_jx2_jcachereg;
+	sctx->qcachereg=bgbcc_jx2_qcachereg;
 	sctx->maxreg_gpr=bgbcc_jx2_maxreg;
+	sctx->maxreg_gpr_lf=bgbcc_jx2_maxreg_lf;
+
 	if(sctx->has_bjx1egpr && sctx->use_egpr)
+	{
+		sctx->jcachereg=bgbcc_jx2_jcachereg_egpr;
+		sctx->qcachereg=bgbcc_jx2_qcachereg_egpr;
 		sctx->maxreg_gpr=bgbcc_jx2_maxreg_egpr;
+		sctx->maxreg_gpr_lf=bgbcc_jx2_maxreg_egpr_lf;
+	}
 
 //	for(i=0; i<5; i++)
 //	for(i=0; i<bgbcc_jx2_maxreg; i++)
-	for(i=0; i<sctx->maxreg_gpr; i++)
+//	for(i=0; i<sctx->maxreg_gpr; i++)
+	for(i=0; i<sctx->maxreg_gpr_lf; i++)
 	{
 		if(!((sctx->regalc_save)&(1<<i)))
 			continue;

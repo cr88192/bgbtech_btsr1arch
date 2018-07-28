@@ -29,8 +29,9 @@ vec3_t		viewlightvec;
 alight_t	r_viewlighting = {128, 192, viewlightvec};
 float		r_time1;
 int			r_numallocatededges;
-qboolean	r_drawpolys = true;
-qboolean	r_drawculledpolys;
+//qboolean	r_drawpolys = true;
+qboolean	r_drawpolys = false;
+qboolean	r_drawculledpolys = false;
 qboolean	r_worldpolysbacktofront;
 qboolean	r_recursiveaffinetriangles = true;
 int			r_pixbytes = 1;
@@ -916,6 +917,9 @@ void R_EdgeDrawing (void)
 	surf_t	lsurfs[NUMSTACKSURFACES +
 				((CACHE_SIZE - 1) / sizeof(surf_t)) + 1];
 
+	r_drawpolys	= 0;			//BGB Debug
+	r_drawculledpolys = 0;		//BGB Debug
+
 	if (auxedges)
 	{
 		r_edges = auxedges;
@@ -943,6 +947,8 @@ void R_EdgeDrawing (void)
 	{
 		rw_time1 = Sys_FloatTime ();
 	}
+
+//	__debugbreak();
 
 	R_RenderWorld ();
 
@@ -973,9 +979,13 @@ void R_EdgeDrawing (void)
 		S_ExtraUpdate ();	// don't let sound get messed up if going slow
 		VID_LockBuffer ();
 	}
+
+//	__debugbreak();
 	
 	if (!(r_drawpolys | r_drawculledpolys))
 		R_ScanEdges ();
+
+//	__debugbreak();
 }
 
 

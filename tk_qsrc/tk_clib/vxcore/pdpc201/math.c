@@ -370,6 +370,7 @@ __PDPCLIB_API__ double sin(double x)
 
     int i, n;
     double term,answer,work,x1;
+    double f0, f1;
 
 /*
   scale so series converges pretty quickly
@@ -377,6 +378,7 @@ __PDPCLIB_API__ double sin(double x)
     i = x/(2.0*pi);
     x1 =  x - (i * (2.0 * pi));
 
+//	__debugbreak();
 /*
  set up initial term
 */
@@ -385,15 +387,22 @@ __PDPCLIB_API__ double sin(double x)
 /*
  loop until no more changes
 */
+
+#if 1
 	n=256;
     while ((n--)>0)
     {
         work = i+1;
-        term = -(term * x1 * x1)/(work * (work + 1.0));
+        f0 = -(term * x1 * x1);
+        f1 = (work * (work + 1.0));
+        term = f0 / f1;
+//        __debugbreak();
+//        term = -(term * x1 * x1)/(work * (work + 1.0));
         if ( answer == (answer + term) )break;
         answer = answer + term;
         i = i+2;
     }
+#endif
 
     return(answer);
 }

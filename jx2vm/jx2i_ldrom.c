@@ -1,5 +1,8 @@
 u32 mmgp_data[256];
 
+s64 mmgp_spi_lastcyc;
+int mmgp_spi_delcyc;
+
 int BJX2_MemMmgpCb_GetByte(BJX2_Context *ctx,
 	BJX2_MemSpan *sp, bjx2_addr addr)
 {
@@ -16,12 +19,32 @@ int BJX2_MemMmgpCb_GetWord(BJX2_Context *ctx,
 	return(0);
 }
 
+s64 BJX2_Interp_GetVirtualUsec(BJX2_Context *ctx)
+{
+	s64 rvq;
+
+	rvq=(ctx->tot_cyc*ctx->rcp_mhz)>>16;
+//	rv=rvq;
+
+	return(rvq);
+}
+
 s32 BJX2_MemMmgpCb_GetDWord(BJX2_Context *ctx,
 	BJX2_MemSpan *sp, bjx2_addr addr)
 {
 	u32 *mmio;
-	s64 rvq;
+	s64 rvq, dcyc;
 	int ra, rv;
+
+	dcyc=ctx->tot_cyc-mmgp_spi_lastcyc;
+	mmgp_spi_lastcyc=ctx->tot_cyc;
+	
+	if(dcyc>mmgp_spi_delcyc)
+		mmgp_spi_delcyc=0;
+	else
+		mmgp_spi_delcyc-=dcyc;
+	ctx->iodel_cyc=mmgp_spi_delcyc;
+
 
 	ra=addr-sp->addr_base;
 
@@ -68,6 +91,8 @@ s32 BJX2_MemMmgpCb_GetDWord(BJX2_Context *ctx,
 
 	case 0x30:
 		rv=mmio[0x10];
+		if(mmgp_spi_delcyc>0)
+			rv|=2;
 //		printf("SPI_C(R): D=%08X\n", rv);
 		break;
 	case 0x34:
@@ -99,8 +124,19 @@ int BJX2_MemMmgpCb_SetDWord(BJX2_Context *ctx,
 	BJX2_MemSpan *sp, bjx2_addr addr, s32 val)
 {
 	u32 *mmio;
+	s64 dcyc;
 	int v;
 	int ra;
+
+	dcyc=ctx->tot_cyc-mmgp_spi_lastcyc;
+	mmgp_spi_lastcyc=ctx->tot_cyc;
+	
+	if(dcyc>mmgp_spi_delcyc)
+		mmgp_spi_delcyc=0;
+	else
+		mmgp_spi_delcyc-=dcyc;
+	ctx->iodel_cyc=mmgp_spi_delcyc;
+
 
 	ra=addr-sp->addr_base;
 
@@ -139,6 +175,13 @@ int BJX2_MemMmgpCb_SetDWord(BJX2_Context *ctx,
 	case 0x0034:
 		v=btesh2_spimmc_XrByte(ctx, val);
 		mmio[0x11]=v;
+//		ctx->iodel_cyc=800;
+//		mmgp_spi_delcyc+=800;
+//		ctx->iodel_cyc=200;
+//		mmgp_spi_delcyc+=200;
+//		ctx->iodel_cyc=20;
+//		mmgp_spi_delcyc+=20;
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_IOPOKE);
 
 //		printf("SPI_D(W): %08X -> %08X, D=%08X\n", val, v, mmio[0x11]);
 		break;
@@ -157,6 +200,7 @@ int BJX2_MemDefineMmgp(BJX2_Context *ctx,
 	sp->name=name;
 	sp->addr_base=base;
 	sp->addr_lim=lim;
+	sp->addr_sz=lim-base;
 //	sp->data=malloc((lim-base)+8);
 	
 	sp->GetByte=BJX2_MemMmgpCb_GetByte;
@@ -190,6 +234,17 @@ int BJX2_ContextLoadMap(BJX2_Context *ctx, char *name)
 	}
 
 	tmn=0;
+	
+	if(ctx->map_n_ents)
+	{
+		for(i=0; i<ctx->map_n_ents; i++)
+		{
+			tmap_addr[i]=ctx->map_addr[i];
+			tmap_name[i]=ctx->map_name[i];
+		}
+		tmn=ctx->map_n_ents;
+	}
+	
 	while(!feof(fd))
 	{
 		fgets(tb, 255, fd);

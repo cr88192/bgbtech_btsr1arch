@@ -612,15 +612,20 @@ D_DrawSpans16
 */
 void D_DrawSpans16 (espan_t *pspan)
 {
-	int				count, spancount, px;
+	int				count, spancount;
+	register int		px;
 //	unsigned char		*pbase;
-	unsigned short		*pbase;
-	unsigned short		*pdest;
-	fixed16_t		s, t, snext, tnext, sstep, tstep;
+	register unsigned short		*pbase;
+	register unsigned short		*pdest;
+	fixed16_t		snext, tnext;
+	register fixed16_t		s, t, sstep, tstep;
+	register int			t_cachewidth;
 	float			sdivz, tdivz, zi, z, du, dv, spancountminus1;
 	float			sdivz8stepu, tdivz8stepu, zi8stepu;
 
 //	return;	//BGB Debug
+
+//	__hint_use_egpr();
 
 	sstep = 0;	// keep compiler happy
 	tstep = 0;	// ditto
@@ -659,8 +664,8 @@ void D_DrawSpans16 (espan_t *pspan)
 		sdivz = d_sdivzorigin + dv*d_sdivzstepv + du*d_sdivzstepu;
 		tdivz = d_tdivzorigin + dv*d_tdivzstepv + du*d_tdivzstepu;
 		zi = d_ziorigin + dv*d_zistepv + du*d_zistepu;
-		z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
-//		z = 65536.0 / zi;	// prescale to 16.16 fixed-point
+//		z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
+		z = 65536.0 / zi;	// prescale to 16.16 fixed-point
 
 //		tk_printf("zio=%f %f %f\n", d_ziorigin, d_zistepv, d_zistepu);
 
@@ -693,8 +698,8 @@ void D_DrawSpans16 (espan_t *pspan)
 				sdivz += sdivz8stepu;
 				tdivz += tdivz8stepu;
 				zi += zi8stepu;
-				z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
-//				z = 65536.0 / zi;	// prescale to 16.16 fixed-point
+//				z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
+				z = 65536.0 / zi;	// prescale to 16.16 fixed-point
 
 				snext = (int)(sdivz * z) + sadjust;
 //				snext = (sdivz * z) + sadjust;
@@ -724,8 +729,8 @@ void D_DrawSpans16 (espan_t *pspan)
 				sdivz += d_sdivzstepu * spancountminus1;
 				tdivz += d_tdivzstepu * spancountminus1;
 				zi += d_zistepu * spancountminus1;
-				z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
-//				z = 65536.0 / zi;	// prescale to 16.16 fixed-point
+//				z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
+				z = 65536.0 / zi;	// prescale to 16.16 fixed-point
 				snext = (int)(sdivz * z) + sadjust;
 //				snext = (sdivz * z) + sadjust;
 				if (snext > bbextents)
@@ -765,10 +770,51 @@ void D_DrawSpans16 (espan_t *pspan)
 #endif
 			
 //			tk_printf("%d %d\n", sstep, tstep);
+			t_cachewidth = cachewidth;
 
+			while(spancount>=4)
+			{
+				px = *(pbase + (s >> 16) + (t >> 16) * t_cachewidth);
+				s += sstep;		t += tstep;
+				*pdest++ = px;
+
+				px = *(pbase + (s >> 16) + (t >> 16) * t_cachewidth);
+				s += sstep;		t += tstep;
+				*pdest++ = px;
+
+				px = *(pbase + (s >> 16) + (t >> 16) * t_cachewidth);
+				s += sstep;		t += tstep;
+				*pdest++ = px;
+
+				px = *(pbase + (s >> 16) + (t >> 16) * t_cachewidth);
+				s += sstep;		t += tstep;
+				*pdest++ = px;
+
+				spancount-=4;
+			}
+			if(spancount>=2)
+			{
+				px = *(pbase + (s >> 16) + (t >> 16) * t_cachewidth);
+				s += sstep;		t += tstep;
+				*pdest++ = px;
+
+				px = *(pbase + (s >> 16) + (t >> 16) * t_cachewidth);
+				s += sstep;		t += tstep;
+				*pdest++ = px;
+
+				spancount-=2;
+			}
+			if(spancount>0)
+			{
+				px = *(pbase + (s >> 16) + (t >> 16) * t_cachewidth);
+				s += sstep;		t += tstep;
+				*pdest++ = px;
+			}
+
+#if 0
 			do
 			{
-				px = *(pbase + (s >> 16) + (t >> 16) * cachewidth);
+				px = *(pbase + (s >> 16) + (t >> 16) * t_cachewidth);
 //				px = *(pbase + (s >> 16) + (t >> 16) * (cachewidth>>1));
 
 //				px = d_8to16table[px];
@@ -777,6 +823,7 @@ void D_DrawSpans16 (espan_t *pspan)
 				s += sstep;
 				t += tstep;
 			} while (--spancount > 0);
+#endif
 
 			s = snext;
 			t = tnext;

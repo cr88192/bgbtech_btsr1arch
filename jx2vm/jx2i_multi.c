@@ -5,6 +5,12 @@
 
 #include <time.h>
 
+#include <math.h>
+
+#ifndef M_PI
+#define M_PI 3.1415926535897932384626433832795
+#endif
+
 #include "jx2i_interp.h"
 
 #include "jx2r_fatfs.h"
@@ -13,8 +19,12 @@
 #include "gfxdrv_w32.c"
 #include "gfxdrv_input.c"
 
+#include "sound_w32.c"
+
 #include "jx2r_sdfat.c"
 #include "jx2r_spimmc.c"
+
+#include "jx2r_snd_sblk.c"
 
 #include "jx2i_gfxcon.c"
 

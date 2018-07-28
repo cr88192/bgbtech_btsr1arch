@@ -36,6 +36,21 @@ int tk_fat_init()
 	return(1);
 }
 
+int tk_mount_sdfat()
+{
+	TKFAT_ImageInfo *img;
+	TK_MOUNT *mnt;
+
+	img=TKFAT_CreateSdFatContext();
+
+	mnt=tk_alloc_mount();
+	mnt->vt=&tk_vfile_fat_vt;
+	mnt->udata0=img;
+	
+	mnt->next=tk_vf_mount;
+	tk_vf_mount=mnt;
+}
+
 TK_MOUNT *tk_fat_mount(char *devfn, char *mntfn,
 	char *fsty, char *mode, char **opts)
 {
@@ -49,14 +64,21 @@ TK_FILE *tk_fat_fopen(TK_MOUNT *mnt, char *name, char *mode)
 	TK_FILE *fd;
 	int i;
 
+	tk_printf("tk_fat_fopen: %s\n", name);
+
 	img=mnt->udata0;
 	dee=&tdee;
+	memset(dee, 0, sizeof(TKFAT_FAT_DirEntExt));
 	i=TKFAT_LookupDirEntPath(img, dee, name);
 	if(i<0)
-		{ return(NULL); }
+	{
+		tk_printf("tk_fat_fopen: fail %s\n", name);
+		return(NULL);
+	}
 
 	dee2=malloc(sizeof(TKFAT_FAT_DirEntExt));
 	memcpy(dee2, dee, sizeof(TKFAT_FAT_DirEntExt));
+	dee2->img=img;
 
 	fd=tk_alloc_file();
 	fd->vt=&tk_vfile_fat_vt;
@@ -121,6 +143,7 @@ int tk_fat_fread(void *buf, int sz1, int sz2, TK_FILE *fd)
 	sz=sz1*sz2;
 	sz=TKFAT_ReadWriteDirEntFile(
 		fd->udata1, fd->ofs, false, buf, sz);
+	if(sz>0)fd->ofs+=sz;
 	return(sz);
 }
 
@@ -131,6 +154,7 @@ int tk_fat_fwrite(void *buf, int sz1, int sz2, TK_FILE *fd)
 	sz=sz1*sz2;
 	sz=TKFAT_ReadWriteDirEntFile(
 		fd->udata1, fd->ofs, true, buf, sz);
+	if(sz>0)fd->ofs+=sz;
 	return(sz);
 }
 

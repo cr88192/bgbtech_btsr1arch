@@ -226,7 +226,7 @@ model_t *Mod_FindName (char *name)
 	{
 		if (!strcmp (mod->name, name) )
 		{
-//			tk_printf("Mod_FindName: Found %s\n", name);
+			tk_printf("Mod_FindName: Found %s\n", name);
 			break;
 		}
 		if (mod->needload == NL_UNREFERENCED)
@@ -251,7 +251,7 @@ model_t *Mod_FindName (char *name)
 		else
 			mod_numknown++;
 
-//		tk_printf("Mod_FindName: Create %s\n", name);
+		tk_printf("Mod_FindName: Create %s\n", name);
 
 		strcpy (mod->name, name);
 		mod->needload = NL_NEEDS_LOADED;
@@ -374,11 +374,11 @@ model_t *Mod_ForName (char *name, qboolean crash)
 
 	mod = Mod_FindName (name);
 
-//	tk_printf("Mod_ForName A name=%s mod=%p\n", name, mod);
+	tk_printf("Mod_ForName A name=%s mod=%p\n", name, mod);
 
 	mod = Mod_LoadModel (mod, crash);
 
-//	tk_printf("Mod_ForName B name=%s mod=%p\n", name, mod);
+	tk_printf("Mod_ForName B name=%s mod=%p\n", name, mod);
 
 	return mod;
 }
@@ -1507,6 +1507,8 @@ void Mod_LoadBrushModel (model_t *mod, void *buffer)
 			loadmodel = Mod_FindName (name);
 
 			*loadmodel = *mod;
+			
+//			__debugbreak();
 //			memcpy(loadmodel, mod, sizeof(model_t));
 //			Q_memcpy(loadmodel, mod, sizeof(model_t));
 			

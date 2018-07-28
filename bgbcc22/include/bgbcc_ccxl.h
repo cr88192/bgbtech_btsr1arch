@@ -409,6 +409,7 @@ ccxl_value imm;
 struct BGBCC_CCXL_VirtTr_s {
 int b_ops;			//first opcode
 int n_ops;			//num opcodes
+int trfl;			//trace flags
 };
 
 

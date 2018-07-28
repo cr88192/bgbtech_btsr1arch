@@ -77,16 +77,18 @@ MMIO Space:
 ** Bit 1: Clear Recieve
 ** Bit 4: Enable Interrupt
 
-* 0000E020(R/W): SPI Slave Data
-* 0000E024(W): SPI Slave Control
+* 0000E020(W): SPI Slave Control
+* 0000E024(R/W): SPI Slave Data
 
-* 0000E030(R/W): SPI Master Data
-* 0000E034(W): SPI Master Control
+* 0000E030(W): SPI Slave Control
+* 0000E034(R/W): SPI Slave Data
 
 * 0000E100(R): GPIO In
 * 0000E104(R/W): GPIO Out
 * 0000E108(R/W): GPIO Direction
 * 0000E110(W): GPIO Set (Out=Out|Val)
 * 0000E114(W): GPIO Clear (Out=Out&(~Val))
+
+* 00080000 .. 00080FFF: Audio Loop Buffer / Registers
 
 * 000A0000 .. 000BFFFF: Reserved for Display Memory (Bypass)

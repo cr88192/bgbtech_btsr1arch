@@ -1,0 +1,195 @@
+Types: B=byte, UV=UVLI, SV=SVLI.
+
+Bytes:
+0x00-0x7F: Data Values / Tick Delays
+
+0x80-0xEF: Inline MIDI Events
+The command is stored in the high nibble, with the channel in the low nibble.
+
+0x80|<chan>,<note:B>,<velocity:B>	NoteOff
+0x90|<chan>,<note:B>,<velocity:B>	NoteOn
+0xA0|<chan>,<note:B>,<velocity:B>	NoteAftertouch
+0xB0|<chan>,<ctrl:B>,<value:B>		ControllerChange
+0xC0|<chan>,<patchnum:B>			ProgramChange
+0xD0|<chan>,<value:B>				ChannelAftertouch
+0xE0|<chan>,<value:B>,<value2:B>	PitchBlend
+
+0xF0-0xF7: SysEx Events
+0xF8-0xFF: SysRT Events
+
+0xFF, <tag:UV>, <len:UV>, <data:B[len]>
+	Meta-Event.
+
+
+0xFD, <cmd:UV>, <args*>
+	Extended Command.
+	
+0xFD,0x08,<chan:SV>,<note:SV>,<vel:SV>	NoteOff
+0xFD,0x09,<chan:SV>,<note:SV>,<vel:SV>	NoteOn
+0xFD,0x0A,<chan:SV>,<note:SV>,<vel:SV>	NoteAftertouch
+0xFD,0x0B,<chan:SV>,<ctrl:SV>,<val:SV>	ControllerChange
+0xFD,0x0C,<chan:SV>,<num:SV>			ProgramChange
+0xFD,0x0D,<chan:SV>,<val:SV>			ChannelAftertouch
+0xFD,0x0E,<chan:SV>,<val:SV>			PitchBlend
+
+Where chan is a variable-length value.
+There may be an implementation limit on the max number of channels (TBD: 1024, 4096, or 16384 channels).
+
+Channels 0-15 will be initialized to note-playback channels, with channel 9 (AKA: #10), as the drum-beat channel.
+
+
+0xFD,0x01,<patchnum:SV>,<name:ASCIIZ>
+	Load Patch / Sample.
+	
+Name identifies the VFS base-path of the patch or sample to load.
+
+0xFD,0x02,<chan:SV>,<patchnum:SV>
+	PlaySample Default.
+
+// Attn: 0=None, 1=Normal, 2=Idle, 3=Static, 4=Low
+// Vol: 0=0%, 63=100%
+
+0xFD,0x03,<patchnum:SV>,<size:SV>,<data:byte[size]>
+Stream Sample Data.
+
+Stream controllers will be used to define the format and encoding of the sample data, as well as how it is used. Stream parameters are to be set prior to sending the sample data.
+
+
+0xFD,0x06,<base:SV>
+	Channel Select Base.
+Gives a base to be added to the channel base used with inline messages.
+
+0xFD,0x07,<chan:SV>
+	Delete Channel.
+
+Deletes a channel (stops all notes and releases any associated resources for this channel). Deleted channels may not be used again until recreated via a ProgramChange or PlaySample event.
+
+ProgramChange will indicate that the channel is a Note-channel, rather than a sample-playback channel.
+
+
+0xFD,0x10,<chan:SV>,<ctrl:SV>,<x:SV>
+	Controller (Int).
+0xFD,0x11,<chan:SV>,<ctrl:SV>,<x:SV>,<y:SV>
+	Controller (Int2).
+0xFD,0x12,<chan:SV>,<ctrl:SV>,<x:SV>,<y:SV>,<z:SV>
+	Controller (Int3).
+0xFD,0x13,<chan:SV>,<ctrl:SV>,<x:SV>,<y:SV>,<z:SV>,<w:SV>
+	Controller (Int4).
+0xFD,0x14,<chan:SV>,<ctrl:SV>,<x:SV>,<e:SV>
+	Controller (Float).
+0xFD,0x15,<chan:SV>,<ctrl:SV>,<x:SV>,<y:SV>,<e:SV>
+	Controller (Float2).
+0xFD,0x16,<chan:SV>,<ctrl:SV>,<x:SV>,<y:SV>,<z:SV>,<e:SV>
+	Controller (Float3).
+0xFD,0x17,<chan:SV>,<ctrl:SV>,<x:SV>,<y:SV>,<z:SV>,<w:SV>,<e:SV>
+	Controller (Float4).
+
+0xFD,0x18,<patch:SV>,<ctrl:SV>,<x:SV>
+	Stream Controller (Int).
+0xFD,0x19,<patch:SV>,<ctrl:SV>,<x:SV>,<y:SV>
+	Stream Controller (Int2).
+0xFD,0x1A,<patch:SV>,<ctrl:SV>,<x:SV>,<y:SV>,<z:SV>
+	Stream Controller (Int3).
+0xFD,0x1B,<patch:SV>,<ctrl:SV>,<x:SV>,<y:SV>,<z:SV>,<w:SV>
+	Stream Controller (Int4).
+0xFD,0x1C,<patch:SV>,<ctrl:SV>,<x:SV>,<e:SV>
+	Stream Controller (Float).
+0xFD,0x1D,<patch:SV>,<ctrl:SV>,<x:SV>,<y:SV>,<e:SV>
+	Stream Controller (Float2).
+0xFD,0x1E,<patch:SV>,<ctrl:SV>,<x:SV>,<y:SV>,<z:SV>,<e:SV>
+	Stream Controller (Float3).
+0xFD,0x1F,<patch:SV>,<ctrl:SV>,<x:SV>,<y:SV>,<z:SV>,<w:SV>,<e:SV>
+	Stream Controller (Float4).
+
+X/Y/Z/W give the value as a sign-folded variable-length value, whereas E gives the exponent.
+
+Controllers will be type-specific, and may only be accessed with the correct controller-change message.
+
+Float3 Controllers:
+	0: Origin (Default=0,0,0)
+	1: Velocity (Default=0,0,0)
+
+Float4 Controllers:
+	2: Rotation (Default=0x+0y+0z+1w)
+
+If the channel is -1, then the controller will instead apply to the listener.
+
+By default, distances will be calibrated in meters.
+
+
+UVLI (UV):
+Uses bit 7 to indicate that another byte follows. Bytes are sent in MSB-first order.
+
+For signed values (SV), the sign will be folded into the LSB, following the pattern 0, -1, 1, -2, 2, ...
+
+For float values (and shared exponent vectors), the exponent will give a value in 2^e form to multiply with the base values to give the target value.
+
+
+//Sample Flags
+#define BGBMID_SFL_16BIT			1
+#define BGBMID_SFL_UNSIGNED			2
+#define BGBMID_SFL_LOOP				4
+#define BGBMID_SFL_BIDIRLOOP		8
+#define BGBMID_SFL_REVERSE			16
+#define BGBMID_SFL_ENVELOPESUST		32
+#define BGBMID_SFL_ENVELOPEFILT		64
+
+//BTAC Encoding Flags
+#define BGBMID_BTAC_EFL_STEREO		256		//samples are stereo
+#define BGBMID_BTAC_EFL_CENTERMONO	512		//encode as centered-mono
+#define BGBMID_BTAC_EFL_HALFMONO	1024	//dealing with a single channel
+#define BGBMID_BTAC_EFL_MIDSTREAM	4096	//middle-part of a stream
+#define BGBMID_BTAC_EFL_MIPMAP		8192	//mipmapped sample
+
+#define BGBMID_BTAC_EBMODE_MASK		0xE000	//encoded block mode
+#define BGBMID_BTAC_EBMODE_BLK64	0x0000	//64-sample 256-bit blocks
+#define BGBMID_BTAC_EBMODE_BLK256	0x2000	//256-sample 1024-bit blocks
+#define BGBMID_BTAC_EBMODE_BLK256LQ	0x4000	//256-sample 512-bit blocks
+#define BGBMID_BTAC_EBMODE_BLK256HQ	0x6000	//256-sample 2048-bit blocks
+
+#define BGBMID_FCC_MThd	0x4D546864
+#define BGBMID_FCC_MTrk	0x4D54726B
+
+//Channel Flags
+#define BGBMID_CHFL_LOOP		1	//loop the sample
+#define BGBMID_CHFL_POINT		2	//point source
+#define BGBMID_CHFL_NOATTN		4	//disable attenuation
+#define BGBMID_CHFL_HIGHATTN	8	//rapid falloff
+#define BGBMID_CHFL_LOWATTN		16	//gradual falloff
+#define BGBMID_CHFL_CALCCURVOL	32	//calculate current volume
+#define BGBMID_CHFL_CALCCURDCT	64	//calculate current DCT (low frequency)
+#define BGBMID_CHFL_UNLINK		256		//remove sound from mixer
+
+#define BGBMID_SOUND_C			331	//speed of sound in m/s
+
+
+#define BGBMID_CONTROL_BANK_MSB		0	//
+#define BGBMID_CONTROL_MOD_WHEEL	1	//
+#define BGBMID_CONTROL_BREATH		2	//
+
+#define BGBMID_CONTROL_FOOT			4	//
+#define BGBMID_CONTROL_PORTMENTO	5	//
+#define BGBMID_CONTROL_DATA_MSB		6	//
+#define BGBMID_CONTROL_VOLUME		7	//
+#define BGBMID_CONTROL_BALANCE		8	//
+
+#define BGBMID_CONTROL_PAN			10	//
+#define BGBMID_CONTROL_EXPRESSION	11	//
+#define BGBMID_CONTROL_EFFECT1		12	//
+#define BGBMID_CONTROL_EFFECT2		13	//
+
+#define BGBMID_CONTROL_GENERAL1		16	//
+#define BGBMID_CONTROL_GENERAL2		17	//
+#define BGBMID_CONTROL_GENERAL3		18	//
+#define BGBMID_CONTROL_GENERAL4		19	//
+
+#define BGBMID_CONTROL_BANK_LSB		32	//
+
+#define BGBMID_CONTROL_FLAGS_LSB	108	//
+#define BGBMID_CONTROL_FLAGS_MSB	109	//
+#define BGBMID_CONTROL_FLAGS2_LSB	110	//
+#define BGBMID_CONTROL_FLAGS2_MSB	111	//
+#define BGBMID_CONTROL_ORIGIN_3D	112	//
+#define BGBMID_CONTROL_VELOCITY_3D	113	//
+#define BGBMID_CONTROL_ROTATION_3D	114	//
+#define BGBMID_CONTROL_FLAGS		115	//

@@ -426,7 +426,7 @@ void R_RenderFace (msurface_t *fa, int clipflags)
 	mvertex_t	*pv0, *pv1;
 	clipplane_t	*pclip;
 
-//	return;
+//	return;  //BGB
 
 // skip out if no more surfs
 	if ((surface_p) >= surf_max)

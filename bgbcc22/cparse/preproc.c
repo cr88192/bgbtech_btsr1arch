@@ -1639,6 +1639,22 @@ int BGBPP_Line(BGBCP_ParseState *ctx, char *str)
 				ni++;
 				continue;
 			}
+			
+			if(!strcmp(b, "__FILE__"))
+			{
+				t=BGBPP_PrintToken(t, bgbpp_lfn, BTK_STRING);
+				ni++;
+				continue;
+			}
+
+			if(!strcmp(b, "__LINE__"))
+			{
+//				t=BGBPP_PrintToken(t, bgbpp_lln, BTK_NUMBER);
+				sprintf(t, "%d ", bgbpp_lln);
+				t+=strlen(t);
+				ni++;
+				continue;
+			}
 
 			t=BGBPP_PrintName(t, b);
 			continue;

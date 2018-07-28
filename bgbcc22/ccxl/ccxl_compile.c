@@ -3257,6 +3257,11 @@ void BGBCC_CCXL_EmitTopVar(BGBCC_TransState *ctx,
 	s64 li;
 	int i, j;
 
+//	if(!strcmp(name, "anims"))
+//	{
+//		BGBCC_DBGBREAK
+//	}
+
 	i=BCCX_GetIntCst(ty, &bgbcc_rcst_flags, "flags");
 
 	s=BGBCC_CCXL_VarTypeString(ctx, ty);

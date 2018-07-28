@@ -377,6 +377,8 @@ __PDPCLIB_API__ char *strtok(char *s1, const char *s2)
 #ifdef memset
 #undef memset
 #endif
+
+#if 0
 __PDPCLIB_API__ void *memset(void *s, int c, size_t n)
 {
 	size_t x = 0;
@@ -387,6 +389,37 @@ __PDPCLIB_API__ void *memset(void *s, int c, size_t n)
 	}
 	return (s);
 }
+#endif
+
+#if 1
+__PDPCLIB_API__ void *memset(void *s, int c, size_t n)
+{
+	unsigned char *ct, *cte, *cte0;
+	int v;
+
+	v=c; v|=(v<<8); v|=(v<<16);
+	ct=s; cte=s+n;
+
+	cte0=s+(n&(~15));
+	while(ct<cte0)
+	{
+		((int *)ct)[0]=v;
+		((int *)ct)[1]=v;
+		((int *)ct)[2]=v;
+		((int *)ct)[3]=v;
+		ct+=16;
+	}
+
+	cte0=s+(n&(~3));
+	while(ct<cte0)
+		{ *(int *)ct=v; ct+=4; }
+
+	while(ct<cte)
+		{ *ct++=c; }
+
+	return (s);
+}
+#endif
 
 #ifdef strerror
 #undef strerror
@@ -468,13 +501,60 @@ __PDPCLIB_API__ size_t strlen(const char *s)
 //	return ((size_t)(p - s));
 }
 
+__PDPCLIB_API__ int stricmp(const char *s1, const char *s2)
+{
+	const unsigned char *p1;
+	const unsigned char *p2;
+	int c1, c2;
+
+	p1 = (const unsigned char *)s1;
+	p2 = (const unsigned char *)s2;
+	while (*p1 != '\0')
+	{
+		c1=toupper(*p1);
+		c2=toupper(*p2);
+		if (c1 < c2)
+			return (-1);
+		else if (c1 > c2)
+			return (1);
+		p1++;
+		p2++;
+	}
+	if (*p2 == '\0') return (0);
+	else return (-1);
+}
+
+__PDPCLIB_API__ int strnicmp(const char *s1, const char *s2, size_t n)
+{
+	const unsigned char *p1;
+	const unsigned char *p2;
+	int c1, c2;
+	size_t x = 0;
+
+	p1 = (const unsigned char *)s1;
+	p2 = (const unsigned char *)s2;
+	while (x < n)
+	{
+		c1 = toupper(p1[x]);
+		c2 = toupper(p2[x]);
+		if (c1 < c2)
+			return (-1);
+		else if (toupper(p1[x]) > toupper(p2[x]))
+			return (1);
+		else if (p1[x] == '\0') return (0);
+		x++;
+	}
+	return (0);
+}
+
+
 #ifndef USE_ASSEMBLER
 #ifdef memcpy
 #undef memcpy
 #endif
 
 // #ifndef __32BIT__
-#if 1
+#if 0
 __PDPCLIB_API__ void *memcpy(void *s1, const void *s2, size_t n)
 {
 //	register const unsigned char *f = s2;

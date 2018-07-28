@@ -443,7 +443,7 @@ static void checkMode(void)
 		myfile->textMode = 1;
 	}
 
-//	myfile->textMode = 0;
+	myfile->textMode = 0;
 
 	return;
 }

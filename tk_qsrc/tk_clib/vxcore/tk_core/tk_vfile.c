@@ -3,6 +3,8 @@
 char kerninit[256];
 
 TK_FILE *tk_vf_freelist=NULL;
+TK_MOUNT *tk_mnt_freelist=NULL;
+
 TK_FILE_VT *tk_fsty_root=NULL;
 TK_MOUNT *tk_vf_mount=NULL;
 
@@ -12,15 +14,26 @@ int tk_vf_register(TK_FILE_VT *fsty)
 	tk_fsty_root=fsty;
 }
 
+int tk_fat_init();
+int tk_mount_sdfat();
+
+
+static int tk_vf_init=0;
+
 int tk_vfile_init()
 {
-	static int init=0;
+	if(tk_vf_init==1)return(0);
+	tk_vf_init=1;
 	
-	if(init)return(0);
-	init=1;
+	tk_puts("tk_vfile_init\n");
 	
 //	tk_ird_init();
 	tk_fat_init();
+	
+	tk_mount_sdfat();
+
+	tk_puts("tk_vfile_init: OK\n");
+
 	return(1);
 }
 
@@ -45,6 +58,30 @@ void tk_free_file(TK_FILE *tmp)
 {
 	tmp->udata0=tk_vf_freelist;
 	tk_vf_freelist=tmp;
+}
+
+
+TK_MOUNT *tk_alloc_mount()
+{
+	TK_MOUNT *tmp;
+	
+	tmp=tk_mnt_freelist;
+	if(tmp)
+	{
+		tk_mnt_freelist=tmp->udata0;
+		memset(tmp, 0, sizeof(TK_MOUNT));
+		return(tmp);
+	}
+	
+	tmp=malloc(sizeof(TK_MOUNT));
+	memset(tmp, 0, sizeof(TK_MOUNT));
+	return(tmp);
+}
+
+void tk_free_mount(TK_MOUNT *tmp)
+{
+	tmp->udata0=tk_mnt_freelist;
+	tk_mnt_freelist=tmp;
 }
 
 // #include "tk_vf_ird.c"
@@ -73,6 +110,8 @@ TK_FILE *tk_fopen(char *name, char *mode)
 			return(fd);
 		mnt=mnt->next;
 	}
+
+	tk_printf("tk_fopen: Fail %s\n", name);
 
 	return(NULL);
 }

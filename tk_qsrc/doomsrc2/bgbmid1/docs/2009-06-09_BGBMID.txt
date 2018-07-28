@@ -1,0 +1,120 @@
+All this was written around 1 month ago (at the time of this writing...).
+
+Basically, this is a midi synth...
+
+
+int BGBMID_SetInputBuffer(BGBMID_Context *ctx, byte *buf, int sz);
+Sets the source of input MIDI opcodes.
+
+int BGBMID_SetOutputBuffer(BGBMID_Context *ctx, short *buf, int len);
+Sets the output buffer of PCM samples (stereo, 16-bit).
+
+int BGBMID_SynthStream(BGBMID_Context *ctx, byte *buf, int sz);
+Attempt to synth the whole MIDI stream (given in buf).
+
+
+short *BGBMID_GetOutputBuffer(BGBMID_Context *ctx);
+Get the PCM buffer.
+
+int BGBMID_GetOutputBufferPos(BGBMID_Context *ctx);
+Get the current offset (in samples) within the PCM buffer.
+
+int BGBMID_GetOutputBufferSize(BGBMID_Context *ctx);
+Get the current size of the PCM buffer.
+
+int BGBMID_GetOutputSampleRate(BGBMID_Context *ctx);
+Get the PCM sample rate.
+
+int BGBMID_SetOutputSampleRate(BGBMID_Context *ctx, int rate);
+Set the PCM sample rate (default=44100).
+
+
+int BGBMID_SetNoteTicks(BGBMID_Context *ctx, int ticks);
+Sets the number of ticks per note (default=120).
+
+int BGBMID_SetNoteLen(BGBMID_Context *ctx, float sec);
+Sets the note length (default=1.0 seconds)
+
+int BGBMID_SetRateScale(BGBMID_Context *ctx, float scale);
+Sets the rate scale (default=1.0). Values >1.0 make playback slower, and values <1.0 make playback faster.
+
+
+BGBMID_Context *BGBMID_NewContext();
+Make a new context. This is initially set up to defaults.
+
+
+int BGBMID_SynthStep(BGBMID_Context *ctx);
+Execute the next step in the synth process (typically a delay or a single command).
+Returns: 0=OK, 1=Input Empty, 2=Output Full, -1=Stream Error.
+
+int BGBMID_DoSynth(BGBMID_Context *ctx);
+Attempt to synth as much as possible until something happens (Input Empty, Output Full, Stream Error).
+
+int BGBMID_SynthSamples(BGBMID_Context *ctx, short *buf, int len);
+Attempt to synthesize a requested number of samples (this uses the PCM buffer as scratchpad). The 'buf' argument is used to return the requested number of samples. Note that if the input is empty, it will just continue synthesizing the last state.
+
+
+Note that it is possible, but not advised, to direct-drive the synth:
+
+int BGBMID_InitChannels(BGBMID_Context *ctx);
+This resets the synth to defaults (all notes off, resets instruments and controllers, ...).
+
+int BGBMID_DeltaTime(BGBMID_Context *ctx, int step);
+Attemps to mix the requested number of ticks.
+This returns a non-zero value (containing the remaining number of ticks), if the PCM buffer gets full.
+
+
+int BGBMID_NoteOn(BGBMID_Context *ctx, int chan, int note, int vel);
+int BGBMID_NoteOff(BGBMID_Context *ctx, int chan, int note, int vel);
+int BGBMID_NoteAftertouch(BGBMID_Context *ctx, int chan, int note, int val);
+int BGBMID_Controller(BGBMID_Context *ctx, int chan, int num, int val);
+int BGBMID_ProgramChange(BGBMID_Context *ctx, int chan, int num);
+int BGBMID_ChannelAftertouch(BGBMID_Context *ctx, int chan, int val);
+int BGBMID_PitchBlend(BGBMID_Context *ctx, int chan, int val);
+
+These perform essentially the same tasks as their associated MIDI opcodes.
+
+
+char *BGBMID_GetPatchName(int idx);
+int BGBMID_SetPatchName(int idx, char *name);
+
+Get/Set patch names. Note that 0-127 are for General Midi patches, and 128-255 are reserved for GM2 patches. It is ill-advised to modify patches in this range.
+
+Patches in the range 256-2097151 may be used for user-defined patches.
+Accessing patches above 127 is accomplished via bank-select (Controller 0), which is interpreted as a 14 bit controller (MSB in 0, LSB in 32).
+
+
+
+ASCII Midi
+
+ASCII Midi will be an ASCII Serialization of the MIDI command stream.
+
+M=NoteOff
+N=NoteOn
+A=NoteAftertouch
+B=Controller
+C=ProgramChange
+D=ChannelAftertouch
+E=PitchBlend
+
+T=DetlaTime (delay until next command)
+
+Args will appear as comma-separated items after the command letter.
+M<chan>,<note>,<vel>
+N<chan>,<note>,<vel>
+A<chan>,<note>,<vel>
+B<chan>,<ctrl>,<val>
+C<chan>,<num>
+D<chan>,<val>
+E<chan>,<val>
+
+T<ticks>
+
+RT<ticks>		Note Tick Rate (Default=120)
+RN<num>
+Rz				End Of Stream
+
+SB<chan>,<val>	Set Controller 0 to Val
+Sv<chan>,<val>	Set Controller 7 to Val
+Sb<chan>,<val>	Set Controller 8 to Val
+Sp<chan>,<val>	Set Controller 10 to Val

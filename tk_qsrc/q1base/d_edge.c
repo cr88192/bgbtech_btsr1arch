@@ -286,6 +286,8 @@ void D_DrawSurfaces (void)
 	TransformVector (modelorg, transformed_modelorg);
 	VectorCopy (transformed_modelorg, world_transformed_modelorg);
 
+//	__debugbreak();
+
 // TODO: could preset a lot of this at mode set time
 	if (r_drawflat.value)
 	{

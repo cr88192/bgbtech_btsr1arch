@@ -31,7 +31,7 @@ void *TKMM_MMList_AllocBrk(int sz)
 		tkmm_mmlist_brkpos=tkmm_mmlist_brkbuf;
 	}
 
-	tk_puts("TKMM_MMList_AllocBrk D\n");
+//	tk_puts("TKMM_MMList_AllocBrk D\n");
 	
 	ptr=tkmm_mmlist_brkpos;
 	tkmm_mmlist_brkpos=ptr+sz;
@@ -97,6 +97,10 @@ void *TKMM_MMList_Malloc(int sz)
 
 	ix=TKMM_SizeToFxiU(sz);
 //	printf("%d", ix);
+
+	if(ix&(~255))
+		__debugbreak();
+
 	obj=tkmm_mmlist_freelist[ix];
 	if(obj)
 	{
@@ -207,6 +211,9 @@ int TKMM_MMList_FreeLnkObj(TKMM_MemLnkObj *obj)
 		tk_puts("TKMM_MMList_FreeLnkObj: Check Value Fail\n");
 		return(-1);
 	}
+
+	if((obj->ix)&(~255))
+		__debugbreak();
 
 	obj->fl|=1;
 	*(TKMM_MemLnkObj **)(obj->data)=tkmm_mmlist_freelist[obj->ix];

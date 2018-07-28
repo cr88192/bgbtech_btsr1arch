@@ -1008,6 +1008,8 @@ char *BGBCP_TokenI(char *s, char *b, int *ty, int lang, int sz)
 		*t++='0';
 		*t++='.';
 
+		if(*s=='.')s++;
+
 		while((*s>='0') && (*s<='9'))
 			*t++=*s++;
 		if(*s=='e')

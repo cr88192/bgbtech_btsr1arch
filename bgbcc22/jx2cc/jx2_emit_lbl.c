@@ -283,7 +283,8 @@ int BGBCC_JX2_EmitCommSym(BGBCC_JX2_Context *ctx, int lblid, int sz)
 
 	i=ctx->sec;
 	BGBCC_JX2_SetSectionName(ctx, ".bss");
-	BGBCC_JX2_EmitBAlign(ctx, 4);
+//	BGBCC_JX2_EmitBAlign(ctx, 4);
+	BGBCC_JX2_EmitBAlign(ctx, 8);
 	BGBCC_JX2_EmitLabel(ctx, lblid);
 	BGBCC_JX2_EmitRawBytes(ctx, NULL, sz);
 	ctx->sec=i;

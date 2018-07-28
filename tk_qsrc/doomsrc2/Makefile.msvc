@@ -1,0 +1,89 @@
+################################################################
+#
+# $Id:$
+#
+# $Log:$
+#
+CC=cl
+
+CFLAGS=/I. /Zi
+LDFLAGS=
+LIBS=opengl32.lib gdi32.lib user32.lib winmm.lib kernel32.lib ole32.lib ws2_32.lib
+
+#		i_net.c			\
+
+# not too sophisticated dependency
+SRCS=				\
+		gfxdrv_w32.c	\
+		gfxdrv_input.c	\
+		sound_w32.c	\
+		bgbmid1/bgbmid.c	\
+		i_bgb_mus.c		\
+		\
+		doomdef.c		\
+		doomstat.c		\
+		dstrings.c		\
+		i_bgb_w32.c		\
+		i_system.c		\
+		i_sound.c		\
+		tables.c			\
+		f_finale.c		\
+		f_wipe.c 		\
+		d_main.c			\
+		d_net.c			\
+		d_items.c		\
+		g_game.c			\
+		m_menu.c			\
+		m_misc.c			\
+		m_argv.c  		\
+		m_bbox.c			\
+		m_fixed.c		\
+		m_swap.c			\
+		m_cheat.c		\
+		m_random.c		\
+		am_map.c			\
+		p_ceilng.c		\
+		p_doors.c		\
+		p_enemy.c		\
+		p_floor.c		\
+		p_inter.c		\
+		p_lights.c		\
+		p_map.c			\
+		p_maputl.c		\
+		p_plats.c		\
+		p_pspr.c			\
+		p_setup.c		\
+		p_sight.c		\
+		p_spec.c			\
+		p_switch.c		\
+		p_mobj.c			\
+		p_telept.c		\
+		p_tick.c			\
+		p_saveg.c		\
+		p_user.c			\
+		r_bsp.c			\
+		r_data.c			\
+		r_draw.c			\
+		r_main.c			\
+		r_plane.c		\
+		r_segs.c			\
+		r_sky.c			\
+		r_things.c		\
+		w_wad.c			\
+		wi_stuff.c		\
+		v_video.c		\
+		st_lib.c			\
+		st_stuff.c		\
+		hu_stuff.c		\
+		hu_lib.c			\
+		s_sound.c		\
+		z_zone.c			\
+		info.c				\
+		sounds.c
+
+all:	 doom_t.exe
+
+clean:
+
+doom_t.exe:	$(SRCS) i_main.c
+	cl /Fedoom_t.exe $(CFLAGS) $(LDFLAGS) $(SRCS) i_main.c $(LIBS)

@@ -1,5 +1,7 @@
-void BJX2_DecTraceCb_SetupForTrace(BJX2_Context *ctx, BJX2_Trace *tr)
+force_inline void BJX2_DecTraceCb_SetupForTrace(
+	BJX2_Context *ctx, BJX2_Trace *tr)
 {
+	tr->runcnt++;
 	ctx->tr_cur=tr;
 	ctx->tr_rnxt=tr->lnknext;
 	ctx->tr_rjmp=tr->jmpnext;
@@ -545,9 +547,11 @@ BJX2_Trace *BJX2_DecTraceCb_Bad(BJX2_Context *ctx, BJX2_Trace *tr)
 int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 	BJX2_Trace *tr, bjx2_addr addr)
 {
-	BJX2_Opcode *op;
+	static int rec=0;
+	BJX2_Opcode *op, *op1, *op2;
 	int ldrl, vdrl, brk;
 	int pc, nc, ncyc, npc, jpc;
+	int i;
 	
 //	if((addr&1) || (addr&(~65535)))
 	if(addr&1)
@@ -557,6 +561,8 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 		tr->Run=BJX2_DecTraceCb_Bad;
 		return(-1);
 	}
+	
+	rec++;
 	
 	ldrl=0; vdrl=0;
 	nc=0; ncyc=0;
@@ -571,12 +577,12 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 		pc+=2;
 		if(op->fl&BJX2_OPFL_TWOWORD)
 		{
-			ncyc++;
+//			ncyc++;
 			pc+=2;
 		}
 		if(op->fl&BJX2_OPFL_TRIWORD)
 		{
-			ncyc+=2;
+//			ncyc+=2;
 			pc+=4;
 		}
 		
@@ -630,6 +636,92 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 			}
 		}
 	}
+	
+	for(i=0; i<nc; i++)
+	{
+		op=tr->ops[i];
+		op1=tr->ops[i+1];
+		op2=tr->ops[i+2];
+
+		if((op->nmid==BJX2_NMID_MOVB) ||
+			(op->nmid==BJX2_NMID_MOVW) ||
+			(op->nmid==BJX2_NMID_MOVL) ||
+			(op->nmid==BJX2_NMID_MOVQ) ||
+			(op->nmid==BJX2_NMID_MOVUB) ||
+			(op->nmid==BJX2_NMID_MOVUW) ||
+			(op->nmid==BJX2_NMID_MOVUL) ||
+			(op->nmid==BJX2_NMID_FMOVS) ||
+			(op->nmid==BJX2_NMID_FMOVD))
+		{		
+			if((op->fmid==BJX2_FMID_LDREGREG) ||
+				(op->fmid==BJX2_FMID_LDDRREGREG) ||
+				(op->fmid==BJX2_FMID_LDREGDISPREG) ||
+				(op->fmid==BJX2_FMID_LDREG2REG))
+			{
+				if((i+3)>nc)
+					continue;
+
+				if(	(op->rn!=op1->rm) &&
+					(op->rn!=op1->rn) &&
+					(op->rn!=op1->ro))
+				{
+					if(	(op->rn!=op2->rm) &&
+						(op->rn!=op2->rn) &&
+						(op->rn!=op2->ro))
+					{
+						op->cyc=1;
+					}else
+					{
+						op->cyc=2;
+					}
+				}
+			}
+
+			if((op->fmid==BJX2_FMID_REGSTREG) ||
+				(op->fmid==BJX2_FMID_REGSTDRREG) ||
+				(op->fmid==BJX2_FMID_REGSTREGDISP) ||
+				(op->fmid==BJX2_FMID_REGSTREG2))
+			{
+				op->cyc=1;
+			}
+			
+		}
+
+		if((op->nmid==BJX2_NMID_PUSH) ||
+			(op->nmid==BJX2_NMID_FPUSH))
+		{
+			op->cyc=1;
+		}
+
+		if((op->nmid==BJX2_NMID_POP) ||
+			(op->nmid==BJX2_NMID_FPOP))
+		{
+			if((i+3)>nc)
+				continue;
+
+			if(	(op->rn!=op1->rm) &&
+				(op->rn!=op1->rn) &&
+				(op->rn!=op1->ro))
+			{
+				if(	(op->rn!=op2->rm) &&
+					(op->rn!=op2->rn) &&
+					(op->rn!=op2->ro))
+				{
+					op->cyc=1;
+				}else
+				{
+					op->cyc=2;
+				}
+			}
+		}
+	}
+
+	ncyc=0;
+	for(i=0; i<nc; i++)
+	{
+		op=tr->ops[i];
+		ncyc+=op->cyc;
+	}
 
 	if(nc>=BJX2_TR_MAXOP)
 		{ npc=pc; }
@@ -639,10 +731,13 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 	tr->addr_nxt=npc;
 	tr->addr_jmp=jpc;
 	
-	if(npc && !brk)
-		{ tr->lnknext=BJX2_GetTraceForAddr(ctx, pc); }
-	if(jpc)
-		{ tr->jmpnext=BJX2_GetTraceForAddr(ctx, jpc); }
+	if(rec<64)
+	{
+		if(npc && !brk)
+			{ tr->lnknext=BJX2_GetTraceForAddr(ctx, pc); }
+		if(jpc)
+			{ tr->jmpnext=BJX2_GetTraceForAddr(ctx, jpc); }
+	}
 	
 	switch(nc)
 	{
@@ -680,5 +775,6 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 	case 32: tr->Run=BJX2_DecTraceCb_Run32; break;
 	}
 	
+	rec--;
 	return(0);
 }

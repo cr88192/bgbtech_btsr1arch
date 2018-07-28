@@ -459,6 +459,10 @@ u64 btesh2_gfxcon_glyphs[256]=
 u32 *jx2i_gfxcon_conbuf;
 byte jx2i_gfxcon_dirty;
 
+u32 jx2i_gfxcon_cbfrnum;
+u32 jx2i_gfxcon_cblfrnum;
+int jx2i_gfxcon_cbffms;
+
 int JX2I_GfxCon_Startup()
 {
 	int i;
@@ -469,12 +473,21 @@ int JX2I_GfxCon_Startup()
 	GfxDrv_PrepareFramebuf();
 	
 //	jx2i_gfxcon_conbuf=malloc(40*25*4*sizeof(u32));
-	jx2i_gfxcon_conbuf=malloc(4096*sizeof(u32));
+//	jx2i_gfxcon_conbuf=malloc(4096*sizeof(u32));
+	jx2i_gfxcon_conbuf=malloc(8192*sizeof(u32));
 	
-	for(i=0; i<40*25*4; i++)
+//	for(i=0; i<40*25*4; i++)
+	for(i=0; i<40*25*8; i++)
 		jx2i_gfxcon_conbuf[i]=rand()*rand()*rand();
 	jx2i_gfxcon_dirty=1;
 	return(0);
+}
+
+int jx2i_gfxcon_clamp255(int v)
+{
+	if(v<  0)	return(0);
+	if(v>255)	return(255);
+	return(v);
 }
 
 int JX2I_GfxCon_UpdateCell(int cx, int cy)
@@ -483,14 +496,22 @@ int JX2I_GfxCon_UpdateCell(int cx, int cy)
 	static byte pixv_c3[8]={0, 36, 73, 109, 146, 182, 218, 255};
 	static u32 pixv6[64];
 	static u32 pixv9[512];
+	static u32 clrt4[4];
 	static int pixv_init=0;
 
 	u32 c0, c1, c2, c3;
+	u32 c4, c5, c6, c7;
+	int c2ya, c2yb, c2ua, c2ub, c2va, c2vb;
+	int cr0, cg0, cb0, cr1, cg1, cb1;
+	int cr2, cg2, cb2, cr3, cg3, cb3;
+	int cy0, cu0, cv0, cu2, cv2;
 	u32 clra, clrb, clrc;
 	u64 fontbits, pixbits;
+	u16 pxubits, pxvbits;
+	u32 px2;
 	int celbits;
 	int clra6, clrb6, clra9, clrb9;
-	int px, py;
+	int px, py, qx, qy, by, bx;
 	int i, j, k;
 	
 	if(!pixv_init)
@@ -514,10 +535,15 @@ int JX2I_GfxCon_UpdateCell(int cx, int cy)
 		}
 	}
 	
-	c0=jx2i_gfxcon_conbuf[(cy*40+cx)*4+0];
-	c1=jx2i_gfxcon_conbuf[(cy*40+cx)*4+1];
-	c2=jx2i_gfxcon_conbuf[(cy*40+cx)*4+2];
-	c3=jx2i_gfxcon_conbuf[(cy*40+cx)*4+3];
+	c0=jx2i_gfxcon_conbuf[(cy*40+cx)*8+0];
+	c1=jx2i_gfxcon_conbuf[(cy*40+cx)*8+1];
+	c2=jx2i_gfxcon_conbuf[(cy*40+cx)*8+2];
+	c3=jx2i_gfxcon_conbuf[(cy*40+cx)*8+3];
+
+	c4=jx2i_gfxcon_conbuf[(cy*40+cx)*8+4];
+	c5=jx2i_gfxcon_conbuf[(cy*40+cx)*8+5];
+	c6=jx2i_gfxcon_conbuf[(cy*40+cx)*8+6];
+	c7=jx2i_gfxcon_conbuf[(cy*40+cx)*8+7];
 	
 	clra6=(c0>>16)&63;
 	clrb6=(c0>>22)&63;
@@ -536,6 +562,66 @@ int JX2I_GfxCon_UpdateCell(int cx, int cy)
 		clra=pixv9[clra9];
 		clrb=pixv9[clrb9];
 		break;
+	}
+
+	if(((c0>>30)&3)==2)
+	{		
+		c2yb=(c0>>22)&63;
+		c2ya=(c0>>16)&63;
+		c2ub=(c0>>12)&15;
+		c2ua=(c0>> 8)&15;
+		c2vb=(c0>> 4)&15;
+		c2va=(c0>> 0)&15;
+		
+		c2yb=(c2yb<<2)|(c2yb>>6);
+		c2ya=(c2ya<<2)|(c2ya>>6);
+		c2ub<<=4;		c2vb<<=4;
+		c2ua<<=4;		c2va<<=4;
+
+#if 0		
+		cg0=c2yb<<2;
+		cb0=cg0+(16*c2ub-128)*2;
+		cr0=cg0+(16*c2vb-128)*2;
+
+		cg1=c2ya<<2;
+		cb1=cg1+(16*c2ua-128)*2;
+		cr1=cg1+(16*c2va-128)*2;
+		
+		cr0=jx2i_gfxcon_clamp255(cr0);
+		cg0=jx2i_gfxcon_clamp255(cg0);
+		cb0=jx2i_gfxcon_clamp255(cb0);
+
+		cr1=jx2i_gfxcon_clamp255(cr1);
+		cg1=jx2i_gfxcon_clamp255(cg1);
+		cb1=jx2i_gfxcon_clamp255(cb1);
+		
+		clra=0xFF000000|(cb1<<16)|(cg1<<8)|(cr1<<0);
+		clrb=0xFF000000|(cb0<<16)|(cg0<<8)|(cr0<<0);
+#endif
+
+		pxubits=c1>>16;
+		pxvbits=c1;
+		
+		if(((c0>>28)&3)==1)
+		{
+			pxubits=(c1>>16);
+			cr0=(pxubits>>10)&31;
+			cg0=(pxubits>> 5)&31;
+			cb0=(pxubits>> 0)&31;
+			cr0=(cr0<<3)|(cr0>>2);
+			cg0=(cg0<<3)|(cg0>>2);
+			cb0=(cb0<<3)|(cb0>>2);
+			clrb=0xFF000000|(cb0<<16)|(cg0<<8)|cr0;
+
+			pxvbits=(c1    );
+			cr1=(pxvbits>>10)&31;
+			cg1=(pxvbits>> 5)&31;
+			cb1=(pxvbits>> 0)&31;
+			cr1=(cr1<<3)|(cr1>>2);
+			cg1=(cg1<<3)|(cg1>>2);
+			cb1=(cb1<<3)|(cb1>>2);
+			clra=0xFF000000|(cb1<<16)|(cg1<<8)|cr1;
+		}
 	}
 	
 	switch((c0>>7)&7)
@@ -557,7 +643,8 @@ int JX2I_GfxCon_UpdateCell(int cx, int cy)
 	
 	celbits=c0&65535;
 	
-	pixbits=(((u64)c3)<<21)|c2;
+//	pixbits=(((u64)c3)<<21)|c2;
+	pixbits=(((u64)c3)<<32)|c2;
 
 	if(((c0>>30)&3)==0)
 	{		
@@ -586,13 +673,41 @@ int JX2I_GfxCon_UpdateCell(int cx, int cy)
 	}else
 		if(((c0>>30)&3)==2)
 	{
-		for(py=0; py<8; py++)
-			for(px=0; px<8; px++)
+		if(((c0>>28)&3)==0)
 		{
-			clrc=((pixbits>>((7-py)*8+(7-px)))&1)?clra:clrb;
-			((u32 *)btesh2_gfxcon_framebuf)[((cy*8+py)*320)+(cx*8+px)]=clrc;
+			for(py=0; py<8; py++)
+				for(px=0; px<8; px++)
+			{
+				k=(3-(py>>1))*4+(3-(px>>1));
+				cy0=((pixbits>>((7-py)*8+(7-px)))&1)?c2ya:c2yb;
+				cu0=((pxubits>>k)&1)?c2ua:c2ub;
+				cv0=((pxvbits>>k)&1)?c2va:c2vb;
+	//			cg0=cy0;
+				cg0=cy0-((cu0+cv0-256)>>1);
+				cb0=cg0+(cu0-128)*2;
+				cr0=cg0+(cv0-128)*2;
+				if(cr0|cg0|cb0)
+				{
+					cr0=jx2i_gfxcon_clamp255(cr0);
+					cg0=jx2i_gfxcon_clamp255(cg0);
+					cb0=jx2i_gfxcon_clamp255(cb0);
+				}
+				clrc=0xFF000000|(cb0<<16)|(cg0<<8)|(cr0<<0);
+
+	//			clrc=((pixbits>>((7-py)*8+(7-px)))&1)?clra:clrb;
+				((u32 *)btesh2_gfxcon_framebuf)[((cy*8+py)*320)+(cx*8+px)]=clrc;
+			}
+		}else
+		{
+			for(py=0; py<8; py++)
+				for(px=0; px<8; px++)
+			{
+				clrc=((pixbits>>((7-py)*8+(7-px)))&1)?clra:clrb;
+				((u32 *)btesh2_gfxcon_framebuf)[((cy*8+py)*320)+(cx*8+px)]=clrc;
+			}
 		}
 	}else
+#if 0
 		if(((c0>>30)&3)==3)
 	{
 		for(py=0; py<4; py++)
@@ -619,6 +734,103 @@ int JX2I_GfxCon_UpdateCell(int cx, int cy)
 				((cy*8+py*2+1)*320)+(cx*8+px*2+1)]=clrc;
 		}
 	}
+#endif
+
+		if(((c0>>30)&3)==3)
+	{
+		for(qy=0; qy<2; qy++)
+			for(qx=0; qx<2; qx++)
+		{
+			switch(qy*2+qx)
+			{
+			case 0: k=c0; px2=c4; break;
+			case 1: k=c1; px2=c5; break;
+			case 2: k=c2; px2=c6; break;
+			case 3: k=c3; px2=c7; break;
+			}
+
+			pxubits=(k>>14);
+			cy0=(pxubits>>11)&31;	cv0=(pxubits>> 5)&31;	cu0=(pxubits    )&31;
+			cu2=(cu0-16)<<1;	cv2=(cv0-16)<<1;
+			cg0=cy0-((cu2+cv2)>>1);
+			cb0=cg0+cu2;	cr0=cg0+cv2;
+
+			pxvbits=(k<<1);
+			cy0=(pxvbits>>11)&31;	cv0=(pxvbits>> 5)&31;	cu0=(pxvbits    )&31;
+			cu2=(cu0-16)<<1;	cv2=(cv0-16)<<1;
+			cg1=cy0-((cu2+cv2)>>1);
+			cb1=cg1+cu2;	cr1=cg1+cv2;
+
+			cr0=(cr0<<3)|(cr0>>2);
+			cg0=(cg0<<3)|(cg0>>2);
+			cb0=(cb0<<3)|(cb0>>2);
+			if(cr0|cg0|cb0)
+			{
+				cr0=jx2i_gfxcon_clamp255(cr0);
+				cg0=jx2i_gfxcon_clamp255(cg0);
+				cb0=jx2i_gfxcon_clamp255(cb0);
+			}
+
+			cr1=(cr1<<3)|(cr1>>2);
+			cg1=(cg1<<3)|(cg1>>2);
+			cb1=(cb1<<3)|(cb1>>2);
+			if(cr1|cg1|cb1)
+			{
+				cr1=jx2i_gfxcon_clamp255(cr1);
+				cg1=jx2i_gfxcon_clamp255(cg1);
+				cb1=jx2i_gfxcon_clamp255(cb1);
+			}
+
+#if 0
+			pxubits=(k>>15);
+			cr0=(pxubits>>10)&31;
+			cg0=(pxubits>> 5)&31;
+			cb0=(pxubits>> 0)&31;
+			cr0=(cr0<<3)|(cr0>>2);
+			cg0=(cg0<<3)|(cg0>>2);
+			cb0=(cb0<<3)|(cb0>>2);
+//			clrb=0xFF000000|(cb0<<16)|(cg0<<8)|cr0;
+
+			pxvbits=(k    );
+			cr1=(pxvbits>>10)&31;
+			cg1=(pxvbits>> 5)&31;
+			cb1=(pxvbits>> 0)&31;
+			cr1=(cr1<<3)|(cr1>>2);
+			cg1=(cg1<<3)|(cg1>>2);
+			cb1=(cb1<<3)|(cb1>>2);
+//			clra=0xFF000000|(cb1<<16)|(cg1<<8)|cr1;
+#endif
+
+			cr2=(11*cr0+ 5*cr1)>>4;
+			cg2=(11*cg0+ 5*cg1)>>4;
+			cb2=(11*cb0+ 5*cb1)>>4;
+			cr3=( 5*cr0+11*cr1)>>4;
+			cg3=( 5*cg0+11*cg1)>>4;
+			cb3=( 5*cb0+11*cb1)>>4;
+
+			clrt4[0]=0xFF000000|(cb0<<16)|(cg0<<8)|cr0;
+			clrt4[1]=0xFF000000|(cb2<<16)|(cg2<<8)|cr2;
+			clrt4[2]=0xFF000000|(cb3<<16)|(cg3<<8)|cr3;
+			clrt4[3]=0xFF000000|(cb1<<16)|(cg1<<8)|cr1;
+
+			by=cy*8+qy*4;
+			bx=cx*8+qx*4;
+
+			for(py=0; py<4; py++)
+				for(px=0; px<4; px++)
+			{
+//				i=((3-py)*4)+(3-px);
+				i=15-(4*py+px);
+				j=(px2>>(2*i))&3;
+//				clrc=(j&2)?clra:clrb;
+				clrc=clrt4[j];
+
+				((u32 *)btesh2_gfxcon_framebuf)[
+					((by+py)*320)+(bx+px)]=clrc;
+			}
+		}
+	}
+
 	return(0);
 }
 
@@ -670,7 +882,8 @@ s32 BJX2_MemGfxConCb_GetDWord(BJX2_Context *ctx,
 
 	if(jx2i_gfxcon_conbuf)
 	{
-		rv=jx2i_gfxcon_conbuf[(ra>>2)&4095];
+//		rv=jx2i_gfxcon_conbuf[(ra>>2)&4095];
+		rv=jx2i_gfxcon_conbuf[(ra>>2)&8191];
 	}
 
 	return(rv);
@@ -701,8 +914,22 @@ int BJX2_MemGfxConCb_SetDWord(BJX2_Context *ctx,
 
 	if(jx2i_gfxcon_conbuf)
 	{
-		jx2i_gfxcon_conbuf[(ra>>2)&4095]=val;
+//		jx2i_gfxcon_conbuf[(ra>>2)&4095]=val;
+		jx2i_gfxcon_conbuf[(ra>>2)&8191]=val;
 		jx2i_gfxcon_dirty=1;
+		
+//		if(ra==(40*25*8))
+		if(ra==(8100*4))
+		{
+			jx2i_gfxcon_cbfrnum=val;
+			if(jx2i_gfxcon_cbfrnum!=jx2i_gfxcon_cblfrnum)
+			{
+				if(!jx2i_gfxcon_cblfrnum)
+					jx2i_gfxcon_cbffms=FRGL_TimeMS();
+				jx2i_gfxcon_cblfrnum=val;
+				BJX2_ThrowFaultStatus(ctx, BJX2_FLT_SCRPOKE);
+			}
+		}
 	}
 
 	return(0);
@@ -718,6 +945,7 @@ int BJX2_MemDefineGfxCon(BJX2_Context *ctx,
 	sp->name=name;
 	sp->addr_base=base;
 	sp->addr_lim=lim;
+	sp->addr_sz=lim-base;
 //	sp->data=malloc((lim-base)+8);
 	
 	sp->GetByte=BJX2_MemGfxConCb_GetByte;
