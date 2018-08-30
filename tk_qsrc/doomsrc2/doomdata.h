@@ -53,7 +53,8 @@ enum
   ML_NODES,		// BSP nodes
   ML_SECTORS,		// Sectors, from editing
   ML_REJECT,		// LUT, sector-sector visibility	
-  ML_BLOCKMAP		// LUT, motion clipping, walls/grid element
+  ML_BLOCKMAP,		// LUT, motion clipping, walls/grid element
+  ML_BEHAVIOR		// BEHAVIOR / ACS
 };
 
 
@@ -92,6 +93,22 @@ typedef struct
   // sidenum[1] will be -1 if one sided
   short		sidenum[2];		
 } maplinedef_t;
+
+
+//BGB: Linedef, Hexen Format
+typedef struct
+{
+	short		v1;
+	short		v2;
+	short		flags;
+	byte		acs_spec;
+	byte		arg1;
+	byte		arg2;
+	byte		arg3;
+	byte		arg4;
+	byte		arg5;
+	short		sidenum[2];		
+} maplinedef2_t;
 
 
 //
@@ -203,14 +220,30 @@ typedef struct
 // plus skill/visibility flags and attributes.
 typedef struct
 {
-    short		x;
-    short		y;
-    short		angle;
-    short		type;
-    short		options;
+	short		x;
+	short		y;
+	short		angle;
+	short		type;
+	short		options;
 } mapthing_t;
 
-
+// BGB: MapThing, Hexen format
+typedef struct
+{
+	short		tid;
+	short		x;
+	short		y;
+	short		z;
+	short		angle;
+	short		type;
+	short		options;
+	byte		ac_spec;
+	byte		arg1;
+	byte		arg2;
+	byte		arg3;
+	byte		arg4;
+	byte		arg5;
+} mapthing2_t;
 
 
 

@@ -535,6 +535,91 @@ void BJX2_Op_MOVUL_LdPcDispReg(BJX2_Context *ctx, BJX2_Opcode *op)
 }
 #endif
 
+
+#if 1
+void BJX2_Op_MOVB_RegStPcIdx(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->trapc=op->pc;
+	BJX2_MemSetByte(ctx,
+		(op->pc2)+(ctx->regs[op->ro]),
+		ctx->regs[op->rm]);
+}
+
+void BJX2_Op_MOVB_LdPcIdxReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->trapc=op->pc;
+	ctx->regs[op->rn]=(sbyte)BJX2_MemGetByte(ctx,
+		(op->pc2)+(ctx->regs[op->ro]));
+}
+
+void BJX2_Op_MOVW_RegStPcIdx(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->trapc=op->pc;
+	BJX2_MemSetWord(ctx,
+		(op->pc2)+(ctx->regs[op->ro]),
+		ctx->regs[op->rm]);
+}
+
+void BJX2_Op_MOVW_LdPcIdxReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->trapc=op->pc;
+	ctx->regs[op->rn]=(s16)BJX2_MemGetWord(ctx,
+		(op->pc2)+(ctx->regs[op->ro]));
+}
+
+void BJX2_Op_MOVL_RegStPcIdx(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->trapc=op->pc;
+	BJX2_MemSetDWord(ctx,
+		(op->pc2)+(ctx->regs[op->ro]),
+		ctx->regs[op->rm]);
+}
+
+void BJX2_Op_MOVL_LdPcIdxReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->trapc=op->pc;
+	ctx->regs[op->rn]=(s32)BJX2_MemGetDWord(ctx,
+		(op->pc2)+(ctx->regs[op->ro]));
+}
+
+void BJX2_Op_MOVQ_RegStPcIdx(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->trapc=op->pc;
+	BJX2_MemSetQWord(ctx,
+		(op->pc2)+(ctx->regs[op->ro]),
+		ctx->regs[op->rm]);
+}
+
+void BJX2_Op_MOVQ_LdPcIdxReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->trapc=op->pc;
+	ctx->regs[op->rn]=BJX2_MemGetQWord(ctx,
+		(op->pc2)+(ctx->regs[op->ro]));
+}
+
+void BJX2_Op_MOVUB_LdPcIdxReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->trapc=op->pc;
+	ctx->regs[op->rn]=(byte)BJX2_MemGetByte(ctx,
+		(op->pc2)+(ctx->regs[op->ro]));
+}
+
+void BJX2_Op_MOVUW_LdPcIdxReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->trapc=op->pc;
+	ctx->regs[op->rn]=(u16)BJX2_MemGetWord(ctx,
+		(op->pc2)+(ctx->regs[op->ro]));
+}
+
+void BJX2_Op_MOVUL_LdPcIdxReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->trapc=op->pc;
+	ctx->regs[op->rn]=(u32)BJX2_MemGetDWord(ctx,
+		(op->pc2)+(ctx->regs[op->ro]));
+}
+#endif
+
+
 #if 0
 void BJX2_Op_PUSH_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 {

@@ -127,7 +127,7 @@ reg [ 1: 0]		decRegStepPc;
 wire[ 6:0]		decIdRegN;
 wire[ 6:0]		decIdRegM;
 wire[ 6:0]		decIdRegO;
-wire[31:0]		decIdImm;
+wire[32:0]		decIdImm;
 wire[ 7:0]		decIdUCmd;
 wire[ 7:0]		decIdUIxt;
 
@@ -158,7 +158,7 @@ reg				gprRegExHold;
 reg [ 6:0]		gprRegIdCo;
 reg [63:0]		gprRegValCo;
 
-reg[31:0]		gprIdImm;
+reg[32:0]		gprIdImm;
 reg[63:0]		gprIdValPc;
 reg[47:0]		gprIstrWord;
 reg[ 1:0]		gprRegStepPc;
@@ -239,7 +239,7 @@ reg[ 1:0]		exRegStepPc;
 reg[63:0]		exRegValRm;		//Rm input value
 reg[63:0]		exRegValRn;		//Rn input value
 reg[63:0]		exRegValRi;		//Rn input value
-reg[31:0]		exImmValRi;		//immediate/disp value
+reg[32:0]		exImmValRi;		//immediate/disp value
 reg[63:0]		exIdInGenPc;	//PC to next instruction
 
 wire[63:0]		exRegOutVal;	//Rn output value

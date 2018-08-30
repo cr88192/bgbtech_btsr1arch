@@ -111,6 +111,11 @@ int BGBCC_JX2_EmitLabel(BGBCC_JX2_Context *ctx, int lblid)
 
 	BGBCC_JX2_CheckExpandLabel(ctx);
 
+	ctx->pos_pad_op3=-999;
+	ctx->pos_pad_op2=-999;
+	ctx->pos_pad_op1=-999;
+	ctx->pos_pad_op0=-999;
+
 	if(ctx->is_simpass)
 	{
 		i=ctx->nvlbl++;

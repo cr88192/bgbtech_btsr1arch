@@ -199,7 +199,8 @@ typedef enum
     //  use a translation table for player colormaps
     MF_TRANSLATION  	= 0xc000000,
     // Hmm ???.
-    MF_TRANSSHIFT	= 26
+    MF_TRANSSHIFT		= 26, 
+    MF_DORMANT	    	= 0x10000000
 
 } mobjflag_t;
 
@@ -279,7 +280,7 @@ typedef struct mobj_s
     int			lastlook;	
 
     // For nightmare respawn.
-    mapthing_t		spawnpoint;	
+    mapthing2_t		spawnpoint;	
 
     // Thing being chased/attacked for tracers.
     struct mobj_s*	tracer;	
@@ -287,6 +288,8 @@ typedef struct mobj_s
 } mobj_t;
 
 
+mobj_t	*EV_FindMObjForTid(int tid);
+mobj_t	*EV_FindMObjForTid2(void **rptr, int tid);
 
 #endif
 //-----------------------------------------------------------------------------

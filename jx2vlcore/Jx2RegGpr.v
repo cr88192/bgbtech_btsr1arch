@@ -61,7 +61,7 @@ input[63:0]		regSrVal;
 
 input			regExHold;
 
-input[31:0]		idImm;
+input[32:0]		idImm;
 input[63:0]		idValPc;
 
 input[63:0]		exNextSp2;			//
@@ -209,8 +209,11 @@ begin
 	tGenNextPc = { idValPc[63:32], idValPc[31:0]+2 };
 	
 	case(regIdRm)
-		JX2_REG_R0:		tRegValRm = regGprR0A ;
-		JX2_REG_R1:		tRegValRm = regGprR1A ;
+		JX2_REG_R0:		tRegValRm = exNextDlr2;
+		JX2_REG_R1:		tRegValRm = exNextDhr2;
+
+//		JX2_REG_R0:		tRegValRm = regGprR0A ;
+//		JX2_REG_R1:		tRegValRm = regGprR1A ;
 		JX2_REG_R2:		tRegValRm = regGprR2A ;
 		JX2_REG_R3:		tRegValRm = regGprR3A ;
 		JX2_REG_R4:		tRegValRm = regGprR4A ;
@@ -257,8 +260,10 @@ begin
 		JX2_REG_GBR:	tRegValRm = regGbr    ;
 		JX2_REG_TBR:	tRegValRm = regTbr    ;
 
-		JX2_REG_R0B:	tRegValRm = regGprR0B ;
-		JX2_REG_R1B:	tRegValRm = regGprR1B ;
+		JX2_REG_R0B:	tRegValRm = regSDl    ;
+		JX2_REG_R1B:	tRegValRm = regSDh    ;
+//		JX2_REG_R0B:	tRegValRm = regGprR0B ;
+//		JX2_REG_R1B:	tRegValRm = regGprR1B ;
 		JX2_REG_R2B:	tRegValRm = regGprR2B ;
 		JX2_REG_R3B:	tRegValRm = regGprR3B ;
 		JX2_REG_R4B:	tRegValRm = regGprR4B ;
@@ -288,15 +293,17 @@ begin
 
 //		JX2_REG_PCW:	tRegValRm = idValPc + {idImmHi, idImm[30:0], 1'b0} ;
 
-		JX2_REG_IMM:	tRegValRm = { idImm[31]?UV32_FF:UV32_00, idImm };
+		JX2_REG_IMM:	tRegValRm = { idImm[32]?UV32_FF:UV32_00, idImm[31:0] };
 		JX2_REG_ZZR:	tRegValRm = 0;
 
 		default:		tRegValRm = UV64_XX;
 	endcase
 
 	case(regIdRn)
-		JX2_REG_R0:		tRegValRn = regGprR0A ;
-		JX2_REG_R1:		tRegValRn = regGprR1A ;
+		JX2_REG_R0:		tRegValRn = exNextDlr2;
+		JX2_REG_R1:		tRegValRn = exNextDhr2;
+//		JX2_REG_R0:		tRegValRn = regGprR0A ;
+//		JX2_REG_R1:		tRegValRn = regGprR1A ;
 		JX2_REG_R2:		tRegValRn = regGprR2A ;
 		JX2_REG_R3:		tRegValRn = regGprR3A ;
 		JX2_REG_R4:		tRegValRn = regGprR4A ;
@@ -357,8 +364,10 @@ begin
 	endcase
 
 	case(regIdRi)
-		JX2_REG_R0:		tRegValRi = regGprR0A ;
-		JX2_REG_R1:		tRegValRi = regGprR1A ;
+		JX2_REG_R0:		tRegValRi = exNextDlr2;
+		JX2_REG_R1:		tRegValRi = exNextDhr2;
+//		JX2_REG_R0:		tRegValRi = regGprR0A ;
+//		JX2_REG_R1:		tRegValRi = regGprR1A ;
 		JX2_REG_R2:		tRegValRi = regGprR2A ;
 		JX2_REG_R3:		tRegValRi = regGprR3A ;
 		JX2_REG_R4:		tRegValRi = regGprR4A ;
@@ -393,6 +402,9 @@ begin
 		JX2_REG_R30:	tRegValRi = regGprR30  ;
 		JX2_REG_R31:	tRegValRi = regGprR31  ;
 `endif
+
+		JX2_REG_IMM:	tRegValRi = { idImm[32]?UV32_FF:UV32_00, idImm[31:0] };
+		JX2_REG_ZZR:	tRegValRi = 0;
 
 		default:		tRegValRi = UV64_XX   ;
 	endcase
@@ -452,11 +464,11 @@ begin
 	else
 		if(regSrRB^nxtRegSrRB)
 	begin
-		regGprR0A <= regGprR0B;		regGprR1A <= regGprR1B;
+//		regGprR0A <= regGprR0B;		regGprR1A <= regGprR1B;
 		regGprR2A <= regGprR2B;		regGprR3A <= regGprR3B;
 		regGprR4A <= regGprR4B;		regGprR5A <= regGprR5B;
 		regGprR6A <= regGprR6B;		regGprR7A <= regGprR7B;
-		regGprR0B <= regGprR0A;		regGprR1B <= regGprR1A;
+//		regGprR0B <= regGprR0A;		regGprR1B <= regGprR1A;
 		regGprR2B <= regGprR2A;		regGprR3B <= regGprR3A;
 		regGprR4B <= regGprR4A;		regGprR5B <= regGprR5A;
 		regGprR6B <= regGprR6A;		regGprR7B <= regGprR7A;
@@ -484,8 +496,8 @@ begin
 	else
 		if(!regExHold)
 	begin
-		regGprR0A <= (regIdRoA==JX2_REG_R0) ? regValRoA[63:0] : regGprR0A;
-		regGprR1A <= (regIdRoA==JX2_REG_R1) ? regValRoA[63:0] : regGprR1A;
+//		regGprR0A <= (regIdRoA==JX2_REG_R0) ? regValRoA[63:0] : regGprR0A;
+//		regGprR1A <= (regIdRoA==JX2_REG_R1) ? regValRoA[63:0] : regGprR1A;
 		regGprR2A <= (regIdRoA==JX2_REG_R2) ? regValRoA[63:0] : regGprR2A;
 		regGprR3A <= (regIdRoA==JX2_REG_R3) ? regValRoA[63:0] : regGprR3A;
 		regGprR4A <= (regIdRoA==JX2_REG_R4) ? regValRoA[63:0] : regGprR4A;
@@ -493,8 +505,8 @@ begin
 		regGprR6A <= (regIdRoA==JX2_REG_R6) ? regValRoA[63:0] : regGprR6A;
 		regGprR7A <= (regIdRoA==JX2_REG_R7) ? regValRoA[63:0] : regGprR7A;
 
-		regGprR0B <= (regIdCoB==JX2_REG_R0B) ? regValCoB[63:0] : regGprR0B;
-		regGprR1B <= (regIdCoB==JX2_REG_R1B) ? regValCoB[63:0] : regGprR1B;
+//		regGprR0B <= (regIdCoB==JX2_REG_R0B) ? regValCoB[63:0] : regGprR0B;
+//		regGprR1B <= (regIdCoB==JX2_REG_R1B) ? regValCoB[63:0] : regGprR1B;
 		regGprR2B <= (regIdCoB==JX2_REG_R2B) ? regValCoB[63:0] : regGprR2B;
 		regGprR3B <= (regIdCoB==JX2_REG_R3B) ? regValCoB[63:0] : regGprR3B;
 		regGprR4B <= (regIdCoB==JX2_REG_R4B) ? regValCoB[63:0] : regGprR4B;
@@ -548,8 +560,11 @@ begin
 		regSr	<= (regIdCoA==JX2_REG_SR  ) ? regValCoA[63:0] : exNextSr2;
 		regVbr	<= (regIdCoA==JX2_REG_VBR ) ? regValCoA[63:0] : exNextVbr2;
 
-		regDlr	<= (regIdCoB==JX2_REG_DLR ) ? regValCoB[63:0] : exNextDlr2;
-		regDhr	<= (regIdCoB==JX2_REG_DHR ) ? regValCoB[63:0] : exNextDhr2;
+		regDlr	<= (regIdCoB==JX2_REG_R0  ) ? regValCoB[63:0] : exNextDlr2;
+		regDhr	<= (regIdCoB==JX2_REG_R1  ) ? regValCoB[63:0] : exNextDhr2;
+
+//		regDlr	<= (regIdCoB==JX2_REG_DLR ) ? regValCoB[63:0] : exNextDlr2;
+//		regDhr	<= (regIdCoB==JX2_REG_DHR ) ? regValCoB[63:0] : exNextDhr2;
 		regGbr	<= (regIdCoB==JX2_REG_GBR ) ? regValCoB[63:0] : exNextGbr2;
 		regTbr	<= (regIdCoB==JX2_REG_TBR ) ? regValCoB[63:0] : exNextTbr2;
 
@@ -558,8 +573,11 @@ begin
 		regSSr	<= (regIdCoA==JX2_REG_SSR ) ? regValCoA[63:0] : regSSr;
 		regSSp	<= (regIdCoA==JX2_REG_SSP ) ? regValCoA[63:0] : regSSp;
 
-		regSDl	<= (regIdCoB==JX2_REG_SDL ) ? regValCoB[63:0] : regSDl;
-		regSDh	<= (regIdCoB==JX2_REG_SDH ) ? regValCoB[63:0] : regSDh;
+		regSDl	<= (regIdCoB==JX2_REG_R0B ) ? regValCoB[63:0] : regSDl;
+		regSDh	<= (regIdCoB==JX2_REG_R1B ) ? regValCoB[63:0] : regSDh;
+
+//		regSDl	<= (regIdCoB==JX2_REG_SDL ) ? regValCoB[63:0] : regSDl;
+//		regSDh	<= (regIdCoB==JX2_REG_SDH ) ? regValCoB[63:0] : regSDh;
 		regSGb	<= (regIdCoB==JX2_REG_SGB ) ? regValCoB[63:0] : regSGb;
 		regSTb	<= (regIdCoB==JX2_REG_STB ) ? regValCoB[63:0] : regSTb;
 

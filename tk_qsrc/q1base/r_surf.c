@@ -641,15 +641,21 @@ void R_DrawSurfaceBlock16_mipN (int mip)
 	int				v, i, b, l, d;
 	int				lighttemp;
 
-	register int lightstep, light;
-	register unsigned char	*psource;
-	register unsigned short *prowdest;
-	register unsigned short *cmap16;
-	register int pix;
+//	register int lightstep, light;
+//	register unsigned char	*psource;
+//	register unsigned short *prowdest;
+//	register unsigned short *cmap16;
+//	register int pix;
+
+	int lightstep, light;
+	unsigned char	*psource;
+	unsigned short *prowdest;
+	unsigned short *cmap16;
+	int pix;
 
 	int pixa, pixb, shr0, shp2, shp2n1;
 
-	__hint_use_egpr();
+//	__hint_use_egpr();
 
 	psource = pbasesource;
 	prowdest = prowdestbase;
@@ -711,7 +717,7 @@ void R_DrawSurfaceBlock16_mipN (int mip)
 	}
 }
 
-
+#if 1
 void R_DrawSurfaceBlock16_mip0 (void)
 {
 	int				v, i, b, l, d;
@@ -861,6 +867,7 @@ void R_DrawSurfaceBlock16_mip1 (void)
 			{ psource -= r_stepback; }
 	}
 }
+#endif
 
 //void R_DrawSurfaceBlock16_mip0 (void)
 //	{ R_DrawSurfaceBlock16_mipN(0); }

@@ -95,18 +95,32 @@ parameter[255:0] UV256_XX		= { UV128_XX, UV128_XX };	//
 parameter[15:0] UV16_00			= 16'h0000;	//
 parameter[15:0] UV16_FF			= 16'hFFFF;	//
 
+parameter[16:0] UV17_00			= 17'h00000;	//
+parameter[16:0] UV17_FF			= 17'h1FFFF;	//
+
 parameter[19:0] UV20_00			= 20'h00000;	//
 parameter[19:0] UV20_FF			= 20'hFFFFF;	//
 
 parameter[23:0] UV24_00			= 24'h000000;	//
 parameter[23:0] UV24_FF			= 24'hFFFFFF;	//
 
+parameter[24:0] UV25_00			= 25'h0000000;	//
+parameter[24:0] UV25_FF			= 25'h1FFFFFF;	//
+
+parameter[25:0] UV26_00			= 26'h0000000;	//
+parameter[25:0] UV26_FF			= 26'h3FFFFFF;	//
+
 parameter[26:0] UV27_00			= 27'h0000000;	//
+parameter[26:0] UV27_FF			= 27'h7FFFFFF;	//
 
 parameter[27:0] UV28_00			= 28'h0000000;	//
 parameter[27:0] UV28_FF			= 28'hFFFFFFF;	//
 
-parameter[28:0] UV29_00			= 29'h0000000;	//
+parameter[28:0] UV29_00			= 29'h00000000;	//
+parameter[28:0] UV29_FF			= 29'h1FFFFFFF;	//
+
+parameter[29:0] UV30_00			= 30'h00000000;	//
+parameter[29:0] UV30_FF			= 30'h3FFFFFFF;	//
 
 parameter[31:0] UV32_00			= 32'h00000000;	//
 parameter[31:0] UV32_FF			= 32'hFFFFFFFF;	//
@@ -133,16 +147,16 @@ parameter[4:0] UMEM_OPM_CTRLF	= 5'b00010;		//Control Flow
 parameter[4:0] UMEM_OPM_RD_SB	= 5'b01000;		//Read Byte
 parameter[4:0] UMEM_OPM_RD_SW	= 5'b01001;		//Read Word
 parameter[4:0] UMEM_OPM_RD_SL	= 5'b01010;		//Read DWord
-parameter[4:0] UMEM_OPM_RD_Q	= 5'b01011;		//Read QWord (Resv)
-parameter[4:0] UMEM_OPM_RD_UB	= 5'b01100;		//Read Byte
-parameter[4:0] UMEM_OPM_RD_UW	= 5'b01101;		//Read Word
-parameter[4:0] UMEM_OPM_RD_UL	= 5'b01110;		//Read Unsigned DWord (Resv)
+parameter[4:0] UMEM_OPM_RD_Q	= 5'b01011;		//Read QWord
+parameter[4:0] UMEM_OPM_RD_UB	= 5'b01100;		//Read Byte (ZX)
+parameter[4:0] UMEM_OPM_RD_UW	= 5'b01101;		//Read Word (ZX)
+parameter[4:0] UMEM_OPM_RD_UL	= 5'b01110;		//Read DWord (ZX)
 parameter[4:0] UMEM_OPM_RD_TILE	= 5'b01111;		//Read Tile
 
 parameter[4:0] UMEM_OPM_WR_SB	= 5'b10000;		//Write Byte
 parameter[4:0] UMEM_OPM_WR_SW	= 5'b10001;		//Write Word
 parameter[4:0] UMEM_OPM_WR_SL	= 5'b10010;		//Write DWord
-parameter[4:0] UMEM_OPM_WR_Q	= 5'b10011;		//Write QWord (Resv)
+parameter[4:0] UMEM_OPM_WR_Q	= 5'b10011;		//Write QWord
 parameter[4:0] UMEM_OPM_WR_UB	= 5'b10100;		//Write Byte (Resv)
 parameter[4:0] UMEM_OPM_WR_UW	= 5'b10101;		//Write Word (Resv)
 parameter[4:0] UMEM_OPM_WR_UL	= 5'b10110;		//Write DWord (Resv)
@@ -165,7 +179,7 @@ parameter[4:0] JX2_FMID_LDDRPCREG	= 5'h0D;	//OOnO  (PC, DLR), Rn
 parameter[4:0] JX2_FMID_IMM4ZREG	= 5'h0E;	//OOnj  #imm4u, Rn
 parameter[4:0] JX2_FMID_IMM4NREG	= 5'h0F;	//OOnj  #imm4n, Rn
 
-parameter[4:0] JX2_FMID_DR4PC		= 5'h10;	//OOOj	(PC, DLR_i4)
+// parameter[4:0] JX2_FMID_DR4PC		= 5'h10;	//OOOj	(PC, DLR_i4)
 parameter[4:0] JX2_FMID_DRPC		= 5'h11;	//OOOO	(PC, DLR)
 parameter[4:0] JX2_FMID_DRREG		= 5'h12;	//OOnO	DLR, Rn
 parameter[4:0] JX2_FMID_PCDISP8		= 5'h13;	//OOii	(PC, disp8s)
@@ -177,8 +191,8 @@ parameter[4:0] JX2_FMID_REGSTDLR	= 5'h18;	//OOnO  Rn, (DLR)
 parameter[4:0] JX2_FMID_LDDLRREG	= 5'h19;	//OOnO  (DLR), Rn
 // parameter[4:0] JX2_FMID_REGSTDRGBR	= 5'h1A;	//OOnO  Rm, (GBR, DLR)
 // parameter[4:0] JX2_FMID_LDDRGBRREG	= 5'h1B;	//OOnO  (GBR, DLR), Rn
-parameter[4:0] JX2_FMID_REGSTDR4PC	= 5'h1C;	//OOnj  Rn, (PC, DLR_i4)
-parameter[4:0] JX2_FMID_LDDR4PCREG	= 5'h1D;	//OOnj  (PC, DLR_i4), Rn
+// parameter[4:0] JX2_FMID_REGSTDR4PC	= 5'h1C;	//OOnj  Rn, (PC, DLR_i4)
+// parameter[4:0] JX2_FMID_LDDR4PCREG	= 5'h1D;	//OOnj  (PC, DLR_i4), Rn
 parameter[4:0] JX2_FMID_REGSTDI4SP	= 5'h1E;	//OOnj  Rn, (SP, disp4)
 parameter[4:0] JX2_FMID_LDDI4SPREG	= 5'h1F;	//OOnj  (SP, disp4), Rn
 
@@ -237,10 +251,16 @@ parameter[3:0] JX2_ITY_UB	= 4'b0100;	/* XXzz_XXjj		ZX */
 parameter[3:0] JX2_ITY_UW	= 4'b0101;	/* XXzz_jjjj		ZX */
 parameter[3:0] JX2_ITY_UL	= 4'b0110;	/* XXzz_jjjj_jjjj	ZX */
 parameter[3:0] JX2_ITY_UQ	= 4'b0111;	/* XXjj				ZX */
+
 parameter[3:0] JX2_ITY_NB	= 4'b1000;	/* XXzz_XXjj		NX */
 parameter[3:0] JX2_ITY_NW	= 4'b1001;	/* XXzz_jjjj		NX */
 parameter[3:0] JX2_ITY_NL	= 4'b1010;	/* XXzz_jjjj_jjjj	NX */
 parameter[3:0] JX2_ITY_NQ	= 4'b1011;	/* XXjj				NX */
+
+parameter[3:0] JX2_ITY_XB	= 4'b1100;	/* XXzz_XXjj		XX */
+parameter[3:0] JX2_ITY_XW	= 4'b1101;	/* XXzz_jjjj		XX */
+parameter[3:0] JX2_ITY_XL	= 4'b1110;	/* XXzz_jjjj_jjjj	XX */
+parameter[3:0] JX2_ITY_XQ	= 4'b1111;	/* XXjj				XX */
 
 
 // parameter[7:0] JX2_UCMD_MOV_RM		= 8'h04;	//(AGU)=Rm
@@ -364,6 +384,13 @@ parameter[7:0] JX2_UCMD_ALU_AND3	= 8'h6A;	//Rn=Rm&Ro
 parameter[7:0] JX2_UCMD_ALU_OR3		= 8'h6B;	//Rn=Rm|Ro
 parameter[7:0] JX2_UCMD_ALU_XOR3	= 8'h6C;	//Rn=Rm^Ro
 parameter[7:0] JX2_UCMD_ALU_MUL3	= 8'h6D;	//Rn=Rm*Ro
+
+parameter[7:0] JX2_UCMD_ALU_CSELT	= 8'h6E;	//Rn=SR.T?Rm:Ro
+
+parameter[7:0] JX2_UCMD_ALU_SHAD3	= 8'h70;
+parameter[7:0] JX2_UCMD_ALU_SHLD3	= 8'h71;
+parameter[7:0] JX2_UCMD_ALU_SHADQ3	= 8'h72;
+parameter[7:0] JX2_UCMD_ALU_SHLDQ3	= 8'h73;
 
 
 parameter[7:0] JX2_UCMD_IX_NOP		= 8'h00;

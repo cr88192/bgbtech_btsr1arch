@@ -284,7 +284,7 @@ int TKSPI_ReadSectors(byte *buf, s64 lba, int cnt)
 
 //	tk_printf("TKSPI_ReadSectors: %d %d\n", lba, cnt);
 
-#if 1
+#if 0
 	if(cnt>1)
 	{
 		ct=buf; la=lba; n=cnt;

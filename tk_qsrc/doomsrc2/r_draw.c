@@ -86,9 +86,13 @@ byte		translations[3][256];
 lighttable_t*		dc_colormap; 
 int			dc_x; 
 int			dc_yl; 
-int			dc_yh; 
+int			dc_yh;
+
+fixed_t			dc_scale; 
 fixed_t			dc_iscale; 
 fixed_t			dc_texturemid;
+
+byte			dc_isspr;
 
 // first pixel in a column (possibly virtual) 
 byte*			dc_source;		
@@ -97,6 +101,20 @@ byte*			dc_source;
 int			dccount;
 
 u64		r_colmask[32];
+
+int dc_czbuf_yl[512];
+int dc_czbuf_yh[512];
+fixed_t dc_czbuf_sc[512];
+
+void R_ClearCZBuf (void) 
+{
+	int i, j, k;
+	
+	for(i=0; i<512; i++)
+	{
+		dc_czbuf_sc[i] = MAXINT;
+	}
+}
 
 void R_CellMarkColumn (void) 
 {
@@ -187,6 +205,34 @@ void R_DrawColumn (void)
 	count = dc_yh - dc_yl + 1; 
 
 	source = dc_source;
+	if(!source)
+		return;
+
+	if(!dc_isspr)
+	{
+		if(dc_scale==dc_czbuf_sc[dc_x])
+		{
+			if(dc_yl < dc_czbuf_yl[dc_x])
+				dc_czbuf_yl[dc_x] = dc_yl;
+			if(dc_yh > dc_czbuf_yh[dc_x])
+				dc_czbuf_yh[dc_x] = dc_yh;
+		}else
+			if(dc_scale<dc_czbuf_sc[dc_x])
+		{
+			dc_czbuf_yl[dc_x] = dc_yl;
+			dc_czbuf_yh[dc_x] = dc_yh;
+			dc_czbuf_sc[dc_x] = dc_scale;
+		}else
+		{
+//			return;
+		}
+	}
+
+//	else
+//	{
+//		return;
+//	}
+
 	colormap = dc_colormap;		 
 	dest = ylookup[dc_yl] + columnofs[dc_x];  
 	 

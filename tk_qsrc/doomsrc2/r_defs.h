@@ -192,6 +192,13 @@ typedef struct line_s
     short	special;
     short	tag;
 
+	byte		acs_spec;
+	byte		arg1;
+	byte		arg2;
+	byte		arg3;
+	byte		arg4;
+	byte		arg5;
+
     // Visual appearance: SideDefs.
     //  sidenum[1] will be -1 if one sided
     short	sidenum[2];			

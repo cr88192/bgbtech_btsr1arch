@@ -154,6 +154,8 @@ void P_Ticker (void)
     P_UpdateSpecials ();
     P_RespawnSpecials ();
 
+	P_AcsTick();
+
     // for par times
     leveltime++;	
 }

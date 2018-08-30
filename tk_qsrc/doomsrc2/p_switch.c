@@ -293,6 +293,11 @@ P_UseSpecialLine
 
 	spop = line->special;
 
+	if(spop==1024)
+	{
+		return(P_AcsUseSpecialLine(thing, line, side));
+	}
+
 	if(gamemode==heretic)
 	{
 		switch(spop)
@@ -326,7 +331,7 @@ P_UseSpecialLine
 
 	
 	// Switches that other things can activate.
-	if (!thing->player)
+	if (thing && !thing->player)
 	{
 		// never open secret doors
 		if (line->flags & ML_SECRET)
@@ -388,6 +393,8 @@ P_UseSpecialLine
 	
 		case 11:
 			// Exit level
+			if((line->acs_spec==74) && (line->arg1>0))
+				gamemap=line->arg1-1;
 			P_ChangeSwitchTexture(line,0);
 			G_ExitLevel ();
 			break;
@@ -408,6 +415,14 @@ P_UseSpecialLine
 			// Raise Floor to next highest floor
 			if (EV_DoFloor(line, raiseFloorToNearest))
 				P_ChangeSwitchTexture(line,0);
+			break;
+
+		case 19: /* BGB, copied over */
+			if(line->acs_spec)
+			{
+				// Lower Floor
+				EV_DoFloor(line,lowerFloor);
+			}
 			break;
 	
 		case 20:
@@ -433,7 +448,15 @@ P_UseSpecialLine
 			if (EV_DoDoor(line, vld_normal))
 				P_ChangeSwitchTexture(line,0);
 			break;
-	
+
+		case 38:
+			if(line->acs_spec)
+			{
+				// Lower Floor To Lowest
+				EV_DoFloor( line, lowerFloorToLowest );
+			}
+			break;
+
 		case 41:
 			// Lower Ceiling to Floor
 			if (EV_DoCeiling(line, lowerToFloor))
@@ -676,7 +699,12 @@ P_UseSpecialLine
 			EV_LightTurnOn(line,35);
 			P_ChangeSwitchTexture(line,1);
 			break;
-			
+		
+		default:
+			if((line->sidenum[0]<0) && (line->sidenum[1]<0))
+				__debugbreak();
+			break;
+				
 	}
 	
 	return true;

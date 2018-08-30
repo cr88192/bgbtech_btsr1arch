@@ -844,12 +844,14 @@ void G_PlayerReborn (int player)
 // at the given mapthing_t spot  
 // because something is occupying it 
 //
-void P_SpawnPlayer (mapthing_t* mthing); 
+// void P_SpawnPlayer (mapthing_t* mthing); 
+void P_SpawnPlayer (mapthing2_t* mthing); 
  
 boolean
 G_CheckSpot
 ( int		playernum,
-  mapthing_t*	mthing ) 
+  mapthing2_t*	mthing ) 
+//  mapthing_t*	mthing ) 
 { 
     fixed_t		x;
     fixed_t		y; 
@@ -1596,7 +1598,7 @@ void G_DoPlayDemo (void)
 #if 1
 	if ( *demo_p++ != VERSION)
 	{
-		if(gamemode==heretic)
+		if((gamemode==heretic) || (gamemode==hexen))
 //		if(1)
 		{
 			fprintf( stderr, "Demo is from a different game version!\n");

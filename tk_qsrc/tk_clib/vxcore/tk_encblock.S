@@ -20,7 +20,7 @@ TK_EncBlock16P:
 
 	xor r2, r2		//i
 	cmpqeq r18, r22
-	movnt r2
+//	movnt r2
 
 	/* Branch Early, we already know block differs. */
 	bf .L0
@@ -33,24 +33,29 @@ TK_EncBlock16P:
 	/* Check if any pixels differ. */
 	cmpqeq r19, r23
 //	movnt r3
+//	movt r2
+	movnt r2
 //	or r3, r2
-	addc r2, r2
+//	addc r2, r2
 
 	cmpqeq r20, r16
-//	movnt r3
-//	or r3, r2
-	addc r2, r2
+	movnt r3
+	or r3, r2
+//	addc r2, r2
 
 	cmpqeq r21, r17
-//	movnt r3
-//	or r3, r2
-	addc r2, r2
+	movnt r3
+	or r3, r2
+//	addc r2, r2
 
 	tst r2, r2
 	bf .L0
+//	bt .L0
 	
 	/* Nothing changed, return now. */
+	xor r2, r2
 	rts
+//	nop
 
 /*
 	At this point, we know we need to actually encode the block.
@@ -326,6 +331,8 @@ TK_EncBlock16P:
 	
 	mov.l r2, @r6
 	mov.l r3, @r7
+
+	mov #1, r2
 	rts
 
 #endif

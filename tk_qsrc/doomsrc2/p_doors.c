@@ -357,7 +357,7 @@ EV_VerticalDoor
 	mobj_t*	thing )
 {
 	player_t*	player;
-	int		secnum;
+	int		secnum, sidenum;
 	sector_t*	sec;
 	vldoor_t*	door;
 	int		side;
@@ -365,76 +365,92 @@ EV_VerticalDoor
 	side = 0;	// only front sides can be used
 
 	//	Check for locks
-	player = thing->player;
+	if(thing)
+		player = thing->player;
+	else
+		player = NULL;
 		
 	switch(line->special)
 	{
-		case 26: // Blue Lock
-		case 32:
-	if ( !player )
-		return;
-	
-	if (!player->cards[it_bluecard] && !player->cards[it_blueskull])
-	{
-		player->message = PD_BLUEK;
-		S_StartSound(NULL,sfx_oof);
-		return;
-	}
-	break;
-	
-		case 27: // Yellow Lock
-		case 34:
-	if ( !player )
-		return;
-	
-	if (!player->cards[it_yellowcard] &&
-		!player->cards[it_yellowskull])
-	{
-		player->message = PD_YELLOWK;
-		S_StartSound(NULL,sfx_oof);
-		return;
-	}
-	break;
-	
-		case 28: // Red Lock
-		case 33:
-	if ( !player )
-		return;
-	
-	if (!player->cards[it_redcard] && !player->cards[it_redskull])
-	{
-		player->message = PD_REDK;
-		S_StartSound(NULL,sfx_oof);
-		return;
-	}
-	break;
+	case 26: // Blue Lock
+	case 32:
+		if ( !player )
+			return;
+		
+		if (!player->cards[it_bluecard] && !player->cards[it_blueskull])
+		{
+			player->message = PD_BLUEK;
+			S_StartSound(NULL,sfx_oof);
+			return;
+		}
+		break;
+
+	case 27: // Yellow Lock
+	case 34:
+		if ( !player )
+			return;
+		
+		if (!player->cards[it_yellowcard] &&
+			!player->cards[it_yellowskull])
+		{
+			player->message = PD_YELLOWK;
+			S_StartSound(NULL,sfx_oof);
+			return;
+		}
+		break;
+
+	case 28: // Red Lock
+	case 33:
+		if ( !player )
+			return;
+		
+		if (!player->cards[it_redcard] && !player->cards[it_redskull])
+		{
+			player->message = PD_REDK;
+			S_StartSound(NULL,sfx_oof);
+			return;
+		}
+		break;
 	}
 	
 	// if the sector has an active thinker, use it
-	sec = sides[ line->sidenum[side^1]] .sector;
-	secnum = sec-sectors;
+	sidenum = line->sidenum[side^1];
+//	if (sidenum<0)
+//		return;
 
-	if (sec->specialdata)
+	if(sidenum>0)
 	{
-	door = sec->specialdata;
-	switch(line->special)
+		sec = sides[ sidenum ] .sector;
+		secnum = sec-sectors;
+	}else
 	{
-		case	1: // ONLY FOR "RAISE" DOORS, NOT "OPEN"s
-		case	26:
-		case	27:
-		case	28:
-		case	117:
-		if (door->direction == -1)
-		door->direction = 1;	// go back up
-		else
-		{
-		if (!thing->player)
-			return;		// JDC: bad guys never close doors
-		
-		door->direction = -1;	// start going down immediately
-		}
+		sec = NULL;
+		secnum = 0;
 		return;
 	}
+
+	if (sec && sec->specialdata)
+	{
+		door = sec->specialdata;
+		switch(line->special)
+		{
+			case	1: // ONLY FOR "RAISE" DOORS, NOT "OPEN"s
+			case	26:
+			case	27:
+			case	28:
+			case	117:
+				if (door->direction == -1)
+					door->direction = 1;	// go back up
+				else
+				{
+			//		if (!thing->player)
+					if (!player)
+						return;		// JDC: bad guys never close doors
+					
+					door->direction = -1;	// start going down immediately
+				}
+				return;
+		}
 	}
 	
 	// for proper sound
@@ -442,20 +458,19 @@ EV_VerticalDoor
 	{
 		case 117:	// BLAZING DOOR RAISE
 		case 118:	// BLAZING DOOR OPEN
-	S_StartSound((mobj_t *)&sec->soundorg,sfx_bdopn);
-	break;
+			S_StartSound((mobj_t *)&sec->soundorg,sfx_bdopn);
+			break;
 	
 		case 1:	// NORMAL DOOR SOUND
 		case 31:
-	S_StartSound((mobj_t *)&sec->soundorg,sfx_doropn);
-	break;
+			S_StartSound((mobj_t *)&sec->soundorg,sfx_doropn);
+			break;
 	
 		default:	// LOCKED DOOR SOUND
-	S_StartSound((mobj_t *)&sec->soundorg,sfx_doropn);
-	break;
+			S_StartSound((mobj_t *)&sec->soundorg,sfx_doropn);
+			break;
 	}
-	
-	
+
 	// new door thinker
 	door = Z_Malloc (sizeof(*door), PU_LEVSPEC, 0);
 	P_AddThinker (&door->thinker);
@@ -495,8 +510,11 @@ EV_VerticalDoor
 	}
 	
 	// find the top and bottom of the movement range
-	door->topheight = P_FindLowestCeilingSurrounding(sec);
-	door->topheight -= 4*FRACUNIT;
+	if(sec>0)
+	{
+		door->topheight = P_FindLowestCeilingSurrounding(sec);
+		door->topheight -= 4*FRACUNIT;
+	}
 }
 
 

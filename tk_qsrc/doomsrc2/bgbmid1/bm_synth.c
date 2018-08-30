@@ -148,24 +148,27 @@ float bgbmid_funcgen(float th, int fn)
 	
 	switch(fn)
 	{
-//	case 0:
-//		v=sin(th);
-//		break;
-//	case 1:
-//		v=sin(th);
-//		if(v<0)v=0;
-//		break;
-//	case 2:
-//		v=sin(th);
-//		if(v<0)v=-v;
-//		break;
-//	case 3:
-//		i=th2*2;
-//		v=sin(th);
-//		if(v<0)v=-v;
-//		if(i&1)v=0;
-//		break;
+#if 1
+	case 0:
+		v=sin(th);
+		break;
+	case 1:
+		v=sin(th);
+		if(v<0)v=0;
+		break;
+	case 2:
+		v=sin(th);
+		if(v<0)v=-v;
+		break;
+	case 3:
+		i=th2*2;
+		v=sin(th);
+		if(v<0)v=-v;
+		if(i&1)v=0;
+		break;
+#endif
 
+#if 0
 	case 0:
 		i=th2;
 		j=(byte)(th2*256);
@@ -189,6 +192,7 @@ float bgbmid_funcgen(float th, int fn)
 		v=(-1.0+(j/256.0));
 		if(v<0)v=0;
 		break;
+#endif
 
 	case 4:
 		i=th2;

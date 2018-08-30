@@ -33,21 +33,39 @@ void tkfat_setDWord(byte *ptr, u32 val)
 byte *TKFAT_GetSectorTempBuffer(TKFAT_ImageInfo *img,
 	int lba, int num)
 {
+	u32 *tbc_lba, *tbca;
+	s16 *tbc_lbn;
 	u32 tba;
 	void *tbd;
-	int n, tbn;
+	int n, tbn, tbcn;
 	int i, j, k;
 
+	tbcn=img->tbc_num;
+	tbc_lba=img->tbc_lba;
+	tbc_lbn=img->tbc_lbn;
+
 	n=num&255;
-	for(i=0; i<img->tbc_num; i++)
+	
+#if 0
+//	for(i=0; i<img->tbc_num; i++)
+	for(i=0; i<tbcn; i++)
 	{
-		if((img->tbc_lba[i]==lba) &&
-			(img->tbc_lbn[i]==n))
+//		if((img->tbc_lba[i]==lba) &&
+//			(img->tbc_lbn[i]==n))
+		if((tbc_lba[i]==lba) &&
+			(tbc_lbn[i]==n))
 		{
 			if(num&TKFAT_SFL_DIRTY)
 				img->tbc_lbn[i]|=TKFAT_SFL_DIRTY;
 
-			j=(i*7)>>3;
+			if(!i)
+			{
+				tbd=img->tbc_buf[i];
+				return(tbd);
+			}
+
+//			j=(i*7)>>3;
+			j=(i*3)>>4;
 			tbd=img->tbc_buf[i];
 			tba=img->tbc_lba[i];
 			tbn=img->tbc_lbn[i];
@@ -59,18 +77,116 @@ byte *TKFAT_GetSectorTempBuffer(TKFAT_ImageInfo *img,
 			img->tbc_lbn[j]=tbn;
 			return(tbd);
 		}
+
+#if 1
+		if((i+8)<tbcn)
+		{
+//			j=	(tbc_lba[i+0]==lba) | (tbc_lba[i+1]==lba) |
+//				(tbc_lba[i+2]==lba) | (tbc_lba[i+3]==lba) |
+//				(tbc_lba[i+4]==lba) | (tbc_lba[i+5]==lba) |
+//				(tbc_lba[i+6]==lba) | (tbc_lba[i+7]==lba) ;
+
+			tbca=tbc_lba+i;
+			j=	(tbca[0]==lba) | (tbca[1]==lba) |
+				(tbca[2]==lba) | (tbca[3]==lba) ;
+			k=	(tbca[4]==lba) | (tbca[5]==lba) |
+				(tbca[6]==lba) | (tbca[7]==lba) ;
+
+			if(!(j|k))
+				{ i+=7; continue; }
+			if(!j)
+				{ i+=3; continue; }
+		}
+#endif
+	}
+#endif
+
+
+#if 1
+//	i=255;
+	i=img->tbc_pred0;
+
+	if(tbc_lba[i]!=lba)
+		i=img->tbc_pred1;
+
+	if(tbc_lba[i]!=lba)
+	{
+		for(i=0; i<tbcn; i+=8)
+		{
+			tbca=tbc_lba+i;
+			j=	(tbca[0]==lba) | (tbca[1]==lba) |
+				(tbca[2]==lba) | (tbca[3]==lba) ;
+			k=	(tbca[4]==lba) | (tbca[5]==lba) |
+				(tbca[6]==lba) | (tbca[7]==lba) ;
+
+			if(j)
+				break;
+			if(k)
+				{ i+=4; break; }
+		}
+
+		for(; i<tbcn; i++)
+		{
+			if(tbc_lba[i]==lba)
+				break;
+		}
 	}
 
+//	if(i<256)
+	if(i<tbcn)
+	{
+		if((tbc_lba[i]==lba) &&
+			(tbc_lbn[i]==n))
+		{
+			if(num&TKFAT_SFL_DIRTY)
+				img->tbc_lbn[i]|=TKFAT_SFL_DIRTY;
+
+			if(!i)
+			{
+				tbd=img->tbc_buf[i];
+				return(tbd);
+			}
+
+			j=(i*7)>>3;
+//			j=(i*3)>>4;
+			tbd=img->tbc_buf[i];
+			tba=img->tbc_lba[i];
+			tbn=img->tbc_lbn[i];
+			img->tbc_buf[i]=img->tbc_buf[j];
+			img->tbc_lba[i]=img->tbc_lba[j];
+			img->tbc_lbn[i]=img->tbc_lbn[j];
+			img->tbc_buf[j]=tbd;
+			img->tbc_lba[j]=tba;
+			img->tbc_lbn[j]=tbn;
+
+			if(j!=img->tbc_pred0)
+			{
+				img->tbc_pred1=img->tbc_pred0;
+				img->tbc_pred0=j;
+			}
+
+			return(tbd);
+		}
+	}
+#endif
+
 	if(img->tbc_num<256)
+//	if(img->tbc_num<64)
+//	if(img->tbc_num<1024)
 	{
 		i=img->tbc_num++;
 		tbd=malloc(n*512);
 		img->tbc_buf[i]=tbd;
 		img->tbc_lba[i]=lba;
 		img->tbc_lbn[i]=n;
+
+		img->tbc_pred1=img->tbc_pred0;
+		img->tbc_pred0=i;
 	}else
 	{
 		i=255;
+//		i=63;
+//		i=1023;
 
 		if(img->tbc_lbn[i]&TKFAT_SFL_DIRTY)
 		{
@@ -88,6 +204,9 @@ byte *TKFAT_GetSectorTempBuffer(TKFAT_ImageInfo *img,
 		img->tbc_lba[i]=lba;
 		img->tbc_lbn[i]=n;
 		tbd=img->tbc_buf[i];
+
+		img->tbc_pred1=img->tbc_pred0;
+		img->tbc_pred0=i;
 	}
 
 	TKSPI_ReadSectors(tbd, lba, n);
@@ -124,6 +243,166 @@ byte *TKFAT_GetSectorStaticBuffer(TKFAT_ImageInfo *img,
 	return(img->sbc_buf[i]);
 //	return(img->pImgData+(lba<<9));
 }
+
+
+/** Get sectors as a temporary buffer.
+  * Given LBA and a number of sectors (max=128).
+  * If DIRTY flag is set, mark the sector as dirty.
+  * The buffer will be released implicitly following the call.
+  *
+  * This version is specifically for the FAT.
+  */
+byte *TKFAT_GetSectorTempFatBuffer(TKFAT_ImageInfo *img,
+	int lba, int num)
+{
+	u32 *tbc_lba, *tbca;
+	s16 *tbc_lbn;
+	void **tbc_buf;
+	u32 tba;
+	void *tbd;
+	int n, tbn, tbcn;
+	int i, j, k;
+
+	tbcn=img->tfbc_num;
+	tbc_lba=img->tfbc_lba;
+	tbc_lbn=img->tfbc_lbn;
+	tbc_buf=img->tfbc_buf;
+
+	n=num&255;
+
+#if 1
+//	i=255;
+	i=img->tfbc_pred0;
+
+	if(tbc_lba[i]!=lba)
+		i=img->tfbc_pred1;
+
+	if(tbc_lba[i]!=lba)
+	{
+		for(i=0; i<tbcn; i+=8)
+		{
+			tbca=tbc_lba+i;
+			j=	(tbca[0]==lba) | (tbca[1]==lba) |
+				(tbca[2]==lba) | (tbca[3]==lba) ;
+			k=	(tbca[4]==lba) | (tbca[5]==lba) |
+				(tbca[6]==lba) | (tbca[7]==lba) ;
+
+			if(j)
+				break;
+			if(k)
+				{ i+=4; break; }
+		}
+
+		for(; i<tbcn; i++)
+		{
+			if(tbc_lba[i]==lba)
+				break;
+		}
+	}
+
+//	if(i<256)
+	if(i<tbcn)
+	{
+		if((tbc_lba[i]==lba) &&
+			(tbc_lbn[i]==n))
+		{
+			if(num&TKFAT_SFL_DIRTY)
+				img->tfbc_lbn[i]|=TKFAT_SFL_DIRTY;
+
+			if(!i)
+			{
+//				tbd=img->tfbc_buf[i];
+				tbd=tbc_buf[i];
+				return(tbd);
+			}
+
+			j=(i*7)>>3;
+//			j=(i*3)>>4;
+
+#if 0
+			tbd=img->tfbc_buf[i];
+			tba=img->tfbc_lba[i];
+			tbn=img->tfbc_lbn[i];
+			img->tfbc_buf[i]=img->tfbc_buf[j];
+			img->tfbc_lba[i]=img->tfbc_lba[j];
+			img->tfbc_lbn[i]=img->tfbc_lbn[j];
+			img->tfbc_buf[j]=tbd;
+			img->tfbc_lba[j]=tba;
+			img->tfbc_lbn[j]=tbn;
+#endif
+
+#if 1
+			tbd=tbc_buf[i];
+			tba=tbc_lba[i];
+			tbn=tbc_lbn[i];
+			tbc_buf[i]=tbc_buf[j];
+			tbc_lba[i]=tbc_lba[j];
+			tbc_lbn[i]=tbc_lbn[j];
+			tbc_buf[j]=tbd;
+			tbc_lba[j]=tba;
+			tbc_lbn[j]=tbn;
+#endif
+
+			if(j!=img->tfbc_pred0)
+			{
+				img->tfbc_pred1=img->tfbc_pred0;
+				img->tfbc_pred0=j;
+			}
+
+			return(tbd);
+		}
+	}
+#endif
+
+	if(img->tfbc_num<256)
+//	if(img->tfbc_num<64)
+//	if(img->tfbc_num<1024)
+	{
+		i=img->tfbc_num++;
+		tbd=malloc(n*512);
+//		img->tfbc_buf[i]=tbd;
+//		img->tfbc_lba[i]=lba;
+//		img->tfbc_lbn[i]=n;
+
+		tbc_buf[i]=tbd;
+		tbc_lba[i]=lba;
+		tbc_lbn[i]=n;
+
+		img->tfbc_pred1=img->tfbc_pred0;
+		img->tfbc_pred0=i;
+	}else
+	{
+		i=255;
+//		i=63;
+//		i=1023;
+
+		if(img->tfbc_lbn[i]&TKFAT_SFL_DIRTY)
+		{
+			TKSPI_WriteSectors(
+				img->tfbc_buf[i],
+				img->tfbc_lba[i],
+				img->tfbc_lbn[i]&255);
+		}
+		
+		if(n!=img->tfbc_lbn[i])
+		{
+			free(img->tfbc_buf[i]);
+			img->tfbc_buf[i]=malloc(n*512);
+		}
+		img->tfbc_lba[i]=lba;
+		img->tfbc_lbn[i]=n;
+		tbd=img->tfbc_buf[i];
+
+		img->tfbc_pred1=img->tfbc_pred0;
+		img->tfbc_pred0=i;
+	}
+
+	TKSPI_ReadSectors(tbd, lba, n);
+	return(tbd);
+
+//	return(img->pImgData+(lba<<9));
+}
+
 
 /** Partition image with a simple MBR holding a FAT volume.
   */
@@ -244,21 +523,42 @@ int TKFAT_GetFatEntry(TKFAT_ImageInfo *img, int clid)
 //		ofs=img->pImgData+(img->lba_fat1*512)+(clid*2);
 
 		lba=img->lba_fat1+(clid>>8);
-		ofs=TKFAT_GetSectorTempBuffer(img, lba, 1);
+//		ofs=TKFAT_GetSectorTempBuffer(img, lba, 1);
+		ofs=TKFAT_GetSectorTempFatBuffer(img, lba, 1);
 		ofs+=(clid&255)*2;
 
-		i=ofs[0]+(ofs[1]<<8);
+//		i=ofs[0]+(ofs[1]<<8);
+		i=tkfat_getWord(ofs);
 		if(i>=0xFFF0)
 			i=(i<<16)>>16;
 		return(i);
 	}
 
+#if 0
 //	ofs=img->pImgData+(img->lba_fat1*512)+(clid*4);
 	lba=img->lba_fat1+(clid>>7);
-	ofs=TKFAT_GetSectorTempBuffer(img, lba, 1);
+//	ofs=TKFAT_GetSectorTempBuffer(img, lba, 1);
+	ofs=TKFAT_GetSectorTempFatBuffer(img, lba, 1);
 	ofs+=(clid&127)*4;
+#endif
 
-	i=ofs[0]+(ofs[1]<<8)+(ofs[2]<<16)+(ofs[3]<<24);
+#if 1
+	lba=img->lba_fat1+((clid>>11)<<4);
+	if(img->tfbc_pr_lba==lba)
+	{
+		ofs=img->tfbc_pr_ofs;
+		ofs+=(clid&2047)*4;
+	}else
+	{
+		ofs=TKFAT_GetSectorTempFatBuffer(img, lba, 16);
+		img->tfbc_pr_lba=lba;
+		img->tfbc_pr_ofs=ofs;
+		ofs+=(clid&2047)*4;
+	}
+#endif
+
+//	i=ofs[0]+(ofs[1]<<8)+(ofs[2]<<16)+(ofs[3]<<24);
+	i=tkfat_getDWord(ofs);
 	if(i>=0x0FFFFFF0)
 		i=(i<<4)>>4;
 	return(i);
@@ -289,14 +589,29 @@ int TKFAT_SetFatEntry(TKFAT_ImageInfo *img,
 		return(0);
 	}
 
+#if 1
 	lba1=img->lba_fat1+(clid>>7);
 	lba2=img->lba_fat2+(clid>>7);
-	ofs1=TKFAT_GetSectorTempBuffer(img,
+//	ofs1=TKFAT_GetSectorTempBuffer(img,
+	ofs1=TKFAT_GetSectorTempFatBuffer(img,
 		lba1, 1|TKFAT_SFL_DIRTY);
 	ofs1+=(clid&127)*4;
-	ofs2=TKFAT_GetSectorTempBuffer(img,
+//	ofs2=TKFAT_GetSectorTempBuffer(img,
+	ofs2=TKFAT_GetSectorTempFatBuffer(img,
 		lba2, 1|TKFAT_SFL_DIRTY);
 	ofs2+=(clid&127)*4;
+#endif
+
+#if 0
+	lba1=img->lba_fat1+((clid>>11)<<4);
+	lba2=img->lba_fat2+((clid>>11)<<4);
+	ofs1=TKFAT_GetSectorTempFatBuffer(img,
+		lba1, 16|TKFAT_SFL_DIRTY);
+	ofs1+=(clid&2047)*4;
+	ofs2=TKFAT_GetSectorTempFatBuffer(img,
+		lba2, 16|TKFAT_SFL_DIRTY);
+	ofs2+=(clid&2047)*4;
+#endif
 
 //	ofs1=img->pImgData+(img->lba_fat1*512)+(clid*4);
 //	ofs2=img->pImgData+(img->lba_fat2*512)+(clid*4);
@@ -607,7 +922,7 @@ int TKFAT_GetWalkCluster(
 	TKFAT_ImageInfo *img,
 	int clid, int cloffs, bool expand)
 {
-	int i, j, n;
+	int i, j, n, o;
 
 	if(!clid)
 		return(-1);
@@ -619,10 +934,59 @@ int TKFAT_GetWalkCluster(
 		(cloffs>=img->walk_clofs))
 	{
 		i=img->walk_clcur;
-		n=cloffs-img->walk_clofs;
+//		n=cloffs-img->walk_clofs;
+		o=img->walk_clofs;
+		n=cloffs-o;
+		
+//		if((n>512) && (cloffs<=img->walk_lumax))
+		if(n>192)
+		{
+			if(cloffs<=img->walk_lumax)
+			{
+	//			j=cloffs>>8;
+				j=cloffs>>7;
+				i=img->walk_luhint[j];
+	//			o=j<<8;
+				o=j<<7;
+				n=cloffs-o;
+			}else if(img->walk_lumax>0)
+			{
+				j=img->walk_lumax>>7;
+				i=img->walk_luhint[j];
+				o=j<<7;
+				n=cloffs-o;
+			}
+		}
 	}else
 	{
-		i=clid; n=cloffs;
+		if(img->walk_clid==clid)
+//		if(0)
+		{
+			if(cloffs<=img->walk_lumax)
+			{
+//				j=cloffs>>8;
+				j=cloffs>>7;
+				i=img->walk_luhint[j];
+//				o=j<<8;
+				o=j<<7;
+				n=cloffs-o;
+			}else if(img->walk_lumax>0)
+			{
+				j=img->walk_lumax>>7;
+				i=img->walk_luhint[j];
+				o=j<<7;
+				n=cloffs-o;
+			}else
+			{
+				i=clid; n=cloffs;
+				o=0;
+			}
+		}else
+		{
+			img->walk_lumax=-1;
+			i=clid; n=cloffs;
+			o=0;
+		}
 	}
 
 //	i=clid; n=cloffs;
@@ -640,8 +1004,18 @@ int TKFAT_GetWalkCluster(
 			TKFAT_SetFatEntry(img, i, j);
 //			TKFAT_SetFatEntry(img, j, 0x0FFFFFFF);
 		}
+		
+//		if(!(o&255) && (o>img->walk_lumax))
+		if(!(o&127) && (o>img->walk_lumax))
+		{
+//			img->walk_luhint[o>>8]=i;
+			img->walk_luhint[o>>7]=i;
+			img->walk_lumax=o;
+		}
+		
 		i=j;
 		n--;
+		o++;
 	}
 
 	img->walk_clid=clid;

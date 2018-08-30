@@ -619,6 +619,7 @@ void IdentifyVersion (void)
     char*	plutoniawad;
     char*	tntwad;
     char*	htic1wad;
+    char*	hex1wad;
 
 // #ifdef NORMALUNIX
 #if 1
@@ -659,6 +660,9 @@ void IdentifyVersion (void)
 
     htic1wad = malloc(strlen(doomwaddir)+1+10+1);
     sprintf(htic1wad, "%s/heretic1.wad", doomwaddir);
+
+    hex1wad = malloc(strlen(doomwaddir)+1+10+1);
+    sprintf(hex1wad, "%s/hexen.wad", doomwaddir);
 
 //    home = getenv("HOME");
 //    if (!home)
@@ -715,6 +719,14 @@ void IdentifyVersion (void)
 		gamemode = heretic;
 		D_AddFile (doom1wad);
 		D_AddFile (htic1wad);
+		return;
+    }
+
+    if ( !w_chkaccess (hex1wad) )
+    {
+		gamemode = hexen;
+		D_AddFile (doom2wad);
+		D_AddFile (hex1wad);
 		return;
     }
 

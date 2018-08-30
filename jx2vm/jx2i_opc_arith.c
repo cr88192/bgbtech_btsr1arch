@@ -3,6 +3,11 @@ void BJX2_Op_MOV_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=op->imm;
 }
 
+void BJX2_Op_MOV_ImmxReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[op->rn]=((s32)op->imm)^0xFFFFFFFF00000000LL;
+}
+
 void BJX2_Op_MOV_Dr4Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	ctx->regs[op->rn]=ctx->regs[BJX2_REG_DR]*16+op->imm;
@@ -200,7 +205,7 @@ void BJX2_Op_MULS_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	vb=(s32)(ctx->regs[op->rm]);
 	vc=va*vb;
 	ctx->regs[BJX2_REG_DLR]=(u32)(vc    );
-	ctx->regs[BJX2_REG_DHR]=(u32)(vc>>32);
+	ctx->regs[BJX2_REG_DHR]=(s32)(vc>>32);
 }
 
 void BJX2_Op_MULU_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
@@ -269,7 +274,7 @@ void BJX2_Op_CMPGE_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_CMPEQ_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	if(((u32)ctx->regs[op->rn])==op->imm)
+	if(((u32)ctx->regs[op->rn])==((u32)op->imm))
 		ctx->regs[BJX2_REG_SR]|=1;
 	else
 		ctx->regs[BJX2_REG_SR]&=~1;
@@ -277,7 +282,7 @@ void BJX2_Op_CMPEQ_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_CMPGT_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	if(((s32)ctx->regs[op->rn])>op->imm)
+	if(((s32)ctx->regs[op->rn])>((s32)op->imm))
 		ctx->regs[BJX2_REG_SR]|=1;
 	else
 		ctx->regs[BJX2_REG_SR]&=~1;
@@ -285,7 +290,15 @@ void BJX2_Op_CMPGT_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_CMPGE_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	if(((s32)ctx->regs[op->rn])>=op->imm)
+	if(((s32)ctx->regs[op->rn])>=((s32)op->imm))
+		ctx->regs[BJX2_REG_SR]|=1;
+	else
+		ctx->regs[BJX2_REG_SR]&=~1;
+}
+
+void BJX2_Op_CMPHI_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	if(((u32)ctx->regs[op->rn])>((u32)op->imm))
 		ctx->regs[BJX2_REG_SR]|=1;
 	else
 		ctx->regs[BJX2_REG_SR]&=~1;
@@ -331,6 +344,39 @@ void BJX2_Op_CMPQGE_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	else
 		ctx->regs[BJX2_REG_SR]&=~1;
 }
+
+void BJX2_Op_CMPQEQ_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	if(((u64)ctx->regs[op->rn])==((u64)op->imm))
+		ctx->regs[BJX2_REG_SR]|=1;
+	else
+		ctx->regs[BJX2_REG_SR]&=~1;
+}
+
+void BJX2_Op_CMPQGT_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	if(((s64)ctx->regs[op->rn])>((s64)op->imm))
+		ctx->regs[BJX2_REG_SR]|=1;
+	else
+		ctx->regs[BJX2_REG_SR]&=~1;
+}
+
+void BJX2_Op_CMPQGE_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	if(((s64)ctx->regs[op->rn])>=((s64)op->imm))
+		ctx->regs[BJX2_REG_SR]|=1;
+	else
+		ctx->regs[BJX2_REG_SR]&=~1;
+}
+
+void BJX2_Op_CMPQHI_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	if(((u64)ctx->regs[op->rn])>((u64)op->imm))
+		ctx->regs[BJX2_REG_SR]|=1;
+	else
+		ctx->regs[BJX2_REG_SR]&=~1;
+}
+
 
 void BJX2_Op_LDIZ_Imm(BJX2_Context *ctx, BJX2_Opcode *op)
 {
@@ -464,6 +510,11 @@ void BJX2_Op_LEAW_LdDrPcReg(BJX2_Context *ctx, BJX2_Opcode *op)
 void BJX2_Op_LEAD_LdDrPcReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	ctx->regs[op->rn]=(op->pc+2)+(ctx->regs[BJX2_REG_DR]*4);
+}
+
+void BJX2_Op_LEAQ_LdDrPcReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[op->rn]=(op->pc+2)+(ctx->regs[BJX2_REG_DR]*8);
 }
 
 
@@ -808,7 +859,61 @@ void BJX2_Op_SHLDQ_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	}
 }
 
+void BJX2_Op_CLZ_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u32 v;
+	int n;
+	
+	v=(u32)ctx->regs[op->rm];
 
+	if(!v)
+	{
+		ctx->regs[op->rn]=32;
+		return;
+	}
+
+	n=0;
+	if(!(v&0xFFFF0000U))
+		{ v<<=16; n+=16; }
+	if(!(v&0xFF000000U))
+		{ v<<=8; n+=8; }
+	if(!(v&0xF0000000U))
+		{ v<<=4; n+=4; }
+	if(!(v&0xC0000000U))
+		{ v<<=2; n+=2; }
+	if(!(v&0x80000000U))
+		{ v<<=1; n+=1; }
+	ctx->regs[op->rn]=n;
+}
+
+void BJX2_Op_CLZQ_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v;
+	int n;
+	
+	v=(u64)ctx->regs[op->rm];
+
+	if(!v)
+	{
+		ctx->regs[op->rn]=64;
+		return;
+	}
+
+	n=0;
+	if(!(v&0xFFFFFFFF00000000ULL))
+		{ v<<=32; n+=32; }
+	if(!(v&0xFFFF000000000000ULL))
+		{ v<<=16; n+=16; }
+	if(!(v&0xFF00000000000000ULL))
+		{ v<<=8; n+=8; }
+	if(!(v&0xF000000000000000ULL))
+		{ v<<=4; n+=4; }
+	if(!(v&0xC000000000000000ULL))
+		{ v<<=2; n+=2; }
+	if(!(v&0x8000000000000000ULL))
+		{ v<<=1; n+=1; }
+	ctx->regs[op->rn]=n;
+}
 
 void BJX2_Op_SHAD_RegDrReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
@@ -937,6 +1042,71 @@ void BJX2_Op_SHLDQ_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 			((u64)ctx->regs[op->rm])>>((-shl)&63);
 	}
 }
+
+void BJX2_Op_SHAD_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	int shl;
+	
+	shl=(sbyte)ctx->regs[op->ro];
+	if(shl>=0)
+	{
+		ctx->regs[op->rn]=
+			ctx->regs[op->rm]<<(shl&31);
+	}else
+	{
+		ctx->regs[op->rn]=
+			((s32)ctx->regs[op->rm])>>((-shl)&31);
+	}
+}
+
+void BJX2_Op_SHLD_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	int shl;
+	
+	shl=(sbyte)ctx->regs[op->ro];
+	if(shl>=0)
+	{
+		ctx->regs[op->rn]=
+			ctx->regs[op->rm]<<(shl&31);
+	}else
+	{
+		ctx->regs[op->rn]=
+			((u32)ctx->regs[op->rm])>>((-shl)&31);
+	}
+}
+
+void BJX2_Op_SHADQ_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	int shl;
+	
+	shl=(sbyte)ctx->regs[op->ro];
+	if(shl>=0)
+	{
+		ctx->regs[op->rn]=
+			ctx->regs[op->rm]<<(shl&63);
+	}else
+	{
+		ctx->regs[op->rn]=
+			((s64)ctx->regs[op->rm])>>((-shl)&63);
+	}
+}
+
+void BJX2_Op_SHLDQ_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	int shl;
+	
+	shl=(sbyte)ctx->regs[op->ro];
+	if(shl>=0)
+	{
+		ctx->regs[op->rn]=
+			ctx->regs[op->rm]<<(shl&63);
+	}else
+	{
+		ctx->regs[op->rn]=
+			((u64)ctx->regs[op->rm])>>((-shl)&63);
+	}
+}
+
 
 void BJX2_Op_CSELT_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {

@@ -232,11 +232,11 @@ P_GiveBody
   int		num )
 {
     if (player->health >= MAXHEALTH)
-	return false;
+		return false;
 		
     player->health += num;
     if (player->health > MAXHEALTH)
-	player->health = MAXHEALTH;
+		player->health = MAXHEALTH;
     player->mo->health = player->health;
 	
     return true;
@@ -362,7 +362,7 @@ P_TouchSpecialThing
     // Dead thing touching.
     // Can happen with a sliding player corpse.
     if (toucher->health <= 0)
-	return;
+		return;
 
     // Identify by sprite.
     switch (special->sprite)
@@ -652,6 +652,18 @@ P_TouchSpecialThing
       default:
 	I_Error ("P_SpecialThing: Unknown gettable thing");
     }
+
+	if(special->spawnpoint.ac_spec)
+	{
+		/* BGB: Items may trigger ACS on pickup. */
+		P_AcsDoSpecialCmd(
+			special->spawnpoint.ac_spec,
+			special->spawnpoint.arg1,
+			special->spawnpoint.arg2,
+			special->spawnpoint.arg3,
+			special->spawnpoint.arg4,
+			special->spawnpoint.arg5);
+	}
 	
     if (special->flags & MF_COUNTITEM)
 	player->itemcount++;
@@ -673,6 +685,18 @@ P_KillMobj
     mobjtype_t	item;
     mobj_t*	mo;
 	
+	if(target->spawnpoint.ac_spec)
+	{
+		/* BGB: Entities may trigger ACS on death. */
+		P_AcsDoSpecialCmd(
+			target->spawnpoint.ac_spec,
+			target->spawnpoint.arg1,
+			target->spawnpoint.arg2,
+			target->spawnpoint.arg3,
+			target->spawnpoint.arg4,
+			target->spawnpoint.arg5);
+	}
+	
     target->flags &= ~(MF_SHOOTABLE|MF_FLOAT|MF_SKULLFLY);
 
     if (target->type != MT_SKULL)
@@ -683,51 +707,52 @@ P_KillMobj
 
     if (source && source->player)
     {
-	// count for intermission
-	if (target->flags & MF_COUNTKILL)
-	    source->player->killcount++;	
+		// count for intermission
+		if (target->flags & MF_COUNTKILL)
+			source->player->killcount++;	
 
-	if (target->player)
-	    source->player->frags[target->player-players]++;
+		if (target->player)
+			source->player->frags[target->player-players]++;
     }
     else if (!netgame && (target->flags & MF_COUNTKILL) )
     {
-	// count all monster deaths,
-	// even those caused by other monsters
-	players[0].killcount++;
+		// count all monster deaths,
+		// even those caused by other monsters
+		players[0].killcount++;
     }
     
     if (target->player)
     {
-	// count environment kills against you
-	if (!source)	
-	    target->player->frags[target->player-players]++;
-			
-	target->flags &= ~MF_SOLID;
-	target->player->playerstate = PST_DEAD;
-	P_DropWeapon (target->player);
+		// count environment kills against you
+		if (!source)	
+			target->player->frags[target->player-players]++;
+				
+		target->flags &= ~MF_SOLID;
+		target->player->playerstate = PST_DEAD;
+		P_DropWeapon (target->player);
 
-	if (target->player == &players[consoleplayer]
-	    && automapactive)
-	{
-	    // don't die in auto map,
-	    // switch view prior to dying
-	    AM_Stop ();
-	}
+		if (target->player == &players[consoleplayer]
+			&& automapactive)
+		{
+			// don't die in auto map,
+			// switch view prior to dying
+			AM_Stop ();
+		}
 	
     }
 
     if (target->health < -target->info->spawnhealth 
-	&& target->info->xdeathstate)
+		&& target->info->xdeathstate)
     {
-	P_SetMobjState (target, target->info->xdeathstate);
+		P_SetMobjState (target, target->info->xdeathstate);
     }
     else
-	P_SetMobjState (target, target->info->deathstate);
+		P_SetMobjState (target, target->info->deathstate);
+
     target->tics -= P_Random()&3;
 
     if (target->tics < 1)
-	target->tics = 1;
+		target->tics = 1;
 		
     //	I_StartSound (&actor->r, actor->info->deathsound);
 
@@ -786,10 +811,13 @@ P_DamageMobj
     int		temp;
 	
     if ( !(target->flags & MF_SHOOTABLE) )
-	return;	// shouldn't happen...
+		return;	// shouldn't happen...
 		
     if (target->health <= 0)
-	return;
+		return;
+
+    if(target->flags & MF_DORMANT)
+		return;
 
     if ( target->flags & MF_SKULLFLY )
     {
@@ -835,84 +863,86 @@ P_DamageMobj
     // player specific
     if (player)
     {
-	// end of game hell hack
-	if (target->subsector->sector->special == 11
-	    && damage >= target->health)
-	{
-	    damage = target->health - 1;
-	}
-	
+		// end of game hell hack
+		if (target->subsector->sector->special == 11
+			&& damage >= target->health)
+		{
+			damage = target->health - 1;
+		}
 
-	// Below certain threshold,
-	// ignore damage in GOD mode, or with INVUL power.
-	if ( damage < 1000
-	     && ( (player->cheats&CF_GODMODE)
-		  || player->powers[pw_invulnerability] ) )
-	{
-	    return;
-	}
-	
-	if (player->armortype)
-	{
-	    if (player->armortype == 1)
-		saved = damage/3;
-	    else
-		saved = damage/2;
-	    
-	    if (player->armorpoints <= saved)
-	    {
-		// armor is used up
-		saved = player->armorpoints;
-		player->armortype = 0;
-	    }
-	    player->armorpoints -= saved;
-	    damage -= saved;
-	}
-	player->health -= damage; 	// mirror mobj health here for Dave
-	if (player->health < 0)
-	    player->health = 0;
-	
-	player->attacker = source;
-	player->damagecount += damage;	// add damage after armor / invuln
+		// Below certain threshold,
+		// ignore damage in GOD mode, or with INVUL power.
+		if ( damage < 1000
+			 && ( (player->cheats&CF_GODMODE)
+			  || player->powers[pw_invulnerability] ) )
+		{
+			return;
+		}
+		
+		if (player->armortype)
+		{
+			if (player->armortype == 1)
+				saved = damage/3;
+			else
+				saved = damage/2;
+			
+			if (player->armorpoints <= saved)
+			{
+				// armor is used up
+				saved = player->armorpoints;
+				player->armortype = 0;
+			}
+			player->armorpoints -= saved;
+			damage -= saved;
+		}
+		player->health -= damage; 	// mirror mobj health here for Dave
+		if (player->health < 0)
+			player->health = 0;
+		
+		player->attacker = source;
+		player->damagecount += damage;	// add damage after armor / invuln
 
-	if (player->damagecount > 100)
-	    player->damagecount = 100;	// teleport stomp does 10k points...
-	
-	temp = damage < 100 ? damage : 100;
+		if (player->damagecount > 100)
+			player->damagecount = 100;	// teleport stomp does 10k points...
+		
+		temp = damage < 100 ? damage : 100;
 
-	if (player == &players[consoleplayer])
-	    I_Tactile (40,10,40+temp*2);
+		if (player == &players[consoleplayer])
+			I_Tactile (40,10,40+temp*2);
     }
     
     // do the damage	
-    target->health -= damage;	
-    if (target->health <= 0)
+    if(!(target->flags & MF_DORMANT))
     {
-	P_KillMobj (source, target);
-	return;
+		target->health -= damage;	
+		if (target->health <= 0)
+		{
+			P_KillMobj (source, target);
+			return;
+		}
     }
 
     if ( (P_Random () < target->info->painchance)
-	 && !(target->flags&MF_SKULLFLY) )
+	 && !(target->flags & MF_SKULLFLY))
     {
-	target->flags |= MF_JUSTHIT;	// fight back!
-	
-	P_SetMobjState (target, target->info->painstate);
+		target->flags |= MF_JUSTHIT;	// fight back!
+		P_SetMobjState (target, target->info->painstate);
     }
 			
     target->reactiontime = 0;		// we're awake now...	
 
-    if ( (!target->threshold || target->type == MT_VILE)
-	 && source && source != target
-	 && source->type != MT_VILE)
+    if ( (!target->threshold || (target->type == MT_VILE))
+		&& source && (source != target)
+		&& (source->type != MT_VILE) &&
+		!(target->flags & MF_DORMANT))
     {
-	// if not intent on another player,
-	// chase after this one
-	target->target = source;
-	target->threshold = BASETHRESHOLD;
-	if (target->state == &states[target->info->spawnstate]
-	    && target->info->seestate != S_NULL)
-	    P_SetMobjState (target, target->info->seestate);
+		// if not intent on another player,
+		// chase after this one
+		target->target = source;
+		target->threshold = BASETHRESHOLD;
+		if (target->state == &states[target->info->spawnstate]
+			&& target->info->seestate != S_NULL)
+			P_SetMobjState (target, target->info->seestate);
     }
 			
 }

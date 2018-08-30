@@ -518,7 +518,9 @@ void WI_initAnimatedBack(void)
 	anim_t*	a;
 
 	if (gamemode == commercial)
-	return;
+		return;
+	if (gamemode == hexen)
+		return;
 
 	if (wbs->epsd > 2)
 	return;
@@ -548,7 +550,9 @@ void WI_updateAnimatedBack(void)
 	anim_t*	a;
 
 	if (gamemode == commercial)
-	return;
+		return;
+	if (gamemode == hexen)
+		return;
 
 	if (wbs->epsd > 2)
 	return;
@@ -793,27 +797,32 @@ void WI_drawShowNextLoc(void)
 	// draw animated background
 	WI_drawAnimatedBack(); 
 
-	if ( gamemode != commercial)
+	if (gamemode == hexen)
+		return;
+
+//	if ( gamemode != commercial)
+	if(( gamemode != commercial) &&
+		( gamemode != hexen))
 	{
 		if (wbs->epsd > 2)
-	{
-		WI_drawEL();
-		return;
-	}
-	
-	last = (wbs->last == 8) ? wbs->next - 1 : wbs->last;
+		{
+			WI_drawEL();
+			return;
+		}
+		
+		last = (wbs->last == 8) ? wbs->next - 1 : wbs->last;
 
-	// draw a splat on taken cities.
-	for (i=0 ; i<=last ; i++)
-		WI_drawOnLnode(i, &splat);
+		// draw a splat on taken cities.
+		for (i=0 ; i<=last ; i++)
+			WI_drawOnLnode(i, &splat);
 
-	// splat the secret level?
-	if (wbs->didsecret)
-		WI_drawOnLnode(8, &splat);
+		// splat the secret level?
+		if (wbs->didsecret)
+			WI_drawOnLnode(8, &splat);
 
-	// draw flashing ptr
-	if (snl_pointeron)
-		WI_drawOnLnode(wbs->next, yah); 
+		// draw flashing ptr
+		if (snl_pointeron)
+			WI_drawOnLnode(wbs->next, yah); 
 	}
 
 	// draws which level you are entering..
@@ -974,7 +983,9 @@ void WI_updateDeathmatchStats(void)
 	{
 		S_StartSound(0, sfx_slop);
 
-		if ( gamemode == commercial)
+//		if ( gamemode == commercial)
+		if (( gamemode == commercial) ||
+			( gamemode == hexen))
 		WI_initNoState();
 		else
 		WI_initShowNextLoc();
@@ -1254,10 +1265,11 @@ void WI_updateNetgameStats(void)
 	if (acceleratestage)
 	{
 		S_StartSound(0, sfx_sgcock);
-		if ( gamemode == commercial )
-		WI_initNoState();
+//		if ( gamemode == commercial )
+		if (( gamemode == commercial ) || ( gamemode == hexen ))
+			WI_initNoState();
 		else
-		WI_initShowNextLoc();
+			WI_initShowNextLoc();
 	}
 	}
 	else if (ng_state & 1)
@@ -1430,10 +1442,11 @@ void WI_updateStats(void)
 	{
 		S_StartSound(0, sfx_sgcock);
 
-		if (gamemode == commercial)
-		WI_initNoState();
+//		if (gamemode == commercial)
+		if ((gamemode == commercial) || (gamemode == hexen))
+			WI_initNoState();
 		else
-		WI_initShowNextLoc();
+			WI_initShowNextLoc();
 	}
 	}
 	else if (sp_state & 1)
@@ -1525,10 +1538,11 @@ void WI_Ticker(void)
 	if (bcnt == 1)
 	{
 	// intermission music
-		if ( gamemode == commercial )
-		S_ChangeMusic(mus_dm2int, true);
-	else
-		S_ChangeMusic(mus_inter, true); 
+//		if ( gamemode == commercial )
+		if ((gamemode == commercial) || (gamemode == hexen))
+			S_ChangeMusic(mus_dm2int, true);
+		else
+			S_ChangeMusic(mus_inter, true); 
 	}
 
 	WI_checkForAccelerate();
@@ -1563,7 +1577,8 @@ void WI_loadData(void)
 	wi_anims[1] = epsd1animinfo;	//BGB: Debug
 	wi_anims[2] = epsd2animinfo;	//BGB: Debug
 
-	if (gamemode == commercial)
+//	if (gamemode == commercial)
+	if ((gamemode == commercial) || (gamemode == hexen))
 		strcpy(name, "INTERPIC");
 	else 
 		sprintf(name, "WIMAP%d", wbs->epsd);
@@ -1591,7 +1606,8 @@ void WI_loadData(void)
 	// }
 	//}
 
-	if (gamemode == commercial)
+//	if (gamemode == commercial)
+	if ((gamemode == commercial) || (gamemode == hexen))
 	{
 		NUMCMAPS = 32;								
 		lnames = (patch_t **) Z_Malloc(sizeof(patch_t*) * NUMCMAPS,
@@ -1757,7 +1773,8 @@ void WI_unloadData(void)
 			Z_ChangeTag(num[i], PU_CACHE);
 	}
 	
-	if (gamemode == commercial)
+//	if (gamemode == commercial)
+	if ((gamemode == commercial) || (gamemode == hexen))
 	{
 		for (i=0 ; i<NUMCMAPS ; i++)
 		{
@@ -1847,17 +1864,18 @@ void WI_initVariables(wbstartstruct_t* wbstartstruct)
 	wbs = wbstartstruct;
 
 #ifdef RANGECHECKING
-	if (gamemode != commercial)
+//	if (gamemode != commercial)
+	if ((gamemode != commercial) && (gamemode != hexen))
 	{
 		if ( gamemode == retail )
-	RNGCHECK(wbs->epsd, 0, 3);
+			RNGCHECK(wbs->epsd, 0, 3);
 		else
-	RNGCHECK(wbs->epsd, 0, 2);
+			RNGCHECK(wbs->epsd, 0, 2);
 	}
 	else
 	{
-	RNGCHECK(wbs->last, 0, 8);
-	RNGCHECK(wbs->next, 0, 8);
+		RNGCHECK(wbs->last, 0, 8);
+		RNGCHECK(wbs->next, 0, 8);
 	}
 	RNGCHECK(wbs->pnum, 0, MAXPLAYERS);
 	RNGCHECK(wbs->pnum, 0, MAXPLAYERS);

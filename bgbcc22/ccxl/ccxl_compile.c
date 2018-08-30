@@ -1378,8 +1378,8 @@ int BGBCC_CCXL_VarTypeString_ModifierChar(BGBCC_TransState *ctx, s64 i)
 //	case BGBCC_TYFL_EVENT: c='e'; break;
 	case BGBCC_TYFL_EXTERN: c='e'; break;
 	//f (fastcall/amd64)
-	case BGBCC_TYFL_GETTER: c='g'; break;
-	case BGBCC_TYFL_SETTER: c='h'; break;
+//	case BGBCC_TYFL_GETTER: c='g'; break;
+//	case BGBCC_TYFL_SETTER: c='h'; break;
 	case BGBCC_TYFL_INLINE: c='i'; break;
 	case BGBCC_TYFL_FINAL: c='j'; break;
 	case BGBCC_TYFL_CONST: c='k'; break;
@@ -2720,7 +2720,8 @@ void BGBCC_CCXL_CompileClass(BGBCC_TransState *ctx, BCCX_Node *l)
 			if(s)
 			{
 				BGBCC_CCXL_BeginName(ctx, CCXL_CMD_VARDECL, s);
-				BGBCC_CCXL_AttribStr(ctx, CCXL_ATTR_NAME, s);
+//				BGBCC_CCXL_AttribStr(ctx, CCXL_ATTR_NAME, s);
+				BGBCC_CCXL_AttribStr(ctx, CCXL_ATTR_SIG, s);
 				BGBCC_CCXL_End(ctx);
 			}
 			c=BCCX_Next(c);

@@ -236,6 +236,166 @@ int BGBCC_JX2_EmitStatWord(BGBCC_JX2_Context *ctx, int val)
 
 }
 
+/** Returns whether a 32-bit instruction would cross a 32B boundary (and require padding as a result). */
+int BGBCC_JX2_CheckPadCross32(BGBCC_JX2_Context *ctx)
+{
+	int i, j, k;
+
+	i=BGBCC_JX2_EmitGetOffs(ctx);
+	if(ctx->sec==BGBCC_SH_CSEG_TEXT)
+	{
+		if((i&31)==30)
+			return(1);
+	}
+	return(0);
+}
+
+/** Returns whether a 48-bit instruction would cross a 32B boundary (and require padding as a result). */
+int BGBCC_JX2_CheckPadCross48(BGBCC_JX2_Context *ctx)
+{
+	int i, j, k;
+
+	i=BGBCC_JX2_EmitGetOffs(ctx);
+	if(ctx->sec==BGBCC_SH_CSEG_TEXT)
+	{
+		if((i&31)==30)
+			return(1);
+		if((i&31)==28)
+			return(1);
+	}
+	return(0);
+}
+
+/** Check if we can expand last op to avoid inserting a NOP. */
+int BGBCC_JX2_EmitPadCheckExpandLastOp(
+	BGBCC_JX2_Context *ctx)
+{
+	int op0, opw1, opw2;
+	int i, j, k;
+
+	i=BGBCC_JX2_EmitGetOffs(ctx);
+	j=ctx->pos_pad_op0;
+	
+	if((i-j)!=2)
+		return(0);
+	
+	op0=BGBCC_JX2_EmitGetOffsWord(ctx, j);
+	opw1=-1; opw2=-1;
+	switch((op0>>8)&255)
+	{
+	case 0x10:		opw1=0xF000; opw2=0x1900|(op0&255);	break;
+	case 0x11:		opw1=0xF001; opw2=0x1900|(op0&255);	break;
+	case 0x12:		opw1=0xF002; opw2=0x1900|(op0&255);	break;
+	case 0x13:		opw1=0xF003; opw2=0x1900|(op0&255);	break;
+	case 0x14:		opw1=0xF004; opw2=0x1900|(op0&255);	break;
+	case 0x15:		opw1=0xF005; opw2=0x1900|(op0&255);	break;
+	case 0x16:		opw1=0xF006; opw2=0x1900|(op0&255);	break;
+	case 0x17:		opw1=0xF007; opw2=0x1900|(op0&255);	break;
+
+	case 0x18:		opw1=0xF008; opw2=0x1900|(op0&255);	break;
+	case 0x19:		opw1=0xF028; opw2=0x1900|(op0&255);	break;
+	case 0x1A:		opw1=0xF048; opw2=0x1900|(op0&255);	break;
+	case 0x1B:		opw1=0xF068; opw2=0x1900|(op0&255);	break;
+
+	case 0x1C:		opw1=0xF00C; opw2=0x1900|(op0&255);	break;
+	case 0x1D:		opw1=0xF00D; opw2=0x1900|(op0&255);	break;
+	case 0x1E:		opw1=0xF00E; opw2=0x1900|(op0&255);	break;
+
+	case 0x32:
+		switch(op0&15)
+		{
+		case 0x4:
+			opw1=0xF088;
+			opw2=0x1C00|(op0&0xF0)|((op0&0xF0)>>4);
+			break;
+		case 0x5:
+			opw1=0xF089;
+			opw2=0x1C00|(op0&0xF0)|((op0&0xF0)>>4);
+			break;
+		case 0x6:
+			opw1=0xF008;
+			opw2=0x1C00|(op0&0xF0)|((op0&0xF0)>>4);
+			break;
+		case 0x7:
+			opw1=0xF009;
+			opw2=0x1C00|(op0&0xF0)|((op0&0xF0)>>4);
+			break;
+		
+		default:
+			k=-1;
+			break;
+		}
+		break;
+
+	default:
+		k=-1;
+		break;
+	}
+
+	if((opw1>=0) && (opw2>=0))
+	{
+		BGBCC_JX2_EmitSetOffsWord(ctx, j, opw1);
+		BGBCC_JX2_EmitWord(ctx, opw2);
+		return(1);
+	}
+
+	return(0);
+}
+
+/* If the instruction would cross a 32B boundary, pad-align. */
+int BGBCC_JX2_EmitPadForOpWord(BGBCC_JX2_Context *ctx, int val)
+{
+	static int rec=0;
+	int i, j, k;
+
+	if(ctx->emit_isprobe)
+		return(0);
+
+	if(rec)
+		return(0);
+	rec++;
+
+	i=BGBCC_JX2_EmitGetOffs(ctx);
+//	if(!(i&(al-1)))
+//		return(0);
+//	j=al-(i&(al-1));
+
+	if(ctx->sec==BGBCC_SH_CSEG_TEXT)
+	{
+		if((val&0xFC00)==0xFC00)
+		{
+			if((i&31)==30)
+			{
+				if(!BGBCC_JX2_EmitPadCheckExpandLastOp(ctx))
+					BGBCC_JX2_EmitWord(ctx, 0x3000);
+			}
+
+			if((i&31)==28)
+			{
+				BGBCC_JX2_EmitWord(ctx, 0xF000);
+				BGBCC_JX2_EmitWord(ctx, 0x1600);
+			}
+		}else if((val&0xF000)==0xF000)
+		{
+			if((i&31)==30)
+			{
+				if(!BGBCC_JX2_EmitPadCheckExpandLastOp(ctx))
+					BGBCC_JX2_EmitWord(ctx, 0x3000);
+			}
+		}
+		
+		i=BGBCC_JX2_EmitGetOffs(ctx);
+		ctx->pos_pad_op3=ctx->pos_pad_op2;
+		ctx->pos_pad_op2=ctx->pos_pad_op1;
+		ctx->pos_pad_op1=ctx->pos_pad_op0;
+		ctx->pos_pad_op0=i;
+	}
+	
+	rec--;
+	return(0);
+}
+
+
 int BGBCC_JX2_EmitWord(BGBCC_JX2_Context *ctx, int val)
 {
 	int i, j, k;
@@ -248,12 +408,19 @@ int BGBCC_JX2_EmitWord(BGBCC_JX2_Context *ctx, int val)
 //		BGBCC_DBGBREAK
 //	}
 
+//	if((ctx->sec==BGBCC_SH_CSEG_TEXT) && !ctx->stat_opc_issfx)
+//	{
+//		BGBCC_JX2_EmitPadForOpWord(ctx, val);
+//		if(!val)
+//			{ BGBCC_DBGBREAK }
+//	}
+
 	BGBCC_JX2_EmitStatWord(ctx, val);
 
-	if(!val && (ctx->sec==BGBCC_SH_CSEG_TEXT))
-	{
-		k=-1;
-	}
+//	if(!val && (ctx->sec==BGBCC_SH_CSEG_TEXT))
+//	{
+//		k=-1;
+//	}
 
 	if(ctx->is_le)
 	{

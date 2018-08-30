@@ -34,8 +34,11 @@ extern lighttable_t*	dc_colormap;
 extern int		dc_x;
 extern int		dc_yl;
 extern int		dc_yh;
+extern fixed_t		dc_scale;
 extern fixed_t		dc_iscale;
 extern fixed_t		dc_texturemid;
+
+extern byte		dc_isspr;
 
 // first pixel in a column
 extern byte*		dc_source;		

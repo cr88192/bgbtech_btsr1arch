@@ -1,0 +1,145 @@
+BGB Reg/RM ISA 0
+* Simplistic superficially x86-like ISA
+
+
+Instruction Layout:
+* sqtt_oooo_nnnn_mmmm
+* 0qtt_oooo_nnnn_mmmm
+* 1qtt_oooo_nnnn_mmmm 0zzz_zzzz_zzzz_zzzz
+* 1qtt_oooo_nnnn_mmmm 1zzz_zzzz_zzzz_zzzz zzzz_zzzz_zzzz_zzzz
+
+Sub-Layouts:
+* 0qtt_00oo_nnnn_mmmm
+** 0c00_00cc_iiii_iiii  Jcc disp8			//Jump Condition Code
+** 0q01_0000_iiii_iiii  BRA disp8			//Branch
+** 0q01_0001_iiii_iiii  BSR disp8			//Branch Subroutine
+** 0q01_0010_iiii_iiii  BT disp8			//Branch If True
+** 0q01_0011_iiii_iiii  BF disp8			//Branch If False
+** 0010_00oo_nnnn_mmmm  MOV.x Rm, [Rn]		//Load
+** 0110_00oo_nnnn_mmmm  MOV.x [Rm], Rn		//Store
+** 0011_00oo_nnnn_mmmm  MOV.x Rm, [Rn+R12]	//Load
+** 0111_00oo_nnnn_mmmm  MOV.x [Rm+R12], Rn	//Store
+
+
+The 's' field could encode the instruction size.
+* 0=16-bit Form
+* 1=32/48 Bit Forms
+
+The 'q' field would give the direction for Reg/Mem ops.
+* 0: Functions as a Load
+* 1: Functions as a Store.
+* Serves as a sign-extension bit for immediate values.
+* Alternate-Opcode bit for "Reg, Reg" cases.
+
+The tt field could function similar to the Mod field in an Mod/RM, but would interact with the instruction size encoded in other bits.
+  00=Rn, Rm
+  01=Rn, #imm
+  10=Rn, [Rm, Disp]
+  11=Rn, [Rm, Ri] / [Rm, Ri, disp]
+
+For 16-bit ops
+  Disp is 0.
+  Ri is hard-wired (RBX?).
+  imm is an imm5s.
+
+For 32-bit ops, tt/... influences structure of zzzz bits.
+  Most cases will extend the opcode bits some.
+  tt=00: Adds a 3rd register for arith ops.
+  tt=01: Extends the immediate.
+  tt=10: Adds a proper displacement.
+  tt=11: Adds an index register, and an additional displacement.
+
+oooo:
+  0000=MOV.B / BRA (depends on tt)
+  0001=MOV.W / BSR (depends on tt)
+  0010=MOV.L / BT (depends on tt)
+  0011=MOV.Q / BF (depends on tt)
+  0100=?
+  0101=?
+  0110=?
+  0111=MOV (tt=00/01), 0R and 1R ops (tt=10/11)
+  1000=ADD / ADC (q=1, tt=00)
+  1001=SUB / SBB (q=1, tt=00)
+  1010=MUL
+  1011=CMP	(Compare) 
+  1101=AND
+  1110=OR
+  1111=XOR
+
+
+Could probably be fiddled into something which would count as "actually usable" (can run C code, ...).
+
+
+Could either use, or not bother with, x86 style register naming.
+
+Me being uncreative:
+  R0 / RAX, Scratch, Return
+  R1 / RCX, Scratch, Arg 0
+  R2 / RDX, Scratch, Arg 1
+  R3 / RBX, Scratch
+  R5 / RSI, Preserve
+  R6 / RDI, Preserve
+  R6 / RBP, Preserve
+  R7 / RSP, Special / Stack
+  R8, Scratch, Arg 2
+  R9, Scratch, Arg 3
+  R10, Preserve
+  R11, Preserve
+  R12 / DLR, Special
+  R13 / DHR, Special
+  R14 / LR, Special
+  R15 / PC, Special
+
+This is a little messy, but oh well.
+
+
+PC would be semi-exposed mostly as it allows PC relative addressing and some special case ops, but PC may only be used in certain ways.
+
+LR may only be used in certain ways (loads and stores), and accessing it in other ways would encode some alternate instruction forms.
+
+
+
+Partial Rework
+* Base 16-bit ops function more like in a Load/Store ISA
+* Extended 32/48 bit ops may support Reg/Mem Operations.
+
+Instruction Layout:
+* ssoo_oooo_nnnn_mmmm
+* 00oo_oooo_nnnn_mmmm
+* 01oo_oooo_nnnn_mmmm
+* 10oo_nnnn_iiii_iiii
+** 1010_oooo_iiii_iiii
+** 1011_oooo_nnnn_oooo
+** 1011_0000_oooo_oooo
+* 11oo_oooo_nnnn_mmmm 0zzz_zzzz_zzzz_zzzz
+* 11oo_oooo_nnnn_mmmm 1zzz_zzzz_zzzz_zzzz zzzz_zzzz_zzzz_zzzz
+
+MOV.x:
+* 0000_rtbb_nnnn_mmmm
+* 1100_rtbb_nnnn_mmmm 0000_qnmi_iiii_iiii
+* 1100_rtbb_nnnn_mmmm 1000_qnmi_iiii_iiii iiii_iiii_iiii_iiii
+** bb: 00=B, 01=W, 10=L, 11=Q
+** t: 0=(Rm) / (Rm, Imm), 1=(Rm, R0) / (Rm, Ri)
+** r: 0=Store, 1=Load
+** q: 0=SX, 1=ZX (r=1) / LEA (r=0)
+
+Arith:
+* 0001_bbbb_nnnn_mmmm
+* 1101_bbbb_nnnn_mmmm 0rtt_qnmi_iiii_iiii
+* 1101_bbbb_nnnn_mmmm 1rtt_qnmi_iiii_iiii iiii_iiii_iiii_iiii
+** bbbb:
+*** 0000=ADD, 0001=SUB, 0010=ADC, 0011=SBB
+*** 0100=AND, 0101=OR , 0110=XOR, 0111= -
+*** 10xx=MOV (16-bit)
+*** 1100=CMPEQ, 1101=CMPHI, 1110=CMPGT, 1111=TST
+** tt (3R):
+*** 00=Reg, Reg, Reg
+*** 01=Reg, Imm, Reg
+*** 10=(Reg, Reg), Reg
+*** 11=(Reg, Imm), Reg
+
+** tt (2R):
+*** 00=Rm, Rn; Imm=Opcode
+*** 01=Imm, Rn; Rm=Imm
+*** 10=(Rm, Reg), Rn
+*** 11=(Rm, Imm), Rn

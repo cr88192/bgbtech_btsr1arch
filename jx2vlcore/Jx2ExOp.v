@@ -45,7 +45,7 @@ input[6:0]		regIdRi;
 input[63:0]		regValRm;		//Rm input value
 input[63:0]		regValRn;		//Rn input value
 input[63:0]		regValRi;		//Rn input value
-input[31:0]		immValRi;		//immediate/disp value
+input[32:0]		immValRi;		//immediate/disp value
 input[63:0]		idInGenPc;		//PC to next instruction
 
 output[63:0]	regOutVal;		//Rn output value
@@ -142,15 +142,30 @@ assign	regOutIdCn	= tRegOutIdCn;
 wire[31:0]	tShadOut;
 reg[2:0]	tShOp;
 
+wire	tShadIsImm3;
+assign	tShadIsImm3 =
+	(opCmd == JX2_UCMD_ALU_SHAD3 ) ||
+	(opCmd == JX2_UCMD_ALU_SHLD3 ) ||
+	(opCmd == JX2_UCMD_ALU_SHADQ3) ||
+	(opCmd == JX2_UCMD_ALU_SHLDQ3) ;
+
+wire[63:0]	tShadValIn;
+assign		tShadValIn =
+		tShadIsImm3 ? regValRm : regValRn;
+
+wire[7:0]	tShadValShl;
+assign		tShadValShl =
+		tShadIsImm3 ? regValRi[7:0] : regValRm[7:0];
+
 Jx2ExShad32		shad(
 	clock, 			reset,
-	regValRn[31:0],	regValRm[7:0],
+	tShadValIn[31:0],	tShadValShl,
 	tShadOut,		tShOp);
 
 wire[63:0]	tShadQOut;
 Jx2ExShad64		shadq(
 	clock, 			reset,
-	regValRn[63:0],	regValRm[7:0],
+	tShadValIn[63:0],	tShadValShl,
 	tShadQOut,		tShOp);
 
 reg[63:0]		regMaRbVal;
@@ -232,7 +247,7 @@ begin
 	opCmdC		= opCmd;
 
 	regRnSxt	= regValRn[63] ? UV64_FF : UV64_00;
-	immValRiB	= { immValRi[31] ? UV32_FF : UV32_00, immValRi};
+	immValRiB	= { immValRi[32] ? UV32_FF : UV32_00, immValRi[31:0]};
 
 	regMulA		= UV32_XX;
 	regMulB		= UV32_XX;
@@ -267,7 +282,7 @@ begin
 */
 	
 	
-	immValRiA = immValRi;
+	immValRiA = immValRi[31:0];
 	regDlrA = ctlInDlr;
 	regDlrI4 = {regDlrA[59:0], immValRiA[3:0]};
 
@@ -282,10 +297,10 @@ begin
 		5'b01001: regMaIxVal2={immValRiB[62:0], 1'b0};
 		5'b01010: regMaIxVal2={immValRiB[61:0], 2'b0};
 		5'b01011: regMaIxVal2={immValRiB[60:0], 3'b0};
-		5'b01100: regMaIxVal2=regDlrI4;
-		5'b01101: regMaIxVal2={regDlrI4[62:0], 1'b0};
-		5'b01110: regMaIxVal2={regDlrI4[61:0], 2'b0};
-		5'b01111: regMaIxVal2={regDlrI4[60:0], 3'b0};
+//		5'b01100: regMaIxVal2=regDlrI4;
+//		5'b01101: regMaIxVal2={regDlrI4[62:0], 1'b0};
+//		5'b01110: regMaIxVal2={regDlrI4[61:0], 2'b0};
+//		5'b01111: regMaIxVal2={regDlrI4[60:0], 3'b0};
 		5'b10100: regMaIxVal2=regValRi;
 		5'b10101: regMaIxVal2={regValRi[62:0], 1'b0};
 		5'b10110: regMaIxVal2={regValRi[61:0], 2'b0};
@@ -301,7 +316,7 @@ begin
 		2'b00: regMaIxVal3=0;
 		2'b01: regMaIxVal3={regDlrA[62:0], 1'b0};
 		2'b10: regMaIxVal3={immValRiB[62:0], 1'b0};
-		2'b11: regMaIxVal3={regDlrI4[62:0], 1'b0};
+//		2'b11: regMaIxVal3={regDlrI4[62:0], 1'b0};
 	endcase
 	regMaAddrPc=regMaRbVal+regMaIxVal3;
 //	regMaAddrPc = { regMaRbVal[63:32],
@@ -633,6 +648,7 @@ begin
 
 	case(opCmdB)
 
+/*
 		JX2_UCMD_MOV_DLR4R: begin
 			if(regRnIsGpr)
 			begin
@@ -648,6 +664,7 @@ begin
 				tRegOutId	= regIdRn;
 			end
 		end
+*/
 
 		JX2_UCMD_ALU_ADD: begin
 			if(regRnIsGpr)
@@ -809,6 +826,14 @@ begin
 
 		end
 
+		JX2_UCMD_ALU_CSELT: begin
+			if(regRnIsGpr)
+			begin
+				tRegOutVal	= ctlInSr[0] ? regValRm : regValRi;
+				tRegOutId	= regIdRn;
+			end
+		end
+
 
 		JX2_UCMD_ALU_SHLD: begin
 	//		tShOp = (opCmd == JX2_UCMD_ALU_SHLD) ? 3'h1 : 3'h2;
@@ -837,6 +862,41 @@ begin
 			end
 		end
 		JX2_UCMD_ALU_SHADQ: begin
+			tShOp = 3'h2;
+			if(regRnIsGpr)
+			begin
+				tRegOutVal	= tShadQOut[63:0];
+				tRegOutId	= regIdRn;
+			end
+		end
+
+
+		JX2_UCMD_ALU_SHLD3: begin
+			tShOp = 3'h1;
+			if(regRnIsGpr)
+			begin
+				tRegOutVal	= {UV32_00, tShadOut[31:0]};
+				tRegOutId	= regIdRn;
+			end
+		end
+		JX2_UCMD_ALU_SHAD3: begin
+			tShOp = 3'h2;
+			if(regRnIsGpr)
+			begin
+				tRegOutVal	= {tShadOut[31]?UV32_FF:UV32_00, tShadOut[31:0]};
+				tRegOutId	= regIdRn;
+			end
+		end
+
+		JX2_UCMD_ALU_SHLDQ3: begin
+			tShOp = 3'h1;
+			if(regRnIsGpr)
+			begin
+				tRegOutVal	= tShadQOut[63:0];
+				tRegOutId	= regIdRn;
+			end
+		end
+		JX2_UCMD_ALU_SHADQ3: begin
 			tShOp = 3'h2;
 			if(regRnIsGpr)
 			begin

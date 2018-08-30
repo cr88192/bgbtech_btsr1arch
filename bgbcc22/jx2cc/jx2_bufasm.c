@@ -651,6 +651,8 @@ int nmid;
 {"shar32",	BGBCC_SH_NMID_SHAR32},
 {"movnt",	BGBCC_SH_NMID_MOVNT},
 {"cselt",	BGBCC_SH_NMID_CSELT},
+{"clz",		BGBCC_SH_NMID_CLZ},
+{"clzq",	BGBCC_SH_NMID_CLZQ},
 
 {"mac.w",	BGBCC_SH_NMID_MACW},
 {"not",		BGBCC_SH_NMID_NOT},
@@ -702,6 +704,7 @@ int nmid;
 {"push",	BGBCC_SH_NMID_PUSH},
 {"pop",		BGBCC_SH_NMID_POP},
 {"bra8b",	BGBCC_SH_NMID_BRA8B},
+{"ret",		BGBCC_SH_NMID_RET},
 
 {"fabs",	BGBCC_SH_NMID_FABS},
 {"fadd",	BGBCC_SH_NMID_FADD},

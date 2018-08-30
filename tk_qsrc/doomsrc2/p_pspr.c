@@ -192,7 +192,7 @@ boolean P_CheckAmmo (player_t* player)
 	}
 	else if (player->weaponowned[wp_supershotgun] 
 		 && player->ammo[am_shell]>2
-		 && (gamemode == commercial) )
+		 && ( (gamemode == commercial) || (gamemode == hexen)) )
 	{
 	    player->pendingweapon = wp_supershotgun;
 	}

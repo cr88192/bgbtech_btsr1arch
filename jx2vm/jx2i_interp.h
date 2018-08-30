@@ -98,6 +98,10 @@ Will use direct linking and assume a non-modifiable program space.
 
 #define BJX2_FLT_PCMISH		0x8801		//PC doesn't match trace addr
 
+#define BJX2_FLT_TLBGF		0xA000		//TLB General Fault
+#define BJX2_FLT_TLBMISS	0xA001		//TLB Miss
+#define BJX2_FLT_TLBACL		0xA002		//TLB ACL
+
 #define BJX2_FLT_TIMER		0xC001		//kHz timer
 #define BJX2_FLT_IOPOKE		0xC002		//IO Poke
 #define BJX2_FLT_SCRPOKE	0xC003		//Screen Poke
@@ -220,6 +224,8 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_FPOP		0x69		//
 #define BJX2_NMID_CSELT		0x6A		//
 #define BJX2_NMID_MOVNT		0x6B		//
+#define BJX2_NMID_CLZ		0x6C		//
+#define BJX2_NMID_CLZQ		0x6D		//
 
 
 #define BJX2_FMID_NONE			0x00		//?
@@ -357,6 +363,14 @@ bjx2_addr mem_l1addr4;		//L1 addr
 
 bjx2_addr mem_l1h4k[256];		//L1 addr (4kB)
 bjx2_addr mem_l2h32k[4096];		//L2 addr (32/64kB)
+
+u64 mem_tlb_hi[64];
+u64 mem_tlb_lo[64];
+
+u64 mem_tlb_pr0_hi;
+u64 mem_tlb_pr0_lo;
+u64 mem_tlb_pr1_hi;
+u64 mem_tlb_pr1_lo;
 
 bjx2_addr *map_addr;
 char **map_name;

@@ -191,6 +191,36 @@ BCCX_Node *BGBCP_DefName(BGBCP_ParseState *ctx, char **str)
 	}else if(ty==BTK_NAME)
 	{
 		s=BGBCP_Token(s, b, &ty);
+		
+		if(ctx->lang==BGBCC_LANG_CPP)
+		{
+			if(!strcmp(b, "operator"))
+			{
+				s=BGBCP_Token(s, b, &ty);
+				
+				if(!strcmp(b, "+"))
+					{ strcpy(b, "__operator_add"); }
+				else if(!strcmp(b, "-"))
+					{ strcpy(b, "__operator_sub"); }
+				else if(!strcmp(b, "*"))
+					{ strcpy(b, "__operator_mul"); }
+				else if(!strcmp(b, "/"))
+					{ strcpy(b, "__operator_div"); }
+				else if(!strcmp(b, "%"))
+					{ strcpy(b, "__operator_mod"); }
+				else if(!strcmp(b, "&"))
+					{ strcpy(b, "__operator_and"); }
+				else if(!strcmp(b, "|"))
+					{ strcpy(b, "__operator_or"); }
+				else if(!strcmp(b, "^"))
+					{ strcpy(b, "__operator_xor"); }
+				else if(!strcmp(b, "="))
+					{ strcpy(b, "__operator_set"); }
+				else if(!strcmp(b, "new"))
+					{ strcpy(b, "__operator_new"); }
+			}
+		}
+		
 		n=BCCX_NewCst(&bgbcc_rcst_var, "var");
 		BCCX_SetCst(n, &bgbcc_rcst_name, "name", b);
 	}else

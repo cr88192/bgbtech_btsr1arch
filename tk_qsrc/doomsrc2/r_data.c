@@ -202,7 +202,15 @@ R_DrawColumnInCache
 	int		position;
 	byte*	source;
 	byte*	dest;
+
+#if 0
+	cache[0]=0;
+	cache[1]=cacheheight;
 	
+	cache[cacheheight+4]=0xff;
+	cache[cacheheight+5]=0x00;
+#endif
+
 	dest = (byte *)cache + 3;
 	
 	while (patch->topdelta != 0xff)
@@ -237,7 +245,8 @@ R_DrawColumnInCache
 //
 void R_GenerateComposite (int texnum)
 {
-	byte*		block;
+	byte		*block;
+	byte		*tdest;
 	texture_t*		texture;
 	texpatch_t*		patch;	
 	patch_t*		realpatch;
@@ -258,6 +267,18 @@ void R_GenerateComposite (int texnum)
 	collump = texturecolumnlump[texnum];
 	colofs = texturecolumnofs[texnum];
 	
+	for (x=0 ; x<texture->width ; x++)
+	{
+#if 1
+		tdest=block + colofs[x];
+		tdest[0]=0x00;
+		tdest[1]=texture->height;
+		
+		tdest[(texture->height)+4]=0xFF;
+		tdest[(texture->height)+5]=0x00;
+#endif
+	}
+
 	// Composite the columns together.
 	patch = texture->patches;
 		
@@ -281,7 +302,7 @@ void R_GenerateComposite (int texnum)
 		{
 			// Column does not have multiple patches?
 			if (collump[x] >= 0)
-			continue;
+				continue;
 			
 			patchcol = (column_t *)((byte *)realpatch
 						+ LONG(realpatch->columnofs[x-x1]));
@@ -377,7 +398,8 @@ void R_GenerateLookup (int texnum)
 				 texnum);
 			}
 			
-			texturecompositesize[texnum] += texture->height;
+//			texturecompositesize[texnum] += texture->height;
+			texturecompositesize[texnum] += texture->height+6;
 		}
 	}	
 }
@@ -395,6 +417,11 @@ byte *R_GetColumn
 	int		lump;
 	int		ofs;
 	
+//	if(texturewidthmask[tex]<2)
+//	{
+//		__debugbreak();
+//	}
+	
 	col &= texturewidthmask[tex];
 	lump = texturecolumnlump[tex][col];
 	ofs = texturecolumnofs[tex][col];
@@ -403,7 +430,10 @@ byte *R_GetColumn
 		return (byte *)W_CacheLumpNum(lump,PU_CACHE)+ofs;
 
 	if (!texturecomposite[tex])
-	R_GenerateComposite (tex);
+	{
+		R_GenerateComposite (tex);
+//		return(NULL);
+	}
 
 	return texturecomposite[tex] + ofs;
 }
@@ -573,13 +603,13 @@ void R_InitTextures (void)
 	
 	// Precalculate whatever possible.	
 	for (i=0 ; i<numtextures ; i++)
-	R_GenerateLookup (i);
+		R_GenerateLookup (i);
 	
 	// Create translation table for global animation.
 	texturetranslation = Z_Malloc ((numtextures+1)*4, PU_STATIC, 0);
 	
 	for (i=0 ; i<numtextures ; i++)
-	texturetranslation[i] = i;
+		texturetranslation[i] = i;
 }
 
 
@@ -772,6 +802,9 @@ int R_FlatNumForName (char* name)
 {
 	int		i;
 	char	namet[9];
+
+	if(!strcmp(name, "F_SKY"))
+		return(skyflatnum);
 
 	i = W_CheckNumForName (name);
 

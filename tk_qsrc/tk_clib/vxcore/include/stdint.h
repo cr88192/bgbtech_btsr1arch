@@ -69,6 +69,7 @@ typedef unsigned int		uint40_t;
 typedef long			int40_t;
 typedef unsigned long		uint40_t;
 #endif
+
 #if	__Q8_CW == 64 && defined(__Q8_SC)
 typedef __Q8_SC			int64_t;
 typedef unsigned char		uint64_t;
@@ -84,6 +85,26 @@ typedef unsigned long		uint64_t;
 #elif	__Q8_QW == 64
 typedef __Q8_QT			int64_t;
 typedef unsigned __Q8_QT	uint64_t;
+#endif
+
+#if	__Q8_CW == 128 && defined(__Q8_SC)
+typedef __Q8_SC			int128_t;
+typedef unsigned char		uint128_t;
+#elif	__Q8_SW == 128
+typedef short				int128_t;
+typedef unsigned short	uint128_t;
+#elif	__Q8_IW == 128
+typedef int				int128_t;
+typedef unsigned int		uint128_t;
+#elif	__Q8_LW == 128
+typedef long				int128_t;
+typedef unsigned long		uint128_t;
+#elif	__Q8_QW == 128
+typedef __Q8_QT			int128_t;
+typedef unsigned __Q8_QT	uint128_t;
+#elif	__Q8_OW == 128
+typedef __Q8_OT			int128_t;
+typedef unsigned __Q8_OT	uint128_t;
 #endif
 
 /*
@@ -144,6 +165,7 @@ typedef unsigned long		uint_least40_t;
 typedef __Q8_QT			int_least40_t;
 typedef unsigned __Q8_QT	uint_least40_t;
 #endif
+
 #if	__Q8_CW < __Q8_IW && __Q8_CW >= 64 && defined(__Q8_SC)
 typedef __Q8_SC			int_least64_t;
 typedef unsigned char		uint_least64_t;
@@ -159,6 +181,26 @@ typedef unsigned long		uint_least64_t;
 #elif	__Q8_QW >= 64			/* (will be 0 if not defined) */
 typedef __Q8_QT		int_least64_t;
 typedef unsigned __Q8_QT	uint_least64_t;
+#endif
+
+#if	__Q8_CW < __Q8_IW && __Q8_CW >= 128 && defined(__Q8_SC)
+typedef __Q8_SC			int_least128_t;
+typedef unsigned char		uint_least128_t;
+#elif	__Q8_SW < __Q8_IW && __Q8_SW >= 128
+typedef short				int_least128_t;
+typedef unsigned short	uint_least128_t;
+#elif	__Q8_IW >= 128
+typedef int				int_least128_t;
+typedef unsigned int		uint_least128_t;
+#elif	__Q8_LW >= 128
+typedef long				int_least128_t;
+typedef unsigned long		uint_least128_t;
+#elif	__Q8_QW >= 128			/* (will be 0 if not defined) */
+typedef __Q8_QT			int_least128_t;
+typedef unsigned __Q8_QT	uint_least128_t;
+#elif	__Q8_OW >= 128			/* (will be 0 if not defined) */
+typedef __Q8_OT			int_least128_t;
+typedef unsigned __Q8_OT	uint_least128_t;
 #endif
 
 /*

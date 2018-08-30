@@ -15,6 +15,10 @@ typedef signed int s32;
 
 // int	mb_used = 6;
 
+long long __smullq(int a, int b)
+{
+	return(((s64)a) * ((s64)b));
+}
 
 void I_InitNetwork (void)
 {
@@ -126,9 +130,30 @@ void I_HandleInput (void)
 
 void I_StartFrame (void)
 {
+	dt_scrpix *cs;
+	u32 *ct;
+	int x, y, p;
+
 	I_HandleInput();
 
 	GfxDrv_BeginDrawing();
+	
+	R_ClearCZBuf();
+
+//	for(y=0; y<BASEHEIGHT; y++)
+	for(y=0; y<viewheight; y++)
+	{
+//		cs=screens[0]+(y*BASEWIDTH);
+		cs=screens[0]+((y+viewwindowy)*BASEWIDTH)+viewwindowx;
+//		for(x=0; x<BASEWIDTH; x++)
+		for(x=0; x<viewwidth; x++)
+		{
+//			*cs++=(16<<10)|(16<<5)|16;
+//			*cs++=((((x^y)&1)?18:14)<<10)|(16<<5)|16;
+//			*cs++=((((x^y)&4)?20:12)<<10)|(16<<5)|16;
+			*cs++=((((x^y)&2)?18:14)<<10)|(16<<5)|16;
+		}
+	}
 }
 
 void I_UpdateNoBlit (void)

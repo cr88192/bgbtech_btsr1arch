@@ -638,6 +638,33 @@ EV_Teleport
   int		side,
   mobj_t*	thing );
 
+
+
+/**
+A currently running ACS Script.
+  */
+typedef struct {
+short idx;		//script index
+short map;		//map number of script
+int arg1, arg2, arg3;
+
+line_t	*trigline;
+
+int *cs;		//current position (if running/suspended)
+int *css;		//start position (reset)
+int stack[256];
+byte stackpos;
+char status;
+int delay;
+
+char prnbuf[256];
+byte prnpos;
+
+} p_acsrun_t;
+
+void P_AcsRunScript(int idx, int map, int arg1, int arg2, int arg3);
+
+
 #endif
 //-----------------------------------------------------------------------------
 //

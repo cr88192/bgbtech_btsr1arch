@@ -504,6 +504,7 @@
 #define BGBCC_SH_NMID_FSQRTA		0xB1	//
 #define BGBCC_SH_NMID_FRCP			0xB2	//
 
+#define BGBCC_SH_NMID_RET			0xBD	//
 #define BGBCC_SH_NMID_PUSHX2		0xBE	//
 #define BGBCC_SH_NMID_POPX2			0xBF	//
 
@@ -560,6 +561,8 @@
 #define BGBCC_SH_NMID_BRA8B			0xF2	//SUB
 #define BGBCC_SH_NMID_SHARX			0xF3	//SUB
 #define BGBCC_SH_NMID_MOVNT			0xF4	//
+#define BGBCC_SH_NMID_CLZ			0xF5	//
+#define BGBCC_SH_NMID_CLZQ			0xF6	//
 
 
 
@@ -937,6 +940,11 @@ int nvlbln;
 u32 *lblstr_ofs;	//named label names
 u32 *lblstr_id;		//named label IDs
 int nlblstr, mlblstr;
+
+int pos_pad_op0;
+int pos_pad_op1;
+int pos_pad_op2;
+int pos_pad_op3;
 
 // byte reg_idx[BGBCC_SH_MAX_CACHEVAR];
 // byte reg_reg[BGBCC_SH_MAX_CACHEVAR];

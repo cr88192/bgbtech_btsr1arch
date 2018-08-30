@@ -304,6 +304,7 @@ __PDPCLIB_API__ double atan2(double y,double x)
                                    : -pi + atan(y/x));
 }
 
+#if 0
 
 #ifdef cos
 #undef cos
@@ -406,6 +407,8 @@ __PDPCLIB_API__ double sin(double x)
 
     return(answer);
 }
+
+#endif
 
 #ifdef tan
 #undef tan

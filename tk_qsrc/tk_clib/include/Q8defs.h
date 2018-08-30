@@ -221,7 +221,7 @@
 	XXX -- system parameters really ought to be in a separate header.
 */
 
-#if defined(__BJX1_64__)
+#if defined(__BJX1_64__) || defined(__BJX2__)
 
 #define	__Q8_TC
 #define	__Q8_SC	/* signed */ char
@@ -238,19 +238,33 @@
 #undef	__Q8_WU
 #define	__Q8_XW	32
 #undef	__Q8_XU
+
 #if	__STDC_VERSION__ >= 199901
 #define	__Q8_CF	"hh"
 #else
 #undef	__Q8_CF		/* no known length modifier for character type */
 #endif
+
 #define	__Q8_QW	64
 #define	__Q8_QT	long long
 #define	__Q8_QS	LL
 #define	__Q8_QF	"ll"
-#define	__Q8_MW	__Q8_QW
-#define	__Q8_MT	__Q8_QT
-#define	__Q8_MS	__Q8_QS
-#define	__Q8_MF	__Q8_QF
+
+#define	__Q8_OW	128
+#define	__Q8_OT	__int128
+#define	__Q8_OS	LLX
+#define	__Q8_OF	"llx"
+
+// #define	__Q8_MW	__Q8_QW
+// #define	__Q8_MT	__Q8_QT
+// #define	__Q8_MS	__Q8_QS
+// #define	__Q8_MF	__Q8_QF
+
+#define	__Q8_MW	__Q8_OW
+#define	__Q8_MT	__Q8_OT
+#define	__Q8_MS	__Q8_OS
+#define	__Q8_MF	__Q8_OF
+
 #define	__Q8_GT	long double
 
 

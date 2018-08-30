@@ -51,9 +51,9 @@ byte *TKFAT_GetSectorTempBuffer(TKFAT_ImageInfo *img,
 			img->tbc_buf[i]=img->tbc_buf[j];
 			img->tbc_lba[i]=img->tbc_lba[j];
 			img->tbc_lbn[i]=img->tbc_lbn[j];
-			img->tbc_buf[i]=tbd;
-			img->tbc_lba[i]=tba;
-			img->tbc_lbn[i]=tbn;
+			img->tbc_buf[j]=tbd;
+			img->tbc_lba[j]=tba;
+			img->tbc_lbn[j]=tbn;
 			return(tbd);
 		}
 	}

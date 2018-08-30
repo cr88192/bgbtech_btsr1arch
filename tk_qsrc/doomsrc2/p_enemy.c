@@ -103,6 +103,9 @@ void A_Fall (mobj_t *actor);
 
 mobj_t*		soundtarget;
 
+extern int p_map_hexenfmt;
+
+
 void
 P_RecursiveSound
 ( sector_t*	sec,
@@ -116,7 +119,7 @@ P_RecursiveSound
     if (sec->validcount == validcount
 	&& sec->soundtraversed <= soundblocks+1)
     {
-	return;		// already flooded
+		return;		// already flooded
     }
     
     sec->validcount = validcount;
@@ -200,18 +203,18 @@ boolean P_CheckMissileRange (mobj_t* actor)
     fixed_t	dist;
 	
     if (! P_CheckSight (actor, actor->target) )
-	return false;
+		return false;
 	
     if ( actor->flags & MF_JUSTHIT )
     {
-	// the target just hit the enemy,
-	// so fight back!
-	actor->flags &= ~MF_JUSTHIT;
-	return true;
+		// the target just hit the enemy,
+		// so fight back!
+		actor->flags &= ~MF_JUSTHIT;
+		return true;
     }
 	
     if (actor->reactiontime)
-	return false;	// do not attack yet
+		return false;	// do not attack yet
 		
     // OPTIMIZE: get this from a global checksight
     dist = P_AproxDistance ( actor->x-actor->target->x,
@@ -508,6 +511,15 @@ P_LookForPlayers
     angle_t	an;
     fixed_t	dist;
 		
+	/* BGB: Thing is dormant and needs to be activated. */
+//	if( (actor->spawnpoint.options&0x0010) && p_map_hexenfmt )
+//	if( p_map_hexenfmt )
+	if(1)
+	{
+		if(actor->flags & MF_DORMANT)
+			return false;
+	}
+
     sector = actor->subsector->sector;
 	
     c = 0; n=4;
@@ -612,23 +624,32 @@ void A_Look (mobj_t* actor)
     actor->threshold = 0;	// any shot will wake up
     targ = actor->subsector->sector->soundtarget;
 
-    if (targ
-	&& (targ->flags & MF_SHOOTABLE) )
-    {
-	actor->target = targ;
-
-	if ( actor->flags & MF_AMBUSH )
+	/* BGB: Thing is dormant and needs to be activated. */
+//	if( (actor->spawnpoint.options&0x0010) && p_map_hexenfmt )
+//	if( p_map_hexenfmt )
+	if(1)
 	{
-	    if (P_CheckSight (actor, actor->target))
-		goto seeyou;
+		if(actor->flags & MF_DORMANT)
+			return;
 	}
-	else
-	    goto seeyou;
+
+    if (targ
+		&& (targ->flags & MF_SHOOTABLE) )
+    {
+		actor->target = targ;
+
+		if ( actor->flags & MF_AMBUSH )
+		{
+			if (P_CheckSight (actor, actor->target))
+			goto seeyou;
+		}
+		else
+			goto seeyou;
     }
 	
 	
     if (!P_LookForPlayers (actor, false) )
-	return;
+		return;
 		
     // go into chase state
   seeyou:

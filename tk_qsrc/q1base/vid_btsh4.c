@@ -70,6 +70,8 @@ byte	*vid_buffer;
 short	*zbuffer;
 byte	*surfcache;
 
+byte	*vid_backbuffer;
+
 unsigned short	d_8to16table[256];
 unsigned	d_8to24table[256];
 unsigned	d2d_8to24table[256];
@@ -359,6 +361,7 @@ void	VID_Init (unsigned char *palette)
 	int i, j, k;
 
 	vid_buffer=malloc(BASEWIDTH*BASEHEIGHT*2);
+	vid_backbuffer=malloc(BASEWIDTH*BASEHEIGHT*2);
 	zbuffer=malloc(BASEWIDTH*BASEHEIGHT*2);
 	surfcache=malloc(BASEWIDTH*BASEHEIGHT*3*2);
 //	surfcache=malloc(512*1024);
@@ -1068,13 +1071,39 @@ void	VID_ConGfx_EncBlock16Q(u16 *src, u32 *rdst)
 	
 	cs1=src;
 	cs2=src+(BASEWIDTH<<2);
-	VID_ConGfx_EncBlock16P(cs1+0, rdst+0, rdst+4);
-	VID_ConGfx_EncBlock16P(cs1+4, rdst+1, rdst+5);
-	VID_ConGfx_EncBlock16P(cs2+0, rdst+2, rdst+6);
-	VID_ConGfx_EncBlock16P(cs2+4, rdst+3, rdst+7);
+//	VID_ConGfx_EncBlock16P(cs1+0, rdst+0, rdst+4);
+//	VID_ConGfx_EncBlock16P(cs1+4, rdst+1, rdst+5);
+//	VID_ConGfx_EncBlock16P(cs2+0, rdst+2, rdst+6);
+//	VID_ConGfx_EncBlock16P(cs2+4, rdst+3, rdst+7);
+
+	VID_ConGfx_EncBlock16P(cs1+0, rdst+3, rdst+7);
+	VID_ConGfx_EncBlock16P(cs1+4, rdst+2, rdst+6);
+	VID_ConGfx_EncBlock16P(cs2+0, rdst+1, rdst+5);
+	VID_ConGfx_EncBlock16P(cs2+4, rdst+0, rdst+4);
 }
 #endif
 
+#endif
+
+#if 1
+int VID_ConGfx_EncBlock16Q2(u16 *src, u16 *lsrc, u32 *rdst)
+{
+	u16 *cs1, *cs2;
+	u16 *lcs1, *lcs2;
+	int rt;
+	
+	cs1=src;
+	cs2=src+(BASEWIDTH<<2);
+
+	lcs1=lsrc;
+	lcs2=lsrc+(BASEWIDTH<<2);
+
+	rt=TK_EncBlock16P(cs1+0, lcs1+0, rdst+3, rdst+7);
+	rt|=TK_EncBlock16P(cs1+4, lcs1+4, rdst+2, rdst+6)<<1;
+	rt|=TK_EncBlock16P(cs2+0, lcs2+0, rdst+1, rdst+5)<<2;
+	rt|=TK_EncBlock16P(cs2+4, lcs2+4, rdst+0, rdst+4)<<3;
+	return(rt);
+}
 #endif
 
 void tk_putc(int val);
@@ -1088,7 +1117,7 @@ void	VID_Update (vrect_t *rects)
 	int bx, by, by2;
 
 	byte *ics;
-	u16 *ict16, *ics16, *ics16b;
+	u16 *ict16, *ics16, *lcs16, *ics16b, *lcs16b;
 	u16 *icz16;
 	u32 *ict;
 	u32 bxa, bxb, bxc, bxd;
@@ -1106,6 +1135,7 @@ void	VID_Update (vrect_t *rects)
 		bn=0;
 
 		ics16=(u16 *)vid.buffer;
+		lcs16=vid_backbuffer;
 		ict=conbufa;
 
 #if 0		
@@ -1120,6 +1150,7 @@ void	VID_Update (vrect_t *rects)
 //		for(by=0; by<25; by+=2)
 		{
 			ics16b=ics16;
+			lcs16b=lcs16;
 			for(bx=0; bx<40; bx++)
 			{
 				by2=by;
@@ -1127,7 +1158,8 @@ void	VID_Update (vrect_t *rects)
 //				k=by2*80+bx;
 //				VID_ConGfx_EncBlock16(ics16b, conbufa+k, conbufb+k);
 
-				VID_ConGfx_EncBlock16Q(ics16b, ict);
+//				VID_ConGfx_EncBlock16Q(ics16b, ict);
+				VID_ConGfx_EncBlock16Q2(ics16b, lcs16b, ict);
 				
 //				ict[0]=bxa;		ict[1]=bxb;
 //				ict[2]=bxc;		ict[3]=bxd;
@@ -1141,12 +1173,16 @@ void	VID_Update (vrect_t *rects)
 //				bn+=4;
 
 				ics16b+=8;
+				lcs16b+=8;
 			}
 			ics16+=8*BASEWIDTH;
+			lcs16+=8*BASEWIDTH;
 
 //			ics16+=16*BASEWIDTH;
 //			ict+=8*40;
 		}
+
+		conbufa[8100]=vid_frnum;
 	}
 	
 //	memset(vid.buffer, 0, 320*200*2);

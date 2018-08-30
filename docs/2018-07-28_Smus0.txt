@@ -1,8 +1,8 @@
 Simple Music
 * Several Programmable Waveforms
 * 5 Main Voices, 5 Sub Voices
-** 0..3, 7, 8..11, 15
-** Voices 4..6 and 12..14 are reserved.
+** 0..4, 8..12
+** Other voices are reserved.
 
 
 Registers:
@@ -31,6 +31,11 @@ Control Register A:
 * 27..22: Volume
 * 31..28: Waveform
 
+Control Register B:
+* 3..0: Pan
+** 0: Mono Center
+** 1..15, With 8 being Center
+
 Voice Control Register B and C:
 * Reserved for future expansion.
 
@@ -51,12 +56,8 @@ Pair Link Flag
 ** 0: Unpaired, Each voice plays independently
 ** 1: Paired, Sub-Voice used as a modulator.
 
-MIDI Mapping (Nominal):
-* Channel 1..8: Voice 0..7
-* Channel 9: Voice 15
-** Using Channel 9 will implicitly force unpairing Voice 7.
-* Channel 10..15: Voice 8..14
-** Using these will unpair Voices 0..6.
+When paired, the sub-voice is silent. The sub-voice will instead adjust the phase of the main voice, with the volume of the sub-voice controlling the relative amplitude of the phase shifts.
+
 
 When a channel is forced to be unpaired, it will probably fall back to Triangle or Sawtooth.
 

@@ -518,8 +518,8 @@ int BGBCP_DefTypeFlag(BGBCP_ParseState *ctx, char *tag)
 				if(!bgbcp_strcmp(tag, "__thread"))i=BGBCC_TYFL_THREAD;
 				if(!bgbcp_strcmp(tag, "__dynamic"))i=BGBCC_TYFL_DYNAMIC;
 
-				if(!bgbcp_strcmp(tag, "__getter"))i=BGBCC_TYFL_GETTER;
-				if(!bgbcp_strcmp(tag, "__setter"))i=BGBCC_TYFL_SETTER;
+//				if(!bgbcp_strcmp(tag, "__getter"))i=BGBCC_TYFL_GETTER;
+//				if(!bgbcp_strcmp(tag, "__setter"))i=BGBCC_TYFL_SETTER;
 			}else
 			{
 				if(!bgbcp_strcmp(tag, "_Complex"))i=BGBCC_TYFL_UNSIGNED;

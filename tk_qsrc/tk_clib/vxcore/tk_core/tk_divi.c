@@ -1,3 +1,4 @@
+#if 0
 static int _fcn_clz32(u32 v)
 {
 	const u32 m1=0x80000000U;
@@ -14,21 +15,23 @@ static int _fcn_clz32(u32 v)
 		{ n++; c+=c; }
 	return(n);
 }
+#endif
 
+#if 0
 u32 __udivsi3(u32 n, u32 d)
 {
-    u32 q, r;
-    int s, c;
-//    int sr;
-    byte sr;
+	u32 q, r;
+	int s, c;
+//	int sr;
+	byte sr;
 
-    if(!d || !n)
+	if(!d || !n)
 		return(0);
-//    sr=_fcn_clz(d)-_fcn_clz(n);
-    sr=(byte)(_fcn_clz32(d)-_fcn_clz32(n));
+//	sr=_fcn_clz(d)-_fcn_clz(n);
+	sr=(byte)(_fcn_clz32(d)-_fcn_clz32(n));
 
-    if(sr>=31)
-    {
+	if(sr>=31)
+	{
 		if(sr==31)
 			return(n);
 		return(0);
@@ -48,7 +51,9 @@ u32 __udivsi3(u32 n, u32 d)
 	q=(u32)q;
 	return(q);
 }
+#endif
 
+#if 0
 s32 __sdivsi3(s32 a, s32 b)
 {
 	s32 sga, sgb;
@@ -57,6 +62,7 @@ s32 __sdivsi3(s32 a, s32 b)
 	sga^=sgb;
 	return((__udivsi3(a, b)^sga)-sga);
 }
+#endif
 
 #if 1
 static int _fcn_clz64(u64 v)
@@ -81,18 +87,18 @@ static int _fcn_clz64(u64 v)
 
 u64 __udivdi3(u64 n, u64 d)
 {
-    u64 q, r;
-    int s, c;
-//    int sr;
-    byte sr;
+	u64 q, r;
+	int s, c;
+//	int sr;
+	byte sr;
 
-    if(!d || !n)
+	if(!d || !n)
 		return(0);
-//    sr=_fcn_clz(d)-_fcn_clz(n);
-    sr=(byte)(_fcn_clz64(d)-_fcn_clz64(n));
+//	sr=_fcn_clz(d)-_fcn_clz(n);
+	sr=(byte)(_fcn_clz64(d)-_fcn_clz64(n));
 
-    if(sr>=63)
-    {
+	if(sr>=63)
+	{
 		if(sr==63)
 			return(n);
 		return(0);

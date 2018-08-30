@@ -2,24 +2,24 @@ BJX2 for now will use a 32-bit address space sign-extended to 64 bits.
 
 
 Base Physical Memory Map (32-bit):
-00000000 .. 00007FFF: Boot ROM
-00008000 .. 0000BFFF: (Reserved)
-0000C000 .. 0000DFFF: Boot SRAM
-0000E000 .. 0000FFFF: Reserved
-00010000 .. 000FFFFF: Reserved
-00100000 .. 00FFFFFF: Reserved
-01000000 .. 7FFFFFFF: DRAM
-80000000 .. 9FFFFFFF: System (Repeats 00000000..1FFFFFFF)
-A0000000 .. BFFFFFFF: MMIO (No MMU, Bypass)
-C0000000 .. DFFFFFFF: System (No MMU, Repeats 00000000..1FFFFFFF)
-E0000000 .. FFFFFFFF: Reserved for Processor/Chipset
+* 00000000 .. 00007FFF: Boot ROM
+* 00008000 .. 0000BFFF: (Reserved)
+* 0000C000 .. 0000DFFF: Boot SRAM
+* 0000E000 .. 0000FFFF: Reserved
+* 00010000 .. 000FFFFF: Reserved
+* 00100000 .. 00FFFFFF: Reserved
+* 01000000 .. 7FFFFFFF: DRAM
+* 80000000 .. 9FFFFFFF: System (MMU Range 00000000..1FFFFFFF)
+* A0000000 .. BFFFFFFF: MMIO (No MMU, Bypass)
+* C0000000 .. DFFFFFFF: System (No MMU, Repeats 00000000..1FFFFFFF)
+* E0000000 .. FFFFFFFF: Reserved for Processor/Chipset
 
 Logical Memory Map (32-bit):
-00000000 .. 7FFFFFFF: Userland (MMU)
-80000000 .. 9FFFFFFF: System (MMU)
-A0000000 .. BFFFFFFF: MMIO (No MMU, Bypass)
-C0000000 .. DFFFFFFF: System (No MMU, Repeats 00000000..1FFFFFFF)
-E0000000 .. FFFFFFFF: Reserved for Processor/Chipset
+* 00000000 .. 7FFFFFFF: Userland (MMU)
+* 80000000 .. 9FFFFFFF: System (MMU)
+* A0000000 .. BFFFFFFF: MMIO (No MMU, Bypass)
+* C0000000 .. DFFFFFFF: System (No MMU, Repeats 00000000..1FFFFFFF)
+* E0000000 .. FFFFFFFF: Reserved for Processor/Chipset
 
 Addresses in the MMIO ranges will "bypass" the normal memory access mechanisms and go directly to the MMIO Bus.
 
@@ -27,15 +27,17 @@ Addresses in the MMIO range will be masked to 29 bits, which will be used as the
 
 
 Extended 64-bit Memory Map
-00000000_00000000 .. 00000000_7FFFFFFF: Userland (MMU, Low 2GB)
-00000000_80000000 .. 00007FFF_FFFFFFFF: Userland (MMU, Extended)
-00008000_00000000 .. 7FFFFFFF_FFFFFFFF: Reserved (No Man's Land)
-80000000_00000000 .. FFFF7FFF_FFFFFFFF: Reserved (No Man's Land)
-FFFF8000_00000000 .. FFFF9FFF_FFFFFFFF: System (MMU, Extended)
-FFFFA000_00000000 .. FFFFBFFF_FFFFFFFF: Extended MMIO (Bypass)
-FFFFC000_00000000 .. FFFFDFFF_FFFFFFFF: System (No MMU, Repeats Low 48)
-FFFFE000_00000000 .. FFFFFFFF_7FFFFFFF: Reserved (Processor/Chipset)
-FFFFFFFF_80000000 .. FFFFFFFF_FFFFFFFF: Maps to Base Physical Map
+* 00000000_00000000 .. 00000000_7FFFFFFF: Userland (MMU, Low 2GB)
+* 00000000_80000000 .. 00000000_FFFFFFFF: Maps 32-bit Base Map
+* 00000001_00000000 .. 00007FFF_FFFFFFFF: Userland (MMU, Extended)
+* 00008000_00000000 .. 7FFFFFFF_FFFFFFFF: Reserved (No Man's Land)
+* 80000000_00000000 .. FFFF7FFF_FFFFFFFF: Reserved (No Man's Land)
+* FFFF8000_00000000 .. FFFF9FFF_FFFFFFFF: System (MMU, Extended)
+* FFFFA000_00000000 .. FFFFBFFF_FFFFFFFF: Extended MMIO (Bypass)
+* FFFFC000_00000000 .. FFFFDFFF_FFFFFFFF: System (No MMU, Repeats Low 48)
+* FFFFE000_00000000 .. FFFFFFFE_FFFFFFFF: Reserved (Processor/Chipset)
+* FFFFFFFF_00000000 .. FFFFFFFF_7FFFFFFF: System (MMU, Low 2GB)
+* FFFFFFFF_80000000 .. FFFFFFFF_FFFFFFFF: Maps 32-bit Base Map
 
 
 On boot, VBR will be initialized to the start of ROM.
@@ -45,7 +47,7 @@ VBR will contain several Vectors:
   VBR+0x00: Boot/Reset
   VBR+0x08: Runtime Exception
   VBR+0x10: Hardware Interrupt
-  VBR+0x18: MMU Page/TLB Fault
+  VBR+0x18: MMU/TLB Miss/Fault
   VBR+0x20: Syscall
 
 On an interrupt, control will be transferred to an address relative to VBR. This address may then encode a branch to wherever is the start of the ISR.
@@ -92,3 +94,107 @@ MMIO Space:
 * 00080000 .. 00080FFF: Audio Loop Buffer / Registers
 
 * 000A0000 .. 000BFFFF: Reserved for Display Memory (Bypass)
+
+
+=== MMU ===
+
+The MMU will consist of a semi-exposed TLB Mechanism.
+
+During a TLB Miss Exception, the ISR is to fetch the relevant data from the Page Table and load it into the TLB.
+
+The TLB will be loaded via the LDTLB instruction, which will load the 128 bit entry from the DHR:DLR pair.
+
+TLB Entry:
+* (127:112) = VUGID
+* (111: 76) = Virtual Address Page
+* ( 75: 64) = KR Access
+* ( 63: 48) = Available
+* ( 47: 12) = Physical Address Page
+* ( 11:  0) = Page Control bits
+
+VUGID:
+* (15:10) = VGID
+* ( 9: 0) = VUID
+
+KR Access:
+* (11): Other X
+* (10): Other W
+* ( 9): Other R
+* ( 8): Group X
+* ( 7): Group W
+* ( 6): Group R
+* ( 5): User X
+* ( 4): User W
+* ( 3): User R
+* ( 2): VUGID Enable 2
+* ( 1): VUGID Enable 1
+* ( 0): VUGID Enable 0
+
+If Keyring Check is Enabled, VUGID Enable will have several modes:
+* 000: Access Check Always Fails (Access Fault)
+* 001: Perform VUGID Check, Access Check is Pass or Fail (Access Fault).
+* 010: Always Generate ACL Check Exception
+* 011: Perform VUGID Check, Generate ACL Check on Fail.
+* 100: Reserved
+* 101: Reserved
+* 110: Reserved
+* 111: Reserved
+
+If Keyring Check is Disabled, VUGID access checks are ignored (Always Pass).
+* Only the normal page access checks are used.
+
+Note that Keyring checks are placed after normal page access checks, so with Keyring access enabled, both the Normal and Keyring checks are required to allow access to the page.
+
+
+
+Page Control:
+* ( 9): PR.U1 (User 1)
+* ( 8): PR.U0 (User 0)
+* ( 9): PR.S1 (Size 1)
+* ( 8): PR.S0 (Size 0)
+* ( 7): PR.NU (Not User Accessible)
+** Disallow access from User Mode.
+* ( 6): PR.NX (Execute Disable)
+** Page may not be executed.
+* ( 5): PR.NW (Write Disable)
+** Page may not be written to.
+* ( 4): PR.NR (Read Disable)
+** Page may not be read from.
+* ( 3): Page Is Non-Cachable
+** Set to indicate accesses to page will bypass cache.
+* ( 2): PR.D, (Dirty)
+** Set if page has been modified.
+* ( 1): PR.SH, Page Is Shared
+* ( 0): PR.V, Page Is Valid
+
+Size 0/1:
+* 00: 4kB Page (Single Page)
+* 01: 2MB Page (512 Pages)
+* 10: 64kB Page (16 Pages)
+* 11: 1GB Page (256K Pages)
+
+
+Keyring checks are enabled via the Keyring Register (KRR):
+* This register is interpreted as four 16-bit word values.
+** Each holds a VUGID pair.
+* If the low 16 bits are zero, Keyring Check is disabled.
+* If the other words are zero, they are ignored.
+
+The keyring values are compared against the VUGID value in the TLB:
+* Both Match: Check using User RWX bits.
+* VGID Matches: Check using Group RWX bits.
+* Otherwise: Check using Other RWX bits.
+
+If any of the four keys will allow the requested access, access will pass.
+* Otherwise, if ACL Check is set, generate an ACL Check Exception.
+* Otherwise, generate an Access Fault Exception.
+
+
+Page Table Entries:
+* ( 63: 48) = VUGID Table Index
+* ( 47: 12) = Physical Address Page
+* ( 11:  0) = Page Control bits
+
+The MMU will use a 4-level Page Table.
+There will be a User Page Table (TTB) and a System Page Table (STTB).
+

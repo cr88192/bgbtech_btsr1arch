@@ -42,8 +42,11 @@ rcsid[] = "$Id: p_mobj.c,v 1.5 1997/02/03 22:45:12 b1 Exp $";
 
 
 void G_PlayerReborn (int player);
-void P_SpawnMapThing (mapthing_t*	mthing);
+// void P_SpawnMapThing (mapthing_t*	mthing);
+void P_SpawnMapThing (mapthing2_t*	mthing);
 
+
+extern int p_map_hexenfmt;
 
 //
 // P_SetMobjState
@@ -377,7 +380,8 @@ P_NightmareRespawn (mobj_t* mobj)
 	fixed_t		z; 
 	subsector_t*	ss; 
 	mobj_t*		mo;
-	mapthing_t*		mthing;
+//	mapthing_t*		mthing;
+	mapthing2_t*		mthing;
 		
 	x = mobj->spawnpoint.x << FRACBITS; 
 	y = mobj->spawnpoint.y << FRACBITS; 
@@ -554,7 +558,8 @@ P_SpawnMobj
 //
 // P_RemoveMobj
 //
-mapthing_t	itemrespawnque[ITEMQUESIZE];
+//mapthing_t	itemrespawnque[ITEMQUESIZE];
+mapthing2_t	itemrespawnque[ITEMQUESIZE];
 int		itemrespawntime[ITEMQUESIZE];
 int		iquehead;
 int		iquetail;
@@ -600,7 +605,8 @@ void P_RespawnSpecials (void)
 	
 	subsector_t*	ss; 
 	mobj_t*		mo;
-	mapthing_t*		mthing;
+//	mapthing_t*		mthing;
+	mapthing2_t*	mthing;
 	
 	int			i;
 
@@ -656,7 +662,8 @@ void P_RespawnSpecials (void)
 // Most of the player structure stays unchanged
 //  between levels.
 //
-void P_SpawnPlayer (mapthing_t* mthing)
+// void P_SpawnPlayer (mapthing_t* mthing)
+void P_SpawnPlayer (mapthing2_t *mthing)
 {
 	player_t*		p;
 	fixed_t		x;
@@ -718,13 +725,13 @@ void P_SpawnPlayer (mapthing_t* mthing)
 	}
 }
 
-
 //
 // P_SpawnMapThing
 // The fields of the mapthing should
 // already be in host byte order.
 //
-void P_SpawnMapThing (mapthing_t* mthing)
+// void P_SpawnMapThing (mapthing_t* mthing)
+void P_SpawnMapThing (mapthing2_t* mthing)
 {
 	int			i;
 	int			bit;
@@ -749,6 +756,12 @@ void P_SpawnMapThing (mapthing_t* mthing)
 	{
 		// save spots for respawning in network games
 		playerstarts[mthing->type-1] = *mthing;
+//		playerstarts[mthing->type-1].x = mthing->x;
+//		playerstarts[mthing->type-1].y = mthing->y;
+//		playerstarts[mthing->type-1].angle = mthing->angle;
+//		playerstarts[mthing->type-1].type = mthing->type;
+//		playerstarts[mthing->type-1].options = mthing->options;
+
 		if (!deathmatch)
 			P_SpawnPlayer (mthing);
 
@@ -756,7 +769,7 @@ void P_SpawnMapThing (mapthing_t* mthing)
 	}
 
 	// check for apropriate skill level
-	if (!netgame && (mthing->options & 16) )
+	if (!netgame && !p_map_hexenfmt && (mthing->options & 16) )
 		return;
 		
 	if (gameskill == sk_baby)
@@ -820,6 +833,12 @@ void P_SpawnMapThing (mapthing_t* mthing)
 	mobj->angle = ANG45 * (mthing->angle/45);
 	if (mthing->options & MTF_AMBUSH)
 		mobj->flags |= MF_AMBUSH;
+
+	if (mthing->options & 16)
+	{
+		/* BGB: Use Dormant flag to inactivate Thing. */
+		mobj->flags |= MF_DORMANT;
+	}
 }
 
 

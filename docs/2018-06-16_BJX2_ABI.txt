@@ -1,10 +1,9 @@
 BJX2 General C ABI.
 
 Basic C ABI:
-* R0..R7, R16..R23: Scratch
+* R2..R7, R16..R23: Scratch
 * R8..R14: Callee Preserved
 * R15: Stack Pointer
-* / R0/R1: Return Value
 * R2/R3: Return Value
 * R2: Struct Return Address
 * R4..R7, R20..R23: Register Arguments
@@ -14,8 +13,8 @@ Basic C ABI:
 * (Hard FPU) FR8..FR15: Callee Preserve
 * (Hard FPU) FR4..FR7: Float Arguments
 ** For Soft-FPU, Float and Double arguments will be passed in GPRs.
-* DLR: Volatile/Scratch
-* DHR: Volatile/Scratch
+* R0/DLR: Volatile/Scratch
+* R1/DHR: Volatile/Scratch
 * GBR: Callee Preserve
 ** GBR may be used to access memory, and is treated as a callee preserve register.
 * TBR: System

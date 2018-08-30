@@ -30,12 +30,16 @@ int BJX2_DecodeOpcode_DecFC(BJX2_Context *ctx,
 	if(opw1&0x0004)rn_dfl+=16;
 	if(opw1&0x0002)rm_dfl+=16;
 
-	disp17s=opw3;
-	if(opw1&0x0001)disp17s|=(-1)<<16;
-	disp17u=opw3;
-	if(opw1&0x0001)disp17u|=1<<16;
+	disp17s=(u16)opw3;
+	disp17u=(u16)opw3;
+	if(opw1&0x0001)
+	{
+		disp17s|=(-1)<<16;
+		disp17u|=( 1)<<16;
+	}
 	
-	eq=(opw1&0x0008)?1:0;
+//	eq=(opw1&0x0008)?1:0;
+	eq=(opw1>>3)&1;
 
 	ret=0;
 	switch((opw1>>4)&15)
@@ -159,6 +163,47 @@ int BJX2_DecodeOpcode_DecFC(BJX2_Context *ctx,
 				if(eq)
 				{	op->fmid=BJX2_FMID_REGIMMREG;
 					op->Run=BJX2_Op_XOR_RegImmReg;	}
+				break;
+
+			case 0x8:	/* FC0e_18zz_iiii */
+				break;
+			case 0x9:	/* FC0e_19zz_iiii */
+				switch((opw2>>0)&15)
+				{
+				case 0x4:	/* FC0e_19n4_iiii */
+					op->nmid=BJX2_NMID_TST;
+					op->fmid=BJX2_FMID_IMMREG;
+					op->Run=BJX2_Op_TST_ImmReg;
+					if(eq)
+					{	op->nmid=BJX2_NMID_TSTQ;
+						op->Run=BJX2_Op_TSTQ_ImmReg;	}
+					break;
+
+				case 0xC:	/* FC0e_19nC_iiii */
+					op->nmid=BJX2_NMID_CMPEQ;
+					op->fmid=BJX2_FMID_IMMREG;
+					op->Run=BJX2_Op_CMPEQ_ImmReg;
+					if(eq)
+					{	op->nmid=BJX2_NMID_CMPQEQ;
+						op->Run=BJX2_Op_CMPQEQ_ImmReg;	}
+					break;
+				case 0xD:	/* FC0e_19nD_iiii */
+					op->nmid=BJX2_NMID_CMPHI;
+					op->fmid=BJX2_FMID_IMMREG;
+					op->Run=BJX2_Op_CMPHI_ImmReg;
+					if(eq)
+					{	op->nmid=BJX2_NMID_CMPQHI;
+						op->Run=BJX2_Op_CMPQHI_ImmReg;	}
+					break;
+				case 0xE:	/* FC0e_19nE_iiii */
+					op->nmid=BJX2_NMID_CMPGT;
+					op->fmid=BJX2_FMID_IMMREG;
+					op->Run=BJX2_Op_CMPGT_ImmReg;
+					if(eq)
+					{	op->nmid=BJX2_NMID_CMPQGT;
+						op->Run=BJX2_Op_CMPQGT_ImmReg;	}
+					break;
+				}
 				break;
 			}
 			break;
@@ -301,7 +346,6 @@ int BJX2_DecodeOpcode_DecFC(BJX2_Context *ctx,
 		op->fmid=BJX2_FMID_IMMREG;
 		op->Run=BJX2_Op_ADD_ImmReg;
 		break;
-
 	case 0xD:
 		op->imm=imm32;
 		op->rn=rn_i32;
@@ -309,13 +353,19 @@ int BJX2_DecodeOpcode_DecFC(BJX2_Context *ctx,
 		op->fmid=BJX2_FMID_IMMREG;
 		op->Run=BJX2_Op_LDISH32_ImmReg;
 		break;
-
 	case 0xE:
 		op->imm=imm32;
 		op->rn=rn_i32;
 		op->nmid=BJX2_NMID_MOV;
 		op->fmid=BJX2_FMID_IMMREG;
 		op->Run=BJX2_Op_MOV_ImmReg;
+		break;
+	case 0xF:
+		op->imm=imm32;
+		op->rn=rn_i32;
+		op->nmid=BJX2_NMID_MOV;
+		op->fmid=BJX2_FMID_IMMREG;
+		op->Run=BJX2_Op_MOV_ImmxReg;
 		break;
 
 	default:

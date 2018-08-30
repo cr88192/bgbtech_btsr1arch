@@ -80,6 +80,35 @@ isr_table:
 	bra8b isr_except
 	bra8b isr_inter
 
+
+/*
+	umullq: Unsigned Multiply, Long to Quad
+	smullq: Signed Multiply, Long to Quad
+*/
+
+.global X(__umullq)
+X(__umullq):
+	dmulu r4, r5
+	mov dhr, r3
+	mov dlr, r2
+	shll32 r3
+	add r3, r2
+	rts
+
+.global X(__smullq)
+X(__smullq):
+	dmuls r4, r5
+	mov dhr, r3
+	mov dlr, r2
+	shll32 r3
+	add r3, r2
+	rts
+
+/*
+	umulsq: Unsigned Multiply, Single Quad
+	smulsq: Signed Multiply, Single Quad
+*/
+	
 .global X(__umulsq)
 .global X(__smulsq)
 X(__umulsq):
@@ -102,6 +131,68 @@ X(__smulsq):
 
 	shll32 r3
 	add r3, r2
+
+//	break
+
+	rts
+
+/*
+	umuldq: Unsigned Multiply, Double Quad
+*/
+.global X(__umuldq)
+	mov r4, r6
+	mov r5, r7
+	shlr32 r6
+	shlr32 r7
+	
+	dmulu r4, r5
+	mov dhr, r3
+	mov dlr, r2
+
+	dmulu r4, r7
+	add dlr, r3
+	dmulu r6, r5
+	add dlr, r3
+
+//	break
+	mov r3, r4
+	shll32 r4
+	add r4, r2
+
+	shlr32 r3
+	dmulu r6, r7
+	add dlr, r3
+
+//	break
+
+	rts
+
+/*
+	smuldq: Signed Multiply, Double Quad
+*/
+.global X(__smuldq)
+	mov r4, r6
+	mov r5, r7
+	shlr32 r6
+	shlr32 r7
+	
+	dmulu r4, r5
+	mov dhr, r3
+	mov dlr, r2
+
+	dmulu r4, r7
+	add dlr, r3
+	dmulu r6, r5
+	add dlr, r3
+
+//	break
+	mov r3, r4
+	shll32 r4
+	add r4, r2
+
+	shlr32 r3
+	dmuls r6, r7
+	add dlr, r3
 
 //	break
 

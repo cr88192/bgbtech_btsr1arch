@@ -369,30 +369,30 @@ void R_DrawMaskedColumn (column_t* column)
 	
 	for ( ; column->topdelta != 0xff ; ) 
 	{
-	// calculate unclipped screen coordinates
-	//  for post
-	topscreen = sprtopscreen + spryscale*column->topdelta;
-	bottomscreen = topscreen + spryscale*column->length;
+		// calculate unclipped screen coordinates
+		//  for post
+		topscreen = sprtopscreen + spryscale*column->topdelta;
+		bottomscreen = topscreen + spryscale*column->length;
 
-	dc_yl = (topscreen+FRACUNIT-1)>>FRACBITS;
-	dc_yh = (bottomscreen-1)>>FRACBITS;
-		
-	if (dc_yh >= mfloorclip[dc_x])
-		dc_yh = mfloorclip[dc_x]-1;
-	if (dc_yl <= mceilingclip[dc_x])
-		dc_yl = mceilingclip[dc_x]+1;
+		dc_yl = (topscreen+FRACUNIT-1)>>FRACBITS;
+		dc_yh = (bottomscreen-1)>>FRACBITS;
+			
+		if (dc_yh >= mfloorclip[dc_x])
+			dc_yh = mfloorclip[dc_x]-1;
+		if (dc_yl <= mceilingclip[dc_x])
+			dc_yl = mceilingclip[dc_x]+1;
 
-	if (dc_yl <= dc_yh)
-	{
-		dc_source = (byte *)column + 3;
-		dc_texturemid = basetexturemid - (column->topdelta<<FRACBITS);
-		// dc_source = (byte *)column + 3 - column->topdelta;
+		if (dc_yl <= dc_yh)
+		{
+			dc_source = (byte *)column + 3;
+			dc_texturemid = basetexturemid - (column->topdelta<<FRACBITS);
+			// dc_source = (byte *)column + 3 - column->topdelta;
 
-		// Drawn by either R_DrawColumn
-		//  or (SHADOW) R_DrawFuzzColumn.
-		colfunc ();	
-	}
-	column = (column_t *)(  (byte *)column + column->length + 4);
+			// Drawn by either R_DrawColumn
+			//  or (SHADOW) R_DrawFuzzColumn.
+			colfunc ();	
+		}
+		column = (column_t *)(  (byte *)column + column->length + 4);
 	}
 	
 	dc_texturemid = basetexturemid;
@@ -422,32 +422,34 @@ R_DrawVisSprite
 	
 	if (!dc_colormap)
 	{
-	// NULL colormap = shadow draw
-	colfunc = fuzzcolfunc;
+		// NULL colormap = shadow draw
+		colfunc = fuzzcolfunc;
 	}
 	else if (vis->mobjflags & MF_TRANSLATION)
 	{
-	colfunc = R_DrawTranslatedColumn;
-	dc_translation = translationtables - 256 +
-		( (vis->mobjflags & MF_TRANSLATION) >> (MF_TRANSSHIFT-8) );
+		colfunc = R_DrawTranslatedColumn;
+		dc_translation = translationtables - 256 +
+			( (vis->mobjflags & MF_TRANSLATION) >> (MF_TRANSSHIFT-8) );
 	}
 	
 	dc_iscale = abs(vis->xiscale)>>detailshift;
 	dc_texturemid = vis->texturemid;
 	frac = vis->startfrac;
 	spryscale = vis->scale;
+    dc_scale = spryscale;
 	sprtopscreen = centeryfrac - FixedMul(dc_texturemid,spryscale);
+	dc_isspr = 1;
 	
 	for (dc_x=vis->x1 ; dc_x<=vis->x2 ; dc_x++, frac += vis->xiscale)
 	{
-	texturecolumn = frac>>FRACBITS;
+		texturecolumn = frac>>FRACBITS;
 #ifdef RANGECHECK
-	if (texturecolumn < 0 || texturecolumn >= SHORT(patch->width))
-		I_Error ("R_DrawSpriteRange: bad texturecolumn");
+		if (texturecolumn < 0 || texturecolumn >= SHORT(patch->width))
+			I_Error ("R_DrawSpriteRange: bad texturecolumn");
 #endif
-	column = (column_t *) ((byte *)patch +
-				   LONG(patch->columnofs[texturecolumn]));
-	R_DrawMaskedColumn (column);
+		column = (column_t *) ((byte *)patch +
+					   LONG(patch->columnofs[texturecolumn]));
+		R_DrawMaskedColumn (column);
 	}
 
 	colfunc = basecolfunc;
@@ -899,7 +901,7 @@ void R_SortVisSprites (void)
 	unsorted.next = unsorted.prev = &unsorted;
 
 	if (!count)
-	return;
+		return;
 		
 	for (ds=vissprites ; ds<vissprite_p ; ds++)
 	{
@@ -990,7 +992,7 @@ void R_DrawSprite (vissprite_t* spr)
 		{
 			// masked mid texture?
 			if (ds->maskedtexturecol)	
-			R_RenderMaskedSegRange (ds, r1, r2);
+				R_RenderMaskedSegRange (ds, r1, r2);
 			// seg is behind sprite
 			continue;			
 		}

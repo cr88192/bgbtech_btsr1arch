@@ -2910,7 +2910,11 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx;
 	BGBCC_CCXL_RegisterInfo *obj;
 	BGBCC_CCXL_LiteralInfo *litobj;
+	int *shufarr;
+	int t0, t1, t2, t3;
 	int l0;
+	int shufgbl;
+	u64 h;
 	u32 addr;
 	int i, j, k;
 
@@ -2975,8 +2979,23 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 		BGBCC_CCXL_SanityObjSize(ctx, litobj, 1);
 	}
 
+	h=clock();
+	
+	t0=clock();
+	t1=t0;
+	while(t1<(t0+(0.1*CLOCKS_PER_SEC)))
+	{
+		t2=clock();
+		t3=t2-t1;
+		t1=t2;
+		h=(h*65521)+t1;
+	}
+
 	for(i=0; i<ctx->n_reg_globals; i++)
 	{
+//		j=shufarr[i];
+//		obj=ctx->reg_globals[j];
+
 		obj=ctx->reg_globals[i];
 		if(!obj)
 			continue;
@@ -3065,8 +3084,27 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 		}
 	}
 
+	shufgbl=ctx->n_reg_globals;
+	shufarr=malloc(shufgbl*sizeof(int));
+	for(i=0; i<shufgbl; i++)
+		shufarr[i]=i;
+
+#if 0
+	for(i=0; i<shufgbl; i++)
+	{
+		j=(((int)(h>>32))&0x0FFFFFFF)%(shufgbl);
+		h=h*65521+13;
+		k=shufarr[i];
+		shufarr[i]=shufarr[j];
+		shufarr[j]=k;
+	}
+#endif
+
 	for(i=0; i<ctx->n_reg_globals; i++)
 	{
+//		j=shufarr[i];
+//		obj=ctx->reg_globals[j];
+
 		obj=ctx->reg_globals[i];
 		if(!obj)
 			continue;
@@ -3095,7 +3133,13 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 
 	for(i=0; i<ctx->n_reg_globals; i++)
 	{
-		obj=ctx->reg_globals[i];
+		if(i<shufgbl)
+			j=shufarr[i];
+		else
+			j=i;
+		obj=ctx->reg_globals[j];
+
+//		obj=ctx->reg_globals[i];
 		if(!obj)
 			continue;
 

@@ -95,24 +95,25 @@ X(__smulsq):
 	shlr32 r7
 	
 	dmulu r4, r5
-	mov dhr, r1
-	mov dlr, r0
+	mov dhr, r3
+	mov dlr, r2
 
 	dmulu r4, r7
-	add dlr, r1
+	add dlr, r3
 	dmulu r6, r5
-	add dlr, r1
+	add dlr, r3
 
 //	break
 
-	shll32 r1
-	add r1, r0
+	shll32 r3
+	add r3, r2
 
 //	break
 
 	rts
 
 
+#if 0
 .ifarch seen_idiv_var
 
 divx3:
@@ -195,7 +196,9 @@ X(__udivsi3_asm):
 	jmp r1
 
 .endif
+#endif
 
+#if 0
 .ifarch seen_ishr_var
 .global X(__lshrsi3)
 X(__lshrsi3):
@@ -334,6 +337,7 @@ ashl_list:
 	shll1 r0 /* 1 */
 	rts
 .endif
+#endif
 
 
 .global X(__longj)
@@ -378,7 +382,7 @@ X(__longj):
 	mov.q  @(240,r4), r30
 	mov.q  @(248,r4), r31
 
-	mov r2, r0
+//	mov r2, r0
 	rts
 	nop
 
@@ -423,125 +427,115 @@ X(__setj):
 	mov #16, r0
 	mov.q  r1,@(r0,r4)
 	
-	mov #0, r0
+//	mov #0, r0
+	mov #0, r2
 	rts
 	nop
 
 
 .global X(__va64_arg_i)
 X(__va64_arg_i):
-	mov #96, r0
-	mov.l @(r4, r0), r0
+	mov.l @(r4, 96), r2
 	mov #64, r1
-	cmp/gt r0, r1
+	cmp/gt r2, r1
 	bf __va64_arg_i.L0
 	
-	mov.q @(r4, r0), r6
-	add #8, r0
-//	mov.l  r0, @(r4, 96)
-	mov r0, r1
-	mov #96, r0
-	mov.l  r1, @(r4, r0)
-	mov r6, r0
+	mov r2, r3
+	add r4, r3
+	mov.q @r3, r6
+	add #8, r2
+	mov.l  r2, @(r4, 96)
+	mov r6, r2
 	rts
 	nop
 __va64_arg_i.L0:
-	mov #112, r0
-	mov.q @(r4, r0), r1
+	mov.q @(r4, 112), r1
 	mov.l @r1+, r6
-	mov.q  r1, @(r4, r0)
-	mov r6, r0
+	mov.q  r1, @(r4, 112)
+	mov r6, r2
 	rts
 	nop
 
 .global X(__va64_arg_l)
 X(__va64_arg_l):
-	mov #96, r0
-	mov.l @(r4, r0), r0
+	mov.l @(r4, 96), r2
 	mov #64, r1
-	cmp/gt r0, r1
+	cmp/gt r2, r1
 	bf __va64_arg_l.L0	
-	mov.q @(r4, r0), r6
-	add #8, r0
-	mov r0, r1
-	mov #96, r0
-	mov.l  r1, @(r4, r0)
-	mov r6, r0
+
+	mov r2, r3
+	add r4, r3
+	mov.q @r3, r6
+	add #8, r2
+	mov.l  r2, @(r4, 96)
+	mov r6, r2
 	rts
 	nop
 __va64_arg_l.L0:
-	mov #112, r0
-	mov.q @(r4, r0), r1
+	mov.q @(r4, 112), r1
 	add #7, r1
-	mov #-8, r0
-	and r0, r1
+	and #-8, r1
 	mov.q @r1+, r6
-	mov.q  r1, @(r4, r0)
-	mov r6, r0
+	mov.q  r1, @(r4, 112)
+	mov r6, r2
 	rts
 	nop
 
 .global X(__va64_arg_x)
 X(__va64_arg_x):
-	mov #96, r0
-	mov.l @(r4, r0), r0
+	mov.l @(r4, 96), r0
 	mov #56, r1
 	cmp/gt r0, r1
 	bf __va64_arg_x.L0
-	mov.q @(r4, r0), r6
-	add #8, r0
-	mov.q @(r4, r0), r7
-	add #8, r0
 	mov r0, r1
-	mov #96, r0
-	mov.l  r1, @(r4, r0)
-	mov r6, r0
-	mov r7, r1
+	add r4, r1
+	mov.q @r1, r6
+	add #8, r1
+	mov.q @r1, r7
+	add #8, r1
+	mov.l  r1, @(r4, 96)
+	mov r6, r2
+	mov r7, r3
 	rts
 	nop
 __va64_arg_x.L0:
-	mov #112, r0
-	mov.q @(r4, r0), r1
+	mov.q @(r4, 112), r1
 	add #7, r1
-	mov #-8, r0
-	and r0, r1
+	and #-8, r1
 	mov.q @r1+, r6
 	mov.q @r1+, r7
-	mov.q  r1, @(r4, r0)
-	mov r6, r0
-	mov r7, r1
+	mov.q  r1, @(r4, 112)
+	mov r6, r2
+	mov r7, r3
 	rts
 	nop
 
 .global X(__va64_arg_f)
 X(__va64_arg_f):
-	mov #104, r0
-	mov.l @(r4, r0), r0
+	mov.l @(r4, 104), r0
 	mov #96, r1
 	cmp/gt r0, r1
 	bf __va64_arg_f.L0
 
-	fmov.d @(r4, r0), fr0
+	mov r4, r3
+	add r0, r3
+	fmov.d @r3, fr2
 	add #8, r0
 	mov r0, r1
-	mov #104, r0
-	mov.l  r1, @(r4, r0)
+	mov.l  r1, @(r4, 104)
 	rts
 	nop
 __va64_arg_f.L0:
-	mov #112, r0
-	mov.q @(r4, r0), r1
-	fmov.s @r1, fr0
+	mov.q @(r4, 112), r1
+	fmov.s @r1, fr2
 	add #4, r1
-	mov.q  r1, @(r4, r0)
+	mov.q  r1, @(r4, 112)
 	rts
 	nop
 
 .global X(__va64_arg_d)
 X(__va64_arg_d):
-	mov #104, r0
-	mov.l @(r4, r0), r0
-	
+	mov.l @(r4, 104), r0
 	add #7, r0
 	mov #-8, r1
 	and r1, r0
@@ -550,38 +544,53 @@ X(__va64_arg_d):
 	cmp/gt r0, r1
 	bf __va64_arg_d.L0
 
-	add r4, r0
-	fmov.d @r0, fr0
+	mov r4, r3
+	add r0, r3
+	fmov.d @r3, fr2
+
 	add #8, r0
-	sub r4, r0
 	mov r0, r1
-	mov #104, r0
-	mov.l  r1, @(r4, r0)
+	mov.l  r1, @(r4, 104)
 	rts
 	nop
 __va64_arg_d.L0:
-	mov #112, r0
-	mov.q @(r4, r0), r1
-	fmov.d @r1, fr1
+	mov.q @(r4, 112), r1
+	fmov.d @r1, fr2
 	add #8, r1
-	mov.q  r1, @(r4, r0)
+	mov.q  r1, @(r4, 112)
 	rts
 	nop
 
 .global X(__ldhf16)
 X(__ldhf16):
 	mov r4, dlr
-	fldch fr0
+	fldch fr2
 	rts
 
 .global X(__sthf16)
 X(__sthf16):
 	fstch fr4
-	mov dlr, r0
+	mov dlr, r2
 	rts
 
 .global X(__memcpy32)
 X(__memcpy32):
+
+#if 1
+	mov r5, r3
+	add r6, r3
+__memcpy32.L0:
+	mov.l @r5, r1
+	mov.l r1, @r4
+	add #4, r5
+	add #4, r4
+	cmp/hi r5, r3
+	bt __memcpy32.L0
+//	break
+	rts
+#endif
+
+#if 0
 	mov.q @(r5,  0), r0
 	mov.q @(r5,  8), r1
 	mov.q @(r5, 16), r2
@@ -591,6 +600,43 @@ X(__memcpy32):
 	mov.q r2, @(r4, 16)
 	mov.q r3, @(r4, 24)
 	rts
+#endif
+
+.global X(__memcpy64)
+X(__memcpy64):
+
+#if 1
+	mov r5, r3
+	add r6, r3
+__memcpy64.L0:
+	mov.q @r5, r1
+	mov.q r1, @r4
+	add #8, r5
+	add #8, r4
+	cmp/hi r5, r3
+	bt __memcpy64.L0
+//	break
+	rts
+#endif
+
+.global X(__memcpy128)
+X(__memcpy128):
+
+#if 1
+	mov r5, r3
+	add r6, r3
+__memcpy128.L0:
+	mov.q @(r5, 0), r0
+	mov.q @(r5, 8), r1
+	mov.q r0, @(r4, 0)
+	mov.q r1, @(r4, 8)
+	add #16, r5
+	add #16, r4
+	cmp/hi r5, r3
+	bt __memcpy128.L0
+//	break
+	rts
+#endif
 
 .global X(__memcpy8_16)
 X(__memcpy8_16):

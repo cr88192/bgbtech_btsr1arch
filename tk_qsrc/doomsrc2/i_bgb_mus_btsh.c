@@ -18,9 +18,11 @@ int i_smus_tt;			//remaining tics until next event
 int smus_notediv[128];
 byte smus_noteatt[128];
 
-byte smus_chanvol[16];
-byte smus_chanpbl[16];
-byte smus_chanprg[16];
+byte smus_chanvol[16];		//volume
+byte smus_chanpbl[16];		//pitch blend
+byte smus_chanprg[16];		//program
+byte smus_chanpan[16];		//pan
+byte smus_chanmod[16];		//modulation wheel
 
 byte smus_chanvn[16];
 byte smus_channt[16];
@@ -36,6 +38,7 @@ int smus_irq_tt;
 
 int smus_timer_irq()
 {
+	int i;
 //	return(0);
 
 	if(smus_irq_tt>0)
@@ -44,8 +47,9 @@ int smus_timer_irq()
 		return(0);
 	}
 	
-	I_SMus_Tick();
-	smus_irq_tt=7;
+	i=I_SMus_Tick();
+	if(i>0)
+		smus_irq_tt=7;
 //	smus_irq_tt=234;
 //	smus_irq_tt=14;
 //	smus_irq_tt=20;
@@ -97,6 +101,9 @@ int SMus_SetFmRegisterData(int prg, int idx, u32 val)
 int SMus_SilenceAll()
 {
 	int i;
+
+	if(!smus_regs)
+		return(0);
 
 	for(i=0; i<16; i++)
 	{
@@ -419,14 +426,26 @@ int SMus_Controller(int ch, int d0, int d1)
 		return(1);
 	}
 
-	switch(d0)
+	if(d0==10)
 	{
-	case 7:
-		smus_chanvol[ch]=d1;
-		break;
+		smus_chanpan[ch]=d1;
+		return(1);
 	}
 
-	printf("SMus_Controller: %d %d %d\n", ch, d0, d1);
+	if(d0==1)
+	{
+		smus_chanmod[ch]=d1;
+		return(1);
+	}
+
+//	switch(d0)
+//	{
+//	case 7:
+//		smus_chanvol[ch]=d1;
+//		break;
+//	}
+
+	printf("SMus_Controller: ch=%d var=%d val=%d\n", ch, d0, d1);
 	return(0);
 }
 
@@ -567,17 +586,23 @@ int I_SMus_ParseEvent()
 
 int I_SMus_Tick()
 {
+	int i;
 	if(i_smus_tt>0)
 	{
 		i_smus_tt--;
-		return(0);
+//		return(0);
+		return(1);
 	}
 	
 	i_smus_tt=0;
-	while(!i_smus_tt)
+//	i=10;
+	i=5;
+//	while(!i_smus_tt)
+	while(!i_smus_tt && ((i--)>0))
 	{
 		I_SMus_ParseEvent();
 	}
+	return(i>0);
 }
 
 

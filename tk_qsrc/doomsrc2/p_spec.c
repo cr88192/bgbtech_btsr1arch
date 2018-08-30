@@ -148,41 +148,45 @@ extern	line_t*	linespeciallist[MAXLINEANIMS];
 
 void P_InitPicAnims (void)
 {
-	int		i;
+	int		i, n;
 
 	
 	//	Init animation
 	lastanim = anims;
 	for (i=0 ; animdefs[i].istexture != -1 ; i++)
 	{
-	if (animdefs[i].istexture)
-	{
-		// different episode ?
-		if (R_CheckTextureNumForName(animdefs[i].startname) == -1)
-		continue;	
+		if (animdefs[i].istexture)
+		{
+			// different episode ?
+			if (R_CheckTextureNumForName(animdefs[i].startname) == -1)
+				continue;	
 
-		lastanim->picnum = R_TextureNumForName (animdefs[i].endname);
-		lastanim->basepic = R_TextureNumForName (animdefs[i].startname);
-	}
-	else
-	{
-		if (W_CheckNumForName(animdefs[i].startname) == -1)
-		continue;
+			lastanim->picnum = R_TextureNumForName (animdefs[i].endname);
+			lastanim->basepic = R_TextureNumForName (animdefs[i].startname);
+		}
+		else
+		{
+			if (W_CheckNumForName(animdefs[i].startname) == -1)
+				continue;
 
-		lastanim->picnum = R_FlatNumForName (animdefs[i].endname);
-		lastanim->basepic = R_FlatNumForName (animdefs[i].startname);
-	}
+			lastanim->picnum = R_FlatNumForName (animdefs[i].endname);
+			lastanim->basepic = R_FlatNumForName (animdefs[i].startname);
+		}
 
-	lastanim->istexture = animdefs[i].istexture;
-	lastanim->numpics = lastanim->picnum - lastanim->basepic + 1;
+		n = lastanim->picnum - lastanim->basepic + 1;
+		if((n<2) || (n>32))
+			continue;
+		
+		lastanim->istexture = animdefs[i].istexture;
+		lastanim->numpics = n;
 
-	if (lastanim->numpics < 2)
-		I_Error ("P_InitPicAnims: bad cycle from %s to %s",
-			 animdefs[i].startname,
-			 animdefs[i].endname);
-	
-	lastanim->speed = animdefs[i].speed;
-	lastanim++;
+		if (lastanim->numpics < 2)
+			I_Error ("P_InitPicAnims: bad cycle from %s to %s",
+				 animdefs[i].startname,
+				 animdefs[i].endname);
+		
+		lastanim->speed = animdefs[i].speed;
+		lastanim++;
 	}
 	
 }
@@ -505,6 +509,12 @@ P_CrossSpecialLine
 	line = &lines[linenum];
 
 	spop = line->special;
+	
+	if(spop==1024)
+	{
+		P_AcsCrossSpecialLine(linenum, side, thing);
+		return;
+	}
 
 	if(gamemode==heretic)
 	{
@@ -697,11 +707,14 @@ P_CrossSpecialLine
 	break;
 	
 		case 52:
-	// EXIT!
-	G_ExitLevel ();
-	break;
-	
-		case 53:
+			// EXIT!
+			if((line->acs_spec==74) && (line->arg1>0))
+				gamemap=line->arg1-1;
+		
+			G_ExitLevel ();
+			break;
+		
+			case 53:
 	// Perpetual Platform Raise
 	EV_DoPlat(line,perpetualRaise,0);
 	line->special = 0;
@@ -986,6 +999,12 @@ P_ShootSpecialLine
 
 	spop = line->special;
 
+	if(spop==1024)
+	{
+		P_AcsShootSpecialLine(thing, line);
+		return;
+	}
+
 	if(gamemode==heretic)
 	{
 		switch(spop)
@@ -1102,9 +1121,9 @@ void P_PlayerInSpecialSector (player_t* player)
 	break;
 			
 		default:
-	printf ("P_PlayerInSpecialSector: "
-		 "unknown special %i\n",
-		 sector->special);
+//	printf ("P_PlayerInSpecialSector: "
+//		 "unknown special %i\n",
+//		 sector->special);
 //	I_Error ("P_PlayerInSpecialSector: "
 //		 "unknown special %i",
 //		 sector->special);

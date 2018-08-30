@@ -63,9 +63,14 @@ The target address is computed and PC is updated to the new address.
 
 === BREAK ===
 
-* 3030 BREAK
+* 3030            BREAK
+* 0000            BREAK1  //Pseudo
+* F000_0000       BREAK2  //Pseudo
+* FC00_0000_0000  BREAK3  //Pseudo
 
 Trigger a Breakpoint exception.
+
+The BREAK1/2/3 forms overlap with MOV.B, but will be regarded as invalid special cases which will result in a breakpoint rather than a MOV.
 
 
 === BSR ===

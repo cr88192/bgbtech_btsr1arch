@@ -138,20 +138,52 @@ TKFAT_MBR *mbr;
 TKFAT_FAT16_Boot *boot16;
 TKFAT_FAT32_Boot *boot32;
 
+/* Static Buffer Cache */
 u32 sbc_lba[64];
 s16 sbc_lbn[64];
 void *sbc_buf[64];
 int sbc_num;
 
+/* Temp Buffer Cache */
 u32 tbc_lba[256];
 s16 tbc_lbn[256];
 void *tbc_buf[256];
+
+//u32 tbc_lba[1024];
+//s16 tbc_lbn[1024];
+//void *tbc_buf[1024];
+
 int tbc_num;
+int tbc_pred0;
+int tbc_pred1;
+
+#if 1
+/* Temp FAT Buffer Cache */
+
+// u32 tfbc_lba[1024];
+// s16 tfbc_lbn[1024];
+// void *tfbc_buf[1024];
+
+u32 tfbc_lba[256];
+s16 tfbc_lbn[256];
+void *tfbc_buf[256];
+
+int tfbc_num;
+int tfbc_pred0;
+int tfbc_pred1;
+
+byte *tfbc_pr_ofs;
+int tfbc_pr_lba;
+
+#endif
 
 int cl_rov;			//cluster rover
 int walk_clid;		//walk starting cluster
 int walk_clofs;		//walk cluster offset
 int walk_clcur;		//walk cluster current
+
+int walk_luhint[65536];		//lookup, once per 128 clusters
+int walk_lumax;
 };
 
 

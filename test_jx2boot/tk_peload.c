@@ -1,11 +1,12 @@
 int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr)
 {
 	byte tbuf[1024];
-	byte *imgptr;
+	byte *imgptr, *ct, *cte;
 	u64 imgbase;
 	u32 imgsz, startrva;
 	int sig_mz, sig_pe, mach;
 	int ofs_pe;
+	int cb, nb;
 	
 	tk_fread(tbuf, 1, 1024, fd);
 
@@ -43,7 +44,21 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr)
 	imgptr=(byte *)imgbase;
 	
 	tk_fseek(fd, 0, 0);
-	tk_fread(imgptr, 1, imgsz, fd);
+//	tk_fread(imgptr, 1, imgsz, fd);
+
+#if 1
+	cb=0; nb=imgsz>>10;
+	ct=imgptr; cte=imgptr+imgsz;
+	while((ct+1024)<=cte)
+	{
+		printf("%d/%dkB\r", cb, nb);
+		tk_fread(ct, 1, 1024, fd);
+		ct+=1024; cb++;
+	}
+	printf("%d/%dkB\r", cb, nb);
+	tk_fread(ct, 1, cte-ct, fd);
+	printf("\n", cb, nb);
+#endif
 	
 	*rbootptr=imgptr+startrva;
 #endif

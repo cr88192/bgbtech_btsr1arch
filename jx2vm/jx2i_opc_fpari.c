@@ -194,6 +194,35 @@ void BJX2_Op_FMOVD_LdReg2Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 }
 
 
+void BJX2_Op_FMOVS_RegStPcReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	float sf;
+	u32 v;
+	sf=((double *)ctx->fpreg)[op->rm];
+	v=*(u32 *)(&sf);
+	BJX2_MemSetDWord(ctx, (op->pc2)+(ctx->regs[op->ro]), v);
+}
+
+void BJX2_Op_FMOVS_LdPcRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u32 v;
+	v=BJX2_MemGetDWord(ctx, (op->pc2)+(ctx->regs[op->ro]));
+	((double *)ctx->fpreg)[op->rn]=*(float *)(&v);
+}
+
+void BJX2_Op_FMOVD_RegStPcReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	BJX2_MemSetQWord(ctx, (op->pc2)+
+		(ctx->regs[op->ro]), ctx->fpreg[op->rm]);
+}
+
+void BJX2_Op_FMOVD_LdPcRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->fpreg[op->rn]=BJX2_MemGetQWord(ctx,
+		(op->pc2)+(ctx->regs[op->ro]));
+}
+
+
 void BJX2_Op_FLDCF_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	u32 v;

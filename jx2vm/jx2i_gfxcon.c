@@ -497,6 +497,9 @@ int JX2I_GfxCon_UpdateCell(int cx, int cy)
 	static u32 pixv6[64];
 	static u32 pixv9[512];
 	static u32 clrt4[4];
+	static byte clrt4_y[4];
+	static byte clrt4_u[4];
+	static byte clrt4_v[4];
 	static int pixv_init=0;
 
 	u32 c0, c1, c2, c3;
@@ -504,7 +507,10 @@ int JX2I_GfxCon_UpdateCell(int cx, int cy)
 	int c2ya, c2yb, c2ua, c2ub, c2va, c2vb;
 	int cr0, cg0, cb0, cr1, cg1, cb1;
 	int cr2, cg2, cb2, cr3, cg3, cb3;
-	int cy0, cu0, cv0, cu2, cv2;
+	int cy0, cu0, cv0;
+	int cy1, cu1, cv1;
+	int cy2, cu2, cv2;
+	int cy3, cu3, cv3;
 	u32 clra, clrb, clrc;
 	u64 fontbits, pixbits;
 	u16 pxubits, pxvbits;
@@ -698,6 +704,155 @@ int JX2I_GfxCon_UpdateCell(int cx, int cy)
 				((u32 *)btesh2_gfxcon_framebuf)[((cy*8+py)*320)+(cx*8+px)]=clrc;
 			}
 		}else
+			if(((c0>>28)&3)==2)
+		{
+			for(qy=0; qy<2; qy++)
+				for(qx=0; qx<2; qx++)
+			{
+				switch(qy*2+qx)
+				{
+				case 0:
+					k=c3; px2=c7;
+					pxubits=c3>>24;
+					pxvbits=c2>>24;
+					break;
+				case 1:
+					k=c2; px2=c6;
+					pxubits=c3>>16;
+					pxvbits=c2>>16;
+					break;
+				case 2:
+					k=c1; px2=c5;
+					pxubits=c3>>8;
+					pxvbits=c2>>8;
+					break;
+				case 3:
+					k=c0; px2=c4;
+					pxubits=c3>>0;
+					pxvbits=c2>>0;
+					break;
+				}
+
+
+//				pxubits=(k>>14);
+
+//				cy0=(pxubits>>11)&31;
+//				cv0=(pxubits>> 5)&31;
+//				cu0=(pxubits    )&31;
+				
+				cy0=(c1>>16)&255;
+				cu0=(c1>> 8)&255;
+				cv0=(c1>> 0)&255;
+
+				cy1=(c0>>16)&255;
+				cu1=(c0>> 8)&255;
+				cv1=(c0>> 0)&255;
+
+				cu3=(cu0+cu1)>>1;
+				cv3=(cv0+cv1)>>1;
+
+//				cu2=(cu0-16)<<1;	cv2=(cv0-16)<<1;
+//				cu2=(cu0-128)<<1;	cv2=(cv0-128)<<1;
+				cu2=(cu3-128)<<1;	cv2=(cv3-128)<<1;
+				cg0=cy0-((cu2+cv2)>>1);
+				cb0=cg0+cu2;	cr0=cg0+cv2;
+
+//				pxvbits=(k<<1);
+//				cy0=(pxvbits>>11)&31;
+//				cv0=(pxvbits>> 5)&31;
+//				cu0=(pxvbits    )&31;
+
+
+//				cu2=(cu0-16)<<1;	cv2=(cv0-16)<<1;
+//				cu2=(cu1-128)<<1;	cv2=(cv1-128)<<1;
+				cu2=(cu3-128)<<1;	cv2=(cv3-128)<<1;
+				cg1=cy1-((cu2+cv2)>>1);
+				cb1=cg1+cu2;	cr1=cg1+cv2;
+
+//				cr0=(cr0<<3)|(cr0>>2);
+//				cg0=(cg0<<3)|(cg0>>2);
+//				cb0=(cb0<<3)|(cb0>>2);
+				if(cr0|cg0|cb0)
+				{
+					cr0=jx2i_gfxcon_clamp255(cr0);
+					cg0=jx2i_gfxcon_clamp255(cg0);
+					cb0=jx2i_gfxcon_clamp255(cb0);
+				}
+
+//				cr1=(cr1<<3)|(cr1>>2);
+//				cg1=(cg1<<3)|(cg1>>2);
+//				cb1=(cb1<<3)|(cb1>>2);
+				if(cr1|cg1|cb1)
+				{
+					cr1=jx2i_gfxcon_clamp255(cr1);
+					cg1=jx2i_gfxcon_clamp255(cg1);
+					cb1=jx2i_gfxcon_clamp255(cb1);
+				}
+
+				cr2=(11*cr0+ 5*cr1)>>4;
+				cg2=(11*cg0+ 5*cg1)>>4;
+				cb2=(11*cb0+ 5*cb1)>>4;
+				cr3=( 5*cr0+11*cr1)>>4;
+				cg3=( 5*cg0+11*cg1)>>4;
+				cb3=( 5*cb0+11*cb1)>>4;
+
+				clrt4[0]=0xFF000000|(cb0<<16)|(cg0<<8)|cr0;
+				clrt4[1]=0xFF000000|(cb2<<16)|(cg2<<8)|cr2;
+				clrt4[2]=0xFF000000|(cb3<<16)|(cg3<<8)|cr3;
+				clrt4[3]=0xFF000000|(cb1<<16)|(cg1<<8)|cr1;
+
+				clrt4_y[0]=cy0;
+				clrt4_y[1]=(11*cy0+ 5*cy1)>>4;
+				clrt4_y[2]=( 5*cy0+11*cy1)>>4;
+				clrt4_y[3]=cy1;
+
+				clrt4_u[0]=cu0;
+				clrt4_u[1]=(11*cu0+ 5*cu1)>>4;
+				clrt4_u[2]=( 5*cu0+11*cu1)>>4;
+				clrt4_u[3]=cu1;
+
+				clrt4_v[0]=cv0;
+				clrt4_v[1]=(11*cv0+ 5*cv1)>>4;
+				clrt4_v[2]=( 5*cv0+11*cv1)>>4;
+				clrt4_v[3]=cv1;
+
+				by=cy*8+qy*4;
+				bx=cx*8+qx*4;
+
+				for(py=0; py<4; py++)
+					for(px=0; px<4; px++)
+				{
+					i=15-(4*py+px);
+					j=(px2>>(2*i))&3;
+					clrc=clrt4[j];
+					cy3=clrt4_y[j];
+
+					i=3-(2*(py/2)+(px/2));
+					j=(pxubits>>(2*i))&3;
+					k=(pxvbits>>(2*i))&3;
+					cu3=clrt4_u[j];
+					cv3=clrt4_v[k];
+
+//					cu3=clrt4_u[3-j];
+//					cv3=clrt4_v[3-k];
+
+					cu2=(cu3-128)<<1;	cv2=(cv3-128)<<1;
+					cg1=cy3-((cu2+cv2)>>1);
+					cb1=cg1+cu2;	cr1=cg1+cv2;
+
+					if(cr1|cg1|cb1)
+					{
+						cr1=jx2i_gfxcon_clamp255(cr1);
+						cg1=jx2i_gfxcon_clamp255(cg1);
+						cb1=jx2i_gfxcon_clamp255(cb1);
+					}
+
+//					clrc=0xFF000000|(cb1<<16)|(cg1<<8)|cr1;
+					((u32 *)btesh2_gfxcon_framebuf)[
+						((by+py)*320)+(bx+px)]=clrc;
+				}
+			}
+		}else
 		{
 			for(py=0; py<8; py++)
 				for(px=0; px<8; px++)
@@ -743,90 +898,186 @@ int JX2I_GfxCon_UpdateCell(int cx, int cy)
 		{
 			switch(qy*2+qx)
 			{
-			case 0: k=c0; px2=c4; break;
-			case 1: k=c1; px2=c5; break;
-			case 2: k=c2; px2=c6; break;
-			case 3: k=c3; px2=c7; break;
+//			case 0: k=c0; px2=c4; break;
+//			case 1: k=c1; px2=c5; break;
+//			case 2: k=c2; px2=c6; break;
+//			case 3: k=c3; px2=c7; break;
+
+			case 0: k=c3; px2=c7; break;
+			case 1: k=c2; px2=c6; break;
+			case 2: k=c1; px2=c5; break;
+			case 3: k=c0; px2=c4; break;
 			}
 
-			pxubits=(k>>14);
-			cy0=(pxubits>>11)&31;	cv0=(pxubits>> 5)&31;	cu0=(pxubits    )&31;
-			cu2=(cu0-16)<<1;	cv2=(cv0-16)<<1;
-			cg0=cy0-((cu2+cv2)>>1);
-			cb0=cg0+cu2;	cr0=cg0+cv2;
-
-			pxvbits=(k<<1);
-			cy0=(pxvbits>>11)&31;	cv0=(pxvbits>> 5)&31;	cu0=(pxvbits    )&31;
-			cu2=(cu0-16)<<1;	cv2=(cv0-16)<<1;
-			cg1=cy0-((cu2+cv2)>>1);
-			cb1=cg1+cu2;	cr1=cg1+cv2;
-
-			cr0=(cr0<<3)|(cr0>>2);
-			cg0=(cg0<<3)|(cg0>>2);
-			cb0=(cb0<<3)|(cb0>>2);
-			if(cr0|cg0|cb0)
+			pxubits=(u16)(k>>14);
+			pxvbits=(u16)(k<< 1);
+//			if(pxubits>pxvbits)
+			if((pxubits&0xFC00)>(pxvbits&0xFC00))
 			{
-				cr0=jx2i_gfxcon_clamp255(cr0);
-				cg0=jx2i_gfxcon_clamp255(cg0);
-				cb0=jx2i_gfxcon_clamp255(cb0);
-			}
 
-			cr1=(cr1<<3)|(cr1>>2);
-			cg1=(cg1<<3)|(cg1>>2);
-			cb1=(cb1<<3)|(cb1>>2);
-			if(cr1|cg1|cb1)
+				cy0=(pxubits>>11)&31;
+				cv0=(pxubits>> 5)&30;	
+				cu0=(pxubits    )&30;
+
+				cy1=(pxvbits>>11)&31;
+				cv1=(pxvbits>> 5)&30;
+				cu1=(pxvbits    )&30;
+
+				cy0=(cy0<<3)|(cy0>>2);
+				cy1=(cy1<<3)|(cy1>>2);
+//				cu0=(cu0<<3);	cv0=(cv0<<3);
+//				cu1=(cu1<<3);	cv1=(cv1<<3);
+
+				cu0=(cu0<<3)|(7-(cu0>>2));
+				cv0=(cv0<<3)|(7-(cv0>>2));
+
+				cu1=(cu1<<3)|(7-(cu1>>2));
+				cv1=(cv1<<3)|(7-(cv1>>2));
+
+				clrt4_y[0]=cy0;
+				clrt4_y[1]=(11*cy0+ 5*cy1)>>4;
+				clrt4_y[2]=( 5*cy0+11*cy1)>>4;
+				clrt4_y[3]=cy1;
+
+				by=cy*8+qy*4;
+				bx=cx*8+qx*4;
+
+				for(py=0; py<4; py++)
+					for(px=0; px<4; px++)
+				{
+	//				i=((3-py)*4)+(3-px);
+					i=15-(4*py+px);
+					j=(px2>>(2*i))&3;
+
+					cy3=clrt4_y[j];
+//					cu3=(pxubits&32)?((py&2)?cu0:cu1):((px&2)?cu0:cu1);
+//					cv3=(pxvbits&32)?((py&2)?cv0:cv1):((px&2)?cv0:cv1);
+
+					cu3=(pxubits&32)?((py&2)?cu0:cu1):((px&2)?cu0:cu1);
+					cv3=(pxvbits&32)?((py&2)?cv0:cv1):((px&2)?cv0:cv1);
+					cu2=cu3-128; cv2=cv3-128;
+					cr0=(256*cy3        +359*cv2+128)>>8;
+					cg0=(256*cy3- 88*cu2-183*cv2+128)>>8;
+					cb0=(256*cy3+454*cu2        +128)>>8;
+	//			cu2=(cu0-16)<<1;	cv2=(cv0-16)<<1;
+	//			cg0=cy0-((cu2+cv2)>>1);
+	//			cb0=cg0+cu2;	cr0=cg0+cv2;
+					if((cr0|cg0|cb0)&(~255))
+					{	cr0=jx2i_gfxcon_clamp255(cr0);
+						cg0=jx2i_gfxcon_clamp255(cg0);
+						cb0=jx2i_gfxcon_clamp255(cb0);		}
+					clrc=0xFF000000|(cb0<<16)|(cg0<<8)|cr0;
+//					clrc=0;
+
+					((u32 *)btesh2_gfxcon_framebuf)[
+						((by+py)*320)+(bx+px)]=clrc;
+				}
+
+			}else
 			{
-				cr1=jx2i_gfxcon_clamp255(cr1);
-				cg1=jx2i_gfxcon_clamp255(cg1);
-				cb1=jx2i_gfxcon_clamp255(cb1);
-			}
+				cy0=(pxubits>>11)&31;
+				cv0=(pxubits>> 5)&31;	
+				cu0=(pxubits    )&31;
+	//			cu2=(cu0-16)<<1;	cv2=(cv0-16)<<1;
+	//			cg0=cy0-((cu2+cv2)>>1);
+	//			cb0=cg0+cu2;	cr0=cg0+cv2;
 
-#if 0
-			pxubits=(k>>15);
-			cr0=(pxubits>>10)&31;
-			cg0=(pxubits>> 5)&31;
-			cb0=(pxubits>> 0)&31;
-			cr0=(cr0<<3)|(cr0>>2);
-			cg0=(cg0<<3)|(cg0>>2);
-			cb0=(cb0<<3)|(cb0>>2);
-//			clrb=0xFF000000|(cb0<<16)|(cg0<<8)|cr0;
+				cy0=(cy0<<3)|(cy0>>2);
+//				cu0=(cu0<<3);	cv0=(cv0<<3);
+				cu0=(cu0<<3)|(7-(cu0>>2));
+				cv0=(cv0<<3)|(7-(cv0>>2));
 
-			pxvbits=(k    );
-			cr1=(pxvbits>>10)&31;
-			cg1=(pxvbits>> 5)&31;
-			cb1=(pxvbits>> 0)&31;
-			cr1=(cr1<<3)|(cr1>>2);
-			cg1=(cg1<<3)|(cg1>>2);
-			cb1=(cb1<<3)|(cb1>>2);
-//			clra=0xFF000000|(cb1<<16)|(cg1<<8)|cr1;
-#endif
+				cu2=cu0-128; cv2=cv0-128;
+				cr0=(256*cy0        +359*cv2+128)>>8;
+				cg0=(256*cy0- 88*cu2-183*cv2+128)>>8;
+				cb0=(256*cy0+454*cu2        +128)>>8;
 
-			cr2=(11*cr0+ 5*cr1)>>4;
-			cg2=(11*cg0+ 5*cg1)>>4;
-			cb2=(11*cb0+ 5*cb1)>>4;
-			cr3=( 5*cr0+11*cr1)>>4;
-			cg3=( 5*cg0+11*cg1)>>4;
-			cb3=( 5*cb0+11*cb1)>>4;
+				cy0=(pxvbits>>11)&31;
+				cv0=(pxvbits>> 5)&31;
+				cu0=(pxvbits    )&31;
+	//			cu2=(cu0-16)<<1;	cv2=(cv0-16)<<1;
+	//			cg1=cy0-((cu2+cv2)>>1);
+	//			cb1=cg1+cu2;	cr1=cg1+cv2;
 
-			clrt4[0]=0xFF000000|(cb0<<16)|(cg0<<8)|cr0;
-			clrt4[1]=0xFF000000|(cb2<<16)|(cg2<<8)|cr2;
-			clrt4[2]=0xFF000000|(cb3<<16)|(cg3<<8)|cr3;
-			clrt4[3]=0xFF000000|(cb1<<16)|(cg1<<8)|cr1;
+				cy0=(cy0<<3)|(cy0>>2);
+//				cu0=(cu0<<3);	cv0=(cv0<<3);
+				cu0=(cu0<<3)|(7-(cu0>>2));
+				cv0=(cv0<<3)|(7-(cv0>>2));
 
-			by=cy*8+qy*4;
-			bx=cx*8+qx*4;
+				cu2=cu0-128; cv2=cv0-128;
+				cr1=(256*cy0        +359*cv2+128)>>8;
+				cg1=(256*cy0- 88*cu2-183*cv2+128)>>8;
+				cb1=(256*cy0+454*cu2        +128)>>8;
 
-			for(py=0; py<4; py++)
-				for(px=0; px<4; px++)
-			{
-//				i=((3-py)*4)+(3-px);
-				i=15-(4*py+px);
-				j=(px2>>(2*i))&3;
-//				clrc=(j&2)?clra:clrb;
-				clrc=clrt4[j];
+	//			cr0=(cr0<<3)|(cr0>>2);
+	//			cg0=(cg0<<3)|(cg0>>2);
+	//			cb0=(cb0<<3)|(cb0>>2);
+//				if(cr0|cg0|cb0)
+				if((cr0|cg0|cb0)&(~255))
+				{
+					cr0=jx2i_gfxcon_clamp255(cr0);
+					cg0=jx2i_gfxcon_clamp255(cg0);
+					cb0=jx2i_gfxcon_clamp255(cb0);
+				}
 
-				((u32 *)btesh2_gfxcon_framebuf)[
-					((by+py)*320)+(bx+px)]=clrc;
+	//			cr1=(cr1<<3)|(cr1>>2);
+	//			cg1=(cg1<<3)|(cg1>>2);
+	//			cb1=(cb1<<3)|(cb1>>2);
+//				if(cr1|cg1|cb1)
+				if((cr1|cg1|cb1)&(~255))
+				{
+					cr1=jx2i_gfxcon_clamp255(cr1);
+					cg1=jx2i_gfxcon_clamp255(cg1);
+					cb1=jx2i_gfxcon_clamp255(cb1);
+				}
+
+	#if 0
+				pxubits=(k>>15);
+				cr0=(pxubits>>10)&31;
+				cg0=(pxubits>> 5)&31;
+				cb0=(pxubits>> 0)&31;
+				cr0=(cr0<<3)|(cr0>>2);
+				cg0=(cg0<<3)|(cg0>>2);
+				cb0=(cb0<<3)|(cb0>>2);
+	//			clrb=0xFF000000|(cb0<<16)|(cg0<<8)|cr0;
+
+				pxvbits=(k    );
+				cr1=(pxvbits>>10)&31;
+				cg1=(pxvbits>> 5)&31;
+				cb1=(pxvbits>> 0)&31;
+				cr1=(cr1<<3)|(cr1>>2);
+				cg1=(cg1<<3)|(cg1>>2);
+				cb1=(cb1<<3)|(cb1>>2);
+	//			clra=0xFF000000|(cb1<<16)|(cg1<<8)|cr1;
+	#endif
+
+				cr2=(11*cr0+ 5*cr1)>>4;
+				cg2=(11*cg0+ 5*cg1)>>4;
+				cb2=(11*cb0+ 5*cb1)>>4;
+				cr3=( 5*cr0+11*cr1)>>4;
+				cg3=( 5*cg0+11*cg1)>>4;
+				cb3=( 5*cb0+11*cb1)>>4;
+
+				clrt4[0]=0xFF000000|(cb0<<16)|(cg0<<8)|cr0;
+				clrt4[1]=0xFF000000|(cb2<<16)|(cg2<<8)|cr2;
+				clrt4[2]=0xFF000000|(cb3<<16)|(cg3<<8)|cr3;
+				clrt4[3]=0xFF000000|(cb1<<16)|(cg1<<8)|cr1;
+
+				by=cy*8+qy*4;
+				bx=cx*8+qx*4;
+
+				for(py=0; py<4; py++)
+					for(px=0; px<4; px++)
+				{
+	//				i=((3-py)*4)+(3-px);
+					i=15-(4*py+px);
+					j=(px2>>(2*i))&3;
+	//				clrc=(j&2)?clra:clrb;
+					clrc=clrt4[j];
+
+					((u32 *)btesh2_gfxcon_framebuf)[
+						((by+py)*320)+(bx+px)]=clrc;
+				}
 			}
 		}
 	}

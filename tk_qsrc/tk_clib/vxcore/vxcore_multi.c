@@ -14,6 +14,7 @@
 #include "pdpc201/ctype.c"
 #include "pdpc201/setjmp.c"
 #include "pdpc201/math.c"
+#include "pdpc201/math2.c"
 #include "pdpc201/__memmgr.c"
 
 #include <tk_core.h>

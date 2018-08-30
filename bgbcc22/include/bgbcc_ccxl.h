@@ -144,6 +144,8 @@
 #define CCXL_LITID_PROTOTYPE	22
 #define CCXL_LITID_EXPLIST		23			//DLL export list
 
+#define CCXL_LITID_SUPERCLZ		24			//superclass list
+
 #define CCXL_STATUS_YES					1
 #define CCXL_STATUS_NO					0
 #define CCXL_STATUS_ERR_GENERIC			-1
@@ -343,8 +345,8 @@ int alc_ln;
 BGBCC_CCXL_RegisterInfo *defv;		//define var
 BGBCC_CCXL_RegisterInfo *defp;		//define parent
 
-BGBCC_CCXL_RegisterInfo **fields;
-BGBCC_CCXL_RegisterInfo **args;
+BGBCC_CCXL_RegisterInfo **fields;	//struct/class/union fields
+BGBCC_CCXL_RegisterInfo **args;		//function arguments, superclass list
 BGBCC_CCXL_RegisterInfo **locals;
 BGBCC_CCXL_RegisterInfo **regs;
 // u32 *regs_tyseq;

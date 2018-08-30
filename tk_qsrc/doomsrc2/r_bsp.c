@@ -516,29 +516,29 @@ void R_Subsector (int num)
 
     if (frontsector->floorheight < viewz)
     {
-	floorplane = R_FindPlane (frontsector->floorheight,
-				  frontsector->floorpic,
-				  frontsector->lightlevel);
+		floorplane = R_FindPlane (frontsector->floorheight,
+					  frontsector->floorpic,
+					  frontsector->lightlevel);
     }
     else
-	floorplane = NULL;
+		floorplane = NULL;
     
     if (frontsector->ceilingheight > viewz 
 	|| frontsector->ceilingpic == skyflatnum)
     {
-	ceilingplane = R_FindPlane (frontsector->ceilingheight,
-				    frontsector->ceilingpic,
-				    frontsector->lightlevel);
+		ceilingplane = R_FindPlane (frontsector->ceilingheight,
+						frontsector->ceilingpic,
+						frontsector->lightlevel);
     }
     else
-	ceilingplane = NULL;
+		ceilingplane = NULL;
 		
     R_AddSprites (frontsector);	
 
     while (count--)
     {
-	R_AddLine (line);
-	line++;
+		R_AddLine (line);
+		line++;
     }
 }
 

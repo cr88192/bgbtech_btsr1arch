@@ -22,13 +22,16 @@ Match records will be a 16 or 32 bits, with the low 2 bits as a tag.
 
 * Tag=11: PP Match (16-bit)
 ** Bits 3..2: TagB
+
 ** TagB=00: Raw Data (No Match)
 *** Bits 15..4: Raw Length (1..4096)
 ** TagB=01: Predicted Length and Distance
 *** Bits 15..4: Raw Length
+
 ** TagB=10: Predicted Distance
 *** Bits 15..8: Match Length
 *** Bits 7..4: Raw Length
+
 ** TagB=11: Predicted Length
 *** Bits 15..8: Match Distance
 *** Bits 7..4: Raw Length
