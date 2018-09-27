@@ -881,6 +881,8 @@ byte no_ext32;		//no 32-bit instruction forms
 byte fpu_soft;		//use SoftFPU design.
 byte fpu_lite;		//use LiteFPU design.
 
+byte is_fixed32;	//uses only 32-bit instruction forms
+
 byte has_shad;		//has SHAD/SHLD
 byte has_movi20;	//has MOVI20 and friends
 byte has_misalgn;	//has misaligned load/store
@@ -1049,6 +1051,8 @@ int lbl_ret;			//label ID for function exit
 int lbl_got;			//label ID for got
 int frm_offs_retstr;	//offset of return struct
 int frm_offs_save;		//offset of register-save area
+
+int frm_offs_thisptr;	//offset of 'this' pointer
 
 int lbl_rom_data_strt;
 int lbl_rom_data_end;

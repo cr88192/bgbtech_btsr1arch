@@ -191,7 +191,7 @@ char *BGBCP_EatExpectToken(BGBCP_ParseState *ctx, char *s, char *tok)
 	if(!s)
 		return(s);
 
-	s=BGBCP_Token(s, b, &ty); //token
+	s=BGBCP_Token2(s, b, &ty, ctx->lang); //token
 	if(bgbcp_strcmp(b, tok))
 		{ BGBCP_ErrorCtx(ctx, s, "Expected '%s' got '%s'\n", tok, b); }
 
@@ -206,8 +206,8 @@ BCCX_Node *BGBCP_Statement(BGBCP_ParseState *ctx, char **str)
 	BCCX_Node *n, *n1, *n2;
 
 	s=*str;
-	s=BGBCP_Token(s, b, &ty);
-	BGBCP_Token(s, b2, &ty2);
+	s=BGBCP_Token2(s, b, &ty, ctx->lang);
+	BGBCP_Token2(s, b2, &ty2, ctx->lang);
 	if(!*s)
 	{
 		*str=s;
@@ -246,7 +246,7 @@ BCCX_Node *BGBCP_Statement(BGBCP_ParseState *ctx, char **str)
 
 	if(!bgbcp_strcmp4(b, "goto"))
 	{
-		s=BGBCP_Token(s, b2, &ty2);
+		s=BGBCP_Token2(s, b2, &ty2, ctx->lang);
 //		n=BCCX_NewCst1(&bgbcc_rcst_goto, "goto", BCCX_NewText(b2));
 		n=BCCX_NewCst(&bgbcc_rcst_goto, "goto");
 		BCCX_SetCst(n, &bgbcc_rcst_name, "name", b2);
@@ -256,7 +256,7 @@ BCCX_Node *BGBCP_Statement(BGBCP_ParseState *ctx, char **str)
 
 	if(!bgbcp_strcmp(b, "return"))
 	{
-		BGBCP_Token(s, b2, &ty2);
+		BGBCP_Token2(s, b2, &ty2, ctx->lang);
 		if(b2[0]!=';')
 		{
 			n1=BGBCP_Expression(ctx, &s);
@@ -389,8 +389,8 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 		return(n);
 	}
 
-	s=BGBCP_Token(s, b, &ty);
-	BGBCP_Token(s, b2, &ty2);
+	s=BGBCP_Token2(s, b, &ty, ctx->lang);
+	BGBCP_Token2(s, b2, &ty2, ctx->lang);
 	if(!*s)
 	{
 		*str=s;
@@ -405,7 +405,7 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 
 	if((ty==BTK_NAME) && !bgbcp_strcmp1(b2, ":"))
 	{
-		s=BGBCP_Token(s, b2, &ty2);	//:
+		s=BGBCP_Token2(s, b2, &ty2, ctx->lang);	//:
 
 		if(!bgbcp_strcmp(b, "default"))
 		{
@@ -425,7 +425,8 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 	{
 
 		if((b[0]=='t') && !bgbcp_strcmp7(b, "typedef") &&
-			(ctx->lang==BGBCC_LANG_C))
+			((ctx->lang==BGBCC_LANG_C) ||
+			(ctx->lang==BGBCC_LANG_CPP)))
 		{
 			n=BGBCP_ForceDefinition(ctx, &s);
 			BGBCP_HandleTypedef(ctx, n);
@@ -437,7 +438,7 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 		if((b[0]=='c') && !bgbcp_strcmp4(b, "case"))
 		{
 			n1=BGBCP_Expression(ctx, &s);
-			s=BGBCP_Token(s, b2, &ty2);	//:
+			s=BGBCP_Token2(s, b2, &ty2, ctx->lang);	//:
 			n=BCCX_NewCst1(&bgbcc_rcst_case, "case",
 				BCCX_NewCst1V(&bgbcc_rcst_value, "value", n1));
 
@@ -447,12 +448,12 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 
 		if((b[0]=='i') && !bgbcp_strcmp2(b, "if"))
 		{
-			s=BGBCP_Token(s, b, &ty);	//(
+			s=BGBCP_Token2(s, b, &ty, ctx->lang);	//(
 			n1=BGBCP_Expression(ctx, &s);
-			s=BGBCP_Token(s, b, &ty);	//)
+			s=BGBCP_Token2(s, b, &ty, ctx->lang);	//)
 			n2=BGBCP_BlockStatement3(ctx, &s);
 
-			BGBCP_Token(s, b, &ty);
+			BGBCP_Token2(s, b, &ty, ctx->lang);
 			if(bgbcp_strcmp4(b, "else"))
 			{
 				n=BCCX_NewCst2(&bgbcc_rcst_if, "if",
@@ -462,7 +463,7 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 				return(n);
 			}
 
-			s=BGBCP_Token(s, b, &ty);	//else
+			s=BGBCP_Token2(s, b, &ty, ctx->lang);	//else
 			n3=BGBCP_BlockStatement3(ctx, &s);
 			n=BCCX_NewCst3(&bgbcc_rcst_if, "if",
 				BCCX_NewCst1V(&bgbcc_rcst_cond, "cond", n1),
@@ -475,9 +476,9 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 
 		if((b[0]=='w') && !bgbcp_strcmp5(b, "while"))
 		{
-			s=BGBCP_Token(s, b, &ty);	//'('
+			s=BGBCP_Token2(s, b, &ty, ctx->lang);	//'('
 			n1=BGBCP_Expression(ctx, &s);
-			s=BGBCP_Token(s, b, &ty);	//')'
+			s=BGBCP_Token2(s, b, &ty, ctx->lang);	//')'
 
 			n2=BGBCP_BlockStatement3(ctx, &s);
 			n=BCCX_NewCst2(&bgbcc_rcst_while, "while",
@@ -490,8 +491,8 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 
 		if((b[0]=='f') && !bgbcp_strcmp3(b, "for"))
 		{
-			s=BGBCP_Token(s, b, &ty);		//(
-			s2=BGBCP_Token(s, b, &ty);		//
+			s=BGBCP_Token2(s, b, &ty, ctx->lang);		//(
+			s2=BGBCP_Token2(s, b, &ty, ctx->lang);		//
 			s2=BGBCP_Token(s2, b2, &ty);	//
 
 			if(!bgbcp_strcmp1(b, ";"))
@@ -500,20 +501,20 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 				{ n1=BGBCP_Expression2(ctx, &s); }
 			s=BGBCP_EatSemicolonRequired(ctx, s);
 
-			s2=BGBCP_Token(s, b, &ty);
+			s2=BGBCP_Token2(s, b, &ty, ctx->lang);
 			if(!bgbcp_strcmp1(b, ";"))
 				{ n2=NULL; }
 			else
 				{ n2=BGBCP_Expression2(ctx, &s); }
 			s=BGBCP_EatSemicolonRequired(ctx, s);
 
-			s2=BGBCP_Token(s, b, &ty);
+			s2=BGBCP_Token2(s, b, &ty, ctx->lang);
 			if(!bgbcp_strcmp1(b, ")"))
 				{ n3=NULL; }
 			else
 				{ n3=BGBCP_Expression2(ctx, &s); }
 
-			s=BGBCP_Token(s, b, &ty);	//)
+			s=BGBCP_Token2(s, b, &ty, ctx->lang);	//)
 			n4=BGBCP_BlockStatement3(ctx, &s);
 
 			n=BCCX_NewCst4(&bgbcc_rcst_for, "for",
@@ -530,14 +531,14 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 		{
 			n2=BGBCP_BlockStatement3(ctx, &s);
 
-			BGBCP_Token(s, b, &ty);	//'while'
+			BGBCP_Token2(s, b, &ty, ctx->lang);	//'while'
 			if(!bgbcp_strcmp(b, "while"))
 			{
-				s=BGBCP_Token(s, b, &ty);	//'while'
+				s=BGBCP_Token2(s, b, &ty, ctx->lang);	//'while'
 
-				s=BGBCP_Token(s, b, &ty);	//'('
+				s=BGBCP_Token2(s, b, &ty, ctx->lang);	//'('
 				n1=BGBCP_Expression(ctx, &s);
-				s=BGBCP_Token(s, b, &ty);	//')'
+				s=BGBCP_Token2(s, b, &ty, ctx->lang);	//')'
 
 				n=BCCX_NewCst2(&bgbcc_rcst_do_while, "do_while",
 					BCCX_NewCst1V(&bgbcc_rcst_cond, "cond", n1),
@@ -553,11 +554,11 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 
 		if((b[0]=='s') && !bgbcp_strcmp6(b, "switch"))
 		{
-			s=BGBCP_Token(s, b, &ty);	//(
+			s=BGBCP_Token2(s, b, &ty, ctx->lang);	//(
 			n1=BGBCP_Expression(ctx, &s);
-			s=BGBCP_Token(s, b, &ty);	//)
+			s=BGBCP_Token2(s, b, &ty, ctx->lang);	//)
 
-			s=BGBCP_Token(s, b, &ty); //{
+			s=BGBCP_Token2(s, b, &ty, ctx->lang); //{
 			n2=BGBCP_Block(ctx, &s);
 
 			n=BCCX_NewCst2(&bgbcc_rcst_switch, "switch",
@@ -572,16 +573,16 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 		{
 			if(!bgbcp_strcmp(b, "__asm__"))
 			{
-	//			s=BGBCP_Token(s, b, &ty);	//(
+	//			s=BGBCP_Token2(s, b, &ty, ctx->lang);	//(
 	//			n1=BGBCP_Expression(ctx, &s);
-	//			s=BGBCP_Token(s, b, &ty);	//)
+	//			s=BGBCP_Token2(s, b, &ty, ctx->lang);	//)
 
-	//			s=BGBCP_Token(s, b, &ty);	//(
+	//			s=BGBCP_Token2(s, b, &ty, ctx->lang);	//(
 
 				i=0;
 				while(1)
 				{
-					s=BGBCP_Token(s, b, &ty);
+					s=BGBCP_Token2(s, b, &ty, ctx->lang);
 					if(!bgbcp_strcmp1(b, "("))i++;
 					if(!bgbcp_strcmp1(b, ")"))
 					{
@@ -601,7 +602,7 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 				i=0;
 				while(1)
 				{
-					s=BGBCP_Token(s, b, &ty);
+					s=BGBCP_Token2(s, b, &ty, ctx->lang);
 					if(!bgbcp_strcmp1(b, "{"))i++;
 					if(!bgbcp_strcmp1(b, "}"))
 					{
@@ -651,17 +652,22 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 		{
 			if(!bgbcp_strcmp(b, "using"))
 			{
-				s=BGBCP_Token(s, b, &ty);	//'name'
-				BGBCP_Token(s, b2, &ty2);
+				s1=BGBCP_Token2(s, b2, &ty2, ctx->lang);
+				if(!bgbcp_strcmp(b2, "namespace"))
+					s=s1;
 
-				while(!bgbcp_strcmp1(b2, "."))
+				s=BGBCP_Token2(s, b, &ty, ctx->lang);	//'name'
+				BGBCP_Token2(s, b2, &ty2, ctx->lang);
+
+				while(!bgbcp_strcmp1(b2, ".") ||
+					!bgbcp_strcmp2(b2, "::"))
 				{
-					s=BGBCP_Token(s, b2, &ty2);	//.
-					s=BGBCP_Token(s, b2, &ty2);
+					s=BGBCP_Token2(s, b2, &ty2, ctx->lang);	//.
+					s=BGBCP_Token2(s, b2, &ty2, ctx->lang);
 					strcat(b, "/");
 					strcat(b, b2);
 
-					BGBCP_Token(s, b2, &ty2);
+					BGBCP_Token2(s, b2, &ty2, ctx->lang);
 				}
 
 				s1=bgbcc_strdup(b);
@@ -682,17 +688,18 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 
 			if(!bgbcp_strcmp(b, "namespace"))
 			{
-				s=BGBCP_Token(s, b, &ty);	//'name'
-				BGBCP_Token(s, b2, &ty2);
+				s=BGBCP_Token2(s, b, &ty, ctx->lang);	//'name'
+				BGBCP_Token2(s, b2, &ty2, ctx->lang);
 
-				while(!bgbcp_strcmp1(b2, "."))
+				while(!bgbcp_strcmp1(b2, ".") ||
+					!bgbcp_strcmp2(b2, "::"))
 				{
-					s=BGBCP_Token(s, b2, &ty2);	//.
-					s=BGBCP_Token(s, b2, &ty2);
+					s=BGBCP_Token2(s, b2, &ty2, ctx->lang);	//.
+					s=BGBCP_Token2(s, b2, &ty2, ctx->lang);
 					strcat(b, "/");
 					strcat(b, b2);
 
-					BGBCP_Token(s, b2, &ty2);
+					BGBCP_Token2(s, b2, &ty2, ctx->lang);
 				}
 
 				s0=ctx->cur_ns;
@@ -703,7 +710,7 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 				ctx->cur_nsi=ab;
 				ctx->cur_nsi[0]=NULL;
 
-				s=BGBCP_Token(s, b, &ty); //{
+				s=BGBCP_Token2(s, b, &ty, ctx->lang); //{
 				n1=BGBCP_Block(ctx, &s);
 				n=BCCX_NewCst1(&bgbcc_rcst_namespace, "namespace", n1);
 				BCCX_SetCst(n, &bgbcc_rcst_name, "name", s1);
@@ -721,17 +728,17 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 		{
 			if(!bgbcp_strcmp6(b, "import"))
 			{
-				s=BGBCP_Token(s, b, &ty);	//'name'
-				BGBCP_Token(s, b2, &ty2);
+				s=BGBCP_Token2(s, b, &ty, ctx->lang);	//'name'
+				BGBCP_Token2(s, b2, &ty2, ctx->lang);
 
 				while(!bgbcp_strcmp1(b2, "."))
 				{
-					s=BGBCP_Token(s, b2, &ty2);	//.
-					s=BGBCP_Token(s, b2, &ty2);
+					s=BGBCP_Token2(s, b2, &ty2, ctx->lang);	//.
+					s=BGBCP_Token2(s, b2, &ty2, ctx->lang);
 					strcat(b, "/");
 					strcat(b, b2);
 
-					BGBCP_Token(s, b2, &ty2);
+					BGBCP_Token2(s, b2, &ty2, ctx->lang);
 				}
 
 				s1=bgbcc_strdup(b);
@@ -745,6 +752,77 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 
 //				s=BGBCP_EatSemicolon(s);
 				s=BGBCP_EatSemicolonRequired(ctx, s);
+
+				*str=s;
+				return(n);
+			}
+		}
+		
+		if(ctx->lang==BGBCC_LANG_BS2)
+		{
+			if(!bgbcp_strcmp(b, "import") ||
+				!bgbcp_strcmp(b, "using"))
+			{
+				s=BGBCP_Token2(s, b, &ty, ctx->lang);	//import
+				BGBCP_Token2(s, b2, &ty2, ctx->lang);
+
+				while(!bgbcp_strcmp1(b2, "."))
+				{
+					s=BGBCP_Token2(s, b2, &ty2, ctx->lang);	//.
+					s=BGBCP_Token2(s, b2, &ty2, ctx->lang);
+					strcat(b, "/");
+					strcat(b, b2);
+
+					BGBCP_Token2(s, b2, &ty2, ctx->lang);
+				}
+
+				s1=bgbcc_strdup(b);
+
+				for(i=0; ctx->cur_nsi[i]; i++);
+				ctx->cur_nsi[i++]=s1;
+				ctx->cur_nsi[i]=NULL;
+
+				n=BCCX_NewCst(&bgbcc_rcst_using, "using");
+				BCCX_SetCst(n, &bgbcc_rcst_name, "name", s1);
+
+//				s=BGBCP_EatSemicolon(s);
+				s=BGBCP_EatSemicolonRequired(ctx, s);
+
+				*str=s;
+				return(n);
+			}
+
+			if(!bgbcp_strcmp(b, "package") ||
+				!bgbcp_strcmp(b, "namespace"))
+			{
+				s=BGBCP_Token2(s, b, &ty, ctx->lang);	//'name'
+				BGBCP_Token2(s, b2, &ty2, ctx->lang);
+
+				while(!bgbcp_strcmp1(b2, "."))
+				{
+					s=BGBCP_Token2(s, b2, &ty2, ctx->lang);	//.
+					s=BGBCP_Token2(s, b2, &ty2, ctx->lang);
+					strcat(b, "/");
+					strcat(b, b2);
+
+					BGBCP_Token2(s, b2, &ty2, ctx->lang);
+				}
+
+				s0=ctx->cur_ns;
+				s1=bgbcc_strdup(b);
+				ctx->cur_ns=s1;
+
+				a=ctx->cur_nsi;
+				ctx->cur_nsi=ab;
+				ctx->cur_nsi[0]=NULL;
+
+				s=BGBCP_Token2(s, b, &ty, ctx->lang); //{
+				n1=BGBCP_Block(ctx, &s);
+				n=BCCX_NewCst1(&bgbcc_rcst_namespace, "namespace", n1);
+				BCCX_SetCst(n, &bgbcc_rcst_name, "name", s1);
+
+				ctx->cur_ns=s0;
+				ctx->cur_nsi=a;
 
 				*str=s;
 				return(n);
@@ -799,14 +877,14 @@ BCCX_Node *BGBCP_BlockStatementI(BGBCP_ParseState *ctx, char **str, int flag)
 	s=*str;
 
 #if 1
-	BGBCP_Token(s, b, &ty);
+	BGBCP_Token2(s, b, &ty, ctx->lang);
 	while(!bgbcp_strcmp1(b, "#"))
 	{
-		s=BGBCP_Token(s, b, &ty);
+		s=BGBCP_Token2(s, b, &ty, ctx->lang);
 		while(*s && (*s!='\n'))s++;
 
 		b[0]=0;
-		BGBCP_Token(s, b, &ty);
+		BGBCP_Token2(s, b, &ty, ctx->lang);
 	}
 #endif
 
@@ -874,10 +952,10 @@ BCCX_Node *BGBCP_BlockI(BGBCP_ParseState *ctx, char **str, int flag)
 	{
 		if(!s)
 			break;
-		BGBCP_Token(s, b, &ty);
+		BGBCP_Token2(s, b, &ty, ctx->lang);
 		if(!*s || (*b=='}'))
 		{
-			s=BGBCP_Token(s, b, &ty);
+			s=BGBCP_Token2(s, b, &ty, ctx->lang);
 			break;
 		}
 
@@ -956,6 +1034,7 @@ BCCX_Node *BGBCP_BlockStatement2(BGBCP_ParseState *ctx, char **str)
 {
 	char b[256];
 	char *s;
+	s64 dfl_fl;
 	int tk0, tk1, tk2;
 	int ty;
 	BCCX_Node *n;
@@ -968,14 +1047,18 @@ BCCX_Node *BGBCP_BlockStatement2(BGBCP_ParseState *ctx, char **str)
 
 	s=*str;
 
-	BGBCP_Token(s, b, &ty);
+	BGBCP_Token2(s, b, &ty, ctx->lang);
 	if(!bgbcp_strcmp1(b, "{"))
 	{
-		s=BGBCP_Token(s, b, &ty);
+		s=BGBCP_Token2(s, b, &ty, ctx->lang);
+
+		dfl_fl=ctx->dfl_flags;
 
 		tk0=BGBCP_GetTokenCount();
 		n=BGBCP_Block(ctx, &s);
 		tk1=BGBCP_GetTokenCount();
+
+		ctx->dfl_flags=dfl_fl;
 
 		n=BCCX_NewCst1(&bgbcc_rcst_begin, "begin", n);
 

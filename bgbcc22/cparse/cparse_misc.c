@@ -242,42 +242,66 @@ fourcc BGBCP_LangForName(char *name)
 		s=name+strlen(name);
 		while((s>name) && (*s!='.'))s--;
 
-		if(!bgbcp_strcmp(s, ".c"))lang=BGBCC_LANG_C;
-		if(!bgbcp_strcmp(s, ".h"))lang=BGBCC_LANG_C;
+		if(!bgbcp_strcmp(s, ".c"))
+			lang=BGBCC_LANG_C;
+		if(!bgbcp_strcmp(s, ".h"))
+			lang=BGBCC_LANG_C;
 
-		if(!bgbcp_strcmp(s, ".cpp"))lang=BGBCC_LANG_CPP;
-		if(!bgbcp_strcmp(s, ".hpp"))lang=BGBCC_LANG_CPP;
-		if(!bgbcp_strcmp(s, ".cs"))lang=BGBCC_LANG_CS;
-		if(!bgbcp_strcmp(s, ".java"))lang=BGBCC_LANG_JAVA;
+		if(!bgbcp_strcmp(s, ".cpp"))
+			lang=BGBCC_LANG_CPP;
+		if(!bgbcp_strcmp(s, ".hpp"))
+			lang=BGBCC_LANG_CPP;
+		if(!bgbcp_strcmp(s, ".cs"))
+			lang=BGBCC_LANG_CS;
+		if(!bgbcp_strcmp(s, ".java"))
+			lang=BGBCC_LANG_JAVA;
 
-		if(!bgbcp_strcmp(s, ".bs"))lang=BGBCC_LANG_BS;
-		if(!bgbcp_strcmp(s, ".js"))lang=BGBCC_LANG_BS;
-		if(!bgbcp_strcmp(s, ".es"))lang=BGBCC_LANG_BS;
-		if(!bgbcp_strcmp(s, ".bs2"))lang=BGBCC_LANG_BS2;
+		if(!bgbcp_strcmp(s, ".bs"))
+			lang=BGBCC_LANG_BS;
+		if(!bgbcp_strcmp(s, ".js"))
+			lang=BGBCC_LANG_BS;
+		if(!bgbcp_strcmp(s, ".es"))
+			lang=BGBCC_LANG_BS;
+		if(!bgbcp_strcmp(s, ".bs2"))
+			lang=BGBCC_LANG_BS2;
 
-		if(!bgbcp_strcmp(s, ".s"))lang=BGBCC_LANG_ASM;
-		if(!bgbcp_strcmp(s, ".asm"))lang=BGBCC_LANG_ASM;
+		if(!bgbcp_strcmp(s, ".s"))
+			lang=BGBCC_LANG_ASM;
+		if(!bgbcp_strcmp(s, ".asm"))
+			lang=BGBCC_LANG_ASM;
 
-		if(!bgbcp_strcmp(s, ".C"))lang=BGBCC_LANG_C;
-		if(!bgbcp_strcmp(s, ".H"))lang=BGBCC_LANG_C;
+		if(!bgbcp_strcmp(s, ".C"))
+			lang=BGBCC_LANG_C;
+		if(!bgbcp_strcmp(s, ".H"))
+			lang=BGBCC_LANG_C;
 
-		if(!bgbcp_strcmp(s, ".CPP"))lang=BGBCC_LANG_CPP;
-		if(!bgbcp_strcmp(s, ".HPP"))lang=BGBCC_LANG_CPP;
-		if(!bgbcp_strcmp(s, ".CS"))lang=BGBCC_LANG_CS;
-		if(!bgbcp_strcmp(s, ".JAVA"))lang=BGBCC_LANG_JAVA;
+		if(!bgbcp_strcmp(s, ".CPP"))
+			lang=BGBCC_LANG_CPP;
+		if(!bgbcp_strcmp(s, ".HPP"))
+			lang=BGBCC_LANG_CPP;
+		if(!bgbcp_strcmp(s, ".CS"))
+			lang=BGBCC_LANG_CS;
+		if(!bgbcp_strcmp(s, ".JAVA"))
+			lang=BGBCC_LANG_JAVA;
 
 		if(!bgbcp_strcmp(s, ".BS"))lang=BGBCC_LANG_BS;
 		if(!bgbcp_strcmp(s, ".JS"))lang=BGBCC_LANG_BS;
 		if(!bgbcp_strcmp(s, ".ES"))lang=BGBCC_LANG_BS;
 		if(!bgbcp_strcmp(s, ".BS2"))lang=BGBCC_LANG_BS2;
 
-		if(!bgbcp_strcmp(s, ".S"))lang=BGBCC_LANG_ASM;
-		if(!bgbcp_strcmp(s, ".ASM"))lang=BGBCC_LANG_ASM;
+		if(!bgbcp_strcmp(s, ".S"))
+			lang=BGBCC_LANG_ASM;
+		if(!bgbcp_strcmp(s, ".ASM"))
+			lang=BGBCC_LANG_ASM;
 
-		if(!bgbcp_strcmp(s, ".ril"))lang=BGBCC_IMGFMT_RIL3;
-		if(!bgbcp_strcmp(s, ".RIL"))lang=BGBCC_IMGFMT_RIL3;
-		if(!bgbcp_strcmp(s, ".ril3"))lang=BGBCC_IMGFMT_RIL3;
-		if(!bgbcp_strcmp(s, ".RIL3"))lang=BGBCC_IMGFMT_RIL3;
+		if(!bgbcp_strcmp(s, ".ril"))
+			lang=BGBCC_IMGFMT_RIL3;
+		if(!bgbcp_strcmp(s, ".RIL"))
+			lang=BGBCC_IMGFMT_RIL3;
+		if(!bgbcp_strcmp(s, ".ril3"))
+			lang=BGBCC_IMGFMT_RIL3;
+		if(!bgbcp_strcmp(s, ".RIL3"))
+			lang=BGBCC_IMGFMT_RIL3;
 
 		if(!bgbcp_strcmp(s, ".dll"))lang=BGBCC_IMGFMT_DLL;
 		if(!bgbcp_strcmp(s, ".DLL"))lang=BGBCC_IMGFMT_DLL;
@@ -294,6 +318,9 @@ fourcc BGBCP_LangForName(char *name)
 		if(!bgbcp_strcmp(s, ".BIN"))lang=BGBCC_IMGFMT_ROM;
 	}
 	
+	if(lang==BGBCC_LANG_BS)
+		lang=BGBCC_LANG_BS2;
+	
 	return(lang);
 }
 
@@ -308,8 +335,8 @@ char *BGBCP_NameForLang(int lang)
 	case BGBCC_LANG_JAVA: s="Java"; break;
 	case BGBCC_LANG_CS: s="C#"; break;
 	case BGBCC_LANG_CX: s="CX"; break;
-	case BGBCC_LANG_BS: s="BGBScript"; break;
-	case BGBCC_LANG_BS2: s="BGBScript2"; break;
+	case BGBCC_LANG_BS: s="BS"; break;
+	case BGBCC_LANG_BS2: s="BS2"; break;
 
 	default: s="unknown"; break;
 	}
@@ -376,6 +403,9 @@ fourcc BGBCP_ArchForName(char *name)
 	if(!bgbcc_stricmp(name, "BSR1"))		i=BGBCC_ARCH_BSR;
 
 	if(!bgbcc_stricmp(name, "BJX2"))		i=BGBCC_ARCH_BJX2;
+	if(!bgbcc_stricmp(name, "BJX2_F"))		i=BGBCC_ARCH_BJX2;
+	if(!bgbcc_stricmp(name, "BJX2_32"))		i=BGBCC_ARCH_BJX2;
+	if(!bgbcc_stricmp(name, "BJX2_32F"))	i=BGBCC_ARCH_BJX2;
 
 	return(i);
 }
@@ -419,6 +449,9 @@ fourcc BGBCP_SubArchForName(int arch, char *name)
 	if(!bgbcc_stricmp(name, "BSR1A"))		i=BGBCC_ARCH_BSR_BS1A;
 
 	if(!bgbcc_stricmp(name, "BJX2"))		i=BGBCC_ARCH_BJX2_JX2A;
+	if(!bgbcc_stricmp(name, "BJX2_F"))		i=BGBCC_ARCH_BJX2_JX2B;
+	if(!bgbcc_stricmp(name, "BJX2_32"))		i=BGBCC_ARCH_BJX2_JX2C;
+	if(!bgbcc_stricmp(name, "BJX2_32F"))	i=BGBCC_ARCH_BJX2_JX2D;
 
 	return(i);
 }

@@ -307,8 +307,8 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegQLong(
 			{ nm1=BGBCC_SH_NMID_ADD; k=j; }
 		if((opr==CCXL_BINOP_SUB) && (j==(byte)j))
 			{ nm1=BGBCC_SH_NMID_SUB; k=j; }
-		if((opr==CCXL_BINOP_MUL) && (j==(sbyte)j))
-			{ nm1=BGBCC_SH_NMID_MULQ; k=j; }
+//		if((opr==CCXL_BINOP_MUL) && (j==(sbyte)j))
+//			{ nm1=BGBCC_SH_NMID_MULQ; k=j; }
 
 		if((opr==CCXL_BINOP_ADD) && ((-j)==(byte)(-j)))
 			{ nm1=BGBCC_SH_NMID_SUB; k=-j; }

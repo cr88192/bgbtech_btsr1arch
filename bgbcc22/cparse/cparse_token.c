@@ -1311,6 +1311,19 @@ char *BGBCP_TokenI(char *s, char *b, int *ty, int lang, int sz)
 			return(s);
 		}
 
+		if(lang==BGBCC_LANG_CPP)
+		{
+			if(!strncmp(s, "::", 2))
+			{
+				*t++=*s++;
+				*t++=*s++;
+				*t++=0;
+
+				*ty=BTK_SEPERATOR;
+				return(s);
+			}
+		}
+
 		if(lang==BGBCC_LANG_JAVA)
 		{
 			if( !strncmp(s, "<<<=", 4) ||
@@ -1423,7 +1436,8 @@ int bgbcp_strcpy(char *dst, char *src)
 int bgbcp_token_cnt;
 
 #define BGBCP_TKHASHSZ 256
-char *BGBCP_TokenLang2(char *s, char *b, int *ty, int lang)
+//char *BGBCP_TokenLang2(char *s, char *b, int *ty, int lang)
+char *BGBCP_Token2(char *s, char *b, int *ty, int lang)
 {
 	static char ltb[BGBCP_TKHASHSZ][256];
 	static char *ls[BGBCP_TKHASHSZ];
@@ -1487,7 +1501,8 @@ char *BGBCP_TokenLang2(char *s, char *b, int *ty, int lang)
 
 char *BGBCP_Token(char *s, char *b, int *ty)
 {
-	return(BGBCP_TokenLang2(s, b, ty, BGBCC_LANG_C));
+//	return(BGBCP_TokenLang2(s, b, ty, BGBCC_LANG_C));
+	return(BGBCP_Token2(s, b, ty, BGBCC_LANG_C));
 }
 
 void BGBCP_FlushToken(char *s)

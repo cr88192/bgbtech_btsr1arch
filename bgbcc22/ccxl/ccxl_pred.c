@@ -112,7 +112,54 @@ bool BGBCC_CCXL_IsRegGlobalP(
 	BGBCC_TransState *ctx, ccxl_register reg)
 {
 	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_GLOBAL)
+		return(1);
+	return(0);
+}
+
+bool BGBCC_CCXL_IsRegThisIdxP(
+	BGBCC_TransState *ctx, ccxl_register reg)
+{
+	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_THISIDX)
+		return(1);
+	return(0);
+}
+
+bool BGBCC_CCXL_IsRegThisP(
+	BGBCC_TransState *ctx, ccxl_register reg)
+{
+	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_THISIDX)
+	{
+		if((reg.val&CCXL_REGID_BASEMASK)==CCXL_REGID_BASEMASK)
 			return(1);
+		return(0);
+	}
+	return(0);
+}
+
+bool BGBCC_CCXL_IsRegZzP(
+	BGBCC_TransState *ctx, ccxl_register reg)
+{
+	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_TEMP)
+	{
+		if((reg.val&CCXL_REGID_BASEMASK)==CCXL_REGID_BASEMASK)
+			return(1);
+	}
+	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_ARG)
+	{
+		if((reg.val&CCXL_REGID_BASEMASK)==CCXL_REGID_BASEMASK)
+			return(1);
+	}
+	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_LOCAL)
+	{
+		if((reg.val&CCXL_REGID_BASEMASK)==CCXL_REGID_BASEMASK)
+			return(1);
+	}
+
+	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_GLOBAL)
+	{
+		if((reg.val&CCXL_REGID_REGMASK)==CCXL_REGID_REGMASK)
+			return(1);
+	}
 	return(0);
 }
 
@@ -198,6 +245,13 @@ ccxl_type BGBCC_CCXL_GetRegType(
 		return(tty);
 	}
 
+	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_THISIDX)
+	{
+		tty.val=(reg.val&CCXL_REGID_TYPEMASK)>>CCXL_REGID_TYPESHIFT;
+		BGBCC_CCXL_TypeGetTypedefType(ctx, tty, &tty);
+		return(tty);
+	}
+
 	if((reg.val&CCXL_REGTY2_TYMASK)==CCXL_REGTY2_IMM_LONG)
 		{ tty.val=CCXL_TY_L; return(tty); }
 	if((reg.val&CCXL_REGTY2_TYMASK)==CCXL_REGTY2_IMM_DOUBLE)
@@ -241,6 +295,15 @@ int BGBCC_CCXL_GetRegAsType(
 	if(((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_TEMP) ||
 		((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_ARG) ||
 		((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_LOCAL))
+	{
+//		tty.val=(reg.val&CCXL_REGID_TYPEMASK)>>CCXL_REGID_TYPESHIFT;
+		treg.val=(reg.val&(~CCXL_REGID_TYPEMASK))|
+			(((u64)tty.val)<<CCXL_REGID_TYPESHIFT);
+		*rtreg=treg;
+		return(1);
+	}
+
+	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_THISIDX)
 	{
 //		tty.val=(reg.val&CCXL_REGID_TYPEMASK)>>CCXL_REGID_TYPESHIFT;
 		treg.val=(reg.val&(~CCXL_REGID_TYPEMASK))|
@@ -1639,6 +1702,11 @@ int BGBCC_CCXL_GetTypeOperationZ(
 	if(i==CCXL_TY_F16)
 		return(CCXL_TY_F);
 	
+	if(BGBCC_CCXL_TypeFatArrayP(ctx, ty))
+		return(CCXL_TY_FATP_AREF);
+	if(BGBCC_CCXL_TypeMethodPointerP(ctx, ty))
+		return(CCXL_TY_FATP_VMTH);
+	
 	return(-1);
 //	return(CCXL_TY_UNDEF_I);
 }
@@ -1695,6 +1763,11 @@ int BGBCC_CCXL_GetTypeOperationBaseZ(
 	
 	case CCXL_TY_F16:
 		z1=CCXL_TY_F; break;
+	
+	case CCXL_TY_FATP:
+	case CCXL_TY_FATP_AREF:
+	case CCXL_TY_FATP_VMTH:
+		z1=CCXL_TY_FATP;
 	
 	default:
 		z1=CCXL_TY_P; break;

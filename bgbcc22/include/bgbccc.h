@@ -133,6 +133,7 @@ extern "C" {
 #define BGBCC_TYFL_DELEGATE			0x2000	//BS2: pass-by-reference
 
 #define BGBCC_TYFL_VIRTUAL			0x4000
+#define BGBCC_TYFL_TYPEDEF			0x8000
 
 // #define BGBCC_TYFL_GETTER			0x4000
 // #define BGBCC_TYFL_SETTER			0x8000
@@ -205,6 +206,14 @@ extern "C" {
 
 #define BGBCC_TYFL_NONPOD			(1LL<<34)
 #define BGBCC_TYFL_HASDATA			(1LL<<35)
+
+#define BGBCC_TYFL_DFL_MASK			\
+	(BGBCC_TYFL_PUBLIC|BGBCC_TYFL_PRIVATE|BGBCC_TYFL_PROTECTED)
+
+#define BGBCC_TYFL_DFL_COPY_MASK	\
+	(BGBCC_TYFL_STATIC|BGBCC_TYFL_NATIVE|BGBCC_TYFL_VIRTUAL)
+
+
 
 #define BGBCC_CTXFL_SAVENAMES		0x0001
 #define BGBCC_CTXFL_ENDOFTRACE		0x0002
@@ -315,7 +324,10 @@ extern "C" {
 #define BGBCC_ARCH_BSR_BS1A	BGBCC_FOURCC('B', 'S', '1', 'A')
 
 #define BGBCC_ARCH_BJX2			BGBCC_FOURCC('B', 'J', 'X', '2')
-#define BGBCC_ARCH_BJX2_JX2A	BGBCC_FOURCC('J', 'X', '2', 'A')
+#define BGBCC_ARCH_BJX2_JX2A	BGBCC_FOURCC('J', 'X', '2', 'A')	//VL 64b
+#define BGBCC_ARCH_BJX2_JX2B	BGBCC_FOURCC('J', 'X', '2', 'B')	//Fix32, 64b
+#define BGBCC_ARCH_BJX2_JX2C	BGBCC_FOURCC('J', 'X', '2', 'C')	//VL 32b
+#define BGBCC_ARCH_BJX2_JX2D	BGBCC_FOURCC('J', 'X', '2', 'D')	//Fix32, 32b
 
 
 //output formats.
@@ -382,6 +394,8 @@ fourcc lang;
 fourcc arch;
 fourcc subarch;
 int tuidx;				//translation unit index
+
+s64	dfl_flags;
 
 BCCX_Node *structs;
 BCCX_Node *types;
@@ -477,6 +491,9 @@ int cur_idx;	//field
 int cur_idx2;	//method
 int cur_idx3;	//property
 int cur_idx4;	//property
+
+char *imp_ns[64];
+int n_imp;
 
 fourcc lang;
 fourcc arch;			//major architecture

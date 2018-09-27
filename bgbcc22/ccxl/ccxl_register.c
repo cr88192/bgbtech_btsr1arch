@@ -259,6 +259,9 @@ ccxl_status BGBCC_CCXL_RegisterCheckRelease(
 	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_GLOBAL)
 		{ return(CCXL_STATUS_NO); }
 
+	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_THISIDX)
+		{ return(CCXL_STATUS_NO); }
+
 	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_INT)
 		{ return(CCXL_STATUS_NO); }
 	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_LONG)

@@ -26,6 +26,10 @@
 #define CCXL_TY_VARARGS			0x15		//VarArgs
 #define CCXL_TY_VALIST			0x16		//va_list
 
+#define CCXL_TY_FATP			0x18		//Fat Pointer
+#define CCXL_TY_FATP_AREF		0x19		//Fat Pointer, Array Reference
+#define CCXL_TY_FATP_VMTH		0x1A		//Fat Pointer, Virtual Method
+
 #define CCXL_VTY_PCHAR			0x00001008	//'char *'
 #define CCXL_VTY_PWCHAR			0x0000100B	//'wchar_t *'
 
@@ -48,6 +52,27 @@
 #define CCXL_TY_TYTY_BASIC3		0x30000000	//type-type basic3
 
 #define CCXL_TYOVF_IDXMASK		0x0000FFFF	//type overflow index
+
+#define CCXL_TYB1_PTRIDX7		0x00007000	//pointer level
+#define CCXL_TYB1_PTRIDX8		0x00008000	//pointer level
+
+#define CCXL_TY_PN4_BASE	0x0		//pointer level (T)
+#define CCXL_TY_PN4_P1		0x1		//pointer level (T*)
+#define CCXL_TY_PN4_P2		0x2		//pointer level (T**)
+#define CCXL_TY_PN4_P3		0x3		//pointer level (T***)
+#define CCXL_TY_PN4_P4		0x4		//pointer level (T****)
+#define CCXL_TY_PN4_P5		0x5		//pointer level (T*****)
+#define CCXL_TY_PN4_P6		0x6		//pointer level (T******)
+#define CCXL_TY_PN4_P7		0x7		//pointer level (T*******)
+#define CCXL_TY_PN4_REF		0x8		//pointer level (T&)
+#define CCXL_TY_PN4_Q1		0x9		//pointer level (T[])
+#define CCXL_TY_PN4_Q2		0xA		//pointer level (T[][])
+#define CCXL_TY_PN4_Q3		0xB		//pointer level (T[][][])
+#define CCXL_TY_PN4_PTRREF	0xC		//pointer level (&T*)
+#define CCXL_TY_PN4_Q1P1	0xD		//pointer level (*T[])
+#define CCXL_TY_PN4_A0B		0xE		//pointer level (T[0])
+#define CCXL_TY_PN4_A0P1	0xF		//pointer level (*T[0])
+
 
 //Basic2 Type
 #define CCXL_TYB2_BASEMASK		0x0000003F	//base type or struct
@@ -90,6 +115,8 @@
 #define CCXL_REGTY_IMM_I128_LVT		0x0E00000000000000ULL	//pair of indices
 #define CCXL_REGTY_IMM_F128_LVT		0x0F00000000000000ULL	//pair of indices
 
+#define CCXL_REGTY_THISIDX			0x1000000000000000ULL	//path within 'this'
+
 #define CCXL_REGTY2_TYMASK			0xE000000000000000ULL
 #define CCXL_REGTY2_IMM_LONG		0x2000000000000000ULL	//long(61b)
 #define CCXL_REGTY2_IMM_DOUBLE		0x4000000000000000ULL	//double(61b)
@@ -118,6 +145,8 @@
 #define CCXL_REGID_REG_TYZ		0x0000000000FF0FFFULL	//type-only placeholder
 
 #define CCXL_REGLONG2_MASK		0x1FFFFFFFFFFFFFFFULL	//long2/double2
+
+#define CCXL_REGSP_THIS			0x1000000000000FFFULL	//'this'
 
 #define CCXL_LITID_STRUCT		1
 #define CCXL_LITID_UNION		2
@@ -336,6 +365,8 @@ int srctok;				//source tokens
 s64 flagsint;			//flags (integer)
 ccxl_register value;	//literal value
 
+ccxl_type clz_type;		//owning class (fields, methods)
+
 byte *text;				//bytecode
 int sz_text;			//sizeof bytecode
 
@@ -347,8 +378,8 @@ BGBCC_CCXL_RegisterInfo *defp;		//define parent
 
 BGBCC_CCXL_RegisterInfo **fields;	//struct/class/union fields
 BGBCC_CCXL_RegisterInfo **args;		//function arguments, superclass list
-BGBCC_CCXL_RegisterInfo **locals;
-BGBCC_CCXL_RegisterInfo **regs;
+BGBCC_CCXL_RegisterInfo **locals;	//function locals
+BGBCC_CCXL_RegisterInfo **regs;		//function temporaries
 // u32 *regs_tyseq;
 int n_fields, m_fields;
 int n_args, m_args;
@@ -392,7 +423,10 @@ BGBCC_CCXL_RegisterInfo *decl;
 struct BGBCC_CCXL_TypeOverflow_s {
 int base;
 int asz[16];
-byte pn, an;
+byte pn;	//pointer level (T, T*, T**, ...)
+byte an;	//array levels
+byte rn;	//reference (T &x)
+byte qn;	//Q array levels, T[] .. T[][][]
 };
 
 struct BGBCC_CCXL_VirtOp_s {

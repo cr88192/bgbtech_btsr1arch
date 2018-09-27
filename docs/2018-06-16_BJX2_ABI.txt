@@ -1,11 +1,39 @@
 BJX2 General C ABI.
 
+
+== C Definitions ==
+
+Canonically, C types will map to this ISA as:
+* Integer
+** char, 8-bit
+** short, 16-bit
+** int, 32-bit
+** long, 64-bit
+** long long, 64-bit
+** __int128, 128-bit
+* Floating Point
+** short float / __float16, IEEE Binary16
+** float, IEEE Binary32
+** double, IEEE Binary64
+** long double, IEEE Binary64
+** __float128, IEEE Binary128
+
+The integer types will wrap at their nominal sizes, though types narrower than int will implicitly promote to int. Signed integer types will be two's complement, and defined here as being wrap on overflow.
+
+Float16 will exist as a special type in the ABI, in that in most cases it will quietly promote to float. Within structures, arrays, and pointers, the type will remain as a 16-bit half-float. Within local variables or function arguments, it will normally promote to float unless its address is taken.
+
+Pointer types will normally be 64-bit, but a sub-ABI may exist with 32-bit pointers.
+
+
+== Basic ABI ==
+
 Basic C ABI:
 * R2..R7, R16..R23: Scratch
 * R8..R14: Callee Preserved
 * R15: Stack Pointer
 * R2/R3: Return Value
 * R2: Struct Return Address
+* R3: Owning 'this' Object (C++ and BS2)
 * R4..R7, R20..R23: Register Arguments
 ** Structures are passed in 1 or 2 registers if they fit.
 ** Otherwise, structures are passed by reference.
@@ -23,7 +51,7 @@ Basic C ABI:
 
 If insufficient free registers exist to pass an argument, it and any following arguments of the same class will be passed on the stack. The stack will not have any spill space.
 
-Items on the stack will have a 8-byte alignment, with the size of stack frames for non-leaf functions kept to a 16-byte alignment. The creation of a stack frame is optional for leaf functions.
+Items on the stack will have a 8-byte alignment, with the size of stack frames kept to a 16-byte alignment. The creation of a stack frame is optional for leaf functions.
 
 
 Structure Passing by value:
@@ -35,3 +63,306 @@ Structure Passing by value:
 ** This reference may be either in a register or on the stack.
 
 When passing and returning structures by value, the structure will be padded up to a multiple of 8 bytes. Structures on-stack will have a nominal 8-byte alignment.
+
+
+Non-POD classes will always be passed by reference or by pointer, including in cases where the class could otherwise be passed in registers.
+
+C Style Vararg:
+* Will pass variable arguments the same as fixed arguments.
+* Float will be semantically promoted to Double.
+
+BS2 Style Vararg:
+* The remaining arguments will be folded off into an array.
+* All of the arguments will be converted to Variant.
+* This will be passed to the called function as a Fat Pointer.
+
+
+=== Fat Pointers ===
+
+In several cases, Fat Pointers will be used.
+* They will be 16 bytes, and passed as a register pair.
+* Will be used for Array References, and for Virtual Method Pointers.
+
+Method pointers will have the first register point to the method, and the second register to its associated 'this'.
+
+Array Refs will have the first register as a base pointer for the array.
+The second register will be split between a base offset and limit. With the limit in the low 32 bits, and the base offset in the high 32 bits.
+
+The base-offset and limit will be expressed in terms of the element size of the array. The base offset will be added to the index prior to performing the bounds check and accessing the array.
+
+The bounds of multidimensional arrays may not be expressed directly in this scheme, and as such the bounds given for a multidimensional array will cover the entire space used by the array.
+
+
+=== Class Layout ===
+
+Classes will be divided into several sub-categories.
+* POD ("struct")
+** Do not contain any virtual methods.
+** May not be derived from a parent class nor implement interfaces.
+** Will be laid out equivalently to a C struct.
+* Non-POD, Single Inheritance
+** May have virtual methods.
+** Will have only a single (non-interface) parent class.
+* Non-POD, Multiple Inheritance
+** May have multiple (non-interface) parent classes.
+
+The POD case will be informally referred to as a "struct" case, and will apply to both the C and BS2 struct types. It will also apply to C++ classes which qualify as POD.
+
+The Non-POD case will be the "class" case, and will apply to all classes in BS2, as well as to C++ classes which don't qualify as POD.
+
+
+Non-POD classes will have a certain layout:
+* VTable Pointer for the Current Class
+** SI: Members for the parent classes.
+** MI (?): An inlined instance of each parent class in declared order.
+* Data Fields for the current class.
+** Fields in a child class will be appended following those of the parent class.
+* Interface VTable Pointers.
+** The start of the first interface pointer will follow the data area.
+** This point may move between parent and child classes.
+** A child class will always have the same interfaces in the same order as the parent class, followed by any new interfaces.
+** (Also possible): Treat interface pointers like fields?
+
+A class will be considered as an interface if:
+* It is declared as such (BS2).
+* It is an abstract class with no data members (C++).
+
+
+In the case of a SI class, only a single VTable pointer will be used, which will cover both the current class and any superclasses. In effect, each subclass will append onto the VTable and data members of the superclass.
+
+In the case of an MI class, each superclass will have its own VTable pointer independent of that of the current class.
+
+(Change): Assume only SI case exists for now. The C++ (subset) impl in BGBCC probably wont support MI.
+
+
+VTable Layout:
+* Pointer 0: ClassInfo Pointer
+* Pointer 1: Displacement from start of the base object
+* Pointer 2: Displacement from the base object to the first interface pointer.
+* Pointer 3: Reserved
+* Pointer 4: Index of first virtual method for class.
+
+The structure for an Interface VTable will match that of a class VTable, but will give a list of methods matching the layout for the Interface. These will generally be duplicates for those given in the main class.
+
+The 'this' passed to a called interface method will be adjusted by the caller to point to the base-class.
+
+Dynamic Classes will have a pointer to the dynamic storage of the object. This will be located at the start of the data area for the first class in the heirarchy to be marked as dynamic.
+
+
+
+=== Name Mangling ===
+
+Will use a 2-stage scheme.
+
+The first stage will encode a name:
+* Namespaces or other scopes will be separated with '/';
+* The signature is appended directly (if it starts with '(');
+* The signature will be appended after a colon (otherwise).
+** For normal variables or fields, the signature will be absent.
+
+
+Second stage may (optionally) transform it to a more limited character set.
+* A prefix is prepended.
+** '_X_' for normal definitions.
+* Letters/Numbers are passed through as-is.
+* Some characters will be escaped via special sequences:
+** "_" with "_1"
+** ";" with "_2"
+** ":" with "_3"
+** "(" with "_4"
+** ")" with "_5"
+** "/" with "_6"
+* Other characters (Latin-1 range):
+** _9xx
+* Other characters (BMP Range):
+** _0xxxx
+* Characters outside the BMP will use surrogate pairs and the _0 encoding.
+
+Some special cases with second-stage encoding:
+* "_" followed by a letter will be interpreted as an unescaped '_'.
+* "__" will be reserved as a separator sequence.
+** If an escape occurs directly following the prefix, its "_" will be omitted.
+
+
+This second-stage scheme may be used for ASM symbols as well as for imports/exports. It is trivial to reverse into the first-stage form.
+
+Names which are unqualified and do not have a signature appended (such as normal C symbols) will not use name mangling.
+
+
+=== Type Signatures ===
+
+Typed signatures are encoded as strings, with characters indicating value types.
+
+Basic Types:
+* 'a': signed char
+* 'b': bool
+* 'c': char
+* 'd': double
+* 'e': long double
+* 'f': float
+* 'g': float128
+* 'h': unsigned char
+* 'i': int
+* 'j': unsigned int
+* 'k': float16/half
+* 'l': long
+* 'm': unsigned long
+* 'n': int128
+* 'o': unsigned int128
+* 'p': intptr
+* 'q': (reserved)
+* 'r': variant (64-bit tagged value)
+* 's': short
+* 't': unsigned short
+* 'u': (reserved)
+* 'v': void
+* 'w': wchar
+* 'x': long long
+* 'y': unsigned long long
+* 'z': vararg (C style)
+
+Expanded Cx Types
+* 'Ca': vec2f (sizeof=8)
+* 'Cb': vec3f (sizeof=16)
+* 'Cc': vec4f (sizeof=16)
+* 'Cd': Complex Double (sizeof=16)
+*  Ce, vec2d (sizeof=16)
+*  Cf, Complex Float (vec2f)
+*  Cg, Complex Float128 (N/A)
+*  Ch, vec3xf (sizeof=16)
+*  Ci, (IsType) SmallInt
+*  Cj, (IsType) SmallFloat
+*  Ck, Complex Float16 (vec2hf) (sizeof=4)
+*  Cl, (IsType) SmallLong
+*  Cm, (IsType) SmallDouble
+*  Cn, keyword (BS2)
+*  Co, Object (Class/Instance)
+*  Cp, MapObj (Dynamic Object)
+*  Cq, Quaternion (vec4f) (sizeof=16)
+*  Cr, Fat Variant (sizeof=16)
+*  Cs, string (BS2)
+*  Ct, symbol (BS2)
+*  Cv, (IsType) null
+*  Cy, Class Reference
+*  Cz, Named Vararg Array (BS2 Style)
+
+Expanded Dx Types
+* 'Da': auto
+*  Db, vec3d (sizeof=32)
+*  Dc, vec4d (sizeof=32)
+*  Dd, decimal64 (resv)
+*  De, decimal128 (resv)
+*  Df, decimal32 (resv)
+
+* 'Dz': va_list
+
+Other Types
+* "A{size}{sig}": Array
+* "B{size}{sig}": Sized Array-Ref
+* "C{sig}"  : Extended Type (Cx)
+* "D{sig}"  : Extended Type (Dx)
+* "E..."    : (Reserved)
+* ...
+* "K..."    : (Reserved)
+* "L{name};": Class or Interface (Class Reference)
+* "M..."    : (Reserved)
+* "N..."    : (Reserved)
+* "O..."    : (Reserved)
+* "P{sig}"  : Pointer (Narrow)
+* "Q{sig}"  : Array-Ref (Fat Pointer)
+* "R{sig}"  : Reference to type.
+* "S..."    : (Reserved)
+* "T..."    : (Reserved)
+* "U{name};": Named Extended Type
+* "V{sig}"  : Virtual Pointer (Fat Pointer)
+* "W{sig}"  : Wide Pointer (Fat Pointer)
+* "X{name};": Struct/Union
+* "Y..."    : (Reserved)
+* "Z..."    : (Reserved)
+
+Compound Signatures:
+* '({args}){ret}': Function Signature
+* 'V({args}){ret}': Virtual Method Pointer (Fat Pointer)
+
+
+For 'A', the "size" for arrays will be encoded as a list of integer values expressed in decimal, separated by commas, and optionally terminated by a semicolon. The semicolon will be optional in cases where parsing is unambigous. This will be used to represent the 'physical' storage of an array.
+
+
+The choice of 'X' vs 'L' will depend on context:
+* If a class is POD, it will use 'X'.
+* If a class is being passed as a pointer, it will use 'X'.
+* If a Non-POD class by Reference, it will use 'L'.
+* If a Non-POD class by Value, it will use 'L'.
+** A Non-POD class will always be passed by reference at the ABI level.
+** The compiler may elect to implement its own Value-Type semantics.
+
+The 'L', 'U', and 'X' types may also be followed by a numeric index without a semicolon terminator. This will be an index into the literal table. An index may be used but it is not required for this table to exist in a binary unless needed for some other reason. The specifics of this table are outside the scope of this specification.
+
+
+=== Flag String ===
+
+* a: abstract ("__abstract")
+* b: bigendian ("__bigendian")
+* c: cdecl ("__cdecl")
+* d: delegate ("__delegate")
+* e: extern ("extern")
+* f: fastcall ("__fastcall")
+* g: getter ("__get")
+* h: setter ("__set")
+* i: inline ("inline" / "__inline")
+* j: final/const2 ("type * const")
+* k: const ("const type")
+* l: ltlendian ("__ltlendian")
+* m: packed ("__packed" / "__unaligned", struct=packed, pointer=unaligned)
+* n: native ("__native")
+* o: restrict ("__restrict", "restrict")
+* p: public ("public")
+* q: private ("private")
+* r: protected ("protected")
+* s: static ("static")
+* t: thiscall/virtual (virtual method function)
+* u: (special case)
+* v: volatile ("volatile")
+* w: stdcall ("__stdcall")
+* x: xcall ("__xcall")
+* y: transient ("__transient")
+* z: reserved
+
+* Cb: reference ("&type")
+* Ci: interface ("__interface")
+* Cs: synchronized ("__synchronized")
+* Ct: thread ("__thread")
+
+* Cw: wide ("__wide")
+
+* De: dllexport
+* Di: dllimport
+
+* U{name};	//named flag
+
+
+=== Variant ===
+
+Will be a 64-bit tagged type.
+Specifics will depend to some extent on the runtime.
+
+Possible (LSB Tagged):
+* 000: Object Pointer
+** High 16 bits may give additional type info.
+*** High 16 bits of 0000 or FFFF will be considered unknown.
+**** Effectively, a raw pointer of unspecified nature.
+*** Other values will be under the control of the BS2 Runtime.
+* 001: FixLong-A (62-bit Integer Value)
+* 010: Flonum (Double)
+* 011: (Reserved)
+* 100: Pointer (Qualified via a Signature Index)
+* 101: FixLong-A (62-bit Integer Value)
+* 110: (Reserved)
+* 111: (Reserved)
+
+Narrower integer values will typically be converted to FixLong.
+
+Flonum will be essentially a Double with the low 3 bits modified.
+
+If a Fat Pointer type is passed, effectively it will be passes as a pointer to the Fat Pointer. Similar boxing will be used for any other values which can't fit into the available bits.
+

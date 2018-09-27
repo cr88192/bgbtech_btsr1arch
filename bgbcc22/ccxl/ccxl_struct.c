@@ -368,6 +368,62 @@ ccxl_status BGBCC_CCXL_LookupStructFieldType(
 	return(0);
 }
 
+
+
+ccxl_status BGBCC_CCXL_LookupStructSuperFieldType(
+	BGBCC_TransState *ctx,
+	BGBCC_CCXL_LiteralInfo *st, char *name,
+	int *rsi, int *rfi,
+	ccxl_type *rty)
+{
+	BGBCC_CCXL_LiteralInfo *sobj;
+	ccxl_type bty, tty;
+	int i0, i1;
+	int i;
+	
+	if(!st)
+		return(-1);
+	if(!st->decl)
+		return(-1);
+	
+	for(i=0; i<st->decl->n_fields; i++)
+	{
+		if(!st->decl->fields[i]->name)
+			continue;
+
+		if(!strcmp(st->decl->fields[i]->name, name))
+		{
+			BGBCC_CCXL_TypeFromSig(ctx, &bty,
+				st->decl->fields[i]->sig);
+			*rty=bty;
+			*rsi=0;
+			*rfi=i;
+			return(1);
+		}
+	}
+	
+	if(st->decl->n_args>0)
+	{
+		tty=st->decl->args[0]->type;
+		sobj=BGBCC_CCXL_LookupStructureForType(ctx, tty);
+		i=BGBCC_CCXL_LookupStructSuperFieldType(ctx, sobj, name,
+			&i0, &i1, &bty);
+		if(i>0)
+		{
+			*rty=bty;
+			*rsi=i0+1;
+			*rfi=i1;
+			return(1);
+		}
+	}
+	
+//	printf("BGBCC_CCXL_LookupStructFieldType: No Field '%s'\n", name);
+	bty=BGBCC_CCXL_TypeWrapBasicType(CCXL_TY_I);
+//	*rty=bty;	
+	return(0);
+}
+
+
 ccxl_status BGBCC_CCXL_LookupStructFieldIdType(
 	BGBCC_TransState *ctx, BGBCC_CCXL_LiteralInfo *st, int idx,
 	ccxl_type *rty)

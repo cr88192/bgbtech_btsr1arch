@@ -554,6 +554,11 @@ void BJX2_Op_LEAB_LdPcDispReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=(op->pc2)+op->imm;
 }
 
+void BJX2_Op_LEAB_LdPcIdxReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[op->rn]=(op->pc2)+ctx->regs[op->ro];
+}
+
 
 void BJX2_Op_NOP_None(BJX2_Context *ctx, BJX2_Opcode *op)
 {

@@ -32,6 +32,8 @@ u32 bgbcc_gshash;
 
 char *bgbcc_imgname;
 
+byte bgbcc_dumpast;
+
 
 #if 0
 // BGBCC_API int BGBCC_BindSig(BGBCC_State *ctx, char *name, char *sig)
@@ -377,7 +379,7 @@ int BGBCC_LoadCMeta(char *name)
 	if(!t)return(-1);
 
 #if 1
-	if(mod)
+	if(mod && bgbcc_dumpast)
 	{
 		sprintf(tb1, "dump/%s_ast.txt", mod);
 		fd=fopen(tb1, "wt");
@@ -514,7 +516,7 @@ BCCX_Node *BGBCC_LoadCSourceAST(char *name)
 
 	if(!t)return(NULL);
 
-#if 0
+#if 1
 	if(mod)
 	{
 		sprintf(tb1, "dump/%s_ast.txt", mod);
@@ -795,6 +797,7 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 	home=NULL;
 	base=NULL;
 	bgbcc_gshash=0;
+	bgbcc_dumpast=0;
 
 	m=0;
 	for(i=1; i<argc; i++)
@@ -843,6 +846,12 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 			if(!strncmp(argv[i]+1, "home=", 5))
 			{
 				home=argv[i]+6;
+				continue;
+			}
+
+			if(!strncmp(argv[i]+1, "Zz", 2))
+			{
+				bgbcc_dumpast=1;
 				continue;
 			}
 

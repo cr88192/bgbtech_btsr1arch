@@ -86,10 +86,10 @@ BCCX_Node *BGBCP_Number(BGBCP_ParseState *ctx, char *str)
 BCCX_Node *BGBCP_ExpressionLit(BGBCP_ParseState *ctx, char **str)
 {
 	static char stbuf[16384];
-	char b[256], b2[256];
+	char b[256], b2[256], b3[256];
 	char *s, *t, *s1, *t1;
 	char *suf;
-	int ty, ty2;
+	int ty, ty2, ty3;
 	BCCX_Node *n, *n1, *n2;
 	int i;
 
@@ -207,6 +207,29 @@ BCCX_Node *BGBCP_ExpressionLit(BGBCP_ParseState *ctx, char **str)
 		{
 			*str=s;
 			return(n);
+		}
+
+		if(ctx->lang==BGBCC_LANG_CPP)
+		{
+			while(!bgbcp_strcmp2(b2, "::"))
+			{
+				s=BGBCP_Token(s, b2, &ty2);
+				s=BGBCP_Token(s, b3, &ty3);
+				strcat(b, "/");
+				strcat(b, b3);
+				BGBCP_Token(s, b2, &ty2);
+			}
+		}else
+			if(ctx->lang==BGBCC_LANG_BS2)
+		{
+			while(!bgbcp_strcmp1(b2, "."))
+			{
+				s=BGBCP_Token(s, b2, &ty2);
+				s=BGBCP_Token(s, b3, &ty3);
+				strcat(b, "/");
+				strcat(b, b3);
+				BGBCP_Token(s, b2, &ty2);
+			}
 		}
 
 		n=BCCX_NewCst(&bgbcc_rcst_ref, "ref");

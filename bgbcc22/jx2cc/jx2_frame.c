@@ -1131,6 +1131,7 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 	BGBCC_JX2_Context *sctx,
 	ccxl_register sreg, int dreg)
 {
+	ccxl_register tvreg;
 	ccxl_type tty;
 	char *s0;
 	double f, g;
@@ -1791,6 +1792,20 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 		return(1);
 	}
 	
+	if(BGBCC_CCXL_IsRegThisIdxP(ctx, sreg))
+	{
+		if(BGBCC_CCXL_IsRegThisP(ctx, sreg))
+		{
+			k=sctx->frm_offs_thisptr;
+			i=BGBCC_JX2C_EmitLoadFrameOfsReg(ctx, sctx, k, dreg);
+			return(i);
+		}
+
+		tty=BGBCC_CCXL_GetRegType(ctx, sreg);
+		BGBCC_JX2C_EmitLoadThisIdxVRegReg(ctx, sctx, tty, sreg, dreg);
+		return(1);
+	}
+	
 	BGBCC_CCXL_StubError(ctx);
 	return(0);
 }
@@ -2085,6 +2100,19 @@ int BGBCC_JX2C_EmitStoreFrameVRegReg(
 
 		BGBCC_CCXL_StubError(ctx);
 		return(0);
+	}
+	
+	if(BGBCC_CCXL_IsRegThisIdxP(ctx, dreg))
+	{
+		if(BGBCC_CCXL_IsRegThisP(ctx, dreg))
+		{
+			BGBCC_DBGBREAK
+			return(0);
+		}
+
+		tty=BGBCC_CCXL_GetRegType(ctx, dreg);
+		BGBCC_JX2C_EmitStoreThisIdxVRegReg(ctx, sctx, tty, dreg, sreg);
+		return(1);
 	}
 	
 	BGBCC_CCXL_StubError(ctx);
@@ -2414,6 +2442,7 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 	sctx->use_dbr=0;
 	sctx->is_vararg=0;
 	sctx->frm_offs_retstr=0;
+	sctx->frm_offs_thisptr=0;
 
 	for(i=0; i<obj->n_vop; i++)
 	{
@@ -2489,6 +2518,9 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 
 //		sctx->use_egpr=1;
 	}
+	
+	if(sctx->is_fixed32)
+		sctx->use_egpr=1;
 
 	ni=0; nf=0;
 	k=0; ka=0; kf=0;
@@ -2502,6 +2534,15 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 
 	if(sctx->is_addr64)
 		k*=2;
+		
+	if(obj->flagsint&BGBCC_TYFL_VIRTUAL)
+	{
+		if(sctx->is_addr64)
+			{ k-=8; k&=~7; }
+		else
+			{ k-=4; k&=~3; }
+		sctx->frm_offs_thisptr=k;
+	}
 
 	for(i=0; i<obj->n_locals; i++)
 	{

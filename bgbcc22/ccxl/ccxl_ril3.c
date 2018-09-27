@@ -1549,6 +1549,15 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		}
 		break;
 
+	case BGBCC_RIL3OP_DUPIX:
+		i0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
+		BGBCC_CCXL_StackDupIdx(ctx, i0);
+		break;
+	case BGBCC_RIL3OP_DUPMIX:
+		i0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
+		BGBCC_CCXL_StackDupMarkIdx(ctx, i0);
+		break;
+
 	default:
 		__debugbreak();
 		break;

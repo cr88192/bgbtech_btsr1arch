@@ -284,8 +284,9 @@ BCCX_Node *BGBCP_GetEnum(BGBCP_ParseState *ctx, char *name)
 BCCX_Node *BGBCP_GetStructJ(BGBCP_ParseState *ctx, char *name, int ty)
 {
 	char tb[256];
-	BCCX_Node *n;
+	BCCX_Node *n, *n1, *nt;
 	char *s, *s1;
+	int i;
 
 	n=BGBCP_LookupStruct(ctx, name);
 	if(n)return(n);
@@ -313,6 +314,27 @@ BCCX_Node *BGBCP_GetStructJ(BGBCP_ParseState *ctx, char *name, int ty)
 
 	BCCX_SetCst(n, &bgbcc_rcst_name, "name", s1);
 	ctx->structs=BCCX_AddEnd2(ctx->structs, &ctx->e_structs, n);
+
+	if(ctx->lang==BGBCC_LANG_CPP)
+	{
+		n1=n;
+//		s1=BCCX_GetCst(n1, &bgbcc_rcst_name, "name");
+		nt=BCCX_NewCst(&bgbcc_rcst_type, "type");
+		BCCX_SetCst(nt, &bgbcc_rcst_name, "name", s1);
+//		BCCX_SetIntCst(nt, &bgbcc_rcst_flags, "flags", fl);
+		BCCX_SetIntCst(nt, &bgbcc_rcst_flags, "flags", 0);
+		BCCX_SetIntCst(nt, &bgbcc_rcst_ind, "ind", 0);
+
+		n1=BCCX_NewCst1V(&bgbcc_rcst_var, "var", nt);
+		BCCX_SetCst(n1, &bgbcc_rcst_name, "name", s1);
+
+		ctx->types=BCCX_AddEnd2(ctx->types, &ctx->e_types, n1);
+
+		i=BGBCP_HashTypeNameI(ctx, s1);
+		n1->hnext=ctx->type_hash[i];
+		ctx->type_hash[i]=n1;
+	}
+
 	return(n);
 }
 
@@ -347,6 +369,28 @@ NULL
 static char *bgbcp_basetypes_j[]={
 "char", "byte", "short", "ushort", "int", "uint", "long", "ulong",
 "float", "double", "void", "string", "variant",
+"__int128", "__uint128",
+"__float128", "__float16", "__m64", "__m128",
+"__vec2", "__vec3", "__vec4", "__quat", 
+"__vec2d", "__vec3d", "__vec4d", "__quatd", 
+"__mat2", "__mat3", "__mat4",
+
+"__v2f", "__v3f", "__v4f",
+"__m2f", "__m3f", "__m4f",
+"__variantf",
+NULL
+};
+
+static char *bgbcp_basetypes_bs2[]={
+"char", "byte", "sbyte", "ubyte",
+"short", "ushort",
+"int", "uint",
+"long", "ulong",
+"float", "double",
+"void", "string",
+"var", "variant",
+"hfloat",
+
 "__int128", "__uint128",
 "__float128", "__float16", "__m64", "__m128",
 "__vec2", "__vec3", "__vec4", "__quat", 
@@ -595,6 +639,26 @@ int BGBCP_DefTypeFlag(BGBCP_ParseState *ctx, char *tag)
 		if(!bgbcp_strcmp(tag, "abstract"))i=BGBCC_TYFL_ABSTRACT;
 	}
 
+	if(ctx->lang==BGBCC_LANG_BS2)
+	{
+		if(!bgbcp_strcmp(tag, "public"))
+			i=BGBCC_TYFL_PUBLIC;
+		if(!bgbcp_strcmp(tag, "private"))
+			i=BGBCC_TYFL_PRIVATE;
+		if(!bgbcp_strcmp(tag, "protected"))
+			i=BGBCC_TYFL_PROTECTED;
+
+		if(!bgbcp_strcmp(tag, "abstract"))i=BGBCC_TYFL_ABSTRACT;
+		if(!bgbcp_strcmp(tag, "virtual"))i=BGBCC_TYFL_VIRTUAL;
+
+		if(!bgbcp_strcmp(tag, "final"))i=BGBCC_TYFL_FINAL;
+
+		if(!bgbcp_strcmp(tag, "transient"))i=BGBCC_TYFL_TRANSIENT;
+		if(!bgbcp_strcmp(tag, "native"))i=BGBCC_TYFL_NATIVE;
+
+		if(!bgbcp_strcmp(tag, "typedef"))i=BGBCC_TYFL_TYPEDEF;
+	}
+
 	return(i);
 }
 
@@ -602,6 +666,7 @@ BCCX_Node *BGBCP_DefClassC(BGBCP_ParseState *ctx, char **str)
 {
 	char b[256], b2[256];
 	char *s, *s1, *s2;
+	s64 dfl_fl;
 	int i, j, ty, ty2, fl, cty;
 	BCCX_Node *n, *n1, *n2, *nl;
 
@@ -612,12 +677,12 @@ BCCX_Node *BGBCP_DefClassC(BGBCP_ParseState *ctx, char **str)
 	fl=0; j=0;
 	while(1)
 	{
-		BGBCP_Token(s, b, &ty);
+		BGBCP_Token2(s, b, &ty, ctx->lang);
 		i=BGBCP_DefTypeFlag(ctx, b);
 		if(i)
 		{
 			fl|=i;
-			s=BGBCP_Token(s, b, &ty);
+			s=BGBCP_Token2(s, b, &ty, ctx->lang);
 			j++;
 			continue;
 		}
@@ -634,7 +699,11 @@ BCCX_Node *BGBCP_DefClassC(BGBCP_ParseState *ctx, char **str)
 	{
 //		j=!bgbcp_strcmp(b, "struct");
 
-		s=BGBCP_Token(s, b, &ty);	//struct
+		s=BGBCP_Token2(s, b, &ty, ctx->lang);	//struct
+		
+		dfl_fl=ctx->dfl_flags;
+
+		ctx->dfl_flags=BGBCC_TYFL_PUBLIC;
 
 		cty=0;
 		if(!bgbcp_strcmp6(b, "struct"))cty=1;
@@ -643,6 +712,13 @@ BCCX_Node *BGBCP_DefClassC(BGBCP_ParseState *ctx, char **str)
 		if(!bgbcp_strcmp(b, "class"))
 		{
 			cty=3;	//C++, class==struct
+			ctx->dfl_flags=BGBCC_TYFL_PROTECTED;
+
+			if(ctx->lang==BGBCC_LANG_CPP)
+			{
+				cty=1;	//C++, class==struct
+				ctx->dfl_flags=BGBCC_TYFL_PRIVATE;
+			}
 //			if(fl&BGBCC_TYFL_GC)cty=3;
 //				else fl|=BGBCC_TYFL_CLASS;
 			if(!(fl&BGBCC_TYFL_GC))
@@ -652,7 +728,11 @@ BCCX_Node *BGBCP_DefClassC(BGBCP_ParseState *ctx, char **str)
 
 //		if(!bgbcp_strcmp(b, "interface"))cty=4;
 
-		if(!bgbcp_strcmp(b, "__class"))cty=3;
+		if(!bgbcp_strcmp(b, "__class"))
+		{
+			ctx->dfl_flags=BGBCC_TYFL_PROTECTED;
+			cty=3;
+		}
 		if(!bgbcp_strcmp(b, "__interface"))cty=4;
 
 		nl=NULL;
@@ -663,22 +743,22 @@ BCCX_Node *BGBCP_DefClassC(BGBCP_ParseState *ctx, char **str)
 			nl=BCCX_AddEnd(nl, n1);
 		}
 
-		s1=BGBCP_Token(s, b, &ty);	//name, '{', ...
-		BGBCP_Token(s1, b2, &ty2);	//name, '{', ...
+		s1=BGBCP_Token2(s, b, &ty, ctx->lang);	//name, '{', ...
+		BGBCP_Token2(s1, b2, &ty2, ctx->lang);	//name, '{', ...
 
 		n=NULL;
 		if(ty==BTK_NAME)
 		{
-			s=BGBCP_Token(s, b, &ty);	//name
+			s=BGBCP_Token2(s, b, &ty, ctx->lang);	//name
 			n=BGBCP_GetStructJ(ctx, b, cty);
 
-			s1=BGBCP_Token(s, b, &ty);	//name, '{', ...
-			BGBCP_Token(s1, b2, &ty2);	//name, '{', ...
+			s1=BGBCP_Token2(s, b, &ty, ctx->lang);	//name, '{', ...
+			BGBCP_Token2(s1, b2, &ty2, ctx->lang);	//name, '{', ...
 		}
 
 		if(n && !bgbcp_strcmp1(b, ":"))
 		{
-			s=BGBCP_Token(s, b, &ty);	//':'
+			s=BGBCP_Token2(s, b, &ty, ctx->lang);	//':'
 
 			n1=NULL;
 			if(!n1)n1=BCCX_NewCst(&bgbcc_rcst_super, "super");
@@ -687,18 +767,18 @@ BCCX_Node *BGBCP_DefClassC(BGBCP_ParseState *ctx, char **str)
 				n2=BGBCP_DefType(ctx, &s);
 				BCCX_Add(n1, n2);
 
-				BGBCP_Token(s, b, &ty);
+				BGBCP_Token2(s, b, &ty, ctx->lang);
 				if(bgbcp_strcmp1(b, ","))break;
-				s=BGBCP_Token(s, b, &ty);
+				s=BGBCP_Token2(s, b, &ty, ctx->lang);
 			}
 			BCCX_Add(n, n1);
-			BGBCP_Token(s, b, &ty);
+			BGBCP_Token2(s, b, &ty, ctx->lang);
 		}
 
 		if(!n)
 		{
-			s1=BGBCP_Token(s, b, &ty);	//name, '{', ...
-			BGBCP_Token(s1, b2, &ty2);	//name, '{', ...
+			s1=BGBCP_Token2(s, b, &ty, ctx->lang);	//name, '{', ...
+			BGBCP_Token2(s1, b2, &ty2, ctx->lang);	//name, '{', ...
 
 			if(!bgbcp_strcmp1(b, "{"))
 			{
@@ -706,7 +786,7 @@ BCCX_Node *BGBCP_DefClassC(BGBCP_ParseState *ctx, char **str)
 				i=0; j=1;
 				while(*s1 && j)
 				{
-					s1=BGBCP_Token(s1, b2, &ty2);
+					s1=BGBCP_Token2(s1, b2, &ty2, ctx->lang);
 					if(!bgbcp_strcmp1(b2, "{"))j++;
 					if(!bgbcp_strcmp1(b2, "}"))j--;
 					s2=b2;
@@ -733,7 +813,7 @@ BCCX_Node *BGBCP_DefClassC(BGBCP_ParseState *ctx, char **str)
 
 		if(!bgbcp_strcmp1(b, "{"))
 		{
-			s=BGBCP_Token(s, b, &ty); //'{'
+			s=BGBCP_Token2(s, b, &ty, ctx->lang); //'{'
 			n1=BGBCP_Block(ctx, &s);
 			BCCX_AddV(n, BCCX_NewCst1V(&bgbcc_rcst_body, "body", n1));
 
@@ -752,31 +832,33 @@ BCCX_Node *BGBCP_DefClassC(BGBCP_ParseState *ctx, char **str)
 		if(nl)BCCX_AddV(n,
 			BCCX_NewCst1V(&bgbcc_rcst_attributes, "attributes", nl));
 
+		ctx->dfl_flags=dfl_fl;
+
 		*str=s;
 		return(n);
 	}
 
 	if(!bgbcp_strcmp4(b, "enum"))
 	{
-		s=BGBCP_Token(s, b, &ty);	//enum
-		s1=BGBCP_Token(s, b, &ty);	//name|'{'
-		BGBCP_Token(s1, b2, &ty2);	//name|'{'|...
+		s=BGBCP_Token2(s, b, &ty, ctx->lang);	//enum
+		s1=BGBCP_Token2(s, b, &ty, ctx->lang);	//name|'{'
+		BGBCP_Token2(s1, b2, &ty2, ctx->lang);	//name|'{'|...
 
 		if(ty==BTK_NAME)
 		{
-			s=BGBCP_Token(s, b, &ty);	//name
+			s=BGBCP_Token2(s, b, &ty, ctx->lang);	//name
 			n=BGBCP_GetEnum(ctx, b);
 
-			BGBCP_Token(s, b2, &ty2);	//'{', ...
+			BGBCP_Token2(s, b2, &ty2, ctx->lang);	//'{', ...
 			if(!bgbcp_strcmp1(b2, "{"))
 			{
-				s=BGBCP_Token(s, b2, &ty2); //'{'
+				s=BGBCP_Token2(s, b2, &ty2, ctx->lang); //'{'
 				n1=BGBCP_EnumVarsList(ctx, &s);
 				BCCX_AddV(n, BCCX_NewCst1V(&bgbcc_rcst_defs, "defs", n1));
 			}
 		}else if(!bgbcp_strcmp1(b, "{"))
 		{
-			s=BGBCP_Token(s, b, &ty); //'{'
+			s=BGBCP_Token2(s, b, &ty, ctx->lang); //'{'
 			n1=BGBCP_EnumVarsList(ctx, &s);
 
 			s1=BGBCC_GenSym2();
@@ -808,35 +890,35 @@ BCCX_Node *BGBCP_DeclAttributeC(BGBCP_ParseState *ctx, char **str)
 
 	s=*str;
 
-	BGBCP_Token(s, b, &ty);
+	BGBCP_Token2(s, b, &ty, ctx->lang);
 	if(ty!=BTK_NAME)return(NULL);
 
 	if(!bgbcp_strcmp(b, "__declspec"))
 	{
 		nl=NULL;
 	
-		s=BGBCP_Token(s, b, &ty);	//__declspec
-		s=BGBCP_Token(s, b, &ty);	//'('
+		s=BGBCP_Token2(s, b, &ty, ctx->lang);	//__declspec
+		s=BGBCP_Token2(s, b, &ty, ctx->lang);	//'('
 		while(1)
 		{
-			BGBCP_Token(s, b, &ty);
+			BGBCP_Token2(s, b, &ty, ctx->lang);
 			if(!bgbcp_strcmp1(b, ")"))
 			{
-				s=BGBCP_Token(s, b, &ty);
+				s=BGBCP_Token2(s, b, &ty, ctx->lang);
 				break;
 			}
 			if(!bgbcp_strcmp1(b, ","))
 			{
-				s=BGBCP_Token(s, b, &ty);
+				s=BGBCP_Token2(s, b, &ty, ctx->lang);
 				continue;
 			}
 			if(ty!=BTK_NAME)break;
 
-			s=BGBCP_Token(s, b, &ty);	//name
-			BGBCP_Token(s, b2, &ty2);	//'('
+			s=BGBCP_Token2(s, b, &ty, ctx->lang);	//name
+			BGBCP_Token2(s, b2, &ty2, ctx->lang);	//'('
 			if(!bgbcp_strcmp1(b2, "("))
 			{
-				s=BGBCP_Token(s, b2, &ty2);	//'('
+				s=BGBCP_Token2(s, b2, &ty2, ctx->lang);	//'('
 				n2=BGBCP_FunArgs(ctx, &s);
 				n1=BCCX_NewCst1(&bgbcc_rcst_attr, "attr",
 					BCCX_NewCst1V(&bgbcc_rcst_args, "args", n2));
@@ -859,30 +941,30 @@ BCCX_Node *BGBCP_DeclAttributeC(BGBCP_ParseState *ctx, char **str)
 	{
 		nl=NULL;
 	
-		s=BGBCP_Token(s, b, &ty);	//__attribute__
-		s=BGBCP_Token(s, b, &ty);	//'('
-		s=BGBCP_Token(s, b, &ty);	//'('
+		s=BGBCP_Token2(s, b, &ty, ctx->lang);	//__attribute__
+		s=BGBCP_Token2(s, b, &ty, ctx->lang);	//'('
+		s=BGBCP_Token2(s, b, &ty, ctx->lang);	//'('
 		while(1)
 		{
-			BGBCP_Token(s, b, &ty);
+			BGBCP_Token2(s, b, &ty, ctx->lang);
 			if(!bgbcp_strcmp1(b, ")"))
 			{
-				s=BGBCP_Token(s, b, &ty);	//')'
-				s=BGBCP_Token(s, b, &ty);	//')'
+				s=BGBCP_Token2(s, b, &ty, ctx->lang);	//')'
+				s=BGBCP_Token2(s, b, &ty, ctx->lang);	//')'
 				break;
 			}
 			if(!bgbcp_strcmp1(b, ","))
 			{
-				s=BGBCP_Token(s, b, &ty);
+				s=BGBCP_Token2(s, b, &ty, ctx->lang);
 				continue;
 			}
 			if(ty!=BTK_NAME)break;
 
-			s=BGBCP_Token(s, b, &ty);	//name
-			BGBCP_Token(s, b2, &ty2);	//'('
+			s=BGBCP_Token2(s, b, &ty, ctx->lang);	//name
+			BGBCP_Token2(s, b2, &ty2, ctx->lang);	//'('
 			if(!bgbcp_strcmp1(b2, "("))
 			{
-				s=BGBCP_Token(s, b2, &ty2);	//'('
+				s=BGBCP_Token2(s, b2, &ty2, ctx->lang);	//'('
 				n2=BGBCP_FunArgs(ctx, &s);
 				n1=BCCX_NewCst1(&bgbcc_rcst_attr, "attr",
 					BCCX_NewCst1V(&bgbcc_rcst_args, "args", n2));
@@ -906,14 +988,14 @@ BCCX_Node *BGBCP_DeclAttributeC(BGBCP_ParseState *ctx, char **str)
 
 BCCX_Node *BGBCP_DefTypeC(BGBCP_ParseState *ctx, char **str)
 {
-	char b[256], b2[256];
-	char *s, *s1, *bty;
-	int i, j, ty, ty2, fl;
+	char b[256], b2[256], b3[256];
+	char *s, *s1, *s2, *bty;
+	int i, j, ty, ty2, ty3, fl;
 	BCCX_Node *n, *n1, *n2, *attrl, *attrle;
 
 	s=*str;
 
-//	BGBCP_Token(s, b, &ty);
+//	BGBCP_Token2(s, b, &ty, ctx->lang);
 //	BGBCP_Warn(s, "BGBCP_DefTypeC: token=%s\n", b);
 
 	bty=NULL;
@@ -921,21 +1003,50 @@ BCCX_Node *BGBCP_DefTypeC(BGBCP_ParseState *ctx, char **str)
 	fl=0; j=0; attrl=NULL; attrle=NULL;
 	while(1)
 	{
-		BGBCP_Token(s, b, &ty);
+		s1=BGBCP_Token2(s, b, &ty, ctx->lang);
 		if(ty!=BTK_NAME)break;
+
+		if(ctx->lang==BGBCC_LANG_CPP)
+		{
+			s2=BGBCP_Token2(s1, b2, &ty2, ctx->lang);
+
+			if(!bgbcp_strcmp6(b, "extern"))
+			{
+				if(!bgbcp_strcmp1(b2, "C"))
+				{
+					fl|=BGBCC_TYFL_NATIVE;
+					s=s2;
+					j++;
+					continue;
+				}
+			}
+
+			while(!bgbcp_strcmp2(b2, "::"))
+			{
+				s1=BGBCP_Token2(s1, b2, &ty2, ctx->lang);
+				s1=BGBCP_Token2(s1, b3, &ty3, ctx->lang);
+				strcat(b, "/");
+				strcat(b, b3);
+
+				BGBCP_Token2(s1, b2, &ty2, ctx->lang);
+			}
+
+		}
 
 		i=BGBCP_DefTypeFlag(ctx, b);
 		if(i)
 		{
 			fl|=i;
-			s=BGBCP_Token(s, b, &ty);
+//			s=BGBCP_Token2(s, b, &ty, ctx->lang);
+			s=s1;
 			j++;
 			continue;
 		}
 
 		if(bgbcp_chktoklst(b, bgbcp_basetypes_c))
 		{
-			s=BGBCP_Token(s, b, &ty);
+//			s=BGBCP_Token2(s, b, &ty, ctx->lang);
+			s=s1;
 
 			if(!bgbcp_strcmp3(b, "int") && bty)
 			{
@@ -986,6 +1097,19 @@ BCCX_Node *BGBCP_DefTypeC(BGBCP_ParseState *ctx, char **str)
 	if((ty==BTK_STRING) || (ty==BTK_CHARSTRING))
 		return(NULL);
 
+	if(fl && !bgbcp_strcmp1(b, ":"))
+	{
+		ctx->dfl_flags=fl;
+		s=BGBCP_Token2(s, b, &ty, ctx->lang);
+		*str=s;
+		return(NULL);
+	}
+
+	if(!(fl&BGBCC_TYFL_DFL_MASK))
+		fl|=(ctx->dfl_flags&BGBCC_TYFL_DFL_MASK);
+
+	fl|=(ctx->dfl_flags&BGBCC_TYFL_DFL_COPY_MASK);
+
 	if(!bgbcp_strcmp(b, "struct") || !bgbcp_strcmp(b, "union") ||
 		!bgbcp_strcmp4(b, "enum") || !bgbcp_strcmp(b, "__class") ||
 		!bgbcp_strcmp(b, "__interface") ||
@@ -1018,26 +1142,26 @@ BCCX_Node *BGBCP_DefTypeC(BGBCP_ParseState *ctx, char **str)
 	{
 		j=!bgbcp_strcmp(b, "struct");
 
-		s=BGBCP_Token(s, b, &ty);	//struct
-		s1=BGBCP_Token(s, b, &ty);	//name, '{', ...
-		BGBCP_Token(s1, b2, &ty2);	//name, '{', ...
+		s=BGBCP_Token2(s, b, &ty, ctx->lang);	//struct
+		s1=BGBCP_Token2(s, b, &ty, ctx->lang);	//name, '{', ...
+		BGBCP_Token2(s1, b2, &ty2, ctx->lang);	//name, '{', ...
 
 		if(ty==BTK_NAME)
 		{
-			s=BGBCP_Token(s, b, &ty);	//name
+			s=BGBCP_Token2(s, b, &ty, ctx->lang);	//name
 			if(j)n=BGBCP_GetStruct(ctx, b);
 				else n=BGBCP_GetUnion(ctx, b);
 
-			BGBCP_Token(s, b2, &ty2);	//'{', ...
+			BGBCP_Token2(s, b2, &ty2, ctx->lang);	//'{', ...
 			if(!bgbcp_strcmp1(b2, "{"))
 			{
-				s=BGBCP_Token(s, b2, &ty2); //'{'
+				s=BGBCP_Token2(s, b2, &ty2, ctx->lang); //'{'
 				n1=BGBCP_Block(ctx, &s);
 				BCCX_AddV(n, BCCX_NewCst1V(&bgbcc_rcst_body, "body", n1));
 			}
 		}else if(!bgbcp_strcmp1(b, "{"))
 		{
-			s=BGBCP_Token(s, b, &ty); //'{'
+			s=BGBCP_Token2(s, b, &ty, ctx->lang); //'{'
 			n1=BGBCP_Block(ctx, &s);
 
 			s1=BGBCC_GenSym2();
@@ -1065,25 +1189,25 @@ BCCX_Node *BGBCP_DefTypeC(BGBCP_ParseState *ctx, char **str)
 
 	if(!bgbcp_strcmp4(b, "enum"))
 	{
-		s=BGBCP_Token(s, b, &ty);	//enum
-		s1=BGBCP_Token(s, b, &ty);	//name|'{'
-		BGBCP_Token(s1, b2, &ty2);	//name|'{'|...
+		s=BGBCP_Token2(s, b, &ty, ctx->lang);	//enum
+		s1=BGBCP_Token2(s, b, &ty, ctx->lang);	//name|'{'
+		BGBCP_Token2(s1, b2, &ty2, ctx->lang);	//name|'{'|...
 
 		if(ty==BTK_NAME)
 		{
-			s=BGBCP_Token(s, b, &ty);	//name
+			s=BGBCP_Token2(s, b, &ty, ctx->lang);	//name
 			n=BGBCP_GetEnum(ctx, b);
 
-			BGBCP_Token(s, b2, &ty2);	//'{', ...
+			BGBCP_Token2(s, b2, &ty2, ctx->lang);	//'{', ...
 			if(!bgbcp_strcmp1(b2, "{"))
 			{
-				s=BGBCP_Token(s, b2, &ty2); //'{'
+				s=BGBCP_Token2(s, b2, &ty2, ctx->lang); //'{'
 				n1=BGBCP_EnumVarsList(ctx, &s);
 				BCCX_AddV(n, BCCX_NewCst1V(&bgbcc_rcst_defs, "defs", n1));
 			}
 		}else if(!bgbcp_strcmp1(b, "{"))
 		{
-			s=BGBCP_Token(s, b, &ty); //'{'
+			s=BGBCP_Token2(s, b, &ty, ctx->lang); //'{'
 			n1=BGBCP_EnumVarsList(ctx, &s);
 
 			s1=BGBCC_GenSym2();
@@ -1110,16 +1234,16 @@ BCCX_Node *BGBCP_DefTypeC(BGBCP_ParseState *ctx, char **str)
 //	n=BGBCP_LookupType(ctx, b);
 	if(n)
 	{
-		s=BGBCP_Token(s, b, &ty);
+		s=BGBCP_Token2(s, b, &ty, ctx->lang);
 
 		while(1)
 		{
-			BGBCP_Token(s, b2, &ty2);
+			BGBCP_Token2(s, b2, &ty2, ctx->lang);
 			i=BGBCP_DefTypeFlag(ctx, b2);
 			if(i)
 			{
 				fl|=i;
-				s=BGBCP_Token(s, b2, &ty2);
+				s=BGBCP_Token2(s, b2, &ty2, ctx->lang);
 				j++;
 				continue;
 			}
@@ -1181,12 +1305,12 @@ BCCX_Node *BGBCP_DefTypeC(BGBCP_ParseState *ctx, char **str)
 		{
 			while(1)
 			{
-				BGBCP_Token(s, b2, &ty2);
+				BGBCP_Token2(s, b2, &ty2, ctx->lang);
 				i=BGBCP_DefTypeFlag(ctx, b2);
 				if(i)
 				{
 					fl|=i;
-					s=BGBCP_Token(s, b2, &ty2);
+					s=BGBCP_Token2(s, b2, &ty2, ctx->lang);
 					j++;
 					continue;
 				}
@@ -1217,10 +1341,10 @@ BCCX_Node *BGBCP_DefTypeC(BGBCP_ParseState *ctx, char **str)
 		if(attrl)BCCX_Add(n, attrl);
 
 #if 0
-		BGBCP_Token(s, b, &ty);
+		BGBCP_Token2(s, b, &ty, ctx->lang);
 		if(!bgbcp_strcmp1(b, ":"))
 		{
-			s=BGBCP_Token(s, b, &ty);	//':'
+			s=BGBCP_Token2(s, b, &ty, ctx->lang);	//':'
 			n1=BGBCP_Expression(ctx, &s);
 			n1=BCCX_NewCst1(&bgbcc_rcst_bits, "bits", n1);
 			BCCX_Add(n, n1);
@@ -1239,6 +1363,7 @@ BCCX_Node *BGBCP_DefClassJ(BGBCP_ParseState *ctx, char **str)
 {
 	char b[256], b2[256];
 	char *s, *s1;
+	s64 dfl_fl;
 	int i, j, ty, ty2, fl, cty;
 	BCCX_Node *n, *n1, *n2;
 
@@ -1249,12 +1374,12 @@ BCCX_Node *BGBCP_DefClassJ(BGBCP_ParseState *ctx, char **str)
 	fl=0; j=0;
 	while(1)
 	{
-		BGBCP_Token(s, b, &ty);
+		BGBCP_Token2(s, b, &ty, ctx->lang);
 		i=BGBCP_DefTypeFlag(ctx, b);
 		if(i)
 		{
 			fl|=i;
-			s=BGBCP_Token(s, b, &ty);
+			s=BGBCP_Token2(s, b, &ty, ctx->lang);
 			j++;
 			continue;
 		}
@@ -1267,61 +1392,69 @@ BCCX_Node *BGBCP_DefClassJ(BGBCP_ParseState *ctx, char **str)
 	{
 //		j=!bgbcp_strcmp(b, "struct");
 
-		s=BGBCP_Token(s, b, &ty);	//struct
+		s=BGBCP_Token2(s, b, &ty, ctx->lang);	//struct
+
+		dfl_fl=ctx->dfl_flags;
+		
+		ctx->dfl_flags=BGBCC_TYFL_PUBLIC;
 
 		cty=0;
 		if(!bgbcp_strcmp(b, "struct"))cty=1;
 		if(!bgbcp_strcmp(b, "union"))cty=2;
-		if(!bgbcp_strcmp(b, "class"))cty=3;
+		if(!bgbcp_strcmp(b, "class"))
+		{
+			ctx->dfl_flags=BGBCC_TYFL_PROTECTED;
+			cty=3;
+		}
 		if(!bgbcp_strcmp(b, "interface"))cty=4;
 
-		s1=BGBCP_Token(s, b, &ty);	//name, '{', ...
-		BGBCP_Token(s1, b2, &ty2);	//name, '{', ...
+		s1=BGBCP_Token2(s, b, &ty, ctx->lang);	//name, '{', ...
+		BGBCP_Token2(s1, b2, &ty2, ctx->lang);	//name, '{', ...
 
 		n=NULL;
 		if(ty==BTK_NAME)
 		{
-			s=BGBCP_Token(s, b, &ty);	//name
+			s=BGBCP_Token2(s, b, &ty, ctx->lang);	//name
 			n=BGBCP_GetStructJ(ctx, b, cty);
 
-			s1=BGBCP_Token(s, b, &ty);	//name, '{', ...
-			BGBCP_Token(s1, b2, &ty2);	//name, '{', ...
+			s1=BGBCP_Token2(s, b, &ty, ctx->lang);	//name, '{', ...
+			BGBCP_Token2(s1, b2, &ty2, ctx->lang);	//name, '{', ...
 		}
 
 		if(n && !bgbcp_strcmp1(b, ":"))
 		{
-			s=BGBCP_Token(s, b, &ty);	//':'
+			s=BGBCP_Token2(s, b, &ty, ctx->lang);	//':'
 
 			n1=BGBCP_DefType(ctx, &s);
 			BCCX_AddV(n, BCCX_NewCst1V(&bgbcc_rcst_super, "super", n1));
 
-			BGBCP_Token(s, b, &ty);
+			BGBCP_Token2(s, b, &ty, ctx->lang);
 			n1=NULL;
 			while(!bgbcp_strcmp1(b, ","))
 			{
 				if(!n1)n1=BCCX_NewCst(&bgbcc_rcst_impl, "impl");
-				s=BGBCP_Token(s, b, &ty);	//','
+				s=BGBCP_Token2(s, b, &ty, ctx->lang);	//','
 				n2=BGBCP_DefType(ctx, &s);
 				BCCX_Add(n1, n2);
 
-				BGBCP_Token(s, b, &ty);
+				BGBCP_Token2(s, b, &ty, ctx->lang);
 			}
 			BCCX_Add(n, n1);
-			BGBCP_Token(s, b, &ty);
+			BGBCP_Token2(s, b, &ty, ctx->lang);
 		}
 
 		if(n && !bgbcp_strcmp(b, "extends"))
 		{
-			s=BGBCP_Token(s, b, &ty);	//'extends'
+			s=BGBCP_Token2(s, b, &ty, ctx->lang);	//'extends'
 
 			n1=BGBCP_DefType(ctx, &s);
 			BCCX_AddV(n, BCCX_NewCst1V(&bgbcc_rcst_super, "super", n1));
-			BGBCP_Token(s, b, &ty);
+			BGBCP_Token2(s, b, &ty, ctx->lang);
 		}
 
 		if(n && !bgbcp_strcmp(b, "implements"))
 		{
-			s=BGBCP_Token(s, b, &ty);	//'implements'
+			s=BGBCP_Token2(s, b, &ty, ctx->lang);	//'implements'
 
 			n1=BCCX_NewCst(&bgbcc_rcst_impl, "impl");
 
@@ -1330,13 +1463,13 @@ BCCX_Node *BGBCP_DefClassJ(BGBCP_ParseState *ctx, char **str)
 				n2=BGBCP_DefType(ctx, &s);
 				BCCX_Add(n1, n2);
 
-				BGBCP_Token(s, b, &ty);
+				BGBCP_Token2(s, b, &ty, ctx->lang);
 				if(bgbcp_strcmp1(b, ","))
 					break;
-				s=BGBCP_Token(s, b, &ty);	//','
+				s=BGBCP_Token2(s, b, &ty, ctx->lang);	//','
 			}
 			BCCX_Add(n, n1);
-			BGBCP_Token(s, b, &ty);
+			BGBCP_Token2(s, b, &ty, ctx->lang);
 		}
 
 		if(!n)
@@ -1347,7 +1480,7 @@ BCCX_Node *BGBCP_DefClassJ(BGBCP_ParseState *ctx, char **str)
 
 		if(!bgbcp_strcmp1(b, "{"))
 		{
-			s=BGBCP_Token(s, b, &ty); //'{'
+			s=BGBCP_Token2(s, b, &ty, ctx->lang); //'{'
 			n1=BGBCP_Block(ctx, &s);
 			BCCX_AddV(n, BCCX_NewCst1V(&bgbcc_rcst_body, "body", n1));
 
@@ -1363,31 +1496,33 @@ BCCX_Node *BGBCP_DefClassJ(BGBCP_ParseState *ctx, char **str)
 		BCCX_SetIntCst(n, &bgbcc_rcst_flags, "flags", fl);
 		BCCX_SetIntCst(n, &bgbcc_rcst_ind, "ind", 0);
 
+		ctx->dfl_flags=dfl_fl;
+
 		*str=s;
 		return(n);
 	}
 
 	if(!bgbcp_strcmp4(b, "enum"))
 	{
-		s=BGBCP_Token(s, b, &ty);	//enum
-		s1=BGBCP_Token(s, b, &ty);	//name|'{'
-		BGBCP_Token(s1, b2, &ty2);	//name|'{'|...
+		s=BGBCP_Token2(s, b, &ty, ctx->lang);	//enum
+		s1=BGBCP_Token2(s, b, &ty, ctx->lang);	//name|'{'
+		BGBCP_Token2(s1, b2, &ty2, ctx->lang);	//name|'{'|...
 
 		if(ty==BTK_NAME)
 		{
-			s=BGBCP_Token(s, b, &ty);	//name
+			s=BGBCP_Token2(s, b, &ty, ctx->lang);	//name
 			n=BGBCP_GetEnum(ctx, b);
 
-			BGBCP_Token(s, b2, &ty2);	//'{', ...
+			BGBCP_Token2(s, b2, &ty2, ctx->lang);	//'{', ...
 			if(!bgbcp_strcmp1(b2, "{"))
 			{
-				s=BGBCP_Token(s, b2, &ty2); //'{'
+				s=BGBCP_Token2(s, b2, &ty2, ctx->lang); //'{'
 				n1=BGBCP_EnumVarsList(ctx, &s);
 				BCCX_AddV(n, BCCX_NewCst1V(&bgbcc_rcst_defs, "defs", n1));
 			}
 		}else if(!bgbcp_strcmp1(b, "{"))
 		{
-			s=BGBCP_Token(s, b, &ty); //'{'
+			s=BGBCP_Token2(s, b, &ty, ctx->lang); //'{'
 			n1=BGBCP_EnumVarsList(ctx, &s);
 
 			s1=BGBCC_GenSym2();
@@ -1422,17 +1557,30 @@ BCCX_Node *BGBCP_DefTypeJ(BGBCP_ParseState *ctx, char **str)
 	fl=0; j=0;
 	while(1)
 	{
-		BGBCP_Token(s, b, &ty);
+		BGBCP_Token2(s, b, &ty, ctx->lang);
 		i=BGBCP_DefTypeFlag(ctx, b);
 		if(!i)break;
 
 		fl|=i;
-		s=BGBCP_Token(s, b, &ty);
+		s=BGBCP_Token2(s, b, &ty, ctx->lang);
 		j++;
 		continue;
 	}
 
 	bty=NULL;
+	vty=NULL;
+
+//	if(ty!=BTK_NAME)
+	if((ty==BTK_STRING) || (ty==BTK_CHARSTRING))
+		return(NULL);
+
+	if(fl && !bgbcp_strcmp(b, ":"))
+	{
+		ctx->dfl_flags=fl;
+		s=BGBCP_Token2(s, b, &ty, ctx->lang);
+		*str=s;
+		return(NULL);
+	}
 
 //	if(!bgbcp_strcmp(b, "class"))return(NULL);
 //	if(!bgbcp_strcmp(b, "struct"))return(NULL);
@@ -1445,30 +1593,44 @@ BCCX_Node *BGBCP_DefTypeJ(BGBCP_ParseState *ctx, char **str)
 	if(!bgbcp_strcmp(b, "interface"))return(BGBCP_DefClassJ(ctx, str));
 	if(!bgbcp_strcmp4(b, "enum"))return(BGBCP_DefClassJ(ctx, str));
 
-	if(bgbcp_chktoklst(b, bgbcp_basetypes_j))
+	if(ctx->lang==BGBCC_LANG_BS2)
 	{
-		s=BGBCP_Token(s, b, &ty);
+		if(bgbcp_chktoklst(b, bgbcp_basetypes_bs2))
+		{
+			s=BGBCP_Token2(s, b, &ty, ctx->lang);
 
-		bty=bgbcc_strdup(b);
+			bty=bgbcc_strdup(b);
 
-		if(!strncmp(bty, "__type_", 7))bty+=7;
-		if(!strncmp(bty, "__", 2))bty+=2;
+			if(!strncmp(bty, "__type_", 7))bty+=7;
+			if(!strncmp(bty, "__", 2))bty+=2;
+		}
+	}else
+	{
+		if(bgbcp_chktoklst(b, bgbcp_basetypes_j))
+		{
+			s=BGBCP_Token2(s, b, &ty, ctx->lang);
+
+			bty=bgbcc_strdup(b);
+
+			if(!strncmp(bty, "__type_", 7))bty+=7;
+			if(!strncmp(bty, "__", 2))bty+=2;
+		}
 	}
 
 	if(!bty && (ty==BTK_NAME))
 	{
-		s=BGBCP_Token(s, b, &ty);
-		BGBCP_Token(s, b2, &ty2);
+		s=BGBCP_Token2(s, b, &ty, ctx->lang);
+		BGBCP_Token2(s, b2, &ty2, ctx->lang);
 		while(!bgbcp_strcmp1(b2, "."))
 		{
-			s=BGBCP_Token(s, b2, &ty2);	//'.'
+			s=BGBCP_Token2(s, b2, &ty2, ctx->lang);	//'.'
 			strcat(b, "/");
-			s=BGBCP_Token(s, b2, &ty2);	//name
+			s=BGBCP_Token2(s, b2, &ty2, ctx->lang);	//name
 
 			if(ty2!=BTK_NAME)return(NULL);
 
 			strcat(b, b2);
-			BGBCP_Token(s, b2, &ty2);
+			BGBCP_Token2(s, b2, &ty2, ctx->lang);
 		}
 
 		vty=bgbcc_strdup(b);
@@ -1477,6 +1639,11 @@ BCCX_Node *BGBCP_DefTypeJ(BGBCP_ParseState *ctx, char **str)
 
 	//bty: known valid type name
 	//vty: expected valid
+
+	if(!(fl&BGBCC_TYFL_DFL_MASK))
+		fl|=(ctx->dfl_flags&BGBCC_TYFL_DFL_MASK);
+
+	fl|=(ctx->dfl_flags&BGBCC_TYFL_DFL_COPY_MASK);
 
 	if(bty)
 	{
@@ -1519,23 +1686,23 @@ BCCX_Node *BGBCP_DefTypeJ(BGBCP_ParseState *ctx, char **str)
 		return(NULL);
 	}
 
-	BGBCP_Token(s, b, &ty);
+	BGBCP_Token2(s, b, &ty, ctx->lang);
 	while(!bgbcp_strcmp1(b, "["))
 	{
-		s=BGBCP_Token(s, b, &ty);
-		BGBCP_Token(s, b, &ty);
+		s=BGBCP_Token2(s, b, &ty, ctx->lang);
+		BGBCP_Token2(s, b, &ty, ctx->lang);
 		if(!bgbcp_strcmp1(b, "]"))
 		{
-			s=BGBCP_Token(s, b, &ty);
+			s=BGBCP_Token2(s, b, &ty, ctx->lang);
 			BCCX_Add(n, BCCX_NewCst(&bgbcc_rcst_array, "array"));
-			BGBCP_Token(s, b, &ty);
+			BGBCP_Token2(s, b, &ty, ctx->lang);
 			continue;
 		}
 
 		n1=BGBCP_FunArgs(ctx, &s);
 		BCCX_AddV(n, BCCX_NewCst1V(&bgbcc_rcst_array, "array", n1));
 
-		BGBCP_Token(s, b, &ty);
+		BGBCP_Token2(s, b, &ty, ctx->lang);
 	}
 
 	*str=s;
@@ -1549,6 +1716,9 @@ BCCX_Node *BGBCP_DefType(BGBCP_ParseState *ctx, char **str)
 		return(BGBCP_DefTypeC(ctx, str));
 
 	if((ctx->lang==BGBCC_LANG_JAVA) || (ctx->lang==BGBCC_LANG_CS))
+		return(BGBCP_DefTypeJ(ctx, str));
+
+	if(ctx->lang==BGBCC_LANG_BS2)
 		return(BGBCP_DefTypeJ(ctx, str));
 
 	return(NULL);
@@ -1568,15 +1738,15 @@ BCCX_Node *BGBCP_EnumVarsList(BGBCP_ParseState *ctx, char **str)
 
 	while(1)
 	{
-		BGBCP_Token(s, b, &ty);
+		BGBCP_Token2(s, b, &ty, ctx->lang);
 		if(!bgbcp_strcmp1(b, ";") || !bgbcp_strcmp1(b, "}"))
 		{
-			s=BGBCP_Token(s, b, &ty);
+			s=BGBCP_Token2(s, b, &ty, ctx->lang);
 			break;
 		}
 
-		s=BGBCP_Token(s, b, &ty);
-		BGBCP_Token(s, b2, &ty2);
+		s=BGBCP_Token2(s, b, &ty, ctx->lang);
+		BGBCP_Token2(s, b2, &ty2, ctx->lang);
 		if(!bgbcp_strcmp1(b2, "="))
 		{
 			s=BGBCP_Token(s, b2, &ty);	//'='
@@ -1592,7 +1762,7 @@ BCCX_Node *BGBCP_EnumVarsList(BGBCP_ParseState *ctx, char **str)
 		BCCX_SetIntCst(n, &bgbcc_rcst_value, "value", i++);
 		lst=BCCX_AddEnd(lst, n);
 
-		s=BGBCP_Token(s, b, &ty);
+		s=BGBCP_Token2(s, b, &ty, ctx->lang);
 		if(!bgbcp_strcmp1(b, ";"))break;
 		if(!bgbcp_strcmp1(b, "}"))break;
 

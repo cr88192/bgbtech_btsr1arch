@@ -926,6 +926,37 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 			{
 #if 0
 			case 0x0:	/* 31z0 */
+				op->rn+=16;
+				op->nmid=BJX2_NMID_BRA;
+				op->fmid=BJX2_FMID_REG;
+				op->Run=BJX2_Op_BRA_Reg;
+				op->fl|=BJX2_OPFL_CTRLF;
+				break;
+			case 0x1:	/* 31z1 */
+				op->rn+=16;
+				op->nmid=BJX2_NMID_BSR;
+				op->fmid=BJX2_FMID_REG;
+				op->Run=BJX2_Op_BSR_Reg;
+				op->fl|=BJX2_OPFL_CTRLF;
+				break;
+			case 0x2:	/* 31z2 */
+				op->rn+=16;
+				op->nmid=BJX2_NMID_BT;
+				op->fmid=BJX2_FMID_REG;
+				op->Run=BJX2_Op_BT_Reg;
+				op->fl|=BJX2_OPFL_CTRLF;
+				break;
+			case 0x3:	/* 31z3 */
+				op->rn+=16;
+				op->nmid=BJX2_NMID_BF;
+				op->fmid=BJX2_FMID_REG;
+				op->Run=BJX2_Op_BF_Reg;
+				op->fl|=BJX2_OPFL_CTRLF;
+				break;
+#endif
+
+#if 0
+			case 0x0:	/* 31z0 */
 				op->nmid=BJX2_NMID_ADD;
 				op->fmid=BJX2_FMID_REGREG;
 				op->Run=BJX2_Op_ADD_RegReg;
@@ -1686,6 +1717,7 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 			}
 			break;
 
+#if 0
 		case 0xF:	/* 3Fnj */
 			op->rn=(opw>>4)&15;
 			op->imm=opw&15;
@@ -1693,6 +1725,7 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 			op->fmid=BJX2_FMID_LDDR4PCREG;
 			op->Run=BJX2_Op_LEAB_LdDr4PcReg;
 			break;
+#endif
 			
 		default:
 			ret=-1;

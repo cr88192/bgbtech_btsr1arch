@@ -1300,7 +1300,8 @@ int BGBCC_JX2C_EmitGetRegister(
 		BGBCC_JX2C_EmitSyncRegisterIndex(ctx, sctx, i);
 		BGBCC_JX2C_StompLpRegisterIndex(ctx, sctx, i);
 
-		if(((reg.val&0xFFF)==0xFFF) && ((reg.val>>56)<4))
+//		if(((reg.val&0xFFF)==0xFFF) && ((reg.val>>56)<4))
+		if(BGBCC_CCXL_IsRegZzP(ctx, reg))
 			{ BGBCC_DBGBREAK }
 
 		sctx->regalc_save|=1<<i;

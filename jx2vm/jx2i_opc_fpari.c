@@ -76,7 +76,58 @@ void BJX2_Op_FNEG_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_FABS_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->fpreg[op->rn]=ctx->fpreg[op->rn]^0x7FFFFFFFFFFFFFFFULL;
+	ctx->fpreg[op->rn]=ctx->fpreg[op->rn]&0x7FFFFFFFFFFFFFFFULL;
+}
+
+void BJX2_Op_FNEG_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->fpreg[op->rn]=ctx->fpreg[op->rm]^0x8000000000000000ULL;
+}
+
+void BJX2_Op_FABS_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->fpreg[op->rn]=ctx->fpreg[op->rm]&0x7FFFFFFFFFFFFFFFULL;
+}
+
+
+void BJX2_Op_FADD_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	double a, b, c;
+	
+	a=((double *)ctx->fpreg)[op->rm];
+	b=((double *)ctx->fpreg)[op->ro];
+	c=a+b;
+	((double *)ctx->fpreg)[op->rn]=c;
+}
+
+void BJX2_Op_FSUB_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	double a, b, c;
+	
+	a=((double *)ctx->fpreg)[op->rm];
+	b=((double *)ctx->fpreg)[op->ro];
+	c=a-b;
+	((double *)ctx->fpreg)[op->rn]=c;
+}
+
+void BJX2_Op_FMUL_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	double a, b, c;
+	
+	a=((double *)ctx->fpreg)[op->rm];
+	b=((double *)ctx->fpreg)[op->ro];
+	c=a*b;
+	((double *)ctx->fpreg)[op->rn]=c;
+}
+
+void BJX2_Op_FDIV_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	double a, b, c;
+	
+	a=((double *)ctx->fpreg)[op->rm];
+	b=((double *)ctx->fpreg)[op->ro];
+	c=a/b;
+	((double *)ctx->fpreg)[op->rn]=c;
 }
 
 
@@ -332,4 +383,68 @@ void BJX2_Op_FSTCD_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 	v=ctx->fpreg[op->rn];
 	ctx->regs[BJX2_REG_DLR]=v;
 //	ctx->regs[BJX2_REG_DHR]=v>>32;
+}
+
+
+void BJX2_Op_FLDCF_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u32 v;
+	v=ctx->regs[op->rm];
+	((double *)ctx->fpreg)[op->rn]=*(float *)(&v);
+}
+
+void BJX2_Op_FSTCF_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	float sf;
+	u32 v;
+	sf=((double *)ctx->fpreg)[op->rm];
+	v=*(u32 *)(&sf);
+	ctx->regs[op->rn]=v;
+}
+
+void BJX2_Op_FLDCI_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v;
+	v=ctx->regs[op->rm];
+	((double *)ctx->fpreg)[op->rn]=(s64)v;
+}
+
+void BJX2_Op_FSTCI_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	double f;
+	f=((double *)ctx->fpreg)[op->rm];
+	ctx->regs[op->rn]=(s64)f;
+}
+
+void BJX2_Op_FLDCH_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u32 v;
+	v=ctx->regs[op->rm];
+	v=BJX2_CvtHalfToFloat(v);
+	((double *)ctx->fpreg)[op->rn]=*(float *)(&v);
+}
+
+void BJX2_Op_FSTCH_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	float sf;
+	u32 v;
+	sf=((double *)ctx->fpreg)[op->rm];
+	v=*(u32 *)(&sf);
+	v=BJX2_CvtFloatToHalf(v);
+	ctx->regs[op->rn]=v;
+}
+
+
+void BJX2_Op_FLDCD_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v;
+	v=ctx->regs[op->rm];
+	ctx->fpreg[op->rn]=v;
+}
+
+void BJX2_Op_FSTCD_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v;
+	v=ctx->fpreg[op->rm];
+	ctx->regs[op->rn]=v;
 }

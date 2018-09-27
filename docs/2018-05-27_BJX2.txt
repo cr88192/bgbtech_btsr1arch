@@ -80,6 +80,22 @@ Instruction Space:
 Except where noted otherwise, the 16-bit instruction forms are limited to the first 16 registers.
 
 
+=== Special Restrictions ===
+
+A few special-case restrictions will be defined as part of this ISA:
+* It is not allowed for larger instructions to stradle a 32B boundary.
+** This allows making the I-Cache more effective.
+* PC-Relative addressing may not cross a 4GB boundary.
+** Loading a program image across 4GB a boundary is undefined.
+** This will apply both to branch instructions and PC-relative load/store.
+* PC is required to be aligned to a 16-bit boundary.
+* SP will also have some restrictions:
+** The stack may not cross a 4GB boundary.
+** SP will have a minimum alignment of 8 bytes.
+
+The results of violating these restrictions are undefined.
+
+
 === Interrupts ===
 
 
@@ -155,7 +171,6 @@ Addressing Modes (Real):
 * (DLR), Direct/Absolute Address
 * (PC, Disp8s), PC with scaled 8-bit displacement.
 * (SP, Disp4u), SP with scaled 4-bit displacement.
-* / (PC, DLR_i4), PC used with scaled Displacement.
 ** The displacement is encoded as ((DLR SHL 4)|Imm4u).
 
 Displacement Scale:
@@ -177,6 +192,8 @@ If R0 is used as the base of a Scaled Index, it will be interpreted as if it wer
 The use of R1 is reserved as the base for a Scaled-Index form.
 
 Use of R0 as a base for (Reg, disp) in F0eo_0znm will function as R0, use of R0 as a base register in other contexts is undefined / reserved.
+
+If R0 is used as the base of a LEA, it will be interpreted as PC. However, only LEA.B will be valid.
 
 
 === 16-bit Instruction Forms ===
@@ -331,12 +348,6 @@ Instruction Space
 ** 31n5 -
 ** 31n6 -
 ** 31n7 -
-
-** 31n8 / CMPPL	Rn					//SR.T=(Rn GT 0)
-** 31n9 / CMPPZ	Rn					//SR.T=(Rn GE 0)
-** 31nA / LEA.W	(PC, DLR), Rn
-** 31nB / LEA.L	(PC, DLR), Rn
-
 ** 31n8 PUSH	Rn
 ** 31n9 PUSH	Cn
 ** 31nA POP		Rn
@@ -344,7 +355,7 @@ Instruction Space
 ** 31nC CMPPL	Rn					//SR.T=(Rn GT 0)
 ** 31nD CMPPZ	Rn					//SR.T=(Rn GE 0)
 ** 31nE -
-** 31nF / LEA.B	(PC, DLR), Rn
+** 31nF -
 
 ** 32n0 BRA		Rn					//Branch to address given in Rn
 ** 32n1 BSR		Rn					//Branch Subroutine given by Rn
@@ -374,7 +385,7 @@ Instruction Space
 ** 33n8 SHLL	Rn					//Rn'=(Rn SHL 1); SR.T=Rn.31
 ** 33n9 SHLR	Rn					//Rn'=(Rn SHR 1); SR.T=Rn.0
 ** 33nA SHAR	Rn					//Rn'=(Rn SAR 1); SR.T=Rn.0
-** 33nB ADD		Cn, DLR				//DLR=DLR+Cn
+** 33nB ?/ ADD	Cn, DLR				//DLR=DLR+Cn
 ** 33nC NEG		Rn, DLR				//DLR=(~Rn)+1
 ** 33nD NEG		Rk, DLR				//DLR=(~Rk)+1
 ** 33nE -
@@ -401,9 +412,9 @@ Instruction Space
 ** 35n1 -
 ** 35n2 -
 ** 35n3 -
-** 35n4 / MOVU.B	(PC, DLR), Rn
-** 35n5 / MOVU.W	(PC, DLR), Rn
-** 35n6 / MOVU.L	(PC, DLR), Rn
+** 35n4 -
+** 35n5 -
+** 35n6 -
 ** 35n7 -
 ** 35n8 -
 ** 35n9 -
@@ -431,16 +442,16 @@ Instruction Space
 ** 36nE CMPGE	DLR, Rn				//Signed (Rn GE DLR)
 ** 36nF MOVT	Rn					//Rn=SR.T
 
-** 37n0 / CMOVT.L	Rn, (DLR)		//Store DWord if SR.T is Set
-** 37n1 / CMOVF.L	Rn, (DLR)		//Store DWord if SR.T is Clear
-** 37n2 / CMOVT.L	(DLR), Rn		//Load DWord if SR.T is Set
-** 37n3 / CMOVF.L	(DLR), Rn		//Load DWord if SR.T is Clear
-** 37n4 / CMOVT.L	Rn, (PC, DLR)	//Store DWord if SR.T is Set
-** 37n5 / CMOVF.L	Rn, (PC, DLR)	//Store DWord if SR.T is Clear
-** 37n6 / CMOVT.L	(PC, DLR), Rn	//Load DWord if SR.T is Set
-** 37n7 / CMOVF.L	(PC, DLR), Rn	//Load DWord if SR.T is Clear
-** 37n8 / CMOVT	DLR, Rn			//MOV to Rn if SR.T is Set
-** 37n9 / CMOVF	DLR, Rn			//MOV to Rn if SR.T is Clear
+** 37n0 -
+** 37n1 -
+** 37n2 -
+** 37n3 -
+** 37n4 -
+** 37n5 -
+** 37n6 -
+** 37n7 -
+** 37n8 -
+** 37n9 -
 ** 37nA -
 ** 37nB -
 ** 37nC -
@@ -626,6 +637,7 @@ Instruction Blocks:
 ** F0gd_0Anm  MOV.L		(Rm, disp5), Rn		//Q=0
 ** F0Gd_0Anm  MOVU.L	(Rm, disp5), Rn		//Q=1
 ** F0gd_0Bnm  MOV.Q		(Rm, disp5), Rn		//Q=0
+** F0Gd_0Bnm  MOVQ.L	(Rm, disp5), Rn		//Q=1 (63..32=Undefined)
 ** F0go_0Cnm  MOV.B		(Rm, Ro), Rn		//Q=0
 ** F0Go_0Cnm  MOVU.B	(Rm, Ro), Rn		//Q=1
 ** F0go_0Dnm  MOV.W		(Rm, Ro), Rn		//Q=0
@@ -633,6 +645,7 @@ Instruction Blocks:
 ** F0go_0Enm  MOV.L		(Rm, Ro), Rn		//Q=0
 ** F0Go_0Enm  MOVU.L	(Rm, Ro), Rn		//Q=1
 ** F0go_0Fnm  MOV.Q		(Rm, Ro), Rn		//Q=0
+** F0Go_0Fnm  MOVQ.L	(Rm, Ro), Rn		//Q=1 (63..32=Undefined)
 
 * F0zz_1zzz
 ** F0go_10nm  ADD		Rm, Ro, Rn				//Rn=Rm+Ro, Q=0
@@ -662,6 +675,7 @@ Instruction Blocks:
 *** F0e6_19nm OR		Rm, Rn
 *** F0e7_19nm XOR		Rm, Rn
 *** F0e8_19nm MOV		Rm, Rn				//Rn=Rm
+**** F0G8_19nm MOV{Q}	Rm, Rn				//Rn=Rm (High bits Undefined)
 *** F0e9_19nm MULS		Rm, Rn				//(DHR,DLR)=Rm*Rn (Signed Result)
 *** F0eA_19nm MOV		Rm, Cn				//Cn=Rm
 *** F0eB_19nm MOV		Cm, Rn				//Rn=Cm
@@ -743,7 +757,64 @@ Instruction Blocks:
 ** F0fn_2Fjj  CMP{Q}GE	#imm10u, Rn			//Rn==Imm10, Zero Extend
 
 ** F0en_30zz  (Single Register Ops, Mirror 3znz)
-*** 1111_0000_zzzn_nnnn_0011_0000_zzzz_zzzz
+*** 1111_0000_qzzn_nnnn_0011_0000_zzzz_zzzz (1R)
+*** 1111_0000_qzzz_zzzz_0011_0000_0000_zzzz (0R)
+
+*** F000_3000  NOP
+*** F001_3000  RTS
+*** F002_3000  SLEEP
+*** F003_3000  BREAK
+*** F004_3000  CLRT
+*** F005_3000  SETT
+*** F006_3000  CLRS
+*** F007_3000  SETS
+*** F008_3000  NOTT
+*** F009_3000  NOTS
+*** F00A_3000  -
+*** F00B_3000  -
+*** F00C_3000  RTE
+*** F00D_3000  -
+*** F00E_3000  -
+*** F00F_3000  -
+*** F00z_3001  -
+*** F000_3002  BRA		(PC, DLR)
+*** F001_3002  BSR		(PC, DLR)
+*** F002_3002  BT		(PC, DLR)
+*** F003_3002  BF		(PC, DLR)
+*** F00z_3003  -
+*** ...
+*** F00z_300F  _
+
+*** F0en_3018  PUSH		Rn
+*** F0en_3019  PUSH		Cn
+*** F0en_301A  POP		Rn
+*** F0en_301B  POP		Cn
+*** F0en_301C  CMPPL	Rn
+*** F0en_301D  CMPPZ	Rn
+
+*** F0en_3020  BRA		Rn
+*** F0en_3021  BSR		Rn
+*** F0en_3022  BT		Rn
+*** F0en_3023  BF		Rn
+
+*** F0en_3033  MOVNT	Rn
+*** F0en_3034  ROTL		Rn
+*** F0en_3035  ROTR		Rn
+*** F0en_3036  ROTCL	Rn
+*** F0en_3037  ROTCR	Rn
+*** F0en_3038  SHLL		Rn
+*** F0en_3039  SHLR		Rn
+*** F0en_303A  SHAR		Rn
+
+*** F0en_3068  BRA		(PC, Rn)
+*** F0en_3069  BSR		(PC, Rn)
+*** F0en_306A  SWAPB	Rn
+*** F0en_306B  SWAPW	Rn
+
+*** F0en_306F  MOVT		Rn
+
+*** F0en_3082  FPUSH	FRn
+*** F0en_3083  FPOP		FRn
 
 ** F0en_40dd -
 ** F0en_41dd -
@@ -805,7 +876,10 @@ Instruction Blocks:
 ** F0eo_9Anm ? FMUL			FRm, FRo, FRn
 ** F0eo_9Bnm ? FDIV			FRm, FRo, FRn
 
-** F0eo_9Cnm -
+** F0eo_9Cnm
+*** F0eC_9Cnm  FCMPEQ		FRm, FRn			//SR.T=(FRn EQ FRm)
+*** F0eD_9Cnm  FCMPGT		FRm, FRn			//SR.T=(FRn GT FRm)
+*** F0eE_9Cnm  FMOV			FRm, FRn			//FRn=FRm
 ** F0eo_9Dnm -
 ** F0eo_9Enm -
 ** F0eo_9Fnm
@@ -817,14 +891,14 @@ Instruction Blocks:
 *** F0e5_9Fnm ? FSTCD		FRn, Rn		//Store Convert Double
 *** F0e6_9Fnm ? FSTCI		FRn, Rn		//Store Convert Int
 *** F0e7_9Fnm ? FSTCH		FRn, Rn		//Store Convert Half (Low16)
-*** F0e8_9Fn8 ? FNEG		FRm, FRn	//Negate
-*** F0e9_9Fn9 ? FABS		FRm, FRn	//Absolute
-*** F0eA_9FnA -
-*** F0eB_9FnB -
-*** F0eC_9FnC ? FRCP		FRm, FRn	//Reciprocal (Exact)
-*** F0eD_9FnD ? FSQRT		FRm, FRn	//Square Root (Exact)
-*** F0eE_9FnE -
-*** F0eF_9FnF -
+*** F0e8_9Fnm ? FNEG		FRm, FRn	//Negate
+*** F0e9_9Fnm ? FABS		FRm, FRn	//Absolute
+*** F0eA_9Fnm -
+*** F0eB_9Fnm -
+*** F0eC_9Fnm ? FRCP		FRm, FRn	//Reciprocal (Exact)
+*** F0eD_9Fnm ? FSQRT		FRm, FRn	//Square Root (Exact)
+*** F0eE_9Fnm -
+*** F0eF_9Fnm -
 
 * F0zz_Azzz
 * F0zz_Bzzz
@@ -846,7 +920,7 @@ Instruction Blocks:
 ** F1ed_8dnm ? MOV{U}.B		(Rm, disp9u), Rn
 ** F1ed_9dnm ? MOV{U}.W		(Rm, disp9u), Rn
 ** F1ed_Adnm ? MOV{U}.L		(Rm, disp9u), Rn
-** F1ed_Bdnm ? MOV.Q		(Rm, disp9u), Rn
+** F1ed_Bdnm ? MOV{Q}.{Q/L}	(Rm, disp9u), Rn
 ** F1ez_Czzz -
 ** F1ez_Dzzz -
 ** F1ez_Ezzz -
@@ -870,12 +944,12 @@ Instruction Blocks:
 ** F87n_iiii  LDISH16	#imm16u, Rk		//R16..R31
 ** F88n_iiii  -
 ** F89n_iiii  -
-** F8An_iiii  -
-** F8Bn_iiii  -
+** F8An_iiii  BSR		(PC, disp20u)
+** F8Bn_iiii  BSR		(PC, disp20n)
 ** F8Cn_iiii  -
 ** F8Dn_iiii  -
-** F8En_iiii  -
-** F8Fn_iiii  -
+** F8Ei_iiii  -
+** F8Fi_iiii  -
 
 * F9zz_zzzz  (Extended FPU Block)
 

@@ -52,6 +52,8 @@ Perform a bitwise AND of the source and destination values and store the result 
 * 3032            BF		(PC, DLR)
 * 32n3            BF		Rn
 * F0dd_23dd       BF		(PC, disp16s)
+* F003_3002       BF		(PC, DLR)			//Fix32
+* F0en_3023       BF		Rn					//Fix32
 * FC23_dddd_dddd  BF		(PC, disp32s)
 
 Branch if False (SR.T is 0).
@@ -65,6 +67,8 @@ The target address is computed and PC is updated to the new address if the condi
 * 32n0            BRA		Rn
 * 36n8            BRA		(PC, Rn)
 * F0dd_20dd       BRA		(PC, disp16s)
+* F000_3002       BRA		(PC, DLR)			//Fix32
+* F0en_3020       BRA		Rn					//Fix32
 * FC20_dddd_dddd  BRA		(PC, disp32s)
 
 Branch to Address.
@@ -74,9 +78,10 @@ The target address is computed and PC is updated to the new address.
 === BREAK ===
 
 * 3030            BREAK
-* 0000            BREAK1  //Pseudo
-* F000_0000       BREAK2  //Pseudo
-* FC00_0000_0000  BREAK3  //Pseudo
+* F003_3000       BREAK		//Fix32
+* 0000            BREAK1	//Pseudo
+* F000_0000       BREAK2	//Pseudo
+* FC00_0000_0000  BREAK3	//Pseudo
 
 Trigger a Breakpoint exception.
 
@@ -90,6 +95,8 @@ The BREAK1/2/3 forms overlap with MOV.B, but will be regarded as invalid special
 * 32n1            BSR		Rn
 * 36n9            BSR		(PC, Rn)
 * F0dd_21dd       BSR		(PC, disp16s)
+* F001_3002       BSR		(PC, DLR)			//Fix32
+* F0en_3021       BSR		Rn					//Fix32
 * FC21_dddd_dddd  BSR		(PC, disp32s)
 
 Branch to subroutine.
@@ -102,6 +109,8 @@ The target address is computed and PC is updated to the new address, with the pr
 * 3022            BT		(PC, DLR)			//Branch True to PC+(DLR*2)
 * 32n2            BT		Rn
 * F0dd_22dd       BT		(PC, disp16s)
+* F002_3002       BT		(PC, DLR)			//Fix32
+* F0en_3022       BT		Rn					//Fix32
 * FC22_dddd_dddd  BT		(PC, disp32s)
 
 Branch if True (SR.T is 1).
@@ -110,14 +119,16 @@ The target address is computed and PC is updated to the new address if the condi
 
 === CLRS ===
 
-* 3060 CLRS
+* 3060       CLRS
+* F006_3000  CLRS	//Fix32
 
 Clear the SR.S flag.
 
 
 === CLRT ===
 
-* 3040 CLRT
+* 3040       CLRT
+* F004_3000  CLRT	//Fix32
 
 Clear the SR.T flag.
 
@@ -191,7 +202,8 @@ This updates SR.T based on the result of the comparison.
 
 === CMPPL ===
 
-* 31n8 CMPPL	Rn
+* 31nC       CMPPL	Rn
+* F0en_301C  CMPPL	Rn		//Fix32
 
 SR.T=(Rn GT 0)
 
@@ -205,7 +217,8 @@ This updates SR.T based on the result of the comparison.
 
 === CMPPZ ===
 
-* 31n9 CMPPZ	Rn
+* 31nD       CMPPZ	Rn
+* F0en_301D  CMPPZ	Rn		//Fix32
 
 SR.T=(Rn GE 0)
 
@@ -570,6 +583,23 @@ Load or store a Word to/from memory.
 The Word value is sign extended to the size of the register.
 
 
+
+=== MOVQ.L ===
+
+* F0Gd_0Bnm       MOVQ.L	(Rm, disp5), Rn
+* F0Go_0Fnm       MOVQ.L	(Rm, Ro), Rn
+* F1Gd_Bdnm     ? MOVQ.L	(Rm, disp9u), Rn
+* FC0G_0Bnm_dddd  MOVQ.L	(Rm, disp17s), Rn
+
+Load a DWord from memory, but with the high order bits as undefined.
+
+The contents of the high order bits will be undefined following the memory load (the implementation may use whichever type of DWord load is cheapest). 
+
+These bits will remain undefined following arithmetic operations, and any bits which depend on the high order bits of the register will themselves be undefined. This situation may exist de-facto, or be treated as a hint by the implementation. Note that this status effect would be removed following an explicit sign or zero extension.
+
+This operation is intended for cases where the high order bits of the register are considered as irrelevant.
+
+
 === MOVU.B ===
 
 * 35n4          / MOVU.B	(PC, DLR), Rn
@@ -683,6 +713,7 @@ The value of SR.T is updated to reflect the borrow status of the bit.
 === NOP ===
 
 * 3000            NOP
+* F000_3000       NOP		//Fix32
 * 1600            NOP1      //Pseudo (16-bit NOP)
 * F000_1600       NOP2		//Pseudo (32-bit NOP)
 * FC00_1600_0000  NOP3		//Pseudo (48-bit NOP)
@@ -702,7 +733,8 @@ Perform a bitwise NOT of the value in Rn.
 
 === NOTS ===
 
-* 3090 NOTS
+* 3090       NOTS
+* F009_3000  NOTS		//Fix32
 
 SR.S=!SR.S
 
@@ -711,7 +743,8 @@ Invert the SR.S flag.
 
 === NOTT ===
 
-* 3080 NOTT
+* 3080       NOTT
+* F008_3000  NOTT		//Fix32
 
 SR.T=!SR.T
 
@@ -733,10 +766,12 @@ Perform a bitwise OR of the source and destination, storing the result in the de
 
 === POP ===
 
-* 30nA POP		Rn
-* 30nB POP		Cn
-* 32nA POP		Rk					//R16..R31
-* 32nB POP		Ck					//C16..C31
+* 30nA       POP		Rn
+* 30nB       POP		Cn
+* 32nA       POP		Rk			//R16..R31
+* 32nB       POP		Ck			//C16..C31
+* F0en_301A  POP		Rn			//Fix32
+* F0en_301B  POP		Cn			//Fix32
 
 Load the value from the top of the stack into the destination register and increment the stack position.
 
@@ -747,10 +782,12 @@ Note that POP into PC will be treated as a special case "RET" instruction.
 
 === PUSH ===
 
-* 30n8 PUSH		Rn
-* 30n9 PUSH		Cn
-* 32n8 PUSH		Rk					//R16..R31
-* 32n9 PUSH		Ck					//C16..C31
+* 30n8       PUSH		Rn
+* 30n9       PUSH		Cn
+* 32n8       PUSH		Rk		//R16..R31
+* 32n9       PUSH		Ck		//C16..C31
+* F0en_3018  PUSH		Rn		//Fix32
+* F0en_3019  PUSH		Cn		//Fix32
 
 Decrement the stack position and store the value from the register to this location.
 
@@ -800,7 +837,8 @@ Rotate the value in Rn right by 1 bit.
 
 === RTE ===
 
-* 30C0 RTE
+* 30C0       RTE
+* F00C_3000  RTE	//Fix32
 
 Return from exception.
 
@@ -809,7 +847,8 @@ Initiates the behavior for returning from an exception handler (described elsewh
 
 === RTS ===
 
-* 3010 RTS
+* 3010       RTS
+* F001_3000  RTS	//Fix32
 
 Return from Subroutine.
 This effectively restores the value from LR into PC, transferring control back to LR.
@@ -828,14 +867,16 @@ SR.T is updated with the borrow result of this operation.
 
 === SETS ===
 
-* 3070 SETS
+* 3070       SETS
+* F007_3000  SETS		//Fix32
 
 Set the SR.S flag.
 
 
 === SETT ===
 
-* 3050 SETT
+* 3050       SETT
+* F005_3000  SETT		//Fix32
 
 Set the SR.T flag.
 
@@ -976,7 +1017,8 @@ These may be combined to form a shift by a different number of bits.
 
 === SLEEP ===
 
-* 3020 SLEEP
+* 3020       SLEEP
+* F002_3000  SLEEP		//Fix32
 
 Causes the processor to sleep until the next interrupt.
 
