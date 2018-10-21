@@ -45,6 +45,7 @@
 
 
 extern	dt_scrpix	*screens[5];
+extern	u16			*screens_zbuf;
 
 extern  int	dirtybox[4];
 

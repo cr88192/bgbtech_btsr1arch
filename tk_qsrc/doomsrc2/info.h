@@ -1302,6 +1302,10 @@ typedef enum {
     MT_MISC84,
     MT_MISC85,
     MT_MISC86,
+    MT_POLYOBJ0,
+    MT_POLYOBJ1,
+    MT_POLYOBJ2,
+    MT_POLYOBJ3,
     NUMMOBJTYPES
 
 } mobjtype_t;

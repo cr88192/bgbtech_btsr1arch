@@ -51,14 +51,16 @@ planefunction_t		ceilingfunc;
 
 // Here comes the obnoxious "visplane".
 // #define MAXVISPLANES	128
-#define MAXVISPLANES	256
+// #define MAXVISPLANES	256
+#define MAXVISPLANES	512
 visplane_t		visplanes[MAXVISPLANES];
 visplane_t*		lastvisplane;
 visplane_t*		floorplane;
 visplane_t*		ceilingplane;
 
 // ?
-#define MAXOPENINGS	SCREENWIDTH*64
+//#define MAXOPENINGS	SCREENWIDTH*64
+#define MAXOPENINGS	SCREENWIDTH*256
 short			openings[MAXOPENINGS];
 short*			lastopening;
 
@@ -142,16 +144,16 @@ R_MapPlane
 
 	if (planeheight != cachedheight[y])
 	{
-	cachedheight[y] = planeheight;
-	distance = cacheddistance[y] = FixedMul (planeheight, yslope[y]);
-	ds_xstep = cachedxstep[y] = FixedMul (distance,basexscale);
-	ds_ystep = cachedystep[y] = FixedMul (distance,baseyscale);
+		cachedheight[y] = planeheight;
+		distance = cacheddistance[y] = FixedMul (planeheight, yslope[y]);
+		ds_xstep = cachedxstep[y] = FixedMul (distance,basexscale);
+		ds_ystep = cachedystep[y] = FixedMul (distance,baseyscale);
 	}
 	else
 	{
-	distance = cacheddistance[y];
-	ds_xstep = cachedxstep[y];
-	ds_ystep = cachedystep[y];
+		distance = cacheddistance[y];
+		ds_xstep = cachedxstep[y];
+		ds_ystep = cachedystep[y];
 	}
 	
 	length = FixedMul (distance,distscale[x1]);
@@ -160,10 +162,10 @@ R_MapPlane
 	ds_yfrac = -viewy - FixedMul(finesine[angle], length);
 
 	if (fixedcolormap)
-	ds_colormap = fixedcolormap;
+		ds_colormap = fixedcolormap;
 	else
 	{
-	index = distance >> LIGHTZSHIFT;
+		index = distance >> LIGHTZSHIFT;
 	
 	if (index >= MAXLIGHTZ )
 		index = MAXLIGHTZ-1;
@@ -174,6 +176,7 @@ R_MapPlane
 	ds_y = y;
 	ds_x1 = x1;
 	ds_x2 = x2;
+	ds_z = distance;
 
 	// high or low detail
 	spanfunc ();	
@@ -398,7 +401,7 @@ void R_DrawPlanes (void)
 		if (pl->picnum == skyflatnum)
 		{
 			dc_iscale = pspriteiscale>>detailshift;
-			dc_scale = INT_MAX;
+			dc_scale = MAXINT;
 			
 			dc_isspr = 1;
 

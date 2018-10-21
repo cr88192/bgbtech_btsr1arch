@@ -29,6 +29,26 @@
 #pragma interface
 #endif
 
+static int r_int_clamp(int v, int m, int n)
+{
+	if(v>=m)
+	{
+		if(v<=n)
+			return(v);
+		return(n);
+	}
+	return(m);
+}
+
+static int r_int_min(int m, int n)
+{
+	return((m<=n)?m:n);
+}
+
+static int r_int_max(int m, int n)
+{
+	return((m>n)?m:n);
+}
 
 extern lighttable_t*	dc_colormap;
 extern int		dc_x;
@@ -39,6 +59,7 @@ extern fixed_t		dc_iscale;
 extern fixed_t		dc_texturemid;
 
 extern byte		dc_isspr;
+extern fixed_t		dc_zdist;
 
 // first pixel in a column
 extern byte*		dc_source;		
@@ -49,6 +70,8 @@ extern byte*		dc_source;
 //  here.
 void 	R_DrawColumn (void);
 void 	R_DrawColumnLow (void);
+
+void	R_DrawColumn_ZB (void);
 
 // The Spectre/Invisibility effect.
 void 	R_DrawFuzzColumn (void);
@@ -75,6 +98,7 @@ extern fixed_t		ds_xfrac;
 extern fixed_t		ds_yfrac;
 extern fixed_t		ds_xstep;
 extern fixed_t		ds_ystep;
+extern fixed_t		ds_z;
 
 // start of a 64*64 tile image
 extern byte*		ds_source;		
@@ -86,6 +110,8 @@ extern byte*		dc_translation;
 // Span blitting for rows, floor/ceiling.
 // No Sepctre effect needed.
 void 	R_DrawSpan (void);
+
+void 	R_DrawSpan_ZB (void);
 
 // Low resolution mode, 160x200?
 void 	R_DrawSpanLow (void);

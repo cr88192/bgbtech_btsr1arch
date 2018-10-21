@@ -59,6 +59,10 @@ extern int		linecount;
 extern int		loopcount;
 
 
+extern byte	r_ispolyobj;
+extern byte	r_usezbuff;
+
+
 //
 // Lighting LUT.
 // Used for z-depth cuing per column/row,

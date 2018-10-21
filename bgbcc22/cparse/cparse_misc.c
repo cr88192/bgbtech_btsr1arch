@@ -7,6 +7,13 @@
 extern int bgbpp_warn, bgbpp_err;
 extern int bgbcp_warn, bgbcp_err;
 
+extern int bgbcc_msec_pp;
+extern int bgbcc_msec_cp;
+extern int bgbcc_msec_cc;
+extern int bgbcc_msec_tot;
+
+extern byte bgbcc_dumpast;
+
 
 BCCX_Node *BGBCP_FunArgs(BGBCP_ParseState *ctx, char **str)
 {
@@ -141,21 +148,26 @@ BCCX_Node *BGBCP_ModuleBuffer(char *name, char *modname, char *buf)
 
 	t1=clock();
 	dt=(1000.0*(t1-t0))/CLOCKS_PER_SEC;
-	printf("PreProc took %dms\n", dt);
+//	printf("PreProc took %dms\n", dt);
 
-#if 0
-	if(bgbpp_err)
+	bgbcc_msec_pp+=dt;
+
+#if 1
+	if(bgbcc_dumpast)
 	{
-		sprintf(b, "dump/%s_pp_err.txt", modname);
+		if(bgbpp_err)
+		{
+			sprintf(b, "dump/%s_pp_err.txt", modname);
+			basm_storetextfile(b, tbuf);
+
+			return(BS1_MM_NULL);
+		}
+
+	//	printf("PP\n%s\n\n", tbuf);
+
+		sprintf(b, "dump/%s_pp.txt", modname);
 		basm_storetextfile(b, tbuf);
-
-		return(BS1_MM_NULL);
 	}
-
-//	printf("PP\n%s\n\n", tbuf);
-
-	sprintf(b, "dump/%s_pp.txt", modname);
-	basm_storetextfile(b, tbuf);
 #endif
 
 
@@ -176,7 +188,9 @@ BCCX_Node *BGBCP_ModuleBuffer(char *name, char *modname, char *buf)
 
 	t1=clock();
 	dt=(1000.0*(t1-t0))/CLOCKS_PER_SEC;
-	printf("Parse took %dms\n", dt);
+//	printf("Parse took %dms\n", dt);
+
+	bgbcc_msec_cp+=dt;
 
 #if 0
 	memset(tbuf, 0, 1<<24);
@@ -316,6 +330,13 @@ fourcc BGBCP_LangForName(char *name)
 		if(!bgbcp_strcmp(s, ".ROM"))lang=BGBCC_IMGFMT_ROM;
 		if(!bgbcp_strcmp(s, ".bin"))lang=BGBCC_IMGFMT_ROM;
 		if(!bgbcp_strcmp(s, ".BIN"))lang=BGBCC_IMGFMT_ROM;
+
+		if(!bgbcp_strcmp(s, ".asm"))lang=BGBCC_IMGFMT_ASM;
+		if(!bgbcp_strcmp(s, ".ASM"))lang=BGBCC_IMGFMT_ASM;
+		if(!bgbcp_strcmp(s, ".as"))lang=BGBCC_IMGFMT_ASM;
+		if(!bgbcp_strcmp(s, ".AS"))lang=BGBCC_IMGFMT_ASM;
+		if(!bgbcp_strcmp(s, ".s"))lang=BGBCC_IMGFMT_ASM;
+		if(!bgbcp_strcmp(s, ".S"))lang=BGBCC_IMGFMT_ASM;
 	}
 	
 	if(lang==BGBCC_LANG_BS)
@@ -645,6 +666,10 @@ fourcc BGBCP_ImageFormatForName(char *name)
 
 		if(!bgbcc_stricmp(s, ".rom"))fmt=BGBCC_IMGFMT_ROM;
 		if(!bgbcc_stricmp(s, ".bin"))fmt=BGBCC_IMGFMT_ROM;
+
+		if(!bgbcc_stricmp(s, ".asm"))fmt=BGBCC_IMGFMT_ASM;
+		if(!bgbcc_stricmp(s, ".s"))fmt=BGBCC_IMGFMT_ASM;
+		if(!bgbcc_stricmp(s, ".as"))fmt=BGBCC_IMGFMT_ASM;
 	}
 	
 	return(fmt);
@@ -706,12 +731,17 @@ BCCX_Node *BGBCP_ModuleBuffer(char *name, char *modname, char *buf)
 
 	t1=clock();
 	dt=(1000.0*(t1-t0))/CLOCKS_PER_SEC;
-	printf("PreProc took %dms\n", dt);
+//	printf("PreProc took %dms\n", dt);
+
+	bgbcc_msec_pp+=dt;
 
 //	printf("PP\n%s\n\n", tbuf);
 
-//	sprintf(b, "dump/%s_pp.txt", modname);
-//	BGBCC_StoreTextFile(b, tbuf);
+	if(bgbcc_dumpast)
+	{
+		sprintf(b, "dump/%s_pp.txt", modname);
+		BGBCC_StoreTextFile(b, tbuf);
+	}
 
 	if(pprs<0)
 	{
@@ -743,7 +773,9 @@ BCCX_Node *BGBCP_ModuleBuffer(char *name, char *modname, char *buf)
 
 	t1=clock();
 	dt=(1000.0*(t1-t0))/CLOCKS_PER_SEC;
-	printf("Parse took %dms\n", dt);
+//	printf("Parse took %dms\n", dt);
+
+	bgbcc_msec_cp+=dt;
 
 	if(bgbcp_err>0)
 	{

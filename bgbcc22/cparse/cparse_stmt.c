@@ -230,14 +230,16 @@ BCCX_Node *BGBCP_Statement(BGBCP_ParseState *ctx, char **str)
 		return(n);
 	}
 
-	if(!bgbcp_strcmp(b, "break"))
+//	if(!bgbcp_strcmp(b, "break"))
+	if(!bgbcp_strcmp5(b, "break"))
 	{
 		n=BCCX_NewCst(&bgbcc_rcst_break, "break");
 		*str=s;
 		return(n);
 	}
 
-	if(!bgbcp_strcmp(b, "continue"))
+//	if(!bgbcp_strcmp(b, "continue"))
+	if(!bgbcp_strcmp8(b, "continue"))
 	{
 		n=BCCX_NewCst(&bgbcc_rcst_continue, "continue");
 		*str=s;
@@ -254,7 +256,8 @@ BCCX_Node *BGBCP_Statement(BGBCP_ParseState *ctx, char **str)
 		return(n);
 	}
 
-	if(!bgbcp_strcmp(b, "return"))
+//	if(!bgbcp_strcmp(b, "return"))
+	if(!bgbcp_strcmp6(b, "return"))
 	{
 		BGBCP_Token2(s, b2, &ty2, ctx->lang);
 		if(b2[0]!=';')
@@ -407,7 +410,8 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 	{
 		s=BGBCP_Token2(s, b2, &ty2, ctx->lang);	//:
 
-		if(!bgbcp_strcmp(b, "default"))
+//		if(!bgbcp_strcmp(b, "default"))
+		if(!bgbcp_strcmp7(b, "default"))
 		{
 			n=BCCX_NewCst(&bgbcc_rcst_case_default, "case_default");
 			*str=s;
@@ -532,7 +536,8 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 			n2=BGBCP_BlockStatement3(ctx, &s);
 
 			BGBCP_Token2(s, b, &ty, ctx->lang);	//'while'
-			if(!bgbcp_strcmp(b, "while"))
+//			if(!bgbcp_strcmp(b, "while"))
+			if(!bgbcp_strcmp5(b, "while"))
 			{
 				s=BGBCP_Token2(s, b, &ty, ctx->lang);	//'while'
 

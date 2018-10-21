@@ -437,6 +437,7 @@ R_DrawVisSprite
 	frac = vis->startfrac;
 	spryscale = vis->scale;
     dc_scale = spryscale;
+    dc_zdist = vis->tz;
 	sprtopscreen = centeryfrac - FixedMul(dc_texturemid,spryscale);
 	dc_isspr = 1;
 	
@@ -496,6 +497,15 @@ void R_ProjectSprite (mobj_t* thing)
 	
 	angle_t		ang;
 	fixed_t		iscale;
+	
+//	if((thing->spawnpoint.type>=0x9300) &&
+//		(thing->spawnpoint.type<=0x9303))
+	if((thing->type>=MT_POLYOBJ0) &&
+		(thing->type<=MT_POLYOBJ3))
+	{
+		R_ProjectSprite_PolyObj(thing);
+		return;
+	}
 	
 	// transform the origin point
 	tr_x = thing->x - viewx;
@@ -586,7 +596,8 @@ void R_ProjectSprite (mobj_t* thing)
 	vis->gzt = thing->z + spritetopoffset[lump];
 	vis->texturemid = vis->gzt - viewz;
 	vis->x1 = x1 < 0 ? 0 : x1;
-	vis->x2 = x2 >= viewwidth ? viewwidth-1 : x2;	
+	vis->x2 = x2 >= viewwidth ? viewwidth-1 : x2;
+	vis->tz = tz;
 	iscale = FixedDiv (FRACUNIT, xscale);
 
 	if (flip)
@@ -765,7 +776,8 @@ void R_DrawPSprite (pspdef_t* psp)
 			(psp->sy-spritetopoffset[lump]);
 	vis->x1 = x1 < 0 ? 0 : x1;
 	vis->x2 = x2 >= viewwidth ? viewwidth-1 : x2;	
-	vis->scale = pspritescale<<detailshift;
+	vis->scale	= pspritescale<<detailshift;
+	vis->tz		= 0;
 	
 	if (flip)
 	{
@@ -991,8 +1003,11 @@ void R_DrawSprite (vissprite_t* spr)
 			 && !R_PointOnSegSide (spr->gx, spr->gy, ds->curline) ) )
 		{
 			// masked mid texture?
-			if (ds->maskedtexturecol)	
+			if (ds->maskedtexturecol)
+			{	
+//				dc_isspr = 1;
 				R_RenderMaskedSegRange (ds, r1, r2);
+			}
 			// seg is behind sprite
 			continue;			
 		}

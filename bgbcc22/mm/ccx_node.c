@@ -259,6 +259,7 @@ int BCCX_LookupAttrValIx(BCCX_Node *node, int iv,
 {
 	u16 *attr_n;
 	BCCX_AttrVal *attr_v;
+	int m, n, c;
 	int i, j, k;
 	
 	if(!node->mattr)
@@ -271,11 +272,46 @@ int BCCX_LookupAttrValIx(BCCX_Node *node, int iv,
 		attr_v=node->attr_v[1].p;
 	}
 
-	for(i=0; i<node->nattr; i++)
+	if(node->nattr<5)
 	{
-		j=attr_n[i];
-		if((j&4095)==iv)
+		for(i=0; i<node->nattr; i++)
 		{
+			j=attr_n[i];
+			if((j&4095)==iv)
+			{
+				*rrn=attr_n+i;
+				*rrv=attr_v+i;
+				return(i);
+			}
+		}
+	}else
+	{
+		m=0; n=node->nattr;
+//		while(m!=n)
+//		while((m+1)<n)
+		while(m!=(i=(m+n)>>1))
+		{
+//			i=(m+n)>>1;
+			j=attr_n[i]&4095;
+			if(iv>=j)
+				{ m=i; }
+//				{ if(m==i)break; m=i; }
+			else
+				{ n=i; }
+		}
+
+		j=attr_n[i]&4095;
+		if(iv==j)
+		{
+			*rrn=attr_n+i;
+			*rrv=attr_v+i;
+			return(i);
+		}
+
+		j=attr_n[i+1]&4095;
+		if(iv==j)
+		{
+			i++;
 			*rrn=attr_n+i;
 			*rrv=attr_v+i;
 			return(i);
@@ -344,6 +380,15 @@ int BCCX_FetchAttrValIx(BCCX_Node *node, int iv,
 	if(node->nattr<ma)
 	{
 		i=node->nattr++;
+		
+//		while((i>0) && attr_n[i-1]>iv)
+		while((i>0) && (attr_n[i-1]&4095)>iv)
+		{
+			attr_n[i]=attr_n[i-1];
+			attr_v[i]=attr_v[i-1];
+			i--;
+		}
+		
 		attr_n[i]=iv;
 		*rrn=attr_n+i;
 		*rrv=attr_v+i;
@@ -660,7 +705,9 @@ void BCCX_AddV(BCCX_Node *parent, BCCX_Node *child)
 //	if(!child->nattr && child->down && !child->down->next)
 	if((child->itag>>12)==BCCX_NTY_TRANS)
 	{
-		i=BCCX_FetchAttrVal(parent, BCCX_Tag(child), &an, &av);
+//		i=BCCX_FetchAttrVal(parent, BCCX_Tag(child), &an, &av);
+//		i=BCCX_FetchAttrValIx(parent, child->itag, &an, &av);
+		i=BCCX_FetchAttrValIx(parent, child->itag&4095, &an, &av);
 //		if(((*an>>12)==BCCX_IVTY_STRING) && !(av->s))
 //		if(((*an>>12)==BCCX_IVTY_DEFAULT) && !(av->s))
 		if((*an>>12)==BCCX_IVTY_DEFAULT)
@@ -1022,6 +1069,20 @@ BCCX_Node *BCCX_FindNextTag(BCCX_Node *last, char *tag)
 	return(NULL);
 }
 
+BCCX_Node *BCCX_FindNextTagIx(BCCX_Node *last, int iv)
+{
+	BCCX_Node *cur;
+
+	cur=last;
+	while(cur)
+	{
+		if((cur->itag&4095)==iv)
+			return(cur);
+		cur=cur->next;
+	}
+	return(NULL);
+}
+
 BCCX_Node *BCCX_FindNextAttr(BCCX_Node *last, char *var, char *val)
 {
 	BCCX_Node *cur;
@@ -1066,6 +1127,20 @@ BCCX_Node *BCCX_FindTagAttr(BCCX_Node *parent,
 		char *tag, char *var, char *val)
 	{ return(BCCX_FindNextTagAttr(parent->down, tag, var, val)); }
 
+BCCX_Node *BCCX_FindTagIx(BCCX_Node *parent, int iv)
+	{ return(BCCX_FindNextTagIx(parent->down, iv)); }
+
+BCCX_Node *BCCX_FindTagCst(BCCX_Node *parent, bccx_cxstate *rcst, char *tag)
+{
+	BCCX_Node *tmp;
+	int iv;
+
+	iv=*rcst;
+	if(!iv)
+		{ iv=BCCX_StringToStridx(tag); *rcst=iv; }
+	return(BCCX_FindNextTagIx(parent->down, iv));
+}
+
 BCCX_Node *BCCX_Fetch(BCCX_Node *parent, char *tag)
 {
 	u16 *an;
@@ -1082,6 +1157,33 @@ BCCX_Node *BCCX_Fetch(BCCX_Node *parent, char *tag)
 	}
 
 	tmp=BCCX_FindTag(parent, tag);
+	if(tmp)return(BCCX_Child(tmp));
+	return(NULL);
+}
+
+
+BCCX_Node *BCCX_FetchCst(BCCX_Node *parent, bccx_cxstate *rcst, char *tag)
+{
+	u16 *an;
+	BCCX_Node *tmp;
+	BCCX_AttrVal *av;
+	char *tb;
+	int iv;
+	int i;
+
+	iv=*rcst;
+	if(!iv)
+		{ iv=BCCX_StringToStridx(tag); *rcst=iv; }
+
+//	i=BCCX_LookupAttrVal(parent, tag, &an, &av);
+	i=BCCX_LookupAttrValIx(parent, iv, &an, &av);
+	if(i>=0)
+	{
+		if((*an>>12)==BCCX_IVTY_NODE)
+			{ return(av->p); }
+	}
+
+	tmp=BCCX_FindTagIx(parent, iv);
 	if(tmp)return(BCCX_Child(tmp));
 	return(NULL);
 }

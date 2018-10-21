@@ -31,7 +31,9 @@ typedef unsigned int size_t;
 
 #ifndef __SIZE_T_DEFINED
 #define __SIZE_T_DEFINED
-typedef unsigned int size_t;
+// typedef unsigned int size_t;
+// typedef long size_t;
+typedef unsigned long size_t;
 #endif
 
 

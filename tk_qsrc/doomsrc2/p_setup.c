@@ -1207,6 +1207,8 @@ P_SetupLevel
 
 	p_map_hexenfmt = 0;		//BGB: Assume map not in Hexen format.
 	
+	R_FlushPolyObj();
+	
     // note: most of this ordering is important	
     P_LoadBlockMap (lumpnum+ML_BLOCKMAP);
     P_LoadVertexes (lumpnum+ML_VERTEXES);

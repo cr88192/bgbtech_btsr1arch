@@ -111,6 +111,79 @@ typedef u32 fourcc;
 #define BGBCC_FrBC_RegisterAllocTemporary(ctx, bty, rr)	\
 	BGBCC_FrBC_RegisterAllocTemporaryLLn(ctx, bty, rr, __FILE__, __LINE__)
 
+#ifdef _MSC_VER
+#ifndef BGBCC_GET_BITS
+#define BGBCC_GET_BITS
+
+#define BGBCC_GET_U16LE(p)	(*(u16 *)(p))
+#define BGBCC_GET_U32LE(p)	(*(u32 *)(p))
+#define BGBCC_GET_U64LE(p)	(*(u64 *)(p))
+
+#define BGBCC_SET_U16LE(p, v)	((*(u16 *)(p))=(v))
+#define BGBCC_SET_U32LE(p, v)	((*(u32 *)(p))=(v))
+#define BGBCC_SET_U64LE(p, v)	((*(u64 *)(p))=(v))
+
+#endif
+#endif
+
+#ifndef BGBCC_GET_BITS
+#define BGBCC_GET_BITS
+static u16 BGBCC_GET_U16LE(void *ptr)
+{
+	byte *p;
+	p=(byte *)ptr;
+	return(p[0]|(p[1]<<8));
+}
+
+static u32 BGBCC_GET_U32LE(void *ptr)
+{
+	byte *p;
+	p=(byte *)ptr;
+	return(p[0]|(p[1]<<8)|(p[2]<<16)|(p[3]<<24));
+}
+
+static u64 BGBCC_GET_U64LE(void *ptr)
+{
+	byte *p;
+	u32 t0, t1;
+	p=(byte *)ptr;
+	t0=(p[0]|(p[1]<<8)|(p[2]<<16)|(p[3]<<24));
+	t1=(p[4]|(p[5]<<8)|(p[6]<<16)|(p[7]<<24));
+	return(t0|(((u64)t1)<<32));
+}
+
+static void BGBCC_SET_U16LE(void *ptr, u16 val)
+{
+	byte *p;
+	p=(byte *)ptr;
+	p[0]=val;
+	p[1]=val>>8;
+}
+
+static void BGBCC_SET_U32LE(void *ptr, u32 val)
+{
+	byte *p;
+	p=(byte *)ptr;
+	p[0]=val;
+	p[1]=val>>8;
+	p[2]=val>>16;
+	p[3]=val>>24;
+}
+#endif
+
+static u16 BGBCC_GET_U16EN(void *ptr, int en)
+{
+	byte *p;
+	p=(byte *)ptr;
+	if(en)
+		return(p[1]|(p[0]<<8));
+	return(p[0]|(p[1]<<8));
+}
+
+
+#define BGBCC_ASC_MASK32	0x80808080UL
+#define BGBCC_ASC_MASK64	0x8080808080808080ULL
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -339,6 +412,8 @@ extern "C" {
 #define BGBCC_IMGFMT_ELSO	BGBCC_FOURCC('E', 'L', 'S', 'O')
 #define BGBCC_IMGFMT_ROM	BGBCC_FOURCC('R', 'O', 'M', ' ')
 
+#define BGBCC_IMGFMT_ASM	BGBCC_FOURCC('A', 'S', 'M', ' ')
+
 #define BGBCC_IMGFMT_RIL3	BGBCC_FOURCC('R', 'I', 'L', '3')
 
 #endif
@@ -353,6 +428,36 @@ extern "C" {
 #define BGBCC_TYCSEEN_ISHL_VAR	0x0040	//saw int shift left, variable
 #define BGBCC_TYCSEEN_ISHR_VAR	0x0080	//saw int shift right (log), variable
 #define BGBCC_TYCSEEN_ISAR_VAR	0x0100	//saw int shift right (arith), variable
+
+typedef union {
+	struct {
+		u32 la;
+		u32 lb;
+		u32 lc;
+		u32 ld;
+	};
+	struct {
+		u64 lo;
+		u64 hi;
+	};
+}bgbcc_vint128;
+
+typedef union {
+	struct {
+		u32 la;
+		u32 lb;
+		u32 lc;
+		u32 ld;
+	};
+	struct {
+		u64 lo;
+		u64 hi;
+	};
+}bgbcc_vfloat128;
+
+#define BGBCC_U64_LO32MASK	0x00000000FFFFFFFFULL
+#define BGBCC_U64_LO32(a)	((a)&BGBCC_U64_LO32MASK)
+#define BGBCC_U64_HI32(a)	((((u64)(a))>>32)&BGBCC_U64_LO32MASK)
 
 
 #include <bgbcc_endian.h>
@@ -387,6 +492,15 @@ char *name;
 BCCX_Node *(*func)(BGBCP_ParseState *ctx, char **s);
 };
 
+//#define BGBCC_PPDEF_SIZE	256
+//#define BGBCC_PPDEF_MASK	255
+//#define BGBCC_PPDEF_SIZE	512
+//#define BGBCC_PPDEF_MASK	511
+#define BGBCC_PPDEF_SIZE	1024
+#define BGBCC_PPDEF_MASK	1023
+//#define BGBCC_PPDEF_SIZE	2048
+//#define BGBCC_PPDEF_MASK	2047
+
 struct BGBCP_ParseState_s {
 int flags;
 
@@ -403,7 +517,8 @@ BCCX_Node *types;
 BCCX_Node *e_structs;
 BCCX_Node *e_types;
 
-BGBPP_Def *ppdef[256];
+// BGBPP_Def *ppdef[256];
+BGBPP_Def *ppdef[BGBCC_PPDEF_SIZE];
 
 BCCX_Node *struct_hash[256];
 BCCX_Node *type_hash[1024];
@@ -467,6 +582,8 @@ u16 ril_txrov;
 u16 ril_txrh;
 u16 ril_psidx[64];
 byte ril_pslen[64];
+byte ril_pschn[64];		//chain (per length)
+byte ril_pslix[256];	//length index
 byte ril_psrov;
 
 BGBCC_CCXL_VirtOp **vop;
@@ -484,6 +601,7 @@ int uregstackpos;
 
 BCCX_Node *types;
 BCCX_Node *structs;
+BCCX_Node *struct_hash[256];
 
 char *cur_ns;
 char *cur_struct;
@@ -509,6 +627,7 @@ byte arch_align_objmin;	//minimum alignment for value-objects
 
 byte ril3_norec;
 byte cgif_no3ac;
+byte ril3_noril;
 
 int ccxl_tyc_seen;
 

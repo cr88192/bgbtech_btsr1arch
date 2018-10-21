@@ -218,6 +218,8 @@ Machine:
 * BJX1-32:  0xB132
 * BJX1-64:  0xB164
 * BJX1-64C: 0xB64C
+* BJX2-32:  0xB232 (Resv)
+* BJX2-64:  0xB264
 
 The main header is followed by sections.
 

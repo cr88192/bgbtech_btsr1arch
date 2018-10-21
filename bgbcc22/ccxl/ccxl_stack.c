@@ -765,19 +765,28 @@ ccxl_status BGBCC_CCXL_MovLoadStore(BGBCC_TransState *ctx,
 
 ccxl_status BGBCC_CCXL_StackTransforCallArgs(BGBCC_TransState *ctx)
 {
+	ccxl_register tarr[64];
 	ccxl_register treg, dreg;
 	int ms;
-	int i, j, k, n;
+	int i, j, k, n, na;
 	
 	ms=ctx->markstack[ctx->markstackpos-1];
 	n=ctx->regstackpos-ms;
 
+	na=0;
 	while(ctx->regstackpos>ms)
 	{
 		i=BGBCC_CCXL_PopRegister(ctx, &treg);
 		BGBCC_CCXL_EmitCallArg(ctx, treg);
-		BGBCC_CCXL_RegisterCheckRelease(ctx, treg);
+//		BGBCC_CCXL_RegisterCheckRelease(ctx, treg);
+		tarr[na++]=treg;
 	}
+
+	for(i=0; i<na; i++)
+	{
+		BGBCC_CCXL_RegisterCheckRelease(ctx, tarr[i]);
+	}
+
 	ctx->markstackpos--;
 	return(CCXL_STATUS_YES);
 }
@@ -833,7 +842,9 @@ int BGBCC_CCXL_StackGetConvCallArgs(BGBCC_TransState *ctx,
 		i=BGBCC_CCXL_GetRegID(ctx, fnreg);
 		rfn=ctx->reg_globals[i];
 		
-		if(rfn->regtype==CCXL_LITID_GLOBALVAR)
+//		if(rfn->regtype==CCXL_LITID_GLOBALVAR)
+		if(	(rfn->regtype==CCXL_LITID_GLOBALVAR) ||
+			(rfn->regtype==CCXL_LITID_STATICVAR) )
 		{
 			if(BGBCC_CCXL_TypeFunctionP(ctx, rfn->type))
 			{
@@ -3327,7 +3338,11 @@ ccxl_status BGBCC_CCXL_StackLoadSlot(BGBCC_TransState *ctx, char *name)
 		BGBCC_CCXL_EmitLoadSlotAddrID(ctx, bty2, dreg, sreg, st, j);
 		BGBCC_CCXL_PushRegister(ctx, dreg);
 		BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
-		return(BGBCC_CCXL_StackLoadSlot(ctx, name));
+
+		ctx->ril3_noril++;
+		i=BGBCC_CCXL_StackLoadSlot(ctx, name);
+		ctx->ril3_noril--;
+		return(i);
 	}
 	
 	BGBCC_CCXL_TagError(ctx,
@@ -3380,20 +3395,25 @@ ccxl_status BGBCC_CCXL_StackStoreSlot(BGBCC_TransState *ctx, char *name)
 		return(CCXL_STATUS_YES);
 	}
 
-#if 0
+#if 1
 	j=BGBCC_CCXL_LookupStructContainsFieldID(ctx, st, name);
 	if(j>=0)
 	{
 		BGBCC_CCXL_LookupStructFieldIdType(ctx, st, j, &bty);
 		BGBCC_CCXL_TypePointerType(ctx, bty, &bty2);
 
-		BGBCC_CCXL_RegisterAllocTemporaryInit(ctx, bty2, &dreg);
-		BGBCC_CCXL_EmitStoreSlotAddrID(ctx, bty2, dreg, sreg, st, j);
+		BGBCC_CCXL_RegisterAllocTemporaryInit(ctx, bty2, &treg);
+//		BGBCC_CCXL_EmitStoreSlotAddrID(ctx, bty2, dreg, sreg, st, j);
+		BGBCC_CCXL_EmitLoadSlotAddrID(ctx, bty2, treg, sreg, st, j);
 
 		BGBCC_CCXL_PushRegister(ctx, sreg);
-		BGBCC_CCXL_PushRegister(ctx, dreg);
-		BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
-		return(BGBCC_CCXL_StackStoreSlot(ctx, name));
+		BGBCC_CCXL_PushRegister(ctx, treg);
+		BGBCC_CCXL_RegisterCheckRelease(ctx, dreg);
+		
+		ctx->ril3_noril++;
+		i=BGBCC_CCXL_StackStoreSlot(ctx, name);
+		ctx->ril3_noril--;
+		return(i);
 	}
 #endif
 	
@@ -3443,7 +3463,11 @@ ccxl_status BGBCC_CCXL_StackLoadSlotAddr(BGBCC_TransState *ctx, char *name)
 		BGBCC_CCXL_EmitLoadSlotAddrID(ctx, bty2, dreg, sreg, st, j);
 		BGBCC_CCXL_PushRegister(ctx, dreg);
 		BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
-		return(BGBCC_CCXL_StackLoadSlotAddr(ctx, name));
+
+		ctx->ril3_noril++;
+		i=BGBCC_CCXL_StackLoadSlotAddr(ctx, name);
+		ctx->ril3_noril--;
+		return(i);
 	}
 	
 	BGBCC_CCXL_TagError(ctx,

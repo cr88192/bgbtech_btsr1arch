@@ -279,3 +279,65 @@ ccxl_status BGBCC_JX2C_FlattenImageROM(BGBCC_TransState *ctx,
 	return(0);
 }
 
+
+
+ccxl_status BGBCC_JX2C_FlattenImageASM(BGBCC_TransState *ctx,
+	byte *obuf, int *rosz, fourcc imgfmt)
+{
+	char tb[256];
+	BGBCC_JX2_Context *sctx;
+	FILE *mapfd;
+	char *s0;
+	byte *ct;
+	int nm, fl, lva, rva, lsz, sn_strs, imty;
+	int i, j, k;
+
+	sctx=ctx->uctx;
+	
+	lsz=0;
+
+	for(i=0; i<sctx->nsec; i++)
+	{
+		s0=sctx->sec_name[i];
+		if(s0)
+		{
+//			BGBCC_JX2_EmitGetStrtabLabel(sctx, s0);
+		}else
+		{
+			switch(i)
+			{
+			case BGBCC_SH_CSEG_TEXT: s0=".text"; break;
+			case BGBCC_SH_CSEG_STRTAB: s0=".strtab"; break;
+			case BGBCC_SH_CSEG_GOT: s0=".got"; break;
+			case BGBCC_SH_CSEG_DATA: s0=".data"; break;
+			case BGBCC_SH_CSEG_RODATA: s0=".rodata"; break;
+			case BGBCC_SH_CSEG_BSS: s0=".bss"; break;
+			default: s0=".unknown"; break;
+			}
+
+//			BGBCC_JX2_EmitGetStrtabLabel(sctx, s0);
+			sctx->sec_name[i]=s0;
+		}
+
+		j=sctx->asm_pos[i]-sctx->asm_buf[i];
+		lsz+=j+1024;
+	}
+
+	ct=obuf;
+	for(i=0; i<sctx->nsec; i++)
+	{
+		j=sctx->asm_pos[i]-sctx->asm_buf[i];
+		if(j<=0)
+			continue;
+
+		sprintf(ct, ".section %s\n", sctx->sec_name[i]);
+		ct+=strlen(ct);
+		
+		memcpy(ct, sctx->asm_buf[i], j);
+		ct+=j;
+		*ct=0;
+	}
+	
+	*rosz=ct-obuf;
+	return(0);
+}

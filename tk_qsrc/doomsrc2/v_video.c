@@ -44,7 +44,8 @@ rcsid[] = "$Id: v_video.c,v 1.5 1997/02/03 22:45:13 b1 Exp $";
 
 // Each screen is [SCREENWIDTH*SCREENHEIGHT]; 
 dt_scrpix		*screens[5];	
- 
+u16				*screens_zbuf;
+
 int				dirtybox[4]; 
 
 
@@ -263,7 +264,7 @@ V_DrawPatchCmap
 			dest = desttop + column->topdelta*SCREENWIDTH; 
 			count = column->length; 
 
-#if 1
+#if 0
 			while (count>=4) 
 			{ 
 				*dest = tcol[*source++];
@@ -278,6 +279,26 @@ V_DrawPatchCmap
 				*dest = tcol[*source++];
 				dest += SCREENWIDTH; 
 				
+				count-=4;
+			}
+#endif
+
+#if 1
+			while (count>=4) 
+			{ 
+				*dest = tcol[source[0]];
+				dest += SCREENWIDTH; 
+
+				*dest = tcol[source[1]];
+				dest += SCREENWIDTH; 
+
+				*dest = tcol[source[2]];
+				dest += SCREENWIDTH; 
+
+				*dest = tcol[source[3]];
+				dest += SCREENWIDTH; 
+				
+				source+=4;
 				count-=4;
 			}
 #endif
@@ -642,4 +663,7 @@ void V_Init (void)
     {
 		screens[i] = base + i*SCREENWIDTH*SCREENHEIGHT;
 	}
+
+    screens_zbuf = (u16 *)
+		I_AllocLow (SCREENWIDTH*SCREENHEIGHT*sizeof(u16));
 }

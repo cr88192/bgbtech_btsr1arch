@@ -13,7 +13,9 @@ SRCS=\
 	mm/ccx_node.c \
 	mm/ccx_print.c \
 	mm/ccx_parse.c \
+	mm/cc_float128.c \
 	mm/cc_float16.c \
+	mm/cc_int128.c \
 	mm/cc_malloc.c \
 	mm/cc_thread.c \
 	\
@@ -82,6 +84,7 @@ SRCS=\
 	bsrcc/bsr_struct.c \
 	bsrcc/bsr_vreg.c \
 	\
+	jx2cc/jx2_asmdump.c \
 	jx2cc/jx2_binop.c \
 	jx2cc/jx2_bufasm.c \
 	jx2cc/jx2_cgif.c \

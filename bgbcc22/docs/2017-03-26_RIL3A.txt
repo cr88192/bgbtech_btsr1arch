@@ -246,6 +246,7 @@ Begin/Commands
 * 0x8011, VARDECL
 * 0x8012, MANIFOBJ
 * 0x8013, TYPEDEF
+* 0x8014, JMPTAB
 
 Attribute/Literal
 * 0x9001, SIG
@@ -275,6 +276,7 @@ Commands/Attributes (Alt)
 * 0x11, VARDECL
 * 0x12, MANIFOBJ
 * 0x13, TYPEDEF
+* 0x14, JMPTAB
 * ...
 * 0x21, SIG
 * 0x22, FLAGS
@@ -612,21 +614,28 @@ Opcodes (Executable Code)
 * 0x66, SHL ( A B -- A<<B )
 * 0x67, SAR ( A B -- A>>B )
 
-* 0x68, ADDC
-** SVLI val;
-* 0x69, -
-* 0x6A, MULC
-** SVLI val;
-* 0x6B, ANDC
-** SVLI val;
-* 0x6C, ORC
-** SVLI val;
-* 0x6D, XORC
-** SVLI val;
-* 0x6E, SHLC
-** SVLI val;
-* 0x6F, SARC
-** SVLI val;
+* 0x68, STLDSLOT
+* 0x69, STLDSLOTA
+* 0x6A, STLDIXC
+* 0x6B, STLDIXAC
+* 0x6C, STLDIX
+* 0x6D, STLDIXA
+* 0x6E, STCASTSIG
+* 0x6F, CSELCMP
+
+* 0x70, DUPIX
+** Dup with Index
+* 0x71, DUPMIX
+** Dup with Index (relative to Mark)
+* 0x72, JMPTAB
+** Jump Table
+** SVLI nLbl;	//number of labels
+*** Greater than 0: Check range, branch to Default if out of range.
+*** Less than 0: Don't check range (value assumed to be in range).
+** LABEL dfl;	//default
+** For Each Label:
+*** SVLI val;	//case value
+*** LABEL lbl;	//target label
 
 
 === Global Objects ===

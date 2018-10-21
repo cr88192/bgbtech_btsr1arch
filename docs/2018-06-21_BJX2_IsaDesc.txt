@@ -23,7 +23,6 @@ Add with Carry, Rn=Rn+Rm+SR.T, with SR.T being updated to reflect the carry-out 
 * F0go_10nm       ADD		Rm, Ro, Rn			//Rn=Rm+Ro, Q=0
 * F0Go_10nm       ADD		Rm, imm5u, Rn		//Rn=Rm+imm5u, Q=1
 * F0e0_19nm       ADD		Rm, Rn				//Rn=Rn+Rm
-* F0e8_1Dnm    /? ADD		Rm, DLR, Rn
 * F84n_iiii       ADD		#imm16s, Rn
 * F85n_iiii       ADD		#imm16s, Rk
 * FC0G_10nm_dddd  ADD		Rm, imm17u, Rn		//Rn=Rm+DLR
@@ -40,7 +39,6 @@ Add the source and destination values and store the result in the destination re
 * F0go_15nm       AND		Rm, Ro, Rn				//Rn=Rm AND Ro, Q=0
 * F0Go_15nm       AND		Rm, imm5u, Rn			//Rn=Rm AND imm5u, Q=1
 * F0e5_19nm       AND		Rm, Rn
-* F0eA_1Dnm    /? AND		Rm, DLR, Rn
 * FC0G_15nm_dddd  AND		Rm, imm17s, Rn
 
 Perform a bitwise AND of the source and destination values and store the result in the destination register.
@@ -284,7 +282,8 @@ This updates SR.T based on the result of the comparison.
 
 === CMPQHS ===
 
-* 38nD CMPQHS	DLR, Rn
+* 38nD       CMPQHS		DLR, Rn
+* F0eD_1Dnm  CMPQHS		Rm, Rn			//Unsigned Rn GE Rm
 
 Unsigned (Rn GE DLR)
 
@@ -304,7 +303,7 @@ Sign extend the value in the low 8 bits of the register to the width of the regi
 === EXTS.L ===
 
 * 36n5       EXTS.L	Rn
-* F0e9_1Cnm  EXTS.L	Rm, Rn				//Q=0, I=1
+* F0e5_1Cnm  EXTS.L	Rm, Rn				//Q=0, I=0
 
 Sign extend the value in the low 32 bits of the register to the width of the register.
 
@@ -328,7 +327,7 @@ Zero extend the value in the low 8 bits of the register to the width of the regi
 === EXTU.L ===
 
 * 36n4       EXTU.L	Rn
-* F0e9_1Cnm  EXTU.L	Rm, Rn				//Q=1, I=1
+* F0e5_1Cnm  EXTU.L	Rm, Rn				//Q=1, I=0
 
 Zero extend the value in the low 32 bits of the register to the width of the register.
 
@@ -343,7 +342,8 @@ Zero extend the value in the low 16 bits of the register to the width of the reg
 
 === LDTLB ===
 
-* 30F0  LDTLB
+* 30F0       LDTLB
+* F00F_3000  LDTLB
 
 Copy DHR:DLR into the TLB.
 
@@ -354,10 +354,9 @@ This instruction is invalid outside of an ISR. Its behavior is undefined, but sh
 
 === LEA.B ===
 
-* 31nF          / LEA.B	(PC, DLR), Rn
 * 4Cnm            LEA.B	(Rm, DLR), Rn
-* F0go_4Cnm       LEA.B	(Rm, Ro), Rn		//
-* F0Go_4Cnm       LEA.B	(Rm, disp5), Rn		//
+* F0Gd_00nm       LEA.B	(Rm, disp5), Rn
+* F0Go_04nm       LEA.B	Rm, (Rn, Ro)
 * FC27_Fndd_dddd  LEA.B	(PC, disp24s), Rn	//PC-Rel Load
 
 Load the effective address of the Base register added to the displacement and store the result into the destination register.
@@ -367,10 +366,9 @@ This will use a scale factor of 1.
 
 === LEA.L ===
 
-* 31nB     / LEA.L	(PC, DLR), Rn
 * 4Enm       LEA.L	(Rm, DLR), Rn
-* F0go_4Enm  LEA.L	(Rm, Ro), Rn		//
-* F0Go_4Enm  LEA.L	(Rm, disp5), Rn		//
+* F0Gd_02nm  LEA.L	(Rm, disp5), Rn
+* F0Go_06nm  LEA.L	Rm, (Rn, Ro)
 
 Load the effective address of the Base register added to the scaled displacement and store the result into the destination register.
 
@@ -380,8 +378,8 @@ This will use a scale factor of 4.
 === LEA.Q ===
 
 * 4Fnm       LEA.Q	(Rm, DLR), Rn
-* F0go_4Fnm  LEA.Q	(Rm, Ro), Rn		//
-* F0Go_4Fnm  LEA.Q	(Rm, disp5), Rn		//
+* F0Gd_03nm  LEA.Q	(Rm, disp5), Rn
+* F0Go_07nm  LEA.Q	Rm, (Rn, Ro)
 
 Load the effective address of the Base register added to the scaled displacement and store the result into the destination register.
 
@@ -390,10 +388,9 @@ This will use a scale factor of 8.
 
 === LEA.W ===
 
-* 31nA     / LEA.W	(PC, DLR), Rn
 * 4Dnm       LEA.W	(Rm, DLR), Rn
-* F0go_4Dnm  LEA.W	(Rm, Ro), Rn		//
-* F0Go_4Dnm  LEA.W	(Rm, disp5), Rn		//
+* F0Gd_01nm  LEA.W	(Rm, disp5), Rn
+* F0Go_05nm  LEA.W	Rm, (Rn, Ro)
 
 Load the effective address of the Base register added to the scaled displacement and store the result into the destination register.
 
@@ -444,7 +441,8 @@ MOV, GPR
 * 19zz            MOV		Rj, Rn
 * 1Azz            MOV		Rm, Rk
 * 1Bzz            MOV		Rj, Rk
-* F0e8_19nm       MOV		Rm, Rn				//Rn=Rm
+* F0g8_19nm       MOV		Rm, Rn				//Rn=Rm
+* F0G8_19nm       MOVD		Rm, Rn				//Rn=Rm (Low32, Hi=Undef)
 
 MOV, Control Register
 * 48nm            MOV		Rm, Cn
@@ -457,7 +455,7 @@ MOV, Control Register
 * F0eB_1Cnm       MOV		Sm, Rn				//Rn=Cm
 
 MOV, Constant
-* Enii            MOV		#imm8s, Rn	//Rn=Imm8
+* Enii            MOV		#imm8s, Rn		//Rn=Imm8
 * F80n_iiii       MOV		#imm16u, Rn
 * F81n_iiii       MOV		#imm16u, Rk
 * F82n_iiii       MOV		#imm16n, Rn
@@ -479,8 +477,6 @@ The Xor-Extend case extends the value with the opposite of the sign bit, and thu
 * 04nm            MOV.B		Rm, (Rn, DLR)		//(Rn==0): PC-Rel
 * 08nm            MOV.B		(Rm), Rn
 * 0Cnm            MOV.B		(Rm, DLR), Rn		//(Rm==0): PC-Rel
-* 30n4          / MOV.B		Rn, (PC, DLR)
-* 30nC          / MOV.B		(PC, DLR), Rn
 * F0gd_00nm       MOV.B		Rm, (Rn, disp5u)	//Q=0
 * F0go_04nm       MOV.B		Rm, (Rn, Ro)		//Q=0	//(Rn==0): PC-Rel
 * F0gd_08nm       MOV.B		(Rm, disp5u), Rn	//Q=0
@@ -506,14 +502,10 @@ The byte is sign extended to the size of the register.
 * 0Enm            MOV.L		(Rm, DLR), Rn		//(Rm==0): PC-Rel
 * 28nd            MOV.L		Rn, (SP, disp4u)	//Stack-Relative Store
 * 2And            MOV.L		(SP, disp4u), Rn	//Stack-Relative Load
-* 30n6          / MOV.L		Rn, (PC, DLR)
-* 30nE          / MOV.L		(PC, DLR), Rn
 * F0gd_02nm       MOV.L		Rm, (Rn, disp5u)
 * F0go_06nm       MOV.L		Rm, (Rn, Ro)		//(Rn==0): PC-Rel
 * F0gd_0Anm       MOV.L		(Rm, disp5u), Rn
 * F0go_0Enm       MOV.L		(Rm, Ro), Rn		//(Rm==0): PC-Rel
-* F0hn_28dd     / MOV.L		Rn, (SP, disp10u)	//Stack-Relative Store
-* F0hn_2Add     / MOV.L		(SP, disp10u), Rn	//Stack-Relative Load
 * F1gd_2dnm     ? MOV.L		Rm, (Rn, disp9u)
 * F1gd_Adnm     ? MOV.L		(Rm, disp9u), Rn
 * FC0g_02nm_dddd  MOV.L		Rm, (Rn, disp17s)
@@ -538,14 +530,10 @@ For example, F0-28 and F1-2 could both achieve a similar purpose, so don't need 
 * 0Fnm            MOV.Q		(Rm, DLR), Rn		//(Rm==0): PC-Rel
 * 29nd            MOV.Q		Rn, (SP, disp4u)	//Stack-Relative Store
 * 2Bnd            MOV.Q		(SP, disp4u), Rn	//Stack-Relative Load
-* 30n7          / MOV.Q		Rn, (PC, DLR)
-* 30nF          / MOV.Q		(PC, DLR), Rn
 * F0gd_03nm       MOV.Q		Rm, (Rn, disp5)		//Q=0
 * F0go_07nm       MOV.Q		Rm, (Rn, Ro)		//Q=0
 * F0gd_0Bnm       MOV.Q		(Rm, disp5), Rn		//Q=0
 * F0go_0Fnm       MOV.Q		(Rm, Ro), Rn		//Q=0
-* F0hn_29dd     / MOV.Q		Rn, (SP, disp10u)	//Stack-Relative Store
-* F0hn_2Bdd     / MOV.Q		(SP, disp10u), Rn	//Stack-Relative Load
 * F1gd_3dnm     ? MOV.Q		Rm, (Rn, disp9u)
 * F1gd_Bdnm     ? MOV.Q		(Rm, disp9u), Rn
 * FC0g_03nm_dddd  MOV.Q		Rm, (Rn, disp17s)
@@ -564,8 +552,6 @@ Load or store a QWord to/from memory.
 * 05nm            MOV.W		Rm, (Rn, DLR)		//(Rn==0): PC-Rel
 * 09nm            MOV.W		(Rm), Rn
 * 0Dnm            MOV.W		(Rm, DLR), Rn		//(Rm==0): PC-Rel
-* 30n5          / MOV.W		Rn, (PC, DLR)
-* 30nD          / MOV.W		(PC, DLR), Rn
 * F0gd_01nm       MOV.W		Rm, (Rn, disp5)		//Q=0
 * F0go_05nm       MOV.W		Rm, (Rn, Ro)		//Q=0	//(Rn==0): PC-Rel
 * F0gd_09nm       MOV.W		(Rm, disp5), Rn		//Q=0
@@ -584,16 +570,16 @@ The Word value is sign extended to the size of the register.
 
 
 
-=== MOVQ.L ===
+=== MOVD.L ===
 
-* F0Gd_0Bnm       MOVQ.L	(Rm, disp5), Rn
-* F0Go_0Fnm       MOVQ.L	(Rm, Ro), Rn
-* F1Gd_Bdnm     ? MOVQ.L	(Rm, disp9u), Rn
-* FC0G_0Bnm_dddd  MOVQ.L	(Rm, disp17s), Rn
+* F0Gd_0Bnm       MOVD.L	(Rm, disp5), Rn
+* F0Go_0Fnm       MOVD.L	(Rm, Ro), Rn
+* F1Gd_Bdnm       MOVD.L	(Rm, disp9u), Rn
+* FC0G_0Bnm_dddd  MOVD.L	(Rm, disp17s), Rn
 
-Load a DWord from memory, but with the high order bits as undefined.
+Load a DWord from memory, but leaves the high order bits in an undefined state.
 
-The contents of the high order bits will be undefined following the memory load (the implementation may use whichever type of DWord load is cheapest). 
+The contents of the high order bits will be undefined following the memory load (the implementation may use whichever form of a DWord load is cheapest). 
 
 These bits will remain undefined following arithmetic operations, and any bits which depend on the high order bits of the register will themselves be undefined. This situation may exist de-facto, or be treated as a hint by the implementation. Note that this status effect would be removed following an explicit sign or zero extension.
 
@@ -602,7 +588,6 @@ This operation is intended for cases where the high order bits of the register a
 
 === MOVU.B ===
 
-* 35n4          / MOVU.B	(PC, DLR), Rn
 * 50nm            MOVU.B	(Rm), Rn
 * 52nm            MOVU.B	(Rm, DLR), Rn		//(Rm==0): PC-Rel
 * F0Gd_08nm       MOVU.B	(Rm, disp5), Rn
@@ -620,7 +605,6 @@ Note that these instruction forms will be specific to the 32-bit ISA.
 
 === MOVU.L ===
 
-* 35n6          / MOVU.L	(PC, DLR), Rn
 * 80nm            MOVU.L	(Rm), Rn
 * 88nm            MOVU.L	(Rm, DLR), Rn		//(Rm==0): PC-Rel
 * F0Gd_0Anm       MOVU.L	(Rm, disp5), Rn
@@ -638,7 +622,6 @@ Note that these instruction forms will be specific to the 32-bit ISA.
 
 === MOVU.W ===
 
-* 35n5          / MOVU.W	(PC, DLR), Rn
 * 51nm            MOVU.W	(Rm), Rn
 * 53nm            MOVU.W	(Rm, DLR), Rn		//(Rm==0): PC-Rel
 * F0Gd_09nm       MOVU.W	(Rm, disp5), Rn
@@ -758,7 +741,6 @@ Invert the SR.T flag.
 * F0go_16nm       OR	Rm, Ro, Rn				//Rn=Rm OR  Ro, Q=0
 * F0Go_16nm       OR	Rm, imm5, Rn			//Rn=Rm OR Imm5, Q=1
 * F0e6_19nm       OR	Rm, Rn
-* F0eB_1Dnm    /? OR	Rm, DLR, Rn
 * FC0G_16nm_dddd  OR	Rm, imm17s, Rn
 
 Perform a bitwise OR of the source and destination, storing the result in the destination.
@@ -885,7 +867,6 @@ Set the SR.T flag.
 
 * 36n6       SHAD	DLR, Rn
 * F0g6_1Cnm  SHAD	Rm, Rn
-* F0g6_1Dnm /? SHAD	Rm, DLR, Rn
 * F0go_54nm  SHAD	Rm, Ro, Rn
 * F0go_56nm  SHAD	Rm, imm5u, Rn
 * F0Go_56nm  SHAD	Rm, imm5n, Rn
@@ -899,7 +880,6 @@ The input is 32-bit sign extended prior to performing the shift.
 
 * 38n6       SHADQ	DLR, Rn
 * F0G6_1Cnm  SHADQ	Rm, Rn
-* F0G6_1Dnm /? SHADQ	Rm, DLR, Rn
 * F0Go_54nm  SHADQ	Rm, Ro, Rn
 * F0go_58nm  SHADQ	Rm, imm5u, Rn		//Rn=Rm SHL imm5 (  0.. 31)
 * F0Go_58nm  SHADQ	Rm, imm5n, Rn		//Rn=Rm SAR imm5 (-32.. -1)
@@ -940,7 +920,6 @@ These may be combined to form a shift by a different number of bits.
 
 * 36n7       SHLD	DLR, Rn
 * F0g7_1Cnm  SHLD	Rm, Rn
-* F0g7_1Dnm /? SHLD	Rm, DLR, Rn
 * F0go_55nm  SHLD	Rm, Ro, Rn
 * F0go_57nm  SHLD	Rm, imm5u, Rn		//Rn=Rm SHL imm5 (ZX 32)
 * F0Go_57nm  SHLD	Rm, imm5n, Rn		//Rn=Rm SHR imm5 (ZX 32)
@@ -954,7 +933,6 @@ The input is 32-bit zero extended prior to performing the shift.
 
 * 38n7       SHLDQ	DLR, Rn
 * F0G7_1Cnm  SHLDQ	Rm, Rn
-* F0G7_1Dnm /? SHLDQ	Rm, DLR, Rn
 * F0Go_55nm  SHADQ	Rm, Ro, Rn
 * F0go_59nm  SHLDQ	Rm, imm5u, Rn		//Rn=Rm SHL imm5 (  0.. 31)
 * F0Go_59nm  SHLDQ	Rm, imm5n, Rn		//Rn=Rm SHR imm5 (-32.. -1)
@@ -1032,7 +1010,6 @@ May generate an fault if used in a context where this would halt the processor i
 * F0go_11nm       SUB		Rm, Ro, Rn			//Rn=Rm-Ro, Q=0
 * F0Go_11nm       SUB		Rm, Imm5, Rn		//Rn=Rm-Imm5u, Q=1
 * F0e1_19nm       SUB		Rm, Rn				//Rn=Rn-Rm
-* F0e9_1Dnm    /? SUB		Rm, DLR, Rn
 * FC0G_11nm_dddd  SUB		Rm, imm17u, Rn
 
 Rn=Rn-Rm
@@ -1103,7 +1080,6 @@ This operation will test all 64 bits.
 * F0go_17nm       XOR		Rm, Ro, Rn				//Rn=Rm XOR Ro, Q=0
 * F0Go_17nm       XOR		Rm, imm5u, Rn			//Rn=Rm XOR Imm5, Q=1
 * F0e7_19nm       XOR		Rm, Rn
-* F0eC_1Dnm    /? XOR		Rm, DLR, Rn
 * FC0G_17nm_dddd  XOR		Rm, imm17s, Rn
 
 Perform a bitwise XOR of the source and destination registers, storing the result in the destination.

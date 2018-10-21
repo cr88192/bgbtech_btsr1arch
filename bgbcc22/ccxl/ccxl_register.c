@@ -311,19 +311,28 @@ ccxl_status BGBCC_CCXL_RegisterCheckAcquire(
 ccxl_status BGBCC_CCXL_RegisterIdentEqualP(
 	BGBCC_TransState *ctx, ccxl_register sreg, ccxl_register treg)
 {
-	if((sreg.val&CCXL_REGTY_REGMASK)!=(treg.val&CCXL_REGTY_REGMASK))
+	u64 stxv;
+	
+	stxv=sreg.val^treg.val;
+//	if((sreg.val&CCXL_REGTY_REGMASK)!=(treg.val&CCXL_REGTY_REGMASK))
+//	if(((sreg.val^treg.val)&CCXL_REGTY_REGMASK)!=0)
+	if((stxv&CCXL_REGTY_REGMASK)!=0)
 		return(CCXL_STATUS_NO);
 	
-	if(	((sreg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_TEMP) ||
-		((sreg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_ARG) ||
-		((sreg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_LOCAL))
+//	if(	((sreg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_TEMP) ||
+//		((sreg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_ARG) ||
+//		((sreg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_LOCAL))
+	if((sreg.val&CCXL_REGTY_REGMASK)<=CCXL_REGTY_LOCAL)
 	{
-		if((sreg.val&CCXL_REGID_BASEMASK)!=(treg.val&CCXL_REGID_BASEMASK))
+//		if((sreg.val&CCXL_REGID_BASEMASK)!=(treg.val&CCXL_REGID_BASEMASK))
+//		if(((sreg.val^treg.val)&CCXL_REGID_BASEMASK)!=0)
+		if((stxv&CCXL_REGID_BASEMASK)!=0)
 			return(CCXL_STATUS_NO);
 		return(CCXL_STATUS_YES);
 	}
 	
-	if(sreg.val!=treg.val)
+//	if(sreg.val!=treg.val)
+	if(stxv!=0)
 		return(CCXL_STATUS_NO);
 	return(CCXL_STATUS_YES);
 }

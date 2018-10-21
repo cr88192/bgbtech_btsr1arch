@@ -1104,8 +1104,8 @@ void P_AcsRunLoop(p_acsrun_t *run)
 	int sp, a1, a2, a3, a4, a5, a6, a7;
 	int i, j, k;
 	
-//	lim=4096;
-	lim=1<<18;
+	lim=4096;
+//	lim=1<<18;
 	while(((lim--)>0) && !(run->status))
 	{
 		op=*run->cs++;
@@ -1799,6 +1799,9 @@ void P_AcsTick()
 				{
 					run->map=-1;
 				}
+
+				run->css=NULL;
+				run->cs=NULL;
 			}
 		}
 	}

@@ -405,6 +405,8 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_SHADQ:		s0="SHAD.Q";	break;
 	case BJX2_NMID_SHLDQ:		s0="SHLD.Q";	break;
 
+	case BJX2_NMID_TSTQ:		s0="TSTQ";	break;
+
 	case BJX2_NMID_CMPQEQ:		s0="CMPQEQ";	break;
 	case BJX2_NMID_CMPQGT:		s0="CMPQGT";	break;
 	case BJX2_NMID_CMPQHI:		s0="CMPQHI";	break;
@@ -414,8 +416,12 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_FPUSH:		s0="FPUSH";		break;
 	case BJX2_NMID_FPOP:		s0="FPOP";		break;
 
-	case BJX2_NMID_MOVNT:		s0="MOVNT";		break;
 	case BJX2_NMID_CSELT:		s0="CSELT";		break;
+	case BJX2_NMID_MOVNT:		s0="MOVNT";		break;
+	case BJX2_NMID_CLZ:			s0="CLZ";		break;
+	case BJX2_NMID_CLZQ:		s0="CLZQ";		break;
+	case BJX2_NMID_MOVDL:		s0="MOVD.L";	break;
+	case BJX2_NMID_LDI:			s0="LDI";		break;
 
 	default:
 		sprintf(tb, "?NM%02X", nmid);
@@ -610,6 +616,8 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 	case BJX2_NMID_MOVUW:
 		msc=2;	break;
 	case BJX2_NMID_MOVL:
+	case BJX2_NMID_MOVUL:
+	case BJX2_NMID_MOVDL:
 		msc=4;	break;
 	case BJX2_NMID_MOVQ:
 		msc=8;	break;
@@ -659,6 +667,9 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		{
 			printf("#%d", op->imm);
 		}
+		break;
+	case BJX2_FMID_PCREG:
+		printf("(PC, %s)", BJX2_DbgPrintNameForReg(ctx, op->rn));
 		break;
 	case BJX2_FMID_PCDISP:
 		if(
@@ -978,13 +989,14 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 {
 	BJX2_Trace *tra[65536];
 	s64 cyc_nmid[256];
+	int idx_nmid[256];
 	BJX2_Trace *trcur;
 	bjx2_addr ba2;
 	s64 cyc;
 	double pcnt;
 	char *bn2;
 	int trn;
-	int i, j;
+	int i, j, k;
 
 	for(i=0; i<256; i++)
 	{
@@ -1060,7 +1072,21 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 #endif
 	}
 
-#if 1
+	for(i=0; i<256; i++)
+		idx_nmid[i]=i;
+
+	for(i=0; i<256; i++)
+		for(j=i+1; j<256; j++)
+	{
+		if(cyc_nmid[idx_nmid[j]]>cyc_nmid[idx_nmid[i]])
+		{
+			k=idx_nmid[i];
+			idx_nmid[i]=idx_nmid[j];
+			idx_nmid[j]=k;
+		}
+	}
+
+#if 0
 	printf("Cyc/Nmid:\n");
 	for(i=0; i<64; i++)
 	{
@@ -1070,6 +1096,22 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 			printf("%8s(%10lld) ",
 				BJX2_DbgPrintNameForNmid(ctx, i*2+j),
 				cyc_nmid[i*2+j]);
+		}
+		printf("\n");
+	}
+#endif
+
+#if 1
+	printf("Cyc/Nmid:\n");
+	for(i=0; i<64; i++)
+	{
+//		printf("%2X ", i*2);
+		for(j=0; j<2; j++)
+		{
+			k=idx_nmid[i*2+j];
+			printf("%8s(%10lld) ",
+				BJX2_DbgPrintNameForNmid(ctx, k),
+				cyc_nmid[k]);
 		}
 		printf("\n");
 	}

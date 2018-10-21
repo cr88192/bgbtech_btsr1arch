@@ -1169,7 +1169,8 @@ BCCX_Node *BGBCP_DefTypeC(BGBCP_ParseState *ctx, char **str)
 			BCCX_SetCst(n, &bgbcc_rcst_name, "name", s1);
 			BCCX_AddV(n, BCCX_NewCst1V(&bgbcc_rcst_body, "body", n1));
 
-			ctx->structs=BCCX_AddEnd(ctx->structs, n);
+//			ctx->structs=BCCX_AddEnd(ctx->structs, n);
+			ctx->structs=BCCX_AddEnd2(ctx->structs, &ctx->e_structs, n);
 		}
 
 
@@ -1214,7 +1215,8 @@ BCCX_Node *BGBCP_DefTypeC(BGBCP_ParseState *ctx, char **str)
 			n=BCCX_NewCst(&bgbcc_rcst_enum, "enum");
 			BCCX_SetCst(n, &bgbcc_rcst_name, "name", s1);
 			BCCX_AddV(n, BCCX_NewCst1V(&bgbcc_rcst_defs, "defs", n1));
-			ctx->structs=BCCX_AddEnd(ctx->structs, n);
+//			ctx->structs=BCCX_AddEnd(ctx->structs, n);
+			ctx->structs=BCCX_AddEnd2(ctx->structs, &ctx->e_structs, n);
 		}
 
 		s1=BCCX_GetCst(n, &bgbcc_rcst_name, "name");
@@ -1250,9 +1252,9 @@ BCCX_Node *BGBCP_DefTypeC(BGBCP_ParseState *ctx, char **str)
 			break;
 		}
 
-		n1=BCCX_FindTag(n, "type");
+		n1=BCCX_FindTagCst(n, &bgbcc_rcst_type, "type");
 
-		n2=BCCX_FindTag(n1, "size");
+		n2=BCCX_FindTagCst(n1, &bgbcc_rcst_size, "size");
 		if(n2)
 		{
 			s1=BCCX_GetCst(n, &bgbcc_rcst_name, "name");
@@ -1529,7 +1531,8 @@ BCCX_Node *BGBCP_DefClassJ(BGBCP_ParseState *ctx, char **str)
 			n=BCCX_NewCst(&bgbcc_rcst_enum, "enum");
 			BCCX_SetCst(n, &bgbcc_rcst_name, "name", s1);
 			BCCX_AddV(n, BCCX_NewCst1V(&bgbcc_rcst_defs, "defs", n1));
-			ctx->structs=BCCX_AddEnd(ctx->structs, n);
+//			ctx->structs=BCCX_AddEnd(ctx->structs, n);
+			ctx->structs=BCCX_AddEnd2(ctx->structs, &ctx->e_structs, n);
 		}
 
 		s1=BCCX_GetCst(n, &bgbcc_rcst_name, "name");
@@ -1650,7 +1653,7 @@ BCCX_Node *BGBCP_DefTypeJ(BGBCP_ParseState *ctx, char **str)
 		n=BGBCP_LookupType(ctx, bty);
 		if(n)
 		{
-			n=BCCX_FindTag(n, "type");
+			n=BCCX_FindTagCst(n, &bgbcc_rcst_type, "type");
 			n=BCCX_Clone(n);
 			i=BCCX_GetIntCst(n, &bgbcc_rcst_flags, "flags");
 			BCCX_SetIntCst(n, &bgbcc_rcst_flags, "flags", i|fl);
@@ -1666,7 +1669,7 @@ BCCX_Node *BGBCP_DefTypeJ(BGBCP_ParseState *ctx, char **str)
 		n=BGBCP_LookupType(ctx, vty);
 		if(n)
 		{
-			n=BCCX_FindTag(n, "type");
+			n=BCCX_FindTagCst(n, &bgbcc_rcst_type, "type");
 
 			n=BCCX_Clone(n);
 			i=BCCX_GetIntCst(n, &bgbcc_rcst_flags, "flags");
@@ -1729,11 +1732,12 @@ BCCX_Node *BGBCP_EnumVarsList(BGBCP_ParseState *ctx, char **str)
 	char b[256], b2[256];
 	char *s, *s1;
 	int ty, ty2;
-	BCCX_Node *n, *n1, *lst;
+	BCCX_Node *n, *n1, *lst, *lste;
 	int i;
 
 	s=*str;
 	lst=NULL;
+	lste=NULL;
 	i=0;
 
 	while(1)
@@ -1760,7 +1764,8 @@ BCCX_Node *BGBCP_EnumVarsList(BGBCP_ParseState *ctx, char **str)
 		n=BCCX_NewCst(&bgbcc_rcst_def, "def");
 		BCCX_SetCst(n, &bgbcc_rcst_name, "name", b);
 		BCCX_SetIntCst(n, &bgbcc_rcst_value, "value", i++);
-		lst=BCCX_AddEnd(lst, n);
+//		lst=BCCX_AddEnd(lst, n);
+		lst=BCCX_AddEnd2(lst, &lste, n);
 
 		s=BGBCP_Token2(s, b, &ty, ctx->lang);
 		if(!bgbcp_strcmp1(b, ";"))break;

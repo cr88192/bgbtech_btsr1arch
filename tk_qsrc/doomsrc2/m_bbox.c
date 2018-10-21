@@ -79,6 +79,23 @@ M_AddToBox
 }
 
 
+int
+M_CheckBoxCollide
+( fixed_t	*box1,
+  fixed_t	*box2)
+{
+	if(box1[BOXTOP] < box2[BOXBOTTOM])
+		return(false);
+	if(box1[BOXBOTTOM] > box2[BOXTOP])
+		return(false);
+
+	if(box1[BOXRIGHT] < box2[BOXLEFT])
+		return(false);
+	if(box1[BOXLEFT] > box2[BOXRIGHT])
+		return(false);
+
+	return(true);
+}
 
 
 

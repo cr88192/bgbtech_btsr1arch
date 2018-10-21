@@ -226,6 +226,8 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_MOVNT		0x6B		//
 #define BJX2_NMID_CLZ		0x6C		//
 #define BJX2_NMID_CLZQ		0x6D		//
+#define BJX2_NMID_MOVDL		0x6E		//
+#define BJX2_NMID_LDI		0x6F		//
 
 
 #define BJX2_FMID_NONE			0x00		//?

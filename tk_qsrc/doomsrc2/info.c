@@ -4666,6 +4666,112 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	sfx_None,		// activesound
 	MF_NOBLOCKMAP,		// flags
 	S_NULL		// raisestate
+	},
+
+
+	{		// PolyObj
+	9300,		// doomednum
+	S_SMALLPOOL,		// spawnstate
+	100000,		// spawnhealth
+	S_NULL,		// seestate
+	sfx_None,		// seesound
+	8,		// reactiontime
+	sfx_None,		// attacksound
+	S_NULL,		// painstate
+	0,		// painchance
+	sfx_None,		// painsound
+	S_NULL,		// meleestate
+	S_NULL,		// missilestate
+	S_NULL,		// deathstate
+	S_NULL,		// xdeathstate
+	sfx_None,		// deathsound
+	0,		// speed
+	20*FRACUNIT,		// radius
+	16*FRACUNIT,		// height
+	100,		// mass
+	0,		// damage
+	sfx_None,		// activesound
+	MF_NOBLOCKMAP,		// flags
+	S_NULL		// raisestate
+	},
+
+	{		// PolyObj
+	9301,		// doomednum
+	S_SMALLPOOL,		// spawnstate
+	100000,		// spawnhealth
+	S_NULL,		// seestate
+	sfx_None,		// seesound
+	8,		// reactiontime
+	sfx_None,		// attacksound
+	S_NULL,		// painstate
+	0,		// painchance
+	sfx_None,		// painsound
+	S_NULL,		// meleestate
+	S_NULL,		// missilestate
+	S_NULL,		// deathstate
+	S_NULL,		// xdeathstate
+	sfx_None,		// deathsound
+	0,		// speed
+	120*FRACUNIT,		// radius
+	120*FRACUNIT,		// height
+	100,		// mass
+	0,		// damage
+	sfx_None,		// activesound
+	MF_SOLID|MF_SHOOTABLE|MF_NOBLOOD, //  MF_NOBLOCKMAP,		// flags
+	S_NULL		// raisestate
+	},
+
+	{		// PolyObj
+	9302,		// doomednum
+	S_SMALLPOOL,		// spawnstate
+	100000,		// spawnhealth
+	S_NULL,		// seestate
+	sfx_None,		// seesound
+	8,		// reactiontime
+	sfx_None,		// attacksound
+	S_NULL,		// painstate
+	0,		// painchance
+	sfx_None,		// painsound
+	S_NULL,		// meleestate
+	S_NULL,		// missilestate
+	S_NULL,		// deathstate
+	S_NULL,		// xdeathstate
+	sfx_None,		// deathsound
+	0,		// speed
+	120*FRACUNIT,		// radius
+	120*FRACUNIT,		// height
+	100,		// mass
+	0,		// damage
+	sfx_None,		// activesound
+	MF_SOLID|MF_SHOOTABLE|MF_NOBLOOD, // MF_NOBLOCKMAP,		// flags
+	S_NULL		// raisestate
+	},
+
+	{		// PolyObj
+	9303,		// doomednum
+	S_SMALLPOOL,		// spawnstate
+	100000,		// spawnhealth
+	S_NULL,		// seestate
+	sfx_None,		// seesound
+	8,		// reactiontime
+	sfx_None,		// attacksound
+	S_NULL,		// painstate
+	0,		// painchance
+	sfx_None,		// painsound
+	S_NULL,		// meleestate
+	S_NULL,		// missilestate
+	S_NULL,		// deathstate
+	S_NULL,		// xdeathstate
+	sfx_None,		// deathsound
+	0,		// speed
+	120*FRACUNIT,		// radius
+	120*FRACUNIT,		// height
+	100,		// mass
+	0,		// damage
+	sfx_None,		// activesound
+	MF_SOLID|MF_SHOOTABLE|MF_NOBLOOD, // MF_NOBLOCKMAP,		// flags
+	S_NULL		// raisestate
 	}
+
 };
 

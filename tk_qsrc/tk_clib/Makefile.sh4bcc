@@ -1,6 +1,11 @@
 BUILD = .
 PATH := $(BUILD):$(PATH)
 
+INST_BIN=$(USRLIB_HOME)/bin
+INST_LIB=$(USRLIB_HOME)/lib
+INST_INC=$(USRLIB_HOME)/include/bgbcc
+
+
 EXE = .elf
 BIN = .bin
 O = .o
@@ -13,10 +18,12 @@ FORCE:
 includes: FORCE
 	make -C vxcore -f Makefile.sh4bcc includes
 	cp -rf vxcore/include/*	$(BUILD)/include
+	cp -rf $(BUILD)/include/* $(INST_INC)
 
 libs: FORCE
 	make -C vxcore -f Makefile.sh4bcc libs
 	cp vxcore/*.ril		$(BUILD)
+	cp -rf $(BUILD)/*.ril $(INST_LIB)
 
 apps: libs FORCE
 	make -C vxcore -f Makefile.sh4bcc apps

@@ -139,3 +139,4 @@
 
 #define BGBCC_RIL3OP_DUPIX		0x70	//Dup with Index
 #define BGBCC_RIL3OP_DUPMIX		0x71	//Dup with Index (relative to Mark)
+#define BGBCC_RIL3OP_JMPTAB		0x72	//Jump Table

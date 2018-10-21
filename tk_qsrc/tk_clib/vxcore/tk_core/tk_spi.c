@@ -237,6 +237,12 @@ byte TKSPI_SendCmd(byte cmd, u32 arg)
 {
 	byte n, h, res;
 
+//	if(arg>>32)
+//		__debugbreak();
+		
+	if((cmd==MMC_CMD55) && (arg!=0))
+		__debugbreak();
+
 	if(cmd&0x80)
 	{
 		cmd&=0x7F;
@@ -281,6 +287,10 @@ int TKSPI_ReadSectors(byte *buf, s64 lba, int cnt)
 	byte *ct;
 	u64 la;
 	int n, h;
+
+//	if(((s32)lba)!=lba)
+	if(lba>>32)
+		__debugbreak();
 
 //	tk_printf("TKSPI_ReadSectors: %d %d\n", lba, cnt);
 

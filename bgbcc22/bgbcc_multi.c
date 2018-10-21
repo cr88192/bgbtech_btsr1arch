@@ -68,6 +68,9 @@
 
 #include "mm/cc_thread.c"
 
+#include "mm/cc_int128.c"
+#include "mm/cc_float128.c"
+
 
 #include "mm/inflate.c"
 #include "mm/deflate.c"
@@ -151,6 +154,7 @@
 #include "bsrcc/bsr_vreg.c"
 
 
+#include "jx2cc/jx2_asmdump.c"
 #include "jx2cc/jx2_binop.c"
 #include "jx2cc/jx2_bufasm.c"
 #include "jx2cc/jx2_cgif.c"

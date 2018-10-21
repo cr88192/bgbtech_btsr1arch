@@ -67,6 +67,7 @@ SRCS=				\
 		r_draw.c			\
 		r_main.c			\
 		r_plane.c		\
+		r_polyobj.c		\
 		r_segs.c			\
 		r_sky.c			\
 		r_things.c		\
@@ -80,7 +81,10 @@ SRCS=				\
 		s_sound.c		\
 		z_zone.c			\
 		info.c				\
-		sounds.c
+		sounds.c		\
+		\
+		tst_bs2a.bs		\
+		tst_cpp1a.cpp
 
 all:	 doom_bjx2.exe
 

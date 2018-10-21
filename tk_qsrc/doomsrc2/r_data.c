@@ -971,11 +971,13 @@ void R_PrecacheLevel (void)
 		for (j=0 ; j<sprites[i].numframes ; j++)
 		{
 			sf = &sprites[i].spriteframes[j];
+
 			for (k=0 ; k<8 ; k++)
 			{
-			lump = firstspritelump + sf->lump[k];
-			spritememory += lumpinfo[lump].size;
-			W_CacheLumpNum(lump , PU_CACHE);
+				lump = firstspritelump + sf->lump[k];
+				spritememory += lumpinfo[lump].size;
+
+				W_CacheLumpNum(lump , PU_CACHE);
 			}
 		}
 	}

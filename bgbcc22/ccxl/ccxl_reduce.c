@@ -40,14 +40,14 @@ int BGBCC_CCXL_BoolExpr(BGBCC_TransState *ctx, BCCX_Node *l)
 
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_cast, "cast"))
 	{
-		t=BGBCC_CCXL_ReduceExpr(ctx, BCCX_Fetch(l, "value"));
+		t=BGBCC_CCXL_ReduceExpr(ctx, BCCX_FetchCst(l, &bgbcc_rcst_value, "value"));
 		i=BGBCC_CCXL_BoolExpr(ctx, t);
 		return(i);
 	}
 
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_boolify, "boolify"))
 	{
-		t=BGBCC_CCXL_ReduceExpr(ctx, BCCX_Fetch(l, "value"));
+		t=BGBCC_CCXL_ReduceExpr(ctx, BCCX_FetchCst(l, &bgbcc_rcst_value, "value"));
 		i=BGBCC_CCXL_BoolExpr(ctx, t);
 		return(i);
 	}
@@ -77,8 +77,8 @@ int BGBCC_CCXL_IsFixIntAssignRVP(
 	if(s0)
 		return(0);
 
-	ln=BCCX_Fetch(l, "left");
-	rn=BCCX_Fetch(l, "right");
+	ln=BCCX_FetchCst(l, &bgbcc_rcst_left, "left");
+	rn=BCCX_FetchCst(l, &bgbcc_rcst_right, "right");
 	ln=BGBCC_CCXL_ReduceExpr(ctx, ln);
 	rn=BGBCC_CCXL_ReduceExpr(ctx, rn);
 
@@ -131,8 +131,8 @@ int BGBCC_CCXL_IsFixIntCompareRVP(
 	if(!strcmp(s0, "<="))op=s0;
 	if(!strcmp(s0, ">="))op=s0;
 
-	ln=BCCX_Fetch(l, "left");
-	rn=BCCX_Fetch(l, "right");
+	ln=BCCX_FetchCst(l, &bgbcc_rcst_left, "left");
+	rn=BCCX_FetchCst(l, &bgbcc_rcst_right, "right");
 	ln=BGBCC_CCXL_ReduceExpr(ctx, ln);
 	rn=BGBCC_CCXL_ReduceExpr(ctx, rn);
 
@@ -172,7 +172,7 @@ int BGBCC_CCXL_IsTagVarRVP(
 	if(!BCCX_TagIsP(l, tag))
 		return(0);
 
-	v=BCCX_Fetch(l, "value");
+	v=BCCX_FetchCst(l, &bgbcc_rcst_value, "value");
 	v=BGBCC_CCXL_ReduceExpr(ctx, v);
 
 	s0=NULL;
@@ -188,6 +188,13 @@ int BGBCC_CCXL_IsTagVarRVP(
 BCCX_Node *BGBCC_CCXL_WrapIntSuf(s64 i, char *suf)
 {
 	BCCX_Node *t;
+	
+	if(suf)
+	{
+		if(!bgbcp_strcmp1(suf, "U"))
+			i=(u32)i;
+	}
+	
 	t=BCCX_NewCst(&bgbcc_rcst_int, "int");
 	BCCX_SetIntCst(t, &bgbcc_rcst_value, "value", i);
 	if(suf)BCCX_SetCst(t, &bgbcc_rcst_tysuf, "tysuf", suf);
@@ -332,6 +339,7 @@ BCCX_Node *BGBCC_CCXL_ReduceForm(BGBCC_TransState *ctx,
 
 	if(!l)return(l);
 
+#if 0
 	if(	(BCCX_TagIsCstP(l, &bgbcc_rcst_value, "value")) ||
 		(BCCX_TagIsCstP(l, &bgbcc_rcst_left, "left")) ||
 		(BCCX_TagIsCstP(l, &bgbcc_rcst_right, "right")) ||
@@ -339,6 +347,17 @@ BCCX_Node *BGBCC_CCXL_ReduceForm(BGBCC_TransState *ctx,
 		(BCCX_TagIsCstP(l, &bgbcc_rcst_then, "then")) ||
 		(BCCX_TagIsCstP(l, &bgbcc_rcst_else, "else")) ||
 		(BCCX_TagIsCstP(l, &bgbcc_rcst_body, "body")))
+#endif
+
+#if 1
+	if(	(l->itag==bgbcc_rcst_value) ||
+		(l->itag==bgbcc_rcst_left) ||
+		(l->itag==bgbcc_rcst_right) ||
+		(l->itag==bgbcc_rcst_cond) ||
+		(l->itag==bgbcc_rcst_then) ||
+		(l->itag==bgbcc_rcst_else) ||
+		(l->itag==bgbcc_rcst_body))
+#endif
 	{
 		return(BGBCC_CCXL_ReduceForm(ctx,
 			BCCX_Child(l), flag));
@@ -348,25 +367,27 @@ BCCX_Node *BGBCC_CCXL_ReduceForm(BGBCC_TransState *ctx,
 	if(BGBCC_CCXL_IsUnaryP(ctx, l, "!"))
 	{
 		t=BGBCC_CCXL_ReduceForm(ctx,
-			BCCX_Fetch(l, "value"), flag);
+			BCCX_FetchCst(l, &bgbcc_rcst_value, "value"), flag);
 
-		if(BGBCC_CCXL_BoolExpr(ctx, t)==0)
+		i0=BGBCC_CCXL_BoolExpr(ctx, t);
+		if(i0==0)
 		{
 			BCCX_CheckDeleteUnlinked(t);
 			return(BGBCP_Number(NULL, "1"));
 		}
-		if(BGBCC_CCXL_BoolExpr(ctx, t)==1)
+		if(i0==1)
 		{
 			BCCX_CheckDeleteUnlinked(t);
 			return(BGBCP_Number(NULL, "0"));
 		}
 
-		ln=BCCX_Fetch(t, "left");
-		rn=BCCX_Fetch(t, "right");
+		ln=BCCX_FetchCst(t, &bgbcc_rcst_left, "left");
+		rn=BCCX_FetchCst(t, &bgbcc_rcst_right, "right");
 
 		ln=BGBCC_CCXL_ReduceForm(ctx, ln, flag);
 		rn=BGBCC_CCXL_ReduceForm(ctx, rn, flag);
 
+#if 0
 		x=NULL;
 		if(BGBCC_CCXL_IsBinaryP(ctx, t, "=="))
 			x=BGBCP_BinaryExpr("!=", ln, rn);
@@ -384,6 +405,40 @@ BCCX_Node *BGBCC_CCXL_ReduceForm(BGBCC_TransState *ctx,
 			x=BGBCP_BinaryExpr(">", ln, rn);
 		if(BGBCC_CCXL_IsBinaryP(ctx, t, ">="))
 			x=BGBCP_BinaryExpr("<", ln, rn);
+#endif
+
+#if 1
+		x=NULL;
+		if(BCCX_TagIsCstP(t, &bgbcc_rcst_binary, "binary"))
+		{
+			s=BCCX_GetCst(t, &bgbcc_rcst_op, "op");
+
+//			if(!strcmp(s, "=="))
+			if(!bgbcp_strcmp2(s, "=="))
+				x=BGBCP_BinaryExpr("!=", ln, rn);
+//			if(!strcmp(s, "!="))
+			if(!bgbcp_strcmp2(s, "!="))
+				x=BGBCP_BinaryExpr("==", ln, rn);
+//			if(!strcmp(s, "==="))
+			if(!bgbcp_strcmp3(s, "==="))
+				x=BGBCP_BinaryExpr("!==", ln, rn);
+//			if(!strcmp(s, "!=="))
+			if(!bgbcp_strcmp3(s, "!=="))
+				x=BGBCP_BinaryExpr("===", ln, rn);
+//			if(!strcmp(s, "<"))
+			if(!bgbcp_strcmp1(s, "<"))
+				x=BGBCP_BinaryExpr(">=", ln, rn);
+//			if(!strcmp(s, ">"))
+			if(!bgbcp_strcmp1(s, ">"))
+				x=BGBCP_BinaryExpr("<=", ln, rn);
+//			if(!strcmp(s, "<="))
+			if(!bgbcp_strcmp2(s, "<="))
+				x=BGBCP_BinaryExpr(">", ln, rn);
+//			if(!strcmp(s, ">="))
+			if(!bgbcp_strcmp2(s, ">="))
+				x=BGBCP_BinaryExpr("<", ln, rn);
+		}
+#endif
 
 		BCCX_CheckDeleteUnlinked(t);
 		t=NULL;
@@ -398,25 +453,38 @@ BCCX_Node *BGBCC_CCXL_ReduceForm(BGBCC_TransState *ctx,
 
 	if(BGBCC_CCXL_IsBinaryP(ctx, l, "&&"))
 	{
-		ln=BGBCC_CCXL_ReduceForm(ctx, BCCX_Fetch(l, "left"), flag);
-		rn=BGBCC_CCXL_ReduceForm(ctx, BCCX_Fetch(l, "right"), flag);
+		ln=BGBCC_CCXL_ReduceForm(ctx,
+			BCCX_FetchCst(l, &bgbcc_rcst_left, "left"), flag);
+		rn=BGBCC_CCXL_ReduceForm(ctx,
+			BCCX_FetchCst(l, &bgbcc_rcst_right, "right"), flag);
 
-		if((BGBCC_CCXL_BoolExpr(ctx, ln)==0) ||
-			(BGBCC_CCXL_BoolExpr(ctx, rn)==0))
+		i0=BGBCC_CCXL_BoolExpr(ctx, ln);
+		i1=BGBCC_CCXL_BoolExpr(ctx, rn);
+
+		if((i0==0) || (i1==0))
 		{
 			BCCX_CheckDeleteUnlinked(ln);
 			BCCX_CheckDeleteUnlinked(rn);
-			return(BGBCP_Number(NULL, "0"));
+//			return(BGBCP_Number(NULL, "0"));
+			return(BGBCC_CCXL_WrapInt(0));
 		}
 
-		if(BGBCC_CCXL_BoolExpr(ctx, ln)==1)
+		if((i0==1) && (i1==1))
+		{
+			BCCX_CheckDeleteUnlinked(ln);
+			BCCX_CheckDeleteUnlinked(rn);
+//			return(BGBCP_Number(NULL, "1"));
+			return(BGBCC_CCXL_WrapInt(1));
+		}
+
+		if(i0==1)
 		{
 			BCCX_CheckDeleteUnlinked(ln);
 			t=BGBCC_CCXL_Boolify(ctx, rn);
 			return(t);
 		}
 
-		if(BGBCC_CCXL_BoolExpr(ctx, rn)==1)
+		if(i1==1)
 		{
 			BCCX_CheckDeleteUnlinked(rn);
 			t=BGBCC_CCXL_Boolify(ctx, ln);
@@ -429,25 +497,38 @@ BCCX_Node *BGBCC_CCXL_ReduceForm(BGBCC_TransState *ctx,
 
 	if(BGBCC_CCXL_IsBinaryP(ctx, l, "||"))
 	{
-		ln=BGBCC_CCXL_ReduceForm(ctx, BCCX_Fetch(l, "left"), flag);
-		rn=BGBCC_CCXL_ReduceForm(ctx, BCCX_Fetch(l, "right"), flag);
+		ln=BGBCC_CCXL_ReduceForm(ctx,
+			BCCX_FetchCst(l, &bgbcc_rcst_left, "left"), flag);
+		rn=BGBCC_CCXL_ReduceForm(ctx,
+			BCCX_FetchCst(l, &bgbcc_rcst_right, "right"), flag);
 
-		if((BGBCC_CCXL_BoolExpr(ctx, ln)==1) ||
-			(BGBCC_CCXL_BoolExpr(ctx, rn)==1))
+		i0=BGBCC_CCXL_BoolExpr(ctx, ln);
+		i1=BGBCC_CCXL_BoolExpr(ctx, rn);
+
+		if((i0==1) || (i1==1))
 		{
 			BCCX_CheckDeleteUnlinked(ln);
 			BCCX_CheckDeleteUnlinked(rn);
-			return(BGBCP_Number(NULL, "1"));
+//			return(BGBCP_Number(NULL, "1"));
+			return(BGBCC_CCXL_WrapInt(1));
 		}
 
-		if(BGBCC_CCXL_BoolExpr(ctx, ln)==0)
+		if((i0==0) && (i1==0))
+		{
+			BCCX_CheckDeleteUnlinked(ln);
+			BCCX_CheckDeleteUnlinked(rn);
+//			return(BGBCP_Number(NULL, "0"));
+			return(BGBCC_CCXL_WrapInt(0));
+		}
+
+		if(i0==0)
 		{
 			BCCX_CheckDeleteUnlinked(ln);
 			t=BGBCC_CCXL_Boolify(ctx, rn);
 			return(t);
 		}
 
-		if(BGBCC_CCXL_BoolExpr(ctx, rn)==0)
+		if(i1==0)
 		{
 			BCCX_CheckDeleteUnlinked(rn);
 			t=BGBCC_CCXL_Boolify(ctx, ln);
@@ -460,7 +541,8 @@ BCCX_Node *BGBCC_CCXL_ReduceForm(BGBCC_TransState *ctx,
 
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_unary, "unary"))
 	{
-		t=BGBCC_CCXL_ReduceForm(ctx, BCCX_Fetch(l, "value"), flag);
+		t=BGBCC_CCXL_ReduceForm(ctx,
+			BCCX_FetchCst(l, &bgbcc_rcst_value, "value"), flag);
 
 		if(BGBCC_CCXL_IsCharP(ctx, t))
 		{
@@ -476,24 +558,29 @@ BCCX_Node *BGBCC_CCXL_ReduceForm(BGBCC_TransState *ctx,
 		if(BGBCC_CCXL_IsIntP(ctx, t))
 		{
 			i=BCCX_GetIntCst(t, &bgbcc_rcst_value, "value");
-			suf=BCCX_GetCst(l, &bgbcc_rcst_tysuf, "tysuf");
+//			suf=BCCX_GetCst(l, &bgbcc_rcst_tysuf, "tysuf");
+			suf=BCCX_GetCst(t, &bgbcc_rcst_tysuf, "tysuf");
 
-			if(!strcmp(s, "+"))
+//			if(!strcmp(s, "+"))
+			if(!bgbcp_strcmp1(s, "+"))
 			{
 				BCCX_CheckDeleteUnlinked(t);
 				return(BGBCC_CCXL_WrapIntSuf(i, suf));
 			}
-			if(!strcmp(s, "-"))
+//			if(!strcmp(s, "-"))
+			if(!bgbcp_strcmp1(s, "-"))
 			{
 				BCCX_CheckDeleteUnlinked(t);
 				return(BGBCC_CCXL_WrapIntSuf(-i, suf));
 			}
-			if(!strcmp(s, "~"))
+//			if(!strcmp(s, "~"))
+			if(!bgbcp_strcmp1(s, "~"))
 			{
 				BCCX_CheckDeleteUnlinked(t);
 				return(BGBCC_CCXL_WrapIntSuf(~i, suf));
 			}
-			if(!strcmp(s, "!"))
+//			if(!strcmp(s, "!"))
+			if(!bgbcp_strcmp1(s, "!"))
 			{
 				BCCX_CheckDeleteUnlinked(t);
 				return(BGBCC_CCXL_WrapInt(!i));
@@ -504,17 +591,20 @@ BCCX_Node *BGBCC_CCXL_ReduceForm(BGBCC_TransState *ctx,
 		{
 			f=BCCX_GetFloatCst(t, &bgbcc_rcst_value, "value");
 			suf=BCCX_GetCst(l, &bgbcc_rcst_tysuf, "tysuf");
-			if(!strcmp(s, "+"))
+//			if(!strcmp(s, "+"))
+			if(!bgbcp_strcmp1(s, "+"))
 			{
 				BCCX_CheckDeleteUnlinked(t);
 				return(BGBCC_CCXL_WrapRealSuf(f, suf));
 			}
-			if(!strcmp(s, "-"))
+//			if(!strcmp(s, "-"))
+			if(!bgbcp_strcmp1(s, "-"))
 			{
 				BCCX_CheckDeleteUnlinked(t);
 				return(BGBCC_CCXL_WrapRealSuf(-f, suf));
 			}
-			if(!strcmp(s, "!"))
+//			if(!strcmp(s, "!"))
+			if(!bgbcp_strcmp1(s, "!"))
 			{
 				BCCX_CheckDeleteUnlinked(t);
 				return(BGBCC_CCXL_WrapInt(f!=0));
@@ -527,8 +617,8 @@ BCCX_Node *BGBCC_CCXL_ReduceForm(BGBCC_TransState *ctx,
 
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_binary, "binary"))
 	{
-		ln=BCCX_Fetch(l, "left");
-		rn=BCCX_Fetch(l, "right");
+		ln=BCCX_FetchCst(l, &bgbcc_rcst_left, "left");
+		rn=BCCX_FetchCst(l, &bgbcc_rcst_right, "right");
 
 		ln=BGBCC_CCXL_ReduceForm(ctx, ln, flag);
 		rn=BGBCC_CCXL_ReduceForm(ctx, rn, flag);
@@ -558,135 +648,187 @@ BCCX_Node *BGBCC_CCXL_ReduceForm(BGBCC_TransState *ctx,
 			i=BCCX_GetIntCst(ln, &bgbcc_rcst_value, "value");
 			j=BCCX_GetIntCst(rn, &bgbcc_rcst_value, "value");
 
-			if(!strcmp(s, "=="))
+			suf=BGBCC_CCXL_BinaryTySuf(ctx, s, ln, rn);
+
+//			if(!strcmp(s, "=="))
+			if(!bgbcp_strcmp2(s, "=="))
 			{
 				BCCX_CheckDeleteUnlinked(ln);
 				BCCX_CheckDeleteUnlinked(rn);
 				return(BGBCC_CCXL_WrapInt(i==j));
 			}
-			if(!strcmp(s, "!="))
+//			if(!strcmp(s, "!="))
+			if(!bgbcp_strcmp2(s, "!="))
 			{
 				BCCX_CheckDeleteUnlinked(ln);
 				BCCX_CheckDeleteUnlinked(rn);
 				return(BGBCC_CCXL_WrapInt(i!=j));
 			}
-			if(!strcmp(s, "==="))
+//			if(!strcmp(s, "==="))
+			if(!bgbcp_strcmp3(s, "==="))
 			{
 				BCCX_CheckDeleteUnlinked(ln);
 				BCCX_CheckDeleteUnlinked(rn);
 				return(BGBCC_CCXL_WrapInt(i==j));
 			}
-			if(!strcmp(s, "!=="))
+//			if(!strcmp(s, "!=="))
+			if(!bgbcp_strcmp3(s, "!=="))
 			{
 				BCCX_CheckDeleteUnlinked(ln);
 				BCCX_CheckDeleteUnlinked(rn);
 				return(BGBCC_CCXL_WrapInt(i!=j));
 			}
-			if(!strcmp(s, "<="))
+//			if(!strcmp(s, "<="))
+			if(!bgbcp_strcmp2(s, "<="))
 			{
 				BCCX_CheckDeleteUnlinked(ln);
 				BCCX_CheckDeleteUnlinked(rn);
+				if(suf && (*suf=='U'))
+					{ return(BGBCC_CCXL_WrapInt(((u64)i)<=((u64)j))); }
 				return(BGBCC_CCXL_WrapInt(i<=j));
 			}
-			if(!strcmp(s, ">="))
+//			if(!strcmp(s, ">="))
+			if(!bgbcp_strcmp2(s, ">="))
 			{
 				BCCX_CheckDeleteUnlinked(ln);
 				BCCX_CheckDeleteUnlinked(rn);
+				if(suf && (*suf=='U'))
+					{ return(BGBCC_CCXL_WrapInt(((u64)i)>=((u64)j))); }
 				return(BGBCC_CCXL_WrapInt(i>=j));
 			}
-			if(!strcmp(s, "<"))
+//			if(!strcmp(s, "<"))
+			if(!bgbcp_strcmp1(s, "<"))
 			{
 				BCCX_CheckDeleteUnlinked(ln);
 				BCCX_CheckDeleteUnlinked(rn);
+				if(suf && (*suf=='U'))
+					{ return(BGBCC_CCXL_WrapInt(((u64)i)<((u64)j))); }
 				return(BGBCC_CCXL_WrapInt(i<j));
 			}
-			if(!strcmp(s, ">"))
+//			if(!strcmp(s, ">"))
+			if(!bgbcp_strcmp1(s, ">"))
 			{
 				BCCX_CheckDeleteUnlinked(ln);
 				BCCX_CheckDeleteUnlinked(rn);
+				if(suf && (*suf=='U'))
+					{ return(BGBCC_CCXL_WrapInt(((u64)i)>((u64)j))); }
 				return(BGBCC_CCXL_WrapInt(i>j));
 			}
 
-			suf=BGBCC_CCXL_BinaryTySuf(ctx, s, ln, rn);
-			if(!strcmp(s, "+"))
+//			if(!strcmp(s, "+"))
+			if(!bgbcp_strcmp1(s, "+"))
 			{
 				BCCX_CheckDeleteUnlinked(ln);
 				BCCX_CheckDeleteUnlinked(rn);
 				return(BGBCC_CCXL_WrapIntSuf(i+j, suf));
 			}
-			if(!strcmp(s, "-"))
+//			if(!strcmp(s, "-"))
+			if(!bgbcp_strcmp1(s, "-"))
 			{
 				BCCX_CheckDeleteUnlinked(ln);
 				BCCX_CheckDeleteUnlinked(rn);
 				return(BGBCC_CCXL_WrapIntSuf(i-j, suf));
 			}
-			if(!strcmp(s, "*"))
+//			if(!strcmp(s, "*"))
+			if(!bgbcp_strcmp1(s, "*"))
 			{
 				BCCX_CheckDeleteUnlinked(ln);
 				BCCX_CheckDeleteUnlinked(rn);
 				return(BGBCC_CCXL_WrapIntSuf(i*j, suf));
 			}
-			if(!strcmp(s, "/"))
+//			if(!strcmp(s, "/"))
+			if(!bgbcp_strcmp1(s, "/"))
 			{
 				BCCX_CheckDeleteUnlinked(ln);
 				BCCX_CheckDeleteUnlinked(rn);
+
+				if(!j)
+					return(BGBCP_WrapIntSuf(0, suf));				
+				if(suf && (*suf=='U'))
+				{
+					return(BGBCC_CCXL_WrapIntSuf(((u64)i)/((u64)j), suf));
+				}
+
 				return(BGBCC_CCXL_WrapIntSuf(i/j, suf));
 			}
-			if(!strcmp(s, "%"))
+//			if(!strcmp(s, "%"))
+			if(!bgbcp_strcmp1(s, "%"))
 			{
 				BCCX_CheckDeleteUnlinked(ln);
 				BCCX_CheckDeleteUnlinked(rn);
+
+				if(!j)
+					return(BGBCP_WrapIntSuf(0, suf));				
+				if(suf && (*suf=='U'))
+				{
+					return(BGBCC_CCXL_WrapIntSuf(((u64)i)%((u64)j), suf));
+				}
+
 				return(BGBCC_CCXL_WrapIntSuf(i%j, suf));
 			}
 
-			if(!strcmp(s, "&"))
+//			if(!strcmp(s, "&"))
+			if(!bgbcp_strcmp1(s, "&"))
 			{
 				BCCX_CheckDeleteUnlinked(ln);
 				BCCX_CheckDeleteUnlinked(rn);
 				return(BGBCC_CCXL_WrapIntSuf(i&j, suf));
 			}
-			if(!strcmp(s, "|"))
+//			if(!strcmp(s, "|"))
+			if(!bgbcp_strcmp1(s, "|"))
 			{
 				BCCX_CheckDeleteUnlinked(ln);
 				BCCX_CheckDeleteUnlinked(rn);
 				return(BGBCC_CCXL_WrapIntSuf(i|j, suf));
 			}
-			if(!strcmp(s, "^"))
+//			if(!strcmp(s, "^"))
+			if(!bgbcp_strcmp1(s, "^"))
 			{
 				BCCX_CheckDeleteUnlinked(ln);
 				BCCX_CheckDeleteUnlinked(rn);
 				return(BGBCC_CCXL_WrapIntSuf(i^j, suf));
 			}
-			if(!strcmp(s, "\\"))
+//			if(!strcmp(s, "\\"))
+			if(!bgbcp_strcmp1(s, "\\"))
 			{
 				BCCX_CheckDeleteUnlinked(ln);
 				BCCX_CheckDeleteUnlinked(rn);
 				return(BGBCC_CCXL_WrapIntSuf(i/j, suf));
 			}
 
-			if(!strcmp(s, "&&"))
+//			if(!strcmp(s, "&&"))
+			if(!bgbcp_strcmp2(s, "&&"))
 			{
 				BCCX_CheckDeleteUnlinked(ln);
 				BCCX_CheckDeleteUnlinked(rn);
 				return(BGBCC_CCXL_WrapInt(i&&j));
 			}
-			if(!strcmp(s, "||"))
+//			if(!strcmp(s, "||"))
+			if(!bgbcp_strcmp2(s, "||"))
 			{
 				BCCX_CheckDeleteUnlinked(ln);
 				BCCX_CheckDeleteUnlinked(rn);
 				return(BGBCC_CCXL_WrapInt(i||j));
 			}
 
-			if(!strcmp(s, "<<"))
+//			if(!strcmp(s, "<<"))
+			if(!bgbcp_strcmp2(s, "<<"))
 			{
 				BCCX_CheckDeleteUnlinked(ln);
 				BCCX_CheckDeleteUnlinked(rn);
 				return(BGBCC_CCXL_WrapIntSuf(i<<j, suf));
 			}
-			if(!strcmp(s, ">>"))
+//			if(!strcmp(s, ">>"))
+			if(!bgbcp_strcmp2(s, ">>"))
 			{
 				BCCX_CheckDeleteUnlinked(ln);
 				BCCX_CheckDeleteUnlinked(rn);
+
+				if(suf && (*suf=='U'))
+				{
+					return(BGBCC_CCXL_WrapIntSuf(((u64)i)>>j, suf));
+				}
+
 				return(BGBCC_CCXL_WrapIntSuf(i>>j, suf));
 			}
 		}
@@ -696,49 +838,57 @@ BCCX_Node *BGBCC_CCXL_ReduceForm(BGBCC_TransState *ctx,
 			f=BCCX_GetFloatCst(ln, &bgbcc_rcst_value, "value");
 			g=BCCX_GetFloatCst(rn, &bgbcc_rcst_value, "value");
 
-			if(!strcmp(s, "=="))
+//			if(!strcmp(s, "=="))
+			if(!bgbcp_strcmp2(s, "=="))
 			{
 				BCCX_CheckDeleteUnlinked(ln);
 				BCCX_CheckDeleteUnlinked(rn);
 				return(BGBCC_CCXL_WrapInt(f==g));
 			}
-			if(!strcmp(s, "!="))
+//			if(!strcmp(s, "!="))
+			if(!bgbcp_strcmp2(s, "!="))
 			{
 				BCCX_CheckDeleteUnlinked(ln);
 				BCCX_CheckDeleteUnlinked(rn);
 				return(BGBCC_CCXL_WrapInt(f!=g));
 			}
-			if(!strcmp(s, "==="))
+//			if(!strcmp(s, "==="))
+			if(!bgbcp_strcmp3(s, "==="))
 			{
 				BCCX_CheckDeleteUnlinked(ln);
 				BCCX_CheckDeleteUnlinked(rn);
 				return(BGBCC_CCXL_WrapInt(f==g));
 			}
-			if(!strcmp(s, "!=="))
+//			if(!strcmp(s, "!=="))
+			if(!bgbcp_strcmp3(s, "!=="))
 			{
 				BCCX_CheckDeleteUnlinked(ln);
 				BCCX_CheckDeleteUnlinked(rn);
 				return(BGBCC_CCXL_WrapInt(f!=g));
 			}
-			if(!strcmp(s, "<="))
+//			if(!strcmp(s, "<="))
+			if(!bgbcp_strcmp2(s, "<="))
 			{
 				BCCX_CheckDeleteUnlinked(ln);
 				BCCX_CheckDeleteUnlinked(rn);
 				return(BGBCC_CCXL_WrapInt(f<=g));
 			}
-			if(!strcmp(s, ">="))
+//			if(!strcmp(s, ">="))
+			if(!bgbcp_strcmp2(s, ">="))
 			{
 				BCCX_CheckDeleteUnlinked(ln);
 				BCCX_CheckDeleteUnlinked(rn);
 				return(BGBCC_CCXL_WrapInt(f>=g));
 			}
-			if(!strcmp(s, "<"))
+//			if(!strcmp(s, "<"))
+			if(!bgbcp_strcmp1(s, "<"))
 			{
 				BCCX_CheckDeleteUnlinked(ln);
 				BCCX_CheckDeleteUnlinked(rn);
 				return(BGBCC_CCXL_WrapInt(f<g));
 			}
-			if(!strcmp(s, ">"))
+//			if(!strcmp(s, ">"))
+			if(!bgbcp_strcmp1(s, ">"))
 			{
 				BCCX_CheckDeleteUnlinked(ln);
 				BCCX_CheckDeleteUnlinked(rn);
@@ -747,31 +897,36 @@ BCCX_Node *BGBCC_CCXL_ReduceForm(BGBCC_TransState *ctx,
 
 			suf=BGBCC_CCXL_BinaryTySuf(ctx, s, ln, rn);
 
-			if(!strcmp(s, "+"))
+//			if(!strcmp(s, "+"))
+			if(!bgbcp_strcmp1(s, "+"))
 			{
 				BCCX_CheckDeleteUnlinked(ln);
 				BCCX_CheckDeleteUnlinked(rn);
 				return(BGBCC_CCXL_WrapRealSuf(f+g, suf));
 			}
-			if(!strcmp(s, "-"))
+//			if(!strcmp(s, "-"))
+			if(!bgbcp_strcmp1(s, "-"))
 			{
 				BCCX_CheckDeleteUnlinked(ln);
 				BCCX_CheckDeleteUnlinked(rn);
 				return(BGBCC_CCXL_WrapRealSuf(f-g, suf));
 			}
-			if(!strcmp(s, "*"))
+//			if(!strcmp(s, "*"))
+			if(!bgbcp_strcmp1(s, "*"))
 			{
 				BCCX_CheckDeleteUnlinked(ln);
 				BCCX_CheckDeleteUnlinked(rn);
 				return(BGBCC_CCXL_WrapRealSuf(f*g, suf));
 			}
-			if(!strcmp(s, "/"))
+//			if(!strcmp(s, "/"))
+			if(!bgbcp_strcmp1(s, "/"))
 			{
 				BCCX_CheckDeleteUnlinked(ln);
 				BCCX_CheckDeleteUnlinked(rn);
 				return(BGBCC_CCXL_WrapRealSuf(f/g, suf));
 			}
-			if(!strcmp(s, "\\"))
+//			if(!strcmp(s, "\\"))
+			if(!bgbcp_strcmp1(s, "\\"))
 			{
 				BCCX_CheckDeleteUnlinked(ln);
 				BCCX_CheckDeleteUnlinked(rn);
@@ -786,27 +941,27 @@ BCCX_Node *BGBCC_CCXL_ReduceForm(BGBCC_TransState *ctx,
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_if, "if"))
 	{
 		t=BGBCC_CCXL_ReduceForm(ctx,
-			BCCX_Fetch(l, "cond"), flag);
+			BCCX_FetchCst(l, &bgbcc_rcst_cond, "cond"), flag);
 		i=BGBCC_CCXL_BoolExpr(ctx, t);
 		if(i==1)
 		{
 			BCCX_CheckDeleteUnlinked(t);
 
 			t=BGBCC_CCXL_ReduceForm(ctx,
-				BCCX_Fetch(l, "then"), flag);
+				BCCX_FetchCst(l, &bgbcc_rcst_then, "then"), flag);
 			return(t);
 		}
 		if(i==0)
 		{
 			BCCX_CheckDeleteUnlinked(t);
 
-			t=BCCX_Fetch(l, "else");
+			t=BCCX_FetchCst(l, &bgbcc_rcst_else, "else");
 			if(t)t=BGBCC_CCXL_ReduceForm(ctx, t, flag);
 			return(t);
 		}
 
-		ln=BCCX_Fetch(l, "then");
-		rn=BCCX_Fetch(l, "else");
+		ln=BCCX_FetchCst(l, &bgbcc_rcst_then, "then");
+		rn=BCCX_FetchCst(l, &bgbcc_rcst_else, "else");
 
 		ln=BGBCC_CCXL_ReduceForm(ctx, ln, flag);
 		rn=BGBCC_CCXL_ReduceForm(ctx, rn, flag);
@@ -920,11 +1075,11 @@ BCCX_Node *BGBCC_CCXL_ReduceForm(BGBCC_TransState *ctx,
 
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_sizeof, "sizeof"))
 	{
-		t=BCCX_FindTag(l, "type");
+		t=BCCX_FindTagCst(l, &bgbcc_rcst_type, "type");
 		if(!t)
 		{
-			t=BCCX_Fetch(l, "tyexpr");
-			if(t)t=BCCX_FindTag(t, "type");
+			t=BCCX_FetchCst(l, &bgbcc_rcst_tyexpr, "tyexpr");
+			if(t)t=BCCX_FindTagCst(t, &bgbcc_rcst_type, "type");
 		}
 
 		if(ctx && t)
@@ -945,7 +1100,7 @@ BCCX_Node *BGBCC_CCXL_ReduceForm(BGBCC_TransState *ctx,
 
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_sizeof_expr, "sizeof_expr"))
 	{
-		t=BCCX_Fetch(l, "value");
+		t=BCCX_FetchCst(l, &bgbcc_rcst_value, "value");
 
 		if(BGBCC_CCXL_IsUnaryP(ctx, t, "&"))
 		{
@@ -985,7 +1140,7 @@ BCCX_Node *BGBCC_CCXL_ReduceForm(BGBCC_TransState *ctx,
 
 		if(BCCX_TagIsCstP(t, &bgbcc_rcst_loadindex, "loadindex"))
 		{
-			t=BCCX_Fetch(t, "array");
+			t=BCCX_FetchCst(t, &bgbcc_rcst_array, "array");
 			if(BCCX_TagIsCstP(t, &bgbcc_rcst_ref, "ref"))
 			{
 				s=BCCX_GetCst(t, &bgbcc_rcst_name, "name");
@@ -1018,10 +1173,10 @@ BCCX_Node *BGBCC_CCXL_ReduceForm(BGBCC_TransState *ctx,
 
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_cast, "cast"))
 	{
-		t=BGBCC_CCXL_ReduceExpr(ctx, BCCX_Fetch(l, "value"));
+		t=BGBCC_CCXL_ReduceExpr(ctx, BCCX_FetchCst(l, &bgbcc_rcst_value, "value"));
 		if(BGBCC_CCXL_IsIntP(ctx, t))
 		{
-			s0=BGBCC_CCXL_VarTypeString(ctx, BCCX_FindTag(l, "type"));
+			s0=BGBCC_CCXL_VarTypeString(ctx, BCCX_FindTagCst(l, &bgbcc_rcst_type, "type"));
 			i=BCCX_GetIntCst(t, &bgbcc_rcst_value, "value");
 			f=i;
 
@@ -1045,7 +1200,7 @@ BCCX_Node *BGBCC_CCXL_ReduceForm(BGBCC_TransState *ctx,
 
 		if(BGBCC_CCXL_IsRealP(ctx, t))
 		{
-			s0=BGBCC_CCXL_VarTypeString(ctx, BCCX_FindTag(l, "type"));
+			s0=BGBCC_CCXL_VarTypeString(ctx, BCCX_FindTagCst(l, &bgbcc_rcst_type, "type"));
 			f=BCCX_GetFloatCst(t, &bgbcc_rcst_value, "value");
 			i=f;
 
@@ -1099,23 +1254,23 @@ BCCX_Node *BGBCC_CCXL_ReduceStatementForm(BGBCC_TransState *ctx,
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_if, "if"))
 	{
 		t=BGBCC_CCXL_ReduceForm(ctx,
-			BCCX_Fetch(l, "cond"), flag);
+			BCCX_FetchCst(l, &bgbcc_rcst_cond, "cond"), flag);
 		i=BGBCC_CCXL_BoolExpr(ctx, t);
 		if(i==1)
 		{
 			t=BGBCC_CCXL_ReduceStatementForm(ctx,
-				BCCX_Fetch(l, "then"), flag);
+				BCCX_FetchCst(l, &bgbcc_rcst_then, "then"), flag);
 			return(t);
 		}
 		if(i==0)
 		{
-			t=BCCX_Fetch(l, "else");
+			t=BCCX_FetchCst(l, &bgbcc_rcst_else, "else");
 			if(t)t=BGBCC_CCXL_ReduceStatementForm(ctx, t, flag);
 			return(t);
 		}
 
-		ln=BCCX_Fetch(l, "then");
-		rn=BCCX_Fetch(l, "else");
+		ln=BCCX_FetchCst(l, &bgbcc_rcst_then, "then");
+		rn=BCCX_FetchCst(l, &bgbcc_rcst_else, "else");
 
 		ln=BGBCC_CCXL_ReduceStatementForm(ctx, ln, flag);
 		rn=BGBCC_CCXL_ReduceStatementForm(ctx, rn, flag);
@@ -1153,7 +1308,7 @@ BCCX_Node *BGBCC_CCXL_ReduceStatementForm(BGBCC_TransState *ctx,
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_while, "while"))
 	{
 		t=BGBCC_CCXL_ReduceForm(ctx,
-			BCCX_Fetch(l, "cond"), flag);
+			BCCX_FetchCst(l, &bgbcc_rcst_cond, "cond"), flag);
 		i=BGBCC_CCXL_BoolExpr(ctx, t);
 		if(i==0)
 		{
@@ -1161,7 +1316,7 @@ BCCX_Node *BGBCC_CCXL_ReduceStatementForm(BGBCC_TransState *ctx,
 		}
 
 		v=BGBCC_CCXL_ReduceStatementForm(ctx,
-			BCCX_Fetch(l, "body"), flag);
+			BCCX_FetchCst(l, &bgbcc_rcst_body, "body"), flag);
 		if(!v)return(NULL);
 
 		x=BCCX_New2("while",
@@ -1175,17 +1330,17 @@ BCCX_Node *BGBCC_CCXL_ReduceStatementForm(BGBCC_TransState *ctx,
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_do_while, "do_while"))
 	{
 		t=BGBCC_CCXL_ReduceForm(ctx,
-			BCCX_Fetch(l, "cond"), flag);
+			BCCX_FetchCst(l, &bgbcc_rcst_cond, "cond"), flag);
 		i=BGBCC_CCXL_BoolExpr(ctx, t);
 		if(i==0)
 		{
 			v=BGBCC_CCXL_ReduceStatementForm(ctx,
-				BCCX_Fetch(l, "body"), flag);
+				BCCX_FetchCst(l, &bgbcc_rcst_body, "body"), flag);
 			return(v);
 		}
 
 		v=BGBCC_CCXL_ReduceStatementForm(ctx,
-			BCCX_Fetch(l, "body"), flag);
+			BCCX_FetchCst(l, &bgbcc_rcst_body, "body"), flag);
 		if(!v)return(NULL);
 
 		x=BCCX_New2("do_while",
@@ -1198,19 +1353,22 @@ BCCX_Node *BGBCC_CCXL_ReduceStatementForm(BGBCC_TransState *ctx,
 
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_for, "for"))
 	{
-		t=BGBCC_CCXL_ReduceForm(ctx, BCCX_Fetch(l, "cond"), flag);
+		t=BGBCC_CCXL_ReduceForm(ctx, BCCX_FetchCst(l, &bgbcc_rcst_cond, "cond"), flag);
 		i=BGBCC_CCXL_BoolExpr(ctx, t);
 		if(i==0)
 		{
 			ln=BGBCC_CCXL_ReduceStatementForm(ctx,
-				BCCX_Fetch(l, "init"), flag);
+				BCCX_FetchCst(l, &bgbcc_rcst_init, "init"), flag);
 			return(ln);
 		}
 
-		ln=BGBCC_CCXL_ReduceStatementForm(ctx, BCCX_Fetch(l, "init"), flag);
-		rn=BGBCC_CCXL_ReduceStatementForm(ctx, BCCX_Fetch(l, "step"), flag);
+		ln=BGBCC_CCXL_ReduceStatementForm(ctx,
+			BCCX_FetchCst(l, &bgbcc_rcst_init, "init"), flag);
+		rn=BGBCC_CCXL_ReduceStatementForm(ctx,
+			BCCX_FetchCst(l, &bgbcc_rcst_step, "step"), flag);
 
-		v=BGBCC_CCXL_ReduceStatementForm(ctx, BCCX_Fetch(l, "body"), flag);
+		v=BGBCC_CCXL_ReduceStatementForm(ctx,
+			BCCX_FetchCst(l, &bgbcc_rcst_body, "body"), flag);
 
 		x=BCCX_New4("for",
 			BCCX_NewCst1(&bgbcc_rcst_init, "init", ln),

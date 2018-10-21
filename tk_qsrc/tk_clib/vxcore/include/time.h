@@ -18,6 +18,7 @@
 
 typedef unsigned int clock_t;
 
+#if 0
 #ifndef __SIZE_T_DEFINED
 #define __SIZE_T_DEFINED
 #if (defined(__OS2__) || defined(__32BIT__) || defined(__MVS__) \
@@ -27,6 +28,14 @@ typedef unsigned long size_t;
     || defined(__WIN32__) || defined(__gnu_linux__))
 typedef unsigned int size_t;
 #endif
+#endif
+#endif
+
+#ifndef __SIZE_T_DEFINED
+#define __SIZE_T_DEFINED
+// typedef unsigned int size_t;
+// typedef long size_t;
+typedef unsigned long size_t;
 #endif
 
 #ifndef _TIME_T_DEFINED

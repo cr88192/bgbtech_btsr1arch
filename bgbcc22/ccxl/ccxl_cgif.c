@@ -284,8 +284,79 @@ ccxl_status BGBCC_CCXL_EmitCallArg(BGBCC_TransState *ctx,
 		{ BGBCC_DBGBREAK }
 
 	op=ctx->vop[ctx->n_vop-1];
+
+	if(op->opn!=CCXL_VOP_CALL)
+		{ BGBCC_DBGBREAK }
+
 	i=op->imm.call.ca++;
 	op->imm.call.args[i]=reg;
+	return(0);
+}
+
+ccxl_status BGBCC_CCXL_EmitJmpTab(BGBCC_TransState *ctx,
+	ccxl_type type, ccxl_register src,
+	int clm, int cln, ccxl_label *clbl, s64 *clv,
+	ccxl_label dfl, ccxl_label dfl2)
+{
+	BGBCC_CCXL_VirtOp *op;
+	s64 vmin, vmax;
+	int ncl, ncv;
+	int i, j, k;
+
+	if(ctx->cgif_no3ac)
+		return(0);
+
+	if(BGBCC_CCXL_IsRegZzP(ctx, src))
+		{ BGBCC_DBGBREAK }
+
+	ncl=cln-clm;
+
+//	if((ncl<1) || (ncl>256))
+	if((ncl<1) || (ncl>1024))
+		{ BGBCC_DBGBREAK }
+
+	vmin=clv[clm];
+	vmax=clv[cln-1];
+	ncv=(vmax-vmin)+1;
+
+//	if((ncv<1) || (ncv>256))
+	if((ncv<1) || (ncv>1024))
+		{ BGBCC_DBGBREAK }
+
+	op=BGBCC_CCXL_AllocVirtOp(ctx);
+	op->opn=CCXL_VOP_JMPTAB;
+	op->type=type;
+//	op->dst=dst;
+	op->srca=src;
+
+//	op->srcc.val=CCXL_REGTY2_IMM_LONG|(vmin&CCXL_REGLONG2_MASK);
+//	op->srcd.val=CCXL_REGTY2_IMM_LONG|(vmax&CCXL_REGLONG2_MASK);
+
+	op->imm.jmptab.vmin=vmin;
+	op->imm.jmptab.nlbl=ncv;
+//	op->imm.jmptab.ca=0;
+	op->imm.jmptab.lbls=bgbcc_malloc((ncv+2)*sizeof(ccxl_label));
+
+//	for(i=0; i<ncv; i++)
+	for(i=0; i<(ncv+2); i++)
+	{
+		op->imm.jmptab.lbls[i]=dfl2;
+	}
+//	op->imm.jmptab.lbls[ncv]=dfl;
+	op->imm.jmptab.lbls[ncv+1]=dfl;
+
+	for(i=0; i<ncl; i++)
+	{
+		j=clv[clm+i]-vmin;
+		
+		if((j<0) || (j>=ncv))
+			{ BGBCC_DBGBREAK }
+		
+		op->imm.jmptab.lbls[j]=clbl[clm+i];
+	}
+
+	BGBCC_CCXL_AddVirtOp(ctx, op);
+	BGBCC_CCXL_EmitMarkEndTrace(ctx);
 	return(0);
 }
 

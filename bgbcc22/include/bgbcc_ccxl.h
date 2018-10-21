@@ -92,6 +92,7 @@
 #define CCXL_TYB3_ARRMASK		0x0FC00000	//small array size
 #define CCXL_TYB3_PTRSHL		20			//pointer level shl
 #define CCXL_TYB3_ARRSHL		22			//array size shl
+
 #define CCXL_TYB3_BASETYMAX		1048576		//base type limit
 #define CCXL_TYB3_BASEARRMAX	64			//base array limit
 
@@ -207,6 +208,7 @@
 #define CCXL_CMD_VARDECL				0x8011
 #define CCXL_CMD_MANIFOBJ				0x8012
 #define CCXL_CMD_TYPEDEF				0x8013
+#define CCXL_CMD_JMPTAB					0x8014
 
 #define CCXL_ATTR_SIG					0x9001
 #define CCXL_ATTR_FLAGS					0x9002
@@ -302,6 +304,7 @@
 
 #define CCXL_VOP_CSELCMP			0x28
 #define CCXL_VOP_CSELCMP_Z			0x29
+#define CCXL_VOP_JMPTAB				0x2A
 
 #define CCXL_LBL_GLOBALBASE			0x000000	//globals (main context)
 
@@ -331,6 +334,12 @@ typedef union {
 		int gid;
 		int fid;
 	}obj;
+	struct {
+		s64 vmin;
+		short nlbl;
+		byte ca;
+		ccxl_label *lbls;
+	}jmptab;
 }ccxl_value;
 
 typedef int ccxl_status;
@@ -505,6 +514,7 @@ bccx_cxstate bgbcc_rcst_func;
 bccx_cxstate bgbcc_rcst_funcall;
 
 bccx_cxstate bgbcc_rcst_gcc_asm;
+bccx_cxstate bgbcc_rcst_get;
 bccx_cxstate bgbcc_rcst_getindex;
 bccx_cxstate bgbcc_rcst_goto;
 
@@ -557,6 +567,7 @@ bccx_cxstate bgbcc_rcst_return;
 bccx_cxstate bgbcc_rcst_right;
 
 bccx_cxstate bgbcc_rcst_sharpcall;
+bccx_cxstate bgbcc_rcst_set;
 bccx_cxstate bgbcc_rcst_size;
 bccx_cxstate bgbcc_rcst_sizeof;
 bccx_cxstate bgbcc_rcst_sizeof_expr;

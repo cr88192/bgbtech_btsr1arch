@@ -28,6 +28,14 @@ int BGBCC_JX2C_EmitLoadFrameOfsReg(
 
 	nmid=BGBCC_SH_NMID_MOVL;
 
+	if(sctx->is_addr64 && sctx->is_addr_x32)
+	{
+		if((dreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_R0)
+			nmid=BGBCC_SH_NMID_MOVUL;
+		if((dreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_RD0)
+			nmid=BGBCC_SH_NMID_MOVDL;
+	}
+
 	if(((dreg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_RD0) && !sctx->is_addr64)
 		nmid=BGBCC_SH_NMID_MOVW;
 
@@ -434,6 +442,7 @@ int BGBCC_JX2C_CheckNmidScaleMatch(
 	case BGBCC_SH_NMID_MOVUB: rt=(sc==1); break;
 	case BGBCC_SH_NMID_MOVUW: rt=(sc==2); break;
 	case BGBCC_SH_NMID_MOVUL: rt=(sc==4); break;
+	case BGBCC_SH_NMID_MOVDL: rt=(sc==4); break;
 
 	case BGBCC_SH_NMID_FMOVS: rt=(sc==4); break;
 	case BGBCC_SH_NMID_FMOVD: rt=(sc==8); break;
@@ -465,6 +474,11 @@ int BGBCC_JX2C_EmitLoadBRegIRegScReg(
 //		BGBCC_JX2_EmitCheckRegExtGPR(sctx, dreg) &&
 		BGBCC_JX2C_CheckNmidScaleMatch(ctx, sctx, nmid, sc))
 	{
+		if(BGBCC_JX2_EmitCheckRegNeedSzx(sctx, ireg))
+		{
+			BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_EXTSL, ireg);
+		}
+	
 		i=BGBCC_JX2_TryEmitOpLdReg2Reg(sctx, nmid,
 			breg, ireg, dreg);
 		if(i>0)
@@ -548,6 +562,11 @@ int BGBCC_JX2C_EmitStoreBRegIRegScReg(
 //		BGBCC_JX2_EmitCheckRegExtGPR(sctx, dreg) &&
 		BGBCC_JX2C_CheckNmidScaleMatch(ctx, sctx, nmid, sc))
 	{
+		if(BGBCC_JX2_EmitCheckRegNeedSzx(sctx, ireg))
+		{
+			BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_EXTSL, ireg);
+		}
+	
 		i=BGBCC_JX2_TryEmitOpRegStReg2(sctx, nmid,
 			dreg, ireg, breg);
 		if(i>0)
@@ -630,6 +649,11 @@ int BGBCC_JX2C_EmitLoadBRegIRegScDispReg(
 		BGBCC_JX2C_EmitRegIsExtGpReg(ctx, sctx, dreg) &&
 		BGBCC_JX2C_CheckNmidScaleMatch(ctx, sctx, nmid, sc))
 	{
+		if(BGBCC_JX2_EmitCheckRegNeedSzx(sctx, ireg))
+		{
+			BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_EXTSL, ireg);
+		}
+	
 		i=BGBCC_JX2_TryEmitOpLdReg2DispReg(sctx, nmid,
 			breg, ireg, disp, dreg);
 		if(i>0)
@@ -717,6 +741,11 @@ int BGBCC_JX2C_EmitStoreBRegIRegScDispReg(
 		BGBCC_JX2C_EmitRegIsExtGpReg(ctx, sctx, dreg) &&
 		BGBCC_JX2C_CheckNmidScaleMatch(ctx, sctx, nmid, sc))
 	{
+		if(BGBCC_JX2_EmitCheckRegNeedSzx(sctx, ireg))
+		{
+			BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_EXTSL, ireg);
+		}
+	
 		i=BGBCC_JX2_TryEmitOpRegStReg2Disp(sctx, nmid,
 			dreg, ireg, breg, disp);
 		if(i>0)
@@ -1586,10 +1615,15 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 				!BGBCC_CCXL_TypeArrayP(ctx, tty))
 			{
 				nm1=BGBCC_SH_NMID_MOVL;
-				if(sctx->is_addr64)
+//				if(sctx->is_addr64)
+				if(ctx->arch_sizeof_ptr==8)
 				{
 					BGBCC_JX2C_CheckSetModeDqSet(ctx, sctx);
 					nm1=BGBCC_SH_NMID_MOVQ;
+				}
+				else if(sctx->is_addr64)
+				{
+					nm1=BGBCC_SH_NMID_MOVUL;
 				}
 			
 				j=BGBCC_CCXL_GetRegID(ctx, sreg);
@@ -1615,7 +1649,8 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 //		if(	BGBCC_JX2C_EmitRegIsFpReg(ctx, sctx, dreg) ||
 //			BGBCC_JX2C_EmitRegIsDpReg(ctx, sctx, dreg) ||
 //			BGBCC_JX2C_EmitRegIsLpReg(ctx, sctx, dreg)	)
-		if(!BGBCC_JX2_EmitCheckRegAddrGPR(sctx, dreg))
+//		if(!BGBCC_JX2_EmitCheckRegAddrGPR(sctx, dreg))
+		if(!BGBCC_JX2_EmitCheckRegExtGPR(sctx, dreg))
 		{
 			treg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
 		}
@@ -1689,13 +1724,36 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 			return(1);
 		}
 
+//		if(BGBCC_CCXL_TypeSmallLongP(ctx, tty) ||
+//			BGBCC_CCXL_TypeSgNLongP(ctx, tty) ||
+//			BGBCC_CCXL_TypeVariantP(ctx, tty) ||
+//			(BGBCC_CCXL_TypePointerP(ctx, tty) && sctx->is_addr64))
+
 		if(BGBCC_CCXL_TypeSmallLongP(ctx, tty) ||
-			BGBCC_CCXL_TypeSgNLongP(ctx, tty) ||
-			BGBCC_CCXL_TypeVariantP(ctx, tty) ||
-			(BGBCC_CCXL_TypePointerP(ctx, tty) && sctx->is_addr64))
+			BGBCC_CCXL_TypeVariantP(ctx, tty))
 		{
 			nm1=BGBCC_SH_NMID_MOVL;
 			if(sctx->is_addr64)
+			{
+				BGBCC_JX2C_CheckSetModeDqSet(ctx, sctx);
+				nm1=BGBCC_SH_NMID_MOVQ;
+			}
+
+			BGBCC_JX2C_EmitLoadBRegOfsReg(ctx, sctx,
+				nm1, treg, 0, dreg);
+
+			if(treg!=dreg)
+				BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, treg);
+			return(1);
+		}
+
+		if(	BGBCC_CCXL_TypeSgNLongP(ctx, tty) ||
+			(BGBCC_CCXL_TypePointerP(ctx, tty) && sctx->is_addr64))
+		{
+			nm1=BGBCC_SH_NMID_MOVL;
+
+//			if(sctx->is_addr64)
+			if(ctx->arch_sizeof_ptr==8)
 			{
 				BGBCC_JX2C_CheckSetModeDqSet(ctx, sctx);
 				nm1=BGBCC_SH_NMID_MOVQ;
@@ -1976,7 +2034,8 @@ int BGBCC_JX2C_EmitStoreFrameVRegReg(
 				!BGBCC_CCXL_TypeArrayP(ctx, tty))
 			{
 				nm1=BGBCC_SH_NMID_MOVL;
-				if(sctx->is_addr64)
+//				if(sctx->is_addr64)
+				if(ctx->arch_sizeof_ptr==8)
 				{
 					BGBCC_JX2C_CheckSetModeDqSet(ctx, sctx);
 					nm1=BGBCC_SH_NMID_MOVQ;
@@ -2283,6 +2342,50 @@ int BGBCC_JX2C_GetFrameVRegFlags(
 	return(0);
 }
 
+int BGBCC_JX2C_BeginSetupFrameVRegSpan(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx)
+{
+	return(0);
+}
+
+int BGBCC_JX2C_EndSetupFrameVRegSpan(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx)
+{
+	BGBCC_JX2_VarSpan *vsp, *vsp1;
+	ccxl_register vreg;
+	int v, h;
+	int i, j, k;
+	
+	for(i=0; i<64; i++)
+		sctx->vspan_hash[i]=(-1);
+	
+//	for(i=0; i<sctx->vspan_num; i++)
+	for(i=sctx->vspan_num-1; i>=0; i--)
+	{
+		vsp=sctx->vspan[i];
+		vreg=vsp->reg;
+
+//		v=vreg.val&CCXL_REGTY_REGMASK;
+		v=(vreg.val&CCXL_REGID_BASEMASK)^
+			((vreg.val&CCXL_REGTY_REGMASK)>>56);
+		h=v*251;
+		h=(h>>8)&63;
+
+		sctx->vspan_chn[i]=sctx->vspan_hash[h];
+		sctx->vspan_hash[h]=i;
+
+//		if((vreg.val&CCXL_REGTY_REGMASK)!=(reg.val&CCXL_REGTY_REGMASK))
+//			continue;
+		
+//		if(BGBCC_CCXL_RegisterIdentEqualP(ctx, vreg, reg))
+//			return(i);
+	}
+
+	return(0);
+}
+
 int BGBCC_JX2C_SetupFrameVRegSpan(
 	BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx,
@@ -2304,6 +2407,7 @@ int BGBCC_JX2C_SetupFrameVRegSpan(
 	if(!sctx->vspan)
 	{
 		sctx->vspan=bgbcc_malloc(1024*sizeof(BGBCC_JX2_VarSpan *));
+		sctx->vspan_chn=bgbcc_malloc(1024*sizeof(short));
 		sctx->vspan_num=0;
 		sctx->vspan_max=1024;
 	}
@@ -2342,15 +2446,25 @@ int BGBCC_JX2C_SetupFrameVRegSpan(
 			if(j>63)j=63;
 			vspb=vsp->seq+j;
 
-			if(sctx->tr_opnum < vspb->bbeg)
+			if(vspb->cnt)
+			{
+				if(sctx->tr_opnum < vspb->bbeg)
+					vspb->bbeg=sctx->tr_opnum;
+				if(sctx->tr_opnum > vspb->bend)
+					vspb->bend=sctx->tr_opnum;
+				if(sctx->tr_trnum < vspb->tbeg)
+					vspb->tbeg=sctx->tr_trnum;
+				if(sctx->tr_trnum > vspb->tend)
+					vspb->tend=sctx->tr_trnum;
+				vspb->cnt++;
+			}else
+			{
 				vspb->bbeg=sctx->tr_opnum;
-			if(sctx->tr_opnum > vspb->bend)
 				vspb->bend=sctx->tr_opnum;
-			if(sctx->tr_trnum < vspb->tbeg)
 				vspb->tbeg=sctx->tr_trnum;
-			if(sctx->tr_trnum > vspb->tend)
 				vspb->tend=sctx->tr_trnum;
-			vspb->cnt++;
+				vspb->cnt=1;
+			}
 			
 			return(1);
 		}
@@ -2379,6 +2493,9 @@ int BGBCC_JX2C_SetupFrameVRegSpan(
 	{
 		vsp=bgbcc_malloc(sizeof(BGBCC_JX2_VarSpan));
 		sctx->vspan[i]=vsp;
+	}else
+	{
+		memset(vsp, 0, sizeof(BGBCC_JX2_VarSpan));
 	}
 
 	vsp->reg=sreg;
@@ -2398,6 +2515,7 @@ int BGBCC_JX2C_SetupFrameVRegSpan(
 
 //	if((obj->flagsint&BGBCC_TYFL_CONST) &&
 
+#if 0
 	for(j=0; j<64; j++)
 	{
 		vspb=vsp->seq+j;
@@ -2407,6 +2525,7 @@ int BGBCC_JX2C_SetupFrameVRegSpan(
 		vspb->tend=-999999;
 		vspb->cnt=0;
 	}
+#endif
 	
 	j=(sreg.val>>12)&4093;
 	if(j<0)j=0;
@@ -2462,6 +2581,8 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 
 	sctx->vsp_tcnt=0;
 	trn=0;
+	BGBCC_JX2C_BeginSetupFrameVRegSpan(ctx, sctx);
+
 	for(i=0; i<obj->n_vop; i++)
 	{
 		vtr=obj->vtr[trn];
@@ -2490,6 +2611,8 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 			}
 		}
 	}
+	BGBCC_JX2C_EndSetupFrameVRegSpan(ctx, sctx);
+
 	
 	if(!(sctx->use_egpr&4))
 		sctx->use_egpr=0;
@@ -3170,7 +3293,8 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 	epij=0;
 	if(epilbl>0)
 	{
-		epij=BGBCC_JX2_EmitCheckAutoLabelNear16B(sctx, epilbl);
+		epij=BGBCC_JX2_EmitCheckAutoLabelNear16B(sctx, epilbl, 
+			BGBCC_SH_NMID_BSR);
 		if(epij<=0)epilbl=0;
 	}
 
@@ -4297,11 +4421,13 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 		BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr0);
 	}
 
-	j=BGBCC_JX2_EmitCheckAutoLabelNear16B(sctx, epilbl);
+	j=BGBCC_JX2_EmitCheckAutoLabelNear16B(sctx, epilbl, 
+		BGBCC_SH_NMID_BSR);
 	if(epik && (sctx->epihash_key[epix]==epik) && (epilbl>0) &&
 		!sctx->is_simpass && j)
 	{
-		if((j&3)==3)
+//		if((j&3)==3)
+		if((j&15)==1)
 		{
 			BGBCC_JX2_EmitOpLabel(sctx,
 				BGBCC_SH_NMID_BRAN, epilbl);

@@ -83,9 +83,174 @@ BCCX_Node *BGBCP_Number(BGBCP_ParseState *ctx, char *str)
 	return(n);
 }
 
+BCCX_Node *BGBCP_NumberXF(BGBCP_ParseState *ctx, char *str)
+{
+	BCCX_Node *n;
+	char *s;
+	s64 li, lj;
+	int i;
+
+	bgbcc_atoxf(str, (u64 *)(&li), (u64 *)(&lj));
+
+	n=BCCX_NewCst(&bgbcc_rcst_float128, "float128");
+//	BCCX_SetFloatCst(n, &bgbcc_rcst_value, "value", BGBCC_ParseNumber(str));
+	BCCX_SetIntCst(n, &bgbcc_rcst_value_lo, "value_lo", li);
+	BCCX_SetIntCst(n, &bgbcc_rcst_value_hi, "value_hi", lj);
+	return(n);
+}
+
+BCCX_Node *BGBCP_ExpressionLitString(BGBCP_ParseState *ctx, char **str)
+{
+//	static char stbufa[16384];
+	static char *stbuf=NULL;
+	static char *stbufe;
+	char b[256], b2[256], b3[256];
+	char *s, *t, *s1, *t1;
+	char *suf;
+	int ty, ty2, ty3;
+	BCCX_Node *n, *n1, *n2;
+	int i, j, k, l;
+
+	if(!stbuf)
+	{
+//		stbuf=stbufa;
+
+		l=16384;
+		stbuf=malloc(l);
+		stbufe=stbuf+l;
+	}
+
+	s=*str;
+
+	t1=stbuf;
+
+#if 0
+	s1=BGBCP_Token(s, b, &ty);
+	if(ty==BTK_STRING)
+	{
+		s=s1;
+		strcpy(t1, b);
+		t1+=strlen(t1);
+	}
+#endif
+
+	s1=BGBCP_Token(s, b2, &ty2);
+//	while(ty2==BTK_STRING)
+	while(1)
+	{
+		if(ty2==BTK_STRING)
+		{
+			s=s1;
+//			s=BGBCP_Token(s, b2, &ty2);
+	//			strcat(b, b2);
+	//		strcpy(t1, b2);
+	//		t1+=strlen(t1);
+
+			l=strlen(b2);
+			
+			if((t1+l)>stbufe)
+			{
+				j=t1-stbuf;
+				k=stbufe-stbuf;
+				
+				k=k+(k>>1);
+				stbuf=realloc(stbuf, k);
+				stbufe=stbuf+k;
+				t1=stbuf+j;
+			}
+			
+			memcpy(t1, b2, l+1);
+			t1+=l;
+			
+			s1=BGBCP_Token(s, b2, &ty2);
+			continue;
+		}
+
+		if(ty2==BTK_STRING_OVF)
+		{
+			s=s1;
+			while(*s)
+			{
+				if((t1+16)>stbufe)
+				{
+					j=t1-stbuf;
+					k=stbufe-stbuf;
+					
+					k=k+(k>>1);
+					stbuf=realloc(stbuf, k);
+					stbufe=stbuf+k;
+					t1=stbuf+j;
+				}
+				
+				if(*s=='\\')
+				{
+					switch(s[1])
+					{
+					case 'a':	s+=2;	*t++='\a';		break;
+					case 'b':	s+=2;	*t++='\b';		break;
+					case 'e':	s+=2;	*t++='\x1B';	break;
+					case 'f':	s+=2;	*t++='\f';		break;
+					case 'r':	s+=2;	*t++='\r';		break;
+					case 'n':	s+=2;	*t++='\n';		break;
+					case 'v':	s+=2;	*t++='\v';		break;
+					case 't':	s+=2;	*t++='\t';		break;
+					case '\\':	s+=2;	*t++='\\';		break;
+					case '\"':	s+=2;	*t++='\"';		break;
+					case '\'':	s+=2;	*t++='\'';		break;
+					case '?':	s+=2;	*t++='?';		break;
+					
+					case 'x':
+					case 'u':
+					case 'U':
+						i=2;
+						if(s[1]=='u')i=4;
+						if(s[1]=='U')i=8;
+					
+						s+=2; j=0;
+						while(*s && i--)
+						{
+							k=-1;
+							if((*s>='0') && (*s<='9'))k=*s-'0';
+							if((*s>='A') && (*s<='F'))k=*s-'A'+10;
+							if((*s>='a') && (*s<='f'))k=*s-'a'+10;
+							if(k<0)break;
+							j=(j<<4)|k;
+							s++;
+						}
+						BGBCP_EmitChar(&t1, j);
+						break;
+						
+					}
+					continue;
+				}
+				
+				if(*s=='\"')
+				{
+					s++;
+					break;
+				}
+				
+				*t1++=*s++;
+			}
+			*t1=0;
+
+			s1=BGBCP_Token(s, b2, &ty2);
+			continue;
+		}
+		break;
+	}
+
+	n=BCCX_NewCst(&bgbcc_rcst_string, "string");
+//		BCCX_SetCst(n, &bgbcc_rcst_value, "value", b);
+	BCCX_SetCst(n, &bgbcc_rcst_value, "value", stbuf);
+
+	*str=s;
+	return(n);
+}
+
 BCCX_Node *BGBCP_ExpressionLit(BGBCP_ParseState *ctx, char **str)
 {
-	static char stbuf[16384];
+//	static char stbuf[16384];
 	char b[256], b2[256], b3[256];
 	char *s, *t, *s1, *t1;
 	char *suf;
@@ -111,6 +276,13 @@ BCCX_Node *BGBCP_ExpressionLit(BGBCP_ParseState *ctx, char **str)
 //		n=BGBCP_FunArgs(ctx, &s);
 //		if(CDR(n))n=CONS(SYM("begin"), n);
 
+		*str=s;
+		return(n);
+	}
+
+	if(ty==BTK_STRING)
+	{
+		n=BGBCP_ExpressionLitString(ctx, &s);
 		*str=s;
 		return(n);
 	}
@@ -259,6 +431,8 @@ BCCX_Node *BGBCP_ExpressionLit(BGBCP_ParseState *ctx, char **str)
 
 		suf=NULL;
 		if(!bgbcp_strcmp1(b2, "F") || !bgbcp_strcmp1(b2, "f"))suf="F";
+		if(!bgbcp_strcmp1(b2, "D") || !bgbcp_strcmp1(b2, "d"))suf="D";
+
 		if(!bgbcp_strcmp1(b2, "L") || !bgbcp_strcmp1(b2, "l"))suf="L";
 		if(!bgbcp_strcmp2(b2, "LL") || !bgbcp_strcmp2(b2, "ll"))suf="LL";
 		if(!bgbcp_strcmp1(b2, "U") || !bgbcp_strcmp1(b2, "u"))suf="U";
@@ -266,7 +440,35 @@ BCCX_Node *BGBCP_ExpressionLit(BGBCP_ParseState *ctx, char **str)
 		if(!bgbcp_strcmp3(b2, "ULL") || !bgbcp_strcmp3(b2, "ull"))suf="ULL";
 
 		if(!bgbcp_strcmp2(b2, "XL") || !bgbcp_strcmp2(b2, "xl"))suf="XL";
-		if(!bgbcp_strcmp3(b2, "UXL") || !bgbcp_strcmp3(b2, "uXl"))suf="UXL";
+		if(!bgbcp_strcmp3(b2, "UXL") || !bgbcp_strcmp3(b2, "uxl"))suf="UXL";
+
+		if(!bgbcp_strcmp3(b2, "LLX") || !bgbcp_strcmp3(b2, "llx"))suf="XL";
+		if(!bgbcp_strcmp4(b2, "ULLX") || !bgbcp_strcmp4(b2, "ullx"))suf="UXL";
+
+
+		if(!bgbcp_strcmp3(b2, "F32") || !bgbcp_strcmp3(b2, "f32"))suf="F";
+		if(!bgbcp_strcmp3(b2, "F64") || !bgbcp_strcmp3(b2, "f64"))suf="D";
+		if(!bgbcp_strcmp4(b2, "F128") || !bgbcp_strcmp4(b2, "f128"))suf="XF";
+
+		if(!bgbcp_strcmp3(b2, "I32") || !bgbcp_strcmp3(b2, "i32"))suf="I";
+		if(!bgbcp_strcmp3(b2, "I64") || !bgbcp_strcmp3(b2, "i64"))suf="LL";
+		if(!bgbcp_strcmp3(b2, "U32") || !bgbcp_strcmp3(b2, "u32"))suf="U";
+		if(!bgbcp_strcmp3(b2, "U64") || !bgbcp_strcmp3(b2, "u64"))suf="ULL";
+		if(!bgbcp_strcmp4(b2, "I128") || !bgbcp_strcmp4(b2, "i128"))suf="XL";
+		if(!bgbcp_strcmp4(b2, "U128") || !bgbcp_strcmp4(b2, "u128"))suf="UXL";
+
+		if(!bgbcp_strcmp4(b2, "UI32") || !bgbcp_strcmp4(b2, "ui32"))suf="U";
+		if(!bgbcp_strcmp4(b2, "UI64") || !bgbcp_strcmp4(b2, "ui64"))suf="ULL";
+		if(!bgbcp_strcmp5(b2, "UI128") || !bgbcp_strcmp5(b2, "ui128"))suf="UXL";
+
+		if(suf && (ty2==BTK_NAME) && !bgbcp_strcmp2(suf, "XF"))
+		{
+			s=BGBCP_Token(s, b2, &ty2);
+			*str=s;
+			n=BGBCP_NumberXF(ctx, b);
+			BCCX_SetCst(n, &bgbcc_rcst_tysuf, "tysuf", suf);
+			return(n);
+		}
 
 		if(suf && (ty2==BTK_NAME))
 		{
@@ -282,6 +484,7 @@ BCCX_Node *BGBCP_ExpressionLit(BGBCP_ParseState *ctx, char **str)
 		return(n);
 	}
 
+#if 0
 	if(ty==BTK_STRING)
 	{
 		t1=stbuf;
@@ -306,6 +509,7 @@ BCCX_Node *BGBCP_ExpressionLit(BGBCP_ParseState *ctx, char **str)
 		*str=s;
 		return(n);
 	}
+#endif
 
 	if(ty==BTK_CHARSTRING)
 	{
@@ -488,7 +692,9 @@ BCCX_Node *BGBCP_ExpressionUnary(BGBCP_ParseState *ctx, char **str)
 	}
 
 #if 1
-	if(!bgbcp_strcmp(b, "sizeof"))
+//	if(!bgbcp_strcmp(b, "sizeof") &&
+	if(!bgbcp_strcmp6(b, "sizeof") &&
+		(ty==BTK_NAME))
 	{
 		s=BGBCP_Token(s, b, &ty);
 
@@ -569,7 +775,7 @@ BCCX_Node *BGBCP_ExpressionCast(BGBCP_ParseState *ctx, char **str)
 //			n=BGBCP_ExpandDefinition(n, n1);
 //			n=CDR(n);
 
-			n2=BCCX_FindTag(n, "type");
+			n2=BCCX_FindTagCst(n, &bgbcc_rcst_type, "type");
 			n2=BCCX_Clone(n2);
 
 			s=s1;

@@ -252,92 +252,109 @@ boolean PIT_CheckLine (line_t* ld)
 //
 boolean PIT_CheckThing (mobj_t* thing)
 {
+	fixed_t		pbox[4];
 	fixed_t		blockdist;
 	boolean		solid;
 	int			damage;
+    fixed_t		x1, y1, x2, y2;
 		
 	if (!(thing->flags & (MF_SOLID|MF_SPECIAL|MF_SHOOTABLE) ))
-	return true;
+		return true;
 	
-	blockdist = thing->radius + tmthing->radius;
-
-	if ( abs(thing->x - tmx) >= blockdist
-	 || abs(thing->y - tmy) >= blockdist )
+	if(R_ThingIsPolyObjP(thing))
 	{
-	// didn't hit it
-	return true;	
+		R_PolyObjGetBox(thing, &x1, &y1, &x2, &y2);
+
+		pbox[BOXTOP] = y2;
+		pbox[BOXBOTTOM] = y1;
+		pbox[BOXRIGHT] = x2;
+		pbox[BOXLEFT] = x1;
+		
+		if(!M_CheckBoxCollide(tmbbox, pbox))
+			return(true);
+
+	}else
+	{
+		blockdist = thing->radius + tmthing->radius;
+
+		if ( abs(thing->x - tmx) >= blockdist
+		 || abs(thing->y - tmy) >= blockdist )
+		{
+			// didn't hit it
+			return true;	
+		}
 	}
 	
 	// don't clip against self
 	if (thing == tmthing)
-	return true;
+		return true;
 	
 	// check for skulls slamming into things
 	if (tmthing->flags & MF_SKULLFLY)
 	{
-	damage = ((P_Random()%8)+1)*tmthing->info->damage;
-	
-	P_DamageMobj (thing, tmthing, tmthing, damage);
-	
-	tmthing->flags &= ~MF_SKULLFLY;
-	tmthing->momx = tmthing->momy = tmthing->momz = 0;
-	
-	P_SetMobjState (tmthing, tmthing->info->spawnstate);
-	
-	return false;		// stop moving
+		damage = ((P_Random()%8)+1)*tmthing->info->damage;
+		
+		P_DamageMobj (thing, tmthing, tmthing, damage);
+		
+		tmthing->flags &= ~MF_SKULLFLY;
+		tmthing->momx = tmthing->momy = tmthing->momz = 0;
+		
+		P_SetMobjState (tmthing, tmthing->info->spawnstate);
+		
+		return false;		// stop moving
 	}
 
 	
 	// missiles can hit other things
 	if (tmthing->flags & MF_MISSILE)
 	{
-	// see if it went over / under
-	if (tmthing->z > thing->z + thing->height)
-		return true;		// overhead
-	if (tmthing->z+tmthing->height < thing->z)
-		return true;		// underneath
-		
-	if (tmthing->target && (
-		tmthing->target->type == thing->type || 
-		(tmthing->target->type == MT_KNIGHT && thing->type == MT_BRUISER)||
-		(tmthing->target->type == MT_BRUISER && thing->type == MT_KNIGHT) ) )
-	{
-		// Don't hit same species as originator.
-		if (thing == tmthing->target)
-		return true;
-
-		if (thing->type != MT_PLAYER)
+		// see if it went over / under
+		if (tmthing->z > thing->z + thing->height)
+			return true;		// overhead
+		if (tmthing->z+tmthing->height < thing->z)
+			return true;		// underneath
+			
+		if (tmthing->target && (
+			tmthing->target->type == thing->type || 
+			(tmthing->target->type == MT_KNIGHT && thing->type == MT_BRUISER)||
+			(tmthing->target->type == MT_BRUISER && thing->type == MT_KNIGHT) ) )
 		{
-		// Explode, but do no damage.
-		// Let players missile other players.
-		return false;
-		}
-	}
-	
-	if (! (thing->flags & MF_SHOOTABLE) )
-	{
-		// didn't do any damage
-		return !(thing->flags & MF_SOLID);	
-	}
-	
-	// damage / explode
-	damage = ((P_Random()%8)+1)*tmthing->info->damage;
-	P_DamageMobj (thing, tmthing, tmthing->target, damage);
+			// Don't hit same species as originator.
+			if (thing == tmthing->target)
+				return true;
 
-	// don't traverse any more
-	return false;				
+			if (thing->type != MT_PLAYER)
+			{
+				// Explode, but do no damage.
+				// Let players missile other players.
+				return false;
+			}
+		}
+		
+		if (! (thing->flags & MF_SHOOTABLE) )
+		{
+			// didn't do any damage
+			return !(thing->flags & MF_SOLID);	
+		}
+		
+		// damage / explode
+		damage = ((P_Random()%8)+1)*tmthing->info->damage;
+		P_DamageMobj (thing, tmthing, tmthing->target, damage);
+
+		// don't traverse any more
+		return false;				
 	}
 	
 	// check for special pickup
 	if (thing->flags & MF_SPECIAL)
 	{
-	solid = thing->flags&MF_SOLID;
-	if (tmflags&MF_PICKUP)
-	{
-		// can remove thing
-		P_TouchSpecialThing (thing, tmthing);
-	}
-	return !solid;
+		solid = thing->flags&MF_SOLID;
+		if (tmflags&MF_PICKUP)
+		{
+			// can remove thing
+			P_TouchSpecialThing (thing, tmthing);
+		}
+		return !solid;
 	}
 	
 	return !(thing->flags & MF_SOLID);
@@ -411,7 +428,7 @@ P_CheckPosition
 	numspechit = 0;
 
 	if ( tmflags & MF_NOCLIP )
-	return true;
+		return true;
 	
 	// Check things first, possibly picking things up.
 	// The bounding box is extended by MAXRADIUS
@@ -462,7 +479,7 @@ P_TryMove
 
 	floatok = false;
 	if (!P_CheckPosition (thing, x, y))
-	return false;		// solid wall or thing
+		return false;		// solid wall or thing
 	
 	if ( !(thing->flags & MF_NOCLIP) )
 	{

@@ -55,11 +55,34 @@ bool BGBCC_CCXL_TypeSmallTypeP(
 bool BGBCC_CCXL_TypeSmallIntP(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
-	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
-		return(false);
-	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+	int bty;
+
+//	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
+//		return(false);
+//	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//		return(false);
+
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
 		return(false);
 
+#if 1
+	bty=BGBCC_CCXL_GetTypeBaseType(ctx, ty);
+	if(bty==CCXL_TY_I)		return(true);
+	if(bty==CCXL_TY_UI)		return(true);
+	if(bty==CCXL_TY_SB)		return(true);
+	if(bty==CCXL_TY_UB)		return(true);
+	if(bty==CCXL_TY_SS)		return(true);
+	if(bty==CCXL_TY_US)		return(true);
+	if(ctx->arch_sizeof_long==4)
+	{
+		if(bty==CCXL_TY_NL)
+			return(true);
+		if(bty==CCXL_TY_UNL)
+			return(true);
+	}
+#endif
+
+#if 0
 	if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_I)
 		return(true);
 	if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_UI)
@@ -81,6 +104,7 @@ bool BGBCC_CCXL_TypeSmallIntP(
 		if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_UNL)
 			return(true);
 	}
+#endif
 
 	return(false);
 }
@@ -88,9 +112,12 @@ bool BGBCC_CCXL_TypeSmallIntP(
 bool BGBCC_CCXL_TypeSmallLongP(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
-	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
-		return(false);
-	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
+//		return(false);
+//	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//		return(false);
+
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
 		return(false);
 
 	if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_L)
@@ -121,9 +148,12 @@ bool BGBCC_CCXL_TypeSmallLongP(
 bool BGBCC_CCXL_TypeSmallInt128P(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
-	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
-		return(false);
-	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
+//		return(false);
+//	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//		return(false);
+
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
 		return(false);
 
 	if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_I128)
@@ -145,11 +175,32 @@ bool BGBCC_CCXL_TypeSmallInt128P(
 bool BGBCC_CCXL_TypeUnsignedP(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
-	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
-		return(false);
-	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+	int bty;
+
+//	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
+//		return(false);
+//	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//		return(false);
+
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
 		return(false);
 
+#if 1
+	bty=BGBCC_CCXL_GetTypeBaseType(ctx, ty);
+	if(bty==CCXL_TY_UI)		return(true);
+	if(bty==CCXL_TY_US)		return(true);
+	if(bty==CCXL_TY_UB)		return(true);
+
+	if(bty==CCXL_TY_UL)		return(true);
+	if(bty==CCXL_TY_UNL)	return(true);
+	if(bty==CCXL_TY_UI128)
+	{
+		ctx->ccxl_tyc_seen|=BGBCC_TYCSEEN_INT128;
+		return(true);
+	}
+#endif
+
+#if 0
 	if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_UI)
 		return(true);
 	if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_US)
@@ -166,6 +217,7 @@ bool BGBCC_CCXL_TypeUnsignedP(
 		ctx->ccxl_tyc_seen|=BGBCC_TYCSEEN_INT128;
 		return(true);
 	}
+#endif
 
 	return(false);
 }
@@ -173,9 +225,12 @@ bool BGBCC_CCXL_TypeUnsignedP(
 bool BGBCC_CCXL_TypeIntP(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
-	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
-		return(false);
-	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
+//		return(false);
+//	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//		return(false);
+
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
 		return(false);
 
 	if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_I)
@@ -186,7 +241,10 @@ bool BGBCC_CCXL_TypeIntP(
 bool BGBCC_CCXL_TypeLongP(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
-	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//		return(false);
+
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
 		return(false);
 
 	if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_L)
@@ -197,9 +255,12 @@ bool BGBCC_CCXL_TypeLongP(
 bool BGBCC_CCXL_TypeUnsignedIntP(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
-	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
-		return(false);
-	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
+//		return(false);
+//	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//		return(false);
+
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
 		return(false);
 
 	if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_UI)
@@ -210,9 +271,12 @@ bool BGBCC_CCXL_TypeUnsignedIntP(
 bool BGBCC_CCXL_TypeUnsignedLongP(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
-	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
-		return(false);
-	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
+//		return(false);
+//	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//		return(false);
+
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
 		return(false);
 
 	if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_UL)
@@ -223,9 +287,12 @@ bool BGBCC_CCXL_TypeUnsignedLongP(
 bool BGBCC_CCXL_TypeSgIntP(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
-	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
-		return(false);
-	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
+//		return(false);
+//	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//		return(false);
+
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
 		return(false);
 
 	if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_I)
@@ -238,9 +305,12 @@ bool BGBCC_CCXL_TypeSgIntP(
 bool BGBCC_CCXL_TypeSgNLongP(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
-	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
-		return(false);
-	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
+//		return(false);
+//	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//		return(false);
+
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
 		return(false);
 
 	if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_NL)
@@ -253,9 +323,12 @@ bool BGBCC_CCXL_TypeSgNLongP(
 bool BGBCC_CCXL_TypeSgLongP(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
-	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
-		return(false);
-	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
+//		return(false);
+//	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//		return(false);
+
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
 		return(false);
 
 	if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_L)
@@ -268,9 +341,12 @@ bool BGBCC_CCXL_TypeSgLongP(
 bool BGBCC_CCXL_TypeSgInt128P(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
-	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
-		return(false);
-	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
+//		return(false);
+//	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//		return(false);
+
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
 		return(false);
 
 	if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_I128)
@@ -289,9 +365,12 @@ bool BGBCC_CCXL_TypeSgInt128P(
 bool BGBCC_CCXL_TypeFloatP(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
-	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
-		return(false);
-	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
+//		return(false);
+//	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//		return(false);
+
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
 		return(false);
 
 	if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_F)
@@ -305,9 +384,12 @@ bool BGBCC_CCXL_TypeFloatP(
 bool BGBCC_CCXL_TypeDoubleP(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
-	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
-		return(false);
-	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
+//		return(false);
+//	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//		return(false);
+
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
 		return(false);
 
 	if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_D)
@@ -321,9 +403,12 @@ bool BGBCC_CCXL_TypeDoubleP(
 bool BGBCC_CCXL_TypeFloat128P(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
-	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
-		return(false);
-	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
+//		return(false);
+//	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//		return(false);
+
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
 		return(false);
 
 	if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_F128)
@@ -337,9 +422,12 @@ bool BGBCC_CCXL_TypeFloat128P(
 bool BGBCC_CCXL_TypeFloat16P(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
-	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
-		return(false);
-	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
+//		return(false);
+//	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//		return(false);
+
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
 		return(false);
 
 	if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_F16)
@@ -350,9 +438,12 @@ bool BGBCC_CCXL_TypeFloat16P(
 bool BGBCC_CCXL_TypeRealP(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
-	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
-		return(false);
-	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
+//		return(false);
+//	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//		return(false);
+
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
 		return(false);
 
 	if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_F)
@@ -374,9 +465,12 @@ bool BGBCC_CCXL_TypeRealP(
 bool BGBCC_CCXL_TypeVariantP(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
-	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
-		return(false);
-	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
+//		return(false);
+//	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//		return(false);
+
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
 		return(false);
 
 	if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_VARIANT)
@@ -390,9 +484,12 @@ bool BGBCC_CCXL_TypeVariantP(
 bool BGBCC_CCXL_TypeSmallFloatP(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
-	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
-		return(false);
-	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
+//		return(false);
+//	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//		return(false);
+
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
 		return(false);
 
 	if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_F)
@@ -414,9 +511,12 @@ bool BGBCC_CCXL_TypeSmallFloatP(
 bool BGBCC_CCXL_TypeSmallDoubleP(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
-	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
-		return(false);
-	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
+//		return(false);
+//	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//		return(false);
+
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
 		return(false);
 
 	if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_F)
@@ -443,9 +543,12 @@ bool BGBCC_CCXL_TypeSmallDoubleP(
 bool BGBCC_CCXL_TypeSmallFloat128P(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
-	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
-		return(false);
-	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
+//		return(false);
+//	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//		return(false);
+
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
 		return(false);
 
 	if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_F128)
@@ -471,9 +574,12 @@ bool BGBCC_CCXL_TypeSmallVariantP(
 bool BGBCC_CCXL_TypeBaseILFD_P(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
-	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
-		return(false);
-	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
+//		return(false);
+//	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//		return(false);
+
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
 		return(false);
 
 	if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_I)
@@ -512,9 +618,12 @@ bool BGBCC_CCXL_TypeBaseILFD_P(
 bool BGBCC_CCXL_TypeBaseSmallILFD_P(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
-	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
-		return(false);
-	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
+//		return(false);
+//	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//		return(false);
+
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
 		return(false);
 
 	if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_I)
@@ -553,19 +662,23 @@ bool BGBCC_CCXL_TypeBaseSmallILFD_P(
 bool BGBCC_CCXL_TypeBaseSmallILFDP_P(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
-	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
+//	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
+//		return(false);
+//	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//		return(true);
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
 		return(false);
-	if(BGBCC_CCXL_TypePointerP(ctx, ty))
-		return(true);
 	return(BGBCC_CCXL_TypeBaseSmallILFD_P(ctx, ty));
 }
 
 bool BGBCC_CCXL_TypeBaseSmallIL_P(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
-	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
-		return(false);
-	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
+//		return(false);
+//	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//		return(false);
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
 		return(false);
 
 	if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_I)
@@ -713,6 +826,38 @@ bool BGBCC_CCXL_TypeArrayP(
 bool BGBCC_CCXL_TypeArrayOrPointerP(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
+#if 1
+	if((ty.val&CCXL_TY_TYTY_MASK)==CCXL_TY_TYTY_BASIC)
+	{
+		if(ty.val&CCXL_TY_ARRMASK)
+			return(true);
+
+		if(ty.val&CCXL_TY_PTRMASK)
+		{
+			if(((ty.val&CCXL_TY_PTRMASK)>>CCXL_TY_PTRSHL)<CCXL_TY_PN4_REF)
+				return(true);
+			if(((ty.val&CCXL_TY_PTRMASK)>>CCXL_TY_PTRSHL)==CCXL_TY_PN4_PTRREF)
+				return(true);
+			if(((ty.val&CCXL_TY_PTRMASK)>>CCXL_TY_PTRSHL)==CCXL_TY_PN4_A0P1)
+				return(true);
+
+			if(((ty.val&CCXL_TY_PTRMASK)>>CCXL_TY_PTRSHL)==CCXL_TY_PN4_A0B)
+				return(true);
+//			if(((ty.val&CCXL_TY_PTRMASK)>>CCXL_TY_PTRSHL)==CCXL_TY_PN4_A0P1)
+//				return(true);
+
+//			return(true);
+		}
+//		return(false);
+
+//		if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_P)
+		if((ty.val&CCXL_TY_BASEMASK)==CCXL_TY_P)
+			return(true);
+		
+		return(false);
+	}
+#endif
+
 	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
 		return(true);
 	if(BGBCC_CCXL_TypePointerP(ctx, ty))
@@ -808,7 +953,9 @@ bool BGBCC_CCXL_TypeUnsignedByteP(
 bool BGBCC_CCXL_TypeSgByteP(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
-	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//		return(false);
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
 		return(false);
 	if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_SB)
 		return(true);
@@ -820,7 +967,9 @@ bool BGBCC_CCXL_TypeSgByteP(
 bool BGBCC_CCXL_TypeSignedShortP(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
-	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//		return(false);
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
 		return(false);
 	if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_SS)
 		return(true);
@@ -830,7 +979,9 @@ bool BGBCC_CCXL_TypeSignedShortP(
 bool BGBCC_CCXL_TypeUnsignedShortP(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
-	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//		return(false);
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
 		return(false);
 	if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_US)
 		return(true);
@@ -840,7 +991,9 @@ bool BGBCC_CCXL_TypeUnsignedShortP(
 bool BGBCC_CCXL_TypeSgShortP(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
-	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//		return(false);
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
 		return(false);
 	if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_SS)
 		return(true);
@@ -852,7 +1005,9 @@ bool BGBCC_CCXL_TypeSgShortP(
 bool BGBCC_CCXL_TypeVoidP(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
-	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//		return(false);
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
 		return(false);
 	if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_V)
 		return(true);
@@ -862,7 +1017,9 @@ bool BGBCC_CCXL_TypeVoidP(
 bool BGBCC_CCXL_TypeVarArgsP(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
-	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//		return(false);
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
 		return(false);
 	if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_VARARGS)
 		return(true);
@@ -872,7 +1029,9 @@ bool BGBCC_CCXL_TypeVarArgsP(
 bool BGBCC_CCXL_TypeVaListP(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
-	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+//		return(false);
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
 		return(false);
 	if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_VALIST)
 		return(true);
@@ -2252,10 +2411,10 @@ ccxl_status BGBCC_CCXL_TypeFromSig(
 		return(CCXL_STATUS_YES);
 	}
 
-	if((bty>=0) && (bty<CCXL_TYB3_BASETYMAX) &&
+	if((bty>=0) && (bty<CCXL_TYB2_BASETYMAX) &&
 		(an==1) && (asz[0]>0) && (pn<2) &&
 		!qn && !rn &&
-		(asz[0]<CCXL_TYB3_BASEARRMAX))
+		(asz[0]<CCXL_TYB2_BASEARRMAX))
 	{
 		tty.val=bty|(pn<<CCXL_TYB2_PTRSHL)|
 			(asz[0]<<CCXL_TYB2_ARRSHL)|
@@ -2462,7 +2621,22 @@ char *BGBCC_CCXL_TypeGetSig(
 ccxl_type BGBCC_CCXL_TypeWrapBasicType(int ty)
 {
 	ccxl_type tty;
-	tty.val=ty;
+
+	if(ty<CCXL_TY_BASETYMAX)
+	{
+		tty.val=CCXL_TY_TYTY_BASIC|ty;
+		return(tty);
+	}
+
+	if(ty<CCXL_TYB3_BASETYMAX)
+	{
+		tty.val=CCXL_TY_TYTY_BASIC3|ty;
+		return(tty);
+	}
+	
+	BGBCC_DBGBREAK
+
+	tty.val=CCXL_TY_TYTY_BASIC3|ty;
 	return(tty);
 }
 
@@ -3467,6 +3641,20 @@ ccxl_status BGBCC_CCXL_GetTypeCompareBinaryDest(
 			*rdty=lty;
 			return(CCXL_STATUS_YES);
 		}
+	}
+
+	if(BGBCC_CCXL_TypePointerP(ctx, lty) &&
+		BGBCC_CCXL_TypeFunctionP(ctx, rty))
+	{
+		*rdty=lty;
+		return(CCXL_STATUS_YES);
+	}
+
+	if(BGBCC_CCXL_TypePointerP(ctx, rty) &&
+		BGBCC_CCXL_TypeFunctionP(ctx, lty))
+	{
+		*rdty=rty;
+		return(CCXL_STATUS_YES);
 	}
 
 	*rdty=lty;

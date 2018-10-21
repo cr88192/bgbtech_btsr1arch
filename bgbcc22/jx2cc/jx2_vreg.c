@@ -448,7 +448,7 @@ int BGBCC_JX2C_EmitMovVRegVReg(
 {
 	s64 li;
 	int cdreg, csreg;
-	int tr0, rcls;
+	int tr0, rcls, nm1;
 	int i, j, k;
 
 	BGBCC_JX2C_NormalizeImmVRegInt(ctx, sctx, type, &sreg);
@@ -516,14 +516,35 @@ int BGBCC_JX2C_EmitMovVRegVReg(
 		if((cdreg<0) || (cdreg==BGBCC_SH_REG_ZZR))
 			cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dreg);
 		
-		if((cdreg&0xF0) != (csreg&0xF0))
+//		if((cdreg&0xF0) != (csreg&0xF0))
+		if((cdreg&BGBCC_SH_REG_RTMASK5)!=(csreg&BGBCC_SH_REG_RTMASK5))
 		{
+			if(((cdreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_R0) &&
+				((csreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_RD0))
+			{
+				nm1=BGBCC_SH_NMID_EXTSL;
+
+				if(BGBCC_CCXL_TypeUnsignedP(ctx, type) ||
+					BGBCC_CCXL_TypePointerP(ctx, type))
+						nm1=BGBCC_SH_NMID_EXTUL;
+			
+				BGBCC_JX2C_EmitOpRegReg(ctx, sctx,
+					nm1, csreg, cdreg);
+				BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
+				BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, sreg);
+				return(1);
+			}
+
 			if(((cdreg&BGBCC_SH_REG_RTMASK5)==(csreg&BGBCC_SH_REG_RTMASK5)) &&
 				((csreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_RQ0))
 			{
 			}else
 			if(((cdreg&BGBCC_SH_REG_RTMASK5)==(csreg&BGBCC_SH_REG_RTMASK5)) &&
 				((csreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_RD0))
+			{
+			}else
+			if(((cdreg&BGBCC_SH_REG_RTMASK5)==(csreg&BGBCC_SH_REG_RTMASK5)) &&
+				((csreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_R0))
 			{
 			}else
 
@@ -535,6 +556,18 @@ int BGBCC_JX2C_EmitMovVRegVReg(
 				csreg=BGBCC_SH_REG_RD0+(csreg&31);
 //			}else if(((cdreg&0xF0)==BGBCC_SH_REG_RQ0) &&
 //				((csreg&0xF0)==BGBCC_SH_REG_RD0))
+			}else if(((cdreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_R0) &&
+				((csreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_RQ0))
+			{
+				csreg=BGBCC_SH_REG_R0+(csreg&31);
+			}else if(((cdreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_RQ0) &&
+				((csreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_R0))
+			{
+				csreg=BGBCC_SH_REG_RQ0+(csreg&31);
+			}else if(((cdreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_RD0) &&
+				((csreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_R0))
+			{
+				csreg=BGBCC_SH_REG_RD0+(csreg&31);
 			}else if(((cdreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_RQ0) &&
 				((csreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_RD0))
 			{
@@ -1277,6 +1310,12 @@ int BGBCC_JX2C_EmitJCmpVRegVReg(
 			type, sreg, treg, cmp, lbl));
 	}
 
+	if(BGBCC_CCXL_TypePointerP(ctx, type) && sctx->is_addr_x32)
+	{
+		return(BGBCC_JX2C_EmitJCmpVRegVRegInt(ctx, sctx,
+			type, sreg, treg, cmp, lbl));
+	}
+
 	if(BGBCC_CCXL_TypeFloatP(ctx, type) ||
 		BGBCC_CCXL_TypeDoubleP(ctx, type))
 	{
@@ -1473,7 +1512,8 @@ int BGBCC_JX2C_EmitJCmpVRegZero(
 	}
 
 	if((BGBCC_CCXL_TypePointerP(ctx, type) ||
-		BGBCC_CCXL_TypeArrayP(ctx, type)) && !sctx->is_addr64)
+		BGBCC_CCXL_TypeArrayP(ctx, type)) &&
+			(!sctx->is_addr64 || sctx->is_addr_x32))
 	{
 		return(BGBCC_JX2C_EmitJCmpVRegZeroInt(ctx, sctx,
 			type, sreg, cmp, lbl));
@@ -1533,4 +1573,53 @@ int BGBCC_JX2C_EmitJCmpVRegZero(
 
 	BGBCC_CCXL_StubError(ctx);
 	return(0);
+}
+
+
+int BGBCC_JX2C_EmitJmpTab(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	ccxl_type type,
+	ccxl_register sreg,
+	s64 vmin, int nlbl,
+	ccxl_label *lbls)
+{
+	ccxl_label dfl;
+	int csreg, ctreg;
+	int i, j, k;
+
+//	dfl=lbls[nlbl];
+	dfl=lbls[nlbl+1];
+
+	csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, sreg);
+	ctreg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
+
+	BGBCC_JX2C_EmitOpRegImmReg(ctx, sctx,
+		BGBCC_SH_NMID_SUB, csreg, vmin, ctreg);
+
+	if(dfl.id)
+	{
+		BGBCC_JX2C_EmitOpImmReg(ctx, sctx,
+			BGBCC_SH_NMID_CMPHI, nlbl, ctreg);
+		BGBCC_JX2_EmitOpAutoLabel(sctx, BGBCC_SH_NMID_BT, dfl.id);
+	}
+
+	BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_SHLL1, ctreg);
+	BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_BRA2F, ctreg);
+//	BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_BRK);
+
+	for(i=0; i<=nlbl; i++)
+	{
+		if(!BGBCC_JX2_CheckPadAlign32(sctx))
+			{ BGBCC_DBGBREAK }
+		j=BGBCC_JX2_TryEmitOpFar20Label(sctx, BGBCC_SH_NMID_BRAN, lbls[i].id);
+		if(j<=0)
+			{ BGBCC_DBGBREAK }
+//		BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_BRK);
+	}
+
+
+	BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, ctreg);
+	BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, sreg);
+	return(1);
 }

@@ -1,0 +1,73 @@
+Possible:
+* Partial Redesign of BTSR1 based on experiences.
+* Idea Spec for now.
+
+
+Instruction Latouts:
+* OnmO
+* Onii
+* OnOO
+* OOOO
+
+Or:
+* OOnm
+* Oini
+* OOnO
+* OOOO
+
+
+Base Instructions:
+* 00nm  MOV.B	Rm, (Rn)
+* 01nm  MOV.W	Rm, (Rn)
+* 02nm  MOV.L	Rm, (Rn)
+* 03nm  MOV.Q	Rm, (Rn)
+* 04nm  MOV.B	Rm, (Rn, R0)
+* 05nm  MOV.W	Rm, (Rn, R0)
+* 06nm  MOV.L	Rm, (Rn, R0)
+* 07nm  MOV.Q	Rm, (Rn, R0)
+* 08nm  MOV.B	(Rm), Rn
+* 09nm  MOV.W	(Rm), Rn
+* 0Anm  MOV.L	(Rm), Rn
+* 0Bnm  MOV.Q	(Rm), Rn
+* 0Cnm  MOV.B	(Rm, R0), Rn
+* 0Dnm  MOV.W	(Rm, R0), Rn
+* 0Enm  MOV.L	(Rm, R0), Rn
+* 0Fnm  MOV.Q	(Rm, R0), Rn
+** (R0, R0) encodes (PC, R0)
+** 32-bit: MOV.Q encodes MOVU.B/MOVU.W
+* 10nm  ADD		Rm, Rn
+* 11nm  SUB		Rm, Rn
+* 12nm  ADC		Rm, Rn
+* 13nm  SBB		Rm, Rn
+* 14nm  TST		Rm, Rn
+* 15nm  AND		Rm, Rn
+* 16nm  OR		Rm, Rn
+* 17nm  XOR		Rm, Rn
+* 18nm  MOV		Rm, Rn
+* 19nm  MOV		Rj, Rn
+* 1Anm  MOV		Rm, Rk
+* 1Bnm  MOV		Rj, Rk
+* 1Cnm  CMPEQ	Rm, Rn				//Rn==Rm
+* 1Dnm  CMPHI	Rm, Rn				//Unsigned Rn GT Rm
+* 1Enm  CMPGT	Rm, Rn				//Signed Rn GT Rm
+
+* Ajjj  LDIZ    #imm12, R0
+* Bjjj  LDIN    #imm12, R0
+* Cnii  ADD		#imm8, Rn
+* Dzzz
+* Enii  MOV		#imm8, Rn
+* Fzzz  N/E
+
+32-Bit Block
+* F0nm_OOeo  Typical Rm, Ro, Rn
+* F0dd_OOdd  Typical #Imm16
+
+* F0jj_Ajjj  BRA #disp20
+* F0jj_Bjjj  BSR #disp20
+
+* F1nm_dOed  MOV.x (Rm, Disp9), Rn
+
+* F8nO_dddd  Typical #Imm16, Rn
+* F9nO_dddd  Typical #Imm16, Rn
+* FAjj_jjjj  LDIZ #imm24, R0
+* FBjj_jjjj  LDIN #imm24, R0

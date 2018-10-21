@@ -34,6 +34,12 @@ char *bgbcc_imgname;
 
 byte bgbcc_dumpast;
 
+int bgbcc_msec_pp;
+int bgbcc_msec_cp;
+int bgbcc_msec_cc;
+int bgbcc_msec_tot;
+
+
 
 #if 0
 // BGBCC_API int BGBCC_BindSig(BGBCC_State *ctx, char *name, char *sig)
@@ -289,33 +295,94 @@ char *bgbcc_loadfile(char *name, int *rsz)
 	return(buf);
 }
 
+char *bgbcc_loadfile_txt(char *name, int *rsz)
+{
+	char *buf, *buf1, *s, *se, *t;
+	int i, en, sz, sz1;
+
+	buf=bgbcc_loadfile(name, &sz);
+
+	if(buf)
+	{
+		/* Attempt Normalization */
+	
+		en=-1;
+		i=BGBCC_GET_U16LE(buf);
+		if(i==0xFEFF)en=0;
+		if(i==0xFFFE)en=1;
+		
+		if(en>=0)
+		{
+			/* File has UTF16 BOM; Convert to UTF8 */
+
+			buf1=bgbcc_malloc2(sz*2);
+			
+			s=buf+2; se=buf+sz;
+			t=buf1;
+			
+			while(s<se)
+			{
+				i=BGBCC_GET_U16EN(s, en);
+				BGBCP_EmitChar(&t, i);
+				s+=2;
+			}
+			
+			sz1=t-buf1;
+			
+			bgbcc_free(buf);
+			buf=bgbcc_malloc2(sz1);
+			memcpy(buf, buf1, sz1);
+			sz=sz1;
+			bgbcc_free(buf1);
+		}
+		else
+			if((buf[0]==0xEF) && (buf[1]==0xBB) && (buf[2]==0xBF))
+		{
+			/* File has UTF8 BOM, Copy data over it. */
+
+			s=buf+3; se=buf+sz;
+			t=buf;
+			while(s<se)
+				{ *t++=*s++; }
+			sz=sz-3;
+		}
+	}
+
+	*rsz=sz;
+	return(buf);
+}
+
 char *bgbcc_loadfile2(char *name, int *rsz)
 {
 	char tb[256];
 	void *buf;
 	int i;
 
-	buf=bgbcc_loadfile(name, rsz);
+//	buf=bgbcc_loadfile(name, rsz);
+	buf=bgbcc_loadfile_txt(name, rsz);
 	if(buf)return(buf);
 	
 	for(i=0; i<bgbcc_nsrc; i++)
 	{
 		sprintf(tb, "%s/%s", bgbcc_src[i], name);
-		buf=bgbcc_loadfile(tb, rsz);
+//		buf=bgbcc_loadfile(tb, rsz);
+		buf=bgbcc_loadfile_txt(tb, rsz);
 		if(buf)return(buf);
 	}
 
 	for(i=0; i<bgbcc_ninc; i++)
 	{
 		sprintf(tb, "%s/%s", bgbcc_inc[i], name);
-		buf=bgbcc_loadfile(tb, rsz);
+//		buf=bgbcc_loadfile(tb, rsz);
+		buf=bgbcc_loadfile_txt(tb, rsz);
 		if(buf)return(buf);
 	}
 
 	for(i=0; i<bgbcc_nlib; i++)
 	{
 		sprintf(tb, "%s/%s", bgbcc_lib[i], name);
-		buf=bgbcc_loadfile(tb, rsz);
+//		buf=bgbcc_loadfile(tb, rsz);
+		buf=bgbcc_loadfile_txt(tb, rsz);
 		if(buf)return(buf);
 	}
 	
@@ -494,7 +561,8 @@ BCCX_Node *BGBCC_LoadCSourceAST(char *name)
 		return(NULL);
 	}
 
-	printf("BGBCC_LoadCSourceAST: %s %d bytes\n", name, sz);
+//	printf("BGBCC_LoadCSourceAST: %s %d bytes\n", name, sz);
+	printf("%s %d bytes\n", name, sz);
 
 	strcpy(tb, name);
 	s=tb;
@@ -517,7 +585,7 @@ BCCX_Node *BGBCC_LoadCSourceAST(char *name)
 	if(!t)return(NULL);
 
 #if 1
-	if(mod)
+	if(mod && bgbcc_dumpast)
 	{
 		sprintf(tb1, "dump/%s_ast.txt", mod);
 		fd=fopen(tb1, "wt");
@@ -593,6 +661,11 @@ int BGBCC_LoadCSourcesCCXL(
 
 	BGBCC_CCXL_SetupContextForArch(ctx);
 
+	bgbcc_msec_pp=0;
+	bgbcc_msec_cp=0;
+	bgbcc_msec_cc=0;
+	bgbcc_msec_tot=0;
+
 //	if(1)
 	if(imgfmt==BGBCC_IMGFMT_RIL3)
 	{
@@ -601,7 +674,7 @@ int BGBCC_LoadCSourcesCCXL(
 
 	for(i=0; i<nnames; i++)
 	{
-		printf("BGBCC_LoadCSourcesCCXL: %s\n", names[i]);
+//		printf("BGBCC_LoadCSourcesCCXL: %s\n", names[i]);
 
 		if((names[i][0]=='-') && (names[i][1]=='l'))
 		{
@@ -647,7 +720,10 @@ int BGBCC_LoadCSourcesCCXL(
 		BCCX_DeleteTree(t);
 		t1=clock();
 		t2=t1-t0;
-		printf("Compile Module %dms\n", t2);
+//		printf("Compile Module %dms\n", t2);
+
+		bgbcc_msec_cc+=t2;
+		bgbcc_msec_tot++;
 		
 		c=ctx->reduce_tmp;
 		ctx->reduce_tmp=NULL;
@@ -669,6 +745,16 @@ int BGBCC_LoadCSourcesCCXL(
 //		sprintf(tb, "dump/%s_ril3.dat", "tst");
 //		BGBCC_StoreFile(tb, ctx->ril_ips, ctx->ril_ip-ctx->ril_ips);
 //	}
+
+	if(bgbcc_msec_tot>0)
+	{
+		printf("Preproc Module tot=%dms, avg=%d\n",
+			bgbcc_msec_pp, bgbcc_msec_pp/bgbcc_msec_tot);
+		printf("Parse Module tot=%dms, avg=%d\n",
+			bgbcc_msec_cp, bgbcc_msec_cp/bgbcc_msec_tot);
+		printf("Compile Module tot=%dms, avg=%d\n",
+			bgbcc_msec_cc, bgbcc_msec_cc/bgbcc_msec_tot);
+	}
 
 	if(imgfmt==BGBCC_IMGFMT_RIL3)
 	{
@@ -711,8 +797,14 @@ int BGBCC_LoadConfig(char *name)
 	FILE *fd;
 	int i;
 	
+	printf("BGBCC_LoadConfig: Try %s\n", name);
+	
 	fd=fopen(name, "rt");
-	if(!fd)return(-1);
+	if(!fd)
+	{
+		printf("BGBCC_LoadConfig: Fail %s\n", name);
+		return(-1);
+	}
 	
 	while(!feof(fd))
 	{
@@ -755,7 +847,9 @@ int BGBCC_LoadConfig(char *name)
 			continue;
 		}
 	}
-	
+
+	printf("BGBCC_LoadConfig: Done %s\n", name);
+
 	return(0);
 }
 
@@ -819,7 +913,16 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 				continue;
 			}
 
-			if(!strncmp(argv[i]+1, "Fi", 2))
+			if(!strncmp(argv[i]+1, "Fi", 2) ||
+				!strncmp(argv[i]+1, "Fe", 2) ||
+				!strncmp(argv[i]+1, "Fo", 2) ||
+				!strncmp(argv[i]+1, "Fa", 2))
+			{
+				m|=64;
+				continue;
+			}
+
+			if(!strcmp(argv[i]+1, "o"))
 			{
 				m|=64;
 				continue;
@@ -994,15 +1097,27 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 #endif
 	}
 
+#ifdef _WIN32
+	GetModuleFileName(NULL, buf, 256);
+#else
 	strcpy(buf, argv[0]);
+#endif
+	printf("BGBCC_InitEnv: Try %s\n", buf);
+
 	s=buf+strlen(buf);
 	while((s>buf) && (*s!='/') && (*s!='\\'))
 		s--;
+
+	printf("BGBCC_InitEnv: Try %s\n", s);
+
 	if(s>buf)
 	{
 		*s=0;
 		base=bgbcc_strdup(buf);
 	}
+
+	printf("BGBCC_InitEnv: Buf %s\n", buf);
+	printf("BGBCC_InitEnv: Base %s\n", base);
 
 #ifdef linux
 	if(!home)home="~";
@@ -1012,13 +1127,18 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 	{
 		if(home)
 		{
-			sprintf(buf, "%s/frvmcfg.txt", home);
+//			sprintf(buf, "%s/frvmcfg.txt", home);
+			sprintf(buf, "%s/bgbcc.cfg", home);
 			BGBCC_LoadConfig(buf);
 		}
 
 		if(base)
 		{
-			sprintf(buf, "%s/frvmcfg.txt", base);
+//			sprintf(buf, "%s/frvmcfg.txt", base);
+			sprintf(buf, "%s/bgbcc.cfg", base);
+			BGBCC_LoadConfig(buf);
+
+			sprintf(buf, "%s/../etc/bgbcc.cfg", base);
 			BGBCC_LoadConfig(buf);
 		}
 	}
@@ -1330,7 +1450,9 @@ int main(int argc, char *argv[], char **env)
 			}
 
 			if(!strncmp(argv[i]+1, "Fi", 2) ||
-				!strncmp(argv[i]+1, "Fe", 2))
+				!strncmp(argv[i]+1, "Fe", 2) ||
+				!strncmp(argv[i]+1, "Fo", 2) ||
+				!strncmp(argv[i]+1, "Fa", 2))
 			{
 				frbcfn=argv[i]+3;
 				continue;
@@ -1560,6 +1682,7 @@ int main(int argc, char *argv[], char **env)
 		}else
 		{
 			printf("Failed to produce output, status=%d\n", i);
+			return(-1);
 		}
 	}else
 	{

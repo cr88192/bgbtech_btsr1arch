@@ -1811,7 +1811,7 @@ void BGBCC_CCXL_FixupObjSize(BGBCC_TransState *ctx,
 				if(BGBCC_CCXL_TypeValueObjectP(ctx, tty))
 				{
 					obj2=BGBCC_CCXL_LookupStructureForType(ctx, tty);
-					if(!obj2->decl)
+					if(!obj2 || !obj2->decl)
 					{
 						if(flag&1)
 							{ BGBCC_DBGBREAK }

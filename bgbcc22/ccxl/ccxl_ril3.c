@@ -1,23 +1,52 @@
 #include <bgbccc.h>
 
-ccxl_label ril3_lbltab[65536];
-int ril3_nlbl;
+#define RIL3_LBLMAX	262144
+
+//ccxl_label ril3_lbltab[65536];
+ccxl_label ril3_lbltab[RIL3_LBLMAX];
+int ril3_lblchn[RIL3_LBLMAX];
+int ril3_lblhash[1024];
+int ril3_nlbl=0;
 
 int BGBCC_CCXLR3_LabelToIndex(BGBCC_TransState *ctx, ccxl_label lbl)
 {
+	int v, h;
 	int i;
+
+	if(!ril3_nlbl)
+	{
+		for(i=0; i<1024; i++)
+			ril3_lblhash[i]=-1;
+	}
 
 //	if(!(ctx->ril_ip))
 
-	
+	v=lbl.id;
+	h=((v*65521)>>16)&1023;
+
+	i=ril3_lblhash[h];
+	while(i>=0)
+	{
+		if(ril3_lbltab[i].id==lbl.id)
+			return(i);
+		i=ril3_lblchn[i];
+	}
+
+#if 0
 	for(i=0; i<ril3_nlbl; i++)
 	{
 		if(ril3_lbltab[i].id==lbl.id)
 			return(i);
 	}
+#endif
 	
 	i=ril3_nlbl++;
+	if(i>=RIL3_LBLMAX)
+		{ BGBCC_DBGBREAK }
+	
 	ril3_lbltab[i].id=lbl.id;
+	ril3_lblchn[i]=ril3_lblhash[h];
+	ril3_lblhash[h]=i;
 	return(i);
 }
 
@@ -301,7 +330,7 @@ void BGBCC_CCXLR3_EmitRawString(
 void BGBCC_CCXLR3_EmitOp(
 	BGBCC_TransState *ctx, int op)
 {
-	if(!(ctx->ril_ip))
+	if(!(ctx->ril_ip) || ctx->ril3_noril)
 		return;
 
 //	BGBCC_CCXLR3_EmitUVLI(ctx, op);
@@ -311,7 +340,7 @@ void BGBCC_CCXLR3_EmitOp(
 void BGBCC_CCXLR3_EmitArgInt(
 	BGBCC_TransState *ctx, s64 val)
 {
-	if(!(ctx->ril_ip))
+	if(!(ctx->ril_ip) || ctx->ril3_noril)
 		return;
 
 //	BGBCC_CCXLR3_EmitUVLI(ctx, BGBCC_RIL3OP_ARGINT);
@@ -321,7 +350,7 @@ void BGBCC_CCXLR3_EmitArgInt(
 void BGBCC_CCXLR3_EmitArgTag(
 	BGBCC_TransState *ctx, s64 val)
 {
-	if(!(ctx->ril_ip))
+	if(!(ctx->ril_ip) || ctx->ril3_noril)
 		return;
 
 	if((val>0x8000) && (val<0x8020))
@@ -340,7 +369,7 @@ void BGBCC_CCXLR3_EmitArgFloat(
 	s64 fm;
 	int fe, fs;
 
-	if(!(ctx->ril_ip))
+	if(!(ctx->ril_ip) || ctx->ril3_noril)
 		return;
 
 	fv=*(u64 *)(&val);
@@ -433,10 +462,10 @@ void BGBCC_CCXLR3_EmitArgBlob(
 	byte *ct, *cte, *tbuf, *tbuf1;
 	byte *s, *se, *rs;
 	int c0, c1;
-	int r, t, p, ml, md;
+	int r, t, p, ml, md, lj;
 	int i, j, k;
 
-	if(!(ctx->ril_ip))
+	if(!(ctx->ril_ip) || ctx->ril3_noril)
 		return;
 
 	if(!str)
@@ -448,13 +477,20 @@ void BGBCC_CCXLR3_EmitArgBlob(
 //	l=strlen(str);
 //	if(!l)l=1;
 
+#if 0
+	lj=-1;
 	for(i=0; i<64; i++)
 	{
 		j=(ctx->ril_psrov-i-1)&63;
 		if(ctx->ril_pslen[j]!=len)
 			continue;
-		s=str;
+
+		lj=j;
 		p=ctx->ril_psidx[j];
+		if(str[0]!=ctx->ril_txwin[p])
+			continue;
+
+		s=str;
 		for(k=0; k<len; k++)
 		{
 			c0=*s; c1=ctx->ril_txwin[p];
@@ -469,14 +505,61 @@ void BGBCC_CCXLR3_EmitArgBlob(
 		BGBCC_CCXLR3_EmitSVLI(ctx, -(i+1));
 		return;
 	}
+	if(len<256)
+	{
+		i=ctx->ril_psrov;
+		ctx->ril_psidx[i]=ctx->ril_txrov;
+		ctx->ril_pslen[i]=len;
+		ctx->ril_psrov=(i+1)&63;
+	}
+#endif
 
-	i=ctx->ril_psrov;
-	ctx->ril_psidx[i]=ctx->ril_txrov;
-	ctx->ril_pslen[i]=len;
-	ctx->ril_psrov=(i+1)&63;
+#if 1
+	if(len<256)
+	{
+		j=ctx->ril_pslix[len];
+		for(i=0; i<16; i++)
+		{
+			if(ctx->ril_pslen[j]!=len)
+				break;
+
+			p=ctx->ril_psidx[j];
+			if(str[0]!=ctx->ril_txwin[p])
+				{ j=ctx->ril_pschn[j]; continue; }
+
+			s=str;
+			for(k=0; k<len; k++)
+			{
+				c0=*s; c1=ctx->ril_txwin[p];
+				if(c0!=c1)break;
+				s++; p=(p+1)&16383;
+			}
+			if(k>=len)
+				break;
+			j=ctx->ril_pschn[j];
+		}
+		if((i<16) && (ctx->ril_pslen[j]==len))
+		{
+			k=(ctx->ril_psrov-(j+1))&63;
+			BGBCC_CCXLR3_EmitSVLI(ctx, -(k+1));
+			return;
+		}
+
+		i=ctx->ril_psrov;
+		ctx->ril_psidx[i]=ctx->ril_txrov;
+		ctx->ril_pslen[i]=len;
+
+		j=ctx->ril_pslix[len];
+		ctx->ril_pschn[i]=j;
+		ctx->ril_pslix[len]=i;
+
+		ctx->ril_psrov=(i+1)&63;
+	}
+#endif
 
 //	if(len<8)
-	if(1)
+//	if(1)
+	if(len<24)
 	{
 		BGBCC_CCXLR3_EmitSVLI(ctx, len);
 		s=str;
@@ -583,7 +666,7 @@ void BGBCC_CCXLR3_EmitArgString(
 {
 	int l;
 	
-	if(!(ctx->ril_ip))
+	if(!(ctx->ril_ip) || ctx->ril3_noril)
 		return;
 
 	if(!str)
@@ -600,7 +683,7 @@ void BGBCC_CCXLR3_EmitArgString(
 void BGBCC_CCXLR3_EmitArgDataBlob(
 	BGBCC_TransState *ctx, byte *buf, int len)
 {
-	if(!(ctx->ril_ip))
+	if(!(ctx->ril_ip) || ctx->ril3_noril)
 		return;
 
 	BGBCC_CCXLR3_EmitArgBlob(ctx, buf, len);
@@ -611,7 +694,7 @@ void BGBCC_CCXLR3_EmitArgLabel(
 {
 	int i;
 
-	if(!(ctx->ril_ip))
+	if(!(ctx->ril_ip) || ctx->ril3_noril)
 		return;
 
 	i=BGBCC_CCXLR3_LabelToIndex(ctx, lbl);
@@ -1029,14 +1112,17 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 	BGBCC_TransState *ctx, byte **rcs)
 {
 	char tb[4096];
+	s64 vala[256];
+	ccxl_label lbla[256];
 	BGBCC_CCXL_RegisterInfo *decl;
 	byte *cs, *tbuf;
 	char *s0, *s1, *s2;
-	ccxl_label lbl;
+	ccxl_label lbl, lbl2;
 	s64 li0, li1;
 	f64 f0, f1;
 	int i0, i1, i2, i3;
 	int op, tsz;
+	int i, j, k;
 	
 	cs=*rcs;
 //	op=*cs++;
@@ -1556,6 +1642,26 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 	case BGBCC_RIL3OP_DUPMIX:
 		i0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
 		BGBCC_CCXL_StackDupMarkIdx(ctx, i0);
+		break;
+
+	case BGBCC_RIL3OP_JMPTAB:
+		i0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
+		lbl=BGBCC_CCXLR3_ReadLabel(ctx, &cs);
+
+		lbl2=lbl;
+		if(i0<0)
+			{ lbl.id=0; i0=-i0; }
+
+		for(i=0; i<i0; i++)
+		{
+			vala[i]=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
+			lbla[i]=BGBCC_CCXLR3_ReadLabel(ctx, &cs);
+		}
+
+		BGBCC_CCXL_StackCompileJmpTab(ctx, 0, i0, lbla, vala, lbl, lbl2);
+
+//		BGBCC_CCXL_StackDupIdx(ctx, i0);
+
 		break;
 
 	default:

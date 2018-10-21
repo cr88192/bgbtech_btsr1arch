@@ -8,7 +8,7 @@ Canonically, C types will map to this ISA as:
 ** char, 8-bit
 ** short, 16-bit
 ** int, 32-bit
-** long, 64-bit
+** long, 64-bit (64-bit ABI)
 ** long long, 64-bit
 ** __int128, 128-bit
 * Floating Point
@@ -45,6 +45,7 @@ Basic C ABI:
 * R1/DHR: Volatile/Scratch
 * GBR: Callee Preserve
 ** GBR may be used to access memory, and is treated as a callee preserve register.
+** PBO Sub-ABI: GBR will be the base address for ".data" and ".bss".
 * TBR: System
 ** TBR will be a System register, and should not be modified by normal code.
 ** The use of TBR is outside the scope of the basic C ABI.
@@ -73,9 +74,34 @@ C Style Vararg:
 
 BS2 Style Vararg:
 * The remaining arguments will be folded off into an array.
-* All of the arguments will be converted to Variant.
-* This will be passed to the called function as a Fat Pointer.
+* All of the variable arguments will be converted to Variant.
+* This array will be passed to the called function as a Fat Pointer.
 
+
+=== 32-bit Sub ABI ===
+
+Is basically the same as the 64-bit ABI, except that 'long' and pointer values are reduced to 32 bits. The address space is nominally zero-extended, and maps to the low 4GB of the Userland space.
+
+
+=== PBO Sub ABI ===
+
+General:
+* GBR will be used to access any mutable sections (such as ".data" and ".bss").
+* These sections will be accessed relative to GBR.
+* GBR will be initialized relative to a "PBO Base" accessed via TBR.
+
+ MOV #offs_pbo_base, R0		//special reloc
+ MOV.Q (TBR, DLR), R2
+ MOV R2, GBR
+
+
+
+=== Thread Local Storage ===
+
+General:
+* Will be nominally accessed as an offset relative to TBR.
+* Special fixups may be used during program loading.
+* Will reside within ".tlsvar"
 
 === Fat Pointers ===
 

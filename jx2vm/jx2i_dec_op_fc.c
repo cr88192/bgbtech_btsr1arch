@@ -54,21 +54,49 @@ int BJX2_DecodeOpcode_DecFC(BJX2_Context *ctx,
 			switch((opw2>>8)&15)
 			{
 			case 0x0:	/* FC0e_00zz_dddd */
+				if(eq)
+				{
+					op->nmid=BJX2_NMID_LEAB;
+					op->fmid=BJX2_FMID_LDREGDISPREG;
+					op->Run=BJX2_Op_LEAB_LdRegDispReg;
+					break;
+				}
 				op->nmid=BJX2_NMID_MOVB;
 				op->fmid=BJX2_FMID_REGSTREGDISP;
 				op->Run=BJX2_Op_MOVB_RegStRegDisp;
 				break;
 			case 0x1:	/* FC0e_01zz_dddd */
+				if(eq)
+				{
+					op->nmid=BJX2_NMID_LEAW;
+					op->fmid=BJX2_FMID_LDREGDISPREG;
+					op->Run=BJX2_Op_LEAW_LdRegDispReg;
+					break;
+				}
 				op->nmid=BJX2_NMID_MOVW;
 				op->fmid=BJX2_FMID_REGSTREGDISP;
 				op->Run=BJX2_Op_MOVW_RegStRegDisp;
 				break;
 			case 0x2:	/* FC0e_02zz_dddd */
+				if(eq)
+				{
+					op->nmid=BJX2_NMID_LEAD;
+					op->fmid=BJX2_FMID_LDREGDISPREG;
+					op->Run=BJX2_Op_LEAD_LdRegDispReg;
+					break;
+				}
 				op->nmid=BJX2_NMID_MOVL;
 				op->fmid=BJX2_FMID_REGSTREGDISP;
 				op->Run=BJX2_Op_MOVL_RegStRegDisp;
 				break;
 			case 0x3:	/* FC0e_03zz_dddd */
+				if(eq)
+				{
+					op->nmid=BJX2_NMID_LEAQ;
+					op->fmid=BJX2_FMID_LDREGDISPREG;
+					op->Run=BJX2_Op_LEAQ_LdRegDispReg;
+					break;
+				}
 				op->nmid=BJX2_NMID_MOVQ;
 				op->fmid=BJX2_FMID_REGSTREGDISP;
 				op->Run=BJX2_Op_MOVQ_RegStRegDisp;
@@ -102,6 +130,9 @@ int BJX2_DecodeOpcode_DecFC(BJX2_Context *ctx,
 				op->nmid=BJX2_NMID_MOVQ;
 				op->fmid=BJX2_FMID_LDREGDISPREG;
 				op->Run=BJX2_Op_MOVQ_LdRegDispReg;
+				if(eq)
+				{	op->nmid=BJX2_NMID_MOVDL;
+					op->Run=BJX2_Op_MOVUL_LdRegDispReg;		}
 				break;
 
 			}

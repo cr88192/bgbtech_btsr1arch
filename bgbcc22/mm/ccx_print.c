@@ -344,6 +344,7 @@ void BCCX_PrintBufNodeAttrNode(BCCX_Node *node, int ind,
 {
 	char tb[256];
 	u16 *attr_n;
+	BCCX_Node *ncur;
 	BCCX_AttrVal *attr_v;
 	char *t, *s0;
 	int i, j, k;
@@ -388,7 +389,14 @@ void BCCX_PrintBufNodeAttrNode(BCCX_Node *node, int ind,
 		pb(ob, tb);
 
 		k=(ind>0)?(ind+2):0;
-		BCCX_PrintBuf(attr_v[i].p, k, pb, ob);
+//		BCCX_PrintBuf(attr_v[i].p, k, pb, ob);
+
+		ncur=attr_v[i].p;
+		while(ncur)
+		{
+			BCCX_PrintBuf(ncur, k, pb, ob);
+			ncur=ncur->next;
+		}
 
 		t=tb;
 		for(k=0; k<ind; k++)*t++=' ';

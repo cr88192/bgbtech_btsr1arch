@@ -53,7 +53,8 @@
 #define SIL_TOP			2
 #define SIL_BOTH		3
 
-#define MAXDRAWSEGS		256
+// #define MAXDRAWSEGS		256
+#define MAXDRAWSEGS		2048
 
 
 
@@ -339,6 +340,10 @@ typedef struct drawseg_s
     fixed_t		scale2;
     fixed_t		scalestep;
 
+    fixed_t		tz1;		//BGB: distance to first vertex
+    fixed_t		tz2;		//BGB: distance to second vertex
+    fixed_t		zstep;
+
     // 0=none, 1=bottom, 2=top, 3=both
     int			silhouette;
 
@@ -390,6 +395,7 @@ typedef struct vissprite_s
     
     int			x1;
     int			x2;
+    fixed_t		tz;		//Z distance
 
     // for line side calculation
     fixed_t		gx;

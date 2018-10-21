@@ -296,7 +296,9 @@ int BGBCC_CCXL_LookupStructContainsFieldID(
 	
 	for(i=0; i<st->decl->n_fields; i++)
 	{
-		if(!st->decl->fields[i]->name)
+//		if(!st->decl->fields[i]->name)
+		if(!st->decl->fields[i]->name ||
+			!strcmp(st->decl->fields[i]->name, "_"))
 		{
 			st2=BGBCC_CCXL_LookupStructureForType(ctx,
 				st->decl->fields[i]->type);

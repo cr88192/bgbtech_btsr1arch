@@ -24,7 +24,8 @@ int BJX2_DecodeOpcode_DecF8(BJX2_Context *ctx,
 	case 0x0:	case 0x1:
 		op->imm=imm16u;
 		op->rn=rn_i16;
-		op->nmid=BJX2_NMID_MOV;
+//		op->nmid=BJX2_NMID_MOV;
+		op->nmid=BJX2_NMID_LDI;
 		op->fmid=BJX2_FMID_IMMREG;
 		op->Run=BJX2_Op_MOV_ImmReg;
 		break;

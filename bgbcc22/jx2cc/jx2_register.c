@@ -1,33 +1,9 @@
 /*
- * R0/R1/R2/R3: Return Value, Scratch
- *   R0: ReturnA, Default Const-Load
- *   R1: ReturnB, Scratch
- *   R2: Struct Return Pointer
- *   R3: Temp Opr Working Reg
- * R4/R5/R6/R7: Arg Passing/Scratch
- * R8..R11: Var Cache (Callee Save)
- * R12: Var Cache / Context Pointer (GOT)
- * R13: Var Cache (Callee Save)
- * R14: Var Cache / Frame Pointer
- * R15: Stack Pointer
- * FR5,FR4,FR7,FR6,FR9,FR8,FR11,FR10: Float/Double Args, Scratch
- * FR12..FR15: Var Cache (Callee Save)
- *
- * Frame (Frame-Ref Point)
- *   (- 4) Saved PR
- *   (- 8) Saved R14
- *   (-12) Saved R13
- *   (-16) Saved R12
- *   (-20) Saved R11
- *   (-24) Saved R10
- *   (-28) Saved R9
- *   (-32) Saved R8
- *   (-36) Saved FR15
- *   (-40) Saved FR14
- *   (-44) Saved FR13
- *   (-48) Saved FR12
- *   ...
- *   SP (Stack Ref Point)
+ * BJX2
+ * Rn: Register is full-width, but the value only occupies the low 32 bits.
+ *   The value is effectively kept in a sign or zero extended form.
+ * RDn: Only the low bits are used, the high bits are undefined.
+ * RQn: The full 64 bit register is used.
  */
 
 int BGBCC_JX2C_ScratchCheckRegFree(
@@ -810,6 +786,15 @@ const byte bgbcc_jx2_qcachereg[16]={
 	BGBCC_SH_REG_RQ5, BGBCC_SH_REG_RQ4,
 	BGBCC_SH_REG_RQ3, BGBCC_SH_REG_RQ2,
 	BGBCC_SH_REG_ZZR };
+const byte bgbcc_jx2_pcachereg[16]={
+	BGBCC_SH_REG_R14, BGBCC_SH_REG_R13,
+	BGBCC_SH_REG_R12, BGBCC_SH_REG_R11,
+	BGBCC_SH_REG_R10, BGBCC_SH_REG_R9,
+	BGBCC_SH_REG_R8,
+	BGBCC_SH_REG_R7, BGBCC_SH_REG_R6,
+	BGBCC_SH_REG_R5, BGBCC_SH_REG_R4,
+	BGBCC_SH_REG_R3, BGBCC_SH_REG_R2,
+	BGBCC_SH_REG_ZZR };
 
 const byte bgbcc_jx2_jcachereg_egpr[32]={
 	BGBCC_SH_REG_RD14, BGBCC_SH_REG_RD13,
@@ -845,6 +830,23 @@ const byte bgbcc_jx2_qcachereg_egpr[32]={
 	BGBCC_SH_REG_RQ19, BGBCC_SH_REG_RQ18,
 	BGBCC_SH_REG_RQ17, BGBCC_SH_REG_RQ16, 
 	BGBCC_SH_REG_ZZR };
+const byte bgbcc_jx2_pcachereg_egpr[32]={
+	BGBCC_SH_REG_R14, BGBCC_SH_REG_R13,
+	BGBCC_SH_REG_R12, BGBCC_SH_REG_R11,
+	BGBCC_SH_REG_R10, BGBCC_SH_REG_R9,
+	BGBCC_SH_REG_R8,
+	BGBCC_SH_REG_R31, BGBCC_SH_REG_R30,
+	BGBCC_SH_REG_R29, BGBCC_SH_REG_R28,
+	BGBCC_SH_REG_R27, BGBCC_SH_REG_R26,
+	BGBCC_SH_REG_R25, BGBCC_SH_REG_R24, 
+	BGBCC_SH_REG_R7,  BGBCC_SH_REG_R6,
+	BGBCC_SH_REG_R5,  BGBCC_SH_REG_R4,
+	BGBCC_SH_REG_R3,  BGBCC_SH_REG_R2,
+	BGBCC_SH_REG_R23, BGBCC_SH_REG_R22,
+	BGBCC_SH_REG_R21, BGBCC_SH_REG_R20,
+	BGBCC_SH_REG_R19, BGBCC_SH_REG_R18,
+	BGBCC_SH_REG_R17, BGBCC_SH_REG_R16, 
+	BGBCC_SH_REG_ZZR };
 const byte bgbcc_jx2_maxreg=7;
 const byte bgbcc_jx2_maxreg_egpr=15;
 const byte bgbcc_jx2_maxreg_lf=13;
@@ -864,9 +866,9 @@ int BGBCC_JX2C_EmitTryGetRegister(
 	ccxl_register reg1;
 	ccxl_type tty;
 	int maxreg, vrsave;
-	int creg, excl, nsv, userq, rcls;
+	int creg, excl, nsv, userq, usepq, rcls;
 	int pr0, pr1;
-	int i, bi;
+	int i, j, bi;
 
 	tty=BGBCC_CCXL_GetRegType(ctx, reg);
 	rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, tty);
@@ -903,6 +905,8 @@ int BGBCC_JX2C_EmitTryGetRegister(
 		return(BGBCC_JX2C_EmitTryGetLpRegister(ctx, sctx, reg, fl));
 	}
 
+	usepq=0;
+
 	switch(rcls)
 	{
 	case BGBCC_SH_REGCLS_VO_QGR:
@@ -933,6 +937,11 @@ int BGBCC_JX2C_EmitTryGetRegister(
 			{ userq=0; }
 #endif
 
+	if(BGBCC_CCXL_IsRegPointerP(ctx, reg))
+	{
+		usepq=1;
+	}
+
 	excl=0;
 	if(sctx->use_bp)
 		excl|=1;
@@ -951,14 +960,24 @@ int BGBCC_JX2C_EmitTryGetRegister(
 //	for(i=0; i<sctx->maxreg_gpr; i++)
 	for(i=0; i<maxreg; i++)
 	{
-		if(excl&(1<<i))
+//		if(excl&(1<<i))
+		if((excl>>i)&1)
 			continue;
 
 //		if(!((sctx->regalc_live)&(1<<i)))
 //			continue;
 
-		if(!((sctx->regalc_save)&(1<<i)))
+//		if(!((sctx->regalc_save)&(1<<i)))
+//			continue;
+
+		j=(sctx->regalc_save)>>i;
+		if(!(j&1))
+		{
+			if(!j)
+				break;
 			continue;
+		}
+
 		if(BGBCC_CCXL_RegisterIdentEqualP(ctx,
 			reg, sctx->regalc_map[i]))
 		{
@@ -979,6 +998,8 @@ int BGBCC_JX2C_EmitTryGetRegister(
 //				creg=bgbcc_jx2_jcachereg[i];
 			if(userq)
 				creg=sctx->qcachereg[i];
+			else if(usepq)
+				creg=sctx->pcachereg[i];
 			else
 				creg=sctx->jcachereg[i];
 			return(creg);
@@ -1000,7 +1021,8 @@ int BGBCC_JX2C_EmitTryGetRegister(
 //		for(i=0; i<sctx->maxreg_gpr; i++)
 		for(i=0; i<maxreg; i++)
 		{
-			if(excl&(1<<i))
+//			if(excl&(1<<i))
+			if((excl>>i)&1)
 				continue;
 
 			if((sctx->vsp_rsv>0) && (i<sctx->vsp_rsv))
@@ -1085,6 +1107,8 @@ int BGBCC_JX2C_EmitTryGetRegister(
 //				creg=bgbcc_jx2_jcachereg[i];
 			if(userq)
 				creg=sctx->qcachereg[i];
+			else if(usepq)
+				creg=sctx->pcachereg[i];
 			else
 				creg=sctx->jcachereg[i];
 			BGBCC_JX2C_EmitSaveFrameReg(ctx, sctx, creg);
@@ -1110,7 +1134,7 @@ int BGBCC_JX2C_EmitGetRegister(
 	ccxl_register reg1;
 	ccxl_type tty;
 	int maxreg, vrsave;
-	int creg, lng, excl, bi, nsv, userq, rcls;
+	int creg, lng, excl, bi, nsv, userq, usepq, rcls;
 	int pr0, pr1;
 	int i;
 
@@ -1141,6 +1165,7 @@ int BGBCC_JX2C_EmitGetRegister(
 		return(BGBCC_JX2C_EmitGetLpRegister(ctx, sctx, reg, fl));
 	}
 
+	usepq=0;
 	switch(rcls)
 	{
 	case BGBCC_SH_REGCLS_VO_QGR:
@@ -1160,6 +1185,11 @@ int BGBCC_JX2C_EmitGetRegister(
 	default:
 		userq=0;
 		break;
+	}
+
+	if(BGBCC_CCXL_IsRegPointerP(ctx, reg))
+	{
+		usepq=1;
 	}
 
 #if 0
@@ -1318,6 +1348,8 @@ int BGBCC_JX2C_EmitGetRegister(
 //			creg=bgbcc_jx2_jcachereg[i];
 		if(userq)
 			creg=sctx->qcachereg[i];
+		else if(usepq)
+			creg=sctx->pcachereg[i];
 		else
 			creg=sctx->jcachereg[i];
 		BGBCC_JX2C_EmitSaveFrameReg(ctx, sctx, creg);
@@ -1361,6 +1393,8 @@ int BGBCC_JX2C_EmitGetRegister(
 //			creg=bgbcc_jx2_jcachereg[i];
 		if(userq)
 			creg=sctx->qcachereg[i];
+		else if(usepq)
+			creg=sctx->pcachereg[i];
 		else
 			creg=sctx->jcachereg[i];
 		BGBCC_JX2C_EmitSaveFrameReg(ctx, sctx, creg);
@@ -1439,19 +1473,54 @@ int BGBCC_JX2C_GetVRegPriority(
 	BGBCC_JX2_Context *sctx,
 	ccxl_register reg)
 {
-	BGBCC_CCXL_RegisterInfo *fcn;
+//	BGBCC_CCXL_RegisterInfo *fcn;
 	BGBCC_JX2_VarSpan *vsp, *vsp1;
+	ccxl_register vreg;
+	int v, v1, h;
 	int i, j, k;
 
-	fcn=ctx->cur_func;
+//	fcn=ctx->cur_func;
 
+//	v=reg.val&CCXL_REGTY_REGMASK;
+	v=(reg.val&CCXL_REGID_BASEMASK)^
+		((reg.val&CCXL_REGTY_REGMASK)>>56);
+	h=v*251;
+	h=(h>>8)&63;
+	
+	i=sctx->vspan_hash[h];
+	while(i>=0)
+	{
+		vsp=sctx->vspan[i];
+		vreg=vsp->reg;
+//		v1=vreg.val&CCXL_REGTY_REGMASK;
+		v1=(vreg.val&CCXL_REGID_BASEMASK)^
+			((vreg.val&CCXL_REGTY_REGMASK)>>56);
+
+//		if((vreg.val&CCXL_REGTY_REGMASK)!=(reg.val&CCXL_REGTY_REGMASK))
+		if(v1!=v)
+			{ i=sctx->vspan_chn[i]; continue; }
+		
+		if(BGBCC_CCXL_RegisterIdentEqualP(ctx, vreg, reg))
+			return(i);
+		i=sctx->vspan_chn[i];
+	}
+
+	return(99999);
+
+#if 0
 	for(i=0; i<sctx->vspan_num; i++)
 	{
 		vsp=sctx->vspan[i];
-		if(BGBCC_CCXL_RegisterIdentEqualP(ctx, vsp->reg, reg))
+		vreg=vsp->reg;
+
+		if((vreg.val&CCXL_REGTY_REGMASK)!=(reg.val&CCXL_REGTY_REGMASK))
+			continue;
+		
+		if(BGBCC_CCXL_RegisterIdentEqualP(ctx, vreg, reg))
 			return(i);
 	}
 	return(99999);
+#endif
 }
 
 int BGBCC_JX2C_GetVRegLiveRange(
@@ -1679,7 +1748,7 @@ int BGBCC_JX2C_EmitSyncRegisterIndex2(
 	static int rchk=0;
 	ccxl_register reg;
 	ccxl_type tty;
-	int creg, regfl, userq, rcls;
+	int creg, regfl, userq, usepq, rcls;
 	int i;
 
 	i=rgix;
@@ -1693,6 +1762,7 @@ int BGBCC_JX2C_EmitSyncRegisterIndex2(
 	tty=BGBCC_CCXL_GetRegType(ctx, reg);
 	rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, tty);
 
+	usepq=0;
 	switch(rcls)
 	{
 	case BGBCC_SH_REGCLS_VO_QGR:
@@ -1726,6 +1796,8 @@ int BGBCC_JX2C_EmitSyncRegisterIndex2(
 //			creg=bgbcc_jx2_jcachereg[i];
 		if(userq)
 			creg=sctx->qcachereg[i];
+		else if(usepq)
+			creg=sctx->pcachereg[i];
 		else
 			creg=sctx->jcachereg[i];
 
@@ -1833,6 +1905,7 @@ int BGBCC_JX2C_EmitLabelFlushRegisters(
 
 	sctx->jcachereg=bgbcc_jx2_jcachereg;
 	sctx->qcachereg=bgbcc_jx2_qcachereg;
+	sctx->pcachereg=bgbcc_jx2_pcachereg;
 	sctx->maxreg_gpr=bgbcc_jx2_maxreg;
 	sctx->maxreg_gpr_lf=bgbcc_jx2_maxreg_lf;
 
@@ -1840,6 +1913,7 @@ int BGBCC_JX2C_EmitLabelFlushRegisters(
 	{
 		sctx->jcachereg=bgbcc_jx2_jcachereg_egpr;
 		sctx->qcachereg=bgbcc_jx2_qcachereg_egpr;
+		sctx->pcachereg=bgbcc_jx2_pcachereg_egpr;
 		sctx->maxreg_gpr=bgbcc_jx2_maxreg_egpr;
 		sctx->maxreg_gpr_lf=bgbcc_jx2_maxreg_egpr_lf;
 	}

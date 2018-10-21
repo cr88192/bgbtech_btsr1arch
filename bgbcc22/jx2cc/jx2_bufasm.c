@@ -1436,7 +1436,8 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 			return(1);
 		}
 
-		if(!strcmp(tk0, "I.string"))
+		if(!strcmp(tk0, "I.string") ||
+			!strcmp(tk0, "I.asciz"))
 		{
 			cs2=cs1;
 			cs2=BGBCC_JX2A_ParseToken(cs2, &tk0);
@@ -1447,6 +1448,57 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 					cs2++;
 				cs2=BGBCC_JX2A_ParseToken(cs2, &tk0);
 				BGBCC_JX2_EmitString(ctx, tk0+1);
+			}
+
+			*rcs=cs2;
+			return(1);
+		}
+
+		if(!strcmp(tk0, "I.ascii"))
+		{
+			cs2=cs1;
+			cs2=BGBCC_JX2A_ParseToken(cs2, &tk0);
+			BGBCC_JX2_EmitAscii(ctx, tk0+1);
+			while(*cs2 && *cs2==',')
+			{
+				if(*cs2==',')
+					cs2++;
+				cs2=BGBCC_JX2A_ParseToken(cs2, &tk0);
+				BGBCC_JX2_EmitAscii(ctx, tk0+1);
+			}
+
+			*rcs=cs2;
+			return(1);
+		}
+
+		if(!strcmp(tk0, "I.ucstr"))
+		{
+			cs2=cs1;
+			cs2=BGBCC_JX2A_ParseToken(cs2, &tk0);
+			BGBCC_JX2_EmitAsciiUTF2UCS2(ctx, tk0+1);
+			while(*cs2 && *cs2==',')
+			{
+				if(*cs2==',')
+					cs2++;
+				cs2=BGBCC_JX2A_ParseToken(cs2, &tk0);
+				BGBCC_JX2_EmitAsciiUTF2UCS2(ctx, tk0+1);
+			}
+
+			*rcs=cs2;
+			return(1);
+		}
+
+		if(!strcmp(tk0, "I.ucstrz"))
+		{
+			cs2=cs1;
+			cs2=BGBCC_JX2A_ParseToken(cs2, &tk0);
+			BGBCC_JX2_EmitStringUTF2UCS2(ctx, tk0+1);
+			while(*cs2 && *cs2==',')
+			{
+				if(*cs2==',')
+					cs2++;
+				cs2=BGBCC_JX2A_ParseToken(cs2, &tk0);
+				BGBCC_JX2_EmitStringUTF2UCS2(ctx, tk0+1);
 			}
 
 			*rcs=cs2;

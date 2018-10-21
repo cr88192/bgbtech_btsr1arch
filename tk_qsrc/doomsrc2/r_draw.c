@@ -43,6 +43,7 @@ rcsid[] = "$Id: r_draw.c,v 1.4 1997/02/03 16:47:55 b1 Exp $";
 // State.
 #include "doomstat.h"
 
+// #include <stdint.h>
 
 // ?
 #define MAXWIDTH			1120
@@ -70,6 +71,8 @@ int		viewwindowy;
 dt_scrpix	*ylookup[MAXHEIGHT]; 
 int		columnofs[MAXWIDTH]; 
 
+u16		*ylookup_zb[MAXHEIGHT]; 
+
 // Color tables for different players,
 //  translate a limited part to another
 //  (color ramps used for  suit colors).
@@ -91,6 +94,7 @@ int			dc_yh;
 fixed_t			dc_scale; 
 fixed_t			dc_iscale; 
 fixed_t			dc_texturemid;
+fixed_t			dc_zdist;
 
 byte			dc_isspr;
 
@@ -106,6 +110,8 @@ int dc_czbuf_yl[512];
 int dc_czbuf_yh[512];
 fixed_t dc_czbuf_sc[512];
 
+int r_nseenpolyobj;
+
 void R_ClearCZBuf (void) 
 {
 	int i, j, k;
@@ -114,6 +120,18 @@ void R_ClearCZBuf (void)
 	{
 		dc_czbuf_sc[i] = MAXINT;
 	}
+	
+	if(r_usezbuff)
+	{
+		for(i=0; i<(SCREENWIDTH*SCREENHEIGHT); i++)
+			screens_zbuf[i]=0xFFFF;
+	}
+	
+	if(!r_nseenpolyobj)
+	{
+		r_usezbuff=0;
+	}
+	r_nseenpolyobj=0;
 }
 
 void R_CellMarkColumn (void) 
@@ -204,6 +222,9 @@ void R_DrawColumn (void)
  
 	count = dc_yh - dc_yl + 1; 
 
+	if(count<=0)
+		return;
+
 	source = dc_source;
 	if(!source)
 		return;
@@ -265,6 +286,132 @@ void R_DrawColumn (void)
 	while (count > 0)
 	{ 
 		*dest = colormap[source[frac>>25]]; 
+		dest += SCREENWIDTH; 
+		frac += fracstep; 
+		count--;
+	} 
+}
+#endif
+
+
+#if 1
+void R_DrawColumn_ZB (void) 
+{ 
+	int			count; 
+	dt_scrpix	*dest; 
+	u16			*dest_zb;
+	fixed_t		frac;
+	fixed_t		fracstep;
+	u16			z;
+	int			i;
+ 
+	count = dc_yh - dc_yl; 
+
+	// Zero length, column does not exceed a pixel.
+	if (count < 0) 
+		return; 
+				 
+	dest = ylookup[dc_yl] + columnofs[dc_x];  
+	dest_zb = ylookup_zb[dc_yl] + columnofs[dc_x];  
+
+	fracstep = dc_iscale; 
+	frac = dc_texturemid + (dc_yl-centery)*fracstep; 
+
+//	z = dc_scale;
+//	z = dc_iscale;
+//	z = dc_zdist>>16;
+
+	z = dc_zdist >> 13;
+	z = r_int_clamp(z, 0, 65535);
+	i = 0;
+
+	do 
+	{
+//		if((z<=(*dest_zb)) || dc_isspr)
+		if(z<(*dest_zb))
+		{
+			*dest = dc_colormap[dc_source[(frac>>FRACBITS)&127]];
+			*dest_zb = z;
+		}else
+		{
+			i = -1;
+		}
+		dest += SCREENWIDTH; 
+		dest_zb += SCREENWIDTH; 
+		frac += fracstep;
+	} while (count--); 
+} 
+#endif
+
+// UNUSED.
+// Loop unrolled.
+#if 0
+void R_DrawColumn_ZB (void) 
+{ 
+	int				count; 
+	byte*			source;
+	dt_scrpix*		dest;
+	u16*			dest_zb;
+	lighttable_t*	colormap;
+	
+	unsigned		frac;
+	unsigned		fracstep;
+	unsigned		fracstep2;
+	unsigned		fracstep3;
+	unsigned		fracstep4;
+	u16 			z;
+ 
+	count = dc_yh - dc_yl + 1; 
+
+	if(count<=0)
+		return;
+
+	source = dc_source;
+	if(!source)
+		return;
+
+	colormap = dc_colormap;		 
+	dest = ylookup[dc_yl] + columnofs[dc_x];  
+	dest_zb = ylookup_zb[dc_yl] + columnofs[dc_x];  
+	 
+	fracstep = dc_iscale<<9; 
+	frac = (dc_texturemid + (dc_yl-centery)*dc_iscale)<<9; 
+ 
+	fracstep2 = fracstep+fracstep;
+	fracstep3 = fracstep2+fracstep;
+	fracstep4 = fracstep3+fracstep;
+	
+	z = dc_scale;
+	
+	while (count >= 8) 
+	{
+		if(z<=dest_zb[SCREENWIDTH*0])
+		{
+		dest[SCREENWIDTH*0] = colormap[source[(frac          )>>25]];
+		dest[SCREENWIDTH*1] = colormap[source[(frac+fracstep )>>25]]; 
+		dest[SCREENWIDTH*2] = colormap[source[(frac+fracstep2)>>25]]; 
+		dest[SCREENWIDTH*3] = colormap[source[(frac+fracstep3)>>25]];
+		
+		frac += fracstep4; 
+
+		dest[SCREENWIDTH*4] = colormap[source[(frac          )>>25]]; 
+		dest[SCREENWIDTH*5] = colormap[source[(frac+fracstep )>>25]]; 
+		dest[SCREENWIDTH*6] = colormap[source[(frac+fracstep2)>>25]]; 
+		dest[SCREENWIDTH*7] = colormap[source[(frac+fracstep3)>>25]]; 
+
+		frac += fracstep4; 
+		dest += SCREENWIDTH*8; 
+		count -= 8;
+	} 
+	
+	while (count > 0)
+	{
+		if(z<=(*dest_zb))
+		{
+			*dest_zb = z;
+			*dest = colormap[source[frac>>25]]; 
+		}
+		
 		dest += SCREENWIDTH; 
 		frac += fracstep; 
 		count--;
@@ -575,6 +722,7 @@ void R_InitTranslationTables (void)
 int			ds_y; 
 int			ds_x1; 
 int			ds_x2;
+fixed_t		ds_z; 
 
 lighttable_t*		ds_colormap; 
 
@@ -754,6 +902,55 @@ void R_DrawSpan (void)
 } 
 #endif
 
+#if 1
+void R_DrawSpan_ZB (void) 
+{ 
+	fixed_t		xfrac;
+	fixed_t		yfrac; 
+	dt_scrpix	*dest; 
+	u16			*dest_zb; 
+	int			count;
+	int			spot;
+	int			tz;
+
+	xfrac = ds_xfrac; 
+	yfrac = ds_yfrac; 
+	 
+	dest = ylookup[ds_y] + columnofs[ds_x1];
+	dest_zb = ylookup_zb[ds_y] + columnofs[ds_x1];
+	count = ds_x2 - ds_x1; 
+	
+//	tz = ds_z >> 16;
+	tz = ds_z >> 13;
+	tz = r_int_clamp(tz, 0, 65535);
+
+	do 
+	{
+		// Current texture index in u,v.
+		spot = ((yfrac>>(16-6))&(63*64)) + ((xfrac>>16)&63);
+
+		// Lookup pixel from flat texture tile,
+		//  re-index using light/colormap.
+		if(tz <= (*dest_zb))
+		{
+			*dest = ds_colormap[ds_source[spot]];
+			*dest_zb = tz;
+		}
+
+		dest++;
+		dest_zb++;
+
+//		*dest++ = ds_colormap[ds_source[spot]];
+//		*dest_zb++=ds_z;
+
+		// Next step in u,v.
+		xfrac += ds_xstep; 
+		yfrac += ds_ystep;
+	
+	} while (count--); 
+} 
+#endif
+
 
 //
 // Again..
@@ -836,7 +1033,11 @@ R_InitBuffer
 
 	// Preclaculate all row offsets.
 	for (i=0 ; i<height ; i++) 
+	{
 		ylookup[i] = screens[0] + (i+viewwindowy)*SCREENWIDTH; 
+
+		ylookup_zb[i] = screens_zbuf + (i+viewwindowy)*SCREENWIDTH; 
+	}
 } 
  
  

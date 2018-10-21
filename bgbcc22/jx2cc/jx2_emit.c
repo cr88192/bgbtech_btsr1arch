@@ -33,6 +33,81 @@ int BGBCC_JX2_EmitCheckRegExt4(BGBCC_JX2_Context *ctx, int reg)
 	return(0);
 }
 
+int BGBCC_JX2_EmitCheckRegNeedSx(BGBCC_JX2_Context *ctx, int reg)
+{
+	if(((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_RD0) ||
+		((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_RD16))
+	{
+//		if(ctx->reg_pszx[reg&15]!=BGBCC_PSZX_SX)
+//			return(1);
+//		return(0);
+
+		if((ctx->reg_pszx[reg&15]==BGBCC_PSZX_SX) ||
+			(ctx->reg_pszx[reg&15]==BGBCC_PSZX_SSX) ||
+			(ctx->reg_pszx[reg&15]==BGBCC_PSZX_SZX))
+			return(0);
+		return(1);
+	}
+
+	return(0);
+}
+
+int BGBCC_JX2_EmitCheckRegNeedZx(BGBCC_JX2_Context *ctx, int reg)
+{
+	if(((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_RD0) ||
+		((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_RD16))
+	{
+//		if(ctx->reg_pszx[reg&15]!=BGBCC_PSZX_SX)
+//			return(1);
+//		return(0);
+
+		if((ctx->reg_pszx[reg&15]==BGBCC_PSZX_ZX) ||
+			(ctx->reg_pszx[reg&15]==BGBCC_PSZX_SZX))
+			return(0);
+		return(1);
+	}
+
+	return(0);
+
+#if 0
+	if((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_RD0)
+	{
+		if(ctx->reg_pszx[reg&15]!=BGBCC_PSZX_ZX)
+			return(1);
+		return(0);
+	}
+
+	if((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_RD16)
+	{
+		if(ctx->reg_pszx[reg&15]!=BGBCC_PSZX_ZX)
+			return(1);
+		return(0);
+	}
+#endif
+
+	return(0);
+}
+
+int BGBCC_JX2_EmitCheckRegNeedSzx(BGBCC_JX2_Context *ctx, int reg)
+{
+	if(((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_RD0) ||
+		((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_RD16))
+	{
+//		if(ctx->reg_pszx[reg&15]!=BGBCC_PSZX_SX)
+//			return(1);
+//		return(0);
+
+		if(	(ctx->reg_pszx[reg&15]==BGBCC_PSZX_SX) ||
+			(ctx->reg_pszx[reg&15]==BGBCC_PSZX_ZX) ||
+			(ctx->reg_pszx[reg&15]==BGBCC_PSZX_SSX) ||
+			(ctx->reg_pszx[reg&15]==BGBCC_PSZX_SZX))
+			return(0);
+		return(1);
+	}
+
+	return(0);
+}
+
 int BGBCC_JX2_EmitCheckRegExtGPR(BGBCC_JX2_Context *ctx, int reg)
 {
 	if(BGBCC_JX2_EmitCheckRegBaseGPR(ctx, reg))
@@ -59,6 +134,12 @@ int BGBCC_JX2_EmitCheckRegExtAddrGPR(BGBCC_JX2_Context *ctx, int reg)
 //		return(1);
 	if((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_RQ16)
 		return(1);
+
+	if((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_RD16)
+	{
+		if(ctx->is_addr_x32)
+			return(1);
+	}
 
 	return(0);
 }
@@ -94,6 +175,12 @@ int BGBCC_JX2_EmitCheckRegAddrGPR(BGBCC_JX2_Context *ctx, int reg)
 	if((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_RQ0)
 	{
 		return(1);
+	}
+
+	if((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_RD0)
+	{
+		if(ctx->is_addr_x32)
+			return(1);
 	}
 
 	return(0);
@@ -338,8 +425,10 @@ int BGBCC_JX2_EmitLoadDrImm(
 	{
 		BGBCC_JX2_EmitLoadDrImm(ctx, imm>>16);
 
-		opw1=0xF000|((imm>> 8)&255);
-		opw2=0x2600|((imm>> 0)&255);
+//		opw1=0xF000|((imm>> 8)&255);
+//		opw2=0x2600|((imm>> 0)&255);
+		opw1=0xF860;
+		opw2=imm&65535;
 		BGBCC_JX2_EmitPadForOpWord(ctx, opw1);
 		BGBCC_JX2_EmitWord(ctx, opw1);
 		BGBCC_JX2_EmitWord(ctx, opw2);
@@ -412,6 +501,8 @@ int BGBCC_JX2_EmitLoadRegImm(
 	u16 imm_f16;
 	int rt1;
 	int opw1, opw2, opw3;
+
+	BGBCC_JX2DA_EmitLoadRegImm(ctx, nmid, reg, imm);
 
 	if(BGBCC_JX2_EmitCheckRegBaseGPR(ctx, reg))
 //	if(0)
@@ -694,6 +785,8 @@ int BGBCC_JX2_EmitLoadRegImm64P(
 	s32 lo, hi;
 	int rt1, rt2;
 	int opw1, opw2, opw3;
+
+	BGBCC_JX2DA_EmitLoadRegImm64(ctx, BGBCC_SH_NMID_MOVQ, reg, imm);
 
 	if(BGBCC_JX2C_EmitRegIsLpReg(NULL, ctx, reg))
 	{
@@ -1079,7 +1172,7 @@ int BGBCC_JX2_TryEmitLoadRegLabelVarRel24(
 	}
 #endif
 
-	if(BGBCC_JX2_EmitCheckAutoLabelNear8(ctx, lbl))
+	if(BGBCC_JX2_EmitCheckAutoLabelNear8(ctx, lbl, nmid))
 		{ prlty=BGBCC_SH_RLC_RELW8_BSR;}
 	else if(BGBCC_JX2_ModelIsLabel16P(ctx))
 	{
@@ -1493,6 +1586,8 @@ int BGBCC_JX2_TryEmitLoadRegLabelVarRel24(
 
 	if(opw1>=0)
 	{
+		BGBCC_JX2DA_EmitLoadRegLabelVarRel24(ctx, nmid, reg, lbl);
+
 		BGBCC_JX2_EmitPadForOpWord(ctx, opw1);
 		if(rlty>0)
 			{ BGBCC_JX2_EmitRelocTy(ctx, lbl, rlty); }
@@ -1542,7 +1637,7 @@ int BGBCC_JX2_EmitStoreRegLabelVarRel24(
 	}
 #endif
 
-	if(BGBCC_JX2_EmitCheckAutoLabelNear8(ctx, lbl))
+	if(BGBCC_JX2_EmitCheckAutoLabelNear8(ctx, lbl, nmid))
 		{ prlty=BGBCC_SH_RLC_RELW8_BSR;}
 	else if(BGBCC_JX2_ModelIsLabel16P(ctx))
 	{
@@ -1810,6 +1905,8 @@ int BGBCC_JX2_EmitStoreRegLabelVarRel24(
 
 	if(opw1>=0)
 	{
+		BGBCC_JX2DA_EmitStoreRegLabelVarRel24(ctx, nmid, reg, lbl);
+
 		BGBCC_JX2_EmitPadForOpWord(ctx, opw1);
 		if(rlty>0)
 			{ BGBCC_JX2_EmitRelocTy(ctx, lbl, rlty); }

@@ -65,7 +65,7 @@ libs2: FORCE
 #	cp pdpc201/*.ril		$(BUILD)
 #	cp pdpc201/crt0.o	$(BUILD)
 
-libs: libs2 libvxcore.ril libvxcore64.ril
+libs: libs2 libvxcore.ril libvxcore64.ril libvxcore_bjx2.ril
 
 apps: FORCE
 #	make -C pdpc201 -f Makefile.vx86 apps
@@ -76,6 +76,9 @@ libvxcore.ril: $(SRCS_CLIB) $(SRCS_ASM)
 
 libvxcore64.ril: $(SRCS_CLIB) $(SRCS_ASM)
 	$(CC) -o libvxcore64.ril vxcore_multi.c $(SRCS_ASM) $(COPTS64)
+
+libvxcore_bjx2.ril: $(SRCS_CLIB) $(SRCS_ASM)
+	$(CC) -o libvxcore_bjx2.ril vxcore_multi.c $(SRCS_ASM) $(COPTS64)
 
 FORCE:
 

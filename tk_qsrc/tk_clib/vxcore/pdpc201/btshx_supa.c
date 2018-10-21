@@ -542,6 +542,26 @@ u32 TK_GetTimeMs(void)
 	return(ms);
 }
 
+s64 TK_GetTimeUs(void)
+{
+	u32 *sreg;
+	u32 us_lo, us_hi;
+	u64 us;
+	int ms;
+
+	sreg=(int *)0xA000E000;
+	us_lo=sreg[0];
+	us_hi=sreg[1];
+	us=(((u64)us_hi)<<32)|us_lo;
+//	ms=us>>10;
+
+//	sreg=(int *)0x007F8000;
+//	ms=(P_AIC_RTC_NSEC>>20)|(P_AIC_RTC_SEC_LO*1000);
+//	ms=sreg[4];
+//	return(ms);
+	return(us);
+}
+
 void __datetime(void *ptr)
 {
 	struct dt_s {

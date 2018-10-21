@@ -504,6 +504,10 @@
 #define BGBCC_SH_NMID_FSQRTA		0xB1	//
 #define BGBCC_SH_NMID_FRCP			0xB2	//
 
+#define BGBCC_SH_NMID_BSR2F			0xBA	//BSRF, 32-bit align
+#define BGBCC_SH_NMID_BRA2F			0xBB	//BRAF, 32-bit align
+
+#define BGBCC_SH_NMID_MOVDL			0xBC	//MOVD.L
 #define BGBCC_SH_NMID_RET			0xBD	//
 #define BGBCC_SH_NMID_PUSHX2		0xBE	//
 #define BGBCC_SH_NMID_POPX2			0xBF	//
@@ -662,6 +666,7 @@
 #define BGBCC_SH_RLC_RELW16_BJX		0x0E	//Relative 16 bit (WORD, BJX1)
 											//OOxx_OOxx
 #define BGBCC_SH_RLC_RELW20_BJX		0x0F	//Relative 20 bit (WORD, BJX1)
+											//OOxx_Oxxx
 #define BGBCC_SH_RLC_REL24_BJX		0x10	//Relative 24 bit (BYTE, BJX1)
 											//OOxx_xxxx
 #define BGBCC_SH_RLC_REL24B_BJX		0x11	//Relative 24 bit (BYTE, BJX1, Rev)
@@ -828,6 +833,14 @@ Large32:
 #define BGBCC_MEMMDL_MEDIUM32		4	//16MB+16MB, 4GB
 #define BGBCC_MEMMDL_LARGE32		4	//4GB+4GB, 4GB
 
+#define BGBCC_PSZX_MASK				0x0F	//
+#define BGBCC_PSZX_UNK				0x00	//Unknown extension
+#define BGBCC_PSZX_SX				0x01	//Sign Extended
+#define BGBCC_PSZX_ZX				0x02	//Zero Extended
+#define BGBCC_PSZX_QW				0x03	//Quadword
+#define BGBCC_PSZX_SSX				0x04	//Small Sign Extended
+#define BGBCC_PSZX_SZX				0x05	//Small Zero Extended
+
 #define BGBCC_SHX_GenLabelTemp(ctx)		\
 	BGBCC_SHX_GenLabelTempLLn(ctx, __FILE__, __LINE__)
 #define BGBCC_SHX_GenLabel(ctx)		\
@@ -857,24 +870,39 @@ u32 sec_lsz[16];		//logical size
 byte sec;
 byte nsec;
 
+byte *asm_buf[16];
+byte *asm_end[16];
+byte *asm_pos[16];
+byte do_asm;
+
 byte is_le;			//is little endian
 byte use_bp;		//use frame pointer
 byte need_farjmp;	//function needs far32 jumps
 byte need_f16jmp;	//function needs far16 jumps
 byte need_n12jmp;	//function needs at least 12-bit jumps
+
+byte need_n16bsr;	//image exceeds 16-bit BSR
+byte need_n20bsr;	//image exceeds 20-bit BSR
+byte need_n24bsr;	//image exceeds 24-bit BSR
+
+byte need_n16dat;	//image exceeds 16-bit BSR
+byte need_n20dat;	//image exceeds 20-bit BSR
+byte need_n24dat;	//image exceeds 24-bit BSR
+
 byte is_pic;		//is PIC.
 byte use_fpr;		//uses floating point registers
 byte use_dbr;		//uses fp double registers
 byte is_vararg;		//function is varargs
 byte is_simpass;	//is simulation pass
 byte is_stable;		//function is stable
-byte is_addr64;		//target uses 64-bit addresses
+byte is_addr64;		//target uses a 64-bit ISA
 byte is_rawasm;		//is raw assembler
 byte is_leaf;		//function is a leaf function
 byte is_rom;		//building a ROM image
 byte is_betav;		//uses BetaVe tweaks.
 byte is_mergece;	//merge CC0e/CC3e into CExx
 byte is_tr_leaf;	//given trace is a leaf
+byte is_addr_x32;	//target uses 32-bit addresses (on 64-bit ISA)
 
 byte no_fpu;		//no hardware FPU instructions
 byte no_ext32;		//no 32-bit instruction forms
@@ -918,6 +946,11 @@ int fnsz_vtr[16];
 int fnsz_lvtr[16];
 int fnsz_dvtr[16];
 
+int sim_txtsz;
+int sim_datsz;
+int sim_bsssz;
+int simimgsz;
+
 u32 *lbl_ofs;		//label offsets
 u32 *rlc_ofs;		//reloc offsets
 u32 *lbl_id;		//label IDs
@@ -933,9 +966,12 @@ u16 lblrov;			//labels (local)
 u16 lbltrov;		//labels (temp)
 
 s32 lbl_hash[1024];		//label chain hash
+s32 lbl_simhash[64];	//label chain hash (simulation)
 
-char **lbln_name;	//named label names
-u32 *lbln_id;		//named label IDs
+char **lbln_name;		//named label names
+u32 *lbln_id;			//named label IDs
+s16 *lbln_chn;			//named label chain
+s16 lbln_hash[256];
 int nlbln, mlbln;
 int nvlbln;
 
@@ -1014,6 +1050,9 @@ int jitfl;
 
 const byte *jcachereg;
 const byte *qcachereg;
+const byte *pcachereg;
+
+byte reg_pszx[32];		//register sign/zero extension
 
 ccxl_register regalc_map[32];
 byte regalc_ltcnt[32];	//lifetime count (who to evict)
@@ -1038,6 +1077,8 @@ int iflvl_t;			//number of branches in true set
 int iflvl_f;			//number of branches in false set
 
 BGBCC_SHX_VarSpan **vspan;
+short *vspan_chn;
+short vspan_hash[64];
 int vspan_num;
 int vspan_max;
 int vsp_rsv;

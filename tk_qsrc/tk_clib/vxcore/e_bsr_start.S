@@ -79,6 +79,7 @@ isr_table:
 	bra8b _start
 	bra8b isr_except
 	bra8b isr_inter
+	bra8b isr_inter
 
 
 /*

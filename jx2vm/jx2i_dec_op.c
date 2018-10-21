@@ -2386,7 +2386,8 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 	case 0xE:	/* Enii */
 		op->imm=(sbyte)opw;
 		op->rn=(opw>>8)&15;
-		op->nmid=BJX2_NMID_MOV;
+//		op->nmid=BJX2_NMID_MOV;
+		op->nmid=BJX2_NMID_LDI;
 		op->fmid=BJX2_FMID_IMMREG;
 		op->Run=BJX2_Op_MOV_ImmReg;
 		break;

@@ -175,9 +175,9 @@ void *bgbcc_tmalloc(char *ty, int sz)
 		n=bgbcc_alloc_nblock++;
 		if(!bgbcc_alloc_block[n])
 		{
-			printf("BGBCC: Expand Heap, %d block, %dMiB\n",
-				bgbcc_alloc_nblock,
-				bgbcc_alloc_nblock*4);
+//			printf("BGBCC: Expand Heap, %d block, %dMiB\n",
+//				bgbcc_alloc_nblock,
+//				bgbcc_alloc_nblock*4);
 			bgbcc_alloc_block[n]=malloc(1<<22);
 
 			if(!bgbcc_alloc_block[n])
@@ -242,9 +242,9 @@ void *bgbcc_stralloc(int sz)
 		n=bgbcc_stralloc_nblock++;
 		if(!bgbcc_stralloc_block[n])
 		{
-			printf("BGBCC: Expand Str Heap, %d block, %dMiB\n",
-				bgbcc_stralloc_nblock,
-				bgbcc_stralloc_nblock*4);
+//			printf("BGBCC: Expand Str Heap, %d block, %dMiB\n",
+//				bgbcc_stralloc_nblock,
+//				bgbcc_stralloc_nblock*4);
 			bgbcc_stralloc_block[n]=malloc(1<<22);
 
 			if(!bgbcc_stralloc_block[n])
@@ -476,6 +476,17 @@ int bgbcc_strdup_strlen(char *str)
 
 int bgbcc_strdup_strcmp(char *s1, char *s2)
 {
+#if 1
+	if(*s1 && (*s1==*s2))	{ s1++; s2++; }
+	else					{ return(*s1-*s2); }
+	if(*s1 && (*s1==*s2))	{ s1++; s2++; }
+	else					{ return(*s1-*s2); }
+	if(*s1 && (*s1==*s2))	{ s1++; s2++; }
+	else					{ return(*s1-*s2); }
+	if(*s1 && (*s1==*s2))	{ s1++; s2++; }
+	else					{ return(*s1-*s2); }
+#endif
+
 	while(*s1 && (*s1==*s2))
 		{ s1++; s2++; }
 	return(*s1-*s2);
@@ -1073,15 +1084,27 @@ s64 bgbcc_atoi(char *str)
 
 int bgbcc_strtoxl(char *str, int rdx, u64 *rxlo, u64 *rxhi)
 {
+	return(bgbcc_strtoxl2(str, rdx, rxlo, rxhi, NULL));
+}
+
+int bgbcc_strtoxl2(char *str, int rdx, u64 *rxlo, u64 *rxhi, short *rdpct)
+{
 	char *s;
 	u64 tl, tm, th;
-	int i, j;
+	int i, j, dpct;
 	
-	s=str; tl=0; tm=0; th=0;
+	s=str; tl=0; tm=0; th=0; dpct=-9999;
 	while(*s)
 	{
 		if(*s=='_')
 			{ s++; continue; }
+
+		if((*s=='.') && rdpct)
+		{
+			s++;
+			dpct=0;
+			continue;
+		}
 
 		i=*s++; j=-1;
 		if((i>='0') && (i<='9'))
@@ -1097,10 +1120,16 @@ int bgbcc_strtoxl(char *str, int rdx, u64 *rxlo, u64 *rxhi)
 		th=(th*rdx)+(tm>>32);
 		tl=(u32)tl;
 		tm=(u32)tm;
+		dpct++;
 	}
+	
+	if(dpct<0)
+		dpct=0;
 	
 	*rxlo=tl|(tm<<32);
 	*rxhi=th;
+	if(rdpct)
+		*rdpct=dpct;
 	
 	return(1);
 }
@@ -1148,4 +1177,116 @@ s64 bgbcc_atoxl(char *str, u64 *rxlo, u64 *rxhi)
 f64 bgbcc_atof(char *str)
 {
 	return(atof(str));
+}
+
+int bgbcc_atoxf(char *str, u64 *rxlo, u64 *rxhi)
+{
+	u64 dxlo, dxhi, v;
+	int dpct, dpshr;
+
+//	bgbcc_strtoxl2(str, 10, dxlo, dxhi, dpct);
+//	dpshr=dpct*217706;
+
+	*((double *)(&v))=atof(str);
+	dxhi=((v>>4)&0x07FFFFFFFFFFFFFFULL)+
+		(  0x3C00000000000000ULL)+
+		(v&0x8000000000000000ULL);
+	dxlo=v<<60;
+	
+	*rxlo=dxlo;
+	*rxhi=dxhi;
+	return(0);
+}
+
+char *BGBCC_StrPrintUInt(char *t, u32 val)
+{
+	static u16 lutab[1024];
+	char tb[16];
+	char *t1;
+	u32 v;
+	int i, j, k;
+	
+	if(lutab[999]!=0x999)
+	{
+		for(i=0; i<1000; i++)
+		{
+			k=(i%10);
+			k+=((i/10)%10)<<4;
+			k+=(i/100)<<8;
+			lutab[i]=k;
+		}
+	}
+	
+	if(!val)
+	{
+		*t++='0';
+		return(t);
+	}
+	
+	t1=tb;
+	v=val;
+	while(v>=1000)
+	{
+		i=v%1000;
+		v=v/1000;
+		j=lutab[i];
+		*t1++='0'+((j   )&15);
+		*t1++='0'+((j>>4)&15);
+		*t1++='0'+((j>>8)&15);
+	}
+
+	i=v;
+	j=lutab[i];
+	if(j)
+	{
+		*t1++='0'+((j   )&15);
+		if(j>>4)
+		{
+			*t1++='0'+((j>>4)&15);
+			if(j>>8)
+			{
+				*t1++='0'+((j>>8)&15);
+			}
+		}
+	}
+	
+	while(t1>tb)
+		{ *t++=*(--t1); }
+	*t=0;
+	return(t);
+}
+
+char *BGBCC_StrPrintInt(char *t, s32 val)
+{
+	if(val<0)
+	{
+		*t++='-';
+		return(BGBCC_StrPrintUInt(t, -val));
+	}else
+	{
+		return(BGBCC_StrPrintUInt(t, val));
+	}
+}
+
+char *BGBCC_StrPrintInt8X(char *t, u32 val)
+{
+	static char *hexchars="0123456789ABCDEF";
+	*t++=hexchars[(val>>28)&15];
+	*t++=hexchars[(val>>24)&15];
+	*t++=hexchars[(val>>20)&15];
+	*t++=hexchars[(val>>16)&15];
+	*t++=hexchars[(val>>12)&15];
+	*t++=hexchars[(val>> 8)&15];
+	*t++=hexchars[(val>> 4)&15];
+	*t++=hexchars[(val>> 0)&15];
+	*t=0;
+	return(t);
+}
+
+char *BGBCC_StrPrintRawStr(char *t, char *s)
+{
+	while(*s)
+		*t++=*s++;
+	*t=0;
+	return(t);
 }
