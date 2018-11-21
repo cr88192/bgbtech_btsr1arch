@@ -262,6 +262,10 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 	op->opn=opw;
 	op->pc=addr;
 	op->cyc=-1;
+	op->rn=0;
+	op->rm=0;
+	op->ro=0;
+	op->imm=0;
 	
 	ret=0;
 	switch((opw>>12)&15)
@@ -269,6 +273,7 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 	case 0x0:	/* 0zzz */
 		op->rn=(opw>>4)&15;
 		op->rm=opw&15;
+		op->ro=0;
 		switch((opw>>8)&15)
 		{
 		case 0x0:	/* 00zz */
@@ -580,14 +585,14 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 			op->nmid=BJX2_NMID_LDIZ;
 			op->fmid=BJX2_FMID_IMM;
 			op->Run=BJX2_Op_LDIZ_Imm;
-			BJX2_DecodeOpcode_CheckTwoWord(ctx, op, addr, opw);
+//			BJX2_DecodeOpcode_CheckTwoWord(ctx, op, addr, opw);
 			break;
 		case 0x5:	/* 25zz */
 			op->imm=opw|(~255);
 			op->nmid=BJX2_NMID_LDIN;
 			op->fmid=BJX2_FMID_IMM;
 			op->Run=BJX2_Op_LDIN_Imm;
-			BJX2_DecodeOpcode_CheckTwoWord(ctx, op, addr, opw);
+//			BJX2_DecodeOpcode_CheckTwoWord(ctx, op, addr, opw);
 			break;
 		case 0x6:	/* 26zz */
 			op->imm=opw&255;
@@ -763,6 +768,7 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 			case 0x2:	/* 30z2 */
 				switch((opw>>4)&15)
 				{
+#if 0
 				case 0x0:
 					op->nmid=BJX2_NMID_BRA;
 					op->fmid=BJX2_FMID_PCDR;
@@ -787,6 +793,7 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 					op->Run=BJX2_Op_BF_PcDr;
 					op->fl|=BJX2_OPFL_CTRLF;
 					break;
+#endif
 
 //				case 0x7:
 //					op->rn=BJX2_REG_SP;
@@ -924,33 +931,33 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 			op->rm=BJX2_REG_DR;
 			switch(opw&15)
 			{
-#if 0
+#if 1
 			case 0x0:	/* 31z0 */
-				op->rn+=16;
+//				op->rn+=16;
 				op->nmid=BJX2_NMID_BRA;
-				op->fmid=BJX2_FMID_REG;
-				op->Run=BJX2_Op_BRA_Reg;
+				op->fmid=BJX2_FMID_PCREG;
+				op->Run=BJX2_Op_BRA_PcReg;
 				op->fl|=BJX2_OPFL_CTRLF;
 				break;
 			case 0x1:	/* 31z1 */
-				op->rn+=16;
+//				op->rn+=16;
 				op->nmid=BJX2_NMID_BSR;
-				op->fmid=BJX2_FMID_REG;
-				op->Run=BJX2_Op_BSR_Reg;
+				op->fmid=BJX2_FMID_PCREG;
+				op->Run=BJX2_Op_BSR_PcReg;
 				op->fl|=BJX2_OPFL_CTRLF;
 				break;
 			case 0x2:	/* 31z2 */
-				op->rn+=16;
+//				op->rn+=16;
 				op->nmid=BJX2_NMID_BT;
-				op->fmid=BJX2_FMID_REG;
-				op->Run=BJX2_Op_BT_Reg;
+				op->fmid=BJX2_FMID_PCREG;
+				op->Run=BJX2_Op_BT_PcReg;
 				op->fl|=BJX2_OPFL_CTRLF;
 				break;
 			case 0x3:	/* 31z3 */
-				op->rn+=16;
+//				op->rn+=16;
 				op->nmid=BJX2_NMID_BF;
-				op->fmid=BJX2_FMID_REG;
-				op->Run=BJX2_Op_BF_Reg;
+				op->fmid=BJX2_FMID_PCREG;
+				op->Run=BJX2_Op_BF_PcReg;
 				op->fl|=BJX2_OPFL_CTRLF;
 				break;
 #endif
@@ -1607,12 +1614,15 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 				op->fmid=BJX2_FMID_REGREG;
 				op->Run=BJX2_Op_SHLD_RegReg;
 				break;
+
+#if 0
 			case 0x8:	/* 36z8 */
 				op->rm=BJX2_REG_DLR;
 				op->rn=(opw>>4)&15;
 				op->nmid=BJX2_NMID_BRA;
 				op->fmid=BJX2_FMID_PCREG;
 				op->Run=BJX2_Op_BRA_PcReg;
+				op->fl|=BJX2_OPFL_CTRLF;
 				break;
 			case 0x9:	/* 36z9 */
 				op->rm=BJX2_REG_DLR;
@@ -1620,7 +1630,10 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 				op->nmid=BJX2_NMID_BSR;
 				op->fmid=BJX2_FMID_PCREG;
 				op->Run=BJX2_Op_BSR_PcReg;
+				op->fl|=BJX2_OPFL_CTRLF;
 				break;
+#endif
+
 			case 0xA:	/* 36zA */
 				op->rm=BJX2_REG_DLR;
 				op->rn=(opw>>4)&15;
@@ -1691,12 +1704,12 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 
 			case 0x2:	/* 38z2 */
 				op->nmid=BJX2_NMID_FPUSH;
-				op->fmid=BJX2_FMID_REG;
+				op->fmid=BJX2_FMID_FREG;
 				op->Run=BJX2_Op_PUSH_FpReg;
 				break;
 			case 0x3:	/* 38z3 */
 				op->nmid=BJX2_NMID_FPOP;
-				op->fmid=BJX2_FMID_REG;
+				op->fmid=BJX2_FMID_FREG;
 				op->Run=BJX2_Op_POP_FpReg;
 				break;
 
@@ -2023,6 +2036,7 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 		case 0x8:	/* 58nm */
 			op->rn=(opw>>4)&15;
 			op->rm=(opw   )&15;
+			op->ro=0;
 			op->nmid=BJX2_NMID_ADD;
 			op->fmid=BJX2_FMID_REGDRREG;
 			op->Run=BJX2_Op_ADD_RegDrReg;
@@ -2030,6 +2044,7 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 		case 0x9:	/* 59nm */
 			op->rn=(opw>>4)&15;
 			op->rm=(opw   )&15;
+			op->ro=0;
 			op->nmid=BJX2_NMID_SUB;
 			op->fmid=BJX2_FMID_REGDRREG;
 			op->Run=BJX2_Op_SUB_RegDrReg;
@@ -2040,6 +2055,7 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 		case 0xA:	/* 5Anm */
 			op->rn=(opw>>4)&15;
 			op->rm=(opw   )&15;
+			op->ro=0;
 			op->nmid=BJX2_NMID_AND;
 			op->fmid=BJX2_FMID_REGDRREG;
 			op->Run=BJX2_Op_AND_RegDrReg;
@@ -2047,6 +2063,7 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 		case 0xB:	/* 5Bnm */
 			op->rn=(opw>>4)&15;
 			op->rm=(opw   )&15;
+			op->ro=0;
 			op->nmid=BJX2_NMID_OR;
 			op->fmid=BJX2_FMID_REGDRREG;
 			op->Run=BJX2_Op_OR_RegDrReg;
@@ -2054,6 +2071,7 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 		case 0xC:	/* 5Cnm */
 			op->rn=(opw>>4)&15;
 			op->rm=(opw   )&15;
+			op->ro=0;
 			op->nmid=BJX2_NMID_XOR;
 			op->fmid=BJX2_FMID_REGDRREG;
 			op->Run=BJX2_Op_XOR_RegDrReg;
@@ -2095,6 +2113,7 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 		case 0xD:	/* 5Dnm */
 			op->rn=(opw>>4)&15;
 			op->rm=(opw   )&15;
+			op->ro=0;
 			op->nmid=BJX2_NMID_AND;
 			op->fmid=BJX2_FMID_REGDRREG;
 			op->Run=BJX2_Op_AND_RegDrReg;
@@ -2102,6 +2121,7 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 		case 0xE:	/* 5Enm */
 			op->rn=(opw>>4)&15;
 			op->rm=(opw   )&15;
+			op->ro=0;
 			op->nmid=BJX2_NMID_OR;
 			op->fmid=BJX2_FMID_REGDRREG;
 			op->Run=BJX2_Op_OR_RegDrReg;
@@ -2109,6 +2129,7 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 		case 0xF:	/* 5Fnm */
 			op->rn=(opw>>4)&15;
 			op->rm=(opw   )&15;
+			op->ro=0;
 			op->nmid=BJX2_NMID_XOR;
 			op->fmid=BJX2_FMID_REGDRREG;
 			op->Run=BJX2_Op_XOR_RegDrReg;

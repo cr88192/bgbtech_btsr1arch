@@ -590,6 +590,21 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 
 		if(op->fl&BJX2_OPFL_CTRLF)
 		{
+#if 0
+			if(ctx->use_jit)
+			{
+				if(op->nmid==BJX2_NMID_BRA)
+				{
+					if(op->fmid==BJX2_FMID_PCDISP)
+					{
+						nc--;
+						pc=op->pc2+(op->imm*2);
+						continue;
+					}
+				}
+			}
+#endif
+
 //			if(op->nmid!=BJX2_NMID_BRA)
 			if((op->nmid!=BJX2_NMID_BRA) &&
 				(op->nmid!=BJX2_NMID_RTS) &&

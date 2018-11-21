@@ -77,7 +77,7 @@ void btesh_main_iterate()
 {
 	s64 cyc;
 	int ms1, ms, dtms;
-	int i, rcy;
+	int i, rcy, rsc;
 
 	ms1=FRGL_TimeMS();
 	ms=ms1-ms0;
@@ -97,7 +97,13 @@ void btesh_main_iterate()
 	BJX2_SndSblk_Update(ctx, dtms);
 	JX2I_GfxCon_Update();
 
-	rcy=ctx->tgt_mhz*1000000/45;
+//	rcy=ctx->tgt_mhz*1000000/45;
+//	rcy=(ctx->tgt_mhz*1000000LL)/45;
+	rcy=(ctx->tgt_mhz*1000000LL)/30;
+	
+	rsc=256+((ctx->tgt_mhz-100)>>2);
+	if(rsc>256)
+		rcy=(((s64)rcy)*rsc)>>8;
 
 	GfxDrv_BeginDrawing();
 	BJX2_MainPollKeyboard(ctx);
@@ -131,7 +137,7 @@ int main(int argc, char *argv[])
 	char *ifn;
 	double tsec;
 	int t0, t1, tt, fbtt, tvus;
-	int ifmd, rdsz;
+	int ifmd, rdsz, mhz;
 	int i;
 	
 	rd_n_add=0;
@@ -139,6 +145,7 @@ int main(int argc, char *argv[])
 	rd_n_map=0;
 	ifn=NULL;
 	ifmd=0; rdsz=128;
+	mhz=100;
 	for(i=1; i<argc; i++)
 	{
 		if(argv[i][0]=='-')
@@ -151,6 +158,9 @@ int main(int argc, char *argv[])
 				{ ifmd=2; continue; }
 			if(!strcmp(argv[i], "--rd_map"))
 				{ ifmd=3; continue; }
+
+			if(!strcmp(argv[i], "--mhz"))
+				{ mhz=atoi(argv[i+1]); i++; continue; }
 
 			continue;
 		}
@@ -198,10 +208,15 @@ int main(int argc, char *argv[])
 		BJX2_ContextLoadMap(ctx, rd_map[i]);
 	}
 
+	ctx->use_jit=0;
+	if(mhz>100)
+		ctx->use_jit=1;
+
 //	ctx->ttick_hk=3052;
 //	ctx->ttick_rst=3052;
 	
-	ctx->tgt_mhz=100;
+	ctx->tgt_mhz=mhz;
+//	ctx->tgt_mhz=100;
 //	ctx->tgt_mhz=200;
 //	ctx->tgt_mhz=300;
 	ctx->rcp_mhz=((1048576/ctx->tgt_mhz)+7)>>4;

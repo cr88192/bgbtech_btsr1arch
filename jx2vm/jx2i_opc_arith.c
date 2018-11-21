@@ -928,7 +928,7 @@ void BJX2_Op_SHAD_RegDrReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	if(shl>=0)
 	{
 		ctx->regs[op->rn]=
-			ctx->regs[op->rm]<<(shl&31);
+			((s32)ctx->regs[op->rm])<<(shl&31);
 	}else
 	{
 		ctx->regs[op->rn]=
@@ -944,7 +944,7 @@ void BJX2_Op_SHLD_RegDrReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	if(shl>=0)
 	{
 		ctx->regs[op->rn]=
-			ctx->regs[op->rm]<<(shl&31);
+			((u32)ctx->regs[op->rm])<<(shl&31);
 	}else
 	{
 		ctx->regs[op->rn]=
@@ -992,7 +992,8 @@ void BJX2_Op_SHAD_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	if(shl>=0)
 	{
 		ctx->regs[op->rn]=
-			((s32)ctx->regs[op->rm])<<(shl&31);
+//			((s32)ctx->regs[op->rm])<<(shl&31);
+			(ctx->regs[op->rm])<<(shl&31);
 	}else
 	{
 		ctx->regs[op->rn]=
@@ -1008,7 +1009,8 @@ void BJX2_Op_SHLD_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	if(shl>=0)
 	{
 		ctx->regs[op->rn]=
-			((u32)ctx->regs[op->rm])<<(shl&31);
+//			((u32)ctx->regs[op->rm])<<(shl&31);
+			(ctx->regs[op->rm])<<(shl&31);
 	}else
 	{
 		ctx->regs[op->rn]=
@@ -1056,7 +1058,8 @@ void BJX2_Op_SHAD_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	if(shl>=0)
 	{
 		ctx->regs[op->rn]=
-			ctx->regs[op->rm]<<(shl&31);
+//			((s32)ctx->regs[op->rm])<<(shl&31);
+			(ctx->regs[op->rm])<<(shl&31);
 	}else
 	{
 		ctx->regs[op->rn]=
@@ -1072,7 +1075,8 @@ void BJX2_Op_SHLD_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	if(shl>=0)
 	{
 		ctx->regs[op->rn]=
-			ctx->regs[op->rm]<<(shl&31);
+//			((u32)ctx->regs[op->rm])<<(shl&31);
+			(ctx->regs[op->rm])<<(shl&31);
 	}else
 	{
 		ctx->regs[op->rn]=

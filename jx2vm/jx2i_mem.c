@@ -254,6 +254,9 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr)
 	bjx2_addr t0, t1;
 	int h;
 	
+	if(ctx->use_jit)
+		return(0);
+	
 	h=(addr>>4)&63;
 
 #if 0
@@ -460,12 +463,19 @@ force_inline int BJX2_MemGetByte(BJX2_Context *ctx, bjx2_addr addr0)
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		return(0);
 	}
-
+	
 	BJX2_MemSimAddrL1(ctx, addr);
 
 #if 1
 	if(sp->simple_mem)
 	{
+		if(!(ctx->regs[BJX2_REG_MMCR]&1))
+		{
+			ctx->psp_pbase=sp->addr_base;
+			ctx->psp_prng3=sp->addr_sz-3;
+			ctx->psp_pdata=sp->data;
+		}
+
 		ra=addr-sp->addr_base;
 		return(BJX2_PtrGetSByteOfsLe(sp->data, ra));
 	}
@@ -496,6 +506,13 @@ force_inline int BJX2_MemGetWord(BJX2_Context *ctx, bjx2_addr addr0)
 #if 1
 	if(sp->simple_mem)
 	{
+		if(!(ctx->regs[BJX2_REG_MMCR]&1))
+		{
+			ctx->psp_pbase=sp->addr_base;
+			ctx->psp_prng3=sp->addr_sz-3;
+			ctx->psp_pdata=sp->data;
+		}
+
 		ra=addr-sp->addr_base;
 		return(BJX2_PtrGetSWordOfsLe(sp->data, ra));
 	}
@@ -539,6 +556,13 @@ force_inline s32 BJX2_MemGetDWord(BJX2_Context *ctx, bjx2_addr addr0)
 #if 1
 	if(sp->simple_mem)
 	{
+		if(!(ctx->regs[BJX2_REG_MMCR]&1))
+		{
+			ctx->psp_pbase=sp->addr_base;
+			ctx->psp_prng3=sp->addr_sz-3;
+			ctx->psp_pdata=sp->data;
+		}
+
 		ra=addr-sp->addr_base;
 		return(BJX2_PtrGetSDWordOfsLe(sp->data, ra));
 	}
@@ -583,6 +607,13 @@ force_inline s64 BJX2_MemGetQWord(BJX2_Context *ctx, bjx2_addr addr0)
 #if 1
 	if(sp->simple_mem)
 	{
+		if(!(ctx->regs[BJX2_REG_MMCR]&1))
+		{
+			ctx->psp_pbase=sp->addr_base;
+			ctx->psp_prng3=sp->addr_sz-3;
+			ctx->psp_pdata=sp->data;
+		}
+
 		ra=addr-sp->addr_base;
 		return(BJX2_PtrGetSQWordOfsLe(sp->data, ra));
 	}

@@ -395,7 +395,7 @@ int BJX2_DecodeOpcode_DecFC(BJX2_Context *ctx,
 		op->imm=imm32;
 		op->rn=rn_i32;
 		op->nmid=BJX2_NMID_MOV;
-		op->fmid=BJX2_FMID_IMMREG;
+		op->fmid=BJX2_FMID_IMMXREG;
 		op->Run=BJX2_Op_MOV_ImmxReg;
 		break;
 

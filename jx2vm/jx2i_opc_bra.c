@@ -70,6 +70,31 @@ void BJX2_Op_BSR_PcReg(BJX2_Context *ctx, BJX2_Opcode *op)
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVOP);
 }
 
+void BJX2_Op_BT_PcReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	if(ctx->regs[BJX2_REG_SR]&1)
+	{
+		ctx->regs[BJX2_REG_PC]=(op->pc2)+(ctx->regs[op->rn]*2);
+		ctx->tr_rnxt=ctx->tr_rjmp;
+
+		if(!ctx->regs[BJX2_REG_PC])
+			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVOP);
+	}
+}
+
+void BJX2_Op_BF_PcReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	if(!(ctx->regs[BJX2_REG_SR]&1))
+	{
+		ctx->regs[BJX2_REG_PC]=(op->pc2)+(ctx->regs[op->rn]*2);
+		ctx->tr_rnxt=ctx->tr_rjmp;
+
+		if(!ctx->regs[BJX2_REG_PC])
+			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVOP);
+	}
+}
+
+
 void BJX2_JumpUpdatePredicted(BJX2_Context *ctx)
 {
 	BJX2_Trace *tr;

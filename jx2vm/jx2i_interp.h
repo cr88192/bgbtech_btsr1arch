@@ -55,6 +55,8 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_REG_MMCR	42
 #define BJX2_REG_EXSR	43
 
+#define BJX2_REG_ZZR	63
+
 #define BJX2_REG_DLR	0
 #define BJX2_REG_DHR	1
 
@@ -260,6 +262,7 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_FMID_REGSTREG2		0x1B		//Rm, (Rn, Ro)
 #define BJX2_FMID_REGREGREG		0x1C		//Rm, Ro, Rn
 #define BJX2_FMID_REGIMMREG		0x1D		//Rm, Imm, Rn
+#define BJX2_FMID_IMMXREG		0x1E		//#immx, Rn
 
 #define BJX2_FMID_FREG			0x20		//FRn
 #define BJX2_FMID_FREGREG		0x21		//FRm, FRn
@@ -278,6 +281,8 @@ typedef s64 bjx2_addr;
 typedef u64 bjx2_addru;
 
 typedef unsigned char jx2_bool;
+
+typedef signed long long nlint;
 
 #ifdef _MSC_VER
 #ifndef default_inline
@@ -319,11 +324,17 @@ u64 fpreg[32];				//FPRs
 u64 ex_regs[128];				//GPRs and CRs
 u64 ex_fpreg[32];				//FPRs
 
+BJX2_Trace *rttr[64];		//return traces (mini hash)
+
 BJX2_Trace *trhash[1024];
 BJX2_Trace *trcur;			//cached trace for interpreter loop.
 
 BJX2_MemSpan *span[32];	//memory spans, sorted by address
 int n_span;
+
+bjx2_addr	 psp_pbase;		//Predict Span/Page Base
+bjx2_addr	 psp_prng3;		//Predict Span/Page Range-3
+byte		*psp_pdata;		//Predict Span/Page Data
 
 BJX2_MemSpan *span_pr0;
 BJX2_MemSpan *span_pr1;
@@ -337,6 +348,8 @@ BJX2_Trace *tr_rjmp;		//Trace jmpnext (Runtime)
 
 u32 pclog[64];
 byte pclogrov;
+
+byte use_jit;
 
 int status;
 bjx2_addr trapc;

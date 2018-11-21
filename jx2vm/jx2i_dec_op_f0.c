@@ -880,6 +880,7 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			case 0x0:	/* F0e0_1Dnm */
 				break;
 
+#if 0
 			case 0x6:	/* F0e6_1Dnm */
 				op->nmid=BJX2_NMID_SHAD;
 				op->fmid=BJX2_FMID_REGDRREG;
@@ -900,8 +901,9 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 					op->Run=BJX2_Op_SHLDQ_RegDrReg;
 				}
 				break;
+#endif
 
-#if 1
+#if 0
 			case 0x8:	/* F0e8_1Dnm */
 				op->nmid=BJX2_NMID_ADD;
 				op->fmid=BJX2_FMID_REGDRREG;
@@ -929,6 +931,7 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				break;
 #endif
 
+#if 1
 			case 0xD:	/* F0eD_1Dnm */
 				op->nmid=BJX2_NMID_CMPHS;
 				op->fmid=BJX2_FMID_REGREG;
@@ -949,6 +952,8 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 					op->Run=BJX2_Op_CMPQGE_RegReg;
 				}
 				break;
+#endif
+
 			}
 			break;
 		case 0xE:	/* F0ez_1Ezz */
@@ -1209,6 +1214,37 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				}
 				break;
 
+#if 1
+			case 0x10:	/* F0en_3010 */
+				op->rm=BJX2_REG_DLR;
+				op->nmid=BJX2_NMID_BRA;
+				op->fmid=BJX2_FMID_PCREG;
+				op->Run=BJX2_Op_BRA_PcReg;
+				op->fl|=BJX2_OPFL_CTRLF;
+				break;
+			case 0x11:	/* F0en_3011 */
+				op->rm=BJX2_REG_DLR;
+				op->nmid=BJX2_NMID_BSR;
+				op->fmid=BJX2_FMID_PCREG;
+				op->Run=BJX2_Op_BSR_PcReg;
+				op->fl|=BJX2_OPFL_CTRLF;
+				break;
+			case 0x12:	/* F0en_3012 */
+				op->rm=BJX2_REG_DLR;
+				op->nmid=BJX2_NMID_BRA;
+				op->fmid=BJX2_FMID_PCREG;
+				op->Run=BJX2_Op_BT_PcReg;
+				op->fl|=BJX2_OPFL_CTRLF;
+				break;
+			case 0x13:	/* F0en_3013 */
+				op->rm=BJX2_REG_DLR;
+				op->nmid=BJX2_NMID_BSR;
+				op->fmid=BJX2_FMID_PCREG;
+				op->Run=BJX2_Op_BF_PcReg;
+				op->fl|=BJX2_OPFL_CTRLF;
+				break;
+#endif
+
 			case 0x18:	/* F0ez_3018 */
 				op->nmid=BJX2_NMID_PUSH;
 				op->fmid=BJX2_FMID_REG;
@@ -1318,7 +1354,7 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				op->Run=BJX2_Op_SHAR_Reg;
 				break;
 
-
+#if 0
 			case 0x68:	/* 36z8 */
 				op->rm=BJX2_REG_DLR;
 				op->nmid=BJX2_NMID_BRA;
@@ -1333,6 +1369,8 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				op->Run=BJX2_Op_BSR_PcReg;
 				op->fl|=BJX2_OPFL_CTRLF;
 				break;
+#endif
+
 			case 0x6A:	/* 36zA */
 				op->rm=BJX2_REG_DLR;
 				op->nmid=BJX2_NMID_SWAPB;

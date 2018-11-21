@@ -87,6 +87,13 @@ BJX2_Trace *BJX2_GetTraceForAddr(BJX2_Context *ctx, bjx2_addr addr)
 
 #if 1
 	h=((addr*65521)>>16)&1023;
+
+#if 1
+	cur=ctx->rttr[h&63];
+	if(cur && (cur->addr==addr))
+		return(cur);
+#endif
+
 	cur=ctx->trhash[h];
 	if(cur)
 	{
@@ -124,6 +131,7 @@ BJX2_Trace *BJX2_GetTraceForAddr(BJX2_Context *ctx, bjx2_addr addr)
 	ctx->trhash[h]=cur;
 
 	BJX2_DecodeTraceForAddr(ctx, cur, addr);
+	BJX2_CheckJitTrace(ctx, cur);
 
 	return(cur);
 }
@@ -173,6 +181,7 @@ int BJX2_FaultSwapRegs(BJX2_Context *ctx)
 	u64 va, vb;
 	int i;
 
+#if 1
 	for(i=0; i<8; i++)
 	{
 		va=ctx->regs[BJX2_REG_R0+i];
@@ -185,6 +194,7 @@ int BJX2_FaultSwapRegs(BJX2_Context *ctx)
 		ctx->regs[BJX2_REG_R16+i]=vb;
 		ctx->regs[BJX2_REG_R16B+i]=va;
 	}
+#endif
 
 	for(i=0; i<8; i++)
 	{
@@ -553,6 +563,7 @@ char *BJX2_DbgPrintNameForFReg(BJX2_Context *ctx, int reg)
 
 int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 {
+	s64 li;
 	int msc, psc, brpc;
 
 //	printf("%05X  %04X %-8s ", op->pc, op->opn,
@@ -745,6 +756,12 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 			printf("#%d, %s", op->imm,
 				BJX2_DbgPrintNameForReg(ctx, op->rn));
 		}
+		break;
+	case BJX2_FMID_IMMXREG:
+		li=((u32)op->imm)|
+			(((((u32)op->imm)>>31)-1LL)<<32);
+		printf("#0x%llX, %s", li,
+			BJX2_DbgPrintNameForReg(ctx, op->rn));
 		break;
 
 	case BJX2_FMID_LDDRABSREG:
@@ -1035,6 +1052,13 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 			tra[i]=tra[j];
 			tra[j]=trcur;
 		}
+	}
+
+	trcur=tra[0];
+	if(!trcur->runcnt)
+	{
+		/* If we don't have a run count here; skip further analysis. */
+		return(0);
 	}
 	
 	printf("Top Traces:\n");
