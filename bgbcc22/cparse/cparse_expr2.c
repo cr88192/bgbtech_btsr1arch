@@ -430,36 +430,52 @@ BCCX_Node *BGBCP_ExpressionLit(BGBCP_ParseState *ctx, char **str)
 		}
 
 		suf=NULL;
-		if(!bgbcp_strcmp1(b2, "F") || !bgbcp_strcmp1(b2, "f"))suf="F";
-		if(!bgbcp_strcmp1(b2, "D") || !bgbcp_strcmp1(b2, "d"))suf="D";
+		if(ty2==BTK_NAME)
+		{
+			if(!bgbcp_strcmp1(b2, "F") || !bgbcp_strcmp1(b2, "f"))suf="F";
+			if(!bgbcp_strcmp1(b2, "D") || !bgbcp_strcmp1(b2, "d"))suf="D";
+			if(!bgbcp_strcmp2(b2, "G") || !bgbcp_strcmp2(b2, "g"))suf="XF";
+			if(!bgbcp_strcmp2(b2, "XF") || !bgbcp_strcmp2(b2, "xf"))suf="XF";
+			if(!bgbcp_strcmp2(b2, "HF") || !bgbcp_strcmp2(b2, "hf"))suf="HF";
+			if(!bgbcp_strcmp2(b2, "SF") || !bgbcp_strcmp2(b2, "sf"))suf="HF";
 
-		if(!bgbcp_strcmp1(b2, "L") || !bgbcp_strcmp1(b2, "l"))suf="L";
-		if(!bgbcp_strcmp2(b2, "LL") || !bgbcp_strcmp2(b2, "ll"))suf="LL";
-		if(!bgbcp_strcmp1(b2, "U") || !bgbcp_strcmp1(b2, "u"))suf="U";
-		if(!bgbcp_strcmp2(b2, "UL") || !bgbcp_strcmp2(b2, "ul"))suf="UL";
-		if(!bgbcp_strcmp3(b2, "ULL") || !bgbcp_strcmp3(b2, "ull"))suf="ULL";
+			if(!bgbcp_strcmp1(b2, "L") || !bgbcp_strcmp1(b2, "l"))suf="L";
+			if(!bgbcp_strcmp2(b2, "LL") || !bgbcp_strcmp2(b2, "ll"))suf="LL";
+			if(!bgbcp_strcmp1(b2, "U") || !bgbcp_strcmp1(b2, "u"))suf="U";
+			if(!bgbcp_strcmp2(b2, "UL") || !bgbcp_strcmp2(b2, "ul"))suf="UL";
+			if(!bgbcp_strcmp3(b2, "ULL") || !bgbcp_strcmp3(b2, "ull"))suf="ULL";
 
-		if(!bgbcp_strcmp2(b2, "XL") || !bgbcp_strcmp2(b2, "xl"))suf="XL";
-		if(!bgbcp_strcmp3(b2, "UXL") || !bgbcp_strcmp3(b2, "uxl"))suf="UXL";
+			if(!bgbcp_strcmp2(b2, "XL") || !bgbcp_strcmp2(b2, "xl"))suf="XL";
+			if(!bgbcp_strcmp3(b2, "UXL") || !bgbcp_strcmp3(b2, "uxl"))suf="UXL";
 
-		if(!bgbcp_strcmp3(b2, "LLX") || !bgbcp_strcmp3(b2, "llx"))suf="XL";
-		if(!bgbcp_strcmp4(b2, "ULLX") || !bgbcp_strcmp4(b2, "ullx"))suf="UXL";
+			if(!bgbcp_strcmp3(b2, "LLX") || !bgbcp_strcmp3(b2, "llx"))suf="XL";
+			if(!bgbcp_strcmp4(b2, "ULLX") || !bgbcp_strcmp4(b2, "ullx"))
+				suf="UXL";
 
 
-		if(!bgbcp_strcmp3(b2, "F32") || !bgbcp_strcmp3(b2, "f32"))suf="F";
-		if(!bgbcp_strcmp3(b2, "F64") || !bgbcp_strcmp3(b2, "f64"))suf="D";
-		if(!bgbcp_strcmp4(b2, "F128") || !bgbcp_strcmp4(b2, "f128"))suf="XF";
+			if(!bgbcp_strcmp3(b2, "F16") || !bgbcp_strcmp3(b2, "f16"))suf="HF";
+			if(!bgbcp_strcmp3(b2, "F32") || !bgbcp_strcmp3(b2, "f32"))suf="F";
+			if(!bgbcp_strcmp3(b2, "F64") || !bgbcp_strcmp3(b2, "f64"))suf="D";
+			if(!bgbcp_strcmp4(b2, "F128") || !bgbcp_strcmp4(b2, "f128"))
+				suf="XF";
 
-		if(!bgbcp_strcmp3(b2, "I32") || !bgbcp_strcmp3(b2, "i32"))suf="I";
-		if(!bgbcp_strcmp3(b2, "I64") || !bgbcp_strcmp3(b2, "i64"))suf="LL";
-		if(!bgbcp_strcmp3(b2, "U32") || !bgbcp_strcmp3(b2, "u32"))suf="U";
-		if(!bgbcp_strcmp3(b2, "U64") || !bgbcp_strcmp3(b2, "u64"))suf="ULL";
-		if(!bgbcp_strcmp4(b2, "I128") || !bgbcp_strcmp4(b2, "i128"))suf="XL";
-		if(!bgbcp_strcmp4(b2, "U128") || !bgbcp_strcmp4(b2, "u128"))suf="UXL";
+			if(!bgbcp_strcmp3(b2, "I32") || !bgbcp_strcmp3(b2, "i32"))suf="I";
+			if(!bgbcp_strcmp3(b2, "I64") || !bgbcp_strcmp3(b2, "i64"))suf="LL";
+			if(!bgbcp_strcmp4(b2, "I128") || !bgbcp_strcmp4(b2, "i128"))
+				suf="XL";
+//			if(!bgbcp_strcmp3(b2, "U32") || !bgbcp_strcmp3(b2, "u32"))suf="U";
+//			if(!bgbcp_strcmp3(b2, "U64") || !bgbcp_strcmp3(b2, "u64"))
+//				suf="ULL";
+//			if(!bgbcp_strcmp4(b2, "U128") || !bgbcp_strcmp4(b2, "u128"))
+//				suf="UXL";
 
-		if(!bgbcp_strcmp4(b2, "UI32") || !bgbcp_strcmp4(b2, "ui32"))suf="U";
-		if(!bgbcp_strcmp4(b2, "UI64") || !bgbcp_strcmp4(b2, "ui64"))suf="ULL";
-		if(!bgbcp_strcmp5(b2, "UI128") || !bgbcp_strcmp5(b2, "ui128"))suf="UXL";
+			if(!bgbcp_strcmp4(b2, "UI32") || !bgbcp_strcmp4(b2, "ui32"))
+				suf="U";
+			if(!bgbcp_strcmp4(b2, "UI64") || !bgbcp_strcmp4(b2, "ui64"))
+				suf="ULL";
+			if(!bgbcp_strcmp5(b2, "UI128") || !bgbcp_strcmp5(b2, "ui128"))
+				suf="UXL";
+		}
 
 		if(suf && (ty2==BTK_NAME) && !bgbcp_strcmp2(suf, "XF"))
 		{

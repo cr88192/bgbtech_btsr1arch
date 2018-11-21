@@ -384,7 +384,8 @@ int BGBCC_JX2_TryEmitOpLabel(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 		opw1=0x25FF;
 		opw2=0x26FF;
 		opw3=0x26FF;
-		opw4=0x3002;
+//		opw4=0x3002;
+		opw4=0x3100;
 		break;
 	}
 
@@ -457,7 +458,8 @@ int BGBCC_JX2_TryEmitOpFar16Label(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 //		opw2=0x2601;
 		opw1=0x25FF;
 		opw2=0x26FF;
-		opw3=0x3002;
+//		opw3=0x3002;
+		opw3=0x3100;
 		break;
 	case BGBCC_SH_NMID_BSR:
 	case BGBCC_SH_NMID_BSRN:
@@ -485,7 +487,8 @@ int BGBCC_JX2_TryEmitOpFar16Label(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 //		opw2=0x2601;
 		opw1=0x25FF;
 		opw2=0x26FF;
-		opw3=0x3012;
+//		opw3=0x3012;
+		opw3=0x3101;
 		break;
 	case BGBCC_SH_NMID_BT:
 //		if(1)
@@ -504,7 +507,8 @@ int BGBCC_JX2_TryEmitOpFar16Label(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 //		opw2=0x2601;
 		opw1=0x25FF;
 		opw2=0x26FF;
-		opw3=0x3022;
+//		opw3=0x3022;
+		opw3=0x3102;
 		break;
 	case BGBCC_SH_NMID_BF:
 //		if(1)
@@ -523,7 +527,8 @@ int BGBCC_JX2_TryEmitOpFar16Label(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 //		opw2=0x2601;
 		opw1=0x25FF;
 		opw2=0x26FF;
-		opw3=0x3032;
+//		opw3=0x3032;
+		opw3=0x3103;
 		break;
 	}
 
@@ -614,8 +619,10 @@ int BGBCC_JX2_TryEmitOpFar24Label(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 			rlty=BGBCC_SH_RLC_RELW24_BJX;
 			opw1=0xFBFF;
 			opw2=0xFFFE;
+//			opw3=0xF000;
+//			opw4=0x3002;
 			opw3=0xF000;
-			opw4=0x3002;
+			opw4=0x3010;
 			break;
 		}
 
@@ -630,7 +637,8 @@ int BGBCC_JX2_TryEmitOpFar24Label(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 		rlty=BGBCC_SH_RLC_RELW24_BJX;
 		opw1=0xFBFF;
 		opw2=0xFFFF;
-		opw3=0x3002;
+//		opw3=0x3002;
+		opw3=0x3100;
 		break;
 #endif
 	case BGBCC_SH_NMID_BSR:
@@ -639,8 +647,10 @@ int BGBCC_JX2_TryEmitOpFar24Label(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 			rlty=BGBCC_SH_RLC_RELW24_BJX;
 			opw1=0xFBFF;
 			opw2=0xFFFE;
-			opw3=0xF001;
-			opw4=0x3002;
+//			opw3=0xF001;
+//			opw4=0x3002;
+			opw3=0xF000;
+			opw4=0x3011;
 			break;
 		}
 #if 0
@@ -654,7 +664,8 @@ int BGBCC_JX2_TryEmitOpFar24Label(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 		rlty=BGBCC_SH_RLC_RELW24_BJX;
 		opw1=0xFBFF;
 		opw2=0xFFFF;
-		opw3=0x3012;
+//		opw3=0x3012;
+		opw3=0x3101;
 		break;
 #endif
 	case BGBCC_SH_NMID_BT:
@@ -663,8 +674,10 @@ int BGBCC_JX2_TryEmitOpFar24Label(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 			rlty=BGBCC_SH_RLC_RELW24_BJX;
 			opw1=0xFBFF;
 			opw2=0xFFFE;
-			opw3=0xF002;
-			opw4=0x3002;
+//			opw3=0xF002;
+//			opw4=0x3002;
+			opw3=0xF000;
+			opw4=0x3012;
 			break;
 		}
 #if 0
@@ -678,7 +691,8 @@ int BGBCC_JX2_TryEmitOpFar24Label(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 		rlty=BGBCC_SH_RLC_RELW24_BJX;
 		opw1=0xFBFF;
 		opw2=0xFFFF;
-		opw3=0x3022;
+//		opw3=0x3022;
+		opw3=0x3102;
 		break;
 #endif
 	case BGBCC_SH_NMID_BF:
@@ -687,8 +701,10 @@ int BGBCC_JX2_TryEmitOpFar24Label(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 			rlty=BGBCC_SH_RLC_RELW24_BJX;
 			opw1=0xFBFF;
 			opw2=0xFFFE;
-			opw3=0xF003;
-			opw4=0x3002;
+//			opw3=0xF003;
+//			opw4=0x3002;
+			opw3=0xF000;
+			opw4=0x3013;
 			break;
 		}
 #if 0
@@ -702,7 +718,8 @@ int BGBCC_JX2_TryEmitOpFar24Label(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 		rlty=BGBCC_SH_RLC_RELW24_BJX;
 		opw1=0xFBFF;
 		opw2=0xFFFF;
-		opw3=0x3032;
+//		opw3=0x3032;
+		opw3=0x3103;
 		break;
 #endif
 	}
@@ -799,7 +816,8 @@ int BGBCC_JX2_EmitCheckAutoLabelNear8(
 //			rngb=224-(szrng/2);
 //			rngb=244-(szrng/2);
 //			rngb=248;
-			rngb=224;
+//			rngb=224;
+			rngb=208;
 			rngw=4080-(szrng/2);
 
 //			if(j<k)

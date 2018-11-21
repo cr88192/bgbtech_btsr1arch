@@ -136,6 +136,10 @@
 #define CCXL_REGINT_MASK		0x00000000FFFFFFFFULL	//int/float
 #define CCXL_REGLONG_MASK		0x00FFFFFFFFFFFFFFULL	//long/double (non-LVT)
 
+#define CCXL_REGINT_STMASK		0x00F0000000000000ULL	//int subtype
+#define CCXL_REGINT_ST_I		0x0000000000000000ULL	//signed int
+#define CCXL_REGINT_ST_UI		0x0010000000000000ULL	//signed int
+
 #define CCXL_REGINTPL_MASK		0x000000000FFFFFFFULL	//LVT (low half index)
 #define CCXL_REGINTPH_MASK		0x00FFFFFFF0000000ULL	//LVT (high half index)
 #define CCXL_REGINTPH_SHL		28
@@ -224,6 +228,7 @@
 
 #define CCXL_TERR_CONV_PTRRANGELOSS		0xA004
 #define CCXL_TERR_CONV_PTRSIZEDIFF		0xA005
+#define CCXL_TERR_RETVOID				0xA006
 
 #define CCXL_TERR_STATUS(st)			(0xA800+(st))
 
@@ -311,6 +316,8 @@
 #define CCXL_LBL_GENSYMBASE			0x800000	//gensyms (middle)
 #define CCXL_LBL_GENSYM2BASE		0xC00000	//gensyms (backend, stable)
 #define CCXL_LBL_GENSYM2BASE2		0xE00000	//gensyms (backend, temp)
+
+#define CCXL_LBL_ARCHBASE			0x7F0000	//arch-specific special symbols
 
 
 typedef struct { u64 val; } ccxl_register;

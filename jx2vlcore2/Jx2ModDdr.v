@@ -51,7 +51,13 @@ RAS = Row Activate Strobe
 	10-zzzz		//Read Burst
 	11-zzzz		//Write Burst
 
+Note: ddrData_I/ddrData_O;
+These exist because verilator lacks tristate IO.
+
+
 */
+
+`include "Jx2CoreDefs.v"
 
 module Jx2ModDdr(
 	clock,	reset,
@@ -59,7 +65,10 @@ module Jx2ModDdr(
 	memAddr,	memOpm,
 	memOK,
 	
-	ddrData,
+//	ddrData,
+	ddrData_I,
+	ddrData_O,
+	ddrData_En,
 	ddrCmd,
 	ddrClk);
 
@@ -68,10 +77,14 @@ input			reset;
 input[127:0]	memDataIn;
 output[127:0]	memDataOut;
 input[31:0]		memAddr;
-input[5:0]		memOpm;
+input[4:0]		memOpm;
 output[1:0]		memOK;
 	
-inout[15:0]		ddrData;		//DDR data pins
+// inout[15:0]		ddrData;		//DDR data pins
+input[15:0]		ddrData_I;		//DDR data pins
+output[15:0]	ddrData_O;		//DDR data pins
+output			ddrData_En;		//DDR data pins
+
 output[9:0]		ddrCmd;			//Command/Address pins
 output[1:0]		ddrClk;			//clock pins
 
@@ -83,9 +96,17 @@ parameter[7:0]	DDR_RAS_INIT	= 128;	//Wait several uS
 
 parameter[63:0]	DDR_DRI_INIT	= 64'h0000_0122_0201_0AFF;
 
+/* verilator lint_off UNOPTFLAT */
+
 reg[15:0]		tDdrData;
 reg				tDdrOut;
-assign			ddrData = tDdrOut ? tDdrData : 16'hzzzz;
+// assign			ddrData = tDdrOut ? tDdrData : 16'hzzzz;
+// assign			ddrData = tDdrData;
+
+wire[15:0]		ddrData;
+assign			ddrData_O = tDdrData;
+assign			ddrData = ddrData_I;
+assign			ddrData_En = tDdrOut;
 
 reg[9:0]		tDdrCmd;			//Command/Address pins
 reg[1:0]		tDdrClk;			//clock pins
@@ -95,7 +116,7 @@ assign			ddrClk = tDdrClk;
 reg[1:0]		tMemOK;
 assign			memOK = tMemOK;
 
-output[127:0]	tMemDataOut;
+reg[127:0]		tMemDataOut;
 assign			memDataOut = tMemDataOut;
 
 reg[5:0]		accState;
@@ -125,9 +146,13 @@ reg[15:0]		dreRowAddr;			//DRAM Refresh, Current Row
 reg[15:0]		dreNextRowAddr;		//DRAM Refresh, Next Row
 reg[15:0]		dreCount;			//DRAM Refresh, Cycle Count
 reg[15:0]		dreNextCount;		//DRAM Refresh, Next Cycle Count
+reg				dreIsZero;
 
 reg[63:0]		driModeOut;			//DRAM Init, Mode Out
 reg[63:0]		driNextModeOut;		//DRAM Init, Next Out
+reg				driStillInit;
+
+/* verilator lint_on UNOPTFLAT */
 
 
 always @*
@@ -137,7 +162,10 @@ begin
 
 	accNextReadBlk	= accReadBlk;
 	tDdrOut			= 0;
-	tDdrData		= 0;
+//	tDdrData		= 0;
+	tDdrData		= 16'hzzzz;
+	
+	tMemDataOut		= UV128_XX;
 
 	tDdrCmd			= 10'b0000000111;
 	tDdrClk			= accNextCkLo ? 2'b10 : 2'b01;
@@ -156,6 +184,19 @@ begin
 
 	tMemOK			= UMEM_OK_READY;
 
+	driStillInit	= (driModeOut[15:0]!=0);
+	dreIsZero		= (dreCount == 0);
+
+	if(!dreIsZero && accCkLo)
+	begin
+		dreNextCount = dreCount - 1;
+	end
+
+	if(driStillInit)
+	begin
+//		$display("DRI Mode %X", driModeOut);
+	end
+
 	/* If doing something Load/Store requests can wait. */
 	if(accState!=0)
 	begin
@@ -165,35 +206,52 @@ begin
 			tMemOK		= UMEM_OK_HOLD;
 	end
 
+//	$display("ModDdr: State %X", accState);
+
 	case(accState)
 	6'b000000: begin	/* Waiting for request */
+//		$display("ModDdr: State 0");
 
 		accNextState = 6'b000000;
 
-		if(memOpm[3])	/* Load Request */
+		if(memOpm[3] && !driStillInit && !dreIsZero)	/* Load Request */
 		begin
+			$display("ModDdr: Read Req, A=%X", memAddr);
+
 			tMemOK		= UMEM_OK_HOLD;
 			if(accCkLo)
 			begin
 				accNextState = 6'b010000;
 				
-//				accNextAddr	= {4'h0, memAddr[27:4], 4'h0};
+				accNextAddr	= {4'h0, memAddr[27:4], 4'h0};
+
 //				accNextRowAddr = accNextAddr[24:9];
 //				accNextColAddr = {7'b0, accNextAddr[ 8:0]};
 
 				accNextRowAddr = accNextAddr[28:13];
 				accNextBaAddr = accNextAddr[12:10];
 				accNextColAddr = {6'b0, accNextAddr[ 9:0]};
+
+//				accNextRowAddr = memAddr[28:13];
+//				accNextBaAddr = memAddr[12:10];
+//				accNextColAddr = {6'b0, memAddr[ 9:0]};
+
+//				$display("Read Row=%X Bank=%X Col=%X",
+//					accNextRowAddr,
+//					accNextBaAddr,
+//					accNextColAddr);
 			end
 		end
 		else
-			if(memOpm[4])	/* Store Request */
+			if(memOpm[4] && !driStillInit && !dreIsZero)	/* Store Request */
 		begin
+			$display("ModDdr: Store Req");
+
 			accNextReadBlk	= memDataIn;
 			tMemOK			= UMEM_OK_HOLD;
 			if(accCkLo)
 			begin
-				if(opm==UMEM_OPM_WR_SW)
+				if(memOpm==UMEM_OPM_WR_SW)
 				begin
 					accNextState = 6'b000010;
 					accNextRowAddr = memDataIn[15:0];
@@ -214,14 +272,17 @@ begin
 		begin
 			if(accCkLo)
 			begin
+//				$display("ModDdr: IdleClk");
+
 				if(driModeOut[15:0]!=0)
 				begin
 					accNextState	= 6'b000010;
-					accRowAddr		= driModeOut[15:0];
+					accNextRowAddr	= driModeOut[15:0];
 					driNextModeOut	= { 16'h0000, driModeOut[63:16] };
 				end
 				else
-				if(dreCount == 0)
+//				if(dreCount == 0)
+				if(dreIsZero)
 				begin
 					accNextState	= 6'b001000;
 
@@ -229,13 +290,13 @@ begin
 					accNextBaAddr = 0;
 					accNextColAddr = 0;
 
-					dreNextRowAddr	= { 3'b000, dreRowAddr[13:0] + 1 };
+					dreNextRowAddr	= { 3'b000, dreRowAddr[12:0] + 13'h1 };
 					dreNextCount = 8192;
 				end
-				else
-				begin
-					dreNextCount = dreCount - 1;
-				end
+//				else
+//				begin
+//					dreNextCount = dreCount - 1;
+//				end
 			end
 		end
 
@@ -244,6 +305,7 @@ begin
 	6'b000001: begin	/* Access Complete, Hold */
 		if(memOpm[4] || memOpm[3])
 		begin
+			$display("ReadBlk %X", accReadBlk);
 			/* Hang out here until released. */
 			tMemDataOut		= accReadBlk;
 			tMemOK			= UMEM_OK_OK;
@@ -270,7 +332,7 @@ begin
 		tDdrCmd			= {accRowAddr[7:0], accRowAddr[15:14]};
 //		accNextState	= 6'b000001;
 		accNextCkCas	= DDR_RAS_M1;	/* RAS Latency (-1) */
-		if(accRowAddr[15:8]==8'b0A)
+		if(accRowAddr[15:8]==8'h0A)
 			accNextCkCas	= DDR_RAS_INIT;
 		accNextState	= 6'b001110;
 	end
@@ -301,7 +363,7 @@ begin
 		accNextState	= 6'b001100;
 		if(accCkCas!=0)
 		begin
-			accNextCkCas	= accCkCas - 1
+			accNextCkCas	= accCkCas - 1;
 			accNextState	= 6'b001010;
 		end
 	end
@@ -330,8 +392,9 @@ begin
 		accNextState	= 6'b000000;
 		if(accCkCas!=0)
 		begin
-			accNextCkCas	= accCkCas - 1
+			accNextCkCas	= accCkCas - 1;
 			accNextState	= 6'b001110;
+//			$display("DDR: CAS Hold %d", accNextCkCas);
 		end
 	end
 
@@ -363,7 +426,7 @@ begin
 		accNextState	= 6'b010100;
 		if(accCkCas!=0)
 		begin
-			accNextCkCas	= accCkCas - 1
+			accNextCkCas	= accCkCas - 1;
 			accNextState	= 6'b010010;
 		end
 	end
@@ -372,6 +435,8 @@ begin
 		/* Column Read (Rise) */
 		/* BA2 BA1 BA0 C2 C1 r r Hi Lo Hi */
 
+		$display("Read ColA %X", accColAddr);
+
 		tDdrCmd			= {accBaAddr[2:0], accColAddr[2:1], 5'b00101};
 		accNextState	= 6'b010101;
 	end
@@ -379,6 +444,8 @@ begin
 	6'b010101: begin
 		/* Column Read (Fall) */
 		/* C11 C10 C9 C8 C7 C6 C5 C4 C3 AP */
+
+		$display("Read ColB %X", accColAddr);
 
 		tDdrCmd			= {accColAddr[11:3], 1'b1};
 		accNextState	= 6'b010110;
@@ -398,7 +465,7 @@ begin
 		accNextState	= 6'b100000;
 		if(accCkCas!=0)
 		begin
-			accNextCkCas	= accCkCas - 1
+			accNextCkCas	= accCkCas - 1;
 			accNextState	= 6'b010110;
 		end
 	end
@@ -431,7 +498,7 @@ begin
 		accNextState	= 6'b011100;
 		if(accCkCas!=0)
 		begin
-			accNextCkCas	= accCkCas - 1
+			accNextCkCas	= accCkCas - 1;
 			accNextState	= 6'b011010;
 		end
 	end
@@ -463,7 +530,7 @@ begin
 		accNextState	= 6'b110000;
 		if(accCkCas!=0)
 		begin
-			accNextCkCas	= accCkCas - 1
+			accNextCkCas	= accCkCas - 1;
 			accNextState	= 6'b011110;
 		end
 	end
@@ -473,35 +540,43 @@ begin
 	/* Read Burst States */
 	
 	6'b100000: begin
+		$display("Read Word0 %X (Ck=%d)", ddrData, clock);
 		accNextState			= 6'b100001;
 		accNextReadBlk[15:0]	= ddrData;
 	end
 	6'b100001: begin
+		$display("Read Word1 %X (Ck=%d)", ddrData, clock);
 		accNextState			= 6'b100010;
 		accNextReadBlk[31:16]	= ddrData;
 	end
 	6'b100010: begin
+		$display("Read Word2 %X", ddrData);
 		accNextState			= 6'b100011;
 		accNextReadBlk[47:32]	= ddrData;
 	end
 	6'b100011: begin
+		$display("Read Word3 %X", ddrData);
 		accNextState			= 6'b100100;
 		accNextReadBlk[63:48]	= ddrData;
 	end
 	6'b100100: begin
+		$display("Read Word4 %X", ddrData);
 		accNextState			= 6'b100101;
 		accNextReadBlk[79:64]	= ddrData;
 	end
 	6'b100101: begin
+		$display("Read Word5 %X", ddrData);
 		accNextState			= 6'b100110;
 		accNextReadBlk[95:80]	= ddrData;
 	end
 	6'b100110: begin
+		$display("Read Word6 %X", ddrData);
 		accNextState			= 6'b100111;
 		accNextReadBlk[111:96]	= ddrData;
 	end
 	6'b100111: begin
-		accNextState			= 6'b000000;
+		$display("Read Word7 %X", ddrData);
+		accNextState			= 6'b000001;
 		accNextReadBlk[127:112]	= ddrData;
 	end
 
@@ -549,6 +624,9 @@ begin
 		tDdrOut					= 1;
 	end
 
+	default: begin
+	end
+
 	endcase
 end
 
@@ -570,9 +648,10 @@ begin
 	dreRowAddr	<= dreNextRowAddr;
 	dreCount	<= dreNextCount;
 
-	if(reset || (regInitSanity!=8'b55))
+	if(reset || (regInitSanity!=8'h55))
 	begin
 		driModeOut	<= DDR_DRI_INIT;
+		accState <= 0;
 	end
 	else
 	begin
@@ -585,7 +664,7 @@ begin
 	end
 	else
 	begin
-		regInitSanity	<= 8'b55;
+		regInitSanity	<= 8'h55;
 	end
 
 end

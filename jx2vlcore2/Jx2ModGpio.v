@@ -137,6 +137,9 @@ reg				mmioInLastWR;
 
 always @*
 begin
+	gpioNextOut		= gpioOut;
+	gpioNextDir		= gpioDir;
+
 	tMmioOK			= UMEM_OK_READY;
 	tMmioOutData	= UV32_XX;
 

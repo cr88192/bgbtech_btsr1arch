@@ -658,6 +658,85 @@ int bgbcp_strncmp5(char *s1, char *s2)
 	return(s1[4]-s2[4]);
 }
 
+int bgbcp_strncmp6(char *s1, char *s2)
+{
+	int i;
+	i=(*(s32 *)s1)-(*(s32 *)s2);
+	if(i)return(i);
+	s1+=4; s2+=4;
+	return((*(s16 *)s1)-(*(s16 *)s2));
+}
+
+int bgbcp_strncmp7(char *s1, char *s2)
+{
+	int i;
+	i=(*(s32 *)s1)-(*(s32 *)s2);
+	if(i)return(i);
+	s1+=4; s2+=4;
+	i=(*(s16 *)s1)-(*(s16 *)s2);
+	if(i)return(i);
+	return(s1[2]-s2[2]);
+}
+
+int bgbcp_strncmp8(char *s1, char *s2)
+{
+	int i;
+	i=(*(s32 *)s1)-(*(s32 *)s2);
+	if(i)return(i);
+	s1+=4; s2+=4;
+	return((*(s32 *)s1)-(*(s32 *)s2));
+}
+
+int bgbcp_strncmp9(char *s1, char *s2)
+{
+	int i;
+	i=(*(s32 *)s1)-(*(s32 *)s2);
+	if(i)return(i);
+	s1+=4; s2+=4;
+	i=(*(s32 *)s1)-(*(s32 *)s2);
+	if(i)return(i);
+	return(s1[4]-s2[4]);
+}
+
+int bgbcp_strncmp10(char *s1, char *s2)
+{
+	int i;
+	i=(*(s32 *)s1)-(*(s32 *)s2);
+	if(i)return(i);
+	s1+=4; s2+=4;
+	i=(*(s32 *)s1)-(*(s32 *)s2);
+	if(i)return(i);
+	s1+=4; s2+=4;
+	return((*(s16 *)s1)-(*(s16 *)s2));
+}
+
+int bgbcp_strncmp11(char *s1, char *s2)
+{
+	int i;
+	i=(*(s32 *)s1)-(*(s32 *)s2);
+	if(i)return(i);
+	s1+=4; s2+=4;
+	i=(*(s32 *)s1)-(*(s32 *)s2);
+	if(i)return(i);
+	s1+=4; s2+=4;
+	i=(*(s16 *)s1)-(*(s16 *)s2);
+	if(i)return(i);
+	return(s1[2]-s2[2]);
+}
+
+int bgbcp_strncmp12(char *s1, char *s2)
+{
+	int i;
+	i=(*(s32 *)s1)-(*(s32 *)s2);
+	if(i)return(i);
+	s1+=4; s2+=4;
+	i=(*(s32 *)s1)-(*(s32 *)s2);
+	if(i)return(i);
+	s1+=4; s2+=4;
+	return((*(s32 *)s1)-(*(s32 *)s2));
+}
+
+
 
 int BGBCP_StrlenUTF8(char *str)
 {

@@ -28,9 +28,9 @@ module Jx2DcTileB(
 	regInData,		regOutData,
 	regOutOK,
 
-	memPcAddr,		memPcOpm,
+	memPcAddr,
 	memPcDataI,		memPcDataO,
-	memPcOK
+	memPcOpm,		memPcOK
 	);
 
 input			clock;

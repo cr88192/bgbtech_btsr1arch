@@ -39,18 +39,23 @@ parameter[6:0] JX2_REG_R31		= 7'h1F;
 
 parameter[6:0] JX2_REG_SP		= 7'h0F;
 
+parameter[6:0] JX2_REG_DLR		= 7'h00;
+parameter[6:0] JX2_REG_DHR		= 7'h01;
+
 parameter[6:0] JX2_REG_PC		= 7'h20;
 parameter[6:0] JX2_REG_LR		= 7'h21;
 parameter[6:0] JX2_REG_SR		= 7'h22;
 parameter[6:0] JX2_REG_VBR		= 7'h23;
-parameter[6:0] JX2_REG_DLR		= 7'h24;
-parameter[6:0] JX2_REG_DHR		= 7'h25;
+// parameter[6:0] JX2_REG_DLR		= 7'h24;
+// parameter[6:0] JX2_REG_DHR		= 7'h25;
 parameter[6:0] JX2_REG_GBR		= 7'h26;
 parameter[6:0] JX2_REG_TBR		= 7'h27;
 parameter[6:0] JX2_REG_TTB		= 7'h28;
 parameter[6:0] JX2_REG_TEA		= 7'h29;
 parameter[6:0] JX2_REG_MMCR		= 7'h2A;
 parameter[6:0] JX2_REG_EXSR		= 7'h2B;
+parameter[6:0] JX2_REG_STTB		= 7'h2C;
+parameter[6:0] JX2_REG_KRR		= 7'h2D;
 
 parameter[6:0] JX2_REG_R0B		= 7'h40;
 parameter[6:0] JX2_REG_R1B		= 7'h41;
@@ -82,6 +87,7 @@ parameter[6:0] JX2_REG_ZZR		= 7'h5F;
 
 
 parameter[ 15:0] UV16_XX		= 16'hXXXX;	//
+parameter[ 27:0] UV28_XX		= 28'hXXXXXXX;	//
 parameter[ 31:0] UV32_XX		= 32'hXXXXXXXX;	//
 parameter[ 47:0] UV48_XX		= 48'hXXXXXXXX_XXXX;	//
 parameter[ 63:0] UV64_XX		= 64'hXXXXXXXX_XXXXXXXX;	//
@@ -92,11 +98,17 @@ parameter[191:0] UV192_XX		= { UV64_XX, UV128_XX };	//
 parameter[223:0] UV224_XX		= { UV96_XX, UV128_XX };	//
 parameter[255:0] UV256_XX		= { UV128_XX, UV128_XX };	//
 
+parameter[319:0] UV320_XX		= { UV256_XX, UV64_XX };	//
+parameter[383:0] UV384_XX		= { UV256_XX, UV128_XX };	//
+
 parameter[7:0] UV8_00			= 8'h00;	//
 parameter[7:0] UV8_FF			= 8'hFF;	//
 
 parameter[8:0] UV9_00			= 9'h000;	//
 parameter[8:0] UV9_FF			= 9'h1FF;	//
+
+parameter[12:0] UV13_00			= 13'h0000;	//
+parameter[12:0] UV13_FF			= 13'h1FFF;	//
 
 parameter[15:0] UV16_00			= 16'h0000;	//
 parameter[15:0] UV16_FF			= 16'hFFFF;	//
@@ -109,6 +121,9 @@ parameter[19:0] UV20_FF			= 20'hFFFFF;	//
 
 parameter[20:0] UV21_00			= 21'h000000;	//
 parameter[20:0] UV21_FF			= 21'h1FFFFF;	//
+
+parameter[22:0] UV23_00			= 23'h000000;	//
+parameter[22:0] UV23_FF			= 23'h7FFFFF;	//
 
 parameter[23:0] UV24_00			= 24'h000000;	//
 parameter[23:0] UV24_FF			= 24'hFFFFFF;	//
@@ -140,6 +155,9 @@ parameter[47:0] UV48_FF			= 48'hFFFF_FFFFFFFF;	//
 parameter[55:0] UV56_00			= 56'h000000_00000000;	//
 parameter[55:0] UV56_FF			= 56'hFFFFFF_FFFFFFFF;	//
 
+parameter[62:0] UV63_00			= 63'h00000000_00000000;	//
+parameter[62:0] UV63_FF			= 63'h7FFFFFFF_FFFFFFFF;	//
+
 parameter[63:0] UV64_00			= 64'h00000000_00000000;	//
 parameter[63:0] UV64_FF			= 64'hFFFFFFFF_FFFFFFFF;	//
 
@@ -152,6 +170,7 @@ parameter[1:0] UMEM_OK_FAULT	= 2'h3;		//FAULT (Request Failed)
 parameter[4:0] UMEM_OPM_READY	= 5'b00000;		//Ready/Idle
 
 parameter[4:0] UMEM_OPM_CTRLF	= 5'b00010;		//Control Flow
+parameter[4:0] UMEM_OPM_LDTLB	= 5'b00100;		//LDTLB
 
 parameter[4:0] UMEM_OPM_RD_SB	= 5'b01000;		//Read Byte
 parameter[4:0] UMEM_OPM_RD_SW	= 5'b01001;		//Read Word
@@ -171,6 +190,9 @@ parameter[4:0] UMEM_OPM_WR_UW	= 5'b10101;		//Write Word (Resv)
 parameter[4:0] UMEM_OPM_WR_UL	= 5'b10110;		//Write DWord (Resv)
 parameter[4:0] UMEM_OPM_WR_TILE	= 5'b10111;		//Write Tile
 
+parameter[4:0] UMEM_OPM_SW_TILE	= 5'b11111;		//Swap Tiles (Full Duplex)
+
+
 parameter[4:0] JX2_FMID_INV			= 5'h00;	//? (Invalid Opcode) / Custom
 parameter[4:0] JX2_FMID_Z			= 5'h01;	//OOOO	-
 parameter[4:0] JX2_FMID_REG			= 5'h02;	//OOnO	Rn | #0, Rn
@@ -188,7 +210,8 @@ parameter[4:0] JX2_FMID_LDDRPCREG	= 5'h0D;	//OOnO  (PC, DLR), Rn
 parameter[4:0] JX2_FMID_IMM4ZREG	= 5'h0E;	//OOnj  #imm4u, Rn
 parameter[4:0] JX2_FMID_IMM4NREG	= 5'h0F;	//OOnj  #imm4n, Rn
 
-parameter[4:0] JX2_FMID_DRPC		= 5'h11;	//OOOO	(PC, DLR)
+// parameter[4:0] JX2_FMID_DRPC		= 5'h11;	//OOOO	(PC, DLR)
+parameter[4:0] JX2_FMID_REGPC		= 5'h11;	//OOOO	(PC, Rn)
 parameter[4:0] JX2_FMID_DRREG		= 5'h12;	//OOnO	DLR, Rn
 parameter[4:0] JX2_FMID_PCDISP8		= 5'h13;	//OOii	(PC, disp8s)
 
@@ -203,6 +226,26 @@ parameter[4:0] JX2_FMID_LDDI4SPREG	= 5'h1F;	//OOnj  (SP, disp4), Rn
 
 
 /*
+JX2_FMID_REG
+Base
+	SB: ZZR, Rn / ZZR, Rn, Rn
+	SW: ZZR, Rk / ZZR, Rk, Rk
+	SL: Rn, Rn / Rn, ZZR, Rn
+	SQ: Rk, Rk / Rk, ZZR, Rk
+
+	UB: ZZR, Cn
+	UW: ZZR, Ck
+	UL: ZZR, Sr
+	UQ: ZZR, Sk
+
+	NB: Cn, ZZR
+	NW: Ck, ZZR
+	NL: Sr, ZZR
+	NQ: Sk, ZZR
+
+	XB: ZZR, Rn, DLR
+	XW: ZZR, Rk, DLR
+	
 JX2_FMID_REGREG
 Base
 	SB: Rm, Rn / Rm, DLR, Rn
@@ -241,6 +284,11 @@ JX2_FMID_IMM8REG
 Base
 	SB: Imm, Rn / Imm, Rn, Rn
 
+JX2_FMID_PCDISP8
+	SB: OOdd / OOdd-OOxx
+	SW: OOdd-OOdd
+	UW: OOdd-Oddd
+
 */
 
 
@@ -266,9 +314,9 @@ D:
  1: (Rm), Rn
 */
 
-parameter[3:0] JX2_IXT_REG	= 4'b0000;
-parameter[3:0] JX2_IXT_RDL	= 4'b0001;
-parameter[3:0] JX2_IXT_RDI	= 4'b0010;
+// parameter[3:0] JX2_IXT_REG	= 4'b0000;
+// parameter[3:0] JX2_IXT_RDL	= 4'b0001;
+// parameter[3:0] JX2_IXT_RDI	= 4'b0010;
 // parameter[3:0] JX2_IXT_RD4	= 4'b0011;
 
 parameter[3:0] JX2_IXT_RRI	= 4'b0100;
@@ -286,6 +334,17 @@ parameter[2:0] JX2_BTY_UB	= 3'b100;
 parameter[2:0] JX2_BTY_UW	= 3'b101;
 parameter[2:0] JX2_BTY_UL	= 3'b110;
 parameter[2:0] JX2_BTY_UQ	= 3'b111;
+
+
+parameter[7:0] JX2_IXTB_RRI_LDSB	= 8'b01001000;
+parameter[7:0] JX2_IXTB_RRI_LDSW	= 8'b01001001;
+parameter[7:0] JX2_IXTB_RRI_LDSL	= 8'b01001010;
+parameter[7:0] JX2_IXTB_RRI_LDSQ	= 8'b01001011;
+
+parameter[7:0] JX2_IXTB_RRI_LDUB	= 8'b01001100;
+parameter[7:0] JX2_IXTB_RRI_LDUW	= 8'b01001101;
+parameter[7:0] JX2_IXTB_RRI_LDUL	= 8'b01001110;
+parameter[7:0] JX2_IXTB_RRI_LDUQ	= 8'b01001111;
 
 parameter[3:0] JX2_ITY_SB	= 4'b0000;	/* XXzz_XXii		SX */
 parameter[3:0] JX2_ITY_SW	= 4'b0001;	/* XXzz_iiii		SX */
@@ -329,12 +388,15 @@ parameter[7:0] JX2_UCMD_MOVQ_RM		= 8'h0F;	//(AGU)=Rn
 
 parameter[7:0] JX2_UCMD_MOV_CR		= 8'h10;	//Rn=Cm
 parameter[7:0] JX2_UCMD_MOV_RC		= 8'h11;	//Cn=Rm
+parameter[7:0] JX2_UCMD_RET			= 8'h12;
 
 // parameter[7:0] JX2_UCMD_ALU_ADD		= 8'h10;	//Rn=Rn+Rm
 // parameter[7:0] JX2_UCMD_ALU_SUB		= 8'h11;	//Rn=Rn-Rm
 // parameter[7:0] JX2_UCMD_ALU_ADC		= 8'h12;	//Rn=Rn+Rm
 // parameter[7:0] JX2_UCMD_ALU_SBB		= 8'h13;	//Rn=Rn-Rm
 parameter[7:0] JX2_UCMD_ALU_TST		= 8'h14;	//SR.T=!(Rn&Rm)
+parameter[7:0] JX2_UCMD_ALU_CMPHS	= 8'h15;
+
 // parameter[7:0] JX2_UCMD_ALU_AND		= 8'h15;	//Rn=Rn&Rm
 // parameter[7:0] JX2_UCMD_ALU_OR		= 8'h16;	//Rn=Rn|Rm
 // parameter[7:0] JX2_UCMD_ALU_XOR		= 8'h17;	//Rn=Rn^Rm
@@ -387,12 +449,15 @@ parameter[7:0] JX2_UCMD_ALU_SHARN	= 8'h3E;
 // parameter[7:0] JX2_UCMD_ALU_OR2		= 8'h43;	//Rn=Rm|DLR
 // parameter[7:0] JX2_UCMD_ALU_XOR2	= 8'h44;	//Rn=Rm^DLR
 
+parameter[7:0] JX2_UCMD_ALU_SWAPB	= 8'h40;	//Rn=SwapBytes(Rm)
+parameter[7:0] JX2_UCMD_ALU_SWAPW	= 8'h41;	//Rn=SwapWords(Rm)
+parameter[7:0] JX2_UCMD_ALU_SWAPL	= 8'h42;	//Rn=SwapLong(Rm)
 parameter[7:0] JX2_UCMD_MOVUL_MR	= 8'h43;	//Rn=(AGU)
 parameter[7:0] JX2_UCMD_ALU_LDISH16	= 8'h45;	//
 parameter[7:0] JX2_UCMD_ALU_LDISH24	= 8'h46;	//
 parameter[7:0] JX2_UCMD_ALU_LDISH32	= 8'h47;	//
-parameter[7:0] JX2_UCMD_MOV_DLR4R	= 8'h48;	//Rn=DLR_i4
-parameter[7:0] JX2_UCMD_ADD_DLR4R	= 8'h49;	//Rn=Rn+DLR_i4
+// parameter[7:0] JX2_UCMD_MOV_DLR4R	= 8'h48;	//Rn=DLR_i4
+// parameter[7:0] JX2_UCMD_ADD_DLR4R	= 8'h49;	//Rn=Rn+DLR_i4
 parameter[7:0] JX2_UCMD_MOVUB_MR	= 8'h4A;	//Rn=(AGU)
 parameter[7:0] JX2_UCMD_MOVUW_MR	= 8'h4B;	//Rn=(AGU)
 parameter[7:0] JX2_UCMD_FMOVS_RM	= 8'h4C;	//(AGU)=FRm
@@ -461,8 +526,13 @@ parameter[7:0] JX2_UCMD_IX_NOTS		= 8'h09;
 
 parameter[7:0] JX2_UCMD_IX_RTE		= 8'h0C;
 parameter[7:0] JX2_UCMD_IX_TRAPA	= 8'h0D;
+parameter[7:0] JX2_UCMD_IX_LDTLB	= 8'h0E;
 
 parameter[7:0] JX2_UCMD_IX_MOVNT	= 8'h10;
+
+parameter[7:0] JX2_UCMD_IXS_NOP		= 8'h00;
+parameter[7:0] JX2_UCMD_IXS_MOVT	= 8'h01;
+parameter[7:0] JX2_UCMD_IXS_MOVNT	= 8'h02;
 
 parameter[7:0] JX2_UCMD_FPIX_FNEG	= 8'h00;
 parameter[7:0] JX2_UCMD_FPIX_FABS	= 8'h01;
@@ -470,5 +540,42 @@ parameter[7:0] JX2_UCMD_FPIX_FRCPA	= 8'h02;
 parameter[7:0] JX2_UCMD_FPIX_FSQRTA	= 8'h03;
 parameter[7:0] JX2_UCMD_FPIX_FRCP	= 8'h04;
 parameter[7:0] JX2_UCMD_FPIX_FSQRT	= 8'h05;
+
+`define JX2_QUIET			//disable non-serious debug messages
+`define JX2_DC1_SINGLETILE		//L1 D$, only cache a single tile.
+
+// `define JX2_MEM_NOMMU				//Disable MMU
+
+`define JX2_MMU_DO64X				//Use 64x 4-way
+
+// `define JX2_MEMDBG_PRINTDATA		//debugging dataflow within cache
+
+`define JX2_MEM_CACHEA256		//Use 256-bit half-duplex cache
+// `define JX2_MEM_CACHEB128		//Use 128-bit half-duplex cache
+// `define JX2_MEM_CACHEC256			//Use 256-bit full-duplex cache
+
+`ifdef JX2_MEM_CACHEB128
+`define JX2_MEM_HALFDPX			//Half-Duplex
+`define JX2_MEM_TILE128			//Uses 128 bit tiles
+`endif
+
+`ifdef JX2_MEM_CACHEA256
+`define JX2_MEM_HALFDPX			//Half-Duplex
+`endif
+
+// `define JX2_MEM_USELSQ			//Use Load-Store Queue
+
+// `define JX2_EX_MERGEAGU			//Merge AGU with ALU
+`define JX2_EX_AGU48				//Use 48-bit AGU
+
+`define JX2_GPR_GPRARR		//Use array for GPRs
+// `define JX2_GPR_GPR2CWB		//Use extra cycle for writeback
+
+`define JX2_FPR_FPRARR		//Use array for FPRs
+
+`define JX2_EX_LEA_2C		//Two Cycle LEA
+`define JX2_EX_ALU_2C		//Two Cycle ALU Ops
+
+`define def_true
 
 `endif

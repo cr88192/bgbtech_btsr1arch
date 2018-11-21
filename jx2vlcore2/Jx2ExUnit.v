@@ -6,9 +6,7 @@ IF, ID1, ID2, EX, [MA*, WB]
 
 `include "Jx2CoreDefs.v"
 
-`include "Jx2MemTileB.v"
-`include "Jx2DcTileB.v"
-`include "Jx2IcTileB.v"
+`include "Jx2MemCache.v"
 
 `include "Jx2RegGpr.v"
 `include "Jx2RegFpr.v"
@@ -21,6 +19,10 @@ IF, ID1, ID2, EX, [MA*, WB]
 `include "Jx2ConvFpuD2S.v"
 `include "Jx2ConvFpuD2H.v"
 `include "Jx2ConvFpuD2I.v"
+
+`ifdef JX2_MEM_USELSQ
+`include "Jx2ExLsq.v"
+`endif
 
 
 module Jx2ExUnit(
@@ -52,24 +54,12 @@ input[1:0]		mmioOK;			//mmio OK
 
 /* Conjoined Memory Cache */
 
-reg[47:0]		memRegInAddr;		//input PC address
-reg[127:0]		memRegInData;		//input data (store)
-reg[4:0]		memRegInOpm;		//Operation Size/Type
-wire[127:0]		memRegOutData;		//output data (load)
-wire[1:0]		memRegOutOK;		//set if operation suceeds
+wire[15:0]		memRegOutExc;		//Raise Exception
+wire[63:0]		memRegOutTea;		//Exception TEA
 
-Jx2MemTileB	memTile(
-	clock, reset,
-	memRegInAddr,	memRegInData,
-	memRegOutData,	memRegOutOK,
-	memRegInOpm,
-	
-	memInData,		memOutData,		memAddr,
-	memOpm,			memOK,
-	mmioInData,		mmioOutData,	mmioAddr,
-	mmioOpm,		mmioOK
-	);
-
+reg[63:0]		memRegInMMCR;		//MMU Control Register
+reg[63:0]		memRegInKRR;		//Keyring Register
+reg[63:0]		memRegInSR;			//Status Register
 
 /* D1 Cache */
 
@@ -79,23 +69,6 @@ reg [63: 0]		dcRegInData;		//input data (store)
 wire[63: 0]		dcRegOutData;		//output data (load)
 wire[ 1: 0]		dcRegOutOK;			//set if we have a valid value.
 
-reg [127:0]		dcMemPcDataI;		//memory data in
-wire[127:0]		dcMemPcDataO;		//memory data out
-reg [  1:0]		dcMemPcOK;			//memory OK
-wire[ 47:0]		dcMemPcAddr;		//memory address
-wire[  4:0]		dcMemPcOpm;			//memory output-enable
-
-Jx2DcTileB	dcTile(
-	clock, reset,
-	dcRegInAddr,		dcRegInOpm,
-	dcRegInData,		dcRegOutData,
-	dcRegOutOK,
-	dcMemPcAddr,		dcMemPcOpm,
-	dcMemPcDataI,		dcMemPcDataO,
-	dcMemPcOK
-	);
-
-
 /* I1 Cache */
 
 reg [63: 0]		icRegInPc;		//input PC address
@@ -103,26 +76,76 @@ wire[47: 0]		icRegOutPcVal;	//output PC value
 wire[ 1: 0]		icRegOutPcOK;		//set if we have a valid value.
 wire[ 1: 0]		icRegStepPc;
 
-reg [127:0]		icMemPcData;		//memory PC data
-reg [  1:0]		icMemPcOK;		//memory PC OK
-wire[ 47:0]		icMemPcAddr;		//memory PC address
-wire[  4:0]		icMemPcOpm;		//memory PC output-enable
+Jx2MemCache cache(
+	clock,			reset,
 
-Jx2IcTileB	icTile(
-	clock, reset,
-	icRegInPc,
-	icRegOutPcVal,	icRegOutPcOK,
-	icRegStepPc,
-	icMemPcData,	icMemPcAddr,
-	icMemPcOpm,		icMemPcOK
+	dcRegInAddr,
+	dcRegInData,	dcRegOutData,
+	dcRegInOpm,		dcRegOutOK,
+
+	icRegInPc,		icRegOutPcVal,
+	icRegOutPcOK,	icRegStepPc,
+
+	memRegOutExc,	memRegOutTea,
+	memRegInMMCR,	memRegInKRR,
+	memRegInSR,
+
+	memInData,		memOutData,		memAddr,
+	memOpm,			memOK,
+
+	mmioInData,		mmioOutData,	mmioAddr,		
+	mmioOpm,		mmioOK
 	);
 
+
+`ifdef JX2_MEM_USELSQ
+
+/* Load Store Queue */
+
+reg [63: 0]		lsqExAddr;			//input address
+reg [ 6: 0]		lsqExIdRn;			//register to load to
+reg [ 4: 0]		lsqExOpm;
+wire[63: 0]		lsqExDataO;			//
+reg [63: 0]		lsqExDataI;			//
+wire[ 1: 0]		lsqExOK;			//set if we have a valid value.
+
+wire[63: 0]		lsqMemAddr;			//input address
+wire[ 4: 0]		lsqMemOpm;			//memory operation
+reg [63: 0]		lsqMemDataI;		//input data (store)
+wire[63: 0]		lsqMemDataO;		//output data (load)
+reg [ 1: 0]		lsqMemOK;			//set if we have a valid value.
+
+wire[63:0]		lsqRegOutVal;		//Rn output value
+wire[6:0]		lsqRegOutId;		//Rn, value to write
+wire[1:0]		lsqRegOutOK;		//execute status
+
+Jx2ExLsq	memLsq(
+	clock,			reset,
+
+	lsqExAddr,		lsqExIdRn,
+	lsqExDataO,		lsqExDataI,
+	lsqExOpm,		lsqExOK,
+
+	lsqMemAddr,
+	lsqMemDataI,	lsqMemDataO,
+	lsqMemOpm,		lsqMemOK,
+
+	gprRegIdRm,		gprRegIdRn,
+	gprRegIdRi,
+
+	lsqRegOutId,	lsqRegOutVal,
+	lsqRegOutOK
+	);
+
+`endif
+	
 
 /* Decode */
 
 reg [63: 0]		decRegPc;		//input PC address
 reg [47: 0]		decIstrWord;
 reg [ 1: 0]		decRegStepPc;
+reg [63: 0]		decRegNextPc;	//next PC
 
 wire[ 6:0]		decIdRegN;
 wire[ 6:0]		decIdRegM;
@@ -164,6 +187,7 @@ reg[32:0]		gprIdImm;
 reg[63:0]		gprIdValPc;
 reg[47:0]		gprIstrWord;
 reg[ 1:0]		gprRegStepPc;
+reg [63: 0]		gprRegNextPc;	//next PC
 
 reg[63:0]		gprExNextSp2;		//
 reg[63:0]		gprExNextPc2;		//PC in
@@ -174,6 +198,8 @@ reg[63:0]		gprExNextDlr2;		//DLR
 reg[63:0]		gprExNextDhr2;		//DHR
 reg[63:0]		gprExNextGbr2;		//GBR
 reg[63:0]		gprExNextTbr2;		//TBR
+reg[63:0]		gprExNextExc2;		//EXSR
+reg[63:0]		gprExNextTea2;		//TEA
 
 wire[63:0]		gprOregSp;			//SP (R15)
 wire[63:0]		gprOregPc;			//PC
@@ -184,6 +210,11 @@ wire[63:0]		gprOregDlr;			//DLR
 wire[63:0]		gprOregDhr;			//DHR
 wire[63:0]		gprOregGbr;			//GBR
 wire[63:0]		gprOregTbr;			//TBR
+wire[63:0]		gprOregExc;			//EXSR
+wire[63:0]		gprOregTea;			//TEA
+
+wire[63:0]		gprOregMmcr;		//MMCR
+wire[63:0]		gprOregKrr;			//KRR
 
 Jx2RegGpr	gprFile(
 	clock,			reset,
@@ -197,6 +228,7 @@ Jx2RegGpr	gprFile(
 
 	gprRegSrVal,	gprRegExHold,
 	gprIdImm,		gprIdValPc,
+	gprRegStepPc,	gprRegNextPc,
 
 	gprOregSp,		gprExNextSp2,
 	gprOregPc,		gprExNextPc2,
@@ -206,7 +238,11 @@ Jx2RegGpr	gprFile(
 	gprOregDlr,		gprExNextDlr2,
 	gprOregDhr,		gprExNextDhr2,
 	gprOregGbr,		gprExNextGbr2,
-	gprOregTbr,		gprExNextTbr2
+	gprOregTbr,		gprExNextTbr2,
+	gprOregExc,		gprExNextExc2,
+	gprOregTea,		gprExNextTea2,
+	gprOregMmcr,
+	gprOregKrr
 	);
 
 
@@ -232,6 +268,10 @@ Jx2RegFpr	fpr(
 reg[7:0]		exOpCmd;		//command opcode
 reg[7:0]		exRegIdIxt;		//ALU Index / Opcode Extension
 
+reg[7:0]		exOpCmdB;		//command opcode
+reg[7:0]		exRegIdIxtB;	//ALU Index / Opcode Extension
+reg[7:0]		exOpCmdC;		//command opcode
+
 reg[6:0]		exRegIdRm;
 reg[6:0]		exRegIdRn;
 reg[6:0]		exRegIdRi;
@@ -240,8 +280,13 @@ reg[63:0]		exIdCurPc;		//PC to current instruction
 reg[ 1:0]		exRegStepPc;
 
 reg[63:0]		exRegValRm;		//Rm input value
+reg[63:0]		exRegValRmB;	//Rm input value (alternate)
+reg[63:0]		exRegValRmC;	//Rm input value (alternate)
 reg[63:0]		exRegValRn;		//Rn input value
-reg[63:0]		exRegValRi;		//Rn input value
+reg[63:0]		exRegValRi;		//Ri input value
+reg[63:0]		exRegValRiB;	//Ri input value (alternate)
+reg[63:0]		exRegValRiC;	//Ri input value (alternate)
+reg[63:0]		exRegValRb;		//Rb input value (synthetic)
 reg[63:0]		exRegValCm;		//Rm input value
 reg[32:0]		exImmValRi;		//immediate/disp value
 reg[63:0]		exIdInGenPc;	//PC to next instruction
@@ -260,6 +305,7 @@ wire[63:0]		exMemAddr;		//memory address
 wire[63:0]		exMemData;		//memory data (store)
 wire[4:0]		exMemOpm;		//mem op mode
 wire[7:0]		exMemOpCmd2;	//mem EX chain
+wire[6:0]		exMemOutId;		//
 reg [63:0]		exMemDataLd;	//memory data (load)
 reg [1:0]		exMemDataOK;	//memory status (load)
 
@@ -286,10 +332,11 @@ wire[63:0]		exCtlOutTbr;
 Jx2ExOp		exOp(
 	clock,			reset,
 
-	exOpCmd,		exRegIdIxt,
-	exRegIdRm,		exRegValRm,
-	exRegIdRn,		exRegValRn,
-	exRegIdRi,		exRegValRi,
+	exOpCmd,		exOpCmdB,		exOpCmdC,
+	exRegIdIxt,		exRegIdIxtB,
+	exRegIdRm,		exRegValRm,		exRegValRmB,	exRegValRmC,
+	exRegIdRn,		exRegValRn,		exRegValRb,
+	exRegIdRi,		exRegValRi,		exRegValRiB,	exRegValRiC,
 	exRegIdRm,		exRegValCm,
 	exImmValRi,		exIdInGenPc,
 	exRegOutId,		exRegOutVal,
@@ -301,6 +348,7 @@ Jx2ExOp		exOp(
 	exMemAddr,		exMemData,
 	exMemOpm,		exMemOpCmd2,
 	exMemDataLd,	exMemDataOK,
+	exMemOutId,
 
 	exCtlInSp,		exCtlOutSp,
 	exCtlInPc,		exCtlOutPc,
@@ -316,6 +364,9 @@ Jx2ExOp		exOp(
 
 /* FPU Execute */
 
+reg[7:0]		exOpCmdFp;			//command opcode
+reg[7:0]		exRegIdIxtFp;		//ALU Index / Opcode Extension
+
 wire[63:0]		exRegOutValFn;		//FRn output value
 wire[6:0]		exRegOutIdFn;		//FRn, value to write
 wire[1:0]		exRegOutFpOK;		//execute status (FPU)
@@ -323,7 +374,7 @@ wire[63:0]		exCtlOutFpDlr;		//DLR out (FPU)
 
 Jx2FpuExOp	exFpOp(
 	clock,		reset,
-	exOpCmd,		exRegIdIxt,
+	exOpCmdFp,		exRegIdIxtFp,
 	exRegIdRm,		exRegValFRm,
 	exRegIdRi,		exRegValFRn,
 	exRegIdRn,		exRegValFRn,
@@ -338,8 +389,13 @@ Jx2FpuExOp	exFpOp(
 /* Common */
 
 reg		exHold;
+reg		exLastHold;
 reg		exNextPc;
 reg		exBranchFlush;
+
+reg[15:0]	exRegExc;
+reg[63:0]	exRegTea;
+reg[ 7:0]	exRegExcVbrOfs;
 
 reg[63:0]	exRegNextPc;
 
@@ -347,41 +403,127 @@ always @*
 begin
 	exHold			= 0;
 	if(exRegOutOK==UMEM_OK_HOLD)
+	begin
+`ifndef JX2_QUIET
+		if(!exLastHold)
+			$display("ExOp Hold");
+`endif
 		exHold		= 1;
+	end
 	if(exRegOutFpOK==UMEM_OK_HOLD)
+	begin
+`ifndef JX2_QUIET
+		if(!exLastHold)
+			$display("FpuOp Hold");
+`endif
 		exHold		= 1;
+	end
+
+`ifndef JX2_MEM_USELSQ			//Use Load-Store Queue
 	if(dcRegOutOK==UMEM_OK_HOLD)
+	begin
+`ifndef JX2_QUIET
+		if(!exLastHold)
+			$display("D$ Hold");
+`endif
 		exHold		= 1;
+	end
+`endif
+
 	if(icRegOutPcOK==UMEM_OK_HOLD)
+	begin
+`ifndef JX2_QUIET
+		if(!exLastHold)
+			$display("I$ Hold");
+`endif
 		exHold		= 1;
+	end
+
+`ifdef JX2_MEM_USELSQ			//Use Load-Store Queue
+	if(lsqRegOutOK==UMEM_OK_HOLD)
+	begin
+`ifndef JX2_QUIET
+		if(!exLastHold)
+			$display("LSQ Hold");
+`endif
+		exHold		= 1;
+	end
+`endif
+
+
+`ifndef JX2_QUIET
+	if(exLastHold && !exHold)
+		$display("Hold Release");
+`endif
+
+	exRegExc=memRegOutExc;
+	exRegTea=memRegOutTea;
+
+//	exRegExc = 0;
 
 //	if((exMemOpm==0) &&
 //				((exMemDataOK==UMEM_OK_OK) ||
 //				(dcRegOutOK==UMEM_OK_OK)))
 //		exHold		= 1;
 
+`ifdef JX2_MEM_USELSQ
+	exMemDataLd		= lsqExDataO;
+	exMemDataOK		= lsqExOK;
+	lsqMemDataI		= dcRegOutData;
+	lsqMemOK		= dcRegOutOK;
+
+	dcRegInAddr		= lsqMemAddr;
+	dcRegInOpm		= lsqMemOpm;
+	dcRegInData		= lsqMemDataO;
+
+`ifndef JX2_QUIET
+	if(dcRegInOpm!=0)
+	begin
+// /*
+		$display("ExUnit LSQ Addr %X %X", dcRegInAddr, exMemAddr);
+		$display("ExUnit LSQ DataO %X %X", exMemData, dcRegInData);
+		$display("ExUnit LSQ DataI %X %X", dcRegOutData, exMemDataLd);
+
+		$display("ExUnit LSQ Opm %X %X", exMemOpm, dcRegInOpm);
+		$display("ExUnit LSQ OK %X %X", dcRegOutOK, exMemDataOK);
+// */
+	end
+`endif
+
+`else
 	exMemDataLd		= dcRegOutData;
 	exMemDataOK		= dcRegOutOK;
+`endif
+
+//	lsqRegOutVal;		//Rn output value
+//	lsqRegOutId;		//Rn, value to write
+//	lsqRegOutOK;		//execute status
+
 
 //	dcRegInAddr		= exMemAddr;
 //	dcRegInOpm		= exMemOpm;
 //	dcRegInData		= exMemData;
 
-	icMemPcOK		= UMEM_OK_HOLD;
-	dcMemPcOK		= UMEM_OK_HOLD;
-	icMemPcData		= memRegOutData;
-	dcMemPcDataI	= memRegOutData;
+//	icMemPcOK		= UMEM_OK_HOLD;
+//	dcMemPcOK		= UMEM_OK_HOLD;
+//	icMemPcData		= memRegOutData;
+//	dcMemPcDataI	= memRegOutData;
 
+/*
 	memRegInAddr	= 0;
-	memRegInData	= UV128_XX;
+	memRegOutAddr	= 0;
+//	memRegInData	= UV128_XX;
+	memRegInData	= UV256_XX;
 	memRegInOpm		= UMEM_OPM_READY;
 
 	if(icMemPcOpm!=0)
 	begin
 		icMemPcData		= memRegOutData;
 		icMemPcOK		= memRegOutOK;
-		memRegInAddr	= icMemPcAddr;
-		memRegInData	= UV128_XX;
+//		memRegInAddr	= icMemPcAddr;
+		memRegOutAddr	= icMemPcAddr;
+//		memRegInData	= UV128_XX;
+		memRegInData	= UV256_XX;
 		memRegInOpm		= icMemPcOpm;
 	end
 	else
@@ -389,7 +531,8 @@ begin
 	begin
 		dcMemPcDataI	= memRegOutData;
 		dcMemPcOK		= memRegOutOK;
-		memRegInAddr	= dcMemPcAddr;
+		memRegOutAddr	= dcMemPcAddrI;
+		memRegInAddr	= dcMemPcAddrO;
 		memRegInData	= dcMemPcDataO;
 		memRegInOpm		= dcMemPcOpm;
 	end
@@ -398,7 +541,7 @@ begin
 		icMemPcOK		= UMEM_OK_READY;
 		dcMemPcOK		= UMEM_OK_READY;
 	end
-
+*/
 
 	gprRegIdRo		= exRegOutId;
 	gprRegValRo		= exRegOutVal;
@@ -408,6 +551,17 @@ begin
 
 	fprRegIdRo		= exRegOutIdFn;
 	fprRegValRo		= exRegOutValFn;
+
+`ifdef JX2_MEM_USELSQ
+	if(lsqRegOutId!=JX2_REG_ZZR)
+	begin
+		if(exRegOutId!=JX2_REG_ZZR)
+			exHold		= 1;
+
+		gprRegIdRo		= lsqRegOutId;
+		gprRegValRo		= lsqRegOutVal;
+	end
+`endif
 
 	gprExNextSp2	= exCtlOutSp;
 	gprExNextPc2	= exCtlOutPc;
@@ -421,6 +575,10 @@ begin
 	gprExNextGbr2	= exCtlOutGbr;
 	gprExNextTbr2	= exCtlOutTbr;
 
+	memRegInSR		= exCtlOutSr;
+	memRegInMMCR	= gprOregMmcr;
+	memRegInKRR		= gprOregKrr;
+
 //	if(exHold)
 //		exRegNextPc		= gprOregPc;
 //	else
@@ -428,6 +586,8 @@ begin
 
 //	exRegNextPc		= gprOregPc+ {61'h0, icRegStepPc, 1'b0};
 //	exRegNextPc		= gprOregPc+ {61'h0, dcRegStepPc, 1'b0};
+
+	icRegInPc		= gprOregPc;
 
 	exRegNextPc		= { gprOregPc[63:32],
 		gprOregPc[31:0] + {29'h0, icRegStepPc, 1'b0} };
@@ -443,7 +603,46 @@ begin
 	exCtlInGbr		= gprOregGbr;
 	exCtlInTbr		= gprOregTbr;
 
+//	gprExNextPc2	= exRegNextPc;
+//	if((exMemOpm==UMEM_OPM_CTRLF) && !exBranchFlush)
+//		gprExNextPc2	= exCtlOutPc;
+
+	gprExNextExc2	= gprOregExc;
+	gprExNextTea2	= gprOregTea;
+
 	gprRegExHold	= exHold;
+
+/*
+	if(exBranchFlush)
+	begin
+		gprExNextPc2 = exRegNextPc;
+	end
+	else
+*/
+
+// /*
+	if(exRegExc[15])
+	begin
+`ifndef JX2_QUIET
+		$display("Trap %X", exRegExc);
+`endif
+	
+		case(exRegExc[14:13])
+			2'b00: exRegExcVbrOfs = 8'h08;
+			2'b01: exRegExcVbrOfs = 8'h18;
+			2'b10: exRegExcVbrOfs = 8'h10;
+			2'b11: exRegExcVbrOfs = 8'h20;
+		endcase
+
+		gprExNextPc2 = { gprOregVbr[63:16],
+			gprOregVbr[15:0]+{UV8_00, exRegExcVbrOfs} };
+		gprExNextSr2[30:28]=3'b111;
+		
+		gprExNextExc2[15: 0]	= exRegExc[15:0];
+		gprExNextExc2[63:16]	= exIdCurPc[47:0];
+		gprExNextTea2			= exRegTea;
+	end
+// */
 
 end
 
@@ -452,6 +651,7 @@ reg[31:0]		regCurPc;
 always @ (posedge clock)
 begin
 //	gprRegExHold		<= exHold;
+	exLastHold			<= exHold;
 	
 	if(exHold)
 	begin
@@ -462,15 +662,39 @@ begin
 	begin
 
 	/* IF */
-		icRegInPc		<= gprOregPc;
+//		icRegInPc		<= gprOregPc;
 
 	/* ID1 */
 		decRegPc		<= icRegInPc;
-		decIstrWord		<= exBranchFlush ? 48'h300030003000 : icRegOutPcVal;
-		decRegStepPc	<= exBranchFlush ? 2'b00 : icRegStepPc;
+//		decIstrWord		<= exBranchFlush ? 48'h300030003000 : icRegOutPcVal;
+		decIstrWord		<= icRegOutPcVal;
+//		decRegStepPc	<= exBranchFlush ? 2'b00 : icRegStepPc;
+		decRegStepPc	<= icRegStepPc;
+		decRegNextPc	<= exRegNextPc;
 
 //		decIstrWord		<= icRegOutPcVal;
+
+`ifndef JX2_QUIET
+
 //		$display("ID1 %X %X", decRegPc, decIstrWord);
+
+/*
+		$display("ID1 %X %X-%X-%X", decRegPc,
+			decIstrWord[15:0],
+			decIstrWord[31:16],
+			decIstrWord[47:32]
+			);
+*/
+
+// /*
+		$display("ID1 %X %X-%X-%X", icRegInPc,
+			icRegOutPcVal[15:0],
+			icRegOutPcVal[31:16],
+			icRegOutPcVal[47:32]
+			);
+// */
+
+`endif
 
 	/* ID2 */
 		gprRegIdRm		<= decIdRegM;
@@ -481,9 +705,12 @@ begin
 		gprIdValPc		<= decRegPc;
 		gprIstrWord		<= decIstrWord;
 		gprRegStepPc	<= decRegStepPc;
+		gprRegNextPc	<= decRegNextPc;
 
 		gprIdUCmd		<= decIdUCmd;
 		gprIdUIxt		<= decIdUIxt;
+
+`ifndef JX2_QUIET
 
 //		$display("ID2 %X %X %X-%X Rm=%X(%X) Rn=%X(%X) Imm=%X",
 //			gprIdValPc, gprIstrWord,
@@ -491,10 +718,37 @@ begin
 //			gprRegIdRm, gprRegValRm, gprRegIdRn, gprRegValRn,
 //			gprIdImm);
 
+/*
+		$display("ID2 %X %X-%X-%X %X-%X",
+			gprIdValPc,
+			gprIstrWord[15:0],
+			gprIstrWord[31:16],
+			gprIstrWord[47:32],
+			gprIdUCmd, gprIdUIxt);
+*/
+
+// /*
+		$display("ID2 %X %X-%X-%X %X-%X",
+			decRegPc,
+			decIstrWord[15:0],
+			decIstrWord[31:16],
+			decIstrWord[47:32],
+			decIdUCmd, decIdUIxt);
+// */
+
+`endif
+
 	/* EX */
-//		exOpCmd			<= exBranchFlush ? BSR_UCMD_NOP: gprIdUCmd;
 		exOpCmd			<= gprIdUCmd;
+		exOpCmdB		<= gprIdUCmd;
+		exOpCmdC		<= gprIdUCmd;
+		exOpCmdFp		<= gprIdUCmd;
+
 		exRegIdIxt		<= gprIdUIxt;
+		exRegIdIxtB		<= gprIdUIxt;
+
+		exRegIdIxtFp	<= gprIdUIxt;
+
 		exRegIdRm		<= gprRegIdRm;
 		exRegIdRn		<= gprRegIdRn;
 		exRegIdRi		<= gprRegIdRi;
@@ -505,10 +759,17 @@ begin
 		exRegValRm		<= gprRegValRm;
 		exRegValRn		<= gprRegValRn;
 		exRegValRi		<= gprRegValRi;
+		exRegValRmB		<= gprRegValRm;
+		exRegValRiB		<= gprRegValRi;
+		exRegValRmC		<= gprRegValRm;
+		exRegValRiC		<= gprRegValRi;
+		exRegValRb		<= gprIdUIxt[3] ? gprRegValRm : gprRegValRn;
+//		exRegValRb		<= UV64_XX;
 		exRegValCm		<= gprRegValCm;
 		exImmValRi		<= gprIdImm;
 //		exIdInGenPc		<= (gprIdValPc+2);
-		exIdInGenPc		<= (gprIdValPc + {61'h0, gprRegStepPc, 1'b0} );
+//		exIdInGenPc		<= (gprIdValPc + {61'h0, gprRegStepPc, 1'b0} );
+		exIdInGenPc		<= gprRegNextPc;
 		exIstrWord		<= gprIstrWord;
 
 		exRegValFRm		<= fprRegValRm;
@@ -517,6 +778,8 @@ begin
 //		exBranchFlush	<= (exCtlOutPc!=exCtlInPc);
 //		exBranchFlush	<= 0;
 
+`ifndef JX2_QUIET
+
 //		$display("EX %X %X %X-%X DLR=%X Rm=%X(%X) Rn=%X(%X) Ro=%X(%X)",
 //			exIdCurPc[47:0], exIstrWord,
 //			exOpCmd, exRegIdIxt, exCtlInDlr,
@@ -524,11 +787,55 @@ begin
 //			exRegIdRn, exRegValRn,
 //			exRegOutId, exRegOutVal);
 
+/*
+		$display("EX  %X %X-%X-%X %X-%X",
+			exIdCurPc[47:0],
+			exIstrWord[15:0],
+			exIstrWord[31:16],
+			exIstrWord[47:32],
+			exOpCmd, exRegIdIxt);
+
+		$display("EX  DLR=%X Rm=%X(%X) Rn=%X(%X)",
+			exCtlInDlr,
+			exRegIdRm, exRegValRm,
+			exRegIdRn, exRegValRn);
+
+		$display("EX  Ri=%X(%X) Ro=%X(%X) Imm=%X",
+			exRegIdRi, exRegValRi,
+			exRegOutId, exRegOutVal,
+			exImmValRi);
+*/
+
+// /*
+		$display("EX  %X %X-%X-%X %X-%X",
+			gprIdValPc[47:0],
+			gprIstrWord[15:0],
+			gprIstrWord[31:16],
+			gprIstrWord[47:32],
+			gprIdUCmd, gprIdUIxt);
+
+		$display("EX  DLR=%X Rm=%X(%X) Rn=%X(%X)",
+			gprOregDlr,
+			gprRegIdRm, gprRegValRm,
+			gprRegIdRn, gprRegValRn);
+
+		$display("EX  Ri=%X(%X) Ro=%X(%X) Imm=%X",
+			gprRegIdRi, gprRegValRi,
+			exRegOutId, exRegOutVal,
+			gprIdImm);
+// */
+
+`endif
+
 //		if((exCtlOutPc!=exCtlInPc) ||
 //			(exMemOpm==UMEM_OPM_CTRLF))
-		if(exMemOpm==UMEM_OPM_CTRLF)
+//		if(exMemOpm==UMEM_OPM_CTRLF)
+//		if(((exMemOpm==UMEM_OPM_CTRLF) || (exRegExc[15])) && !exBranchFlush)
+		if((exMemOpm==UMEM_OPM_CTRLF) || (exRegExc[15]))
 		begin
-//			$display("BRA Flush %X %X", exCtlOutPc, exCtlInPc);
+`ifndef JX2_QUIET
+			$display("BRA Flush %X->%X", exCtlInPc, exCtlOutPc);
+`endif
 			exBranchFlush	<= 1;
 //			regCurPc		<= exCtlOutPc;
 
@@ -537,6 +844,9 @@ begin
 			exIstrWord		<= 48'h300030003000;
 			gprIdUCmd		<= JX2_UCMD_NOP;
 			exOpCmd			<= JX2_UCMD_NOP;
+			exOpCmdB		<= JX2_UCMD_NOP;
+			exOpCmdC		<= JX2_UCMD_NOP;
+			exOpCmdFp		<= JX2_UCMD_NOP;
 		end
 		else
 		begin
@@ -550,9 +860,24 @@ begin
 //	exMemDataLd		<= dcRegOutData;
 //	exMemDataOK		<= dcRegOutOK;
 
+`ifdef JX2_MEM_USELSQ
+
+	lsqExAddr		<= exMemAddr;
+	lsqExOpm		<= exMemOpm;
+	lsqExDataI		<= exMemData;
+	lsqExIdRn		<= exMemOutId;
+
+//	dcRegInAddr		<= lsqMemAddr;
+//	dcRegInOpm		<= lsqMemOpm;
+//	dcRegInData		<= lsqMemDataO;
+
+`else
+
 	dcRegInAddr		<= exMemAddr;
 	dcRegInOpm		<= exMemOpm;
 	dcRegInData		<= exMemData;
+
+`endif
 
 end
 

@@ -1,0 +1,88 @@
+Possible Filesystem Idea:
+* Should be moderately simple.
+* Should be "less terrible" than FAT32.
+* May target SDcards.
+
+
+Overview:
+* Block size between 512B and 4K.
+* Block allocation via a bitmap.
+
+
+Layout:
+* First 4K: Boot+Header
+** 000..BFF: Unused
+** C00..FFF: Header
+
+Header:
+ struct FVFS_Head {
+ EIGHTCC magic;			//'BTFVFS00'
+ BYTE blksz;			//Block Size, log2
+ BYTE resv[7];
+ FVFS_Span root;		//Root Directory span.
+ };
+
+
+ struct FVFS_Span {
+ DWORD		lbaBaseLo;	//LBA, Low Bits
+ WORD		lbaSizeLo;	//Size, Low Bits
+ BYTE		lbaBaseHi;	//LBA, High Bits
+ BYTE		lbaSizeHi;	//Size, High Bits
+ };
+
+
+The Span will encode a 38 bit block base and a 24-bit span size.
+
+The high 2 bits lbaBaseHi will encode escape cases.
+* 00: Normal Block Span
+* 01: Cascaded Span / Overflow
+** The target block will contain additional spans.
+** Will Use a 54-bit LBA.
+*** Will contain 256 bytes of metadata.
+*** Remainder of block will be an array of spans.
+* 10: End-Packed Span
+** Target will be an end-packing block.
+** SizeLo will give the offset (in 16 byte tiles).
+** SizeHi will give the size (in 16 byte types).
+*** This will allow end-packed spans up to 4K.
+* 11: Reserved.
+
+
+ struct FVFS_DirEnt {
+ BYTE		name[32];		//00..1F Name, up to 32 chars, UTF-8
+ WORD		flags;			//20..21, Attribute Flags
+ BYTE		method;			//    22, Compression Method
+ BYTE		resv1;			//    23, Reserved
+ DWORD		ugid;			//24..27, UID/GID/Mode
+ DWORD		ctime;			//28..2B, Creation Time
+ DWORD		mtime;			//2C..2F, Modified Time
+ QWORD		size;			//30..37, File Size (Uncompressed)
+ FVFS_Span	span;			//38..3F, Contents Span
+ };
+
+Name:
+* Holds a name of up to 32 characters encoded as UTF-8.
+* If Name-Overflow is set, then 18..1F  is interpreted as a Span.
+** The span will give the location of an end-packed name field.
+
+Flags:
+* 0001: Read Only
+* 0002: Hidden
+* 0004: System
+* 0008: Name-Overflow
+* 0010: Directory
+
+Method:
+* 0, Store (Uncompressed)
+* 4, PEL4 style LZ4
+
+In the simple case, if a compression method is used with a file containing either a single normal or end-packed span, the entire file's contents will be encoded with this method.
+
+Will use an LZ4 variant where data is packed into multiples of the native block size. For end-packed spans, the entire span will be compressed as a single logical block.
+
+
+Ugid:
+* FFE0_0000: GID
+* 001F_FC00: UID
+* 0000_03FF: Mode (rwx/rwx/rwx, ACL)
+

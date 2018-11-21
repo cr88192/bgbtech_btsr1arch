@@ -260,13 +260,18 @@ Instruction Blocks:
 *** F00E_3000  -
 *** F00F_3000  LDTLB
 *** F00z_3001  -
-*** F000_3002  BRA		(PC, DLR)
-*** F001_3002  BSR		(PC, DLR)
-*** F002_3002  BT		(PC, DLR)
-*** F003_3002  BF		(PC, DLR)
+*** F000_3002 / BRA		(PC, DLR)
+*** F001_3002 / BSR		(PC, DLR)
+*** F002_3002 / BT		(PC, DLR)
+*** F003_3002 / BF		(PC, DLR)
 *** F00z_3003  -
 *** ...
 *** F00z_300F  _
+
+*** F0en_3010  BRA		(PC, Rn)
+*** F0en_3011  BSR		(PC, Rn)
+*** F0en_3012  BT		(PC, Rn)
+*** F0en_3013  BF		(PC, Rn)
 
 *** F0en_3018  PUSH		Rn
 *** F0en_3019  PUSH		Cn
@@ -289,10 +294,11 @@ Instruction Blocks:
 *** F0en_3039  SHLR		Rn
 *** F0en_303A  SHAR		Rn
 
-*** F0en_3068  BRA		(PC, Rn)
-*** F0en_3069  BSR		(PC, Rn)
+*** F0en_3068 / BRA		(PC, Rn)
+*** F0en_3069 / BSR		(PC, Rn)
 *** F0en_306A  SWAPB	Rn
 *** F0en_306B  SWAPW	Rn
+*** F0en_306C  SWAPL	Rn
 
 *** F0en_306F  MOVT		Rn
 
@@ -399,16 +405,16 @@ Instruction Blocks:
 
 * F1zz_zzzz  (MOV Disp9 Block)
 ** F1gd_0dnm  MOV.B		Rm, (Rn, disp9u)
-** F1Gd_0dnm  LEA.B		(Rm, disp9u), Rn
+** F1Gd_0dnm  LEA.B		(Rm, disp9u), Rn	//Canon, Context
 ** F1Gd_0dnm  ADD		Rm, disp9u, Rn		//Context
 ** F1gd_1dnm  MOV.W		Rm, (Rn, disp9u)
-** F1Gd_1dnm  LEA.W		(Rm, disp9u), Rn
+** F1Gd_1dnm  LEA.W		(Rm, disp9u), Rn	//Canon, Context
 ** F1Gd_1dnm  ADD		Rm, disp9u*2, Rn	//Context
 ** F1gd_2dnm  MOV.L		Rm, (Rn, disp9u)
-** F1Gd_2dnm  LEA.L		(Rm, disp9u), Rn
+** F1Gd_2dnm  LEA.L		(Rm, disp9u), Rn	//Canon, Context
 ** F1Gd_2dnm  ADD		Rm, disp9u*4, Rn	//Context
 ** F1gd_3dnm  MOV.Q		Rm, (Rn, disp9u)
-** F1Gd_3dnm  LEA.Q		(Rm, disp9u), Rn
+** F1Gd_3dnm  LEA.Q		(Rm, disp9u), Rn	//Canon, Context
 ** F1Gd_3dnm  ADD		Rm, disp9u*8, Rn	//Context
 ** F1ez_4zzz -
 ** F1ez_5zzz -

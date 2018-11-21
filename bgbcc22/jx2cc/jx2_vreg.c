@@ -710,12 +710,12 @@ int BGBCC_JX2C_EmitFpConvVRegVReg(
 			{
 				s0="__sfp_float_f64";
 				lr4=BGBCC_SH_REG_RD4;
-				lr0=BGBCC_SH_REG_RQ0;
+				lr0=BGBCC_SH_REG_RQ2;
 			}else
 			{
 				s0="__sfp_float_f32";
 				lr4=BGBCC_SH_REG_RD4;
-				lr0=BGBCC_SH_REG_RD0;
+				lr0=BGBCC_SH_REG_RD2;
 			}
 		}
 
@@ -725,12 +725,12 @@ int BGBCC_JX2C_EmitFpConvVRegVReg(
 			{
 				s0="__sfp_ftrc_f64";
 				lr4=BGBCC_SH_REG_RQ4;
-				lr0=BGBCC_SH_REG_RD0;
+				lr0=BGBCC_SH_REG_RD2;
 			}else
 			{
 				s0="__sfp_ftrc_f32";
 				lr4=BGBCC_SH_REG_RD4;
-				lr0=BGBCC_SH_REG_RD0;
+				lr0=BGBCC_SH_REG_RD2;
 			}
 		}
 
@@ -738,14 +738,14 @@ int BGBCC_JX2C_EmitFpConvVRegVReg(
 		{
 			s0="__sfp_fcnvsd";
 			lr4=BGBCC_SH_REG_RD4;
-			lr0=BGBCC_SH_REG_RQ0;
+			lr0=BGBCC_SH_REG_RQ2;
 		}
 
 		if(nm1==BGBCC_SH_NMID_FCNVDS)
 		{
 			s0="__sfp_fcnvds";
 			lr4=BGBCC_SH_REG_RQ4;
-			lr0=BGBCC_SH_REG_RD0;
+			lr0=BGBCC_SH_REG_RD2;
 		}
 
 		if(!sctx->is_addr64)
@@ -755,10 +755,10 @@ int BGBCC_JX2C_EmitFpConvVRegVReg(
 			else
 				lr4=BGBCC_SH_REG_R4;
 
-			if(lr0==BGBCC_SH_REG_RQ0)
-				lr0=BGBCC_SH_REG_LR0;
+			if(lr0==BGBCC_SH_REG_RQ2)
+				lr0=BGBCC_SH_REG_LR2;
 			else
-				lr0=BGBCC_SH_REG_R0;
+				lr0=BGBCC_SH_REG_R2;
 		}
 
 		if(s0)
@@ -817,12 +817,12 @@ int BGBCC_JX2C_EmitFpConvVRegVReg(
 			{
 				s0="__lfp_float_f64";
 				lr4=BGBCC_SH_REG_R4;
-				lr0=BGBCC_SH_REG_DR0;
+				lr0=BGBCC_SH_REG_DR2;
 			}else
 			{
 				s0="__lfp_float_f32";
 				lr4=BGBCC_SH_REG_R4;
-				lr0=BGBCC_SH_REG_FR0;
+				lr0=BGBCC_SH_REG_FR2;
 			}
 		}
 
@@ -832,12 +832,12 @@ int BGBCC_JX2C_EmitFpConvVRegVReg(
 			{
 				s0="__lfp_ftrc_f64";
 				lr4=BGBCC_SH_REG_DR4;
-				lr0=BGBCC_SH_REG_R0;
+				lr0=BGBCC_SH_REG_R2;
 			}else
 			{
 				s0="__lfp_ftrc_f32";
 				lr4=BGBCC_SH_REG_FR4;
-				lr0=BGBCC_SH_REG_R0;
+				lr0=BGBCC_SH_REG_R2;
 			}
 		}
 
@@ -845,14 +845,14 @@ int BGBCC_JX2C_EmitFpConvVRegVReg(
 		{
 			s0="__lfp_fcnvsd";
 			lr4=BGBCC_SH_REG_FR4;
-			lr0=BGBCC_SH_REG_DR0;
+			lr0=BGBCC_SH_REG_DR2;
 		}
 
 		if(nm1==BGBCC_SH_NMID_FCNVDS)
 		{
 			s0="__lfp_fcnvds";
 			lr4=BGBCC_SH_REG_DR4;
-			lr0=BGBCC_SH_REG_FR0;
+			lr0=BGBCC_SH_REG_FR2;
 		}
 
 		if(s0)

@@ -214,15 +214,15 @@ char *BGBCP_BinaryTySuf(BGBCP_ParseState *ctx, char *op,
 			return(NULL);
 		}
 
-		if(!bgbcp_strcmp2(s0, "ULL"))
+		if(!bgbcp_strcmp3(s0, "ULL"))
 		{
 			if(!bgbcp_strcmp1(s1, "U"))
 				return(s0);
 			if(!bgbcp_strcmp1(s1, "L"))
 				return(s0);
-			if(!bgbcp_strcmp1(s1, "UL"))
+			if(!bgbcp_strcmp2(s1, "UL"))
 				return(s0);
-			if(!bgbcp_strcmp1(s1, "LL"))
+			if(!bgbcp_strcmp2(s1, "LL"))
 				return(s0);
 			return(NULL);
 		}
@@ -239,15 +239,15 @@ char *BGBCP_BinaryTySuf(BGBCP_ParseState *ctx, char *op,
 			return(NULL);
 		}
 
-		if(!bgbcp_strcmp2(s1, "ULL"))
+		if(!bgbcp_strcmp3(s1, "ULL"))
 		{
 			if(!bgbcp_strcmp1(s0, "U"))
 				return(s1);
 			if(!bgbcp_strcmp1(s0, "L"))
 				return(s1);
-			if(!bgbcp_strcmp1(s0, "UL"))
+			if(!bgbcp_strcmp2(s0, "UL"))
 				return(s1);
-			if(!bgbcp_strcmp1(s0, "LL"))
+			if(!bgbcp_strcmp2(s0, "LL"))
 				return(s1);
 			return(NULL);
 		}

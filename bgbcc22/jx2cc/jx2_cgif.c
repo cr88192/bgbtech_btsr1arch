@@ -831,6 +831,11 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 
 //	BGBCC_JX2C_CompilePrintVirtOp(ctx, sctx, obj, op);
 
+	sctx->test_lclalign=0;
+
+//	sctx->test_lclalign=1;
+//	sctx->test_lclalign=3;
+
 	sctx->sreg_live=sctx->sreg_held;
 	sctx->sfreg_live=sctx->sfreg_held;
 	BGBCC_JX2_EmitCheckFlushIndexImm(sctx);
@@ -2106,6 +2111,12 @@ ccxl_status BGBCC_JX2C_BuildGlobal(BGBCC_TransState *ctx,
 //		l0=BGBCC_JX2_GenLabel(sctx);
 		l0=BGBCC_JX2_GetNamedLabel(sctx, obj->qname);
 		obj->fxoffs=l0;
+	}
+	
+	if((l0>=BGBCC_SH_LBL_ARCHSTRT) && (l0<BGBCC_SH_LBL_ARCHEND))
+	{
+		/* This variable is a system register. */
+		return(0);
 	}
 	
 	hasval=1;

@@ -1417,7 +1417,11 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		break;
 	case BGBCC_RIL3OP_LDCONSTI:
 		li0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
-		BGBCC_CCXL_StackPushConstInt(ctx, li0);
+		if(((s32)li0)==li0)
+			{ BGBCC_CCXL_StackPushConstInt(ctx, li0); break; }
+		if(((u32)li0)==li0)
+			{ BGBCC_CCXL_StackPushConstUInt(ctx, li0); break; }
+		BGBCC_DBGBREAK
 		break;
 	case BGBCC_RIL3OP_LDCONSTL:
 		li0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);

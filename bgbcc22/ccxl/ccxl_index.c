@@ -221,10 +221,19 @@ void BGBCC_CCXL_ConvImm(BGBCC_TransState *ctx,
 	s64 li, lj;
 	int i;
 
-	if(BGBCC_CCXL_TypeSmallIntP(ctx, dty))
+//	if(BGBCC_CCXL_TypeSmallIntP(ctx, dty))
+	if(BGBCC_CCXL_TypeSmallSIntP(ctx, dty))
 	{
 		i=BGBCC_CCXL_GetRegImmIntValue(ctx, sreg);
 		BGBCC_CCXL_GetRegForIntValue(ctx, rdreg, i);
+		return;
+	}
+	
+	if(BGBCC_CCXL_TypeSmallUIntP(ctx, dty))
+	{
+		li=BGBCC_CCXL_GetRegImmLongValue(ctx, sreg);
+//		BGBCC_CCXL_GetRegForLongValue(ctx, rdreg, li);
+		BGBCC_CCXL_GetRegForUIntValue(ctx, rdreg, li);
 		return;
 	}
 

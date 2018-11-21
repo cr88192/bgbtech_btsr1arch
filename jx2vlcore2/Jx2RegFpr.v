@@ -36,6 +36,7 @@ reg			nxtRegSrRB;
 reg[63:0]	tRegValRm;
 reg[63:0]	tRegValRn;
 
+`ifndef JX2_FPR_FPRARR
 reg[63:0]	regFprR0;
 reg[63:0]	regFprR1;
 reg[63:0]	regFprR2;
@@ -53,10 +54,15 @@ reg[63:0]	regFprR12;
 reg[63:0]	regFprR13;
 reg[63:0]	regFprR14;
 reg[63:0]	regFprR15;
+`endif
 
 assign regValRm = tRegValRm;
 assign regValRn = tRegValRn;
 
+`ifdef JX2_FPR_FPRARR
+reg[63:0]	regFprArrRm[15:0];
+reg[63:0]	regFprArrRn[15:0];
+`endif
 
 always @*
 begin
@@ -64,7 +70,16 @@ begin
 
 	tRegValRm=UV64_XX;
 	tRegValRn=UV64_XX;
+
+`ifdef JX2_FPR_FPRARR
+	tRegValRm = regFprArrRm[regIdRm[3:0]];
+	tRegValRn = regFprArrRn[regIdRn[3:0]];
 	
+	if(regIdRm==JX2_REG_ZZR)
+		tRegValRm = 0;
+	if(regIdRn==JX2_REG_ZZR)
+		tRegValRn = 0;
+`else
 	case(regIdRm)
 		JX2_REG_R0:		tRegValRm = regFprR0  ;
 		JX2_REG_R1:		tRegValRm = regFprR1  ;
@@ -109,6 +124,7 @@ begin
 		JX2_REG_ZZR:	tRegValRn = 0;
 		default:		tRegValRn = UV64_XX   ;
 	endcase
+`endif
 
 	if(regIdRm == regIdRo)
 		tRegValRm = regValRo;
@@ -120,6 +136,13 @@ always @ (posedge clock)
 begin
 	if(!regExHold)
 	begin
+`ifdef JX2_FPR_FPRARR
+		if(regIdRo[6:4]==0)
+		begin
+			regFprArrRm[regIdRo[3:0]]	<= regValRo;
+			regFprArrRn[regIdRo[3:0]]	<= regValRo;
+		end
+`else
 		regFprR0  <= (regIdRo==JX2_REG_R0 ) ? regValRo[63:0] : regFprR0 ;
 		regFprR1  <= (regIdRo==JX2_REG_R1 ) ? regValRo[63:0] : regFprR1 ;
 		regFprR2  <= (regIdRo==JX2_REG_R2 ) ? regValRo[63:0] : regFprR2 ;
@@ -135,6 +158,8 @@ begin
 		regFprR12 <= (regIdRo==JX2_REG_R12) ? regValRo[63:0] : regFprR12;
 		regFprR13 <= (regIdRo==JX2_REG_R13) ? regValRo[63:0] : regFprR13;
 		regFprR14 <= (regIdRo==JX2_REG_R14) ? regValRo[63:0] : regFprR14;
+		regFprR15 <= (regIdRo==JX2_REG_R15) ? regValRo[63:0] : regFprR15;
+`endif
 	end
 end
 

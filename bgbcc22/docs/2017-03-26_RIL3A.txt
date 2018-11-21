@@ -212,6 +212,8 @@ Typed signatures are encoded as strings, with characters indicating value types.
 * z: reserved
 
 * Cb: reference ("&type")
+* Ce: event ("__event")
+* Cf: interrupt ("__interrupt")
 * Ci: interface ("__interface")
 * Cs: synchronized ("__synchronized")
 * Ct: thread ("__thread")

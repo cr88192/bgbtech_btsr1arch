@@ -357,6 +357,9 @@ static char *bgbcp_basetypes_c[]={
 "__vec2d", "__vec3d", "__vec4d", "__quatd", 
 "__mat2", "__mat3", "__mat4",
 
+// "_Float128",	"_Float64",
+// "_Float32",	"_Float16",
+
 "__v2f", "__v3f", "__v4f",
 "__m2f", "__m3f", "__m4f",
 "__variant", "__variantf",
@@ -391,6 +394,9 @@ static char *bgbcp_basetypes_bs2[]={
 "var", "variant",
 "hfloat",
 
+"int128", "uint128",
+"float128",
+
 "__int128", "__uint128",
 "__float128", "__float16", "__m64", "__m128",
 "__vec2", "__vec3", "__vec4", "__quat", 
@@ -402,6 +408,8 @@ static char *bgbcp_basetypes_bs2[]={
 "__variantf",
 NULL
 };
+
+static short bgbcp_basetypes_c_hix[512];
 
 static int bgbcp_chktoklst(char *str, char **lst)
 {
@@ -419,9 +427,63 @@ static int bgbcp_chktoklst(char *str, char **lst)
 	return(0);
 }
 
-int BGBCP_DefTypeFlag(BGBCP_ParseState *ctx, char *tag)
+static int bgbcp_chktoklst_hix(char *str, char **lst, short *hix)
 {
-	int i, n, c0;
+	char *s;
+	int i, h;
+	
+	if(!hix[0])
+	{
+		for(i=0; i<256; i++)
+			hix[i]=-1;
+
+		for(i=0; lst[i]; i++)
+		{
+			s=lst[i];
+			h=*(u32 *)s;
+			h=((h*65521)>>16)&255;
+			
+			hix[256+i]=hix[h];
+			hix[h]=256+i;
+		}
+	}
+
+	h=*(u32 *)str;
+	h=((h*65521)>>16)&255;
+	i=hix[h];
+	while(i>0)
+	{
+		if(!bgbcp_strcmp(lst[i-256], str))
+			return(1);
+		i=hix[i];
+	}
+
+	if(str[0]=='_')
+	{
+		s="__type_";
+//		if(!strncmp(str, s, strlen(s)))
+		if(!strncmp(str, s, 7))
+			return(1);
+	}
+
+	return(0);
+
+#if 0
+	for(i=0; lst[i]; i++)
+		if(!bgbcp_strcmp(lst[i], str))
+			return(1);
+
+	s="__type_";
+	if(!strncmp(str, s, strlen(s)))
+		return(1);
+
+	return(0);
+#endif
+}
+
+s64 BGBCP_DefTypeFlag(BGBCP_ParseState *ctx, char *tag)
+{
+	s64 i, n, c0;
 
 	i=0;
 
@@ -469,8 +531,8 @@ int BGBCP_DefTypeFlag(BGBCP_ParseState *ctx, char *tag)
 	case BOTK___XCALL:			i=BGBCC_TYFL_XCALL; break;
 
 	case BOTK___PACKED:			i=BGBCC_TYFL_PACKED; break;
-	case BOTK___GC:				i=BGBCC_TYFL_GC; break;
-	case BOTK___NOGC:			i=BGBCC_TYFL_NOGC; break;
+//	case BOTK___GC:				i=BGBCC_TYFL_GC; break;
+//	case BOTK___NOGC:			i=BGBCC_TYFL_NOGC; break;
 
 	case BOTK___WIDE:			i=BGBCC_TYFL_PERSISTENT; break;
 		
@@ -539,6 +601,8 @@ int BGBCP_DefTypeFlag(BGBCP_ParseState *ctx, char *tag)
 				if(!bgbcp_strcmp(tag, "__cdecl"))i=BGBCC_TYFL_CDECL;
 				if(!bgbcp_strcmp(tag, "__proxy"))i=BGBCC_TYFL_PROXY;
 
+				if(!bgbcp_strcmp(tag, "__interrupt"))i=BGBCC_TYFL_INTERRUPT;
+
 				if(!bgbcp_strcmp(tag, "__w64"))i=BGBCC_TYFL_INLINE;
 				if(!bgbcp_strcmp(tag, "__ptr64"))i=BGBCC_TYFL_INLINE;
 				if(!bgbcp_strcmp(tag, "__ptr32"))i=BGBCC_TYFL_INLINE;
@@ -548,8 +612,8 @@ int BGBCP_DefTypeFlag(BGBCP_ParseState *ctx, char *tag)
 				if(!bgbcp_strcmp(tag, "__xcall"))i=BGBCC_TYFL_XCALL;
 
 				if(!bgbcp_strcmp(tag, "__packed"))i=BGBCC_TYFL_PACKED;
-				if(!bgbcp_strcmp(tag, "__gc"))i=BGBCC_TYFL_GC;
-				if(!bgbcp_strcmp(tag, "__nogc"))i=BGBCC_TYFL_NOGC;
+//				if(!bgbcp_strcmp(tag, "__gc"))i=BGBCC_TYFL_GC;
+//				if(!bgbcp_strcmp(tag, "__nogc"))i=BGBCC_TYFL_NOGC;
 				if(!bgbcp_strcmp(tag, "__unaligned"))i=BGBCC_TYFL_PACKED;
 				if(!bgbcp_strcmp(tag, "__restrict"))i=BGBCC_TYFL_RESTRICT;
 
@@ -666,8 +730,8 @@ BCCX_Node *BGBCP_DefClassC(BGBCP_ParseState *ctx, char **str)
 {
 	char b[256], b2[256];
 	char *s, *s1, *s2;
-	s64 dfl_fl;
-	int i, j, ty, ty2, fl, cty;
+	s64 dfl_fl, fl, li;
+	int i, j, ty, ty2, cty;
 	BCCX_Node *n, *n1, *n2, *nl;
 
 	s=*str;
@@ -678,10 +742,10 @@ BCCX_Node *BGBCP_DefClassC(BGBCP_ParseState *ctx, char **str)
 	while(1)
 	{
 		BGBCP_Token2(s, b, &ty, ctx->lang);
-		i=BGBCP_DefTypeFlag(ctx, b);
-		if(i)
+		li=BGBCP_DefTypeFlag(ctx, b);
+		if(li)
 		{
-			fl|=i;
+			fl|=li;
 			s=BGBCP_Token2(s, b, &ty, ctx->lang);
 			j++;
 			continue;
@@ -721,8 +785,8 @@ BCCX_Node *BGBCP_DefClassC(BGBCP_ParseState *ctx, char **str)
 			}
 //			if(fl&BGBCC_TYFL_GC)cty=3;
 //				else fl|=BGBCC_TYFL_CLASS;
-			if(!(fl&BGBCC_TYFL_GC))
-				fl|=BGBCC_TYFL_NOGC;
+//			if(!(fl&BGBCC_TYFL_GC))
+//				fl|=BGBCC_TYFL_NOGC;
 
 		}
 
@@ -990,7 +1054,8 @@ BCCX_Node *BGBCP_DefTypeC(BGBCP_ParseState *ctx, char **str)
 {
 	char b[256], b2[256], b3[256];
 	char *s, *s1, *s2, *bty;
-	int i, j, ty, ty2, ty3, fl;
+	s64 fl, li;
+	int i, j, ty, ty2, ty3;
 	BCCX_Node *n, *n1, *n2, *attrl, *attrle;
 
 	s=*str;
@@ -1033,17 +1098,18 @@ BCCX_Node *BGBCP_DefTypeC(BGBCP_ParseState *ctx, char **str)
 
 		}
 
-		i=BGBCP_DefTypeFlag(ctx, b);
-		if(i)
+		li=BGBCP_DefTypeFlag(ctx, b);
+		if(li)
 		{
-			fl|=i;
+			fl|=li;
 //			s=BGBCP_Token2(s, b, &ty, ctx->lang);
 			s=s1;
 			j++;
 			continue;
 		}
 
-		if(bgbcp_chktoklst(b, bgbcp_basetypes_c))
+//		if(bgbcp_chktoklst(b, bgbcp_basetypes_c))
+		if(bgbcp_chktoklst_hix(b, bgbcp_basetypes_c, bgbcp_basetypes_c_hix))
 		{
 //			s=BGBCP_Token2(s, b, &ty, ctx->lang);
 			s=s1;
@@ -1074,8 +1140,47 @@ BCCX_Node *BGBCP_DefTypeC(BGBCP_ParseState *ctx, char **str)
 			}else
 			{
 				bty=bgbcc_strdup(b);
-				if(!strncmp(bty, "__type_", 7))bty+=7;
-				if(!strncmp(bty, "__", 2))bty+=2;
+				if(bty[0]=='_')
+				{
+					if(bty[1]=='_')
+					{
+//						if(!strncmp(bty, "__type_", 7))bty+=7;
+//						if(!strncmp(bty, "__", 2))bty+=2;
+
+						if(!strncmp(bty, "__type_", 7))
+							bty+=7;
+						else
+							bty+=2;
+					}
+#if 0
+					else
+						if(bty[1]=='I')
+					{
+						if(!strcmp(bty, "_Int8"))
+							bty=bgbcc_strdup("char");
+						if(!strcmp(bty, "_Int16"))
+							bty=bgbcc_strdup("short");
+						if(!strcmp(bty, "_Int32"))
+							bty=bgbcc_strdup("int");
+						if(!strcmp(bty, "_Int64"))
+							bty=bgbcc_strdup("llong");
+						if(!strcmp(bty, "_Int128"))
+							bty=bgbcc_strdup("int128");
+					}
+					else
+						if(bty[1]=='F')
+					{
+						if(!strcmp(bty, "_Float16"))
+							bty=bgbcc_strdup("float16");
+						if(!strcmp(bty, "_Float32"))
+							bty=bgbcc_strdup("float");
+						if(!strcmp(bty, "_Float64"))
+							bty=bgbcc_strdup("double");
+						if(!strcmp(bty, "_Float128"))
+							bty=bgbcc_strdup("float128");
+					}
+#endif
+				}
 			}
 
 			j++;
@@ -1241,10 +1346,10 @@ BCCX_Node *BGBCP_DefTypeC(BGBCP_ParseState *ctx, char **str)
 		while(1)
 		{
 			BGBCP_Token2(s, b2, &ty2, ctx->lang);
-			i=BGBCP_DefTypeFlag(ctx, b2);
-			if(i)
+			li=BGBCP_DefTypeFlag(ctx, b2);
+			if(li)
 			{
-				fl|=i;
+				fl|=li;
 				s=BGBCP_Token2(s, b2, &ty2, ctx->lang);
 				j++;
 				continue;
@@ -1308,10 +1413,10 @@ BCCX_Node *BGBCP_DefTypeC(BGBCP_ParseState *ctx, char **str)
 			while(1)
 			{
 				BGBCP_Token2(s, b2, &ty2, ctx->lang);
-				i=BGBCP_DefTypeFlag(ctx, b2);
-				if(i)
+				li=BGBCP_DefTypeFlag(ctx, b2);
+				if(li)
 				{
-					fl|=i;
+					fl|=li;
 					s=BGBCP_Token2(s, b2, &ty2, ctx->lang);
 					j++;
 					continue;
@@ -1365,8 +1470,8 @@ BCCX_Node *BGBCP_DefClassJ(BGBCP_ParseState *ctx, char **str)
 {
 	char b[256], b2[256];
 	char *s, *s1;
-	s64 dfl_fl;
-	int i, j, ty, ty2, fl, cty;
+	s64 dfl_fl, fl, li;
+	int i, j, ty, ty2, cty;
 	BCCX_Node *n, *n1, *n2;
 
 	s=*str;
@@ -1377,10 +1482,10 @@ BCCX_Node *BGBCP_DefClassJ(BGBCP_ParseState *ctx, char **str)
 	while(1)
 	{
 		BGBCP_Token2(s, b, &ty, ctx->lang);
-		i=BGBCP_DefTypeFlag(ctx, b);
-		if(i)
+		li=BGBCP_DefTypeFlag(ctx, b);
+		if(li)
 		{
-			fl|=i;
+			fl|=li;
 			s=BGBCP_Token2(s, b, &ty, ctx->lang);
 			j++;
 			continue;
@@ -1552,7 +1657,8 @@ BCCX_Node *BGBCP_DefTypeJ(BGBCP_ParseState *ctx, char **str)
 {
 	char b[256], b2[256];
 	char *s, *s1, *bty, *vty;
-	int i, j, ty, ty2, fl;
+	s64 fl, li;
+	int i, j, ty, ty2;
 	BCCX_Node *n, *n1, *n2;
 
 	s=*str;
@@ -1561,10 +1667,10 @@ BCCX_Node *BGBCP_DefTypeJ(BGBCP_ParseState *ctx, char **str)
 	while(1)
 	{
 		BGBCP_Token2(s, b, &ty, ctx->lang);
-		i=BGBCP_DefTypeFlag(ctx, b);
-		if(!i)break;
+		li=BGBCP_DefTypeFlag(ctx, b);
+		if(!li)break;
 
-		fl|=i;
+		fl|=li;
 		s=BGBCP_Token2(s, b, &ty, ctx->lang);
 		j++;
 		continue;

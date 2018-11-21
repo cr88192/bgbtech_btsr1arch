@@ -185,8 +185,8 @@ int BGBCC_CCXL_CompileSwitch_SortR(
 //	if(1)
 //	if(ncl<32)
 //	if(ncl<16)
-	if(ncl<8)
-//	if(ncl<4)
+//	if(ncl<8)
+	if(ncl<4)
 	{
 		for(i=0; i<ncl; i++)
 			for(j=i+1; j<ncl; j++)
@@ -1678,50 +1678,51 @@ int BGBCC_CCXL_VarTypeString_ModifierChar(BGBCC_TransState *ctx, s64 i)
 
 	switch(i)
 	{
-	case BGBCC_TYFL_ABSTRACT: c='a'; break;
-	case BGBCC_TYFL_BIGENDIAN: c='b'; break;
-	case BGBCC_TYFL_CDECL: c='c'; break;
-	case BGBCC_TYFL_DELEGATE: c='d'; break;
+	case BGBCC_TYFL_ABSTRACT:		c='a'; break;
+	case BGBCC_TYFL_BIGENDIAN:		c='b'; break;
+	case BGBCC_TYFL_CDECL:			c='c'; break;
+	case BGBCC_TYFL_DELEGATE:		c='d'; break;
 //	case BGBCC_TYFL_EVENT: c='e'; break;
-	case BGBCC_TYFL_EXTERN: c='e'; break;
+	case BGBCC_TYFL_EXTERN:			c='e'; break;
 	//f (fastcall/amd64)
 //	case BGBCC_TYFL_GETTER: c='g'; break;
 //	case BGBCC_TYFL_SETTER: c='h'; break;
-	case BGBCC_TYFL_INLINE: c='i'; break;
-	case BGBCC_TYFL_FINAL: c='j'; break;
-	case BGBCC_TYFL_CONST: c='k'; break;
-	case BGBCC_TYFL_LTLENDIAN: c='l'; break;
-	case BGBCC_TYFL_PACKED: c='m'; break;
-	case BGBCC_TYFL_NATIVE: c='n'; break;
-	case BGBCC_TYFL_OVERRIDE: c='o'; break;
-	case BGBCC_TYFL_PUBLIC: c='p'; break;
-	case BGBCC_TYFL_PRIVATE: c='q'; break;
-	case BGBCC_TYFL_PROTECTED: c='r'; break;
-	case BGBCC_TYFL_STATIC: c='s'; break;
+	case BGBCC_TYFL_INLINE:			c='i'; break;
+	case BGBCC_TYFL_FINAL:			c='j'; break;
+	case BGBCC_TYFL_CONST:			c='k'; break;
+	case BGBCC_TYFL_LTLENDIAN:		c='l'; break;
+	case BGBCC_TYFL_PACKED:			c='m'; break;
+	case BGBCC_TYFL_NATIVE:			c='n'; break;
+	case BGBCC_TYFL_OVERRIDE:		c='o'; break;
+	case BGBCC_TYFL_PUBLIC:			c='p'; break;
+	case BGBCC_TYFL_PRIVATE:		c='q'; break;
+	case BGBCC_TYFL_PROTECTED:		c='r'; break;
+	case BGBCC_TYFL_STATIC:			c='s'; break;
 	//t (thiscall)
 	//u (special)
-	case BGBCC_TYFL_VIRTUAL: c='v'; break;
-	case BGBCC_TYFL_STDCALL: c='w'; break;
-	case BGBCC_TYFL_XCALL: c='x'; break;
-	case BGBCC_TYFL_TRANSIENT: c='y'; break;
+	case BGBCC_TYFL_VIRTUAL:		c='v'; break;
+	case BGBCC_TYFL_STDCALL:		c='w'; break;
+	case BGBCC_TYFL_XCALL:			c='x'; break;
+	case BGBCC_TYFL_TRANSIENT:		c='y'; break;
 	//z
 //	case BGBCC_TYFL_VOLATILE: c='z'; break;
 
 //	case BGBCC_TYFL_TRANSIENT: c=('C'<<8)|'t'; break;
 
-//	case BGBCC_TYFL_ASYNC: c=('C'<<8)|'a'; break;
-	case BGBCC_TYFL_BYREF: c=('C'<<8)|'b'; break;
+//	case BGBCC_TYFL_ASYNC:			c=('C'<<8)|'a'; break;
+	case BGBCC_TYFL_BYREF:			c=('C'<<8)|'b'; break;
 
-	case BGBCC_TYFL_EVENT: c=('C'<<8)|'e'; break;
+	case BGBCC_TYFL_EVENT:			c=('C'<<8)|'e'; break;
+	case BGBCC_TYFL_INTERRUPT:		c=('C'<<8)|'f'; break;
 
-	case BGBCC_TYFL_INTERFACE: c=('C'<<8)|'i'; break;
+	case BGBCC_TYFL_INTERFACE:		c=('C'<<8)|'i'; break;
 
-	case BGBCC_TYFL_SYNCHRONIZED: c=('C'<<8)|'s'; break;
+	case BGBCC_TYFL_SYNCHRONIZED:	c=('C'<<8)|'s'; break;
 
-	case BGBCC_TYFL_DLLEXPORT: c=('D'<<8)|'e'; break;
-	case BGBCC_TYFL_DLLIMPORT: c=('D'<<8)|'i'; break;
+	case BGBCC_TYFL_DLLEXPORT:		c=('D'<<8)|'e'; break;
+	case BGBCC_TYFL_DLLIMPORT:		c=('D'<<8)|'i'; break;
 
-	case BGBCC_TYFL_THREAD: c=('D'<<8)|'t'; break;
+	case BGBCC_TYFL_THREAD:			c=('D'<<8)|'t'; break;
 	default: c=0; break;
 	}
 	return(c);

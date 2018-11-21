@@ -12,7 +12,7 @@ module Jx2ExShad64(
 input	clock;
 input	reset;
 
-/* verilator lint_off UNOPTFLAT */
+// /* verilator lint_off UNOPTFLAT */
 
 input[63:0]		valRs;
 input[ 7:0]		valRt;
@@ -21,7 +21,7 @@ output[63:0]	valRn;
 
 reg[63:0]		tValRn;
 assign			valRn = tValRn;
-/* verilator lint_on UNOPTFLAT */
+// /* verilator lint_on UNOPTFLAT */
 
 reg[63:0]		tValRol;
 reg[63:0]		tValRor;
@@ -33,41 +33,51 @@ begin
 	tValRol=0;
 	tValRor=0;
 	tValRn = 0;
-	tValSh = 0;
+//	tValSh = 0;
+	tValSh = valRt;
 
+`ifndef def_true
 	case(shOp)
 	3'h0: begin
 	end
 
 	3'h1: begin		//SHLD
-		tValRol=0;
+//		tValRol=0;
 		tValRor=0;
-		tValSh = valRt;
+//		tValSh = valRt;
 	end
 
 	3'h2: begin		//SHAD
-		tValRol=0;
+//		tValRol=0;
 		tValRor=valRs[63] ? 64'hFFFFFFFF : 64'h00000000;
-		tValSh = valRt;
+//		tValSh = valRt;
 	end
 
+/*
 	3'h3: begin		//SHLDR
-		tValRol=0;
+//		tValRol=0;
 		tValRor=0;
-		tValSh = -valRt;
+//		tValSh = -valRt;
 	end
 
 	3'h4: begin		//SHADR
-		tValRol=0;
+//		tValRol=0;
 		tValRor=valRs[63] ? 64'hFFFFFFFF : 64'h00000000;
-		tValSh = -valRt;
+//		tValSh = -valRt;
 	end
+*/
 
 	default:
 	begin
 	end
 
 	endcase
+`else
+	if(shOp[0])
+		tValRor=0;
+	else
+		tValRor=valRs[63] ? 64'hFFFFFFFF : 64'h00000000;
+`endif
 
 	casez(tValSh)
 	8'b0z000000: tValRn = valRs;

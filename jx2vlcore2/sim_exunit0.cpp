@@ -1,7 +1,7 @@
-#include "VBsrExUnit.h"
+#include "VJx2ExUnit.h"
 #include "verilated.h"
 
-VBsrExUnit *top = new VBsrExUnit;
+VJx2ExUnit *top = new VJx2ExUnit;
 
 vluint64_t main_time = 0;
 
@@ -20,6 +20,8 @@ vluint64_t main_time = 0;
 
 typedef unsigned char byte;
 typedef signed char sbyte;
+
+#include "coretst/jx2_tstmulti.c"
 
 #define FKEY_F1		0x81
 #define FKEY_F2		0x82
@@ -376,13 +378,36 @@ char *BTSR1_CheckGetString()
 	return(NULL);
 }
 
+BJX2_Context	*jx2_ctx;
 
-uint32_t mmio_ReadDWord(uint32_t addr)
+u32 mmgp_data[256];
+
+uint32_t mmio_ReadDWord(BJX2_Context *ctx, uint32_t addr)
 {
+	u32 *mmio;
+	s64 rvq, dcyc;
 	int val;
 
-	switch(addr)
+	mmio=mmgp_data;
+
+	switch(addr&0xFFFFFF)
 	{
+	case 0xE000:
+		rvq=(ctx->tot_cyc*ctx->rcp_mhz)>>16;
+		val=rvq;
+		break;
+	case 0xE004:
+		rvq=(ctx->tot_cyc*ctx->rcp_mhz)>>16;
+		val=rvq>>32;
+		break;
+
+	case 0xE008:
+		val=ctx->ttick_hk;
+		break;
+	case 0xE00C:
+		val=ctx->ttick_rst;
+		break;
+
 	case 0xE010:
 		val=0;
 		if(kbirov!=kbrov)
@@ -392,11 +417,27 @@ uint32_t mmio_ReadDWord(uint32_t addr)
 		}
 		break;
 
+	case 0xE014:
+		val=0; break;
+
 	case 0xE018:
 		val=0;
 		if(kbirov!=kbrov)
 			val|=1;
 		break;
+
+	case 0xE01C:
+		val=0; break;
+
+	case 0xE030:
+		val=mmio[0x10];
+//		if(mmgp_spi_delcyc>0)
+//			val|=2;
+		break;
+	case 0xE034:
+		val=mmio[0x11];
+		break;
+
 	default:
 		val=0;
 		break;
@@ -404,25 +445,85 @@ uint32_t mmio_ReadDWord(uint32_t addr)
 	return(val);
 }
 
-uint32_t mmio_WriteDWord(uint32_t addr, uint32_t val)
+uint32_t mmio_WriteDWord(BJX2_Context *ctx, uint32_t addr, uint32_t val)
 {
-	switch(addr)
+	u32 *mmio;
+	int v;
+
+	mmio=mmgp_data;
+
+	switch(addr&0xFFFFFF)
 	{
+	case 0xE000:
+		break;
+	case 0xE004:
+		break;
+	case 0xE008:
+		ctx->ttick_hk=val;
+		break;
+	case 0xE00C:
+		ctx->ttick_rst=val;
+		break;
+	case 0xE010:
+		break;
 	case 0xE014:
 //		printf("UART TX %02X(%c)\n", val, val);
 		fputc(val, stdout);
 		break;
+	case 0xE018:
+		break;
+	case 0xE01C:
+		break;
+
+	case 0xE030:
+		v=btesh2_spimmc_XrCtl(ctx, val);
+
+//		printf("SPI XrCtl %02X %02X\n", val, v);
+
+		mmio[0x10]=v&255;
+		if(v&0x10000)
+			mmio[0x11]=(v>>8)&255;
+		break;
+	case 0xE034:
+		v=btesh2_spimmc_XrByte(ctx, val);
+		mmio[0x11]=v;
+
+//		printf("SPI XrData %02X %02X\n", val, v);
+
+//		mmgp_spi_delcyc+=200;
+//		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_IOPOKE);
+		break;
+
 	default:
 		break;
 	}
 	return(0);
 }
 
+uint32_t *drambuf;
+
 int main(int argc, char **argv, char **env)
 {
+	BJX2_Context *ctx;
+	uint32_t addr;
 	int opm_latch;
-	int lclk;
+	int lclk, mhz;
+
+	mhz=100;
+
 	Verilated::commandArgs(argc, argv);
+
+	drambuf=(uint32_t *)malloc(1<<28);
+
+	ctx=(BJX2_Context *)malloc(sizeof(BJX2_Context));
+	jx2_ctx=ctx;
+
+	ctx->tgt_mhz=mhz;
+	ctx->rcp_mhz=((1048576/ctx->tgt_mhz)+7)>>4;
+	ctx->ttick_rst=(ctx->tgt_mhz*1000000)/1024;
+	ctx->ttick_hk=ctx->ttick_rst;
+
+	printf("Start ExUnit\n");
 
 	BTSR1_MainInitKeyboard();
 
@@ -435,7 +536,16 @@ int main(int argc, char **argv, char **env)
 		if(top->clock && (lclk!=top->clock))
 		{
 //			printf("Cycle\n");
+
+			ctx->ttick_hk--;
+			if(ctx->ttick_hk<=0)
+			{
+//				printf("Clock IRQ\n");
+				ctx->ttick_hk=ctx->ttick_rst;
+			}
 		}
+		
+		jx2_ctx->tot_cyc=main_time>>1;
 		
 		lclk = top->clock;
 //		top->mode = 3;
@@ -446,24 +556,60 @@ int main(int argc, char **argv, char **env)
 
 		top->eval();
 
+
+		if(top->memOpm)
+		{
+			addr=top->memAddr;
+			top->memOK=0;
+
+			if(top->memOpm&0x08)
+			{			
+				top->memInData[0]=drambuf[((addr>>2)+0)&0x3FFFFFFF];
+				top->memInData[1]=drambuf[((addr>>2)+1)&0x3FFFFFFF];
+				top->memInData[2]=drambuf[((addr>>2)+2)&0x3FFFFFFF];
+				top->memInData[3]=drambuf[((addr>>2)+3)&0x3FFFFFFF];
+				top->memOK=1;
+
+//				printf("DRAM  %08X  %08X %08X %08X %08X\n",
+//					addr,
+//					top->memInData[0], top->memInData[1],
+//					top->memInData[2], top->memInData[3]);
+			}
+
+			if(top->memOpm&0x10)
+			{
+				drambuf[((addr>>2)+0)&0x3FFFFFFF]=top->memOutData[0];
+				drambuf[((addr>>2)+1)&0x3FFFFFFF]=top->memOutData[1];
+				drambuf[((addr>>2)+2)&0x3FFFFFFF]=top->memOutData[2];
+				drambuf[((addr>>2)+3)&0x3FFFFFFF]=top->memOutData[3];
+				top->memOK=1;
+			}
+		}else
+		{
+			top->memOK=0;
+		}
+
+
 //		top->mmioOK = 0;
 		if(top->mmioOpm && !opm_latch)
 		{
 			top->mmioOK = 0;
 			opm_latch=1;
-//			printf("OPM=%X Addr=%X\n", top->mmioOpm, top->mmioAddr);
-			if((top->mmioAddr&0xF000)==0xE000)
+//			printf("MMIO OPM=%X Addr=%X\n", top->mmioOpm, top->mmioAddr);
+			if((top->mmioAddr&0x0FFFF000)==0x0000E000)
 			{
 				if(top->mmioOpm&0x08)
 				{
 					top->mmioInData=
-						mmio_ReadDWord(top->mmioAddr);
+						mmio_ReadDWord(jx2_ctx, top->mmioAddr);
 					top->mmioOK = 1;
-				}
-				if(top->mmioOpm&0x10)
+				}else if(top->mmioOpm&0x10)
 				{
-					mmio_WriteDWord(top->mmioAddr,
+					mmio_WriteDWord(jx2_ctx, top->mmioAddr,
 						top->mmioOutData);
+					top->mmioOK = 1;
+				}else
+				{
 					top->mmioOK = 1;
 				}
 			}else
@@ -473,7 +619,7 @@ int main(int argc, char **argv, char **env)
 			}
 		}else
 		{
-			if(!top->mmioOpm)
+			if(!(top->mmioOpm&0x18))
 			{
 				opm_latch=0;
 				top->mmioOK = 0;

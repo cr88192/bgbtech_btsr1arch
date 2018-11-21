@@ -47,10 +47,12 @@ Perform a bitwise AND of the source and destination values and store the result 
 === BF ===
 
 * 23dd            BF		(PC, disp8s)
-* 3032            BF		(PC, DLR)
+* 3032          / BF		(PC, DLR)
+* 31n3            BF		(PC, Rn)
 * 32n3            BF		Rn
 * F0dd_23dd       BF		(PC, disp16s)
-* F003_3002       BF		(PC, DLR)			//Fix32
+* F003_3002     / BF		(PC, DLR)			//Fix32
+* F0en_3013       BF		(PC, Rn)			//Fix32
 * F0en_3023       BF		Rn					//Fix32
 * FC23_dddd_dddd  BF		(PC, disp32s)
 
@@ -61,11 +63,13 @@ The target address is computed and PC is updated to the new address if the condi
 === BRA ===
 
 * 20dd            BRA		(PC, disp8s)
-* 3002            BRA		(PC, DLR)
+* 3002          / BRA		(PC, DLR)
+* 31n0            BRA		(PC, Rn)
 * 32n0            BRA		Rn
-* 36n8            BRA		(PC, Rn)
+* 36n8          / BRA		(PC, Rn)
 * F0dd_20dd       BRA		(PC, disp16s)
-* F000_3002       BRA		(PC, DLR)			//Fix32
+* F000_3002     / BRA		(PC, DLR)			//Fix32
+* F0en_3010       BRA		(PC, Rn)			//Fix32
 * F0en_3020       BRA		Rn					//Fix32
 * FC20_dddd_dddd  BRA		(PC, disp32s)
 
@@ -89,11 +93,13 @@ The BREAK1/2/3 forms overlap with MOV.B, but will be regarded as invalid special
 === BSR ===
 
 * 21dd            BSR		(PC, disp8s)
-* 3012            BSR		(PC, DLR)
+* 3012          / BSR		(PC, DLR)
+* 31n1            BSR		(PC, Rn)
 * 32n1            BSR		Rn
-* 36n9            BSR		(PC, Rn)
+* 36n9          / BSR		(PC, Rn)
 * F0dd_21dd       BSR		(PC, disp16s)
-* F001_3002       BSR		(PC, DLR)			//Fix32
+* F001_3002     / BSR		(PC, DLR)			//Fix32
+* F0en_3011       BSR		(PC, Rn)			//Fix32
 * F0en_3021       BSR		Rn					//Fix32
 * FC21_dddd_dddd  BSR		(PC, disp32s)
 
@@ -104,10 +110,12 @@ The target address is computed and PC is updated to the new address, with the pr
 === BT ===
 
 * 22dd            BT		(PC, disp8s)		//Branch True
-* 3022            BT		(PC, DLR)			//Branch True to PC+(DLR*2)
+* 3022          / BT		(PC, DLR)			//Branch True to PC+(DLR*2)
+* 31n2            BT		(PC, Rn)			//Branch True to PC+(Rn*2)
 * 32n2            BT		Rn
 * F0dd_22dd       BT		(PC, disp16s)
-* F002_3002       BT		(PC, DLR)			//Fix32
+* F002_3002     / BT		(PC, DLR)			//Fix32
+* F0en_3012       BT		(PC, Rn)			//Fix32
 * F0en_3022       BT		Rn					//Fix32
 * FC22_dddd_dddd  BT		(PC, disp32s)
 
@@ -362,6 +370,8 @@ This instruction is invalid outside of an ISR. Its behavior is undefined, but sh
 Load the effective address of the Base register added to the displacement and store the result into the destination register.
 
 This will use a scale factor of 1.
+
+Note that the effective precision of LEA will be relative to the size of the address space. The effective precision of a LEA may be smaller than 64 bits.
 
 
 === LEA.L ===
@@ -1021,21 +1031,33 @@ Subtract the source from the destination, storing the result in the destination 
 
 === SWAP.B ===
 
-* 36nA SWAPB	Rn
+* 36nA SWAP.B	Rn
 
-Rn'=((Rn AND 0xFF00FF00FF00FF00) SHR 8) OR ((Rn AND 0x00FF00FF00FF00FF) SHL 8);
+Rn'=((Rn AND 0xFF00FF00FF00FF00) SHR 8) OR
+	((Rn AND 0x00FF00FF00FF00FF) SHL 8);
 
 Swap the Bytes within Rn.
 
 
 
-=== SWAP.B ===
+=== SWAP.W ===
 
-* 36nB SWAPW	Rn
+* 36nB SWAP.W	Rn
 
-Rn'=((Rn AND 0xFFFF0000FFFF0000) SHR 16) OR ((Rn AND 0x0000FFFF0000FFFF) SHL 8);
+Rn'=((Rn AND 0xFFFF0000FFFF0000) SHR 16) OR
+	((Rn AND 0x0000FFFF0000FFFF) SHL 16);
 
 Swap the Words within Rn.
+
+
+=== SWAP.L ===
+
+* 36nC SWAP.L	Rn
+
+Rn'=((Rn AND 0xFFFFFFFF00000000) SHR 32) OR
+	((Rn AND 0x00000000FFFFFFFF) SHL 32);
+
+Swap the DWords within Rn.
 
 
 === TRAP ===

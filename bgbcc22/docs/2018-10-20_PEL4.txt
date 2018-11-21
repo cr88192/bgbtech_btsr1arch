@@ -1,15 +1,27 @@
+General:
+* This is a spec for the Testkern PE/COFF and PEL4 variants.
+
+
+== PEL4 ==
+
 PEL4: LZ compressed PE/COFF
 
 Overview:
 * Omits the MZ header or stub.
-* Uses the magic "PEL4" rather than "PE\0\0"
-** If the normal magic is used, it is interpreted as uncompressed PE/COFF.
-* The first 1kB is stored in an uncompressed form.
-* The remainder of the image is compressed using an LZ4 variant.
-** This is done in terms of 1kB blocks.
+** An MZ header may be present, but is not allowed if PEL4 is used.
+** An MZ stub will be present for conventional PE/COFF.
+* PEL4 uses the magic "PEL4" rather than "PE\0\0"
+** If the normal "PE" magic is used, it is interpreted as uncompressed PE/COFF.
+** The first 1kB is stored in an uncompressed form.
+** The remainder of the image is compressed using an LZ4 variant.
+*** This is done in terms of 1kB blocks.
 * Assumes that RVA and uncompressed offsets are equivalent for resident sections.
 ** The ".bss" is an partial exception to this rule.
 *** The ".bss" section may overlap other non-resident sections.
+
+The LZ encoding is applied at the image level, and as such the image is unpacked prior to subsequent initialization. The PE headers are kept in an uncompressed form so that a loader can know where things need to go in memory without needing to unpack into a secondary intermediate buffer.
+
+Once unpacked, a PEL4 image is otherwise an ordinaty PE image.
 
 
 === LZ Encoding ===
@@ -52,9 +64,31 @@ Note that each block is to be handled separately, and as such a run of literal b
 A 1 byte tolerance is allowed because it may not be possible in all cases to end the run exactly on a block edge.
 
 
-=== PE Header ===
+== PE Main Headers ==
 
 <pre>
+struct PeMzHeader
+{
+//0000: MZ Header
+    WORD  mMagicMz;                     //0000: 'MZ'
+    WORD  mResv0;                       //0002: Reserved (0)
+    DWORD mResv1;                       //0004: Reserved (0)
+    DWORD mResv2;                       //0008: Reserved (0)
+    DWORD mResv3;                       //000C: Reserved (0)
+    DWORD mResv4;                       //0010: Reserved (0)
+    DWORD mResv5;                       //0014: Reserved (0)
+    DWORD mResv6;                       //0018: Reserved (0)
+    DWORD mResv7;                       //001C: Reserved (0)
+    DWORD mResv8;                       //0020: Reserved (0)
+    DWORD mResv9;                       //0024: Reserved (0)
+    DWORD mResv10;                      //0028: Reserved (0)
+    DWORD mResv11;                      //002C: Reserved (0)
+    DWORD mResv12;                      //0030: Reserved (0)
+    DWORD mResv13;                      //0034: Reserved (0)
+    DWORD mResv14;                      //0038: Reserved (0)
+    DWORD lfaNew;                       //003C: Address of PE header
+};
+
 struct PeMainHeader
 {
 //0000: PE/COFF Header
@@ -97,40 +131,40 @@ struct PeMainHeader
     DWORD mSizeOfHeapReserve;           //0068: (NOMMU?)
     DWORD mSizeOfHeapCommit;            //006C: (NOMMU?)
     DWORD mLoaderFlags;                 //0070: (Reserved, 0)
-    DWORD mNumberOfRvaAndSizes;         //0074:
+    DWORD mNumberOfRvaAndSizes;         //0074: Number of Data Directory Entries
 
-//00B8: Data Directories
-    DWORD rvaExportTable;               //0078:
+//0078: Data Directories
+    DWORD rvaExportTable;               //0078: Export Table
     DWORD szExportTable;                //007C:
-    DWORD rvaImportTable;               //0080:
+    DWORD rvaImportTable;               //0080: Import Table
     DWORD szImportTable;                //0084:
-    DWORD rvaResourceTable;             //0088:
+    DWORD rvaResourceTable;             //0088: Resource Table
     DWORD szResourceTable;              //008C:
-    DWORD rvaExceptionTable;            //0090:
+    DWORD rvaExceptionTable;            //0090: Exception Table
     DWORD szExceptionTable;             //0094:
-    DWORD rvaCertTable;                 //0098:
+    DWORD rvaCertTable;                 //0098: Certificate Table
     DWORD szCertTable;                  //009C:
-    DWORD rvaBaseRelocTable;            //00A0:
+    DWORD rvaBaseRelocTable;            //00A0: Base Relocations
     DWORD szBaseRelocTable;             //00A4:
-    DWORD rvaDebugData;                 //00A8:
+    DWORD rvaDebugData;                 //00A8: Debug Data
     DWORD szDebugData;                  //00AC:
-    DWORD rvaArchData;                  //00B0:
+    DWORD rvaArchData;                  //00B0: Arch Data
     DWORD szArchData;                   //00B4:
-    DWORD rvaGlobalPtr;                 //00B8:
+    DWORD rvaGlobalPtr;                 //00B8: Global Pointer (BJX2: PBO)
     DWORD szGlobalPtr;                  //00BC:
-    DWORD rvaTlsTable;                  //00C0:
+    DWORD rvaTlsTable;                  //00C0: TLS Table
     DWORD szTlsTable;                   //00C4:
-    DWORD rvaLoadConfigTable;           //00C8:
+    DWORD rvaLoadConfigTable;           //00C8: ?
     DWORD szLoadConfigTable;            //00CC:
-    DWORD rvaBoundImportTable;          //00D0:
+    DWORD rvaBoundImportTable;          //00D0: ?
     DWORD szBoundImportTable;           //00D4:
-    DWORD rvaImportAddressTable;        //00D8:
+    DWORD rvaImportAddressTable;        //00D8: Import Address Table
     DWORD szImportAddressTable;         //00DC:
-    DWORD rvaDelayImportTable;          //00E0:
+    DWORD rvaDelayImportTable;          //00E0: Delay Import Table
     DWORD szDelayImportTable;           //00E4:
-    DWORD rvaClrHeader;                 //00E8:
+    DWORD rvaClrHeader;                 //00E8: CLR/VM Header
     DWORD szClrHeader;                  //00EC:
-    DWORD rvaResvTable;                 //00F0:
+    DWORD rvaResvTable;                 //00F0: Reserved
     DWORD szResvTable;                  //00F4:
 //00F8:End of Header
 };
@@ -138,7 +172,7 @@ struct PeMainHeader
 
 struct PeMainHeader64
 {
-//0040: PE/COFF Header
+//0000: PE/COFF Header
     DWORD mMagicPe;                     //0000: PE\0\0 or 0x00004550
     WORD  mMachine;                     //0004:
     WORD  mNumberOfSections;            //0006:
@@ -148,7 +182,7 @@ struct PeMainHeader64
     WORD  mSizeOfOptionalHeader;        //0014: Size of rest of header.
     WORD  mCharacteristics;             //0016:
 
-//0058: Optional Header
+//0018: Optional Header
     WORD  mMagic;                       //0018: 0x020b=PE32+
     BYTE  mMajorLinkerVersion;          //001A: (Ignore)
     BYTE  mMinorLinkerVersion;          //001B: (Ignore)
@@ -179,7 +213,7 @@ struct PeMainHeader64
     DWORD mLoaderFlags;                 //0080: (Reserved, 0)
     DWORD mNumberOfRvaAndSizes;         //0084:
 
-//00B8: Data Directories
+//0088: Data Directories
     DWORD rvaExportTable;               //0088:
     DWORD szExportTable;                //008C:
     DWORD rvaImportTable;               //0090:
@@ -230,24 +264,69 @@ Machine:
 * BJX2-32:  0xB232 (Resv)
 * BJX2-64:  0xB264
 
-The main header is followed by sections.
+The Image starts with an 'MZ' header for traditional PE/COFF.
+
+This header is unused and the image will begin directly at the 'PE' header in Testkern PE and PEL4 images.
+
+
+=== Section Headers ===
+
+The main PE header are followed by section headers.
 
 <pre>
 struct PeSectionHeader
 {
-    BYTE  mName[8];                     //0000
-    DWORD mVirtualSize;                 //0008
-    DWORD mVirtualAddress;              //000C
-    DWORD mSizeOfRawData;               //0010
-    DWORD mPointerToRawData;            //0014
-    DWORD mPointerToRealocations;       //0018
-    DWORD mPointerToLinenumbers;        //001C
-    WORD  mNumberOfRealocations;        //0020
-    WORD  mNumberOfLinenumbers;         //0022
-    DWORD mCharacteristics;             //0024
+    BYTE  mName[8];                     //0000, Section Name
+    DWORD mVirtualSize;                 //0008, Size of section in memory
+    DWORD mVirtualAddress;              //000C, RVA Address of section in memory
+    DWORD mSizeOfRawData;               //0010, Size of section in image
+    DWORD mPointerToRawData;            //0014, Offset to section data in image
+    DWORD mPointerToRealocations;       //0018, Unused, Zero
+    DWORD mPointerToLinenumbers;        //001C, Unused, Zero
+    WORD  mNumberOfRealocations;        //0020, Unused, Zero
+    WORD  mNumberOfLinenumbers;         //0022, Unused, Zero
+    DWORD mCharacteristics;             //0024, Section Flags
     //28
 };
 </pre>
+
+In Testkern PE and PEL4 images, (mPointerToRawData==mVirtualAddress) for sections where (mSizeOfRawData!=0). Sections are aligned to a multiple of their base alignment.
+
+Section names are limited to 8 characters in PE image files.
+
+Section Flags:
+* 0x00000001, Reserved
+* 0x00000002, Reserved
+* 0x00000004, Reserved
+* 0x00000008, NO_PAD
+* 0x00000010, Reserved
+* 0x00000020, CNT_CODE, Contains code
+* 0x00000040, CNT_INITIALIZED_DATA, Contains initialized data
+* 0x00000080, CNT_UNINITIALIZED_DATA, Contains uninitialized data
+* 0x00000100, Reserved
+* 0x00000200, Reserved
+* 0x00000400, Reserved
+* 0x00000800, Reserved
+* 0x00001000, Reserved
+* 0x00002000, Reserved
+* 0x00004000, Reserved
+* 0x00008000, GPREL (BJX2 PBO: Relative to GBR / PBO Base)
+* 0x00010000, Reserved
+* 0x00020000, Reserved
+* 0x00040000, Reserved
+* 0x00080000, Reserved
+* 0x00100000, Align Bit1
+* 0x00200000, Align Bit2
+* 0x00400000, Align Bit3
+* 0x00800000, Align Bit4
+* 0x01000000, NRELOC, Reloc
+* 0x02000000, DISCARDABLE, Discardable
+* 0x04000000, NOT_CACHED, Not Cached
+* 0x08000000, NOT_PAGED, Not Paged
+* 0x10000000, MEM_SHARED, Can be Shared
+* 0x20000000, MEM_EXECUTE, Can be Executed
+* 0x40000000, MEM_READ, Can be Read from
+* 0x80000000, MEM_WRITE, Can be Written to
 
 
 === Base Relocations ===
@@ -294,7 +373,7 @@ TLS Index:
 * This will be replaced by the TBR relative offset of the corresponding variable.
 
 
-=== Exports ===
+=== Exports Table ===
 
 This is located within the '.edata' section, and referenced via the optional header.
 
@@ -332,7 +411,7 @@ ExportNamePointerTable and ExportOrdinalTable
 * ExportOrdinalTable maps these names to ordinal indices.
 
 
-=== Imports ===
+=== Imports Table ===
 
 This is located within the '.idata' section, and referenced via the optional header.
 
@@ -418,3 +497,143 @@ Directly following the function, there will be one of:
 
 If no exception handler is present, the function will be unwound following the pattern given in the epilog sequence. Otherwise, control will be transferred to the exception handler. The exception handler then will be responsible any dispatching or unwinding.
 
+
+=== Global Pointer ===
+
+In BJX2 PBO Mode, this will encode the base address (generally to the start of the ".data" section or similar), used as the base address for GBR. The size will encode the combined length of these sections in this case.
+
+Using this entry in this way will indicate that the image is intended to operate in PBO Mode, otherwise these entries will be set to zero.
+
+
+=== CLR / VM Header ===
+
+Traditionally used for the CLR.
+
+May be used for other VMs which also use PE/COFF.
+This section will begin with a FOURCC or similar indicating the VM image type.
+
+Note that the VM will be itself responsible for launching itself as an interpreter for appropriate images. The use of this header is, as such, VM specific.
+
+
+=== Resources and RWAD ===
+
+May be either a traditional Windows Resource Format or RWAD.
+
+<pre>
+struct PeResourceHeader
+{
+    DWORD mFlags;                       //00 Flags
+    DWORD mDateTime;                    //04, Data/Time Compiled
+    WORD  mMajorVersion;                //08, Major Version (User Defined)
+    WORD  mMinorVersion;                //0A, Minor Version (User Defined)
+    WORD  mNumNamedEntries;             //0C, Number of Named Entries
+    WORD  mNumIdEntries;                //0E, Number of ID Numbered Entries
+};
+
+struct PeResourceDirEntry
+{
+    DWORD mNameOrID;                    //Name or ID Number
+    DWORD ofsData;                      //Offset of Data or Subdirectory
+};
+
+struct PeResourceDataEntry
+{
+    DWORD rvaData;                      //RVA of Data
+    DWORD szData;                       //Size of Data
+    DWORD mCodepage;                    //Codepage or Encoding for Data
+    DWORD mResv;                        //Reserved
+};
+</pre>
+
+Data Offsets are relative to the start of the resource section.
+The high order bits are special and used for tags.
+* If ofsData has bit 31 set, it is a directory.
+** Otherwise, it is a data entry.
+
+Named entries use offsets to length-prefixed UCS-2 strings.
+
+The directory entries will directly follow the header, and will be stored sorted by ID or by Name.
+
+
+ID numbers between 0x20000000 and 0x7F000000 will be interpreted as FOURCC values, in which case all characters will be required to be in printable ASCII range.
+
+
+==== RWAD ====
+
+RWAD will use the above resource headers to daisy-chain a WAD variant.
+
+<pre>
+struct PeRsrcRWadInlineHeader
+{
+    DWORD mFlags;                       //00, Flags
+    DWORD mDateTime;                    //04, Data/Time Compiled
+    DWORD fccMagic;                     //08, 'RWAD'
+    DWORD mMagicZero;                   //0C, Magic (Set to 0)
+    DWORD rvaDir;                       //10, RVA of Directory
+    DWORD szDir;                        //14, Size of Directory
+    DWORD rvaTypes;                     //18, RVA of Types
+    DWORD szTypes;                      //1C, Size of Types
+};
+
+struct PeRsrcRWadEntry
+{
+    DWORD rvaData;                      //RVA of Lump Data
+    DWORD dszData;                      //Uncompressed Size of Lump Data
+    DWORD cszData;                      //Compressed Size of Lump Data
+    BYTE  mType;                        //Lump Type
+    BYTE  mMethod;                      //Lump Compression Method
+    WORD  mFlags;                       //Lump Flags
+    BYTE  mName[16];                    //Name of Lump
+};
+</pre>
+
+There will be one of several ways to encode an RWAD Image:
+* As a hybrid RWAD/Resource Image
+* As a direct RWAD image via the Inline Header
+
+An Hybrid RWAD will consist of a resource entry with an RWAD ID, and the Data Entry will define the RWAD directory. These will be present in the top-level Resource directory. The RWAD structure will be superficially similar to that of a heirarchical filesystem.
+
+The RWAD ID's will be FOURCC's with defined names:
+* 'RWAD' (0x44415752): RWAD Directory.
+* 'RWAZ' (0x5A415752): RWAD Lump Types
+
+The 'RWAZ' Entry will be shared, consisting of a table of up to 256 entry types.
+* Each entry type is given as a FOURCC.
+** These nominally correspond to a file extension.
+** Extensions with fewer than 4 characters are padded with spaces.
+** Extensions encoded via this mechanism will be limited to 4 characters.
+* Unused entries are filled with zeroes.
+
+The 'RWAD' Entry will give the directoy was a series of RWAD directoy entries.
+
+mFlags:
+* Reserved for Now.
+
+mType:
+* 0: Generic File (Inline Name)
+** Will use an explicit file extension if needed.
+* 1: Directory
+** Points to an array of RWAD directory entries.
+* 2: Generic File (RVA Name)
+* 3: Directory (RVA Name)
+* 4-31: Special, Reserved
+* 32-255: Will refer to a table of known file types/extensions.
+** The lump name will not include a file extension.
+
+mMethod:
+* 0: Store
+* 4: LZ4
+* 8: Deflate
+* 9: Deflate64
+* 10: BTLZH
+
+mName:
+* Conventionally stored as ASCII or UTF-8 and padded with zeroes.
+* Nominally stored as lower-case, case sensitive.
+* Names longer than the 16 char limit may be escaped.
+** The name will hold an RVA in the first 4 bytes.
+* File-like lumps will typically omit the use of file extensions.
+** If the type is 0, the extension will be encoded explicitly.
+* This field may also be used to hold a GUID.
+** The use of a name or GUID is context dependent.
+** An inline (UTF-8) name may not be used if it matches a valid GUID.

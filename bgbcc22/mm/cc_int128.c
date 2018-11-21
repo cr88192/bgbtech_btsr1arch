@@ -34,6 +34,22 @@ bgbcc_vint128 BGBCC_Int128_Neg(bgbcc_vint128 a)
 //	c.hi=(~a.hi)+ci;
 }
 
+bgbcc_vint128 BGBCC_Int128_Not(bgbcc_vint128 a)
+{
+	bgbcc_vint128 c;
+
+	c.lo=~a.lo;
+	c.hi=~a.hi;
+	return(c);
+}
+
+int BGBCC_Int128_LNot(bgbcc_vint128 a)
+{
+	if(!a.lo && !a.hi)
+		return(1);
+	return(0);
+}
+
 bgbcc_vint128 BGBCC_Int128_Sub(bgbcc_vint128 a, bgbcc_vint128 b)
 {
 	return(BGBCC_Int128_Add(a, BGBCC_Int128_Neg(b)));
@@ -54,10 +70,10 @@ int BGBCC_Int64_MuluW(u64 a, u64 b, u64 *rc, u64 *rd)
 	u64 pa, pb, pc, pd;
 	u64 qa, qb, qc, qd;
 	
-	pa=BGBCC_U64_LO32(a)*BGBCC_U64_LO32(b);
-	pb=BGBCC_U64_LO32(a)*BGBCC_U64_HI32(b);
-	pc=BGBCC_U64_HI32(a)*BGBCC_U64_LO32(b);
-	pd=BGBCC_U64_HI32(a)*BGBCC_U64_HI32(b);
+	pa=BGBCC_U64_LO32(a)*BGBCC_U64_LO32(b);		//0
+	pb=BGBCC_U64_LO32(a)*BGBCC_U64_HI32(b);		//1
+	pc=BGBCC_U64_HI32(a)*BGBCC_U64_LO32(b);		//1
+	pd=BGBCC_U64_HI32(a)*BGBCC_U64_HI32(b);		//2
 	
 	qa=BGBCC_U64_LO32(pa);
 	qb=BGBCC_U64_HI32(pa)+
@@ -69,8 +85,8 @@ int BGBCC_Int64_MuluW(u64 a, u64 b, u64 *rc, u64 *rd)
 	qc+=qb>>32;
 	qd+=qc>>32;
 	
-	*rc=BGBCC_U64_LO32(pa)+(BGBCC_U64_LO32(pb)<<32);
-	*rd=BGBCC_U64_LO32(pc)+(BGBCC_U64_LO32(pd)<<32);
+	*rc=BGBCC_U64_LO32(qa)+(BGBCC_U64_LO32(qb)<<32);
+	*rd=BGBCC_U64_LO32(qc)+(BGBCC_U64_LO32(qd)<<32);
 	return(0);
 }
 
@@ -167,15 +183,46 @@ bgbcc_vint128 BGBCC_Int128_MulHA(bgbcc_vint128 a, bgbcc_vint128 b)
 	return(c);
 }
 
+bgbcc_vint128 BGBCC_Int128_And(bgbcc_vint128 a, bgbcc_vint128 b)
+{
+	bgbcc_vint128 c;
+	c.lo=a.lo&b.lo;
+	c.hi=a.hi&b.hi;
+	return(c);
+}
+
+bgbcc_vint128 BGBCC_Int128_Or(bgbcc_vint128 a, bgbcc_vint128 b)
+{
+	bgbcc_vint128 c;
+	c.lo=a.lo|b.lo;
+	c.hi=a.hi|b.hi;
+	return(c);
+}
+
+bgbcc_vint128 BGBCC_Int128_Xor(bgbcc_vint128 a, bgbcc_vint128 b)
+{
+	bgbcc_vint128 c;
+	c.lo=a.lo^b.lo;
+	c.hi=a.hi^b.hi;
+	return(c);
+}
+
 bgbcc_vint128 BGBCC_Int128_Shl(bgbcc_vint128 a, int shl)
 {
 	bgbcc_vint128 c;
 
-	shl&=63;
+	shl&=127;
 	if(shl>0)
 	{
-		c.lo=a.lo<<shl;
-		c.hi=(a.hi<<shl)|(a.lo>>(64-shl));
+		if(shl>=64)
+		{
+			c.hi=a.lo<<(shl-64);
+			c.lo=0;
+		}else
+		{
+			c.lo=a.lo<<shl;
+			c.hi=(a.hi<<shl)|(a.lo>>(64-shl));
+		}
 	}else
 	{
 		c.lo=a.lo;
@@ -188,11 +235,18 @@ bgbcc_vint128 BGBCC_Int128_Shr(bgbcc_vint128 a, int shl)
 {
 	bgbcc_vint128 c;
 
-	shl&=63;
+	shl&=127;
 	if(shl>0)
 	{
-		c.lo=(a.lo>>shl)|(a.lo<<(64-shl));
-		c.hi=(a.hi>>shl);
+		if(shl>=64)
+		{
+			c.lo=a.hi>>(shl-64);
+			c.hi=0;
+		}else
+		{
+			c.lo=(a.lo>>shl)|(a.hi<<(64-shl));
+			c.hi=(a.hi>>shl);
+		}
 	}else
 	{
 		c.lo=a.lo;
@@ -206,12 +260,28 @@ bgbcc_vint128 BGBCC_Int128_Sar(bgbcc_vint128 a, int shl)
 	bgbcc_vint128 c;
 	u64 sx;
 
-	shl&=63;
+	shl&=127;
 	if(shl>0)
 	{
-		sx=~((a.hi>>63)-1);
-		c.lo=(a.lo>>shl)|(a.lo<<(64-shl));
-		c.hi=(a.hi>>shl)|(sx<<(64-shl));
+//		sx=~((a.hi>>63)-1);
+		sx=-(a.hi>>63);
+
+		if(shl>=64)
+		{
+			if(shl>64)
+			{
+				c.lo=(a.hi>>(shl-64))|(sx<<(128-shl));
+				c.hi=sx;
+			}else
+			{
+				c.lo=a.hi;
+				c.hi=sx;
+			}
+		}else
+		{
+			c.lo=(a.lo>>shl)|(a.hi<<(64-shl));
+			c.hi=(a.hi>>shl)|(sx<<(64-shl));
+		}
 	}else
 	{
 		c.lo=a.lo;
@@ -220,3 +290,72 @@ bgbcc_vint128 BGBCC_Int128_Sar(bgbcc_vint128 a, int shl)
 	return(c);
 }
 
+int BGBCC_Int128_CmpEq(bgbcc_vint128 a, bgbcc_vint128 b)
+{
+	if(a.hi!=b.hi)
+		return(0);
+	if(a.lo!=b.lo)
+		return(0);
+	return(1);
+}
+
+int BGBCC_Int128_CmpGt(bgbcc_vint128 a, bgbcc_vint128 b)
+{
+	if(((s64)(a.hi))>((s64)(b.hi)))
+		return(1);
+	if(((s64)(a.hi))<((s64)(b.hi)))
+		return(0);
+	if(a.lo>b.lo)
+		return(1);
+	return(0);
+}
+
+int BGBCC_Int128_CmpHi(bgbcc_vint128 a, bgbcc_vint128 b)
+{
+	if(a.hi>b.hi)
+		return(1);
+	if(a.hi<b.hi)
+		return(0);
+	if(a.lo>b.lo)
+		return(1);
+	return(0);
+}
+
+int BGBCC_Int128_CmpNe(bgbcc_vint128 a, bgbcc_vint128 b)
+	{ return(!BGBCC_Int128_CmpEq(a, b)); }
+
+int BGBCC_Int128_CmpLe(bgbcc_vint128 a, bgbcc_vint128 b)
+	{ return(!BGBCC_Int128_CmpGt(a, b)); }
+int BGBCC_Int128_CmpLt(bgbcc_vint128 a, bgbcc_vint128 b)
+	{ return(BGBCC_Int128_CmpGt(b, a)); }
+int BGBCC_Int128_CmpGe(bgbcc_vint128 a, bgbcc_vint128 b)
+	{ return(!BGBCC_Int128_CmpGt(b, a)); }
+
+int BGBCC_Int128_CmpA(bgbcc_vint128 a, bgbcc_vint128 b)
+	{ return(BGBCC_Int128_CmpHi(a, b)); }
+int BGBCC_Int128_CmpBe(bgbcc_vint128 a, bgbcc_vint128 b)
+	{ return(!BGBCC_Int128_CmpHi(a, b)); }
+int BGBCC_Int128_CmpB(bgbcc_vint128 a, bgbcc_vint128 b)
+	{ return(BGBCC_Int128_CmpHi(b, a)); }
+int BGBCC_Int128_CmpAe(bgbcc_vint128 a, bgbcc_vint128 b)
+	{ return(!BGBCC_Int128_CmpHi(b, a)); }
+
+
+int BGBCC_Int128_CheckSx64P(bgbcc_vint128 a)
+{
+	if(!a.hi)
+	{
+		if(a.lo&0x8000000000000000ULL)
+			return(0);
+		return(1);
+	}
+
+	if(a.hi==((u64)(-1)))
+	{
+		if(a.lo&0x8000000000000000ULL)
+			return(1);
+		return(0);
+	}
+
+	return(0);
+}

@@ -223,7 +223,8 @@ ccxl_status BGBCC_JX2C_FlattenImageROM(BGBCC_TransState *ctx,
 		bgbcc_setu16en(ct+0, en, 0xA000|(i>>16)&4095);
 		bgbcc_setu16en(ct+2, en, 0x2600|(i>> 8)& 255);
 		bgbcc_setu16en(ct+4, en, 0x2600|(i>> 0)& 255);
-		bgbcc_setu16en(ct+6, en, 0x3002);
+//		bgbcc_setu16en(ct+6, en, 0x3002);
+		bgbcc_setu16en(ct+6, en, 0x3100);
 
 #if 1
 		ct+=8;
@@ -237,7 +238,8 @@ ccxl_status BGBCC_JX2C_FlattenImageROM(BGBCC_TransState *ctx,
 			bgbcc_setu16en(ct+0, en, 0xA000|(j>>16)&4095);
 			bgbcc_setu16en(ct+2, en, 0x2600|(j>> 8)& 255);
 			bgbcc_setu16en(ct+4, en, 0x2600|(j>> 0)& 255);
-			bgbcc_setu16en(ct+6, en, 0x3002);
+//			bgbcc_setu16en(ct+6, en, 0x3002);
+			bgbcc_setu16en(ct+6, en, 0x3100);
 
 			ct+=8;
 		}

@@ -1,0 +1,36 @@
+BJX2 GPR SIMD
+* Uses GPRs as SIMD Registers.
+* Mostly focus on Packed-WORD SIMD.
+
+
+PACKHI.W2B Rm, Rn
+  Rn = { 32'h0, Rm[63:56], Rm[47:40], Rm[31:24], Rm[15:8] };
+
+Pack four words into four bytes, using the high 8 bits of each word.
+
+
+PACKHI.B2W Rm, Rn
+	Rn = {	Rm[31:24], 16'h0,
+			Rm[23:16], 16'h0,
+			Rm[15: 8], 16'h0,
+			Rm[ 7: 0], 16'h0	};
+
+Unpack four bytes into four words, moving each byte into the high 8 bits of each word.
+
+
+PACKLZ.W2B Rm, Rn
+PACKLZ.B2W Rm, Rn
+
+Similar to the PACKHI case, but using the low 8 bits.
+Converting byte to word will zero extend, converting word to byte will saturate.
+
+
+PACKLS.W2B Rm, Rn
+PACKLS.B2W Rm, Rn
+
+Similar to PACKLZ, but with sign-extension and signed saturate.
+
+
+PADDW Rm, Rn
+
+Packed Add Words.

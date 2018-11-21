@@ -979,6 +979,8 @@ void BGBCC_CCXL_CompileExprT(BGBCC_TransState *ctx, BCCX_Node *l)
 	float f;
 	BCCX_Node *t, *c, *ct, *cv;
 	char *s0, *s1, *s2;
+//	u32 ui, uj;
+//	u16 usi, usj;
 	int i, j;
 
 	l=BGBCC_CCXL_ReduceExpr(ctx, l);
@@ -995,7 +997,14 @@ void BGBCC_CCXL_CompileExprT(BGBCC_TransState *ctx, BCCX_Node *l)
 		s0=BCCX_GetCst(l, &bgbcc_rcst_tysuf, "tysuf");
 		li=BCCX_GetIntCst(l, &bgbcc_rcst_value, "value");
 		
-		if(s0 && (!stricmp(s0, "L") || !stricmp(s0, "LL") ||
+		if(s0 && !strcmp(s0, "U"))
+		{
+			BGBCC_CCXL_StackPushConstUInt(ctx, li);
+			return;
+		}
+		
+		if(s0 && (!strcmp(s0, "L") || !strcmp(s0, "LL") ||
+			!strcmp(s0, "ULL") ||
 			(((s32)li)!=li)))
 		{
 			BGBCC_CCXL_StackPushConstLong(ctx, li);
@@ -1008,11 +1017,30 @@ void BGBCC_CCXL_CompileExprT(BGBCC_TransState *ctx, BCCX_Node *l)
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_real, "real"))
 	{
 		s0=BCCX_GetCst(l, &bgbcc_rcst_tysuf, "tysuf");
-		if(s0 && !stricmp(s0, "F"))
+//		if(s0 && !stricmp(s0, "F"))
+		if(s0)
 		{
-			g=BCCX_GetFloatCst(l, &bgbcc_rcst_value, "value");
-			BGBCC_CCXL_StackPushConstFloat(ctx, g);
-			return;
+			if(!strcmp(s0, "F"))
+			{
+				g=BCCX_GetFloatCst(l, &bgbcc_rcst_value, "value");
+				BGBCC_CCXL_StackPushConstFloat(ctx, g);
+				return;
+			}
+
+			if(!strcmp(s0, "HF"))
+			{
+				g=BCCX_GetFloatCst(l, &bgbcc_rcst_value, "value");
+				
+				BGBCC_Float16_Init();
+				
+//				*(float *)(&uj)=g;
+//				BGBCC_JX2_ConstConvFloatToHalf(uj, &usj);
+				j=BGBCC_EncodeFloat16(g);
+				g=BGBCC_DecodeFloat16(j);
+				
+				BGBCC_CCXL_StackPushConstFloat(ctx, g);
+				return;
+			}
 		}
 
 		g=BCCX_GetFloatCst(l, &bgbcc_rcst_value, "value");

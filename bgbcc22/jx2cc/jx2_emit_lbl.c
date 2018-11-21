@@ -261,6 +261,19 @@ int BGBCC_JX2_GetNamedLabel(BGBCC_JX2_Context *ctx, char *name)
 	int lbl;
 	int i;
 
+	if(!bgbcp_strncmp2(name, "__"))
+	{
+		if(!bgbcp_strncmp7(name, "__arch_"))
+		{
+			i=BGBCC_JX2A_GetRegId(name+7);
+			if(i>=0)
+			{
+				lbl=BGBCC_SH_LBL_ARCHREG(i);
+				return(lbl);
+			}
+		}
+	}
+
 	s=name; h=0;
 	while(*s)h=h*251+(*s++);
 //	h=((h*251)>>8)&255;

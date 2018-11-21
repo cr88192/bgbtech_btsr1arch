@@ -1398,6 +1398,8 @@ int main(int argc, char *argv[], char **env)
 	BGBCC_SHXC_InitIface();
 	BGBCC_BSRC_InitIface();
 	BGBCC_JX2C_InitIface();
+	
+	BGBCC_Float128_Init();
 
 	metafn=NULL;
 	wadfn=NULL;

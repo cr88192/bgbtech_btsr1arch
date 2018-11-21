@@ -1579,6 +1579,15 @@ ccxl_status BGBCC_CCXL_StackRet(BGBCC_TransState *ctx)
 	
 	dty=BGBCC_CCXL_GetTypeReturnType(ctx, ctx->cur_func->type);
 
+	if(BGBCC_CCXL_TypeVoidP(ctx, dty))
+	{
+		BGBCC_CCXL_TagWarn(ctx, CCXL_TERR_RETVOID);
+
+		BGBCC_CCXL_EmitCallRetV(ctx);
+		BGBCC_CCXL_RegisterCheckRelease(ctx, treg);
+		return(CCXL_STATUS_YES);
+	}
+
 //	if(!BGBCC_CCXL_TypeCompatibleP(ctx, dty, bty))
 	if(!BGBCC_CCXL_TypeCompatibleArchP(ctx, dty, bty))
 	{
@@ -3017,6 +3026,21 @@ ccxl_status BGBCC_CCXL_StackPushConstInt(BGBCC_TransState *ctx, s32 val)
 	BGBCC_CCXLR3_EmitArgInt(ctx, val);
 
 	BGBCC_CCXL_GetRegForIntValue(ctx, &sreg, val);
+	BGBCC_CCXL_PushRegister(ctx, sreg);
+	return(CCXL_STATUS_YES);
+//	BGBCC_CCXL_StubError(ctx);
+}
+
+ccxl_status BGBCC_CCXL_StackPushConstUInt(BGBCC_TransState *ctx, u32 val)
+{
+	ccxl_register sreg;
+
+	BGBCC_CCXL_DebugPrintStackLLn(ctx, "PushConstI", __FILE__, __LINE__);
+
+	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_LDCONSTI);
+	BGBCC_CCXLR3_EmitArgInt(ctx, val);
+
+	BGBCC_CCXL_GetRegForUIntValue(ctx, &sreg, val);
 	BGBCC_CCXL_PushRegister(ctx, sreg);
 	return(CCXL_STATUS_YES);
 //	BGBCC_CCXL_StubError(ctx);

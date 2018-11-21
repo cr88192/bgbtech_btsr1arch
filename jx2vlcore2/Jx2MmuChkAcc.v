@@ -12,12 +12,20 @@ AccMode:
   
  */
 module Jx2MmuChkAcc(
+	clock, reset,
 	regInMMCR,
 	regInKRR,
 	regInSR,
 	regInOpm,
 	tlbInAcc,
-	accOutExc);
+	accOutExc
+	);
+
+/* verilator lint_off UNUSED */
+// /* verilator lint_off UNOPTFLAT */
+
+input			clock;
+input			reset;
 
 input[63:0]		regInMMCR;		//MMU Control Register
 input[63:0]		regInKRR;		//Keyring Register
@@ -28,8 +36,10 @@ input[31:0]		tlbInAcc;		//TLB Access Mode
 
 output[15:0]	accOutExc;		//Output Exception Code
 
+reg[15:0]		tAccOutExc2;	//Output Exception Code
+assign			accOutExc = tAccOutExc2;
+
 reg[15:0]		tAccOutExc;		//Output Exception Code
-assign			accOutExc = tAccOutExc;
 
 reg			tVugidEnA;
 reg			tVugidEnB;
@@ -57,19 +67,29 @@ reg[2:0]	tKrrAccFl;
 
 reg			tUsDeny;
 
+reg[31:0]		tTlbInAcc;		//TLB Access Mode
+reg[63:0]		tRegInKRR;		//Keyring Register
+
+
+/* verilator lint_on UNUSED */
+// /* verilator lint_on UNOPTFLAT */
+
+
 always @*
 begin
 	tAccOutExc	= 0;
 
-	tKrrA		= regInKRR[15: 0];
-	tKrrB		= regInKRR[31:16];
-	tKrrC		= regInKRR[47:32];
-	tKrrD		= regInKRR[63:48];
+	tKrrA		= tRegInKRR[15: 0];
+	tKrrB		= tRegInKRR[31:16];
+	tKrrC		= tRegInKRR[47:32];
+	tKrrD		= tRegInKRR[63:48];
 	tVugidEnA	= (tKrrA != 16'h0000);
 	tVugidEnB	= (tKrrB != 16'h0000);
 	tVugidEnC	= (tKrrC != 16'h0000);
 	tVugidEnD	= (tKrrD != 16'h0000);
-	tVugid		= tlbInAcc[31:16];
+	tVugid		= tTlbInAcc[31:16];
+	
+//	tVugidEnA	= 0;
 	
 	tKrrGrpEqA	= (tKrrA[15:10] == tVugid[15:10]) && tVugidEnA;
 	tKrrGrpEqB	= (tKrrB[15:10] == tVugid[15:10]) && tVugidEnB;
@@ -87,13 +107,13 @@ begin
 		(tKrrGrpEqC && tKrrUsrEqC) ||
 		(tKrrGrpEqD && tKrrUsrEqD) ;
 	tKrrAccFl = 
-		tKrrUsrEq ? tlbInAcc[ 9: 7] :
-		tKrrGrpEq ? tlbInAcc[12:10] :
+		tKrrUsrEq ? tTlbInAcc[ 9: 7] :
+		tKrrGrpEq ? tTlbInAcc[12:10] :
 		tlbInAcc[15:13];
 	
 	if(tVugidEnA)
 	begin
-		case(tlbInAcc[6:4])
+		case(tTlbInAcc[6:4])
 			3'b000: begin
 				if(regInOpm[4])
 					tAccOutExc	= 16'h8002;
@@ -128,6 +148,13 @@ begin
 	if(regInOpm[3] && (tlbInAcc[0] || tUsDeny))
 		tAccOutExc	= 16'h8001;
 
+end
+
+always @(posedge clock)
+begin
+	tTlbInAcc	<= tlbInAcc;		//TLB Access Mode
+	tRegInKRR	<= regInKRR;		//Keyring Register
+	tAccOutExc2	<= tAccOutExc;
 end
 
 endmodule

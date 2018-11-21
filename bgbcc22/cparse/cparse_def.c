@@ -207,7 +207,8 @@ BCCX_Node *BGBCP_DefName(BGBCP_ParseState *ctx, char **str)
 {
 	char b[256], b2[256], b3[256];
 	char *s, *s1, *s2, *s3;
-	int i, ty, ty2, ty3, fl, ind;
+	s64 fl, li;
+	int i, ty, ty2, ty3, ind;
 	BCCX_Node *n, *n1, *nl, *anl, *nle, *anle, *nty;
 
 	s=*str;
@@ -232,12 +233,12 @@ BCCX_Node *BGBCP_DefName(BGBCP_ParseState *ctx, char **str)
 			continue;
 		}
 
-		i=BGBCP_DefTypeFlag(ctx, b);
-		if(i)
+		li=BGBCP_DefTypeFlag(ctx, b);
+		if(li)
 		{
 			s=BGBCP_Token2(s, b, &ty, ctx->lang);
 			BGBCP_Token2(s, b, &ty, ctx->lang);
-			fl|=i;
+			fl|=li;
 			continue;
 		}
 
@@ -462,7 +463,8 @@ BCCX_Node *BGBCP_VarDefinition(BGBCP_ParseState *ctx,
 	char b[256], b2[256];
 	char *s, *s2;
 	char *fn, *tdn;
-	int ty, ty2, fl, ind, fl1, ind1;
+	s64 fl, fl1;
+	int ty, ty2, ind, ind1;
 	BCCX_Node *n, *n1, *n2, *n3, *n4;
 	BCCX_Node *nl, *nle;
 	int i, j;
@@ -742,6 +744,7 @@ BCCX_Node *BGBCP_Definition(BGBCP_ParseState *ctx, char **str)
 	char b[256];
 	char *s, *s2;
 	BCCX_Node *n, *n1, *n2, *ntl;
+	s64 li;
 	int tk0, tk1, tk2;
 	int i, ty;
 
@@ -765,9 +768,9 @@ BCCX_Node *BGBCP_Definition(BGBCP_ParseState *ctx, char **str)
 			n1=BCCX_FindTagCst(n, &bgbcc_rcst_type, "type");
 			if(n1)
 			{
-				i=BCCX_GetIntCst(n1, &bgbcc_rcst_flags, "flags");
-				i|=BGBCC_TYFL_VIRTUAL|BGBCC_TYFL_PROXY;
-				BCCX_SetIntCst(n1, &bgbcc_rcst_flags, "flags", i);
+				li=BCCX_GetIntCst(n1, &bgbcc_rcst_flags, "flags");
+				li|=BGBCC_TYFL_VIRTUAL|BGBCC_TYFL_PROXY;
+				BCCX_SetIntCst(n1, &bgbcc_rcst_flags, "flags", li);
 			}
 			*str=s;
 			return(n);
@@ -968,6 +971,7 @@ BCCX_Node *BGBCP_ForceDefinition(BGBCP_ParseState *ctx, char **str)
 	char b[256];
 	char *s, *s2;
 	BCCX_Node *n, *n1, *n2;
+	s64 li;
 	int tk0, tk1, tk2;
 	int i, ty;
 
@@ -991,9 +995,9 @@ BCCX_Node *BGBCP_ForceDefinition(BGBCP_ParseState *ctx, char **str)
 			n1=BCCX_FindTagCst(n, &bgbcc_rcst_type, "type");
 			if(n1)
 			{
-				i=BCCX_GetIntCst(n1, &bgbcc_rcst_flags, "flags");
-				i|=BGBCC_TYFL_VIRTUAL|BGBCC_TYFL_PROXY;
-				BCCX_SetIntCst(n1, &bgbcc_rcst_flags, "flags", i);
+				li=BCCX_GetIntCst(n1, &bgbcc_rcst_flags, "flags");
+				li|=BGBCC_TYFL_VIRTUAL|BGBCC_TYFL_PROXY;
+				BCCX_SetIntCst(n1, &bgbcc_rcst_flags, "flags", li);
 			}
 			*str=s;
 			return(n);

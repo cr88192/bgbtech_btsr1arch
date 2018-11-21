@@ -1181,17 +1181,24 @@ f64 bgbcc_atof(char *str)
 
 int bgbcc_atoxf(char *str, u64 *rxlo, u64 *rxhi)
 {
+	bgbcc_vfloat128 c;
 	u64 dxlo, dxhi, v;
 	int dpct, dpshr;
 
 //	bgbcc_strtoxl2(str, 10, dxlo, dxhi, dpct);
 //	dpshr=dpct*217706;
 
+#if 0
 	*((double *)(&v))=atof(str);
 	dxhi=((v>>4)&0x07FFFFFFFFFFFFFFULL)+
 		(  0x3C00000000000000ULL)+
 		(v&0x8000000000000000ULL);
 	dxlo=v<<60;
+#endif
+	
+	c=BGBCC_Float128_FromString(str);
+	dxlo=c.lo;
+	dxhi=c.hi;
 	
 	*rxlo=dxlo;
 	*rxhi=dxhi;

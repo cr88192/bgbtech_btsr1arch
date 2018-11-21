@@ -602,8 +602,20 @@ bool BGBCC_CCXL_IsRegVariantP(
 bool BGBCC_CCXL_IsRegImmIntP(
 	BGBCC_TransState *ctx, ccxl_register reg)
 {
+	s64 li;
+
 	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_INT)
-		return(true);
+	{
+		if((reg.val&CCXL_REGINT_STMASK)==CCXL_REGINT_ST_I)
+			return(true);
+		if((reg.val&CCXL_REGINT_STMASK)==CCXL_REGINT_ST_UI)
+		{
+			li=((u32)reg.val);
+			if(((s32)li==li))
+				return(true);
+			return(false);
+		}
+	}
 	return(false);
 }
 
@@ -616,6 +628,23 @@ bool BGBCC_CCXL_IsRegImmLongP(
 		return(true);
 	if((reg.val&CCXL_REGTY2_TYMASK)==CCXL_REGTY2_IMM_LONG)
 		return(true);
+	return(false);
+}
+
+bool BGBCC_CCXL_IsRegImmUIntP(
+	BGBCC_TransState *ctx, ccxl_register reg)
+{
+	s64 li;
+
+	if(	((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_INT) ||
+		((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_LONG) ||
+		((reg.val&CCXL_REGTY2_TYMASK)==CCXL_REGTY2_IMM_LONG) )
+	{
+		li=BGBCC_CCXL_GetRegImmLongValue(ctx, reg);
+		return(((u32)li)==li);
+
+//		return(true);
+	}
 	return(false);
 }
 
@@ -1185,25 +1214,67 @@ int BGBCC_CCXL_GetRegImmLitIndex(
 int BGBCC_CCXL_GetRegImmIntValue(
 	BGBCC_TransState *ctx, ccxl_register reg)
 {
+	double dv;
+	s64 v;
+
 	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_INT)
 		{ return((int)(reg.val&CCXL_REGINT_MASK)); }
-	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_LONG)
-		{ return((int)(reg.val&CCXL_REGINT_MASK)); }
 
-	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_FLOAT)
-		{ return(BGBCC_CCXL_GetRegImmDoubleValue(ctx, reg)); }
-	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_DOUBLE)
-		{ return(BGBCC_CCXL_GetRegImmDoubleValue(ctx, reg)); }
+	if(	((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_LONG) ||
+		((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_LONG_LVT) ||
+		((reg.val&CCXL_REGTY2_TYMASK)==CCXL_REGTY2_IMM_LONG) )
+	{
+		v=BGBCC_CCXL_GetRegImmLongValue(ctx, reg);
+		if(((s32)v)!=v)
+		{
+			BGBCC_DBGBREAK
+		}
+		
+		return(v);
+	
+//		return((int)(reg.val&CCXL_REGINT_MASK));
+	}
 
-	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_LONG_LVT)
-		{ return(BGBCC_CCXL_GetRegImmLongValue(ctx, reg)); }
-	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_DOUBLE_LVT)
-		{ return(BGBCC_CCXL_GetRegImmDoubleValue(ctx, reg)); }
+//	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_DOUBLE_LVT)
+//		{ return(BGBCC_CCXL_GetRegImmDoubleValue(ctx, reg)); }
 
-	if((reg.val&CCXL_REGTY2_TYMASK)==CCXL_REGTY2_IMM_LONG)
-		{ return(BGBCC_CCXL_GetRegImmLongValue(ctx, reg)); }
 	if((reg.val&CCXL_REGTY2_TYMASK)==CCXL_REGTY2_IMM_DOUBLE)
 		{ return(BGBCC_CCXL_GetRegImmDoubleValue(ctx, reg)); }
+
+	if(((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_FLOAT) ||
+		((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_DOUBLE) ||
+		((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_DOUBLE_LVT) ||
+		((reg.val&CCXL_REGTY2_TYMASK)==CCXL_REGTY2_IMM_DOUBLE))
+	{
+		dv=BGBCC_CCXL_GetRegImmDoubleValue(ctx, reg);
+		if(((s32)dv)!=dv)
+		{
+			BGBCC_DBGBREAK
+		}
+		
+		return((s32)dv);
+	
+//		return(BGBCC_CCXL_GetRegImmDoubleValue(ctx, reg));
+	}
+
+//	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_LONG)
+//		{ return((int)(reg.val&CCXL_REGINT_MASK)); }
+//	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_FLOAT)
+//		{ return(BGBCC_CCXL_GetRegImmDoubleValue(ctx, reg)); }
+//	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_DOUBLE)
+//		{ return(BGBCC_CCXL_GetRegImmDoubleValue(ctx, reg)); }
+
+//	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_LONG_LVT)
+//		{ return(BGBCC_CCXL_GetRegImmLongValue(ctx, reg)); }
+//	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_DOUBLE_LVT)
+//		{ return(BGBCC_CCXL_GetRegImmDoubleValue(ctx, reg)); }
+
+//	if((reg.val&CCXL_REGTY2_TYMASK)==CCXL_REGTY2_IMM_LONG)
+//		{ return(BGBCC_CCXL_GetRegImmLongValue(ctx, reg)); }
+//	if((reg.val&CCXL_REGTY2_TYMASK)==CCXL_REGTY2_IMM_DOUBLE)
+//		{ return(BGBCC_CCXL_GetRegImmDoubleValue(ctx, reg)); }
+
+	__debugbreak();
 
 	return(0);
 }
@@ -1215,7 +1286,15 @@ s64 BGBCC_CCXL_GetRegImmLongValue(
 	s64 v;
 
 	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_INT)
-		{ return((int)(reg.val&CCXL_REGINT_MASK)); }
+	{
+//		return((int)(reg.val&CCXL_REGINT_MASK));
+
+		if((reg.val&CCXL_REGINT_STMASK)==CCXL_REGINT_ST_I)
+			return((s32)(reg.val&CCXL_REGINT_MASK));
+		if((reg.val&CCXL_REGINT_STMASK)==CCXL_REGINT_ST_UI)
+			return((u32)(reg.val&CCXL_REGINT_MASK));
+		return((int)(reg.val&CCXL_REGINT_MASK));
+	}
 
 	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_LONG)
 	{
@@ -1249,6 +1328,8 @@ s64 BGBCC_CCXL_GetRegImmLongValue(
 
 	if((reg.val&CCXL_REGTY2_TYMASK)==CCXL_REGTY2_IMM_DOUBLE)
 		{ return(BGBCC_CCXL_GetRegImmDoubleValue(ctx, reg)); }
+
+	__debugbreak();
 
 	return(0);
 }
@@ -1464,7 +1545,8 @@ ccxl_status BGBCC_CCXL_GetRegForIntValue(
 {
 	ccxl_register treg;
 	
-	treg.val=(val&CCXL_REGINT_MASK)|CCXL_REGTY_IMM_INT;
+//	treg.val=(val&CCXL_REGINT_MASK)|CCXL_REGTY_IMM_INT;
+	treg.val=(val&CCXL_REGINT_MASK)|CCXL_REGTY_IMM_INT|CCXL_REGINT_ST_I;
 	*rreg=treg;
 	return(CCXL_STATUS_YES);
 }
@@ -1488,6 +1570,19 @@ ccxl_status BGBCC_CCXL_GetRegForLongValue(
 	treg.val=(val&CCXL_REGLONG2_MASK)|CCXL_REGTY2_IMM_LONG;
 	*rreg=treg;
 	return(CCXL_STATUS_YES);
+}
+
+ccxl_status BGBCC_CCXL_GetRegForUIntValue(
+	BGBCC_TransState *ctx, ccxl_register *rreg, u32 val)
+{
+	ccxl_register treg;
+	
+//	treg.val=(val&CCXL_REGINT_MASK)|CCXL_REGTY_IMM_INT;
+	treg.val=(val&CCXL_REGINT_MASK)|CCXL_REGTY_IMM_INT|CCXL_REGINT_ST_UI;
+	*rreg=treg;
+	return(CCXL_STATUS_YES);
+
+//	return(BGBCC_CCXL_GetRegForLongValue(ctx, rreg, val));
 }
 
 ccxl_status BGBCC_CCXL_GetRegForFloatValue(

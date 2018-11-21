@@ -1,0 +1,724 @@
+// Verilated -*- C++ -*-
+// DESCRIPTION: Verilator output: Primary design header
+//
+// This header should be included by all source files instantiating the design.
+// The class here is then constructed to instantiate the design.
+// See the Verilator manual for examples.
+
+#ifndef _VJx2ExUnit_H_
+#define _VJx2ExUnit_H_
+
+#include "verilated_heavy.h"
+
+class VJx2ExUnit__Syms;
+
+//----------
+
+VL_MODULE(VJx2ExUnit) {
+  public:
+    
+    // PORTS
+    // The application code writes and reads these signals to
+    // propagate new values into/out from the Verilated model.
+    VL_IN8(clock,0,0);
+    VL_IN8(reset,0,0);
+    VL_OUT8(memOpm,4,0);
+    VL_IN8(memOK,1,0);
+    VL_OUT8(mmioOpm,4,0);
+    VL_IN8(mmioOK,1,0);
+    VL_INW(memInData,127,0,4);
+    VL_OUTW(memOutData,127,0,4);
+    VL_OUT(memAddr,31,0);
+    VL_IN(mmioInData,31,0);
+    VL_OUT(mmioOutData,31,0);
+    VL_OUT(mmioAddr,31,0);
+    
+    // LOCAL SIGNALS
+    // Internals; generally not touched by application code
+    // Anonymous structures to workaround compiler member-count bugs
+    struct {
+	VL_SIG8(Jx2ExUnit__DOT__dcRegInOpm,4,0);
+	VL_SIG8(Jx2ExUnit__DOT__decRegStepPc,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__gprIdUCmd,7,0);
+	VL_SIG8(Jx2ExUnit__DOT__gprIdUIxt,7,0);
+	VL_SIG8(Jx2ExUnit__DOT__gprRegIdRm,6,0);
+	VL_SIG8(Jx2ExUnit__DOT__gprRegIdRn,6,0);
+	VL_SIG8(Jx2ExUnit__DOT__gprRegIdRi,6,0);
+	VL_SIG8(Jx2ExUnit__DOT__gprRegExHold,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOpCmd,7,0);
+	VL_SIG8(Jx2ExUnit__DOT__exRegIdIxt,7,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOpCmdB,7,0);
+	VL_SIG8(Jx2ExUnit__DOT__exRegIdIxtB,7,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOpCmdC,7,0);
+	VL_SIG8(Jx2ExUnit__DOT__exRegIdRn,6,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOpCmdFp,7,0);
+	VL_SIG8(Jx2ExUnit__DOT__exRegIdIxtFp,7,0);
+	VL_SIG8(Jx2ExUnit__DOT__exHold,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exRegExcVbrOfs,7,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memRegInOpm,4,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__dcMemPcOK,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__icMemPcOK,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memIsReady,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memIcLatch,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memNextIcLatch,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memDcLatch,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memNextDcLatch,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuInOpmA,4,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegOutOK2,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegOutOK,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMemOpm2,4,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMemOpm,4,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMmioOpm2,4,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMmioOpm,4,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamTileFlagA,3,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamTileFlagB,3,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextRamTileFlagA,3,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextRamTileFlagB,3,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamTile1FlagA,3,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamTile1FlagB,3,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamTile2FlagA,3,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamTile2FlagB,3,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTileSt,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTileSrSt,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__icBlkBypass,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__icReqLow4GB,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamMissA,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamMissB,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamStickyA,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamStickyB,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMissDoneFlag,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMissReqaFlag,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMissReqbFlag,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMissDoneaFlag,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMissDonebFlag,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTileStWR,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcOpm,4,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tRegOutOK2,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tRegOutOK,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tRegInOpm,4,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__icBlkDirty,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__icBlkReady,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__icBlkMiss,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__icBlkBypass,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__icBlkHi,0,0);
+    };
+    struct {
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tIcBlkStore,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__icReqLow4GB,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__icReqCrossEdge,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__icMemIsReady,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__icReqLatch,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcOK,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tMemPcOpm2,4,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tMemPcOpm,4,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkReady,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkMiss,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkHi,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkWordIx,3,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkLenF14,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkLenF15,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA0,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA1,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA2,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA3,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA4,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA5,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA6,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA7,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA8,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA9,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA10,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA11,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA12,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA13,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA14,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA15,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icMemIsReady,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icReqLatch,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tRegOutOK2,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tRegOutOK,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbHixA,3,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbMmuEnable,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbHitA,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbHitB,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbHitC,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbHitD,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbHitAB,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbHitCD,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbHit,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbMiss,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbMmuSkip,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbDoLdtlb,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbLdtlbOK,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tVugidEnA,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tVugidEnB,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tVugidEnC,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tVugidEnD,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tKrrGrpEqA,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tKrrGrpEqB,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tKrrGrpEqC,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tKrrGrpEqD,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tKrrGrpEq,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tKrrUsrEqA,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tKrrUsrEqB,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tKrrUsrEqC,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tKrrUsrEqD,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tKrrUsrEq,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tKrrAccFl,2,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tUsDeny,0,0);
+    };
+    struct {
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__opRegN,6,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__opRegM,6,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__opRegO,6,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__opUCmd,7,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__opUIxt,7,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__opRegO_Dfl,6,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__opRegN_Dfl,6,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__opRegM_Dfl,6,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__opRegN_Cr,6,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__opRegM_Cr,6,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__opRegN_Sr,6,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__opRegM_Sr,6,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__opRegN_Er,6,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__opRegM_Er,6,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__opRegN_ECr,6,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__opRegN_ESr,6,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__opFmid,4,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__opBty,2,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__opIty,3,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__opUCmdIx,7,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__tRegRmIsRz,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__tRegRnIsRz,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__tRegRmIsR1,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__tRegRnIsR1,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__opIsFx,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__tMsgLatch,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__tNextMsgLatch,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN,6,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM,6,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO,6,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd,7,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUIxt,7,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO_Dfl,6,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Dfl,6,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Dfl,6,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO_DfFC,6,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegP_DfFC,6,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid,4,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty,2,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty,3,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx,7,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsImm32,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsImm16,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsFC0,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsNotFx,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRmIsRz,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRnIsRz,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRoIsRz,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRmIsR1,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRnIsR1,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRoIsR1,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tMsgLatch,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tNextMsgLatch,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__gprFile__DOT__regSrRB,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tRegOutId,6,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tRegOutOK,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn,6,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tMemOpm,4,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__regMulOp,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__regMulOpDr,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__regHoldFixedCnt,3,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__regHoldFixed,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__regRnIsGpr,0,0);
+    };
+    struct {
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tRegValFRn_IsNaN,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tRegValFRm_IsNaN,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__aluIs2C,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tRegOpSticky1,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tRegOpSticky2,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tRegOpSticky3,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tNextOpSticky1,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tNextOpSticky2,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tNextOpSticky3,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tOpSticky2,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tOpSticky3,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__isNewPc,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tOpDoMovX,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tOpDoMovX_MR,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tRegOkLatch,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tNextOkLatch,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tJointOkLatch,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tOpMiss1,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tOpMiss2,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tOpMiss3,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tOpState,3,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tNextOpState,3,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__regMulOp1,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__regMulOpPp,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__regMulOpPq,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__shad__DOT__tValSh,7,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__shadq__DOT__tValSh,7,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__fd2i_rn__DOT__tRegSgn1,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__fd2i_rn__DOT__tRegSgn2,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__tRegOutId,6,0);
+	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__tRegOutOK,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__tRegAddExOp,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__tMulRcpStable,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__tMulRcpSeed,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__tMulRcpSeed0,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__tRegMulExOp,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__tRegDivStrobe,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tRegExOK,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tExEn1,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tSgnB1,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tExEn2,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tSgnA2,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tSgnB2,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tSgnC2,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tExEn3,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tSgnC3,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tSgnC3B,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tExEn4,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tSgnC4,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tSgnC4B,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tExEn5,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tRegExOK,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tSgnA1,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tSgnB1,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tSgnC1,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tSgnC2,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tSgnC3,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tSgnC4,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tSgnC4B,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tExEn1,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tExEn2,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tExEn3,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tExEn4,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tExEn5,1,0);
+    };
+    struct {
+	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__mrcp__DOT__tSgnB1,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__nrcp__DOT__tSgnB1,0,0);
+	VL_SIG16(Jx2ExUnit__DOT__exRegExc,15,0);
+	VL_SIG16(Jx2ExUnit__DOT__cache__DOT__tRegOutExc2,15,0);
+	VL_SIG16(Jx2ExUnit__DOT__cache__DOT__tRegOutExc,15,0);
+	VL_SIG16(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegOutExc2,15,0);
+	VL_SIG16(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegOutExc,15,0);
+	VL_SIG16(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegTileIxA,11,0);
+	VL_SIG16(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegTileIxB,11,0);
+	VL_SIG16(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tAccTileIxA,11,0);
+	VL_SIG16(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTileIxA,11,0);
+	VL_SIG16(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTileIxB,11,0);
+	VL_SIG16(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tRegOutExc2,15,0);
+	VL_SIG16(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tRegOutExc,15,0);
+	VL_SIG16(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tAccOutExc2,15,0);
+	VL_SIG16(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tAccOutExc,15,0);
+	VL_SIG16(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tKrrA,15,0);
+	VL_SIG16(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tKrrB,15,0);
+	VL_SIG16(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tKrrC,15,0);
+	VL_SIG16(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tKrrD,15,0);
+	VL_SIG16(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tVugid,15,0);
+	VL_SIG16(Jx2ExUnit__DOT__exOp__DOT__fd2i_rn__DOT__tRegExp1,10,0);
+	VL_SIG16(Jx2ExUnit__DOT__exOp__DOT__fd2i_rn__DOT__tRegExp2,10,0);
+	VL_SIG16(Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tExpA1,10,0);
+	VL_SIG16(Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tExpB1,10,0);
+	VL_SIG16(Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tExpA1D,11,0);
+	VL_SIG16(Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tExpB1D,11,0);
+	VL_SIG16(Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tExpA2,10,0);
+	VL_SIG16(Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tExpC2,10,0);
+	VL_SIG16(Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tExpC3,10,0);
+	VL_SIG16(Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tExpC3B,11,0);
+	VL_SIG16(Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tExpC4,11,0);
+	VL_SIG16(Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tExpC4B,11,0);
+	VL_SIG16(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tExpA1,10,0);
+	VL_SIG16(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tExpB1,10,0);
+	VL_SIG16(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tExpC1,11,0);
+	VL_SIG16(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC1_AB_C5,9,0);
+	VL_SIG16(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC1_BA_C5,9,0);
+	VL_SIG16(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tExpC2,11,0);
+	VL_SIG16(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tExpC3,11,0);
+	VL_SIG16(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tExpC4,11,0);
+	VL_SIG16(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tExpC4B,11,0);
+	VL_SIGW(Jx2ExUnit__DOT__cache__DOT__memRegInData,255,0,8);
+	VL_SIGW(Jx2ExUnit__DOT__cache__DOT__dcMemPcDataI,255,0,8);
+	VL_SIGW(Jx2ExUnit__DOT__cache__DOT__icMemPcData,255,0,8);
+	VL_SIGW(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2,255,0,8);
+	VL_SIGW(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData,255,0,8);
+	VL_SIGW(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMemOutData2,127,0,4);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMemAddr2,31,0);
+	VL_SIGW(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMemOutData,127,0,4);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMemAddr,31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMmioOutData2,31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMmioAddr2,31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMmioOutData,31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMmioAddr,31,0);
+	VL_SIGW(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRomTile,255,0,8);
+	VL_SIGW(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tSRamTile,255,0,8);
+	VL_SIGW(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamTile,255,0,8);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamTileAddrA,27,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamTileAddrB,27,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextRamTileAddrA,27,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextRamTileAddrB,27,0);
+	VL_SIGW(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamTile1,255,0,8);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamTile1AddrA,27,0);
+    };
+    struct {
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamTile1AddrB,27,0);
+	VL_SIGW(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamTile2,255,0,8);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamTile2AddrA,27,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamTile2AddrB,27,0);
+	VL_SIGW(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMemTile,255,0,8);
+	VL_SIGW(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTile,255,0,8);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamReqBlkAddrA,27,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamReqBlkAddrB,27,0);
+	VL_SIGW(Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcDataO,255,0,8);
+	VL_SIGW(Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__icBlkData,319,0,10);
+	VL_SIGW(Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__icBlkDataSt,319,0,10);
+	VL_SIGW(Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData,255,0,8);
+	VL_SIGW(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbHdatA,127,0,4);
+	VL_SIGW(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbHdatB,127,0,4);
+	VL_SIGW(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbHdatC,127,0,4);
+	VL_SIGW(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbHdatD,127,0,4);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbAddrAB,31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbAddrCD,31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbAccAB,31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbAccCD,31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbAddr,31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbAcc,31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tTlbInAcc,31,0);
+	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__regMulA,31,0);
+	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__regMulB,31,0);
+	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__regMulDlr,31,0);
+	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__regMulDhr,31,0);
+	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__tAdd0RmRi_A0,16,0);
+	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__tAdd0RmRi_A1,16,0);
+	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__tAdd0RmRi_B0,16,0);
+	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__tAdd0RmRi_B1,16,0);
+	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__tAdd0RmRi_C0,16,0);
+	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__tAdd0RmRi_C1,16,0);
+	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__tAdd0RmRi_D0,16,0);
+	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__tAdd0RmRi_D1,16,0);
+	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__tSub0RmRi_A0,16,0);
+	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__tSub0RmRi_A1,16,0);
+	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__tSub0RmRi_B0,16,0);
+	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__tSub0RmRi_B1,16,0);
+	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__tSub0RmRi_C0,16,0);
+	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__tSub0RmRi_C1,16,0);
+	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__tSub0RmRi_D0,16,0);
+	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__tSub0RmRi_D1,16,0);
+	VL_SIGW(Jx2ExUnit__DOT__exOp__DOT__tAddRmRi0,64,0,3);
+	VL_SIGW(Jx2ExUnit__DOT__exOp__DOT__tAddRmRi1,64,0,3);
+	VL_SIGW(Jx2ExUnit__DOT__exOp__DOT__tSubRmRi0,64,0,3);
+	VL_SIGW(Jx2ExUnit__DOT__exOp__DOT__tSubRmRi1,64,0,3);
+	VL_SIGW(Jx2ExUnit__DOT__exOp__DOT__tNextAddRmRi0,64,0,3);
+	VL_SIGW(Jx2ExUnit__DOT__exOp__DOT__tNextAddRmRi1,64,0,3);
+	VL_SIGW(Jx2ExUnit__DOT__exOp__DOT__tNextSubRmRi0,64,0,3);
+	VL_SIGW(Jx2ExUnit__DOT__exOp__DOT__tNextSubRmRi1,64,0,3);
+	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__regMulA1,31,0);
+	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__regMulB1,31,0);
+	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__regMulPpA,31,0);
+	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__regMulPpB,31,0);
+	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__regMulPpC,31,0);
+	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__regMulPpD,31,0);
+	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__regMulPpE,31,0);
+	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__regMulPqA,31,0);
+	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__regMulPqB,31,0);
+	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__shad__DOT__tValRn,31,0);
+	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__shad__DOT__tValRor,31,0);
+	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__maAdd__DOT__tVal0_A0,16,0);
+	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__maAdd__DOT__tVal0_B0,16,0);
+    };
+    struct {
+	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__maAdd__DOT__tVal0_B1,16,0);
+	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__maAdd__DOT__tVal0_C0,16,0);
+	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__maAdd__DOT__tVal0_C1,16,0);
+	VL_SIGW(Jx2ExUnit__DOT__exOp__DOT__maAdd__DOT__tVal2,64,0,3);
+	VL_SIG(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__mrcp__DOT__tFraB1_Adj1P,31,0);
+	VL_SIG(Jx2ExUnit__DOT__exFpOp__DOT__nrcp__DOT__tFraB1_Adj1P,31,0);
+	VL_SIG64(Jx2ExUnit__DOT__dcRegInAddr,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__dcRegInData,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__decRegPc,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__decIstrWord,47,0);
+	VL_SIG64(Jx2ExUnit__DOT__decRegNextPc,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprIdImm,32,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprIdValPc,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprRegNextPc,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprExNextPc2,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprExNextSr2,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprExNextExc2,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprExNextTea2,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exIdCurPc,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exRegValRm,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exRegValRmC,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exRegValRn,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exRegValRi,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exRegValRiB,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exRegValRiC,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exRegValRb,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exRegValCm,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exImmValRi,32,0);
+	VL_SIG64(Jx2ExUnit__DOT__exIdInGenPc,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exRegValFRm,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exRegValFRn,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exCtlInPc,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exRegTea,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exRegNextPc,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__cache__DOT__tRegOutTea2,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__cache__DOT__tRegOutTea,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__cache__DOT__memRegInAddr,47,0);
+	VL_SIG64(Jx2ExUnit__DOT__cache__DOT__mmuInAddrA,47,0);
+	VL_SIG64(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegOutTea2,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegOutTea,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcAddr,47,0);
+	VL_SIG64(Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tRegOutData2,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tRegOutData,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tRegInAddr,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tRegInData,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__icBlkAddr,43,0);
+	VL_SIG64(Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__icReqAddr,43,0);
+	VL_SIG64(Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tRegTmpData,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tRegTmpDataSt,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcVal,47,0);
+	VL_SIG64(Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tMemPcAddr2,47,0);
+	VL_SIG64(Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tMemPcAddr,47,0);
+	VL_SIG64(Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkAddr,43,0);
+	VL_SIG64(Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icReqAddr,43,0);
+	VL_SIG64(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tRegOutAddr2,47,0);
+	VL_SIG64(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tRegOutTea2,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tRegOutAddr,47,0);
+	VL_SIG64(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tRegOutTea,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tRegInKRR,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__decOp__DOT__opImm,32,0);
+	VL_SIG64(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm,32,0);
+	VL_SIG64(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm17s,32,0);
+	VL_SIG64(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm17u,32,0);
+	VL_SIG64(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_disp20s,32,0);
+    };
+    struct {
+	VL_SIG64(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_immWordZx,32,0);
+	VL_SIG64(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_immWordNx,32,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__regSp,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__regPc,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__regPr,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__regSr,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__regVbr,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__regDlr,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__regDhr,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__regGbr,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__regTbr,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__regTtb,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__regTea,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__regMmcr,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__regExsr,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__regSttb,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__regKrr,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__tRegValRm,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__tRegValRn,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__tRegValRi,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__tRegValCm,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__regSPc,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__regSPr,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__regSSr,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__regSSp,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__regSDl,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__regSDh,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__regSGb,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__regSTb,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__tGenNextPc,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__tGenImm64,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__fpr__DOT__tRegValRm,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__fpr__DOT__tRegValRn,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__tCtlOutSp,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__tCtlOutPc,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__tCtlOutPr,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__tCtlOutSr,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__tCtlOutDlr,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__tCtlOutDhr,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__tCtlOutGbr,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__tCtlOutTbr,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__tRegOutVal,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__tMemAddr,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__tMemData,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__memHoldDataLd,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__memNextDataLd,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__regMaIxVal2,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__regLastMaAddr,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__regRnSxt,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__immValRiB,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__regValRm_T0,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__regValRm_T1,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__regValRi_T0,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__regValRi_T1,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__tAddRmRi_A0,32,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__tAddRmRi_A1,32,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__tAddRmRi_B0,32,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__tAddRmRi_B1,32,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__tSubRmRi_A0,32,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__tSubRmRi_A1,32,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__tSubRmRi_B0,32,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__tSubRmRi_B1,32,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__idLastGenPc,63,0);
+    };
+    struct {
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__shadq__DOT__tValRn,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__shadq__DOT__tValRor,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__maAdd__DOT__tVal1_A0,32,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__maAdd__DOT__tVal1_B0,32,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__maAdd__DOT__tVal1_B1,32,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__fd2i_rn__DOT__tRegValFRm,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__fd2i_rn__DOT__tRegValFRn2,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__fd2i_rn__DOT__tRegValFRn3,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__fd2i_rn__DOT__tRegValFRnB,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__fd2i_rn__DOT__tRegFra1,51,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__fd2i_rn__DOT__tRegFra2,51,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__fd2i_rn__DOT__tRegFraExt2,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__tRegOutVal,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__tRegAddRn,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__tRegMulRm,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__tRegMulRn,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__tMulDivRcp,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__regRcpValRn,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tRegValRo,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tFraA1,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tFraB1,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tFraA1D,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tFraB1D,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tFraA2,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tFraB2,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tFraJ2,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tFraC2,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tFraC3,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tFraC3B,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tFraC4,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tFraC4B,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tValC4,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tRegValRo,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraA1,53,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraB1,53,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC1_AC,35,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC1_BB,35,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC1_BC,35,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC1_CA,35,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC1_CB,35,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC1_CC,35,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC2_AC,35,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC2_BB,35,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC2_BC,35,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC2_CA,35,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC2_CB,35,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC2_CC,35,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC2_P,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC2_Q,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC2_R,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC3_P,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC3_Q,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC3_R,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC3_S,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC4_S,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC4B,53,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tValC4,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__mrcp__DOT__tFraB1_Adj1,51,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__nrcp__DOT__tRegValFRn,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__nrcp__DOT__tFraB1_Adj1,51,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__romTileA[1024],31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__romTileB[1024],31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__romTileC[1024],31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__romTileD[1024],31,0);
+    };
+    struct {
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__romTileE[1024],31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__romTileF[1024],31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__romTileG[1024],31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__romTileH[1024],31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__sramTileA[256],31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__sramTileB[256],31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__sramTileC[256],31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__sramTileD[256],31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__sramTileE[256],31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__sramTileF[256],31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__sramTileG[256],31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__sramTileH[256],31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileA[2048],31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileB[2048],31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileC[2048],31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileD[2048],31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileE[2048],31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileF[2048],31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileG[2048],31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileH[2048],31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileAdA[2048],31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileAdB[2048],31,0);
+	VL_SIG64(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbBlkHiA[16],63,0);
+	VL_SIG64(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbBlkHiB[16],63,0);
+	VL_SIG64(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbBlkHiC[16],63,0);
+	VL_SIG64(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbBlkHiD[16],63,0);
+	VL_SIG64(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbBlkLoA[16],63,0);
+	VL_SIG64(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbBlkLoB[16],63,0);
+	VL_SIG64(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbBlkLoC[16],63,0);
+	VL_SIG64(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbBlkLoD[16],63,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__regGprArrN[32],63,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__regGprArrM[32],63,0);
+	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__regGprArrO[32],63,0);
+	VL_SIG64(Jx2ExUnit__DOT__fpr__DOT__regFprArrRm[16],63,0);
+	VL_SIG64(Jx2ExUnit__DOT__fpr__DOT__regFprArrRn[16],63,0);
+    };
+    
+    // LOCAL VARIABLES
+    // Internals; generally not touched by application code
+    VL_SIG8(__Vclklast__TOP__clock,0,0);
+    
+    // INTERNAL VARIABLES
+    // Internals; generally not touched by application code
+    VJx2ExUnit__Syms* __VlSymsp;  // Symbol table
+    
+    // PARAMETERS
+    // Parameters marked /*verilator public*/ for use by application code
+    
+    // CONSTRUCTORS
+  private:
+    VL_UNCOPYABLE(VJx2ExUnit);  ///< Copying not allowed
+  public:
+    /// Construct the model; called by application code
+    /// The special name  may be used to make a wrapper with a
+    /// single model invisible with respect to DPI scope names.
+    VJx2ExUnit(const char* name="TOP");
+    /// Destroy the model; called (often implicitly) by application code
+    ~VJx2ExUnit();
+    
+    // API METHODS
+    /// Evaluate the model.  Application must call when inputs change.
+    void eval();
+    /// Simulation complete, run final blocks.  Application must call on completion.
+    void final();
+    
+    // INTERNAL METHODS
+  private:
+    static void _eval_initial_loop(VJx2ExUnit__Syms* __restrict vlSymsp);
+  public:
+    void __Vconfigure(VJx2ExUnit__Syms* symsp, bool first);
+  private:
+    static QData _change_request(VJx2ExUnit__Syms* __restrict vlSymsp);
+  public:
+    static void _combo__TOP__4(VJx2ExUnit__Syms* __restrict vlSymsp);
+  private:
+    void _ctor_var_reset();
+  public:
+    static void _eval(VJx2ExUnit__Syms* __restrict vlSymsp);
+  private:
+#ifdef VL_DEBUG
+    void _eval_debug_assertions();
+#endif // VL_DEBUG
+  public:
+    static void _eval_initial(VJx2ExUnit__Syms* __restrict vlSymsp);
+    static void _eval_settle(VJx2ExUnit__Syms* __restrict vlSymsp);
+    static void _initial__TOP__2(VJx2ExUnit__Syms* __restrict vlSymsp);
+    static void _sequent__TOP__1(VJx2ExUnit__Syms* __restrict vlSymsp);
+    static void _settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp);
+} VL_ATTR_ALIGNED(128);
+
+#endif // guard

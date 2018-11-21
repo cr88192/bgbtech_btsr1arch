@@ -7,7 +7,7 @@ BJX2
 Registers:
 * R0..R31, 64-bit
 ** There are 32, 64-bit GPRs.
-** R0..R15 will be Primary GPRs.
+** R0..R15 will be Primary GPRs (Partially excluding R0, R1, and R15).
 ** R16..R31 are Extended GPRs.
 * FR0..FR31, 64-bit
 ** There are 32, 64-bit Floating Point Registers.
@@ -23,6 +23,8 @@ Special Purpose Registers:
 * R0 / DLR: Displacement/Low Register.
 * R1 / DHR: Displacement/High Register.
 * R15 / SP: Will be the Stack Pointer.
+
+Control Registers:
 * C0 / PC: Program Counter
 * C1 / LR: Link Register
 * C2 / SR: Status Register.
@@ -69,13 +71,15 @@ SR Bits:
 ** Set when interrupt occurs.
 ** Cleared when interrupt returns.
 * 30: MD, User/Supervisor.
-* 31: JQ, Reserved for possible 64-bit extension.
+* 31: JQ, Address-Space Size.
+* 32..63: Reserved
 
 Instruction Space:
 * 0xxx .. Exxx: 16-bit
 * F0xx .. FBxx: 32-bit
 * FCxx .. FDxx: 48-bit
 * FExx .. FFxx: 64-bit (Reserved)
+** Or could just tack FExx/FFxx onto 48-bit space.
 
 Except where noted otherwise, the 16-bit instruction forms are limited to the first 16 registers.
 
@@ -87,6 +91,12 @@ Several ISA Subsets may exist:
 ** This will nominally run code within a 2GB address space.
 * D: Uses a 32-bit address space with fixed-length instructions.
 
+For application-level code, misaligned access to memory is required to be supported (excluding system structures, for which proper alignment is required). However, whether this is provided by the hardware or via an interrupt handler is left as implementation specific.
+
+
+The JQ bit will effect the size of the address space:
+* JQ=0, Use a 32-bit address space.
+* JQ=1, Use 48/64 address space.
 
 
 === Special Restrictions ===
@@ -125,7 +135,9 @@ EXSR Codes:
 * Holds a numeric status code for the exception.
 * Bits 15..12:
 ** 0x8: General Fault
+** 0xA: MMU/TLB
 ** 0xC: IRQ or Software Interrupt
+** 0xE: Syscall
 * General Faults:
 ** 0x8000: Invalid Address
 ** 0x8001: Invalid Read (Address lacks read access)
@@ -133,11 +145,11 @@ EXSR Codes:
 ** 0x8003: Invalid Execute (Address lacks execute access)
 ** 0x8004: BREAK instruction used.
 ** 0x8005: Invalid use of a SLEEP instruction.
-** 0x8006: -
+** 0x8006: TRAxx, Compare Fault.
 ** 0x8007: -
-** 0x8008: -
-** 0x8009: Misaligned Read (N/A)
-** 0x800A: Misaligned Write (N/A)
+** 0x8008: Misaligned Special
+** 0x8009: Misaligned Read
+** 0x800A: Misaligned Write
 ** 0x800B: Misaligned Execute ((PC&1)!=0)
 * Interrupts:
 ** 0xC000: General Interrupt
@@ -155,7 +167,8 @@ Shadow Registers:
 * S0..S15: R0B..R7B, C0B..C7B
 * S16..S31: R16B..R23B, C16B..C23B
 * The main and shadow registers will be swapped during an interrupt.
-** R0..R7 swapped with R0B..R7B
+** R0..R7 may be swapped with R0B..R7B (Optional)
+** R16..R23 may be swapped with R16B..R23B (Optional)
 ** C0..C7 swapped with C0B..C7B, where Cn!=C3
 *** C0B: SPC
 *** C1B: SLR
@@ -168,6 +181,13 @@ Shadow Registers:
 ** R15 will be swapped with C3B.
 ** Registers will not be swapped if SR.RB is set upon entering an interrupt.
 *** Registers will swap and SR.RB will be clear upon returning from an interrupt.
+
+
+Whether R0B..R7B and R16B..R23B exist, and thus whether a register-swap occurs for them, is an optional feature. On a core which does not swap registers, it is necessary for the ISR handler to manage this part itself.
+
+The relevant Control Registers will still be swapped depending on the state of the SR.RB status.
+
+TBD: ISR's would not be entirely compatible between an implementation which swaps these registers and one which does not. While assuming a non-swap implementation to be safe almost works for ISRs, things like preemptive scheduling would need different logic.
 
 
 === Addressing Modes ===
@@ -186,10 +206,9 @@ Displacement Scale:
 * MOV.x will depend on the base register:
 ** If using a GPR, will be scaled based on the size of the type.
 ** If using PC, a scale of 1 is used for MOV.x forms.
-** / GBR and TBR, will be scaled using the size of the base type.
 ** GBR and TBR, as with PC, will use a scale of 1.
 * Branches will use a scale of 2.
-* LEA.x will always be scaled by the size of the base type.
+* LEA.x will be scaled by the size of the base type.
 
 
 For PC relative addresses, the address will be calculated relative to the start of the following instruction.
@@ -199,7 +218,7 @@ Architectural memory access will be unaligned for types less than or equal to 64
 Integer values will be little endian two's complement.
 
 
-If R0 is used as the base of a Scaled Index, it will be interpreted as if it were PC. This will also be the case for Disp9 and Disp17s.
+If R0 is used as the base of a Scaled Index, it will be interpreted as if it were PC. This will also be the case for Disp5, Disp9 and Disp17s forms. As with other uses of PC, the scale will be 1.
 
 If R0 is used as the base of a LEA, it will be interpreted as PC. However, only LEA.B will be valid.
 
@@ -211,6 +230,10 @@ The use of R0 or R1 will be special as a base register for memory-access ops.
 ** Encoding of GBR or TBR will depend on Index register.
 ** (R1, R0) will encode (GBR, DLR)
 ** (R1, R1) will encode (TBR, DLR)
+
+
+Note that the effective precision of LEA will be relative to the size of the address space. The effective precision of a LEA may be smaller than 64 bits. The value contained in bits above the effective size of the virtual address space will be implementation defined.
+
 
 
 === 16-bit Instruction Forms ===
@@ -238,7 +261,7 @@ Prefixes:
 *** Instead, this will denote that the instruction is optional within the block.
 * ??, Don't know if it will be implemented.
 ** Instruction space may likely be reserved but unimplemented.
-* ?/, May drop.
+* ?/ or /?, May drop from ISA.
 
 Register Notation:
 * Rm, Source Register
@@ -253,83 +276,83 @@ Register Notation:
 
 Instruction Space
 * 0zzz (Basic MOV.x Block)
-** 00nm MOV.B	Rm, (Rn)
-** 01nm MOV.W	Rm, (Rn)
-** 02nm MOV.L	Rm, (Rn)
-** 03nm MOV.Q	Rm, (Rn)
-** 04nm MOV.B	Rm, (Rn, DLR)
-** 05nm MOV.W	Rm, (Rn, DLR)
-** 06nm MOV.L	Rm, (Rn, DLR)
-** 07nm MOV.Q	Rm, (Rn, DLR)
-** 08nm MOV.B	(Rm), Rn
-** 09nm MOV.W	(Rm), Rn
-** 0Anm MOV.L	(Rm), Rn
-** 0Bnm MOV.Q	(Rm), Rn
-** 0Cnm MOV.B	(Rm, DLR), Rn
-** 0Dnm MOV.W	(Rm, DLR), Rn
-** 0Enm MOV.L	(Rm, DLR), Rn
-** 0Fnm MOV.Q	(Rm, DLR), Rn
+** 00nm  MOV.B	Rm, (Rn)
+** 01nm  MOV.W	Rm, (Rn)
+** 02nm  MOV.L	Rm, (Rn)
+** 03nm  MOV.Q	Rm, (Rn)
+** 04nm  MOV.B	Rm, (Rn, DLR)
+** 05nm  MOV.W	Rm, (Rn, DLR)
+** 06nm  MOV.L	Rm, (Rn, DLR)
+** 07nm  MOV.Q	Rm, (Rn, DLR)
+** 08nm  MOV.B	(Rm), Rn
+** 09nm  MOV.W	(Rm), Rn
+** 0Anm  MOV.L	(Rm), Rn
+** 0Bnm  MOV.Q	(Rm), Rn
+** 0Cnm  MOV.B	(Rm, DLR), Rn
+** 0Dnm  MOV.W	(Rm, DLR), Rn
+** 0Enm  MOV.L	(Rm, DLR), Rn
+** 0Fnm  MOV.Q	(Rm, DLR), Rn
 
 * 1zzz (Basic Arith Block)
-** 10nm ADD		Rm, Rn				//Rn=Rn+Rm
-** 11nm SUB		Rm, Rn				//Rn=Rn-Rm
-** 12nm ADC		Rm, Rn				//Add with Carry, Rn=Rn+Rm+SR.T
-** 13nm SBB		Rm, Rn				//Subtract with Borrow, Rn=Rn+(~Rm)+(!SR.T)
-** 14nm TST		Rm, Rn				//SR.T=!(Rm&Rn)
-** 15nm AND		Rm, Rn
-** 16nm OR		Rm, Rn
-** 17nm XOR		Rm, Rn
-** 18nm MOV		Rm, Rn				//Rn=Rm
-** 19nm MOV		Rj, Rn
-** 1Anm MOV		Rm, Rk
-** 1Bnm MOV		Rj, Rk
-** 1Cnm CMPEQ	Rm, Rn				//Rn==Rm
-** 1Dnm CMPHI	Rm, Rn				//Unsigned Rn GT Rm
-** 1Enm CMPGT	Rm, Rn				//Signed Rn GT Rm
-** 1Fnm -
+** 10nm  ADD	Rm, Rn				//Rn=Rn+Rm
+** 11nm  SUB	Rm, Rn				//Rn=Rn-Rm
+** 12nm  ADC	Rm, Rn				//Add with Carry, Rn=Rn+Rm+SR.T
+** 13nm  SBB	Rm, Rn				//Subtract with Borrow, Rn=Rn+(~Rm)+(!SR.T)
+** 14nm  TST	Rm, Rn				//SR.T=!(Rm&Rn)
+** 15nm  AND	Rm, Rn
+** 16nm  OR		Rm, Rn
+** 17nm  XOR	Rm, Rn
+** 18nm  MOV	Rm, Rn				//Rn=Rm
+** 19nm  MOV	Rj, Rn
+** 1Anm  MOV	Rm, Rk
+** 1Bnm  MOV	Rj, Rk
+** 1Cnm  CMPEQ	Rm, Rn				//Rn==Rm (Low 32 Bits)
+** 1Dnm  CMPHI	Rm, Rn				//Unsigned Rn GT Rm (Low 32 Bits)
+** 1Enm  CMPGT	Rm, Rn				//Signed Rn GT Rm (Low 32 Bits)
+** 1Fnm  -
 
 * 2zzz
-** 20dd BRA		(PC, disp8s)		//Branch, PC=PC+(disp8s*2)
-** 21dd BSR		(PC, disp8s)		//Branch Subroutine
-** 22dd BT		(PC, disp8s)		//Branch True
-** 23dd BF		(PC, disp8s)		//Branch False
-** 24jj LDIZ	#imm8u, DLR
-** 25jj LDIN	#imm8n, DLR
-** 26jj LDISH	#imm8u, DLR			//DLR=(DLR SHL 8)|Imm8u
-** 27dd -
-** 28nd MOV.L	Rn, (SP, disp4u)	//Stack-Relative Store
-** 29nd MOV.Q	Rn, (SP, disp4u)	//Stack-Relative Store
-** 2And MOV.L	(SP, disp4u), Rn	//Stack-Relative Load
-** 2Bnd MOV.Q	(SP, disp4u), Rn	//Stack-Relative Load
-** 2Cnj CMPEQ	#imm4u, Rn			//Rn==Imm4, Zero Extend
-** 2Dnj CMPEQ	#imm4n, Rn			//Rn==Imm4, One Extend
-** 2Enj CMPGT	#imm4u, Rn			//Rn==Imm4, Zero Extend
-** 2Fnj CMPGE	#imm4u, Rn			//Rn==Imm4, Zero Extend
+** 20dd  BRA	(PC, disp8s)		//Branch, PC=PC+(disp8s*2)
+** 21dd  BSR	(PC, disp8s)		//Branch Subroutine
+** 22dd  BT		(PC, disp8s)		//Branch True
+** 23dd  BF		(PC, disp8s)		//Branch False
+** 24jj  LDIZ	#imm8u, DLR
+** 25jj  LDIN	#imm8n, DLR
+** 26jj  LDISH	#imm8u, DLR			//DLR=(DLR SHL 8)|Imm8u
+** 27dd  -
+** 28nd  MOV.L	Rn, (SP, disp4u)	//Stack-Relative Store
+** 29nd  MOV.Q	Rn, (SP, disp4u)	//Stack-Relative Store
+** 2And  MOV.L	(SP, disp4u), Rn	//Stack-Relative Load
+** 2Bnd  MOV.Q	(SP, disp4u), Rn	//Stack-Relative Load
+** 2Cnj  CMPEQ	#imm4u, Rn			//Rn==Imm4, Zero Extend
+** 2Dnj  CMPEQ	#imm4n, Rn			//Rn==Imm4, One Extend
+** 2Enj  CMPGT	#imm4u, Rn			//Rn==Imm4, Zero Extend
+** 2Fnj  CMPGE	#imm4u, Rn			//Rn==Imm4, Zero Extend
 
 * 3zzz
-** 3000 NOP							//Do Nothing
-** 3010 RTS							//PC=LR
-** 3020 SLEEP						//Sleep
-** 3030 BREAK						//Breakpoint
-** 3040 CLRT						//Clear SR.T
-** 3050 SETT						//Set SR.T
-** 3060 CLRS						//Clear SR.S
-** 3070 SETS						//Set SR.S
-** 3080 NOTT						//SR.T=!SR.T
-** 3090 NOTS						//SR.S=!SR.S
-** 30A0 LDISH16	#0x0000, DLR		//DLR=(DLR SHL 16)|0x0000
-** 30B0 LDISH16	#0xFFFF, DLR		//DLR=(DLR SHL 16)|0xFFFF
-** 30C0 RTE							//Return from exception
+** 3000  NOP						//Do Nothing
+** 3010  RTS						//PC=LR
+** 3020  SLEEP						//Sleep
+** 3030  BREAK						//Breakpoint
+** 3040  CLRT						//Clear SR.T
+** 3050  SETT						//Set SR.T
+** 3060  CLRS						//Clear SR.S
+** 3070  SETS						//Set SR.S
+** 3080  NOTT						//SR.T=!SR.T
+** 3090  NOTS						//SR.S=!SR.S
+** 30A0  LDISH16	#0x0000, DLR	//DLR=(DLR SHL 16)|0x0000
+** 30B0  LDISH16	#0xFFFF, DLR	//DLR=(DLR SHL 16)|0xFFFF
+** 30C0  RTE						//Return from exception
 ** 30D0 ? DIV0						//Setup SR for divide
 ** 30E0 ? DIV1						//Divide Step (Uses R5, R4)
-** 30F0 ? LDTLB						//Load entry into TLB
+** 30F0  LDTLB						//Load entry into TLB
 
 ** 30z1 -
 
-** 3002 BRA		(PC, DLR)			//Branch to PC+(DLR*2)
-** 3012 BSR		(PC, DLR)			//Branch Subroutine to PC+(DLR*2)
-** 3022 BT		(PC, DLR)			//Branch True to PC+(DLR*2)
-** 3032 BF		(PC, DLR)			//Branch False to PC+(DLR*2)
+** 3002 / BRA	(PC, DLR)			//Branch to PC+(DLR*2)
+** 3012 / BSR	(PC, DLR)			//Branch Subroutine to PC+(DLR*2)
+** 3022 / BT	(PC, DLR)			//Branch True to PC+(DLR*2)
+** 3032 / BF	(PC, DLR)			//Branch False to PC+(DLR*2)
 
 ** 3082 -
 ** 3092 -
@@ -357,150 +380,150 @@ Instruction Space
 ** 30zE  -
 ** 30zF  -
 
-** 31n0 -
-** 31n1 -
-** 31n2 -
-** 31n3 -
-** 31n4 -
-** 31n5 -
-** 31n6 -
-** 31n7 -
-** 31n8 PUSH	Rn
-** 31n9 PUSH	Cn
-** 31nA POP		Rn
-** 31nB POP		Cn
-** 31nC CMPPL	Rn					//SR.T=(Rn GT 0)
-** 31nD CMPPZ	Rn					//SR.T=(Rn GE 0)
-** 31nE -
-** 31nF -
+** 31n0  BRA	(PC, Rn)			//Branch to address given in (PC, Rn)
+** 31n1  BSR	(PC, Rn)			//Branch Subroutine given by (PC, Rn)
+** 31n2  BT		(PC, Rn)			//Branch if True to (PC, Rn)
+** 31n3  BF		(PC, Rn)			//Branch if False to (PC, Rn)
+** 31n4  -
+** 31n5  -
+** 31n6  -
+** 31n7  -
+** 31n8  PUSH	Rn
+** 31n9  PUSH	Cn
+** 31nA  POP	Rn
+** 31nB  POP	Cn
+** 31nC  CMPPL	Rn					//SR.T=(Rn GT 0)
+** 31nD  CMPPZ	Rn					//SR.T=(Rn GE 0)
+** 31nE  -
+** 31nF  -
 
-** 32n0 BRA		Rn					//Branch to address given in Rn
-** 32n1 BSR		Rn					//Branch Subroutine given by Rn
-** 32n2 BT		Rn
-** 32n3 BF		Rn
-** 32n4 EXTU.B	Rn
-** 32n5 EXTU.W	Rn
-** 32n6 EXTS.B	Rn
-** 32n7 EXTS.W	Rn
-** 32n8 PUSH	Rk					//R16..R31
-** 32n9 PUSH	Ck					//C16..C31
-** 32nA POP		Rk					//R16..R31
-** 32nB POP		Ck					//C16..C31
+** 32n0  BRA	Rn					//Branch to address given in Rn
+** 32n1  BSR	Rn					//Branch Subroutine given by Rn
+** 32n2  BT		Rn
+** 32n3  BF		Rn
+** 32n4  EXTU.B	Rn
+** 32n5  EXTU.W	Rn
+** 32n6  EXTS.B	Rn
+** 32n7  EXTS.W	Rn
+** 32n8  PUSH	Rk					//R16..R31
+** 32n9  PUSH	Ck					//C16..C31
+** 32nA  POP	Rk					//R16..R31
+** 32nB  POP	Ck					//C16..C31
 ** 32nC ? PUSHX2	Rn
 ** 32nD ? PUSHX2	Rk
 ** 32nE ? POPX2		Rn
 ** 32nF ? POPX2		Rk
 
-** 33n0	NOT		Rn					//Rn=~Rn
-** 33n1	NEG		Rn					//Rn=(~Rn)+1
-** 33n2	NEGC	Rn					//Rn=(~Rn)+(~SR.T)
-** 33n3 MOVNT	Rn					//Rn=!SR.T
-** 33n4	ROTL	Rn					//Rn=(Rn SHL 1)|(Rn SHR 31)
-** 33n5	ROTR	Rn					//Rn=(Rn SHR 1)|(Rn SHL 31)
-** 33n6	ROTCL	Rn					//Rn'=(Rn SHL 1)|SR.T; SR.T=Rn.31
-** 33n7	ROTCR	Rn
-** 33n8 SHLL	Rn					//Rn'=(Rn SHL 1); SR.T=Rn.31
-** 33n9 SHLR	Rn					//Rn'=(Rn SHR 1); SR.T=Rn.0
-** 33nA SHAR	Rn					//Rn'=(Rn SAR 1); SR.T=Rn.0
+** 33n0  NOT	Rn					//Rn=~Rn
+** 33n1  NEG	Rn					//Rn=(~Rn)+1
+** 33n2  NEGC	Rn					//Rn=(~Rn)+(~SR.T)
+** 33n3  MOVNT	Rn					//Rn=!SR.T
+** 33n4  ROTL	Rn					//Rn=(Rn SHL 1)|(Rn SHR 31)
+** 33n5  ROTR	Rn					//Rn=(Rn SHR 1)|(Rn SHL 31)
+** 33n6  ROTCL	Rn					//Rn'=(Rn SHL 1)|SR.T; SR.T=Rn.31
+** 33n7  ROTCR	Rn
+** 33n8  SHLL	Rn					//Rn'=(Rn SHL 1); SR.T=Rn.31
+** 33n9  SHLR	Rn					//Rn'=(Rn SHR 1); SR.T=Rn.0
+** 33nA  SHAR	Rn					//Rn'=(Rn SAR 1); SR.T=Rn.0
 ** 33nB ?/ ADD	Cn, DLR				//DLR=DLR+Cn
-** 33nC NEG		Rn, DLR				//DLR=(~Rn)+1
-** 33nD NEG		Rk, DLR				//DLR=(~Rk)+1
-** 33nE -
-** 33nF -
+** 33nC  NEG	Rn, DLR				//DLR=(~Rn)+1
+** 33nD  NEG	Rk, DLR				//DLR=(~Rk)+1
+** 33nE  -
+** 33nF  -
 
-** 34n0 SHLL1	Rn					//Rn=Rn SHL 1
-** 34n1 SHLL2	Rn					//Rn=Rn SHL 2
-** 34n2 SHLL4	Rn
-** 34n3 SHLL8	Rn
-** 34n4 SHLR1	Rn					//Rn=Rn SHR 1, Logical
-** 34n5 SHLR2	Rn					//Rn=Rn SHR 2, Logical
-** 34n6 SHLR4	Rn
-** 34n7 SHLR8	Rn
-** 34n8 SHAR1	Rn					//Rn=Rn SAR 1, Arithmetic
-** 34n9 SHAR2	Rn					//Rn=Rn SAR 2, Arithmetic
-** 34nA SHAR4	Rn
-** 34nB SHAR8	Rn
-** 34nC SHLL16	Rn					//Rn=Rn SHL 16
-** 34nD SHLR16	Rn					//Rn=Rn SHR 16, Logical
-** 34nE SHAR16	Rn					//Rn=Rn SAR 16, Arithmetic
-** 34nF SHARSX	Rn					//Copy sign bit to all other bits.
+** 34n0  SHLL1	Rn					//Rn=Rn SHL 1
+** 34n1  SHLL2	Rn					//Rn=Rn SHL 2
+** 34n2  SHLL4	Rn
+** 34n3  SHLL8	Rn
+** 34n4  SHLR1	Rn					//Rn=Rn SHR 1, Logical
+** 34n5  SHLR2	Rn					//Rn=Rn SHR 2, Logical
+** 34n6  SHLR4	Rn
+** 34n7  SHLR8	Rn
+** 34n8  SHAR1	Rn					//Rn=Rn SAR 1, Arithmetic
+** 34n9  SHAR2	Rn					//Rn=Rn SAR 2, Arithmetic
+** 34nA  SHAR4	Rn
+** 34nB  SHAR8	Rn
+** 34nC  SHLL16	Rn					//Rn=Rn SHL 16
+** 34nD  SHLR16	Rn					//Rn=Rn SHR 16, Logical
+** 34nE  SHAR16	Rn					//Rn=Rn SAR 16, Arithmetic
+** 34nF  SHARSX	Rn					//Copy sign bit to all other bits.
 
-** 35n0 -
-** 35n1 -
-** 35n2 -
-** 35n3 -
-** 35n4 -
-** 35n5 -
-** 35n6 -
-** 35n7 -
-** 35n8 -
-** 35n9 -
-** 35nA -
-** 35nB -
-** 35nC -
-** 35nD -
-** 35nE -
-** 35nF -
+** 35n0  -
+** 35n1  -
+** 35n2  -
+** 35n3  -
+** 35n4  -
+** 35n5  -
+** 35n6  -
+** 35n7  -
+** 35n8  -
+** 35n9  -
+** 35nA  -
+** 35nB  -
+** 35nC  -
+** 35nD  -
+** 35nE  -
+** 35nF  -
 
-** 36n0 SHLL32	Rn					//Rn=Rn SHL 32
-** 36n1 SHLR32	Rn					//Rn=Rn SHR 32, Logical
-** 36n2 SHAR32	Rn					//Rn=Rn SAR 32, Arithmetic
-** 36j3 TRAP	#imm4u				//Generate an Interrupt
-** 36n4 EXTU.L	Rn					//Zero Extend DWord to QWord
-** 36n5 EXTS.L	Rn					//Sign Extend DWord to QWord
-** 36n6 SHAD	DLR, Rn				//Barrel Shift, Arithmetic
-** 36n7 SHLD	DLR, Rn				//Barrel Shift, Logical
-** 36n8 BRA		(PC, Rn)			//Branch to address given in (PC, Rn)
-** 36n9 BSR		(PC, Rn)			//Branch Subroutine given by (PC, Rn)
-** 36nA SWAPB	Rn					//Swap Bytes
-** 36nB SWAPW	Rn					//Swap Words
-** 36nC -
-** 36nD CMPHS	DLR, Rn				//Unsigned (Rn GE DLR)
-** 36nE CMPGE	DLR, Rn				//Signed (Rn GE DLR)
-** 36nF MOVT	Rn					//Rn=SR.T
+** 36n0  SHLL32	Rn					//Rn=Rn SHL 32
+** 36n1  SHLR32	Rn					//Rn=Rn SHR 32, Logical
+** 36n2  SHAR32	Rn					//Rn=Rn SAR 32, Arithmetic
+** 36j3  TRAP	#imm4u				//Generate an Interrupt
+** 36n4  EXTU.L	Rn					//Zero Extend DWord to QWord
+** 36n5  EXTS.L	Rn					//Sign Extend DWord to QWord
+** 36n6  SHAD	DLR, Rn				//Barrel Shift, Arithmetic
+** 36n7  SHLD	DLR, Rn				//Barrel Shift, Logical
+** 36n8 / BRA	(PC, Rn)			//Branch to address given in (PC, Rn)
+** 36n9 / BSR	(PC, Rn)			//Branch Subroutine given by (PC, Rn)
+** 36nA  SWAPB	Rn					//Swap Bytes
+** 36nB  SWAPW	Rn					//Swap Words
+** 36nC  SWAPL	Rn					//Swap DWord
+** 36nD  CMPHS	DLR, Rn				//Unsigned (Rn GE DLR)
+** 36nE  CMPGE	DLR, Rn				//Signed (Rn GE DLR)
+** 36nF  MOVT	Rn					//Rn=SR.T
 
-** 37n0 -
-** 37n1 -
-** 37n2 -
-** 37n3 -
-** 37n4 -
-** 37n5 -
-** 37n6 -
-** 37n7 -
-** 37n8 -
-** 37n9 -
-** 37nA -
-** 37nB -
-** 37nC -
-** 37nD -
-** 37nE -
-** 37nF -
+** 37n0  -
+** 37n1  -
+** 37n2  -
+** 37n3  -
+** 37n4  -
+** 37n5  -
+** 37n6  -
+** 37n7  -
+** 37n8  -
+** 37n9  -
+** 37nA  -
+** 37nB  -
+** 37nC  -
+** 37nD  -
+** 37nE  -
+** 37nF  -
 
-** 38j0 WEX0	#imm4				//Wide Execute Hint
-** 38j1 WEX1	#imm4
-** 38n2 PUSH	FRn
-** 38n3 POP		FRn
-** 38n4 -
-** 38n5 -
-** 38n6 SHADQ	DLR, Rn				//Barrel Shift, Arithmetic
-** 38n7 SHLDQ	DLR, Rn				//Barrel Shift, Logical
-** 38n8 -
-** 38n9 -
-** 38nA -
-** 38nB -
-** 38nC -
-** 38nD -
-** 38nE -
-** 38nF -
+** 38j0  WEX0	#imm4				//Wide Execute Hint
+** 38j1  WEX1	#imm4
+** 38n2  PUSH	FRn
+** 38n3  POP	FRn
+** 38n4  -
+** 38n5  -
+** 38n6  SHADQ	DLR, Rn				//Barrel Shift, Arithmetic
+** 38n7  SHLDQ	DLR, Rn				//Barrel Shift, Logical
+** 38n8  -
+** 38n9  -
+** 38nA  -
+** 38nB  -
+** 38nC  -
+** 38nD  -
+** 38nE  -
+** 38nF  -
 
-** 39zz -
-** 3Azz -
-** 3Bzz -
-** 3Czz -
+** 39zz  -
+** 3Azz  -
+** 3Bzz  -
+** 3Czz  -
 
-** 3Dzz -
-** 3Ezz -
-** 3Fzz -
+** 3Dzz  -
+** 3Ezz  -
+** 3Fzz  -
 
 * 4zzz
 ** 40nj  -
@@ -610,7 +633,7 @@ Notation:
 *** Selects between CMPxx and CMPQxx
 ** n=Bit4 of Rn
 ** m=Bit4 of Rm
-** i=Context Dependent bit
+** i=Bit4 of Ro, Context Dependent bit
 * f: qnii (If n is in n position)
 * f: qiin (If n is in o position)
 
@@ -618,12 +641,17 @@ Notation:
 * H/h: 1nii / 0nii (If n is in n position)
 * H/h: 1iin / 0iin (If n is in o position)
 
+* P/p: 1nm0 / 0nm0
+* Q/q: 1nm1 / 0nm1
+
 Canonical F0 Block Instruction:
 * F0eo_ZZnm
 ** n: Nominal position for Rn.
 ** m: Nominal position for Rm.
 ** o: Nominal position for Ro.
-*** May also be Rn for some forms, an imm5/disp5, or opcode bits.
+*** May also be Rn for some forms.
+*** May be used as an imm5/disp5.
+*** May be used for additional opcode bits.
 
 
 Major Ranges
@@ -691,16 +719,24 @@ Instruction Blocks:
 ** F0ez_18nm
 
 ** F0ez_19nm
-*** F0g0_19nm ADD		Rm, Rn				//Rn=Rn+Rm
-*** F0g1_19nm SUB		Rm, Rn				//Rn=Rn-Rm
+*** F0p0_19nm ADD		Rm, Rn				//Rn=Rn+Rm
+*** F0P0_19nm ADDL		Rm, Rn				//Rn=Rn+Rm (Low 32)
+*** F0q0_19nm ? PADDW	Rm, Rn				//Packed Add Word
+*** F0Q0_19nm ? PADDL	Rm, Rn				//Packed Add DWord
+*** F0p1_19nm SUB		Rm, Rn				//Rn=Rn-Rm
+*** F0P1_19nm SUBL		Rm, Rn				//Rn=Rn-Rm (Low 32)
+*** F0q1_19nm ? PSUBW	Rm, Rn				//Packed Sub Word
+*** F0Q1_19nm ? PSUBL	Rm, Rn				//Packed Sub DWord
 *** F0g2_19nm ADC		Rm, Rn
 *** F0g3_19nm SBB		Rm, Rn
 *** F0e4_19nm TST{Q}	Rm, Rn				//SR.T=!(Rm&Rn)
 *** F0g5_19nm AND		Rm, Rn
 *** F0g6_19nm OR		Rm, Rn
 *** F0g7_19nm XOR		Rm, Rn
-*** F0g8_19nm MOV		Rm, Rn				//Rn=Rm
-**** F0G8_19nm MOVD		Rm, Rn				//Rn=Rm (High bits Undefined)
+*** F0p8_19nm MOV		Rm, Rn				//Rn=Rm
+*** F0P8_19nm MOVD		Rm, Rn				//Rn=Rm (High Undefined)
+*** F0q8_19nm ? MOVHD	Rm, Rn				//Move High DWord
+*** F0Q8_19nm ? MOVLD	Rm, Rn				//Move Low DWord
 *** F0g9_19nm MULS		Rm, Rn				//(DHR,DLR)=Rm*Rn (Signed Result)
 *** F0gA_19nm MOV		Rm, Cn				//Cn=Rm
 *** F0gB_19nm MOV		Cm, Rn				//Rn=Cm
@@ -758,7 +794,7 @@ Instruction Blocks:
 *** F0eC_1Dnm  -
 *** F0eD_1Dnm  CMP{Q}HS		Rm, Rn				//Unsigned Rn GE Rm
 *** F0eE_1Dnm  CMP{Q}GE		Rm, Rn				//Signed Rn GE Rm
-*** F0eF_1Dnm  -
+*** F0eF_1Dnm  TRA{Q}NHI	Rm, Rn				//Compare and Trap !(Rn GT Rm)
 
 ** F0ez_1Enm  -
 ** F0ez_1Fnm  -
@@ -803,13 +839,18 @@ Instruction Blocks:
 *** F00E_3000  -
 *** F00F_3000  LDTLB
 *** F00z_3001  -
-*** F000_3002  BRA		(PC, DLR)
-*** F001_3002  BSR		(PC, DLR)
-*** F002_3002  BT		(PC, DLR)
-*** F003_3002  BF		(PC, DLR)
+*** F000_3002 / BRA	(PC, DLR)
+*** F001_3002 / BSR	(PC, DLR)
+*** F002_3002 / BT		(PC, DLR)
+*** F003_3002 / BF		(PC, DLR)
 *** F00z_3003  -
 *** ...
 *** F00z_300F  _
+
+*** F0en_3010  BRA		(PC, Rn)
+*** F0en_3011  BSR		(PC, Rn)
+*** F0en_3012  BT		(PC, Rn)
+*** F0en_3013  BF		(PC, Rn)
 
 *** F0en_3018  PUSH		Rn
 *** F0en_3019  PUSH		Cn
@@ -832,8 +873,8 @@ Instruction Blocks:
 *** F0en_3039  SHLR		Rn
 *** F0en_303A  SHAR		Rn
 
-*** F0en_3068  BRA		(PC, Rn)
-*** F0en_3069  BSR		(PC, Rn)
+*** F0en_3068 / BRA		(PC, Rn)
+*** F0en_3069 / BSR		(PC, Rn)
 *** F0en_306A  SWAPB	Rn
 *** F0en_306B  SWAPW	Rn
 
