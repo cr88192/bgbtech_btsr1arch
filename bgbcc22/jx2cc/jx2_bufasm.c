@@ -324,6 +324,11 @@ int BGBCC_JX2A_GetRegId(char *str)
 		if(!bgbcc_stricmp(str, "exsr"))
 			return(BGBCC_SH_REG_EXSR);
 
+		if(!bgbcc_stricmp(str, "sttb"))
+			return(BGBCC_SH_REG_STTB);
+		if(!bgbcc_stricmp(str, "krr"))
+			return(BGBCC_SH_REG_KRR);
+
 		break;
 	}
 
@@ -748,6 +753,45 @@ int nmid;
 {"fstci",	BGBCC_SH_NMID_FSTCI},
 {"fstch",	BGBCC_SH_NMID_FSTCH},
 
+{"movd.l",	BGBCC_SH_NMID_MOVDL},
+{"movd",	BGBCC_SH_NMID_MOVD},
+{"movhd",	BGBCC_SH_NMID_MOVHD},
+{"movld",	BGBCC_SH_NMID_MOVLD},
+{"movhld",	BGBCC_SH_NMID_MOVHLD},
+{"movlhd",	BGBCC_SH_NMID_MOVLHD},
+
+{"cmovt.b",		BGBCC_SH_NMID_CMOVTB},
+{"cmovt.w",		BGBCC_SH_NMID_CMOVTW},
+{"cmovt.l",		BGBCC_SH_NMID_CMOVTL},
+{"cmovt.q",		BGBCC_SH_NMID_CMOVTQ},
+{"cmovf.b",		BGBCC_SH_NMID_CMOVFB},
+{"cmovf.w",		BGBCC_SH_NMID_CMOVFW},
+{"cmovf.l",		BGBCC_SH_NMID_CMOVFL},
+{"cmovf.q",		BGBCC_SH_NMID_CMOVFQ},
+{"cmovut.b",	BGBCC_SH_NMID_CMOVUTB},
+{"cmovut.w",	BGBCC_SH_NMID_CMOVUTW},
+{"cmovut.l",	BGBCC_SH_NMID_CMOVUTL},
+{"cmovdt.l",	BGBCC_SH_NMID_CMOVDTL},
+{"cmovuf.b",	BGBCC_SH_NMID_CMOVUFB},
+{"cmovuf.w",	BGBCC_SH_NMID_CMOVUFW},
+{"cmovuf.l",	BGBCC_SH_NMID_CMOVUFL},
+{"cmovdf.l",	BGBCC_SH_NMID_CMOVDFL},
+
+{"padd.w",		BGBCC_SH_NMID_PADDW},
+{"padd.l",		BGBCC_SH_NMID_PADDL},
+{"psub.w",		BGBCC_SH_NMID_PSUBW},
+{"psub.l",		BGBCC_SH_NMID_PSUBL},
+{"padd.h",		BGBCC_SH_NMID_PADDH},
+{"psub.h",		BGBCC_SH_NMID_PSUBH},
+{"pmul.h",		BGBCC_SH_NMID_PMULH},
+
+{"pmulu.w",		BGBCC_SH_NMID_PMULUW},
+
+{"adds.l",		BGBCC_SH_NMID_ADDSL},
+{"addu.l",		BGBCC_SH_NMID_ADDUL},
+{"subs.l",		BGBCC_SH_NMID_SUBSL},
+{"subu.l",		BGBCC_SH_NMID_SUBUL},
+
 // {"iclrmd.dq",	BGBCC_SH_NMID_ICLRMD_DQ},
 // {"isetmd.dq",	BGBCC_SH_NMID_ISETMD_DQ},
 
@@ -988,6 +1032,20 @@ int BGBCC_JX2A_TryAssembleOpcode(
 			nmid, arg0->breg, arg1->breg);
 		break;
 	case BGBCC_SH_FMID_REGIMM:
+		if(nmid==BGBCC_SH_NMID_MOV)
+		{
+			if(	(arg1->breg==BGBCC_SH_REG_R0) ||
+				(arg1->breg==BGBCC_SH_REG_DLR))
+			{
+				BGBCC_JX2_EmitLoadDrImm(ctx, arg0->disp);
+				break;
+			}
+		
+			BGBCC_JX2_EmitLoadRegImm64P(ctx,
+				arg1->breg, arg0->disp);
+			break;
+		}
+	
 		rt=BGBCC_JX2_TryEmitOpImmReg(ctx,
 			nmid, arg0->disp, arg1->breg);
 		break;
@@ -1184,6 +1242,9 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 		k=BGBCC_JX2A_TryAssembleOpcode(ctx, tk0+1, &arg[0], &arg[1], &arg[2]);
 		if(k>0)
 		{
+			if(*cs2==';')
+				cs2++;
+		
 			*rcs=cs2;
 			return(1);
 		}

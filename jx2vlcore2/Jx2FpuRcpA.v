@@ -1,9 +1,18 @@
+`include "Jx2ExCsAdd64F.v"
+
 module Jx2FpuRcpA(
 	regValFRm,
 	regValFRn);
 
 input[63:0]		regValFRm;
 output[63:0]	regValFRn;
+
+reg[63:0]		tRegValFRmInv;
+reg[63:0]		tRegValFRmBias;
+wire[63:0]		tRegValFRnIB;
+
+Jx2ExCsAdd64F	fprcpAdd(tRegValFRmInv, tRegValFRmBias, tRegValFRnIB);
+
 
 reg[63:0]		tRegValFRn;
 
@@ -177,9 +186,13 @@ begin
 //	else
 //		tFraB1B=tFraB1[51:0]-tFraB1_Adj1-tFraB1_Adj2A;
 
-	tRegValFRn	=
-		{tSgnB1, ~regValFRm[62:0] +
-			{ 11'h7FD, ~tFraB1_Adj1 } };
+//	tRegValFRn	=
+//		{tSgnB1, ~regValFRm[62:0] +
+//			{ 11'h7FD, ~tFraB1_Adj1 } };
+
+	tRegValFRmInv	= { 1'b0, ~regValFRm[62:0] };
+	tRegValFRmBias	= { 12'h7FD, ~tFraB1_Adj1 };
+	tRegValFRn		= {tSgnB1, tRegValFRnIB[62:0] };
 
 //	tRegValFRn	= { tSgnB1, tExpB1, tFraB1[51:0] };
 //	tRegValFRn	= { tSgnB1, tExpB1, tFraB1B };

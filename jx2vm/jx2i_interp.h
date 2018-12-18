@@ -186,8 +186,8 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_LDISH20	0x43		//
 #define BJX2_NMID_SHAD		0x44		//
 #define BJX2_NMID_SHLD		0x45		//
-#define BJX2_NMID_SWAPB		0x46		//
-#define BJX2_NMID_SWAPW		0x47		//
+// #define BJX2_NMID_SWAPB		0x46		//
+// #define BJX2_NMID_SWAPW		0x47		//
 #define BJX2_NMID_FADD		0x48		//
 #define BJX2_NMID_FSUB		0x49		//
 #define BJX2_NMID_FMUL		0x4A		//
@@ -231,6 +231,60 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_MOVDL		0x6E		//
 #define BJX2_NMID_LDI		0x6F		//
 
+#define BJX2_NMID_SWAPB		0x70		//
+#define BJX2_NMID_SWAPW		0x71		//
+#define BJX2_NMID_SWAP8B	0x72		//
+#define BJX2_NMID_SWAPL		0x73		//
+#define BJX2_NMID_SWAPLB	0x74		//
+#define BJX2_NMID_SWAPLW	0x75		//
+#define BJX2_NMID_SWCPLB	0x76		//
+#define BJX2_NMID_SWCPLW	0x77		//
+#define BJX2_NMID_SWAPMB	0x78		//
+#define BJX2_NMID_SWAPMW	0x79		//
+#define BJX2_NMID_SWCPMB	0x7A		//
+#define BJX2_NMID_SWCPMW	0x7B		//
+#define BJX2_NMID_SWAPHB	0x7C		//
+#define BJX2_NMID_SWAPHW	0x7D		//
+#define BJX2_NMID_SWCPHB	0x7E		//
+#define BJX2_NMID_SWCPHW	0x7F		//
+
+#define BJX2_NMID_MOVHD		0x80		//
+#define BJX2_NMID_MOVLD		0x81		//
+#define BJX2_NMID_MOVHLD	0x82		//
+#define BJX2_NMID_MOVLHD	0x83		//
+#define BJX2_NMID_MOVD		0x84		//
+
+#define BJX2_NMID_ADDSL		0x88		//
+#define BJX2_NMID_ADDUL		0x89		//
+#define BJX2_NMID_SUBSL		0x8A		//
+#define BJX2_NMID_SUBUL		0x8B		//
+#define BJX2_NMID_PADDW		0x8C		//
+#define BJX2_NMID_PADDL		0x8D		//
+#define BJX2_NMID_PSUBW		0x8E		//
+#define BJX2_NMID_PSUBL		0x8F		//
+
+#define BJX2_NMID_PMULUW	0x90		//
+#define BJX2_NMID_PADDH		0x91		//
+#define BJX2_NMID_PSUBH		0x92		//
+#define BJX2_NMID_PMULH		0x93		//
+
+#define BJX2_NMID_CMOVTB	0xA0		//CMOVT.B
+#define BJX2_NMID_CMOVTW	0xA1		//CMOVT.W
+#define BJX2_NMID_CMOVTL	0xA2		//CMOVT.L
+#define BJX2_NMID_CMOVTQ	0xA3		//CMOVT.Q
+#define BJX2_NMID_CMOVFB	0xA4		//CMOVF.B
+#define BJX2_NMID_CMOVFW	0xA5		//CMOVF.W
+#define BJX2_NMID_CMOVFL	0xA6		//CMOVF.L
+#define BJX2_NMID_CMOVFQ	0xA7		//CMOVF.Q
+#define BJX2_NMID_CMOVUTB	0xA8		//CMOVUT.B
+#define BJX2_NMID_CMOVUTW	0xA9		//CMOVUT.W
+#define BJX2_NMID_CMOVUTL	0xAA		//CMOVUT.L
+#define BJX2_NMID_CMOVDTL	0xAB		//CMOVDT.L
+#define BJX2_NMID_CMOVUFB	0xAC		//CMOVUF.B
+#define BJX2_NMID_CMOVUFW	0xAD		//CMOVUF.W
+#define BJX2_NMID_CMOVUFL	0xAE		//CMOVUF.L
+#define BJX2_NMID_CMOVDFL	0xAF		//CMOVDF.L
+
 
 #define BJX2_FMID_NONE			0x00		//?
 #define BJX2_FMID_REG			0x01		//Rn
@@ -266,7 +320,10 @@ Will use direct linking and assume a non-modifiable program space.
 
 #define BJX2_FMID_FREG			0x20		//FRn
 #define BJX2_FMID_FREGREG		0x21		//FRm, FRn
-#define BJX2_FMID_FREGREGREG	0x22		//FRm, FRn
+#define BJX2_FMID_FREGREGREG	0x22		//FRm, FRo, FRn
+
+#define BJX2_FMID_FREGGREG		0x24		//FRm, Rn
+#define BJX2_FMID_GREGFREG		0x25		//Rm, FRn
 
 typedef unsigned char byte;
 typedef signed char sbyte;

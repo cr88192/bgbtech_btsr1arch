@@ -20,12 +20,17 @@ typedef signed int s32;
 typedef unsigned long long u64;
 typedef signed long long s64;
 
+typedef long nlint;
+
 typedef volatile u32 vol_u32;
 
 // #define GPIO_BASE 0xABCD0000
 // #define SPI_BASE 0xABCD0040
 // #define UART_BASE 0xABCD0100
 // #define AIC_BASE 0xABCD0200
+
+#define NOMMU_BASE	0xC0000000
+
 
 #define GPIO_BASE	0xA000E100
 #define SPI_BASE	0xA000E030

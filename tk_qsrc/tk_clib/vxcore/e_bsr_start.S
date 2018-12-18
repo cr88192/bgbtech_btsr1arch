@@ -70,10 +70,11 @@ isr_except:
 //	rte
 
 isr_inter:
-	mov	exsr, r4
+//	mov	exsr, r4
 //	break
-	bsr __isr_interrupt
-	rte
+//	bsr __isr_interrupt
+//	rte
+	bra __isr_interrupt
 
 isr_table:
 	bra8b _start
@@ -522,8 +523,8 @@ X(__setj):
 .global X(__va64_arg_i)
 X(__va64_arg_i):
 	mov.l @(r4, 96), r2
-	mov #64, r1
-	cmp/gt r2, r1
+	mov #64, r3
+	cmp/gt r2, r3
 	bf __va64_arg_i.L0
 	
 	mov r2, r3
@@ -535,18 +536,19 @@ X(__va64_arg_i):
 	rts
 	nop
 __va64_arg_i.L0:
-	mov.q @(r4, 112), r1
-	mov.l @r1+, r6
-	mov.q  r1, @(r4, 112)
+	mov.q @(r4, 112), r3
+	mov.l @r3+, r6
+	mov.q  r3, @(r4, 112)
 	mov r6, r2
+//	break
 	rts
 	nop
 
 .global X(__va64_arg_l)
 X(__va64_arg_l):
 	mov.l @(r4, 96), r2
-	mov #64, r1
-	cmp/gt r2, r1
+	mov #64, r3
+	cmp/gt r2, r3
 	bf __va64_arg_l.L0	
 
 	mov r2, r3
@@ -558,39 +560,39 @@ X(__va64_arg_l):
 	rts
 	nop
 __va64_arg_l.L0:
-	mov.q @(r4, 112), r1
-	add #7, r1
-	and #-8, r1
-	mov.q @r1+, r6
-	mov.q  r1, @(r4, 112)
+	mov.q @(r4, 112), r3
+	add #7, r3
+	and #-8, r3
+	mov.q @r3+, r6
+	mov.q  r3, @(r4, 112)
 	mov r6, r2
 	rts
 	nop
 
 .global X(__va64_arg_x)
 X(__va64_arg_x):
-	mov.l @(r4, 96), r0
-	mov #56, r1
-	cmp/gt r0, r1
+	mov.l @(r4, 96), r2
+	mov #56, r3
+	cmp/gt r2, r3
 	bf __va64_arg_x.L0
-	mov r0, r1
-	add r4, r1
-	mov.q @r1, r6
-	add #8, r1
-	mov.q @r1, r7
-	add #8, r1
-	mov.l  r1, @(r4, 96)
+	mov r2, r3
+	add r4, r3
+	mov.q @r3, r6
+	add #8, r3
+	mov.q @r3, r7
+	add #8, r3
+	mov.l  r3, @(r4, 96)
 	mov r6, r2
 	mov r7, r3
 	rts
 	nop
 __va64_arg_x.L0:
-	mov.q @(r4, 112), r1
-	add #7, r1
-	and #-8, r1
-	mov.q @r1+, r6
-	mov.q @r1+, r7
-	mov.q  r1, @(r4, 112)
+	mov.q @(r4, 112), r3
+	add #7, r3
+	and #-8, r3
+	mov.q @r3+, r6
+	mov.q @r3+, r7
+	mov.q  r3, @(r4, 112)
 	mov r6, r2
 	mov r7, r3
 	rts
@@ -598,52 +600,52 @@ __va64_arg_x.L0:
 
 .global X(__va64_arg_f)
 X(__va64_arg_f):
-	mov.l @(r4, 104), r0
-	mov #96, r1
-	cmp/gt r0, r1
+	mov.l @(r4, 104), r2
+	mov #96, r3
+	cmp/gt r2, r3
 	bf __va64_arg_f.L0
 
 	mov r4, r3
-	add r0, r3
+	add r2, r3
 	fmov.d @r3, fr2
-	add #8, r0
-	mov r0, r1
+	add #8, r2
+	mov r2, r1
 	mov.l  r1, @(r4, 104)
 	rts
 	nop
 __va64_arg_f.L0:
-	mov.q @(r4, 112), r1
-	fmov.s @r1, fr2
-	add #4, r1
-	mov.q  r1, @(r4, 112)
+	mov.q @(r4, 112), r3
+	fmov.s @r3, fr2
+	add #4, r3
+	mov.q  r3, @(r4, 112)
 	rts
 	nop
 
 .global X(__va64_arg_d)
 X(__va64_arg_d):
-	mov.l @(r4, 104), r0
-	add #7, r0
+	mov.l @(r4, 104), r2
+	add #7, r2
 	mov #-8, r1
-	and r1, r0
+	and r1, r2
 	
 	mov #96, r1
-	cmp/gt r0, r1
+	cmp/gt r2, r1
 	bf __va64_arg_d.L0
 
 	mov r4, r3
-	add r0, r3
+	add r2, r3
 	fmov.d @r3, fr2
 
-	add #8, r0
-	mov r0, r1
+	add #8, r2
+	mov r2, r1
 	mov.l  r1, @(r4, 104)
 	rts
 	nop
 __va64_arg_d.L0:
-	mov.q @(r4, 112), r1
-	fmov.d @r1, fr2
-	add #8, r1
-	mov.q  r1, @(r4, 112)
+	mov.q @(r4, 112), r3
+	fmov.d @r3, fr2
+	add #8, r3
+	mov.q  r3, @(r4, 112)
 	rts
 	nop
 
@@ -738,3 +740,186 @@ X(sleep_0):
 	sleep
 	rts
 
+#if 1
+/* DR4=rv, DR5=a */
+.global X(__fpu_frcp_b0)
+X(__fpu_frcp_b0):
+	fmul dr4, dr5, dr7			//rp=rv*a
+	fmov dr7, r7				//rpb=rp
+	mov #0x3FF0000000000000, r6
+	sub r7, r6
+
+	fmov dr4, r5				//rvb=rv
+	add r6, r5					
+	fmov r5, dr4
+//	break
+	rts
+
+#define FRCP_SEG					\
+	fmul dr4, dr5, dr7;				\
+	fmov dr7, r7;					\
+	mov #0x3FF0000000000000, r6;	\
+	sub r7, r6;						\
+	fmov dr4, r5;					\
+	add r6, r5;						\
+	fmov r5, dr4
+
+#define FRCP_SEG2					\
+	fmov r5, dr4;					\
+	fmul dr4, dr5, dr7;				\
+	fmov dr7, r7;					\
+	sub r6, r7, r7;					\
+	add r7, r5;
+
+#if 0
+.global X(__fpu_frcp_b2)
+X(__fpu_frcp_b2):
+	mov #0x3FF0000000000000, r6
+	fmov dr4, r5;
+
+	FRCP_SEG2
+	FRCP_SEG2
+	FRCP_SEG2
+	FRCP_SEG2
+	fmov r5, dr4
+	rts
+
+.global X(__fpu_frcp_b3)
+X(__fpu_frcp_b3):
+	mov #0x3FF0000000000000, r6
+	fmov dr4, r5;
+
+	FRCP_SEG2
+//	FRCP_SEG2
+//	FRCP_SEG2
+//	FRCP_SEG2
+//	fmov r5, dr4
+	fmov r5, dr2
+//	fmov dr4, dr2
+	
+	mov #0x4000, r0
+	fldch dr3
+
+	fmul dr2, dr5, dr6
+	fsub dr3, dr6, dr7
+//	fmul dr2, dr7, dr2
+	fmul dr7, dr2
+
+	fmul dr2, dr5, dr6
+	fsub dr3, dr6, dr7
+//	fmul dr2, dr7, dr2
+	fmul dr7, dr2
+
+	fmul dr2, dr5, dr6
+	fsub dr3, dr6, dr7
+//	fmul dr2, dr7, dr2
+	fmul dr7, dr2
+
+//	fmov dr4, dr2
+	
+	rts
+#endif
+
+.global X(__fpu_frcp)
+X(__fpu_frcp):
+	mov #0x0000, r0
+	fldch dr3
+	fcmp/gt dr4, dr3
+	bf .L0
+	push lr
+	fneg dr4
+	bsr __fpu_frcp
+	fneg dr2
+	ret
+
+	.L0:
+	fmov dr4, dr5
+	fmov dr4, r6
+	mov #0x7FF0000000000000, r5
+	sub r6, r5
+	mov #0x3FF0000000000000, r6
+
+	fmov r5, dr4
+	fmul dr4, dr5, dr7
+	fmov dr7, r7
+	sub r6, r7, r7
+	add r7, r5
+
+//	fmov r5, dr4
+//	fmul dr4, dr5, dr7
+//	fmov dr7, r7
+//	sub r6, r7, r7
+//	add r7, r5
+
+	fmov r5, dr2
+	
+	mov #0x4000, r0
+	fldch dr3
+
+	fmul dr2, dr5, dr6
+	fsub dr3, dr6, dr7
+	fmul dr7, dr2
+
+	fmul dr2, dr5, dr6
+	fsub dr3, dr6, dr7
+	fmul dr7, dr2
+
+	fmul dr2, dr5, dr6
+	fsub dr3, dr6, dr7
+	fmul dr7, dr2
+
+	fmul dr2, dr5, dr6
+	fsub dr3, dr6, dr7
+	fmul dr7, dr2
+	
+	rts
+
+#if 0
+.global X(__fpu_frcp_b1)
+X(__fpu_frcp_b1):
+	push lr
+
+	bsr __fpu_frcp_b2
+	bsr __fpu_frcp_b2
+	bsr __fpu_frcp_b2
+	bsr __fpu_frcp_b2
+
+#if 0
+	FRCP_SEG
+	FRCP_SEG
+	FRCP_SEG
+	FRCP_SEG
+
+	FRCP_SEG
+	FRCP_SEG
+	FRCP_SEG
+	FRCP_SEG
+
+	FRCP_SEG
+	FRCP_SEG
+	FRCP_SEG
+	FRCP_SEG
+#endif
+
+#if 0
+	bsr __fpu_frcp_b0
+	bsr __fpu_frcp_b0
+	bsr __fpu_frcp_b0
+	bsr __fpu_frcp_b0
+
+	bsr __fpu_frcp_b0
+	bsr __fpu_frcp_b0
+	bsr __fpu_frcp_b0
+	bsr __fpu_frcp_b0
+
+	bsr __fpu_frcp_b0
+	bsr __fpu_frcp_b0
+	bsr __fpu_frcp_b0
+	bsr __fpu_frcp_b0
+#endif
+
+	fmov dr4, dr2
+	ret
+#endif
+
+#endif

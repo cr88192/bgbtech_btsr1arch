@@ -1674,6 +1674,7 @@ int BGBCC_JX2C_EmitReleaseRegister(
 	{
 		if(BGBCC_CCXL_IsRegFloatP(ctx, reg) ||
 			BGBCC_CCXL_IsRegFloat16P(ctx, reg) ||
+			BGBCC_CCXL_IsRegBFloat16P(ctx, reg) ||
 			BGBCC_CCXL_IsRegDoubleP(ctx, reg))
 		{
 			return(BGBCC_JX2C_EmitReleaseFpRegister(ctx, sctx, reg));

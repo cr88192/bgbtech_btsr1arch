@@ -449,9 +449,9 @@ X(__va64_arg_i):
 	rts
 	nop
 __va64_arg_i.L0:
-	mov.q @(r4, 112), r1
-	mov.l @r1+, r6
-	mov.q  r1, @(r4, 112)
+	mov.q @(r4, 112), r3
+	mov.l @r3+, r6
+	mov.q  r3, @(r4, 112)
 	mov r6, r2
 	rts
 	nop
@@ -459,8 +459,8 @@ __va64_arg_i.L0:
 .global X(__va64_arg_l)
 X(__va64_arg_l):
 	mov.l @(r4, 96), r2
-	mov #64, r1
-	cmp/gt r2, r1
+	mov #64, r3
+	cmp/gt r2, r3
 	bf __va64_arg_l.L0	
 
 	mov r2, r3
@@ -472,39 +472,39 @@ X(__va64_arg_l):
 	rts
 	nop
 __va64_arg_l.L0:
-	mov.q @(r4, 112), r1
-	add #7, r1
-	and #-8, r1
-	mov.q @r1+, r6
-	mov.q  r1, @(r4, 112)
+	mov.q @(r4, 112), r3
+	add #7, r3
+	and #-8, r3
+	mov.q @r3+, r6
+	mov.q  r3, @(r4, 112)
 	mov r6, r2
 	rts
 	nop
 
 .global X(__va64_arg_x)
 X(__va64_arg_x):
-	mov.l @(r4, 96), r0
-	mov #56, r1
-	cmp/gt r0, r1
+	mov.l @(r4, 96), r2
+	mov #56, r3
+	cmp/gt r0, r3
 	bf __va64_arg_x.L0
-	mov r0, r1
-	add r4, r1
-	mov.q @r1, r6
-	add #8, r1
-	mov.q @r1, r7
-	add #8, r1
-	mov.l  r1, @(r4, 96)
+	mov r2, r3
+	add r4, r3
+	mov.q @r3, r6
+	add #8, r3
+	mov.q @r3, r7
+	add #8, r3
+	mov.l  r3, @(r4, 96)
 	mov r6, r2
 	mov r7, r3
 	rts
 	nop
 __va64_arg_x.L0:
-	mov.q @(r4, 112), r1
-	add #7, r1
-	and #-8, r1
-	mov.q @r1+, r6
-	mov.q @r1+, r7
-	mov.q  r1, @(r4, 112)
+	mov.q @(r4, 112), r3
+	add #7, r3
+	and #-8, r3
+	mov.q @r3+, r6
+	mov.q @r3+, r7
+	mov.q  r3, @(r4, 112)
 	mov r6, r2
 	mov r7, r3
 	rts
@@ -512,52 +512,52 @@ __va64_arg_x.L0:
 
 .global X(__va64_arg_f)
 X(__va64_arg_f):
-	mov.l @(r4, 104), r0
-	mov #96, r1
-	cmp/gt r0, r1
+	mov.l @(r4, 104), r2
+	mov #96, r3
+	cmp/gt r2, r3
 	bf __va64_arg_f.L0
 
 	mov r4, r3
-	add r0, r3
+	add r2, r3
 	fmov.d @r3, fr2
-	add #8, r0
-	mov r0, r1
-	mov.l  r1, @(r4, 104)
+	add #8, r2
+	mov r2, r3
+	mov.l  r3, @(r4, 104)
 	rts
 	nop
 __va64_arg_f.L0:
-	mov.q @(r4, 112), r1
-	fmov.s @r1, fr2
-	add #4, r1
-	mov.q  r1, @(r4, 112)
+	mov.q @(r4, 112), r3
+	fmov.s @r3, fr2
+	add #4, r3
+	mov.q  r3, @(r4, 112)
 	rts
 	nop
 
 .global X(__va64_arg_d)
 X(__va64_arg_d):
-	mov.l @(r4, 104), r0
-	add #7, r0
-	mov #-8, r1
-	and r1, r0
+	mov.l @(r4, 104), r2
+	add #7, r2
+	mov #-8, r3
+	and r3, r2
 	
-	mov #96, r1
-	cmp/gt r0, r1
+	mov #96, r3
+	cmp/gt r2, r3
 	bf __va64_arg_d.L0
 
 	mov r4, r3
-	add r0, r3
+	add r2, r3
 	fmov.d @r3, fr2
 
-	add #8, r0
-	mov r0, r1
-	mov.l  r1, @(r4, 104)
+	add #8, r2
+	mov r2, r3
+	mov.l  r3, @(r4, 104)
 	rts
 	nop
 __va64_arg_d.L0:
-	mov.q @(r4, 112), r1
-	fmov.d @r1, fr2
-	add #8, r1
-	mov.q  r1, @(r4, 112)
+	mov.q @(r4, 112), r3
+	fmov.d @r3, fr2
+	add #8, r3
+	mov.q  r3, @(r4, 112)
 	rts
 	nop
 
@@ -651,3 +651,34 @@ X(sleep_0):
 	sleep
 	rts
 
+.global X(__do_ldtlb)
+X(__do_ldtlb):
+	mov r4, r0
+	mov r5, r1
+	ldtlb
+	rts
+
+.global X(__do_rethrow_fault)
+X(__do_rethrow_fault):
+	mov STACK_BASE_ISR, sp
+	sub #128, sp
+	pop r0
+	pop r1
+	pop r2
+	pop r3
+	pop r4
+	pop r5
+	pop r6
+	pop r7
+	pop r16
+	pop r17
+	pop r18
+	pop r19
+	pop r20
+	pop r21
+	pop r22
+	pop r23
+	
+	mov vbr, r2
+	add #8, r2
+	jmp r2

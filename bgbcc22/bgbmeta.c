@@ -1134,6 +1134,8 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 
 		if(base)
 		{
+			BGBCC_CCXL_SetBasePath(base);
+
 //			sprintf(buf, "%s/frvmcfg.txt", base);
 			sprintf(buf, "%s/bgbcc.cfg", base);
 			BGBCC_LoadConfig(buf);

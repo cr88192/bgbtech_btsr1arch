@@ -56,16 +56,47 @@ void BGBCC_CCXL_StubErrorLLn(BGBCC_TransState *ctx,
 	BGBCC_DBGBREAK
 }
 
+char *BGBCC_CCXL_TagGetMessage(int tag)
+{
+	char *str;
+
+	str=NULL;
+	switch(tag)
+	{
+	case CCXL_TERR_GENERIC:
+		str="Generic Error"; break;
+	case CCXL_TERR_STACK_OVERFLOW:
+		str="Register Stack Overflow";	break;
+	case CCXL_TERR_STACK_UNDERFLOW:
+		str="Register Stack Underflow";	break;
+	case CCXL_TERR_FORMAT_SANITY:
+		str="Format sanity check fail";	break;
+	case CCXL_TERR_CONV_PTRRANGELOSS:
+		str="Pointer conversion loss of range";	break;
+	case CCXL_TERR_CONV_PTRSIZEDIFF:
+		str="Conversion to pointer size differs";	break;
+	case CCXL_TERR_RETVOID:
+		str="Returning a value in a function returning void";	break;
+	default:
+		str="(Unknown)";	break;
+	}
+	return(str);
+}
+
 void BGBCC_CCXL_TagErrorLLn(BGBCC_TransState *ctx, int tag,
 	char *file, int line)
 {
-	BGBCC_CCXL_Error(ctx, "TagError(%04X) %s:%d\n", tag, file, line);
+	BGBCC_CCXL_Error(ctx, "TagError(%04X) %s:%d: %s\n", tag, file, line,
+		BGBCC_CCXL_TagGetMessage(tag));
 }
 
 void BGBCC_CCXL_TagWarnLLn(BGBCC_TransState *ctx, int tag,
 	char *file, int line)
 {
-	BGBCC_CCXL_Warn(ctx, "TagWarn(%04X) %s:%d\n", tag, file, line);
+//	BGBCC_CCXL_Warn(ctx, "TagWarn(%04X) %s:%d: %s\n", tag, file, line,
+//		BGBCC_CCXL_TagGetMessage(tag));
+	BGBCC_CCXL_Warn(ctx, "(%04X) %s\n", tag,
+		BGBCC_CCXL_TagGetMessage(tag));
 }
 
 ccxl_label BGBCC_CCXL_GenSym(BGBCC_TransState *ctx)
@@ -1470,6 +1501,7 @@ char *BGBCC_CCXL_VarTypeString_FlattenName(BGBCC_TransState *ctx,
 		if(!strcmp(s, "int128"))*t++='n';
 		if(!strcmp(s, "float128"))*t++='g';
 		if(!strcmp(s, "float16"))*t++='k';
+		if(!strcmp(s, "bfloat16"))*t++='u';
 
 		if(!strcmp(s, "uint128"))*t++='o';
 

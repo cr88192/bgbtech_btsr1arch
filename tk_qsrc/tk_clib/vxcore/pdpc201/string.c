@@ -577,8 +577,13 @@ __PDPCLIB_API__ void *memcpy(void *s1, const void *s2, size_t n)
 	register unsigned int *cs2 = (unsigned int *)s2;
 	register unsigned int *endi;
 
+//	n=(int)n;
+	if(n!=((int)n))
+		__debugbreak();
+
 	endi = (unsigned int *)((char *)p + (n & ~0x03));
-	while (p != endi)
+//	while (p != endi)
+	while (p < endi)
 	{
 		*p++ = *cs2++;
 	}

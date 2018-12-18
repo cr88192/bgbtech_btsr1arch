@@ -881,11 +881,19 @@ int BGBCC_JX2_EmitLoadRegImm64P(
 				}
 			}
 
+			if(!((u32)imm))
+			{
+				opw1=0x3600|((reg&15)<<4);
+				BGBCC_JX2_EmitLoadRegImm64P(ctx, reg, imm>>32);
+				BGBCC_JX2_EmitWord(ctx, opw1);
+				return(1);
+			}
+
 #if 1
 	//		if(!BGBCC_JX2_CheckPadCross48(ctx))
 			if(!BGBCC_JX2_CheckPadCross48(ctx) ||
 				BGBCC_JX2_CheckPadCross32(ctx))
-			{
+			{			
 				opw1=0xFCD0|(reg&15);
 				opw2=(u16)(imm    );
 				opw3=(u16)(imm>>16);
@@ -1985,4 +1993,624 @@ int BGBCC_JX2_EmitStoreRegLabelVarRel24(
 	return(0);
 }
 
+static byte bgbcc_jx2_wshuftab[256][8]={
+{8, 7, 4, 0, 0, 0, 0, 0}, /* 00(0,0,0,0) */
+{8, 7, 1, 0, 0, 0, 0, 0}, /* 01(1,0,0,0) */
+{8, 4, 3, 0, 0, 0, 0, 0}, /* 02(2,0,0,0) */
+{7, 4, 6, 0, 0, 0, 0, 0}, /* 03(3,0,0,0) */
+{8, 7, 0, 0, 0, 0, 0, 0}, /* 04(0,1,0,0) */
+{8, 5, 1, 4, 0, 0, 0, 0}, /* 05(1,1,0,0) */
+{8, 5, 0, 0, 0, 0, 0, 0}, /* 06(2,1,0,0) */
+{7, 6, 0, 0, 0, 0, 0, 0}, /* 07(3,1,0,0) */
+{8, 4, 3, 1, 0, 0, 0, 0}, /* 08(0,2,0,0) */
+{8, 5, 1, 0, 0, 0, 0, 0}, /* 09(1,2,0,0) */
+{4, 3, 4, 0, 0, 0, 0, 0}, /* 0A(2,2,0,0) */
+{4, 3, 1, 0, 0, 0, 0, 0}, /* 0B(3,2,0,0) */
+{7, 4, 3, 0, 0, 0, 0, 0}, /* 0C(0,3,0,0) */
+{7, 6, 1, 0, 0, 0, 0, 0}, /* 0D(1,3,0,0) */
+{4, 3, 0, 0, 0, 0, 0, 0}, /* 0E(2,3,0,0) */
+{7, 6, 4, 0, 0, 0, 0, 0}, /* 0F(3,3,0,0) */
+{8, 7, 3, 2, 0, 0, 0, 0}, /* 10(0,0,1,0) */
+{8, 1, 7, 0, 0, 0, 0, 0}, /* 11(1,0,1,0) */
+{8, 1, 3, 0, 0, 0, 0, 0}, /* 12(2,0,1,0) */
+{7, 3, 2, 0, 0, 0, 0, 0}, /* 13(3,0,1,0) */
+{8, 1, 7, 1, 0, 0, 0, 0}, /* 14(0,1,1,0) */
+{1, 8, 7, 3, 0, 0, 0, 0}, /* 15(1,1,1,0) */
+{1, 8, 3, 0, 0, 0, 0, 0}, /* 16(2,1,1,0) */
+{2, 8, 3, 0, 0, 0, 0, 0}, /* 17(3,1,1,0) */
+{8, 3, 2, 0, 0, 0, 0, 0}, /* 18(0,2,1,0) */
+{2, 7, 3, 0, 0, 0, 0, 0}, /* 19(1,2,1,0) */
+{3, 4, 2, 0, 0, 0, 0, 0}, /* 1A(2,2,1,0) */
+{3, 2, 0, 0, 0, 0, 0, 0}, /* 1B(3,2,1,0) */
+{7, 1, 3, 0, 0, 0, 0, 0}, /* 1C(0,3,1,0) */
+{1, 7, 3, 0, 0, 0, 0, 0}, /* 1D(1,3,1,0) */
+{1, 3, 0, 0, 0, 0, 0, 0}, /* 1E(2,3,1,0) */
+{3, 2, 4, 0, 0, 0, 0, 0}, /* 1F(3,3,1,0) */
+{8, 4, 0, 0, 0, 0, 0, 0}, /* 20(0,0,2,0) */
+{8, 1, 0, 0, 0, 0, 0, 0}, /* 21(1,0,2,0) */
+{8, 1, 3, 7, 0, 0, 0, 0}, /* 22(2,0,2,0) */
+{4, 6, 0, 0, 0, 0, 0, 0}, /* 23(3,0,2,0) */
+{8, 0, 0, 0, 0, 0, 0, 0}, /* 24(0,1,2,0) */
+{6, 1, 4, 0, 0, 0, 0, 0}, /* 25(1,1,2,0) */
+{6, 5, 7, 0, 0, 0, 0, 0}, /* 26(2,1,2,0) */
+{6, 0, 0, 0, 0, 0, 0, 0}, /* 27(3,1,2,0) */
+{8, 3, 8, 2, 0, 0, 0, 0}, /* 28(0,2,2,0) */
+{5, 8, 2, 0, 0, 0, 0, 0}, /* 29(1,2,2,0) */
+{3, 8, 4, 2, 0, 0, 0, 0}, /* 2A(2,2,2,0) */
+{3, 8, 2, 0, 0, 0, 0, 0}, /* 2B(3,2,2,0) */
+{4, 6, 1, 0, 0, 0, 0, 0}, /* 2C(0,3,2,0) */
+{6, 1, 0, 0, 0, 0, 0, 0}, /* 2D(1,3,2,0) */
+{1, 3, 7, 0, 0, 0, 0, 0}, /* 2E(2,3,2,0) */
+{6, 4, 0, 0, 0, 0, 0, 0}, /* 2F(3,3,2,0) */
+{7, 4, 2, 0, 0, 0, 0, 0}, /* 30(0,0,3,0) */
+{7, 2, 0, 0, 0, 0, 0, 0}, /* 31(1,0,3,0) */
+{4, 6, 3, 0, 0, 0, 0, 0}, /* 32(2,0,3,0) */
+{4, 6, 7, 0, 0, 0, 0, 0}, /* 33(3,0,3,0) */
+{7, 2, 1, 0, 0, 0, 0, 0}, /* 34(0,1,3,0) */
+{5, 2, 4, 0, 0, 0, 0, 0}, /* 35(1,1,3,0) */
+{6, 5, 0, 0, 0, 0, 0, 0}, /* 36(2,1,3,0) */
+{6, 7, 0, 0, 0, 0, 0, 0}, /* 37(3,1,3,0) */
+{4, 5, 2, 0, 0, 0, 0, 0}, /* 38(0,2,3,0) */
+{5, 2, 0, 0, 0, 0, 0, 0}, /* 39(1,2,3,0) */
+{5, 4, 2, 0, 0, 0, 0, 0}, /* 3A(2,2,3,0) */
+{3, 2, 7, 0, 0, 0, 0, 0}, /* 3B(3,2,3,0) */
+{4, 6, 7, 1, 0, 0, 0, 0}, /* 3C(0,3,3,0) */
+{6, 7, 1, 0, 0, 0, 0, 0}, /* 3D(1,3,3,0) */
+{6, 4, 5, 0, 0, 0, 0, 0}, /* 3E(2,3,3,0) */
+{6, 7, 4, 0, 0, 0, 0, 0}, /* 3F(3,3,3,0) */
+{8, 7, 3, 0, 0, 0, 0, 0}, /* 40(0,0,0,1) */
+{7, 1, 8, 0, 0, 0, 0, 0}, /* 41(1,0,0,1) */
+{8, 3, 0, 0, 0, 0, 0, 0}, /* 42(2,0,0,1) */
+{7, 3, 1, 0, 0, 0, 0, 0}, /* 43(3,0,0,1) */
+{7, 1, 8, 1, 0, 0, 0, 0}, /* 44(0,1,0,1) */
+{5, 1, 8, 4, 0, 0, 0, 0}, /* 45(1,1,0,1) */
+{5, 1, 8, 1, 0, 0, 0, 0}, /* 46(2,1,0,1) */
+{6, 2, 8, 1, 0, 0, 0, 0}, /* 47(3,1,0,1) */
+{8, 3, 1, 0, 0, 0, 0, 0}, /* 48(0,2,0,1) */
+{5, 1, 8, 0, 0, 0, 0, 0}, /* 49(1,2,0,1) */
+{3, 4, 0, 0, 0, 0, 0, 0}, /* 4A(2,2,0,1) */
+{3, 1, 0, 0, 0, 0, 0, 0}, /* 4B(3,2,0,1) */
+{7, 3, 0, 0, 0, 0, 0, 0}, /* 4C(0,3,0,1) */
+{6, 2, 8, 0, 0, 0, 0, 0}, /* 4D(1,3,0,1) */
+{3, 0, 0, 0, 0, 0, 0, 0}, /* 4E(2,3,0,1) */
+{3, 1, 4, 0, 0, 0, 0, 0}, /* 4F(3,3,0,1) */
+{7, 1, 8, 5, 0, 0, 0, 0}, /* 50(0,0,1,1) */
+{1, 8, 7, 0, 0, 0, 0, 0}, /* 51(1,0,1,1) */
+{1, 8, 5, 0, 0, 0, 0, 0}, /* 52(2,0,1,1) */
+{2, 8, 5, 0, 0, 0, 0, 0}, /* 53(3,0,1,1) */
+{1, 8, 7, 1, 0, 0, 0, 0}, /* 54(0,1,1,1) */
+{1, 8, 7, 4, 0, 0, 0, 0}, /* 55(1,1,1,1) */
+{1, 8, 4, 3, 0, 0, 0, 0}, /* 56(2,1,1,1) */
+{2, 8, 4, 3, 0, 0, 0, 0}, /* 57(3,1,1,1) */
+{1, 8, 5, 1, 0, 0, 0, 0}, /* 58(0,2,1,1) */
+{2, 7, 4, 3, 0, 0, 0, 0}, /* 59(1,2,1,1) */
+{1, 4, 3, 4, 0, 0, 0, 0}, /* 5A(2,2,1,1) */
+{2, 4, 3, 0, 0, 0, 0, 0}, /* 5B(3,2,1,1) */
+{2, 8, 5, 1, 0, 0, 0, 0}, /* 5C(0,3,1,1) */
+{1, 7, 4, 3, 0, 0, 0, 0}, /* 5D(1,3,1,1) */
+{1, 4, 3, 0, 0, 0, 0, 0}, /* 5E(2,3,1,1) */
+{2, 4, 3, 4, 0, 0, 0, 0}, /* 5F(3,3,1,1) */
+{8, 5, 3, 0, 0, 0, 0, 0}, /* 60(0,0,2,1) */
+{1, 8, 0, 0, 0, 0, 0, 0}, /* 61(1,0,2,1) */
+{6, 3, 7, 0, 0, 0, 0, 0}, /* 62(2,0,2,1) */
+{1, 6, 0, 0, 0, 0, 0, 0}, /* 63(3,0,2,1) */
+{1, 8, 1, 0, 0, 0, 0, 0}, /* 64(0,1,2,1) */
+{1, 8, 4, 0, 0, 0, 0, 0}, /* 65(1,1,2,1) */
+{2, 4, 6, 7, 0, 0, 0, 0}, /* 66(2,1,2,1) */
+{1, 4, 6, 0, 0, 0, 0, 0}, /* 67(3,1,2,1) */
+{5, 8, 3, 0, 0, 0, 0, 0}, /* 68(0,2,2,1) */
+{5, 7, 1, 8, 0, 0, 0, 0}, /* 69(1,2,2,1) */
+{3, 7, 4, 0, 0, 0, 0, 0}, /* 6A(2,2,2,1) */
+{3, 7, 1, 0, 0, 0, 0, 0}, /* 6B(3,2,2,1) */
+{5, 3, 0, 0, 0, 0, 0, 0}, /* 6C(0,3,2,1) */
+{6, 1, 8, 0, 0, 0, 0, 0}, /* 6D(1,3,2,1) */
+{3, 7, 0, 0, 0, 0, 0, 0}, /* 6E(2,3,2,1) */
+{1, 6, 4, 0, 0, 0, 0, 0}, /* 6F(3,3,2,1) */
+{7, 6, 3, 0, 0, 0, 0, 0}, /* 70(0,0,3,1) */
+{2, 8, 0, 0, 0, 0, 0, 0}, /* 71(1,0,3,1) */
+{6, 3, 0, 0, 0, 0, 0, 0}, /* 72(2,0,3,1) */
+{6, 7, 3, 0, 0, 0, 0, 0}, /* 73(3,0,3,1) */
+{2, 8, 1, 0, 0, 0, 0, 0}, /* 74(0,1,3,1) */
+{2, 8, 4, 0, 0, 0, 0, 0}, /* 75(1,1,3,1) */
+{2, 4, 6, 0, 0, 0, 0, 0}, /* 76(2,1,3,1) */
+{1, 4, 6, 7, 0, 0, 0, 0}, /* 77(3,1,3,1) */
+{6, 3, 1, 0, 0, 0, 0, 0}, /* 78(0,2,3,1) */
+{5, 2, 8, 0, 0, 0, 0, 0}, /* 79(1,2,3,1) */
+{6, 3, 4, 0, 0, 0, 0, 0}, /* 7A(2,2,3,1) */
+{3, 1, 7, 0, 0, 0, 0, 0}, /* 7B(3,2,3,1) */
+{6, 7, 3, 1, 0, 0, 0, 0}, /* 7C(0,3,3,1) */
+{6, 7, 1, 8, 0, 0, 0, 0}, /* 7D(1,3,3,1) */
+{6, 8, 3, 0, 0, 0, 0, 0}, /* 7E(2,3,3,1) */
+{6, 8, 7, 3, 0, 0, 0, 0}, /* 7F(3,3,3,1) */
+{8, 4, 2, 0, 0, 0, 0, 0}, /* 80(0,0,0,2) */
+{8, 2, 0, 0, 0, 0, 0, 0}, /* 81(1,0,0,2) */
+{8, 3, 8, 0, 0, 0, 0, 0}, /* 82(2,0,0,2) */
+{4, 2, 5, 0, 0, 0, 0, 0}, /* 83(3,0,0,2) */
+{8, 2, 1, 0, 0, 0, 0, 0}, /* 84(0,1,0,2) */
+{6, 2, 4, 0, 0, 0, 0, 0}, /* 85(1,1,0,2) */
+{5, 8, 0, 0, 0, 0, 0, 0}, /* 86(2,1,0,2) */
+{5, 6, 0, 0, 0, 0, 0, 0}, /* 87(3,1,0,2) */
+{8, 3, 8, 1, 0, 0, 0, 0}, /* 88(0,2,0,2) */
+{5, 8, 1, 0, 0, 0, 0, 0}, /* 89(1,2,0,2) */
+{3, 8, 4, 0, 0, 0, 0, 0}, /* 8A(2,2,0,2) */
+{3, 8, 1, 0, 0, 0, 0, 0}, /* 8B(3,2,0,2) */
+{4, 6, 2, 0, 0, 0, 0, 0}, /* 8C(0,3,0,2) */
+{6, 2, 0, 0, 0, 0, 0, 0}, /* 8D(1,3,0,2) */
+{3, 8, 0, 0, 0, 0, 0, 0}, /* 8E(2,3,0,2) */
+{6, 4, 2, 0, 0, 0, 0, 0}, /* 8F(3,3,0,2) */
+{8, 2, 5, 0, 0, 0, 0, 0}, /* 90(0,0,1,2) */
+{2, 7, 0, 0, 0, 0, 0, 0}, /* 91(1,0,1,2) */
+{1, 5, 8, 0, 0, 0, 0, 0}, /* 92(2,0,1,2) */
+{2, 5, 0, 0, 0, 0, 0, 0}, /* 93(3,0,1,2) */
+{2, 7, 1, 0, 0, 0, 0, 0}, /* 94(0,1,1,2) */
+{2, 7, 4, 0, 0, 0, 0, 0}, /* 95(1,1,1,2) */
+{1, 8, 3, 8, 0, 0, 0, 0}, /* 96(2,1,1,2) */
+{2, 4, 5, 0, 0, 0, 0, 0}, /* 97(3,1,1,2) */
+{1, 5, 8, 1, 0, 0, 0, 0}, /* 98(0,2,1,2) */
+{5, 8, 1, 7, 0, 0, 0, 0}, /* 99(1,2,1,2) */
+{3, 7, 4, 2, 0, 0, 0, 0}, /* 9A(2,2,1,2) */
+{3, 7, 2, 0, 0, 0, 0, 0}, /* 9B(3,2,1,2) */
+{2, 5, 1, 0, 0, 0, 0, 0}, /* 9C(0,3,1,2) */
+{6, 2, 7, 0, 0, 0, 0, 0}, /* 9D(1,3,1,2) */
+{1, 3, 8, 0, 0, 0, 0, 0}, /* 9E(2,3,1,2) */
+{2, 5, 4, 0, 0, 0, 0, 0}, /* 9F(3,3,1,2) */
+{4, 3, 4, 3, 0, 0, 0, 0}, /* A0(0,0,2,2) */
+{3, 4, 3, 1, 0, 0, 0, 0}, /* A1(1,0,2,2) */
+{6, 3, 8, 7, 0, 0, 0, 0}, /* A2(2,0,2,2) */
+{5, 4, 3, 1, 0, 0, 0, 0}, /* A3(3,0,2,2) */
+{3, 4, 3, 0, 0, 0, 0, 0}, /* A4(0,1,2,2) */
+{3, 7, 6, 4, 0, 0, 0, 0}, /* A5(1,1,2,2) */
+{5, 8, 7, 0, 0, 0, 0, 0}, /* A6(2,1,2,2) */
+{5, 7, 6, 0, 0, 0, 0, 0}, /* A7(3,1,2,2) */
+{3, 8, 4, 3, 0, 0, 0, 0}, /* A8(0,2,2,2) */
+{5, 8, 7, 1, 0, 0, 0, 0}, /* A9(1,2,2,2) */
+{3, 8, 7, 4, 0, 0, 0, 0}, /* AA(2,2,2,2) */
+{3, 8, 7, 1, 0, 0, 0, 0}, /* AB(3,2,2,2) */
+{5, 4, 3, 0, 0, 0, 0, 0}, /* AC(0,3,2,2) */
+{3, 7, 6, 0, 0, 0, 0, 0}, /* AD(1,3,2,2) */
+{3, 8, 7, 0, 0, 0, 0, 0}, /* AE(2,3,2,2) */
+{5, 7, 6, 4, 0, 0, 0, 0}, /* AF(3,3,2,2) */
+{4, 2, 0, 0, 0, 0, 0, 0}, /* B0(0,0,3,2) */
+{2, 0, 0, 0, 0, 0, 0, 0}, /* B1(1,0,3,2) */
+{6, 3, 8, 0, 0, 0, 0, 0}, /* B2(2,0,3,2) */
+{2, 5, 7, 0, 0, 0, 0, 0}, /* B3(3,0,3,2) */
+{2, 1, 0, 0, 0, 0, 0, 0}, /* B4(0,1,3,2) */
+{2, 4, 0, 0, 0, 0, 0, 0}, /* B5(1,1,3,2) */
+{6, 5, 8, 0, 0, 0, 0, 0}, /* B6(2,1,3,2) */
+{5, 6, 7, 0, 0, 0, 0, 0}, /* B7(3,1,3,2) */
+{6, 3, 8, 1, 0, 0, 0, 0}, /* B8(0,2,3,2) */
+{5, 7, 2, 0, 0, 0, 0, 0}, /* B9(1,2,3,2) */
+{5, 7, 4, 2, 0, 0, 0, 0}, /* BA(2,2,3,2) */
+{3, 8, 1, 7, 0, 0, 0, 0}, /* BB(3,2,3,2) */
+{2, 5, 7, 1, 0, 0, 0, 0}, /* BC(0,3,3,2) */
+{6, 8, 2, 0, 0, 0, 0, 0}, /* BD(1,3,3,2) */
+{6, 8, 3, 8, 0, 0, 0, 0}, /* BE(2,3,3,2) */
+{6, 8, 4, 2, 0, 0, 0, 0}, /* BF(3,3,3,2) */
+{7, 4, 0, 0, 0, 0, 0, 0}, /* C0(0,0,0,3) */
+{7, 1, 0, 0, 0, 0, 0, 0}, /* C1(1,0,0,3) */
+{4, 5, 0, 0, 0, 0, 0, 0}, /* C2(2,0,0,3) */
+{7, 3, 1, 8, 0, 0, 0, 0}, /* C3(3,0,0,3) */
+{7, 0, 0, 0, 0, 0, 0, 0}, /* C4(0,1,0,3) */
+{5, 1, 4, 0, 0, 0, 0, 0}, /* C5(1,1,0,3) */
+{5, 0, 0, 0, 0, 0, 0, 0}, /* C6(2,1,0,3) */
+{5, 6, 8, 0, 0, 0, 0, 0}, /* C7(3,1,0,3) */
+{4, 5, 1, 0, 0, 0, 0, 0}, /* C8(0,2,0,3) */
+{5, 1, 0, 0, 0, 0, 0, 0}, /* C9(1,2,0,3) */
+{5, 4, 0, 0, 0, 0, 0, 0}, /* CA(2,2,0,3) */
+{3, 1, 8, 0, 0, 0, 0, 0}, /* CB(3,2,0,3) */
+{4, 6, 7, 2, 0, 0, 0, 0}, /* CC(0,3,0,3) */
+{6, 7, 2, 0, 0, 0, 0, 0}, /* CD(1,3,0,3) */
+{3, 1, 8, 1, 0, 0, 0, 0}, /* CE(2,3,0,3) */
+{6, 7, 4, 2, 0, 0, 0, 0}, /* CF(3,3,0,3) */
+{7, 1, 5, 0, 0, 0, 0, 0}, /* D0(0,0,1,3) */
+{1, 7, 0, 0, 0, 0, 0, 0}, /* D1(1,0,1,3) */
+{1, 5, 0, 0, 0, 0, 0, 0}, /* D2(2,0,1,3) */
+{2, 5, 8, 0, 0, 0, 0, 0}, /* D3(3,0,1,3) */
+{1, 7, 1, 0, 0, 0, 0, 0}, /* D4(0,1,1,3) */
+{1, 7, 4, 0, 0, 0, 0, 0}, /* D5(1,1,1,3) */
+{1, 4, 5, 0, 0, 0, 0, 0}, /* D6(2,1,1,3) */
+{2, 8, 3, 8, 0, 0, 0, 0}, /* D7(3,1,1,3) */
+{1, 5, 1, 0, 0, 0, 0, 0}, /* D8(0,2,1,3) */
+{5, 1, 7, 0, 0, 0, 0, 0}, /* D9(1,2,1,3) */
+{1, 5, 4, 0, 0, 0, 0, 0}, /* DA(2,2,1,3) */
+{3, 2, 8, 0, 0, 0, 0, 0}, /* DB(3,2,1,3) */
+{2, 5, 8, 1, 0, 0, 0, 0}, /* DC(0,3,1,3) */
+{6, 8, 1, 7, 0, 0, 0, 0}, /* DD(1,3,1,3) */
+{3, 2, 8, 1, 0, 0, 0, 0}, /* DE(2,3,1,3) */
+{3, 2, 8, 4, 0, 0, 0, 0}, /* DF(3,3,1,3) */
+{4, 0, 0, 0, 0, 0, 0, 0}, /* E0(0,0,2,3) */
+{1, 0, 0, 0, 0, 0, 0, 0}, /* E1(1,0,2,3) */
+{1, 5, 7, 0, 0, 0, 0, 0}, /* E2(2,0,2,3) */
+{1, 6, 8, 0, 0, 0, 0, 0}, /* E3(3,0,2,3) */
+{0, 0, 0, 0, 0, 0, 0, 0}, /* E4(0,1,2,3) */
+{1, 4, 0, 0, 0, 0, 0, 0}, /* E5(1,1,2,3) */
+{5, 7, 0, 0, 0, 0, 0, 0}, /* E6(2,1,2,3) */
+{6, 8, 0, 0, 0, 0, 0, 0}, /* E7(3,1,2,3) */
+{3, 8, 3, 0, 0, 0, 0, 0}, /* E8(0,2,2,3) */
+{5, 7, 1, 0, 0, 0, 0, 0}, /* E9(1,2,2,3) */
+{5, 7, 4, 0, 0, 0, 0, 0}, /* EA(2,2,2,3) */
+{3, 7, 1, 8, 0, 0, 0, 0}, /* EB(3,2,2,3) */
+{6, 4, 6, 0, 0, 0, 0, 0}, /* EC(0,3,2,3) */
+{6, 8, 1, 0, 0, 0, 0, 0}, /* ED(1,3,2,3) */
+{3, 7, 1, 8, 1, 0, 0, 0}, /* EE(2,3,2,3) */
+{6, 8, 4, 0, 0, 0, 0, 0}, /* EF(3,3,2,3) */
+{7, 6, 4, 3, 0, 0, 0, 0}, /* F0(0,0,3,3) */
+{6, 7, 6, 1, 0, 0, 0, 0}, /* F1(1,0,3,3) */
+{6, 4, 3, 0, 0, 0, 0, 0}, /* F2(2,0,3,3) */
+{6, 7, 4, 3, 0, 0, 0, 0}, /* F3(3,0,3,3) */
+{6, 7, 6, 0, 0, 0, 0, 0}, /* F4(0,1,3,3) */
+{2, 4, 3, 4, 3, 0, 0, 0}, /* F5(1,1,3,3) */
+{6, 8, 5, 0, 0, 0, 0, 0}, /* F6(2,1,3,3) */
+{6, 8, 7, 0, 0, 0, 0, 0}, /* F7(3,1,3,3) */
+{6, 4, 3, 1, 0, 0, 0, 0}, /* F8(0,2,3,3) */
+{6, 8, 5, 1, 0, 0, 0, 0}, /* F9(1,2,3,3) */
+{6, 4, 3, 4, 0, 0, 0, 0}, /* FA(2,2,3,3) */
+{3, 1, 8, 7, 0, 0, 0, 0}, /* FB(3,2,3,3) */
+{6, 7, 4, 6, 0, 0, 0, 0}, /* FC(0,3,3,3) */
+{6, 8, 7, 1, 0, 0, 0, 0}, /* FD(1,3,3,3) */
+{6, 8, 4, 3, 0, 0, 0, 0}, /* FE(2,3,3,3) */
+{6, 8, 7, 4, 0, 0, 0, 0}, /* FF(3,3,3,3) */
+};
 
+// #define BGBCC_JX2_SHUFW_ID(w0, w1, w2, w3)	\
+//	((w0) | ((w1)<<2) | ((w2)<<4) | ((w3)<<6))
+
+
+int BGBCC_JX2_EmitShufWord_IdToOp(BGBCC_JX2_Context *ctx, int id)
+{
+	int op;
+
+	switch(id)
+	{
+	case 0: op=-1; break;
+	case 1: op=BGBCC_SH_NMID_SWAPLW; break;
+	case 2: op=BGBCC_SH_NMID_SWAPW; break;
+	case 3: op=BGBCC_SH_NMID_SWAPL; break;
+	case 4: op=BGBCC_SH_NMID_SWCPLW; break;
+	case 5: op=BGBCC_SH_NMID_SWAPMW; break;
+	case 6: op=BGBCC_SH_NMID_SWAPHW; break;
+	case 7: op=BGBCC_SH_NMID_SWCPMW; break;
+	case 8: op=BGBCC_SH_NMID_SWCPHW; break;
+
+	default: op=-1; break;
+	}
+	return(op);
+}
+
+int BGBCC_JX2_EmitShufByte_IdToOp(BGBCC_JX2_Context *ctx, int id)
+{
+	int op;
+
+	switch(id)
+	{
+	case 0: op=-1; break;
+	case 1: op=BGBCC_SH_NMID_SWAPLB; break;
+	case 2: op=BGBCC_SH_NMID_SWAPB; break;
+	case 3: op=BGBCC_SH_NMID_SWAPLW; break;
+	case 4: op=BGBCC_SH_NMID_SWCPLB; break;
+	case 5: op=BGBCC_SH_NMID_SWAPMB; break;
+	case 6: op=BGBCC_SH_NMID_SWAPHB; break;
+	case 7: op=BGBCC_SH_NMID_SWCPMB; break;
+	case 8: op=BGBCC_SH_NMID_SWCPHB; break;
+	default: op=-1; break;
+	}
+	return(op);
+}
+
+int BGBCC_JX2_EmitShufWord(BGBCC_JX2_Context *ctx, int reg, int shuf)
+{
+	return(BGBCC_JX2_EmitShufWordRegReg(ctx, reg, shuf, reg));
+}
+
+int BGBCC_JX2_EmitShufByte(BGBCC_JX2_Context *ctx, int reg, int shuf)
+{
+	return(BGBCC_JX2_EmitShufByteRegReg(ctx, reg, shuf, reg));
+}
+
+int BGBCC_JX2_EmitShufWordRegReg(BGBCC_JX2_Context *ctx,
+	int sreg, int shuf, int dreg)
+{
+	int op1, op2, op3, op4;
+	int op5, op6, op7, op8;
+	int treg;
+
+	shuf&=255;
+	
+	op1=BGBCC_JX2_EmitShufWord_IdToOp(ctx, bgbcc_jx2_wshuftab[shuf][0]);
+	op2=BGBCC_JX2_EmitShufWord_IdToOp(ctx, bgbcc_jx2_wshuftab[shuf][1]);
+	op3=BGBCC_JX2_EmitShufWord_IdToOp(ctx, bgbcc_jx2_wshuftab[shuf][2]);
+	op4=BGBCC_JX2_EmitShufWord_IdToOp(ctx, bgbcc_jx2_wshuftab[shuf][3]);
+
+	op5=BGBCC_JX2_EmitShufWord_IdToOp(ctx, bgbcc_jx2_wshuftab[shuf][4]);
+	op6=BGBCC_JX2_EmitShufWord_IdToOp(ctx, bgbcc_jx2_wshuftab[shuf][5]);
+	op7=BGBCC_JX2_EmitShufWord_IdToOp(ctx, bgbcc_jx2_wshuftab[shuf][6]);
+	op8=BGBCC_JX2_EmitShufWord_IdToOp(ctx, bgbcc_jx2_wshuftab[shuf][7]);
+	
+	if(op1<0)
+	{
+		if(sreg!=dreg)
+		{
+			BGBCC_JX2_EmitOpRegReg(ctx, BGBCC_SH_NMID_MOV, sreg, dreg);
+			return(1);
+		}
+		return(1);
+	}else
+	{
+		treg=dreg;
+		if(BGBCC_JX2_EmitCheckRegExt4(ctx, dreg) && (op3>=0))
+			treg=BGBCC_SH_REG_R1;
+	
+		if(sreg!=treg)
+		{
+			BGBCC_JX2_EmitOpRegReg(ctx, op1, sreg, treg);
+		}else
+		{
+			BGBCC_JX2_EmitOpReg(ctx, op1, dreg);
+		}
+	}	
+	
+	if(treg!=dreg)
+	{
+	//	if(op1>=0)		{ BGBCC_JX2_EmitOpReg(ctx, op1, treg); }
+		if(op2>=0)
+		{
+			if(op3<0)
+			{
+				BGBCC_JX2_EmitOpRegReg(ctx, op2, treg, dreg);
+				return(1);
+			}
+			BGBCC_JX2_EmitOpReg(ctx, op2, treg);
+		}
+		if(op3>=0)
+		{
+			if(op4<0)
+			{
+				BGBCC_JX2_EmitOpRegReg(ctx, op3, treg, dreg);
+				return(1);
+			}
+			BGBCC_JX2_EmitOpReg(ctx, op3, treg);
+		}
+		if(op4>=0)
+		{
+			if(op5<0)
+			{
+				BGBCC_JX2_EmitOpRegReg(ctx, op4, treg, dreg);
+				return(1);
+			}
+			BGBCC_JX2_EmitOpReg(ctx, op4, treg);
+		}
+		if(op5>=0)
+		{
+			if(op6<0)
+			{
+				BGBCC_JX2_EmitOpRegReg(ctx, op5, treg, dreg);
+				return(1);
+			}
+			BGBCC_JX2_EmitOpReg(ctx, op5, treg);
+		}
+		if(op6>=0)		{ BGBCC_JX2_EmitOpReg(ctx, op6, treg); }
+		if(op7>=0)		{ BGBCC_JX2_EmitOpReg(ctx, op7, treg); }
+		if(op8>=0)		{ BGBCC_JX2_EmitOpReg(ctx, op8, treg); }
+
+		BGBCC_JX2_EmitOpRegReg(ctx, BGBCC_SH_NMID_MOV, treg, dreg);
+		return(1);
+	}else
+	{
+	//	if(op1>=0)		{ BGBCC_JX2_EmitOpReg(ctx, op1, treg); }
+		if(op2>=0)		{ BGBCC_JX2_EmitOpReg(ctx, op2, treg); }
+		if(op3>=0)		{ BGBCC_JX2_EmitOpReg(ctx, op3, treg); }
+		if(op4>=0)		{ BGBCC_JX2_EmitOpReg(ctx, op4, treg); }
+		if(op5>=0)		{ BGBCC_JX2_EmitOpReg(ctx, op5, treg); }
+		if(op6>=0)		{ BGBCC_JX2_EmitOpReg(ctx, op6, treg); }
+		if(op7>=0)		{ BGBCC_JX2_EmitOpReg(ctx, op7, treg); }
+		if(op8>=0)		{ BGBCC_JX2_EmitOpReg(ctx, op8, treg); }
+		return(1);
+	}
+
+	return(1);
+}
+
+int BGBCC_JX2_EmitShufByteRegReg(BGBCC_JX2_Context *ctx,
+	int sreg, int shuf, int dreg)
+{
+	int op1, op2, op3, op4;
+	int op5, op6, op7, op8;
+	int treg;
+
+	shuf&=255;
+	
+	op1=BGBCC_JX2_EmitShufByte_IdToOp(ctx, bgbcc_jx2_wshuftab[shuf][0]);
+	op2=BGBCC_JX2_EmitShufByte_IdToOp(ctx, bgbcc_jx2_wshuftab[shuf][1]);
+	op3=BGBCC_JX2_EmitShufByte_IdToOp(ctx, bgbcc_jx2_wshuftab[shuf][2]);
+	op4=BGBCC_JX2_EmitShufByte_IdToOp(ctx, bgbcc_jx2_wshuftab[shuf][3]);
+
+	op5=BGBCC_JX2_EmitShufByte_IdToOp(ctx, bgbcc_jx2_wshuftab[shuf][4]);
+	op6=BGBCC_JX2_EmitShufByte_IdToOp(ctx, bgbcc_jx2_wshuftab[shuf][5]);
+	op7=BGBCC_JX2_EmitShufByte_IdToOp(ctx, bgbcc_jx2_wshuftab[shuf][6]);
+	op8=BGBCC_JX2_EmitShufByte_IdToOp(ctx, bgbcc_jx2_wshuftab[shuf][7]);
+	
+	if(op1<0)
+	{
+		if(sreg!=dreg)
+		{
+			BGBCC_JX2_EmitOpRegReg(ctx, BGBCC_SH_NMID_MOV, sreg, dreg);
+			return(1);
+		}
+		return(1);
+	}else
+	{
+		treg=dreg;
+		if(BGBCC_JX2_EmitCheckRegExt4(ctx, dreg))
+			treg=BGBCC_SH_REG_R1;
+	
+//		if(sreg!=dreg)
+		if(sreg!=treg)
+		{
+//			BGBCC_JX2_EmitOpRegReg(ctx, op1, sreg, dreg);
+			BGBCC_JX2_EmitOpRegReg(ctx, op1, sreg, treg);
+		}else
+		{
+			BGBCC_JX2_EmitOpReg(ctx, op1, dreg);
+		}
+	}
+	
+//	if(op1>=0)		{ BGBCC_JX2_EmitOpReg(ctx, op1, treg); }
+	if(op2>=0)		{ BGBCC_JX2_EmitOpReg(ctx, op2, treg); }
+	if(op3>=0)		{ BGBCC_JX2_EmitOpReg(ctx, op3, treg); }
+	if(op4>=0)		{ BGBCC_JX2_EmitOpReg(ctx, op4, treg); }
+	if(op5>=0)		{ BGBCC_JX2_EmitOpReg(ctx, op5, treg); }
+	if(op6>=0)		{ BGBCC_JX2_EmitOpReg(ctx, op6, treg); }
+	if(op7>=0)		{ BGBCC_JX2_EmitOpReg(ctx, op7, treg); }
+	if(op8>=0)		{ BGBCC_JX2_EmitOpReg(ctx, op8, treg); }
+	
+	if(treg!=dreg)
+	{
+		BGBCC_JX2_EmitOpRegReg(ctx, BGBCC_SH_NMID_MOV, treg, dreg);
+		return(1);
+	}
+	
+	return(1);
+}
+
+u64 *bgbcc_jx2_shuftab8b=NULL;
+u64 *bgbcc_jx2_shufovf8b=NULL;
+
+int BGBCC_JX2_InitShufByte8(BGBCC_JX2_Context *ctx)
+{
+	char tb[256];
+	FILE *fd;
+	char *base;
+	u64 v;
+	int i, j, k;
+	
+	if(bgbcc_jx2_shuftab8b)
+		return(0);
+	
+	base=BGBCC_CCXL_GetBasePath();
+	if(!base)
+		return(-1);
+
+	sprintf(tb, "%s/swaps_tab8b.dat", base);
+	fd=fopen(tb, "rb");
+	if(!fd)
+		return(-1);
+		
+	bgbcc_jx2_shuftab8b=malloc(16777216*sizeof(u64));
+	
+	for(i=0; i<16777216; i++)
+	{
+		fread(&v, 1, 8, fd);
+		bgbcc_jx2_shuftab8b[i]=v;
+	}
+
+	fread(&v, 1, 8, fd);
+	k=(int)v;
+	if((k>0) && (k<16777216))
+	{
+		bgbcc_jx2_shufovf8b=malloc(k*sizeof(u64));
+		for(i=0; i<k; i++)
+		{
+			fread(&v, 1, 8, fd);
+			bgbcc_jx2_shufovf8b[i]=v;
+		}
+	}
+	
+	fclose(fd);
+
+	return(0);
+}
+
+int BGBCC_JX2_EmitShufByte8_IdToOp(BGBCC_JX2_Context *ctx, int id)
+{
+	int op;
+
+	switch(id)
+	{
+	case 0: op=-1; break;
+	case 1: op=BGBCC_SH_NMID_SWAPLB; break;
+	case 2: op=BGBCC_SH_NMID_SWAPB; break;
+	case 3: op=BGBCC_SH_NMID_SWAPLW; break;
+	case 4: op=BGBCC_SH_NMID_SWCPLB; break;
+	case 5: op=BGBCC_SH_NMID_SWAPMB; break;
+	case 6: op=BGBCC_SH_NMID_SWAPHB; break;
+
+	case 7: op=BGBCC_SH_NMID_SWAPW; break;
+	case 8: op=BGBCC_SH_NMID_SWAPL; break;
+	case 9: op=BGBCC_SH_NMID_SWCPLW; break;
+	case 10: op=BGBCC_SH_NMID_SWAPMW; break;
+	case 11: op=BGBCC_SH_NMID_SWAPHW; break;
+
+	case 12: op=BGBCC_SH_NMID_SWCPMB; break;
+	case 13: op=BGBCC_SH_NMID_SWCPHB; break;
+	case 14: op=BGBCC_SH_NMID_SWCPMW; break;
+	case 15: op=BGBCC_SH_NMID_SWCPHW; break;
+
+	default: op=-1; break;
+	}
+	return(op);
+}
+
+int BGBCC_JX2_EmitShufByte8B(BGBCC_JX2_Context *ctx, int reg, int shuf)
+{
+	u64 opv, opv1, opv2;
+	int op;
+	int i, j, k;
+
+	BGBCC_JX2_InitShufByte8(ctx);
+	
+	if(!bgbcc_jx2_shuftab8b)
+	{
+		BGBCC_DBGBREAK
+		return(0);
+	}
+	
+	shuf=shuf&16777215;
+	opv=bgbcc_jx2_shuftab8b[shuf];
+	
+	if(((opv>>60)&15)==15)
+	{
+		if((opv>>56)&8)
+		{
+			opv1=bgbcc_jx2_shufovf8b[((opv>>32)+0)&0xFFFFFF];
+			opv2=bgbcc_jx2_shufovf8b[((opv>>32)+1)&0xFFFFFF];
+		}else
+		{
+			opv1=bgbcc_jx2_shufovf8b[(opv>>32)&0xFFFFFF];
+			opv2=0;
+		}
+
+		for(i=0; i<16; i++)
+		{
+			op=BGBCC_JX2_EmitShufByte8_IdToOp(ctx, (opv1>>(i*4))&15);
+			if(op>=0)	{ BGBCC_JX2_EmitOpReg(ctx, op, reg); }
+		}
+		
+		if(opv2)
+		{
+			for(i=0; i<16; i++)
+			{
+				op=BGBCC_JX2_EmitShufByte8_IdToOp(ctx, (opv2>>(i*4))&15);
+				if(op>=0)	{ BGBCC_JX2_EmitOpReg(ctx, op, reg); }
+			}
+		}
+		
+		for(i=0; i<8; i++)
+		{
+			op=BGBCC_JX2_EmitShufByte8_IdToOp(ctx, (opv>>(i*4))&15);
+			if(op>=0)	{ BGBCC_JX2_EmitOpReg(ctx, op, reg); }
+		}
+		
+		return(1);
+	
+//		BGBCC_DBGBREAK
+//		return(0);
+	}
+	
+	for(i=0; i<16; i++)
+	{
+		op=BGBCC_JX2_EmitShufByte8_IdToOp(ctx, (opv>>(i*4))&15);
+		if(op>=0)	{ BGBCC_JX2_EmitOpReg(ctx, op, reg); }
+	}
+	
+	return(1);
+}

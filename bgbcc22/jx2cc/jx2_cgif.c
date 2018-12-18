@@ -75,13 +75,16 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	shctx->has_misalgn=1;
 	shctx->has_bjx1mov=1;
 	shctx->has_bjx1ari=1;
-	shctx->has_bjx1breq=0;
+//	shctx->has_bjx1breq=0;
+	shctx->has_bjx1breq=1;
+	shctx->has_addsl=1;
 	
 //	shctx->no_fpu=1;
 	shctx->no_ext32=0;
 //	shctx->fpu_soft=1;
 	shctx->fpu_lite=0;
 	shctx->is_addr_x32=0;
+	shctx->use_padcross=0;
 	
 	if(ctx->sub_arch==BGBCC_ARCH_BJX2_JX2B)
 	{
@@ -156,6 +159,8 @@ bool BGBCC_JX2C_TypeIntRegP(BGBCC_TransState *ctx, ccxl_type ty)
 			return(true);
 		if(BGBCC_CCXL_TypeFloat16P(ctx, ty))
 			return(true);
+		if(BGBCC_CCXL_TypeBFloat16P(ctx, ty))
+			return(true);
 	}
 
 	if(ty.val==0x000F)
@@ -212,6 +217,8 @@ bool BGBCC_JX2C_TypeFloatRegP(BGBCC_TransState *ctx, ccxl_type ty)
 	if(BGBCC_CCXL_TypeFloatP(ctx, ty))
 		return(true);
 	if(BGBCC_CCXL_TypeFloat16P(ctx, ty))
+		return(true);
+	if(BGBCC_CCXL_TypeBFloat16P(ctx, ty))
 		return(true);
 
 //	if(BGBCC_CCXL_TypeDoubleP(ctx, ty))
@@ -3798,10 +3805,23 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	BGBCC_JX2_EmitNamedLabel(sctx, "_end");
 	BGBCC_JX2_EmitNamedLabel(sctx, "__bss_end");
 
+	if(ctx->n_error)
+	{
+		printf("Errors Seen (CGEN)\n");
+		return(-1);
+	}
+
 	if((imgfmt==BGBCC_IMGFMT_EXE) ||
 		(imgfmt==BGBCC_IMGFMT_DLL))
 	{
 		BGBCC_JX2C_FlattenImagePECOFF(ctx, obuf, rosz, imgfmt);
+
+		if(ctx->n_error)
+		{
+			printf("Errors Seen (IMG)\n");
+			return(-1);
+		}
+
 		return(1);
 	}
 
@@ -3815,6 +3835,13 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	if(imgfmt==BGBCC_IMGFMT_ROM)
 	{
 		BGBCC_JX2C_FlattenImageROM(ctx, obuf, rosz, imgfmt);
+
+		if(ctx->n_error)
+		{
+			printf("Errors Seen (IMG)\n");
+			return(-1);
+		}
+
 		return(1);
 	}
 
@@ -3824,5 +3851,5 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 		return(1);
 	}
 
-	return(0);
+	return(-1);
 }

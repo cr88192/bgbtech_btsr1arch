@@ -33,7 +33,7 @@ module Jx2ExUnit(
 	memOpm,			memOK,
 
 	mmioInData,		mmioOutData,	mmioAddr,		
-	mmioOpm,		mmioOK
+	mmioOpm,		mmioOK,			mmioExc
 	);
 
 input			clock;			//clock
@@ -50,6 +50,7 @@ output[31:0]	mmioOutData;	//mmio data out
 output[31:0]	mmioAddr;		//mmio address
 output[4:0]		mmioOpm;		//mmio read
 input[1:0]		mmioOK;			//mmio OK
+input[15:0]		mmioExc;		//mmio EXC (Interrupt)
 
 
 /* Conjoined Memory Cache */
@@ -367,6 +368,8 @@ Jx2ExOp		exOp(
 reg[7:0]		exOpCmdFp;			//command opcode
 reg[7:0]		exRegIdIxtFp;		//ALU Index / Opcode Extension
 
+reg[63:0]		exRegValRmFp;		//Rm input value (FPU)
+
 wire[63:0]		exRegOutValFn;		//FRn output value
 wire[6:0]		exRegOutIdFn;		//FRn, value to write
 wire[1:0]		exRegOutFpOK;		//execute status (FPU)
@@ -381,6 +384,7 @@ Jx2FpuExOp	exFpOp(
 	exRegOutIdFn,	exRegOutValFn,
 	exRegOutFpOK,
 
+	exRegValRmFp,
 	exMemDataLd,	exMemDataOK,
 	exCtlInDlr,		exCtlOutFpDlr
 	);
@@ -420,14 +424,14 @@ begin
 	end
 
 `ifndef JX2_MEM_USELSQ			//Use Load-Store Queue
-	if(dcRegOutOK==UMEM_OK_HOLD)
-	begin
+//	if(dcRegOutOK==UMEM_OK_HOLD)
+//	begin
 `ifndef JX2_QUIET
-		if(!exLastHold)
-			$display("D$ Hold");
+//		if(!exLastHold)
+//			$display("D$ Hold");
 `endif
-		exHold		= 1;
-	end
+//		exHold		= 1;
+//	end
 `endif
 
 	if(icRegOutPcOK==UMEM_OK_HOLD)
@@ -458,6 +462,23 @@ begin
 
 	exRegExc=memRegOutExc;
 	exRegTea=memRegOutTea;
+
+	if(mmioExc[15])
+	begin
+		if(mmioExc[14])
+		begin
+			/* Normal Interrupt */
+			if(!gprOregSr[28] && gprOregSr[3])
+			begin
+				exRegExc=mmioExc;
+			end
+		end
+		else
+		begin
+			/* Fault */
+			exRegExc=mmioExc;
+		end
+	end
 
 //	exRegExc = 0;
 
@@ -757,14 +778,18 @@ begin
 		exRegStepPc		<= gprRegStepPc;
 
 		exRegValRm		<= gprRegValRm;
-		exRegValRn		<= gprRegValRn;
-		exRegValRi		<= gprRegValRi;
 		exRegValRmB		<= gprRegValRm;
-		exRegValRiB		<= gprRegValRi;
 		exRegValRmC		<= gprRegValRm;
+
+		exRegValRi		<= gprRegValRi;
+		exRegValRiB		<= gprRegValRi;
 		exRegValRiC		<= gprRegValRi;
-		exRegValRb		<= gprIdUIxt[3] ? gprRegValRm : gprRegValRn;
-//		exRegValRb		<= UV64_XX;
+		exRegValRmFp	<= gprRegValRi;
+
+		exRegValRn		<= gprRegValRn;
+		
+//		exRegValRb		<= gprIdUIxt[3] ? gprRegValRm : gprRegValRn;
+		exRegValRb		<= UV64_XX;
 		exRegValCm		<= gprRegValCm;
 		exImmValRi		<= gprIdImm;
 //		exIdInGenPc		<= (gprIdValPc+2);

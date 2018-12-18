@@ -108,6 +108,7 @@ reg[31:0]	tlbAccCD;
 
 reg[31:0]	tlbAddr;
 reg[31:0]	tlbAcc;
+reg			tlbIs32b;
 
 wire[15:0]	tTlbExc;
 
@@ -140,7 +141,12 @@ begin
 //	icBlkBypass	= (regInAddr[47:45]==3'b101) ||
 //		((regInAddr[31:29]==3'b101) && icReqLow4GB);
 	
-	tlbMmuEnable = regInMMCR[0];
+	tlbMmuEnable	= regInMMCR[0];
+	tlbIs32b		= regInSR[31];
+	if(regInMMCR[2] && !regInSR[30])
+		tlbIs32b		= 1;
+	if(regInMMCR[3] && regInSR[30])
+		tlbIs32b		= 1;
 	
 	if(tlbMmuEnable)
 	begin
@@ -160,10 +166,19 @@ begin
 	tlbHdatC = { tlbBlkHiC[tlbHixA], tlbBlkLoC[tlbHixA]};
 	tlbHdatD = { tlbBlkHiD[tlbHixA], tlbBlkLoD[tlbHixA]};
 	
-	tlbHitA = (regInAddr [47:12] == tlbHdatA[111:76]) && tlbHdatA[0];
-	tlbHitB = (regInAddr [47:12] == tlbHdatB[111:76]) && tlbHdatB[0];
-	tlbHitC = (regInAddr [47:12] == tlbHdatC[111:76]) && tlbHdatC[0];
-	tlbHitD = (regInAddr [47:12] == tlbHdatD[111:76]) && tlbHdatD[0];
+//	tlbHitA = (regInAddr [47:12] == tlbHdatA[111:76]) && tlbHdatA[0];
+//	tlbHitB = (regInAddr [47:12] == tlbHdatB[111:76]) && tlbHdatB[0];
+//	tlbHitC = (regInAddr [47:12] == tlbHdatC[111:76]) && tlbHdatC[0];
+//	tlbHitD = (regInAddr [47:12] == tlbHdatD[111:76]) && tlbHdatD[0];
+
+	tlbHitA = ((regInAddr [47:32] == tlbHdatA[111:96]) || tlbIs32b) &&
+		(regInAddr [31:12] == tlbHdatA[95:76]) && tlbHdatA[0];
+	tlbHitB = ((regInAddr [47:32] == tlbHdatB[111:96]) || tlbIs32b) &&
+		(regInAddr [31:12] == tlbHdatB[95:76]) && tlbHdatB[0];
+	tlbHitC = ((regInAddr [47:32] == tlbHdatC[111:96]) || tlbIs32b) &&
+		(regInAddr [31:12] == tlbHdatC[95:76]) && tlbHdatC[0];
+	tlbHitD = ((regInAddr [47:32] == tlbHdatD[111:96]) || tlbIs32b) &&
+		(regInAddr [31:12] == tlbHdatD[95:76]) && tlbHdatD[0];
 	
 	tlbHitAB = tlbHitA || tlbHitB;
 	tlbHitCD = tlbHitC || tlbHitD;

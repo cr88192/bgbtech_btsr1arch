@@ -40,6 +40,12 @@ int BGBCC_JX2C_EmitConvOpRegReg(
 			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, BGBCC_SH_REG_R2);
 			return(1);
 		}
+
+		if(BGBCC_JX2_TryEmitOpRegReg(sctx,
+			BGBCC_SH_NMID_FLDCH, sreg, dreg)>0)
+		{
+			return(1);
+		}
 	
 //		BGBCC_JX2C_EmitScratchSyncRegisters(ctx, sctx);
 		BGBCC_JX2C_EmitScratchSyncRegistersSafeMask(ctx, sctx, 0xC0);
@@ -75,6 +81,12 @@ int BGBCC_JX2C_EmitConvOpRegReg(
 			return(1);
 		}
 
+		if(BGBCC_JX2_TryEmitOpRegReg(sctx,
+			BGBCC_SH_NMID_FSTCH, sreg, dreg)>0)
+		{
+			return(1);
+		}
+	
 //		BGBCC_JX2C_EmitScratchSyncRegisters(ctx, sctx);
 		BGBCC_JX2C_EmitScratchSyncRegistersSafeMask(ctx, sctx, 0xC0);
 
@@ -87,6 +99,32 @@ int BGBCC_JX2C_EmitConvOpRegReg(
 		BGBCC_JX2_EmitOpRegReg(sctx,
 			BGBCC_SH_NMID_MOV, BGBCC_SH_REG_R2, dreg);
 		BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, BGBCC_SH_REG_R2);
+		return(1);
+	}
+
+	if(nmid==BGBCC_SH_NMID_LDBF16)
+	{
+//		BGBCC_JX2_EmitOpRegReg(sctx,
+//			BGBCC_SH_NMID_MOV, sreg, BGBCC_SH_REG_R0);
+//		BGBCC_JX2_EmitOpReg(sctx,
+//			BGBCC_SH_NMID_SHLL16, BGBCC_SH_REG_R0);
+		BGBCC_JX2_EmitOpRegImmReg(sctx,
+			BGBCC_SH_NMID_SHLD, sreg, 16, BGBCC_SH_REG_R0);
+		BGBCC_JX2_EmitOpReg(sctx,
+			BGBCC_SH_NMID_FLDCF, dreg);
+		return(1);
+	}
+
+	if(nmid==BGBCC_SH_NMID_STBF16)
+	{
+		BGBCC_JX2_EmitOpReg(sctx,
+			BGBCC_SH_NMID_FSTCF, sreg);
+//		BGBCC_JX2_EmitOpReg(sctx,
+//			BGBCC_SH_NMID_SHLR16, BGBCC_SH_REG_R0);
+//		BGBCC_JX2_EmitOpRegReg(sctx,
+//			BGBCC_SH_NMID_MOV, BGBCC_SH_REG_R0, dreg);
+		BGBCC_JX2_EmitOpRegImmReg(sctx,
+			BGBCC_SH_NMID_SHLD, BGBCC_SH_REG_R0, -16, dreg);
 		return(1);
 	}
 
@@ -303,7 +341,8 @@ int BGBCC_JX2C_EmitLoadSlotVRegVRegImm(
 				if((cdreg&BGBCC_SH_REG_RTMASK)!=BGBCC_SH_REG_FR0)
 					{ BGBCC_DBGBREAK }
 			}
-			else if(BGBCC_CCXL_TypeFloat16P(ctx, type))
+			else if(BGBCC_CCXL_TypeFloat16P(ctx, type) ||
+				BGBCC_CCXL_TypeBFloat16P(ctx, type))
 			{
 				if((cdreg&BGBCC_SH_REG_RTMASK)!=BGBCC_SH_REG_FR0)
 					{ BGBCC_DBGBREAK }
@@ -311,7 +350,8 @@ int BGBCC_JX2C_EmitLoadSlotVRegVRegImm(
 			}
 		}else
 		{
-			if(BGBCC_CCXL_TypeFloat16P(ctx, type))
+			if(BGBCC_CCXL_TypeFloat16P(ctx, type) ||
+				BGBCC_CCXL_TypeBFloat16P(ctx, type))
 			{
 //				ctreg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
 				ctreg=BGBCC_SH_REG_R1;
@@ -437,7 +477,8 @@ int BGBCC_JX2C_EmitStoreSlotVRegVRegImm(
 				if((csreg&BGBCC_SH_REG_RTMASK)!=BGBCC_SH_REG_FR0)
 					{ BGBCC_DBGBREAK }
 			}
-			else if(BGBCC_CCXL_TypeFloat16P(ctx, type))
+			else if(BGBCC_CCXL_TypeFloat16P(ctx, type) ||
+				BGBCC_CCXL_TypeBFloat16P(ctx, type))
 			{
 				if((csreg&BGBCC_SH_REG_RTMASK)!=BGBCC_SH_REG_FR0)
 					{ BGBCC_DBGBREAK }
@@ -446,7 +487,8 @@ int BGBCC_JX2C_EmitStoreSlotVRegVRegImm(
 			}
 		}else
 		{
-			if(BGBCC_CCXL_TypeFloat16P(ctx, type))
+			if(BGBCC_CCXL_TypeFloat16P(ctx, type) ||
+				BGBCC_CCXL_TypeBFloat16P(ctx, type))
 			{
 //				ctreg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
 				ctreg=BGBCC_SH_REG_R1;
@@ -644,7 +686,8 @@ int BGBCC_JX2C_EmitLoadSlotRegVRegImm(
 				if((cdreg&BGBCC_SH_REG_RTMASK)!=BGBCC_SH_REG_FR0)
 					{ BGBCC_DBGBREAK }
 			}
-			else if(BGBCC_CCXL_TypeFloat16P(ctx, type))
+			else if(BGBCC_CCXL_TypeFloat16P(ctx, type) ||
+				BGBCC_CCXL_TypeBFloat16P(ctx, type))
 			{
 				if((cdreg&BGBCC_SH_REG_RTMASK)!=BGBCC_SH_REG_FR0)
 					{ BGBCC_DBGBREAK }
@@ -652,7 +695,8 @@ int BGBCC_JX2C_EmitLoadSlotRegVRegImm(
 			}
 		}else
 		{
-			if(BGBCC_CCXL_TypeFloat16P(ctx, type))
+			if(BGBCC_CCXL_TypeFloat16P(ctx, type) ||
+				BGBCC_CCXL_TypeBFloat16P(ctx, type))
 			{
 //				ctreg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
 				ctreg=BGBCC_SH_REG_R1;
@@ -743,7 +787,8 @@ int BGBCC_JX2C_EmitStoreSlotVRegRegImm(
 				if((csreg&BGBCC_SH_REG_RTMASK)!=BGBCC_SH_REG_FR0)
 					{ BGBCC_DBGBREAK }
 			}
-			else if(BGBCC_CCXL_TypeFloat16P(ctx, type))
+			else if(BGBCC_CCXL_TypeFloat16P(ctx, type) ||
+				BGBCC_CCXL_TypeBFloat16P(ctx, type))
 			{
 				if((csreg&BGBCC_SH_REG_RTMASK)!=BGBCC_SH_REG_FR0)
 					{ BGBCC_DBGBREAK }
@@ -752,7 +797,8 @@ int BGBCC_JX2C_EmitStoreSlotVRegRegImm(
 			}
 		}else
 		{
-			if(BGBCC_CCXL_TypeFloat16P(ctx, type))
+			if(BGBCC_CCXL_TypeFloat16P(ctx, type) ||
+				BGBCC_CCXL_TypeBFloat16P(ctx, type))
 			{
 //				ctreg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
 				ctreg=BGBCC_SH_REG_R1;

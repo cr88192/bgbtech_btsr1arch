@@ -56,7 +56,19 @@ parameter[6:0] JX2_REG_MMCR		= 7'h2A;
 parameter[6:0] JX2_REG_EXSR		= 7'h2B;
 parameter[6:0] JX2_REG_STTB		= 7'h2C;
 parameter[6:0] JX2_REG_KRR		= 7'h2D;
+parameter[6:0] JX2_REG_IMM		= 7'h2E;
+parameter[6:0] JX2_REG_ZZR		= 7'h2F;
 
+parameter[6:0] JX2_REG_SPC		= 7'h38;
+parameter[6:0] JX2_REG_SLR		= 7'h39;
+parameter[6:0] JX2_REG_SSR		= 7'h3A;
+parameter[6:0] JX2_REG_SSP		= 7'h3B;
+parameter[6:0] JX2_REG_SDL		= 7'h3C;
+parameter[6:0] JX2_REG_SDH		= 7'h3D;
+parameter[6:0] JX2_REG_SGB		= 7'h3E;
+parameter[6:0] JX2_REG_STB		= 7'h3F;
+
+/*
 parameter[6:0] JX2_REG_R0B		= 7'h40;
 parameter[6:0] JX2_REG_R1B		= 7'h41;
 parameter[6:0] JX2_REG_R2B		= 7'h42;
@@ -84,8 +96,9 @@ parameter[6:0] JX2_REG_R23B		= 7'h57;
 
 parameter[6:0] JX2_REG_IMM		= 7'h5E;
 parameter[6:0] JX2_REG_ZZR		= 7'h5F;
+*/
 
-
+parameter[  7:0] UV8_XX			= 8'hXX;	//
 parameter[ 15:0] UV16_XX		= 16'hXXXX;	//
 parameter[ 27:0] UV28_XX		= 28'hXXXXXXX;	//
 parameter[ 31:0] UV32_XX		= 32'hXXXXXXXX;	//
@@ -109,6 +122,9 @@ parameter[8:0] UV9_FF			= 9'h1FF;	//
 
 parameter[12:0] UV13_00			= 13'h0000;	//
 parameter[12:0] UV13_FF			= 13'h1FFF;	//
+
+parameter[14:0] UV15_00			= 15'h0000;	//
+parameter[14:0] UV15_FF			= 15'h7FFF;	//
 
 parameter[15:0] UV16_00			= 16'h0000;	//
 parameter[15:0] UV16_FF			= 16'hFFFF;	//
@@ -211,9 +227,9 @@ parameter[4:0] JX2_FMID_IMM4ZREG	= 5'h0E;	//OOnj  #imm4u, Rn
 parameter[4:0] JX2_FMID_IMM4NREG	= 5'h0F;	//OOnj  #imm4n, Rn
 
 // parameter[4:0] JX2_FMID_DRPC		= 5'h11;	//OOOO	(PC, DLR)
-parameter[4:0] JX2_FMID_REGPC		= 5'h11;	//OOOO	(PC, Rn)
+parameter[4:0] JX2_FMID_REGPC		= 5'h11;	//OOnO	(PC, Rn)
 parameter[4:0] JX2_FMID_DRREG		= 5'h12;	//OOnO	DLR, Rn
-parameter[4:0] JX2_FMID_PCDISP8		= 5'h13;	//OOii	(PC, disp8s)
+parameter[4:0] JX2_FMID_PCDISP8		= 5'h13;	//OOdd	(PC, disp8s)
 
 parameter[4:0] JX2_FMID_IMM12Z		= 5'h16;	//Ojjj	#imm12u, DLR
 parameter[4:0] JX2_FMID_IMM12N		= 5'h17;	//Ojjj	#imm12n, DLR
@@ -263,14 +279,19 @@ Fxxx
 	SB: Rm, Ro, Rn
 	SW: Rm, disp17s, Rn
 
-	UB: Rm, Q?Imm5:Ro, Rn
+	UB: Rm, Q?Imm5u:Ro, Rn
 	UW: Rm, disp17u, Rn
 
 	NB: Rn, Rm, Rn
+	NW: Rm, disp17n, Rn
 	
 	XB: Rm, Q?Imm5n:Imm5u, Rn
 	XW: Rm, Q?(Imm5n-32):(Imm5u+32), Rn
 
+
+JX2_FMID_REGPC
+Fxxx	Fzdd_Oenm
+	SB: Rm, Rn, Disp8s
 
 JX2_FMID_DRREG
 Base
@@ -296,22 +317,32 @@ JX2_FMID_PCDISP8
 /*
 
 MVIXT:
-  0,I2,I1,I0, D,Zx,S1,S0
+/ 0,I2,I1,I0, D,Zx,S1,S0
+  C,T,I1,I0, D,Zx,S1,S0
 
 I2/1/0:
- 000: REG	(Rn)
- 001: RDL	(Rn,DLR)
- 010: RDI	(Rn,Disp)
+ 000: / REG	(Rn)
+ 001: / RDL	(Rn,DLR)
+ 010: / RDI	(Rn,Disp)
  011: / RD4	(Rn,DLR_i4)
  100: / ADL	(DLR)
  101: / PDL	(PC,DLR)
  110: / PDI	(PC,Disp)
  111: / PD4	(PC,DLR_i4)
+ 100: / RRI (Rn, Ri)
 
- 100: RRI (Rn, Ri)
+I1/I0
+ 00: RRI (Rb, Ri)
+
 D:
- 0: Rm, (Rn)
- 1: (Rm), Rn
+ 0: Rm, (Rn); Rb=Rn
+ 1: (Rm), Rn; Rb=Rm
+
+C,T:
+ 0,0: Always
+ 0,1: Resv
+ 1,0: SR.T=True
+ 1,1: SR.T=False
 */
 
 // parameter[3:0] JX2_IXT_REG	= 4'b0000;
@@ -319,12 +350,19 @@ D:
 // parameter[3:0] JX2_IXT_RDI	= 4'b0010;
 // parameter[3:0] JX2_IXT_RD4	= 4'b0011;
 
-parameter[3:0] JX2_IXT_RRI	= 4'b0100;
+// parameter[3:0] JX2_IXT_RRI	= 4'b0100;
+parameter[3:0] JX2_IXT_RRI	= 4'b0000;
 
-parameter[1:0] JX2_IX2_REG	= 2'b00;
-parameter[1:0] JX2_IX2_RDL	= 2'b01;
-parameter[1:0] JX2_IX2_RDI	= 2'b10;
+// parameter[1:0] JX2_IX2_REG	= 2'b00;
+// parameter[1:0] JX2_IX2_RDL	= 2'b01;
+// parameter[1:0] JX2_IX2_RDI	= 2'b10;
 // parameter[1:0] JX2_IX2_RD4	= 2'b11;
+
+parameter[1:0] JX2_IX2_RRI	= 2'b00;
+
+parameter[1:0] JX2_IXC_AL	= 2'b00;
+parameter[1:0] JX2_IXC_CT	= 2'b10;
+parameter[1:0] JX2_IXC_CF	= 2'b11;
 
 parameter[2:0] JX2_BTY_SB	= 3'b000;	/* Signed Byte, GPR */
 parameter[2:0] JX2_BTY_SW	= 3'b001;	/* Signed Word, EGPR */
@@ -335,7 +373,7 @@ parameter[2:0] JX2_BTY_UW	= 3'b101;
 parameter[2:0] JX2_BTY_UL	= 3'b110;
 parameter[2:0] JX2_BTY_UQ	= 3'b111;
 
-
+/*
 parameter[7:0] JX2_IXTB_RRI_LDSB	= 8'b01001000;
 parameter[7:0] JX2_IXTB_RRI_LDSW	= 8'b01001001;
 parameter[7:0] JX2_IXTB_RRI_LDSL	= 8'b01001010;
@@ -345,6 +383,17 @@ parameter[7:0] JX2_IXTB_RRI_LDUB	= 8'b01001100;
 parameter[7:0] JX2_IXTB_RRI_LDUW	= 8'b01001101;
 parameter[7:0] JX2_IXTB_RRI_LDUL	= 8'b01001110;
 parameter[7:0] JX2_IXTB_RRI_LDUQ	= 8'b01001111;
+*/
+
+parameter[7:0] JX2_IXTB_RRI_LDSB	= 8'b00001000;
+parameter[7:0] JX2_IXTB_RRI_LDSW	= 8'b00001001;
+parameter[7:0] JX2_IXTB_RRI_LDSL	= 8'b00001010;
+parameter[7:0] JX2_IXTB_RRI_LDSQ	= 8'b00001011;
+
+parameter[7:0] JX2_IXTB_RRI_LDUB	= 8'b00001100;
+parameter[7:0] JX2_IXTB_RRI_LDUW	= 8'b00001101;
+parameter[7:0] JX2_IXTB_RRI_LDUL	= 8'b00001110;
+parameter[7:0] JX2_IXTB_RRI_LDUQ	= 8'b00001111;
 
 parameter[3:0] JX2_ITY_SB	= 4'b0000;	/* XXzz_XXii		SX */
 parameter[3:0] JX2_ITY_SW	= 4'b0001;	/* XXzz_iiii		SX */
@@ -390,16 +439,11 @@ parameter[7:0] JX2_UCMD_MOV_CR		= 8'h10;	//Rn=Cm
 parameter[7:0] JX2_UCMD_MOV_RC		= 8'h11;	//Cn=Rm
 parameter[7:0] JX2_UCMD_RET			= 8'h12;
 
-// parameter[7:0] JX2_UCMD_ALU_ADD		= 8'h10;	//Rn=Rn+Rm
-// parameter[7:0] JX2_UCMD_ALU_SUB		= 8'h11;	//Rn=Rn-Rm
-// parameter[7:0] JX2_UCMD_ALU_ADC		= 8'h12;	//Rn=Rn+Rm
-// parameter[7:0] JX2_UCMD_ALU_SBB		= 8'h13;	//Rn=Rn-Rm
 parameter[7:0] JX2_UCMD_ALU_TST		= 8'h14;	//SR.T=!(Rn&Rm)
 parameter[7:0] JX2_UCMD_ALU_CMPHS	= 8'h15;
+parameter[7:0] JX2_UCMD_ALU_ADDSL	= 8'h16;	//Rn=Rn+Rm
+parameter[7:0] JX2_UCMD_ALU_ADDUL	= 8'h17;	//Rn=Rn-Rm
 
-// parameter[7:0] JX2_UCMD_ALU_AND		= 8'h15;	//Rn=Rn&Rm
-// parameter[7:0] JX2_UCMD_ALU_OR		= 8'h16;	//Rn=Rn|Rm
-// parameter[7:0] JX2_UCMD_ALU_XOR		= 8'h17;	//Rn=Rn^Rm
 parameter[7:0] JX2_UCMD_ALU_MULU	= 8'h18;	//DLR=Rn*Rm
 parameter[7:0] JX2_UCMD_ALU_MULS	= 8'h19;	//DLR=Rn*Rm
 parameter[7:0] JX2_UCMD_ALU_LDIX	= 8'h1A;
@@ -449,13 +493,13 @@ parameter[7:0] JX2_UCMD_ALU_SHARN	= 8'h3E;
 // parameter[7:0] JX2_UCMD_ALU_OR2		= 8'h43;	//Rn=Rm|DLR
 // parameter[7:0] JX2_UCMD_ALU_XOR2	= 8'h44;	//Rn=Rm^DLR
 
-parameter[7:0] JX2_UCMD_ALU_SWAPB	= 8'h40;	//Rn=SwapBytes(Rm)
-parameter[7:0] JX2_UCMD_ALU_SWAPW	= 8'h41;	//Rn=SwapWords(Rm)
-parameter[7:0] JX2_UCMD_ALU_SWAPL	= 8'h42;	//Rn=SwapLong(Rm)
+parameter[7:0] JX2_UCMD_ALU_SWAPN	= 8'h40;	//Rn=SwapBytes(Rm)
+
 parameter[7:0] JX2_UCMD_MOVUL_MR	= 8'h43;	//Rn=(AGU)
-parameter[7:0] JX2_UCMD_ALU_LDISH16	= 8'h45;	//
+parameter[7:0] JX2_UCMD_ALU_LDISH16	= 8'h45;	//Rn=(Rn<<16)|Imm16
 parameter[7:0] JX2_UCMD_ALU_LDISH24	= 8'h46;	//
-parameter[7:0] JX2_UCMD_ALU_LDISH32	= 8'h47;	//
+parameter[7:0] JX2_UCMD_ALU_LDISH32	= 8'h47;	//Rn=(Rn<<32)|Imm32
+
 // parameter[7:0] JX2_UCMD_MOV_DLR4R	= 8'h48;	//Rn=DLR_i4
 // parameter[7:0] JX2_UCMD_ADD_DLR4R	= 8'h49;	//Rn=Rn+DLR_i4
 parameter[7:0] JX2_UCMD_MOVUB_MR	= 8'h4A;	//Rn=(AGU)
@@ -486,11 +530,10 @@ parameter[7:0] JX2_UCMD_ALU_TSTQ	= 8'h60;	//SR.T=!(Rn&Rm)
 parameter[7:0] JX2_UCMD_ALU_CMPQEQ	= 8'h61;	//
 parameter[7:0] JX2_UCMD_ALU_CMPQHI	= 8'h62;	//
 parameter[7:0] JX2_UCMD_ALU_CMPQGT	= 8'h63;	//
-//parameter[7:0] JX2_UCMD_ALU_SHADQ	= 8'h64;
-//parameter[7:0] JX2_UCMD_ALU_SHLDQ	= 8'h65;
+parameter[7:0] JX2_UCMD_ALU_SUBSL	= 8'h64;	//Rn=Rn+Rm
+parameter[7:0] JX2_UCMD_ALU_SUBUL	= 8'h65;	//Rn=Rn-Rm
 parameter[7:0] JX2_UCMD_ALU_EXTUL	= 8'h66;
 parameter[7:0] JX2_UCMD_ALU_EXTSL	= 8'h67;
-
 parameter[7:0] JX2_UCMD_ALU_ADD3	= 8'h68;	//Rn=Rm+Ro
 parameter[7:0] JX2_UCMD_ALU_SUB3	= 8'h69;	//Rn=Rm-Ro
 parameter[7:0] JX2_UCMD_ALU_AND3	= 8'h6A;	//Rn=Rm&Ro
@@ -498,19 +541,43 @@ parameter[7:0] JX2_UCMD_ALU_OR3		= 8'h6B;	//Rn=Rm|Ro
 parameter[7:0] JX2_UCMD_ALU_XOR3	= 8'h6C;	//Rn=Rm^Ro
 parameter[7:0] JX2_UCMD_ALU_MUL3	= 8'h6D;	//Rn=Rm*Ro
 parameter[7:0] JX2_UCMD_ALU_CSELT	= 8'h6E;	//Rn=SR.T?Rm:Ro
+parameter[7:0] JX2_UCMD_CF_JCMPCC	= 8'h6F;	//Jump/Compare
 
 parameter[7:0] JX2_UCMD_ALU_SHAD3	= 8'h70;
 parameter[7:0] JX2_UCMD_ALU_SHLD3	= 8'h71;
 parameter[7:0] JX2_UCMD_ALU_SHADQ3	= 8'h72;
 parameter[7:0] JX2_UCMD_ALU_SHLDQ3	= 8'h73;
-
 parameter[7:0] JX2_UCMD_ALU_ADC3	= 8'h74;	//Rn=Rn+Rm
 parameter[7:0] JX2_UCMD_ALU_SBB3	= 8'h75;	//Rn=Rn-Rm
+parameter[7:0] JX2_UCMD_FPU_FMOV_GF	= 8'h76;	//FPU FRn=Rm
+parameter[7:0] JX2_UCMD_FPU_FMOV_FG	= 8'h77;	//FPU Rn=FRm
 
 parameter[7:0] JX2_UCMD_FPU_FADD3	= 8'h78;	//FPU FRn=FRn+FRm
 parameter[7:0] JX2_UCMD_FPU_FSUB3	= 8'h79;	//FPU FRn=FRn-FRm
 parameter[7:0] JX2_UCMD_FPU_FMUL3	= 8'h7A;	//FPU FRn=FRn*FRm
 parameter[7:0] JX2_UCMD_FPU_FDIV3	= 8'h7B;	//FPU FRn=FRn/FRm
+
+parameter[7:0] JX2_UCMD_ALU_PADDW	= 8'h80;	//Rn=Rm+Ro (Pack Word)
+parameter[7:0] JX2_UCMD_ALU_PSUBW	= 8'h81;	//Rn=Rm-Ro (Pack Word)
+parameter[7:0] JX2_UCMD_ALU_PADDL	= 8'h82;	//Rn=Rm+Ro (Pack Word)
+parameter[7:0] JX2_UCMD_ALU_PSUBL	= 8'h83;	//Rn=Rm-Ro (Pack Word)
+parameter[7:0] JX2_UCMD_ALU_PMULUW	= 8'h84;	//(DHR,DLR)=Rm*Ro (Pack Word)
+parameter[7:0] JX2_UCMD_GSV_PFPHF	= 8'h85;	//4x Packed Half
+parameter[7:0] JX2_UCMD_ALU_CMPGTHF	= 8'h86;	//Cmp Packed Half
+parameter[7:0] JX2_UCMD_ALU_PSELT	= 8'h87;	//Rn=SR.T?Rm:Ro
+//parameter[7:0] JX2_UCMD_GSV_PADDHF	= 8'h85;	//4x Packed Half
+// parameter[7:0] JX2_UCMD_GSV_PSUBHF	= 8'h86;	//4x Packed Half
+// parameter[7:0] JX2_UCMD_GSV_PMULHF	= 8'h87;	//4x Packed Half
+
+// parameter[7:0] JX2_UCMD_ALU_PMULLW	= 8'h84;	//Rn=Rm*Ro
+// parameter[7:0] JX2_UCMD_ALU_PMULHW	= 8'h85;	//Rn=Rm*Ro
+
+// parameter[7:0] JX2_UCMD_ALU_JCMPCC	= 8'h88;
+// parameter[7:0] JX2_UCMD_ALU_JCMPNE	= 8'h89;
+// parameter[7:0] JX2_UCMD_ALU_JCMPGT	= 8'h8A;
+// parameter[7:0] JX2_UCMD_ALU_JCMPLE	= 8'h8B;
+// parameter[7:0] JX2_UCMD_ALU_JCMPHI	= 8'h8C;
+// parameter[7:0] JX2_UCMD_ALU_JCMPLS	= 8'h8D;
 
 
 parameter[7:0] JX2_UCMD_IX_NOP		= 8'h00;
@@ -529,10 +596,19 @@ parameter[7:0] JX2_UCMD_IX_TRAPA	= 8'h0D;
 parameter[7:0] JX2_UCMD_IX_LDTLB	= 8'h0E;
 
 parameter[7:0] JX2_UCMD_IX_MOVNT	= 8'h10;
+parameter[7:0] JX2_UCMD_IX_PLDMSK	= 8'h11;
+parameter[7:0] JX2_UCMD_IX_CPUID	= 8'h12;
+
+// parameter[7:0] JX2_UCMD_IX_CPUID1	= 8'h12;
+// parameter[7:0] JX2_UCMD_IX_CPUID2	= 8'h13;
+// parameter[7:0] JX2_UCMD_IX_CPUID3	= 8'h14;
+// parameter[7:0] JX2_UCMD_IX_CPUID4	= 8'h15;
 
 parameter[7:0] JX2_UCMD_IXS_NOP		= 8'h00;
 parameter[7:0] JX2_UCMD_IXS_MOVT	= 8'h01;
 parameter[7:0] JX2_UCMD_IXS_MOVNT	= 8'h02;
+parameter[7:0] JX2_UCMD_IXS_LDSRMSK	= 8'h03;
+// parameter[7:0] JX2_UCMD_IXS_PLDMSK	= 8'h04;
 
 parameter[7:0] JX2_UCMD_FPIX_FNEG	= 8'h00;
 parameter[7:0] JX2_UCMD_FPIX_FABS	= 8'h01;
@@ -563,6 +639,8 @@ parameter[7:0] JX2_UCMD_FPIX_FSQRT	= 8'h05;
 `define JX2_MEM_HALFDPX			//Half-Duplex
 `endif
 
+`define JX2_MEM_L2_128K			//Use 128kB of L2 Cache
+
 // `define JX2_MEM_USELSQ			//Use Load-Store Queue
 
 // `define JX2_EX_MERGEAGU			//Merge AGU with ALU
@@ -571,10 +649,23 @@ parameter[7:0] JX2_UCMD_FPIX_FSQRT	= 8'h05;
 `define JX2_GPR_GPRARR		//Use array for GPRs
 // `define JX2_GPR_GPR2CWB		//Use extra cycle for writeback
 
+`define JX2_EX_GPRSIMD		//Enable GPR SIMD
+
 `define JX2_FPR_FPRARR		//Use array for FPRs
+
+`define JX2_FPU_NOFPU		//No Hardware FPU
+`define JX2_FPU_NOFDIV		//No Hardware FDIV
 
 `define JX2_EX_LEA_2C		//Two Cycle LEA
 `define JX2_EX_ALU_2C		//Two Cycle ALU Ops
+`define JX2_EX_SIMD_2C		//Two Cycle SIMD Ops
+`define JX2_EX_SIMD_ADDSL	//Use ADDSL's ALU
+
+`define JX2_EX_ALU_ADDSL	//ADDS.L / ADDU.L
+// `define JX2_EX_ALU_JMPCC	//Has JCMP
+
+`define JX2_EX_GPRSIMD_HF	//Enable GPR SIMD (Half Float)
+// `define JX2_EX_GPRSIMD_F	//Enable GPR SIMD (Float32)
 
 `define def_true
 

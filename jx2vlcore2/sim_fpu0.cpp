@@ -5,41 +5,57 @@ VJx2FpuExOp *top = new VJx2FpuExOp;
 
 vluint64_t main_time = 0;
 
-struct {
+#define JX2_UCMD_FPU_FADD3 0x78
+#define JX2_UCMD_FPU_FSUB3 0x79
+#define JX2_UCMD_FPU_FMUL3 0x7A
+#define JX2_UCMD_FPU_FDIV3 0x7B
+
+#define JX2_NODIV
+
+struct JX2_FpuTestCase_s {
 int cmd;
 int ixt;
 double x;
 double y;
 double z;
 }fputest[]={
-{0x50, 0,  3.14,  2.73,  5.870000000},
-{0x51, 0,  3.14,  2.73,  0.410000000},
-{0x52, 0,  3.14,  2.73,  8.572200000},
-{0x53, 0,  3.14,  2.73,  1.1501831501831501831501831501832},
+{JX2_UCMD_FPU_FADD3, 0,  3.14,  2.73,  5.870000000},
+{JX2_UCMD_FPU_FSUB3, 0,  3.14,  2.73,  0.410000000},
+{JX2_UCMD_FPU_FMUL3, 0,  3.14,  2.73,  8.572200000},
 
-{0x50, 0,  3.14, -2.73,  0.410000000},
-{0x51, 0,  3.14, -2.73,  5.870000000},
-{0x52, 0,  3.14, -2.73, -8.572200000},
-{0x53, 0,  3.14, -2.73, -1.1501831501831501831501831501832},
+{JX2_UCMD_FPU_FADD3, 0,  3.14, -2.73,  0.410000000},
+{JX2_UCMD_FPU_FSUB3, 0,  3.14, -2.73,  5.870000000},
+{JX2_UCMD_FPU_FMUL3, 0,  3.14, -2.73, -8.572200000},
 
-{0x50, 0, -3.14,  2.73, -0.410000000},
-{0x51, 0, -3.14,  2.73, -5.870000000},
-{0x52, 0, -3.14,  2.73, -8.572200000},
-{0x53, 0, -3.14,  2.73, -1.1501831501831501831501831501832},
+{JX2_UCMD_FPU_FADD3, 0, -3.14,  2.73, -0.410000000},
+{JX2_UCMD_FPU_FSUB3, 0, -3.14,  2.73, -5.870000000},
+{JX2_UCMD_FPU_FMUL3, 0, -3.14,  2.73, -8.572200000},
+
+#ifndef JX2_NODIV
+{JX2_UCMD_FPU_FDIV3, 0,  3.14,  2.73,  1.1501831501831501831501831501832},
+{JX2_UCMD_FPU_FDIV3, 0,  3.14, -2.73, -1.1501831501831501831501831501832},
+{JX2_UCMD_FPU_FDIV3, 0, -3.14,  2.73, -1.1501831501831501831501831501832},
+#endif
 
 {0x57, 0,  3.14,  2.73, -3.140000000},
 {0x57, 1,  3.14,  2.73,  3.140000000},
+
+#ifndef JX2_NODIV
 {0x57, 2,  3.14,  2.73,  0.318471338},
 {0x57, 3,  3.14,  2.73,  1.772004515},
+#endif
 
 {0x57, 0, -3.14,  2.73,  3.140000000},
 {0x57, 1, -3.14,  2.73,  3.140000000},
+
+#ifndef JX2_NODIV
 {0x57, 2, -3.14,  2.73, -0.318471338},
 {0x57, 3, -3.14,  2.73, -1.772004515},
+#endif
 
-{0x50, 0,  3.6055512754639892931192212674705,  4.1231056256176605498214098559741,  5.870000000},
-{0x51, 0,  3.6055512754639892931192212674705,  4.1231056256176605498214098559741,  0.410000000},
-{0x52, 0,  3.6055512754639892931192212674705,  4.1231056256176605498214098559741,  8.572200000},
+{JX2_UCMD_FPU_FADD3, 0,  3.6055512754639892931192212674705,  4.1231056256176605498214098559741,  5.870000000},
+{JX2_UCMD_FPU_FSUB3, 0,  3.6055512754639892931192212674705,  4.1231056256176605498214098559741,  0.410000000},
+{JX2_UCMD_FPU_FMUL3, 0,  3.6055512754639892931192212674705,  4.1231056256176605498214098559741,  8.572200000},
 
 {0x00, 0,  3.14,  2.73,  0.000000000},
 };
@@ -49,6 +65,8 @@ int main(int argc, char **argv, char **env)
 	double fx, fy, fz, fw;
 	vluint64_t tx, ty, tz, tw;
 	int tst, op, ixt;
+	
+	printf("FPU Test\n");
 	
 	Verilated::commandArgs(argc, argv);
 
@@ -97,25 +115,25 @@ int main(int argc, char **argv, char **env)
 
 			switch(op)
 			{
-			case 0x50:	fw=fx+fy; break;
-			case 0x51:	fw=fx-fy; break;
-			case 0x52:	fw=fx*fy; break;
-			case 0x53:	fw=fx/fy; break;
+			case JX2_UCMD_FPU_FADD3:	fw=fx+fy; break;
+			case JX2_UCMD_FPU_FSUB3:	fw=fx-fy; break;
+			case JX2_UCMD_FPU_FMUL3:	fw=fx*fy; break;
+			case JX2_UCMD_FPU_FDIV3:	fw=fx/fy; break;
 			}
 
 			tx=*(vluint64_t *)(&fx);
 			ty=*(vluint64_t *)(&fy);
 			tw=*(vluint64_t *)(&fw);
 		
-//			top->opCmd=0x50;
+//			top->opCmd=JX2_UCMD_FPU_FADD3;
 			top->opCmd=op;
 			top->regIdIxt=ixt;
 
-			top->regIdRn=3;
-			top->regValRn=tx;
+			top->regIdRs=3;
+			top->regValRs=tx;
 
-			top->regIdRm=11;
-			top->regValRm=ty;
+			top->regIdRt=11;
+			top->regValRt=ty;
 
 			top->memDataLd=0;
 			top->memDataOK=0;

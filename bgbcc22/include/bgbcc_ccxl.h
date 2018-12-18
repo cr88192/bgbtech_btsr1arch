@@ -25,6 +25,7 @@
 #define CCXL_TY_VARIANT			0x14		//Variant
 #define CCXL_TY_VARARGS			0x15		//VarArgs
 #define CCXL_TY_VALIST			0x16		//va_list
+#define CCXL_TY_BF16			0x17		//BFloat16
 
 #define CCXL_TY_FATP			0x18		//Fat Pointer
 #define CCXL_TY_FATP_AREF		0x19		//Fat Pointer, Array Reference

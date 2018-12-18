@@ -1,36 +1,146 @@
-BJX2 GPR SIMD
-* Uses GPRs as SIMD Registers.
-* Mostly focus on Packed-WORD SIMD.
+Poor Man's SIMD (BJX2 ISA):
+* Low cost SIMD implemented on top of GPRs
+* Only a few SIMD ops, mostly reusing existing integer ops.
+* Shuffle is implemented via a limited number of SWAP.x or SWCP.x instructions.
+** These are treated as a compound op in the Verilog code.
+
+This will focus mostly on Packed-Word, but a few operations may support Packed Byte or Packed DWord.
 
 
-PACKHI.W2B Rm, Rn
-  Rn = { 32'h0, Rm[63:56], Rm[47:40], Rm[31:24], Rm[15:8] };
+=== C Intrinsics ===
 
-Pack four words into four bytes, using the high 8 bits of each word.
+Arithmetic:
+* uint64_t __int64_paddw(uint64_t a, uint64_t b);
+** Add four packed Words.
+* uint64_t __int64_paddl(uint64_t a, uint64_t b);
+** Add four packed DWords.
+* uint64_t __int64_psubw(uint64_t a, uint64_t b);
+** Subtract four packed Words.
+* uint64_t __int64_psubl(uint64_t a, uint64_t b);
+** Subtract four packed DWords.
+
+* uint64_t __int64_pmulw(uint64_t a, uint64_t b);
+** Mulyiply four packed Words (Low Result).
+* uint64_t __int64_pmulhw(uint64_t a, uint64_t b);
+** Multiply four packed Words (High Result).
+** Gives the high result of an unsigned multiply of four packed Words.
+** Conceptually, the words can be seen as values between 0 and 1.
+
+Shuffle:
+* uint32_t __int32_shufb(uint32_t a, uint8_t perm);
+** Shuffle four bytes within a 32-bit vector.
+* uint64_t __int64_shuf4b(uint64_t a, uint8_t perm);
+** Shuffle four bytes within the low 32 bits of a 64-bit vector.
+** The high 32 bits will remain unchanged.
+* uint64_t __int64_shufw(uint64_t a, uint8_t perm);
+** Shuffle four words within a 64-bit vector.
+* uint64_t __int64_shuf8b(uint64_t a, uint32_t perm);
+** Shuffle eight bytes within a 64-bit vector, using a 24-bit vector permutation.
+
+Within an 8 bit permutation:
+* Two bits are used to encode each vector element.
+* Each encodes which element of the source-vector should be found at this position.
+* The low bits of the permutation map to the low bits of the register.
+* The element index starts at the low bits of the register.
+** 0x33221100
+
+Within an 24 bit permutation:
+* Three bits are used to encode each vector element (3x8=24).
+* Each encodes which element of the source-vector should be found at this position.
+
+The permutation given to these intrinsic functions is required to be a constant.
 
 
-PACKHI.B2W Rm, Rn
-	Rn = {	Rm[31:24], 16'h0,
-			Rm[23:16], 16'h0,
-			Rm[15: 8], 16'h0,
-			Rm[ 7: 0], 16'h0	};
+=== Vector Ops ===
 
-Unpack four bytes into four words, moving each byte into the high 8 bits of each word.
-
-
-PACKLZ.W2B Rm, Rn
-PACKLZ.B2W Rm, Rn
-
-Similar to the PACKHI case, but using the low 8 bits.
-Converting byte to word will zero extend, converting word to byte will saturate.
-
-
-PACKLS.W2B Rm, Rn
-PACKLS.B2W Rm, Rn
-
-Similar to PACKLZ, but with sign-extension and signed saturate.
+Vector Ops
+* PADD.W	Rm, Rn
+** Packed Add Word.
+* PADD.L	Rm, Rn
+** Packed Add DWord.
+* PSUB.W	Rm, Rn
+** Packed Subtract Word.
+* PSUB.L	Rm, Rn
+** Packed Subtract DWord.
+* PMULU.W	Rm, Rn
+** Packed Multiply Unsigned Word.
+** DLR: Low Vector Products
+** DHR: High Vector Products.
 
 
-PADDW Rm, Rn
+=== Shuffle Implementation ===
 
-Packed Add Words.
+Shuffle will be implemented via SWAP.x and SWCP.x operations.
+* SWAP.x will swap two items within a register.
+* SWCP.x will copy an item to a different position.
+
+SWAP.x:
+* Exchange a pair of bytes or words within a register.
+* SWAP.B: Swap Even/Odd Bytes (within the low 32 bits of the GPR)
+** 0xAABBCCDD => 0xBBAADDCC
+* SWAP.LB: Swap Low two Bytes.
+** 0xAABBCCDD => 0xAABBDDCC
+* SWAP.MB: Swap Low and Middle Byte
+** 0xAABBCCDD => 0xAADDCCBB
+* SWAP.HB: Swap Low and High Byte
+** 0xAABBCCDD => 0xDDBBCCAA
+* SWAP.W: Swap Even/Odd Words
+** 0xAAAABBBBCCCCDDDDD => 0xBBBBAAAADDDDCCCC
+* SWAP.LW: Swap Low two Words.
+** 0xAAAABBBBCCCCDDDDD => 0xAAAABBBBDDDDCCCC
+* SWAP.MW: Swap Low and Middle Word
+** 0xAAAABBBBCCCCDDDDD => 0xAAAADDDDCCCCBBBB 
+* SWAP.HW: Swap Low and High Word
+** 0xAAAABBBBCCCCDDDDD => 0xDDDDBBBBCCCCAAAA
+* SWAP.L: Swap Low and High DWords.
+** 0xAAAABBBBCCCCDDDDD => 0xCCCCDDDDAAAABBBB
+* SWAP.8B: Swap Even/Odd Bytes (All 8 bytes).
+** 0x8877665544332211 => 0x7788556633441122
+
+SWCP.x:
+* Do basically the same things as SWAP.x, except these copy the Low Byte/Word into another position.
+* SWCP.LB: Copy Low two Bytes.
+** 0xAABBCCDD => 0xAABBDDDD
+* SWCP.MB: Copy Low to Middle Byte
+** 0xAABBCCDD => 0xAADDCCDD
+* SWCP.HB: Copy Low to High Byte
+** 0xAABBCCDD => 0xDDBBCCDD
+* SWCP.LW: Copy Low two Words.
+** 0xAAAABBBBCCCCDDDDD => 0xAAAABBBBDDDDDDDD
+* SWCP.MW: Copy Low to Middle Word
+** 0xAAAABBBBCCCCDDDDD => 0xAAAADDDDCCCCDDDDD
+* SWCP.HW: Copy Low to High Word
+** 0xAAAABBBBCCCCDDDDD => 0xDDDDBBBBCCCCDDDDD
+
+
+Chains of SWAP.x and SWCP.x can be used to implement arbitrary 4 or 8 element shuffles.
+* A 4 element Word shuffle is, as-stated.
+* A 4 element byte shuffle works on the low 32-bits of the GPR.
+* An 8 element byte shuffle shuffles all 8 bytes into an arbitrary order.
+
+The 4-element cases are fairly straightforward, and use a small lookup table embedded directly into the compiler.
+* This takes an average of 3 instructions to shuffle the register into any desired order.
+* The compiler intrinsic is given an 8 bit mask with 2 bits per vector element.
+
+
+The 8 byte case is more complicated:
+* The compiler intrinsic is given a 24-bit index.
+* Has an average case of around 9 instructions.
+* Requires a large (roughly 128MB) lookup table to map the 24-bit index to an instruction sequence.
+** The mapping from the 24-bit index to an instruction sequence is otherwise non-trivial.
+** This lookup table is very expensive to rebuild.
+** However, reading 128MB from disk is still kinda expensive.
+*** ~ 1500ms from an HDD when not in the disk cache.
+*** (Realizes): I don't need to read the whole table, only the needed elements.
+
+
+The 8-byte table consists of 16M indices, each containing a 64-bit instruction sequence.
+* Each 4 bit nybble encodes which of the SWAP.x or SWCP.x operations to use.
+* The value 0 is special, and terminates the sequence.
+* The value 15 in the high 4 bits is used as an escape, allowing sequences longer than 16 instructions.
+** A small minority of sequences do not fit within the 16 nybbles in a 64-bit word.
+
+
+The alternative would be doing 8-byte shuffles via shifts and masking, but this is considerably more expensive.
+* Requires significantly more instructions, and thus is worse for code density and performance.
+* However, it does not require the compiler to use a huge lookup table.

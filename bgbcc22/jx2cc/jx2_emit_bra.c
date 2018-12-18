@@ -223,7 +223,8 @@ int BGBCC_JX2_TryEmitOpLblReg(BGBCC_JX2_Context *ctx,
 				{
 					rlty2=BGBCC_SH_RLC_REL24_BJX;
 					opw1=0xFC27|((reg&16)<<4);
-					opw2=0xF000|((reg&15)<<8);
+//					opw2=0xF000|((reg&15)<<8);
+					opw2=0x4000|((reg&15)<<8);
 					opw3=0x0000;
 					break;
 				}

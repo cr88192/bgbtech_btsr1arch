@@ -143,6 +143,8 @@
 #define BGBCC_SH_REG_TEA		0x79
 #define BGBCC_SH_REG_MMCR		0x7A
 #define BGBCC_SH_REG_EXSR		0x7B
+#define BGBCC_SH_REG_STTB		0x7C
+#define BGBCC_SH_REG_KRR		0x7D
 
 #define BGBCC_SH_REG_DBR		0x7F
 
@@ -343,254 +345,293 @@
 #define BGBCC_SH_LBL_ARCHEND		(CCXL_LBL_ARCHBASE+256)
 
 
-#define BGBCC_SH_NMID_UNK			0x00	//Unknown
-#define BGBCC_SH_NMID_MOV			0x01	//MOV
-#define BGBCC_SH_NMID_MOVB			0x02	//MOV.B
-#define BGBCC_SH_NMID_MOVW			0x03	//MOV.W
-#define BGBCC_SH_NMID_MOVL			0x04	//MOV.L
-#define BGBCC_SH_NMID_ADD			0x05	//ADD
-#define BGBCC_SH_NMID_ADDC			0x06	//ADDC
-#define BGBCC_SH_NMID_ADDV			0x07	//ADDV
-#define BGBCC_SH_NMID_SUB			0x08	//SUB
-#define BGBCC_SH_NMID_SUBC			0x09	//SUBC
-#define BGBCC_SH_NMID_SUBV			0x0A	//SUBV
-#define BGBCC_SH_NMID_CMPHS			0x0B	//CMPHS
-#define BGBCC_SH_NMID_CMPHI			0x0C	//CMPHI
-#define BGBCC_SH_NMID_CMPEQ			0x0D	//CMPEQ
-#define BGBCC_SH_NMID_CMPGE			0x0E	//CMPGE
-#define BGBCC_SH_NMID_CMPGT			0x0F	//CMPGT
-#define BGBCC_SH_NMID_JMP			0x10	//JMP
-#define BGBCC_SH_NMID_JSR			0x11	//JSR
-#define BGBCC_SH_NMID_BRA			0x12	//BRA
-#define BGBCC_SH_NMID_BSR			0x13	//BSR
-#define BGBCC_SH_NMID_BT			0x14	//BT
-#define BGBCC_SH_NMID_BF			0x15	//BF
-#define BGBCC_SH_NMID_BTS			0x16	//BTS
-#define BGBCC_SH_NMID_BFS			0x17	//BFS
-#define BGBCC_SH_NMID_DIV1			0x18	//DIV1
-#define BGBCC_SH_NMID_DMULU			0x19	//DMULU
-#define BGBCC_SH_NMID_DMULS			0x1A	//DMULS
-#define BGBCC_SH_NMID_TST			0x1B	//TST
-#define BGBCC_SH_NMID_AND			0x1C	//AND
-#define BGBCC_SH_NMID_XOR			0x1D	//XOR
-#define BGBCC_SH_NMID_OR			0x1E	//OR
-#define BGBCC_SH_NMID_INVALID		0x1F	//Invalid
-#define BGBCC_SH_NMID_DIV0S			0x20	//
-#define BGBCC_SH_NMID_CMPSTR		0x21	//
-#define BGBCC_SH_NMID_MULUW			0x22	//
-#define BGBCC_SH_NMID_MULSW			0x23	//
-#define BGBCC_SH_NMID_MACL			0x24	//
-#define BGBCC_SH_NMID_BSRF			0x25	//
-#define BGBCC_SH_NMID_BRAF			0x26	//
-#define BGBCC_SH_NMID_MULL			0x27	//
-#define BGBCC_SH_NMID_CLRT			0x28	//
-#define BGBCC_SH_NMID_SETT			0x29	//
-#define BGBCC_SH_NMID_CLRMAC		0x2A	//
-#define BGBCC_SH_NMID_NOP			0x2B	//
-#define BGBCC_SH_NMID_MOVT			0x2C	//
-#define BGBCC_SH_NMID_RTS			0x2D	//
-#define BGBCC_SH_NMID_SLEEP			0x2E	//
-#define BGBCC_SH_NMID_RTE			0x2F	//
-#define BGBCC_SH_NMID_SHLL			0x30	//
-#define BGBCC_SH_NMID_DT			0x31	//
-#define BGBCC_SH_NMID_SHAL			0x32	//
-#define BGBCC_SH_NMID_SHLR			0x33	//
-#define BGBCC_SH_NMID_CMPPZ			0x34	//
-#define BGBCC_SH_NMID_SHAR			0x35	//
-#define BGBCC_SH_NMID_ROTL			0x36	//
-#define BGBCC_SH_NMID_ROTCL			0x37	//
-#define BGBCC_SH_NMID_ROTT			0x38	//
-#define BGBCC_SH_NMID_ROTCR			0x39	//
-#define BGBCC_SH_NMID_SHLL2			0x3A	//
-#define BGBCC_SH_NMID_ROTR			0x3B	//
-#define BGBCC_SH_NMID_CMPPL			0x3C	//
-#define BGBCC_SH_NMID_SHLL8			0x3D	//
-#define BGBCC_SH_NMID_SHLL16		0x3E	//
-#define BGBCC_SH_NMID_SHLR2			0x3F	//
-#define BGBCC_SH_NMID_SHLR8			0x40	//
-#define BGBCC_SH_NMID_SHLR16		0x41	//
-#define BGBCC_SH_NMID_MACW			0x42	//
-#define BGBCC_SH_NMID_NOT			0x43	//
-#define BGBCC_SH_NMID_SWAPB			0x44	//
-#define BGBCC_SH_NMID_SWAPW			0x45	//
-#define BGBCC_SH_NMID_NEGC			0x46	//
-#define BGBCC_SH_NMID_NEG			0x47	//
-#define BGBCC_SH_NMID_EXTUB			0x48	//
-#define BGBCC_SH_NMID_EXTUW			0x49	//
-#define BGBCC_SH_NMID_EXTSB			0x4A	//
-#define BGBCC_SH_NMID_EXTSW			0x4B	//
-#define BGBCC_SH_NMID_TRAPA			0x4C	//
-#define BGBCC_SH_NMID_MOVA			0x4D	//
-#define BGBCC_SH_NMID_TSTB			0x4E	//
-#define BGBCC_SH_NMID_DIV0U			0x4F	//
-#define BGBCC_SH_NMID_LDC			0x50	//
-#define BGBCC_SH_NMID_LDCL			0x51	//
-#define BGBCC_SH_NMID_LDS			0x52	//
-#define BGBCC_SH_NMID_LDSL			0x53	//
-#define BGBCC_SH_NMID_STC			0x54	//
-#define BGBCC_SH_NMID_STCL			0x55	//
-#define BGBCC_SH_NMID_STS			0x56	//
-#define BGBCC_SH_NMID_STSL			0x57	//
-#define BGBCC_SH_NMID_CASL			0x58	//
-#define BGBCC_SH_NMID_TASB			0x59	//
-#define BGBCC_SH_NMID_XTRCT			0x5A	//
-#define BGBCC_SH_NMID_ANDB			0x5B	//
-#define BGBCC_SH_NMID_XORB			0x5C	//
-#define BGBCC_SH_NMID_ORB			0x5D	//
-#define BGBCC_SH_NMID_SHAD			0x5E	//
-#define BGBCC_SH_NMID_SHLD			0x5F	//
-#define BGBCC_SH_NMID_INVDLY		0x60	//
-#define BGBCC_SH_NMID_CLRS			0x61	//
-#define BGBCC_SH_NMID_SETS			0x62	//
-#define BGBCC_SH_NMID_MOVI20		0x63	//MOVI20
-#define BGBCC_SH_NMID_MOVI20S		0x64	//MOVI20S
-#define BGBCC_SH_NMID_MOVUB			0x65	//MOVU.B
-#define BGBCC_SH_NMID_MOVUW			0x66	//MOVU.W
-#define BGBCC_SH_NMID_MOVUL			0x67	//MOVU.L
-#define BGBCC_SH_NMID_LEAB			0x68	//LEA.B
-#define BGBCC_SH_NMID_LEAW			0x69	//LEA.W
-#define BGBCC_SH_NMID_LEAL			0x6A	//LEA.L
-#define BGBCC_SH_NMID_LEAQ			0x6B	//LEA.Q
-#define BGBCC_SH_NMID_LEAO			0x6C	//LEA.O
-#define BGBCC_SH_NMID_NOTT			0x6D	//
-#define BGBCC_SH_NMID_LDTLB			0x6E	//
-#define BGBCC_SH_NMID_BRK			0x6F	//
-#define BGBCC_SH_NMID_MOVRT			0x70	//
-#define BGBCC_SH_NMID_MOVCAL		0x71	//
+#define BGBCC_SH_NMID_UNK			0x0000	//Unknown
+#define BGBCC_SH_NMID_MOV			0x0001	//MOV
+#define BGBCC_SH_NMID_MOVB			0x0002	//MOV.B
+#define BGBCC_SH_NMID_MOVW			0x0003	//MOV.W
+#define BGBCC_SH_NMID_MOVL			0x0004	//MOV.L
+#define BGBCC_SH_NMID_ADD			0x0005	//ADD
+#define BGBCC_SH_NMID_ADDC			0x0006	//ADDC
+#define BGBCC_SH_NMID_ADDV			0x0007	//ADDV
+#define BGBCC_SH_NMID_SUB			0x0008	//SUB
+#define BGBCC_SH_NMID_SUBC			0x0009	//SUBC
+#define BGBCC_SH_NMID_SUBV			0x000A	//SUBV
+#define BGBCC_SH_NMID_CMPHS			0x000B	//CMPHS
+#define BGBCC_SH_NMID_CMPHI			0x000C	//CMPHI
+#define BGBCC_SH_NMID_CMPEQ			0x000D	//CMPEQ
+#define BGBCC_SH_NMID_CMPGE			0x000E	//CMPGE
+#define BGBCC_SH_NMID_CMPGT			0x000F	//CMPGT
+#define BGBCC_SH_NMID_JMP			0x0010	//JMP
+#define BGBCC_SH_NMID_JSR			0x0011	//JSR
+#define BGBCC_SH_NMID_BRA			0x0012	//BRA
+#define BGBCC_SH_NMID_BSR			0x0013	//BSR
+#define BGBCC_SH_NMID_BT			0x0014	//BT
+#define BGBCC_SH_NMID_BF			0x0015	//BF
+#define BGBCC_SH_NMID_BTS			0x0016	//BTS
+#define BGBCC_SH_NMID_BFS			0x0017	//BFS
+#define BGBCC_SH_NMID_DIV1			0x0018	//DIV1
+#define BGBCC_SH_NMID_DMULU			0x0019	//DMULU
+#define BGBCC_SH_NMID_DMULS			0x001A	//DMULS
+#define BGBCC_SH_NMID_TST			0x001B	//TST
+#define BGBCC_SH_NMID_AND			0x001C	//AND
+#define BGBCC_SH_NMID_XOR			0x001D	//XOR
+#define BGBCC_SH_NMID_OR			0x001E	//OR
+#define BGBCC_SH_NMID_INVALID		0x001F	//Invalid
+#define BGBCC_SH_NMID_DIV0S			0x0020	//
+#define BGBCC_SH_NMID_CMPSTR		0x0021	//
+#define BGBCC_SH_NMID_MULUW			0x0022	//
+#define BGBCC_SH_NMID_MULSW			0x0023	//
+#define BGBCC_SH_NMID_MACL			0x0024	//
+#define BGBCC_SH_NMID_BSRF			0x0025	//
+#define BGBCC_SH_NMID_BRAF			0x0026	//
+#define BGBCC_SH_NMID_MULL			0x0027	//
+#define BGBCC_SH_NMID_CLRT			0x0028	//
+#define BGBCC_SH_NMID_SETT			0x0029	//
+#define BGBCC_SH_NMID_CLRMAC		0x002A	//
+#define BGBCC_SH_NMID_NOP			0x002B	//
+#define BGBCC_SH_NMID_MOVT			0x002C	//
+#define BGBCC_SH_NMID_RTS			0x002D	//
+#define BGBCC_SH_NMID_SLEEP			0x002E	//
+#define BGBCC_SH_NMID_RTE			0x002F	//
+#define BGBCC_SH_NMID_SHLL			0x0030	//
+#define BGBCC_SH_NMID_DT			0x0031	//
+#define BGBCC_SH_NMID_SHAL			0x0032	//
+#define BGBCC_SH_NMID_SHLR			0x0033	//
+#define BGBCC_SH_NMID_CMPPZ			0x0034	//
+#define BGBCC_SH_NMID_SHAR			0x0035	//
+#define BGBCC_SH_NMID_ROTL			0x0036	//
+#define BGBCC_SH_NMID_ROTCL			0x0037	//
+#define BGBCC_SH_NMID_ROTT			0x0038	//
+#define BGBCC_SH_NMID_ROTCR			0x0039	//
+#define BGBCC_SH_NMID_SHLL2			0x003A	//
+#define BGBCC_SH_NMID_ROTR			0x003B	//
+#define BGBCC_SH_NMID_CMPPL			0x003C	//
+#define BGBCC_SH_NMID_SHLL8			0x003D	//
+#define BGBCC_SH_NMID_SHLL16		0x003E	//
+#define BGBCC_SH_NMID_SHLR2			0x003F	//
+#define BGBCC_SH_NMID_SHLR8			0x0040	//
+#define BGBCC_SH_NMID_SHLR16		0x0041	//
+#define BGBCC_SH_NMID_MACW			0x0042	//
+#define BGBCC_SH_NMID_NOT			0x0043	//
+#define BGBCC_SH_NMID_SWAPB			0x0044	//
+#define BGBCC_SH_NMID_SWAPW			0x0045	//
+#define BGBCC_SH_NMID_NEGC			0x0046	//
+#define BGBCC_SH_NMID_NEG			0x0047	//
+#define BGBCC_SH_NMID_EXTUB			0x0048	//
+#define BGBCC_SH_NMID_EXTUW			0x0049	//
+#define BGBCC_SH_NMID_EXTSB			0x004A	//
+#define BGBCC_SH_NMID_EXTSW			0x004B	//
+#define BGBCC_SH_NMID_TRAPA			0x004C	//
+#define BGBCC_SH_NMID_MOVA			0x004D	//
+#define BGBCC_SH_NMID_TSTB			0x004E	//
+#define BGBCC_SH_NMID_DIV0U			0x004F	//
+#define BGBCC_SH_NMID_LDC			0x0050	//
+#define BGBCC_SH_NMID_LDCL			0x0051	//
+#define BGBCC_SH_NMID_LDS			0x0052	//
+#define BGBCC_SH_NMID_LDSL			0x0053	//
+#define BGBCC_SH_NMID_STC			0x0054	//
+#define BGBCC_SH_NMID_STCL			0x0055	//
+#define BGBCC_SH_NMID_STS			0x0056	//
+#define BGBCC_SH_NMID_STSL			0x0057	//
+#define BGBCC_SH_NMID_CASL			0x0058	//
+#define BGBCC_SH_NMID_TASB			0x0059	//
+#define BGBCC_SH_NMID_XTRCT			0x005A	//
+#define BGBCC_SH_NMID_ANDB			0x005B	//
+#define BGBCC_SH_NMID_XORB			0x005C	//
+#define BGBCC_SH_NMID_ORB			0x005D	//
+#define BGBCC_SH_NMID_SHAD			0x005E	//
+#define BGBCC_SH_NMID_SHLD			0x005F	//
+#define BGBCC_SH_NMID_INVDLY		0x0060	//
+#define BGBCC_SH_NMID_CLRS			0x0061	//
+#define BGBCC_SH_NMID_SETS			0x0062	//
+#define BGBCC_SH_NMID_MOVI20		0x0063	//MOVI20
+#define BGBCC_SH_NMID_MOVI20S		0x0064	//MOVI20S
+#define BGBCC_SH_NMID_MOVUB			0x0065	//MOVU.B
+#define BGBCC_SH_NMID_MOVUW			0x0066	//MOVU.W
+#define BGBCC_SH_NMID_MOVUL			0x0067	//MOVU.L
+#define BGBCC_SH_NMID_LEAB			0x0068	//LEA.B
+#define BGBCC_SH_NMID_LEAW			0x0069	//LEA.W
+#define BGBCC_SH_NMID_LEAL			0x006A	//LEA.L
+#define BGBCC_SH_NMID_LEAQ			0x006B	//LEA.Q
+#define BGBCC_SH_NMID_LEAO			0x006C	//LEA.O
+#define BGBCC_SH_NMID_NOTT			0x006D	//
+#define BGBCC_SH_NMID_LDTLB			0x006E	//
+#define BGBCC_SH_NMID_BRK			0x006F	//
+#define BGBCC_SH_NMID_MOVRT			0x0070	//
+#define BGBCC_SH_NMID_MOVCAL		0x0071	//
+#define BGBCC_SH_NMID_PUSH			0x0072	//
+#define BGBCC_SH_NMID_POP			0x0073	//
+#define BGBCC_SH_NMID_ICLRMD		0x0074	//
+#define BGBCC_SH_NMID_ISETMD		0x0075	//
+#define BGBCC_SH_NMID_SHLL1			0x0076	//
+#define BGBCC_SH_NMID_LDHF16		0x0077	//
+#define BGBCC_SH_NMID_BRAN			0x0078	//BRA/N
+#define BGBCC_SH_NMID_BSRN			0x0079	//BSR/N
+#define BGBCC_SH_NMID_RTSN			0x007A	//
+#define BGBCC_SH_NMID_LDIF16		0x007B	//
+#define BGBCC_SH_NMID_STHF16		0x007C	//
+#define BGBCC_SH_NMID_CSELT			0x007D	//
+#define BGBCC_SH_NMID_EXTUL			0x007E	//
+#define BGBCC_SH_NMID_EXTSL			0x007F	//
+#define BGBCC_SH_NMID_FABS			0x0080	//
+#define BGBCC_SH_NMID_FADD			0x0081	//
+#define BGBCC_SH_NMID_FCMPEQ		0x0082	//
+#define BGBCC_SH_NMID_FCMPGT		0x0083	//
+#define BGBCC_SH_NMID_FCNVDS		0x0084	//
+#define BGBCC_SH_NMID_FCNVSD		0x0085	//
+#define BGBCC_SH_NMID_FDIV			0x0086	//
+#define BGBCC_SH_NMID_FLDI0			0x0087	//
+#define BGBCC_SH_NMID_FLDI1			0x0088	//
+#define BGBCC_SH_NMID_FLDS			0x0089	//
+#define BGBCC_SH_NMID_FLOAT			0x008A	//
+#define BGBCC_SH_NMID_FMAC			0x008B	//
+#define BGBCC_SH_NMID_FMOV			0x008C	//
+#define BGBCC_SH_NMID_FMOVS			0x008D	//
+#define BGBCC_SH_NMID_FMOVD			0x008E	//
+#define BGBCC_SH_NMID_FMUL			0x008F	//
+#define BGBCC_SH_NMID_FNEG			0x0090	//
+#define BGBCC_SH_NMID_FSCHG			0x0091	//
+#define BGBCC_SH_NMID_FSQRT			0x0092	//
+#define BGBCC_SH_NMID_FSTS			0x0093	//
+#define BGBCC_SH_NMID_FSUB			0x0094	//
+#define BGBCC_SH_NMID_FTRC			0x0095	//
+#define BGBCC_SH_NMID_FSRRA			0x0096	//
+#define BGBCC_SH_NMID_FIPR			0x0097	//
+#define BGBCC_SH_NMID_FTRV			0x0098	//
+#define BGBCC_SH_NMID_PSETMD4		0x0099	//
+#define BGBCC_SH_NMID_PSETMD12		0x009A	//
+#define BGBCC_SH_NMID_FMOVX			0x009B	//
+#define BGBCC_SH_NMID_FMOVIS		0x009C	//
+#define BGBCC_SH_NMID_FMOVID		0x009D	//
+#define BGBCC_SH_NMID_FMOVSI		0x009E	//
+#define BGBCC_SH_NMID_FMOVDI		0x009F	//
 
-#define BGBCC_SH_NMID_PUSH			0x72	//
-#define BGBCC_SH_NMID_POP			0x73	//
-#define BGBCC_SH_NMID_ICLRMD		0x74	//
-#define BGBCC_SH_NMID_ISETMD		0x75	//
-#define BGBCC_SH_NMID_SHLL1			0x76	//
-#define BGBCC_SH_NMID_LDHF16		0x77	//
-#define BGBCC_SH_NMID_BRAN			0x78	//BRA/N
-#define BGBCC_SH_NMID_BSRN			0x79	//BSR/N
-#define BGBCC_SH_NMID_RTSN			0x7A	//
-#define BGBCC_SH_NMID_LDIF16		0x7B	//
-#define BGBCC_SH_NMID_STHF16		0x7C	//
-#define BGBCC_SH_NMID_CSELT			0x7D	//
-#define BGBCC_SH_NMID_EXTUL			0x7E	//
-#define BGBCC_SH_NMID_EXTSL			0x7F	//
+#define BGBCC_SH_NMID_FLDCF			0x00A8	//
+#define BGBCC_SH_NMID_FLDCD			0x00A9	//
+#define BGBCC_SH_NMID_FLDCI			0x00AA	//
+#define BGBCC_SH_NMID_FLDCH			0x00AB	//
+#define BGBCC_SH_NMID_FSTCF			0x00AC	//
+#define BGBCC_SH_NMID_FSTCD			0x00AD	//
+#define BGBCC_SH_NMID_FSTCI			0x00AE	//
+#define BGBCC_SH_NMID_FSTCH			0x00AF	//
+#define BGBCC_SH_NMID_FRCPA			0x00B0	//
+#define BGBCC_SH_NMID_FSQRTA		0x00B1	//
+#define BGBCC_SH_NMID_FRCP			0x00B2	//
+#define BGBCC_SH_NMID_SWCPLW		0x00B3	//
+#define BGBCC_SH_NMID_SWCPMW		0x00B4	//
+#define BGBCC_SH_NMID_SWCPHW		0x00B5	//
+#define BGBCC_SH_NMID_SWAPMW		0x00B6	//
+#define BGBCC_SH_NMID_SWAPHW		0x00B7	//
+#define BGBCC_SH_NMID_SWAPL			0x00B8	//
+#define BGBCC_SH_NMID_SWAPLW		0x00B9	//
+#define BGBCC_SH_NMID_BSR2F			0x00BA	//BSRF, 32-bit align
+#define BGBCC_SH_NMID_BRA2F			0x00BB	//BRAF, 32-bit align
+#define BGBCC_SH_NMID_MOVDL			0x00BC	//MOVD.L
+#define BGBCC_SH_NMID_RET			0x00BD	//
+#define BGBCC_SH_NMID_PUSHX2		0x00BE	//
+#define BGBCC_SH_NMID_POPX2			0x00BF	//
+#define BGBCC_SH_NMID_MOVI			0x00C0	//
+#define BGBCC_SH_NMID_MOVIV			0x00C1	//
+#define BGBCC_SH_NMID_PREF			0x00C2	//
+#define BGBCC_SH_NMID_OCBI			0x00C3	//
+#define BGBCC_SH_NMID_OCBP			0x00C4	//
+#define BGBCC_SH_NMID_OCBWB			0x00C5	//
+#define BGBCC_SH_NMID_ICBI			0x00C6	//
+#define BGBCC_SH_NMID_MOVQ			0x00C7	//MOV.Q
+#define BGBCC_SH_NMID_ADDQ			0x00C8	//ADD
+#define BGBCC_SH_NMID_SUBQ			0x00C9	//SUB
+#define BGBCC_SH_NMID_MULQ			0x00CA	//SUB
+#define BGBCC_SH_NMID_ANDQ			0x00CB	//SUB
+#define BGBCC_SH_NMID_ORQ			0x00CC	//SUB
+#define BGBCC_SH_NMID_XORQ			0x00CD	//SUB
+#define BGBCC_SH_NMID_SHLLQ			0x00CE	//SUB
+#define BGBCC_SH_NMID_SHLRQ			0x00CF	//SUB
+#define BGBCC_SH_NMID_SHALQ			0x00D0	//SUB
+#define BGBCC_SH_NMID_SHARQ			0x00D1	//SUB
+#define BGBCC_SH_NMID_LDSH16		0x00D2	//SUB
+#define BGBCC_SH_NMID_TSTQ			0x00D3	//SUB
+#define BGBCC_SH_NMID_SHADQ			0x00D4	//
+#define BGBCC_SH_NMID_SHLDQ			0x00D5	//
+#define BGBCC_SH_NMID_SHLL4			0x00D6	//
+#define BGBCC_SH_NMID_SHLR4			0x00D7	//
+#define BGBCC_SH_NMID_BREQ			0x00D8	//
+#define BGBCC_SH_NMID_BRNE			0x00D9	//
+#define BGBCC_SH_NMID_BRGT			0x00DA	//
+#define BGBCC_SH_NMID_BRLE			0x00DB	//
+#define BGBCC_SH_NMID_BRGE			0x00DC	//
+#define BGBCC_SH_NMID_BRLT			0x00DD	//
+#define BGBCC_SH_NMID_ICLRMD_DQ		0x00DE	//
+#define BGBCC_SH_NMID_ISETMD_DQ		0x00DF	//
+#define BGBCC_SH_NMID_CMPQHS		0x00E0	//CMPQ/HS
+#define BGBCC_SH_NMID_CMPQHI		0x00E1	//CMPQ/HI
+#define BGBCC_SH_NMID_CMPQEQ		0x00E2	//CMPQ/EQ
+#define BGBCC_SH_NMID_CMPQGE		0x00E3	//CMPQ/GE
+#define BGBCC_SH_NMID_CMPQGT		0x00E4	//CMPQ/GT
+#define BGBCC_SH_NMID_CMPQPZ		0x00E5	//CMPQ/PZ
+#define BGBCC_SH_NMID_CMPQPL		0x00E6	//CMPQ/PL
+#define BGBCC_SH_NMID_NOTS			0x00E7	//
+#define BGBCC_SH_NMID_SHLL32		0x00E8	//
+#define BGBCC_SH_NMID_SHLR32		0x00E9	//
+#define BGBCC_SH_NMID_SHLR1			0x00EA	//
+#define BGBCC_SH_NMID_SHAR1			0x00EB	//
+#define BGBCC_SH_NMID_SHAR2			0x00EC	//
+#define BGBCC_SH_NMID_SHAR4			0x00ED	//
+#define BGBCC_SH_NMID_SHAR8			0x00EE	//
+#define BGBCC_SH_NMID_SHAR16		0x00EF	//
+#define BGBCC_SH_NMID_SHAR32		0x00F0	//
+#define BGBCC_SH_NMID_LDSH8			0x00F1	//SUB
+#define BGBCC_SH_NMID_BRA8B			0x00F2	//SUB
+#define BGBCC_SH_NMID_SHARX			0x00F3	//SUB
+#define BGBCC_SH_NMID_MOVNT			0x00F4	//
+#define BGBCC_SH_NMID_CLZ			0x00F5	//
+#define BGBCC_SH_NMID_CLZQ			0x00F6	//
+#define BGBCC_SH_NMID_SWAP8B		0x00F7	//
+#define BGBCC_SH_NMID_SWCPLB		0x00F8	//
+#define BGBCC_SH_NMID_SWAPLB		0x00F9	//
+#define BGBCC_SH_NMID_SWAPMB		0x00FA	//
+#define BGBCC_SH_NMID_SWAPHB		0x00FB	//
+#define BGBCC_SH_NMID_SWCPMB		0x00FC	//
+#define BGBCC_SH_NMID_SWCPHB		0x00FD	//
+#define BGBCC_SH_NMID_LDBF16		0x00FE	//
+#define BGBCC_SH_NMID_STBF16		0x00FF	//
 
-#define BGBCC_SH_NMID_FABS			0x80	//
-#define BGBCC_SH_NMID_FADD			0x81	//
-#define BGBCC_SH_NMID_FCMPEQ		0x82	//
-#define BGBCC_SH_NMID_FCMPGT		0x83	//
-#define BGBCC_SH_NMID_FCNVDS		0x84	//
-#define BGBCC_SH_NMID_FCNVSD		0x85	//
-#define BGBCC_SH_NMID_FDIV			0x86	//
-#define BGBCC_SH_NMID_FLDI0			0x87	//
-#define BGBCC_SH_NMID_FLDI1			0x88	//
-#define BGBCC_SH_NMID_FLDS			0x89	//
-#define BGBCC_SH_NMID_FLOAT			0x8A	//
-#define BGBCC_SH_NMID_FMAC			0x8B	//
-#define BGBCC_SH_NMID_FMOV			0x8C	//
-#define BGBCC_SH_NMID_FMOVS			0x8D	//
-#define BGBCC_SH_NMID_FMOVD			0x8E	//
-#define BGBCC_SH_NMID_FMUL			0x8F	//
-#define BGBCC_SH_NMID_FNEG			0x90	//
-#define BGBCC_SH_NMID_FSCHG			0x91	//
-#define BGBCC_SH_NMID_FSQRT			0x92	//
-#define BGBCC_SH_NMID_FSTS			0x93	//
-#define BGBCC_SH_NMID_FSUB			0x94	//
-#define BGBCC_SH_NMID_FTRC			0x95	//
-#define BGBCC_SH_NMID_FSRRA			0x96	//
-#define BGBCC_SH_NMID_FIPR			0x97	//
-#define BGBCC_SH_NMID_FTRV			0x98	//
-#define BGBCC_SH_NMID_PSETMD4		0x99	//
-#define BGBCC_SH_NMID_PSETMD12		0x9A	//
-#define BGBCC_SH_NMID_FMOVX			0x9B	//
-#define BGBCC_SH_NMID_FMOVIS		0x9C	//
-#define BGBCC_SH_NMID_FMOVID		0x9D	//
-#define BGBCC_SH_NMID_FMOVSI		0x9E	//
-#define BGBCC_SH_NMID_FMOVDI		0x9F	//
+#define BGBCC_SH_NMID_ADDL			0x0100	//
+#define BGBCC_SH_NMID_SUBL			0x0101	//
+#define BGBCC_SH_NMID_PADDW			0x0102	//
+#define BGBCC_SH_NMID_PADDL			0x0103	//
+#define BGBCC_SH_NMID_PSUBW			0x0104	//
+#define BGBCC_SH_NMID_PSUBL			0x0105	//
+#define BGBCC_SH_NMID_PMULUW		0x0106	//
+#define BGBCC_SH_NMID_MOVD			0x0107	//
+#define BGBCC_SH_NMID_MOVHD			0x0108	//
+#define BGBCC_SH_NMID_MOVLD			0x0109	//
+#define BGBCC_SH_NMID_MOVHLD		0x010A	//
+#define BGBCC_SH_NMID_MOVLHD		0x010B	//
+#define BGBCC_SH_NMID_ADDSL			0x010C	//ADD
+#define BGBCC_SH_NMID_ADDUL			0x010D	//ADD
+#define BGBCC_SH_NMID_SUBSL			0x010E	//ADD
+#define BGBCC_SH_NMID_SUBUL			0x010F	//ADD
 
-#define BGBCC_SH_NMID_CMOVTB		0xA0	//CMOVT.B
-#define BGBCC_SH_NMID_CMOVTW		0xA1	//CMOVT.W
-#define BGBCC_SH_NMID_CMOVTL		0xA2	//CMOVT.L
-#define BGBCC_SH_NMID_CMOVTQ		0xA3	//CMOVT.Q
-#define BGBCC_SH_NMID_CMOVFB		0xA4	//CMOVF.B
-#define BGBCC_SH_NMID_CMOVFW		0xA5	//CMOVF.W
-#define BGBCC_SH_NMID_CMOVFL		0xA6	//CMOVF.L
-#define BGBCC_SH_NMID_CMOVFQ		0xA7	//CMOVF.Q
+#define BGBCC_SH_NMID_CMOVTB		0x0110	//CMOVT.B
+#define BGBCC_SH_NMID_CMOVTW		0x0111	//CMOVT.W
+#define BGBCC_SH_NMID_CMOVTL		0x0112	//CMOVT.L
+#define BGBCC_SH_NMID_CMOVTQ		0x0113	//CMOVT.Q
+#define BGBCC_SH_NMID_CMOVFB		0x0114	//CMOVF.B
+#define BGBCC_SH_NMID_CMOVFW		0x0115	//CMOVF.W
+#define BGBCC_SH_NMID_CMOVFL		0x0116	//CMOVF.L
+#define BGBCC_SH_NMID_CMOVFQ		0x0117	//CMOVF.Q
+#define BGBCC_SH_NMID_CMOVUTB		0x0118	//CMOVUT.B
+#define BGBCC_SH_NMID_CMOVUTW		0x0119	//CMOVUT.W
+#define BGBCC_SH_NMID_CMOVUTL		0x011A	//CMOVUT.L
+#define BGBCC_SH_NMID_CMOVDTL		0x011B	//CMOVDT.L
+#define BGBCC_SH_NMID_CMOVUFB		0x011C	//CMOVUF.B
+#define BGBCC_SH_NMID_CMOVUFW		0x011D	//CMOVUF.W
+#define BGBCC_SH_NMID_CMOVUFL		0x011E	//CMOVUF.L
+#define BGBCC_SH_NMID_CMOVDFL		0x011F	//CMOVDF.L
 
-#define BGBCC_SH_NMID_FLDCF			0xA8	//
-#define BGBCC_SH_NMID_FLDCD			0xA9	//
-#define BGBCC_SH_NMID_FLDCI			0xAA	//
-#define BGBCC_SH_NMID_FLDCH			0xAB	//
-#define BGBCC_SH_NMID_FSTCF			0xAC	//
-#define BGBCC_SH_NMID_FSTCD			0xAD	//
-#define BGBCC_SH_NMID_FSTCI			0xAE	//
-#define BGBCC_SH_NMID_FSTCH			0xAF	//
-#define BGBCC_SH_NMID_FRCPA			0xB0	//
-#define BGBCC_SH_NMID_FSQRTA		0xB1	//
-#define BGBCC_SH_NMID_FRCP			0xB2	//
-
-#define BGBCC_SH_NMID_BSR2F			0xBA	//BSRF, 32-bit align
-#define BGBCC_SH_NMID_BRA2F			0xBB	//BRAF, 32-bit align
-
-#define BGBCC_SH_NMID_MOVDL			0xBC	//MOVD.L
-#define BGBCC_SH_NMID_RET			0xBD	//
-#define BGBCC_SH_NMID_PUSHX2		0xBE	//
-#define BGBCC_SH_NMID_POPX2			0xBF	//
-
-#define BGBCC_SH_NMID_MOVI			0xC0	//
-#define BGBCC_SH_NMID_MOVIV			0xC1	//
-#define BGBCC_SH_NMID_PREF			0xC2	//
-#define BGBCC_SH_NMID_OCBI			0xC3	//
-#define BGBCC_SH_NMID_OCBP			0xC4	//
-#define BGBCC_SH_NMID_OCBWB			0xC5	//
-#define BGBCC_SH_NMID_ICBI			0xC6	//
-#define BGBCC_SH_NMID_MOVQ			0xC7	//MOV.Q
-#define BGBCC_SH_NMID_ADDQ			0xC8	//ADD
-#define BGBCC_SH_NMID_SUBQ			0xC9	//SUB
-#define BGBCC_SH_NMID_MULQ			0xCA	//SUB
-#define BGBCC_SH_NMID_ANDQ			0xCB	//SUB
-#define BGBCC_SH_NMID_ORQ			0xCC	//SUB
-#define BGBCC_SH_NMID_XORQ			0xCD	//SUB
-#define BGBCC_SH_NMID_SHLLQ			0xCE	//SUB
-#define BGBCC_SH_NMID_SHLRQ			0xCF	//SUB
-#define BGBCC_SH_NMID_SHALQ			0xD0	//SUB
-#define BGBCC_SH_NMID_SHARQ			0xD1	//SUB
-#define BGBCC_SH_NMID_LDSH16		0xD2	//SUB
-#define BGBCC_SH_NMID_TSTQ			0xD3	//SUB
-#define BGBCC_SH_NMID_SHADQ			0xD4	//
-#define BGBCC_SH_NMID_SHLDQ			0xD5	//
-#define BGBCC_SH_NMID_SHLL4			0xD6	//
-#define BGBCC_SH_NMID_SHLR4			0xD7	//
-#define BGBCC_SH_NMID_BREQ			0xD8	//
-#define BGBCC_SH_NMID_BRNE			0xD9	//
-#define BGBCC_SH_NMID_BRGT			0xDA	//
-#define BGBCC_SH_NMID_BRLE			0xDB	//
-#define BGBCC_SH_NMID_BRGE			0xDC	//
-#define BGBCC_SH_NMID_BRLT			0xDD	//
-#define BGBCC_SH_NMID_ICLRMD_DQ		0xDE	//
-#define BGBCC_SH_NMID_ISETMD_DQ		0xDF	//
-#define BGBCC_SH_NMID_CMPQHS		0xE0	//CMPQ/HS
-#define BGBCC_SH_NMID_CMPQHI		0xE1	//CMPQ/HI
-#define BGBCC_SH_NMID_CMPQEQ		0xE2	//CMPQ/EQ
-#define BGBCC_SH_NMID_CMPQGE		0xE3	//CMPQ/GE
-#define BGBCC_SH_NMID_CMPQGT		0xE4	//CMPQ/GT
-#define BGBCC_SH_NMID_CMPQPZ		0xE5	//CMPQ/PZ
-#define BGBCC_SH_NMID_CMPQPL		0xE6	//CMPQ/PL
-#define BGBCC_SH_NMID_NOTS			0xE7	//
-#define BGBCC_SH_NMID_SHLL32		0xE8	//
-#define BGBCC_SH_NMID_SHLR32		0xE9	//
-#define BGBCC_SH_NMID_SHLR1			0xEA	//
-#define BGBCC_SH_NMID_SHAR1			0xEB	//
-#define BGBCC_SH_NMID_SHAR2			0xEC	//
-#define BGBCC_SH_NMID_SHAR4			0xED	//
-#define BGBCC_SH_NMID_SHAR8			0xEE	//
-#define BGBCC_SH_NMID_SHAR16		0xEF	//
-#define BGBCC_SH_NMID_SHAR32		0xF0	//
-#define BGBCC_SH_NMID_LDSH8			0xF1	//SUB
-#define BGBCC_SH_NMID_BRA8B			0xF2	//SUB
-#define BGBCC_SH_NMID_SHARX			0xF3	//SUB
-#define BGBCC_SH_NMID_MOVNT			0xF4	//
-#define BGBCC_SH_NMID_CLZ			0xF5	//
-#define BGBCC_SH_NMID_CLZQ			0xF6	//
-
+#define BGBCC_SH_NMID_PADDH			0x0121	//
+#define BGBCC_SH_NMID_PSUBH			0x0122	//
+#define BGBCC_SH_NMID_PMULH			0x0123	//
 
 
 #define BGBCC_SH_FMID_REGREG		0x01	//Rm, Rn
@@ -785,84 +826,6 @@
 #define BGBCC_SH_MAX_CACHEFPVAR 4
 
 
-#define BGBCC_COFF_MACH_SH3			0x01A2
-#define BGBCC_COFF_MACH_SH3DSP		0x01A3
-#define BGBCC_COFF_MACH_SH4			0x01A6
-
-#define BGBCC_COFF_SCNT_NOPAD		0x00000008
-#define BGBCC_COFF_SCNT_CODE		0x00000020
-#define BGBCC_COFF_SCNT_IDATA		0x00000040
-#define BGBCC_COFF_SCNT_UDATA		0x00000080
-
-#define BGBCC_COFF_SCNT_GPREL		0x00008000
-#define BGBCC_COFF_SCNT_MEM6BIT		0x00020000
-
-#define BGBCC_COFF_SCNT_ALGN1B		0x00100000
-#define BGBCC_COFF_SCNT_ALGN2B		0x00200000
-#define BGBCC_COFF_SCNT_ALGN4B		0x00300000
-#define BGBCC_COFF_SCNT_ALGN8B		0x00400000
-#define BGBCC_COFF_SCNT_ALGN16B		0x00500000
-#define BGBCC_COFF_SCNT_ALGN32B		0x00600000
-#define BGBCC_COFF_SCNT_ALGN64B		0x00700000
-#define BGBCC_COFF_SCNT_ALGN128B	0x00800000
-#define BGBCC_COFF_SCNT_ALGN256B	0x00900000
-#define BGBCC_COFF_SCNT_ALGN512B	0x00A00000
-#define BGBCC_COFF_SCNT_ALGN1KB		0x00B00000
-#define BGBCC_COFF_SCNT_ALGN2KB		0x00C00000
-#define BGBCC_COFF_SCNT_ALGN4KB		0x00D00000
-#define BGBCC_COFF_SCNT_ALGN8KB		0x00E00000
-
-#define BGBCC_COFF_SCNT_NRLCOVF		0x01000000
-#define BGBCC_COFF_SCNT_DISCARD		0x02000000
-#define BGBCC_COFF_SCNT_NOCACHE		0x04000000
-#define BGBCC_COFF_SCNT_NOPAGE		0x08000000
-#define BGBCC_COFF_SCNT_SHARED		0x10000000
-#define BGBCC_COFF_SCNT_EXECUTE		0x20000000
-#define BGBCC_COFF_SCNT_READ		0x40000000
-#define BGBCC_COFF_SCNT_WRITE		0x80000000
-
-/*
-Memory Models
-Default:
-	Text/Data/BSS range: 16MB
-	Address Space: Full 32/64
-
-Tiny16:
-	Assume all addresses fit within a 64kB space.
-	Address Space: 16 bit
-
-Small24:
-	Assume Text/Data/BSS range of 64kB.
-	Data/BSS range is 24 bits,
-	Address Space: 24 bit
-
-Medium24:
-	Assume Text/Data/BSS range of 16MB.
-	Address Space: 24 bit
-
-Medium32:
-	Assume Text/Data/BSS range of 16MB.
-	Address Space: 32 bit
-
-Large32:
-	Assume Text/Data/BSS range of 4GB.
-	Address Space: 32 bit.
-*/
-
-#define BGBCC_MEMMDL_DEFAULT		0	//Default
-#define BGBCC_MEMMDL_TINY16			1	//64KB
-#define BGBCC_MEMMDL_SMALL24		2	//64KB+16MB, 16MB
-#define BGBCC_MEMMDL_MEDIUM24		3	//16MB+16MB, 16MB
-#define BGBCC_MEMMDL_MEDIUM32		4	//16MB+16MB, 4GB
-#define BGBCC_MEMMDL_LARGE32		4	//4GB+4GB, 4GB
-
-#define BGBCC_PSZX_MASK				0x0F	//
-#define BGBCC_PSZX_UNK				0x00	//Unknown extension
-#define BGBCC_PSZX_SX				0x01	//Sign Extended
-#define BGBCC_PSZX_ZX				0x02	//Zero Extended
-#define BGBCC_PSZX_QW				0x03	//Quadword
-#define BGBCC_PSZX_SSX				0x04	//Small Sign Extended
-#define BGBCC_PSZX_SZX				0x05	//Small Zero Extended
 
 #define BGBCC_SHX_GenLabelTemp(ctx)		\
 	BGBCC_SHX_GenLabelTempLLn(ctx, __FILE__, __LINE__)
@@ -873,346 +836,20 @@ Large32:
 #define BGBCC_SHX_GETLREG_HI(reg)		(BGBCC_SH_REG_R0+(((reg)&31)+1))
 
 
+#if 0
 typedef struct BGBCC_SHX_Context_s BGBCC_SHX_Context;
 typedef struct BGBCC_SHX_OpcodeArg_s BGBCC_SHX_OpcodeArg;
 typedef struct BGBCC_SHX_VarSpan_s BGBCC_SHX_VarSpan;
 typedef struct BGBCC_SHX_VarSpan2_s BGBCC_SHX_VarSpan2;
 
 typedef struct BGBCC_SHX_EmitQueueOp_s BGBCC_SHX_EmitQueueOp;
-
-
-struct BGBCC_SHX_Context_s {
-char *sec_name[16];
-byte *sec_buf[16];
-byte *sec_end[16];
-byte *sec_pos[16];
-byte *sec_vpos[16];
-u32 sec_rva[16];		//relative virtual address (image offset)
-u32 sec_lva[16];		//logical virtual address
-u32 sec_lsz[16];		//logical size
-byte sec;
-byte nsec;
-
-byte *asm_buf[16];
-byte *asm_end[16];
-byte *asm_pos[16];
-byte do_asm;
-
-byte is_le;			//is little endian
-byte use_bp;		//use frame pointer
-byte need_farjmp;	//function needs far32 jumps
-byte need_f16jmp;	//function needs far16 jumps
-byte need_n12jmp;	//function needs at least 12-bit jumps
-
-byte need_n16bsr;	//image exceeds 16-bit BSR
-byte need_n20bsr;	//image exceeds 20-bit BSR
-byte need_n24bsr;	//image exceeds 24-bit BSR
-
-byte need_n16dat;	//image exceeds 16-bit BSR
-byte need_n20dat;	//image exceeds 20-bit BSR
-byte need_n24dat;	//image exceeds 24-bit BSR
-
-byte is_pic;		//is PIC.
-byte use_fpr;		//uses floating point registers
-byte use_dbr;		//uses fp double registers
-byte is_vararg;		//function is varargs
-byte is_simpass;	//is simulation pass
-byte is_stable;		//function is stable
-byte is_addr64;		//target uses a 64-bit ISA
-byte is_rawasm;		//is raw assembler
-byte is_leaf;		//function is a leaf function
-byte is_rom;		//building a ROM image
-byte is_betav;		//uses BetaVe tweaks.
-byte is_mergece;	//merge CC0e/CC3e into CExx
-byte is_tr_leaf;	//given trace is a leaf
-byte is_addr_x32;	//target uses 32-bit addresses (on 64-bit ISA)
-
-byte no_fpu;		//no hardware FPU instructions
-byte no_ext32;		//no 32-bit instruction forms
-byte fpu_soft;		//use SoftFPU design.
-byte fpu_lite;		//use LiteFPU design.
-
-byte is_fixed32;	//uses only 32-bit instruction forms
-
-byte has_shad;		//has SHAD/SHLD
-byte has_movi20;	//has MOVI20 and friends
-byte has_misalgn;	//has misaligned load/store
-byte has_bjx1mov;	//has BJX1 MOV I-forms
-byte has_bjx1jmp;	//has BJX1 Branch I-forms
-byte has_bjx1ari;	//has BJX1 Arithmetic I-forms
-byte has_bjx1breq;	//has BJX1 BREQ/BRNE/... I-forms
-byte use_onlyimm;	//use only inline immediates
-byte has_bjx1egpr;	//has BJX1-64 extended GPR ops
-byte has_bjx1r3mov;	//has BJX1 Reg3 ops
-
-byte use_egpr;		//enable use of extended GPRs
-byte maxreg_gpr;	//current number of GPR register-slots
-byte maxreg_gpr_lf;	//current number of GPR register-slots (leaf)
-
-byte use_memmdl;	//use memory model
-byte csrv_skip;		//skip a CSRV operation
-
-byte use_emitqueue;	//use emit queue
-
-byte emit_isprobe;	//if we are simply probing an instruction
-
-byte test_lclalign;	//local alignment-sensitivity test
-
-int simfnsz;		//simulation's function size
-int simfnmsz;		//simulation's min function size
-int simfnnsz;		//simulation's max function size
-int tr_trnum;		//trace number
-int tr_opnum;		//trace op number
-
-int fnsz_pro;		//size of prolog
-int fnsz_epi;		//size of epilog
-int fnsz_bod;		//size of function body
-int fnsz_vtr[16];
-int fnsz_lvtr[16];
-int fnsz_dvtr[16];
-
-int sim_txtsz;
-int sim_datsz;
-int sim_bsssz;
-int simimgsz;
-
-u32 *lbl_ofs;		//label offsets
-u32 *rlc_ofs;		//reloc offsets
-u32 *lbl_id;		//label IDs
-u32 *rlc_id;		//reloc label IDs
-byte *lbl_sec;		//label section
-byte *rlc_sec;		//reloc section
-byte *rlc_ty;		//reloc type
-s32 *lbl_chn;		//label chains
-int nlbl, mlbl;
-int nrlc, mrlc;
-int nvlbl;
-u16 lblrov;			//labels (local)
-u16 lbltrov;		//labels (temp)
-
-s32 lbl_hash[1024];		//label chain hash
-s32 lbl_simhash[64];	//label chain hash (simulation)
-
-char **lbln_name;		//named label names
-u32 *lbln_id;			//named label IDs
-s16 *lbln_chn;			//named label chain
-s16 lbln_hash[256];
-int nlbln, mlbln;
-int nvlbln;
-
-u32 *lblstr_ofs;	//named label names
-u32 *lblstr_id;		//named label IDs
-int nlblstr, mlblstr;
-
-int pos_pad_op0;
-int pos_pad_op1;
-int pos_pad_op2;
-int pos_pad_op3;
-
-// byte reg_idx[BGBCC_SH_MAX_CACHEVAR];
-// byte reg_reg[BGBCC_SH_MAX_CACHEVAR];
-// int reg_live;
-// int reg_resv;
-u32 reg_save;
-// int reg_dirty;
-u32 freg_save;
-u32 reg_vsave;
-u32 freg_vsave;
-
-int cnt_set_fp32;
-int cnt_set_fp64;
-
-int cnt_set_dq0;
-int cnt_set_dq1;
-
-int stat_tot_dq0;
-int stat_tot_dq1;
-int stat_tot_dqi;
-
-int stat_tot_imm;
-int stat_tot_imm8;
-int stat_tot_imm16;
-int stat_tot_imm8r;
-int stat_tot_imm32;
-
-int stat_ovlbl8;
-
-int stat_opc_tot;
-int stat_opc_base16;
-int stat_opc_ext8a;
-int stat_opc_ext8e;
-int stat_opc_extCe;
-int stat_opc_extCC0;
-int stat_opc_extCC3;
-byte stat_opc_issfx;
-
-
-int sim_voffs;		//est' offset between real PC and sim PC
-
-s32 dfl_fpscr;		//default FPSCR state
-s32 cur_fpscr;		//current FPSCR state
-
-s32 cur_srmode;		//current SR mode
-byte dfl_dq;
-
-s64 image_base;		//image base address
-
-int ofs_s16tab[256];
-int ofs_s32tab[256];
-byte idx_s16tab[256];
-byte idx_s32tab[256];
-
-s16 const_s16tab[256];
-s32 const_s32tab[256];
-u32 const_s16tab_rlc[256];	//reloc label type+ID
-u32 const_s32tab_rlc[256];	//reloc label type+ID
-byte const_ns16;
-byte const_ns32;
-byte nofs_s16tab;
-byte nofs_s32tab;
-
-int jitfl;
-
-const byte *jcachereg;
-const byte *qcachereg;
-const byte *pcachereg;
-
-byte reg_pszx[32];		//register sign/zero extension
-
-ccxl_register regalc_map[32];
-byte regalc_ltcnt[32];	//lifetime count (who to evict)
-byte regalc_utcnt[32];	//current use count (0=unused)
-u32 regalc_save;		//register has been saved and may hold a value
-u32 regalc_live;		//register is currently holding a value
-u32 regalc_dirty;
-
-ccxl_register fregalc_map[16];
-byte fregalc_ltcnt[16];	//lifetime count (who to evict)
-byte fregalc_utcnt[16];	//current use count (0=unused)
-u16 fregalc_save;		//register has been saved and may hold a value
-u16 fregalc_live;		//register is currently holding a value
-u16 fregalc_dirty;
-
-u32 sreg_live;			//scratch registers live (per 3AC operation)
-u32 sreg_held;			//scratch registers live-held (multiple ops)
-u32 sfreg_live;			//scratch registers live (per 3AC operation)
-u32 sfreg_held;			//scratch registers live-held (multiple ops)
-
-int iflvl_t;			//number of branches in true set
-int iflvl_f;			//number of branches in false set
-
-BGBCC_SHX_VarSpan **vspan;
-short *vspan_chn;
-short vspan_hash[64];
-int vspan_num;
-int vspan_max;
-int vsp_rsv;
-int vsp_tcnt;
-
-int frm_size;			//allocated size of frame
-int frm_offs_lcl;		//frame offset of local vars
-int frm_offs_tmp;		//frame offset of temporaries
-int frm_offs_fix;		//fixed-size automatic
-int lbl_ret;			//label ID for function exit
-int lbl_got;			//label ID for got
-int frm_offs_retstr;	//offset of return struct
-int frm_offs_save;		//offset of register-save area
-
-int frm_offs_thisptr;	//offset of 'this' pointer
-
-int lbl_rom_data_strt;
-int lbl_rom_data_end;
-
-BGBCC_SHX_Context *next;
-struct BGBCC_TransState_s *tctx;
-FILE *cgen_log;
-
-char *csrept;
-int cnrept;
-
-BGBCC_SHX_EmitQueueOp *eqfree;
-BGBCC_SHX_EmitQueueOp *eqstrt, *eqend;
-
-int *got_gblidx;
-int got_n_gblidx;
-int got_m_gblidx;
-int t_got_gblidx[4096];
-
-int *lvt16_lbl;
-s64 *lvt16_val;
-int lvt16_n_idx;
-int lvt16_m_idx;
-int t_lvt16_lbl[1024];
-s64 t_lvt16_val[1024*2];
-
-int *genlabel_srcpos;
-int genlabel_limit;
-int t_genlabel_srcpos[4096];
-
-/* Epilog Caching */
-int epihash_key[1024];
-int epihash_lbl[1024];
-
-/* Prolog Caching */
-int eprhash_key[1024];
-int eprhash_lbl[1024];
-
-
-int opcnt_hi8[256];
-int opcnt_3xx[256];
-int n_opcnt_3xx;
-
-int opcnt_f0xx[256];
-int opcnt_opw1;
-};
-
-/*
-sc==0: register, immediate, or label
-	breg!=Z: register
-	breg==Z: immediate (disp)
-sc!=0: memory reference
- */
-struct BGBCC_SHX_OpcodeArg_s {
-byte ty;		//operand type
-byte sc;		//scale for Reg/RM forms (1,2,3,4 for mem-ref)
-byte ireg;		//index for Reg/RM forms
-byte breg;		//base for Reg/RM forms, or register
-s64 disp;		//displacement for Reg/RM forms, or immed
-int lbl;		//label
-char *name;		//name
-};
-
-struct BGBCC_SHX_VarSpan2_s {
-int bbeg;				//begin (vop)
-int bend;				//end (vop)
-int tbeg;				//begin (vop)
-int tend;				//end (vop)
-int cnt;				//total times used
-};
-
-struct BGBCC_SHX_VarSpan_s {
-ccxl_register reg;		//register in question
-int bbeg;				//begin (vop)
-int bend;				//end (vop)
-int tbeg;				//begin (vop)
-int tend;				//end (vop)
-int cnt;				//total times used
-int flag;				//span flags
-
-BGBCC_SHX_VarSpan2 seq[64];
-int nseq;
-};
-
-/*
- * Used to buffer instructions during emit.
- */
-struct BGBCC_SHX_EmitQueueOp_s {
-BGBCC_SHX_EmitQueueOp *next;
-u16 nmid;
-byte fmid;
-byte rn;		//Rn
-byte rm;		//Rm or Rs
-byte ro;		//Ro or Rt
-int imm;
-int lbl;
-};
+#endif
+
+#if 1
+typedef struct BGBCC_CMG_Context_s BGBCC_SHX_Context;
+typedef struct BGBCC_CMG_OpcodeArg_s BGBCC_SHX_OpcodeArg;
+typedef struct BGBCC_CMG_VarSpan_s BGBCC_SHX_VarSpan;
+typedef struct BGBCC_CMG_VarSpan2_s BGBCC_SHX_VarSpan2;
+
+typedef struct BGBCC_CMG_EmitQueueOp_s BGBCC_SHX_EmitQueueOp;
+#endif

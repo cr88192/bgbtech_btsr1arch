@@ -589,6 +589,16 @@ bool BGBCC_CCXL_IsRegFloat16P(
 	return(false);
 }
 
+bool BGBCC_CCXL_IsRegBFloat16P(
+	BGBCC_TransState *ctx, ccxl_register reg)
+{
+	ccxl_type tty;
+	tty=BGBCC_CCXL_GetRegType(ctx, reg);
+	if(BGBCC_CCXL_TypeBFloat16P(ctx, tty))
+		return(true);
+	return(false);
+}
+
 bool BGBCC_CCXL_IsRegVariantP(
 	BGBCC_TransState *ctx, ccxl_register reg)
 {
@@ -1874,6 +1884,8 @@ int BGBCC_CCXL_GetTypeOperationZ(
 
 	if(i==CCXL_TY_F16)
 		return(CCXL_TY_F);
+	if(i==CCXL_TY_BF16)
+		return(CCXL_TY_F);
 	
 	if(BGBCC_CCXL_TypeFatArrayP(ctx, ty))
 		return(CCXL_TY_FATP_AREF);
@@ -1935,6 +1947,7 @@ int BGBCC_CCXL_GetTypeOperationBaseZ(
 		z1=CCXL_TY_P; break;
 	
 	case CCXL_TY_F16:
+	case CCXL_TY_BF16:
 		z1=CCXL_TY_F; break;
 	
 	case CCXL_TY_FATP:

@@ -433,6 +433,11 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_MOVDL:		s0="MOVD.L";	break;
 	case BJX2_NMID_LDI:			s0="LDI";		break;
 
+	case BJX2_NMID_ADDSL:		s0="ADDS.L";	break;
+	case BJX2_NMID_ADDUL:		s0="ADDU.L";	break;
+	case BJX2_NMID_SUBSL:		s0="SUBS.L";	break;
+	case BJX2_NMID_SUBUL:		s0="SUBU.L";	break;
+
 	default:
 		sprintf(tb, "?NM%02X", nmid);
 		s0=tb;

@@ -115,6 +115,18 @@ reg[4:0]		tMmioOpm;		//mmio read
 (* ram_style="block" *) reg[31:0]		sramTileG[255:0];		//SRAM
 (* ram_style="block" *) reg[31:0]		sramTileH[255:0];		//SRAM
 
+`ifdef JX2_MEM_L2_128K
+(* ram_style="block" *) reg[31:0]		ramTileA[4095:0];		//RAM/L2
+(* ram_style="block" *) reg[31:0]		ramTileB[4095:0];		//RAM/L2
+(* ram_style="block" *) reg[31:0]		ramTileC[4095:0];		//RAM/L2
+(* ram_style="block" *) reg[31:0]		ramTileD[4095:0];		//RAM/L2
+(* ram_style="block" *) reg[31:0]		ramTileE[4095:0];		//RAM/L2
+(* ram_style="block" *) reg[31:0]		ramTileF[4095:0];		//RAM/L2
+(* ram_style="block" *) reg[31:0]		ramTileG[4095:0];		//RAM/L2
+(* ram_style="block" *) reg[31:0]		ramTileH[4095:0];		//RAM/L2
+(* ram_style="block" *) reg[31:0]		ramTileAdA[4095:0];		//RAM Address
+(* ram_style="block" *) reg[31:0]		ramTileAdB[4095:0];		//RAM Address
+`else
 (* ram_style="block" *) reg[31:0]		ramTileA[2047:0];		//RAM/L2
 (* ram_style="block" *) reg[31:0]		ramTileB[2047:0];		//RAM/L2
 (* ram_style="block" *) reg[31:0]		ramTileC[2047:0];		//RAM/L2
@@ -125,11 +137,11 @@ reg[4:0]		tMmioOpm;		//mmio read
 (* ram_style="block" *) reg[31:0]		ramTileH[2047:0];		//RAM/L2
 (* ram_style="block" *) reg[31:0]		ramTileAdA[2047:0];		//RAM Address
 (* ram_style="block" *) reg[31:0]		ramTileAdB[2047:0];		//RAM Address
-
+`endif
 
 reg[255:0]		tRomTile;
 reg[255:0]		tSRamTile;
-reg[11:0]		tAccTileIx;
+reg[12:0]		tAccTileIx;
 
 reg[255:0]		tRamTile;
 reg[27:0]		tRamTileAddrA;			//RAM Address
@@ -161,16 +173,16 @@ reg[255:0]		tMemTile;
 reg[255:0]		tNextTile;
 reg[255:0]		tNextTileA;
 
-reg[11:0]		tRegTileIxA;
-reg[11:0]		tRegTileIxB;
+reg[12:0]		tRegTileIxA;
+reg[12:0]		tRegTileIxB;
 
-reg[11:0]		tAccTileIxA;
-reg[11:0]		tAccTileIxB;
+reg[12:0]		tAccTileIxA;
+reg[12:0]		tAccTileIxB;
 
-reg[11:0]		tNextTileIxA;
-reg[11:0]		tNextTileIxB;
+reg[12:0]		tNextTileIxA;
+reg[12:0]		tNextTileIxB;
 
-reg[11:0]		tNextTileIx;
+reg[12:0]		tNextTileIx;
 reg				tNextTileSt;
 reg				tNextTileSrSt;
 
@@ -249,12 +261,20 @@ begin
 
 	if(regInAddr[4])
 	begin
+`ifdef JX2_MEM_L2_128K
+		tRegTileIxB		= regInAddr[16:4];
+`else
 		tRegTileIxB		= regInAddr[15:4];
+`endif
 		tRegTileIxA		= tRegTileIxB+1;
 	end
 	else
 	begin
+`ifdef JX2_MEM_L2_128K
+		tRegTileIxA		= regInAddr[16:4];
+`else
 		tRegTileIxA		= regInAddr[15:4];
+`endif
 		tRegTileIxB		= tRegTileIxA;
 	end
 
@@ -479,6 +499,20 @@ begin
 	tSRamTile[223:192] <= sramTileG[tRegTileIxB[8:1]];
 	tSRamTile[255:224] <= sramTileH[tRegTileIxB[8:1]];
 
+`ifdef JX2_MEM_L2_128K
+	tRamTile2[ 31:  0] <= ramTileA[tRegTileIxA[12:1]];
+	tRamTile2[ 63: 32] <= ramTileB[tRegTileIxA[12:1]];
+	tRamTile2[ 95: 64] <= ramTileC[tRegTileIxA[12:1]];
+	tRamTile2[127: 96] <= ramTileD[tRegTileIxA[12:1]];
+	tRamTile2[159:128] <= ramTileE[tRegTileIxB[12:1]];
+	tRamTile2[191:160] <= ramTileF[tRegTileIxB[12:1]];
+	tRamTile2[223:192] <= ramTileG[tRegTileIxB[12:1]];
+	tRamTile2[255:224] <= ramTileH[tRegTileIxB[12:1]];
+	{tRamTile2FlagA, tRamTile2AddrA} <=
+		ramTileAdA[tRegTileIxA[12:1]];
+	{tRamTile2FlagB, tRamTile2AddrB} <=
+		ramTileAdB[tRegTileIxB[12:1]];
+`else
 	tRamTile2[ 31:  0] <= ramTileA[tRegTileIxA[11:1]];
 	tRamTile2[ 63: 32] <= ramTileB[tRegTileIxA[11:1]];
 	tRamTile2[ 95: 64] <= ramTileC[tRegTileIxA[11:1]];
@@ -491,6 +525,7 @@ begin
 		ramTileAdA[tRegTileIxA[11:1]];
 	{tRamTile2FlagB, tRamTile2AddrB} <=
 		ramTileAdB[tRegTileIxB[11:1]];
+`endif
 
 	tRamTile1		<= tRamTile;
 	tRamTile1AddrA	<= tRamTileAddrA;
@@ -738,12 +773,21 @@ begin
 	begin
 		if(!tRamMissA)
 		begin
+`ifdef JX2_MEM_L2_128K
+			ramTileA[tNextTileIxA[12:1]]	<= tNextTile[ 31:  0];
+			ramTileB[tNextTileIxA[12:1]]	<= tNextTile[ 63: 32];
+			ramTileC[tNextTileIxA[12:1]]	<= tNextTile[ 95: 64];
+			ramTileD[tNextTileIxA[12:1]]	<= tNextTile[127: 96];
+			ramTileAdA[tNextTileIxA[12:1]]	<=
+				{ tNextRamTileFlagA, tNextRamTileAddrA };
+`else
 			ramTileA[tNextTileIxA[11:1]]	<= tNextTile[ 31:  0];
 			ramTileB[tNextTileIxA[11:1]]	<= tNextTile[ 63: 32];
 			ramTileC[tNextTileIxA[11:1]]	<= tNextTile[ 95: 64];
 			ramTileD[tNextTileIxA[11:1]]	<= tNextTile[127: 96];
 			ramTileAdA[tNextTileIxA[11:1]]	<=
 				{ tNextRamTileFlagA, tNextRamTileAddrA };
+`endif
 			tRamStickyA			<= 0;
 
 `ifndef JX2_QUIET
@@ -758,12 +802,21 @@ begin
 
 		if(!tRamMissB)
 		begin
+`ifdef JX2_MEM_L2_128K
+			ramTileE[tNextTileIxB[12:1]] 	<= tNextTile[159:128];
+			ramTileF[tNextTileIxB[12:1]]	<= tNextTile[191:160];
+			ramTileG[tNextTileIxB[12:1]]	<= tNextTile[223:192];
+			ramTileH[tNextTileIxB[12:1]]	<= tNextTile[255:224];
+			ramTileAdB[tNextTileIxB[12:1]]	<=
+				{ tNextRamTileFlagB, tNextRamTileAddrB };
+`else
 			ramTileE[tNextTileIxB[11:1]] 	<= tNextTile[159:128];
 			ramTileF[tNextTileIxB[11:1]]	<= tNextTile[191:160];
 			ramTileG[tNextTileIxB[11:1]]	<= tNextTile[223:192];
 			ramTileH[tNextTileIxB[11:1]]	<= tNextTile[255:224];
 			ramTileAdB[tNextTileIxB[11:1]]	<=
 				{ tNextRamTileFlagB, tNextRamTileAddrB };
+`endif
 			tRamStickyB			<= 0;
 
 `ifndef JX2_QUIET

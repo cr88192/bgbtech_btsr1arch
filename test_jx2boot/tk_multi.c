@@ -14,6 +14,8 @@
 #include "tk_vfile.c"
 #include "tk_divi.c"
 
+#include "tk_ptetlb.c"
+
 #include "tk_peload.c"
 
 #include "tk_start.c"

@@ -1,5 +1,17 @@
 BGBCC_CCXL_BackendFuncs_vt *bgbcc_ccxl_backends=NULL;
 
+char *bgbcc_ccxl_basepath;
+
+void BGBCC_CCXL_SetBasePath(char *path)
+{
+	bgbcc_ccxl_basepath=bgbcc_strdup(path);
+}
+
+char *BGBCC_CCXL_GetBasePath(void)
+{
+	return(bgbcc_ccxl_basepath);
+}
+
 ccxl_status BGBCC_CCXL_RegisterBackend(BGBCC_CCXL_BackendFuncs_vt *ivt)
 {
 	ivt->next=bgbcc_ccxl_backends;

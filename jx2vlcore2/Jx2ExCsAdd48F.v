@@ -33,9 +33,9 @@ begin
 	tVal0_C0 = { 1'b0, valA[47:32] } + { 1'b0, valB[47:32] } + 0;
 	tVal0_C1 = { 1'b0, valA[47:32] } + { 1'b0, valB[47:32] } + 1;
 //	tVal0_D0 = { 1'b0, valA[63:48] } + { 1'b0, valB[63:48] } + 0;
-//	tVal0_D0 = { 1'b0, valA[63:48] };
+	tVal0_D0 = { 1'b0, valA[63:48] };
 //	tVal0_D0 = { 1'b0, valA[47]?UV16_FF:UV16_00 };
-	tVal0_D0 = { 1'b0, UV16_00 };
+//	tVal0_D0 = { 1'b0, UV16_00 };
 	
 	tVal1_A0 = { tVal0_A0[16] ? tVal0_B1 : tVal0_B0, tVal0_A0[15:0] };
 //	tVal1_B0 = { tVal0_C0[16] ? tVal0_D1 : tVal0_D0, tVal0_C0[15:0] };

@@ -1645,6 +1645,15 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 				return(1);
 			}
 
+			if(BGBCC_CCXL_TypeSgLongP(ctx, tty) && sctx->is_addr64)
+			{
+				j=BGBCC_CCXL_GetRegID(ctx, sreg);
+				k=BGBCC_JX2C_GetGblIndexLabel(ctx, sctx, j);
+				BGBCC_JX2_EmitLoadRegLabelVarRel24(sctx,
+					BGBCC_SH_NMID_MOVQ, dreg, k);
+				return(1);
+			}
+
 			if(BGBCC_CCXL_TypeSmallIntP(ctx, tty))
 			{
 				nm1=BGBCC_SH_NMID_MOVL;
@@ -2108,6 +2117,15 @@ int BGBCC_JX2C_EmitStoreFrameVRegReg(
 				k=BGBCC_JX2C_GetGblIndexLabel(ctx, sctx, j);
 				BGBCC_JX2_EmitStoreRegLabelVarRel24(sctx,
 					nm1, sreg, k);
+				return(1);
+			}
+
+			if(BGBCC_CCXL_TypeSgLongP(ctx, tty) && sctx->is_addr64)
+			{
+				j=BGBCC_CCXL_GetRegID(ctx, dreg);
+				k=BGBCC_JX2C_GetGblIndexLabel(ctx, sctx, j);
+				BGBCC_JX2_EmitStoreRegLabelVarRel24(sctx,
+					BGBCC_SH_NMID_MOVQ, sreg, k);
 				return(1);
 			}
 

@@ -33,11 +33,14 @@ output[63:0]	regValRo;
 input[1:0]		regExOp;
 output[1:0]		regExOK;
 
+reg[63:0]		tRegValRo2;
+reg[1:0]		tRegExOK2;
+
+assign	regValRo	= tRegValRo2;
+assign	regExOK		= tRegExOK2;
+
 reg[63:0]		tRegValRo;
 reg[1:0]		tRegExOK;
-
-assign	regValRo	= tRegValRo;
-assign	regExOK		= tRegExOK;
 
 reg				tExEn1;
 reg				tSgnA1;
@@ -290,6 +293,9 @@ end
 
 always @(posedge clock)
 begin
+	tRegValRo2	<= tRegValRo;
+	tRegExOK2	<= tRegExOK;
+
 	if(tExEn1)
 	begin
 		if(tExpA1>=tExpB1)

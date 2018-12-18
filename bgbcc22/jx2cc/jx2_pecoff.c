@@ -396,11 +396,11 @@ int BGBCC_JX2C_CoffBuildImports(
 			obj=exptab[j];
 			BGBCC_JX2_EmitRelocTy(sctx, obj->fxnalgn, BGBCC_SH_RLC_RVA32);
 			BGBCC_JX2_EmitDWord(sctx, 0);	//name
-			if(sctx->is_addr64)
+			if(sctx->is_addr64 && !sctx->is_addr_x32)
 				BGBCC_JX2_EmitDWord(sctx, 0);
 		}
 		BGBCC_JX2_EmitDWord(sctx, 0);
-		if(sctx->is_addr64)
+		if(sctx->is_addr64 && !sctx->is_addr_x32)
 			BGBCC_JX2_EmitDWord(sctx, 0);
 	}
 
@@ -416,11 +416,11 @@ int BGBCC_JX2C_CoffBuildImports(
 			BGBCC_JX2_EmitLabel(sctx, obj->fxnoffs);
 			BGBCC_JX2_EmitRelocTy(sctx, obj->fxnalgn, BGBCC_SH_RLC_RVA32);
 			BGBCC_JX2_EmitDWord(sctx, 0);	//name
-			if(sctx->is_addr64)
+			if(sctx->is_addr64 && !sctx->is_addr_x32)
 				BGBCC_JX2_EmitDWord(sctx, 0);
 		}
 		BGBCC_JX2_EmitDWord(sctx, 0);
-		if(sctx->is_addr64)
+		if(sctx->is_addr64 && !sctx->is_addr_x32)
 			BGBCC_JX2_EmitDWord(sctx, 0);
 	}
 	
@@ -1147,6 +1147,8 @@ int BGBCC_JX2C_VerifyImagePEL4(BGBCC_TransState *ctx,
 	}
 	
 	free(tbuf);
+	
+	return(0);
 }
 
 ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
@@ -1299,7 +1301,7 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 	of_shdr=0x0138;
 //	of_shdr=0x00E8;
 
-	if(sctx->is_addr64)
+	if(sctx->is_addr64 && !sctx->is_addr_x32)
 		of_shdr=0x0148;
 
 	if(no_mz)
@@ -1457,7 +1459,7 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 //	mach=0x1A6;
 //	if(sctx->has_bjx1mov)
 //		mach=0xB132;
-	if(sctx->is_addr64)
+	if(sctx->is_addr64 && !sctx->is_addr_x32)
 	{
 //		mach=0xB164;
 //		if(sctx->is_betav)
@@ -1465,7 +1467,10 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		mach=0xB264;
 	}else
 	{
-		mach=0xB232;
+		if(sctx->is_addr_x32)
+			mach=0xB264;
+		else
+			mach=0xB232;
 	}
 
 #if 1
@@ -1476,7 +1481,7 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 	bgbcc_setu32en(ct+0x10, en, 0);			//mNumberOfSymbols
 	bgbcc_setu16en(ct+0x16, en, k);			//mCharacteristics
 
-	if(!sctx->is_addr64)
+	if(!sctx->is_addr64 || sctx->is_addr_x32)
 	{
 		bgbcc_setu16en(ct+0x14, en, 224);		//mSizeOfOptionalHeader
 
@@ -1577,7 +1582,7 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 	bgbcc_setu32en(ct+0x50, en, 0);			//mNumberOfSymbols
 	bgbcc_setu16en(ct+0x56, en, k);			//mCharacteristics
 
-	if(!sctx->is_addr64)
+	if(!sctx->is_addr64 || sctx->is_addr_x32)
 	{
 		bgbcc_setu16en(ct+0x54, en, 224);		//mSizeOfOptionalHeader
 

@@ -55,7 +55,9 @@
 #include "jx2i_opc_arith.c"
 #include "jx2i_opc_bra.c"
 #include "jx2i_opc_mov.c"
+#include "jx2i_opc_cmov.c"
 #include "jx2i_opc_fpari.c"
+#include "jx2i_opc_fphfv.c"
 
 #include "jx2i_dec_op.c"
 #include "jx2i_dec_op_f0.c"

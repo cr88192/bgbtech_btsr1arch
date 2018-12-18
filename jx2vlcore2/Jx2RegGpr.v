@@ -101,8 +101,8 @@ output[63:0]	oregDlr;			//MACL
 output[63:0]	oregDhr;			//MACH
 output[63:0]	oregGbr;			//GBR
 output[63:0]	oregTbr;			//TBR
-output[63:0]	oregExc;			//GBR
-output[63:0]	oregTea;			//TBR
+output[63:0]	oregExc;			//EXSR
+output[63:0]	oregTea;			//TEA
 
 output[63:0]	oregMmcr;			//MMCR
 output[63:0]	oregKrr;			//KRR
@@ -185,9 +185,13 @@ reg[63:0]	regGprR31;
 `endif
 
 `ifdef JX2_GPR_GPRARR
-reg[63:0]	regGprArrN[31:0];
-reg[63:0]	regGprArrM[31:0];
-reg[63:0]	regGprArrO[31:0];
+// reg[63:0]	regGprArrN[31:0];
+// reg[63:0]	regGprArrM[31:0];
+// reg[63:0]	regGprArrO[31:0];
+
+reg[63:0]	regGprArrN[63:0];
+reg[63:0]	regGprArrM[63:0];
+reg[63:0]	regGprArrO[63:0];
 `endif
 
 reg[63:0]		regSPc;				//PC
@@ -217,11 +221,28 @@ reg[63:0]		regValCoB;
 reg[6:0]		regIdCoA;
 reg[6:0]		regIdCoB;
 
+
 assign regValRm = tRegValRm;
 assign regValRn = tRegValRn;
 assign regValRi = tRegValRi;
 
 assign regValCm = tRegValCm;
+
+
+wire[6:0]		regIdRn1;
+wire[6:0]		regIdRm1;
+wire[6:0]		regIdRi1;
+wire[6:0]		regIdCm1;
+wire[6:0]		regIdRo1;
+wire[6:0]		regIdCo1;
+
+assign	regIdRm1	= {1'b0, regIdRm[5:0]};
+assign	regIdRn1	= {1'b0, regIdRn[5:0]};
+assign	regIdRi1	= {1'b0, regIdRi[5:0]};
+assign	regIdCm1	= {1'b0, regIdCm[5:0]};
+assign	regIdRo1	= {1'b0, regIdRo[5:0]};
+assign	regIdCo1	= {1'b0, regIdCo[5:0]};
+
 
 reg[63:0]		tGenNextPc;
 reg[63:0]		tGenImm64;
@@ -262,20 +283,24 @@ begin
 	tGenImm64 = { idImm[32]?UV32_FF:UV32_00, idImm[31:0] };
 
 `ifdef JX2_GPR_GPRARR
-	tRegValRm = regGprArrM[regIdRm[4:0]];
-	tRegValRn = regGprArrN[regIdRn[4:0]];
-	tRegValRi = regGprArrO[regIdRi[4:0]];
+//	tRegValRm = regGprArrM[regIdRm[4:0]];
+//	tRegValRn = regGprArrN[regIdRn[4:0]];
+//	tRegValRi = regGprArrO[regIdRi[4:0]];
 
 //	tRegValRm = regGprArrM[regIdRm[4:0]];
 //	tRegValRn = regGprArrM[regIdRn[4:0]];
 //	tRegValRi = regGprArrM[regIdRi[4:0]];
+
+	tRegValRm = regGprArrM[regIdRm1[5:0]];
+	tRegValRn = regGprArrN[regIdRn1[5:0]];
+	tRegValRi = regGprArrO[regIdRi1[5:0]];
 `else
 	tRegValRm = UV64_XX;
 	tRegValRn = UV64_XX;
 	tRegValRi = UV64_XX;
 `endif
 	
-	case(regIdRm)
+	case(regIdRm1)
 		JX2_REG_R0:		tRegValRm = exNextDlr2;
 		JX2_REG_R1:		tRegValRm = exNextDhr2;
 		JX2_REG_R15:	tRegValRm = exNextSp2 ;
@@ -335,7 +360,7 @@ begin
 		end
 	endcase
 
-	case(regIdRn)
+	case(regIdRn1)
 		JX2_REG_R0:		tRegValRn = exNextDlr2;
 		JX2_REG_R1:		tRegValRn = exNextDhr2;
 		JX2_REG_R15:	tRegValRn = exNextSp2 ;
@@ -390,7 +415,7 @@ begin
 		end
 	endcase
 
-	case(regIdRi)
+	case(regIdRi1)
 		JX2_REG_R0:		tRegValRi = exNextDlr2;
 		JX2_REG_R1:		tRegValRi = exNextDhr2;
 		JX2_REG_R15:	tRegValRi = exNextSp2 ;
@@ -441,7 +466,7 @@ begin
 		end
 	endcase
 
-	case(regIdCm)
+	case(regIdCm1)
 		JX2_REG_PC:		tRegValCm = tGenNextPc;
 		JX2_REG_LR:		tRegValCm = exNextPr2 ;
 		JX2_REG_SR:		tRegValCm = regSr     ;
@@ -471,6 +496,7 @@ begin
 	endcase
 
 `ifndef JX2_GPR_GPR2CWB
+
 	regValRoA = regValRo;
 	regValRoB = regValRo;
 	regValRoC = regValRo;
@@ -478,39 +504,42 @@ begin
 	regValRoE = regValRo;
 	regValRoF = regValRo;
 	
-	regIdRoA	= regIdRo;
-	regIdRoB	= regIdRo;
-	regIdRoC	= regIdRo;
-	regIdRoD	= regIdRo;
-	regIdRoE	= regIdRo;
-	regIdRoF	= regIdRo;
+	regIdRoA	= regIdRo1;
+	regIdRoB	= regIdRo1;
+	regIdRoC	= regIdRo1;
+	regIdRoD	= regIdRo1;
+	regIdRoE	= regIdRo1;
+	regIdRoF	= regIdRo1;
 
 	regValCoA	= regValCo;
 	regValCoB	= regValCo;
-	regIdCoA	= regIdCo;
-	regIdCoB	= regIdCo;
+	regIdCoA	= regIdCo1;
+	regIdCoB	= regIdCo1;
 `endif
 
 `ifdef JX2_GPR_GPR2CWB
-	if(regIdRm == regIdRoA)
+	if(regIdRm1 == regIdRoA)
 		tRegValRm = regValRoA;
-	if(regIdRn == regIdRoB)
+	if(regIdRn1 == regIdRoB)
 		tRegValRn = regValRoB;
-	if(regIdRi == regIdRoC)
+	if(regIdRi1 == regIdRoC)
 		tRegValRi = regValRoC;
 
-	if(regIdCm == regIdCoA)
+	if(regIdCm1 == regIdCoA)
 		tRegValCm = regValCoA;
 `endif
 	
-	if(regIdRm == regIdRo)
+//	if(regIdRm == regIdRo)
+	if(regIdRm1 == regIdRo1)
 		tRegValRm = regValRo;
-	if(regIdRn == regIdRo)
+//	if(regIdRn == regIdRo)
+	if(regIdRn1 == regIdRo1)
 		tRegValRn = regValRo;
-	if(regIdRi == regIdRo)
+//	if(regIdRi == regIdRo)
+	if(regIdRi1 == regIdRo1)
 		tRegValRi = regValRo;
 
-	if(regIdCm == regIdCo)
+	if(regIdCm1 == regIdCo1)
 		tRegValCm = regValCo;
 end
 
@@ -601,27 +630,31 @@ begin
 		regValRoD	<= regValRo;
 		regValRoE	<= regValRo;
 		regValRoF	<= regValRo;
-		regIdRoA	<= regIdRo;
-		regIdRoB	<= regIdRo;
-		regIdRoC	<= regIdRo;
-		regIdRoD	<= regIdRo;
-		regIdRoE	<= regIdRo;
-		regIdRoF	<= regIdRo;
+		regIdRoA	<= regIdRo1;
+		regIdRoB	<= regIdRo1;
+		regIdRoC	<= regIdRo1;
+		regIdRoD	<= regIdRo1;
+		regIdRoE	<= regIdRo1;
+		regIdRoF	<= regIdRo1;
 		regValCoA	<= regValCo;
 		regValCoB	<= regValCo;
-		regIdCoA	<= regIdCo;
-		regIdCoB	<= regIdCo;
+		regIdCoA	<= regIdCo1;
+		regIdCoB	<= regIdCo1;
 `endif
 
 		/* GPR Port */
 
 `ifdef JX2_GPR_GPRARR
-		if(regIdRoA[6:5]==0)
-		begin
-			regGprArrM[regIdRoA[4:0]] <= regValRoA;
-			regGprArrN[regIdRoA[4:0]] <= regValRoA;
-			regGprArrO[regIdRoA[4:0]] <= regValRoA;
-		end
+//		if(regIdRoA[6:5]==0)
+//		begin
+//			regGprArrM[regIdRoA[4:0]] <= regValRoA;
+//			regGprArrN[regIdRoA[4:0]] <= regValRoA;
+//			regGprArrO[regIdRoA[4:0]] <= regValRoA;
+//		end
+
+		regGprArrM[regIdRoA[5:0]] <= regValRoA;
+		regGprArrN[regIdRoB[5:0]] <= regValRoB;
+		regGprArrO[regIdRoC[5:0]] <= regValRoC;
 `endif
 
 //		regDlr     <= (regIdRoA==JX2_REG_R0 ) ? regValRoA : exNextDlr2;

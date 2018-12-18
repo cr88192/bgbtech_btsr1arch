@@ -767,6 +767,9 @@ int BGBCC_JX2_CheckPadCross32(BGBCC_JX2_Context *ctx)
 //		return(0);
 	}
 
+	if(!ctx->use_padcross)
+		return(0);
+
 	i=BGBCC_JX2_EmitGetOffs(ctx);
 	if(ctx->sec==BGBCC_SH_CSEG_TEXT)
 	{
@@ -795,6 +798,9 @@ int BGBCC_JX2_CheckPadCross48(BGBCC_JX2_Context *ctx)
 //		return(1);
 //		return(0);
 	}
+	
+	if(!ctx->use_padcross)
+		return(0);
 
 	i=BGBCC_JX2_EmitGetOffs(ctx);
 	if(ctx->sec==BGBCC_SH_CSEG_TEXT)
@@ -910,6 +916,9 @@ int BGBCC_JX2_EmitPadForOpWord(BGBCC_JX2_Context *ctx, int val)
 	int i, j, k;
 
 	if(ctx->emit_isprobe)
+		return(0);
+
+	if(!ctx->use_padcross)
 		return(0);
 
 	if(rec)

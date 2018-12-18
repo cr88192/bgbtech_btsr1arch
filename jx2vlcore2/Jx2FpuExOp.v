@@ -11,8 +11,11 @@ It will recieve copies of some inputs, but it is the main Execute unit which wil
 
 `include "Jx2FpuAdd.v"
 `include "Jx2FpuMul.v"
+
+`ifndef JX2_FPU_NOFDIV
 `include "Jx2FpuRcpA.v"
 `include "Jx2FpuSqrtA.v"
+`endif
 
 module Jx2FpuExOp(
 	/* verilator lint_off UNUSED */
@@ -24,6 +27,7 @@ module Jx2FpuExOp(
 	regOutId,	regOutVal,
 	regOutOK,
 
+	regValGRm,
 	memDataLd,	memDataOK,
 
 	ctlInDlr,	ctlOutDlr
@@ -42,6 +46,8 @@ input[6:0]		regIdRn;
 input[63:0]		regValRs;		//Rs input value (FPR)
 input[63:0]		regValRt;		//Rt input value (FPR)
 input[63:0]		regValRn;		//Rn input value (FPR, Duplicate)
+
+input[63:0]		regValGRm;		//Rm input value (GPR)
 
 output[63:0]	regOutVal;		//Ro output value
 output[6:0]		regOutId;		//Ro, register to write (FPR)
@@ -71,16 +77,19 @@ wire[63:0]		memDataLd_S2D;		//memory data (Single To Double)
 Jx2ConvFpuS2D mem_cnv_s2d(memDataLd[31:0], memDataLd_S2D);
 
 wire[63:0]		ctlInDlr_S2D;		//memory data (Single To Double)
-Jx2ConvFpuS2D dlr_cnv_s2d(ctlInDlr[31:0], ctlInDlr_S2D);
+// Jx2ConvFpuS2D dlr_cnv_s2d(ctlInDlr[31:0], ctlInDlr_S2D);
+Jx2ConvFpuS2D dlr_cnv_s2d(regValGRm[31:0], ctlInDlr_S2D);
 
 wire[63:0]		ctlInDlr_H2D;		//memory data (Half To Double)
-Jx2ConvFpuH2D dlr_cnv_h2d(ctlInDlr[15:0], ctlInDlr_H2D);
+// Jx2ConvFpuH2D dlr_cnv_h2d(ctlInDlr[15:0], ctlInDlr_H2D);
+Jx2ConvFpuH2D dlr_cnv_h2d(regValGRm[15:0], ctlInDlr_H2D);
 
 
 wire[63:0]	tRegAddRn;		//Rn input value
 assign tRegAddRn =
 	(opCmd==JX2_UCMD_FPU_FLDCI) ?
-		ctlInDlr : regValRs;
+//		ctlInDlr : regValRs;
+		regValGRm : regValRs;
 
 wire[63:0]	tRegAddVal;		//Rn output value
 // reg[1:0]	tRegAddExOp;	
@@ -96,6 +105,8 @@ Jx2FpuAdd	fpu_add(
 
 wire[63:0]	tRegMulRm;		//Rm output value
 wire[63:0]	tRegMulRn;		//Rn output value
+
+`ifndef JX2_FPU_NOFDIV
 
 reg[63:0] tMulDivRcp;
 reg[63:0] tMulDivAdj;
@@ -117,6 +128,13 @@ assign tRegMulRn =
 		(tMulRcpStable ? regValRs : tMulDivRcp) :
 	regValRs;
 
+`else
+
+assign tRegMulRm = regValRt;
+assign tRegMulRn = regValRs;
+
+`endif
+
 wire[63:0]	tRegMulVal;		//Rn output value
 // reg[1:0]	tRegMulExOp;	
 wire[1:0]	tRegMulExOp;	
@@ -129,6 +147,8 @@ Jx2FpuMul	fpu_mul(
 	tRegMulExOK);
 
 
+`ifndef JX2_FPU_NOFDIV
+
 wire[63:0]		regRcpValRn;
 assign	regRcpValRn =
 	(opCmd==JX2_UCMD_FPU_FDIV) ? regValRt : regValRs;
@@ -137,16 +157,20 @@ wire[63:0]		regValRnRcp;
 Jx2FpuRcpA	nrcp(
 	regRcpValRn, regValRnRcp);
 
-
 wire[63:0]		regValRnSqrt;
 Jx2FpuSqrtA	nsqrt(
 	regValRs, regValRnSqrt);
 
+`endif
+
 assign	tRegAddExOp	=
-	(opCmd==JX2_UCMD_FPU_FADD) ? 2'h1 :
-	(opCmd==JX2_UCMD_FPU_FSUB) ? 2'h2 :
+	(opCmd==JX2_UCMD_FPU_FADD3) ? 2'h1 :
+	(opCmd==JX2_UCMD_FPU_FSUB3) ? 2'h2 :
 	(opCmd==JX2_UCMD_FPU_FLDCI) ? 2'h3 :
 	2'h0;
+
+
+`ifndef JX2_FPU_NOFDIV
 
 reg		tRegDivStrobe;
 assign	tRegMulExOp	=
@@ -159,6 +183,24 @@ assign	tRegMulExOp	=
 //	tRegMulExOp	= 0;
 	
 
+reg[63:0]	tMulDivValBase;		//Rn output value
+reg[63:0]	tMulDivValInv;		//Rn output value
+wire[63:0]	tMulDivValAdd;		//Rn output value
+
+Jx2ExCsAdd64F	fpdivAdd1(tMulDivValBase, tMulDivValInv, tMulDivValAdd);
+
+wire[63:0]	tMulDivRcpTemp;		//Rn output value
+Jx2ExCsAdd64F	fpdivAdd2(tMulDivRcp, tMulDivAdj, tMulDivRcpTemp);
+
+//	tMulDivRcp		<= tMulDivRcp + tMulDivAdj;
+
+`else
+
+assign	tRegMulExOp	=
+	(opCmd==JX2_UCMD_FPU_FMUL3) ? 2'h1 : 2'h0;
+
+`endif
+
 always @*
 begin
 
@@ -170,8 +212,13 @@ begin
 //	tRegAddExOp	= 0;
 //	tRegMulExOp	= 0;
 
+`ifndef JX2_FPU_NOFDIV
 //	tMulDivAdj = { 1'b0, 63'h3FF00000_00000000 - tRegMulVal[62:0] };
-	tMulDivAdj = 64'h3FF00000_00000000 - tRegMulVal;
+//	tMulDivAdj = 64'h3FF00000_00000000 - tRegMulVal;
+
+	tMulDivValBase = 64'h3FF00000_00000000;
+	tMulDivValInv = ~tRegMulVal;
+`endif
 
 	case(opCmd)
 		JX2_UCMD_FMOVS_MR: begin
@@ -202,6 +249,7 @@ begin
 			tRegOutId	= regIdRn;
 		end
 
+`ifndef JX2_FPU_NOFDIV
 		JX2_UCMD_FPU_FDIV3: begin
 			if((tRegMulExOK == UMEM_OK_OK) && tMulRcpStable)
 				tRegOutOK	= UMEM_OK_OK;
@@ -212,6 +260,7 @@ begin
 			tRegOutVal	= tRegMulVal;
 			tRegOutId	= regIdRn;
 		end
+`endif
 
 		JX2_UCMD_FPU_FCMPEQ: begin
 			/* Ignore, handled by EX */
@@ -227,6 +276,12 @@ begin
 			tRegOutId	= regIdRn;
 		end
 
+		JX2_UCMD_FPU_FMOV_GF: begin
+			tRegOutOK	= UMEM_OK_OK;
+			tRegOutVal	= regValGRm;
+			tRegOutId	= regIdRn;
+		end
+
 		JX2_UCMD_FPU_FLDCF: begin
 			tRegOutOK	= UMEM_OK_OK;
 			tRegOutVal	= ctlInDlr_S2D;
@@ -235,7 +290,8 @@ begin
 
 		JX2_UCMD_FPU_FLDCD: begin
 			tRegOutOK	= UMEM_OK_OK;
-			tRegOutVal	= ctlInDlr;
+//			tRegOutVal	= ctlInDlr;
+			tRegOutVal	= regValGRm;
 			tRegOutId	= regIdRn;
 		end
 
@@ -279,6 +335,7 @@ begin
 					tRegOutId	= regIdRn;
 				end
 
+`ifndef JX2_FPU_NOFDIV
 				JX2_UCMD_FPIX_FRCPA: begin
 					tRegOutOK	= UMEM_OK_OK;
 					tRegOutVal	= regValRnRcp;
@@ -290,6 +347,7 @@ begin
 					tRegOutVal	= regValRnSqrt;
 					tRegOutId	= regIdRn;
 				end
+`endif
 				
 				default: begin
 				end
@@ -302,8 +360,15 @@ begin
 
 end
 
+reg[1:0]	tLastRegMulExOK;
+
 always @(posedge clock)
 begin
+
+	tLastRegMulExOK		<= tRegMulExOK;
+
+`ifndef JX2_FPU_NOFDIV
+	tMulDivAdj			<= tMulDivValAdd;
 
 	if(opCmd==JX2_UCMD_FPU_FDIV)
 	begin
@@ -315,12 +380,14 @@ begin
 		else
 		if(tMulRcpSeed)
 		begin
-			if(tRegMulExOK == UMEM_OK_OK)
+//			if(tRegMulExOK == UMEM_OK_OK)
+			if(tLastRegMulExOK == UMEM_OK_OK)
 			begin
 //				tMulDivRcp		<= tMulDivRcp + (tMulDivAdj>>2);
 //				tMulDivRcp		<= tMulDivRcp +
 //					{ tMulDivAdj[63], tMulDivAdj[63:1] };
-				tMulDivRcp		<= tMulDivRcp + tMulDivAdj;
+//				tMulDivRcp		<= tMulDivRcp + tMulDivAdj;
+				tMulDivRcp		<= tMulDivRcpTemp;
 				if(tMulDivAdj[52:2]==0)
 					tMulRcpStable	<= 1;
 				if(tMulDivAdj[52:2]==-1)
@@ -352,6 +419,7 @@ begin
 		tMulRcpSeed		<= 0;
 		tMulRcpSeed0	<= 0;
 	end
+`endif
 
 end
 

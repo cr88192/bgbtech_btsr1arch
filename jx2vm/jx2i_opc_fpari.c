@@ -69,6 +69,17 @@ void BJX2_Op_FMOV_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->fpreg[op->rn]=ctx->fpreg[op->rm];
 }
 
+void BJX2_Op_FMOV_FRegGReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[op->rn]=ctx->fpreg[op->rm];
+}
+
+void BJX2_Op_FMOV_GRegFReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->fpreg[op->rn]=ctx->regs[op->rm];
+}
+
+
 void BJX2_Op_FNEG_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	ctx->fpreg[op->rn]=ctx->fpreg[op->rn]^0x8000000000000000ULL;

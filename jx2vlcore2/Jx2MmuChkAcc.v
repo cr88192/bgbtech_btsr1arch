@@ -64,11 +64,13 @@ reg			tKrrUsrEqD;
 reg			tKrrUsrEq;
 
 reg[2:0]	tKrrAccFl;
+reg[2:0]	tNextKrrAccFl;
 
 reg			tUsDeny;
 
 reg[31:0]		tTlbInAcc;		//TLB Access Mode
 reg[63:0]		tRegInKRR;		//Keyring Register
+reg[4:0]		tRegInOpm;		//Operation Size/Type
 
 
 /* verilator lint_on UNUSED */
@@ -107,6 +109,7 @@ begin
 		(tKrrGrpEqC && tKrrUsrEqC) ||
 		(tKrrGrpEqD && tKrrUsrEqD) ;
 	tKrrAccFl = 
+//	tNextKrrAccFl = 
 		tKrrUsrEq ? tTlbInAcc[ 9: 7] :
 		tKrrGrpEq ? tTlbInAcc[12:10] :
 		tlbInAcc[15:13];
@@ -115,24 +118,24 @@ begin
 	begin
 		case(tTlbInAcc[6:4])
 			3'b000: begin
-				if(regInOpm[4])
+				if(tRegInOpm[4])
 					tAccOutExc	= 16'h8002;
-				if(regInOpm[3])
+				if(tRegInOpm[3])
 					tAccOutExc	= 16'h8001;
 			end
 			3'b001: begin
-				if(regInOpm[4] && !tKrrAccFl[1])
+				if(tRegInOpm[4] && !tKrrAccFl[1])
 					tAccOutExc	= 16'h8002;
-				if(regInOpm[3] && !tKrrAccFl[0])
+				if(tRegInOpm[3] && !tKrrAccFl[0])
 					tAccOutExc	= 16'h8001;
 			end
 			3'b010: begin
 				tAccOutExc	= 16'hA002;
 			end
 			3'b011: begin
-				if(regInOpm[4] && !tKrrAccFl[1])
+				if(tRegInOpm[4] && !tKrrAccFl[1])
 					tAccOutExc	= 16'hA002;
-				if(regInOpm[3] && !tKrrAccFl[0])
+				if(tRegInOpm[3] && !tKrrAccFl[0])
 					tAccOutExc	= 16'hA002;
 			end
 			default: begin
@@ -143,9 +146,9 @@ begin
 
 	tUsDeny = (tlbInAcc[3] && !regInSR[30]);
 
-	if(regInOpm[4] && (tlbInAcc[1] || tUsDeny))
+	if(tRegInOpm[4] && (tlbInAcc[1] || tUsDeny))
 		tAccOutExc	= 16'h8002;
-	if(regInOpm[3] && (tlbInAcc[0] || tUsDeny))
+	if(tRegInOpm[3] && (tlbInAcc[0] || tUsDeny))
 		tAccOutExc	= 16'h8001;
 
 end
@@ -154,7 +157,11 @@ always @(posedge clock)
 begin
 	tTlbInAcc	<= tlbInAcc;		//TLB Access Mode
 	tRegInKRR	<= regInKRR;		//Keyring Register
+	tRegInOpm	<= regInOpm;
+
 	tAccOutExc2	<= tAccOutExc;
+	
+//	tKrrAccFl	<= tNextKrrAccFl;
 end
 
 endmodule

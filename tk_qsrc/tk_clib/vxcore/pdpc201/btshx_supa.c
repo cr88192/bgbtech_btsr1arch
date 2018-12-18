@@ -1217,9 +1217,15 @@ int irq_addTimerIrq(void *fcn)
 	irq_timer[n_irq_timer++]=fcn;
 }
 
-int __isr_interrupt(int irq)
+extern int __arch_exsr;
+
+// int __isr_interrupt(int irq)
+__interrupt void __isr_interrupt(void)
 {
-	int i;
+	int i, irq;
+
+//	irq=__get_exsr();
+	irq=__arch_exsr;
 
 	if(((u16)irq)==0xC001)
 	{

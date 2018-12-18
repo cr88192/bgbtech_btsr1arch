@@ -891,7 +891,8 @@ int BGBCC_CCXL_StackGetConvCallArgs(BGBCC_TransState *ctx,
 		if(an>=rfn->n_args)
 		{
 			if(BGBCC_CCXL_IsRegFloatP(ctx, dreg) ||
-				BGBCC_CCXL_IsRegFloat16P(ctx, dreg))
+				BGBCC_CCXL_IsRegFloat16P(ctx, dreg) ||
+				BGBCC_CCXL_IsRegBFloat16P(ctx, dreg))
 			{
 				dty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_D);
 				BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &treg);

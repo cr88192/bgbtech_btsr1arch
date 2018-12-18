@@ -167,7 +167,7 @@ Typed signatures are encoded as strings, with characters indicating value types.
 * 'r': variant (64-bit tagged value)
 * 's': short
 * 't': unsigned short
-* 'u': reserved
+* 'u': bfloat16
 * 'v': void
 * 'w': wchar
 * 'x': long long

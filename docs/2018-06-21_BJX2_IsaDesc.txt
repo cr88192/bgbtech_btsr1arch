@@ -6,6 +6,32 @@ Register Aliases:
 * SP will be an alias for R15.
 
 
+Notation:
+* 0..9, A..F: Literal Hexadecimal Values
+* e: The 'E' bits 'QNMI'
+** Q will give an operation size or type.
+** N will give Bit 4 of the N field (usually Rn).
+** M will give Bit 4 of the M field (usually Rm).
+** I will give Bit 4 of the O field (usually Ro).
+*** Alternately may serve as the MSB for an immediate.
+*** If no Ro or Imm, serves a role similar to Q.
+* f: -
+* g: E bits (3R), but Q=0, thus 0nmi
+* G: E bits (3R), but Q=1, thus 1nmi
+* h: E bits (I,R), but Q=0, thus 0nii or 0iin
+* H: E bits (I,R), but Q=1, thus 1nii or 1iin
+** Two of the register fields will be interpreted as an immediate.
+* i: Immediate (Signed)
+* j: Immediate (Unsigned)
+* m: Source Register
+* n: Destination Register
+* o: Index or Secondary Register
+* p: E bits (2R), but Q=0, I=0, thus 0nm0
+* P: E bits (2R), but Q=1, I=0, thus 1nm0
+* q: E bits (2R), but Q=0, I=1, thus 0nm1
+* Q: E bits (2R), but Q=1, I=1, thus 1nm1
+
+
 === ADC ===
 
 * 12nm       ADC		Rm, Rn
@@ -17,12 +43,13 @@ Add with Carry, Rn=Rn+Rm+SR.T, with SR.T being updated to reflect the carry-out 
 === ADD ===
 
 * 10nm            ADD		Rm, Rn
-* 33nB            ADD		Cn, DLR
 * 58nm            ADD		Rm, DLR, Rn			//Rn=Rm+DLR
 * Cnii            ADD		#imm8s, Rn
 * F0go_10nm       ADD		Rm, Ro, Rn			//Rn=Rm+Ro, Q=0
 * F0Go_10nm       ADD		Rm, imm5u, Rn		//Rn=Rm+imm5u, Q=1
 * F0e0_19nm       ADD		Rm, Rn				//Rn=Rn+Rm
+* F1gj_4jnm       ADD		Rm, disp9u, Rn		//
+* F1gj_5jnm       ADD		Rm, disp9n, Rn		//
 * F84n_iiii       ADD		#imm16s, Rn
 * F85n_iiii       ADD		#imm16s, Rk
 * FC0G_10nm_dddd  ADD		Rm, imm17u, Rn		//Rn=Rm+DLR
@@ -30,6 +57,20 @@ Add with Carry, Rn=Rn+Rm+SR.T, with SR.T being updated to reflect the carry-out 
 * FDCn_iiii_iiii  ADD		#imm32s, Rn
 
 Add the source and destination values and store the result in the destination register.
+
+
+=== ADDx.L ===
+
+* F0go_5Cnm       ADDS.L	Rm, Ro, Rn
+* F0Go_5Cnm       ADDU.L	Rm, Ro, Rn
+* F1gj_Cjnm       ADDS.L	Rm, disp9u, Rn
+* F1Gj_Cjnm       ADDU.L	Rm, disp9u, Rn
+* F1gj_Djnm       ADDS.L	Rm, disp9n, Rn
+* F1Gj_Djnm       ADDU.L	Rm, disp9n, Rn
+
+Add the source and destination values and store the result in the destination register.
+
+This form sign or zero extends the 32-bit result to 64 bits.
 
 
 === AND ===
@@ -47,11 +88,9 @@ Perform a bitwise AND of the source and destination values and store the result 
 === BF ===
 
 * 23dd            BF		(PC, disp8s)
-* 3032          / BF		(PC, DLR)
 * 31n3            BF		(PC, Rn)
 * 32n3            BF		Rn
 * F0dd_23dd       BF		(PC, disp16s)
-* F003_3002     / BF		(PC, DLR)			//Fix32
 * F0en_3013       BF		(PC, Rn)			//Fix32
 * F0en_3023       BF		Rn					//Fix32
 * FC23_dddd_dddd  BF		(PC, disp32s)
@@ -63,14 +102,12 @@ The target address is computed and PC is updated to the new address if the condi
 === BRA ===
 
 * 20dd            BRA		(PC, disp8s)
-* 3002          / BRA		(PC, DLR)
 * 31n0            BRA		(PC, Rn)
 * 32n0            BRA		Rn
-* 36n8          / BRA		(PC, Rn)
 * F0dd_20dd       BRA		(PC, disp16s)
-* F000_3002     / BRA		(PC, DLR)			//Fix32
 * F0en_3010       BRA		(PC, Rn)			//Fix32
 * F0en_3020       BRA		Rn					//Fix32
+* F0dd_Addd       BRA		(PC, disp20s)
 * FC20_dddd_dddd  BRA		(PC, disp32s)
 
 Branch to Address.
@@ -80,27 +117,22 @@ The target address is computed and PC is updated to the new address.
 === BREAK ===
 
 * 3030            BREAK
-* F003_3000       BREAK		//Fix32
-* 0000            BREAK1	//Pseudo
-* F000_0000       BREAK2	//Pseudo
-* FC00_0000_0000  BREAK3	//Pseudo
+* F003_3000       BREAK2	//Fix32
 
 Trigger a Breakpoint exception.
 
-The BREAK1/2/3 forms overlap with MOV.B, but will be regarded as invalid special cases which will result in a breakpoint rather than a MOV.
+The BREAK1/2/3 forms overlap with MOV.B, but will be regarded as invalid special cases which will result in an exception rather than a MOV.
 
 
 === BSR ===
 
 * 21dd            BSR		(PC, disp8s)
-* 3012          / BSR		(PC, DLR)
 * 31n1            BSR		(PC, Rn)
 * 32n1            BSR		Rn
-* 36n9          / BSR		(PC, Rn)
 * F0dd_21dd       BSR		(PC, disp16s)
-* F001_3002     / BSR		(PC, DLR)			//Fix32
 * F0en_3011       BSR		(PC, Rn)			//Fix32
 * F0en_3021       BSR		Rn					//Fix32
+* F0dd_Bddd       BSR		(PC, disp20s)
 * FC21_dddd_dddd  BSR		(PC, disp32s)
 
 Branch to subroutine.
@@ -110,11 +142,9 @@ The target address is computed and PC is updated to the new address, with the pr
 === BT ===
 
 * 22dd            BT		(PC, disp8s)		//Branch True
-* 3022          / BT		(PC, DLR)			//Branch True to PC+(DLR*2)
 * 31n2            BT		(PC, Rn)			//Branch True to PC+(Rn*2)
 * 32n2            BT		Rn
 * F0dd_22dd       BT		(PC, disp16s)
-* F002_3002     / BT		(PC, DLR)			//Fix32
 * F0en_3012       BT		(PC, Rn)			//Fix32
 * F0en_3022       BT		Rn					//Fix32
 * FC22_dddd_dddd  BT		(PC, disp32s)
@@ -154,6 +184,7 @@ This provides both zero and one extended immediates, allowing a direct immediate
 
 
 This updates SR.T based on the result of the comparison.
+The contents of SR.S, and SR.PQRO are undefined following this operation.
 
 
 === CMPGE ===
@@ -167,6 +198,7 @@ Compare if Rn is Greater or Equal to the immediate.
 Only exists for immediates because this can be easily emulated for the two-register forms via swapping the registers and inverting the branch condition.
 
 This updates SR.T based on the result of the comparison.
+The contents of SR.S, and SR.PQRO are undefined following this operation.
 
 
 === CMPGT ===
@@ -181,6 +213,7 @@ Signed Rn GT Rm.
 Compare if destination is greater than the source using a signed comparison.
 
 This updates SR.T based on the result of the comparison.
+The contents of SR.S, and SR.PQRO are undefined following this operation.
 
 
 === CMPHI ===
@@ -193,6 +226,7 @@ Unsigned Rn GT Rm.
 Compare if destination is greater than the source using an unsigned comparison.
 
 This updates SR.T based on the result of the comparison.
+The contents of SR.S, and SR.PQRO are undefined following this operation.
 
 
 === CMPHS ===
@@ -204,6 +238,7 @@ Unsigned (Rn GE DLR)
 Compare if destination is greater than or equal to the source using an unsigned comparison.
 
 This updates SR.T based on the result of the comparison.
+The contents of SR.S, and SR.PQRO are undefined following this operation.
 
 
 === CMPPL ===
@@ -219,6 +254,7 @@ This operation is specific to the use of signed values.
 For the unsigned case, this decates to comparing that the value is not equal to zero.
 
 This updates SR.T based on the result of the comparison.
+The contents of SR.S, and SR.PQRO are undefined following this operation.
 
 
 === CMPPZ ===
@@ -234,6 +270,7 @@ This operation is specific to the use of signed values.
 For the unsigned case, the result would always be true.
 
 This updates SR.T based on the result of the comparison.
+The contents of SR.S, and SR.PQRO are undefined following this operation.
 
 
 === CMPQEQ ===
@@ -249,6 +286,7 @@ This provides both zero and one extended immediates, allowing a direct immediate
 
 
 This updates SR.T based on the result of the comparison.
+The contents of SR.S, and SR.PQRO are undefined following this operation.
 
 
 === CMPQGE ===
@@ -261,6 +299,7 @@ Compare if Rn is Greater or Equal to the immediate.
 Only exists for immediates because this can be easily emulated for the two-register forms via swapping the registers and inverting the branch condition.
 
 This updates SR.T based on the result of the comparison.
+The contents of SR.S, and SR.PQRO are undefined following this operation.
 
 
 === CMPQGT ===
@@ -274,6 +313,7 @@ Signed Rn GT Rm.
 Compare if destination is greater than the source using a signed comparison.
 
 This updates SR.T based on the result of the comparison.
+The contents of SR.S, and SR.PQRO are undefined following this operation.
 
 
 === CMPQHI ===
@@ -286,6 +326,7 @@ Unsigned Rn GT Rm.
 Compare if destination is greater than the source using an unsigned comparison.
 
 This updates SR.T based on the result of the comparison.
+The contents of SR.S, and SR.PQRO are undefined following this operation.
 
 
 === CMPQHS ===
@@ -298,6 +339,7 @@ Unsigned (Rn GE DLR)
 Compare if destination is greater than or equal to the source using an unsigned comparison.
 
 This updates SR.T based on the result of the comparison.
+The contents of SR.S, and SR.PQRO are undefined following this operation.
 
 
 === EXTS.B ===
@@ -306,6 +348,40 @@ This updates SR.T based on the result of the comparison.
 * F0g8_1Cnm  EXTS.B	Rm, Rn				//Q=0, I=0
 
 Sign extend the value in the low 8 bits of the register to the width of the register.
+
+
+=== CMOVx.x ===
+
+* F0g0_1Bnm  CMOV{T/F}.B		Rm, (Rn)		//Q=0, I=T/F (0=T, 1=F)
+* F0g1_1Bnm  CMOV{T/F}.W		Rm, (Rn)		//Q=0
+* F0g2_1Bnm  CMOV{T/F}.L		Rm, (Rn)		//Q=0
+* F0g3_1Bnm  CMOV{T/F}.Q		Rm, (Rn)		//Q=0
+* F0g4_1Bnm  CMOV{T/F}.B		Rm, (Rn, DLR)	//Q=0
+* F0g5_1Bnm  CMOV{T/F}.W		Rm, (Rn, DLR)	//Q=0
+* F0g6_1Bnm  CMOV{T/F}.L		Rm, (Rn, DLR)	//Q=0
+* F0g7_1Bnm  CMOV{T/F}.Q		Rm, (Rn, DLR)	//Q=0
+* F0g8_1Bnm  CMOV{T/F}.B		(Rm), Rn		//Q=0
+* F0G8_1Bnm  CMOVU{T/F}.B		(Rm), Rn		//Q=1
+* F0g9_1Bnm  CMOV{T/F}.W		(Rm), Rn		//Q=0
+* F0G9_1Bnm  CMOVU{T/F}.W		(Rm), Rn		//Q=1
+* F0gA_1Bnm  CMOV{T/F}.L		(Rm), Rn		//Q=0
+* F0GA_1Bnm  CMOVU{T/F}.L		(Rm), Rn		//Q=1
+* F0gB_1Bnm  CMOV{T/F}.Q		(Rm), Rn		//Q=0
+* F0GB_1Bnm  CMOVD{T/F}.L		(Rm), Rn		//Q=1 (63..32=Undefined)
+* F0gC_1Bnm  CMOV{T/F}.B		(Rm, DLR), Rn	//Q=0
+* F0GC_1Bnm  CMOVU{T/F}.B		(Rm, DLR), Rn	//Q=1
+* F0gD_1Bnm  CMOV{T/F}.W		(Rm, DLR), Rn	//Q=0
+* F0GD_1Bnm  CMOVU{T/F}.W		(Rm, DLR), Rn	//Q=1
+* F0gE_1Bnm  CMOV{T/F}.L		(Rm, DLR), Rn	//Q=0
+* F0GE_1Bnm  CMOVU{T/F}.L		(Rm, DLR), Rn	//Q=1
+* F0gF_1Bnm  CMOV{T/F}.Q		(Rm, DLR), Rn	//Q=0
+* F0GF_1Bnm  CMOVD{T/F}.L		(Rm, DLR), Rn	//Q=1 (63..32=Undefined)
+
+These perform a Conditional MOV.
+
+If the state of SR.T matches the condition encoded in the instruction, then the Load or Store will be performed, otherwise the instruction will behave as a NOP.
+
+The I bit will indicate the condition of SR.T, where if I is Clear then SR.T is to be Set, and if I is Set then SR.T is to be Clear. In effect, the XOR of the two bits will indicate will signal whether to execute the instruction.
 
 
 === EXTS.L ===
@@ -362,10 +438,11 @@ This instruction is invalid outside of an ISR. Its behavior is undefined, but sh
 
 === LEA.B ===
 
-* 4Cnm            LEA.B	(Rm, DLR), Rn
-* F0Gd_00nm       LEA.B	(Rm, disp5), Rn
-* F0Go_04nm       LEA.B	Rm, (Rn, Ro)
-* FC27_Fndd_dddd  LEA.B	(PC, disp24s), Rn	//PC-Rel Load
+* 4Cnm            LEA.B		(Rm, DLR), Rn
+* F0Gd_00nm       LEA.B		(Rm, disp5), Rn
+* F0Go_04nm       LEA.B		Rm, (Rn, Ro)
+* F1Gd_0dnm       LEA.B		(Rm, disp9u), Rn
+* FC27_4ndd_dddd  LEA.B		(PC, disp24s), Rn	//PC-Rel Load
 
 Load the effective address of the Base register added to the displacement and store the result into the destination register.
 
@@ -379,6 +456,7 @@ Note that the effective precision of LEA will be relative to the size of the add
 * 4Enm       LEA.L	(Rm, DLR), Rn
 * F0Gd_02nm  LEA.L	(Rm, disp5), Rn
 * F0Go_06nm  LEA.L	Rm, (Rn, Ro)
+* F1Gd_2dnm  LEA.L	(Rm, disp9u), Rn
 
 Load the effective address of the Base register added to the scaled displacement and store the result into the destination register.
 
@@ -390,6 +468,7 @@ This will use a scale factor of 4.
 * 4Fnm       LEA.Q	(Rm, DLR), Rn
 * F0Gd_03nm  LEA.Q	(Rm, disp5), Rn
 * F0Go_07nm  LEA.Q	Rm, (Rn, Ro)
+* F1Gd_3dnm  LEA.Q	(Rm, disp9u), Rn
 
 Load the effective address of the Base register added to the scaled displacement and store the result into the destination register.
 
@@ -401,6 +480,7 @@ This will use a scale factor of 8.
 * 4Dnm       LEA.W	(Rm, DLR), Rn
 * F0Gd_01nm  LEA.W	(Rm, disp5), Rn
 * F0Go_05nm  LEA.W	Rm, (Rn, Ro)
+* F1Gd_1dnm  LEA.W	(Rm, disp9u), Rn
 
 Load the effective address of the Base register added to the scaled displacement and store the result into the destination register.
 
@@ -410,11 +490,11 @@ This will use a scale factor of 2.
 === LDIN / LDIZ ===
 
 * 24jj       LDIZ	#imm8u, DLR
-* 25jj       LDIN	#imm8u, DLR
+* 25jj       LDIN	#imm8n, DLR
 * Ajjj       LDIZ	#imm12u, DLR
-* Bjjj       LDIN	#imm12u, DLR
+* Bjjj       LDIN	#imm12n, DLR
 * FAjj_jjjj	 LDIZ	#imm24u, DLR		//Zero Extend
-* FBjj_jjjj	 LDIN	#imm24u, DLR		//One Extend
+* FBjj_jjjj	 LDIN	#imm24n, DLR		//One Extend
 
 Load an 8 or 12 bit value into DLR.
 
@@ -452,7 +532,7 @@ MOV, GPR
 * 1Azz            MOV		Rm, Rk
 * 1Bzz            MOV		Rj, Rk
 * F0g8_19nm       MOV		Rm, Rn				//Rn=Rm
-* F0G8_19nm       MOVD		Rm, Rn				//Rn=Rm (Low32, Hi=Undef)
+* F0G8_19nm       MOV.L		Rm, Rn				//Rn=Rm (Low32, Hi=Undef)
 
 MOV, Control Register
 * 48nm            MOV		Rm, Cn
@@ -491,8 +571,8 @@ The Xor-Extend case extends the value with the opposite of the sign bit, and thu
 * F0go_04nm       MOV.B		Rm, (Rn, Ro)		//Q=0	//(Rn==0): PC-Rel
 * F0gd_08nm       MOV.B		(Rm, disp5u), Rn	//Q=0
 * F0go_0Cnm       MOV.B		(Rm, Ro), Rn		//Q=0	//(Rm==0): PC-Rel
-* F1gd_0dnm     ? MOV.B		Rm, (Rn, disp9u)
-* F1gd_8dnm     ? MOV.B		(Rm, disp9u), Rn
+* F1gd_0dnm       MOV.B		Rm, (Rn, disp9u)
+* F1gd_8dnm       MOV.B		(Rm, disp9u), Rn
 * FC0g_00nm_dddd  MOV.B		Rm, (Rn, disp17s)
 * FC0g_08nm_dddd  MOV.B		(Rm, disp17s), Rn
 * FC27_0ndd_dddd  MOV.B		Rn, (PC, disp24s)	//PC-Rel Store (R0..R15)
@@ -516,8 +596,8 @@ The byte is sign extended to the size of the register.
 * F0go_06nm       MOV.L		Rm, (Rn, Ro)		//(Rn==0): PC-Rel
 * F0gd_0Anm       MOV.L		(Rm, disp5u), Rn
 * F0go_0Enm       MOV.L		(Rm, Ro), Rn		//(Rm==0): PC-Rel
-* F1gd_2dnm     ? MOV.L		Rm, (Rn, disp9u)
-* F1gd_Adnm     ? MOV.L		(Rm, disp9u), Rn
+* F1gd_2dnm       MOV.L		Rm, (Rn, disp9u)
+* F1gd_Adnm       MOV.L		(Rm, disp9u), Rn
 * FC0g_02nm_dddd  MOV.L		Rm, (Rn, disp17s)
 * FC0g_0Anm_dddd  MOV.L		(Rm, disp17s), Rn
 * FC27_2ndd_dddd  MOV.L		Rn, (PC, disp24s)	//PC-Rel Store
@@ -544,8 +624,8 @@ For example, F0-28 and F1-2 could both achieve a similar purpose, so don't need 
 * F0go_07nm       MOV.Q		Rm, (Rn, Ro)		//Q=0
 * F0gd_0Bnm       MOV.Q		(Rm, disp5), Rn		//Q=0
 * F0go_0Fnm       MOV.Q		(Rm, Ro), Rn		//Q=0
-* F1gd_3dnm     ? MOV.Q		Rm, (Rn, disp9u)
-* F1gd_Bdnm     ? MOV.Q		(Rm, disp9u), Rn
+* F1gd_3dnm       MOV.Q		Rm, (Rn, disp9u)
+* F1gd_Bdnm       MOV.Q		(Rm, disp9u), Rn
 * FC0g_03nm_dddd  MOV.Q		Rm, (Rn, disp17s)
 * FC0g_0Bnm_dddd  MOV.Q		(Rm, disp17s), Rn
 * FC27_3ndd_dddd  MOV.Q		Rn, (PC, disp24s)	//PC-Rel Store
@@ -566,8 +646,8 @@ Load or store a QWord to/from memory.
 * F0go_05nm       MOV.W		Rm, (Rn, Ro)		//Q=0	//(Rn==0): PC-Rel
 * F0gd_09nm       MOV.W		(Rm, disp5), Rn		//Q=0
 * F0go_0Dnm       MOV.W		(Rm, Ro), Rn		//Q=0	//(Rm==0): PC-Rel
-* F1gd_1dnm     ? MOV.W		Rm, (Rn, disp9u)
-* F1gd_9dnm     ? MOV.W		(Rm, disp9u), Rn
+* F1gd_1dnm       MOV.W		Rm, (Rn, disp9u)
+* F1gd_9dnm       MOV.W		(Rm, disp9u), Rn
 * FC0e_01nm_dddd  MOV.W		Rm, (Rn, disp17s)
 * FC0g_09nm_dddd  MOV.W		(Rm, disp17s), Rn
 * FC27_1ndd_dddd  MOV.W		Rn, (PC, disp24s)	//PC-Rel Store
@@ -602,7 +682,7 @@ This operation is intended for cases where the high order bits of the register a
 * 52nm            MOVU.B	(Rm, DLR), Rn		//(Rm==0): PC-Rel
 * F0Gd_08nm       MOVU.B	(Rm, disp5), Rn
 * F0Go_0Cnm       MOVU.B	(Rm, Ro), Rn		//(Rm==0): PC-Rel
-* F1Gd_8dnm     ? MOVU.B	(Rm, disp9u), Rn
+* F1Gd_8dnm       MOVU.B	(Rm, disp9u), Rn
 * FC0G_08nm_dddd  MOVU.B	(Rm, disp17s), Rn
 * FC27_Cndd_dddd  MOVU.B	(PC, disp24s), Rn	//PC-Rel Load
 * FD27_Cndd_dddd  MOVU.B	(PC, disp24s), Rk	//PC-Rel Load
@@ -619,7 +699,7 @@ Note that these instruction forms will be specific to the 32-bit ISA.
 * 88nm            MOVU.L	(Rm, DLR), Rn		//(Rm==0): PC-Rel
 * F0Gd_0Anm       MOVU.L	(Rm, disp5), Rn
 * F0Go_0Enm       MOVU.L	(Rm, Ro), Rn		//(Rm==0): PC-Rel
-* F1Gd_Adnm     ? MOVU.L	(Rm, disp9u), Rn
+* F1Gd_Adnm       MOVU.L	(Rm, disp9u), Rn
 * FC0G_0Anm_dddd  MOVU.L	(Rm, disp17s), Rn
 * FC27_Endd_dddd  MOVU.L	(PC, disp24s), Rn	//PC-Rel Load
 * FD27_Endd_dddd  MOVU.L	(PC, disp24s), Rk	//PC-Rel Load
@@ -636,7 +716,7 @@ Note that these instruction forms will be specific to the 32-bit ISA.
 * 53nm            MOVU.W	(Rm, DLR), Rn		//(Rm==0): PC-Rel
 * F0Gd_09nm       MOVU.W	(Rm, disp5), Rn
 * F0Go_0Dnm       MOVU.W	(Rm, Ro), Rn		//(Rm==0): PC-Rel
-* F1Gd_9dnm     ? MOVU.W	(Rm, disp9u), Rn
+* F1Gd_9dnm       MOVU.W	(Rm, disp9u), Rn
 * FC0G_09nm_dddd  MOVU.W	(Rm, disp17s), Rn
 * FC27_Dndd_dddd  MOVU.W	(PC, disp24s), Rn	//PC-Rel Load
 * FD27_Dndd_dddd  MOVU.W	(PC, disp24s), Rk	//PC-Rel Load
@@ -1029,20 +1109,30 @@ Rn=Rm-Imm
 Subtract the source from the destination, storing the result in the destination register.
 
 
+=== SUBx.L ===
+
+* F0go_5Dnm       SUBS.L	Rm, Ro, Rn
+* F0Go_5Dnm       SUBU.L	Rm, Ro, Rn
+
+Subtract the source from the destination, storing the result in the destination register.
+
+This variant sign or zero extends the 32 bit result to 64 bits.
+
+
 === SWAP.B ===
 
-* 36nA SWAP.B	Rn
+* 37n0 SWAP.B	Rn
 
-Rn'=((Rn AND 0xFF00FF00FF00FF00) SHR 8) OR
-	((Rn AND 0x00FF00FF00FF00FF) SHL 8);
+Rn'= (Rn AND 0xFFFFFFFF00000000)        OR
+	((Rn AND 0x00000000FF00FF00) SHR 8) OR
+	((Rn AND 0x0000000000FF00FF) SHL 8);
 
-Swap the Bytes within Rn.
-
+Swap the Even/Odd Bytes within the low four bytes of Rn.
 
 
 === SWAP.W ===
 
-* 36nB SWAP.W	Rn
+* 37n1 SWAP.W	Rn
 
 Rn'=((Rn AND 0xFFFF0000FFFF0000) SHR 16) OR
 	((Rn AND 0x0000FFFF0000FFFF) SHL 16);
@@ -1050,9 +1140,19 @@ Rn'=((Rn AND 0xFFFF0000FFFF0000) SHR 16) OR
 Swap the Words within Rn.
 
 
+=== SWAP.8B ===
+
+* 37n2 SWAP.8B	Rn
+
+Rn'=((Rn AND 0xFF00FF00FF00FF00) SHR 8) OR
+	((Rn AND 0x00FF00FF00FF00FF) SHL 8);
+
+Swap the Even/Odd Bytes within the all eight bytes of Rn.
+
+
 === SWAP.L ===
 
-* 36nC SWAP.L	Rn
+* 37n3 SWAP.L	Rn
 
 Rn'=((Rn AND 0xFFFFFFFF00000000) SHR 32) OR
 	((Rn AND 0x00000000FFFFFFFF) SHL 32);
@@ -1109,53 +1209,110 @@ Perform a bitwise XOR of the source and destination registers, storing the resul
 
 == FPU Instructions ==
 
+The BJX2 FPU aims more to be "sufficient" and "reasonably cheap" than strict adherence to IEEE 754. An FPU is allowed, but not required, to be IEEE 754 conformant.
+
+These will reuse the existing IEEE formats, with some noted divergences:
+* Rounding should be within +/- 2 ULP (rather than 0.5 ULP).
+** No user-defined rounding behavior is provided for.
+* The exact handling of denormals is undefined.
+** Zero is to behave as Zero.
+** Non-Zero denormals may behave either as zero or some tiny non-zero value.
+* The results of operations involving NaN or Inf values are undefined.
+** Operations on these values giving garbage results will be acceptable.
+* Inf vs NaN need only check the high 4 bits of the mantissa.
+** If these bits are 0, Inf may be assumed regardless of the other bits.
+* Divide and Square Root are reduced to being an optional extension.
+* Handling of range overflow or underflow is required:
+** If the operation exceeds the valid range, an Inf is produced.
+** If the value underflows, a zero will be produced.
+
+The nominal internal format of the BJX2 FPU is 64-bit Double.
+* Use of a higher precision internal format is allowed.
+* Precision should not be less than that expected from a Double.
+
+
 === FABS ===
 
-* 9Fn9  FABS		FRn					//Absolute
+* 9Fn9       FABS	FRn			//Absolute
+* F0e9_9Fnm  FABS	FRm, FRn	//Absolute
+
+Get the Absolute Value of a register.
+This effectively clears the sign bit.
+
 
 === FADD ===
 
-* 98nm  FADD		FRm, FRn			//FRn=FRn+FRm
+* 98nm       FADD	FRm, FRn			//FRn=FRn+FRm
+* F0eo_98nm  FADD	FRm, FRo, FRn
+
+Floating point Add. This adds the value in FRm to FRn (2R), or adds FRm and FRo storing the result in FRn.
 
 
 === FCMPEQ ===
 
-* 9Cnm  FCMPEQ		FRm, FRn			//SR.T=(FRn EQ FRm)
+* 9Cnm       FCMPEQ		FRm, FRn			//SR.T=(FRn EQ FRm)
+* F0eC_9Cnm  FCMPEQ		FRm, FRn			//SR.T=(FRn EQ FRm)
+
+Compare values for Equality.
+
+Nominally, this will behave the same as an integer compare, except that the result will be False if either FRm or FRn is a NaN.
 
 
 === FCMPGT ===
 
-* 9Dnm  FCMPGT		FRm, FRn			//SR.T=(FRn GT FRm)
+* 9Dnm       FCMPGT		FRm, FRn			//SR.T=(FRn GT FRm)
+* F0eD_9Cnm  FCMPGT		FRm, FRn			//SR.T=(FRn GT FRm)
+
 
 === FDIV ===
 
-* 9Bnm FDIV		FRm, FRn			//FRn=FRn/FRm
+* 9Bnm       FDIV		FRm, FRn			//(Opt) FRn=FRn/FRm
+* F0eo_9Bnm  FDIV		FRm, FRo, FRn		//(Opt)
+
+Perform a Floating Point division.
+
+FDIV is an Optional Feature (FPDIV).
+If not present floating-point division is to be emulated by the compiler.
+
+The rationale for this operation being optional is mostly the FDIV is relatively expensive, and the FPU can be made cheaper by not providing this feature. In this case, the FPU need not require strict IEEE conformance.
 
 
 === FLDCx ===
 
-* 9Fn0 FLDCF		DLR, FRn			//Float Load Convert Float32
-* 9Fn1 FLDCD		DLR, FRn			//Float Load Convert Double (DLR)
-* 9Fn2 FLDCI		DLR, FRn			//Float Load Convert Int
-* 9Fn3 FLDCH		DLR, FRn			//Float Load Convert Half (DLR, Low16)
+* 9Fn0       FLDCF	DLR, FRn	//Float Load Convert Float32
+* 9Fn1       FLDCD	DLR, FRn	//Float Load Convert Double (DLR)
+* 9Fn2       FLDCI	DLR, FRn	//Float Load Convert Int
+* 9Fn3       FLDCH	DLR, FRn	//Float Load Convert Half (DLR, Low16)
+* F0e0_9Fnm  FLDCF	Rm, FRn		//Load Convert Float32
+* F0e1_9Fnm  FLDCD	Rm, FRn		//Load Convert Double
+* F0e2_9Fnm  FLDCI	Rm, FRn		//Load Convert Int
+* F0e3_9Fnm  FLDCH	Rm, FRn		//Load Convert Half (Low16)
 
 Load a value from DLR into an FRU Register.
+
 The value will be converted from the given source format into the internal format of the FPU Register.
+
+Bits within the register outside of those used in the conversion operation are to be ignored.
 
 
 === FMOV ===
 
-* 9Enm  FMOV		FRm, FRn			//FRn=FRm
+* 9Enm       FMOV	FRm, FRn			//FRn=FRm
+* F0gE_9Cnm  FMOV	FRm, FRn			//FRn=FRm
 
 Move a floating point value from FRm to FRn.
 
 
 === FMOV.D ===
 
-* 91nm  FMOV.D		FRm, (Rm)
-* 95nm  FMOV.D		(Rm), FRn
-* 93nm  FMOV.D		FRm, (Rm, DLR)
-* 97nm  FMOV.D		(Rm, DLR), FRn
+* 91nm       FMOV.D		FRm, (Rm)
+* 95nm       FMOV.D		(Rm), FRn
+* 93nm       FMOV.D		FRm, (Rm, DLR)
+* 97nm       FMOV.D		(Rm, DLR), FRn
+* F0ed_91nm  FMOV.D		FRm, (Rm, disp5)
+* F0eo_93nm  FMOV.D		FRm, (Rm, Ro)
+* F0ed_95nm  FMOV.D		(Rm, disp5), FRn
+* F0eo_97nm  FMOV.D		(Rm, Ro), FRn
 
 Load or store a double precision value.
 The value is converted to or from the internal format of the FPU register.
@@ -1163,10 +1320,14 @@ The value is converted to or from the internal format of the FPU register.
 
 === FMOV.S ===
 
-* 90nm  FMOV.S		FRm, (Rm)
-* 92nm  FMOV.S		FRm, (Rm, DLR)
-* 94nm  FMOV.S		(Rm), FRn
-* 96nm  FMOV.S		(Rm, DLR), FRn
+* 90nm       FMOV.S		FRm, (Rm)
+* 92nm       FMOV.S		FRm, (Rm, DLR)
+* 94nm       FMOV.S		(Rm), FRn
+* 96nm       FMOV.S		(Rm, DLR), FRn
+* F0ed_90nm  FMOV.S		FRm, (Rm, disp5)
+* F0eo_92nm  FMOV.S		FRm, (Rm, Ro)
+* F0ed_94nm  FMOV.S		(Rm, disp5), FRn
+* F0eo_96nm  FMOV.S		(Rm, Ro), FRn
 
 Load or store a single precision value.
 The value is converted to or from the internal format of the FPU register.
@@ -1174,55 +1335,216 @@ The value is converted to or from the internal format of the FPU register.
 
 === FMUL ===
 
-* 9Anm  FMUL		FRm, FRn			//FRn=FRn*FRm
+* 9Anm       FMUL		FRm, FRn			//FRn=FRn*FRm
+* F0eo_9Anm  FMUL		FRm, FRo, FRn
 
 Multiply FRm by FRn and store the result in FRn.
 
 
 === FNEG ===
 
-* 9Fn8 FNEG		FRn					//Negate
+* 9Fn8       FNEG		FRn			//Negate
+* F0e8_9Fnm  FNEG		FRm, FRn	//Negate
 
 Negate the value held in FRn.
+This operation effectively inverts the sign bit.
 
 
 === FRCP ===
 
-* 9FnC FRCP		FRn					//Reciprocal
+* 9FnC       FRCP		FRn			//Reciprocal (Exact, Opt)
+* F0eC_9Fnm  FRCP		FRm, FRn	//Reciprocal (Exact, Opt)
 
 Calculate the reciprocal of FRn and store the result in FRn.
+
+This instruction is Optional (FPDIV).
 
 
 === FRCPA ===
 
-* 9FnA FRCPA		FRn					//Reciprocal (Approximate)
+* 9FnA FRCPA		FRn				//Reciprocal (Approximate, Opt)
 
-Calculate a fast approximation of the reciprocal of FRn and store the result in FRn.
+Calculate an approximation of the reciprocal of FRn and store the result in FRn.
+
+This instruction is Optional (FPDIV).
 
 
-=== FSTCF ===
+=== FSTCx ===
 
-* 9Fn4 FSTCF		FRn, DLR			//Float Store Convert Float32
-* 9Fn5 FSTCD		FRn, DLR			//Float Store Convert Double (DLR)
-* 9Fn6 FSTCI		FRn, DLR			//Float Store Convert Int
-* 9Fn7 FSTCH		FRn, DLR			//Float Store Convert Half (DLR, Low16)
+* 9Fn4       FSTCF	FRn, DLR	//Float Store Convert Float32
+* 9Fn5       FSTCD	FRn, DLR	//Float Store Convert Double (DLR)
+* 9Fn6       FSTCI	FRn, DLR	//Float Store Convert Int
+* 9Fn7       FSTCH	FRn, DLR	//Float Store Convert Half (DLR, Low16)
+* F0e4_9Fnm  FSTCF	FRm, Rn		//Store Convert Float32
+* F0e5_9Fnm  FSTCD	FRm, Rn		//Store Convert Double
+* F0e6_9Fnm  FSTCI	FRm, Rn		//Store Convert Int
+* F0e7_9Fnm  FSTCH	FRm, Rn		//Store Convert Half (Low16)
+
+Convert the value held in the floating point register to the requested form and store to DLR or to a GPR.
+
+The bits in the register outside of those used by the conversion are to be set to zeroes.
+
+Conversion to a narrower floating point format will used round-to-nearest, but may truncate in cases where the rounding would results in a carry outside the low order bits.
+
+Conversion to integer will truncate towards zero. Its output will be a 64-bit integer with undefined results if the value overflows the allowed range.
+
 
 === FSUB ===
 
-* 99nm  FSUB		FRm, FRn			//FRn=FRn-FRm
+* 99nm       FSUB	FRm, FRn			//FRn=FRn-FRm
+* F0eo_99nm  FSUB	FRm, FRo, FRn
 
-Floating point subtract. Subtract FRm from FRn and store result in FRn.
+Floating point subtract. Subtract FRm from FRn (2R) and store result in FRn.
+Subtract FRo from FRm (3R) and store the result in FRn.
 
 
 === FSQRT ===
 
-* 9FnD FSQRT		FRn					//Square Root
+* 9FnD       FSQRT	FRn			//Square Root (Opt)
+* F0eD_9Fnm  FSQRT	FRm, FRn	//Square Root (Exact, Opt)
 
 Calculate the Square Root of FRn and store the result in FRn.
+
+This instruction is Optional (FPDIV).
 
 
 === FSQRTA ===
 
-* 9FnB FSQRTA		FRn					//Square Root (Approximate)
+* 9FnB FSQRTA		FRn					//Square Root (Approximate, Opt)
 
-Calculate a fast approximation of the Square Root of FRn and store the result in FRn.
+Calculate an approximation of the Square Root of FRn and store the result in FRn.
+
+This instruction is Optional.
+
+
+== GPR SIMD Extension ==
+
+These instructions will be considered part of the GPR SIMD Vector Extension (GSV). These instruction forms will be considered optional, and exist mostly to add rudimentary SIMD support to BJX2.
+
+
+=== MOV.xD (GSV) ===
+
+* F0g8_1Anm  MOVHD		Rm, Rn			//(GSV) Move High DWord
+* F0G8_1Anm  MOVLD		Rm, Rn			//(GSV) Move Low DWord
+* F0gA_1Anm  MOVHLD		Rm, Rn			//(GSV) Rn=Rm (MOV High to Low)
+* F0GA_1Anm  MOVLHD		Rm, Rn			//(GSV) Rn=Rm (MOV Low to High)
+
+Partial Register Move. These MOV part of the bits from Rm into Rn, while leaving the other bits in Rn as their original value.
+
+
+=== PADD.x (GSV) ===
+
+* F0g0_1Anm  PADD.W		Rm, Rn		//(GSV) Packed ADD Word
+* F0G0_1Anm  PADD.L		Rm, Rn		//(GSV) Packed ADD DWord
+* F0g5_1Anm  PADD.H		Rm, Rn		//(GSV) Packed ADD Half
+
+Add Packed Elements.
+
+Each element from Rm is added to the corresponding element of Rn.
+
+
+=== PCMPx.x (GSV) ===
+
+* F0pC_1Anm  PCMPEQ.W	Rm, Rn		//Pack Compare Word, Equal
+* F0qC_1Anm  PCMPEQ.H	Rm, Rn		//Pack Compare Half, Equal
+* F0pD_1Anm  PCMPHI.W	Rm, Rn		//Pack Compare Word, Above
+* F0pE_1Anm  PCMPGT.W	Rm, Rn		//Pack Compare Word, Greater
+* F0qE_1Anm  PCMPGT.H	Rm, Rn		//Pack Compare Half, Greater
+
+* F0PC_1Anm  PCMPEQ.L	Rm, Rn		//Pack Compare DWord, Equal
+* F0PD_1Anm  PCMPHI.L	Rm, Rn		//Pack Compare DWord, Above
+* F0PE_1Anm  PCMPGT.L	Rm, Rn		//Pack Compare DWord, Greater
+* F0QC_1Anm  PCMPEQ.F	Rm, Rn		//Pack Compare Float32, Equal
+* F0QE_1Anm  PCMPGT.F	Rm, Rn		//Pack Compare Float32, Greater
+
+Packed Compare.
+
+With Word and Half will update the P/Q/R/O bits in SR depending on the result of each comparison. These will compare each element Rn with the corresponding element in Rm. The SR.P bit will correspond with the low-order element, and SR.O will correspond with the high order element.
+
+Half comparisons will be similar to Word comparisons, but will differ in that values are sign magnitude.
+
+With Packed DWord and Float32, The T and S bits will be updated based on the comparison (T for the low element, and S for the high element).
+
+
+Note that bits other than those defined for the comparison will be undefined following the operation. So, If Q=0 then S and T are undefined, and if Q=1 then P/Q/R/O are undefined.
+
+
+=== PMUL.H (GSV) ===
+
+* F0g7_1Anm  PMUL.H		Rm, Rn				//(GSV) Packed MUL Half
+
+Multiply the packed Half-Float values in Rm and Rn, storing the result in Rn.
+
+
+=== PMULU.W (GSV) ===
+
+* F0gF_1Anm  PMULU.W	Rm, Rn		//(GSV) (DHR,DLR)=Rm*Rn (Vector)
+
+Packed Multiply of Unsigned Words.
+The DLR register is updated with the low words of each packed multiply.
+The DHR register is updated with the high words of each packed multiply.
+
+
+=== PSUB.x (GSV) ===
+
+* F0g1_1Anm  PSUB.W		Rm, Rn		//(GSV) Packed SUB Word
+* F0G1_1Anm  PSUB.L		Rm, Rn		//(GSV) Packed SUB DWord
+* F0g6_1Anm  PSUB.H		Rm, Rn		//(GSV) Packed SUB Half
+
+Subtract Packed Elements.
+
+Each element from Rm is subtracted from the corresponding element of Rn.
+
+
+=== PSELx.x (GSV) ===
+
+* F0pB_1Anm  PSELT.W	Rm, Rn		//Packed Select Word
+* F0qB_1Anm  PSELF.W	Rm, Rn		//Packed Select Word
+* F0PB_1Anm  PSELT.L	Rm, Rn		//Packed Select DWord
+* F0QB_1Anm  PSELF.L	Rm, Rn		//Packed Select DWord
+
+Select each Word element from Rm or Rn depending on the corresponding P/Q/R/O bits in SR, or each DWord element depending on the corresponding T or S bit.
+
+PSELT will select the Word from Rm if the corresponding bit is Set, selecting the Rn otherwise. PSELF will instead select from Rn if the bit is set, selecting from Rm otherwise.
+
+
+=== SWxP.x (GSV) ===
+
+* 37n4       SWAP.LB	Rn			//(1023) Swap Low Two Bytes (GSV)
+* 37n5       SWAP.LW	Rn			//(1023) Swap Low Two Words (GSV)
+* 37n6       SWCP.LB	Rn			//(0023) Copy Low Bytes (GSV)
+* 37n7       SWCP.LW	Rn			//(0023) Copy Low Words (GSV)
+* 37n8       SWAP.MB	Rn			//(2103) Swap Low and Middle Byte (GSV)
+* 37n9       SWAP.MW	Rn			//(2103) Swap Low and Middle Word (GSV)
+* 37nA       SWCP.MB	Rn			//(0103) Copy Low To Middle Byte (GSV)
+* 37nB       SWCP.MW	Rn			//(0103) Copy Low To Middle Word (GSV)
+* 37nC       SWAP.HB	Rn			//(3120) Swap Low and High Byte (GSV)
+* 37nD       SWAP.HW	Rn			//(3120) Swap Low and High Word (GSV)
+* 37nE       SWCP.HB	Rn			//(0120) Copy Low To High Bytes (GSV)
+* 37nF       SWCP.HW	Rn			//(0120) Copy Low To High Word (GSV)
+
+* F0e0_37nm  SWAP.B		Rm, Rn		//(1032) Swap E/O Bytes (Low Four Bytes)
+* F0e1_37nm  SWAP.W		Rm, Rn		//(1032) Swap E/O Words (All words)
+* F0e2_37nm  SWAP.8B	Rm, Rn		//       Swap E/O Bytes (All Eight Bytes)
+* F0e3_37nm  SWAP.L		Rm, Rn		//(2301) Swap DWord
+* F0e4_37nm  SWAP.LB	Rm, Rn		//(1023) Swap Low Two Bytes (GSV)
+* F0e5_37nm  SWAP.LW	Rm, Rn		//(1023) Swap Low Two Words (GSV)
+* F0e6_37nm  SWCP.LB	Rm, Rn		//(0023) Copy Low Bytes (GSV)
+* F0e7_37nm  SWCP.LW	Rm, Rn		//(0023) Copy Low Words (GSV)
+* F0e8_37nm  SWAP.MB	Rm, Rn		//(2103) Swap Low and Middle Byte (GSV)
+* F0e9_37nm  SWAP.MW	Rm, Rn		//(2103) Swap Low and Middle Word (GSV)
+* F0eA_37nm  SWCP.MB	Rm, Rn		//(0103) Copy Low To Middle Byte (GSV)
+* F0eB_37nm  SWCP.MW	Rm, Rn		//(0103) Copy Low To Middle Word (GSV)
+* F0eC_37nm  SWAP.HB	Rm, Rn		//(3120) Swap Low and High Byte (GSV)
+* F0eD_37nm  SWAP.HW	Rm, Rn		//(3120) Swap Low and High Word (GSV)
+* F0eE_37nm  SWCP.HB	Rm, Rn		//(0120) Copy Low To High Bytes (GSV)
+* F0eF_37nm  SWCP.HW	Rm, Rn		//(0120) Copy Low To High Word (GSV)
+
+Swap or Copy elements within a register.
+
+SWAP.x will exchange a the low element with another element, whereas SWCP.x will copy the low element into another element.
+
+Other than the first element, the others will be labeled as Low, Middle, and High. Low will correspond to the lower-order bits of the register, and High will correspond with the higher order bits.
+
+
+

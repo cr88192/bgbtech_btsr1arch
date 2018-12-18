@@ -21,7 +21,7 @@ int BGBCC_JX2C_EmitBinaryVRegVRegFloat(
 	case CCXL_BINOP_ADD:	nm1=BGBCC_SH_NMID_FADD;	nm2=-1; break;
 	case CCXL_BINOP_SUB:	nm1=BGBCC_SH_NMID_FSUB;	nm2=-1; break;
 	case CCXL_BINOP_MUL:	nm1=BGBCC_SH_NMID_FMUL;	nm2=-1; break;
-	case CCXL_BINOP_DIV:	nm1=BGBCC_SH_NMID_FDIV;	nm2=-1; break;
+//	case CCXL_BINOP_DIV:	nm1=BGBCC_SH_NMID_FDIV;	nm2=-1; break;
 
 	default:		nm1=-1; nm2=-1; break;
 	}
@@ -74,6 +74,49 @@ int BGBCC_JX2C_EmitBinaryVRegVRegFloat(
 		return(1);
 	}
 
+#if 1
+	switch(opr)
+	{
+	case CCXL_BINOP_ADD:	s0="__fpu_fadd";	break;
+	case CCXL_BINOP_SUB:	s0="__fpu_fsub";	break;
+	case CCXL_BINOP_MUL:	s0="__fpu_fmul";	break;
+	case CCXL_BINOP_DIV:	s0="__fpu_fdiv";	break;
+	default:				s0=NULL; break;
+	}
+
+	if(s0)
+	{
+		if(BGBCC_CCXL_TypeDoubleP(ctx, type))
+		{
+			BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, BGBCC_SH_REG_DR4);
+			BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, BGBCC_SH_REG_DR5);
+			BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx, treg, BGBCC_SH_REG_DR5);
+			BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx, dreg, BGBCC_SH_REG_DR4);
+			BGBCC_JX2C_EmitCallName(ctx, sctx, s0);
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, BGBCC_SH_REG_DR4);
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, BGBCC_SH_REG_DR5);
+			BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, BGBCC_SH_REG_DR2);
+			BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, BGBCC_SH_REG_DR2);
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, BGBCC_SH_REG_DR2);
+			return(1);
+		}else
+		{
+			BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, BGBCC_SH_REG_FR4);
+			BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, BGBCC_SH_REG_FR5);
+			BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx, treg, BGBCC_SH_REG_FR5);
+			BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx, dreg, BGBCC_SH_REG_FR4);
+			BGBCC_JX2C_EmitCallName(ctx, sctx, s0);
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, BGBCC_SH_REG_FR4);
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, BGBCC_SH_REG_FR5);
+			BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, BGBCC_SH_REG_FR2);
+			BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, BGBCC_SH_REG_FR2);
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, BGBCC_SH_REG_FR2);
+			return(1);
+		}
+	}
+#endif
+
+#if 0
 	if(BGBCC_CCXL_TypeDoubleP(ctx, type))
 	{
 		switch(opr)
@@ -125,6 +168,7 @@ int BGBCC_JX2C_EmitBinaryVRegVRegFloat(
 			return(1);
 		}
 	}
+#endif
 
 	BGBCC_CCXL_StubError(ctx);
 	return(0);

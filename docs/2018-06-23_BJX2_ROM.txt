@@ -94,7 +94,9 @@ MMIO Space:
 * 00080000 .. 00080FFF: Audio Loop Buffer / Registers
 
 * 000A0000 .. 000BFFFF: Reserved for Display Memory (Bypass)
-
+** 000A0000 .. 000BEFFF: Framebuffer Memory
+** 000BF000 .. 000BFEFF: Control SRAM
+** 000BFF00 .. 000BFFFF: Display Control Registers
 
 === MMU ===
 
@@ -195,6 +197,26 @@ Page Table Entries:
 * ( 47: 12) = Physical Address Page
 * ( 11:  0) = Page Control bits
 
-The MMU will use a 4-level Page Table.
-There will be a User Page Table (TTB) and a System Page Table (STTB).
 
+There will be a User Page Table (TTB) and a System Page Table (STTB).
+Whether STTD is used, and what page-table type is assumed, will depend on the low bits in TTB.
+
+The low 2 bits of TTB will give the main page-table type:
+* 00: None / Invalid
+* 01: Two-level, 32-bit PTE; Single Page Table.
+* 10: Three-Level, 64-bit PTE, 39-bit address.
+* 11: Four-Level, 64-bit PTE, 48-bit address.
+
+The next two bits will give the type of STTB table:
+* 00: None, Reuse TTB.
+* 01: Use Two-Level STTB.
+* 10: Use Three-Level STTB.
+* 11: Use Four-Level STTB.
+
+
+MMCR Bits:
+* 0001: Enable TLB
+** Enables the use of page-level translation via the TLB.
+** If clear, direct physical addressing is used.
+* 0004: User-mode uses 32-bit addressing.
+* 0008: System-mode uses 32-bit addressing.

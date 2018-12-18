@@ -357,6 +357,8 @@ static char *bgbcp_basetypes_c[]={
 "__vec2d", "__vec3d", "__vec4d", "__quatd", 
 "__mat2", "__mat3", "__mat4",
 
+"__bfloat16",
+
 // "_Float128",	"_Float64",
 // "_Float32",	"_Float16",
 

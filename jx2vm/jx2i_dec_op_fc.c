@@ -299,6 +299,14 @@ int BJX2_DecodeOpcode_DecFC(BJX2_Context *ctx,
 				op->fmid=BJX2_FMID_REGSTPCDISP;
 				op->Run=BJX2_Op_MOVQ_RegStPcDisp;
 				break;
+			case 0x4:
+				op->rn=rn_i24;
+				op->rm=BJX2_REG_PC;
+				op->imm=imm24;
+				op->nmid=BJX2_NMID_LEAB;
+				op->fmid=BJX2_FMID_LDPCDISPREG;
+				op->Run=BJX2_Op_LEAB_LdPcDispReg;
+				break;
 
 			case 0x8:
 				op->rn=rn_i24;
@@ -357,6 +365,7 @@ int BJX2_DecodeOpcode_DecFC(BJX2_Context *ctx,
 				op->fmid=BJX2_FMID_LDPCDISPREG;
 				op->Run=BJX2_Op_MOVUL_LdPcDispReg;
 				break;
+/*
 			case 0xF:
 				op->rn=rn_i24;
 				op->rm=BJX2_REG_PC;
@@ -365,6 +374,7 @@ int BJX2_DecodeOpcode_DecFC(BJX2_Context *ctx,
 				op->fmid=BJX2_FMID_LDPCDISPREG;
 				op->Run=BJX2_Op_LEAB_LdPcDispReg;
 				break;
+*/
 			}
 			break;
 		}

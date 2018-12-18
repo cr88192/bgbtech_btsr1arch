@@ -477,6 +477,7 @@ typedef union {
 
 #include <bgbcc_ccxl.h>
 #include <bgbcc_ril3.h>
+#include <bgbcc_comcc.h>
 #include <bgbcc_shcc.h>
 #include <bgbcc_bsrcc.h>
 

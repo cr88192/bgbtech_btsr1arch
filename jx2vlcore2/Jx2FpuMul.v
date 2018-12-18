@@ -1,5 +1,6 @@
 
 `include "Jx2CoreDefs.v"
+`include "Jx2ExCsAdd64F.v"
 
 module Jx2FpuMul(
 	/* verilator lint_off UNUSED */
@@ -27,11 +28,10 @@ assign	regValRo	= tRegValRo;
 assign	regExOK		= tRegExOK;
 
 
-wire[63:0]		regValRmRcp;
-Jx2FpuRcpA	mrcp(
-	regValRm, regValRmRcp);
-
-reg[63:0]		regValRmRcp1;
+// wire[63:0]		regValRmRcp;
+// Jx2FpuRcpA	mrcp(
+//	regValRm, regValRmRcp);
+// reg[63:0]		regValRmRcp1;
 
 
 reg				tSgnA1;
@@ -43,10 +43,10 @@ reg[11:0]		tExpC1;
 reg[53:0]		tFraA1;
 reg[53:0]		tFraB1;
 
-reg[35:0]		tFraC1_AA;
-reg[35:0]		tFraC1_AB;
+//reg[35:0]		tFraC1_AA;
+//reg[35:0]		tFraC1_AB;
 reg[35:0]		tFraC1_AC;
-reg[35:0]		tFraC1_BA;
+//reg[35:0]		tFraC1_BA;
 reg[35:0]		tFraC1_BB;
 reg[35:0]		tFraC1_BC;
 reg[35:0]		tFraC1_CA;
@@ -62,10 +62,10 @@ reg[9:0]		tFraC1_BA_C5;
 reg				tSgnC2;
 reg[11:0]		tExpC2;
 
-reg[35:0]		tFraC2_AA;
-reg[35:0]		tFraC2_AB;
+// reg[35:0]	tFraC2_AA;
+// reg[35:0]	tFraC2_AB;
 reg[35:0]		tFraC2_AC;
-reg[35:0]		tFraC2_BA;
+// reg[35:0]	tFraC2_BA;
 reg[35:0]		tFraC2_BB;
 reg[35:0]		tFraC2_BC;
 reg[35:0]		tFraC2_CA;
@@ -89,7 +89,10 @@ reg[63:0]		tFraC3_P;
 reg[63:0]		tFraC3_Q;
 reg[63:0]		tFraC3_R;
 
-reg[63:0]		tFraC3_S;
+//reg[63:0]		tFraC3_S;
+wire[63:0]		tFraC3_S;
+
+Jx2ExCsAdd64F	fpmulAdd(tFraC3_Q, tFraC3_R, tFraC3_S);
 
 reg				tSgnC4;
 reg[11:0]		tExpC4;
@@ -151,43 +154,25 @@ begin
 //	tFraB1	= {2'b01, regValRm[51:0]};
 	tFraA1	= {1'b0, (tExpA1!=0), regValRn[51:0]};
 	tFraB1	= {1'b0, (tExpB1!=0), regValRm[51:0]};
-
-/*
-//	if(regExOp[1])
-//	if(regExOp==2)
-	if(0)
-	begin
-//		tExpB1	= 2045-regValRm[62:52];
-//		tFraB1	= {2'b01, ~regValRm[51:0]};
-		tExpB1	= regValRmRcp1[62:52];
-		tFraB1	= {2'b01, regValRmRcp1[51:0]};
-	end
-	else
-	begin
-		tExpB1	= regValRm[62:52];
-//		tFraB1	= {2'b01, regValRm[51:0]};
-		tFraB1	= {1'b0, (tExpB1!=0), regValRm[51:0]};
-	end
-*/
 	
 	tSgnC1	= tSgnA1 ^ tSgnB1;
 	tExpC1	=
 		{1'b0, tExpA1} +
 		{1'b0, tExpB1} - 1023;
 
-	tFraC1_AA	=
-		{ 18'h0, tFraA1[17: 0]} *
-		{ 18'h0, tFraB1[17: 0]};
-	tFraC1_AB	=
-		{ 18'h0, tFraA1[17: 0]} *
-		{ 18'h0, tFraB1[35:18]};
+//	tFraC1_AA	=
+//		{ 18'h0, tFraA1[17: 0]} *
+//		{ 18'h0, tFraB1[17: 0]};
+//	tFraC1_AB	=
+//		{ 18'h0, tFraA1[17: 0]} *
+//		{ 18'h0, tFraB1[35:18]};
 	tFraC1_AC	=
 		{ 18'h0, tFraA1[17: 0]} *
 		{ 18'h0, tFraB1[53:36]};
 
-	tFraC1_BA	=
-		{ 18'h0, tFraA1[35:18]} *
-		{ 18'h0, tFraB1[17: 0]};
+//	tFraC1_BA	=
+//		{ 18'h0, tFraA1[35:18]} *
+//		{ 18'h0, tFraB1[17: 0]};
 	tFraC1_BB	=
 		{ 18'h0, tFraA1[35:18]} *
 		{ 18'h0, tFraB1[35:18]};
@@ -225,17 +210,27 @@ begin
 	tFraC2_Q =
 		{18'h0, tFraC2_BC, tFraC1_AB_C5} +
 		{18'h0, tFraC2_CB, tFraC1_BA_C5} ;
+//	tFraC2_R =
+//		{36'h0, tFraC2_BB[35:8]} +
+//		{tFraC2_CC, 28'h00} ;
+//	tFraC2_R =
+//		{tFraC2_CC, tFraC2_BB[35:8]};
 	tFraC2_R =
-		{36'h0, tFraC2_BB[35:8]} +
-		{tFraC2_CC, 28'h00} ;
+		{tFraC2_CC, tFraC2_BB[35:8]} +
+		{36'h0, tFraC2_AC[35:8]} +
+		{36'h0, tFraC2_CA[35:8]};
 
 
 	/* Stage 3 */
 
-	tFraC3_S =
-		tFraC3_P +
-		tFraC3_Q +
-		tFraC3_R ;
+//	tFraC3_S =
+//		tFraC3_Q +
+//		tFraC3_R ;
+
+//	tFraC3_S =
+//		tFraC3_P +
+//		tFraC3_Q +
+//		tFraC3_R ;
 //	tFraC3_S =
 //		tFraC3_P +
 //		tFraC3_Q +
@@ -278,15 +273,15 @@ begin
 //	if(tExEn1)
 	if(tExEn1!=0)
 	begin
-		regValRmRcp1	<= regValRmRcp;
+//		regValRmRcp1	<= regValRmRcp;
 	
 		tSgnC2		<= tSgnC1;
 		tExpC2		<= tExpC1;
 
-		tFraC2_AA	<= tFraC1_AA;
-		tFraC2_AB	<= tFraC1_AB;
+//		tFraC2_AA	<= tFraC1_AA;
+//		tFraC2_AB	<= tFraC1_AB;
 		tFraC2_AC	<= tFraC1_AC;
-		tFraC2_BA	<= tFraC1_BA;
+//		tFraC2_BA	<= tFraC1_BA;
 		tFraC2_BB	<= tFraC1_BB;
 		tFraC2_BC	<= tFraC1_BC;
 		tFraC2_CA	<= tFraC1_CA;

@@ -178,7 +178,7 @@ int BJX2_MemMmgpCb_SetDWord(BJX2_Context *ctx,
 //		ctx->iodel_cyc=800;
 //		mmgp_spi_delcyc+=800;
 //		ctx->iodel_cyc=200;
-		mmgp_spi_delcyc+=200;
+//		mmgp_spi_delcyc+=200;
 //		ctx->iodel_cyc=20;
 //		mmgp_spi_delcyc+=20;
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_IOPOKE);
