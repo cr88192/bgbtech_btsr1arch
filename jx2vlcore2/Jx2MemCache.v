@@ -447,7 +447,7 @@ begin
 //			icMemPcOK		= UMEM_OK_HOLD;
 `endif
 
-`ifndef JX2_QUIET
+`ifndef JX2_MEM_QUIET
 		$display("Jx2MemCache: IC Addr=%X Opm=%X",
 			icMemPcAddr, icMemPcOpm);
 
@@ -519,7 +519,7 @@ begin
 
 `endif
 		
-`ifndef JX2_QUIET
+`ifndef JX2_MEM_QUIET
 		if(!regSticky1)
 		begin
 			regNextSticky1 = 1;
@@ -553,7 +553,7 @@ begin
 	end
 	else
 	begin
-`ifndef JX2_QUIET
+`ifndef JX2_MEM_QUIET
 		if((icMemPcOpm!=0) || (dcMemPcOpm!=0))
 		begin
 			$display("MemCache: Latch State IcL=%X DcL=%X IcOpm=%X DcOpm=%X",

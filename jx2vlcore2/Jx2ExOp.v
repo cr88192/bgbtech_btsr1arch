@@ -1173,7 +1173,7 @@ begin
 			end
 			else
 			begin
-	//			$display("MULS %X:%X", tCtlOutDhr, tCtlOutDlr);
+//				$display("MUL3 %X * %X => %X", regValRm, regValRi, regMulDlr);
 			end
 
 		end
@@ -1282,23 +1282,23 @@ begin
 `ifdef JX2_EX_ALU_ADDSL
 		JX2_UCMD_ALU_ADDSL: begin
 			tRegOutVal	= {
-				tAddRmRi_A0[31] ? UV32_FF : UV32_00,
-				tAddRmRi_A0[31:0] };
+				tNextAddRmRi_A0[31] ? UV32_FF : UV32_00,
+				tNextAddRmRi_A0[31:0] };
 			tRegOutId	= regIdRn;
 		end
 		JX2_UCMD_ALU_ADDUL: begin
-			tRegOutVal	= { UV32_00, tAddRmRi_A0[31:0] };
+			tRegOutVal	= { UV32_00, tNextAddRmRi_A0[31:0] };
 			tRegOutId	= regIdRn;
 		end
 
 		JX2_UCMD_ALU_SUBSL: begin
 			tRegOutVal	= {
-				tSubRmRi_A1[31] ? UV32_FF : UV32_00,
-				tSubRmRi_A1[31:0] };
+				tNextSubRmRi_A1[31] ? UV32_FF : UV32_00,
+				tNextSubRmRi_A1[31:0] };
 			tRegOutId	= regIdRn;
 		end
 		JX2_UCMD_ALU_SUBUL: begin
-			tRegOutVal	= { UV32_00, tSubRmRi_A1[31:0] };
+			tRegOutVal	= { UV32_00, tNextSubRmRi_A1[31:0] };
 			tRegOutId	= regIdRn;
 		end
 `endif
@@ -1784,6 +1784,9 @@ begin
 		JX2_UCMD_OP_IXT: begin
 			case(regIdIxt[7:0])
 				JX2_UCMD_IX_NOP: begin
+				end
+
+				JX2_UCMD_IX_SLEEP: begin
 				end
 
 				JX2_UCMD_IX_RTS: begin

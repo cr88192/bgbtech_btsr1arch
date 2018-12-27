@@ -378,6 +378,51 @@ char *BTSR1_CheckGetString()
 	return(NULL);
 }
 
+int FRGL_TimeMS()
+{
+#ifdef _WIN32
+	static unsigned int init;
+	unsigned int t;
+
+	t=timeGetTime();
+	if(!init)init=t;
+
+	return((unsigned int)(t-init));
+#else
+
+#ifdef __EMSCRIPTEN__
+	struct timeval	tp;
+	static int      secbase; 
+
+	gettimeofday(&tp, NULL);  
+	if(!secbase)secbase=tp.tv_sec;
+	return(((tp.tv_sec-secbase)*1000)+tp.tv_usec/1000);
+#endif
+
+#ifndef linux
+	static int init;
+	int t;
+
+	t=clock();
+	t*=CLOCKS_PER_SEC/1000.0;
+//	t=FRGL_TimeMS();
+
+	if(!init)init=t;
+
+	return((unsigned int)(t-init));
+#endif
+#ifdef linux
+	struct timeval	tp;
+	static int      secbase; 
+
+	gettimeofday(&tp, NULL);  
+	if(!secbase)secbase=tp.tv_sec;
+	return(((tp.tv_sec-secbase)*1000)+tp.tv_usec/1000);
+#endif
+#endif
+}
+
+
 BJX2_Context	*jx2_ctx;
 
 u32 mmgp_data[256];
@@ -490,6 +535,15 @@ uint32_t mmio_WriteDWord(BJX2_Context *ctx, uint32_t addr, uint32_t val)
 
 //		printf("SPI XrData %02X %02X\n", val, v);
 
+#if 0
+		if((val!=0xFF) && (v!=0xFF))
+			printf("%02X->%02X ", val, v);
+		else if((val!=0xFF))
+			printf("%02X-> ", val);
+		else if((v!=0xFF))
+			printf("->%02X ", v);
+#endif
+
 //		mmgp_spi_delcyc+=200;
 //		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_IOPOKE);
 		break;
@@ -508,8 +562,16 @@ int main(int argc, char **argv, char **env)
 	uint32_t addr;
 	int opm_latch;
 	int lclk, mhz;
+	int tt_start;
+	int t0, t1, t2;
 
 	mhz=100;
+
+//	JX2R_UseImageCreateRamdisk(128*1024);
+	JX2R_UseImageCreateRamdisk(32*1024);
+//	JX2R_UseImageAddFile(
+//		(char *)"BOOTLOAD.SYS",
+//		(char *)"../tk_qsrc/doomsrc2/doom_bjx2.exe");
 
 	Verilated::commandArgs(argc, argv);
 
@@ -526,6 +588,8 @@ int main(int argc, char **argv, char **env)
 	printf("Start ExUnit\n");
 
 	BTSR1_MainInitKeyboard();
+
+	tt_start=FRGL_TimeMS();
 
 	while (!Verilated::gotFinish())
 	{
@@ -564,13 +628,13 @@ int main(int argc, char **argv, char **env)
 
 			if(top->memOpm&0x08)
 			{			
-				top->memInData[0]=drambuf[((addr>>2)+0)&0x3FFFFFFF];
-				top->memInData[1]=drambuf[((addr>>2)+1)&0x3FFFFFFF];
-				top->memInData[2]=drambuf[((addr>>2)+2)&0x3FFFFFFF];
-				top->memInData[3]=drambuf[((addr>>2)+3)&0x3FFFFFFF];
+				top->memInData[0]=drambuf[((addr>>2)+0)&0x3FFFFFF];
+				top->memInData[1]=drambuf[((addr>>2)+1)&0x3FFFFFF];
+				top->memInData[2]=drambuf[((addr>>2)+2)&0x3FFFFFF];
+				top->memInData[3]=drambuf[((addr>>2)+3)&0x3FFFFFF];
 				top->memOK=1;
 
-//				printf("DRAM  %08X  %08X %08X %08X %08X\n",
+//				printf("DRAM-LD  %08X  %08X %08X %08X %08X\n",
 //					addr,
 //					top->memInData[0], top->memInData[1],
 //					top->memInData[2], top->memInData[3]);
@@ -578,11 +642,16 @@ int main(int argc, char **argv, char **env)
 
 			if(top->memOpm&0x10)
 			{
-				drambuf[((addr>>2)+0)&0x3FFFFFFF]=top->memOutData[0];
-				drambuf[((addr>>2)+1)&0x3FFFFFFF]=top->memOutData[1];
-				drambuf[((addr>>2)+2)&0x3FFFFFFF]=top->memOutData[2];
-				drambuf[((addr>>2)+3)&0x3FFFFFFF]=top->memOutData[3];
+				drambuf[((addr>>2)+0)&0x3FFFFFF]=top->memOutData[0];
+				drambuf[((addr>>2)+1)&0x3FFFFFF]=top->memOutData[1];
+				drambuf[((addr>>2)+2)&0x3FFFFFF]=top->memOutData[2];
+				drambuf[((addr>>2)+3)&0x3FFFFFF]=top->memOutData[3];
 				top->memOK=1;
+
+//				printf("DRAM-ST  %08X  %08X %08X %08X %08X\n",
+//					addr,
+//					top->memInData[0], top->memInData[1],
+//					top->memInData[2], top->memInData[3]);
 			}
 		}else
 		{
@@ -641,6 +710,11 @@ int main(int argc, char **argv, char **env)
 			break;
 		}
 	}
+
+	t1=FRGL_TimeMS();
+	t2=t1-tt_start;
+	
+	printf("%.3fMHz\n", jx2_ctx->tot_cyc/(t2*1000.0));
 	
 	BTSR1_MainDeinitKeyboard();
 	

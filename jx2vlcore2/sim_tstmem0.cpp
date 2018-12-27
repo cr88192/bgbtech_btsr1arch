@@ -8,12 +8,12 @@ vluint64_t main_time = 0;
 // static int write_words=256;
 static int write_words=2048;
 
-static int write_words2=4096;
+// static int write_words2=4096;
 
 //static int write_words2=8192;
-//static int write_words2=16384;
+// static int write_words2=16384;
 // static int write_words2=32768;
-// static int write_words2=65536;
+static int write_words2=65536;
 
 uint32_t *rombuf;
 

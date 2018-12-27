@@ -67,8 +67,8 @@ int btesh2_spimmc_XrByte(BJX2_Context *cpu, int val)
 		spimmc_imsgbuf[ib]=val;
 	}
 
-	if(val!=0xFF)
-		printf("D%02X ", val);
+//	if(val!=0xFF)
+//		printf("D%02X ", val);
 	
 	n=((spimmc_imsgrov|4096)-spimmc_imsgirov)&4095;
 	if(n>=3)

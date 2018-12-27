@@ -975,7 +975,7 @@ begin
 			begin
 				if(istrWord[11])
 				begin
-					opUCmd	= JX2_UCMD_MOVL_RM;
+					opUCmd	= JX2_UCMD_MOVL_MR;
 					opFmid	= JX2_FMID_LDREGREG;
 					opBty	= JX2_BTY_UL;
 				end

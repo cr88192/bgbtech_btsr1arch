@@ -100,6 +100,7 @@ reg			icMemIsReady;
 reg			icNextMemIsReady;
 
 reg			icReqLatch;
+reg			icBypassLatch;
 
 always @*
 begin
@@ -134,10 +135,10 @@ begin
 	tRegOutOK = UMEM_OK_READY;
 
 
-	if((tRegInOpm[4:3]!=0) && !icBlkBypass)
+	if((tRegInOpm[4:3]!=0) && !icBlkBypass && !icBypassLatch)
 	begin
 	
-`ifndef JX2_QUIET
+`ifndef JX2_MEM_QUIET
 		$display("DcTileA A=%X D=%X Opm=%X",
 			tRegInAddr, tRegInData, tRegInOpm);
 `endif
@@ -193,7 +194,7 @@ begin
 	end
 */
 	
-	if(!icBlkMiss && !icBlkBypass && icBlkReady)
+	if(!icBlkMiss && !icBlkBypass && icBlkReady && !icBypassLatch)
 	begin
 		if(regInOpm[4:3]!=0)
 			tRegOutOK = UMEM_OK_OK;
@@ -328,12 +329,15 @@ begin
 		tIcBlkStore = regInOpm[4];
 	end
 	else
-		if(icBlkBypass)
+		if(icBlkBypass || icBypassLatch)
 	begin
-`ifndef JX2_QUIET
+`ifndef JX2_MEM_QUIET
 		$display("DcTileA Bypass A=%X D=%X Opm=%X OK=%d",
 			tRegInAddr, tRegInData, tRegInOpm, memPcOK);
 `endif
+
+//		if(tRegInOpm[3] && (memPcDataI[7:0]!=0) && (memPcOK==UMEM_OK_OK))
+//			$display("DcTileA: regInData=%X", memPcDataI[7:0]);
 
 		tRegOutOK = memPcOK;
 		tRegOutData = memPcDataI[63:0];
@@ -350,17 +354,31 @@ begin
 	tRegOutOK2		<= tRegOutOK;		//set if we have a valid value.
 
 	icMemIsReady	<= icNextMemIsReady;
+	icBypassLatch	<= icBypassLatch;
 
-`ifndef JX2_QUIET
+`ifndef JX2_MEM_QUIET
 	if(tRegOutOK!=0)
 		$display("DcTileA: OK=%X", tRegOutOK);
 `endif
 
-	if(icBlkBypass)
+	if(icBlkBypass || icBypassLatch)
 	begin
+//		if(tRegInOpm[3])
+//			$display("DcTileA: regInData=%X", regInData[7:0]);
+
 		tMemPcAddr	<= regInAddr[47:0];
 		tMemPcDataO	<= { UV192_XX, regInData };
 		tMemPcOpm	<= tRegInOpm;
+		
+		if(icBlkBypass)
+		begin
+			icBypassLatch <= 1;
+		end
+		else
+			if(icNextMemIsReady)
+		begin
+			icBypassLatch <= 0;
+		end
 	end
 	else
 		if(icBlkMiss)
@@ -379,7 +397,7 @@ begin
 
 			if(icBlkDirty)
 			begin
-`ifndef JX2_QUIET
+`ifndef JX2_MEM_QUIET
 				$display("DcTileA: Miss OK, Dirty");
 `endif
 				tMemPcAddr			<= { icReqAddr[43:0], 4'h0 };
@@ -391,7 +409,7 @@ begin
 			end
 			else
 			begin
-`ifndef JX2_QUIET
+`ifndef JX2_MEM_QUIET
 				$display("DcTileA: Miss OK, Clean");
 `endif
 				tMemPcAddr			<= UV48_XX;
@@ -407,7 +425,7 @@ begin
 		begin
 			if(icBlkDirty)
 			begin
-`ifndef JX2_QUIET
+`ifndef JX2_MEM_QUIET
 				$display("DcTileA: Miss Dirty");
 `endif
 
@@ -418,7 +436,7 @@ begin
 			end
 			else
 			begin
-`ifndef JX2_QUIET
+`ifndef JX2_MEM_QUIET
 				$display("DcTileA: Miss Clean");
 `endif
 

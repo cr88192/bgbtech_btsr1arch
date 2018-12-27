@@ -261,7 +261,11 @@ Base
 
 	XB: ZZR, Rn, DLR
 	XW: ZZR, Rk, DLR
-	
+
+Fxxx
+	SB: ZZR, Ro, Ro
+	SW: ZZR, Rm, Rn
+
 JX2_FMID_REGREG
 Base
 	SB: Rm, Rn / Rm, DLR, Rn
@@ -291,7 +295,8 @@ Fxxx
 
 JX2_FMID_REGPC
 Fxxx	Fzdd_Oenm
-	SB: Rm, Rn, Disp8s
+	SB, Fzeo_OOOO: (PC, Ro)
+	UB, Fzdd_Oenm: Rm, Rn, Disp8s
 
 JX2_FMID_DRREG
 Base
@@ -471,8 +476,8 @@ parameter[7:0] JX2_UCMD_ALU_EXTSB	= 8'h2E;
 parameter[7:0] JX2_UCMD_ALU_EXTSW	= 8'h2F;
 
 parameter[7:0] JX2_UCMD_ALU_NOT		= 8'h30;
-parameter[7:0] JX2_UCMD_ALU_NEG		= 8'h31;
-parameter[7:0] JX2_UCMD_ALU_NEGC	= 8'h32;
+// parameter[7:0] JX2_UCMD_ALU_NEG		= 8'h31;
+// parameter[7:0] JX2_UCMD_ALU_NEGC	= 8'h32;
 parameter[7:0] JX2_UCMD_ALU_SHARSX	= 8'h33;
 parameter[7:0] JX2_UCMD_ALU_ROTL	= 8'h34;
 parameter[7:0] JX2_UCMD_ALU_ROTR	= 8'h35;
@@ -621,6 +626,12 @@ parameter[7:0] JX2_UCMD_FPIX_FSQRT	= 8'h05;
 `define JX2_DC1_SINGLETILE		//L1 D$, only cache a single tile.
 
 // `define JX2_MEM_NOMMU				//Disable MMU
+
+`define JX2_MEM_QUIET			//disable non-serious debug messages
+
+`ifdef JX2_QUIET
+`define JX2_MEM_QUIET			//disable non-serious debug messages
+`endif
 
 `define JX2_MMU_DO64X				//Use 64x 4-way
 

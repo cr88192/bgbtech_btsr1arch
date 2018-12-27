@@ -26,6 +26,7 @@ VL_MODULE(VJx2ExUnit) {
     VL_IN8(memOK,1,0);
     VL_OUT8(mmioOpm,4,0);
     VL_IN8(mmioOK,1,0);
+    VL_IN16(mmioExc,15,0);
     VL_INW(memInData,127,0,4);
     VL_OUTW(memOutData,127,0,4);
     VL_OUT(memAddr,31,0);
@@ -86,12 +87,12 @@ VL_MODULE(VJx2ExUnit) {
 	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamMissB,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamStickyA,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamStickyB,0,0);
-	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMissDoneFlag,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMissReqaFlag,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMissReqbFlag,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMissDoneaFlag,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMissDonebFlag,0,0);
-	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTileStWR,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMissStoraFlag,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMissStorbFlag,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcOpm,4,0);
 	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tRegOutOK2,1,0);
 	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tRegOutOK,1,0);
@@ -108,6 +109,7 @@ VL_MODULE(VJx2ExUnit) {
 	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__icReqCrossEdge,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__icMemIsReady,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__icReqLatch,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__icBypassLatch,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcOK,1,0);
 	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tMemPcOpm2,4,0);
 	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tMemPcOpm,4,0);
@@ -166,9 +168,9 @@ VL_MODULE(VJx2ExUnit) {
 	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tKrrUsrEqC,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tKrrUsrEqD,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tKrrUsrEq,0,0);
-	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tKrrAccFl,2,0);
     };
     struct {
+	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tKrrAccFl,2,0);
 	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tUsDeny,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tRegInOpm,4,0);
 	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__opRegN,6,0);
@@ -219,7 +221,6 @@ VL_MODULE(VJx2ExUnit) {
 	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExI,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsImm32,0,0);
-	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsImm16,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsFC0,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsNotFx,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRmIsRz,0,0);
@@ -250,8 +251,11 @@ VL_MODULE(VJx2ExUnit) {
 	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tLastCmpRmRnHiPW,3,0);
 	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tLastCmpRmRnEqPL,1,0);
 	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tLastCmpRmRnHiPL,1,0);
-	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tCmpRmRnEqQ,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tCmpRmRnHiQ,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tLastFCmpRmRnEqPW,3,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tLastFCmpRmRnHiPW,3,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tLastFCmpRmRnEqPL,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tLastFCmpRmRnHiPL,1,0);
 	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tRegOpSticky1,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tRegOpSticky2,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tRegOpSticky3,0,0);
@@ -268,7 +272,6 @@ VL_MODULE(VJx2ExUnit) {
 	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tRegOkLatch,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tNextOkLatch,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tJointOkLatch,0,0);
-	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tJcmpStatus,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tOpMiss1,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tOpMiss2,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__tOpMiss3,0,0);
@@ -297,10 +300,10 @@ VL_MODULE(VJx2ExUnit) {
 	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRmsk,3,0);
 	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextVecRmsk,3,0);
 	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tHfopExOp,1,0);
-	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tHfopOK,1,0);
-	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tIsDone,0,0);
     };
     struct {
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tHfopOK,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tIsDone,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextIsDone,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tSeenOK,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextSeenOK,0,0);
@@ -339,8 +342,6 @@ VL_MODULE(VJx2ExUnit) {
 	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tExc1,5,0);
 	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tSgc,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tExd,5,0);
-	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEqL,0,0);
-	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHiL,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq0,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq1,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq2,0,0);
@@ -373,9 +374,6 @@ VL_MODULE(VJx2ExUnit) {
 	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEqPL,1,0);
 	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHiPL,1,0);
 	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHsPL,1,0);
-	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__exFCmp__DOT__tCmpRmRnEqQ,0,0);
-	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__exFCmp__DOT__tCmpRmRnHiL,0,0);
-	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__exFCmp__DOT__tCmpRmRnHiQ,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__exFCmp__DOT__tCmpRmRnEq0,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__exFCmp__DOT__tCmpRmRnEq1,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__exFCmp__DOT__tCmpRmRnEq2,0,0);
@@ -389,7 +387,12 @@ VL_MODULE(VJx2ExUnit) {
 	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__exFCmp__DOT__tCmpRmRnEq01,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__exFCmp__DOT__tCmpRmRnEq23,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__exFCmp__DOT__tCmpRmRnHi01,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__exFCmp__DOT__tCmpRmRnHi23,0,0);
 	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__exFCmp__DOT__tCmpRmRnHs01,0,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__exFCmp__DOT__tCmpRmRnEqPW,3,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__exFCmp__DOT__tCmpRmRnHiPW,3,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__exFCmp__DOT__tCmpRmRnEqPL,1,0);
+	VL_SIG8(Jx2ExUnit__DOT__exOp__DOT__exFCmp__DOT__tCmpRmRnHiPL,1,0);
 	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__tRegOutId,6,0);
 	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__tRegOutOK,1,0);
 	VL_SIG8(Jx2ExUnit__DOT__exFpOp__DOT__tRegAddExOp,1,0);
@@ -429,13 +432,14 @@ VL_MODULE(VJx2ExUnit) {
 	VL_SIG16(Jx2ExUnit__DOT__cache__DOT__tRegOutExc,15,0);
 	VL_SIG16(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegOutExc2,15,0);
 	VL_SIG16(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegOutExc,15,0);
-	VL_SIG16(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegTileIxA,11,0);
-	VL_SIG16(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegTileIxB,11,0);
     };
     struct {
-	VL_SIG16(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tAccTileIxA,11,0);
-	VL_SIG16(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTileIxA,11,0);
-	VL_SIG16(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTileIxB,11,0);
+	VL_SIG16(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegTileIxA,12,0);
+	VL_SIG16(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegTileIxB,12,0);
+	VL_SIG16(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegTileIxH,12,0);
+	VL_SIG16(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tAccTileIxA,12,0);
+	VL_SIG16(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTileIxA,12,0);
+	VL_SIG16(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTileIxB,12,0);
 	VL_SIG16(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tRegOutExc2,15,0);
 	VL_SIG16(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tRegOutExc,15,0);
 	VL_SIG16(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tAccOutExc2,15,0);
@@ -494,11 +498,11 @@ VL_MODULE(VJx2ExUnit) {
 	VL_SIG16(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tExpA1,10,0);
 	VL_SIG16(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tExpB1,10,0);
 	VL_SIG16(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tExpC1,11,0);
+    };
+    struct {
 	VL_SIG16(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC1_AB_C5,9,0);
 	VL_SIG16(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC1_BA_C5,9,0);
 	VL_SIG16(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tExpC2,11,0);
-    };
-    struct {
 	VL_SIG16(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tExpC3,11,0);
 	VL_SIG16(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tExpC4,11,0);
 	VL_SIG16(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tExpC4B,11,0);
@@ -530,6 +534,8 @@ VL_MODULE(VJx2ExUnit) {
 	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamTile2AddrB,27,0);
 	VL_SIGW(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMemTile,255,0,8);
 	VL_SIGW(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTile,255,0,8);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamBlkAddrA,27,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamBlkAddrB,27,0);
 	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamReqBlkAddrA,27,0);
 	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamReqBlkAddrB,27,0);
 	VL_SIGW(Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcDataO,255,0,8);
@@ -558,13 +564,13 @@ VL_MODULE(VJx2ExUnit) {
 	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__maAdd__DOT__tVal0_B1,16,0);
 	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__maAdd__DOT__tVal0_C0,16,0);
 	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__maAdd__DOT__tVal0_C1,16,0);
+    };
+    struct {
 	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__maAdd__DOT__tVal0_D0,16,0);
 	VL_SIGW(Jx2ExUnit__DOT__exOp__DOT__maAdd__DOT__tVal2,64,0,3);
 	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulDlr,31,0);
 	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulDhr,31,0);
 	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulDlrHi,31,0);
-    };
-    struct {
 	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulDhrHi,31,0);
 	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulA1,31,0);
 	VL_SIG(Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulB1,31,0);
@@ -624,13 +630,13 @@ VL_MODULE(VJx2ExUnit) {
 	VL_SIG64(Jx2ExUnit__DOT__gprExNextTea2,63,0);
 	VL_SIG64(Jx2ExUnit__DOT__exIdCurPc,63,0);
 	VL_SIG64(Jx2ExUnit__DOT__exRegValRm,63,0);
+    };
+    struct {
 	VL_SIG64(Jx2ExUnit__DOT__exRegValRmB,63,0);
 	VL_SIG64(Jx2ExUnit__DOT__exRegValRmC,63,0);
 	VL_SIG64(Jx2ExUnit__DOT__exRegValRn,63,0);
 	VL_SIG64(Jx2ExUnit__DOT__exRegValRi,63,0);
 	VL_SIG64(Jx2ExUnit__DOT__exRegValRiB,63,0);
-    };
-    struct {
 	VL_SIG64(Jx2ExUnit__DOT__exRegValRiC,63,0);
 	VL_SIG64(Jx2ExUnit__DOT__exRegValCm,63,0);
 	VL_SIG64(Jx2ExUnit__DOT__exImmValRi,32,0);
@@ -690,13 +696,13 @@ VL_MODULE(VJx2ExUnit) {
 	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__regExsr,63,0);
 	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__regSttb,63,0);
 	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__regKrr,63,0);
+    };
+    struct {
 	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__tRegValRm,63,0);
 	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__tRegValRn,63,0);
 	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__tRegValRi,63,0);
 	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__tRegValCm,63,0);
 	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__regSPc,63,0);
-    };
-    struct {
 	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__regSPr,63,0);
 	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__regSSr,63,0);
 	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__regSSp,63,0);
@@ -724,7 +730,6 @@ VL_MODULE(VJx2ExUnit) {
 	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__memNextDataLd,63,0);
 	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__regMaIxVal2,63,0);
 	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__regLastMaAddr,63,0);
-	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__regBraAddr,63,0);
 	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__regRnSxt,63,0);
 	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__immValRiB,63,0);
 	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__regMulA,63,0);
@@ -746,6 +751,8 @@ VL_MODULE(VJx2ExUnit) {
 	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__tRegValSpP8,63,0);
 	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__tRegValSpN8,63,0);
 	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__idLastGenPc,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr0,63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr0,63,0);
 	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__shadq__DOT__tValRn,63,0);
 	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__shadq__DOT__tValRor,63,0);
 	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__swapn__DOT__tRegOutVal,63,0);
@@ -755,14 +762,14 @@ VL_MODULE(VJx2ExUnit) {
 	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__maAdd__DOT__tVal1_B0,32,0);
 	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__maAdd__DOT__tVal1_B1,32,0);
 	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPqA1,63,0);
+    };
+    struct {
 	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPqB1,63,0);
 	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__mulAdd__DOT__tVal1_A0,32,0);
 	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__mulAdd__DOT__tVal1_B0,32,0);
 	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__mulAdd__DOT__tVal1_B1,32,0);
 	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__fd2i_rn__DOT__tRegValFRm,63,0);
 	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__fd2i_rn__DOT__tRegValFRn2,63,0);
-    };
-    struct {
 	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__fd2i_rn__DOT__tRegValFRn3,63,0);
 	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__fd2i_rn__DOT__tRegValFRnB,63,0);
 	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__fd2i_rn__DOT__tRegFra1,51,0);
@@ -821,14 +828,14 @@ VL_MODULE(VJx2ExUnit) {
 	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC1_BC,35,0);
 	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC1_CA,35,0);
 	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC1_CB,35,0);
+    };
+    struct {
 	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC1_CC,35,0);
 	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC2_AC,35,0);
 	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC2_BB,35,0);
 	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC2_BC,35,0);
 	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC2_CA,35,0);
 	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC2_CB,35,0);
-    };
-    struct {
 	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC2_CC,35,0);
 	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC2_Q,63,0);
 	VL_SIG64(Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC2_R,63,0);
@@ -856,16 +863,16 @@ VL_MODULE(VJx2ExUnit) {
 	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__sramTileF[256],31,0);
 	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__sramTileG[256],31,0);
 	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__sramTileH[256],31,0);
-	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileA[2048],31,0);
-	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileB[2048],31,0);
-	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileC[2048],31,0);
-	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileD[2048],31,0);
-	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileE[2048],31,0);
-	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileF[2048],31,0);
-	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileG[2048],31,0);
-	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileH[2048],31,0);
-	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileAdA[2048],31,0);
-	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileAdB[2048],31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileA[4096],31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileB[4096],31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileC[4096],31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileD[4096],31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileE[4096],31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileF[4096],31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileG[4096],31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileH[4096],31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileAdA[4096],31,0);
+	VL_SIG(Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileAdB[4096],31,0);
 	VL_SIG64(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbBlkHiA[64],63,0);
 	VL_SIG64(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbBlkHiB[64],63,0);
 	VL_SIG64(Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbBlkHiC[64],63,0);
@@ -879,6 +886,8 @@ VL_MODULE(VJx2ExUnit) {
 	VL_SIG64(Jx2ExUnit__DOT__gprFile__DOT__regGprArrO[64],63,0);
 	VL_SIG64(Jx2ExUnit__DOT__fpr__DOT__regFprArrRm[16],63,0);
 	VL_SIG64(Jx2ExUnit__DOT__fpr__DOT__regFprArrRn[16],63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr[16],63,0);
+	VL_SIG64(Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr[16],63,0);
     };
     
     // LOCAL VARIABLES
@@ -929,8 +938,8 @@ VL_MODULE(VJx2ExUnit) {
   public:
     static void _eval_initial(VJx2ExUnit__Syms* __restrict vlSymsp);
     static void _eval_settle(VJx2ExUnit__Syms* __restrict vlSymsp);
-    static void _initial__TOP__2(VJx2ExUnit__Syms* __restrict vlSymsp);
-    static void _sequent__TOP__1(VJx2ExUnit__Syms* __restrict vlSymsp);
+    static void _initial__TOP__1(VJx2ExUnit__Syms* __restrict vlSymsp);
+    static void _sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlSymsp);
     static void _settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp);
 } VL_ATTR_ALIGNED(128);
 

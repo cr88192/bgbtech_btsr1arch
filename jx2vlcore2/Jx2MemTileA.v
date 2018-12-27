@@ -12,6 +12,11 @@ E000..FFFF: MMIO (Bypass)
 
 `include "Jx2CoreDefs.v"
 
+// `ifdef JX2_QUIET
+`ifdef JX2_MEM_QUIET
+`define JX2_MMT_QUIET			//disable non-serious debug messages
+`endif
+
 module Jx2MemTileA(
 	/* verilator lint_off UNUSED */
 	clock,			reset,
@@ -175,6 +180,7 @@ reg[255:0]		tNextTileA;
 
 reg[12:0]		tRegTileIxA;
 reg[12:0]		tRegTileIxB;
+reg[12:0]		tRegTileIxH;
 
 reg[12:0]		tAccTileIxA;
 reg[12:0]		tAccTileIxB;
@@ -229,6 +235,8 @@ reg			tMissReqaFlag;
 reg			tMissReqbFlag;
 reg			tMissDoneaFlag;
 reg			tMissDonebFlag;
+reg			tMissStoraFlag;
+reg			tMissStorbFlag;
 
 reg			tNextTileStWR;
 
@@ -259,32 +267,56 @@ begin
 	icBlkBypass	= (regInAddr[47:45]==3'b101) ||
 		((regInAddr[31:29]==3'b101) && icReqLow4GB);
 
+`ifdef JX2_MEM_L2_128K
+	tRegTileIxH		= regInAddr[16:4];
+//	tRegTileIxH		= regInAddr[16:4] ^
+//		regInAddr[24:12];
+`else
+	tRegTileIxH		= regInAddr[15:4];
+//	tRegTileIxH		= regInAddr[15:4] ^
+//		regInAddr[23:12];
+`endif
+
 	if(regInAddr[4])
 	begin
 `ifdef JX2_MEM_L2_128K
-		tRegTileIxB		= regInAddr[16:4];
+//		tRegTileIxB		= regInAddr[16:4];
 `else
-		tRegTileIxB		= regInAddr[15:4];
+//		tRegTileIxB		= regInAddr[15:4];
 `endif
+		tRegTileIxB		= tRegTileIxH;
 		tRegTileIxA		= tRegTileIxB+1;
 	end
 	else
 	begin
 `ifdef JX2_MEM_L2_128K
-		tRegTileIxA		= regInAddr[16:4];
+//		tRegTileIxA		= regInAddr[16:4];
+//		tRegTileIxA		= regInAddr[16:4] ^
+//			regInAddr[24:12];
 `else
-		tRegTileIxA		= regInAddr[15:4];
+//		tRegTileIxA		= regInAddr[15:4];
 `endif
+		tRegTileIxA		= tRegTileIxH;
 		tRegTileIxB		= tRegTileIxA;
 	end
+
+	tRamBlkAddrA=regInAddr[31:4];
+	tRamBlkAddrB=tRamBlkAddrA+1;
+	tRamMissA=0;
+	tRamMissB=0;
 
 	tNextTileIxA	= 0;
 	tNextTileIxB	= 0;
 
 	tNextTileSt		= 0;
 	tNextTileSrSt	= 0;
+	tNextTileStWR	= 0;
 	tRegOutOK		= UMEM_OK_READY;
 
+	tNextRamTileAddrA	= 0;
+	tNextRamTileAddrB	= 0;
+	tNextRamTileFlagA	= 0;
+	tNextRamTileFlagB	= 0;
 	tRegOutExc		= 0;
 	tRegOutTea		= UV64_XX;
 
@@ -326,7 +358,7 @@ begin
 	if((regInOE || regInWR) && !icBlkBypass)
 	begin
 
-`ifndef JX2_QUIET
+`ifndef JX2_MMT_QUIET
 		$display("MemTileA Addr=%X Opm=%X IsRom=%d IsRam=%d IsSRam=%d", 
 			regInAddr, regInOpm,
 			addrIsRom, addrIsRam, addrIsSRam);
@@ -403,25 +435,94 @@ begin
 			begin
 				tMemTile[127:  0] = tRamTile[255:128];
 				tMemTile[255:128] = tRamTile[127:  0];
+				if(tRamTileAddrA!=tRamBlkAddrB)
+				begin
+`ifndef JX2_MMT_QUIET
+					$display("MissA(1A) %X %X",
+						tRamTileAddrA, tRamBlkAddrB);
+`endif
+					tRamMissA=1;
+				end
+				if(tRamTileAddrB!=tRamBlkAddrA)
+				begin
+`ifndef JX2_MMT_QUIET
+					$display("MissB(1A) %X %X",
+						tRamTileAddrB, tRamBlkAddrA);
+`endif
+					tRamMissB=1;
+				end
+				tRamReqBlkAddrA=tRamBlkAddrB;
+				tRamReqBlkAddrB=tRamBlkAddrA;
 			end
 			else
 			begin
 				tMemTile[127:  0] = tRamTile[127:  0];
 				tMemTile[255:128] = tRamTile[255:128];
+				if(tRamTileAddrA!=tRamBlkAddrA)
+				begin
+`ifndef JX2_MMT_QUIET
+					$display("MissA(1B) %X %X",
+						tRamTileAddrA, tRamBlkAddrA);
+`endif
+					tRamMissA=1;
+				end
+				if(tRamTileAddrB!=tRamBlkAddrB)
+				begin
+`ifndef JX2_MMT_QUIET
+					$display("MissB(1B) %X %X",
+						tRamTileAddrB, tRamBlkAddrB);
+`endif
+					tRamMissB=1;
+				end
+				tRamReqBlkAddrA=tRamBlkAddrA;
+				tRamReqBlkAddrB=tRamBlkAddrB;
 			end
-			tNextTile = tSRamTile;
+//			tNextTile = tSRamTile;
 //			tNextTileA = tMemTile;
 
-			tRegOutOK = (tAccTileIxA == tRegTileIxA) ?
+			if(tAccTileIxA != tRegTileIxA)
+			begin
+				tRamMissA=0;
+				tRamMissB=0;
+			end
+
+//			tRegOutOK = (tAccTileIxA == tRegTileIxA) ?
+//				UMEM_OK_OK : UMEM_OK_HOLD;
+
+			tRegOutOK = (tAccTileIxA == tRegTileIxA) &&
+					!(tRamMissA || tRamMissB) &&
+					!(tRamStickyA || tRamStickyB) ?
 				UMEM_OK_OK : UMEM_OK_HOLD;
 
 			tOutData=tMemTile;
-		
-			if(regInWR)
+
+			tNextTile = tRamTile;
+			tNextTileIxA = tRegTileIxA;
+			tNextTileIxB = tRegTileIxB;
+
+			tNextRamTileAddrA=tRamTileAddrA;
+			tNextRamTileAddrB=tRamTileAddrB;
+			tNextRamTileFlagA=tRamTileFlagA;
+			tNextRamTileFlagB=tRamTileFlagB;
+
+			if(tRamStickyA || tRamStickyB)
 			begin
-				tNextTileIxA = tRegTileIxA;
-				tNextTileIxB = tRegTileIxB;
+	`ifndef JX2_MMT_QUIET
+				$display("RAM, Sticky Store IxA=%X IxB=%X",
+					tRegTileIxA, tRegTileIxB);
+				$display("RAM, Sticky Store AddrA=%X AddrB=%X",
+					tNextRamTileAddrA, tNextRamTileAddrB);
+	`endif
+				
 				tNextTileSt = 1;
+			end
+			else
+				if(regInWR)
+			begin
+				tNextTileSt			= 1;
+				tNextTileStWR		= 1;
+				tNextRamTileFlagA	= 1;
+				tNextRamTileFlagB	= 1;
 
 				if(regInAddr[4])
 				begin
@@ -449,13 +550,40 @@ begin
 
 	end
 
+/*
+	if(tRamStickyA || tRamStickyB)
+	begin
+`ifndef JX2_MMT_QUIET
+		$display("RAM, Sticky Store IxA=%X IxB=%X",
+			tRegTileIxA, tRegTileIxB);
+		$display("RAM, Sticky Store AddrA=%X AddrB=%X",
+			tNextRamTileAddrA, tNextRamTileAddrB);
+`endif
+	
+		tNextTile = tRamTile;
+		tNextTileIxA = tRegTileIxA;
+		tNextTileIxB = tRegTileIxB;
+		
+		tNextTileSt = 1;
+//				if(regInWR)
+//					tRegHoldI = 1;
+	end
+*/
+
 	if(icBlkBypass)
 	begin
-`ifndef JX2_QUIET
+`ifndef JX2_MMT_QUIET
 		$display("MMIO A=%X DO=%X DI=%X Opm=%X OK=%X",
 			regInAddr, regInData[31:0], mmioInData[31:0],
 			regInOpm, mmioOK);
 `endif
+
+//		if(regInOE && mmioInData[7:0]!=0)
+//		begin
+//			$display("MMIO A=%X DO=%X DI=%X Opm=%X OK=%X",
+//				regInAddr, regInData[31:0], mmioInData[31:0],
+//				regInOpm, mmioOK);
+//		end
 		
 		tMmioOutData	= regInData[31:0];
 		tMmioAddr		= regInAddr[31:0];
@@ -536,28 +664,13 @@ begin
 	tAccTileIxA		<= tRegTileIxA;
 	tAccTileIxB		<= tRegTileIxB;
 
-	if(tNextTileSrSt)
-	begin
-		sramTileA[tRegTileIxA[8:1]] <= tNextTile[ 31:  0];
-		sramTileB[tRegTileIxA[8:1]] <= tNextTile[ 63: 32];
-		sramTileC[tRegTileIxA[8:1]] <= tNextTile[ 95: 64];
-		sramTileD[tRegTileIxA[8:1]] <= tNextTile[127: 96];
-		sramTileE[tRegTileIxB[8:1]] <= tNextTile[159:128];
-		sramTileF[tRegTileIxB[8:1]] <= tNextTile[191:160];
-		sramTileG[tRegTileIxB[8:1]] <= tNextTile[223:192];
-		sramTileH[tRegTileIxB[8:1]] <= tNextTile[255:224];
-	end
-
-
-	tAccTileIxA <= tRegTileIxA;
-	tAccTileIxB <= tRegTileIxB;
-
+	tMemOpm			<= 5'b00000;
 
 	if(tRamMissA)
 	begin
-		if((memOK==UMEM_OK_READY) && tMissDoneFlag && tMissReqaFlag)
+		if((memOK==UMEM_OK_READY) && tMissDoneaFlag && tMissReqaFlag)
 		begin
-			tMissDoneFlag		<= 0;
+			tMissDoneaFlag		<= 0;
 			tRamTile1AddrA		<= tRamReqBlkAddrA;
 			tRamTile1FlagA		<= 0;
 			tRamStickyA			<= 1;
@@ -566,7 +679,7 @@ begin
 			tMissReqbFlag		<= 0;
 			tMemOpm				<= 5'b00000;
 
-`ifndef JX2_QUIET
+`ifndef JX2_MMT_QUIET
 			$display("RAM MissA Done Ok=%d Stky=%d ReqA=%d Addr=%X",
 				memOK, tRamStickyA, tMissReqaFlag, tRamReqBlkAddrA);
 `endif
@@ -574,12 +687,13 @@ begin
 		else
 			if((memOK==UMEM_OK_OK) && tMissReqaFlag)
 		begin
-			if(tRamTileFlagA[0])
+//			if(tRamTileFlagA[0])
+			if(tMissStoraFlag)
 			begin
 				tRamTile1FlagA		<= 0;
 				tMemOpm				<= 5'b00000;
 
-`ifndef JX2_QUIET
+`ifndef JX2_MMT_QUIET
 				$display("RAM MissA Dirty Ok=%d Stky=%d ReqA=%d",
 					memOK, tRamStickyA, tMissReqaFlag);
 `endif
@@ -590,9 +704,9 @@ begin
 //				tRamTile1AddrA		<= tRamReqBlkAddrA;
 //				tRamTile1FlagA		<= 0;
 //				tRamStickyA			<= 1;
-				tMissDoneFlag		<= 1;
+				tMissDoneaFlag		<= 1;
 
-`ifndef JX2_QUIET
+`ifndef JX2_MMT_QUIET
 				$display("RAM MissA Clean Ok=%d Stky=%d ReqA=%d",
 					memOK, tRamStickyA, tMissReqaFlag);
 `endif
@@ -602,7 +716,7 @@ begin
 			tMemOutData			<= UV128_XX;
 			tMemOpm				<= 5'b00000;
 
-`ifndef JX2_QUIET
+`ifndef JX2_MMT_QUIET
 			$display("RAM MissA Get: A=%X D=%X_%X_%X_%X",
 				tRamReqBlkAddrA,
 				memInData[127: 96], memInData[ 95: 64],
@@ -610,16 +724,17 @@ begin
 `endif
 
 		end
-		else
+		else if(memOK==UMEM_OK_READY)
 		begin
 			if(tRamTileFlagA[0])
 			begin
 				tMemAddr		<= { tRamTileAddrA[27:0], 4'h0 };
 				tMemOpm			<= UMEM_OPM_WR_TILE;
 				tMemOutData		<= tRamTile[127:  0];
-				tMissDoneFlag	<= 0;
+				tMissDoneaFlag	<= 0;
+				tMissStoraFlag	<= 1;
 
-`ifndef JX2_QUIET
+`ifndef JX2_MMT_QUIET
 				$display("RAM MissA WR Ok=%d", memOK);
 `endif
 			end
@@ -628,26 +743,32 @@ begin
 				tMemAddr		<= { tRamReqBlkAddrA[27:0], 4'h0 };
 				tMemOpm			<= UMEM_OPM_RD_TILE;
 				tMemOutData		<= UV128_XX;
-				tMissDoneFlag	<= 0;
+				tMissDoneaFlag	<= 0;
+				tMissStoraFlag	<= 0;
 				
-`ifndef JX2_QUIET
+`ifndef JX2_MMT_QUIET
 				$display("RAM MissA RD Ok=%d", memOK);
 `endif
 			end
 
-`ifndef JX2_QUIET
+`ifndef JX2_MMT_QUIET
 			$display("RAM MissA %X %X", tRamReqBlkAddrA, tRamTileAddrA);
 `endif
 			tMissReqaFlag	<= 1;
 			tMissReqbFlag	<= 0;
 		end
+		else
+		begin
+			$display("RAM MissA, Wait-Ready %X", tRamReqBlkAddrA);
+			tMemOpm			<= 0;
+		end
 	end
 	else
 		if(tRamMissB)
 	begin
-		if((memOK==UMEM_OK_READY) && tMissDoneFlag && tMissReqbFlag)
+		if((memOK==UMEM_OK_READY) && tMissDonebFlag && tMissReqbFlag)
 		begin
-			tMissDoneFlag		<= 0;
+			tMissDonebFlag		<= 0;
 			tRamTile1AddrB		<= tRamReqBlkAddrB;
 			tRamTile1FlagB		<= 0;
 			tRamStickyB			<= 1;
@@ -656,20 +777,21 @@ begin
 			tMissReqbFlag		<= 0;
 			tMemOpm				<= 5'b00000;
 
-`ifndef JX2_QUIET
-			$display("RAM MissA Done Ok=%d Stky=%d ReqA=%d",
+`ifndef JX2_MMT_QUIET
+			$display("RAM MissB Done Ok=%d Stky=%d ReqA=%d",
 				memOK, tRamStickyA, tMissReqaFlag);
 `endif
 		end
 		else
 			if((memOK==UMEM_OK_OK) && tMissReqbFlag)
 		begin
-			if(tRamTileFlagB[0])
+//			if(tRamTileFlagB[0])
+			if(tMissStorbFlag)
 			begin
 				tRamTile1FlagB		<= 0;
 				tMemOpm				<= 5'b00000;
 
-`ifndef JX2_QUIET
+`ifndef JX2_MMT_QUIET
 				$display("RAM MissB Dirty Ok=%d Stky=%d ReqB=%d",
 					memOK, tRamStickyB, tMissReqbFlag);
 `endif
@@ -680,9 +802,9 @@ begin
 //				tRamTile1AddrB		<= tRamReqBlkAddrB;
 //				tRamTile1FlagB		<= 0;
 //				tRamStickyB			<= 1;
-				tMissDoneFlag		<= 1;
+				tMissDonebFlag		<= 1;
 
-`ifndef JX2_QUIET
+`ifndef JX2_MMT_QUIET
 				$display("RAM MissB Clean Ok=%d Stky=%d ReqB=%d",
 					memOK, tRamStickyB, tMissReqbFlag);
 `endif
@@ -692,39 +814,48 @@ begin
 			tMemOutData			<= UV128_XX;
 			tMemOpm				<= 5'b00000;
 
-`ifndef JX2_QUIET
+`ifndef JX2_MMT_QUIET
 			$display("RAM MissB Get: A=%X D=%X_%X_%X_%X",
 				tRamReqBlkAddrB,
 				memInData[127: 96], memInData[ 95: 64],
 				memInData[ 63: 32], memInData[ 31:  0]);
 `endif
 		end
-		else
+		else if(memOK==UMEM_OK_READY)
 		begin
 			if(tRamTileFlagB[0])
 			begin
 				tMemAddr		<= { tRamTileAddrB[27:0], 4'h0 };
 				tMemOpm			<= UMEM_OPM_WR_TILE;
 				tMemOutData		<= tRamTile[255:128];
-				tMissDoneFlag	<= 0;
+				tMissDonebFlag	<= 0;
+				tMissStorbFlag	<= 1;
 			end
 			else
 			begin
 				tMemAddr		<= { tRamReqBlkAddrB[27:0], 4'h0 };
 				tMemOpm			<= UMEM_OPM_RD_TILE;
 				tMemOutData		<= UV128_XX;
-				tMissDoneFlag	<= 0;
+				tMissDonebFlag	<= 0;
+				tMissStorbFlag	<= 0;
 			end
 			
 			tMissReqaFlag	<= 0;
 			tMissReqbFlag	<= 1;
 
-`ifndef JX2_QUIET
+`ifndef JX2_MMT_QUIET
 //			$display("RAM MissB %X", tRamReqBlkAddrB);
 			$display("RAM MissB %X %X", tRamReqBlkAddrB, tRamTileAddrB);
 `endif
 		end
+		else
+		begin
+			$display("RAM MissB, Wait-Ready %X", tRamReqBlkAddrB);
+			tMemOpm			<= 0;
+		end
+
 	end
+`ifndef def_true
 	else if(tNextTileStWR)
 	begin
 			if(memOK==UMEM_OK_OK)
@@ -759,6 +890,7 @@ begin
 				tMissDoneFlag	<= 1;
 			end
 	end
+`endif
 	else
 	begin
 //		$display("RAM Miss, Release");
@@ -767,6 +899,8 @@ begin
 		tMissReqbFlag	<= 0;
 		tMissDoneaFlag	<= 0;
 		tMissDonebFlag	<= 0;
+		tMissStoraFlag	<= 0;
+		tMissStorbFlag	<= 0;
 	end
 
 	if(tNextTileSt)
@@ -790,7 +924,7 @@ begin
 `endif
 			tRamStickyA			<= 0;
 
-`ifndef JX2_QUIET
+`ifndef JX2_MMT_QUIET
 			$display("RAM St A: Ix=%X Addr=%X",
 				tNextTileIxA, tNextRamTileAddrA);
 
@@ -819,7 +953,7 @@ begin
 `endif
 			tRamStickyB			<= 0;
 
-`ifndef JX2_QUIET
+`ifndef JX2_MMT_QUIET
 			$display("RAM St B: Ix=%X Addr=%X",
 				tNextTileIxB, tNextRamTileAddrB);
 			$display("RAM St B: D=%X_%X_%X_%X",
@@ -827,6 +961,18 @@ begin
 				tNextTile[191:160], tNextTile[159:128]);
 `endif
 		end
+	end
+
+	if(tNextTileSrSt)
+	begin
+		sramTileA[tRegTileIxA[8:1]] <= tNextTile[ 31:  0];
+		sramTileB[tRegTileIxA[8:1]] <= tNextTile[ 63: 32];
+		sramTileC[tRegTileIxA[8:1]] <= tNextTile[ 95: 64];
+		sramTileD[tRegTileIxA[8:1]] <= tNextTile[127: 96];
+		sramTileE[tRegTileIxB[8:1]] <= tNextTile[159:128];
+		sramTileF[tRegTileIxB[8:1]] <= tNextTile[191:160];
+		sramTileG[tRegTileIxB[8:1]] <= tNextTile[223:192];
+		sramTileH[tRegTileIxB[8:1]] <= tNextTile[255:224];
 	end
 
 end
