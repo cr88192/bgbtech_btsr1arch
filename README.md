@@ -45,7 +45,7 @@ vmbase: Holds an emulator for the BSR1 ISA.
 
 jx2vm: Emulator for the BJX2 ISA.
 
-vlcore: Verilog implementation of the processor.
+vlcore: Verilog implementation of the BSR1 processor.
 
 jx2vlcore: Verilog attempts at a BJX2 processor.
 * jx2vlcore2: Partial rework of the former.
