@@ -45,8 +45,12 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_REG_LR		33
 #define BJX2_REG_SR		34
 #define BJX2_REG_VBR	35
+
 // #define BJX2_REG_DLR	36
 // #define BJX2_REG_DHR	37
+#define BJX2_REG_SPC	36
+#define BJX2_REG_SSP	37
+
 #define BJX2_REG_GBR	38
 #define BJX2_REG_TBR	39
 
@@ -70,10 +74,10 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_REG_R5B	69
 #define BJX2_REG_R6B	70
 #define BJX2_REG_R7B	71
-#define BJX2_REG_SPC	72
+// #define BJX2_REG_SPC	72
 #define BJX2_REG_SLR	73
 #define BJX2_REG_SSR	74
-#define BJX2_REG_SSP	75
+// #define BJX2_REG_SSP	75
 #define BJX2_REG_SDL	76
 #define BJX2_REG_SDH	77
 #define BJX2_REG_SGB	78
@@ -420,13 +424,20 @@ byte kbirq;					//keyboard IRQ
 int ttick_hk;				//timer ticks until IRQ
 int ttick_rst;				//timer ticks reset
 s64 tot_cyc;
+s64 tot_cyc_mem;
+s64 tot_cyc_miss;
+s64 tot_cyc_miss_l1;
+s64 tot_cyc_miss_l2;
 s64 tot_ops;
 s16 tgt_mhz;				//target MHz
 u16 rcp_mhz;				//reciprocal MHz
 int iodel_cyc;				//IO delay cycles
 
 int nttick_irq;				//number of timer-tick IRQs
+int mem_cyc;				//cache miss cycles
 int miss_cyc;				//cache miss cycles
+int miss_cyc_l1;			//cache miss cycles (L1 miss)
+int miss_cyc_l2;			//cache miss cycles (L2 miss)
 
 bjx2_addr mem_l1addr1;		//L1 addr
 bjx2_addr mem_l1addr2;		//L1 addr
@@ -434,7 +445,7 @@ bjx2_addr mem_l1addr3;		//L1 addr
 bjx2_addr mem_l1addr4;		//L1 addr
 
 bjx2_addr mem_l1h4k[256];		//L1 addr (4kB)
-bjx2_addr mem_l2h32k[4096];		//L2 addr (32/64kB)
+bjx2_addr mem_l2h32k[8192];		//L2 addr (32/64kB)
 
 u64 mem_tlb_hi[64];
 u64 mem_tlb_lo[64];

@@ -575,12 +575,12 @@ int BGBCC_JX2C_EmitCompareVRegVRegVRegQLong(
 	int i;
 	
 	noflip=0;
-	if(BGBCC_CCXL_IsRegImmIntP(ctx, treg))
-	{
-		noflip=1;
-		if(sctx->is_betav && !sctx->has_bjx1ari)
-			noflip=0;
-	}
+//	if(BGBCC_CCXL_IsRegImmIntP(ctx, treg))
+//	{
+//		noflip=1;
+//		if(sctx->is_betav && !sctx->has_bjx1ari)
+//			noflip=0;
+//	}
 	
 	nm3=-1; flip=0;
 	switch(cmp)
@@ -748,7 +748,11 @@ int BGBCC_JX2C_EmitJCmpVRegVRegQLong(
 	
 	noflip=0;
 	if(BGBCC_CCXL_IsRegImmIntP(ctx, treg))
-		noflip=1;
+	{
+		imm=BGBCC_CCXL_GetRegImmIntValue(ctx, treg);
+		if(((imm&1023)==imm) || ((imm|(~1023))==imm))
+			noflip=1;
+	}
 	
 	nm3=-1; flip=0;
 	switch(cmp)

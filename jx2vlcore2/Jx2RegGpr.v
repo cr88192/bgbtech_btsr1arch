@@ -398,9 +398,9 @@ begin
 		JX2_REG_R31:	tRegValRn = regGprR31 ;
 `endif
 
-		JX2_REG_PC:		tRegValRn = tGenNextPc;
-		JX2_REG_GBR:	tRegValCm = regGbr    ;
-		JX2_REG_TBR:	tRegValCm = regTbr    ;
+//		JX2_REG_PC:		tRegValRn = tGenNextPc;
+//		JX2_REG_GBR:	tRegValCm = regGbr    ;
+//		JX2_REG_TBR:	tRegValCm = regTbr    ;
 
 		JX2_REG_IMM:	tRegValRn = tGenImm64 ;
 		JX2_REG_ZZR:	tRegValRn = 0         ;
@@ -580,39 +580,44 @@ begin
 	begin
 //		regSp	<= regSSp;
 //		regPc	<= regSPc;
-		regPr	<= regSPr;
+//		regPr	<= regSPr;
 //		regSr	<= regSSr;
 //		regDlr	<= regSDl;			regDhr	<= regSDh;
-		regGbr	<= regSGb;			regTbr	<= regSTb;
+//		regGbr	<= regSGb;			regTbr	<= regSTb;
 //		regSPc	<= exNextPc2;
 
-		regSp	<= regSSp;
-		regSSp	<= regSp;
+//		regSp	<= regSSp;
+//		regSSp	<= regSp;
 
-		regSPr	<= exNextPr2;
+//		regSPr	<= exNextPr2;
 //		regSSr	<= exNextSr2;
 //		regSSp	<= exNextSp2;
 //		regSDl	<= exNextDlr2;		regSDh	<= exNextDhr2;
-		regSGb	<= exNextGbr2;		regSTb	<= exNextTbr2;
+//		regSGb	<= exNextGbr2;		regSTb	<= exNextTbr2;
 
 		if(nxtRegSrRB)
 		begin
 			regSPc	<= { exNextExc2[63]?UV16_FF:UV16_00, exNextExc2[63:16] };
 			regPc	<= exNextPc2;
 
-			regSSr	<= regSr;
+			regSSp	<= regSp;
+
+//			regSSr	<= regSr;
 			regSr	<= exNextSr2;
 
 			regTea	<= exNextTea2;
-			regExsr	<= exNextExc2;
+//			regExsr	<= exNextExc2;
+			regExsr	<= { regSr[31:0], exNextExc2[31:0] };
 		end
 		else
 		begin
 			regPc	<= regSPc;
-			regSPc	<= regPc;
+			regSp	<= regSSp;
+			regSr	<= { regSr[63:32], regExsr[63:32] };
 
-			regSr	<= regSSr;
-			regSSr	<= exNextSr2;
+//			regSPc	<= regPc;
+//			regSr	<= regSSr;
+//			regSSr	<= exNextSr2;
 
 			regTea	<= exNextTea2;
 			regExsr	<= exNextExc2;

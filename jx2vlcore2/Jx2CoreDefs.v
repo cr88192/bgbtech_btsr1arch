@@ -48,6 +48,10 @@ parameter[6:0] JX2_REG_SR		= 7'h22;
 parameter[6:0] JX2_REG_VBR		= 7'h23;
 // parameter[6:0] JX2_REG_DLR		= 7'h24;
 // parameter[6:0] JX2_REG_DHR		= 7'h25;
+
+parameter[6:0] JX2_REG_SPC		= 7'h24;
+parameter[6:0] JX2_REG_SSP		= 7'h25;
+
 parameter[6:0] JX2_REG_GBR		= 7'h26;
 parameter[6:0] JX2_REG_TBR		= 7'h27;
 parameter[6:0] JX2_REG_TTB		= 7'h28;
@@ -59,10 +63,10 @@ parameter[6:0] JX2_REG_KRR		= 7'h2D;
 parameter[6:0] JX2_REG_IMM		= 7'h2E;
 parameter[6:0] JX2_REG_ZZR		= 7'h2F;
 
-parameter[6:0] JX2_REG_SPC		= 7'h38;
+// parameter[6:0] JX2_REG_SPC		= 7'h38;
 parameter[6:0] JX2_REG_SLR		= 7'h39;
 parameter[6:0] JX2_REG_SSR		= 7'h3A;
-parameter[6:0] JX2_REG_SSP		= 7'h3B;
+// parameter[6:0] JX2_REG_SSP		= 7'h3B;
 parameter[6:0] JX2_REG_SDL		= 7'h3C;
 parameter[6:0] JX2_REG_SDH		= 7'h3D;
 parameter[6:0] JX2_REG_SGB		= 7'h3E;
@@ -296,7 +300,8 @@ Fxxx
 JX2_FMID_REGPC
 Fxxx	Fzdd_Oenm
 	SB, Fzeo_OOOO: (PC, Ro)
-	UB, Fzdd_Oenm: Rm, Rn, Disp8s
+/	UB, Fzdd_Oenm: Rm, Rn, Disp8s
+	UB, Fznm_Oedd: Rm, Rn, Disp8s
 
 JX2_FMID_DRREG
 Base
@@ -305,16 +310,65 @@ Base
 	NB: Rn, DLR, Rn
 	NW: DLR, Rn, Rn
 
+
+JX2_FMID_REGSTREG
+
+Fzzz
+	SB: Rm, (Rn)
+	UB: Rm, (Rn, Disp5)
+	SW: Rm, (Rn, Disp9u/17s)
+
+
+JX2_FMID_LDREGREG
+
+Fzzz
+	SB: (Rm), Rn
+	UB: (Rm, Disp5), Rn
+	SW: Rm, (Rn, Disp9u/17s)
+
+
 JX2_FMID_IMM8REG
 
 Base
 	SB: Imm, Rn / Imm, Rn, Rn
 
-JX2_FMID_PCDISP8
-	SB: OOdd / OOdd-OOxx
-	SW: OOdd-OOdd
-	UW: OOdd-Oddd
+Fzzz
+	SB: Fzeo_zzii		Imm8s, Ro
+	SW: Fzeo_iiii		Imm16s, Ro
+	SL: Fzeo_iiii_iiii	Imm32s, Ro
 
+	UB: Fzeo_zzjj		Imm8u, Ro
+	UW: Fzeo_jjjj		Imm16u, Ro
+	UL: Fzeo_jjjj_jjjj	Imm32u, Ro
+
+	NB: Fzeo_zzjj		Imm8n, Ro
+	NW: Fzeo_jjjj		Imm16n, Ro
+	NL: Fzeo_jjjj_jjjj	Imm32n, Ro
+
+	XB: Fzeo_zzjj		Imm8x, Ro
+	XW: Fzeo_jjjj		Imm16x, Ro
+	XL: Fzeo_jjjj_jjjj	Imm32x, Ro
+
+	SQ: Fzze_zznz_iiii	Imm10s/Imm17s, Rn
+	UQ: Fzze_zznz_iiii	Imm10u/Imm17u, Rn
+	NQ: Fzze_zznz_iiii	Imm10n/Imm17n, Rn
+
+
+JX2_FMID_PCDISP8
+	SB: / OOdd / OOdd-OOxx
+	SW: / OOdd-OOdd
+	UW: / OOdd-Oddd
+
+	SB: OOdd-OOdd
+	SW: OOdd-Oddd
+
+JX2_FMID_IMM4ZREG
+Fzzz
+	SB: Rn, Imm10u
+
+JX2_FMID_IMM4NREG
+Fzzz
+	SB: Rn, Imm10n
 */
 
 
@@ -500,6 +554,9 @@ parameter[7:0] JX2_UCMD_ALU_SHARN	= 8'h3E;
 
 parameter[7:0] JX2_UCMD_ALU_SWAPN	= 8'h40;	//Rn=SwapBytes(Rm)
 
+parameter[7:0] JX2_UCMD_ALU_CMPQHS	= 8'h41;	//
+parameter[7:0] JX2_UCMD_ALU_CMPQGE	= 8'h42;	//
+
 parameter[7:0] JX2_UCMD_MOVUL_MR	= 8'h43;	//Rn=(AGU)
 parameter[7:0] JX2_UCMD_ALU_LDISH16	= 8'h45;	//Rn=(Rn<<16)|Imm16
 parameter[7:0] JX2_UCMD_ALU_LDISH24	= 8'h46;	//
@@ -650,7 +707,7 @@ parameter[7:0] JX2_UCMD_FPIX_FSQRT	= 8'h05;
 `define JX2_MEM_HALFDPX			//Half-Duplex
 `endif
 
-`define JX2_MEM_L2_128K			//Use 128kB of L2 Cache
+// `define JX2_MEM_L2_128K			//Use 128kB of L2 Cache
 
 // `define JX2_MEM_USELSQ			//Use Load-Store Queue
 
@@ -664,7 +721,7 @@ parameter[7:0] JX2_UCMD_FPIX_FSQRT	= 8'h05;
 
 `define JX2_FPR_FPRARR		//Use array for FPRs
 
-`define JX2_FPU_NOFPU		//No Hardware FPU
+// `define JX2_FPU_NOFPU		//No Hardware FPU
 `define JX2_FPU_NOFDIV		//No Hardware FDIV
 
 `define JX2_EX_LEA_2C		//Two Cycle LEA
@@ -675,7 +732,7 @@ parameter[7:0] JX2_UCMD_FPIX_FSQRT	= 8'h05;
 `define JX2_EX_ALU_ADDSL	//ADDS.L / ADDU.L
 // `define JX2_EX_ALU_JMPCC	//Has JCMP
 
-`define JX2_EX_GPRSIMD_HF	//Enable GPR SIMD (Half Float)
+// `define JX2_EX_GPRSIMD_HF	//Enable GPR SIMD (Half Float)
 // `define JX2_EX_GPRSIMD_F	//Enable GPR SIMD (Float32)
 
 `define def_true

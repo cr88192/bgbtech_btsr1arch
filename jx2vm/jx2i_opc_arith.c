@@ -8,6 +8,16 @@ void BJX2_Op_MOV_ImmxReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=((s32)op->imm)^0xFFFFFFFF00000000LL;
 }
 
+void BJX2_Op_MOV_ImmuReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[op->rn]=((u32)op->imm);
+}
+
+void BJX2_Op_MOV_ImmnReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[op->rn]=((s32)op->imm)|0xFFFFFFFF00000000LL;
+}
+
 void BJX2_Op_MOV_Dr4Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	ctx->regs[op->rn]=ctx->regs[BJX2_REG_DR]*16+op->imm;

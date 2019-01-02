@@ -56,11 +56,11 @@ zero_bss:
 copy_data:
 	mov __rom_data_start, r2
 	mov __rom_data_end, r3
-	mov __data_start, r1
+	mov __data_start, r5
 .L1:
 	mov.l @r2, r4
-	mov.l r4, @r1
-	add #4, r1
+	mov.l r4, @r5
+	add #4, r5
 	add #4, r2
 	cmp/hi r2, r3
 	bt .L1

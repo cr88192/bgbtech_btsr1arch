@@ -69,7 +69,7 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr)
 	int sig_mz, sig_pe, mach, mmagic;
 	int ofs_pe;
 	int cb, nb;
-	int l;
+	int i, l;
 	
 	tk_fread(tbuf, 1, 1024, fd);
 
@@ -114,9 +114,12 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr)
 	mmagic=tkfat_getWord(tbuf+ofs_pe+0x18);
 	if(mmagic==0x020B)
 	{
+//		printf("TKPE: Magic 64 %04X\n", mmagic);
 		is64=1;
 	}else if(mmagic==0x010B)
 	{
+		__debugbreak();
+//		printf("TKPE: Magic 32 %04X\n", mmagic);
 		is64=0;
 	}else
 	{
@@ -126,17 +129,19 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr)
 	
 	if(is64)
 	{
+//		puts("TKPE: PE64\n");
 		startrva=*(u32 *)(tbuf+ofs_pe+0x28);
 		imgbase=*(u64 *)(tbuf+ofs_pe+0x30);
 		imgsz=*(u32 *)(tbuf+ofs_pe+0x50);
 	}else
 	{
+//		puts("TKPE: PE32\n");
 		startrva=*(u32 *)(tbuf+ofs_pe+0x28);
 		imgbase=*(u32 *)(tbuf+ofs_pe+0x34);
 		imgsz=*(u32 *)(tbuf+ofs_pe+0x50);
 	}
 	
-	printf("TKPE: Base=%X Sz=%d BootRVA=%X\n", imgbase, imgsz, startrva);
+	printf("TKPE: Base=%08X Sz=%d BootRVA=%08X\n", imgbase, imgsz, startrva);
 	
 	imgptr=(byte *)imgbase;
 	
@@ -164,21 +169,28 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr)
 #if 1
 		cb=0; nb=imgsz>>10;
 		ct=imgptr+1024; cte=imgptr+imgsz;
+		l=1024;
 		while((ct+1024)<=cte)
 		{
 			printf("%d/%dkB\r", cb, nb);
 //			tk_fread(ct, 1, 1024, fd);
 //			ct+=1024;
-			tk_fread(tbuf, 1, 1024, fd);
-			ct=TKPE_UnpackL4(ct, tbuf, 1024);
+			l=tk_fread(tbuf, 1, 1024, fd);
+//			ct=TKPE_UnpackL4(ct, tbuf, 1024);
+			ct=TKPE_UnpackL4(ct, tbuf, l);
+			if(l<1024)
+				break;
 //			ct+=1024;
 			cb++;
 		}
 		printf("%d/%dkB\r", cb, nb);
-//		tk_fread(ct, 1, cte-ct, fd);
-		l=tk_fread(tbuf, 1, 1024, fd);
-		ct=TKPE_UnpackL4(ct, tbuf, l);
-		printf("\n", cb, nb);
+		if(l>=1024)
+		{
+//			tk_fread(ct, 1, cte-ct, fd);
+			l=tk_fread(tbuf, 1, 1024, fd);
+			ct=TKPE_UnpackL4(ct, tbuf, l);
+		}
+		printf("\n");
 #endif
 	}
 	

@@ -399,14 +399,17 @@ int BJX2_DecodeOpcode_DecFC(BJX2_Context *ctx,
 		op->rn=rn_i32;
 		op->nmid=BJX2_NMID_MOV;
 		op->fmid=BJX2_FMID_IMMREG;
-		op->Run=BJX2_Op_MOV_ImmReg;
+//		op->Run=BJX2_Op_MOV_ImmReg;
+		op->Run=BJX2_Op_MOV_ImmuReg;
 		break;
 	case 0xF:
 		op->imm=imm32;
 		op->rn=rn_i32;
 		op->nmid=BJX2_NMID_MOV;
-		op->fmid=BJX2_FMID_IMMXREG;
-		op->Run=BJX2_Op_MOV_ImmxReg;
+//		op->fmid=BJX2_FMID_IMMXREG;
+		op->fmid=BJX2_FMID_IMMREG;
+//		op->Run=BJX2_Op_MOV_ImmxReg;
+		op->Run=BJX2_Op_MOV_ImmnReg;
 		break;
 
 	default:

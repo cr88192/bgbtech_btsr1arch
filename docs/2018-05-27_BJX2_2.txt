@@ -1,14 +1,8 @@
-
-== Overview ==
-
 BJX2
 * Variable-Length Instructions (16/32/48)
 * Derived from BSR1 and BJX1-64C
-** Little-Endian, Byte Addressed
+** Little-Endian
 ** Instructions as a sequence of 16-bit words.
-
-
-=== Registers ===
 
 Registers:
 * R0..R31, 64-bit
@@ -23,7 +17,7 @@ Registers:
 ** Control Registers.
 ** Not all of these necessarily exist.
 * S0..S31, 64-bit
-** Shadow Registers (Partial Drop).
+** Shadow Registers.
 
 Special Purpose Registers:
 * R0 / DLR: Displacement/Low Register.
@@ -35,8 +29,8 @@ Control Registers:
 * C1 / LR: Link Register
 * C2 / SR: Status Register.
 * C3 / VBR: Vector Base Register.
-* C4 / SPC: Saved PC
-* C5 / SSP: Saved SP
+* C4 / -: 
+* C5 / -: 
 * C6 / GBR: Global Base Register.
 * C7 / TBR: Thread Base Register.
 * C8 / TTB: Translation Table Base.
@@ -47,13 +41,11 @@ Control Registers:
 * C13 / KRR: MMU Keyring Register.
 * C14 / IMM (U,R/O): Undefined Value (Internal)
 * C15 / ZZR (U,R/O): Always returns Zero (Internal)
-* C16 .. C31: Reserved
 
 Access to SPRs will depend on Mode:
 * C0: All Modes
 * C1: All Modes
-* C2: Read-Only in Usermode
-** Partial write via special ops.
+* C2: Partial Write Access (Usermode)
 * C3: Supervisor Only
 * C4: Supervisor Only
 * C5: Supervisor Only
@@ -65,8 +57,6 @@ Access to SPRs will depend on Mode:
 * C11: Supervisor Only
 * C12: Supervisor Only
 * C13: Supervisor Only
-* C14: All Modes (Read Only, Undefined)
-* C15: All Modes (Read Only, Zero)
 
 SR Bits:
 * 0: T, Used as a True/False status, or Carry for ADC/SBB.
@@ -77,8 +67,7 @@ SR Bits:
 ** 10: Medium Priority Only (Timers, ...).
 ** 11: All Interrupts Enabled.
 * 4..7: P/Q/R/O Bits, Context Dependent
-** Used by GSV for Vector Compare.
-* 8..23: Reserved
+* Most operations will not change the contents of SR.
 * 28: BL, Block Interrupts
 * 29: RB, Encodes the ISR register bank.
 ** Set when interrupt occurs.
@@ -87,10 +76,24 @@ SR Bits:
 * 31: JQ, Address-Space Size.
 * 32..63: Reserved
 
-Most operations will not change the contents of SR unless noted otherwise.
+Instruction Space:
+* 0xxx .. Exxx: 16-bit
+* F0xx .. FBxx: 32-bit
+* FCxx .. FDxx: 48-bit
+* FExx .. FFxx: 64-bit (Reserved)
+** Or could just tack FExx/FFxx onto 48-bit space.
 
+Except where noted otherwise, the 16-bit instruction forms are limited to the first 16 registers.
 
-For application-level code, misaligned access to memory is required to be supported (excluding system structures, for which proper alignment is required). However, whether this is provided by the hardware or via an interrupt handler is left as implementation defined.
+Several ISA Subsets may exist:
+* A: Full Features
+* B: Only uses 32-bit instruction forms (Fixed Length).
+* C: Limited to a 32-bit address space.
+** This mode will still use 64-bit registers.
+** This will nominally run code within a 2GB address space.
+* D: Uses a 32-bit address space with fixed-length instructions.
+
+For application-level code, misaligned access to memory is required to be supported (excluding system structures, for which proper alignment is required). However, whether this is provided by the hardware or via an interrupt handler is left as implementation specific.
 
 
 The JQ bit will effect the size of the address space:
@@ -164,40 +167,31 @@ EXSR Codes:
 ** 0xA002: TLB ACL Check
 
 
-Change:
-* Drop Shadow Registers.
-** C4 and C5 become SPC and SSP
-** SSR overlaps with EXSR
-* PC is copied to SPC, and copied back on RTE.
-* SP and SSP are swapped.
-* The low 32 bits of SR are saved into the high 32 bits of EXSR.
-** EXSR holds both the saed SR bits, and also the Exception Code.
-** The remaining 16 bits may be used for internal status flags.
-
-The relevant Control Registers will be swapped depending on the state of the SR.RB status.
-
-On interrupt Entry:
-* (If SR.RB=0) Exchange SP with SSP
-* Copy PC to SPC.
-* Copy low 32 bits of SR into high 32 bits of EXSR.
-** Set SR.BL, SR.MD, and SR.RB
-* TEA will be set to the Fault Address (if relevant for the interrupt).
-* EXSR will be set to the exception code in the low 16 bits.
-** The high 32 bits will hold the saved bits from SR.
-** The remaining 16 bits may be used by the handler mechanism.
-
-Interrupt Return:
-* (If EXSR.SR.RB=0) Exchange SP with SSP
-* Copy SPC back to PC (Branch to SPC)
-* Restore bits in SR.
-** Copy bits from EXSR(63:32) to SR(31:0)
-** SR(63:32) will be left unchanged (Global State)
+Shadow Registers:
+* S0..S15: R0B..R7B, C0B..C7B
+* S16..S31: R16B..R23B, C16B..C23B
+* The main and shadow registers will be swapped during an interrupt.
+** R0..R7 may be swapped with R0B..R7B (Optional)
+** R16..R23 may be swapped with R16B..R23B (Optional)
+** C0..C7 swapped with C0B..C7B, where Cn!=C3
+*** C0B: SPC
+*** C1B: SLR
+*** C2B: SSR
+*** C3B: SSP (Shadow R15/SP)
+*** C4B: -
+*** C5B: -
+*** C6B: SGB (Shadow GBR)
+*** C7B: STB (Shadow TBR)
+** R15 will be swapped with C3B.
+** Registers will not be swapped if SR.RB is set upon entering an interrupt.
+*** Registers will swap and SR.RB will be clear upon returning from an interrupt.
 
 
-The interrupt hanlder will be responsible for saving/restoring any registers effected by the ISR. For passing control back into C, this will mean saving any ABI scratch registers.
+Whether R0B..R7B and R16B..R23B exist, and thus whether a register-swap occurs for them, is an optional feature. On a core which does not swap registers, it is necessary for the ISR handler to manage this part itself.
 
-Instructions which modify DLR may not be used until after DLR has been preserved.
+The relevant Control Registers will still be swapped depending on the state of the SR.RB status.
 
+TBD: ISR's would not be entirely compatible between an implementation which swaps these registers and one which does not. While assuming a non-swap implementation to be safe almost works for ISRs, things like preemptive scheduling would need different logic.
 
 
 === MMU ===
@@ -327,7 +321,7 @@ MMCR Bits:
 
 === Addressing Modes ===
 
-Addressing Modes (16-bit Instruction Forms):
+Addressing Modes (Real):
 * (Rn), Register used as an address.
 * (Rn, DLR), Register used with scaled Displacement Register.
 ** MOV.x, Scale is size of base type.
@@ -335,13 +329,7 @@ Addressing Modes (16-bit Instruction Forms):
 * (DLR), Direct/Absolute Address
 * (PC, Disp8s), PC with scaled 8-bit displacement.
 * (SP, Disp4u), SP with scaled 4-bit displacement.
-
-Addressing Modes (32-bit Instruction Forms):
-* (Rm, Ri), Register with a scaled index.
-* (Rm, Disp9u), Register with a 9 bit displacement.
-
-Additional addressing modes may be faked by the assembler.
-* Larger displacements will involve loading a value into DLR.
+** The displacement is encoded as ((DLR SHL 4)|Imm4u).
 
 Displacement Scale:
 * MOV.x will depend on the base register:
@@ -382,7 +370,7 @@ R1 and R15 will be special and reserved as Index Registers.
 R16 and R17 will be reserved as base or index registers, similar to R0 and R1.
 
 
-== Instruction Set ==
+=== 16-bit Instruction Forms ===
 
 Notation:
 * 0..9, A..F: Literal hex bits
@@ -391,6 +379,8 @@ Notation:
 * i: Signed immediate bits
 * j: Unsigned immediate bits
 * d: Displacement bits
+** 4 bit displacements will generally be unsigned.
+** 8 bit displacements will generally be signed.
 * x: First Value Placeholder bits.
 * y: Second Value Placeholder bits.
 * z: Undefined/Pattern/Third Value, Placeholder bits.
@@ -416,67 +406,6 @@ Register Notation:
 * Cn, Destination Register (Control Register)
 * Sm, Source Register (Shadow Register)
 * Sn, Destination Register (Shadow Register)
-
-Immediate Notation
-* Imm9, Immediate with 9 bits, unspecified extension.
-* Imm9u, Immediate with 9 bits, zero extended.
-* Imm9s, Immediate with 9 bits, sign extended.
-* Imm9n, Immediate with 9 bits, one extended.
-* Disp17u, Displacement with 17 bits, zero extended.
-* Disp17s, Displacement with 17 bits, sign extended.
-* Etc.
-
-
-Notation for the 'e' field:
-* e: qnmi
-** q=Quadword/Alternate Operation
-*** Selects between MOV.L and MOVU.L
-*** Selects between CMPxx and CMPQxx
-** n=Bit4 of Rn
-** m=Bit4 of Rm
-** i=Bit4 of Ro/Ri
-* f: qnii (If n is in n position)
-* f: qiin (If n is in o position)
-
-* G/g: 1nmi / 0nmi
-* H/h: 1nii / 0nii (If n is in n position)
-* H/h: 1iin / 0iin (If n is in o position)
-
-* P/p: 1nm0 / 0nm0
-* Q/q: 1nm1 / 0nm1
-
-Canonical F0 Block Instruction:
-* F0eo_ZZnm
-** n: Nominal position for Rn.
-** m: Nominal position for Rm.
-** o: Nominal position for Ro.
-*** May also be Rn for some forms.
-*** May be used as an imm5/disp5.
-*** May be used for additional opcode bits.
-
-
-The base unit of instruction encoding is a 16-bit word, with the high bits of the first word encoding the length of the instruction.
-
-When an immediate is split between multiple words, the preceding word will contain the high-order bits relative to the following word, with the primary exception of Imm32.
-
-
-Instruction Space:
-* 0xxx .. Exxx: 16-bit Instruction Forms
-* F0xx .. FBxx: 32-bit Instruction Forms
-* FCxx .. FFxx: 48-bit Instruction Forms
-
-Except where noted otherwise, the 16-bit instruction forms are limited to the first 16 registers.
-
-Several ISA Subsets may exist:
-* A: Full Features
-* B: Only uses 32-bit instruction forms (Fixed Length).
-* C: Limited to a 32-bit address space.
-** This mode will still use 64-bit registers.
-** This will nominally run code within a 2GB address space.
-* D: Uses a 32-bit address space with fixed-length instructions.
-
-
-=== 16-bit Instruction Forms ===
 
 
 Instruction Space
@@ -549,23 +478,26 @@ Instruction Space
 ** 30B0  LDISH16	#0xFFFF, DLR	//DLR=(DLR SHL 16)|0xFFFF
 ** 30C0  RTE						//Return from exception
 ** 30D0 ? DIV0						//Setup SR for divide
-** 30E0 ? DIV1						//Divide Step (Uses DHR, DLR)
+** 30E0 ? DIV1						//Divide Step (Uses R5, R4)
 ** 30F0  LDTLB						//Load entry into TLB
 
 ** 30z1 -
 
-** 3002 -
-** 3012 -
-** 3022 -
-** 3032 -
-** 3042 -
-** 3052 -
-** 3062 -
-** 3072 -
+** 3002 / BRA	(PC, DLR)			//Branch to PC+(DLR*2)
+** 3012 / BSR	(PC, DLR)			//Branch Subroutine to PC+(DLR*2)
+** 3022 / BT	(PC, DLR)			//Branch True to PC+(DLR*2)
+** 3032 / BF	(PC, DLR)			//Branch False to PC+(DLR*2)
+
+** 3042 / CPUID1					//Load CPUID1 bits into DHR:DLR
+** 3052 / CPUID2					//Load CPUID2 bits into DHR:DLR
+** 3062 / CPUID3					//Load CPUID3 bits into DHR:DLR
+** 3072 / CPUID4					//Load CPUID4 bits into DHR:DLR
+
 ** 3082 -
 ** 3092 -
 ** 30A2 -
 ** 30B2 -
+
 ** 30C2 ? LDISH32	#0x00000000, DLR	//DLR=(DLR SHL 32)|0x00000000
 ** 30D2 ? LDISH32	#0xFFFFFFFF, DLR	//DLR=(DLR SHL 32)|0xFFFFFFFF
 ** 30E2  ICFLUSH	//Flush the Instruction Cache
@@ -631,7 +563,7 @@ Instruction Space
 ** 33n8  SHLL	Rn					//Rn'=(Rn SHL 1); SR.T=Rn.31
 ** 33n9  SHLR	Rn					//Rn'=(Rn SHR 1); SR.T=Rn.0
 ** 33nA  SHAR	Rn					//Rn'=(Rn SAR 1); SR.T=Rn.0
-** 33nB  -
+** 33nB / ADD	Cn, DLR				//DLR=DLR+Cn
 ** 33nC  NEG	Rn, DLR				//DLR=(~Rn)+1
 ** 33nD  NEG	Rk, DLR				//DLR=(~Rk)+1
 ** 33nE  -
@@ -654,7 +586,22 @@ Instruction Space
 ** 34nE  SHAR16	Rn					//Rn=Rn SAR 16, Arithmetic
 ** 34nF  SHARSX	Rn					//Copy sign bit to all other bits.
 
-** 35zz  -
+** 35n0  -
+** 35n1  -
+** 35n2  -
+** 35n3  -
+** 35n4  -
+** 35n5  -
+** 35n6  -
+** 35n7  -
+** 35n8  -
+** 35n9  -
+** 35nA  -
+** 35nB  -
+** 35nC  -
+** 35nD  -
+** 35nE  -
+** 35nF  -
 
 ** 36n0  SHLL32	Rn					//Rn=Rn SHL 32
 ** 36n1  SHLR32	Rn					//Rn=Rn SHR 32, Logical
@@ -664,11 +611,11 @@ Instruction Space
 ** 36n5  EXTS.L	Rn					//Sign Extend DWord to QWord
 ** 36n6  SHAD	DLR, Rn				//Barrel Shift, Arithmetic
 ** 36n7  SHLD	DLR, Rn				//Barrel Shift, Logical
-** 36n8  -
-** 36n9  -
-** 36nA  -
-** 36nB  -
-** 36nC  -
+** 36n8 / BRA	(PC, Rn)			//Branch to address given in (PC, Rn)
+** 36n9 / BSR	(PC, Rn)			//Branch Subroutine given by (PC, Rn)
+** 36nA / SWAPB	Rn					//Swap Bytes (Low Four Bytes)
+** 36nB / SWAPW	Rn					//Swap Words (All words)
+** 36nC / SWAPL	Rn					//Swap DWord
 ** 36nD  CMPHS	DLR, Rn				//Unsigned (Rn GE DLR)
 ** 36nE  CMPGE	DLR, Rn				//Signed (Rn GE DLR)
 ** 36nF  MOVT	Rn					//Rn=SR.T
@@ -752,8 +699,8 @@ Instruction Space
 ** 5Enm  OR			Rm, DLR, Rn
 ** 5Fnm  XOR		Rm, DLR, Rn
 
-* 6zzz (Reserved)
-* 7zzz (Reserved)
+* 6zzz (Reserved, 8-bit Ops)
+* 7zzz (Reserved, Single-Arg ops)
 
 * 8zzz ( MOV.L 1000-rddd-nnnn-mmmm, r=Store/Load )
 ** 80nm  MOVU.L		(Rm), Rn
@@ -810,7 +757,9 @@ Instruction Space
 * Ajjj  LDIZ		#imm12u, DLR	//Load 12 bit value into DLR (Zero Extend)
 * Bjjj  LDIN		#imm12u, DLR	//Load 12 bit value into DLR (One Extend)
 * Cnii  ADD			#imm8s, Rn		//Rn=Rn+Imm8
-* Dzzz  -
+* Dzzz
+** Dnjj  ?1 LDISH8	#imm8, Rn		//One Possibility
+** Dddd  ?2 BRA		(PC, disp12s)	//Another
 * Enii  MOV			#imm8s, Rn		//Rn=Imm8
 * Fzzz  (N/E)
 
@@ -818,36 +767,55 @@ Instruction Space
 
 === 32-bit Instruction Forms ===
 
+Notation:
+* e: qnmi
+** q=Quadword/Alternate Operation
+*** Selects between MOV.L and MOVU.L
+*** Selects between CMPxx and CMPQxx
+** n=Bit4 of Rn
+** m=Bit4 of Rm
+** i=Bit4 of Ro, Context Dependent bit
+* f: qnii (If n is in n position)
+* f: qiin (If n is in o position)
+
+* G/g: 1nmi / 0nmi
+* H/h: 1nii / 0nii (If n is in n position)
+* H/h: 1iin / 0iin (If n is in o position)
+
+* P/p: 1nm0 / 0nm0
+* Q/q: 1nm1 / 0nm1
+
+Canonical F0 Block Instruction:
+* F0eo_ZZnm
+** n: Nominal position for Rn.
+** m: Nominal position for Rm.
+** o: Nominal position for Ro.
+*** May also be Rn for some forms.
+*** May be used as an imm5/disp5.
+*** May be used for additional opcode bits.
+
 
 Major Ranges
-* F0eo_XXnm (Basic Instructions, Partially mirrors 16-bit space)
-* F1nm_Xedd (Load/Store, Disp9)
-* F2nm_Xejj (Imm9 / Imm10 ops)
-* F3zz_zzzz (Reserved)
-* F4zz_zzzz (Reserved)
-* F5zz_zzzz (Reserved)
-* F6zz_zzzz (User Block)
-* F7zz_zzzz (User Block)
-* F8Xn_jjjj (Some Imm16 Instructions)
-* F9zz_zzzz (Reserved)
-* FAjj_jjjj (LDIZ Imm24, DLR)
-* FBjj_jjjj (LDIN Imm24, DLR)
+* F0zz_zzzz (Basic Instructions, Mirror 16-bit space)
+
+* F8zz_zzzz (Some Imm16 Instructions)
+
 * FCzz_zzzz (48-bit)
 * FDzz_zzzz (48-bit)
-* FEzz_zzzz (48-bit)
-* FFzz_zzzz (48-bit)
+* FEzz_zzzz (Reserved, Longer Forms)
+* FFzz_zzzz (Reserved, Longer Forms)
 
+Instruction Blocks:
 
-F0zz Instruction Block:
 * F0zz_0zzz
-** F0gd_00nm ? MOV.B	Rm, (Rn, disp5)		// (Opt, MOV.x Imm5)
-** F0Gd_00nm ? LEA.B	(Rm, disp5), Rn		// (Opt, MOV.x Imm5)
-** F0gd_01nm ? MOV.W	Rm, (Rn, disp5)		// (Opt, MOV.x Imm5)
-** F0Gd_01nm ? LEA.W	(Rm, disp5), Rn		// (Opt, MOV.x Imm5)
-** F0gd_02nm ? MOV.L	Rm, (Rn, disp5)		// (Opt, MOV.x Imm5)
-** F0Gd_02nm ? LEA.L	(Rm, disp5), Rn		// (Opt, MOV.x Imm5)
-** F0gd_03nm ? MOV.Q	Rm, (Rn, disp5)		// (Opt, MOV.x Imm5)
-** F0Gd_03nm ? LEA.Q	(Rm, disp5), Rn		// (Opt, MOV.x Imm5)
+** F0gd_00nm /? MOV.B	Rm, (Rn, disp5)		//Q=0
+** F0Gd_00nm /? LEA.B	(Rm, disp5), Rn		//Q=1
+** F0gd_01nm /? MOV.W	Rm, (Rn, disp5)		//Q=0
+** F0Gd_01nm /? LEA.W	(Rm, disp5), Rn		//Q=1
+** F0gd_02nm /? MOV.L	Rm, (Rn, disp5)		//Q=0
+** F0Gd_02nm /? LEA.L	(Rm, disp5), Rn		//Q=1
+** F0gd_03nm /? MOV.Q	Rm, (Rn, disp5)		//Q=0
+** F0Gd_03nm /? LEA.Q	(Rm, disp5), Rn		//Q=1
 ** F0go_04nm  MOV.B		Rm, (Rn, Ro)		//Q=0
 ** F0Go_04nm  LEA.B		Rm, (Rn, Ro)		//Q=1
 ** F0go_05nm  MOV.W		Rm, (Rn, Ro)		//Q=0
@@ -856,14 +824,14 @@ F0zz Instruction Block:
 ** F0Go_06nm  LEA.L		Rm, (Rn, Ro)		//Q=1
 ** F0go_07nm  MOV.Q		Rm, (Rn, Ro)		//Q=0
 ** F0Go_07nm  LEA.Q		Rm, (Rn, Ro)		//Q=1
-** F0gd_08nm ? MOV.B	(Rm, disp5), Rn		// (Opt, MOV.x Imm5)
-** F0Gd_08nm ? MOVU.B	(Rm, disp5), Rn		// (Opt, MOV.x Imm5)
-** F0gd_09nm ? MOV.W	(Rm, disp5), Rn		// (Opt, MOV.x Imm5)
-** F0Gd_09nm ? MOVU.W	(Rm, disp5), Rn		// (Opt, MOV.x Imm5)
-** F0gd_0Anm ? MOV.L	(Rm, disp5), Rn		// (Opt, MOV.x Imm5)
-** F0Gd_0Anm ? MOVU.L	(Rm, disp5), Rn		// (Opt, MOV.x Imm5)
-** F0gd_0Bnm ? MOV.Q	(Rm, disp5), Rn		// (Opt, MOV.x Imm5)
-** F0Gd_0Bnm ? MOVD.L	(Rm, disp5), Rn		// (63..32=Undefined)
+** F0gd_08nm /? MOV.B	(Rm, disp5), Rn		//Q=0
+** F0Gd_08nm /? MOVU.B	(Rm, disp5), Rn		//Q=1
+** F0gd_09nm /? MOV.W	(Rm, disp5), Rn		//Q=0
+** F0Gd_09nm /? MOVU.W	(Rm, disp5), Rn		//Q=1
+** F0gd_0Anm /? MOV.L	(Rm, disp5), Rn		//Q=0
+** F0Gd_0Anm /? MOVU.L	(Rm, disp5), Rn		//Q=1
+** F0gd_0Bnm /? MOV.Q	(Rm, disp5), Rn		//Q=0
+** F0Gd_0Bnm /? MOVD.L	(Rm, disp5), Rn		//Q=1 (63..32=Undefined)
 ** F0go_0Cnm  MOV.B		(Rm, Ro), Rn		//Q=0
 ** F0Go_0Cnm  MOVU.B	(Rm, Ro), Rn		//Q=1
 ** F0go_0Dnm  MOV.W		(Rm, Ro), Rn		//Q=0
@@ -874,14 +842,20 @@ F0zz Instruction Block:
 ** F0Go_0Fnm  MOVD.L	(Rm, Ro), Rn		//Q=1 (63..32=Undefined)
 
 * F0zz_1zzz
-** F0go_10nm  ADD		Rm, Ro, Rn				//Rn=Rm+Ro
-** F0go_11nm  SUB		Rm, Ro, Rn				//Rn=Rm-Ro
-** F0go_12nm  MUL		Rm, Ro, Rn				//Rn=Rm*Ro
+** F0go_10nm  ADD		Rm, Ro, Rn				//Rn=Rm+Ro, Q=0
+** F0Go_10nm  ADD		Rm, Imm5, Rn			//Rn=Rm+Imm5u, Q=1
+** F0go_11nm  SUB		Rm, Ro, Rn				//Rn=Rm-Ro, Q=0
+** F0Go_11nm  SUB		Rm, Imm5, Rn			//Rn=Rm-Imm5u, Q=1
+** F0go_12nm  MUL		Rm, Ro, Rn				//Rn=Rm*Ro, Q=0
+** F0Go_12nm  MUL		Rm, Imm5, Rn			//Rn=Rm*Imm5u, Q=1
 ** F0eo_13nm  -
 ** F0eo_14nm  -
-** F0go_15nm  AND		Rm, Ro, Rn				//Rn=Rm AND Ro
-** F0go_16nm  OR		Rm, Ro, Rn				//Rn=Rm OR  Ro
-** F0go_17nm  XOR		Rm, Ro, Rn				//Rn=Rm XOR Ro
+** F0go_15nm  AND		Rm, Ro, Rn				//Rn=Rm AND Ro, Q=0
+** F0Go_15nm  AND		Rm, Imm5, Rn			//Rn=Rm AND Imm5u, Q=1
+** F0go_16nm  OR		Rm, Ro, Rn				//Rn=Rm OR  Ro, Q=0
+** F0Go_16nm  OR		Rm, Imm5, Rn			//Rn=Rm OR Imm5u, Q=1
+** F0go_17nm  XOR		Rm, Ro, Rn				//Rn=Rm XOR Ro, Q=0
+** F0Go_17nm  XOR		Rm, Imm5, Rn			//Rn=Rm XOR Imm5u, Q=1
 
 ** F0ez_18nm
 
@@ -935,30 +909,30 @@ F0zz Instruction Block:
 *** F0gF_1Anm ? PMULU.W		Rm, Rn				//(GSV) (DHR,DLR)=Rm*Rn (Vector)
 
 ** F0ez_1Bnz  (Conditional Load/Store Block)
-*** F0g0_1Bnm  CMOV{T/F}.B		Rm, (Rn)		//I=T/F (0=T, 1=F)
-*** F0g1_1Bnm  CMOV{T/F}.W		Rm, (Rn)		//
-*** F0g2_1Bnm  CMOV{T/F}.L		Rm, (Rn)		//
-*** F0g3_1Bnm  CMOV{T/F}.Q		Rm, (Rn)		//
-*** F0g4_1Bnm  CMOV{T/F}.B		Rm, (Rn, DLR)	//
-*** F0g5_1Bnm  CMOV{T/F}.W		Rm, (Rn, DLR)	//
-*** F0g6_1Bnm  CMOV{T/F}.L		Rm, (Rn, DLR)	//
-*** F0g7_1Bnm  CMOV{T/F}.Q		Rm, (Rn, DLR)	//
-*** F0g8_1Bnm  CMOV{T/F}.B		(Rm), Rn		//
-*** F0G8_1Bnm  CMOVU{T/F}.B		(Rm), Rn		//
-*** F0g9_1Bnm  CMOV{T/F}.W		(Rm), Rn		//
-*** F0G9_1Bnm  CMOVU{T/F}.W		(Rm), Rn		//
-*** F0gA_1Bnm  CMOV{T/F}.L		(Rm), Rn		//
-*** F0GA_1Bnm  CMOVU{T/F}.L		(Rm), Rn		//
-*** F0gB_1Bnm  CMOV{T/F}.Q		(Rm), Rn		//
-*** F0GB_1Bnm  CMOVD{T/F}.L		(Rm), Rn		//(63..32=Undefined)
-*** F0gC_1Bnm  CMOV{T/F}.B		(Rm, DLR), Rn	//
-*** F0GC_1Bnm  CMOVU{T/F}.B		(Rm, DLR), Rn	//
-*** F0gD_1Bnm  CMOV{T/F}.W		(Rm, DLR), Rn	//
-*** F0GD_1Bnm  CMOVU{T/F}.W		(Rm, DLR), Rn	//
-*** F0gE_1Bnm  CMOV{T/F}.L		(Rm, DLR), Rn	//
-*** F0GE_1Bnm  CMOVU{T/F}.L		(Rm, DLR), Rn	//
-*** F0gF_1Bnm  CMOV{T/F}.Q		(Rm, DLR), Rn	//
-*** F0GF_1Bnm  CMOVD{T/F}.L		(Rm, DLR), Rn	//(63..32=Undefined)
+*** F0g0_1Bnm  CMOV{T/F}.B		Rm, (Rn)		//Q=0, I=T/F (0=T, 1=F)
+*** F0g1_1Bnm  CMOV{T/F}.W		Rm, (Rn)		//Q=0
+*** F0g2_1Bnm  CMOV{T/F}.L		Rm, (Rn)		//Q=0
+*** F0g3_1Bnm  CMOV{T/F}.Q		Rm, (Rn)		//Q=0
+*** F0g4_1Bnm  CMOV{T/F}.B		Rm, (Rn, DLR)	//Q=0
+*** F0g5_1Bnm  CMOV{T/F}.W		Rm, (Rn, DLR)	//Q=0
+*** F0g6_1Bnm  CMOV{T/F}.L		Rm, (Rn, DLR)	//Q=0
+*** F0g7_1Bnm  CMOV{T/F}.Q		Rm, (Rn, DLR)	//Q=0
+*** F0g8_1Bnm  CMOV{T/F}.B		(Rm), Rn		//Q=0
+*** F0G8_1Bnm  CMOVU{T/F}.B		(Rm), Rn		//Q=1
+*** F0g9_1Bnm  CMOV{T/F}.W		(Rm), Rn		//Q=0
+*** F0G9_1Bnm  CMOVU{T/F}.W		(Rm), Rn		//Q=1
+*** F0gA_1Bnm  CMOV{T/F}.L		(Rm), Rn		//Q=0
+*** F0GA_1Bnm  CMOVU{T/F}.L		(Rm), Rn		//Q=1
+*** F0gB_1Bnm  CMOV{T/F}.Q		(Rm), Rn		//Q=0
+*** F0GB_1Bnm  CMOVD{T/F}.L		(Rm), Rn		//Q=1 (63..32=Undefined)
+*** F0gC_1Bnm  CMOV{T/F}.B		(Rm, DLR), Rn	//Q=0
+*** F0GC_1Bnm  CMOVU{T/F}.B		(Rm, DLR), Rn	//Q=1
+*** F0gD_1Bnm  CMOV{T/F}.W		(Rm, DLR), Rn	//Q=0
+*** F0GD_1Bnm  CMOVU{T/F}.W		(Rm, DLR), Rn	//Q=1
+*** F0gE_1Bnm  CMOV{T/F}.L		(Rm, DLR), Rn	//Q=0
+*** F0GE_1Bnm  CMOVU{T/F}.L		(Rm, DLR), Rn	//Q=1
+*** F0gF_1Bnm  CMOV{T/F}.Q		(Rm, DLR), Rn	//Q=0
+*** F0GF_1Bnm  CMOVD{T/F}.L		(Rm, DLR), Rn	//Q=1 (63..32=Undefined)
 
 
 ** F0ez_1Cnm
@@ -979,16 +953,54 @@ F0zz Instruction Block:
 *** F0eA_1Cnm  MOV		Rm, Sn				//Cn=Rm
 *** F0eB_1Cnm  MOV		Sm, Rn				//Rn=Cm
 
-*** F0eC_1Cnm -
-*** F0eD_1Cnm -
-*** F0eE_1Cnm -
-*** F0eF_1Cnm -
+*** F0gC_1Cnm / CMOV{T/F}.L	Rm, (Rn)		//Conditional Store, I=T/F
+*** F0GC_1Cnm / CMOV{T/F}.Q	Rm, (Rn)		//Conditional Store
+*** F0gD_1Cnm / CMOV{T/F}.L	Rm, (Rn, DLR)	//Conditional Store
+*** F0GD_1Cnm / CMOV{T/F}.Q	Rm, (Rn, DLR)	//Conditional Store
+*** F0gE_1Cnm / CMOV{T/F}.L	(Rm), Rn		//Conditional Load, I=T/F
+*** F0GE_1Cnm / CMOV{T/F}.Q	(Rm), Rn		//Conditional Load
+*** F0gF_1Cnm / CMOV{T/F}.L	(Rm, DLR), Rn	//Conditional Load
+*** F0GF_1Cnm / CMOV{T/F}.Q	(Rm, DLR), Rn	//Conditional Load
 
 ** F0ez_1Dnm
+*** F0e0_1Dnm  -
+*** F0e1_1Dnm  -
+*** F0e2_1Dnm  -
+*** F0e3_1Dnm  -
+*** F0e4_1Dnm  -
+*** F0e5_1Dnm  -
+*** F0e6_1Dnm  -
+*** F0e7_1Dnm  -
+*** F0e8_1Dnm  -
+*** F0e9_1Dnm  -
+*** F0eA_1Dnm  -
+*** F0eB_1Dnm  -
+*** F0eC_1Dnm  -
+*** F0eD_1Dnm  CMP{Q}HS		Rm, Rn				//Unsigned Rn GE Rm
+*** F0eE_1Dnm  CMP{Q}GE		Rm, Rn				//Signed Rn GE Rm
+*** F0eF_1Dnm  TRA{Q}NHI	Rm, Rn				//Compare and Trap !(Rn GT Rm)
+
 ** F0ez_1Enm  -
 ** F0ez_1Fnm  -
 
 * F0zz_2zzz
+** F0dd_20dd  BRA		(PC, disp16s)
+** F0dd_21dd  BSR		(PC, disp16s)
+** F0dd_22dd  BT		(PC, disp16s)
+** F0dd_23dd  BF		(PC, disp16s)
+** F0dd_24dd  -
+** F0dd_25dd  -
+** F0dd_26dd  -
+** F0dd_27dd  -
+** F0hn_28dd  -
+** F0hn_29dd  -
+** F0hn_2Add  -
+** F0hn_2Bdd  -
+
+** F0fn_2Cjj  CMP{Q}EQ	#imm10u, Rn			//Rn==Imm10, Zero Extend
+** F0fn_2Djj  CMP{Q}EQ	#imm10n, Rn			//Rn==Imm10, One Extend
+** F0fn_2Ejj  CMP{Q}GT	#imm10u, Rn			//Rn==Imm10, Zero Extend
+** F0fn_2Fjj  CMP{Q}GE	#imm10u, Rn			//Rn==Imm10, Zero Extend
 
 ** F0en_30zz  (Single Register Ops, Mirror 3znz)
 *** 1111_0000_qzzn_nnnn_0011_0000_zzzz_zzzz (1R)
@@ -1062,12 +1074,19 @@ F0zz Instruction Block:
 ** F0eo_53nm  -
 ** F0eo_54nm ? SHAD{Q}	Rm, Ro, Rn
 ** F0eo_55nm ? SHLD{Q}	Rm, Ro, Rn
-** F0eo_56nm  -
-** F0eo_57nm  -
-** F0eo_58nm  -
-** F0eo_59nm  -
-** F0eo_5Anm  -
-** F0eo_5Bnm  -
+** F0go_56nm ? SHAD		Rm, imm5u, Rn		//Rn=Rm SHL imm5 (SX 32)
+** F0Go_56nm ? SHAD		Rm, imm5n, Rn		//Rn=Rm SAR imm5 (SX 32)
+** F0go_57nm ? SHLD		Rm, imm5u, Rn		//Rn=Rm SHL imm5 (ZX 32)
+** F0Go_57nm ? SHLD		Rm, imm5n, Rn		//Rn=Rm SHR imm5 (ZX 32)
+
+** F0go_58nm ? SHADQ	Rm, imm5u, Rn		//Rn=Rm SHL imm5 (  0.. 31)
+** F0Go_58nm ? SHADQ	Rm, imm5n, Rn		//Rn=Rm SAR imm5 (-32.. -1)
+** F0go_59nm ? SHLDQ	Rm, imm5u, Rn		//Rn=Rm SHL imm5 (  0.. 31)
+** F0Go_59nm ? SHLDQ	Rm, imm5n, Rn		//Rn=Rm SHR imm5 (-32.. -1)
+** F0go_5Anm ? SHADQ	Rm, imm5u, Rn		//Rn=Rm SHL imm5 ( 32.. 63)
+** F0Go_5Anm ? SHADQ	Rm, imm5n, Rn		//Rn=Rm SAR imm5 (-63..-33)
+** F0go_5Bnm ? SHLDQ	Rm, imm5u, Rn		//Rn=Rm SHL imm5 ( 32.. 63)
+** F0Go_5Bnm ? SHLDQ	Rm, imm5n, Rn		//Rn=Rm SHR imm5 (-63..-33)
 ** F0go_5Cnm ? ADDS.L	Rm, Ro, Rn			//Rn=Rm+Ro, ADD 32-bit, Sign Extend
 ** F0Go_5Cnm ? ADDU.L	Rm, Ro, Rn			//Rn=Rm+Ro, ADD 32-bit, Zero Extend
 ** F0go_5Dnm ? SUBS.L	Rm, Ro, Rn			//Rn=Rm-Ro, ADD 32-bit, Sign Extend
@@ -1091,7 +1110,7 @@ F0zz Instruction Block:
 ** F0go_98nm  FADD			FRm, FRo, FRn
 ** F0go_99nm  FSUB			FRm, FRo, FRn
 ** F0go_9Anm  FMUL			FRm, FRo, FRn
-** F0go_9Bnm ? FDIV			FRm, FRo, FRn		//(FDIV)
+** F0go_9Bnm ? FDIV			FRm, FRo, FRn
 
 ** F0eo_9Cnm
 *** F0eC_9Cnm  FCMPEQ		FRm, FRn			//SR.T=(FRn EQ FRm)
@@ -1108,35 +1127,68 @@ F0zz Instruction Block:
 *** F0e5_9Fnm  FSTCD		FRn, Rn		//Store Convert Double
 *** F0e6_9Fnm  FSTCI		FRn, Rn		//Store Convert Int
 *** F0e7_9Fnm  FSTCH		FRn, Rn		//Store Convert Half (Low16)
-*** F0e8_9Fnm  FNEG			FRm, FRn	//Negate
-*** F0e9_9Fnm  FABS			FRm, FRn	//Absolute
+*** F0e8_9Fnm  FNEG		FRm, FRn	//Negate
+*** F0e9_9Fnm  FABS		FRm, FRn	//Absolute
 *** F0eA_9Fnm -
 *** F0eB_9Fnm -
-*** F0eC_9Fnm ? FRCP		FRm, FRn	//(FDIV) Reciprocal (Exact)
-*** F0eD_9Fnm ? FSQRT		FRm, FRn	//(FDIV) Square Root (Exact)
+*** F0eC_9Fnm ? FRCP		FRm, FRn	//Reciprocal (Exact)
+*** F0eD_9Fnm ? FSQRT		FRm, FRn	//Square Root (Exact)
 *** F0eE_9Fnm -
 *** F0eF_9Fnm -
 
-* F0dd_Addd
-* F0dd_Bddd
+* F0dd_Addd  BRA	(PC, disp20)		//Branch, +/- 1MB
+* F0dd_Bddd  BSR	(PC, disp20)		//Call, +/- 1MB
+* F0dd_Cddd ? BT	(PC, disp20)		//Branch True, +/- 1MB
+* F0dd_Dddd ? BF	(PC, disp20)		//Branch False, +/- 1MB
 
-* F0dd_Cddd  BRA	(PC, disp20s)		//Branch, +/- 1MB
-* F0dd_Dddd  BSR	(PC, disp20s)		//Call, +/- 1MB
-* F0dd_Eddd  BT		(PC, disp20s)		//Branch True, +/- 1MB
-* F0dd_Fddd  BF		(PC, disp20s)		//Branch False, +/- 1MB
+* F0zz_Dzzz
+** F0dd_Dpnm / JCMPGT	Rm, Rn, disp8s	//(JCMP)
+** F0dd_DPnm / JCMPQGT	Rm, Rn, disp8s	//(JCMP)
+** F0dd_Dqnm / JCMPLE	Rm, Rn, disp8s	//(JCMP)
+** F0dd_DQnm / JCMPQLE	Rm, Rn, disp8s	//(JCMP)
+* F0zz_Ezzz
+** F0dd_Epnm / JCMPHI	Rm, Rn, disp8s	//(JCMP)
+** F0dd_EPnm / JCMPQHI	Rm, Rn, disp8s	//(JCMP)
+** F0dd_Eqnm / JCMPLS	Rm, Rn, disp8s	//(JCMP)
+** F0dd_EQnm / JCMPQLS	Rm, Rn, disp8s	//(JCMP)
+* F0zz_Fzzz
+** F0dd_Fpnm / JCMPEQ	Rm, Rn, disp8s	//(JCMP)
+** F0dd_FPnm / JCMPQEQ	Rm, Rn, disp8s	//(JCMP)
+** F0dd_Fqnm / JCMPNE	Rm, Rn, disp8s	//(JCMP)
+** F0dd_FQnm / JCMPQNE	Rm, Rn, disp8s	//(JCMP)
 
 
-F1zz Instruction Block:
+* F1zz_zzzz  (MOV Disp9 Block, Old/Drop?)
+** F1gd_0dnm  MOV.B		Rm, (Rn, disp9u)
+** F1Gd_0dnm  LEA.B		(Rm, disp9u), Rn
+** F1gd_1dnm  MOV.W		Rm, (Rn, disp9u)
+** F1Gd_1dnm  LEA.W		(Rm, disp9u), Rn
+** F1gd_2dnm  MOV.L		Rm, (Rn, disp9u)
+** F1Gd_2dnm  LEA.L		(Rm, disp9u), Rn
+** F1gd_3dnm  MOV.Q		Rm, (Rn, disp9u)
+** F1Gd_3dnm  LEA.Q		(Rm, disp9u), Rn
+** F1gj_4jnm /? ADD		Rm, disp9u, Rn		//
+** F1gj_5jnm /? ADD		Rm, disp9n, Rn		//
+** F1ez_6zzz -
+** F1ez_7zzz -
+** F1ed_8dnm  MOV{U}.B	(Rm, disp9u), Rn
+** F1ed_9dnm  MOV{U}.W	(Rm, disp9u), Rn
+** F1ed_Adnm  MOV{U}.L	(Rm, disp9u), Rn
+** F1gd_Bdnm  MOV.Q		(Rm, disp9u), Rn
+** F1Gd_Bdnm  MOVD.L	(Rm, disp9u), Rn
+** F1gj_Cjnm /? ADDS.L	Rm, disp9u, Rn		//ADD 32 SX, Zero-Ext Imm
+** F1Gj_Cjnm /? ADDU.L	Rm, disp9u, Rn		//ADD 32 ZX, Zero-Ext Imm
+** F1gj_Djnm /? ADDS.L	Rm, disp9n, Rn		//ADD 32 SX, One-Ext Imm
+** F1Gj_Djnm /? ADDU.L	Rm, disp9n, Rn		//ADD 32 ZX, One-Ext Imm
+** F1ez_Ezzz -
+** F1ez_Fzzz -
 
-* F1nm_Xeii  (MOV Disp9 Block, New)
-** F1nm_0gdd  MOV.B		Rm, (Rn, disp9u)
-** F1nm_0Gdd  LEA.B		(Rm, disp9u), Rn
-** F1nm_1gdd  MOV.W		Rm, (Rn, disp9u)
-** F1nm_1Gdd  LEA.W		(Rm, disp9u), Rn
-** F1nm_2gdd  MOV.L		Rm, (Rn, disp9u)
-** F1nm_2Gdd  LEA.L		(Rm, disp9u), Rn
-** F1nm_3gdd  MOV.Q		Rm, (Rn, disp9u)
-** F1nm_3Gdd  LEA.Q		(Rm, disp9u), Rn
+
+* F1nm_Xeii  (MOV Disp9 Block, New?)
+** F1nm_0edd  MOV.B		Rm, (Rn, disp9u)
+** F1nm_1edd  MOV.W		Rm, (Rn, disp9u)
+** F1nm_2edd  MOV.L		Rm, (Rn, disp9u)
+** F1nm_3edd  MOV.Q		Rm, (Rn, disp9u)
 ** F1nm_4ejj  -
 ** F1nm_5ejj  -
 ** F1nm_6ejj  -
@@ -1149,31 +1201,10 @@ F1zz Instruction Block:
 ** F1nm_AGdd  MOVU.L	(Rm, disp9u), Rn
 ** F1nm_Bgdd  MOV.Q		(Rm, disp9u), Rn
 ** F1nm_BGdd  MOVD.L	(Rm, disp9u), Rn
-** F1zz_Czzz
-*** F1nm_Dpdd ? JTSTT	Rm, Rn, disp8s	//(JCMP)
-*** F1nm_DPdd ? JTSTQT	Rm, Rn, disp8s	//(JCMP)
-*** F1nm_Dqdd ? JTSTF	Rm, Rn, disp8s	//(JCMP)
-*** F1nm_DQdd ? JTSTQF	Rm, Rn, disp8s	//(JCMP)
-** F1zz_Dzzz
-*** F1nm_Dpdd ? JCMPGT	Rm, Rn, disp8s	//(JCMP)
-*** F1nm_DPdd ? JCMPQGT	Rm, Rn, disp8s	//(JCMP)
-*** F1nm_Dqdd ? JCMPLE	Rm, Rn, disp8s	//(JCMP)
-*** F1nm_DQdd ? JCMPQLE	Rm, Rn, disp8s	//(JCMP)
-** F1zz_Ezzz
-*** F1nm_Epdd ? JCMPHI	Rm, Rn, disp8s	//(JCMP)
-*** F1nm_EPdd ? JCMPQHI	Rm, Rn, disp8s	//(JCMP)
-*** F1nm_Eqdd ? JCMPLS	Rm, Rn, disp8s	//(JCMP)
-*** F1nm_EQdd ? JCMPQLS	Rm, Rn, disp8s	//(JCMP)
-** F1zz_Fzzz
-*** F1nm_Fpdd ? JCMPEQ	Rm, Rn, disp8s	//(JCMP)
-*** F1nm_FPdd ? JCMPQEQ	Rm, Rn, disp8s	//(JCMP)
-*** F1nm_Fqdd ? JCMPNE	Rm, Rn, disp8s	//(JCMP)
-*** F1nm_FQdd ? JCMPQNE	Rm, Rn, disp8s	//(JCMP)
 
+* / F2zz_zzzz -
 
-F2zz Instruction Block:
-
-* F2nm_Xeii  (Imm9 Block, New)
+* F2nm_Xeii  (Imm9 Block, New?)
 ** F2nm_0gjj  ADD		Rm, #imm9u, Rn		//
 ** F2nm_1gjj  ADD		Rm, #imm9n, Rn		//
 ** F2nm_2gjj  MUL		Rm, #imm9u, Rn		//
@@ -1184,36 +1215,54 @@ F2zz Instruction Block:
 ** F2nm_5gjj  AND		Rm, #imm9u, Rn		//
 ** F2nm_6gjj  OR		Rm, #imm9u, Rn		//
 ** F2nm_7gjj  XOR		Rm, #imm9u, Rn		//
-** F2nm_8ejj  SHAD{Q}	Rm, #imm9u, Rn
-** F2nm_9ejj  SHLD{Q}	Rm, #imm9u, Rn
+** F2nm_8ejj  SHAD{Q}	Rm, #imm9, Rn
+** F2nm_9ejj  SHLD{Q}	Rm, #imm9, Rn
 
 ** F2nz_Aejj
+*** F2n0_Aejj -
+*** F2n1_Aejj -
+*** F2n2_Aejj -
+*** F2n3_Aejj -
+*** F2n4_Aejj TST{Q}	#imm9u, Rn				//SR.T=!(Rm&Rn)
+*** F2n5_Aejj TST{Q}	#imm9n, Rn				//SR.T=!(Rm&Rn)
+*** F2n6_Aejj CMP{Q}HS	#imm9u, Rn				//Unsigned Rn GT Rm
+*** F2n7_Aejj CMP{Q}HS	#imm9n, Rn				//Unsigned Rn GT Rm
+*** F2n8_Aejj CMP{Q}HI	#imm9u, Rn				//Unsigned Rn GT Rm
+*** F2n8_Aejj CMP{Q}HI	#imm9n, Rn				//Unsigned Rn GT Rm
+*** F2nA_Aejj CMP{Q}GE	#imm9u, Rn				//Signed Rn GT Rm
+*** F2nB_Aejj CMP{Q}GE	#imm9n, Rn				//Signed Rn GT Rm
+*** F2nC_Aejj CMP{Q}EQ	#imm9u, Rn				//Rn==Rm
+*** F2nD_Aejj CMP{Q}EQ	#imm9n, Rn				//Rn==Rm
+*** F2nE_Aejj CMP{Q}GT	#imm9u, Rn				//Signed Rn GT Rm
+*** F2nF_Aejj CMP{Q}GT	#imm9n, Rn				//Signed Rn GT Rm
 ** F2nz_Bejj
-
-** F2nz_Cfjj
-*** F2n0_Cfjj -
-*** F2n1_Cfjj -
-*** F2n2_Cfjj -
-*** F2n3_Cfjj -
-*** F2n4_Cfjj TST{Q}	#imm10u, Rn				//SR.T=!(Rm&Rn)
-*** F2n5_Cfjj TST{Q}	#imm10n, Rn				//SR.T=!(Rm&Rn)
-*** F2n6_Cfjj CMP{Q}HS	#imm10u, Rn				//Unsigned Rn GE Rm
-*** F2n7_Cfjj CMP{Q}HS	#imm10n, Rn				//Unsigned Rn GE Rm
-*** F2n8_Cfjj CMP{Q}HI	#imm10u, Rn				//Unsigned Rn GT Rm
-*** F2n9_Cfjj CMP{Q}HI	#imm10n, Rn				//Unsigned Rn GT Rm
-*** F2nA_Cfjj CMP{Q}GE	#imm10u, Rn				//Signed Rn GT Rm
-*** F2nB_Cfjj CMP{Q}GE	#imm10n, Rn				//Signed Rn GT Rm
-*** F2nC_Cfjj CMP{Q}EQ	#imm10u, Rn				//Rn==Rm
-*** F2nD_Cfjj CMP{Q}EQ	#imm10n, Rn				//Rn==Rm
-*** F2nE_Cfjj CMP{Q}GT	#imm10u, Rn				//Signed Rn GT Rm
-*** F2nF_Cfjj CMP{Q}GT	#imm10n, Rn				//Signed Rn GT Rm
-
-** F2nz_Dfjj
-** F2nz_Efjj
-** F2nz_Ffjj
+** F2zz_Czzz
+*** F2nm_Dpdd ? JTSTT	Rm, Rn, disp8s	//(JCMP)
+*** F2nm_DPdd ? JTSTQT	Rm, Rn, disp8s	//(JCMP)
+*** F2nm_Dqdd ? JTSTF	Rm, Rn, disp8s	//(JCMP)
+*** F2nm_DQdd ? JTSTQF	Rm, Rn, disp8s	//(JCMP)
+** F2zz_Dzzz
+*** F2nm_Dpdd ? JCMPGT	Rm, Rn, disp8s	//(JCMP)
+*** F2nm_DPdd ? JCMPQGT	Rm, Rn, disp8s	//(JCMP)
+*** F2nm_Dqdd ? JCMPLE	Rm, Rn, disp8s	//(JCMP)
+*** F2nm_DQdd ? JCMPQLE	Rm, Rn, disp8s	//(JCMP)
+** F2zz_Ezzz
+*** F2nm_Epdd ? JCMPHI	Rm, Rn, disp8s	//(JCMP)
+*** F2nm_EPdd ? JCMPQHI	Rm, Rn, disp8s	//(JCMP)
+*** F2nm_Eqdd ? JCMPLS	Rm, Rn, disp8s	//(JCMP)
+*** F2nm_EQdd ? JCMPQLS	Rm, Rn, disp8s	//(JCMP)
+** F2zz_Fzzz
+*** F2nm_Fpdd ? JCMPEQ	Rm, Rn, disp8s	//(JCMP)
+*** F2nm_FPdd ? JCMPQEQ	Rm, Rn, disp8s	//(JCMP)
+*** F2nm_Fqdd ? JCMPNE	Rm, Rn, disp8s	//(JCMP)
+*** F2nm_FQdd ? JCMPQNE	Rm, Rn, disp8s	//(JCMP)
 
 
-F8zz Instruction Block:
+* F3zz_zzzz -
+* F4zz_zzzz -
+* F5zz_zzzz -
+* F6zz_zzzz  (User Extension Block)
+* F7zz_zzzz  (User Extension Block)
 
 * F8nz_iiii
 ** F80n_iiii  MOVZ		#imm16u, Rn		//R0..R15, Zero Extend
@@ -1233,11 +1282,14 @@ F8zz Instruction Block:
 ** F8En_iiii  -
 ** F8Fn_iiii  -
 
-
-FAzz/FBzz Instructions:
+* F9zz_zzzz  (Extended FPU Block)
 
 * FAjj_jjjj	 LDIZ	#imm24u, DLR		//Zero Extend
 * FBjj_jjjj	 LDIN	#imm24u, DLR		//One Extend
+* FCzz_zzzz  (N/E)
+* FDzz_zzzz  (N/E)
+* FEzz_zzzz  (N/E)
+* FFzz_zzzz  (N/E)
 
 
 === 48-bit Instruction Forms ===
@@ -1359,10 +1411,10 @@ FAzz/FBzz Instructions:
 * FDCn_iiii_iiii  ADD		#imm32s, Rk		//R16..R31
 * FCDn_jjjj_jjjj  LDISH32	#imm32u, Rn		//R0..R15
 * FDDn_jjjj_jjjj  LDISH32	#imm32u, Rk		//R16..R31
-* FCEn_jjjj_jjjj  MOV		#imm32u, Rn		//R0..R15 (Zero Extend)
-* FDEn_jjjj_jjjj  MOV		#imm32u, Rk		//R16..R31 (Zero Extend)
-* FCFn_jjjj_jjjj  MOV		#imm32n, Rn		//R0..R15 (One Extend)
-* FDFn_jjjj_jjjj  MOV		#imm32n, Rk		//R16..R31 (One Extend)
+* FCEn_iiii_iiii  MOV		#imm32s, Rn		//R0..R15
+* FDEn_iiii_iiii  MOV		#imm32s, Rk		//R16..R31 
+* FCFn_iiii_iiii  MOV		#imm32x, Rn		//R0..R15 (Xor Extend)
+* FDFn_iiii_iiii  MOV		#imm32x, Rk		//R16..R31 (Xor Extend)
 
 Note that 32 bit immediates and displacements will be encoded in low-high order such that the value in-memory has the proper little-endian byte ordering.
 

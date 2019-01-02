@@ -1658,8 +1658,8 @@ int BGBCC_JX2C_EmitCompareVRegVRegVRegInt(
 #endif
 	
 	noflip=0;
-	if(BGBCC_CCXL_IsRegImmIntP(ctx, treg))
-		noflip=1;
+//	if(BGBCC_CCXL_IsRegImmIntP(ctx, treg))
+//		noflip=1;
 	
 	flip=0;
 	switch(cmp)
@@ -3419,8 +3419,8 @@ int BGBCC_JX2C_EmitCSeltCompareVRegVRegInt(
 	int i;
 	
 	noflip=0;
-	if(BGBCC_CCXL_IsRegImmIntP(ctx, treg))
-		noflip=1;
+//	if(BGBCC_CCXL_IsRegImmIntP(ctx, treg))
+//		noflip=1;
 	
 	flip=0;
 	switch(cmp)

@@ -9,9 +9,11 @@ IF, ID1, ID2, EX, [MA*, WB]
 `include "Jx2MemCache.v"
 
 `include "Jx2RegGpr.v"
-`include "Jx2RegFpr.v"
 `include "Jx2DecOp.v"
 `include "Jx2ExOp.v"
+
+`ifndef JX2_FPU_NOFPU
+`include "Jx2RegFpr.v"
 `include "Jx2FpuExOp.v"
 
 `include "Jx2ConvFpuS2D.v"
@@ -19,6 +21,7 @@ IF, ID1, ID2, EX, [MA*, WB]
 `include "Jx2ConvFpuD2S.v"
 `include "Jx2ConvFpuD2H.v"
 `include "Jx2ConvFpuD2I.v"
+`endif
 
 `ifdef JX2_MEM_USELSQ
 `include "Jx2ExLsq.v"
@@ -249,6 +252,8 @@ Jx2RegGpr	gprFile(
 
 /* FPU Register File */
 
+`ifndef JX2_FPU_NOFPU
+
 wire[63:0]		fprRegValRm;
 wire[63:0]		fprRegValRn;
 
@@ -262,6 +267,8 @@ Jx2RegFpr	fpr(
 	fprRegIdRo,		fprRegValRo,
 	gprRegSrVal,	gprRegExHold	
 	);
+
+`endif
 
 
 /* Execute Unit */
@@ -375,6 +382,8 @@ wire[6:0]		exRegOutIdFn;		//FRn, value to write
 wire[1:0]		exRegOutFpOK;		//execute status (FPU)
 wire[63:0]		exCtlOutFpDlr;		//DLR out (FPU)
 
+`ifndef JX2_FPU_NOFPU
+
 Jx2FpuExOp	exFpOp(
 	clock,		reset,
 	exOpCmdFp,		exRegIdIxtFp,
@@ -389,6 +398,7 @@ Jx2FpuExOp	exFpOp(
 	exCtlInDlr,		exCtlOutFpDlr
 	);
 
+`endif
 
 /* Common */
 
@@ -570,8 +580,10 @@ begin
 	gprRegIdCo		= exRegOutIdCn;
 	gprRegValCo		= exRegOutValCn;
 
+`ifndef JX2_FPU_NOFPU
 	fprRegIdRo		= exRegOutIdFn;
 	fprRegValRo		= exRegOutValFn;
+`endif
 
 `ifdef JX2_MEM_USELSQ
 	if(lsqRegOutId!=JX2_REG_ZZR)
@@ -797,8 +809,13 @@ begin
 		exIdInGenPc		<= gprRegNextPc;
 		exIstrWord		<= gprIstrWord;
 
+`ifndef JX2_FPU_NOFPU
 		exRegValFRm		<= fprRegValRm;
 		exRegValFRn		<= fprRegValRn;
+`else
+		exRegValFRm		<= UV64_XX;
+		exRegValFRn		<= UV64_XX;
+`endif
 
 //		exBranchFlush	<= (exCtlOutPc!=exCtlInPc);
 //		exBranchFlush	<= 0;

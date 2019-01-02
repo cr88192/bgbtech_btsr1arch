@@ -1,0 +1,132 @@
+int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
+	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2)
+{
+	int rn_dfl, rm_dfl, ro_dfl;
+	int disp5, eq, eo;
+//	int imm8u, imm8n;
+//	int imm10u, imm10n;
+	int imm9u, imm9n;
+	int ret;
+
+	op->fl|=BJX2_OPFL_TWOWORD;
+	op->opn=opw1;
+	op->opn2=opw2;
+
+	rn_dfl=(opw1>>4)&15;
+	rm_dfl=(opw1   )&15;
+//	ro_dfl=(opw1   )&15;
+	if(opw2&0x0400)rn_dfl+=16;
+	if(opw2&0x0200)rm_dfl+=16;
+//	if(opw2&0x0010)ro_dfl+=16;
+
+//	disp5=(opw1   )&31;
+	eq=(opw2&0x0800)?1:0;
+	eo=(opw2&0x0100)?1:0;
+
+//	imm8u=opw2&255;
+//	imm8n=opw2|(~255);
+//	imm10u=(opw2&255)|((opw1&0x0060)<<3);
+//	imm10n=(opw2&255)|((opw1&0x0060)<<3)|(~1023);
+
+//	imm9u=((opw1&31)<<4)|((opw2>>8)&15);
+//	imm9n=((opw1&31)<<4)|((opw2>>8)&15)|((-1)<<9);
+
+	imm9u=(opw2&511);
+	imm9n=(opw2&511)|((-1)<<9);
+
+	op->rn=rn_dfl;
+	op->rm=rm_dfl;
+	op->imm=imm9u;
+
+	ret=0;
+	switch((opw2>>12)&15)
+	{
+#if 1
+	case 0x0:	/* F2ed_0dzz */
+		op->imm=imm9u;
+		op->nmid=BJX2_NMID_ADD;
+		op->fmid=BJX2_FMID_REGIMMREG;
+		op->Run=BJX2_Op_ADD_RegImmReg;
+		break;
+	case 0x1:	/* F2ed_1dzz */
+		op->imm=imm9n;
+		op->nmid=BJX2_NMID_ADD;
+		op->fmid=BJX2_FMID_REGIMMREG;
+		op->Run=BJX2_Op_ADD_RegImmReg;
+		break;
+#endif
+
+#if 1
+	case 0x3:	/* F1ed_3dzz */
+		op->imm=imm9u;
+		op->nmid=BJX2_NMID_ADDSL;
+		op->fmid=BJX2_FMID_REGIMMREG;
+		op->Run=BJX2_Op_ADDSL_RegImmReg;
+		if(eq)
+		{
+			op->nmid=BJX2_NMID_ADDUL;
+			op->Run=BJX2_Op_ADDSL_RegImmReg;
+		}
+		break;
+	case 0x4:	/* F1ed_4dzz */
+		op->imm=imm9n;
+		op->nmid=BJX2_NMID_ADDSL;
+		op->fmid=BJX2_FMID_REGIMMREG;
+		op->Run=BJX2_Op_ADDSL_RegImmReg;
+		if(eq)
+		{
+			op->nmid=BJX2_NMID_ADDUL;
+			op->Run=BJX2_Op_ADDSL_RegImmReg;
+		}
+		break;
+#endif
+
+	case 0x5:	/* F2nm_5ejj */
+		op->imm=imm9u;
+		op->nmid=BJX2_NMID_AND;
+		op->fmid=BJX2_FMID_REGIMMREG;
+		op->Run=BJX2_Op_AND_RegImmReg;
+		break;
+	case 0x6:	/* F2nm_6ejj */
+		op->imm=imm9u;
+		op->nmid=BJX2_NMID_OR;
+		op->fmid=BJX2_FMID_REGIMMREG;
+		op->Run=BJX2_Op_OR_RegImmReg;
+		break;
+	case 0x7:	/* F2nm_7ejj */
+		op->imm=imm9u;
+		op->nmid=BJX2_NMID_XOR;
+		op->fmid=BJX2_FMID_REGIMMREG;
+		op->Run=BJX2_Op_XOR_RegImmReg;
+		break;
+
+	case 0x8:	/* F2nm_8ejj */
+		op->imm=(sbyte)imm9u;
+		op->nmid=BJX2_NMID_SHAD;
+		op->fmid=BJX2_FMID_REGIMMREG;
+		op->Run=BJX2_Op_SHAD_RegImmReg;
+		if(eq)
+		{
+			op->nmid=BJX2_NMID_SHADQ;
+			op->Run=BJX2_Op_SHADQ_RegImmReg;
+		}
+		break;
+	case 0x9:	/* F2nm_9ejj */
+		op->imm=(sbyte)imm9u;
+		op->nmid=BJX2_NMID_SHLD;
+		op->fmid=BJX2_FMID_REGIMMREG;
+		op->Run=BJX2_Op_SHLD_RegImmReg;
+		if(eq)
+		{
+			op->nmid=BJX2_NMID_SHLDQ;
+			op->Run=BJX2_Op_SHLDQ_RegImmReg;
+		}
+		break;
+
+	default:
+		ret=-1;
+		break;
+	}
+	
+	return(ret);
+}

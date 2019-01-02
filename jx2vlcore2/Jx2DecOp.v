@@ -1004,6 +1004,7 @@ begin
 		end
 
 
+`ifndef JX2_FPU_NOFPU
 		16'h90zz: begin
 			opUCmd	= JX2_UCMD_FMOVS_RM;
 			opFmid	= JX2_FMID_REGSTREG;
@@ -1135,6 +1136,8 @@ begin
 			opFmid		= JX2_FMID_REG;
 			opUCmdIx	= JX2_UCMD_FPIX_FABS;
 		end
+
+`ifndef JX2_FPU_NOFDIV
 		16'h9FzA: begin
 			opUCmd		= JX2_UCMD_FPU_FIXS;
 			opFmid		= JX2_FMID_REG;
@@ -1155,6 +1158,9 @@ begin
 			opFmid		= JX2_FMID_REG;
 			opUCmdIx	= JX2_UCMD_FPIX_FSQRT;
 		end
+`endif
+
+`endif
 
 		16'hAzzz: begin
 			opUCmd	= JX2_UCMD_ALU_LDIX;

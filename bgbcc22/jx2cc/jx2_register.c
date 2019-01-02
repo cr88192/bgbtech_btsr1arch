@@ -811,7 +811,7 @@ const byte bgbcc_jx2_jcachereg_egpr[32]={
 	BGBCC_SH_REG_RD23, BGBCC_SH_REG_RD22,
 	BGBCC_SH_REG_RD21, BGBCC_SH_REG_RD20,
 	BGBCC_SH_REG_RD19, BGBCC_SH_REG_RD18,
-	BGBCC_SH_REG_RD17, BGBCC_SH_REG_RD16, 
+//	BGBCC_SH_REG_RD17, BGBCC_SH_REG_RD16, 
 	BGBCC_SH_REG_ZZR };
 const byte bgbcc_jx2_qcachereg_egpr[32]={
 	BGBCC_SH_REG_RQ14, BGBCC_SH_REG_RQ13,
@@ -828,7 +828,7 @@ const byte bgbcc_jx2_qcachereg_egpr[32]={
 	BGBCC_SH_REG_RQ23, BGBCC_SH_REG_RQ22,
 	BGBCC_SH_REG_RQ21, BGBCC_SH_REG_RQ20,
 	BGBCC_SH_REG_RQ19, BGBCC_SH_REG_RQ18,
-	BGBCC_SH_REG_RQ17, BGBCC_SH_REG_RQ16, 
+//	BGBCC_SH_REG_RQ17, BGBCC_SH_REG_RQ16, 
 	BGBCC_SH_REG_ZZR };
 const byte bgbcc_jx2_pcachereg_egpr[32]={
 	BGBCC_SH_REG_R14, BGBCC_SH_REG_R13,
@@ -845,13 +845,83 @@ const byte bgbcc_jx2_pcachereg_egpr[32]={
 	BGBCC_SH_REG_R23, BGBCC_SH_REG_R22,
 	BGBCC_SH_REG_R21, BGBCC_SH_REG_R20,
 	BGBCC_SH_REG_R19, BGBCC_SH_REG_R18,
-	BGBCC_SH_REG_R17, BGBCC_SH_REG_R16, 
+//	BGBCC_SH_REG_R17, BGBCC_SH_REG_R16, 
 	BGBCC_SH_REG_ZZR };
+
+
+const byte bgbcc_jx2_jcachereg_egt[24]={
+	BGBCC_SH_REG_RD14, BGBCC_SH_REG_RD13,
+	BGBCC_SH_REG_RD12, BGBCC_SH_REG_RD11,
+	BGBCC_SH_REG_RD10, BGBCC_SH_REG_RD9,
+	BGBCC_SH_REG_RD8,
+	BGBCC_SH_REG_RD7, BGBCC_SH_REG_RD6,
+	BGBCC_SH_REG_RD5, BGBCC_SH_REG_RD4,
+	BGBCC_SH_REG_RD3, BGBCC_SH_REG_RD2,
+	BGBCC_SH_REG_RD23, BGBCC_SH_REG_RD22,
+	BGBCC_SH_REG_RD21, BGBCC_SH_REG_RD20,
+	BGBCC_SH_REG_RD19, BGBCC_SH_REG_RD18,
+	BGBCC_SH_REG_ZZR };
+const byte bgbcc_jx2_qcachereg_egt[24]={
+	BGBCC_SH_REG_RQ14, BGBCC_SH_REG_RQ13,
+	BGBCC_SH_REG_RQ12, BGBCC_SH_REG_RQ11,
+	BGBCC_SH_REG_RQ10, BGBCC_SH_REG_RQ9,
+	BGBCC_SH_REG_RQ8,
+	BGBCC_SH_REG_RQ7, BGBCC_SH_REG_RQ6,
+	BGBCC_SH_REG_RQ5, BGBCC_SH_REG_RQ4,
+	BGBCC_SH_REG_RQ3, BGBCC_SH_REG_RQ2,
+	BGBCC_SH_REG_RQ23, BGBCC_SH_REG_RQ22,
+	BGBCC_SH_REG_RQ21, BGBCC_SH_REG_RQ20,
+	BGBCC_SH_REG_RQ19, BGBCC_SH_REG_RQ18,
+	BGBCC_SH_REG_ZZR };
+const byte bgbcc_jx2_pcachereg_egt[24]={
+	BGBCC_SH_REG_R14, BGBCC_SH_REG_R13,
+	BGBCC_SH_REG_R12, BGBCC_SH_REG_R11,
+	BGBCC_SH_REG_R10, BGBCC_SH_REG_R9,
+	BGBCC_SH_REG_R8,
+	BGBCC_SH_REG_R7, BGBCC_SH_REG_R6,
+	BGBCC_SH_REG_R5, BGBCC_SH_REG_R4,
+	BGBCC_SH_REG_R3, BGBCC_SH_REG_R2,
+	BGBCC_SH_REG_R23, BGBCC_SH_REG_R22,
+	BGBCC_SH_REG_R21, BGBCC_SH_REG_R20,
+	BGBCC_SH_REG_R19, BGBCC_SH_REG_R18,
+	BGBCC_SH_REG_ZZR };
+
+
 const byte bgbcc_jx2_maxreg=7;
 const byte bgbcc_jx2_maxreg_egpr=15;
 const byte bgbcc_jx2_maxreg_lf=13;
-const byte bgbcc_jx2_maxreg_egpr_lf=29;
+// const byte bgbcc_jx2_maxreg_egpr_lf=29;
+const byte bgbcc_jx2_maxreg_egpr_lf=27;
+const byte bgbcc_jx2_maxreg_egt=7;
+const byte bgbcc_jx2_maxreg_egt_lf=19;
+
 #endif
+
+/* For leaf traces, rotate index to prefer scratch registers.
+ */
+int BGBCC_JX2C_EmitRotateRegisterIndex(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	int idx)
+{
+	int m1, m2, m3;
+	int i1;
+
+	if(!(sctx->is_tr_leaf&1))
+		return(idx);
+
+	m1=sctx->maxreg_gpr;
+	m2=sctx->maxreg_gpr_lf;
+	m3=m2-m1;
+	
+	if(idx<m3)
+		i1=(m1+idx);
+	else
+		i1=(idx-m3);
+	if((i1<0) || (i1>=m2))
+		{ BGBCC_DBGBREAK }
+	return(i1);
+}
 
 /* Try to get Variable as register.
  * Will return a value as a register if possible, but may fail.
@@ -1136,7 +1206,7 @@ int BGBCC_JX2C_EmitGetRegister(
 	int maxreg, vrsave;
 	int creg, lng, excl, bi, nsv, userq, usepq, rcls;
 	int pr0, pr1;
-	int i;
+	int i, i1;
 
 	creg=BGBCC_JX2C_EmitTryGetRegister(ctx, sctx, reg, fl);
 	if((creg>=0) && (creg!=BGBCC_SH_REG_ZZR))
@@ -1366,37 +1436,39 @@ int BGBCC_JX2C_EmitGetRegister(
 //	for(i=0; i<sctx->maxreg_gpr; i++)
 	for(i=0; i<maxreg; i++)
 	{
-		if(excl&(1<<i))
+		i1=BGBCC_JX2C_EmitRotateRegisterIndex(ctx, sctx, i);
+	
+		if(excl&(1<<i1))
 			continue;
 
-		if((sctx->vsp_rsv>0) && (i<sctx->vsp_rsv))
+		if((sctx->vsp_rsv>0) && (i1<sctx->vsp_rsv))
 		{
 			if(pr0>=sctx->vsp_rsv)
 				continue;
 		}
 
-		if((sctx->regalc_save)&(1<<i))
+		if((sctx->regalc_save)&(1<<i1))
 			continue;
 		
-		sctx->regalc_ltcnt[i]=0;
-		sctx->regalc_map[i]=reg;
-		sctx->regalc_utcnt[i]=1;
-		sctx->regalc_save|=1<<i;
-		sctx->regalc_live|=1<<i;
+		sctx->regalc_ltcnt[i1]=0;
+		sctx->regalc_map[i1]=reg;
+		sctx->regalc_utcnt[i1]=1;
+		sctx->regalc_save|=1<<i1;
+		sctx->regalc_live|=1<<i1;
 		if(fl&1)
-			sctx->regalc_dirty|=1<<i;
+			sctx->regalc_dirty|=1<<i1;
 
-//		creg=bgbcc_jx2_cachereg[i];		
+//		creg=bgbcc_jx2_cachereg[i1];		
 //		if(userq)
-//			creg=bgbcc_jx2_qcachereg[i];
+//			creg=bgbcc_jx2_qcachereg[i1];
 //		else if(sctx->is_addr64)
-//			creg=bgbcc_jx2_jcachereg[i];
+//			creg=bgbcc_jx2_jcachereg[i1];
 		if(userq)
-			creg=sctx->qcachereg[i];
+			creg=sctx->qcachereg[i1];
 		else if(usepq)
-			creg=sctx->pcachereg[i];
+			creg=sctx->pcachereg[i1];
 		else
-			creg=sctx->jcachereg[i];
+			creg=sctx->jcachereg[i1];
 		BGBCC_JX2C_EmitSaveFrameReg(ctx, sctx, creg);
 //		if(fl&2)
 //		if((fl&2) && (i>=sctx->vsp_rsv))
@@ -1909,6 +1981,15 @@ int BGBCC_JX2C_EmitLabelFlushRegisters(
 	sctx->pcachereg=bgbcc_jx2_pcachereg;
 	sctx->maxreg_gpr=bgbcc_jx2_maxreg;
 	sctx->maxreg_gpr_lf=bgbcc_jx2_maxreg_lf;
+
+	if(sctx->has_bjx1egpr)
+	{
+		sctx->jcachereg=bgbcc_jx2_jcachereg_egt;
+		sctx->qcachereg=bgbcc_jx2_qcachereg_egt;
+		sctx->pcachereg=bgbcc_jx2_pcachereg_egt;
+		sctx->maxreg_gpr=bgbcc_jx2_maxreg_egt;
+		sctx->maxreg_gpr_lf=bgbcc_jx2_maxreg_egt_lf;
+	}
 
 	if(sctx->has_bjx1egpr && sctx->use_egpr)
 	{

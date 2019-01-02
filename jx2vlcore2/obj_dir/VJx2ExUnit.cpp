@@ -89,125 +89,8 @@ void VJx2ExUnit::_eval_initial_loop(VJx2ExUnit__Syms* __restrict vlSymsp) {
 //--------------------
 // Internal Methods
 
-void VJx2ExUnit::_initial__TOP__1(VJx2ExUnit__Syms* __restrict vlSymsp) {
-    VL_DEBUG_IF(VL_DBG_MSGF("+    VJx2ExUnit::_initial__TOP__1\n"); );
-    VJx2ExUnit* __restrict vlTOPp VL_ATTR_UNUSED = vlSymsp->TOPp;
-    // Variables
-    VL_SIGW(__Vtemp1,127,0,4);
-    VL_SIGW(__Vtemp2,127,0,4);
-    VL_SIGW(__Vtemp3,127,0,4);
-    VL_SIGW(__Vtemp4,127,0,4);
-    VL_SIGW(__Vtemp5,127,0,4);
-    VL_SIGW(__Vtemp6,127,0,4);
-    VL_SIGW(__Vtemp7,127,0,4);
-    VL_SIGW(__Vtemp8,127,0,4);
-    // Body
-    // INITIAL at Jx2ExOp.v:548
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr0 = 
-	(VL_ULL(0x32584a42) | (VL_ULL(0xffffffff00000000) 
-			       & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr0));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr0 = 
-	(VL_ULL(0x31304c5600000000) | (VL_ULL(0xffffffff) 
-				       & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr0));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr0 = 
-	(VL_ULL(0xffffffff00000000) & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr0);
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr0 = 
-	(VL_ULL(0xffffffff) & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr0);
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr0 = 
-	(VL_ULL(1) | vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr0);
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr0 = 
-	(VL_ULL(4) | vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr0);
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr0 = 
-	(VL_ULL(8) | vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr0);
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr0 = 
-	(VL_ULL(0x10) | vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr0);
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr[0U] 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr0;
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr[0U] 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr0;
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr[1U] = VL_ULL(0);
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr[1U] = VL_ULL(0);
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr[2U] = VL_ULL(0);
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr[2U] = VL_ULL(0);
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr[3U] = VL_ULL(0);
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr[3U] = VL_ULL(0);
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr[4U] = VL_ULL(0);
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr[4U] = VL_ULL(0);
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr[5U] = VL_ULL(0);
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr[5U] = VL_ULL(0);
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr[6U] = VL_ULL(0);
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr[6U] = VL_ULL(0);
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr[7U] = VL_ULL(0);
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr[7U] = VL_ULL(0);
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr[8U] = VL_ULL(0);
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr[8U] = VL_ULL(0);
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr[9U] = VL_ULL(0);
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr[9U] = VL_ULL(0);
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr[0xaU] = VL_ULL(0);
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr[0xaU] = VL_ULL(0);
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr[0xbU] = VL_ULL(0);
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr[0xbU] = VL_ULL(0);
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr[0xcU] = VL_ULL(0);
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr[0xcU] = VL_ULL(0);
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr[0xdU] = VL_ULL(0);
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr[0xdU] = VL_ULL(0);
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr[0xeU] = VL_ULL(0);
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr[0xeU] = VL_ULL(0);
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr[0xfU] = VL_ULL(0);
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr[0xfU] = VL_ULL(0);
-    // INITIAL at Jx2MemTileA.v:245
-    __Vtemp1[0U] = 0x2e747874U;
-    __Vtemp1[1U] = 0x6d5f3261U;
-    __Vtemp1[2U] = 0x6f74726fU;
-    __Vtemp1[3U] = 0x626fU;
-    VL_READMEM_W (true,32,1024, 0,4, __Vtemp1, vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__romTileA
-		  ,0,~0);
-    __Vtemp2[0U] = 0x2e747874U;
-    __Vtemp2[1U] = 0x6d5f3262U;
-    __Vtemp2[2U] = 0x6f74726fU;
-    __Vtemp2[3U] = 0x626fU;
-    VL_READMEM_W (true,32,1024, 0,4, __Vtemp2, vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__romTileB
-		  ,0,~0);
-    __Vtemp3[0U] = 0x2e747874U;
-    __Vtemp3[1U] = 0x6d5f3263U;
-    __Vtemp3[2U] = 0x6f74726fU;
-    __Vtemp3[3U] = 0x626fU;
-    VL_READMEM_W (true,32,1024, 0,4, __Vtemp3, vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__romTileC
-		  ,0,~0);
-    __Vtemp4[0U] = 0x2e747874U;
-    __Vtemp4[1U] = 0x6d5f3264U;
-    __Vtemp4[2U] = 0x6f74726fU;
-    __Vtemp4[3U] = 0x626fU;
-    VL_READMEM_W (true,32,1024, 0,4, __Vtemp4, vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__romTileD
-		  ,0,~0);
-    __Vtemp5[0U] = 0x2e747874U;
-    __Vtemp5[1U] = 0x6d5f3265U;
-    __Vtemp5[2U] = 0x6f74726fU;
-    __Vtemp5[3U] = 0x626fU;
-    VL_READMEM_W (true,32,1024, 0,4, __Vtemp5, vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__romTileE
-		  ,0,~0);
-    __Vtemp6[0U] = 0x2e747874U;
-    __Vtemp6[1U] = 0x6d5f3266U;
-    __Vtemp6[2U] = 0x6f74726fU;
-    __Vtemp6[3U] = 0x626fU;
-    VL_READMEM_W (true,32,1024, 0,4, __Vtemp6, vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__romTileF
-		  ,0,~0);
-    __Vtemp7[0U] = 0x2e747874U;
-    __Vtemp7[1U] = 0x6d5f3267U;
-    __Vtemp7[2U] = 0x6f74726fU;
-    __Vtemp7[3U] = 0x626fU;
-    VL_READMEM_W (true,32,1024, 0,4, __Vtemp7, vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__romTileG
-		  ,0,~0);
-    __Vtemp8[0U] = 0x2e747874U;
-    __Vtemp8[1U] = 0x6d5f3268U;
-    __Vtemp8[2U] = 0x6f74726fU;
-    __Vtemp8[3U] = 0x626fU;
-    VL_READMEM_W (true,32,1024, 0,4, __Vtemp8, vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__romTileH
-		  ,0,~0);
-}
-
-VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlSymsp) {
-    VL_DEBUG_IF(VL_DBG_MSGF("+    VJx2ExUnit::_sequent__TOP__2\n"); );
+VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__1(VJx2ExUnit__Syms* __restrict vlSymsp) {
+    VL_DEBUG_IF(VL_DBG_MSGF("+    VJx2ExUnit::_sequent__TOP__1\n"); );
     VJx2ExUnit* __restrict vlTOPp VL_ATTR_UNUSED = vlSymsp->TOPp;
     // Variables
     VL_SIG8(__Vdly__Jx2ExUnit__DOT__gprIdUCmd,7,0);
@@ -265,16 +148,16 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
     VL_SIG8(__Vdly__Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tSgnC2,0,0);
     VL_SIG8(__Vdly__Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tExEn3,1,0);
     VL_SIG8(__Vdly__Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tExEn2,1,0);
-    VL_SIG16(__Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileA__v0,11,0);
-    VL_SIG16(__Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileB__v0,11,0);
-    VL_SIG16(__Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileC__v0,11,0);
-    VL_SIG16(__Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileD__v0,11,0);
-    VL_SIG16(__Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileAdA__v0,11,0);
-    VL_SIG16(__Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileE__v0,11,0);
-    VL_SIG16(__Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileF__v0,11,0);
-    VL_SIG16(__Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileG__v0,11,0);
-    VL_SIG16(__Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileH__v0,11,0);
-    VL_SIG16(__Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileAdB__v0,11,0);
+    VL_SIG16(__Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileA__v0,10,0);
+    VL_SIG16(__Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileB__v0,10,0);
+    VL_SIG16(__Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileC__v0,10,0);
+    VL_SIG16(__Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileD__v0,10,0);
+    VL_SIG16(__Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileAdA__v0,10,0);
+    VL_SIG16(__Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileE__v0,10,0);
+    VL_SIG16(__Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileF__v0,10,0);
+    VL_SIG16(__Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileG__v0,10,0);
+    VL_SIG16(__Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileH__v0,10,0);
+    VL_SIG16(__Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileAdB__v0,10,0);
     VL_SIG16(__Vdly__Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tExpC3,11,0);
     VL_SIG16(__Vdly__Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tExpC2,11,0);
     VL_SIG(__Vdlyvval__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileA__v0,31,0);
@@ -296,7 +179,7 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
     VL_SIG(__Vdlyvval__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__sramTileG__v0,31,0);
     VL_SIG(__Vdlyvval__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__sramTileH__v0,31,0);
     VL_SIGW(__Vdly__Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__icBlkData,319,0,10);
-    VL_SIGW(__Vtemp12,255,0,8);
+    VL_SIGW(__Vtemp4,255,0,8);
     VL_SIG64(__Vdly__Jx2ExUnit__DOT__decIstrWord,47,0);
     VL_SIG64(__Vdly__Jx2ExUnit__DOT__gprIdImm,32,0);
     VL_SIG64(__Vdly__Jx2ExUnit__DOT__gprIdValPc,63,0);
@@ -313,7 +196,6 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
     VL_SIG64(__Vdlyvval__Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbBlkHiD__v0,63,0);
     VL_SIG64(__Vdlyvval__Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbBlkLoD__v0,63,0);
     VL_SIG64(__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSp,63,0);
-    VL_SIG64(__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regPc,63,0);
     VL_SIG64(__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSr,63,0);
     VL_SIG64(__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regVbr,63,0);
     VL_SIG64(__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regGbr,63,0);
@@ -324,6 +206,7 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
     VL_SIG64(__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSSp,63,0);
     VL_SIG64(__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSGb,63,0);
     VL_SIG64(__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSTb,63,0);
+    VL_SIG64(__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regExsr,63,0);
     VL_SIG64(__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regTtb,63,0);
     VL_SIG64(__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regMmcr,63,0);
     VL_SIG64(__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSttb,63,0);
@@ -409,8 +292,8 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
     __Vdly__Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbLdtlbOK 
 	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbLdtlbOK;
     __Vdlyvset__Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbBlkHiA__v0 = 0U;
-    __Vdly__Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icReqLatch 
-	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icReqLatch;
+    __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regGbr = vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regGbr;
+    __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regTbr = vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regTbr;
     __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSPc = vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSPc;
     __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSPr = vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSPr;
     __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSSr = vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSSr;
@@ -420,16 +303,16 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
     __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regTtb = vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regTtb;
     __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSttb = vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSttb;
     __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regKrr = vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regKrr;
-    __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regGbr = vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regGbr;
-    __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regTbr = vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regTbr;
     __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regVbr = vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regVbr;
+    __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regExsr = vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regExsr;
     __Vdlyvset__Jx2ExUnit__DOT__gprFile__DOT__regGprArrM__v0 = 0U;
     __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regMmcr = vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regMmcr;
+    __Vdly__Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icReqLatch 
+	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icReqLatch;
     __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSp = vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSp;
     __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSr = vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSr;
     __Vdly__Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkReady 
 	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkReady;
-    __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regPc = vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regPc;
     __Vdly__Jx2ExUnit__DOT__gprIdUCmd = vlTOPp->Jx2ExUnit__DOT__gprIdUCmd;
     __Vdly__Jx2ExUnit__DOT__decRegStepPc = vlTOPp->Jx2ExUnit__DOT__decRegStepPc;
     __Vdly__Jx2ExUnit__DOT__gprIdValPc = vlTOPp->Jx2ExUnit__DOT__gprIdValPc;
@@ -451,57 +334,12 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
     // ALWAYS at Jx2ConvFpuD2I.v:131
     vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fd2i_rn__DOT__tRegFra2 
 	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fd2i_rn__DOT__tRegFra1;
-    // ALWAYS at Jx2FphfAdd.v:221
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSga1 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSga0;
-    // ALWAYS at Jx2FphfAdd.v:221
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgb1 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgb0;
-    // ALWAYS at Jx2FphfAdd.v:221
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgd1 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgd0;
     // ALWAYS at Jx2MemCache.v:575
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__tRegOutExc2 
 	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__tRegOutExc;
     // ALWAYS at Jx2MemCache.v:575
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__tRegOutTea2 
 	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__tRegOutTea;
-    // ALWAYS at Jx2FphfAdd.v:221
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExa1 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExa0;
-    // ALWAYS at Jx2FphfAdd.v:221
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExb1 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExb0;
-    // ALWAYS at Jx2FphfAdd.v:221
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFra1 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFra0;
-    // ALWAYS at Jx2FphfAdd.v:221
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrb1 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrb0;
-    // ALWAYS at Jx2FphfAdd.v:221
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrShrA1 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrShrA0;
-    // ALWAYS at Jx2FphfAdd.v:221
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrShrB1 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrShrB0;
-    // ALWAYS at Jx2FphfAdd.v:221
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrDifA1 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrDifA0;
-    // ALWAYS at Jx2FphfAdd.v:221
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrDifB1 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrDifB0;
-    // ALWAYS at Jx2FphfAdd.v:221
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrSum1 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrSum0;
-    // ALWAYS at Jx2FphfAdd.v:221
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExGtAB1 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExGtAB0;
-    // ALWAYS at Jx2FphfAdd.v:221
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExGtBA1 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExGtBA0;
-    // ALWAYS at Jx2FphfAdd.v:221
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrGtAB1 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrGtAB0;
     // ALWAYS at Jx2MemTileA.v:599
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMmioOutData2 
 	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMmioOutData;
@@ -517,9 +355,6 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
     // ALWAYS at Jx2MemTileA.v:599
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegOutTea2 
 	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegOutTea;
-    // ALWAYS at Jx2FphfMul.v:99
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tRegValRo2 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tRegValRo;
     // ALWAYS at Jx2ExMul.v:219
     vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPqA1 
 	= (VL_ULL(0x1ffffffff0000) & (((QData)((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPpB)) 
@@ -549,29 +384,7 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
     // ALWAYS at Jx2FpuAdd.v:296
     vlTOPp->Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tRegExOK2 
 	= vlTOPp->Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tRegExOK;
-    // ALWAYS at Jx2FphfVecOp.v:160
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRo 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextVecRo;
-    // ALWAYS at Jx2FphfVecOp.v:160
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRmsk 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextVecRmsk;
-    // ALWAYS at Jx2FphfVecOp.v:160
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tIsDone 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextIsDone;
-    // ALWAYS at Jx2FphfVecOp.v:160
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tSeenOK 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextSeenOK;
-    // ALWAYS at Jx2FphfVecOp.v:160
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tIsStart 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextIsStart;
-    // ALWAYS at Jx2FphfAdd.v:221
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tRegExOp2 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tRegExOp1;
-    // ALWAYS at Jx2FphfMul.v:99
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tRegExOK2 
-	= ((0U != (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tRegExOp1))
-	    ? 1U : 0U);
-    // ALWAYS at Jx2DecOp.v:1657
+    // ALWAYS at Jx2DecOp.v:1663
     vlTOPp->Jx2ExUnit__DOT__decOp__DOT__tMsgLatch = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__tNextMsgLatch;
     // ALWAYS at Jx2MmuChkAcc.v:158
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tTlbInAcc 
@@ -579,35 +392,26 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
     // ALWAYS at Jx2MemTileA.v:599
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tAccTileIxA 
 	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegTileIxA;
-    // ALWAYS at Jx2MemTileA.v:641
+    // ALWAYS at Jx2MemTileA.v:654
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamTile2FlagB 
 	= (0xfU & (vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileAdB
-		   [(0xfffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegTileIxB) 
+		   [(0x7ffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegTileIxB) 
 			       >> 1U))] >> 0x1cU));
-    // ALWAYS at Jx2MemTileA.v:641
+    // ALWAYS at Jx2MemTileA.v:654
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamTile2AddrB 
 	= (0xfffffffU & vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileAdB
-	   [(0xfffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegTileIxB) 
+	   [(0x7ffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegTileIxB) 
 		       >> 1U))]);
-    // ALWAYS at Jx2MemTileA.v:639
+    // ALWAYS at Jx2MemTileA.v:652
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamTile2FlagA 
 	= (0xfU & (vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileAdA
-		   [(0xfffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegTileIxA) 
+		   [(0x7ffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegTileIxA) 
 			       >> 1U))] >> 0x1cU));
-    // ALWAYS at Jx2MemTileA.v:639
+    // ALWAYS at Jx2MemTileA.v:652
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamTile2AddrA 
 	= (0xfffffffU & vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileAdA
-	   [(0xfffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegTileIxA) 
+	   [(0x7ffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegTileIxA) 
 		       >> 1U))]);
-    // ALWAYS at Jx2FphfAdd.v:221
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgc2 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgc1;
-    // ALWAYS at Jx2FphfAdd.v:221
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc1;
-    // ALWAYS at Jx2FphfAdd.v:221
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc1;
     // ALWAYS at Jx2MemTileA.v:599
     if (vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTileSrSt) {
 	__Vdlyvval__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__sramTileA__v0 
@@ -688,35 +492,35 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
     // ALWAYS at Jx2MemTileA.v:599
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamTile2[0U] 
 	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileA
-	[(0xfffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegTileIxA) 
+	[(0x7ffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegTileIxA) 
 		    >> 1U))];
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamTile2[1U] 
 	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileB
-	[(0xfffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegTileIxA) 
+	[(0x7ffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegTileIxA) 
 		    >> 1U))];
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamTile2[2U] 
 	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileC
-	[(0xfffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegTileIxA) 
+	[(0x7ffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegTileIxA) 
 		    >> 1U))];
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamTile2[3U] 
 	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileD
-	[(0xfffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegTileIxA) 
+	[(0x7ffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegTileIxA) 
 		    >> 1U))];
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamTile2[4U] 
 	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileE
-	[(0xfffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegTileIxB) 
+	[(0x7ffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegTileIxB) 
 		    >> 1U))];
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamTile2[5U] 
 	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileF
-	[(0xfffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegTileIxB) 
+	[(0x7ffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegTileIxB) 
 		    >> 1U))];
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamTile2[6U] 
 	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileG
-	[(0xfffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegTileIxB) 
+	[(0x7ffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegTileIxB) 
 		    >> 1U))];
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamTile2[7U] 
 	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileH
-	[(0xfffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegTileIxB) 
+	[(0x7ffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegTileIxB) 
 		    >> 1U))];
     // ALWAYS at Jx2MemTileA.v:599
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRomTile[0U] 
@@ -757,29 +561,6 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
     // ALWAYS at Jx2FpuAdd.v:296
     vlTOPp->Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tRegValRo2 
 	= vlTOPp->Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tRegValRo;
-    // ALWAYS at Jx2FphfMul.v:99
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tExc0 
-	= (0x3fU & (((0x1fU & (IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRs 
-				       >> 0xaU))) + 
-		     (0x1fU & (IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRt 
-				       >> 0xaU)))) 
-		    - (IData)(0xfU)));
-    // ALWAYS at Jx2FphfMul.v:99
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tExc1 
-	= (0x3fU & (((0x1fU & (IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRs 
-				       >> 0xaU))) + 
-		     (0x1fU & (IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRt 
-				       >> 0xaU)))) 
-		    - (IData)(0xeU)));
-    // ALWAYS at Jx2FphfMul.v:99
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tFrc 
-	= (0x3fffffU & ((0x400U | (0x3ffU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRs))) 
-			* (0x400U | (0x3ffU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRt)))));
-    // ALWAYS at Jx2FphfMul.v:99
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tSgc 
-	= (1U & ((IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRs 
-			  >> 0xfU)) ^ (IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRt 
-					       >> 0xfU))));
     // ALWAYS at Jx2FpuMul.v:270
     if ((0U != (IData)(vlTOPp->Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tExEn1))) {
 	vlTOPp->Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC2_AC 
@@ -838,7 +619,7 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
     vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulD1 
 	= (IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__regMulB 
 		   >> 0x20U));
-    // ALWAYS at Jx2ExUnit.v:675
+    // ALWAYS at Jx2ExUnit.v:687
     vlTOPp->Jx2ExUnit__DOT__dcRegInOpm = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tMemOpm;
     // ALWAYS at Jx2MmuChkAcc.v:158
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tRegInOpm 
@@ -858,12 +639,41 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
     // ALWAYS at Jx2MemTileA.v:599
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMemOpm2 
 	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMemOpm;
-    // ALWAYS at Jx2DecOpFx.v:2247
+    // ALWAYS at Jx2DecOpFx.v:2164
     vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tMsgLatch 
 	= vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tNextMsgLatch;
-    // ALWAYS at Jx2MmuTlb.v:299
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tRegOutOK2 
-	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tRegOutOK;
+    // ALWAYS at Jx2ExOp.v:1987
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tAddRmRi_A0 
+	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAddRmRi_A0;
+    // ALWAYS at Jx2ExOp.v:1987
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tAddRmRi_A1 
+	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAddRmRi_A1;
+    // ALWAYS at Jx2ExOp.v:1987
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tAddRmRi_B0 
+	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAddRmRi_B0;
+    // ALWAYS at Jx2ExOp.v:1987
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tAddRmRi_B1 
+	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAddRmRi_B1;
+    // ALWAYS at Jx2ExOp.v:1987
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tSubRmRi_A0 
+	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSubRmRi_A0;
+    // ALWAYS at Jx2ExOp.v:1987
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tSubRmRi_A1 
+	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSubRmRi_A1;
+    // ALWAYS at Jx2ExOp.v:1987
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tSubRmRi_B0 
+	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSubRmRi_B0;
+    // ALWAYS at Jx2ExOp.v:1987
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tSubRmRi_B1 
+	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSubRmRi_B1;
+    // ALWAYS at Jx2ExOp.v:1987
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tAluPAddW = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAluPAddW;
+    // ALWAYS at Jx2ExOp.v:1987
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tAluPAddL = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAluPAddL;
+    // ALWAYS at Jx2ExOp.v:1987
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tAluPSubW = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAluPSubW;
+    // ALWAYS at Jx2ExOp.v:1987
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tAluPSubL = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAluPSubL;
     // ALWAYS at Jx2DcTileA.v:353
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tRegOutOK2 
 	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tRegOutOK;
@@ -872,21 +682,21 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 	= ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fd2i_rn__DOT__tRegSgn2)
 	    ? VL_NEGATE_Q(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fd2i_rn__DOT__tRegValFRn3)
 	    : vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fd2i_rn__DOT__tRegValFRn3);
-    // ALWAYS at Jx2ExOp.v:2015
+    // ALWAYS at Jx2ExOp.v:1987
     vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tLastFCmpRmRnEqPW 
 	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exFCmp__DOT__tCmpRmRnEqPW;
-    // ALWAYS at Jx2ExOp.v:2015
+    // ALWAYS at Jx2ExOp.v:1987
     vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tLastFCmpRmRnHiPW 
 	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exFCmp__DOT__tCmpRmRnHiPW;
-    // ALWAYS at Jx2ExOp.v:2015
+    // ALWAYS at Jx2ExOp.v:1987
     vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tLastFCmpRmRnEqPL 
 	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exFCmp__DOT__tCmpRmRnEqPL;
-    // ALWAYS at Jx2ExOp.v:2015
+    // ALWAYS at Jx2ExOp.v:1987
     vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tLastFCmpRmRnHiPL 
 	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exFCmp__DOT__tCmpRmRnHiPL;
-    // ALWAYS at Jx2FphfVecOp.v:160
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tRegExOK2 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tRegExOK;
+    // ALWAYS at Jx2MmuTlb.v:299
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tRegOutOK2 
+	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tRegOutOK;
     // ALWAYS at Jx2MemTileA.v:599
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[0U] 
 	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData[0U];
@@ -907,76 +717,41 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
     // ALWAYS at Jx2MmuTlb.v:299
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tRegOutAddr2 
 	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tRegOutAddr;
-    // ALWAYS at Jx2FphfVecOp.v:160
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tRegValRo2 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tHeldRo;
     // ALWAYS at Jx2DcTileA.v:353
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tRegOutData2 
 	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tRegOutData;
+    // ALWAYS at Jx2ExOp.v:1987
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__memHoldDataLd 
+	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__memNextDataLd;
+    // ALWAYS at Jx2ExOp.v:1987
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOpSticky1 
+	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tNextOpSticky1;
+    // ALWAYS at Jx2ExOp.v:1987
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOpSticky2 
+	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tNextOpSticky2;
+    // ALWAYS at Jx2ExOp.v:1987
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOpSticky3 
+	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tNextOpSticky3;
+    // ALWAYS at Jx2ExOp.v:1987
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpState = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tNextOpState;
+    // ALWAYS at Jx2ExOp.v:1987
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOkLatch 
+	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tNextOkLatch;
     // ALWAYS at Jx2MemCache.v:575
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__memIcLatch 
 	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memNextIcLatch;
     // ALWAYS at Jx2MemCache.v:575
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__memDcLatch 
 	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memNextDcLatch;
-    // ALWAYS at Jx2ExOp.v:2015
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__memHoldDataLd 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__memNextDataLd;
-    // ALWAYS at Jx2ExOp.v:2015
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOpSticky1 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tNextOpSticky1;
-    // ALWAYS at Jx2ExOp.v:2015
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOpSticky2 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tNextOpSticky2;
-    // ALWAYS at Jx2ExOp.v:2015
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOpSticky3 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tNextOpSticky3;
-    // ALWAYS at Jx2ExOp.v:2015
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpState = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tNextOpState;
-    // ALWAYS at Jx2ExOp.v:2015
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOkLatch 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tNextOkLatch;
-    // ALWAYS at Jx2ExOp.v:2015
+    // ALWAYS at Jx2ExOp.v:1987
     __Vdly__Jx2ExUnit__DOT__exOp__DOT__regHoldFixedCnt 
 	= (0xfU & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__regHoldFixed)
 		    ? ((IData)(1U) + (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__regHoldFixedCnt))
 		    : 0U));
-    // ALWAYS at Jx2ExOp.v:2015
+    // ALWAYS at Jx2ExOp.v:1987
     vlTOPp->Jx2ExUnit__DOT__exOp__DOT__regLastMaAddr 
 	= (((QData)((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__maAdd__DOT__tVal2[1U])) 
 	    << 0x20U) | (QData)((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__maAdd__DOT__tVal2[0U])));
-    // ALWAYS at Jx2ExOp.v:2015
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tAddRmRi_A0 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAddRmRi_A0;
-    // ALWAYS at Jx2ExOp.v:2015
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tAddRmRi_A1 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAddRmRi_A1;
-    // ALWAYS at Jx2ExOp.v:2015
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tAddRmRi_B0 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAddRmRi_B0;
-    // ALWAYS at Jx2ExOp.v:2015
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tAddRmRi_B1 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAddRmRi_B1;
-    // ALWAYS at Jx2ExOp.v:2015
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tSubRmRi_A0 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSubRmRi_A0;
-    // ALWAYS at Jx2ExOp.v:2015
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tSubRmRi_A1 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSubRmRi_A1;
-    // ALWAYS at Jx2ExOp.v:2015
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tSubRmRi_B0 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSubRmRi_B0;
-    // ALWAYS at Jx2ExOp.v:2015
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tSubRmRi_B1 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSubRmRi_B1;
-    // ALWAYS at Jx2ExOp.v:2015
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tAluPAddW = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAluPAddW;
-    // ALWAYS at Jx2ExOp.v:2015
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tAluPAddL = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAluPAddL;
-    // ALWAYS at Jx2ExOp.v:2015
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tAluPSubW = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAluPSubW;
-    // ALWAYS at Jx2ExOp.v:2015
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tAluPSubL = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAluPSubL;
     // ALWAYS at Jx2MemCache.v:575
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__memIsReady 
 	= (0U == (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegOutOK2));
@@ -985,6 +760,9 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 	= (((QData)((IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPpD 
 			     + vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPpE))) 
 	    << 0x20U) | (QData)((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPpA)));
+    // ALWAYS at Jx2ExOp.v:1987
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tLastCmpRmRnEqPL 
+	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEqPL;
     // ALWAYS at Jx2MmuTlb.v:299
     if (((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbDoLdtlb) 
 	 & (~ (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbLdtlbOK)))) {
@@ -1033,203 +811,38 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
     } else {
 	__Vdly__Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbLdtlbOK = 0U;
     }
-    // ALWAYS at Jx2ExOp.v:2015
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tLastCmpRmRnEqPL 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEqPL;
-    // ALWAYS at Jx2ExOp.v:2015
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tLastCmpRmRnEqPW 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEqPW;
-    // ALWAYS at Jx2ExOp.v:2015
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tLastCmpRmRnHiPW 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHiPW;
-    // ALWAYS at Jx2ExOp.v:2015
+    // ALWAYS at Jx2ExOp.v:1987
     vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tLastCmpRmRnHiPL 
 	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHiPL;
+    // ALWAYS at Jx2ExOp.v:1987
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tLastCmpRmRnHsPW 
+	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHsPW;
+    // ALWAYS at Jx2ExOp.v:1987
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tLastCmpRmRnHsPL 
+	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHsPL;
+    // ALWAYS at Jx2ExOp.v:1987
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tLastCmpRmRnEqPW 
+	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEqPW;
+    // ALWAYS at Jx2ExOp.v:1987
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tLastCmpRmRnHiPW 
+	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHiPW;
     // ALWAYS at Jx2IcTileC.v:352
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tMemPcAddr2 
 	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tMemPcAddr;
     // ALWAYS at Jx2IcTileC.v:352
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tMemPcOpm2 
 	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tMemPcOpm;
-    // ALWAYS at Jx2RegGpr.v:549
-    if (vlTOPp->reset) {
-	__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSp = VL_ULL(0);
-	__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regPc = VL_ULL(0);
-	vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regPr = VL_ULL(0);
-	__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSr = VL_ULL(0);
-	__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regVbr = VL_ULL(0);
-	vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regDlr = VL_ULL(0);
-	vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regDhr = VL_ULL(0);
-	__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regGbr = VL_ULL(0);
-	__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regTbr = VL_ULL(0);
-	__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSPc = VL_ULL(0);
-	__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSPr = VL_ULL(0);
-	__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSSr = VL_ULL(0);
-	__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSSp = VL_ULL(0);
-	vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSDl = VL_ULL(0);
-	vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSDh = VL_ULL(0);
-	__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSGb = VL_ULL(0);
-	__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSTb = VL_ULL(0);
-    } else {
-	if ((1U & ((IData)(vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSrRB) 
-		   ^ (IData)((vlTOPp->Jx2ExUnit__DOT__gprExNextSr2 
-			      >> 0x1dU))))) {
-	    __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSSp 
-		= vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSp;
-	    vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regPr 
-		= vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSPr;
-	    __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regGbr 
-		= vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSGb;
-	    __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regTbr 
-		= vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSTb;
-	    if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__gprExNextSr2 
-			       >> 0x1dU)))) {
-		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSPc 
-		    = (((QData)((IData)(((1U & (IData)(
-						       (vlTOPp->Jx2ExUnit__DOT__gprExNextExc2 
-							>> 0x3fU)))
-					  ? 0xffffU
-					  : 0U))) << 0x30U) 
-		       | (VL_ULL(0xffffffffffff) & 
-			  (vlTOPp->Jx2ExUnit__DOT__gprExNextExc2 
-			   >> 0x10U)));
-		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regPc 
-		    = vlTOPp->Jx2ExUnit__DOT__gprExNextPc2;
-		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSSr 
-		    = vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSr;
-		vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regTea 
-		    = vlTOPp->Jx2ExUnit__DOT__gprExNextTea2;
-		vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regExsr 
-		    = vlTOPp->Jx2ExUnit__DOT__gprExNextExc2;
-		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSr 
-		    = vlTOPp->Jx2ExUnit__DOT__gprExNextSr2;
-	    } else {
-		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSPc 
-		    = vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regPc;
-		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSr 
-		    = vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSSr;
-		vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regTea 
-		    = vlTOPp->Jx2ExUnit__DOT__gprExNextTea2;
-		vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regExsr 
-		    = vlTOPp->Jx2ExUnit__DOT__gprExNextExc2;
-		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regPc 
-		    = vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSPc;
-		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSSr 
-		    = vlTOPp->Jx2ExUnit__DOT__gprExNextSr2;
-	    }
-	    __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSp 
-		= vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSSp;
-	    __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSPr 
-		= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutPr;
-	    __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSGb 
-		= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutGbr;
-	    __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSTb 
-		= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutTbr;
-	} else {
-	    if ((1U & (~ (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegExHold)))) {
-		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regVbr 
-		    = ((0x23U == (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn)))
-		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn
-		        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regVbr);
-		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regGbr 
-		    = ((0x26U == (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn)))
-		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn
-		        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regGbr);
-		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regTbr 
-		    = ((0x27U == (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn)))
-		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn
-		        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regTbr);
-		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSPc 
-		    = ((0x38U == (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn)))
-		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn
-		        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSPc);
-		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSPr 
-		    = ((0x39U == (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn)))
-		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn
-		        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSPr);
-		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSSr 
-		    = ((0x3aU == (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn)))
-		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn
-		        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSSr);
-		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSSp 
-		    = ((0x3bU == (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn)))
-		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn
-		        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSSp);
-		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSGb 
-		    = ((0x3eU == (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn)))
-		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn
-		        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSGb);
-		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSTb 
-		    = ((0x3fU == (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn)))
-		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn
-		        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSTb);
-		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regTtb 
-		    = ((0x28U == (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn)))
-		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn
-		        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regTtb);
-		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regMmcr 
-		    = ((0x2aU == (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn)))
-		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn
-		        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regMmcr);
-		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSttb 
-		    = ((0x2cU == (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn)))
-		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn
-		        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSttb);
-		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regKrr 
-		    = ((0x2dU == (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn)))
-		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn
-		        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regKrr);
-		__Vdlyvval__Jx2ExUnit__DOT__gprFile__DOT__regGprArrM__v0 
-		    = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal;
-		__Vdlyvset__Jx2ExUnit__DOT__gprFile__DOT__regGprArrM__v0 = 1U;
-		__Vdlyvdim0__Jx2ExUnit__DOT__gprFile__DOT__regGprArrM__v0 
-		    = (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutId));
-		__Vdlyvval__Jx2ExUnit__DOT__gprFile__DOT__regGprArrN__v0 
-		    = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal;
-		__Vdlyvdim0__Jx2ExUnit__DOT__gprFile__DOT__regGprArrN__v0 
-		    = (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutId));
-		__Vdlyvval__Jx2ExUnit__DOT__gprFile__DOT__regGprArrO__v0 
-		    = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal;
-		__Vdlyvdim0__Jx2ExUnit__DOT__gprFile__DOT__regGprArrO__v0 
-		    = (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutId));
-		vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regDlr 
-		    = ((0U == (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutId))
-		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal
-		        : vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutDlr);
-		vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regDhr 
-		    = ((1U == (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutId))
-		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal
-		        : vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutDhr);
-		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSp 
-		    = ((0xfU == (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutId))
-		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal
-		        : vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSp);
-		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regPc 
-		    = ((0x20U == (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn)))
-		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn
-		        : vlTOPp->Jx2ExUnit__DOT__gprExNextPc2);
-		vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regPr 
-		    = ((0x21U == (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn)))
-		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn
-		        : vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutPr);
-		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSr 
-		    = ((0x22U == (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn)))
-		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn
-		        : vlTOPp->Jx2ExUnit__DOT__gprExNextSr2);
-		vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regTea 
-		    = ((0x29U == (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn)))
-		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn
-		        : vlTOPp->Jx2ExUnit__DOT__gprExNextTea2);
-		vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regExsr 
-		    = ((0x2bU == (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn)))
-		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn
-		        : vlTOPp->Jx2ExUnit__DOT__gprExNextExc2);
-	    }
-	}
-    }
-    // ALWAYS at Jx2ExOp.v:2015
+    // ALWAYS at Jx2ExOp.v:1987
     vlTOPp->Jx2ExUnit__DOT__exOp__DOT__idLastGenPc 
 	= vlTOPp->Jx2ExUnit__DOT__exIdInGenPc;
+    // ALWAYS at Jx2ExOp.v:1987
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidOutDlr 
+	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr
+	[(0xfU & (IData)(vlTOPp->Jx2ExUnit__DOT__exRegIdRn))];
+    // ALWAYS at Jx2ExOp.v:1987
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidOutDhr 
+	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr
+	[(0xfU & (IData)(vlTOPp->Jx2ExUnit__DOT__exRegIdRn))];
     // ALWAYSPOST at Jx2RegFpr.v:142
     if (__Vdlyvset__Jx2ExUnit__DOT__fpr__DOT__regFprArrRm__v0) {
 	vlTOPp->Jx2ExUnit__DOT__fpr__DOT__regFprArrRm[__Vdlyvdim0__Jx2ExUnit__DOT__fpr__DOT__regFprArrRm__v0] 
@@ -1338,82 +951,6 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 	vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbBlkLoD[__Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbBlkLoD__v0] 
 	    = __Vdlyvval__Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbBlkLoD__v0;
     }
-    vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSPr = __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSPr;
-    vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSGb = __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSGb;
-    vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSTb = __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSTb;
-    vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSSr = __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSSr;
-    vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSPc = __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSPc;
-    vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSSp = __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSSp;
-    vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regTtb = __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regTtb;
-    vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSttb = __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSttb;
-    vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regKrr = __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regKrr;
-    // ALWAYSPOST at Jx2RegGpr.v:655
-    if (__Vdlyvset__Jx2ExUnit__DOT__gprFile__DOT__regGprArrM__v0) {
-	vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regGprArrM[__Vdlyvdim0__Jx2ExUnit__DOT__gprFile__DOT__regGprArrM__v0] 
-	    = __Vdlyvval__Jx2ExUnit__DOT__gprFile__DOT__regGprArrM__v0;
-    }
-    // ALWAYSPOST at Jx2RegGpr.v:656
-    if (__Vdlyvset__Jx2ExUnit__DOT__gprFile__DOT__regGprArrM__v0) {
-	vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regGprArrN[__Vdlyvdim0__Jx2ExUnit__DOT__gprFile__DOT__regGprArrN__v0] 
-	    = __Vdlyvval__Jx2ExUnit__DOT__gprFile__DOT__regGprArrN__v0;
-    }
-    // ALWAYSPOST at Jx2RegGpr.v:657
-    if (__Vdlyvset__Jx2ExUnit__DOT__gprFile__DOT__regGprArrM__v0) {
-	vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regGprArrO[__Vdlyvdim0__Jx2ExUnit__DOT__gprFile__DOT__regGprArrO__v0] 
-	    = __Vdlyvval__Jx2ExUnit__DOT__gprFile__DOT__regGprArrO__v0;
-    }
-    vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regGbr = __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regGbr;
-    vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regTbr = __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regTbr;
-    vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regVbr = __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regVbr;
-    vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regMmcr = __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regMmcr;
-    vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSp = __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSp;
-    vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSr = __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSr;
-    // ALWAYS at Jx2FphfAdd.v:103
-    if (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExGtAB1) {
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgc1 
-	    = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSga1;
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc1 
-	    = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExa1;
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc1 
-	    = (0xfffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgd1)
-			  ? ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFra1) 
-			     - (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrShrB1))
-			  : ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFra1) 
-			     + (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrShrB1))));
-    } else {
-	if (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExGtBA1) {
-	    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgc1 
-		= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgb1;
-	    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc1 
-		= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExb1;
-	    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc1 
-		= (0xfffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgd1)
-			      ? ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrb1) 
-				 - (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrShrA1))
-			      : ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrb1) 
-				 + (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrShrA1))));
-	} else {
-	    if (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrGtAB1) {
-		vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgc1 
-		    = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSga1;
-		vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc1 
-		    = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExa1;
-		vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc1 
-		    = ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgd1)
-		        ? (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrDifA1)
-		        : (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrSum1));
-	    } else {
-		vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgc1 
-		    = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgb1;
-		vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc1 
-		    = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExb1;
-		vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc1 
-		    = ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgd1)
-		        ? (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrDifB1)
-		        : (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrSum1));
-	    }
-	}
-    }
     vlTOPp->mmioOutData = vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMmioOutData2;
     vlTOPp->mmioAddr = vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMmioAddr2;
     vlTOPp->mmioOpm = vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMmioOpm2;
@@ -1432,146 +969,6 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 	vlTOPp->Jx2ExUnit__DOT__cache__DOT__tRegOutTea 
 	    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tRegOutTea2;
     }
-    // ALWAYS at Jx2FphfAdd.v:221
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tRegExOp1 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tHfopExOp;
-    // ALWAYS at Jx2FphfMul.v:99
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tRegExOp1 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tHfopExOp;
-    // ALWAYS at Jx2FphfAdd.v:103
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgc2B 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgc2;
-    if ((0x800U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2))) {
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2B 
-	    = (0x3fU & ((IData)(1U) + (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2)));
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2B 
-	    = (0x3ffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2) 
-			 >> 1U));
-    } else {
-	if ((0x400U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2))) {
-	    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2B 
-		= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2;
-	    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2B 
-		= (0x3ffU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2));
-	} else {
-	    if ((0x200U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2))) {
-		vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2B 
-		    = (0x3fU & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2) 
-				- (IData)(1U)));
-		vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2B 
-		    = (0x3feU & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2) 
-				 << 1U));
-	    } else {
-		if ((0x100U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2))) {
-		    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2B 
-			= (0x3fU & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2) 
-				    - (IData)(2U)));
-		    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2B 
-			= (0x3fcU & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2) 
-				     << 2U));
-		} else {
-		    if ((0x80U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2))) {
-			vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2B 
-			    = (0x3fU & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2) 
-					- (IData)(3U)));
-			vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2B 
-			    = (0x3f8U & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2) 
-					 << 3U));
-		    } else {
-			if ((0x40U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2))) {
-			    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2B 
-				= (0x3fU & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2) 
-					    - (IData)(4U)));
-			    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2B 
-				= (0x3f0U & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2) 
-					     << 4U));
-			} else {
-			    if ((0x20U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2))) {
-				vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2B 
-				    = (0x3fU & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2) 
-						- (IData)(5U)));
-				vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2B 
-				    = (0x3e0U & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2) 
-						 << 5U));
-			    } else {
-				if ((0x10U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2))) {
-				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2B 
-					= (0x3fU & 
-					   ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2) 
-					    - (IData)(6U)));
-				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2B 
-					= (0x3c0U & 
-					   ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2) 
-					    << 6U));
-				} else {
-				    if ((8U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2))) {
-					vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2B 
-					    = (0x3fU 
-					       & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2) 
-						  - (IData)(7U)));
-					vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2B 
-					    = (0x380U 
-					       & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2) 
-						  << 7U));
-				    } else {
-					if ((4U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2))) {
-					    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2B 
-						= (0x3fU 
-						   & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2) 
-						      - (IData)(8U)));
-					    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2B 
-						= (0x300U 
-						   & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2) 
-						      << 8U));
-					} else {
-					    if ((2U 
-						 & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2))) {
-						vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2B 
-						    = 
-						    (0x3fU 
-						     & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2) 
-							- (IData)(9U)));
-						vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2B 
-						    = 
-						    (0x200U 
-						     & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2) 
-							<< 9U));
-					    } else {
-						if (
-						    (1U 
-						     & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2))) {
-						    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2B 
-							= 
-							(0x3fU 
-							 & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2) 
-							    - (IData)(0xaU)));
-						    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2B = 0U;
-						} else {
-						    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2B = 0U;
-						    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2B = 0U;
-						    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgc2B = 0U;
-						}
-					    }
-					}
-				    }
-				}
-			    }
-			}
-		    }
-		}
-	    }
-	}
-    }
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tRegValRo 
-	= ((0x20U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2B))
-	    ? ((0x10U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2B))
-	        ? 0U : (0x7c00U | ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgc2B) 
-				   << 0xfU))) : (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgc2B) 
-						  << 0xfU) 
-						 | ((0x7c00U 
-						     & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2B) 
-							<< 0xaU)) 
-						    | (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2B))));
     // ALWAYS at Jx2FpuAdd.v:296
     if (vlTOPp->Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tExEn1) {
 	if (((IData)(vlTOPp->Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tExpA1) 
@@ -1631,36 +1028,6 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 	vlTOPp->Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tExEn5 = 0U;
 	vlTOPp->Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tRegValRo = VL_ULL(0);
     }
-    // ALWAYS at Jx2FphfMul.v:58
-    if ((0x200000U & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tFrc)) {
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tExd 
-	    = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tExc1;
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tFrd 
-	    = (0x3ffU & (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tFrc 
-			 >> 0xbU));
-    } else {
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tExd 
-	    = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tExc0;
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tFrd 
-	    = (0x3ffU & (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tFrc 
-			 >> 0xaU));
-    }
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tRegValRo 
-	= ((0x20U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tExd))
-	    ? ((0x10U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tExd))
-	        ? 0U : (0x7c00U | ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tSgc) 
-				   << 0xfU))) : (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tSgc) 
-						  << 0xfU) 
-						 | ((0x7c00U 
-						     & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tExd) 
-							<< 0xaU)) 
-						    | (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tFrd))));
-    // ALWAYS at Jx2FphfVecOp.v:160
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRs 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextVecRs;
-    // ALWAYS at Jx2FphfVecOp.v:160
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRt 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextVecRt;
     // ALWAYS at Jx2FpuMul.v:130
     // ALWAYS at Jx2FpuMul.v:130
     vlTOPp->Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC2_R 
@@ -1974,28 +1341,28 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTile[0U];
 	    __Vdlyvset__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileA__v0 = 1U;
 	    __Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileA__v0 
-		= (0xfffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTileIxA) 
+		= (0x7ffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTileIxA) 
 			     >> 1U));
 	    __Vdlyvval__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileB__v0 
 		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTile[1U];
 	    __Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileB__v0 
-		= (0xfffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTileIxA) 
+		= (0x7ffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTileIxA) 
 			     >> 1U));
 	    __Vdlyvval__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileC__v0 
 		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTile[2U];
 	    __Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileC__v0 
-		= (0xfffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTileIxA) 
+		= (0x7ffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTileIxA) 
 			     >> 1U));
 	    __Vdlyvval__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileD__v0 
 		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTile[3U];
 	    __Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileD__v0 
-		= (0xfffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTileIxA) 
+		= (0x7ffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTileIxA) 
 			     >> 1U));
 	    __Vdlyvval__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileAdA__v0 
 		= (((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextRamTileFlagA) 
 		    << 0x1cU) | vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextRamTileAddrA);
 	    __Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileAdA__v0 
-		= (0xfffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTileIxA) 
+		= (0x7ffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTileIxA) 
 			     >> 1U));
 	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamStickyA = 0U;
 	}
@@ -2004,28 +1371,28 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTile[4U];
 	    __Vdlyvset__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileE__v0 = 1U;
 	    __Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileE__v0 
-		= (0xfffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTileIxB) 
+		= (0x7ffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTileIxB) 
 			     >> 1U));
 	    __Vdlyvval__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileF__v0 
 		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTile[5U];
 	    __Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileF__v0 
-		= (0xfffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTileIxB) 
+		= (0x7ffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTileIxB) 
 			     >> 1U));
 	    __Vdlyvval__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileG__v0 
 		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTile[6U];
 	    __Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileG__v0 
-		= (0xfffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTileIxB) 
+		= (0x7ffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTileIxB) 
 			     >> 1U));
 	    __Vdlyvval__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileH__v0 
 		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTile[7U];
 	    __Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileH__v0 
-		= (0xfffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTileIxB) 
+		= (0x7ffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTileIxB) 
 			     >> 1U));
 	    __Vdlyvval__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileAdB__v0 
 		= (((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextRamTileFlagB) 
 		    << 0x1cU) | vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextRamTileAddrB);
 	    __Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileAdB__v0 
-		= (0xfffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTileIxB) 
+		= (0x7ffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tNextTileIxB) 
 			     >> 1U));
 	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRamStickyB = 0U;
 	}
@@ -2036,9 +1403,6 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
     // ALWAYS at Jx2ConvFpuD2I.v:131
     vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fd2i_rn__DOT__tRegValFRn3 
 	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fd2i_rn__DOT__tRegValFRn2;
-    // ALWAYS at Jx2FphfVecOp.v:160
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tHeldRo 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextHeldRo;
     // ALWAYS at Jx2ConvFpuS2D.v:13
     vlTOPp->Jx2ExUnit__DOT__exFpOp__DOT__mem_cnv_s2d__DOT__tExpIsZero 
 	= (0U == (0xffU & (IData)((vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tRegOutData2 
@@ -2142,23 +1506,23 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 	 | (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__icBypassLatch))) {
 	vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcAddr 
 	    = (VL_ULL(0xffffffffffff) & vlTOPp->Jx2ExUnit__DOT__dcRegInAddr);
-	VL_EXTEND_WQ(256,64, __Vtemp12, vlTOPp->Jx2ExUnit__DOT__dcRegInData);
+	VL_EXTEND_WQ(256,64, __Vtemp4, vlTOPp->Jx2ExUnit__DOT__dcRegInData);
 	vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcDataO[0U] 
-	    = __Vtemp12[0U];
+	    = __Vtemp4[0U];
 	vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcDataO[1U] 
-	    = __Vtemp12[1U];
+	    = __Vtemp4[1U];
 	vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcDataO[2U] 
-	    = __Vtemp12[2U];
+	    = __Vtemp4[2U];
 	vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcDataO[3U] 
-	    = __Vtemp12[3U];
+	    = __Vtemp4[3U];
 	vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcDataO[4U] 
-	    = __Vtemp12[4U];
+	    = __Vtemp4[4U];
 	vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcDataO[5U] 
-	    = __Vtemp12[5U];
+	    = __Vtemp4[5U];
 	vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcDataO[6U] 
-	    = __Vtemp12[6U];
+	    = __Vtemp4[6U];
 	vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcDataO[7U] 
-	    = __Vtemp12[7U];
+	    = __Vtemp4[7U];
 	vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcOpm 
 	    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tRegInOpm;
 	if (vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__icBlkBypass) {
@@ -2321,6 +1685,14 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 		 ((((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tLastCmpRmRnEqPW) 
 		    >> 3U) & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tLastCmpRmRnEqPW) 
 			      >> 2U)) & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tLastCmpRmRnHiPL))));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCmpRmRnHsQ 
+	= (1U & ((((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tLastCmpRmRnHiPW) 
+		   >> 3U) | (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tLastCmpRmRnEqPW) 
+			      >> 3U) & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tLastCmpRmRnHsPW) 
+					>> 2U))) | 
+		 ((((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tLastCmpRmRnEqPW) 
+		    >> 3U) & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tLastCmpRmRnEqPW) 
+			      >> 2U)) & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tLastCmpRmRnHsPL))));
     // ALWAYS at Jx2IcTileC.v:352
     if (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkMiss) {
 	if ((1U & ((~ (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icMemIsReady)) 
@@ -2369,15 +1741,7 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 	vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tMemPcAddr = VL_ULL(0);
 	vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tMemPcOpm = 0U;
     }
-    // ALWAYS at Jx2RegGpr.v:549
-    vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSrRB = 
-	(1U & (IData)((vlTOPp->Jx2ExUnit__DOT__gprExNextSr2 
-		       >> 0x1dU)));
-    // ALWAYS at Jx2ExOp.v:599
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutGbr = vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regGbr;
-    // ALWAYS at Jx2ExOp.v:599
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutTbr = vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regTbr;
-    // ALWAYS at Jx2ExUnit.v:675
+    // ALWAYS at Jx2ExUnit.v:687
     if ((1U & (~ (IData)(vlTOPp->Jx2ExUnit__DOT__exHold)))) {
 	__Vdly__Jx2ExUnit__DOT__decIstrWord = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcVal;
 	vlTOPp->Jx2ExUnit__DOT__gprRegIdRm = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opRegM;
@@ -2386,7 +1750,6 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 	vlTOPp->Jx2ExUnit__DOT__exRegIdRn = vlTOPp->Jx2ExUnit__DOT__gprRegIdRn;
 	vlTOPp->Jx2ExUnit__DOT__exIdCurPc = vlTOPp->Jx2ExUnit__DOT__gprIdValPc;
 	vlTOPp->Jx2ExUnit__DOT__exRegValRm = vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__tRegValRm;
-	vlTOPp->Jx2ExUnit__DOT__exRegValRmB = vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__tRegValRm;
 	vlTOPp->Jx2ExUnit__DOT__exRegValRmC = vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__tRegValRm;
 	vlTOPp->Jx2ExUnit__DOT__exRegValRi = vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__tRegValRi;
 	vlTOPp->Jx2ExUnit__DOT__exRegValRiB = vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__tRegValRi;
@@ -2438,52 +1801,52 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 	= __Vdly__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMissDonebFlag;
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMissStorbFlag 
 	= __Vdly__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMissStorbFlag;
-    // ALWAYSPOST at Jx2MemTileA.v:911
+    // ALWAYSPOST at Jx2MemTileA.v:918
     if (__Vdlyvset__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileA__v0) {
 	vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileA[__Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileA__v0] 
 	    = __Vdlyvval__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileA__v0;
     }
-    // ALWAYSPOST at Jx2MemTileA.v:912
+    // ALWAYSPOST at Jx2MemTileA.v:919
     if (__Vdlyvset__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileA__v0) {
 	vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileB[__Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileB__v0] 
 	    = __Vdlyvval__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileB__v0;
     }
-    // ALWAYSPOST at Jx2MemTileA.v:913
+    // ALWAYSPOST at Jx2MemTileA.v:920
     if (__Vdlyvset__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileA__v0) {
 	vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileC[__Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileC__v0] 
 	    = __Vdlyvval__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileC__v0;
     }
-    // ALWAYSPOST at Jx2MemTileA.v:914
+    // ALWAYSPOST at Jx2MemTileA.v:921
     if (__Vdlyvset__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileA__v0) {
 	vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileD[__Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileD__v0] 
 	    = __Vdlyvval__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileD__v0;
     }
-    // ALWAYSPOST at Jx2MemTileA.v:915
+    // ALWAYSPOST at Jx2MemTileA.v:922
     if (__Vdlyvset__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileA__v0) {
 	vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileAdA[__Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileAdA__v0] 
 	    = __Vdlyvval__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileAdA__v0;
     }
-    // ALWAYSPOST at Jx2MemTileA.v:940
+    // ALWAYSPOST at Jx2MemTileA.v:947
     if (__Vdlyvset__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileE__v0) {
 	vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileE[__Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileE__v0] 
 	    = __Vdlyvval__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileE__v0;
     }
-    // ALWAYSPOST at Jx2MemTileA.v:941
+    // ALWAYSPOST at Jx2MemTileA.v:948
     if (__Vdlyvset__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileE__v0) {
 	vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileF[__Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileF__v0] 
 	    = __Vdlyvval__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileF__v0;
     }
-    // ALWAYSPOST at Jx2MemTileA.v:942
+    // ALWAYSPOST at Jx2MemTileA.v:949
     if (__Vdlyvset__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileE__v0) {
 	vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileG[__Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileG__v0] 
 	    = __Vdlyvval__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileG__v0;
     }
-    // ALWAYSPOST at Jx2MemTileA.v:943
+    // ALWAYSPOST at Jx2MemTileA.v:950
     if (__Vdlyvset__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileE__v0) {
 	vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileH[__Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileH__v0] 
 	    = __Vdlyvval__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileH__v0;
     }
-    // ALWAYSPOST at Jx2MemTileA.v:944
+    // ALWAYSPOST at Jx2MemTileA.v:951
     if (__Vdlyvset__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileE__v0) {
 	vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileAdB[__Vdlyvdim0__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileAdB__v0] 
 	    = __Vdlyvval__Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileAdB__v0;
@@ -2606,7 +1969,6 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
     vlTOPp->Jx2ExUnit__DOT__gprIdImm = __Vdly__Jx2ExUnit__DOT__gprIdImm;
     vlTOPp->Jx2ExUnit__DOT__gprRegNextPc = __Vdly__Jx2ExUnit__DOT__gprRegNextPc;
     vlTOPp->Jx2ExUnit__DOT__decIstrWord = __Vdly__Jx2ExUnit__DOT__decIstrWord;
-    vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regPc = __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regPc;
     // ALWAYS at Jx2FpuAdd.v:101
     vlTOPp->Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tSgnC3B 
 	= vlTOPp->Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tSgnC3;
@@ -2827,53 +2189,6 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 				 >> 9U))) ? VL_ULL(1)
 		   : VL_ULL(0)));
     }
-    // ALWAYS at Jx2FphfAdd.v:103
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExa0 
-	= (0x1fU & (IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRs 
-			    >> 0xaU)));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExb0 
-	= (0x1fU & (IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRt 
-			    >> 0xaU)));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFra0 
-	= (0x400U | (0x3ffU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRs)));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrb0 
-	= (0x400U | (0x3ffU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRt)));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExDifA0 
-	= (0x3fU & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExa0) 
-		    - (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExb0)));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExDifB0 
-	= (0x3fU & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExb0) 
-		    - (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExa0)));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExGtAB0 
-	= (1U & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExDifB0) 
-		 >> 5U));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExGtBA0 
-	= (1U & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExDifA0) 
-		 >> 5U));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrDifA0 
-	= (0xfffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFra0) 
-		     - (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrb0)));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrDifB0 
-	= (0xfffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrb0) 
-		     - (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFra0)));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrSum0 
-	= (0xfffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFra0) 
-		     + (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrb0)));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrGtAB0 
-	= (1U & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrDifB0) 
-		 >> 0xbU));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrShrA0 
-	= (0xfffU & ((0U == (7U & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExDifB0) 
-				   >> 3U))) ? ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFra0) 
-					       >> (0xfU 
-						   & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExDifB0)))
-		      : 0U));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrShrB0 
-	= (0xfffU & ((0U == (7U & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExDifA0) 
-				   >> 3U))) ? ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrb0) 
-					       >> (0xfU 
-						   & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExDifA0)))
-		      : 0U));
     // ALWAYS at Jx2ExMul.v:219
     vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPpB 
 	= ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiAC) 
@@ -2909,13 +2224,13 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
     vlTOPp->Jx2ExUnit__DOT__exOp__DOT__regMulDhr = 
 	(((QData)((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulDhrHi)) 
 	  << 0x20U) | (QData)((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulDhr)));
+    // ALWAYS at Jx2ExUnit.v:687
+    vlTOPp->Jx2ExUnit__DOT__dcRegInAddr = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tMemAddr;
+    // ALWAYS at Jx2ExUnit.v:687
+    vlTOPp->Jx2ExUnit__DOT__dcRegInData = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tMemData;
     // ALWAYS at Jx2DcTileA.v:353
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__icMemIsReady 
 	= (0U == (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcOK));
-    // ALWAYS at Jx2ExUnit.v:675
-    vlTOPp->Jx2ExUnit__DOT__dcRegInAddr = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tMemAddr;
-    // ALWAYS at Jx2ExUnit.v:675
-    vlTOPp->Jx2ExUnit__DOT__dcRegInData = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tMemData;
     // ALWAYS at Jx2IcTileC.v:352
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icMemIsReady 
 	= (0U == (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcOK));
@@ -2980,13 +2295,16 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 							(0x3ffU 
 							 & (IData)(vlTOPp->Jx2ExUnit__DOT__exRegValRmFp)))) 
 					<< 0x2aU))));
-    // ALWAYS at Jx2DecOpFx.v:90
+    // ALWAYS at Jx2DecOpFx.v:114
     vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ 
 	= (1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 			 >> 7U)));
     vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExI 
 	= (1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 			 >> 4U)));
+    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2 
+	= (1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+			 >> 0x1bU)));
     vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO_Dfl 
 	= ((0x10U & ((IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 			      >> 4U)) << 4U)) | (0xfU 
@@ -3013,16 +2331,15 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 						 & (IData)(
 							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							    >> 0x18U))));
-    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Jcmp 
+    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Df2 
 	= ((0x10U & ((IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 			      >> 0x1aU)) << 4U)) | 
 	   (0xfU & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-			    >> 0x14U))));
-    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Jcmp 
+			    >> 4U))));
+    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Df2 
 	= ((0x10U & ((IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 			      >> 0x19U)) << 4U)) | 
-	   (0xfU & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-			    >> 0x10U))));
+	   (0xfU & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)));
     vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsFC0 
 	= (6U == (7U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 				>> 9U))));
@@ -3039,20 +2356,29 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 			      | (0xfffU & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 						   >> 0x10U)))))));
     vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm17u 
-	= (((QData)((IData)((0x1fU & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) 
-	    << 4U) | (QData)((IData)((0xfU & (IData)(
-						     (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-						      >> 0x18U))))));
+	= (QData)((IData)((0x1ffU & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+					     >> 0x10U)))));
     vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm17n 
-	= (VL_ULL(0x1fffffe00) | (QData)((IData)(((0x1f0U 
-						   & ((IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord) 
-						      << 4U)) 
-						  | (0xfU 
-						     & (IData)(
-							       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								>> 0x18U)))))));
+	= (VL_ULL(0x1fffffe00) | (QData)((IData)((0x1ffU 
+						  & (IData)(
+							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							     >> 0x10U))))));
     vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm17s 
 	= vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm17u;
+    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm10u 
+	= (QData)((IData)((0x3ffU & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+					     >> 0x10U)))));
+    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm10n 
+	= (VL_ULL(0x1fffffc00) | (QData)((IData)((0x3ffU 
+						  & (IData)(
+							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							     >> 0x10U))))));
+    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm10s 
+	= (((QData)((IData)(((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+					    >> 0x19U)))
+			      ? 0x7fffffU : 0U))) << 0xaU) 
+	   | (QData)((IData)((0x3ffU & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+						>> 0x10U))))));
     vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_immWordZx 
 	= (QData)((IData)((0xffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 					      >> 0x10U)))));
@@ -3061,11 +2387,6 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 						  & (IData)(
 							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							     >> 0x10U))))));
-    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_disp8s 
-	= (((QData)((IData)(((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-					    >> 7U)))
-			      ? 0x1ffffffU : 0U))) 
-	    << 8U) | (QData)((IData)((0xffU & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))));
     if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsFC0) {
 	vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Dfl 
 	    = ((0x10U & ((IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
@@ -3077,12 +2398,6 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 				  >> 1U)) << 4U)) | 
 	       (0xfU & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 				>> 0x10U))));
-	vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ 
-	    = (1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-			     >> 3U)));
-	vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExI 
-	    = (1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord));
-	vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO_Dfl = 0U;
 	vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm17s 
 	    = (((QData)((IData)(((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))
 				  ? 0x1ffffU : 0U))) 
@@ -3105,6 +2420,21 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 							 & (IData)(
 								   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								    >> 0x20U)))))));
+	vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ 
+	    = (1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+			     >> 3U)));
+	vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExI 
+	    = (1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord));
+	vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2 
+	    = (1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+			     >> 3U)));
+	vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO_Dfl = 0U;
+	vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm10u 
+	    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm17u;
+	vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm10n 
+	    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm17n;
+	vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm10s 
+	    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm17s;
 	vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_immWordZx 
 	    = (QData)((IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 			       >> 0x10U)));
@@ -3112,18 +2442,10 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 	    = (VL_ULL(0x100000000) | (QData)((IData)(
 						     (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 						      >> 0x10U))));
-	vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Jcmp 
+	vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Df2 
 	    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Dfl;
-	vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Jcmp 
+	vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Df2 
 	    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Dfl;
-	vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_disp8s 
-	    = (((QData)((IData)(((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-						>> 0x2fU)))
-				  ? 0x1ffffU : 0U))) 
-		<< 0x10U) | (QData)((IData)((0xffffU 
-					     & (IData)(
-						       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							>> 0x20U))))));
     }
     vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRnIsRz 
 	= (0U == (0xfU & ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Dfl) 
@@ -3143,6 +2465,18 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
     vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRoIsR1 
 	= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRoIsRz) 
 	   & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO_Dfl));
+    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRn2IsRz 
+	= (0U == (0xfU & ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Df2) 
+			  >> 1U)));
+    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRm2IsRz 
+	= (0U == (0xfU & ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Df2) 
+			  >> 1U)));
+    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRn2IsR1 
+	= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRn2IsRz) 
+	   & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Df2));
+    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRm2IsR1 
+	= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRm2IsRz) 
+	   & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Df2));
     vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 1U;
     vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN = 0x2fU;
     vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM = 0x2fU;
@@ -3152,7 +2486,6 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
     vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUIxt = 0U;
     vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = 0U;
     vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
-    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsImm32 = 0U;
     vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0U;
     vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty = 0U;
     if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
@@ -3171,13 +2504,11 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 					       >> 4U)))) {
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 5U;
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 5U;
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0xeU;
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsImm32 = 1U;
+				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0xaU;
 			    } else {
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 5U;
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 5U;
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 2U;
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsImm32 = 1U;
+				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 6U;
 			    }
 			} else {
 			    if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
@@ -3185,12 +2516,10 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x47U;
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 5U;
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 6U;
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsImm32 = 1U;
 			    } else {
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x68U;
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 5U;
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 2U;
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsImm32 = 1U;
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = 8U;
 			    }
 			}
@@ -3212,157 +2541,18 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 							  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							   >> 1U)))) {
 					    if ((1U 
-						 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-						if (
-						    (1U 
-						     & (IData)(
-							       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								>> 0x1fU)))) {
-						    if (
-							(1U 
-							 & (IData)(
-								   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								    >> 0x1eU)))) {
-							if (
-							    (1U 
-							     & (IData)(
-								       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									>> 0x1dU)))) {
-							    if (
-								(1U 
-								 & (IData)(
-									   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									    >> 0x1cU)))) {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x43U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xdU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
-							    } else {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x43U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xdU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
-							    }
-							} else {
-							    if (
-								(1U 
-								 & (IData)(
-									   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									    >> 0x1cU)))) {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x4bU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xdU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
-							    } else {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x4aU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xdU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
-							    }
-							}
-						    } else {
-							if (
-							    (1U 
-							     & (IData)(
-								       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									>> 0x1dU)))) {
-							    if (
-								(1U 
-								 & (IData)(
-									   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									    >> 0x1cU)))) {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xeU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xdU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
-							    } else {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xdU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xdU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
-							    }
-							} else {
-							    if (
-								(1U 
-								 & (IData)(
-									   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									    >> 0x1cU)))) {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xbU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xdU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
-							    } else {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 9U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xdU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
-							    }
-							}
-						    }
-						} else {
-						    if (
-							(1U 
-							 & (IData)(
-								   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								    >> 0x1eU)))) {
-							if (
-							    (1U 
-							     & (~ (IData)(
-									  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									   >> 0x1dU))))) {
-							    if (
-								(1U 
-								 & (~ (IData)(
-									      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									       >> 0x1cU))))) {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 6U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xdU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
-							    }
-							}
-						    } else {
-							if (
-							    (1U 
-							     & (IData)(
-								       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									>> 0x1dU)))) {
-							    if (
-								(1U 
-								 & (IData)(
-									   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									    >> 0x1cU)))) {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xfU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xcU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
-							    } else {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xcU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xcU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
-							    }
-							} else {
-							    if (
-								(1U 
-								 & (IData)(
-									   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									    >> 0x1cU)))) {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xaU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xcU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
-							    } else {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 8U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xcU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
-							    }
-							}
-						    }
-						}
-					    } else {
+						 & (~ (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) {
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x1bU;
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 6U;
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsImm32 = 1U;
 					    }
 					} else {
 					    if ((1U 
 						 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x1aU;
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 7U;
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsImm32 = 1U;
 					    } else {
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x1aU;
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 6U;
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsImm32 = 1U;
 					    }
 					}
 				    } else {
@@ -3374,14 +2564,14 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x20U;
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x13U;
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 2U;
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty = 3U;
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsImm32 = 1U;
 					    } else {
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x20U;
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x13U;
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 2U;
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty = 2U;
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsImm32 = 1U;
 					    }
 					} else {
 					    if ((1U 
@@ -3389,12 +2579,12 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x21U;
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x13U;
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsImm32 = 1U;
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 2U;
 					    } else {
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x20U;
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x13U;
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsImm32 = 1U;
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 2U;
 					    }
 					}
 				    }
@@ -3603,6 +2793,94 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6cU;
 							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
 							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 1U;
+							} else {
+							    if (
+								(0x1900U 
+								 == 
+								 (0xff00U 
+								  & (IData)(
+									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+									     >> 0x10U))))) {
+								if (
+								    (1U 
+								     & (IData)(
+									       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+										>> 0x13U)))) {
+								    if (
+									(1U 
+									 & (IData)(
+										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+										>> 0x12U)))) {
+									if (
+									    (1U 
+									     & (IData)(
+										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+										>> 0x11U)))) {
+									    if (
+										(1U 
+										& (~ (IData)(
+										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+										>> 0x10U))))) {
+										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+										= 
+										((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+										 ? 0x63U
+										 : 0x1eU);
+										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 5U;
+										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 3U;
+									    }
+									} else {
+									    if (
+										(1U 
+										& (IData)(
+										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+										>> 0x10U)))) {
+										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+										= 
+										((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+										 ? 0x62U
+										 : 0x1dU);
+										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 5U;
+										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 3U;
+									    } else {
+										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+										= 
+										((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+										 ? 0x61U
+										 : 0x1cU);
+										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 5U;
+										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 3U;
+									    }
+									}
+								    }
+								} else {
+								    if (
+									(1U 
+									 & (IData)(
+										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+										>> 0x12U)))) {
+									if (
+									    (1U 
+									     & (~ (IData)(
+										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+										>> 0x11U))))) {
+									    if (
+										(1U 
+										& (~ (IData)(
+										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+										>> 0x10U))))) {
+										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+										= 
+										((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+										 ? 0x60U
+										 : 0x14U);
+										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 5U;
+										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 3U;
+									    }
+									}
+								    }
+								}
+							    }
 							}
 						    }
 						}
@@ -3642,7 +2920,6 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x68U;
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 5U;
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 1U;
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = 8U;
 			    }
 			} else {
 			    if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
@@ -3663,31 +2940,141 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
     } else {
 	if ((1U & (~ (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 			      >> 0xaU))))) {
-	    if ((1U & (~ (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-				  >> 9U))))) {
-		if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-				   >> 8U)))) {
+	    if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+			       >> 9U)))) {
+		if ((1U & (~ (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+				      >> 8U))))) {
 		    if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 				       >> 0x1fU)))) {
 			if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 					   >> 0x1eU)))) {
 			    if ((1U & (~ (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 						  >> 0x1dU))))) {
+				if ((1U & (~ (IData)(
+						     (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+						      >> 0x1cU))))) {
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty 
+					= ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))
+					    ? 0xbU : 7U);
+				    if ((1U & (IData)(
+						      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+						       >> 3U)))) {
+					if ((1U & (IData)(
+							  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							   >> 2U)))) {
+					    if ((1U 
+						 & (IData)(
+							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							    >> 1U)))) {
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+						    = 
+						    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2)
+						      ? 0x63U
+						      : 0x1eU);
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 5U;
+					    } else {
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+						    = 
+						    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2)
+						      ? 0x61U
+						      : 0x1cU);
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 5U;
+					    }
+					} else {
+					    if ((1U 
+						 & (IData)(
+							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							    >> 1U)))) {
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+						    = 
+						    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2)
+						      ? 0x42U
+						      : 0x1fU);
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 5U;
+					    } else {
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+						    = 
+						    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2)
+						      ? 0x62U
+						      : 0x1dU);
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 5U;
+					    }
+					}
+				    } else {
+					if ((1U & (IData)(
+							  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							   >> 2U)))) {
+					    if ((1U 
+						 & (IData)(
+							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							    >> 1U)))) {
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+						    = 
+						    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2)
+						      ? 0x41U
+						      : 0x15U);
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 5U;
+					    } else {
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+						    = 
+						    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2)
+						      ? 0x60U
+						      : 0x14U);
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 5U;
+					    }
+					}
+				    }
+				}
+			    }
+			} else {
+			    if ((1U & (~ (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+						  >> 0x1dU))))) {
 				if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 						   >> 0x1cU)))) {
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-					= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+					= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2)
+					    ? 0x73U
+					    : 0x71U);
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 5U;
+				} else {
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+					= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2)
+					    ? 0x72U
+					    : 0x70U);
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 5U;
+				}
+			    }
+			}
+		    } else {
+			if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+					   >> 0x1eU)))) {
+			    if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+					       >> 0x1dU)))) {
+				if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+						   >> 0x1cU)))) {
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6cU;
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 5U;
+				} else {
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6bU;
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 5U;
+				}
+			    } else {
+				if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+						   >> 0x1cU)))) {
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6aU;
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 5U;
+				} else {
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+					= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2)
 					    ? 0x17U
 					    : 0x16U);
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 9U;
-				} else {
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-					= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-					    ? 0x17U
-					    : 0x16U);
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 5U;
 				}
 			    }
 			} else {
@@ -3696,15 +3083,54 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 				if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 						   >> 0x1cU)))) {
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-					= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+					= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2)
+					    ? 0x17U
+					    : 0x16U);
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 5U;
+				} else {
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6dU;
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 5U;
+				}
+			    } else {
+				if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+						   >> 0x1cU)))) {
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x68U;
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 9U;
+				} else {
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x68U;
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 5U;
+				}
+			    }
+			}
+		    }
+		}
+	    } else {
+		if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+				   >> 8U)))) {
+		    if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+				       >> 0x1fU)))) {
+			if ((1U & (~ (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+					      >> 0x1eU))))) {
+			    if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+					       >> 0x1dU)))) {
+				if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+						   >> 0x1cU)))) {
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+					= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2)
 					    ? 0x43U
 					    : 0xeU);
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 1U;
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty 
+					= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2)
+					    ? 2U : 3U);
 				} else {
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-					= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+					= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2)
 					    ? 0x43U
 					    : 0xdU);
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
@@ -3715,7 +3141,7 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 				if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 						   >> 0x1cU)))) {
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-					= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+					= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2)
 					    ? 0x4bU
 					    : 0xbU);
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
@@ -3723,7 +3149,7 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
 				} else {
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-					= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+					= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2)
 					    ? 0x4aU
 					    : 9U);
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
@@ -3733,48 +3159,52 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 			    }
 			}
 		    } else {
-			if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-					   >> 0x1eU)))) {
-			    if ((1U & (~ (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-						  >> 0x1dU))))) {
-				if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-						   >> 0x1cU)))) {
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x68U;
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 9U;
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = 8U;
-				} else {
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x68U;
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 5U;
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = 8U;
-				}
-			    }
-			} else {
+			if ((1U & (~ (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+					      >> 0x1eU))))) {
 			    if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 					       >> 0x1dU)))) {
 				if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 						   >> 0x1cU)))) {
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xfU;
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
+				    if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2) {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 6U;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
+				    } else {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xfU;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
+				    }
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 1U;
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
 				} else {
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xcU;
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
+				    if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2) {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 6U;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
+				    } else {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xcU;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
+				    }
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 1U;
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
 				}
 			    } else {
 				if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 						   >> 0x1cU)))) {
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xaU;
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
+				    if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2) {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 6U;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
+				    } else {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xaU;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
+				    }
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 1U;
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
 				} else {
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 8U;
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
+				    if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2) {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 6U;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
+				    } else {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 8U;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
+				    }
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 1U;
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
 				}
@@ -3782,237 +3212,103 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 			}
 		    }
 		} else {
-		    if (((((((((0U == (0xff00U & (IData)(
-							 (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							  >> 0x10U)))) 
-			       | (0x100U == (0xff00U 
+		    if (((((((((0x400U == (0xff00U 
+					   & (IData)(
+						     (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+						      >> 0x10U)))) 
+			       | (0x500U == (0xff00U 
 					     & (IData)(
 						       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							>> 0x10U))))) 
-			      | (0x200U == (0xff00U 
+			      | (0x600U == (0xff00U 
 					    & (IData)(
 						      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 						       >> 0x10U))))) 
-			     | (0x300U == (0xff00U 
+			     | (0x700U == (0xff00U 
 					   & (IData)(
 						     (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 						      >> 0x10U))))) 
-			    | (0x400U == (0xff00U & (IData)(
+			    | (0xc00U == (0xff00U & (IData)(
 							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							     >> 0x10U))))) 
-			   | (0x500U == (0xff00U & (IData)(
+			   | (0xd00U == (0xff00U & (IData)(
 							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							    >> 0x10U))))) 
-			  | (0x600U == (0xff00U & (IData)(
+			  | (0xe00U == (0xff00U & (IData)(
 							  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							   >> 0x10U))))) 
-			 | (0x700U == (0xff00U & (IData)(
+			 | (0xf00U == (0xff00U & (IData)(
 							 (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							  >> 0x10U)))))) {
-			if ((0U == (0xff00U & (IData)(
-						      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-						       >> 0x10U))))) {
+			if ((0x400U == (0xff00U & (IData)(
+							  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							   >> 0x10U))))) {
 			    if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ) {
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 6U;
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
+				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
 			    } else {
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 8U;
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
+				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
 			    }
 			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
 			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
 			} else {
-			    if ((0x100U == (0xff00U 
+			    if ((0x500U == (0xff00U 
 					    & (IData)(
 						      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 						       >> 0x10U))))) {
 				if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ) {
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 6U;
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
 				} else {
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xaU;
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
 				}
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
 			    } else {
-				if ((0x200U == (0xff00U 
+				if ((0x600U == (0xff00U 
 						& (IData)(
 							  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							   >> 0x10U))))) {
 				    if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ) {
 					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 6U;
-					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
 				    } else {
 					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xcU;
-					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
 				    }
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
 				} else {
-				    if ((0x300U == 
+				    if ((0x700U == 
 					 (0xff00U & (IData)(
 							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							     >> 0x10U))))) {
 					if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ) {
 					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 6U;
-					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
+					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
 					} else {
-					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xfU;
-					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
+					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xcU;
+					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
 					}
 					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
 					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
 				    } else {
-					if ((0x400U 
-					     == (0xff00U 
-						 & (IData)(
-							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							    >> 0x10U))))) {
-					    if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ) {
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 6U;
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
-					    } else {
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 8U;
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
-					    }
-					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
-					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-					} else {
-					    if ((0x500U 
-						 == 
-						 (0xff00U 
-						  & (IData)(
-							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							     >> 0x10U))))) {
-						if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ) {
-						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 6U;
-						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
-						} else {
-						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xaU;
-						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
-						}
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-					    } else {
-						if (
-						    (0x600U 
-						     == 
-						     (0xff00U 
-						      & (IData)(
-								(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								 >> 0x10U))))) {
-						    if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ) {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 6U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
-						    } else {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xcU;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
-						    }
-						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
-						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-						} else {
-						    if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ) {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 6U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
-						    } else {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xcU;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
-						    }
-						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
-						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-						}
-					    }
-					}
-				    }
-				}
-			    }
-			}
-		    } else {
-			if (((((((((0x800U == (0xff00U 
-					       & (IData)(
-							 (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							  >> 0x10U)))) 
-				   | (0x900U == (0xff00U 
-						 & (IData)(
-							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							    >> 0x10U))))) 
-				  | (0xa00U == (0xff00U 
-						& (IData)(
-							  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							   >> 0x10U))))) 
-				 | (0xb00U == (0xff00U 
-					       & (IData)(
-							 (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							  >> 0x10U))))) 
-				| (0xc00U == (0xff00U 
-					      & (IData)(
-							(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							 >> 0x10U))))) 
-			       | (0xd00U == (0xff00U 
-					     & (IData)(
-						       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							>> 0x10U))))) 
-			      | (0xe00U == (0xff00U 
-					    & (IData)(
-						      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-						       >> 0x10U))))) 
-			     | (0xf00U == (0xff00U 
-					   & (IData)(
-						     (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-						      >> 0x10U)))))) {
-			    if ((0x800U == (0xff00U 
-					    & (IData)(
-						      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-						       >> 0x10U))))) {
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-				    = ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-				        ? 0x4aU : 9U);
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-			    } else {
-				if ((0x900U == (0xff00U 
-						& (IData)(
-							  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							   >> 0x10U))))) {
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-					= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-					    ? 0x4bU
-					    : 0xbU);
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-				} else {
-				    if ((0xa00U == 
-					 (0xff00U & (IData)(
-							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							     >> 0x10U))))) {
-					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-					    = ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-					        ? 0x43U
-					        : 0xdU);
-					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
-					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
-					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-				    } else {
-					if ((0xb00U 
+					if ((0xc00U 
 					     == (0xff00U 
 						 & (IData)(
 							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							    >> 0x10U))))) {
 					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
 						= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-						    ? 0x43U
-						    : 0xeU);
-					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
+						    ? 0x4aU
+						    : 9U);
+					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
+					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
 					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty 
-						= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-						    ? 2U
-						    : 3U);
 					} else {
-					    if ((0xc00U 
+					    if ((0xd00U 
 						 == 
 						 (0xff00U 
 						  & (IData)(
@@ -4021,14 +3317,14 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
 						    = 
 						    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-						      ? 0x4aU
-						      : 9U);
+						      ? 0x4bU
+						      : 0xbU);
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
 					    } else {
 						if (
-						    (0xd00U 
+						    (0xe00U 
 						     == 
 						     (0xff00U 
 						      & (IData)(
@@ -4037,221 +3333,164 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
 							= 
 							((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-							  ? 0x4bU
-							  : 0xbU);
+							  ? 0x43U
+							  : 0xdU);
 						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
-						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
 						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
 						} else {
-						    if (
-							(0xe00U 
-							 == 
-							 (0xff00U 
-							  & (IData)(
-								    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								     >> 0x10U))))) {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-							    = 
-							    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-							      ? 0x43U
-							      : 0xdU);
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-						    } else {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-							    = 
-							    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-							      ? 0x43U
-							      : 0xeU);
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty 
-							    = 
-							    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-							      ? 2U
-							      : 3U);
-						    }
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+							= 
+							((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+							  ? 0x43U
+							  : 0xeU);
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty 
+							= 
+							((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+							  ? 2U
+							  : 3U);
 						}
 					    }
 					}
 				    }
 				}
 			    }
-			} else {
-			    if (((((((((0x1000U == 
-					(0xff00U & (IData)(
-							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							    >> 0x10U)))) 
-				       | (0x1100U == 
-					  (0xff00U 
-					   & (IData)(
-						     (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-						      >> 0x10U))))) 
-				      | (0x1200U == 
-					 (0xff00U & (IData)(
-							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							     >> 0x10U))))) 
-				     | (0x1500U == 
-					(0xff00U & (IData)(
-							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							    >> 0x10U))))) 
-				    | (0x1600U == (0xff00U 
-						   & (IData)(
-							     (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							      >> 0x10U))))) 
-				   | (0x1700U == (0xff00U 
+			}
+		    } else {
+			if (((((((((0x1000U == (0xff00U 
+						& (IData)(
+							  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							   >> 0x10U)))) 
+				   | (0x1100U == (0xff00U 
 						  & (IData)(
 							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							     >> 0x10U))))) 
-				  | (0x1800U == (0xff00U 
+				  | (0x1200U == (0xff00U 
 						 & (IData)(
 							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							    >> 0x10U))))) 
-				 | (0x1900U == (0xff00U 
+				 | (0x1500U == (0xff00U 
 						& (IData)(
 							  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							   >> 0x10U)))))) {
-				if ((0x1000U == (0xff00U 
+							   >> 0x10U))))) 
+				| (0x1600U == (0xff00U 
+					       & (IData)(
+							 (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							  >> 0x10U))))) 
+			       | (0x1700U == (0xff00U 
+					      & (IData)(
+							(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							 >> 0x10U))))) 
+			      | (0x1800U == (0xff00U 
+					     & (IData)(
+						       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							>> 0x10U))))) 
+			     | (0x1900U == (0xff00U 
+					    & (IData)(
+						      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+						       >> 0x10U)))))) {
+			    if ((0x1000U == (0xff00U 
+					     & (IData)(
+						       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							>> 0x10U))))) {
+				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x68U;
+				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+			    } else {
+				if ((0x1100U == (0xff00U 
 						 & (IData)(
 							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							    >> 0x10U))))) {
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x68U;
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x69U;
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = 8U;
 				} else {
-				    if ((0x1100U == 
+				    if ((0x1200U == 
 					 (0xff00U & (IData)(
 							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							     >> 0x10U))))) {
-					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x69U;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6dU;
 					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = 0xcU;
 				    } else {
-					if ((0x1200U 
+					if ((0x1500U 
 					     == (0xff00U 
 						 & (IData)(
 							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							    >> 0x10U))))) {
-					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6dU;
+					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6aU;
 					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
 					} else {
-					    if ((0x1500U 
+					    if ((0x1600U 
 						 == 
 						 (0xff00U 
 						  & (IData)(
 							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							     >> 0x10U))))) {
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6aU;
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6bU;
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
 					    } else {
 						if (
-						    (0x1600U 
+						    (0x1700U 
 						     == 
 						     (0xff00U 
 						      & (IData)(
 								(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								 >> 0x10U))))) {
-						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6bU;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6cU;
 						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
 						} else {
 						    if (
-							(0x1700U 
-							 == 
+							(0x1800U 
+							 != 
 							 (0xff00U 
 							  & (IData)(
 								    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								     >> 0x10U))))) {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6cU;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-						    } else {
 							if (
-							    (0x1800U 
-							     != 
-							     (0xff00U 
-							      & (IData)(
-									(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									 >> 0x10U))))) {
+							    (1U 
+							     & (IData)(
+								       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+									>> 3U)))) {
 							    if (
 								(1U 
 								 & (IData)(
 									   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									    >> 3U)))) {
+									    >> 2U)))) {
 								if (
 								    (1U 
 								     & (IData)(
 									       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 2U)))) {
+										>> 1U)))) {
 								    if (
 									(1U 
-									 & (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 1U)))) {
-									if (
-									    (1U 
-									     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x18U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									} else {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-										= 
-										((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-										 ? 0x63U
-										 : 0x1eU);
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									}
+									 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x18U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
 								    } else {
-									if (
-									    (1U 
-									     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-										= 
-										((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-										 ? 0x62U
-										 : 0x1dU);
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									} else {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-										= 
-										((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-										 ? 0x61U
-										 : 0x1cU);
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									}
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+									    = 
+									    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+									      ? 0x63U
+									      : 0x1eU);
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
 								    }
 								} else {
 								    if (
 									(1U 
-									 & (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 1U)))) {
-									if (
-									    (1U 
-									     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x10U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 5U;
-									} else {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x11U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-									}
+									 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+									    = 
+									    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+									      ? 0x62U
+									      : 0x1dU);
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
 								    } else {
-									if (
-									    (1U 
-									     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x19U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									} else {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 4U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									}
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+									    = 
+									    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+									      ? 0x61U
+									      : 0x1cU);
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
 								    }
 								}
 							    } else {
@@ -4259,73 +3498,97 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 								    (1U 
 								     & (IData)(
 									       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 2U)))) {
+										>> 1U)))) {
 								    if (
 									(1U 
-									 & (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 1U)))) {
-									if (
-									    (1U 
-									     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6cU;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
-									} else {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6bU;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
-									}
+									 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x10U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 5U;
 								    } else {
-									if (
-									    (1U 
-									     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6aU;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
-									} else {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-										= 
-										((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-										 ? 0x60U
-										 : 0x14U);
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0U;
-									}
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x11U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
 								    }
 								} else {
 								    if (
 									(1U 
-									 & (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 1U)))) {
-									if (
-									    (1U 
-									     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x75U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = 0xcU;
-									} else {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x74U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = 8U;
-									}
+									 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x19U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
 								    } else {
-									if (
-									    (1U 
-									     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x69U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = 0xcU;
-									} else {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x68U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = 8U;
-									}
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 4U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+								    }
+								}
+							    }
+							} else {
+							    if (
+								(1U 
+								 & (IData)(
+									   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+									    >> 2U)))) {
+								if (
+								    (1U 
+								     & (IData)(
+									       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+										>> 1U)))) {
+								    if (
+									(1U 
+									 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6cU;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
+								    } else {
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6bU;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
+								    }
+								} else {
+								    if (
+									(1U 
+									 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6aU;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
+								    } else {
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+									    = 
+									    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+									      ? 0x60U
+									      : 0x14U);
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0U;
+								    }
+								}
+							    } else {
+								if (
+								    (1U 
+								     & (IData)(
+									       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+										>> 1U)))) {
+								    if (
+									(1U 
+									 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x75U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
+								    } else {
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x74U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
+								    }
+								} else {
+								    if (
+									(1U 
+									 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x69U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
+								    } else {
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x68U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
 								    }
 								}
 							    }
@@ -4336,49 +3599,185 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 					}
 				    }
 				}
-			    } else {
-				if (((((((((0x1a00U 
-					    == (0xff00U 
-						& (IData)(
-							  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							   >> 0x10U)))) 
-					   | (0x1b00U 
-					      == (0xff00U 
-						  & (IData)(
-							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							     >> 0x10U))))) 
-					  | (0x1c00U 
-					     == (0xff00U 
-						 & (IData)(
+			    }
+			} else {
+			    if (((((((((0x1a00U == 
+					(0xff00U & (IData)(
 							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							    >> 0x10U))))) 
-					 | (0x1d00U 
-					    == (0xff00U 
-						& (IData)(
-							  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							   >> 0x10U))))) 
-					| (0x2000U 
-					   == (0xff00U 
-					       & (IData)(
-							 (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							  >> 0x10U))))) 
-				       | (0x2100U == 
+							    >> 0x10U)))) 
+				       | (0x1b00U == 
 					  (0xff00U 
 					   & (IData)(
 						     (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 						      >> 0x10U))))) 
-				      | (0x2200U == 
+				      | (0x1c00U == 
 					 (0xff00U & (IData)(
 							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							     >> 0x10U))))) 
-				     | (0x2300U == 
+				     | (0x1d00U == 
 					(0xff00U & (IData)(
 							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							    >> 0x10U)))))) {
-				    if ((0x1a00U == 
+							    >> 0x10U))))) 
+				    | (0x3010U == (0xffffU 
+						   & (IData)(
+							     (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							      >> 0x10U))))) 
+				   | (0x3011U == (0xffffU 
+						  & (IData)(
+							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							     >> 0x10U))))) 
+				  | (0x3012U == (0xffffU 
+						 & (IData)(
+							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							    >> 0x10U))))) 
+				 | (0x3013U == (0xffffU 
+						& (IData)(
+							  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							   >> 0x10U)))))) {
+				if ((0x1a00U == (0xff00U 
+						 & (IData)(
+							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							    >> 0x10U))))) {
+				    if ((1U & (IData)(
+						      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+						       >> 3U)))) {
+					if ((1U & (IData)(
+							  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							   >> 2U)))) {
+					    if ((1U 
+						 & (IData)(
+							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							    >> 1U)))) {
+						if (
+						    (1U 
+						     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x84U;
+						} else {
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+							= 
+							((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExI)
+							  ? 0x86U
+							  : 0x1eU);
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+						}
+					    } else {
+						if (
+						    (1U 
+						     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x1dU;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+						} else {
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x1cU;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+						}
+					    }
+					} else {
+					    if ((1U 
+						 & (IData)(
+							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							    >> 1U)))) {
+						if (
+						    (1U 
+						     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x87U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx 
+							= 
+							(((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ) 
+							  << 1U) 
+							 | (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExI));
+						} else {
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 4U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx 
+							= 
+							(0xffU 
+							 & ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+							     ? 7U
+							     : 6U));
+						}
+					    } else {
+						if (
+						    (1U 
+						     & (~ (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) {
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 4U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx 
+							= 
+							(0xffU 
+							 & ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+							     ? 5U
+							     : 4U));
+						}
+					    }
+					}
+				    } else {
+					if ((1U & (IData)(
+							  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							   >> 2U)))) {
+					    if ((1U 
+						 & (IData)(
+							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							    >> 1U)))) {
+						if (
+						    (1U 
+						     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x85U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = 3U;
+						} else {
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x85U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = 2U;
+						}
+					    } else {
+						if (
+						    (1U 
+						     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x85U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = 1U;
+						}
+					    }
+					} else {
+					    if ((1U 
+						 & (~ (IData)(
+							      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							       >> 1U))))) {
+						if (
+						    (1U 
+						     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+							= 
+							((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+							  ? 0x83U
+							  : 0x81U);
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
+						} else {
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+							= 
+							((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+							  ? 0x82U
+							  : 0x80U);
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
+						}
+					    }
+					}
+				    }
+				} else {
+				    if ((0x1b00U == 
 					 (0xff00U & (IData)(
 							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							     >> 0x10U))))) {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty 
+					    = (2U | (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExI));
 					if ((1U & (IData)(
 							  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							   >> 3U)))) {
@@ -4394,25 +3793,45 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 						    if (
 							(1U 
 							 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x84U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+							    = 
+							    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+							      ? 0x43U
+							      : 0xeU);
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty 
+							    = 
+							    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+							      ? 2U
+							      : 3U);
 						    } else {
 							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
 							    = 
-							    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExI)
-							      ? 0x86U
-							      : 0x1eU);
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+							    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+							      ? 0x43U
+							      : 0xdU);
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
 						    }
 						} else {
 						    if (
 							(1U 
 							 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x1dU;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+							    = 
+							    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+							      ? 0x4bU
+							      : 0xbU);
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
 						    } else {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x1cU;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+							    = 
+							    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+							      ? 0x4aU
+							      : 9U);
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
 						    }
 						}
 					    } else {
@@ -4424,36 +3843,41 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 						    if (
 							(1U 
 							 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x87U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx 
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
 							    = 
-							    (((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ) 
-							      << 1U) 
-							     | (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExI));
+							    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+							      ? 0x43U
+							      : 0xeU);
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
 						    } else {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 4U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx 
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
 							    = 
-							    (0xffU 
-							     & ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-								 ? 7U
-								 : 6U));
+							    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+							      ? 0x43U
+							      : 0xdU);
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
 						    }
 						} else {
 						    if (
 							(1U 
-							 & (~ (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 4U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx 
+							 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
 							    = 
-							    (0xffU 
-							     & ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-								 ? 5U
-								 : 4U));
+							    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+							      ? 0x4bU
+							      : 0xbU);
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
+						    } else {
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+							    = 
+							    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+							      ? 0x4aU
+							      : 9U);
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
 						    }
 						}
 					    }
@@ -4470,72 +3894,74 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 						    if (
 							(1U 
 							 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x85U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = 3U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xfU;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
 						    } else {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x85U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = 2U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xcU;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
 						    }
 						} else {
 						    if (
 							(1U 
 							 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x85U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = 1U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xaU;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
+						    } else {
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 8U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
 						    }
 						}
 					    } else {
 						if (
 						    (1U 
-						     & (~ (IData)(
-								  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								   >> 1U))))) {
+						     & (IData)(
+							       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+								>> 1U)))) {
 						    if (
 							(1U 
 							 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-							    = 
-							    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-							      ? 0x83U
-							      : 0x81U);
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xfU;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
 						    } else {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-							    = 
-							    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-							      ? 0x82U
-							      : 0x80U);
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xcU;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
+						    }
+						} else {
+						    if (
+							(1U 
+							 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xaU;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
+						    } else {
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 8U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
 						    }
 						}
 					    }
 					}
 				    } else {
-					if ((0x1b00U 
+					if ((0x1c00U 
 					     == (0xff00U 
 						 & (IData)(
 							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							    >> 0x10U))))) {
-					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty 
-						= (2U 
-						   | (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExI));
 					    if ((1U 
 						 & (IData)(
 							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							    >> 3U)))) {
 						if (
 						    (1U 
-						     & (IData)(
-							       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								>> 2U)))) {
+						     & (~ (IData)(
+								  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+								   >> 2U))))) {
 						    if (
 							(1U 
 							 & (IData)(
@@ -4544,25 +3970,13 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 							if (
 							    (1U 
 							     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-								= 
-								((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-								  ? 0x43U
-								  : 0xeU);
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty 
-								= 
-								((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-								  ? 2U
-								  : 3U);
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x10U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 7U;
 							} else {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-								= 
-								((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-								  ? 0x43U
-								  : 0xdU);
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x11U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 6U;
 							}
 						    } else {
 							if (
@@ -4571,64 +3985,16 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
 								= 
 								((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-								  ? 0x4bU
-								  : 0xbU);
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
+								  ? 0x2dU
+								  : 0x2fU);
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
 							} else {
 							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
 								= 
 								((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-								  ? 0x4aU
-								  : 9U);
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
-							}
-						    }
-						} else {
-						    if (
-							(1U 
-							 & (IData)(
-								   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								    >> 1U)))) {
-							if (
-							    (1U 
-							     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-								= 
-								((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-								  ? 0x43U
-								  : 0xeU);
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
-							} else {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-								= 
-								((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-								  ? 0x43U
-								  : 0xdU);
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
-							}
-						    } else {
-							if (
-							    (1U 
-							     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-								= 
-								((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-								  ? 0x4bU
-								  : 0xbU);
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
-							} else {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-								= 
-								((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-								  ? 0x4aU
-								  : 9U);
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
+								  ? 0x2cU
+								  : 0x2eU);
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
 							}
 						    }
 						}
@@ -4640,205 +4006,214 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 								>> 2U)))) {
 						    if (
 							(1U 
-							 & (IData)(
-								   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								    >> 1U)))) {
+							 & (~ (IData)(
+								      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+								       >> 1U))))) {
 							if (
 							    (1U 
 							     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xfU;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
-							} else {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xcU;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
-							}
-						    } else {
-							if (
-							    (1U 
-							     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xaU;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
-							} else {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 8U;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+								= 
+								((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+								  ? 0x66U
+								  : 0x67U);
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
 							}
 						    }
 						} else {
 						    if (
 							(1U 
-							 & (IData)(
-								   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								    >> 1U)))) {
+							 & (~ (IData)(
+								      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+								       >> 1U))))) {
 							if (
 							    (1U 
 							     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xfU;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x69U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 1U;
 							} else {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xcU;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
-							}
-						    } else {
-							if (
-							    (1U 
-							     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xaU;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
-							} else {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 8U;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x30U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
 							}
 						    }
 						}
 					    }
 					} else {
-					    if ((0x1c00U 
-						 == 
+					    if ((0x1d00U 
+						 != 
 						 (0xff00U 
 						  & (IData)(
 							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							     >> 0x10U))))) {
 						if (
-						    (1U 
-						     & (IData)(
-							       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								>> 3U)))) {
-						    if (
-							(1U 
-							 & (~ (IData)(
-								      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								       >> 2U))))) {
-							if (
-							    (1U 
-							     & (IData)(
-								       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									>> 1U)))) {
-							    if (
-								(1U 
-								 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x10U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 7U;
-							    } else {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x11U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 6U;
-							    }
-							} else {
-							    if (
-								(1U 
-								 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-								    = 
-								    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-								      ? 0x2dU
-								      : 0x2fU);
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-							    } else {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-								    = 
-								    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-								      ? 0x2cU
-								      : 0x2eU);
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-							    }
-							}
-						    }
+						    (0x3010U 
+						     == 
+						     (0xffffU 
+						      & (IData)(
+								(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+								 >> 0x10U))))) {
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x20U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x11U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
 						} else {
 						    if (
-							(1U 
-							 & (IData)(
-								   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								    >> 2U)))) {
-							if (
-							    (1U 
-							     & (~ (IData)(
-									  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									   >> 1U))))) {
-							    if (
-								(1U 
-								 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-								    = 
-								    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-								      ? 0x66U
-								      : 0x67U);
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-							    }
-							}
+							(0x3011U 
+							 == 
+							 (0xffffU 
+							  & (IData)(
+								    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+								     >> 0x10U))))) {
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x21U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x11U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
 						    } else {
 							if (
-							    (1U 
-							     & (~ (IData)(
-									  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									   >> 1U))))) {
-							    if (
-								(1U 
-								 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x69U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 1U;
-							    } else {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x30U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-							    }
+							    (0x3012U 
+							     == 
+							     (0xffffU 
+							      & (IData)(
+									(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+									 >> 0x10U))))) {
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x20U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x11U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty = 2U;
+							} else {
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x20U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x11U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty = 3U;
 							}
 						    }
 						}
+					    }
+					}
+				    }
+				}
+			    } else {
+				if (((((((((0x3018U 
+					    == (0xffffU 
+						& (IData)(
+							  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							   >> 0x10U)))) 
+					   | (0x3019U 
+					      == (0xffffU 
+						  & (IData)(
+							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							     >> 0x10U))))) 
+					  | (0x301aU 
+					     == (0xffffU 
+						 & (IData)(
+							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							    >> 0x10U))))) 
+					 | (0x301bU 
+					    == (0xffffU 
+						& (IData)(
+							  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							   >> 0x10U))))) 
+					| (0x301cU 
+					   == (0xffffU 
+					       & (IData)(
+							 (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							  >> 0x10U))))) 
+				       | (0x301dU == 
+					  (0xffffU 
+					   & (IData)(
+						     (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+						      >> 0x10U))))) 
+				      | (0x3020U == 
+					 (0xffffU & (IData)(
+							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							     >> 0x10U))))) 
+				     | (0x3021U == 
+					(0xffffU & (IData)(
+							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							    >> 0x10U)))))) {
+				    if ((0x3018U == 
+					 (0xffffU & (IData)(
+							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							     >> 0x10U))))) {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x24U;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0U;
+				    } else {
+					if ((0x3019U 
+					     == (0xffffU 
+						 & (IData)(
+							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							    >> 0x10U))))) {
+					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x25U;
+					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
+					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
+					} else {
+					    if ((0x301aU 
+						 == 
+						 (0xffffU 
+						  & (IData)(
+							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							     >> 0x10U))))) {
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x26U;
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0U;
 					    } else {
 						if (
-						    (0x1d00U 
-						     != 
-						     (0xff00U 
+						    (0x301bU 
+						     == 
+						     (0xffffU 
 						      & (IData)(
 								(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								 >> 0x10U))))) {
 						    if (
-							(0x2000U 
+							(0U 
 							 == 
-							 (0xff00U 
+							 (0xfU 
+							  & (IData)(
+								    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+								     >> 4U))))) {
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x12U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 1U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 4U;
+						    } else {
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x27U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
+						    }
+						} else {
+						    if (
+							(0x301cU 
+							 == 
+							 (0xffffU 
 							  & (IData)(
 								    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								     >> 0x10U))))) {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x20U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x13U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x1eU;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0U;
 						    } else {
 							if (
-							    (0x2100U 
+							    (0x301dU 
 							     == 
-							     (0xff00U 
+							     (0xffffU 
 							      & (IData)(
 									(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 									 >> 0x10U))))) {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x21U;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x13U;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x1fU;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0U;
 							} else {
 							    if (
-								(0x2200U 
+								(0x3020U 
 								 == 
-								 (0xff00U 
+								 (0xffffU 
 								  & (IData)(
 									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 									     >> 0x10U))))) {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x20U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x13U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty = 2U;
+								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x28U;
+								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
 							    } else {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x20U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x13U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty = 3U;
+								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x29U;
+								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
 							    }
 							}
 						    }
@@ -4847,120 +4222,145 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 					}
 				    }
 				} else {
-				    if (((((((((0x2400U 
+				    if (((((((((0x3022U 
 						== 
-						(0xff00U 
+						(0xffffU 
 						 & (IData)(
 							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							    >> 0x10U)))) 
-					       | (0x2500U 
+					       | (0x3023U 
 						  == 
-						  (0xff00U 
+						  (0xffffU 
 						   & (IData)(
 							     (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							      >> 0x10U))))) 
-					      | (0x2600U 
+					      | (0x3700U 
 						 == 
 						 (0xff00U 
 						  & (IData)(
 							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							     >> 0x10U))))) 
-					     | (0x2700U 
+					     | (0x5000U 
 						== 
 						(0xff00U 
 						 & (IData)(
 							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							    >> 0x10U))))) 
-					    | (0x2800U 
+					    | (0x5400U 
 					       == (0xff00U 
 						   & (IData)(
 							     (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							      >> 0x10U))))) 
-					   | (0x2900U 
+					   | (0x5500U 
 					      == (0xff00U 
 						  & (IData)(
 							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							     >> 0x10U))))) 
-					  | (0x2a00U 
+					  | (0x5c00U 
 					     == (0xff00U 
 						 & (IData)(
 							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							    >> 0x10U))))) 
-					 | (0x2b00U 
+					 | (0x5d00U 
 					    == (0xff00U 
 						& (IData)(
 							  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							   >> 0x10U)))))) {
-					if ((0x2400U 
-					     == (0xff00U 
+					if ((0x3022U 
+					     == (0xffffU 
 						 & (IData)(
 							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							    >> 0x10U))))) {
-					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x1aU;
-					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 6U;
+					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x28U;
+					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
+					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty = 2U;
 					} else {
-					    if ((0x2500U 
+					    if ((0x3023U 
 						 == 
-						 (0xff00U 
+						 (0xffffU 
 						  & (IData)(
 							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							     >> 0x10U))))) {
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x1aU;
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 7U;
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x28U;
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty = 3U;
 					    } else {
 						if (
-						    (0x2600U 
+						    (0x3700U 
 						     == 
 						     (0xff00U 
 						      & (IData)(
 								(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								 >> 0x10U))))) {
-						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x1bU;
-						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 6U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x40U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx 
+							= 
+							(0xfU 
+							 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord));
 						} else {
 						    if (
-							(0x2700U 
-							 != 
+							(0x5000U 
+							 == 
 							 (0xff00U 
 							  & (IData)(
 								    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								     >> 0x10U))))) {
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6eU;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = 0U;
+						    } else {
 							if (
-							    (0x2800U 
+							    (0x5400U 
 							     == 
 							     (0xff00U 
 							      & (IData)(
 									(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 									 >> 0x10U))))) {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xcU;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x1eU;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+								= 
+								((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+								  ? 0x72U
+								  : 0x70U);
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0U;
 							} else {
 							    if (
-								(0x2900U 
+								(0x5500U 
 								 == 
 								 (0xff00U 
 								  & (IData)(
 									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 									     >> 0x10U))))) {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xfU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x1eU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
+								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+								    = 
+								    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+								      ? 0x73U
+								      : 0x71U);
+								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0U;
 							    } else {
 								if (
-								    (0x2a00U 
+								    (0x5c00U 
 								     == 
 								     (0xff00U 
 								      & (IData)(
 										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 										>> 0x10U))))) {
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xdU;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x1fU;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
+								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+									= 
+									((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+									  ? 0x17U
+									  : 0x16U);
+								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
 								} else {
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xeU;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x1fU;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
+								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+									= 
+									((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+									  ? 0x65U
+									  : 0x64U);
+								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
 								}
 							    }
 							}
@@ -4970,131 +4370,141 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 					}
 				    } else {
 					if ((((((((
-						   (0x2c00U 
+						   (0x9000U 
 						    == 
 						    (0xff00U 
 						     & (IData)(
 							       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								>> 0x10U)))) 
-						   | (0x2d00U 
+						   | (0x9100U 
 						      == 
 						      (0xff00U 
 						       & (IData)(
 								 (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								  >> 0x10U))))) 
-						  | (0x2e00U 
+						  | (0x9200U 
 						     == 
 						     (0xff00U 
 						      & (IData)(
 								(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								 >> 0x10U))))) 
-						 | (0x2f00U 
+						 | (0x9300U 
 						    == 
 						    (0xff00U 
 						     & (IData)(
 							       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								>> 0x10U))))) 
-						| (0x3010U 
+						| (0x9400U 
 						   == 
-						   (0xffffU 
+						   (0xff00U 
 						    & (IData)(
 							      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							       >> 0x10U))))) 
-					       | (0x3011U 
+					       | (0x9500U 
 						  == 
-						  (0xffffU 
+						  (0xff00U 
 						   & (IData)(
 							     (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							      >> 0x10U))))) 
-					      | (0x3012U 
+					      | (0x9600U 
 						 == 
-						 (0xffffU 
+						 (0xff00U 
 						  & (IData)(
 							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							     >> 0x10U))))) 
-					     | (0x3013U 
+					     | (0x9700U 
 						== 
-						(0xffffU 
+						(0xff00U 
 						 & (IData)(
 							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							    >> 0x10U)))))) {
-					    if ((0x2c00U 
+					    if ((0x9000U 
 						 == 
 						 (0xff00U 
 						  & (IData)(
 							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							     >> 0x10U))))) {
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x1cU;
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xeU;
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x4cU;
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
 					    } else {
 						if (
-						    (0x2d00U 
+						    (0x9100U 
 						     == 
 						     (0xff00U 
 						      & (IData)(
 								(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								 >> 0x10U))))) {
-						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x1cU;
-						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xfU;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x4eU;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
 						} else {
 						    if (
-							(0x2e00U 
+							(0x9200U 
 							 == 
 							 (0xff00U 
 							  & (IData)(
 								    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								     >> 0x10U))))) {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x1eU;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xeU;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x4cU;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
 						    } else {
 							if (
-							    (0x2f00U 
+							    (0x9300U 
 							     == 
 							     (0xff00U 
 							      & (IData)(
 									(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 									 >> 0x10U))))) {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x1fU;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xeU;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x4eU;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
 							} else {
 							    if (
-								(0x3010U 
+								(0x9400U 
 								 == 
-								 (0xffffU 
+								 (0xff00U 
 								  & (IData)(
 									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 									     >> 0x10U))))) {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x20U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x11U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
+								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x4dU;
+								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
+								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
+								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
 							    } else {
 								if (
-								    (0x3011U 
+								    (0x9500U 
 								     == 
-								     (0xffffU 
+								     (0xff00U 
 								      & (IData)(
 										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 										>> 0x10U))))) {
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x21U;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x11U;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
+								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x4fU;
+								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
+								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
+								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
 								} else {
 								    if (
-									(0x3012U 
+									(0x9600U 
 									 == 
-									 (0xffffU 
+									 (0xff00U 
 									  & (IData)(
 										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 										>> 0x10U))))) {
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x20U;
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x11U;
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty = 2U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x4dU;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
 								    } else {
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x20U;
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x11U;
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty = 3U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x4fU;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
 								    }
 								}
 							    }
@@ -5104,144 +4514,157 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 					    }
 					} else {
 					    if ((((
-						   (((((0x3018U 
+						   (((((0x9800U 
 							== 
-							(0xffffU 
+							(0xff00U 
 							 & (IData)(
 								   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								    >> 0x10U)))) 
-						       | (0x3019U 
+						       | (0x9900U 
 							  == 
-							  (0xffffU 
+							  (0xff00U 
 							   & (IData)(
 								     (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								      >> 0x10U))))) 
-						      | (0x301aU 
+						      | (0x9a00U 
 							 == 
-							 (0xffffU 
+							 (0xff00U 
 							  & (IData)(
 								    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								     >> 0x10U))))) 
-						     | (0x301bU 
+						     | (0x9c00U 
 							== 
-							(0xffffU 
+							(0xff00U 
 							 & (IData)(
 								   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								    >> 0x10U))))) 
-						    | (0x301cU 
+						    | (0x9f00U 
 						       == 
-						       (0xffffU 
+						       (0xff00U 
 							& (IData)(
 								  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								   >> 0x10U))))) 
-						   | (0x301dU 
+						   | (0xc000U 
 						      == 
-						      (0xffffU 
+						      (0xf000U 
 						       & (IData)(
 								 (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								  >> 0x10U))))) 
-						  | (0x3020U 
+						  | (0xd000U 
 						     == 
-						     (0xffffU 
+						     (0xf000U 
 						      & (IData)(
 								(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								 >> 0x10U))))) 
-						 | (0x3021U 
+						 | (0xe000U 
 						    == 
-						    (0xffffU 
+						    (0xf000U 
 						     & (IData)(
 							       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								>> 0x10U)))))) {
 						if (
-						    (0x3018U 
+						    (0x9800U 
 						     == 
-						     (0xffffU 
+						     (0xff00U 
 						      & (IData)(
 								(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								 >> 0x10U))))) {
-						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x24U;
-						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x78U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
 						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0U;
 						} else {
 						    if (
-							(0x3019U 
+							(0x9900U 
 							 == 
-							 (0xffffU 
+							 (0xff00U 
 							  & (IData)(
 								    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								     >> 0x10U))))) {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x25U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x79U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0U;
 						    } else {
 							if (
-							    (0x301aU 
+							    (0x9a00U 
 							     == 
-							     (0xffffU 
+							     (0xff00U 
 							      & (IData)(
 									(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 									 >> 0x10U))))) {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x26U;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x7aU;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
 							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0U;
 							} else {
 							    if (
-								(0x301bU 
+								(0x9c00U 
 								 == 
-								 (0xffffU 
+								 (0xff00U 
 								  & (IData)(
 									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 									     >> 0x10U))))) {
 								if (
-								    (0U 
+								    (0xeU 
 								     == 
 								     (0xfU 
-								      & (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 4U))))) {
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x12U;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 1U;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 4U;
-								} else {
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x27U;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
+								      & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) {
+								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x56U;
+								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
 								}
 							    } else {
 								if (
-								    (0x301cU 
+								    (0x9f00U 
 								     == 
-								     (0xffffU 
+								     (0xff00U 
 								      & (IData)(
 										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 										>> 0x10U))))) {
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x1eU;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0U;
+								    if (
+									(1U 
+									 == 
+									 (0xfU 
+									  & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) {
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x59U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+								    } else {
+									if (
+									    (5U 
+									     == 
+									     (0xfU 
+									      & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) {
+									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x5dU;
+									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+									}
+								    }
 								} else {
 								    if (
-									(0x301dU 
+									(0xc000U 
 									 == 
-									 (0xffffU 
+									 (0xf000U 
 									  & (IData)(
 										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 										>> 0x10U))))) {
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x1fU;
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x20U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x13U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 1U;
 								    } else {
 									if (
-									    (0x3020U 
+									    (0xd000U 
 									     == 
-									     (0xffffU 
+									     (0xf000U 
 									      & (IData)(
 										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 										>> 0x10U))))) {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x28U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
+									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x21U;
+									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x13U;
+									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
+									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 1U;
 									} else {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x29U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
+									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x20U;
+									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x13U;
+									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
+									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 1U;
+									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty = 2U;
 									}
 								    }
 								}
@@ -5251,531 +4674,17 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 						}
 					    } else {
 						if (
-						    ((((((((0x3022U 
-							    == 
-							    (0xffffU 
-							     & (IData)(
-								       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									>> 0x10U)))) 
-							   | (0x3023U 
-							      == 
-							      (0xffffU 
-							       & (IData)(
-									 (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									  >> 0x10U))))) 
-							  | (0x3700U 
-							     == 
-							     (0xff00U 
-							      & (IData)(
-									(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									 >> 0x10U))))) 
-							 | (0x5000U 
-							    == 
-							    (0xff00U 
-							     & (IData)(
-								       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									>> 0x10U))))) 
-							| (0x5400U 
-							   == 
-							   (0xff00U 
-							    & (IData)(
-								      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								       >> 0x10U))))) 
-						       | (0x5500U 
-							  == 
-							  (0xff00U 
-							   & (IData)(
-								     (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								      >> 0x10U))))) 
-						      | (0x5600U 
-							 == 
-							 (0xff00U 
-							  & (IData)(
-								    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								     >> 0x10U))))) 
-						     | (0x5700U 
-							== 
-							(0xff00U 
-							 & (IData)(
-								   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								    >> 0x10U)))))) {
-						    if (
-							(0x3022U 
-							 == 
-							 (0xffffU 
-							  & (IData)(
-								    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								     >> 0x10U))))) {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x28U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty = 2U;
-						    } else {
-							if (
-							    (0x3023U 
-							     == 
-							     (0xffffU 
-							      & (IData)(
-									(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									 >> 0x10U))))) {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x28U;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty = 3U;
-							} else {
-							    if (
-								(0x3700U 
-								 == 
-								 (0xff00U 
-								  & (IData)(
-									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									     >> 0x10U))))) {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x40U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx 
-								    = 
-								    (0xfU 
-								     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord));
-							    } else {
-								if (
-								    (0x5000U 
-								     == 
-								     (0xff00U 
-								      & (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) {
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6eU;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = 0U;
-								} else {
-								    if (
-									(0x5400U 
-									 == 
-									 (0xff00U 
-									  & (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) {
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-									    = 
-									    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-									      ? 0x72U
-									      : 0x70U);
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0U;
-								    } else {
-									if (
-									    (0x5500U 
-									     == 
-									     (0xff00U 
-									      & (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-										= 
-										((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-										 ? 0x73U
-										 : 0x71U);
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0U;
-									} else {
-									    if (
-										(0x5600U 
-										== 
-										(0xff00U 
-										& (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) {
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x70U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0xcU;
-									    } else {
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x71U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0xcU;
-									    }
-									}
-								    }
-								}
-							    }
-							}
-						    }
-						} else {
-						    if (
-							((((((((0x5800U 
-								== 
-								(0xff00U 
-								 & (IData)(
-									   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									    >> 0x10U)))) 
-							       | (0x5900U 
-								  == 
-								  (0xff00U 
-								   & (IData)(
-									     (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									      >> 0x10U))))) 
-							      | (0x5a00U 
-								 == 
-								 (0xff00U 
-								  & (IData)(
-									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									     >> 0x10U))))) 
-							     | (0x5b00U 
-								== 
-								(0xff00U 
-								 & (IData)(
-									   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									    >> 0x10U))))) 
-							    | (0x5c00U 
-							       == 
-							       (0xff00U 
-								& (IData)(
-									  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									   >> 0x10U))))) 
-							   | (0x5d00U 
-							      == 
-							      (0xff00U 
-							       & (IData)(
-									 (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									  >> 0x10U))))) 
-							  | (0x9000U 
-							     == 
-							     (0xff00U 
-							      & (IData)(
-									(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									 >> 0x10U))))) 
-							 | (0x9100U 
-							    == 
-							    (0xff00U 
-							     & (IData)(
-								       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									>> 0x10U)))))) {
-							if (
-							    (0x5800U 
-							     == 
-							     (0xff00U 
-							      & (IData)(
-									(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									 >> 0x10U))))) {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x72U;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0xcU;
-							} else {
-							    if (
-								(0x5900U 
-								 == 
-								 (0xff00U 
-								  & (IData)(
-									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									     >> 0x10U))))) {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x73U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0xcU;
-							    } else {
-								if (
-								    (0x5a00U 
-								     == 
-								     (0xff00U 
-								      & (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) {
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x72U;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0xdU;
-								} else {
-								    if (
-									(0x5b00U 
-									 == 
-									 (0xff00U 
-									  & (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) {
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x73U;
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0xdU;
-								    } else {
-									if (
-									    (0x5c00U 
-									     == 
-									     (0xff00U 
-									      & (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-										= 
-										((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-										 ? 0x17U
-										 : 0x16U);
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									} else {
-									    if (
-										(0x5d00U 
-										== 
-										(0xff00U 
-										& (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) {
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-										= 
-										((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-										 ? 0x65U
-										 : 0x64U);
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									    } else {
-										if (
-										(0x9000U 
-										== 
-										(0xff00U 
-										& (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) {
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x4cU;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-										} else {
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x4eU;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-										}
-									    }
-									}
-								    }
-								}
-							    }
-							}
-						    } else {
-							if (
-							    ((((((((0x9200U 
-								    == 
-								    (0xff00U 
-								     & (IData)(
-									       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U)))) 
-								   | (0x9300U 
-								      == 
-								      (0xff00U 
-								       & (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) 
-								  | (0x9400U 
-								     == 
-								     (0xff00U 
-								      & (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) 
-								 | (0x9500U 
-								    == 
-								    (0xff00U 
-								     & (IData)(
-									       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) 
-								| (0x9600U 
-								   == 
-								   (0xff00U 
-								    & (IData)(
-									      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									       >> 0x10U))))) 
-							       | (0x9700U 
-								  == 
-								  (0xff00U 
-								   & (IData)(
-									     (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									      >> 0x10U))))) 
-							      | (0x9800U 
-								 == 
-								 (0xff00U 
-								  & (IData)(
-									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									     >> 0x10U))))) 
-							     | (0x9900U 
-								== 
-								(0xff00U 
-								 & (IData)(
-									   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									    >> 0x10U)))))) {
-							    if (
-								(0x9200U 
-								 == 
-								 (0xff00U 
-								  & (IData)(
-									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									     >> 0x10U))))) {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x4cU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-							    } else {
-								if (
-								    (0x9300U 
-								     == 
-								     (0xff00U 
-								      & (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) {
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x4eU;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-								} else {
-								    if (
-									(0x9400U 
-									 == 
-									 (0xff00U 
-									  & (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) {
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x4dU;
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-								    } else {
-									if (
-									    (0x9500U 
-									     == 
-									     (0xff00U 
-									      & (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x4fU;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-									} else {
-									    if (
-										(0x9600U 
-										== 
-										(0xff00U 
-										& (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) {
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x4dU;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-									    } else {
-										if (
-										(0x9700U 
-										== 
-										(0xff00U 
-										& (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) {
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x4fU;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-										} else {
-										if (
-										(0x9800U 
-										== 
-										(0xff00U 
-										& (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) {
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x78U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0U;
-										} else {
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x79U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0U;
-										}
-										}
-									    }
-									}
-								    }
-								}
-							    }
-							} else {
-							    if (
-								(0x9a00U 
-								 == 
-								 (0xff00U 
-								  & (IData)(
-									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									     >> 0x10U))))) {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x7aU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0U;
-							    } else {
-								if (
-								    (0x9c00U 
-								     == 
-								     (0xff00U 
-								      & (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) {
-								    if (
-									(0xeU 
-									 == 
-									 (0xfU 
-									  & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) {
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x56U;
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExI) {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-										= 
-										((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-										 ? 0x59U
-										 : 0x5dU);
-									}
-								    }
-								} else {
-								    if (
-									(0x9f00U 
-									 == 
-									 (0xff00U 
-									  & (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) {
-									if (
-									    (1U 
-									     == 
-									     (0xfU 
-									      & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x59U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									} else {
-									    if (
-										(5U 
-										== 
-										(0xfU 
-										& (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) {
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x5dU;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									    }
-									}
-								    } else {
-									if (
-									    (0xa000U 
-									     == 
-									     (0xf000U 
-									      & (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x20U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x13U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 1U;
-									} else {
-									    if (
-										(0xb000U 
-										== 
-										(0xf000U 
-										& (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) {
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x21U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x13U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 1U;
-									    }
-									}
-								    }
-								}
-							    }
-							}
-						    }
+						    (0xf000U 
+						     == 
+						     (0xf000U 
+						      & (IData)(
+								(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+								 >> 0x10U))))) {
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x20U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x13U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 1U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty = 3U;
 						}
 					    }
 					}
@@ -5857,38 +4766,42 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 			vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUIxt 
 			    = (8U | (((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty) 
 				      << 6U) | (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty)));
-			if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsImm32) {
+			if ((0U == (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
 			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
 				= (((QData)((IData)(
-						    (1U 
-						     & (IData)(
-							       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								>> 0x2fU))))) 
-				    << 0x20U) | (QData)((IData)(
+						    ((1U 
+						      & (IData)(
 								(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								 >> 0x10U))));
+								 >> 7U)))
+						      ? 0x1ffffU
+						      : 0U))) 
+				    << 0x10U) | (QData)((IData)(
+								((0xff00U 
+								  & ((IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord) 
+								     << 8U)) 
+								 | (0xffU 
+								    & (IData)(
+									      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+									       >> 0x10U)))))));
 			} else {
-			    if ((0U == (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
+			    if ((1U == (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
-				    = (((QData)((IData)(
-							((1U 
-							  & (IData)(
-								    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								     >> 7U)))
-							  ? 0x1ffffU
-							  : 0U))) 
-					<< 0x10U) | (QData)((IData)(
-								    ((0xff00U 
-								      & ((IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord) 
-									 << 8U)) 
-								     | (0xffU 
-									& (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U)))))));
+				    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_disp20s;
 			    } else {
-				if ((1U == (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
+				if (VL_LIKELY((2U == (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty)))) {
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
-					= vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_disp20s;
+					= (((QData)((IData)(
+							    (1U 
+							     & (IData)(
+								       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+									>> 0x2fU))))) 
+					    << 0x20U) 
+					   | (QData)((IData)(
+							     (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							      >> 0x10U))));
+				} else {
+				    VL_WRITEF("Jx2DecOpFx: PcDisp, Bad Ity=%x\n",
+					      4,vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty);
 				}
 			    }
 			}
@@ -5910,7 +4823,8 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 		    }
 		} else {
 		    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid))) {
-			if ((0U == (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
+			if (VL_LIKELY((0U == (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty)))) {
+			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN = 0x2fU;
 			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM = 0x20U;
 			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO 
 				= vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO_Dfl;
@@ -5918,17 +4832,8 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 				= (8U | (((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty) 
 					  << 6U) | (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty)));
 			} else {
-			    if ((4U == (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
-				    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Jcmp;
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM 
-				    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Jcmp;
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO = 0x2eU;
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
-				    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_disp8s;
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUIxt 
-				    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx;
-			    }
+			    VL_WRITEF("Jx2DecOpFx: RegPc Bad Ity=%x\n",
+				      4,vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty);
 			}
 		    } else {
 			if (VL_UNLIKELY((1U & (~ (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tMsgLatch))))) {
@@ -5953,36 +4858,20 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 	if ((8U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid))) {
 	    if ((4U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid))) {
 		if ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid))) {
-		    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid))) {
-			vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
-			    = (VL_ULL(0x1fffffc00) 
-			       | (QData)((IData)(((0x300U 
-						   & ((IData)(
-							      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							       >> 5U)) 
-						      << 8U)) 
-						  | (0xffU 
-						     & (IData)(
-							       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								>> 0x10U)))))));
-			vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
-			    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO_Dfl;
-			vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM = 0x2eU;
-		    } else {
-			vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
-			    = (((QData)((IData)((3U 
-						 & (IData)(
-							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							    >> 5U))))) 
-				<< 8U) | (QData)((IData)(
-							 (0xffU 
-							  & (IData)(
-								    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								     >> 0x10U))))));
-			vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
-			    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO_Dfl;
-			vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM = 0x2eU;
+		    if (VL_UNLIKELY((1U & (~ (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tMsgLatch))))) {
+			VL_WRITEF("Jx2DecOpFx: Unhandled FMID (32/48) %x\n",
+				  5,vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid);
+			VL_WRITEF("Jx2DecOpFx: Istr %x-%x-%x\n",
+				  16,(0xffffU & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)),
+				  16,(0xffffU & (IData)(
+							(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							 >> 0x10U))),
+				  16,(0xffffU & (IData)(
+							(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							 >> 0x20U))));
 		    }
+		    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 1U;
+		    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tNextMsgLatch = 1U;
 		} else {
 		    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid))) {
 			vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
@@ -6143,80 +5032,90 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 		    }
 		} else {
 		    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid))) {
-			vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
-			    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Dfl;
+			vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO = 0x2eU;
 			vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUIxt 
 			    = (8U | (((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty) 
 				      << 6U) | (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty)));
-			if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRmIsRz) {
+			if ((1U == (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
+			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
+				= vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Df2;
 			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM 
-				= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRmIsR1)
-				    ? 0x26U : 0x20U);
-			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO = 0x2eU;
-			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUIxt 
-				= (8U | ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty) 
-					 << 6U));
+				= vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Df2;
+			    if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRm2IsRz) {
+				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM 
+				    = ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRm2IsR1)
+				        ? 0x26U : 0x20U);
+				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUIxt 
+				    = (8U | ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty) 
+					     << 6U));
+			    }
 			} else {
-			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM 
-				= vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Dfl;
-			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO = 0x2eU;
-			}
-			if ((4U == (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
 			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
 				= vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Dfl;
 			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM 
 				= vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Dfl;
-			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO = 0x2eU;
-			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
-				= (QData)((IData)((0x1fU 
-						   & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))));
-			} else {
-			    if ((1U == (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
-				    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm17s;
-			    } else {
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
-				    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Dfl;
+			    if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRmIsRz) {
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM 
-				    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Dfl;
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO = 0x2fU;
+				    = ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRmIsR1)
+				        ? 0x26U : 0x20U);
+				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUIxt 
+				    = (8U | ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty) 
+					     << 6U));
 			    }
-			}
-		    } else {
-			vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
-			    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Dfl;
-			vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUIxt 
-			    = (((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty) 
-				<< 6U) | (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty));
-			if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRnIsRz) {
-			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM 
-				= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRnIsR1)
-				    ? 0x26U : 0x20U);
-			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO = 0x2eU;
-			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUIxt 
-				= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty) 
-				   << 6U);
-			} else {
-			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM 
-				= vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Dfl;
-			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO = 0x2eU;
 			}
 			if ((4U == (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
 			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
 				= (QData)((IData)((0x1fU 
 						   & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))));
-			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM 
-				= vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Dfl;
-			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO = 0x2eU;
 			} else {
 			    if ((1U == (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
 				    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm17s;
 			    } else {
+				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO = 0x2fU;
+			    }
+			}
+		    } else {
+			vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO = 0x2eU;
+			vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUIxt 
+			    = (((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty) 
+				<< 6U) | (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty));
+			if ((1U == (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
+			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
+				= vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Df2;
+			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM 
+				= vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Df2;
+			    if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRn2IsRz) {
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM 
-				    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Dfl;
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
-				    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Dfl;
+				    = ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRn2IsR1)
+				        ? 0x26U : 0x20U);
+				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUIxt 
+				    = ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty) 
+				       << 6U);
+			    }
+			} else {
+			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
+				= vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Dfl;
+			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM 
+				= vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Dfl;
+			    if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRnIsRz) {
+				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM 
+				    = ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRnIsR1)
+				        ? 0x26U : 0x20U);
+				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUIxt 
+				    = ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty) 
+				       << 6U);
+			    }
+			}
+			if ((4U == (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
+			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
+				= (QData)((IData)((0x1fU 
+						   & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))));
+			} else {
+			    if ((1U == (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
+				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
+				    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm17s;
+			    } else {
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO = 0x2fU;
 			    }
 			}
@@ -6268,146 +5167,6 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 		    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid))) {
 			vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUIxt 
 			    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx;
-			if ((8U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
-			    if ((4U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
-				if ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
-				    if ((1U & (~ (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty)))) {
-					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
-					    = (((QData)((IData)(
-								(1U 
-								 & (~ (IData)(
-									      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									       >> 0x2fU)))))) 
-						<< 0x20U) 
-					       | (QData)((IData)(
-								 (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								  >> 0x10U))));
-				    }
-				} else {
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
-					= ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))
-					    ? (((QData)((IData)(
-								((1U 
-								  & (IData)(
-									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									     >> 0x1fU)))
-								  ? 0U
-								  : 0x1ffffU))) 
-						<< 0x10U) 
-					       | (QData)((IData)(
-								 (0xffffU 
-								  & (IData)(
-									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									     >> 0x10U))))))
-					    : (((QData)((IData)(
-								((1U 
-								  & (IData)(
-									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									     >> 0x17U)))
-								  ? 0U
-								  : 0x1ffffffU))) 
-						<< 8U) 
-					       | (QData)((IData)(
-								 (0xffU 
-								  & (IData)(
-									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									     >> 0x10U)))))));
-				}
-			    } else {
-				if ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
-				    if ((1U & (~ (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty)))) {
-					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
-					    = (VL_ULL(0x100000000) 
-					       | (QData)((IData)(
-								 (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								  >> 0x10U))));
-				    }
-				} else {
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
-					= ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))
-					    ? (VL_ULL(0x1ffff0000) 
-					       | (QData)((IData)(
-								 (0xffffU 
-								  & (IData)(
-									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									     >> 0x10U))))))
-					    : (VL_ULL(0x1ffffff00) 
-					       | (QData)((IData)(
-								 (0xffU 
-								  & (IData)(
-									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									     >> 0x10U)))))));
-				}
-			    }
-			} else {
-			    if ((4U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
-				if ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
-				    if ((1U & (~ (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty)))) {
-					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
-					    = (QData)((IData)(
-							      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							       >> 0x10U)));
-				    }
-				} else {
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
-					= ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))
-					    ? (QData)((IData)(
-							      (0xffffU 
-							       & (IData)(
-									 (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									  >> 0x10U)))))
-					    : (QData)((IData)(
-							      (0xffU 
-							       & (IData)(
-									 (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									  >> 0x10U))))));
-				}
-			    } else {
-				if ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
-				    if ((1U & (~ (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty)))) {
-					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
-					    = (((QData)((IData)(
-								(1U 
-								 & (IData)(
-									   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									    >> 0x2fU))))) 
-						<< 0x20U) 
-					       | (QData)((IData)(
-								 (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								  >> 0x10U))));
-				    }
-				} else {
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
-					= ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))
-					    ? (((QData)((IData)(
-								((1U 
-								  & (IData)(
-									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									     >> 0x1fU)))
-								  ? 0x1ffffU
-								  : 0U))) 
-						<< 0x10U) 
-					       | (QData)((IData)(
-								 (0xffffU 
-								  & (IData)(
-									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									     >> 0x10U))))))
-					    : (((QData)((IData)(
-								((1U 
-								  & (IData)(
-									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									     >> 0x17U)))
-								  ? 0x1ffffffU
-								  : 0U))) 
-						<< 8U) 
-					       | (QData)((IData)(
-								 (0xffU 
-								  & (IData)(
-									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									     >> 0x10U)))))));
-				}
-			    }
-			}
 			if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsFC0) {
 			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM = 0x2eU;
 			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
@@ -6420,6 +5179,120 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 				= vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO_Dfl;
 			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO 
 				= vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO_Dfl;
+			}
+			if ((8U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
+			    if (VL_UNLIKELY((4U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty)))) {
+				VL_WRITEF("Jx2DecOpFx: Imm8Reg, Bad Ity=%x\n",
+					  4,vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty);
+			    } else {
+				if ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
+				    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
+					    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm10n;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
+					    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Df2;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO 
+					    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Df2;
+				    } else {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
+					    = (VL_ULL(0x100000000) 
+					       | (QData)((IData)(
+								 (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+								  >> 0x10U))));
+				    }
+				} else {
+				    if (VL_LIKELY((1U 
+						   & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty)))) {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
+					    = (VL_ULL(0x1ffff0000) 
+					       | (QData)((IData)(
+								 (0xffffU 
+								  & (IData)(
+									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+									     >> 0x10U))))));
+				    } else {
+					VL_WRITEF("Jx2DecOpFx: Imm8Reg, Bad Ity=%x\n",
+						  4,
+						  vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty);
+				    }
+				}
+			    }
+			} else {
+			    if ((4U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
+				if ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
+				    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
+					    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm10u;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
+					    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Df2;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO 
+					    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Df2;
+				    } else {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
+					    = (QData)((IData)(
+							      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							       >> 0x10U)));
+				    }
+				} else {
+				    if (VL_LIKELY((1U 
+						   & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty)))) {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
+					    = (QData)((IData)(
+							      (0xffffU 
+							       & (IData)(
+									 (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+									  >> 0x10U)))));
+				    } else {
+					VL_WRITEF("Jx2DecOpFx: Imm8Reg, Bad Ity=%x\n",
+						  4,
+						  vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty);
+				    }
+				}
+			    } else {
+				if ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
+				    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
+					    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm10s;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
+					    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Df2;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO 
+					    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Df2;
+				    } else {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
+					    = (((QData)((IData)(
+								(1U 
+								 & (IData)(
+									   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+									    >> 0x2fU))))) 
+						<< 0x20U) 
+					       | (QData)((IData)(
+								 (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+								  >> 0x10U))));
+				    }
+				} else {
+				    if (VL_LIKELY((1U 
+						   & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty)))) {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
+					    = (((QData)((IData)(
+								((1U 
+								  & (IData)(
+									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+									     >> 0x1fU)))
+								  ? 0x1ffffU
+								  : 0U))) 
+						<< 0x10U) 
+					       | (QData)((IData)(
+								 (0xffffU 
+								  & (IData)(
+									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+									     >> 0x10U))))));
+				    } else {
+					VL_WRITEF("Jx2DecOpFx: Imm8Reg, Bad Ity=%x\n",
+						  4,
+						  vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty);
+				    }
+				}
+			    }
 			}
 		    } else {
 			vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
@@ -6434,40 +5307,20 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 			    = (QData)((IData)((0x1fU 
 					       & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))));
 			if ((8U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
-			    if ((4U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
-				if ((1U & (~ ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty) 
-					      >> 1U)))) {
-				    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
-					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO = 0x2eU;
-					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
-					    = (((QData)((IData)(
-								((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-								  ? 0x7ffffffU
-								  : 0U))) 
-						<< 6U) 
-					       | (QData)((IData)(
-								 ((0x20U 
-								   & ((~ (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)) 
-								      << 5U)) 
-								  | (0x1fU 
-								     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))))));
-				    } else {
-					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO = 0x2eU;
-					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
-					    = (((QData)((IData)(
-								((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-								  ? 0xfffffffU
-								  : 0U))) 
-						<< 5U) 
-					       | (QData)((IData)(
-								 (0x1fU 
-								  & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))));
-				    }
-				}
+			    if (VL_UNLIKELY((4U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty)))) {
+				VL_WRITEF("Jx2DecOpFx: RegReg, Bad Ity=%x\n",
+					  4,vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty);
 			    } else {
-				if ((1U & (~ ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty) 
-					      >> 1U)))) {
+				if (VL_UNLIKELY((2U 
+						 & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty)))) {
+				    VL_WRITEF("Jx2DecOpFx: RegReg, Bad Ity=%x\n",
+					      4,vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty);
+				} else {
 				    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
+					    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Df2;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM 
+					    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Df2;
 					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO = 0x2eU;
 					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
 					    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm17n;
@@ -6483,27 +5336,37 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 			    }
 			} else {
 			    if ((4U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
-				if ((1U & (~ ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty) 
-					      >> 1U)))) {
-				    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
+				if (VL_UNLIKELY((2U 
+						 & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty)))) {
+				    VL_WRITEF("Jx2DecOpFx: RegReg, Bad Ity=%x\n",
+					      4,vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty);
+				} else {
+				    if (VL_LIKELY((1U 
+						   & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty)))) {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
+					    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Df2;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM 
+					    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Df2;
 					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO = 0x2eU;
 					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
 					    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm17u;
 				    } else {
-					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO 
-					    = ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-					        ? 0x2eU
-					        : (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO_Dfl));
-					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
-					    = (QData)((IData)(
-							      (0x1fU 
-							       & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))));
+					VL_WRITEF("Jx2DecOpFx: RegReg, Bad Ity=%x\n",
+						  4,
+						  vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty);
 				    }
 				}
 			    } else {
-				if ((1U & (~ ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty) 
-					      >> 1U)))) {
+				if (VL_UNLIKELY((2U 
+						 & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty)))) {
+				    VL_WRITEF("Jx2DecOpFx: RegReg, Bad Ity=%x\n",
+					      4,vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty);
+				} else {
 				    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
+					    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Df2;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM 
+					    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Df2;
 					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO_Dfl = 0x2eU;
 					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
 					    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm17s;
@@ -6540,12 +5403,26 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO 
 				= vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO_Dfl;
 			} else {
-			    if ((1U == (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
+			    if (VL_LIKELY((1U == (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty)))) {
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
 				    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Dfl;
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM = 0x2fU;
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO 
 				    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Dfl;
+			    } else {
+				VL_WRITEF("Jx2DecOpFx: Bad Reg, Ity=%x\n",
+					  4,vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty);
+				VL_WRITEF("Jx2DecOpFx: Istr %x-%x-%x\n",
+					  16,(0xffffU 
+					      & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)),
+					  16,(0xffffU 
+					      & (IData)(
+							(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							 >> 0x10U))),
+					  16,(0xffffU 
+					      & (IData)(
+							(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							 >> 0x20U))));
 			    }
 			}
 		    }
@@ -6574,7 +5451,7 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 	    }
 	}
     }
-    // ALWAYS at Jx2ExOp.v:599
+    // ALWAYS at Jx2ExOp.v:606
     vlTOPp->Jx2ExUnit__DOT__exOp__DOT__regMaIxVal2 
 	= ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__exRegIdIxtB))
 	    ? ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__exRegIdIxtB))
@@ -7649,453 +6526,6 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 								>> 0x3fU)) 
 						       << 0xfU)))
 		    : 0U)));
-    // ALWAYS at Jx2IcTileC.v:99
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icReqAddr 
-	= (VL_ULL(0xfffffffffff) & (vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regPc 
-				    >> 4U));
-    // ALWAYS at Jx2IcTileC.v:99
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkHi 
-	= ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkAddr)) 
-	   != (1U & (IData)((vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regPc 
-			     >> 4U))));
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkWordIx 
-	= (((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkHi) 
-	    << 3U) | (7U & (IData)((vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regPc 
-				    >> 1U))));
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkMiss 
-	= (1U & (((((0xfffffffU & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkAddr)) 
-		    != (0xfffffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regPc 
-					      >> 4U)))) 
-		   & (((IData)(1U) + (0xfffffffU & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkAddr))) 
-		      != (0xfffffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regPc 
-						>> 4U))))) 
-		  | ((0xffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkAddr 
-					 >> 0x1cU))) 
-		     != (0xffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regPc 
-					    >> 0x20U))))) 
-		 | (~ (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkReady))));
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA0 
-	= ((0x3fU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[1U] 
-				<< 0x16U) | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[0U] 
-					     >> 0xaU))))
-	    ? 3U : ((0x3eU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[1U] 
-					 << 0x16U) 
-					| (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[0U] 
-					   >> 0xaU))))
-		     ? 2U : ((0x3cU == (0x3eU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[1U] 
-						  << 0x16U) 
-						 | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[0U] 
-						    >> 0xaU))))
-			      ? 2U : 1U)));
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA1 
-	= ((0x3fU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[1U] 
-				<< 6U) | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[0U] 
-					  >> 0x1aU))))
-	    ? 3U : ((0x3eU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[1U] 
-					 << 6U) | (
-						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[0U] 
-						   >> 0x1aU))))
-		     ? 2U : ((0x3cU == (0x3eU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[1U] 
-						  << 6U) 
-						 | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[0U] 
-						    >> 0x1aU))))
-			      ? 2U : 1U)));
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA2 
-	= ((0x3fU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[2U] 
-				<< 0x16U) | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[1U] 
-					     >> 0xaU))))
-	    ? 3U : ((0x3eU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[2U] 
-					 << 0x16U) 
-					| (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[1U] 
-					   >> 0xaU))))
-		     ? 2U : ((0x3cU == (0x3eU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[2U] 
-						  << 0x16U) 
-						 | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[1U] 
-						    >> 0xaU))))
-			      ? 2U : 1U)));
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA3 
-	= ((0x3fU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[2U] 
-				<< 6U) | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[1U] 
-					  >> 0x1aU))))
-	    ? 3U : ((0x3eU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[2U] 
-					 << 6U) | (
-						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[1U] 
-						   >> 0x1aU))))
-		     ? 2U : ((0x3cU == (0x3eU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[2U] 
-						  << 6U) 
-						 | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[1U] 
-						    >> 0x1aU))))
-			      ? 2U : 1U)));
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA4 
-	= ((0x3fU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[3U] 
-				<< 0x16U) | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[2U] 
-					     >> 0xaU))))
-	    ? 3U : ((0x3eU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[3U] 
-					 << 0x16U) 
-					| (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[2U] 
-					   >> 0xaU))))
-		     ? 2U : ((0x3cU == (0x3eU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[3U] 
-						  << 0x16U) 
-						 | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[2U] 
-						    >> 0xaU))))
-			      ? 2U : 1U)));
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA5 
-	= ((0x3fU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[3U] 
-				<< 6U) | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[2U] 
-					  >> 0x1aU))))
-	    ? 3U : ((0x3eU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[3U] 
-					 << 6U) | (
-						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[2U] 
-						   >> 0x1aU))))
-		     ? 2U : ((0x3cU == (0x3eU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[3U] 
-						  << 6U) 
-						 | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[2U] 
-						    >> 0x1aU))))
-			      ? 2U : 1U)));
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA6 
-	= ((0x3fU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[4U] 
-				<< 0x16U) | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[3U] 
-					     >> 0xaU))))
-	    ? 3U : ((0x3eU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[4U] 
-					 << 0x16U) 
-					| (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[3U] 
-					   >> 0xaU))))
-		     ? 2U : ((0x3cU == (0x3eU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[4U] 
-						  << 0x16U) 
-						 | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[3U] 
-						    >> 0xaU))))
-			      ? 2U : 1U)));
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA7 
-	= ((0x3fU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[4U] 
-				<< 6U) | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[3U] 
-					  >> 0x1aU))))
-	    ? 3U : ((0x3eU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[4U] 
-					 << 6U) | (
-						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[3U] 
-						   >> 0x1aU))))
-		     ? 2U : ((0x3cU == (0x3eU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[4U] 
-						  << 6U) 
-						 | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[3U] 
-						    >> 0x1aU))))
-			      ? 2U : 1U)));
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA8 
-	= ((0x3fU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[5U] 
-				<< 0x16U) | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[4U] 
-					     >> 0xaU))))
-	    ? 3U : ((0x3eU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[5U] 
-					 << 0x16U) 
-					| (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[4U] 
-					   >> 0xaU))))
-		     ? 2U : ((0x3cU == (0x3eU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[5U] 
-						  << 0x16U) 
-						 | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[4U] 
-						    >> 0xaU))))
-			      ? 2U : 1U)));
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA9 
-	= ((0x3fU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[5U] 
-				<< 6U) | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[4U] 
-					  >> 0x1aU))))
-	    ? 3U : ((0x3eU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[5U] 
-					 << 6U) | (
-						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[4U] 
-						   >> 0x1aU))))
-		     ? 2U : ((0x3cU == (0x3eU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[5U] 
-						  << 6U) 
-						 | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[4U] 
-						    >> 0x1aU))))
-			      ? 2U : 1U)));
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA10 
-	= ((0x3fU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[6U] 
-				<< 0x16U) | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[5U] 
-					     >> 0xaU))))
-	    ? 3U : ((0x3eU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[6U] 
-					 << 0x16U) 
-					| (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[5U] 
-					   >> 0xaU))))
-		     ? 2U : ((0x3cU == (0x3eU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[6U] 
-						  << 0x16U) 
-						 | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[5U] 
-						    >> 0xaU))))
-			      ? 2U : 1U)));
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA11 
-	= ((0x3fU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[6U] 
-				<< 6U) | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[5U] 
-					  >> 0x1aU))))
-	    ? 3U : ((0x3eU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[6U] 
-					 << 6U) | (
-						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[5U] 
-						   >> 0x1aU))))
-		     ? 2U : ((0x3cU == (0x3eU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[6U] 
-						  << 6U) 
-						 | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[5U] 
-						    >> 0x1aU))))
-			      ? 2U : 1U)));
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA12 
-	= ((0x3fU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[7U] 
-				<< 0x16U) | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[6U] 
-					     >> 0xaU))))
-	    ? 3U : ((0x3eU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[7U] 
-					 << 0x16U) 
-					| (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[6U] 
-					   >> 0xaU))))
-		     ? 2U : ((0x3cU == (0x3eU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[7U] 
-						  << 0x16U) 
-						 | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[6U] 
-						    >> 0xaU))))
-			      ? 2U : 1U)));
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA13 
-	= ((0x3fU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[7U] 
-				<< 6U) | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[6U] 
-					  >> 0x1aU))))
-	    ? 3U : ((0x3eU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[7U] 
-					 << 6U) | (
-						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[6U] 
-						   >> 0x1aU))))
-		     ? 2U : ((0x3cU == (0x3eU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[7U] 
-						  << 6U) 
-						 | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[6U] 
-						    >> 0x1aU))))
-			      ? 2U : 1U)));
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkLenF14 = 0U;
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkLenF15 = 0U;
-    if ((0x3fU == (0x3fU & (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[7U] 
-			    >> 0xaU)))) {
-	vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA14 = 3U;
-	vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkLenF14 = 1U;
-    } else {
-	vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA14 
-	    = ((0x3eU == (0x3fU & (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[7U] 
-				   >> 0xaU))) ? 2U : 
-	       ((0x3cU == (0x3eU & (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[7U] 
-				    >> 0xaU))) ? 2U
-		 : 1U));
-    }
-    if ((0x3fU == (0x3fU & (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[7U] 
-			    >> 0x1aU)))) {
-	vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA15 = 3U;
-	vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkLenF15 = 1U;
-    } else {
-	if ((0x3eU == (0x3fU & (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[7U] 
-				>> 0x1aU)))) {
-	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA15 = 2U;
-	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkLenF15 = 1U;
-	} else {
-	    if ((0x3cU == (0x3eU & (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[7U] 
-				    >> 0x1aU)))) {
-		vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA15 = 2U;
-		vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkLenF15 = 1U;
-	    } else {
-		vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA15 = 1U;
-	    }
-	}
-    }
-    if (((0xeU == (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkWordIx)) 
-	 & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkLenF14))) {
-	vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkMiss = 1U;
-    }
-    if (((0xfU == (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkWordIx)) 
-	 & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkLenF15))) {
-	vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkMiss = 1U;
-    }
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcVal = VL_ULL(0);
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA = 0U;
-    if (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkMiss) {
-	vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcOK = 2U;
-    } else {
-	vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcOK = 1U;
-	if ((8U & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkWordIx))) {
-	    if ((4U & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkWordIx))) {
-		if ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkWordIx))) {
-		    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkWordIx))) {
-			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcVal 
-			    = (QData)((IData)((0xffffU 
-					       & (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[7U] 
-						  >> 0x10U))));
-			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA 
-			    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA15;
-		    } else {
-			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcVal 
-			    = (QData)((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[7U]));
-			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA 
-			    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA14;
-		    }
-		} else {
-		    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkWordIx))) {
-			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcVal 
-			    = (VL_ULL(0xffffffffffff) 
-			       & (((QData)((IData)(
-						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[7U])) 
-				   << 0x10U) | ((QData)((IData)(
-								vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[6U])) 
-						>> 0x10U)));
-			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA 
-			    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA13;
-		    } else {
-			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcVal 
-			    = (VL_ULL(0xffffffffffff) 
-			       & (((QData)((IData)(
-						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[7U])) 
-				   << 0x20U) | (QData)((IData)(
-							       vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[6U]))));
-			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA 
-			    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA12;
-		    }
-		}
-	    } else {
-		if ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkWordIx))) {
-		    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkWordIx))) {
-			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcVal 
-			    = (VL_ULL(0xffffffffffff) 
-			       & (((QData)((IData)(
-						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[7U])) 
-				   << 0x30U) | (((QData)((IData)(
-								 vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[6U])) 
-						 << 0x10U) 
-						| ((QData)((IData)(
-								   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[5U])) 
-						   >> 0x10U))));
-			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA 
-			    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA11;
-		    } else {
-			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcVal 
-			    = (VL_ULL(0xffffffffffff) 
-			       & (((QData)((IData)(
-						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[6U])) 
-				   << 0x20U) | (QData)((IData)(
-							       vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[5U]))));
-			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA 
-			    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA10;
-		    }
-		} else {
-		    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkWordIx))) {
-			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcVal 
-			    = (VL_ULL(0xffffffffffff) 
-			       & (((QData)((IData)(
-						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[6U])) 
-				   << 0x30U) | (((QData)((IData)(
-								 vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[5U])) 
-						 << 0x10U) 
-						| ((QData)((IData)(
-								   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[4U])) 
-						   >> 0x10U))));
-			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA 
-			    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA9;
-		    } else {
-			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcVal 
-			    = (VL_ULL(0xffffffffffff) 
-			       & (((QData)((IData)(
-						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[5U])) 
-				   << 0x20U) | (QData)((IData)(
-							       vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[4U]))));
-			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA 
-			    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA8;
-		    }
-		}
-	    }
-	} else {
-	    if ((4U & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkWordIx))) {
-		if ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkWordIx))) {
-		    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkWordIx))) {
-			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcVal 
-			    = (VL_ULL(0xffffffffffff) 
-			       & (((QData)((IData)(
-						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[5U])) 
-				   << 0x30U) | (((QData)((IData)(
-								 vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[4U])) 
-						 << 0x10U) 
-						| ((QData)((IData)(
-								   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[3U])) 
-						   >> 0x10U))));
-			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA 
-			    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA7;
-		    } else {
-			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcVal 
-			    = (VL_ULL(0xffffffffffff) 
-			       & (((QData)((IData)(
-						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[4U])) 
-				   << 0x20U) | (QData)((IData)(
-							       vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[3U]))));
-			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA 
-			    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA6;
-		    }
-		} else {
-		    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkWordIx))) {
-			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcVal 
-			    = (VL_ULL(0xffffffffffff) 
-			       & (((QData)((IData)(
-						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[4U])) 
-				   << 0x30U) | (((QData)((IData)(
-								 vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[3U])) 
-						 << 0x10U) 
-						| ((QData)((IData)(
-								   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[2U])) 
-						   >> 0x10U))));
-			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA 
-			    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA5;
-		    } else {
-			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcVal 
-			    = (VL_ULL(0xffffffffffff) 
-			       & (((QData)((IData)(
-						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[3U])) 
-				   << 0x20U) | (QData)((IData)(
-							       vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[2U]))));
-			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA 
-			    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA4;
-		    }
-		}
-	    } else {
-		if ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkWordIx))) {
-		    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkWordIx))) {
-			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcVal 
-			    = (VL_ULL(0xffffffffffff) 
-			       & (((QData)((IData)(
-						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[3U])) 
-				   << 0x30U) | (((QData)((IData)(
-								 vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[2U])) 
-						 << 0x10U) 
-						| ((QData)((IData)(
-								   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[1U])) 
-						   >> 0x10U))));
-			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA 
-			    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA3;
-		    } else {
-			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcVal 
-			    = (VL_ULL(0xffffffffffff) 
-			       & (((QData)((IData)(
-						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[2U])) 
-				   << 0x20U) | (QData)((IData)(
-							       vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[1U]))));
-			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA 
-			    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA2;
-		    }
-		} else {
-		    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkWordIx))) {
-			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcVal 
-			    = (VL_ULL(0xffffffffffff) 
-			       & (((QData)((IData)(
-						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[2U])) 
-				   << 0x30U) | (((QData)((IData)(
-								 vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[1U])) 
-						 << 0x10U) 
-						| ((QData)((IData)(
-								   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[0U])) 
-						   >> 0x10U))));
-			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA 
-			    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA1;
-		    } else {
-			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcVal 
-			    = (VL_ULL(0xffffffffffff) 
-			       & (((QData)((IData)(
-						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[1U])) 
-				   << 0x20U) | (QData)((IData)(
-							       vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[0U]))));
-			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA 
-			    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA0;
-		    }
-		}
-	    }
-	}
-    }
     // ALWAYS at Jx2ExShad32.v:32
     vlTOPp->Jx2ExUnit__DOT__exOp__DOT__shad__DOT__tValSh 
 	= (0xffU & (IData)(vlTOPp->Jx2ExUnit__DOT__exRegValRi));
@@ -9707,6 +8137,169 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
     vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHsPL 
 	= (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHs23) 
 	    << 1U) | (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHs01));
+    // ALWAYS at Jx2RegGpr.v:549
+    if (vlTOPp->reset) {
+	__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSp = VL_ULL(0);
+	vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regPc = VL_ULL(0);
+	vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regPr = VL_ULL(0);
+	__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSr = VL_ULL(0);
+	__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regVbr = VL_ULL(0);
+	vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regDlr = VL_ULL(0);
+	vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regDhr = VL_ULL(0);
+	__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regGbr = VL_ULL(0);
+	__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regTbr = VL_ULL(0);
+	__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSPc = VL_ULL(0);
+	__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSPr = VL_ULL(0);
+	__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSSr = VL_ULL(0);
+	__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSSp = VL_ULL(0);
+	vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSDl = VL_ULL(0);
+	vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSDh = VL_ULL(0);
+	__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSGb = VL_ULL(0);
+	__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSTb = VL_ULL(0);
+    } else {
+	if ((1U & ((IData)(vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSrRB) 
+		   ^ (IData)((vlTOPp->Jx2ExUnit__DOT__gprExNextSr2 
+			      >> 0x1dU))))) {
+	    if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__gprExNextSr2 
+			       >> 0x1dU)))) {
+		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSPc 
+		    = (((QData)((IData)(((1U & (IData)(
+						       (vlTOPp->Jx2ExUnit__DOT__gprExNextExc2 
+							>> 0x3fU)))
+					  ? 0xffffU
+					  : 0U))) << 0x30U) 
+		       | (VL_ULL(0xffffffffffff) & 
+			  (vlTOPp->Jx2ExUnit__DOT__gprExNextExc2 
+			   >> 0x10U)));
+		vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regPc 
+		    = vlTOPp->Jx2ExUnit__DOT__gprExNextPc2;
+		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSSp 
+		    = vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSp;
+		vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regTea 
+		    = vlTOPp->Jx2ExUnit__DOT__gprExNextTea2;
+		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regExsr 
+		    = (((QData)((IData)(vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSr)) 
+			<< 0x20U) | (QData)((IData)(vlTOPp->Jx2ExUnit__DOT__gprExNextExc2)));
+		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSr 
+		    = vlTOPp->Jx2ExUnit__DOT__gprExNextSr2;
+	    } else {
+		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSr 
+		    = (((QData)((IData)((vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSr 
+					 >> 0x20U))) 
+			<< 0x20U) | (QData)((IData)(
+						    (vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regExsr 
+						     >> 0x20U))));
+		vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regPc 
+		    = vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSPc;
+		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSp 
+		    = vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSSp;
+		vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regTea 
+		    = vlTOPp->Jx2ExUnit__DOT__gprExNextTea2;
+		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regExsr 
+		    = vlTOPp->Jx2ExUnit__DOT__gprExNextExc2;
+	    }
+	} else {
+	    if ((1U & (~ (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegExHold)))) {
+		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regVbr 
+		    = ((0x23U == (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn)))
+		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn
+		        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regVbr);
+		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regGbr 
+		    = ((0x26U == (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn)))
+		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn
+		        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regGbr);
+		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regTbr 
+		    = ((0x27U == (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn)))
+		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn
+		        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regTbr);
+		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSPc 
+		    = ((0x24U == (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn)))
+		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn
+		        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSPc);
+		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSPr 
+		    = ((0x39U == (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn)))
+		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn
+		        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSPr);
+		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSSr 
+		    = ((0x3aU == (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn)))
+		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn
+		        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSSr);
+		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSSp 
+		    = ((0x25U == (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn)))
+		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn
+		        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSSp);
+		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSGb 
+		    = ((0x3eU == (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn)))
+		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn
+		        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSGb);
+		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSTb 
+		    = ((0x3fU == (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn)))
+		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn
+		        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSTb);
+		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regTtb 
+		    = ((0x28U == (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn)))
+		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn
+		        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regTtb);
+		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regMmcr 
+		    = ((0x2aU == (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn)))
+		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn
+		        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regMmcr);
+		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSttb 
+		    = ((0x2cU == (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn)))
+		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn
+		        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSttb);
+		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regKrr 
+		    = ((0x2dU == (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn)))
+		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn
+		        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regKrr);
+		__Vdlyvval__Jx2ExUnit__DOT__gprFile__DOT__regGprArrM__v0 
+		    = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal;
+		__Vdlyvset__Jx2ExUnit__DOT__gprFile__DOT__regGprArrM__v0 = 1U;
+		__Vdlyvdim0__Jx2ExUnit__DOT__gprFile__DOT__regGprArrM__v0 
+		    = (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutId));
+		__Vdlyvval__Jx2ExUnit__DOT__gprFile__DOT__regGprArrN__v0 
+		    = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal;
+		__Vdlyvdim0__Jx2ExUnit__DOT__gprFile__DOT__regGprArrN__v0 
+		    = (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutId));
+		__Vdlyvval__Jx2ExUnit__DOT__gprFile__DOT__regGprArrO__v0 
+		    = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal;
+		__Vdlyvdim0__Jx2ExUnit__DOT__gprFile__DOT__regGprArrO__v0 
+		    = (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutId));
+		vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regDlr 
+		    = ((0U == (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutId))
+		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal
+		        : vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutDlr);
+		vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regDhr 
+		    = ((1U == (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutId))
+		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal
+		        : vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutDhr);
+		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSp 
+		    = ((0xfU == (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutId))
+		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal
+		        : vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSp);
+		vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regPc 
+		    = ((0x20U == (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn)))
+		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn
+		        : vlTOPp->Jx2ExUnit__DOT__gprExNextPc2);
+		vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regPr 
+		    = ((0x21U == (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn)))
+		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn
+		        : vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutPr);
+		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSr 
+		    = ((0x22U == (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn)))
+		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn
+		        : vlTOPp->Jx2ExUnit__DOT__gprExNextSr2);
+		vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regTea 
+		    = ((0x29U == (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn)))
+		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn
+		        : vlTOPp->Jx2ExUnit__DOT__gprExNextTea2);
+		__Vdly__Jx2ExUnit__DOT__gprFile__DOT__regExsr 
+		    = ((0x2bU == (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn)))
+		        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn
+		        : vlTOPp->Jx2ExUnit__DOT__gprExNextExc2);
+	    }
+	}
+    }
     // ALWAYS at Jx2MemCache.v:324
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcOK = 2U;
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcOK = 2U;
@@ -11965,23 +10558,23 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 										== 
 										(0xff0fU 
 										& (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) 
-										| (0x9f0aU 
-										== 
-										(0xff0fU 
-										& (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) 
-										| (0x9f0bU 
-										== 
-										(0xff0fU 
-										& (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) 
-										| (0x9f0cU 
-										== 
-										(0xff0fU 
-										& (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) 
-										| (0x9f0dU 
-										== 
-										(0xff0fU 
-										& (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) 
 										| (0xa000U 
+										== 
+										(0xf000U 
+										& (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) 
+										| (0xb000U 
+										== 
+										(0xf000U 
+										& (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) 
+										| (0xc000U 
+										== 
+										(0xf000U 
+										& (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) 
+										| (0xe000U 
+										== 
+										(0xf000U 
+										& (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) 
+										| (0xf000U 
 										== 
 										(0xf000U 
 										& (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))))) {
@@ -12013,50 +10606,12 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opUCmdIx = 1U;
 										} else {
 										if (
-										(0x9f0aU 
+										(0xa000U 
 										== 
-										(0xff0fU 
+										(0xf000U 
 										& (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) {
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opUCmd = 0x57U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opFmid = 2U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opUCmdIx = 2U;
-										} else {
-										if (
-										(0x9f0bU 
-										== 
-										(0xff0fU 
-										& (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) {
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opUCmd = 0x57U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opFmid = 2U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opUCmdIx = 3U;
-										} else {
-										if (
-										(0x9f0cU 
-										== 
-										(0xff0fU 
-										& (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) {
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opUCmd = 0x57U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opFmid = 2U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opUCmdIx = 4U;
-										} else {
-										if (
-										(0x9f0dU 
-										== 
-										(0xff0fU 
-										& (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) {
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opUCmd = 0x57U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opFmid = 2U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opUCmdIx = 5U;
-										} else {
 										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opUCmd = 0x1aU;
 										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opFmid = 0x16U;
-										}
-										}
-										}
-										}
-										}
-										}
-										}
 										} else {
 										if (
 										(0xb000U 
@@ -12084,21 +10639,19 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opUCmd = 5U;
 										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opFmid = 5U;
 										} else {
-										if (
-										(0xf000U 
-										== 
-										(0xf000U 
-										& (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) {
 										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opIsFx = 1U;
 										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opUCmd = 1U;
 										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opFmid = 1U;
+										}
+										}
+										}
+										}
+										}
+										}
+										}
 										} else {
 										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opUCmd = 1U;
 										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opFmid = 0U;
-										}
-										}
-										}
-										}
 										}
 										}
 									    }
@@ -12861,17 +11414,37 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 	    ? (vlTOPp->Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tFraB1 
 	       >> (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tExpA1D)))
 	    : VL_ULL(0));
-    // ALWAYS at Jx2ExUnit.v:408
-    vlTOPp->Jx2ExUnit__DOT__exRegNextPc = (((QData)((IData)(
-							    (vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regPc 
-							     >> 0x20U))) 
-					    << 0x20U) 
-					   | (QData)((IData)(
-							     ((IData)(vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regPc) 
-							      + 
-							      ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA) 
-							       << 1U)))));
-    vlTOPp->Jx2ExUnit__DOT__exCtlInPc = vlTOPp->Jx2ExUnit__DOT__exRegNextPc;
+    vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSPc = __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSPc;
+    vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSSp = __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSSp;
+    vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regGbr = __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regGbr;
+    vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regTbr = __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regTbr;
+    vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSPr = __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSPr;
+    vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSSr = __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSSr;
+    vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSGb = __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSGb;
+    vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSTb = __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSTb;
+    vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regTtb = __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regTtb;
+    vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSttb = __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSttb;
+    vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regKrr = __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regKrr;
+    // ALWAYSPOST at Jx2RegGpr.v:660
+    if (__Vdlyvset__Jx2ExUnit__DOT__gprFile__DOT__regGprArrM__v0) {
+	vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regGprArrM[__Vdlyvdim0__Jx2ExUnit__DOT__gprFile__DOT__regGprArrM__v0] 
+	    = __Vdlyvval__Jx2ExUnit__DOT__gprFile__DOT__regGprArrM__v0;
+    }
+    // ALWAYSPOST at Jx2RegGpr.v:661
+    if (__Vdlyvset__Jx2ExUnit__DOT__gprFile__DOT__regGprArrM__v0) {
+	vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regGprArrN[__Vdlyvdim0__Jx2ExUnit__DOT__gprFile__DOT__regGprArrN__v0] 
+	    = __Vdlyvval__Jx2ExUnit__DOT__gprFile__DOT__regGprArrN__v0;
+    }
+    // ALWAYSPOST at Jx2RegGpr.v:662
+    if (__Vdlyvset__Jx2ExUnit__DOT__gprFile__DOT__regGprArrM__v0) {
+	vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regGprArrO[__Vdlyvdim0__Jx2ExUnit__DOT__gprFile__DOT__regGprArrO__v0] 
+	    = __Vdlyvval__Jx2ExUnit__DOT__gprFile__DOT__regGprArrO__v0;
+    }
+    vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regExsr = __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regExsr;
+    vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regVbr = __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regVbr;
+    vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regMmcr = __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regMmcr;
+    vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSp = __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSp;
+    vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSr = __Vdly__Jx2ExUnit__DOT__gprFile__DOT__regSr;
     // ALWAYS at Jx2ExMul.v:129
     if (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulIsPMul1) {
 	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiAA 
@@ -14097,7 +12670,469 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 	vlTOPp->Jx2ExUnit__DOT__fpr__DOT__tRegValRn 
 	    = vlTOPp->Jx2ExUnit__DOT__exFpOp__DOT__tRegOutVal;
     }
-    // ALWAYS at Jx2ExOp.v:599
+    // ALWAYS at Jx2RegGpr.v:549
+    vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSrRB = 
+	(1U & (IData)((vlTOPp->Jx2ExUnit__DOT__gprExNextSr2 
+		       >> 0x1dU)));
+    // ALWAYS at Jx2IcTileC.v:99
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icReqAddr 
+	= (VL_ULL(0xfffffffffff) & (vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regPc 
+				    >> 4U));
+    // ALWAYS at Jx2IcTileC.v:99
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkHi 
+	= ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkAddr)) 
+	   != (1U & (IData)((vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regPc 
+			     >> 4U))));
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkWordIx 
+	= (((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkHi) 
+	    << 3U) | (7U & (IData)((vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regPc 
+				    >> 1U))));
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkMiss 
+	= (1U & (((((0xfffffffU & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkAddr)) 
+		    != (0xfffffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regPc 
+					      >> 4U)))) 
+		   & (((IData)(1U) + (0xfffffffU & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkAddr))) 
+		      != (0xfffffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regPc 
+						>> 4U))))) 
+		  | ((0xffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkAddr 
+					 >> 0x1cU))) 
+		     != (0xffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regPc 
+					    >> 0x20U))))) 
+		 | (~ (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkReady))));
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA0 
+	= ((0x3fU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[1U] 
+				<< 0x16U) | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[0U] 
+					     >> 0xaU))))
+	    ? 3U : ((0x3eU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[1U] 
+					 << 0x16U) 
+					| (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[0U] 
+					   >> 0xaU))))
+		     ? 2U : ((0x3cU == (0x3eU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[1U] 
+						  << 0x16U) 
+						 | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[0U] 
+						    >> 0xaU))))
+			      ? 2U : 1U)));
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA1 
+	= ((0x3fU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[1U] 
+				<< 6U) | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[0U] 
+					  >> 0x1aU))))
+	    ? 3U : ((0x3eU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[1U] 
+					 << 6U) | (
+						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[0U] 
+						   >> 0x1aU))))
+		     ? 2U : ((0x3cU == (0x3eU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[1U] 
+						  << 6U) 
+						 | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[0U] 
+						    >> 0x1aU))))
+			      ? 2U : 1U)));
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA2 
+	= ((0x3fU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[2U] 
+				<< 0x16U) | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[1U] 
+					     >> 0xaU))))
+	    ? 3U : ((0x3eU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[2U] 
+					 << 0x16U) 
+					| (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[1U] 
+					   >> 0xaU))))
+		     ? 2U : ((0x3cU == (0x3eU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[2U] 
+						  << 0x16U) 
+						 | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[1U] 
+						    >> 0xaU))))
+			      ? 2U : 1U)));
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA3 
+	= ((0x3fU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[2U] 
+				<< 6U) | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[1U] 
+					  >> 0x1aU))))
+	    ? 3U : ((0x3eU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[2U] 
+					 << 6U) | (
+						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[1U] 
+						   >> 0x1aU))))
+		     ? 2U : ((0x3cU == (0x3eU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[2U] 
+						  << 6U) 
+						 | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[1U] 
+						    >> 0x1aU))))
+			      ? 2U : 1U)));
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA4 
+	= ((0x3fU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[3U] 
+				<< 0x16U) | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[2U] 
+					     >> 0xaU))))
+	    ? 3U : ((0x3eU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[3U] 
+					 << 0x16U) 
+					| (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[2U] 
+					   >> 0xaU))))
+		     ? 2U : ((0x3cU == (0x3eU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[3U] 
+						  << 0x16U) 
+						 | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[2U] 
+						    >> 0xaU))))
+			      ? 2U : 1U)));
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA5 
+	= ((0x3fU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[3U] 
+				<< 6U) | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[2U] 
+					  >> 0x1aU))))
+	    ? 3U : ((0x3eU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[3U] 
+					 << 6U) | (
+						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[2U] 
+						   >> 0x1aU))))
+		     ? 2U : ((0x3cU == (0x3eU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[3U] 
+						  << 6U) 
+						 | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[2U] 
+						    >> 0x1aU))))
+			      ? 2U : 1U)));
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA6 
+	= ((0x3fU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[4U] 
+				<< 0x16U) | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[3U] 
+					     >> 0xaU))))
+	    ? 3U : ((0x3eU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[4U] 
+					 << 0x16U) 
+					| (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[3U] 
+					   >> 0xaU))))
+		     ? 2U : ((0x3cU == (0x3eU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[4U] 
+						  << 0x16U) 
+						 | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[3U] 
+						    >> 0xaU))))
+			      ? 2U : 1U)));
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA7 
+	= ((0x3fU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[4U] 
+				<< 6U) | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[3U] 
+					  >> 0x1aU))))
+	    ? 3U : ((0x3eU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[4U] 
+					 << 6U) | (
+						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[3U] 
+						   >> 0x1aU))))
+		     ? 2U : ((0x3cU == (0x3eU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[4U] 
+						  << 6U) 
+						 | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[3U] 
+						    >> 0x1aU))))
+			      ? 2U : 1U)));
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA8 
+	= ((0x3fU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[5U] 
+				<< 0x16U) | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[4U] 
+					     >> 0xaU))))
+	    ? 3U : ((0x3eU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[5U] 
+					 << 0x16U) 
+					| (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[4U] 
+					   >> 0xaU))))
+		     ? 2U : ((0x3cU == (0x3eU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[5U] 
+						  << 0x16U) 
+						 | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[4U] 
+						    >> 0xaU))))
+			      ? 2U : 1U)));
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA9 
+	= ((0x3fU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[5U] 
+				<< 6U) | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[4U] 
+					  >> 0x1aU))))
+	    ? 3U : ((0x3eU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[5U] 
+					 << 6U) | (
+						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[4U] 
+						   >> 0x1aU))))
+		     ? 2U : ((0x3cU == (0x3eU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[5U] 
+						  << 6U) 
+						 | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[4U] 
+						    >> 0x1aU))))
+			      ? 2U : 1U)));
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA10 
+	= ((0x3fU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[6U] 
+				<< 0x16U) | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[5U] 
+					     >> 0xaU))))
+	    ? 3U : ((0x3eU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[6U] 
+					 << 0x16U) 
+					| (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[5U] 
+					   >> 0xaU))))
+		     ? 2U : ((0x3cU == (0x3eU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[6U] 
+						  << 0x16U) 
+						 | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[5U] 
+						    >> 0xaU))))
+			      ? 2U : 1U)));
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA11 
+	= ((0x3fU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[6U] 
+				<< 6U) | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[5U] 
+					  >> 0x1aU))))
+	    ? 3U : ((0x3eU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[6U] 
+					 << 6U) | (
+						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[5U] 
+						   >> 0x1aU))))
+		     ? 2U : ((0x3cU == (0x3eU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[6U] 
+						  << 6U) 
+						 | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[5U] 
+						    >> 0x1aU))))
+			      ? 2U : 1U)));
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA12 
+	= ((0x3fU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[7U] 
+				<< 0x16U) | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[6U] 
+					     >> 0xaU))))
+	    ? 3U : ((0x3eU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[7U] 
+					 << 0x16U) 
+					| (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[6U] 
+					   >> 0xaU))))
+		     ? 2U : ((0x3cU == (0x3eU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[7U] 
+						  << 0x16U) 
+						 | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[6U] 
+						    >> 0xaU))))
+			      ? 2U : 1U)));
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA13 
+	= ((0x3fU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[7U] 
+				<< 6U) | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[6U] 
+					  >> 0x1aU))))
+	    ? 3U : ((0x3eU == (0x3fU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[7U] 
+					 << 6U) | (
+						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[6U] 
+						   >> 0x1aU))))
+		     ? 2U : ((0x3cU == (0x3eU & ((vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[7U] 
+						  << 6U) 
+						 | (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[6U] 
+						    >> 0x1aU))))
+			      ? 2U : 1U)));
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkLenF14 = 0U;
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkLenF15 = 0U;
+    if ((0x3fU == (0x3fU & (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[7U] 
+			    >> 0xaU)))) {
+	vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA14 = 3U;
+	vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkLenF14 = 1U;
+    } else {
+	vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA14 
+	    = ((0x3eU == (0x3fU & (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[7U] 
+				   >> 0xaU))) ? 2U : 
+	       ((0x3cU == (0x3eU & (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[7U] 
+				    >> 0xaU))) ? 2U
+		 : 1U));
+    }
+    if ((0x3fU == (0x3fU & (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[7U] 
+			    >> 0x1aU)))) {
+	vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA15 = 3U;
+	vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkLenF15 = 1U;
+    } else {
+	if ((0x3eU == (0x3fU & (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[7U] 
+				>> 0x1aU)))) {
+	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA15 = 2U;
+	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkLenF15 = 1U;
+	} else {
+	    if ((0x3cU == (0x3eU & (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[7U] 
+				    >> 0x1aU)))) {
+		vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA15 = 2U;
+		vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkLenF15 = 1U;
+	    } else {
+		vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA15 = 1U;
+	    }
+	}
+    }
+    if (((0xeU == (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkWordIx)) 
+	 & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkLenF14))) {
+	vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkMiss = 1U;
+    }
+    if (((0xfU == (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkWordIx)) 
+	 & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkLenF15))) {
+	vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkMiss = 1U;
+    }
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcVal = VL_ULL(0);
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA = 0U;
+    if (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkMiss) {
+	vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcOK = 2U;
+    } else {
+	vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcOK = 1U;
+	if ((8U & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkWordIx))) {
+	    if ((4U & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkWordIx))) {
+		if ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkWordIx))) {
+		    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkWordIx))) {
+			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcVal 
+			    = (QData)((IData)((0xffffU 
+					       & (vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[7U] 
+						  >> 0x10U))));
+			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA 
+			    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA15;
+		    } else {
+			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcVal 
+			    = (QData)((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[7U]));
+			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA 
+			    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA14;
+		    }
+		} else {
+		    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkWordIx))) {
+			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcVal 
+			    = (VL_ULL(0xffffffffffff) 
+			       & (((QData)((IData)(
+						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[7U])) 
+				   << 0x10U) | ((QData)((IData)(
+								vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[6U])) 
+						>> 0x10U)));
+			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA 
+			    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA13;
+		    } else {
+			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcVal 
+			    = (VL_ULL(0xffffffffffff) 
+			       & (((QData)((IData)(
+						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[7U])) 
+				   << 0x20U) | (QData)((IData)(
+							       vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[6U]))));
+			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA 
+			    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA12;
+		    }
+		}
+	    } else {
+		if ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkWordIx))) {
+		    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkWordIx))) {
+			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcVal 
+			    = (VL_ULL(0xffffffffffff) 
+			       & (((QData)((IData)(
+						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[7U])) 
+				   << 0x30U) | (((QData)((IData)(
+								 vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[6U])) 
+						 << 0x10U) 
+						| ((QData)((IData)(
+								   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[5U])) 
+						   >> 0x10U))));
+			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA 
+			    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA11;
+		    } else {
+			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcVal 
+			    = (VL_ULL(0xffffffffffff) 
+			       & (((QData)((IData)(
+						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[6U])) 
+				   << 0x20U) | (QData)((IData)(
+							       vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[5U]))));
+			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA 
+			    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA10;
+		    }
+		} else {
+		    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkWordIx))) {
+			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcVal 
+			    = (VL_ULL(0xffffffffffff) 
+			       & (((QData)((IData)(
+						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[6U])) 
+				   << 0x30U) | (((QData)((IData)(
+								 vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[5U])) 
+						 << 0x10U) 
+						| ((QData)((IData)(
+								   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[4U])) 
+						   >> 0x10U))));
+			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA 
+			    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA9;
+		    } else {
+			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcVal 
+			    = (VL_ULL(0xffffffffffff) 
+			       & (((QData)((IData)(
+						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[5U])) 
+				   << 0x20U) | (QData)((IData)(
+							       vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[4U]))));
+			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA 
+			    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA8;
+		    }
+		}
+	    }
+	} else {
+	    if ((4U & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkWordIx))) {
+		if ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkWordIx))) {
+		    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkWordIx))) {
+			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcVal 
+			    = (VL_ULL(0xffffffffffff) 
+			       & (((QData)((IData)(
+						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[5U])) 
+				   << 0x30U) | (((QData)((IData)(
+								 vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[4U])) 
+						 << 0x10U) 
+						| ((QData)((IData)(
+								   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[3U])) 
+						   >> 0x10U))));
+			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA 
+			    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA7;
+		    } else {
+			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcVal 
+			    = (VL_ULL(0xffffffffffff) 
+			       & (((QData)((IData)(
+						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[4U])) 
+				   << 0x20U) | (QData)((IData)(
+							       vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[3U]))));
+			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA 
+			    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA6;
+		    }
+		} else {
+		    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkWordIx))) {
+			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcVal 
+			    = (VL_ULL(0xffffffffffff) 
+			       & (((QData)((IData)(
+						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[4U])) 
+				   << 0x30U) | (((QData)((IData)(
+								 vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[3U])) 
+						 << 0x10U) 
+						| ((QData)((IData)(
+								   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[2U])) 
+						   >> 0x10U))));
+			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA 
+			    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA5;
+		    } else {
+			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcVal 
+			    = (VL_ULL(0xffffffffffff) 
+			       & (((QData)((IData)(
+						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[3U])) 
+				   << 0x20U) | (QData)((IData)(
+							       vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[2U]))));
+			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA 
+			    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA4;
+		    }
+		}
+	    } else {
+		if ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkWordIx))) {
+		    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkWordIx))) {
+			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcVal 
+			    = (VL_ULL(0xffffffffffff) 
+			       & (((QData)((IData)(
+						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[3U])) 
+				   << 0x30U) | (((QData)((IData)(
+								 vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[2U])) 
+						 << 0x10U) 
+						| ((QData)((IData)(
+								   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[1U])) 
+						   >> 0x10U))));
+			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA 
+			    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA3;
+		    } else {
+			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcVal 
+			    = (VL_ULL(0xffffffffffff) 
+			       & (((QData)((IData)(
+						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[2U])) 
+				   << 0x20U) | (QData)((IData)(
+							       vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[1U]))));
+			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA 
+			    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA2;
+		    }
+		} else {
+		    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkWordIx))) {
+			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcVal 
+			    = (VL_ULL(0xffffffffffff) 
+			       & (((QData)((IData)(
+						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[2U])) 
+				   << 0x30U) | (((QData)((IData)(
+								 vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[1U])) 
+						 << 0x10U) 
+						| ((QData)((IData)(
+								   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[0U])) 
+						   >> 0x10U))));
+			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA 
+			    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA1;
+		    } else {
+			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tRegOutPcVal 
+			    = (VL_ULL(0xffffffffffff) 
+			       & (((QData)((IData)(
+						   vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[1U])) 
+				   << 0x20U) | (QData)((IData)(
+							       vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkData[0U]))));
+			vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA 
+			    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA0;
+		    }
+		}
+	    }
+	}
+    }
+    // ALWAYS at Jx2ExUnit.v:418
+    vlTOPp->Jx2ExUnit__DOT__exRegNextPc = (((QData)((IData)(
+							    (vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regPc 
+							     >> 0x20U))) 
+					    << 0x20U) 
+					   | (QData)((IData)(
+							     ((IData)(vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regPc) 
+							      + 
+							      ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA) 
+							       << 1U)))));
+    vlTOPp->Jx2ExUnit__DOT__exCtlInPc = vlTOPp->Jx2ExUnit__DOT__exRegNextPc;
+    // ALWAYS at Jx2ExOp.v:606
     vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSp = vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSp;
     vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutPc = vlTOPp->Jx2ExUnit__DOT__exCtlInPc;
     vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutPr = vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regPr;
@@ -14468,10 +13503,7 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 				if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmd))) {
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpMiss1 = 1U;
 				} else {
-				    if ((1U != (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpState))) {
-					vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutOK = 2U;
-					vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tNextOpState = 1U;
-				    }
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C = 1U;
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal 
 					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__regLastMaAddr;
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutId 
@@ -14570,7 +13602,6 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 		= vlTOPp->Jx2ExUnit__DOT__exRegIdRn;
 	}
     }
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__regFphfCmd = 0U;
     if ((0x80U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdB))) {
 	if ((0x40U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdB))) {
 	    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpMiss2 = 1U;
@@ -14728,14 +13759,7 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 				}
 			    } else {
 				if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdB))) {
-				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__regFphfCmd 
-					= (3U & (IData)(vlTOPp->Jx2ExUnit__DOT__exRegIdIxtB));
-				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutOK 
-					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tRegExOK2;
-				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal 
-					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tRegValRo2;
-				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutId 
-					= vlTOPp->Jx2ExUnit__DOT__exRegIdRn;
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpMiss2 = 1U;
 				} else {
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__regMulA 
 					= vlTOPp->Jx2ExUnit__DOT__exRegValRm;
@@ -14754,21 +13778,15 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 			} else {
 			    if ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdB))) {
 				if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdB))) {
-				    if (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluSimdIs2C) 
-					 & (1U != (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpState)))) {
-					vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutOK = 2U;
-					vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tNextOpState = 1U;
-				    }
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C 
+					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluSimdIs2C;
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutId 
 					= vlTOPp->Jx2ExUnit__DOT__exRegIdRn;
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal 
 					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tAluPSubL;
 				} else {
-				    if (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluSimdIs2C) 
-					 & (1U != (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpState)))) {
-					vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutOK = 2U;
-					vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tNextOpState = 1U;
-				    }
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C 
+					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluSimdIs2C;
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutId 
 					= vlTOPp->Jx2ExUnit__DOT__exRegIdRn;
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal 
@@ -14776,21 +13794,15 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 				}
 			    } else {
 				if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdB))) {
-				    if (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluSimdIs2C) 
-					 & (1U != (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpState)))) {
-					vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutOK = 2U;
-					vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tNextOpState = 1U;
-				    }
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C 
+					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluSimdIs2C;
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutId 
 					= vlTOPp->Jx2ExUnit__DOT__exRegIdRn;
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal 
 					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tAluPSubW;
 				} else {
-				    if (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluSimdIs2C) 
-					 & (1U != (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpState)))) {
-					vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutOK = 2U;
-					vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tNextOpState = 1U;
-				    }
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C 
+					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluSimdIs2C;
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutId 
 					= vlTOPp->Jx2ExUnit__DOT__exRegIdRn;
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal 
@@ -14814,7 +13826,8 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 				vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpMiss2 = 1U;
 			    } else {
 				if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdB))) {
-				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C = 1U;
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C 
+					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluIs2C;
 				    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSr))) {
 					vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal 
 					    = (((QData)((IData)(
@@ -14845,7 +13858,8 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutId 
 					= vlTOPp->Jx2ExUnit__DOT__exRegIdRn;
 				} else {
-				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C = 1U;
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C 
+					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluIs2C;
 				    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSr))) {
 					vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal 
 					    = (((QData)((IData)(
@@ -14972,7 +13986,8 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 				}
 			    } else {
 				if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdB))) {
-				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C = 1U;
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C 
+					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluIs2C;
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal 
 					= (((QData)((IData)(
 							    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tSubRmRi1[1U])) 
@@ -14982,7 +13997,8 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutId 
 					= vlTOPp->Jx2ExUnit__DOT__exRegIdRn;
 				} else {
-				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C = 1U;
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C 
+					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluIs2C;
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal 
 					= (((QData)((IData)(
 							    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tAddRmRi0[1U])) 
@@ -15001,22 +14017,26 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 			    } else {
 				if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdB))) {
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal 
-					= (QData)((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSubRmRi_A1));
+					= (QData)((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tSubRmRi_A1));
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutId 
 					= vlTOPp->Jx2ExUnit__DOT__exRegIdRn;
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C 
+					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluIs2C;
 				} else {
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal 
 					= (((QData)((IData)(
 							    ((1U 
 							      & (IData)(
-									(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSubRmRi_A1 
+									(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tSubRmRi_A1 
 									 >> 0x1fU)))
 							      ? 0xffffffffU
 							      : 0U))) 
 					    << 0x20U) 
-					   | (QData)((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSubRmRi_A1)));
+					   | (QData)((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tSubRmRi_A1)));
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutId 
 					= vlTOPp->Jx2ExUnit__DOT__exRegIdRn;
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C 
+					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluIs2C;
 				}
 			    }
 			} else {
@@ -15139,22 +14159,26 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 			    if ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdB))) {
 				if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdB))) {
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal 
-					= (QData)((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAddRmRi_A0));
+					= (QData)((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tAddRmRi_A0));
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutId 
 					= vlTOPp->Jx2ExUnit__DOT__exRegIdRn;
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C 
+					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluIs2C;
 				} else {
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal 
 					= (((QData)((IData)(
 							    ((1U 
 							      & (IData)(
-									(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAddRmRi_A0 
+									(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tAddRmRi_A0 
 									 >> 0x1fU)))
 							      ? 0xffffffffU
 							      : 0U))) 
 					    << 0x20U) 
-					   | (QData)((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAddRmRi_A0)));
+					   | (QData)((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tAddRmRi_A0)));
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutId 
 					= vlTOPp->Jx2ExUnit__DOT__exRegIdRn;
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C 
+					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluIs2C;
 				}
 			    } else {
 				vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpMiss2 = 1U;
@@ -15170,93 +14194,7 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 	}
     }
     if ((0x80U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdC))) {
-	if ((0x40U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdC))) {
-	    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpMiss3 = 1U;
-	} else {
-	    if ((0x20U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdC))) {
-		vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpMiss3 = 1U;
-	    } else {
-		if ((0x10U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdC))) {
-		    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpMiss3 = 1U;
-		} else {
-		    if ((8U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdC))) {
-			vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpMiss3 = 1U;
-		    } else {
-			if ((4U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdC))) {
-			    if ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdC))) {
-				if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdC))) {
-				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpMiss3 = 1U;
-				} else {
-				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSr 
-					= ((VL_ULL(0xfffffffffffffffc) 
-					    & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSr) 
-					   | (IData)((IData)(
-							     ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHiPL) 
-							      ^ 
-							      ((2U 
-								& (((IData)(
-									    (vlTOPp->Jx2ExUnit__DOT__exRegValRn 
-									     >> 0x3fU)) 
-								    | (IData)(
-									      (vlTOPp->Jx2ExUnit__DOT__exRegValRm 
-									       >> 0x3fU))) 
-								   << 1U)) 
-							       | (1U 
-								  & ((IData)(
-									     (vlTOPp->Jx2ExUnit__DOT__exRegValRn 
-									      >> 0x1fU)) 
-								     | (IData)(
-									       (vlTOPp->Jx2ExUnit__DOT__exRegValRm 
-										>> 0x1fU)))))))));
-				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSr 
-					= ((VL_ULL(0xffffffffffffff0f) 
-					    & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSr) 
-					   | ((QData)((IData)(
-							      ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHiPW) 
-							       ^ 
-							       ((8U 
-								 & (((IData)(
-									     (vlTOPp->Jx2ExUnit__DOT__exRegValRn 
-									      >> 0x3fU)) 
-								     | (IData)(
-									       (vlTOPp->Jx2ExUnit__DOT__exRegValRm 
-										>> 0x3fU))) 
-								    << 3U)) 
-								| ((4U 
-								    & (((IData)(
-										(vlTOPp->Jx2ExUnit__DOT__exRegValRn 
-										>> 0x2fU)) 
-									| (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__exRegValRm 
-										>> 0x2fU))) 
-								       << 2U)) 
-								   | ((2U 
-								       & (((IData)(
-										(vlTOPp->Jx2ExUnit__DOT__exRegValRn 
-										>> 0x1fU)) 
-									   | (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__exRegValRm 
-										>> 0x1fU))) 
-									  << 1U)) 
-								      | (1U 
-									 & ((IData)(
-										(vlTOPp->Jx2ExUnit__DOT__exRegValRn 
-										>> 0xfU)) 
-									    | (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__exRegValRm 
-										>> 0xfU)))))))))) 
-					      << 4U));
-				}
-			    } else {
-				vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpMiss3 = 1U;
-			    }
-			} else {
-			    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpMiss3 = 1U;
-			}
-		    }
-		}
-	    }
-	}
+	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpMiss3 = 1U;
     } else {
 	if ((0x40U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdC))) {
 	    if ((0x20U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdC))) {
@@ -15297,7 +14235,8 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 			} else {
 			    if ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdC))) {
 				if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdC))) {
-				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C = 1U;
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C 
+					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluIs2C;
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSr 
 					= ((VL_ULL(0xfffffffffffffffe) 
 					    & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSr) 
@@ -15312,7 +14251,8 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 									    (vlTOPp->Jx2ExUnit__DOT__exRegValRm 
 									     >> 0x3fU))))))));
 				} else {
-				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C = 1U;
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C 
+					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluIs2C;
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSr 
 					= ((VL_ULL(0xfffffffffffffffe) 
 					    & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSr) 
@@ -15320,7 +14260,8 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 				}
 			    } else {
 				if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdC))) {
-				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C = 1U;
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C 
+					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluIs2C;
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSr 
 					= ((VL_ULL(0xfffffffffffffffe) 
 					    & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSr) 
@@ -15383,7 +14324,8 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 				}
 			    } else {
 				if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdC))) {
-				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C = 1U;
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C 
+					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluIs2C;
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSr 
 					= ((VL_ULL(0xfffffffffffffffe) 
 					    & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSr) 
@@ -15408,7 +14350,8 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 									    (vlTOPp->Jx2ExUnit__DOT__exRegValFRm 
 									     >> 0x1fU))))))));
 				} else {
-				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C = 1U;
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C 
+					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluIs2C;
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSr 
 					= ((VL_ULL(0xfffffffffffffffe) 
 					    & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSr) 
@@ -15431,10 +14374,29 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 			    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpMiss3 = 1U;
 			} else {
 			    if ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdC))) {
-				vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpMiss3 = 1U;
-			    } else {
 				if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdC))) {
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpMiss3 = 1U;
+				} else {
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSr 
+					= ((VL_ULL(0xfffffffffffffffe) 
+					    & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSr) 
+					   | (IData)((IData)(
+							     (1U 
+							      & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCmpRmRnHsQ) 
+								 ^ 
+								 ((IData)(
+									  (vlTOPp->Jx2ExUnit__DOT__exRegValRn 
+									   >> 0x3fU)) 
+								  ^ (IData)(
+									    (vlTOPp->Jx2ExUnit__DOT__exRegValRm 
+									     >> 0x3fU))))))));
+				}
+			    } else {
+				if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdC))) {
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSr 
+					= ((VL_ULL(0xfffffffffffffffe) 
+					    & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSr) 
+					   | (IData)((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCmpRmRnHsQ)));
 				} else {
 				    if (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__regRnIsGpr) {
 					vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutId 
@@ -16138,18 +15100,11 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 									      (IData)(vlTOPp->Jx2ExUnit__DOT__exRegIdIxt));
 								    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutOK = 2U;
 								} else {
+								    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C = 1U;
 								    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutDlr 
-									= 
-									vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr
-									[
-									(0xfU 
-									 & (IData)(vlTOPp->Jx2ExUnit__DOT__exRegIdRn))];
+									= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidOutDlr;
 								    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutDhr 
-									= 
-									vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr
-									[
-									(0xfU 
-									 & (IData)(vlTOPp->Jx2ExUnit__DOT__exRegIdRn))];
+									= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidOutDhr;
 								}
 							    } else {
 								if (VL_LIKELY(
@@ -16465,8 +15420,7 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 	}
     }
     if (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C) {
-	if (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluIs2C) 
-	     & (1U != (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpState)))) {
+	if ((1U != (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpState))) {
 	    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutOK = 2U;
 	    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tNextOpState = 1U;
 	}
@@ -16480,7 +15434,7 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tNextOpSticky1 = 1U;
 	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutOK = 2U;
     }
-    // ALWAYS at Jx2ExUnit.v:408
+    // ALWAYS at Jx2ExUnit.v:418
     vlTOPp->Jx2ExUnit__DOT__exHold = 0U;
     if ((2U == (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutOK))) {
 	vlTOPp->Jx2ExUnit__DOT__exHold = 1U;
@@ -16576,23 +15530,6 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 			        ? VL_ULL(0) : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__tGenImm64);
 		    }
 		}
-	    } else {
-		if ((4U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRn))) {
-		    if ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRn))) {
-			vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__tRegValCm 
-			    = ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRn))
-			        ? vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regTbr
-			        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regGbr);
-		    }
-		} else {
-		    if ((1U & (~ (0x1fU & ((IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRn) 
-					   >> 1U))))) {
-			if ((1U & (~ (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRn))))) {
-			    vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__tRegValRn 
-				= vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__tGenNextPc;
-			}
-		    }
-		}
 	    }
 	}
     } else {
@@ -16674,44 +15611,38 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 			        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSDl))
 		        : ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
 			    ? ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
-			        ? vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSSp
-			        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSSr)
+			        ? VL_ULL(0) : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSSr)
 			    : ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
 			        ? vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSPr
-			        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSPc)))
-		    : VL_ULL(0)) : ((8U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
-				     ? ((4U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
-					 ? ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
-					     ? VL_ULL(0)
-					     : ((1U 
-						 & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
-						 ? vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regKrr
-						 : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSttb))
-					 : ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
-					     ? ((1U 
-						 & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
-						 ? vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regExsr
-						 : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regMmcr)
-					     : ((1U 
-						 & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
-						 ? vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regTea
-						 : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regTtb)))
-				     : ((4U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
-					 ? ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
-					     ? ((1U 
-						 & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
-						 ? vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regTbr
-						 : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regGbr)
-					     : VL_ULL(0))
-					 : ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
-					     ? ((1U 
-						 & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
-						 ? vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regVbr
-						 : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSr)
-					     : ((1U 
-						 & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
-						 ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutPr
-						 : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__tGenNextPc)))))
+			        : VL_ULL(0)))) : VL_ULL(0))
+	        : ((8U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
+		    ? ((4U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
+		        ? ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
+			    ? VL_ULL(0) : ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
+					    ? vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regKrr
+					    : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSttb))
+		        : ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
+			    ? ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
+			        ? vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regExsr
+			        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regMmcr)
+			    : ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
+			        ? vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regTea
+			        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regTtb)))
+		    : ((4U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
+		        ? ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
+			    ? ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
+			        ? vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regTbr
+			        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regGbr)
+			    : ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
+			        ? vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSSp
+			        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSPc))
+		        : ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
+			    ? ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
+			        ? vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regVbr
+			        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSr)
+			    : ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
+			        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutPr
+			        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__tGenNextPc)))))
 	    : ((0x10U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
 	        ? VL_ULL(0) : ((8U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
 			        ? VL_ULL(0) : ((4U 
@@ -16745,88 +15676,6 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
 	 == (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn)))) {
 	vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__tRegValCm 
 	    = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn;
-    }
-    // ALWAYS at Jx2FphfVecOp.v:87
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextVecRs 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRs;
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextVecRt 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRt;
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextVecRo 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRo;
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextVecRmsk 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRmsk;
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextHeldRo 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tHeldRo;
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tHfopExOp = 0U;
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextIsDone 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tIsDone;
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextSeenOK 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tSeenOK;
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextIsStart 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tIsStart;
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tIsOpMul 
-	= (3U == (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__regFphfCmd));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tHfopRo 
-	= ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tIsOpMul)
-	    ? (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tRegValRo2)
-	    : (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tRegValRo));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tHfopOK 
-	= ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tIsOpMul)
-	    ? (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tRegExOK2)
-	    : ((0U != (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tRegExOp2))
-	        ? 1U : 0U));
-    if ((0U != (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__regFphfCmd))) {
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tRegExOK 
-	    = ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tIsDone)
-	        ? 1U : 2U);
-	if (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tIsStart) {
-	    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRmsk))) {
-		vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tHfopExOp 
-		    = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__regFphfCmd;
-		vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextVecRs 
-		    = (VL_ULL(0xffffffffffff) & (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRs 
-						 >> 0x10U));
-		vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextVecRt 
-		    = (VL_ULL(0xffffffffffff) & (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRt 
-						 >> 0x10U));
-		vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextVecRmsk 
-		    = (7U & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRmsk) 
-			     >> 1U));
-	    }
-	} else {
-	    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextIsStart = 1U;
-	    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextVecRs 
-		= vlTOPp->Jx2ExUnit__DOT__exRegValRmB;
-	    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextVecRt 
-		= vlTOPp->Jx2ExUnit__DOT__exRegValRiB;
-	    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextVecRmsk = 0xfU;
-	}
-	if ((1U == (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tHfopOK))) {
-	    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextVecRo 
-		= (((QData)((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tHfopRo)) 
-		    << 0x30U) | (VL_ULL(0xffffffffffff) 
-				 & (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRo 
-				    >> 0x10U)));
-	    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextSeenOK = 1U;
-	} else {
-	    if ((0U == (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tHfopOK))) {
-		if (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tSeenOK) {
-		    if ((1U & (~ (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tIsDone)))) {
-			vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextHeldRo 
-			    = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRo;
-		    }
-		    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextIsDone = 1U;
-		}
-	    }
-	}
-    } else {
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextIsDone = 0U;
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextSeenOK = 0U;
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextIsStart = 0U;
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextVecRmsk = 0U;
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tRegExOK 
-	    = ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tIsDone)
-	        ? 1U : 0U);
     }
     // ALWAYS at Jx2MmuTlb.v:136
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbMmuEnable 
@@ -17050,16 +15899,6 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
     }
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tRegOutAddr 
 	= (QData)((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbAddr));
-    // ALWAYS at Jx2FphfAdd.v:103
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSga0 
-	= (1U & (IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRs 
-			 >> 0xfU)));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgb0 
-	= (1U & ((IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRt 
-			  >> 0xfU)) ^ (~ (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tHfopExOp))));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgd0 
-	= ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSga0) 
-	   ^ (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgb0));
     // ALWAYS at Jx2MmuChkAcc.v:80
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tAccOutExc = 0U;
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tKrrA 
@@ -17197,6 +16036,123 @@ VL_INLINE_OPT void VJx2ExUnit::_sequent__TOP__2(VJx2ExUnit__Syms* __restrict vlS
     }
 }
 
+void VJx2ExUnit::_initial__TOP__2(VJx2ExUnit__Syms* __restrict vlSymsp) {
+    VL_DEBUG_IF(VL_DBG_MSGF("+    VJx2ExUnit::_initial__TOP__2\n"); );
+    VJx2ExUnit* __restrict vlTOPp VL_ATTR_UNUSED = vlSymsp->TOPp;
+    // Variables
+    VL_SIGW(__Vtemp17,127,0,4);
+    VL_SIGW(__Vtemp18,127,0,4);
+    VL_SIGW(__Vtemp19,127,0,4);
+    VL_SIGW(__Vtemp20,127,0,4);
+    VL_SIGW(__Vtemp21,127,0,4);
+    VL_SIGW(__Vtemp22,127,0,4);
+    VL_SIGW(__Vtemp23,127,0,4);
+    VL_SIGW(__Vtemp24,127,0,4);
+    // Body
+    // INITIAL at Jx2ExOp.v:555
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr0 = 
+	(VL_ULL(0x32584a42) | (VL_ULL(0xffffffff00000000) 
+			       & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr0));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr0 = 
+	(VL_ULL(0x31304c5600000000) | (VL_ULL(0xffffffff) 
+				       & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr0));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr0 = 
+	(VL_ULL(0xffffffff00000000) & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr0);
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr0 = 
+	(VL_ULL(0xffffffff) & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr0);
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr0 = 
+	(VL_ULL(1) | vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr0);
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr0 = 
+	(VL_ULL(2) | vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr0);
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr0 = 
+	(VL_ULL(4) | vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr0);
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr0 = 
+	(VL_ULL(0x10) | vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr0);
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr[0U] 
+	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr0;
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr[0U] 
+	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr0;
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr[1U] = VL_ULL(0);
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr[1U] = VL_ULL(0);
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr[2U] = VL_ULL(0);
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr[2U] = VL_ULL(0);
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr[3U] = VL_ULL(0);
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr[3U] = VL_ULL(0);
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr[4U] = VL_ULL(0);
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr[4U] = VL_ULL(0);
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr[5U] = VL_ULL(0);
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr[5U] = VL_ULL(0);
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr[6U] = VL_ULL(0);
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr[6U] = VL_ULL(0);
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr[7U] = VL_ULL(0);
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr[7U] = VL_ULL(0);
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr[8U] = VL_ULL(0);
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr[8U] = VL_ULL(0);
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr[9U] = VL_ULL(0);
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr[9U] = VL_ULL(0);
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr[0xaU] = VL_ULL(0);
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr[0xaU] = VL_ULL(0);
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr[0xbU] = VL_ULL(0);
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr[0xbU] = VL_ULL(0);
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr[0xcU] = VL_ULL(0);
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr[0xcU] = VL_ULL(0);
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr[0xdU] = VL_ULL(0);
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr[0xdU] = VL_ULL(0);
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr[0xeU] = VL_ULL(0);
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr[0xeU] = VL_ULL(0);
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr[0xfU] = VL_ULL(0);
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr[0xfU] = VL_ULL(0);
+    // INITIAL at Jx2MemTileA.v:245
+    __Vtemp17[0U] = 0x2e747874U;
+    __Vtemp17[1U] = 0x6d5f3261U;
+    __Vtemp17[2U] = 0x6f74726fU;
+    __Vtemp17[3U] = 0x626fU;
+    VL_READMEM_W (true,32,1024, 0,4, __Vtemp17, vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__romTileA
+		  ,0,~0);
+    __Vtemp18[0U] = 0x2e747874U;
+    __Vtemp18[1U] = 0x6d5f3262U;
+    __Vtemp18[2U] = 0x6f74726fU;
+    __Vtemp18[3U] = 0x626fU;
+    VL_READMEM_W (true,32,1024, 0,4, __Vtemp18, vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__romTileB
+		  ,0,~0);
+    __Vtemp19[0U] = 0x2e747874U;
+    __Vtemp19[1U] = 0x6d5f3263U;
+    __Vtemp19[2U] = 0x6f74726fU;
+    __Vtemp19[3U] = 0x626fU;
+    VL_READMEM_W (true,32,1024, 0,4, __Vtemp19, vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__romTileC
+		  ,0,~0);
+    __Vtemp20[0U] = 0x2e747874U;
+    __Vtemp20[1U] = 0x6d5f3264U;
+    __Vtemp20[2U] = 0x6f74726fU;
+    __Vtemp20[3U] = 0x626fU;
+    VL_READMEM_W (true,32,1024, 0,4, __Vtemp20, vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__romTileD
+		  ,0,~0);
+    __Vtemp21[0U] = 0x2e747874U;
+    __Vtemp21[1U] = 0x6d5f3265U;
+    __Vtemp21[2U] = 0x6f74726fU;
+    __Vtemp21[3U] = 0x626fU;
+    VL_READMEM_W (true,32,1024, 0,4, __Vtemp21, vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__romTileE
+		  ,0,~0);
+    __Vtemp22[0U] = 0x2e747874U;
+    __Vtemp22[1U] = 0x6d5f3266U;
+    __Vtemp22[2U] = 0x6f74726fU;
+    __Vtemp22[3U] = 0x626fU;
+    VL_READMEM_W (true,32,1024, 0,4, __Vtemp22, vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__romTileF
+		  ,0,~0);
+    __Vtemp23[0U] = 0x2e747874U;
+    __Vtemp23[1U] = 0x6d5f3267U;
+    __Vtemp23[2U] = 0x6f74726fU;
+    __Vtemp23[3U] = 0x626fU;
+    VL_READMEM_W (true,32,1024, 0,4, __Vtemp23, vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__romTileG
+		  ,0,~0);
+    __Vtemp24[0U] = 0x2e747874U;
+    __Vtemp24[1U] = 0x6d5f3268U;
+    __Vtemp24[2U] = 0x6f74726fU;
+    __Vtemp24[3U] = 0x626fU;
+    VL_READMEM_W (true,32,1024, 0,4, __Vtemp24, vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__romTileH
+		  ,0,~0);
+}
+
 void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
     VL_DEBUG_IF(VL_DBG_MSGF("+    VJx2ExUnit::_settle__TOP__3\n"); );
     VJx2ExUnit* __restrict vlTOPp VL_ATTR_UNUSED = vlSymsp->TOPp;
@@ -17212,10 +16168,6 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
     vlTOPp->mmioOutData = vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMmioOutData2;
     vlTOPp->mmioAddr = vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMmioAddr2;
     vlTOPp->mmioOpm = vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tMmioOpm2;
-    // ALWAYS at Jx2ExOp.v:599
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutGbr = vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regGbr;
-    // ALWAYS at Jx2ExOp.v:599
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutTbr = vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regTbr;
     // ALWAYS at Jx2FpuMul.v:130
     // ALWAYS at Jx2FpuMul.v:130
     vlTOPp->Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC2_R 
@@ -17245,30 +16197,6 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 	vlTOPp->Jx2ExUnit__DOT__cache__DOT__tRegOutTea 
 	    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tRegOutTea2;
     }
-    // ALWAYS at Jx2FphfMul.v:58
-    if ((0x200000U & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tFrc)) {
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tExd 
-	    = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tExc1;
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tFrd 
-	    = (0x3ffU & (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tFrc 
-			 >> 0xbU));
-    } else {
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tExd 
-	    = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tExc0;
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tFrd 
-	    = (0x3ffU & (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tFrc 
-			 >> 0xaU));
-    }
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tRegValRo 
-	= ((0x20U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tExd))
-	    ? ((0x10U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tExd))
-	        ? 0U : (0x7c00U | ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tSgc) 
-				   << 0xfU))) : (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tSgc) 
-						  << 0xfU) 
-						 | ((0x7c00U 
-						     & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tExd) 
-							<< 0xaU)) 
-						    | (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tFrd))));
     // ALWAYS at Jx2FpuMul.v:130
     if ((0x800U & (IData)(vlTOPp->Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tExpC4))) {
 	vlTOPp->Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tSgnC4B = 0U;
@@ -17311,52 +16239,6 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 	    << 0x3fU) | (((QData)((IData)((0x7ffU & (IData)(vlTOPp->Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tExpC4B)))) 
 			  << 0x34U) | (VL_ULL(0xfffffffffffff) 
 				       & vlTOPp->Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC4B)));
-    // ALWAYS at Jx2FphfAdd.v:103
-    if (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExGtAB1) {
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgc1 
-	    = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSga1;
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc1 
-	    = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExa1;
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc1 
-	    = (0xfffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgd1)
-			  ? ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFra1) 
-			     - (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrShrB1))
-			  : ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFra1) 
-			     + (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrShrB1))));
-    } else {
-	if (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExGtBA1) {
-	    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgc1 
-		= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgb1;
-	    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc1 
-		= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExb1;
-	    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc1 
-		= (0xfffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgd1)
-			      ? ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrb1) 
-				 - (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrShrA1))
-			      : ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrb1) 
-				 + (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrShrA1))));
-	} else {
-	    if (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrGtAB1) {
-		vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgc1 
-		    = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSga1;
-		vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc1 
-		    = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExa1;
-		vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc1 
-		    = ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgd1)
-		        ? (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrDifA1)
-		        : (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrSum1));
-	    } else {
-		vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgc1 
-		    = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgb1;
-		vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc1 
-		    = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExb1;
-		vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc1 
-		    = ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgd1)
-		        ? (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrDifB1)
-		        : (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrSum1));
-	    }
-	}
-    }
     // ALWAYS at Jx2ExCsAdd64F.v:30
     vlTOPp->Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__fpmulAdd__DOT__tVal0_A0 
 	= (0x1ffffU & ((0xffffU & (IData)(vlTOPp->Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tFraC3_Q)) 
@@ -17423,140 +16305,6 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 				   >> 0x20U))) ? vlTOPp->Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__fpmulAdd__DOT__tVal1_B1
 		     : vlTOPp->Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__fpmulAdd__DOT__tVal1_B0) 
 		   >> 0x20U));
-    // ALWAYS at Jx2FphfAdd.v:103
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgc2B 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgc2;
-    if ((0x800U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2))) {
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2B 
-	    = (0x3fU & ((IData)(1U) + (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2)));
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2B 
-	    = (0x3ffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2) 
-			 >> 1U));
-    } else {
-	if ((0x400U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2))) {
-	    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2B 
-		= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2;
-	    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2B 
-		= (0x3ffU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2));
-	} else {
-	    if ((0x200U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2))) {
-		vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2B 
-		    = (0x3fU & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2) 
-				- (IData)(1U)));
-		vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2B 
-		    = (0x3feU & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2) 
-				 << 1U));
-	    } else {
-		if ((0x100U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2))) {
-		    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2B 
-			= (0x3fU & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2) 
-				    - (IData)(2U)));
-		    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2B 
-			= (0x3fcU & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2) 
-				     << 2U));
-		} else {
-		    if ((0x80U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2))) {
-			vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2B 
-			    = (0x3fU & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2) 
-					- (IData)(3U)));
-			vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2B 
-			    = (0x3f8U & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2) 
-					 << 3U));
-		    } else {
-			if ((0x40U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2))) {
-			    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2B 
-				= (0x3fU & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2) 
-					    - (IData)(4U)));
-			    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2B 
-				= (0x3f0U & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2) 
-					     << 4U));
-			} else {
-			    if ((0x20U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2))) {
-				vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2B 
-				    = (0x3fU & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2) 
-						- (IData)(5U)));
-				vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2B 
-				    = (0x3e0U & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2) 
-						 << 5U));
-			    } else {
-				if ((0x10U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2))) {
-				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2B 
-					= (0x3fU & 
-					   ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2) 
-					    - (IData)(6U)));
-				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2B 
-					= (0x3c0U & 
-					   ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2) 
-					    << 6U));
-				} else {
-				    if ((8U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2))) {
-					vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2B 
-					    = (0x3fU 
-					       & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2) 
-						  - (IData)(7U)));
-					vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2B 
-					    = (0x380U 
-					       & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2) 
-						  << 7U));
-				    } else {
-					if ((4U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2))) {
-					    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2B 
-						= (0x3fU 
-						   & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2) 
-						      - (IData)(8U)));
-					    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2B 
-						= (0x300U 
-						   & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2) 
-						      << 8U));
-					} else {
-					    if ((2U 
-						 & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2))) {
-						vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2B 
-						    = 
-						    (0x3fU 
-						     & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2) 
-							- (IData)(9U)));
-						vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2B 
-						    = 
-						    (0x200U 
-						     & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2) 
-							<< 9U));
-					    } else {
-						if (
-						    (1U 
-						     & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2))) {
-						    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2B 
-							= 
-							(0x3fU 
-							 & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2) 
-							    - (IData)(0xaU)));
-						    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2B = 0U;
-						} else {
-						    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2B = 0U;
-						    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2B = 0U;
-						    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgc2B = 0U;
-						}
-					    }
-					}
-				    }
-				}
-			    }
-			}
-		    }
-		}
-	    }
-	}
-    }
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tRegValRo 
-	= ((0x20U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2B))
-	    ? ((0x10U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2B))
-	        ? 0U : (0x7c00U | ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgc2B) 
-				   << 0xfU))) : (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgc2B) 
-						  << 0xfU) 
-						 | ((0x7c00U 
-						     & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2B) 
-							<< 0xaU)) 
-						    | (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2B))));
     // ALWAYS at Jx2ConvFpuS2D.v:13
     vlTOPp->Jx2ExUnit__DOT__exFpOp__DOT__mem_cnv_s2d__DOT__tExpIsZero 
 	= (0U == (0xffU & (IData)((vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tRegOutData2 
@@ -17587,6 +16335,14 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 		 ((((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tLastCmpRmRnEqPW) 
 		    >> 3U) & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tLastCmpRmRnEqPW) 
 			      >> 2U)) & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tLastCmpRmRnHiPL))));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCmpRmRnHsQ 
+	= (1U & ((((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tLastCmpRmRnHiPW) 
+		   >> 3U) | (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tLastCmpRmRnEqPW) 
+			      >> 3U) & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tLastCmpRmRnHsPW) 
+					>> 2U))) | 
+		 ((((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tLastCmpRmRnEqPW) 
+		    >> 3U) & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tLastCmpRmRnEqPW) 
+			      >> 2U)) & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tLastCmpRmRnHsPL))));
     // ALWAYS at Jx2ExCsAdd64F.v:30
     vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__mulAdd__DOT__tVal0_A0 
 	= (0x1ffffU & ((0xffffU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPqA1)) 
@@ -17653,10 +16409,6 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 				   >> 0x20U))) ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__mulAdd__DOT__tVal1_B1
 		     : vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__mulAdd__DOT__tVal1_B0) 
 		   >> 0x20U));
-    // ALWAYS at Jx2IcTileC.v:99
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icReqAddr 
-	= (VL_ULL(0xfffffffffff) & (vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regPc 
-				    >> 4U));
     // ALWAYS at Jx2FpuMul.v:130
     vlTOPp->Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tSgnA1 
 	= (1U & (IData)((vlTOPp->Jx2ExUnit__DOT__exRegValFRm 
@@ -18701,53 +17453,168 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 							>> 0x3eU)))
 					  ? VL_ULL(0x8000000000000000)
 					  : VL_ULL(0))));
-    // ALWAYS at Jx2FphfAdd.v:103
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExa0 
-	= (0x1fU & (IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRs 
-			    >> 0xaU)));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExb0 
-	= (0x1fU & (IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRt 
-			    >> 0xaU)));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFra0 
-	= (0x400U | (0x3ffU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRs)));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrb0 
-	= (0x400U | (0x3ffU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRt)));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExDifA0 
-	= (0x3fU & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExa0) 
-		    - (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExb0)));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExDifB0 
-	= (0x3fU & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExb0) 
-		    - (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExa0)));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExGtAB0 
-	= (1U & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExDifB0) 
-		 >> 5U));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExGtBA0 
-	= (1U & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExDifA0) 
-		 >> 5U));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrDifA0 
-	= (0xfffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFra0) 
-		     - (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrb0)));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrDifB0 
-	= (0xfffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrb0) 
-		     - (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFra0)));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrSum0 
-	= (0xfffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFra0) 
-		     + (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrb0)));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrGtAB0 
-	= (1U & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrDifB0) 
-		 >> 0xbU));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrShrA0 
-	= (0xfffU & ((0U == (7U & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExDifB0) 
-				   >> 3U))) ? ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFra0) 
-					       >> (0xfU 
-						   & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExDifB0)))
-		      : 0U));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrShrB0 
-	= (0xfffU & ((0U == (7U & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExDifA0) 
-				   >> 3U))) ? ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrb0) 
-					       >> (0xfU 
-						   & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExDifA0)))
-		      : 0U));
+    // ALWAYS at Jx2ExOpAlu.v:94
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRm_T0 
+	= vlTOPp->Jx2ExUnit__DOT__exRegValRmC;
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRi_T0 
+	= vlTOPp->Jx2ExUnit__DOT__exRegValRiC;
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_A0 
+	= (0x1ffffU & ((0xffffU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRm_T0)) 
+		       + (0xffffU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRi_T0))));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_A1 
+	= (0x1ffffU & ((IData)(1U) + ((0xffffU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRm_T0)) 
+				      + (0xffffU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRi_T0)))));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_B0 
+	= (0x1ffffU & ((0xffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRm_T0 
+					   >> 0x10U))) 
+		       + (0xffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRi_T0 
+					     >> 0x10U)))));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_B1 
+	= (0x1ffffU & ((IData)(1U) + ((0xffffU & (IData)(
+							 (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRm_T0 
+							  >> 0x10U))) 
+				      + (0xffffU & (IData)(
+							   (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRi_T0 
+							    >> 0x10U))))));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_C0 
+	= (0x1ffffU & ((0xffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRm_T0 
+					   >> 0x20U))) 
+		       + (0xffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRi_T0 
+					     >> 0x20U)))));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_C1 
+	= (0x1ffffU & ((IData)(1U) + ((0xffffU & (IData)(
+							 (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRm_T0 
+							  >> 0x20U))) 
+				      + (0xffffU & (IData)(
+							   (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRi_T0 
+							    >> 0x20U))))));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_D0 
+	= (0x1ffffU & ((0xffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRm_T0 
+					   >> 0x30U))) 
+		       + (0xffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRi_T0 
+					     >> 0x30U)))));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_D1 
+	= (0x1ffffU & ((IData)(1U) + ((0xffffU & (IData)(
+							 (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRm_T0 
+							  >> 0x30U))) 
+				      + (0xffffU & (IData)(
+							   (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRi_T0 
+							    >> 0x30U))))));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAddRmRi_A0 
+	= (((QData)((IData)(((0x10000U & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_A0)
+			      ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_B1
+			      : vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_B0))) 
+	    << 0x10U) | (QData)((IData)((0xffffU & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_A0))));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAddRmRi_A1 
+	= (((QData)((IData)(((0x10000U & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_A1)
+			      ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_B1
+			      : vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_B0))) 
+	    << 0x10U) | (QData)((IData)((0xffffU & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_A1))));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAddRmRi_B0 
+	= (((QData)((IData)(((0x10000U & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_C0)
+			      ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_D1
+			      : vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_D0))) 
+	    << 0x10U) | (QData)((IData)((0xffffU & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_C0))));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAddRmRi_B1 
+	= (((QData)((IData)(((0x10000U & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_C1)
+			      ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_D1
+			      : vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_D0))) 
+	    << 0x10U) | (QData)((IData)((0xffffU & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_C1))));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAluPAddW 
+	= (((QData)((IData)(((0xffff0000U & (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_D0 
+					     << 0x10U)) 
+			     | (0xffffU & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_C0)))) 
+	    << 0x20U) | (QData)((IData)(((0xffff0000U 
+					  & (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_B0 
+					     << 0x10U)) 
+					 | (0xffffU 
+					    & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_A0)))));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAluPAddL 
+	= (((QData)((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAddRmRi_B0)) 
+	    << 0x20U) | (QData)((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAddRmRi_A0)));
+    // ALWAYS at Jx2ExOpAlu.v:94
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRm_T1 
+	= vlTOPp->Jx2ExUnit__DOT__exRegValRmC;
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRi_T1 
+	= vlTOPp->Jx2ExUnit__DOT__exRegValRiC;
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_A0 
+	= (0x1ffffU & ((0xffffU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRm_T1)) 
+		       + (0xffffU & (~ (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRi_T1)))));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_A1 
+	= (0x1ffffU & ((IData)(1U) + ((0xffffU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRm_T1)) 
+				      + (0xffffU & 
+					 (~ (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRi_T1))))));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_B0 
+	= (0x1ffffU & ((0xffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRm_T1 
+					   >> 0x10U))) 
+		       + (0xffffU & (~ (IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRi_T1 
+						>> 0x10U))))));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_B1 
+	= (0x1ffffU & ((IData)(1U) + ((0xffffU & (IData)(
+							 (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRm_T1 
+							  >> 0x10U))) 
+				      + (0xffffU & 
+					 (~ (IData)(
+						    (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRi_T1 
+						     >> 0x10U)))))));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_C0 
+	= (0x1ffffU & ((0xffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRm_T1 
+					   >> 0x20U))) 
+		       + (0xffffU & (~ (IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRi_T1 
+						>> 0x20U))))));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_C1 
+	= (0x1ffffU & ((IData)(1U) + ((0xffffU & (IData)(
+							 (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRm_T1 
+							  >> 0x20U))) 
+				      + (0xffffU & 
+					 (~ (IData)(
+						    (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRi_T1 
+						     >> 0x20U)))))));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_D0 
+	= (0x1ffffU & ((0xffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRm_T1 
+					   >> 0x30U))) 
+		       + (0xffffU & (~ (IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRi_T1 
+						>> 0x30U))))));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_D1 
+	= (0x1ffffU & ((IData)(1U) + ((0xffffU & (IData)(
+							 (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRm_T1 
+							  >> 0x30U))) 
+				      + (0xffffU & 
+					 (~ (IData)(
+						    (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRi_T1 
+						     >> 0x30U)))))));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSubRmRi_A0 
+	= (((QData)((IData)(((0x10000U & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_A0)
+			      ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_B1
+			      : vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_B0))) 
+	    << 0x10U) | (QData)((IData)((0xffffU & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_A0))));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSubRmRi_A1 
+	= (((QData)((IData)(((0x10000U & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_A1)
+			      ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_B1
+			      : vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_B0))) 
+	    << 0x10U) | (QData)((IData)((0xffffU & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_A1))));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSubRmRi_B0 
+	= (((QData)((IData)(((0x10000U & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_C0)
+			      ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_D1
+			      : vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_D0))) 
+	    << 0x10U) | (QData)((IData)((0xffffU & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_C0))));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSubRmRi_B1 
+	= (((QData)((IData)(((0x10000U & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_C1)
+			      ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_D1
+			      : vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_D0))) 
+	    << 0x10U) | (QData)((IData)((0xffffU & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_C1))));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAluPSubW 
+	= (((QData)((IData)(((0xffff0000U & (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_D1 
+					     << 0x10U)) 
+			     | (0xffffU & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_C1)))) 
+	    << 0x20U) | (QData)((IData)(((0xffff0000U 
+					  & (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_B1 
+					     << 0x10U)) 
+					 | (0xffffU 
+					    & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_A1)))));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAluPSubL 
+	= (((QData)((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSubRmRi_B1)) 
+	    << 0x20U) | (QData)((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSubRmRi_A1)));
     // ALWAYS at Jx2FpuMul.v:130
     vlTOPp->Jx2ExUnit__DOT__exFpOp__DOT__fpu_mul__DOT__tExpA1 
 	= (0x7ffU & (IData)((vlTOPp->Jx2ExUnit__DOT__exRegValFRm 
@@ -18983,13 +17850,16 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 		== ((0x7aU == (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdFp))
 		     ? 1U : 0U)) ? 1U : 2U);
     }
-    // ALWAYS at Jx2DecOpFx.v:90
+    // ALWAYS at Jx2DecOpFx.v:114
     vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ 
 	= (1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 			 >> 7U)));
     vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExI 
 	= (1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 			 >> 4U)));
+    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2 
+	= (1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+			 >> 0x1bU)));
     vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO_Dfl 
 	= ((0x10U & ((IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 			      >> 4U)) << 4U)) | (0xfU 
@@ -19016,16 +17886,15 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 						 & (IData)(
 							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							    >> 0x18U))));
-    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Jcmp 
+    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Df2 
 	= ((0x10U & ((IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 			      >> 0x1aU)) << 4U)) | 
 	   (0xfU & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-			    >> 0x14U))));
-    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Jcmp 
+			    >> 4U))));
+    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Df2 
 	= ((0x10U & ((IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 			      >> 0x19U)) << 4U)) | 
-	   (0xfU & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-			    >> 0x10U))));
+	   (0xfU & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)));
     vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsFC0 
 	= (6U == (7U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 				>> 9U))));
@@ -19042,20 +17911,29 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 			      | (0xfffU & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 						   >> 0x10U)))))));
     vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm17u 
-	= (((QData)((IData)((0x1fU & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) 
-	    << 4U) | (QData)((IData)((0xfU & (IData)(
-						     (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-						      >> 0x18U))))));
+	= (QData)((IData)((0x1ffU & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+					     >> 0x10U)))));
     vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm17n 
-	= (VL_ULL(0x1fffffe00) | (QData)((IData)(((0x1f0U 
-						   & ((IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord) 
-						      << 4U)) 
-						  | (0xfU 
-						     & (IData)(
-							       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								>> 0x18U)))))));
+	= (VL_ULL(0x1fffffe00) | (QData)((IData)((0x1ffU 
+						  & (IData)(
+							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							     >> 0x10U))))));
     vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm17s 
 	= vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm17u;
+    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm10u 
+	= (QData)((IData)((0x3ffU & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+					     >> 0x10U)))));
+    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm10n 
+	= (VL_ULL(0x1fffffc00) | (QData)((IData)((0x3ffU 
+						  & (IData)(
+							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							     >> 0x10U))))));
+    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm10s 
+	= (((QData)((IData)(((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+					    >> 0x19U)))
+			      ? 0x7fffffU : 0U))) << 0xaU) 
+	   | (QData)((IData)((0x3ffU & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+						>> 0x10U))))));
     vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_immWordZx 
 	= (QData)((IData)((0xffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 					      >> 0x10U)))));
@@ -19064,11 +17942,6 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 						  & (IData)(
 							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							     >> 0x10U))))));
-    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_disp8s 
-	= (((QData)((IData)(((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-					    >> 7U)))
-			      ? 0x1ffffffU : 0U))) 
-	    << 8U) | (QData)((IData)((0xffU & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))));
     if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsFC0) {
 	vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Dfl 
 	    = ((0x10U & ((IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
@@ -19080,12 +17953,6 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 				  >> 1U)) << 4U)) | 
 	       (0xfU & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 				>> 0x10U))));
-	vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ 
-	    = (1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-			     >> 3U)));
-	vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExI 
-	    = (1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord));
-	vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO_Dfl = 0U;
 	vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm17s 
 	    = (((QData)((IData)(((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))
 				  ? 0x1ffffU : 0U))) 
@@ -19108,6 +17975,21 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 							 & (IData)(
 								   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								    >> 0x20U)))))));
+	vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ 
+	    = (1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+			     >> 3U)));
+	vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExI 
+	    = (1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord));
+	vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2 
+	    = (1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+			     >> 3U)));
+	vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO_Dfl = 0U;
+	vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm10u 
+	    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm17u;
+	vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm10n 
+	    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm17n;
+	vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm10s 
+	    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm17s;
 	vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_immWordZx 
 	    = (QData)((IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 			       >> 0x10U)));
@@ -19115,18 +17997,10 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 	    = (VL_ULL(0x100000000) | (QData)((IData)(
 						     (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 						      >> 0x10U))));
-	vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Jcmp 
+	vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Df2 
 	    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Dfl;
-	vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Jcmp 
+	vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Df2 
 	    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Dfl;
-	vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_disp8s 
-	    = (((QData)((IData)(((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-						>> 0x2fU)))
-				  ? 0x1ffffU : 0U))) 
-		<< 0x10U) | (QData)((IData)((0xffffU 
-					     & (IData)(
-						       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							>> 0x20U))))));
     }
     vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRnIsRz 
 	= (0U == (0xfU & ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Dfl) 
@@ -19146,6 +18020,18 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
     vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRoIsR1 
 	= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRoIsRz) 
 	   & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO_Dfl));
+    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRn2IsRz 
+	= (0U == (0xfU & ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Df2) 
+			  >> 1U)));
+    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRm2IsRz 
+	= (0U == (0xfU & ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Df2) 
+			  >> 1U)));
+    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRn2IsR1 
+	= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRn2IsRz) 
+	   & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Df2));
+    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRm2IsR1 
+	= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRm2IsRz) 
+	   & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Df2));
     vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 1U;
     vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN = 0x2fU;
     vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM = 0x2fU;
@@ -19155,7 +18041,6 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
     vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUIxt = 0U;
     vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = 0U;
     vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
-    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsImm32 = 0U;
     vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0U;
     vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty = 0U;
     if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
@@ -19174,13 +18059,11 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 					       >> 4U)))) {
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 5U;
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 5U;
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0xeU;
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsImm32 = 1U;
+				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0xaU;
 			    } else {
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 5U;
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 5U;
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 2U;
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsImm32 = 1U;
+				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 6U;
 			    }
 			} else {
 			    if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
@@ -19188,12 +18071,10 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x47U;
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 5U;
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 6U;
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsImm32 = 1U;
 			    } else {
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x68U;
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 5U;
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 2U;
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsImm32 = 1U;
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = 8U;
 			    }
 			}
@@ -19215,157 +18096,18 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 							  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							   >> 1U)))) {
 					    if ((1U 
-						 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-						if (
-						    (1U 
-						     & (IData)(
-							       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								>> 0x1fU)))) {
-						    if (
-							(1U 
-							 & (IData)(
-								   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								    >> 0x1eU)))) {
-							if (
-							    (1U 
-							     & (IData)(
-								       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									>> 0x1dU)))) {
-							    if (
-								(1U 
-								 & (IData)(
-									   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									    >> 0x1cU)))) {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x43U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xdU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
-							    } else {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x43U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xdU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
-							    }
-							} else {
-							    if (
-								(1U 
-								 & (IData)(
-									   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									    >> 0x1cU)))) {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x4bU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xdU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
-							    } else {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x4aU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xdU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
-							    }
-							}
-						    } else {
-							if (
-							    (1U 
-							     & (IData)(
-								       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									>> 0x1dU)))) {
-							    if (
-								(1U 
-								 & (IData)(
-									   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									    >> 0x1cU)))) {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xeU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xdU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
-							    } else {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xdU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xdU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
-							    }
-							} else {
-							    if (
-								(1U 
-								 & (IData)(
-									   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									    >> 0x1cU)))) {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xbU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xdU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
-							    } else {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 9U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xdU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
-							    }
-							}
-						    }
-						} else {
-						    if (
-							(1U 
-							 & (IData)(
-								   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								    >> 0x1eU)))) {
-							if (
-							    (1U 
-							     & (~ (IData)(
-									  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									   >> 0x1dU))))) {
-							    if (
-								(1U 
-								 & (~ (IData)(
-									      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									       >> 0x1cU))))) {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 6U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xdU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
-							    }
-							}
-						    } else {
-							if (
-							    (1U 
-							     & (IData)(
-								       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									>> 0x1dU)))) {
-							    if (
-								(1U 
-								 & (IData)(
-									   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									    >> 0x1cU)))) {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xfU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xcU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
-							    } else {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xcU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xcU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
-							    }
-							} else {
-							    if (
-								(1U 
-								 & (IData)(
-									   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									    >> 0x1cU)))) {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xaU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xcU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
-							    } else {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 8U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xcU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
-							    }
-							}
-						    }
-						}
-					    } else {
+						 & (~ (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) {
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x1bU;
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 6U;
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsImm32 = 1U;
 					    }
 					} else {
 					    if ((1U 
 						 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x1aU;
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 7U;
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsImm32 = 1U;
 					    } else {
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x1aU;
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 6U;
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsImm32 = 1U;
 					    }
 					}
 				    } else {
@@ -19377,14 +18119,14 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x20U;
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x13U;
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 2U;
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty = 3U;
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsImm32 = 1U;
 					    } else {
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x20U;
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x13U;
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 2U;
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty = 2U;
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsImm32 = 1U;
 					    }
 					} else {
 					    if ((1U 
@@ -19392,12 +18134,12 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x21U;
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x13U;
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsImm32 = 1U;
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 2U;
 					    } else {
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x20U;
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x13U;
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsImm32 = 1U;
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 2U;
 					    }
 					}
 				    }
@@ -19606,6 +18348,94 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6cU;
 							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
 							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 1U;
+							} else {
+							    if (
+								(0x1900U 
+								 == 
+								 (0xff00U 
+								  & (IData)(
+									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+									     >> 0x10U))))) {
+								if (
+								    (1U 
+								     & (IData)(
+									       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+										>> 0x13U)))) {
+								    if (
+									(1U 
+									 & (IData)(
+										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+										>> 0x12U)))) {
+									if (
+									    (1U 
+									     & (IData)(
+										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+										>> 0x11U)))) {
+									    if (
+										(1U 
+										& (~ (IData)(
+										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+										>> 0x10U))))) {
+										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+										= 
+										((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+										 ? 0x63U
+										 : 0x1eU);
+										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 5U;
+										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 3U;
+									    }
+									} else {
+									    if (
+										(1U 
+										& (IData)(
+										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+										>> 0x10U)))) {
+										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+										= 
+										((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+										 ? 0x62U
+										 : 0x1dU);
+										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 5U;
+										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 3U;
+									    } else {
+										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+										= 
+										((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+										 ? 0x61U
+										 : 0x1cU);
+										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 5U;
+										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 3U;
+									    }
+									}
+								    }
+								} else {
+								    if (
+									(1U 
+									 & (IData)(
+										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+										>> 0x12U)))) {
+									if (
+									    (1U 
+									     & (~ (IData)(
+										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+										>> 0x11U))))) {
+									    if (
+										(1U 
+										& (~ (IData)(
+										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+										>> 0x10U))))) {
+										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+										= 
+										((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+										 ? 0x60U
+										 : 0x14U);
+										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 5U;
+										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 3U;
+									    }
+									}
+								    }
+								}
+							    }
 							}
 						    }
 						}
@@ -19645,7 +18475,6 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x68U;
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 5U;
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 1U;
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = 8U;
 			    }
 			} else {
 			    if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
@@ -19666,31 +18495,141 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
     } else {
 	if ((1U & (~ (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 			      >> 0xaU))))) {
-	    if ((1U & (~ (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-				  >> 9U))))) {
-		if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-				   >> 8U)))) {
+	    if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+			       >> 9U)))) {
+		if ((1U & (~ (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+				      >> 8U))))) {
 		    if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 				       >> 0x1fU)))) {
 			if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 					   >> 0x1eU)))) {
 			    if ((1U & (~ (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 						  >> 0x1dU))))) {
+				if ((1U & (~ (IData)(
+						     (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+						      >> 0x1cU))))) {
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty 
+					= ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))
+					    ? 0xbU : 7U);
+				    if ((1U & (IData)(
+						      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+						       >> 3U)))) {
+					if ((1U & (IData)(
+							  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							   >> 2U)))) {
+					    if ((1U 
+						 & (IData)(
+							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							    >> 1U)))) {
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+						    = 
+						    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2)
+						      ? 0x63U
+						      : 0x1eU);
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 5U;
+					    } else {
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+						    = 
+						    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2)
+						      ? 0x61U
+						      : 0x1cU);
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 5U;
+					    }
+					} else {
+					    if ((1U 
+						 & (IData)(
+							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							    >> 1U)))) {
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+						    = 
+						    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2)
+						      ? 0x42U
+						      : 0x1fU);
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 5U;
+					    } else {
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+						    = 
+						    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2)
+						      ? 0x62U
+						      : 0x1dU);
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 5U;
+					    }
+					}
+				    } else {
+					if ((1U & (IData)(
+							  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							   >> 2U)))) {
+					    if ((1U 
+						 & (IData)(
+							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							    >> 1U)))) {
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+						    = 
+						    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2)
+						      ? 0x41U
+						      : 0x15U);
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 5U;
+					    } else {
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+						    = 
+						    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2)
+						      ? 0x60U
+						      : 0x14U);
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 5U;
+					    }
+					}
+				    }
+				}
+			    }
+			} else {
+			    if ((1U & (~ (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+						  >> 0x1dU))))) {
 				if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 						   >> 0x1cU)))) {
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-					= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+					= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2)
+					    ? 0x73U
+					    : 0x71U);
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 5U;
+				} else {
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+					= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2)
+					    ? 0x72U
+					    : 0x70U);
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 5U;
+				}
+			    }
+			}
+		    } else {
+			if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+					   >> 0x1eU)))) {
+			    if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+					       >> 0x1dU)))) {
+				if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+						   >> 0x1cU)))) {
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6cU;
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 5U;
+				} else {
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6bU;
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 5U;
+				}
+			    } else {
+				if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+						   >> 0x1cU)))) {
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6aU;
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 5U;
+				} else {
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+					= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2)
 					    ? 0x17U
 					    : 0x16U);
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 9U;
-				} else {
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-					= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-					    ? 0x17U
-					    : 0x16U);
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 5U;
 				}
 			    }
 			} else {
@@ -19699,15 +18638,54 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 				if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 						   >> 0x1cU)))) {
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-					= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+					= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2)
+					    ? 0x17U
+					    : 0x16U);
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 5U;
+				} else {
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6dU;
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 5U;
+				}
+			    } else {
+				if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+						   >> 0x1cU)))) {
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x68U;
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 9U;
+				} else {
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x68U;
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 5U;
+				}
+			    }
+			}
+		    }
+		}
+	    } else {
+		if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+				   >> 8U)))) {
+		    if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+				       >> 0x1fU)))) {
+			if ((1U & (~ (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+					      >> 0x1eU))))) {
+			    if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+					       >> 0x1dU)))) {
+				if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+						   >> 0x1cU)))) {
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+					= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2)
 					    ? 0x43U
 					    : 0xeU);
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 1U;
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty 
+					= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2)
+					    ? 2U : 3U);
 				} else {
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-					= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+					= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2)
 					    ? 0x43U
 					    : 0xdU);
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
@@ -19718,7 +18696,7 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 				if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 						   >> 0x1cU)))) {
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-					= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+					= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2)
 					    ? 0x4bU
 					    : 0xbU);
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
@@ -19726,7 +18704,7 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
 				} else {
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-					= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+					= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2)
 					    ? 0x4aU
 					    : 9U);
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
@@ -19736,48 +18714,52 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 			    }
 			}
 		    } else {
-			if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-					   >> 0x1eU)))) {
-			    if ((1U & (~ (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-						  >> 0x1dU))))) {
-				if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-						   >> 0x1cU)))) {
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x68U;
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 9U;
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = 8U;
-				} else {
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x68U;
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 5U;
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = 8U;
-				}
-			    }
-			} else {
+			if ((1U & (~ (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+					      >> 0x1eU))))) {
 			    if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 					       >> 0x1dU)))) {
 				if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 						   >> 0x1cU)))) {
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xfU;
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
+				    if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2) {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 6U;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
+				    } else {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xfU;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
+				    }
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 1U;
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
 				} else {
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xcU;
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
+				    if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2) {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 6U;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
+				    } else {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xcU;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
+				    }
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 1U;
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
 				}
 			    } else {
 				if ((1U & (IData)((vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 						   >> 0x1cU)))) {
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xaU;
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
+				    if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2) {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 6U;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
+				    } else {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xaU;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
+				    }
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 1U;
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
 				} else {
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 8U;
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
+				    if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2) {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 6U;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
+				    } else {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 8U;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
+				    }
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 1U;
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
 				}
@@ -19785,237 +18767,103 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 			}
 		    }
 		} else {
-		    if (((((((((0U == (0xff00U & (IData)(
-							 (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							  >> 0x10U)))) 
-			       | (0x100U == (0xff00U 
+		    if (((((((((0x400U == (0xff00U 
+					   & (IData)(
+						     (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+						      >> 0x10U)))) 
+			       | (0x500U == (0xff00U 
 					     & (IData)(
 						       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							>> 0x10U))))) 
-			      | (0x200U == (0xff00U 
+			      | (0x600U == (0xff00U 
 					    & (IData)(
 						      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 						       >> 0x10U))))) 
-			     | (0x300U == (0xff00U 
+			     | (0x700U == (0xff00U 
 					   & (IData)(
 						     (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 						      >> 0x10U))))) 
-			    | (0x400U == (0xff00U & (IData)(
+			    | (0xc00U == (0xff00U & (IData)(
 							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							     >> 0x10U))))) 
-			   | (0x500U == (0xff00U & (IData)(
+			   | (0xd00U == (0xff00U & (IData)(
 							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							    >> 0x10U))))) 
-			  | (0x600U == (0xff00U & (IData)(
+			  | (0xe00U == (0xff00U & (IData)(
 							  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							   >> 0x10U))))) 
-			 | (0x700U == (0xff00U & (IData)(
+			 | (0xf00U == (0xff00U & (IData)(
 							 (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							  >> 0x10U)))))) {
-			if ((0U == (0xff00U & (IData)(
-						      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-						       >> 0x10U))))) {
+			if ((0x400U == (0xff00U & (IData)(
+							  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							   >> 0x10U))))) {
 			    if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ) {
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 6U;
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
+				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
 			    } else {
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 8U;
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
+				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
 			    }
 			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
 			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
 			} else {
-			    if ((0x100U == (0xff00U 
+			    if ((0x500U == (0xff00U 
 					    & (IData)(
 						      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 						       >> 0x10U))))) {
 				if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ) {
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 6U;
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
 				} else {
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xaU;
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
 				}
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
 			    } else {
-				if ((0x200U == (0xff00U 
+				if ((0x600U == (0xff00U 
 						& (IData)(
 							  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							   >> 0x10U))))) {
 				    if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ) {
 					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 6U;
-					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
 				    } else {
 					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xcU;
-					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
 				    }
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
 				} else {
-				    if ((0x300U == 
+				    if ((0x700U == 
 					 (0xff00U & (IData)(
 							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							     >> 0x10U))))) {
 					if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ) {
 					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 6U;
-					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
+					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
 					} else {
-					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xfU;
-					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
+					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xcU;
+					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
 					}
 					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
 					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
 				    } else {
-					if ((0x400U 
-					     == (0xff00U 
-						 & (IData)(
-							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							    >> 0x10U))))) {
-					    if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ) {
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 6U;
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
-					    } else {
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 8U;
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
-					    }
-					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
-					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-					} else {
-					    if ((0x500U 
-						 == 
-						 (0xff00U 
-						  & (IData)(
-							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							     >> 0x10U))))) {
-						if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ) {
-						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 6U;
-						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
-						} else {
-						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xaU;
-						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
-						}
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-					    } else {
-						if (
-						    (0x600U 
-						     == 
-						     (0xff00U 
-						      & (IData)(
-								(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								 >> 0x10U))))) {
-						    if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ) {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 6U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
-						    } else {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xcU;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
-						    }
-						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
-						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-						} else {
-						    if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ) {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 6U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
-						    } else {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xcU;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
-						    }
-						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
-						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-						}
-					    }
-					}
-				    }
-				}
-			    }
-			}
-		    } else {
-			if (((((((((0x800U == (0xff00U 
-					       & (IData)(
-							 (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							  >> 0x10U)))) 
-				   | (0x900U == (0xff00U 
-						 & (IData)(
-							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							    >> 0x10U))))) 
-				  | (0xa00U == (0xff00U 
-						& (IData)(
-							  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							   >> 0x10U))))) 
-				 | (0xb00U == (0xff00U 
-					       & (IData)(
-							 (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							  >> 0x10U))))) 
-				| (0xc00U == (0xff00U 
-					      & (IData)(
-							(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							 >> 0x10U))))) 
-			       | (0xd00U == (0xff00U 
-					     & (IData)(
-						       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							>> 0x10U))))) 
-			      | (0xe00U == (0xff00U 
-					    & (IData)(
-						      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-						       >> 0x10U))))) 
-			     | (0xf00U == (0xff00U 
-					   & (IData)(
-						     (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-						      >> 0x10U)))))) {
-			    if ((0x800U == (0xff00U 
-					    & (IData)(
-						      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-						       >> 0x10U))))) {
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-				    = ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-				        ? 0x4aU : 9U);
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-			    } else {
-				if ((0x900U == (0xff00U 
-						& (IData)(
-							  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							   >> 0x10U))))) {
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-					= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-					    ? 0x4bU
-					    : 0xbU);
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-				} else {
-				    if ((0xa00U == 
-					 (0xff00U & (IData)(
-							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							     >> 0x10U))))) {
-					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-					    = ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-					        ? 0x43U
-					        : 0xdU);
-					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
-					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
-					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-				    } else {
-					if ((0xb00U 
+					if ((0xc00U 
 					     == (0xff00U 
 						 & (IData)(
 							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							    >> 0x10U))))) {
 					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
 						= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-						    ? 0x43U
-						    : 0xeU);
-					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
+						    ? 0x4aU
+						    : 9U);
+					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
+					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
 					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty 
-						= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-						    ? 2U
-						    : 3U);
 					} else {
-					    if ((0xc00U 
+					    if ((0xd00U 
 						 == 
 						 (0xff00U 
 						  & (IData)(
@@ -20024,14 +18872,14 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
 						    = 
 						    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-						      ? 0x4aU
-						      : 9U);
+						      ? 0x4bU
+						      : 0xbU);
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
 					    } else {
 						if (
-						    (0xd00U 
+						    (0xe00U 
 						     == 
 						     (0xff00U 
 						      & (IData)(
@@ -20040,221 +18888,164 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
 							= 
 							((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-							  ? 0x4bU
-							  : 0xbU);
+							  ? 0x43U
+							  : 0xdU);
 						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
-						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
 						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
 						} else {
-						    if (
-							(0xe00U 
-							 == 
-							 (0xff00U 
-							  & (IData)(
-								    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								     >> 0x10U))))) {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-							    = 
-							    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-							      ? 0x43U
-							      : 0xdU);
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-						    } else {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-							    = 
-							    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-							      ? 0x43U
-							      : 0xeU);
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty 
-							    = 
-							    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-							      ? 2U
-							      : 3U);
-						    }
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+							= 
+							((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+							  ? 0x43U
+							  : 0xeU);
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty 
+							= 
+							((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+							  ? 2U
+							  : 3U);
 						}
 					    }
 					}
 				    }
 				}
 			    }
-			} else {
-			    if (((((((((0x1000U == 
-					(0xff00U & (IData)(
-							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							    >> 0x10U)))) 
-				       | (0x1100U == 
-					  (0xff00U 
-					   & (IData)(
-						     (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-						      >> 0x10U))))) 
-				      | (0x1200U == 
-					 (0xff00U & (IData)(
-							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							     >> 0x10U))))) 
-				     | (0x1500U == 
-					(0xff00U & (IData)(
-							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							    >> 0x10U))))) 
-				    | (0x1600U == (0xff00U 
-						   & (IData)(
-							     (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							      >> 0x10U))))) 
-				   | (0x1700U == (0xff00U 
+			}
+		    } else {
+			if (((((((((0x1000U == (0xff00U 
+						& (IData)(
+							  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							   >> 0x10U)))) 
+				   | (0x1100U == (0xff00U 
 						  & (IData)(
 							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							     >> 0x10U))))) 
-				  | (0x1800U == (0xff00U 
+				  | (0x1200U == (0xff00U 
 						 & (IData)(
 							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							    >> 0x10U))))) 
-				 | (0x1900U == (0xff00U 
+				 | (0x1500U == (0xff00U 
 						& (IData)(
 							  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							   >> 0x10U)))))) {
-				if ((0x1000U == (0xff00U 
+							   >> 0x10U))))) 
+				| (0x1600U == (0xff00U 
+					       & (IData)(
+							 (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							  >> 0x10U))))) 
+			       | (0x1700U == (0xff00U 
+					      & (IData)(
+							(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							 >> 0x10U))))) 
+			      | (0x1800U == (0xff00U 
+					     & (IData)(
+						       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							>> 0x10U))))) 
+			     | (0x1900U == (0xff00U 
+					    & (IData)(
+						      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+						       >> 0x10U)))))) {
+			    if ((0x1000U == (0xff00U 
+					     & (IData)(
+						       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							>> 0x10U))))) {
+				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x68U;
+				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+			    } else {
+				if ((0x1100U == (0xff00U 
 						 & (IData)(
 							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							    >> 0x10U))))) {
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x68U;
+				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x69U;
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = 8U;
 				} else {
-				    if ((0x1100U == 
+				    if ((0x1200U == 
 					 (0xff00U & (IData)(
 							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							     >> 0x10U))))) {
-					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x69U;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6dU;
 					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = 0xcU;
 				    } else {
-					if ((0x1200U 
+					if ((0x1500U 
 					     == (0xff00U 
 						 & (IData)(
 							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							    >> 0x10U))))) {
-					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6dU;
+					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6aU;
 					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
 					} else {
-					    if ((0x1500U 
+					    if ((0x1600U 
 						 == 
 						 (0xff00U 
 						  & (IData)(
 							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							     >> 0x10U))))) {
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6aU;
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6bU;
 						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
 					    } else {
 						if (
-						    (0x1600U 
+						    (0x1700U 
 						     == 
 						     (0xff00U 
 						      & (IData)(
 								(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								 >> 0x10U))))) {
-						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6bU;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6cU;
 						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
 						} else {
 						    if (
-							(0x1700U 
-							 == 
+							(0x1800U 
+							 != 
 							 (0xff00U 
 							  & (IData)(
 								    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								     >> 0x10U))))) {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6cU;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-						    } else {
 							if (
-							    (0x1800U 
-							     != 
-							     (0xff00U 
-							      & (IData)(
-									(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									 >> 0x10U))))) {
+							    (1U 
+							     & (IData)(
+								       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+									>> 3U)))) {
 							    if (
 								(1U 
 								 & (IData)(
 									   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									    >> 3U)))) {
+									    >> 2U)))) {
 								if (
 								    (1U 
 								     & (IData)(
 									       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 2U)))) {
+										>> 1U)))) {
 								    if (
 									(1U 
-									 & (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 1U)))) {
-									if (
-									    (1U 
-									     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x18U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									} else {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-										= 
-										((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-										 ? 0x63U
-										 : 0x1eU);
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									}
+									 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x18U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
 								    } else {
-									if (
-									    (1U 
-									     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-										= 
-										((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-										 ? 0x62U
-										 : 0x1dU);
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									} else {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-										= 
-										((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-										 ? 0x61U
-										 : 0x1cU);
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									}
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+									    = 
+									    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+									      ? 0x63U
+									      : 0x1eU);
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
 								    }
 								} else {
 								    if (
 									(1U 
-									 & (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 1U)))) {
-									if (
-									    (1U 
-									     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x10U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 5U;
-									} else {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x11U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-									}
+									 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+									    = 
+									    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+									      ? 0x62U
+									      : 0x1dU);
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
 								    } else {
-									if (
-									    (1U 
-									     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x19U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									} else {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 4U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									}
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+									    = 
+									    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+									      ? 0x61U
+									      : 0x1cU);
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
 								    }
 								}
 							    } else {
@@ -20262,73 +19053,97 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 								    (1U 
 								     & (IData)(
 									       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 2U)))) {
+										>> 1U)))) {
 								    if (
 									(1U 
-									 & (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 1U)))) {
-									if (
-									    (1U 
-									     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6cU;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
-									} else {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6bU;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
-									}
+									 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x10U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 5U;
 								    } else {
-									if (
-									    (1U 
-									     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6aU;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
-									} else {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-										= 
-										((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-										 ? 0x60U
-										 : 0x14U);
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0U;
-									}
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x11U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
 								    }
 								} else {
 								    if (
 									(1U 
-									 & (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 1U)))) {
-									if (
-									    (1U 
-									     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x75U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = 0xcU;
-									} else {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x74U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = 8U;
-									}
+									 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x19U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
 								    } else {
-									if (
-									    (1U 
-									     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x69U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = 0xcU;
-									} else {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x68U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = 8U;
-									}
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 4U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+								    }
+								}
+							    }
+							} else {
+							    if (
+								(1U 
+								 & (IData)(
+									   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+									    >> 2U)))) {
+								if (
+								    (1U 
+								     & (IData)(
+									       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+										>> 1U)))) {
+								    if (
+									(1U 
+									 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6cU;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
+								    } else {
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6bU;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
+								    }
+								} else {
+								    if (
+									(1U 
+									 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6aU;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
+								    } else {
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+									    = 
+									    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+									      ? 0x60U
+									      : 0x14U);
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0U;
+								    }
+								}
+							    } else {
+								if (
+								    (1U 
+								     & (IData)(
+									       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+										>> 1U)))) {
+								    if (
+									(1U 
+									 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x75U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
+								    } else {
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x74U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
+								    }
+								} else {
+								    if (
+									(1U 
+									 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x69U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
+								    } else {
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x68U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
 								    }
 								}
 							    }
@@ -20339,49 +19154,185 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 					}
 				    }
 				}
-			    } else {
-				if (((((((((0x1a00U 
-					    == (0xff00U 
-						& (IData)(
-							  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							   >> 0x10U)))) 
-					   | (0x1b00U 
-					      == (0xff00U 
-						  & (IData)(
-							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							     >> 0x10U))))) 
-					  | (0x1c00U 
-					     == (0xff00U 
-						 & (IData)(
+			    }
+			} else {
+			    if (((((((((0x1a00U == 
+					(0xff00U & (IData)(
 							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							    >> 0x10U))))) 
-					 | (0x1d00U 
-					    == (0xff00U 
-						& (IData)(
-							  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							   >> 0x10U))))) 
-					| (0x2000U 
-					   == (0xff00U 
-					       & (IData)(
-							 (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							  >> 0x10U))))) 
-				       | (0x2100U == 
+							    >> 0x10U)))) 
+				       | (0x1b00U == 
 					  (0xff00U 
 					   & (IData)(
 						     (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 						      >> 0x10U))))) 
-				      | (0x2200U == 
+				      | (0x1c00U == 
 					 (0xff00U & (IData)(
 							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							     >> 0x10U))))) 
-				     | (0x2300U == 
+				     | (0x1d00U == 
 					(0xff00U & (IData)(
 							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							    >> 0x10U)))))) {
-				    if ((0x1a00U == 
+							    >> 0x10U))))) 
+				    | (0x3010U == (0xffffU 
+						   & (IData)(
+							     (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							      >> 0x10U))))) 
+				   | (0x3011U == (0xffffU 
+						  & (IData)(
+							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							     >> 0x10U))))) 
+				  | (0x3012U == (0xffffU 
+						 & (IData)(
+							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							    >> 0x10U))))) 
+				 | (0x3013U == (0xffffU 
+						& (IData)(
+							  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							   >> 0x10U)))))) {
+				if ((0x1a00U == (0xff00U 
+						 & (IData)(
+							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							    >> 0x10U))))) {
+				    if ((1U & (IData)(
+						      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+						       >> 3U)))) {
+					if ((1U & (IData)(
+							  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							   >> 2U)))) {
+					    if ((1U 
+						 & (IData)(
+							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							    >> 1U)))) {
+						if (
+						    (1U 
+						     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x84U;
+						} else {
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+							= 
+							((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExI)
+							  ? 0x86U
+							  : 0x1eU);
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+						}
+					    } else {
+						if (
+						    (1U 
+						     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x1dU;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+						} else {
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x1cU;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+						}
+					    }
+					} else {
+					    if ((1U 
+						 & (IData)(
+							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							    >> 1U)))) {
+						if (
+						    (1U 
+						     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x87U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx 
+							= 
+							(((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ) 
+							  << 1U) 
+							 | (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExI));
+						} else {
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 4U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx 
+							= 
+							(0xffU 
+							 & ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+							     ? 7U
+							     : 6U));
+						}
+					    } else {
+						if (
+						    (1U 
+						     & (~ (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) {
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 4U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx 
+							= 
+							(0xffU 
+							 & ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+							     ? 5U
+							     : 4U));
+						}
+					    }
+					}
+				    } else {
+					if ((1U & (IData)(
+							  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							   >> 2U)))) {
+					    if ((1U 
+						 & (IData)(
+							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							    >> 1U)))) {
+						if (
+						    (1U 
+						     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x85U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = 3U;
+						} else {
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x85U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = 2U;
+						}
+					    } else {
+						if (
+						    (1U 
+						     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x85U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = 1U;
+						}
+					    }
+					} else {
+					    if ((1U 
+						 & (~ (IData)(
+							      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							       >> 1U))))) {
+						if (
+						    (1U 
+						     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+							= 
+							((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+							  ? 0x83U
+							  : 0x81U);
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
+						} else {
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+							= 
+							((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+							  ? 0x82U
+							  : 0x80U);
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
+						}
+					    }
+					}
+				    }
+				} else {
+				    if ((0x1b00U == 
 					 (0xff00U & (IData)(
 							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							     >> 0x10U))))) {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty 
+					    = (2U | (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExI));
 					if ((1U & (IData)(
 							  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							   >> 3U)))) {
@@ -20397,25 +19348,45 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 						    if (
 							(1U 
 							 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x84U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+							    = 
+							    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+							      ? 0x43U
+							      : 0xeU);
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty 
+							    = 
+							    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+							      ? 2U
+							      : 3U);
 						    } else {
 							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
 							    = 
-							    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExI)
-							      ? 0x86U
-							      : 0x1eU);
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+							    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+							      ? 0x43U
+							      : 0xdU);
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
 						    }
 						} else {
 						    if (
 							(1U 
 							 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x1dU;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+							    = 
+							    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+							      ? 0x4bU
+							      : 0xbU);
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
 						    } else {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x1cU;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+							    = 
+							    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+							      ? 0x4aU
+							      : 9U);
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
 						    }
 						}
 					    } else {
@@ -20427,36 +19398,41 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 						    if (
 							(1U 
 							 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x87U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx 
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
 							    = 
-							    (((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ) 
-							      << 1U) 
-							     | (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExI));
+							    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+							      ? 0x43U
+							      : 0xeU);
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
 						    } else {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 4U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx 
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
 							    = 
-							    (0xffU 
-							     & ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-								 ? 7U
-								 : 6U));
+							    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+							      ? 0x43U
+							      : 0xdU);
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
 						    }
 						} else {
 						    if (
 							(1U 
-							 & (~ (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 4U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx 
+							 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
 							    = 
-							    (0xffU 
-							     & ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-								 ? 5U
-								 : 4U));
+							    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+							      ? 0x4bU
+							      : 0xbU);
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
+						    } else {
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+							    = 
+							    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+							      ? 0x4aU
+							      : 9U);
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
 						    }
 						}
 					    }
@@ -20473,72 +19449,74 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 						    if (
 							(1U 
 							 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x85U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = 3U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xfU;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
 						    } else {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x85U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = 2U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xcU;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
 						    }
 						} else {
 						    if (
 							(1U 
 							 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x85U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = 1U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xaU;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
+						    } else {
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 8U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
 						    }
 						}
 					    } else {
 						if (
 						    (1U 
-						     & (~ (IData)(
-								  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								   >> 1U))))) {
+						     & (IData)(
+							       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+								>> 1U)))) {
 						    if (
 							(1U 
 							 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-							    = 
-							    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-							      ? 0x83U
-							      : 0x81U);
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xfU;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
 						    } else {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-							    = 
-							    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-							      ? 0x82U
-							      : 0x80U);
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xcU;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
+						    }
+						} else {
+						    if (
+							(1U 
+							 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xaU;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
+						    } else {
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 8U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
 						    }
 						}
 					    }
 					}
 				    } else {
-					if ((0x1b00U 
+					if ((0x1c00U 
 					     == (0xff00U 
 						 & (IData)(
 							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							    >> 0x10U))))) {
-					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty 
-						= (2U 
-						   | (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExI));
 					    if ((1U 
 						 & (IData)(
 							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							    >> 3U)))) {
 						if (
 						    (1U 
-						     & (IData)(
-							       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								>> 2U)))) {
+						     & (~ (IData)(
+								  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+								   >> 2U))))) {
 						    if (
 							(1U 
 							 & (IData)(
@@ -20547,25 +19525,13 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 							if (
 							    (1U 
 							     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-								= 
-								((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-								  ? 0x43U
-								  : 0xeU);
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty 
-								= 
-								((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-								  ? 2U
-								  : 3U);
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x10U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 7U;
 							} else {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-								= 
-								((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-								  ? 0x43U
-								  : 0xdU);
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x11U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 6U;
 							}
 						    } else {
 							if (
@@ -20574,64 +19540,16 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
 								= 
 								((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-								  ? 0x4bU
-								  : 0xbU);
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
+								  ? 0x2dU
+								  : 0x2fU);
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
 							} else {
 							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
 								= 
 								((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-								  ? 0x4aU
-								  : 9U);
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
-							}
-						    }
-						} else {
-						    if (
-							(1U 
-							 & (IData)(
-								   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								    >> 1U)))) {
-							if (
-							    (1U 
-							     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-								= 
-								((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-								  ? 0x43U
-								  : 0xeU);
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
-							} else {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-								= 
-								((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-								  ? 0x43U
-								  : 0xdU);
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
-							}
-						    } else {
-							if (
-							    (1U 
-							     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-								= 
-								((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-								  ? 0x4bU
-								  : 0xbU);
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
-							} else {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-								= 
-								((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-								  ? 0x4aU
-								  : 9U);
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
+								  ? 0x2cU
+								  : 0x2eU);
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
 							}
 						    }
 						}
@@ -20643,205 +19561,214 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 								>> 2U)))) {
 						    if (
 							(1U 
-							 & (IData)(
-								   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								    >> 1U)))) {
+							 & (~ (IData)(
+								      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+								       >> 1U))))) {
 							if (
 							    (1U 
 							     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xfU;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
-							} else {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xcU;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
-							}
-						    } else {
-							if (
-							    (1U 
-							     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xaU;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
-							} else {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 8U;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+								= 
+								((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+								  ? 0x66U
+								  : 0x67U);
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
 							}
 						    }
 						} else {
 						    if (
 							(1U 
-							 & (IData)(
-								   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								    >> 1U)))) {
+							 & (~ (IData)(
+								      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+								       >> 1U))))) {
 							if (
 							    (1U 
 							     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xfU;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x69U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 1U;
 							} else {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xcU;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
-							}
-						    } else {
-							if (
-							    (1U 
-							     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xaU;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
-							} else {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 8U;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 0U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x30U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
 							}
 						    }
 						}
 					    }
 					} else {
-					    if ((0x1c00U 
-						 == 
+					    if ((0x1d00U 
+						 != 
 						 (0xff00U 
 						  & (IData)(
 							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							     >> 0x10U))))) {
 						if (
-						    (1U 
-						     & (IData)(
-							       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								>> 3U)))) {
-						    if (
-							(1U 
-							 & (~ (IData)(
-								      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								       >> 2U))))) {
-							if (
-							    (1U 
-							     & (IData)(
-								       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									>> 1U)))) {
-							    if (
-								(1U 
-								 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x10U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 7U;
-							    } else {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x11U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 6U;
-							    }
-							} else {
-							    if (
-								(1U 
-								 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-								    = 
-								    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-								      ? 0x2dU
-								      : 0x2fU);
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-							    } else {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-								    = 
-								    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-								      ? 0x2cU
-								      : 0x2eU);
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-							    }
-							}
-						    }
+						    (0x3010U 
+						     == 
+						     (0xffffU 
+						      & (IData)(
+								(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+								 >> 0x10U))))) {
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x20U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x11U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
 						} else {
 						    if (
-							(1U 
-							 & (IData)(
-								   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								    >> 2U)))) {
-							if (
-							    (1U 
-							     & (~ (IData)(
-									  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									   >> 1U))))) {
-							    if (
-								(1U 
-								 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-								    = 
-								    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-								      ? 0x66U
-								      : 0x67U);
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-							    }
-							}
+							(0x3011U 
+							 == 
+							 (0xffffU 
+							  & (IData)(
+								    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+								     >> 0x10U))))) {
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x21U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x11U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
 						    } else {
 							if (
-							    (1U 
-							     & (~ (IData)(
-									  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									   >> 1U))))) {
-							    if (
-								(1U 
-								 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))) {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x69U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 1U;
-							    } else {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x30U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-							    }
+							    (0x3012U 
+							     == 
+							     (0xffffU 
+							      & (IData)(
+									(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+									 >> 0x10U))))) {
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x20U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x11U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty = 2U;
+							} else {
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x20U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x11U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty = 3U;
 							}
 						    }
 						}
+					    }
+					}
+				    }
+				}
+			    } else {
+				if (((((((((0x3018U 
+					    == (0xffffU 
+						& (IData)(
+							  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							   >> 0x10U)))) 
+					   | (0x3019U 
+					      == (0xffffU 
+						  & (IData)(
+							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							     >> 0x10U))))) 
+					  | (0x301aU 
+					     == (0xffffU 
+						 & (IData)(
+							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							    >> 0x10U))))) 
+					 | (0x301bU 
+					    == (0xffffU 
+						& (IData)(
+							  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							   >> 0x10U))))) 
+					| (0x301cU 
+					   == (0xffffU 
+					       & (IData)(
+							 (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							  >> 0x10U))))) 
+				       | (0x301dU == 
+					  (0xffffU 
+					   & (IData)(
+						     (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+						      >> 0x10U))))) 
+				      | (0x3020U == 
+					 (0xffffU & (IData)(
+							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							     >> 0x10U))))) 
+				     | (0x3021U == 
+					(0xffffU & (IData)(
+							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							    >> 0x10U)))))) {
+				    if ((0x3018U == 
+					 (0xffffU & (IData)(
+							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							     >> 0x10U))))) {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x24U;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0U;
+				    } else {
+					if ((0x3019U 
+					     == (0xffffU 
+						 & (IData)(
+							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							    >> 0x10U))))) {
+					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x25U;
+					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
+					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
+					} else {
+					    if ((0x301aU 
+						 == 
+						 (0xffffU 
+						  & (IData)(
+							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							     >> 0x10U))))) {
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x26U;
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0U;
 					    } else {
 						if (
-						    (0x1d00U 
-						     != 
-						     (0xff00U 
+						    (0x301bU 
+						     == 
+						     (0xffffU 
 						      & (IData)(
 								(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								 >> 0x10U))))) {
 						    if (
-							(0x2000U 
+							(0U 
 							 == 
-							 (0xff00U 
+							 (0xfU 
+							  & (IData)(
+								    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+								     >> 4U))))) {
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x12U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 1U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 4U;
+						    } else {
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x27U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
+						    }
+						} else {
+						    if (
+							(0x301cU 
+							 == 
+							 (0xffffU 
 							  & (IData)(
 								    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								     >> 0x10U))))) {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x20U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x13U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x1eU;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0U;
 						    } else {
 							if (
-							    (0x2100U 
+							    (0x301dU 
 							     == 
-							     (0xff00U 
+							     (0xffffU 
 							      & (IData)(
 									(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 									 >> 0x10U))))) {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x21U;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x13U;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x1fU;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0U;
 							} else {
 							    if (
-								(0x2200U 
+								(0x3020U 
 								 == 
-								 (0xff00U 
+								 (0xffffU 
 								  & (IData)(
 									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 									     >> 0x10U))))) {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x20U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x13U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty = 2U;
+								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x28U;
+								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
 							    } else {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x20U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x13U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty = 3U;
+								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x29U;
+								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
 							    }
 							}
 						    }
@@ -20850,120 +19777,145 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 					}
 				    }
 				} else {
-				    if (((((((((0x2400U 
+				    if (((((((((0x3022U 
 						== 
-						(0xff00U 
+						(0xffffU 
 						 & (IData)(
 							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							    >> 0x10U)))) 
-					       | (0x2500U 
+					       | (0x3023U 
 						  == 
-						  (0xff00U 
+						  (0xffffU 
 						   & (IData)(
 							     (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							      >> 0x10U))))) 
-					      | (0x2600U 
+					      | (0x3700U 
 						 == 
 						 (0xff00U 
 						  & (IData)(
 							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							     >> 0x10U))))) 
-					     | (0x2700U 
+					     | (0x5000U 
 						== 
 						(0xff00U 
 						 & (IData)(
 							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							    >> 0x10U))))) 
-					    | (0x2800U 
+					    | (0x5400U 
 					       == (0xff00U 
 						   & (IData)(
 							     (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							      >> 0x10U))))) 
-					   | (0x2900U 
+					   | (0x5500U 
 					      == (0xff00U 
 						  & (IData)(
 							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							     >> 0x10U))))) 
-					  | (0x2a00U 
+					  | (0x5c00U 
 					     == (0xff00U 
 						 & (IData)(
 							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							    >> 0x10U))))) 
-					 | (0x2b00U 
+					 | (0x5d00U 
 					    == (0xff00U 
 						& (IData)(
 							  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							   >> 0x10U)))))) {
-					if ((0x2400U 
-					     == (0xff00U 
+					if ((0x3022U 
+					     == (0xffffU 
 						 & (IData)(
 							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							    >> 0x10U))))) {
-					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x1aU;
-					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 6U;
+					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x28U;
+					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
+					    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty = 2U;
 					} else {
-					    if ((0x2500U 
+					    if ((0x3023U 
 						 == 
-						 (0xff00U 
+						 (0xffffU 
 						  & (IData)(
 							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							     >> 0x10U))))) {
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x1aU;
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 7U;
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x28U;
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty = 3U;
 					    } else {
 						if (
-						    (0x2600U 
+						    (0x3700U 
 						     == 
 						     (0xff00U 
 						      & (IData)(
 								(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								 >> 0x10U))))) {
-						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x1bU;
-						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 6U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x40U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx 
+							= 
+							(0xfU 
+							 & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord));
 						} else {
 						    if (
-							(0x2700U 
-							 != 
+							(0x5000U 
+							 == 
 							 (0xff00U 
 							  & (IData)(
 								    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								     >> 0x10U))))) {
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6eU;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = 0U;
+						    } else {
 							if (
-							    (0x2800U 
+							    (0x5400U 
 							     == 
 							     (0xff00U 
 							      & (IData)(
 									(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 									 >> 0x10U))))) {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xcU;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x1eU;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+								= 
+								((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+								  ? 0x72U
+								  : 0x70U);
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0U;
 							} else {
 							    if (
-								(0x2900U 
+								(0x5500U 
 								 == 
 								 (0xff00U 
 								  & (IData)(
 									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 									     >> 0x10U))))) {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xfU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x1eU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
+								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+								    = 
+								    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+								      ? 0x73U
+								      : 0x71U);
+								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0U;
 							    } else {
 								if (
-								    (0x2a00U 
+								    (0x5c00U 
 								     == 
 								     (0xff00U 
 								      & (IData)(
 										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 										>> 0x10U))))) {
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xdU;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x1fU;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
+								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+									= 
+									((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+									  ? 0x17U
+									  : 0x16U);
+								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
 								} else {
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0xeU;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x1fU;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
+								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
+									= 
+									((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
+									  ? 0x65U
+									  : 0x64U);
+								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
 								}
 							    }
 							}
@@ -20973,131 +19925,141 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 					}
 				    } else {
 					if ((((((((
-						   (0x2c00U 
+						   (0x9000U 
 						    == 
 						    (0xff00U 
 						     & (IData)(
 							       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								>> 0x10U)))) 
-						   | (0x2d00U 
+						   | (0x9100U 
 						      == 
 						      (0xff00U 
 						       & (IData)(
 								 (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								  >> 0x10U))))) 
-						  | (0x2e00U 
+						  | (0x9200U 
 						     == 
 						     (0xff00U 
 						      & (IData)(
 								(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								 >> 0x10U))))) 
-						 | (0x2f00U 
+						 | (0x9300U 
 						    == 
 						    (0xff00U 
 						     & (IData)(
 							       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								>> 0x10U))))) 
-						| (0x3010U 
+						| (0x9400U 
 						   == 
-						   (0xffffU 
+						   (0xff00U 
 						    & (IData)(
 							      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							       >> 0x10U))))) 
-					       | (0x3011U 
+					       | (0x9500U 
 						  == 
-						  (0xffffU 
+						  (0xff00U 
 						   & (IData)(
 							     (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							      >> 0x10U))))) 
-					      | (0x3012U 
+					      | (0x9600U 
 						 == 
-						 (0xffffU 
+						 (0xff00U 
 						  & (IData)(
 							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							     >> 0x10U))))) 
-					     | (0x3013U 
+					     | (0x9700U 
 						== 
-						(0xffffU 
+						(0xff00U 
 						 & (IData)(
 							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							    >> 0x10U)))))) {
-					    if ((0x2c00U 
+					    if ((0x9000U 
 						 == 
 						 (0xff00U 
 						  & (IData)(
 							    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 							     >> 0x10U))))) {
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x1cU;
-						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xeU;
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x4cU;
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
+						vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
 					    } else {
 						if (
-						    (0x2d00U 
+						    (0x9100U 
 						     == 
 						     (0xff00U 
 						      & (IData)(
 								(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								 >> 0x10U))))) {
-						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x1cU;
-						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xfU;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x4eU;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
 						} else {
 						    if (
-							(0x2e00U 
+							(0x9200U 
 							 == 
 							 (0xff00U 
 							  & (IData)(
 								    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								     >> 0x10U))))) {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x1eU;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xeU;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x4cU;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
 						    } else {
 							if (
-							    (0x2f00U 
+							    (0x9300U 
 							     == 
 							     (0xff00U 
 							      & (IData)(
 									(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 									 >> 0x10U))))) {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x1fU;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xeU;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x4eU;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
 							} else {
 							    if (
-								(0x3010U 
+								(0x9400U 
 								 == 
-								 (0xffffU 
+								 (0xff00U 
 								  & (IData)(
 									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 									     >> 0x10U))))) {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x20U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x11U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
+								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x4dU;
+								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
+								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
+								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
 							    } else {
 								if (
-								    (0x3011U 
+								    (0x9500U 
 								     == 
-								     (0xffffU 
+								     (0xff00U 
 								      & (IData)(
 										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 										>> 0x10U))))) {
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x21U;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x11U;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
+								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x4fU;
+								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
+								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
+								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
 								} else {
 								    if (
-									(0x3012U 
+									(0x9600U 
 									 == 
-									 (0xffffU 
+									 (0xff00U 
 									  & (IData)(
 										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 										>> 0x10U))))) {
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x20U;
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x11U;
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty = 2U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x4dU;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
 								    } else {
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x20U;
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x11U;
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty = 3U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x4fU;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
 								    }
 								}
 							    }
@@ -21107,144 +20069,157 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 					    }
 					} else {
 					    if ((((
-						   (((((0x3018U 
+						   (((((0x9800U 
 							== 
-							(0xffffU 
+							(0xff00U 
 							 & (IData)(
 								   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								    >> 0x10U)))) 
-						       | (0x3019U 
+						       | (0x9900U 
 							  == 
-							  (0xffffU 
+							  (0xff00U 
 							   & (IData)(
 								     (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								      >> 0x10U))))) 
-						      | (0x301aU 
+						      | (0x9a00U 
 							 == 
-							 (0xffffU 
+							 (0xff00U 
 							  & (IData)(
 								    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								     >> 0x10U))))) 
-						     | (0x301bU 
+						     | (0x9c00U 
 							== 
-							(0xffffU 
+							(0xff00U 
 							 & (IData)(
 								   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								    >> 0x10U))))) 
-						    | (0x301cU 
+						    | (0x9f00U 
 						       == 
-						       (0xffffU 
+						       (0xff00U 
 							& (IData)(
 								  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								   >> 0x10U))))) 
-						   | (0x301dU 
+						   | (0xc000U 
 						      == 
-						      (0xffffU 
+						      (0xf000U 
 						       & (IData)(
 								 (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								  >> 0x10U))))) 
-						  | (0x3020U 
+						  | (0xd000U 
 						     == 
-						     (0xffffU 
+						     (0xf000U 
 						      & (IData)(
 								(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								 >> 0x10U))))) 
-						 | (0x3021U 
+						 | (0xe000U 
 						    == 
-						    (0xffffU 
+						    (0xf000U 
 						     & (IData)(
 							       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								>> 0x10U)))))) {
 						if (
-						    (0x3018U 
+						    (0x9800U 
 						     == 
-						     (0xffffU 
+						     (0xff00U 
 						      & (IData)(
 								(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								 >> 0x10U))))) {
-						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x24U;
-						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x78U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
 						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0U;
 						} else {
 						    if (
-							(0x3019U 
+							(0x9900U 
 							 == 
-							 (0xffffU 
+							 (0xff00U 
 							  & (IData)(
 								    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 								     >> 0x10U))))) {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x25U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 8U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x79U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0U;
 						    } else {
 							if (
-							    (0x301aU 
+							    (0x9a00U 
 							     == 
-							     (0xffffU 
+							     (0xff00U 
 							      & (IData)(
 									(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 									 >> 0x10U))))) {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x26U;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x7aU;
+							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
 							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0U;
 							} else {
 							    if (
-								(0x301bU 
+								(0x9c00U 
 								 == 
-								 (0xffffU 
+								 (0xff00U 
 								  & (IData)(
 									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 									     >> 0x10U))))) {
 								if (
-								    (0U 
+								    (0xeU 
 								     == 
 								     (0xfU 
-								      & (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 4U))))) {
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x12U;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 1U;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 4U;
-								} else {
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x27U;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
+								      & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) {
+								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x56U;
+								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
 								}
 							    } else {
 								if (
-								    (0x301cU 
+								    (0x9f00U 
 								     == 
-								     (0xffffU 
+								     (0xff00U 
 								      & (IData)(
 										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 										>> 0x10U))))) {
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x1eU;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0U;
+								    if (
+									(1U 
+									 == 
+									 (0xfU 
+									  & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) {
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x59U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+								    } else {
+									if (
+									    (5U 
+									     == 
+									     (0xfU 
+									      & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) {
+									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x5dU;
+									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
+									}
+								    }
 								} else {
 								    if (
-									(0x301dU 
+									(0xc000U 
 									 == 
-									 (0xffffU 
+									 (0xf000U 
 									  & (IData)(
 										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 										>> 0x10U))))) {
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x1fU;
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x20U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x13U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
+									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 1U;
 								    } else {
 									if (
-									    (0x3020U 
+									    (0xd000U 
 									     == 
-									     (0xffffU 
+									     (0xf000U 
 									      & (IData)(
 										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
 										>> 0x10U))))) {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x28U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
+									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x21U;
+									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x13U;
+									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
+									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 1U;
 									} else {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x29U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
+									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x20U;
+									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x13U;
+									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
+									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 1U;
+									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty = 2U;
 									}
 								    }
 								}
@@ -21254,531 +20229,17 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 						}
 					    } else {
 						if (
-						    ((((((((0x3022U 
-							    == 
-							    (0xffffU 
-							     & (IData)(
-								       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									>> 0x10U)))) 
-							   | (0x3023U 
-							      == 
-							      (0xffffU 
-							       & (IData)(
-									 (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									  >> 0x10U))))) 
-							  | (0x3700U 
-							     == 
-							     (0xff00U 
-							      & (IData)(
-									(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									 >> 0x10U))))) 
-							 | (0x5000U 
-							    == 
-							    (0xff00U 
-							     & (IData)(
-								       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									>> 0x10U))))) 
-							| (0x5400U 
-							   == 
-							   (0xff00U 
-							    & (IData)(
-								      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								       >> 0x10U))))) 
-						       | (0x5500U 
-							  == 
-							  (0xff00U 
-							   & (IData)(
-								     (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								      >> 0x10U))))) 
-						      | (0x5600U 
-							 == 
-							 (0xff00U 
-							  & (IData)(
-								    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								     >> 0x10U))))) 
-						     | (0x5700U 
-							== 
-							(0xff00U 
-							 & (IData)(
-								   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								    >> 0x10U)))))) {
-						    if (
-							(0x3022U 
-							 == 
-							 (0xffffU 
-							  & (IData)(
-								    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								     >> 0x10U))))) {
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x28U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
-							vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty = 2U;
-						    } else {
-							if (
-							    (0x3023U 
-							     == 
-							     (0xffffU 
-							      & (IData)(
-									(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									 >> 0x10U))))) {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x28U;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 2U;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty = 3U;
-							} else {
-							    if (
-								(0x3700U 
-								 == 
-								 (0xff00U 
-								  & (IData)(
-									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									     >> 0x10U))))) {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x40U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx 
-								    = 
-								    (0xfU 
-								     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord));
-							    } else {
-								if (
-								    (0x5000U 
-								     == 
-								     (0xff00U 
-								      & (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) {
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x6eU;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = 0U;
-								} else {
-								    if (
-									(0x5400U 
-									 == 
-									 (0xff00U 
-									  & (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) {
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-									    = 
-									    ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-									      ? 0x72U
-									      : 0x70U);
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0U;
-								    } else {
-									if (
-									    (0x5500U 
-									     == 
-									     (0xff00U 
-									      & (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-										= 
-										((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-										 ? 0x73U
-										 : 0x71U);
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0U;
-									} else {
-									    if (
-										(0x5600U 
-										== 
-										(0xff00U 
-										& (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) {
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x70U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0xcU;
-									    } else {
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x71U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0xcU;
-									    }
-									}
-								    }
-								}
-							    }
-							}
-						    }
-						} else {
-						    if (
-							((((((((0x5800U 
-								== 
-								(0xff00U 
-								 & (IData)(
-									   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									    >> 0x10U)))) 
-							       | (0x5900U 
-								  == 
-								  (0xff00U 
-								   & (IData)(
-									     (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									      >> 0x10U))))) 
-							      | (0x5a00U 
-								 == 
-								 (0xff00U 
-								  & (IData)(
-									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									     >> 0x10U))))) 
-							     | (0x5b00U 
-								== 
-								(0xff00U 
-								 & (IData)(
-									   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									    >> 0x10U))))) 
-							    | (0x5c00U 
-							       == 
-							       (0xff00U 
-								& (IData)(
-									  (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									   >> 0x10U))))) 
-							   | (0x5d00U 
-							      == 
-							      (0xff00U 
-							       & (IData)(
-									 (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									  >> 0x10U))))) 
-							  | (0x9000U 
-							     == 
-							     (0xff00U 
-							      & (IData)(
-									(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									 >> 0x10U))))) 
-							 | (0x9100U 
-							    == 
-							    (0xff00U 
-							     & (IData)(
-								       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									>> 0x10U)))))) {
-							if (
-							    (0x5800U 
-							     == 
-							     (0xff00U 
-							      & (IData)(
-									(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									 >> 0x10U))))) {
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x72U;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-							    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0xcU;
-							} else {
-							    if (
-								(0x5900U 
-								 == 
-								 (0xff00U 
-								  & (IData)(
-									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									     >> 0x10U))))) {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x73U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0xcU;
-							    } else {
-								if (
-								    (0x5a00U 
-								     == 
-								     (0xff00U 
-								      & (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) {
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x72U;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0xdU;
-								} else {
-								    if (
-									(0x5b00U 
-									 == 
-									 (0xff00U 
-									  & (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) {
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x73U;
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0xdU;
-								    } else {
-									if (
-									    (0x5c00U 
-									     == 
-									     (0xff00U 
-									      & (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-										= 
-										((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-										 ? 0x17U
-										 : 0x16U);
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									} else {
-									    if (
-										(0x5d00U 
-										== 
-										(0xff00U 
-										& (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) {
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-										= 
-										((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-										 ? 0x65U
-										 : 0x64U);
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									    } else {
-										if (
-										(0x9000U 
-										== 
-										(0xff00U 
-										& (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) {
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x4cU;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-										} else {
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x4eU;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 8U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-										}
-									    }
-									}
-								    }
-								}
-							    }
-							}
-						    } else {
-							if (
-							    ((((((((0x9200U 
-								    == 
-								    (0xff00U 
-								     & (IData)(
-									       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U)))) 
-								   | (0x9300U 
-								      == 
-								      (0xff00U 
-								       & (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) 
-								  | (0x9400U 
-								     == 
-								     (0xff00U 
-								      & (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) 
-								 | (0x9500U 
-								    == 
-								    (0xff00U 
-								     & (IData)(
-									       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) 
-								| (0x9600U 
-								   == 
-								   (0xff00U 
-								    & (IData)(
-									      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									       >> 0x10U))))) 
-							       | (0x9700U 
-								  == 
-								  (0xff00U 
-								   & (IData)(
-									     (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									      >> 0x10U))))) 
-							      | (0x9800U 
-								 == 
-								 (0xff00U 
-								  & (IData)(
-									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									     >> 0x10U))))) 
-							     | (0x9900U 
-								== 
-								(0xff00U 
-								 & (IData)(
-									   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									    >> 0x10U)))))) {
-							    if (
-								(0x9200U 
-								 == 
-								 (0xff00U 
-								  & (IData)(
-									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									     >> 0x10U))))) {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x4cU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-							    } else {
-								if (
-								    (0x9300U 
-								     == 
-								     (0xff00U 
-								      & (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) {
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x4eU;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xaU;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
-								    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-								} else {
-								    if (
-									(0x9400U 
-									 == 
-									 (0xff00U 
-									  & (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) {
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x4dU;
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-								    } else {
-									if (
-									    (0x9500U 
-									     == 
-									     (0xff00U 
-									      & (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x4fU;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 9U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-									} else {
-									    if (
-										(0x9600U 
-										== 
-										(0xff00U 
-										& (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) {
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x4dU;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 2U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-									    } else {
-										if (
-										(0x9700U 
-										== 
-										(0xff00U 
-										& (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) {
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x4fU;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0xbU;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 3U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 4U;
-										} else {
-										if (
-										(0x9800U 
-										== 
-										(0xff00U 
-										& (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) {
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x78U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0U;
-										} else {
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x79U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0U;
-										}
-										}
-									    }
-									}
-								    }
-								}
-							    }
-							} else {
-							    if (
-								(0x9a00U 
-								 == 
-								 (0xff00U 
-								  & (IData)(
-									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									     >> 0x10U))))) {
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x7aU;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-								vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 0U;
-							    } else {
-								if (
-								    (0x9c00U 
-								     == 
-								     (0xff00U 
-								      & (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) {
-								    if (
-									(0xeU 
-									 == 
-									 (0xfU 
-									  & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) {
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x56U;
-									vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExI) {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd 
-										= 
-										((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-										 ? 0x59U
-										 : 0x5dU);
-									}
-								    }
-								} else {
-								    if (
-									(0x9f00U 
-									 == 
-									 (0xff00U 
-									  & (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) {
-									if (
-									    (1U 
-									     == 
-									     (0xfU 
-									      & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x59U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									} else {
-									    if (
-										(5U 
-										== 
-										(0xfU 
-										& (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) {
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x5dU;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 4U;
-									    }
-									}
-								    } else {
-									if (
-									    (0xa000U 
-									     == 
-									     (0xf000U 
-									      & (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) {
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x20U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x13U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
-									    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 1U;
-									} else {
-									    if (
-										(0xb000U 
-										== 
-										(0xf000U 
-										& (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U))))) {
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x21U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x13U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 1U;
-									    }
-									}
-								    }
-								}
-							    }
-							}
-						    }
+						    (0xf000U 
+						     == 
+						     (0xf000U 
+						      & (IData)(
+								(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+								 >> 0x10U))))) {
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 0x20U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = 0x13U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty = 1U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty = 1U;
+						    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty = 3U;
 						}
 					    }
 					}
@@ -21860,38 +20321,42 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 			vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUIxt 
 			    = (8U | (((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty) 
 				      << 6U) | (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty)));
-			if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsImm32) {
+			if ((0U == (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
 			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
 				= (((QData)((IData)(
-						    (1U 
-						     & (IData)(
-							       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								>> 0x2fU))))) 
-				    << 0x20U) | (QData)((IData)(
+						    ((1U 
+						      & (IData)(
 								(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								 >> 0x10U))));
+								 >> 7U)))
+						      ? 0x1ffffU
+						      : 0U))) 
+				    << 0x10U) | (QData)((IData)(
+								((0xff00U 
+								  & ((IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord) 
+								     << 8U)) 
+								 | (0xffU 
+								    & (IData)(
+									      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+									       >> 0x10U)))))));
 			} else {
-			    if ((0U == (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
+			    if ((1U == (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
-				    = (((QData)((IData)(
-							((1U 
-							  & (IData)(
-								    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								     >> 7U)))
-							  ? 0x1ffffU
-							  : 0U))) 
-					<< 0x10U) | (QData)((IData)(
-								    ((0xff00U 
-								      & ((IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord) 
-									 << 8U)) 
-								     | (0xffU 
-									& (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-										>> 0x10U)))))));
+				    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_disp20s;
 			    } else {
-				if ((1U == (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
+				if (VL_LIKELY((2U == (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty)))) {
 				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
-					= vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_disp20s;
+					= (((QData)((IData)(
+							    (1U 
+							     & (IData)(
+								       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+									>> 0x2fU))))) 
+					    << 0x20U) 
+					   | (QData)((IData)(
+							     (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							      >> 0x10U))));
+				} else {
+				    VL_WRITEF("Jx2DecOpFx: PcDisp, Bad Ity=%x\n",
+					      4,vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty);
 				}
 			    }
 			}
@@ -21913,7 +20378,8 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 		    }
 		} else {
 		    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid))) {
-			if ((0U == (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
+			if (VL_LIKELY((0U == (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty)))) {
+			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN = 0x2fU;
 			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM = 0x20U;
 			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO 
 				= vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO_Dfl;
@@ -21921,17 +20387,8 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 				= (8U | (((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty) 
 					  << 6U) | (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty)));
 			} else {
-			    if ((4U == (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
-				    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Jcmp;
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM 
-				    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Jcmp;
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO = 0x2eU;
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
-				    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_disp8s;
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUIxt 
-				    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx;
-			    }
+			    VL_WRITEF("Jx2DecOpFx: RegPc Bad Ity=%x\n",
+				      4,vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty);
 			}
 		    } else {
 			if (VL_UNLIKELY((1U & (~ (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tMsgLatch))))) {
@@ -21956,36 +20413,20 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 	if ((8U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid))) {
 	    if ((4U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid))) {
 		if ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid))) {
-		    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid))) {
-			vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
-			    = (VL_ULL(0x1fffffc00) 
-			       | (QData)((IData)(((0x300U 
-						   & ((IData)(
-							      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							       >> 5U)) 
-						      << 8U)) 
-						  | (0xffU 
-						     & (IData)(
-							       (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								>> 0x10U)))))));
-			vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
-			    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO_Dfl;
-			vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM = 0x2eU;
-		    } else {
-			vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
-			    = (((QData)((IData)((3U 
-						 & (IData)(
-							   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							    >> 5U))))) 
-				<< 8U) | (QData)((IData)(
-							 (0xffU 
-							  & (IData)(
-								    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								     >> 0x10U))))));
-			vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
-			    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO_Dfl;
-			vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM = 0x2eU;
+		    if (VL_UNLIKELY((1U & (~ (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tMsgLatch))))) {
+			VL_WRITEF("Jx2DecOpFx: Unhandled FMID (32/48) %x\n",
+				  5,vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid);
+			VL_WRITEF("Jx2DecOpFx: Istr %x-%x-%x\n",
+				  16,(0xffffU & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)),
+				  16,(0xffffU & (IData)(
+							(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							 >> 0x10U))),
+				  16,(0xffffU & (IData)(
+							(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							 >> 0x20U))));
 		    }
+		    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmd = 1U;
+		    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tNextMsgLatch = 1U;
 		} else {
 		    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid))) {
 			vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
@@ -22146,80 +20587,90 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 		    }
 		} else {
 		    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid))) {
-			vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
-			    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Dfl;
+			vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO = 0x2eU;
 			vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUIxt 
 			    = (8U | (((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty) 
 				      << 6U) | (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty)));
-			if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRmIsRz) {
+			if ((1U == (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
+			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
+				= vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Df2;
 			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM 
-				= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRmIsR1)
-				    ? 0x26U : 0x20U);
-			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO = 0x2eU;
-			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUIxt 
-				= (8U | ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty) 
-					 << 6U));
+				= vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Df2;
+			    if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRm2IsRz) {
+				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM 
+				    = ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRm2IsR1)
+				        ? 0x26U : 0x20U);
+				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUIxt 
+				    = (8U | ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty) 
+					     << 6U));
+			    }
 			} else {
-			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM 
-				= vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Dfl;
-			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO = 0x2eU;
-			}
-			if ((4U == (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
 			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
 				= vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Dfl;
 			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM 
 				= vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Dfl;
-			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO = 0x2eU;
-			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
-				= (QData)((IData)((0x1fU 
-						   & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))));
-			} else {
-			    if ((1U == (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
-				    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm17s;
-			    } else {
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
-				    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Dfl;
+			    if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRmIsRz) {
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM 
-				    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Dfl;
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO = 0x2fU;
+				    = ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRmIsR1)
+				        ? 0x26U : 0x20U);
+				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUIxt 
+				    = (8U | ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty) 
+					     << 6U));
 			    }
-			}
-		    } else {
-			vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
-			    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Dfl;
-			vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUIxt 
-			    = (((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty) 
-				<< 6U) | (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty));
-			if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRnIsRz) {
-			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM 
-				= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRnIsR1)
-				    ? 0x26U : 0x20U);
-			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO = 0x2eU;
-			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUIxt 
-				= ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty) 
-				   << 6U);
-			} else {
-			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM 
-				= vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Dfl;
-			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO = 0x2eU;
 			}
 			if ((4U == (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
 			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
 				= (QData)((IData)((0x1fU 
 						   & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))));
-			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM 
-				= vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Dfl;
-			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO = 0x2eU;
 			} else {
 			    if ((1U == (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
 				    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm17s;
 			    } else {
+				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO = 0x2fU;
+			    }
+			}
+		    } else {
+			vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO = 0x2eU;
+			vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUIxt 
+			    = (((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty) 
+				<< 6U) | (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opBty));
+			if ((1U == (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
+			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
+				= vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Df2;
+			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM 
+				= vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Df2;
+			    if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRn2IsRz) {
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM 
-				    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Dfl;
-				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
-				    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Dfl;
+				    = ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRn2IsR1)
+				        ? 0x26U : 0x20U);
+				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUIxt 
+				    = ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty) 
+				       << 6U);
+			    }
+			} else {
+			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
+				= vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Dfl;
+			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM 
+				= vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Dfl;
+			    if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRnIsRz) {
+				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM 
+				    = ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRnIsR1)
+				        ? 0x26U : 0x20U);
+				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUIxt 
+				    = ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opCcty) 
+				       << 6U);
+			    }
+			}
+			if ((4U == (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
+			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
+				= (QData)((IData)((0x1fU 
+						   & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))));
+			} else {
+			    if ((1U == (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
+				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
+				    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm17s;
+			    } else {
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO = 0x2fU;
 			    }
 			}
@@ -22271,146 +20722,6 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 		    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid))) {
 			vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUIxt 
 			    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx;
-			if ((8U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
-			    if ((4U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
-				if ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
-				    if ((1U & (~ (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty)))) {
-					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
-					    = (((QData)((IData)(
-								(1U 
-								 & (~ (IData)(
-									      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									       >> 0x2fU)))))) 
-						<< 0x20U) 
-					       | (QData)((IData)(
-								 (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								  >> 0x10U))));
-				    }
-				} else {
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
-					= ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))
-					    ? (((QData)((IData)(
-								((1U 
-								  & (IData)(
-									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									     >> 0x1fU)))
-								  ? 0U
-								  : 0x1ffffU))) 
-						<< 0x10U) 
-					       | (QData)((IData)(
-								 (0xffffU 
-								  & (IData)(
-									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									     >> 0x10U))))))
-					    : (((QData)((IData)(
-								((1U 
-								  & (IData)(
-									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									     >> 0x17U)))
-								  ? 0U
-								  : 0x1ffffffU))) 
-						<< 8U) 
-					       | (QData)((IData)(
-								 (0xffU 
-								  & (IData)(
-									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									     >> 0x10U)))))));
-				}
-			    } else {
-				if ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
-				    if ((1U & (~ (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty)))) {
-					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
-					    = (VL_ULL(0x100000000) 
-					       | (QData)((IData)(
-								 (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								  >> 0x10U))));
-				    }
-				} else {
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
-					= ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))
-					    ? (VL_ULL(0x1ffff0000) 
-					       | (QData)((IData)(
-								 (0xffffU 
-								  & (IData)(
-									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									     >> 0x10U))))))
-					    : (VL_ULL(0x1ffffff00) 
-					       | (QData)((IData)(
-								 (0xffU 
-								  & (IData)(
-									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									     >> 0x10U)))))));
-				}
-			    }
-			} else {
-			    if ((4U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
-				if ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
-				    if ((1U & (~ (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty)))) {
-					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
-					    = (QData)((IData)(
-							      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-							       >> 0x10U)));
-				    }
-				} else {
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
-					= ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))
-					    ? (QData)((IData)(
-							      (0xffffU 
-							       & (IData)(
-									 (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									  >> 0x10U)))))
-					    : (QData)((IData)(
-							      (0xffU 
-							       & (IData)(
-									 (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									  >> 0x10U))))));
-				}
-			    } else {
-				if ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
-				    if ((1U & (~ (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty)))) {
-					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
-					    = (((QData)((IData)(
-								(1U 
-								 & (IData)(
-									   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									    >> 0x2fU))))) 
-						<< 0x20U) 
-					       | (QData)((IData)(
-								 (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-								  >> 0x10U))));
-				    }
-				} else {
-				    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
-					= ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))
-					    ? (((QData)((IData)(
-								((1U 
-								  & (IData)(
-									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									     >> 0x1fU)))
-								  ? 0x1ffffU
-								  : 0U))) 
-						<< 0x10U) 
-					       | (QData)((IData)(
-								 (0xffffU 
-								  & (IData)(
-									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									     >> 0x10U))))))
-					    : (((QData)((IData)(
-								((1U 
-								  & (IData)(
-									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									     >> 0x17U)))
-								  ? 0x1ffffffU
-								  : 0U))) 
-						<< 8U) 
-					       | (QData)((IData)(
-								 (0xffU 
-								  & (IData)(
-									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
-									     >> 0x10U)))))));
-				}
-			    }
-			}
 			if (vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsFC0) {
 			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM = 0x2eU;
 			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
@@ -22423,6 +20734,120 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 				= vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO_Dfl;
 			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO 
 				= vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO_Dfl;
+			}
+			if ((8U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
+			    if (VL_UNLIKELY((4U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty)))) {
+				VL_WRITEF("Jx2DecOpFx: Imm8Reg, Bad Ity=%x\n",
+					  4,vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty);
+			    } else {
+				if ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
+				    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
+					    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm10n;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
+					    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Df2;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO 
+					    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Df2;
+				    } else {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
+					    = (VL_ULL(0x100000000) 
+					       | (QData)((IData)(
+								 (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+								  >> 0x10U))));
+				    }
+				} else {
+				    if (VL_LIKELY((1U 
+						   & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty)))) {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
+					    = (VL_ULL(0x1ffff0000) 
+					       | (QData)((IData)(
+								 (0xffffU 
+								  & (IData)(
+									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+									     >> 0x10U))))));
+				    } else {
+					VL_WRITEF("Jx2DecOpFx: Imm8Reg, Bad Ity=%x\n",
+						  4,
+						  vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty);
+				    }
+				}
+			    }
+			} else {
+			    if ((4U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
+				if ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
+				    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
+					    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm10u;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
+					    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Df2;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO 
+					    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Df2;
+				    } else {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
+					    = (QData)((IData)(
+							      (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							       >> 0x10U)));
+				    }
+				} else {
+				    if (VL_LIKELY((1U 
+						   & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty)))) {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
+					    = (QData)((IData)(
+							      (0xffffU 
+							       & (IData)(
+									 (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+									  >> 0x10U)))));
+				    } else {
+					VL_WRITEF("Jx2DecOpFx: Imm8Reg, Bad Ity=%x\n",
+						  4,
+						  vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty);
+				    }
+				}
+			    } else {
+				if ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
+				    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
+					    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm10s;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
+					    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Df2;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO 
+					    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Df2;
+				    } else {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
+					    = (((QData)((IData)(
+								(1U 
+								 & (IData)(
+									   (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+									    >> 0x2fU))))) 
+						<< 0x20U) 
+					       | (QData)((IData)(
+								 (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+								  >> 0x10U))));
+				    }
+				} else {
+				    if (VL_LIKELY((1U 
+						   & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty)))) {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
+					    = (((QData)((IData)(
+								((1U 
+								  & (IData)(
+									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+									     >> 0x1fU)))
+								  ? 0x1ffffU
+								  : 0U))) 
+						<< 0x10U) 
+					       | (QData)((IData)(
+								 (0xffffU 
+								  & (IData)(
+									    (vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+									     >> 0x10U))))));
+				    } else {
+					VL_WRITEF("Jx2DecOpFx: Imm8Reg, Bad Ity=%x\n",
+						  4,
+						  vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty);
+				    }
+				}
+			    }
 			}
 		    } else {
 			vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
@@ -22437,40 +20862,20 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 			    = (QData)((IData)((0x1fU 
 					       & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))));
 			if ((8U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
-			    if ((4U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
-				if ((1U & (~ ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty) 
-					      >> 1U)))) {
-				    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
-					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO = 0x2eU;
-					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
-					    = (((QData)((IData)(
-								((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-								  ? 0x7ffffffU
-								  : 0U))) 
-						<< 6U) 
-					       | (QData)((IData)(
-								 ((0x20U 
-								   & ((~ (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)) 
-								      << 5U)) 
-								  | (0x1fU 
-								     & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))))));
-				    } else {
-					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO = 0x2eU;
-					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
-					    = (((QData)((IData)(
-								((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-								  ? 0xfffffffU
-								  : 0U))) 
-						<< 5U) 
-					       | (QData)((IData)(
-								 (0x1fU 
-								  & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))));
-				    }
-				}
+			    if (VL_UNLIKELY((4U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty)))) {
+				VL_WRITEF("Jx2DecOpFx: RegReg, Bad Ity=%x\n",
+					  4,vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty);
 			    } else {
-				if ((1U & (~ ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty) 
-					      >> 1U)))) {
+				if (VL_UNLIKELY((2U 
+						 & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty)))) {
+				    VL_WRITEF("Jx2DecOpFx: RegReg, Bad Ity=%x\n",
+					      4,vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty);
+				} else {
 				    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
+					    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Df2;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM 
+					    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Df2;
 					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO = 0x2eU;
 					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
 					    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm17n;
@@ -22486,27 +20891,37 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 			    }
 			} else {
 			    if ((4U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
-				if ((1U & (~ ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty) 
-					      >> 1U)))) {
-				    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
+				if (VL_UNLIKELY((2U 
+						 & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty)))) {
+				    VL_WRITEF("Jx2DecOpFx: RegReg, Bad Ity=%x\n",
+					      4,vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty);
+				} else {
+				    if (VL_LIKELY((1U 
+						   & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty)))) {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
+					    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Df2;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM 
+					    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Df2;
 					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO = 0x2eU;
 					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
 					    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm17u;
 				    } else {
-					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO 
-					    = ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ)
-					        ? 0x2eU
-					        : (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO_Dfl));
-					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
-					    = (QData)((IData)(
-							      (0x1fU 
-							       & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))));
+					VL_WRITEF("Jx2DecOpFx: RegReg, Bad Ity=%x\n",
+						  4,
+						  vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty);
 				    }
 				}
 			    } else {
-				if ((1U & (~ ((IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty) 
-					      >> 1U)))) {
+				if (VL_UNLIKELY((2U 
+						 & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty)))) {
+				    VL_WRITEF("Jx2DecOpFx: RegReg, Bad Ity=%x\n",
+					      4,vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty);
+				} else {
 				    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
+					    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Df2;
+					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM 
+					    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Df2;
 					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO_Dfl = 0x2eU;
 					vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm 
 					    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm17s;
@@ -22543,12 +20958,26 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 			    vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO 
 				= vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO_Dfl;
 			} else {
-			    if ((1U == (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty))) {
+			    if (VL_LIKELY((1U == (IData)(vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty)))) {
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN 
 				    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Dfl;
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM = 0x2fU;
 				vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO 
 				    = vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Dfl;
+			    } else {
+				VL_WRITEF("Jx2DecOpFx: Bad Reg, Ity=%x\n",
+					  4,vlTOPp->Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIty);
+				VL_WRITEF("Jx2DecOpFx: Istr %x-%x-%x\n",
+					  16,(0xffffU 
+					      & (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)),
+					  16,(0xffffU 
+					      & (IData)(
+							(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							 >> 0x10U))),
+					  16,(0xffffU 
+					      & (IData)(
+							(vlTOPp->Jx2ExUnit__DOT__decIstrWord 
+							 >> 0x20U))));
 			    }
 			}
 		    }
@@ -23966,168 +22395,6 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 	    : ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__exRegIdIxt))
 	        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__swapn__DOT__tSwapWord
 	        : vlTOPp->Jx2ExUnit__DOT__exOp__DOT__swapn__DOT__tSwapByte));
-    // ALWAYS at Jx2ExOpAlu.v:94
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRm_T0 
-	= vlTOPp->Jx2ExUnit__DOT__exRegValRmC;
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRi_T0 
-	= vlTOPp->Jx2ExUnit__DOT__exRegValRiC;
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_A0 
-	= (0x1ffffU & ((0xffffU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRm_T0)) 
-		       + (0xffffU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRi_T0))));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_A1 
-	= (0x1ffffU & ((IData)(1U) + ((0xffffU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRm_T0)) 
-				      + (0xffffU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRi_T0)))));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_B0 
-	= (0x1ffffU & ((0xffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRm_T0 
-					   >> 0x10U))) 
-		       + (0xffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRi_T0 
-					     >> 0x10U)))));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_B1 
-	= (0x1ffffU & ((IData)(1U) + ((0xffffU & (IData)(
-							 (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRm_T0 
-							  >> 0x10U))) 
-				      + (0xffffU & (IData)(
-							   (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRi_T0 
-							    >> 0x10U))))));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_C0 
-	= (0x1ffffU & ((0xffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRm_T0 
-					   >> 0x20U))) 
-		       + (0xffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRi_T0 
-					     >> 0x20U)))));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_C1 
-	= (0x1ffffU & ((IData)(1U) + ((0xffffU & (IData)(
-							 (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRm_T0 
-							  >> 0x20U))) 
-				      + (0xffffU & (IData)(
-							   (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRi_T0 
-							    >> 0x20U))))));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_D0 
-	= (0x1ffffU & ((0xffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRm_T0 
-					   >> 0x30U))) 
-		       + (0xffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRi_T0 
-					     >> 0x30U)))));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_D1 
-	= (0x1ffffU & ((IData)(1U) + ((0xffffU & (IData)(
-							 (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRm_T0 
-							  >> 0x30U))) 
-				      + (0xffffU & (IData)(
-							   (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRi_T0 
-							    >> 0x30U))))));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAddRmRi_A0 
-	= (((QData)((IData)(((0x10000U & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_A0)
-			      ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_B1
-			      : vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_B0))) 
-	    << 0x10U) | (QData)((IData)((0xffffU & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_A0))));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAddRmRi_A1 
-	= (((QData)((IData)(((0x10000U & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_A1)
-			      ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_B1
-			      : vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_B0))) 
-	    << 0x10U) | (QData)((IData)((0xffffU & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_A1))));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAddRmRi_B0 
-	= (((QData)((IData)(((0x10000U & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_C0)
-			      ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_D1
-			      : vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_D0))) 
-	    << 0x10U) | (QData)((IData)((0xffffU & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_C0))));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAddRmRi_B1 
-	= (((QData)((IData)(((0x10000U & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_C1)
-			      ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_D1
-			      : vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_D0))) 
-	    << 0x10U) | (QData)((IData)((0xffffU & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_C1))));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAluPAddW 
-	= (((QData)((IData)(((0xffff0000U & (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_D0 
-					     << 0x10U)) 
-			     | (0xffffU & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_C0)))) 
-	    << 0x20U) | (QData)((IData)(((0xffff0000U 
-					  & (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_B0 
-					     << 0x10U)) 
-					 | (0xffffU 
-					    & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAdd0RmRi_A0)))));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAluPAddL 
-	= (((QData)((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAddRmRi_B0)) 
-	    << 0x20U) | (QData)((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAddRmRi_A0)));
-    // ALWAYS at Jx2ExOpAlu.v:94
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRm_T1 
-	= vlTOPp->Jx2ExUnit__DOT__exRegValRmC;
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRi_T1 
-	= vlTOPp->Jx2ExUnit__DOT__exRegValRiC;
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_A0 
-	= (0x1ffffU & ((0xffffU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRm_T1)) 
-		       + (0xffffU & (~ (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRi_T1)))));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_A1 
-	= (0x1ffffU & ((IData)(1U) + ((0xffffU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRm_T1)) 
-				      + (0xffffU & 
-					 (~ (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRi_T1))))));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_B0 
-	= (0x1ffffU & ((0xffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRm_T1 
-					   >> 0x10U))) 
-		       + (0xffffU & (~ (IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRi_T1 
-						>> 0x10U))))));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_B1 
-	= (0x1ffffU & ((IData)(1U) + ((0xffffU & (IData)(
-							 (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRm_T1 
-							  >> 0x10U))) 
-				      + (0xffffU & 
-					 (~ (IData)(
-						    (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRi_T1 
-						     >> 0x10U)))))));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_C0 
-	= (0x1ffffU & ((0xffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRm_T1 
-					   >> 0x20U))) 
-		       + (0xffffU & (~ (IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRi_T1 
-						>> 0x20U))))));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_C1 
-	= (0x1ffffU & ((IData)(1U) + ((0xffffU & (IData)(
-							 (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRm_T1 
-							  >> 0x20U))) 
-				      + (0xffffU & 
-					 (~ (IData)(
-						    (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRi_T1 
-						     >> 0x20U)))))));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_D0 
-	= (0x1ffffU & ((0xffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRm_T1 
-					   >> 0x30U))) 
-		       + (0xffffU & (~ (IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRi_T1 
-						>> 0x30U))))));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_D1 
-	= (0x1ffffU & ((IData)(1U) + ((0xffffU & (IData)(
-							 (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRm_T1 
-							  >> 0x30U))) 
-				      + (0xffffU & 
-					 (~ (IData)(
-						    (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRi_T1 
-						     >> 0x30U)))))));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSubRmRi_A0 
-	= (((QData)((IData)(((0x10000U & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_A0)
-			      ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_B1
-			      : vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_B0))) 
-	    << 0x10U) | (QData)((IData)((0xffffU & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_A0))));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSubRmRi_A1 
-	= (((QData)((IData)(((0x10000U & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_A1)
-			      ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_B1
-			      : vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_B0))) 
-	    << 0x10U) | (QData)((IData)((0xffffU & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_A1))));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSubRmRi_B0 
-	= (((QData)((IData)(((0x10000U & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_C0)
-			      ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_D1
-			      : vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_D0))) 
-	    << 0x10U) | (QData)((IData)((0xffffU & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_C0))));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSubRmRi_B1 
-	= (((QData)((IData)(((0x10000U & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_C1)
-			      ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_D1
-			      : vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_D0))) 
-	    << 0x10U) | (QData)((IData)((0xffffU & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_C1))));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAluPSubW 
-	= (((QData)((IData)(((0xffff0000U & (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_D1 
-					     << 0x10U)) 
-			     | (0xffffU & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_C1)))) 
-	    << 0x20U) | (QData)((IData)(((0xffff0000U 
-					  & (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_B1 
-					     << 0x10U)) 
-					 | (0xffffU 
-					    & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSub0RmRi_A1)))));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAluPSubL 
-	= (((QData)((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSubRmRi_B1)) 
-	    << 0x20U) | (QData)((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSubRmRi_A1)));
     // ALWAYS at Jx2ExOpCmp.v:111
     vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tTstRmRn0 
 	= (0U == (0xffffU & ((IData)(vlTOPp->Jx2ExUnit__DOT__exRegValRmC) 
@@ -24154,7 +22421,7 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 	= (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tTstRmRn2) 
 	    & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tTstRmRn3)) 
 	   & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tTstRmRnL));
-    // ALWAYS at Jx2ExOp.v:599
+    // ALWAYS at Jx2ExOp.v:606
     vlTOPp->Jx2ExUnit__DOT__exOp__DOT__regMaIxVal2 
 	= ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__exRegIdIxtB))
 	    ? ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__exRegIdIxtB))
@@ -24170,6 +22437,297 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 	        ? (VL_ULL(0xfffffffffffffffe) & (vlTOPp->Jx2ExUnit__DOT__exRegValRiB 
 						 << 1U))
 	        : vlTOPp->Jx2ExUnit__DOT__exRegValRiB));
+    // ALWAYS at Jx2ExOpCmp.v:111
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq0 
+	= ((0xffffU & (IData)(vlTOPp->Jx2ExUnit__DOT__exRegValRn)) 
+	   == (0xffffU & (IData)(vlTOPp->Jx2ExUnit__DOT__exRegValRmC)));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq1 
+	= ((0xffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__exRegValRn 
+			       >> 0x10U))) == (0xffffU 
+					       & (IData)(
+							 (vlTOPp->Jx2ExUnit__DOT__exRegValRmC 
+							  >> 0x10U))));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq2 
+	= ((0xffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__exRegValRn 
+			       >> 0x20U))) == (0xffffU 
+					       & (IData)(
+							 (vlTOPp->Jx2ExUnit__DOT__exRegValRmC 
+							  >> 0x20U))));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq3 
+	= ((0xffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__exRegValRn 
+			       >> 0x30U))) == (0xffffU 
+					       & (IData)(
+							 (vlTOPp->Jx2ExUnit__DOT__exRegValRmC 
+							  >> 0x30U))));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi0 
+	= ((0xffffU & (IData)(vlTOPp->Jx2ExUnit__DOT__exRegValRn)) 
+	   > (0xffffU & (IData)(vlTOPp->Jx2ExUnit__DOT__exRegValRmC)));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi1 
+	= ((0xffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__exRegValRn 
+			       >> 0x10U))) > (0xffffU 
+					      & (IData)(
+							(vlTOPp->Jx2ExUnit__DOT__exRegValRmC 
+							 >> 0x10U))));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi2 
+	= ((0xffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__exRegValRn 
+			       >> 0x20U))) > (0xffffU 
+					      & (IData)(
+							(vlTOPp->Jx2ExUnit__DOT__exRegValRmC 
+							 >> 0x20U))));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi3 
+	= ((0xffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__exRegValRn 
+			       >> 0x30U))) > (0xffffU 
+					      & (IData)(
+							(vlTOPp->Jx2ExUnit__DOT__exRegValRmC 
+							 >> 0x30U))));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHs0 
+	= ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi0) 
+	   | (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq0));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHs1 
+	= ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi1) 
+	   | (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq1));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHs2 
+	= ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi2) 
+	   | (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq2));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHs3 
+	= ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi3) 
+	   | (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq3));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq01 
+	= ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq0) 
+	   & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq1));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq23 
+	= ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq2) 
+	   & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq3));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi01 
+	= ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi1) 
+	   | ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq1) 
+	      & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi0)));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHs01 
+	= ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi1) 
+	   | ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq1) 
+	      & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHs0)));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi23 
+	= ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi3) 
+	   | ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq3) 
+	      & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi2)));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHs23 
+	= ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi3) 
+	   | ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq3) 
+	      & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHs2)));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEqPW 
+	= (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq3) 
+	    << 3U) | (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq2) 
+		       << 2U) | (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq1) 
+				  << 1U) | (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq0))));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHiPW 
+	= (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi3) 
+	    << 3U) | (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi2) 
+		       << 2U) | (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi1) 
+				  << 1U) | (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi0))));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHsPW 
+	= (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHs3) 
+	    << 3U) | (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHs2) 
+		       << 2U) | (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHs1) 
+				  << 1U) | (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHs0))));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEqPL 
+	= (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq23) 
+	    << 1U) | (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq01));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHiPL 
+	= (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi23) 
+	    << 1U) | (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi01));
+    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHsPL 
+	= (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHs23) 
+	    << 1U) | (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHs01));
+    // ALWAYS at Jx2MemCache.v:324
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcOK = 2U;
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcOK = 2U;
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcData[0U] 
+	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[0U];
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcData[1U] 
+	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[1U];
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcData[2U] 
+	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[2U];
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcData[3U] 
+	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[3U];
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcData[4U] 
+	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[4U];
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcData[5U] 
+	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[5U];
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcData[6U] 
+	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[6U];
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcData[7U] 
+	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[7U];
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcDataI[0U] 
+	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[0U];
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcDataI[1U] 
+	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[1U];
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcDataI[2U] 
+	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[2U];
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcDataI[3U] 
+	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[3U];
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcDataI[4U] 
+	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[4U];
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcDataI[5U] 
+	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[5U];
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcDataI[6U] 
+	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[6U];
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcDataI[7U] 
+	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[7U];
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memNextIcLatch = 0U;
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memNextDcLatch = 0U;
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInAddr = VL_ULL(0);
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInData[0U] = 0U;
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInData[1U] = 0U;
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInData[2U] = 0U;
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInData[3U] = 0U;
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInData[4U] = 0U;
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInData[5U] = 0U;
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInData[6U] = 0U;
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInData[7U] = 0U;
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInOpm = 0U;
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuInAddrA = VL_ULL(0);
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuInOpmA = 0U;
+    if (((((0U != (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tMemPcOpm2)) 
+	   & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memIsReady)) 
+	  | (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memIcLatch)) 
+	 & (~ (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memDcLatch)))) {
+	vlTOPp->Jx2ExUnit__DOT__cache__DOT__memNextIcLatch 
+	    = (0U != (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tMemPcOpm2));
+	vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcData[0U] 
+	    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[0U];
+	vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcData[1U] 
+	    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[1U];
+	vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcData[2U] 
+	    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[2U];
+	vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcData[3U] 
+	    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[3U];
+	vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcData[4U] 
+	    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[4U];
+	vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcData[5U] 
+	    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[5U];
+	vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcData[6U] 
+	    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[6U];
+	vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcData[7U] 
+	    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[7U];
+	vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcOK 
+	    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegOutOK2;
+	vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuInAddrA 
+	    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tMemPcAddr2;
+	vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuInOpmA 
+	    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tMemPcOpm2;
+	vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInAddr 
+	    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tRegOutAddr2;
+	vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInOpm 
+	    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tMemPcOpm2;
+	if ((1U != (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tRegOutOK2))) {
+	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInOpm = 0U;
+	}
+    } else {
+	if (((0U != (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcOpm)) 
+	     & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memIsReady) 
+		| (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memDcLatch)))) {
+	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memNextDcLatch 
+		= (0U != (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcOpm));
+	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcDataI[0U] 
+		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[0U];
+	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcDataI[1U] 
+		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[1U];
+	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcDataI[2U] 
+		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[2U];
+	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcDataI[3U] 
+		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[3U];
+	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcDataI[4U] 
+		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[4U];
+	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcDataI[5U] 
+		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[5U];
+	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcDataI[6U] 
+		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[6U];
+	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcDataI[7U] 
+		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[7U];
+	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcOK 
+		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegOutOK2;
+	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInData[0U] 
+		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcDataO[0U];
+	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInData[1U] 
+		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcDataO[1U];
+	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInData[2U] 
+		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcDataO[2U];
+	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInData[3U] 
+		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcDataO[3U];
+	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInData[4U] 
+		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcDataO[4U];
+	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInData[5U] 
+		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcDataO[5U];
+	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInData[6U] 
+		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcDataO[6U];
+	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInData[7U] 
+		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcDataO[7U];
+	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInOpm 
+		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcOpm;
+	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuInAddrA 
+		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcAddr;
+	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInAddr 
+		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tRegOutAddr2;
+	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuInOpmA 
+		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcOpm;
+	    if ((1U != (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tRegOutOK2))) {
+		vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInOpm = 0U;
+	    }
+	} else {
+	    if ((0U == (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tMemPcOpm2))) {
+		vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcOK = 0U;
+	    }
+	    if ((0U == (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcOpm))) {
+		vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcOK = 0U;
+	    }
+	}
+    }
+    // ALWAYS at Jx2IcTileC.v:99
+    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icReqAddr 
+	= (VL_ULL(0xfffffffffff) & (vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regPc 
+				    >> 4U));
+    // ALWAYS at Jx2ExMul.v:129
+    if (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulIsPMul1) {
+	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiAA 
+	    = (0xffffU & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulA1);
+	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiAB 
+	    = (0xffffU & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulC1);
+	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiAC 
+	    = (0xffffU & (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulA1 
+			  >> 0x10U));
+	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiAD 
+	    = (0xffffU & (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulC1 
+			  >> 0x10U));
+	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiBA 
+	    = (0xffffU & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulB1);
+	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiBB 
+	    = (0xffffU & (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulB1 
+			  >> 0x10U));
+	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiBC 
+	    = (0xffffU & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulD1);
+	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiBD 
+	    = (0xffffU & (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulD1 
+			  >> 0x10U));
+    } else {
+	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiAA 
+	    = (0xffffU & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulA1);
+	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiAB 
+	    = (0xffffU & (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulA1 
+			  >> 0x10U));
+	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiBA 
+	    = (0xffffU & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulB1);
+	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiBB 
+	    = (0xffffU & (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulB1 
+			  >> 0x10U));
+	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiAC 
+	    = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiAA;
+	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiAD 
+	    = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiAB;
+	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiBC 
+	    = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiBA;
+	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiBD 
+	    = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiBB;
+    }
     // ALWAYS at Jx2IcTileC.v:99
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkHi 
 	= ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__icBlkAddr)) 
@@ -24612,293 +23170,6 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 		}
 	    }
 	}
-    }
-    // ALWAYS at Jx2ExOpCmp.v:111
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq0 
-	= ((0xffffU & (IData)(vlTOPp->Jx2ExUnit__DOT__exRegValRn)) 
-	   == (0xffffU & (IData)(vlTOPp->Jx2ExUnit__DOT__exRegValRmC)));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq1 
-	= ((0xffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__exRegValRn 
-			       >> 0x10U))) == (0xffffU 
-					       & (IData)(
-							 (vlTOPp->Jx2ExUnit__DOT__exRegValRmC 
-							  >> 0x10U))));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq2 
-	= ((0xffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__exRegValRn 
-			       >> 0x20U))) == (0xffffU 
-					       & (IData)(
-							 (vlTOPp->Jx2ExUnit__DOT__exRegValRmC 
-							  >> 0x20U))));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq3 
-	= ((0xffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__exRegValRn 
-			       >> 0x30U))) == (0xffffU 
-					       & (IData)(
-							 (vlTOPp->Jx2ExUnit__DOT__exRegValRmC 
-							  >> 0x30U))));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi0 
-	= ((0xffffU & (IData)(vlTOPp->Jx2ExUnit__DOT__exRegValRn)) 
-	   > (0xffffU & (IData)(vlTOPp->Jx2ExUnit__DOT__exRegValRmC)));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi1 
-	= ((0xffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__exRegValRn 
-			       >> 0x10U))) > (0xffffU 
-					      & (IData)(
-							(vlTOPp->Jx2ExUnit__DOT__exRegValRmC 
-							 >> 0x10U))));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi2 
-	= ((0xffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__exRegValRn 
-			       >> 0x20U))) > (0xffffU 
-					      & (IData)(
-							(vlTOPp->Jx2ExUnit__DOT__exRegValRmC 
-							 >> 0x20U))));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi3 
-	= ((0xffffU & (IData)((vlTOPp->Jx2ExUnit__DOT__exRegValRn 
-			       >> 0x30U))) > (0xffffU 
-					      & (IData)(
-							(vlTOPp->Jx2ExUnit__DOT__exRegValRmC 
-							 >> 0x30U))));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHs0 
-	= ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi0) 
-	   | (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq0));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHs1 
-	= ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi1) 
-	   | (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq1));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHs2 
-	= ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi2) 
-	   | (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq2));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHs3 
-	= ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi3) 
-	   | (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq3));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq01 
-	= ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq0) 
-	   & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq1));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq23 
-	= ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq2) 
-	   & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq3));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi01 
-	= ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi1) 
-	   | ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq1) 
-	      & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi0)));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHs01 
-	= ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi1) 
-	   | ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq1) 
-	      & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHs0)));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi23 
-	= ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi3) 
-	   | ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq3) 
-	      & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi2)));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHs23 
-	= ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi3) 
-	   | ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq3) 
-	      & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHs2)));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEqPW 
-	= (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq3) 
-	    << 3U) | (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq2) 
-		       << 2U) | (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq1) 
-				  << 1U) | (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq0))));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHiPW 
-	= (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi3) 
-	    << 3U) | (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi2) 
-		       << 2U) | (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi1) 
-				  << 1U) | (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi0))));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHsPW 
-	= (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHs3) 
-	    << 3U) | (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHs2) 
-		       << 2U) | (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHs1) 
-				  << 1U) | (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHs0))));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEqPL 
-	= (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq23) 
-	    << 1U) | (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnEq01));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHiPL 
-	= (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi23) 
-	    << 1U) | (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHi01));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHsPL 
-	= (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHs23) 
-	    << 1U) | (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHs01));
-    // ALWAYS at Jx2MemCache.v:324
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcOK = 2U;
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcOK = 2U;
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcData[0U] 
-	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[0U];
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcData[1U] 
-	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[1U];
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcData[2U] 
-	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[2U];
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcData[3U] 
-	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[3U];
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcData[4U] 
-	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[4U];
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcData[5U] 
-	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[5U];
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcData[6U] 
-	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[6U];
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcData[7U] 
-	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[7U];
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcDataI[0U] 
-	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[0U];
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcDataI[1U] 
-	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[1U];
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcDataI[2U] 
-	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[2U];
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcDataI[3U] 
-	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[3U];
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcDataI[4U] 
-	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[4U];
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcDataI[5U] 
-	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[5U];
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcDataI[6U] 
-	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[6U];
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcDataI[7U] 
-	= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[7U];
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memNextIcLatch = 0U;
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memNextDcLatch = 0U;
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInAddr = VL_ULL(0);
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInData[0U] = 0U;
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInData[1U] = 0U;
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInData[2U] = 0U;
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInData[3U] = 0U;
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInData[4U] = 0U;
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInData[5U] = 0U;
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInData[6U] = 0U;
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInData[7U] = 0U;
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInOpm = 0U;
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuInAddrA = VL_ULL(0);
-    vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuInOpmA = 0U;
-    if (((((0U != (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tMemPcOpm2)) 
-	   & (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memIsReady)) 
-	  | (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memIcLatch)) 
-	 & (~ (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memDcLatch)))) {
-	vlTOPp->Jx2ExUnit__DOT__cache__DOT__memNextIcLatch 
-	    = (0U != (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tMemPcOpm2));
-	vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcData[0U] 
-	    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[0U];
-	vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcData[1U] 
-	    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[1U];
-	vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcData[2U] 
-	    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[2U];
-	vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcData[3U] 
-	    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[3U];
-	vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcData[4U] 
-	    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[4U];
-	vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcData[5U] 
-	    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[5U];
-	vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcData[6U] 
-	    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[6U];
-	vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcData[7U] 
-	    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[7U];
-	vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcOK 
-	    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegOutOK2;
-	vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuInAddrA 
-	    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tMemPcAddr2;
-	vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuInOpmA 
-	    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tMemPcOpm2;
-	vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInAddr 
-	    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tRegOutAddr2;
-	vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInOpm 
-	    = vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tMemPcOpm2;
-	if ((1U != (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tRegOutOK2))) {
-	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInOpm = 0U;
-	}
-    } else {
-	if (((0U != (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcOpm)) 
-	     & ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memIsReady) 
-		| (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__memDcLatch)))) {
-	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memNextDcLatch 
-		= (0U != (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcOpm));
-	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcDataI[0U] 
-		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[0U];
-	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcDataI[1U] 
-		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[1U];
-	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcDataI[2U] 
-		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[2U];
-	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcDataI[3U] 
-		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[3U];
-	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcDataI[4U] 
-		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[4U];
-	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcDataI[5U] 
-		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[5U];
-	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcDataI[6U] 
-		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[6U];
-	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcDataI[7U] 
-		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData2[7U];
-	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcOK 
-		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRegOutOK2;
-	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInData[0U] 
-		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcDataO[0U];
-	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInData[1U] 
-		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcDataO[1U];
-	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInData[2U] 
-		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcDataO[2U];
-	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInData[3U] 
-		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcDataO[3U];
-	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInData[4U] 
-		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcDataO[4U];
-	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInData[5U] 
-		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcDataO[5U];
-	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInData[6U] 
-		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcDataO[6U];
-	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInData[7U] 
-		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcDataO[7U];
-	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInOpm 
-		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcOpm;
-	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuInAddrA 
-		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcAddr;
-	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInAddr 
-		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tRegOutAddr2;
-	    vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuInOpmA 
-		= vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcOpm;
-	    if ((1U != (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tRegOutOK2))) {
-		vlTOPp->Jx2ExUnit__DOT__cache__DOT__memRegInOpm = 0U;
-	    }
-	} else {
-	    if ((0U == (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__tMemPcOpm2))) {
-		vlTOPp->Jx2ExUnit__DOT__cache__DOT__icMemPcOK = 0U;
-	    }
-	    if ((0U == (IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tMemPcOpm))) {
-		vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcMemPcOK = 0U;
-	    }
-	}
-    }
-    // ALWAYS at Jx2ExMul.v:129
-    if (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulIsPMul1) {
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiAA 
-	    = (0xffffU & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulA1);
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiAB 
-	    = (0xffffU & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulC1);
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiAC 
-	    = (0xffffU & (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulA1 
-			  >> 0x10U));
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiAD 
-	    = (0xffffU & (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulC1 
-			  >> 0x10U));
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiBA 
-	    = (0xffffU & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulB1);
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiBB 
-	    = (0xffffU & (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulB1 
-			  >> 0x10U));
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiBC 
-	    = (0xffffU & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulD1);
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiBD 
-	    = (0xffffU & (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulD1 
-			  >> 0x10U));
-    } else {
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiAA 
-	    = (0xffffU & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulA1);
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiAB 
-	    = (0xffffU & (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulA1 
-			  >> 0x10U));
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiBA 
-	    = (0xffffU & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulB1);
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiBB 
-	    = (0xffffU & (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulB1 
-			  >> 0x10U));
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiAC 
-	    = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiAA;
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiAD 
-	    = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiAB;
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiBC 
-	    = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiBA;
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiBD 
-	    = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exMul__DOT__regMulPiBB;
     }
     // ALWAYS at Jx2FpuAdd.v:101
     vlTOPp->Jx2ExUnit__DOT__exFpOp__DOT__fpu_add__DOT__tSgnB1 
@@ -27074,23 +25345,23 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 										== 
 										(0xff0fU 
 										& (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) 
-										| (0x9f0aU 
-										== 
-										(0xff0fU 
-										& (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) 
-										| (0x9f0bU 
-										== 
-										(0xff0fU 
-										& (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) 
-										| (0x9f0cU 
-										== 
-										(0xff0fU 
-										& (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) 
-										| (0x9f0dU 
-										== 
-										(0xff0fU 
-										& (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) 
 										| (0xa000U 
+										== 
+										(0xf000U 
+										& (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) 
+										| (0xb000U 
+										== 
+										(0xf000U 
+										& (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) 
+										| (0xc000U 
+										== 
+										(0xf000U 
+										& (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) 
+										| (0xe000U 
+										== 
+										(0xf000U 
+										& (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) 
+										| (0xf000U 
 										== 
 										(0xf000U 
 										& (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord))))) {
@@ -27122,50 +25393,12 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opUCmdIx = 1U;
 										} else {
 										if (
-										(0x9f0aU 
+										(0xa000U 
 										== 
-										(0xff0fU 
+										(0xf000U 
 										& (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) {
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opUCmd = 0x57U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opFmid = 2U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opUCmdIx = 2U;
-										} else {
-										if (
-										(0x9f0bU 
-										== 
-										(0xff0fU 
-										& (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) {
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opUCmd = 0x57U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opFmid = 2U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opUCmdIx = 3U;
-										} else {
-										if (
-										(0x9f0cU 
-										== 
-										(0xff0fU 
-										& (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) {
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opUCmd = 0x57U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opFmid = 2U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opUCmdIx = 4U;
-										} else {
-										if (
-										(0x9f0dU 
-										== 
-										(0xff0fU 
-										& (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) {
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opUCmd = 0x57U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opFmid = 2U;
-										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opUCmdIx = 5U;
-										} else {
 										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opUCmd = 0x1aU;
 										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opFmid = 0x16U;
-										}
-										}
-										}
-										}
-										}
-										}
-										}
 										} else {
 										if (
 										(0xb000U 
@@ -27193,21 +25426,19 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opUCmd = 5U;
 										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opFmid = 5U;
 										} else {
-										if (
-										(0xf000U 
-										== 
-										(0xf000U 
-										& (IData)(vlTOPp->Jx2ExUnit__DOT__decIstrWord)))) {
 										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opIsFx = 1U;
 										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opUCmd = 1U;
 										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opFmid = 1U;
+										}
+										}
+										}
+										}
+										}
+										}
+										}
 										} else {
 										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opUCmd = 1U;
 										vlTOPp->Jx2ExUnit__DOT__decOp__DOT__opFmid = 0U;
-										}
-										}
-										}
-										}
 										}
 										}
 									    }
@@ -27910,17 +26141,6 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 				   >> 0x20U))) ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__maAdd__DOT__tVal1_B1
 		     : vlTOPp->Jx2ExUnit__DOT__exOp__DOT__maAdd__DOT__tVal1_B0) 
 		   >> 0x20U));
-    // ALWAYS at Jx2ExUnit.v:408
-    vlTOPp->Jx2ExUnit__DOT__exRegNextPc = (((QData)((IData)(
-							    (vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regPc 
-							     >> 0x20U))) 
-					    << 0x20U) 
-					   | (QData)((IData)(
-							     ((IData)(vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regPc) 
-							      + 
-							      ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA) 
-							       << 1U)))));
-    vlTOPp->Jx2ExUnit__DOT__exCtlInPc = vlTOPp->Jx2ExUnit__DOT__exRegNextPc;
     // ALWAYS at Jx2DcTileA.v:107
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__dcTile__DOT__tRegInAddr 
 	= vlTOPp->Jx2ExUnit__DOT__dcRegInAddr;
@@ -29611,6 +27831,17 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tRegOutTea 
 	= ((VL_ULL(0xffff000000000000) & vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tRegOutTea) 
 	   | vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuInAddrA);
+    // ALWAYS at Jx2ExUnit.v:418
+    vlTOPp->Jx2ExUnit__DOT__exRegNextPc = (((QData)((IData)(
+							    (vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regPc 
+							     >> 0x20U))) 
+					    << 0x20U) 
+					   | (QData)((IData)(
+							     ((IData)(vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regPc) 
+							      + 
+							      ((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__icTile__DOT__opLenA) 
+							       << 1U)))));
+    vlTOPp->Jx2ExUnit__DOT__exCtlInPc = vlTOPp->Jx2ExUnit__DOT__exRegNextPc;
     // ALWAYS at Jx2RegFpr.v:75
     vlTOPp->Jx2ExUnit__DOT__fpr__DOT__tRegValRm = vlTOPp->Jx2ExUnit__DOT__fpr__DOT__regFprArrRm
 	[(0xfU & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))];
@@ -29633,7 +27864,7 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 	vlTOPp->Jx2ExUnit__DOT__fpr__DOT__tRegValRn 
 	    = vlTOPp->Jx2ExUnit__DOT__exFpOp__DOT__tRegOutVal;
     }
-    // ALWAYS at Jx2ExOp.v:599
+    // ALWAYS at Jx2ExOp.v:606
     vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSp = vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSp;
     vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutPc = vlTOPp->Jx2ExUnit__DOT__exCtlInPc;
     vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutPr = vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regPr;
@@ -30004,10 +28235,7 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 				if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmd))) {
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpMiss1 = 1U;
 				} else {
-				    if ((1U != (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpState))) {
-					vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutOK = 2U;
-					vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tNextOpState = 1U;
-				    }
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C = 1U;
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal 
 					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__regLastMaAddr;
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutId 
@@ -30106,7 +28334,6 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 		= vlTOPp->Jx2ExUnit__DOT__exRegIdRn;
 	}
     }
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__regFphfCmd = 0U;
     if ((0x80U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdB))) {
 	if ((0x40U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdB))) {
 	    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpMiss2 = 1U;
@@ -30264,14 +28491,7 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 				}
 			    } else {
 				if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdB))) {
-				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__regFphfCmd 
-					= (3U & (IData)(vlTOPp->Jx2ExUnit__DOT__exRegIdIxtB));
-				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutOK 
-					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tRegExOK2;
-				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal 
-					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tRegValRo2;
-				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutId 
-					= vlTOPp->Jx2ExUnit__DOT__exRegIdRn;
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpMiss2 = 1U;
 				} else {
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__regMulA 
 					= vlTOPp->Jx2ExUnit__DOT__exRegValRm;
@@ -30290,21 +28510,15 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 			} else {
 			    if ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdB))) {
 				if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdB))) {
-				    if (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluSimdIs2C) 
-					 & (1U != (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpState)))) {
-					vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutOK = 2U;
-					vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tNextOpState = 1U;
-				    }
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C 
+					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluSimdIs2C;
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutId 
 					= vlTOPp->Jx2ExUnit__DOT__exRegIdRn;
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal 
 					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tAluPSubL;
 				} else {
-				    if (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluSimdIs2C) 
-					 & (1U != (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpState)))) {
-					vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutOK = 2U;
-					vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tNextOpState = 1U;
-				    }
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C 
+					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluSimdIs2C;
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutId 
 					= vlTOPp->Jx2ExUnit__DOT__exRegIdRn;
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal 
@@ -30312,21 +28526,15 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 				}
 			    } else {
 				if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdB))) {
-				    if (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluSimdIs2C) 
-					 & (1U != (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpState)))) {
-					vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutOK = 2U;
-					vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tNextOpState = 1U;
-				    }
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C 
+					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluSimdIs2C;
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutId 
 					= vlTOPp->Jx2ExUnit__DOT__exRegIdRn;
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal 
 					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tAluPSubW;
 				} else {
-				    if (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluSimdIs2C) 
-					 & (1U != (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpState)))) {
-					vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutOK = 2U;
-					vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tNextOpState = 1U;
-				    }
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C 
+					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluSimdIs2C;
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutId 
 					= vlTOPp->Jx2ExUnit__DOT__exRegIdRn;
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal 
@@ -30350,7 +28558,8 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 				vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpMiss2 = 1U;
 			    } else {
 				if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdB))) {
-				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C = 1U;
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C 
+					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluIs2C;
 				    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSr))) {
 					vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal 
 					    = (((QData)((IData)(
@@ -30381,7 +28590,8 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutId 
 					= vlTOPp->Jx2ExUnit__DOT__exRegIdRn;
 				} else {
-				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C = 1U;
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C 
+					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluIs2C;
 				    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSr))) {
 					vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal 
 					    = (((QData)((IData)(
@@ -30508,7 +28718,8 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 				}
 			    } else {
 				if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdB))) {
-				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C = 1U;
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C 
+					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluIs2C;
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal 
 					= (((QData)((IData)(
 							    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tSubRmRi1[1U])) 
@@ -30518,7 +28729,8 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutId 
 					= vlTOPp->Jx2ExUnit__DOT__exRegIdRn;
 				} else {
-				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C = 1U;
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C 
+					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluIs2C;
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal 
 					= (((QData)((IData)(
 							    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tAddRmRi0[1U])) 
@@ -30537,22 +28749,26 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 			    } else {
 				if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdB))) {
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal 
-					= (QData)((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSubRmRi_A1));
+					= (QData)((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tSubRmRi_A1));
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutId 
 					= vlTOPp->Jx2ExUnit__DOT__exRegIdRn;
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C 
+					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluIs2C;
 				} else {
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal 
 					= (((QData)((IData)(
 							    ((1U 
 							      & (IData)(
-									(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSubRmRi_A1 
+									(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tSubRmRi_A1 
 									 >> 0x1fU)))
 							      ? 0xffffffffU
 							      : 0U))) 
 					    << 0x20U) 
-					   | (QData)((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tSubRmRi_A1)));
+					   | (QData)((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tSubRmRi_A1)));
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutId 
 					= vlTOPp->Jx2ExUnit__DOT__exRegIdRn;
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C 
+					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluIs2C;
 				}
 			    }
 			} else {
@@ -30675,22 +28891,26 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 			    if ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdB))) {
 				if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdB))) {
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal 
-					= (QData)((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAddRmRi_A0));
+					= (QData)((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tAddRmRi_A0));
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutId 
 					= vlTOPp->Jx2ExUnit__DOT__exRegIdRn;
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C 
+					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluIs2C;
 				} else {
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutVal 
 					= (((QData)((IData)(
 							    ((1U 
 							      & (IData)(
-									(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAddRmRi_A0 
+									(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tAddRmRi_A0 
 									 >> 0x1fU)))
 							      ? 0xffffffffU
 							      : 0U))) 
 					    << 0x20U) 
-					   | (QData)((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__tAddRmRi_A0)));
+					   | (QData)((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tAddRmRi_A0)));
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutId 
 					= vlTOPp->Jx2ExUnit__DOT__exRegIdRn;
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C 
+					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluIs2C;
 				}
 			    } else {
 				vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpMiss2 = 1U;
@@ -30706,93 +28926,7 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 	}
     }
     if ((0x80U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdC))) {
-	if ((0x40U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdC))) {
-	    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpMiss3 = 1U;
-	} else {
-	    if ((0x20U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdC))) {
-		vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpMiss3 = 1U;
-	    } else {
-		if ((0x10U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdC))) {
-		    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpMiss3 = 1U;
-		} else {
-		    if ((8U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdC))) {
-			vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpMiss3 = 1U;
-		    } else {
-			if ((4U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdC))) {
-			    if ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdC))) {
-				if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdC))) {
-				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpMiss3 = 1U;
-				} else {
-				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSr 
-					= ((VL_ULL(0xfffffffffffffffc) 
-					    & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSr) 
-					   | (IData)((IData)(
-							     ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHiPL) 
-							      ^ 
-							      ((2U 
-								& (((IData)(
-									    (vlTOPp->Jx2ExUnit__DOT__exRegValRn 
-									     >> 0x3fU)) 
-								    | (IData)(
-									      (vlTOPp->Jx2ExUnit__DOT__exRegValRm 
-									       >> 0x3fU))) 
-								   << 1U)) 
-							       | (1U 
-								  & ((IData)(
-									     (vlTOPp->Jx2ExUnit__DOT__exRegValRn 
-									      >> 0x1fU)) 
-								     | (IData)(
-									       (vlTOPp->Jx2ExUnit__DOT__exRegValRm 
-										>> 0x1fU)))))))));
-				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSr 
-					= ((VL_ULL(0xffffffffffffff0f) 
-					    & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSr) 
-					   | ((QData)((IData)(
-							      ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__exCmp__DOT__tCmpRmRnHiPW) 
-							       ^ 
-							       ((8U 
-								 & (((IData)(
-									     (vlTOPp->Jx2ExUnit__DOT__exRegValRn 
-									      >> 0x3fU)) 
-								     | (IData)(
-									       (vlTOPp->Jx2ExUnit__DOT__exRegValRm 
-										>> 0x3fU))) 
-								    << 3U)) 
-								| ((4U 
-								    & (((IData)(
-										(vlTOPp->Jx2ExUnit__DOT__exRegValRn 
-										>> 0x2fU)) 
-									| (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__exRegValRm 
-										>> 0x2fU))) 
-								       << 2U)) 
-								   | ((2U 
-								       & (((IData)(
-										(vlTOPp->Jx2ExUnit__DOT__exRegValRn 
-										>> 0x1fU)) 
-									   | (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__exRegValRm 
-										>> 0x1fU))) 
-									  << 1U)) 
-								      | (1U 
-									 & ((IData)(
-										(vlTOPp->Jx2ExUnit__DOT__exRegValRn 
-										>> 0xfU)) 
-									    | (IData)(
-										(vlTOPp->Jx2ExUnit__DOT__exRegValRm 
-										>> 0xfU)))))))))) 
-					      << 4U));
-				}
-			    } else {
-				vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpMiss3 = 1U;
-			    }
-			} else {
-			    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpMiss3 = 1U;
-			}
-		    }
-		}
-	    }
-	}
+	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpMiss3 = 1U;
     } else {
 	if ((0x40U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdC))) {
 	    if ((0x20U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdC))) {
@@ -30833,7 +28967,8 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 			} else {
 			    if ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdC))) {
 				if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdC))) {
-				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C = 1U;
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C 
+					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluIs2C;
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSr 
 					= ((VL_ULL(0xfffffffffffffffe) 
 					    & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSr) 
@@ -30848,7 +28983,8 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 									    (vlTOPp->Jx2ExUnit__DOT__exRegValRm 
 									     >> 0x3fU))))))));
 				} else {
-				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C = 1U;
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C 
+					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluIs2C;
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSr 
 					= ((VL_ULL(0xfffffffffffffffe) 
 					    & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSr) 
@@ -30856,7 +28992,8 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 				}
 			    } else {
 				if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdC))) {
-				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C = 1U;
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C 
+					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluIs2C;
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSr 
 					= ((VL_ULL(0xfffffffffffffffe) 
 					    & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSr) 
@@ -30919,7 +29056,8 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 				}
 			    } else {
 				if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdC))) {
-				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C = 1U;
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C 
+					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluIs2C;
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSr 
 					= ((VL_ULL(0xfffffffffffffffe) 
 					    & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSr) 
@@ -30944,7 +29082,8 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 									    (vlTOPp->Jx2ExUnit__DOT__exRegValFRm 
 									     >> 0x1fU))))))));
 				} else {
-				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C = 1U;
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C 
+					= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluIs2C;
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSr 
 					= ((VL_ULL(0xfffffffffffffffe) 
 					    & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSr) 
@@ -30967,10 +29106,29 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 			    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpMiss3 = 1U;
 			} else {
 			    if ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdC))) {
-				vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpMiss3 = 1U;
-			    } else {
 				if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdC))) {
 				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpMiss3 = 1U;
+				} else {
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSr 
+					= ((VL_ULL(0xfffffffffffffffe) 
+					    & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSr) 
+					   | (IData)((IData)(
+							     (1U 
+							      & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCmpRmRnHsQ) 
+								 ^ 
+								 ((IData)(
+									  (vlTOPp->Jx2ExUnit__DOT__exRegValRn 
+									   >> 0x3fU)) 
+								  ^ (IData)(
+									    (vlTOPp->Jx2ExUnit__DOT__exRegValRm 
+									     >> 0x3fU))))))));
+				}
+			    } else {
+				if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOpCmdC))) {
+				    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSr 
+					= ((VL_ULL(0xfffffffffffffffe) 
+					    & vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutSr) 
+					   | (IData)((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCmpRmRnHsQ)));
 				} else {
 				    if (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__regRnIsGpr) {
 					vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutId 
@@ -31674,18 +29832,11 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 									      (IData)(vlTOPp->Jx2ExUnit__DOT__exRegIdIxt));
 								    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutOK = 2U;
 								} else {
+								    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C = 1U;
 								    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutDlr 
-									= 
-									vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDlr
-									[
-									(0xfU 
-									 & (IData)(vlTOPp->Jx2ExUnit__DOT__exRegIdRn))];
+									= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidOutDlr;
 								    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutDhr 
-									= 
-									vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr
-									[
-									(0xfU 
-									 & (IData)(vlTOPp->Jx2ExUnit__DOT__exRegIdRn))];
+									= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCpuidOutDhr;
 								}
 							    } else {
 								if (VL_LIKELY(
@@ -32001,8 +30152,7 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 	}
     }
     if (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpDoAri2C) {
-	if (((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__aluIs2C) 
-	     & (1U != (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpState)))) {
+	if ((1U != (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tOpState))) {
 	    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutOK = 2U;
 	    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tNextOpState = 1U;
 	}
@@ -32016,7 +30166,7 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tNextOpSticky1 = 1U;
 	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutOK = 2U;
     }
-    // ALWAYS at Jx2ExUnit.v:408
+    // ALWAYS at Jx2ExUnit.v:418
     vlTOPp->Jx2ExUnit__DOT__exHold = 0U;
     if ((2U == (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutOK))) {
 	vlTOPp->Jx2ExUnit__DOT__exHold = 1U;
@@ -32028,7 +30178,7 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 	vlTOPp->Jx2ExUnit__DOT__exHold = 1U;
     }
     vlTOPp->Jx2ExUnit__DOT__gprRegExHold = vlTOPp->Jx2ExUnit__DOT__exHold;
-    // ALWAYS at Jx2ExUnit.v:408
+    // ALWAYS at Jx2ExUnit.v:418
     vlTOPp->Jx2ExUnit__DOT__exRegExc = vlTOPp->Jx2ExUnit__DOT__cache__DOT__tRegOutExc2;
     vlTOPp->Jx2ExUnit__DOT__exRegTea = vlTOPp->Jx2ExUnit__DOT__cache__DOT__tRegOutTea2;
     if ((0x8000U & (IData)(vlTOPp->mmioExc))) {
@@ -32162,23 +30312,6 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 			        ? VL_ULL(0) : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__tGenImm64);
 		    }
 		}
-	    } else {
-		if ((4U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRn))) {
-		    if ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRn))) {
-			vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__tRegValCm 
-			    = ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRn))
-			        ? vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regTbr
-			        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regGbr);
-		    }
-		} else {
-		    if ((1U & (~ (0x1fU & ((IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRn) 
-					   >> 1U))))) {
-			if ((1U & (~ (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRn))))) {
-			    vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__tRegValRn 
-				= vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__tGenNextPc;
-			}
-		    }
-		}
 	    }
 	}
     } else {
@@ -32260,44 +30393,38 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 			        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSDl))
 		        : ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
 			    ? ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
-			        ? vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSSp
-			        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSSr)
+			        ? VL_ULL(0) : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSSr)
 			    : ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
 			        ? vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSPr
-			        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSPc)))
-		    : VL_ULL(0)) : ((8U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
-				     ? ((4U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
-					 ? ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
-					     ? VL_ULL(0)
-					     : ((1U 
-						 & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
-						 ? vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regKrr
-						 : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSttb))
-					 : ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
-					     ? ((1U 
-						 & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
-						 ? vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regExsr
-						 : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regMmcr)
-					     : ((1U 
-						 & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
-						 ? vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regTea
-						 : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regTtb)))
-				     : ((4U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
-					 ? ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
-					     ? ((1U 
-						 & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
-						 ? vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regTbr
-						 : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regGbr)
-					     : VL_ULL(0))
-					 : ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
-					     ? ((1U 
-						 & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
-						 ? vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regVbr
-						 : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSr)
-					     : ((1U 
-						 & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
-						 ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutPr
-						 : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__tGenNextPc)))))
+			        : VL_ULL(0)))) : VL_ULL(0))
+	        : ((8U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
+		    ? ((4U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
+		        ? ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
+			    ? VL_ULL(0) : ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
+					    ? vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regKrr
+					    : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSttb))
+		        : ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
+			    ? ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
+			        ? vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regExsr
+			        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regMmcr)
+			    : ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
+			        ? vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regTea
+			        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regTtb)))
+		    : ((4U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
+		        ? ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
+			    ? ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
+			        ? vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regTbr
+			        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regGbr)
+			    : ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
+			        ? vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSSp
+			        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSPc))
+		        : ((2U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
+			    ? ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
+			        ? vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regVbr
+			        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__regSr)
+			    : ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
+			        ? vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tCtlOutPr
+			        : vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__tGenNextPc)))))
 	    : ((0x10U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
 	        ? VL_ULL(0) : ((8U & (IData)(vlTOPp->Jx2ExUnit__DOT__gprRegIdRm))
 			        ? VL_ULL(0) : ((4U 
@@ -32331,88 +30458,6 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
 	 == (0x3fU & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutIdCn)))) {
 	vlTOPp->Jx2ExUnit__DOT__gprFile__DOT__tRegValCm 
 	    = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__tRegOutValCn;
-    }
-    // ALWAYS at Jx2FphfVecOp.v:87
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextVecRs 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRs;
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextVecRt 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRt;
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextVecRo 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRo;
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextVecRmsk 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRmsk;
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextHeldRo 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tHeldRo;
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tHfopExOp = 0U;
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextIsDone 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tIsDone;
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextSeenOK 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tSeenOK;
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextIsStart 
-	= vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tIsStart;
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tIsOpMul 
-	= (3U == (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__regFphfCmd));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tHfopRo 
-	= ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tIsOpMul)
-	    ? (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tRegValRo2)
-	    : (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tRegValRo));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tHfopOK 
-	= ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tIsOpMul)
-	    ? (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tRegExOK2)
-	    : ((0U != (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tRegExOp2))
-	        ? 1U : 0U));
-    if ((0U != (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__regFphfCmd))) {
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tRegExOK 
-	    = ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tIsDone)
-	        ? 1U : 2U);
-	if (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tIsStart) {
-	    if ((1U & (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRmsk))) {
-		vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tHfopExOp 
-		    = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__regFphfCmd;
-		vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextVecRs 
-		    = (VL_ULL(0xffffffffffff) & (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRs 
-						 >> 0x10U));
-		vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextVecRt 
-		    = (VL_ULL(0xffffffffffff) & (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRt 
-						 >> 0x10U));
-		vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextVecRmsk 
-		    = (7U & ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRmsk) 
-			     >> 1U));
-	    }
-	} else {
-	    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextIsStart = 1U;
-	    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextVecRs 
-		= vlTOPp->Jx2ExUnit__DOT__exRegValRmB;
-	    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextVecRt 
-		= vlTOPp->Jx2ExUnit__DOT__exRegValRiB;
-	    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextVecRmsk = 0xfU;
-	}
-	if ((1U == (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tHfopOK))) {
-	    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextVecRo 
-		= (((QData)((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tHfopRo)) 
-		    << 0x30U) | (VL_ULL(0xffffffffffff) 
-				 & (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRo 
-				    >> 0x10U)));
-	    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextSeenOK = 1U;
-	} else {
-	    if ((0U == (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tHfopOK))) {
-		if (vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tSeenOK) {
-		    if ((1U & (~ (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tIsDone)))) {
-			vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextHeldRo 
-			    = vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRo;
-		    }
-		    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextIsDone = 1U;
-		}
-	    }
-	}
-    } else {
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextIsDone = 0U;
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextSeenOK = 0U;
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextIsStart = 0U;
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextVecRmsk = 0U;
-	vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tRegExOK 
-	    = ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tIsDone)
-	        ? 1U : 0U);
     }
     // ALWAYS at Jx2MmuTlb.v:136
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbMmuEnable 
@@ -32636,16 +30681,6 @@ void VJx2ExUnit::_settle__TOP__3(VJx2ExUnit__Syms* __restrict vlSymsp) {
     }
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tRegOutAddr 
 	= (QData)((IData)(vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbAddr));
-    // ALWAYS at Jx2FphfAdd.v:103
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSga0 
-	= (1U & (IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRs 
-			 >> 0xfU)));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgb0 
-	= (1U & ((IData)((vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRt 
-			  >> 0xfU)) ^ (~ (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tHfopExOp))));
-    vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgd0 
-	= ((IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSga0) 
-	   ^ (IData)(vlTOPp->Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgb0));
     // ALWAYS at Jx2MmuChkAcc.v:80
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tAccOutExc = 0U;
     vlTOPp->Jx2ExUnit__DOT__cache__DOT__mmuTlbA__DOT__tlbChkAcc__DOT__tKrrA 
@@ -33318,7 +31353,7 @@ VL_INLINE_OPT void VJx2ExUnit::_combo__TOP__4(VJx2ExUnit__Syms* __restrict vlSym
 	vlTOPp->Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tOutData[7U] 
 	    = __Vtemp85[7U];
     }
-    // ALWAYS at Jx2ExUnit.v:408
+    // ALWAYS at Jx2ExUnit.v:418
     vlTOPp->Jx2ExUnit__DOT__exRegExc = vlTOPp->Jx2ExUnit__DOT__cache__DOT__tRegOutExc2;
     vlTOPp->Jx2ExUnit__DOT__exRegTea = vlTOPp->Jx2ExUnit__DOT__cache__DOT__tRegOutTea2;
     if ((0x8000U & (IData)(vlTOPp->mmioExc))) {
@@ -33375,7 +31410,7 @@ void VJx2ExUnit::_eval(VJx2ExUnit__Syms* __restrict vlSymsp) {
     VJx2ExUnit* __restrict vlTOPp VL_ATTR_UNUSED = vlSymsp->TOPp;
     // Body
     if (((IData)(vlTOPp->clock) & (~ (IData)(vlTOPp->__Vclklast__TOP__clock)))) {
-	vlTOPp->_sequent__TOP__2(vlSymsp);
+	vlTOPp->_sequent__TOP__1(vlSymsp);
     }
     vlTOPp->_combo__TOP__4(vlSymsp);
     // Final
@@ -33386,7 +31421,7 @@ void VJx2ExUnit::_eval_initial(VJx2ExUnit__Syms* __restrict vlSymsp) {
     VL_DEBUG_IF(VL_DBG_MSGF("+    VJx2ExUnit::_eval_initial\n"); );
     VJx2ExUnit* __restrict vlTOPp VL_ATTR_UNUSED = vlSymsp->TOPp;
     // Body
-    vlTOPp->_initial__TOP__1(vlSymsp);
+    vlTOPp->_initial__TOP__2(vlSymsp);
 }
 
 void VJx2ExUnit::final() {
@@ -33471,7 +31506,6 @@ void VJx2ExUnit::_ctor_var_reset() {
     Jx2ExUnit__DOT__exRegIdRn = VL_RAND_RESET_I(7);
     Jx2ExUnit__DOT__exIdCurPc = VL_RAND_RESET_Q(64);
     Jx2ExUnit__DOT__exRegValRm = VL_RAND_RESET_Q(64);
-    Jx2ExUnit__DOT__exRegValRmB = VL_RAND_RESET_Q(64);
     Jx2ExUnit__DOT__exRegValRmC = VL_RAND_RESET_Q(64);
     Jx2ExUnit__DOT__exRegValRn = VL_RAND_RESET_Q(64);
     Jx2ExUnit__DOT__exRegValRi = VL_RAND_RESET_Q(64);
@@ -33577,34 +31611,34 @@ void VJx2ExUnit::_ctor_var_reset() {
     { int __Vi0=0; for (; __Vi0<256; ++__Vi0) {
 	    Jx2ExUnit__DOT__cache__DOT__memTile__DOT__sramTileH[__Vi0] = VL_RAND_RESET_I(32);
     }}
-    { int __Vi0=0; for (; __Vi0<4096; ++__Vi0) {
+    { int __Vi0=0; for (; __Vi0<2048; ++__Vi0) {
 	    Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileA[__Vi0] = VL_RAND_RESET_I(32);
     }}
-    { int __Vi0=0; for (; __Vi0<4096; ++__Vi0) {
+    { int __Vi0=0; for (; __Vi0<2048; ++__Vi0) {
 	    Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileB[__Vi0] = VL_RAND_RESET_I(32);
     }}
-    { int __Vi0=0; for (; __Vi0<4096; ++__Vi0) {
+    { int __Vi0=0; for (; __Vi0<2048; ++__Vi0) {
 	    Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileC[__Vi0] = VL_RAND_RESET_I(32);
     }}
-    { int __Vi0=0; for (; __Vi0<4096; ++__Vi0) {
+    { int __Vi0=0; for (; __Vi0<2048; ++__Vi0) {
 	    Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileD[__Vi0] = VL_RAND_RESET_I(32);
     }}
-    { int __Vi0=0; for (; __Vi0<4096; ++__Vi0) {
+    { int __Vi0=0; for (; __Vi0<2048; ++__Vi0) {
 	    Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileE[__Vi0] = VL_RAND_RESET_I(32);
     }}
-    { int __Vi0=0; for (; __Vi0<4096; ++__Vi0) {
+    { int __Vi0=0; for (; __Vi0<2048; ++__Vi0) {
 	    Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileF[__Vi0] = VL_RAND_RESET_I(32);
     }}
-    { int __Vi0=0; for (; __Vi0<4096; ++__Vi0) {
+    { int __Vi0=0; for (; __Vi0<2048; ++__Vi0) {
 	    Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileG[__Vi0] = VL_RAND_RESET_I(32);
     }}
-    { int __Vi0=0; for (; __Vi0<4096; ++__Vi0) {
+    { int __Vi0=0; for (; __Vi0<2048; ++__Vi0) {
 	    Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileH[__Vi0] = VL_RAND_RESET_I(32);
     }}
-    { int __Vi0=0; for (; __Vi0<4096; ++__Vi0) {
+    { int __Vi0=0; for (; __Vi0<2048; ++__Vi0) {
 	    Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileAdA[__Vi0] = VL_RAND_RESET_I(32);
     }}
-    { int __Vi0=0; for (; __Vi0<4096; ++__Vi0) {
+    { int __Vi0=0; for (; __Vi0<2048; ++__Vi0) {
 	    Jx2ExUnit__DOT__cache__DOT__memTile__DOT__ramTileAdB[__Vi0] = VL_RAND_RESET_I(32);
     }}
     VL_RAND_RESET_W(256,Jx2ExUnit__DOT__cache__DOT__memTile__DOT__tRomTile);
@@ -33835,15 +31869,17 @@ void VJx2ExUnit::_ctor_var_reset() {
     Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO_Dfl = VL_RAND_RESET_I(7);
     Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Dfl = VL_RAND_RESET_I(7);
     Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Dfl = VL_RAND_RESET_I(7);
+    Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Df2 = VL_RAND_RESET_I(7);
+    Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Df2 = VL_RAND_RESET_I(7);
     Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegO_DfFC = VL_RAND_RESET_I(7);
     Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegP_DfFC = VL_RAND_RESET_I(7);
-    Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegN_Jcmp = VL_RAND_RESET_I(7);
-    Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opRegM_Jcmp = VL_RAND_RESET_I(7);
     Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm17s = VL_RAND_RESET_Q(33);
     Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm17u = VL_RAND_RESET_Q(33);
     Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm17n = VL_RAND_RESET_Q(33);
+    Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm10s = VL_RAND_RESET_Q(33);
+    Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm10u = VL_RAND_RESET_Q(33);
+    Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_imm10n = VL_RAND_RESET_Q(33);
     Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_disp20s = VL_RAND_RESET_Q(33);
-    Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_disp8s = VL_RAND_RESET_Q(33);
     Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_immWordZx = VL_RAND_RESET_Q(33);
     Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opImm_immWordNx = VL_RAND_RESET_Q(33);
     Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opFmid = VL_RAND_RESET_I(5);
@@ -33853,15 +31889,19 @@ void VJx2ExUnit::_ctor_var_reset() {
     Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opUCmdIx = VL_RAND_RESET_I(8);
     Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ = VL_RAND_RESET_I(1);
     Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExI = VL_RAND_RESET_I(1);
-    Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsImm32 = VL_RAND_RESET_I(1);
     Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsFC0 = VL_RAND_RESET_I(1);
     Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opIsNotFx = VL_RAND_RESET_I(1);
+    Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__opExQ2 = VL_RAND_RESET_I(1);
     Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRmIsRz = VL_RAND_RESET_I(1);
     Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRnIsRz = VL_RAND_RESET_I(1);
     Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRoIsRz = VL_RAND_RESET_I(1);
     Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRmIsR1 = VL_RAND_RESET_I(1);
     Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRnIsR1 = VL_RAND_RESET_I(1);
     Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRoIsR1 = VL_RAND_RESET_I(1);
+    Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRm2IsRz = VL_RAND_RESET_I(1);
+    Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRn2IsRz = VL_RAND_RESET_I(1);
+    Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRm2IsR1 = VL_RAND_RESET_I(1);
+    Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tRegRn2IsR1 = VL_RAND_RESET_I(1);
     Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tMsgLatch = VL_RAND_RESET_I(1);
     Jx2ExUnit__DOT__decOp__DOT__decOpFx__DOT__tNextMsgLatch = VL_RAND_RESET_I(1);
     Jx2ExUnit__DOT__gprFile__DOT__regSp = VL_RAND_RESET_Q(64);
@@ -33917,8 +31957,6 @@ void VJx2ExUnit::_ctor_var_reset() {
     Jx2ExUnit__DOT__exOp__DOT__tCtlOutSr = VL_RAND_RESET_Q(64);
     Jx2ExUnit__DOT__exOp__DOT__tCtlOutDlr = VL_RAND_RESET_Q(64);
     Jx2ExUnit__DOT__exOp__DOT__tCtlOutDhr = VL_RAND_RESET_Q(64);
-    Jx2ExUnit__DOT__exOp__DOT__tCtlOutGbr = VL_RAND_RESET_Q(64);
-    Jx2ExUnit__DOT__exOp__DOT__tCtlOutTbr = VL_RAND_RESET_Q(64);
     Jx2ExUnit__DOT__exOp__DOT__tRegOutVal = VL_RAND_RESET_Q(64);
     Jx2ExUnit__DOT__exOp__DOT__tRegOutId = VL_RAND_RESET_I(7);
     Jx2ExUnit__DOT__exOp__DOT__tRegOutOK = VL_RAND_RESET_I(2);
@@ -33943,7 +31981,6 @@ void VJx2ExUnit::_ctor_var_reset() {
     Jx2ExUnit__DOT__exOp__DOT__regRnIsGpr = VL_RAND_RESET_I(1);
     Jx2ExUnit__DOT__exOp__DOT__tRegValFRn_IsNaN = VL_RAND_RESET_I(1);
     Jx2ExUnit__DOT__exOp__DOT__tRegValFRm_IsNaN = VL_RAND_RESET_I(1);
-    Jx2ExUnit__DOT__exOp__DOT__regFphfCmd = VL_RAND_RESET_I(2);
     Jx2ExUnit__DOT__exOp__DOT__tAddRmRi_A0 = VL_RAND_RESET_Q(33);
     Jx2ExUnit__DOT__exOp__DOT__tAddRmRi_A1 = VL_RAND_RESET_Q(33);
     Jx2ExUnit__DOT__exOp__DOT__tAddRmRi_B0 = VL_RAND_RESET_Q(33);
@@ -33964,9 +32001,12 @@ void VJx2ExUnit::_ctor_var_reset() {
     Jx2ExUnit__DOT__exOp__DOT__aluSimdIs2C = VL_RAND_RESET_I(1);
     Jx2ExUnit__DOT__exOp__DOT__tLastCmpRmRnEqPW = VL_RAND_RESET_I(4);
     Jx2ExUnit__DOT__exOp__DOT__tLastCmpRmRnHiPW = VL_RAND_RESET_I(4);
+    Jx2ExUnit__DOT__exOp__DOT__tLastCmpRmRnHsPW = VL_RAND_RESET_I(4);
     Jx2ExUnit__DOT__exOp__DOT__tLastCmpRmRnEqPL = VL_RAND_RESET_I(2);
     Jx2ExUnit__DOT__exOp__DOT__tLastCmpRmRnHiPL = VL_RAND_RESET_I(2);
+    Jx2ExUnit__DOT__exOp__DOT__tLastCmpRmRnHsPL = VL_RAND_RESET_I(2);
     Jx2ExUnit__DOT__exOp__DOT__tCmpRmRnHiQ = VL_RAND_RESET_I(1);
+    Jx2ExUnit__DOT__exOp__DOT__tCmpRmRnHsQ = VL_RAND_RESET_I(1);
     Jx2ExUnit__DOT__exOp__DOT__tLastFCmpRmRnEqPW = VL_RAND_RESET_I(4);
     Jx2ExUnit__DOT__exOp__DOT__tLastFCmpRmRnHiPW = VL_RAND_RESET_I(4);
     Jx2ExUnit__DOT__exOp__DOT__tLastFCmpRmRnEqPL = VL_RAND_RESET_I(2);
@@ -34003,6 +32043,8 @@ void VJx2ExUnit::_ctor_var_reset() {
     { int __Vi0=0; for (; __Vi0<16; ++__Vi0) {
 	    Jx2ExUnit__DOT__exOp__DOT__tCpuidDhr[__Vi0] = VL_RAND_RESET_Q(64);
     }}
+    Jx2ExUnit__DOT__exOp__DOT__tCpuidOutDlr = VL_RAND_RESET_Q(64);
+    Jx2ExUnit__DOT__exOp__DOT__tCpuidOutDhr = VL_RAND_RESET_Q(64);
     Jx2ExUnit__DOT__exOp__DOT__shad__DOT__tValRn = VL_RAND_RESET_I(32);
     Jx2ExUnit__DOT__exOp__DOT__shad__DOT__tValRor = VL_RAND_RESET_I(32);
     Jx2ExUnit__DOT__exOp__DOT__shad__DOT__tValSh = VL_RAND_RESET_I(8);
@@ -34087,83 +32129,6 @@ void VJx2ExUnit::_ctor_var_reset() {
     Jx2ExUnit__DOT__exOp__DOT__fd2i_rn__DOT__tRegExp2 = VL_RAND_RESET_I(11);
     Jx2ExUnit__DOT__exOp__DOT__fd2i_rn__DOT__tRegFra2 = VL_RAND_RESET_Q(52);
     Jx2ExUnit__DOT__exOp__DOT__fd2i_rn__DOT__tRegFraExt2 = VL_RAND_RESET_Q(64);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tRegValRo2 = VL_RAND_RESET_Q(64);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tRegExOK2 = VL_RAND_RESET_I(2);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tRegExOK = VL_RAND_RESET_I(2);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRs = VL_RAND_RESET_Q(64);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRt = VL_RAND_RESET_Q(64);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRo = VL_RAND_RESET_Q(64);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextVecRs = VL_RAND_RESET_Q(64);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextVecRt = VL_RAND_RESET_Q(64);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextVecRo = VL_RAND_RESET_Q(64);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tVecRmsk = VL_RAND_RESET_I(4);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextVecRmsk = VL_RAND_RESET_I(4);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tHeldRo = VL_RAND_RESET_Q(64);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextHeldRo = VL_RAND_RESET_Q(64);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tHfopExOp = VL_RAND_RESET_I(2);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tHfopRo = VL_RAND_RESET_I(16);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tHfopOK = VL_RAND_RESET_I(2);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tIsDone = VL_RAND_RESET_I(1);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextIsDone = VL_RAND_RESET_I(1);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tSeenOK = VL_RAND_RESET_I(1);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextSeenOK = VL_RAND_RESET_I(1);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tIsStart = VL_RAND_RESET_I(1);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tNextIsStart = VL_RAND_RESET_I(1);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__tIsOpMul = VL_RAND_RESET_I(1);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tRegValRo = VL_RAND_RESET_I(16);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tRegExOp1 = VL_RAND_RESET_I(2);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tRegExOp2 = VL_RAND_RESET_I(2);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExa0 = VL_RAND_RESET_I(6);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExb0 = VL_RAND_RESET_I(6);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExa1 = VL_RAND_RESET_I(6);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExb1 = VL_RAND_RESET_I(6);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2 = VL_RAND_RESET_I(6);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExDifA0 = VL_RAND_RESET_I(6);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExDifB0 = VL_RAND_RESET_I(6);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSga0 = VL_RAND_RESET_I(1);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgb0 = VL_RAND_RESET_I(1);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSga1 = VL_RAND_RESET_I(1);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgb1 = VL_RAND_RESET_I(1);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgc2 = VL_RAND_RESET_I(1);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgd0 = VL_RAND_RESET_I(1);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgd1 = VL_RAND_RESET_I(1);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExGtAB0 = VL_RAND_RESET_I(1);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExGtBA0 = VL_RAND_RESET_I(1);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrGtAB0 = VL_RAND_RESET_I(1);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExGtAB1 = VL_RAND_RESET_I(1);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExGtBA1 = VL_RAND_RESET_I(1);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrGtAB1 = VL_RAND_RESET_I(1);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFra0 = VL_RAND_RESET_I(12);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrb0 = VL_RAND_RESET_I(12);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFra1 = VL_RAND_RESET_I(12);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrb1 = VL_RAND_RESET_I(12);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrShrA0 = VL_RAND_RESET_I(12);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrShrB0 = VL_RAND_RESET_I(12);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrShrA1 = VL_RAND_RESET_I(12);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrShrB1 = VL_RAND_RESET_I(12);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrDifA0 = VL_RAND_RESET_I(12);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrDifB0 = VL_RAND_RESET_I(12);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrSum0 = VL_RAND_RESET_I(12);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrDifA1 = VL_RAND_RESET_I(12);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrDifB1 = VL_RAND_RESET_I(12);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrSum1 = VL_RAND_RESET_I(12);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgc1 = VL_RAND_RESET_I(1);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc1 = VL_RAND_RESET_I(6);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc1 = VL_RAND_RESET_I(12);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2 = VL_RAND_RESET_I(12);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tSgc2B = VL_RAND_RESET_I(1);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tExc2B = VL_RAND_RESET_I(6);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfAdd__DOT__tFrc2B = VL_RAND_RESET_I(10);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tRegValRo2 = VL_RAND_RESET_I(16);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tRegExOK2 = VL_RAND_RESET_I(2);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tRegValRo = VL_RAND_RESET_I(16);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tRegExOp1 = VL_RAND_RESET_I(2);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tExc0 = VL_RAND_RESET_I(6);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tExc1 = VL_RAND_RESET_I(6);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tSgc = VL_RAND_RESET_I(1);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tFrc = VL_RAND_RESET_I(22);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tExd = VL_RAND_RESET_I(6);
-    Jx2ExUnit__DOT__exOp__DOT__fphfVec__DOT__hfMul__DOT__tFrd = VL_RAND_RESET_I(10);
     Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRm_T0 = VL_RAND_RESET_Q(64);
     Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRm_T1 = VL_RAND_RESET_Q(64);
     Jx2ExUnit__DOT__exOp__DOT__exAlu1__DOT__regValRi_T0 = VL_RAND_RESET_Q(64);

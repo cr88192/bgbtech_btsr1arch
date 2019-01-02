@@ -108,6 +108,7 @@ int TKSPI_ReadData(byte *buf, u32 len)
 {
 	byte *ct;
 	u32 count;
+	u32 v;
 	byte rv;
 	int n;
 	
@@ -131,8 +132,16 @@ int TKSPI_ReadData(byte *buf, u32 len)
 	ct=buf; n=len;
 	while((n--)>0)
 	{
-		rv=TKSPI_XchByte(0xFF);
-		*ct++=rv;
+//		rv=TKSPI_XchByte(0xFF);
+//		printf("%02X ", rv);
+//		*ct++=rv;
+
+		P_SPI_DATA=0xFF;
+		P_SPI_CTRL=tkspi_ctl_status|SPICTRL_XMIT;
+		v=P_SPI_CTRL;
+		while(v&SPICTRL_BUSY) 
+			v=P_SPI_CTRL;
+		*ct++=P_SPI_DATA;
 	}
 
 //	printf(">\n");
@@ -281,6 +290,8 @@ int TKSPI_ReadSectors(byte *buf, s64 lba, int cnt)
 	byte *ct;
 	u64 la;
 	int n, h;
+
+//	printf("TKSPI_ReadSectors: %08X %02X\n", (u32)lba, cnt);
 
 #if 0
 	if(cnt>1)

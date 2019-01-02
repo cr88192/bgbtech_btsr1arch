@@ -362,6 +362,16 @@ int BGBCC_JX2_TryEmitOpLabel(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 		opw1=0x2300; break;
 
 	case BGBCC_SH_NMID_BRA8B:
+		if(1)
+		{
+			rlty=BGBCC_SH_RLC_RELW20_BJX;
+			opw1=0xF000;
+			opw2=0xC000;
+			opw3=0xF003;
+			opw4=0x3000;
+			break;
+		}
+
 		if(ctx->is_fixed32)
 		{
 			rlty=BGBCC_SH_RLC_RELW24_BJX;
@@ -435,11 +445,13 @@ int BGBCC_JX2_TryEmitOpFar16Label(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 	{
 	case BGBCC_SH_NMID_BRA:
 	case BGBCC_SH_NMID_BRAN:
-		if(ctx->is_fixed32)
+//		if(ctx->is_fixed32)
+		if(1)
 		{
 			rlty=BGBCC_SH_RLC_RELW20_BJX;
 			opw1=0xF000;
-			opw2=0xA000;
+//			opw2=0xA000;
+			opw2=0xC000;
 			break;
 		}
 	
@@ -464,11 +476,13 @@ int BGBCC_JX2_TryEmitOpFar16Label(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 		break;
 	case BGBCC_SH_NMID_BSR:
 	case BGBCC_SH_NMID_BSRN:
-		if(ctx->is_fixed32)
+//		if(ctx->is_fixed32)
+		if(1)
 		{
 			rlty=BGBCC_SH_RLC_RELW20_BJX;
 			opw1=0xF000;
-			opw2=0xB000;
+//			opw2=0xB000;
+			opw2=0xD000;
 			break;
 		}
 	
@@ -492,6 +506,15 @@ int BGBCC_JX2_TryEmitOpFar16Label(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 		opw3=0x3101;
 		break;
 	case BGBCC_SH_NMID_BT:
+//		if(ctx->is_fixed32)
+		if(1)
+		{
+			rlty=BGBCC_SH_RLC_RELW20_BJX;
+			opw1=0xF000;
+			opw2=0xE000;
+			break;
+		}
+
 //		if(1)
 		if(!BGBCC_JX2_CheckPadCross32(ctx))
 		{
@@ -512,6 +535,14 @@ int BGBCC_JX2_TryEmitOpFar16Label(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 		opw3=0x3102;
 		break;
 	case BGBCC_SH_NMID_BF:
+//		if(ctx->is_fixed32)
+		if(1)
+		{
+			rlty=BGBCC_SH_RLC_RELW20_BJX;
+			opw1=0xF000;
+			opw2=0xF000;
+			break;
+		}
 //		if(1)
 		if(!BGBCC_JX2_CheckPadCross32(ctx))
 		{
@@ -574,14 +605,27 @@ int BGBCC_JX2_TryEmitOpFar20Label(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 //		opw1=0xF0FF;
 //		opw2=0xAFFE;
 		opw1=0xF000;
-		opw2=0xA000;
+//		opw2=0xA000;
+		opw2=0xC000;
 		break;
 	case BGBCC_SH_NMID_BSR:
 		rlty=BGBCC_SH_RLC_RELW20_BJX;
 //		opw1=0xF0FF;
 //		opw2=0xBFFE;
 		opw1=0xF000;
-		opw2=0xB000;
+//		opw2=0xB000;
+		opw2=0xD000;
+		break;
+
+	case BGBCC_SH_NMID_BT:
+		rlty=BGBCC_SH_RLC_RELW20_BJX;
+		opw1=0xF000;
+		opw2=0xE000;
+		break;
+	case BGBCC_SH_NMID_BF:
+		rlty=BGBCC_SH_RLC_RELW20_BJX;
+		opw1=0xF000;
+		opw2=0xF000;
 		break;
 	}
 

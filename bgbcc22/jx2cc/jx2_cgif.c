@@ -1116,7 +1116,8 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 	}
 #endif
 
-	if(sctx->is_simpass==1)
+//	if(sctx->is_simpass==1)
+	if((sctx->is_simpass==1) || (sctx->is_simpass&64))
 	{
 		sctx->is_leaf|=4;
 	}
@@ -1186,7 +1187,8 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 
 	BGBCC_JX2_EmitCheckFlushIndexImm(sctx);
 
-	if(sctx->is_simpass==1)
+//	if(sctx->is_simpass==1)
+	if((sctx->is_simpass==1) || (sctx->is_simpass&64))
 	{
 		if(sctx->is_leaf&4)
 			tr->trfl|=1;

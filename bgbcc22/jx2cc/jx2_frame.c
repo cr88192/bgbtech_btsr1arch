@@ -377,6 +377,14 @@ int BGBCC_JX2C_EmitLeaBRegOfsReg(
 //	if((ctx->arch_sizeof_ptr==8) || (breg!=dreg))
 	if(sctx->is_addr64 || (breg!=dreg))
 	{
+		if((((sbyte)ofs)==ofs) && (breg==dreg) && ((breg&31)<16))
+		{
+			i=BGBCC_JX2_TryEmitOpImmReg(sctx,
+				BGBCC_SH_NMID_ADD, ofs, dreg);
+			if(i>0)
+				return(1);
+		}
+
 		opw1=BGBCC_SH_NMID_LEAB;	k=ofs;
 		if(!(ofs&1))
 			{ opw1=BGBCC_SH_NMID_LEAW;	k=ofs>>1; }
@@ -384,8 +392,8 @@ int BGBCC_JX2C_EmitLeaBRegOfsReg(
 			{ opw1=BGBCC_SH_NMID_LEAL;	k=ofs>>2; }
 		if(!(ofs&7))
 			{ opw1=BGBCC_SH_NMID_LEAQ;	k=ofs>>3; }
-		if(!(ofs&15))
-			{ opw1=BGBCC_SH_NMID_LEAO;	k=ofs>>4; }
+//		if(!(ofs&15))
+//			{ opw1=BGBCC_SH_NMID_LEAO;	k=ofs>>4; }
 
 		i=BGBCC_JX2_TryEmitOpRegImmReg(sctx,
 			opw1, breg, k, dreg);
@@ -2722,10 +2730,10 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 //		if(sctx->vspan_num>32)
 //		if(sctx->vspan_num>48)
 //		if(sctx->vspan_num>56)
-//		if(sctx->vspan_num>64)
+		if(sctx->vspan_num>64)
 //		if(sctx->vspan_num>68)
 
-		if(sctx->vspan_num>72)
+//		if(sctx->vspan_num>72)
 
 //		if(sctx->vspan_num>80)
 //		if(sctx->vspan_num>88)
@@ -3675,7 +3683,8 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 	else
 	{
 #if 1
-		if(!(sctx->is_leaf&1) && !(obj->flagsint&BGBCC_TYFL_INTERRUPT))
+//		if(!(sctx->is_leaf&1) && !(obj->flagsint&BGBCC_TYFL_INTERRUPT))
+		if(!(sctx->is_leaf&1) || (obj->flagsint&BGBCC_TYFL_INTERRUPT))
 		{
 //			BGBCC_JX2_EmitOpRegStDecReg(sctx, BGBCC_SH_NMID_STSL,
 //				BGBCC_SH_REG_PR, BGBCC_SH_REG_SP);
@@ -4680,19 +4689,20 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 				if(sctx->is_addr64)
 				{
 					BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_POP,
-						BGBCC_SH_REG_RQ16+i);
+						BGBCC_SH_REG_RQ0+i);
 					k+=8;
 				}else
 				{
 					BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_POP,
-						BGBCC_SH_REG_R16+i);
+						BGBCC_SH_REG_R0+i);
 					k+=4;
 				}
 			}
 		}
 	}
 
-	if(!(sctx->is_leaf&1) && !(obj->flagsint&BGBCC_TYFL_INTERRUPT))
+//	if(!(sctx->is_leaf&1) && !(obj->flagsint&BGBCC_TYFL_INTERRUPT))
+	if(!(sctx->is_leaf&1) || (obj->flagsint&BGBCC_TYFL_INTERRUPT))
 	{
 		if(sctx->is_addr64)
 			k+=8;
@@ -4707,6 +4717,7 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 
 	if(obj->flagsint&BGBCC_TYFL_INTERRUPT)
 	{
+		BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_POP, BGBCC_SH_REG_PR);
 		BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_RTE);
 	}
 	else

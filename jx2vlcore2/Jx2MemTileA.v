@@ -272,7 +272,7 @@ begin
 //	tRegTileIxH		= regInAddr[16:4] ^
 //		regInAddr[24:12];
 `else
-	tRegTileIxH		= regInAddr[15:4];
+	tRegTileIxH		= regInAddr[16:4];
 //	tRegTileIxH		= regInAddr[15:4] ^
 //		regInAddr[23:12];
 `endif

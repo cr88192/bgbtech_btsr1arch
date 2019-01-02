@@ -62,6 +62,7 @@
 #include "jx2i_dec_op.c"
 #include "jx2i_dec_op_f0.c"
 #include "jx2i_dec_op_f1.c"
+#include "jx2i_dec_op_f2.c"
 #include "jx2i_dec_op_f8.c"
 #include "jx2i_dec_op_fc.c"
 

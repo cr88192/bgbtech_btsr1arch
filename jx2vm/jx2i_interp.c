@@ -161,7 +161,7 @@ int BJX2_ThrowFaultStatus(BJX2_Context *ctx, int status)
 #if 1
 	if((status&0xF000)==0x8000)
 	{
-		ctx->regs[BJX2_REG_EXSR]=status;
+//		ctx->regs[BJX2_REG_EXSR]=status;
 		for(i=0; i<128; i++)
 			ctx->ex_regs[i]=ctx->regs[i];
 		for(i=0; i<32; i++)
@@ -169,13 +169,17 @@ int BJX2_ThrowFaultStatus(BJX2_Context *ctx, int status)
 	}
 #endif
 
-	ctx->regs[BJX2_REG_EXSR]=status;
+//	ctx->regs[BJX2_REG_EXSR]=status;
+	ctx->regs[BJX2_REG_EXSR]=
+		(ctx->regs[BJX2_REG_EXSR]&(~65535))|
+		(status&65535);
 	ctx->tr_rnxt=NULL;
 	ctx->tr_rjmp=NULL;
 	ctx->status=status;
 	return(0);
 }
 
+#if 0
 int BJX2_FaultSwapRegs(BJX2_Context *ctx)
 {
 	u64 va, vb;
@@ -196,6 +200,7 @@ int BJX2_FaultSwapRegs(BJX2_Context *ctx)
 	}
 #endif
 
+#if 0
 	for(i=0; i<8; i++)
 	{
 		if(i==3)
@@ -205,6 +210,12 @@ int BJX2_FaultSwapRegs(BJX2_Context *ctx)
 		ctx->regs[BJX2_REG_PC+i]=vb;
 		ctx->regs[BJX2_REG_SPC+i]=va;
 	}
+#endif
+
+//	va=ctx->regs[BJX2_REG_PC];
+//	vb=ctx->regs[BJX2_REG_SPC];
+//	ctx->regs[BJX2_REG_PC]=vb;
+//	ctx->regs[BJX2_REG_SPC]=va;
 
 	va=ctx->regs[BJX2_REG_SP];
 	vb=ctx->regs[BJX2_REG_SSP];
@@ -213,6 +224,109 @@ int BJX2_FaultSwapRegs(BJX2_Context *ctx)
 	
 	return(0);
 }
+#endif
+
+int BJX2_FaultSwapRegs2(BJX2_Context *ctx)
+{
+	u64 va, vb;
+	int i;
+
+#if 1
+	for(i=0; i<8; i++)
+	{
+		va=ctx->regs[BJX2_REG_R0+i];
+		vb=ctx->regs[BJX2_REG_R0B+i];
+		ctx->regs[BJX2_REG_R0+i]=vb;
+		ctx->regs[BJX2_REG_R0B+i]=va;
+
+		va=ctx->regs[BJX2_REG_R16+i];
+		vb=ctx->regs[BJX2_REG_R16B+i];
+		ctx->regs[BJX2_REG_R16+i]=vb;
+		ctx->regs[BJX2_REG_R16B+i]=va;
+	}
+#endif
+}
+
+int BJX2_FaultEnterRegs(BJX2_Context *ctx)
+{
+	u64 va, vb;
+	int i;
+
+//	BJX2_FaultSwapRegs2(ctx);
+
+	va=ctx->regs[BJX2_REG_SR];
+	vb=ctx->regs[BJX2_REG_EXSR];
+	va=(va<<32)|((u32)vb);
+	ctx->regs[BJX2_REG_EXSR]=va;
+
+	va=ctx->regs[BJX2_REG_PC];
+//	vb=ctx->regs[BJX2_REG_SPC];
+//	ctx->regs[BJX2_REG_PC]=vb;
+	ctx->regs[BJX2_REG_SPC]=va;
+
+	va=ctx->regs[BJX2_REG_SP];
+	vb=ctx->regs[BJX2_REG_SSP];
+	ctx->regs[BJX2_REG_SP]=vb;
+	ctx->regs[BJX2_REG_SSP]=va;
+
+//	va=ctx->regs[BJX2_REG_LR];
+//	vb=ctx->regs[BJX2_REG_SLR];
+//	ctx->regs[BJX2_REG_LR]=vb;
+//	ctx->regs[BJX2_REG_SLR]=va;
+
+//	va=ctx->regs[BJX2_REG_LR];
+//	ctx->regs[BJX2_REG_SLR]=va;
+//	va=ctx->regs[BJX2_REG_SR];
+//	ctx->regs[BJX2_REG_SSR]=va;
+
+//	va=ctx->regs[BJX2_REG_DLR];
+//	vb=ctx->regs[BJX2_REG_DHR];
+//	ctx->regs[BJX2_REG_SDL]=va;
+//	ctx->regs[BJX2_REG_SDH]=vb;
+	
+	return(0);
+}
+
+int BJX2_FaultExitRegs(BJX2_Context *ctx)
+{
+	u64 va, vb;
+	int i;
+
+//	BJX2_FaultSwapRegs2(ctx);
+
+	va=ctx->regs[BJX2_REG_SR];
+	vb=ctx->regs[BJX2_REG_EXSR];
+	va=(va&0xFFFFFFFF00000000ULL)|((u32)(vb>>32));
+	ctx->regs[BJX2_REG_SR]=va;
+
+//	va=ctx->regs[BJX2_REG_PC];
+	vb=ctx->regs[BJX2_REG_SPC];
+	ctx->regs[BJX2_REG_PC]=vb;
+//	ctx->regs[BJX2_REG_SPC]=va;
+
+	va=ctx->regs[BJX2_REG_SP];
+	vb=ctx->regs[BJX2_REG_SSP];
+	ctx->regs[BJX2_REG_SP]=vb;
+	ctx->regs[BJX2_REG_SSP]=va;
+
+//	va=ctx->regs[BJX2_REG_LR];
+//	vb=ctx->regs[BJX2_REG_SLR];
+//	ctx->regs[BJX2_REG_LR]=vb;
+//	ctx->regs[BJX2_REG_SLR]=va;
+
+//	va=ctx->regs[BJX2_REG_SLR];
+//	ctx->regs[BJX2_REG_LR]=va;
+//	va=ctx->regs[BJX2_REG_SSR];
+//	ctx->regs[BJX2_REG_SR]=va;
+
+//	va=ctx->regs[BJX2_REG_SDL];
+//	vb=ctx->regs[BJX2_REG_SDH];
+//	ctx->regs[BJX2_REG_DLR]=va;
+//	ctx->regs[BJX2_REG_DHR]=vb;
+
+	return(0);
+}
+
 
 int BJX2_FaultEnterInterrupt(BJX2_Context *ctx)
 {
@@ -231,7 +345,8 @@ int BJX2_FaultEnterInterrupt(BJX2_Context *ctx)
 //		exsr=ctx->status;
 		if(((exsr&0xF000)==0x8000) &&
 			(exsr!=BJX2_FLT_BREAK) &&
-			(exsr==ctx->ex_regs[BJX2_REG_EXSR]))
+//			(exsr==ctx->ex_regs[BJX2_REG_EXSR]))
+			(((u16)exsr)==((u16)ctx->ex_regs[BJX2_REG_EXSR])))
 		{
 			for(i=0; i<128; i++)
 				ctx->regs[i]=ctx->ex_regs[i];
@@ -241,7 +356,8 @@ int BJX2_FaultEnterInterrupt(BJX2_Context *ctx)
 		ctx->ex_regs[BJX2_REG_EXSR]=0;
 #endif
 
-		BJX2_FaultSwapRegs(ctx);
+//		BJX2_FaultSwapRegs(ctx);
+		BJX2_FaultEnterRegs(ctx);
 		ctx->regs[BJX2_REG_SR]|=(1<<29);	//Set RB
 	}
 
@@ -268,7 +384,8 @@ int BJX2_FaultLeaveInterrupt(BJX2_Context *ctx)
 {
 	if(ctx->regs[BJX2_REG_SR]&(1<<29))
 	{
-		BJX2_FaultSwapRegs(ctx);
+//		BJX2_FaultSwapRegs(ctx);
+		BJX2_FaultExitRegs(ctx);
 		ctx->regs[BJX2_REG_SR]&=~(1<<29);	//Clear RB
 	}
 	ctx->regs[BJX2_REG_SR]&=~(1<<29);	//Clear RB
@@ -1138,13 +1255,28 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 		for(j=0; j<2; j++)
 		{
 			k=idx_nmid[i*2+j];
-			printf("%8s(%10lld) ",
+			pcnt=(100.0*cyc_nmid[k])/(ctx->tot_cyc);
+
+			printf("%8s(%10lld) %2.2f%%  ",
 				BJX2_DbgPrintNameForNmid(ctx, k),
-				cyc_nmid[k]);
+				cyc_nmid[k], pcnt);
 		}
 		printf("\n");
 	}
 #endif
+
+	pcnt=(100.0*ctx->tot_cyc_mem)/(ctx->tot_cyc);
+	printf("Cycles Spent, Mem Op: %.2f%%\n", pcnt);
+	pcnt=(100.0*(ctx->tot_cyc_mem+ctx->tot_cyc_miss))/(ctx->tot_cyc);
+	printf("Cycles Spent, Mem Tot: %.2f%%\n", pcnt);
+
+	pcnt=(100.0*ctx->tot_cyc_miss)/(ctx->tot_cyc);
+	printf("Cycles Spent, Cache Miss: %.2f%%\n", pcnt);
+	pcnt=(100.0*ctx->tot_cyc_miss_l1)/(ctx->tot_cyc);
+	printf("Cycles Spent, Cache Miss L1: %.2f%%\n", pcnt);
+	pcnt=(100.0*ctx->tot_cyc_miss_l2)/(ctx->tot_cyc);
+	printf("Cycles Spent, Cache Miss L2: %.2f%%\n", pcnt);
+
 }
 
 
@@ -1281,8 +1413,16 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 //		nc+=ctx->iodel_cyc;
 //		ctx->iodel_cyc=0;
 
+		ctx->tot_cyc_mem+=ctx->mem_cyc;
+		ctx->tot_cyc_miss+=ctx->miss_cyc;
+		ctx->tot_cyc_miss_l1+=ctx->miss_cyc_l1;
+		ctx->tot_cyc_miss_l2+=ctx->miss_cyc_l2;
+
 		nc+=ctx->miss_cyc;
+		ctx->mem_cyc=0;
 		ctx->miss_cyc=0;
+		ctx->miss_cyc_l1=0;
+		ctx->miss_cyc_l2=0;
 		
 		ctx->tot_cyc+=nc;
 		ctx->tot_ops+=no;

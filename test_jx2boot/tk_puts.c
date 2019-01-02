@@ -132,6 +132,12 @@ void print_hex_n(u32 v, int n)
 //	char *chrs;
 //	chrs="0123456789ABCDEF";
 
+	if(n>8)
+	{
+		puts("!%X!\n");
+		__debugbreak();
+	}
+
 	if(n>7)putc(chrs[(v>>28)&15]);
 	if(n>6)putc(chrs[(v>>24)&15]);
 	if(n>5)putc(chrs[(v>>20)&15]);
@@ -181,6 +187,10 @@ void print_decimal(int val)
 	while(k>0)
 	{
 		i=k%10;
+		
+//		if((i<0) | (i>=10))
+//			__debugbreak();
+		
 		*t++='0'+i;
 		k=k/10;
 	}
@@ -333,4 +343,71 @@ void printf(char *str, ...)
 		}
 	}
 	va_end(lst);
+}
+
+
+byte *tk_ralloc_bufs=NULL;
+byte *tk_ralloc_bufe;
+byte *tk_ralloc_bufr;
+
+void *tk_ralloc(int sz)
+{
+	void *p;
+	if(!tk_ralloc_bufs)
+	{
+		tk_ralloc_bufs=malloc(4096);
+		tk_ralloc_bufe=tk_ralloc_bufs+4096;
+		tk_ralloc_bufr=tk_ralloc_bufs;
+	}
+	
+	if((tk_ralloc_bufr+sz)>=tk_ralloc_bufe)
+	{
+		tk_ralloc_bufr=tk_ralloc_bufs;
+	}
+	
+	p=tk_ralloc_bufr;
+	tk_ralloc_bufr+=sz;
+	return(p);
+}
+
+char *tk_rstrdup(char *s)
+{
+	char *t;
+	int l;
+	
+	l=strlen(s);
+	t=tk_ralloc(l+1);
+	memcpy(t, s, l+1);
+	return(t);
+}
+
+char *tk_rsplit(char *str)
+{
+	char tb[64];
+	char *ta[32];
+	char **ta2;
+	char *s, *t;
+	int i, nta;
+	
+	nta=0;
+	s=str;
+	while(*s)
+	{
+		while(*s && (*s<=' '))
+			s++;
+		if(*s>' ')
+		{
+			t=tb;
+			while(*s>' ')
+				*t++=*s++;
+			*t++=0;
+			ta[nta++]=tk_rstrdup(tb);
+		}
+	}
+	
+	ta2=tk_ralloc((nta+1)*sizeof(char *));
+	for(i=0; i<nta; i++)
+		ta2[i]=ta[i];
+	ta2[i]=NULL;
+	return(ta2);
 }

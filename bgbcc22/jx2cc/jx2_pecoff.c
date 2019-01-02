@@ -686,7 +686,7 @@ int BGBCC_JX2C_PackBlockLZ4(BGBCC_TransState *ctx,
 				if(rl>=15)
 					{ lmc+=((rl-15)/255)+1; }
 				if(bl>=19)
-					{ lmc+=((rl-19)/255)+1; }
+					{ lmc+=((bl-19)/255)+1; }
 
 				if((ct+rl+lmc)>=cte)
 					break;

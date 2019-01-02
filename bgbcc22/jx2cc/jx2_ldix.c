@@ -360,8 +360,8 @@ int BGBCC_JX2C_EmitLdixVRegVRegVReg(
 //			BGBCC_JX2C_EmitRegIsGpReg(ctx, sctx, cdreg) &&
 			BGBCC_JX2C_CheckNmidScaleMatch(ctx, sctx, nm1, sz))
 		{
-			if(BGBCC_JX2_EmitCheckRegNeedSzx(sctx, ctreg))
-				{ BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_EXTSL, ctreg); }
+//			if(BGBCC_JX2_EmitCheckRegNeedSzx(sctx, ctreg))
+//				{ BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_EXTSL, ctreg); }
 
 			i=BGBCC_JX2_TryEmitOpLdReg2Reg(sctx, nm4,
 				csreg, ctreg, cdreg);
@@ -732,8 +732,8 @@ int BGBCC_JX2C_EmitStixVRegVRegVReg(
 #if 1
 		if(nm4>=0)
 		{
-			if(BGBCC_JX2_EmitCheckRegNeedSzx(sctx, csreg))
-				{ BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_EXTSL, csreg); }
+//			if(BGBCC_JX2_EmitCheckRegNeedSzx(sctx, csreg))
+//				{ BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_EXTSL, csreg); }
 
 			i=BGBCC_JX2_TryEmitOpRegStReg2(sctx, nm4,
 				ctreg, csreg, cdreg);
@@ -1903,8 +1903,8 @@ int BGBCC_JX2C_EmitLeaBRegIRegScReg(
 //	if(bs!=2)		//Debug
 //		shl=-1;
 
-	if(BGBCC_JX2_EmitCheckRegNeedSzx(sctx, ireg))
-		{ BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_EXTSL, ireg); }
+//	if(BGBCC_JX2_EmitCheckRegNeedSzx(sctx, ireg))
+//		{ BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_EXTSL, ireg); }
 
 	if((shl>=0) && (bs==2) && (cbo<=cmo))
 	{

@@ -569,9 +569,9 @@ int main(int argc, char **argv, char **env)
 
 //	JX2R_UseImageCreateRamdisk(128*1024);
 	JX2R_UseImageCreateRamdisk(32*1024);
-//	JX2R_UseImageAddFile(
-//		(char *)"BOOTLOAD.SYS",
-//		(char *)"../tk_qsrc/doomsrc2/doom_bjx2.exe");
+	JX2R_UseImageAddFile(
+		(char *)"BOOTLOAD.SYS",
+		(char *)"../tk_qsrc/doomsrc2/doom_bjx2.exe");
 
 	Verilated::commandArgs(argc, argv);
 

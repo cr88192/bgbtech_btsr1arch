@@ -1132,10 +1132,13 @@ int BGBCC_JX2C_EmitJCmpVRegVRegInt(
 #if 1
 	if(BGBCC_CCXL_IsRegImmIntP(ctx, treg))
 	{
-		noflip=1;
+		imm=BGBCC_CCXL_GetRegImmIntValue(ctx, treg);
+
+		if(((imm&1023)==imm) || ((imm|(~1023))==imm))
+			noflip=1;
 //		if(sctx->is_betav && !sctx->has_bjx1ari)
-		if(sctx->is_betav && (!sctx->has_bjx1ari || !sctx->has_bjx1mov))
-			noflip=0;
+//		if(sctx->is_betav && (!sctx->has_bjx1ari || !sctx->has_bjx1mov))
+//			noflip=0;
 	}
 #endif
 	

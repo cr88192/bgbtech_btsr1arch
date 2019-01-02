@@ -2332,6 +2332,7 @@ int BGBCC_JX2_EmitByteI(BGBCC_JX2_Context *ctx, int val);
 void BGBCC_JX2_UpdatePszxWord(BGBCC_JX2_Context *ctx, int val);
 void BGBCC_JX2_UpdatePszxWordF0(BGBCC_JX2_Context *ctx,int opw1, int opw2);
 void BGBCC_JX2_UpdatePszxWordF1(BGBCC_JX2_Context *ctx,int opw1, int opw2);
+void BGBCC_JX2_UpdatePszxWordF2(BGBCC_JX2_Context *ctx,int opw1, int opw2);
 void BGBCC_JX2_UpdatePszxWordF8(BGBCC_JX2_Context *ctx,int opw1, int opw2);
 void BGBCC_JX2_UpdatePszxWordFx(BGBCC_JX2_Context *ctx,int opw1, int opw2);
 int BGBCC_JX2_EmitStatWord(BGBCC_JX2_Context *ctx, int val);
@@ -2547,6 +2548,7 @@ int BGBCC_JX2C_SaveFrameOfsForReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx
 int BGBCC_JX2C_SaveFrameOfsForFpReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
 int BGBCC_JX2C_EmitSaveFrameReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
 int BGBCC_JX2C_EmitReloadSavedFrameReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
+int BGBCC_JX2C_EmitRotateRegisterIndex(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int idx);
 int BGBCC_JX2C_EmitTryGetRegister(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg, int fl);
 int BGBCC_JX2C_EmitGetRegister(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg, int fl);
 int BGBCC_JX2C_EmitGetRegisterDirty(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);

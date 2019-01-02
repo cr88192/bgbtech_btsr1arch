@@ -12,27 +12,24 @@ int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
 	op->opn=opw1;
 	op->opn2=opw2;
 
-	rn_dfl=(opw1>>4)&15;
-	rm_dfl=(opw1   )&15;
-//	ro_dfl=(opw1   )&15;
-	if(opw2&0x0400)rn_dfl+=16;
-	if(opw2&0x0200)rm_dfl+=16;
-//	if(opw2&0x0010)ro_dfl+=16;
+	rn_dfl=(opw2>>4)&15;
+	rm_dfl=(opw2   )&15;
+	ro_dfl=(opw1   )&15;
+	if(opw1&0x0040)rn_dfl+=16;
+	if(opw1&0x0020)rm_dfl+=16;
+	if(opw1&0x0010)ro_dfl+=16;
 
-//	disp5=(opw1   )&31;
-	eq=(opw2&0x0800)?1:0;
-	eo=(opw2&0x0100)?1:0;
+	disp5=(opw1   )&31;
+	eq=(opw1&0x0080)?1:0;
+	eo=(opw1&0x0010)?1:0;
 
 //	imm8u=opw2&255;
 //	imm8n=opw2|(~255);
 //	imm10u=(opw2&255)|((opw1&0x0060)<<3);
 //	imm10n=(opw2&255)|((opw1&0x0060)<<3)|(~1023);
 
-//	imm9u=((opw1&31)<<4)|((opw2>>8)&15);
-//	imm9n=((opw1&31)<<4)|((opw2>>8)&15)|((-1)<<9);
-
-	imm9u=(opw2&511);
-	imm9n=(opw2&511)|((-1)<<9);
+	imm9u=((opw1&31)<<4)|((opw2>>8)&15);
+	imm9n=((opw1&31)<<4)|((opw2>>8)&15)|((-1)<<9);
 
 	op->rn=rn_dfl;
 	op->rm=rm_dfl;
@@ -136,7 +133,6 @@ int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
 		}
 		break;
 
-#if 0
 	case 0x4:	/* F1ed_4dzz */
 		op->imm=imm9u;
 		op->nmid=BJX2_NMID_ADD;
@@ -149,7 +145,6 @@ int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
 		op->fmid=BJX2_FMID_REGIMMREG;
 		op->Run=BJX2_Op_ADD_RegImmReg;
 		break;
-#endif
 
 	case 0x8:	/* F1ed_8dzz */
 		if(op->rm==1)
@@ -240,7 +235,6 @@ int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
 		}
 		break;
 
-#if 0
 	case 0xC:	/* F1ed_Cdzz */
 		op->imm=imm9u;
 		op->nmid=BJX2_NMID_ADDSL;
@@ -263,7 +257,6 @@ int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
 			op->Run=BJX2_Op_ADDSL_RegImmReg;
 		}
 		break;
-#endif
 
 	default:
 		ret=-1;

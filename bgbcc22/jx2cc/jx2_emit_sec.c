@@ -267,6 +267,19 @@ void BGBCC_JX2_UpdatePszxWord(BGBCC_JX2_Context *ctx, int val)
 				rn=rn_dfl;	sx=BGBCC_PSZX_UNK;	break;
 			}
 			break;
+
+		case 6:
+			switch(val&15)
+			{
+			case 4:
+				rn=rn_dfl;	sx=BGBCC_PSZX_ZX;	break;
+			case 5:
+				rn=rn_dfl;	sx=BGBCC_PSZX_SX;	break;
+			default:
+				rn=rn_dfl;	sx=BGBCC_PSZX_UNK;	break;
+			}
+			break;
+
 		default:
 			rn=rn_dfl;	sx=BGBCC_PSZX_UNK;	break;
 			break;
@@ -320,7 +333,7 @@ void BGBCC_JX2_UpdatePszxWord(BGBCC_JX2_Context *ctx, int val)
 		break;
 	case 0xE:
 		rn=(val>>8)&15;
-		sx=(val&128)?BGBCC_PSZX_SX:BGBCC_PSZX_ZX;
+		sx=(val&128)?BGBCC_PSZX_SSX:BGBCC_PSZX_SZX;
 		break;
 	case 0xF:
 		break;
@@ -420,10 +433,10 @@ void BGBCC_JX2_UpdatePszxWordF0(BGBCC_JX2_Context *ctx,
 			switch((opw1>>0)&15)
 			{
 			case 6:
-				rn=rn_dfl;	sx=BGBCC_PSZX_SX;
+				rn=rn_dfl;	sx=eq?BGBCC_PSZX_QW:BGBCC_PSZX_SX;
 				break;
 			case 7:
-				rn=rn_dfl;	sx=BGBCC_PSZX_ZX;
+				rn=rn_dfl;	sx=eq?BGBCC_PSZX_QW:BGBCC_PSZX_ZX;
 				break;
 			case 8:
 				rn=rn_dfl;
@@ -454,9 +467,9 @@ void BGBCC_JX2_UpdatePszxWordF0(BGBCC_JX2_Context *ctx,
 	case 0x2:
 		switch((opw2>>8)&15)
 		{
-		case 4: rn=0; sx=BGBCC_PSZX_SZX; break;
-		case 5: rn=0; sx=BGBCC_PSZX_SSX; break;
-		case 6: rn=0; sx=BGBCC_PSZX_UNK; break;
+//		case 4: rn=0; sx=BGBCC_PSZX_SZX; break;
+//		case 5: rn=0; sx=BGBCC_PSZX_SSX; break;
+//		case 6: rn=0; sx=BGBCC_PSZX_UNK; break;
 		default:
 			break;
 		}
@@ -471,12 +484,12 @@ void BGBCC_JX2_UpdatePszxWordF0(BGBCC_JX2_Context *ctx,
 	case 0x5:
 		switch((opw2>>8)&15)
 		{
-		case 0x4:	rn=rn_dfl; sx=BGBCC_PSZX_SX; break;
-		case 0x5:	rn=rn_dfl; sx=BGBCC_PSZX_ZX; break;
-		case 0x6:	rn=rn_dfl; sx=BGBCC_PSZX_SX; break;
-		case 0x7:	rn=rn_dfl; sx=BGBCC_PSZX_ZX; break;
-		case 0x8: case 0x9: case 0xA: case 0xB:
-			rn=rn_dfl; sx=BGBCC_PSZX_QW; break;
+		case 0x4:	rn=rn_dfl; sx=eq?BGBCC_PSZX_QW:BGBCC_PSZX_SX; break;
+		case 0x5:	rn=rn_dfl; sx=eq?BGBCC_PSZX_QW:BGBCC_PSZX_ZX; break;
+//		case 0x6:	rn=rn_dfl; sx=BGBCC_PSZX_SX; break;
+//		case 0x7:	rn=rn_dfl; sx=BGBCC_PSZX_ZX; break;
+//		case 0x8: case 0x9: case 0xA: case 0xB:
+//			rn=rn_dfl; sx=BGBCC_PSZX_QW; break;
 
 		default:
 			rn=rn_dfl;	sx=BGBCC_PSZX_UNK;
@@ -486,6 +499,10 @@ void BGBCC_JX2_UpdatePszxWordF0(BGBCC_JX2_Context *ctx,
 
 	case 0xA:
 	case 0xB:
+	case 0xC:
+	case 0xD:
+	case 0xE:
+	case 0xF:
 		break;
 
 	default:
@@ -505,18 +522,27 @@ void BGBCC_JX2_UpdatePszxWordF1(BGBCC_JX2_Context *ctx,
 	int rn_dfl, rm_dfl, ro_dfl, rn_sx, rm_sx, ro_sx;
 	int rn, sx, eq;
 	
-	rn_dfl=(opw2>>4)&15;
-	rm_dfl=(opw2>>0)&15;
-	ro_dfl=(opw1>>0)&15;
+//	rn_dfl=(opw2>>4)&15;
+//	rm_dfl=(opw2>>0)&15;
+//	ro_dfl=(opw1>>0)&15;
+
+	rn_dfl=(opw1>>4)&15;
+	rm_dfl=(opw1>>0)&15;
+//	ro_dfl=(opw1>>0)&15;
 	
-	eq=(opw1&0x0080)!=0;
-	if(opw1&0x0040)rn_dfl+=16;
-	if(opw1&0x0020)rm_dfl+=16;
-	if(opw1&0x0010)ro_dfl+=16;
+//	eq=(opw1&0x0080)!=0;
+//	if(opw1&0x0040)rn_dfl+=16;
+//	if(opw1&0x0020)rm_dfl+=16;
+//	if(opw1&0x0010)ro_dfl+=16;
+
+	eq=(opw2&0x0800)!=0;
+	if(opw2&0x0400)rn_dfl+=16;
+	if(opw2&0x0200)rm_dfl+=16;
+//	if(opw2&0x0100)ro_dfl+=16;
 	
 	rn_sx=ctx->reg_pszx[rn_dfl];
 	rm_sx=ctx->reg_pszx[rm_dfl];
-	ro_sx=ctx->reg_pszx[ro_dfl];
+//	ro_sx=ctx->reg_pszx[ro_dfl];
 
 	rn=-1; sx=0;
 	switch((opw2>>12)&15)
@@ -544,6 +570,99 @@ void BGBCC_JX2_UpdatePszxWordF1(BGBCC_JX2_Context *ctx,
 		rn=rn_dfl;	sx=BGBCC_PSZX_QW;
 		if(eq)
 			sx=BGBCC_PSZX_UNK;
+		break;
+	}
+
+	if(rn>=0)
+	{
+		ctx->reg_pszx[rn]=sx;
+	}
+}
+
+void BGBCC_JX2_UpdatePszxWordF2(BGBCC_JX2_Context *ctx,
+	int opw1, int opw2)
+{
+	int rn_dfl, rm_dfl, ro_dfl, rn_sx, rm_sx, ro_sx;
+	int rn, sx, eq;
+	
+//	rn_dfl=(opw2>>4)&15;
+//	rm_dfl=(opw2>>0)&15;
+//	ro_dfl=(opw1>>0)&15;
+
+	rn_dfl=(opw1>>4)&15;
+	rm_dfl=(opw1>>0)&15;
+//	ro_dfl=(opw1>>0)&15;
+	
+//	eq=(opw1&0x0080)!=0;
+//	if(opw1&0x0040)rn_dfl+=16;
+//	if(opw1&0x0020)rm_dfl+=16;
+//	if(opw1&0x0010)ro_dfl+=16;
+
+	eq=(opw2&0x0800)!=0;
+	if(opw2&0x0400)rn_dfl+=16;
+	if(opw2&0x0200)rm_dfl+=16;
+//	if(opw2&0x0100)ro_dfl+=16;
+	
+	rn_sx=ctx->reg_pszx[rn_dfl];
+	rm_sx=ctx->reg_pszx[rm_dfl];
+//	ro_sx=ctx->reg_pszx[ro_dfl];
+
+	rn=-1; sx=0;
+	switch((opw2>>12)&15)
+	{
+	case 0: case 1:
+		rn=rn_dfl;	sx=BGBCC_PSZX_QW;
+		break;
+	case 2:
+		rn=rn_dfl;	sx=BGBCC_PSZX_SX;
+		break;
+	case 3:
+		rn=rn_dfl;	sx=eq?BGBCC_PSZX_ZX:BGBCC_PSZX_SX;
+		break;
+	case 4:
+		rn=rn_dfl;	sx=eq?BGBCC_PSZX_ZX:BGBCC_PSZX_SX;
+		break;
+	case 5: case 6: case 7:
+		rn=rn_dfl;	sx=BGBCC_PSZX_UNK;
+		break;
+	case 8:
+		rn=rn_dfl;	sx=eq?BGBCC_PSZX_QW:BGBCC_PSZX_SX;
+		break;
+	case 9:
+		rn=rn_dfl;	sx=eq?BGBCC_PSZX_QW:BGBCC_PSZX_ZX;
+		break;
+
+	case 0xC:
+		break;
+
+#if 0
+	case 0: case 1: case 2: case 3:
+	case 4: case 5: case 6: case 7:
+		if(eq)
+		{
+			rn=rn_dfl;	sx=BGBCC_PSZX_UNK;
+			break;
+		}
+		break;
+	case 0x8: case 0x9:
+	case 0xC: case 0xD:
+		rn=rn_dfl;	sx=BGBCC_PSZX_SSX;
+		if(eq)
+			sx=BGBCC_PSZX_SZX;
+		break;
+	case 0xA: case 0xE:
+		rn=rn_dfl;	sx=BGBCC_PSZX_SX;
+		if(eq)
+			sx=BGBCC_PSZX_ZX;
+		break;
+	case 0xB:		case 0xF:
+		rn=rn_dfl;	sx=BGBCC_PSZX_QW;
+		if(eq)
+			sx=BGBCC_PSZX_UNK;
+		break;
+#endif
+	default:
+		rn=rn_dfl;	sx=BGBCC_PSZX_UNK;
 		break;
 	}
 
@@ -604,6 +723,12 @@ void BGBCC_JX2_UpdatePszxWordFx(BGBCC_JX2_Context *ctx,
 	if(((opw1>>8)&255)==0xF1)
 	{
 		BGBCC_JX2_UpdatePszxWordF1(ctx, opw1, opw2);
+		return;
+	}
+
+	if(((opw1>>8)&255)==0xF2)
+	{
+		BGBCC_JX2_UpdatePszxWordF2(ctx, opw1, opw2);
 		return;
 	}
 

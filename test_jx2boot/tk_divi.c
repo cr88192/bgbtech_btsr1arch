@@ -43,6 +43,7 @@ u32 __udivsi3(u32 n, u32 d)
 		r-=d&s;
 	}
 	q=(q<<1)|c;
+	q=(u32)q;
 	return(q);
 }
 

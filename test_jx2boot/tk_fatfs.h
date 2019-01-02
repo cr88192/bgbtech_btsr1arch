@@ -1,5 +1,8 @@
 #define TKFAT_SFL_DIRTY		0x00000200
 
+#define TKFAT_READONLY
+#define TKFAT_NOLFN
+
 typedef struct TKFAT_MBR_Entry_s TKFAT_MBR_Entry;
 typedef struct TKFAT_MBR_s TKFAT_MBR;
 typedef struct TKFAT_FAT16_Boot_s TKFAT_FAT16_Boot;
@@ -147,6 +150,18 @@ u32 tbc_lba[256];
 s16 tbc_lbn[256];
 void *tbc_buf[256];
 int tbc_num;
+
+int tbc_num;
+int tbc_pred0;
+int tbc_pred1;
+int tbc_pred2;
+int tbc_pred3;
+int tbc_rov;
+
+int cl_rov;			//cluster rover
+int walk_clid;		//walk starting cluster
+int walk_clofs;		//walk cluster offset
+int walk_clcur;		//walk cluster current
 };
 
 

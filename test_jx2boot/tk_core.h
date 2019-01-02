@@ -2,7 +2,7 @@
 #if defined(ARCH_SH4) || defined(ARCH_BJX1) || defined(ARCH_BJX1_64)
 
 #ifndef ARCH_HAS_FPU
-#define ARCH_HAS_FPU
+// #define ARCH_HAS_FPU
 #endif
 
 #ifndef ARCH_HAS_MMU

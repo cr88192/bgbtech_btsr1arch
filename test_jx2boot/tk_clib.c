@@ -8,6 +8,17 @@ int strcmp(char *s1, char *s2)
 	return(0);
 }
 
+int strlen(char *str)
+{
+	char *s;
+	int i;
+	
+	s=str;
+	while(*s)s++;
+	i=s-str;
+	return(i);
+}
+
 void *memset(void *dest, int val, size_t size)
 {
 	byte *ct, *cte;
@@ -197,6 +208,10 @@ void *malloc(int sz)
 	sz=(sz+15)&(~15);
 	ptr=malloc_heaprov;
 	malloc_heaprov+=sz;
+	
+//	__debugbreak();
+	
+//	printf("malloc: Ptr=%08X Sz=%08X Rov=%08X\n", ptr, sz, malloc_heaprov);
 	
 //	ptr=TKMM_Malloc(sz);
 //	memset(ptr, 0, sz);

@@ -259,6 +259,8 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr)
 	
 	h=(addr>>4)&63;
 
+	ctx->mem_cyc+=3;
+
 #if 0
 	if((addr>>4)==ctx->mem_l1h4k[(h<<2)|0])
 		return(0);
@@ -299,6 +301,7 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr)
 	}
 
 	ctx->miss_cyc+=3;
+	ctx->miss_cyc_l1+=3;
 	if(ctx->tr_cur)
 		ctx->tr_cur->acc_pencyc+=3;
 
@@ -310,7 +313,9 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr)
 	/* L2 Cache */
 
 //	h=(addr>>4)&1023;
-	h=(addr>>4)&2047;
+//	h=(addr>>4)&2047;
+	h=(addr>>4)&4095;
+//	h=(addr>>4)&8191;
 
 	if((addr>>4)==ctx->mem_l2h32k[(h<<1)|0])
 		return(0);
@@ -330,6 +335,7 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr)
 	/* Main RAM */
 
 	ctx->miss_cyc+=24;
+	ctx->miss_cyc_l2+=24;
 	if(ctx->tr_cur)
 		ctx->tr_cur->acc_pencyc+=24;
 #endif
