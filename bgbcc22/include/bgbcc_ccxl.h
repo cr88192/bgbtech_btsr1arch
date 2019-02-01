@@ -31,8 +31,13 @@
 #define CCXL_TY_FATP_AREF		0x19		//Fat Pointer, Array Reference
 #define CCXL_TY_FATP_VMTH		0x1A		//Fat Pointer, Virtual Method
 
+#define CCXL_TY_VARSTRING		0x1B		//Variant String
+#define CCXL_TY_VAROBJECT		0x1C		//Variant Object
+
 #define CCXL_VTY_PCHAR			0x00001008	//'char *'
 #define CCXL_VTY_PWCHAR			0x0000100B	//'wchar_t *'
+
+#define CCXL_VTY_NULL			0x0000100F	//Null Virtual Type
 
 
 //Basic Type
@@ -56,6 +61,7 @@
 
 #define CCXL_TYB1_PTRIDX7		0x00007000	//pointer level
 #define CCXL_TYB1_PTRIDX8		0x00008000	//pointer level
+#define CCXL_TYB1_PTRIDXE		0x0000E000	//pointer level
 
 #define CCXL_TY_PN4_BASE	0x0		//pointer level (T)
 #define CCXL_TY_PN4_P1		0x1		//pointer level (T*)
@@ -104,8 +110,8 @@
 #define CCXL_REGTY_LOCAL			0x0200000000000000ULL
 #define CCXL_REGTY_GLOBAL			0x0300000000000000ULL
 
-#define CCXL_REGTY_IMM_INT			0x0400000000000000ULL
-#define CCXL_REGTY_IMM_LONG			0x0500000000000000ULL
+#define CCXL_REGTY_IMM_INT			0x0400000000000000ULL	//small integer
+#define CCXL_REGTY_IMM_LONG			0x0500000000000000ULL	//sign ext, 56 bit
 #define CCXL_REGTY_IMM_FLOAT		0x0600000000000000ULL
 #define CCXL_REGTY_IMM_DOUBLE		0x0700000000000000ULL
 #define CCXL_REGTY_IMM_STRING		0x0800000000000000ULL
@@ -139,7 +145,20 @@
 
 #define CCXL_REGINT_STMASK		0x00F0000000000000ULL	//int subtype
 #define CCXL_REGINT_ST_I		0x0000000000000000ULL	//signed int
-#define CCXL_REGINT_ST_UI		0x0010000000000000ULL	//signed int
+#define CCXL_REGINT_ST_UI		0x0010000000000000ULL	//unsigned int
+#define CCXL_REGINT_ST_L		0x0020000000000000ULL	//signed long
+#define CCXL_REGINT_ST_UL		0x0030000000000000ULL	//unsigned long
+#define CCXL_REGINT_ST_SB		0x0040000000000000ULL	//signed long
+#define CCXL_REGINT_ST_UB		0x0050000000000000ULL	//unsigned long
+#define CCXL_REGINT_ST_SS		0x0060000000000000ULL	//signed long
+#define CCXL_REGINT_ST_US		0x0070000000000000ULL	//unsigned long
+#define CCXL_REGINT_ST_OF1		0x0080000000000000ULL	//overflow 1
+
+#define CCXL_REGGBLA_STMASK		0x00F0000000000000ULL	//int subtype
+#define CCXL_REGGBLA_ST_Z		0x0000000000000000ULL	//basic address
+#define CCXL_REGGBLA_ST_D		0x0010000000000000ULL	//displacement
+
+#define CCXL_REGGBLA_DZMASK		0x000FFFFF00000000ULL	//displacement mask
 
 #define CCXL_REGINTPL_MASK		0x000000000FFFFFFFULL	//LVT (low half index)
 #define CCXL_REGINTPH_MASK		0x00FFFFFFF0000000ULL	//LVT (high half index)
@@ -153,6 +172,8 @@
 #define CCXL_REGLONG2_MASK		0x1FFFFFFFFFFFFFFFULL	//long2/double2
 
 #define CCXL_REGSP_THIS			0x1000000000000FFFULL	//'this'
+// #define CCXL_REGSP_NULL		0x030000100F000000ULL	//null
+#define CCXL_REGSP_NULL			0x0480100F00000000ULL	//null
 
 #define CCXL_LITID_STRUCT		1
 #define CCXL_LITID_UNION		2
@@ -180,6 +201,10 @@
 #define CCXL_LITID_EXPLIST		23			//DLL export list
 
 #define CCXL_LITID_SUPERCLZ		24			//superclass list
+
+#define CCXL_LITID_RAWSIG		25			//raw signature
+#define CCXL_LITID_ENUMDEF		26			//enum object
+#define CCXL_LITID_NAMESPACE	27			//package/namespace
 
 #define CCXL_STATUS_YES					1
 #define CCXL_STATUS_NO					0
@@ -214,6 +239,8 @@
 #define CCXL_CMD_MANIFOBJ				0x8012
 #define CCXL_CMD_TYPEDEF				0x8013
 #define CCXL_CMD_JMPTAB					0x8014
+#define CCXL_CMD_METHODPROTO			0x8015
+#define CCXL_CMD_ENUMDEF				0x8016
 
 #define CCXL_ATTR_SIG					0x9001
 #define CCXL_ATTR_FLAGS					0x9002
@@ -221,6 +248,7 @@
 #define CCXL_ATTR_SRCTOK				0x9004
 #define CCXL_ATTR_NAME					0x9005
 #define CCXL_ATTR_TUIDX					0x9006
+#define CCXL_ATTR_THISNAME				0x9007
 
 #define CCXL_TERR_GENERIC				0xA000
 #define CCXL_TERR_STACK_OVERFLOW		0xA001
@@ -318,7 +346,22 @@
 #define CCXL_LBL_GENSYM2BASE		0xC00000	//gensyms (backend, stable)
 #define CCXL_LBL_GENSYM2BASE2		0xE00000	//gensyms (backend, temp)
 
+#define CCXL_LBL_SPMASK				0xFF0000	//mask
+
+#define CCXL_LBL_ABS16UP			0x7C0000	//16 bit, z-ext, sz_ptr
+#define CCXL_LBL_ABS16NP			0x7D0000	//16 bit, n-ext, sz_ptr
+#define CCXL_LBL_ABS16S				0x7E0000	//16 bit, sign-ext, sz_byte
+
 #define CCXL_LBL_ARCHBASE			0x7F0000	//arch-specific special symbols
+
+#define CCXL_FID_BASEMASK			0x00FFFFFF	//FieldID, Base Index
+#define CCXL_FID_TAGMASK			0xFF000000	//FieldID, Tag
+
+#define CCXL_FID_TAG_FIELD			0x00000000	//FieldID, Tag
+#define CCXL_FID_TAG_ARGS			0x01000000	//FieldID, Tag
+#define CCXL_FID_TAG_LOCALS			0x02000000	//FieldID, Tag
+#define CCXL_FID_TAG_REGS			0x03000000	//FieldID, Tag
+#define CCXL_FID_TAG_STATICS		0x04000000	//FieldID, Tag
 
 
 typedef struct { u64 val; } ccxl_register;
@@ -370,6 +413,7 @@ char *name;				//assigned variable name
 char *qname;			//assigned qualified name
 char *sig;				//type signature
 char *flagstr;			//flag string
+char *thisstr;			//this string
 ccxl_type type;			//assigned type
 byte ucnt;				//use count
 byte type_zb;			//type Z base
@@ -396,12 +440,14 @@ BGBCC_CCXL_RegisterInfo *defp;		//define parent
 BGBCC_CCXL_RegisterInfo **fields;	//struct/class/union fields
 BGBCC_CCXL_RegisterInfo **args;		//function arguments, superclass list
 BGBCC_CCXL_RegisterInfo **locals;	//function locals
-BGBCC_CCXL_RegisterInfo **regs;		//function temporaries
+BGBCC_CCXL_RegisterInfo **regs;		//function temporaries, class methods
+BGBCC_CCXL_RegisterInfo **statics;	//static variables (function and class)
 // u32 *regs_tyseq;
 int n_fields, m_fields;
 int n_args, m_args;
 int n_locals, m_locals;
 int n_regs, m_regs;
+int n_statics, m_statics;
 int n_cargs;		//max number of called-function arguments
 int n_eargs;		//end args
 int n_vargs;		//virtual args
@@ -472,6 +518,7 @@ bccx_cxstate bgbcc_rcst_arch;
 bccx_cxstate bgbcc_rcst_args;
 bccx_cxstate bgbcc_rcst_argdecls;
 bccx_cxstate bgbcc_rcst_array;
+bccx_cxstate bgbcc_rcst_arrayq;
 bccx_cxstate bgbcc_rcst_asm_blob;
 bccx_cxstate bgbcc_rcst_assign;
 bccx_cxstate bgbcc_rcst_attr;
@@ -489,6 +536,7 @@ bccx_cxstate bgbcc_rcst_break;
 bccx_cxstate bgbcc_rcst_case;
 bccx_cxstate bgbcc_rcst_case_default;
 bccx_cxstate bgbcc_rcst_cast;
+bccx_cxstate bgbcc_rcst_catch;
 bccx_cxstate bgbcc_rcst_charstring;
 bccx_cxstate bgbcc_rcst_class;
 bccx_cxstate bgbcc_rcst_classdef;
@@ -513,6 +561,7 @@ bccx_cxstate bgbcc_rcst_enumdef;
 bccx_cxstate bgbcc_rcst_expr;
 bccx_cxstate bgbcc_rcst_extern2_lang;
 
+bccx_cxstate bgbcc_rcst_finally;
 bccx_cxstate bgbcc_rcst_flags;
 bccx_cxstate bgbcc_rcst_float128;
 bccx_cxstate bgbcc_rcst_fn;
@@ -525,6 +574,7 @@ bccx_cxstate bgbcc_rcst_gcc_asm;
 bccx_cxstate bgbcc_rcst_get;
 bccx_cxstate bgbcc_rcst_getindex;
 bccx_cxstate bgbcc_rcst_goto;
+bccx_cxstate bgbcc_rcst_goto_case;
 
 bccx_cxstate bgbcc_rcst_if;
 bccx_cxstate bgbcc_rcst_imag;
@@ -553,6 +603,7 @@ bccx_cxstate bgbcc_rcst_msvc_asm;
 bccx_cxstate bgbcc_rcst_name;
 bccx_cxstate bgbcc_rcst_namespace;
 bccx_cxstate bgbcc_rcst_new;
+bccx_cxstate bgbcc_rcst_nspath;
 bccx_cxstate bgbcc_rcst_null_statement;
 
 bccx_cxstate bgbcc_rcst_objref;
@@ -605,6 +656,7 @@ bccx_cxstate bgbcc_rcst_value;
 bccx_cxstate bgbcc_rcst_value_hi;
 bccx_cxstate bgbcc_rcst_value_lo;
 bccx_cxstate bgbcc_rcst_var;
+bccx_cxstate bgbcc_rcst_var_init;
 bccx_cxstate bgbcc_rcst_vars;
 bccx_cxstate bgbcc_rcst_vector_ref;
 

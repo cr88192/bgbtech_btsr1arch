@@ -4,7 +4,7 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 	int rn_dfl, rm_dfl, ro_dfl;
 	int disp5, eq, eo;
 //	int imm8u, imm8n;
-//	int imm10u, imm10n;
+	int imm10u, imm10n;
 	int imm9u, imm9n;
 	int ret;
 
@@ -33,6 +33,9 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 
 	imm9u=(opw2&511);
 	imm9n=(opw2&511)|((-1)<<9);
+
+	imm10u=(opw2&1023);
+	imm10n=(opw2&1023)|((-1)<<10);
 
 	op->rn=rn_dfl;
 	op->rm=rm_dfl;
@@ -120,6 +123,85 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 		{
 			op->nmid=BJX2_NMID_SHLDQ;
 			op->Run=BJX2_Op_SHLDQ_RegImmReg;
+		}
+		break;
+
+	case 0xC:	/* F2nz_Cejj */
+		op->imm=imm10u;
+		if(opw1&1)
+			op->imm=imm10n;
+
+		switch(opw1&0xE)
+		{
+		case 0x0:
+			op->nmid=BJX2_NMID_LDI;
+			op->fmid=BJX2_FMID_IMMREG;
+			op->Run=BJX2_Op_MOV_ImmReg;
+			break;
+
+		case 0x4:
+			op->nmid=BJX2_NMID_TST;
+			op->fmid=BJX2_FMID_IMMREG;
+			op->Run=BJX2_Op_TST_ImmReg;
+			if(eq)
+			{
+				op->nmid=BJX2_NMID_TSTQ;
+				op->Run=BJX2_Op_TSTQ_ImmReg;
+			}
+			break;
+		case 0x6:
+			op->nmid=BJX2_NMID_CMPHS;
+			op->fmid=BJX2_FMID_IMMREG;
+			op->Run=BJX2_Op_CMPHS_ImmReg;
+			if(eq)
+			{
+				op->nmid=BJX2_NMID_CMPQHS;
+				op->Run=BJX2_Op_CMPQHS_ImmReg;
+			}
+			break;
+		case 0x8:
+			op->nmid=BJX2_NMID_CMPHI;
+			op->fmid=BJX2_FMID_IMMREG;
+			op->Run=BJX2_Op_CMPHI_ImmReg;
+			if(eq)
+			{
+				op->nmid=BJX2_NMID_CMPQHI;
+				op->Run=BJX2_Op_CMPQHI_ImmReg;
+			}
+			break;
+		case 0xA:
+			op->nmid=BJX2_NMID_CMPGE;
+			op->fmid=BJX2_FMID_IMMREG;
+			op->Run=BJX2_Op_CMPGE_ImmReg;
+			if(eq)
+			{
+				op->nmid=BJX2_NMID_CMPQGE;
+				op->Run=BJX2_Op_CMPQGE_ImmReg;
+			}
+			break;
+		case 0xC:
+			op->nmid=BJX2_NMID_CMPEQ;
+			op->fmid=BJX2_FMID_IMMREG;
+			op->Run=BJX2_Op_CMPEQ_ImmReg;
+			if(eq)
+			{
+				op->nmid=BJX2_NMID_CMPQEQ;
+				op->Run=BJX2_Op_CMPQEQ_ImmReg;
+			}
+			break;
+		case 0xE:
+			op->nmid=BJX2_NMID_CMPGT;
+			op->fmid=BJX2_FMID_IMMREG;
+			op->Run=BJX2_Op_CMPGT_ImmReg;
+			if(eq)
+			{
+				op->nmid=BJX2_NMID_CMPQGT;
+				op->Run=BJX2_Op_CMPQGT_ImmReg;
+			}
+			break;
+			
+		default:
+			break;
 		}
 		break;
 

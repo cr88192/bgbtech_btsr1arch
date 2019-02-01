@@ -86,6 +86,12 @@ BJX2_Trace *BJX2_GetTraceForAddr(BJX2_Context *ctx, bjx2_addr addr)
 #endif
 
 #if 1
+	cur=ctx->prttr;
+	if(cur && (cur->addr==addr))
+		return(cur);
+#endif
+
+#if 1
 	h=((addr*65521)>>16)&1023;
 
 #if 1
@@ -366,7 +372,15 @@ int BJX2_FaultEnterInterrupt(BJX2_Context *ctx)
 	
 	vbr=ctx->regs[BJX2_REG_VBR];
 	exsr=ctx->regs[BJX2_REG_EXSR];
-	if((exsr&0xF000)==0xC000)
+	if((exsr&0xF000)==0xE000)
+	{
+		pc1=vbr+0x20;
+	}else
+		if((exsr&0xF000)==0xA000)
+	{
+		pc1=vbr+0x18;
+	}else
+		if((exsr&0xF000)==0xC000)
 	{
 		pc1=vbr+0x10;
 	}else
@@ -879,12 +893,27 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 				BJX2_DbgPrintNameForReg(ctx, op->rn));
 		}
 		break;
+#if 0
 	case BJX2_FMID_IMMXREG:
 		li=((u32)op->imm)|
 			(((((u32)op->imm)>>31)-1LL)<<32);
 		printf("#0x%llX, %s", li,
 			BJX2_DbgPrintNameForReg(ctx, op->rn));
 		break;
+#endif
+
+#if 1
+	case BJX2_FMID_IMMZREG:
+		li=((u32)op->imm);
+		printf("#0x%llX, %s", li,
+			BJX2_DbgPrintNameForReg(ctx, op->rn));
+		break;
+	case BJX2_FMID_IMMNREG:
+		li=((u32)op->imm)|((-1LL)<<32);
+		printf("#0x%llX, %s", li,
+			BJX2_DbgPrintNameForReg(ctx, op->rn));
+		break;
+#endif
 
 	case BJX2_FMID_LDDRABSREG:
 		printf("(DLR), %s",
@@ -1286,17 +1315,23 @@ int BJX2_DbgDump(BJX2_Context *ctx)
 	bjx2_addr pc;
 	int i;
 
-	for(i=0; i<32; i++)
+//	if(!ctx->use_jit)
+	if(ctx->pclogrov<128)
 	{
-		pc=ctx->pclog[(ctx->pclogrov-32+i)&63];
-		cur=BJX2_GetTraceForAddr(ctx, pc);
-		BJX2_DbgPrintTrace(ctx, cur);
+		for(i=0; i<32; i++)
+		{
+			pc=ctx->pclog[(ctx->pclogrov-32+i)&63];
+			cur=BJX2_GetTraceForAddr(ctx, pc);
+			BJX2_DbgPrintTrace(ctx, cur);
+		}
 	}
 
 	BJX2_DbgPrintRegs(ctx);
 	BJX2_DbgPrintFpRegs(ctx);
 	
-	if(!ctx->status)
+//		if(ctx->use_jit)
+
+	if(!ctx->status && !ctx->use_jit)
 	{
 		BJX2_DbgTopTraces(ctx);
 	}
@@ -1375,26 +1410,34 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 		cn0=cn1;
 		
 		no=0;
-		while(cur && (cn1>0))
+		
+//		if(ctx->tgt_mhz>300)
+//		if(ctx->use_jit)
+		if(0)
 		{
-#if 0
-			if(cur && (cur->addr!=ctx->regs[BJX2_REG_PC]))
+			ctx->pclogrov=128;
+			while(cur && (cn1>0))
 			{
-				ctx->status=BJX2_FLT_PCMISH;
-//				__debugbreak();
-				break;
+				nc=cur->n_cyc;
+				cn1-=nc;
+				no+=cur->n_ops;
+				cur=cur->Run(ctx, cur);
 			}
-#endif
+		}
+		else
+		{
+			while(cur && (cn1>0))
+			{
+				ctx->pclog[ctx->pclogrov]=cur->addr;
+				ctx->pclogrov=
+					(ctx->pclogrov+1)&63;
+		//		BJX2_DbgPrintTrace(ctx, cur);
+				nc=cur->n_cyc;
+				cn1-=nc;
+				no+=cur->n_ops;
 
-			ctx->pclog[ctx->pclogrov]=cur->addr;
-			ctx->pclogrov=
-				(ctx->pclogrov+1)&63;
-	//		BJX2_DbgPrintTrace(ctx, cur);
-			nc=cur->n_cyc;
-			cn1-=nc;
-			no+=cur->n_ops;
-
-			cur=cur->Run(ctx, cur);
+				cur=cur->Run(ctx, cur);
+			}
 		}
 
 #if 0

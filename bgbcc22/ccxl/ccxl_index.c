@@ -72,6 +72,27 @@ ccxl_label BGBCC_CCXL_LabelFromName(BGBCC_TransState *ctx, char *name)
 }
 #endif
 
+BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_GetLiteralRawSig(
+	BGBCC_TransState *ctx, char *sig)
+{
+	BGBCC_CCXL_LiteralInfo *obj;
+	int i;
+	
+	for(i=1; i<ctx->n_literals; i++)
+	{
+		obj=ctx->literals[i];
+		if(obj->littype!=CCXL_LITID_RAWSIG)
+			continue;
+		if(!strcmp(obj->sig, sig))
+			return(obj);
+	}
+	
+	obj=BGBCC_CCXL_AllocLiteral(ctx);
+	obj->littype=CCXL_LITID_RAWSIG;
+	obj->sig=bgbcc_strdup(sig);
+	BGBCC_CCXL_AddLiteral(ctx, obj);
+	return(obj);
+}
 
 void BGBCC_CCXL_CompileBreak(BGBCC_TransState *ctx)
 {

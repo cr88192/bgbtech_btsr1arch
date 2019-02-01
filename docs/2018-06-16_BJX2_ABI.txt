@@ -78,12 +78,14 @@ C Style Vararg:
 BS2 Style Vararg:
 * The remaining arguments will be folded off into an array.
 * All of the variable arguments will be converted to Variant.
-* This array will be passed to the called function as a Fat Pointer.
+* This array will be passed to the called function as a Tag Array.
 
 
 === 32-bit Sub ABI ===
 
 Is basically the same as the 64-bit ABI, except that 'long' and pointer values are reduced to 32 bits. The address space is nominally zero-extended, and maps to the low 4GB of the Userland space.
+
+Tagged Pointer types will remain as 64 bit.
 
 
 === PBO Sub ABI ===
@@ -106,11 +108,12 @@ General:
 * Special fixups may be used during program loading.
 * Will reside within ".tlsvar"
 
+
 === Fat Pointers ===
 
 In several cases, Fat Pointers will be used.
 * They will be 16 bytes, and passed as a register pair.
-* Will be used for Array References, and for Virtual Method Pointers.
+* May be used for Array References, and for Virtual Method Pointers.
 
 Method pointers will have the first register point to the method, and the second register to its associated 'this'.
 
@@ -121,61 +124,21 @@ The base-offset and limit will be expressed in terms of the element size of the 
 
 The bounds of multidimensional arrays may not be expressed directly in this scheme, and as such the bounds given for a multidimensional array will cover the entire space used by the array.
 
-
-=== Class Layout ===
-
-Classes will be divided into several sub-categories.
-* POD ("struct")
-** Do not contain any virtual methods.
-** May not be derived from a parent class nor implement interfaces.
-** Will be laid out equivalently to a C struct.
-* Non-POD, Single Inheritance
-** May have virtual methods.
-** Will have only a single (non-interface) parent class.
-* Non-POD, Multiple Inheritance
-** May have multiple (non-interface) parent classes.
-
-The POD case will be informally referred to as a "struct" case, and will apply to both the C and BS2 struct types. It will also apply to C++ classes which qualify as POD.
-
-The Non-POD case will be the "class" case, and will apply to all classes in BS2, as well as to C++ classes which don't qualify as POD.
+Array Refs may also use Tagged Pointers (Tag Array).
 
 
-Non-POD classes will have a certain layout:
-* VTable Pointer for the Current Class
-** SI: Members for the parent classes.
-** MI (?): An inlined instance of each parent class in declared order.
-* Data Fields for the current class.
-** Fields in a child class will be appended following those of the parent class.
-* Interface VTable Pointers.
-** The start of the first interface pointer will follow the data area.
-** This point may move between parent and child classes.
-** A child class will always have the same interfaces in the same order as the parent class, followed by any new interfaces.
-** (Also possible): Treat interface pointers like fields?
+=== System Calls ===
 
-A class will be considered as an interface if:
-* It is declared as such (BS2).
-* It is an abstract class with no data members (C++).
+Will be handled by generating a SysCall exception, with the EXSR vector normally providing the function number.
+
+Otherwise, the behavior of a SysCall will (unlike a normal interrupt) follow behaviors typical of the C ABI, such as treating scratch registers as scratch registers.
+
+The interpretation of function numbers will be partly putside the scope of this spec (though, the assumption is that it would likely be accomplished on the back end via a mask and a jump table or similar).
 
 
-In the case of a SI class, only a single VTable pointer will be used, which will cover both the current class and any superclasses. In effect, each subclass will append onto the VTable and data members of the superclass.
+== Extended ABI ==
 
-In the case of an MI class, each superclass will have its own VTable pointer independent of that of the current class.
-
-(Change): Assume only SI case exists for now. The C++ (subset) impl in BGBCC probably wont support MI.
-
-
-VTable Layout:
-* Pointer 0: ClassInfo Pointer
-* Pointer 1: Displacement from start of the base object
-* Pointer 2: Displacement from the base object to the first interface pointer.
-* Pointer 3: Reserved
-* Pointer 4: Index of first virtual method for class.
-
-The structure for an Interface VTable will match that of a class VTable, but will give a list of methods matching the layout for the Interface. These will generally be duplicates for those given in the main class.
-
-The 'this' passed to a called interface method will be adjusted by the caller to point to the base-class.
-
-Dynamic Classes will have a pointer to the dynamic storage of the object. This will be located at the start of the data area for the first class in the heirarchy to be marked as dynamic.
+This will be things specific to C++, C#, and BGBScript2 (BS2) as implemented by BGBCC. Other compilers or implementations may differ here.
 
 
 
@@ -188,6 +151,9 @@ The first stage will encode a name:
 * The signature is appended directly (if it starts with '(');
 * The signature will be appended after a colon (otherwise).
 ** For normal variables or fields, the signature will be absent.
+* Sequence numbers for identifiers may be appended following a '!'
+** These will be zero-based and expressed in decimal.
+** If relevant, they will precede the signature.
 
 
 Second stage may (optionally) transform it to a more limited character set.
@@ -213,7 +179,7 @@ Some special cases with second-stage encoding:
 ** If an escape occurs directly following the prefix, its "_" will be omitted.
 
 
-This second-stage scheme may be used for ASM symbols as well as for imports/exports. It is trivial to reverse into the first-stage form.
+This second-stage scheme may be used for ASM symbols as well as for imports/exports. It is trivial to reverse into the first-stage form. The first stage form will be canonical within BGBCC.
 
 Names which are unqualified and do not have a signature appended (such as normal C symbols) will not use name mangling.
 
@@ -255,33 +221,33 @@ Expanded Cx Types
 * 'Cb': vec3f (sizeof=16)
 * 'Cc': vec4f (sizeof=16)
 * 'Cd': Complex Double (sizeof=16)
-*  Ce, vec2d (sizeof=16)
-*  Cf, Complex Float (vec2f)
-*  Cg, Complex Float128 (N/A)
-*  Ch, vec3xf (sizeof=16)
-*  Ci, (IsType) SmallInt
-*  Cj, (IsType) SmallFloat
-*  Ck, Complex Float16 (vec2hf) (sizeof=4)
-*  Cl, (IsType) SmallLong
-*  Cm, (IsType) SmallDouble
-*  Cn, keyword (BS2)
-*  Co, Object (Class/Instance)
-*  Cp, MapObj (Dynamic Object)
-*  Cq, Quaternion (vec4f) (sizeof=16)
-*  Cr, Fat Variant (sizeof=16)
-*  Cs, string (BS2)
-*  Ct, symbol (BS2)
-*  Cv, (IsType) null
-*  Cy, Class Reference
-*  Cz, Named Vararg Array (BS2 Style)
+* 'Ce': vec2d (sizeof=16)
+* 'Cf': Complex Float (vec2f)
+* 'Cg': Complex Float128 (N/A)
+* 'Ch': vec3xf (sizeof=16)
+* 'Ci': (IsType) SmallInt
+* 'Cj': (IsType) SmallFloat
+* 'Ck': Complex Float16 (vec2hf) (sizeof=4)
+* 'Cl': (IsType) SmallLong
+* 'Cm': (IsType) SmallDouble
+* 'Cn': keyword (BS2)
+* 'Co': Object (Class/Instance, BS2 / C#)
+* 'Cp': MapObj (Dynamic Object)
+* 'Cq': Quaternion (vec4f) (sizeof=16)
+* 'Cr': Fat Variant (sizeof=16)
+* 'Cs': string (BS2 / C#)
+* 'Ct': symbol (BS2)
+* 'Cv': (IsType) null
+* 'Cy': Class Reference
+* 'Cz': Named Vararg Array (BS2 Style)
 
 Expanded Dx Types
 * 'Da': auto
-*  Db, vec3d (sizeof=32)
-*  Dc, vec4d (sizeof=32)
-*  Dd, decimal64 (resv)
-*  De, decimal128 (resv)
-*  Df, decimal32 (resv)
+* 'Db': vec3d (sizeof=32)
+* 'Dc': vec4d (sizeof=32)
+* 'Dd': decimal64 (resv)
+* 'De': decimal128 (resv)
+* 'Df': decimal32 (resv)
 
 * 'Dz': va_list
 
@@ -293,16 +259,16 @@ Other Types
 * "E..."    : (Reserved)
 * ...
 * "K..."    : (Reserved)
-* "L{name};": Class or Interface (Class Reference)
+* "L{name};": Class or Interface (Tagged Ref)
 * "M..."    : (Reserved)
 * "N..."    : (Reserved)
 * "O..."    : (Reserved)
 * "P{sig}"  : Pointer (Narrow)
-* "Q{sig}"  : Array-Ref (Fat Pointer)
+* "Q{sig}"  : Array-Ref (Tagged Ref)
 * "R{sig}"  : Reference to type.
 * "S..."    : (Reserved)
 * "T..."    : (Reserved)
-* "U{name};": Named Extended Type
+* "U{name};": Named Extended Type (Special)
 * "V{sig}"  : Virtual Pointer (Fat Pointer)
 * "W{sig}"  : Wide Pointer (Fat Pointer)
 * "X{name};": Struct/Union
@@ -320,10 +286,9 @@ For 'A', the "size" for arrays will be encoded as a list of integer values expre
 The choice of 'X' vs 'L' will depend on context:
 * If a class is POD, it will use 'X'.
 * If a class is being passed as a pointer, it will use 'X'.
-* If a Non-POD class by Reference, it will use 'L'.
-* If a Non-POD class by Value, it will use 'L'.
+* If a Non-POD class via a Tagged Reference, it will use 'L'.
 ** A Non-POD class will always be passed by reference at the ABI level.
-** The compiler may elect to implement its own Value-Type semantics.
+** The compiler may itself implement Value-Type semantics if appropriate.
 
 The 'L', 'U', and 'X' types may also be followed by a numeric index without a semicolon terminator. This will be an index into the literal table. An index may be used but it is not required for this table to exist in a binary unless needed for some other reason. The specifics of this table are outside the scope of this specification.
 
@@ -370,28 +335,257 @@ The 'L', 'U', and 'X' types may also be followed by a numeric index without a se
 * U{name};	//named flag
 
 
-=== Variant ===
+=== Class Layout ===
+
+Classes will be divided into several sub-categories.
+* POD ("struct")
+** Do not contain any virtual methods.
+** May not be derived from a parent class nor implement interfaces.
+** Will be laid out equivalently to a C struct.
+* Non-POD, Single Inheritance
+** May have virtual methods.
+** Will have only a single (non-interface) parent class.
+
+The POD case will be informally referred to as a "struct" case, and will apply to both the C and BS2 struct types. It will also apply to C++ classes which qualify as POD. POD will be N/A for BS2 or C# classes.
+
+The Non-POD case will be the "class" case, and will apply to all classes in BS2, as well as to C++ classes which don't qualify as POD types.
+
+The form of C++ variant defined here will not define support for multiple inheritence.
+
+In C++ mode, class pointers will be represented as native pointers.
+In BS2 and C#, the classes will be represented as Tagged References.
+
+
+Non-POD classes will have a certain layout:
+* VTable Pointer for the Current Class
+* A pointer for the Dynamic Object, else Reserved (and set to NULL)
+* Data Fields for the current class.
+* Interface VTable Pointers.
+** Interfaces will follow data fields for a given class.
+
+The contents defined in a child class will be appended following those of the parent class. As such, the physical layout for the parent class is also valid in relation to the child class.
+
+Similarly, the methods for a child class will be appended after those of the parent class, preserving layout.
+
+Interface VTable pointers may end up between the data members of a parent and child class. Each interface will be handled as a bare VTable pointer, with the VTable being used to find the address of the base object.
+
+An interface may not be used as a base class or as a direct superclass, but may only be implemented on behalf of another class. An object may have a null superclass, yet still implement one or more interfaces.
+
+
+A class may be considered as an interface if:
+* It is declared as such (BS2 or C#).
+* It is an abstract class with no data members (C++).
+** It may only contain virtual method prototypes.
+** Method bodies and static members are not allowed.
+
+
+In the case of a SI class, only a single VTable pointer will be used, which will cover both the current class and any superclasses. In effect, each subclass will append onto the VTable and data members of the superclass.
+
+
+VTable Layout:
+* Pointer 0: ClassInfo Pointer
+* Pointer 1: Displacement from start of the base object (Interface)
+* Pointer 2: Reserved
+* Pointer 3: Reserved
+* Pointer 4: Index of first virtual method for class.
+
+The structure for an Interface VTable will match that of a class VTable, but will give a list of methods matching the layout for the Interface. These will generally be duplicates for those given in the main class.
+
+The 'this' passed to a called interface method will be adjusted by the caller to point to the base-class.
+
+Dynamic Classes will have a pointer to the dynamic storage of the object. This will be located at the start of the data area for the first class in the heirarchy to be marked as dynamic.
+
+
+=== Class Info ===
+
+The ClassInfo structure will be partially defined here.
+ClassInfo will be required for objects which are either exported, or may otherwise be subject to dynamic handling (such as by being accessed as a variant).
+
+This structure may be placed into read only memory, and these structures may be extended later.
+
+ClassInfo:
+ ClassInfo {
+   ClassInfo_RVA  self_ptr;
+   String_RVA     qname;
+   ClassInfo_RVA  super;
+   FieldInfo_RVA  fields;
+   FieldInfo_RVA  methods;
+   FieldInfo_RVA  interfaces;
+ }
+
+The self_ptr field will be a pointer for the structure back to itself.
+
+The fields, methods, and interfaces tables will be NULL terminated.
+If absent, these fields will be set to NULL. A list which is empty (but present) will point to a lone NULL pointer.
+
+Fields and methods will be optional, and may be omitted on internal classes if the class is never accessed dynamically. Interfaces will be needed if an object may be dynamically cast to an interface.
+
+
+FieldInfo:
+ FieldInfo {
+   String_RVA name;
+   String_RVA sig;
+   DWORD flags;
+   DWORD offset;
+ }
+
+For interfaces, the FieldInfo is similar, but differs mostly in that name gives the interface QName, and sig gives an interface pointer.
+
+For methods, the basic scheme is similar to fields, except that it will define methods.
+
+The offset is the number of bytes from the start of the object for fields and interfaces. For methods, the offset corresponds to an index relative to the start of the main vtable.
+
+
+== Tagged References ==
+
+Object and Variant will use the same representation, but will differ in their semantics. Class and Interface objects will also use this same representation.
+
 
 Will be a 64-bit tagged type.
 Specifics will depend to some extent on the runtime.
 
-Possible (LSB Tagged):
-* 000: Object Pointer
-** High 16 bits may give additional type info.
-*** High 16 bits of 0000 or FFFF will be considered unknown.
-**** Effectively, a raw pointer of unspecified nature.
-*** Other values will be under the control of the BS2 Runtime.
-* 001: FixLong-A (62-bit Integer Value)
-* 010: Flonum (Double)
-* 011: (Reserved)
-* 100: Pointer (Qualified via a Signature Index)
-* 101: FixLong-A (62-bit Integer Value)
-* 110: (Reserved)
-* 111: (Reserved)
+Current Scheme (4 bit MSB Tag):
+* 0000: Object Pointer / Tagged Object
+* 0001: Sub-Spaces
+** This is subdivied into various spaces between 32 and 56 bits.
+** 10..17: 56-bit (8 spaces)
+** 18..1B: 48-bit (1024 spaces)
+** 1C..1D: 32-bit (16M spaces)
+** 1E..1F: Reserved
+* 001z: Reserved
+* 01zz: FixLong (62 bit)
+* 10zz: Flonum (62 bit)
+** Double shifted right 2 bits.
+* 1100: TagArray
+** Low 48: Array Base Object
+** High 12: Base Offset.
+* 1101: Vec2F (2x Float, 30 bits each)
+* 1110: TypeTag Pointer
+** High 12: Element Type
+* 1111: Raw Pointer
+** Low 48: Address
+** High 12: Reserved
+
+The pointer value from the low 48 bits will be logically sign-extended to 64 bits if expressed as a machine pointer.
+
+
+Fat Variant:
+* Will be 128 bit, with the low 64 bits as in a normal variant.
+* The high 64 bits will depend on the type tag.
 
 Narrower integer values will typically be converted to FixLong.
 
-Flonum will be essentially a Double with the low 3 bits modified.
+If a Fat Pointer or Fat Variant type is coerced into a narrow variant (and can't be represented in the narrower type), effectively it will be passed as a pointer to the Fat Pointer. Similar boxing will be used for any other values which can't fit into the available bits.
 
-If a Fat Pointer type is passed, effectively it will be passes as a pointer to the Fat Pointer. Similar boxing will be used for any other values which can't fit into the available bits.
+
+=== Object Pointer / Tagged Object ===
+
+Tagged Object
+* Low 48=Address
+* High 12=ObjectTag
+
+
+The Object Type Tag (ObjectTag) will be an index into a table which exists at runtime, and as such most of its index values will not be fixed. Instead, object types will be identified via a name.
+
+The tag value of 0 will be special, and reserved for a NULL tag. Object with a null tag will have an unknown type, and this type will be regarded as functionally analogous to a "void *" pointer.
+
+
+Object type names which begin with a symbol will be reserved for special or implementation defined types. Names beginning with a lower or upper case letter will be used for application types, and will generally be in the form of QNames.
+
+Names beginning with an underscore and an upper case letter are reserved for built-in types. Names beginning with two underscores will be used for implementation specific tags.
+
+Other names beginning with an underscore may be used for application types.
+
+
+ABI Defined Types:
+* "_ClassPtr": Class Pointer (Non-POD, C++ Style)
+* "_ClassObj": Class Object Instance (BS2 or C# style)
+* "_ClassInfo": Class Info
+* "_TagArray": Tag Array (Base)
+** By default, TagArray is to use the TagArray tag (positive case).
+** If referenced by an Object Pointer tag, the offset will be 0.
+
+Object types will use the ClassInfo header to manage class types.
+
+
+Some Primitive types may also be expressed:
+* "_Byte": Unsigned Byte
+* "_SByte": Signed Byte
+* "_Short": Int16
+* "_UShort": UInt16
+* "_Int": Int32
+* "_UInt": UInt32
+* "_Long": Int64
+* "_ULong": UInt64
+* "_Float": Float32
+* "_Double": Double
+* "_Variant": Variant (64 bit)
+* etc.
+
+Primitive types will not normally be used for Object Pointer tags, but are intended mostly for use by TagArray. If they are used for an Object Pointer, they will be interpreted as a memory object holding a single element of a given type (or a "boxed type"). These may be used for values or types which can't be represented directly in a tagged reference being coerced to object variant.
+
+
+=== Tag Array ===
+
+Tag Array will be used for arrays referenced via Tagged References.
+
+The normal layout for a TagArray will have a 48 bit base pointer and a 12 bit index base offset. This base offset will be added to the index given on access to produce the index used to access the array.
+
+Accesses via a TagArray will normally be bounds checked.
+
+An implementation may be allowed to skip bounds checks, or to assume that the base offset is zero, as appropriate for the source language. These may be useful for performance reasons.
+
+
+TagArray:
+<pre>
+ TagArray_Pos {
+   s32 size;		//number of array elements (Positive).
+   u16 type;		//element type tag
+   u16 resv;		//reserved, Must Be Zero
+   //raw data elements follow
+ }
+ 
+ TagArray_Neg {
+   s32 size;		//number of array elements (Negative).
+   s32 base;		//base offset (Positive)
+   u64 data_ty;		//Pointer to data area (and type)
+ }
+</pre>
+
+In the positive case, the tagged-reference provides the complete offset, which is limited to 12 bits (or 4095 elements). If referenced by an Object Pointer reference, the positive case will assume a base offset of zero.
+
+The negative case will use a 32-bit base offset provided in the header.
+The type tag will be located in the high 16 bits of the pointer.
+
+The maximum size of a tagged array may depend on the implementation, bigger arrays will likely require the use of raw pointers or some other way of expressing the array.
+
+
+The type tag will contain a Object Type Tag located in the low 12 bits. The high bits will contain an indirection level.
+
+Indirection Level:
+* 0: Basic Type
+* 1..7: Between 1 and 7 pointer levels.
+* 8: Array of Pointers or Overflow
+* 9..F: Between 1 and 7 array levels.
+
+
+Tag Array, Fat Variant:
+* Bits  47..  0: Data Pointer
+* Bits  59.. 48: Object Type Tag
+* Bits  63.. 60: Tag Array Tag
+* Bits  95.. 64: Array Size (Positive)
+* Bits 123.. 96: Base Offset (28 bit unsigned)
+* Bits 127..124: Indirection Level
+
+
+=== Type Tag Pointer ===
+
+Will consist of a pointer with a 4 bit indirection level, and 8 bits for the base type.
+
+The base type will be limited to primitive types and a limited selection of registered 'struct' types (POD Only). This is mostly intended for being able to express C-style pointers coerced over to variant, but should not be used much otherwise.
+
+The types will use a separate table from that used by the object tag space.
+Typed Tag Pointers are not to be used for normal object types.
+
+Note that C++ style classes coerced over to "object" or "variant" will instead be expressed via a Tagged Object.
 

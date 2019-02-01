@@ -249,6 +249,16 @@ BCCX_Node *BGBCP_Statement(BGBCP_ParseState *ctx, char **str)
 	if(!bgbcp_strcmp4(b, "goto"))
 	{
 		s=BGBCP_Token2(s, b2, &ty2, ctx->lang);
+
+		if(!bgbcp_strcmp4(b2, "case"))
+		{
+			n1=BGBCP_Expression(ctx, &s);
+			n=BCCX_NewCst1(&bgbcc_rcst_goto_case, "goto_case",
+				BCCX_NewCst1V(&bgbcc_rcst_value, "value", n1));
+			*str=s;
+			return(n);
+		}
+
 //		n=BCCX_NewCst1(&bgbcc_rcst_goto, "goto", BCCX_NewText(b2));
 		n=BCCX_NewCst(&bgbcc_rcst_goto, "goto");
 		BCCX_SetCst(n, &bgbcc_rcst_name, "name", b2);
@@ -271,6 +281,21 @@ BCCX_Node *BGBCP_Statement(BGBCP_ParseState *ctx, char **str)
 		return(n);
 	}
 
+	if((ctx->lang==BGBCC_LANG_CPP) ||
+		(ctx->lang==BGBCC_LANG_CS) ||
+		(ctx->lang==BGBCC_LANG_CX) ||
+		(ctx->lang==BGBCC_LANG_JAVA) ||
+		(ctx->lang==BGBCC_LANG_BS2))
+	{
+		if(!bgbcp_strcmp5(b, "throw"))
+		{
+			n1=BGBCP_Expression(ctx, &s);
+			n=BCCX_NewCst1(&bgbcc_rcst_throw, "throw",
+				BCCX_NewCst1V(&bgbcc_rcst_value, "value", n1));
+			*str=s;
+			return(n);
+		}
+	}
 
 	s=*str;
 	s=BGBCP_EatWhite(s);
@@ -381,6 +406,8 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 	char *s, *t, *s0, *s1, *s2;
 	int ty, ty2;
 	BCCX_Node *n, *n1, *n2, *n3, *n4;
+	int ocnsi;
+	int is_cpp_cx, is_c;
 	int i;
 
 	s=*str;
@@ -500,10 +527,20 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 			s2=BGBCP_Token(s2, b2, &ty);	//
 
 			if(!bgbcp_strcmp1(b, ";"))
-				{ n1=NULL; }
+			{
+				n1=NULL;
+				s=BGBCP_EatSemicolonRequired(ctx, s);
+			}
 			else
-				{ n1=BGBCP_Expression2(ctx, &s); }
-			s=BGBCP_EatSemicolonRequired(ctx, s);
+			{
+				n1=BGBCP_Definition(ctx, &s);
+			
+				if(!n1)
+				{
+					n1=BGBCP_Expression2(ctx, &s);
+					s=BGBCP_EatSemicolonRequired(ctx, s);
+				}
+			}
 
 			s2=BGBCP_Token2(s, b, &ty, ctx->lang);
 			if(!bgbcp_strcmp1(b, ";"))
@@ -651,11 +688,87 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 			}
 		}
 
-		if((ctx->lang==BGBCC_LANG_CPP) ||
-			(ctx->lang==BGBCC_LANG_CS) ||
-			(ctx->lang==BGBCC_LANG_CX))
+		if(ctx->lang==BGBCC_LANG_CS)
 		{
-			if(!bgbcp_strcmp(b, "using"))
+			if(!bgbcp_strcmp(b, "get") && !bgbcp_strcmp1(b2, "{"))
+			{
+				n1=BGBCP_BlockStatement2(ctx, &s);
+				n2=BCCX_NewCst1V(&bgbcc_rcst_body, "body", n1);
+				n=BCCX_NewCst1(&bgbcc_rcst_get, "get", n2);
+				*str=s;
+				return(n);
+			}
+
+			if(!bgbcp_strcmp(b, "set") && !bgbcp_strcmp1(b2, "{"))
+			{
+				n1=BGBCP_BlockStatement2(ctx, &s);
+				n2=BCCX_NewCst1V(&bgbcc_rcst_body, "body", n1);
+				n=BCCX_NewCst1(&bgbcc_rcst_set, "set", n2);
+				*str=s;
+				return(n);
+			}
+		}
+
+		if(	(ctx->lang==BGBCC_LANG_CS) ||
+			(ctx->lang==BGBCC_LANG_BS2) )
+		{
+			if(!bgbcp_strcmp(b, "try"))
+			{
+				n1=BGBCP_BlockStatement2(ctx, &s);
+				n2=BCCX_NewCst1V(&bgbcc_rcst_body, "body", n1);
+				n=BCCX_NewCst1(&bgbcc_rcst_try_catch, "try_catch", n2);
+
+				s1=BGBCP_Token2(s, b2, &ty2, ctx->lang);
+				if(!bgbcp_strcmp(b2, "catch"))
+				{
+					s=s1;
+
+					n1=NULL;
+
+					BGBCP_Token(s, b, &ty);
+					if(!bgbcp_strcmp1(b, "("))
+					{
+						s=BGBCP_Token(s, b, &ty); //'('
+						n1=BGBCP_FunArgs(ctx, &s);
+						n1=BCCX_NewCst1V(&bgbcc_rcst_args, "args", n1);
+					}
+
+					n2=BGBCP_BlockStatement2(ctx, &s);
+					n2=BCCX_NewCst1V(&bgbcc_rcst_body, "body", n2);
+
+					n1=BCCX_NewCst2(&bgbcc_rcst_catch, "catch", n1, n2);
+					BCCX_Add(n, n1);
+
+					s1=BGBCP_Token2(s, b2, &ty2, ctx->lang);
+				}
+
+				if(!bgbcp_strcmp(b2, "finally"))
+				{
+					s=s1;
+
+					n1=BGBCP_BlockStatement2(ctx, &s);
+					n2=BCCX_NewCst1V(&bgbcc_rcst_finally, "finally", n1);
+					BCCX_Add(n, n2);
+				}
+
+				*str=s;
+				return(n);
+			}
+		}
+
+		is_c = (ctx->lang==BGBCC_LANG_C);
+		is_cpp_cx =
+			((ctx->lang==BGBCC_LANG_CPP) ||
+			(ctx->lang==BGBCC_LANG_CS) ||
+			(ctx->lang==BGBCC_LANG_CX));
+
+//		if((ctx->lang==BGBCC_LANG_CPP) ||
+//			(ctx->lang==BGBCC_LANG_CS) ||
+//			(ctx->lang==BGBCC_LANG_CX))
+		if(1)
+		{
+			if((is_cpp_cx && !bgbcp_strcmp(b, "using")) ||
+				(is_c && !bgbcp_strcmp(b, "__using")))
 			{
 				s1=BGBCP_Token2(s, b2, &ty2, ctx->lang);
 				if(!bgbcp_strcmp(b2, "namespace"))
@@ -677,9 +790,11 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 
 				s1=bgbcc_strdup(b);
 
-				for(i=0; ctx->cur_nsi[i]; i++);
-				ctx->cur_nsi[i++]=s1;
-				ctx->cur_nsi[i]=NULL;
+//				for(i=0; ctx->cur_nsi[i]; i++);
+//				ctx->cur_nsi[i++]=s1;
+//				ctx->cur_nsi[i]=NULL;
+
+				ctx->cur_nsi[ctx->n_cur_nsi++]=s1;
 
 				n=BCCX_NewCst(&bgbcc_rcst_using, "using");
 				BCCX_SetCst(n, &bgbcc_rcst_name, "name", s1);
@@ -691,7 +806,8 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 				return(n);
 			}
 
-			if(!bgbcp_strcmp(b, "namespace"))
+			if((is_cpp_cx && !bgbcp_strcmp(b, "namespace")) ||
+				(is_c && !bgbcp_strcmp(b, "__namespace")))
 			{
 				s=BGBCP_Token2(s, b, &ty, ctx->lang);	//'name'
 				BGBCP_Token2(s, b2, &ty2, ctx->lang);
@@ -711,9 +827,10 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 				s1=bgbcc_strdup(b);
 				ctx->cur_ns=s1;
 
-				a=ctx->cur_nsi;
-				ctx->cur_nsi=ab;
-				ctx->cur_nsi[0]=NULL;
+//				a=ctx->cur_nsi;
+//				ctx->cur_nsi=ab;
+//				ctx->cur_nsi[0]=NULL;
+				ocnsi=ctx->n_cur_nsi;
 
 				s=BGBCP_Token2(s, b, &ty, ctx->lang); //{
 				n1=BGBCP_Block(ctx, &s);
@@ -721,7 +838,8 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 				BCCX_SetCst(n, &bgbcc_rcst_name, "name", s1);
 
 				ctx->cur_ns=s0;
-				ctx->cur_nsi=a;
+//				ctx->cur_nsi=a;
+				ctx->n_cur_nsi=ocnsi;
 
 				*str=s;
 				return(n);
@@ -748,9 +866,10 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 
 				s1=bgbcc_strdup(b);
 
-				for(i=0; ctx->cur_nsi[i]; i++);
-				ctx->cur_nsi[i++]=s1;
-				ctx->cur_nsi[i]=NULL;
+//				for(i=0; ctx->cur_nsi[i]; i++);
+//				ctx->cur_nsi[i++]=s1;
+//				ctx->cur_nsi[i]=NULL;
+				ctx->cur_nsi[ctx->n_cur_nsi++]=s1;
 
 				n=BCCX_NewCst(&bgbcc_rcst_import, "import");
 				BCCX_SetCst(n, &bgbcc_rcst_name, "name", s1);
@@ -783,9 +902,10 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 
 				s1=bgbcc_strdup(b);
 
-				for(i=0; ctx->cur_nsi[i]; i++);
-				ctx->cur_nsi[i++]=s1;
-				ctx->cur_nsi[i]=NULL;
+//				for(i=0; ctx->cur_nsi[i]; i++);
+//				ctx->cur_nsi[i++]=s1;
+//				ctx->cur_nsi[i]=NULL;
+				ctx->cur_nsi[ctx->n_cur_nsi++]=s1;
 
 				n=BCCX_NewCst(&bgbcc_rcst_using, "using");
 				BCCX_SetCst(n, &bgbcc_rcst_name, "name", s1);
@@ -817,9 +937,10 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 				s1=bgbcc_strdup(b);
 				ctx->cur_ns=s1;
 
-				a=ctx->cur_nsi;
-				ctx->cur_nsi=ab;
-				ctx->cur_nsi[0]=NULL;
+//				a=ctx->cur_nsi;
+//				ctx->cur_nsi=ab;
+//				ctx->cur_nsi[0]=NULL;
+				ocnsi=ctx->n_cur_nsi;
 
 				s=BGBCP_Token2(s, b, &ty, ctx->lang); //{
 				n1=BGBCP_Block(ctx, &s);
@@ -827,7 +948,8 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 				BCCX_SetCst(n, &bgbcc_rcst_name, "name", s1);
 
 				ctx->cur_ns=s0;
-				ctx->cur_nsi=a;
+//				ctx->cur_nsi=a;
+				ctx->n_cur_nsi=ocnsi;
 
 				*str=s;
 				return(n);
@@ -896,7 +1018,8 @@ BCCX_Node *BGBCP_BlockStatementI(BGBCP_ParseState *ctx, char **str, int flag)
 //	s=BGBCP_EatWhite(s);
 	BGBCP_EatWhite(s);
 	fn=BGBCP_GetLastFileName();
-	ln=BGBCP_GetLastLineNumber();
+//	ln=BGBCP_GetLastLineNumber();
+	ln=BGBCP_GetPredictLineNumber(s);
 
 //	printf("@ %s:%d\n", fn, ln);
 
@@ -920,12 +1043,15 @@ BCCX_Node *BGBCP_BlockStatementI(BGBCP_ParseState *ctx, char **str, int flag)
 	}
 #endif
 
-	s1=ctx->cur_ns; a=ctx->cur_nsi;
-	ctx->cur_ns=NULL; ctx->cur_nsi=NULL;
+	s1=ctx->cur_ns; 
+	ctx->cur_ns=NULL;
+//	a=ctx->cur_nsi;
+//	ctx->cur_nsi=NULL;
 
 	n=BGBCP_BlockStatementInner(ctx, &s);
 
-	ctx->cur_ns=s1; ctx->cur_nsi=a;
+	ctx->cur_ns=s1;
+//	ctx->cur_nsi=a;
 
 	if(n)
 	{
@@ -1040,7 +1166,7 @@ BCCX_Node *BGBCP_BlockStatement2(BGBCP_ParseState *ctx, char **str)
 	char b[256];
 	char *s;
 	s64 dfl_fl;
-	int tk0, tk1, tk2;
+	int tk0, tk1, tk2, bn;
 	int ty;
 	BCCX_Node *n;
 
@@ -1071,6 +1197,9 @@ BCCX_Node *BGBCP_BlockStatement2(BGBCP_ParseState *ctx, char **str)
 		if(tk2>0)
 			BCCX_SetIntCst(n, &bgbcc_rcst_tokens, "tokens", tk2);
 
+		bn=ctx->blkidx++;
+		BCCX_SetIntCst(n, &bgbcc_rcst_index, "index", bn);
+		
 		*str=s;
 		return(n);
 	}

@@ -14,6 +14,7 @@ int bgbcp_csln;
 
 char *bgbcp_lfn;
 int bgbcp_lln;
+char *bgbcp_lcs;
 
 int BGBCP_GetLinenum()
 	{ return(bgbcp_linenum); }
@@ -147,6 +148,28 @@ char *BGBCP_GetLastFileName()
 int BGBCP_GetLastLineNumber()
 	{ return(bgbcp_lln); }
 
+int BGBCP_GetPredictLineNumber(char *tgt)
+{
+	char *s;
+	int i;
+
+	if(!bgbcp_lcs || !tgt)
+		return(bgbcp_lln);
+
+	s=bgbcp_lcs;
+	i=bgbcp_lln;
+	while(*s && (s<tgt))
+	{
+		if(*s=='\n')
+			{ s++; i++; continue; }
+		if((s[0]=='\r') && (s[1]!='\n'))
+			{ s++; i++; continue; }
+		s++;
+	}
+
+	return(i);
+}
+
 
 char *BGBCP_EatWhiteOnly(char *s)
 {
@@ -194,6 +217,7 @@ char *BGBCP_EatWhite(char *s)
 			{
 				if(fn)bgbcp_lfn=fn;
 				bgbcp_lln=ln;
+				bgbcp_lcs=s;
 			}
 
 #if 1
@@ -292,6 +316,7 @@ char *BGBCP_EatWhiteNLb(char *s)
 			{
 				if(fn)bgbcp_lfn=fn;
 				bgbcp_lln=ln;
+				bgbcp_lcs=s;
 			}
 
 #if 1
@@ -360,6 +385,45 @@ int BGBCP_IsLineBreak(char *se)
 	if(!*s)return(1);
 
 	return(0);
+}
+
+void BGBCP_CopyStringQQQB(char **dst, char **src)
+{
+	char *cs, *ct;
+	
+	cs=*src;
+	ct=*dst;
+	
+	*ct++='\"';
+	*ct++='\"';
+	*ct++='\"';
+	
+	while(*cs)
+	{
+		if(	(cs[0]=='\\') &&
+			(cs[1]=='\"') &&
+			(cs[2]=='\"') &&
+			(cs[3]=='\"'))
+		{
+			*ct++=*cs++;	*ct++=*cs++;
+			*ct++=*cs++;	*ct++=*cs++;
+			continue;
+		}
+
+		if(	(cs[0]=='\"') &&
+			(cs[1]=='\"') &&
+			(cs[2]=='\"'))
+		{
+			*ct++=*cs++;	*ct++=*cs++;
+			*ct++=*cs++;
+			break;
+		}
+
+		*ct++=*cs++;
+	}
+	
+	*src=cs;
+	*dst=ct;
 }
 
 
@@ -1326,6 +1390,17 @@ char *BGBCP_TokenI(char *s, char *b, int *ty, int lang, int sz)
 //	if((*s=='"') || (*s=='\'')) /* quoted string */
 	if((ch=='"') || (ch=='\'')) /* quoted string */
 	{
+		if((s[0]=='\"') && (s[1]=='\"') && (s[2]=='\"'))
+		{
+			*t++=*s++;
+			*t++=*s++;
+			*t++=*s++;
+			*t=0;
+
+			*ty=BTK_STRING_QQQ;
+			return(s);
+		}
+
 		if(*s=='\'')sti=1;
 			else sti=0;
 		s0=s;
@@ -1635,7 +1710,10 @@ char *BGBCP_TokenI(char *s, char *b, int *ty, int lang, int sz)
 			return(s);
 		}
 
-		if(lang==BGBCC_LANG_CPP)
+//		if(lang==BGBCC_LANG_CPP)
+		if(	(lang==BGBCC_LANG_CPP)	||
+			(lang==BGBCC_LANG_CS)	||
+			(lang==BGBCC_LANG_BS2)	)
 		{
 //			if(!strncmp(s, "::", 2))
 			if(!bgbcp_strncmp2(s, "::"))

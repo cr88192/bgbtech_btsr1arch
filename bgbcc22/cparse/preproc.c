@@ -1038,7 +1038,7 @@ void BGBPP_Directive(BGBCP_ParseState *ctx, char *str)
 {
 //	char b[256], b2[4096], b3[256];
 	char b[4096], b2[4096], b3[4096];
-	char *ab[64];
+	char *ab[256];
 	BGBPP_Def *def;
 	BCCX_Node *exp;
 	char *s, *t, *s1, *s2, *tn;
@@ -1380,7 +1380,10 @@ void BGBPP_Directive(BGBCP_ParseState *ctx, char *str)
 }
 
 
-char *BGBPP_ParseArg(BGBCP_ParseState *ctx, char *s, char *b)
+static int bgbpp_ncnt_expand;
+
+char *BGBPP_ParseArg(BGBCP_ParseState *ctx,
+	BGBPP_Def *pudef, char *s, char *b)
 {
 	char b2[4096];
 	BGBPP_Def *def;
@@ -1416,7 +1419,8 @@ char *BGBPP_ParseArg(BGBCP_ParseState *ctx, char *s, char *b)
 		s=BGBCP_TokenCtx(ctx, s, b2, &ty2);
 //		s=BGBCP_EatWhite(s);
 
-		if(ty2!=BTK_NAME)
+//		if(ty2!=BTK_NAME)
+		if((ty2!=BTK_NAME) || (bgbpp_ncnt_expand<8))
 //		if(1)
 		{
 			b=BGBPP_PrintToken(b, b2, ty2);
@@ -1424,13 +1428,13 @@ char *BGBPP_ParseArg(BGBCP_ParseState *ctx, char *s, char *b)
 		}
 
 		def=BGBPP_LookupDefine(ctx, b2);
-		if(!def)
+		if(!def || (def==pudef))
 		{
 			b=BGBPP_PrintToken(b, b2, ty2);
 			continue;
 		}
 
-		if(*s!='(')
+		if((*s!='(') && !def->args)
 		{
 			strcpy(b, def->value);
 			b+=strlen(b);
@@ -1557,6 +1561,9 @@ int BGBPP_Expand(BGBCP_ParseState *ctx,
 		return(1);
 	}
 
+	if(bgbpp_ncnt_expand<2)
+		return(0);
+
 	def=BGBPP_LookupDefine(ctx, op);
 	if(!def)return(0);
 
@@ -1601,7 +1608,7 @@ int BGBPP_Expand(BGBCP_ParseState *ctx,
 		if(*s==')') break;
 		while(*s && (*s<=' '))s++;
 
-		s=BGBPP_ParseArg(ctx, s, b2);
+		s=BGBPP_ParseArg(ctx, def, s, b2);
 		ab[j++]=bgbcc_strdup(b2);
 
 		if(*s==',')
@@ -1697,6 +1704,13 @@ int BGBPP_Expand(BGBCP_ParseState *ctx,
 //			sprintf(t, "%s", b);
 //			t+=strlen(t);
 			t=BGBCC_StrPrintRawStr(t, b);
+			continue;
+		}
+
+		if(ty==BTK_STRING_QQQ)
+		{
+			BGBCP_CopyStringQQQB(&t, &s);
+//			t=BGBPP_EmitCharString(t, b);
 			continue;
 		}
 
@@ -1866,6 +1880,13 @@ int BGBPP_Line(BGBCP_ParseState *ctx, char *str)
 //			sprintf(t, "%s", b);
 //			t+=strlen(t);
 			t=BGBCC_StrPrintRawStr(t, b);
+			continue;
+		}
+
+		if(ty==BTK_STRING_QQQ)
+		{
+			BGBCP_CopyStringQQQB(&t, &s);
+//			t=BGBPP_EmitCharString(t, b);
 			continue;
 		}
 
@@ -2057,6 +2078,13 @@ char *BGBPP_ParseLine(BGBCP_ParseState *ctx, char *s, char *b)
 
 		if(*s=='\"')
 		{
+			if((s[1]=='\"') && (s[2]=='\"'))
+			{
+				s+=3;
+				BGBCP_CopyStringQQQB(&t, &s);
+				continue;
+			}
+		
 			is=1;
 			*t++=*s++;
 			continue;
@@ -2225,9 +2253,11 @@ int BGBPP_BufferLine(BGBCP_ParseState *ctx, char *b)
 	if(bgbpp_iflvl2)
 		{ return(0); }
 
+	bgbpp_ncnt_expand=256;
 	i=1;
-	while(i)
+	while(i && (bgbpp_ncnt_expand>0))
 	{
+		bgbpp_ncnt_expand--;
 		BGBCP_FlushToken(b);
 		i=BGBPP_Line(ctx, b);
 	}

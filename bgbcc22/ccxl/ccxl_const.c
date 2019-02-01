@@ -386,6 +386,9 @@ BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_LookupStructure(
 	int h, c;
 	int i, j, k;
 
+	if(!str)
+		return(NULL);
+
 #if 1
 	h=BGBCC_CCXL_HashName(str);
 	c=ctx->hash_literals[h];
@@ -399,6 +402,7 @@ BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_LookupStructure(
 		if((cur->littype!=CCXL_LITID_STRUCT) &&
 			(cur->littype!=CCXL_LITID_UNION) &&
 			(cur->littype!=CCXL_LITID_CLASS) &&
+			(cur->littype!=CCXL_LITID_ENUMDEF) &&
 			(cur->littype!=CCXL_LITID_FUNCTION))
 				continue;
 		if(!cur->name)
@@ -427,7 +431,7 @@ BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_LookupStructure(
 	}
 #endif
 
-#if 0
+#if 1
 	for(i=0; i<ctx->n_literals; i++)
 	{
 		cur=ctx->literals[i];
@@ -449,6 +453,33 @@ BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_LookupStructure(
 #endif
 
 	return(NULL);
+}
+
+BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_LookupStructureRns(
+	BGBCC_TransState *ctx, char *name)
+{
+	char tb1[256];
+	BGBCC_CCXL_LiteralInfo *cur, *ri;
+	int i;
+
+	ri=NULL;
+
+	for(i=(ctx->n_imp-1); i>=0; i--)
+	{
+		sprintf(tb1, "%s/%s", ctx->imp_ns[i], name);
+		cur=BGBCC_CCXL_LookupStructure(ctx, tb1);
+		if(cur)
+			{ ri=cur; break; }
+	}
+	
+	if(!ri)
+	{
+		cur=BGBCC_CCXL_LookupStructure(ctx, name);
+		if(cur)
+			{ ri=cur; }
+	}
+	
+	return(ri);
 }
 
 int BGBCC_CCXL_LookupStructureID(
@@ -716,4 +747,83 @@ BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_GetTypedef(
 	ctx->hash_literals[h]=i;
 
 	return(cur);
+}
+
+
+BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_LookupNamespace(
+	BGBCC_TransState *ctx, char *str)
+{
+	BGBCC_CCXL_LiteralInfo *cur;
+	int h, c;
+	int i, j, k;
+
+	if(!str)
+		return(NULL);
+
+	h=BGBCC_CCXL_HashName(str);
+	c=ctx->hash_literals[h];
+	while(c>0)
+	{
+		cur=ctx->literals[c];
+		c=cur->hnext_name;
+
+		if(cur->littype!=CCXL_LITID_NAMESPACE)
+			continue;
+		if(!cur->name)
+			continue;
+		if(!strcmp(cur->name, str))
+			return(cur);
+	}
+
+	return(NULL);
+}
+
+BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_GetNamespace(
+	BGBCC_TransState *ctx, char *str)
+{
+	BGBCC_CCXL_LiteralInfo *cur;
+	int h;
+	int i, j, k;
+	
+	cur=BGBCC_CCXL_LookupNamespace(ctx, str);
+	if(cur)return(cur);
+	
+	BGBCC_CCXL_CheckExpandLiterals(ctx);
+
+	cur=bgbcc_malloc(sizeof(BGBCC_CCXL_LiteralInfo));
+	cur->littype=CCXL_LITID_NAMESPACE;
+	cur->name=bgbcc_strdup(str);
+
+	if(!ctx->n_literals)
+		ctx->n_literals++;
+
+	i=ctx->n_literals++;
+	ctx->literals[i]=cur;
+	cur->litid=i;
+
+	h=BGBCC_CCXL_HashName(str);
+	cur->hnext_name=ctx->hash_literals[h];
+	ctx->hash_literals[h]=i;
+
+	return(cur);
+}
+
+void BGBCC_CCXL_GetNamespaceBuildPath(
+	BGBCC_TransState *ctx, char *str)
+{
+	char tb[256];
+	char *s, *t;
+	
+	s=str; t=tb;
+	while(*s)
+	{
+		if(*s=='/')
+		{
+			*t=0;
+			BGBCC_CCXL_GetNamespace(ctx, tb);
+		}
+		*t++=*s++;
+	}
+	*t=0;
+	BGBCC_CCXL_GetNamespace(ctx, tb);
 }

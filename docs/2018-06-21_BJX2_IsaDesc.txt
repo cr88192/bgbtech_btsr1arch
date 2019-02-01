@@ -537,7 +537,7 @@ MOV, GPR
 * 1Azz            MOV		Rm, Rk
 * 1Bzz            MOV		Rj, Rk
 * F0g8_19nm       MOV		Rm, Rn				//Rn=Rm
-* F0G8_19nm       MOV.L		Rm, Rn				//Rn=Rm (Low32, Hi=Undef)
+* F0G8_19nm       MOVD		Rm, Rn				//Rn=Rm (Low32, Hi=Undef)
 
 MOV, Control Register
 * 48nm            MOV		Rm, Cn
@@ -551,6 +551,10 @@ MOV, Control Register
 
 MOV, Constant
 * Enii            MOV		#imm8s, Rn		//Rn=Imm8
+* F2n0_Chjj       MOV		#imm10u, Rn		//(WEX2), Rn=Imm10u
+* F2n0_CHjj       MOVD		#imm10u, Rn		//(WEX2), Rn=Imm10u (Hi=Undef)
+* F2n1_Chjj       MOV		#imm10n, Rn		//(WEX2), Rn=Imm10n
+* F2n1_CHjj       MOVD		#imm10n, Rn		//(WEX2), Rn=Imm10n (Hi=Undef)
 * F80n_iiii       MOV		#imm16u, Rn
 * F81n_iiii       MOV		#imm16u, Rk
 * F82n_iiii       MOV		#imm16n, Rn
@@ -1151,9 +1155,22 @@ Swap the DWords within Rn.
 
 === TRAP ===
 
-* 36j3 TRAP	#imm4u
+* 36j3       TRAP	#imm4u
+* 36n8       TRAP	Rn
+* F0en_3068  TRAP	Rn
 
-Generate an Interrupt, using the bits from the immediate as part of the bit-pattern for EXSR (0xC08j).
+Generate an Interrupt.
+
+Trap with an Imm4 uses the bits from the immediate as part of the bit-pattern for EXSR (0xC08j).
+
+
+The register trap gives the full EXSR bit pattern (in the low 16 bits).
+
+In user mode, only SysCall patterns will be allowed, other patterns will result either in a fault or some other implementation-defined behavior. In supervisor mode, patterns representing a valid EXSR pattern will behave as-if this exception had occured.
+
+Patterns which do not represent a valid EXSR pattern may result in a fault or some other implementation-defined behavior.
+
+In a VM, an EXSR with the pattern 0xFzzz will correspond to a VM trap call. This will call a handler outside of the emulated environment. Use of a VM trap within a bare-metal implementation is undefined and should not be used.
 
 
 === TST ===

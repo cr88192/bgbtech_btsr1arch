@@ -592,6 +592,13 @@ int BGBCC_JX2_TryEmitOpFar16Label(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 }
 
 
+int BGBCC_JX2_EmitOpFar20Label(BGBCC_JX2_Context *ctx, int nmid, int lbl)
+{
+	if(!BGBCC_JX2_TryEmitOpFar20Label(ctx, nmid, lbl))
+		{ BGBCC_DBGBREAK }
+	return(1);
+}
+
 int BGBCC_JX2_TryEmitOpFar20Label(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 {
 	int opw1, opw2, opw3, opw4, rlty;
@@ -609,6 +616,7 @@ int BGBCC_JX2_TryEmitOpFar20Label(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 		opw2=0xC000;
 		break;
 	case BGBCC_SH_NMID_BSR:
+	case BGBCC_SH_NMID_BSRN:
 		rlty=BGBCC_SH_RLC_RELW20_BJX;
 //		opw1=0xF0FF;
 //		opw2=0xBFFE;

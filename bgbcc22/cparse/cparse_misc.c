@@ -758,6 +758,15 @@ BCCX_Node *BGBCP_ModuleBuffer(char *name, char *modname, char *buf)
 	ctx->structs=NULL;
 	ctx->types=NULL;
 
+	if(!ctx->cur_nsi)
+	{
+		ctx->cur_nsi=bgbcc_malloc(256*sizeof(char *));
+		ctx->n_cur_nsi=0;
+		ctx->m_cur_nsi=256;
+	}
+
+	ctx->n_cur_nsi=0;
+
 	if(lang==BGBCC_LANG_ASM)
 	{
 		n1=BCCX_NewCData(tbuf);

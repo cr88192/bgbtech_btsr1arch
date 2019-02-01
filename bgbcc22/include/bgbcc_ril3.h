@@ -140,3 +140,6 @@
 #define BGBCC_RIL3OP_DUPIX		0x70	//Dup with Index
 #define BGBCC_RIL3OP_DUPMIX		0x71	//Dup with Index (relative to Mark)
 #define BGBCC_RIL3OP_JMPTAB		0x72	//Jump Table
+#define BGBCC_RIL3OP_MKTMPOBJ	0x73	//New Temporary Object
+#define BGBCC_RIL3OP_EXCH		0x74	//Exchange stack items
+#define BGBCC_RIL3OP_LDSLOTSIG	0x75	//Load Slot, Signature

@@ -24,6 +24,9 @@ int BGBCC_JX2C_ScratchSafeStompFpReg(
 	if(	((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_FR0) ||
 		((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_DR0))
 	{
+		if((reg&15)>=2)
+			sctx->is_leaf&=(~4);
+
 		if((reg&15)>=8)
 			{ BGBCC_DBGBREAK }
 		if(sctx->sfreg_live&(1<<(reg&15)))
@@ -42,6 +45,9 @@ int BGBCC_JX2C_ScratchStompFpReg(
 	if(	((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_FR0) ||
 		((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_DR0))
 	{
+		if((reg&15)>=2)
+			sctx->is_leaf&=(~4);
+
 		if((reg&15)>=8)
 			{ BGBCC_DBGBREAK }
 		sctx->sfreg_live|=1<<(reg&15);
@@ -59,6 +65,9 @@ int BGBCC_JX2C_ScratchHoldFpReg(
 	if(	((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_FR0) ||
 		((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_DR0))
 	{
+		if((reg&15)>=2)
+			sctx->is_leaf&=(~4);
+
 		if((reg&15)>=8)
 			{ BGBCC_DBGBREAK }
 		sctx->sfreg_held|=1<<(reg&15);
@@ -92,6 +101,8 @@ int BGBCC_JX2C_ScratchAllocFpReg(
 	int cls)
 {
 	int i;
+
+	sctx->is_leaf&=(~4);
 
 	if(cls==BGBCC_SH_REGCLS_FR)
 	{
@@ -182,18 +193,50 @@ int BGBCC_JX2C_EmitReloadSavedFrameFpReg(
 }
 
 #if 1
-const byte bgbcc_jx2_fcachereg[8]={
+const byte bgbcc_jx2_fcachereg[16]={
 	BGBCC_SH_REG_FR15, BGBCC_SH_REG_FR14,
 	BGBCC_SH_REG_FR13, BGBCC_SH_REG_FR12,
 	BGBCC_SH_REG_FR11, BGBCC_SH_REG_FR10,
-	BGBCC_SH_REG_FR9, BGBCC_SH_REG_FR8 };
-const byte bgbcc_jx2_dcachereg[8]={
+	BGBCC_SH_REG_FR9, BGBCC_SH_REG_FR8,
+	BGBCC_SH_REG_FR7, BGBCC_SH_REG_FR6,
+	BGBCC_SH_REG_FR5, BGBCC_SH_REG_FR4 };
+const byte bgbcc_jx2_dcachereg[16]={
 	BGBCC_SH_REG_DR15, BGBCC_SH_REG_DR14,
 	BGBCC_SH_REG_DR13, BGBCC_SH_REG_DR12,
 	BGBCC_SH_REG_DR11, BGBCC_SH_REG_DR10,
-	BGBCC_SH_REG_DR9, BGBCC_SH_REG_DR8 };
+	BGBCC_SH_REG_DR9, BGBCC_SH_REG_DR8,
+	BGBCC_SH_REG_DR7, BGBCC_SH_REG_DR6,
+	BGBCC_SH_REG_DR5, BGBCC_SH_REG_DR4 };
 const byte bgbcc_jx2_fmaxreg=8;
+const byte bgbcc_jx2_fmaxreg_lf=12;
 #endif
+
+/* For leaf traces, rotate index to prefer scratch registers.
+ */
+int BGBCC_JX2C_EmitRotateFpRegisterIndex(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	int idx)
+{
+	int m1, m2, m3;
+	int i1;
+
+	if(!(sctx->is_tr_leaf&1))
+		return(idx);
+
+	m1=sctx->maxreg_fpr;
+	m2=sctx->maxreg_fpr_lf;
+	m3=m2-m1;
+	
+	if(idx<m3)
+		i1=(m1+idx);
+	else
+		i1=(idx-m3);
+	if((i1<0) || (i1>=m2))
+		{ BGBCC_DBGBREAK }
+	return(i1);
+}
+
 
 /* Try to get Variable as register.
  * Will return a value as a register if possible, but may fail.
@@ -207,6 +250,7 @@ int BGBCC_JX2C_EmitTryGetFpRegister(
 	static int rchk=0;
 	ccxl_register reg1;
 	ccxl_type tty;
+	int maxreg, vrsave;
 	int creg, excl, nsv, userq, rcls;
 	int pr0, pr1;
 	int i, bi;
@@ -229,9 +273,15 @@ int BGBCC_JX2C_EmitTryGetFpRegister(
 
 	excl=0;
 
+	maxreg=sctx->maxreg_fpr;
+	if(sctx->is_tr_leaf&1)
+		maxreg=sctx->maxreg_fpr_lf;
+	vrsave=0x00FF00FC;
+
 #if 1
 	/* value already in a register? */
-	for(i=0; i<bgbcc_jx2_fmaxreg; i++)
+//	for(i=0; i<bgbcc_jx2_fmaxreg; i++)
+	for(i=0; i<maxreg; i++)
 	{
 		if(excl&(1<<i))
 			continue;
@@ -266,7 +316,8 @@ int BGBCC_JX2C_EmitTryGetFpRegister(
 		bi=-1; nsv=0;
 	
 		/* Check for registers not holding a live value. */
-		for(i=0; i<bgbcc_jx2_fmaxreg; i++)
+//		for(i=0; i<bgbcc_jx2_fmaxreg; i++)
+		for(i=0; i<maxreg; i++)
 		{
 			if(excl&(1<<i))
 				continue;
@@ -282,7 +333,8 @@ int BGBCC_JX2C_EmitTryGetFpRegister(
 			if(!((sctx->fregalc_save)&(1<<i)))
 			{
 				creg=bgbcc_jx2_fcachereg[i];
-				if(sctx->freg_save&(1<<(creg&31)))
+//				if(sctx->freg_save&(1<<(creg&31)))
+				if((sctx->freg_save|vrsave)&(1<<(creg&31)))
 					{ bi=i; break; }
 
 				nsv++;
@@ -367,9 +419,10 @@ int BGBCC_JX2C_EmitGetFpRegister(
 	static int rchk=0;
 	ccxl_register reg1;
 	ccxl_type tty;
+	int maxreg, vrsave;
 	int creg, lng, excl, bi, nsv, userq, rcls;
 	int pr0, pr1;
-	int i;
+	int i, i1;
 
 	creg=BGBCC_JX2C_EmitTryGetFpRegister(ctx, sctx, reg, fl);
 	if((creg>=0) && (creg!=BGBCC_SH_REG_ZZR))
@@ -393,14 +446,21 @@ int BGBCC_JX2C_EmitGetFpRegister(
 
 	excl=0;
 
-	for(i=0; i<bgbcc_jx2_fmaxreg; i++)
+	maxreg=sctx->maxreg_fpr;
+	if(sctx->is_tr_leaf&1)
+		maxreg=sctx->maxreg_fpr_lf;
+	vrsave=0x00FF00FC;
+
+//	for(i=0; i<bgbcc_jx2_fmaxreg; i++)
+	for(i=0; i<maxreg; i++)
 		if(sctx->fregalc_ltcnt[i]<255)
 			sctx->fregalc_ltcnt[i]++;
 
 	pr0=BGBCC_JX2C_GetVRegPriority(ctx, sctx, reg);
 	bi=-1; nsv=0;
 	/* Check for registers not holding a live value. */
-	for(i=0; i<bgbcc_jx2_fmaxreg; i++)
+//	for(i=0; i<bgbcc_jx2_fmaxreg; i++)
+	for(i=0; i<maxreg; i++)
 	{
 		if(excl&(1<<i))
 			continue;
@@ -416,7 +476,8 @@ int BGBCC_JX2C_EmitGetFpRegister(
 		if(!((sctx->fregalc_save)&(1<<i)))
 		{
 			creg=bgbcc_jx2_fcachereg[i];
-			if(sctx->freg_save&(1<<(creg&31)))
+//			if(sctx->freg_save&(1<<(creg&31)))
+			if((sctx->freg_save|vrsave)&(1<<(creg&31)))
 				{ bi=i; break; }
 
 			nsv++;
@@ -444,7 +505,8 @@ int BGBCC_JX2C_EmitGetFpRegister(
 	
 	if(bi<0)
 	{
-		for(i=0; i<bgbcc_jx2_fmaxreg; i++)
+//		for(i=0; i<bgbcc_jx2_fmaxreg; i++)
+		for(i=0; i<maxreg; i++)
 		{
 			if(excl&(1<<i))
 				continue;
@@ -520,9 +582,12 @@ int BGBCC_JX2C_EmitGetFpRegister(
 #endif
 
 	/* Check for unallocated registers. */
-	for(i=0; i<bgbcc_jx2_fmaxreg; i++)
+//	for(i=0; i<bgbcc_jx2_fmaxreg; i++)
+	for(i=0; i<maxreg; i++)
 	{
-		if(excl&(1<<i))
+		i1=BGBCC_JX2C_EmitRotateFpRegisterIndex(ctx, sctx, i);
+
+		if(excl&(1<<i1))
 			continue;
 
 #if 0
@@ -533,20 +598,20 @@ int BGBCC_JX2C_EmitGetFpRegister(
 		}
 #endif
 
-		if((sctx->fregalc_save)&(1<<i))
+		if((sctx->fregalc_save)&(1<<i1))
 			continue;
 		
-		sctx->fregalc_ltcnt[i]=0;
-		sctx->fregalc_map[i]=reg;
-		sctx->fregalc_utcnt[i]=1;
-		sctx->fregalc_save|=1<<i;
-		sctx->fregalc_live|=1<<i;
+		sctx->fregalc_ltcnt[i1]=0;
+		sctx->fregalc_map[i1]=reg;
+		sctx->fregalc_utcnt[i1]=1;
+		sctx->fregalc_save|=1<<i1;
+		sctx->fregalc_live|=1<<i1;
 		if(fl&1)
-			sctx->fregalc_dirty|=1<<i;
+			sctx->fregalc_dirty|=1<<i1;
 
-		creg=bgbcc_jx2_fcachereg[i];		
+		creg=bgbcc_jx2_fcachereg[i1];		
 		if(userq)
-			creg=bgbcc_jx2_dcachereg[i];
+			creg=bgbcc_jx2_dcachereg[i1];
 		BGBCC_JX2C_EmitSaveFrameFpReg(ctx, sctx, creg);
 
 		if(fl&2)
@@ -623,11 +688,18 @@ int BGBCC_JX2C_EmitReleaseFpRegister(
 {
 	static int rchk=0;
 	ccxl_register reg1;
+	int maxreg, vrsave;
 	int creg, regfl;
 	int i;
 
+	maxreg=sctx->maxreg_fpr;
+	if(sctx->is_tr_leaf&1)
+		maxreg=sctx->maxreg_fpr_lf;
+	vrsave=0x00FF00FC;
+
 	/* value in register? */
-	for(i=0; i<bgbcc_jx2_fmaxreg; i++)
+//	for(i=0; i<bgbcc_jx2_fmaxreg; i++)
+	for(i=0; i<maxreg; i++)
 	{
 		if(!((sctx->fregalc_save)&(1<<i)))
 			continue;
@@ -774,7 +846,8 @@ int BGBCC_JX2C_EmitSyncFpRegisters(
 	int i;
 
 	/* value in register? */
-	for(i=0; i<bgbcc_jx2_fmaxreg; i++)
+//	for(i=0; i<bgbcc_jx2_fmaxreg; i++)
+	for(i=0; i<bgbcc_jx2_fmaxreg_lf; i++)
 	{
 		BGBCC_JX2C_EmitSyncFpRegisterIndex(ctx, sctx, i);
 		sctx->fregalc_utcnt[i]=0;
@@ -794,7 +867,12 @@ int BGBCC_JX2C_EmitLabelFlushFpRegisters(
 //	if(sctx->has_bjx1egpr && sctx->use_egpr)
 //		sctx->maxreg_gpr=bgbcc_jx2_maxreg_egpr;
 
-	for(i=0; i<bgbcc_jx2_fmaxreg; i++)
+	sctx->maxreg_fpr=bgbcc_jx2_fmaxreg;
+	sctx->maxreg_fpr_lf=bgbcc_jx2_fmaxreg_lf;
+
+//	for(i=0; i<bgbcc_jx2_fmaxreg; i++)
+	for(i=0; i<bgbcc_jx2_fmaxreg_lf; i++)
+//	for(i=0; i<sctx->maxreg_fpr_lf; i++)
 	{
 		if(!((sctx->fregalc_save)&(1<<i)))
 			continue;

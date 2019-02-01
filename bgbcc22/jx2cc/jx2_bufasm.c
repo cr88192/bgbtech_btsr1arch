@@ -1182,7 +1182,7 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 	s64 li;
 	f32 ff;
 	f64 fd;
-	int i, j, k;
+	int i, j, k, wx;
 
 	cs=*rcs;
 	cs1=BGBCC_JX2A_ParseTokenAlt(cs, &tk0);
@@ -1239,14 +1239,33 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 		}
 #endif
 
+		wx=0;
+		cs2=BGBCC_JX2A_EatWhiteNoLinebreak(cs2);
+		if(*cs2=='|')
+			{ wx=1; }
+			
+		if(wx)
+		{
+			ctx->op_is_wex2=3;
+		}
+
 		k=BGBCC_JX2A_TryAssembleOpcode(ctx, tk0+1, &arg[0], &arg[1], &arg[2]);
 		if(k>0)
 		{
 			if(*cs2==';')
 				cs2++;
+			if(*cs2=='|')
+				cs2++;
+			
+			ctx->op_is_wex2=wx?2:0;
 		
 			*rcs=cs2;
 			return(1);
+		}
+
+		if(wx)
+		{
+			ctx->op_is_wex2=0;
 		}
 
 		if(!strcmp(tk0, "I.align"))

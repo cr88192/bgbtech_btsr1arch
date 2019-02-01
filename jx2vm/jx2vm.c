@@ -90,7 +90,8 @@ void btesh_main_iterate()
 	{
 		BJX2_MainPollKeyboard(ctx);
 		BJX2_SndSblk_Update(ctx, dtms);
-		Sleep(1);
+//		Sleep(1);
+		Sleep(0);
 		return;
 	}
 
@@ -98,12 +99,18 @@ void btesh_main_iterate()
 	JX2I_GfxCon_Update();
 
 //	rcy=ctx->tgt_mhz*1000000/45;
+	rcy=(ctx->tgt_mhz*1000000LL)/72;
 //	rcy=(ctx->tgt_mhz*1000000LL)/45;
-	rcy=(ctx->tgt_mhz*1000000LL)/30;
+//	rcy=(ctx->tgt_mhz*1000000LL)/30;
+//	rcy=(ctx->tgt_mhz*1000000LL)/15;
 	
+//	rsc=256+((ctx->tgt_mhz-100)>>3);
 	rsc=256+((ctx->tgt_mhz-100)>>2);
-	if(rsc>256)
-		rcy=(((s64)rcy)*rsc)>>8;
+//	rsc=256+((ctx->tgt_mhz-100)>>1);
+//	rsc=(256*ctx->tgt_mhz)/100;
+
+//	if(rsc>256)
+//		rcy=(((s64)rcy)*rsc)>>8;
 
 	GfxDrv_BeginDrawing();
 	BJX2_MainPollKeyboard(ctx);
@@ -111,7 +118,17 @@ void btesh_main_iterate()
 //	i=BJX2_RunLimit(ctx, 9999999);
 //	i=BJX2_RunLimit(ctx, 5000000);
 //	i=BJX2_RunLimit(ctx, 2500000);
-	i=BJX2_RunLimit(ctx, rcy);
+//	i=BJX2_RunLimit(ctx, rcy);
+
+	do {
+		i=BJX2_RunLimit(ctx, rcy);
+
+		if(i || ctx->req_kill)
+			break;
+
+		ms1=FRGL_TimeMS();
+		ms=ms1-lms1;
+	} while((ctx->tot_cyc<cyc) && (ms<28));
 	
 	
 	if(i || ctx->req_kill)

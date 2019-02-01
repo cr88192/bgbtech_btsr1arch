@@ -434,6 +434,9 @@ ccxl_status BGBCC_CCXL_EmitConv(BGBCC_TransState *ctx,
 	if(BGBCC_CCXL_IsRegZzP(ctx, dst))
 		{ BGBCC_DBGBREAK }
 
+	if(dtype.val==CCXL_TY_V)
+		{ BGBCC_DBGBREAK }
+
 //	if(dtype.val==stype.val)
 //	{
 //		BGBCC_CCXL_EmitMov(ctx, dtype, dst, src);
@@ -812,7 +815,7 @@ ccxl_status BGBCC_CCXL_EmitOffsetOf(BGBCC_TransState *ctx,
 
 ccxl_status BGBCC_CCXL_EmitLoadSlot(BGBCC_TransState *ctx,
 	ccxl_type type, ccxl_register dst, ccxl_register src,
-	BGBCC_CCXL_LiteralInfo *st, char *name)
+	BGBCC_CCXL_LiteralInfo *st, char *name, char *sig)
 {
 	BGBCC_CCXL_VirtOp *op;
 	int fn;
@@ -830,7 +833,8 @@ ccxl_status BGBCC_CCXL_EmitLoadSlot(BGBCC_TransState *ctx,
 	op->type=type;
 	op->dst=dst;
 	op->srca=src;
-	fn=BGBCC_CCXL_LookupStructFieldID(ctx, st, name);
+//	fn=BGBCC_CCXL_LookupStructFieldID(ctx, st, name);
+	fn=BGBCC_CCXL_LookupStructFieldIDSig(ctx, st, name, sig);
 	op->imm.obj.gid=st->litid;
 	op->imm.obj.fid=fn;
 	BGBCC_CCXL_AddVirtOp(ctx, op);

@@ -1668,6 +1668,19 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 
 		break;
 
+	case BGBCC_RIL3OP_MKTMPOBJ:
+		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		BGBCC_CCXL_StackPushTempObj(ctx, s0);
+		break;
+	case BGBCC_RIL3OP_EXCH:
+		BGBCC_CCXL_StackExch(ctx);
+		break;
+	case BGBCC_RIL3OP_LDSLOTSIG:
+		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s1=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		BGBCC_CCXL_StackLoadSlotSig(ctx, s0, s1);
+		break;
+
 	default:
 		__debugbreak();
 		break;

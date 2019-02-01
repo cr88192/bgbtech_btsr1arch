@@ -324,6 +324,7 @@ extern "C" {
 #define BTK_INT			13
 #define BTK_FLOAT		14
 #define BTK_STRING_OVF	15	//overlong string
+#define BTK_STRING_QQQ	16	//triple-quote
 
 #endif
 
@@ -511,6 +512,9 @@ fourcc lang;
 fourcc arch;
 fourcc subarch;
 int tuidx;				//translation unit index
+int blkidx;				//block index
+
+byte expect_type;		//force detecting a type
 
 s64	dfl_flags;
 
@@ -529,8 +533,12 @@ BCCX_Node *type_hash[1024];
 BCCX_Node *reduce_tmp;
 
 char *cur_ns;
-char **cur_nsi;
+// char **cur_nsi;
 char *cur_class;
+
+char **cur_nsi;
+int n_cur_nsi;
+int m_cur_nsi;
 
 BGBCC_CCXL_BackendFuncs_vt *back_vt;
 };
@@ -606,6 +614,10 @@ BCCX_Node *types;
 BCCX_Node *structs;
 BCCX_Node *struct_hash[256];
 
+
+BCCX_Node *static_init;
+int static_init_seq;
+
 char *cur_ns;
 char *cur_struct;
 int cur_idx;	//field
@@ -613,8 +625,13 @@ int cur_idx2;	//method
 int cur_idx3;	//property
 int cur_idx4;	//property
 
-char *imp_ns[64];
+char *imp_ns[256];
 int n_imp;
+
+int vlcl_seq;
+int vlcl_curseq;
+int vlcl_stack[256];
+int vlcl_stackpos;
 
 fourcc lang;
 fourcc arch;			//major architecture
@@ -632,6 +649,11 @@ byte ril3_norec;
 byte cgif_no3ac;
 byte ril3_noril;
 
+byte ccxl_top_only;
+byte ccxl_in_func;
+
+byte ccxl_var_needsinit;
+
 int ccxl_tyc_seen;
 
 int gs_seq;
@@ -647,11 +669,13 @@ BCCX_Node *reduce_tmp;
 
 
 BGBCC_CCXL_RegisterInfo *cur_func;
+BGBCC_CCXL_LiteralInfo *cur_this;
 
 // BGBCC_CCXL_RegisterInfo *reg_globals[4096];
 // int idx_globals[4096];
-BGBCC_CCXL_RegisterInfo *reg_globals[262144];
-int idx_globals[262144];
+// BGBCC_CCXL_RegisterInfo *reg_globals[262144];
+BGBCC_CCXL_RegisterInfo **reg_globals;
+// int idx_globals[262144];
 int n_reg_globals;
 int m_reg_globals;
 
@@ -660,8 +684,10 @@ BGBCC_CCXL_RegisterInfo *usort_globals;			//unsorted globals
 
 // BGBCC_CCXL_LiteralInfo *literals[4096];
 // int idx_literals[4096];
-BGBCC_CCXL_LiteralInfo *literals[65536];
-int idx_literals[65536];
+// BGBCC_CCXL_LiteralInfo *literals[65536];
+// int idx_literals[65536];
+BGBCC_CCXL_LiteralInfo **literals;
+// int *idx_literals;
 int n_literals, m_literals;
 
 int hash_literals[4096];
@@ -669,7 +695,8 @@ int manif_literal;
 int usort_literal;
 
 // BGBCC_CCXL_TypeOverflow *tyovf[1024];
-BGBCC_CCXL_TypeOverflow *tyovf[16384];
+// BGBCC_CCXL_TypeOverflow *tyovf[16384];
+BGBCC_CCXL_TypeOverflow **tyovf;
 int n_tyovf, m_tyovf;
 
 u32 *ctab_lvt4;
@@ -689,7 +716,7 @@ int sz_wstrtab, msz_wstrtab;
 
 BGBCC_CCXL_RegisterInfo *reginfo_free;
 
-BGBCC_CCXL_LiteralInfo *cur_objstack[64];
+BGBCC_CCXL_LiteralInfo *cur_objstack[256];
 BGBCC_CCXL_LiteralInfo *cur_obj;
 int cur_objstackpos;
 

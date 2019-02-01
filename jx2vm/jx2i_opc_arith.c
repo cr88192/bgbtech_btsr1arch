@@ -455,6 +455,14 @@ void BJX2_Op_CMPHI_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 		ctx->regs[BJX2_REG_SR]&=~1;
 }
 
+void BJX2_Op_CMPHS_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	if(((u32)ctx->regs[op->rn])>=((u32)op->imm))
+		ctx->regs[BJX2_REG_SR]|=1;
+	else
+		ctx->regs[BJX2_REG_SR]&=~1;
+}
+
 
 void BJX2_Op_CMPQEQ_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
@@ -523,6 +531,14 @@ void BJX2_Op_CMPQGE_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 void BJX2_Op_CMPQHI_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	if(((u64)ctx->regs[op->rn])>((u64)op->imm))
+		ctx->regs[BJX2_REG_SR]|=1;
+	else
+		ctx->regs[BJX2_REG_SR]&=~1;
+}
+
+void BJX2_Op_CMPQHS_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	if(((u64)ctx->regs[op->rn])>=((u64)op->imm))
 		ctx->regs[BJX2_REG_SR]|=1;
 	else
 		ctx->regs[BJX2_REG_SR]&=~1;

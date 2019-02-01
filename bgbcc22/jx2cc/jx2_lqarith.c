@@ -539,10 +539,10 @@ int BGBCC_JX2C_EmitUnaryVRegVRegQLong(
 		csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, sreg);
 		cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dreg);
 
-		BGBCC_JX2_EmitOpLdRegDispReg(sctx,
-			BGBCC_SH_NMID_LEAB, csreg, j, cdreg);
+//		BGBCC_JX2_EmitOpLdRegDispReg(sctx,
+//			BGBCC_SH_NMID_LEAB, csreg, j, cdreg);
 
-#if 0
+#if 1
 		i=BGBCC_JX2_TryEmitOpRegImmReg(sctx,
 			BGBCC_SH_NMID_ADD, csreg, j, cdreg);
 		if(i<=0)

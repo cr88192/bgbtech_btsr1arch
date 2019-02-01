@@ -1113,6 +1113,13 @@ int UAX_EmitOpString(UAX_Context *ctx, char *str,
 				continue;
 			}
 
+			if(s[1]=='q')
+			{
+				s+=2; taa++;
+				UAX_EmitRegRM(ctx, targ0->breg, targ0);
+				continue;
+			}
+
 			__debugbreak();
 		}
 		

@@ -905,9 +905,11 @@ int GfxDrv_MainLoop(void (*fcn)())
 	{
 		ct=FRGL_TimeMS();
 		dt=ct-lt;
-		if((dt>=0) && (dt<10))
+//		if((dt>=0) && (dt<10))
+		if((dt>=0) && (dt<5))
 		{
-			Sleep(1);
+//			Sleep(1);
+			Sleep(0);
 			continue;
 		}
 		

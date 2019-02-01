@@ -332,3 +332,14 @@ void BJX2_Op_BF_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVOP);
 	}
 }
+
+
+void BJX2_Op_TRAP_Imm(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	BJX2_ThrowFaultStatus(ctx, op->imm);
+}
+
+void BJX2_Op_TRAP_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	BJX2_ThrowFaultStatus(ctx, ctx->regs[op->rn]);
+}

@@ -1335,6 +1335,30 @@ int BGBCC_JX2DA_EmitQWordAbs(BGBCC_JX2_Context *ctx, int lbl)
 	return(1);
 }
 
+int BGBCC_JX2DA_EmitDWordAbsDisp(BGBCC_JX2_Context *ctx, int lbl, int disp)
+{
+	char *sro;
+
+	if(ctx->is_simpass || !ctx->do_asm)
+		return(0);
+
+	sro=BGBCC_JX2DA_NameForLabel(ctx, lbl);
+	BGBCC_JX2DA_EmitPrintf(ctx, "  .dword %s+%d\n", sro, disp);
+	return(1);
+}
+
+int BGBCC_JX2DA_EmitQWordAbsDisp(BGBCC_JX2_Context *ctx, int lbl, int disp)
+{
+	char *sro;
+
+	if(ctx->is_simpass || !ctx->do_asm)
+		return(0);
+
+	sro=BGBCC_JX2DA_NameForLabel(ctx, lbl);
+	BGBCC_JX2DA_EmitPrintf(ctx, "  .qword %s+%d\n", sro, disp);
+	return(1);
+}
+
 int BGBCC_JX2DA_EmitComm(BGBCC_JX2_Context *ctx, int sz)
 {
 	if(ctx->is_simpass || !ctx->do_asm)

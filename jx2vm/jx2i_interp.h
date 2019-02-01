@@ -190,6 +190,9 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_LDISH20	0x43		//
 #define BJX2_NMID_SHAD		0x44		//
 #define BJX2_NMID_SHLD		0x45		//
+
+#define BJX2_NMID_TRAP		0x46		//
+
 // #define BJX2_NMID_SWAPB		0x46		//
 // #define BJX2_NMID_SWAPW		0x47		//
 #define BJX2_NMID_FADD		0x48		//
@@ -320,7 +323,10 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_FMID_REGSTREG2		0x1B		//Rm, (Rn, Ro)
 #define BJX2_FMID_REGREGREG		0x1C		//Rm, Ro, Rn
 #define BJX2_FMID_REGIMMREG		0x1D		//Rm, Imm, Rn
-#define BJX2_FMID_IMMXREG		0x1E		//#immx, Rn
+// #define BJX2_FMID_IMMXREG		0x1E		//#immx, Rn
+
+#define BJX2_FMID_IMMZREG		0x1E		//#immu, Rn
+#define BJX2_FMID_IMMNREG		0x1F		//#immn, Rn
 
 #define BJX2_FMID_FREG			0x20		//FRn
 #define BJX2_FMID_FREGREG		0x21		//FRm, FRn
@@ -386,6 +392,7 @@ u64 ex_regs[128];				//GPRs and CRs
 u64 ex_fpreg[32];				//FPRs
 
 BJX2_Trace *rttr[64];		//return traces (mini hash)
+BJX2_Trace *prttr;			//return traces (pred)
 
 BJX2_Trace *trhash[1024];
 BJX2_Trace *trcur;			//cached trace for interpreter loop.

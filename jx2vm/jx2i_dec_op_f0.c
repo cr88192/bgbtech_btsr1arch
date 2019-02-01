@@ -1675,6 +1675,7 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				break;
 #endif
 
+#if 0
 			case 0x6A:	/* 36zA */
 				op->rm=BJX2_REG_DLR;
 				op->nmid=BJX2_NMID_SWAPB;
@@ -1687,6 +1688,7 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				op->fmid=BJX2_FMID_REG;
 				op->Run=BJX2_Op_SWAPW_Reg;
 				break;
+#endif
 
 			case 0x6F:	/* 36zF */
 				op->nmid=BJX2_NMID_MOVT;
@@ -1914,6 +1916,7 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			}
 			break;
 
+#if 0
 		case 0x6:	/* F0eo_56nm */
 			op->nmid=BJX2_NMID_SHAD;
 			op->fmid=BJX2_FMID_REGIMMREG;
@@ -1926,6 +1929,7 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			op->Run=BJX2_Op_SHLD_RegImmReg;
 			if(eq)op->imm|=~31;
 			break;
+#endif
 
 #if 0
 		case 0x8:	/* F0eo_58nm */
@@ -2001,11 +2005,27 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			op->Run=BJX2_Op_FMOVD_RegStRegDisp;
 			break;
 		case 0x2:	/* F0eo_92nm */
+			if(rn_dfl==0)
+			{
+				op->rn=BJX2_REG_PC;
+				op->nmid=BJX2_NMID_FMOVS;
+				op->fmid=BJX2_FMID_REGSTREG2;
+				op->Run=BJX2_Op_FMOVS_RegStPcReg;
+				break;
+			}
 			op->nmid=BJX2_NMID_FMOVS;
 			op->fmid=BJX2_FMID_REGSTREG2;
 			op->Run=BJX2_Op_FMOVS_RegStReg2;
 			break;
 		case 0x3:	/* F0eo_93nm */
+			if(rn_dfl==0)
+			{
+				op->rn=BJX2_REG_PC;
+				op->nmid=BJX2_NMID_FMOVD;
+				op->fmid=BJX2_FMID_REGSTREG2;
+				op->Run=BJX2_Op_FMOVD_RegStPcReg;
+				break;
+			}
 			op->nmid=BJX2_NMID_FMOVD;
 			op->fmid=BJX2_FMID_REGSTREG2;
 			op->Run=BJX2_Op_FMOVD_RegStReg2;
@@ -2021,11 +2041,27 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			op->Run=BJX2_Op_FMOVD_LdRegDispReg;
 			break;
 		case 0x6:	/* F0eo_96nm */
+			if(rm_dfl==0)
+			{
+				op->rm=BJX2_REG_PC;
+				op->nmid=BJX2_NMID_FMOVS;
+				op->fmid=BJX2_FMID_LDREG2REG;
+				op->Run=BJX2_Op_FMOVS_LdPcRegReg;
+				break;
+			}
 			op->nmid=BJX2_NMID_FMOVS;
 			op->fmid=BJX2_FMID_LDREG2REG;
 			op->Run=BJX2_Op_FMOVS_LdReg2Reg;
 			break;
 		case 0x7:	/* F0eo_97nm */
+			if(rm_dfl==0)
+			{
+				op->rm=BJX2_REG_PC;
+				op->nmid=BJX2_NMID_FMOVD;
+				op->fmid=BJX2_FMID_LDREG2REG;
+				op->Run=BJX2_Op_FMOVD_LdPcRegReg;
+				break;
+			}
 			op->nmid=BJX2_NMID_FMOVD;
 			op->fmid=BJX2_FMID_LDREG2REG;
 			op->Run=BJX2_Op_FMOVD_LdReg2Reg;

@@ -1,0 +1,103 @@
+List of Builtin and Intrinsic Functions
+
+
+void __debugbreak(void);
+
+Trigger a breakpoint in the program.
+
+void __halt(void);
+
+Halt execution for a small amount of time.
+
+
+void __systrap(int exsr);
+
+Perform a system-call trap with a given exception code.
+
+
+... __syscall_nnn(...);
+
+Perform a system call to a given function number (given by nnn), with the arguments and return type for the system call provided by the prototype.
+
+The suffix follows the same basic notation as an integer literal.
+
+0..4095: Produce a normal SysCall (EXSR is 0xEzzz)
+4096..8191: Produce a VM Trap Call (EXSR is 0xFzzz)
+
+
+
+void __hint_use_egpr(void);
+
+Hint that compiler should enable the use of extended GPRs for functions where it might otherwise use a subset.
+
+
+void __hint_cc_dbgbreak(void);
+
+Trigger a compiler breakpoint / abort compilation.
+
+
+uint32_t	__float32_getbits(float v);
+float		__float32_frombits(uint32_t v);
+uint64_t	__float64_getbits(double v);
+double		__float64_frombits(uint64_t v);
+
+Convert between a floating point representation and its bitwise equivalent.
+
+
+int __int_min(int x, int y);
+
+Find the minimum of two integers.
+
+
+int __int_max(int x, int y);
+
+Find the maximum of two integers.
+
+
+int __int_clamp(int val, int min, int max);
+
+Clamp value to be between min and max.
+
+
+int32_t  __int32_bswap_s(int32_t  v);
+uint32_t __int32_bswap_u(uint32_t v);
+uint32_t __int32_bswap  (uint32_t v);
+
+Byte-swap a DWord value. These variants differ as to how they handle sign or zero extending the result. The 's' suffix will sign extend, and the 'u' suffix will zero extend. The version without a suffix will leave any higher-order bits in an undefined state.
+
+
+uint64_t __int64_bswap(uint64_t v);
+
+Byte-swap a 64 bit value.
+
+
+uint32_t __int32_shufb(uint32_t v, int mask);
+uint64_t __int64_shuf4b(uint64_t v, int mask);
+
+Shuffle 4 bytes, or the low 4 bytes within a 64 bit value.
+Mask is given with two bits per element, with the low 2 bits of the mask corresponding to the low byte of the register.
+
+
+uint64_t __int64_shufw(uint64_t v, int mask);
+
+Shuffle 4 words within a 64 bit value.
+
+
+uint64_t __int64_shuf8b(uint64_t v, int mask);
+
+Shuffle 8 bytes within a 64 bit value.
+The mask is given with 3 bits per element, for a total of 24 bits.
+
+
+uint64_t __int64_paddw(uint64_t x, uint64_t y);
+uint64_t __int64_paddl(uint64_t x, uint64_t y);
+uint64_t __int64_psubw(uint64_t x, uint64_t y);
+uint64_t __int64_psubl(uint64_t x, uint64_t y);
+
+Add or subtract packed Words or DWords.
+
+
+uint64_t __int64_pmulw(uint64_t x, uint64_t y);
+uint64_t __int64_pmulhw(uint64_t x, uint64_t y);
+
+Multiply packed works, taking the low or high results.

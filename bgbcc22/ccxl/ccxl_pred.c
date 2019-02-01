@@ -189,6 +189,8 @@ ccxl_type BGBCC_CCXL_MakeTypeID(
 		ctx->ccxl_tyc_seen|=BGBCC_TYCSEEN_FLOAT128;
 		break;
 	case CCXL_TY_VARIANT:
+	case CCXL_TY_VARSTRING:
+	case CCXL_TY_VAROBJECT:
 		ctx->ccxl_tyc_seen|=BGBCC_TYCSEEN_VARIANT;
 		break;
 	case CCXL_TY_F:
@@ -238,6 +240,12 @@ ccxl_type BGBCC_CCXL_GetRegType(
 		if(regty==CCXL_REGTY_GLOBAL)
 		{
 			i=reg.val&CCXL_REGID_REGMASK;
+			if(!i)
+			{
+				tty.val=(reg.val&CCXL_REGID_TYPEMASK)>>CCXL_REGID_TYPESHIFT;
+				BGBCC_CCXL_TypeGetTypedefType(ctx, tty, &tty);
+				return(tty);
+			}
 			if(i>=ctx->n_reg_globals)
 				{ BGBCC_DBGBREAK }
 			tty=ctx->reg_globals[i]->type;
@@ -257,7 +265,27 @@ ccxl_type BGBCC_CCXL_GetRegType(
 		if(regty<CCXL_REGTY_IMM_STRING)
 		{
 			if(regty==CCXL_REGTY_IMM_INT)
-				{ tty.val=CCXL_TY_I; return(tty); }
+			{
+//				tty.val=CCXL_TY_I;
+//				tty.val=(reg.val>>32)&0xFFFF;
+				switch(reg.val>>44)
+				{
+					case 0: tty.val=CCXL_TY_I ; break;
+					case 1: tty.val=CCXL_TY_UI; break;
+					case 2: tty.val=CCXL_TY_L ; break;
+					case 3: tty.val=CCXL_TY_UL; break;
+					case 4: tty.val=CCXL_TY_SB; break;
+					case 5: tty.val=CCXL_TY_UB; break;
+					case 6: tty.val=CCXL_TY_SS; break;
+					case 7: tty.val=CCXL_TY_US; break;
+					case 8:
+						tty.val=(reg.val>>32)&0xFFFF;
+						break;
+					default:
+						 tty.val=CCXL_TY_I; break;
+				}
+				return(tty);
+			}
 			if(regty==CCXL_REGTY_IMM_LONG)
 				{ tty.val=CCXL_TY_L; return(tty); }
 			if(regty==CCXL_REGTY_IMM_FLOAT)
@@ -490,7 +518,7 @@ ccxl_type BGBCC_CCXL_GetRegReturnType(
 		return(dty);
 	}
 
-	printf("BGBCC_CCXL_GetRegReturnType: ty=%X\n", bty.val);
+	printf("BGBCC_CCXL_GetRegReturnType: ty=%X reg=%llX\n", bty.val, reg.val);
 
 	BGBCC_CCXL_StubWarn(ctx);
 	dty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_I);
@@ -625,6 +653,14 @@ bool BGBCC_CCXL_IsRegImmIntP(
 				return(true);
 			return(false);
 		}
+
+		if(	((reg.val&CCXL_REGINT_STMASK)==CCXL_REGINT_ST_SB) ||
+			((reg.val&CCXL_REGINT_STMASK)==CCXL_REGINT_ST_UB) ||
+			((reg.val&CCXL_REGINT_STMASK)==CCXL_REGINT_ST_SS) ||
+			((reg.val&CCXL_REGINT_STMASK)==CCXL_REGINT_ST_US) )
+				return(true);
+
+		return(false);
 	}
 	return(false);
 }
@@ -632,6 +668,15 @@ bool BGBCC_CCXL_IsRegImmIntP(
 bool BGBCC_CCXL_IsRegImmLongP(
 	BGBCC_TransState *ctx, ccxl_register reg)
 {
+	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_INT)
+	{
+		if((reg.val&CCXL_REGINT_STMASK)==CCXL_REGINT_ST_L)
+			return(true);
+		if((reg.val&CCXL_REGINT_STMASK)==CCXL_REGINT_ST_UL)
+			return(true);
+		return(false);
+	}
+
 	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_LONG)
 		return(true);
 	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_LONG_LVT)
@@ -1550,6 +1595,26 @@ int BGBCC_CCXL_GetRegImm32Value(
 	return(0);
 }
 
+ccxl_status BGBCC_CCXL_GetRegForSmallIntValue(
+	BGBCC_TransState *ctx, ccxl_register *rreg, s32 val, int stv)
+{
+	ccxl_register treg;
+	
+	if((stv>8) && ((stv&0xFFFF)==stv))
+	{
+		treg.val=(val&CCXL_REGINT_MASK)|CCXL_REGTY_IMM_INT|
+			CCXL_REGINT_ST_OF1|(((u64)stv)<<32);
+		*rreg=treg;
+		return(CCXL_STATUS_YES);
+	}
+	
+//	treg.val=(val&CCXL_REGINT_MASK)|CCXL_REGTY_IMM_INT;
+	treg.val=(val&CCXL_REGINT_MASK)|CCXL_REGTY_IMM_INT|
+		(((u64)(stv&15))<<44);
+	*rreg=treg;
+	return(CCXL_STATUS_YES);
+}
+
 ccxl_status BGBCC_CCXL_GetRegForIntValue(
 	BGBCC_TransState *ctx, ccxl_register *rreg, s32 val)
 {
@@ -1699,6 +1764,17 @@ ccxl_status BGBCC_CCXL_GetRegForGlobalAddrValue(
 	ccxl_register treg;
 	
 	treg.val=(val&CCXL_REGINT_MASK)|CCXL_REGTY_IMM_GBLADDR;
+	*rreg=treg;
+	return(CCXL_STATUS_YES);
+}
+
+ccxl_status BGBCC_CCXL_GetRegForGlobalAddrValueDisp(
+	BGBCC_TransState *ctx, ccxl_register *rreg, s32 val, int disp)
+{
+	ccxl_register treg;
+	
+	treg.val=(val&CCXL_REGINT_MASK)|CCXL_REGTY_IMM_GBLADDR;
+	treg.val|=CCXL_REGGBLA_ST_D|(((u64)(disp&0xFFFFF))<<32);
 	*rreg=treg;
 	return(CCXL_STATUS_YES);
 }
@@ -1874,7 +1950,10 @@ int BGBCC_CCXL_GetTypeOperationZ(
 
 	if(BGBCC_CCXL_TypeValueObjectP(ctx, ty))
 		return(CCXL_TY_S);
-	
+
+	if(BGBCC_CCXL_TypeRefArrayP(ctx, ty))
+		return(CCXL_TY_V);
+
 	i=BGBCC_CCXL_GetTypeBaseType(ctx, ty);
 	if(i<16)
 		return(i);
@@ -1891,6 +1970,11 @@ int BGBCC_CCXL_GetTypeOperationZ(
 		return(CCXL_TY_FATP_AREF);
 	if(BGBCC_CCXL_TypeMethodPointerP(ctx, ty))
 		return(CCXL_TY_FATP_VMTH);
+
+	if(i==CCXL_TY_VARSTRING)
+		return(CCXL_TY_V);
+	if(i==CCXL_TY_VAROBJECT)
+		return(CCXL_TY_V);
 	
 	return(-1);
 //	return(CCXL_TY_UNDEF_I);
@@ -1909,6 +1993,9 @@ int BGBCC_CCXL_GetTypeOperationExtZ(
 	if(BGBCC_CCXL_TypeValueObjectP(ctx, ty))
 		return(CCXL_TY_S);
 	
+	if(BGBCC_CCXL_TypeRefArrayP(ctx, ty))
+		return(CCXL_TY_V);
+
 	i=BGBCC_CCXL_GetTypeBaseType(ctx, ty);
 	if(i<256)
 		return(i);

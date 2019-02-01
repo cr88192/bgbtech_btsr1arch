@@ -536,6 +536,22 @@ int BJX2_JitInsnVMRegVMReg(UAX_Context *jctx, int op, int didx, int sidx)
 	if(sidx!=(sidx&127))
 		{ __debugbreak(); }
 
+	if(sidx==didx)
+	{
+		dreg=BJX2_JitLoadReadSyncVMReg(jctx, didx);
+		if(dreg!=UAX_REG_Z)
+		{
+			UAX_AsmInsnRegReg(jctx, op, dreg, dreg);
+			return(1);
+		}
+
+		BJX2_JitLoadVMReg(jctx, sidx, UAX_REG_RDX);
+		UAX_AsmInsnRegReg(jctx, op, UAX_REG_RDX, UAX_REG_RDX);
+		BJX2_JitStoreVMReg(jctx, didx, UAX_REG_RDX);
+//		BJX2_JitInsnVMRegReg(jctx, op, didx, UAX_REG_EAX);
+		return(1);
+	}
+
 	dreg=BJX2_JitLoadReadSyncVMReg(jctx, didx);
 	sreg=BJX2_JitLoadReadSyncVMReg(jctx, sidx);
 	if(sreg!=UAX_REG_Z)
@@ -829,7 +845,7 @@ int BJX2_JitGetAddrByte(UAX_Context *jctx, BJX2_Context *cpu)
 	int l0, l1, l2;
 	int i;
 
-#if 0
+#if 1
 //	if(cpu->GetAddrDWord==BJX2_GetAddrDWordFMMU_NoAT)
 	if(1)
 	{
@@ -1151,11 +1167,18 @@ int BJX2_TryJitOpcode(UAX_Context *jctx,
 
 	if(BJX2_TryJitOpcode_MovReg(jctx, cpu, tr, op)>0)
 		return(1);
+
+//	return(0);
+
 	if(BJX2_TryJitOpcode_ArithReg(jctx, cpu, tr, op)>0)
 		return(1);
+
+//	return(0);
+
 	if(BJX2_TryJitOpcode_SignExtOp(jctx, cpu, tr, op)>0)
 		return(1);
 
+//	return(0);
 
 	if(BJX2_TryJitOpcode_MovMem(jctx, cpu, tr, op)>0)
 		return(1);

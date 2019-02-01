@@ -173,10 +173,13 @@ Typed signatures are encoded as strings, with characters indicating value types.
 * 'x': long long
 * 'y': unsigned long long
 * 'z': vararg
+* 'Co': object
+* 'Cs': string
 * 'Da': auto
 * 'Dz': va_list
 * 'A{sz};{sig}: Array
 * 'P{sig}': Pointer
+* 'Q{sig}': Tag Array
 * 'U{name};': Extended Type
 * 'X{name};': Struct/Union
 * '({args}){ret}': Function Signature
@@ -638,6 +641,9 @@ Opcodes (Executable Code)
 ** For Each Label:
 *** SVLI val;	//case value
 *** LABEL lbl;	//target label
+* 0x73, MKTMPOBJ
+** STRING sig;
+** Make a new temporary object of a given type.
 
 
 === Global Objects ===

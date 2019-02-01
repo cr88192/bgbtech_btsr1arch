@@ -1136,6 +1136,7 @@ int BGBCC_JX2C_EmitJCmpVRegVRegInt(
 
 		if(((imm&1023)==imm) || ((imm|(~1023))==imm))
 			noflip=1;
+
 //		if(sctx->is_betav && !sctx->has_bjx1ari)
 //		if(sctx->is_betav && (!sctx->has_bjx1ari || !sctx->has_bjx1mov))
 //			noflip=0;
@@ -1650,5 +1651,79 @@ int BGBCC_JX2C_EmitJmpTab(
 
 	BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, ctreg);
 	BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, sreg);
+	return(1);
+}
+
+int BGBCC_JX2C_EmitInitObj(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	ccxl_type type,
+	ccxl_register sreg)
+{
+	BGBCC_CCXL_RegisterInfo *obj;
+	int ctreg, rcls;
+	int i, j, k;
+	
+	obj=ctx->cur_func;
+
+	if(BGBCC_CCXL_IsRegTempP(ctx, sreg))
+	{
+		i=sreg.val&CCXL_REGID_BASEMASK;
+	
+		if(obj->regs[i]->regflags&BGBCC_REGFL_CULL)
+			return(0);
+
+		rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, obj->regs[i]->type);
+
+		if((rcls==BGBCC_SH_REGCLS_VO_REF) ||
+			(rcls==BGBCC_SH_REGCLS_AR_REF))
+		{
+			j=obj->regs[i]->fxmoffs+(sctx->frm_offs_fix);
+			k=obj->regs[i]->fxoffs;
+
+			ctreg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
+//			BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, BGBCC_SH_REG_R3);
+			if(sctx->is_addr64)
+			{
+				BGBCC_JX2C_EmitLdaFrameOfsReg(ctx, sctx, j, ctreg);
+				BGBCC_JX2C_EmitStoreFrameOfsReg(ctx, sctx, k, ctreg);
+			}else
+			{
+				BGBCC_JX2C_EmitLdaFrameOfsReg(ctx, sctx, j, ctreg);
+				BGBCC_JX2C_EmitStoreFrameOfsReg(ctx, sctx, k, ctreg);
+			}
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, ctreg);
+		}
+		
+		return(1);
+	}
+	
+	return(0);
+}	
+
+/*
+int BGBCC_JX2C_EmitMovVRegImm(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	ccxl_type type,
+	ccxl_register dreg, s64 imm)
+*/
+
+int BGBCC_JX2C_SizeofVar(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	ccxl_type type,
+	ccxl_register dreg)
+{
+	ccxl_type tty;
+	int tsz;
+
+	tsz=BGBCC_CCXL_TypeGetLogicalSize(ctx, type);
+
+	tty=BGBCC_CCXL_GetRegType(ctx, dreg);
+	BGBCC_JX2C_EmitMovVRegImm(ctx, sctx, tty, dreg, tsz);
+
+//	BGBCC_CCXL_StubError(ctx);
+
 	return(1);
 }

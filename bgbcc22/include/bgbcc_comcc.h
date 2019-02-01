@@ -138,6 +138,7 @@ byte fpu_soft;		//use SoftFPU design.
 byte fpu_lite;		//use LiteFPU design.
 
 byte is_fixed32;	//uses only 32-bit instruction forms
+byte op_is_wex2;	//encoding a WEX2 instruction (0/2/3).
 
 byte has_shad;		//has SHAD/SHLD
 byte has_movi20;	//has MOVI20 and friends
@@ -156,6 +157,9 @@ byte has_addsl;		//has ADDS.L and similar
 byte use_egpr;		//enable use of extended GPRs
 byte maxreg_gpr;	//current number of GPR register-slots
 byte maxreg_gpr_lf;	//current number of GPR register-slots (leaf)
+
+byte maxreg_fpr;	//current number of GPR register-slots
+byte maxreg_fpr_lf;	//current number of GPR register-slots (leaf)
 
 byte use_memmdl;	//use memory model
 byte csrv_skip;		//skip a CSRV operation

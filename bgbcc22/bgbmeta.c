@@ -266,6 +266,71 @@ int BGBCC_StoreFile(char *name, void *buf, int sz)
 	return(0);
 }
 
+char *bgbcc_protos_c =
+"void       __debugbreak();\n"
+"void       __hint_use_egpr();\n"
+"int        __int_min(int x, int y);\n"
+"int        __int_max(int x, int y);\n"
+"int        __int_clamp(int x, int min, int max);\n"
+
+"unsigned long long  __object_getbits(__object val);\n"
+"__object            __object_frombits(unsigned long long val);\n"
+"unsigned long long  __variant_getbits(__variant val);\n"
+"__variant           __variant_frombits(unsigned long long val);\n"
+
+"void	   *__operator_new(int sz);\n"
+"void       __exc_throw(__object exc);\n"
+"__variant  __lva_getslot(__object obj, char *name);\n"
+"void       __lva_setslot(__object obj, char *name, __variant val);\n"
+"int        __lva_get_length(__object obj);\n"
+"__variant  __lva_methodcall(__object obj, char *name, __object args);\n"
+
+"__object   __lva_newvararray_0(void);\n"
+"__object   __lva_newvararray_1(__object a0);\n"
+"__object   __lva_newvararray_2(__object a0, __object a1);\n"
+"__object   __lva_newvararray_3(__object a0, __object a1, __object a2);\n"
+"__object   __lva_newvararray_4("
+	"__object a0, __object a1, __object a2, __object a3);\n"
+"__object   __lva_newvararray_5("
+	"__object a0, __object a1, __object a2, __object a3, "
+	"__object a4);\n"
+"__object   __lva_newvararray_6("
+	"__object a0, __object a1, __object a2, __object a3, "
+	"__object a4, __object a5);\n"
+"__object   __lva_newvararray_7("
+	"__object a0, __object a1, __object a2, __object a3, "
+	"__object a4, __object a5, __object a6);\n"
+"__object   __lva_newvararray_8("
+	"__object a0, __object a1, __object a2, __object a3, "
+	"__object a4, __object a5, __object a6, __object a7);\n"
+
+"int        __lva_loadindex_i(__object obj, int idx);\n"
+"long long  __lva_loadindex_l(__object obj, int idx);\n"
+"float      __lva_loadindex_f(__object obj, int idx);\n"
+"double     __lva_loadindex_d(__object obj, int idx);\n"
+"void      *__lva_loadindex_p(__object obj, int idx);\n"
+"__object   __lva_loadindex_v(__object obj, int idx);\n"
+"int        __lva_loadindex_sb(__object obj, int idx);\n"
+"int        __lva_loadindex_ub(__object obj, int idx);\n"
+"int        __lva_loadindex_ss(__object obj, int idx);\n"
+"int        __lva_loadindex_us(__object obj, int idx);\n"
+"unsigned int        __lva_loadindex_ui(__object obj, int idx);\n"
+"unsigned long long  __lva_loadindex_ul(__object obj, int idx);\n"
+"__variant   __lva_loadindex_va(__object obj, int idx);\n"
+
+"void        __lva_storeindex_i(__object obj, int idx, int val);\n"
+"void        __lva_storeindex_l(__object obj, int idx, long long val);\n"
+"void        __lva_storeindex_f(__object obj, int idx, float val);\n"
+"void        __lva_storeindex_d(__object obj, int idx, double val);\n"
+"void        __lva_storeindex_p(__object obj, int idx, void *val);\n"
+"void        __lva_storeindex_v(__object obj, int idx, __object val);\n"
+"void        __lva_storeindex_b(__object obj, int idx, int val);\n"
+"void        __lva_storeindex_s(__object obj, int idx, int val);\n"
+"void        __lva_storeindex_va(__object obj, int idx, __variant val);\n"
+
+"\n";
+
+
 int bgbcc_storefile(char *name, void *buf, int sz)
 	{ return(BGBCC_StoreFile(name, buf, sz)); }
 
@@ -274,6 +339,15 @@ char *bgbcc_loadfile(char *name, int *rsz)
 	FILE *fd;
 	void *buf;
 	int sz;
+
+	if(!strcmp(name, "$protos$.c"))
+	{
+		sz=strlen(bgbcc_protos_c);
+		buf=bgbcc_malloc2(sz);
+		memcpy(buf, bgbcc_protos_c, sz);
+		*rsz=sz;
+		return(buf);
+	}
 
 //	printf("bgbcc_loadfile: %s\n", name);
 
@@ -617,12 +691,15 @@ int BGBCC_LoadCSourcesCCXL(
 	char tb[256];
 	BGBCC_TransState *ctx;
 	int t0, t1, t2;
+	char *asts_bsn[256];
+	BCCX_Node *asts_bsa[256];
 	BCCX_Node *t, *c, *n;
 	byte *buf;
 	char *dllname;
 	char *s0, *s1;
 	fourcc lang;
-	int i, sz, omsz;
+	int i, j, k, sz, omsz;
+	int n_asts_bs;
 
 	omsz=*rsz;
 	
@@ -671,6 +748,8 @@ int BGBCC_LoadCSourcesCCXL(
 	{
 		BGBCC_CCXLR3_BeginRecRIL(ctx);
 	}
+	
+	n_asts_bs=0;
 
 	for(i=0; i<nnames; i++)
 	{
@@ -692,8 +771,10 @@ int BGBCC_LoadCSourcesCCXL(
 			continue;
 		}
 
-#if 0
 		lang=BGBCP_LangForName(names[i]);
+
+#if 0
+//		lang=BGBCP_LangForName(names[i]);
 		if(lang==BGBCC_IMGFMT_RIL3)
 		{
 			buf=bgbcc_loadfile2(names[i], &sz);
@@ -715,8 +796,53 @@ int BGBCC_LoadCSourcesCCXL(
 		if(!t)
 			break;
 
+//		if(0)
+		if((lang==BGBCC_LANG_CS) ||
+			(lang==BGBCC_LANG_BS2))
+		{
+			j=n_asts_bs++;
+			asts_bsn[j]=names[i];
+			asts_bsa[j]=t;
+			BGBCC_CCXL_CompileModuleTopOnlyCTX(ctx, names[i], t);
+		}else
+		{
+			t0=clock();
+			BGBCC_CCXL_CompileModuleCTX(ctx, names[i], t);
+			BCCX_DeleteTree(t);
+			t1=clock();
+			t2=t1-t0;
+	//		printf("Compile Module %dms\n", t2);
+
+			bgbcc_msec_cc+=t2;
+			bgbcc_msec_tot++;
+			
+			c=ctx->reduce_tmp;
+			ctx->reduce_tmp=NULL;
+			while(c)
+			{
+				n=c->hnext;
+				BCCX_DeleteTree(c);
+				c=n;
+			}
+		}
+	}
+	
+	if(i<nnames)
+	{
+		return(-1);
+	}
+
+	for(i=0; i<n_asts_bs; i++)
+	{
+		BGBCC_CCXL_CompileModuleTopOnlyCTX(ctx,
+			asts_bsn[i], asts_bsa[i]);
+	}
+	
+	for(i=0; i<n_asts_bs; i++)
+	{
+		t=asts_bsa[i];
 		t0=clock();
-		BGBCC_CCXL_CompileModuleCTX(ctx, names[i], t);
+		BGBCC_CCXL_CompileModuleCTX(ctx, asts_bsn[i], t);
 		BCCX_DeleteTree(t);
 		t1=clock();
 		t2=t1-t0;
@@ -733,11 +859,6 @@ int BGBCC_LoadCSourcesCCXL(
 			BCCX_DeleteTree(c);
 			c=n;
 		}
-	}
-	
-	if(i<nnames)
-	{
-		return(-1);
 	}
 
 //	if(ctx->ril_ip)
@@ -1389,7 +1510,7 @@ int main(int argc, char *argv[], char **env)
 	void *p;
 	char *s, *t, *s0;
 	fourcc fmt;
-	int n, m, nuds, nargs, nadds;
+	int n, m, nuds, nargs, nadds, minuds;
 	int t0, dt, te, sz;
 	int i, j;
 
@@ -1412,6 +1533,10 @@ int main(int argc, char *argv[], char **env)
 
 	nadds=0;
 	nuds=0;
+
+	uds[nuds++]="$protos$.c";
+	
+	minuds=nuds;
 
 	n=0; m=0; nadds=0;
 	for(i=1; i<argc; i++)
@@ -1657,7 +1782,8 @@ int main(int argc, char *argv[], char **env)
 		return(0);
 	}
 
-	if(!nuds)
+//	if(!nuds)
+	if(nuds<minuds)
 	{
 		printf("No input files\n");
 //		help(argv[0]);
