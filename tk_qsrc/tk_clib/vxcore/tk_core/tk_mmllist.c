@@ -1,5 +1,9 @@
 TKMM_MemLnkObj *tkmm_mmlist_freelist[256];
 
+byte *tkmm_mmlist_vrm_brkbuf[1024];
+byte *tkmm_mmlist_vrm_brkend[1024];
+int tkmm_mmlist_n_vrm=0;
+
 byte *tkmm_mmlist_brkbuf=NULL;
 byte *tkmm_mmlist_brkend;
 byte *tkmm_mmlist_brkpos;
@@ -7,11 +11,17 @@ byte *tkmm_mmlist_brkpos;
 void *TKMM_MMList_AllocBrk(int sz)
 {
 	byte *ptr;
+	int i;
 
 	if(sz>=65536)
 	{
 		tk_puts("TKMM_MMList_AllocBrk A\n");
 		ptr=TKMM_PageAlloc(sz);
+
+		i=tkmm_mmlist_n_vrm++;
+		tkmm_mmlist_vrm_brkbuf[i]=ptr;
+		tkmm_mmlist_vrm_brkend[i]=ptr+sz;
+
 		return(ptr);
 	}
 	
@@ -29,6 +39,10 @@ void *TKMM_MMList_AllocBrk(int sz)
 		tkmm_mmlist_brkbuf=TKMM_PageAlloc(1<<20);
 		tkmm_mmlist_brkend=tkmm_mmlist_brkbuf+(1<<20);
 		tkmm_mmlist_brkpos=tkmm_mmlist_brkbuf;
+
+		i=tkmm_mmlist_n_vrm++;
+		tkmm_mmlist_vrm_brkbuf[i]=tkmm_mmlist_brkbuf;
+		tkmm_mmlist_vrm_brkend[i]=tkmm_mmlist_brkend;
 	}
 
 //	tk_puts("TKMM_MMList_AllocBrk D\n");
@@ -230,6 +244,7 @@ int TKMM_MMList_Free(void *ptr)
 	obj->fl|=1;
 	
 	TKMM_MMList_FreeLnkObj(obj);
+	return(0);
 }
 
 int TKMM_MMList_Init(void)
@@ -238,4 +253,55 @@ int TKMM_MMList_Init(void)
 
 	for(i=0; i<256; i++)
 		tkmm_mmlist_freelist[i]=NULL;
+	return(0);
+}
+
+int TKMM_MMList_CheckPtrIsHeap(void *ptr)
+{
+	byte *vss, *vse;
+	byte *p;
+	int i, vrn;
+	
+	p=ptr;
+	vrn=tkmm_mmlist_n_vrm;
+	for(i=0; i<vrn; i++)
+	{
+		vss=tkmm_mmlist_vrm_brkbuf[i];
+		vse=tkmm_mmlist_vrm_brkend[i];
+		if((p>=vss) && (p<vse))
+			return(1);
+	}
+	
+	return(0);
+}
+
+int TKMM_MMList_GetTag(void *ptr)
+{
+	TKMM_MemLnkObj *obj;
+
+	if(!ptr)return(-1);
+	obj=(TKMM_MemLnkObj *)(((byte *)ptr)-TKMM_OFFS_DATA);
+	return(obj->dty_tag);
+}
+
+
+int TKMM_MMList_SetTag(void *ptr, int tag)
+{
+	TKMM_MemLnkObj *obj;
+
+	if(!ptr)return(-1);
+	obj=(TKMM_MemLnkObj *)(((byte *)ptr)-TKMM_OFFS_DATA);
+	obj->dty_tag=tag;
+	return(0);
+}
+
+int TKMM_MMList_GetSize(void *ptr)
+{
+	TKMM_MemLnkObj *obj;
+	int sz1;
+
+	if(!ptr)return(-1);
+	obj=(TKMM_MemLnkObj *)(((byte *)ptr)-TKMM_OFFS_DATA);
+	sz1=TKMM_FxiToSize(obj->ix);
+	return(sz1);
 }

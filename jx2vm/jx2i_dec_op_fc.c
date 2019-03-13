@@ -430,3 +430,35 @@ int BJX2_DecodeOpcode_DecFC(BJX2_Context *ctx,
 	}
 	return(ret);
 }
+
+int BJX2_DecodeOpcode_DecDC(BJX2_Context *ctx,
+	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2, int opw3)
+{
+	BJX2_Opcode *op1;
+	int ret;
+
+	op->fl|=BJX2_OPFL_TRIWORD;
+	op->opn=opw1;
+	op->opn2=opw2;
+	op->opn3=opw3;
+	
+	op1=BJX2_ContextAllocOpcode(ctx);
+
+	ret=BJX2_DecodeOpcode_DecFC(ctx, op1, addr, opw1, opw2, opw3);
+
+	if(opw1&0x0200)
+	{
+		op->nmid=BJX2_NMID_PRED_F;
+		op->fmid=BJX2_FMID_CHAIN;
+		op->Run=BJX2_Op_PREDF_Chn;
+		op->data=op1;
+	}else
+	{
+		op->nmid=BJX2_NMID_PRED_T;
+		op->fmid=BJX2_FMID_CHAIN;
+		op->Run=BJX2_Op_PREDT_Chn;
+		op->data=op1;
+	}
+
+	return(ret);
+}

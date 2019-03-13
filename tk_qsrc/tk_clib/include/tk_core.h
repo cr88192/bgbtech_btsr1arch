@@ -140,9 +140,11 @@ struct TKMM_MemLnkObj_s {
 TKMM_MemLnkObj *cnext;	//next object in chunk
 TKMM_MemLnkObj *cprev;	//previous object in chunk
 u16 ix;					//size index value
-byte fl;
+u16 dty_tag;			//type tag
+byte fl;				//object flags
 byte check;				//check value
-u32 pad;
+byte refcnt;			//reference count
+byte pad;
 // int flag;
 // u32 size;
 //double data[1];	//start of data
@@ -202,6 +204,7 @@ void *udata1;
 
 #include <tk_fatfs.h>
 #include <tk_dummyavi.h>
+#include <tk_varobj.h>
 
 void *TKMM_Malloc(int sz);
 int TKMM_Free(void *ptr);

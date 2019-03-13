@@ -154,7 +154,8 @@ void *__lva_conv_toptr(u64 val)
 
 	if((val>>60)==0)
 	{
-#ifdef __BJX1_64__
+// #ifdef __BJX1_64__
+#ifdef __ADDR_64__
 		iv=val<<16;
 		return((void *)(iv>>16));
 #else
@@ -164,7 +165,8 @@ void *__lva_conv_toptr(u64 val)
 
 	if((val>>60)==15)
 	{
-#ifdef __BJX1_64__
+//#ifdef __BJX1_64__
+#ifdef __ADDR_64__
 		iv=val<<4;
 		return((void *)(iv>>4));
 #else
@@ -174,7 +176,8 @@ void *__lva_conv_toptr(u64 val)
 
 	if((val>>62)==1)
 	{
-#ifdef __BJX1_64__
+// #ifdef __BJX1_64__
+#ifdef __ADDR_64__
 		iv=val<<2;
 		return((void *)(iv>>2));
 #else
@@ -266,17 +269,28 @@ u64 __lva_conv_fromf64(double val)
 
 u64 __lva_conv_fromptr(void *val)
 {
-#ifdef __BJX1_64__
 	u64 v;	
+
+// #ifdef __BJX1_64__
+#ifdef __ADDR_64__
 	v=(u64)val;
 	v=v<<16;
 	v=v>>16;
+	v|=TKMM_LVA_GetPtrTypeTag(val);
 	return(v);
 #else
-	return((u64)((u32)val));
+	v=(u64)((u32)val);
+	v|=TKMM_LVA_GetPtrTypeTag(val);
+	return(v);
 #endif
 }
 
+int tkmm_lvatyi_string;
+
+u64 __lva_conv_fromstr(char *val)
+{
+	return(TKMM_LVA_WrapString(val));
+}
 
 u64 __lva_add(u64 arga, u64 argb)
 {
@@ -305,7 +319,7 @@ u64 __lva_add(u64 arga, u64 argb)
 		}
 	}
 
-	if(__lva_fixnump(arga))
+	if(__lva_flonump(arga))
 	{
 		if(__lva_fixnump(argb) ||
 			__lva_flonump(argb))
@@ -346,7 +360,7 @@ u64 __lva_sub(u64 arga, u64 argb)
 		}
 	}
 
-	if(__lva_fixnump(arga))
+	if(__lva_flonump(arga))
 	{
 		if(__lva_fixnump(argb) ||
 			__lva_flonump(argb))

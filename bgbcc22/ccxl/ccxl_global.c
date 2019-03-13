@@ -1956,6 +1956,9 @@ void BGBCC_CCXL_FixupObjSize(BGBCC_TransState *ctx,
 
 	if(!obj)
 		return;
+	
+	if(ctx->ccxl_top_only)
+		return;
 
 	switch(obj->littype)
 	{
@@ -2481,6 +2484,22 @@ void BGBCC_CCXL_FixupObjSize(BGBCC_TransState *ctx,
 					obj2=BGBCC_CCXL_LookupStructureForType(ctx, tty);
 					obj->decl->args[i]->flagsint|=obj2->decl->flagsint&
 						(BGBCC_TYFL_NONPOD|BGBCC_TYFL_INTERFACE);
+					
+					/* Mark any methods used by interfaces as virtual. */
+					for(j=0; j<obj2->decl->n_regs; j++)
+					{
+						for(k=0; k<obj->decl->n_regs; k++)
+						{
+							if(!strcmp(obj2->decl->regs[j]->name,
+								obj->decl->regs[k]->name))
+							{
+								obj->decl->regs[k]->flagsint&=
+									~BGBCC_TYFL_FINAL;
+								obj->decl->regs[k]->flagsint|=
+									BGBCC_TYFL_VIRTUAL;
+							}
+						}
+					}
 				}
 
 				if(obj->decl->args[i]->flagsint&BGBCC_TYFL_INTERFACE)
@@ -2496,13 +2515,24 @@ void BGBCC_CCXL_FixupObjSize(BGBCC_TransState *ctx,
 			vtix=4;
 			if((nsbc==1) && (nsbcv==1))
 			{
-//				obj->decl->n_vargs
-				vtix=obj->decl->args[0]->n_vargs;
+				tty=obj->decl->args[0]->type;
+				obj2=BGBCC_CCXL_LookupStructureForType(ctx, tty);
 
-				msz=obj->decl->args[0]->fxmsize;
-				nsz=obj->decl->args[0]->fxnsize;
-				mal=obj->decl->args[0]->fxmalgn;
-				nal=obj->decl->args[0]->fxnalgn;
+				vtix=obj2->decl->n_vargs;
+
+				msz=obj2->decl->fxmsize;
+				nsz=obj2->decl->fxnsize;
+				mal=obj2->decl->fxmalgn;
+				nal=obj2->decl->fxnalgn;
+
+
+//				obj->decl->n_vargs
+//				vtix=obj->decl->args[0]->n_vargs;
+
+//				msz=obj->decl->args[0]->fxmsize;
+//				nsz=obj->decl->args[0]->fxnsize;
+//				mal=obj->decl->args[0]->fxmalgn;
+//				nal=obj->decl->args[0]->fxnalgn;
 			}
 
 			if( ((nsbc>1) || (nsbcv>1)) )
@@ -2548,6 +2578,13 @@ void BGBCC_CCXL_FixupObjSize(BGBCC_TransState *ctx,
 			if	((obj->decl->regs[i]->regtype==CCXL_LITID_FUNCTION) ||
 				 (obj->decl->regs[i]->regtype==CCXL_LITID_PROTOTYPE))
 			{
+				if((obj->decl->regs[i]->flagsint&BGBCC_TYFL_FINAL) ||
+					(obj->decl->regs[i]->flagsint&BGBCC_TYFL_STATIC))
+				{
+					obj->decl->regs[i]->fxmoffs=0;
+					continue;
+				}
+
 				obj->decl->regs[i]->fxmoffs=vtix;
 				vtix++;
 				continue;
@@ -2959,11 +2996,15 @@ void BGBCC_CCXL_End(BGBCC_TransState *ctx)
 void BGBCC_CCXL_AttribStr(BGBCC_TransState *ctx, int attr, char *str)
 {
 	BGBCC_CCXL_LiteralInfo *obj;
+	ccxl_type bty;
 	int i, j, k;
 
 	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_ATTRSTR);
 	BGBCC_CCXLR3_EmitArgTag(ctx, attr);
 	BGBCC_CCXLR3_EmitArgString(ctx, str);
+	
+//	if(!strncmp(str, "/*", 2))
+//		__debugbreak();
 
 	obj=ctx->cur_obj;
 	if(!obj)
@@ -2996,6 +3037,8 @@ void BGBCC_CCXL_AttribStr(BGBCC_TransState *ctx, int attr, char *str)
 		case CCXL_ATTR_SIG:
 			obj->decl->sig=bgbcc_strdup(str);
 			if(!obj->sig)obj->sig=obj->decl->sig;
+			if(str)
+				BGBCC_CCXL_TypeFromSig(ctx, &bty, str);
 			break;
 		case CCXL_ATTR_FLAGS:
 			if(str && (*str))

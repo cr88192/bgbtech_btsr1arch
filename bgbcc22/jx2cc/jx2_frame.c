@@ -2748,11 +2748,17 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		sctx->use_egpr=0;
 	if(sctx->has_bjx1egpr)
 	{
+		k=64;
+		if(ctx->optmode==BGBCC_OPT_SPEED)
+			k=32;
+		if(ctx->optmode==BGBCC_OPT_SIZE)
+			k=96;
+
 #if 1
 //		if(sctx->vspan_num>32)
 //		if(sctx->vspan_num>48)
 //		if(sctx->vspan_num>56)
-		if(sctx->vspan_num>64)
+//		if(sctx->vspan_num>64)
 //		if(sctx->vspan_num>68)
 
 //		if(sctx->vspan_num>72)
@@ -2761,6 +2767,8 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 //		if(sctx->vspan_num>88)
 //		if(sctx->vspan_num>96)
 //		if(sctx->vspan_num>128)
+
+		if(sctx->vspan_num>k)
 		{
 			sctx->use_egpr=1;
 		}
@@ -3331,6 +3339,11 @@ int BGBCC_JX2C_CalcFrameEpiKey(BGBCC_TransState *ctx,
 //		return(0);
 
 	if(obj->flagsint&BGBCC_TYFL_INTERRUPT)
+		return(0);
+
+//	if(ctx->optmode==BGBCC_OPT_SPEED)
+//		return(0);
+	if(ctx->optmode!=BGBCC_OPT_SIZE)
 		return(0);
 
 	if((sctx->is_leaf&1) && (rqt&1))

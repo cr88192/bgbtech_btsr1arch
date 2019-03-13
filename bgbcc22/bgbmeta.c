@@ -33,6 +33,7 @@ u32 bgbcc_gshash;
 char *bgbcc_imgname;
 
 byte bgbcc_dumpast;
+byte bgbcc_optmode;
 
 int bgbcc_msec_pp;
 int bgbcc_msec_cp;
@@ -266,69 +267,252 @@ int BGBCC_StoreFile(char *name, void *buf, int sz)
 	return(0);
 }
 
-char *bgbcc_protos_c =
-"void       __debugbreak();\n"
-"void       __hint_use_egpr();\n"
-"int        __int_min(int x, int y);\n"
-"int        __int_max(int x, int y);\n"
-"int        __int_clamp(int x, int min, int max);\n"
+char *bgbcc_protos_c[] =
+{
+"void       __debugbreak();\n",
+"void       __hint_use_egpr();\n",
+"int        __int_min(int x, int y);\n",
+"int        __int_max(int x, int y);\n",
+"int        __int_clamp(int x, int min, int max);\n",
 
-"unsigned long long  __object_getbits(__object val);\n"
-"__object            __object_frombits(unsigned long long val);\n"
-"unsigned long long  __variant_getbits(__variant val);\n"
-"__variant           __variant_frombits(unsigned long long val);\n"
+"__uint32   __float32_getbits(float val);\n",
+"float      __float32_frombits(__uint32 val);\n",
+"__uint64   __float64_getbits(double val);\n",
+"double     __float64_frombits(__uint64 val);\n",
 
-"void	   *__operator_new(int sz);\n"
-"void       __exc_throw(__object exc);\n"
-"__variant  __lva_getslot(__object obj, char *name);\n"
-"void       __lva_setslot(__object obj, char *name, __variant val);\n"
-"int        __lva_get_length(__object obj);\n"
-"__variant  __lva_methodcall(__object obj, char *name, __object args);\n"
+"__uint64   __object_getbits(__object val);\n",
+"__object   __object_frombits(__uint64 val);\n",
+"__uint64   __variant_getbits(__variant val);\n",
+"__variant  __variant_frombits(__uint64 val);\n",
+"void	   *__operator_new(int sz);\n",
+"void       __lvo_throw(__object exc);\n",
+"__variant  __lvo_getslot(__object obj, char *name);\n",
+"void       __lvo_setslot(__object obj, char *name, __variant val);\n",
+"int        __lvo_get_length(__object obj);\n",
+"__variant  __lvo_methodcall(__object obj, char *name, __object args);\n",
 
-"__object   __lva_newvararray_0(void);\n"
-"__object   __lva_newvararray_1(__object a0);\n"
-"__object   __lva_newvararray_2(__object a0, __object a1);\n"
-"__object   __lva_newvararray_3(__object a0, __object a1, __object a2);\n"
-"__object   __lva_newvararray_4("
-	"__object a0, __object a1, __object a2, __object a3);\n"
-"__object   __lva_newvararray_5("
+"__object   __lvo_newvararray_0(void);\n",
+"__object   __lvo_newvararray_1(__object a0);\n",
+"__object   __lvo_newvararray_2(__object a0, __object a1);\n",
+"__object   __lvo_newvararray_3(__object a0, __object a1, __object a2);\n",
+"__object   __lvo_newvararray_4("
+	"__object a0, __object a1, __object a2, __object a3);\n",
+"__object   __lvo_newvararray_5("
 	"__object a0, __object a1, __object a2, __object a3, "
-	"__object a4);\n"
-"__object   __lva_newvararray_6("
+	"__object a4);\n",
+"__object   __lvo_newvararray_6("
 	"__object a0, __object a1, __object a2, __object a3, "
-	"__object a4, __object a5);\n"
-"__object   __lva_newvararray_7("
+	"__object a4, __object a5);\n",
+"__object   __lvo_newvararray_7("
 	"__object a0, __object a1, __object a2, __object a3, "
-	"__object a4, __object a5, __object a6);\n"
-"__object   __lva_newvararray_8("
+	"__object a4, __object a5, __object a6);\n",
+"__object   __lvo_newvararray_8("
 	"__object a0, __object a1, __object a2, __object a3, "
-	"__object a4, __object a5, __object a6, __object a7);\n"
+	"__object a4, __object a5, __object a6, __object a7);\n",
+"__object   __lvo_newvararray_n(int n, ...);\n",
 
-"int        __lva_loadindex_i(__object obj, int idx);\n"
-"long long  __lva_loadindex_l(__object obj, int idx);\n"
-"float      __lva_loadindex_f(__object obj, int idx);\n"
-"double     __lva_loadindex_d(__object obj, int idx);\n"
-"void      *__lva_loadindex_p(__object obj, int idx);\n"
-"__object   __lva_loadindex_v(__object obj, int idx);\n"
-"int        __lva_loadindex_sb(__object obj, int idx);\n"
-"int        __lva_loadindex_ub(__object obj, int idx);\n"
-"int        __lva_loadindex_ss(__object obj, int idx);\n"
-"int        __lva_loadindex_us(__object obj, int idx);\n"
-"unsigned int        __lva_loadindex_ui(__object obj, int idx);\n"
-"unsigned long long  __lva_loadindex_ul(__object obj, int idx);\n"
-"__variant   __lva_loadindex_va(__object obj, int idx);\n"
+"int        __lvo_loadindex_i(__object obj, int idx);\n",
+"__int64    __lvo_loadindex_l(__object obj, int idx);\n",
+"float      __lvo_loadindex_f(__object obj, int idx);\n",
+"double     __lvo_loadindex_d(__object obj, int idx);\n",
+"void      *__lvo_loadindex_p(__object obj, int idx);\n",
+"__object   __lvo_loadindex_v(__object obj, int idx);\n",
+"int        __lvo_loadindex_sb(__object obj, int idx);\n",
+"int        __lvo_loadindex_ub(__object obj, int idx);\n",
+"int        __lvo_loadindex_ss(__object obj, int idx);\n",
+"int        __lvo_loadindex_us(__object obj, int idx);\n",
+"__uint32   __lvo_loadindex_ui(__object obj, int idx);\n",
+"__uint64   __lvo_loadindex_ul(__object obj, int idx);\n",
+"__variant  __lvo_loadindex_va(__object obj, int idx);\n",
+"void       __lvo_storeindex_i(__object obj, int idx, int val);\n",
+"void       __lvo_storeindex_l(__object obj, int idx, __int64 val);\n",
+"void       __lvo_storeindex_f(__object obj, int idx, float val);\n",
+"void       __lvo_storeindex_d(__object obj, int idx, double val);\n",
+"void       __lvo_storeindex_p(__object obj, int idx, void *val);\n",
+"void       __lvo_storeindex_v(__object obj, int idx, __object val);\n",
+"void       __lvo_storeindex_b(__object obj, int idx, int val);\n",
+"void       __lvo_storeindex_s(__object obj, int idx, int val);\n",
+"void       __lvo_storeindex_va(__object obj, int idx, __variant val);\n",
 
-"void        __lva_storeindex_i(__object obj, int idx, int val);\n"
-"void        __lva_storeindex_l(__object obj, int idx, long long val);\n"
-"void        __lva_storeindex_f(__object obj, int idx, float val);\n"
-"void        __lva_storeindex_d(__object obj, int idx, double val);\n"
-"void        __lva_storeindex_p(__object obj, int idx, void *val);\n"
-"void        __lva_storeindex_v(__object obj, int idx, __object val);\n"
-"void        __lva_storeindex_b(__object obj, int idx, int val);\n"
-"void        __lva_storeindex_s(__object obj, int idx, int val);\n"
-"void        __lva_storeindex_va(__object obj, int idx, __variant val);\n"
+"__object __lvo_newarray_sb_0(void);\n",
+"__object __lvo_newarray_sb_1(int a0);\n",
+"__object __lvo_newarray_sb_2(int a0, int a1);\n",
+"__object __lvo_newarray_sb_3(int a0, int a1, int a2);\n",
+"__object __lvo_newarray_sb_4(int a0, int a1, int a2, int a3);\n",
+"__object __lvo_newarray_sb_5(int a0, int a1, int a2, int a3, int a4);\n",
+"__object __lvo_newarray_sb_6(int a0, int a1, int a2, int a3, int a4, "
+	"int a5);\n",
+"__object __lvo_newarray_sb_7(int a0, int a1, int a2, int a3, int a4, "
+	"int a5, int a6);\n",
+"__object __lvo_newarray_sb_8(int a0, int a1, int a2, int a3, int a4, "
+	"int a5, int a6, int a7);\n",
+"__object __lvo_newarray_sb_n(int n, ...);\n",
 
-"\n";
+"__object __lvo_newarray_ub_0(void);\n",
+"__object __lvo_newarray_ub_1(int a0);\n",
+"__object __lvo_newarray_ub_2(int a0, int a1);\n",
+"__object __lvo_newarray_ub_3(int a0, int a1, int a2);\n",
+"__object __lvo_newarray_ub_4(int a0, int a1, int a2, int a3);\n",
+"__object __lvo_newarray_ub_5(int a0, int a1, int a2, int a3, int a4);\n",
+"__object __lvo_newarray_ub_6(int a0, int a1, int a2, int a3, int a4, "
+	"int a5);\n",
+"__object __lvo_newarray_ub_7(int a0, int a1, int a2, int a3, int a4, "
+	"int a5, int a6);\n",
+"__object __lvo_newarray_ub_8(int a0, int a1, int a2, int a3, int a4, "
+	"int a5, int a6, int a7);\n",
+"__object __lvo_newarray_ub_n(int n, ...);\n",
+
+"__object __lvo_newarray_ss_0(void);\n",
+"__object __lvo_newarray_ss_1(int a0);\n",
+"__object __lvo_newarray_ss_2(int a0, int a1);\n",
+"__object __lvo_newarray_ss_3(int a0, int a1, int a2);\n",
+"__object __lvo_newarray_ss_4(int a0, int a1, int a2, int a3);\n",
+"__object __lvo_newarray_ss_5(int a0, int a1, int a2, int a3, int a4);\n",
+"__object __lvo_newarray_ss_6(int a0, int a1, int a2, int a3, int a4, "
+	"int a5);\n",
+"__object __lvo_newarray_ss_7(int a0, int a1, int a2, int a3, int a4, "
+	"int a5, int a6);\n",
+"__object __lvo_newarray_ss_8(int a0, int a1, int a2, int a3, int a4, "
+	"int a5, int a6, int a7);\n",
+"__object __lvo_newarray_ss_n(int n, ...);\n",
+
+"__object __lvo_newarray_us_0(void);\n",
+"__object __lvo_newarray_us_1(int a0);\n",
+"__object __lvo_newarray_us_2(int a0, int a1);\n",
+"__object __lvo_newarray_us_3(int a0, int a1, int a2);\n",
+"__object __lvo_newarray_us_4(int a0, int a1, int a2, int a3);\n",
+"__object __lvo_newarray_us_5(int a0, int a1, int a2, int a3, int a4);\n",
+"__object __lvo_newarray_us_6(int a0, int a1, int a2, int a3, int a4, "
+	"int a5);\n",
+"__object __lvo_newarray_us_7(int a0, int a1, int a2, int a3, int a4, "
+	"int a5, int a6);\n",
+"__object __lvo_newarray_us_8(int a0, int a1, int a2, int a3, int a4, "
+	"int a5, int a6, int a7);\n",
+"__object __lvo_newarray_us_n(int n, ...);\n",
+
+"__object __lvo_newarray_si_0(void);\n",
+"__object __lvo_newarray_si_1(int a0);\n",
+"__object __lvo_newarray_si_2(int a0, int a1);\n",
+"__object __lvo_newarray_si_3(int a0, int a1, int a2);\n",
+"__object __lvo_newarray_si_4(int a0, int a1, int a2, int a3);\n",
+"__object __lvo_newarray_si_5(int a0, int a1, int a2, int a3, int a4);\n",
+"__object __lvo_newarray_si_6(int a0, int a1, int a2, int a3, int a4, "
+	"int a5);\n",
+"__object __lvo_newarray_si_7(int a0, int a1, int a2, int a3, int a4, "
+	"int a5, int a6);\n",
+"__object __lvo_newarray_si_8(int a0, int a1, int a2, int a3, int a4, "
+	"int a5, int a6, int a7);\n",
+"__object __lvo_newarray_si_n(int n, ...);\n",
+
+"__object __lvo_newarray_ui_0(void);\n",
+"__object __lvo_newarray_ui_1(int a0);\n",
+"__object __lvo_newarray_ui_2(int a0, int a1);\n",
+"__object __lvo_newarray_ui_3(int a0, int a1, int a2);\n",
+"__object __lvo_newarray_ui_4(int a0, int a1, int a2, int a3);\n",
+"__object __lvo_newarray_ui_5(int a0, int a1, int a2, int a3, int a4);\n",
+"__object __lvo_newarray_ui_6(int a0, int a1, int a2, int a3, int a4, "
+	"int a5);\n",
+"__object __lvo_newarray_ui_7(int a0, int a1, int a2, int a3, int a4, "
+	"int a5, int a6);\n",
+"__object __lvo_newarray_ui_8(int a0, int a1, int a2, int a3, int a4, "
+	"int a5, int a6, int a7);\n",
+"__object __lvo_newarray_ui_n(int n, ...);\n",
+
+"__object __lvo_newarray_sl_0(void);\n",
+"__object __lvo_newarray_sl_1(__int64 a0);\n",
+"__object __lvo_newarray_sl_2(__int64 a0, __int64 a1);\n",
+"__object __lvo_newarray_sl_3(__int64 a0, __int64 a1, __int64 a2);\n",
+"__object __lvo_newarray_sl_4("
+	"__int64 a0, __int64 a1, __int64 a2, __int64 a3);\n",
+"__object __lvo_newarray_sl_5("
+	"__int64 a0, __int64 a1, __int64 a2, __int64 a3, __int64 a4);\n",
+"__object __lvo_newarray_sl_6("
+	"__int64 a0, __int64 a1, __int64 a2, __int64 a3, __int64 a4, "
+	"__int64 a5);\n",
+"__object __lvo_newarray_sl_7("
+	"__int64 a0, __int64 a1, __int64 a2, __int64 a3, __int64 a4, "
+	"__int64 a5, __int64 a6);\n",
+"__object __lvo_newarray_sl_8("
+	"__int64 a0, __int64 a1, __int64 a2, __int64 a3, __int64 a4, "
+	"__int64 a5, __int64 a6, __int64 a7);\n",
+"__object __lvo_newarray_sl_n(int n, ...);\n",
+
+"__object __lvo_newarray_ul_0(void);\n",
+"__object __lvo_newarray_ul_1(__uint64 a0);\n",
+"__object __lvo_newarray_ul_2(__uint64 a0, __uint64 a1);\n",
+"__object __lvo_newarray_ul_3(__uint64 a0, __uint64 a1, __uint64 a2);\n",
+"__object __lvo_newarray_ul_4("
+	"__uint64 a0, __uint64 a1, __uint64 a2, int a3);\n",
+"__object __lvo_newarray_ul_5("
+	"__uint64 a0, __uint64 a1, __uint64 a2, __uint64 a3, __uint64 a4);\n",
+"__object __lvo_newarray_ul_6("
+	"__uint64 a0, __uint64 a1, __uint64 a2, __uint64 a3, __uint64 a4, "
+	"__uint64 a5);\n",
+"__object __lvo_newarray_ul_7("
+	"__uint64 a0, __uint64 a1, __uint64 a2, __uint64 a3, __uint64 a4, "
+	"__uint64 a5, __uint64 a6);\n",
+"__object __lvo_newarray_ul_8("
+	"__uint64 a0, __uint64 a1, __uint64 a2, __uint64 a3, __uint64 a4, "
+	"__uint64 a5, __uint64 a6, __uint64 a7);\n",
+"__object __lvo_newarray_ul_n(int n, ...);\n",
+
+"__object __lvo_newarray_f_0(void);\n",
+"__object __lvo_newarray_f_1(float a0);\n",
+"__object __lvo_newarray_f_2(float a0, float a1);\n",
+"__object __lvo_newarray_f_3(float a0, float a1, float a2);\n",
+"__object __lvo_newarray_f_4(float a0, float a1, float a2, float a3);\n",
+"__object __lvo_newarray_f_5("
+	"float a0, float a1, float a2, float a3, float a4);\n",
+"__object __lvo_newarray_f_6("
+	"float a0, float a1, float a2, float a3, float a4, "
+	"float a5);\n",
+"__object __lvo_newarray_f_7("
+	"float a0, float a1, float a2, float a3, float a4, "
+	"float a5, float a6);\n",
+"__object __lvo_newarray_f_8("
+	"float a0, float a1, float a2, float a3, float a4, "
+	"float a5, float a6, float a7);\n",
+"__object __lvo_newarray_f_n(int n, ...);\n",
+
+"__object __lvo_newarray_d_0(void);\n",
+"__object __lvo_newarray_d_1(double a0);\n",
+"__object __lvo_newarray_d_2(double a0, double a1);\n",
+"__object __lvo_newarray_d_3(double a0, double a1, double a2);\n",
+"__object __lvo_newarray_d_4(double a0, double a1, double a2, double a3);\n",
+"__object __lvo_newarray_d_5("
+	"double a0, double a1, double a2, double a3, double a4);\n",
+"__object __lvo_newarray_d_6("
+	"double a0, double a1, double a2, double a3, double a4, "
+	"double a5);\n",
+"__object __lvo_newarray_d_7("
+	"double a0, double a1, double a2, double a3, double a4, "
+	"double a5, double a6);\n",
+"__object __lvo_newarray_d_8("
+	"double a0, double a1, double a2, double a3, double a4, "
+	"double a5, double a6, double a7);\n",
+"__object __lvo_newarray_d_n(int n, ...);\n",
+
+"__object __lvo_array_append_0(void);\n",
+"__object __lvo_array_append_1(__object a0);\n",
+"__object __lvo_array_append_2(__object a0, __object a1);\n",
+"__object __lvo_array_append_3(__object a0, __object a1, __object a2);\n",
+"__object __lvo_array_append_4("
+	"__object a0, __object a1, __object a2, __object a3);\n",
+"__object __lvo_array_append_5("
+	"__object a0, __object a1, __object a2, __object a3, __object a4);\n",
+"__object __lvo_array_append_6("
+	"__object a0, __object a1, __object a2, __object a3, "
+	"__object a4, __object a5);\n",
+"__object __lvo_array_append_7("
+	"__object a0, __object a1, __object a2, __object a3, "
+	"__object a4, __object a5, __object a6);\n",
+"__object __lvo_array_append_8("
+	"__object a0, __object a1, __object a2, __object a3, "
+	"__object a4, __object a5, __object a6, __object a7);\n",
+"__object __lvo_array_append_n(int n, ...);\n",
+
+NULL
+};
 
 
 int bgbcc_storefile(char *name, void *buf, int sz)
@@ -337,14 +521,25 @@ int bgbcc_storefile(char *name, void *buf, int sz)
 char *bgbcc_loadfile(char *name, int *rsz)
 {
 	FILE *fd;
+	char *t;
 	void *buf;
-	int sz;
+	int i, j, k, sz;
 
 	if(!strcmp(name, "$protos$.c"))
 	{
-		sz=strlen(bgbcc_protos_c);
-		buf=bgbcc_malloc2(sz);
-		memcpy(buf, bgbcc_protos_c, sz);
+		sz=0;
+		for(i=0; bgbcc_protos_c[i]; i++)
+			sz+=strlen(bgbcc_protos_c[i]);
+	
+		buf=bgbcc_malloc2(sz+8);
+		t=buf;
+		for(i=0; bgbcc_protos_c[i]; i++)
+		{
+			j=strlen(bgbcc_protos_c[i]);
+			memcpy(t, bgbcc_protos_c[i], j+1);
+			t+=j;
+		}
+
 		*rsz=sz;
 		return(buf);
 	}
@@ -735,6 +930,7 @@ int BGBCC_LoadCSourcesCCXL(
 	ctx->sub_arch=bgbcc_subarch;
 	ctx->imgbasename=dllname;
 	ctx->imgname=bgbcc_strdup(bgbcc_imgname);
+	ctx->optmode=bgbcc_optmode;
 
 	BGBCC_CCXL_SetupContextForArch(ctx);
 
@@ -1013,6 +1209,7 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 	base=NULL;
 	bgbcc_gshash=0;
 	bgbcc_dumpast=0;
+	bgbcc_optmode=BGBCC_OPT_DEFAULT;
 
 	m=0;
 	for(i=1; i<argc; i++)
@@ -1076,6 +1273,32 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 			if(!strncmp(argv[i]+1, "Zz", 2))
 			{
 				bgbcc_dumpast=1;
+				continue;
+			}
+
+			if(!strcmp(argv[i]+1, "O2") ||
+				!strcmp(argv[i]+1, "O3"))
+			{
+				bgbcc_optmode=BGBCC_OPT_SPEED;
+				continue;
+			}
+
+			if(!strcmp(argv[i]+1, "Os"))
+			{
+				bgbcc_optmode=BGBCC_OPT_SIZE;
+				continue;
+			}
+
+			if(!strcmp(argv[i]+1, "O1"))
+			{
+//				bgbcc_optmode=BGBCC_OPT_SIZE;
+				bgbcc_optmode=BGBCC_OPT_SPEED;
+				continue;
+			}
+
+			if(!strcmp(argv[i]+1, "O0"))
+			{
+				bgbcc_optmode=BGBCC_OPT_DEBUG;
 				continue;
 			}
 

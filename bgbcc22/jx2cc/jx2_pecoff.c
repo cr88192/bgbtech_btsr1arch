@@ -782,7 +782,12 @@ int BGBCC_JX2C_PackBlockLZ4(BGBCC_TransState *ctx,
 	bl=cse-cs0;
 	
 //	if((rl+4)>bl)
-	if((bl+5)<rl)
+//	if((bl+5)<rl)
+	if(	((bl+5)<rl) ||
+		(((bl+1)<rl) && (bl< 16)) ||
+		(((bl+2)<rl) && (bl<271)) ||
+		(((bl+3)<rl) && (bl<526)) ||
+		(((bl+4)<rl) && (bl<781)) )
 	{
 		/* Out of input, encode end marker. */
 	
@@ -807,7 +812,7 @@ int BGBCC_JX2C_PackBlockLZ4(BGBCC_TransState *ctx,
 		}
 			
 //		if((ct+1)<cte)
-			{ *(u16 *)ct=0; ct+=2; }
+//			{ *(u16 *)ct=0; ct+=2; }
 
 		while(ct<cte)
 			*ct++=0;

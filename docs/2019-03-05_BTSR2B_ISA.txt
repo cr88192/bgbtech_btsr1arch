@@ -1,0 +1,227 @@
+BTSR2B ISA (Idea Spec)
+* Simpler 32-bit ISA
+* Primary instruction format will be 32-bit
+** 16-bit instructions will exist as a subset.
+** Will only have 16 and 32-bit forms.
+* Will have fewer addressing Modes.
+
+Registers:
+* R0..R31, 32-bit GPRs
+** R0/R1: DLR/DHR (ALU), PC/GBR (Load/Store)
+** R15: SP
+** R16/R16: ELR/EHR
+** R31: ZZR (Zero Register)
+* ABI is similar to the BJX2 ABI.
+
+
+Register Notation:
+* Rm: Source Register (Primary)
+* Rn: Destination Register
+* Ro: Source Register (Secondary)
+* Rb: Base Register (Load/Store)
+* Rj: Source Register (R16..R31)
+* Rk: Desitnation Register (R16..R31)
+
+Address Modes:
+* (Rb)
+* (Rb, Disp)
+* (Rb, DLR)
+
+If Rb is R0, it is interpreted as PC.
+If Rb is R1, it is interpreted as GBR.
+
+Both DLR and Disp will be scaled by the element size unless the base is PC or GBR, where the scale is 1.
+
+
+Opcode Space
+* 0000..BFFF: 16-bit
+* C000..FFFF: 32-bit
+* XXnm: Typical 16-bit Op
+* XXnm_XeXo: Typical 3R Op
+* XXnm_Xejj: Typical 3R Imm Op (Imm9)
+* XXjj_Xjjj: Disp20
+
+C/D/E/F: Will effectively repeat the encoding space.
+* C: Execute if True
+** Executed if SR.T is Set
+** Operation is Scalar.
+* D: Execute if False
+** Executed if SR.T is Clear
+** Operation is Scalar.
+* E: Unconditional, Concurrent
+** Always Executed
+** May execute in parallel with the following instruction.
+* F: Unconditional, Scalar
+** Always Executed
+** May not be executed in parallel.
+
+When instructions are predicated and are not executed, they will behave as NOPs.
+An instruction may be executed concurrently if it does not form any dependencies with the following instruction (such as both trying to use the same register).
+
+Predicated forms may indicate alternate instructions for encodings where predication does not make sense.
+
+Normally, predicated operations will always be scalar, but may be handled concurrently if the following instruction is predicated with the opposite value.
+
+Instructions will be organized into Blocks.
+* F0: General Instructions
+* F1: Load/Store Disp9
+* F2: ALU + Immed
+* ...
+
+
+Instructions (16-bit)
+* 00nb  MOV.B	Rn, (Rb)
+* 01nb  MOV.W	Rn, (Rb)
+* 02nb  MOV.L	Rn, (Rb)
+* 03nb  MOVU.B	(Rb), Rn
+* 04nb  MOV.B	Rn, (Rb, DLR)
+* 05nb  MOV.W	Rn, (Rb, DLR)
+* 06nb  MOV.L	Rn, (Rb, DLR)
+* 07nb  MOVU.B	Rn, (Rb, DLR)
+* 08nb  MOV.B	(Rb), Rn
+* 09nb  MOV.W	(Rb), Rn
+* 0Anb  MOV.L	(Rb), Rn
+* 0Bnb  MOVU.W	(Rb), Rn
+* 0Cnb  MOV.B	(Rb, DLR), Rn
+* 0Dnb  MOV.W	(Rb, DLR), Rn
+* 0Enb  MOV.L	(Rb, DLR), Rn
+* 0Fnb  MOVU.W	(Rb, DLR), Rn
+
+* 10nm  ADD		Rm, Rn
+* 11nm  SUB		Rm, Rn
+* 12nm  ADC		Rm, Rn
+* 13nm  SBB		Rm, Rn
+* 14nm  TST		Rm, Rn
+* 15nm  AND		Rm, Rn
+* 16nm  OR		Rm, Rn
+* 17nm  XOR		Rm, Rn
+* 18nm  MOV	Rm, Rn				//Rn=Rm
+* 19nm  MOV	Rj, Rn
+* 1Anm  MOV	Rm, Rk
+* 1Bnm  MOV	Rj, Rk
+* 1Cnm  CMPEQ	Rm, Rn				//Rn==Rm (Low 32 Bits)
+* 1Dnm  CMPHI	Rm, Rn				//Unsigned Rn GT Rm (Low 32 Bits)
+* 1Enm  CMPGT	Rm, Rn				//Signed Rn GT Rm (Low 32 Bits)
+* 1Fnm  -
+
+* 20dd  BRA		#disp8s				//Branch, PC=PC+(disp8s*2)
+* 21dd  BSR		#disp8s				//Branch Subroutine
+* 22dd  BT		#disp8s				//Branch True
+* 23dd  BF		#disp8s				//Branch False
+* 24jj  LDIZ	#imm8u, DLR
+* 25jj  LDIN	#imm8n, DLR
+* 26jj  LDISH	#imm8u, DLR			//DLR=(DLR SHL 8)|Imm8u
+* 27ii  LEASP	#disp8s, SP			//SP=SP+(disp*4)
+* 28nd  MOV.L	Rn, (SP, disp4u)	//Stack-Relative Store
+* 29nd  MOV.L	Rk, (SP, disp4u)	//Stack-Relative Store
+* 2And  MOV.W	Rn, (SP, disp4u)	//Stack-Relative Store
+* 2Bnd  MOV.W	Rk, (SP, disp4u)	//Stack-Relative Store
+* 2Cnd  MOV.L	(SP, disp4u), Rn	//Stack-Relative Load
+* 2Dnd  MOV.L	(SP, disp4u), Rk	//Stack-Relative Load
+* 2End  MOV.W	(SP, disp4u), Rn	//Stack-Relative Load
+* 2Fnd  MOV.W	(SP, disp4u), Rk	//Stack-Relative Load
+
+* 9zzz  (FPU Block)
+* Ajjj  LDIZ	#imm12u, DLR		//Load 12 bit value into DLR (Zero Extend)
+* Bjjj  LDIN	#imm12n, DLR		//Load 12 bit value into DLR (One Extend)
+
+
+Instructions (32-bit)
+* F0nm_0zzz  ?
+
+* F0nm_1e0o  ADD	Rm, Ro, Rn
+* F0nm_1e1o  SUB	Rm, Ro, Rn
+* F0nm_1g2o  MUL	Rm, Ro, Rn			//MUL, 32-bit
+* F0nm_1e3o  -
+* F0nm_1e4o  -
+* F0nm_1e5o  AND	Rm, Ro, Rn
+* F0nm_1e6o  OR		Rm, Ro, Rn
+* F0nm_1e7o  XOR	Rm, Ro, Rn
+* F0nm_1e8o  -
+* ...
+* F0nm_1eFo  -
+
+* F0nb_3e00  MOV.B	Rn, (Rb)
+* F0nb_3e01  MOV.W	Rn, (Rb)
+* F0nb_3e02  MOV.L	Rn, (Rb)
+* F0nb_3e03  MOVU.B	(Rb), Rn
+* F0nb_3e04  MOV.B	Rn, (Rb, DLR)
+* F0nb_3e05  MOV.W	Rn, (Rb, DLR)
+* F0nb_3e06  MOV.L	Rn, (Rb, DLR)
+* F0nb_3e07  MOVU.B	Rn, (Rb, DLR)
+* F0nb_3e08  MOV.B	(Rb), Rn
+* F0nb_3e09  MOV.W	(Rb), Rn
+* F0nb_3e0A  MOV.L	(Rb), Rn
+* F0nb_3e0B  MOVU.W	(Rb), Rn
+* F0nb_3e0C  MOV.B	(Rb, DLR), Rn
+* F0nb_3e0D  MOV.W	(Rb, DLR), Rn
+* F0nb_3e0E  MOV.L	(Rb, DLR), Rn
+* F0nb_3e0F  MOVU.W	(Rb, DLR), Rn
+
+* F0dd_Cddd  BRA	#disp20s
+** C0dd_Cddd  BT	#disp20s
+** D0dd_Cddd  BF	#disp20s
+
+
+* F1nm_Xeii  Imm9
+** F1nm_0edd  MOV.B		Rn, (Rm, disp9u)
+** F1nm_1edd  MOV.W		Rn, (Rm, disp9u)
+** F1nm_2edd  MOV.L		Rn, (Rm, disp9u)
+** F1nm_3edd  MOV.Q		Rn, (Rm, disp9u)
+** F1nm_4ejj  -
+** F1nm_5ejj  -
+** F1nm_6ejj  -
+** F1nm_7ejj  -
+** F1nm_8gdd  MOV.B		(Rm, disp9u), Rn
+** F1nm_8Gdd  MOVU.B	(Rm, disp9u), Rn
+** F1nm_9gdd  MOV.W		(Rm, disp9u), Rn
+** F1nm_9Gdd  MOVU.W	(Rm, disp9u), Rn
+** F1nm_Agdd  MOV.L		(Rm, disp9u), Rn
+** F1nm_AGdd  MOVU.L	(Rm, disp9u), Rn
+** F1nm_Bgdd  MOV.Q		(Rm, disp9u), Rn
+** F1nm_BGdd  MOVD.L	(Rm, disp9u), Rn
+* F1zz_Czzz  -
+* F1zz_Dzzz  -
+* F1zz_Ezzz  -
+* F1zz_Fzzz  -
+
+* F2nm_Xeii  Imm9
+** F2nm_0gjj  ADD		Rm, #imm9u, Rn		//
+** F2nm_1gjj  ADD		Rm, #imm9n, Rn		//
+** F2nm_2gjj  MUL		Rm, #imm9u, Rn		//
+** F2nm_3gjj  ADDS.L	Rm, #imm9u, Rn		//ADD 32 SX, Zero-Ext Imm
+** F2nm_3Gjj  ADDU.L	Rm, #imm9u, Rn		//ADD 32 ZX, Zero-Ext Imm
+** F2nm_4gjj  ADDS.L	Rm, #imm9n, Rn		//ADD 32 SX, One-Ext Imm
+** F2nm_4Gjj  ADDU.L	Rm, #imm9n, Rn		//ADD 32 ZX, One-Ext Imm
+** F2nm_5gjj  AND		Rm, #imm9u, Rn		//
+** F2nm_6gjj  OR		Rm, #imm9u, Rn		//
+** F2nm_7gjj  XOR		Rm, #imm9u, Rn		//
+** F2nm_8ejj  SHAD		Rm, #imm9, Rn
+** F2nm_9ejj  SHLD		Rm, #imm9, Rn
+** F2nm_Aejj
+** F2nm_Bejj
+
+** F2nz_Cejj
+*** F2n0_Cejj MOV		#imm10u, Rn				//Load Constant
+*** F2n1_Cejj MOV		#imm10n, Rn				//Load Constant
+*** F2n2_Cejj -
+*** F2n3_Cejj -
+*** F2n4_Cejj TST		#imm10u, Rn				//SR.T=!(Rm&Rn)
+*** F2n5_Cejj TST		#imm10n, Rn				//SR.T=!(Rm&Rn)
+*** F2n6_Cejj CMPHS		#imm10u, Rn				//Unsigned Rn GT Rm
+*** F2n7_Cejj CMPHS		#imm10n, Rn				//Unsigned Rn GT Rm
+*** F2n8_Cejj CMPHI		#imm10u, Rn				//Unsigned Rn GT Rm
+*** F2n8_Cejj CMPHI		#imm10n, Rn				//Unsigned Rn GT Rm
+*** F2nA_Cejj CMPGE		#imm10u, Rn				//Signed Rn GT Rm
+*** F2nB_Cejj CMPGE		#imm10n, Rn				//Signed Rn GT Rm
+*** F2nC_Cejj CMPEQ		#imm10u, Rn				//Rn==Rm
+*** F2nD_Cejj CMPEQ		#imm10n, Rn				//Rn==Rm
+*** F2nE_Cejj CMPGT		#imm10u, Rn				//Signed Rn GT Rm
+*** F2nF_Cejj CMPGT		#imm10n, Rn				//Signed Rn GT Rm
+** F2nz_Dejj
+** F2nz_Eejj
+** F2nz_Fejj
+
+
+* FAjj_jjjj  LDIZ	#imm24u, DLR
+* FBjj_jjjj  LDIN	#imm24n, DLR

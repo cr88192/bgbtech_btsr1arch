@@ -18,7 +18,7 @@ extern byte bgbcc_dumpast;
 BCCX_Node *BGBCP_FunArgs(BGBCP_ParseState *ctx, char **str)
 {
 	char b[256], b2[256];
-	char *s;
+	char *s, *s1, *s2;
 	int ty, ty2;
 	BCCX_Node *n, *n1, *lst, *lste;
 
@@ -26,35 +26,60 @@ BCCX_Node *BGBCP_FunArgs(BGBCP_ParseState *ctx, char **str)
 	while(s && *s)
 	{
 		b[0]=0;
-		BGBCP_Token(s, b, &ty);
+		s1=BGBCP_Token(s, b, &ty);
+
 		if(ty==BTK_NULL)break;		
 		if((ty==BTK_BRACE) &&
 			(!bgbcp_strcmp1(b, ")") || !bgbcp_strcmp1(b, "]") ||
 			!bgbcp_strcmp1(b, "}")))
 		{
-			s=BGBCP_Token(s, b, &ty);
+//			s=BGBCP_Token(s, b, &ty);
+			s=s1;
 			break;
 		}
 
 		if((ty==BTK_SEPERATOR) && !bgbcp_strcmp1(b, ","))
 		{
-			s=BGBCP_Token(s, b, &ty);
+//			s=BGBCP_Token(s, b, &ty);
+			s=s1;
 			continue;
 		}
-
+		
 		n=NULL;
-		if((ctx->lang==BGBCC_LANG_C) || (ctx->lang==BGBCC_LANG_CPP))
+
+		if(	(ctx->lang==BGBCC_LANG_CS) ||
+			(ctx->lang==BGBCC_LANG_BS2))
 		{
-			n=BGBCP_DefType(ctx, &s);
-			if(n)
+			if((ty==BTK_NAME) && !BGBCP_CheckTokenKeyword(ctx, b))
 			{
-				n1=BGBCP_VarDefinition(ctx, &s, n);
-				if(n1)n=n1;
+				s2=BGBCP_Token(s1, b2, &ty2);
+				if(!bgbcp_strcmp1(b2, ":"))
+				{
+					s=s2;
+					n1=BGBCP_Expression(ctx, &s);
+					n=BCCX_NewCst1(&bgbcc_rcst_attr, "attr", n1);
+					BCCX_SetCst(n, &bgbcc_rcst_name, "name", b);
+				}
 			}
 		}
 
 		if(!n)
-			{ n=BGBCP_Expression(ctx, &s); }
+		{
+			if((ctx->lang==BGBCC_LANG_C) || (ctx->lang==BGBCC_LANG_CPP))
+			{
+				n=BGBCP_DefType(ctx, &s);
+				if(n)
+				{
+					n1=BGBCP_VarDefinition(ctx, &s, n);
+					if(n1)n=n1;
+				}
+			}
+		}
+
+		if(!n)
+		{
+			n=BGBCP_Expression(ctx, &s);
+		}
 //		lst=BCCX_AddEnd(lst, n);
 		lst=BCCX_AddEnd2(lst, &lste, n);
 
@@ -271,7 +296,7 @@ fourcc BGBCP_LangForName(char *name)
 			lang=BGBCC_LANG_JAVA;
 
 		if(!bgbcp_strcmp(s, ".bs"))
-			lang=BGBCC_LANG_BS;
+			lang=BGBCC_LANG_BS2;
 		if(!bgbcp_strcmp(s, ".js"))
 			lang=BGBCC_LANG_BS;
 		if(!bgbcp_strcmp(s, ".es"))

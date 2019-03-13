@@ -1833,6 +1833,7 @@ int BGBPP_Line(BGBCP_ParseState *ctx, char *str)
 		}
 
 		if((ty==BTK_OPERATOR) && (ctx->lang!=BGBCC_LANG_ASM) &&
+			(ctx->lang!=BGBCC_LANG_BS2) &&
 //			(!bgbpp_strcmp(b, "#") || !bgbpp_strcmp(b, "%:")))
 			(!bgbcp_strcmp1(b, "#") || !bgbcp_strcmp2(b, "%:")))
 		{

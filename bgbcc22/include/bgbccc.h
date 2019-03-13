@@ -307,6 +307,8 @@ extern "C" {
 #define BGBCC_REGFL_LOADED			0x0020		//already loaded
 #define BGBCC_REGFL_ALIASPTR		0x0040		//may be aliased by a pointer
 
+#define BGBCC_REGFL_VARCONV			0x0080		//converted to/from variant
+
 #ifndef BTK_NAME
 #define BTK_NAME	1
 #define BTK_NUMBER	2
@@ -327,6 +329,11 @@ extern "C" {
 #define BTK_STRING_QQQ	16	//triple-quote
 
 #endif
+
+#define BGBCC_OPT_DEFAULT	0
+#define BGBCC_OPT_SIZE		1
+#define BGBCC_OPT_SPEED		2
+#define BGBCC_OPT_DEBUG		3
 
 #if 0
 #define BGBCC_LANG_C		1	//C
@@ -515,6 +522,7 @@ int tuidx;				//translation unit index
 int blkidx;				//block index
 
 byte expect_type;		//force detecting a type
+byte in_func_body;		//parsing a function body
 
 s64	dfl_flags;
 
@@ -653,6 +661,9 @@ byte ccxl_top_only;
 byte ccxl_in_func;
 
 byte ccxl_var_needsinit;
+byte ccxl_isdef_methodproto;
+
+byte optmode;			//optimization mode
 
 int ccxl_tyc_seen;
 

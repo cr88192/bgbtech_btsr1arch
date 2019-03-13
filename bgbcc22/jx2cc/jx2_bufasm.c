@@ -1182,7 +1182,9 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 	s64 li;
 	f32 ff;
 	f64 fd;
-	int i, j, k, wx;
+	int i, j, k, wx, pfc;
+
+	pfc=0;
 
 	cs=*rcs;
 	cs1=BGBCC_JX2A_ParseTokenAlt(cs, &tk0);
@@ -1211,6 +1213,18 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 			}
 			*rcs=cs1+1;
 			return(1);
+		}
+		
+		if(cs1[0]=='?')
+		{
+			if((cs1[1]=='t') || (cs1[1]=='T'))
+			{
+				cs1+=2; pfc=4;
+			}else
+				if((cs1[1]=='f') || (cs1[1]=='F'))
+			{
+				cs1+=2; pfc=5;
+			}
 		}
 
 		cs2=cs1;
@@ -1248,6 +1262,11 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 		{
 			ctx->op_is_wex2=3;
 		}
+		
+		if(pfc)
+		{
+			ctx->op_is_wex2=pfc;
+		}
 
 		k=BGBCC_JX2A_TryAssembleOpcode(ctx, tk0+1, &arg[0], &arg[1], &arg[2]);
 		if(k>0)
@@ -1258,15 +1277,17 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 				cs2++;
 			
 			ctx->op_is_wex2=wx?2:0;
+			if(pfc)
+				{ ctx->op_is_wex2=0; }
 		
 			*rcs=cs2;
 			return(1);
 		}
 
 		if(wx)
-		{
-			ctx->op_is_wex2=0;
-		}
+			{ ctx->op_is_wex2=0; }
+		if(pfc)
+			{ ctx->op_is_wex2=0; }
 
 		if(!strcmp(tk0, "I.align"))
 		{

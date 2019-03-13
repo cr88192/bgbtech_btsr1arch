@@ -372,6 +372,20 @@ int BGBCC_CCXL_LookupStructFieldIDSig(
 	return(-1);
 }
 
+BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_GetStructSuperclass(
+	BGBCC_TransState *ctx, BGBCC_CCXL_LiteralInfo *st)
+{
+	BGBCC_CCXL_LiteralInfo *st1;
+
+	if(st->decl->n_args>0)
+	{
+		st1=BGBCC_CCXL_LookupStructureForSig(ctx,
+			st->decl->args[0]->sig);
+		return(st1);
+	}
+	return(NULL);
+}
+
 ccxl_status BGBCC_CCXL_LookupStructFieldType(
 	BGBCC_TransState *ctx, BGBCC_CCXL_LiteralInfo *st, char *name,
 	ccxl_type *rty)
@@ -904,6 +918,11 @@ ccxl_status BGBCC_CCXL_MarkTypeAccessed(
 	for(i=0; i<obj->decl->n_locals; i++)
 		{ BGBCC_CCXL_MarkTypeAccessed(ctx, obj->decl->locals[i]->type); }
 
+	for(i=0; i<obj->decl->n_regs; i++)
+		{ BGBCC_CCXL_MarkTypeAccessed(ctx, obj->decl->regs[i]->type); }
+	for(i=0; i<obj->decl->n_statics; i++)
+		{ BGBCC_CCXL_MarkTypeAccessed(ctx, obj->decl->statics[i]->type); }
+
 	n=obj->decl->n_fields;
 	for(i=0; i<n; i++)
 	{
@@ -913,6 +932,52 @@ ccxl_status BGBCC_CCXL_MarkTypeAccessed(
 
 	return(1);
 }
+
+
+
+ccxl_status BGBCC_CCXL_MarkTypeVarConv(
+	BGBCC_TransState *ctx, ccxl_type type)
+{
+	BGBCC_CCXL_LiteralInfo *obj;
+	ccxl_type tty;
+	int i, j, k, n;
+
+	i=BGBCC_CCXL_TypeObjectLiteralIndex(ctx, type);
+	if(i<0)return(0);
+	obj=ctx->literals[i];
+	if(!obj || !obj->decl)
+		return(0);
+
+	if(obj->decl->regflags&BGBCC_REGFL_VARCONV)
+		return(0);
+
+	obj->decl->regflags|=BGBCC_REGFL_VARCONV;
+
+#if 0
+	for(i=0; i<obj->decl->n_args; i++)
+		{ BGBCC_CCXL_MarkTypeAccessed(ctx, obj->decl->args[i]->type); }
+	for(i=0; i<obj->decl->n_locals; i++)
+		{ BGBCC_CCXL_MarkTypeAccessed(ctx, obj->decl->locals[i]->type); }
+
+	n=obj->decl->n_fields;
+	for(i=0; i<n; i++)
+	{
+		BGBCC_CCXL_MarkTypeAccessed(ctx,
+			obj->decl->fields[i]->type);
+	}
+#endif
+
+	if(obj->decl->n_args>0)
+	{
+//		obj=BGBCC_CCXL_LookupStructureForSig(ctx,
+//			obj->decl->args[0]->sig);
+		BGBCC_CCXL_TypeFromSig(ctx, &tty, obj->decl->args[0]->sig);
+		BGBCC_CCXL_MarkTypeVarConv(ctx, tty);
+	}
+
+	return(1);
+}
+
 
 
 BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_LookupStructureStaticMember(

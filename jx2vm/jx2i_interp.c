@@ -569,6 +569,9 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_SUBSL:		s0="SUBS.L";	break;
 	case BJX2_NMID_SUBUL:		s0="SUBU.L";	break;
 
+	case BJX2_NMID_PRED_T:		s0="PRED.T";	break;
+	case BJX2_NMID_PRED_F:		s0="PRED.F";	break;
+
 	default:
 		sprintf(tb, "?NM%02X", nmid);
 		s0=tb;
@@ -699,52 +702,59 @@ char *BJX2_DbgPrintNameForFReg(BJX2_Context *ctx, int reg)
 
 int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 {
+	BJX2_Opcode *op1;
 	s64 li;
 	int msc, psc, brpc;
 
 //	printf("%05X  %04X %-8s ", op->pc, op->opn,
 //		BJX2_DbgPrintNameForNmid(ctx, op->nmid));
 
-	if(op->fl&BJX2_OPFL_TRIWORD)
+	if(fl&4)
 	{
-		printf("%08X  (%2d) %04X_%04X_%04X %-8s ",
-			(u32)op->pc, op->cyc,
-			op->opn, op->opn2, op->opn3,
-			BJX2_DbgPrintNameForNmid(ctx, op->nmid));
-		brpc=op->pc+6;
-	}else
-	if(op->fl&BJX2_OPFL_TWOWORD)
-	{
-		if(fl&2)
-		{
-			printf("%08X  (%2d) %04X_%04X      %-8s ",
-				(u32)op->pc, op->cyc,
-				op->opn, op->opn2,
-				BJX2_DbgPrintNameForNmid(ctx, op->nmid));
-		}else
-		{
-			printf("%08X  (%2d) %04X_%04X %-8s ",
-				(u32)op->pc, op->cyc,
-				op->opn, op->opn2,
-				BJX2_DbgPrintNameForNmid(ctx, op->nmid));
-		}
-		brpc=op->pc+4;
+		brpc=op->pc2;
 	}else
 	{
-		if(fl&2)
+		if(op->fl&BJX2_OPFL_TRIWORD)
 		{
-			printf("%08X  (%2d) %04X           %-8s ",
+			printf("%08X  (%2d) %04X_%04X_%04X %-8s ",
 				(u32)op->pc, op->cyc,
-				op->opn,
+				op->opn, op->opn2, op->opn3,
 				BJX2_DbgPrintNameForNmid(ctx, op->nmid));
+			brpc=op->pc+6;
+		}else
+		if(op->fl&BJX2_OPFL_TWOWORD)
+		{
+			if(fl&2)
+			{
+				printf("%08X  (%2d) %04X_%04X      %-8s ",
+					(u32)op->pc, op->cyc,
+					op->opn, op->opn2,
+					BJX2_DbgPrintNameForNmid(ctx, op->nmid));
+			}else
+			{
+				printf("%08X  (%2d) %04X_%04X %-8s ",
+					(u32)op->pc, op->cyc,
+					op->opn, op->opn2,
+					BJX2_DbgPrintNameForNmid(ctx, op->nmid));
+			}
+			brpc=op->pc+4;
 		}else
 		{
-			printf("%08X  (%2d) %04X      %-8s ",
-				(u32)op->pc, op->cyc,
-				op->opn,
-				BJX2_DbgPrintNameForNmid(ctx, op->nmid));
+			if(fl&2)
+			{
+				printf("%08X  (%2d) %04X           %-8s ",
+					(u32)op->pc, op->cyc,
+					op->opn,
+					BJX2_DbgPrintNameForNmid(ctx, op->nmid));
+			}else
+			{
+				printf("%08X  (%2d) %04X      %-8s ",
+					(u32)op->pc, op->cyc,
+					op->opn,
+					BJX2_DbgPrintNameForNmid(ctx, op->nmid));
+			}
+			brpc=op->pc+2;
 		}
-		brpc=op->pc+2;
 	}
 
 	msc=1;
@@ -1015,6 +1025,11 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 			BJX2_DbgPrintNameForFReg(ctx, op->ro),
 			BJX2_DbgPrintNameForFReg(ctx, op->rn));
 		break;
+		
+	case BJX2_FMID_CHAIN:
+		op1=op->data;
+		BJX2_DbgPrintOp(ctx, op1, 4);
+		break;
 
 	default:
 		printf("?");
@@ -1163,7 +1178,7 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 	s64 cyc;
 	double pcnt;
 	char *bn2;
-	int trn;
+	int trn, trtops;
 	int i, j, k;
 
 	for(i=0; i<256; i++)
@@ -1171,7 +1186,7 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 		cyc_nmid[i]=0;
 	}
 
-	trn=0;
+	trn=0; trtops=0;
 	for(i=0; i<1024; i++)
 	{
 		trcur=ctx->trhash[i];
@@ -1185,6 +1200,7 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 	for(i=0; i<trn; i++)
 	{
 		trcur=tra[i];
+		trtops+=trcur->n_ops;
 		for(j=0; j<trcur->n_ops; j++)
 		{
 			cyc_nmid[trcur->ops[j]->nmid]+=
@@ -1293,6 +1309,9 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 		printf("\n");
 	}
 #endif
+
+	pcnt=((double)trtops)/trn;
+	printf("Average Trace Length: %.2f\n", pcnt);
 
 	pcnt=(100.0*ctx->tot_cyc_mem)/(ctx->tot_cyc);
 	printf("Cycles Spent, Mem Op: %.2f%%\n", pcnt);

@@ -260,6 +260,33 @@ ccxl_status BGBCC_CCXL_EmitCallOp(BGBCC_TransState *ctx,
 	op->type=type;
 	op->dst=dst;
 	op->srca=src;
+	op->srcb.val=CCXL_REGID_REG_Z;
+	op->imm.call.na=na;
+	op->imm.call.ca=0;
+	op->imm.call.args=bgbcc_malloc(na*sizeof(ccxl_register));
+	BGBCC_CCXL_AddVirtOp(ctx, op);
+	BGBCC_CCXL_EmitMarkEndTrace(ctx);
+	return(0);
+}
+
+ccxl_status BGBCC_CCXL_EmitObjCallOp(BGBCC_TransState *ctx,
+	ccxl_type type, ccxl_register dst,
+	ccxl_register src, ccxl_register obj, int na)
+{
+	BGBCC_CCXL_VirtOp *op;
+
+	if(ctx->cgif_no3ac)
+		return(0);
+
+	if(BGBCC_CCXL_IsRegZzP(ctx, src))
+		{ BGBCC_DBGBREAK }
+
+	op=BGBCC_CCXL_AllocVirtOp(ctx);
+	op->opn=CCXL_VOP_OBJCALL;
+	op->type=type;
+	op->dst=dst;
+	op->srca=src;
+	op->srcb=obj;
 	op->imm.call.na=na;
 	op->imm.call.ca=0;
 	op->imm.call.args=bgbcc_malloc(na*sizeof(ccxl_register));
@@ -297,8 +324,10 @@ ccxl_status BGBCC_CCXL_EmitCallArg(BGBCC_TransState *ctx,
 
 	op=ctx->vop[ctx->n_vop-1];
 
-	if(op->opn!=CCXL_VOP_CALL)
-		{ BGBCC_DBGBREAK }
+//	if(op->opn!=CCXL_VOP_CALL)
+	if((op->opn!=CCXL_VOP_CALL) &&
+		(op->opn!=CCXL_VOP_OBJCALL))
+			{ BGBCC_DBGBREAK }
 
 	i=op->imm.call.ca++;
 	op->imm.call.args[i]=reg;
@@ -451,6 +480,16 @@ ccxl_status BGBCC_CCXL_EmitConv(BGBCC_TransState *ctx,
 		BGBCC_CCXL_TypeFloatP(ctx, dtype))
 	{
 		ctx->ccxl_tyc_seen|=BGBCC_TYCSEEN_FLOAT_FPU;
+	}
+
+	if(BGBCC_CCXL_TypeVarObjP(ctx, dtype))
+	{
+		BGBCC_CCXL_MarkTypeVarConv(ctx, stype);
+	}
+
+	if(BGBCC_CCXL_TypeVarObjP(ctx, stype))
+	{
+		BGBCC_CCXL_MarkTypeVarConv(ctx, dtype);
 	}
 
 //	if((dtype.val==408) && (stype.val==0))
@@ -818,6 +857,7 @@ ccxl_status BGBCC_CCXL_EmitLoadSlot(BGBCC_TransState *ctx,
 	BGBCC_CCXL_LiteralInfo *st, char *name, char *sig)
 {
 	BGBCC_CCXL_VirtOp *op;
+	BGBCC_CCXL_LiteralInfo *st1;
 	int fn;
 
 	if(ctx->cgif_no3ac)
@@ -835,6 +875,20 @@ ccxl_status BGBCC_CCXL_EmitLoadSlot(BGBCC_TransState *ctx,
 	op->srca=src;
 //	fn=BGBCC_CCXL_LookupStructFieldID(ctx, st, name);
 	fn=BGBCC_CCXL_LookupStructFieldIDSig(ctx, st, name, sig);
+	if(fn<0)
+	{
+		st1=BGBCC_CCXL_GetStructSuperclass(ctx, st);
+		while(st1)
+		{
+			fn=BGBCC_CCXL_LookupStructFieldIDSig(ctx, st1, name, sig);
+			if(fn>=0)
+				{ st=st1; break; }
+			st1=BGBCC_CCXL_GetStructSuperclass(ctx, st1);
+		}
+		
+		if(fn<0)
+			{ BGBCC_DBGBREAK }
+	}
 	op->imm.obj.gid=st->litid;
 	op->imm.obj.fid=fn;
 	BGBCC_CCXL_AddVirtOp(ctx, op);
@@ -846,6 +900,7 @@ ccxl_status BGBCC_CCXL_EmitStoreSlot(BGBCC_TransState *ctx,
 	BGBCC_CCXL_LiteralInfo *st, char *name)
 {
 	BGBCC_CCXL_VirtOp *op;
+	BGBCC_CCXL_LiteralInfo *st1;
 	int fn;
 
 	if(ctx->cgif_no3ac)
@@ -862,6 +917,20 @@ ccxl_status BGBCC_CCXL_EmitStoreSlot(BGBCC_TransState *ctx,
 	op->dst=dst;
 	op->srca=src;
 	fn=BGBCC_CCXL_LookupStructFieldID(ctx, st, name);
+	if(fn<0)
+	{
+		st1=BGBCC_CCXL_GetStructSuperclass(ctx, st);
+		while(st1)
+		{
+			fn=BGBCC_CCXL_LookupStructFieldID(ctx, st1, name);
+			if(fn>=0)
+				{ st=st1; break; }
+			st1=BGBCC_CCXL_GetStructSuperclass(ctx, st1);
+		}
+		
+		if(fn<0)
+			{ BGBCC_DBGBREAK }
+	}
 	op->imm.obj.gid=st->litid;
 	op->imm.obj.fid=fn;
 	BGBCC_CCXL_AddVirtOp(ctx, op);
@@ -873,6 +942,7 @@ ccxl_status BGBCC_CCXL_EmitLoadSlotAddr(BGBCC_TransState *ctx,
 	BGBCC_CCXL_LiteralInfo *st, char *name)
 {
 	BGBCC_CCXL_VirtOp *op;
+	BGBCC_CCXL_LiteralInfo *st1;
 	int fn;
 
 	if(ctx->cgif_no3ac)
@@ -884,6 +954,20 @@ ccxl_status BGBCC_CCXL_EmitLoadSlotAddr(BGBCC_TransState *ctx,
 	op->dst=dst;
 	op->srca=src;
 	fn=BGBCC_CCXL_LookupStructFieldID(ctx, st, name);
+	if(fn<0)
+	{
+		st1=BGBCC_CCXL_GetStructSuperclass(ctx, st);
+		while(st1)
+		{
+			fn=BGBCC_CCXL_LookupStructFieldID(ctx, st1, name);
+			if(fn>=0)
+				{ st=st1; break; }
+			st1=BGBCC_CCXL_GetStructSuperclass(ctx, st1);
+		}
+		
+		if(fn<0)
+			{ BGBCC_DBGBREAK }
+	}
 	op->imm.obj.gid=st->litid;
 	op->imm.obj.fid=fn;
 	BGBCC_CCXL_AddVirtOp(ctx, op);
@@ -895,9 +979,13 @@ ccxl_status BGBCC_CCXL_EmitLoadSlotAddrID(BGBCC_TransState *ctx,
 	BGBCC_CCXL_LiteralInfo *st, int fn)
 {
 	BGBCC_CCXL_VirtOp *op;
+	BGBCC_CCXL_LiteralInfo *st1;
 
 	if(ctx->cgif_no3ac)
 		return(0);
+
+	if(fn<0)
+		{ BGBCC_DBGBREAK }
 
 	op=BGBCC_CCXL_AllocVirtOp(ctx);
 	op->opn=CCXL_VOP_LOADSLOTADDR;

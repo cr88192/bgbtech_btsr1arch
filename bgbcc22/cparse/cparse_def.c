@@ -834,7 +834,8 @@ BCCX_Node *BGBCP_Definition(BGBCP_ParseState *ctx, char **str)
 			(ctx->lang==BGBCC_LANG_BS2))
 		{
 			if(BCCX_TagIsP(n, "classdef") ||
-				BCCX_TagIsP(n, "enumdef"))
+				BCCX_TagIsP(n, "enumdef") ||
+				BCCX_TagIsP(n, "null_statement"))
 			{
 				*str=s;
 				return(n);
@@ -899,9 +900,12 @@ BCCX_Node *BGBCP_Definition(BGBCP_ParseState *ctx, char **str)
 				n=BCCX_Clone(n1);
 				BCCX_CheckDeleteUnlinked(n1);
 
+				i=ctx->in_func_body;
+				ctx->in_func_body=1;
 				tk0=BGBCP_GetTokenCount();
 				n1=BGBCP_BlockStatement2(ctx, &s2);
 				tk1=BGBCP_GetTokenCount();
+				ctx->in_func_body=i;
 
 				BCCX_SetTagCst(n, &bgbcc_rcst_defun, "defun");
 				BCCX_AddV(n, BCCX_NewCst1V(&bgbcc_rcst_body, "body", n1));

@@ -616,6 +616,18 @@ bool BGBCC_CCXL_TypeVarRefP(
 	return(false);
 }
 
+bool BGBCC_CCXL_TypeCStringP(
+	BGBCC_TransState *ctx, ccxl_type ty)
+{
+	return(ty.val==CCXL_VTY_PCHAR);
+}
+
+bool BGBCC_CCXL_TypeCWStringP(
+	BGBCC_TransState *ctx, ccxl_type ty)
+{
+	return(ty.val==CCXL_VTY_PWCHAR);
+}
+
 bool BGBCC_CCXL_TypeSmallFloatP(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {

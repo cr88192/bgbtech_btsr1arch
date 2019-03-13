@@ -3069,6 +3069,7 @@ int BGBCC_JX2C_EmitCallVReg(
 	ccxl_type type,
 	ccxl_register dst,
 	ccxl_register fcn,
+	ccxl_register thisobj,
 	int narg, ccxl_register *args)
 {
 	ccxl_register treg;
@@ -3487,9 +3488,16 @@ int BGBCC_JX2C_EmitCallVReg(
 //	BGBCC_JX2C_ResetFpscrDefaults(ctx, sctx);
 //	BGBCC_JX2C_SetModeDqClear(ctx, sctx);
 
+	if(!BGBCC_CCXL_IsRegZzP(ctx, thisobj))
+	{
+		sctx->sreg_live|=0x08;
+		BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx,
+			thisobj, BGBCC_SH_REG_RQ3);
+	}
+
 	BGBCC_JX2C_EmitCallFcnVReg(ctx, sctx, fcn);
 
-	sctx->sreg_live&=~0x00F000F0;
+	sctx->sreg_live&=~0x00F000F8;
 //	sctx->sfreg_live&=~0x0FF0;
 	sctx->sfreg_live&=~0x00F0;
 

@@ -1012,9 +1012,17 @@ int BGBCC_JX2C_EmitConvVRegVReg(
 		return(0);
 	}
 
-	if(dt==CCXL_TY_VARIANT)
+	if((dt==CCXL_TY_VARIANT) ||
+		(dt==CCXL_TY_VAROBJECT))
 	{
-		if(st==CCXL_TY_VARIANT)
+		if((st==CCXL_TY_VARIANT) ||
+			(st==CCXL_TY_VAROBJECT))
+		{
+			return(BGBCC_JX2C_EmitMovVRegVReg(ctx, sctx,
+				dtype, dreg, sreg));
+		}
+		
+		if(BGBCC_CCXL_TypeVarRefP(ctx, stype))
 		{
 			return(BGBCC_JX2C_EmitMovVRegVReg(ctx, sctx,
 				dtype, dreg, sreg));
@@ -1022,6 +1030,13 @@ int BGBCC_JX2C_EmitConvVRegVReg(
 		
 		return(
 			BGBCC_JX2C_EmitConvFromVRegVRegVariant(ctx, sctx,
+				stype, dreg, sreg));
+	}
+	
+	if(dt==CCXL_TY_VARSTRING)
+	{
+		return(
+			BGBCC_JX2C_EmitConvFromVRegVRegVarString(ctx, sctx,
 				stype, dreg, sreg));
 	}
 

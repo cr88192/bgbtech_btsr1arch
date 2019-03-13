@@ -986,6 +986,18 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 #endif
 
 	n=BGBCP_Statement(ctx, &s);
+	
+	if(ctx->lang==BGBCC_LANG_BS2)
+	{
+		s=BGBCP_EatWhite(s);
+		if(*s=='}')
+		{
+			n=BCCX_NewCst1(&bgbcc_rcst_return, "return", n);
+			*str=s;
+			return(n);
+		}
+	}
+	
 //	s=BGBCP_EatSemicolon(s);
 	s=BGBCP_EatSemicolonRequired(ctx, s);
 	*str=s;

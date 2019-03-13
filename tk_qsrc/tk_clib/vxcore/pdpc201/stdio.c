@@ -98,9 +98,13 @@ static FILE permFiles[3];
 void tk_printf(char *str, ...);
 
 
-FILE *__stdin = &permFiles[0];
-FILE *__stdout = &permFiles[1];
-FILE *__stderr = &permFiles[2];
+// FILE *__stdin = &permFiles[0];
+// FILE *__stdout = &permFiles[1];
+// FILE *__stderr = &permFiles[2];
+
+FILE *__stdin;
+FILE *__stdout;
+FILE *__stderr;
 
 FILE *__userFiles[__NFILE];
 static FILE  *myfile;

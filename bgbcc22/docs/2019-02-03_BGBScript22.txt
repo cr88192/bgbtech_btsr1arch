@@ -1,0 +1,874 @@
+
+BGBScript 2.2
+* BGBCC Implementation of BGBScript2.
+* Statically typed and performance oriented.
+* Will use Java / C# style declaration syntax.
+* Will use a class/instance object system.
+* GC will be optional.
+** For RT uses, GC may be absent.
+** Delete is to be used to release memory.
+** An RAII like system may also be used for memory management.
+** (Drop?) Additionally, reference counting may be used.
+
+
+== General ==
+
+Scope Levels:
+* Global
+* Package
+* Class
+* Function/Method
+* Lexical
+* Dynamic/TLS
+** Dynamic bindings will only be visible if the declaration is in-scope.
+
+
+Objects
+* Single Inheritance Classes
+* Interfaces
+** Interfaces may supply default methods.
+* Classes are Reference, Structs are Value
+** Structs may support methods, but will not support inheritance.
+** Unlike BGBScript, Value Classes will not be supported.
+
+VM
+* Will have both static and variant values.
+** Variant will be its own type.
+** Types will be tagged by the reference, not by the underlying memory object.
+*** For now, this limits 64-bit address space to 48 bits.
+** (Change) Tag both the reference and memory object, allowing untagged pointers as an edge case.
+
+Implementation
+* Logical 'string' type.
+** Implemented as a Tagged Reference.
+** Backing Memory: UTF-16 or CP-8859-1.
+** The choice of representation will be based on character range.
+** The use of CP-8859-1 over UTF-8 is to allow O(1) random character access.
+** UTF-8 will be used for offline storage of string data, generally independent of character set.
+* Symbols and keywords will remain as UTF-8.
+** Character access to these types will be in terms of bytes.
+
+
+=== Types ===
+
+Integer types will be fixed size twos complement types.
+
+* SmallInt:
+** int, uint (32-bit)
+** short, ushort (16-bit)
+** byte, sbyte (8-bit)
+** char (16-bit in arrays, 32-bit as variables)
+*** char8, 8-bit unsigned char.
+*** char16, 16-bit unsigned char.
+*** char32, 32-bit signed char.
+* SmallLong:
+** long, ulong (64-bit)
+** nlong, unlong (32/64 bit)
+* SmallInt128
+** int128, uint128 (128 bit)
+* FloatingPoint
+** float, 32-bit IEEE binary32
+** double, 64-bit IEEE binary64
+** float128, 128-bit IEEE binary128
+** float16, 16-bit IEEE half-float
+* Vector
+** FComplex, DComplex
+** Vec2f, Vec3f, Vec4f, Vec2d, Vec3xf
+** Quatf
+
+SmallInt types will implicitly promote to int in operations. If the destination is a wider type, then the types will implicitly promote to the wider type. This promotion will happen prior to performing arithmetic operations, and may be applied recursively.
+
+Note that the expression will promote after performing the operation if the early promotion would lead to a type error or adversely effect the result.
+
+
+Example:
+ int i, j, k;
+ long l;
+ l=(i+j)+k;
+The values for i and j will promote to long prior to adding the values.
+
+For signed integer types, a right-shift operation will implicitly sign-extend the value. Shifts larger than the size of the type will behave as if they were done via multiple shifts less than the size of the type.
+
+Masking a shift may be recognized as a special case, for example (i>>(j&31)) will indicate the use of a mod32 shift operation.
+
+A partial exception is operations between int and uint, which are to implicitly promote to long if the destination is SmallLong. If the destination is SmallInt, then it will promote to int.
+
+Implicit narrowing conversions are to result in a warning, except:
+* If the wider type was due to implicit widening.
+* If the value can be statically determined to fall within the range of the narrower type.
+* Implicit int-to-char conversions may also generate a warning, unless produced via an arithmetic operation on a char type.
+
+
+Variant will exist as a dynamically typed type. Values cast to variant will remember their original type and value, with the exception that numeric types may promote to a larger numeric type.
+
+Values may be implicitly converted to variant, but generally a cast will be required to convert a variant back into a given value type. A cast from variant to another type will typically involve run-time type-checks.
+
+The 'object' type will be similar to 'variant', but values of type object will not normally implement operations, and as such 'objeect' will function as an "opaque" type.
+
+Object types may be checked for equality, which will be performed according to strict equality.
+
+
+Many of the core types will be value-types, meaning they are passed around by value. Likewise, structs will be value types by default. A pointer will be a value type, however this does not apply to the memory pointed to by the pointer.
+
+Many other objects will be reference types, and will be passed by identity. Classes, Interfaces, Arrays, ... will be reference types. Reference types will retain identity whether they exist in their native types or are cast to variant.
+
+While 128-bit values will behave as other numeric types, they are likely to be a bit slower.
+
+Likewise, float16 is liable to be emulated, and thus slower than other FP types. It is mostly intended for large arrays.
+
+The native endianess for numbers is undefined.
+While on most common targets it is likely to be little endian, this isn't necessarily safe to assume.
+
+
+==== Declararions ====
+
+ int x;						//int variable
+ float x;					//float variable
+ SomeObj x;					//SomeObj variable
+ int[] arr;					//int array (uninitialized)
+ int[] arr=new int[16];		//int array (initialized)
+ int[16] arr;				//int array (scope-bound)
+ 
+ <nowiki>*</nowiki>int pi;					//integer pointer
+ 
+ &int pi;					//integer by-reference
+ 	Only valid in argument lists.
+ 	Caller also needs to use &.
+ <nowiki> </nowiki>    Passing a variable without an & operator is an error.
+ 
+ void someMethod(int x, int y) { ... }	//method
+ var fn=function(int x, int y):void { ... }		//closure
+
+
+If a function argument list ends with ..., then the function will accept a variable number of arguments.
+
+ void someVarArgMethod(int x, int y, ...args) { ... }	//method
+
+Where args is the name of the arguments list, which is seen by the function as an array of variant.
+
+Named arguments may be given as "name: value", which will be expressed in a variable argument list as the name (as a keyword), followed by the value.
+
+With native/FFI calls, '...' vs '...name' will indicate whether to use C-style varargs passing, or to pass an array. Within BS2 code, only arrays may be used.
+
+Note that the array created by a varargs call is only valid within the lifetime of the called function, and will be destroyed automatically when this function returns.
+
+
+A modifier statement may be formed:
+* '''modifier'''* '':''
+
+A a modifier statement will denote a collection of modifiers which apply to all further declarations within the given block or until another modifier statement is encountered. Its scope will be limited to a single block, and does not effect declarations within child blocks.
+
+
+==== Object ====
+
+Objects may exist without an explicit class, and will exist as a key/value mapping. These will be termed ex-nihilo objects.
+
+ var obj={x: 1, y: 2, z: 3};
+
+The default type for members in ex-nihilo objects will be variant.
+
+
+Likewise, classes may be used:
+ public class Foo extends Bar implements IBaz {
+ 	public int x, y;
+ 	public Foo(int x, int y, int z)
+ 		{ ... }
+ 	public ~Foo() { ... }
+ }
+ Foo o=new Foo(1, 2, 3);
+ ...
+ delete o;
+
+Within constructors or destructors, 'super(...)' may be used to invoke constructors or destructors in the parent class.
+
+A destructor is called when the object is deleted.
+
+Structs may provide constructors and destructors, in which case the destructor is called when the struct goes out of scope. If a struct is passed by value, a copy-constructor may be called each time the object is cloned, and the destructor is called when the struct exits the current scope.
+
+ public struct Foo {
+   Foo(int x, int y) { ...ctor... }
+   Foo(&Foo src) { ...c-ctor... }
+   ~Foo() { ...dtor... }
+ }
+ 
+ {
+   Foo foo=new Foo(1, 2);		//ctor
+   Foo foo2=foo;				//c-ctor
+   ...
+   //foo and foo2 both invoke dtor.
+ }
+
+
+Within an object, multiple methods may exist with the same name but differing argument lists. These will be regarded as separate methods.
+
+Similar will apply to ex-nihilo objects, where a matching method will first be checked for in the method namespace, followed by checking for a closure in the field namespace.
+
+Objects may be created using a type suffix.
+  Foo obj={x: 3, y: 4}:Foo;
+
+This will allocate an object of the specified type and initialize the fields to the default values.
+
+Possible:
+  Foo obj={x: 3, y: 4}:Foo(...);
+
+Which creates an object instance, initializes the fields, and then calls the constructor.
+
+
+==== Tail Position ====
+
+For functions/methods which don't return void, a special rule will apply to the last statement of the block. The last statement may be an expression (without a semicolon) which will be evaluated as if it were part of a return statement.
+
+If the expression in tail position (or as part of a return statement) consists solely of a function or method call, then the caller's frame is to return before the call is made. In this case, the caller will be omitted from the call stack.
+
+
+=== Scope ===
+
+The top-level scope will be based on 'packages'.
+
+Packages exist independently of source files:
+* A package may be spread over any number of source files.
+* A single source file may contain any number of packages.
+* Any number of declarations may appear in a source file.
+* A declaration outside of any package is normally considered as being at the top-level.
+
+However, there will be an overlap:
+In some cases, import may assume that a source-file exists matching a package name. This source file is responsible for importing other files with contents relevant to this package (via 'extern import'). Note that 'extern import' will identify the path of the source file or module, rather than its logical package.
+
+
+Implicitly, the contents of the global toplevel and packages are assumed to be constant at run-time (however, in the implementation it is possible that new content be loaded at run-time, however this should not effect running code).
+
+At present, the possibility and effects of "live patching" a running program (by loading new code with packages and declarations which override existing declarations) are undefined. For batch compilation or static loading scenarios, an error should be raised if such a conflict is detected.
+
+Naturally, the scope visibility will be in lexical order.
+Dynamic variables may exist, but will be visible in terms of their declaration with the lexical context (a dynamic variable with no declaration within the lexically visible scope may not be accessed).
+
+However, with dynamic variables, their bound address will depend on the current call-frame. Similarly, each thread will have its own copies of each dynamic variable. For sake of this language, dynamic variables and Thread-Local-Storage will be regarded as equivalent.
+
+
+Closures will have one of several sub-variants:
+* Inner Functions
+** Declared as a function.
+** Will naturally have a lifetime limited to the parent scope.
+* Closure Expressions ('function')
+** Will normally make a copy of any captured bindings.
+** Lifetime will be unbounded.
+*** These are not automatically reclaimed, and delete may be needed for them.
+* Temporary Closure Expressions ('function!')
+** Will have a lifetime limited to the parent scope.
+
+
+==== Method and Field Namespaces ====
+
+Variables/Fields and Functions/Methods will exist in separate namespaces.
+In the variable namespace, only a single variable may exist with a given name.
+In the function namespace, multiple functions may exist with a given name differing only in terms of their argument list.
+
+A function reference may be retrieved using a name, but only if:
+* The function is part of the visible scope;
+* The name does not identify a function with an overloaded name.
+
+In other cases, a cast expression will be needed to identify the name. The type for the cast will be a typedef of the appropriate method signature.
+
+
+=== Number Operations ===
+
+Arithmetic operations between integer types will automatically promote to a wider type capable of expressing the range of values which may be produced.
+
+Type promotion will not occur if both expressions are of the same type.
+
+Implicit type narrowing will not be allowed in the general case. However, a few exceptions exist which will allow implicit narrowing:
+* The value is a constant which may be represented exactly within the destination type
+* The wider type was the result of implicit promotion from narrower types, where the narrower types may both be implicitly converted to the destination type.
+
+In other cases, narrowing conversions will require a cast.
+
+Casting a value to a given type will sign or zero extend the value to be consistent with the value range of this type.
+
+Integer operations may not promote to a floating-point type unless one or both operands are floating point. Mixing an integer and floating point type is to promote to double.
+
+
+Float and Double will have some builtin properties:
+* sin, cos, tan, rcp, sqrt, ssqrt, abs, log, exp, floor, ceil
+** These compute the associated mathematical function on the type.
+** The ssqrt operation returns a sign-folded sqrt (x>=0)?sqrt(x):-sqrt(-x).
+
+
+=== Vector Operations ===
+
+A vector in this language will consist of between 2 and 4 floating point numbers
+* vec2f: Will consist of a pair of floats with 64-bit storage.
+* vec2d: Will consist of a pair of doubles with 128-bit storage.
+* vec3f: Will consist of 3 floats with 128 bit storage (32 bits unused)
+* vec4f: Will consist of 4 floats with 128 bit storage.
+* vec3xf: Will consist of 3 extended floats with 128 bit storage.
+** Essentially it is a vec3f with additional mantissa bits.
+** The final 128 bits will be divided among the other components.
+** Logically, components will be treated as double.
+
+There will be shorthand type names:
+* vec2: Will alias to vec2d
+* vec3: Will alias to vec3xf
+* vec4: Will alias to vec4f
+
+Additionally, there will be quaternions:
+* quatf: Will consist of 4 floats representing a quaternion.
+** The 'w' component will be interpreted as the 'real' part.
+* quat: Will alias to quatf
+
+Vector Binary Operators:
+* A+B, A-B: Add/Subtract Vectors (Per Component)
+* A*B, A/B: Multiply/Divide Vectors (Per Component, Excludes Quat)
+* A*f, A/f: Multiply/Divide Vector by a Scalar.
+* A^B: Dot Product
+* A%B: Cross Product
+
+Vector Unary Operators:
+* -A: Negated value of the vector.
+
+Vector Properties:
+* len | length: Length of the vector
+* len2 | length2: Squared length of the vector
+* neg: Negated vector
+* norm | normalize: The normalized value of the vector
+* rcp: Reciprocal (Per Component)
+* rsqrt: Reciprocal Square Root (Per Component)
+* sqrt: Square Root (Per Component)
+
+Vector Members:
+* x, y, z, w: X, Y, Z, and W fields.
+** W does not exist in vec2 or vec3 types.
+** Z does not exist in vec2.
+* i, j, k, l, r: Aliases to X/Y/Z/W used for quaternions.
+** i=x, j=y, k=z, l=r=w
+* i, r: Y and X for complex numbers
+** r=x, i=y
+
+The members within a vector are read-only given a vector is a value type.
+* Vector members may be only modified using arithmetic or by creating a new vector.
+
+
+Quaternion:
+* A*B: Quaternion product
+* A/B: Quaternion divide
+** Defined as equivalent to A*(1.0/B)
+
+Example syntax:
+ vec2 v2=#[1.0, 0.0];
+ vec3 v3=#[0.0, 1.0, 0.0];
+ vec4 v4=#[0.0, 0.0, 1.0, 0.0];
+
+Vector literals are to automatically convert to the type they are assigned to, and to match with the other operand in the case of a vector operation, thus suffixes should rarely be necessary.
+
+Vectors may also be constructed dynamically using expressions.
+
+
+Vectors may be converted to other vector types.
+* If converted to a narrower type, the extra parameters are to be discarded.
+* If converted to a wider type, the added parameters are to be zeroed.
+* If a scalar is converted to a vector, its value will be used for each member.
+* If a scalar is converted to a quat, the scalar goes into W with X=Y=Z=0.
+* If a complex is converted to a quat, R/I go into W/X with Y=Z=0.
+
+Type promotions:
+* Operations between vectors of the same width will promote to higher precision
+* Operations between vectors of differing width will promote to the wider type.
+* Operations involving quat will promote to quat.
+
+
+=== String/Array/Pointer Operators ===
+
+* Obj + Int, Obj - Int
+** Returns a new string or array offset by a given number of items.
+** Both the old and new array will share the same memory.
+** Bounds checks will be relative to the original string or array.
+* ObjA & ObjB
+** Will append the two items together.
+** The appended array will be a new array independent of the parent arrays.
+* The ++, --, +=, -=, ... operators may be used to walk arrays.
+
+String comparisons will be done by value. They will require that both objects be strings (types will not be coerced).
+
+Array comparisons will be done by the identity of the target memory. Relative array comparisons are only valid for arrays representing the same underlying memory.
+
+Arrays may not be cast to arrays of a different type, but may be cast to pointers of a different type. If an array is cast to a pointer, the pointer will point to the memory held by the array.
+
+A pointer cast to 'variant' is to remember the type of the pointer that was cast.
+
+Pointer conversions are to require casts. The compiler should not allow implicit conversion between pointers of different types. An exception to this rule will be '*void', which may be implicitly cast to any other pointer type, and any other pointer type may be cast to '*void'.
+
+The VM is may check and throw for memory accesses outside the bounds of the pointed-to memory region. Memory accesses via pointers are to be bounds-checked by the VM (for pointers produced within the scope of the VM). Accessing a variable outside the allowed range is to throw an exception.
+
+
+The '&' unary operator may be used to gain a pointer or reference to a variable. The pointer type is to be the same as that of the variable. The results of the operation are undefined if a variable is accessed as a different type from that of the variable. However, like with other memory objects, the VM should not allow operations outside the bounds of the memory covered by this variable.
+
+The '*' unary operator may access the first element of an array or string. In most respects, '*expr' will be regarded as equivalent to 'expr[0]'.
+
+Literal strings will be constant and immutable.
+
+
+Many types will possess a built-in 'toString' property which will convert the type to a string-based serialization.
+
+The string will posess several built-in properties for parsing strings:
+* toInt, toUInt, toLong, toULong, toFloat, toDouble.
+
+
+=== Object/Array Lifetime ===
+
+The lifetime for raw 'struct' variables will be bounded to that of the scope in which they are declared. Passing a struct will effectively copy its contents into a new struct instance. Passing a pointer or reference to a struct will have no effect on its lifetime.
+
+Objects created with 'new' will have an unbounded lifetime. Delete is to be used to reclaim their memory. Failure to use 'delete' may result in the memory being "leaked" and unrecoverable by the VM.
+
+It is in error to attempt to access an object which has been deleted.
+
+Likewise:
+* type[] arr=new type[size];
+** Creates an array with an unbounded lifespan.
+* type[size] arr;
+** Creates an array with a bounded lifespan.
+* type[] arr=[X, Y, Z];
+** Creates an array with initialized contents.
+
+
+=== Exceptions and Continuations ===
+
+Exceptions will use a try/catch/finally setup.
+
+ try {
+    body...
+ }catch(Exception ex)
+ {
+    handle...
+ }finally
+ {
+    cleanup...
+ }
+
+Throwing an exception within a try block will cause any exception handlers to be checked, and failing being handled, the finally block is executed (if present) and the exception is rethrown.
+
+If no exception is thrown, then control passes from the try block to the finally block (if present), and then to any following statements.
+
+If a thrown exception is caught, then afterwards control passes to the finally block, and then on to subsequent statements.
+
+
+A form of exit-only continuations will be allowed.
+
+ let_escape(var-def)
+ {
+    body...
+ }
+
+Within body, var will be initialized to an escape continuation.
+Throwing this continuation will send control to the statement following the body (skipping over any additional statements). The escape continuation may not be used outside the enclosed block.
+
+As with exceptions, this may be used across multiple functions. However, a thrown continuation may not be caught. Like with exceptions, any finally blocks are to be executed in the process of unwinding.
+
+
+== Syntax ==
+
+So begins the section on language syntax.
+
+
+=== Tokens ===
+
+Identifier:
+* '_', '$'
+* 'A'..'Z', 'a'..'z'
+* '0'..'9'
+** However, an identifier may not begin with a digit.
+* An identifier may not exceed 252 characters.
+* Within an identifier, '::' may be used to denote scope.
+
+QName:
+* A qname is an subtype of identifier.
+* A syntactic element may be designated as a qname.
+** If so, either '.' or '::' may be used to denote scope.
+** Within these contexts, both are treated as functionally equivalent.
+
+
+Integer:
+* Numbers will begin with a digit.
+* An '0x' prefix will denote a hexadecimal number.
+* An '0' or '0c' prefix will denote octal.
+** Use of the '0' prefix may is deprecated.
+* An '0b' prefix will denote binary.
+* An '0d' prefix will denote decimal.
+** Decimal will be the default number base.
+* Within numbers, '_' may be used as a digit separator.
+** It may appear between any digits within the body of the number.
+** It will have no effect on the value of the number.
+
+Real:
+* Will be a number which contains a decimal point.
+
+Strings:
+* Normal strings will be enclosed in quotes and use C-style '\' escapes.
+* String literals placed directly end-to-end will combine into a larger compound string literal.
+** The minimum maximum length for a string literal is 252 ASCII characters.
+** The minimum maximum length for a compound string is 4092 ASCII characters.
+** A compiler may reject code which exceeds these limits.
+* Single quoted literals will exist, but are not strings per-se.
+** They will represent one or more characters treated as a single value.
+** A single character will represent the codepoint of the character.
+** Multiple characters will be treated as an integer literal composed of these characters interpreted as bytes in little-endian order.
+* Triple-Quote strings may exist, which may be larger.
+
+Triple Quote Strings:
+* They will be unescaped raw character sequences.
+* The minumum maximum length for a triple-quoted string is 65472 characters.
+
+
+=== Syntactic Forms ===
+
+
+PackageStatement:
+* ( ''modifier'' * ) '''package''' ''qname'' '{' ''package-statement''* '}'
+* ( ''modifier'' * ) '''import''' ''package'' ';'
+* ( ''modifier'' * ) '''class''' ''classname'' ( '''extends''' ''superclass'' ) ( '''implements''' ''interfaces'' ) '{' ''declaration''* '}'
+* ( ''modifier'' * ) '''struct''' ''classname'' '{' ''declaration''* '}'
+* ''declaration''
+
+
+Declaration:
+* ( ''modifier'' * ) ''typeexpression'' ''declname'' ( '=' ''expression'' ) ';'
+* ( ''modifier'' * ) ''typeexpression'' ''declname'' '''(''' ''argslist'' ''')''' ''block''
+
+Block:
+* ''BlockStatement''
+* '{' ''BlockStatement''* ( ''TailStatement'' ) '}'
+
+TailStatement:
+* ''BlockStatement''
+* ''expression''
+
+
+BlockStatement:
+* ''declaration''
+* '''if''' '''(''' ''cond-expression'' ''')''' ''then-block'' ( '''else''' ''else-block'' )
+* '''for''' '''(''' ''init'' ';' ''cond'' ';' ''step'' ''')''' ''block''
+* '''while''' '''(''' ''cond'' ''')''' ''block''
+* '''do''' ''block'' '''while''' '''(''' ''cond'' ''')''' ';'
+* '''switch''' '''(''' ''indexexpr'' ''')''' ''block''
+* '''case''' ''expr'' ':'
+* '''default''' ':'
+* ''identifier'' ':'
+** Label
+* '''try''' ''block'' ( '''catch''' '''(''' ''args'' ''')''' ''catch-block'' )* ( '''finally''' ''final-block'' )
+* '''let_escape''' '''(''' ''var'' ''')''' ''body''
+* ''statement'' ';'
+
+Statement:
+* '''break'''
+** '''break''' ''level''
+* '''continue'''
+** '''continue''' ''level''
+* '''goto''' ''label''
+* '''goto''' '''case''' ''label''
+* '''return''' ''expression''
+* '''throw''' ''expression''
+* ''expression''
+
+ExpressionLiteral:
+* #identifier
+** Symbol (Variant)
+* #:identifier
+** Keyword (Variant)
+* #"identifier"
+** Symbol (Variant)
+* #'identifier'
+** Identifier (escape for an otherwise invalid identifier name).
+* #:"identifier"
+** Keyword (Variant)
+
+* "chars"
+** String Literal
+** String literals placed end-to-end will be appended into a longer string.
+
+* 'char'
+** Character Literal
+** A char literal with multiple chars will be interpreted as a charcode.
+*** Result will be an int or long with the characters in little-endian order.
+
+* ''integer'' ( ''typesuffix'' )
+* ''real'' ( ''typesuffix'' )
+** Number Literal
+
+* ''name''
+** Identifier
+
+* """ ... """
+** Large String
+** If opening quote is on its own line
+*** Preceding whitespace is removed from subsequent lines.
+** '\' followed by a linebreak will omit the linebreak.
+** '\' followed by """ will escape the triple quote.
+
+* '''{''' ( ''name'' ''':''' ''value'' ( ''',''' ) )* '''}''' ( ''':''' ''type'' )
+** Dynamic Object
+
+* '''[''' ''exprlist'' ''']''' ( ''':''' ''type'' )
+* '''[''' ''exprlist'' ''']''' ( ''suffix'' )
+** Array
+
+* '''(''' ''Expression'' ''')'''
+** Parenthesized Expression
+
+* '''#[''' ''exprlist'' ''']''' ( ''':''' ''type'' )
+* '''#[''' ''exprlist'' ''']''' ( ''suffix'' )
+** Numeric Vector
+
+* '''function''' ( ''name'' ) '''(''' ''argslist '' ''')''' ( ''':''' ''type'' ) ''body''
+** Closure
+
+* '''new''' ''typeexpression'' ( '''(''' ''argslist'' ''')''' )
+** Create new object instance or array (Main Heap).
+
+* '''new''' '''(''' ''region'' ''')''' ''typeexpression'' ( '''(''' ''argslist'' ''')''' )
+** Create new object instance or array (Region).
+
+* '''delete''' ''exprlist''
+* '''sizeof''' ''expression''
+
+OperatorPrecedence:
+* ''ExpressionLiteral''
+* postfix:
+** ''postfix'' '''++'''
+** ''postfix'' '''--'''
+** ''postfix'' '''[''' ''index'' ''']'''
+** ''postfix'' '''(''' ''exprlist'' ''')'''
+** ''postfix'' '''.''' ''ExpressionLiteral''
+** ''postfix'' '''->''' ''ExpressionLiteral''
+** ''ExpressionLiteral''
+* cast:
+** '''(''' ''TypeExpression'' ''')''' ''postfix''
+* unary:
+** '''++''' ''unary''
+** '''--''' ''unary''
+** '''+''' ''unary''
+** '''-''' ''unary''
+** '''~''' ''unary''
+** '''!''' ''unary''
+** '''*''' ''unary''
+** '''&''' ''unary''
+** ''cast''
+* muldiv: '''*''', '''/''', '''%'''
+** ''muldiv'' ''op'' ''unary''
+** ''unary''
+* addsub: '''+''', '''-'''
+** ''addsub'' ''op'' ''muldiv''
+** ''muldiv''
+* bitop: '''&''', '''|''', '''^'''
+** ''bitop'' ''op'' ''addsub''
+** ''addsub''
+* shlr: &lt;&lt;, &gt;&gt;, &gt;&gt;&gt;
+** ''shlr'' ''op'' ''bitop''
+** ''bitop''
+* relcmp: &lt;, &gt;, &lt;=, &gt;=, '''in''', '''instanceof''', '''is''', '''as''', '''as!'''
+** ''relcmp'' ''op'' ''shlr''
+** ''relcmp'' '''is''' ''typeexpression''
+*** Returns boolean indicating if a given expression is a given type.
+** ''relcmp'' '''instanceof''' ''typeexpression''
+*** Returns boolean indicating if an object is a given class.
+** ''relcmp'' '''as''' ''typeexpression''
+*** Cast expression to a given type.
+*** Will return null if the cast fails.
+** ''relcmp'' '''as!''' ''typeexpression''
+*** Cast expression to a given type.
+*** Will throw CastException if the cast fails.
+** ''shlr''
+* eqcmp: '''==''', '''!=''', '''===''', '''!=='''
+** ''eqcmp'' ''op'' ''relcmp''
+** ''relcmp''
+* logop: '''&&''', '''||'''
+** ''logop'' ''op'' ''eqcmp''
+** ''eqcmp''
+* tern: ?:
+** ''logop'' '''?''' ''tern'' ''':''' ''tern''
+** ''logop''
+* assignop: =, +=, -=, *=, /=, &lt;&lt;=, &gt;&gt;=, &gt;&gt;&gt;=, &=, |=, ^=
+** ''bitop'' ''op'' ''assignop''
+** ''bitop''
+* comma: ''','''
+** ''comma'' ''',''' ''assignop''
+** ''assignop''
+* Expression: ''comma''
+
+
+Literal Type Suffix:
+* SB, Signed Byte
+* B, Bool
+* SC, Char8
+* D, Double
+* F, Float
+* G, Float128
+* UB, Unsigned Byte
+* SI, Signed Int
+* UI, Unsigned Int
+* SF, Float16
+* L, Long
+* UL, Unsigned Long
+* LX, Int128
+** ULX, UInt128
+* V, Variant
+* SS, Signed Short
+* US, Unsigned Short
+* W, Char
+* Q, Quaternion (for vectors)
+* J, Complex (Vector), Imaginary (Number)
+** JF, Complex Float, Imaginary Float
+** JD, Complex Double, Imaginary Double
+
+
+Modifier:
+* '''abstract'''
+** Class: May not be directly instantiated.
+** Method: To be supplied by a derived class.
+
+* '''async'''
+** Method: Calls will be non-blocking.
+** Block/Statement: Will execute asynchronously.
+
+* '''const'''
+** Variable:
+*** Value types will be constant and immutable.
+*** Referenced value/data will be immutable (through this variable).
+**** However, the variable itself may still be modifiable.
+** Expression: Expression's value should be precomputed and immutable.
+*** Used with arrays/lists to indicate arrays with immutable contents.
+
+* '''delegate'''
+** Variable: Contained bindings may be seen from the containing scope.
+** Import: Contents of the imported package will also be visible to those who import the current package.
+
+* '''dynamic'''
+** Class: Class layout may be extended at run-time.
+** Variable: Use dynamic scoping.
+
+* '''extern'''
+** Import: Indicates modules that should be loaded.
+
+* '''final'''
+** Class: May not be inherited from.
+** Method: May not be overriden.
+** Variable: is immutable.
+*** Final instance variables may be modified in constructors.
+
+* '''inline'''
+** Function: Compiler or VM should inline this function.
+
+* '''native'''
+** Package: Indicates contents to be exported to native code.
+** Import: Indicates external libraries to be imported.
+** Struct: Indicates struct may be shared with native code.
+** Function: Indicates a function to be imported/exported.
+
+* '''private'''
+** Declaration may only be used within the current scope.
+
+* '''protected'''
+** Declaration may only be used within the current scope, or from derived scope.
+
+* '''public'''
+** Declaration may be seen anywhere.
+
+* '''static'''
+** Method: Is tied to the class, rather than an instance.
+** Class Variable: Holds value with the class, shared between instances.
+** Local Variable: Values remains between invocations.
+
+* '''synchronized'''
+** Method: Object is locked for the execution of this method.
+** Block: Will be a critical section.
+
+* '''typedef'''
+** Variable: Declares an alias for a given type.
+** Method: Declares an type representing the method's signature.
+
+* '''volatile'''
+** Indicates that the variable may be modified asynchronously.
+** This causes changes to a variable to be immediately visible between threads.
+** Other variables may have their values cached temporarily.
+
+Special Number Modifiers (Possible)
+* '''ltlendian'''
+** Number is little endian.
+** This modifier will only apply to struct members.
+* '''bigendian'''
+** Number is big endian.
+** This modifier will only apply to struct members.
+
+
+TypeName:
+* ''qname''
+** ''classname''
+** ''structname''
+
+* '''int''' (32-bit, signed)
+** '''uint''' (32-bit, unsigned)
+
+* '''long''' (64-bit, unsigned)
+** '''ulong''' (64-bit, unsigned)
+
+* '''nlong''' (32/64-bit)
+** '''unlong''' (32/64-bit, unsigned)
+** Size of nlong and unlong will depend on the native C 'long' type for the target.
+** This need not necessarily be the size of a pointer.
+
+* '''float''' (32-bit)
+* '''double''' (64-bit)
+* '''byte''' (8-bit)
+** '''sbyte''' (8-bit, signed)
+
+* '''short''' (16-bit, signed)
+** '''ushort''' (16-bit, unsigned)
+
+* '''char''' (16-bit, unsigned)
+** '''char8''' (8-bit, unsigned)
+** '''char16''' (16-bit, unsigned)
+** '''char32''' (32-bit, signed)
+
+* '''void'''
+* '''variant'''
+** Dynamically typed value.
+
+* '''object'''
+** Object of indeterminate type.
+** Functionally similar to variant, but does not implement operators.
+
+* '''auto'''
+** Inferred type.
+** Compiler should attempt to infer the type of variable from its assigned value.
+** An auto-type variable should only ever hold a single type.
+
+* 64-bit vector types
+** '''vec2f'''
+** '''fcomplex'''
+
+* 128-bit types
+** '''int128'''
+** '''uint128'''
+** '''float128'''
+** '''vec2d'''
+** '''vec3f'''
+** '''vec4f'''
+** '''dcomplex'''
+** '''quatf'''
+** '''vec3xf'''
+
+* Shorthands
+** '''vec2''' maps to '''vec2d'''
+** '''vec3''' maps to '''vec3xf'''
+** '''vec4''' maps to '''vec4f'''
+** '''quat''' maps to '''quatf'''
+
+TypeExpression:
+* ''typename''
+** QName identifying a class, struct, or typedef.
+
+* '''*''' ''typeexpression''
+** Pointer to a type.
+
+* '''&''' ''typeexpression''
+** Reference to a type.
+
+* ''typeexpression'' '[' ']'
+* ''typeexpression'' '[' ''size'' ']'

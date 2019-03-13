@@ -107,7 +107,7 @@ int TKSPI_DelayUSec(int us)
 int TKSPI_ReadData(byte *buf, u32 len)
 {
 	byte *ct;
-	u32 count;
+	u32 count, v;
 	byte rv;
 	int n;
 	
@@ -115,6 +115,17 @@ int TKSPI_ReadData(byte *buf, u32 len)
 	while(count>0)
 	{
 		rv=TKSPI_XchByte(0xFF);
+
+#if 0
+		P_SPI_DATA=0xFF;
+		P_SPI_CTRL=tkspi_ctl_status|SPICTRL_XMIT;
+		v=P_SPI_CTRL;
+		while(v&SPICTRL_BUSY) 
+			v=P_SPI_CTRL;
+		v=P_SPI_DATA;
+		rv=(v&0xFF);
+#endif
+
 		if(rv!=0xFF)
 			break;
 		TKSPI_DelayUSec(10);
@@ -131,8 +142,18 @@ int TKSPI_ReadData(byte *buf, u32 len)
 	ct=buf; n=len;
 	while((n--)>0)
 	{
-		rv=TKSPI_XchByte(0xFF);
-		*ct++=rv;
+//		rv=TKSPI_XchByte(0xFF);
+
+		P_SPI_DATA=0xFF;
+		P_SPI_CTRL=tkspi_ctl_status|SPICTRL_XMIT;
+		v=P_SPI_CTRL;
+		while(v&SPICTRL_BUSY) 
+			v=P_SPI_CTRL;
+		v=P_SPI_DATA;
+//		rv=(v&0xFF);
+		*ct++=v;
+
+//		*ct++=rv;
 	}
 
 //	printf(">\n");

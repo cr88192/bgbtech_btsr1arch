@@ -1937,6 +1937,7 @@ int BGBCC_JX2C_EmitSyncRegisterIndex2(
 	if(sfl&2)
 	{
 		if(BGBCC_CCXL_IsRegGlobalP(ctx, reg) ||
+			BGBCC_CCXL_IsRegThisIdxP(ctx, reg) ||
 			(regfl&BGBCC_REGFL_ALIASPTR))
 		{
 			sctx->regalc_map[i].val=-1;

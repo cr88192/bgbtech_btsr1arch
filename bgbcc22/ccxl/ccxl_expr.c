@@ -203,9 +203,31 @@ char *BGBCC_CCXL_CompileRemapName(BGBCC_TransState *ctx,
 		(ctx->lang==BGBCC_LANG_JAVA)	)
 	{
 		if(!bgbcp_strcmp(name, "this"))
-			return(name);
+		{
+//			return(name);
+			return(bgbcc_strdup("__object_this"));
+		}
+	}
+
+	if(	(ctx->lang==BGBCC_LANG_CS)	||
+		(ctx->lang==BGBCC_LANG_BS2)	||
+		(ctx->lang==BGBCC_LANG_JAVA)	)
+	{
+		if(!bgbcp_strcmp(name, "null"))
+		{
+			return(bgbcc_strdup("__object_null"));
+		}
 	}
 	
+	if(	(ctx->lang==BGBCC_LANG_BS2)	||
+		(ctx->lang==BGBCC_LANG_JAVA)	)
+	{
+		if(!bgbcp_strcmp(name, "super"))
+		{
+			return(bgbcc_strdup("__object_super"));
+		}
+	}
+
 	s0=name;
 
 	ri=NULL;
@@ -343,8 +365,188 @@ void BGBCC_CCXL_CompileArgsAsVarArray(BGBCC_TransState *ctx, BCCX_Node *l)
 		BGBCC_CCXL_CompileExprAsTypeSig(ctx, "r", n);
 	}
 
-	sprintf(tb, "__lva_newvararray_%d", na);
+	if(na>8)
+	{
+		BGBCC_CCXL_StackPushConstInt(ctx, na);
+		sprintf(tb, "__lvo_newvararray_n");
+	}else
+	{
+		sprintf(tb, "__lvo_newvararray_%d", na);
+	}
 	BGBCC_CCXL_StackCallName(ctx, tb, 0);
+}
+
+void BGBCC_CCXL_CompileArgsAsVarArraySig_A1(
+	BGBCC_TransState *ctx, BCCX_Node **stk, int na, char *sig)
+{
+	char tb[256];
+	BCCX_Node *cur, *n;
+	char *sfn;
+	int i;
+
+	sfn=NULL;
+	
+	switch(*sig)
+	{
+	case 'a':	sfn="__lvo_newarray_sb";	break;
+	case 'b':	sfn="__lvo_newarray_sb";	break;
+	case 'c':	sfn="__lvo_newarray_sb";	break;
+	case 'd':	sfn="__lvo_newarray_d";		break;
+	case 'e':	sfn="__lvo_newarray_d";		break;
+	case 'f':	sfn="__lvo_newarray_f";		break;
+	case 'g':	break;
+	case 'h':	sfn="__lvo_newarray_ub";	break;
+	case 'i':	sfn="__lvo_newarray_si";	break;
+	case 'j':	sfn="__lvo_newarray_ui";	break;
+	case 'k':	sfn="__lvo_newarray_hf";	sig="f";	break;
+	case 'l':	sfn="__lvo_newarray_sl";	break;
+	case 'm':	sfn="__lvo_newarray_ul";	break;
+	case 'n':	break;
+	case 'o':	break;
+	case 'p':	break;
+	case 'q':	break;
+	case 'r':	sfn="__lvo_newvararray";	break;
+	case 's':	sfn="__lvo_newarray_ss";	break;
+	case 't':	sfn="__lvo_newarray_us";	break;
+	case 'u':	break;
+	case 'v':	break;
+	case 'w':	sfn="__lvo_newarray_us";	break;
+	case 'x':	sfn="__lvo_newarray_l";		break;
+	case 'y':	sfn="__lvo_newarray_ul";	break;
+	case 'z':	break;
+
+	default:
+		sig="r";
+		sfn="__lvo_newvararray";
+		break;
+	}
+
+	BGBCC_CCXL_PushMark(ctx);
+
+	i=na;
+	while(i--)
+	{
+		n=BGBCC_CCXL_ReduceExpr(ctx, stk[i]);
+		BGBCC_CCXL_CompileExprAsTypeSig(ctx, sig, n);
+	}
+
+	if(na>8)
+	{
+		BGBCC_CCXL_StackPushConstInt(ctx, na);
+		sprintf(tb, "%s_n", sfn);
+	}else
+	{
+		sprintf(tb, "%s_%d", sfn, na);
+	}
+	BGBCC_CCXL_StackCallName(ctx, tb, 0);
+}
+
+void BGBCC_CCXL_CompileArgsAsVarArraySig_A2(
+	BGBCC_TransState *ctx, BCCX_Node **stk, int na, char *sig)
+{
+	char tb[256];
+	int i;
+
+	if(na<=8)
+	{
+		BGBCC_CCXL_CompileArgsAsVarArraySig_A1(ctx, stk, na, sig);
+		return;
+	}
+
+	BGBCC_CCXL_PushMark(ctx);
+
+	i=na;
+	while(i>8)
+	{
+		i-=8;
+		BGBCC_CCXL_CompileArgsAsVarArraySig_A1(ctx, stk+i, 8, sig);
+	}
+	BGBCC_CCXL_CompileArgsAsVarArraySig_A1(ctx, stk, i, sig);
+
+	sprintf(tb, "__lvo_array_append_%d", (na+7)/8);
+	BGBCC_CCXL_StackCallName(ctx, tb, 0);
+}
+
+void BGBCC_CCXL_CompileArgsAsVarArraySig_A3(
+	BGBCC_TransState *ctx, BCCX_Node **stk, int na, char *sig)
+{
+	char tb[256];
+	int i;
+
+	if(na<=64)
+	{
+		BGBCC_CCXL_CompileArgsAsVarArraySig_A2(ctx, stk, na, sig);
+		return;
+	}
+
+	BGBCC_CCXL_PushMark(ctx);
+
+	i=na;
+	while(i>64)
+	{
+		i-=64;
+		BGBCC_CCXL_CompileArgsAsVarArraySig_A2(ctx, stk+i, 64, sig);
+	}
+	BGBCC_CCXL_CompileArgsAsVarArraySig_A2(ctx, stk, i, sig);
+
+	sprintf(tb, "__lvo_array_append_%d", (na+63)/64);
+	BGBCC_CCXL_StackCallName(ctx, tb, 0);
+}
+
+void BGBCC_CCXL_CompileArgsAsVarArraySig_A4(
+	BGBCC_TransState *ctx, BCCX_Node **stk, int na, char *sig)
+{
+	char tb[256];
+	int i;
+
+	if(na<=512)
+	{
+		BGBCC_CCXL_CompileArgsAsVarArraySig_A3(ctx, stk, na, sig);
+		return;
+	}
+
+	BGBCC_CCXL_PushMark(ctx);
+
+	i=na;
+	while(i>512)
+	{
+		i-=512;
+		BGBCC_CCXL_CompileArgsAsVarArraySig_A3(ctx, stk+i, 512, sig);
+	}
+	BGBCC_CCXL_CompileArgsAsVarArraySig_A3(ctx, stk, i, sig);
+	sprintf(tb, "__lvo_array_append_%d", (na+511)/512);
+	BGBCC_CCXL_StackCallName(ctx, tb, 0);
+}
+
+void BGBCC_CCXL_CompileArgsAsVarArraySig(
+	BGBCC_TransState *ctx, BCCX_Node *l, char *sig)
+{
+	char tb[256];
+	BCCX_Node *stk[8192];
+	BCCX_Node *cur, *n;
+	char *sfn;
+	int i, j, k, na;
+
+	
+	i=0; cur=l;
+	while(cur) { stk[i++]=cur; cur=BCCX_Next(cur); }
+	na=i;
+
+	if(na>512)
+	{
+		BGBCC_CCXL_CompileArgsAsVarArraySig_A4(ctx, stk, na, sig);
+	}else
+		if(na>64)
+	{
+		BGBCC_CCXL_CompileArgsAsVarArraySig_A3(ctx, stk, na, sig);
+	}else
+		if(na>8)
+	{
+		BGBCC_CCXL_CompileArgsAsVarArraySig_A2(ctx, stk, na, sig);
+	}else
+	{
+		BGBCC_CCXL_CompileArgsAsVarArraySig_A1(ctx, stk, na, sig);
+	}
 }
 
 void BGBCC_CCXL_CompileMethodcall(BGBCC_TransState *ctx, BCCX_Node *l)
@@ -366,7 +568,8 @@ void BGBCC_CCXL_CompileMethodcall(BGBCC_TransState *ctx, BCCX_Node *l)
 	{
 		s1=BCCX_GetCst(v, &bgbcc_rcst_name, "name");
 		ri=BGBCC_CCXL_LookupStructureMethodRns(ctx, s1, s0, NULL);
-		if(ri)
+		if(ri && !(ri->flagsint&BGBCC_TYFL_FINAL))
+//		if(ri && (ri->flagsint&BGBCC_TYFL_VIRTUAL))
 		{
 			bgbcc_strcpy_nosig(tb, ri->name);
 			s2=bgbcc_strdup(tb);
@@ -374,8 +577,9 @@ void BGBCC_CCXL_CompileMethodcall(BGBCC_TransState *ctx, BCCX_Node *l)
 
 			BGBCC_CCXL_PushMark(ctx);
 			BGBCC_CCXL_CompileExprListReverse(ctx, u);
+			BGBCC_CCXL_CompileExpr(ctx, v);
 	//		BGBCC_CCXL_StackCallName(ctx, s0, flag);
-			BGBCC_CCXL_StackCallName2(ctx, tb, NULL, 0);
+			BGBCC_CCXL_StackCallName2(ctx, tb, NULL, 4);
 			return;
 		}
 	}
@@ -388,11 +592,22 @@ void BGBCC_CCXL_CompileMethodcall(BGBCC_TransState *ctx, BCCX_Node *l)
 
 	if(BGBCC_CCXL_TypeVarObjP(ctx, sty))
 	{
+		if(ctx->lang==BGBCC_LANG_BS2)
+		{
+			if(!strcmp(s0, "toString"))
+			{
+				BGBCC_CCXL_PushMark(ctx);
+				BGBCC_CCXL_CompileExpr(ctx, l);
+				BGBCC_CCXL_StackCallName(ctx, "__lvo_tostring", 0);
+				return;
+			}
+		}
+	
 		BGBCC_CCXL_PushMark(ctx);
 		BGBCC_CCXL_CompileArgsAsVarArray(ctx, u);
 		BGBCC_CCXL_StackPushConstString(ctx, s0);
 		BGBCC_CCXL_CompileExpr(ctx, v);
-		BGBCC_CCXL_StackCallName(ctx, "__lva_methodcall", 0);
+		BGBCC_CCXL_StackCallName(ctx, "__lvo_methodcall", 0);
 		return;
 	}
 
@@ -402,10 +617,12 @@ void BGBCC_CCXL_CompileMethodcall(BGBCC_TransState *ctx, BCCX_Node *l)
 	sig=BGBCC_CCXL_StackGetSigCallArgs(ctx);
 
 	BGBCC_CCXL_CompileExpr(ctx, v);
+	BGBCC_CCXL_StackDup(ctx);
+
 //	BGBCC_CCXL_StackLoadSlot(ctx, s0);
 	BGBCC_CCXL_StackLoadSlotSig(ctx, s0, sig);
 
-	BGBCC_CCXL_StackPopCall(ctx, 0);
+	BGBCC_CCXL_StackPopCall(ctx, 4);
 	return;
 }
 
@@ -414,6 +631,7 @@ int BGBCC_CCXL_CheckCompileObjGet(BGBCC_TransState *ctx,
 {
 	char tb[256];
 	ccxl_type sty;
+	char *s0;
 //	char *s0, *s1, *s2, *sig;
 //	BCCX_Node *c, *d, *t, *u, *v;
 //	int i, j;
@@ -433,31 +651,85 @@ int BGBCC_CCXL_CheckCompileObjGet(BGBCC_TransState *ctx,
 
 	if(BGBCC_CCXL_TypeVarObjP(ctx, sty))
 	{
-		BGBCC_CCXL_PushMark(ctx);
-		BGBCC_CCXL_StackPushConstString(ctx, name);
-		BGBCC_CCXL_CompileExpr(ctx, l);
-//		BGBCC_CCXL_StackLoadSlotSig(ctx, tb, "()");
-//		BGBCC_CCXL_StackPopCall(ctx, 0);
-		BGBCC_CCXL_StackCallName(ctx, "__lva_getslot", 0);
-		return(1);
-	}
-	
-	if(BGBCC_CCXL_TypeRefArrayP(ctx, sty) ||
-		BGBCC_CCXL_TypeRefStringP(ctx, sty))
-	{
-		if(!strcmp(name, "length") ||
-			!strcmp(name, "Length"))
+		if(ctx->lang==BGBCC_LANG_BS2)
 		{
-			BGBCC_CCXL_PushMark(ctx);
-			BGBCC_CCXL_CompileExpr(ctx, l);
-			BGBCC_CCXL_StackCallName(ctx, "__lva_get_length", 0);
-			return(1);
+			if(!strcmp(name, "toString"))
+			{
+				BGBCC_CCXL_PushMark(ctx);
+				BGBCC_CCXL_CompileExpr(ctx, l);
+				BGBCC_CCXL_StackCallName(ctx, "__lvo_tostring", 0);
+				return(1);
+			}
 		}
 	
 		BGBCC_CCXL_PushMark(ctx);
 		BGBCC_CCXL_StackPushConstString(ctx, name);
 		BGBCC_CCXL_CompileExpr(ctx, l);
-		BGBCC_CCXL_StackCallName(ctx, "__lva_getslot", 0);
+//		BGBCC_CCXL_StackLoadSlotSig(ctx, tb, "()");
+//		BGBCC_CCXL_StackPopCall(ctx, 0);
+		BGBCC_CCXL_StackCallName(ctx, "__lvo_getslot", 0);
+		return(1);
+	}
+	
+	if(BGBCC_CCXL_TypeRefArrayP(ctx, sty))
+	{
+		if((!strcmp(name, "length") && (ctx->lang==BGBCC_LANG_BS2)) ||
+			(!strcmp(name, "Length") && (ctx->lang==BGBCC_LANG_CS)))
+		{
+			BGBCC_CCXL_PushMark(ctx);
+			BGBCC_CCXL_CompileExpr(ctx, l);
+			BGBCC_CCXL_StackCallName(ctx, "__lvo_get_length", 0);
+			return(1);
+		}
+
+		BGBCC_CCXL_PushMark(ctx);
+		BGBCC_CCXL_StackPushConstString(ctx, name);
+		BGBCC_CCXL_CompileExpr(ctx, l);
+		BGBCC_CCXL_StackCallName(ctx, "__lvo_getslot", 0);
+		return(1);
+	}
+
+	if(BGBCC_CCXL_TypeRefStringP(ctx, sty))
+	{
+		if((!strcmp(name, "length") && (ctx->lang==BGBCC_LANG_BS2)) ||
+			(!strcmp(name, "Length") && (ctx->lang==BGBCC_LANG_CS)))
+		{
+			BGBCC_CCXL_PushMark(ctx);
+			BGBCC_CCXL_CompileExpr(ctx, l);
+			BGBCC_CCXL_StackCallName(ctx, "__lvo_get_length", 0);
+			return(1);
+		}
+
+		if(ctx->lang==BGBCC_LANG_BS2)
+		{
+			s0=NULL;
+			if(!strcmp(name, "toInt"))
+				s0="__lvo_stringtoint";
+			if(!strcmp(name, "toUInt"))
+				s0="__lvo_stringtouint";
+			if(!strcmp(name, "toLong"))
+				s0="__lvo_stringtolong";
+			if(!strcmp(name, "toULong"))
+				s0="__lvo_stringtoulong";
+
+			if(!strcmp(name, "toFloat"))
+				s0="__lvo_stringtofloat";
+			if(!strcmp(name, "toDouble"))
+				s0="__lvo_stringtodouble";
+
+			if(s0)
+			{
+				BGBCC_CCXL_PushMark(ctx);
+				BGBCC_CCXL_CompileExpr(ctx, l);
+				BGBCC_CCXL_StackCallName(ctx, s0, 0);
+				return(1);
+			}
+		}
+
+		BGBCC_CCXL_PushMark(ctx);
+		BGBCC_CCXL_StackPushConstString(ctx, name);
+		BGBCC_CCXL_CompileExpr(ctx, l);
+		BGBCC_CCXL_StackCallName(ctx, "__lvo_getslot", 0);
 		return(1);
 	}
 
@@ -499,7 +771,7 @@ int BGBCC_CCXL_CheckCompileObjSet(BGBCC_TransState *ctx,
 		BGBCC_CCXL_CompileExpr(ctx, l);
 //		BGBCC_CCXL_StackLoadSlotSig(ctx, tb, "()");
 //		BGBCC_CCXL_StackPopCall(ctx, 0);
-		BGBCC_CCXL_StackCallName(ctx, "__lva_setslot", 1);
+		BGBCC_CCXL_StackCallName(ctx, "__lvo_setslot", 1);
 		BGBCC_CCXL_StackPop(ctx);
 		return(1);
 	}
@@ -511,7 +783,7 @@ int BGBCC_CCXL_CheckCompileObjSet(BGBCC_TransState *ctx,
 		BGBCC_CCXL_StackDupMarkIdx(ctx, 0);
 		BGBCC_CCXL_StackPushConstString(ctx, name);
 		BGBCC_CCXL_CompileExpr(ctx, l);
-		BGBCC_CCXL_StackCallName(ctx, "__lva_setslot", 1);
+		BGBCC_CCXL_StackCallName(ctx, "__lvo_setslot", 1);
 		BGBCC_CCXL_StackPop(ctx);
 		return(1);
 	}
@@ -540,32 +812,32 @@ int BGBCC_CCXL_CheckCompileLoadIndex(BGBCC_TransState *ctx,
 	{
 		BGBCC_CCXL_TypeDerefType(ctx, sty, &tty);
 		
-		fn="__lva_loadindex_va";
+		fn="__lvo_loadindex_va";
 
 		if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, tty))
-			{ fn="__lva_loadindex_p"; }
+			{ fn="__lvo_loadindex_p"; }
 		else if(BGBCC_CCXL_TypeVarRefP(ctx, tty))
-			{ fn="__lva_loadindex_v"; }
+			{ fn="__lvo_loadindex_v"; }
 		else
 		{
 //			bt=BGBCC_CCXL_GetTypeBaseType(ctx, tty);
 			bt=BGBCC_CCXL_GetTypeOperationZ(ctx, tty);
 			switch(bt)
 			{
-			case CCXL_TY_I:		fn="__lva_loadindex_i"; break;
-			case CCXL_TY_L:		fn="__lva_loadindex_l"; break;
-			case CCXL_TY_F:		fn="__lva_loadindex_f"; break;
-			case CCXL_TY_D:		fn="__lva_loadindex_d"; break;
-			case CCXL_TY_P:		fn="__lva_loadindex_p"; break;
-			case CCXL_TY_V:		fn="__lva_loadindex_v"; break;
-			case CCXL_TY_NL:	fn="__lva_loadindex_l"; break;
-			case CCXL_TY_SB:	fn="__lva_loadindex_sb"; break;
-			case CCXL_TY_UB:	fn="__lva_loadindex_ub"; break;
-			case CCXL_TY_SS:	fn="__lva_loadindex_ss"; break;
-			case CCXL_TY_US:	fn="__lva_loadindex_us"; break;
-			case CCXL_TY_UI:	fn="__lva_loadindex_ui"; break;
-			case CCXL_TY_UL:	fn="__lva_loadindex_ul"; break;
-			case CCXL_TY_UNL:	fn="__lva_loadindex_ul"; break;
+			case CCXL_TY_I:		fn="__lvo_loadindex_i"; break;
+			case CCXL_TY_L:		fn="__lvo_loadindex_l"; break;
+			case CCXL_TY_F:		fn="__lvo_loadindex_f"; break;
+			case CCXL_TY_D:		fn="__lvo_loadindex_d"; break;
+			case CCXL_TY_P:		fn="__lvo_loadindex_p"; break;
+			case CCXL_TY_V:		fn="__lvo_loadindex_v"; break;
+			case CCXL_TY_NL:	fn="__lvo_loadindex_l"; break;
+			case CCXL_TY_SB:	fn="__lvo_loadindex_sb"; break;
+			case CCXL_TY_UB:	fn="__lvo_loadindex_ub"; break;
+			case CCXL_TY_SS:	fn="__lvo_loadindex_ss"; break;
+			case CCXL_TY_US:	fn="__lvo_loadindex_us"; break;
+			case CCXL_TY_UI:	fn="__lvo_loadindex_ui"; break;
+			case CCXL_TY_UL:	fn="__lvo_loadindex_ul"; break;
+			case CCXL_TY_UNL:	fn="__lvo_loadindex_ul"; break;
 			default:
 				break;
 			}
@@ -608,32 +880,32 @@ int BGBCC_CCXL_CheckCompileStoreIndex(BGBCC_TransState *ctx,
 	{
 		BGBCC_CCXL_TypeDerefType(ctx, sty, &tty);
 		
-		fn="__lva_storeindex_va";
+		fn="__lvo_storeindex_va";
 
 		if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, tty))
-			{ fn="__lva_storeindex_p"; }
+			{ fn="__lvo_storeindex_p"; }
 		else if(BGBCC_CCXL_TypeVarRefP(ctx, tty))
-			{ fn="__lva_storeindex_v"; }
+			{ fn="__lvo_storeindex_v"; }
 		else
 		{
 //			bt=BGBCC_CCXL_GetTypeBaseType(ctx, tty);
 			bt=BGBCC_CCXL_GetTypeOperationZ(ctx, tty);
 			switch(bt)
 			{
-			case CCXL_TY_I:		fn="__lva_storeindex_i"; break;
-			case CCXL_TY_L:		fn="__lva_storeindex_l"; break;
-			case CCXL_TY_F:		fn="__lva_storeindex_f"; break;
-			case CCXL_TY_D:		fn="__lva_storeindex_d"; break;
-			case CCXL_TY_P:		fn="__lva_storeindex_p"; break;
-			case CCXL_TY_V:		fn="__lva_storeindex_v"; break;
-			case CCXL_TY_NL:	fn="__lva_storeindex_l"; break;
-			case CCXL_TY_SB:	fn="__lva_storeindex_b"; break;
-			case CCXL_TY_UB:	fn="__lva_storeindex_b"; break;
-			case CCXL_TY_SS:	fn="__lva_storeindex_s"; break;
-			case CCXL_TY_US:	fn="__lva_storeindex_s"; break;
-			case CCXL_TY_UI:	fn="__lva_storeindex_i"; break;
-			case CCXL_TY_UL:	fn="__lva_storeindex_l"; break;
-			case CCXL_TY_UNL:	fn="__lva_storeindex_l"; break;
+			case CCXL_TY_I:		fn="__lvo_storeindex_i"; break;
+			case CCXL_TY_L:		fn="__lvo_storeindex_l"; break;
+			case CCXL_TY_F:		fn="__lvo_storeindex_f"; break;
+			case CCXL_TY_D:		fn="__lvo_storeindex_d"; break;
+			case CCXL_TY_P:		fn="__lvo_storeindex_p"; break;
+			case CCXL_TY_V:		fn="__lvo_storeindex_v"; break;
+			case CCXL_TY_NL:	fn="__lvo_storeindex_l"; break;
+			case CCXL_TY_SB:	fn="__lvo_storeindex_b"; break;
+			case CCXL_TY_UB:	fn="__lvo_storeindex_b"; break;
+			case CCXL_TY_SS:	fn="__lvo_storeindex_s"; break;
+			case CCXL_TY_US:	fn="__lvo_storeindex_s"; break;
+			case CCXL_TY_UI:	fn="__lvo_storeindex_i"; break;
+			case CCXL_TY_UL:	fn="__lvo_storeindex_l"; break;
+			case CCXL_TY_UNL:	fn="__lvo_storeindex_l"; break;
 			default:
 				break;
 			}
@@ -1396,6 +1668,73 @@ void BGBCC_CCXL_CompileForm(BGBCC_TransState *ctx, BCCX_Node *l)
 		BGBCC_CCXL_StackPushConstInt(ctx, 0);
 		BGBCC_CCXL_StubError(ctx);
 		return;
+	}
+
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_symbol, "symbol"))
+	{
+		s0=BCCX_GetCst(l, &bgbcc_rcst_name, "name");
+		BGBCC_CCXL_PushMark(ctx);
+		BGBCC_CCXL_StackPushConstString(ctx, s0);
+		BGBCC_CCXL_StackCallName(ctx, "__lvo_symbol", 0);
+		return;
+	}
+
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_keyword, "keyword"))
+	{
+		s0=BCCX_GetCst(l, &bgbcc_rcst_name, "name");
+		BGBCC_CCXL_PushMark(ctx);
+		BGBCC_CCXL_StackPushConstString(ctx, s0);
+		BGBCC_CCXL_StackCallName(ctx, "__lvo_keyword", 0);
+		return;
+	}
+
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_array, "array"))
+	{
+		s0=BCCX_GetCst(l, &bgbcc_rcst_tysuf, "tysuf");
+		ln=BCCX_FetchCst(l, &bgbcc_rcst_list, "list");
+
+		if(!s0)
+		{
+//			BGBCC_CCXL_CompileArgsAsVarArray(ctx, ln);
+			BGBCC_CCXL_CompileArgsAsVarArraySig(ctx, ln, "r");
+			return;
+		}
+
+		s1=NULL;
+		
+		if(!bgbcc_stricmp(s0, "SB"))	s1="a";
+		if(!bgbcc_stricmp(s0, "B"))		s1="a";
+		if(!bgbcc_stricmp(s0, "SC"))	s1="c";
+		if(!bgbcc_stricmp(s0, "D"))		s1="d";
+		if(!bgbcc_stricmp(s0, "F"))		s1="f";
+		if(!bgbcc_stricmp(s0, "G"))		s1="g";
+		if(!bgbcc_stricmp(s0, "UB"))	s1="h";
+		if(!bgbcc_stricmp(s0, "SI"))	s1="i";
+		if(!bgbcc_stricmp(s0, "UI"))	s1="j";
+		if(!bgbcc_stricmp(s0, "SF"))	s1="k";
+		if(!bgbcc_stricmp(s0, "HF"))	s1="k";
+		if(!bgbcc_stricmp(s0, "L"))		s1="x";
+		if(!bgbcc_stricmp(s0, "UL"))	s1="y";
+		if(!bgbcc_stricmp(s0, "LX"))	s1="n";
+		if(!bgbcc_stricmp(s0, "ULX"))	s1="o";
+		if(!bgbcc_stricmp(s0, "V"))		s1="r";
+		if(!bgbcc_stricmp(s0, "SS"))	s1="s";
+		if(!bgbcc_stricmp(s0, "US"))	s1="t";
+		if(!bgbcc_stricmp(s0, "W"))		s1="w";
+		
+		if(s1)
+		{
+			BGBCC_CCXL_CompileArgsAsVarArraySig(ctx, ln, s1);
+			return;
+		}
+
+		BGBCC_CCXL_CompileArgsAsVarArraySig(ctx, ln, "r");
+		return;
+
+//		BGBCC_CCXL_PushMark(ctx);
+//		BGBCC_CCXL_StackPushConstString(ctx, s0);
+//		BGBCC_CCXL_StackCallName(ctx, "__lvo_keyword", 0);
+//		return(1);
 	}
 
 	BGBCC_CCXL_Error(ctx, "Unhandled expr %s\n", BCCX_Tag(l));

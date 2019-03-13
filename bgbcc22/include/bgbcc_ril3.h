@@ -143,3 +143,10 @@
 #define BGBCC_RIL3OP_MKTMPOBJ	0x73	//New Temporary Object
 #define BGBCC_RIL3OP_EXCH		0x74	//Exchange stack items
 #define BGBCC_RIL3OP_LDSLOTSIG	0x75	//Load Slot, Signature
+
+#define BGBCC_RIL3OP_OBJCALLP	0x76	//Call Object, Return on stack
+#define BGBCC_RIL3OP_OBJCALLPV	0x77	//Call Object, Return Void
+#define BGBCC_RIL3OP_STOBJCALLP	0x78	//Call Object, Resturn Store
+#define BGBCC_RIL3OP_OBJCALLN	0x79	//Call Obj, Non-Virt, Ret Stack
+#define BGBCC_RIL3OP_OBJCALLNV	0x7A	//Call Obj, Non-Virt, Ret Void
+#define BGBCC_RIL3OP_STOBJCALLN	0x7B	//Call Obj, Non-Virt, Ret Store

@@ -261,6 +261,8 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_MOVLHD	0x83		//
 #define BJX2_NMID_MOVD		0x84		//
 
+#define BJX2_NMID_PRED_T	0x86		//
+#define BJX2_NMID_PRED_F	0x87		//
 #define BJX2_NMID_ADDSL		0x88		//
 #define BJX2_NMID_ADDUL		0x89		//
 #define BJX2_NMID_SUBSL		0x8A		//
@@ -334,6 +336,8 @@ Will use direct linking and assume a non-modifiable program space.
 
 #define BJX2_FMID_FREGGREG		0x24		//FRm, Rn
 #define BJX2_FMID_GREGFREG		0x25		//Rm, FRn
+
+#define BJX2_FMID_CHAIN			0x27		//Chained Opcode
 
 typedef unsigned char byte;
 typedef signed char sbyte;
@@ -484,6 +488,7 @@ bjx2_addr pc;
 bjx2_addr pc2;
 
 void (*Run)(BJX2_Context *ctx, BJX2_Opcode *op);
+void *data;
 };
 
 struct BJX2_Trace_s {

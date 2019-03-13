@@ -171,6 +171,8 @@ byte emit_isprobe;	//if we are simply probing an instruction
 byte test_lclalign;	//local alignment-sensitivity test
 byte use_padcross;	//use padding across cache lines
 
+byte optmode;		//optimization mode
+
 int simfnsz;		//simulation's function size
 int simfnmsz;		//simulation's min function size
 int simfnnsz;		//simulation's max function size

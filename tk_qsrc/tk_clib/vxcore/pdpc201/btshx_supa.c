@@ -374,6 +374,17 @@ u64 __umodsq(u64 a, u64 b)
 	}
 	return(d);
 }
+
+s64 __smodsq(s64 a, s64 b)
+{
+	if(b<0)
+		{ return(-__smodsq(a, -b)); }
+
+	if(a<0)
+		{ return(-__umodsq(-a, b)); }
+	else
+		{ return(__umodsq(a, b)); }
+}
 #endif
 
 #if 0
@@ -619,6 +630,9 @@ void __exec(char *cmd, void *env)
 //	vx_system(cmd);
 }
 
+int __start_init();
+
+
 int __start_early()
 {
 	TKMM_Init();
@@ -626,6 +640,7 @@ int __start_early()
 
 int __start_late()
 {
+	__start_init();
 }
 
 char *__get_cmdline()
@@ -1231,10 +1246,9 @@ __interrupt void __isr_interrupt(void)
 	{
 		for(i=0; i<n_irq_timer; i++)
 			irq_timer[i]();
-		return(0);
+		return;
 	}
 
 	tk_printf("IRQ %X?\n", irq);
-
-	return(0);
+//	return;
 }

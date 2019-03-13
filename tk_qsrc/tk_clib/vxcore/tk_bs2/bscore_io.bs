@@ -1,0 +1,101 @@
+#if 1
+public native:
+
+typedef *void CFILE;
+typedef *void MemRegion;
+typedef native long size_t;
+#endif
+
+#if 1
+CFILE fopen(cstring name, cstring mode);
+int fclose(CFILE fd);
+int fread(*void buf, size_t sz1, size_t sz2, CFILE fd);
+int fwrite(*void buf, size_t sz1, size_t sz2, CFILE fd);
+size_t ftell(CFILE fd);
+int fseek(CFILE fd, size_t seek, int set);
+int fgetc(CFILE fd);
+int fputc(int c, CFILE fd);
+int fgets(*cchar buf, int sz, CFILE fd);
+
+MemRegion TKMM_CreateRegion();
+void TKMM_DestroyRegion(MemRegion rgn);
+#endif
+
+#if 1
+public:
+
+package BsCore
+{
+	public class File
+	{
+		public:
+
+		CFILE fd;
+
+		static File open(string name, string mode)
+		{
+			CFILE cfd;
+			File vfd;
+			
+			cfd=fopen(name, mode);
+			if(!cfd)
+				return(null);
+
+			vfd=new File(cfd);
+			return(vfd);
+		}
+
+		File(CFILE cfd)
+		{
+			fd=cfd;
+		}
+		
+		void close()
+		{
+			fclose(fd);
+			fd=null;
+			delete this;
+		}
+
+#if 1
+		int read(*void buf, int sz)
+			{ fread(buf, 1, sz, fd) }
+		int write(*void buf, int sz)
+			{ fwrite(buf, 1, sz, fd) }
+		int read(*byte buf, int sz)
+			{ fread(buf, 1, sz, fd) }
+		int write(*byte buf, int sz)
+			{ fwrite(buf, 1, sz, fd) }
+		int read(byte[] buf, int sz)
+			{ fread((*void)buf, 1, sz, fd) }
+		int write(byte[] buf, int sz)
+			{ fwrite((*void)buf, 1, sz, fd) }
+			
+		long tell()
+			{ ftell(fd) }
+		long seek(long seek, int set)
+			{ fseek(fd, seek, set) }
+
+		int getc()
+			{ fgetc(fd) }
+		int putc(int v)
+			{ fputc(v, fd) }
+#endif
+
+#if 0
+		string gets()
+		{
+			cchar[256] buf;
+			fgets(buf, 256, fd);
+			String.fromBuf(buf)
+		}
+#endif
+	}
+
+	public MemRegion createRegion()
+		{ TKMM_CreateRegion() }
+
+	public void destroyRegion(MemRegion rgn)
+		{ TKMM_DestroyRegion(rgn); }
+}
+#endif

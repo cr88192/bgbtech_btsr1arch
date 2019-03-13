@@ -363,14 +363,156 @@ BCCX_Node *BGBCP_ExpressionLit(BGBCP_ParseState *ctx, char **str)
 	s=*str;
 
 	s=BGBCP_Token(s, b, &ty);
+	s1=BGBCP_Token(s, b2, &ty2);
 	if(!s)return(NULL);
 
+
+	if(ctx->lang!=BGBCC_LANG_BS2)
+	{
+		if(!bgbcp_strcmp1(b, "{") && (ty==BTK_BRACE))
+		{
+			n1=BGBCP_FunArgs(ctx, &s);
+			n=BCCX_NewCst1(&bgbcc_rcst_list, "list", n1);
+
+			*str=s;
+			return(n);
+		}
+	}
+
+#if 0
 	if(!bgbcp_strcmp1(b, "{") && (ty==BTK_BRACE))
 	{
 		n1=BGBCP_FunArgs(ctx, &s);
 		n=BCCX_NewCst1(&bgbcc_rcst_list, "list", n1);
+
+#if 0
+		if(ctx->lang==BGBCC_LANG_BS2)
+		{
+			s1=BGBCP_Token(s, b, &ty);
+			if(!bgbcp_strcmp1(b, ":"))
+			{
+				n=BCCX_NewCst1(&bgbcc_rcst_object, "object", n);
+
+				s=s1;
+				n1=BGBCP_DefExpectType(ctx, &s);
+				if(n1)
+					BCCX_Add(n, n1);
+			}
+		}
+#endif
+
 		*str=s;
 		return(n);
+	}
+#endif
+
+	if(ctx->lang==BGBCC_LANG_BS2)
+	{
+		if(!bgbcp_strcmp1(b, "{") && (ty==BTK_BRACE))
+		{
+			n1=BGBCP_FunArgs(ctx, &s);
+			n1=BCCX_NewCst1(&bgbcc_rcst_list, "list", n1);
+			n=BCCX_NewCst1(&bgbcc_rcst_object, "object", n1);
+
+			s1=BGBCP_Token(s, b, &ty);
+			if(!bgbcp_strcmp1(b, ":"))
+			{
+				s=s1;
+				n1=BGBCP_DefExpectType(ctx, &s);
+				if(n1)
+					BCCX_Add(n, n1);
+			}else if(ty==BTK_NAME)
+			{
+				s=s1;
+				BCCX_SetCst(n, &bgbcc_rcst_tysuf, "tysuf", b);
+			}
+
+			*str=s;
+			return(n);
+		}
+
+		if(!bgbcp_strcmp1(b, "[") && (ty==BTK_BRACE))
+		{
+			n1=BGBCP_FunArgs(ctx, &s);
+			n1=BCCX_NewCst1(&bgbcc_rcst_list, "list", n1);
+			n=BCCX_NewCst1(&bgbcc_rcst_array, "array", n1);
+
+			s1=BGBCP_Token(s, b, &ty);
+			if(!bgbcp_strcmp1(b, ":"))
+			{
+				s=s1;
+				n1=BGBCP_DefExpectType(ctx, &s);
+				if(n1)
+					BCCX_Add(n, n1);
+			}else if(ty==BTK_NAME)
+			{
+				s=s1;
+				BCCX_SetCst(n, &bgbcc_rcst_tysuf, "tysuf", b);
+			}
+
+			*str=s;
+			return(n);
+		}
+
+		if(!bgbcp_strcmp1(b, "#") && (ty==BTK_OPERATOR))
+		{
+			if(!bgbcp_strcmp1(b2, "[") && (ty2==BTK_BRACE))
+			{
+				s=s1;
+				n1=BGBCP_FunArgs(ctx, &s);
+				n1=BCCX_NewCst1(&bgbcc_rcst_list, "list", n1);
+				n=BCCX_NewCst1(&bgbcc_rcst_vector, "vector", n1);
+
+				s1=BGBCP_Token(s, b, &ty);
+				if(!bgbcp_strcmp1(b, ":"))
+				{
+					s=s1;
+					n1=BGBCP_DefExpectType(ctx, &s);
+					if(n1)
+						BCCX_Add(n, n1);
+				}else if(ty==BTK_NAME)
+				{
+					s=s1;
+					BCCX_SetCst(n, &bgbcc_rcst_tysuf, "tysuf", b);
+				}
+
+				*str=s;
+				return(n);
+			}
+
+			if(!bgbcp_strcmp1(b2, ":") && (ty2==BTK_SEPERATOR))
+			{
+				s=s1;
+				s=BGBCP_Token(s, b, &ty);
+				n=BCCX_NewCst(&bgbcc_rcst_keyword, "keyword");
+				BCCX_SetCst(n, &bgbcc_rcst_name, "name", b);
+
+				*str=s;
+				return(n);
+			}
+
+			if((ty2==BTK_NAME) || (ty2==BTK_STRING))
+			{
+				s=s1;
+				s=BGBCP_Token(s, b, &ty);
+				n=BCCX_NewCst(&bgbcc_rcst_symbol, "symbol");
+				BCCX_SetCst(n, &bgbcc_rcst_name, "name", b);
+
+				*str=s;
+				return(n);
+			}
+
+			if(ty2==BTK_CHARSTRING)
+			{
+				s=s1;
+				s=BGBCP_Token(s, b, &ty);
+				n=BCCX_NewCst(&bgbcc_rcst_ref, "ref");
+				BCCX_SetCst(n, &bgbcc_rcst_name, "name", b);
+
+				*str=s;
+				return(n);
+			}
+		}
 	}
 
 	if(ty==BTK_NAME)
@@ -416,13 +558,26 @@ BCCX_Node *BGBCP_ExpressionLit(BGBCP_ParseState *ctx, char **str)
 		{
 			n=BCCX_NewCst(&bgbcc_rcst_new, "new");
 
-			i=ctx->expect_type;
-			ctx->expect_type=0;
-			if(	(ctx->lang==BGBCC_LANG_CS) ||
-				(ctx->lang==BGBCC_LANG_BS2))
-					ctx->expect_type=1;
-			n1=BGBCP_DefType(ctx, &s);
-			ctx->expect_type=i;
+			if(ctx->lang==BGBCC_LANG_BS2)
+			{
+				BGBCP_Token(s, b, &ty);
+				if(!bgbcp_strcmp1(b, "("))
+				{
+					s=BGBCP_Token(s, b, &ty); //'('
+					n1=BGBCP_FunArgs(ctx, &s);
+					BCCX_Add(n, BCCX_NewCst1V(&bgbcc_rcst_ref, "ref", n1));
+				}
+			}
+
+//			i=ctx->expect_type;
+//			ctx->expect_type=0;
+//			if(	(ctx->lang==BGBCC_LANG_CS) ||
+//				(ctx->lang==BGBCC_LANG_BS2))
+//					ctx->expect_type=1;
+//			n1=BGBCP_DefType(ctx, &s);
+//			ctx->expect_type=i;
+
+			n1=BGBCP_DefExpectType(ctx, &s);
 
 			if(!n1)
 			{

@@ -27,6 +27,10 @@
 #include "tk_core/tk_vfile.c"
 #include "tk_core/tk_divi.c"
 
+#include "tk_core/lva_array.c"
+#include "tk_core/lva_strdup.c"
+#include "tk_core/lva_tagobj.c"
+
 #include "pdpc201/btshx_supa.c"
 #include "pdpc201/btshx_lva.c"
 #include "pdpc201/btshx_xli.c"

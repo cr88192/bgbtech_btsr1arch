@@ -85,6 +85,10 @@ extern void *__lastsup; /* last thing supplied to memmgr */
 char **__eplist;
 char *__plist;
 
+int __start_early();
+int __start_late();
+
+
 __PDPCLIB_API__ int CTYP __start()
 {
 	FILE *t_stdin, *t_stdout, *t_stderr;

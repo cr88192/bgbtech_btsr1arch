@@ -2,6 +2,7 @@ Cell size may vary with screen type.
 * 40 x 25 x  64 bit:  8kB
 * 40 x 25 x 128 bit: 16kB
 * 40 x 25 x 256 bit: 32kB
+* 80 x 25 x 128 bit: 32kB
 * 80 x 25 x 256 bit: 64kB
 
 The cell will be organized as 8 consecutive DWORD values.
@@ -24,6 +25,21 @@ For 2-bit pixel formats:
 * 11: ColorA
 
 
+Colors may be one of several colorspaces:
+* RGB222 (6-bit)
+* RGB333 (9-bit)
+* CLR15 (15-bit)
+** Mode specific endpoint
+** RGB555 (15-bit)
+*** (14:10)=R
+*** ( 9: 5)=G
+*** ( 4: 0)=B
+** YVU654 (15-bit)
+*** (14:9)=Y
+*** ( 8:4)=V
+*** ( 3:0)=U
+
+
 === Cell Modes 0 and 1 (Basic Cells) ===
 
 Base glyphs are organized as 32-bit cells.
@@ -40,10 +56,21 @@ Base glyphs are organized as 32-bit cells.
 Cell Mode 0:
 * Cells are a text-cell, with a 10-bit font space.
 ** (15:10): Attribute Effect Flags (if ClrTag==0)
-*** (10)=Strike, (11)=Underline, (15)=Blink
+*** (10)=Strike
+*** (11)=Underline
+*** (12)=Overline
+*** (13)=Reserved
+*** (15:14)=Blink
 ** ( 9: 8): Font
 ** ( 7: 0): Glyph
 
+Blink:
+* 00: Non-Blink
+* 01: Blibk, Fast
+* 10: Blink, Slow/Basic
+* 11: Blink, Alternating Cell
+** (61:32)=Alternate Cell Contents
+** Switches alternatively between two different cell glyphs.
 
 Cell Mode 1:
 * Encodes a 4x4x1 Color Cell
@@ -73,28 +100,25 @@ For 9-bit color endpoints:
 * Each 3-bit value maps to one of: 0, 36, 73, 110, 146, 182, 219, 255
 
 
-=== Cell Mode 2 (Graphical Cells) ===
+=== Cell Mode 2 (Graphical Cells, Change) ===
 
-Encodes an 8x8 4:2:0 Color Cell (128 or 256 bit):
-* ClrTag=00: Y=8x8x1 UV=4x4x1, 128-bit
-* ClrTag=01: Reserved
-* ClrTag=10: Y=8x8x2 UV=4x4x2, 256-bit
-* ClrTag=11: Reserved
+Encodes an 8x8 Color Cell (128):
+* (63:62): Cell Mode B (CellModeB)
+* CellModeB=00: Y=8x8x1, 128-bit
+* CellModeB=01: Reserved
+* CellModeB=10: Y=8x8x2, 256-bit
+* CellModeB=11: Reserved
 
 
-==== Format (2.0): YUV 4:2:0 (128 bit) ====
+==== Format (2.0): 8x8x1 (128 bit) ====
 
 Format (2.0): YUV 4:2:0 (128 bit):
 * (127:64): 8x8x1 Luma (Y)
-* ( 63:48): 4x4x1 Chroma (U)
-* ( 47:32): 4x4x1 Chroma (V)
-**  Low 28 bits: 2x YUV644
-**  CyB(27:22)
-**  CyA(21:16)
-**  CuB(15:12)
-**  CuA(11: 8)
-**  CvB( 7: 4)
-**  CvA( 3: 0)
+* (63:62): Cell Mode B (CellModeB)
+* ( 61:32): Reserved
+**  Low 30 bits: 2x CLR15
+** (29:15)=ColorB
+** (14: 0)=ColorA
 
 
 ==== Format (2.2): YUV 4:2:0 (256 bit) ====
@@ -113,13 +137,13 @@ These will rely on a secondary Cell Mode in bits 62 and 63.
 
 Extended Graphics Cell
 * (63:62): Cell Mode B (CellModeB)
-** 00: 4x4, 6-bpp Bitmap
+** 00: 4x4, 6-bpp Bitmap (Drop)
 ** 01: 8x16, 4x8 Sub-Cell (15-bit YUV)
 ** 10: 4x8, 2x2 Sub-Cell (15-bit YUV)
 ** 11: 8x8, 4x4 Sub-Cell (15-bit YUV)
 
 
-==== Format (3.0): 6-bpp Bitmap Cells ====
+==== Format (3.0): 4x4 Cell, 6-bpp Bitmap Cells (Drop) ====
 
 Format (3.0): 6-bpp Bitmap Cells (128 bit):
 * CellMode=11, ClrTag=00/01
@@ -131,23 +155,13 @@ Format (3.0): 6-bpp Bitmap Cells (128 bit):
 ** (127:120), (95:88) = Currently Ignored
 
 
-==== Format (3.1): 4x8 Sub-Cell ====
+==== Format (3.1): 8x16 Cell, 4x8 Sub-Cell ====
 
-Format (3.1): 6-bpp Bitmap 2x2 Cells (256 bit):
-* / CellModeB = 01 (Possible?)
-* / Divided into 2x2-pixel sub-blocks.
-** / Each contains a pair of 6-bit colors and a 3 bit pattern.
-* / Bits 23:0 of each DWORD contains the color endpoints (4x 6-bits).
-* / Bits 29:24 contain the pattern (2x 3-bits).
-
-Format (3.1): YUV 4:2:0 (128 bit):
+Format (3.1): YUV 4:2:0 (256 bit):
 * (255:128) = Pixel Bits (As 2x4 4x4x1 Sub-Blocks)
-* The first 4 DWORD values consist of pairs of YVU654 endpoints.
-** (29:15)=ColorB
-** (14: 0)=ColorA
-*** (14:9)=Y
-*** ( 8:4)=V
-*** ( 3:0)=U
+* The first 4 DWORD values consist of pairs of CLR15 endpoints.
+** (29:15)=ColorB, CLR15
+** (14: 0)=ColorA, CLR15
 * The last 4 DWORD values consist of pixel bits.
 ** Each contains a 4x4x2 sub-block.
 *** These blocks are organized in raster order.
@@ -156,17 +170,14 @@ Format (3.1): YUV 4:2:0 (128 bit):
 Within each 4x8 sub-block, the pixel bit selects which of the two endpoints to use.
 
 
-==== Format (3.2): 2x2 Sub-Cell (256 bit) ====
+==== Format (3.2): 4x8 Cell, 2x2 Sub-Cell (256 bit) ====
 
 Format (3.2): 2x2 Sub-Cell (256 bit):
 * CellMode = 11
 ** CellModeB = 10
-* The first four DWORD values consist of pairs of YVU654 endpoints.
-** (29:15)=ColorB
-** (14: 0)=ColorA
-*** (14:9)=Yc
-*** ( 8:4)=V
-*** ( 3:0)=U
+* The first four DWORD values consist of pairs of CLR15 endpoints.
+** (29:15)=ColorB, CLR15
+** (14: 0)=ColorA, CLR15
 * The last two DWORD values consist of pixel bits.
 * The middle two DWORDs will contain 7-bit Y deltas.
 ** (27:21)=Yd0
@@ -176,28 +187,15 @@ Format (3.2): 2x2 Sub-Cell (256 bit):
 
 
 
-==== Format (3.3): 4x4 Sub-Cell (256 bit) ====
+==== Format (3.3): 8x8 Cell, 4x4 Sub-Cell (256 bit) ====
 
 Format (3.3): 4x4 Sub-Cell (256 bit):
 * CellMode = 11
 ** CellModeB = 11
-* The first 4 DWORD values consist of pairs of YVU654 endpoints.
-** (29:15)=ColorB
-** (14: 0)=ColorA
-*** (14:9)=Y
-*** ( 8:4)=V
-*** ( 3:0)=U
+* The first four DWORD values consist of pairs of CLR15 endpoints.
+** (29:15)=ColorB, CLR15
+** (14: 0)=ColorA, CLR15
 * The last 4 DWORD values consist of pixel bits.
 ** Each contains a 4x4x2 sub-block.
 *** These blocks are organized in raster order.
 *** Pixels within the block start with the upper-left in the MSB.
-
-Possible:
-* If ColorB.Y<=ColorA.Y
-** Endpoint YUV is interpolated.
-* If ColorB.Y> ColorA.Y
-** Only Y is interpolated.
-** Bits 4 and 19 are used as UV selection hints.
-*** 0: Left/Right Split (AB/AB)
-*** 1: Up/Down Split (AA/BB)
-*** Bit 19 controls U split, bit 4 controls V split.

@@ -164,6 +164,11 @@
 #define CCXL_REGINTPH_MASK		0x00FFFFFFF0000000ULL	//LVT (high half index)
 #define CCXL_REGINTPH_SHL		28
 
+#define CCXL_REGTHIS_FIDBMASK	0x0000000000000FFFULL	//FID base
+#define CCXL_REGTHIS_LVLMASK	0x00000000000FF000ULL	//Supertype Level
+#define CCXL_REGTHIS_FIDTYMASK	0x0000000000F00000ULL	//FID Type Mask
+
+
 #define CCXL_REGID_REG_Z		0x0000000000FFFFFFULL	//placeholder void reg
 #define CCXL_REGID_REG_DZ		0x0000000002FFFFFFULL	//multi-part regs
 
@@ -172,6 +177,7 @@
 #define CCXL_REGLONG2_MASK		0x1FFFFFFFFFFFFFFFULL	//long2/double2
 
 #define CCXL_REGSP_THIS			0x1000000000000FFFULL	//'this'
+#define CCXL_REGSP_SUPER		0x1000000000001FFFULL	//'super'
 // #define CCXL_REGSP_NULL		0x030000100F000000ULL	//null
 #define CCXL_REGSP_NULL			0x0480100F00000000ULL	//null
 
@@ -339,6 +345,8 @@
 #define CCXL_VOP_CSELCMP			0x28
 #define CCXL_VOP_CSELCMP_Z			0x29
 #define CCXL_VOP_JMPTAB				0x2A
+#define CCXL_VOP_OBJCALL			0x2B
+
 
 #define CCXL_LBL_GLOBALBASE			0x000000	//globals (main context)
 
@@ -588,6 +596,8 @@ bccx_cxstate bgbcc_rcst_int128;
 bccx_cxstate bgbcc_rcst_interface;
 bccx_cxstate bgbcc_rcst_iproto;
 
+bccx_cxstate bgbcc_rcst_keyword;
+
 bccx_cxstate bgbcc_rcst_label;
 bccx_cxstate bgbcc_rcst_lang;
 bccx_cxstate bgbcc_rcst_left;
@@ -607,6 +617,7 @@ bccx_cxstate bgbcc_rcst_nspath;
 bccx_cxstate bgbcc_rcst_null_statement;
 
 bccx_cxstate bgbcc_rcst_objref;
+bccx_cxstate bgbcc_rcst_object;
 bccx_cxstate bgbcc_rcst_offsetof;
 bccx_cxstate bgbcc_rcst_op;
 
@@ -637,6 +648,7 @@ bccx_cxstate bgbcc_rcst_structs;
 bccx_cxstate bgbcc_rcst_subarch;
 bccx_cxstate bgbcc_rcst_super;
 bccx_cxstate bgbcc_rcst_switch;
+bccx_cxstate bgbcc_rcst_symbol;
 bccx_cxstate bgbcc_rcst_s_proto;
 
 bccx_cxstate bgbcc_rcst_then;
@@ -658,6 +670,7 @@ bccx_cxstate bgbcc_rcst_value_lo;
 bccx_cxstate bgbcc_rcst_var;
 bccx_cxstate bgbcc_rcst_var_init;
 bccx_cxstate bgbcc_rcst_vars;
+bccx_cxstate bgbcc_rcst_vector;
 bccx_cxstate bgbcc_rcst_vector_ref;
 
 bccx_cxstate bgbcc_rcst_while;

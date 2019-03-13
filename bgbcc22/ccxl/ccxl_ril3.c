@@ -545,6 +545,7 @@ void BGBCC_CCXLR3_EmitArgBlob(
 			return;
 		}
 
+#if 0
 		i=ctx->ril_psrov;
 		ctx->ril_psidx[i]=ctx->ril_txrov;
 		ctx->ril_pslen[i]=len;
@@ -554,13 +555,38 @@ void BGBCC_CCXLR3_EmitArgBlob(
 		ctx->ril_pslix[len]=i;
 
 		ctx->ril_psrov=(i+1)&63;
+#endif
 	}
+#endif
+
+#if 1
+	i=ctx->ril_psrov;
+	ctx->ril_psidx[i]=ctx->ril_txrov;
+	ctx->ril_pslen[i]=len;
+
+	j=ctx->ril_pslix[len];
+	ctx->ril_pschn[i]=j;
+	ctx->ril_pslix[len]=i;
+
+	ctx->ril_psrov=(i+1)&63;
 #endif
 
 //	if(len<8)
 //	if(1)
 	if(len<24)
 	{
+#if 0
+		i=ctx->ril_psrov;
+		ctx->ril_psidx[i]=ctx->ril_txrov;
+		ctx->ril_pslen[i]=len;
+
+		j=ctx->ril_pslix[len];
+		ctx->ril_pschn[i]=j;
+		ctx->ril_pslix[len]=i;
+
+		ctx->ril_psrov=(i+1)&63;
+#endif
+
 		BGBCC_CCXLR3_EmitSVLI(ctx, len);
 		s=str;
 //		while(*s)
@@ -640,6 +666,18 @@ void BGBCC_CCXLR3_EmitArgBlob(
 
 	if((k+3)>=(len+1))
 	{
+#if 0
+		i=ctx->ril_psrov;
+		ctx->ril_psidx[i]=ctx->ril_txrov;
+		ctx->ril_pslen[i]=len;
+
+		j=ctx->ril_pslix[len];
+		ctx->ril_pschn[i]=j;
+		ctx->ril_pslix[len]=i;
+
+		ctx->ril_psrov=(i+1)&63;
+#endif
+
 		BGBCC_CCXLR3_EmitSVLI(ctx, len);
 		s=str;
 		for(i=0; i<len; i++)
@@ -674,6 +712,9 @@ void BGBCC_CCXLR3_EmitArgString(
 		BGBCC_CCXLR3_EmitSVLI(ctx, 0);
 		return;
 	}
+
+//	if(!strncmp(str, "/*", 2))
+//		__debugbreak();
 
 	l=strlen(str);
 	if(!l)l=1;
@@ -1072,8 +1113,17 @@ char *BGBCC_CCXLR3_ReadString(BGBCC_TransState *ctx, byte **rcs)
 	byte *s0, *s1;
 	int sz;
 
+//	if(!strncmp(tb, "/*", 2))
+//		__debugbreak();
+
 	s0=tb; sz=4096;
 	BGBCC_CCXLR3_ReadTextBlob(ctx, rcs, &s0, &sz);
+	
+	if(!s0)
+		return(NULL);
+
+	if(!strncmp(s0, "/*", 2))
+		__debugbreak();
 	
 	s1=(byte *)bgbcc_rstrdup((char *)s0);
 	if(s0!=tb)
@@ -1238,7 +1288,6 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 	case BGBCC_RIL3OP_CALLPV:
 		BGBCC_CCXL_StackPopCall(ctx, 1);
 		break;
-
 	case BGBCC_RIL3OP_STCALLN:
 		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
 		s1=BGBCC_CCXLR3_ReadString(ctx, &cs);
@@ -1247,6 +1296,30 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 	case BGBCC_RIL3OP_STCALLP:
 		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
 		BGBCC_CCXL_StackPopCall2(ctx, s0, 0);
+		break;
+
+	case BGBCC_RIL3OP_OBJCALLN:
+		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		BGBCC_CCXL_StackCallName(ctx, s0, 4);
+		break;
+	case BGBCC_RIL3OP_OBJCALLP:
+		BGBCC_CCXL_StackPopCall(ctx, 4);
+		break;
+	case BGBCC_RIL3OP_OBJCALLNV:
+		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		BGBCC_CCXL_StackCallName(ctx, s0, 5);
+		break;
+	case BGBCC_RIL3OP_OBJCALLPV:
+		BGBCC_CCXL_StackPopCall(ctx, 5);
+		break;
+	case BGBCC_RIL3OP_STOBJCALLN:
+		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s1=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		BGBCC_CCXL_StackCallName2(ctx, s0, s1, 4);
+		break;
+	case BGBCC_RIL3OP_STOBJCALLP:
+		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		BGBCC_CCXL_StackPopCall2(ctx, s0, 4);
 		break;
 
 	case BGBCC_RIL3OP_LDIXC:

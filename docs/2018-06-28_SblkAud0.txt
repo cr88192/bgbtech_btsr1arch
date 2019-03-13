@@ -43,23 +43,23 @@ While it would be more effective to identity map small values, this would be mor
 The predictor step will be interpreted as a similar E4.F2 value encoding a step range.
 
 Samples:
-* 000: +1/7 * Range, Pred--
-* 001: +3/7 * Range, Pred
-* 010: +5/7 * Range, Pred
-* 011: +7/7 * Range, Pred+=2
-* 100: -1/7 * Range, Pred--
-* 101: -3/7 * Range, Pred
-* 110: -5/7 * Range, Pred
-* 111: -7/7 * Range, Pred+=2
+* 000: +1/7 * Range, Step--
+* 001: +3/7 * Range, Step
+* 010: +5/7 * Range, Step
+* 011: +7/7 * Range, Step+=2
+* 100: -1/7 * Range, Step--
+* 101: -3/7 * Range, Step
+* 110: -5/7 * Range, Step
+* 111: -7/7 * Range, Step+=2
 
-* / 000: +1/4 * Range, Pred--
-* / 001: +2/4 * Range, Pred
-* / 010: +3/4 * Range, Pred
-* / 011: +4/4 * Range, Pred++
-* / 100: -1/4 * Range, Pred--
-* / 101: -2/4 * Range, Pred
-* / 110: -3/4 * Range, Pred
-* / 111: -4/4 * Range, Pred++
+* / 000: +1/4 * Range, Step--
+* / 001: +2/4 * Range, Step
+* / 010: +3/4 * Range, Step
+* / 011: +4/4 * Range, Step++
+* / 100: -1/4 * Range, Step--
+* / 101: -2/4 * Range, Step
+* / 110: -3/4 * Range, Step
+* / 111: -4/4 * Range, Step++
 
 During decoding, the samples will exist in an 18-bit space (or larger), but will represent a signed 16-bit value range on the output. This extra range is effectively "overflow space", with the final output being clamped to range.
 
@@ -100,4 +100,4 @@ Step Range (Hex)
   E= 0: 00000, 00001, 00002, 00003
  
  
- For Split-Mono mode, Center and Side will be instead interpreted as High-Pass and Low-Pass samples, 
+For Split-Mono mode, Center and Side will be instead interpreted as High-Pass and Low-Pass samples.

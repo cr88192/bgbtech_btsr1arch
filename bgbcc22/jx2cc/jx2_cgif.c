@@ -86,6 +86,8 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	shctx->is_addr_x32=0;
 	shctx->use_padcross=0;
 	
+	shctx->optmode=ctx->optmode;
+	
 	if(ctx->sub_arch==BGBCC_ARCH_BJX2_JX2B)
 	{
 		shctx->is_fixed32=1;
@@ -730,6 +732,7 @@ ccxl_status BGBCC_JX2C_PrintVirtOp(BGBCC_TransState *ctx,
 			case CCXL_VOP_VA_ARG:			s0="VA_ARG"; break;
 			case CCXL_VOP_CSELCMP:			s0="CSELCMP"; break;
 			case CCXL_VOP_CSELCMP_Z:		s0="CSELCMP_Z"; break;
+			case CCXL_VOP_OBJCALL:			s0="OBJCALL"; break;
 		}
 
 		if(s0)
@@ -829,7 +832,8 @@ ccxl_status BGBCC_JX2C_PrintVirtOp(BGBCC_TransState *ctx,
 		fprintf(sctx->cgen_log, "\n");
 		fflush(sctx->cgen_log);
 		
-		if(op->opn==CCXL_VOP_CALL)
+//		if(op->opn==CCXL_VOP_CALL)
+		if((op->opn==CCXL_VOP_CALL) || (op->opn==CCXL_VOP_OBJCALL))
 		{
 			na=op->imm.call.na;
 			ca=op->imm.call.args;
@@ -924,6 +928,7 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 		BGBCC_JX2C_EmitLabelFlushRegisters(ctx, sctx);
 		break;
 	case CCXL_VOP_CALL:
+	case CCXL_VOP_OBJCALL:
 		BGBCC_JX2C_EmitSyncRegisters(ctx, sctx);
 //		BGBCC_JX2C_ResetFpscrDefaults(ctx, sctx);
 //		BGBCC_JX2_EmitForceFlushIndexImm(sctx);
@@ -933,7 +938,7 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 //		sctx->sreg_live|=0x00F000F0;
 //		sctx->sfreg_live|=0x0FF0;
 		BGBCC_JX2C_EmitCallVReg(ctx, sctx,
-			op->type, op->dst, op->srca,
+			op->type, op->dst, op->srca, op->srcb,
 			op->imm.call.na, op->imm.call.args);
 
 //		sctx->sreg_live&=~0x00F0;
@@ -2454,6 +2459,57 @@ ccxl_status BGBCC_JX2C_BuildAsmBlob(BGBCC_TransState *ctx,
 	return(1);
 }
 
+ccxl_status BGBCC_JX2C_BuildPrestartInit(BGBCC_TransState *ctx)
+{
+	char tb[256];
+	BGBCC_JX2_Context *sctx;
+	char *s;
+	int l0, l1, l2, l3, nm1;
+	int i;
+
+	sctx=ctx->uctx;
+
+//	l0=BGBCC_JX2_GetNamedLabel(sctx, "__prestart_init");
+	l0=BGBCC_JX2_GetNamedLabel(sctx, "__start_init");
+
+	/* Object Init Stub */
+	BGBCC_JX2_SetSectionName(sctx, ".text");
+	BGBCC_JX2_EmitBAlign(sctx, 8);
+	BGBCC_JX2_EmitLabel(sctx, l0);
+
+	BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_PUSH, BGBCC_SH_REG_PR);
+	
+	for(i=0; i<1024; i++)
+	{
+		sprintf(tb, "__prestart_init!%d", i);
+		s=bgbcc_strdup(tb);
+
+		l1=BGBCC_JX2_LookupNamedLabel(sctx, s);
+		if(l1<=0)
+			break;
+		
+		nm1=BGBCC_SH_NMID_BSRN;
+		BGBCC_JX2_EmitOpAutoLabel(sctx, nm1, l1);
+
+#if 0
+		if(BGBCC_JX2_EmitCheckAutoLabelNear20B(sctx, l1, nm1))
+		{
+			BGBCC_JX2_EmitOpFar20Label(sctx, nm1, l1);
+			continue;
+		}
+		if(BGBCC_JX2_EmitCheckAutoLabelNear24B(sctx, l1, nm1))
+		{
+			BGBCC_JX2_EmitOpFar24Label(sctx, nm1, l1);
+			continue;
+		}
+#endif
+	}
+	
+//	BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_RTS);
+	BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_RET);
+	
+	return(0);
+}
 
 ccxl_status BGBCC_JX2C_BuildStruct(BGBCC_TransState *ctx,
 	BGBCC_CCXL_RegisterInfo *obj)
@@ -2528,7 +2584,10 @@ ccxl_status BGBCC_JX2C_BuildStruct(BGBCC_TransState *ctx,
 		vt_vmi[i]=NULL;
 	}
 	
-	vt_lbl[0]=l2;
+	if(obj->regflags&BGBCC_REGFL_VARCONV)
+	{
+		vt_lbl[0]=l2;
+	}
 
 	naclz=0;
 	cclz=obj;
@@ -2539,7 +2598,10 @@ ccxl_status BGBCC_JX2C_BuildStruct(BGBCC_TransState *ctx,
 		for(i=0; i<cclz->n_regs; i++)
 		{
 			fi=cclz->regs[i];
-			j=fi->fxoffs;
+			j=fi->fxmoffs;
+			if(j<=0)
+				continue;
+			
 			sprintf(tb, "%s/%s", cclz->qname, fi->name);
 			k=BGBCC_JX2_GetNamedLabel(sctx, tb);
 			if(vt_lbl[j]<=0)
@@ -2570,107 +2632,111 @@ ccxl_status BGBCC_JX2C_BuildStruct(BGBCC_TransState *ctx,
 	BGBCC_JX2_EmitPtrWordAbs(sctx, 0);
 
 
-	/* Class Info */
 
-	l4=BGBCC_JX2_GenLabel(sctx);
-	l5=BGBCC_JX2_GenLabel(sctx);
-	l6=BGBCC_JX2_GenLabel(sctx);
-
-	BGBCC_JX2_EmitLabel(sctx, l2);	
-	k=BGBCC_JX2_EmitGetStrtabLabel(sctx, obj->qname);
-	BGBCC_JX2_EmitDWordRva32(sctx, l2);		/* Self Pointer */
-	BGBCC_JX2_EmitDWordRva32(sctx, k);		/* QName */
-	BGBCC_JX2_EmitDWordRva32(sctx, l3);		/* Super */
-	BGBCC_JX2_EmitDWordRva32(sctx, l4);		/* Fields */
-	BGBCC_JX2_EmitDWordRva32(sctx, l5);		/* Methods */
-	BGBCC_JX2_EmitDWordRva32(sctx, l6);		/* IFace */
-
-	/* Build Fields List */
-	for(i=0; i<obj->n_fields; i++)
+	if(obj->regflags&BGBCC_REGFL_VARCONV)
 	{
-		k=BGBCC_JX2_GenLabel(sctx);
-		tlbl[i]=k;
+		/* Class Info */
+
+		l4=BGBCC_JX2_GenLabel(sctx);
+		l5=BGBCC_JX2_GenLabel(sctx);
+		l6=BGBCC_JX2_GenLabel(sctx);
+
+		BGBCC_JX2_EmitLabel(sctx, l2);	
+		k=BGBCC_JX2_EmitGetStrtabLabel(sctx, obj->qname);
+		BGBCC_JX2_EmitDWordRva32(sctx, l2);		/* Self Pointer */
+		BGBCC_JX2_EmitDWordRva32(sctx, k);		/* QName */
+		BGBCC_JX2_EmitDWordRva32(sctx, l3);		/* Super */
+		BGBCC_JX2_EmitDWordRva32(sctx, l4);		/* Fields */
+		BGBCC_JX2_EmitDWordRva32(sctx, l5);		/* Methods */
+		BGBCC_JX2_EmitDWordRva32(sctx, l6);		/* IFace */
+
+		/* Build Fields List */
+		for(i=0; i<obj->n_fields; i++)
+		{
+			k=BGBCC_JX2_GenLabel(sctx);
+			tlbl[i]=k;
+
+			BGBCC_JX2_EmitBAlign(sctx, 8);
+			BGBCC_JX2_EmitLabel(sctx, k);
+
+			fi=obj->fields[i];
+			j=BGBCC_JX2_EmitGetStrtabLabel(sctx, fi->name);
+			k=BGBCC_JX2_EmitGetStrtabLabel(sctx, fi->sig);
+			BGBCC_JX2_EmitDWordRva32(sctx, j);		/* Name */
+			BGBCC_JX2_EmitDWordRva32(sctx, k);		/* Sig */
+	//		BGBCC_JX2_EmitQWord(sctx, fi->flagsint);
+			BGBCC_JX2_EmitDWord(sctx, fi->flagsint);
+			BGBCC_JX2_EmitDWord(sctx, fi->fxoffs);
+	//		BGBCC_JX2_EmitDWord(sctx, 0);
+		}
 
 		BGBCC_JX2_EmitBAlign(sctx, 8);
-		BGBCC_JX2_EmitLabel(sctx, k);
-
-		fi=obj->fields[i];
-		j=BGBCC_JX2_EmitGetStrtabLabel(sctx, fi->name);
-		k=BGBCC_JX2_EmitGetStrtabLabel(sctx, fi->sig);
-		BGBCC_JX2_EmitDWordRva32(sctx, j);		/* Name */
-		BGBCC_JX2_EmitDWordRva32(sctx, k);		/* Sig */
-//		BGBCC_JX2_EmitQWord(sctx, fi->flagsint);
-		BGBCC_JX2_EmitDWord(sctx, fi->flagsint);
-		BGBCC_JX2_EmitDWord(sctx, fi->fxoffs);
-//		BGBCC_JX2_EmitDWord(sctx, 0);
-	}
-
-	BGBCC_JX2_EmitBAlign(sctx, 8);
-	BGBCC_JX2_EmitLabel(sctx, l4);
-	for(i=0; i<obj->n_fields; i++)
-		{ BGBCC_JX2_EmitPtrWordAbs(sctx, tlbl[i]); }
-	BGBCC_JX2_EmitPtrWordAbs(sctx, 0);
+		BGBCC_JX2_EmitLabel(sctx, l4);
+		for(i=0; i<obj->n_fields; i++)
+			{ BGBCC_JX2_EmitPtrWordAbs(sctx, tlbl[i]); }
+		BGBCC_JX2_EmitPtrWordAbs(sctx, 0);
 
 
-	/* Build Methods List */
-	for(i=0; i<obj->n_regs; i++)
-	{
-		k=BGBCC_JX2_GenLabel(sctx);
-		tlbl[i]=k;
+		/* Build Methods List */
+		for(i=0; i<obj->n_regs; i++)
+		{
+			k=BGBCC_JX2_GenLabel(sctx);
+			tlbl[i]=k;
 
-		BGBCC_JX2_EmitBAlign(sctx, 8);
-		BGBCC_JX2_EmitLabel(sctx, k);
+			BGBCC_JX2_EmitBAlign(sctx, 8);
+			BGBCC_JX2_EmitLabel(sctx, k);
 
-		fi=obj->regs[i];
-		j=BGBCC_JX2_EmitGetStrtabLabel(sctx, fi->name);
-		k=BGBCC_JX2_EmitGetStrtabLabel(sctx, fi->sig);
-		BGBCC_JX2_EmitDWordRva32(sctx, j);		/* Name */
-		BGBCC_JX2_EmitDWordRva32(sctx, k);		/* Sig */
-//		BGBCC_JX2_EmitQWord(sctx, fi->flagsint);
-		BGBCC_JX2_EmitDWord(sctx, fi->flagsint);
-		BGBCC_JX2_EmitDWord(sctx, fi->fxoffs);
-//		BGBCC_JX2_EmitDWord(sctx, 0);
-	}
-
-	BGBCC_JX2_EmitBAlign(sctx, 8);
-	BGBCC_JX2_EmitLabel(sctx, l5);
-	for(i=0; i<obj->n_regs; i++)
-		{ BGBCC_JX2_EmitDWordRva32(sctx, tlbl[i]); }
-	BGBCC_JX2_EmitDWordRva32(sctx, 0);
-
-
-	/* Build Interface List */
-	for(i=1; i<obj->n_args; i++)
-	{
-		k=BGBCC_JX2_GenLabel(sctx);
-		tlbl[i]=k;
+			fi=obj->regs[i];
+			j=BGBCC_JX2_EmitGetStrtabLabel(sctx, fi->name);
+			k=BGBCC_JX2_EmitGetStrtabLabel(sctx, fi->sig);
+			BGBCC_JX2_EmitDWordRva32(sctx, j);		/* Name */
+			BGBCC_JX2_EmitDWordRva32(sctx, k);		/* Sig */
+	//		BGBCC_JX2_EmitQWord(sctx, fi->flagsint);
+			BGBCC_JX2_EmitDWord(sctx, fi->flagsint);
+			BGBCC_JX2_EmitDWord(sctx, fi->fxoffs);
+	//		BGBCC_JX2_EmitDWord(sctx, 0);
+		}
 
 		BGBCC_JX2_EmitBAlign(sctx, 8);
-		BGBCC_JX2_EmitLabel(sctx, k);
+		BGBCC_JX2_EmitLabel(sctx, l5);
+		for(i=0; i<obj->n_regs; i++)
+			{ BGBCC_JX2_EmitDWordRva32(sctx, tlbl[i]); }
+		BGBCC_JX2_EmitDWordRva32(sctx, 0);
 
-		fi=obj->args[i];
-		li_sclz=BGBCC_CCXL_LookupStructureForSig(ctx, fi->sig);
-		cclz=li_sclz->decl;
 
-		j=BGBCC_JX2_EmitGetStrtabLabel(sctx, cclz->qname);
-//		k=BGBCC_JX2_EmitGetStrtabLabel(sctx, fi->sig);
+		/* Build Interface List */
+		for(i=1; i<obj->n_args; i++)
+		{
+			k=BGBCC_JX2_GenLabel(sctx);
+			tlbl[i]=k;
 
-		sprintf(tb, "%s/%s", cclz->qname, "__cinfo");
-		k=BGBCC_JX2_GetNamedLabel(sctx, tb);
+			BGBCC_JX2_EmitBAlign(sctx, 8);
+			BGBCC_JX2_EmitLabel(sctx, k);
 
-		BGBCC_JX2_EmitDWordRva32(sctx, j);		/* Name */
-		BGBCC_JX2_EmitDWordRva32(sctx, k);		/* Sig */
-//		BGBCC_JX2_EmitQWord(sctx, fi->flagsint);
-		BGBCC_JX2_EmitDWord(sctx, fi->flagsint);
-		BGBCC_JX2_EmitDWord(sctx, fi->fxoffs);
-//		BGBCC_JX2_EmitDWord(sctx, 0);
+			fi=obj->args[i];
+			li_sclz=BGBCC_CCXL_LookupStructureForSig(ctx, fi->sig);
+			cclz=li_sclz->decl;
+
+			j=BGBCC_JX2_EmitGetStrtabLabel(sctx, cclz->qname);
+	//		k=BGBCC_JX2_EmitGetStrtabLabel(sctx, fi->sig);
+
+			sprintf(tb, "%s/%s", cclz->qname, "__cinfo");
+			k=BGBCC_JX2_GetNamedLabel(sctx, tb);
+
+			BGBCC_JX2_EmitDWordRva32(sctx, j);		/* Name */
+			BGBCC_JX2_EmitDWordRva32(sctx, k);		/* Sig */
+	//		BGBCC_JX2_EmitQWord(sctx, fi->flagsint);
+			BGBCC_JX2_EmitDWord(sctx, fi->flagsint);
+			BGBCC_JX2_EmitDWord(sctx, fi->fxoffs);
+	//		BGBCC_JX2_EmitDWord(sctx, 0);
+		}
+
+		BGBCC_JX2_EmitBAlign(sctx, 8);
+		BGBCC_JX2_EmitLabel(sctx, l6);
+		for(i=1; i<obj->n_args; i++)
+			{ BGBCC_JX2_EmitDWordRva32(sctx, tlbl[i]); }
+		BGBCC_JX2_EmitDWordRva32(sctx, 0);
 	}
-
-	BGBCC_JX2_EmitBAlign(sctx, 8);
-	BGBCC_JX2_EmitLabel(sctx, l6);
-	for(i=1; i<obj->n_args; i++)
-		{ BGBCC_JX2_EmitDWordRva32(sctx, tlbl[i]); }
-	BGBCC_JX2_EmitDWordRva32(sctx, 0);
 
 
 	/* Build Per-Interface VTables */
@@ -2708,7 +2774,7 @@ ccxl_status BGBCC_JX2C_BuildStruct(BGBCC_TransState *ctx,
 				}
 				
 				if(k<nvtix)
-					{ tlbl[fi->fxoffs]=vt_lbl[k]; }
+					{ tlbl[fi->fxmoffs]=vt_lbl[k]; }
 			}
 
 			sprintf(tb, "%s/%s", cclz->qname, "__cinfo");
@@ -3695,6 +3761,13 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 					if(!strcmp(obj->name, "__smodsi3"))
 						continue;
 				}
+
+				if(1)
+				{
+					/* called by frontend, no free pass. */
+					if(!strncmp(obj->name, "__lvo_", 6))
+						continue;
+				}
 				
 				BGBCC_CCXL_GlobalMarkReachable(ctx, obj);
 				continue;
@@ -3895,6 +3968,9 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 			continue;
 		}
 	}
+	
+	BGBCC_JX2C_BuildPrestartInit(ctx);
+
 
 	k=sctx->stat_tot_dq0+sctx->stat_tot_dq1+sctx->stat_tot_dqi;
 	if(k>0)

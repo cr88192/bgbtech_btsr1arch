@@ -209,6 +209,7 @@ int BGBCC_JX2C_EmitConvToVRegVRegVariant(
 {
 	int fr0, dr0;
 	int tri, tro;
+	int pri, pro;
 	int rcls;
 
 //	rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, type);
@@ -216,6 +217,9 @@ int BGBCC_JX2C_EmitConvToVRegVRegVariant(
 	{
 		tri=BGBCC_SH_REG_RQ4;
 		tro=BGBCC_SH_REG_RQ2;
+
+		pri=BGBCC_SH_REG_RQ4;
+		pro=BGBCC_SH_REG_RQ2;
 
 		if(sctx->no_fpu)
 		{
@@ -230,6 +234,9 @@ int BGBCC_JX2C_EmitConvToVRegVRegVariant(
 	{
 		tri=BGBCC_SH_REG_LR4;
 		tro=BGBCC_SH_REG_LR2;
+
+		pri=BGBCC_SH_REG_R4;
+		pro=BGBCC_SH_REG_R2;
 
 		if(sctx->no_fpu)
 		{
@@ -293,13 +300,25 @@ int BGBCC_JX2C_EmitConvToVRegVRegVariant(
 
 	if(BGBCC_CCXL_TypePointerP(ctx, type))
 	{
+		if(BGBCC_CCXL_TypeCStringP(ctx, type))
+		{
+			BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, tri);
+			BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx, sreg, tri);
+			BGBCC_JX2C_EmitCallName(ctx, sctx, "__lva_conv_tostr");
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tri);
+			BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, pro);
+			BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, pro);
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, pro);
+			return(1);
+		}
+	
 		BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, tri);
 		BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx, sreg, tri);
 		BGBCC_JX2C_EmitCallName(ctx, sctx, "__lva_conv_toptr");
 		BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tri);
-		BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, BGBCC_SH_REG_RQ2);
-		BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, BGBCC_SH_REG_RQ2);
-		BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, BGBCC_SH_REG_RQ2);
+		BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, pro);
+		BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, pro);
+		BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, pro);
 		return(1);
 	}
 
@@ -328,11 +347,15 @@ int BGBCC_JX2C_EmitConvFromVRegVRegVariant(
 {
 	int fr4, dr4;
 	int tri, tro;
+	int pri, pro;
 
 	if(sctx->is_addr64)
 	{
 		tri=BGBCC_SH_REG_RQ4;
 		tro=BGBCC_SH_REG_RQ2;
+
+		pri=BGBCC_SH_REG_RQ4;
+		pro=BGBCC_SH_REG_RQ2;
 		
 		if(sctx->no_fpu)
 		{
@@ -347,6 +370,9 @@ int BGBCC_JX2C_EmitConvFromVRegVRegVariant(
 	{
 		tri=BGBCC_SH_REG_LR4;
 		tro=BGBCC_SH_REG_LR2;
+
+		pri=BGBCC_SH_REG_R4;
+		pro=BGBCC_SH_REG_R2;
 
 		if(sctx->no_fpu)
 		{
@@ -410,10 +436,84 @@ int BGBCC_JX2C_EmitConvFromVRegVRegVariant(
 
 	if(BGBCC_CCXL_TypePointerP(ctx, type))
 	{
-		BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, BGBCC_SH_REG_R4);
-		BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx, sreg, BGBCC_SH_REG_R4);
+		BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, pri);
+		BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx, sreg, pri);
 		BGBCC_JX2C_EmitCallName(ctx, sctx, "__lva_conv_fromptr");
-		BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, BGBCC_SH_REG_R4);
+		BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, pri);
+		BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, tro);
+		BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, tro);
+		BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tro);
+		return(1);
+	}
+
+	BGBCC_CCXL_StubError(ctx);
+	return(0);
+}
+
+int BGBCC_JX2C_EmitConvFromVRegVRegVarString(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	ccxl_type type, ccxl_register dreg, ccxl_register sreg)
+{
+	int fr4, dr4;
+	int tri, tro;
+	int pri, pro;
+
+	if(sctx->is_addr64)
+	{
+		tri=BGBCC_SH_REG_RQ4;
+		tro=BGBCC_SH_REG_RQ2;
+
+		pri=BGBCC_SH_REG_RQ4;
+		pro=BGBCC_SH_REG_RQ2;
+		
+		if(sctx->no_fpu)
+		{
+			fr4=BGBCC_SH_REG_RD4;
+			dr4=BGBCC_SH_REG_RQ4;
+		}else
+		{
+			fr4=BGBCC_SH_REG_FR4;
+			dr4=BGBCC_SH_REG_DR4;
+		}
+	}else
+	{
+		tri=BGBCC_SH_REG_LR4;
+		tro=BGBCC_SH_REG_LR2;
+
+		pri=BGBCC_SH_REG_R4;
+		pro=BGBCC_SH_REG_R2;
+
+		if(sctx->no_fpu)
+		{
+			fr4=BGBCC_SH_REG_R4;
+			dr4=BGBCC_SH_REG_LR4;
+		}else
+		{
+			fr4=BGBCC_SH_REG_FR4;
+			dr4=BGBCC_SH_REG_DR4;
+		}
+	}
+
+//	if(BGBCC_CCXL_TypePointerP(ctx, type))
+	if(BGBCC_CCXL_TypeCStringP(ctx, type))
+	{
+		BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, pri);
+		BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx, sreg, pri);
+		BGBCC_JX2C_EmitCallName(ctx, sctx, "__lva_conv_fromstr");
+		BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, pri);
+		BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, tro);
+		BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, tro);
+		BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tro);
+		return(1);
+	}
+
+	if(BGBCC_CCXL_TypeCWStringP(ctx, type))
+	{
+		BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, pri);
+		BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx, sreg, pri);
+		BGBCC_JX2C_EmitCallName(ctx, sctx, "__lva_conv_fromwstr");
+		BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, pri);
 		BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, tro);
 		BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, tro);
 		BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tro);

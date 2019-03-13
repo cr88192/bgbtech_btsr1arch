@@ -182,11 +182,14 @@ byte *TKFAT_GetSectorTempBuffer(TKFAT_ImageInfo *img,
 
 		img->tbc_pred1=img->tbc_pred0;
 		img->tbc_pred0=i;
+		img->tbc_rov=0;
 	}else
 	{
 		i=255;
 //		i=63;
 //		i=1023;
+		i=img->tbc_rov;
+		img->tbc_rov=(i+1)&255;
 
 		if(img->tbc_lbn[i]&TKFAT_SFL_DIRTY)
 		{
@@ -370,11 +373,14 @@ byte *TKFAT_GetSectorTempFatBuffer(TKFAT_ImageInfo *img,
 
 		img->tfbc_pred1=img->tfbc_pred0;
 		img->tfbc_pred0=i;
+		img->tfbc_rov=0;
 	}else
 	{
 		i=255;
 //		i=63;
 //		i=1023;
+		i=img->tfbc_rov;
+		img->tfbc_rov=(i+1)&255;
 
 		if(img->tfbc_lbn[i]&TKFAT_SFL_DIRTY)
 		{

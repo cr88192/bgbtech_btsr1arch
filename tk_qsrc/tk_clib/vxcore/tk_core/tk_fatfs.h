@@ -156,6 +156,7 @@ void *tbc_buf[256];
 int tbc_num;
 int tbc_pred0;
 int tbc_pred1;
+int tbc_rov;
 
 #if 1
 /* Temp FAT Buffer Cache */
@@ -171,6 +172,7 @@ void *tfbc_buf[256];
 int tfbc_num;
 int tfbc_pred0;
 int tfbc_pred1;
+int tfbc_rov;
 
 byte *tfbc_pr_ofs;
 int tfbc_pr_lba;

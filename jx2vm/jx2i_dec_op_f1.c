@@ -136,6 +136,43 @@ int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
 		}
 		break;
 
+	case 0x4:	/* F1nm_4gnm */
+		if(op->rn==1)
+			op->rn=BJX2_REG_GBR;			
+		if(op->rn==0)
+			break;
+		op->nmid=BJX2_NMID_FMOVS;
+		op->fmid=BJX2_FMID_REGSTREGDISP;
+		op->Run=BJX2_Op_FMOVS_RegStRegDisp;
+		break;
+	case 0x5:	/* F1nm_5gnm */
+		if(op->rn==1)
+			op->rn=BJX2_REG_GBR;			
+		if(op->rn==0)
+			break;
+		op->nmid=BJX2_NMID_FMOVD;
+		op->fmid=BJX2_FMID_REGSTREGDISP;
+		op->Run=BJX2_Op_FMOVD_RegStRegDisp;
+		break;
+	case 0x6:	/* F1nm_6gdd */
+		if(op->rm==0)
+			break;
+		if(op->rm==1)
+			op->rm=BJX2_REG_GBR;			
+		op->nmid=BJX2_NMID_FMOVS;
+		op->fmid=BJX2_FMID_LDREGDISPREG;
+		op->Run=BJX2_Op_FMOVS_LdRegDispReg;
+		break;
+	case 0x7:	/* F1nm_7gdd */
+		if(op->rm==0)
+			break;
+		if(op->rm==1)
+			op->rm=BJX2_REG_GBR;			
+		op->nmid=BJX2_NMID_FMOVD;
+		op->fmid=BJX2_FMID_LDREGDISPREG;
+		op->Run=BJX2_Op_FMOVD_LdRegDispReg;
+		break;
+
 #if 0
 	case 0x4:	/* F1ed_4dzz */
 		op->imm=imm9u;
@@ -270,5 +307,71 @@ int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
 		break;
 	}
 	
+	return(ret);
+}
+
+int BJX2_DecodeOpcode_DecF5(BJX2_Context *ctx,
+	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2)
+{
+	BJX2_Opcode *op1;
+	int opw2b;
+	int ret;
+	
+	if(!(ctx->regs[BJX2_REG_SR]&(1<<27)))
+	{
+		op1=BJX2_ContextAllocOpcode(ctx);
+
+		opw2b=opw2&0xFEFF;
+		ret=BJX2_DecodeOpcode_DecF1(ctx, op1, addr, opw1, opw2b);
+
+		if(opw2&0x0100)
+		{
+			op->nmid=BJX2_NMID_PRED_F;
+			op->fmid=BJX2_FMID_CHAIN;
+			op->Run=BJX2_Op_PREDF_Chn;
+			op->data=op1;
+		}else
+		{
+			op->nmid=BJX2_NMID_PRED_T;
+			op->fmid=BJX2_FMID_CHAIN;
+			op->Run=BJX2_Op_PREDT_Chn;
+			op->data=op1;
+		}
+
+		return(ret);
+	}
+	
+	ret=BJX2_DecodeOpcode_DecF1(ctx, op, addr, opw1, opw2);
+	return(ret);
+}
+
+int BJX2_DecodeOpcode_DecD5(BJX2_Context *ctx,
+	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2)
+{
+	BJX2_Opcode *op1;
+	int ret;
+	
+	op->fl|=BJX2_OPFL_TWOWORD;
+	op->opn=opw1;
+	op->opn2=opw2;
+
+	op1=BJX2_ContextAllocOpcode(ctx);
+
+	ret=BJX2_DecodeOpcode_DecF1(ctx, op1, addr, opw1, opw2);
+
+	if(opw1&0x0400)
+	{
+		op->nmid=BJX2_NMID_PRED_F;
+		op->fmid=BJX2_FMID_CHAIN;
+		op->Run=BJX2_Op_PREDF_Chn;
+		op->data=op1;
+	}else
+	{
+		op->nmid=BJX2_NMID_PRED_T;
+		op->fmid=BJX2_FMID_CHAIN;
+		op->Run=BJX2_Op_PREDT_Chn;
+		op->data=op1;
+	}
+
 	return(ret);
 }
