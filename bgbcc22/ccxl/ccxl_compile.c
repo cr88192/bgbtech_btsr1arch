@@ -1574,8 +1574,19 @@ char *BGBCC_CCXL_VarTypeString_FlattenName(BGBCC_TransState *ctx,
 			if(!strcmp(s, "void"))*t++='v';
 			if(!strcmp(s, "char"))*t++='h';
 			if(!strcmp(s, "short"))*t++='t';
-			if(!strcmp(s, "int"))*t++='j';
-			if(!strcmp(s, "long"))*t++='m';
+			if(ctx->arch_sizeof_int==2)
+			{
+				if(!strcmp(s, "int"))*t++='t';
+				if(!strcmp(s, "long"))*t++='j';
+			}else
+			{
+				if(!strcmp(s, "int"))*t++='j';
+				if(!strcmp(s, "long"))*t++='m';
+			}
+//			if(!strcmp(s, "int"))				
+//				*t++=(ctx->arch_sizeof_int==2)?'t':'j';
+//				*t++='j';
+//			if(!strcmp(s, "long"))*t++='m';
 			if(!strcmp(s, "llong"))*t++='y';
 			if(!strcmp(s, "int128"))*t++='o';
 
@@ -1594,7 +1605,16 @@ char *BGBCC_CCXL_VarTypeString_FlattenName(BGBCC_TransState *ctx,
 	{
 		if(!strcmp(s, "void"))*t++='v';
 		if(!strcmp(s, "short"))*t++='s';
-		if(!strcmp(s, "int"))*t++='i';
+
+		if(ctx->arch_sizeof_int!=2)
+		{
+			if(!strcmp(s, "int"))*t++='i';
+		}
+
+//		if(!strcmp(s, "int"))
+//			*t++=(ctx->arch_sizeof_int==2)?'s':'i';
+//			*t++='i';
+
 		if(!strcmp(s, "float"))*t++='f';
 		if(!strcmp(s, "double"))*t++='d';
 
@@ -1606,7 +1626,18 @@ char *BGBCC_CCXL_VarTypeString_FlattenName(BGBCC_TransState *ctx,
 		if((lang==BGBCC_LANG_C) || (lang==BGBCC_LANG_CPP))
 		{
 			if(!strcmp(s, "char"))*t++='c';
-			if(!strcmp(s, "long"))*t++='l';
+
+			if(ctx->arch_sizeof_int==2)
+			{
+				if(!strcmp(s, "int"))*t++='s';
+				if(!strcmp(s, "long"))*t++='i';
+			}else
+			{
+				if(!strcmp(s, "int"))*t++='i';
+				if(!strcmp(s, "long"))*t++='l';
+			}
+
+//			if(!strcmp(s, "long"))*t++='l';
 			if(!strcmp(s, "llong"))*t++='x';
 			if(!strcmp(s, "bool"))*t++='b';
 
@@ -3457,7 +3488,9 @@ char *BGBCC_CCXL_GenProtoSig(BGBCC_TransState *ctx,
 		if(s) { strcpy(t, s); t+=strlen(t); }
 	}else
 	{
-		*t++='Pv';
+//		*t++='Pv';
+		*t++='P';
+		*t++='v';
 	}
 
 	*t++=0;

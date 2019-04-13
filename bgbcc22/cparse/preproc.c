@@ -774,7 +774,7 @@ char *BGBPP_LoadInclude(BGBCP_ParseState *ctx, char *name, int *rsz)
 	char *buf, *buf1, *s, *t;
 	int i, sz;
 
-	if(BGBPP_CheckIncludeCache(name, &buf, &sz)>0)
+	if(BGBPP_CheckIncludeCache(name, (byte **)(&buf), &sz)>0)
 	{
 		if(rsz)*rsz=sz;
 		return(buf);
@@ -820,7 +820,7 @@ char *BGBPP_LoadInclude(BGBCP_ParseState *ctx, char *name, int *rsz)
 	if(buf)
 	{
 //		printf("Loaded Include: '%s' %d bytes\n", name, sz);
-		BGBPP_AddIncludeCache(name, buf, sz);
+		BGBPP_AddIncludeCache(name, (byte *)buf, sz);
 		if(rsz)*rsz=sz;
 		return(buf);
 	}

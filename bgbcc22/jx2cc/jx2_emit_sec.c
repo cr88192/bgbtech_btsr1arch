@@ -1337,7 +1337,7 @@ int BGBCC_JX2_EmitString(BGBCC_JX2_Context *ctx, char *str)
 {
 	byte *s;
 	
-	s=str;
+	s=(byte *)str;
 	while(*s)
 		BGBCC_JX2_EmitByteI(ctx, *s++);
 	BGBCC_JX2_EmitByteI(ctx, *s++);

@@ -25,7 +25,7 @@ Float16 will exist as a special type in the ABI, in that in most cases it will q
 
 BFloat16 will be another floating point type, which is effectively a 32-bit float with the low 16 bits cut off. It has a higher dynamic range but less precision than half-float.
 
-Pointer types will normally be 64-bit, but a sub-ABI may exist with 32-bit pointers.
+Pointer types will normally be 64-bit, but a sub-ABI will exist with 32-bit pointers.
 
 
 == Basic ABI ==
@@ -86,6 +86,8 @@ BS2 Style Vararg:
 Is basically the same as the 64-bit ABI, except that 'long' and pointer values are reduced to 32 bits. The address space is nominally zero-extended, and maps to the low 4GB of the Userland space.
 
 Tagged Pointer types will remain as 64 bit.
+
+PE/COFF binaries using this mode are to be encoded as PE32, whereas those using the 64-bit ABI will be PE32+.
 
 
 === PBO Sub ABI ===

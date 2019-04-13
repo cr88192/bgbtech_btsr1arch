@@ -636,6 +636,21 @@ void BIPRO_ResumeThreads()
 {
 }
 
+void BIPRO_GetThreadRegisterState(
+	thContext *inf, BIPRO_RegisterState *regs)
+{
+}
+
+void BIPRO_HandleThreadStates(
+	void (*fcn)(thContext *inf))
+{
+}
+
+int BIPRO_InitDllsOS()
+{
+	return(0);
+}
+
 void *BIPRO_ThreadProcLnx(void *parm) 
 {
 	thContext *inf;
@@ -724,8 +739,9 @@ void thLockMutex(void *p)
 
 int thTryLockMutex(void *p)
 {
-	if(!p)return;
+	if(!p)return(-1);
 	pthread_mutex_trylock((pthread_mutex_t *)p);
+	return(0);
 }
 
 void thUnlockMutex(void *p)
@@ -746,7 +762,7 @@ void *thFastMutex()
 void thLockFastMutex(void *p)
 	{ thLockMutex(p); }
 int thTryLockFastMutex(void *p)
-	{ thTryLockMutex(p); }
+	{ thTryLockMutex(p); return(0); }
 void thUnlockFastMutex(void *p)
 	{ thUnlockMutex(p); }
 void thFreeFastMutex(void *p)

@@ -16,36 +16,47 @@ Changes from BSR1A:
 
 Basic Design:
 * Fixed width 16-bit instructions.
+* Will be little-endian with unaligned memory access.
+* FPU will be optional (Absent for low-cost implementations).
+* MMU will be optional (Absent for low-cost implementations).
+
+Registers:
 * 16 General Purpose Registers.
 ** R0..R15, 32 bit
 * 16 Special Registers.
 ** C0..C15, But given other names.
-* 16 Shadow Registers
-** S0..S15, Map to R0..R7, C0..C2, R15, and C4..C7
-* Will be little-endian with unaligned memory access.
+* 16 Shadow Registers (Drop)
+* 16 FPU Registers (Optional)
+** FR0..FR15, 64-bit
 
-Register Aliases:
+Special Purpose Registers:
 * R0: DLR (Displacement/Low Register)
 * R1: DHR (Displacement/High Register)
 * R15: SP
 ** R15 will exist in GPR space but will be essentially an SPR in the arch.
-* C0: PC (Program Counter)
-* C1: LR (Link Register)
+
+Control Registers:
+* C0 / PC: Program Counter
+* C1 / LR: Link Register
 ** BSR will save PC to LR.
 ** RET will copy LR to PC.
 *** For non-leaf functions, LR is saved manually.
-* C2: SR (Status Register)
+* C2 / SR: Status Register
 ** Uses a T bit, which is a True/False Status.
 ** The T bit also serves as a Carry Bit.
-* C3: VBR (Interrupt Vector Base Register)
-* C4: -
-* C5: -
-* C6: GBR (Global Base Register)
-* C7: TBR (Thread Base Register)
+* C3 / VBR: Interrupt Vector Base Register
+* C4 / SPC: Saved PC
+* C5 / SSP: Saved SP
+* C6 / GBR: Global Base Register
+* C7 / TBR: Thread Base Register
 * C8: -
 * C9: -
 * C10: -
-* C11: EXSR (Exception Status Register)
+* C11 / EXSR: Exception Status Register
+* C12 / SSR: Saved SR
+* C13: -
+* C14: -
+* C15: -
 
 
 Barrel Shift
@@ -90,13 +101,15 @@ SR Bits:
 ** 01: High Priority Only (System/Fault).
 ** 10: Medium Priority Only (Timers, ...).
 ** 11: All Interrupts Enabled.
-* Most operations will not change the contents of SR.
+* 4..7: P/Q/R/O Bits, Context Dependent
 * 28: BL, Block Interrupts
 * 29: RB, Encodes the ISR register bank.
 ** Set when interrupt occurs.
 ** Cleared when interrupt returns.
 * 30: MD, User/Supervisor.
-* 31: JQ, Reserved for possible 64-bit extension.
+* 31: Drop
+
+Most operations will not change the contents of SR unless noted otherwise.
 
 Mnonics:
 * MOV.B, Load/Store Byte, Sign Extend
@@ -117,7 +130,7 @@ Operand Types:
 
 
 On an interrupt:
-* The registers will be swapped with their shadow-register counterparts.
+* PC and SP will be saved to SPC and SSP.
 * SR.RB, SR.BL, and SR.MD will be set.
 * The status code for the interrupt will be loaded into EXSR.
 * An displacement will be added to VBR and the result will be loaded into PC.
@@ -211,7 +224,7 @@ Architectural memory access will require accesses to aligned to the native size.
 Integer values will be little endian two's complement.
 
 If R0 is used as the base of a Scaled Index, it will be interpreted as if it were PC.
-The use of R1 is reserved as the base for a Scaled-Index form.
+If R1 is used as a base, it will be interpreted as GBR.
 
 
 === Opcode Map ===
@@ -287,11 +300,11 @@ Instruction Space
 ** 24jj  LDIZ		#imm8u, DLR			//DLR=Imm8 (Zero Extend)
 ** 25jj  LDIN		#imm8u, DLR			//DLR=Imm8 (One Extend)
 ** 26jj  LDISH		#imm8u, DLR			//DLR=(DLR SHL 8)|Imm8u
-** 27dd  -
+** 27dd  MOVU.W		(SP, disp4u), Rn
 ** 28nd  MOV.L		Rn, (SP, disp4u)	//Stack-Relative Store
-** 29nd  -
+** 29nd  MOV.W		Rn, (SP, disp4u)
 ** 2And  MOV.L		(SP, disp4u), Rn	//Stack-Relative Load
-** 2Bnd  -
+** 2Bnd  MOV.W		(SP, disp4u), Rn
 ** 2Cnj  CMPEQ		#imm4u, Rn			//Rn==Imm4, Zero Extend
 ** 2Dnj  CMPEQ		#imm4n, Rn			//Rn==Imm4, One Extend
 ** 2Enj  CMPGT		#imm4u, Rn			//Rn==Imm4, Zero Extend
@@ -315,11 +328,6 @@ Instruction Space
 ** 30E0  -
 
 ** 30z1  -
-
-** 3002  BRA		(PC, DLR)			//Branch to PC+(DLR*2)
-** 3012  BSR		(PC, DLR)			//Branch Subroutine to PC+(DLR*2)
-** 3022  BT			(PC, DLR)			//Branch True to PC+(DLR*2)
-** 3032  BF			(PC, DLR)			//Branch False to PC+(DLR*2)
 
 ** 3082  -
 ** 3092  -
@@ -421,15 +429,22 @@ Instruction Space
 ** 36n7  SHAD		DLR, Rn				//Barrel Shift, Arithmetic
 ** 36n8  -
 ** 36n9  -
-** 36nA  SWAPB		Rn					//Swap Bytes
-** 36nB  SWAPW		Rn					//Swap Words
+** 36nA  -
+** 36nB  -
 ** 36nC  -
 ** 36nD  CMPHS		DLR, Rn				//Unsigned (Rn GE DLR)
 ** 36nE  CMPGE		DLR, Rn				//Signed (Rn GE DLR)
 ** 36nF  MOVT		Rn					//Rn=SR.T
 
-** 37zz  -
-** 38zz  -
+** 37n0  SWAP.B		Rn				//(1032) Swap E/O Bytes (Four Bytes)
+** 37n1  SWAP.W		Rn				//(1032) Swap E/O Words (All words)
+** 37n2  -
+** 37n3  -
+** 37n4  SWAP.LB	Rn				//(1023) Swap Low Two Bytes (GSV)
+
+** 38n2 ? PUSH		FRn
+** 38n3 ? POP		FRn
+
 ** 39zz  -
 ** 3Azz  -
 ** 3Bzz  -
@@ -474,8 +489,8 @@ Instruction Space
 ** 5Enm  OR			Rm, DLR, Rn
 ** 5Fnm  XOR		Rm, DLR, Rn
 
-* 6zzz  (Reserved, 8-bit Ops)
-* 7zzz  (Reserved, Single-Arg ops)
+* 6zzz  (Reserved)
+* 7zzz  (Reserved)
 
 * 8zzz  ( MOV.L 1000-rddd-nnnn-mmmm, r=Store/Load )
 ** 80nm  -
@@ -495,16 +510,45 @@ Instruction Space
 ** 8Enm	 MOV.L		(Rm, 24), Rn
 ** 8Fnm	 MOV.L		(Rm, 28), Rn
 
-* 9zzz  (FPU Block, Reserved in BSR1B)
-** This block is reserved for the addition of an FPU.
-** Having an FPU will be regarded as an extension.
+* 9zzz  (FPU Block, Optional)
+** 90nm  FMOV.S		FRm, (Rm)
+** 91nm  FMOV.D		FRm, (Rm)
+** 92nm  FMOV.S		FRm, (Rm, DLR)
+** 93nm  FMOV.D		FRm, (Rm, DLR)
+** 94nm  FMOV.S		(Rm), FRn
+** 95nm  FMOV.D		(Rm), FRn
+** 96nm  FMOV.S		(Rm, DLR), FRn
+** 97nm  FMOV.D		(Rm, DLR), FRn
+** 98nm  FADD		FRm, FRn			//FRn=FRn+FRm
+** 99nm  FSUB		FRm, FRn			//FRn=FRn-FRm
+** 9Anm  FMUL		FRm, FRn			//FRn=FRn*FRm
+** 9Bnm  !
+** 9Cnm  FCMPEQ		FRm, FRn			//SR.T=(FRn EQ FRm)
+** 9Dnm  FCMPGT		FRm, FRn			//SR.T=(FRn GT FRm)
+** 9Enm  FMOV		FRm, FRn			//FRn=FRm
+** 9Fnz  
+*** 9Fn0 FLDCF		DLR, FRn			//Float Load Convert Float32
+*** 9Fn1 FLDCD		DLR, FRn			//Float Load Convert Double (DLR)
+*** 9Fn2 FLDCI		DLR, FRn			//Float Load Convert Int
+*** 9Fn3 FLDCH		DLR, FRn			//Float Load Convert Half (DLR, Low16)
+*** 9Fn4 FSTCF		FRn, DLR			//Float Store Convert Float32
+*** 9Fn5 FSTCD		FRn, DLR			//Float Store Convert Double (DLR)
+*** 9Fn6 FSTCI		FRn, DLR			//Float Store Convert Int
+*** 9Fn7 FSTCH		FRn, DLR			//Float Store Convert Half (DLR, Low16)
+*** 9Fn8 FNEG		FRn					//Negate
+*** 9Fn9 FABS		FRn					//Absolute
+*** 9FnA !
+*** 9FnB !
+*** 9FnC !
+*** 9FnD !
+*** 9FnE -
+*** 9FnF -
 
 * Ajjj  LDIZ		#imm12u, DLR	//Load 12 bit value into DLR (Zero Extend)
 * Bjjj  LDIN		#imm12u, DLR	//Load 12 bit value into DLR (One Extend)
 * Cnii  ADD			#imm8s, Rn		//Rn=Rn+Imm8
-* Dnjj  -
-* Enii  MOV			#imm8s, Rn		//Rn=Imm8
-
+* Dnii  MOV			#imm8s, Rn		//Rn=Imm8
+* Enjj (Reserved, Larger Instruction Forms)
 * Fxxx (Larger Instruction Forms, Unused in BSR1B)
 
 

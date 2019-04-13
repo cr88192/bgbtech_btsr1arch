@@ -873,6 +873,7 @@ f64 BGBCC_CCXLR3_ReadFVLI(BGBCC_TransState *ctx, byte **rcs)
 	}
 	
 	v=fm*pow(2.0, fe);
+//	v=fm*bgbcc_pow2f(fe);
 	return(v);
 }
 
@@ -1122,13 +1123,13 @@ char *BGBCC_CCXLR3_ReadString(BGBCC_TransState *ctx, byte **rcs)
 	if(!s0)
 		return(NULL);
 
-	if(!strncmp(s0, "/*", 2))
+	if(!strncmp((char *)s0, "/*", 2))
 		__debugbreak();
 	
 	s1=(byte *)bgbcc_rstrdup((char *)s0);
 	if(s0!=tb)
 		bgbcc_free(s0);
-	return(s1);
+	return((char *)s1);
 
 #if 0
 	sz=BGBCC_CCXLR3_ReadSVLI(ctx, rcs);
@@ -1183,10 +1184,10 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		BGBCC_CCXL_End(ctx);
 		break;
 	case BGBCC_RIL3OP_ASMBLOB:
-		tbuf=tb; tsz=4096;
+		tbuf=(byte *)tb; tsz=4096;
 		BGBCC_CCXLR3_ReadTextBlob(ctx, &cs, &tbuf, &tsz);
-		BGBCC_CCXL_AddAsmBlob(ctx, tbuf);
-		if(tbuf!=tb)
+		BGBCC_CCXL_AddAsmBlob(ctx, (char *)tbuf);
+		if(tbuf!=((byte *)tb))
 			bgbcc_free(tbuf);
 		break;
 	case BGBCC_RIL3OP_BEGIN:

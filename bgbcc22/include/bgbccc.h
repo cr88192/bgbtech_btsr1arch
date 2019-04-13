@@ -646,6 +646,7 @@ fourcc arch;			//major architecture
 fourcc sub_arch;		//subset architecture
 int tuidx;				//translation unit index
 
+byte arch_sizeof_int;	//sizeof(int), 0/2/4
 byte arch_sizeof_long;
 byte arch_sizeof_ptr;
 byte arch_sizeof_valist;

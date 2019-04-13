@@ -299,6 +299,7 @@ static int elf32_dump_symbol(Elf32_Context *ctx, int num)
 	printf("st_other\t%d\n", sym->st_other);
 	printf("st_shndx\t%d\n", elf32_half(sym->st_shndx));
 	printf("\n");
+	return(0);
 }
 
 static char *elf32_get_symbol_name(Elf32_Context *ctx, int num)
@@ -364,7 +365,7 @@ static Elf32_Context *elf32_decompose_ctx(byte *buf, int sz)
 
 	shdr=(Elf32_Shdr *)(buf+ctx->secoffs+(ssec*ctx->shsz));
 	ctx->shstr_offs=elf32_off(shdr->sh_offset);
-	ctx->shstrtab=buf+ctx->shstr_offs;
+	ctx->shstrtab=(char *)(buf+ctx->shstr_offs);
 
 	for(i=0; i<ctx->nsec; i++)
 	{
@@ -383,7 +384,7 @@ static Elf32_Context *elf32_decompose_ctx(byte *buf, int sz)
 	ctx->stridx=elf32_lookup_section(ctx, ".strtab");
 	shdr=(Elf32_Shdr *)(buf+ctx->secoffs+(ctx->stridx*ctx->shsz));
 	ctx->stroffs=elf32_off(shdr->sh_offset);
-	ctx->strtab=buf+ctx->stroffs;
+	ctx->strtab=(char *)(buf+ctx->stroffs);
 
 	ctx->symidx=elf32_lookup_section(ctx, ".symtab");
 	shdr=(Elf32_Shdr *)(buf+ctx->secoffs+(ctx->symidx*ctx->shsz));

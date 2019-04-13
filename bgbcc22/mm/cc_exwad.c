@@ -85,7 +85,7 @@ ExWAD_Context *ExWAD_LoadImage(char *name)
 	char *s;
 	int i, j, k, n, sz;
 
-	buf=bgbcc_loadfile(name, &sz);
+	buf=(byte *)bgbcc_loadfile(name, &sz);
 	if(!buf)return(NULL);
 
 	tmp=ExWAD_LoadImageBuffer(name, buf, sz);
@@ -117,7 +117,7 @@ ExWAD_Context *ExWAD_LoadImageBuffer(char *name, byte *buf, int sz)
 		if((i>0) && (i<=(sz-EXWAD_CELLSZ)) && !(i&(EXWAD_CELLSZ-1)))
 		{
 			buf1=buf+i;
-			if(!strncmp(buf1, EXWAD_MAGIC1, 8))
+			if(!strncmp((char *)buf1, EXWAD_MAGIC1, 8))
 			{
 				tmp->head=(ExWAD_Header *)buf1;
 				tmp->head_rva=i;
@@ -130,7 +130,7 @@ ExWAD_Context *ExWAD_LoadImageBuffer(char *name, byte *buf, int sz)
 		if((i>0) && (i<=(sz-EXWAD_CELLSZ)) && !(i&(EXWAD_CELLSZ-1)))
 		{
 			buf1=buf+i;
-			if(!strncmp(buf1, EXWAD_MAGIC1, 8))
+			if(!strncmp((char *)buf1, EXWAD_MAGIC1, 8))
 			{
 				tmp->head=(ExWAD_Header *)buf1;
 				tmp->head_rva=i;
@@ -637,13 +637,13 @@ int ExWAD_GetDirEnt(ExWAD_Context *ctx, char *name)
 			{
 //				de->name[14]=pfx&0xFF;
 //				de->name[15]=(pfx>>8)&0xFF;
-				strcpy(de->name, name1);
+				strcpy((char *)(de->name), name1);
 //				exwad_setu16(de->name+14, pfx);
 				exwad_setu32(de->dir, pfx);
 				exwad_setu16(de->flags, EXWAD_DIRFL_DIRPFX);
 			}else if(strlen(name)<=EXWAD_NAMESZ)
 			{
-				strcpy(de->name, name);
+				strcpy((char *)(de->name), name);
 				exwad_setu16(de->flags, 0);
 			}else
 			{
@@ -680,13 +680,13 @@ int ExWAD_GetDirEnt(ExWAD_Context *ctx, char *name)
 	{
 //		de->name[14]=pfx&0xFF;
 //		de->name[15]=(pfx>>8)&0xFF;
-		strcpy(de->name, name1);
+		strcpy((char *)(de->name), name1);
 //		exwad_setu16(de->name+14, pfx);
 		exwad_setu32(de->dir, pfx);
 		exwad_setu16(de->flags, EXWAD_DIRFL_DIRPFX);
 	}else if(strlen(name)<=EXWAD_NAMESZ)
 	{
-		strcpy(de->name, name);
+		strcpy((char *)(de->name), name);
 		exwad_setu16(de->flags, 0);
 	}else
 	{
@@ -836,7 +836,7 @@ void ExWAD_AddFile(ExWAD_Context *ctx, char *name)
 	byte *buf, *buf1;
 	int i, j, k, n, sz;
 
-	buf=bgbcc_loadfile(name, &sz);
+	buf=(byte *)bgbcc_loadfile(name, &sz);
 	if(!buf)
 	{
 		printf("reading '%s' failed\n", name);

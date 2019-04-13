@@ -220,9 +220,9 @@ ccxl_status BGBCC_JX2C_FlattenImageROM(BGBCC_TransState *ctx,
 //		bgbcc_setu16en(ct+4, en, 0x2600|(i>> 4)& 255);
 //		bgbcc_setu16en(ct+6, en, 0x40F0|(i>> 0)&  15);
 
-		bgbcc_setu16en(ct+0, en, 0xA000|(i>>16)&4095);
-		bgbcc_setu16en(ct+2, en, 0x2600|(i>> 8)& 255);
-		bgbcc_setu16en(ct+4, en, 0x2600|(i>> 0)& 255);
+		bgbcc_setu16en(ct+0, en, 0xA000|((i>>16)&4095));
+		bgbcc_setu16en(ct+2, en, 0x2600|((i>> 8)& 255));
+		bgbcc_setu16en(ct+4, en, 0x2600|((i>> 0)& 255));
 //		bgbcc_setu16en(ct+6, en, 0x3002);
 		bgbcc_setu16en(ct+6, en, 0x3100);
 
@@ -235,9 +235,9 @@ ccxl_status BGBCC_JX2C_FlattenImageROM(BGBCC_TransState *ctx,
 //			bgbcc_setu16en(ct+2, en, 0x2600|(j>>12)& 255);
 //			bgbcc_setu16en(ct+4, en, 0x2600|(j>> 4)& 255);
 //			bgbcc_setu16en(ct+6, en, 0x40F0|(j>> 0)&  15);
-			bgbcc_setu16en(ct+0, en, 0xA000|(j>>16)&4095);
-			bgbcc_setu16en(ct+2, en, 0x2600|(j>> 8)& 255);
-			bgbcc_setu16en(ct+4, en, 0x2600|(j>> 0)& 255);
+			bgbcc_setu16en(ct+0, en, 0xA000|((j>>16)&4095));
+			bgbcc_setu16en(ct+2, en, 0x2600|((j>> 8)& 255));
+			bgbcc_setu16en(ct+4, en, 0x2600|((j>> 0)& 255));
 //			bgbcc_setu16en(ct+6, en, 0x3002);
 			bgbcc_setu16en(ct+6, en, 0x3100);
 
@@ -332,8 +332,8 @@ ccxl_status BGBCC_JX2C_FlattenImageASM(BGBCC_TransState *ctx,
 		if(j<=0)
 			continue;
 
-		sprintf(ct, ".section %s\n", sctx->sec_name[i]);
-		ct+=strlen(ct);
+		sprintf((char *)ct, ".section %s\n", sctx->sec_name[i]);
+		ct+=strlen((char *)ct);
 		
 		memcpy(ct, sctx->asm_buf[i], j);
 		ct+=j;

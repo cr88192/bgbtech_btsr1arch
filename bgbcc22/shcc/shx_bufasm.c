@@ -1531,7 +1531,7 @@ int BGBCC_SHXA_ParseOpcode(BGBCC_SHX_Context *ctx, char **rcs)
 int BGBCC_SHXA_ParseBuffer(BGBCC_SHX_Context *ctx, char **rcs)
 {
 	char tb[256];
-	byte *cs, *t;
+	char *cs, *t;
 	int i;
 
 	BGBCC_SHXA_Init();
@@ -1542,7 +1542,7 @@ int BGBCC_SHXA_ParseBuffer(BGBCC_SHX_Context *ctx, char **rcs)
 		cs=BGBCC_SHXA_EatWhite(cs);
 		if(!(*cs))
 			break;
-		i=BGBCC_SHXA_ParseOpcode(ctx, &cs);
+		i=BGBCC_SHXA_ParseOpcode(ctx, (char **)(&cs));
 		if(i<0)
 		{
 			t=tb;

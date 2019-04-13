@@ -21,11 +21,11 @@
 #define __debugbreak()	(*((int *)-1)=-1)
 #endif
 
-#ifdef _M_X64
-typedef long long nlint;
-#else
-typedef long nlint;
-#endif
+// #ifdef _M_X64
+// typedef long long nlint;
+// #else
+// typedef long nlint;
+// #endif
 
 #ifdef _MSC_VER
 #define force_inline __forceinline
@@ -34,8 +34,8 @@ typedef long nlint;
 
 #ifndef __EMSCRIPTEN__
 #ifdef __GNUC__
-#define force_inline inline
-#define default_inline inline
+//#define force_inline inline
+//#define default_inline inline
 #endif
 #endif
 
@@ -44,7 +44,9 @@ typedef long nlint;
 #define default_inline
 #endif
 
-#if defined(X86)||defined(X86_64)||defined(ARM)
+#if defined(X86) || defined(X86_64) || defined(ARM)
+// #if 0
+
 #define bgbcc_getu16le(ptr)		(*(u16 *)(ptr))
 #define bgbcc_getu32le(ptr)		(*(u32 *)(ptr))
 #define bgbcc_getu64le(ptr)		(*(u64 *)(ptr))
@@ -208,6 +210,7 @@ default_inline u64 bgbcc_u64fromf64bits(f64 val)
 #define bgbcc_gets64en(ptr, en)			\
 	((en)?bgbcc_gets32be(ptr):bgbcc_gets32le(ptr))
 
+#if 0
 #define bgbcc_setu16en(ptr, en, val)			\
 	((en)?bgbcc_setu16be(ptr, val):bgbcc_setu16le(ptr, val))
 #define bgbcc_setu32en(ptr, en, val)			\
@@ -220,6 +223,51 @@ default_inline u64 bgbcc_u64fromf64bits(f64 val)
 	((en)?bgbcc_sets32be(ptr, val):bgbcc_sets32le(ptr, val))
 #define bgbcc_sets64en(ptr, en, val)			\
 	((en)?bgbcc_sets64be(ptr, val):bgbcc_sets64le(ptr, val))
+#endif
+
+default_inline void bgbcc_setu16en(byte *ptr, int en, u16 val)
+{
+	if(en)
+		bgbcc_setu16be(ptr, val);
+	else
+		bgbcc_setu16le(ptr, val);
+}
+default_inline void bgbcc_setu32en(byte *ptr, int en, u32 val)
+{
+	if(en)
+		bgbcc_setu32be(ptr, val);
+	else
+		bgbcc_setu32le(ptr, val);
+}
+
+default_inline void bgbcc_setu64en(byte *ptr, int en, u64 val)
+{
+	if(en)
+		bgbcc_setu64be(ptr, val);
+	else
+		bgbcc_setu64le(ptr, val);
+}
+default_inline void bgbcc_sets16en(byte *ptr, int en, s16 val)
+{
+	if(en)
+		bgbcc_sets16be(ptr, val);
+	else
+		bgbcc_sets16le(ptr, val);
+}
+default_inline void bgbcc_sets32en(byte *ptr, int en, s32 val)
+{
+	if(en)
+		bgbcc_sets32be(ptr, val);
+	else
+		bgbcc_sets32le(ptr, val);
+}
+default_inline void bgbcc_sets64en(byte *ptr, int en, s64 val)
+{
+	if(en)
+		bgbcc_sets64be(ptr, val);
+	else
+		bgbcc_sets64le(ptr, val);
+}
 
 #define bgbcc_getu8en(ptr, en)			(*(byte *)(ptr))
 #define bgbcc_gets8en(ptr, en)			(*(sbyte *)(ptr))

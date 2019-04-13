@@ -91,18 +91,20 @@ void SMus_Step16k()
 	jx2i_smus_accum[ 2]+=jx2i_smus_ctrl[ 2]<<2;
 	jx2i_smus_accum[ 3]+=jx2i_smus_ctrl[ 3]<<2;
 	jx2i_smus_accum[ 4]+=jx2i_smus_ctrl[ 4]<<2;
-//	jx2i_smus_accum[ 5]+=jx2i_smus_ctrl[ 5]<<2;
-//	jx2i_smus_accum[ 6]+=jx2i_smus_ctrl[ 6]<<2;
-//	jx2i_smus_accum[ 7]+=jx2i_smus_ctrl[ 7]<<2;
+
+	jx2i_smus_accum[ 5]+=jx2i_smus_ctrl[ 5]<<2;
+	jx2i_smus_accum[ 6]+=jx2i_smus_ctrl[ 6]<<2;
+	jx2i_smus_accum[ 7]+=jx2i_smus_ctrl[ 7]<<2;
 
 	jx2i_smus_accum[ 8]+=jx2i_smus_ctrl[ 8]<<2;
 	jx2i_smus_accum[ 9]+=jx2i_smus_ctrl[ 9]<<2;
 	jx2i_smus_accum[10]+=jx2i_smus_ctrl[10]<<2;
 	jx2i_smus_accum[11]+=jx2i_smus_ctrl[11]<<2;
 	jx2i_smus_accum[12]+=jx2i_smus_ctrl[12]<<2;
-//	jx2i_smus_accum[13]+=jx2i_smus_ctrl[13]<<2;
-//	jx2i_smus_accum[14]+=jx2i_smus_ctrl[14]<<2;
-//	jx2i_smus_accum[15]+=jx2i_smus_ctrl[15]<<2;
+
+	jx2i_smus_accum[13]+=jx2i_smus_ctrl[13]<<2;
+	jx2i_smus_accum[14]+=jx2i_smus_ctrl[14]<<2;
+	jx2i_smus_accum[15]+=jx2i_smus_ctrl[15]<<2;
 
 	jx2i_smus_usec+=64;
 //	jx2i_smus_usec+=23;
@@ -188,21 +190,23 @@ int SMus_GetVoiceWaveRsVal_Dfl(int vnfl)
 	switch(fn)
 	{
 	case 0:
-		v=ph1^x19;
-//		v=jx2i_smus_sintab[ph0>>8];
+//		v=ph1^x19;
+		v=jx2i_smus_sintab[ph0>>8];
 		break;
 	case 1:
-		v=ph1^x19;
-//		v=jx2i_smus_sintab[ph0>>8];
+//		v=ph1^x19;
+		v=jx2i_smus_sintab[ph0>>8];
 		if(v<0x8000)v=0x8000;
 		break;
 	case 2:
-		v=ph1^x19;
-//		v=jx2i_smus_sintab[ph0>>8];
+//		v=ph1^x19;
+		v=jx2i_smus_sintab[ph0>>8];
 		if(v<0x8000)v^=0xFFFF;
 		break;
 	case 3:
-		v=ph1;
+//		v=ph1;
+//		v=jx2i_smus_sintab[ph0>>8]^x19;
+		v=jx2i_smus_sintab[ph0>>8]^x19^x18;
 		if(v<0x8000)v=0x8000;
 		break;
 
@@ -272,8 +276,8 @@ int SMus_GetVoiceWaveRsVal_Car0(int vnfl)
 	
 	x19=(((int)(acc<<12))>>31)&0xFFFF;	//mask for acc[19]
 	
-	v=ph1^x19;
-//	v=jx2i_smus_sintab[ph0>>8]-32768;
+//	v=ph1^x19;
+	v=jx2i_smus_sintab[ph0>>8]-32768;
 	v=SMus_ScaleWaveAttn(v, an);
 //	jx2i_smus_lastval[vn]=v;
 
@@ -300,8 +304,8 @@ int SMus_GetVoiceWaveRsVal_Mod0(int vnfl)
 	
 	x19=(((int)(acc<<12))>>31)&0xFFFF;	//mask for acc[19]
 	
-	v=ph1^x19;
-//	v=jx2i_smus_sintab[ph0>>8]-32768;
+//	v=ph1^x19;
+	v=jx2i_smus_sintab[ph0>>8]-32768;
 //	v=sin(ph0*(1.0/65536.0)*(2.0*M_PI))*32767;
 //	v=0;
 	
@@ -335,9 +339,7 @@ int SMus_GetStepSample(int step)
 	v+=SMus_GetVoiceWaveRsVal[ 3]( 3);
 
 	v+=SMus_GetVoiceWaveRsVal[ 4]( 4);
-//	v+=SMus_GetVoiceWaveRsVal[ 5]( 5);
-//	v+=SMus_GetVoiceWaveRsVal[ 6]( 6);
-//	v+=SMus_GetVoiceWaveRsVal[ 7]( 7);
+
 
 #if 1
 	v+=SMus_GetVoiceWaveRsVal[ 8]( 8);
@@ -345,9 +347,16 @@ int SMus_GetStepSample(int step)
 	v+=SMus_GetVoiceWaveRsVal[10](10);
 	v+=SMus_GetVoiceWaveRsVal[11](11);
 	v+=SMus_GetVoiceWaveRsVal[12](12);
-//	v+=SMus_GetVoiceWaveRsVal[13](13);
-//	v+=SMus_GetVoiceWaveRsVal[14](14);
-//	v+=SMus_GetVoiceWaveRsVal[15](15);
+#endif
+
+#if 1
+	v+=SMus_GetVoiceWaveRsVal[ 5]( 5);
+	v+=SMus_GetVoiceWaveRsVal[ 6]( 6);
+	v+=SMus_GetVoiceWaveRsVal[ 7]( 7);
+
+	v+=SMus_GetVoiceWaveRsVal[13](13);
+	v+=SMus_GetVoiceWaveRsVal[14](14);
+	v+=SMus_GetVoiceWaveRsVal[15](15);
 #endif
 
 //	v=sin(jx2i_smus_usec*(220/1000000.0)*(2*M_PI))*4096;
@@ -485,6 +494,7 @@ int SMus_SetRegisterI(BJX2_Context *ctx, int reg, u32 val)
 				SMus_GetVoiceWaveRsVal_Mod[vn]=SMus_GetVoiceWaveRsVal_Mute;
 			}else
 			{
+#if 0
 				switch((val>>28)&15)
 				{
 				case 0:
@@ -506,6 +516,12 @@ int SMus_SetRegisterI(BJX2_Context *ctx, int reg, u32 val)
 						SMus_GetVoiceWaveRsVal_Dfl;
 					break;
 				}
+#else
+				SMus_GetVoiceWaveRsVal[vn]=
+					SMus_GetVoiceWaveRsVal_Dfl;
+				SMus_GetVoiceWaveRsVal_Mod[vn]=
+					SMus_GetVoiceWaveRsVal_Dfl;
+#endif
 				
 				if(jx2i_smus_ctrl[vn&7]&0x00200000)
 				{

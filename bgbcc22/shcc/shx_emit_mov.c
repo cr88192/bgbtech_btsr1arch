@@ -1275,12 +1275,12 @@ int BGBCC_SHX_TryEmitOpLdRegDispReg(BGBCC_SHX_Context *ctx,
 #if 1
 			if(rn==0)
 			{
-				opw=0x83F0|(disp>>2)&15;
+				opw=0x83F0|((disp>>2)&15);
 				break;
 			}
 #endif			
 			if(((rn&31)<8) || ((rn&31)>14))	break;
-			opw=0x8380|((rn&7)<<4)|(disp>>2)&15;
+			opw=0x8380|((rn&7)<<4)|((disp>>2)&15);
 			break;
 
 		case BGBCC_SH_NMID_FMOVS:

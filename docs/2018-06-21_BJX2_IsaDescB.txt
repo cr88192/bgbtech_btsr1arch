@@ -826,11 +826,12 @@ Decrement the stack position and store the value from the register to this locat
 
 === RET ===
 
-* 300B RET
+* 300B ? RET
 
 Load the value from the top of the stack into PC and increment the stack position.
 
 Note that this is an alias for "POP PC".
+Support for this case is optional.
 
 
 === ROTCL ===
@@ -877,13 +878,17 @@ Return from exception.
 Initiates the behavior for returning from an exception handler (described elsewhere).
 
 
-=== RTS ===
+=== RTS / RTSU ===
 
 * 3010       RTS
+* 3012       RTSU
 * F000_3010  RTS	//Fix32
+* F002_3010  RTSU	//Fix32
 
 Return from Subroutine.
 This effectively restores the value from LR into PC, transferring control back to LR.
+
+RTSU will be functionally equivalent to RTS with the main exception that LR may not have been modified since the last unconditional branch or within a certain number of instructions, allowing it to be treated more like an unconditional branch.
 
 
 === SBB ===

@@ -340,7 +340,7 @@ int bgbcc_malloc_lookupblock(void *obj)
 
 int bgbcc_stralloc_lookupblock(void *obj)
 {
-	byte *p, *ps, *pe;
+	char *p, *ps, *pe;
 	int i;
 	
 	p=obj;

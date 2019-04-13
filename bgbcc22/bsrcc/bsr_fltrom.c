@@ -189,10 +189,10 @@ ccxl_status BGBCC_BSRC_FlattenImageROM(BGBCC_TransState *ctx,
 //		bgbcc_setu16en(ct+6, en, 0x3200);
 
 		i=va_strt-8;
-		bgbcc_setu16en(ct+0, en, 0xA000|(i>>20)&4095);
-		bgbcc_setu16en(ct+2, en, 0x2600|(i>>12)& 255);
-		bgbcc_setu16en(ct+4, en, 0x2600|(i>> 4)& 255);
-		bgbcc_setu16en(ct+6, en, 0x40F0|(i>> 0)&  15);
+		bgbcc_setu16en(ct+0, en, 0xA000|((i>>20)&4095));
+		bgbcc_setu16en(ct+2, en, 0x2600|((i>>12)& 255));
+		bgbcc_setu16en(ct+4, en, 0x2600|((i>> 4)& 255));
+		bgbcc_setu16en(ct+6, en, 0x40F0|((i>> 0)&  15));
 	}else
 	{
 //		bgbcc_setu16en(ct+0, en, 0xE000|(va_strt>>24)&255);

@@ -1701,7 +1701,7 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		lsz=sctx->sec_lsz[i];
 
 		if(strlen(s0)<=8)
-			{ strncpy(ct+0, s0, 8); }
+			{ strncpy((char *)(ct+0), s0, 8); }
 		else
 			{ bgbcc_setu32en(ct+0x04, en, nm); }
 		bgbcc_setu32en(ct+0x08, en, lsz);	//mVirtualSize

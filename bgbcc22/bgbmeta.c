@@ -518,7 +518,7 @@ NULL
 int bgbcc_storefile(char *name, void *buf, int sz)
 	{ return(BGBCC_StoreFile(name, buf, sz)); }
 
-char *bgbcc_loadfile(char *name, int *rsz)
+void *bgbcc_loadfile(char *name, int *rsz)
 {
 	FILE *fd;
 	char *t;
@@ -564,9 +564,9 @@ char *bgbcc_loadfile(char *name, int *rsz)
 	return(buf);
 }
 
-char *bgbcc_loadfile_txt(char *name, int *rsz)
+void *bgbcc_loadfile_txt(char *name, int *rsz)
 {
-	char *buf, *buf1, *s, *se, *t;
+	byte *buf, *buf1, *s, *se, *t;
 	int i, en, sz, sz1;
 
 	buf=bgbcc_loadfile(name, &sz);
@@ -592,7 +592,7 @@ char *bgbcc_loadfile_txt(char *name, int *rsz)
 			while(s<se)
 			{
 				i=BGBCC_GET_U16EN(s, en);
-				BGBCP_EmitChar(&t, i);
+				BGBCP_EmitChar((char **)(&t), i);
 				s+=2;
 			}
 			
@@ -621,7 +621,7 @@ char *bgbcc_loadfile_txt(char *name, int *rsz)
 	return(buf);
 }
 
-char *bgbcc_loadfile2(char *name, int *rsz)
+void *bgbcc_loadfile2(char *name, int *rsz)
 {
 	char tb[256];
 	void *buf;

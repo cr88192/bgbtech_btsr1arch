@@ -295,7 +295,8 @@ int BGBCC_JX2C_EmitStoreBRegOfsReg(
 	if(BGBCC_JX2C_EmitRegIsDpReg(ctx, sctx, dreg))
 	{
 //		dreg2=BGBCC_SH_REG_FR0+(dreg&7)*2;
-		dreg2=BGBCC_SH_REG_FR0+(dreg&15);
+//		dreg2=BGBCC_SH_REG_FR0+(dreg&15);
+		dreg2=BGBCC_SH_REG_FR0+(dreg&31);
 	
 //		BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, BGBCC_SH_REG_R0);
 //		BGBCC_JX2_EmitLoadRegImm(sctx, BGBCC_SH_NMID_MOV,
@@ -1471,7 +1472,8 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 		if(BGBCC_JX2C_EmitRegIsDpReg(ctx, sctx, dreg))
 		{
 //			dreg2=BGBCC_SH_REG_FR0+((dreg&7)*2);
-			dreg2=BGBCC_SH_REG_FR0+(dreg&15);
+//			dreg2=BGBCC_SH_REG_FR0+(dreg&15);
+			dreg2=BGBCC_SH_REG_FR0+(dreg&31);
 
 			f=BGBCC_CCXL_GetRegImmLongValue(ctx, sreg);
 			j=(*(u64 *)(&f))>>32;
@@ -1510,7 +1512,8 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 		if(BGBCC_JX2C_EmitRegIsDpReg(ctx, sctx, dreg))
 		{
 //			dreg2=BGBCC_SH_REG_FR0+((dreg&7)*2);
-			dreg2=BGBCC_SH_REG_DR0+(dreg&15);
+//			dreg2=BGBCC_SH_REG_DR0+(dreg&15);
+			dreg2=BGBCC_SH_REG_DR0+(dreg&31);
 
 			f=BGBCC_CCXL_GetRegImmDoubleValue(ctx, sreg);
 			j=(*(u64 *)(&f))>>32;
@@ -3516,7 +3519,8 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 //			k+=sctx->is_addr64?2:1;
 		}
 
-		for(i=15; i>0; i--)
+//		for(i=15; i>0; i--)
+		for(i=31; i>0; i--)
 		{
 			if(sctx->freg_vsave&(1<<i))
 			{
@@ -3800,7 +3804,8 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 //			k+=sctx->is_addr64?2:1;
 		}
 
-		for(i=15; i>0; i--)
+//		for(i=15; i>0; i--)
+		for(i=31; i>0; i--)
 		{
 			if(sctx->freg_vsave&(1<<i))
 			{
@@ -4644,7 +4649,8 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 //	BGBCC_JX2_EmitWord(sctx, 0x0848);	//Debug, Clear Token
 
 #if 1
-	for(i=0; i<16; i++)
+//	for(i=0; i<16; i++)
+	for(i=0; i<32; i++)
 	{
 		if(sctx->freg_save&(1<<i))
 		{
@@ -4763,7 +4769,8 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 		if(!(sctx->is_leaf&1))
 	{
 
-		BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_POP, BGBCC_SH_REG_PC);
+//		BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_POP, BGBCC_SH_REG_PC);
+		BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_RET);
 
 #if 0
 //		BGBCC_JX2_EmitOpLdIncRegReg(sctx, BGBCC_SH_NMID_LDSL,

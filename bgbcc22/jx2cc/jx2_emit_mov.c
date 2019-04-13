@@ -619,7 +619,8 @@ int BGBCC_JX2_TryEmitOpRegStDecReg(BGBCC_JX2_Context *ctx,
 	{
 		BGBCC_JX2DA_EmitOpRegStDecReg(ctx, nmid, rm, rn);
 	
-		BGBCC_JX2_EmitOpCheckRepack(ctx, &opw1, &opw2);
+//		BGBCC_JX2_EmitOpCheckRepack(ctx, &opw1, &opw2);
+		BGBCC_JX2_EmitOpCheckRepack4(ctx, &opw1, &opw2, &opw3, &opw4);
 		BGBCC_JX2_EmitPadForOpWord(ctx, opw1);
 		BGBCC_JX2_EmitWord(ctx, opw1);
 		if(opw2>=0)
@@ -820,7 +821,8 @@ int BGBCC_JX2_TryEmitOpLdIncRegReg(BGBCC_JX2_Context *ctx,
 	{
 		BGBCC_JX2DA_EmitOpLdIncRegReg(ctx, nmid, rm, rn);
 	
-		BGBCC_JX2_EmitOpCheckRepack(ctx, &opw1, &opw2);
+//		BGBCC_JX2_EmitOpCheckRepack(ctx, &opw1, &opw2);
+		BGBCC_JX2_EmitOpCheckRepack4(ctx, &opw1, &opw2, &opw3, &opw4);
 		BGBCC_JX2_EmitPadForOpWord(ctx, opw1);
 		BGBCC_JX2_EmitWord(ctx, opw1);
 		if(opw2>=0)
@@ -1370,7 +1372,8 @@ int BGBCC_JX2_TryEmitOpRegStRegDisp(
 			BGBCC_JX2_EmitLoadDrImm(ctx, disp/odr);
 		}
 
-		BGBCC_JX2_EmitOpCheckRepack(ctx, &opw1, &opw2);
+//		BGBCC_JX2_EmitOpCheckRepack(ctx, &opw1, &opw2);
+		BGBCC_JX2_EmitOpCheckRepack3(ctx, &opw1, &opw2, &opw3);
 		BGBCC_JX2_EmitPadForOpWord(ctx, opw1);
 		BGBCC_JX2_EmitWord(ctx, opw1);
 		if(opw2>=0)
@@ -2031,7 +2034,8 @@ int BGBCC_JX2_TryEmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,
 			BGBCC_JX2_EmitLoadDrImm(ctx, disp/odr);
 		}
 
-		BGBCC_JX2_EmitOpCheckRepack(ctx, &opw1, &opw2);
+//		BGBCC_JX2_EmitOpCheckRepack(ctx, &opw1, &opw2);
+		BGBCC_JX2_EmitOpCheckRepack3(ctx, &opw1, &opw2, &opw3);
 		BGBCC_JX2_EmitPadForOpWord(ctx, opw1);
 		BGBCC_JX2_EmitWord(ctx, opw1);
 		if(opw2>=0)
@@ -2322,7 +2326,8 @@ int BGBCC_JX2_TryEmitOpRegStReg2(
 	{
 		BGBCC_JX2DA_EmitOpRegStReg2(ctx, nmid, rm, ro, rn);
 
-		BGBCC_JX2_EmitOpCheckRepack(ctx, &opw1, &opw2);
+//		BGBCC_JX2_EmitOpCheckRepack(ctx, &opw1, &opw2);
+		BGBCC_JX2_EmitOpCheckRepack3(ctx, &opw1, &opw2, &opw3);
 		BGBCC_JX2_EmitPadForOpWord(ctx, opw1);
 		BGBCC_JX2_EmitWord(ctx, opw1);
 		if(opw2>=0)
@@ -2774,7 +2779,8 @@ int BGBCC_JX2_TryEmitOpLdReg2Reg(
 	{
 		BGBCC_JX2DA_EmitOpLdReg2Reg(ctx, nmid, rm, ro, rn);
 
-		BGBCC_JX2_EmitOpCheckRepack(ctx, &opw1, &opw2);
+//		BGBCC_JX2_EmitOpCheckRepack(ctx, &opw1, &opw2);
+		BGBCC_JX2_EmitOpCheckRepack3(ctx, &opw1, &opw2, &opw3);
 		BGBCC_JX2_EmitPadForOpWord(ctx, opw1);
 		BGBCC_JX2_EmitWord(ctx, opw1);
 		if(opw2>=0)
@@ -2887,7 +2893,8 @@ int BGBCC_JX2_TryEmitOpRegStReg2Disp(
 			BGBCC_JX2_EmitLoadDrImm(ctx, disp/odr);
 		}
 
-		BGBCC_JX2_EmitOpCheckRepack(ctx, &opw1, &opw2);
+//		BGBCC_JX2_EmitOpCheckRepack(ctx, &opw1, &opw2);
+		BGBCC_JX2_EmitOpCheckRepack3(ctx, &opw1, &opw2, &opw3);
 		BGBCC_JX2_EmitPadForOpWord(ctx, opw1);
 		BGBCC_JX2_EmitWord(ctx, opw1);
 		if(opw2>=0)
@@ -2981,7 +2988,8 @@ int BGBCC_JX2_TryEmitOpLdReg2DispReg(
 			BGBCC_JX2_EmitLoadDrImm(ctx, disp/odr);
 		}
 
-		BGBCC_JX2_EmitOpCheckRepack(ctx, &opw1, &opw2);
+//		BGBCC_JX2_EmitOpCheckRepack(ctx, &opw1, &opw2);
+		BGBCC_JX2_EmitOpCheckRepack3(ctx, &opw1, &opw2, &opw3);
 		BGBCC_JX2_EmitPadForOpWord(ctx, opw1);
 		BGBCC_JX2_EmitWord(ctx, opw1);
 		if(opw2>=0)

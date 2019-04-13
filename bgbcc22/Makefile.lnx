@@ -19,7 +19,7 @@ BIN = .bin
 MACHTYPE=$(shell ./getmachine.sh)
 
 CFLAGS=-Iinclude -I../include -g -pg -DMACHTYPE="\"$(MACHTYPE)\""
-DLL_CFLAGS=$(CFLAGS) -DBGBCC_DLL
+DLL_CFLAGS=$(CFLAGS) -DBGBCC_DLL -lm -lpthread
 CFLAGS_META=-DBGBCC_BGBMETA $(DLL_CFLAGS)
 LDFLAGS=-g -pg -L.. -lbgbgc -lbgbdy -lbgbasm -lbgbsxil -lzpack -lm \
 	-Wl,-rpath,"$$ORIGIN"

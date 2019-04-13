@@ -71,7 +71,9 @@ SRCS=\
 	bsrcc/bsr_emit_mov.c \
 	bsrcc/bsr_emit_opc.c \
 	bsrcc/bsr_emit_sec.c \
+	bsrcc/bsr_emit_queue.c \
 	bsrcc/bsr_fltrom.c \
+	bsrcc/bsr_fpstub.c \
 	bsrcc/bsr_frame.c \
 	bsrcc/bsr_ldix.c \
 	bsrcc/bsr_lparith.c \

@@ -1599,7 +1599,7 @@ int BGBCC_BSRA_ParseOpcode(BGBCC_BSR_Context *ctx, char **rcs)
 int BGBCC_BSRA_ParseBuffer(BGBCC_BSR_Context *ctx, char **rcs)
 {
 	char tb[256];
-	byte *cs, *t;
+	char *cs, *t;
 	int i;
 
 	BGBCC_BSRA_Init();

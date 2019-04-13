@@ -1834,7 +1834,7 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 int BGBCC_JX2A_ParseBuffer(BGBCC_JX2_Context *ctx, char **rcs)
 {
 	char tb[256];
-	byte *cs, *t;
+	char *cs, *t;
 	int i;
 
 	BGBCC_JX2A_Init();

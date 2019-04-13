@@ -23,7 +23,7 @@ int BGBCC_JX2DA_EmitPuts(BGBCC_JX2_Context *ctx, char *str)
 		ctx->asm_pos[ctx->sec]=ctx->asm_buf[ctx->sec]+bpos;
 	}
 	
-	strcpy(ctx->asm_pos[ctx->sec], str);
+	strcpy((char *)(ctx->asm_pos[ctx->sec]), str);
 	ctx->asm_pos[ctx->sec]+=len;
 	return(0);
 }

@@ -304,7 +304,7 @@ int BGBCC_BSR_EmitString(BGBCC_BSR_Context *ctx, char *str)
 {
 	byte *s;
 	
-	s=str;
+	s=(byte *)str;
 	while(*s)
 		BGBCC_BSR_EmitByte(ctx, *s++);
 	BGBCC_BSR_EmitByte(ctx, *s++);

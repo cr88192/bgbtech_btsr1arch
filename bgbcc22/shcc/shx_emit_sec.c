@@ -328,7 +328,7 @@ int BGBCC_SHX_EmitString(BGBCC_SHX_Context *ctx, char *str)
 {
 	byte *s;
 	
-	s=str;
+	s=(byte *)str;
 	while(*s)
 		BGBCC_SHX_EmitByte(ctx, *s++);
 	BGBCC_SHX_EmitByte(ctx, *s++);

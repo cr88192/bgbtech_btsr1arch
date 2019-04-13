@@ -63,7 +63,7 @@ char *id_wsuf()
 
 void prx_def(char *buf)
 {
-	char tb[256], tbn[256], tty[256];
+	char tb[1024], tbn[1024], tty[1024];
 	char *s, *t, *t1, *sa;
 	int ind;
 
@@ -127,8 +127,8 @@ int main(int argc, char *argv[])
 
 	buf=malloc(16384);
 	buf2=malloc(16384);
-	buf3=malloc(256);
-	buf4=malloc(256);
+	buf3=malloc(1024);
+	buf4=malloc(1024);
 
 	doc=0; pds=0; amod=0; prx=0;
 	api=NULL;
@@ -201,6 +201,8 @@ int main(int argc, char *argv[])
 		l=0;
 		while(!feof(fd))
 		{
+			fflush(stdout);
+		
 			memset(buf, 0, 256);
 			fgets(buf, 255, fd);
 			l++;

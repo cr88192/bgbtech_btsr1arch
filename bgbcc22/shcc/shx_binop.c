@@ -1595,13 +1595,13 @@ int BGBCC_SHXC_EmitReturnVReg(
 			BGBCC_SHXC_EmitLoadVRegReg(ctx, sctx, sreg, BGBCC_SH_REG_RQ0);
 		else
 			BGBCC_SHXC_EmitLoadVRegReg(ctx, sctx, sreg, BGBCC_SH_REG_R0);
-	}else if((rcls==BGBCC_SH_REGCLS_GR2))
+	}else if(rcls==BGBCC_SH_REGCLS_GR2)
 	{
 		BGBCC_SHXC_EmitLoadVRegReg(ctx, sctx, sreg, BGBCC_SH_REG_LR0);
-	}else if((rcls==BGBCC_SH_REGCLS_FR))
+	}else if(rcls==BGBCC_SH_REGCLS_FR)
 	{
 		BGBCC_SHXC_EmitLoadVRegReg(ctx, sctx, sreg, BGBCC_SH_REG_FR0);
-	}else if((rcls==BGBCC_SH_REGCLS_FR2))
+	}else if(rcls==BGBCC_SH_REGCLS_FR2)
 	{
 		BGBCC_SHXC_EmitLoadVRegReg(ctx, sctx, sreg, BGBCC_SH_REG_DR0);
 	}else if(rcls==BGBCC_SH_REGCLS_VO_GR)

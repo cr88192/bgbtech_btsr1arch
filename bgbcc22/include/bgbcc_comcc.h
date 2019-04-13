@@ -158,6 +158,7 @@ byte use_egpr;		//enable use of extended GPRs
 byte maxreg_gpr;	//current number of GPR register-slots
 byte maxreg_gpr_lf;	//current number of GPR register-slots (leaf)
 
+byte use_efpr;		//enable use of extended FPRs
 byte maxreg_fpr;	//current number of GPR register-slots
 byte maxreg_fpr_lf;	//current number of GPR register-slots (leaf)
 
@@ -303,6 +304,10 @@ const byte *jcachereg;
 const byte *qcachereg;
 const byte *pcachereg;
 
+const byte *fcachereg;
+const byte *dcachereg;
+
+
 byte reg_pszx[32];		//register sign/zero extension
 
 ccxl_register regalc_map[32];
@@ -312,9 +317,9 @@ u32 regalc_save;		//register has been saved and may hold a value
 u32 regalc_live;		//register is currently holding a value
 u32 regalc_dirty;
 
-ccxl_register fregalc_map[16];
-byte fregalc_ltcnt[16];	//lifetime count (who to evict)
-byte fregalc_utcnt[16];	//current use count (0=unused)
+ccxl_register fregalc_map[32];
+byte fregalc_ltcnt[32];	//lifetime count (who to evict)
+byte fregalc_utcnt[32];	//current use count (0=unused)
 u16 fregalc_save;		//register has been saved and may hold a value
 u16 fregalc_live;		//register is currently holding a value
 u16 fregalc_dirty;

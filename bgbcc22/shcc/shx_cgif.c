@@ -1678,7 +1678,7 @@ ccxl_status BGBCC_SHXC_BuildGlobal_EmitLitAsType(
 	}
 
 	if((bty==CCXL_TY_I) || (bty==CCXL_TY_UI) ||
-		((bty==CCXL_TY_NL) || (bty==CCXL_TY_UNL) && !sctx->is_addr64))
+		(((bty==CCXL_TY_NL) || (bty==CCXL_TY_UNL)) && !sctx->is_addr64))
 	{
 		BGBCC_SHX_EmitBAlign(sctx, 4);
 
@@ -1694,7 +1694,7 @@ ccxl_status BGBCC_SHXC_BuildGlobal_EmitLitAsType(
 	}
 
 	if((bty==CCXL_TY_L) || (bty==CCXL_TY_UL) ||
-		((bty==CCXL_TY_NL) || (bty==CCXL_TY_UNL) && sctx->is_addr64))
+		(((bty==CCXL_TY_NL) || (bty==CCXL_TY_UNL)) && sctx->is_addr64))
 	{
 		if(sctx->is_addr64)
 			BGBCC_SHX_EmitBAlign(sctx, 8);
@@ -2243,7 +2243,8 @@ ccxl_status BGBCC_SHXC_ApplyImageRelocs(
 
 			if((ctl<=imgbase) || (ctl>(imgbase+0x1000000)))
 				__debugbreak();
-			if(		(sctx->lbl_ofs[j]<0) ||
+			if(
+//					(sctx->lbl_ofs[j]<0) ||
 					(sctx->lbl_ofs[j] > sctx->sec_lsz[sctx->lbl_sec[j]]))
 				__debugbreak();
 		}

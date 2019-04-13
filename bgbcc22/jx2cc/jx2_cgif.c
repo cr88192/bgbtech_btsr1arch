@@ -1446,6 +1446,7 @@ ccxl_status BGBCC_JX2C_BuildFunction(BGBCC_TransState *ctx,
 	sctx->dfl_dq=0;
 
 	sctx->use_egpr=0;
+	sctx->use_efpr=0;
 
 	otrov=sctx->lbltrov;
 	sctx->reg_vsave=0;
@@ -1883,7 +1884,7 @@ ccxl_status BGBCC_JX2C_BuildGlobal_EmitLitAsType(
 	}
 
 	if((bty==CCXL_TY_I) || (bty==CCXL_TY_UI) ||
-		((bty==CCXL_TY_NL) || (bty==CCXL_TY_UNL) && !sctx->is_addr64))
+		(((bty==CCXL_TY_NL) || (bty==CCXL_TY_UNL)) && !sctx->is_addr64))
 	{
 		BGBCC_JX2_EmitBAlign(sctx, 4);
 
@@ -1908,7 +1909,7 @@ ccxl_status BGBCC_JX2C_BuildGlobal_EmitLitAsType(
 	}
 
 	if((bty==CCXL_TY_L) || (bty==CCXL_TY_UL) ||
-		((bty==CCXL_TY_NL) || (bty==CCXL_TY_UNL) && sctx->is_addr64))
+		(((bty==CCXL_TY_NL) || (bty==CCXL_TY_UNL)) && sctx->is_addr64))
 	{
 		if(sctx->is_addr64)
 			BGBCC_JX2_EmitBAlign(sctx, 8);
@@ -2975,7 +2976,8 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 
 			if((ctl<=imgbase) || (ctl>(imgbase+0x1000000)))
 				__debugbreak();
-			if(		(sctx->lbl_ofs[j]<0) ||
+			if(
+//					(sctx->lbl_ofs[j]<0) ||
 					(sctx->lbl_ofs[j] > sctx->sec_lsz[sctx->lbl_sec[j]]))
 				__debugbreak();
 		}
