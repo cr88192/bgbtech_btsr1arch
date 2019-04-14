@@ -27,5 +27,7 @@ DLL_LDFLAGS=-g -pg -L.. -lbgbgc -lbgbdy -lbgbasm -lbgbsxil -lzpack -lm -fPIC \
 	-Wl,-rpath,"$$ORIGIN"
 LDFLAGS_META=
 
+INST_BIN=$(PREFIX)/usr/bin
+
 include Makefile.inc
 

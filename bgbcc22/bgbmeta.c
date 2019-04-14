@@ -1173,12 +1173,12 @@ int BGBCC_LoadConfig(char *name)
 int BGBCC_InitEnv(int argc, char **argv, char **env)
 {
 	char *ta[16];
-	char buf[256];
+	char buf[256], tb[256];
 	static int init=0;
 	int inc_ok;
 	int i, j, k, m, endian;
 	char *s, *t;
-	char *mach_name, *gcc_ver, *home, *base, *cfg;
+	char *mach_name, *gcc_ver, *home, *base, *cfg, *prefix;
 //#ifdef linux
 //	struct utsname utsbuf;
 //#endif
@@ -1207,6 +1207,7 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 
 	home=NULL;
 	base=NULL;
+	prefix=NULL;
 	bgbcc_gshash=0;
 	bgbcc_dumpast=0;
 	bgbcc_optmode=BGBCC_OPT_DEFAULT;
@@ -1439,6 +1440,14 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 			home=s;
 		}
 #endif
+
+#if 1
+		if(!strnicmp(env[i], "PREFIX=", strlen("PREFIX=")))
+		{
+			s=env[i]+strlen("PREFIX=");
+			prefix=s;
+		}
+#endif
 	}
 
 #ifdef _WIN32
@@ -1461,11 +1470,27 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 	}
 
 	printf("BGBCC_InitEnv: Buf %s\n", buf);
-	printf("BGBCC_InitEnv: Base %s\n", base);
 
 #ifdef linux
 	if(!home)home="~";
+	
+	if(!base)
+	{
+		if(prefix)
+		{
+			sprintf(tb, "%s/bin", prefix);
+			base=bgbcc_strdup(tb);
+		}else
+		{
+			base=bgbcc_strdup("/usr/bin");
+		}
+	}
 #endif
+
+	if(home)
+		printf("BGBCC_InitEnv: Home %s\n", home);
+	if(base)
+		printf("BGBCC_InitEnv: Base %s\n", base);
 
 	if(m&64)
 	{
@@ -1500,7 +1525,8 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 
 	if(!mach_name && !bgbcc_arch)
 	{
-		mach_name="SH4";
+//		mach_name="SH4";
+		mach_name="BJX2";
 //		mach_name="BJX1L";
 	}
 
