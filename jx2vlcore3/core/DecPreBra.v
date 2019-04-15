@@ -7,10 +7,12 @@ module DecPreBra(
 	istrWord,
 	istrBraPc,
 	preBraPc,
-	preIsBra);
+	preIsBra,
+	regValLr);
 
 input[63:0]		istrWord;	//Instruction Word
 input[31:0]		istrBraPc;	//Branch Base PC
+input[31:0]		regValLr;	//Link Register
 
 output[31:0]	preBraPc;
 output			preIsBra;
@@ -29,6 +31,7 @@ reg[31:0]	tDisp20;
 
 reg			tIsBra8;
 reg			tIsBra20;
+reg			tIsRtsu;
 
 
 always @*
@@ -51,6 +54,9 @@ begin
 		(istrWord[15:12]==4'hF) &&
 		(istrWord[11: 8]==4'h0) &&
 		(istrWord[31:29]==3'b110);
+	
+	tIsRtsu			=
+		(istrWord[15:0] == 16'h3012);
 		
 	if(tIsBra8)
 	begin
@@ -60,6 +66,12 @@ begin
 	if(tIsBra20)
 	begin
 		tPreBraPc	= tBraDisp20;
+		tPreBra		= 1;
+	end
+	
+	if(tIsRtsu)
+	begin
+		tPreBraPc	= regValLr;
 		tPreBra		= 1;
 	end
 end

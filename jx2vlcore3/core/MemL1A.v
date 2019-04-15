@@ -128,6 +128,8 @@ begin
 
 	if((tIfNzOpm && !tLatchDc) || tLatchIc)
 	begin
+//		$display("L1$, Latch I$, Opm=%X", ifMemOpm);
+	
 		ifMemOK		= memOK;
 		tMemAddr	= ifMemAddr;
 		tMemOpm		= ifMemOpm;
@@ -137,7 +139,9 @@ begin
 	else
 		if((tDfNzOpm && !tLatchIc) || tLatchDc)
 	begin
-		ifMemOK		= memOK;
+//		$display("L1$, Latch D$, Opm=%X", dfMemOpm);
+
+		dfMemOK		= memOK;
 		tMemAddr	= dfMemAddr;
 		tMemOpm		= dfMemOpm;
 		tMemDataOut	= dfMemDataOut;

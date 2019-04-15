@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
 	fclose(fdod);
 #endif
 	
-#if 1
+#if 0
 	n=(sz+31)/32;
 	
 	fdoa=fopen("bootrom_2a.txt", "wt");

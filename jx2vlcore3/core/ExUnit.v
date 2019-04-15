@@ -39,7 +39,14 @@ input[1:0]		memOK;
 reg				exHold1;
 reg				exHold2;
 
+
 /* IF */
+
+wire[63:0]		gprOutDlr;
+wire[63:0]		gprOutDhr;
+
+wire[63:0]		crOutMmcr;
+wire[63:0]		crOutKrr;
 
 reg[31:0]		ifValPc;
 wire[63:0]		ifIstrWord;	//source instruction word
@@ -73,6 +80,10 @@ MemL1A		memL1(
 
 /* ID1 */
 
+wire[31:0]		gprValGbr;
+wire[31:0]		gprValLr;
+
+
 reg[31:0]		id1ValPc;
 reg[63:0]		id1IstrWord;	//source instruction word
 
@@ -96,7 +107,8 @@ wire			id1PreBra;
 
 DecPreBra	preBra(
 	id1IstrWord,	id1ValPc,
-	id1PreBraPc,	id1PreBra);
+	id1PreBraPc,	id1PreBra,
+	gprValLr);
 	
 
 /* ID2 */
@@ -126,14 +138,14 @@ reg [32:0]		gprValImm;
 // reg [31:0]		gprValGbr;
 // reg [31:0]		gprValLr;
 
-wire[31:0]		gprValGbr;
-wire[31:0]		gprValLr;
+// wire[31:0]		gprValGbr;
+// wire[31:0]		gprValLr;
 assign		gprValGbr = crOutGbr;
 assign		gprValLr = crOutLr;
 
-wire[63:0]		gprOutDlr;
+// wire[63:0]		gprOutDlr;
 reg [63:0]		gprInDlr;
-wire[63:0]		gprOutDhr;
+// wire[63:0]		gprOutDhr;
 reg [63:0]		gprInDhr;
 wire[63:0]		gprOutElr;
 reg [63:0]		gprInElr;
@@ -177,6 +189,8 @@ RegGPR regGpr(
 
 /* ID2, FPR */
 
+wire[63:0]		crOutSr;
+
 wire[5:0]		gprIdFRs;
 wire[5:0]		gprIdFRt;
 assign	gprIdFRs = (id2IdUCmd[5:0]==JX2_UCMD_MOV_RM) ? gprIdRm :  gprIdRs;
@@ -208,13 +222,13 @@ wire[31:0]	crOutPc;
 reg [31:0]	crInPc;
 wire[31:0]	crOutLr;
 reg [31:0]	crInLr;
-wire[63:0]	crOutSr;
+// wire[63:0]	crOutSr;
 reg [63:0]	crInSr;
 wire[31:0]	crOutVbr;
 wire[31:0]	crOutGbr;
 wire[31:0]	crOutTbr;
-wire[63:0]	crOutMmcr;
-wire[63:0]	crOutKrr;
+// wire[63:0]	crOutMmcr;
+// wire[63:0]	crOutKrr;
 
 RegCR regCr(
 	clock,	reset,	exHold2,
@@ -240,6 +254,19 @@ RegCR regCr(
 
 
 /* EX1 */	
+
+
+wire[63:0]		ex1MulVal;
+
+wire[5:0]		ex1RegIdFRn;
+wire[63:0]		ex1RegValFRn;
+wire[63:0]		ex1FpuValGRn;
+wire[1:0]		ex1FpuOK;
+wire			ex1FpuSrT;
+
+reg[63:0]		ex2MemDataIn;
+reg[1:0]		ex2MemDataOK;
+
 
 reg[7:0]		ex1OpUCmd;
 reg[7:0]		ex1OpUIxt;
@@ -311,19 +338,10 @@ ExEX1	ex1(
 	ex1MemDataOut
 	);
 
-
-wire[63:0]	ex1MulVal;
-
 ExMul	ex1Mul(
 	clock,			reset,
 	ex1RegValRs[31:0],	ex1RegValRt[31:0],
 	ex1MulVal,		ex1OpUIxt);
-
-wire[5:0]	ex1RegIdFRn;
-wire[63:0]	ex1RegValFRn;
-wire[63:0]	ex1FpuValGRn;
-wire[1:0]	ex1FpuOK;
-wire		ex1FpuSrT;
 
 FpuExOp	ex1Fpu(
 	clock,			reset,
@@ -387,8 +405,8 @@ reg[31:0]		ex2RegInLr;
 wire[63:0]		ex2RegOutSr;
 reg[63:0]		ex2RegInSr;
 
-reg[63:0]		ex2MemDataIn;
-reg[1:0]		ex2MemDataOK;
+// reg[63:0]		ex2MemDataIn;
+// reg[1:0]		ex2MemDataOK;
 
 ExEX2	ex2(
 	clock,			reset,

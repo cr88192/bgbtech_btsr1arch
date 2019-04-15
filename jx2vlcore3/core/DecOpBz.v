@@ -32,19 +32,19 @@ output[32:0]	idImm;
 output[7:0]		idUCmd;
 output[7:0]		idUIxt;
 
-assign	idRegN = opRegN;
-assign	idRegM = opRegM;
-assign	idRegO = opRegO;
-assign	idImm = opImm;
-assign	idUCmd = opUCmd;
-assign	idUIxt = opUIxt;
-
 reg[5:0]		opRegN;
 reg[5:0]		opRegM;
 reg[5:0]		opRegO;
 reg[32:0]		opImm;
 reg[7:0]		opUCmd;
 reg[7:0]		opUIxt;
+
+assign	idRegN = opRegN;
+assign	idRegM = opRegM;
+assign	idRegO = opRegO;
+assign	idImm = opImm;
+assign	idUCmd = opUCmd;
+assign	idUIxt = opUIxt;
 
 reg[5:0]	opRegO_Dfl;
 reg[5:0]	opRegN_Dfl;
@@ -487,6 +487,12 @@ begin
 			opNmid		= JX2_UCMD_OP_IXT;
 			opFmid		= JX2_FMID_Z;
 			opUCmdIx	= JX2_UCIX_IXT_RTE;
+		end
+
+		16'h3012: begin
+			opNmid		= JX2_UCMD_JMP;
+			opFmid		= JX2_FMID_Z;
+			opRegM_Fix	= JX2_GR_LR;
 		end
 
 		16'h31z0: begin
