@@ -438,7 +438,7 @@ unsigned char	cheat_commercial_noclip_seq[] =
 }; 
 
 
-
+#if 1
 unsigned char	cheat_powerup_seq[7][10] =
 {
     { 0xb2, 0x26, 0x62, 0xa6, 0x32, 0xf6, 0x36, 0x26, 0x6e, 0xff }, 	// beholdv
@@ -449,6 +449,46 @@ unsigned char	cheat_powerup_seq[7][10] =
     { 0xb2, 0x26, 0x62, 0xa6, 0x32, 0xf6, 0x36, 0x26, 0x36, 0xff }, 	// beholdl
     { 0xb2, 0x26, 0x62, 0xa6, 0x32, 0xf6, 0x36, 0x26, 0xff }		// behold
 };
+
+cheatseq_t	cheat_powerup[7] =
+{
+    { cheat_powerup_seq[0], 0 },
+    { cheat_powerup_seq[1], 0 },
+    { cheat_powerup_seq[2], 0 },
+    { cheat_powerup_seq[3], 0 },
+    { cheat_powerup_seq[4], 0 },
+    { cheat_powerup_seq[5], 0 },
+    { cheat_powerup_seq[6], 0 }
+};
+#endif
+
+#if 0
+unsigned char	cheat_powerup_seq_0[] =
+    { 0xb2, 0x26, 0x62, 0xa6, 0x32, 0xf6, 0x36, 0x26, 0x6e, 0xff };	// beholdv
+unsigned char	cheat_powerup_seq_1[] =
+    { 0xb2, 0x26, 0x62, 0xa6, 0x32, 0xf6, 0x36, 0x26, 0xea, 0xff };	// beholds
+unsigned char	cheat_powerup_seq_2[] =
+    { 0xb2, 0x26, 0x62, 0xa6, 0x32, 0xf6, 0x36, 0x26, 0xb2, 0xff };	// beholdi
+unsigned char	cheat_powerup_seq_3[] =
+    { 0xb2, 0x26, 0x62, 0xa6, 0x32, 0xf6, 0x36, 0x26, 0x6a, 0xff };	// beholdr
+unsigned char	cheat_powerup_seq_4[] =
+    { 0xb2, 0x26, 0x62, 0xa6, 0x32, 0xf6, 0x36, 0x26, 0xa2, 0xff };	// beholda
+unsigned char	cheat_powerup_seq_5[] =
+    { 0xb2, 0x26, 0x62, 0xa6, 0x32, 0xf6, 0x36, 0x26, 0x36, 0xff };	// beholdl
+unsigned char	cheat_powerup_seq_6[] =
+    { 0xb2, 0x26, 0x62, 0xa6, 0x32, 0xf6, 0x36, 0x26, 0xff };		// behold
+
+cheatseq_t	cheat_powerup[7] =
+{
+    { cheat_powerup_seq_0, 0 },
+    { cheat_powerup_seq_1, 0 },
+    { cheat_powerup_seq_2, 0 },
+    { cheat_powerup_seq_3, 0 },
+    { cheat_powerup_seq_4, 0 },
+    { cheat_powerup_seq_5, 0 },
+    { cheat_powerup_seq_6, 0 }
+};
+#endif
 
 
 unsigned char	cheat_clev_seq[] =
@@ -471,17 +511,6 @@ cheatseq_t	cheat_ammo = { cheat_ammo_seq, 0 };
 cheatseq_t	cheat_ammonokey = { cheat_ammonokey_seq, 0 };
 cheatseq_t	cheat_noclip = { cheat_noclip_seq, 0 };
 cheatseq_t	cheat_commercial_noclip = { cheat_commercial_noclip_seq, 0 };
-
-cheatseq_t	cheat_powerup[7] =
-{
-    { cheat_powerup_seq[0], 0 },
-    { cheat_powerup_seq[1], 0 },
-    { cheat_powerup_seq[2], 0 },
-    { cheat_powerup_seq[3], 0 },
-    { cheat_powerup_seq[4], 0 },
-    { cheat_powerup_seq[5], 0 },
-    { cheat_powerup_seq[6], 0 }
-};
 
 cheatseq_t	cheat_choppers = { cheat_choppers_seq, 0 };
 cheatseq_t	cheat_clev = { cheat_clev_seq, 0 };

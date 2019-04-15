@@ -464,6 +464,19 @@ void Sys_CheckSanity(void)
 	if(LittleShort(*(int *)(pat_tst0+4))!=(short)0xCDEF)
 		__debugbreak();
 
+	if(!rec)	tk_puts("Sanity C1\n");
+
+	i=*(int *)(pat_tst0+4);
+	if((i<<16)!=0xCDEF0000)
+		__debugbreak();
+	if((i>>16)!=0xFFFF89AB)
+		__debugbreak();
+
+	if((((u32)i)<<16)!=0xCDEF0000)
+		__debugbreak();
+	if((((u32)i)>>16)!=0x000089AB)
+		__debugbreak();
+
 	if(!rec)	tk_puts("Sanity D\n");
 
 
@@ -747,6 +760,14 @@ void Sys_CheckSanity(void)
 	sfas.sfc=sf3;
 
 	tk_printf("F16 D sf1=%f sf2=%f sf3=%f\n", sfas.sfa, sfas.sfb, sfas.sfc);
+
+	__bfloat16 bf1, bf2, bf3;
+	bf1=2.0;
+	bf2=3.0;
+	bf3=bf1+bf2;
+	tk_printf("BF16 sizeof=%d\n", sizeof(__bfloat16));
+	tk_printf("BF16 A sf1=%f sf2=%f sf3=%f\n", bf1, bf2, bf3);
+	
 
 #if 1
 	tk_printf("VAR sizeof=%d\n", sizeof(__variant));

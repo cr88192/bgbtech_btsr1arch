@@ -185,7 +185,8 @@ boolean         gamekeydown[NUMKEYS];
 int             turnheld;				// for accelerative turning 
  
 boolean		mousearray[4]; 
-boolean*	mousebuttons = &mousearray[1];		// allow [-1]
+// boolean*	mousebuttons = &mousearray[1];		// allow [-1]
+boolean*	mousebuttons = NULL;
 
 // mouse values are used once 
 int             mousex;
@@ -202,7 +203,8 @@ int		dclicks2;
 int             joyxmove;
 int		joyymove;
 boolean         joyarray[5]; 
-boolean*	joybuttons = &joyarray[1];		// allow [-1] 
+// boolean*	joybuttons = &joyarray[1];		// allow [-1] 
+boolean*	joybuttons = NULL;
  
 int		savegameslot; 
 char		savedescription[32]; 
@@ -254,6 +256,12 @@ void G_BuildTiccmd (ticcmd_t* cmd)
 	
     cmd->consistancy = 
 	consistancy[consoleplayer][maketic%BACKUPTICS]; 
+
+	if(!mousebuttons)
+	{
+		mousebuttons = &mousearray[1];
+		joybuttons = &joyarray[1];
+	}
 
  
     strafe = gamekeydown[key_strafe] || mousebuttons[mousebstrafe] 

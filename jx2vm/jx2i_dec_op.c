@@ -789,6 +789,17 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 					break;
 #endif
 
+				case 0x0:
+					op->nmid=BJX2_NMID_NOP;
+					op->Run=BJX2_Op_NOP_None;
+					break;
+				case 0x1:
+					op->nmid=BJX2_NMID_RTS;
+					op->Run=BJX2_Op_RTS_None;
+					op->fl|=BJX2_OPFL_CTRLF;
+					break;
+
+
 //				case 0x7:
 //					op->rn=BJX2_REG_SP;
 //					op->rm=BJX2_REG_SP;

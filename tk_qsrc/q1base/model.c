@@ -226,7 +226,7 @@ model_t *Mod_FindName (char *name)
 	{
 		if (!strcmp (mod->name, name) )
 		{
-			tk_printf("Mod_FindName: Found %s\n", name);
+//			tk_printf("Mod_FindName: Found %s\n", name);
 			break;
 		}
 		if (mod->needload == NL_UNREFERENCED)
@@ -374,11 +374,11 @@ model_t *Mod_ForName (char *name, qboolean crash)
 
 	mod = Mod_FindName (name);
 
-	tk_printf("Mod_ForName A name=%s mod=%p\n", name, mod);
+//	tk_printf("Mod_ForName A name=%s mod=%p\n", name, mod);
 
 	mod = Mod_LoadModel (mod, crash);
 
-	tk_printf("Mod_ForName B name=%s mod=%p\n", name, mod);
+//	tk_printf("Mod_ForName B name=%s mod=%p\n", name, mod);
 
 	return mod;
 }
@@ -1114,7 +1114,7 @@ void Mod_LoadLeafs (lump_t *l)
 		
 		if(p>=0)
 		{
-			tk_printf("Leaf %d Contents %d\n", i, p);
+//			tk_printf("Leaf %d Contents %d\n", i, p);
 			p=-1;
 		}
 		
@@ -1216,27 +1216,27 @@ void Mod_MakeHull0 (void)
 //	hull = &loadmodel->hulls[0];	
 	hull = loadmodel->hulls+0;
 
-	tk_printf("Mod_MakeHull0: Mod=%p Hulls=%p\n",
-		loadmodel, loadmodel->hulls);
+//	tk_printf("Mod_MakeHull0: Mod=%p Hulls=%p\n",
+//		loadmodel, loadmodel->hulls);
 	
 	in = loadmodel->nodes;
 	count = loadmodel->numnodes;
 //	out = Hunk_AllocName ( count*sizeof(*out), loadname);	
 	out = Hunk_AllocName ( count*sizeof(dclipnode_t), loadname);	
 
-	tk_printf("Mod_MakeHull0: A Nodes=%p\n", loadmodel->nodes);
+//	tk_printf("Mod_MakeHull0: A Nodes=%p\n", loadmodel->nodes);
 
-	tk_printf("Mod_MakeHull0: Mod=%p Hull=%p\n", loadmodel, hull);
+//	tk_printf("Mod_MakeHull0: Mod=%p Hull=%p\n", loadmodel, hull);
 
 	plane = loadmodel->planes;
 
-	tk_printf("Mod_MakeHull0: A-1 Nodes=%p\n", loadmodel->nodes);
+//	tk_printf("Mod_MakeHull0: A-1 Nodes=%p\n", loadmodel->nodes);
 
 	hull->clipnodes = out;
 	hull->firstclipnode = 0;
 	hull->lastclipnode = count-1;
 
-	tk_printf("Mod_MakeHull0: A-2 Nodes=%p\n", loadmodel->nodes);
+//	tk_printf("Mod_MakeHull0: A-2 Nodes=%p\n", loadmodel->nodes);
 
 	hull->planes = plane;
 //	*(int *)-1=-1;
@@ -1260,7 +1260,7 @@ void Mod_MakeHull0 (void)
 		in=in+1;
 	}
 
-	tk_printf("Mod_MakeHull0: C Nodes=%p\n", loadmodel->nodes);
+//	tk_printf("Mod_MakeHull0: C Nodes=%p\n", loadmodel->nodes);
 }
 
 /*
@@ -1429,7 +1429,7 @@ void Mod_LoadBrushModel (model_t *mod, void *buffer)
 
 // load into heap
 	
-	tk_printf("Mod_LoadBrushModel: A nodes=%p\n", mod->nodes);
+//	tk_printf("Mod_LoadBrushModel: A nodes=%p\n", mod->nodes);
 	
 	Mod_LoadVertexes (&header->lumps[LUMP_VERTEXES]);
 	Mod_LoadEdges (&header->lumps[LUMP_EDGES]);
@@ -1444,21 +1444,21 @@ void Mod_LoadBrushModel (model_t *mod, void *buffer)
 	Mod_LoadLeafs (&header->lumps[LUMP_LEAFS]);
 	Mod_LoadNodes (&header->lumps[LUMP_NODES]);
 
-	tk_printf("Mod_LoadBrushModel: A1 nodes=%p\n", mod->nodes);
+//	tk_printf("Mod_LoadBrushModel: A1 nodes=%p\n", mod->nodes);
 
 	Mod_LoadClipnodes (&header->lumps[LUMP_CLIPNODES]);
 	Mod_LoadEntities (&header->lumps[LUMP_ENTITIES]);
 	Mod_LoadSubmodels (&header->lumps[LUMP_MODELS]);
 
-	tk_printf("Mod_LoadBrushModel: B nodes=%p surfs=%p\n",
-		mod->nodes, mod->surfaces);
+//	tk_printf("Mod_LoadBrushModel: B nodes=%p surfs=%p\n",
+//		mod->nodes, mod->surfaces);
 
 	Mod_MakeHull0 ();
 	
 	mod->numframes = 2;		// regular and alternate animation
 	mod->flags = 0;
 	
-	tk_printf("Mod_LoadBrushModel: C %p nodes=%p\n", mod, mod->nodes);
+//	tk_printf("Mod_LoadBrushModel: C %p nodes=%p\n", mod, mod->nodes);
 
 //
 // set up the submodels (FIXME: this is confusing)
@@ -1529,7 +1529,7 @@ void Mod_LoadBrushModel (model_t *mod, void *buffer)
 //		tk_printf("Mod_LoadBrushModel: C-5\n");
 	}
 
-	tk_printf("Mod_LoadBrushModel: D %p nodes=%p\n", mod, mod->nodes);
+//	tk_printf("Mod_LoadBrushModel: D %p nodes=%p\n", mod, mod->nodes);
 }
 
 /*

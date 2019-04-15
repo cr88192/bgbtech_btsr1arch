@@ -678,11 +678,15 @@ void Key_Event (int key, qboolean down)
 //
 	if (!down)
 	{
+//		tk_printf("Key_Event Up: %d\n", key);
+
 		kb = keybindings[key];
 		if (kb && kb[0] == '+')
 		{
 			sprintf (cmd, "-%s %i\n", kb+1, key);
 			Cbuf_AddText (cmd);
+
+//			tk_printf("Key_Event Up1: %s\n", cmd);
 		}
 		if (keyshift[key] != key)
 		{
@@ -691,6 +695,8 @@ void Key_Event (int key, qboolean down)
 			{
 				sprintf (cmd, "-%s %i\n", kb+1, key);
 				Cbuf_AddText (cmd);
+
+//				tk_printf("Key_Event Up2: %s\n", cmd);
 			}
 		}
 		return;

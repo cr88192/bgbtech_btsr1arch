@@ -4,3 +4,9 @@ int fib(int x)
 		return(fib(x-1)+fib(x-2));
 	return(1);
 }
+
+string bs2str=
+"""
+Multi line string.
+Line B.
+""";

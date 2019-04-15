@@ -995,8 +995,18 @@ void D_PolysetDrawSpans16 (spanpackage_t *pspanpackage)
 			if((byte *)(lpdest+lcount)>d_pdest_limit)		return;
 			if((lpz)<d_pz_base)								return;
 			if((lpz+lcount)>d_pz_limit)						return;
-//			if(((byte *)lptex)<d_ptex)	return;
-//			if(((byte *)lptex)>(d_ptex+65536))	return;
+			if(((byte *)lptex)<d_ptex)				return;
+			if(((byte *)lptex)>(d_ptex+65536))		return;
+#endif
+
+#if 0
+			if(
+				((byte *)(lpdest)<d_pdest_base) ||
+				((byte *)(lpdest+lcount)>d_pdest_limit) )
+			{
+				pspanpackage++;
+				continue;
+			}
 #endif
 
 			do
@@ -1172,7 +1182,7 @@ void D_RasterizeAliasPolySmooth (void)
 	d_pz = d_pzbuffer +
 		(ystart * d_zwidth + plefttop[0]);
 
-#if 0
+#if 1
 	d_pdest_base=(byte *)d_viewbuffer;
 	d_pdest_limit=d_pdest_base+
 		(screenwidth*200)*2;
@@ -1190,6 +1200,11 @@ void D_RasterizeAliasPolySmooth (void)
 
 			d_pedgespanpackage->pdest = (byte *)d_pdest16;
 			d_pedgespanpackage->ptex = (byte *)d_ptex16;
+
+			if((byte *)d_pdest16<d_pdest_base)
+				__debugbreak();
+			if((byte *)(d_pdest16+d_aspancount)>d_pdest_limit)
+				__debugbreak();
 
 			if((byte *)d_ptex16<d_ptex_base)
 				__debugbreak();

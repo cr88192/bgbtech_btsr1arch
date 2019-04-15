@@ -9,7 +9,8 @@ extern int   		paintedtime; 	// sample PAIRS
 extern int			endtime;		// sample PAIRS
 
 unsigned char dma_buffer[BUFFER_SIZE];
-unsigned char pend_buffer[BUFFER_SIZE];
+// unsigned char dma_buffer[BUFFER_SIZE*2];
+// unsigned char pend_buffer[BUFFER_SIZE];
 
 
 int Sblkau_SampToPred9(int val)
@@ -376,6 +377,9 @@ qboolean SNDDMA_Init(void)
 	shm->submission_chunk = 1;
 	shm->buffer = (unsigned char *)dma_buffer;
 	
+	if(shm->samples != 8192)
+		__debugbreak();
+	
 	return(1);
 }
 
@@ -394,7 +398,16 @@ int SNDDMA_GetDevDMAPos(void)
 
 int SNDDMA_GetDMAPos(void)
 {
+	int i, j, k;
+	
+//	i = (int)(realtime*shm->speed*shm->channels);
+//	j = i & (shm->samples-1);
+//	shm->samplepos = j;
+//	__debugbreak();
+//	return j;
+
 	shm->samplepos = (int)(realtime*shm->speed*shm->channels) & (shm->samples-1);
+//	tk_printf("SNDDMA_GetDMAPos: %f %d\n", realtime, shm->samplepos);	
 	return shm->samplepos;
 }
 
@@ -501,12 +514,16 @@ void SNDDMA_Submit(void)
 			snd_tsblk[l*2+0]=buf[k+l];
 			snd_tsblk[l*2+1]=buf[k+l];
 
+//			snd_tsblk[(l*2+0)&255]=buf[k+l];
+//			snd_tsblk[(l*2+1)&255]=buf[k+l];
+
 //			snd_tsblk[l*2+0]=(((l>>3)^i)&1)?1024:(-1024);
 //			snd_tsblk[l*2+1]=(((l>>3)^i)&1)?1024:(-1024);
 		}
 		
 		Sblkau_EncodeBlock(snd_tsblk,
 			snd_dmabuf+(j<<4), &snd_dmapred);
+
 //		Sblkau_EncodeBlock(buf+(k<<1),
 //			snd_dmabuf+(j<<4), &snd_dmapred);
 	}

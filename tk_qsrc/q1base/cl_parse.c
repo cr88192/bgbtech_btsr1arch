@@ -520,6 +520,8 @@ void CL_ParseClientdata (int bits)
 {
 	int		i, j;
 	
+//	Con_Printf("CL_ParseClientdata: %d\n", bits);
+	
 	if (bits & SU_VIEWHEIGHT)
 		cl.viewheight = MSG_ReadChar ();
 	else
@@ -773,6 +775,7 @@ void CL_ParseServerMessage (void)
 		switch (cmd)
 		{
 		default:
+			__debugbreak();
 			Host_Error ("CL_ParseServerMessage: Illegible server message\n");
 			break;
 			

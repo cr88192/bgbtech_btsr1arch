@@ -719,7 +719,7 @@ byte	checkpvs[MAX_MAP_LEAFS/8];
 
 int PF_newcheckclient (int check)
 {
-	int		i;
+	int		i, j;
 	byte	*pvs;
 	edict_t	*ent;
 	mleaf_t	*leaf;
@@ -762,7 +762,19 @@ int PF_newcheckclient (int check)
 	VectorAdd (ent->v.origin, ent->v.view_ofs, org);
 	leaf = Mod_PointInLeaf (org, sv.worldmodel);
 	pvs = Mod_LeafPVS (leaf, sv.worldmodel);
-	memcpy (checkpvs, pvs, (sv.worldmodel->numleafs+7)>>3 );
+//	memcpy (checkpvs, pvs, (sv.worldmodel->numleafs+7)>>3 );
+
+	j=(sv.worldmodel->numleafs+7)>>3;
+//	j=(int)j;
+//	if((i<0) && (i>1024))
+//		__debugbreak();
+//	i=MAX_MAP_LEAFS/8;
+//	j=MAX_MAP_LEAFS/8;
+
+//	__debugbreak();
+
+//	tk_printf("PF_newcheckclient: %d\n", i);
+	memcpy (checkpvs, pvs, j );
 
 	return i;
 }

@@ -66,13 +66,24 @@ void KeyDown (kbutton_t *b)
 	else
 		k = -1;		// typed manually at the console for continuous down
 
+//	tk_printf("KeyDown A %p %d\n", b, k);
+
 	if (k == b->down[0] || k == b->down[1])
+	{
+//		tk_printf("KeyDown Repeat %p\n", b);
 		return;		// repeating key
+	}
 	
 	if (!b->down[0])
+	{
+//		tk_printf("KeyDown Set0 %p\n", b);
 		b->down[0] = k;
+	}
 	else if (!b->down[1])
+	{
+//		tk_printf("KeyDown Set1 %p\n", b);
 		b->down[1] = k;
+	}
 	else
 	{
 		Con_Printf ("Three keys down for a button!\n");
@@ -80,7 +91,10 @@ void KeyDown (kbutton_t *b)
 	}
 	
 	if (b->state & 1)
+	{
+//		tk_printf("KeyDown Still %p\n", b);
 		return;		// still down
+	}
 	b->state |= 1 + 2;	// down + impulse down
 	
 //	tk_printf("KeyDown %p\n", b);
@@ -90,6 +104,8 @@ void KeyUp (kbutton_t *b)
 {
 	int		k;
 	char	*c;
+
+//	tk_printf("KeyUp A %p\n", b);
 	
 	c = Cmd_Argv(1);
 	if (c[0])
@@ -106,16 +122,34 @@ void KeyUp (kbutton_t *b)
 	else if (b->down[1] == k)
 		b->down[1] = 0;
 	else
+	{
+//		tk_printf("KeyUp MemuPass %p\n", b);
+
+//		b->down[0] = b->down[1] = 0;
+//		b->state = 4;	// impulse up
+
 		return;		// key up without coresponding down (menu pass through)
+	}
+
 	if (b->down[0] || b->down[1])
+	{
+//		tk_printf("KeyUp Still Down %p %d %d\n", b, b->down[0], b->down[1]);
+
+//		b->down[0] = b->down[1] = 0;
+//		b->state = 4;	// impulse up
+
 		return;		// some other key is still holding it down
+	}
 
 	if (!(b->state & 1))
+	{
+//		tk_printf("KeyUp Still Up %p\n", b);
 		return;		// still up (this should not happen)
+	}
 	b->state &= ~1;		// now up
 	b->state |= 4; 		// impulse up
 
-//	tk_printf("KeyUp %p\n", b);
+//	tk_printf("KeyUp B %p\n", b);
 }
 
 void IN_KLookDown (void) {KeyDown(&in_klook);}

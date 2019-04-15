@@ -210,15 +210,20 @@ void R_DrawColumn (void)
 void R_DrawColumn (void) 
 { 
 	int				count; 
-	byte*			source;
-	dt_scrpix*		dest;
-	lighttable_t*	colormap;
+	register byte*			source;
+	register dt_scrpix*		dest;
+	register lighttable_t*	colormap;
 	
-	unsigned		frac;
-	unsigned		fracstep;
-	unsigned		fracstep2;
-	unsigned		fracstep3;
-	unsigned		fracstep4;	 
+//	register unsigned		frac;
+//	register unsigned		fracstep;
+//	unsigned		fracstep2;
+//	unsigned		fracstep3;
+//	unsigned		fracstep4;	 
+
+//	register int	frac;
+//	register int	fracstep;
+	register unsigned	frac;
+	register unsigned	fracstep;
  
 	count = dc_yh - dc_yl + 1; 
 
@@ -260,25 +265,38 @@ void R_DrawColumn (void)
 	fracstep = dc_iscale<<9; 
 	frac = (dc_texturemid + (dc_yl-centery)*dc_iscale)<<9; 
  
-	fracstep2 = fracstep+fracstep;
-	fracstep3 = fracstep2+fracstep;
-	fracstep4 = fracstep3+fracstep;
+//	fracstep2 = fracstep+fracstep;
+//	fracstep3 = fracstep2+fracstep;
+//	fracstep4 = fracstep3+fracstep;
 	
 	while (count >= 8) 
-	{ 
-		dest[0] = colormap[source[frac>>25]]; 
-		dest[SCREENWIDTH] = colormap[source[(frac+fracstep)>>25]]; 
+	{
+#if 0
+		dest[0            ] = colormap[source[(frac          )>>25]]; 
+		dest[SCREENWIDTH  ] = colormap[source[(frac+fracstep )>>25]]; 
 		dest[SCREENWIDTH*2] = colormap[source[(frac+fracstep2)>>25]]; 
 		dest[SCREENWIDTH*3] = colormap[source[(frac+fracstep3)>>25]];
-		
 		frac += fracstep4; 
 
-		dest[SCREENWIDTH*4] = colormap[source[frac>>25]]; 
-		dest[SCREENWIDTH*5] = colormap[source[(frac+fracstep)>>25]]; 
+		dest[SCREENWIDTH*4] = colormap[source[(frac          )>>25]]; 
+		dest[SCREENWIDTH*5] = colormap[source[(frac+fracstep )>>25]]; 
 		dest[SCREENWIDTH*6] = colormap[source[(frac+fracstep2)>>25]]; 
 		dest[SCREENWIDTH*7] = colormap[source[(frac+fracstep3)>>25]]; 
-
 		frac += fracstep4; 
+#endif
+
+#if 1
+		dest[0            ] = colormap[source[frac>>25]]; frac += fracstep; 
+		dest[SCREENWIDTH  ] = colormap[source[frac>>25]]; frac += fracstep; 
+		dest[SCREENWIDTH*2] = colormap[source[frac>>25]]; frac += fracstep; 
+		dest[SCREENWIDTH*3] = colormap[source[frac>>25]]; frac += fracstep; 
+
+		dest[SCREENWIDTH*4] = colormap[source[frac>>25]]; frac += fracstep; 
+		dest[SCREENWIDTH*5] = colormap[source[frac>>25]]; frac += fracstep; 
+		dest[SCREENWIDTH*6] = colormap[source[frac>>25]]; frac += fracstep; 
+		dest[SCREENWIDTH*7] = colormap[source[frac>>25]]; frac += fracstep; 
+#endif
+
 		dest += SCREENWIDTH*8; 
 		count -= 8;
 	} 
@@ -829,17 +847,72 @@ void R_DrawSpan (void)
 } 
 #endif
 
+#if 0
+//BGB: Loop Unrolled 2
+void R_DrawSpan (void) 
+{ 
+	fixed_t		xfrac;
+	fixed_t		yfrac; 
+	dt_scrpix	*dest; 
+	int			count;
+	int			spot; 
+	 
+	xfrac = ds_xfrac; 
+	yfrac = ds_yfrac; 
+	 
+	dest = ylookup[ds_y] + columnofs[ds_x1];
+//	count = ds_x2 - ds_x1; 
+	count = ds_x2 - ds_x1 + 1; 
+
+	while(count>=4)
+	{
+		spot = ((yfrac>>10)&4032) + ((xfrac>>16)&63);
+		dest[0] = ds_colormap[ds_source[spot]];
+		xfrac += ds_xstep;		yfrac += ds_ystep;
+
+		spot = ((yfrac>>10)&4032) + ((xfrac>>16)&63);
+		dest[1] = ds_colormap[ds_source[spot]];
+		xfrac += ds_xstep;		yfrac += ds_ystep;
+
+		spot = ((yfrac>>10)&4032) + ((xfrac>>16)&63);
+		dest[2] = ds_colormap[ds_source[spot]];
+		xfrac += ds_xstep;		yfrac += ds_ystep;
+
+		spot = ((yfrac>>10)&4032) + ((xfrac>>16)&63);
+		dest[3] = ds_colormap[ds_source[spot]];
+		xfrac += ds_xstep;		yfrac += ds_ystep;
+
+		count -= 4;
+		dest += 4;
+	}
+
+	while(count>0)
+	{
+		// Current texture index in u,v.
+		spot = ((yfrac>>10)&4032) + ((xfrac>>16)&63);
+
+		// Lookup pixel from flat texture tile,
+		//  re-index using light/colormap.
+		*dest++ = ds_colormap[ds_source[spot]];
+
+		// Next step in u,v.
+		xfrac += ds_xstep; 
+		yfrac += ds_ystep;
+		count--;
+	}
+} 
+#endif
+
 
 // UNUSED.
 // Loop unrolled by 4.
 #if 1
 void R_DrawSpan (void) 
 { 
-	unsigned	position, step;
-
-	byte			*source;
-	lighttable_t	*colormap;
-	dt_scrpix		*dest;
+	register unsigned	position, step;
+	register byte			*source;
+	register lighttable_t	*colormap;
+	register dt_scrpix		*dest;
 
 	unsigned	count;
 	unsigned	spot; 

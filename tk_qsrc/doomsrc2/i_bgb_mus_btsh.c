@@ -174,8 +174,8 @@ int SMus_FindFreeVoice(int fl)
 	if(fl&1)
 	{
 //		for(i=0; i<6; i++)
-		for(i=0; i<5; i++)
-//		for(i=0; i<8; i++)
+//		for(i=0; i<5; i++)
+		for(i=0; i<8; i++)
 		{
 			if(!smus_vnflg[i] && !smus_vnflg[8+i])
 			{
@@ -193,8 +193,8 @@ int SMus_FindFreeVoice(int fl)
 	}
 
 //	for(i=0; i<6; i++)
-	for(i=0; i<5; i++)
-//	for(i=0; i<8; i++)
+//	for(i=0; i<5; i++)
+	for(i=0; i<8; i++)
 	{
 		if(!smus_vnflg[i])
 		{
@@ -211,8 +211,8 @@ int SMus_FindFreeVoice(int fl)
 #endif
 
 //	for(i=8; i<14; i++)
-//	for(i=8; i<16; i++)
-	for(i=8; i<13; i++)
+	for(i=8; i<16; i++)
+//	for(i=8; i<13; i++)
 	{
 		if(!smus_vnflg[i])
 		{
