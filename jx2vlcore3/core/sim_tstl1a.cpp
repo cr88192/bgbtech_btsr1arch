@@ -90,8 +90,8 @@ void MemUpdateForBus()
 		top->memOK=0;
 		
 		isRom	= (addr>=0x00000000) && (addr<=0x00007FFF);
-//		isSRam	= (addr>=0x0000C000) && (addr<=0x0000DFFF);
-		isSRam	= (addr>=0x0000C000) && (addr<=0x0000E010);
+		isSRam	= (addr>=0x0000C000) && (addr<=0x0000DFFF);
+//		isSRam	= (addr>=0x0000C000) && (addr<=0x0000E010);
 		isDRam	= (addr>=0x01000000) && (addr<=0x0FFFFFFF);
 
 		top->memDataIn[0]=0;
@@ -128,7 +128,9 @@ void MemUpdateForBus()
 				top->memOK=1;
 			}
 
-#if 0
+			top->memOK=1;
+
+#if 1
 			printf("%08X LD  %08X %08X %08X %08X\n",
 				addr,
 				top->memDataIn[0], top->memDataIn[1],
@@ -155,6 +157,8 @@ void MemUpdateForBus()
 				drambuf[((addr>>2)+3)&0x3FFFFF]=top->memDataOut[3];
 				top->memOK=1;
 			}
+
+			top->memOK=1;
 
 			printf("%08X ST  %08X %08X %08X %08X\n",
 				addr,
@@ -358,6 +362,15 @@ int main(int argc, char **argv, char **env)
 	delete top;
 	exit(0);
 #endif
+
+	for(i=0; i<4; i++)
+	{
+		top->dcInOpm=0x00;
+		top->clock = (main_time>>0)&1;
+		main_time++;
+		MemUpdateForBus();
+		top->eval();
+	}
 
 
 #if 1

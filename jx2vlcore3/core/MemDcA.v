@@ -33,8 +33,11 @@ input [  1:0]	memOK;			//memory PC OK
 reg[63:0]		tRegOutVal;	//output PC value
 reg[ 1:0]		tRegOutOK;	//set if we have a valid value.
 
-assign	regOutVal		= tRegOutVal;
-assign	regOutOK		= tRegOutOK;
+reg[63:0]		tRegOutVal2;	//output PC value
+reg[ 1:0]		tRegOutOK2;	//set if we have a valid value.
+
+assign	regOutVal		= tRegOutVal2;
+assign	regOutOK		= tRegOutOK2;
 
 reg[31:0]		tMemAddr;		//memory PC address
 reg[ 4:0]		tMemOpm;		//memory PC output-enable
@@ -70,6 +73,11 @@ reg[ 5:0]		tReqIxA;
 reg[ 5:0]		tReqIxB;
 reg				tReqIsMmio;
 
+reg[ 5:0]		tLstIxA;
+reg[ 5:0]		tLstIxB;
+reg[ 5:0]		tNx2IxA;
+reg[ 5:0]		tNx2IxB;
+
 reg[31:0]		tInAddr;
 reg[ 2:0]		tInByteIx;
 reg[ 4:0]		tInOpm;
@@ -80,6 +88,7 @@ reg				tMissB;
 reg				tMiss;
 reg				tHold;
 reg				tReqOpmNz;
+reg				tLstHold;
 
 reg[127:0]		tStBlkDataA;
 reg[127:0]		tStBlkDataB;
@@ -108,6 +117,20 @@ reg[127:0]		tBlkData;
 reg[127:0]		tBlkDataW;
 reg[ 63:0]		tBlkExData;
 reg[ 63:0]		tBlkInData;
+
+
+reg		tMemLatchA;
+reg		tMemLatchB;
+reg		tMemLatchDnA;
+reg		tMemLatchDnB;
+reg		tMemLatchWbA;
+reg		tMemLatchWbB;
+reg		tMemLatchWdA;
+reg		tMemLatchWdB;
+reg		tMmioLatch;
+reg		tMmioDone;
+
+
 
 always @*
 begin
@@ -219,7 +242,7 @@ begin
 //		tRegOutOK = (tMiss || tDoMiBlk) ? UMEM_OK_HOLD : UMEM_OK_OK;
 
 	if(tReqOpmNz && !tReqIsMmio)
-		tHold = (tMiss || tDoMiBlk);
+		tHold = (tMiss || tDoMiBlk) || (tMemLatchA || tMemLatchB);
 		
 	if(tHold)
 	begin
@@ -253,13 +276,14 @@ begin
 
 		$display("L1D$ Do Write Block A=%X D=%X", tInAddr, tBlkDataW);
 
-`ifdef def_true
 		tStBlkAddrA	= tReqAddrA;
 		tStBlkAddrB	= tReqAddrB;
 		tStBlkFlagA	= { 2'b01, ~tStBlkAddrA[1:0] };
 		tStBlkFlagB	= { 2'b01, ~tStBlkAddrB[1:0] };
 		tStBlkIxA	= tReqIxA;
 		tStBlkIxB	= tReqIxB;
+		tDoStBlkA	= 0;
+		tDoStBlkB	= 0;
 
 		case(tInAddr[4:3])
 			2'b00: begin
@@ -277,45 +301,12 @@ begin
 				tDoStBlkB	= 1;
 			end
 			2'b11: begin
-				tStBlkDataA = { tBlkDataA[127:64], tBlkDataW[127:64] };
 				tStBlkDataB = { tBlkDataW[ 63: 0], tBlkDataB[ 63: 0] };
+				tStBlkDataA = { tBlkDataA[127:64], tBlkDataW[127:64] };
 				tDoStBlkA	= 1;
 				tDoStBlkB	= 1;
 			end
 		endcase
-`endif
-
-`ifndef def_true
-		if(tInAddr[3])
-		begin
-//			tBlkData = { tBlkDataA, tBlkDataB };
-			tStBlkDataA = tBlkDataW[127:64];
-			tStBlkDataB = tBlkDataW[ 63: 0];
-			tStBlkAddrA	= tReqAddrA;
-			tStBlkAddrB	= tReqAddrB;
-			tStBlkFlagA	= { 2'b01, ~tStBlkAddrA[1:0] };
-			tStBlkFlagB	= { 2'b01, ~tStBlkAddrB[1:0] };
-
-			tStBlkIxA	= tReqIxA;
-			tStBlkIxB	= tReqIxB;
-			tDoStBlkA	= 1;
-			tDoStBlkB	= 1;
-		end else begin
-//			tBlkData = { tBlkDataB, tBlkDataA };
-			tStBlkDataA = tBlkDataW[ 63: 0];
-			tStBlkDataB = tBlkDataW[127:64];
-			tStBlkAddrA	= tReqAddrA;
-			tStBlkAddrB	= tReqAddrB;
-			tStBlkFlagA	= { 2'b01, ~tStBlkAddrA[1:0] };
-			tStBlkFlagB	= { 2'b01, ~tStBlkAddrB[1:0] };
-
-			tStBlkIxA	= tReqIxA;
-			tStBlkIxB	= tReqIxB;
-			tDoStBlkA	= 1;
-			tDoStBlkB	= 1;
-		end
-`endif
-
 	end
 
 	if(tReqIsMmio)
@@ -334,22 +325,16 @@ begin
 //	tRegOutOK = tReqOpmNz ? (tHold ? UMEM_OK_HOLD : UMEM_OK_OK) : UMEM_OK_READY;
 	tRegOutOK = tHold ? UMEM_OK_HOLD : (tReqOpmNz ? UMEM_OK_OK : UMEM_OK_READY);
 
+	tNx2IxA		= tLstHold ? tReqIxA : tNxtIxA;
+	tNx2IxB		= tLstHold ? tReqIxB : tNxtIxB;
 end
-
-reg		tMemLatchA;
-reg		tMemLatchB;
-reg		tMemLatchDnA;
-reg		tMemLatchDnB;
-reg		tMemLatchWbA;
-reg		tMemLatchWbB;
-reg		tMmioLatch;
-reg		tMmioDone;
-
 
 always @(posedge clock)
 begin
 
 	/* Stage A */
+
+	tLstHold	<= tHold;
 
 //	if(!tMiss)
 	if(!tHold)
@@ -363,19 +348,21 @@ begin
 		tReqIxA		<= tNxtIxA;
 		tReqIxB		<= tNxtIxB;
 		tReqIsMmio	<= tNxtIsMmio;
+//		tLstIxA		<= tNxtIxA;
+//		tLstIxB		<= tNxtIxB;
 	end
 
-	tBlkDataA	<= dcCaMemA [tNxtIxA];
-	tBlkDataB	<= dcCaMemB [tNxtIxB];
-	{ tBlkFlagA, tBlkAddrA }	<= dcCaAddrA[tNxtIxA];
-	{ tBlkFlagB, tBlkAddrB }	<= dcCaAddrB[tNxtIxB];
+	tBlkDataA	<= dcCaMemA [tNx2IxA];
+	tBlkDataB	<= dcCaMemB [tNx2IxB];
+	{ tBlkFlagA, tBlkAddrA }	<= dcCaAddrA[tNx2IxA];
+	{ tBlkFlagB, tBlkAddrB }	<= dcCaAddrB[tNx2IxB];
 
 	if(tDoStBlkA)
 	begin
 		if(tStBlkAddrA[0])
 			$display("L1D$, DoStBlkA: Even/Odd Mismatch");
 
-		$display("L1D$, DoStBlkA, Data=%X", tStBlkDataA);
+		$display("L1D$, DoStBlkA(%X), Data=%X", tStBlkIxA, tStBlkDataA);
 	
 		dcCaMemA [tStBlkIxA]	<= tStBlkDataA;
 		dcCaAddrA[tStBlkIxA]	<= { tStBlkFlagA, tStBlkAddrA };
@@ -387,7 +374,7 @@ begin
 		if(tStBlkAddrA[0])
 			$display("L1D$, DoStBlkA: Even/Odd Mismatch");
 
-		$display("L1D$, DoStBlkB, Data=%X", tStBlkDataB);
+		$display("L1D$, DoStBlkB(%X), Data=%X", tStBlkIxB, tStBlkDataB);
 
 		dcCaMemB [tStBlkIxB]	<= tStBlkDataB;
 		dcCaAddrB[tStBlkIxB]	<= { tStBlkFlagB, tStBlkAddrB };
@@ -397,7 +384,7 @@ begin
 
 	/* Stage B */
 	
-	if(tMiss && (tMissA || tMemLatchA) && !tMemLatchB && !tMmioLatch)
+	if(((tMiss && tMissA) || tMemLatchA) && !tMemLatchB && !tMmioLatch)
 	begin
 
 		$display("L1D$ MissA, Miss=%d Latch=%d OK=%d Dn=%d Wb=%d",
@@ -408,9 +395,12 @@ begin
 			tMemOpm	<= UMEM_OPM_READY;
 			if(memOK==UMEM_OK_READY)
 			begin
+				$display("L1D$: MissA Done");
+
 				tMemLatchA		<= 0;
 				tMemLatchDnA	<= 0;
 				tMemLatchWbA	<= 0;
+				tMemLatchWdA	<= 0;
 			end
 		end
 		else
@@ -418,15 +408,17 @@ begin
 		begin
 			tMemOpm			<= UMEM_OPM_READY;
 			
-			if(!tBlkDirtyA || tMemLatchWbA)
+			if(!tBlkDirtyA || tMemLatchWdA)
 			begin
+				$display("L1D$: MissA Dn memDataIn=%X", memDataIn);
+			
 				tMemLatchDnA	<= 1;
 				tMiBlkDataA		<= memDataIn;
 				tMiBlkAddrA		<= tReqAddrA;
 				tMiBlkIxA		<= tReqIxA;
 				tDoMiBlkA		<= 1;
 			end
-			else
+			else if(tBlkDirtyA)
 			begin
 				tMemLatchWbA	<= 1;
 			end
@@ -450,6 +442,7 @@ begin
 				tMemOpm			<= UMEM_OPM_WR_TILE;
 				tMemAddr		<= { tBlkAddrA, 4'b0 };
 				tMemDataOut		<= tBlkDataA;
+				tMemLatchWdA	<= 0;
 			end
 			else
 			begin
@@ -459,6 +452,7 @@ begin
 				tMemOpm			<= UMEM_OPM_RD_TILE;
 				tMemAddr		<= { tReqAddrA, 4'b0 };
 				tMemDataOut		<= UV128_XX;
+				tMemLatchWdA	<= tMemLatchWbA;
 			end
 		end
 		else
@@ -468,7 +462,7 @@ begin
 
 	end
 	else
-		if(tMiss && (tMissB || tMemLatchB) && !tMemLatchA && !tMmioLatch)
+		if(((tMiss && tMissB) || tMemLatchB) && !tMemLatchA && !tMmioLatch)
 	begin
 
 		$display("L1D$ MissB, Miss=%d Latch=%d", tMissB, tMemLatchB);
@@ -478,9 +472,12 @@ begin
 			tMemOpm	<= UMEM_OPM_READY;
 			if(memOK==UMEM_OK_READY)
 			begin
+				$display("L1D$: MissB Done");
+
 				tMemLatchB		<= 0;
 				tMemLatchDnB	<= 0;
 				tMemLatchWbB	<= 0;
+				tMemLatchWdB	<= 0;
 			end
 		end
 		else
@@ -488,15 +485,17 @@ begin
 		begin
 			tMemOpm			<= UMEM_OPM_READY;
 
-			if(!tBlkDirtyB || tMemLatchWbB)
+			if(!tBlkDirtyB || tMemLatchWdB)
 			begin
+				$display("L1D$: MissB Dn memDataIn=%X", memDataIn);
+
 				tMemLatchDnB	<= 1;
 				tMiBlkDataB		<= memDataIn;
 				tMiBlkAddrB		<= tReqAddrB;
 				tMiBlkIxB		<= tReqIxB;
 				tDoMiBlkB		<= 1;
 			end
-			else
+			else if(tBlkDirtyB)
 			begin
 				tMemLatchWbB	<= 1;
 			end
@@ -520,15 +519,17 @@ begin
 				tMemOpm			<= UMEM_OPM_WR_TILE;
 				tMemAddr		<= { tBlkAddrB, 4'b0 };
 				tMemDataOut		<= tBlkDataB;
+				tMemLatchWdB	<= 0;
 			end
 			else
 			begin
-				$display("L1D$ MissA ReadyLd");
+				$display("L1D$ MissB ReadyLd");
 
 				tMemLatchB		<= 1;
 				tMemOpm			<= UMEM_OPM_RD_TILE;
 				tMemAddr		<= { tReqAddrB, 4'b0 };
 				tMemDataOut		<= UV128_XX;
+				tMemLatchWdB	<= tMemLatchWbB;
 			end
 		end
 		else
@@ -542,6 +543,15 @@ begin
 			$display("L1D$ Sticky Miss, %d %d", tMissA, tMissB);
 		if(tMemLatchA || tMemLatchB)
 			$display("L1D$ Sticky Latch, %d %d", tMemLatchA, tMemLatchB);
+
+		tMemLatchDnA	<= 0;
+		tMemLatchWbA	<= 0;
+		tMemLatchWdA	<= 0;
+
+		tMemLatchDnB	<= 0;
+		tMemLatchWbB	<= 0;
+		tMemLatchWdB	<= 0;
+
 	end
 	
 	if((tReqIsMmio && !tMemLatchA && !tMemLatchB) || tMmioLatch)
@@ -587,6 +597,9 @@ begin
 	begin
 		tMmioDone	<= 0;
 	end
+
+	tRegOutVal2		<= tRegOutVal;	//output PC value
+	tRegOutOK2		<= tRegOutOK;	//set if we have a valid value.
 	
 end
 

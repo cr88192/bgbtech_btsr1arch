@@ -88,6 +88,8 @@ VL_MODULE(VMemL1A) {
 	VL_SIG8(MemL1A__DOT__memDc__DOT__tReqIxA,5,0);
 	VL_SIG8(MemL1A__DOT__memDc__DOT__tReqIxB,5,0);
 	VL_SIG8(MemL1A__DOT__memDc__DOT__tReqIsMmio,0,0);
+	VL_SIG8(MemL1A__DOT__memDc__DOT__tNx2IxA,5,0);
+	VL_SIG8(MemL1A__DOT__memDc__DOT__tNx2IxB,5,0);
 	VL_SIG8(MemL1A__DOT__memDc__DOT__tInByteIx,2,0);
 	VL_SIG8(MemL1A__DOT__memDc__DOT__tInOpm,4,0);
 	VL_SIG8(MemL1A__DOT__memDc__DOT__tMissA,0,0);
@@ -95,6 +97,7 @@ VL_MODULE(VMemL1A) {
 	VL_SIG8(MemL1A__DOT__memDc__DOT__tMiss,0,0);
 	VL_SIG8(MemL1A__DOT__memDc__DOT__tHold,0,0);
 	VL_SIG8(MemL1A__DOT__memDc__DOT__tReqOpmNz,0,0);
+	VL_SIG8(MemL1A__DOT__memDc__DOT__tLstHold,0,0);
 	VL_SIG8(MemL1A__DOT__memDc__DOT__tStBlkFlagA,3,0);
 	VL_SIG8(MemL1A__DOT__memDc__DOT__tStBlkFlagB,3,0);
 	VL_SIG8(MemL1A__DOT__memDc__DOT__tStBlkIxA,5,0);
@@ -106,14 +109,16 @@ VL_MODULE(VMemL1A) {
 	VL_SIG8(MemL1A__DOT__memDc__DOT__tDoMiBlkA,0,0);
 	VL_SIG8(MemL1A__DOT__memDc__DOT__tDoMiBlkB,0,0);
 	VL_SIG8(MemL1A__DOT__memDc__DOT__tDoMiBlk,0,0);
+    };
+    struct {
 	VL_SIG8(MemL1A__DOT__memDc__DOT__tMemLatchA,0,0);
 	VL_SIG8(MemL1A__DOT__memDc__DOT__tMemLatchB,0,0);
 	VL_SIG8(MemL1A__DOT__memDc__DOT__tMemLatchDnA,0,0);
-    };
-    struct {
 	VL_SIG8(MemL1A__DOT__memDc__DOT__tMemLatchDnB,0,0);
 	VL_SIG8(MemL1A__DOT__memDc__DOT__tMemLatchWbA,0,0);
 	VL_SIG8(MemL1A__DOT__memDc__DOT__tMemLatchWbB,0,0);
+	VL_SIG8(MemL1A__DOT__memDc__DOT__tMemLatchWdA,0,0);
+	VL_SIG8(MemL1A__DOT__memDc__DOT__tMemLatchWdB,0,0);
 	VL_SIG8(MemL1A__DOT__memDc__DOT__tMmioLatch,0,0);
 	VL_SIG8(MemL1A__DOT__memDc__DOT__tMmioDone,0,0);
 	VL_SIG(MemL1A__DOT__tMemAddr,31,0);

@@ -14,6 +14,9 @@ input[7:0]		idUIxt;
 reg[63:0]	tValRn;
 assign 	valRn = tValRn;
 
+reg[31:0]		tValRs;
+reg[31:0]		tValRt;
+
 reg[31:0]	tMul1AA;
 reg[31:0]	tMul1AB;
 reg[31:0]	tMul1BA;
@@ -37,15 +40,17 @@ reg[63:0]	tMul3B;
 wire[63:0]	tMul3C;
 ExCsAdd64F	mulAdd3(tMul3A, tMul3B, tMul3C);
 
+reg[63:0]	tMul4;
+
 always @*
 begin
 `ifndef def_true
-	casez( { idUIxt[0], valRs[31], valRt[31] } )
+	casez( { idUIxt[0], tValRs[31], tValRt[31] } )
 		3'b000: ttMul1C = UV32_00;
-		3'b001: ttMul1C = (-valRs[31:0]);
-		3'b010: ttMul1C = (-valRt[31:0]);
-//		3'b011: ttMul1C = (~valRs[31:0]) + (~valRt[31:0]) + 2;
-//		3'b011: ttMul1C = (-valRs[31:0]) + (-valRt[31:0]);
+		3'b001: ttMul1C = (-tValRs[31:0]);
+		3'b010: ttMul1C = (-tValRt[31:0]);
+//		3'b011: ttMul1C = (~tValRs[31:0]) + (~tValRt[31:0]) + 2;
+//		3'b011: ttMul1C = (-tValRs[31:0]) + (-tValRt[31:0]);
 		3'b011: ttMul1C = 32'h0002;		//HACK
 		3'b1zz: ttMul1C = UV32_00;
 	endcase
@@ -55,8 +60,8 @@ begin
 		ttMul1C = UV32_00;
 	else
 		ttMul1C =
-			(valRt[31]?(-valRs[31:0]):UV32_00) +
-			(valRs[31]?(-valRt[31:0]):UV32_00);
+			(tValRt[31]?(-tValRs[31:0]):UV32_00) +
+			(tValRs[31]?(-tValRt[31:0]):UV32_00);
 
 	tMul3A = { tMul2D, tMul2C, tMul2B, tMul2A  };
 	tMul3B = { tMul2G, tMul2F, tMul2E, UV16_00 };
@@ -64,11 +69,14 @@ end
 
 always @(posedge clock)
 begin
+	tValRs	<= valRs;
+	tValRt	<= valRt;
+
 	/* Stage 1 */
-	tMul1AA <= { UV16_00, valRs[15: 0] } * { UV16_00, valRt[15: 0] };
-	tMul1AB <= { UV16_00, valRs[15: 0] } * { UV16_00, valRt[31:16] };
-	tMul1BA <= { UV16_00, valRs[31:16] } * { UV16_00, valRt[15: 0] };
-	tMul1BB <= { UV16_00, valRs[31:16] } * { UV16_00, valRt[31:16] };
+	tMul1AA <= { UV16_00, tValRs[15: 0] } * { UV16_00, tValRt[15: 0] };
+	tMul1AB <= { UV16_00, tValRs[15: 0] } * { UV16_00, tValRt[31:16] };
+	tMul1BA <= { UV16_00, tValRs[31:16] } * { UV16_00, tValRt[15: 0] };
+	tMul1BB <= { UV16_00, tValRs[31:16] } * { UV16_00, tValRt[31:16] };
 
 //	tMul1AC <= valRt[31] ? (-valRs[31:0]) : UV32_00;
 //	tMul1CA <= valRs[31] ? (-valRt[31:0]) : UV32_00;
@@ -86,6 +94,8 @@ begin
 	
 	/* Stage 3 */
 	tValRn	<= tMul3C;
+//	tMul4	<= tMul3C;
+//	tValRn	<= tMul4;
 end
 
 endmodule

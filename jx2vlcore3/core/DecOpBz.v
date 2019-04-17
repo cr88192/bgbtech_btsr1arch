@@ -650,9 +650,13 @@ begin
 
 
 		16'h33z0: begin
-			opNmid		= JX2_UCMD_ALU3;
+//			opNmid		= JX2_UCMD_ALU3;
+//			opFmid		= JX2_FMID_REG;
+//			opUCmdIx	= JX2_UCIX_ALU_NOR;
+
+			opNmid		= JX2_UCMD_SHLLN;
 			opFmid		= JX2_FMID_REG;
-			opUCmdIx	= JX2_UCIX_ALU_NOR;
+			opUCmdIx	= 6'h13;
 		end
 		16'h33z1: begin
 			opNmid		= JX2_UCMD_ALU3;

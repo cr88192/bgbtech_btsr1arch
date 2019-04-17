@@ -46,6 +46,8 @@ S1, S2, S3 -> V
 
 module ExALU(
 	/* verilator lint_off UNUSED */
+	clock,
+	reset,
 	regValRs,
 	regValRt,
 	idUIxt,
@@ -53,6 +55,9 @@ module ExALU(
 	regOutVal,
 	regOutSrT
 	);
+
+input			clock;
+input			reset;
 
 input[63:0]		regValRs;
 input[63:0]		regValRt;
@@ -62,10 +67,13 @@ input			regInSrT;
 output[63:0]	regOutVal;
 output			regOutSrT;
 
+reg[63:0]	tRegOutVal2;
+reg			tRegOutSrT2;
+assign	regOutVal = tRegOutVal2;
+assign	regOutSrT = tRegOutSrT2;
+
 reg[63:0]	tRegOutVal;
 reg			tRegOutSrT;
-assign	regOutVal = tRegOutVal;
-assign	regOutSrT = tRegOutSrT;
 
 
 reg[16:0]	tAdd1A0;
@@ -269,14 +277,14 @@ begin
 			tResult2T=tSub2ZF || (tSub2SF^tSub2VF);
 		end
 		4'hB: begin		/* NOR */
-			tResult1A={1'b0, ~(regValRs[31: 0] | regValRt[31: 0])};
-			tResult2A={1'b0, ~(regValRs[63:32] | regValRt[63:32]),
-				tResult1A[31:0]};
-			tResult1T=regInSrT;
-			tResult2T=regInSrT;
+//			tResult1A={1'b0, ~(regValRs[31: 0] | regValRt[31: 0])};
+//			tResult2A={1'b0, ~(regValRs[63:32] | regValRt[63:32]),
+//				tResult1A[31:0]};
+//			tResult1T=regInSrT;
+//			tResult2T=regInSrT;
 
-//			tResult1A=UV33_XX;
-//			tResult2A=UV65_XX;
+			tResult1A=UV33_XX;
+			tResult2A=UV65_XX;
 			tResult1T=regInSrT;
 			tResult2T=regInSrT;
 		end
@@ -320,6 +328,12 @@ begin
 			tRegOutVal = { tResult1A[31]?UV32_FF:UV32_00, tResult1A[31:0] };
 		tRegOutSrT = tResult1T;
 	end
+end
+
+always @(posedge clock)
+begin
+	tRegOutVal2		<= tRegOutVal;
+	tRegOutSrT2		<= tRegOutSrT;
 end
 
 endmodule

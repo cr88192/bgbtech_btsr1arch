@@ -25,10 +25,10 @@ module ExEX2(
 
 	regIdRs,		//Source A, ALU / Base
 	regIdRt,		//Source B, ALU / Index
-	regIdRm,		//Source C, MemStore
+	regIdRm,		//Source C, MemStore / Dest
 	regValRs,		//Source A Value
 	regValRt,		//Source B Value
-	regValRm,		//Source C Value
+	regValRm,		//Source C Value / Dest
 
 	regValFRs,		//Source A Value (FPR)
 	regValFRt,		//Source B Value (FPR)
@@ -46,7 +46,8 @@ module ExEX2(
 	
 	regValPc,		//PC Value (Synthesized)
 	regValImm,		//Immediate (Decode)
-	regValMulRes,	//Immediate (Decode)
+	regValAluRes,	//ALU Result
+	regValMulRes,	//Multiplier Result
 	regFpuGRn,		//FPU GPR Result
 	
 	regOutDlr,	regInDlr,
@@ -88,6 +89,8 @@ output[63:0]	regValCn2;		//Destination Value (CR, EX1)
 	
 input[31:0]		regValPc;		//PC Value (Synthesized)
 input[32:0]		regValImm;		//Immediate (Decode)
+
+input[64:0]		regValAluRes;	//Multiplier Result
 input[63:0]		regValMulRes;	//Multiplier Result
 input[63:0]		regFpuGRn;		//FPU GPR Result
 	
@@ -194,9 +197,13 @@ begin
 		end
 
 		JX2_UCMD_ALU3: begin
+			tRegIdRn2		= regIdRm;			//
+			tRegValRn2		= regValAluRes[63:0];		//
+			tRegOutSr[0]	= regValAluRes[64];
 		end
 
 		JX2_UCMD_ALUCMP: begin
+			tRegOutSr[0]	= regValAluRes[64];
 		end
 	
 		JX2_UCMD_BRA: begin
@@ -237,6 +244,8 @@ begin
 	
 	if(tDoMemOp)
 	begin
+		if(tHoldCyc==0)
+			tExHold=1;
 		if(memDataOK[1])
 			tExHold=1;
 

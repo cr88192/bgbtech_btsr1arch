@@ -16,7 +16,7 @@ Holding/Completing a memory access will be the responsibility of EX2.
 `include "CoreDefs.v"
 
 `include "ExAGU.v"
-`include "ExALU.v"
+// `include "ExALU.v"
 `include "ExConv2R.v"
 `include "ExShad32.v"
 `include "ExShad64.v"
@@ -150,9 +150,9 @@ assign	exHold		= tExHold;
 wire[31:0]	tValAgu;
 ExAGU	exAgu(regValRs[31:0], regValRt[31:0], opUIxt, tValAgu);
 
-wire[63:0]	tValAlu;
-wire		tAluSrT;
-ExALU	exAlu(regValRs, regValRt, opUIxt, regInSr[0], tValAlu, tAluSrT);
+// wire[63:0]	tValAlu;
+// wire		tAluSrT;
+// ExALU	exAlu(regValRs, regValRt, opUIxt, regInSr[0], tValAlu, tAluSrT);
 
 wire[63:0]	tValCnv;
 wire		tCnvSrT;
@@ -277,12 +277,13 @@ begin
 		end
 
 		JX2_UCMD_ALU3: begin
-			tRegIdRn1	= regIdRm;
-			tRegValRn1	= tValAlu;
+			tHeldIdRn1	= regIdRm;
+//			tRegIdRn1	= regIdRm;
+//			tRegValRn1	= tValAlu;
 		end
 
 		JX2_UCMD_ALUCMP: begin
-			tRegOutSr[0]	= tAluSrT;
+//			tRegOutSr[0]	= tAluSrT;
 		end
 	
 		JX2_UCMD_CONV_RR: begin

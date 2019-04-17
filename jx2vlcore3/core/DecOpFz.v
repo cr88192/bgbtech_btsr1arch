@@ -367,10 +367,14 @@ begin
 //						opNmid	= JX2_UCMD_ALU_NOT;
 //						opFmid	= JX2_FMID_REGREG;
 
-						opNmid		= JX2_UCMD_ALU3;
-						opFmid		= JX2_FMID_REG;
-						opIty		= JX2_ITY_SW;
-						opUCmdIx	= JX2_UCIX_ALU_NOR;
+//						opNmid		= JX2_UCMD_ALU3;
+//						opFmid		= JX2_FMID_REG;
+//						opIty		= JX2_ITY_SW;
+//						opUCmdIx	= JX2_UCIX_ALU_NOR;
+
+						opNmid		= JX2_UCMD_SHLLN;
+						opFmid		= JX2_FMID_REGREG;
+						opUCmdIx	= 6'h13;
 					end
 					4'h1: begin
 						opNmid		= JX2_UCMD_ALU3;

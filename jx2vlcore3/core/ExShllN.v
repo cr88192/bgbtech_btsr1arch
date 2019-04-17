@@ -51,7 +51,7 @@ begin
 		5'h10: tRegOutVal = { regValRm[31:0], 32'b0 };
 		5'h11: tRegOutVal = { 32'b0, regValRm[63:32] };
 		5'h12: tRegOutVal = { tRegSx[31:0], regValRm[63:32] };
-
+		5'h13: tRegOutVal = ~regValRm;
 		5'h14: tRegOutVal	= { regValRm[62:0], regValRm[63] };
 		5'h15: tRegOutVal = { regValRm[0], regValRm[63:1] };
 

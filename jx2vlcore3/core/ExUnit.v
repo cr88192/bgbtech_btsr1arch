@@ -14,6 +14,7 @@ IF ID1 ID2 EX1 EX2 WB
 
 `include "ExEX1.v"
 `include "ExEX2.v"
+`include "ExALU.v"
 `include "ExMul.v"
 `include "FpuExOp.v"
 `include "DecPreBra.v"
@@ -338,6 +339,15 @@ ExEX1	ex1(
 	ex1MemDataOut
 	);
 
+wire[64:0]	ex1ValAlu;
+// wire		ex1AluSrT;
+ExALU	exAlu(
+	clock,				reset,
+	ex1RegValRs,		ex1RegValRt,
+	ex1OpUIxt,			ex1RegInSr[0],
+//	ex1ValAlu,			ex1AluSrT);
+	ex1ValAlu[63:0],	ex1ValAlu[64]);
+
 ExMul	ex1Mul(
 	clock,			reset,
 	ex1RegValRs[31:0],	ex1RegValRt[31:0],
@@ -390,6 +400,7 @@ wire[63:0]		ex2RegValCn2;		//Destination Value (CR, EX1)
 	
 reg[31:0]		ex2RegValPc;		//PC Value (Synthesized)
 reg[32:0]		ex2RegValImm;		//Immediate (Decode)
+reg[64:0]		ex2RegAluRes;		//Arithmetic Result
 reg[63:0]		ex2RegMulRes;		//Multiplier Result
 // reg[63:0]		ex2RegFpuGRn;		//FPU GPR Result
 
@@ -424,7 +435,8 @@ ExEX2	ex2(
 	ex2RegIdCn2,	ex2RegValCn2,
 	
 	ex2RegValPc,	ex2RegValImm,
-	ex2RegMulRes,	ex1FpuValGRn,
+	ex2RegAluRes,	ex2RegMulRes,
+	ex1FpuValGRn,
 	
 	ex2RegOutDlr,	ex2RegInDlr,
 	ex2RegOutDhr,	ex2RegInDhr,
@@ -470,6 +482,9 @@ begin
 	begin
 		exHold1		= exHold1 | ({1'b1, ex1HldIdCn1} != JX2_CR_ZZR);
 	end
+
+//	exHold1		= 0;
+//	exHold2		= 0;
 
 	tValStepPc		= { 29'b0, ifOutPcStep, 1'b0 };
 	tValNextPc		= crOutPc + tValStepPc;
@@ -531,8 +546,10 @@ begin
 	ex1RegInDhr		= gprOutDhr;
 	ex1RegInSp		= gprOutSp;
 	ex1RegInLr		= crOutLr;
-	ex1RegInSr		= crOutSr;
+//	ex1RegInSr		= crOutSr;
+	ex1RegInSr		= ex2RegOutSr;
 
+	ex2RegAluRes	= ex1ValAlu;
 	ex2RegMulRes	= ex1MulVal;
 //	ex2RegFpuGRn	= ex1FpuValGRn;
 
@@ -557,7 +574,13 @@ end
 always @(posedge clock)
 begin
 
-	if(!exHold1)
+	if(reset)
+	begin
+		ifValPc			<= UV32_00;
+		opBraFlushMask	<= 8'h07;
+	end
+	else
+		if(!exHold1)
 	begin
 		/* IF */
 	
@@ -587,10 +610,10 @@ begin
 
 		/* EX1 */
 
-//		ex1OpUCmd		<= id2OpUCmd;
+//		ex1OpUCmd		<= id2IdUCmd;
 		ex1OpUCmd		<= {
-			opBraFlushMask[0] ? JX2_IXC_NV : ex1OpUCmd[7:6],
-			ex1OpUCmd[5:0] };
+			opBraFlushMask[0] ? JX2_IXC_NV : id2IdUCmd[7:6],
+			id2IdUCmd[5:0] };
 		ex1OpUIxt		<= id2IdUIxt;
 		ex1PreBra		<= id2PreBra;
 
