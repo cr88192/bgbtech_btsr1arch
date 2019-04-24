@@ -70,7 +70,7 @@ Possible Naive Reg Allocator:
 int BJX2_JitLoadFrame(UAX_Context *jctx, int idx, int reg)
 {
 //	if(idx!=(idx&127))
-//		{ __debugbreak(); }
+//		{ JX2_DBGBREAK }
 
 	UAX_AsmInsnRegLdRegDisp(jctx, UAX_OP_MOV,
 		reg, UAX_REG_RSP, BTEJ_X64_FRAMESZ+(idx*8));
@@ -80,7 +80,7 @@ int BJX2_JitLoadFrame(UAX_Context *jctx, int idx, int reg)
 int BJX2_JitStoreFrame(UAX_Context *jctx, int idx, int reg)
 {
 //	if(idx!=(idx&127))
-//		{ __debugbreak(); }
+//		{ JX2_DBGBREAK }
 
 	UAX_AsmInsnStRegDispReg(jctx, UAX_OP_MOV,
 		UAX_REG_RSP, BTEJ_X64_FRAMESZ+(idx*8), reg);
@@ -92,7 +92,7 @@ int BJX2_JitLoadCtxVMReg(UAX_Context *jctx, int idx, int reg)
 	int reg1;
 
 	if(idx!=(idx&127))
-		{ __debugbreak(); }
+		{ JX2_DBGBREAK }
 
 	if(UAX_Asm_RegIsXmmP(reg))
 	{
@@ -111,7 +111,7 @@ int BJX2_JitStoreCtxVMReg(UAX_Context *jctx, int idx, int reg)
 	int reg1;
 
 	if(idx!=(idx&127))
-		{ __debugbreak(); }
+		{ JX2_DBGBREAK }
 
 	if(UAX_Asm_RegIsXmmP(reg))
 	{
@@ -131,7 +131,7 @@ int BJX2_JitLoadReadSyncVMReg(UAX_Context *jctx, int idx)
 	int i, j, k;
 
 	if(idx!=(idx&127))
-		{ __debugbreak(); }
+		{ JX2_DBGBREAK }
 
 	for(i=0; i<UAX_MAX_CACHEVAR; i++)
 		if((jctx->reg_resv&(1<<i)) && (jctx->reg_idx[i]==idx))
@@ -155,7 +155,7 @@ int BJX2_JitLoadWriteSyncVMReg(UAX_Context *jctx, int idx)
 	int i, j, k;
 
 	if(idx!=(idx&127))
-		{ __debugbreak(); }
+		{ JX2_DBGBREAK }
 
 	for(i=0; i<UAX_MAX_CACHEVAR; i++)
 		if((jctx->reg_resv&(1<<i)) && (jctx->reg_idx[i]==idx))
@@ -175,7 +175,7 @@ int BJX2_JitLoadVMReg(UAX_Context *jctx, int idx, int reg)
 	int reg0, reg1;
 
 	if(idx!=(idx&127))
-		{ __debugbreak(); }
+		{ JX2_DBGBREAK }
 
 	reg1=BJX2_JitLoadReadSyncVMReg(jctx, idx);
 	if(reg1!=UAX_REG_Z)
@@ -205,7 +205,7 @@ int BJX2_JitStoreVMReg(UAX_Context *jctx, int idx, int reg)
 	int reg0, reg1;
 
 	if(idx!=(idx&127))
-		{ __debugbreak(); }
+		{ JX2_DBGBREAK }
 
 	reg1=BJX2_JitLoadWriteSyncVMReg(jctx, idx);
 	if(reg1!=UAX_REG_Z)
@@ -235,7 +235,7 @@ int BJX2_JitStoreVMRegImm(UAX_Context *jctx, int idx, s64 val)
 	int reg1;
 
 	if(idx!=(idx&127))
-		{ __debugbreak(); }
+		{ JX2_DBGBREAK }
 
 	reg1=BJX2_JitLoadWriteSyncVMReg(jctx, idx);
 	if(reg1!=UAX_REG_Z)
@@ -274,7 +274,7 @@ int BJX2_JitLoadVMRegZx(UAX_Context *jctx, int idx, int reg)
 	int reg1, reg1b;
 
 	if(idx!=(idx&127))
-		{ __debugbreak(); }
+		{ JX2_DBGBREAK }
 
 	reg1=BJX2_JitLoadReadSyncVMReg(jctx, idx);
 	if(reg1!=UAX_REG_Z)
@@ -294,7 +294,7 @@ int BJX2_JitInsnVMRegReg(UAX_Context *jctx, int op, int idx, int reg)
 	int reg1;
 
 	if(idx!=(idx&127))
-		{ __debugbreak(); }
+		{ JX2_DBGBREAK }
 
 	reg1=BJX2_JitLoadReadSyncVMReg(jctx, idx);
 	if(reg1!=UAX_REG_Z)
@@ -313,7 +313,7 @@ int BJX2_JitInsnVMRegLdReg(UAX_Context *jctx, int op, int idx, int reg)
 	int reg1;
 
 	if(idx!=(idx&127))
-		{ __debugbreak(); }
+		{ JX2_DBGBREAK }
 
 	reg1=BJX2_JitLoadReadSyncVMReg(jctx, idx);
 	if(reg1!=UAX_REG_Z)
@@ -332,7 +332,7 @@ int BJX2_JitInsnVMRegImm(UAX_Context *jctx, int op, int idx, s32 val)
 	int reg1;
 
 	if(idx!=(idx&127))
-		{ __debugbreak(); }
+		{ JX2_DBGBREAK }
 
 	reg1=BJX2_JitLoadReadSyncVMReg(jctx, idx);
 	if(reg1!=UAX_REG_Z)
@@ -361,7 +361,7 @@ int BJX2_JitInsnVMRegLdImm(UAX_Context *jctx, int op, int idx, s32 val)
 	int reg1;
 
 	if(idx!=(idx&127))
-		{ __debugbreak(); }
+		{ JX2_DBGBREAK }
 
 	reg1=BJX2_JitLoadReadSyncVMReg(jctx, idx);
 	if(reg1!=UAX_REG_Z)
@@ -389,7 +389,7 @@ int BJX2_JitInsnVMReg(UAX_Context *jctx, int op, int idx)
 	int reg1;
 
 	if(idx!=(idx&127))
-		{ __debugbreak(); }
+		{ JX2_DBGBREAK }
 
 	reg1=BJX2_JitLoadReadSyncVMReg(jctx, idx);
 	if(reg1!=UAX_REG_Z)
@@ -408,7 +408,7 @@ int BJX2_JitInsnRegVMReg(UAX_Context *jctx, int op, int reg, int idx)
 	int reg1;
 
 	if(idx!=(idx&127))
-		{ __debugbreak(); }
+		{ JX2_DBGBREAK }
 
 	reg1=BJX2_JitLoadReadSyncVMReg(jctx, idx);
 	if(reg1!=UAX_REG_Z)
@@ -427,7 +427,7 @@ int BJX2_JitInsnLdRegVMReg(UAX_Context *jctx, int op, int reg, int idx)
 	int reg1;
 
 	if(idx!=(idx&127))
-		{ __debugbreak(); }
+		{ JX2_DBGBREAK }
 
 	reg1=BJX2_JitLoadReadSyncVMReg(jctx, idx);
 	if(reg1!=UAX_REG_Z)
@@ -484,9 +484,9 @@ int BJX2_JitMovVMRegVMReg(UAX_Context *jctx, int didx, int sidx)
 	int reg1, reg2;
 
 	if(didx!=(didx&127))
-		{ __debugbreak(); }
+		{ JX2_DBGBREAK }
 	if(sidx!=(sidx&127))
-		{ __debugbreak(); }
+		{ JX2_DBGBREAK }
 
 	reg1=BJX2_JitLoadReadSyncVMReg(jctx, sidx);
 	reg2=BJX2_JitLoadWriteSyncVMReg(jctx, didx);
@@ -532,9 +532,9 @@ int BJX2_JitInsnVMRegVMReg(UAX_Context *jctx, int op, int didx, int sidx)
 	int dreg, sreg;
 
 	if(didx!=(didx&127))
-		{ __debugbreak(); }
+		{ JX2_DBGBREAK }
 	if(sidx!=(sidx&127))
-		{ __debugbreak(); }
+		{ JX2_DBGBREAK }
 
 	if(sidx==didx)
 	{
@@ -589,7 +589,7 @@ int BJX2_JitInsnVMRegVMReg(UAX_Context *jctx, int op, int didx, int sidx)
 int BJX2_JitLoadVMFReg(UAX_Context *jctx, int idx, int reg)
 {
 	if(idx!=(idx&127))
-		{ __debugbreak(); }
+		{ JX2_DBGBREAK }
 
 	if(UAX_Asm_RegIsXmmP(reg))
 	{
@@ -606,7 +606,7 @@ int BJX2_JitLoadVMFReg(UAX_Context *jctx, int idx, int reg)
 int BJX2_JitStoreVMFReg(UAX_Context *jctx, int idx, int reg)
 {
 	if(idx!=(idx&127))
-		{ __debugbreak(); }
+		{ JX2_DBGBREAK }
 
 	if(UAX_Asm_RegIsXmmP(reg))
 	{
@@ -624,10 +624,10 @@ int BJX2_JitStoreVMFReg(UAX_Context *jctx, int idx, int reg)
 int BJX2_JitLoadVMDReg(UAX_Context *jctx, int idx, int reg)
 {
 	if(idx!=(idx&127))
-		{ __debugbreak(); }
+		{ JX2_DBGBREAK }
 
 	if(idx&(~15))
-		{ __debugbreak(); }
+		{ JX2_DBGBREAK }
 
 	if(UAX_Asm_RegIsXmmP(reg))
 	{
@@ -656,10 +656,10 @@ int BJX2_JitLoadVMDReg(UAX_Context *jctx, int idx, int reg)
 int BJX2_JitStoreVMDReg(UAX_Context *jctx, int idx, int reg)
 {
 	if(idx!=(idx&127))
-		{ __debugbreak(); }
+		{ JX2_DBGBREAK }
 
 	if(idx&(~15))
-		{ __debugbreak(); }
+		{ JX2_DBGBREAK }
 
 	if(UAX_Asm_RegIsXmmP(reg))
 	{
@@ -1158,6 +1158,7 @@ int BJX2_JitSetupOpTrap(UAX_Context *jctx,
 	UAX_AsmMovRegImm(jctx, UAX_REG_RAX, op->pc);
 	UAX_AsmInsnStRegDispReg(jctx, UAX_OP_MOV,
 		UAX_REG_RCCTX, offsetof(BJX2_Context, trapc), UAX_REG_RAX);
+	return(0);
 }
 
 int BJX2_TryJitOpcode(UAX_Context *jctx,
@@ -1465,7 +1466,7 @@ int BJX2_TryJitTrace(BJX2_Context *cpu, BJX2_Trace *tr)
 		if(trj)
 		{
 			if(tr->addr_jmp != trj->addr)
-				__debugbreak();
+				JX2_DBGBREAK
 		
 //			BJX2_JitLinkTrace(cpu, trj);
 			tr->jmpnext=trj;
@@ -1640,7 +1641,7 @@ int BJX2_TryJitTrace(BJX2_Context *cpu, BJX2_Trace *tr)
 	{
 		printf("BJX2_TryJitTrace: ExHeap Full\n");
 //		cpu->jit_needflush=1;
-		__debugbreak();
+		JX2_DBGBREAK
 		return(-1);
 	}
 	
@@ -1651,7 +1652,7 @@ int BJX2_TryJitTrace(BJX2_Context *cpu, BJX2_Trace *tr)
 //	BJX2_JTraceAddTrace(cpu, tr);	
 	
 	if(!(tr->Run))
-		__debugbreak();
+		JX2_DBGBREAK
 	
 	return(1);
 }
@@ -1663,7 +1664,7 @@ int BJX2_CheckJitTrace(BJX2_Context *ctx,
 		return(0);
 
 	BJX2_TryJitTrace(ctx, tr);
-//	return(0);
+	return(0);
 }
 
 

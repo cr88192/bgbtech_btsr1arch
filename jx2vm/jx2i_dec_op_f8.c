@@ -60,19 +60,19 @@ int BJX2_DecodeOpcode_DecF8(BJX2_Context *ctx,
 }
 
 int BJX2_DecodeOpcode_DecD8(BJX2_Context *ctx,
-	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2, int opw3)
+	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2)
 {
 	BJX2_Opcode *op1;
 	int ret;
 
-	op->fl|=BJX2_OPFL_TRIWORD;
+	op->fl|=BJX2_OPFL_TWOWORD;
 	op->opn=opw1;
 	op->opn2=opw2;
-	op->opn3=opw3;
+//	op->opn3=opw3;
 	
 	op1=BJX2_ContextAllocOpcode(ctx);
 
-	ret=BJX2_DecodeOpcode_DecF8(ctx, op1, addr, opw1, opw2, opw3);
+	ret=BJX2_DecodeOpcode_DecF8(ctx, op1, addr, opw1, opw2);
 
 	if(opw1&0x0200)
 	{

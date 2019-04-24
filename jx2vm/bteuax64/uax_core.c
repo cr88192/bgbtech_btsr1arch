@@ -307,7 +307,7 @@ byte *UAX_LinkContext(UAX_Context *ctx)
 					break;
 			if(j>=ctx->nlbl)
 			{
-				__debugbreak();
+				JX2_DBGBREAK
 			}
 
 			plbl=gptr[ctx->lbl_sec[j]]+ctx->lbl_ofs[j];
@@ -321,7 +321,7 @@ byte *UAX_LinkContext(UAX_Context *ctx)
 		
 		if(!plbl)
 		{
-			__debugbreak();
+			JX2_DBGBREAK
 		}
 		
 		nla=(nlint)plbl;
@@ -1043,7 +1043,7 @@ int UAX_EmitRegRM(UAX_Context *ctx, int reg, UAX_OpcodeArg *rm)
 		return(0);
 	}
 	
-	__debugbreak();
+	JX2_DBGBREAK
 	return(-1);
 }
 
@@ -1087,7 +1087,7 @@ int UAX_EmitOpString(UAX_Context *ctx, char *str,
 				*(p-1)|=targ0->breg&7;
 				continue;
 			}
-			__debugbreak();
+			JX2_DBGBREAK
 		}
 
 		if(s[0]=='/')
@@ -1120,7 +1120,7 @@ int UAX_EmitOpString(UAX_Context *ctx, char *str,
 				continue;
 			}
 
-			__debugbreak();
+			JX2_DBGBREAK
 		}
 		
 		if(*s=='X')
@@ -1167,7 +1167,7 @@ int UAX_EmitOpString(UAX_Context *ctx, char *str,
 					{ s+=3; taa++; UAX_EmitDWord(ctx, targ0->disp); continue; }
 				if(s[2]=='q')
 					{ s+=3; taa++; UAX_EmitQWord(ctx, targ0->disp); continue; }
-				__debugbreak();
+				JX2_DBGBREAK
 			}
 
 			if(s[1]=='r')
@@ -1184,7 +1184,7 @@ int UAX_EmitOpString(UAX_Context *ctx, char *str,
 				{	UAX_EmitRelocRel32(ctx, targ0->lbl);
 					UAX_EmitDWord(ctx, targ0->disp);
 					s+=3; taa++; continue;	}
-				__debugbreak();
+				JX2_DBGBREAK
 			}
 
 			if(s[1]=='m')
@@ -1205,7 +1205,7 @@ int UAX_EmitOpString(UAX_Context *ctx, char *str,
 				{	UAX_EmitRelocAbs64(ctx, targ0->lbl);
 					UAX_EmitQWord(ctx, targ0->disp);
 					s+=3; taa++; continue;	}
-				__debugbreak();
+				JX2_DBGBREAK
 			}
 		}
 
@@ -1327,7 +1327,7 @@ int UAX_CheckArgsMatchString(UAX_Context *ctx, char *str,
 				s+=3; ta++; continue;
 			}
 
-			__debugbreak();
+			JX2_DBGBREAK
 		}
 
 		if(s[0]=='m')
@@ -1494,7 +1494,7 @@ int UAX_CheckArgsMatchString(UAX_Context *ctx, char *str,
 				}
 			}
 
-			__debugbreak();
+			JX2_DBGBREAK
 		}
 
 		if(s[0]=='x')
@@ -1537,7 +1537,7 @@ int UAX_CheckArgsMatchString(UAX_Context *ctx, char *str,
 				s+=2; ta++; continue;
 			}
 
-			__debugbreak();
+			JX2_DBGBREAK
 		}
 
 		if(s[0]=='f')
@@ -1568,7 +1568,7 @@ int UAX_CheckArgsMatchString(UAX_Context *ctx, char *str,
 			s=s1; ta++; continue;
 		}
 
-		__debugbreak();
+		JX2_DBGBREAK
 	}
 	
 	if(*s || *ta)
@@ -1600,7 +1600,7 @@ int UAX_AssembleInsn(UAX_Context *ctx, int nmid,
 	i=UAX_FindMatchInsnId(ctx, nmid, arg0, arg1, arg2);
 	if(i<0)
 	{
-		__debugbreak();
+		JX2_DBGBREAK
 		return(-1);
 	}
 

@@ -209,6 +209,10 @@ VL_INLINE_OPT void VMemL1A::_sequent__TOP__1(VMemL1A__Syms* __restrict vlSymsp) 
     vlTOPp->MemL1A__DOT__memIc__DOT__tBlkAddrB = (0xfffffffU 
 						  & vlTOPp->MemL1A__DOT__memIc__DOT__icCaAddrB
 						  [vlTOPp->MemL1A__DOT__memIc__DOT__tNxtIxB]);
+    // ALWAYS at MemDcA.v:337
+    vlTOPp->MemL1A__DOT__memDc__DOT__tRegOutVal2 = vlTOPp->MemL1A__DOT__memDc__DOT__tRegOutVal;
+    // ALWAYS at MemDcA.v:337
+    vlTOPp->MemL1A__DOT__memDc__DOT__tRegOutOK2 = vlTOPp->MemL1A__DOT__memDc__DOT__tRegOutOK;
     // ALWAYS at MemIcA.v:173
     vlTOPp->MemL1A__DOT__memIc__DOT__tBlkDataA = vlTOPp->MemL1A__DOT__memIc__DOT__icCaMemA
 	[vlTOPp->MemL1A__DOT__memIc__DOT__tNxtIxA];
@@ -219,7 +223,7 @@ VL_INLINE_OPT void VMemL1A::_sequent__TOP__1(VMemL1A__Syms* __restrict vlSymsp) 
     vlTOPp->MemL1A__DOT__tLatchIc = vlTOPp->MemL1A__DOT__tNxtLatchIc;
     // ALWAYS at MemL1A.v:165
     vlTOPp->MemL1A__DOT__tLatchDc = vlTOPp->MemL1A__DOT__tNxtLatchDc;
-    // ALWAYS at MemDcA.v:334
+    // ALWAYS at MemDcA.v:337
     vlTOPp->MemL1A__DOT__memDc__DOT__tLstHold = vlTOPp->MemL1A__DOT__memDc__DOT__tHold;
     // ALWAYS at MemIcA.v:173
     vlTOPp->MemL1A__DOT__memIc__DOT__tInAddr = vlTOPp->icInPcAddr;
@@ -361,7 +365,7 @@ VL_INLINE_OPT void VMemL1A::_sequent__TOP__1(VMemL1A__Syms* __restrict vlSymsp) 
 	    }
 	}
     }
-    // ALWAYS at MemDcA.v:334
+    // ALWAYS at MemDcA.v:337
     if ((1U & (~ (IData)(vlTOPp->MemL1A__DOT__memDc__DOT__tHold)))) {
 	__Vdly__MemL1A__DOT__memDc__DOT__tInAddr = vlTOPp->dcInAddr;
 	__Vdly__MemL1A__DOT__memDc__DOT__tReqAddrA 
@@ -771,6 +775,8 @@ VL_INLINE_OPT void VMemL1A::_sequent__TOP__1(VMemL1A__Syms* __restrict vlSymsp) 
     vlTOPp->MemL1A__DOT__memDc__DOT__tDataIn = __Vdly__MemL1A__DOT__memDc__DOT__tDataIn;
     vlTOPp->MemL1A__DOT__memDc__DOT__tInAddr = __Vdly__MemL1A__DOT__memDc__DOT__tInAddr;
     vlTOPp->MemL1A__DOT__memDc__DOT__tMmioDone = __Vdly__MemL1A__DOT__memDc__DOT__tMmioDone;
+    vlTOPp->dcOutVal = vlTOPp->MemL1A__DOT__memDc__DOT__tRegOutVal2;
+    vlTOPp->dcOutOK = vlTOPp->MemL1A__DOT__memDc__DOT__tRegOutOK2;
     // ALWAYS at MemIcA.v:173
     vlTOPp->MemL1A__DOT__memIc__DOT__tReqIxA = vlTOPp->MemL1A__DOT__memIc__DOT__tNxtIxA;
     // ALWAYS at MemIcA.v:173
@@ -932,7 +938,7 @@ VL_INLINE_OPT void VMemL1A::_sequent__TOP__1(VMemL1A__Syms* __restrict vlSymsp) 
     vlTOPp->MemL1A__DOT__memIc__DOT__tReqAddrA = vlTOPp->MemL1A__DOT__memIc__DOT__tNxtAddrA;
     // ALWAYS at MemIcA.v:173
     vlTOPp->MemL1A__DOT__memIc__DOT__tReqAddrB = vlTOPp->MemL1A__DOT__memIc__DOT__tNxtAddrB;
-    // ALWAYS at MemDcA.v:334
+    // ALWAYS at MemDcA.v:337
     vlTOPp->MemL1A__DOT__memDc__DOT__tBlkDataA[0U] 
 	= vlTOPp->MemL1A__DOT__memDc__DOT__dcCaMemA
 	[vlTOPp->MemL1A__DOT__memDc__DOT__tNx2IxA][0U];
@@ -945,7 +951,7 @@ VL_INLINE_OPT void VMemL1A::_sequent__TOP__1(VMemL1A__Syms* __restrict vlSymsp) 
     vlTOPp->MemL1A__DOT__memDc__DOT__tBlkDataA[3U] 
 	= vlTOPp->MemL1A__DOT__memDc__DOT__dcCaMemA
 	[vlTOPp->MemL1A__DOT__memDc__DOT__tNx2IxA][3U];
-    // ALWAYS at MemDcA.v:334
+    // ALWAYS at MemDcA.v:337
     vlTOPp->MemL1A__DOT__memDc__DOT__tBlkDataB[0U] 
 	= vlTOPp->MemL1A__DOT__memDc__DOT__dcCaMemB
 	[vlTOPp->MemL1A__DOT__memDc__DOT__tNx2IxB][0U];
@@ -958,27 +964,27 @@ VL_INLINE_OPT void VMemL1A::_sequent__TOP__1(VMemL1A__Syms* __restrict vlSymsp) 
     vlTOPp->MemL1A__DOT__memDc__DOT__tBlkDataB[3U] 
 	= vlTOPp->MemL1A__DOT__memDc__DOT__dcCaMemB
 	[vlTOPp->MemL1A__DOT__memDc__DOT__tNx2IxB][3U];
-    // ALWAYS at MemDcA.v:354
+    // ALWAYS at MemDcA.v:357
     vlTOPp->MemL1A__DOT__memDc__DOT__tBlkFlagA = (0xfU 
 						  & (vlTOPp->MemL1A__DOT__memDc__DOT__dcCaAddrA
 						     [vlTOPp->MemL1A__DOT__memDc__DOT__tNx2IxA] 
 						     >> 0x1cU));
-    // ALWAYS at MemDcA.v:354
+    // ALWAYS at MemDcA.v:357
     vlTOPp->MemL1A__DOT__memDc__DOT__tBlkAddrA = (0xfffffffU 
 						  & vlTOPp->MemL1A__DOT__memDc__DOT__dcCaAddrA
 						  [vlTOPp->MemL1A__DOT__memDc__DOT__tNx2IxA]);
-    // ALWAYS at MemDcA.v:355
+    // ALWAYS at MemDcA.v:358
     vlTOPp->MemL1A__DOT__memDc__DOT__tBlkFlagB = (0xfU 
 						  & (vlTOPp->MemL1A__DOT__memDc__DOT__dcCaAddrB
 						     [vlTOPp->MemL1A__DOT__memDc__DOT__tNx2IxB] 
 						     >> 0x1cU));
-    // ALWAYS at MemDcA.v:355
+    // ALWAYS at MemDcA.v:358
     vlTOPp->MemL1A__DOT__memDc__DOT__tBlkAddrB = (0xfffffffU 
 						  & vlTOPp->MemL1A__DOT__memDc__DOT__dcCaAddrB
 						  [vlTOPp->MemL1A__DOT__memDc__DOT__tNx2IxB]);
     vlTOPp->icOutPcVal = vlTOPp->MemL1A__DOT__memIc__DOT__tRegOutPcVal;
     vlTOPp->icOutPcStep = vlTOPp->MemL1A__DOT__memIc__DOT__tRegOutPcStep;
-    // ALWAYSPOST at MemDcA.v:364
+    // ALWAYSPOST at MemDcA.v:367
     if (__Vdlyvset__MemL1A__DOT__memDc__DOT__dcCaMemA__v0) {
 	vlTOPp->MemL1A__DOT__memDc__DOT__dcCaMemA[__Vdlyvdim0__MemL1A__DOT__memDc__DOT__dcCaMemA__v0][0U] 
 	    = __Vdlyvval__MemL1A__DOT__memDc__DOT__dcCaMemA__v0[0U];
@@ -989,7 +995,7 @@ VL_INLINE_OPT void VMemL1A::_sequent__TOP__1(VMemL1A__Syms* __restrict vlSymsp) 
 	vlTOPp->MemL1A__DOT__memDc__DOT__dcCaMemA[__Vdlyvdim0__MemL1A__DOT__memDc__DOT__dcCaMemA__v0][3U] 
 	    = __Vdlyvval__MemL1A__DOT__memDc__DOT__dcCaMemA__v0[3U];
     }
-    // ALWAYSPOST at MemDcA.v:376
+    // ALWAYSPOST at MemDcA.v:379
     if (__Vdlyvset__MemL1A__DOT__memDc__DOT__dcCaMemB__v0) {
 	vlTOPp->MemL1A__DOT__memDc__DOT__dcCaMemB[__Vdlyvdim0__MemL1A__DOT__memDc__DOT__dcCaMemB__v0][0U] 
 	    = __Vdlyvval__MemL1A__DOT__memDc__DOT__dcCaMemB__v0[0U];
@@ -1000,12 +1006,12 @@ VL_INLINE_OPT void VMemL1A::_sequent__TOP__1(VMemL1A__Syms* __restrict vlSymsp) 
 	vlTOPp->MemL1A__DOT__memDc__DOT__dcCaMemB[__Vdlyvdim0__MemL1A__DOT__memDc__DOT__dcCaMemB__v0][3U] 
 	    = __Vdlyvval__MemL1A__DOT__memDc__DOT__dcCaMemB__v0[3U];
     }
-    // ALWAYSPOST at MemDcA.v:365
+    // ALWAYSPOST at MemDcA.v:368
     if (__Vdlyvset__MemL1A__DOT__memDc__DOT__dcCaMemA__v0) {
 	vlTOPp->MemL1A__DOT__memDc__DOT__dcCaAddrA[__Vdlyvdim0__MemL1A__DOT__memDc__DOT__dcCaAddrA__v0] 
 	    = __Vdlyvval__MemL1A__DOT__memDc__DOT__dcCaAddrA__v0;
     }
-    // ALWAYSPOST at MemDcA.v:377
+    // ALWAYSPOST at MemDcA.v:380
     if (__Vdlyvset__MemL1A__DOT__memDc__DOT__dcCaMemB__v0) {
 	vlTOPp->MemL1A__DOT__memDc__DOT__dcCaAddrB[__Vdlyvdim0__MemL1A__DOT__memDc__DOT__dcCaAddrB__v0] 
 	    = __Vdlyvval__MemL1A__DOT__memDc__DOT__dcCaAddrB__v0;
@@ -1042,6 +1048,8 @@ void VMemL1A::_settle__TOP__2(VMemL1A__Syms* __restrict vlSymsp) {
     VL_SIGW(__Vtemp46,127,0,4);
     VL_SIGW(__Vtemp48,127,0,4);
     // Body
+    vlTOPp->dcOutOK = vlTOPp->MemL1A__DOT__memDc__DOT__tRegOutOK2;
+    vlTOPp->dcOutVal = vlTOPp->MemL1A__DOT__memDc__DOT__tRegOutVal2;
     // ALWAYS at MemIcA.v:78
     vlTOPp->MemL1A__DOT__memIc__DOT__tInWordIx = (3U 
 						  & (vlTOPp->MemL1A__DOT__memIc__DOT__tInAddr 
@@ -1286,7 +1294,7 @@ void VMemL1A::_settle__TOP__2(VMemL1A__Syms* __restrict vlSymsp) {
     vlTOPp->MemL1A__DOT__memIc__DOT__tRegOutPcOK = 
 	((IData)(vlTOPp->MemL1A__DOT__memIc__DOT__tMiss)
 	  ? 2U : 1U);
-    // ALWAYS at MemDcA.v:136
+    // ALWAYS at MemDcA.v:139
     if ((0x10U & vlTOPp->dcInAddr)) {
 	vlTOPp->MemL1A__DOT__memDc__DOT__tNxtAddrB 
 	    = (0xfffffffU & (vlTOPp->dcInAddr >> 4U));
@@ -2068,8 +2076,6 @@ void VMemL1A::_settle__TOP__2(VMemL1A__Syms* __restrict vlSymsp) {
     vlTOPp->memDataOut[2U] = vlTOPp->MemL1A__DOT__tMemDataOut[2U];
     vlTOPp->memDataOut[3U] = vlTOPp->MemL1A__DOT__tMemDataOut[3U];
     vlTOPp->icOutPcOK = vlTOPp->MemL1A__DOT__memIc__DOT__tRegOutPcOK;
-    vlTOPp->dcOutVal = vlTOPp->MemL1A__DOT__memDc__DOT__tRegOutVal;
-    vlTOPp->dcOutOK = vlTOPp->MemL1A__DOT__memDc__DOT__tRegOutOK;
 }
 
 VL_INLINE_OPT void VMemL1A::_combo__TOP__3(VMemL1A__Syms* __restrict vlSymsp) {
@@ -2152,7 +2158,7 @@ VL_INLINE_OPT void VMemL1A::_combo__TOP__3(VMemL1A__Syms* __restrict vlSymsp) {
 						& vlTOPp->MemL1A__DOT__memIc__DOT__tNxtAddrA);
     vlTOPp->MemL1A__DOT__memIc__DOT__tNxtIxB = (0x3fU 
 						& vlTOPp->MemL1A__DOT__memIc__DOT__tNxtAddrB);
-    // ALWAYS at MemDcA.v:136
+    // ALWAYS at MemDcA.v:139
     if ((0x10U & vlTOPp->dcInAddr)) {
 	vlTOPp->MemL1A__DOT__memDc__DOT__tNxtAddrB 
 	    = (0xfffffffU & (vlTOPp->dcInAddr >> 4U));
@@ -2931,8 +2937,6 @@ VL_INLINE_OPT void VMemL1A::_combo__TOP__3(VMemL1A__Syms* __restrict vlSymsp) {
     vlTOPp->memDataOut[1U] = vlTOPp->MemL1A__DOT__tMemDataOut[1U];
     vlTOPp->memDataOut[2U] = vlTOPp->MemL1A__DOT__tMemDataOut[2U];
     vlTOPp->memDataOut[3U] = vlTOPp->MemL1A__DOT__tMemDataOut[3U];
-    vlTOPp->dcOutVal = vlTOPp->MemL1A__DOT__memDc__DOT__tRegOutVal;
-    vlTOPp->dcOutOK = vlTOPp->MemL1A__DOT__memDc__DOT__tRegOutOK;
 }
 
 void VMemL1A::_eval(VMemL1A__Syms* __restrict vlSymsp) {
@@ -3078,6 +3082,8 @@ void VMemL1A::_ctor_var_reset() {
     MemL1A__DOT__memIc__DOT__tDoStBlk = VL_RAND_RESET_I(1);
     MemL1A__DOT__memDc__DOT__tRegOutVal = VL_RAND_RESET_Q(64);
     MemL1A__DOT__memDc__DOT__tRegOutOK = VL_RAND_RESET_I(2);
+    MemL1A__DOT__memDc__DOT__tRegOutVal2 = VL_RAND_RESET_Q(64);
+    MemL1A__DOT__memDc__DOT__tRegOutOK2 = VL_RAND_RESET_I(2);
     MemL1A__DOT__memDc__DOT__tMemAddr = VL_RAND_RESET_I(32);
     MemL1A__DOT__memDc__DOT__tMemOpm = VL_RAND_RESET_I(5);
     VL_RAND_RESET_W(128,MemL1A__DOT__memDc__DOT__tMemDataOut);

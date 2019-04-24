@@ -548,6 +548,7 @@ int SMus_SyncTimeUsec(BJX2_Context *ctx)
 	if(dt<0)dt=0;
 	if(dt>100000)
 		jx2i_smus_usec=usc;
+	return(0);
 }
 
 int SMus_SetRegister(BJX2_Context *ctx, int reg, u32 val)

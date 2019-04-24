@@ -1,10 +1,76 @@
 #include "jx2i_multi.c"
 
+
+#ifdef linux
+void SoundDev_Submit()
+{
+}
+
+int SoundDev_WriteStereoSamples(short *buffer, int cnt)
+{
+}
+
+int SoundDev_Init()
+{
+}
+
+int SoundDev_DeInit()
+{
+}
+#endif
+
+#ifdef linux
+int	gfxdrv_kill=0;
+
+int GfxDrv_Start()
+{
+}
+
+int GfxDrv_PrepareFramebuf()
+{
+}
+
+void GfxDrv_BeginDrawing()
+{
+}
+
+void GfxDrv_EndDrawing(void)
+{
+}
+
+int GfxDrv_MainLoop(void (*fcn)())
+{
+	static int lt=0;
+	int ct, dt;
+	
+	ct=FRGL_TimeMS();
+	while(!gfxdrv_kill)
+	{
+		ct=FRGL_TimeMS();
+		dt=ct-lt;
+//		if((dt>=0) && (dt<10))
+		if((dt>=0) && (dt<5))
+		{
+//			Sleep(1);
+			usleep(0);
+			continue;
+		}
+		
+		fcn();
+		lt=ct;
+	}
+	return(0);
+}
+
+#endif
+
+
 int BJX2_MainAddKeyByte(BJX2_Context *ctx, int k)
 {
 	ctx->kbbuf[ctx->kbrov]=k;
 	ctx->kbrov=(ctx->kbrov+1)&255;
 	ctx->kbirq++;
+	return(0);
 }
 
 int BJX2_MainPollKeyboard(BJX2_Context *ctx)
@@ -90,8 +156,12 @@ void btesh_main_iterate()
 	{
 		BJX2_MainPollKeyboard(ctx);
 		BJX2_SndSblk_Update(ctx, dtms);
+#ifdef linux
+		usleep(0);
+#else
 //		Sleep(1);
 		Sleep(0);
+#endif
 		return;
 	}
 
@@ -130,9 +200,10 @@ void btesh_main_iterate()
 		ms=ms1-lms1;
 	} while((ctx->tot_cyc<cyc) && (ms<28));
 	
-	
+#ifndef linux
 	if(i || ctx->req_kill)
 		gfxdrv_kill=1;
+#endif
 	
 //	t1=clock();
 //	if(t1>t0)

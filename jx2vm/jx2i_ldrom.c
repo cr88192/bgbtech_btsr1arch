@@ -222,6 +222,7 @@ int BJX2_ContextLoadMap(BJX2_Context *ctx, char *name)
 	char tb[256];
 	FILE *fd;
 	char **a;
+	char *s;
 	int tmn, ta;
 	int sz, sz1;
 	int i, j, k;
@@ -247,7 +248,7 @@ int BJX2_ContextLoadMap(BJX2_Context *ctx, char *name)
 	
 	while(!feof(fd))
 	{
-		fgets(tb, 255, fd);
+		s=fgets(tb, 255, fd);
 		a=JX2R_SplitLine(tb);
 		
 		sscanf(a[0], "%08X", &ta);
@@ -276,6 +277,7 @@ int BJX2_ContextLoadRom(BJX2_Context *ctx, char *name)
 	byte *buf;
 	FILE *fd;
 	int sz, sz1;
+	int i, j, k;
 	
 	fd=fopen(name, "rb");
 	if(!fd)
@@ -288,7 +290,7 @@ int BJX2_ContextLoadRom(BJX2_Context *ctx, char *name)
 	sz=ftell(fd);
 	fseek(fd, 0, 0);
 	buf=malloc(sz);
-	fread(buf, 1, sz, fd);
+	k=fread(buf, 1, sz, fd);
 	fclose(fd);
 	
 	sp=BJX2_MemSpanForName(ctx, "ROM");

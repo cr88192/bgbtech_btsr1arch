@@ -251,6 +251,8 @@ int BJX2_FaultSwapRegs2(BJX2_Context *ctx)
 		ctx->regs[BJX2_REG_R16B+i]=va;
 	}
 #endif
+
+	return(0);
 }
 
 int BJX2_FaultEnterRegs(BJX2_Context *ctx)
@@ -1325,6 +1327,7 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 	pcnt=(100.0*ctx->tot_cyc_miss_l2)/(ctx->tot_cyc);
 	printf("Cycles Spent, Cache Miss L2: %.2f%%\n", pcnt);
 
+	return(0);
 }
 
 

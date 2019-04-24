@@ -237,10 +237,10 @@ int BCCX_Init();
 BCCX_Node *BCCX_AllocNode(void);
 void BCCX_FreeNode(BCCX_Node *n);
 int BCCX_LookupAttrVal(BCCX_Node *node, char *var,u16 **rrn, BCCX_AttrVal **rrv);
-int BCCX_LookupAttrValCst(BCCX_Node *node,bccx_cxstate *rcst, char *var, u16 **rrn, BCCX_AttrVal **rrv);
+int BCCX_LookupAttrValCst(BCCX_Node *node,bccx_cxstate *rcst, char *var, u16 **rrn, BCCX_AttrVal **rrv);
 int BCCX_LookupAttrValIx(BCCX_Node *node, int iv,u16 **rrn, BCCX_AttrVal **rrv);
 int BCCX_FetchAttrVal(BCCX_Node *node, char *var,u16 **rrn, BCCX_AttrVal **rrv);
-int BCCX_FetchAttrValCst(BCCX_Node *node,bccx_cxstate *rcst, char *var, u16 **rrn, BCCX_AttrVal **rrv);
+int BCCX_FetchAttrValCst(BCCX_Node *node,bccx_cxstate *rcst, char *var, u16 **rrn, BCCX_AttrVal **rrv);
 int BCCX_FetchAttrValIx(BCCX_Node *node, int iv,u16 **rrn, BCCX_AttrVal **rrv);
 char *BCCX_Get(BCCX_Node *n, char *var);
 char *BCCX_GetCst(BCCX_Node *n,bccx_cxstate *rcst, char *var);
@@ -584,46 +584,46 @@ ccxl_status BGBCC_CCXL_StackEnable3AC(BGBCC_TransState *ctx);
 ccxl_status BGBCC_CCXL_EmitLabel(BGBCC_TransState *ctx, ccxl_label lbl);
 ccxl_status BGBCC_CCXL_EmitJump(BGBCC_TransState *ctx, ccxl_label lbl);
 ccxl_status BGBCC_CCXL_EmitJumpRegZero(BGBCC_TransState *ctx,ccxl_type type, int cmpop, ccxl_register reg, ccxl_label lbl);
-ccxl_status BGBCC_CCXL_EmitJumpRegCmpI(BGBCC_TransState *ctx,ccxl_type type, int cmpop, ccxl_register sreg, ccxl_register treg, ccxl_label lbl);
-ccxl_status BGBCC_CCXL_EmitJumpRegCmp(BGBCC_TransState *ctx,ccxl_type type, int cmpop, ccxl_register sreg, ccxl_register treg, ccxl_label lbl);
+ccxl_status BGBCC_CCXL_EmitJumpRegCmpI(BGBCC_TransState *ctx,ccxl_type type, int cmpop, ccxl_register sreg, ccxl_register treg, ccxl_label lbl);
+ccxl_status BGBCC_CCXL_EmitJumpRegCmp(BGBCC_TransState *ctx,ccxl_type type, int cmpop, ccxl_register sreg, ccxl_register treg, ccxl_label lbl);
 ccxl_status BGBCC_CCXL_EmitMov(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dreg, ccxl_register sreg);
 ccxl_status BGBCC_CCXL_EmitCallOp(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register src, int na);
-ccxl_status BGBCC_CCXL_EmitObjCallOp(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register src, ccxl_register obj, int na);
+ccxl_status BGBCC_CCXL_EmitObjCallOp(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register src, ccxl_register obj, int na);
 ccxl_status BGBCC_CCXL_EmitCallCsrvOp(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register src);
 ccxl_status BGBCC_CCXL_EmitCallArg(BGBCC_TransState *ctx,ccxl_register reg);
-ccxl_status BGBCC_CCXL_EmitJmpTab(BGBCC_TransState *ctx,ccxl_type type, ccxl_register src, int clm, int cln, ccxl_label *clbl, s64 *clv, ccxl_label dfl, ccxl_label dfl2);
+ccxl_status BGBCC_CCXL_EmitJmpTab(BGBCC_TransState *ctx,ccxl_type type, ccxl_register src, int clm, int cln, ccxl_label *clbl, s64 *clv, ccxl_label dfl, ccxl_label dfl2);
 ccxl_status BGBCC_CCXL_EmitCallRetDefault(BGBCC_TransState *ctx);
 ccxl_status BGBCC_CCXL_EmitCallRetV(BGBCC_TransState *ctx);
 ccxl_status BGBCC_CCXL_EmitCallRetOp(BGBCC_TransState *ctx,ccxl_type type, ccxl_register src);
-ccxl_status BGBCC_CCXL_EmitConv(BGBCC_TransState *ctx,ccxl_type dtype, ccxl_type stype, ccxl_register dst, ccxl_register src);
-ccxl_status BGBCC_CCXL_EmitUnaryOp(BGBCC_TransState *ctx,ccxl_type type, int opr, ccxl_register dst, ccxl_register src);
-ccxl_status BGBCC_CCXL_EmitBinaryOp(BGBCC_TransState *ctx,ccxl_type type, int opr, ccxl_register dst, ccxl_register srca, ccxl_register srcb);
-ccxl_status BGBCC_CCXL_EmitCompareOp(BGBCC_TransState *ctx,ccxl_type type, int opr, ccxl_register dst, ccxl_register srca, ccxl_register srcb);
+ccxl_status BGBCC_CCXL_EmitConv(BGBCC_TransState *ctx,ccxl_type dtype, ccxl_type stype, ccxl_register dst, ccxl_register src);
+ccxl_status BGBCC_CCXL_EmitUnaryOp(BGBCC_TransState *ctx,ccxl_type type, int opr, ccxl_register dst, ccxl_register src);
+ccxl_status BGBCC_CCXL_EmitBinaryOp(BGBCC_TransState *ctx,ccxl_type type, int opr, ccxl_register dst, ccxl_register srca, ccxl_register srcb);
+ccxl_status BGBCC_CCXL_EmitCompareOp(BGBCC_TransState *ctx,ccxl_type type, int opr, ccxl_register dst, ccxl_register srca, ccxl_register srcb);
 ccxl_status BGBCC_CCXL_EmitLoadIndexImm(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register src, int idx);
 ccxl_status BGBCC_CCXL_EmitStoreIndexImm(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register src, int idx);
-ccxl_status BGBCC_CCXL_EmitLoadIndex(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register srca, ccxl_register srcb);
-ccxl_status BGBCC_CCXL_EmitStoreIndex(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register srca, ccxl_register srcb);
+ccxl_status BGBCC_CCXL_EmitLoadIndex(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register srca, ccxl_register srcb);
+ccxl_status BGBCC_CCXL_EmitStoreIndex(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register srca, ccxl_register srcb);
 ccxl_status BGBCC_CCXL_EmitLeaImm(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register src, int idx);
-ccxl_status BGBCC_CCXL_EmitLea(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register srca, ccxl_register srcb);
+ccxl_status BGBCC_CCXL_EmitLea(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register srca, ccxl_register srcb);
 ccxl_status BGBCC_CCXL_EmitLdaVar(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register src);
 ccxl_status BGBCC_CCXL_EmitSizeofVar(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst);
-ccxl_status BGBCC_CCXL_EmitDiffPtr(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register srca, ccxl_register srcb);
-ccxl_status BGBCC_CCXL_EmitOffsetOf(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, BGBCC_CCXL_LiteralInfo *st, char *name);
-ccxl_status BGBCC_CCXL_EmitLoadSlot(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register src, BGBCC_CCXL_LiteralInfo *st, char *name, char *sig);
-ccxl_status BGBCC_CCXL_EmitStoreSlot(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register src, BGBCC_CCXL_LiteralInfo *st, char *name);
-ccxl_status BGBCC_CCXL_EmitLoadSlotAddr(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register src, BGBCC_CCXL_LiteralInfo *st, char *name);
-ccxl_status BGBCC_CCXL_EmitLoadSlotAddrID(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register src, BGBCC_CCXL_LiteralInfo *st, int fn);
-ccxl_status BGBCC_CCXL_EmitInitObj(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, BGBCC_CCXL_LiteralInfo *st);
-ccxl_status BGBCC_CCXL_EmitDropObj(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, BGBCC_CCXL_LiteralInfo *st);
+ccxl_status BGBCC_CCXL_EmitDiffPtr(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register srca, ccxl_register srcb);
+ccxl_status BGBCC_CCXL_EmitOffsetOf(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, BGBCC_CCXL_LiteralInfo *st, char *name);
+ccxl_status BGBCC_CCXL_EmitLoadSlot(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register src, BGBCC_CCXL_LiteralInfo *st, char *name, char *sig);
+ccxl_status BGBCC_CCXL_EmitStoreSlot(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register src, BGBCC_CCXL_LiteralInfo *st, char *name);
+ccxl_status BGBCC_CCXL_EmitLoadSlotAddr(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register src, BGBCC_CCXL_LiteralInfo *st, char *name);
+ccxl_status BGBCC_CCXL_EmitLoadSlotAddrID(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register src, BGBCC_CCXL_LiteralInfo *st, int fn);
+ccxl_status BGBCC_CCXL_EmitInitObj(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, BGBCC_CCXL_LiteralInfo *st);
+ccxl_status BGBCC_CCXL_EmitDropObj(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, BGBCC_CCXL_LiteralInfo *st);
 ccxl_status BGBCC_CCXL_EmitInitArr(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, int sz);
-ccxl_status BGBCC_CCXL_EmitInitObjArr(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, BGBCC_CCXL_LiteralInfo *st, int sz);
+ccxl_status BGBCC_CCXL_EmitInitObjArr(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, BGBCC_CCXL_LiteralInfo *st, int sz);
 ccxl_status BGBCC_CCXL_EmitLoadInitArr(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register val, int sz);
-ccxl_status BGBCC_CCXL_EmitLoadInitObjArr(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, BGBCC_CCXL_LiteralInfo *st, ccxl_register val, int sz);
+ccxl_status BGBCC_CCXL_EmitLoadInitObjArr(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, BGBCC_CCXL_LiteralInfo *st, ccxl_register val, int sz);
 ccxl_status BGBCC_CCXL_EmitVaStart(BGBCC_TransState *ctx,ccxl_register dreg, ccxl_register sreg);
 ccxl_status BGBCC_CCXL_EmitVaEnd(BGBCC_TransState *ctx,ccxl_register sreg);
 ccxl_status BGBCC_CCXL_EmitVaArg(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dreg, ccxl_register sreg);
-ccxl_status BGBCC_CCXL_EmitCSelCmp(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register srca, ccxl_register srcb, ccxl_type ptype, int cmpop, ccxl_register srcc, ccxl_register srcd);
-ccxl_status BGBCC_CCXL_EmitCSelCmpZero(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register srca, ccxl_register srcb, ccxl_type ptype, int cmpop, ccxl_register srcc);
+ccxl_status BGBCC_CCXL_EmitCSelCmp(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register srca, ccxl_register srcb, ccxl_type ptype, int cmpop, ccxl_register srcc, ccxl_register srcd);
+ccxl_status BGBCC_CCXL_EmitCSelCmpZero(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register srca, ccxl_register srcb, ccxl_type ptype, int cmpop, ccxl_register srcc);
 ccxl_status BGBCC_CCXL_FlattenImage(BGBCC_TransState *ctx,byte *obuf, int *rosz, fourcc imgfmt);
 ccxl_status BGBCC_CCXL_SetupContextForArch(BGBCC_TransState *ctx);
 ccxl_status BGBCC_CCXL_SetupParserForArch(BGBCP_ParseState *ctx);
@@ -640,10 +640,10 @@ void BGBCC_CCXL_TagErrorLLn(BGBCC_TransState *ctx, int tag,char *file, int line)
 void BGBCC_CCXL_TagWarnLLn(BGBCC_TransState *ctx, int tag,char *file, int line);
 ccxl_label BGBCC_CCXL_GenSym(BGBCC_TransState *ctx);
 ccxl_label BGBCC_CCXL_GenSym2(BGBCC_TransState *ctx);
-int BGBCC_CCXL_CompileSwitchJmpR(BGBCC_TransState *ctx, ccxl_label *cl, s64 *clv, int clm, int cln, ccxl_label dfl, ccxl_label dfl2);
-int BGBCC_CCXL_CompileSwitch_SortR(BGBCC_TransState *ctx, ccxl_label *cl, s64 *clv, int clm, int cln);
+int BGBCC_CCXL_CompileSwitchJmpR(BGBCC_TransState *ctx, ccxl_label *cl, s64 *clv, int clm, int cln, ccxl_label dfl, ccxl_label dfl2);
+int BGBCC_CCXL_CompileSwitch_SortR(BGBCC_TransState *ctx, ccxl_label *cl, s64 *clv, int clm, int cln);
 int BGBCC_CCXL_CompileSwitch(BGBCC_TransState *ctx, BCCX_Node *l);
-int BGBCC_CCXL_CompileInitArrayMultiR(BGBCC_TransState *ctx,char *name, ccxl_type ty, BCCX_Node *l, int *cidx, int nidx);
+int BGBCC_CCXL_CompileInitArrayMultiR(BGBCC_TransState *ctx,char *name, ccxl_type ty, BCCX_Node *l, int *cidx, int nidx);
 int BGBCC_CCXL_CompileInitArrayMulti(BGBCC_TransState *ctx,char *name, char *sig, BCCX_Node *l);
 int BGBCC_CCXL_CompileInitArray(BGBCC_TransState *ctx,char *name, char *sig, BCCX_Node *l);
 void BGBCC_CCXL_CompileInitVar(BGBCC_TransState *ctx,char *name, BCCX_Node *type, BCCX_Node *value);
@@ -676,7 +676,7 @@ void BGBCC_CCXL_CompileVarStatement(BGBCC_TransState *ctx, BCCX_Node *l);
 void BGBCC_CCXL_CompileVarStatement2(BGBCC_TransState *ctx, BCCX_Node *l);
 BCCX_Node *BGBCC_CCXL_ArgDeclsTypeForName(BGBCC_TransState *ctx,BCCX_Node *adecl, char *name);
 BCCX_Node *BGBCC_CCXL_CompileBlock(BGBCC_TransState *ctx,BCCX_Node *type, char *name, BCCX_Node *args, BCCX_Node *body);
-BCCX_Node *BGBCC_CCXL_CompileBlock2(BGBCC_TransState *ctx,BCCX_Node *type, char *name, BCCX_Node *args, BCCX_Node *body, BCCX_Node *adecl);
+BCCX_Node *BGBCC_CCXL_CompileBlock2(BGBCC_TransState *ctx,BCCX_Node *type, char *name, BCCX_Node *args, BCCX_Node *body, BCCX_Node *adecl);
 char *BGBCC_CCXL_GenProtoSig(BGBCC_TransState *ctx,BCCX_Node *type, BCCX_Node *args);
 void BGBCC_CCXL_EmitSigProto(BGBCC_TransState *ctx,BCCX_Node *type, char *name, BCCX_Node *args);
 char *BGBCC_CCXL_VarSigProto(BGBCC_TransState *ctx,BCCX_Node *type, char *name, BCCX_Node *args);
@@ -789,11 +789,11 @@ BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_GetGlobal2I(BGBCC_TransState *ctx, char *nam
 BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_GetGlobal(BGBCC_TransState *ctx, char *name);
 void BGBCC_CCXL_NormalizeGlobalDeclQn(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *decl);
 void BGBCC_CCXL_AddGlobalDecl(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *decl);
-void BGBCC_CCXL_AddFrameArg(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *frame, BGBCC_CCXL_RegisterInfo *decl);
-void BGBCC_CCXL_AddFrameLocal(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *frame, BGBCC_CCXL_RegisterInfo *decl);
-void BGBCC_CCXL_AddFrameField(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *frame, BGBCC_CCXL_RegisterInfo *decl);
-void BGBCC_CCXL_AddFrameReg(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *frame, BGBCC_CCXL_RegisterInfo *decl);
-void BGBCC_CCXL_AddFrameStatic(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *frame, BGBCC_CCXL_RegisterInfo *decl);
+void BGBCC_CCXL_AddFrameArg(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *frame, BGBCC_CCXL_RegisterInfo *decl);
+void BGBCC_CCXL_AddFrameLocal(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *frame, BGBCC_CCXL_RegisterInfo *decl);
+void BGBCC_CCXL_AddFrameField(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *frame, BGBCC_CCXL_RegisterInfo *decl);
+void BGBCC_CCXL_AddFrameReg(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *frame, BGBCC_CCXL_RegisterInfo *decl);
+void BGBCC_CCXL_AddFrameStatic(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *frame, BGBCC_CCXL_RegisterInfo *decl);
 BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_AllocLiteral(BGBCC_TransState *ctx);
 void BGBCC_CCXL_CheckFreeLiteral(BGBCC_TransState *ctx,BGBCC_CCXL_LiteralInfo *obj);
 void BGBCC_CCXL_AddLiteral(BGBCC_TransState *ctx,BGBCC_CCXL_LiteralInfo *obj);
@@ -851,7 +851,7 @@ int BGBCC_CCXL_StackCSelCmp(BGBCC_TransState *ctx, char *op);
 int BGBCC_CCXL_StackCSelCmpZero(BGBCC_TransState *ctx, char *op);
 void BGBCC_CCXL_CompileCSelCmp(BGBCC_TransState *ctx,char *op, BCCX_Node *ln, BCCX_Node *rn);
 void BGBCC_CCXL_CompileCSel(BGBCC_TransState *ctx, BCCX_Node *l);
-ccxl_status BGBCC_CCXL_StackCompileJmpTab(BGBCC_TransState *ctx,int clm, int cln, ccxl_label *clbl, s64 *clv, ccxl_label dfl, ccxl_label dfl2);
+ccxl_status BGBCC_CCXL_StackCompileJmpTab(BGBCC_TransState *ctx,int clm, int cln, ccxl_label *clbl, s64 *clv, ccxl_label dfl, ccxl_label dfl2);
 //AHSRC:ccxl/ccxl_infer.c
 int BGBCC_CCXL_InferExpr(BGBCC_TransState *ctx,BCCX_Node *l, ccxl_type *rdty);
 int BGBCC_CCXL_InferExprCleanP(BGBCC_TransState *ctx, BCCX_Node *l);
@@ -874,7 +874,7 @@ bool BGBCC_CCXL_IsRegZzP(BGBCC_TransState *ctx, ccxl_register reg);
 int BGBCC_CCXL_GetRegID(BGBCC_TransState *ctx, ccxl_register reg);
 ccxl_type BGBCC_CCXL_MakeTypeID(BGBCC_TransState *ctx, int id);
 ccxl_type BGBCC_CCXL_GetRegType(BGBCC_TransState *ctx, ccxl_register reg);
-int BGBCC_CCXL_GetRegAsType(BGBCC_TransState *ctx, ccxl_register reg, ccxl_type tty, ccxl_register *rtreg);
+int BGBCC_CCXL_GetRegAsType(BGBCC_TransState *ctx, ccxl_register reg, ccxl_type tty, ccxl_register *rtreg);
 ccxl_type BGBCC_CCXL_GetRegDerefType(BGBCC_TransState *ctx, ccxl_register reg);
 ccxl_type BGBCC_CCXL_GetTypeReturnType(BGBCC_TransState *ctx, ccxl_type bty);
 ccxl_type BGBCC_CCXL_GetRegReturnType(BGBCC_TransState *ctx, ccxl_register reg);
@@ -919,9 +919,9 @@ int BGBCC_CCXL_GetRegImmLit24(BGBCC_TransState *ctx, ccxl_register reg, ccxl_typ
 int BGBCC_CCXL_GetRegImmLitIndex(BGBCC_TransState *ctx, ccxl_register reg, ccxl_type type);
 int BGBCC_CCXL_GetRegImmIntValue(BGBCC_TransState *ctx, ccxl_register reg);
 s64 BGBCC_CCXL_GetRegImmLongValue(BGBCC_TransState *ctx, ccxl_register reg);
-int BGBCC_CCXL_GetRegImmX128Value(BGBCC_TransState *ctx, ccxl_register reg, s64 *rval_lo, s64 *rval_hi);
-int BGBCC_CCXL_GetRegImmInt128Value(BGBCC_TransState *ctx, ccxl_register reg, s64 *rval_lo, s64 *rval_hi);
-int BGBCC_CCXL_GetRegImmFloat128Value(BGBCC_TransState *ctx, ccxl_register reg, s64 *rval_lo, s64 *rval_hi);
+int BGBCC_CCXL_GetRegImmX128Value(BGBCC_TransState *ctx, ccxl_register reg, s64 *rval_lo, s64 *rval_hi);
+int BGBCC_CCXL_GetRegImmInt128Value(BGBCC_TransState *ctx, ccxl_register reg, s64 *rval_lo, s64 *rval_hi);
+int BGBCC_CCXL_GetRegImmFloat128Value(BGBCC_TransState *ctx, ccxl_register reg, s64 *rval_lo, s64 *rval_hi);
 double BGBCC_CCXL_GetRegImmFloatValue(BGBCC_TransState *ctx, ccxl_register reg);
 double BGBCC_CCXL_GetRegImmDoubleValue(BGBCC_TransState *ctx, ccxl_register reg);
 char *BGBCC_CCXL_GetRegImmStringValue(BGBCC_TransState *ctx, ccxl_register reg);
@@ -933,8 +933,8 @@ ccxl_status BGBCC_CCXL_GetRegForLongValue(BGBCC_TransState *ctx, ccxl_register *
 ccxl_status BGBCC_CCXL_GetRegForUIntValue(BGBCC_TransState *ctx, ccxl_register *rreg, u32 val);
 ccxl_status BGBCC_CCXL_GetRegForFloatValue(BGBCC_TransState *ctx, ccxl_register *rreg, f32 val);
 ccxl_status BGBCC_CCXL_GetRegForDoubleValue(BGBCC_TransState *ctx, ccxl_register *rreg, f64 val);
-ccxl_status BGBCC_CCXL_GetRegForInt128Value(BGBCC_TransState *ctx, ccxl_register *rreg, s64 val_lo, s64 val_hi);
-ccxl_status BGBCC_CCXL_GetRegForFloat128Value(BGBCC_TransState *ctx, ccxl_register *rreg, s64 val_lo, s64 val_hi);
+ccxl_status BGBCC_CCXL_GetRegForInt128Value(BGBCC_TransState *ctx, ccxl_register *rreg, s64 val_lo, s64 val_hi);
+ccxl_status BGBCC_CCXL_GetRegForFloat128Value(BGBCC_TransState *ctx, ccxl_register *rreg, s64 val_lo, s64 val_hi);
 ccxl_status BGBCC_CCXL_GetRegForStringValue(BGBCC_TransState *ctx, ccxl_register *rreg, char *str);
 ccxl_status BGBCC_CCXL_GetRegForWStringValue(BGBCC_TransState *ctx, ccxl_register *rreg, char *str);
 ccxl_status BGBCC_CCXL_GetRegForLiteralValue(BGBCC_TransState *ctx, ccxl_register *rreg, s32 val);
@@ -947,9 +947,9 @@ int BGBCC_CCXL_GetTypeOperationBaseZ(BGBCC_TransState *ctx, ccxl_type ty);
 int BGBCC_CCXL_IsUnaryP(BGBCC_TransState *ctx, BCCX_Node *l, char *op);
 int BGBCC_CCXL_IsBinaryP(BGBCC_TransState *ctx, BCCX_Node *l, char *op);
 int BGBCC_CCXL_BoolExpr(BGBCC_TransState *ctx, BCCX_Node *l);
-int BGBCC_CCXL_IsFixIntAssignRVP(BGBCC_TransState *ctx, BCCX_Node *l, char **rname, int *rval);
-int BGBCC_CCXL_IsFixIntCompareRVP(BGBCC_TransState *ctx, BCCX_Node *l, char **rname, char **rcmp, int *rval);
-int BGBCC_CCXL_IsTagVarRVP(BGBCC_TransState *ctx, BCCX_Node *l, char *tag, char *name);
+int BGBCC_CCXL_IsFixIntAssignRVP(BGBCC_TransState *ctx, BCCX_Node *l, char **rname, int *rval);
+int BGBCC_CCXL_IsFixIntCompareRVP(BGBCC_TransState *ctx, BCCX_Node *l, char **rname, char **rcmp, int *rval);
+int BGBCC_CCXL_IsTagVarRVP(BGBCC_TransState *ctx, BCCX_Node *l, char *tag, char *name);
 BCCX_Node *BGBCC_CCXL_WrapIntSuf(s64 i, char *suf);
 BCCX_Node *BGBCC_CCXL_WrapRealSuf(double f, char *suf);
 BCCX_Node *BGBCC_CCXL_WrapInt(s64 i);
@@ -980,8 +980,8 @@ BCCX_Node *BGBCC_CCXL_ReduceExprConst2(BGBCC_TransState *ctx, BCCX_Node *l);
 //AHSRC:ccxl/ccxl_register.c
 BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_AllocRegisterInfo(BGBCC_TransState *ctx);
 bool BGBCC_CCXL_FreeRegisterInfo(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *rinf);
-ccxl_status BGBCC_CCXL_RegisterAllocTemporary(BGBCC_TransState *ctx, ccxl_type bty, ccxl_register *rtreg);
-ccxl_status BGBCC_CCXL_RegisterAllocTemporaryLLn(BGBCC_TransState *ctx, ccxl_type bty, ccxl_register *rtreg, char *fn, int ln);
+ccxl_status BGBCC_CCXL_RegisterAllocTemporary(BGBCC_TransState *ctx, ccxl_type bty, ccxl_register *rtreg);
+ccxl_status BGBCC_CCXL_RegisterAllocTemporaryLLn(BGBCC_TransState *ctx, ccxl_type bty, ccxl_register *rtreg, char *fn, int ln);
 ccxl_status BGBCC_CCXL_RegisterAllocTemporaryInit(BGBCC_TransState *ctx, ccxl_type bty, ccxl_register *rtreg);
 ccxl_status BGBCC_CCXL_RegisterAllocTemporaryInt(BGBCC_TransState *ctx, ccxl_register *rtreg);
 ccxl_status BGBCC_CCXL_RegisterAllocTemporaryLong(BGBCC_TransState *ctx, ccxl_register *rtreg);
@@ -1070,8 +1070,8 @@ int BGBCC_CCXL_StackGetConvCallArgs(BGBCC_TransState *ctx,ccxl_register fnreg);
 char *BGBCC_CCXL_StackGetSigCallArgs(BGBCC_TransState *ctx);
 char *BGBCC_CCXL_StackGetSigUnary(BGBCC_TransState *ctx,ccxl_type lty);
 char *BGBCC_CCXL_StackGetSigBinary(BGBCC_TransState *ctx,ccxl_type lty, ccxl_type rty);
-char *BGBCC_CCXL_StackGetNameBinaryOverload(BGBCC_TransState *ctx, char *op);
-char *BGBCC_CCXL_StackGetMangleNameBinaryOverload(BGBCC_TransState *ctx, char *op, ccxl_type lty, ccxl_type rty);
+char *BGBCC_CCXL_StackGetNameBinaryOverload(BGBCC_TransState *ctx, char *op);
+char *BGBCC_CCXL_StackGetMangleNameBinaryOverload(BGBCC_TransState *ctx, char *op, ccxl_type lty, ccxl_type rty);
 ccxl_status BGBCC_CCXL_StackCallName(BGBCC_TransState *ctx,char *name, int flag);
 ccxl_status BGBCC_CCXL_StackCallName2(BGBCC_TransState *ctx,char *name, char *dname, int flag);
 ccxl_status BGBCC_CCXL_StackPopCall(BGBCC_TransState *ctx, int flag);
@@ -1099,9 +1099,9 @@ ccxl_status BGBCC_CCXL_StackBinaryOpStore(BGBCC_TransState *ctx,char *op, char *
 ccxl_status BGBCC_CCXL_StackUnaryOpName(BGBCC_TransState *ctx,char *op, char *name);
 ccxl_status BGBCC_CCXL_StackUnaryOpNameB(BGBCC_TransState *ctx,char *op, char *name, int mod);
 ccxl_status BGBCC_CCXL_StackUnaryOpStore(BGBCC_TransState *ctx,char *op, char *dname);
-ccxl_status BGBCC_CCXL_StackLoadSlotStore(BGBCC_TransState *ctx, char *name, char *dname);
-ccxl_status BGBCC_CCXL_StackLoadSlotStoreI(BGBCC_TransState *ctx, char *name, char *dname);
-ccxl_status BGBCC_CCXL_StackLoadSlotAddrStore(BGBCC_TransState *ctx, char *name, char *dname);
+ccxl_status BGBCC_CCXL_StackLoadSlotStore(BGBCC_TransState *ctx, char *name, char *dname);
+ccxl_status BGBCC_CCXL_StackLoadSlotStoreI(BGBCC_TransState *ctx, char *name, char *dname);
+ccxl_status BGBCC_CCXL_StackLoadSlotAddrStore(BGBCC_TransState *ctx, char *name, char *dname);
 ccxl_status BGBCC_CCXL_StackLoadIndexConstStore(BGBCC_TransState *ctx, int idx, char *dname);
 ccxl_status BGBCC_CCXL_StackLoadIndexStore(BGBCC_TransState *ctx, char *dname);
 ccxl_status BGBCC_CCXL_StackCastSigStore(BGBCC_TransState *ctx, char *sig, char *dname);
@@ -1155,12 +1155,12 @@ BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_LookupStructureForType(BGBCC_TransState *ctx,
 int BGBCC_CCXL_LookupStructureIDForType(BGBCC_TransState *ctx, ccxl_type type);
 int BGBCC_CCXL_LookupStructContainsFieldID(BGBCC_TransState *ctx, BGBCC_CCXL_LiteralInfo *st, char *name);
 int BGBCC_CCXL_LookupStructFieldID(BGBCC_TransState *ctx, BGBCC_CCXL_LiteralInfo *st, char *name);
-int BGBCC_CCXL_LookupStructFieldIDSig(BGBCC_TransState *ctx, BGBCC_CCXL_LiteralInfo *st, char *name, char *sig);
+int BGBCC_CCXL_LookupStructFieldIDSig(BGBCC_TransState *ctx, BGBCC_CCXL_LiteralInfo *st, char *name, char *sig);
 BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_GetStructSuperclass(BGBCC_TransState *ctx, BGBCC_CCXL_LiteralInfo *st);
-ccxl_status BGBCC_CCXL_LookupStructFieldType(BGBCC_TransState *ctx, BGBCC_CCXL_LiteralInfo *st, char *name, ccxl_type *rty);
-ccxl_status BGBCC_CCXL_LookupStructFieldTypeSig(BGBCC_TransState *ctx, BGBCC_CCXL_LiteralInfo *st, char *name, char *sig, ccxl_type *rty);
-ccxl_status BGBCC_CCXL_LookupStructSuperFieldType(BGBCC_TransState *ctx, BGBCC_CCXL_LiteralInfo *st, char *name, int *rsi, int *rfi, ccxl_type *rty);
-ccxl_status BGBCC_CCXL_LookupStructFieldIdType(BGBCC_TransState *ctx, BGBCC_CCXL_LiteralInfo *st, int idx, ccxl_type *rty);
+ccxl_status BGBCC_CCXL_LookupStructFieldType(BGBCC_TransState *ctx, BGBCC_CCXL_LiteralInfo *st, char *name, ccxl_type *rty);
+ccxl_status BGBCC_CCXL_LookupStructFieldTypeSig(BGBCC_TransState *ctx, BGBCC_CCXL_LiteralInfo *st, char *name, char *sig, ccxl_type *rty);
+ccxl_status BGBCC_CCXL_LookupStructSuperFieldType(BGBCC_TransState *ctx, BGBCC_CCXL_LiteralInfo *st, char *name, int *rsi, int *rfi, ccxl_type *rty);
+ccxl_status BGBCC_CCXL_LookupStructFieldIdType(BGBCC_TransState *ctx, BGBCC_CCXL_LiteralInfo *st, int idx, ccxl_type *rty);
 int BGBCC_CCXL_GetArraySizeForSig(BGBCC_TransState *ctx, char *sig);
 int BGBCC_CCXL_GetArraySizeForSig2(BGBCC_TransState *ctx, char *sig);
 int BGBCC_CCXL_GetArraySizeForSig2R(BGBCC_TransState *ctx, char **rsig);
@@ -1241,9 +1241,9 @@ bool BGBCC_CCXL_TypeSgShortP(BGBCC_TransState *ctx, ccxl_type ty);
 bool BGBCC_CCXL_TypeVoidP(BGBCC_TransState *ctx, ccxl_type ty);
 bool BGBCC_CCXL_TypeVarArgsP(BGBCC_TransState *ctx, ccxl_type ty);
 bool BGBCC_CCXL_TypeVaListP(BGBCC_TransState *ctx, ccxl_type ty);
-bool BGBCC_CCXL_TypeEqualP(BGBCC_TransState *ctx, ccxl_type dty, ccxl_type sty);
-bool BGBCC_CCXL_TypeBaseEqualP(BGBCC_TransState *ctx, ccxl_type dty, ccxl_type sty);
-bool BGBCC_CCXL_TypeBaseSmallEqualP(BGBCC_TransState *ctx, ccxl_type dty, ccxl_type sty);
+bool BGBCC_CCXL_TypeEqualP(BGBCC_TransState *ctx, ccxl_type dty, ccxl_type sty);
+bool BGBCC_CCXL_TypeBaseEqualP(BGBCC_TransState *ctx, ccxl_type dty, ccxl_type sty);
+bool BGBCC_CCXL_TypeBaseSmallEqualP(BGBCC_TransState *ctx, ccxl_type dty, ccxl_type sty);
 bool BGBCC_CCXL_TypeOprBasicP(BGBCC_TransState *ctx, ccxl_type ty);
 int BGBCC_CCXL_TypeObjectLiteralIndex(BGBCC_TransState *ctx, ccxl_type ty);
 bool BGBCC_CCXL_TypeFunctionP(BGBCC_TransState *ctx, ccxl_type ty);
@@ -1261,45 +1261,45 @@ int BGBCC_CCXL_TypeGetLogicalBaseShift(BGBCC_TransState *ctx, ccxl_type ty);
 int BGBCC_CCXL_TypeGetLogicalSize(BGBCC_TransState *ctx, ccxl_type ty);
 int BGBCC_CCXL_TypeGetLogicalAlign(BGBCC_TransState *ctx, ccxl_type ty);
 int BGBCC_CCXL_TypeGetLogicalPadSize(BGBCC_TransState *ctx, ccxl_type ty);
-ccxl_status BGBCC_CCXL_TypeDerefType(BGBCC_TransState *ctx, ccxl_type sty, ccxl_type *rdty);
-ccxl_status BGBCC_CCXL_TypePointerType(BGBCC_TransState *ctx, ccxl_type sty, ccxl_type *rdty);
-ccxl_status BGBCC_CCXL_TypeAutoPromoteType(BGBCC_TransState *ctx, ccxl_type sty, ccxl_type *rdty);
+ccxl_status BGBCC_CCXL_TypeDerefType(BGBCC_TransState *ctx, ccxl_type sty, ccxl_type *rdty);
+ccxl_status BGBCC_CCXL_TypePointerType(BGBCC_TransState *ctx, ccxl_type sty, ccxl_type *rdty);
+ccxl_status BGBCC_CCXL_TypeAutoPromoteType(BGBCC_TransState *ctx, ccxl_type sty, ccxl_type *rdty);
 int BGBCC_CCXL_TypeGetArraySize(BGBCC_TransState *ctx, ccxl_type sty);
-int BGBCC_CCXL_TypeArrayAdjustSize(BGBCC_TransState *ctx, ccxl_type sty, ccxl_type *rdty, int newsz);
+int BGBCC_CCXL_TypeArrayAdjustSize(BGBCC_TransState *ctx, ccxl_type sty, ccxl_type *rdty, int newsz);
 int BGBCC_CCXL_TypeGetArrayDimSize(BGBCC_TransState *ctx, ccxl_type sty);
-int BGBCC_CCXL_TypeUnpackOverflow(BGBCC_TransState *ctx, ccxl_type ty, BGBCC_CCXL_TypeOverflow *rovf);
-int BGBCC_CCXL_TypeIndexOverflow(BGBCC_TransState *ctx, BGBCC_CCXL_TypeOverflow ovf);
-ccxl_status BGBCC_CCXL_TypeFromOverflow(BGBCC_TransState *ctx, ccxl_type *rty, BGBCC_CCXL_TypeOverflow ovf);
-ccxl_status BGBCC_CCXL_TypeFromSig(BGBCC_TransState *ctx, ccxl_type *rty, char *sig);
+int BGBCC_CCXL_TypeUnpackOverflow(BGBCC_TransState *ctx, ccxl_type ty, BGBCC_CCXL_TypeOverflow *rovf);
+int BGBCC_CCXL_TypeIndexOverflow(BGBCC_TransState *ctx, BGBCC_CCXL_TypeOverflow ovf);
+ccxl_status BGBCC_CCXL_TypeFromOverflow(BGBCC_TransState *ctx, ccxl_type *rty, BGBCC_CCXL_TypeOverflow ovf);
+ccxl_status BGBCC_CCXL_TypeFromSig(BGBCC_TransState *ctx, ccxl_type *rty, char *sig);
 char *BGBCC_CCXL_TypeGetSig(BGBCC_TransState *ctx, ccxl_type ty);
 ccxl_type BGBCC_CCXL_TypeWrapBasicType(int ty);
-int BGBCC_CCXL_TypeCompatibleP(BGBCC_TransState *ctx, ccxl_type dty, ccxl_type sty);
-int BGBCC_CCXL_TypeCompatibleFlP(BGBCC_TransState *ctx, ccxl_type dty, ccxl_type sty, int fl);
-int BGBCC_CCXL_TypeCompatibleArchP(BGBCC_TransState *ctx, ccxl_type dty, ccxl_type sty);
+int BGBCC_CCXL_TypeCompatibleP(BGBCC_TransState *ctx, ccxl_type dty, ccxl_type sty);
+int BGBCC_CCXL_TypeCompatibleFlP(BGBCC_TransState *ctx, ccxl_type dty, ccxl_type sty, int fl);
+int BGBCC_CCXL_TypeCompatibleArchP(BGBCC_TransState *ctx, ccxl_type dty, ccxl_type sty);
 bool BGBCC_CCXL_TypeSupportsOperatorP(BGBCC_TransState *ctx, ccxl_type ty, int opr);
-ccxl_status BGBCC_CCXL_GetTypeBinaryDest(BGBCC_TransState *ctx, int opr, ccxl_type lty, ccxl_type rty, ccxl_type *rdty);
-ccxl_status BGBCC_CCXL_GetTypeCompareBinaryDest(BGBCC_TransState *ctx, int opr, ccxl_type lty, ccxl_type rty, ccxl_type *rdty);
+ccxl_status BGBCC_CCXL_GetTypeBinaryDest(BGBCC_TransState *ctx, int opr, ccxl_type lty, ccxl_type rty, ccxl_type *rdty);
+ccxl_status BGBCC_CCXL_GetTypeCompareBinaryDest(BGBCC_TransState *ctx, int opr, ccxl_type lty, ccxl_type rty, ccxl_type *rdty);
 //AHSRC:shcc/shx_binop.c
-int BGBCC_SHXC_NormalizeImmVRegInt(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register *rtreg);
-int BGBCC_SHXC_EmitBinaryVRegVRegInt(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
-int BGBCC_SHXC_EmitBinaryVRegVRegVRegInt(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
-int BGBCC_SHXC_EmitBinaryVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
-int BGBCC_SHXC_EmitDstRegOp(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int dreg);
-int BGBCC_SHXC_EmitUnaryVRegVRegInt(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
-int BGBCC_SHXC_EmitUnaryVRegVReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
-int BGBCC_SHXC_EmitCompareVRegVRegVRegInt(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int cmp, ccxl_register sreg, ccxl_register treg);
-int BGBCC_SHXC_EmitCompareVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
-int BGBCC_SHXC_EmitReturnVoid(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_SHXC_EmitReturnVReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register sreg);
-int BGBCC_SHXC_EmitCsrvVReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg);
-int BGBCC_SHXC_EmitCallBuiltin(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, char *name);
-int BGBCC_SHXC_EmitCallBuiltinArgs(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dst, char *name, int narg, ccxl_register *args);
-int BGBCC_SHXC_EmitCallFcnVReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register fcn);
-int BGBCC_SHXC_EmitCallName(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, char *name);
-int BGBCC_SHXC_EmitCallVReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dst, ccxl_register fcn, int narg, ccxl_register *args);
-int BGBCC_SHXC_EmitCSeltSelectVRegVRegVRegInt(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg);
-int BGBCC_SHXC_EmitCSeltCompareVRegVRegInt(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, int cmp, ccxl_register sreg, ccxl_register treg);
-int BGBCC_SHXC_EmitCSeltVRegVRegVRegInt(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg, ccxl_type ptype, int cmp, ccxl_register ureg, ccxl_register vreg);
+int BGBCC_SHXC_NormalizeImmVRegInt(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register *rtreg);
+int BGBCC_SHXC_EmitBinaryVRegVRegInt(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
+int BGBCC_SHXC_EmitBinaryVRegVRegVRegInt(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
+int BGBCC_SHXC_EmitBinaryVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
+int BGBCC_SHXC_EmitDstRegOp(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int dreg);
+int BGBCC_SHXC_EmitUnaryVRegVRegInt(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
+int BGBCC_SHXC_EmitUnaryVRegVReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
+int BGBCC_SHXC_EmitCompareVRegVRegVRegInt(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int cmp, ccxl_register sreg, ccxl_register treg);
+int BGBCC_SHXC_EmitCompareVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
+int BGBCC_SHXC_EmitReturnVoid(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_SHXC_EmitReturnVReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register sreg);
+int BGBCC_SHXC_EmitCsrvVReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg);
+int BGBCC_SHXC_EmitCallBuiltin(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, char *name);
+int BGBCC_SHXC_EmitCallBuiltinArgs(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dst, char *name, int narg, ccxl_register *args);
+int BGBCC_SHXC_EmitCallFcnVReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register fcn);
+int BGBCC_SHXC_EmitCallName(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, char *name);
+int BGBCC_SHXC_EmitCallVReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dst, ccxl_register fcn, int narg, ccxl_register *args);
+int BGBCC_SHXC_EmitCSeltSelectVRegVRegVRegInt(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg);
+int BGBCC_SHXC_EmitCSeltCompareVRegVRegInt(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, int cmp, ccxl_register sreg, ccxl_register treg);
+int BGBCC_SHXC_EmitCSeltVRegVRegVRegInt(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg, ccxl_type ptype, int cmp, ccxl_register ureg, ccxl_register vreg);
 //AHSRC:shcc/shx_bufasm.c
 char *BGBCC_SHXA_EatWhite(char *cs);
 char *BGBCC_SHXA_EatWhiteNoLinebreak(char *cs);
@@ -1314,12 +1314,12 @@ int BGBCC_SHXA_GetRegId(char *str);
 int BGBCC_SHXA_ParseOperand(char **rcs, BGBCC_SHX_OpcodeArg *opv);
 int BGBCC_SHXA_Init();
 int BGBCC_SHXA_LookupOpcodeNmid(char *name);
-int BGBCC_SHXA_LookupOpcodeFmid(BGBCC_SHX_OpcodeArg *arg0, BGBCC_SHX_OpcodeArg *arg1, BGBCC_SHX_OpcodeArg *arg2);
-int BGBCC_SHXA_TryAssembleOpcode(BGBCC_SHX_Context *ctx, char *name, BGBCC_SHX_OpcodeArg *arg0, BGBCC_SHX_OpcodeArg *arg1, BGBCC_SHX_OpcodeArg *arg2);
+int BGBCC_SHXA_LookupOpcodeFmid(BGBCC_SHX_OpcodeArg *arg0, BGBCC_SHX_OpcodeArg *arg1, BGBCC_SHX_OpcodeArg *arg2);
+int BGBCC_SHXA_TryAssembleOpcode(BGBCC_SHX_Context *ctx, char *name, BGBCC_SHX_OpcodeArg *arg0, BGBCC_SHX_OpcodeArg *arg1, BGBCC_SHX_OpcodeArg *arg2);
 int BGBCC_SHXA_ParseCheckFeature(BGBCC_SHX_Context *ctx, char *sym);
 int BGBCC_SHXA_ParseOpcode(BGBCC_SHX_Context *ctx, char **rcs);
 int BGBCC_SHXA_ParseBuffer(BGBCC_SHX_Context *ctx, char **rcs);
-int BGBCC_SHXC_AssembleBuffer(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, char *text);
+int BGBCC_SHXC_AssembleBuffer(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, char *text);
 //AHSRC:shcc/shx_cgif.c
 int BGBCC_SHXC_InitIface();
 ccxl_status BGBCC_SHXC_LoadBufferDLL(BGBCC_TransState *ctx,byte *buf, int sz);
@@ -1329,27 +1329,27 @@ bool BGBCC_SHXC_TypeInt2RegP(BGBCC_TransState *ctx, ccxl_type ty);
 bool BGBCC_SHXC_TypeFloatRegP(BGBCC_TransState *ctx, ccxl_type ty);
 bool BGBCC_SHXC_TypeFloat2RegP(BGBCC_TransState *ctx, ccxl_type ty);
 int BGBCC_SHXC_TypeGetRegClassP(BGBCC_TransState *ctx, ccxl_type ty);
-int BGBCC_SHXC_EmitVaArg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg);
-int BGBCC_SHXC_EmitVaEnd(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register sreg);
-int BGBCC_SHXC_EmitVaStart(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register sreg, ccxl_register treg);
-char *BGBCC_SHXC_DebugRegToStr(BGBCC_TransState *ctx,BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register reg);
-ccxl_status BGBCC_SHXC_PrintVirtOp(BGBCC_TransState *ctx,BGBCC_SHX_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, BGBCC_CCXL_VirtOp *op);
-ccxl_status BGBCC_SHXC_CompileVirtOp(BGBCC_TransState *ctx,BGBCC_SHX_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, BGBCC_CCXL_VirtOp *op);
-ccxl_status BGBCC_SHXC_PrintVirtTr(BGBCC_TransState *ctx,BGBCC_SHX_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, BGBCC_CCXL_VirtTr *tr, int idx);
-ccxl_status BGBCC_SHXC_CompileVirtTr(BGBCC_TransState *ctx,BGBCC_SHX_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, BGBCC_CCXL_VirtTr *tr, int idx);
+int BGBCC_SHXC_EmitVaArg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg);
+int BGBCC_SHXC_EmitVaEnd(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register sreg);
+int BGBCC_SHXC_EmitVaStart(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register sreg, ccxl_register treg);
+char *BGBCC_SHXC_DebugRegToStr(BGBCC_TransState *ctx,BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register reg);
+ccxl_status BGBCC_SHXC_PrintVirtOp(BGBCC_TransState *ctx,BGBCC_SHX_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, BGBCC_CCXL_VirtOp *op);
+ccxl_status BGBCC_SHXC_CompileVirtOp(BGBCC_TransState *ctx,BGBCC_SHX_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, BGBCC_CCXL_VirtOp *op);
+ccxl_status BGBCC_SHXC_PrintVirtTr(BGBCC_TransState *ctx,BGBCC_SHX_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, BGBCC_CCXL_VirtTr *tr, int idx);
+ccxl_status BGBCC_SHXC_CompileVirtTr(BGBCC_TransState *ctx,BGBCC_SHX_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, BGBCC_CCXL_VirtTr *tr, int idx);
 ccxl_status BGBCC_SHXC_EndFunction(BGBCC_TransState *ctx,BGBCC_CCXL_LiteralInfo *obj);
-ccxl_status BGBCC_SHXC_BuildFunctionBody(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, int fcnlbl);
+ccxl_status BGBCC_SHXC_BuildFunctionBody(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, int fcnlbl);
 ccxl_status BGBCC_SHXC_BuildFunction(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *obj);
-ccxl_status BGBCC_SHXC_BuildGlobal_EmitLitAsType(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register value);
+ccxl_status BGBCC_SHXC_BuildGlobal_EmitLitAsType(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register value);
 ccxl_status BGBCC_SHXC_BuildGlobal(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *obj);
 ccxl_status BGBCC_SHXC_BuildAsmBlob(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *obj);
-int BGBCC_SHXC_LookupLabelIndex(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int lblid);
-int BGBCC_SHXC_LookupLabelImgOffs(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int lblid);
-int BGBCC_SHXC_LookupLabelImgVA(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int lblid);
-ccxl_status BGBCC_SHXC_ApplyImageRelocs(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, byte *imgbase);
+int BGBCC_SHXC_LookupLabelIndex(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int lblid);
+int BGBCC_SHXC_LookupLabelImgOffs(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int lblid);
+int BGBCC_SHXC_LookupLabelImgVA(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int lblid);
+ccxl_status BGBCC_SHXC_ApplyImageRelocs(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, byte *imgbase);
 ccxl_status BGBCC_SHXC_FlattenImage(BGBCC_TransState *ctx,byte *obuf, int *rosz, fourcc imgfmt);
 //AHSRC:shcc/shx_conv.c
-int BGBCC_SHXC_EmitConvVRegVReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type dtype, ccxl_type stype, ccxl_register dreg, ccxl_register sreg);
+int BGBCC_SHXC_EmitConvVRegVReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type dtype, ccxl_type stype, ccxl_register dreg, ccxl_register sreg);
 //AHSRC:shcc/shx_elf.c
 ccxl_status BGBCC_SHXC_FlattenImageELF(BGBCC_TransState *ctx,byte *obuf, int *rosz, fourcc imgfmt);
 //AHSRC:shcc/shx_emit.c
@@ -1530,232 +1530,232 @@ int BGBCC_SHX_EmitOpCmpRegRegLabel(BGBCC_SHX_Context *ctx,int nmid, int rm, int 
 //AHSRC:shcc/shx_fltrom.c
 ccxl_status BGBCC_SHXC_FlattenImageROM(BGBCC_TransState *ctx,byte *obuf, int *rosz, fourcc imgfmt);
 //AHSRC:shcc/shx_fpreg.c
-int BGBCC_SHXC_EmitRegIsGpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg);
-int BGBCC_SHXC_EmitRegIsExtGpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg);
-int BGBCC_SHXC_EmitRegIsFpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg);
-int BGBCC_SHXC_EmitRegIsDpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg);
-int BGBCC_SHXC_EmitRegIsLpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg);
-int BGBCC_SHXC_RegNormalizeReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg);
-int BGBCC_SHXC_CheckVRegIsZRegP(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg);
-int BGBCC_SHXC_GetStatusFpscrSz(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_SHXC_GetStatusFpscrPr(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_SHXC_UpdateStatusFpscr(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, u32 state);
-int BGBCC_SHXC_ClearStatusFpscrSz(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_SHXC_ClearStatusFpscrPr(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_SHXC_SetStatusFpscrSz(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_SHXC_SetStatusFpscrPr(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_SHXC_SetStatusFpscrFloat(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_SHXC_SetStatusFpscrDouble(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_SHXC_ResetModeDqLocal(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_SHXC_ResetModeDqUnknown(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_SHXC_SetModeDqSet(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_SHXC_SetModeDqClear(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_SHXC_CheckSetModeDqSet(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_SHXC_CheckSetModeDqClear(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_SHXC_ResetFpscrLocal(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_SHXC_ResetFpscrDefaults(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_SHXC_ResetFpscrUnknown(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_SHXC_EmitLoadFrameOfsFpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int ofs, int dreg);
-int BGBCC_SHXC_EmitStoreStackOfsFpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int ofs, int dreg);
-int BGBCC_SHXC_EmitStoreFrameOfsFpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int ofs, int dreg);
-int BGBCC_SHXC_EmitLoadBRegOfsFpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int breg, int ofs, int dreg);
-int BGBCC_SHXC_EmitStoreBRegOfsFpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int breg, int ofs, int dreg);
-int BGBCC_SHXC_EmitLoadBRegIRegScFpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int breg, int ireg, int sc, int dreg);
-int BGBCC_SHXC_EmitStoreBRegIRegScFpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int breg, int ireg, int sc, int dreg);
-int BGBCC_SHXC_EmitTryGetDpRegister(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg, int fl);
-int BGBCC_SHXC_EmitGetDpRegisterI(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg, int fl);
-int BGBCC_SHXC_EmitTryGetFpRegister(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg, int fl);
-int BGBCC_SHXC_EmitGetFpRegister(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg, int fl);
-int BGBCC_SHXC_EmitReleaseFpRegister(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg);
-int BGBCC_SHXC_StompFpRegisterIndex(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int rgidx);
-int BGBCC_SHXC_EmitSyncFpRegisterIndex(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int rgidx);
-int BGBCC_SHXC_EmitSyncFpRegisters(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_SHXC_EmitLabelFlushFpRegisters(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_SHXC_EmitBinaryVRegVRegFloat(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
-int BGBCC_SHXC_EmitBinaryVRegVRegVRegFloat(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
-int BGBCC_SHXC_EmitUnaryVRegVRegFloat(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
-int BGBCC_SHXC_EmitCompareVRegVRegVRegFloat(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int cmp, ccxl_register sreg, ccxl_register treg);
-int BGBCC_SHXC_EmitJCmpVRegVRegFloat(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp, int lbl);
+int BGBCC_SHXC_EmitRegIsGpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg);
+int BGBCC_SHXC_EmitRegIsExtGpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg);
+int BGBCC_SHXC_EmitRegIsFpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg);
+int BGBCC_SHXC_EmitRegIsDpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg);
+int BGBCC_SHXC_EmitRegIsLpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg);
+int BGBCC_SHXC_RegNormalizeReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg);
+int BGBCC_SHXC_CheckVRegIsZRegP(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg);
+int BGBCC_SHXC_GetStatusFpscrSz(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_SHXC_GetStatusFpscrPr(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_SHXC_UpdateStatusFpscr(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, u32 state);
+int BGBCC_SHXC_ClearStatusFpscrSz(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_SHXC_ClearStatusFpscrPr(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_SHXC_SetStatusFpscrSz(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_SHXC_SetStatusFpscrPr(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_SHXC_SetStatusFpscrFloat(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_SHXC_SetStatusFpscrDouble(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_SHXC_ResetModeDqLocal(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_SHXC_ResetModeDqUnknown(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_SHXC_SetModeDqSet(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_SHXC_SetModeDqClear(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_SHXC_CheckSetModeDqSet(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_SHXC_CheckSetModeDqClear(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_SHXC_ResetFpscrLocal(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_SHXC_ResetFpscrDefaults(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_SHXC_ResetFpscrUnknown(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_SHXC_EmitLoadFrameOfsFpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int ofs, int dreg);
+int BGBCC_SHXC_EmitStoreStackOfsFpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int ofs, int dreg);
+int BGBCC_SHXC_EmitStoreFrameOfsFpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int ofs, int dreg);
+int BGBCC_SHXC_EmitLoadBRegOfsFpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int breg, int ofs, int dreg);
+int BGBCC_SHXC_EmitStoreBRegOfsFpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int breg, int ofs, int dreg);
+int BGBCC_SHXC_EmitLoadBRegIRegScFpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int breg, int ireg, int sc, int dreg);
+int BGBCC_SHXC_EmitStoreBRegIRegScFpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int breg, int ireg, int sc, int dreg);
+int BGBCC_SHXC_EmitTryGetDpRegister(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg, int fl);
+int BGBCC_SHXC_EmitGetDpRegisterI(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg, int fl);
+int BGBCC_SHXC_EmitTryGetFpRegister(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg, int fl);
+int BGBCC_SHXC_EmitGetFpRegister(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg, int fl);
+int BGBCC_SHXC_EmitReleaseFpRegister(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg);
+int BGBCC_SHXC_StompFpRegisterIndex(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int rgidx);
+int BGBCC_SHXC_EmitSyncFpRegisterIndex(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int rgidx);
+int BGBCC_SHXC_EmitSyncFpRegisters(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_SHXC_EmitLabelFlushFpRegisters(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_SHXC_EmitBinaryVRegVRegFloat(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
+int BGBCC_SHXC_EmitBinaryVRegVRegVRegFloat(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
+int BGBCC_SHXC_EmitUnaryVRegVRegFloat(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
+int BGBCC_SHXC_EmitCompareVRegVRegVRegFloat(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int cmp, ccxl_register sreg, ccxl_register treg);
+int BGBCC_SHXC_EmitJCmpVRegVRegFloat(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp, int lbl);
 //AHSRC:shcc/shx_frame.c
-int BGBCC_SHXC_EmitLoadFrameOfsReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int ofs, int dreg);
-int BGBCC_SHXC_EmitStoreFrameOfsReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int ofs, int dreg);
-int BGBCC_SHXC_EmitLdaFrameOfsReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int ofs, int dreg);
-int BGBCC_SHXC_EmitStoreStackOfsReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int ofs, int dreg);
-int BGBCC_SHXC_EmitLoadBRegOfsReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int breg, int ofs, int dreg);
-int BGBCC_SHXC_EmitLoadOp2BRegOfsReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int nmid2, int breg, int ofs, int dreg);
-int BGBCC_SHXC_EmitStoreBRegOfsReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int breg, int ofs, int dreg);
-int BGBCC_SHXC_EmitLeaBRegOfsReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int breg, int ofs, int dreg);
-int BGBCC_SHXC_CheckNmidScaleMatch(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int sc);
-int BGBCC_SHXC_EmitLoadBRegIRegScReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int breg, int ireg, int sc, int dreg);
-int BGBCC_SHXC_EmitStoreBRegIRegScReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int breg, int ireg, int sc, int dreg);
-int BGBCC_SHXC_EmitLoadBRegIRegScDispReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int breg, int ireg, int sc, int disp, int dreg);
-int BGBCC_SHXC_EmitStoreBRegIRegScDispReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int breg, int ireg, int sc, int disp, int dreg);
-int BGBCC_SHXC_GetGblIndexGotIndex(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int gblidx);
-int BGBCC_SHXC_GetGblIndexLabel(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int gblidx);
-int BGBCC_SHXC_GetVRegGotIndex(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register sreg);
-int BGBCC_SHXC_GetGblNameGotIndex(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, char *name);
-int BGBCC_SHXC_GetGblNameLabel(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, char *name);
-int BGBCC_SHXC_EmitLoadGblNameReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, char *name, int dreg);
-int BGBCC_SHXC_EmitLoadFrameVRegByValReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register sreg, int dreg);
-int BGBCC_SHXC_EmitStoreFrameVRegByValReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register sreg, int dreg);
-int BGBCC_SHXC_EmitLoadFrameVRegReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register sreg, int dreg);
-int BGBCC_SHXC_EmitStoreFrameVRegReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register dreg, int sreg);
-int BGBCC_SHXC_EmitLdaValSyncFrameVRegReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register sreg, int dreg);
-int BGBCC_SHXC_EmitLdaFrameVRegReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register sreg, int dreg);
-int BGBCC_SHXC_GetFrameVRegFlags(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register sreg);
-int BGBCC_SHXC_SetupFrameVRegSpan(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register sreg);
-int BGBCC_SHXC_SetupFrameLayout(BGBCC_TransState *ctx,BGBCC_SHX_Context *sctx, BGBCC_CCXL_RegisterInfo *obj);
-int BGBCC_SHXC_CalcFrameEpiKey(BGBCC_TransState *ctx,BGBCC_SHX_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, int rqt, int *repik, int *repix);
-int BGBCC_SHXC_EmitFrameProlog(BGBCC_TransState *ctx,BGBCC_SHX_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, int fcnlbl);
-int BGBCC_SHXC_EmitFrameEpilog(BGBCC_TransState *ctx,BGBCC_SHX_Context *sctx, BGBCC_CCXL_RegisterInfo *obj);
+int BGBCC_SHXC_EmitLoadFrameOfsReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int ofs, int dreg);
+int BGBCC_SHXC_EmitStoreFrameOfsReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int ofs, int dreg);
+int BGBCC_SHXC_EmitLdaFrameOfsReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int ofs, int dreg);
+int BGBCC_SHXC_EmitStoreStackOfsReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int ofs, int dreg);
+int BGBCC_SHXC_EmitLoadBRegOfsReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int breg, int ofs, int dreg);
+int BGBCC_SHXC_EmitLoadOp2BRegOfsReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int nmid2, int breg, int ofs, int dreg);
+int BGBCC_SHXC_EmitStoreBRegOfsReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int breg, int ofs, int dreg);
+int BGBCC_SHXC_EmitLeaBRegOfsReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int breg, int ofs, int dreg);
+int BGBCC_SHXC_CheckNmidScaleMatch(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int sc);
+int BGBCC_SHXC_EmitLoadBRegIRegScReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int breg, int ireg, int sc, int dreg);
+int BGBCC_SHXC_EmitStoreBRegIRegScReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int breg, int ireg, int sc, int dreg);
+int BGBCC_SHXC_EmitLoadBRegIRegScDispReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int breg, int ireg, int sc, int disp, int dreg);
+int BGBCC_SHXC_EmitStoreBRegIRegScDispReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int breg, int ireg, int sc, int disp, int dreg);
+int BGBCC_SHXC_GetGblIndexGotIndex(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int gblidx);
+int BGBCC_SHXC_GetGblIndexLabel(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int gblidx);
+int BGBCC_SHXC_GetVRegGotIndex(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register sreg);
+int BGBCC_SHXC_GetGblNameGotIndex(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, char *name);
+int BGBCC_SHXC_GetGblNameLabel(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, char *name);
+int BGBCC_SHXC_EmitLoadGblNameReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, char *name, int dreg);
+int BGBCC_SHXC_EmitLoadFrameVRegByValReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register sreg, int dreg);
+int BGBCC_SHXC_EmitStoreFrameVRegByValReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register sreg, int dreg);
+int BGBCC_SHXC_EmitLoadFrameVRegReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register sreg, int dreg);
+int BGBCC_SHXC_EmitStoreFrameVRegReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register dreg, int sreg);
+int BGBCC_SHXC_EmitLdaValSyncFrameVRegReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register sreg, int dreg);
+int BGBCC_SHXC_EmitLdaFrameVRegReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register sreg, int dreg);
+int BGBCC_SHXC_GetFrameVRegFlags(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register sreg);
+int BGBCC_SHXC_SetupFrameVRegSpan(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register sreg);
+int BGBCC_SHXC_SetupFrameLayout(BGBCC_TransState *ctx,BGBCC_SHX_Context *sctx, BGBCC_CCXL_RegisterInfo *obj);
+int BGBCC_SHXC_CalcFrameEpiKey(BGBCC_TransState *ctx,BGBCC_SHX_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, int rqt, int *repik, int *repix);
+int BGBCC_SHXC_EmitFrameProlog(BGBCC_TransState *ctx,BGBCC_SHX_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, int fcnlbl);
+int BGBCC_SHXC_EmitFrameEpilog(BGBCC_TransState *ctx,BGBCC_SHX_Context *sctx, BGBCC_CCXL_RegisterInfo *obj);
 //AHSRC:shcc/shx_ldix.c
-int BGBCC_SHXC_EmitLdix_FillSzNmTy(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, int *rsz, int *rnm1, int *rnm2, int *rnm3, int *rnm4);
-int BGBCC_SHXC_EmitLdixVRegVRegImm(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, s32 imm);
-int BGBCC_SHXC_EmitLdixVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg);
-int BGBCC_SHXC_EmitLdixVRegVRegVRegImm(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg, int imm);
-int BGBCC_SHXC_EmitStixVRegVRegImm(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, s32 imm);
-int BGBCC_SHXC_EmitStixVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg);
-int BGBCC_SHXC_EmitStixVRegVRegVRegImm(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg, int imm);
-int BGBCC_SHXC_EmitLeaVRegVRegImm(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, s32 imm);
-int BGBCC_SHXC_EmitLeaVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg);
-int BGBCC_SHXC_EmitLdaVRegVReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg);
-int BGBCC_SHXC_EmitDiffPtrVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg);
-int BGBCC_SHXC_EmitLeaShrRegImm(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg, int shl);
-int BGBCC_SHXC_EmitLeaShlRegImm(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg, int shl);
-int BGBCC_SHXC_EmitLeaBRegIRegScReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int breg, int ireg, int sc, int dreg);
+int BGBCC_SHXC_EmitLdix_FillSzNmTy(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, int *rsz, int *rnm1, int *rnm2, int *rnm3, int *rnm4);
+int BGBCC_SHXC_EmitLdixVRegVRegImm(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, s32 imm);
+int BGBCC_SHXC_EmitLdixVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg);
+int BGBCC_SHXC_EmitLdixVRegVRegVRegImm(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg, int imm);
+int BGBCC_SHXC_EmitStixVRegVRegImm(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, s32 imm);
+int BGBCC_SHXC_EmitStixVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg);
+int BGBCC_SHXC_EmitStixVRegVRegVRegImm(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg, int imm);
+int BGBCC_SHXC_EmitLeaVRegVRegImm(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, s32 imm);
+int BGBCC_SHXC_EmitLeaVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg);
+int BGBCC_SHXC_EmitLdaVRegVReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg);
+int BGBCC_SHXC_EmitDiffPtrVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg);
+int BGBCC_SHXC_EmitLeaShrRegImm(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg, int shl);
+int BGBCC_SHXC_EmitLeaShlRegImm(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg, int shl);
+int BGBCC_SHXC_EmitLeaBRegIRegScReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int breg, int ireg, int sc, int dreg);
 //AHSRC:shcc/shx_lparith.c
-int BGBCC_SHXC_EmitBinaryLong_ShlImm(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int cdreg, int shl);
-int BGBCC_SHXC_EmitBinaryLong_ShrImm(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int cdreg, int shl);
-int BGBCC_SHXC_EmitBinaryLong_SarImm(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int cdreg, int shl);
-int BGBCC_SHXC_EmitBinaryVRegVRegLong(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
-int BGBCC_SHXC_EmitBinaryVRegVRegVRegLong(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
-int BGBCC_SHXC_EmitUnaryVRegVRegLong(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
-int BGBCC_SHXC_EmitJCmpVRegVRegLong(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp, int lbl);
+int BGBCC_SHXC_EmitBinaryLong_ShlImm(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int cdreg, int shl);
+int BGBCC_SHXC_EmitBinaryLong_ShrImm(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int cdreg, int shl);
+int BGBCC_SHXC_EmitBinaryLong_SarImm(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int cdreg, int shl);
+int BGBCC_SHXC_EmitBinaryVRegVRegLong(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
+int BGBCC_SHXC_EmitBinaryVRegVRegVRegLong(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
+int BGBCC_SHXC_EmitUnaryVRegVRegLong(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
+int BGBCC_SHXC_EmitJCmpVRegVRegLong(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp, int lbl);
 //AHSRC:shcc/shx_lpreg.c
-int BGBCC_SHXC_EmitTryGetLpRegister(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg, int fl);
-int BGBCC_SHXC_EmitGetLpRegister(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg, int fl);
-int BGBCC_SHXC_EmitReleaseLpRegister(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg);
-int BGBCC_SHXC_StompLpRegisterIndex(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int rgidx);
+int BGBCC_SHXC_EmitTryGetLpRegister(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg, int fl);
+int BGBCC_SHXC_EmitGetLpRegister(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg, int fl);
+int BGBCC_SHXC_EmitReleaseLpRegister(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg);
+int BGBCC_SHXC_StompLpRegisterIndex(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int rgidx);
 //AHSRC:shcc/shx_lqarith.c
-int BGBCC_SHXC_EmitBinaryVRegVRegQLong(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
-int BGBCC_SHXC_EmitBinaryVRegVRegVRegQLong(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
-int BGBCC_SHXC_EmitUnaryVRegVRegQLong(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
-int BGBCC_SHXC_EmitCompareVRegVRegVRegQLong(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int cmp, ccxl_register sreg, ccxl_register treg);
-int BGBCC_SHXC_EmitJCmpVRegVRegQLong(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp, int lbl);
-int BGBCC_SHXC_EmitJCmpVRegZeroQLong(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register sreg, int cmp, int lbl);
+int BGBCC_SHXC_EmitBinaryVRegVRegQLong(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
+int BGBCC_SHXC_EmitBinaryVRegVRegVRegQLong(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
+int BGBCC_SHXC_EmitUnaryVRegVRegQLong(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
+int BGBCC_SHXC_EmitCompareVRegVRegVRegQLong(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int cmp, ccxl_register sreg, ccxl_register treg);
+int BGBCC_SHXC_EmitJCmpVRegVRegQLong(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp, int lbl);
+int BGBCC_SHXC_EmitJCmpVRegZeroQLong(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register sreg, int cmp, int lbl);
 //AHSRC:shcc/shx_lvarith.c
-int BGBCC_SHXC_EmitBinaryVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
-int BGBCC_SHXC_EmitBinaryVRegVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
-int BGBCC_SHXC_EmitUnaryVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
-int BGBCC_SHXC_EmitConvToVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg);
-int BGBCC_SHXC_EmitConvFromVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg);
+int BGBCC_SHXC_EmitBinaryVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
+int BGBCC_SHXC_EmitBinaryVRegVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
+int BGBCC_SHXC_EmitUnaryVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
+int BGBCC_SHXC_EmitConvToVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg);
+int BGBCC_SHXC_EmitConvFromVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg);
 //AHSRC:shcc/shx_lxarith.c
-int BGBCC_SHXC_IndexLitInt128(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, s64 val_lo, s64 val_hi);
-int BGBCC_SHXC_EmitBinaryVRegVRegInt128(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
-int BGBCC_SHXC_EmitBinaryVRegVRegVRegInt128(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
-int BGBCC_SHXC_EmitUnaryVRegVRegInt128(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
+int BGBCC_SHXC_IndexLitInt128(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, s64 val_lo, s64 val_hi);
+int BGBCC_SHXC_EmitBinaryVRegVRegInt128(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
+int BGBCC_SHXC_EmitBinaryVRegVRegVRegInt128(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
+int BGBCC_SHXC_EmitUnaryVRegVRegInt128(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
 //AHSRC:shcc/shx_pecoff.c
-int BGBCC_SHXC_CoffLoadBufferDLL(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, byte *buf, int sz);
-int BGBCC_SHXC_CoffBuildExports(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_SHXC_CoffBuildImports(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_SHXC_CoffSectionFlags(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, char *name);
+int BGBCC_SHXC_CoffLoadBufferDLL(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, byte *buf, int sz);
+int BGBCC_SHXC_CoffBuildExports(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_SHXC_CoffBuildImports(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_SHXC_CoffSectionFlags(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, char *name);
 int bgbcc_shxc_qrsort(u32 *arr, int cnt, int rd);
 ccxl_status BGBCC_SHXC_FlattenImagePECOFF(BGBCC_TransState *ctx,byte *obuf, int *rosz, fourcc imgfmt);
 //AHSRC:shcc/shx_register.c
-int BGBCC_SHXC_ScratchCheckRegFree(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int reg);
-int BGBCC_SHXC_ScratchSafeStompReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int reg);
-int BGBCC_SHXC_ScratchStompReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int reg);
-int BGBCC_SHXC_ScratchHoldReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int reg);
-int BGBCC_SHXC_ScratchReleaseReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int reg);
-int BGBCC_SHXC_ScratchAllocReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int cls);
-int BGBCC_SHXC_SaveFrameOfsForReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int reg);
-int BGBCC_SHXC_SaveFrameOfsForFpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int reg);
-int BGBCC_SHXC_EmitSaveFrameReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int reg);
-int BGBCC_SHXC_EmitReloadSavedFrameReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int reg);
-int BGBCC_SHXC_EmitTryGetRegister(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg, int fl);
-int BGBCC_SHXC_EmitGetRegister(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg, int fl);
-int BGBCC_SHXC_EmitGetRegisterDirty(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg);
-int BGBCC_SHXC_EmitGetRegisterWrite(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg);
-int BGBCC_SHXC_EmitGetRegisterRead(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg);
-int BGBCC_SHXC_EmitTryGetRegisterDirty(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg);
-int BGBCC_SHXC_EmitTryGetRegisterWrite(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg);
-int BGBCC_SHXC_EmitTryGetRegisterRead(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg);
-int BGBCC_SHXC_GetVRegPriority(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg);
-int BGBCC_SHXC_GetVRegLiveRange(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg, int *rbeg, int *rend);
-int BGBCC_SHXC_CheckVRegLiveRange(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg);
-int BGBCC_SHXC_EmitReleaseRegister(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg);
-int BGBCC_SHXC_EmitSyncRegisterIndex(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int rgix);
-int BGBCC_SHXC_EmitSyncRegisterIndex2(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int rgix, int sfl);
-int BGBCC_SHXC_EmitSyncRegisters(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_SHXC_EmitLabelFlushRegisters(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_SHXC_EmitScratchSyncRegisters(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_SHXC_EmitScratchSyncRegistersSafeMask(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int mask);
+int BGBCC_SHXC_ScratchCheckRegFree(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int reg);
+int BGBCC_SHXC_ScratchSafeStompReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int reg);
+int BGBCC_SHXC_ScratchStompReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int reg);
+int BGBCC_SHXC_ScratchHoldReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int reg);
+int BGBCC_SHXC_ScratchReleaseReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int reg);
+int BGBCC_SHXC_ScratchAllocReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int cls);
+int BGBCC_SHXC_SaveFrameOfsForReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int reg);
+int BGBCC_SHXC_SaveFrameOfsForFpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int reg);
+int BGBCC_SHXC_EmitSaveFrameReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int reg);
+int BGBCC_SHXC_EmitReloadSavedFrameReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int reg);
+int BGBCC_SHXC_EmitTryGetRegister(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg, int fl);
+int BGBCC_SHXC_EmitGetRegister(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg, int fl);
+int BGBCC_SHXC_EmitGetRegisterDirty(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg);
+int BGBCC_SHXC_EmitGetRegisterWrite(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg);
+int BGBCC_SHXC_EmitGetRegisterRead(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg);
+int BGBCC_SHXC_EmitTryGetRegisterDirty(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg);
+int BGBCC_SHXC_EmitTryGetRegisterWrite(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg);
+int BGBCC_SHXC_EmitTryGetRegisterRead(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg);
+int BGBCC_SHXC_GetVRegPriority(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg);
+int BGBCC_SHXC_GetVRegLiveRange(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg, int *rbeg, int *rend);
+int BGBCC_SHXC_CheckVRegLiveRange(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg);
+int BGBCC_SHXC_EmitReleaseRegister(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg);
+int BGBCC_SHXC_EmitSyncRegisterIndex(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int rgix);
+int BGBCC_SHXC_EmitSyncRegisterIndex2(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int rgix, int sfl);
+int BGBCC_SHXC_EmitSyncRegisters(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_SHXC_EmitLabelFlushRegisters(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_SHXC_EmitScratchSyncRegisters(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_SHXC_EmitScratchSyncRegistersSafeMask(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int mask);
 //AHSRC:shcc/shx_softfpu.c
-int BGBCC_SHXC_NormalizeImmVRegSoftFloat(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register *rtreg);
-int BGBCC_SHXC_EmitBinaryVRegVRegSoftFloat(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
-int BGBCC_SHXC_EmitBinaryVRegVRegVRegSoftFloat(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
-int BGBCC_SHXC_EmitUnaryVRegVRegSoftFloat(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
-int BGBCC_SHXC_EmitCompareVRegVRegVRegSoftFloat(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int cmp, ccxl_register sreg, ccxl_register treg);
-int BGBCC_SHXC_EmitJCmpVRegVRegSoftFloat(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp, int lbl);
+int BGBCC_SHXC_NormalizeImmVRegSoftFloat(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register *rtreg);
+int BGBCC_SHXC_EmitBinaryVRegVRegSoftFloat(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
+int BGBCC_SHXC_EmitBinaryVRegVRegVRegSoftFloat(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
+int BGBCC_SHXC_EmitUnaryVRegVRegSoftFloat(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
+int BGBCC_SHXC_EmitCompareVRegVRegVRegSoftFloat(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int cmp, ccxl_register sreg, ccxl_register treg);
+int BGBCC_SHXC_EmitJCmpVRegVRegSoftFloat(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp, int lbl);
 //AHSRC:shcc/shx_struct.c
-int BGBCC_SHXC_EmitDebugCheckReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, int sreg);
-int BGBCC_SHXC_EmitConvOpRegReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int sreg, int dreg);
-int BGBCC_SHXC_EmitLoadSlotVRegVRegImm(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, int gblid, int fid);
-int BGBCC_SHXC_EmitStoreSlotVRegVRegImm(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, int gblid, int fid);
-int BGBCC_SHXC_EmitLoadSlotAddrVRegVRegImm(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, int gblid, int fid);
-int BGBCC_SHXC_EmitValueCopyRegRegSz(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg, int sreg, int sz, int al);
-int BGBCC_SHXC_EmitLoadTypeBRegOfsReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, int sreg, int ofs, int dreg);
+int BGBCC_SHXC_EmitDebugCheckReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, int sreg);
+int BGBCC_SHXC_EmitConvOpRegReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int sreg, int dreg);
+int BGBCC_SHXC_EmitLoadSlotVRegVRegImm(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, int gblid, int fid);
+int BGBCC_SHXC_EmitStoreSlotVRegVRegImm(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, int gblid, int fid);
+int BGBCC_SHXC_EmitLoadSlotAddrVRegVRegImm(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, int gblid, int fid);
+int BGBCC_SHXC_EmitValueCopyRegRegSz(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg, int sreg, int sz, int al);
+int BGBCC_SHXC_EmitLoadTypeBRegOfsReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, int sreg, int ofs, int dreg);
 //AHSRC:shcc/shx_vreg.c
-int BGBCC_SHXC_EmitOpNone(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid);
-int BGBCC_SHXC_EmitOpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int reg);
-int BGBCC_SHXC_EmitOpImm(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int imm);
-int BGBCC_SHXC_EmitOpMReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int reg);
-int BGBCC_SHXC_EmitOpRegReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int rm, int rn);
-int BGBCC_SHXC_EmitOpRegStReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int rm, int rn);
-int BGBCC_SHXC_EmitOpLdRegReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int rm, int rn);
-int BGBCC_SHXC_EmitOpRegStDecReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int rm, int rn);
-int BGBCC_SHXC_EmitOpLdIncRegReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int rm, int rn);
-int BGBCC_SHXC_EmitOpRegStRegDisp(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int rm, int rn, int disp);
-int BGBCC_SHXC_EmitOpLdRegDispReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int rm, int disp, int rn);
-int BGBCC_SHXC_EmitOpRegStReg2(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int rm, int ro, int rn);
-int BGBCC_SHXC_EmitOpLdReg2Reg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int rm, int ro, int rn);
-int BGBCC_SHXC_EmitOpRegStReg2Disp(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int rm, int ro, int rn, int disp);
-int BGBCC_SHXC_EmitOpLdReg2DispReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int rm, int ro, int disp, int rn);
-int BGBCC_SHXC_EmitOpRegRegReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int rs, int rt, int rn);
-int BGBCC_SHXC_EmitOpRegImm(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int reg, int imm);
-int BGBCC_SHXC_EmitOpRegImmReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int rm, int imm, int rn);
-int BGBCC_SHXC_EmitMovRegReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int sreg, int dreg);
-int BGBCC_SHXC_EmitLoadVRegReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register sreg, int dreg);
-int BGBCC_SHXC_EmitStoreVRegReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register dreg, int sreg);
-int BGBCC_SHXC_EmitMovVRegVReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg);
-int BGBCC_SHXC_EmitFpConvVRegVReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nm1, int nm2, ccxl_register dreg, ccxl_register sreg);
-int BGBCC_SHXC_EmitMovVRegImm(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, s64 imm);
-int BGBCC_SHXC_EmitOpNmidVRegVReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, int nmid, ccxl_register dreg, ccxl_register sreg);
-int BGBCC_SHXC_EmitJCmpVRegVRegInt(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp, int lbl);
-int BGBCC_SHXC_EmitJCmpVRegVReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp, int lbl);
-int BGBCC_SHXC_EmitJCmpVRegZeroInt(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register sreg, int cmp, int lbl);
-int BGBCC_SHXC_EmitJCmpVRegZero(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register sreg, int cmp, int lbl);
+int BGBCC_SHXC_EmitOpNone(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid);
+int BGBCC_SHXC_EmitOpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int reg);
+int BGBCC_SHXC_EmitOpImm(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int imm);
+int BGBCC_SHXC_EmitOpMReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int reg);
+int BGBCC_SHXC_EmitOpRegReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int rm, int rn);
+int BGBCC_SHXC_EmitOpRegStReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int rm, int rn);
+int BGBCC_SHXC_EmitOpLdRegReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int rm, int rn);
+int BGBCC_SHXC_EmitOpRegStDecReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int rm, int rn);
+int BGBCC_SHXC_EmitOpLdIncRegReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int rm, int rn);
+int BGBCC_SHXC_EmitOpRegStRegDisp(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int rm, int rn, int disp);
+int BGBCC_SHXC_EmitOpLdRegDispReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int rm, int disp, int rn);
+int BGBCC_SHXC_EmitOpRegStReg2(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int rm, int ro, int rn);
+int BGBCC_SHXC_EmitOpLdReg2Reg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int rm, int ro, int rn);
+int BGBCC_SHXC_EmitOpRegStReg2Disp(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int rm, int ro, int rn, int disp);
+int BGBCC_SHXC_EmitOpLdReg2DispReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int rm, int ro, int disp, int rn);
+int BGBCC_SHXC_EmitOpRegRegReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int rs, int rt, int rn);
+int BGBCC_SHXC_EmitOpRegImm(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int reg, int imm);
+int BGBCC_SHXC_EmitOpRegImmReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nmid, int rm, int imm, int rn);
+int BGBCC_SHXC_EmitMovRegReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int sreg, int dreg);
+int BGBCC_SHXC_EmitLoadVRegReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register sreg, int dreg);
+int BGBCC_SHXC_EmitStoreVRegReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register dreg, int sreg);
+int BGBCC_SHXC_EmitMovVRegVReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg);
+int BGBCC_SHXC_EmitFpConvVRegVReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int nm1, int nm2, ccxl_register dreg, ccxl_register sreg);
+int BGBCC_SHXC_EmitMovVRegImm(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, s64 imm);
+int BGBCC_SHXC_EmitOpNmidVRegVReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, int nmid, ccxl_register dreg, ccxl_register sreg);
+int BGBCC_SHXC_EmitJCmpVRegVRegInt(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp, int lbl);
+int BGBCC_SHXC_EmitJCmpVRegVReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp, int lbl);
+int BGBCC_SHXC_EmitJCmpVRegZeroInt(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register sreg, int cmp, int lbl);
+int BGBCC_SHXC_EmitJCmpVRegZero(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register sreg, int cmp, int lbl);
 //AHSRC:bsrcc/bsr_binop.c
-int BGBCC_BSRC_NormalizeImmVRegInt(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register *rtreg);
-int BGBCC_BSRC_EmitBinaryVRegVRegInt(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
-int BGBCC_BSRC_EmitBinaryVRegVRegVRegInt(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
-int BGBCC_BSRC_EmitBinaryVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
-int BGBCC_BSRC_EmitDstRegOp(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int dreg);
-int BGBCC_BSRC_EmitUnaryVRegVRegInt(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
-int BGBCC_BSRC_EmitUnaryVRegVReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
-int BGBCC_BSRC_EmitCompareVRegVRegVRegInt(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int cmp, ccxl_register sreg, ccxl_register treg);
-int BGBCC_BSRC_EmitCompareVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
-int BGBCC_BSRC_EmitReturnVoid(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx);
-int BGBCC_BSRC_EmitReturnVReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register sreg);
-int BGBCC_BSRC_EmitCsrvVReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg);
-int BGBCC_BSRC_EmitCallBuiltin(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, char *name);
-int BGBCC_BSRC_EmitCallBuiltinArgs(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dst, char *name, int narg, ccxl_register *args);
-int BGBCC_BSRC_EmitCallFcnVReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register fcn);
-int BGBCC_BSRC_EmitCallName(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, char *name);
-int BGBCC_BSRC_EmitCallVReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dst, ccxl_register fcn, int narg, ccxl_register *args);
-int BGBCC_BSRC_EmitCSeltSelectVRegVRegVRegInt(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg);
-int BGBCC_BSRC_EmitCSeltCompareVRegVRegInt(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, int cmp, ccxl_register sreg, ccxl_register treg);
-int BGBCC_BSRC_EmitCSeltVRegVRegVRegInt(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg, ccxl_type ptype, int cmp, ccxl_register ureg, ccxl_register vreg);
+int BGBCC_BSRC_NormalizeImmVRegInt(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register *rtreg);
+int BGBCC_BSRC_EmitBinaryVRegVRegInt(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
+int BGBCC_BSRC_EmitBinaryVRegVRegVRegInt(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
+int BGBCC_BSRC_EmitBinaryVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
+int BGBCC_BSRC_EmitDstRegOp(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int dreg);
+int BGBCC_BSRC_EmitUnaryVRegVRegInt(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
+int BGBCC_BSRC_EmitUnaryVRegVReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
+int BGBCC_BSRC_EmitCompareVRegVRegVRegInt(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int cmp, ccxl_register sreg, ccxl_register treg);
+int BGBCC_BSRC_EmitCompareVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
+int BGBCC_BSRC_EmitReturnVoid(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx);
+int BGBCC_BSRC_EmitReturnVReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register sreg);
+int BGBCC_BSRC_EmitCsrvVReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg);
+int BGBCC_BSRC_EmitCallBuiltin(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, char *name);
+int BGBCC_BSRC_EmitCallBuiltinArgs(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dst, char *name, int narg, ccxl_register *args);
+int BGBCC_BSRC_EmitCallFcnVReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register fcn);
+int BGBCC_BSRC_EmitCallName(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, char *name);
+int BGBCC_BSRC_EmitCallVReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dst, ccxl_register fcn, int narg, ccxl_register *args);
+int BGBCC_BSRC_EmitCSeltSelectVRegVRegVRegInt(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg);
+int BGBCC_BSRC_EmitCSeltCompareVRegVRegInt(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, int cmp, ccxl_register sreg, ccxl_register treg);
+int BGBCC_BSRC_EmitCSeltVRegVRegVRegInt(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg, ccxl_type ptype, int cmp, ccxl_register ureg, ccxl_register vreg);
 //AHSRC:bsrcc/bsr_bufasm.c
 char *BGBCC_BSRA_EatWhite(char *cs);
 char *BGBCC_BSRA_EatWhiteNoLinebreak(char *cs);
@@ -1770,12 +1770,12 @@ int BGBCC_BSRA_GetRegId(char *str);
 int BGBCC_BSRA_ParseOperand(char **rcs, BGBCC_BSR_OpcodeArg *opv);
 int BGBCC_BSRA_Init();
 int BGBCC_BSRA_LookupOpcodeNmid(char *name);
-int BGBCC_BSRA_LookupOpcodeFmid(BGBCC_BSR_OpcodeArg *arg0, BGBCC_BSR_OpcodeArg *arg1, BGBCC_BSR_OpcodeArg *arg2);
-int BGBCC_BSRA_TryAssembleOpcode(BGBCC_BSR_Context *ctx, char *name, BGBCC_BSR_OpcodeArg *arg0, BGBCC_BSR_OpcodeArg *arg1, BGBCC_BSR_OpcodeArg *arg2);
+int BGBCC_BSRA_LookupOpcodeFmid(BGBCC_BSR_OpcodeArg *arg0, BGBCC_BSR_OpcodeArg *arg1, BGBCC_BSR_OpcodeArg *arg2);
+int BGBCC_BSRA_TryAssembleOpcode(BGBCC_BSR_Context *ctx, char *name, BGBCC_BSR_OpcodeArg *arg0, BGBCC_BSR_OpcodeArg *arg1, BGBCC_BSR_OpcodeArg *arg2);
 int BGBCC_BSRA_ParseCheckFeature(BGBCC_BSR_Context *ctx, char *sym);
 int BGBCC_BSRA_ParseOpcode(BGBCC_BSR_Context *ctx, char **rcs);
 int BGBCC_BSRA_ParseBuffer(BGBCC_BSR_Context *ctx, char **rcs);
-int BGBCC_BSRC_AssembleBuffer(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, char *text);
+int BGBCC_BSRC_AssembleBuffer(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, char *text);
 //AHSRC:bsrcc/bsr_cgif.c
 int BGBCC_BSRC_InitIface();
 ccxl_status BGBCC_BSRC_LoadBufferDLL(BGBCC_TransState *ctx,byte *buf, int sz);
@@ -1786,28 +1786,28 @@ bool BGBCC_BSRC_TypeInt2RegP(BGBCC_TransState *ctx, ccxl_type ty);
 bool BGBCC_BSRC_TypeFloatRegP(BGBCC_TransState *ctx, ccxl_type ty);
 bool BGBCC_BSRC_TypeFloat2RegP(BGBCC_TransState *ctx, ccxl_type ty);
 int BGBCC_BSRC_TypeGetRegClassP(BGBCC_TransState *ctx, ccxl_type ty);
-int BGBCC_BSRC_EmitVaArg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg);
-int BGBCC_BSRC_EmitVaEnd(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register sreg);
-int BGBCC_BSRC_EmitVaStart(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register sreg, ccxl_register treg);
-char *BGBCC_BSRC_DebugRegToStr(BGBCC_TransState *ctx,BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register reg);
-ccxl_status BGBCC_BSRC_PrintVirtOp(BGBCC_TransState *ctx,BGBCC_BSR_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, BGBCC_CCXL_VirtOp *op);
-ccxl_status BGBCC_BSRC_CompileVirtOp(BGBCC_TransState *ctx,BGBCC_BSR_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, BGBCC_CCXL_VirtOp *op);
-ccxl_status BGBCC_BSRC_PrintVirtTr(BGBCC_TransState *ctx,BGBCC_BSR_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, BGBCC_CCXL_VirtTr *tr, int idx);
-ccxl_status BGBCC_BSRC_CompileVirtTr(BGBCC_TransState *ctx,BGBCC_BSR_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, BGBCC_CCXL_VirtTr *tr, int idx);
+int BGBCC_BSRC_EmitVaArg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg);
+int BGBCC_BSRC_EmitVaEnd(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register sreg);
+int BGBCC_BSRC_EmitVaStart(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register sreg, ccxl_register treg);
+char *BGBCC_BSRC_DebugRegToStr(BGBCC_TransState *ctx,BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register reg);
+ccxl_status BGBCC_BSRC_PrintVirtOp(BGBCC_TransState *ctx,BGBCC_BSR_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, BGBCC_CCXL_VirtOp *op);
+ccxl_status BGBCC_BSRC_CompileVirtOp(BGBCC_TransState *ctx,BGBCC_BSR_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, BGBCC_CCXL_VirtOp *op);
+ccxl_status BGBCC_BSRC_PrintVirtTr(BGBCC_TransState *ctx,BGBCC_BSR_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, BGBCC_CCXL_VirtTr *tr, int idx);
+ccxl_status BGBCC_BSRC_CompileVirtTr(BGBCC_TransState *ctx,BGBCC_BSR_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, BGBCC_CCXL_VirtTr *tr, int idx);
 ccxl_status BGBCC_BSRC_EndFunction(BGBCC_TransState *ctx,BGBCC_CCXL_LiteralInfo *obj);
-ccxl_status BGBCC_BSRC_BuildFunctionBody(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, int fcnlbl);
+ccxl_status BGBCC_BSRC_BuildFunctionBody(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, int fcnlbl);
 ccxl_status BGBCC_BSRC_BuildFunction(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *obj);
-ccxl_status BGBCC_BSRC_BuildGlobal_EmitLitAsType(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register value);
+ccxl_status BGBCC_BSRC_BuildGlobal_EmitLitAsType(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register value);
 ccxl_status BGBCC_BSRC_BuildGlobal(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *obj);
 ccxl_status BGBCC_BSRC_BuildAsmBlob(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *obj);
-int BGBCC_BSRC_LookupLabelIndex(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int lblid);
-int BGBCC_BSRC_LookupLabelImgOffs(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int lblid);
-int BGBCC_BSRC_LookupLabelImgVA(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int lblid);
+int BGBCC_BSRC_LookupLabelIndex(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int lblid);
+int BGBCC_BSRC_LookupLabelImgOffs(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int lblid);
+int BGBCC_BSRC_LookupLabelImgVA(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int lblid);
 void bgbcc_bsrcc_setu16en(byte *ct, int en, u16 v);
-ccxl_status BGBCC_BSRC_ApplyImageRelocs(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, byte *imgbase);
+ccxl_status BGBCC_BSRC_ApplyImageRelocs(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, byte *imgbase);
 ccxl_status BGBCC_BSRC_FlattenImage(BGBCC_TransState *ctx,byte *obuf, int *rosz, fourcc imgfmt);
 //AHSRC:bsrcc/bsr_conv.c
-int BGBCC_BSRC_EmitConvVRegVReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type dtype, ccxl_type stype, ccxl_register dreg, ccxl_register sreg);
+int BGBCC_BSRC_EmitConvVRegVReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type dtype, ccxl_type stype, ccxl_register dreg, ccxl_register sreg);
 //AHSRC:bsrcc/bsr_emit.c
 int BGBCC_BSR_EmitCheckRegQuad(BGBCC_BSR_Context *ctx, int reg);
 int BGBCC_BSR_EmitCheckRegExt4(BGBCC_BSR_Context *ctx, int reg);
@@ -1964,7 +1964,7 @@ int BGBCC_BSR_EmitSetOffsDWord(BGBCC_BSR_Context *ctx, int ofs, int val);
 BGBCC_BSR_EmitQueueOp *BGBCC_BSR_AllocQueueOp(BGBCC_BSR_Context *ctx);
 int BGBCC_BSR_FreeQueueOp(BGBCC_BSR_Context *ctx, BGBCC_BSR_EmitQueueOp *tmp);
 int BGBCC_BSR_AddQueueOp(BGBCC_BSR_Context *ctx, BGBCC_BSR_EmitQueueOp *tmp);
-int BGBCC_BSR_EmitQueueOpBasic(BGBCC_BSR_Context *ctx, BGBCC_BSR_EmitQueueOp *op);
+int BGBCC_BSR_EmitQueueOpBasic(BGBCC_BSR_Context *ctx, BGBCC_BSR_EmitQueueOp *op);
 int BGBCC_BSR_EmitQueueOps(BGBCC_BSR_Context *ctx);
 int BGBCC_BSR_QueueOpNone(BGBCC_BSR_Context *ctx, int nmid);
 int BGBCC_BSR_QueueOpReg(BGBCC_BSR_Context *ctx, int nmid, int reg);
@@ -1987,186 +1987,186 @@ int BGBCC_BSR_QueueOpRegImmReg(BGBCC_BSR_Context *ctx,int nmid, int rm, int imm,
 //AHSRC:bsrcc/bsr_fltrom.c
 ccxl_status BGBCC_BSRC_FlattenImageROM(BGBCC_TransState *ctx,byte *obuf, int *rosz, fourcc imgfmt);
 //AHSRC:bsrcc/bsr_fpstub.c
-int BGBCC_BSRC_EmitRegIsGpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg);
-int BGBCC_BSRC_EmitRegIsExtGpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg);
-int BGBCC_BSRC_EmitRegIsFpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg);
-int BGBCC_BSRC_EmitRegIsDpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg);
-int BGBCC_BSRC_EmitRegIsLpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg);
-int BGBCC_BSRC_RegNormalizeReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg);
-int BGBCC_BSRC_CheckVRegIsZRegP(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg);
-int BGBCC_BSRC_GetStatusFpscrSz(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_BSRC_GetStatusFpscrPr(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_BSRC_UpdateStatusFpscr(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, u32 state);
-int BGBCC_BSRC_ClearStatusFpscrSz(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_BSRC_ClearStatusFpscrPr(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_BSRC_SetStatusFpscrSz(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_BSRC_SetStatusFpscrPr(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_BSRC_SetStatusFpscrFloat(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_BSRC_SetStatusFpscrDouble(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_BSRC_ResetModeDqLocal(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_BSRC_ResetModeDqUnknown(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_BSRC_SetModeDqSet(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_BSRC_SetModeDqClear(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_BSRC_CheckSetModeDqSet(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_BSRC_CheckSetModeDqClear(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_BSRC_ResetFpscrLocal(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_BSRC_ResetFpscrDefaults(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_BSRC_ResetFpscrUnknown(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_BSRC_EmitRegIsGpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg);
+int BGBCC_BSRC_EmitRegIsExtGpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg);
+int BGBCC_BSRC_EmitRegIsFpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg);
+int BGBCC_BSRC_EmitRegIsDpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg);
+int BGBCC_BSRC_EmitRegIsLpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg);
+int BGBCC_BSRC_RegNormalizeReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg);
+int BGBCC_BSRC_CheckVRegIsZRegP(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg);
+int BGBCC_BSRC_GetStatusFpscrSz(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_BSRC_GetStatusFpscrPr(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_BSRC_UpdateStatusFpscr(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, u32 state);
+int BGBCC_BSRC_ClearStatusFpscrSz(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_BSRC_ClearStatusFpscrPr(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_BSRC_SetStatusFpscrSz(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_BSRC_SetStatusFpscrPr(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_BSRC_SetStatusFpscrFloat(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_BSRC_SetStatusFpscrDouble(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_BSRC_ResetModeDqLocal(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_BSRC_ResetModeDqUnknown(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_BSRC_SetModeDqSet(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_BSRC_SetModeDqClear(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_BSRC_CheckSetModeDqSet(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_BSRC_CheckSetModeDqClear(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_BSRC_ResetFpscrLocal(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_BSRC_ResetFpscrDefaults(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_BSRC_ResetFpscrUnknown(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
 //AHSRC:bsrcc/bsr_frame.c
-int BGBCC_BSRC_EmitLoadFrameOfsReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int ofs, int dreg);
-int BGBCC_BSRC_EmitStoreFrameOfsReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int ofs, int dreg);
-int BGBCC_BSRC_EmitLdaFrameOfsReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int ofs, int dreg);
-int BGBCC_BSRC_EmitStoreStackOfsReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int ofs, int dreg);
-int BGBCC_BSRC_EmitLoadBRegOfsReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int breg, int ofs, int dreg);
-int BGBCC_BSRC_EmitLoadOp2BRegOfsReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int nmid2, int breg, int ofs, int dreg);
-int BGBCC_BSRC_EmitStoreBRegOfsReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int breg, int ofs, int dreg);
-int BGBCC_BSRC_EmitLeaBRegOfsReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int breg, int ofs, int dreg);
-int BGBCC_BSRC_CheckNmidScaleMatch(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int sc);
-int BGBCC_BSRC_EmitLoadBRegIRegScReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int breg, int ireg, int sc, int dreg);
-int BGBCC_BSRC_EmitStoreBRegIRegScReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int breg, int ireg, int sc, int dreg);
-int BGBCC_BSRC_EmitLoadBRegIRegScDispReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int breg, int ireg, int sc, int disp, int dreg);
-int BGBCC_BSRC_EmitStoreBRegIRegScDispReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int breg, int ireg, int sc, int disp, int dreg);
-int BGBCC_BSRC_GetGblIndexGotIndex(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int gblidx);
-int BGBCC_BSRC_GetGblIndexLabel(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int gblidx);
-int BGBCC_BSRC_GetVRegGotIndex(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register sreg);
-int BGBCC_BSRC_GetGblNameGotIndex(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, char *name);
-int BGBCC_BSRC_GetGblNameLabel(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, char *name);
-int BGBCC_BSRC_EmitLoadGblNameReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, char *name, int dreg);
-int BGBCC_BSRC_EmitLoadFrameVRegByValReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register sreg, int dreg);
-int BGBCC_BSRC_EmitStoreFrameVRegByValReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register sreg, int dreg);
-int BGBCC_BSRC_EmitLoadFrameVRegReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register sreg, int dreg);
-int BGBCC_BSRC_EmitStoreFrameVRegReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register dreg, int sreg);
-int BGBCC_BSRC_EmitLdaValSyncFrameVRegReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register sreg, int dreg);
-int BGBCC_BSRC_EmitLdaFrameVRegReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register sreg, int dreg);
-int BGBCC_BSRC_GetFrameVRegFlags(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register sreg);
-int BGBCC_BSRC_SetupFrameVRegSpan(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register sreg);
-int BGBCC_BSRC_SetupFrameLayout(BGBCC_TransState *ctx,BGBCC_BSR_Context *sctx, BGBCC_CCXL_RegisterInfo *obj);
-int BGBCC_BSRC_CalcFrameEpiKey(BGBCC_TransState *ctx,BGBCC_BSR_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, int rqt, int *repik, int *repix);
-int BGBCC_BSRC_EmitFrameProlog(BGBCC_TransState *ctx,BGBCC_BSR_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, int fcnlbl);
-int BGBCC_BSRC_EmitFrameEpilog(BGBCC_TransState *ctx,BGBCC_BSR_Context *sctx, BGBCC_CCXL_RegisterInfo *obj);
+int BGBCC_BSRC_EmitLoadFrameOfsReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int ofs, int dreg);
+int BGBCC_BSRC_EmitStoreFrameOfsReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int ofs, int dreg);
+int BGBCC_BSRC_EmitLdaFrameOfsReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int ofs, int dreg);
+int BGBCC_BSRC_EmitStoreStackOfsReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int ofs, int dreg);
+int BGBCC_BSRC_EmitLoadBRegOfsReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int breg, int ofs, int dreg);
+int BGBCC_BSRC_EmitLoadOp2BRegOfsReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int nmid2, int breg, int ofs, int dreg);
+int BGBCC_BSRC_EmitStoreBRegOfsReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int breg, int ofs, int dreg);
+int BGBCC_BSRC_EmitLeaBRegOfsReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int breg, int ofs, int dreg);
+int BGBCC_BSRC_CheckNmidScaleMatch(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int sc);
+int BGBCC_BSRC_EmitLoadBRegIRegScReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int breg, int ireg, int sc, int dreg);
+int BGBCC_BSRC_EmitStoreBRegIRegScReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int breg, int ireg, int sc, int dreg);
+int BGBCC_BSRC_EmitLoadBRegIRegScDispReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int breg, int ireg, int sc, int disp, int dreg);
+int BGBCC_BSRC_EmitStoreBRegIRegScDispReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int breg, int ireg, int sc, int disp, int dreg);
+int BGBCC_BSRC_GetGblIndexGotIndex(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int gblidx);
+int BGBCC_BSRC_GetGblIndexLabel(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int gblidx);
+int BGBCC_BSRC_GetVRegGotIndex(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register sreg);
+int BGBCC_BSRC_GetGblNameGotIndex(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, char *name);
+int BGBCC_BSRC_GetGblNameLabel(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, char *name);
+int BGBCC_BSRC_EmitLoadGblNameReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, char *name, int dreg);
+int BGBCC_BSRC_EmitLoadFrameVRegByValReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register sreg, int dreg);
+int BGBCC_BSRC_EmitStoreFrameVRegByValReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register sreg, int dreg);
+int BGBCC_BSRC_EmitLoadFrameVRegReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register sreg, int dreg);
+int BGBCC_BSRC_EmitStoreFrameVRegReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register dreg, int sreg);
+int BGBCC_BSRC_EmitLdaValSyncFrameVRegReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register sreg, int dreg);
+int BGBCC_BSRC_EmitLdaFrameVRegReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register sreg, int dreg);
+int BGBCC_BSRC_GetFrameVRegFlags(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register sreg);
+int BGBCC_BSRC_SetupFrameVRegSpan(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register sreg);
+int BGBCC_BSRC_SetupFrameLayout(BGBCC_TransState *ctx,BGBCC_BSR_Context *sctx, BGBCC_CCXL_RegisterInfo *obj);
+int BGBCC_BSRC_CalcFrameEpiKey(BGBCC_TransState *ctx,BGBCC_BSR_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, int rqt, int *repik, int *repix);
+int BGBCC_BSRC_EmitFrameProlog(BGBCC_TransState *ctx,BGBCC_BSR_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, int fcnlbl);
+int BGBCC_BSRC_EmitFrameEpilog(BGBCC_TransState *ctx,BGBCC_BSR_Context *sctx, BGBCC_CCXL_RegisterInfo *obj);
 //AHSRC:bsrcc/bsr_ldix.c
-int BGBCC_BSRC_EmitLdix_FillSzNmTy(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, int *rsz, int *rnm1, int *rnm2, int *rnm3, int *rnm4);
-int BGBCC_BSRC_EmitLdixVRegVRegImm(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, s32 imm);
-int BGBCC_BSRC_EmitLdixVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg);
-int BGBCC_BSRC_EmitLdixVRegVRegVRegImm(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg, int imm);
-int BGBCC_BSRC_EmitStixVRegVRegImm(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, s32 imm);
-int BGBCC_BSRC_EmitStixVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg);
-int BGBCC_BSRC_EmitStixVRegVRegVRegImm(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg, int imm);
-int BGBCC_BSRC_EmitLeaVRegVRegImm(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, s32 imm);
-int BGBCC_BSRC_EmitLeaVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg);
-int BGBCC_BSRC_EmitLdaVRegVReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg);
-int BGBCC_BSRC_EmitDiffPtrVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg);
-int BGBCC_BSRC_EmitLeaSarRegImm(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int dreg, int shl);
-int BGBCC_BSRC_EmitLeaShrRegImm(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int dreg, int shl);
-int BGBCC_BSRC_EmitLeaShlRegImm(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int dreg, int shl);
-int BGBCC_BSRC_EmitLeaBRegIRegScReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int breg, int ireg, int sc, int dreg);
+int BGBCC_BSRC_EmitLdix_FillSzNmTy(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, int *rsz, int *rnm1, int *rnm2, int *rnm3, int *rnm4);
+int BGBCC_BSRC_EmitLdixVRegVRegImm(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, s32 imm);
+int BGBCC_BSRC_EmitLdixVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg);
+int BGBCC_BSRC_EmitLdixVRegVRegVRegImm(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg, int imm);
+int BGBCC_BSRC_EmitStixVRegVRegImm(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, s32 imm);
+int BGBCC_BSRC_EmitStixVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg);
+int BGBCC_BSRC_EmitStixVRegVRegVRegImm(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg, int imm);
+int BGBCC_BSRC_EmitLeaVRegVRegImm(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, s32 imm);
+int BGBCC_BSRC_EmitLeaVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg);
+int BGBCC_BSRC_EmitLdaVRegVReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg);
+int BGBCC_BSRC_EmitDiffPtrVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg);
+int BGBCC_BSRC_EmitLeaSarRegImm(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int dreg, int shl);
+int BGBCC_BSRC_EmitLeaShrRegImm(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int dreg, int shl);
+int BGBCC_BSRC_EmitLeaShlRegImm(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int dreg, int shl);
+int BGBCC_BSRC_EmitLeaBRegIRegScReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int breg, int ireg, int sc, int dreg);
 //AHSRC:bsrcc/bsr_lparith.c
-int BGBCC_BSRC_EmitBinaryLong_ShlImm(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int cdreg, int shl);
-int BGBCC_BSRC_EmitBinaryLong_ShrImm(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int cdreg, int shl);
-int BGBCC_BSRC_EmitBinaryLong_SarImm(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int cdreg, int shl);
-int BGBCC_BSRC_EmitBinaryVRegVRegLong(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
-int BGBCC_BSRC_EmitBinaryVRegVRegVRegLong(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
-int BGBCC_BSRC_EmitUnaryVRegVRegLong(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
-int BGBCC_BSRC_EmitJCmpVRegVRegLong(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp, int lbl);
+int BGBCC_BSRC_EmitBinaryLong_ShlImm(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int cdreg, int shl);
+int BGBCC_BSRC_EmitBinaryLong_ShrImm(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int cdreg, int shl);
+int BGBCC_BSRC_EmitBinaryLong_SarImm(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int cdreg, int shl);
+int BGBCC_BSRC_EmitBinaryVRegVRegLong(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
+int BGBCC_BSRC_EmitBinaryVRegVRegVRegLong(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
+int BGBCC_BSRC_EmitUnaryVRegVRegLong(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
+int BGBCC_BSRC_EmitJCmpVRegVRegLong(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp, int lbl);
 //AHSRC:bsrcc/bsr_lpreg.c
-int BGBCC_BSRC_EmitTryGetLpRegister(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register reg, int fl);
-int BGBCC_BSRC_EmitGetLpRegister(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register reg, int fl);
-int BGBCC_BSRC_EmitReleaseLpRegister(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register reg);
-int BGBCC_BSRC_StompLpRegisterIndex(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int rgidx);
-int BGBCC_BSRC_ConvLpRegisterNarrowing(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, ccxl_register sreg, ccxl_register dreg);
-int BGBCC_BSRC_ConvLpRegisterWiden(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type stype, ccxl_register sreg, ccxl_register dreg);
+int BGBCC_BSRC_EmitTryGetLpRegister(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register reg, int fl);
+int BGBCC_BSRC_EmitGetLpRegister(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register reg, int fl);
+int BGBCC_BSRC_EmitReleaseLpRegister(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register reg);
+int BGBCC_BSRC_StompLpRegisterIndex(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int rgidx);
+int BGBCC_BSRC_ConvLpRegisterNarrowing(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, ccxl_register sreg, ccxl_register dreg);
+int BGBCC_BSRC_ConvLpRegisterWiden(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type stype, ccxl_register sreg, ccxl_register dreg);
 //AHSRC:bsrcc/bsr_lvarith.c
-int BGBCC_BSRC_EmitBinaryVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
-int BGBCC_BSRC_EmitBinaryVRegVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
-int BGBCC_BSRC_EmitUnaryVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
-int BGBCC_BSRC_EmitConvToVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg);
-int BGBCC_BSRC_EmitConvFromVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg);
+int BGBCC_BSRC_EmitBinaryVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
+int BGBCC_BSRC_EmitBinaryVRegVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
+int BGBCC_BSRC_EmitUnaryVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
+int BGBCC_BSRC_EmitConvToVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg);
+int BGBCC_BSRC_EmitConvFromVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg);
 //AHSRC:bsrcc/bsr_lxarith.c
-int BGBCC_BSRC_IndexLitInt128(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, s64 val_lo, s64 val_hi);
-int BGBCC_BSRC_EmitBinaryVRegVRegInt128(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
-int BGBCC_BSRC_EmitBinaryVRegVRegVRegInt128(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
-int BGBCC_BSRC_EmitUnaryVRegVRegInt128(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
+int BGBCC_BSRC_IndexLitInt128(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, s64 val_lo, s64 val_hi);
+int BGBCC_BSRC_EmitBinaryVRegVRegInt128(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
+int BGBCC_BSRC_EmitBinaryVRegVRegVRegInt128(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
+int BGBCC_BSRC_EmitUnaryVRegVRegInt128(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
 //AHSRC:bsrcc/bsr_pecoff.c
-int BGBCC_BSRC_CoffLoadBufferDLL(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, byte *buf, int sz);
-int BGBCC_BSRC_CoffBuildExports(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx);
-int BGBCC_BSRC_CoffBuildImports(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx);
-int BGBCC_BSRC_CoffSectionFlags(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, char *name);
+int BGBCC_BSRC_CoffLoadBufferDLL(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, byte *buf, int sz);
+int BGBCC_BSRC_CoffBuildExports(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx);
+int BGBCC_BSRC_CoffBuildImports(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx);
+int BGBCC_BSRC_CoffSectionFlags(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, char *name);
 int bgbcc_bsrc_qrsort(u32 *arr, int cnt, int rd);
 ccxl_status BGBCC_BSRC_FlattenImagePECOFF(BGBCC_TransState *ctx,byte *obuf, int *rosz, fourcc imgfmt);
 //AHSRC:bsrcc/bsr_register.c
-int BGBCC_BSRC_ScratchCheckRegFree(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int reg);
-int BGBCC_BSRC_ScratchSafeStompReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int reg);
-int BGBCC_BSRC_ScratchStompReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int reg);
-int BGBCC_BSRC_ScratchHoldReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int reg);
-int BGBCC_BSRC_ScratchReleaseReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int reg);
-int BGBCC_BSRC_ScratchAllocReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int cls);
-int BGBCC_BSRC_SaveFrameOfsForReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int reg);
-int BGBCC_BSRC_SaveFrameOfsForFpReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int reg);
-int BGBCC_BSRC_EmitSaveFrameReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int reg);
-int BGBCC_BSRC_EmitReloadSavedFrameReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int reg);
-int BGBCC_BSRC_EmitTryGetRegister(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register reg, int fl);
-int BGBCC_BSRC_EmitGetRegister(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register reg, int fl);
-int BGBCC_BSRC_EmitGetRegisterDirty(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register reg);
-int BGBCC_BSRC_EmitGetRegisterWrite(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register reg);
-int BGBCC_BSRC_EmitGetRegisterRead(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register reg);
-int BGBCC_BSRC_EmitTryGetRegisterDirty(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register reg);
-int BGBCC_BSRC_EmitTryGetRegisterWrite(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register reg);
-int BGBCC_BSRC_EmitTryGetRegisterRead(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register reg);
-int BGBCC_BSRC_GetVRegPriority(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register reg);
-int BGBCC_BSRC_GetVRegLiveRange(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register reg, int *rbeg, int *rend);
-int BGBCC_BSRC_CheckVRegLiveRange(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register reg);
-int BGBCC_BSRC_EmitReleaseRegister(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register reg);
-int BGBCC_BSRC_EmitSyncRegisterIndex(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int rgix);
-int BGBCC_BSRC_EmitSyncRegisterIndex2(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int rgix, int sfl);
-int BGBCC_BSRC_EmitSyncRegisters(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx);
-int BGBCC_BSRC_EmitLabelFlushRegisters(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx);
-int BGBCC_BSRC_EmitScratchSyncRegisters(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx);
-int BGBCC_BSRC_EmitScratchSyncRegistersSafeMask(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int mask);
+int BGBCC_BSRC_ScratchCheckRegFree(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int reg);
+int BGBCC_BSRC_ScratchSafeStompReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int reg);
+int BGBCC_BSRC_ScratchStompReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int reg);
+int BGBCC_BSRC_ScratchHoldReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int reg);
+int BGBCC_BSRC_ScratchReleaseReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int reg);
+int BGBCC_BSRC_ScratchAllocReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int cls);
+int BGBCC_BSRC_SaveFrameOfsForReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int reg);
+int BGBCC_BSRC_SaveFrameOfsForFpReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int reg);
+int BGBCC_BSRC_EmitSaveFrameReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int reg);
+int BGBCC_BSRC_EmitReloadSavedFrameReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int reg);
+int BGBCC_BSRC_EmitTryGetRegister(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register reg, int fl);
+int BGBCC_BSRC_EmitGetRegister(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register reg, int fl);
+int BGBCC_BSRC_EmitGetRegisterDirty(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register reg);
+int BGBCC_BSRC_EmitGetRegisterWrite(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register reg);
+int BGBCC_BSRC_EmitGetRegisterRead(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register reg);
+int BGBCC_BSRC_EmitTryGetRegisterDirty(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register reg);
+int BGBCC_BSRC_EmitTryGetRegisterWrite(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register reg);
+int BGBCC_BSRC_EmitTryGetRegisterRead(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register reg);
+int BGBCC_BSRC_GetVRegPriority(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register reg);
+int BGBCC_BSRC_GetVRegLiveRange(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register reg, int *rbeg, int *rend);
+int BGBCC_BSRC_CheckVRegLiveRange(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register reg);
+int BGBCC_BSRC_EmitReleaseRegister(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register reg);
+int BGBCC_BSRC_EmitSyncRegisterIndex(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int rgix);
+int BGBCC_BSRC_EmitSyncRegisterIndex2(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int rgix, int sfl);
+int BGBCC_BSRC_EmitSyncRegisters(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx);
+int BGBCC_BSRC_EmitLabelFlushRegisters(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx);
+int BGBCC_BSRC_EmitScratchSyncRegisters(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx);
+int BGBCC_BSRC_EmitScratchSyncRegistersSafeMask(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int mask);
 //AHSRC:bsrcc/bsr_softfpu.c
-int BGBCC_BSRC_NormalizeImmVRegSoftFloat(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register *rtreg);
-int BGBCC_BSRC_EmitBinaryVRegVRegSoftFloat(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
-int BGBCC_BSRC_EmitBinaryVRegVRegVRegSoftFloat(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
-int BGBCC_BSRC_EmitUnaryVRegVRegSoftFloat(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
-int BGBCC_BSRC_EmitCompareVRegVRegVRegSoftFloat(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int cmp, ccxl_register sreg, ccxl_register treg);
-int BGBCC_BSRC_EmitJCmpVRegVRegSoftFloat(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp, int lbl);
+int BGBCC_BSRC_NormalizeImmVRegSoftFloat(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register *rtreg);
+int BGBCC_BSRC_EmitBinaryVRegVRegSoftFloat(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
+int BGBCC_BSRC_EmitBinaryVRegVRegVRegSoftFloat(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
+int BGBCC_BSRC_EmitUnaryVRegVRegSoftFloat(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
+int BGBCC_BSRC_EmitCompareVRegVRegVRegSoftFloat(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, int cmp, ccxl_register sreg, ccxl_register treg);
+int BGBCC_BSRC_EmitJCmpVRegVRegSoftFloat(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp, int lbl);
 //AHSRC:bsrcc/bsr_struct.c
-int BGBCC_BSRC_EmitDebugCheckReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, int sreg);
-int BGBCC_BSRC_EmitConvOpRegReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int sreg, int dreg);
-int BGBCC_BSRC_EmitLoadSlotVRegVRegImm(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, int gblid, int fid);
-int BGBCC_BSRC_EmitStoreSlotVRegVRegImm(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, int gblid, int fid);
-int BGBCC_BSRC_EmitLoadSlotAddrVRegVRegImm(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, int gblid, int fid);
-int BGBCC_BSRC_EmitValueCopyRegRegSz(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int dreg, int sreg, int sz, int al);
-int BGBCC_BSRC_EmitLoadTypeBRegOfsReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, int sreg, int ofs, int dreg);
+int BGBCC_BSRC_EmitDebugCheckReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, int sreg);
+int BGBCC_BSRC_EmitConvOpRegReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int sreg, int dreg);
+int BGBCC_BSRC_EmitLoadSlotVRegVRegImm(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, int gblid, int fid);
+int BGBCC_BSRC_EmitStoreSlotVRegVRegImm(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, int gblid, int fid);
+int BGBCC_BSRC_EmitLoadSlotAddrVRegVRegImm(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, int gblid, int fid);
+int BGBCC_BSRC_EmitValueCopyRegRegSz(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int dreg, int sreg, int sz, int al);
+int BGBCC_BSRC_EmitLoadTypeBRegOfsReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, int sreg, int ofs, int dreg);
 //AHSRC:bsrcc/bsr_vreg.c
-int BGBCC_BSRC_EmitOpNone(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid);
-int BGBCC_BSRC_EmitOpReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int reg);
-int BGBCC_BSRC_EmitOpImm(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int imm);
-int BGBCC_BSRC_EmitOpMReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int reg);
-int BGBCC_BSRC_EmitOpRegReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int rm, int rn);
-int BGBCC_BSRC_EmitOpRegStReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int rm, int rn);
-int BGBCC_BSRC_EmitOpLdRegReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int rm, int rn);
-int BGBCC_BSRC_EmitOpRegStDecReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int rm, int rn);
-int BGBCC_BSRC_EmitOpLdIncRegReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int rm, int rn);
-int BGBCC_BSRC_EmitOpRegStRegDisp(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int rm, int rn, int disp);
-int BGBCC_BSRC_EmitOpLdRegDispReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int rm, int disp, int rn);
-int BGBCC_BSRC_EmitOpRegStReg2(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int rm, int ro, int rn);
-int BGBCC_BSRC_EmitOpLdReg2Reg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int rm, int ro, int rn);
-int BGBCC_BSRC_EmitOpRegStReg2Disp(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int rm, int ro, int rn, int disp);
-int BGBCC_BSRC_EmitOpLdReg2DispReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int rm, int ro, int disp, int rn);
-int BGBCC_BSRC_EmitOpRegRegReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int rs, int rt, int rn);
-int BGBCC_BSRC_EmitOpImmReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int imm, int reg);
-int BGBCC_BSRC_EmitOpRegImmReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int rm, int imm, int rn);
-int BGBCC_BSRC_EmitMovRegReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int sreg, int dreg);
-int BGBCC_BSRC_EmitLoadVRegReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register sreg, int dreg);
-int BGBCC_BSRC_EmitStoreVRegReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register dreg, int sreg);
-int BGBCC_BSRC_EmitMovVRegVReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg);
-int BGBCC_BSRC_EmitFpConvVRegVReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nm1, int nm2, ccxl_register dreg, ccxl_register sreg);
-int BGBCC_BSRC_EmitMovVRegImm(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, s64 imm);
-int BGBCC_BSRC_EmitOpNmidVRegVReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, int nmid, ccxl_register dreg, ccxl_register sreg);
-int BGBCC_BSRC_EmitJCmpVRegVRegInt(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp, int lbl);
-int BGBCC_BSRC_EmitJCmpVRegVReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp, int lbl);
-int BGBCC_BSRC_EmitJCmpVRegZeroInt(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register sreg, int cmp, int lbl);
-int BGBCC_BSRC_EmitJCmpVRegZero(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register sreg, int cmp, int lbl);
+int BGBCC_BSRC_EmitOpNone(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid);
+int BGBCC_BSRC_EmitOpReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int reg);
+int BGBCC_BSRC_EmitOpImm(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int imm);
+int BGBCC_BSRC_EmitOpMReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int reg);
+int BGBCC_BSRC_EmitOpRegReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int rm, int rn);
+int BGBCC_BSRC_EmitOpRegStReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int rm, int rn);
+int BGBCC_BSRC_EmitOpLdRegReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int rm, int rn);
+int BGBCC_BSRC_EmitOpRegStDecReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int rm, int rn);
+int BGBCC_BSRC_EmitOpLdIncRegReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int rm, int rn);
+int BGBCC_BSRC_EmitOpRegStRegDisp(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int rm, int rn, int disp);
+int BGBCC_BSRC_EmitOpLdRegDispReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int rm, int disp, int rn);
+int BGBCC_BSRC_EmitOpRegStReg2(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int rm, int ro, int rn);
+int BGBCC_BSRC_EmitOpLdReg2Reg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int rm, int ro, int rn);
+int BGBCC_BSRC_EmitOpRegStReg2Disp(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int rm, int ro, int rn, int disp);
+int BGBCC_BSRC_EmitOpLdReg2DispReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int rm, int ro, int disp, int rn);
+int BGBCC_BSRC_EmitOpRegRegReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int rs, int rt, int rn);
+int BGBCC_BSRC_EmitOpImmReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int imm, int reg);
+int BGBCC_BSRC_EmitOpRegImmReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nmid, int rm, int imm, int rn);
+int BGBCC_BSRC_EmitMovRegReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int sreg, int dreg);
+int BGBCC_BSRC_EmitLoadVRegReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register sreg, int dreg);
+int BGBCC_BSRC_EmitStoreVRegReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_register dreg, int sreg);
+int BGBCC_BSRC_EmitMovVRegVReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg);
+int BGBCC_BSRC_EmitFpConvVRegVReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int nm1, int nm2, ccxl_register dreg, ccxl_register sreg);
+int BGBCC_BSRC_EmitMovVRegImm(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register dreg, s64 imm);
+int BGBCC_BSRC_EmitOpNmidVRegVReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, int nmid, ccxl_register dreg, ccxl_register sreg);
+int BGBCC_BSRC_EmitJCmpVRegVRegInt(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp, int lbl);
+int BGBCC_BSRC_EmitJCmpVRegVReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp, int lbl);
+int BGBCC_BSRC_EmitJCmpVRegZeroInt(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register sreg, int cmp, int lbl);
+int BGBCC_BSRC_EmitJCmpVRegZero(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type type, ccxl_register sreg, int cmp, int lbl);
 //AHSRC:jx2cc/jx2_asmdump.c
 int BGBCC_JX2DA_EmitPuts(BGBCC_JX2_Context *ctx, char *str);
 int BGBCC_JX2DA_EmitPrintf(BGBCC_JX2_Context *ctx, char *str, ...);
@@ -2215,27 +2215,27 @@ int BGBCC_JX2DA_EmitDWordAbsDisp(BGBCC_JX2_Context *ctx, int lbl, int disp);
 int BGBCC_JX2DA_EmitQWordAbsDisp(BGBCC_JX2_Context *ctx, int lbl, int disp);
 int BGBCC_JX2DA_EmitComm(BGBCC_JX2_Context *ctx, int sz);
 //AHSRC:jx2cc/jx2_binop.c
-int BGBCC_JX2C_NormalizeImmVRegInt(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register *rtreg);
-int BGBCC_JX2C_EmitBinaryVRegVRegInt(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
-int BGBCC_JX2C_EmitBinaryVRegVRegVRegInt(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
-int BGBCC_JX2C_EmitBinaryVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
-int BGBCC_JX2C_EmitDstRegOp(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int dreg);
-int BGBCC_JX2C_EmitUnaryVRegVRegInt(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
-int BGBCC_JX2C_EmitUnaryVRegVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
-int BGBCC_JX2C_EmitCompareVRegVRegVRegInt(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int cmp, ccxl_register sreg, ccxl_register treg);
-int BGBCC_JX2C_EmitCompareVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
-int BGBCC_JX2C_EmitReturnVoid(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
-int BGBCC_JX2C_EmitNormalizeRegForType(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, int creg);
-int BGBCC_JX2C_EmitReturnVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg);
-int BGBCC_JX2C_EmitCsrvVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg);
-int BGBCC_JX2C_EmitCallBuiltin(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, char *name);
-int BGBCC_JX2C_EmitCallBuiltinArgs(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dst, char *name, int narg, ccxl_register *args);
-int BGBCC_JX2C_EmitCallFcnVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register fcn);
-int BGBCC_JX2C_EmitCallName(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, char *name);
-int BGBCC_JX2C_EmitCallVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dst, ccxl_register fcn, ccxl_register thisobj, int narg, ccxl_register *args);
-int BGBCC_JX2C_EmitCSeltSelectVRegVRegVRegInt(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg);
-int BGBCC_JX2C_EmitCSeltCompareVRegVRegInt(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, int cmp, ccxl_register sreg, ccxl_register treg);
-int BGBCC_JX2C_EmitCSeltVRegVRegVRegInt(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg, ccxl_type ptype, int cmp, ccxl_register ureg, ccxl_register vreg);
+int BGBCC_JX2C_NormalizeImmVRegInt(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register *rtreg);
+int BGBCC_JX2C_EmitBinaryVRegVRegInt(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
+int BGBCC_JX2C_EmitBinaryVRegVRegVRegInt(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
+int BGBCC_JX2C_EmitBinaryVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
+int BGBCC_JX2C_EmitDstRegOp(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int dreg);
+int BGBCC_JX2C_EmitUnaryVRegVRegInt(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
+int BGBCC_JX2C_EmitUnaryVRegVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
+int BGBCC_JX2C_EmitCompareVRegVRegVRegInt(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int cmp, ccxl_register sreg, ccxl_register treg);
+int BGBCC_JX2C_EmitCompareVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
+int BGBCC_JX2C_EmitReturnVoid(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
+int BGBCC_JX2C_EmitNormalizeRegForType(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, int creg);
+int BGBCC_JX2C_EmitReturnVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg);
+int BGBCC_JX2C_EmitCsrvVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg);
+int BGBCC_JX2C_EmitCallBuiltin(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, char *name);
+int BGBCC_JX2C_EmitCallBuiltinArgs(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dst, char *name, int narg, ccxl_register *args);
+int BGBCC_JX2C_EmitCallFcnVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register fcn);
+int BGBCC_JX2C_EmitCallName(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, char *name);
+int BGBCC_JX2C_EmitCallVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dst, ccxl_register fcn, ccxl_register thisobj, int narg, ccxl_register *args);
+int BGBCC_JX2C_EmitCSeltSelectVRegVRegVRegInt(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg);
+int BGBCC_JX2C_EmitCSeltCompareVRegVRegInt(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, int cmp, ccxl_register sreg, ccxl_register treg);
+int BGBCC_JX2C_EmitCSeltVRegVRegVRegInt(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg, ccxl_type ptype, int cmp, ccxl_register ureg, ccxl_register vreg);
 //AHSRC:jx2cc/jx2_bufasm.c
 char *BGBCC_JX2A_EatWhite(char *cs);
 char *BGBCC_JX2A_EatWhiteNoLinebreak(char *cs);
@@ -2250,12 +2250,12 @@ int BGBCC_JX2A_GetRegId(char *str);
 int BGBCC_JX2A_ParseOperand(char **rcs, BGBCC_JX2_OpcodeArg *opv);
 int BGBCC_JX2A_Init();
 int BGBCC_JX2A_LookupOpcodeNmid(char *name);
-int BGBCC_JX2A_LookupOpcodeFmid(BGBCC_JX2_OpcodeArg *arg0, BGBCC_JX2_OpcodeArg *arg1, BGBCC_JX2_OpcodeArg *arg2);
-int BGBCC_JX2A_TryAssembleOpcode(BGBCC_JX2_Context *ctx, char *name, BGBCC_JX2_OpcodeArg *arg0, BGBCC_JX2_OpcodeArg *arg1, BGBCC_JX2_OpcodeArg *arg2);
+int BGBCC_JX2A_LookupOpcodeFmid(BGBCC_JX2_OpcodeArg *arg0, BGBCC_JX2_OpcodeArg *arg1, BGBCC_JX2_OpcodeArg *arg2);
+int BGBCC_JX2A_TryAssembleOpcode(BGBCC_JX2_Context *ctx, char *name, BGBCC_JX2_OpcodeArg *arg0, BGBCC_JX2_OpcodeArg *arg1, BGBCC_JX2_OpcodeArg *arg2);
 int BGBCC_JX2A_ParseCheckFeature(BGBCC_JX2_Context *ctx, char *sym);
 int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs);
 int BGBCC_JX2A_ParseBuffer(BGBCC_JX2_Context *ctx, char **rcs);
-int BGBCC_JX2C_AssembleBuffer(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, char *text);
+int BGBCC_JX2C_AssembleBuffer(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, char *text);
 //AHSRC:jx2cc/jx2_cgif.c
 int BGBCC_JX2C_InitIface();
 ccxl_status BGBCC_JX2C_LoadBufferDLL(BGBCC_TransState *ctx,byte *buf, int sz);
@@ -2268,31 +2268,31 @@ bool BGBCC_JX2C_TypeFloat2RegP(BGBCC_TransState *ctx, ccxl_type ty);
 bool BGBCC_JX2C_TypeDoubleRegP(BGBCC_TransState *ctx, ccxl_type ty);
 int BGBCC_JX2C_TypeGetRegClassP(BGBCC_TransState *ctx, ccxl_type ty);
 int BGBCC_JX2C_TypeGetRegClassPI(BGBCC_TransState *ctx, ccxl_type ty);
-int BGBCC_JX2C_EmitVaArg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg);
-int BGBCC_JX2C_EmitVaEnd(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg);
-int BGBCC_JX2C_EmitVaStart(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg, ccxl_register treg);
-char *BGBCC_JX2C_DebugRegToStr(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register reg);
-ccxl_status BGBCC_JX2C_PrintVirtOp(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, BGBCC_CCXL_VirtOp *op);
-ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, BGBCC_CCXL_VirtOp *op);
-ccxl_status BGBCC_JX2C_PrintVirtTr(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, BGBCC_CCXL_VirtTr *tr, int idx);
-ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, BGBCC_CCXL_VirtTr *tr, int idx);
+int BGBCC_JX2C_EmitVaArg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg);
+int BGBCC_JX2C_EmitVaEnd(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg);
+int BGBCC_JX2C_EmitVaStart(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg, ccxl_register treg);
+char *BGBCC_JX2C_DebugRegToStr(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register reg);
+ccxl_status BGBCC_JX2C_PrintVirtOp(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, BGBCC_CCXL_VirtOp *op);
+ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, BGBCC_CCXL_VirtOp *op);
+ccxl_status BGBCC_JX2C_PrintVirtTr(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, BGBCC_CCXL_VirtTr *tr, int idx);
+ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, BGBCC_CCXL_VirtTr *tr, int idx);
 ccxl_status BGBCC_JX2C_EndFunction(BGBCC_TransState *ctx,BGBCC_CCXL_LiteralInfo *obj);
 int BGBCC_JX2C_BuildFunctionLastTraceP(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
-ccxl_status BGBCC_JX2C_BuildFunctionBody(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, int fcnlbl);
+ccxl_status BGBCC_JX2C_BuildFunctionBody(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, int fcnlbl);
 ccxl_status BGBCC_JX2C_BuildFunction(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *obj);
-ccxl_status BGBCC_JX2C_BuildGlobal_EmitLitAsType(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register value);
+ccxl_status BGBCC_JX2C_BuildGlobal_EmitLitAsType(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register value);
 ccxl_status BGBCC_JX2C_BuildGlobal(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *obj);
 ccxl_status BGBCC_JX2C_BuildAsmBlob(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *obj);
 ccxl_status BGBCC_JX2C_BuildPrestartInit(BGBCC_TransState *ctx);
 ccxl_status BGBCC_JX2C_BuildStruct(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *obj);
-int BGBCC_JX2C_LookupLabelIndex(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int lblid);
-int BGBCC_JX2C_LookupLabelImgOffs(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int lblid);
-int BGBCC_JX2C_LookupLabelImgVA(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int lblid);
+int BGBCC_JX2C_LookupLabelIndex(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int lblid);
+int BGBCC_JX2C_LookupLabelImgOffs(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int lblid);
+int BGBCC_JX2C_LookupLabelImgVA(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int lblid);
 void bgbcc_jx2cc_setu16en(byte *ct, int en, u16 v);
-ccxl_status BGBCC_JX2C_ApplyImageRelocs(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, byte *imgbase);
+ccxl_status BGBCC_JX2C_ApplyImageRelocs(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, byte *imgbase);
 ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,byte *obuf, int *rosz, fourcc imgfmt);
 //AHSRC:jx2cc/jx2_conv.c
-int BGBCC_JX2C_EmitConvVRegVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type dtype, ccxl_type stype, ccxl_register dreg, ccxl_register sreg);
+int BGBCC_JX2C_EmitConvVRegVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type dtype, ccxl_type stype, ccxl_register dreg, ccxl_register sreg);
 //AHSRC:jx2cc/jx2_emit.c
 int BGBCC_JX2_EmitCheckRegQuad(BGBCC_JX2_Context *ctx, int reg);
 int BGBCC_JX2_EmitCheckRegExt4(BGBCC_JX2_Context *ctx, int reg);
@@ -2308,10 +2308,10 @@ int BGBCC_JX2_EmitCheckRegBaseFPR(BGBCC_JX2_Context *ctx, int reg);
 int BGBCC_JX2_EmitCheckRegExtFPR(BGBCC_JX2_Context *ctx, int reg);
 int BGBCC_JX2_EmitOpCheckRepack(BGBCC_JX2_Context *ctx, int *ropw1, int *ropw2);
 int BGBCC_JX2_EmitOpCheckRepack3(BGBCC_JX2_Context *ctx, int *ropw1, int *ropw2, int *ropw3);
-int BGBCC_JX2_EmitOpGetLength(BGBCC_JX2_Context *ctx, int opw);
-int BGBCC_JX2_EmitOpCheckRepack4(BGBCC_JX2_Context *ctx, int *ropw1, int *ropw2, int *ropw3, int *ropw4);
-int BGBCC_JX2_EmitOpCheckRepack5(BGBCC_JX2_Context *ctx, int *ropw1, int *ropw2, int *ropw3, int *ropw4, int *ropw5);
-int BGBCC_JX2_EmitOpCheckRepack6(BGBCC_JX2_Context *ctx, int *ropw1, int *ropw2, int *ropw3, int *ropw4, int *ropw5, int *ropw6);
+int BGBCC_JX2_EmitOpGetLength(BGBCC_JX2_Context *ctx, int opw);
+int BGBCC_JX2_EmitOpCheckRepack4(BGBCC_JX2_Context *ctx, int *ropw1, int *ropw2, int *ropw3, int *ropw4);
+int BGBCC_JX2_EmitOpCheckRepack5(BGBCC_JX2_Context *ctx, int *ropw1, int *ropw2, int *ropw3, int *ropw4, int *ropw5);
+int BGBCC_JX2_EmitOpCheckRepack6(BGBCC_JX2_Context *ctx, int *ropw1, int *ropw2, int *ropw3, int *ropw4, int *ropw5, int *ropw6);
 int BGBCC_JX2_EmitLoadDrImm(BGBCC_JX2_Context *ctx, s64 imm);
 int BGBCC_JX2_EmitLoadRegImm(BGBCC_JX2_Context *ctx, int nmid, int reg, s32 imm);
 int BGBCC_JX2_ConstConvDoubleToFloat(u64 v, u32 *rv);
@@ -2517,160 +2517,160 @@ int BGBCC_JX2_EmitDWordRva32Disp(BGBCC_JX2_Context *ctx, int lbl, int disp);
 ccxl_status BGBCC_JX2C_FlattenImageROM(BGBCC_TransState *ctx,byte *obuf, int *rosz, fourcc imgfmt);
 ccxl_status BGBCC_JX2C_FlattenImageASM(BGBCC_TransState *ctx,byte *obuf, int *rosz, fourcc imgfmt);
 //AHSRC:jx2cc/jx2_fparith.c
-int BGBCC_JX2C_EmitBinaryVRegVRegFloat(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
-int BGBCC_JX2C_EmitBinaryVRegVRegVRegFloat(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
-int BGBCC_JX2C_EmitUnaryVRegVRegFloat(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
-int BGBCC_JX2C_EmitCompareVRegVRegVRegFloat(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int cmp, ccxl_register sreg, ccxl_register treg);
-int BGBCC_JX2C_EmitJCmpVRegVRegFloat(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp, int lbl);
+int BGBCC_JX2C_EmitBinaryVRegVRegFloat(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
+int BGBCC_JX2C_EmitBinaryVRegVRegVRegFloat(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
+int BGBCC_JX2C_EmitUnaryVRegVRegFloat(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
+int BGBCC_JX2C_EmitCompareVRegVRegVRegFloat(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int cmp, ccxl_register sreg, ccxl_register treg);
+int BGBCC_JX2C_EmitJCmpVRegVRegFloat(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp, int lbl);
 //AHSRC:jx2cc/jx2_fpreg2x.c
-int BGBCC_JX2C_ScratchCheckFpRegFree(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
-int BGBCC_JX2C_ScratchSafeStompFpReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
-int BGBCC_JX2C_ScratchStompFpReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
-int BGBCC_JX2C_ScratchHoldFpReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
-int BGBCC_JX2C_ScratchReleaseFpReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
-int BGBCC_JX2C_ScratchAllocFpReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int cls);
-int BGBCC_JX2C_EmitSaveFrameFpReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
-int BGBCC_JX2C_EmitReloadSavedFrameFpReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
-int BGBCC_JX2C_EmitRotateFpRegisterIndex(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int idx);
-int BGBCC_JX2C_EmitTryGetFpRegister(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg, int fl);
-int BGBCC_JX2C_EmitGetFpRegister(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg, int fl);
-int BGBCC_JX2C_EmitGetFpRegisterDirty(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
-int BGBCC_JX2C_EmitGetFpRegisterWrite(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
-int BGBCC_JX2C_EmitGetFpRegisterRead(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
-int BGBCC_JX2C_EmitTryGetFpRegisterDirty(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
-int BGBCC_JX2C_EmitTryGetFpRegisterWrite(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
-int BGBCC_JX2C_EmitTryGetFpRegisterRead(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
-int BGBCC_JX2C_EmitReleaseFpRegister(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
-int BGBCC_JX2C_EmitSyncFpRegisterIndex(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int rgix);
-int BGBCC_JX2C_EmitSyncFpRegisterIndex2(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int rgix, int sfl);
-int BGBCC_JX2C_EmitSyncFpRegisters(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
-int BGBCC_JX2C_EmitLabelFlushFpRegisters(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
-int BGBCC_JX2C_EmitScratchSyncFpRegisters(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
-int BGBCC_JX2C_EmitScratchSyncFpRegistersSafeMask(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int mask);
-int BGBCC_JX2C_EmitLoadStackOfsFpReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int ofs, int dreg);
-int BGBCC_JX2C_EmitStoreStackOfsFpReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int ofs, int dreg);
-int BGBCC_JX2C_EmitLoadFrameOfsFpReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int ofs, int dreg);
-int BGBCC_JX2C_EmitStoreFrameOfsFpReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int ofs, int dreg);
-int BGBCC_JX2C_EmitLoadBRegOfsFpReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid1, int breg, int ofs, int dreg);
-int BGBCC_JX2C_EmitStoreBRegOfsFpReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid1, int breg, int ofs, int dreg);
+int BGBCC_JX2C_ScratchCheckFpRegFree(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
+int BGBCC_JX2C_ScratchSafeStompFpReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
+int BGBCC_JX2C_ScratchStompFpReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
+int BGBCC_JX2C_ScratchHoldFpReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
+int BGBCC_JX2C_ScratchReleaseFpReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
+int BGBCC_JX2C_ScratchAllocFpReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int cls);
+int BGBCC_JX2C_EmitSaveFrameFpReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
+int BGBCC_JX2C_EmitReloadSavedFrameFpReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
+int BGBCC_JX2C_EmitRotateFpRegisterIndex(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int idx);
+int BGBCC_JX2C_EmitTryGetFpRegister(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg, int fl);
+int BGBCC_JX2C_EmitGetFpRegister(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg, int fl);
+int BGBCC_JX2C_EmitGetFpRegisterDirty(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
+int BGBCC_JX2C_EmitGetFpRegisterWrite(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
+int BGBCC_JX2C_EmitGetFpRegisterRead(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
+int BGBCC_JX2C_EmitTryGetFpRegisterDirty(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
+int BGBCC_JX2C_EmitTryGetFpRegisterWrite(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
+int BGBCC_JX2C_EmitTryGetFpRegisterRead(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
+int BGBCC_JX2C_EmitReleaseFpRegister(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
+int BGBCC_JX2C_EmitSyncFpRegisterIndex(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int rgix);
+int BGBCC_JX2C_EmitSyncFpRegisterIndex2(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int rgix, int sfl);
+int BGBCC_JX2C_EmitSyncFpRegisters(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
+int BGBCC_JX2C_EmitLabelFlushFpRegisters(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
+int BGBCC_JX2C_EmitScratchSyncFpRegisters(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
+int BGBCC_JX2C_EmitScratchSyncFpRegistersSafeMask(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int mask);
+int BGBCC_JX2C_EmitLoadStackOfsFpReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int ofs, int dreg);
+int BGBCC_JX2C_EmitStoreStackOfsFpReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int ofs, int dreg);
+int BGBCC_JX2C_EmitLoadFrameOfsFpReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int ofs, int dreg);
+int BGBCC_JX2C_EmitStoreFrameOfsFpReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int ofs, int dreg);
+int BGBCC_JX2C_EmitLoadBRegOfsFpReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid1, int breg, int ofs, int dreg);
+int BGBCC_JX2C_EmitStoreBRegOfsFpReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid1, int breg, int ofs, int dreg);
 //AHSRC:jx2cc/jx2_fpstub.c
-int BGBCC_JX2C_EmitRegIsGpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg);
-int BGBCC_JX2C_EmitRegIsExtGpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg);
-int BGBCC_JX2C_EmitRegIsFpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg);
-int BGBCC_JX2C_EmitRegIsDpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg);
-int BGBCC_JX2C_EmitRegIsLpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg);
-int BGBCC_JX2C_RegNormalizeReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg);
-int BGBCC_JX2C_CheckVRegIsZRegP(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg);
-int BGBCC_JX2C_GetStatusFpscrSz(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_JX2C_GetStatusFpscrPr(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_JX2C_UpdateStatusFpscr(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, u32 state);
-int BGBCC_JX2C_ClearStatusFpscrSz(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_JX2C_ClearStatusFpscrPr(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_JX2C_SetStatusFpscrSz(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_JX2C_SetStatusFpscrPr(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_JX2C_SetStatusFpscrFloat(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_JX2C_SetStatusFpscrDouble(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_JX2C_ResetModeDqLocal(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_JX2C_ResetModeDqUnknown(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_JX2C_SetModeDqSet(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_JX2C_SetModeDqClear(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_JX2C_CheckSetModeDqSet(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_JX2C_CheckSetModeDqClear(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_JX2C_ResetFpscrLocal(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_JX2C_ResetFpscrDefaults(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
-int BGBCC_JX2C_ResetFpscrUnknown(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_JX2C_EmitRegIsGpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg);
+int BGBCC_JX2C_EmitRegIsExtGpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg);
+int BGBCC_JX2C_EmitRegIsFpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg);
+int BGBCC_JX2C_EmitRegIsDpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg);
+int BGBCC_JX2C_EmitRegIsLpReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg);
+int BGBCC_JX2C_RegNormalizeReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int dreg);
+int BGBCC_JX2C_CheckVRegIsZRegP(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_register reg);
+int BGBCC_JX2C_GetStatusFpscrSz(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_JX2C_GetStatusFpscrPr(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_JX2C_UpdateStatusFpscr(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, u32 state);
+int BGBCC_JX2C_ClearStatusFpscrSz(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_JX2C_ClearStatusFpscrPr(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_JX2C_SetStatusFpscrSz(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_JX2C_SetStatusFpscrPr(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_JX2C_SetStatusFpscrFloat(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_JX2C_SetStatusFpscrDouble(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_JX2C_ResetModeDqLocal(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_JX2C_ResetModeDqUnknown(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_JX2C_SetModeDqSet(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_JX2C_SetModeDqClear(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_JX2C_CheckSetModeDqSet(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_JX2C_CheckSetModeDqClear(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_JX2C_ResetFpscrLocal(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_JX2C_ResetFpscrDefaults(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
+int BGBCC_JX2C_ResetFpscrUnknown(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
 //AHSRC:jx2cc/jx2_frame.c
-int BGBCC_JX2C_EmitLoadFrameOfsReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int ofs, int dreg);
-int BGBCC_JX2C_EmitStoreFrameOfsReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int ofs, int dreg);
-int BGBCC_JX2C_EmitLdaFrameOfsReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int ofs, int dreg);
-int BGBCC_JX2C_EmitStoreStackOfsReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int ofs, int dreg);
-int BGBCC_JX2C_EmitLoadBRegOfsReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int breg, int ofs, int dreg);
-int BGBCC_JX2C_EmitLoadOp2BRegOfsReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int nmid2, int breg, int ofs, int dreg);
-int BGBCC_JX2C_EmitStoreBRegOfsReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int breg, int ofs, int dreg);
-int BGBCC_JX2C_EmitLeaBRegOfsReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int breg, int ofs, int dreg);
-int BGBCC_JX2C_CheckNmidScaleMatch(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int sc);
-int BGBCC_JX2C_EmitLoadBRegIRegScReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int breg, int ireg, int sc, int dreg);
-int BGBCC_JX2C_EmitStoreBRegIRegScReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int breg, int ireg, int sc, int dreg);
-int BGBCC_JX2C_EmitLoadBRegIRegScDispReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int breg, int ireg, int sc, int disp, int dreg);
-int BGBCC_JX2C_EmitStoreBRegIRegScDispReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int breg, int ireg, int sc, int disp, int dreg);
-int BGBCC_JX2C_GetGblIndexGotIndex(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int gblidx);
-int BGBCC_JX2C_GetGblIndexLabel(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int gblidx);
-int BGBCC_JX2C_GetVRegGotIndex(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg);
-int BGBCC_JX2C_GetGblNameGotIndex(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, char *name);
-int BGBCC_JX2C_GetGblNameLabel(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, char *name);
-int BGBCC_JX2C_EmitLoadGblNameReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, char *name, int dreg);
-int BGBCC_JX2C_EmitLoadFrameVRegByValReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg, int dreg);
-int BGBCC_JX2C_EmitStoreFrameVRegByValReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg, int dreg);
-int BGBCC_JX2C_EmitLoadFrameVRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg, int dreg);
-int BGBCC_JX2C_EmitStoreFrameVRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register dreg, int sreg);
-int BGBCC_JX2C_EmitLdaValSyncFrameVRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg, int dreg);
-int BGBCC_JX2C_EmitLdaFrameVRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg, int dreg);
-int BGBCC_JX2C_GetFrameVRegFlags(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg);
-int BGBCC_JX2C_BeginSetupFrameVRegSpan(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
-int BGBCC_JX2C_EndSetupFrameVRegSpan(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
-int BGBCC_JX2C_SetupFrameVRegSpan(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg);
-int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj);
-int BGBCC_JX2C_CalcFrameEpiKey(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, int rqt, int *repik, int *repix);
-int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, int fcnlbl);
-int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj);
+int BGBCC_JX2C_EmitLoadFrameOfsReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int ofs, int dreg);
+int BGBCC_JX2C_EmitStoreFrameOfsReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int ofs, int dreg);
+int BGBCC_JX2C_EmitLdaFrameOfsReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int ofs, int dreg);
+int BGBCC_JX2C_EmitStoreStackOfsReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int ofs, int dreg);
+int BGBCC_JX2C_EmitLoadBRegOfsReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int breg, int ofs, int dreg);
+int BGBCC_JX2C_EmitLoadOp2BRegOfsReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int nmid2, int breg, int ofs, int dreg);
+int BGBCC_JX2C_EmitStoreBRegOfsReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int breg, int ofs, int dreg);
+int BGBCC_JX2C_EmitLeaBRegOfsReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int breg, int ofs, int dreg);
+int BGBCC_JX2C_CheckNmidScaleMatch(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int sc);
+int BGBCC_JX2C_EmitLoadBRegIRegScReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int breg, int ireg, int sc, int dreg);
+int BGBCC_JX2C_EmitStoreBRegIRegScReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int breg, int ireg, int sc, int dreg);
+int BGBCC_JX2C_EmitLoadBRegIRegScDispReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int breg, int ireg, int sc, int disp, int dreg);
+int BGBCC_JX2C_EmitStoreBRegIRegScDispReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int breg, int ireg, int sc, int disp, int dreg);
+int BGBCC_JX2C_GetGblIndexGotIndex(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int gblidx);
+int BGBCC_JX2C_GetGblIndexLabel(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int gblidx);
+int BGBCC_JX2C_GetVRegGotIndex(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg);
+int BGBCC_JX2C_GetGblNameGotIndex(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, char *name);
+int BGBCC_JX2C_GetGblNameLabel(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, char *name);
+int BGBCC_JX2C_EmitLoadGblNameReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, char *name, int dreg);
+int BGBCC_JX2C_EmitLoadFrameVRegByValReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg, int dreg);
+int BGBCC_JX2C_EmitStoreFrameVRegByValReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg, int dreg);
+int BGBCC_JX2C_EmitLoadFrameVRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg, int dreg);
+int BGBCC_JX2C_EmitStoreFrameVRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register dreg, int sreg);
+int BGBCC_JX2C_EmitLdaValSyncFrameVRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg, int dreg);
+int BGBCC_JX2C_EmitLdaFrameVRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg, int dreg);
+int BGBCC_JX2C_GetFrameVRegFlags(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg);
+int BGBCC_JX2C_BeginSetupFrameVRegSpan(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
+int BGBCC_JX2C_EndSetupFrameVRegSpan(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
+int BGBCC_JX2C_SetupFrameVRegSpan(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg);
+int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj);
+int BGBCC_JX2C_CalcFrameEpiKey(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, int rqt, int *repik, int *repix);
+int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, int fcnlbl);
+int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj);
 //AHSRC:jx2cc/jx2_ldix.c
-int BGBCC_JX2C_EmitLdix_FillSzNmTy(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, int *rsz, int *rnm1, int *rnm2, int *rnm3, int *rnm4);
-int BGBCC_JX2C_EmitLdixVRegVRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, s32 imm);
-int BGBCC_JX2C_EmitLdixVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg);
-int BGBCC_JX2C_EmitLdixVRegVRegVRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg, int imm);
-int BGBCC_JX2C_EmitStixVRegVRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, s32 imm);
-int BGBCC_JX2C_EmitStixVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg);
-int BGBCC_JX2C_EmitStixVRegVRegVRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg, int imm);
-int BGBCC_JX2C_EmitLeaVRegVRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, s32 imm);
-int BGBCC_JX2C_EmitLeaVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg);
-int BGBCC_JX2C_EmitLdaVRegVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg);
-int BGBCC_JX2C_EmitDiffPtrVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg);
-int BGBCC_JX2C_EmitLeaSarRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int dreg, int shl);
-int BGBCC_JX2C_EmitLeaShrRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int dreg, int shl);
-int BGBCC_JX2C_EmitLeaShlRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int dreg, int shl);
-int BGBCC_JX2C_EmitLeaBRegIRegScReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int breg, int ireg, int sc, int dreg);
+int BGBCC_JX2C_EmitLdix_FillSzNmTy(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, int *rsz, int *rnm1, int *rnm2, int *rnm3, int *rnm4);
+int BGBCC_JX2C_EmitLdixVRegVRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, s32 imm);
+int BGBCC_JX2C_EmitLdixVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg);
+int BGBCC_JX2C_EmitLdixVRegVRegVRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg, int imm);
+int BGBCC_JX2C_EmitStixVRegVRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, s32 imm);
+int BGBCC_JX2C_EmitStixVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg);
+int BGBCC_JX2C_EmitStixVRegVRegVRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg, int imm);
+int BGBCC_JX2C_EmitLeaVRegVRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, s32 imm);
+int BGBCC_JX2C_EmitLeaVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg);
+int BGBCC_JX2C_EmitLdaVRegVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg);
+int BGBCC_JX2C_EmitDiffPtrVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg);
+int BGBCC_JX2C_EmitLeaSarRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int dreg, int shl);
+int BGBCC_JX2C_EmitLeaShrRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int dreg, int shl);
+int BGBCC_JX2C_EmitLeaShlRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int dreg, int shl);
+int BGBCC_JX2C_EmitLeaBRegIRegScReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int breg, int ireg, int sc, int dreg);
 //AHSRC:jx2cc/jx2_lparith.c
-int BGBCC_JX2C_EmitBinaryLong_ShlImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int cdreg, int shl);
-int BGBCC_JX2C_EmitBinaryLong_ShrImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int cdreg, int shl);
-int BGBCC_JX2C_EmitBinaryLong_SarImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int cdreg, int shl);
-int BGBCC_JX2C_EmitBinaryVRegVRegLong(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
-int BGBCC_JX2C_EmitBinaryVRegVRegVRegLong(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
-int BGBCC_JX2C_EmitUnaryVRegVRegLong(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
-int BGBCC_JX2C_EmitJCmpVRegVRegLong(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp, int lbl);
+int BGBCC_JX2C_EmitBinaryLong_ShlImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int cdreg, int shl);
+int BGBCC_JX2C_EmitBinaryLong_ShrImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int cdreg, int shl);
+int BGBCC_JX2C_EmitBinaryLong_SarImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int cdreg, int shl);
+int BGBCC_JX2C_EmitBinaryVRegVRegLong(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
+int BGBCC_JX2C_EmitBinaryVRegVRegVRegLong(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
+int BGBCC_JX2C_EmitUnaryVRegVRegLong(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
+int BGBCC_JX2C_EmitJCmpVRegVRegLong(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp, int lbl);
 //AHSRC:jx2cc/jx2_lpreg.c
-int BGBCC_JX2C_EmitTryGetLpRegister(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg, int fl);
-int BGBCC_JX2C_EmitGetLpRegister(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg, int fl);
-int BGBCC_JX2C_EmitReleaseLpRegister(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
-int BGBCC_JX2C_StompLpRegisterIndex(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int rgidx);
-int BGBCC_JX2C_ConvLpRegisterNarrowing(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, ccxl_register sreg, ccxl_register dreg);
-int BGBCC_JX2C_ConvLpRegisterWiden(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type stype, ccxl_register sreg, ccxl_register dreg);
+int BGBCC_JX2C_EmitTryGetLpRegister(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg, int fl);
+int BGBCC_JX2C_EmitGetLpRegister(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg, int fl);
+int BGBCC_JX2C_EmitReleaseLpRegister(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
+int BGBCC_JX2C_StompLpRegisterIndex(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int rgidx);
+int BGBCC_JX2C_ConvLpRegisterNarrowing(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, ccxl_register sreg, ccxl_register dreg);
+int BGBCC_JX2C_ConvLpRegisterWiden(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type stype, ccxl_register sreg, ccxl_register dreg);
 //AHSRC:jx2cc/jx2_lqarith.c
-int BGBCC_JX2C_EmitBinaryVRegVRegQLong(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
-int BGBCC_JX2C_EmitBinaryVRegVRegVRegQLong(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
-int BGBCC_JX2C_EmitUnaryVRegVRegQLong(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
-int BGBCC_JX2C_EmitCompareVRegVRegVRegQLong(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int cmp, ccxl_register sreg, ccxl_register treg);
-int BGBCC_JX2C_EmitJCmpVRegVRegQLong(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp, int lbl);
-int BGBCC_JX2C_EmitJCmpVRegZeroQLong(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, int cmp, int lbl);
+int BGBCC_JX2C_EmitBinaryVRegVRegQLong(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
+int BGBCC_JX2C_EmitBinaryVRegVRegVRegQLong(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
+int BGBCC_JX2C_EmitUnaryVRegVRegQLong(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
+int BGBCC_JX2C_EmitCompareVRegVRegVRegQLong(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int cmp, ccxl_register sreg, ccxl_register treg);
+int BGBCC_JX2C_EmitJCmpVRegVRegQLong(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp, int lbl);
+int BGBCC_JX2C_EmitJCmpVRegZeroQLong(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, int cmp, int lbl);
 //AHSRC:jx2cc/jx2_lvarith.c
-int BGBCC_JX2C_EmitBinaryVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
-int BGBCC_JX2C_EmitBinaryVRegVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
-int BGBCC_JX2C_EmitUnaryVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
-int BGBCC_JX2C_EmitConvToVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg);
-int BGBCC_JX2C_EmitConvFromVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg);
-int BGBCC_JX2C_EmitConvFromVRegVRegVarString(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg);
+int BGBCC_JX2C_EmitBinaryVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
+int BGBCC_JX2C_EmitBinaryVRegVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
+int BGBCC_JX2C_EmitUnaryVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
+int BGBCC_JX2C_EmitConvToVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg);
+int BGBCC_JX2C_EmitConvFromVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg);
+int BGBCC_JX2C_EmitConvFromVRegVRegVarString(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg);
 //AHSRC:jx2cc/jx2_lxarith.c
-int BGBCC_JX2C_IndexLitInt128(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, s64 val_lo, s64 val_hi);
-int BGBCC_JX2C_EmitBinaryVRegVRegInt128(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
-int BGBCC_JX2C_EmitBinaryVRegVRegVRegInt128(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
-int BGBCC_JX2C_EmitUnaryVRegVRegInt128(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
+int BGBCC_JX2C_IndexLitInt128(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, s64 val_lo, s64 val_hi);
+int BGBCC_JX2C_EmitBinaryVRegVRegInt128(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
+int BGBCC_JX2C_EmitBinaryVRegVRegVRegInt128(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
+int BGBCC_JX2C_EmitUnaryVRegVRegInt128(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
 //AHSRC:jx2cc/jx2_pecoff.c
-int BGBCC_JX2C_CoffLoadBufferDLL(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, byte *buf, int sz);
-int BGBCC_JX2C_CoffBuildExports(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
-int BGBCC_JX2C_CoffBuildImports(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
-int BGBCC_JX2C_CoffSectionFlags(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, char *name);
+int BGBCC_JX2C_CoffLoadBufferDLL(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, byte *buf, int sz);
+int BGBCC_JX2C_CoffBuildExports(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
+int BGBCC_JX2C_CoffBuildImports(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
+int BGBCC_JX2C_CoffSectionFlags(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, char *name);
 int bgbcc_jx2c_qrsort(u32 *arr, int cnt, int rd);
 int BGBCC_JX2C_PackBlockLZ4_Reset(BGBCC_TransState *ctx);
-int BGBCC_JX2C_PackBlockLZ4_LookupMatch(BGBCC_TransState *ctx, byte *cs, byte *cse, int *rbl, int *rbd);
+int BGBCC_JX2C_PackBlockLZ4_LookupMatch(BGBCC_TransState *ctx, byte *cs, byte *cse, int *rbl, int *rbd);
 int BGBCC_JX2C_PackBlockLZ4_HashByte(BGBCC_TransState *ctx, byte *cs);
 int BGBCC_JX2C_PackBlockLZ4_HashString(BGBCC_TransState *ctx, byte *cs, int sz);
 int BGBCC_JX2C_PackBlockLZ4(BGBCC_TransState *ctx,byte *obuf, byte *ibuf, int obsz, int ibsz);
@@ -2679,90 +2679,90 @@ byte *BGBCC_TKPE_UnpackL4(byte *obuf, byte *ibuf, int isz);
 int BGBCC_JX2C_VerifyImagePEL4(BGBCC_TransState *ctx,byte *obuf, byte *ibuf, int obsz, int ibsz);
 ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,byte *obuf, int *rosz, fourcc imgfmt);
 //AHSRC:jx2cc/jx2_register.c
-int BGBCC_JX2C_ScratchCheckRegFree(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
-int BGBCC_JX2C_ScratchSafeStompReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
-int BGBCC_JX2C_ScratchStompReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
-int BGBCC_JX2C_ScratchHoldReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
-int BGBCC_JX2C_ScratchReleaseReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
-int BGBCC_JX2C_ScratchAllocTsReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int cls);
-int BGBCC_JX2C_ScratchAllocReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int cls);
-int BGBCC_JX2C_SaveFrameOfsForReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
-int BGBCC_JX2C_SaveFrameOfsForFpReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
-int BGBCC_JX2C_EmitSaveFrameReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
-int BGBCC_JX2C_EmitReloadSavedFrameReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
-int BGBCC_JX2C_EmitRotateRegisterIndex(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int idx);
-int BGBCC_JX2C_EmitTryGetRegister(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg, int fl);
-int BGBCC_JX2C_EmitGetRegister(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg, int fl);
-int BGBCC_JX2C_EmitGetRegisterDirty(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
-int BGBCC_JX2C_EmitGetRegisterWrite(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
-int BGBCC_JX2C_EmitGetRegisterRead(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
-int BGBCC_JX2C_EmitTryGetRegisterDirty(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
-int BGBCC_JX2C_EmitTryGetRegisterWrite(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
-int BGBCC_JX2C_EmitTryGetRegisterRead(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
-int BGBCC_JX2C_GetVRegPriority(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
-int BGBCC_JX2C_GetVRegLiveRange(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg, int *rbeg, int *rend);
-int BGBCC_JX2C_CheckVRegLiveRange(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
-int BGBCC_JX2C_EmitReleaseRegister(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
-int BGBCC_JX2C_EmitSyncRegisterIndex(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int rgix);
-int BGBCC_JX2C_EmitSyncRegisterIndex2(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int rgix, int sfl);
-int BGBCC_JX2C_EmitSyncRegisters(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
-int BGBCC_JX2C_EmitLabelFlushRegisters(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
-int BGBCC_JX2C_EmitScratchSyncRegisters(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
-int BGBCC_JX2C_EmitScratchSyncRegistersSafeMask(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int mask);
+int BGBCC_JX2C_ScratchCheckRegFree(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
+int BGBCC_JX2C_ScratchSafeStompReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
+int BGBCC_JX2C_ScratchStompReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
+int BGBCC_JX2C_ScratchHoldReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
+int BGBCC_JX2C_ScratchReleaseReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
+int BGBCC_JX2C_ScratchAllocTsReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int cls);
+int BGBCC_JX2C_ScratchAllocReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int cls);
+int BGBCC_JX2C_SaveFrameOfsForReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
+int BGBCC_JX2C_SaveFrameOfsForFpReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
+int BGBCC_JX2C_EmitSaveFrameReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
+int BGBCC_JX2C_EmitReloadSavedFrameReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
+int BGBCC_JX2C_EmitRotateRegisterIndex(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int idx);
+int BGBCC_JX2C_EmitTryGetRegister(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg, int fl);
+int BGBCC_JX2C_EmitGetRegister(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg, int fl);
+int BGBCC_JX2C_EmitGetRegisterDirty(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
+int BGBCC_JX2C_EmitGetRegisterWrite(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
+int BGBCC_JX2C_EmitGetRegisterRead(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
+int BGBCC_JX2C_EmitTryGetRegisterDirty(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
+int BGBCC_JX2C_EmitTryGetRegisterWrite(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
+int BGBCC_JX2C_EmitTryGetRegisterRead(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
+int BGBCC_JX2C_GetVRegPriority(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
+int BGBCC_JX2C_GetVRegLiveRange(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg, int *rbeg, int *rend);
+int BGBCC_JX2C_CheckVRegLiveRange(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
+int BGBCC_JX2C_EmitReleaseRegister(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
+int BGBCC_JX2C_EmitSyncRegisterIndex(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int rgix);
+int BGBCC_JX2C_EmitSyncRegisterIndex2(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int rgix, int sfl);
+int BGBCC_JX2C_EmitSyncRegisters(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
+int BGBCC_JX2C_EmitLabelFlushRegisters(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
+int BGBCC_JX2C_EmitScratchSyncRegisters(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
+int BGBCC_JX2C_EmitScratchSyncRegistersSafeMask(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int mask);
 //AHSRC:jx2cc/jx2_softfpu.c
-int BGBCC_JX2C_NormalizeImmVRegSoftFloat(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register *rtreg);
-int BGBCC_JX2C_EmitBinaryVRegVRegSoftFloat(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
-int BGBCC_JX2C_EmitBinaryVRegVRegVRegSoftFloat(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
-int BGBCC_JX2C_EmitUnaryVRegVRegSoftFloat(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
-int BGBCC_JX2C_EmitCompareVRegVRegVRegSoftFloat(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int cmp, ccxl_register sreg, ccxl_register treg);
-int BGBCC_JX2C_EmitJCmpVRegVRegSoftFloat(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp, int lbl);
+int BGBCC_JX2C_NormalizeImmVRegSoftFloat(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register *rtreg);
+int BGBCC_JX2C_EmitBinaryVRegVRegSoftFloat(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
+int BGBCC_JX2C_EmitBinaryVRegVRegVRegSoftFloat(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
+int BGBCC_JX2C_EmitUnaryVRegVRegSoftFloat(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
+int BGBCC_JX2C_EmitCompareVRegVRegVRegSoftFloat(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int cmp, ccxl_register sreg, ccxl_register treg);
+int BGBCC_JX2C_EmitJCmpVRegVRegSoftFloat(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp, int lbl);
 //AHSRC:jx2cc/jx2_struct.c
-int BGBCC_JX2C_EmitDebugCheckReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, int sreg);
-int BGBCC_JX2C_EmitConvOpRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int sreg, int dreg);
-int BGBCC_JX2C_EmitLoadSlotVRegVRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, int gblid, int fid);
-int BGBCC_JX2C_EmitStoreSlotVRegVRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, int gblid, int fid);
-int BGBCC_JX2C_EmitLoadSlotAddrVRegVRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, int gblid, int fid);
-int BGBCC_JX2C_EmitLoadSlotRegVRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, int dreg, ccxl_register sreg, int gblid, int fid);
-int BGBCC_JX2C_EmitStoreSlotVRegRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int sreg, int gblid, int fid);
-int BGBCC_JX2C_EmitLoadSlotAddrRegVRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, int dreg, ccxl_register sreg, int gblid, int fid);
-int BGBCC_JX2C_EmitLoadThisIdxVRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, int dreg);
-int BGBCC_JX2C_EmitStoreThisIdxVRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, int vreg);
-int BGBCC_JX2C_EmitValueCopyRegRegSz(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int dreg, int sreg, int sz, int al);
-int BGBCC_JX2C_EmitLoadTypeBRegOfsReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, int sreg, int ofs, int dreg);
+int BGBCC_JX2C_EmitDebugCheckReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, int sreg);
+int BGBCC_JX2C_EmitConvOpRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int sreg, int dreg);
+int BGBCC_JX2C_EmitLoadSlotVRegVRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, int gblid, int fid);
+int BGBCC_JX2C_EmitStoreSlotVRegVRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, int gblid, int fid);
+int BGBCC_JX2C_EmitLoadSlotAddrVRegVRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, int gblid, int fid);
+int BGBCC_JX2C_EmitLoadSlotRegVRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, int dreg, ccxl_register sreg, int gblid, int fid);
+int BGBCC_JX2C_EmitStoreSlotVRegRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int sreg, int gblid, int fid);
+int BGBCC_JX2C_EmitLoadSlotAddrRegVRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, int dreg, ccxl_register sreg, int gblid, int fid);
+int BGBCC_JX2C_EmitLoadThisIdxVRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, int dreg);
+int BGBCC_JX2C_EmitStoreThisIdxVRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, int vreg);
+int BGBCC_JX2C_EmitValueCopyRegRegSz(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int dreg, int sreg, int sz, int al);
+int BGBCC_JX2C_EmitLoadTypeBRegOfsReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, int sreg, int ofs, int dreg);
 //AHSRC:jx2cc/jx2_vreg.c
-int BGBCC_JX2C_EmitOpNone(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid);
-int BGBCC_JX2C_EmitOpReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int reg);
-int BGBCC_JX2C_EmitOpImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int imm);
-int BGBCC_JX2C_EmitOpMReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int reg);
-int BGBCC_JX2C_EmitOpRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int rm, int rn);
-int BGBCC_JX2C_EmitOpRegStReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int rm, int rn);
-int BGBCC_JX2C_EmitOpLdRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int rm, int rn);
-int BGBCC_JX2C_EmitOpRegStDecReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int rm, int rn);
-int BGBCC_JX2C_EmitOpLdIncRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int rm, int rn);
-int BGBCC_JX2C_EmitOpRegStRegDisp(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int rm, int rn, int disp);
-int BGBCC_JX2C_EmitOpLdRegDispReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int rm, int disp, int rn);
-int BGBCC_JX2C_EmitOpRegStReg2(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int rm, int ro, int rn);
-int BGBCC_JX2C_EmitOpLdReg2Reg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int rm, int ro, int rn);
-int BGBCC_JX2C_EmitOpRegStReg2Disp(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int rm, int ro, int rn, int disp);
-int BGBCC_JX2C_EmitOpLdReg2DispReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int rm, int ro, int disp, int rn);
-int BGBCC_JX2C_EmitOpRegRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int rs, int rt, int rn);
-int BGBCC_JX2C_EmitOpImmReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int imm, int reg);
-int BGBCC_JX2C_EmitOpRegImmReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int rm, int imm, int rn);
-int BGBCC_JX2C_EmitMovRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int sreg, int dreg);
-int BGBCC_JX2C_EmitLoadVRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg, int dreg);
-int BGBCC_JX2C_EmitStoreVRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register dreg, int sreg);
-int BGBCC_JX2C_EmitMovVRegVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg);
-int BGBCC_JX2C_EmitFpConvVRegVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nm1, int nm2, ccxl_register dreg, ccxl_register sreg);
-int BGBCC_JX2C_EmitMovVRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, s64 imm);
-int BGBCC_JX2C_EmitOpNmidVRegVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, int nmid, ccxl_register dreg, ccxl_register sreg);
-int BGBCC_JX2C_EmitJCmpVRegVRegInt(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp, int lbl);
-int BGBCC_JX2C_EmitJCmpVRegVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp, int lbl);
-int BGBCC_JX2C_EmitJCmpVRegZeroInt(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, int cmp, int lbl);
-int BGBCC_JX2C_EmitJCmpVRegZero(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, int cmp, int lbl);
-int BGBCC_JX2C_EmitJmpTab(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, s64 vmin, int nlbl, ccxl_label *lbls);
-int BGBCC_JX2C_EmitInitObj(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg);
-int BGBCC_JX2C_EmitMovVRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, s64 imm);
-int BGBCC_JX2C_SizeofVar(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg);
+int BGBCC_JX2C_EmitOpNone(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid);
+int BGBCC_JX2C_EmitOpReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int reg);
+int BGBCC_JX2C_EmitOpImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int imm);
+int BGBCC_JX2C_EmitOpMReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int reg);
+int BGBCC_JX2C_EmitOpRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int rm, int rn);
+int BGBCC_JX2C_EmitOpRegStReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int rm, int rn);
+int BGBCC_JX2C_EmitOpLdRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int rm, int rn);
+int BGBCC_JX2C_EmitOpRegStDecReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int rm, int rn);
+int BGBCC_JX2C_EmitOpLdIncRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int rm, int rn);
+int BGBCC_JX2C_EmitOpRegStRegDisp(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int rm, int rn, int disp);
+int BGBCC_JX2C_EmitOpLdRegDispReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int rm, int disp, int rn);
+int BGBCC_JX2C_EmitOpRegStReg2(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int rm, int ro, int rn);
+int BGBCC_JX2C_EmitOpLdReg2Reg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int rm, int ro, int rn);
+int BGBCC_JX2C_EmitOpRegStReg2Disp(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int rm, int ro, int rn, int disp);
+int BGBCC_JX2C_EmitOpLdReg2DispReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int rm, int ro, int disp, int rn);
+int BGBCC_JX2C_EmitOpRegRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int rs, int rt, int rn);
+int BGBCC_JX2C_EmitOpImmReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int imm, int reg);
+int BGBCC_JX2C_EmitOpRegImmReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int rm, int imm, int rn);
+int BGBCC_JX2C_EmitMovRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int sreg, int dreg);
+int BGBCC_JX2C_EmitLoadVRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg, int dreg);
+int BGBCC_JX2C_EmitStoreVRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register dreg, int sreg);
+int BGBCC_JX2C_EmitMovVRegVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg);
+int BGBCC_JX2C_EmitFpConvVRegVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nm1, int nm2, ccxl_register dreg, ccxl_register sreg);
+int BGBCC_JX2C_EmitMovVRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, s64 imm);
+int BGBCC_JX2C_EmitOpNmidVRegVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, int nmid, ccxl_register dreg, ccxl_register sreg);
+int BGBCC_JX2C_EmitJCmpVRegVRegInt(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp, int lbl);
+int BGBCC_JX2C_EmitJCmpVRegVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp, int lbl);
+int BGBCC_JX2C_EmitJCmpVRegZeroInt(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, int cmp, int lbl);
+int BGBCC_JX2C_EmitJCmpVRegZero(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, int cmp, int lbl);
+int BGBCC_JX2C_EmitJmpTab(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, s64 vmin, int nlbl, ccxl_label *lbls);
+int BGBCC_JX2C_EmitInitObj(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg);
+int BGBCC_JX2C_EmitMovVRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, s64 imm);
+int BGBCC_JX2C_SizeofVar(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg);
 //AHSRC:mm/inflate.c
 int PDUNZ_ReadBit();
 int PDUNZ_Read2Bits();
@@ -2777,7 +2777,7 @@ int PDUNZ_ReadAlignedByte();
 int PDUNZ_ReadAlignedWord();
 int PDUNZ_TransposeByte(int v);
 int PDUNZ_TransposeWord(int v);
-int PDUNZ_SetupTable(byte *cl, int ncl,u16 *tc, u16 *tm, byte *tl, u16 *ti, u16 *tn);
+int PDUNZ_SetupTable(byte *cl, int ncl,u16 *tc, u16 *tm, byte *tl, u16 *ti, u16 *tn);
 int PDUNZ_SetupStatic();
 int PDUNZ_DecodeSymbol();
 int PDUNZ_DecodeDistance();
@@ -2913,7 +2913,7 @@ void *bgbcc_loadfile_txt(char *name, int *rsz);
 void *bgbcc_loadfile2(char *name, int *rsz);
 int BGBCC_LoadCMeta(char *name);
 BCCX_Node *BGBCC_LoadCSourceAST(char *name);
-int BGBCC_LoadCSourcesCCXL(char **names, int nnames, byte *obuf, int *rsz, fourcc imgfmt);
+int BGBCC_LoadCSourcesCCXL(char **names, int nnames, byte *obuf, int *rsz, fourcc imgfmt);
 u32 BGBCC_GetArch();
 u32 BGBCC_GetSubArch();
 int BGBCC_LoadConfig(char *name);

@@ -413,6 +413,15 @@ int main(int argc, char **argv, char **env)
 	}
 #endif
 
+	for(i=0; i<4; i++)
+	{
+		top->dcInOpm=0x00;
+		top->clock = (main_time>>0)&1;
+		main_time++;
+		MemUpdateForBus();
+		top->eval();
+	}
+
 #if 1
 	n=0; inh=2; rdy=0;
 	while (!Verilated::gotFinish())

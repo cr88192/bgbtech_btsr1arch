@@ -2,6 +2,9 @@
 
 #include "jx2r_snd_smus.c"
 
+void SoundDev_Submit();
+int SoundDev_WriteStereoSamples(short *buffer, int cnt);
+
 int Sblkau_SampToPred9(int val)
 {
 	int v, ex, sg;

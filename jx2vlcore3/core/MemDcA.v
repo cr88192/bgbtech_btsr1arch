@@ -371,8 +371,8 @@ begin
 
 	if(tDoStBlkB)
 	begin
-		if(tStBlkAddrA[0])
-			$display("L1D$, DoStBlkA: Even/Odd Mismatch");
+		if(!tStBlkAddrB[0])
+			$display("L1D$, DoStBlkB: Even/Odd Mismatch");
 
 		$display("L1D$, DoStBlkB(%X), Data=%X", tStBlkIxB, tStBlkDataB);
 

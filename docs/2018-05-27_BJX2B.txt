@@ -79,12 +79,13 @@ SR Bits:
 * 4..7: P/Q/R/O Bits, Context Dependent
 ** Used by GSV for Vector Compare.
 * 8..23: Reserved
+* 27: WXD, WEX Disable
 * 28: BL, Block Interrupts
 * 29: RB, Encodes the ISR register bank.
 ** Set when interrupt occurs.
 ** Cleared when interrupt returns.
 * 30: MD, User/Supervisor.
-* 31: JQ, Address-Space Size.
+* 31: JQ, Address-Space Size (32/48).
 * 32..63: Reserved
 
 Most operations will not change the contents of SR unless noted otherwise.
@@ -94,10 +95,10 @@ For application-level code, misaligned access to memory is required to be suppor
 
 
 The JQ bit will effect the size of the address space:
-* JQ=0, Use 48/64 address space.
-* JQ=1, Use a 32-bit address space.
+* JQ=0, Use a 32-bit address space.
+* JQ=1, Use 48/64 address space.
 ** Memory access will explicitly discard the high-order address bits.
-** This will be OR'ed with the bit from MMCR.
+** This will be AND'ed with the bit from MMCR.
 
 
 === Special Restrictions ===
@@ -203,6 +204,48 @@ SystemCalls:
 * Unlike other interrupts, SysCall handlers need not preserve scratch registers.
 * Roughly 12 bits are available for a function number.
 ** The specifics of this number are outside the scope of the ISA spec.
+
+
+=== Memory Map ===
+
+Base Physical Memory Map (32-bit):
+* 00000000 .. 00007FFF: Boot ROM
+* 00008000 .. 0000BFFF: (Reserved)
+* 0000C000 .. 0000DFFF: Boot SRAM
+* 0000E000 .. 0000FFFF: Reserved
+* 00010000 .. 000FFFFF: Reserved
+* 00100000 .. 00FFFFFF: Reserved
+* 01000000 .. 7FFFFFFF: DRAM
+* 80000000 .. 9FFFFFFF: System (MMU Range 00000000..1FFFFFFF)
+* A0000000 .. BFFFFFFF: MMIO (No MMU, Bypass)
+* C0000000 .. DFFFFFFF: System (No MMU, Repeats 00000000..1FFFFFFF)
+* E0000000 .. FFFFFFFF: Reserved for Processor/Chipset
+
+
+Logical Memory Map (32-bit):
+* 00000000 .. 7FFFFFFF: Userland (MMU)
+* 80000000 .. 9FFFFFFF: System (MMU)
+* A0000000 .. BFFFFFFF: MMIO (No MMU, Bypass)
+* C0000000 .. DFFFFFFF: System (No MMU, Repeats 00000000..1FFFFFFF)
+* E0000000 .. FFFFFFFF: Reserved for Processor/Chipset
+
+
+Addresses in the MMIO ranges will "bypass" the normal memory access mechanisms and go directly to the MMIO Bus.
+
+Addresses in the MMIO range will be masked to 29 bits, which will be used as the corresponding address on the MMIO Bus.
+
+Access to MMIO will require being in Supervisor mode, and will not be subject to address translation.
+
+In 48-bit Mode, the address space will be extended (bits 32..47):
+* 0000: Behaves the same as in 32-bit mode.
+* 0001..7FFF: Userland (MMU).
+* 8000..9FFF: System (MMU).
+* A000..BFFF: MMIO.
+* C000..DFFF: System (No MMU; Absolute 45-bit address).
+* E000..FFFF: Reserved for Processor/Chipset.
+
+If more DRAM exists than fits into the low 2GB, then addresses above the 4GB mark will be used for DRAM. It will be implementation defined how the DRAM region below the 2GB mark maps into this larger space.
+
 
 
 === MMU ===
@@ -326,8 +369,8 @@ MMCR Bits:
 * 0001: Enable TLB
 ** Enables the use of page-level translation via the TLB.
 ** If clear, direct physical addressing is used.
-* 0004: User-mode uses 32-bit addressing.
-* 0008: System-mode uses 32-bit addressing.
+* 0004: User-mode uses 48-bit addressing.
+* 0008: System-mode uses 48-bit addressing.
 
 
 === Addressing Modes ===
@@ -734,8 +777,8 @@ Instruction Space
 ** 37nE ? SWCP.HB	Rn				//(0120) Copy Low To High Bytes (GSV)
 ** 37nF ? SWCP.HW	Rn				//(0120) Copy Low To High Word (GSV)
 
-** 38j0  WEX0		#imm4				//Wide Execute Hint
-** 38j1  WEX1		#imm4
+** 38j0 / WEX0		#imm4				//Wide Execute Hint
+** 38j1 / WEX1		#imm4
 ** 38n2  PUSH		FRn
 ** 38n3  POP		FRn
 ** 38n4  LDSRMSK	Rn				//Masked Load Rn into SR
@@ -743,7 +786,7 @@ Instruction Space
 ** 38n6  SHADQ		DLR, Rn			//Barrel Shift, Arithmetic
 ** 38n7  SHLDQ		DLR, Rn			//Barrel Shift, Logical
 ** 38j8 ? CPUID		#imm4			//Load CPUID bits into DHR:DLR
-** 38n9  -
+** 38n9  WEXMD		#imm4			//Set WEX Profile
 ** 38nA  PUSH		FRk				//Push FRk (FR16..FR31)
 ** 38nB  POP		FRk				//Pop FRk (FR16..FR31)
 ** 38nC  -

@@ -382,6 +382,15 @@ typedef signed long long nlint;
 #define true 1
 #endif
 
+#ifndef offsetof
+#define offsetof(Ty, Fi)	((nlint)(&(((Ty *)0)->Fi)))
+#endif
+
+#ifdef _WIN32
+#define JX2_DBGBREAK	__debugbreak();
+#else
+#define JX2_DBGBREAK
+#endif
 
 typedef struct BJX2_Context_s BJX2_Context;
 typedef struct BJX2_Opcode_s BJX2_Opcode;

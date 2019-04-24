@@ -79,6 +79,7 @@ VL_MODULE(VMemL1A) {
 	VL_SIG8(MemL1A__DOT__memIc__DOT__tStBlkIx,5,0);
 	VL_SIG8(MemL1A__DOT__memIc__DOT__tDoStBlk,0,0);
 	VL_SIG8(MemL1A__DOT__memDc__DOT__tRegOutOK,1,0);
+	VL_SIG8(MemL1A__DOT__memDc__DOT__tRegOutOK2,1,0);
 	VL_SIG8(MemL1A__DOT__memDc__DOT__tMemOpm,4,0);
 	VL_SIG8(MemL1A__DOT__memDc__DOT__tNxtIxA,5,0);
 	VL_SIG8(MemL1A__DOT__memDc__DOT__tNxtIxB,5,0);
@@ -108,9 +109,9 @@ VL_MODULE(VMemL1A) {
 	VL_SIG8(MemL1A__DOT__memDc__DOT__tMiBlkIxB,5,0);
 	VL_SIG8(MemL1A__DOT__memDc__DOT__tDoMiBlkA,0,0);
 	VL_SIG8(MemL1A__DOT__memDc__DOT__tDoMiBlkB,0,0);
-	VL_SIG8(MemL1A__DOT__memDc__DOT__tDoMiBlk,0,0);
     };
     struct {
+	VL_SIG8(MemL1A__DOT__memDc__DOT__tDoMiBlk,0,0);
 	VL_SIG8(MemL1A__DOT__memDc__DOT__tMemLatchA,0,0);
 	VL_SIG8(MemL1A__DOT__memDc__DOT__tMemLatchB,0,0);
 	VL_SIG8(MemL1A__DOT__memDc__DOT__tMemLatchDnA,0,0);
@@ -161,6 +162,7 @@ VL_MODULE(VMemL1A) {
 	VL_SIG64(MemL1A__DOT__memIc__DOT__tBlkDataA,63,0);
 	VL_SIG64(MemL1A__DOT__memIc__DOT__tBlkDataB,63,0);
 	VL_SIG64(MemL1A__DOT__memDc__DOT__tRegOutVal,63,0);
+	VL_SIG64(MemL1A__DOT__memDc__DOT__tRegOutVal2,63,0);
 	VL_SIG64(MemL1A__DOT__memDc__DOT__tDataIn,63,0);
 	VL_SIG64(MemL1A__DOT__memDc__DOT__tBlkExData,63,0);
 	VL_SIG64(MemL1A__DOT__memDc__DOT__tBlkInData,63,0);
