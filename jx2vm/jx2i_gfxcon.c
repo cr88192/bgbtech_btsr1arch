@@ -456,6 +456,13 @@ u64 btesh2_gfxcon_glyphs[256]=
 0x0000001e1e1e1e00,	//0xFE "?"
 };
 
+#ifdef linux
+byte *btesh2_gfxcon_framebuf;
+int btesh2_gfxcon_fb_dirty;
+int btesh2_gfxcon_fbxs;
+int btesh2_gfxcon_fbys;
+#endif
+
 u32 *jx2i_gfxcon_conbuf;
 byte jx2i_gfxcon_dirty;
 byte jx2i_gfxcon_is80col;
@@ -513,6 +520,7 @@ int JX2I_GfxCon_PutPix200(int px, int py, int clrc)
 		((u32 *)btesh2_gfxcon_framebuf)[((py*2+0)*640)+(px*2+1)]=clrc;
 		((u32 *)btesh2_gfxcon_framebuf)[((py*2+1)*640)+(px*2+1)]=clrc;
 	}
+	return(0);
 }
 
 int JX2I_GfxCon_PutPix400(int px, int py, int clrc)
@@ -527,6 +535,7 @@ int JX2I_GfxCon_PutPix400(int px, int py, int clrc)
 		((u32 *)btesh2_gfxcon_framebuf)[(py*640)+(px*2+0)]=clrc;
 		((u32 *)btesh2_gfxcon_framebuf)[(py*640)+(px*2+1)]=clrc;
 	}
+	return(0);
 }
 
 int JX2I_GfxCon_UpdateCell(int cx, int cy)
@@ -1328,6 +1337,8 @@ int JX2I_GfxCon_UpdateForRegs()
 	jx2i_gfxcon_is80col=0;
 	if(jx2i_gfxcon_ctrlreg[0]&1)
 		jx2i_gfxcon_is80col=1;
+
+	return(0);
 }
 
 int JX2I_GfxCon_Update()
