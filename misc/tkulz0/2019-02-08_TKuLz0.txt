@@ -1,0 +1,128 @@
+TK uLZ
+* Small Huffman-coded LZ77 variant.
+* Aim is to be smaller/simpler to decode than Deflate.
+* Will still be Huffman coded, unlike LZ4.
+* Will not (necessarily) aim for speed, but should not be overly slow.
+
+
+Bitstream
+* LSB first.
+* Huffman symbols are 1-12 bits.
+** Rather than 1-15 as in Deflate.
+** This allows simplifying the table encoding some.
+** Also allows for a single-stage lookup table to be smaller.
+
+
+=== Top Level Bitstream ===
+
+Top level bitstream will consist of a series of 4 bit tags.
+* 0: End of Stream.
+* 1: Raw Uncompressed Data
+* 2: LZ Compressed Data
+* 3: Reserved
+* 4: Packed Huffman Table, Tag
+* 5: Packed Huffman Table, Literal
+* 6: Packed Huffman Table, Distance
+* 7: Reserved
+* 8: Reserved
+* 9: Raw Uncompressed Data, Stream Ends.
+* A: LZ Packed Data, Stream Ends.
+* B..F: Reserved
+
+Raw Uncompressed Data:
+* 2 bit prefixed length:
+** 0: 12 bit length (0 to 4K)
+** 1: 16 bit length (0 to 64K)
+** 2: 20 bit length (0 to 1M)
+** 3: 24 bit length (0 to 16M)
+* Bitstream then realigns to a byte boundary.
+** This many raw bytes follows.
+
+
+=== Packed Huffman Table ===
+
+Huffman tables will encode a series of lengths, but the tables will not be entropy coded. Each table will represent up to 256 lengths.
+
+Table contents will be encoded via 4 bit codes:
+* 0: Non-encoded symbol
+* 1..D: Symbol Length, 1..13 bits.
+** Length 13: Reserved for now.
+* E: 3..18 zeroes (4 bits follow).
+* F: Escaped Run, 2 bit code follows:
+** 0: 19..82 zeroes (6 bits).
+** 1: 4..66 repeats of prior length (6 bits).
+*** Bias is 3, with 0 encoding an "End of Table".
+** 2: Reserved
+** 3: Reserved
+** Rest of table is filled with zeroes.
+
+A table does not necessarily end with an End of Table marker, but may also end upon reaching its total number of lengths. A table may not encode more than 256 lengths.
+
+If an End of Table is seen, any remaining lengths are set to zero.
+
+
+Major Tables:
+* Tag(T): Run Prefix Tags
+* Literal(L): Literal Bytes
+* Distance(D): Distance Prefix
+
+Symbols will be assigned code patterns such that:
+* Shorter symbols precede longer ones;
+* Symbols with the same length will be be ordered by symbol value.
+
+Symbols will be effectively transposed in the bitstream, such that the high-order bit of the symbol's codeword appears in LSB position in the bitstream.
+
+
+=== LZ Compressed Data ===
+
+Runs will be encoded as:
+* Tag Prefix
+* If Needed, Overflowed Literal Length
+* If Needed, Overflowed Match Length
+* Match Distance
+* If Special Case, Extra Distance
+* Zero or more literal symbols
+* (Match copy happens here)
+
+The Tag prefix will be encoded as:
+* High 4 bits: Literal Length, or 15 for overflow.
+* Low 4 bits: Match Length (3..17), or 15 for overflow.
+
+In the overflow cases, the length will be encoded using a distance.
+* The overflow length will add a bias, 15 for literal, and 18 for match.
+
+
+Lengths and distances will be encoded as a prefix followed by zero or more "extra bits".
+
+Distance Prefix:
+* High 5 bits: Exponent (ExtraBits-1)
+* Low 3 bits: Fraction
+
+Thus (Prefix, Range, Extra Bits):
+* 00..07:     0..    7 (0)
+* 08..0F:     8..   15 (0)
+* 10..17:    16..   31 (1)
+* 18..1F:    32..   63 (2)
+* 20..27:    64..  127 (3)
+* 28..2F:   128..  255 (4)
+* 30..37:   256..  511 (5)
+* 38..3F:   512.. 1023 (6)
+* 40..47:  1024.. 2047 (7)
+* 48..4F:  2048.. 4095 (8)
+* 50..57:  4096.. 8191 (9)
+* 58..5F:  8192..16383 (10)
+* 60..67: 16384..32767 (11)
+* 68..6F: 32768..65535 (12)
+* ...
+
+
+If the LZ match distance is zero, this will encode an escape case.
+What happens next will depend on the match length.
+* 3(0): End of Block
+* 4(1): Predicted match length and distance.
+* 5(2): Predicted match length (match distance given as ExtraDistance).
+* 6(3): Predicted distance (match length given as ExtraDistance+3).
+* Other values are reserved.
+
+If a predicted value is used, the previously encoded value will be used as a predictor. At the start of a block these values are undefined and may not be used.
+

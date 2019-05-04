@@ -1,0 +1,314 @@
+BGB Simple(?) Video Codec (Idea)
+* Aim to allow a simple decoder.
+** Keeping LOC for the decoder fairly small if possible.
+** Dunno if this is on the right track.
+* Aim to have acceptable compression while doing so.
+* Will not aim for maximum performance nor to compete with mainstream video codecs.
+
+Will try for a simplistic design along vaguely similar lines to mainstream video codecs.
+
+This codec will operate in terms of logical 16x16 macroblocks, with the resolution of the encoded frame being padded up to a multiple of 16.
+
+
+Will use WHT (Walsh Hadamard Transform) in place of the DCT transform.
+* Will use 8x8 blocks and 4:2:0 chroma subsampling.
+* Will store the coeffients in a ZigZag order for greater coding efficiency.
+
+
+Will use a simplified YUV Scheme:
+* Y=(3R+B+4G)/8
+* Or: Y=(R+B+2G)/4
+* U=(B-Y)/2+128
+* V=(R-Y)/2+128
+* B=Y+2(U-128)
+* R=Y+2(V-128)
+* G=(8Y-3R-B)/4
+* Or: G=(4Y-R-B)/2
+
+Or, alternately:
+* Y=(R+B+2G)/4
+* U=((B-G)/2)+128
+* V=((R-G)/2)+128
+
+
+If lossless encoding is used, it will not use subsampling and the planes will be G,B,R,A.
+
+
+There will be an optional A plane, which may be used as either an alpha channel or as an HDR exponent channel. If no A plane is used, the image will be assumed to be opaque and LDR.
+
+This format will assume that an an external header (such that a BITMAPINFOHEADER) is used to give the resolution and similar for the video.
+
+
+=== WHT ===
+
+Will use a variation of the Walsh-Hadamard Transform.
+
+Pixel values will be transformed from (A, B) to (A+B, ((A+B)/2)-B).
+
+Within each 8-element WHT, Coefficients will be stored in the order 0,4,6,2,3,7,5,1.
+
+Stages:
+* First Stage:
+** A0=I0+I3, A1=I1+I5, A2=I2+I6, A3=I3+I7
+** A4=(A0>>1)-I4, A5=(A1>>1)-I5,
+** A6=(A2>>1)-I6, A7=(A3>>1)-I7
+* Second Stage:
+** B0=A0+A1, B1=A1+A3, B4=A4+A6, B5=A5+A7
+** B2=(B0>>1)-A2, B3=(B1>>1)-A3
+** B6=(B4>>1)-A6, B7=(B5>>1)-A7
+* Third Stage:
+** C0=B0+B1, C2=A2+A3, B4=A4+A5, B6=A6+A7
+** C1=(B0>>1)-A2, B3=(B1>>1)-A3
+** C5=(B4>>1)-A6, B7=(B5>>1)-A7
+
+
+Seen as a 1D transform (In->On):
+<pre>
+    A0=I0+I4;		A1=I1+I5;
+    A2=I2+I6;		A3=I3+I7;
+    A4=(A0>>1)-I4;	A5=(A1>>1)-I5;
+    A6=(A2>>1)-I6;	A7=(A3>>1)-I7;
+    B0=A0+A2;		B1=A1+A3;
+    B4=A4+A6;		B5=A5+A7;
+    B2=(B0>>1)-A2;	B3=(B1>>1)-A3;
+    B6=(B4>>1)-A6;	B7=(B5>>1)-A7;
+    C0=B0+B1;  	    C2=B2+B3;
+    C4=B4+B5;	    C6=B6+B7;
+    C1=(C0>>1)-B1;  C3=(C2>>1)-B3;
+    C5=(C4>>1)-B5;  C7=(C6>>1)-B7;
+    O0=C0;			O1=C4;
+    O2=C6;			O3=C2;
+    O4=C3;			O5=C7;
+    O6=C5;			O7=C1;
+</pre>
+
+This transform will be applied over both horizontally and vertically to transform the input pixels to coefficients.
+
+
+== Format ==
+
+Bitstream Format.
+
+The bitstream will be encoded in LSB first ordering, with Huffman codes effectively transposed in the bitstream.
+
+Each video frame will be encoded as a series of "tag blocks" within a single bitstream.
+
+The ordering of these blocks will be significant, in that tables used by a later block are required to be encoded prior to the block which uses them, and that DC planes (and motion vectors) are required to precede AC planes.
+
+Top-level bitstream:
+* Stream blocks will begin with 4 bit tags.
+* 0: End of Coded Stream
+* 1: Packed Huffman Table (I-Frame Only)
+* 2: Quantization Table (I-Frame Only)
+* 3: Wrapped or User Segment
+* 4: Image DC Coefficient Plane
+* 5: Image AC Coefficient Plane
+
+
+=== Wrapped/User Segment (?) ===
+
+Main tag is followed by a sub-tag and length bits, followed by a tag identifying the payload.
+
+Sub-tag will be 4 bits:
+* 0: 8-bit length; Byte Tag.
+* 1: 16-bit length; Byte Tag.
+* 2: 24-bit length; Byte Tag.
+* 3: 32-bit length; Byte Tag.
+* 4: 8-bit length; TWOCC Tag.
+* 5: 16-bit length; TWOCC Tag.
+* 6: 24-bit length; TWOCC Tag.
+* 7: 32-bit length; TWOCC Tag.
+
+Following the sub-tag, the bitstream realigns with the nearest byte boundary, and is the payload is padded up to a multiple of 8 bits. The tag for the payload will be included in the payload length.
+
+The intention for this feature is to allow for user-defined extension tags and to allow certain blocks to be processed in parallel.
+
+
+=== Packed Huffman Table ===
+
+Huffman tables will encode a series of lengths, but the tables will not be entropy coded. Each table will represent up to 256 lengths.
+
+They will begin with a 4-bit TableID Tag:
+* 0: DC_Y
+* 1: DC_UV
+* 2: DC_A
+* 3: MV_XY
+* 4: AC_Y
+* 5: AC_UV
+* 6: AC_A
+* 7..F: Reserved
+
+
+Table contents will be encoded via 4 bit codes:
+* 0: Non-encoded symbol
+* 1..D: Symbol Length, 1..13 bits.
+* E: 3..18 zeroes (4 bits follow).
+* F: Escaped Run, 2 bit code follows:
+** 0: 19..82 zeroes (6 bits).
+** 1: 4..66 repeats of prior length (6 bits).
+*** Bias is 3, with 0 encoding an "End of Table".
+** 2: Reserved
+** 3: Reserved
+** Rest of table is filled with zeroes.
+
+A table does not necessarily end with an End of Table marker, but may also end upon reaching its total number of lengths. A table may not encode more than 256 lengths.
+
+If an End of Table is seen, any remaining lengths are set to zero.
+
+
+Symbols will be assigned code patterns such that:
+* Shorter symbols precede longer ones;
+* Symbols with the same length will be be ordered by symbol value.
+
+Symbols will be effectively transposed in the bitstream, such that the high-order bit of the symbol's codeword appears in LSB position in the bitstream.
+
+
+The Huffman table will be encoded in the I-Frame, and will be shared with any subsequent P-Frames.
+
+
+=== Quantization Table ===
+
+They will begin with a 4-bit TableID Tag:
+* 0: QT_Y  (WHT)
+* 1: QT_UV (WHT)
+* 2: QT_A  (WHT)
+* 3: Reserved
+* 4: QT_Y  (DCT)
+* 5: QT_UV (DCT)
+* 6: QT_A  (DCT)
+* 7: Reserved
+* 8..15: Repeat 0..7, but use fixed-size elements.
+
+Will consist of a series of values by which each delta is scaled.
+
+This table will be encoded as a series of deltas from the prior coefficient scale. These values are encoded in zigzag order, with the sign of the difference folded into the LSB.
+
+Each delta will be encoded as a 2 bit prefix followed by some 2+n*3 suffix bits.
+* 0: 2 bit suffix
+* 1: 5 bit suffix
+* 2: 8 bit suffix
+** Values 0..15 will encode an RLE run.
+*** Will repeat prior value 1 to 16 times.
+* 3: 11 bit suffix
+
+Nominally, Quantization values will always be positive and hold a value greater than 0.
+
+
+In the fixed-size elements case, a 4 bit value will follow giving the element size in bits. This will then be followed by 64 n-bit elements (representing an unsigned scale value). The range allowed for the element size is between 2 and 12.
+
+
+=== Entropy Coded Delta ===
+
+Signed values will encode a signed quantity by folding the sign into the LSB:
+* 0, -1, 1, -2, 2, -3, 3, ...
+
+Unsigned values will be encoded directly without an additional sign-folding step.
+
+
+The value will then be split into a prefix and extra bits.
+
+Delta Prefix:
+* High bit: 
+* Middle 5 bits: Exponent (ExtraBits-1)
+* Low 2 bits: Fraction
+
+Thus (Prefix, Range, Extra Bits):
+* 00..03:       0..       3 (0)
+* 04..07:       4..       7 (0)
+* 08..0B:       8..      15 (1)
+* 0C..0F:      16..      31 (2)
+* 10..13:      32..      63 (3)
+* 14..17:      64..     127 (4)
+* 18..1B:     128..     255 (5)
+* 1C..1F:     256..     511 (6)
+* 20..23:     512..    1023 (7)
+* 24..27:    1024..    2047 (8)
+* 28..2B:    2048..    4095 (9)
+* 2C..2F:    4096..    8191 (10)
+* 30..33:    8192..   16383 (11)
+* 34..37:   16384..   32767 (12)
+* 38..3B:   32768..   65535 (13)
+* 3C..3F:   65536..  131071 (14)
+* 40..43:  131072..  262143 (15)
+* 44..47:  262144..  524287 (16)
+* 48..4B:  524288.. 1048575 (17)
+* 4C..4F: 1048576.. 2097151 (18)
+* 50..53: 2097152.. 4194303 (19)
+* 54..57: 4194304.. 8388607 (20)
+* 58..5B: 8388608..16777215 (21)
+* ...
+
+For Zero Runs and Small Prefix:
+* 00/01:     0..     1 (0)
+* 02/03:     2..     3 (0)
+* 04/05:     4..     7 (1)
+* 06/07:     8..    15 (2)
+* 08/09:    16..    31 (3)
+* 0A/0B:    32..    63 (4)
+* 0C/0D:    64..   127 (5)
+* 0E/0F:   128..   255 (6)
+
+
+For AC and DC coefficients:
+* 00..7F: Direct Coefficient
+* 80..8F: Run of Zeroes (1..256)
+* 90..FF: (1.zzz.pppp)
+** Combined Zeroes and Small Prefix
+** Cases where the prefix is zero are reserved for escape cases.
+* 00: EOB (for AC blocks)
+
+
+The prefix value will then be encoded with its corresponding Huffman table.
+
+
+=== Image DC Coefficient Plane ===
+
+They will begin with a 4-bit TableID Tag:
+* 0: Y (DC_Y), Y Plane
+* 1: U (DC_UV), U Plane
+* 2: V (DC_UV), V Plane
+* 3: A (DC_A), A Plane
+* 4..7: Reserved
+* 8: MVX_Y (MV_XY), Motion Vectors (X Axis, Y Plane)
+* 9: MVX_UV (MV_XY), Motion Vectors (X Axis, UV Planes)
+* A: MVX_A (MV_XY), Motion Vectors (X Axis, A Plane)
+* B: Reserved
+* C: MVY_Y (MV_XY), Motion Vectors (Y Axis, Y Plane)
+* D: MVY_UV (MV_XY), Motion Vectors (Y Axis, UV Planes)
+* E: MVY_A (MV_XY), Motion Vectors (Y Axis, A Plane)
+* F: Reserved
+
+Consists of a plane of entropy coded DC coefficients.
+Motion vector planes are only allowed in P-Frames.
+
+The size of each plane will depend on the resolution of the video as well as the subsampling for the plane.
+
+Within each plane, a Paeth predictor will be used to predict the value for each coefficient, and the delta will be relative to this. For DC planes, the value will be scaled by the corresponding location in the quantization matrix prior to the IWHT transform.
+
+Within motion-vector planes, the values are unscaled and correspond to an integer number of pixels.
+
+
+=== Image AC Coefficients ===
+
+They will begin with a 4-bit TableID Tag:
+* 0: Y (AC_Y)
+* 1: U (AC_UV)
+* 2: V (AC_UV)
+* 3: A (AC_A)
+
+Will also be organized as planes, with each block encoded as its 63 AC coefficients. Each block of AC coefficients will be stored in ZigZag order.
+
+
+=== Motion Vectors ===
+
+The motion vectors will use the same encoding and resolution as the DC plane, but will differ in terms of how they are used.
+
+Encodes the relative translation (in pixels) of the blocks within a given frame.
+These vectors will indicate the offset (in pixels) of where this block's pixels would come from in the prior frame.
+
+
+The YUVA data within a P-Frame will be interpreted as a delta relative to the pixel values from the prior frame as translated by the motion vector. The decoded YUVA values will be added to the translated block from the prior frame and the resulting pixel values will be range clamped.
+
+The motion vector may not be used encode values which go outside of the frame bounds.
+
+Planes will use the same set of motion vectors as their associated quantization table.
