@@ -29,6 +29,7 @@ struct TKSVC0D_DecState_s {
 	byte status;
 
 	byte is_pf;					/* Is P-Frame */
+	byte is_444;				/* Is 4:4:4 */
 	int xs, ys;
 
 	u16 htab[8][TKULZ_HTABSZ];	/* Huffman Tables */
@@ -220,7 +221,7 @@ void TKSVC0D_DecodeCoeffDc(TKSVC0D_DecState *ctx, int htn, int *rz, int *rv)
 }
 
 void TKSVC0D_DecodeBlockAC(TKSVC0D_DecState *ctx, int htn,
-	int *blk, int *rqt)
+	int *blk, int *rqt, int *rskp)
 {
 	int z, v, qv;
 	int i, j, k;
@@ -231,6 +232,11 @@ void TKSVC0D_DecodeBlockAC(TKSVC0D_DecState *ctx, int htn,
 		TKSVC0D_DecodeCoeff(ctx, htn, &z, &v);
 		if(z<0)
 			break;
+		if(z>=64)
+		{
+			*rskp=z-63;
+			break;
+		}
 
 		j=z;
 		while(j--)
@@ -361,11 +367,20 @@ void TKSVC0D_TransIDCT_Vert(s32 *iblk, s32 *oblk)
 	oblk[32]=l-p;	oblk[40]=k-o;	oblk[48]=j-n;	oblk[56]=i-m;
 }
 
-void TKSVC0D_TransIDCT(s32 *iblk, s32 *oblk)
+void TKSVC0D_TransIDCT(s32 *iblk, s32 *oblk, byte isflat)
 {
 	int s[64];
 	int t[64];
+	int v;
 	int i, j;
+
+	if(isflat)
+	{
+		v=(iblk[0]*8281+32768)>>16;
+		for(i=0; i<64; i++)
+			oblk[i]=v;
+		return;
+	}
 
 	TKSVC0D_TransIDCT_Horiz(iblk+0, s+0);
 	TKSVC0D_TransIDCT_Horiz(iblk+8, s+8);
@@ -471,9 +486,18 @@ void TKSVC0D_TransIWHT_Vert(s32 *iblk, s32 *oblk)
 	oblk[8*6]=ob6;	oblk[8*7]=ob7;
 }
 
-void TKSVC0D_TransIWHT(s32 *iblk, s32 *oblk)
+void TKSVC0D_TransIWHT(s32 *iblk, s32 *oblk, byte isflat)
 {
 	s32 s[64];
+	int v, i;
+
+	if(isflat)
+	{
+		v=iblk[0]>>6;
+		for(i=0; i<64; i++)
+			oblk[i]=v;
+		return;
+	}
 
 	TKSVC0D_TransIWHT_Vert(iblk+0, s+0);
 	TKSVC0D_TransIWHT_Vert(iblk+1, s+1);
@@ -524,7 +548,7 @@ void TKSVC0D_DecodeAcPlaneData(TKSVC0D_DecState *ctx, int htn, int pn, int qn)
 	int *dcp, *mvxp, *mvyp;
 	byte *yvp, *lyvp;
 	int a0, a1, a2, ap, qv, mvy, mvx;
-	int x, y, x1, y1, px, z, v, bpx, lpx;
+	int x, y, x1, y1, px, z, v, bpx, lpx, lz;
 
 	if(pn>=4)
 	{
@@ -547,34 +571,47 @@ void TKSVC0D_DecodeAcPlaneData(TKSVC0D_DecState *ctx, int htn, int pn, int qn)
 	mvxp=ctx->mvxp[qn];
 	mvyp=ctx->mvyp[qn];
 	
+	z=0;
 	for(y=0; y<ys; y++)
 		for(x=0; x<xs; x++)
 	{
 		px=y*xs+x;
 		blk[0]=dcp[px]*qv;
-		TKSVC0D_DecodeBlockAC(ctx, htn, blk, qt);
+
+		if(!z)
+			{ TKSVC0D_DecodeBlockAC(ctx, htn, blk, qt, &z); lz=z; if(z)z--; }
+		else
+			{ lz=z--; }
 
 		if(!ctx->use_dct[qn])
-		{
-			TKSVC0D_TransIWHT(blk, blk);
-		}else
-		{
-			TKSVC0D_TransIDCT(blk, blk);
-		}
+			{ TKSVC0D_TransIWHT(blk, blk, lz); }
+		else
+			{ TKSVC0D_TransIDCT(blk, blk, lz); }
 		
 		mvx=mvxp[px];
 		mvy=mvyp[px];
 		
 		if(ctx->is_pf)
 		{
-			for(y1=0; y1<8; y1++)
+			if(lz)
 			{
-				bpx=y1*8;
-				px=((y*8+y1)*xsp)+(x*8);
-				lpx=((y*8+y1+mvy)*xsp)+(x*8+mvx);
-				for(x1=0; x1<8; x1++)
+				for(y1=0; y1<8; y1++)
 				{
-					yvp[px++]=TKSVC0D_Clamp255(lyvp[lpx++]+blk[bpx++]);
+					bpx=y1*8;
+					px=((y*8+y1)*xsp)+(x*8);
+					lpx=((y*8+y1+mvy)*xsp)+(x*8+mvx);
+					for(x1=0; x1<8; x1++)
+						{ yvp[px++]=lyvp[lpx++]; }
+				}
+			}else
+			{
+				for(y1=0; y1<8; y1++)
+				{
+					bpx=y1*8;
+					px=((y*8+y1)*xsp)+(x*8);
+					lpx=((y*8+y1+mvy)*xsp)+(x*8+mvx);
+					for(x1=0; x1<8; x1++)
+						{ yvp[px++]=TKSVC0D_Clamp255(lyvp[lpx++]+blk[bpx++]); }
 				}
 			}
 		}else
@@ -779,10 +816,20 @@ void TKSVC0D_SetupForResolution(TKSVC0D_DecState *ctx)
 	
 	xs=ctx->xs;
 	ys=ctx->ys;
-	xs_y=((xs+15)/16)*2;
-	ys_y=((ys+15)/16)*2;
-	xs_uv=xs_y/2;
-	ys_uv=ys_y/2;
+
+	if(ctx->is_444)
+	{
+		xs_y=((xs+7)/8);
+		ys_y=((ys+7)/8);
+		xs_uv=xs_y;
+		ys_uv=ys_y;
+	}else
+	{
+		xs_y=((xs+15)/16)*2;
+		ys_y=((ys+15)/16)*2;
+		xs_uv=xs_y/2;
+		ys_uv=ys_y/2;
+	}
 
 	ctx->dcxs[0]=xs_y;
 	ctx->dcxs[1]=xs_uv;
@@ -840,13 +887,15 @@ void TKSVC0D_TeardownBuffers(TKSVC0D_DecState *ctx)
 	}
 }
 
-void TKSVC0D_SetFrameSize(TKSVC0D_DecState *ctx, int xs, int ys)
+void TKSVC0D_SetFrameSize(TKSVC0D_DecState *ctx,
+	int xs, int ys, int is444)
 {
-	if((xs!=ctx->xs) || (ys!=ctx->ys))
+	if((xs!=ctx->xs) || (ys!=ctx->ys) || (ctx->is_444!=is444))
 	{
 		TKSVC0D_TeardownBuffers(ctx);
 		ctx->xs=xs;
 		ctx->ys=ys;
+		ctx->is_444=is444;
 		TKSVC0D_SetupForResolution(ctx);
 	}
 }
@@ -912,11 +961,25 @@ int TKSVC0D_GetImageRGBA(TKSVC0D_DecState *ctx,
 	xsp_uv=xs_uv*8;
 	ysp_uv=ys_uv*8;
 	
-	
 	xs=ctx->xs;
 	ys=ctx->ys;
 	xsh=xs/2;
 	ysh=ys/2;
+	
+//	if((xs_y==xs_uv) && (ys_y==ys_uv))
+	if(ctx->is_444)
+	{
+		for(y=0; y<ys; y++)
+			for(x=0; x<xs; x++)
+		{
+			dpx0=(y*xs+x)*4;
+			ca0=avp[(y*xsp_y)+x];	cg0=yvp[(y*xsp_y)+x];
+			cb0=uvp[(y*xsp_y)+x];	cr0=vvp[(y*xsp_y)+x];
+			ibuf[dpx0+0]=cb0;		ibuf[dpx0+1]=cg0;
+			ibuf[dpx0+2]=cr0;		ibuf[dpx0+3]=ca0;
+		}
+		return;
+	}
 	
 	for(y=0; y<ysh; y++)
 		for(x=0; x<xsh; x++)

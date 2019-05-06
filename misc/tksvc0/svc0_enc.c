@@ -29,6 +29,7 @@ struct TKSVC0E_EncState_s {
 	byte status;
 
 	byte is_pf;					/* Is P-Frame */
+	byte is_444;
 	byte quality;
 	int xs, ys;
 
@@ -656,6 +657,18 @@ void TKSVC0E_EncodeDcPlane(TKSVC0E_EncState *ctx, int pn)
 	printf("DC %d %d\n", pn, i);
 }
 
+int TKSVC0E_CheckAcBlockAllZeroes(s32 *blk)
+{
+	int i;
+	
+	for(i=1; i<64; i++)
+	{
+		if(blk[i]!=0)
+			break;
+	}
+	return(i>=64);
+}
+
 void TKSVC0E_EncodeAcPlaneData(TKSVC0E_EncState *ctx, int htn, int pn, int qn)
 {
 	int blk[64];
@@ -691,10 +704,36 @@ void TKSVC0E_EncodeAcPlaneData(TKSVC0E_EncState *ctx, int htn, int pn, int qn)
 	mvxp=ctx->mvxp[qn];
 	mvyp=ctx->mvyp[qn];
 	
+	z=0;
 	for(y=0; y<ys; y++)
 		for(x=0; x<xs; x++)
 	{
 		px=y*xs+x;
+		
+//		if(TKSVC0E_CheckAcBlockAllZeroes(acp+(px*64)) && (z<128))
+		if(TKSVC0E_CheckAcBlockAllZeroes(acp+(px*64)))
+			{ z++; continue; }
+		
+		if(z>16)
+//		if(z>15)
+//		if(z>20)
+//		if(z>14)
+//		if(0)
+		{
+			while(z>190)
+			{
+				TKSVC0E_EncodeCoeff(ctx, htn, 190+63, 0);
+				z-=190;
+			}
+			TKSVC0E_EncodeCoeff(ctx, htn, z+63, 0);
+			z=0;
+		}else if(z>0)
+		{
+			while(z--)
+				{ TKSVC0E_EncodeCoeff(ctx, htn, 0, 0); }
+			z=0;
+		}
+		
 		TKSVC0E_EncodeBlockAC(ctx, htn, acp+(px*64));
 		
 		if(!x && !y)
@@ -702,6 +741,23 @@ void TKSVC0E_EncodeAcPlaneData(TKSVC0E_EncState *ctx, int htn, int pn, int qn)
 //			TKSVC0_DumpBlockAC(acp+(px*64));
 //			TKSVC0_DumpBlockAC(qt);
 		}
+	}
+
+	if(z>16)
+//	if(0)
+	{
+		while(z>190)
+		{
+			TKSVC0E_EncodeCoeff(ctx, htn, 190+63, 0);
+			z-=190;
+		}
+		TKSVC0E_EncodeCoeff(ctx, htn, z+63, 0);
+		z=0;
+	}else if(z>0)
+	{
+		while(z--)
+			{ TKSVC0E_EncodeCoeff(ctx, htn, 0, 0); }
+		z=0;
 	}
 }
 
@@ -1221,7 +1277,7 @@ int PDZ2_BuildLengths(int *stat, int nc, byte *cl, int ml)
 	j=clen[0];
 	k=j;
 
-	i=4;
+	i=16;
 	while((i--) && (k>ml))
 		k=PDZ2_BalanceTree_r(nodes, nlen, l, 0, ml);
 	if(k>ml)
@@ -1321,10 +1377,20 @@ void TKSVC0E_SetupForResolution(TKSVC0E_EncState *ctx)
 	
 	xs=ctx->xs;
 	ys=ctx->ys;
-	xs_y=((xs+15)/16)*2;
-	ys_y=((ys+15)/16)*2;
-	xs_uv=xs_y/2;
-	ys_uv=ys_y/2;
+
+	if(ctx->is_444)
+	{
+		xs_y=((xs+7)/8);
+		ys_y=((ys+7)/8);
+		xs_uv=xs_y;
+		ys_uv=ys_y;
+	}else
+	{
+		xs_y=((xs+15)/16)*2;
+		ys_y=((ys+15)/16)*2;
+		xs_uv=xs_y/2;
+		ys_uv=ys_y/2;
+	}
 
 	ctx->dcxs[0]=xs_y;
 	ctx->dcxs[1]=xs_uv;
@@ -1356,15 +1422,16 @@ void TKSVC0E_SetupForResolution(TKSVC0E_EncState *ctx)
 	}
 }
 
-void TKSVC0E_SetFrameSize(TKSVC0E_EncState *ctx, int xs, int ys)
+void TKSVC0E_SetFrameSize(TKSVC0E_EncState *ctx, int xs, int ys, int is444)
 {
 	int i, j, k;
 
-	if((xs!=ctx->xs) || (ys!=ctx->ys))
+	if((xs!=ctx->xs) || (ys!=ctx->ys) || (ctx->is_444!=is444))
 	{
 		TKSVC0E_TeardownBuffers(ctx);
 		ctx->xs=xs;
 		ctx->ys=ys;
+		ctx->is_444=is444;
 		TKSVC0E_SetupForResolution(ctx);
 		
 		for(i=0; i<8; i++)
@@ -1398,6 +1465,21 @@ void TKSVC0E_UpdateFrameImage(TKSVC0E_EncState *ctx, byte *ibuf)
 	ys=ctx->ys;
 	xsh=xs/2;
 	ysh=ys/2;
+
+	if(ctx->is_444)
+	{
+		for(y=0; y<ys; y++)
+			for(x=0; x<xs; x++)
+		{
+			px0=(y*xs+x)*4;
+			px1=(y*xs+x);
+			cr0=ibuf[px0+2];	cg0=ibuf[px0+1];
+			cb0=ibuf[px0+0];	ca0=ibuf[px0+3];
+			yvp[px1]=cg0;		uvp[px1]=cb0;
+			vvp[px1]=cr0;		avp[px1]=ca0;
+		}
+		return;
+	}
 	
 	for(y=0; y<ysh; y++)
 		for(x=0; x<xsh; x++)
@@ -1576,10 +1658,13 @@ void TKSVC0E_SetQuality(TKSVC0E_EncState *ctx, int qual)
 
 	ctx->use_dct[0]=0;
 	ctx->use_dct[1]=0;
-	
-//	ctx->use_dct[0]=1;
-//	ctx->use_dct[1]=1;
 	ctx->use_dct[2]=0;
+	
+	if((qual&127)<96)
+	{
+		ctx->use_dct[0]=1;
+		ctx->use_dct[1]=1;
+	}
 }
 
 void TKSVC0E_EncodeHuffmanTable(TKSVC0E_EncState *ctx, int tn)

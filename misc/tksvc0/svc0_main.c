@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #include "svc0_dec.c"
 #include "svc0_enc.c"
@@ -49,12 +50,36 @@ int usage(char *arg0)
 	return(0);
 }
 
+int print_rmse(byte *ib1, byte *ib2, int xs, int ys)
+{
+	double e;
+	int px;
+	int v0, v1, v2;
+	int i, j, k;
+	
+	px=xs*ys; e=0;
+	for(i=0; i<px; i++)
+	{
+		for(j=0; j<4; j++)
+		{
+			v0=ib1[i*4+j];
+			v1=ib2[i*4+j];
+			v2=v0-v1;
+			e+=v2*v2;
+		}
+	}
+	
+	e/=px*4;
+	e=sqrt(e);
+	printf("RMSE=%f\n", e);
+}
+
 int main(int argc, char *argv[])
 {
 	TKSVC0E_EncState *ctxe;
 	TKSVC0D_DecState *ctxd;
 	char *ifn, *ofn;
-	byte *ibuf, *obuf, *tbuf;
+	byte *ibuf, *obuf, *tbuf, *i2buf;
 	int ixs, iys, md, qlvl, osz;
 	int i, j, k;
 
@@ -99,7 +124,7 @@ int main(int argc, char *argv[])
 		
 		ctxe=TKSVC0E_CreateContext();
 		TKSVC0E_SetQuality(ctxe, qlvl);
-		TKSVC0E_SetFrameSize(ctxe, ixs, iys);
+		TKSVC0E_SetFrameSize(ctxe, ixs, iys, qlvl>100);
 		TKSVC0E_UpdateFrameImage(ctxe, ibuf);
 		
 		obuf=malloc(1<<24);
@@ -119,13 +144,16 @@ int main(int argc, char *argv[])
 			storefile(ofn, obuf, osz+64);
 		}
 		
-		memset(ibuf, 0, ixs*iys*4);
+		i2buf=malloc(ixs*iys*4);
+		memset(i2buf, 0, ixs*iys*4);
 		
 		ctxd=TKSVC0D_CreateContext();
-		TKSVC0D_SetFrameSize(ctxd, ixs, iys);
+		TKSVC0D_SetFrameSize(ctxd, ixs, iys, qlvl>100);
 		TKSVC0D_DecodeBuffer(ctxd, obuf+64, osz);
-		TKSVC0D_GetImageRGBA(ctxd, ibuf);
-		BGBRASW_Img_SaveTGA("dump0.tga", ibuf, ixs, iys);
+		TKSVC0D_GetImageRGBA(ctxd, i2buf);
+		BGBRASW_Img_SaveTGA("dump0.tga", i2buf, ixs, iys);
+		
+		print_rmse(ibuf, i2buf, ixs, iys);
 		
 		return(0);
 	}
