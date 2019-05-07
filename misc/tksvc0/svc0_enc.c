@@ -20,6 +20,14 @@ typedef signed int		s32;
 // #define TKULZ_HTABSZ 8192
 #define TKULZ_HTABNB 13
 
+#ifndef TKSVC_DBGBREAK
+#ifdef _MSC_VER
+#define TKSVC_DBGBREAK	__debugbreak();
+#else
+#define TKSVC_DBGBREAK
+#endif
+#endif
+
 typedef struct TKSVC0E_EncState_s TKSVC0E_EncState;
 
 struct TKSVC0E_EncState_s {
@@ -85,7 +93,7 @@ void TKSVC0E_WriteBits(TKSVC0E_EncState *ctx, int val, int bits)
 		return;
 
 	if((bits>=24) || (bits<0))
-		__debugbreak();
+		TKSVC_DBGBREAK
 
 	ctx->win|=(val&((1<<bits)-1))<<ctx->pos;
 	ctx->pos+=bits;
@@ -146,7 +154,7 @@ void TKSVC0E_SetupEncTableLengths(TKSVC0E_EncState *ctx, u32 *htab, byte *cls)
 	}
 	
 //	if(c>8192)
-//		__debugbreak();
+//		TKSVC_DBGBREAK
 }
 
 void TKSVC0E_WritePackedLengths(TKSVC0E_EncState *ctx, byte *cls)
@@ -239,7 +247,7 @@ void TKSVC0E_WritePackedLengths(TKSVC0E_EncState *ctx, byte *cls)
 			continue;
 		}
 		
-		__debugbreak();
+		TKSVC_DBGBREAK
 	}
 }
 
@@ -249,7 +257,7 @@ void TKSVC0E_EncodeHuffSym(TKSVC0E_EncState *ctx, u32 *hetab, int sym)
 	b=hetab[sym];
 	
 	if(!((b>>16)&15))
-		__debugbreak();
+		TKSVC_DBGBREAK
 	
 	TKSVC0E_WriteBits(ctx, b, b>>16);
 }
@@ -322,7 +330,7 @@ void TKSVC0E_EncodeCoeff(TKSVC0E_EncState *ctx, int htab, int z, int val)
 	{
 		if(z<0)
 		{
-			__debugbreak();
+			TKSVC_DBGBREAK
 		}
 	
 		if((z<8) && uval)
@@ -376,7 +384,7 @@ void TKSVC0E_EncodeCoeff(TKSVC0E_EncState *ctx, int htab, int z, int val)
 			return;
 		}
 
-		__debugbreak();
+		TKSVC_DBGBREAK
 //		TKSVC0E_EncodeSymbol(ctx, htab, 0x8F);
 //		TKSVC0E_EncodeExtraBits(ctx, 3, 2);
 //		if((z>32) || val)
@@ -397,7 +405,7 @@ void TKSVC0E_EncodeCoeff(TKSVC0E_EncState *ctx, int htab, int z, int val)
 		}
 	}
 
-	__debugbreak();
+	TKSVC_DBGBREAK
 }
 #endif
 
@@ -454,7 +462,7 @@ void TKSVC0E_EncodeCoeff(TKSVC0E_EncState *ctx, int htab, int z, int val)
 	
 	if(!z)
 	{
-		__debugbreak();
+		TKSVC_DBGBREAK
 	}
 
 //	if(z<32)
@@ -490,10 +498,10 @@ void TKSVC0E_EncodeCoeff(TKSVC0E_EncState *ctx, int htab, int z, int val)
 	{
 		if(z<0)
 		{
-			__debugbreak();
+			TKSVC_DBGBREAK
 		}
 
-//		__debugbreak();
+//		TKSVC_DBGBREAK
 		TKSVC0E_EncodeSymbol(ctx, htab, 0x8F);
 		TKSVC0E_EncodeExtraBits(ctx, 3, 2);
 		if((z>32) || val)
@@ -514,7 +522,7 @@ void TKSVC0E_EncodeCoeff(TKSVC0E_EncState *ctx, int htab, int z, int val)
 		}
 	}
 
-	__debugbreak();
+	TKSVC_DBGBREAK
 #endif
 }
 #endif

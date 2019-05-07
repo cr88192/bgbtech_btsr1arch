@@ -10,7 +10,7 @@ Will try for a simplistic design along vaguely similar lines to mainstream video
 This codec will operate in terms of logical 16x16 macroblocks, with the resolution of the encoded frame being padded up to a multiple of 16.
 
 
-Will use WHT (Walsh Hadamard Transform) in place of the DCT transform.
+Will use WHT (Walsh Hadamard Transform) along with the DCT transform.
 * Will use 8x8 blocks and 4:2:0 chroma subsampling.
 * Will store the coeffients in a ZigZag order for greater coding efficiency.
 
@@ -35,6 +35,11 @@ If lossless encoding is used, it will not use subsampling and the planes will be
 There will be an optional A plane, which may be used as either an alpha channel or as an HDR exponent channel. If no A plane is used, the image will be assumed to be opaque and LDR.
 
 This format will assume that an an external header (such that a BITMAPINFOHEADER) is used to give the resolution and similar for the video.
+
+
+=== DCT ===
+
+Basically the same as in JPEG and friends.
 
 
 === WHT ===

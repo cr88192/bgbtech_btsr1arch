@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <time.h>
 
 #include "svc0_dec.c"
 #include "svc0_enc.c"
@@ -80,6 +81,8 @@ int main(int argc, char *argv[])
 	TKSVC0D_DecState *ctxd;
 	char *ifn, *ofn;
 	byte *ibuf, *obuf, *tbuf, *i2buf;
+	double dt, mpxs;
+	int t0, t1, t2, t3;
 	int ixs, iys, md, qlvl, osz;
 	int i, j, k;
 
@@ -152,6 +155,27 @@ int main(int argc, char *argv[])
 		TKSVC0D_DecodeBuffer(ctxd, obuf+64, osz);
 		TKSVC0D_GetImageRGBA(ctxd, i2buf);
 		BGBRASW_Img_SaveTGA("dump0.tga", i2buf, ixs, iys);
+
+		t0=clock();
+		t1=t0+(10*CLOCKS_PER_SEC);
+		t2=t0;
+		i=0;
+		while(t2<t1)
+		{
+			if(!(i&7))
+			{
+				dt=(t2-t0)/((double)CLOCKS_PER_SEC);
+				mpxs=((ixs*iys)*(i*1.0))/(dt*1000000.0);
+				printf("%.1fs %d %.2ffps %.2fMpx/s        \r",
+					dt, i, i/dt, mpxs);
+			}
+			TKSVC0D_DecodeBuffer(ctxd, obuf+64, osz);
+			TKSVC0D_GetImageRGBA(ctxd, i2buf);
+
+			i++;
+			t2=clock();
+		}
+		printf("\n");
 		
 		print_rmse(ibuf, i2buf, ixs, iys);
 		

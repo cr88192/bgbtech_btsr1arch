@@ -20,6 +20,18 @@ typedef signed int		s32;
 #define TKULZ_HTABSZ 8192
 #define TKULZ_HTABNB 13
 
+#ifndef TKSVC_DBGBREAK
+#ifdef _MSC_VER
+#define TKSVC_DBGBREAK	__debugbreak();
+#else
+#define TKSVC_DBGBREAK
+#endif
+#endif
+
+#if defined(_M_IX86) || defined(_M_X64)
+#define TKSVC_UNALACC_LE
+#endif
+
 typedef struct TKSVC0D_DecState_s TKSVC0D_DecState;
 
 struct TKSVC0D_DecState_s {
@@ -78,8 +90,16 @@ int TKSVC0D_PeekBits(TKSVC0D_DecState *ctx, int bits)
 void TKSVC0D_SkipBits(TKSVC0D_DecState *ctx, int bits)
 {
 	ctx->pos+=bits;
+#ifdef TKSVC_UNALACC_LE
+// #if 0
+	ctx->cs+=(ctx->pos>>3);
+//	ctx->win=*(u32 *)(ctx->cs-4);
+	ctx->win=*(u32 *)ctx->cs;
+	ctx->pos&=7;
+#else
 	while(ctx->pos>=8)
 		{ ctx->win=(ctx->win>>8)|((*ctx->cs++)<<24); ctx->pos-=8; }
+#endif
 }
 
 int TKSVC0D_ReadBits(TKSVC0D_DecState *ctx, int bits)
@@ -169,7 +189,7 @@ int TKSVC0D_DecodeHuffSym(TKSVC0D_DecState *ctx, u16 *htab)
 	b=(ctx->win>>ctx->pos)&(TKULZ_HTABSZ-1);
 	c=htab[b];
 	if(!((c>>8)&15))
-		{ __debugbreak(); }
+		{ TKSVC_DBGBREAK }
 	TKSVC0D_SkipBits(ctx, (c>>8)&15);
 	return(c&255);
 }
@@ -226,6 +246,8 @@ void TKSVC0D_DecodeBlockAC(TKSVC0D_DecState *ctx, int htn,
 	int z, v, qv;
 	int i, j, k;
 	
+	memset(blk+1, 0, 63*sizeof(int));
+	
 	i=1;
 	while(i<64)
 	{
@@ -248,12 +270,23 @@ void TKSVC0D_DecodeBlockAC(TKSVC0D_DecState *ctx, int htn,
 //		blk[k]=v;
 	}
 
+#if 0
+	while((i+4)<64)
+	{
+		blk[tksvc0_zigzag2[i+0]]=0;
+		blk[tksvc0_zigzag2[i+1]]=0;
+		blk[tksvc0_zigzag2[i+2]]=0;
+		blk[tksvc0_zigzag2[i+3]]=0;
+		i+=4;
+	}
+
 	while(i<64)
 		{ blk[tksvc0_zigzag2[i++]]=0; }
+#endif
 		
 	if(i>64)
 	{
-		__debugbreak();
+		TKSVC_DBGBREAK
 	}
 }
 
@@ -402,10 +435,8 @@ void TKSVC0D_TransIDCT(s32 *iblk, s32 *oblk, byte isflat)
 
 	for(i=0; i<64; i++)
 	{
-//		j=(t[i]>>16);
 		j=((t[i]+32768)>>16);
 		oblk[i]=j;
-//		oblk[i]=(j<0)?0:((j>255)?255:j);
 	}
 }
 #endif
@@ -527,6 +558,13 @@ int TKSVC0D_Clamp65535(int v)
 
 int TKSVC0D_Clamp255(int v)
 {
+	int v1, vp1, vn1;
+
+//	vp1=(~(((v>>8)-1)>>31))&255;
+//	vn1=~(v>>31);
+//	v1=(v|vp1)&vn1;
+//	return(v1);
+
 	if(v>>8)
 		return((v>0)?255:0);
 	return(v);
@@ -541,6 +579,7 @@ int TKSVC0D_Clamp32768S(int v)
 
 void TKSVC0D_DecodeAcPlaneData(TKSVC0D_DecState *ctx, int htn, int pn, int qn)
 {
+	byte pblk[64];
 	int blk[64];
 	int *qt;
 	
@@ -549,6 +588,7 @@ void TKSVC0D_DecodeAcPlaneData(TKSVC0D_DecState *ctx, int htn, int pn, int qn)
 	byte *yvp, *lyvp;
 	int a0, a1, a2, ap, qv, mvy, mvx;
 	int x, y, x1, y1, px, z, v, bpx, lpx, lz;
+	int i0, i1, i2, i3;
 
 	if(pn>=4)
 	{
@@ -601,7 +641,7 @@ void TKSVC0D_DecodeAcPlaneData(TKSVC0D_DecState *ctx, int htn, int pn, int qn)
 					px=((y*8+y1)*xsp)+(x*8);
 					lpx=((y*8+y1+mvy)*xsp)+(x*8+mvx);
 					for(x1=0; x1<8; x1++)
-						{ yvp[px++]=lyvp[lpx++]; }
+						{ yvp[px+x1]=lyvp[lpx+x1]; }
 				}
 			}else
 			{
@@ -616,16 +656,92 @@ void TKSVC0D_DecodeAcPlaneData(TKSVC0D_DecState *ctx, int htn, int pn, int qn)
 			}
 		}else
 		{
+#if 1
+//			for(y1=0; y1<64; y1++)
+//			{
+//				pblk[y1]=TKSVC0D_Clamp255(blk[y1]+128);
+//			}
+
+			for(y1=0; y1<64; y1+=4)
+			{
+				i0=blk[y1+0]+128;	i1=blk[y1+1]+128;
+				i2=blk[y1+2]+128;	i3=blk[y1+3]+128;
+				if((i0|i1|i2|i3)>>8)
+				{
+					i0=TKSVC0D_Clamp255(i0);
+					i1=TKSVC0D_Clamp255(i1);
+					i2=TKSVC0D_Clamp255(i2);
+					i3=TKSVC0D_Clamp255(i3);
+				}
+				pblk[y1+0]=i0;	pblk[y1+1]=i1;
+				pblk[y1+2]=i2;	pblk[y1+3]=i3;
+			}
+
 			for(y1=0; y1<8; y1++)
 			{
 				bpx=y1*8;
 				px=((y*8+y1)*xsp)+(x*8);
+				memcpy(yvp+px, pblk+bpx, 8);
+			}
+#endif
+
+#if 0
+			for(y1=0; y1<8; y1++)
+			{
+				bpx=y1*8;
+				px=((y*8+y1)*xsp)+(x*8);
+
+#if 0
+				i0=blk[bpx+0]+128;		i1=blk[bpx+1]+128;
+				i2=blk[bpx+2]+128;		i3=blk[bpx+3]+128;
+				if((i0|i1|i2|i3)>>8)
+				{
+					i0=TKSVC0D_Clamp255(i0);
+					i1=TKSVC0D_Clamp255(i1);
+					i2=TKSVC0D_Clamp255(i2);
+					i3=TKSVC0D_Clamp255(i3);
+				}
+				yvp[px+0]=i0;
+				yvp[px+1]=i1;
+				yvp[px+2]=i2;
+				yvp[px+3]=i3;
+
+				i0=blk[bpx+4]+128;		i1=blk[bpx+5]+128;
+				i2=blk[bpx+6]+128;		i3=blk[bpx+7]+128;
+				if((i0|i1|i2|i3)>>8)
+				{
+					i0=TKSVC0D_Clamp255(i0);
+					i1=TKSVC0D_Clamp255(i1);
+					i2=TKSVC0D_Clamp255(i2);
+					i3=TKSVC0D_Clamp255(i3);
+				}
+				yvp[px+4]=i0;
+				yvp[px+5]=i1;
+				yvp[px+6]=i2;
+				yvp[px+7]=i3;
+#endif
+
+//				yvp[px+0]=TKSVC0D_Clamp255(blk[bpx+0]+128);
+//				yvp[px+1]=TKSVC0D_Clamp255(blk[bpx+1]+128);
+//				yvp[px+2]=TKSVC0D_Clamp255(blk[bpx+2]+128);
+//				yvp[px+3]=TKSVC0D_Clamp255(blk[bpx+3]+128);
+//				yvp[px+4]=TKSVC0D_Clamp255(blk[bpx+4]+128);
+//				yvp[px+5]=TKSVC0D_Clamp255(blk[bpx+5]+128);
+//				yvp[px+6]=TKSVC0D_Clamp255(blk[bpx+6]+128);
+//				yvp[px+7]=TKSVC0D_Clamp255(blk[bpx+7]+128);
+
+//				for(x1=0; x1<8; x1++)
+//				{
+//					yvp[px++]=TKSVC0D_Clamp255(blk[bpx++]);
+//					yvp[px++]=TKSVC0D_Clamp255(blk[bpx++]+128);
+//				}
+
 				for(x1=0; x1<8; x1++)
 				{
-//					yvp[px++]=TKSVC0D_Clamp255(blk[bpx++]);
-					yvp[px++]=TKSVC0D_Clamp255(blk[bpx++]+128);
+					yvp[px+x1]=TKSVC0D_Clamp255(blk[bpx+x1]+128);
 				}
 			}
+#endif
 		}
 	}
 }
@@ -783,7 +899,7 @@ void TKSVC0D_DecodeTagBlock(TKSVC0D_DecState *ctx)
 	
 	tag=TKSVC0D_ReadBits(ctx, 4);
 	
-	printf("TagBlk %d\n", tag);
+//	printf("TagBlk %d\n", tag);
 	
 	if(tag==0)
 		{ ctx->status=TKULZ_STATUS_END; return; }
@@ -805,8 +921,12 @@ void TKSVC0D_SetupDecodeBuffers(TKSVC0D_DecState *ctx,
 {
 	ctx->cs=src;
 	ctx->pos=0;		ctx->status=0;
+#ifndef TKSVC_UNALACC_LE
 	TKSVC0D_SkipBits(ctx, 16);
 	TKSVC0D_SkipBits(ctx, 16);
+#else
+	TKSVC0D_SkipBits(ctx, 0);
+#endif
 }
 
 void TKSVC0D_SetupForResolution(TKSVC0D_DecState *ctx)
