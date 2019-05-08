@@ -93,7 +93,9 @@ void TKSVC0E_WriteBits(TKSVC0E_EncState *ctx, int val, int bits)
 		return;
 
 	if((bits>=24) || (bits<0))
+	{
 		TKSVC_DBGBREAK
+	}
 
 	ctx->win|=(val&((1<<bits)-1))<<ctx->pos;
 	ctx->pos+=bits;
@@ -257,7 +259,9 @@ void TKSVC0E_EncodeHuffSym(TKSVC0E_EncState *ctx, u32 *hetab, int sym)
 	b=hetab[sym];
 	
 	if(!((b>>16)&15))
+	{
 		TKSVC_DBGBREAK
+	}
 	
 	TKSVC0E_WriteBits(ctx, b, b>>16);
 }

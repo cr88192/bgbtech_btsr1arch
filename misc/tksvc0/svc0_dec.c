@@ -188,8 +188,8 @@ int TKSVC0D_DecodeHuffSym(TKSVC0D_DecState *ctx, u16 *htab)
 	int b, c;
 	b=(ctx->win>>ctx->pos)&(TKULZ_HTABSZ-1);
 	c=htab[b];
-	if(!((c>>8)&15))
-		{ TKSVC_DBGBREAK }
+//	if(!((c>>8)&15))
+//		{ TKSVC_DBGBREAK }
 	TKSVC0D_SkipBits(ctx, (c>>8)&15);
 	return(c&255);
 }
@@ -260,9 +260,10 @@ void TKSVC0D_DecodeBlockAC(TKSVC0D_DecState *ctx, int htn,
 			break;
 		}
 
-		j=z;
-		while(j--)
-			{ blk[tksvc0_zigzag2[i++]]=0; }
+//		j=z;
+//		while(j--)
+//			{ blk[tksvc0_zigzag2[i++]]=0; }
+		i+=z;
 
 		qv=rqt[i];
 		k=tksvc0_zigzag2[i++];
@@ -677,11 +678,14 @@ void TKSVC0D_DecodeAcPlaneData(TKSVC0D_DecState *ctx, int htn, int pn, int qn)
 				pblk[y1+2]=i2;	pblk[y1+3]=i3;
 			}
 
+			bpx=0;
+			px=((y*8)*xsp)+(x*8);
 			for(y1=0; y1<8; y1++)
 			{
-				bpx=y1*8;
-				px=((y*8+y1)*xsp)+(x*8);
+//				bpx=y1*8;
+//				px=((y*8+y1)*xsp)+(x*8);
 				memcpy(yvp+px, pblk+bpx, 8);
+				bpx+=8;		px+=xsp;
 			}
 #endif
 
@@ -1056,6 +1060,8 @@ int TKSVC0D_GetImageRGBA(TKSVC0D_DecState *ctx,
 	int xs, ys, xsh, ysh;
 	int x, y;
 	
+	u32 px0, px1, px2, px3;
+	int spx0, spx1, spx2;
 	int dpx0, dpx1, dpx2, dpx3;
 	int cy0, cy1, cy2, cy3;
 	int ca0, ca1, ca2, ca3;
@@ -1063,6 +1069,7 @@ int TKSVC0D_GetImageRGBA(TKSVC0D_DecState *ctx,
 	int cr0, cr1, cr2, cr3;
 	int cg0, cg1, cg2, cg3;
 	int cb0, cb1, cb2, cb3;
+	int cm0, cm1, cm2;
 
 	int cu, cv, cu1, cv1;
 
@@ -1093,31 +1100,33 @@ int TKSVC0D_GetImageRGBA(TKSVC0D_DecState *ctx,
 			for(x=0; x<xs; x++)
 		{
 			dpx0=(y*xs+x)*4;
-			ca0=avp[(y*xsp_y)+x];	cg0=yvp[(y*xsp_y)+x];
-			cb0=uvp[(y*xsp_y)+x];	cr0=vvp[(y*xsp_y)+x];
+			spx0=(y*xsp_y)+x;
+			ca0=avp[spx0];	cg0=yvp[spx0];
+			cb0=uvp[spx0];	cr0=vvp[spx0];
 			ibuf[dpx0+0]=cb0;		ibuf[dpx0+1]=cg0;
 			ibuf[dpx0+2]=cr0;		ibuf[dpx0+3]=ca0;
 		}
-		return;
+		return(0);
 	}
 	
 	for(y=0; y<ysh; y++)
 		for(x=0; x<xsh; x++)
 	{
-		dpx0=((y*2+0)*xs+(x*2))*4;	dpx1=dpx0+4;
-		dpx2=((y*2+1)*xs+(x*2))*4;	dpx3=dpx2+4;
+		dpx0=((y*2+0)*xs+(x*2))*4;
+//		dpx1=dpx0+4;
+		dpx2=((y*2+1)*xs+(x*2))*4;
+//		dpx3=dpx2+4;
+		
+		spx0=((y*2+0)*xsp_y)+(x*2);
+		spx1=((y*2+1)*xsp_y)+(x*2);
+		spx2=(y*xsp_uv)+x;
 	
-		ca0=avp[((y*2+0)*xsp_y)+(x*2+0)];
-		ca1=avp[((y*2+0)*xsp_y)+(x*2+1)];
-		ca2=avp[((y*2+1)*xsp_y)+(x*2+0)];
-		ca3=avp[((y*2+1)*xsp_y)+(x*2+1)];
+		ca0=avp[spx0+0];	ca1=avp[spx0+1];
+		ca2=avp[spx1+0];	ca3=avp[spx1+1];
 
-		cy0=yvp[((y*2+0)*xsp_y)+(x*2+0)];
-		cy1=yvp[((y*2+0)*xsp_y)+(x*2+1)];
-		cy2=yvp[((y*2+1)*xsp_y)+(x*2+0)];
-		cy3=yvp[((y*2+1)*xsp_y)+(x*2+1)];
-		cu=uvp[(y*xsp_uv)+x];
-		cv=vvp[(y*xsp_uv)+x];
+		cy0=yvp[spx0+0];	cy1=yvp[spx0+1];
+		cy2=yvp[spx1+0];	cy3=yvp[spx1+1];
+		cu=uvp[spx2];		cv=vvp[spx2];
 		
 		cu1=(cu-128)*2;
 		cv1=(cv-128)*2;
@@ -1126,6 +1135,10 @@ int TKSVC0D_GetImageRGBA(TKSVC0D_DecState *ctx,
 		cr2=cy2+cv1;	cr3=cy3+cv1;
 		cb0=cy0+cu1;	cb1=cy1+cu1;
 		cb2=cy2+cu1;	cb3=cy3+cu1;
+
+		cm0=cr0|cr1|cr2|cr3;
+		cm2=cb0|cb1|cb2|cb3;
+
 //		cg0=(8*cy0-3*cr0-cb0)/4;
 //		cg1=(8*cy1-3*cr1-cb1)/4;
 //		cg2=(8*cy2-3*cr2-cb2)/4;
@@ -1134,39 +1147,61 @@ int TKSVC0D_GetImageRGBA(TKSVC0D_DecState *ctx,
 		cg1=(4*cy1-cr1-cb1)/2;
 		cg2=(4*cy2-cr2-cb2)/2;
 		cg3=(4*cy3-cr3-cb3)/2;
+
+		cm1=cg0|cg1|cg2|cg3;
 		
-		if((cr0|cr1|cr2|cr3)&(~255))
+		px0=(ca0<<24)|(cr0<<16)|(cg0<<8)|(cb0<<0);
+		px1=(ca1<<24)|(cr1<<16)|(cg1<<8)|(cb1<<0);
+		px2=(ca2<<24)|(cr2<<16)|(cg2<<8)|(cb2<<0);
+		px3=(ca3<<24)|(cr3<<16)|(cg3<<8)|(cb3<<0);
+
+#ifdef TKSVC_UNALACC_LE
+		if(!((cm0|cm1|cm2)&(~255)))
 		{
-			cr0=TKSVC0D_Clamp255(cr0);
-			cr1=TKSVC0D_Clamp255(cr1);
-			cr2=TKSVC0D_Clamp255(cr2);
-			cr3=TKSVC0D_Clamp255(cr3);
+			((u32 *)(ibuf+dpx0))[0]=px0;
+			((u32 *)(ibuf+dpx0))[1]=px1;
+			((u32 *)(ibuf+dpx2))[0]=px2;
+			((u32 *)(ibuf+dpx2))[1]=px3;
+			continue;
+		}
+#endif
+
+//		if((cm0|cm1|cm2)&(~255))
+		if(1)
+		{
+			if(cm0&(~255))
+			{
+				cr0=TKSVC0D_Clamp255(cr0);
+				cr1=TKSVC0D_Clamp255(cr1);
+				cr2=TKSVC0D_Clamp255(cr2);
+				cr3=TKSVC0D_Clamp255(cr3);
+			}
+
+			if(cm1&(~255))
+			{
+				cg0=TKSVC0D_Clamp255(cg0);
+				cg1=TKSVC0D_Clamp255(cg1);
+				cg2=TKSVC0D_Clamp255(cg2);
+				cg3=TKSVC0D_Clamp255(cg3);
+			}
+
+			if(cm2&(~255))
+			{
+				cb0=TKSVC0D_Clamp255(cb0);
+				cb1=TKSVC0D_Clamp255(cb1);
+				cb2=TKSVC0D_Clamp255(cb2);
+				cb3=TKSVC0D_Clamp255(cb3);
+			}
 		}
 
-		if((cg0|cg1|cg2|cg3)&(~255))
-		{
-			cg0=TKSVC0D_Clamp255(cg0);
-			cg1=TKSVC0D_Clamp255(cg1);
-			cg2=TKSVC0D_Clamp255(cg2);
-			cg3=TKSVC0D_Clamp255(cg3);
-		}
-
-		if((cb0|cb1|cb2|cb3)&(~255))
-		{
-			cb0=TKSVC0D_Clamp255(cb0);
-			cb1=TKSVC0D_Clamp255(cb1);
-			cb2=TKSVC0D_Clamp255(cb2);
-			cb3=TKSVC0D_Clamp255(cb3);
-		}
-
-		ibuf[dpx0+0]=cb0;	ibuf[dpx1+0]=cb1;
-		ibuf[dpx2+0]=cb2;	ibuf[dpx3+0]=cb3;
-		ibuf[dpx0+1]=cg0;	ibuf[dpx1+1]=cg1;
-		ibuf[dpx2+1]=cg2;	ibuf[dpx3+1]=cg3;
-		ibuf[dpx0+2]=cr0;	ibuf[dpx1+2]=cr1;
-		ibuf[dpx2+2]=cr2;	ibuf[dpx3+2]=cr3;
-		ibuf[dpx0+3]=ca0;	ibuf[dpx1+3]=ca1;
-		ibuf[dpx2+3]=ca2;	ibuf[dpx3+3]=ca3;
+		ibuf[dpx0+0]=cb0;	ibuf[dpx0+4]=cb1;
+		ibuf[dpx2+0]=cb2;	ibuf[dpx2+4]=cb3;
+		ibuf[dpx0+1]=cg0;	ibuf[dpx0+5]=cg1;
+		ibuf[dpx2+1]=cg2;	ibuf[dpx2+5]=cg3;
+		ibuf[dpx0+2]=cr0;	ibuf[dpx0+6]=cr1;
+		ibuf[dpx2+2]=cr2;	ibuf[dpx2+6]=cr3;
+		ibuf[dpx0+3]=ca0;	ibuf[dpx0+7]=ca1;
+		ibuf[dpx2+3]=ca2;	ibuf[dpx2+7]=ca3;
 	}
 
 	return(0);
