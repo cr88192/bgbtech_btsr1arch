@@ -311,6 +311,11 @@ Encoding a skip run will terminate the current block (which will itself be skipp
 
 In I-Frames, the skipped blocks will be decoded as if all of their AC coefficients were zero. In P-Frames, the plane pixels from the prior frame following motion compensation will be copied over unchanged (thus, the corresponding DC bias will also be ignored).
 
+In I-Frames, the planes are encoded with a constant bias of 128 for both DCT and WHT.
+
+The use of a bias helps make the DCT a little better behaved, and improves compression somewhat.
+
+
 
 === Motion Vectors ===
 

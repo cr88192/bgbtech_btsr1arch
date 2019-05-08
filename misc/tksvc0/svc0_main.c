@@ -73,6 +73,7 @@ int print_rmse(byte *ib1, byte *ib2, int xs, int ys)
 	e/=px*4;
 	e=sqrt(e);
 	printf("RMSE=%f\n", e);
+	return(0);
 }
 
 int main(int argc, char *argv[])
@@ -99,6 +100,8 @@ int main(int argc, char *argv[])
 				{ md=1; continue; }
 			if(!strcmp(argv[i], "-d"))
 				{ md=2; continue; }
+			if(!strcmp(argv[i], "-t"))
+				{ md=3; continue; }
 			if(!strcmp(argv[i], "-q"))
 				{ i++; qlvl=atoi(argv[i]); continue; }
 			continue;
@@ -110,13 +113,13 @@ int main(int argc, char *argv[])
 			{ ofn=argv[i]; continue; }
 	}
 	
-	if(!ifn || !ofn || !md)
+	if(!ifn || (!ofn && (md!=3)) || !md)
 	{
 		usage(argv[0]);
 		return(-1);
 	}
 
-	if(md==1)
+	if((md==1) || (md==3))
 	{
 		ibuf=BGBRASW_Img_LoadTGA(ifn, &ixs, &iys);
 		if(!ibuf)
@@ -139,46 +142,85 @@ int main(int argc, char *argv[])
 		obuf[2]='C';	obuf[3]='0';
 		obuf[4]=ixs;	obuf[5]=ixs>>8;
 		obuf[6]=iys;	obuf[7]=iys>>8;
+		obuf[8]=qlvl;
 		
 		printf("Encoded as %d bytes\n", osz);
 		
-		if(osz>0)
+		if((osz>0) && ofn)
 		{
 			storefile(ofn, obuf, osz+64);
 		}
 		
-		i2buf=malloc(ixs*iys*4);
-		memset(i2buf, 0, ixs*iys*4);
+		if(md==3)
+		{
+			i2buf=malloc(ixs*iys*4);
+			memset(i2buf, 0, ixs*iys*4);
+			
+			ctxd=TKSVC0D_CreateContext();
+			TKSVC0D_SetFrameSize(ctxd, ixs, iys, qlvl>100);
+			TKSVC0D_DecodeBuffer(ctxd, obuf+64, osz);
+			TKSVC0D_GetImageRGBA(ctxd, i2buf);
+			BGBRASW_Img_SaveTGA("dump0.tga", i2buf, ixs, iys);
+
+			t0=clock();
+			t1=t0+(10*CLOCKS_PER_SEC);
+			t2=t0;
+			i=0;
+			while(t2<t1)
+			{
+				if(!(i&7))
+				{
+					dt=(t2-t0)/((double)CLOCKS_PER_SEC);
+					mpxs=((ixs*iys)*(i*1.0))/(dt*1000000.0);
+					printf("%.1fs %d %.2ffps %.2fMpx/s        \r",
+						dt, i, i/dt, mpxs);
+				}
+				TKSVC0D_DecodeBuffer(ctxd, obuf+64, osz);
+				TKSVC0D_GetImageRGBA(ctxd, i2buf);
+
+				i++;
+				t2=clock();
+			}
+			printf("\n");
+			
+			print_rmse(ibuf, i2buf, ixs, iys);
+		}
+		
+		return(0);
+	}
+
+	if(md==2)
+	{
+		obuf=loadfile(ifn, &osz);
+		
+		if(!obuf)
+		{
+			printf("Fail Open %s\n", ifn);
+			return(-1);
+		}
+		
+		if(memcmp(obuf, "SVC0", 4))
+		{
+			printf("SVC0 Sig Fail\n");
+			return(-1);
+		}
+		
+		ixs=obuf[4]|(obuf[5]<<8);
+		iys=obuf[6]|(obuf[7]<<8);
+	
+		ibuf=malloc(ixs*iys*4);
+		memset(ibuf, 0, ixs*iys*4);
 		
 		ctxd=TKSVC0D_CreateContext();
 		TKSVC0D_SetFrameSize(ctxd, ixs, iys, qlvl>100);
 		TKSVC0D_DecodeBuffer(ctxd, obuf+64, osz);
-		TKSVC0D_GetImageRGBA(ctxd, i2buf);
-		BGBRASW_Img_SaveTGA("dump0.tga", i2buf, ixs, iys);
-
-		t0=clock();
-		t1=t0+(10*CLOCKS_PER_SEC);
-		t2=t0;
-		i=0;
-		while(t2<t1)
+		TKSVC0D_GetImageRGBA(ctxd, ibuf);
+		
+		if(ofn)
 		{
-			if(!(i&7))
-			{
-				dt=(t2-t0)/((double)CLOCKS_PER_SEC);
-				mpxs=((ixs*iys)*(i*1.0))/(dt*1000000.0);
-				printf("%.1fs %d %.2ffps %.2fMpx/s        \r",
-					dt, i, i/dt, mpxs);
-			}
-			TKSVC0D_DecodeBuffer(ctxd, obuf+64, osz);
-			TKSVC0D_GetImageRGBA(ctxd, i2buf);
-
-			i++;
-			t2=clock();
+			BGBRASW_Img_SaveTGA(ofn, ibuf, ixs, iys);
 		}
-		printf("\n");
-		
-		print_rmse(ibuf, i2buf, ixs, iys);
-		
+
 		return(0);
 	}
 
