@@ -7,9 +7,15 @@ Takes a 16/32/48 bit instruction word.
 
 `include "CoreDefs.v"
 
+`ifdef jx2_enable_ops16
 `include "DecOpBz.v"
+`endif
+
 `include "DecOpFz.v"
+
+`ifdef jx2_enable_ops48
 `include "DecOpFC.v"
+`endif
 
 module DecOp(
 	/* verilator lint_off UNUSED */
@@ -47,6 +53,7 @@ assign	idImm = opImm;
 assign	idUCmd = opUCmd;
 assign	idUIxt = opUIxt;
 
+`ifdef jx2_enable_ops16
 wire[5:0]		decOpBz_idRegN;
 wire[5:0]		decOpBz_idRegM;
 wire[5:0]		decOpBz_idRegO;
@@ -61,7 +68,7 @@ DecOpBz	decOpBz(
 	decOpBz_idRegO,		decOpBz_idImm,
 	decOpBz_idUCmd,		decOpBz_idUIxt
 	);
-
+`endif
 
 wire[5:0]		decOpFz_idRegN;
 wire[5:0]		decOpFz_idRegM;
@@ -78,6 +85,7 @@ DecOpFz	decOpFz(
 	decOpFz_idUCmd,		decOpFz_idUIxt
 	);
 
+`ifdef jx2_enable_ops48
 wire[5:0]		decOpFC_idRegN;
 wire[5:0]		decOpFC_idRegM;
 wire[5:0]		decOpFC_idRegO;
@@ -92,6 +100,7 @@ DecOpFC	decOpFC(
 	decOpFC_idRegO,		decOpFC_idImm,
 	decOpFC_idUCmd,		decOpFC_idUIxt
 	);
+`endif
 
 reg opIsFx;
 reg opIsFz;
@@ -142,9 +151,14 @@ begin
 		end
 	endcase
 
+`ifndef jx2_enable_ops16
+	opIsFx = 1;
+`endif
+
 
 	if(opIsFx)
 	begin
+`ifdef jx2_enable_ops48
 		if(opIsFC)
 		begin
 			opRegN	= decOpFC_idRegN;
@@ -163,15 +177,25 @@ begin
 			opUCmd	= decOpFz_idUCmd;
 			opUIxt	= decOpFz_idUIxt;
 		end
+`else
+		opRegN	= decOpFz_idRegN;
+		opRegM	= decOpFz_idRegM;
+		opRegO	= decOpFz_idRegO;
+		opImm	= decOpFz_idImm;
+		opUCmd	= decOpFz_idUCmd;
+		opUIxt	= decOpFz_idUIxt;
+`endif
 	end
 	else
 	begin
+`ifdef jx2_enable_ops16
 		opRegN	= decOpBz_idRegN;
 		opRegM	= decOpBz_idRegM;
 		opRegO	= decOpBz_idRegO;
 		opImm	= decOpBz_idImm;
 		opUCmd	= decOpBz_idUCmd;
 		opUIxt	= decOpBz_idUIxt;
+`endif
 	end
 	
 	if(opIsDz)

@@ -800,6 +800,9 @@ int BGBCC_JX2C_EmitFpConvVRegVReg(
 			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, lr0);
 			return(1);
 		}
+
+		BGBCC_CCXL_StubError(ctx);
+		return(0);
 	}
 
 #if 0

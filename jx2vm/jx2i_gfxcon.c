@@ -464,6 +464,7 @@ int btesh2_gfxcon_fbys;
 #endif
 
 u32 *jx2i_gfxcon_conbuf;
+u32 *jx2i_gfxcon_lconbuf;
 byte jx2i_gfxcon_dirty;
 byte jx2i_gfxcon_is80col;
 
@@ -489,6 +490,7 @@ int JX2I_GfxCon_Startup()
 //	jx2i_gfxcon_conbuf=malloc(4096*sizeof(u32));
 //	jx2i_gfxcon_conbuf=malloc(8192*sizeof(u32));
 	jx2i_gfxcon_conbuf=malloc(16384*sizeof(u32));
+	jx2i_gfxcon_lconbuf=malloc(16384*sizeof(u32));
 	
 //	for(i=0; i<40*25*4; i++)
 //	for(i=0; i<40*25*8; i++)

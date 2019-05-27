@@ -47,16 +47,31 @@ assign	ddrMemDataOut	= tDdrMemDataOut;
 assign	ddrMemAddr		= tDdrMemAddr;
 assign	ddrMemOpm		= tDdrMemOpm;
 
-
+`ifdef jx2_reduce_l2sz
+reg[127:0]	memTileData[1023:0];
+reg[ 27:0]	memTileAddr[1023:0];
+reg[  3:0]	memTileFlag[1023:0];
+`else
 reg[127:0]	memTileData[4095:0];
 reg[ 27:0]	memTileAddr[4095:0];
 reg[  3:0]	memTileFlag[4095:0];
+`endif
+
+`ifdef jx2_reduce_l2sz
+reg[9:0]	nxtReqIx;
+reg[9:0]	tReqIx;
+reg[9:0]	tBlkLdIx;
+reg[9:0]	tBlkStIx;
+`else
+reg[11:0]	nxtReqIx;
+reg[11:0]	tReqIx;
+reg[11:0]	tBlkLdIx;
+reg[11:0]	tBlkStIx;
+`endif
 
 reg[27:0]	nxtReqAddr;
-reg[11:0]	nxtReqIx;
 
 reg[27:0]	tReqAddr;
-reg[11:0]	tReqIx;
 reg[4:0]	tReqOpm;
 reg[127:0]	tReqDataIn;
 
@@ -67,11 +82,9 @@ reg			tBlkDirty;
 
 reg[127:0]	tBlkLdData;
 reg[27:0]	tBlkLdAddr;
-reg[11:0]	tBlkLdIx;
 
 reg[127:0]	tBlkStData;
 reg[27:0]	tBlkStAddr;
-reg[11:0]	tBlkStIx;
 reg			tBlkStDirty;
 reg			tBlkDoSt;
 
@@ -84,7 +97,12 @@ reg		tAddrIsRam;
 always @*
 begin
 	nxtReqAddr	= memAddr[31:4];
+
+`ifdef jx2_reduce_l2sz
+	nxtReqIx	= memAddr[13:4];
+`else
 	nxtReqIx	= memAddr[15:4];
+`endif
 	
 	tAddrIsRam	= (tReqAddr[25:20]!=6'h00) &&
 		(tReqAddr[27:26]==2'b00);

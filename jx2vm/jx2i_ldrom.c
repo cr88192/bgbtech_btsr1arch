@@ -3,6 +3,8 @@ u32 mmgp_data[256];
 s64 mmgp_spi_lastcyc;
 int mmgp_spi_delcyc;
 
+char *bjx2_fgets(char *buf, int lim, BJX2_FILE *fd);
+
 int BJX2_MemMmgpCb_GetByte(BJX2_Context *ctx,
 	BJX2_MemSpan *sp, bjx2_addr addr)
 {
@@ -99,6 +101,25 @@ s32 BJX2_MemMmgpCb_GetDWord(BJX2_Context *ctx,
 		rv=mmio[0x11];
 //		printf("SPI_D(R): D=%08X\n", rv);
 		break;
+
+	case 0x0300:
+		rv=ctx->msgbuf_rxspos;
+		break;
+	case 0x0304:
+		rv=ctx->msgbuf_rxepos;
+		break;
+	case 0x0308:
+		rv=ctx->msgbuf_txspos;
+		break;
+	case 0x030C:
+		rv=ctx->msgbuf_txepos;
+		break;
+	case 0x0310:
+		rv=ctx->rtc_ms;
+		break;
+	case 0x0314:
+		rv=ctx->msgbuf_msk;
+		break;
 	}
 	return(rv);
 }
@@ -157,7 +178,8 @@ int BJX2_MemMmgpCb_SetDWord(BJX2_Context *ctx,
 	case 0x0010:
 		break;
 	case 0x0014:
-		printf("%c", (char)val);
+//		printf("%c", (char)val);
+		bjx2_vmputc(ctx, (byte)val);
 		break;
 	case 0x0018:
 		break;
@@ -184,6 +206,23 @@ int BJX2_MemMmgpCb_SetDWord(BJX2_Context *ctx,
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_IOPOKE);
 
 //		printf("SPI_D(W): %08X -> %08X, D=%08X\n", val, v, mmio[0x11]);
+		break;
+
+	case 0x0300:
+		ctx->msgbuf_rxspos=val;
+		BJX2_VmMsgRxUpdate(ctx);
+		break;
+	case 0x0304:
+		ctx->msgbuf_rxepos=val;
+		BJX2_VmMsgRxUpdate(ctx);
+		break;
+	case 0x0308:
+		ctx->msgbuf_txspos=val;
+		BJX2_VmMsgTxUpdate(ctx);
+		break;
+	case 0x030C:
+		ctx->msgbuf_txepos=val;
+		BJX2_VmMsgTxUpdate(ctx);
 		break;
 	}
 
@@ -220,14 +259,14 @@ int BJX2_ContextLoadMap(BJX2_Context *ctx, char *name)
 	bjx2_addr tmap_addr[4096];
 	char *tmap_name[4096];
 	char tb[256];
-	FILE *fd;
+	BJX2_FILE *fd;
 	char **a;
 	char *s;
 	int tmn, ta;
 	int sz, sz1;
 	int i, j, k;
 	
-	fd=fopen(name, "rb");
+	fd=bjx2_fopen(name, "rb");
 	if(!fd)
 	{
 		printf("Failed open %s\n", name);
@@ -246,10 +285,12 @@ int BJX2_ContextLoadMap(BJX2_Context *ctx, char *name)
 		tmn=ctx->map_n_ents;
 	}
 	
-	while(!feof(fd))
+	while(!bjx2_feof(fd))
 	{
-		s=fgets(tb, 255, fd);
+		s=bjx2_fgets(tb, 255, fd);
 		a=JX2R_SplitLine(tb);
+		if(!a[0])
+			continue;
 		
 		sscanf(a[0], "%08X", &ta);
 		
@@ -275,23 +316,23 @@ int BJX2_ContextLoadRom(BJX2_Context *ctx, char *name)
 	char tb[256];
 	BJX2_MemSpan *sp;
 	byte *buf;
-	FILE *fd;
+	BJX2_FILE *fd;
 	int sz, sz1;
 	int i, j, k;
 	
-	fd=fopen(name, "rb");
+	fd=bjx2_fopen(name, "rb");
 	if(!fd)
 	{
 		printf("Failed open %s\n", name);
 		return(-1);
 	}
 
-	fseek(fd, 0, 2);
-	sz=ftell(fd);
-	fseek(fd, 0, 0);
+	bjx2_fseek(fd, 0, 2);
+	sz=bjx2_ftell(fd);
+	bjx2_fseek(fd, 0, 0);
 	buf=malloc(sz);
-	k=fread(buf, 1, sz, fd);
-	fclose(fd);
+	k=bjx2_fread(buf, 1, sz, fd);
+	bjx2_fclose(fd);
 	
 	sp=BJX2_MemSpanForName(ctx, "ROM");
 	if(!sp)

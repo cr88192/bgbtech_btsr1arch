@@ -7,6 +7,9 @@ BJX2
 ** Little-Endian, Byte Addressed
 ** Instructions as a sequence of 16-bit words.
 
+Multiple subset profiles will exist, and some features will be optional.
+* The BJX2 Lite profile will leave MMU and FPU as optional.
+
 
 === Registers ===
 
@@ -15,7 +18,7 @@ Registers:
 ** There are 32, 64-bit GPRs.
 ** R0..R15 will be Primary GPRs (Partially excluding R0, R1, and R15).
 ** R16..R31 are Extended GPRs.
-* FR0..FR31, 64-bit
+* FR0..FR31, 64-bit (for profiles with an FPU).
 ** There are 32, 64-bit Floating Point Registers.
 ** FR0..FR15 will be Primary FPRs.
 ** FR16..FR31 are Extended FPRs (Optional).
@@ -561,6 +564,9 @@ Several ISA Subsets may exist:
 ** This mode will still use 64-bit registers.
 ** This will nominally run code within a 2GB address space.
 * D: Uses a 32-bit address space with fixed-length instructions.
+* E: Only uses 16 and 32-bit instruction forms.
+** Limited to a 32-bit address space.
+** Excludes the use of FPU or MMU.
 
 
 === 16-bit Instruction Forms ===
@@ -601,7 +607,7 @@ Instruction Space
 ** 1Cnm  CMPEQ	Rm, Rn				//Rn==Rm (Low 32 Bits)
 ** 1Dnm  CMPHI	Rm, Rn				//Unsigned Rn GT Rm (Low 32 Bits)
 ** 1Enm  CMPGT	Rm, Rn				//Signed Rn GT Rm (Low 32 Bits)
-** 1Fnm  -
+** 1Fnm ? MULW	Rm, Rn				//DLR=Rm*Rn (Signed 18-bit)
 
 * 2zzz
 ** 20dd  BRA	(PC, disp8s)		//Branch, PC=PC+(disp8s*2)
@@ -612,10 +618,10 @@ Instruction Space
 ** 25jj  LDIN	#imm8n, DLR
 ** 26jj  LDISH	#imm8u, DLR			//DLR=(DLR SHL 8)|Imm8u
 ** 27dd  MOVU.L	(SP, disp4u), Rn	//Stack-Relative ZX Load
-** 28nd  MOV.L	Rn, (SP, disp4u)	//Stack-Relative Store
-** 29nd  MOV.Q	Rn, (SP, disp4u)	//Stack-Relative Store
-** 2And  MOV.L	(SP, disp4u), Rn	//Stack-Relative Load
-** 2Bnd  MOV.Q	(SP, disp4u), Rn	//Stack-Relative Load
+** 28nd / MOV.L	Rn, (SP, disp4u)	//Stack-Relative Store
+** 29nd / MOV.Q	Rn, (SP, disp4u)	//Stack-Relative Store
+** 2And / MOV.L	(SP, disp4u), Rn	//Stack-Relative Load
+** 2Bnd / MOV.Q	(SP, disp4u), Rn	//Stack-Relative Load
 ** 2Cnj  CMPEQ	#imm4u, Rn			//Rn==Imm4, Zero Extend
 ** 2Dnj  CMPEQ	#imm4n, Rn			//Rn==Imm4, One Extend
 ** 2Enj  CMPGT	#imm4u, Rn			//Rn==Imm4, Zero Extend
@@ -679,16 +685,16 @@ Instruction Space
 ** 31n3  BF		(PC, Rn)			//Branch if False to (PC, Rn)
 ** 31n4  -
 ** 31n5  -
-** 31n6  -
-** 31n7  -
+** 31n6  SHADQ	DLR, Rn			//Barrel Shift, Arithmetic
+** 31n7  SHLDQ	DLR, Rn			//Barrel Shift, Logical
 ** 31n8  PUSH	Rn
 ** 31n9  PUSH	Cn
 ** 31nA  POP	Rn
 ** 31nB  POP	Cn
 ** 31nC  CMPPL	Rn					//SR.T=(Rn GT 0)
 ** 31nD  CMPPZ	Rn					//SR.T=(Rn GE 0)
-** 31nE  -
-** 31nF  -
+** 31nE  PUSH	FRn
+** 31nF  POP	FRn
 
 ** 32n0  BRA	Rn					//Branch to address given in Rn
 ** 32n1  BSR	Rn					//Branch Subroutine given by Rn
@@ -698,14 +704,14 @@ Instruction Space
 ** 32n5  EXTU.W	Rn
 ** 32n6  EXTS.B	Rn
 ** 32n7  EXTS.W	Rn
-** 32n8  PUSH	Rk					//R16..R31
-** 32n9  PUSH	Ck					//C16..C31
-** 32nA  POP	Rk					//R16..R31
-** 32nB  POP	Ck					//C16..C31
-** 32nC ? PUSHX2	Rn
-** 32nD ? PUSHX2	Rk
-** 32nE ? POPX2		Rn
-** 32nF ? POPX2		Rk
+** 32n8 / PUSH	Rk					//R16..R31
+** 32n9 / PUSH	Ck					//C16..C31
+** 32nA / POP	Rk					//R16..R31
+** 32nB / POP	Ck					//C16..C31
+** 32nC / PUSHX2	Rn
+** 32nD / PUSHX2	Rk
+** 32nE / POPX2		Rn
+** 32nF / POPX2		Rk
 
 ** 33n0  NOT	Rn					//Rn=~Rn
 ** 33n1  NEG	Rn					//Rn=(~Rn)+1
@@ -720,7 +726,7 @@ Instruction Space
 ** 33nA  SHAR	Rn					//Rn'=(Rn SAR 1); SR.T=Rn.0
 ** 33nB  -
 ** 33nC  NEG	Rn, DLR				//DLR=(~Rn)+1
-** 33nD  NEG	Rk, DLR				//DLR=(~Rk)+1
+** 33nD / NEG	Rk, DLR				//DLR=(~Rk)+1
 ** 33nE  -
 ** 33nF  -
 
@@ -752,6 +758,8 @@ Instruction Space
 ** 36n6  SHAD	DLR, Rn				//Barrel Shift, Arithmetic
 ** 36n7  SHLD	DLR, Rn				//Barrel Shift, Logical
 ** 36n8 ? TRAP	Rn
+** 36n9 ? WEXMD	#imm4				//Set WEX Profile
+** 36jA ? CPUID	#imm4				//Load CPUID bits into DHR:DLR
 ** 36n9  -
 ** 36nA  -
 ** 36nB  -
@@ -777,41 +785,24 @@ Instruction Space
 ** 37nE ? SWCP.HB	Rn				//(0120) Copy Low To High Bytes (GSV)
 ** 37nF ? SWCP.HW	Rn				//(0120) Copy Low To High Word (GSV)
 
-** 38j0 / WEX0		#imm4				//Wide Execute Hint
-** 38j1 / WEX1		#imm4
-** 38n2  PUSH		FRn
-** 38n3  POP		FRn
-** 38n4  LDSRMSK	Rn				//Masked Load Rn into SR
-** 38j5  PLDMSK		#imm4			//Load bits into SR.PQRO and SR.ST
-** 38n6  SHADQ		DLR, Rn			//Barrel Shift, Arithmetic
-** 38n7  SHLDQ		DLR, Rn			//Barrel Shift, Logical
-** 38j8 ? CPUID		#imm4			//Load CPUID bits into DHR:DLR
-** 38n9  WEXMD		#imm4			//Set WEX Profile
-** 38nA  PUSH		FRk				//Push FRk (FR16..FR31)
-** 38nB  POP		FRk				//Pop FRk (FR16..FR31)
-** 38nC  -
-** 38nD  -
-** 38nE  -
-** 38nF  -
-
-** 39zz  -
-** 3Azz  -
-** 3Bzz  -
-
-** 3Cnd  MOV.L		Rk, (SP, disp4u)	//Stack-Relative Store
-** 3Dnd  MOV.Q		Rk, (SP, disp4u)	//Stack-Relative Store
-** 3End  MOV.L		(SP, disp4u), Rk	//Stack-Relative Load
-** 3Fnd  MOV.Q		(SP, disp4u), Rk	//Stack-Relative Load
+** 38zz (Mirror 30zz, R16..R31)
+** 39zz (Mirror 31zz, R16..R31)
+** 3Azz (Mirror 32zz, R16..R31)
+** 3Bzz (Mirror 33zz, R16..R31)
+** 3Czz (Mirror 34zz, R16..R31)
+** 3Dzz (Mirror 35zz, R16..R31)
+** 3Ezz (Mirror 36zz, R16..R31)
+** 3Fzz (Mirror 37zz, R16..R31)
 
 * 4zzz
-** 40nm  -
-** 41nm  -
-** 42nm  -
-** 43nm  -
-** 44nm  -
-** 45nm  -
-** 46nm  -
-** 47nm  -
+** 40nd  MOV.L		Rn, (SP, disp4u)	//Stack-Relative Store
+** 41nd  MOV.Q		Rn, (SP, disp4u)	//Stack-Relative Store
+** 42nd  MOV.L		Rk, (SP, disp4u)	//Stack-Relative Store
+** 43nd  MOV.Q		Rk, (SP, disp4u)	//Stack-Relative Store
+** 44nd  MOV.L		(SP, disp4u), Rn	//Stack-Relative Load
+** 45nd  MOV.Q		(SP, disp4u), Rn	//Stack-Relative Load
+** 46nd  MOV.L		(SP, disp4u), Rk	//Stack-Relative Load
+** 47nd  MOV.Q		(SP, disp4u), Rk	//Stack-Relative Load
 ** 48nm  MOV		Rm, Cn				//Cn=Rm
 ** 49nm  MOV		Cm, Rn				//Rn=Cm
 ** 4Anm  MOV		Rm, Sn				//Store to Shadow Register
@@ -872,7 +863,7 @@ Instruction Space
 ** 98nm  FADD		FRm, FRn			//FRn=FRn+FRm
 ** 99nm  FSUB		FRm, FRn			//FRn=FRn-FRm
 ** 9Anm  FMUL		FRm, FRn			//FRn=FRn*FRm
-** 9Bnm ? FDIV		FRm, FRn			//(FDIV) FRn=FRn/FRm
+** 9Bnm / FDIV		FRm, FRn			//(FDIV) FRn=FRn/FRm
 ** 9Cnm  FCMPEQ		FRm, FRn			//SR.T=(FRn EQ FRm)
 ** 9Dnm  FCMPGT		FRm, FRn			//SR.T=(FRn GT FRm)
 ** 9Enm  FMOV		FRm, FRn			//FRn=FRm
@@ -949,14 +940,14 @@ The encoding of predicated forms will be otherwise equivalent to their Fz counte
 
 F0zz Instruction Block:
 * F0zz_0zzz
-** F0nm_0gd0 / MOV.B	Rm, (Rn, disp5)		// (Drop, MOV.x Imm5)
-** F0nm_0Gd0 / LEA.B	(Rm, disp5), Rn		// (Drop, MOV.x Imm5)
-** F0nm_0gd1 / MOV.W	Rm, (Rn, disp5)		// (Drop, MOV.x Imm5)
-** F0nm_0Gd1 / LEA.W	(Rm, disp5), Rn		// (Drop, MOV.x Imm5)
-** F0nm_0gd2 / MOV.L	Rm, (Rn, disp5)		// (Drop, MOV.x Imm5)
-** F0nm_0Gd2 / LEA.L	(Rm, disp5), Rn		// (Drop, MOV.x Imm5)
-** F0nm_0gd3 / MOV.Q	Rm, (Rn, disp5)		// (Drop, MOV.x Imm5)
-** F0nm_0Gd3 / LEA.Q	(Rm, disp5), Rn		// (Drop, MOV.x Imm5)
+** F0nm_0gd0  /
+** F0nm_0Gd0  /
+** F0nm_0gd1  /
+** F0nm_0Gd1  /
+** F0nm_0gd2  /
+** F0nm_0Gd2  /
+** F0nm_0gd3  /
+** F0nm_0Gd3  /
 ** F0nm_0go4  MOV.B		Rm, (Rn, Ro)		//Q=0
 ** F0nm_0Go4  LEA.B		Rm, (Rn, Ro)		//Q=1
 ** F0nm_0go5  MOV.W		Rm, (Rn, Ro)		//Q=0
@@ -965,14 +956,14 @@ F0zz Instruction Block:
 ** F0nm_0Go6  LEA.L		Rm, (Rn, Ro)		//Q=1
 ** F0nm_0go7  MOV.Q		Rm, (Rn, Ro)		//Q=0
 ** F0nm_0Go7  LEA.Q		Rm, (Rn, Ro)		//Q=1
-** F0nm_0gd8 / MOV.B	(Rm, disp5), Rn		// (Drop, MOV.x Imm5)
-** F0nm_0Gd8 / MOVU.B	(Rm, disp5), Rn		// (Drop, MOV.x Imm5)
-** F0nm_0gd9 / MOV.W	(Rm, disp5), Rn		// (Drop, MOV.x Imm5)
-** F0nm_0Gd9 / MOVU.W	(Rm, disp5), Rn		// (Drop, MOV.x Imm5)
-** F0nm_0gdA / MOV.L	(Rm, disp5), Rn		// (Drop, MOV.x Imm5)
-** F0nm_0GdA / MOVU.L	(Rm, disp5), Rn		// (Drop, MOV.x Imm5)
-** F0nm_0gdB / MOV.Q	(Rm, disp5), Rn		// (Drop, MOV.x Imm5)
-** F0nm_0GdB / MOVD.L	(Rm, disp5), Rn		// (63..32=Undefined)
+** F0nm_0gd8  /
+** F0nm_0Gd8  /
+** F0nm_0gd9  /
+** F0nm_0Gd9  /
+** F0nm_0gdA  /
+** F0nm_0GdA  /
+** F0nm_0gdB  /
+** F0nm_0GdB  /
 ** F0nm_0goC  MOV.B		(Rm, Ro), Rn		//Q=0
 ** F0nm_0GoC  MOVU.B	(Rm, Ro), Rn		//Q=1
 ** F0nm_0goD  MOV.W		(Rm, Ro), Rn		//Q=0
@@ -1324,6 +1315,9 @@ FAzz/FBzz Instructions:
 
 
 === 48-bit Instruction Forms ===
+
+These forms are not available in Fixed-Length or Lite Profiles.
+
 
 * FC0z_zzzz_zzzz  (Extended Opcode Space)
 

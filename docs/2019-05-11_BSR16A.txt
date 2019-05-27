@@ -1,0 +1,33 @@
+BSR16: 16-bit BSR variant (possible).
+
+Overview:
+* 16-bit instructions;
+* 16x 20b GPRs
+** Most ALU ops will be 16-bit, (19:16) mostly for far pointers.
+* 20-bit segmented address space.
+** CS/PBR and DS/GBR
+
+GPR Space:
+* R0: DR (Data Register)
+* R1: LR (Link Register)
+* R2, Scratch / Return Value
+* R3, Scratch 
+* R4..R7: Scratch / Arguments
+* R8..R13: Preserved
+* R14: PC (Program Counter)
+* R15: SP (Stack Pointer)
+
+Control Space:
+* C0: ZZR (Zero Register)
+* C1: PBR (Program Base Register / Code Segment)
+* C2: SR (Status Register)
+* C3: VBR (Vector Base Register)
+* C4: SPC (Saved PC)
+* C5: SSP (Saved SP)
+* C6: GBR (Global Base Register / Data Segment)
+* C7: TBR (Thread Base Register / Thread Segment)
+* C8: -
+* C9: -
+* C10: -
+* C11: EXSR (Exception Status Register)
+* C12: SSR (Saved SR)

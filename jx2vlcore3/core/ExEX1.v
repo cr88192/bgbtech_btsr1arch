@@ -18,8 +18,10 @@ Holding/Completing a memory access will be the responsibility of EX2.
 `include "ExAGU.v"
 // `include "ExALU.v"
 `include "ExConv2R.v"
-`include "ExShad32.v"
-`include "ExShad64.v"
+//`include "ExShad32.v"
+`include "ExShad32B.v"
+// `include "ExShad64.v"
+`include "ExShad64B.v"
 `include "ExSwapN.v"
 `include "ExShllN.v"
 
@@ -159,12 +161,14 @@ wire		tCnvSrT;
 ExConv2R	exConv2R(regValRs, opUIxt, regInSr[0], tValCnv, tCnvSrT);
 
 wire[31:0]	tValShad32;
-ExShad32	exShad32(clock, reset,
+//ExShad32	exShad32(clock, reset,
+ExShad32B	exShad32(clock, reset,
 	regValRs[31:0], regValRt[7:0],
 	tValShad32, opUCmd[0]);
 
 wire[63:0]	tValShad64;
-ExShad64	exShad64(clock, reset,
+//ExShad64	exShad64(clock, reset,
+ExShad64B	exShad64(clock, reset,
 	regValRs[63:0], regValRt[7:0],
 	tValShad64, opUCmd[0]);
 
@@ -245,6 +249,7 @@ begin
 			tHeldIdRn1	= regIdRm;
 		end
 
+`ifdef jx2_enable_fpu
 		JX2_UCMD_FMOV_RM: begin
 			tDoMemOpm	= { 2'b10, opUIxt[3], opUIxt[5:4] };
 			tDoMemOp	= 1;
@@ -253,6 +258,7 @@ begin
 			tDoMemOpm = { 2'b01, opUIxt[3], opUIxt[5:4] };
 			tDoMemOp	= 1;
 		end
+`endif
 
 		JX2_UCMD_PUSHX: begin
 			tMemAddr	= tRegSpSub8[31:0];
@@ -368,6 +374,7 @@ begin
 			tRegOutSr[0]	= tShllSrT;
 		end
 	
+`ifdef jx2_enable_fpu
 		JX2_UCMD_FSTCX: begin
 			tRegIdRn1		= regIdRm;
 			tRegValRn1		= regFpuGRn;
@@ -376,6 +383,7 @@ begin
 		JX2_UCMD_FCMP: begin
 			tRegOutSr[0]	= regFpuSrT;
 		end
+`endif
 
 		default: begin
 		end

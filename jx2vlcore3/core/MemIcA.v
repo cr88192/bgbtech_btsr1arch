@@ -36,15 +36,32 @@ assign	memPcOpm	= tMemPcOpm;
 reg[31:0]		tMemPcAddr;		//memory PC address
 reg[ 4:0]		tMemPcOpm;		//memory PC output-enable
 
+`ifdef jx2_reduce_l1sz
+reg[63:0]		icCaMemA[15:0];		//Local L1 tile memory (Even)
+reg[63:0]		icCaMemB[15:0];		//Local L1 tile memory (Odd)
+reg[31:0]		icCaAddrA[15:0];	//Local L1 tile address
+reg[31:0]		icCaAddrB[15:0];	//Local L1 tile address
+`else
 reg[63:0]		icCaMemA[63:0];		//Local L1 tile memory (Even)
 reg[63:0]		icCaMemB[63:0];		//Local L1 tile memory (Odd)
 reg[31:0]		icCaAddrA[63:0];	//Local L1 tile address
 reg[31:0]		icCaAddrB[63:0];	//Local L1 tile address
+`endif
 
 reg[27:0]		tNxtAddrA;
 reg[27:0]		tNxtAddrB;
+
+`ifdef jx2_reduce_l1sz
+reg[3:0]		tNxtIxA;
+reg[3:0]		tNxtIxB;
+reg[3:0]		tReqIxA;
+reg[3:0]		tReqIxB;
+`else
 reg[5:0]		tNxtIxA;
 reg[5:0]		tNxtIxB;
+reg[5:0]		tReqIxA;
+reg[5:0]		tReqIxB;
+`endif
 
 reg[63:0]		tBlkDataA;
 reg[63:0]		tBlkDataB;
@@ -55,8 +72,6 @@ reg[ 3:0]		tBlkFlagB;
 
 reg[27:0]		tReqAddrA;
 reg[27:0]		tReqAddrB;
-reg[5:0]		tReqIxA;
-reg[5:0]		tReqIxB;
 
 reg[31:0]		tInAddr;
 reg[1:0]		tInWordIx;
@@ -83,8 +98,14 @@ begin
 		tNxtAddrA=regInPc[31:4];
 		tNxtAddrB=tNxtAddrA;
 	end
+
+`ifdef jx2_reduce_l1sz
+	tNxtIxA=tNxtAddrA[3:0];
+	tNxtIxB=tNxtAddrB[3:0];
+`else
 	tNxtIxA=tNxtAddrA[5:0];
 	tNxtIxB=tNxtAddrB[5:0];
+`endif
 
 
 	/* Stage B */
@@ -102,6 +123,7 @@ begin
 		tBlkData = { tBlkDataB, tBlkDataA };
 	end
 
+`ifdef jx2_enable_ops48
 	casez(tBlkData[15:10])
 		6'b111z11:	opLenA0=3'b011;
 		6'b111z10:	opLenA0=3'b010;
@@ -130,6 +152,24 @@ begin
 		6'b111z00: opLenA3=3'b010;
 		default:   opLenA3=3'b001; 
 	endcase
+`else
+	casez(tBlkData[15:13])
+		3'b111:    opLenA0=3'b010;
+		default:   opLenA0=3'b001; 
+	endcase
+	casez(tBlkData[31:29])
+		3'b111:    opLenA1=3'b010;
+		default:   opLenA1=3'b001; 
+	endcase
+	casez(tBlkData[47:45])
+		3'b111:    opLenA2=3'b010;
+		default:   opLenA2=3'b001; 
+	endcase
+	casez(tBlkData[63:61])
+		3'b111:    opLenA3=3'b010;
+		default:   opLenA3=3'b001; 
+	endcase
+`endif
 
 	case(tInWordIx)
 		2'b00: begin
@@ -162,8 +202,13 @@ reg		tMemLatchDnB;
 reg[127:0]		tStBlkData;
 reg[27:0]		tStBlkAddr;
 reg[3:0]		tStBlkFlag;
-reg[5:0]		tStBlkIx;
 reg				tDoStBlk;
+
+`ifdef jx2_reduce_l1sz
+reg[3:0]		tStBlkIx;
+`else
+reg[5:0]		tStBlkIx;
+`endif
 
 
 always @(posedge clock)

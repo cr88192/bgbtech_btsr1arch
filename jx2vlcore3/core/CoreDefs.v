@@ -73,7 +73,8 @@ parameter[1:0] JX2_IXC_NV	= 2'b01;	//Execute Never
 parameter[1:0] JX2_IXC_CT	= 2'b10;	//Execute If True
 parameter[1:0] JX2_IXC_CF	= 2'b11;	//Execute If False
 
-
+parameter[  3:0] UV4_XX			= 4'hX;	//
+parameter[  4:0] UV5_XX			= 5'hXX;	//
 parameter[  5:0] UV6_XX			= 6'hXX;	//
 parameter[  6:0] UV7_XX			= 7'hXX;	//
 parameter[  7:0] UV8_XX			= 8'hXX;	//
@@ -96,6 +97,15 @@ parameter[255:0] UV256_XX		= { UV128_XX, UV128_XX };	//
 
 parameter[319:0] UV320_XX		= { UV256_XX, UV64_XX };	//
 parameter[383:0] UV384_XX		= { UV256_XX, UV128_XX };	//
+
+parameter      UV1_00			= 1'h0;	//
+parameter      UV1_FF			= 1'h1;	//
+
+parameter[1:0] UV2_00			= 2'h0;	//
+parameter[1:0] UV2_FF			= 2'h3;	//
+
+parameter[3:0] UV4_00			= 4'h0;	//
+parameter[3:0] UV4_FF			= 4'hF;	//
 
 parameter[7:0] UV8_00			= 8'h00;	//
 parameter[7:0] UV8_FF			= 8'hFF;	//
@@ -392,5 +402,14 @@ parameter[5:0] JX2_UCIX_IXS_MOVNT	= 6'h02;		//FPU ADD
 parameter[5:0] JX2_UCIX_IXS_LDSRMSK	= 6'h03;		//FPU ADD
 
 `define def_true
+
+`define jx2_enable_mmu
+// `define jx2_enable_fpu
+
+`define jx2_enable_ops16
+// `define jx2_enable_ops48
+
+`define jx2_reduce_l1sz
+`define jx2_reduce_l2sz
 
 `endif

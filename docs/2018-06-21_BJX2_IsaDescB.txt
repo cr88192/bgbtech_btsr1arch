@@ -294,7 +294,6 @@ The contents of SR.S, and SR.PQRO are undefined following this operation.
 
 === CMPQGE ===
 
-* 38nE       CMPQGE		DLR, Rn
 * F2nA_CGjj  CMPQGE		#imm9u, Rn
 * F2nB_CGjj  CMPQGE		#imm9n, Rn
 
@@ -338,7 +337,6 @@ The contents of SR.S, and SR.PQRO are undefined following this operation.
 
 === CMPQHS ===
 
-* 38nD       CMPQHS		DLR, Rn
 * F0nm_1GDD  CMPQHS		Rm, Rn
 * F2n6_CGjj  CMPQHS		#imm9u, Rn
 * F2n7_CGjj  CMPQHS		#imm9n, Rn
@@ -563,8 +561,10 @@ The byte is sign extended to the size of the register.
 * 06nm            MOV.L		Rm, (Rn, DLR)		//(Rn==0): PC-Rel
 * 0Anm            MOV.L		(Rm), Rn
 * 0Enm            MOV.L		(Rm, DLR), Rn		//(Rm==0): PC-Rel
-* 28nd            MOV.L		Rn, (SP, disp4u)	//Stack-Relative Store
-* 2And            MOV.L		(SP, disp4u), Rn	//Stack-Relative Load
+* 40nd            MOV.L		Rn, (SP, disp4u)	//Stack-Relative Store
+* 42nd            MOV.L		Rk, (SP, disp4u)	//Stack-Relative Store
+* 44nd            MOV.L		(SP, disp4u), Rn	//Stack-Relative Load
+* 46nd            MOV.L		(SP, disp4u), Rk	//Stack-Relative Load
 * F0nm_0go6       MOV.L		Rm, (Rn, Ro)		//(Rn==0): PC-Rel
 * F0nm_0goE       MOV.L		(Rm, Ro), Rn		//(Rm==0): PC-Rel
 * F1nm_2gdd       MOV.L		Rm, (Rn, disp9u)
@@ -589,8 +589,10 @@ For example, F0-28 and F1-2 could both achieve a similar purpose, so don't need 
 * 07nm            MOV.Q		Rm, (Rn, DLR)		//(Rn==0): PC-Rel
 * 0Bnm            MOV.Q		(Rm), Rn
 * 0Fnm            MOV.Q		(Rm, DLR), Rn		//(Rm==0): PC-Rel
-* 29nd            MOV.Q		Rn, (SP, disp4u)	//Stack-Relative Store
-* 2Bnd            MOV.Q		(SP, disp4u), Rn	//Stack-Relative Load
+* 41nd            MOV.Q		Rn, (SP, disp4u)	//Stack-Relative Store
+* 43nd            MOV.Q		Rk, (SP, disp4u)	//Stack-Relative Store
+* 45nd            MOV.Q		(SP, disp4u), Rn	//Stack-Relative Load
+* 47nd            MOV.Q		(SP, disp4u), Rk	//Stack-Relative Load
 * F0nm_0go7       MOV.Q		Rm, (Rn, Ro)		//Q=0
 * F0nm_0goF       MOV.Q		(Rm, Ro), Rn		//Q=0
 * F1nm_3gdd       MOV.Q		Rm, (Rn, disp9u)
@@ -798,10 +800,10 @@ Perform a bitwise OR of the source and destination, storing the result in the de
 
 === POP ===
 
-* 30nA       POP		Rn
-* 30nB       POP		Cn
-* 32nA       POP		Rk			//R16..R31
-* 32nB       POP		Ck			//C16..C31
+* 31nA       POP		Rn
+* 31nB       POP		Cn
+* 39nA       POP		Rk			//R16..R31
+* 39nB       POP		Ck			//C16..C31
 * F01A_3en0  POP		Rn			//Fix32
 * F01B_3en0  POP		Cn			//Fix32
 
@@ -814,10 +816,10 @@ Note that POP into PC will be treated as a special case "RET" instruction.
 
 === PUSH ===
 
-* 30n8       PUSH		Rn
-* 30n9       PUSH		Cn
-* 32n8       PUSH		Rk		//R16..R31
-* 32n9       PUSH		Ck		//C16..C31
+* 31n8       PUSH		Rn
+* 31n9       PUSH		Cn
+* 39n8       PUSH		Rk		//R16..R31
+* 39n9       PUSH		Ck		//C16..C31
 * F018_3en0  PUSH		Rn		//Fix32
 * F019_3en0  PUSH		Cn		//Fix32
 
@@ -936,7 +938,7 @@ For SHAD, the shift will be 32-bit modular.
 
 === SHADQ ===
 
-* 38n6       SHADQ	DLR, Rn
+* 31n6       SHADQ	DLR, Rn
 * F0nm_1G6C  SHADQ	Rm, Rn
 * F0nm_5Go4  SHADQ	Rm, Ro, Rn
 * F2nm_8Gjj  SHADQ	Rm, #imm9, Rn
@@ -989,7 +991,7 @@ The input is 32-bit zero extended prior to performing the shift.
 
 === SHLDQ ===
 
-* 38n7       SHLDQ	DLR, Rn
+* 31n7       SHLDQ	DLR, Rn
 * F0nm_1G7C  SHLDQ	Rm, Rn
 * F0nm_5Go5  SHADQ	Rm, Ro, Rn
 * F2nm_9ejj  SHLDQ	Rm, #imm9u, Rn

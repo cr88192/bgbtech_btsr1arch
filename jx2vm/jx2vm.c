@@ -136,6 +136,134 @@ int BJX2_MainPollKeyboard(BJX2_Context *ctx)
 	return(0);
 }
 
+
+
+BJX2_FILE *bjx2_fopen(char *name, char *mode)
+{
+	FILE *fd;
+	fd=fopen(name, mode);
+	return((BJX2_FILE *)fd);
+}
+
+int bjx2_fclose(BJX2_FILE *fd)
+{
+	fclose((FILE *)fd);
+	return(0);
+}
+
+int bjx2_feof(BJX2_FILE *fd)
+{
+	return(feof((FILE *)fd));
+}
+
+s64 bjx2_ftell(BJX2_FILE *fd)
+{
+	return(ftell((FILE *)fd));
+}
+
+int bjx2_fseek(BJX2_FILE *fd, s64 pos, int md)
+{
+	return(fseek((FILE *)fd, pos, md));
+}
+
+int bjx2_fread(void *buf, int n, int m, BJX2_FILE *fd)
+{
+	return(fread(buf, n, m, (FILE *)fd));
+}
+
+int bjx2_fwrite(void *buf, int n, int m, BJX2_FILE *fd)
+{
+	return(fwrite(buf, n, m, (FILE *)fd));
+}
+
+int bjx2_fgetc(BJX2_FILE *fd)
+{
+	return(fgetc((FILE *)fd));
+}
+
+int bjx2_fputc(int val, BJX2_FILE *fd)
+{
+	return(fputc(val, (FILE *)fd));
+}
+
+char *bjx2_fgets(char *buf, int lim, BJX2_FILE *fd)
+{
+	char *t;
+	int i;
+	
+	t=buf;
+	while(!bjx2_feof(fd))
+	{
+		i=bjx2_fgetc(fd);
+		if(i=='\n')
+		{
+			break;
+		}
+		if(i=='\r')
+		{
+			continue;
+		}
+		if(i<0)
+		{
+			break;
+		}
+		
+		*t++=i;
+	}
+	
+	*t=0;
+	
+	return(buf);
+}
+
+int bjx2_fflush(BJX2_FILE *fd)
+{
+	return(fflush((FILE *)fd));
+}
+
+
+int bjx2_vmputc(BJX2_Context *ctx, int val)
+{
+	fputc(val, stdout);
+	return(0);
+
+#if 0
+	static char pbuf[1024];
+	static int pbpos=0;
+	
+	if((val>=' '))
+	{
+		pbuf[pbpos++]=val;
+		return(0);
+	}
+	
+	if(val=='\n')
+	{
+		pbuf[pbpos++]=val;
+		pbuf[pbpos++]=0;
+//		BGBRPI_AddConMessage(pbuf);
+		puts(pbuf);
+		pbpos=0;
+		return(0);
+	}
+#endif
+
+	return(0);
+}
+
+int BJX2_VmMsgRxUpdate(BJX2_Context *ctx)
+{
+	return(0);
+}
+
+int BJX2_VmMsgTxUpdate(BJX2_Context *ctx)
+{
+//	BGBDT_Jx2Vm_UpdateMessages();
+	return(0);
+}
+
+
+
 BJX2_Context *ctx;
 int ms0, lms1;
 

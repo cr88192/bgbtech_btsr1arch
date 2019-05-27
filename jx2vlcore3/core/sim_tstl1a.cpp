@@ -1,12 +1,14 @@
 #include "VMemL1A.h"
 #include "verilated.h"
 
+// #define HAS_OPS48
+
 VMemL1A *top = new VMemL1A;
 
 vluint64_t main_time = 0;
 
-// static int write_words=256;
-static int write_words=2048;
+static int write_words=256;
+// static int write_words=2048;
 
 static int write_words2=4096;
 
@@ -214,7 +216,8 @@ int main(int argc, char **argv, char **env)
 //		top->icRegInOpm=0xA;
 //		top->icRegInData=rand();
 
-		MemUpdateForBus();
+		if(top->clock)
+			MemUpdateForBus();
 		top->eval();
 		
 		if(!top->clock)
@@ -246,10 +249,12 @@ int main(int argc, char **argv, char **env)
 			if((v&0xE000)==0xE000)
 			{
 				stp1=2;
+#ifdef HAS_OPS48
 				if((v&0xEE00)==0xEC00)
 					{ stp1=3; }
 				if((v&0xEE00)==0xEE00)
 					{ stp1=3; }
+#endif
 			}
 			
 			if(stp!=stp1)
@@ -299,7 +304,8 @@ int main(int argc, char **argv, char **env)
 		addr=0x0000|(n1*2);
 		top->icInPcAddr=addr;
 
-		MemUpdateForBus();
+		if(top->clock)
+			MemUpdateForBus();
 		top->eval();
 
 		if(!top->clock)
@@ -328,10 +334,12 @@ int main(int argc, char **argv, char **env)
 			if((v&0xE000)==0xE000)
 			{
 				stp1=2;
+#ifdef HAS_OPS48
 				if((v&0xEE00)==0xEC00)
 					{ stp1=3; }
 				if((v&0xEE00)==0xEE00)
 					{ stp1=3; }
+#endif
 			}
 			
 			if(stp!=stp1)
@@ -391,7 +399,8 @@ int main(int argc, char **argv, char **env)
 		top->dcInOpm=0x12;
 		top->dcInVal=membuf[n];
 
-		MemUpdateForBus();
+		if(top->clock)
+			MemUpdateForBus();
 		top->eval();
 
 		if(!top->clock)
@@ -442,11 +451,19 @@ int main(int argc, char **argv, char **env)
 		v=top->dcOutVal;
 		v1=membuf[n];
 
-		MemUpdateForBus();
+		if(top->clock)
+			MemUpdateForBus();
 		top->eval();
 
 		if(!top->clock)
 			continue;
+		
+		if(inh)
+		{
+			printf("Inhibit Cycle\n");
+			inh--;
+			continue;
+		}
 
 		if(top->dcOutOK==1)
 		{
@@ -462,6 +479,9 @@ int main(int argc, char **argv, char **env)
 			}
 		
 //			printf("W %d\n", n);
+//			inh=1;
+			inh=2;
+//			inh=3;
 			n++;
 			if(n>=2048)
 				break;

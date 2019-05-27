@@ -351,6 +351,11 @@ fourcc BGBCP_LangForName(char *name)
 		if(!bgbcp_strcmp(s, ".so"))lang=BGBCC_IMGFMT_ELSO;
 		if(!bgbcp_strcmp(s, ".SO"))lang=BGBCC_IMGFMT_ELSO;
 
+		if(!bgbcp_strcmp(s, ".pso"))lang=BGBCC_IMGFMT_DLL;
+		if(!bgbcp_strcmp(s, ".PSO"))lang=BGBCC_IMGFMT_DLL;
+		if(!bgbcp_strcmp(s, ".pex"))lang=BGBCC_IMGFMT_EXE;
+		if(!bgbcp_strcmp(s, ".PEX"))lang=BGBCC_IMGFMT_EXE;
+
 		if(!bgbcp_strcmp(s, ".rom"))lang=BGBCC_IMGFMT_ROM;
 		if(!bgbcp_strcmp(s, ".ROM"))lang=BGBCC_IMGFMT_ROM;
 		if(!bgbcp_strcmp(s, ".bin"))lang=BGBCC_IMGFMT_ROM;
@@ -452,6 +457,7 @@ fourcc BGBCP_ArchForName(char *name)
 	if(!bgbcc_stricmp(name, "BJX2_F"))		i=BGBCC_ARCH_BJX2;
 	if(!bgbcc_stricmp(name, "BJX2_32"))		i=BGBCC_ARCH_BJX2;
 	if(!bgbcc_stricmp(name, "BJX2_32F"))	i=BGBCC_ARCH_BJX2;
+	if(!bgbcc_stricmp(name, "BJX2E"))		i=BGBCC_ARCH_BJX2;
 
 	return(i);
 }
@@ -498,6 +504,8 @@ fourcc BGBCP_SubArchForName(int arch, char *name)
 	if(!bgbcc_stricmp(name, "BJX2_F"))		i=BGBCC_ARCH_BJX2_JX2B;
 	if(!bgbcc_stricmp(name, "BJX2_32"))		i=BGBCC_ARCH_BJX2_JX2C;
 	if(!bgbcc_stricmp(name, "BJX2_32F"))	i=BGBCC_ARCH_BJX2_JX2D;
+
+	if(!bgbcc_stricmp(name, "BJX2E"))		i=BGBCC_ARCH_BJX2_JX2E;
 
 	return(i);
 }
@@ -688,6 +696,11 @@ fourcc BGBCP_ImageFormatForName(char *name)
 		if(!bgbcc_stricmp(s, ".so"))fmt=BGBCC_IMGFMT_ELSO;
 		if(!bgbcc_stricmp(s, ".ril"))fmt=BGBCC_IMGFMT_RIL3;
 		if(!bgbcc_stricmp(s, ".ril3"))fmt=BGBCC_IMGFMT_RIL3;
+
+		if(!bgbcc_stricmp(s, ".pex"))fmt=BGBCC_IMGFMT_EXE;
+		if(!bgbcc_stricmp(s, ".pso"))fmt=BGBCC_IMGFMT_DLL;
+		if(!bgbcc_stricmp(s, ".pexe"))fmt=BGBCC_IMGFMT_EXE;
+		if(!bgbcc_stricmp(s, ".pdll"))fmt=BGBCC_IMGFMT_DLL;
 
 		if(!bgbcc_stricmp(s, ".rom"))fmt=BGBCC_IMGFMT_ROM;
 		if(!bgbcc_stricmp(s, ".bin"))fmt=BGBCC_IMGFMT_ROM;

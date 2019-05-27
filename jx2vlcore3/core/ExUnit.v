@@ -9,15 +9,19 @@ IF ID1 ID2 EX1 EX2 WB
 `include "MemL1A.v"
 `include "DecOp.v"
 `include "RegGPR.v"
-`include "RegFPR.v"
 `include "RegCR.v"
 
 `include "ExEX1.v"
 `include "ExEX2.v"
 `include "ExALU.v"
-`include "ExMul.v"
-`include "FpuExOp.v"
+// `include "ExMul.v"
+`include "ExMulB.v"
 `include "DecPreBra.v"
+
+`ifdef jx2_enable_fpu
+`include "RegFPR.v"
+`include "FpuExOp.v"
+`endif
 
 module ExUnit(
 	clock,
@@ -192,6 +196,8 @@ RegGPR regGpr(
 
 wire[63:0]		crOutSr;
 
+`ifdef jx2_enable_fpu
+
 wire[5:0]		gprIdFRs;
 wire[5:0]		gprIdFRt;
 assign	gprIdFRs = (id2IdUCmd[5:0]==JX2_UCMD_MOV_RM) ? gprIdRm :  gprIdRs;
@@ -210,6 +216,7 @@ RegFPR	regFpr(
 	crOutSr,	exHold2
 	);
 
+`endif
 
 /* ID2, CR */
 
@@ -259,11 +266,19 @@ RegCR regCr(
 
 wire[63:0]		ex1MulVal;
 
+// `ifdef jx2_enable_fpu
 wire[5:0]		ex1RegIdFRn;
 wire[63:0]		ex1RegValFRn;
 wire[63:0]		ex1FpuValGRn;
 wire[1:0]		ex1FpuOK;
 wire			ex1FpuSrT;
+// `endif
+
+`ifndef jx2_enable_fpu
+assign	ex1FpuValGRn	= UV64_XX;
+assign	ex1FpuOK		= UMEM_OK_READY;
+assign	ex1FpuSrT		= 0;
+`endif
 
 reg[63:0]		ex2MemDataIn;
 reg[1:0]		ex2MemDataOK;
@@ -281,8 +296,11 @@ reg[63:0]		ex1RegValRs;		//Source A Value
 reg[63:0]		ex1RegValRt;		//Source B Value
 reg[63:0]		ex1RegValRm;		//Source C Value
 
+// `ifdef jx2_enable_fpu
 reg[63:0]		ex1RegValFRs;		//Source A Value (FPR)
 reg[63:0]		ex1RegValFRt;		//Source B Value (FPR)
+// `endif
+
 reg[63:0]		ex1RegValCRm;		//Source C Value (CR)
 
 wire[5:0]		ex1RegIdRn1;		//Destination ID (EX1)
@@ -348,10 +366,13 @@ ExALU	exAlu(
 //	ex1ValAlu,			ex1AluSrT);
 	ex1ValAlu[63:0],	ex1ValAlu[64]);
 
-ExMul	ex1Mul(
+// ExMul	ex1Mul(
+ExMulB	ex1Mul(
 	clock,			reset,
 	ex1RegValRs[31:0],	ex1RegValRt[31:0],
 	ex1MulVal,		ex1OpUIxt);
+
+`ifdef jx2_enable_fpu
 
 FpuExOp	ex1Fpu(
 	clock,			reset,
@@ -369,6 +390,7 @@ FpuExOp	ex1Fpu(
 	ex2MemDataIn,	ex2MemDataOK
 	);
 
+`endif
 
 /* EX2 */
 
@@ -526,8 +548,10 @@ begin
 	crIdCn2			= ex2RegIdCn2;
 	crValCn2		= ex2RegValCn2;
 	
+`ifdef jx2_enable_fpu
 	gprIdFRn		= ex1RegIdFRn;
 	gprValFRn		= ex1RegValFRn;
+`endif
 
 
 	/* ID2 */
@@ -573,6 +597,11 @@ end
 
 always @(posedge clock)
 begin
+
+`ifndef jx2_enable_fpu
+		ex1RegValFRs	<= UV64_XX;
+		ex1RegValFRt	<= UV64_XX;
+`endif
 
 	if(reset)
 	begin
@@ -627,9 +656,13 @@ begin
 		ex1RegValRt		<= gprValRt;
 		ex1RegValRm		<= gprValRm;
 
+		ex1RegValCRm	<= crValCm;
+
+`ifdef jx2_enable_fpu
 		ex1RegValFRs	<= gprValFRs;
 		ex1RegValFRt	<= gprValFRt;
-		ex1RegValCRm	<= crValCm;
+`endif
+
 	end
 	else
 		if(!exHold2)

@@ -30,7 +30,7 @@ int JX2R_TKFAT_GetSegment(
 {
 	JX2R_TKFAT_SegmentInfo *sg1, *sg2;
 	char tb[1024];
-	FILE *fd, *fd2;
+	BJX2_FILE *fd, *fd2;
 	int id2, n;
 	int i, j, k;
 	
@@ -57,21 +57,21 @@ int JX2R_TKFAT_GetSegment(
 
 	sprintf(tb, "%s/S%07X.hd", img->seg_base, id);
 	
-	fd=fopen(tb, "r+b");
+	fd=bjx2_fopen(tb, "r+b");
 	if(!fd)
 	{
 		if(crt)
 		{
-			fd=fopen(tb, "w+b");
+			fd=bjx2_fopen(tb, "w+b");
 			if(fd)
 			{
 				memset(tb+512, 0, 512);
 //				for(j=0; j<(1<<20); i++)
 				for(j=0; j<256; j++)
 				{
-					fwrite(tb+512, 1, 512, fd);
+					bjx2_fwrite(tb+512, 1, 512, fd);
 				}
-				fseek(fd, 0, 0);
+				bjx2_fseek(fd, 0, 0);
 			}
 		}
 	}
@@ -94,7 +94,7 @@ int JX2R_TKFAT_GetSegment(
 		i=63;
 		if(img->seg[i]->fd)
 		{
-			fclose(img->seg[i]->fd);
+			bjx2_fclose(img->seg[i]->fd);
 		}
 	}
 
@@ -104,8 +104,8 @@ int JX2R_TKFAT_GetSegment(
 	
 	if(fd)
 	{
-		fseek(fd, 0, 0);
-		j=fread(tb, 1, 1024, fd);
+		bjx2_fseek(fd, 0, 0);
+		j=bjx2_fread(tb, 1, 1024, fd);
 		if(j<0)
 			return(-1);
 		
@@ -137,9 +137,9 @@ int JX2R_TKFAT_CommitSegment(
 		btesh2_tkfat_setDWord(tb+i*4, seg->idx[i]);
 	}
 
-	fseek(seg->fd, 0, 0);
-	i=fwrite(tb, 1, 1024, seg->fd);
-	fflush(seg->fd);
+	bjx2_fseek(seg->fd, 0, 0);
+	i=bjx2_fwrite(tb, 1, 1024, seg->fd);
+	bjx2_fflush(seg->fd);
 	if(i<0)
 		return(-1);
 	return(0);
@@ -186,10 +186,10 @@ int JX2R_TKFAT_GetSegmentFileOffset(
 //	offs=65536+(i<<(12+9))+(bi<<9);
 	offs=65536+(i<<(12+9));
 
-	fseek(seg->fd, offs, 0);
+	bjx2_fseek(seg->fd, offs, 0);
 	memset(tb, 0, 512);
 	for(i=0; i<4096; i++)
-		fwrite(tb, 1, 512, seg->fd);
+		bjx2_fwrite(tb, 1, 512, seg->fd);
 	
 	printf("JX2R_TKFAT_GetSegmentFileOffset: "
 		"New Segment %07X:%02X:000, %d @%08X\n", seg->id, sp, ix, offs);
@@ -232,8 +232,8 @@ int JX2R_TKFAT_ReadSectors(JX2R_TKFAT_ImageInfo *img,
 
 	if(img->fdImgData)
 	{
-		fseek(img->fdImgData, (int)(lba<<9), 0);
-		j=fread(buf, 1, 512*num, img->fdImgData);
+		bjx2_fseek(img->fdImgData, (int)(lba<<9), 0);
+		j=bjx2_fread(buf, 1, 512*num, img->fdImgData);
 		if(j<0)
 			return(-1);
 		return(0);
@@ -269,8 +269,8 @@ int JX2R_TKFAT_ReadSectors(JX2R_TKFAT_ImageInfo *img,
 		if(img->seg[i]->fd)
 		{
 //			fseek(img->seg[i]->fd, (int)(bi<<9), 0);
-			fseek(img->seg[i]->fd, offs, 0);
-			j=fread(buf, 1, 512*num, img->seg[i]->fd);
+			bjx2_fseek(img->seg[i]->fd, offs, 0);
+			j=bjx2_fread(buf, 1, 512*num, img->seg[i]->fd);
 			if(j<0)
 				return(-1);
 		}
@@ -301,8 +301,8 @@ int JX2R_TKFAT_WriteSectors(JX2R_TKFAT_ImageInfo *img,
 
 	if(img->fdImgData)
 	{
-		fseek(img->fdImgData, (int)(lba<<9), 0);
-		fwrite(buf, 1, 512*num, img->fdImgData);
+		bjx2_fseek(img->fdImgData, (int)(lba<<9), 0);
+		bjx2_fwrite(buf, 1, 512*num, img->fdImgData);
 		return(0);
 	}
 
@@ -335,8 +335,8 @@ int JX2R_TKFAT_WriteSectors(JX2R_TKFAT_ImageInfo *img,
 		if(img->seg[i]->fd)
 		{
 //			fseek(img->seg_fd[i], (int)(bi<<9), 0);
-			fseek(img->seg[i]->fd, offs, 0);
-			fwrite(buf, 1, 512*num, img->seg[i]->fd);
+			bjx2_fseek(img->seg[i]->fd, offs, 0);
+			bjx2_fwrite(buf, 1, 512*num, img->seg[i]->fd);
 			return(0);
 		}
 		return(-1);
@@ -799,7 +799,7 @@ void JX2R_TKFAT_SetupImageFAT(JX2R_TKFAT_ImageInfo *img)
 
 			clsz=1; clsh=0;
 			cln=img->lba_count;
-			while(cln>4294967285)
+			while(cln>4294967285LL)
 			{
 				clsh++; clsz=1<<clsh;
 				cln=img->lba_count>>clsh;
@@ -2377,19 +2377,19 @@ char **JX2R_SplitLine(char *buf)
 byte *JX2R_LoadFile(char *path, int *rsz)
 {
 	byte *buf;
-	FILE *fd;
+	BJX2_FILE *fd;
 	int sz, i;
 	
-	fd=fopen(path, "rb");
+	fd=bjx2_fopen(path, "rb");
 	if(!fd)
 		return(NULL);
 
-	fseek(fd, 0, 2);
-	sz=ftell(fd);
-	fseek(fd, 0, 0);
+	bjx2_fseek(fd, 0, 2);
+	sz=bjx2_ftell(fd);
+	bjx2_fseek(fd, 0, 0);
 	buf=malloc(sz);
-	i=fread(buf, 1, sz, fd);
-	fclose(fd);
+	i=bjx2_fread(buf, 1, sz, fd);
+	bjx2_fclose(fd);
 	
 	*rsz=sz;
 	return(buf);
@@ -2397,35 +2397,35 @@ byte *JX2R_LoadFile(char *path, int *rsz)
 
 int JX2R_StoreFile(char *path, byte *buf, int sz)
 {
-	FILE *fd;
+	BJX2_FILE *fd;
 	
-	fd=fopen(path, "wb");
+	fd=bjx2_fopen(path, "wb");
 	if(!fd)
 		return(-1);
-	fwrite(buf, 1, sz, fd);
-	fclose(fd);
+	bjx2_fwrite(buf, 1, sz, fd);
+	bjx2_fclose(fd);
 	return(0);
 }
 
 int JX2R_SetUseImage(char *name)
 {
 	JX2R_TKFAT_ImageInfo *img;
-	FILE *imgfd;
+	BJX2_FILE *imgfd;
 	char *imgfn;
 	int imgsz;
 
 	imgfn=strdup(name);
-	imgfd=fopen(imgfn, "r+b");
+	imgfd=bjx2_fopen(imgfn, "r+b");
 	if(!imgfd)
 	{
 #if 0
-		imgfd=fopen(imgfn, "w+b");
+		imgfd=bjx2_fopen(imgfn, "w+b");
 		if(imgfd)
 		{
 			memset(tb, 0, 1024);
 			n=imgsz>>10;
 			for(i=0; i<n; i++)
-				fwrite(tb, 1, 1024, imgfd);
+				bjx2_fwrite(tb, 1, 1024, imgfd);
 		}
 #endif
 	}
@@ -2436,9 +2436,9 @@ int JX2R_SetUseImage(char *name)
 		return(-1);
 	}
 	
-	fseek(imgfd, 0, 2);
-	imgsz=ftell(imgfd);
-	fseek(imgfd, 0, 0);
+	bjx2_fseek(imgfd, 0, 2);
+	imgsz=bjx2_ftell(imgfd);
+	bjx2_fseek(imgfd, 0, 0);
 	
 	img=malloc(sizeof(JX2R_TKFAT_ImageInfo));
 	memset(img, 0, sizeof(JX2R_TKFAT_ImageInfo));
@@ -2456,7 +2456,7 @@ JX2R_TKFAT_ImageInfo *JX2R_CreateRamImage(int imgsz, int fsty)
 {
 	JX2R_TKFAT_ImageInfo *img;
 	byte *imgbuf;
-//	FILE *imgfd;
+//	BJX2_FILE *imgfd;
 	int n;
 	int i, j, k;
 	
@@ -2483,14 +2483,14 @@ JX2R_TKFAT_ImageInfo *JX2R_CreateFileImage(char *imgfn, int imgsz, int fsty)
 {
 	char tb[1024];
 	JX2R_TKFAT_ImageInfo *img;
-	FILE *imgfd;
+	BJX2_FILE *imgfd;
 	int n;
 	int i, j, k;
 
-	imgfd=fopen(imgfn, "r+b");
+	imgfd=bjx2_fopen(imgfn, "r+b");
 	if(!imgfd)
 	{
-		imgfd=fopen(imgfn, "w+b");
+		imgfd=bjx2_fopen(imgfn, "w+b");
 		
 		if(imgfd)
 		{
@@ -2498,7 +2498,7 @@ JX2R_TKFAT_ImageInfo *JX2R_CreateFileImage(char *imgfn, int imgsz, int fsty)
 //			n=imgsz>>10;
 			n=imgsz/2;
 			for(i=0; i<n; i++)
-				fwrite(tb, 1, 1024, imgfd);
+				bjx2_fwrite(tb, 1, 1024, imgfd);
 		}
 	}
 	
@@ -2522,15 +2522,15 @@ JX2R_TKFAT_ImageInfo *JX2R_OpenFileImage(char *imgfn, int imgsz, int fsty)
 {
 	char tb[1024];
 	JX2R_TKFAT_ImageInfo *img;
-	FILE *imgfd;
+	BJX2_FILE *imgfd;
 	int n, isnew;
 	int i, j, k;
 
 	isnew=0;
-	imgfd=fopen(imgfn, "r+b");
+	imgfd=bjx2_fopen(imgfn, "r+b");
 	if(!imgfd)
 	{
-		imgfd=fopen(imgfn, "w+b");
+		imgfd=bjx2_fopen(imgfn, "w+b");
 		
 		if(imgfd)
 		{
@@ -2538,13 +2538,13 @@ JX2R_TKFAT_ImageInfo *JX2R_OpenFileImage(char *imgfn, int imgsz, int fsty)
 //			n=imgsz>>10;
 			n=imgsz/2;
 			for(i=0; i<n; i++)
-				fwrite(tb, 1, 1024, imgfd);
+				bjx2_fwrite(tb, 1, 1024, imgfd);
 			isnew=true;
 		}
 	}else
 	{
-		fseek(imgfd, 0, 2);
-		imgsz=ftell(imgfd);
+		bjx2_fseek(imgfd, 0, 2);
+		imgsz=bjx2_ftell(imgfd);
 	}
 	
 	img=malloc(sizeof(JX2R_TKFAT_ImageInfo));
@@ -2573,7 +2573,7 @@ JX2R_TKFAT_ImageInfo *JX2R_OpenSegImage(char *imgfn, int imgsz, int fsty)
 {
 	char tb[1024];
 	JX2R_TKFAT_ImageInfo *img;
-	FILE *imgfd;
+	BJX2_FILE *imgfd;
 	int n, isnew;
 	int i, j, k;
 
@@ -2709,7 +2709,7 @@ int JX2R_ProcessSDCL(
 	char tb[1024];
 	JX2R_TKFAT_FAT_DirEntExt tdee;
 	JX2R_TKFAT_ImageInfo *img;
-	FILE *imgfd;
+	BJX2_FILE *imgfd;
 	char *imgfn;
 	char *fn1, *fn2;
 	byte *imgbuf, *tbuf;
@@ -2823,7 +2823,7 @@ int JX2R_ProcessSDCL(
 			imgisnew=false;
 //			imgbuf=malloc(imgsz*512);
 			imgfn=strdup(a[1]);
-//			imgfd=fopen(imgfn, "r+b");
+//			imgfd=bjx2_fopen(imgfn, "r+b");
 			
 			img=JX2R_OpenSegImage(imgfn, imgsz, fty);
 //			imgfd=img->fdImgData;
@@ -2914,7 +2914,7 @@ int JX2R_ProcessSDCL(
 	{
 		if(imgfd)
 		{
-			fclose(imgfd);
+			bjx2_fclose(imgfd);
 		}
 		if(img)
 		{

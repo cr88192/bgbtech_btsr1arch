@@ -72,14 +72,14 @@ int BGBCC_JX2C_EmitBinaryVRegVRegSoftFloat(
 		{
 			lr4=BGBCC_SH_REG_RD4;
 			lr5=BGBCC_SH_REG_RD5;
-			lr0=BGBCC_SH_REG_RD0;
+			lr0=BGBCC_SH_REG_RD2;
 		}
 
 		if(rcls==BGBCC_SH_REGCLS_QGR)
 		{
 			lr4=BGBCC_SH_REG_RQ4;
 			lr5=BGBCC_SH_REG_RQ5;
-			lr0=BGBCC_SH_REG_RQ0;
+			lr0=BGBCC_SH_REG_RQ2;
 		}
 	}else
 	{
@@ -87,14 +87,14 @@ int BGBCC_JX2C_EmitBinaryVRegVRegSoftFloat(
 		{
 			lr4=BGBCC_SH_REG_R4;
 			lr5=BGBCC_SH_REG_R5;
-			lr0=BGBCC_SH_REG_R0;
+			lr0=BGBCC_SH_REG_R2;
 		}
 
 		if(rcls==BGBCC_SH_REGCLS_GR2)
 		{
 			lr4=BGBCC_SH_REG_LR4;
 			lr5=BGBCC_SH_REG_LR6;
-			lr0=BGBCC_SH_REG_LR0;
+			lr0=BGBCC_SH_REG_LR2;
 		}
 	}
 	
@@ -169,14 +169,14 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegSoftFloat(
 		{
 			lr4=BGBCC_SH_REG_RD4;
 			lr5=BGBCC_SH_REG_RD5;
-			lr0=BGBCC_SH_REG_RD0;
+			lr0=BGBCC_SH_REG_RD2;
 		}
 
 		if(rcls==BGBCC_SH_REGCLS_QGR)
 		{
 			lr4=BGBCC_SH_REG_RQ4;
 			lr5=BGBCC_SH_REG_RQ5;
-			lr0=BGBCC_SH_REG_RQ0;
+			lr0=BGBCC_SH_REG_RQ2;
 		}
 	}else
 	{
@@ -184,14 +184,14 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegSoftFloat(
 		{
 			lr4=BGBCC_SH_REG_R4;
 			lr5=BGBCC_SH_REG_R5;
-			lr0=BGBCC_SH_REG_R0;
+			lr0=BGBCC_SH_REG_R2;
 		}
 
 		if(rcls==BGBCC_SH_REGCLS_GR2)
 		{
 			lr4=BGBCC_SH_REG_LR4;
 			lr5=BGBCC_SH_REG_LR6;
-			lr0=BGBCC_SH_REG_LR0;
+			lr0=BGBCC_SH_REG_LR2;
 		}
 	}
 	
@@ -338,14 +338,14 @@ int BGBCC_JX2C_EmitUnaryVRegVRegSoftFloat(
 		{
 			lr4=BGBCC_SH_REG_RD4;
 			lr5=BGBCC_SH_REG_RD5;
-			lr0=BGBCC_SH_REG_RD0;
+			lr0=BGBCC_SH_REG_RD2;
 		}
 
 		if(rcls==BGBCC_SH_REGCLS_QGR)
 		{
 			lr4=BGBCC_SH_REG_RQ4;
 			lr5=BGBCC_SH_REG_RQ5;
-			lr0=BGBCC_SH_REG_RQ0;
+			lr0=BGBCC_SH_REG_RQ2;
 		}
 	}else
 	{
@@ -353,14 +353,14 @@ int BGBCC_JX2C_EmitUnaryVRegVRegSoftFloat(
 		{
 			lr4=BGBCC_SH_REG_R4;
 			lr5=BGBCC_SH_REG_R5;
-			lr0=BGBCC_SH_REG_R0;
+			lr0=BGBCC_SH_REG_R2;
 		}
 
 		if(rcls==BGBCC_SH_REGCLS_GR2)
 		{
 			lr4=BGBCC_SH_REG_LR4;
 			lr5=BGBCC_SH_REG_LR6;
-			lr0=BGBCC_SH_REG_LR0;
+			lr0=BGBCC_SH_REG_LR2;
 		}
 	}
 	
@@ -434,14 +434,14 @@ int BGBCC_JX2C_EmitCompareVRegVRegVRegSoftFloat(
 		{
 			lr4=BGBCC_SH_REG_RD4;
 			lr5=BGBCC_SH_REG_RD5;
-			lr0=BGBCC_SH_REG_RD0;
+			lr0=BGBCC_SH_REG_RD2;
 		}
 
 		if(rcls==BGBCC_SH_REGCLS_QGR)
 		{
 			lr4=BGBCC_SH_REG_RQ4;
 			lr5=BGBCC_SH_REG_RQ5;
-			lr0=BGBCC_SH_REG_RQ0;
+			lr0=BGBCC_SH_REG_RQ2;
 		}
 	}else
 	{
@@ -449,14 +449,14 @@ int BGBCC_JX2C_EmitCompareVRegVRegVRegSoftFloat(
 		{
 			lr4=BGBCC_SH_REG_R4;
 			lr5=BGBCC_SH_REG_R5;
-			lr0=BGBCC_SH_REG_R0;
+			lr0=BGBCC_SH_REG_R2;
 		}
 
 		if(rcls==BGBCC_SH_REGCLS_GR2)
 		{
 			lr4=BGBCC_SH_REG_LR4;
 			lr5=BGBCC_SH_REG_LR6;
-			lr0=BGBCC_SH_REG_LR0;
+			lr0=BGBCC_SH_REG_LR2;
 		}
 	}
 	
@@ -558,14 +558,14 @@ int BGBCC_JX2C_EmitJCmpVRegVRegSoftFloat(
 		{
 			lr4=BGBCC_SH_REG_RD4;
 			lr5=BGBCC_SH_REG_RD5;
-			lr0=BGBCC_SH_REG_R0;
+			lr0=BGBCC_SH_REG_R2;
 		}
 
 		if(rcls==BGBCC_SH_REGCLS_QGR)
 		{
 			lr4=BGBCC_SH_REG_RQ4;
 			lr5=BGBCC_SH_REG_RQ5;
-			lr0=BGBCC_SH_REG_R0;
+			lr0=BGBCC_SH_REG_R2;
 		}
 	}else
 	{
@@ -573,14 +573,14 @@ int BGBCC_JX2C_EmitJCmpVRegVRegSoftFloat(
 		{
 			lr4=BGBCC_SH_REG_R4;
 			lr5=BGBCC_SH_REG_R5;
-			lr0=BGBCC_SH_REG_R0;
+			lr0=BGBCC_SH_REG_R2;
 		}
 
 		if(rcls==BGBCC_SH_REGCLS_GR2)
 		{
 			lr4=BGBCC_SH_REG_LR4;
 			lr5=BGBCC_SH_REG_LR6;
-			lr0=BGBCC_SH_REG_R0;
+			lr0=BGBCC_SH_REG_R2;
 		}
 	}
 	

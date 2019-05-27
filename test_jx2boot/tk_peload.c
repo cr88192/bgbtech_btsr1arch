@@ -118,7 +118,7 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr)
 		is64=1;
 	}else if(mmagic==0x010B)
 	{
-		__debugbreak();
+//		__debugbreak();
 //		printf("TKPE: Magic 32 %04X\n", mmagic);
 		is64=0;
 	}else

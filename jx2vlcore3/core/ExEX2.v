@@ -180,12 +180,15 @@ begin
 			tDoMemOp	= 1;
 			tRegValRn2	= memDataIn;
 		end
+
+`ifdef jx2_enable_fpu
 		JX2_UCMD_FMOV_RM: begin
 			tDoMemOp	= 1;
 		end
 		JX2_UCMD_FMOV_MR: begin
 			tDoMemOp	= 1;
 		end
+`endif
 
 		JX2_UCMD_PUSHX: begin
 			tDoMemOp	= 1;
@@ -220,9 +223,19 @@ begin
 				tExHold=1;
 
 			casez(opUIxt[1:0])
-				2'b0z: begin
+				2'b00: begin
 					tRegIdRn2	= regIdRm;			//
-					tRegValRn2	= regValMulRes;		//
+//					tRegValRn2	= regValMulRes;		//
+					tRegValRn2	= {
+						regValMulRes[31] ? UV32_FF : UV32_00,
+						regValMulRes[31:0] };		//
+				end
+				2'b01: begin
+					tRegIdRn2	= regIdRm;			//
+//					tRegValRn2	= regValMulRes;		//
+					tRegValRn2	= {
+						UV32_00,
+						regValMulRes[31:0] };		//
 				end
 				2'b10: begin
 					tRegOutDlr  = { UV32_00, regValMulRes[31:0] };

@@ -85,6 +85,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	shctx->fpu_lite=0;
 	shctx->is_addr_x32=0;
 	shctx->use_padcross=0;
+	shctx->no_ops48=0;
 	
 	shctx->optmode=ctx->optmode;
 	
@@ -98,6 +99,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		ctx->arch_sizeof_long=4;
 		ctx->arch_sizeof_ptr=4;
 		shctx->is_addr_x32=1;
+		shctx->no_ops48=1;
 	}
 
 	if(ctx->sub_arch==BGBCC_ARCH_BJX2_JX2D)
@@ -106,6 +108,17 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		ctx->arch_sizeof_ptr=4;
 		shctx->is_fixed32=1;
 		shctx->is_addr_x32=1;
+	}
+
+	if(ctx->sub_arch==BGBCC_ARCH_BJX2_JX2E)
+	{
+		ctx->arch_sizeof_long=4;
+		ctx->arch_sizeof_ptr=4;
+		shctx->is_addr_x32=1;
+		shctx->no_ops48=1;
+
+		shctx->no_fpu=1;
+		shctx->fpu_soft=1;
 	}
 
 	BGBPP_AddStaticDefine(NULL, "__jx2__", "");
@@ -381,6 +394,9 @@ int BGBCC_JX2C_TypeGetRegClassPI(BGBCC_TransState *ctx, ccxl_type ty)
 		{
 			if(BGBCC_CCXL_TypeDoubleP(ctx, ty))
 				return(BGBCC_SH_REGCLS_QGR);
+
+			if(BGBCC_CCXL_TypeFloatP(ctx, ty))
+				return(BGBCC_SH_REGCLS_GR);
 		}
 	}
 
@@ -402,6 +418,9 @@ int BGBCC_JX2C_TypeGetRegClassPI(BGBCC_TransState *ctx, ccxl_type ty)
 		{
 			if(BGBCC_CCXL_TypeDoubleP(ctx, ty))
 				return(BGBCC_SH_REGCLS_QGR);
+
+			if(BGBCC_CCXL_TypeFloatP(ctx, ty))
+				return(BGBCC_SH_REGCLS_GR);
 		}
 	}
 

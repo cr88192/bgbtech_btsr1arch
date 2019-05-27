@@ -353,7 +353,10 @@ typedef u64 bjx2_addru;
 
 typedef unsigned char jx2_bool;
 
+#ifndef NLINT_T
+#define NLINT_T
 typedef signed long long nlint;
+#endif
 
 #ifdef _MSC_VER
 #ifndef default_inline
@@ -385,6 +388,8 @@ typedef signed long long nlint;
 #ifndef offsetof
 #define offsetof(Ty, Fi)	((nlint)(&(((Ty *)0)->Fi)))
 #endif
+
+typedef struct BJX2_FILE_s *BJX2_FILE;
 
 #ifdef _WIN32
 #define JX2_DBGBREAK	__debugbreak();
@@ -478,6 +483,29 @@ u64 mem_tlb_pr1_lo;
 bjx2_addr *map_addr;
 char **map_name;
 int map_n_ents;
+
+int ms0, lms1;
+u32 rtc_ms;
+
+u32 *msgbuf_rx;
+u32 *msgbuf_tx;
+u32 msgbuf_msk;
+u32 msgbuf_rxspos;
+u32 msgbuf_rxepos;
+u32 msgbuf_txspos;
+u32 msgbuf_txepos;
+
+BJX2_MemSpan *(*MemSpanForAddr)(BJX2_Context *ctx, bjx2_addr addr);
+
+int (*MemGetByte)(BJX2_Context *ctx, bjx2_addr addr0);
+int (*MemGetWord)(BJX2_Context *ctx, bjx2_addr addr0);
+s32 (*MemGetDWord)(BJX2_Context *ctx, bjx2_addr addr0);
+s64 (*MemGetQWord)(BJX2_Context *ctx, bjx2_addr addr0);
+
+int (*MemSetByte)(BJX2_Context *ctx, bjx2_addr addr0, int val);
+int (*MemSetWord)(BJX2_Context *ctx, bjx2_addr addr0, int val);
+int (*MemSetDWord)(BJX2_Context *ctx, bjx2_addr addr0, s32 val);
+int (*MemSetQWord)(BJX2_Context *ctx, bjx2_addr addr0, s64 val);
 };
 
 struct BJX2_Opcode_s {
@@ -575,7 +603,26 @@ int (*SetQWord)(BJX2_Context *ctx,
 BJX2_Opcode *BJX2_ContextAllocOpcode(BJX2_Context *ctx);
 BJX2_Trace *BJX2_ContextAllocTrace(BJX2_Context *ctx);
 BJX2_Trace *BJX2_GetTraceForAddr(BJX2_Context *ctx, bjx2_addr addr);
+int BJX2_ThrowFaultStatus(BJX2_Context *ctx, int status);
+int BJX2_FaultLeaveInterrupt(BJX2_Context *ctx);
 
 
 BJX2_MemSpan *BJX2_MemAllocSpan(BJX2_Context *ctx);
 int BJX2_MemAddSpan(BJX2_Context *ctx, BJX2_MemSpan *sp);
+
+BJX2_FILE *bjx2_fopen(char *name, char *mode);
+int bjx2_fclose(BJX2_FILE *fd);
+int bjx2_feof(BJX2_FILE *fd);
+s64 bjx2_ftell(BJX2_FILE *fd);
+int bjx2_fseek(BJX2_FILE *fd, s64 pos, int md);
+int bjx2_fread(void *buf, int n, int m, BJX2_FILE *fd);
+int bjx2_fwrite(void *buf, int n, int m, BJX2_FILE *fd);
+int bjx2_fflush(BJX2_FILE *fd);
+int bjx2_vmputc(BJX2_Context *ctx, int val);
+
+int BJX2_VmMsgRxUpdate(BJX2_Context *ctx);
+int BJX2_VmMsgTxUpdate(BJX2_Context *ctx);
+
+
+
+BJX2_MemSpan *BJX2_MemSpanForAddr(BJX2_Context *ctx, bjx2_addr addr);

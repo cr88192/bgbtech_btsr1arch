@@ -1,6 +1,6 @@
 `include "ExCsAdd64F.v"
 
-module ExMul(
+module ExMulB(
 	clock, reset,
 	valRs, valRt,
 	valRn, idUIxt);
@@ -19,6 +19,9 @@ assign 	valRn = tValRn;
 reg[31:0]		tValRs;
 reg[31:0]		tValRt;
 
+reg[31:0]		tValRsSx;
+reg[31:0]		tValRtSx;
+
 reg[31:0]	tMul1AA;
 reg[31:0]	tMul1AB;
 reg[31:0]	tMul1BA;
@@ -26,7 +29,7 @@ reg[31:0]	tMul1BB;
 // reg[31:0]	tMul1AC;
 // reg[31:0]	tMul1CA;
 reg[31:0]	tMul1C;
-reg[31:0]	ttMul1C;
+// reg[31:0]	ttMul1C;
 
 reg[15:0]	tMul2A;
 reg[15:0]	tMul2B;
@@ -46,28 +49,10 @@ reg[63:0]	tMul4;
 
 always @*
 begin
-`ifndef def_true
-	casez( { idUIxt[0], tValRs[31], tValRt[31] } )
-		3'b000: ttMul1C = UV32_00;
-		3'b001: ttMul1C = (-tValRs[31:0]);
-		3'b010: ttMul1C = (-tValRt[31:0]);
-//		3'b011: ttMul1C = (~tValRs[31:0]) + (~tValRt[31:0]) + 2;
-//		3'b011: ttMul1C = (-tValRs[31:0]) + (-tValRt[31:0]);
-		3'b011: ttMul1C = 32'h0002;		//HACK
-		3'b1zz: ttMul1C = UV32_00;
-	endcase
-`endif
+//	ttMul1C = UV32_00;
 
-	ttMul1C = UV32_00;
-
-// `ifndef def_true
-	if(idUIxt[0])
-		ttMul1C = UV32_00;
-	else
-		ttMul1C =
-			(tValRt[31]?(-tValRs[31:0]):UV32_00) +
-			(tValRs[31]?(-tValRt[31:0]):UV32_00);
-// `endif
+	tValRsSx	= tValRs[31] ? UV32_FF : UV32_00;
+	tValRtSx	= tValRt[31] ? UV32_FF : UV32_00;
 
 	tMul3A = { tMul2D, tMul2C, tMul2B, tMul2A  };
 	tMul3B = { tMul2G, tMul2F, tMul2E, UV16_00 };
@@ -80,13 +65,23 @@ begin
 
 	/* Stage 1 */
 	tMul1AA <= { UV16_00, tValRs[15: 0] } * { UV16_00, tValRt[15: 0] };
-	tMul1AB <= { UV16_00, tValRs[15: 0] } * { UV16_00, tValRt[31:16] };
-	tMul1BA <= { UV16_00, tValRs[31:16] } * { UV16_00, tValRt[15: 0] };
-	tMul1BB <= { UV16_00, tValRs[31:16] } * { UV16_00, tValRt[31:16] };
+//	tMul1AB <= { UV16_00, tValRs[15: 0] } * { UV16_00, tValRt[31:16] };
+//	tMul1BA <= { UV16_00, tValRs[31:16] } * { UV16_00, tValRt[15: 0] };
+//	tMul1BB <= { UV16_00, tValRs[31:16] } * { UV16_00, tValRt[31:16] };
+
+	tMul1AB <=
+		{ UV16_00       , tValRs[15: 0] } *
+		{ tValRtSx[15:0], tValRt[31:16] };
+	tMul1BA <=
+		{ tValRsSx[15:0], tValRs[31:16] } *
+		{ UV16_00       , tValRt[15: 0] };
+	tMul1BB <=
+		{ tValRsSx[15:0], tValRs[31:16] } *
+		{ tValRtSx[15:0], tValRt[31:16] };
 
 //	tMul1AC <= valRt[31] ? (-valRs[31:0]) : UV32_00;
 //	tMul1CA <= valRs[31] ? (-valRt[31:0]) : UV32_00;
-	tMul1C	<= ttMul1C;
+//	tMul1C	<= ttMul1C;
 	
 	/* Stage 2 */
 	tMul2A	<= tMul1AA[15:0];
@@ -95,8 +90,8 @@ begin
 	tMul2D	<= tMul1BB[31:16];
 
 	tMul2E	<= tMul1BA[15: 0];
-	tMul2F	<= tMul1BA[31:16] + tMul1C[15:0];
-	tMul2G	<= tMul1C [31:16];
+	tMul2F	<= tMul1BA[31:16];
+	tMul2G	<= UV16_00;
 	
 	/* Stage 3 */
 	tValRn	<= tMul3C;

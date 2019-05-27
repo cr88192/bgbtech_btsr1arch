@@ -119,7 +119,7 @@ typedef struct JX2R_TKFAT_SegmentInfo_s JX2R_TKFAT_SegmentInfo;
 
 struct JX2R_TKFAT_ImageInfo_s {
 byte *pImgData;		//Image Data (Ramdisk)
-FILE *fdImgData;	//Image Data (File-Backed)
+BJX2_FILE *fdImgData;	//Image Data (File-Backed)
 s64 nImgBlks;
 
 byte fsty;			//filesystem type
@@ -158,7 +158,7 @@ char *exp_ename[256];
 int exp_cnt;
 
 char *seg_base;
-//FILE *seg_fd[256];
+//BJX2_FILE *seg_fd[256];
 //u32 seg_id[256];
 JX2R_TKFAT_SegmentInfo *seg[256];
 int seg_n;
@@ -170,7 +170,7 @@ int walk_clcur;		//walk cluster current
 };
 
 struct JX2R_TKFAT_SegmentInfo_s {
-FILE *fd;
+BJX2_FILE *fd;
 u32 id;
 u32 idx[256];
 int nidx;

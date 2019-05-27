@@ -925,6 +925,9 @@ int BGBCC_JX2_CheckPadCross48(BGBCC_JX2_Context *ctx)
 //		return(0);
 	}
 	
+	if(ctx->no_ops48)
+		return(1);
+	
 	if(!ctx->use_padcross)
 		return(0);
 

@@ -4,6 +4,7 @@
 module ExCsAdd64F(valA, valB, valC);
 
 // /* verilator lint_off UNOPTFLAT */
+/* verilator lint_off UNUSED */
 
 input[63:0]		valA;
 input[63:0]		valB;
