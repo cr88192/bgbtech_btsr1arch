@@ -122,6 +122,18 @@ int BGBCC_JX2_IsSectionReadOnly(BGBCC_JX2_Context *ctx, int sec)
 	return(0);
 }
 
+int BGBCC_JX2_IsSectionGpRel(BGBCC_JX2_Context *ctx, int sec)
+{
+	if(!ctx->is_pbo)
+		return(0);
+
+	if(sec==BGBCC_SH_CSEG_DATA)
+		return(1);
+	if(sec==BGBCC_SH_CSEG_BSS)
+		return(1);
+	return(0);
+}
+
 int BGBCC_JX2_EmitCheckExpand(BGBCC_JX2_Context *ctx, int pad)
 {
 	byte *buf;

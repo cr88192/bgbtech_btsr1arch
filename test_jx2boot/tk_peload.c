@@ -1,3 +1,5 @@
+// extern u64 __arch_gbr;
+
 byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz)
 {
 	byte *cs, *cse, *cs1, *cs1e, *ct1;
@@ -59,12 +61,12 @@ byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz)
 	return(ct);
 }
 
-int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr)
+int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 {
 	byte tbuf[1024];
 	byte *imgptr, *ct, *cte;
 	u64 imgbase;
-	u32 imgsz, startrva;
+	u32 imgsz, startrva, gbr_rva;
 	byte is64, is_pel4;
 	int sig_mz, sig_pe, mach, mmagic;
 	int ofs_pe;
@@ -133,15 +135,18 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr)
 		startrva=*(u32 *)(tbuf+ofs_pe+0x28);
 		imgbase=*(u64 *)(tbuf+ofs_pe+0x30);
 		imgsz=*(u32 *)(tbuf+ofs_pe+0x50);
+		gbr_rva=*(u32 *)(tbuf+ofs_pe+0xC8);
 	}else
 	{
 //		puts("TKPE: PE32\n");
 		startrva=*(u32 *)(tbuf+ofs_pe+0x28);
 		imgbase=*(u32 *)(tbuf+ofs_pe+0x34);
 		imgsz=*(u32 *)(tbuf+ofs_pe+0x50);
+		gbr_rva=*(u32 *)(tbuf+ofs_pe+0xB8);
 	}
 	
-	printf("TKPE: Base=%08X Sz=%d BootRVA=%08X\n", imgbase, imgsz, startrva);
+	printf("TKPE: Base=%08X Sz=%d BootRVA=%08X GbrRVA=%08X\n",
+		imgbase, imgsz, startrva, gbr_rva);
 	
 	imgptr=(byte *)imgbase;
 	
@@ -195,5 +200,6 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr)
 	}
 	
 	*rbootptr=imgptr+startrva;
+	*rbootgbr=imgptr+gbr_rva;
 #endif
 }

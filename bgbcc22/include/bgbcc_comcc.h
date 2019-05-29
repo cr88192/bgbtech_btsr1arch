@@ -118,6 +118,7 @@ byte need_n20dat;	//image exceeds 20-bit BSR
 byte need_n24dat;	//image exceeds 24-bit BSR
 
 byte is_pic;		//is PIC.
+byte is_pbo;		//is using PBO addressing
 byte use_fpr;		//uses floating point registers
 byte use_dbr;		//uses fp double registers
 byte is_vararg;		//function is varargs
@@ -284,6 +285,7 @@ s32 cur_srmode;		//current SR mode
 byte dfl_dq;
 
 s64 image_base;		//image base address
+int gbr_rva;		//GBR base address
 
 int ofs_s16tab[256];
 int ofs_s32tab[256];

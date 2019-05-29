@@ -758,3 +758,86 @@ void BJX2_Op_MOVUL_LdReg2Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=(u32)BJX2_MemGetDWord(ctx,
 		ctx->regs[op->rm]+(ctx->regs[op->ro]*4));
 }
+
+
+
+void BJX2_Op_MOVB_RegStReg2B(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->trapc=op->pc;
+	BJX2_MemSetByte(ctx,
+		ctx->regs[op->rn]+(ctx->regs[op->ro]*1),
+		ctx->regs[op->rm]);
+}
+
+void BJX2_Op_MOVB_LdReg2RegB(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->trapc=op->pc;
+	ctx->regs[op->rn]=(sbyte)BJX2_MemGetByte(ctx,
+		ctx->regs[op->rm]+(ctx->regs[op->ro]*1));
+}
+
+void BJX2_Op_MOVW_RegStReg2B(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->trapc=op->pc;
+	BJX2_MemSetWord(ctx,
+		ctx->regs[op->rn]+(ctx->regs[op->ro]*1),
+		ctx->regs[op->rm]);
+}
+
+void BJX2_Op_MOVW_LdReg2RegB(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->trapc=op->pc;
+	ctx->regs[op->rn]=(s16)BJX2_MemGetWord(ctx,
+		ctx->regs[op->rm]+(ctx->regs[op->ro]*1));
+}
+
+void BJX2_Op_MOVL_RegStReg2B(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->trapc=op->pc;
+	BJX2_MemSetDWord(ctx,
+		ctx->regs[op->rn]+(ctx->regs[op->ro]*1),
+		ctx->regs[op->rm]);
+}
+
+void BJX2_Op_MOVL_LdReg2RegB(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->trapc=op->pc;
+	ctx->regs[op->rn]=(s32)BJX2_MemGetDWord(ctx,
+		ctx->regs[op->rm]+(ctx->regs[op->ro]*1));
+}
+
+void BJX2_Op_MOVQ_RegStReg2B(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->trapc=op->pc;
+	BJX2_MemSetQWord(ctx,
+		ctx->regs[op->rn]+(ctx->regs[op->ro]*1),
+		ctx->regs[op->rm]);
+}
+
+void BJX2_Op_MOVQ_LdReg2RegB(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->trapc=op->pc;
+	ctx->regs[op->rn]=BJX2_MemGetQWord(ctx,
+		ctx->regs[op->rm]+(ctx->regs[op->ro]*1));
+}
+
+void BJX2_Op_MOVUB_LdReg2RegB(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->trapc=op->pc;
+	ctx->regs[op->rn]=(byte)BJX2_MemGetByte(ctx,
+		ctx->regs[op->rm]+(ctx->regs[op->ro]*1));
+}
+
+void BJX2_Op_MOVUW_LdReg2RegB(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->trapc=op->pc;
+	ctx->regs[op->rn]=(u16)BJX2_MemGetWord(ctx,
+		ctx->regs[op->rm]+(ctx->regs[op->ro]*1));
+}
+
+void BJX2_Op_MOVUL_LdReg2RegB(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->trapc=op->pc;
+	ctx->regs[op->rn]=(u32)BJX2_MemGetDWord(ctx,
+		ctx->regs[op->rm]+(ctx->regs[op->ro]*1));
+}

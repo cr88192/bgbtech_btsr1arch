@@ -422,6 +422,14 @@ int BGBCC_SHXC_CoffSectionFlags(
 		!strcmp(name, ".tls") ||
 		!strcmp(name, ".sdata"))
 	{
+		if(sctx->is_pbo)
+		{
+			return(BGBCC_COFF_SCNT_IDATA|
+				BGBCC_COFF_SCNT_READ|
+				BGBCC_COFF_SCNT_WRITE|
+				BGBCC_COFF_SCNT_GPREL);
+		}
+	
 		return(BGBCC_COFF_SCNT_IDATA|
 			BGBCC_COFF_SCNT_READ|
 			BGBCC_COFF_SCNT_WRITE);
@@ -429,6 +437,14 @@ int BGBCC_SHXC_CoffSectionFlags(
 	if(!strcmp(name, ".bss") ||
 		!strcmp(name, ".sbss"))
 	{
+		if(sctx->is_pbo)
+		{
+			return(BGBCC_COFF_SCNT_UDATA|
+				BGBCC_COFF_SCNT_READ|
+				BGBCC_COFF_SCNT_WRITE|
+				BGBCC_COFF_SCNT_GPREL);
+		}
+	
 		return(BGBCC_COFF_SCNT_UDATA|
 			BGBCC_COFF_SCNT_READ|
 			BGBCC_COFF_SCNT_WRITE);
@@ -448,6 +464,14 @@ int BGBCC_SHXC_CoffSectionFlags(
 		return(BGBCC_COFF_SCNT_IDATA|
 			BGBCC_COFF_SCNT_READ|
 			BGBCC_COFF_SCNT_DISCARD);
+	}
+
+	if(sctx->is_pbo)
+	{
+		return(BGBCC_COFF_SCNT_IDATA|
+			BGBCC_COFF_SCNT_READ|
+			BGBCC_COFF_SCNT_WRITE|
+			BGBCC_COFF_SCNT_GPREL);
 	}
 
 	return(BGBCC_COFF_SCNT_IDATA|
@@ -648,6 +672,12 @@ ccxl_status BGBCC_SHXC_FlattenImagePECOFF(BGBCC_TransState *ctx,
 
 		if(i==BGBCC_SH_CSEG_BSS)
 			continue;
+
+		s0=sctx->sec_name[i];
+		j=BGBCC_SHXC_CoffSectionFlags(ctx, sctx, s0);
+		if(j&BGBCC_COFF_SCNT_GPREL)
+			continue;
+
 		j=sctx->sec_pos[i]-sctx->sec_buf[i];
 		sctx->sec_rva[i]=k;
 		sctx->sec_lva[i]=img_base+k;
@@ -662,6 +692,34 @@ ccxl_status BGBCC_SHXC_FlattenImagePECOFF(BGBCC_TransState *ctx,
 			sctx->sec_lsz[i]);
 
 	}
+	
+	if(sctx->is_pbo)
+	{
+		for(i=0; i<sctx->nsec; i++)
+		{
+			if(i==BGBCC_SH_CSEG_BSS)
+				continue;
+
+			s0=sctx->sec_name[i];
+			j=BGBCC_SHXC_CoffSectionFlags(ctx, sctx, s0);
+			if(!(j&BGBCC_COFF_SCNT_GPREL))
+				continue;
+
+			j=sctx->sec_pos[i]-sctx->sec_buf[i];
+			sctx->sec_rva[i]=k;
+			sctx->sec_lva[i]=img_base+k;
+			sctx->sec_lsz[i]=j;
+			memcpy(obuf+k, sctx->sec_buf[i], j);
+			k+=j;
+			k=(k+63)&(~63);
+
+			s0=sctx->sec_name[i];
+			printf("%d: %s %08X..%08X %d\n", i, s0,
+				sctx->sec_lva[i], sctx->sec_lva[i]+sctx->sec_lsz[i],
+				sctx->sec_lsz[i]);
+		}
+	}
+	
 	ofs_iend=k;
 
 	i=BGBCC_SH_CSEG_BSS;

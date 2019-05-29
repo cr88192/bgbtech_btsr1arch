@@ -1,3 +1,5 @@
+extern u64 __arch_gbr;
+
 void sanity_a()
 {
 	int i, j, k;
@@ -50,6 +52,7 @@ void __start()
 	char tbuf[256];
 	char **a;
 	TK_FILE *fd;
+	u64 bootgbr;
 	int (*bootptr)();
 	int ci;
 
@@ -72,11 +75,14 @@ void __start()
 	
 	if(fd)
 	{
-		TKPE_LoadStaticPE(fd, &bootptr);
-		printf("Boot Pointer %p\n", bootptr);
+		TKPE_LoadStaticPE(fd, &bootptr, &bootgbr);
+		printf("Boot Pointer %p, GBR=%p\n", bootptr, (void *)bootgbr);
 		
 		if(bootptr)
+		{
+			__arch_gbr=bootgbr;
 			bootptr();
+		}
 	}
 
 	puts("Boot Failed\n");

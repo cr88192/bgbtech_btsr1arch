@@ -31,11 +31,15 @@ Notation:
 * q: E bits (2R), but Q=0, I=1, thus 0nm1
 * Q: E bits (2R), but Q=1, I=1, thus 1nm1
 
+Single register forms in 30zz..37zz will be mirrored in 38zz..3Fzz, but will encode on R16..R31 rather than R0..R15.
+
+The instructions in the F0zz..F3zz range will repeat in F4zz..F7zz (Parallel), E0zz..E3zz (Execute if True), and E4zz..E7zz (Execute if False) ranges.
+
 
 === ADC ===
 
 * 12nm       ADC		Rm, Rn
-* F0e2_19nm  ADC		Rm, Rn
+* F0nm_1g29  ADC		Rm, Rn
 
 Add with Carry, Rn=Rn+Rm+SR.T, with SR.T being updated to reflect the carry-out bit.
 
@@ -76,8 +80,8 @@ This form sign or zero extends the 32-bit result to 64 bits.
 
 * 15nm            AND		Rm, Rn
 * 5Anm            AND		Rm, DLR, Rn
-* F0nm1_go5       AND		Rm, Ro, Rn
-* F0nm1_e59       AND		Rm, Rn
+* F0nm_1go5       AND		Rm, Ro, Rn
+* F0nm_1e59       AND		Rm, Rn
 * F2nm_5gjj       AND		Rm, #imm9u, Rn
 * FC0G_15nm_dddd  AND		Rm, imm17s, Rn
 

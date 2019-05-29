@@ -86,6 +86,8 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	shctx->is_addr_x32=0;
 	shctx->use_padcross=0;
 	shctx->no_ops48=0;
+
+	shctx->is_pbo=0;
 	
 	shctx->optmode=ctx->optmode;
 	
@@ -119,6 +121,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 
 		shctx->no_fpu=1;
 		shctx->fpu_soft=1;
+		shctx->is_pbo=1;
 	}
 
 	BGBPP_AddStaticDefine(NULL, "__jx2__", "");
@@ -2946,7 +2949,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 	BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx,
 	byte *imgbase)
 {
-	byte *ctl, *ctr;
+	byte *ctl, *ctr, *gbr_base;
 	char *s0;
 	int en;
 	s64 val, var;
@@ -2956,6 +2959,8 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 
 	en=(sctx->is_le==0);
 	sctx->stat_ovlbl8=0;
+	
+	gbr_base=imgbase+sctx->gbr_rva;
 
 	for(i=0; i<sctx->nrlc; i++)
 	{
@@ -3210,6 +3215,38 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			{
 				if((((s32)(d1<<8))>>8)!=d1)
 					__debugbreak();
+				w0=(w0&0xFF00)|((d1>>16)&0x00FF);
+			}
+			w1=d1&0xFFFF;
+			bgbcc_jx2cc_setu16en(ctr+0, en, w0);
+			bgbcc_jx2cc_setu16en(ctr+2, en, w1);
+			break;
+
+		case BGBCC_SH_RLC_PBO24_BJX:
+			w0=bgbcc_getu16en(ctr+0, en);
+			w1=bgbcc_getu16en(ctr+2, en);
+			b=((w0&255)<<16)|(w1&65535);
+			b1=((s32)(b<<8))>>8;
+			d1=b1+(ctl-gbr_base);
+
+			if(d1<0)
+				{ BGBCC_DBGBREAK }
+			
+
+//			if(b1!=0)
+//				{ BGBCC_DBGBREAK }
+
+			if((w0&0xFE00)==0xFA00)
+			{
+				if((((s32)(d1<<7))>>7)!=d1)
+					{ BGBCC_DBGBREAK }
+				w0=(w0&0xFE00)|((d1>>16)&0x01FF);
+			}else
+			{
+				BGBCC_DBGBREAK
+
+				if((((s32)(d1<<8))>>8)!=d1)
+					{ BGBCC_DBGBREAK }
 				w0=(w0&0xFF00)|((d1>>16)&0x00FF);
 			}
 			w1=d1&0xFFFF;
@@ -3620,7 +3657,7 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	int shufgbl;
 	u64 h;
 	u32 addr;
-	int i, j, k;
+	int i, j, k, l, n;
 
 	sctx=ctx->uctx;
 	
@@ -3635,12 +3672,14 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	if(imgfmt==BGBCC_IMGFMT_ASM)
 	{
 		sctx->do_asm=1;
+//		sctx->is_pbo=0;
 	}
 
 
 	sctx->is_rom=0;
 	if(imgfmt==BGBCC_IMGFMT_ROM)
 	{
+		sctx->is_pbo=0;		//PBO is N/A for ROM images.
 		sctx->is_rom=1;
 		sctx->lbl_rom_data_strt=
 			BGBCC_JX2_GetNamedLabel(sctx, "__rom_data_start");
@@ -3666,6 +3705,26 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 
 	BGBCC_JX2_SetSectionName(sctx, ".data");
 	BGBCC_JX2_EmitNamedLabel(sctx, "__data_start");
+
+	if(sctx->is_pbo)
+	{
+		/*
+		 * Emit pointer to self at the start of ".data"
+		 * This self-pointer needs to be at the start of the PBO data area.
+		 */
+	
+		BGBCC_JX2_EmitNamedLabel(sctx, "__global_ptr");
+		j=BGBCC_JX2_GetNamedLabel(sctx, "__global_ptr");
+		BGBCC_JX2_EmitQWordAbs64(sctx, j);
+//		BGBCC_JX2_EmitQWord(sctx, 0);
+
+		/* Reserve space for pointers to other images. */
+		for(i=0; i<127; i++)
+		{
+			BGBCC_JX2_EmitQWord(sctx, 0);
+		}
+
+	}
 
 	BGBCC_JX2_SetSectionName(sctx, ".bss");
 	BGBCC_JX2_EmitNamedLabel(sctx, "__bss_start");
@@ -3945,6 +4004,40 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	sctx->need_n20dat=(sctx->simimgsz>=(1048576-65536));
 	sctx->need_n24dat=(sctx->simimgsz>=(16777216-262144));
 
+#if 0
+#if 1
+	for(i=0; i<ctx->n_reg_globals; i++)
+	{
+		if(i<shufgbl)
+			j=shufarr[i];
+		else
+			j=i;
+		obj=ctx->reg_globals[j];
+
+//		obj=ctx->reg_globals[i];
+		if(!obj)
+			continue;
+
+		if(obj->regtype==CCXL_LITID_GLOBALVAR)
+		{
+			BGBCC_JX2C_BuildGlobal(ctx, obj);
+			continue;
+		}
+
+		if(obj->regtype==CCXL_LITID_STATICVAR)
+		{
+			BGBCC_JX2C_BuildGlobal(ctx, obj);
+			continue;
+		}
+
+		if((obj->regtype==CCXL_LITID_STRUCT) ||
+			(obj->regtype==CCXL_LITID_CLASS))
+		{
+			BGBCC_JX2C_BuildStruct(ctx, obj);
+			continue;
+		}
+	}
+#endif
 
 	for(i=0; i<ctx->n_reg_globals; i++)
 	{
@@ -3964,6 +4057,13 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 			continue;
 		}
 
+		if(obj->regtype==CCXL_LITID_ASMBLOB)
+		{
+			BGBCC_JX2C_BuildAsmBlob(ctx, obj);
+			continue;
+		}
+
+#if 0
 		if(obj->regtype==CCXL_LITID_GLOBALVAR)
 		{
 			BGBCC_JX2C_BuildGlobal(ctx, obj);
@@ -3976,19 +4076,80 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 			continue;
 		}
 
-		if(obj->regtype==CCXL_LITID_ASMBLOB)
-		{
-			BGBCC_JX2C_BuildAsmBlob(ctx, obj);
-			continue;
-		}
-
 		if((obj->regtype==CCXL_LITID_STRUCT) ||
 			(obj->regtype==CCXL_LITID_CLASS))
 		{
 			BGBCC_JX2C_BuildStruct(ctx, obj);
 			continue;
 		}
+#endif
 	}
+#endif
+
+
+#if 1
+	n=0;
+	while(n<ctx->n_reg_globals)
+	{
+		l=ctx->n_reg_globals;
+		for(i=n; i<l; i++)
+		{
+			if(i<shufgbl)
+				j=shufarr[i];
+			else
+				j=i;
+			obj=ctx->reg_globals[j];
+
+	//		obj=ctx->reg_globals[i];
+			if(!obj)
+				continue;
+
+			if(obj->regtype==CCXL_LITID_GLOBALVAR)
+			{
+				BGBCC_JX2C_BuildGlobal(ctx, obj);
+				continue;
+			}
+
+			if(obj->regtype==CCXL_LITID_STATICVAR)
+			{
+				BGBCC_JX2C_BuildGlobal(ctx, obj);
+				continue;
+			}
+
+			if((obj->regtype==CCXL_LITID_STRUCT) ||
+				(obj->regtype==CCXL_LITID_CLASS))
+			{
+				BGBCC_JX2C_BuildStruct(ctx, obj);
+				continue;
+			}
+		}
+
+		for(i=n; i<l; i++)
+		{
+			if(i<shufgbl)
+				j=shufarr[i];
+			else
+				j=i;
+			obj=ctx->reg_globals[j];
+
+			if(!obj)
+				continue;
+
+			if((obj->regtype==CCXL_LITID_FUNCTION) && (obj->vtr))
+			{
+				BGBCC_JX2C_BuildFunction(ctx, obj);
+				continue;
+			}
+			if(obj->regtype==CCXL_LITID_ASMBLOB)
+			{
+				BGBCC_JX2C_BuildAsmBlob(ctx, obj);
+				continue;
+			}
+		}
+		
+		n=l;
+	}
+#endif
 	
 	BGBCC_JX2C_BuildPrestartInit(ctx);
 

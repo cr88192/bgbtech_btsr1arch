@@ -101,6 +101,10 @@ General:
  MOV.Q (TBR, DLR), R2
  MOV R2, GBR
 
+Change:
+* PBO reloads GBR by loading a pointer from an offset relative to GBR.
+* There will be a table shared between all data regions in the process.
+* Each binary will have its offset fixed up to the appropriate index.
 
 
 === Thread Local Storage ===

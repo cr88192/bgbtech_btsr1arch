@@ -2826,6 +2826,10 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 	if(sctx->has_bjx1egpr && sctx->use_egpr)
 		k-=8*4;		//saved R24..R31
 
+//	if(sctx->is_pbo)
+	if(sctx->is_pbo && (obj->regflags&BGBCC_REGFL_ALIASPTR))
+		k-=4;		//saved GBR
+
 	if(obj->flagsint&BGBCC_TYFL_INTERRUPT)
 	{
 		k-=8*4;		//saved R0..R7
@@ -3399,6 +3403,9 @@ int BGBCC_JX2C_CalcFrameEpiKey(BGBCC_TransState *ctx,
 		epik|=0x01000000;
 	if(!(sctx->is_leaf&1))
 		epik|=0x02000000;
+
+	if((obj->regflags&BGBCC_REGFL_ALIASPTR) && sctx->is_pbo)
+		epik|=0x04000000;
 		
 	uli=epik;
 	uli=(uli+1)*65521;
@@ -3710,6 +3717,20 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 		k+=sctx->is_addr64?2:1;
 #endif
 
+//		if(sctx->is_pbo)
+		if(sctx->is_pbo && (obj->regflags&BGBCC_REGFL_ALIASPTR))
+		{
+			BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_PUSH, BGBCC_SH_REG_GBR);
+			k+=sctx->is_addr64?2:1;
+
+			j=BGBCC_JX2_GetNamedLabel(sctx, "__global_ptr");
+			BGBCC_JX2_EmitLoadRegLabelVarRel24(sctx,
+				BGBCC_SH_NMID_MOVQ,
+				BGBCC_SH_REG_R1, j);
+			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_MOV,
+				BGBCC_SH_REG_R1, BGBCC_SH_REG_GBR);
+		}
+
 //		if((j&3)==3)
 		if(0)
 //		if((epij&3)>1)
@@ -3761,6 +3782,20 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 			k+=sctx->is_addr64?2:1;
 		}
 #endif
+
+//		if(sctx->is_pbo)
+		if(sctx->is_pbo && (obj->regflags&BGBCC_REGFL_ALIASPTR))
+		{
+			BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_PUSH, BGBCC_SH_REG_GBR);
+			k+=sctx->is_addr64?2:1;
+
+			j=BGBCC_JX2_GetNamedLabel(sctx, "__global_ptr");
+			BGBCC_JX2_EmitLoadRegLabelVarRel24(sctx,
+				BGBCC_SH_NMID_MOVQ,
+				BGBCC_SH_REG_R1, j);
+			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_MOV,
+				BGBCC_SH_REG_R1, BGBCC_SH_REG_GBR);
+		}
 
 		if(obj->flagsint&BGBCC_TYFL_INTERRUPT)
 		{
@@ -4782,11 +4817,17 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 		else
 			k+=4;
 	}
-	
+
+//	if(sctx->is_pbo)
+	if(sctx->is_pbo && (obj->regflags&BGBCC_REGFL_ALIASPTR))
+	{
+		BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_POP, BGBCC_SH_REG_GBR);
+		k+=sctx->is_addr64?8:4;
+	}
+
 	if((k!=sctx->frm_size) && !sctx->is_simpass)
 		{ BGBCC_DBGBREAK; }
 #endif
-
 
 	if(obj->flagsint&BGBCC_TYFL_INTERRUPT)
 	{

@@ -150,8 +150,8 @@ struct PeMainHeader
     DWORD szDebugData;                  //00AC:
     DWORD rvaArchData;                  //00B0: Arch Data
     DWORD szArchData;                   //00B4:
-    DWORD rvaGlobalPtr;                 //00B8: Global Pointer (BJX2: PBO)
-    DWORD szGlobalPtr;                  //00BC:
+    DWORD rvaGlobalPtr;                 //00B8: Global Pointer Base (BJX2: PBO)
+    DWORD szGlobalPtr;                  //00BC: Size of PBO Data Sections
     DWORD rvaTlsTable;                  //00C0: TLS Table
     DWORD szTlsTable;                   //00C4:
     DWORD rvaLoadConfigTable;           //00C8: ?
@@ -354,9 +354,9 @@ The relocations are given as 16 bit numbers:
 ** 5: MIPS-specific fixup.
 *** 5: BJX2(DIR24): Fixup 24-bit address via instruction.
 ** 6: Reserved
-** 7: Reserved
+** 7: BJX2: PBO/GBR DIR32
 ** 8: BJX2: PBO/GBR DIR24
-*** Initial Contents: Variable address relative to the ".data" section.
+*** Initial Contents: Variable address relative to the PBO base address.
 ** 9: MIPS-specific fixup.
 ** 9: BJX2: TLS/TBR DIR24
 *** Initial: TLS Index, Resolved to TBR-relative address of TLS Variable
@@ -370,7 +370,8 @@ The relocations are given as 16 bit numbers:
 TLS Index:
 * This is a pointer-sized scaled index indicating a given TLS Variable.
 * The index 0 will be special and correspond to the PBO Base Offset Index.
-* This will be replaced by the TBR relative offset of the corresponding variable.
+** This case will be interpreted as being relative to GBR, not TBR.
+* This will be replaced by the relative offset of the corresponding variable.
 
 
 === Exports Table ===

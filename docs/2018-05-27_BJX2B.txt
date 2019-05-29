@@ -7,8 +7,75 @@ BJX2
 ** Little-Endian, Byte Addressed
 ** Instructions as a sequence of 16-bit words.
 
+
+=== Profiles ===
+
 Multiple subset profiles will exist, and some features will be optional.
-* The BJX2 Lite profile will leave MMU and FPU as optional.
+
+Several ISA Profiles may exist:
+* A: Full, Full Features, 48-bit address space.
+* B: Fix32 with 48-bit address space.
+* C: Basic, Partial Features, 32-bit address space.
+* D: Fix32 with 32-bit address space.
+* E: Lite
+
+The compiler is not to use features which are absent in a given profile, and will not assume the presence of features marked as optional.
+
+
+=== BJX2 Full Profile ===
+
+BJX2 Full Profile
+* Will have MMU and FPU.
+* Will use a 48 bit virtual address space.
+* Will use a 32 or 48 bit physical address space.
+* Will support 16, 32, and 48 bit instruction encodings.
+* Will support GSV and JCMP.
+* Support for WEX is optional.
+
+ABI: HardFP, Base-Relocatable.
+
+
+==== BJX2 Basic Profile ====
+
+BJX2 Basic Profile
+* Will have MMU and FPU.
+* Will use a 32-bit address space (both virtual and physical).
+* Will support 16, 32, and 48 bit instruction encodings.
+* Support for GSV and JCMP is optional.
+* Will not support WEX.
+
+ABI: HardFP, Base-Relocatable.
+
+
+==== BJX2 Lite Profile ====
+
+BJX2 Lite Profile
+* Will leave MMU and FPU as optional.
+* Will use a 32-bit (physical) address space.
+* Will not support GSV, JCMP, or most other optional features.
+* Will support 16 and 32 bit instruction encodings.
+* Will not support 48 bit instruction encodings.
+* Will not support WEX.
+
+ABI: SoftFP
+* Base-Relocatable for boot image
+* PBO, Application binaries and libraries.
+
+
+==== BJX2 Fix32 Profile ====
+
+BJX2 Fix32
+* Will be similar to Lite.
+* Will only support 32-bit instruction encodings.
+** The 0R and 1R forms will use 32-bit encodings.
+** Other encoding ranges will be invalid.
+* Will support either a 32 or 48 bit address space.
+* Support for FPU is optional.
+* Support for MMU will be optional for 32-bit, required for 48-bit.
+
+ABI: SoftFP
+* Base-Relocatable for boot image
+* PBO, Application binaries and libraries.
 
 
 === Registers ===
@@ -556,17 +623,6 @@ Instruction Space:
 ** ECxx .. EFxx: 48-bit Instruction Forms (Predicated)
 
 Except where noted otherwise, the 16-bit instruction forms are limited to the first 16 registers.
-
-Several ISA Subsets may exist:
-* A: Full Features
-* B: Only uses 32-bit instruction forms (Fixed Length).
-* C: Limited to a 32-bit address space.
-** This mode will still use 64-bit registers.
-** This will nominally run code within a 2GB address space.
-* D: Uses a 32-bit address space with fixed-length instructions.
-* E: Only uses 16 and 32-bit instruction forms.
-** Limited to a 32-bit address space.
-** Excludes the use of FPU or MMU.
 
 
 === 16-bit Instruction Forms ===

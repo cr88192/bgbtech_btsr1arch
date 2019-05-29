@@ -756,6 +756,13 @@
 #define BGBCC_SH_RLC_RELW24_BJX		0x13	//Relative 24 bit (WORD, BJX1)
 											//OOxx_xxxx
 
+#define BGBCC_SH_RLC_PBO24_BJX		0x14	//PBO 24 bit (BYTE, BJX2)
+											//OOxx_xxxx
+#define BGBCC_SH_RLC_PBO32_BJX		0x15	//PBO 24 bit (BYTE, BJX2)
+											//OOxx_xxxx_OOxx
+#define BGBCC_SH_RLC_TBR24_BJX		0x16	//TBR 24 bit (BYTE, BJX2)
+											//OOxx_xxxx
+
 #define BGBCC_SH_RLC_RELW16C_BSR	0x18	//Relative 16 bit (BYTE, BSR1)
 											//OOxx_OOxx
 #define BGBCC_SH_RLC_RELW16_BSR		0x19	//Relative 16 bit (WORD, BSR1)
@@ -793,6 +800,7 @@
 											//Oxxx_OOxx_OOOx
 #define BGBCC_SH_RLC_RELW32A_BSR	0x2A	//Relative 24 bit (BYTE, BSR1)
 											//Oxxx_OOxx_OOxx_OOOx
+
 
 // #define BGBCC_SH_RLC_ABSW48A_BSR	0x20	//Absolute BYTE
 // #define BGBCC_SH_RLC_ABSW64A_BSR	0x21	//Absolute BYTE

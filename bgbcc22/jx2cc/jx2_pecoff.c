@@ -444,6 +444,14 @@ int BGBCC_JX2C_CoffSectionFlags(
 		!strcmp(name, ".tls") ||
 		!strcmp(name, ".sdata"))
 	{
+		if(sctx->is_pbo)
+		{
+			return(BGBCC_COFF_SCNT_IDATA|
+				BGBCC_COFF_SCNT_READ|
+				BGBCC_COFF_SCNT_WRITE|
+				BGBCC_COFF_SCNT_GPREL);
+		}
+	
 		return(BGBCC_COFF_SCNT_IDATA|
 			BGBCC_COFF_SCNT_READ|
 			BGBCC_COFF_SCNT_WRITE);
@@ -451,6 +459,14 @@ int BGBCC_JX2C_CoffSectionFlags(
 	if(!strcmp(name, ".bss") ||
 		!strcmp(name, ".sbss"))
 	{
+		if(sctx->is_pbo)
+		{
+			return(BGBCC_COFF_SCNT_UDATA|
+				BGBCC_COFF_SCNT_READ|
+				BGBCC_COFF_SCNT_WRITE|
+				BGBCC_COFF_SCNT_GPREL);
+		}
+	
 		return(BGBCC_COFF_SCNT_UDATA|
 			BGBCC_COFF_SCNT_READ|
 			BGBCC_COFF_SCNT_WRITE);
@@ -1176,10 +1192,10 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 	int en, ofs, ofs_sdat, ofs_iend, ofs_mend;
 	int of_phdr, ne_phdr;
 	int of_shdr, ne_shdr;
-	int lb_strt, va_strt;
+	int lb_strt, va_strt, lbl_gptr;
 	int img_base, img_base_hi;
 	int nm, fl, lva, rva, lsz, sn_strs, imty;
-	int lpg, szrlc, ofsrlc, nrlce, mach;
+	int lpg, szrlc, ofsrlc, nrlce, mach, lbl;
 	int ofsimp, szimp, ofsexp, szexp;
 	int i, j, k;
 
@@ -1206,6 +1222,8 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 	{
 		if(i==BGBCC_SH_CSEG_BSS)
 			continue;
+		if(BGBCC_JX2_IsSectionGpRel(sctx, i))
+			continue;
 		j=sctx->sec_pos[i]-sctx->sec_buf[i];
 		sctx->sec_rva[i]=k;
 		sctx->sec_lva[i]=img_base+k;
@@ -1213,18 +1231,49 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		k+=j;
 		k=(k+63)&(~63);
 	}
+	
+	sctx->gbr_rva=k;
+	
+	if(sctx->is_pbo)
+	{
+		for(i=0; i<sctx->nsec; i++)
+		{
+			if(i==BGBCC_SH_CSEG_BSS)
+				continue;
+			if(!BGBCC_JX2_IsSectionGpRel(sctx, i))
+				continue;
+			j=sctx->sec_pos[i]-sctx->sec_buf[i];
+			sctx->sec_rva[i]=k;
+			sctx->sec_lva[i]=img_base+k;
+			sctx->sec_lsz[i]=j;
+			k+=j;
+			k=(k+63)&(~63);
+		}
+	}
+
+	i=BGBCC_SH_CSEG_BSS;
+	j=sctx->sec_pos[i]-sctx->sec_buf[i];
+	sctx->sec_rva[i]=k;
+	sctx->sec_lva[i]=img_base+k;
+	sctx->sec_lsz[i]=j;
+
+	lbl_gptr=BGBCC_JX2_LookupNamedLabel(sctx, "__global_ptr");
 
 	lpg=-1; szrlc=0; nrlce=0;
 	for(i=0; i<sctx->nrlc; i++)
 	{
 		if(	(sctx->rlc_ty[i]!=BGBCC_SH_RLC_ABS16) &&
 			(sctx->rlc_ty[i]!=BGBCC_SH_RLC_ABS32) &&
-			(sctx->rlc_ty[i]!=BGBCC_SH_RLC_ABS64))
+			(sctx->rlc_ty[i]!=BGBCC_SH_RLC_ABS64) &&
+			(sctx->rlc_ty[i]!=BGBCC_SH_RLC_PBO24_BJX) &&
+			(sctx->rlc_ty[i]!=BGBCC_SH_RLC_PBO32_BJX) &&
+			(sctx->rlc_ty[i]!=BGBCC_SH_RLC_TBR24_BJX))
 				continue;
 			
 		j=sctx->rlc_sec[i];
 		rva=sctx->sec_rva[j]+
 			sctx->rlc_ofs[i];
+		lbl=sctx->rlc_id[i];
 
 		lva=rva&0x0FFFFFFF;
 		if(sctx->rlc_ty[i]==BGBCC_SH_RLC_ABS64)
@@ -1232,8 +1281,32 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		if(sctx->rlc_ty[i]==BGBCC_SH_RLC_ABS16)
 			lva|=0x20000000;
 
+		if(sctx->rlc_ty[i]==BGBCC_SH_RLC_PBO24_BJX)
+		{
+			if(lbl==lbl_gptr)
+			{
+//				lva|=0x30000000;
+				lva|=0x60000000;
+			}else
+			{
+				lva|=0x40000000;
+				continue;
+			}
+//			if(rva!=sctx->gbr_rva)
+//				continue;
+		}
+		if(sctx->rlc_ty[i]==BGBCC_SH_RLC_PBO32_BJX)
+		{
+			lva|=0x50000000;
+			if(rva!=sctx->gbr_rva)
+				continue;
+		}
+		if(sctx->rlc_ty[i]==BGBCC_SH_RLC_TBR24_BJX)
+			lva|=0x60000000;
+
 		rlctab[nrlce++]=lva;
 
+#if 0
 		if((rva>>12)!=lpg)
 		{
 			szrlc=(szrlc+3)&(~3);
@@ -1241,6 +1314,8 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 			lpg=rva>>12;
 		}
 		szrlc+=2;
+#endif
+
 	}
 	
 #if 0
@@ -1257,6 +1332,23 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 #endif
 
 	bgbcc_jx2c_qrsort(rlctab, nrlce, 0);
+
+#if 1
+	lpg=-1; szrlc=0;
+	for(i=0; i<nrlce; i++)
+	{
+		lva=rlctab[i];
+		rva=lva&0x0FFFFFFF;
+
+		if((rva>>12)!=lpg)
+		{
+			szrlc=(szrlc+3)&(~3);
+			szrlc+=8;
+			lpg=rva>>12;
+		}
+		szrlc+=2;
+	}
+#endif
 
 	BGBCC_JX2_SetSectionName(sctx, ".reloc");
 	BGBCC_JX2_EmitBAlign(sctx, 4);
@@ -1326,6 +1418,14 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 
 		if(i==BGBCC_SH_CSEG_BSS)
 			continue;
+
+//		s0=sctx->sec_name[i];
+//		j=BGBCC_SHXC_CoffSectionFlags(ctx, sctx, s0);
+//		if(j&BGBCC_COFF_SCNT_GPREL)
+//			continue;
+		if(BGBCC_JX2_IsSectionGpRel(sctx, i))
+			continue;
+
 		j=sctx->sec_pos[i]-sctx->sec_buf[i];
 		sctx->sec_rva[i]=k;
 		sctx->sec_lva[i]=img_base+k;
@@ -1340,6 +1440,39 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 			sctx->sec_lsz[i]);
 
 	}
+
+	sctx->gbr_rva=k;
+	
+	if(sctx->is_pbo)
+	{
+		for(i=0; i<sctx->nsec; i++)
+		{
+			if(i==BGBCC_SH_CSEG_BSS)
+				continue;
+
+//			s0=sctx->sec_name[i];
+//			j=BGBCC_SHXC_CoffSectionFlags(ctx, sctx, s0);
+//			if(!(j&BGBCC_COFF_SCNT_GPREL))
+//				continue;
+			if(!BGBCC_JX2_IsSectionGpRel(sctx, i))
+				continue;
+
+			j=sctx->sec_pos[i]-sctx->sec_buf[i];
+			sctx->sec_rva[i]=k;
+			sctx->sec_lva[i]=img_base+k;
+			sctx->sec_lsz[i]=j;
+			memcpy(obuf+k, sctx->sec_buf[i], j);
+			k+=j;
+			k=(k+63)&(~63);
+
+			s0=sctx->sec_name[i];
+			printf("%d: %s %08X..%08X %d\n", i, s0,
+				sctx->sec_lva[i], sctx->sec_lva[i]+sctx->sec_lsz[i],
+				sctx->sec_lsz[i]);
+
+		}
+	}
+	
 	ofs_iend=k;
 
 	i=BGBCC_SH_CSEG_BSS;
@@ -1427,6 +1560,12 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		case 0:		j=0x3000|(rva&0xFFF);	break;
 		case 1:		j=0xA000|(rva&0xFFF);	break;
 		case 2:		j=0x2000|(rva&0xFFF);	break;
+
+		case 3:		j=0x6000|(rva&0xFFF);	break;
+
+		case 4:		j=0x8000|(rva&0xFFF);	break;
+		case 5:		j=0x7000|(rva&0xFFF);	break;
+		case 6:		j=0x9000|(rva&0xFFF);	break;
 		default:	BGBCC_DBGBREAK			break;
 		}
 #endif
@@ -1530,6 +1669,11 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 
 		bgbcc_setu32en(ct+0xA0, en, ofsrlc);	//rvaBaseRelocTable
 		bgbcc_setu32en(ct+0xA4, en, szrlc);		//szBaseRelocTable
+
+		j=sctx->is_pbo?sctx->gbr_rva:0;
+		bgbcc_setu32en(ct+0xB8, en, j);			//RVA of GBR Base
+		j=sctx->is_pbo?(ofs_mend-sctx->gbr_rva):0;
+		bgbcc_setu32en(ct+0xBC, en, j);			//Size of PBO Region
 	}else
 	{
 		bgbcc_setu16en(ct+0x14, en, 240);		//mSizeOfOptionalHeader
@@ -1576,6 +1720,11 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 
 		bgbcc_setu32en(ct+0xB0, en, ofsrlc);	//rvaBaseRelocTable
 		bgbcc_setu32en(ct+0xB4, en, szrlc);		//szBaseRelocTable
+
+		j=sctx->is_pbo?sctx->gbr_rva:0;
+		bgbcc_setu32en(ct+0xC8, en, j);			//RVA of GBR Base
+		j=sctx->is_pbo?(ofs_mend-sctx->gbr_rva):0;
+		bgbcc_setu32en(ct+0xCC, en, j);			//Size of PBO Region
 	}
 #endif
 

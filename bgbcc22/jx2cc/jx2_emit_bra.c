@@ -152,6 +152,18 @@ int BGBCC_JX2_TryEmitOpLblReg(BGBCC_JX2_Context *ctx,
 //			if(!BGBCC_JX2_EmitCheckRegBaseGPR(ctx, reg))
 //				break;
 
+#if 1
+			if(BGBCC_JX2_CheckLabelIsGpRel(ctx, lbl))
+			{
+				rlty=BGBCC_SH_RLC_PBO24_BJX;
+				opw1=0xFA00;
+				opw2=0x0000;
+				opw3=0xF080|((reg&16)<<2);
+				opw4=0x0401|((reg&15)<<4);
+				break;
+			}
+#endif
+
 			rlty=BGBCC_SH_RLC_REL24_BJX;
 			opw1=0xFBFF;
 			opw2=0xFFFC;
@@ -164,6 +176,17 @@ int BGBCC_JX2_TryEmitOpLblReg(BGBCC_JX2_Context *ctx,
 
 		if(!BGBCC_JX2_EmitCheckRegBaseGPR(ctx, reg))
 			break;
+
+#if 1
+		if(BGBCC_JX2_CheckLabelIsGpRel(ctx, lbl))
+		{
+			rlty=BGBCC_SH_RLC_PBO24_BJX;
+			opw1=0xFA00;
+			opw2=0x0000;
+			opw3=0x4C01|((reg&15)<<4);
+			break;
+		}
+#endif
 
 #if 1
 		if(BGBCC_JX2_EmitCheckAutoLabelNear8(ctx, lbl, nmid))

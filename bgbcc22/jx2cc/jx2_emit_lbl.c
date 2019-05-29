@@ -531,3 +531,21 @@ int BGBCC_JX2_LookupSimLabelIndex(
 	i=BGBCC_JX2_LookupLabelIndex(sctx, lblid);
 	return(i);
 }
+
+int BGBCC_JX2_CheckLabelIsGpRel(
+	BGBCC_JX2_Context *sctx, int lblid)
+{
+	int i, j, k;
+
+	if(!sctx->is_pbo)
+		return(0);
+
+//	i=BGBCC_JX2_LookupLabelIndex(ctx, lblid);
+	i=BGBCC_JX2_LookupSimLabelIndex(sctx, lblid);
+	
+	if(i<0)
+		return(0);
+	
+	j=sctx->lbl_sec[i];
+	return(BGBCC_JX2_IsSectionGpRel(sctx, j));
+}

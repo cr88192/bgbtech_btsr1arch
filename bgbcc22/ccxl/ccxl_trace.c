@@ -121,7 +121,7 @@ int BGBCC_CCXL_EmitMarkEndTrace(BGBCC_TransState *ctx)
 }
 
 ccxl_status BGBCC_CCXL_GlobalMarkReachable_VReg(BGBCC_TransState *ctx,
-	ccxl_register reg)
+	ccxl_register reg, int afl)
 {
 	BGBCC_CCXL_RegisterInfo *rfn;
 	BGBCC_CCXL_LiteralInfo *litobj;
@@ -147,7 +147,7 @@ ccxl_status BGBCC_CCXL_GlobalMarkReachable_VReg(BGBCC_TransState *ctx,
 		if(!rfn)
 			return(0);
 		
-		BGBCC_CCXL_GlobalMarkReachable(ctx, rfn);
+		BGBCC_CCXL_GlobalMarkReachableB(ctx, rfn, afl);
 		return(1);
 	}
 
@@ -162,7 +162,7 @@ ccxl_status BGBCC_CCXL_GlobalMarkReachable_VReg(BGBCC_TransState *ctx,
 			for(i=0; i<n; i++)
 			{
 				BGBCC_CCXL_GlobalMarkReachable_VReg(ctx,
-					litobj->decl->listdata[i]);
+					litobj->decl->listdata[i], afl|1);
 			}
 		}
 		return(1);
@@ -194,20 +194,25 @@ ccxl_status BGBCC_CCXL_GlobalMarkReachable_Func(BGBCC_TransState *ctx,
 	{
 		op=obj->vop[i];
 		
-		BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, op->dst);
-		BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, op->srca);
-		BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, op->srcb);
-		
 		if(op->opn==CCXL_VOP_CALL)
 		{
+			BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, op->dst, 1);
+			BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, op->srca, 0);
+			BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, op->srcb, 0);
+		
 			n=op->imm.call.na;
 			args=op->imm.call.args;
 
 			for(j=0; j<n; j++)
 			{
 				treg=args[j];
-				BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, treg);
+				BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, treg, 1);
 			}
+		}else
+		{
+			BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, op->dst, 1);
+			BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, op->srca, 1);
+			BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, op->srcb, 1);
 		}
 	}
 	return(1);
@@ -215,6 +220,12 @@ ccxl_status BGBCC_CCXL_GlobalMarkReachable_Func(BGBCC_TransState *ctx,
 
 ccxl_status BGBCC_CCXL_GlobalMarkReachable(BGBCC_TransState *ctx,
 	BGBCC_CCXL_RegisterInfo *obj)
+{
+	return(BGBCC_CCXL_GlobalMarkReachableB(ctx, obj, 0));
+}
+
+ccxl_status BGBCC_CCXL_GlobalMarkReachableB(BGBCC_TransState *ctx,
+	BGBCC_CCXL_RegisterInfo *obj, int afl)
 {
 	if(obj->regflags&BGBCC_REGFL_RECTRACE)
 	{
@@ -224,6 +235,14 @@ ccxl_status BGBCC_CCXL_GlobalMarkReachable(BGBCC_TransState *ctx,
 	obj->regflags|=BGBCC_REGFL_RECTRACE;
 	obj->regflags|=BGBCC_REGFL_ACCESSED;
 	obj->regflags&=~BGBCC_REGFL_CULL;
+
+	if(obj->regtype==CCXL_LITID_FUNCTION)
+	{
+		if((obj->flagsint&BGBCC_TYFL_DLLEXPORT) || (afl&1))
+		{
+			obj->regflags|=BGBCC_REGFL_ALIASPTR;
+		}
+	}
 
 //	if((obj->regtype==CCXL_LITID_FUNCTION) && (obj->vtr))
 	if(obj->regtype==CCXL_LITID_FUNCTION)
@@ -235,14 +254,14 @@ ccxl_status BGBCC_CCXL_GlobalMarkReachable(BGBCC_TransState *ctx,
 
 	if(obj->regtype==CCXL_LITID_GLOBALVAR)
 	{
-		BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, obj->value);
+		BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, obj->value, 1);
 //		obj->regflags&=~BGBCC_REGFL_RECTRACE;
 		return(1);
 	}
 
 	if(obj->regtype==CCXL_LITID_STATICVAR)
 	{
-		BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, obj->value);
+		BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, obj->value, 1);
 //		obj->regflags&=~BGBCC_REGFL_RECTRACE;
 		return(1);
 	}
