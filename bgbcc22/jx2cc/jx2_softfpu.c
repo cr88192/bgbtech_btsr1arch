@@ -12,16 +12,23 @@ int BGBCC_JX2C_NormalizeImmVRegSoftFloat(
 
 	treg=*rtreg;
 
-	if(BGBCC_CCXL_IsRegImmIntP(ctx, treg) ||
-		BGBCC_CCXL_IsRegImmLongP(ctx, treg))
+	if(	BGBCC_CCXL_TypeFloatP(ctx, type) ||
+		BGBCC_CCXL_TypeDoubleP(ctx, type) ||
+		BGBCC_CCXL_TypeHFloat16P(ctx, type) ||
+		BGBCC_CCXL_TypeBFloat16P(ctx, type))
 	{
-		f=BGBCC_CCXL_GetRegImmLongValue(ctx, treg);
-		if(BGBCC_CCXL_TypeDoubleP(ctx, type))
-			BGBCC_CCXL_GetRegForDoubleValue(ctx, &treg2, f);
-		else
-			BGBCC_CCXL_GetRegForFloatValue(ctx, &treg2, f);
-		*rtreg=treg2;
-		return(1);
+		if(BGBCC_CCXL_IsRegImmIntP(ctx, treg) ||
+			BGBCC_CCXL_IsRegImmUIntP(ctx, treg) ||
+			BGBCC_CCXL_IsRegImmLongP(ctx, treg))
+		{
+			f=BGBCC_CCXL_GetRegImmLongValue(ctx, treg);
+			if(BGBCC_CCXL_TypeDoubleP(ctx, type))
+				BGBCC_CCXL_GetRegForDoubleValue(ctx, &treg2, f);
+			else
+				BGBCC_CCXL_GetRegForFloatValue(ctx, &treg2, f);
+			*rtreg=treg2;
+			return(1);
+		}
 	}
 
 	return(0);

@@ -1268,6 +1268,9 @@ ccxl_status BGBCC_CCXL_TypeAutoPromoteType(BGBCC_TransState *ctx, ccxl_type sty,
 int BGBCC_CCXL_TypeGetArraySize(BGBCC_TransState *ctx, ccxl_type sty);
 int BGBCC_CCXL_TypeArrayAdjustSize(BGBCC_TransState *ctx, ccxl_type sty, ccxl_type *rdty, int newsz);
 int BGBCC_CCXL_TypeGetArrayDimSize(BGBCC_TransState *ctx, ccxl_type sty);
+int BGBCC_CCXL_TypeGetPointerClass(BGBCC_TransState *ctx, ccxl_type sty);
+int BGBCC_CCXL_TypeNearPointerP(BGBCC_TransState *ctx, ccxl_type sty);
+int BGBCC_CCXL_TypeFarPointerP(BGBCC_TransState *ctx, ccxl_type sty);
 int BGBCC_CCXL_TypeUnpackOverflow(BGBCC_TransState *ctx, ccxl_type ty, BGBCC_CCXL_TypeOverflow *rovf);
 int BGBCC_CCXL_TypeIndexOverflow(BGBCC_TransState *ctx, BGBCC_CCXL_TypeOverflow ovf);
 ccxl_status BGBCC_CCXL_TypeFromOverflow(BGBCC_TransState *ctx, ccxl_type *rty, BGBCC_CCXL_TypeOverflow ovf);
@@ -2342,6 +2345,11 @@ int BGBCC_JX2_EmitShufByteRegReg(BGBCC_JX2_Context *ctx,int sreg, int shuf, int 
 int BGBCC_JX2_InitShufByte8(BGBCC_JX2_Context *ctx);
 int BGBCC_JX2_EmitShufByte8_IdToOp(BGBCC_JX2_Context *ctx, int id);
 int BGBCC_JX2_EmitShufByte8B(BGBCC_JX2_Context *ctx, int reg, int shuf);
+int BGBCC_JX2_EmitBSwapWordRegRegZx(BGBCC_JX2_Context *ctx,int sreg, int dreg);
+int BGBCC_JX2_EmitBSwapDWordRegRegZx(BGBCC_JX2_Context *ctx,int sreg, int dreg);
+int BGBCC_JX2_EmitBSwapWordRegRegSx(BGBCC_JX2_Context *ctx,int sreg, int dreg);
+int BGBCC_JX2_EmitBSwapDWordRegRegSx(BGBCC_JX2_Context *ctx,int sreg, int dreg);
+int BGBCC_JX2_EmitBSwapQWordRegReg(BGBCC_JX2_Context *ctx,int sreg, int dreg);
 //AHSRC:jx2cc/jx2_emit_bra.c
 int BGBCC_JX2_ModelIsLabel16P(BGBCC_JX2_Context *ctx);
 int BGBCC_JX2_ModelIsLabel24P(BGBCC_JX2_Context *ctx);

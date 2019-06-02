@@ -178,11 +178,27 @@ Typed signatures are encoded as strings, with characters indicating value types.
 * 'Da': auto
 * 'Dz': va_list
 * 'A{sz};{sig}: Array
+* 'A{a..z}{sig}': Pointer/Array Class Modifier
+* 'L{qname};': Tag Class
 * 'P{sig}': Pointer
 * 'Q{sig}': Tag Array
+* 'R{sig}': Reference to Type.
 * 'U{name};': Extended Type
+* 'W{sig}': Wide Pointer
 * 'X{name};': Struct/Union
 * '({args}){ret}': Function Signature
+
+Pointer/Array Class Modifer:
+* 'Ab': Packed / Big Endian
+* 'Af': Far
+* 'Al': Packed / Little Endian
+
+* 'An': Near
+* 'Ap': Packed
+* 'Aw': ? Wide
+
+
+
 
 
 === Flag String ===
@@ -222,6 +238,8 @@ Typed signatures are encoded as strings, with characters indicating value types.
 * Ct: thread ("__thread")
 
 * Cw: wide ("__wide")
+* Cx: near pointer ("__near")
+* Cy: far pointer ("__far")
 
 * De: dllexport
 * Di: dllimport

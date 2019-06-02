@@ -279,39 +279,6 @@ int BGBCC_JX2C_EmitLoadSlotVRegVRegImm(
 		BGBCC_DBGBREAK
 	}
 
-#if 0
-	sz=-1; nm1=-1;
-	switch(ty)
-	{
-	case CCXL_TY_I:		case CCXL_TY_UI:
-	case CCXL_TY_NL:	case CCXL_TY_UNL:
-		sz=4; nm1=BGBCC_SH_NMID_MOVL; nm2=-1; break;
-	case CCXL_TY_SB:
-		sz=1; nm1=BGBCC_SH_NMID_MOVB; nm2=-1; break;
-	case CCXL_TY_UB:
-		sz=1; nm1=BGBCC_SH_NMID_MOVB; nm2=BGBCC_SH_NMID_EXTUB; break;
-	case CCXL_TY_SS:
-		sz=2; nm1=BGBCC_SH_NMID_MOVW; nm2=-1; break;
-	case CCXL_TY_US:
-		sz=2; nm1=BGBCC_SH_NMID_MOVW; nm2=BGBCC_SH_NMID_EXTUW; break;
-	case CCXL_TY_F:
-		sz=4; nm1=BGBCC_SH_NMID_FMOVS; nm2=-1; break;
-	case CCXL_TY_D:
-		sz=8; nm1=BGBCC_SH_NMID_FMOVS; nm2=-1; break;
-	case CCXL_TY_L:		case CCXL_TY_UL:
-		sz=8; nm1=BGBCC_SH_NMID_MOVL; nm2=-1; break;
-
-	case CCXL_TY_F16:
-		sz=2; nm1=BGBCC_SH_NMID_MOVW; nm2=BGBCC_SH_NMID_LDHF16; break;
-
-	case CCXL_TY_VARIANT:
-		sz=8; nm1=BGBCC_SH_NMID_MOVL; nm2=-1; break;
-	}
-
-	if(BGBCC_CCXL_TypePointerP(ctx, type))
-		{ sz=4; nm1=BGBCC_SH_NMID_MOVL; nm2=-1; }
-#endif
-
 	BGBCC_JX2C_EmitLdix_FillSzNmTy(ctx, sctx, type,
 		&sz, &nm1, &nm2, &nm3, &nm4);
 
@@ -452,37 +419,6 @@ int BGBCC_JX2C_EmitStoreSlotVRegVRegImm(
 
 	ty=type.val;
 
-#if 0
-	sz=-1; nm1=-1;
-	switch(ty)
-	{
-	case CCXL_TY_I:		case CCXL_TY_UI:
-	case CCXL_TY_NL:	case CCXL_TY_UNL:
-		sz=4; nm1=BGBCC_SH_NMID_MOVL; nm2=-1; break;
-	case CCXL_TY_SB:
-		sz=1; nm1=BGBCC_SH_NMID_MOVB; nm2=-1; break;
-	case CCXL_TY_UB:
-		sz=1; nm1=BGBCC_SH_NMID_MOVB; nm2=-1; break;
-	case CCXL_TY_SS:
-		sz=2; nm1=BGBCC_SH_NMID_MOVW; nm2=-1; break;
-	case CCXL_TY_US:
-		sz=2; nm1=BGBCC_SH_NMID_MOVW; nm2=-1; break;
-	case CCXL_TY_F:
-		sz=4; nm1=BGBCC_SH_NMID_FMOVS; nm2=-1; break;
-	case CCXL_TY_D:
-		sz=8; nm1=BGBCC_SH_NMID_FMOVS; nm2=-1; break;
-	case CCXL_TY_L:		case CCXL_TY_UL:
-		sz=8; nm1=BGBCC_SH_NMID_MOVL; nm2=-1; break;
-	case CCXL_TY_F16:
-		sz=2; nm1=BGBCC_SH_NMID_MOVW; nm2=BGBCC_SH_NMID_STHF16; break;
-	case CCXL_TY_VARIANT:
-		sz=8; nm1=BGBCC_SH_NMID_MOVL; nm2=-1; break;
-	}
-
-	if(BGBCC_CCXL_TypePointerP(ctx, type))
-		{ sz=4; nm1=BGBCC_SH_NMID_MOVL; nm2=-1; }
-#endif
-
 	BGBCC_JX2C_EmitLdix_FillSzNmTy(ctx, sctx, type,
 		&sz, &nm1, &nm2, &nm3, &nm4);
 	if(nm2==BGBCC_SH_NMID_LDHF16)
@@ -608,37 +544,6 @@ int BGBCC_JX2C_EmitLoadSlotAddrVRegVRegImm(
 	}
 
 	ty=type.val;
-
-#if 0
-	sz=-1; nm1=-1;
-	switch(ty)
-	{
-	case CCXL_TY_I:		case CCXL_TY_UI:
-	case CCXL_TY_NL:	case CCXL_TY_UNL:
-		sz=4; nm1=BGBCC_SH_NMID_MOVL; nm2=-1; break;
-	case CCXL_TY_SB:
-		sz=1; nm1=BGBCC_SH_NMID_MOVB; nm2=-1; break;
-	case CCXL_TY_UB:
-		sz=1; nm1=BGBCC_SH_NMID_MOVB; nm2=BGBCC_SH_NMID_EXTUB; break;
-	case CCXL_TY_SS:
-		sz=2; nm1=BGBCC_SH_NMID_MOVW; nm2=-1; break;
-	case CCXL_TY_US:
-		sz=2; nm1=BGBCC_SH_NMID_MOVW; nm2=BGBCC_SH_NMID_EXTUW; break;
-	case CCXL_TY_F:
-		sz=4; nm1=BGBCC_SH_NMID_FMOVS; nm2=-1; break;
-	case CCXL_TY_D:
-		sz=8; nm1=BGBCC_SH_NMID_FMOVS; nm2=-1; break;
-	case CCXL_TY_L:		case CCXL_TY_UL:
-		sz=8; nm1=BGBCC_SH_NMID_MOVL; nm2=-1; break;
-	case CCXL_TY_F16:
-		sz=2; nm1=BGBCC_SH_NMID_MOVW; nm2=-1; break;
-	case CCXL_TY_VARIANT:
-		sz=8; nm1=BGBCC_SH_NMID_MOVL; nm2=-1; break;
-	}
-
-	if(BGBCC_CCXL_TypePointerP(ctx, type))
-		{ sz=4; nm1=BGBCC_SH_NMID_MOVL; nm2=-1; }
-#endif
 
 	BGBCC_JX2C_EmitLdix_FillSzNmTy(ctx, sctx, type,
 		&sz, &nm1, &nm2, &nm3, &nm4);
@@ -1570,11 +1475,20 @@ int BGBCC_JX2C_EmitLoadTypeBRegOfsReg(
 		sz=2; nm1=BGBCC_SH_NMID_MOVW; nm2=BGBCC_SH_NMID_EXTUW; break;
 
 	case CCXL_TY_F:
-		sz=4; nm1=BGBCC_SH_NMID_FMOVS; nm2=-1; break;
+		if(sctx->fpu_soft)
+			{ sz=4; nm1=BGBCC_SH_NMID_MOVL; nm2=-1; break; }
+		else
+			{ sz=4; nm1=BGBCC_SH_NMID_FMOVS; nm2=-1; break; }
 	case CCXL_TY_D:
-		sz=8; nm1=BGBCC_SH_NMID_FMOVS; nm2=-1; break;
+		if(sctx->fpu_soft)
+			{ sz=8; nm1=BGBCC_SH_NMID_MOVQ; nm2=-1; break; }
+		else
+			{ sz=8; nm1=BGBCC_SH_NMID_FMOVS; nm2=-1; break; }
 	case CCXL_TY_L:	case CCXL_TY_UL:
-		sz=8; nm1=BGBCC_SH_NMID_MOVL; nm2=-1; break;
+		if(sctx->is_addr64)
+			{ sz=8; nm1=BGBCC_SH_NMID_MOVQ; nm2=-1; break; }
+		else
+			{ sz=8; nm1=BGBCC_SH_NMID_MOVL; nm2=-1; break; }
 
 	case CCXL_TY_F16:
 		sz=2; nm1=BGBCC_SH_NMID_MOVW; nm2=BGBCC_SH_NMID_LDHF16; break;

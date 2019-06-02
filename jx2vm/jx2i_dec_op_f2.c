@@ -60,6 +60,20 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 #endif
 
 #if 1
+	case 0x2:	/* F1ed_2dzz */
+		op->imm=imm9u;
+		op->nmid=BJX2_NMID_MULS;
+		op->fmid=BJX2_FMID_REGIMMREG;
+		op->Run=BJX2_Op_MULS_RegImmReg;
+		if(eq)
+		{
+			op->nmid=BJX2_NMID_MULU;
+			op->Run=BJX2_Op_MULU_RegImmReg;
+		}
+		break;
+#endif
+
+#if 1
 	case 0x3:	/* F1ed_3dzz */
 		op->imm=imm9u;
 		op->nmid=BJX2_NMID_ADDSL;

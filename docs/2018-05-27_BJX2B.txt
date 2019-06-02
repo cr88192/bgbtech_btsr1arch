@@ -536,6 +536,28 @@ In the ASM syntax, they will be expressed via an "?T" or "?F" suffix:
 * MOV.B?T R3, (R5)	//Store if SR.T is True
 
 
+Predicated Ranges will exist:
+* E0zz_zzzz (Execute if True, Repeats F0)
+* E1zz_zzzz (Execute if True, Repeats F1)
+* E2zz_zzzz (Execute if True, Repeats F2)
+* E3zz_zzzz (Execute if True, Repeats F3)
+* E4zz_zzzz (Execute if False, Repeats F0)
+* E5zz_zzzz (Execute if False, Repeats F1)
+* E6zz_zzzz (Execute if False, Repeats F2)
+* E7zz_zzzz (Execute if False, Repeats F3)
+* E8zz_zzzz (Execute if True, Repeats F8)
+* E9zz_zzzz (Execute if True, Repeats F9)
+* EAzz_zzzz (Execute if False, Repeats F8)
+* EBzz_zzzz (Execute if False, Repeats F9)
+* ECzz_zzzz (Execute if True, Repeats FC)
+* EDzz_zzzz (Execute if True, Repeats FD)
+* EEzz_zzzz (Execute if False, Repeats FC)
+* EFzz_zzzz (Execute if False, Repeats FD)
+
+The ranges FAzz, FBzz, FEzz, and FFzz, may not be encoded in predicated forms.
+The encoding of predicated forms will be otherwise equivalent to their Fz counterparts.
+
+
 == Instruction Set ==
 
 Notation:
@@ -663,7 +685,7 @@ Instruction Space
 ** 1Cnm  CMPEQ	Rm, Rn				//Rn==Rm (Low 32 Bits)
 ** 1Dnm  CMPHI	Rm, Rn				//Unsigned Rn GT Rm (Low 32 Bits)
 ** 1Enm  CMPGT	Rm, Rn				//Signed Rn GT Rm (Low 32 Bits)
-** 1Fnm ? MULW	Rm, Rn				//DLR=Rm*Rn (Signed 18-bit)
+** 1Fnm -
 
 * 2zzz
 ** 20dd  BRA	(PC, disp8s)		//Branch, PC=PC+(disp8s*2)
@@ -673,11 +695,11 @@ Instruction Space
 ** 24jj  LDIZ	#imm8u, DLR
 ** 25jj  LDIN	#imm8n, DLR
 ** 26jj  LDISH	#imm8u, DLR			//DLR=(DLR SHL 8)|Imm8u
-** 27dd  MOVU.L	(SP, disp4u), Rn	//Stack-Relative ZX Load
-** 28nd / MOV.L	Rn, (SP, disp4u)	//Stack-Relative Store
-** 29nd / MOV.Q	Rn, (SP, disp4u)	//Stack-Relative Store
-** 2And / MOV.L	(SP, disp4u), Rn	//Stack-Relative Load
-** 2Bnd / MOV.Q	(SP, disp4u), Rn	//Stack-Relative Load
+** 27zz  -
+** 28nd  MOVU.L	(SP, disp4u), Rn	//Stack-Relative ZX Load
+** 29zz  -
+** 2And  MOVU.L	(SP, disp4u), Rk	//Stack-Relative ZX Load
+** 2Bzz  -
 ** 2Cnj  CMPEQ	#imm4u, Rn			//Rn==Imm4, Zero Extend
 ** 2Dnj  CMPEQ	#imm4n, Rn			//Rn==Imm4, One Extend
 ** 2Enj  CMPGT	#imm4u, Rn			//Rn==Imm4, Zero Extend
@@ -760,14 +782,14 @@ Instruction Space
 ** 32n5  EXTU.W	Rn
 ** 32n6  EXTS.B	Rn
 ** 32n7  EXTS.W	Rn
-** 32n8 / PUSH	Rk					//R16..R31
-** 32n9 / PUSH	Ck					//C16..C31
-** 32nA / POP	Rk					//R16..R31
-** 32nB / POP	Ck					//C16..C31
-** 32nC / PUSHX2	Rn
-** 32nD / PUSHX2	Rk
-** 32nE / POPX2		Rn
-** 32nF / POPX2		Rk
+** 32n8  -
+** 32n9  -
+** 32nA  -
+** 32nB  -
+** 32nC  -
+** 32nD  -
+** 32nE  -
+** 32nF  -
 
 ** 33n0  NOT	Rn					//Rn=~Rn
 ** 33n1  NEG	Rn					//Rn=(~Rn)+1
@@ -782,7 +804,7 @@ Instruction Space
 ** 33nA  SHAR	Rn					//Rn'=(Rn SAR 1); SR.T=Rn.0
 ** 33nB  -
 ** 33nC  NEG	Rn, DLR				//DLR=(~Rn)+1
-** 33nD / NEG	Rk, DLR				//DLR=(~Rk)+1
+** 33nD  -
 ** 33nE  -
 ** 33nF  -
 
@@ -816,8 +838,6 @@ Instruction Space
 ** 36n8 ? TRAP	Rn
 ** 36n9 ? WEXMD	#imm4				//Set WEX Profile
 ** 36jA ? CPUID	#imm4				//Load CPUID bits into DHR:DLR
-** 36n9  -
-** 36nA  -
 ** 36nB  -
 ** 36nC  -
 ** 36nD  CMPHS	DLR, Rn				//Unsigned (Rn GE DLR)
@@ -841,14 +861,14 @@ Instruction Space
 ** 37nE ? SWCP.HB	Rn				//(0120) Copy Low To High Bytes (GSV)
 ** 37nF ? SWCP.HW	Rn				//(0120) Copy Low To High Word (GSV)
 
-** 38zz (Mirror 30zz, R16..R31)
-** 39zz (Mirror 31zz, R16..R31)
-** 3Azz (Mirror 32zz, R16..R31)
-** 3Bzz (Mirror 33zz, R16..R31)
-** 3Czz (Mirror 34zz, R16..R31)
-** 3Dzz (Mirror 35zz, R16..R31)
-** 3Ezz (Mirror 36zz, R16..R31)
-** 3Fzz (Mirror 37zz, R16..R31)
+** 38zz (Mirror 30zz, Rn=R16..R31)
+** 39zz (Mirror 31zz, Rn=R16..R31)
+** 3Azz (Mirror 32zz, Rn=R16..R31)
+** 3Bzz (Mirror 33zz, Rn=R16..R31)
+** 3Czz (Mirror 34zz, Rn=R16..R31)
+** 3Dzz (Mirror 35zz, Rn=R16..R31)
+** 3Ezz (Mirror 36zz, Rn=R16..R31)
+** 3Fzz (Mirror 37zz, Rn=R16..R31)
 
 * 4zzz
 ** 40nd  MOV.L		Rn, (SP, disp4u)	//Stack-Relative Store
@@ -879,7 +899,7 @@ Instruction Space
 ** 57nm  MULU		Rm, Rn			//(DHR,DLR)=Rm*Rn (32-bit, Unsigned Result)
 ** 58nm  ADD		Rm, DLR, Rn		//Rn=Rm+DLR
 ** 59nm  SUB		Rm, DLR, Rn
-** 5Anm  MULS		Rm, DLR, Rn		//Rn=Rm*DLR
+** 5Anm  MULS		Rm, DLR, Rn		//Rn=Rm*DLR (32-bit, Signed Result)
 ** 5Bnm  CMPQHI		Rm, Rn			//Unsigned Rn GT Rm, Quad
 ** 5Cnm  CMPQGT		Rm, Rn			//Signed Rn GT Rm, Quad
 ** 5Dnm  AND		Rm, DLR, Rn
@@ -919,7 +939,7 @@ Instruction Space
 ** 98nm  FADD		FRm, FRn			//FRn=FRn+FRm
 ** 99nm  FSUB		FRm, FRn			//FRn=FRn-FRm
 ** 9Anm  FMUL		FRm, FRn			//FRn=FRn*FRm
-** 9Bnm / FDIV		FRm, FRn			//(FDIV) FRn=FRn/FRm
+** 9Bnm ? FDIV		FRm, FRn			//(FDIV) FRn=FRn/FRm
 ** 9Cnm  FCMPEQ		FRm, FRn			//SR.T=(FRn EQ FRm)
 ** 9Dnm  FCMPGT		FRm, FRn			//SR.T=(FRn GT FRm)
 ** 9Enm  FMOV		FRm, FRn			//FRn=FRm
@@ -944,7 +964,7 @@ Instruction Space
 * Ajjj  LDIZ		#imm12u, DLR	//Load 12 bit value into DLR (Zero Extend)
 * Bjjj  LDIN		#imm12u, DLR	//Load 12 bit value into DLR (One Extend)
 * Cnii  ADD			#imm8s, Rn		//Rn=Rn+Imm8
-* Dnii  MOV			#imm8s, Rn		//Rn=Imm8
+* Dnii  LDI			#imm8s, Rn		//Rn=Imm8
 * Ezzz  (N/E, Predicate Block)
 * Fzzz  (N/E)
 
@@ -954,7 +974,6 @@ Instruction Space
 
 
 Major Ranges
-* / F0nm_eo-XXnm (Basic Instructions, Partially mirrors 16-bit space)
 * F0nm_XeoX (Basic Instructions, Partially mirrors 16-bit space)
 * F1nm_Xedd (Load/Store, Disp9)
 * F2nm_Xejj (Imm9 / Imm10 ops)
@@ -993,6 +1012,8 @@ Additionally, Predicated Ranges will exist:
 The ranges FAzz, FBzz, FEzz, and FFzz, may not be encoded in predicated forms.
 The encoding of predicated forms will be otherwise equivalent to their Fz counterparts.
 
+
+==== F0zz Instruction Block ====
 
 F0zz Instruction Block:
 * F0zz_0zzz
@@ -1056,12 +1077,14 @@ F0zz Instruction Block:
 *** F0nm_1g89 MOV		Rm, Rn				//Rn=Rm
 *** F0nm_1G89 MOVD		Rm, Rn				//Rn=Rm (High Undefined)
 *** F0nm_1g99 MULS		Rm, Rn				//(DHR,DLR)=Rm*Rn (Signed Result)
+*** F0nm_1G99 ? MULSQ	Rm, Rn				//(MULQ) (Signed 64*64=>128)
 *** F0nm_1gA9 MOV		Rm, Cn				//Cn=Rm
 *** F0nm_1gB9 MOV		Cm, Rn				//Rn=Cm
 *** F0nm_1eC9 CMP{Q}EQ	Rm, Rn				//Rn==Rm
 *** F0nm_1eD9 CMP{Q}HI	Rm, Rn				//Unsigned Rn GT Rm
 *** F0nm_1eE9 CMP{Q}GT	Rm, Rn				//Signed Rn GT Rm
 *** F0nm_1gF9 MULU		Rm, Rn				//(DHR,DLR)=Rm*Rn (Unsigned Result)
+*** F0nm_1GF9 ? MULUQ	Rm, Rn				//(MULQ) (Unsigned 64*64=>128)
 
 ** F0nm_1ezA  (GSV Block)
 *** F0nm_1g0A ? PADD.W		Rm, Rn				//(GSV) Packed Add Word
@@ -1098,7 +1121,7 @@ F0zz Instruction Block:
 *** F0nm_1e1C  NEG		Rm, Rn				//Rn=(~Rn)+1
 *** F0nm_1e2C ? CLZ{Q}	Rm, Rn				//Count Leading Zeroes
 *** F0nm_1e3C -
-*** F0nm_1e4C -
+*** F0nm_1e4C ? MUL.W	Rm, Rn				//(DHR,DLR)=Rm*Rn (Signed 18*18=>36)
 *** F0nm_1g5C  EXTS.L	Rm, Rn				//Q=0
 *** F0nm_1G5C  EXTU.L	Rm, Rn				//Q=1
 *** F0nm_1e6C  SHAD{Q}	Rm, Rn				//Barrel Shift, Arithmetic
@@ -1256,6 +1279,8 @@ F0zz Instruction Block:
 * F0dd_Fddd  BF		(PC, disp20s)		//Branch False, +/- 1MB
 
 
+==== F1zz Instruction Block ====
+
 F1zz Instruction Block:
 
 * F1nm_Xeii  (MOV Disp9 Block)
@@ -1301,11 +1326,14 @@ F1zz Instruction Block:
 *** F1nm_FQdd ? JCMPQNE	Rm, Rn, disp8s	//(JCMP)
 
 
+==== F2zz Instruction Block ====
+
 F2zz Instruction Block  (Imm9 Block, New):
 
 * F2nm_0gjj  ADD		Rm, #imm9u, Rn		//
 * F2nm_1gjj  ADD		Rm, #imm9n, Rn		//
-* F2nm_2gjj  MUL		Rm, #imm9u, Rn		//
+* F2nm_2gjj  MULS		Rm, #imm9u, Rn		//32*32=>32, Signed result
+* F2nm_2Gjj  MULU		Rm, #imm9u, Rn		//32*32=>32, Unsigned result
 * F2nm_3gjj  ADDS.L		Rm, #imm9u, Rn		//ADD 32 SX, Zero-Ext Imm
 * F2nm_3Gjj  ADDU.L		Rm, #imm9u, Rn		//ADD 32 ZX, Zero-Ext Imm
 * F2nm_4gjj  ADDS.L		Rm, #imm9n, Rn		//ADD 32 SX, One-Ext Imm
@@ -1344,12 +1372,14 @@ F2zz Instruction Block  (Imm9 Block, New):
 Within the F2 block, if the operation is conditional and the MSB of the second word is set, then Em will be used as the true/false flag rather than Ei.
 
 
+==== F8zz Instruction Block ====
+
 F8zz Instruction Block:
 
-* F80n_iiii  MOVZ		#imm16u, Rn		//R0..R15, Zero Extend
-* F81n_iiii  MOVZ		#imm16u, Rk		//R16..R31, Zero Extend
-* F82n_iiii  MOVN		#imm16n, Rn		//R0..R15, One Extend
-* F83n_iiii  MOVN		#imm16n, Rk		//R16..R31, One Extend
+* F80n_iiii  LDIZ		#imm16u, Rn		//R0..R15, Zero Extend
+* F81n_iiii  LDIZ		#imm16u, Rk		//R16..R31, Zero Extend
+* F82n_iiii  LDIN		#imm16n, Rn		//R0..R15, One Extend
+* F83n_iiii  LDIN		#imm16n, Rk		//R16..R31, One Extend
 * F84n_iiii  ADD		#imm16s, Rn		//R0..R15
 * F85n_iiii  ADD		#imm16s, Rk		//R16..R31
 * F86n_iiii  LDISH16	#imm16u, Rn		//R0..R15

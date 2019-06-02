@@ -27,6 +27,7 @@ randbits.txt
 *.wav
 
 */*log.txt
+bgbcc22/*.dat
 
 vlcore/obj_dir/*
 # bjx1core32/obj_dir/*

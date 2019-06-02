@@ -2030,6 +2030,9 @@ int BGBCC_CCXL_VarTypeString_ModifierChar(BGBCC_TransState *ctx, s64 i)
 
 	case BGBCC_TYFL_SYNCHRONIZED:	c=('C'<<8)|'s'; break;
 
+	case BGBCC_TYFL_NEAR:			c=('C'<<8)|'x'; break;
+	case BGBCC_TYFL_FAR:			c=('C'<<8)|'y'; break;
+
 	case BGBCC_TYFL_DLLEXPORT:		c=('D'<<8)|'e'; break;
 	case BGBCC_TYFL_DLLIMPORT:		c=('D'<<8)|'i'; break;
 
@@ -2115,6 +2118,8 @@ char *BGBCC_CCXL_VarTypeString(BGBCC_TransState *ctx, BCCX_Node *ty)
 	int nasz, nqlvl;
 	char *s, *t, *t1;
 	BCCX_Node *c, *n;
+	s64 li;
+	int ind;
 	int i, j, k;
 
 	if(!ty)return(NULL);
@@ -2189,6 +2194,25 @@ char *BGBCC_CCXL_VarTypeString(BGBCC_TransState *ctx, BCCX_Node *ty)
 			*t++=';';
 		}
 #endif
+
+		ind=BCCX_GetIntCst(ty, &bgbcc_rcst_ind, "ind");
+
+		li=BCCX_GetIntCst(ty, &bgbcc_rcst_flags, "flags");
+		
+		if(ind!=0)
+		{
+			if(li&BGBCC_TYFL_NEAR)
+				{ *t++='A'; *t++='n'; }
+			if(li&BGBCC_TYFL_FAR)
+				{ *t++='A'; *t++='f'; }
+
+			if(li&BGBCC_TYFL_LTLENDIAN)
+				{ *t++='A'; *t++='l'; }
+			else if(li&BGBCC_TYFL_BIGENDIAN)
+				{ *t++='A'; *t++='b'; }
+			else if(li&BGBCC_TYFL_PACKED)
+				{ *t++='A'; *t++='p'; }
+		}
 
 #if 1
 		nasz=0;		nqlvl=0;

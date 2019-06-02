@@ -166,3 +166,186 @@ uint32_t __sfp_fdiv_f32(uint32_t va, uint32_t vb)
 {
 	return(__sfp_fmul_f32(va, tkcl_sfp_rcp_f32(vb)));
 }
+
+
+
+
+int32_t __sfp_ftrc_f32(uint32_t f0)
+{
+	int32_t t;
+	uint32_t f2;
+	int e0, e1, e2;
+	int m0, m1, m2;
+	
+	if(!f0)
+		return(0);
+	
+	e0=(f0>>23)&255;
+	m0=0x00800000|(f0&0x00FFFFFF);
+
+//	if(f0&0x80000000)
+//		m0=~m0;
+	
+	e1=(e0-127)-23;
+	if(e1>=0)
+	{
+		t=m0<<e1;
+	}else
+	{
+		e1=-e1;
+		if(e1>24)
+		{
+			t=0;
+		}else
+		{
+			t=m0>>e1;
+		}
+	}
+	if(f0&0x80000000)
+		t=-t;
+	return(t);
+}
+
+uint32_t __sfp_ftrc_f64(uint64_t f0)
+{
+	int32_t t;
+	uint32_t f2;
+	int e0, e1, e2;
+//	uint32_t m0, m1, m2;
+	int64_t m0, m1, m2;
+	
+	if(!f0)
+		return(0);
+	
+	e0=(f0>>52)&2047;
+	m0=0x80000000ULL|((uint32_t)(f0>>21));
+
+//	if(f0&0x8000000000000000ULL)
+//		m0=-m0;
+	
+	e1=(e0-1023)-31;
+	if(e1>=0)
+	{
+		t=0x80000000U;
+	}else
+	{
+		e1=-e1;
+		if(e1>31)
+		{
+			t=0;
+		}else
+		{
+			t=m0>>e1;
+		}
+		if(f0&0x8000000000000000ULL)
+			t=-t;
+	}
+	return(t);
+}
+
+#if 0
+uint32_t __sfp_float_f32(int32_t iv)
+{
+	uint32_t sg;
+	uint32_t i0, t0;
+	int e0;
+
+	if(!iv)
+		return(0);
+
+	if(iv<0)
+	{
+		i0=-iv;
+		sg=0x80000000U;
+	}else
+	{
+		i0=iv;
+		sg=0;
+	}
+	e0=127+23;
+	if(i0>>24)
+	{
+		while(i0>>24)
+		{
+			i0=i0>>1;
+//			i0=(i0+1)>>1;
+			e0++;
+		}
+	}else
+	{
+#if 1
+		if(!(i0&0x00FFFF00))
+		{
+			i0=i0<<16;
+			e0-=16;
+		}
+
+		if(!(i0&0x00FF0000))
+		{
+			i0=i0<<8;
+			e0-=8;
+		}
+
+		if(!(i0&0x00F00000))
+		{
+			i0=i0<<4;
+			e0-=4;
+		}
+
+		if(!(i0&0x00C00000))
+		{
+			i0=i0<<2;
+			e0-=2;
+		}
+
+		if(!(i0&0x00800000))
+		{
+			i0=i0<<1;
+			e0-=1;
+		}
+#endif
+	}
+
+	t0=sg|(e0<<23)|(i0&0x007FFFFF);
+	return(t0);
+}
+
+uint64_t __sfp_float_f64(int32_t iv)
+{
+	uint64_t sg;
+	uint64_t i0, t0;
+	int e0;
+
+	if(!iv)
+		return(0);
+
+	if(iv<0)
+	{
+		i0=-iv;
+		sg=0x8000000000000000ULL;
+	}else
+	{
+		i0=iv;
+		sg=0;
+	}
+	e0=1023+52;
+
+#if 1
+	if(!(i0&0x001FFFFFFFE00000ULL))
+		{ i0=i0<<32; e0-=32; }
+	if(!(i0&0x001FFFE000000000ULL))
+		{ i0=i0<<16; e0-=16; }
+	if(!(i0&0x001FE00000000000ULL))
+		{ i0=i0<<8; e0-=8; }
+	if(!(i0&0x001E000000000000ULL))
+		{ i0=i0<<4; e0-=4; }
+	if(!(i0&0x0018000000000000ULL))
+		{ i0=i0<<2; e0-=2; }
+	if(!(i0&0x0010000000000000ULL))
+		{ i0=i0<<1; e0--; }
+#endif
+
+	t0=sg|(((uint64_t)e0)<<52)|(i0&0x000FFFFFFFFFFFFFULL);
+	return(t0);
+}
+#endif

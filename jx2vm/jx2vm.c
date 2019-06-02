@@ -1,5 +1,6 @@
 #include "jx2i_multi.c"
 
+FILE *bjx2_vmoutlog=NULL;
 
 #ifdef linux
 void SoundDev_Submit()
@@ -224,6 +225,9 @@ int bjx2_fflush(BJX2_FILE *fd)
 
 int bjx2_vmputc(BJX2_Context *ctx, int val)
 {
+	if(bjx2_vmoutlog)
+		fputc(val, bjx2_vmoutlog);
+
 	fputc(val, stdout);
 	return(0);
 
@@ -392,6 +396,8 @@ int main(int argc, char *argv[])
 			{ rd_map[rd_n_map++]=argv[i]; continue; }
 	}
 	
+	bjx2_vmoutlog=fopen("bjx2_vmoutlog.txt", "wb");
+	
 	JX2R_UseImageCreateRamdisk(rdsz*1024);
 	
 	for(i=0; i<rd_n_add; i++)
@@ -474,6 +480,9 @@ int main(int argc, char *argv[])
 //	if(i)
 
 	BJX2_DbgDump(ctx);
+	
+	if(bjx2_vmoutlog)
+		fclose(bjx2_vmoutlog);
 
 	i=ctx->status;
 

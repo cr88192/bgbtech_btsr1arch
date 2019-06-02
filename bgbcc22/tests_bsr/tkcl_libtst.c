@@ -8,8 +8,9 @@
 
 int main(int argc, char *argv[])
 {
-	float fx, fy, fz;
+	float fx, fy, fz, fw;
 	int a, b, c, d, e, f;
+	int i0, i1, i2;
 	int i;
 	
 	printf("SoftDiv\n");
@@ -47,9 +48,47 @@ int main(int argc, char *argv[])
 	d=__sfp_float_f32(4);
 	e=b-d; if(e<0)e=-e;
 	printf("i->f x,y: %08X %08X %08X %08X  %08X\n", a, b, c, d, e);
-	
+
+
+	fx=321098;	fy=456789;
+	a=*(uint32_t *)(&fx);
+	b=*(uint32_t *)(&fy);
+//	c=*(uint32_t *)(&fz);
+//	d=__sfp_fadd_f32(a, b);
+	c=__sfp_float_f32(321098);
+	d=__sfp_float_f32(456789);
+	e=b-d; if(e<0)e=-e;
+	printf("i->f x,y: %08X %08X %08X %08X  %08X\n", a, b, c, d, e);
+
+
+	i0=__sfp_ftrc_f32(a);
+	i1=fx;
+	printf("f->i x: %08X %d %d\n", a, i0, i1);
+
 	fx=3.14159; fy=2.7182818285;
 	fz=fx+fy;
+	fw=-fz*fz*fz;
+
+	a=*(uint32_t *)(&fx);
+	i0=__sfp_ftrc_f32(a);
+	i1=fx;
+	printf("f->i x: %08X %d %d\n", a, i0, i1);
+
+	b=*(uint32_t *)(&fy);
+	i0=__sfp_ftrc_f32(b);
+	i1=fy;
+	printf("f->i y: %08X %d %d\n", b, i0, i1);
+
+	c=*(uint32_t *)(&fz);
+	i0=__sfp_ftrc_f32(c);
+	i1=fz;
+	printf("f->i z: %08X %d %d\n", c, i0, i1);
+
+	d=*(uint32_t *)(&fw);
+	i0=__sfp_ftrc_f32(d);
+	i1=fw;
+	printf("f->i z: %08X %d %d\n", d, i0, i1);
+
 	
 	a=*(uint32_t *)(&fx);
 	b=*(uint32_t *)(&fy);

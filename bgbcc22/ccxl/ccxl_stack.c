@@ -1044,6 +1044,14 @@ int BGBCC_CCXL_StackGetConvCallArgs(BGBCC_TransState *ctx,
 		{
 			dty=rfn->args[an]->type;
 			
+			treg=dreg;
+			k=BGBCC_JX2C_NormalizeImmVRegInt(ctx, NULL, dty, &treg);
+			if(k)
+			{
+				ctx->regstack[ps]=treg;
+			}
+			else
+			
 //			if(!BGBCC_CCXL_TypeCompatibleP(ctx, dty, sty))
 			if(!BGBCC_CCXL_TypeCompatibleArchP(ctx, dty, sty))
 			{

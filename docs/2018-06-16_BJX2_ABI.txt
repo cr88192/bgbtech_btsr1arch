@@ -95,16 +95,31 @@ PE/COFF binaries using this mode are to be encoded as PE32, whereas those using 
 General:
 * GBR will be used to access any mutable sections (such as ".data" and ".bss").
 * These sections will be accessed relative to GBR.
-* GBR will be initialized relative to a "PBO Base" accessed via TBR.
-
- MOV #offs_pbo_base, R0		//special reloc
- MOV.Q (TBR, DLR), R2
- MOV R2, GBR
-
-Change:
 * PBO reloads GBR by loading a pointer from an offset relative to GBR.
-* There will be a table shared between all data regions in the process.
-* Each binary will have its offset fixed up to the appropriate index.
+** There will be a table shared between all data regions in the process.
+** Each binary will have its offset fixed up to the appropriate index.
+* GBR reload will be required for functions which may be called externally.
+** This includes exported functions and function pointers.
+
+Example of a GBR reload (64 bit address space):
+ LDI #offs_pbo_base, R0		//special reloc
+ MOV.Q (GBR, DLR), R1
+ MOV R1, GBR
+
+Example of a GBR reload (32 bit address space):
+ LDI #offs_pbo_base, R0		//special reloc
+ MOV.L (GBR, DLR), R1
+ MOV R1, GBR
+
+As emitted by the compiler, the PBO base offset will point to the start of the PBO data region, which will hold a pointer back to itself.
+
+During fixup, this base offset will be replaced with a negative offset relative to GBR. The space prior to the start of the data region will be used for an table of pointers to the other data regions for a given process.
+
+This table will be mirrored between all data regions within a given process (with the index assignments shared between processes). Sufficient space is to be provided to manage both statically and dynamically loaded libraries.
+
+If a 12-bit displacement is used as the base address, this allows up to 512 binary images to be assigned an index.
+
+The specifics of intra and inter-process index assignment will depend on the implementation.
 
 
 === Thread Local Storage ===

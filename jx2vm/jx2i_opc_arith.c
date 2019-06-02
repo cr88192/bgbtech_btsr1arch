@@ -376,7 +376,8 @@ void BJX2_Op_MULU_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_MULS_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	s64 va, vb, vc;
+//	s64 va, vb, vc;
+	s32 va, vb, vc;
 	va=(s32)(ctx->regs[op->ro]);
 	vb=(s32)(ctx->regs[op->rm]);
 	vc=va*vb;
@@ -385,12 +386,14 @@ void BJX2_Op_MULS_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_MULS_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=((s64)((s32)ctx->regs[op->rm]))*op->imm;
+//	ctx->regs[op->rn]=((s64)((s32)ctx->regs[op->rm]))*op->imm;
+	ctx->regs[op->rn]=(s32)(((s32)ctx->regs[op->rm])*op->imm);
 }
 
 void BJX2_Op_MULU_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	s64 va, vb, vc;
+//	s64 va, vb, vc;
+	u32 va, vb, vc;
 	va=(u32)(ctx->regs[op->ro]);
 	vb=(u32)(ctx->regs[op->rm]);
 	vc=va*vb;
@@ -399,7 +402,8 @@ void BJX2_Op_MULU_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_MULU_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=((u64)((u32)ctx->regs[op->rm]))*op->imm;
+//	ctx->regs[op->rn]=((u64)((u32)ctx->regs[op->rm]))*op->imm;
+	ctx->regs[op->rn]=(u32)(((u32)ctx->regs[op->rm])*op->imm);
 }
 
 void BJX2_Op_CMPEQ_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)

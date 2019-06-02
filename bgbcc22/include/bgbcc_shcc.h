@@ -762,6 +762,7 @@
 											//OOxx_xxxx_OOxx
 #define BGBCC_SH_RLC_TBR24_BJX		0x16	//TBR 24 bit (BYTE, BJX2)
 											//OOxx_xxxx
+#define BGBCC_SH_RLC_TBR12_BJX		0x17	//TBR 12 bit (BYTE, BJX2)
 
 #define BGBCC_SH_RLC_RELW16C_BSR	0x18	//Relative 16 bit (BYTE, BSR1)
 											//OOxx_OOxx

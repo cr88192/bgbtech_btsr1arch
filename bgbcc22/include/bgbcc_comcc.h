@@ -357,6 +357,8 @@ int frm_offs_thisptr;	//offset of 'this' pointer
 int lbl_rom_data_strt;
 int lbl_rom_data_end;
 
+int lbl_gbl_ptr;			//label ID for got
+
 BGBCC_CMG_Context *next;
 struct BGBCC_TransState_s *tctx;
 FILE *cgen_log;
@@ -397,6 +399,8 @@ int opcnt_3xx[256];
 int n_opcnt_3xx;
 
 int opcnt_f0xx[256];
+int opcnt_f1xx[256];
+int opcnt_f2xx[256];
 int opcnt_opw1;
 };
 

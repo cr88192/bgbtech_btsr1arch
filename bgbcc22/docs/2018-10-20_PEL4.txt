@@ -353,12 +353,12 @@ The relocations are given as 16 bit numbers:
 *** The following entry gives the address of the low part.
 ** 5: MIPS-specific fixup.
 *** 5: BJX2(DIR24): Fixup 24-bit address via instruction.
-** 6: Reserved
-** 7: BJX2: PBO/GBR DIR32
-** 8: BJX2: PBO/GBR DIR24
+** 6: BJX2: TLS/TBR DISP12 (Azzz)
+** 7: BJX2: PBO/GBR DISP32 (FAzz_zzzz-26zz)
+** 8: BJX2: PBO/GBR DISP24 (FAzz_zzzz)
 *** Initial Contents: Variable address relative to the PBO base address.
 ** 9: MIPS-specific fixup.
-** 9: BJX2: TLS/TBR DIR24
+** 9: BJX2: TLS/TBR DISP24 (FAzz_zzzz)
 *** Initial: TLS Index, Resolved to TBR-relative address of TLS Variable
 ** 10: Fixup a 64-bit address (Abs64).
 ** 11: Reserved

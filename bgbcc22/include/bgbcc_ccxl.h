@@ -48,6 +48,9 @@
 #define CCXL_TY_ARRMASK			0x0FFF0000	//small array size
 #define CCXL_TY_ARRSHL			16			//array size shl
 
+#define CCXL_TY_PCLSMASK		0x003F0000	//small array size
+#define CCXL_TY_PCLSSHL			16			//array size shl
+
 #define CCXL_TY_BASETYMAX		4096		//base type limit
 #define CCXL_TY_BASEARRMAX		4096		//base array limit
 
@@ -180,6 +183,16 @@
 #define CCXL_REGSP_SUPER		0x1000000000001FFFULL	//'super'
 // #define CCXL_REGSP_NULL		0x030000100F000000ULL	//null
 #define CCXL_REGSP_NULL			0x0480100F00000000ULL	//null
+
+#define CCXL_PFL_NEARPTR		0x0001	//near pointer
+#define CCXL_PFL_FARPTR			0x0002	//far pointer
+
+#define CCXL_PCLS_DFL			0x00	//default pointer
+#define CCXL_PCLS_NEAR			0x01	//near pointer
+#define CCXL_PCLS_FAR			0x02	//far pointer
+#define CCXL_PCLS_PACKED		0x03	//packed pointer
+#define CCXL_PCLS_BIGEND		0x04	//packed pointer
+#define CCXL_PCLS_LTLEND		0x05	//packed pointer
 
 #define CCXL_LITID_STRUCT		1
 #define CCXL_LITID_UNION		2
@@ -498,6 +511,8 @@ byte pn;	//pointer level (T, T*, T**, ...)
 byte an;	//array levels
 byte rn;	//reference (T &x)
 byte qn;	//Q array levels, T[] .. T[][][]
+byte pcls;	//Pointer Class
+// u32 pfl;	//Special Flags
 };
 
 struct BGBCC_CCXL_VirtOp_s {

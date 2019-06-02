@@ -1688,8 +1688,23 @@ int BGBCC_JX2_TryEmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,
 		odr=2; opw1=0x5300|((rn&15)<<4)|((rm&15)<<0);	break;
 	case BGBCC_SH_NMID_MOVUL:
 //	case BGBCC_SH_NMID_MOVDL:
-		if(!BGBCC_JX2_EmitCheckRegBaseGPR(ctx, rn))		break;
+//		if(!BGBCC_JX2_EmitCheckRegBaseGPR(ctx, rn))		break;
 		if(!BGBCC_JX2_EmitCheckRegAddrGPR(ctx, rm))		break;
+
+#if 1
+		if(!BGBCC_JX2_EmitCheckRegBaseGPR(ctx, rn))
+		{
+			if(!BGBCC_JX2_EmitCheckRegExtGPR(ctx, rn))
+				break;
+			if((rm==BGBCC_SH_REG_SP) && ((disp&0x3C)==disp))
+				{ odr=0; opw1=0x2A00|((rn&15)<<4)|((disp>>2)&15); break; }
+			break;
+		}
+
+		if((rm==BGBCC_SH_REG_SP) && ((disp&0x3C)==disp))
+			{ odr=0; opw1=0x2800|((rn&15)<<4)|((disp>>2)&15); break; }
+#endif
+
 //		if((disp&0x7C)==disp)		break;
 		if((disp&0x7FC)==disp)		break;
 		odr=4; opw1=0x8800|((rn&15)<<4)|((rm&15)<<0);	break;

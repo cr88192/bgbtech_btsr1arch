@@ -6,23 +6,38 @@ int BGBCC_JX2C_NormalizeImmVRegInt(
 	ccxl_register treg, treg2;
 	double f;
 	s64 li;
+	int bty;
 
 	treg=*rtreg;
 
 	if(BGBCC_CCXL_IsRegImmIntP(ctx, treg) ||
+		BGBCC_CCXL_IsRegImmUIntP(ctx, treg) ||
 		BGBCC_CCXL_IsRegImmLongP(ctx, treg) ||
 		BGBCC_CCXL_IsRegImmFloatP(ctx, treg) ||
 		BGBCC_CCXL_IsRegImmDoubleP(ctx, treg))
 	{
 		if(BGBCC_CCXL_TypeSmallSIntP(ctx, type))
 		{
-			if(BGBCC_CCXL_IsRegImmIntP(ctx, treg))
-				return(1);
+//			if(BGBCC_CCXL_IsRegImmIntP(ctx, treg))
+//				return(1);
 		
 			li=BGBCC_CCXL_GetRegImmLongValue(ctx, treg);
+
+			bty=BGBCC_CCXL_GetTypeBaseType(ctx, type);
+			switch(bty)
+			{
+			case CCXL_TY_SB: li=(signed char)li; break;
+			case CCXL_TY_UB: li=(unsigned char)li; break;
+			case CCXL_TY_SS: li=(signed short)li; break;
+			case CCXL_TY_US: li=(unsigned short)li; break;
+			case CCXL_TY_I: li=(signed int)li; break;
+			case CCXL_TY_UI: li=(unsigned int)li; break;
+			default:
+				break;
+			}
 			
-			if(((s32)li)!=li)
-				{ BGBCC_DBGBREAK }
+//			if(((s32)li)!=li)
+//				{ BGBCC_DBGBREAK }
 			
 			BGBCC_CCXL_GetRegForIntValue(ctx, &treg2, li);
 			*rtreg=treg2;
@@ -31,14 +46,27 @@ int BGBCC_JX2C_NormalizeImmVRegInt(
 
 		if(BGBCC_CCXL_TypeSmallUIntP(ctx, type))
 		{
-			if(BGBCC_CCXL_IsRegImmUIntP(ctx, treg))
-				return(1);
+//			if(BGBCC_CCXL_IsRegImmUIntP(ctx, treg))
+//				return(1);
 		
 			li=BGBCC_CCXL_GetRegImmLongValue(ctx, treg);
 			
 //			if(((u32)li)!=li)
-			if((((u32)li)!=li) && (((s32)li)!=li))
-				{ BGBCC_DBGBREAK }
+//			if((((u32)li)!=li) && (((s32)li)!=li))
+//				{ BGBCC_DBGBREAK }
+
+			bty=BGBCC_CCXL_GetTypeBaseType(ctx, type);
+			switch(bty)
+			{
+			case CCXL_TY_SB: li=(signed char)li; break;
+			case CCXL_TY_UB: li=(unsigned char)li; break;
+			case CCXL_TY_SS: li=(signed short)li; break;
+			case CCXL_TY_US: li=(unsigned short)li; break;
+			case CCXL_TY_I: li=(signed int)li; break;
+			case CCXL_TY_UI: li=(unsigned int)li; break;
+			default:
+				break;
+			}
 			
 			BGBCC_CCXL_GetRegForUIntValue(ctx, &treg2, li);
 			*rtreg=treg2;
@@ -909,6 +937,7 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegInt(
 //					if(!strncmp(ctx->cur_func->name, "D_", 2))
 //						nm1=-1;
 
+#if 0
 					if(!(	(!strncmp(ctx->cur_func->name, "TK", 2)) ||
 							(!strncmp(ctx->cur_func->name, "Mod", 3)) ||
 							(!strncmp(ctx->cur_func->name, "R_", 2)) ||
@@ -927,6 +956,7 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegInt(
 						printf("%s\n", ctx->cur_func->name);
 						nm1=-1;
 					}
+#endif
 				}
 #endif
 
@@ -941,6 +971,22 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegInt(
 #endif
 			}
 #endif
+
+#if 1
+			if(nm1<0)
+			{
+				if(opr==CCXL_BINOP_MUL)
+				{
+					if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
+						{ nm1=BGBCC_SH_NMID_DMULU; k=j; }
+//					else
+					if(!BGBCC_CCXL_TypeUnsignedP(ctx, type))
+//					if(!BGBCC_CCXL_TypeUnsignedP(ctx, type) && (j==(byte)j))
+						{ nm1=BGBCC_SH_NMID_DMULS; k=j; }
+				}
+			}
+#endif
+
 
 			if(nm1>=0)
 			{
@@ -1342,8 +1388,10 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVReg(
 		BGBCC_CCXL_TypeDoubleP(ctx, type))
 	{
 		if(sctx->fpu_soft)
+		{
 			return(BGBCC_JX2C_EmitBinaryVRegVRegVRegSoftFloat(ctx, sctx,
 				type, dreg, opr, sreg, treg));
+		}
 		return(BGBCC_JX2C_EmitBinaryVRegVRegVRegFloat(ctx, sctx,
 			type, dreg, opr, sreg, treg));
 	}
@@ -1569,6 +1617,8 @@ int BGBCC_JX2C_EmitUnaryVRegVReg(
 	ccxl_type type, ccxl_register dreg,
 	int opr, ccxl_register sreg)
 {
+	BGBCC_JX2C_NormalizeImmVRegInt(ctx, sctx, type, &sreg);
+
 	if(BGBCC_CCXL_TypeSmallIntP(ctx, type))
 	{
 		return(BGBCC_JX2C_EmitUnaryVRegVRegInt(ctx, sctx,
@@ -1852,6 +1902,9 @@ int BGBCC_JX2C_EmitCompareVRegVRegVReg(
 	int opr,
 	ccxl_register sreg, ccxl_register treg)
 {
+	BGBCC_JX2C_NormalizeImmVRegInt(ctx, sctx, type, &sreg);
+	BGBCC_JX2C_NormalizeImmVRegInt(ctx, sctx, type, &treg);
+
 	if(BGBCC_CCXL_TypeSmallIntP(ctx, type))
 	{
 		return(BGBCC_JX2C_EmitCompareVRegVRegVRegInt(ctx, sctx,
@@ -2585,6 +2638,41 @@ int BGBCC_JX2C_EmitCallBuiltinArgs(
 		return(1);
 	}
 
+	if(!strcmp(name, "__int16_bswap_s") ||
+		!strcmp(name, "__int16_bswap_u") ||
+		!strcmp(name, "__int16_bswap"))
+	{
+		nm1=-1;
+		if(!strcmp(name, "__int16_bswap_u"))
+			nm1=BGBCC_SH_NMID_EXTUW;
+		if(!strcmp(name, "__int16_bswap_s"))
+			nm1=BGBCC_SH_NMID_EXTSW;
+	
+		if(BGBCC_CCXL_RegisterIdentEqualP(ctx, dst, args[0]))
+		{
+			cdreg=BGBCC_JX2C_EmitTryGetRegisterDirty(ctx, sctx, dst);
+			BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_SWAPB, cdreg);
+			if(nm1>=0)
+				BGBCC_JX2_EmitOpReg(sctx, nm1, cdreg);
+			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dst);
+		}else
+		{
+			csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[0]);
+			cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dst);
+
+			BGBCC_JX2C_EmitOpRegReg(ctx, sctx,
+				BGBCC_SH_NMID_SWAPB, csreg, cdreg);
+			if(nm1>=0)
+				BGBCC_JX2_EmitOpReg(sctx, nm1, cdreg);
+
+			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dst);
+			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[0]);
+		}
+		
+		sctx->csrv_skip=1;
+		return(1);
+	}
+
 	if(!strcmp(name, "__int32_bswap_s") ||
 		!strcmp(name, "__int32_bswap_u") ||
 		!strcmp(name, "__int32_bswap"))
@@ -2829,6 +2917,36 @@ int BGBCC_JX2C_EmitCallBuiltinArgs(
 			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[0]);
 			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[1]);
 		}
+
+		sctx->csrv_skip=1;
+		return(1);
+	}
+
+
+	if((!strcmp(name, "__int32_dmuls") ||
+		!strcmp(name, "__int32_dmulu")) && (narg==2))
+	{
+		nm1=-1; tr1=BGBCC_SH_REG_DLR;
+
+		if(!strcmp(name, "__int32_dmuls"))
+			nm1=BGBCC_SH_NMID_DMULS;
+		if(!strcmp(name, "__int32_dmulu"))
+			nm1=BGBCC_SH_NMID_DMULU;
+	
+		csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[0]);
+		ctreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[1]);
+		cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dst);
+
+		BGBCC_JX2C_EmitOpRegReg(ctx, sctx, nm1, csreg, ctreg);
+		BGBCC_JX2C_EmitOpRegImmReg(ctx, sctx,
+			BGBCC_SH_NMID_SHLDQ, BGBCC_SH_REG_R1, 32, cdreg);
+		BGBCC_JX2C_EmitOpRegReg(ctx, sctx,
+			BGBCC_SH_NMID_ADD, BGBCC_SH_REG_R0, cdreg);
+//		BGBCC_JX2C_EmitMovRegReg(ctx, sctx, BGBCC_SH_REG_DLR, cdreg);
+
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dst);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[0]);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[1]);
 
 		sctx->csrv_skip=1;
 		return(1);

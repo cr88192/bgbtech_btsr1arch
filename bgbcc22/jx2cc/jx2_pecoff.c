@@ -1267,7 +1267,8 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 			(sctx->rlc_ty[i]!=BGBCC_SH_RLC_ABS64) &&
 			(sctx->rlc_ty[i]!=BGBCC_SH_RLC_PBO24_BJX) &&
 			(sctx->rlc_ty[i]!=BGBCC_SH_RLC_PBO32_BJX) &&
-			(sctx->rlc_ty[i]!=BGBCC_SH_RLC_TBR24_BJX))
+			(sctx->rlc_ty[i]!=BGBCC_SH_RLC_TBR24_BJX) &&
+			(sctx->rlc_ty[i]!=BGBCC_SH_RLC_TBR12_BJX))
 				continue;
 			
 		j=sctx->rlc_sec[i];
@@ -1303,6 +1304,11 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		}
 		if(sctx->rlc_ty[i]==BGBCC_SH_RLC_TBR24_BJX)
 			lva|=0x60000000;
+		if(sctx->rlc_ty[i]==BGBCC_SH_RLC_TBR12_BJX)
+		{
+//			lva|=0x70000000;
+			lva|=0x30000000;
+		}
 
 		rlctab[nrlce++]=lva;
 

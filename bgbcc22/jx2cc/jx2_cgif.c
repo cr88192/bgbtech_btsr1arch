@@ -193,8 +193,8 @@ bool BGBCC_JX2C_TypeIntRegP(BGBCC_TransState *ctx, ccxl_type ty)
 			return(true);
 		if(BGBCC_CCXL_TypeFloat16P(ctx, ty))
 			return(true);
-		if(BGBCC_CCXL_TypeBFloat16P(ctx, ty))
-			return(true);
+//		if(BGBCC_CCXL_TypeBFloat16P(ctx, ty))
+//			return(true);
 	}
 
 	if(ty.val==0x000F)
@@ -336,6 +336,11 @@ int BGBCC_JX2C_TypeGetRegClassPI(BGBCC_TransState *ctx, ccxl_type ty)
 			return(BGBCC_SH_REGCLS_AR_REF);
 		}
 
+		if(BGBCC_CCXL_TypeNearPointerP(ctx, ty))
+			{ return(BGBCC_SH_REGCLS_GR); }
+		if(BGBCC_CCXL_TypeFarPointerP(ctx, ty))
+			{ return(BGBCC_SH_REGCLS_QGR); }
+
 //		if(BGBCC_CCXL_TypePointerP(ctx, ty))
 		if(1)
 		{
@@ -400,6 +405,8 @@ int BGBCC_JX2C_TypeGetRegClassPI(BGBCC_TransState *ctx, ccxl_type ty)
 
 			if(BGBCC_CCXL_TypeFloatP(ctx, ty))
 				return(BGBCC_SH_REGCLS_GR);
+			if(BGBCC_CCXL_TypeFloat16P(ctx, ty))
+				return(BGBCC_SH_REGCLS_GR);
 		}
 	}
 
@@ -423,6 +430,8 @@ int BGBCC_JX2C_TypeGetRegClassPI(BGBCC_TransState *ctx, ccxl_type ty)
 				return(BGBCC_SH_REGCLS_QGR);
 
 			if(BGBCC_CCXL_TypeFloatP(ctx, ty))
+				return(BGBCC_SH_REGCLS_GR);
+			if(BGBCC_CCXL_TypeFloat16P(ctx, ty))
 				return(BGBCC_SH_REGCLS_GR);
 		}
 	}
@@ -3254,6 +3263,10 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			bgbcc_jx2cc_setu16en(ctr+2, en, w1);
 			break;
 
+		case BGBCC_SH_RLC_TBR24_BJX:
+			break;
+		case BGBCC_SH_RLC_TBR12_BJX:
+			break;
 
 		case BGBCC_SH_RLC_RELW8_BSR:
 			w0=bgbcc_getu16en(ctr, en);
@@ -3718,11 +3731,15 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 		BGBCC_JX2_EmitQWordAbs64(sctx, j);
 //		BGBCC_JX2_EmitQWord(sctx, 0);
 
-		/* Reserve space for pointers to other images. */
-		for(i=0; i<127; i++)
-		{
-			BGBCC_JX2_EmitQWord(sctx, 0);
-		}
+		sctx->lbl_gbl_ptr=j;
+
+//		/* Reserve space for pointers to other images. */
+//		for(i=0; i<127; i++)
+//		{
+//			BGBCC_JX2_EmitQWord(sctx, 0);
+//		}
+
+		/* Change: Pointers table will have negative offsets relative to GBR. */
 
 	}
 
@@ -4213,6 +4230,15 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	
 	for(i=0; i<16; i++)
 	{
+		if((i==0xA) || (i==0xB) || (i==0xC) || (i==0xD))
+		{
+			k=0;
+			for(j=0; j<16; j++)
+				{ k+=sctx->opcnt_hi8[i*16+j]; }
+			printf("  %1Xx %d\n", i, k);
+			continue;
+		}
+	
 		printf("A %1Xx ", i);
 		for(j=0; j<8; j++)
 		{
@@ -4227,6 +4253,7 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 		}
 		printf("\n");
 	}
+	printf("\n");
 #endif
 
 #if 1
@@ -4246,7 +4273,8 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 			printf("     x%1X", j);
 	printf("\n");
 
-	for(i=0; i<16; i++)
+//	for(i=0; i<16; i++)
+	for(i=0; i<8; i++)
 	{
 		printf("A %1Xx ", i);
 		for(j=0; j<8; j++)
@@ -4262,6 +4290,7 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 		}
 		printf("\n");
 	}
+	printf("\n");
 #endif
 
 #if 1
@@ -4283,6 +4312,15 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 
 	for(i=0; i<16; i++)
 	{
+		if(i>=0xC)
+		{
+			k=0;
+			for(j=0; j<16; j++)
+				{ k+=sctx->opcnt_f0xx[i*16+j]; }
+			printf("  %1Xx %d\n", i, k);
+			continue;
+		}
+	
 		printf("A %1Xx ", i);
 		for(j=0; j<8; j++)
 		{
@@ -4297,6 +4335,72 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 		}
 		printf("\n");
 	}
+	printf("\n");
+#endif
+
+#if 1
+	printf("High F1xx op use map:\n");
+	for(i=0; i<8; i++)
+	{
+		printf(" %6d", sctx->opcnt_f1xx[i]);
+	}
+	printf("\n");
+	for(i=8; i<16; i++)
+	{
+		printf(" %6d", sctx->opcnt_f1xx[i]);
+	}
+	printf("\n");
+#endif
+
+#if 1
+	printf("High F2xx op use map:\n");
+
+	printf("A    ");
+	for(j=0; j<8; j++)
+			printf("     x%1X", j);
+	printf("\n");
+
+	printf("B     ");
+	for(j=8; j<16; j++)
+			printf("     x%1X", j);
+	printf("\n");
+
+	printf("0x..7x ");
+	for(i=0; i<8; i++)
+	{
+		k=0;
+		for(j=0; j<16; j++)
+			{ k+=sctx->opcnt_f2xx[i*16+j]; }
+		printf(" %6d", k);
+	}
+	printf("\n");
+	printf("8x..Bx ");
+	for(i=8; i<12; i++)
+	{
+		k=0;
+		for(j=0; j<16; j++)
+			{ k+=sctx->opcnt_f2xx[i*16+j]; }
+		printf(" %6d", k);
+	}
+	printf("\n");
+
+	for(i=12; i<16; i++)
+	{
+		printf("A %1Xx ", i);
+		for(j=0; j<8; j++)
+		{
+			printf(" %6d", sctx->opcnt_f2xx[i*16+j]);
+		}
+		printf("\n");
+
+		printf("B %1Xx  ", i);
+		for(j=8; j<16; j++)
+		{
+			printf(" %6d", sctx->opcnt_f2xx[i*16+j]);
+		}
+		printf("\n");
+	}
+	printf("\n");
 #endif
 
 	if(sctx->lvt16_n_idx>0)
