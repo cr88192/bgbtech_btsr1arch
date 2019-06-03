@@ -704,6 +704,7 @@ char *BJX2_DbgPrintNameForFReg(BJX2_Context *ctx, int reg)
 
 int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 {
+	char tb1[64];
 	BJX2_Opcode *op1;
 	s64 li;
 	int msc, psc, brpc;
@@ -726,18 +727,42 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		}else
 		if(op->fl&BJX2_OPFL_TWOWORD)
 		{
-			if(fl&2)
+			if((op->nmid==BJX2_NMID_PRED_T) || (op->nmid==BJX2_NMID_PRED_F))
 			{
-				printf("%08X  (%2d) %04X_%04X      %-8s ",
-					(u32)op->pc, op->cyc,
-					op->opn, op->opn2,
-					BJX2_DbgPrintNameForNmid(ctx, op->nmid));
+				op1=op->data;
+
+				sprintf(tb1, "%s?%c",
+					BJX2_DbgPrintNameForNmid(ctx, op1->nmid),
+						(op->nmid==BJX2_NMID_PRED_T)?'T':'F');
+
+				if(fl&2)
+				{
+					printf("%08X  (%2d) %04X_%04X      %-8s ",
+						(u32)op->pc, op->cyc,
+						op->opn, op->opn2,
+						tb1);
+				}else
+				{
+					printf("%08X  (%2d) %04X_%04X %-8s ",
+						(u32)op->pc, op->cyc,
+						op->opn, op->opn2,
+						tb1);
+				}
 			}else
 			{
-				printf("%08X  (%2d) %04X_%04X %-8s ",
-					(u32)op->pc, op->cyc,
-					op->opn, op->opn2,
-					BJX2_DbgPrintNameForNmid(ctx, op->nmid));
+				if(fl&2)
+				{
+					printf("%08X  (%2d) %04X_%04X      %-8s ",
+						(u32)op->pc, op->cyc,
+						op->opn, op->opn2,
+						BJX2_DbgPrintNameForNmid(ctx, op->nmid));
+				}else
+				{
+					printf("%08X  (%2d) %04X_%04X %-8s ",
+						(u32)op->pc, op->cyc,
+						op->opn, op->opn2,
+						BJX2_DbgPrintNameForNmid(ctx, op->nmid));
+				}
 			}
 			brpc=op->pc+4;
 		}else
@@ -794,6 +819,8 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 	case BJX2_NMID_FMOVD:
 		msc=8;	break;
 	}
+
+	op1=NULL;
 
 	switch(op->fmid)
 	{
@@ -1038,7 +1065,8 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		break;
 	}
 
-	printf("\n");
+	if(!op1)
+		printf("\n");
 	return(0);
 }
 

@@ -919,7 +919,8 @@ int BGBCC_JX2_EmitStatWord(BGBCC_JX2_Context *ctx, int val)
 	
 	ctx->stat_opc_tot++;
 
-	if((val>>12)==0xF)
+//	if((val>>12)==0xF)
+	if(((val>>12)&0xE)==0xE)
 	{
 		ctx->opcnt_opw1=val;
 	

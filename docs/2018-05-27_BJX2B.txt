@@ -22,7 +22,7 @@ Several ISA Profiles may exist:
 The compiler is not to use features which are absent in a given profile, and will not assume the presence of features marked as optional.
 
 
-=== BJX2 Full Profile ===
+==== BJX2 Full Profile ====
 
 BJX2 Full Profile
 * Will have MMU and FPU.
@@ -31,6 +31,7 @@ BJX2 Full Profile
 * Will support 16, 32, and 48 bit instruction encodings.
 * Will support GSV and JCMP.
 * Support for WEX is optional.
+* Support MULQ is optional.
 
 ABI: HardFP, Base-Relocatable.
 
@@ -42,6 +43,7 @@ BJX2 Basic Profile
 * Will use a 32-bit address space (both virtual and physical).
 * Will support 16, 32, and 48 bit instruction encodings.
 * Support for GSV and JCMP is optional.
+* Will not support MULQ.
 * Will not support WEX.
 
 ABI: HardFP, Base-Relocatable.
@@ -58,8 +60,9 @@ BJX2 Lite Profile
 * Will not support WEX.
 
 ABI: SoftFP
-* Base-Relocatable for boot image
-* PBO, Application binaries and libraries.
+* Absolute Addressing for ROM
+* PBO or Base-Relocatable for boot image.
+* PBO for application binaries and libraries.
 
 
 ==== BJX2 Fix32 Profile ====
@@ -521,10 +524,11 @@ The instructions encoded in the predicated ranges will be otherwise equivalent t
 
 Predicated instructions will be executed if the state of SR.T matches their expected value. If the state of this flag does not match (at the time the instruction is executed), the instruction will function as a NOP.
 
-Instructions whose behavior already depends on SR.T or whose function is to update SR.T may not be encoded as predicated instructions.
+Instructions whose behavior already depends on SR.T or whose function is to update SR.T may not be encoded as predicated instructions. Branches and other control-flow instructions similarly may not be predicated.
 
 Examples of instructions which will not allow predication:
 * BRA, BSR, BT, and BF
+** RTS, RTSU, RTE, etc.
 * CSELT and similar
 * CMPxx, ...
 * ADC, SBB
@@ -1055,7 +1059,8 @@ F0zz Instruction Block:
 ** F0nm_1go1  SUB		Rm, Ro, Rn				//Rn=Rm-Ro
 ** F0nm_1go2  MULS		Rm, Ro, Rn				//Rn=Rm*Ro (Signed Result)
 ** F0nm_1Go2  MULU		Rm, Ro, Rn				//Rn=Rm*Ro (Unsigned Result)
-** F0nm_1eo3  -
+** F0nm_1go3  MULQS		Rm, Ro, Rn				//(MULQ) Signed 64b Result
+** F0nm_1Go3  MULQU		Rm, Ro, Rn				//(MULQ) Unsigned 64b Result
 ** F0nm_1eo4  -
 ** F0nm_1go5  AND		Rm, Ro, Rn				//Rn=Rm AND Ro
 ** F0nm_1go6  OR		Rm, Ro, Rn				//Rn=Rm OR  Ro
@@ -1121,7 +1126,7 @@ F0zz Instruction Block:
 *** F0nm_1e1C  NEG		Rm, Rn				//Rn=(~Rn)+1
 *** F0nm_1e2C ? CLZ{Q}	Rm, Rn				//Count Leading Zeroes
 *** F0nm_1e3C -
-*** F0nm_1e4C ? MUL.W	Rm, Rn				//(DHR,DLR)=Rm*Rn (Signed 18*18=>36)
+*** F0nm_1g4C ? MUL.W	Rm, Rn				//(DHR,DLR)=Rm*Rn (Signed 18*18=>36)
 *** F0nm_1g5C  EXTS.L	Rm, Rn				//Q=0
 *** F0nm_1G5C  EXTU.L	Rm, Rn				//Q=1
 *** F0nm_1e6C  SHAD{Q}	Rm, Rn				//Barrel Shift, Arithmetic
@@ -1531,10 +1536,10 @@ These forms are not available in Fixed-Length or Lite Profiles.
 * FDCn_iiii_iiii  ADD		#imm32s, Rk		//R16..R31
 * FCDn_jjjj_jjjj  LDISH32	#imm32u, Rn		//R0..R15
 * FDDn_jjjj_jjjj  LDISH32	#imm32u, Rk		//R16..R31
-* FCEn_jjjj_jjjj  MOV		#imm32u, Rn		//R0..R15 (Zero Extend)
-* FDEn_jjjj_jjjj  MOV		#imm32u, Rk		//R16..R31 (Zero Extend)
-* FCFn_jjjj_jjjj  MOV		#imm32n, Rn		//R0..R15 (One Extend)
-* FDFn_jjjj_jjjj  MOV		#imm32n, Rk		//R16..R31 (One Extend)
+* FCEn_jjjj_jjjj  LDIZ		#imm32u, Rn		//R0..R15 (Zero Extend)
+* FDEn_jjjj_jjjj  LDIZ		#imm32u, Rk		//R16..R31 (Zero Extend)
+* FCFn_jjjj_jjjj  LDIN		#imm32n, Rn		//R0..R15 (One Extend)
+* FDFn_jjjj_jjjj  LDIN		#imm32n, Rk		//R16..R31 (One Extend)
 
 Note that 32 bit immediates and displacements will be encoded in low-high order such that the value in-memory has the proper little-endian byte ordering.
 

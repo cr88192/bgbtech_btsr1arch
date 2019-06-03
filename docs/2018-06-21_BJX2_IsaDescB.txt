@@ -462,6 +462,7 @@ This will use a scale factor of 2.
 
 === LDIN / LDIZ ===
 
+Targeting R0/DLR:
 * 24jj       LDIZ	#imm8u, DLR
 * 25jj       LDIN	#imm8n, DLR
 * Ajjj       LDIZ	#imm12u, DLR
@@ -469,7 +470,23 @@ This will use a scale factor of 2.
 * FAjj_jjjj	 LDIZ	#imm24u, DLR		//Zero Extend
 * FBjj_jjjj	 LDIN	#imm24n, DLR		//One Extend
 
+Targeting GPRs:
+* Dnii            LDI		#imm8s, Rn		//Rn=Imm8
+* F2n0_Chjj       LDIZ		#imm10u, Rn		//(WEX2), Rn=Imm10u
+* F2n0_CHjj       LDIZD		#imm10u, Rn		//(WEX2), Rn=Imm10u (Hi=Undef)
+* F2n1_Chjj       LDIN		#imm10n, Rn		//(WEX2), Rn=Imm10n
+* F2n1_CHjj       LDIND		#imm10n, Rn		//(WEX2), Rn=Imm10n (Hi=Undef)
+* F80n_iiii       LDIZ		#imm16u, Rn
+* F81n_iiii       LDIZ		#imm16u, Rk
+* F82n_iiii       LDIN		#imm16n, Rn
+* F83n_iiii       LDIN		#imm16n, Rk
+* FCEn_iiii_iiii  LDIZ		#imm32u, Rn
+* FDEn_iiii_iiii  LDIZ		#imm32u, Rk
+* FCFn_iiii_iiii  LDIN		#imm32n, Rn		//R0..R15
+* FDFn_iiii_iiii  LDIN		#imm32n, Rk		//R16..R31
+
 Load an 8, 12, or 24 bit value into DLR.
+Load an 8, 10, 16, or 32 bit value into a GPR.
 
 LDIZ will zero extend the value up to the size of the register.
 
@@ -517,25 +534,7 @@ MOV, Control Register
 * F0nm_1eAC       MOV		Rm, Sn				//Cn=Rm
 * F0nm_1eBC       MOV		Sm, Rn				//Rn=Cm
 
-MOV, Constant
-* Enii            MOV		#imm8s, Rn		//Rn=Imm8
-* F2n0_Chjj       MOV		#imm10u, Rn		//(WEX2), Rn=Imm10u
-* F2n0_CHjj       MOVD		#imm10u, Rn		//(WEX2), Rn=Imm10u (Hi=Undef)
-* F2n1_Chjj       MOV		#imm10n, Rn		//(WEX2), Rn=Imm10n
-* F2n1_CHjj       MOVD		#imm10n, Rn		//(WEX2), Rn=Imm10n (Hi=Undef)
-* F80n_iiii       MOV		#imm16u, Rn
-* F81n_iiii       MOV		#imm16u, Rk
-* F82n_iiii       MOV		#imm16n, Rn
-* F83n_iiii       MOV		#imm16n, Rk
-* FCEn_iiii_iiii  MOV		#imm32s, Rn
-* FDEn_iiii_iiii  MOV		#imm32s, Rk
-* FCFn_iiii_iiii  MOV		#imm32x, Rn		//R0..R15 (Xor Extend)
-* FDFn_iiii_iiii  MOV		#imm32x, Rk		//R16..R31 (Xor Extend)
-
 Move a value from the source to the destination register.
-
-
-The Xor-Extend case extends the value with the opposite of the sign bit, and thus a value with the MSB set is zero-extended, and a value with the MSB clear is one extended. This special case is intended to allow the Imm32s case to be used with normal 32-bit signed fixups.
 
 
 === MOV.B ===
@@ -590,23 +589,23 @@ For example, F0-28 and F1-2 could both achieve a similar purpose, so don't need 
 === MOV.Q ===
 
 * 03nm            MOV.Q		Rm, (Rn)
-* 07nm            MOV.Q		Rm, (Rn, DLR)		//(Rn==0): PC-Rel
+* 07nm            MOV.Q		Rm, (Rn, DLR)
 * 0Bnm            MOV.Q		(Rm), Rn
-* 0Fnm            MOV.Q		(Rm, DLR), Rn		//(Rm==0): PC-Rel
-* 41nd            MOV.Q		Rn, (SP, disp4u)	//Stack-Relative Store
-* 43nd            MOV.Q		Rk, (SP, disp4u)	//Stack-Relative Store
-* 45nd            MOV.Q		(SP, disp4u), Rn	//Stack-Relative Load
-* 47nd            MOV.Q		(SP, disp4u), Rk	//Stack-Relative Load
-* F0nm_0go7       MOV.Q		Rm, (Rn, Ro)		//Q=0
-* F0nm_0goF       MOV.Q		(Rm, Ro), Rn		//Q=0
+* 0Fnm            MOV.Q		(Rm, DLR), Rn
+* 41nd            MOV.Q		Rn, (SP, disp4u)
+* 43nd            MOV.Q		Rk, (SP, disp4u)
+* 45nd            MOV.Q		(SP, disp4u), Rn
+* 47nd            MOV.Q		(SP, disp4u), Rk
+* F0nm_0go7       MOV.Q		Rm, (Rn, Ro)
+* F0nm_0goF       MOV.Q		(Rm, Ro), Rn
 * F1nm_3gdd       MOV.Q		Rm, (Rn, disp9u)
 * F1nm_Bgdd       MOV.Q		(Rm, disp9u), Rn
 * FC0g_03nm_dddd  MOV.Q		Rm, (Rn, disp17s)
 * FC0g_0Bnm_dddd  MOV.Q		(Rm, disp17s), Rn
-* FC27_3ndd_dddd  MOV.Q		Rn, (PC, disp24s)	//PC-Rel Store
-* FC27_Bndd_dddd  MOV.Q		(PC, disp24s), Rn	//PC-Rel Load
-* FD27_3ndd_dddd  MOV.Q		Rk, (PC, disp24s)	//PC-Rel Store
-* FD27_Bndd_dddd  MOV.Q		(PC, disp24s), Rk	//PC-Rel Load
+* FC27_3ndd_dddd  MOV.Q		Rn, (PC, disp24s)
+* FC27_Bndd_dddd  MOV.Q		(PC, disp24s), Rn
+* FD27_3ndd_dddd  MOV.Q		Rk, (PC, disp24s)
+* FD27_Bndd_dddd  MOV.Q		(PC, disp24s), Rk
 
 Load or store a QWord to/from memory.
 
@@ -614,19 +613,19 @@ Load or store a QWord to/from memory.
 === MOV.W ===
 
 * 01nm            MOV.W		Rm, (Rn)
-* 05nm            MOV.W		Rm, (Rn, DLR)		//(Rn==0): PC-Rel
+* 05nm            MOV.W		Rm, (Rn, DLR)
 * 09nm            MOV.W		(Rm), Rn
-* 0Dnm            MOV.W		(Rm, DLR), Rn		//(Rm==0): PC-Rel
-* F0nm_0go5       MOV.W		Rm, (Rn, Ro)		//Q=0	//(Rn==0): PC-Rel
-* F0nm_0goD       MOV.W		(Rm, Ro), Rn		//Q=0	//(Rm==0): PC-Rel
+* 0Dnm            MOV.W		(Rm, DLR), Rn
+* F0nm_0go5       MOV.W		Rm, (Rn, Ro)
+* F0nm_0goD       MOV.W		(Rm, Ro), Rn
 * F1nm_1gdd       MOV.W		Rm, (Rn, disp9u)
 * F1nm_9gdd       MOV.W		(Rm, disp9u), Rn
 * FC0e_01nm_dddd  MOV.W		Rm, (Rn, disp17s)
 * FC0g_09nm_dddd  MOV.W		(Rm, disp17s), Rn
-* FC27_1ndd_dddd  MOV.W		Rn, (PC, disp24s)	//PC-Rel Store
-* FC27_9ndd_dddd  MOV.W		(PC, disp24s), Rn	//PC-Rel Load
-* FD27_1ndd_dddd  MOV.W		Rk, (PC, disp24s)	//PC-Rel Store
-* FD27_9ndd_dddd  MOV.W		(PC, disp24s), Rk	//PC-Rel Load
+* FC27_1ndd_dddd  MOV.W		Rn, (PC, disp24s)
+* FC27_9ndd_dddd  MOV.W		(PC, disp24s), Rn
+* FD27_1ndd_dddd  MOV.W		Rk, (PC, disp24s)
+* FD27_9ndd_dddd  MOV.W		(PC, disp24s), Rk
 
 Load or store a Word to/from memory.
 The Word value is sign extended to the size of the register.
@@ -651,12 +650,12 @@ This operation is intended for cases where the high order bits of the register a
 === MOVU.B ===
 
 * 50nm            MOVU.B	(Rm), Rn
-* 52nm            MOVU.B	(Rm, DLR), Rn		//(Rm==0): PC-Rel
-* F0nm_0GoC       MOVU.B	(Rm, Ro), Rn		//(Rm==0): PC-Rel
+* 52nm            MOVU.B	(Rm, DLR), Rn
+* F0nm_0GoC       MOVU.B	(Rm, Ro), Rn
 * F1nm_8Gdd       MOVU.B	(Rm, disp9u), Rn
 * FC0G_08nm_dddd  MOVU.B	(Rm, disp17s), Rn
-* FC27_Cndd_dddd  MOVU.B	(PC, disp24s), Rn	//PC-Rel Load
-* FD27_Cndd_dddd  MOVU.B	(PC, disp24s), Rk	//PC-Rel Load
+* FC27_Cndd_dddd  MOVU.B	(PC, disp24s), Rn
+* FD27_Cndd_dddd  MOVU.B	(PC, disp24s), Rk
 
 Load or store a Byte to/from memory.
 The byte is zero extended to the size of the register.
@@ -666,13 +665,15 @@ Note that these instruction forms will be specific to the 32-bit ISA.
 
 === MOVU.L ===
 
+* 28nd            MOVU.L	(SP, disp4u), Rn
+* 2And            MOVU.L	(SP, disp4u), Rk
 * 80nm            MOVU.L	(Rm), Rn
-* 88nm            MOVU.L	(Rm, DLR), Rn		//(Rm==0): PC-Rel
-* F0nm_0GoE       MOVU.L	(Rm, Ro), Rn		//(Rm==0): PC-Rel
+* 88nm            MOVU.L	(Rm, DLR), Rn
+* F0nm_0GoE       MOVU.L	(Rm, Ro), Rn
 * F1nm_AGdd       MOVU.L	(Rm, disp9u), Rn
 * FC0G_0Anm_dddd  MOVU.L	(Rm, disp17s), Rn
-* FC27_Endd_dddd  MOVU.L	(PC, disp24s), Rn	//PC-Rel Load
-* FD27_Endd_dddd  MOVU.L	(PC, disp24s), Rk	//PC-Rel Load
+* FC27_Endd_dddd  MOVU.L	(PC, disp24s), Rn
+* FD27_Endd_dddd  MOVU.L	(PC, disp24s), Rk
 
 Load or store a Byte to/from memory.
 The byte is zero extended to the size of the register.
@@ -683,12 +684,12 @@ Note that these instruction forms will be specific to the 32-bit ISA.
 === MOVU.W ===
 
 * 51nm            MOVU.W	(Rm), Rn
-* 53nm            MOVU.W	(Rm, DLR), Rn		//(Rm==0): PC-Rel
-* F0nm_0GoD       MOVU.W	(Rm, Ro), Rn		//(Rm==0): PC-Rel
+* 53nm            MOVU.W	(Rm, DLR), Rn
+* F0nm_0GoD       MOVU.W	(Rm, Ro), Rn
 * F1nm_9Gdd       MOVU.W	(Rm, disp9u), Rn
 * FC0G_09nm_dddd  MOVU.W	(Rm, disp17s), Rn
-* FC27_Dndd_dddd  MOVU.W	(PC, disp24s), Rn	//PC-Rel Load
-* FD27_Dndd_dddd  MOVU.W	(PC, disp24s), Rk	//PC-Rel Load
+* FC27_Dndd_dddd  MOVU.W	(PC, disp24s), Rn
+* FD27_Dndd_dddd  MOVU.W	(PC, disp24s), Rk
 
 Load or store a Word to/from memory.
 The word is zero extended to the size of the register.
@@ -696,11 +697,12 @@ The word is zero extended to the size of the register.
 Note that these instruction forms will be specific to the 32-bit ISA.
 
 
-=== MUL ===
+=== MULS (3R) ===
 
-* F0nm_1go2       MUL	Rm, Ro, Rn				//Rn=Rm*Ro, Q=0
-* F2nm_2gjj       MUL	Rm, #imm9u, Rn		//
-* FC0G_12nm_dddd  MUL	Rm, imm17s, Rn
+* 5Anm            MULS	Rm, DLR, Rn
+* F0nm_1go2       MULS	Rm, Ro, Rn
+* F2nm_2gjj       MULS	Rm, #imm9u, Rn
+* FC0G_12nm_dddd  MULS	Rm, #imm17s, Rn
 
 Performs a narrow multiply (32 bit).
 Only the low 32 bits are used from the input registers, and the resulting value is 32-bit sign extended.
@@ -709,7 +711,7 @@ Only the low 32 bits are used from the input registers, and the resulting value 
 === MULS ===
 
 * 56nm       MULS	Rm, Rn
-* F0nm_1e99  MULS	Rm, Rn				//(DHR,DLR)=Rm*Rn (Signed Result)
+* F0nm_1e99  MULS	Rm, Rn
 
 (DHR,DLR)=Rm*Rn (Signed Result).
 
@@ -718,10 +720,19 @@ Perform a signed multiply storing the result of the multiplication in the DHR,DL
 Each register contains 32 bits of the result, with DHR being 32-bit sign extended.
 
 
+=== MULU (3R) ===
+
+* F0nm_1Go2       MULU	Rm, Ro, Rn
+* F2nm_2Gjj       MULU	Rm, #imm9u, Rn
+
+Performs a narrow multiply (32 bit).
+Only the low 32 bits are used from the input registers, and the resulting value is 32-bit zero extended.
+
+
 === MULU ===
 
 * 57nm       MULU	Rm, Rn
-* F0nm_1eF9  MULU	Rm, Rn				//(DHR,DLR)=Rm*Rn (Unsigned Result)
+* F0nm_1eF9  MULU	Rm, Rn
 
 (DHR,DLR)=Rm*Rn (Unsigned Result).
 
@@ -734,7 +745,6 @@ Each register contains 32 bits of the result, with both DLR and DHR being 32-bit
 
 * 33n1       NEG	Rn
 * 33nC       NEG	Rn, DLR
-* 33nD       NEG	Rk, DLR
 * F0nm_1e1C  NEG	Rm, Rn				//Rn=(~Rn)+1
 
 Rn=(~Rn)+1
@@ -1194,7 +1204,7 @@ This operation will test all 64 bits.
 Perform a bitwise XOR of the source and destination registers, storing the result in the destination.
 
 
-== FPU Instructions ==
+== FPU Instructions (FPU, Optional) ==
 
 The BJX2 FPU aims more to be "sufficient" and "reasonably cheap" than strict adherence to IEEE 754. An FPU is allowed, but not required, to be IEEE 754 conformant.
 
@@ -1251,7 +1261,7 @@ Nominally, this will behave the same as an integer compare, except that the resu
 * F0nm_9eDC  FCMPGT		FRm, FRn			//SR.T=(FRn GT FRm)
 
 
-=== FDIV (Drop) ===
+=== FDIV (FDIV, Optional) ===
 
 * 9Bnm       FDIV		FRm, FRn			//(Opt) FRn=FRn/FRm
 * F0nm_9eoB  FDIV		FRm, FRo, FRn		//(Opt)
@@ -1337,7 +1347,7 @@ Negate the value held in FRn.
 This operation effectively inverts the sign bit.
 
 
-=== FRCP ===
+=== FRCP (FDIV, Optional) ===
 
 * 9FnC       FRCP		FRn			//Reciprocal (Exact, Opt)
 * F0nm_9eCF  FRCP		FRm, FRn	//Reciprocal (Exact, Opt)
@@ -1347,7 +1357,7 @@ Calculate the reciprocal of FRn and store the result in FRn.
 This instruction is Optional (FPDIV).
 
 
-=== FRCPA ===
+=== FRCPA (FDIV, Optional) ===
 
 * 9FnA FRCPA		FRn				//Reciprocal (Approximate, Opt)
 
@@ -1385,7 +1395,7 @@ Floating point subtract. Subtract FRm from FRn (2R) and store result in FRn.
 Subtract FRo from FRm (3R) and store the result in FRn.
 
 
-=== FSQRT ===
+=== FSQRT (FDIV, Optional) ===
 
 * 9FnD       FSQRT	FRn			//Square Root (Opt)
 * F0nm_9eDF  FSQRT	FRm, FRn	//Square Root (Exact, Opt)
@@ -1395,7 +1405,7 @@ Calculate the Square Root of FRn and store the result in FRn.
 This instruction is Optional (FPDIV).
 
 
-=== FSQRTA ===
+=== FSQRTA (FDIV, Optional) ===
 
 * 9FnB FSQRTA		FRn					//Square Root (Approximate, Opt)
 
@@ -1404,7 +1414,7 @@ Calculate an approximation of the Square Root of FRn and store the result in FRn
 This instruction is Optional.
 
 
-== GPR SIMD Extension ==
+== GPR SIMD Extension (GSV, Optional) ==
 
 These instructions will be considered part of the GPR SIMD Vector Extension (GSV). These instruction forms will be considered optional, and exist mostly to add rudimentary SIMD support to BJX2.
 

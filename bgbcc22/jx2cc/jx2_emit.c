@@ -455,7 +455,7 @@ int BGBCC_JX2_EmitLoadDrImm(
 {
 	int opw1, opw2, opw3;
 
-	if(!ctx->is_fixed32)
+	if(!ctx->is_fixed32 && !ctx->op_is_wex2)
 	{
 #if 1
 		if((imm&255)==imm)
@@ -531,7 +531,7 @@ int BGBCC_JX2_EmitLoadDrImm(
 #endif
 
 #if 1
-	if(!ctx->is_fixed32 && !ctx->no_ops48)
+	if(!ctx->is_fixed32 && !ctx->no_ops48 && !ctx->op_is_wex2)
 	{
 	//	if(1)
 	//	if(!BGBCC_JX2_CheckPadCross48(ctx))
@@ -606,7 +606,7 @@ int BGBCC_JX2_EmitLoadDrImm(
 #endif
 	
 #if 1
-	if(!ctx->is_fixed32)
+	if(!ctx->is_fixed32 && !ctx->op_is_wex2)
 	{
 		if((imm&0xFFFF)==0x0000)
 		{
@@ -664,9 +664,9 @@ int BGBCC_JX2_EmitLoadDrImm(
 	}
 #endif
 
-	if(ctx->is_fixed32 || ctx->no_ops48)
+	if(ctx->is_fixed32 || ctx->no_ops48 || ctx->op_is_wex2)
 	{
-		if(!ctx->is_fixed32)
+		if(!ctx->is_fixed32 && !ctx->op_is_wex2)
 		{
 			if((((imm>>8)&16777215)==(imm>>8)) ||
 				(((imm>>8)|(~16777215))==(imm>>8)))
@@ -786,7 +786,7 @@ int BGBCC_JX2_EmitLoadRegImm(
 //		ctx->test_lclalign=3;
 //		BGBCC_JX2_EmitLoadDrImm(ctx, imm);
 
-		if(!ctx->is_fixed32)
+		if(!ctx->is_fixed32 && !ctx->op_is_wex2)
 		{
 			if(((sbyte)imm)==imm)
 			{
@@ -815,7 +815,7 @@ int BGBCC_JX2_EmitLoadRegImm(
 #endif
 
 #if 1
-		if(!ctx->is_fixed32 && !ctx->no_ops48)
+		if(!ctx->is_fixed32 && !ctx->no_ops48 && !ctx->op_is_wex2)
 		{
 	//		if(!BGBCC_JX2_CheckPadCross48(ctx))
 			if(!BGBCC_JX2_CheckPadCross48(ctx) ||
@@ -852,7 +852,7 @@ int BGBCC_JX2_EmitLoadRegImm(
 		}
 #endif
 
-		if(ctx->is_fixed32)
+		if(ctx->is_fixed32 || ctx->op_is_wex2)
 		{
 			BGBCC_DBGBREAK
 		}
@@ -890,7 +890,7 @@ int BGBCC_JX2_EmitLoadRegImm(
 			}
 		}
 
-		if(!ctx->is_fixed32 && !ctx->no_ops48)
+		if(!ctx->is_fixed32 && !ctx->no_ops48 && !ctx->op_is_wex2)
 		{
 	//		if(!BGBCC_JX2_CheckPadCross48(ctx))
 			if(!BGBCC_JX2_CheckPadCross48(ctx) ||
@@ -927,7 +927,7 @@ int BGBCC_JX2_EmitLoadRegImm(
 			return(1);
 		}
 
-		if(ctx->is_fixed32)
+		if(ctx->is_fixed32 || ctx->op_is_wex2)
 		{
 			BGBCC_DBGBREAK
 		}
@@ -955,7 +955,7 @@ int BGBCC_JX2_EmitLoadRegImm(
 		
 		if(rt1>0)
 		{
-			if(ctx->is_fixed32)
+			if(ctx->is_fixed32 || ctx->op_is_wex2)
 			{
 				opw1=0xF003;
 				opw2=0x9F00|((reg&15)<<4);
@@ -971,7 +971,7 @@ int BGBCC_JX2_EmitLoadRegImm(
 			return(1);
 		}
 
-		if(ctx->is_fixed32)
+		if(ctx->is_fixed32 || ctx->op_is_wex2)
 		{
 			opw1=0xF000;
 			opw2=0x9F00|((reg&15)<<4);
@@ -1108,7 +1108,7 @@ int BGBCC_JX2_EmitLoadRegImm64P(
 	if(BGBCC_JX2_EmitCheckRegBaseGPR(ctx, reg))
 //	if(0)
 	{
-		if(!ctx->is_fixed32)
+		if(!ctx->is_fixed32 && !ctx->op_is_wex2)
 		{
 			if(((sbyte)imm)==imm)
 			{
@@ -1131,7 +1131,7 @@ int BGBCC_JX2_EmitLoadRegImm64P(
 			}
 		}
 
-		if(!ctx->is_fixed32)
+		if(!ctx->is_fixed32 && !ctx->op_is_wex2)
 		{
 	//		if(!BGBCC_JX2_CheckPadCross48(ctx))
 			if(!BGBCC_JX2_CheckPadCross48(ctx) ||
@@ -1209,7 +1209,7 @@ int BGBCC_JX2_EmitLoadRegImm64P(
 			return(1);
 		}
 
-		if(ctx->is_fixed32)
+		if(ctx->is_fixed32 || ctx->op_is_wex2)
 		{
 			BGBCC_DBGBREAK
 		}
@@ -1247,7 +1247,7 @@ int BGBCC_JX2_EmitLoadRegImm64P(
 			}
 		}
 
-		if(!ctx->is_fixed32)
+		if(!ctx->is_fixed32 && !ctx->op_is_wex2)
 		{
 	//		if(!BGBCC_JX2_CheckPadCross48(ctx))
 			if(!BGBCC_JX2_CheckPadCross48(ctx) ||
@@ -1307,7 +1307,7 @@ int BGBCC_JX2_EmitLoadRegImm64P(
 		}
 
 #if 1
-		if(ctx->is_fixed32)
+		if(ctx->is_fixed32 || ctx->op_is_wex2)
 		{
 			opw1=0xF860|(reg&31);
 			opw2=(imm&65535);
@@ -1338,7 +1338,7 @@ int BGBCC_JX2_EmitLoadRegImm64P(
 		if(!imm_f32)
 			rt2=0;
 
-		if(ctx->is_fixed32)
+		if(ctx->is_fixed32 || ctx->op_is_wex2)
 		{
 			if(rt2>0)
 			{
