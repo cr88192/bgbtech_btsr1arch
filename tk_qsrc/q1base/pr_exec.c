@@ -378,6 +378,7 @@ void PR_ExecuteProgram (func_t fnum)
 	int			s;
 	dstatement_t	*st;
 	dfunction_t	*f, *newf;
+	ddef_t	*key;
 	int		runaway;
 	int		i;
 	edict_t	*ed;
@@ -392,6 +393,15 @@ void PR_ExecuteProgram (func_t fnum)
 			ED_Print (PROG_TO_EDICT(pr_global_struct->self));
 		Host_Error ("PR_ExecuteProgram: NULL function");
 	}
+
+#if 0
+	key = ED_FindGlobal ("intermission_running");
+	if(key)
+	{
+//		key->_float=0;
+		ED_ParseEpair ((void *)pr_globals, key, "0");
+	}
+#endif
 
 //	tk_puts("PR_ExecuteProgram: A1\n");
 	

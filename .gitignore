@@ -21,13 +21,25 @@ randbits.txt
 *.vhd
 *.hd
 
+*.cxlcpdb
+CacheFile.map
+
 *.tga
 *.png
 *.jpg
 *.wav
 
+*.wad
+*.pak
+*_ast.txt
+*_inf.txt
+*_pp.txt
+
 */*log.txt
 bgbcc22/*.dat
+
+tk_qsrc/q1source/*
+tk_qsrc/doomsrc/*
 
 vlcore/obj_dir/*
 # bjx1core32/obj_dir/*

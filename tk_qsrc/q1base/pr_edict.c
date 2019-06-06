@@ -1024,6 +1024,7 @@ PR_LoadProgs
 */
 void PR_LoadProgs (void)
 {
+	ddef_t	*key;
 	int		i;
 
 // flush the non-C variable lookup cache
@@ -1083,7 +1084,8 @@ void PR_LoadProgs (void)
 
 	printf("PR_LoadProgs nStatements=%d\n", progs->numstatements);
 #endif
-	
+
+#if 1
 // byte swap the lumps
 	for (i=0 ; i<progs->numstatements ; i++)
 	{
@@ -1126,9 +1128,23 @@ void PR_LoadProgs (void)
 	}
 
 	printf("PR_LoadProgs nGlobals=%d\n", progs->numglobals);
+#endif
 
+#if 1
 	for (i=0 ; i<progs->numglobals ; i++)
+	{
 		((int *)pr_globals)[i] = LittleLong (((int *)pr_globals)[i]);
+//		((int *)pr_globals)[i] = 0;
+	}
+#endif
+
+	key = ED_FindGlobal ("intermission_running");
+	if(key)
+	{
+//		key->_float=0;
+//		ED_ParseEpair ((void *)pr_globals, key, "0");
+	}
+
 }
 
 

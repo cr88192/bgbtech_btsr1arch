@@ -1669,6 +1669,7 @@ byte *COM_LoadFile (char *path, int usehunk)
 	
 	if (usehunk == 1)
 		buf = Hunk_AllocName (len+1, base);
+//		buf = Hunk_AllocName (len+256, base);
 	else if (usehunk == 2)
 		buf = Hunk_TempAlloc (len+1);
 	else if (usehunk == 0)

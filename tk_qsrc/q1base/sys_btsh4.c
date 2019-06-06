@@ -809,6 +809,8 @@ void Sys_CheckSanityB(void)
 	u64 t_arrl[4]={
 		0x0000123412345678ULL, 0xAB89EFCD12345678ULL,
 		0x00001234, 0x89ABCDEF};
+	double fg;
+	float ff;
 	byte b_arr0[16];
 	u32 ui, uj, uk;
 	u64 uli, ulj, ulk;
@@ -925,6 +927,50 @@ void Sys_CheckSanityB(void)
 	if((t_arr[0]%i)!=6)
 		__debugbreak();
 #endif
+
+	tk_puts("Q Pt0 OK 6\n");
+
+	i=123456;
+	ff=i;
+	j=ff;
+	if(i!=j)
+		__debugbreak();
+		
+	i=123456789;
+	fg=i;
+	j=fg;
+	if(i!=j)
+		__debugbreak();
+
+
+	i=-123456;
+	ff=i;
+	j=ff;
+	if(i!=j)
+		__debugbreak();
+		
+	i=-123456789;
+	fg=i;
+	j=fg;
+	if(i!=j)
+		__debugbreak();
+	
+	ff=(i==i);
+	ff=!ff;
+	j=ff;
+	if(j)
+		__debugbreak();
+	if(ff)
+		__debugbreak();
+	ff=!ff;
+	if(ff!=1.0)
+		__debugbreak();
+	if(!ff)
+		__debugbreak();
+		
+	ff=123456;
+	if(ff!=123456)
+		__debugbreak();
 }
 
 //=============================================================================

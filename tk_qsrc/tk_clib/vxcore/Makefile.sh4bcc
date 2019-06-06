@@ -56,6 +56,7 @@ SRCS_ASM = \
 	e_bsr_start.S	\
 	tk_encblock.S	\
 	tk_divi2.S	\
+	tk_softfp.S	\
 
 SRCS_BS2 = \
 	tk_bs2/bscore_io.bs

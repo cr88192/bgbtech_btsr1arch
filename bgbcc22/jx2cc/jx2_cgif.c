@@ -4220,12 +4220,12 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	printf("High 8 op use map:\n");
 	printf("A    ");
 	for(j=0; j<8; j++)
-			printf("     x%1X", j);
+			printf("    x%1X", j);
 	printf("\n");
 
 	printf("B     ");
 	for(j=8; j<16; j++)
-			printf("     x%1X", j);
+			printf("    x%1X", j);
 	printf("\n");
 	
 	for(i=0; i<16; i++)
@@ -4238,18 +4238,23 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 			printf("  %1Xx %d\n", i, k);
 			continue;
 		}
+
+		k=0;
+		for(j=0; j<16; j++)
+			{ k+=sctx->opcnt_hi8[i*16+j]; }
+		if(!k)continue;
 	
 		printf("A %1Xx ", i);
 		for(j=0; j<8; j++)
 		{
-			printf(" %6d", sctx->opcnt_hi8[i*16+j]);
+			printf(" %5d", sctx->opcnt_hi8[i*16+j]);
 		}
 		printf("\n");
 
 		printf("B %1Xx  ", i);
 		for(j=8; j<16; j++)
 		{
-			printf(" %6d", sctx->opcnt_hi8[i*16+j]);
+			printf(" %5d", sctx->opcnt_hi8[i*16+j]);
 		}
 		printf("\n");
 	}
@@ -4265,28 +4270,33 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 
 	printf("A    ");
 	for(j=0; j<8; j++)
-			printf("     x%1X", j);
+			printf("    x%1X", j);
 	printf("\n");
 
 	printf("B     ");
 	for(j=8; j<16; j++)
-			printf("     x%1X", j);
+			printf("    x%1X", j);
 	printf("\n");
 
 //	for(i=0; i<16; i++)
 	for(i=0; i<8; i++)
 	{
+		k=0;
+		for(j=0; j<16; j++)
+			{ k+=sctx->opcnt_3xx[i*16+j]; }
+		if(!k)continue;
+
 		printf("A %1Xx ", i);
 		for(j=0; j<8; j++)
 		{
-			printf(" %6d", sctx->opcnt_3xx[i*16+j]);
+			printf(" %5d", sctx->opcnt_3xx[i*16+j]);
 		}
 		printf("\n");
 
 		printf("B %1Xx  ", i);
 		for(j=8; j<16; j++)
 		{
-			printf(" %6d", sctx->opcnt_3xx[i*16+j]);
+			printf(" %5d", sctx->opcnt_3xx[i*16+j]);
 		}
 		printf("\n");
 	}
@@ -4302,16 +4312,21 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 
 	printf("A    ");
 	for(j=0; j<8; j++)
-			printf("     x%1X", j);
+			printf("    x%1X", j);
 	printf("\n");
 
 	printf("B     ");
 	for(j=8; j<16; j++)
-			printf("     x%1X", j);
+			printf("    x%1X", j);
 	printf("\n");
 
 	for(i=0; i<16; i++)
 	{
+		k=0;
+		for(j=0; j<16; j++)
+			{ k+=sctx->opcnt_f0xx[i*16+j]; }
+		if(!k)continue;
+	
 		if(i>=0xC)
 		{
 			k=0;
@@ -4320,18 +4335,18 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 			printf("  %1Xx %d\n", i, k);
 			continue;
 		}
-	
+
 		printf("A %1Xx ", i);
 		for(j=0; j<8; j++)
 		{
-			printf(" %6d", sctx->opcnt_f0xx[i*16+j]);
+			printf(" %5d", sctx->opcnt_f0xx[i*16+j]);
 		}
 		printf("\n");
 
 		printf("B %1Xx  ", i);
 		for(j=8; j<16; j++)
 		{
-			printf(" %6d", sctx->opcnt_f0xx[i*16+j]);
+			printf(" %5d", sctx->opcnt_f0xx[i*16+j]);
 		}
 		printf("\n");
 	}
@@ -4342,12 +4357,12 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	printf("High F1xx op use map:\n");
 	for(i=0; i<8; i++)
 	{
-		printf(" %6d", sctx->opcnt_f1xx[i]);
+		printf(" %5d", sctx->opcnt_f1xx[i]);
 	}
 	printf("\n");
 	for(i=8; i<16; i++)
 	{
-		printf(" %6d", sctx->opcnt_f1xx[i]);
+		printf(" %5d", sctx->opcnt_f1xx[i]);
 	}
 	printf("\n");
 #endif
@@ -4357,12 +4372,12 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 
 	printf("A    ");
 	for(j=0; j<8; j++)
-			printf("     x%1X", j);
+			printf("    x%1X", j);
 	printf("\n");
 
 	printf("B     ");
 	for(j=8; j<16; j++)
-			printf("     x%1X", j);
+			printf("    x%1X", j);
 	printf("\n");
 
 	printf("0x..7x ");
@@ -4371,7 +4386,7 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 		k=0;
 		for(j=0; j<16; j++)
 			{ k+=sctx->opcnt_f2xx[i*16+j]; }
-		printf(" %6d", k);
+		printf(" %5d", k);
 	}
 	printf("\n");
 	printf("8x..Bx ");
@@ -4380,23 +4395,28 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 		k=0;
 		for(j=0; j<16; j++)
 			{ k+=sctx->opcnt_f2xx[i*16+j]; }
-		printf(" %6d", k);
+		printf(" %5d", k);
 	}
 	printf("\n");
 
 	for(i=12; i<16; i++)
 	{
+		k=0;
+		for(j=0; j<16; j++)
+			{ k+=sctx->opcnt_f2xx[i*16+j]; }
+		if(!k)continue;
+	
 		printf("A %1Xx ", i);
 		for(j=0; j<8; j++)
 		{
-			printf(" %6d", sctx->opcnt_f2xx[i*16+j]);
+			printf(" %5d", sctx->opcnt_f2xx[i*16+j]);
 		}
 		printf("\n");
 
 		printf("B %1Xx  ", i);
 		for(j=8; j<16; j++)
 		{
-			printf(" %6d", sctx->opcnt_f2xx[i*16+j]);
+			printf(" %5d", sctx->opcnt_f2xx[i*16+j]);
 		}
 		printf("\n");
 	}

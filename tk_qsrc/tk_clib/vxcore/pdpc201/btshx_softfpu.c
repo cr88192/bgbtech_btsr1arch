@@ -8,6 +8,10 @@ u32 __float32_getbits(float f);
 float __float32_frombits(u32 f);
 u64 __float64_getbits(double f);
 double __float64_frombits(u64 f);
+
+s64 __int32_dmuls(s32 x, s32 y);
+u64 __int32_dmulu(u32 x, u32 y);
+
 #else
 u32 __float32_getbits(float f)
 	{ return(*(u32 *)(&f)); }
@@ -17,6 +21,12 @@ u64 __float64_getbits(double f)
 	{ return(*(u64 *)(&f)); }
 double __float64_frombits(u64 f)
 	{ return(*(double *)(&f)); }
+
+s64 __int32_dmuls(s32 x, s32 y)
+	{ return(((s64)x)*y); }
+u64 __int32_dmulu(u32 x, u32 y);
+	{ return(((u64)x)*y); }
+
 #endif
 
 u16 sfp_rcp_adj[256]={
@@ -60,6 +70,9 @@ u32 __sfp_fadd_f32i(u32 f0, u32 f1)
 	int e0, e1, e2;
 	int m0, m1, m2;
 	
+	if(!f1)
+		return(f0);
+	
 	e0=(f0>>23)&255;
 	e1=(f1>>23)&255;
 	if((e0-e1)>=24)
@@ -92,6 +105,9 @@ u32 __sfp_fsub_f32i(u32 f0, u32 f1)
 	int e0, e1, e2;
 	int m0, m1, m2;
 
+	if(!f1)
+		return(f0);
+
 	e0=(f0>>23)&255;
 	e1=(f1>>23)&255;
 	if((e0-e1)>=24)
@@ -105,11 +121,24 @@ u32 __sfp_fsub_f32i(u32 f0, u32 f1)
 	{
 		if(m2)
 		{
+			if(!(m2&0x00FFFF00U))
+				{ m2=m2<<16; e2-=16; }
+			if(!(m2&0x00FF0000U))
+				{ m2=m2<<8; e2-=8; }
+			if(!(m2&0x00F00000U))
+				{ m2=m2<<4; e2-=4; }
+			if(!(m2&0x00C00000U))
+				{ m2=m2<<2; e2-=2; }
+			if(!(m2&0x00800000U))
+				{ m2=m2<<1; e2-=1; }
+
+#if 0
 			while(!(m2&0x00800000U))
 			{
 				m2=m2<<1;
 				e2--;
 			}
+#endif
 			if(e2<=0)
 			{
 				e2=0; m2=0;
@@ -161,14 +190,33 @@ u32 __sfp_fsub_f32(u32 f0, u32 f1)
 	return(f2);
 }
 
+#if 0
+u32 __sfp_fmul_f32_asm(u32 f0, u32 f1);
 
 u32 __sfp_fmul_f32(u32 f0, u32 f1)
 {
 	u32 f2, sg;
 	int e0, e1, e2;
 	int m0, m1, m2;
-	
+
+//	return(__sfp_fmul_f32_asm(f0, f1));
+
+//	if(!f0 || !f1)
+//		return(0);
+//	if(f0==0)		return(0);
+//	if(f1==0)		return(0);
+
 	sg=(f0^f1)&0x80000000;
+
+//	if(!f0)
+//	{
+//		__debugbreak();
+//	}
+
+	if(!f0 || !f1)
+//	if(!f1)
+//		return(sg);
+		return(0);
 	
 	e0=(f0>>23)&255;
 	e1=(f1>>23)&255;
@@ -178,10 +226,12 @@ u32 __sfp_fmul_f32(u32 f0, u32 f1)
 	m1=0x00800000|(f1&0x00FFFFFF);
 //	m2=m0+m1;
 //	m2=(m0>>9)*(m1>>9);
-	m2=(((u64)m0)*m1)>>18;
+//	m2=(((u64)m0)*m1)>>18;
+	m2=__int32_dmulu(m0, m1)>>18;
 //	m2=(m2+31)>>6;
 	m2=(m2+15)>>5;
-	while((m2&0xFF000000))
+//	while((m2&0xFF000000))
+	if((m2&0xFF000000))
 	{
 		m2=m2>>1;
 //		m2=(m2+1)>>1;
@@ -194,12 +244,14 @@ u32 __sfp_fmul_f32(u32 f0, u32 f1)
 	}else if(e2<=0)
 	{
 		return(0);
+//		return(sg);
 	}
 
 //	f2=(f0&0x80000000)|(e2<<23)|(m2&0x007FFFFF);
 	f2=sg|(e2<<23)|(m2&0x007FFFFF);
 	return(f2);
 }
+#endif
 
 #if 0
 u32 __sfp_frcp_f32(u32 f0)
@@ -231,13 +283,27 @@ u32 __sfp_frcp_f32(u32 f0)
 	int i;
 
 	i=(f0>>23)&255;
-	if((i<2) || (i>252))
-		return(0);
-	
+//	if((i<2) || (i>252))
+//		return(0);
+//	if(i>252)
+//		return(0);
+	if(i>254)
+	{
+//		f1=(f0&0x80000000)|0x7F800000;
+//		f1=(f0&0x80000000);
+		f1=0;
+		return(f1);
+	}
+	if(i<1)
+	{
+		f1=(f0&0x80000000)|0x7FC00000;
+		return(f1);
+	}
+
 	f1=(f0&0x80000000)|(0x7F000000-(f0&0x7FFFFFFF));
 	f1-=(sfp_rcp_adj[(f0>>15)&255])<<5;
 
-#if 0
+#if 1
 //	for(i=0; i<10; i++)
 //	for(i=0; i<6; i++)
 	for(i=0; i<3; i++)
@@ -263,7 +329,8 @@ u32 __sfp_fsqrt_f32(u32 f0)
 
 	f1=(f0>>1)+0x1FC00000;
 
-	for(i=0; i<12; i++)
+//	for(i=0; i<12; i++)
+	for(i=0; i<6; i++)
 	{
 		f2=__sfp_fmul_f32(f1, f1);
 		f1-=((s32)(f2-f0))>>1;
@@ -278,6 +345,9 @@ u64 __sfp_fadd_f64i(u64 f0, u64 f1)
 	u64 f2;
 	int e0, e1, e2;
 	u64 m0, m1, m2;
+	
+	if(!f1)
+		return(f0);
 	
 	e0=(f0>>52)&2047;
 	e1=(f1>>52)&2047;
@@ -308,6 +378,9 @@ u64 __sfp_fsub_f64i(u64 f0, u64 f1)
 	u64 f2;
 	int e0, e1, e2;
 	u64 m0, m1, m2;
+
+	if(!f1)
+		return(f0);
 
 	e0=(f0>>52)&2047;
 	e1=(f1>>52)&2047;
@@ -382,9 +455,14 @@ u64 __sfp_fmul_f64(u64 f0, u64 f1)
 {
 	u64 f2, sg;
 	u64 m0, m1, m2;
+	u64 m3, m4, m5, m6;
 	int e0, e1, e2;
 	
 	sg=(f0^f1)&0x8000000000000000ULL;
+	
+	if(!f0 || !f1)
+//		return(sg);
+		return(0);
 	
 	e0=(f0>>52)&2047;
 	e1=(f1>>52)&2047;
@@ -393,7 +471,14 @@ u64 __sfp_fmul_f64(u64 f0, u64 f1)
 	m1=0x0010000000000000ULL|(f1&0x000FFFFFFFFFFFFFULL);
 //	m2=m0+m1;
 //	m2=(m0>>9)*(m1>>9);
-	m2=(m0>>21)*(m1>>21);
+//	m2=(m0>>21)*(m1>>21);
+
+	m3=__int32_dmulu(m0, m1);
+	m4=__int32_dmulu(m0>>32, m1);
+	m5=__int32_dmulu(m0, m1>>32);
+	m6=__int32_dmulu(m0>>32, m1>>32);
+	m2=(m6<<22)+(m5>>10)+(m4>>10)+(m3>>42);
+
 //	m2=(((u64)m0)*m1)>>18;
 	m2=(m2+511)>>10;
 //	m2=(m2+15)>>5;
@@ -412,6 +497,7 @@ u64 __sfp_fmul_f64(u64 f0, u64 f1)
 		m2=0;
 	}else if(e2<=0)
 	{
+//		return(sg);
 		return(0);
 	}
 
@@ -451,8 +537,20 @@ u64 __sfp_frcp_f64(u64 f0)
 	int i;
 	
 	i=(f0>>52)&2047;
-	if((i<2) || (i>2044))
-		return(0);
+//	if((i<2) || (i>2044))
+//		return(0);
+	if(i<1)
+	{
+		f1=(f0&0x8000000000000000ULL)|
+			0x7FF8000000000000ULL;
+		return(f1);
+	}
+	if(i>2046)
+	{
+//		f1=(f0&0x8000000000000000ULL);
+		f1=0;
+		return(f1);
+	}
 	
 	f1=(f0&0x8000000000000000ULL)|
 		(0x7FF0000000000000ULL-
@@ -787,12 +885,21 @@ u64 __sfp_fdiv_f64(u64 f0, u64 f1)
 
 int __sfp_cmpeq_f32(u32 f0, u32 f1)
 {
+	if((((byte)(f0>>23))==0xFF) && (f0&0x007FFFFF))
+		return(0);
+	if((((byte)(f1>>23))==0xFF) && (f1&0x007FFFFF))
+		return(0);
 	return(f0==f1);
 }
 
 int __sfp_cmpne_f32(u32 f0, u32 f1)
 {
-	return(f0!=f1);
+//	if((((byte)(f0>>23))==0xFF) && (f0&0x007FFFFF))
+//		return(1);
+//	if((((byte)(f1>>23))==0xFF) && (f1&0x007FFFFF))
+//		return(1);
+//	return(f0!=f1);
+	return(!__sfp_cmpeq_f32(f0, f1));
 }
 
 int __sfp_cmpgt_f32(u32 f0, u32 f1)
@@ -824,12 +931,18 @@ int __sfp_cmple_f32(u32 f0, u32 f1)
 
 int __sfp_cmpeq_f64(u64 f0, u64 f1)
 {
+	if((((f0>>52)&2047)==2047) && (f0&0x000FFFFFFFFFFFFFULL))
+		return(0);
+	if((((f1>>52)&2047)==2047) && (f1&0x000FFFFFFFFFFFFFULL))
+		return(0);
+//	return(!__sfp_cmpeq_f64(f0, f1));
 	return(f0==f1);
 }
 
 int __sfp_cmpne_f64(u64 f0, u64 f1)
 {
-	return(f0!=f1);
+	return(!__sfp_cmpeq_f64(f0, f1));
+//	return(f0!=f1);
 }
 
 int __sfp_cmpgt_f64(u64 f0, u64 f1)
@@ -861,6 +974,11 @@ int __sfp_cmple_f64(u64 f0, u64 f1)
 u32 __sfp_lnot_f32(u32 f0)
 {
 	return(f0?0x00000000:0x3F800000U);
+}
+
+u64 __sfp_lnot_f64(u64 f0)
+{
+	return(f0?0x0000000000000000ULL:0x3FF0000000000000ULL);
 }
 
 u32 __sfp_neg_f32(u32 f0)
@@ -905,6 +1023,7 @@ u16 __sfp_sthf16(u32 f0)
 		return(((f0>>16)&0x8000)|0x7C00);
 	return(((f0>>16)&0x8000)|i0);
 }
+
 
 double __lfp_fcnvsd(float f0)
 {

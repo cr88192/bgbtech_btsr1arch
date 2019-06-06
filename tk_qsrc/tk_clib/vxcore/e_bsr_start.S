@@ -598,6 +598,8 @@ __va64_arg_x.L0:
 	rts
 	nop
 
+.ifnarch bjx1_nofpu
+
 .global X(__va64_arg_f)
 X(__va64_arg_f):
 	mov.l @(r4, 104), r2
@@ -661,6 +663,8 @@ X(__sthf16):
 	fstch fr4
 	mov dlr, r2
 	rts
+
+.endif
 
 .global X(__memcpy32)
 X(__memcpy32):
@@ -741,6 +745,9 @@ X(sleep_0):
 	rts
 
 #if 1
+
+.ifnarch bjx1_nofpu
+
 /* DR4=rv, DR5=a */
 .global X(__fpu_frcp_b0)
 X(__fpu_frcp_b0):
@@ -873,53 +880,13 @@ X(__fpu_frcp):
 	fmul dr7, dr2
 	
 	rts
+	
+.else
 
-#if 0
-.global X(__fpu_frcp_b1)
-X(__fpu_frcp_b1):
-	push lr
+.global X(__fpu_frcp)
+X(__fpu_frcp):
+	rts
 
-	bsr __fpu_frcp_b2
-	bsr __fpu_frcp_b2
-	bsr __fpu_frcp_b2
-	bsr __fpu_frcp_b2
-
-#if 0
-	FRCP_SEG
-	FRCP_SEG
-	FRCP_SEG
-	FRCP_SEG
-
-	FRCP_SEG
-	FRCP_SEG
-	FRCP_SEG
-	FRCP_SEG
-
-	FRCP_SEG
-	FRCP_SEG
-	FRCP_SEG
-	FRCP_SEG
-#endif
-
-#if 0
-	bsr __fpu_frcp_b0
-	bsr __fpu_frcp_b0
-	bsr __fpu_frcp_b0
-	bsr __fpu_frcp_b0
-
-	bsr __fpu_frcp_b0
-	bsr __fpu_frcp_b0
-	bsr __fpu_frcp_b0
-	bsr __fpu_frcp_b0
-
-	bsr __fpu_frcp_b0
-	bsr __fpu_frcp_b0
-	bsr __fpu_frcp_b0
-	bsr __fpu_frcp_b0
-#endif
-
-	fmov dr4, dr2
-	ret
-#endif
+.endif
 
 #endif
