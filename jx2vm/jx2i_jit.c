@@ -1466,7 +1466,7 @@ int BJX2_TryJitTrace(BJX2_Context *cpu, BJX2_Trace *tr)
 		if(trj)
 		{
 			if(tr->addr_jmp != trj->addr)
-				JX2_DBGBREAK
+				{ JX2_DBGBREAK }
 		
 //			BJX2_JitLinkTrace(cpu, trj);
 			tr->jmpnext=trj;
@@ -1652,7 +1652,7 @@ int BJX2_TryJitTrace(BJX2_Context *cpu, BJX2_Trace *tr)
 //	BJX2_JTraceAddTrace(cpu, tr);	
 	
 	if(!(tr->Run))
-		JX2_DBGBREAK
+		{ JX2_DBGBREAK }
 	
 	return(1);
 }

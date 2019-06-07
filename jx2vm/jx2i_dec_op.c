@@ -1,3 +1,26 @@
+int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
+	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2);
+int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
+	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2);
+int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
+	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2);
+int BJX2_DecodeOpcode_DecF8(BJX2_Context *ctx,
+	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2);
+int BJX2_DecodeOpcode_DecFC(BJX2_Context *ctx,
+	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2, int opw3);
+
+int BJX2_DecodeOpcode_DecD4(BJX2_Context *ctx,
+	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2);
+int BJX2_DecodeOpcode_DecD5(BJX2_Context *ctx,
+	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2);
+int BJX2_DecodeOpcode_DecD6(BJX2_Context *ctx,
+	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2);
+int BJX2_DecodeOpcode_DecD8(BJX2_Context *ctx,
+	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2);
+int BJX2_DecodeOpcode_DecDC(BJX2_Context *ctx,
+	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2, int opw3);
+
+
 int BJX2_DecodeOpcode_CheckTwoWord(BJX2_Context *ctx,
 	BJX2_Opcode *op, bjx2_addr addr, int opw)
 {

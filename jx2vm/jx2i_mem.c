@@ -403,7 +403,7 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr)
 	return(1);
 }
 
-force_inline bjx2_addr BJX2_MemTranslateTlb(BJX2_Context *ctx, bjx2_addr addr)
+bjx2_addr BJX2_MemTranslateTlb(BJX2_Context *ctx, bjx2_addr addr)
 {
 	bjx2_addr addr1;
 	u64 tlbhi2, tlblo2;

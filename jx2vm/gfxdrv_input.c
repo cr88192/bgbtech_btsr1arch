@@ -1,3 +1,7 @@
+#ifdef linux
+#include <sys/time.h>
+#endif
+
 static byte frgl_keymap[32];
 static byte frgl_lkeymap[32];
 static unsigned short frgl_keybuf2[64];

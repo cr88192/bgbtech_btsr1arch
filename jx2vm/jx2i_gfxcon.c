@@ -1,3 +1,5 @@
+int GfxDrv_PrepareFramebuf();
+
 u64 gfxfont[256]={
 0x0000000000000000ULL,		//00
 0x00005028D4FAF4EAULL,		//01
@@ -590,6 +592,9 @@ int JX2I_GfxCon_UpdateCell(int cx, int cy)
 			pixv9[i]=clra;
 		}
 	}
+
+	if(!btesh2_gfxcon_framebuf)
+		return(0);
 
 	ncx=40;
 	if(jx2i_gfxcon_is80col)

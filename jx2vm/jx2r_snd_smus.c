@@ -1,4 +1,5 @@
 s64 BJX2_Interp_GetVirtualUsec(BJX2_Context *ctx);
+int SMus_CheckApplyRegisters();
 
 
 u32 jx2i_smus_ctrl[32];		//SMus Control Registers

@@ -5,18 +5,22 @@ FILE *bjx2_vmoutlog=NULL;
 #ifdef linux
 void SoundDev_Submit()
 {
+//	return(0);
 }
 
 int SoundDev_WriteStereoSamples(short *buffer, int cnt)
 {
+	return(0);
 }
 
 int SoundDev_Init()
 {
+	return(0);
 }
 
 int SoundDev_DeInit()
 {
+	return(0);
 }
 #endif
 
@@ -25,10 +29,12 @@ int	gfxdrv_kill=0;
 
 int GfxDrv_Start()
 {
+	return(0);
 }
 
 int GfxDrv_PrepareFramebuf()
 {
+	return(0);
 }
 
 void GfxDrv_BeginDrawing()
