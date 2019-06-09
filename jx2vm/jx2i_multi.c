@@ -11,6 +11,7 @@
 #include <unistd.h>
 #endif
 
+#include "jx2i_conf.h"
 
 // #ifdef _M_X64
 // #if defined(_M_X64) || defined(__x86_64__)

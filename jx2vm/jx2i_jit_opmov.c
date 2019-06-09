@@ -1116,3 +1116,93 @@ int BJX2_TryJitOpcode_MovMem(UAX_Context *jctx,
 	return(0);
 }
 
+int BJX2_TryJitOpcode_PredX(UAX_Context *jctx,
+	BJX2_Context *cpu, BJX2_Trace *tr, BJX2_Opcode *op)
+{
+	BJX2_Opcode *op1;
+	u32 v;
+	int l0;
+	int i;
+
+	op1=op->data;
+
+	if(op->nmid==BJX2_NMID_PRED_T)
+	{
+		l0=UAX_GenLabelTemp(jctx);
+		BJX2_JitTestVMRegImm(jctx, BJX2_REG_SR, 1);
+		UAX_AsmInsnLabel(jctx, UAX_OP_JZ, l0|UAX_LBL_NEAR);
+		i=BJX2_TryJitOpcode(jctx, cpu, tr, op1);
+		
+		if(i<=0)
+		{
+			BJX2_JitSyncRegs(jctx, cpu, tr);
+			UAX_AsmMovRegImm(jctx, UAX_REG_RDX, (nlint)(op1));
+			UAX_AsmMovRegReg(jctx, UAX_REG_RCX, UAX_REG_RCCTX);
+			BJX2_JitEmitCallFPtr(jctx, cpu, op1->Run);
+		}
+		
+		UAX_EmitLabel(jctx, l0);
+		return(1);
+	}
+	
+	if(op->nmid==BJX2_NMID_PRED_F)
+	{
+		l0=UAX_GenLabelTemp(jctx);
+		BJX2_JitTestVMRegImm(jctx, BJX2_REG_SR, 1);
+		UAX_AsmInsnLabel(jctx, UAX_OP_JNZ, l0|UAX_LBL_NEAR);
+		i=BJX2_TryJitOpcode(jctx, cpu, tr, op1);
+
+		if(i<=0)
+		{
+			BJX2_JitSyncRegs(jctx, cpu, tr);
+			UAX_AsmMovRegImm(jctx, UAX_REG_RDX, (nlint)(op1));
+			UAX_AsmMovRegReg(jctx, UAX_REG_RCX, UAX_REG_RCCTX);
+			BJX2_JitEmitCallFPtr(jctx, cpu, op1->Run);
+		}
+
+		UAX_EmitLabel(jctx, l0);
+		return(1);
+	}
+	
+	return(0);
+}
+
+
+int BJX2_TryJitOpcodeArr_PredX(UAX_Context *jctx,
+	BJX2_Context *cpu, BJX2_Trace *tr, BJX2_Opcode **opa, int n_op)
+{
+	BJX2_Opcode *op, *op1;
+	u32 v;
+	int l0, tf;
+	int i, j;
+
+	if(n_op<=0)
+		return(0);
+
+	op=opa[0]; tf=0;
+	if(op->nmid==BJX2_NMID_PRED_T)
+		tf=1;
+
+	l0=UAX_GenLabelTemp(jctx);
+	BJX2_JitTestVMRegImm(jctx, BJX2_REG_SR, 1);
+//	UAX_AsmInsnLabel(jctx, tf?UAX_OP_JZ:UAX_OP_JNZ, l0|UAX_LBL_NEAR);
+	UAX_AsmInsnLabel(jctx, tf?UAX_OP_JZ:UAX_OP_JNZ, l0);
+
+	for(i=0; i<n_op; i++)
+	{
+		op=opa[i];
+		op1=op->data;
+
+		j=BJX2_TryJitOpcode(jctx, cpu, tr, op1);
+		if(j<=0)
+		{
+			BJX2_JitSyncRegs(jctx, cpu, tr);
+			UAX_AsmMovRegImm(jctx, UAX_REG_RDX, (nlint)(op1));
+			UAX_AsmMovRegReg(jctx, UAX_REG_RCX, UAX_REG_RCCTX);
+			BJX2_JitEmitCallFPtr(jctx, cpu, op1->Run);
+		}
+	}
+
+	UAX_EmitLabel(jctx, l0);
+	return(1);
+}

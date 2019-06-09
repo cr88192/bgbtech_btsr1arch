@@ -2819,6 +2819,17 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 		op->nmid=BJX2_NMID_ADD;
 		op->fmid=BJX2_FMID_IMMREG;
 		op->Run=BJX2_Op_ADD_ImmReg;
+		
+#ifdef BJX2_ADDR32
+		if(op->rn==15)
+		{
+			op->rm=op->rn;
+			op->nmid=BJX2_NMID_ADDUL;
+			op->fmid=BJX2_FMID_IMMREG;
+			op->Run=BJX2_Op_ADDUL_RegImmReg;
+		}
+#endif
+		
 		break;
 
 //	case 0xE:	/* Enii */

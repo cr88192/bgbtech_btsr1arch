@@ -77,7 +77,11 @@ typedef u32 fourcc;
 #ifdef _MSC_VER
 #define BGBCC_DBGBREAK	__debugbreak();
 #else
-#define BGBCC_DBGBREAK
+#ifdef __GNUC__
+#define BGBCC_DBGBREAK	__builtin_trap();
+#else
+// #define BGBCC_DBGBREAK
+#endif
 #endif
 
 #define BGBCC_CCXL_StubError(ctx)	\

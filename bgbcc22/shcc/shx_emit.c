@@ -1517,6 +1517,9 @@ int BGBCC_SHX_EmitLoadRegLabelVarRel24(
 	if(!BGBCC_SHX_EmitCheckRegBaseGPR(ctx, reg))
 		{ BGBCC_DBGBREAK }
 	
+	opw0=-1;
+	opw1=-1;
+	opw2=-1;
 	opw3=-1;
 
 	if(op==BGBCC_SH_NMID_MOVQ)
@@ -1728,6 +1731,9 @@ int BGBCC_SHX_EmitStoreRegLabelVarRel24(
 	if(!BGBCC_SHX_EmitCheckRegBaseGPR(ctx, reg))
 		{ BGBCC_DBGBREAK }
 	
+	opw0=-1;
+	opw1=-1;
+	opw2=-1;
 	opw3=-1;
 
 	if(op==BGBCC_SH_NMID_MOVQ)

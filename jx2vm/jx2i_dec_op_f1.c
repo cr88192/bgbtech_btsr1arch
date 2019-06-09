@@ -32,7 +32,8 @@ int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
 //	imm9n=((opw1&31)<<4)|((opw2>>8)&15)|((-1)<<9);
 
 	imm9u=(opw2&511);
-	imm9n=(opw2&511)|((-1)<<9);
+//	imm9n=(opw2&511)|((-1)<<9);
+	imm9n=(opw2&511)|(~511);
 
 	op->rn=rn_dfl;
 	op->rm=rm_dfl;

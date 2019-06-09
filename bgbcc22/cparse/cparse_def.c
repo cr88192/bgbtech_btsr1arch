@@ -212,6 +212,7 @@ BCCX_Node *BGBCP_DefName(BGBCP_ParseState *ctx, char **str)
 	BCCX_Node *n, *n1, *nl, *anl, *nle, *anle, *nty;
 
 	s=*str;
+	n=NULL;
 
 	BGBCP_Token2(s, b, &ty, ctx->lang);
 

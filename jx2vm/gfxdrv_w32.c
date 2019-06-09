@@ -129,6 +129,7 @@ byte *btesh2_gfxcon_framebuf;
 int btesh2_gfxcon_fb_dirty;
 int btesh2_gfxcon_fbxs;
 int btesh2_gfxcon_fbys;
+byte btesh2_gfxcon_swaprb=0;
 
 void GfxDrv_EndDrawing(void)
 {

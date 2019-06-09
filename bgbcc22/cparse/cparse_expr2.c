@@ -186,18 +186,18 @@ BCCX_Node *BGBCP_ExpressionLitString(BGBCP_ParseState *ctx, char **str)
 				{
 					switch(s[1])
 					{
-					case 'a':	s+=2;	*t++='\a';		break;
-					case 'b':	s+=2;	*t++='\b';		break;
-					case 'e':	s+=2;	*t++='\x1B';	break;
-					case 'f':	s+=2;	*t++='\f';		break;
-					case 'r':	s+=2;	*t++='\r';		break;
-					case 'n':	s+=2;	*t++='\n';		break;
-					case 'v':	s+=2;	*t++='\v';		break;
-					case 't':	s+=2;	*t++='\t';		break;
-					case '\\':	s+=2;	*t++='\\';		break;
-					case '\"':	s+=2;	*t++='\"';		break;
-					case '\'':	s+=2;	*t++='\'';		break;
-					case '?':	s+=2;	*t++='?';		break;
+					case 'a':	s+=2;	*t1++='\a';		break;
+					case 'b':	s+=2;	*t1++='\b';		break;
+					case 'e':	s+=2;	*t1++='\x1B';	break;
+					case 'f':	s+=2;	*t1++='\f';		break;
+					case 'r':	s+=2;	*t1++='\r';		break;
+					case 'n':	s+=2;	*t1++='\n';		break;
+					case 'v':	s+=2;	*t1++='\v';		break;
+					case 't':	s+=2;	*t1++='\t';		break;
+					case '\\':	s+=2;	*t1++='\\';		break;
+					case '\"':	s+=2;	*t1++='\"';		break;
+					case '\'':	s+=2;	*t1++='\'';		break;
+					case '?':	s+=2;	*t1++='?';		break;
 					
 					case 'x':
 					case 'u':
@@ -324,6 +324,7 @@ BCCX_Node *BGBCP_ExpressionLit(BGBCP_ParseState *ctx, char **str)
 	int i;
 
 	s=*str;
+	n=NULL;
 
 	s1=BGBCP_Token(s, b, &ty);
 	if(!bgbcp_strcmp1(b, "(") && (ty==BTK_BRACE))

@@ -1120,6 +1120,7 @@ BCCX_Node *BGBCP_DefClassC(BGBCP_ParseState *ctx, char **str)
 		s1=BGBCP_Token2(s, b, &ty, ctx->lang);	//name|'{'
 		BGBCP_Token2(s1, b2, &ty2, ctx->lang);	//name|'{'|...
 
+		n=NULL;
 		if(ty==BTK_NAME)
 		{
 			s=BGBCP_Token2(s, b, &ty, ctx->lang);	//name
@@ -1971,6 +1972,7 @@ BCCX_Node *BGBCP_DefClassJ(BGBCP_ParseState *ctx, char **str)
 		s1=BGBCP_Token2(s, b, &ty, ctx->lang);	//name|'{'
 		BGBCP_Token2(s1, b2, &ty2, ctx->lang);	//name|'{'|...
 
+		n=NULL;
 		if(ty==BTK_NAME)
 		{
 			s=BGBCP_Token2(s, b, &ty, ctx->lang);	//name

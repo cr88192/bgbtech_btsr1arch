@@ -860,7 +860,8 @@ s32 BJX2_MemSndSblkCb_GetDWord(BJX2_Context *ctx,
 		}
 	}
 
-	if(jx2i_sndblk_blkbuf)
+//	if(jx2i_sndblk_blkbuf)
+	if(1)
 	{
 		rv=jx2i_sndblk_blkbuf[(ra>>2)&1023];
 	}
@@ -900,7 +901,8 @@ int BJX2_MemSndSblkCb_SetDWord(BJX2_Context *ctx,
 		}
 	}
 
-	if(jx2i_sndblk_blkbuf)
+//	if(jx2i_sndblk_blkbuf)
+	if(1)
 	{
 		jx2i_sndblk_blkbuf[(ra>>2)&1023]=val;
 //		jx2i_gfxcon_dirty=1;

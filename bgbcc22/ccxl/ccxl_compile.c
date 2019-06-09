@@ -322,6 +322,7 @@ int BGBCC_CCXL_CompileSwitch(BGBCC_TransState *ctx, BCCX_Node *l)
 		{
 			v=BCCX_FetchCst(c, &bgbcc_rcst_value, "value");
 			v=BGBCC_CCXL_ReduceExprConst2(ctx, v);
+			li=-999999999;
 
 			if(BGBCC_CCXL_IsIntP(ctx, v))
 			{

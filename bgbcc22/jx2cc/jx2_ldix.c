@@ -1871,6 +1871,7 @@ int BGBCC_JX2C_EmitLeaBRegIRegScReg(
 	case 13: cbo=5; break;
 	case 15: cbo=6; break;
 	case 17: cbo=6; break;
+	default: cbo=-999; break;
 	}
 	switch(shl)
 	{

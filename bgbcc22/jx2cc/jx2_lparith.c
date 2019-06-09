@@ -330,7 +330,7 @@ int BGBCC_JX2C_EmitBinaryVRegVRegLong(
 	int nm1, nm2, nm3, nm4, shl;
 	int i, j, k;
 
-	shl=-1;
+	shl=-1; limm=0;
 	if(BGBCC_CCXL_IsRegImmIntP(ctx, treg))
 	{
 		shl=BGBCC_CCXL_GetRegImmIntValue(ctx, treg);

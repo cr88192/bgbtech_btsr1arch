@@ -948,7 +948,8 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 			BJX2_DbgPrintNameForReg(ctx, op->rn));
 		break;
 	case BJX2_FMID_IMMNREG:
-		li=((u32)op->imm)|((-1LL)<<32);
+//		li=((u32)op->imm)|((-1LL)<<32);
+		li=((u32)op->imm)|(~((1LL<<32)-1));
 		printf("#0x%llX, %s", li,
 			BJX2_DbgPrintNameForReg(ctx, op->rn));
 		break;
@@ -1431,6 +1432,8 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 	int i, j, k;
 
 	cn=lim;
+
+	BJX2_MemSetupState(ctx);
 
 	if(ctx->status)
 	{

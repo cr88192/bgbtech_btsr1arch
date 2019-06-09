@@ -638,8 +638,12 @@ int BGBCC_SHXC_EmitFpConvVRegVReg(
 	int tr0;
 	int cdreg, csreg;
 
+	s0=NULL; lr0=-1; lr4=-1;
+
 	if(sctx->fpu_soft)
 	{
+		s0=NULL; lr0=-1; lr4=-1;
+	
 		if(nm2==BGBCC_SH_NMID_FLOAT)
 		{
 			if(BGBCC_CCXL_IsRegDoubleP(ctx, dreg))

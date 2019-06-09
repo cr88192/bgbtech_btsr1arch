@@ -339,6 +339,7 @@ Will use direct linking and assume a non-modifiable program space.
 
 #define BJX2_FMID_CHAIN			0x27		//Chained Opcode
 
+#if 0
 typedef unsigned char byte;
 typedef signed char sbyte;
 typedef unsigned short u16;
@@ -348,15 +349,27 @@ typedef signed int s32;
 typedef unsigned long long u64;
 typedef signed long long s64;
 
-typedef s64 bjx2_addr;
-typedef u64 bjx2_addru;
-
-typedef unsigned char jx2_bool;
-
 #ifndef NLINT_T
 #define NLINT_T
 typedef signed long long nlint;
 #endif
+
+#endif
+
+#if defined(ARM)
+// #if 1
+#define BJX2_ADDR32
+#endif
+
+#ifdef BJX2_ADDR32
+typedef u32 bjx2_addr;
+typedef u32 bjx2_addru;
+#else
+typedef s64 bjx2_addr;
+typedef u64 bjx2_addru;
+#endif
+
+typedef unsigned char jx2_bool;
 
 #ifdef _MSC_VER
 #ifndef default_inline
@@ -365,12 +378,12 @@ typedef signed long long nlint;
 #endif
 #endif
 
-#ifdef __GNUC__
-#ifndef default_inline
-#define default_inline inline
-#define force_inline inline
-#endif
-#endif
+// #ifdef __GNUC__
+// #ifndef default_inline
+// #define default_inline inline
+// #define force_inline inline
+// #endif
+// #endif
 
 #ifndef default_inline
 #define default_inline
@@ -396,6 +409,12 @@ typedef struct BJX2_FILE_s *BJX2_FILE;
 #else
 #define JX2_DBGBREAK
 #endif
+
+#ifndef JX2_DBGBREAK
+#define JX2_DBGBREAK
+#endif
+
+#include "jx2i_misal.h"
 
 typedef struct BJX2_Context_s BJX2_Context;
 typedef struct BJX2_Opcode_s BJX2_Opcode;
@@ -572,33 +591,6 @@ int (*SetDWord)(BJX2_Context *ctx,
 int (*SetQWord)(BJX2_Context *ctx,
 	BJX2_MemSpan *sp, bjx2_addr addr, s64 val);
 };
-
-
-#define BJX2_PtrGetSByteIxLe(ptr, ix)	(((sbyte *)(ptr))[ix])
-#define BJX2_PtrGetSWordIxLe(ptr, ix)	(((s16 *)(ptr))[ix])
-#define BJX2_PtrGetSDWordIxLe(ptr, ix)	(((s32 *)(ptr))[ix])
-
-#define BJX2_PtrSetByteIxLe(ptr, ix, val)		(((sbyte *)(ptr))[ix]=(val))
-#define BJX2_PtrSetWordIxLe(ptr, ix, val)		(((s16 *)(ptr))[ix]=(val))
-#define BJX2_PtrSetDWordIxLe(ptr, ix, val)		(((s32 *)(ptr))[ix]=(val))
-
-
-#define BJX2_PtrGetOfs(ptr, ix)		(((sbyte *)(ptr))+(ix))
-
-#define BJX2_PtrGetSByteOfsLe(ptr, ix)		(*(sbyte *)BJX2_PtrGetOfs(ptr, ix))
-#define BJX2_PtrGetSWordOfsLe(ptr, ix)		(*(s16 *)BJX2_PtrGetOfs(ptr, ix))
-#define BJX2_PtrGetSDWordOfsLe(ptr, ix)		(*(s32 *)BJX2_PtrGetOfs(ptr, ix))
-#define BJX2_PtrGetSQWordOfsLe(ptr, ix)		(*(s64 *)BJX2_PtrGetOfs(ptr, ix))
-
-#define BJX2_PtrSetByteOfsLe(ptr, ix, val)		\
-	(*(sbyte *)BJX2_PtrGetOfs(ptr, ix)=(val))
-#define BJX2_PtrSetWordOfsLe(ptr, ix, val)		\
-	(*(s16 *)BJX2_PtrGetOfs(ptr, ix)=(val))
-#define BJX2_PtrSetDWordOfsLe(ptr, ix, val)	\
-	(*(s32 *)BJX2_PtrGetOfs(ptr, ix)=(val))
-#define BJX2_PtrSetQWordOfsLe(ptr, ix, val)	\
-	(*(s64 *)BJX2_PtrGetOfs(ptr, ix)=(val))
-
 
 BJX2_Opcode *BJX2_ContextAllocOpcode(BJX2_Context *ctx);
 BJX2_Trace *BJX2_ContextAllocTrace(BJX2_Context *ctx);

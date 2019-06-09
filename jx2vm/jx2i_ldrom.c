@@ -91,13 +91,13 @@ s32 BJX2_MemMmgpCb_GetDWord(BJX2_Context *ctx,
 	case 0x001C:
 		rv=0; break;
 
-	case 0x30:
+	case 0x0030:
 		rv=mmio[0x10];
 		if(mmgp_spi_delcyc>0)
 			rv|=2;
 //		printf("SPI_C(R): D=%08X\n", rv);
 		break;
-	case 0x34:
+	case 0x0034:
 		rv=mmio[0x11];
 //		printf("SPI_D(R): D=%08X\n", rv);
 		break;
@@ -119,6 +119,25 @@ s32 BJX2_MemMmgpCb_GetDWord(BJX2_Context *ctx,
 		break;
 	case 0x0314:
 		rv=ctx->msgbuf_msk;
+		break;
+
+	case 0x0340:
+		rvq=ctx->tot_cyc;
+		rv=rvq;
+//		rv=ctx->tot_cyc/ctx->tgt_mhz;
+		break;
+	case 0x0344:
+		rvq=ctx->tot_cyc;
+		rv=rvq>>32;
+//		rv=(ctx->tot_cyc/ctx->tgt_mhz)>>32;
+		break;
+	case 0x0348:
+		rvq=ctx->tgt_mhz;
+		rv=rvq;
+		break;
+	case 0x034C:
+		rvq=ctx->tgt_mhz;
+		rv=rvq>>32;
 		break;
 	}
 	return(rv);

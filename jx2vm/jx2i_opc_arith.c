@@ -51,47 +51,56 @@ void BJX2_Op_ADD_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_ADDSL_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=(s32)(ctx->regs[op->rm]+ctx->regs[op->rn]);
+//	ctx->regs[op->rn]=(s32)(ctx->regs[op->rm]+ctx->regs[op->rn]);
+	ctx->regs[op->rn]=(s32)(ctx->regs[op->rm])+(s32)(ctx->regs[op->rn]);
 }
 
 void BJX2_Op_ADDSL_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=(s32)(ctx->regs[op->rm]+ctx->regs[op->ro]);
+//	ctx->regs[op->rn]=(s32)(ctx->regs[op->rm]+ctx->regs[op->ro]);
+	ctx->regs[op->rn]=(s32)(ctx->regs[op->rm])+(s32)(ctx->regs[op->ro]);
 }
 
 void BJX2_Op_ADDUL_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=(u32)(ctx->regs[op->rm]+ctx->regs[op->ro]);
+//	ctx->regs[op->rn]=(u32)(ctx->regs[op->rm]+ctx->regs[op->ro]);
+	ctx->regs[op->rn]=(u32)(ctx->regs[op->rm])+(u32)(ctx->regs[op->ro]);
 }
 
 void BJX2_Op_ADDSL_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=(s32)(ctx->regs[op->rm]+op->imm);
+//	ctx->regs[op->rn]=(s32)(ctx->regs[op->rm]+op->imm);
+	ctx->regs[op->rn]=(s32)(ctx->regs[op->rm])+(s32)(op->imm);
 }
 
 void BJX2_Op_ADDUL_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=(u32)(ctx->regs[op->rm]+op->imm);
+//	ctx->regs[op->rn]=(u32)(ctx->regs[op->rm]+op->imm);
+	ctx->regs[op->rn]=(u32)(ctx->regs[op->rm])+(u32)(op->imm);
 }
 
 void BJX2_Op_SUBSL_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=(s32)(ctx->regs[op->rm]-ctx->regs[op->ro]);
+//	ctx->regs[op->rn]=(s32)(ctx->regs[op->rm]-ctx->regs[op->ro]);
+	ctx->regs[op->rn]=(s32)(ctx->regs[op->rm])-(s32)(ctx->regs[op->ro]);
 }
 
 void BJX2_Op_SUBUL_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=(u32)(ctx->regs[op->rm]-ctx->regs[op->ro]);
+//	ctx->regs[op->rn]=(u32)(ctx->regs[op->rm]-ctx->regs[op->ro]);
+	ctx->regs[op->rn]=(u32)(ctx->regs[op->rm])-(u32)(ctx->regs[op->ro]);
 }
 
 void BJX2_Op_SUBSL_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=(s32)(ctx->regs[op->rm]-op->imm);
+//	ctx->regs[op->rn]=(s32)(ctx->regs[op->rm]-op->imm);
+	ctx->regs[op->rn]=(s32)(ctx->regs[op->rm])-(s32)(op->imm);
 }
 
 void BJX2_Op_SUBUL_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=(u32)(ctx->regs[op->rm]-op->imm);
+//	ctx->regs[op->rn]=(u32)(ctx->regs[op->rm]-op->imm);
+	ctx->regs[op->rn]=(u32)(ctx->regs[op->rm])-(u32)(op->imm);
 }
 
 void BJX2_Op_MOV_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
@@ -644,70 +653,83 @@ void BJX2_Op_LDIZ_Imm32(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_LDIN_Imm32(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[BJX2_REG_DR]=((u32)op->imm)|(-1LL<<32);
+//	ctx->regs[BJX2_REG_DR]=((u32)op->imm)|(-1LL<<32);
+	ctx->regs[BJX2_REG_DR]=((u32)op->imm)|(~((1LL<<32)-1));
 }
 
 void BJX2_Op_LEAB_LdRegDispReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=ctx->regs[op->rm]+(op->imm*1);
+	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+(op->imm);
 }
 
 void BJX2_Op_LEAW_LdRegDispReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=ctx->regs[op->rm]+(op->imm*2);
+	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+(op->imm*2);
 }
 
 void BJX2_Op_LEAD_LdRegDispReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=ctx->regs[op->rm]+(op->imm*4);
+	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+(op->imm*4);
 }
 
 void BJX2_Op_LEAQ_LdRegDispReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=ctx->regs[op->rm]+(op->imm*8);
+	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+(op->imm*8);
 }
 
 void BJX2_Op_LEAB_LdDrRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=ctx->regs[op->rm]+(ctx->regs[BJX2_REG_DR]*1);
+	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+
+		(bjx2_addr)(ctx->regs[BJX2_REG_DR]);
 }
 
 void BJX2_Op_LEAW_LdDrRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=ctx->regs[op->rm]+(ctx->regs[BJX2_REG_DR]*2);
+	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+
+		((bjx2_addr)(ctx->regs[BJX2_REG_DR])*2);
 }
 
 void BJX2_Op_LEAD_LdDrRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=ctx->regs[op->rm]+(ctx->regs[BJX2_REG_DR]*4);
+	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+
+		((bjx2_addr)(ctx->regs[BJX2_REG_DR])*4);
 }
 
 void BJX2_Op_LEAQ_LdDrRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=ctx->regs[op->rm]+(ctx->regs[BJX2_REG_DR]*8);
+	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+
+		((bjx2_addr)(ctx->regs[BJX2_REG_DR])*8);
 }
 
 void BJX2_Op_LEAB_LdDrPcReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=(op->pc+2)+(ctx->regs[BJX2_REG_DR]*1);
+//	ctx->regs[op->rn]=(op->pc+2)+(ctx->regs[BJX2_REG_DR]*1);
+	ctx->regs[op->rn]=(bjx2_addr)(op->pc2)+
+		(bjx2_addr)(ctx->regs[BJX2_REG_DR]);
 }
 
 void BJX2_Op_LEAW_LdDrPcReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=(op->pc+2)+(ctx->regs[BJX2_REG_DR]*2);
+//	ctx->regs[op->rn]=(op->pc+2)+(ctx->regs[BJX2_REG_DR]*2);
+	ctx->regs[op->rn]=(bjx2_addr)(op->pc2)+
+		((bjx2_addr)(ctx->regs[BJX2_REG_DR])*2);
 }
 
 void BJX2_Op_LEAD_LdDrPcReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=(op->pc+2)+(ctx->regs[BJX2_REG_DR]*4);
+//	ctx->regs[op->rn]=(op->pc+2)+(ctx->regs[BJX2_REG_DR]*4);
+	ctx->regs[op->rn]=(bjx2_addr)(op->pc2)+
+		((bjx2_addr)(ctx->regs[BJX2_REG_DR])*4);
 }
 
 void BJX2_Op_LEAQ_LdDrPcReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=(op->pc+2)+(ctx->regs[BJX2_REG_DR]*8);
+//	ctx->regs[op->rn]=(op->pc+2)+(ctx->regs[BJX2_REG_DR]*8);
+	ctx->regs[op->rn]=(bjx2_addr)(op->pc2)+
+		((bjx2_addr)(ctx->regs[BJX2_REG_DR])*8);
 }
 
-
+#if 0
 void BJX2_Op_LEAB_LdDr4PcReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	ctx->regs[op->rn]=(op->pc+2)+(ctx->regs[BJX2_REG_DR]*16)+(op->imm);
@@ -717,36 +739,41 @@ void BJX2_Op_LEAW_LdDr4PcReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	ctx->regs[op->rn]=(op->pc+2)+(ctx->regs[BJX2_REG_DR]*32)+(op->imm*2);
 }
+#endif
 
 
 void BJX2_Op_LEAB_LdReg2Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=ctx->regs[op->rm]+(ctx->regs[op->ro]*1);
+	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+
+		(bjx2_addr)(ctx->regs[op->ro]);
 }
 
 void BJX2_Op_LEAW_LdReg2Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=ctx->regs[op->rm]+(ctx->regs[op->ro]*2);
+	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+
+		((bjx2_addr)(ctx->regs[op->ro])*2);
 }
 
 void BJX2_Op_LEAD_LdReg2Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=ctx->regs[op->rm]+(ctx->regs[op->ro]*4);
+	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+
+		((bjx2_addr)(ctx->regs[op->ro])*4);
 }
 
 void BJX2_Op_LEAQ_LdReg2Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=ctx->regs[op->rm]+(ctx->regs[op->ro]*8);
+	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+
+		((bjx2_addr)(ctx->regs[op->ro])*8);
 }
 
 void BJX2_Op_LEAB_LdPcDispReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=(op->pc2)+op->imm;
+	ctx->regs[op->rn]=(bjx2_addr)(op->pc2)+op->imm;
 }
 
 void BJX2_Op_LEAB_LdPcIdxReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=(op->pc2)+ctx->regs[op->ro];
+	ctx->regs[op->rn]=(bjx2_addr)(op->pc2)+(bjx2_addr)(ctx->regs[op->ro]);
 }
 
 

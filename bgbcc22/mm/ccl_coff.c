@@ -44,6 +44,8 @@ int BGBCC_COFF_ResolveRelocs(BGBCC_Object *ctx, BGBCC_COFF_Info *inf, int sec,
 			if(*s!='_')continue;
 			s++;
 		}
+		
+		ty=-1;
 
 //		j=inf->sec_rva_off[sec]+j+4;
 		j=inf->sec_rva_off[sec]+j;
@@ -100,6 +102,11 @@ int BGBCC_COFF_ResolveRelocs(BGBCC_Object *ctx, BGBCC_COFF_Info *inf, int sec,
 			if(l==0x0B) { ty=BGBCC_JMP_SECREL; j+=4; }
 
 			if(l==0x14) { ty=BGBCC_JMP_NEAR32; j+=4; }
+		}
+		
+		if(ty<0)
+		{
+			BGBCC_DBGBREAK
 		}
 
 //		printf("\t%s %08X %d\n", s, j, ty);

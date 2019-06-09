@@ -747,7 +747,7 @@ void BCCX_Add(BCCX_Node *parent, BCCX_Node *child)
 		parent->down=child;
 	}
 
-	cur=child;
+	cur=child; lst=NULL;
 	while(cur)
 	{
 		cur->up=parent;

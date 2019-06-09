@@ -1002,7 +1002,10 @@ int BGBCC_JX2A_TryAssembleOpcode(
 	
 	nmid=BGBCC_JX2A_LookupOpcodeNmid(name);
 	if(nmid<=0)
+	{
+		printf("Unknown Instruction %s\n", name);
 		return(0);
+	}
 
 #if 0
 	if(nmid==BGBCC_SH_NMID_ISETMD_DQ)
@@ -1024,6 +1027,7 @@ int BGBCC_JX2A_TryAssembleOpcode(
 
 	if(ctx->iflvl_f>0)
 		return(1);
+	rt=0;
 
 	switch(fmid)
 	{
@@ -1038,11 +1042,13 @@ int BGBCC_JX2A_TryAssembleOpcode(
 				(arg1->breg==BGBCC_SH_REG_DLR))
 			{
 				BGBCC_JX2_EmitLoadDrImm(ctx, arg0->disp);
+				rt=1;
 				break;
 			}
 		
 			BGBCC_JX2_EmitLoadRegImm64P(ctx,
 				arg1->breg, arg0->disp);
+			rt=1;
 			break;
 		}
 	

@@ -667,7 +667,7 @@ int BGBCC_JX2C_EmitJCmpVRegVRegFloat(
 			ctx, sctx, type, sreg, treg, cmp, lbl));
 	}
 
-	lfp=0;
+	lfp=0; sw=0;
 	switch(cmp)
 	{
 	case CCXL_CMP_EQ:
@@ -701,6 +701,7 @@ int BGBCC_JX2C_EmitJCmpVRegVRegFloat(
 	default:
 		nm1=-1;
 		nm2=-1;
+		sw=0;
 		break;
 	}
 

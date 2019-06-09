@@ -79,7 +79,12 @@ ccxl_status BGBCC_JX2C_FlattenImageROM(BGBCC_TransState *ctx,
 	case BGBCC_MEMMDL_DEFAULT:
 		ofs_sdat=64;
 		va_rom=ofs_sdat;
-		va_ram=0x08000000;
+		va_ram=0x01000000;
+		break;
+	default:
+		ofs_sdat=64;
+		va_rom=ofs_sdat;
+		va_ram=0x01000000;
 		break;
 	}
 	

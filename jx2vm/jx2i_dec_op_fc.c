@@ -34,7 +34,8 @@ int BJX2_DecodeOpcode_DecFC(BJX2_Context *ctx,
 	disp17u=(u16)opw3;
 	if(opw1&0x0001)
 	{
-		disp17s|=(-1)<<16;
+//		disp17s|=(-1)<<16;
+		disp17s|=~65535;
 		disp17u|=( 1)<<16;
 	}
 	

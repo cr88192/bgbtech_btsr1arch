@@ -993,6 +993,7 @@ int BGBCC_SHXC_EmitLoadBRegIRegScFpReg(
 	int p0, p1;
 	int i, j, k;
 
+	nm1=-1; nm2=-1;
 	switch(sc)
 	{
 	case 1: nm1=-1; nm2=-1; break;
@@ -1024,6 +1025,7 @@ int BGBCC_SHXC_EmitStoreBRegIRegScFpReg(
 	int p0, p1;
 	int i, j, k;
 
+	nm1=-1; nm2=-1;
 	switch(sc)
 	{
 	case 1: nm1=-1; nm2=-1; break;
@@ -2356,6 +2358,7 @@ int BGBCC_SHXC_EmitJCmpVRegVRegFloat(
 	default:
 		nm1=-1;
 		nm2=-1;
+		sw=0;
 		break;
 	}
 

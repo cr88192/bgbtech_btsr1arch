@@ -860,7 +860,8 @@ void BIPRO_AddExeSection(char *name, s64 va, s64 sz, int fl)
 
 char *BIPRO_LookupExeSectionPtrName(void *ptr)
 {
-	s64 va, vae;
+//	s64 va, vae;
+	nlint va, vae;
 	int i, j, k;
 	
 	for(i=0; i<bipro_n_exesec; i++)
@@ -1652,6 +1653,7 @@ char *BIPRO_GetLastNamePtr(void *ptr, void **rbp)
 	int i, j, bd;
 	char *s, *bn;
 
+	p=NULL; bd=999999999;
 	bp=NULL; bn=NULL;
 	for(i=0; i<bipro_sym_nsym; i++)
 	{

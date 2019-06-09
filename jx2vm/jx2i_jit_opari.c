@@ -3,6 +3,8 @@ int BJX2_JitStoreVMRegImm(UAX_Context *jctx, int idx, s64 val);
 int BJX2_TryJitOpcode_MovReg(UAX_Context *jctx,
 	BJX2_Context *cpu, BJX2_Trace *tr, BJX2_Opcode *op)
 {
+	int r0, r1, r2;
+
 	if(op->nmid==BJX2_NMID_MOV)
 	{
 		if(op->fmid==BJX2_FMID_REGREG)
@@ -31,7 +33,8 @@ int BJX2_TryJitOpcode_MovReg(UAX_Context *jctx,
 		if(op->fmid==BJX2_FMID_IMMNREG)
 		{
 			BJX2_JitStoreVMRegImm(jctx, op->rn,
-				(-1LL<<32)|
+//				(-1LL<<32)|
+				(~((1LL<<32)-1))|
 				(u32)(op->imm));
 			return(1);
 		}
@@ -89,7 +92,8 @@ int BJX2_TryJitOpcode_MovReg(UAX_Context *jctx,
 	{
 		if(op->fmid==BJX2_FMID_IMM)
 		{
-			BJX2_JitStoreVMRegImm(jctx, 0, ((-1LL)<<32)|(op->imm));
+//			BJX2_JitStoreVMRegImm(jctx, 0, ((-1LL)<<32)|(op->imm));
+			BJX2_JitStoreVMRegImm(jctx, 0, (~((1LL<<32)-1))|(op->imm));
 			return(1);
 		}
 	}
@@ -100,6 +104,14 @@ int BJX2_TryJitOpcode_MovReg(UAX_Context *jctx,
 	{
 		if(op->fmid==BJX2_FMID_IMM)
 		{
+			r1=BJX2_JitLoadReadSyncVMReg(jctx, 0);
+			if(r1!=UAX_REG_Z)
+			{
+				UAX_AsmShlRegImm(jctx, r1, 8);
+				UAX_AsmOrRegImm(jctx, r1, (op->imm&255));
+				return(1);
+			}
+
 			BJX2_JitLoadVMReg(jctx, 0, UAX_REG_RDX);
 			UAX_AsmShlRegImm(jctx, UAX_REG_RDX, 8);
 			UAX_AsmOrRegImm(jctx, UAX_REG_RDX, (op->imm&255));
@@ -116,6 +128,14 @@ int BJX2_TryJitOpcode_MovReg(UAX_Context *jctx,
 	{
 		if(op->fmid==BJX2_FMID_IMM)
 		{
+			r1=BJX2_JitLoadReadSyncVMReg(jctx, 0);
+			if(r1!=UAX_REG_Z)
+			{
+				UAX_AsmShlRegImm(jctx, r1, 16);
+				UAX_AsmOrRegImm(jctx, r1, (op->imm&65535));
+				return(1);
+			}
+
 			BJX2_JitLoadVMReg(jctx, 0, UAX_REG_RDX);
 			UAX_AsmShlRegImm(jctx, UAX_REG_RDX, 16);
 			UAX_AsmOrRegImm(jctx, UAX_REG_RDX, (op->imm&65535));
@@ -125,6 +145,14 @@ int BJX2_TryJitOpcode_MovReg(UAX_Context *jctx,
 
 		if(op->fmid==BJX2_FMID_IMMREG)
 		{
+			r1=BJX2_JitLoadReadSyncVMReg(jctx, op->rn);
+			if(r1!=UAX_REG_Z)
+			{
+				UAX_AsmShlRegImm(jctx, r1, 16);
+				UAX_AsmOrRegImm(jctx, r1, (op->imm&65535));
+				return(1);
+			}
+
 			BJX2_JitLoadVMReg(jctx, op->rn, UAX_REG_RDX);
 			UAX_AsmShlRegImm(jctx, UAX_REG_RDX, 16);
 			UAX_AsmOrRegImm(jctx, UAX_REG_RDX, (op->imm&65535));
@@ -276,13 +304,15 @@ int BJX2_TryJitOpcode_ArithReg(UAX_Context *jctx,
 			dreg=BJX2_JitLoadReadSyncVMReg(jctx, op->rn);
 			if(dreg!=UAX_REG_Z)
 			{
-				UAX_AsmInsnRegImm(jctx, UAX_OP_SHL, dreg, 1);
+//				UAX_AsmInsnRegImm(jctx, UAX_OP_SHL, dreg, 1);
+				UAX_AsmInsnRegReg(jctx, UAX_OP_ADD, dreg, dreg);
 				return(1);
 			}
 
-			BJX2_JitLoadVMReg(jctx, op->rm, UAX_REG_EAX);
-			UAX_AsmInsnRegImm(jctx, UAX_OP_SHL, UAX_REG_EAX, 1);
-			BJX2_JitStoreVMReg(jctx, op->rn, UAX_REG_EAX);
+			BJX2_JitLoadVMReg(jctx, op->rm, UAX_REG_RAX);
+//			UAX_AsmInsnRegImm(jctx, UAX_OP_SHL, UAX_REG_RAX, 1);
+			UAX_AsmInsnRegReg(jctx, UAX_OP_ADD, UAX_REG_RAX, UAX_REG_RAX);
+			BJX2_JitStoreVMReg(jctx, op->rn, UAX_REG_RAX);
 			return(1);
 		}
 	
@@ -911,7 +941,8 @@ int BJX2_TryJitOpcode_ArithReg(UAX_Context *jctx,
 			{
 				BJX2_JitLoadVMReg(jctx, op->rm, UAX_REG_ECX);
 				UAX_AsmInsnRegImm(jctx, UAX_OP_SAR, UAX_REG_ECX, 31);
-				UAX_AsmInsnRegReg(jctx, UAX_OP_MOVSXD, UAX_REG_RCX, UAX_REG_ECX);
+				UAX_AsmInsnRegReg(jctx, UAX_OP_MOVSXD,
+					UAX_REG_RCX, UAX_REG_ECX);
 				BJX2_JitStoreVMReg(jctx, op->rn, UAX_REG_RCX);
 				return(1);
 			}
@@ -924,8 +955,7 @@ int BJX2_TryJitOpcode_ArithReg(UAX_Context *jctx,
 		}else if(((sbyte)op->imm)>0)
 		{
 			BJX2_JitLoadVMReg(jctx, op->rm, UAX_REG_ECX);
-			if(op->imm)
-				UAX_AsmInsnRegImm(jctx, UAX_OP_SHL, UAX_REG_ECX, op->imm);
+			UAX_AsmInsnRegImm(jctx, UAX_OP_SHL, UAX_REG_ECX, op->imm);
 			UAX_AsmInsnRegReg(jctx, UAX_OP_MOVSXD, UAX_REG_RCX, UAX_REG_ECX);
 			BJX2_JitStoreVMReg(jctx, op->rn, UAX_REG_RCX);
 			return(1);
@@ -952,8 +982,7 @@ int BJX2_TryJitOpcode_ArithReg(UAX_Context *jctx,
 		}else if(((sbyte)op->imm)>0)
 		{
 			BJX2_JitLoadVMReg(jctx, op->rm, UAX_REG_ECX);
-			if(op->imm)
-				UAX_AsmInsnRegImm(jctx, UAX_OP_SHL, UAX_REG_ECX, op->imm);
+			UAX_AsmInsnRegImm(jctx, UAX_OP_SHL, UAX_REG_ECX, op->imm);
 			BJX2_JitStoreVMReg(jctx, op->rn, UAX_REG_RCX);
 			return(1);
 		}else
@@ -1043,6 +1072,32 @@ int BJX2_TryJitOpcode_ArithReg(UAX_Context *jctx,
 		BJX2_JitLoadVMReg(jctx, op->ro, UAX_REG_ECX);
 		UAX_AsmInsnReg(jctx, UAX_OP_IMUL, UAX_REG_ECX);
 		UAX_AsmInsnRegReg(jctx, UAX_OP_MOVSXD, UAX_REG_RDX, UAX_REG_EAX);
+		BJX2_JitStoreVMReg(jctx, op->rn, UAX_REG_RDX);
+		return(1);
+	}
+#endif
+
+#if 1
+	if((op->nmid==BJX2_NMID_MULU) && (op->fmid==BJX2_FMID_REGREG))
+	{
+		BJX2_JitLoadVMReg(jctx, op->rm, UAX_REG_EAX);
+		BJX2_JitLoadVMReg(jctx, op->rn, UAX_REG_ECX);
+		UAX_AsmInsnReg(jctx, UAX_OP_MUL, UAX_REG_ECX);
+//		UAX_AsmInsnRegReg(jctx, UAX_OP_MOVSXD, UAX_REG_RDX, UAX_REG_EDX);
+		BJX2_JitStoreVMReg(jctx, 0, UAX_REG_RAX);
+		BJX2_JitStoreVMReg(jctx, 1, UAX_REG_RDX);
+		return(1);
+	}
+#endif
+
+#if 1
+	if((op->nmid==BJX2_NMID_MULU) && (op->fmid==BJX2_FMID_REGREGREG))
+	{
+		BJX2_JitLoadVMReg(jctx, op->rm, UAX_REG_EAX);
+		BJX2_JitLoadVMReg(jctx, op->ro, UAX_REG_ECX);
+		UAX_AsmInsnReg(jctx, UAX_OP_MUL, UAX_REG_ECX);
+//		UAX_AsmInsnRegReg(jctx, UAX_OP_MOVSXD, UAX_REG_RDX, UAX_REG_EAX);
+		UAX_AsmInsnRegReg(jctx, UAX_OP_MOV, UAX_REG_EDX, UAX_REG_EAX);
 		BJX2_JitStoreVMReg(jctx, op->rn, UAX_REG_RDX);
 		return(1);
 	}

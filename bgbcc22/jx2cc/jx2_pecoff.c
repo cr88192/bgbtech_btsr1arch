@@ -1841,6 +1841,7 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		if(sctx->sec_lsz[i]<=0)
 			continue;
 
+		nm=0;
 		s0=sctx->sec_name[i];
 		if(s0)
 		{

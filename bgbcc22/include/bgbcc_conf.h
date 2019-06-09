@@ -16,6 +16,20 @@
 #endif
 #endif
 
+#if defined(__arm__) || defined(_M_ARM)
+#ifndef ARM
+#define ARM
+#endif
+#ifndef __arm__
+#define __arm__
+#endif
+#endif
+
+#if defined(__aarch64__) || defined(_M_ARM64)
+#ifndef ARM64
+#define ARM64
+#endif
+#endif
 
 #ifdef _WIN32
 #ifndef WIN32
@@ -72,12 +86,12 @@ typedef signed long long s64;
 
 #ifndef SNLINT_T
 #define SNLINT_T
-#ifdef X86_64
+#if defined(X86_64) || defined(ARM64)
 typedef s64 snlint;
 typedef u64 unlint;
 typedef s64 nlint;
 #else
-#ifdef X86
+#if defined(X86) || defined(ARM)
 typedef s32 snlint;
 typedef u32 unlint;
 typedef u32 nlint;
@@ -100,7 +114,7 @@ typedef float f32;
 typedef double f64;
 #endif
 
-#ifdef X86_64
+#if defined(X86_64) || defined(ARM64)
 #ifndef PTRBITS
 #define PTRBITS	64
 #endif
@@ -109,7 +123,7 @@ typedef double f64;
 #endif
 #endif
 
-#ifdef X86
+#if defined(X86) || defined(ARM)
 #ifndef PTRBITS
 #define PTRBITS	32
 #endif
@@ -119,7 +133,7 @@ typedef double f64;
 #endif
 
 #if !defined(LITTLEENDIAN) && !defined(BIGENDIAN)
-#if defined(X86) || defined(X86_64)
+#if defined(X86) || defined(X86_64) || defined(ARM) || defined(ARM64)
 #define LITTLEENDIAN
 #endif
 #endif

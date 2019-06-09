@@ -39,6 +39,8 @@ int BGBCC_BSRC_EmitBinaryLong_ShlImm(
 	{
 		BGBCC_BSR_EmitOpRegReg(sctx, BGBCC_SH_NMID_MOV,
 			cdreg2+0, cdreg2+1);
+			
+		nm1=-1; nm2=-1;
 		switch(shl)
 		{
 		case 33: nm1=BGBCC_SH_NMID_SHLL1; nm2=-1; break;
@@ -330,7 +332,7 @@ int BGBCC_BSRC_EmitBinaryVRegVRegLong(
 	int nm1, nm2, nm3, nm4, shl;
 	int i, j, k;
 
-	shl=-1;
+	shl=-1; limm=0;
 	if(BGBCC_CCXL_IsRegImmIntP(ctx, treg))
 	{
 		shl=BGBCC_CCXL_GetRegImmIntValue(ctx, treg);

@@ -71,6 +71,11 @@ ccxl_status BGBCC_BSRC_FlattenImageROM(BGBCC_TransState *ctx,
 		va_rom=ofs_sdat;
 		va_ram=0x18000000;
 		break;
+	default:
+		ofs_sdat=16;
+		va_rom=ofs_sdat;
+		va_ram=0x18000000;
+		break;
 	}
 	
 	for(i=0; i<sctx->nsec; i++)

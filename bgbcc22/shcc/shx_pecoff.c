@@ -954,7 +954,7 @@ ccxl_status BGBCC_SHXC_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		if(sctx->sec_lsz[i]<=0)
 			continue;
 
-		s0=sctx->sec_name[i];
+		s0=sctx->sec_name[i]; nm=0;
 		if(s0)
 		{
 			nm=BGBCC_SHX_EmitGetStrtabSecOfs(sctx, s0);

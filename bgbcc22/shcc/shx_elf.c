@@ -157,7 +157,7 @@ ccxl_status BGBCC_SHXC_FlattenImageELF(BGBCC_TransState *ctx,
 	ct+=40;
 	for(i=0; i<sctx->nsec; i++)
 	{
-		s0=sctx->sec_name[i];
+		s0=sctx->sec_name[i]; nm=0;
 		if(s0)
 		{
 			nm=BGBCC_SHX_EmitGetStrtabSecOfs(sctx, s0);
