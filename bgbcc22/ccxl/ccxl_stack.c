@@ -2703,6 +2703,14 @@ ccxl_status BGBCC_CCXL_StackBinaryOpStore(BGBCC_TransState *ctx,
 
 	if(opr>=0)
 	{
+//		dty=BGBCC_CCXL_GetRegType(ctx, dreg);
+		if(!BGBCC_CCXL_IsRegSmallIntP(ctx, dreg))
+		{
+			BGBCC_CCXL_StackBinaryOp(ctx, op);
+			BGBCC_CCXL_PopStore(ctx, name);
+			return(CCXL_STATUS_YES);
+		}
+
 		BGBCC_CCXL_DebugPrintStackLLn(ctx,
 			"CompareOpStore", __FILE__, __LINE__);
 

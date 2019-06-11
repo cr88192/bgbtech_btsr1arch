@@ -48,7 +48,7 @@ void btesh2_ttynoncanon(void)
 	tcgetattr(0, &old_termios);
 	new_termios=old_termios;
 	new_termios.c_lflag&=(~ICANON);
-	new_termios.c_lflag&=(~ECHO);
+//	new_termios.c_lflag&=(~ECHO);
 	new_termios.c_cc[VTIME]=0;
 	new_termios.c_cc[VMIN]=1;
 	tcsetattr(0, TCSANOW, &new_termios);

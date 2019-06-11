@@ -1184,6 +1184,9 @@ int BJX2_TryJitOpcodeArr_PredX(UAX_Context *jctx,
 		tf=1;
 
 	l0=UAX_GenLabelTemp(jctx);
+
+	BJX2_JitSyncRegs(jctx, cpu, tr);
+
 	BJX2_JitTestVMRegImm(jctx, BJX2_REG_SR, 1);
 //	UAX_AsmInsnLabel(jctx, tf?UAX_OP_JZ:UAX_OP_JNZ, l0|UAX_LBL_NEAR);
 	UAX_AsmInsnLabel(jctx, tf?UAX_OP_JZ:UAX_OP_JNZ, l0);
@@ -1202,6 +1205,8 @@ int BJX2_TryJitOpcodeArr_PredX(UAX_Context *jctx,
 			BJX2_JitEmitCallFPtr(jctx, cpu, op1->Run);
 		}
 	}
+
+	BJX2_JitSyncRegs(jctx, cpu, tr);
 
 	UAX_EmitLabel(jctx, l0);
 	return(1);

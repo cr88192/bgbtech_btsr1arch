@@ -382,3 +382,20 @@ int UA32_TryEmitOpReg(UA32_Context *ctx,
 	
 	return(0);
 }
+
+int UA32_EmitOpReg(UA32_Context *ctx,
+	int nmid, int rd)
+{
+	int i;
+	i=UA32_TryEmitOpReg(ctx, nmid, rd);
+	if(i>0)
+		return(i);
+	
+	JX2_DBGBREAK
+	return(-1);
+}
+
+
+int UA32_EmitLoadImm32(UA32_Context *ctx, int rd, u32 imm)
+{
+}
