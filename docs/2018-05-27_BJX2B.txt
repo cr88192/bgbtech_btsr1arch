@@ -699,11 +699,11 @@ Instruction Space
 ** 24jj  LDIZ	#imm8u, DLR
 ** 25jj  LDIN	#imm8n, DLR
 ** 26jj  LDISH	#imm8u, DLR			//DLR=(DLR SHL 8)|Imm8u
-** 27zz  -
+** 27nj ? ADD #imm3s, Rk
 ** 28nd  MOVU.L	(SP, disp4u), Rn	//Stack-Relative ZX Load
-** 29zz  -
+** 29nj ? LDIZ #imm4u, Rk
 ** 2And  MOVU.L	(SP, disp4u), Rk	//Stack-Relative ZX Load
-** 2Bzz  -
+** 2Bnj ? LDIN #imm4n, Rk
 ** 2Cnj  CMPEQ	#imm4u, Rn			//Rn==Imm4, Zero Extend
 ** 2Dnj  CMPEQ	#imm4n, Rn			//Rn==Imm4, One Extend
 ** 2Enj  CMPGT	#imm4u, Rn			//Rn==Imm4, Zero Extend

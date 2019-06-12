@@ -457,7 +457,7 @@ int BGBCC_JX2_EmitLoadDrImm(
 
 	if(!ctx->is_fixed32 && !ctx->op_is_wex2)
 	{
-#if 1
+#if 0
 		if((imm&255)==imm)
 		{
 			opw1=0x2400|(imm&255);
