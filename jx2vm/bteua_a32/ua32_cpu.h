@@ -85,8 +85,12 @@
 #define UA32_NMID_STRB		0x2C
 #define UA32_NMID_STRH		0x2D
 
-#define UA32_NMID_STRB		0x2C
-#define UA32_NMID_STRH		0x2D
+// #define UA32_NMID_STRB		0x2C
+// #define UA32_NMID_STRH		0x2D
+
+#define UA32_NMID_LSL		0x30
+#define UA32_NMID_LSR		0x31
+#define UA32_NMID_ASR		0x32
 
 #define UA32_NMID_ADCS		0x81
 #define UA32_NMID_ADDS		0x82
@@ -165,7 +169,11 @@
 #define UA32_RLC_ABS32	0x06		//
 #define UA32_RLC_ABS64	0x07		//
 
-#define UA32_RLC_REL24W	0x08		//
+#define UA32_RLC_REL24W	0x08		//ARM32, XXdddddd
+
+#define UA32_RLC_REL11T	0x09		//Thumb, Rel11
+#define UA32_RLC_REL22T	0x0A		//Thumb (Long Branch)
+#define UA32_RLC_REL8T	0x0B		//Thumb, Rel8
 
 #define UA32_CSEG_TEXT	0x00		//.text section
 #define UA32_CSEG_DATA	0x01		//.data section
