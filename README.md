@@ -49,3 +49,4 @@ vlcore: Verilog implementation of the BSR1 processor.
 
 jx2vlcore: Verilog attempts at a BJX2 processor.
 * jx2vlcore2: Partial rework of the former.
+* jx2vlcore3: Another attempt.
