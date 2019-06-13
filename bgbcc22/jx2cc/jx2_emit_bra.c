@@ -188,9 +188,11 @@ int BGBCC_JX2_TryEmitOpLblReg(BGBCC_JX2_Context *ctx,
 		}
 #endif
 
-#if 1
+#if 0
 		if(BGBCC_JX2_EmitCheckAutoLabelNear8(ctx, lbl, nmid))
 		{
+			BGBCC_DBGBREAK
+
 			rlty=BGBCC_SH_RLC_RELW8_BSR;
 //			opw1=0x25FE;
 			opw1=0x25FF;
@@ -220,7 +222,8 @@ int BGBCC_JX2_TryEmitOpLblReg(BGBCC_JX2_Context *ctx,
 
 		if(BGBCC_JX2_ModelIsLabel16P(ctx))
 		{
-			if(!BGBCC_JX2_CheckPadCross32(ctx))
+//			if(!BGBCC_JX2_CheckPadCross32(ctx))
+			if(1)
 			{
 				rlty=BGBCC_SH_RLC_REL24_BJX;
 				opw1=0xFBFF;
@@ -229,6 +232,8 @@ int BGBCC_JX2_TryEmitOpLblReg(BGBCC_JX2_Context *ctx,
 				opw3=0x4C00|((reg&15)<<4);
 				break;
 			}
+
+			BGBCC_DBGBREAK
 
 			rlty=BGBCC_SH_RLC_RELW16C_BSR;
 			opw1=0x25FF;
@@ -255,7 +260,8 @@ int BGBCC_JX2_TryEmitOpLblReg(BGBCC_JX2_Context *ctx,
 #endif
 
 #if 1
-			if(!BGBCC_JX2_CheckPadCross32(ctx))
+//			if(!BGBCC_JX2_CheckPadCross32(ctx))
+			if(1)
 			{
 				rlty=BGBCC_SH_RLC_REL24_BJX;
 				opw1=0xFBFF;
@@ -267,6 +273,8 @@ int BGBCC_JX2_TryEmitOpLblReg(BGBCC_JX2_Context *ctx,
 #endif
 
 #if 1
+			BGBCC_DBGBREAK
+
 			rlty=BGBCC_SH_RLC_RELW24C_BSR;
 			opw1=0x25FF;
 			opw2=0x26FF;
@@ -279,6 +287,8 @@ int BGBCC_JX2_TryEmitOpLblReg(BGBCC_JX2_Context *ctx,
 
 		}else
 		{
+			BGBCC_DBGBREAK
+
 			rlty=BGBCC_SH_RLC_RELW32C_BSR;
 			opw1=0x25FF;
 			opw2=0x26FF;
@@ -423,6 +433,9 @@ int BGBCC_JX2_TryEmitOpLabel(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 //			opw4=0x40F0;
 			break;
 		}
+
+		BGBCC_DBGBREAK
+
 		rlty=BGBCC_SH_RLC_RELW24_BSR;
 		opw1=0x25FF;
 		opw2=0x26FF;
@@ -507,6 +520,9 @@ int BGBCC_JX2_TryEmitOpFar16Label(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 			opw2=0x2000;
 			break;
 		}
+		
+		BGBCC_DBGBREAK
+		
 		rlty=BGBCC_SH_RLC_RELW16_BSR;
 //		opw1=0x2400;
 //		opw2=0x2601;
@@ -538,6 +554,9 @@ int BGBCC_JX2_TryEmitOpFar16Label(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 			opw2=0x2100;
 			break;
 		}
+
+		BGBCC_DBGBREAK
+
 		rlty=BGBCC_SH_RLC_RELW16_BSR;
 //		opw1=0x2400;
 //		opw2=0x2601;
@@ -567,6 +586,9 @@ int BGBCC_JX2_TryEmitOpFar16Label(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 			opw2=0x2200;
 			break;
 		}
+
+		BGBCC_DBGBREAK
+
 		rlty=BGBCC_SH_RLC_RELW16_BSR;
 //		opw1=0x2400;
 //		opw2=0x2601;
@@ -595,6 +617,9 @@ int BGBCC_JX2_TryEmitOpFar16Label(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 			opw2=0x2300;
 			break;
 		}
+
+		BGBCC_DBGBREAK
+
 		rlty=BGBCC_SH_RLC_RELW16_BSR;
 //		opw1=0x2400;
 //		opw2=0x2601;

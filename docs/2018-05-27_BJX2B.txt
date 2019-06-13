@@ -696,14 +696,14 @@ Instruction Space
 ** 21dd  BSR	(PC, disp8s)		//Branch Subroutine
 ** 22dd  BT		(PC, disp8s)		//Branch True
 ** 23dd  BF		(PC, disp8s)		//Branch False
-** 24jj  LDIZ	#imm8u, DLR
-** 25jj  LDIN	#imm8n, DLR
+** 24jj /? LDIZ	#imm8u, DLR
+** 25jj /? LDIN	#imm8n, DLR
 ** 26jj  LDISH	#imm8u, DLR			//DLR=(DLR SHL 8)|Imm8u
-** 27nj ? ADD #imm3s, Rk
+** 27nj ? ADD	#imm4u, Rk
 ** 28nd  MOVU.L	(SP, disp4u), Rn	//Stack-Relative ZX Load
-** 29nj ? LDIZ #imm4u, Rk
+** 29nj ? LDIZ	#imm4u, Rk
 ** 2And  MOVU.L	(SP, disp4u), Rk	//Stack-Relative ZX Load
-** 2Bnj ? LDIN #imm4n, Rk
+** 2Bnj ? LDIN	#imm4n, Rk
 ** 2Cnj  CMPEQ	#imm4u, Rn			//Rn==Imm4, Zero Extend
 ** 2Dnj  CMPEQ	#imm4n, Rn			//Rn==Imm4, One Extend
 ** 2Enj  CMPGT	#imm4u, Rn			//Rn==Imm4, Zero Extend

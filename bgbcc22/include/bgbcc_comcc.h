@@ -401,6 +401,8 @@ int n_opcnt_3xx;
 int opcnt_f0xx[256];
 int opcnt_f1xx[256];
 int opcnt_f2xx[256];
+int opcnt_f3xx[256];
+int opcnt_f8xx[256];
 int opcnt_opw1;
 };
 

@@ -660,6 +660,7 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 			op->Run=BJX2_Op_BF_PcDisp;
 			op->fl|=BJX2_OPFL_CTRLF;
 			break;
+#if 0
 		case 0x4:	/* 24zz */
 			op->imm=opw&255;
 			op->nmid=BJX2_NMID_LDIZ;
@@ -674,6 +675,7 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 			op->Run=BJX2_Op_LDIN_Imm;
 //			BJX2_DecodeOpcode_CheckTwoWord(ctx, op, addr, opw);
 			break;
+#endif
 		case 0x6:	/* 26zz */
 			op->imm=opw&255;
 			op->nmid=BJX2_NMID_LDISH8;
@@ -704,6 +706,35 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 			op->nmid=BJX2_NMID_MOVUL;
 			op->fmid=BJX2_FMID_LDREGDISPREG;
 			op->Run=BJX2_Op_MOVUL_LdRegDispReg;
+			break;
+#endif
+
+#if 1
+//		case 0x9:	/* 29zz */
+		case 0x7:	/* 27zz */
+			op->imm=opw&15;
+//			op->rm=BJX2_REG_SP;
+			op->rn+=16;
+			op->nmid=BJX2_NMID_ADD;
+			op->fmid=BJX2_FMID_IMMREG;
+			op->Run=BJX2_Op_ADD_ImmReg;
+			break;
+//		case 0xB:	/* 2Bzz */
+		case 0x9:	/* 29zz */
+			op->imm=opw&15;
+//			op->rm=BJX2_REG_SP;
+			op->rn+=16;
+			op->nmid=BJX2_NMID_LDIZ;
+			op->fmid=BJX2_FMID_IMMREG;
+			op->Run=BJX2_Op_MOV_ImmReg;
+			break;
+		case 0xB:	/* 2Bzz */
+			op->imm=(opw&15)|(~15);
+//			op->rm=BJX2_REG_SP;
+			op->rn+=16;
+			op->nmid=BJX2_NMID_LDIN;
+			op->fmid=BJX2_FMID_IMMREG;
+			op->Run=BJX2_Op_MOV_ImmReg;
 			break;
 #endif
 

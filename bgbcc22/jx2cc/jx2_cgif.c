@@ -4423,6 +4423,20 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	printf("\n");
 #endif
 
+#if 1
+	printf("High F8xx op use map:\n");
+	for(i=0; i<8; i++)
+	{
+		printf(" %5d", sctx->opcnt_f8xx[i]);
+	}
+	printf("\n");
+	for(i=8; i<16; i++)
+	{
+		printf(" %5d", sctx->opcnt_f8xx[i]);
+	}
+	printf("\n");
+#endif
+
 	if(sctx->lvt16_n_idx>0)
 	{
 		BGBCC_JX2_SetSectionName(sctx, ".data");
