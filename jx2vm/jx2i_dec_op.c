@@ -660,7 +660,7 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 			op->Run=BJX2_Op_BF_PcDisp;
 			op->fl|=BJX2_OPFL_CTRLF;
 			break;
-#if 0
+#if 1
 		case 0x4:	/* 24zz */
 			op->imm=opw&255;
 			op->nmid=BJX2_NMID_LDIZ;
