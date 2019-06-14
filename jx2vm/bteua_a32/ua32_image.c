@@ -294,6 +294,32 @@ byte *UA32_LinkContext(UA32_Context *ctx)
 			*(u32 *)prlc=ui1;
 			break;
 
+		case UA32_RLC_REL11T:
+			d0=((plbl-prlc)-4)>>1;
+			ui0=*(u16 *)prlc;
+			d1=(((s32)(ui0<<21))>>21)+d0;
+			ui1=(ui0&0xF800)|(d1&0x07FF);
+			*(u32 *)prlc=ui1;
+			break;
+		case UA32_RLC_REL22T:
+			d0=((plbl-prlc)-4)>>1;
+			ui0=((u16 *)prlc)[0];
+			ui1=((u16 *)prlc)[1];
+			d1=((ui0&0x7FF)<<11)|(ui1&0x07FF);
+			d1=(((s32)(d1<<10))>>10)+d0;
+			ui0=(ui0&0xF800)|((d1>>11)&0x07FF);
+			ui1=(ui1&0xF800)|((d1>> 0)&0x07FF);
+			((u32 *)prlc)[0]=ui0;
+			((u32 *)prlc)[1]=ui1;
+			break;
+		case UA32_RLC_REL8T:
+			d0=((plbl-prlc)-4)>>1;
+			ui0=*(u16 *)prlc;
+			d1=(((s32)(ui0<<24))>>24)+d0;
+			ui1=(ui0&0xFF00)|(d1&0x00FF);
+			*(u32 *)prlc=ui1;
+			break;
+
 		case UA32_RLC_ABS8:
 			*(byte *)prlc+=nla;
 			break;

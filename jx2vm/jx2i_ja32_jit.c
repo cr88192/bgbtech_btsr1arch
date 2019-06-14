@@ -1,4 +1,5 @@
 /*
+Regs (ARM)
 R0: Scratch (Arg1 / Result)
 R1: Scratch (Arg2)
 R2: Scratch (Arg3)
@@ -15,36 +16,6 @@ R12: IP (Intra-Procedure Scratch)
 R13: SP
 R14: LR
 R15: PC
-
-[RBP+24]: Trace
-[RBP+16]: CPU
-[RBP+ 8]/[RSP+504]: Return RIP
-[RBP+ 0]/[RSP+496]: Saved RBP
-[RBP- 8]/[RSP+488]: Saved RSI
-[RBP-16]/[RSP+480]: Saved RDI
-[RBP-24]/[RSP+472]: Saved RBX
-[RBP-32]/[RSP+464]: Saved R12
-[RBP-40]/[RSP+456]: Saved R13
-[RBP-48]/[RSP+448]: Saved R14
-[RBP-56]/[RSP+440]: Saved R15
-
-Frame 
-
-Args:
-	 RCX,  RDX,   R8,   R9
-	XMM0, XMM1, XMM2, XMM3
-
-[RSP+8]: Opcode
-[RSP+0]: CPU
-
-Locals and stack are placed end-to-end in the frame.
-The stack is placed after the locals.
-
-Possible Naive Reg Allocator:
-  First Pass: Stat most-used vars in a trace.
-  Assign top N vars to cache registers.
-  Operations loading/storing this var directed to register.
-  Write back when trace ends.
 
  */
 

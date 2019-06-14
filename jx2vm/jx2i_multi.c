@@ -16,7 +16,7 @@
 // #ifdef _M_X64
 // #if defined(_M_X64) || defined(__x86_64__)
 #if defined(_M_X64)
-#define BTESH2_HASJIT
+#define BTESH2_HASJIT_X64
 #endif
 
 #ifndef M_PI
@@ -44,7 +44,7 @@
 #include "jx2i_ldrom.c"
 
 
-#ifdef BTESH2_HASJIT
+#if defined(BTESH2_HASJIT_X64)
 #include "bteuax64/uax_multi.c"
 //#include "btesh2_jit_opmov.c"
 //#include "btesh2_jit_opbra.c"
@@ -54,6 +54,8 @@
 #include "jx2i_jit_opbra.c"
 #include "jx2i_jit_opmov.c"
 #include "jx2i_jit.c"
+#elif defined(BTESH2_HASJIT_ARM)
+#include "bteua_a32/ua32_multi.c"
 #else
 #include "jx2i_nojit.c"
 #endif
