@@ -19,6 +19,10 @@
 #define BTESH2_HASJIT_X64
 #endif
 
+#if defined(ARM)
+#define BTESH2_HASJIT_ARM
+#endif
+
 #ifndef M_PI
 #define M_PI 3.1415926535897932384626433832795
 #endif
@@ -56,6 +60,7 @@
 #include "jx2i_jit.c"
 #elif defined(BTESH2_HASJIT_ARM)
 #include "bteua_a32/ua32_multi.c"
+#include "jx2i_ja32_jit.c"
 #else
 #include "jx2i_nojit.c"
 #endif

@@ -2,6 +2,10 @@
 #include <sys/mman.h>
 #endif
 
+#ifdef UA32_LINUX
+void __clear_cache(void *beg, void *end);
+#endif
+
 static int ua32_init=0;
 static int ua32_fault=0;
 
@@ -12,6 +16,8 @@ byte *ua32_exheap_pos;
 char *ua32_gblsym_name[4096];
 void *ua32_gblsym_addr[4096];
 int ua32_gblsym_num;
+
+UA32_Context *ua32_opctx_freelist;
 
 int UA32_Init()
 {
@@ -69,7 +75,8 @@ int UA32_Init()
 	{
 		ua32_exheap_start=mmap(NULL, 1<<24,
 			PROT_READ|PROT_WRITE|PROT_EXEC,
-			MAP_PRIVATE|MAP_ANONYMOUS|MAP_32BIT, -1, 0);
+//			MAP_PRIVATE|MAP_ANONYMOUS|MAP_32BIT, -1, 0);
+			MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
 	}
 #endif
 
@@ -84,6 +91,7 @@ int UA32_Init()
 	ua32_exheap_pos=ua32_exheap_start;
 	
 //	i=UA32_CheckAddrExHeapRel32((void *)UA32_Init);
+	i=0;
 	
 	printf("UA32_Init: ExHeap %p..%p, EXE~=%p, IR32=%d\n",
 		ua32_exheap_start, ua32_exheap_end, (void *)UA32_Init, i);
@@ -218,6 +226,11 @@ byte *UA32_LinkContext(UA32_Context *ctx)
 	int lbl;
 	int i, j, k;
 	
+	for(i=0; i<16; i++)
+	{
+		gptr[i]=NULL; gsz[i]=0;
+	}
+	
 	for(i=0; i<ctx->nsec; i++)
 	{
 		j=ctx->sec_pos[i]-ctx->sec_buf[i];
@@ -299,7 +312,7 @@ byte *UA32_LinkContext(UA32_Context *ctx)
 			ui0=*(u16 *)prlc;
 			d1=(((s32)(ui0<<21))>>21)+d0;
 			ui1=(ui0&0xF800)|(d1&0x07FF);
-			*(u32 *)prlc=ui1;
+			*(u16 *)prlc=ui1;
 			break;
 		case UA32_RLC_REL22T:
 			d0=((plbl-prlc)-4)>>1;
@@ -309,15 +322,26 @@ byte *UA32_LinkContext(UA32_Context *ctx)
 			d1=(((s32)(d1<<10))>>10)+d0;
 			ui0=(ui0&0xF800)|((d1>>11)&0x07FF);
 			ui1=(ui1&0xF800)|((d1>> 0)&0x07FF);
-			((u32 *)prlc)[0]=ui0;
-			((u32 *)prlc)[1]=ui1;
+			((u16 *)prlc)[0]=ui0;
+			((u16 *)prlc)[1]=ui1;
 			break;
 		case UA32_RLC_REL8T:
 			d0=((plbl-prlc)-4)>>1;
 			ui0=*(u16 *)prlc;
 			d1=(((s32)(ui0<<24))>>24)+d0;
 			ui1=(ui0&0xFF00)|(d1&0x00FF);
-			*(u32 *)prlc=ui1;
+			*(u16 *)prlc=ui1;
+			break;
+			
+		case UA32_RLC_REL16TB:
+			d0=(plbl-prlc)-8;
+			ui0=((u16 *)prlc)[0];
+			ui1=((u16 *)prlc)[1];
+			d1=d0;
+			ui0=(ui0&0xFBF0)|((d1>>1)&0x0400)|((d1>>12)&0x000F);
+			ui1=(ui1&0x0F00)|((d1   )&0x00FF)|((d1<< 4)&0x7000);
+			((u16 *)prlc)[0]=ui0;
+			((u16 *)prlc)[1]=ui1;
 			break;
 
 		case UA32_RLC_ABS8:
@@ -332,8 +356,17 @@ byte *UA32_LinkContext(UA32_Context *ctx)
 		case UA32_RLC_ABS64:
 			*(s64 *)prlc+=nla;
 			break;
+		default:
+			printf("Unhandled Reloc Type %X\n", ctx->rlc_ty[i]);
+			fflush(stdout);
+			JX2_DBGBREAK
+			break;
 		}
 	}
+	
+	__clear_cache(
+		gptr[UA32_CSEG_TEXT],
+		gptr[UA32_CSEG_TEXT]+gsz[UA32_CSEG_TEXT]);
 	
 	return(gptr[UA32_CSEG_TEXT]);
 }
@@ -379,6 +412,9 @@ UA32_Context *UA32_AllocContext()
 	
 	UA32_Init();
 	
+	if(ua32_fault)
+		return(NULL);
+	
 	if(ua32_opctx_freelist)
 	{
 		tmp=ua32_opctx_freelist;
@@ -392,9 +428,11 @@ UA32_Context *UA32_AllocContext()
 		
 		tmp->reg_live=0;
 		tmp->reg_resv=0;
-		tmp->reg_save=0;
+		tmp->reg_valid=0;
+		tmp->reg_dirty=0;
 		tmp->jitfl=0;
 		tmp->lblrov=UA32_LBL_LOCALSTART;
+		tmp->n_ctab=0;
 		
 		return(tmp);
 	}
@@ -489,6 +527,22 @@ int UA32_EmitGetOffs(UA32_Context *ctx)
 	return(ctx->sec_pos[ctx->sec]-ctx->sec_buf[ctx->sec]);
 }
 
+int UA32_EmitBAlign(UA32_Context *ctx, int val)
+{
+	int ofs, n;
+	int i;
+
+	ofs=UA32_EmitGetOffs(ctx);
+	if(ofs&(val-1))
+	{
+		n=val-(ofs&(val-1));
+		i=n;
+		while(i--)
+			{ UA32_EmitByte(ctx, 0); }
+	}
+	return(0);
+}
+
 int UA32_GenLabelTemp(UA32_Context *ctx)
 {
 	int i;
@@ -542,4 +596,32 @@ int UA32_EmitRelocAbs32(UA32_Context *ctx, int lbl)
 	{ return(UA32_EmitRelocTy(ctx, lbl, UA32_RLC_ABS32)); }
 int UA32_EmitRelocAbs64(UA32_Context *ctx, int lbl)
 	{ return(UA32_EmitRelocTy(ctx, lbl, UA32_RLC_ABS64)); }
+
+
+int UA32_LookupIndexImm32(UA32_Context *ctx, u32 val)
+{
+	int i;
+	
+	for(i=0; i<ctx->n_ctab; i++)
+	{
+		if(ctx->ctab[i]==val)
+			return(i);
+	}
+	return(-1);
+}
+
+int UA32_GetIndexImm32(UA32_Context *ctx, u32 val)
+{
+	int i;
+	
+	for(i=0; i<ctx->n_ctab; i++)
+	{
+		if(ctx->ctab[i]==val)
+			return(i);
+	}
+	
+	i=ctx->n_ctab++;
+	ctx->ctab[i]=val;
+	return(i);
+}
 

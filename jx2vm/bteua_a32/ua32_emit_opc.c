@@ -87,12 +87,12 @@ int UA32_TryEmitOpRegRegReg(UA32_Context *ctx,
 
 	case UA32_NMID_SMULL:	opw=0x00800090;	md=2;	break;
 	case UA32_NMID_SMLAL:	opw=0x00A00090;	md=2;	break;
-	case UA32_NMID_SMULL:	opw=0x00C00090;	md=2;	break;
-	case UA32_NMID_SMLAL:	opw=0x00E00090;	md=2;	break;
+//	case UA32_NMID_SMULL:	opw=0x00C00090;	md=2;	break;
+//	case UA32_NMID_SMLAL:	opw=0x00E00090;	md=2;	break;
 	case UA32_NMID_UMULLS:	opw=0x00900090;	md=2;	break;
 	case UA32_NMID_UMLALS:	opw=0x00B00090;	md=2;	break;
-	case UA32_NMID_UMULLS:	opw=0x00D00090;	md=2;	break;
-	case UA32_NMID_UMLALS:	opw=0x00F00090;	md=2;	break;
+//	case UA32_NMID_UMULLS:	opw=0x00D00090;	md=2;	break;
+//	case UA32_NMID_UMLALS:	opw=0x00F00090;	md=2;	break;
 	}
 
 	if(md==1)
@@ -135,7 +135,7 @@ int UA32_TryEmitOpRegRegImm(UA32_Context *ctx,
 	int imm, shl;
 	u32 opw, opw1;
 
-	if(imm<0)
+	if(imma<0)
 		return(0);
 
 	imm=imma; shl=0;
@@ -226,7 +226,7 @@ int UA32_TryEmitOpMemDisp(UA32_Context *ctx,
 	case UA32_NMID_LDRH:	opw=0x005000B0; md=2; break;
 	case UA32_NMID_STRH:	opw=0x004000B0; md=2; break;
 	case UA32_NMID_LDRSB:	opw=0x005000D0; md=2; break;
-	case UA32_NMID_STRSB:	opw=0x004000D0; md=2; break;
+//	case UA32_NMID_STRSB:	opw=0x004000D0; md=2; break;
 	}
 	
 	if(md==1)
@@ -251,7 +251,7 @@ int UA32_TryEmitOpMemDisp(UA32_Context *ctx,
 }
 
 int UA32_TryEmitOpMemIdx(UA32_Context *ctx,
-	int nmid, int rd, int rb, int ri, int sh)
+	int nmid, int rd, int rb, int ri, int shl)
 {
 	int neg, md;
 	u32 opw, opw1;
@@ -268,7 +268,7 @@ int UA32_TryEmitOpMemIdx(UA32_Context *ctx,
 	case UA32_NMID_LDRH:	opw=0x001000B0; md=2; break;
 	case UA32_NMID_STRH:	opw=0x000000B0; md=2; break;
 	case UA32_NMID_LDRSB:	opw=0x001000D0; md=2; break;
-	case UA32_NMID_STRSB:	opw=0x000000D0; md=2; break;
+//	case UA32_NMID_STRSB:	opw=0x000000D0; md=2; break;
 	}
 	
 	if(md==1)
@@ -398,4 +398,5 @@ int UA32_EmitOpReg(UA32_Context *ctx,
 
 int UA32_EmitLoadImm32(UA32_Context *ctx, int rd, u32 imm)
 {
+	return(0);
 }

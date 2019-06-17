@@ -404,11 +404,21 @@ typedef unsigned char jx2_bool;
 
 typedef struct BJX2_FILE_s *BJX2_FILE;
 
-#ifdef _WIN32
+#ifdef _MSC_VER
 #define JX2_DBGBREAK	__debugbreak();
 #else
-#define JX2_DBGBREAK
+#ifdef __GNUC__
+#define JX2_DBGBREAK	__builtin_trap();
+#else
+// #define BGBCC_DBGBREAK
 #endif
+#endif
+
+// #ifdef _WIN32
+// #define JX2_DBGBREAK	__debugbreak();
+// #else
+// #define JX2_DBGBREAK
+// #endif
 
 #ifndef JX2_DBGBREAK
 #define JX2_DBGBREAK
