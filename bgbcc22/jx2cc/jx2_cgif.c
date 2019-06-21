@@ -3283,6 +3283,15 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			bgbcc_jx2cc_setu16en(ctr, en, w0);
 			break;
 
+		case BGBCC_SH_RLC_RELW12_BSR:
+			b=bgbcc_getu16en(ctr, en);
+			b1=((s32)(b<<20))>>20;
+			d1=b1+((d-2)>>1);
+			if((((s32)(d1<<20))>>20)!=d1)
+				__debugbreak();
+			bgbcc_jx2cc_setu16en(ctr, en, (b&0xF000)|(d1&0x0FFF));
+			break;
+
 		case BGBCC_SH_RLC_RELW16_BSR:
 			w0=bgbcc_getu16en(ctr+0, en);
 			w1=bgbcc_getu16en(ctr+2, en);

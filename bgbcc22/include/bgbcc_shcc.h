@@ -795,6 +795,8 @@
 #define BGBCC_SH_RLC_ABSW32B_BSR	0x26	//Absolute BYTE
 											//Oxxx_OOxx_OOxx_OOOx
 
+#define BGBCC_SH_RLC_RELW12_BSR		0x27	//Relative Low 12 bits (WORD)
+
 #define BGBCC_SH_RLC_RELW16A_BSR	0x28	//Relative 16 bit (BYTE, BSR1)
 											//Oxxx_OOOx
 #define BGBCC_SH_RLC_RELW24A_BSR	0x29	//Relative 24 bit (BYTE, BSR1)

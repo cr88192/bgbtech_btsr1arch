@@ -913,6 +913,24 @@ Instruction Space
 * 6zzz (Reserved)
 * 7zzz (Reserved)
 
+* 6zzz ? (Possible)
+** 60dd  -
+** 61dd  -
+** 62dd  -
+** 63dd  -
+** 64dd  -
+** 65dd  -
+** 66dd  -
+** 67dd  -
+** 68nj  ADD	#imm4u, Rk
+** 69nj  ADD	#imm4n, Rk
+** 6Anj  LDIZ	#imm4u, Rk
+** 6Bnj  LDIN	#imm4n, Rk
+** 6Cnj  CMPEQ	#imm4u, Rk			//Rn==Imm4, Zero Extend
+** 6Dnj  CMPEQ	#imm4n, Rk			//Rn==Imm4, One Extend
+** 6Enj  CMPGT	#imm4u, Rk			//Rn==Imm4, Zero Extend
+** 6Fnj  CMPGE	#imm4u, Rk			//Rn==Imm4, Zero Extend
+
 * 8zzz ( MOV.L 1000-rddd-nnnn-mmmm, r=Store/Load )
 ** 80nm  MOVU.L		(Rm), Rn
 ** 81nm  MOV.L		Rm, (Rn,  4)
