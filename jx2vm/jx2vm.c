@@ -916,4 +916,6 @@ int main(int argc, char *argv[])
 		printf("Exit Status %04X\n", i);
 	}
 #endif
+
+	fflush(stdout);
 }

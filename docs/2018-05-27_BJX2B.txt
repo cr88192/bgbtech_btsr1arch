@@ -699,11 +699,11 @@ Instruction Space
 ** 24jj /? LDIZ	#imm8u, DLR
 ** 25jj /? LDIN	#imm8n, DLR
 ** 26jj  LDISH	#imm8u, DLR			//DLR=(DLR SHL 8)|Imm8u
-** 27nj ? ADD	#imm4u, Rk
+** 27nj /? ADD	#imm4u, Rk
 ** 28nd  MOVU.L	(SP, disp4u), Rn	//Stack-Relative ZX Load
-** 29nj ? LDIZ	#imm4u, Rk
+** 29nj /? LDIZ	#imm4u, Rk
 ** 2And  MOVU.L	(SP, disp4u), Rk	//Stack-Relative ZX Load
-** 2Bnj ? LDIN	#imm4n, Rk
+** 2Bnj /? LDIN	#imm4n, Rk
 ** 2Cnj  CMPEQ	#imm4u, Rn			//Rn==Imm4, Zero Extend
 ** 2Dnj  CMPEQ	#imm4n, Rn			//Rn==Imm4, One Extend
 ** 2Enj  CMPGT	#imm4u, Rn			//Rn==Imm4, Zero Extend
@@ -765,10 +765,10 @@ Instruction Space
 ** 31n1  BSR	(PC, Rn)			//Branch Subroutine given by (PC, Rn)
 ** 31n2  BT		(PC, Rn)			//Branch if True to (PC, Rn)
 ** 31n3  BF		(PC, Rn)			//Branch if False to (PC, Rn)
-** 31n4  -
-** 31n5  -
-** 31n6  SHADQ	DLR, Rn			//Barrel Shift, Arithmetic
-** 31n7  SHLDQ	DLR, Rn			//Barrel Shift, Logical
+** 31n4 ? TST	Rn					//TST Rn, Rn
+** 31n5 ? TSTQ	Rn					//TSTQ Rn, Rn
+** 31n6  SHADQ	DLR, Rn				//Barrel Shift, Arithmetic
+** 31n7  SHLDQ	DLR, Rn				//Barrel Shift, Logical
 ** 31n8  PUSH	Rn
 ** 31n9  PUSH	Cn
 ** 31nA  POP	Rn
@@ -1162,7 +1162,24 @@ F0zz Instruction Block:
 *** F0nm_1eEC  -
 *** F0nm_1eFC  -
 
-** F0nm_1ezD
+** F0nm_1ezD ? (GFP, GPR FPU, Opt)
+*** F0nm_1e0D  FLDCF.D		Rm, Rn		//Load Convert Float32
+*** F0nm_1e1D  FLDCD.D		Rm, Rn		//Load Convert Double
+*** F0nm_1e2D  FLDCI.D		Rm, Rn		//Load Convert Int
+*** F0nm_1e3D  FLDCH.D		Rm, Rn		//Load Convert Half (Low16)
+*** F0nm_1e4D  FSTCF.D		Rm, Rn		//Store Convert Float32
+*** F0nm_1e5D  FSTCD.D		Rm, Rn		//Store Convert Double
+*** F0nm_1e6D  FSTCI.D		Rm, Rn		//Store Convert Int
+*** F0nm_1e7D  FSTCH.D		Rm, Rn		//Store Convert Half (Low16)
+*** F0nm_1e8D  FNEG.D		Rm, Rn		//Negate
+*** F0nm_1e9D  FABS.D		Rm, Rn		//Absolute
+*** F0nm_1eAD  -
+*** F0nm_1eBD  -
+*** F0nm_1eCD  FCMPEQ.D		Rm, Rn			//SR.T=(FRn EQ FRm)
+*** F0nm_1eDD  FCMPGT.D		Rm, Rn			//SR.T=(FRn GT FRm)
+*** F0nm_1eED  -
+*** F0nm_1eFD  -
+
 ** F0nm_1ezE  -
 ** F0nm_1ezF  -
 
@@ -1195,6 +1212,7 @@ F0zz Instruction Block:
 *** F011_3en0  BSR		(PC, Rn)
 *** F012_3en0  BT		(PC, Rn)
 *** F013_3en0  BF		(PC, Rn)
+*** F014_3en0  NOP3		Rn			//(WEX2) NOP with Register
 
 *** F018_3en0  PUSH		Rn
 *** F019_3en0  PUSH		Cn
@@ -1240,9 +1258,9 @@ F0zz Instruction Block:
 ** F0nm_5eo5  SHLD{Q}	Rm, Ro, Rn
 ** F0nm_5eo6  -
 ** F0nm_5eo7  -
-** F0nm_5eo8  -
-** F0nm_5eo9  -
-** F0nm_5eoA  -
+** F0nm_5go8 ? FADD.D	Rm, Ro, Rn			//(GFP) FADD
+** F0nm_5go9 ? FSUB.D	Rm, Ro, Rn			//(GFP) FSUB
+** F0nm_5goA ? FMUL.D	Rm, Ro, Rn			//(GFP) FMUL
 ** F0nm_5eoB  -
 ** F0nm_5goC  ADDS.L	Rm, Ro, Rn			//Rn=Rm+Ro, ADD 32-bit, Sign Extend
 ** F0nm_5GoC  ADDU.L	Rm, Ro, Rn			//Rn=Rm+Ro, ADD 32-bit, Zero Extend
@@ -1371,9 +1389,9 @@ F2zz Instruction Block  (Imm9 Block, New):
 * F2nz_Bejj
 
 * F2nz_Cfjj
-** F2n0_Cfjj ? MOV{D}	#imm10u, Rn				//Alt (WEX2)
-** F2n1_Cfjj ? MOV{D}	#imm10n, Rn				//Alt (WEX2)
-** F2n2_Cfjj  -
+** F2n0_Cfjj ? LDIZ{D}	#imm10u, Rn				//Alt (WEX2)
+** F2n1_Cfjj ? LDIN{D}	#imm10n, Rn				//Alt (WEX2)
+** F2n2_Cfjj ? LDISH	#imm8u, Rn				//Rn=(Rn<<8)|Imm8 (WEX2)
 ** F2n3_Cfjj  -
 ** F2n4_Cfjj  TST{Q}	#imm10u, Rn				//SR.T=!(Imm AND Rn)
 ** F2n5_Cfjj  TST{Q}	#imm10n, Rn				//SR.T=!(Imm AND Rn)
@@ -1416,6 +1434,8 @@ F8zz Instruction Block:
 * F8En_iiii  -
 * F8Fn_iiii  -
 
+
+==== FAzz/FBzz Instruction Block ====
 
 FAzz/FBzz Instructions:
 

@@ -894,14 +894,16 @@ int BGBCC_JX2_EmitLoadRegImm(
 			if((imm&15)==imm)
 			{
 //				opw1=0x2B00|((reg&15)<<4)|(imm&15);
-				opw1=0x2900|((reg&15)<<4)|(imm&15);
+//				opw1=0x2900|((reg&15)<<4)|(imm&15);
+				opw1=0x6A00|((reg&15)<<4)|(imm&15);
 				BGBCC_JX2_EmitWord(ctx, opw1);
 				return(1);
 			}
 
 			if((imm|(~15))==imm)
 			{
-				opw1=0x2B00|((reg&15)<<4)|(imm&15);
+//				opw1=0x2B00|((reg&15)<<4)|(imm&15);
+				opw1=0x6B00|((reg&15)<<4)|(imm&15);
 //				opw1=0x2900|((reg&15)<<4)|(imm&15);
 				BGBCC_JX2_EmitWord(ctx, opw1);
 				return(1);

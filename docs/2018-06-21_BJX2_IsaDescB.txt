@@ -175,6 +175,8 @@ Clear the SR.T flag.
 * 1Cnm       CMPEQ		Rm, Rn
 * 2Cnj       CMPEQ		#imm4u, Rn
 * 2Dnj       CMPEQ		#imm4n, Rn
+* 6Cnj       CMPEQ		#imm4u, Rk
+* 6Dnj       CMPEQ		#imm4n, Rk
 * F0nm_1gC9  CMPEQ		Rm, Rn
 * F2nC_Cgjj  CMPEQ		#imm9u, Rn
 * F2nD_Cgjj  CMPEQ		#imm9n, Rn
@@ -192,6 +194,7 @@ The contents of SR.S, and SR.PQRO are undefined following this operation.
 
 * 2Fnj       CMPGE	#imm4u, Rn
 * 36nE       CMPGE	DLR, Rn
+* 6Fnj       CMPGE	#imm4u, Rk
 * F2nA_Cgjj  CMPGE	#imm9u, Rn
 * F2nB_Cgjj  CMPGE	#imm9n, Rn
 
@@ -207,6 +210,7 @@ The contents of SR.S, and SR.PQRO are undefined following this operation.
 
 * 1Enm       CMPGT	Rm, Rn
 * 2Enj       CMPGT	#imm4u, Rn
+* 6Enj       CMPGT	#imm4u, Rk
 * F0nm_1gE9  CMPGT	Rm, Rn
 * F2nE_Cgjj  CMPGT	#imm9u, Rn
 * F2nF_Cgjj  CMPGT	#imm9n, Rn
@@ -463,15 +467,15 @@ This will use a scale factor of 2.
 === LDIN / LDIZ ===
 
 Targeting R0/DLR:
-* 24jj       LDIZ	#imm8u, DLR
-* 25jj       LDIN	#imm8n, DLR
+* / 24jj       LDIZ	#imm8u, DLR
+* / 25jj       LDIN	#imm8n, DLR
 * Ajjj       LDIZ	#imm12u, DLR
 * Bjjj       LDIN	#imm12n, DLR
 * FAjj_jjjj	 LDIZ	#imm24u, DLR		//Zero Extend
 * FBjj_jjjj	 LDIN	#imm24n, DLR		//One Extend
 
 Targeting GPRs:
-* Dnii            LDI		#imm8s, Rn		//Rn=Imm8
+* Dnii            LDI		#imm8s, Rn		//Rn=Imm8s
 * F2n0_Chjj       LDIZ		#imm10u, Rn		//(WEX2), Rn=Imm10u
 * F2n0_CHjj       LDIZD		#imm10u, Rn		//(WEX2), Rn=Imm10u (Hi=Undef)
 * F2n1_Chjj       LDIN		#imm10n, Rn		//(WEX2), Rn=Imm10n
@@ -482,8 +486,8 @@ Targeting GPRs:
 * F83n_iiii       LDIN		#imm16n, Rk
 * FCEn_iiii_iiii  LDIZ		#imm32u, Rn
 * FDEn_iiii_iiii  LDIZ		#imm32u, Rk
-* FCFn_iiii_iiii  LDIN		#imm32n, Rn		//R0..R15
-* FDFn_iiii_iiii  LDIN		#imm32n, Rk		//R16..R31
+* FCFn_iiii_iiii  LDIN		#imm32n, Rn
+* FDFn_iiii_iiii  LDIN		#imm32n, Rk
 
 Load an 8, 12, or 24 bit value into DLR.
 Load an 8, 10, 16, or 32 bit value into a GPR.
@@ -495,19 +499,22 @@ LDIN will extend the value with ones up to the size of the register.
 
 === LDISH ===
 
-* 26jj LDISH	#imm8u, DLR
+* 26jj       LDISH	#imm8u, DLR
+* F2n2_Chjj  LDISH	#imm8u, Rn
 
 Load Immediate with Shift.
 
 The value in DLR is shifted left 8 bits, and the immediate value is coppied into the low bits.
+
+The 32-bit encoding is mostly intended for use with WEX2. The high 2 bits of the imm10 field are reserved and must be zero.
 
 
 === LDISH16 ===
 
 * 30A0       LDISH16	#0x0000, DLR
 * 30B0       LDISH16	#0xFFFF, DLR
-* F86n_iiii  LDISH16	#imm16u, Rn		//R0..R15
-* F87n_iiii  LDISH16	#imm16u, Rk		//R16..R31
+* F86n_iiii  LDISH16	#imm16u, Rn
+* F87n_iiii  LDISH16	#imm16u, Rk
 
 Load Immediate with Shift.
 

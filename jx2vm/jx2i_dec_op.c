@@ -709,7 +709,7 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 			break;
 #endif
 
-#if 1
+#if 0
 //		case 0x9:	/* 29zz */
 		case 0x7:	/* 27zz */
 			op->imm=opw&15;
@@ -1148,6 +1148,22 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 				op->Run=BJX2_Op_CMPPZ_Reg;
 				break;
 #endif
+
+#if 1
+			case 0x4:	/* 31n4 */
+				op->rm=op->rn;
+				op->nmid=BJX2_NMID_TST;
+				op->fmid=BJX2_FMID_REG;
+				op->Run=BJX2_Op_TST_RegReg;
+				break;
+			case 0x5:	/* 31n5 */
+				op->rm=op->rn;
+				op->nmid=BJX2_NMID_TSTQ;
+				op->fmid=BJX2_FMID_REG;
+				op->Run=BJX2_Op_TSTQ_RegReg;
+				break;
+#endif
+
 
 #if 1
 			case 0x6:	/* 31z6 */
@@ -2570,6 +2586,78 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 			break;
 #endif
 
+		}
+		break;
+
+	case 0x6:	/* 6zzz */
+		op->rn=(opw>>4)&15;
+		op->rm=opw&15;
+		switch((opw>>8)&15)
+		{
+#if 1
+		case 0x8:	/* 68zz */
+			op->imm=opw&15;
+			op->rn+=16;
+			op->nmid=BJX2_NMID_ADD;
+			op->fmid=BJX2_FMID_IMMREG;
+			op->Run=BJX2_Op_ADD_ImmReg;
+			break;
+		case 0x9:	/* 69zz */
+			op->imm=(opw&15)|(~15);
+			op->rn+=16;
+			op->nmid=BJX2_NMID_ADD;
+			op->fmid=BJX2_FMID_IMMREG;
+			op->Run=BJX2_Op_ADD_ImmReg;
+			break;
+		case 0xA:	/* 6Azz */
+			op->imm=opw&15;
+			op->rn+=16;
+			op->nmid=BJX2_NMID_LDIZ;
+			op->fmid=BJX2_FMID_IMMREG;
+			op->Run=BJX2_Op_MOV_ImmReg;
+			break;
+		case 0xB:	/* 6Bzz */
+			op->imm=(opw&15)|(~15);
+			op->rn+=16;
+			op->nmid=BJX2_NMID_LDIN;
+			op->fmid=BJX2_FMID_IMMREG;
+			op->Run=BJX2_Op_MOV_ImmReg;
+			break;
+#endif
+
+#if 1
+		case 0xC:	/* 2Czz */
+			op->rn+=16;
+			op->imm=opw&15;
+			op->nmid=BJX2_NMID_CMPEQ;
+			op->fmid=BJX2_FMID_IMMREG;
+			op->Run=BJX2_Op_CMPEQ_ImmReg;
+			break;
+		case 0xD:	/* 2Dzz */
+			op->rn+=16;
+			op->imm=opw|(~15);
+			op->nmid=BJX2_NMID_CMPEQ;
+			op->fmid=BJX2_FMID_IMMREG;
+			op->Run=BJX2_Op_CMPEQ_ImmReg;
+			break;
+		case 0xE:	/* 2Ezz */
+			op->rn+=16;
+			op->imm=opw&15;
+			op->nmid=BJX2_NMID_CMPGT;
+			op->fmid=BJX2_FMID_IMMREG;
+			op->Run=BJX2_Op_CMPGT_ImmReg;
+			break;
+		case 0xF:	/* 2Fzz */
+			op->rn+=16;
+			op->imm=opw&15;
+			op->nmid=BJX2_NMID_CMPGE;
+			op->fmid=BJX2_FMID_IMMREG;
+			op->Run=BJX2_Op_CMPGE_ImmReg;
+			break;
+#endif
+
+		default:
+			break;
 		}
 		break;
 
