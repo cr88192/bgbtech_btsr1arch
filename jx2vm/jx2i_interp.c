@@ -1066,6 +1066,9 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		break;
 	}
 
+	if(op->fl&BJX2_OPFL_WEX)
+		printf("\t|");
+
 	if(!op1)
 		printf("\n");
 	return(0);

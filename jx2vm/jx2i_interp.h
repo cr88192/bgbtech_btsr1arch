@@ -116,6 +116,8 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_OPFL_TWOWORD	0x02		//Uses two instruction words
 #define BJX2_OPFL_TRIWORD	0x04		//Uses three instruction words
 
+#define BJX2_OPFL_WEX		0x08		//Uses three instruction words
+
 #define BJX2_NMID_NONE		0x00		//
 #define BJX2_NMID_MOVB		0x01		//
 #define BJX2_NMID_MOVW		0x02		//

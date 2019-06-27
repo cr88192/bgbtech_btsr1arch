@@ -64,6 +64,9 @@ ABI: SoftFP
 * PBO or Base-Relocatable for boot image.
 * PBO for application binaries and libraries.
 
+Optional: GFP
+* GFP will implement a basic FPU via GPRs.
+
 
 ==== BJX2 Fix32 Profile ====
 
@@ -689,7 +692,7 @@ Instruction Space
 ** 1Cnm  CMPEQ	Rm, Rn				//Rn==Rm (Low 32 Bits)
 ** 1Dnm  CMPHI	Rm, Rn				//Unsigned Rn GT Rm (Low 32 Bits)
 ** 1Enm  CMPGT	Rm, Rn				//Signed Rn GT Rm (Low 32 Bits)
-** 1Fnm -
+** 1Fnm  CMPGE	Rm, Rn
 
 * 2zzz
 ** 20dd  BRA	(PC, disp8s)		//Branch, PC=PC+(disp8s*2)
@@ -1003,9 +1006,9 @@ Major Ranges
 * F4zz_zzzz (Repeat F0zz, WEX2 Hint)
 * F5zz_zzzz (Repeat F1zz, WEX2 Hint)
 * F6zz_zzzz (Repeat F2zz, WEX2 Hint)
-* F7zz_zzzz (User Block, WEX2 Hint)
+* F7zz_zzzz (Repeat F3zz, WEX2 Hint)
 * F8Xn_jjjj (Some Imm16 Instructions)
-* F9zz_zzzz (Reserved)
+* F9Xn_jjjj (? Repeat F8zz, WEX2 Hint)
 * FAjj_jjjj (LDIZ Imm24, DLR)
 * FBjj_jjjj (LDIN Imm24, DLR)
 * FCzz_zzzz (48-bit)
@@ -1159,24 +1162,24 @@ F0zz Instruction Block:
 
 *** F0nm_1eCC  -
 *** F0nm_1eDC  -
-*** F0nm_1eEC  -
-*** F0nm_1eFC  -
+*** F0nm_1eEC  CMP{Q}GE	Rm, Rn				//Signed Rn GE Rm
+*** F0nm_1eFC  CMP{Q}HS	Rm, Rn				//Unsigned Rn GE Rm
 
 ** F0nm_1ezD ? (GFP, GPR FPU, Opt)
 *** F0nm_1e0D  FLDCF.D		Rm, Rn		//Load Convert Float32
-*** F0nm_1e1D  FLDCD.D		Rm, Rn		//Load Convert Double
+*** F0nm_1e1D  -
 *** F0nm_1e2D  FLDCI.D		Rm, Rn		//Load Convert Int
 *** F0nm_1e3D  FLDCH.D		Rm, Rn		//Load Convert Half (Low16)
 *** F0nm_1e4D  FSTCF.D		Rm, Rn		//Store Convert Float32
-*** F0nm_1e5D  FSTCD.D		Rm, Rn		//Store Convert Double
+*** F0nm_1e5D  -
 *** F0nm_1e6D  FSTCI.D		Rm, Rn		//Store Convert Int
 *** F0nm_1e7D  FSTCH.D		Rm, Rn		//Store Convert Half (Low16)
 *** F0nm_1e8D  FNEG.D		Rm, Rn		//Negate
 *** F0nm_1e9D  FABS.D		Rm, Rn		//Absolute
-*** F0nm_1eAD  -
-*** F0nm_1eBD  -
-*** F0nm_1eCD  FCMPEQ.D		Rm, Rn			//SR.T=(FRn EQ FRm)
-*** F0nm_1eDD  FCMPGT.D		Rm, Rn			//SR.T=(FRn GT FRm)
+*** F0nm_1eAD  FCMPEQ.D		Rm, Rn			//SR.T=(FRn EQ FRm)
+*** F0nm_1eBD  FCMPGT.D		Rm, Rn			//SR.T=(FRn GT FRm)
+*** F0nm_1eCD  -
+*** F0nm_1eDD  -
 *** F0nm_1eED  -
 *** F0nm_1eFD  -
 
@@ -1274,12 +1277,12 @@ F0zz Instruction Block:
 * F0zz_8zzz
 
 * F0ez_9zzz (FPU Block)
-** F0nm_9ed0 / FMOV.S		FRm, (Rm, disp5)
-** F0nm_9ed1 / FMOV.D		FRm, (Rm, disp5)
+** F0nm_9ed0  /
+** F0nm_9ed1  /
 ** F0nm_9eo2  FMOV.S		FRm, (Rm, Ro)
 ** F0nm_9eo3  FMOV.D		FRm, (Rm, Ro)
-** F0nm_9ed4 / FMOV.S		(Rm, disp5), FRn
-** F0nm_9ed5 / FMOV.D		(Rm, disp5), FRn
+** F0nm_9ed4  /
+** F0nm_9ed5  /
 ** F0nm_9eo6  FMOV.S		(Rm, Ro), FRn
 ** F0nm_9eo7  FMOV.D		(Rm, Ro), FRn
 ** F0nm_9go8  FADD			FRm, FRo, FRn
@@ -1427,12 +1430,14 @@ F8zz Instruction Block:
 * F87n_iiii  LDISH16	#imm16u, Rk		//R16..R31
 * F88n_iiii  -
 * F89n_iiii  -
-* F8Ai_iiii  -
-* F8Bi_iiii  -
+* F8An_iiii  -
+* F8Bn_iiii  -
 * F8Cn_iiii  -
 * F8Dn_iiii  -
 * F8En_iiii  -
 * F8Fn_iiii  -
+
+(Possible) The F9zz block will repeat the F8zz block, but with the primary difference that F9zz will indicate a WEX2 form.
 
 
 ==== FAzz/FBzz Instruction Block ====

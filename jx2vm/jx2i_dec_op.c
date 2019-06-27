@@ -3020,17 +3020,25 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 #if 1
 		case 0x4:	/* F4zz */
 			ret=BJX2_DecodeOpcode_DecF0(ctx, op, addr, opw, opw2);
+			op->fl|=BJX2_OPFL_WEX;
 			break;
 		case 0x5:	/* F5zz */
 			ret=BJX2_DecodeOpcode_DecF1(ctx, op, addr, opw, opw2);
+			op->fl|=BJX2_OPFL_WEX;
 			break;
 		case 0x6:	/* F6zz */
 			ret=BJX2_DecodeOpcode_DecF2(ctx, op, addr, opw, opw2);
+			op->fl|=BJX2_OPFL_WEX;
 			break;
 #endif
 
 		case 0x8:	/* F8zz */
 			ret=BJX2_DecodeOpcode_DecF8(ctx, op, addr, opw, opw2);
+			break;
+
+		case 0x9:	/* F9zz */
+			ret=BJX2_DecodeOpcode_DecF8(ctx, op, addr, opw, opw2);
+			op->fl|=BJX2_OPFL_WEX;
 			break;
 
 		case 0xA:	/* FAzz */
@@ -3055,6 +3063,8 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 
 		case 0xC:	/* FCzz */
 		case 0xD:	/* FDzz */
+		case 0xE:	/* FEzz */
+		case 0xF:	/* FFzz */
 			ret=BJX2_DecodeOpcode_DecFC(ctx, op, addr, opw, opw2, opw3);
 			break;
 		}
