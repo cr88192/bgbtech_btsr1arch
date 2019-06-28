@@ -137,6 +137,7 @@ byte no_fpu;		//no hardware FPU instructions
 byte no_ext32;		//no 32-bit instruction forms
 byte fpu_soft;		//use SoftFPU design.
 byte fpu_lite;		//use LiteFPU design.
+byte fpu_gfp;		//use GprFPU design.
 
 byte is_fixed32;	//uses only 32-bit instruction forms
 byte op_is_wex2;	//encoding a WEX2 instruction (0/2/3).

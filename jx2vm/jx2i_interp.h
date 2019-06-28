@@ -341,6 +341,8 @@ Will use direct linking and assume a non-modifiable program space.
 
 #define BJX2_FMID_CHAIN			0x27		//Chained Opcode
 
+#define BJX2_FLIPSTNM
+
 #if 0
 typedef unsigned char byte;
 typedef signed char sbyte;

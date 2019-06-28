@@ -659,14 +659,14 @@ Except where noted otherwise, the 16-bit instruction forms are limited to the fi
 
 Instruction Space
 * 0zzz (Basic MOV.x Block)
-** 00nm  MOV.B	Rn, (Rm)
-** 01nm  MOV.W	Rn, (Rm)
-** 02nm  MOV.L	Rn, (Rm)
-** 03nm  MOV.Q	Rn, (Rm)
-** 04nm  MOV.B	Rn, (Rm, DLR)
-** 05nm  MOV.W	Rn, (Rm, DLR)
-** 06nm  MOV.L	Rn, (Rm, DLR)
-** 07nm  MOV.Q	Rn, (Rm, DLR)
+** 00nm  MOV.B	Rm, (Rn)
+** 01nm  MOV.W	Rm, (Rn)
+** 02nm  MOV.L	Rm, (Rn)
+** 03nm  MOV.Q	Rm, (Rn)
+** 04nm  MOV.B	Rm, (Rn, DLR)
+** 05nm  MOV.W	Rm, (Rn, DLR)
+** 06nm  MOV.L	Rm, (Rn, DLR)
+** 07nm  MOV.Q	Rm, (Rn, DLR)
 ** 08nm  MOV.B	(Rm), Rn
 ** 09nm  MOV.W	(Rm), Rn
 ** 0Anm  MOV.L	(Rm), Rn
@@ -936,13 +936,13 @@ Instruction Space
 
 * 8zzz ( MOV.L 1000-rddd-nnnn-mmmm, r=Store/Load )
 ** 80nm  MOVU.L		(Rm), Rn
-** 81nm  MOV.L		Rn, (Rm,  4)
-** 82nm  MOV.L		Rn, (Rm,  8)
-** 83nm  MOV.L		Rn, (Rm, 12)
-** 84nm  MOV.L		Rn, (Rm, 16)
-** 85nm  MOV.L		Rn, (Rm, 20)
-** 86nm  MOV.L		Rn, (Rm, 24)
-** 87nm  MOV.L		Rn, (Rm, 28)
+** 81nm  MOV.L		Rm, (Rn,  4)
+** 82nm  MOV.L		Rm, (Rn,  8)
+** 83nm  MOV.L		Rm, (Rn, 12)
+** 84nm  MOV.L		Rm, (Rn, 16)
+** 85nm  MOV.L		Rm, (Rn, 20)
+** 86nm  MOV.L		Rm, (Rn, 24)
+** 87nm  MOV.L		Rm, (Rn, 28)
 ** 88nm  MOVU.L		(Rm, DLR), Rn
 ** 89nm  MOV.L		(Rm,  4), Rn
 ** 8Anm  MOV.L		(Rm,  8), Rn
@@ -953,10 +953,10 @@ Instruction Space
 ** 8Fnm  MOV.L		(Rm, 28), Rn
 
 * 9zzz (FPU Block)
-** 90nm  FMOV.S		FRn, (Rm)
-** 91nm  FMOV.D		FRn, (Rm)
-** 92nm  FMOV.S		FRn, (Rm, DLR)
-** 93nm  FMOV.D		FRn, (Rm, DLR)
+** 90nm  FMOV.S		FRm, (Rm)
+** 91nm  FMOV.D		FRm, (Rm)
+** 92nm  FMOV.S		FRm, (Rm, DLR)
+** 93nm  FMOV.D		FRm, (Rm, DLR)
 ** 94nm  FMOV.S		(Rm), FRn
 ** 95nm  FMOV.D		(Rm), FRn
 ** 96nm  FMOV.S		(Rm, DLR), FRn
@@ -1050,14 +1050,14 @@ F0zz Instruction Block:
 ** F0nm_0Gd2  /
 ** F0nm_0gd3  /
 ** F0nm_0Gd3  /
-** F0nm_0go4  MOV.B		Rn, (Rm, Ro)		//Q=0
-** F0nm_0Go4  LEA.B		(Rm, Ro), Rn		//Q=1
-** F0nm_0go5  MOV.W		Rn, (Rm, Ro)		//Q=0
-** F0nm_0Go5  LEA.W		(Rm, Ro), Rn		//Q=1
-** F0nm_0go6  MOV.L		Rn, (Rm, Ro)		//Q=0
-** F0nm_0Go6  LEA.L		(Rm, Ro), Rn		//Q=1
-** F0nm_0go7  MOV.Q		Rn, (Rm, Ro)		//Q=0
-** F0nm_0Go7  LEA.Q		(Rm, Ro), Rn		//Q=1
+** F0nm_0go4  MOV.B		Rm, (Rn, Ro)		//Q=0
+** F0nm_0Go4  LEA.B		Rm, (Rn, Ro)		//Q=1
+** F0nm_0go5  MOV.W		Rm, (Rn, Ro)		//Q=0
+** F0nm_0Go5  LEA.W		Rm, (Rn, Ro)		//Q=1
+** F0nm_0go6  MOV.L		Rm, (Rn, Ro)		//Q=0
+** F0nm_0Go6  LEA.L		Rm, (Rn, Ro)		//Q=1
+** F0nm_0go7  MOV.Q		Rm, (Rn, Ro)		//Q=0
+** F0nm_0Go7  LEA.Q		Rm, (Rn, Ro)		//Q=1
 ** F0nm_0gd8  /
 ** F0nm_0Gd8  /
 ** F0nm_0gd9  /
@@ -1328,16 +1328,16 @@ F0zz Instruction Block:
 F1zz Instruction Block:
 
 * F1nm_Xeii  (MOV Disp9 Block)
-** F1nm_0gdd  MOV.B		Rn, (Rm, disp9u)
+** F1nm_0gdd  MOV.B		Rm, (Rn, disp9u)
 ** F1nm_0Gdd  LEA.B		(Rm, disp9u), Rn
-** F1nm_1gdd  MOV.W		Rn, (Rm, disp9u)
+** F1nm_1gdd  MOV.W		Rm, (Rn, disp9u)
 ** F1nm_1Gdd  LEA.W		(Rm, disp9u), Rn
-** F1nm_2gdd  MOV.L		Rn, (Rm, disp9u)
+** F1nm_2gdd  MOV.L		Rm, (Rn, disp9u)
 ** F1nm_2Gdd  LEA.L		(Rm, disp9u), Rn
-** F1nm_3gdd  MOV.Q		Rn, (Rm, disp9u)
+** F1nm_3gdd  MOV.Q		Rm, (Rn, disp9u)
 ** F1nm_3Gdd  LEA.Q		(Rm, disp9u), Rn
-** F1nm_4gdd  FMOV.S	FRn, (Rm, disp9u)	//(FPU)
-** F1nm_5gdd  FMOV.D	FRn, (Rm, disp9u)	//(FPU)
+** F1nm_4gdd  FMOV.S	FRm, (Rm, disp9u)	//(FPU)
+** F1nm_5gdd  FMOV.D	FRm, (Rm, disp9u)	//(FPU)
 ** F1nm_6gdd  FMOV.S	(Rm, disp9u), FRn	//(FPU)
 ** F1nm_7gdd  FMOV.D	(Rm, disp9u), FRn	//(FPU)
 ** F1nm_8gdd  MOV.B		(Rm, disp9u), Rn
@@ -1455,21 +1455,21 @@ These forms are not available in Fixed-Length or Lite Profiles.
 
 * FC0z_zzzz_zzzz  (Extended Opcode Space)
 
-** FC0g_00nm_dddd ? MOV.B Rn, (Rm, disp17s)
+** FC0g_00nm_dddd ? MOV.B Rm, (Rn, disp17s)
 ** FC0G_00nm_dddd ? LEA.B (Rm, disp17s), Rn
-** FC0g_01nm_dddd ? MOV.W Rn, (Rm, disp17s)
+** FC0g_01nm_dddd ? MOV.W Rm, (Rn, disp17s)
 ** FC0G_01nm_dddd ? LEA.W (Rm, disp17s), Rn
-** FC0g_02nm_dddd ? MOV.L Rn, (Rm, disp17s)
+** FC0g_02nm_dddd ? MOV.L Rm, (Rn, disp17s)
 ** FC0G_02nm_dddd ? LEA.L (Rm, disp17s), Rn
-** FC0g_03nm_dddd ? MOV.Q Rn, (Rm, disp17s)
+** FC0g_03nm_dddd ? MOV.Q Rm, (Rn, disp17s)
 ** FC0G_03nm_dddd ? LEA.Q (Rm, disp17s), Rn
-** FC0g_04nm_sodd ? MOV.B Rn, (Rm, Ro*Sc, disp8)		//(SCIXD)
+** FC0g_04nm_sodd ? MOV.B Rm, (Rn, Ro*Sc, disp8)		//(SCIXD)
 ** FC0G_04nm_sodd ? LEA.B (Rm, Ro*Sc, disp8), Rn		//(SCIXD)
-** FC0g_05nm_sodd ? MOV.W Rn, (Rm, Ro*Sc, disp8)		//(SCIXD)
+** FC0g_05nm_sodd ? MOV.W Rm, (Rn, Ro*Sc, disp8)		//(SCIXD)
 ** FC0G_05nm_sodd ? LEA.W (Rm, Ro*Sc, disp8), Rn		//(SCIXD)
-** FC0g_06nm_sodd ? MOV.L Rn, (Rm, Ro*Sc, disp8)		//(SCIXD)
+** FC0g_06nm_sodd ? MOV.L Rm, (Rn, Ro*Sc, disp8)		//(SCIXD)
 ** FC0G_06nm_sodd ? LEA.L (Rm, Ro*Sc, disp8), Rn		//(SCIXD)
-** FC0g_07nm_sodd ? MOV.Q Rn, (Rm, Ro*Sc, disp8)		//(SCIXD)
+** FC0g_07nm_sodd ? MOV.Q Rm, (Rn, Ro*Sc, disp8)		//(SCIXD)
 ** FC0G_07nm_sodd ? LEA.Q (Rm, Ro*Sc, disp8), Rn		//(SCIXD)
 ** FC0e_08nm_dddd ? MOV{U}.B (Rm, disp17s), Rn
 ** FC0e_09nm_dddd ? MOV{U}.W (Rm, disp17s), Rn
@@ -1587,7 +1587,7 @@ These forms are not available in Fixed-Length or Lite Profiles.
 Note that 32 bit immediates and displacements will be encoded in low-high order such that the value in-memory has the proper little-endian byte ordering.
 
 
-=== Wide Execution 2 (Optional) ===
+=== Wide Execution 2 (Possible) ===
 
 WEX2 Would be based around 32-bit instructions, where:
 * F0zz..F3zz represent the last instruction in a series.
@@ -1598,9 +1598,3 @@ WEX2 Would be based around 32-bit instructions, where:
 ** The core will limit it to the maximum it supports.
 ** Dependencies between instructions in a series are not allowed.
 ** A series also does not require parallel execution.
-
-Instructions operating in parallel will be organized into lanes.
-The lanes will be encoded in reverse order, with the last instruction being 'Lane 1'. All scalar operations will take place in Lane 1.
-
-Operations which need to read the value from Rn will overlap with Lane 2, and will consume the Ro port for this lane (in scalar ops). In WEX, an operation may Lane 2 with such an operation if its Ro matches the Rn in Lane 1 (otherwise, the results are undefined).
-

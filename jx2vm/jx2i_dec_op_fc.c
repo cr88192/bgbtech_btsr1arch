@@ -7,12 +7,31 @@ int BJX2_DecodeOpcode_DecFC(BJX2_Context *ctx,
 	int rn_i32;
 	int rn_i24;
 	int eq;
-	int ret;
+	int ret, fnm;
 	
 	op->fl|=BJX2_OPFL_TRIWORD;
 	op->opn=opw1;
 	op->opn2=opw2;
 	op->opn3=opw3;
+
+	if(1)
+	{
+#ifdef BJX2_FLIPSTNM
+		fnm=0;
+		if(((opw1&0xFFF8)==0xFC00) &&
+			((opw2&0xF800)==0x0000))
+				fnm=1;
+		if(fnm)
+		{
+			opw1=(opw1&0xFFF9)|
+				((opw1<<1)&0x0004)|
+				((opw1>>1)&0x0002);
+			opw2=(opw2&0xFF00)|
+				((opw2<<4)&0x00F0)|
+				((opw2>>4)&0x000F);
+		}
+#endif
+	}
 
 	rn_i32=opw1&15;
 	if(opw1&0x0100)

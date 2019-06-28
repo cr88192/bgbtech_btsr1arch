@@ -420,7 +420,7 @@ This instruction is invalid outside of an ISR. Its behavior is undefined, but sh
 === LEA.B ===
 
 * 4Cnm            LEA.B		(Rm, DLR), Rn
-* F0nm_0Go4       LEA.B		(Rm, Ro), Rn
+* F0nm_0Go4       LEA.B		Rm, (Rn, Ro)
 * F1nm_0Gdd       LEA.B		(Rm, disp9u), Rn
 * FC27_4ndd_dddd  LEA.B		(PC, disp24s), Rn	//PC-Rel Load
 
@@ -434,7 +434,7 @@ Note that the effective precision of LEA will be relative to the size of the add
 === LEA.L ===
 
 * 4Enm       LEA.L	(Rm, DLR), Rn
-* F0nm_0Go6  LEA.L	(Rm, Ro), Rn
+* F0nm_0Go6  LEA.L	Rm, (Rn, Ro)
 * F1nm_2Gdd  LEA.L	(Rm, disp9u), Rn
 
 Load the effective address of the Base register added to the scaled displacement and store the result into the destination register.
@@ -445,7 +445,7 @@ This will use a scale factor of 4.
 === LEA.Q ===
 
 * 4Fnm       LEA.Q	(Rm, DLR), Rn
-* F0nm_0Go7  LEA.Q	(Rm, Ro), Rn
+* F0nm_0Go7  LEA.Q	Rm, (Rn, Ro)
 * F1nm_3Gdd  LEA.Q	(Rm, disp9u), Rn
 
 Load the effective address of the Base register added to the scaled displacement and store the result into the destination register.
@@ -456,7 +456,7 @@ This will use a scale factor of 8.
 === LEA.W ===
 
 * 4Dnm       LEA.W	(Rm, DLR), Rn
-* F0nm_0Go5  LEA.W	(Rm, Ro), Rn
+* F0nm_0Go5  LEA.W	Rm, (Rn, Ro)
 * F1nm_1Gdd  LEA.W	(Rm, disp9u), Rn
 
 Load the effective address of the Base register added to the scaled displacement and store the result into the destination register.
@@ -546,15 +546,15 @@ Move a value from the source to the destination register.
 
 === MOV.B ===
 
-* 00nm            MOV.B		Rn, (Rm)
-* 04nm            MOV.B		Rn, (Rm, DLR)		//(Rn==0): PC-Rel
+* 00nm            MOV.B		Rm, (Rn)
+* 04nm            MOV.B		Rm, (Rn, DLR)		//(Rn==0): PC-Rel
 * 08nm            MOV.B		(Rm), Rn
 * 0Cnm            MOV.B		(Rm, DLR), Rn		//(Rm==0): PC-Rel
-* F0nm_0go4       MOV.B		Rn, (Rm, Ro)		//Q=0	//(Rn==0): PC-Rel
+* F0nm_0go4       MOV.B		Rm, (Rn, Ro)		//Q=0	//(Rn==0): PC-Rel
 * F0nm_0goC       MOV.B		(Rm, Ro), Rn		//Q=0	//(Rm==0): PC-Rel
-* F1nm_0gdd       MOV.B		Rn, (Rm, disp9u)
+* F1nm_0gdd       MOV.B		Rm, (Rn, disp9u)
 * F1nm_8gdd       MOV.B		(Rm, disp9u), Rn
-* FC0g_00nm_dddd  MOV.B		Rn, (Rm, disp17s)
+* FC0g_00nm_dddd  MOV.B		Rm, (Rn, disp17s)
 * FC0g_08nm_dddd  MOV.B		(Rm, disp17s), Rn
 * FC27_0ndd_dddd  MOV.B		Rn, (PC, disp24s)	//PC-Rel Store (R0..R15)
 * FC27_8ndd_dddd  MOV.B		(PC, disp24s), Rn	//PC-Rel Load (R0..R15)
@@ -567,19 +567,19 @@ The byte is sign extended to the size of the register.
 
 === MOV.L ===
 
-* 02nm            MOV.L		Rn, (Rm)
-* 06nm            MOV.L		Rn, (Rm, DLR)		//(Rn==0): PC-Rel
+* 02nm            MOV.L		Rm, (Rn)
+* 06nm            MOV.L		Rm, (Rn, DLR)		//(Rn==0): PC-Rel
 * 0Anm            MOV.L		(Rm), Rn
 * 0Enm            MOV.L		(Rm, DLR), Rn		//(Rm==0): PC-Rel
 * 40nd            MOV.L		Rn, (SP, disp4u)	//Stack-Relative Store
 * 42nd            MOV.L		Rk, (SP, disp4u)	//Stack-Relative Store
 * 44nd            MOV.L		(SP, disp4u), Rn	//Stack-Relative Load
 * 46nd            MOV.L		(SP, disp4u), Rk	//Stack-Relative Load
-* F0nm_0go6       MOV.L		Rn, (Rm, Ro)		//(Rn==0): PC-Rel
+* F0nm_0go6       MOV.L		Rm, (Rn, Ro)		//(Rn==0): PC-Rel
 * F0nm_0goE       MOV.L		(Rm, Ro), Rn		//(Rm==0): PC-Rel
-* F1nm_2gdd       MOV.L		Rn, (Rm, disp9u)
+* F1nm_2gdd       MOV.L		Rm, (Rn, disp9u)
 * F1nm_Agdd       MOV.L		(Rm, disp9u), Rn
-* FC0g_02nm_dddd  MOV.L		Rn, (Rm, disp17s)
+* FC0g_02nm_dddd  MOV.L		Rm, (Rn, disp17s)
 * FC0g_0Anm_dddd  MOV.L		(Rm, disp17s), Rn
 * FC27_2ndd_dddd  MOV.L		Rn, (PC, disp24s)	//PC-Rel Store
 * FC27_Andd_dddd  MOV.L		(PC, disp24s), Rn	//PC-Rel Load
@@ -595,19 +595,19 @@ For example, F0-28 and F1-2 could both achieve a similar purpose, so don't need 
 
 === MOV.Q ===
 
-* 03nm            MOV.Q		Rn, (Rm)
-* 07nm            MOV.Q		Rn, (Rm, DLR)
+* 03nm            MOV.Q		Rm, (Rn)
+* 07nm            MOV.Q		Rm, (Rn, DLR)
 * 0Bnm            MOV.Q		(Rm), Rn
 * 0Fnm            MOV.Q		(Rm, DLR), Rn
 * 41nd            MOV.Q		Rn, (SP, disp4u)
 * 43nd            MOV.Q		Rk, (SP, disp4u)
 * 45nd            MOV.Q		(SP, disp4u), Rn
 * 47nd            MOV.Q		(SP, disp4u), Rk
-* F0nm_0go7       MOV.Q		Rn, (Rm, Ro)
+* F0nm_0go7       MOV.Q		Rm, (Rn, Ro)
 * F0nm_0goF       MOV.Q		(Rm, Ro), Rn
-* F1nm_3gdd       MOV.Q		Rn, (Rm, disp9u)
+* F1nm_3gdd       MOV.Q		Rm, (Rn, disp9u)
 * F1nm_Bgdd       MOV.Q		(Rm, disp9u), Rn
-* FC0g_03nm_dddd  MOV.Q		Rn, (Rm, disp17s)
+* FC0g_03nm_dddd  MOV.Q		Rm, (Rn, disp17s)
 * FC0g_0Bnm_dddd  MOV.Q		(Rm, disp17s), Rn
 * FC27_3ndd_dddd  MOV.Q		Rn, (PC, disp24s)
 * FC27_Bndd_dddd  MOV.Q		(PC, disp24s), Rn
@@ -619,15 +619,15 @@ Load or store a QWord to/from memory.
 
 === MOV.W ===
 
-* 01nm            MOV.W		Rn, (Rm)
-* 05nm            MOV.W		Rn, (Rm, DLR)
+* 01nm            MOV.W		Rm, (Rn)
+* 05nm            MOV.W		Rm, (Rn, DLR)
 * 09nm            MOV.W		(Rm), Rn
 * 0Dnm            MOV.W		(Rm, DLR), Rn
-* F0nm_0go5       MOV.W		Rn, (Rm, Ro)
+* F0nm_0go5       MOV.W		Rm, (Rn, Ro)
 * F0nm_0goD       MOV.W		(Rm, Ro), Rn
-* F1nm_1gdd       MOV.W		Rn, (Rm, disp9u)
+* F1nm_1gdd       MOV.W		Rm, (Rn, disp9u)
 * F1nm_9gdd       MOV.W		(Rm, disp9u), Rn
-* FC0e_01nm_dddd  MOV.W		Rn, (Rm, disp17s)
+* FC0e_01nm_dddd  MOV.W		Rm, (Rn, disp17s)
 * FC0g_09nm_dddd  MOV.W		(Rm, disp17s), Rn
 * FC27_1ndd_dddd  MOV.W		Rn, (PC, disp24s)
 * FC27_9ndd_dddd  MOV.W		(PC, disp24s), Rn

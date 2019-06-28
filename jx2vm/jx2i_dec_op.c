@@ -275,7 +275,7 @@ int BJX2_DecodeOpcode_CheckTwoWord(BJX2_Context *ctx,
 int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 	BJX2_Opcode *op, bjx2_addr addr)
 {
-	int ret;
+	int ret, fnm;
 	int opw, opw2, opw3;
 
 	opw =BJX2_MemGetWord(ctx, addr+0);
@@ -289,6 +289,24 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 	op->rm=0;
 	op->ro=0;
 	op->imm=0;
+	
+#ifdef BJX2_FLIPSTNM
+	fnm=0;
+	if((opw&0xF800)==0x0000)
+		fnm=1;
+	if(((opw&0xF800)==0x8000) &&
+		((opw&0xFF00)!=0x8000))
+			fnm=1;
+	if((opw&0xFC00)==0x9000)
+		fnm=1;
+	
+	if(fnm)
+	{
+		opw=(opw&0xFF00)|
+			((opw<<4)&0x00F0)|
+			((opw>>4)&0x000F);
+	}
+#endif
 	
 	ret=0;
 	switch((opw>>12)&15)

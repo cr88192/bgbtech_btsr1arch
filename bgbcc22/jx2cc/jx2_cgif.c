@@ -189,6 +189,14 @@ bool BGBCC_JX2C_TypeIntRegP(BGBCC_TransState *ctx, ccxl_type ty)
 
 	if(sctx->no_fpu || sctx->fpu_soft)
 	{
+		if(sctx->fpu_gfp)
+		{
+			if(BGBCC_CCXL_TypeFloatP(ctx, ty))
+				return(false);
+			if(BGBCC_CCXL_TypeFloat16P(ctx, ty))
+				return(false);
+		}
+
 		if(BGBCC_CCXL_TypeFloatP(ctx, ty))
 			return(true);
 		if(BGBCC_CCXL_TypeFloat16P(ctx, ty))
@@ -245,7 +253,7 @@ bool BGBCC_JX2C_TypeFloatRegP(BGBCC_TransState *ctx, ccxl_type ty)
 
 	sctx=ctx->uctx;
 	
-	if(sctx->no_fpu || sctx->fpu_soft)
+	if(sctx->no_fpu || sctx->fpu_soft || sctx->fpu_gfp)
 		return(0);
 
 	if(BGBCC_CCXL_TypeFloatP(ctx, ty))
@@ -267,7 +275,7 @@ bool BGBCC_JX2C_TypeFloat2RegP(BGBCC_TransState *ctx, ccxl_type ty)
 
 	sctx=ctx->uctx;
 	
-	if(sctx->no_fpu || sctx->fpu_soft)
+	if(sctx->no_fpu || sctx->fpu_soft || sctx->fpu_gfp)
 		return(0);
 	
 //	if(BGBCC_CCXL_TypeDoubleP(ctx, ty))
@@ -281,7 +289,7 @@ bool BGBCC_JX2C_TypeDoubleRegP(BGBCC_TransState *ctx, ccxl_type ty)
 
 	sctx=ctx->uctx;
 	
-	if(sctx->no_fpu || sctx->fpu_soft)
+	if(sctx->no_fpu || sctx->fpu_soft || sctx->fpu_gfp)
 		return(0);
 	
 	if(BGBCC_CCXL_TypeDoubleP(ctx, ty))
@@ -408,6 +416,16 @@ int BGBCC_JX2C_TypeGetRegClassPI(BGBCC_TransState *ctx, ccxl_type ty)
 			if(BGBCC_CCXL_TypeFloat16P(ctx, ty))
 				return(BGBCC_SH_REGCLS_GR);
 		}
+
+		if(sctx->fpu_gfp)
+		{
+			if(BGBCC_CCXL_TypeDoubleP(ctx, ty))
+				return(BGBCC_SH_REGCLS_QGR);
+			if(BGBCC_CCXL_TypeFloatP(ctx, ty))
+				return(BGBCC_SH_REGCLS_QGR);
+			if(BGBCC_CCXL_TypeFloat16P(ctx, ty))
+				return(BGBCC_SH_REGCLS_QGR);
+		}
 	}
 
 	if(sctx->is_addr64)
@@ -433,6 +451,16 @@ int BGBCC_JX2C_TypeGetRegClassPI(BGBCC_TransState *ctx, ccxl_type ty)
 				return(BGBCC_SH_REGCLS_GR);
 			if(BGBCC_CCXL_TypeFloat16P(ctx, ty))
 				return(BGBCC_SH_REGCLS_GR);
+		}
+
+		if(sctx->fpu_gfp)
+		{
+			if(BGBCC_CCXL_TypeDoubleP(ctx, ty))
+				return(BGBCC_SH_REGCLS_QGR);
+			if(BGBCC_CCXL_TypeFloatP(ctx, ty))
+				return(BGBCC_SH_REGCLS_QGR);
+			if(BGBCC_CCXL_TypeFloat16P(ctx, ty))
+				return(BGBCC_SH_REGCLS_QGR);
 		}
 	}
 

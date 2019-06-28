@@ -247,7 +247,45 @@ int BGBCC_JX2_EmitOpCheckRepack(
 {
 	int opw1, opw2, opw3, opw4;
 
-	if(!ropw1 || !ropw2)
+	if(!ropw1)
+		return(0);
+
+	opw1=*ropw1;
+
+#ifdef BGBCC_BJX2_FLIPSTNM
+	if((opw1&0xE000)!=0xE000)
+	{
+		opw3=opw1;
+
+		if((opw1&0xF800)==0x0000)
+		{
+			opw3=(opw3&0xFF00)|
+				((opw3<<4)&0x00F0)|
+				((opw3>>4)&0x000F);
+		}
+
+		if(((opw1&0xF800)==0x8000) &&
+			((opw1&0xFF00)!=0x8000))
+		{
+			opw3=(opw3&0xFF00)|
+				((opw3<<4)&0x00F0)|
+				((opw3>>4)&0x000F);
+		}
+	
+		if((opw1&0xFC00)==0x9000)
+		{
+			opw3=(opw3&0xFF00)|
+				((opw3<<4)&0x00F0)|
+				((opw3>>4)&0x000F);
+		}
+
+		*ropw1=opw3;
+	
+		return(0);
+	}
+#endif
+
+	if(!ropw2)
 		return(0);
 
 	opw1=*ropw1;
@@ -266,7 +304,28 @@ int BGBCC_JX2_EmitOpCheckRepack(
 		opw4=(opw2&0xF000)|
 			((opw2>>8)&0x000F)|
 			((opw1<<4)&0x0FF0);
-	
+
+#ifdef BGBCC_BJX2_FLIPSTNM
+		if((opw4&0xF808)==0x0000)
+		{
+			opw3=(opw3&0xFF00)|
+				((opw3<<4)&0x00F0)|
+				((opw3>>4)&0x000F);
+			opw4=(opw4&0xF9FF)|
+				((opw4<<1)&0x0400)|
+				((opw4>>1)&0x0200);
+		}
+		if((opw4&0xF80C)==0x9000)
+		{
+			opw3=(opw3&0xFF00)|
+				((opw3<<4)&0x00F0)|
+				((opw3>>4)&0x000F);
+			opw4=(opw4&0xF9FF)|
+				((opw4<<1)&0x0400)|
+				((opw4>>1)&0x0200);
+		}
+#endif
+
 		*ropw1=opw3;
 		*ropw2=opw4;
 //		BGBCC_JX2_EmitSetOffsWord(ctx, o+0, opw3);
@@ -274,12 +333,66 @@ int BGBCC_JX2_EmitOpCheckRepack(
 		return(1);
 	}
 
+#ifdef BGBCC_BJX2_FLIPSTNM
+	if((opw1&0xFF00)==0xF100)
+	{
+		opw3=opw1;
+		opw4=opw2;
+	
+		if(	((opw4&0xC800)==0x0000)||
+			((opw4&0xE800)==0x4000))
+		{
+			opw3=(opw3&0xFF00)|
+				((opw3<<4)&0x00F0)|
+				((opw3>>4)&0x000F);
+			opw4=(opw4&0xF9FF)|
+				((opw4<<1)&0x0400)|
+				((opw4>>1)&0x0200);
+		}
+
+		*ropw1=opw3;
+		*ropw2=opw4;
+		return(1);
+	}
+#endif
+
 	return(0);
 }
 
 int BGBCC_JX2_EmitOpCheckRepack3(
 	BGBCC_JX2_Context *ctx, int *ropw1, int *ropw2, int *ropw3)
 {
+	int opw1, opw2, opw3;
+	int l1, l2;
+
+	if(!ropw1)
+		return(0);
+
+	if(!ropw2 || !ropw3)
+	{
+		BGBCC_JX2_EmitOpCheckRepack(ctx, ropw1, ropw2);
+		return(0);
+	}
+
+	opw1=*ropw1;
+	opw2=*ropw2;
+	opw3=*ropw3;
+	
+	if((opw1&0xFC00)==0xFC00)
+	{
+		if(((opw1&0xFFF8)==0xFC00) && ((opw2&0xF800)==0x0000))
+		{
+			opw1=(opw1&0xFFF9)|
+				((opw1<<1)&0x0004)|
+				((opw1>>1)&0x0002);
+			opw2=(opw2&0xFF00)|
+				((opw2<<4)&0x00F0)|
+				((opw2>>4)&0x000F);
+		}
+
+		return(0);
+	}
+
 //	BGBCC_JX2_EmitOpCheckRepack(ctx, ropw1, ropw2);
 	BGBCC_JX2_EmitOpCheckRepack4(ctx, ropw1, ropw2, ropw3, NULL);
 	return(0);
@@ -309,8 +422,15 @@ int BGBCC_JX2_EmitOpCheckRepack4(
 	int opw1, opw2;
 	int l1, l2;
 
-	if(!ropw1 || !ropw2)
+//	if(!ropw1 || !ropw2)
+	if(!ropw1)
 		return(0);
+
+	if(!ropw2)
+	{
+		BGBCC_JX2_EmitOpCheckRepack(ctx, ropw1, ropw2);
+		return(0);
+	}
 	
 	opw1=*ropw1;
 	opw2=*ropw2;
@@ -320,6 +440,8 @@ int BGBCC_JX2_EmitOpCheckRepack4(
 
 	if(l1==3)
 	{
+		BGBCC_JX2_EmitOpCheckRepack3(ctx, ropw1, ropw2, ropw3);
+		BGBCC_JX2_EmitOpCheckRepack(ctx, ropw4, NULL);
 		return(0);
 	}
 	
@@ -331,7 +453,9 @@ int BGBCC_JX2_EmitOpCheckRepack4(
 		return(0);
 	}else if(l1==1)
 	{
+		BGBCC_JX2_EmitOpCheckRepack(ctx, ropw1, NULL);
 		BGBCC_JX2_EmitOpCheckRepack(ctx, ropw2, ropw3);
+		BGBCC_JX2_EmitOpCheckRepack(ctx, ropw4, NULL);
 	}
 
 	return(0);
@@ -356,8 +480,15 @@ int BGBCC_JX2_EmitOpCheckRepack6(
 	int l1, l2;
 	int l3, l4;
 
-	if(!ropw1 || !ropw2)
+//	if(!ropw1 || !ropw2)
+	if(!ropw1)
 		return(0);
+	if(!ropw2)
+	{
+		BGBCC_JX2_EmitOpCheckRepack(ctx,
+			ropw1, ropw2);
+		return(0);
+	}
 	if(!ropw3 || !ropw4)
 	{
 		BGBCC_JX2_EmitOpCheckRepack4(ctx,
@@ -395,6 +526,7 @@ int BGBCC_JX2_EmitOpCheckRepack6(
 		if(l3==3)
 		{
 			BGBCC_JX2_EmitOpCheckRepack3(ctx, ropw3, ropw4, ropw5);
+			BGBCC_JX2_EmitOpCheckRepack(ctx, ropw6, NULL);
 		}else if(l3==2)
 		{
 			BGBCC_JX2_EmitOpCheckRepack(ctx, ropw3, ropw4);
@@ -407,6 +539,7 @@ int BGBCC_JX2_EmitOpCheckRepack6(
 			}else if(l4==2)
 			{
 				BGBCC_JX2_EmitOpCheckRepack(ctx, ropw4, ropw5);
+				BGBCC_JX2_EmitOpCheckRepack(ctx, ropw6, NULL);
 			}else if(l4==1)
 			{
 				BGBCC_JX2_EmitOpCheckRepack(ctx, ropw5, ropw6);
@@ -424,6 +557,7 @@ int BGBCC_JX2_EmitOpCheckRepack6(
 		{
 			BGBCC_JX2_EmitOpCheckRepack(ctx, ropw2, ropw3);
 			BGBCC_JX2_EmitOpCheckRepack(ctx, ropw4, ropw5);
+			BGBCC_JX2_EmitOpCheckRepack(ctx, ropw6, NULL);
 		}else if(l2==1)
 		{
 			if(l3==2)
@@ -439,6 +573,7 @@ int BGBCC_JX2_EmitOpCheckRepack6(
 				}else if(l4==2)
 				{
 					BGBCC_JX2_EmitOpCheckRepack(ctx, ropw4, ropw5);
+					BGBCC_JX2_EmitOpCheckRepack(ctx, ropw6, NULL);
 				}else if(l4==1)
 				{
 					BGBCC_JX2_EmitOpCheckRepack(ctx, ropw5, ropw6);
