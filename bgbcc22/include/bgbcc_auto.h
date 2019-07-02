@@ -2778,6 +2778,15 @@ int BGBCC_JX2C_EmitJmpTab(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_t
 int BGBCC_JX2C_EmitInitObj(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg);
 int BGBCC_JX2C_EmitMovVRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, s64 imm);
 int BGBCC_JX2C_SizeofVar(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg);
+//AHSRC:jx2cc/jx2_wexify.c
+int BGBCC_JX2C_CheckOps32GetRegs(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int opw1, int opw2, byte *rrs, byte *rrt, byte *rrn, byte *rspr, byte *rspw);
+int BGBCC_JX2C_CheckOps32SequenceOnlyB(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int opw1, int opw2, int opw3, int opw4, int fl);
+int BGBCC_JX2C_CheckOps32SequenceOnly(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int opw1, int opw2, int opw3, int opw4);
+int BGBCC_JX2C_CheckOps32Immovable(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int opw1, int opw2);
+int BGBCC_JX2C_CheckCanSwapOps32(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, int opw1, int opw2, int opw3, int opw4);
+int BGBCC_JX2C_CheckOps32ValidWexSuffix(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, int opw1, int opw2);
+int BGBCC_JX2C_CheckOps32ValidWexPrefix(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, int opw1, int opw2);
+ccxl_status BGBCC_JX2C_CheckWexify(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, int spos, int epos);
 //AHSRC:mm/inflate.c
 int PDUNZ_ReadBit();
 int PDUNZ_Read2Bits();

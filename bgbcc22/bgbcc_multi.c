@@ -182,5 +182,6 @@
 #include "jx2cc/jx2_softfpu.c"
 #include "jx2cc/jx2_struct.c"
 #include "jx2cc/jx2_vreg.c"
+#include "jx2cc/jx2_wexify.c"
 
 #include "bgbmeta.c"

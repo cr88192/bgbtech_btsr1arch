@@ -651,13 +651,24 @@ int BGBCC_JX2_TryEmitOpReg(BGBCC_JX2_Context *ctx, int nmid, int reg)
 
 	if(ctx->is_fixed32 || ctx->op_is_wex2)
 	{
+		switch(nmid)
+		{
+		case BGBCC_SH_NMID_TST:
+		case BGBCC_SH_NMID_TSTQ:
+		case BGBCC_SH_NMID_CMPEQ:
+		case BGBCC_SH_NMID_CMPQEQ:
+			opw1=-1;
+			break;
+		}
+	
 		if((opw1&0xF000)==0x3000)
 		{
 //			opw2=0x3000|((opw1>>4)&0x00F0)|(opw1&0x000F);
 			opw2=0x3000|((opw1>>4)&0x0070)|(opw1&0x000F);
 //			opw1=0xF000|((opw1>>4)&0x000F);
 			opw1=0xF000|((opw1>>4)&0x000F)|
-				((opw1>>5)&0x0040);
+//				((opw1>>5)&0x0040);
+				((opw1>>7)&0x0010);
 		}else
 			if((opw1&0xF000)!=0xF000)
 		{

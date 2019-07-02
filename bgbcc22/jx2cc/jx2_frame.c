@@ -2722,7 +2722,8 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 	{
 		k=64;
 		if(ctx->optmode==BGBCC_OPT_SPEED)
-			k=32;
+//			k=32;
+			k=24;
 		if(ctx->optmode==BGBCC_OPT_SIZE)
 			k=96;
 

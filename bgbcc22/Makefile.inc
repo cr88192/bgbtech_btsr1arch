@@ -113,6 +113,7 @@ SRCS=\
 	jx2cc/jx2_softfpu.c \
 	jx2cc/jx2_struct.c \
 	jx2cc/jx2_vreg.c \
+	jx2cc/jx2_wexify.c \
 
 
 META_SRCS = \

@@ -83,6 +83,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	shctx->no_ext32=0;
 //	shctx->fpu_soft=1;
 	shctx->fpu_lite=0;
+	shctx->fpu_gfp=0;
 	shctx->is_addr_x32=0;
 	shctx->use_padcross=0;
 	shctx->no_ops48=0;
@@ -121,6 +122,17 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 
 		shctx->no_fpu=1;
 		shctx->fpu_soft=1;
+		shctx->is_pbo=1;
+	}
+
+	if(ctx->sub_arch==BGBCC_ARCH_BJX2_JX2F)
+	{
+		ctx->arch_sizeof_long=4;
+		ctx->arch_sizeof_ptr=4;
+		shctx->is_addr_x32=1;
+		shctx->no_ops48=1;
+
+		shctx->fpu_gfp=1;
 		shctx->is_pbo=1;
 	}
 
@@ -1212,6 +1224,7 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 	BGBCC_CCXL_RegisterInfo *obj, BGBCC_CCXL_VirtTr *tr, int idx)
 {
 	BGBCC_CCXL_VirtOp *vop, *vop1, *vop2;
+	int ps0, ps1;
 	int i, j, k;
 
 #if 0
@@ -1225,6 +1238,7 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 #endif
 
 	sctx->is_leaf&=~4;
+	sctx->is_fixed32&=(~16);
 
 //	if(sctx->is_simpass==1)
 	if((sctx->is_simpass==1) || (sctx->is_simpass&64))
@@ -1235,6 +1249,25 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 	sctx->is_tr_leaf=0;
 	if(tr->trfl&1)
 		sctx->is_tr_leaf=1;
+
+//	if(tr->n_ops>10)
+	if(tr->n_ops>5)
+//	if(tr->n_ops>3)
+	{
+//		if(sctx->use_egpr)
+		if(sctx->use_egpr && sctx->is_tr_leaf)
+//		if(sctx->is_tr_leaf)
+		{
+			sctx->is_fixed32|=16;
+		}
+		
+		if((ctx->optmode==BGBCC_OPT_SPEED) && sctx->is_tr_leaf)
+		{
+			sctx->is_fixed32|=16;
+		}
+	}
+
+	ps0=BGBCC_JX2_EmitGetOffs(sctx);
 
 	for(i=0; i<tr->n_ops; i++)
 	{
@@ -1294,6 +1327,15 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 		
 		BGBCC_JX2C_CompileVirtOp(ctx, sctx, obj, vop);
 	}
+
+	ps1=BGBCC_JX2_EmitGetOffs(sctx);
+
+	if(sctx->is_fixed32&16)
+	{
+		BGBCC_JX2C_CheckWexify(ctx, sctx, ps0, ps1);
+	}
+
+	sctx->is_fixed32&=(~16);
 
 	BGBCC_JX2_EmitCheckFlushIndexImm(sctx);
 

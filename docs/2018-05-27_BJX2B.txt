@@ -17,7 +17,8 @@ Several ISA Profiles may exist:
 * B: Fix32 with 48-bit address space.
 * C: Basic, Partial Features, 32-bit address space.
 * D: Fix32 with 32-bit address space.
-* E: Lite
+* E: Lite + SoftFPU
+* F: Lite + GFP
 
 The compiler is not to use features which are absent in a given profile, and will not assume the presence of features marked as optional.
 
@@ -29,7 +30,7 @@ BJX2 Full Profile
 * Will use a 48 bit virtual address space.
 * Will use a 32 or 48 bit physical address space.
 * Will support 16, 32, and 48 bit instruction encodings.
-* Will support GSV and JCMP.
+* Will support GSV, GFP, and JCMP.
 * Support for WEX is optional.
 * Support MULQ is optional.
 
@@ -42,7 +43,7 @@ BJX2 Basic Profile
 * Will have MMU and FPU.
 * Will use a 32-bit address space (both virtual and physical).
 * Will support 16, 32, and 48 bit instruction encodings.
-* Support for GSV and JCMP is optional.
+* Support for GSV, GFP, and JCMP is optional.
 * Will not support MULQ.
 * Will not support WEX.
 
@@ -175,6 +176,8 @@ The JQ bit will effect the size of the address space:
 * JQ=1, Use 48/64 address space.
 ** Memory access will explicitly discard the high-order address bits.
 ** This will be AND'ed with the bit from MMCR.
+
+Setting the WEX Disable flag will cause WEX instructions to be executed as scalar instructions on cores with WEX support. On other cores this flag will be ignored. This flag may be set of cleared depending on the results of the WEXMD operation.
 
 
 === Special Restrictions ===
@@ -1121,8 +1124,11 @@ F0zz Instruction Block:
 *** F0nm_1G3A -
 *** F0nm_1g4A -
 *** F0nm_1g5A ? PADD.H		Rm, Rn				//(GSV) Packed ADD Half
+*** F0nm_1G5A ? PADD.F		Rm, Rn				//(GSV) Packed ADD Float
 *** F0nm_1g6A ? PSUB.H		Rm, Rn				//(GSV) Packed SUB Half
+*** F0nm_1G6A ? PSUB.F		Rm, Rn				//(GSV) Packed SUB Float
 *** F0nm_1g7A ? PMUL.H		Rm, Rn				//(GSV) Packed MUL Half
+*** F0nm_1G7A ? PMUL.F		Rm, Rn				//(GSV) Packed MUL Float
 *** F0nm_1g8A ? MOVHD		Rm, Rn				//(GSV) Move High DWord
 *** F0nm_1G8A ? MOVLD		Rm, Rn				//(GSV) Move Low DWord
 *** F0nm_1G9A -
@@ -1166,18 +1172,18 @@ F0zz Instruction Block:
 *** F0nm_1eFC  CMP{Q}HS	Rm, Rn				//Unsigned Rn GE Rm
 
 ** F0nm_1ezD ? (GFP, GPR FPU, Opt)
-*** F0nm_1e0D  FLDCF.D		Rm, Rn		//Load Convert Float32
-*** F0nm_1e1D  -
-*** F0nm_1e2D  FLDCI.D		Rm, Rn		//Load Convert Int
-*** F0nm_1e3D  FLDCH.D		Rm, Rn		//Load Convert Half (Low16)
-*** F0nm_1e4D  FSTCF.D		Rm, Rn		//Store Convert Float32
-*** F0nm_1e5D  -
-*** F0nm_1e6D  FSTCI.D		Rm, Rn		//Store Convert Int
-*** F0nm_1e7D  FSTCH.D		Rm, Rn		//Store Convert Half (Low16)
-*** F0nm_1e8D  FNEG.D		Rm, Rn		//Negate
-*** F0nm_1e9D  FABS.D		Rm, Rn		//Absolute
-*** F0nm_1eAD  FCMPEQ.D		Rm, Rn			//SR.T=(FRn EQ FRm)
-*** F0nm_1eBD  FCMPGT.D		Rm, Rn			//SR.T=(FRn GT FRm)
+*** F0nm_1e0D  FLDCF		Rm, Rn		//Load Convert Float32 (Low Bits, ZX)
+*** F0nm_1e1D ? FLDCHF		Rm, Rn		//Load Convert Float32 (High Bits)
+*** F0nm_1e2D  FLDCI		Rm, Rn		//Load Convert Int
+*** F0nm_1e3D  FLDCH		Rm, Rn		//Load Convert Half (Low16)
+*** F0nm_1e4D  FSTCF		Rm, Rn		//Store Convert Float32 (Low Bits, ZX)
+*** F0nm_1e5D ? FSTCHF		Rm, Rn		//Store Convert Float32 (High Bits)
+*** F0nm_1e6D  FSTCI		Rm, Rn		//Store Convert Int
+*** F0nm_1e7D  FSTCH		Rm, Rn		//Store Convert Half (Low16)
+*** F0nm_1e8D  FNEG			Rm, Rn		//Negate
+*** F0nm_1e9D  FABS			Rm, Rn		//Absolute
+*** F0nm_1eAD  FCMPEQ		Rm, Rn			//SR.T=(FRn EQ FRm)
+*** F0nm_1eBD  FCMPGT		Rm, Rn			//SR.T=(FRn GT FRm)
 *** F0nm_1eCD  -
 *** F0nm_1eDD  -
 *** F0nm_1eED  -
@@ -1261,9 +1267,9 @@ F0zz Instruction Block:
 ** F0nm_5eo5  SHLD{Q}	Rm, Ro, Rn
 ** F0nm_5eo6  -
 ** F0nm_5eo7  -
-** F0nm_5go8 ? FADD.D	Rm, Ro, Rn			//(GFP) FADD
-** F0nm_5go9 ? FSUB.D	Rm, Ro, Rn			//(GFP) FSUB
-** F0nm_5goA ? FMUL.D	Rm, Ro, Rn			//(GFP) FMUL
+** F0nm_5go8 ? FADD		Rm, Ro, Rn			//(GFP) FADD
+** F0nm_5go9 ? FSUB		Rm, Ro, Rn			//(GFP) FSUB
+** F0nm_5goA ? FMUL		Rm, Ro, Rn			//(GFP) FMUL
 ** F0nm_5eoB  -
 ** F0nm_5goC  ADDS.L	Rm, Ro, Rn			//Rn=Rm+Ro, ADD 32-bit, Sign Extend
 ** F0nm_5GoC  ADDU.L	Rm, Ro, Rn			//Rn=Rm+Ro, ADD 32-bit, Zero Extend
@@ -1392,9 +1398,9 @@ F2zz Instruction Block  (Imm9 Block, New):
 * F2nz_Bejj
 
 * F2nz_Cfjj
-** F2n0_Cfjj ? LDIZ{D}	#imm10u, Rn				//Alt (WEX2)
-** F2n1_Cfjj ? LDIN{D}	#imm10n, Rn				//Alt (WEX2)
-** F2n2_Cfjj ? LDISH	#imm8u, Rn				//Rn=(Rn<<8)|Imm8 (WEX2)
+** F2n0_Cfjj / LDIZ{D}	#imm10u, Rn				//Alt (WEX2)
+** F2n1_Cfjj / LDIN{D}	#imm10n, Rn				//Alt (WEX2)
+** F2n2_Cfjj / LDISH	#imm8u, Rn				//Rn=(Rn<<8)|Imm8 (WEX2)
 ** F2n3_Cfjj  -
 ** F2n4_Cfjj  TST{Q}	#imm10u, Rn				//SR.T=!(Imm AND Rn)
 ** F2n5_Cfjj  TST{Q}	#imm10n, Rn				//SR.T=!(Imm AND Rn)
@@ -1590,17 +1596,88 @@ Note that 32 bit immediates and displacements will be encoded in low-high order 
 === Wide Execution 2 (Optional) ===
 
 WEX2 Would be based around 32-bit instructions, where:
-* F0zz..F3zz represent the last instruction in a series.
+* F0zz..F3zz represent the last instruction in a block.
 * F4zz..F7zz represent an instruction which may execute in parallel.
 
 * A scalar implementation will treat F4zz..F7zz as equivalent to F0zz..F3zz.
-* There isn't a predefined maximum to the length of a series.
+* There isn't a predefined maximum to the length of a block.
 ** The core will limit it to the maximum it supports.
-** Dependencies between instructions in a series are not allowed.
-** A series also does not require parallel execution.
+** Dependencies between instructions in a block are not allowed.
+** A block also does not require parallel execution.
+
+Operations will be required to be valid both when executed in scalar and parallel orderings. In scalar ordering, the results of operations may be written in the sequential order of the instructions. In parallel ordering, writeback may not necessarily take place until after the end of the block.
+
 
 Instructions operating in parallel will be organized into lanes.
 The lanes will be encoded in reverse order, with the last instruction being 'Lane 1'. All scalar operations will take place in Lane 1.
 
+For example":
+* F4zz_zzzz F4yy_yyyy F0xx_xxxx
+* Will have X in Lane 1, Y in Lane 2, and Z in Lane 3.
+
+
 Operations which need to read the value from Rn will overlap with Lane 2, and will consume the Ro port for this lane (in scalar ops). In WEX, an operation may Lane 2 with such an operation if its Ro matches the Rn in Lane 1 (otherwise, the results are undefined).
+
+For implementations with 3 or more lanes, putting a NOP3 instruction in Lane 2 with the Rn from Lane 1 will allow running other instructions in parallel with such an operation (such as a memory store). For a 2 lane implementation, operations which need 3 ports will typically be scalar-only ops.
+
+This restriction is to allow WEX to be implemented with 2 register read ports per lane.
+
+
+WEX2 Would be based around 32-bit instructions, where:
+* F0zz..F3zz, represent the last instruction in a series.
+* F4zz..F7zz, represent an instruction which may execute in parallel.
+* F8zz/F9zz, may be used for Imm16 ops.
+* FAzz..FFzz, are not allowed in a WEX2 construct (Scalar Only).
+* E0zz..EFzz, Conditional ops are Scalar Only.
+
+Within a scalar implementation, F4zz..F7zz will be functionally equivalent to instructions in the F0zz..F3zz range. 
+
+
+==== WEX2 Profiles ====
+
+Thoughts:
+* WEX2 may have "profiles".
+* If the profiles are not compatible between the program and core:
+** The core may be told to disable WEX2 via an SR flag.
+** The code in question is to be executed as scalar code.
+* Narrower layouts are still allowed in wider profiles.
+** However, going wider than the specified profile is not allowed.
+* Currently, only 32-bit instruction forms are allowed in WEX constructs.
+
+
+The "WEXMD #imm4" instruction will indicate the WEX2 Profile. It will update the SR bits as appropriate for the given profile.
+* This instruction will either enable or disable WEX based on the result.
+* If WEX is not supported on the core, it will be treated as a NOP.
+* No WEX forms will be allowed within the following 3 instructions.
+
+
+Profile 0: No WEX.
+* Only scalar instructions are to be used.
+* Use of F4zz..F7zz is invalid in this mode.
+
+Profile 1: Dual Lane ALU, Single IO Lane.
+* YYYY_YYYY XXXX_XXXX
+* Second lane precedes first lane.
+* Second lane only has ALU ops.
+
+Profile 2: Triple Lane ALU, Single IO Lane.
+* ZZZZ_ZZZZ YYYY_YYYY XXXX_XXXX
+* Lanes are in a 3/2/1 ordering.
+* The second and third lanes only have ALU ops.
+
+Many instructions will only exist in the first lane:
+* Memory operations
+* Branch operations
+* Compare operations
+* Integer multiply
+* ...
+
+The first lane will also be the primary lane for scalar operations, and as such will have full access to the instruction set, albeit with some restrictions as to which operations are allowed to exist in the other lanes.
+
+The result is that the second and third lanes will only have a subset of ALU operations available:
+* ADD, SUB, AND, OR, XOR, MOV, ...
+* SHAD, SHLD
+* LDIZ, LDIN (in forms which are encodable).
+
+The processor may behave in an implementation specific manner when faced with combinations of instructions which are not defined for the given active profile.
 

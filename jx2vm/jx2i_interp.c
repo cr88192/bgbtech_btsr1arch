@@ -719,9 +719,10 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 	{
 		if(op->fl&BJX2_OPFL_TRIWORD)
 		{
-			printf("%08X  (%2d) %04X_%04X_%04X %-8s ",
+			printf("%08X  (%2d) %04X_%04X_%04X %c %-8s ",
 				(u32)op->pc, op->cyc,
 				op->opn, op->opn2, op->opn3,
+				((op->fl&BJX2_OPFL_WEX)?'|':' '),
 				BJX2_DbgPrintNameForNmid(ctx, op->nmid));
 			brpc=op->pc+6;
 		}else
@@ -737,30 +738,34 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 
 				if(fl&2)
 				{
-					printf("%08X  (%2d) %04X_%04X      %-8s ",
+					printf("%08X  (%2d) %04X_%04X     %c %-8s ",
 						(u32)op->pc, op->cyc,
 						op->opn, op->opn2,
+						((op->fl&BJX2_OPFL_WEX)?'|':' '),
 						tb1);
 				}else
 				{
-					printf("%08X  (%2d) %04X_%04X %-8s ",
+					printf("%08X  (%2d) %04X_%04X %c %-8s ",
 						(u32)op->pc, op->cyc,
 						op->opn, op->opn2,
+					((op->fl&BJX2_OPFL_WEX)?'|':' '),
 						tb1);
 				}
 			}else
 			{
 				if(fl&2)
 				{
-					printf("%08X  (%2d) %04X_%04X      %-8s ",
+					printf("%08X  (%2d) %04X_%04X      %c %-8s ",
 						(u32)op->pc, op->cyc,
 						op->opn, op->opn2,
+						((op->fl&BJX2_OPFL_WEX)?'|':' '),
 						BJX2_DbgPrintNameForNmid(ctx, op->nmid));
 				}else
 				{
-					printf("%08X  (%2d) %04X_%04X %-8s ",
+					printf("%08X  (%2d) %04X_%04X %c %-8s ",
 						(u32)op->pc, op->cyc,
 						op->opn, op->opn2,
+						((op->fl&BJX2_OPFL_WEX)?'|':' '),
 						BJX2_DbgPrintNameForNmid(ctx, op->nmid));
 				}
 			}
@@ -769,15 +774,17 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		{
 			if(fl&2)
 			{
-				printf("%08X  (%2d) %04X           %-8s ",
+				printf("%08X  (%2d) %04X           %c %-8s ",
 					(u32)op->pc, op->cyc,
 					op->opn,
+					((op->fl&BJX2_OPFL_WEX)?'|':' '),
 					BJX2_DbgPrintNameForNmid(ctx, op->nmid));
 			}else
 			{
-				printf("%08X  (%2d) %04X      %-8s ",
+				printf("%08X  (%2d) %04X      %c %-8s ",
 					(u32)op->pc, op->cyc,
 					op->opn,
+					((op->fl&BJX2_OPFL_WEX)?'|':' '),
 					BJX2_DbgPrintNameForNmid(ctx, op->nmid));
 			}
 			brpc=op->pc+2;
@@ -1066,8 +1073,8 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		break;
 	}
 
-	if(op->fl&BJX2_OPFL_WEX)
-		printf("\t|");
+//	if(op->fl&BJX2_OPFL_WEX)
+//		printf("\t|");
 
 	if(!op1)
 		printf("\n");

@@ -1441,6 +1441,7 @@ Partial Register Move. These MOV part of the bits from Rm into Rn, while leaving
 * F0nm_1g0A  PADD.W		Rm, Rn		//(GSV) Packed ADD Word
 * F0nm_1G0A  PADD.L		Rm, Rn		//(GSV) Packed ADD DWord
 * F0nm_1g5A  PADD.H		Rm, Rn		//(GSV) Packed ADD Half
+* F0nm_1G5A  PADD.F		Rm, Rn		//(GSV) Packed ADD Float
 
 Add Packed Elements.
 
@@ -1456,9 +1457,9 @@ Each element from Rm is added to the corresponding element of Rn.
 * F0nm_1qEA  PCMPGT.H	Rm, Rn		//Pack Compare Half, Greater
 
 * F0nm_1PCA  PCMPEQ.L	Rm, Rn		//Pack Compare DWord, Equal
+* F0nm_1QCA  PCMPEQ.F	Rm, Rn		//Pack Compare Float32, Equal
 * F0nm_1PDA  PCMPHI.L	Rm, Rn		//Pack Compare DWord, Above
 * F0nm_1PEA  PCMPGT.L	Rm, Rn		//Pack Compare DWord, Greater
-* F0nm_1QCA  PCMPEQ.F	Rm, Rn		//Pack Compare Float32, Equal
 * F0nm_1QEA  PCMPGT.F	Rm, Rn		//Pack Compare Float32, Greater
 
 Packed Compare.
@@ -1476,6 +1477,7 @@ Note that bits other than those defined for the comparison will be undefined fol
 === PMUL.H (GSV) ===
 
 * F0nm_1g7A  PMUL.H		Rm, Rn				//(GSV) Packed MUL Half
+* F0nm_1G7A  PMUL.F		Rm, Rn				//(GSV) Packed MUL Float
 
 Multiply the packed Half-Float values in Rm and Rn, storing the result in Rn.
 
@@ -1494,6 +1496,7 @@ The DHR register is updated with the high words of each packed multiply.
 * F0nm_1g1A  PSUB.W		Rm, Rn		//(GSV) Packed SUB Word
 * F0nm_1G1A  PSUB.L		Rm, Rn		//(GSV) Packed SUB DWord
 * F0nm_1g6A  PSUB.H		Rm, Rn		//(GSV) Packed SUB Half
+* F0nm_1G6A  PSUB.F		Rm, Rn		//(GSV) Packed SUB Float
 
 Subtract Packed Elements.
 
@@ -1550,5 +1553,98 @@ SWAP.x will exchange a the low element with another element, whereas SWCP.x will
 
 Other than the first element, the others will be labeled as Low, Middle, and High. Low will correspond to the lower-order bits of the register, and High will correspond with the higher order bits.
 
+
+
+== GFP Instructions (GPR FPU Ops, Optional) ==
+
+GFP will perform FPU operations with GPRs instead of dedicated FPRs.
+GFP exists as an alternative, potentially lower-cost, form of the FPU.
+
+
+=== FABS (GFP) ===
+
+* F0nm_1e9D  FABS		Rm, Rn		//Absolute
+
+Get the absolute value of the double precision value in Rm and store the result in Rn. This effectively amounts to clearing bit 63 and leaving the other bits unchanged.
+
+
+=== FADD (GFP) ===
+
+* F0nm_5go8  FADD		Rm, Ro, Rn			//(GFP) FADD
+
+Add the double precision value in Ro to the value from Rm and store the resulting value in Rn.
+
+
+=== FCMPEQ (GFP) ===
+
+* F0nm_1eAD  FCMPEQ		Rm, Rn			//SR.T=(Rn EQ Rm)
+
+Compare the double precision values in Rm and Rn for equality, setting SR.T if both values are equal, otherwise clearing SR.T.
+
+If either value encodes a NaN, SR.T will be cleared.
+
+
+=== FCMPGT (GFP) ===
+
+* F0nm_1eBD  FCMPGT		Rm, Rn			//SR.T=(Rn GT Rm)
+
+Compare if the double precision value in Rn is greated than the value in Rm, setting SR.T if this is the case, and clearing otherwise.
+
+If either value is NaN, the resulting state of SR.T is undefined.
+
+
+=== FLDCx (GFP) ===
+
+* F0nm_1e0D  FLDCF		Rm, Rn		//Load Convert Float32 (Low Bits, ZX)
+* F0nm_1e1D  FLDCHF		Rm, Rn		//Load Convert Float32 (High Bits)
+* F0nm_1e2D  FLDCI		Rm, Rn		//Load Convert Int
+* F0nm_1e3D  FLDCH		Rm, Rn		//Load Convert Half (Low16)
+
+Load and convert the value from Rm and store the resulting double precision value in Rn.
+
+FLDCF will pull a single precision value from the low 32 bits of Rm.
+FLDCHF will pull a single precision value from the high 32 bits of Rm.
+
+FLDCI will pull a 64-bit integer value from Rm.
+FLDCH will pull a 16-bit half-float value from Rm.
+
+
+=== FMUL (GFP) ===
+
+* F0nm_5goA  FMUL		Rm, Ro, Rn			//(GFP) FMUL
+
+Multiply the double precision value in Ro with the value from Rm and store the resulting value in Rn.
+
+
+=== FNEG (GFP) ===
+
+* F0nm_1e8D  FNEG		Rm, Rn		//Negate
+
+Negate the value of the double precision value in Rm and store the result in Rn. This effectively amounts to inverting bit 63 and leaving the other bits unchanged.
+
+
+=== FSTCx (GFP) ===
+
+* F0nm_1e4D  FSTCF		Rm, Rn		//Store Convert Float32 (Low Bits, ZX)
+* F0nm_1e5D  FSTCHF		Rm, Rn		//Store Convert Float32 (High Bits)
+* F0nm_1e6D  FSTCI		Rm, Rn		//Store Convert Int
+* F0nm_1e7D  FSTCH		Rm, Rn		//Store Convert Half (Low16)
+
+Convert the double precision value from Rm into the destination value and store the result in Rn.
+
+FSTCF will produce a single precision float, which will be stored into the low 32 bits of the destination register. The high 32 bits of the register will be set to zero.
+
+FSTCHF will produce a single precision float, which will be stored into the high 32 bits of the destination register. The low 32 bits of Rn will be kept unmodified.
+
+FSTCI will produce a 64-bit integer output with truncation towards zero.
+
+FSTCH will produce a half precision float, which will be stored into the low 16 bits of the destination register. The high 48 bits of the register will be set to zero.
+
+
+=== FSUB (GFP) ===
+
+* F0nm_5go9  FSUB		Rm, Ro, Rn			//(GFP) FSUB
+
+Subtract the double precision value in Ro from the value from Rm and store the resulting value in Rn.
 
 
