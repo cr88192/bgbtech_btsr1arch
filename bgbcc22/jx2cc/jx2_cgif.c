@@ -89,7 +89,10 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	shctx->no_ops48=0;
 
 	shctx->is_pbo=0;
-	
+
+//	ctx->arch_has_predops=0;
+	ctx->arch_has_predops=1;
+
 	shctx->optmode=ctx->optmode;
 	
 	if(ctx->sub_arch==BGBCC_ARCH_BJX2_JX2B)
@@ -392,7 +395,8 @@ int BGBCC_JX2C_TypeGetRegClassPI(BGBCC_TransState *ctx, ccxl_type ty)
 			return(BGBCC_SH_REGCLS_VO_GR);
 		if(sz<=8)
 		{
-			if(ctx->arch_sizeof_ptr==8)
+//			if(ctx->arch_sizeof_ptr==8)
+			if(sctx->is_addr64)
 				return(BGBCC_SH_REGCLS_VO_QGR);
 			return(BGBCC_SH_REGCLS_VO_GR2);
 		}
@@ -454,6 +458,16 @@ int BGBCC_JX2C_TypeGetRegClassPI(BGBCC_TransState *ctx, ccxl_type ty)
 		if(BGBCC_CCXL_TypeFunctionP(ctx, ty))
 			return(BGBCC_SH_REGCLS_GR);
 
+		if(sctx->fpu_gfp)
+		{
+			if(BGBCC_CCXL_TypeDoubleP(ctx, ty))
+				return(BGBCC_SH_REGCLS_QGR);
+			if(BGBCC_CCXL_TypeFloatP(ctx, ty))
+				return(BGBCC_SH_REGCLS_QGR);
+			if(BGBCC_CCXL_TypeFloat16P(ctx, ty))
+				return(BGBCC_SH_REGCLS_QGR);
+		}
+
 		if(sctx->fpu_soft)
 		{
 			if(BGBCC_CCXL_TypeDoubleP(ctx, ty))
@@ -463,16 +477,6 @@ int BGBCC_JX2C_TypeGetRegClassPI(BGBCC_TransState *ctx, ccxl_type ty)
 				return(BGBCC_SH_REGCLS_GR);
 			if(BGBCC_CCXL_TypeFloat16P(ctx, ty))
 				return(BGBCC_SH_REGCLS_GR);
-		}
-
-		if(sctx->fpu_gfp)
-		{
-			if(BGBCC_CCXL_TypeDoubleP(ctx, ty))
-				return(BGBCC_SH_REGCLS_QGR);
-			if(BGBCC_CCXL_TypeFloatP(ctx, ty))
-				return(BGBCC_SH_REGCLS_QGR);
-			if(BGBCC_CCXL_TypeFloat16P(ctx, ty))
-				return(BGBCC_SH_REGCLS_QGR);
 		}
 	}
 
@@ -804,6 +808,7 @@ ccxl_status BGBCC_JX2C_PrintVirtOp(BGBCC_TransState *ctx,
 			case CCXL_VOP_CSELCMP:			s0="CSELCMP"; break;
 			case CCXL_VOP_CSELCMP_Z:		s0="CSELCMP_Z"; break;
 			case CCXL_VOP_OBJCALL:			s0="OBJCALL"; break;
+			case CCXL_VOP_PREDCMP:			s0="PREDCMP"; break;
 		}
 
 		if(s0)
@@ -1169,6 +1174,18 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 		BGBCC_JX2C_EmitLabelFlushRegisters(ctx, sctx);
 		break;
 
+	case CCXL_VOP_PREDCMP:
+		BGBCC_JX2C_EmitSyncRegisters(ctx, sctx);
+		BGBCC_JX2C_EmitPredCmpVRegVReg(ctx, sctx, op->type,
+			op->srca, op->srcb, op->opr);
+		BGBCC_JX2C_EmitLabelFlushRegisters(ctx, sctx);
+		break;
+
+	case CCXL_VOP_PREDSYNC:
+		BGBCC_JX2C_EmitSyncRegisters(ctx, sctx);
+		BGBCC_JX2C_EmitLabelFlushRegisters(ctx, sctx);
+		break;
+
 	default:
 		BGBCC_CCXL_StubError(ctx);
 		break;
@@ -1224,7 +1241,7 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 	BGBCC_CCXL_RegisterInfo *obj, BGBCC_CCXL_VirtTr *tr, int idx)
 {
 	BGBCC_CCXL_VirtOp *vop, *vop1, *vop2;
-	int ps0, ps1;
+	int ps0, ps1, usewex;
 	int i, j, k;
 
 #if 0
@@ -1250,6 +1267,8 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 	if(tr->trfl&1)
 		sctx->is_tr_leaf=1;
 
+	usewex=0;
+
 //	if(tr->n_ops>10)
 	if(tr->n_ops>5)
 //	if(tr->n_ops>3)
@@ -1258,16 +1277,27 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 		if(sctx->use_egpr && sctx->is_tr_leaf)
 //		if(sctx->is_tr_leaf)
 		{
-			sctx->is_fixed32|=16;
+//			sctx->is_fixed32|=16;
+			usewex=1;
 		}
 		
 		if((ctx->optmode==BGBCC_OPT_SPEED) && sctx->is_tr_leaf)
 		{
-			sctx->is_fixed32|=16;
+//			sctx->is_fixed32|=16;
+			usewex=1;
 		}
 	}
 
+	if(usewex)
+		{ BGBCC_JX2_BeginWex(sctx); }
+
+#if 0
 	ps0=BGBCC_JX2_EmitGetOffs(sctx);
+	if(sctx->is_fixed32&16)
+		sctx->wex_ofs_begin=ps0;
+#endif
+
+	sctx->op_is_wex2=0;
 
 	for(i=0; i<tr->n_ops; i++)
 	{
@@ -1276,6 +1306,13 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 		vop1=NULL;
 		if((i+1)<tr->n_ops)
 			vop1=obj->vop[tr->b_ops+i+1];
+
+		j=0;
+//		if(vop->prd==2)j=(sctx->pred_tfmd)?5:4;
+//		if(vop->prd==3)j=(sctx->pred_tfmd)?4:5;
+		if(vop->prd==3)j=(sctx->pred_tfmd)?5:4;
+		if(vop->prd==2)j=(sctx->pred_tfmd)?4:5;
+		sctx->op_is_wex2=j;
 
 #if 0
 		/* Hacky Special Case Opt: arr[expr+imm] */
@@ -1328,14 +1365,20 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 		BGBCC_JX2C_CompileVirtOp(ctx, sctx, obj, vop);
 	}
 
+	sctx->op_is_wex2=0;
+
+#if 0
 	ps1=BGBCC_JX2_EmitGetOffs(sctx);
 
 	if(sctx->is_fixed32&16)
 	{
+		ps0=sctx->wex_ofs_begin;
 		BGBCC_JX2C_CheckWexify(ctx, sctx, ps0, ps1);
 	}
-
 	sctx->is_fixed32&=(~16);
+#endif
+
+	BGBCC_JX2_EndWex(sctx);
 
 	BGBCC_JX2_EmitCheckFlushIndexImm(sctx);
 

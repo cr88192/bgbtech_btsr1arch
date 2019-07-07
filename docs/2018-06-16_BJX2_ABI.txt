@@ -23,6 +23,9 @@ The integer types will wrap at their nominal sizes, though types narrower than i
 
 Float16 will exist as a special type in the ABI, in that in most cases it will quietly promote to float. Within structures, arrays, and pointers, the type will remain as a 16-bit half-float. Within local variables or function arguments, it will normally promote to float unless its address is taken.
 
+When passed to or returned from a function in registers, scalar floating point arguments will be implicitly promoted to double.
+
+
 BFloat16 will be another floating point type, which is effectively a 32-bit float with the low 16 bits cut off. It has a higher dynamic range but less precision than half-float.
 
 Pointer types will normally be 64-bit, but a sub-ABI will exist with 32-bit pointers.
@@ -56,6 +59,12 @@ Basic C ABI:
 If insufficient free registers exist to pass an argument, it and any following arguments of the same class will be passed on the stack. The stack will not have any spill space.
 
 Items on the stack will have a 8-byte alignment, with the size of stack frames kept to a 16-byte alignment. The creation of a stack frame is optional for leaf functions.
+
+
+Primitive Types:
+* Small integer types will be sign or zero extended to 64 bits.
+* Small floating point types will be passed and returned as double.
+** Implicitly, float and half-float will be promoted to double.
 
 
 Structure Passing by value:

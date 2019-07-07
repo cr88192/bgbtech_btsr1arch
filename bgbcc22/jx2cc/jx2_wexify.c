@@ -1,5 +1,5 @@
-int BGBCC_JX2C_CheckOps32GetRegs(
-	BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx,
+int BGBCC_JX2_CheckOps32GetRegs(
+	BGBCC_JX2_Context *sctx,
 	int opw1, int opw2,
 	byte *rrs, byte *rrt, byte *rrn,
 	byte *rspr, byte *rspw)
@@ -201,17 +201,17 @@ int BGBCC_JX2C_CheckOps32GetRegs(
 	return(0);
 }
 
-int BGBCC_JX2C_CheckOps32SequenceOnlyB(
-	BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx,
+int BGBCC_JX2_CheckOps32SequenceOnlyB(
+	BGBCC_JX2_Context *sctx,
 	int opw1, int opw2, int opw3, int opw4, int fl)
 {
 	byte rs1, rt1, rn1, rspr1, rspw1;
 	byte rs2, rt2, rn2, rspr2, rspw2;
 	int ret1, ret2;
 
-	ret1=BGBCC_JX2C_CheckOps32GetRegs(ctx, sctx, opw1, opw2,
+	ret1=BGBCC_JX2_CheckOps32GetRegs(sctx, opw1, opw2,
 		&rs1, &rt1, &rn1, &rspr1, &rspw1);
-	ret2=BGBCC_JX2C_CheckOps32GetRegs(ctx, sctx, opw3, opw4,
+	ret2=BGBCC_JX2_CheckOps32GetRegs(sctx, opw3, opw4,
 		&rs2, &rt2, &rn2, &rspr2, &rspw2);
 	
 	if(ret1<=0)
@@ -258,17 +258,17 @@ int BGBCC_JX2C_CheckOps32SequenceOnlyB(
 	return(0);
 }
 
-int BGBCC_JX2C_CheckOps32SequenceOnly(
-	BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx,
+int BGBCC_JX2_CheckOps32SequenceOnly(
+	BGBCC_JX2_Context *sctx,
 	int opw1, int opw2, int opw3, int opw4)
 {
-	return(BGBCC_JX2C_CheckOps32SequenceOnlyB(ctx, sctx,
+	return(BGBCC_JX2_CheckOps32SequenceOnlyB(sctx,
 		opw1, opw2, opw3, opw4, 0));
 }
 
 /* Return true if this operation is immovable and must remain in place. */
-int BGBCC_JX2C_CheckOps32Immovable(
-	BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx,
+int BGBCC_JX2_CheckOps32Immovable(
+	BGBCC_JX2_Context *sctx,
 	int opw1, int opw2)
 {
 	if((opw1&0xFE00)==0xFA00)
@@ -296,13 +296,13 @@ int BGBCC_JX2C_CheckOps32Immovable(
 }
 
 
-int BGBCC_JX2C_CheckCanSwapOps32(BGBCC_TransState *ctx,
+int BGBCC_JX2_CheckCanSwapOps32(
 	BGBCC_JX2_Context *sctx,
 	int opw1, int opw2, int opw3, int opw4)
 {
 	int ret;
 	
-	ret=BGBCC_JX2C_CheckOps32SequenceOnlyB(ctx, sctx,
+	ret=BGBCC_JX2_CheckOps32SequenceOnlyB(sctx,
 		opw1, opw2, opw3, opw4, 1);
 		
 	if(ret<0)
@@ -310,10 +310,10 @@ int BGBCC_JX2C_CheckCanSwapOps32(BGBCC_TransState *ctx,
 	return(!ret);
 }
 
-int BGBCC_JX2C_CheckOps32ValidWexSuffix(BGBCC_TransState *ctx,
+int BGBCC_JX2_CheckOps32ValidWexSuffix(
 	BGBCC_JX2_Context *sctx, int opw1, int opw2)
 {
-	if(BGBCC_JX2C_CheckOps32Immovable(ctx, sctx, opw1, opw2)!=0)
+	if(BGBCC_JX2_CheckOps32Immovable(sctx, opw1, opw2)!=0)
 		return(0);
 
 	if((opw1&0xF000)!=0xF000)
@@ -343,12 +343,12 @@ int BGBCC_JX2C_CheckOps32ValidWexSuffix(BGBCC_TransState *ctx,
 	return(0);
 }
 
-int BGBCC_JX2C_CheckOps32ValidWexPrefix(BGBCC_TransState *ctx,
+int BGBCC_JX2_CheckOps32ValidWexPrefix(
 	BGBCC_JX2_Context *sctx, int opw1, int opw2)
 {
 	int ret;
 
-	if(BGBCC_JX2C_CheckOps32Immovable(ctx, sctx, opw1, opw2)!=0)
+	if(BGBCC_JX2_CheckOps32Immovable(sctx, opw1, opw2)!=0)
 		return(0);
 
 	if((opw1&0xF000)!=0xF000)
@@ -454,7 +454,7 @@ int BGBCC_JX2C_CheckOps32ValidWexPrefix(BGBCC_TransState *ctx,
 	return(0);
 }
 
-ccxl_status BGBCC_JX2C_CheckWexify(BGBCC_TransState *ctx,
+ccxl_status BGBCC_JX2_CheckWexify(
 	BGBCC_JX2_Context *sctx,
 	int spos, int epos)
 {
@@ -505,18 +505,18 @@ ccxl_status BGBCC_JX2C_CheckWexify(BGBCC_TransState *ctx,
 		}
 		
 		/* If ops are immovable, skip. */
-		if(BGBCC_JX2C_CheckOps32Immovable(ctx, sctx, opw1, opw2)>0)
+		if(BGBCC_JX2_CheckOps32Immovable(sctx, opw1, opw2)>0)
 			{ cp+=4; continue; }
-		if(BGBCC_JX2C_CheckOps32Immovable(ctx, sctx, opw3, opw4)>0)
+		if(BGBCC_JX2_CheckOps32Immovable(sctx, opw3, opw4)>0)
 			{ cp+=4; continue; }
 		
-		if(!BGBCC_JX2C_CheckOps32ValidWexPrefix(ctx, sctx, opw1, opw2))
+		if(!BGBCC_JX2_CheckOps32ValidWexPrefix(sctx, opw1, opw2))
 		{
 #if 1
-			if(	BGBCC_JX2C_CheckOps32ValidWexPrefix(ctx, sctx, opw3, opw4) &&
-				BGBCC_JX2C_CheckOps32ValidWexSuffix(ctx, sctx, opw1, opw2) &&
-//				!BGBCC_JX2C_CheckOps32SequenceOnly(ctx, sctx,
-				BGBCC_JX2C_CheckCanSwapOps32(ctx, sctx,
+			if(	BGBCC_JX2_CheckOps32ValidWexPrefix(sctx, opw3, opw4) &&
+				BGBCC_JX2_CheckOps32ValidWexSuffix(sctx, opw1, opw2) &&
+//				!BGBCC_JX2_CheckOps32SequenceOnly(ctx, sctx,
+				BGBCC_JX2_CheckCanSwapOps32(sctx,
 					opw1, opw2, opw3, opw4))
 			{
 				if(sctx->is_simpass)
@@ -548,8 +548,8 @@ ccxl_status BGBCC_JX2C_CheckWexify(BGBCC_TransState *ctx,
 
 		if((opw1&0xFF00)==0xF800)
 		{
-			if(BGBCC_JX2C_CheckOps32ValidWexSuffix(ctx, sctx, opw3, opw4) &&
-				!BGBCC_JX2C_CheckOps32SequenceOnly(ctx, sctx,
+			if(BGBCC_JX2_CheckOps32ValidWexSuffix(sctx, opw3, opw4) &&
+				!BGBCC_JX2_CheckOps32SequenceOnly(sctx,
 					opw1, opw2, opw3, opw4))
 			{
 				opw1|=0x0100;
@@ -569,8 +569,8 @@ ccxl_status BGBCC_JX2C_CheckWexify(BGBCC_TransState *ctx,
 		if(((opw1&0xFF00)==0xF000) ||
 			((opw1&0xFF00)==0xF200))
 		{
-			if(BGBCC_JX2C_CheckOps32ValidWexSuffix(ctx, sctx, opw3, opw4) &&
-				!BGBCC_JX2C_CheckOps32SequenceOnly(ctx, sctx,
+			if(BGBCC_JX2_CheckOps32ValidWexSuffix(sctx, opw3, opw4) &&
+				!BGBCC_JX2_CheckOps32SequenceOnly(sctx,
 					opw1, opw2, opw3, opw4))
 			{
 				sctx->opcnt_hi8[(opw1>>8)&255]--;
@@ -590,4 +590,34 @@ ccxl_status BGBCC_JX2C_CheckWexify(BGBCC_TransState *ctx,
 	}
 	
 	return(1);
+}
+
+ccxl_status BGBCC_JX2_BeginWex(
+	BGBCC_JX2_Context *sctx)
+{
+//	return(0);
+
+	if(!(sctx->is_fixed32&16))
+	{
+		sctx->is_fixed32|=16;
+		sctx->wex_ofs_begin=BGBCC_JX2_EmitGetOffs(sctx);
+		return(1);
+	}
+	return(0);
+}
+
+ccxl_status BGBCC_JX2_EndWex(
+	BGBCC_JX2_Context *sctx)
+{
+	int i0, i1;
+
+	if(sctx->is_fixed32&16)
+	{
+		i0=sctx->wex_ofs_begin;
+		i1=BGBCC_JX2_EmitGetOffs(sctx);
+		BGBCC_JX2_CheckWexify(sctx, i0, i1);
+		sctx->is_fixed32&=(~16);
+		return(1);
+	}
+	return(0);
 }

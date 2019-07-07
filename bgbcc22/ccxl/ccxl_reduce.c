@@ -1742,6 +1742,22 @@ BCCX_Node *BGBCC_CCXL_ReduceForm(BGBCC_TransState *ctx,
 		}
 #endif
 
+#if 0
+		if(BGBCC_CCXL_IsRealP(ctx, rn))
+		{
+			g=BCCX_GetFloatCst(rn, &bgbcc_rcst_value, "value");
+			suf=BCCX_GetCst(rn, &bgbcc_rcst_tysuf, "tysuf");
+
+			if(!bgbcp_strcmp1(s, "/") && (g!=0))
+			{
+				BCCX_CheckDeleteUnlinked(rn);
+				rn=BGBCC_CCXL_WrapRealSuf(1.0/g, suf);
+				x=BGBCP_BinaryExpr("*", ln, rn);
+				return(x);
+			}
+		}
+#endif
+
 		x=BGBCP_BinaryExpr(s, ln, rn);
 		return(x);
 	}

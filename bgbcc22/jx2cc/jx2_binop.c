@@ -2253,6 +2253,14 @@ int BGBCC_JX2C_EmitCsrvVReg(
 	if(	BGBCC_CCXL_TypeFloatP(ctx, type) ||
 		BGBCC_CCXL_TypeFloat16P(ctx, type))
 	{	
+		if(sctx->fpu_gfp)
+		{
+			BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, BGBCC_SH_REG_RQ2);
+			BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, BGBCC_SH_REG_RQ2);
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, BGBCC_SH_REG_RQ2);
+			return(1);
+		}
+	
 		if(sctx->fpu_soft)
 		{
 //			BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, BGBCC_SH_REG_R0);
@@ -2277,7 +2285,7 @@ int BGBCC_JX2C_EmitCsrvVReg(
 
 	if(BGBCC_CCXL_TypeDoubleP(ctx, type))
 	{
-		if(sctx->fpu_soft)
+		if(sctx->fpu_soft || sctx->fpu_gfp)
 		{
 			if(sctx->is_addr64)
 			{

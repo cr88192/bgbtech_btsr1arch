@@ -359,6 +359,9 @@
 #define CCXL_VOP_CSELCMP_Z			0x29
 #define CCXL_VOP_JMPTAB				0x2A
 #define CCXL_VOP_OBJCALL			0x2B
+#define CCXL_VOP_PREDCMP			0x2C
+#define CCXL_VOP_PREDCMP_Z			0x2D
+#define CCXL_VOP_PREDSYNC			0x2E		//sync registers
 
 
 #define CCXL_LBL_GLOBALBASE			0x000000	//globals (main context)
@@ -518,6 +521,7 @@ byte pcls;	//Pointer Class
 struct BGBCC_CCXL_VirtOp_s {
 byte opn;
 byte opr;
+byte prd;			//predication mode
 ccxl_type type;
 ccxl_type stype;
 ccxl_register dst;

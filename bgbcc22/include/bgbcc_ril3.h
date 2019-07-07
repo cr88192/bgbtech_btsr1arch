@@ -150,3 +150,8 @@
 #define BGBCC_RIL3OP_OBJCALLN	0x79	//Call Obj, Non-Virt, Ret Stack
 #define BGBCC_RIL3OP_OBJCALLNV	0x7A	//Call Obj, Non-Virt, Ret Void
 #define BGBCC_RIL3OP_STOBJCALLN	0x7B	//Call Obj, Non-Virt, Ret Store
+
+#define BGBCC_RIL3OP_SETPRED	0x7C	//Set Predicate Mode
+#define BGBCC_RIL3OP_PRCMP		0x7D	//Predicate Compare (A op B)
+#define BGBCC_RIL3OP_PRCMPT		0x7E	//Predicate Compare (A!=0)
+#define BGBCC_RIL3OP_PRCMPF		0x7F	//Predicate Compare (A==0)

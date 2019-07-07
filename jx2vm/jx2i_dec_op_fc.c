@@ -13,6 +13,7 @@ int BJX2_DecodeOpcode_DecFC(BJX2_Context *ctx,
 	op->opn=opw1;
 	op->opn2=opw2;
 	op->opn3=opw3;
+	op->pc=addr;
 
 	if(1)
 	{
@@ -463,6 +464,7 @@ int BJX2_DecodeOpcode_DecDC(BJX2_Context *ctx,
 	op->opn3=opw3;
 	
 	op1=BJX2_ContextAllocOpcode(ctx);
+	op1->pc=addr;
 
 	ret=BJX2_DecodeOpcode_DecFC(ctx, op1, addr, opw1, opw2, opw3);
 

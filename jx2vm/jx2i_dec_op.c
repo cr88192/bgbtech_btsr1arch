@@ -2997,7 +2997,8 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 			break;
 
 		case 0x8:	/* E8zz */
-		case 0xA:	/* EAzz */
+		case 0x9:	/* E9zz */
+//		case 0xA:	/* EAzz */
 			ret=BJX2_DecodeOpcode_DecD8(ctx, op, addr, opw, opw2);
 			break;
 

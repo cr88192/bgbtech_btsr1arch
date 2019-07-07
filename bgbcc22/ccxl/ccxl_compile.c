@@ -1104,34 +1104,70 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_if, "if"))
 	{
-		t=BGBCC_CCXL_ReduceExpr(ctx,
-			BCCX_FetchCst(l, &bgbcc_rcst_cond, "cond"));
+		t=BCCX_FetchCst(l, &bgbcc_rcst_cond, "cond");
+		t=BGBCC_CCXL_ReduceExpr(ctx, t);
 		i=BGBCC_CCXL_BoolExpr(ctx, t);
+		ln=BCCX_FetchCst(l, &bgbcc_rcst_then, "then");
+		rn=BCCX_FetchCst(l, &bgbcc_rcst_else, "else");
+		
 		if(i==1)
 		{
-			BGBCC_CCXL_CompileStatement(ctx,
-				BCCX_FetchCst(l, &bgbcc_rcst_then, "then"));
+			BGBCC_CCXL_CompileStatement(ctx, ln);
 			return;
 		}
 		if(i==0)
 		{
-			t=BCCX_FetchCst(l, &bgbcc_rcst_else, "else");
-			if(t)BGBCC_CCXL_CompileStatement(ctx, t);
+			if(rn)BGBCC_CCXL_CompileStatement(ctx, rn);
 			return;
+		}
+
+		if(ctx->arch_has_predops &&
+			!BGBCC_CCXL_CheckIsStaticLib(ctx))
+		{
+			if(ctx->curprd)
+				{ BGBCC_DBGBREAK }
+		
+			i=BGBCC_CCXL_InferBlockPredSafeP(ctx, ln);
+			if(i && rn)
+			{
+				j=BGBCC_CCXL_InferBlockPredSafeP(ctx, rn);
+				if(j<=0)i=0;
+			}
+			
+			if(i)
+			{
+				j=BGBCC_CCXL_InferExprSimpleCmpP(ctx, t);
+				if(j<=0)i=0;
+			}
+			
+			if(i)
+			{
+				BGBCC_CCXL_CompilePredExpr(ctx, t);
+
+				BGBCC_CCXL_StackSetPred(ctx, 2);
+				BGBCC_CCXL_CompileStatement(ctx, ln);
+
+				if(rn)
+				{
+					BGBCC_CCXL_StackSetPred(ctx, 3);
+					BGBCC_CCXL_CompileStatement(ctx, rn);
+				}
+
+				BGBCC_CCXL_StackSetPred(ctx, 0);
+				return;
+			}
 		}
 
 		l0=BGBCC_CCXL_GenSym(ctx);
 		BGBCC_CCXL_CompileJCF(ctx, t, l0);
 
-		t=BCCX_FetchCst(l, &bgbcc_rcst_else, "else");
-		BGBCC_CCXL_CompileStatement(ctx,
-			BCCX_FetchCst(l, &bgbcc_rcst_then, "then"));
-		if(t)
+		BGBCC_CCXL_CompileStatement(ctx, ln);
+		if(rn)
 		{
 			l1=BGBCC_CCXL_GenSym(ctx);
 			BGBCC_CCXL_CompileJmp(ctx, l1);
 			BGBCC_CCXL_EmitLabel(ctx, l0);
-			BGBCC_CCXL_CompileStatement(ctx, t);
+			BGBCC_CCXL_CompileStatement(ctx, rn);
 			l0=l1;
 		}
 		BGBCC_CCXL_EmitLabel(ctx, l0);

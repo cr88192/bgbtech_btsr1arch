@@ -587,6 +587,11 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 		}
 		
 		op->pc2=pc;
+		if(op->fmid==BJX2_FMID_CHAIN)
+		{
+			op1=op->data;
+			op1->pc2=pc;
+		}
 
 		if(op->fl&BJX2_OPFL_CTRLF)
 		{

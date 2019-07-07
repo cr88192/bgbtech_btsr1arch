@@ -3,7 +3,7 @@ int BGBCC_JX2C_ScratchCheckFpRegFree(
 	BGBCC_JX2_Context *sctx,
 	int reg)
 {
-	if(sctx->no_fpu)
+	if(sctx->no_fpu || sctx->fpu_gfp)
 		return(0);
 
 	if(	((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_FR0) ||
@@ -24,7 +24,7 @@ int BGBCC_JX2C_ScratchSafeStompFpReg(
 	BGBCC_JX2_Context *sctx,
 	int reg)
 {
-	if(sctx->no_fpu)
+	if(sctx->no_fpu || sctx->fpu_gfp)
 		return(0);
 
 	if(	((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_FR0) ||
@@ -48,7 +48,7 @@ int BGBCC_JX2C_ScratchStompFpReg(
 	BGBCC_JX2_Context *sctx,
 	int reg)
 {
-	if(sctx->no_fpu)
+	if(sctx->no_fpu || sctx->fpu_gfp)
 		return(0);
 
 	if(	((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_FR0) ||
@@ -71,7 +71,7 @@ int BGBCC_JX2C_ScratchHoldFpReg(
 	BGBCC_JX2_Context *sctx,
 	int reg)
 {
-	if(sctx->no_fpu)
+	if(sctx->no_fpu || sctx->fpu_gfp)
 		return(0);
 
 	if(	((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_FR0) ||
@@ -94,7 +94,7 @@ int BGBCC_JX2C_ScratchReleaseFpReg(
 	BGBCC_JX2_Context *sctx,
 	int reg)
 {
-	if(sctx->no_fpu)
+	if(sctx->no_fpu || sctx->fpu_gfp)
 		return(0);
 
 	if(	((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_FR0) ||
@@ -117,7 +117,7 @@ int BGBCC_JX2C_ScratchAllocFpReg(
 {
 	int i;
 
-	if(sctx->no_fpu)
+	if(sctx->no_fpu || sctx->fpu_gfp)
 	{
 		BGBCC_DBGBREAK
 		return(-1);
@@ -307,7 +307,7 @@ int BGBCC_JX2C_EmitTryGetFpRegister(
 	int pr0, pr1;
 	int i, bi;
 
-	if(sctx->no_fpu)
+	if(sctx->no_fpu || sctx->fpu_gfp)
 	{
 		BGBCC_DBGBREAK
 		return(-1);
@@ -487,7 +487,7 @@ int BGBCC_JX2C_EmitGetFpRegister(
 	int pr0, pr1;
 	int i, i1;
 
-	if(sctx->no_fpu)
+	if(sctx->no_fpu || sctx->fpu_gfp)
 	{
 		BGBCC_DBGBREAK
 		return(-1);
@@ -832,7 +832,7 @@ int BGBCC_JX2C_EmitSyncFpRegisterIndex2(
 	if(!((sctx->fregalc_save)&(1<<i)))
 		return(0);
 
-	if(sctx->no_fpu)
+	if(sctx->no_fpu || sctx->fpu_gfp)
 	{
 		BGBCC_DBGBREAK
 		return(-1);
@@ -1011,7 +1011,7 @@ int BGBCC_JX2C_EmitLoadStackOfsFpReg(
 	int p0, p1, nmid;
 	int i, j, k;
 
-	if(sctx->no_fpu)
+	if(sctx->no_fpu || sctx->fpu_gfp)
 	{
 		BGBCC_DBGBREAK
 		return(-1);
@@ -1035,7 +1035,7 @@ int BGBCC_JX2C_EmitStoreStackOfsFpReg(
 	int p0, p1, nmid;
 	int i, j, k;
 
-	if(sctx->no_fpu)
+	if(sctx->no_fpu || sctx->fpu_gfp)
 	{
 		BGBCC_DBGBREAK
 		return(-1);
@@ -1059,7 +1059,7 @@ int BGBCC_JX2C_EmitLoadFrameOfsFpReg(
 {
 	int ofs1;
 
-	if(sctx->no_fpu)
+	if(sctx->no_fpu || sctx->fpu_gfp)
 	{
 		BGBCC_DBGBREAK
 		return(-1);
@@ -1077,7 +1077,7 @@ int BGBCC_JX2C_EmitStoreFrameOfsFpReg(
 {
 	int ofs1;
 
-	if(sctx->no_fpu)
+	if(sctx->no_fpu || sctx->fpu_gfp)
 	{
 		BGBCC_DBGBREAK
 		return(-1);
@@ -1098,7 +1098,7 @@ int BGBCC_JX2C_EmitLoadBRegOfsFpReg(
 	int p0, p1, nmid;
 	int i, j, k;
 
-	if(sctx->no_fpu)
+	if(sctx->no_fpu || sctx->fpu_gfp)
 	{
 		BGBCC_DBGBREAK
 		return(-1);
@@ -1122,7 +1122,7 @@ int BGBCC_JX2C_EmitStoreBRegOfsFpReg(
 	int p0, p1, nmid;
 	int i, j, k;
 
-	if(sctx->no_fpu)
+	if(sctx->no_fpu || sctx->fpu_gfp)
 	{
 		BGBCC_DBGBREAK
 		return(-1);

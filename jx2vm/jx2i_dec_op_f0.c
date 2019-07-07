@@ -12,6 +12,7 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 	op->fl|=BJX2_OPFL_TWOWORD;
 	op->opn=opw1;
 	op->opn2=opw2;
+	op->pc=addr;
 	
 	if(1)
 	{
@@ -2507,6 +2508,7 @@ int BJX2_DecodeOpcode_DecF4(BJX2_Context *ctx,
 	if(!(ctx->regs[BJX2_REG_SR]&(1<<27)))
 	{
 		op1=BJX2_ContextAllocOpcode(ctx);
+		op1->pc=addr;
 
 		opw1b=opw1&0xFFEF;
 		ret=BJX2_DecodeOpcode_DecF0(ctx, op1, addr, opw1b, opw2);
@@ -2543,6 +2545,7 @@ int BJX2_DecodeOpcode_DecD4(BJX2_Context *ctx,
 	op->opn2=opw2;
 
 	op1=BJX2_ContextAllocOpcode(ctx);
+	op1->pc=addr;
 
 	ret=BJX2_DecodeOpcode_DecF0(ctx, op1, addr, opw1, opw2);
 

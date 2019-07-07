@@ -8,6 +8,7 @@ int BJX2_DecodeOpcode_DecF8(BJX2_Context *ctx,
 	op->fl|=BJX2_OPFL_TWOWORD;
 	op->opn=opw1;
 	op->opn2=opw2;
+	op->pc=addr;
 
 //	rn_i16=opw1&15;
 //	if(opw1&0x0100)
@@ -71,10 +72,12 @@ int BJX2_DecodeOpcode_DecD8(BJX2_Context *ctx,
 //	op->opn3=opw3;
 	
 	op1=BJX2_ContextAllocOpcode(ctx);
+	op1->pc=addr;
 
 	ret=BJX2_DecodeOpcode_DecF8(ctx, op1, addr, opw1, opw2);
 
-	if(opw1&0x0200)
+//	if(opw1&0x0200)
+	if(opw1&0x0100)
 	{
 		op->nmid=BJX2_NMID_PRED_F;
 		op->fmid=BJX2_FMID_CHAIN;

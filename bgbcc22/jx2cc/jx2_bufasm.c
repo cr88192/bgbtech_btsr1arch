@@ -1148,6 +1148,9 @@ int BGBCC_JX2A_ParseCheckFeature(BGBCC_JX2_Context *ctx, char *sym)
 	if(!bgbcc_stricmp(sym, "bjx1_noext32"))
 		return(ctx->no_ext32);
 
+	if(!bgbcc_stricmp(sym, "bjx1_fpu_gfp"))
+		return(ctx->fpu_gfp);
+
 	tctx=ctx->tctx;
 
 	if(!bgbcc_stricmp(sym, "seen_variant"))
@@ -1828,6 +1831,26 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 			return(1);
 		}
 
+		if(!strcmp(tk0, "I.beginwex"))
+		{
+			BGBCC_JX2_BeginWex(ctx);
+			cs2=cs1;
+			while(*cs2 && (*cs2!='\r') && (*cs2!='\n'))
+				cs2++;
+			*rcs=cs2;
+			return(1);
+		}
+		
+		if(!strcmp(tk0, "I.endwex"))
+		{
+			BGBCC_JX2_EndWex(ctx);
+			cs2=cs1;
+			while(*cs2 && (*cs2!='\r') && (*cs2!='\n'))
+				cs2++;
+			*rcs=cs2;
+			return(1);
+		}
+		
 		printf("unexpected token '%s'\n", tk0+1);
 		*rcs=cs;
 		return(-1);

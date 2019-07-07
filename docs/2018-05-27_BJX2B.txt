@@ -556,9 +556,9 @@ Predicated Ranges will exist:
 * E6zz_zzzz (Execute if False, Repeats F2)
 * E7zz_zzzz (Execute if False, Repeats F3)
 * E8zz_zzzz (Execute if True, Repeats F8)
-* E9zz_zzzz (Execute if True, Repeats F9)
-* EAzz_zzzz (Execute if False, Repeats F8)
-* EBzz_zzzz (Execute if False, Repeats F9)
+* E9zz_zzzz (Execute if False, Repeats F8)
+* EAzz_zzzz (Reserved)
+* EBzz_zzzz (Reserved)
 * ECzz_zzzz (Execute if True, Repeats FC)
 * EDzz_zzzz (Execute if True, Repeats FD)
 * EEzz_zzzz (Execute if False, Repeats FC)
@@ -702,14 +702,14 @@ Instruction Space
 ** 21dd  BSR	(PC, disp8s)		//Branch Subroutine
 ** 22dd  BT		(PC, disp8s)		//Branch True
 ** 23dd  BF		(PC, disp8s)		//Branch False
-** 24jj /? LDIZ	#imm8u, DLR
-** 25jj /? LDIN	#imm8n, DLR
+** 24jj / LDIZ	#imm8u, DLR
+** 25jj / LDIN	#imm8n, DLR
 ** 26jj  LDISH	#imm8u, DLR			//DLR=(DLR SHL 8)|Imm8u
-** 27nj /? ADD	#imm4u, Rk
+** 27nj  -
 ** 28nd  MOVU.L	(SP, disp4u), Rn	//Stack-Relative ZX Load
-** 29nj /? LDIZ	#imm4u, Rk
+** 29nj  -
 ** 2And  MOVU.L	(SP, disp4u), Rk	//Stack-Relative ZX Load
-** 2Bnj /? LDIN	#imm4n, Rk
+** 2Bnj  -
 ** 2Cnj  CMPEQ	#imm4u, Rn			//Rn==Imm4, Zero Extend
 ** 2Dnj  CMPEQ	#imm4n, Rn			//Rn==Imm4, One Extend
 ** 2Enj  CMPGT	#imm4u, Rn			//Rn==Imm4, Zero Extend
@@ -781,8 +781,8 @@ Instruction Space
 ** 31nB  POP	Cn
 ** 31nC  CMPPL	Rn					//SR.T=(Rn GT 0)
 ** 31nD  CMPPZ	Rn					//SR.T=(Rn GE 0)
-** 31nE  PUSH	FRn
-** 31nF  POP	FRn
+** 31nE  PUSH	FRn					//(FPU) Push FRn
+** 31nF  POP	FRn					//(FPU) Pop FRn
 
 ** 32n0  BRA	Rn					//Branch to address given in Rn
 ** 32n1  BSR	Rn					//Branch Subroutine given by Rn
@@ -916,10 +916,7 @@ Instruction Space
 ** 5Enm  OR			Rm, DLR, Rn
 ** 5Fnm  XOR		Rm, DLR, Rn
 
-* 6zzz (Reserved)
-* 7zzz (Reserved)
-
-* 6zzz ? (Possible)
+* 6zzz  (Additional 'Imm, Reg' ops)
 ** 60dd  -
 ** 61dd  -
 ** 62dd  -
@@ -936,6 +933,8 @@ Instruction Space
 ** 6Dnj  CMPEQ	#imm4n, Rk			//Rn==Imm4, One Extend
 ** 6Enj  CMPGT	#imm4u, Rk			//Rn==Imm4, Zero Extend
 ** 6Fnj  CMPGE	#imm4u, Rk			//Rn==Imm4, Zero Extend
+
+* 7zzz (Reserved)
 
 * 8zzz ( MOV.L 1000-rddd-nnnn-mmmm, r=Store/Load )
 ** 80nm  MOVU.L		(Rm), Rn
@@ -1005,13 +1004,13 @@ Major Ranges
 * F0nm_XeoX (Basic Instructions, Partially mirrors 16-bit space)
 * F1nm_Xedd (Load/Store, Disp9)
 * F2nm_Xejj (Imm9 / Imm10 ops)
-* F3zz_zzzz (User Block)
+* F3zz_zzzz (Reserved / User Block)
 * F4zz_zzzz (Repeat F0zz, WEX2 Hint)
 * F5zz_zzzz (Repeat F1zz, WEX2 Hint)
 * F6zz_zzzz (Repeat F2zz, WEX2 Hint)
 * F7zz_zzzz (Repeat F3zz, WEX2 Hint)
 * F8Xn_jjjj (Some Imm16 Instructions)
-* F9Xn_jjjj (? Repeat F8zz, WEX2 Hint)
+* F9Xn_jjjj (Repeat F8zz, WEX2 Hint)
 * FAjj_jjjj (LDIZ Imm24, DLR)
 * FBjj_jjjj (LDIN Imm24, DLR)
 * FCzz_zzzz (48-bit)
@@ -1029,9 +1028,9 @@ Additionally, Predicated Ranges will exist:
 * E6zz_zzzz (Execute if False, Repeats F2)
 * E7zz_zzzz (Execute if False, Repeats F3)
 * E8zz_zzzz (Execute if True, Repeats F8)
-* E9zz_zzzz (Execute if True, Repeats F9)
-* EAzz_zzzz (Execute if False, Repeats F8)
-* EBzz_zzzz (Execute if False, Repeats F9)
+* E9zz_zzzz (Execute if False, Repeats F8)
+* EAzz_zzzz (Reserved)
+* EBzz_zzzz (Reserved)
 * ECzz_zzzz (Execute if True, Repeats FC)
 * EDzz_zzzz (Execute if True, Repeats FD)
 * EEzz_zzzz (Execute if False, Repeats FC)

@@ -660,3 +660,219 @@ int BGBCC_CCXL_InferExprCleanP(BGBCC_TransState *ctx, BCCX_Node *l)
 
 	return(0);
 }
+
+/*
+Determine if block-statement is safe to be compiled as predicated instructions.
+
+There is a small limit for block length here, and the range of operations which can be performed is quite limited.
+ */
+int BGBCC_CCXL_InferBlockPredSafeP(BGBCC_TransState *ctx, BCCX_Node *l)
+{
+	BCCX_Node *c, *t, *ln, *rn;
+	ccxl_type bty, dty, lty, rty;
+	char *s0;
+	int i0, i1, i2, i3;
+	int i, j, k;
+
+	if(!ctx->arch_has_predops)
+		return(0);
+
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_begin, "begin"))
+	{
+		i=1; k=0;
+		c=BCCX_Child(l);
+		while(c)
+		{
+			if(k>3)
+				break;
+//			BGBCC_CCXL_CompileStatement(ctx, c);
+			j=BGBCC_CCXL_InferBlockPredSafeP(ctx, c);
+			if(!j) { i=0; break; }
+			c=BCCX_Next(c);
+			k++;
+		}
+		
+		if(k>3)
+			i=0;
+		
+		return(i);
+	}
+
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_assign, "assign"))
+	{
+		ln=BCCX_FetchCst(l, &bgbcc_rcst_left, "left");
+		rn=BCCX_FetchCst(l, &bgbcc_rcst_right, "right");
+		ln=BGBCC_CCXL_ReduceExpr(ctx, ln);
+		rn=BGBCC_CCXL_ReduceExpr(ctx, rn);
+		BGBCC_CCXL_InferExpr(ctx, ln, &lty);
+		BGBCC_CCXL_InferExpr(ctx, rn, &rty);
+
+		s0=BCCX_GetCst(l, &bgbcc_rcst_op, "op");
+
+		i0=BGBCC_CCXL_InferBlockPredSafeP(ctx, ln);
+		i1=BGBCC_CCXL_InferBlockPredSafeP(ctx, rn);
+		if(!i0 || !i1)
+			return(0);
+
+		if(s0)
+		{
+			i=0;
+			if(!strcmp(s0, "+"))	i=1;
+			if(!strcmp(s0, "-"))	i=1;
+			if(!strcmp(s0, "&"))	i=1;
+			if(!strcmp(s0, "|"))	i=1;
+			if(!strcmp(s0, "^"))	i=1;
+			if(!i)
+				return(0);
+		}
+		
+		return(1);
+	}
+
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_binary, "binary"))
+	{
+		ln=BCCX_FetchCst(l, &bgbcc_rcst_left, "left");
+		rn=BCCX_FetchCst(l, &bgbcc_rcst_right, "right");
+		ln=BGBCC_CCXL_ReduceExpr(ctx, ln);
+		rn=BGBCC_CCXL_ReduceExpr(ctx, rn);
+//		BGBCC_CCXL_InferExpr(ctx, ln, &lty);
+//		BGBCC_CCXL_InferExpr(ctx, rn, &rty);
+
+		s0=BCCX_GetCst(l, &bgbcc_rcst_op, "op");
+
+		i0=BGBCC_CCXL_InferBlockPredSafeP(ctx, ln);
+		i1=BGBCC_CCXL_InferBlockPredSafeP(ctx, rn);
+		if(!i0 || !i1)
+			return(0);
+
+		if(!s0)
+			return(0);
+
+		i=0;
+		if(!strcmp(s0, "+"))	i=1;
+		if(!strcmp(s0, "-"))	i=1;
+		if(!strcmp(s0, "&"))	i=1;
+		if(!strcmp(s0, "|"))	i=1;
+		if(!strcmp(s0, "^"))	i=1;
+		if(!i)
+			return(0);
+		
+		return(1);
+	}
+
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_unary, "unary"))
+	{
+		s0=BCCX_GetCst(l, &bgbcc_rcst_op, "op");
+		t=BCCX_FetchCst(l, &bgbcc_rcst_value, "value");
+
+		i=BGBCC_CCXL_InferBlockPredSafeP(ctx, t);
+		if(!i)
+			return(0);
+
+		i=0;
+		if(!strcmp(s0, "+"))	i=1;
+		if(!strcmp(s0, "-"))	i=1;
+		if(!strcmp(s0, "&"))	i=1;
+		if(!strcmp(s0, "*"))	i=1;
+		if(!i)
+			return(0);
+		
+		return(1);
+	}
+
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_int, "int"))
+		{ return(1); }
+
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_charstring, "charstring"))
+		{ return(1); }
+
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_ref, "ref"))
+	{
+		i=BGBCC_CCXL_InferExpr(ctx, l, &dty);
+		if(i<=0)
+			return(0);
+
+		if(BGBCC_CCXL_TypeSmallIntP(ctx, dty))
+			return(1);
+		if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, dty))
+			return(1);
+		return(0);
+	}
+	
+	return(0);
+}
+
+int BGBCC_CCXL_InferExprSimpleCmpP(BGBCC_TransState *ctx, BCCX_Node *l)
+{
+	BCCX_Node *c, *t, *ln, *rn;
+	ccxl_type bty, dty, lty, rty;
+	char *s0;
+	int i0, i1, i2, i3;
+	int i, j, k;
+
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_binary, "binary"))
+	{
+		ln=BCCX_FetchCst(l, &bgbcc_rcst_left, "left");
+		rn=BCCX_FetchCst(l, &bgbcc_rcst_right, "right");
+		ln=BGBCC_CCXL_ReduceExpr(ctx, ln);
+		rn=BGBCC_CCXL_ReduceExpr(ctx, rn);
+		BGBCC_CCXL_InferExpr(ctx, ln, &lty);
+		BGBCC_CCXL_InferExpr(ctx, rn, &rty);
+
+		s0=BCCX_GetCst(l, &bgbcc_rcst_op, "op");
+		j=BGBCC_CCXL_CompareOpIdForName(ctx, s0);
+//		j=BGBCC_CCXL_BinaryCmpOpIdForName(ctx, s0);
+		if(j<0)
+			return(0);
+		
+//		BGBCC_CCXL_GetTypeBinaryDest(ctx, j, lty, rty, &dty);
+		BGBCC_CCXL_GetTypeCompareBinaryDest(ctx, j, lty, rty, &dty);
+
+		if(	!BGBCC_CCXL_TypeSmallIntP(ctx, dty) &&
+			!BGBCC_CCXL_TypeArrayOrPointerP(ctx, dty))
+				return(0);
+		
+		return(1);
+	}
+
+#if 1
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_unary, "unary"))
+	{
+		ln=BCCX_FetchCst(l, &bgbcc_rcst_value, "value");
+		ln=BGBCC_CCXL_ReduceExpr(ctx, ln);
+		i=BGBCC_CCXL_InferExpr(ctx, ln, &lty);
+		if(i<=0)
+			return(0);
+
+		s0=BCCX_GetCst(l, &bgbcc_rcst_op, "op");
+		
+		if(!strcmp(s0, "!"))
+		{
+			i=BGBCC_CCXL_InferExprSimpleCmpP(ctx, ln);
+			return(i);
+		}
+		return(0);
+	}
+#endif
+
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_int, "int"))
+		{ return(1); }
+
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_charstring, "charstring"))
+		{ return(1); }
+
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_ref, "ref"))
+	{
+		i=BGBCC_CCXL_InferExpr(ctx, l, &dty);
+		if(i<=0)
+			return(0);
+
+		if(BGBCC_CCXL_TypeSmallIntP(ctx, dty))
+			return(1);
+		if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, dty))
+			return(1);
+		return(0);
+	}
+	
+	return(0);
+}

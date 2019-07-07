@@ -396,6 +396,22 @@ void BGBCC_CCXLR3_EmitArgFloat(
 	BGBCC_CCXLR3_EmitSVLI(ctx, fm);
 }
 
+int BGBCC_CCXLR3_CheckEmitRIL(
+	BGBCC_TransState *ctx)
+{
+	if(!(ctx->ril_ip) || ctx->ril3_noril)
+		return(0);
+	return(1);
+}
+
+int BGBCC_CCXL_CheckIsStaticLib(
+	BGBCC_TransState *ctx)
+{
+	if(!(ctx->ril_ip))
+		return(0);
+	return(1);
+}
+
 void BGBCC_CCXLR3_EmitBufUVLI(
 	byte **rct, u64 val)
 {
@@ -1753,6 +1769,27 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
 		s1=BGBCC_CCXLR3_ReadString(ctx, &cs);
 		BGBCC_CCXL_StackLoadSlotSig(ctx, s0, s1);
+		break;
+	
+	case BGBCC_RIL3OP_SETPRED:
+		i0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
+		BGBCC_CCXL_StackSetPred(ctx, i0);
+		break;
+	case BGBCC_RIL3OP_PRCMP:
+		i0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
+		switch(i0)
+		{
+		case CCXL_CMP_EQ:		s0="=="; break;
+		case CCXL_CMP_NE:		s0="!="; break;
+		case CCXL_CMP_LT:		s0="<"; break;
+		case CCXL_CMP_GT:		s0=">"; break;
+		case CCXL_CMP_LE:		s0="<="; break;
+		case CCXL_CMP_GE:		s0=">="; break;
+		case CCXL_CMP_TST:		s0="&"; break;
+		case CCXL_CMP_NTST:		s0="!&"; break;
+		default: s0=NULL; BGBCC_DBGBREAK; break;
+		}
+		BGBCC_CCXL_CompilePredCmp(ctx, s0);
 		break;
 
 	default:

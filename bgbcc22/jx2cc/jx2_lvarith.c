@@ -221,7 +221,7 @@ int BGBCC_JX2C_EmitConvToVRegVRegVariant(
 		pri=BGBCC_SH_REG_RQ4;
 		pro=BGBCC_SH_REG_RQ2;
 
-		if(sctx->no_fpu)
+		if(sctx->no_fpu || sctx->fpu_gfp)
 		{
 			fr0=BGBCC_SH_REG_RD2;
 			dr0=BGBCC_SH_REG_RQ2;
@@ -238,7 +238,7 @@ int BGBCC_JX2C_EmitConvToVRegVRegVariant(
 		pri=BGBCC_SH_REG_R4;
 		pro=BGBCC_SH_REG_R2;
 
-		if(sctx->no_fpu)
+		if(sctx->no_fpu || sctx->fpu_gfp)
 		{
 			fr0=BGBCC_SH_REG_R2;
 			dr0=BGBCC_SH_REG_LR2;
@@ -357,7 +357,7 @@ int BGBCC_JX2C_EmitConvFromVRegVRegVariant(
 		pri=BGBCC_SH_REG_RQ4;
 		pro=BGBCC_SH_REG_RQ2;
 		
-		if(sctx->no_fpu)
+		if(sctx->no_fpu || sctx->fpu_gfp)
 		{
 			fr4=BGBCC_SH_REG_RD4;
 			dr4=BGBCC_SH_REG_RQ4;
@@ -374,7 +374,7 @@ int BGBCC_JX2C_EmitConvFromVRegVRegVariant(
 		pri=BGBCC_SH_REG_R4;
 		pro=BGBCC_SH_REG_R2;
 
-		if(sctx->no_fpu)
+		if(sctx->no_fpu || sctx->fpu_gfp)
 		{
 			fr4=BGBCC_SH_REG_R4;
 			dr4=BGBCC_SH_REG_LR4;
@@ -467,7 +467,7 @@ int BGBCC_JX2C_EmitConvFromVRegVRegVarString(
 		pri=BGBCC_SH_REG_RQ4;
 		pro=BGBCC_SH_REG_RQ2;
 		
-		if(sctx->no_fpu)
+		if(sctx->no_fpu || sctx->fpu_gfp)
 		{
 			fr4=BGBCC_SH_REG_RD4;
 			dr4=BGBCC_SH_REG_RQ4;
@@ -484,7 +484,7 @@ int BGBCC_JX2C_EmitConvFromVRegVRegVarString(
 		pri=BGBCC_SH_REG_R4;
 		pro=BGBCC_SH_REG_R2;
 
-		if(sctx->no_fpu)
+		if(sctx->no_fpu || sctx->fpu_gfp)
 		{
 			fr4=BGBCC_SH_REG_R4;
 			dr4=BGBCC_SH_REG_LR4;

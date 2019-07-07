@@ -2105,15 +2105,21 @@ ccxl_status BGBCC_CCXL_StackBinaryOp(BGBCC_TransState *ctx, char *op)
 			if(BGBCC_CCXL_IsRegImmFloatP(ctx, treg))
 			{
 				f=BGBCC_CCXL_GetRegImmFloatValue(ctx, treg);
-				BGBCC_CCXL_GetRegForFloatValue(ctx, &treg, 1.0/f);
-				opr=CCXL_BINOP_MUL;
+				if((f!=0) && (f==f))
+				{
+					BGBCC_CCXL_GetRegForFloatValue(ctx, &treg, 1.0/f);
+					opr=CCXL_BINOP_MUL;
+				}
 			}
 
 			if(BGBCC_CCXL_IsRegImmDoubleP(ctx, treg))
 			{
 				f=BGBCC_CCXL_GetRegImmDoubleValue(ctx, treg);
-				BGBCC_CCXL_GetRegForDoubleValue(ctx, &treg, 1.0/f);
-				opr=CCXL_BINOP_MUL;
+				if((f!=0) && (f==f))
+				{
+					BGBCC_CCXL_GetRegForDoubleValue(ctx, &treg, 1.0/f);
+					opr=CCXL_BINOP_MUL;
+				}
 			}
 
 			if(BGBCC_CCXL_IsRegImmIntP(ctx, treg) &&
@@ -2129,6 +2135,33 @@ ccxl_status BGBCC_CCXL_StackBinaryOp(BGBCC_TransState *ctx, char *op)
 				}
 			}
 		}
+
+#if 1
+		if(opr==CCXL_BINOP_DIV)
+		{
+			if(	BGBCC_CCXL_TypeFloatP(ctx, dty) &&
+				BGBCC_CCXL_IsRegImmILFDP(ctx, treg))
+			{
+				f=BGBCC_CCXL_GetRegImmFloatValue(ctx, treg);
+				if((f!=0) && (f==f))
+				{
+					BGBCC_CCXL_GetRegForFloatValue(ctx, &treg, 1.0/f);
+					opr=CCXL_BINOP_MUL;
+				}
+			}
+
+			if(	BGBCC_CCXL_TypeDoubleP(ctx, dty) &&
+				BGBCC_CCXL_IsRegImmILFDP(ctx, treg))
+			{
+				f=BGBCC_CCXL_GetRegImmDoubleValue(ctx, treg);
+				if((f!=0) && (f==f))
+				{
+					BGBCC_CCXL_GetRegForDoubleValue(ctx, &treg, 1.0/f);
+					opr=CCXL_BINOP_MUL;
+				}
+			}
+		}
+#endif
 
 #if 1
 //		if(	!BGBCC_CCXL_TypeEqualP(ctx, dty, sty) ||
@@ -2390,6 +2423,76 @@ ccxl_status BGBCC_CCXL_StackUnaryOp(BGBCC_TransState *ctx, char *op)
 	return(CCXL_STATUS_YES);
 }
 
+int BGBCC_CCXL_BinaryOpIdForName(BGBCC_TransState *ctx, char *op)
+{
+	int opr;
+
+	if(!op)
+		return(-1);
+
+	opr=-1;
+	if(!strcmp(op, "+"))opr=CCXL_BINOP_ADD;
+	if(!strcmp(op, "-"))opr=CCXL_BINOP_SUB;
+	if(!strcmp(op, "*"))opr=CCXL_BINOP_MUL;
+	if(!strcmp(op, "/"))opr=CCXL_BINOP_DIV;
+	if(!strcmp(op, "%"))opr=CCXL_BINOP_MOD;
+	if(!strcmp(op, "&"))opr=CCXL_BINOP_AND;
+	if(!strcmp(op, "|"))opr=CCXL_BINOP_OR;
+	if(!strcmp(op, "^"))opr=CCXL_BINOP_XOR;
+	if(!strcmp(op, "<<"))opr=CCXL_BINOP_SHL;
+	if(!strcmp(op, ">>"))opr=CCXL_BINOP_SHR;
+	if(!strcmp(op, ">>>"))opr=CCXL_BINOP_SHRR;
+
+#if 0
+	if(!strcmp(op, "=="))opr=CCXL_BINOP_EQ;
+	if(!strcmp(op, "!="))opr=CCXL_BINOP_NE;
+	if(!strcmp(op, "<"))opr=CCXL_BINOP_LT;
+	if(!strcmp(op, ">"))opr=CCXL_BINOP_GT;
+	if(!strcmp(op, "<="))opr=CCXL_BINOP_LE;
+	if(!strcmp(op, ">="))opr=CCXL_BINOP_GE;
+#endif
+
+	return(opr);
+}
+
+#if 0
+// int BGBCC_CCXL_BinaryCmpOpIdForName(BGBCC_TransState *ctx, char *op)
+{
+	int opr;
+
+	if(!op)
+		return(-1);
+
+	opr=-1;
+	if(!strcmp(op, "=="))opr=CCXL_BINOP_EQ;
+	if(!strcmp(op, "!="))opr=CCXL_BINOP_NE;
+	if(!strcmp(op, "<"))opr=CCXL_BINOP_LT;
+	if(!strcmp(op, ">"))opr=CCXL_BINOP_GT;
+	if(!strcmp(op, "<="))opr=CCXL_BINOP_LE;
+	if(!strcmp(op, ">="))opr=CCXL_BINOP_GE;
+
+	return(opr);
+}
+#endif
+
+int BGBCC_CCXL_CompareOpIdForName(BGBCC_TransState *ctx, char *op)
+{
+	int opr;
+
+	if(!op)
+		return(-1);
+
+	opr=-1;
+	if(!strcmp(op, "=="))opr=CCXL_CMP_EQ;
+	if(!strcmp(op, "!="))opr=CCXL_CMP_NE;
+	if(!strcmp(op, "<"))opr=CCXL_CMP_LT;
+	if(!strcmp(op, ">"))opr=CCXL_CMP_GT;
+	if(!strcmp(op, "<="))opr=CCXL_CMP_LE;
+	if(!strcmp(op, ">="))opr=CCXL_CMP_GE;
+
+	return(opr);
+}
+
 ccxl_status BGBCC_CCXL_StackBinaryOpStore(BGBCC_TransState *ctx,
 	char *op, char *name)
 {
@@ -2582,6 +2685,34 @@ ccxl_status BGBCC_CCXL_StackBinaryOpStore(BGBCC_TransState *ctx,
 				}
 			}
 		}
+
+#if 1
+		if(opr==CCXL_BINOP_DIV)
+		{
+			if(	BGBCC_CCXL_TypeFloatP(ctx, dty2) &&
+				BGBCC_CCXL_IsRegImmILFDP(ctx, treg))
+			{
+				f=BGBCC_CCXL_GetRegImmFloatValue(ctx, treg);
+				if((f!=0) && (f==f))
+				{
+					BGBCC_CCXL_GetRegForFloatValue(ctx, &treg, 1.0/f);
+					opr=CCXL_BINOP_MUL;
+				}
+			}
+
+			if(	BGBCC_CCXL_TypeDoubleP(ctx, dty2) &&
+				BGBCC_CCXL_IsRegImmILFDP(ctx, treg))
+			{
+				f=BGBCC_CCXL_GetRegImmDoubleValue(ctx, treg);
+				if((f!=0) && (f==f))
+				{
+					BGBCC_CCXL_GetRegForDoubleValue(ctx, &treg, 1.0/f);
+					opr=CCXL_BINOP_MUL;
+				}
+			}
+		}
+#endif
+
 
 #if 1
 //		if(	!BGBCC_CCXL_TypeEqualP(ctx, dty2, sty) ||

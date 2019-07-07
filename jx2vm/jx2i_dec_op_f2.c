@@ -11,6 +11,7 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 	op->fl|=BJX2_OPFL_TWOWORD;
 	op->opn=opw1;
 	op->opn2=opw2;
+	op->pc=addr;
 
 	rn_dfl=(opw1>>4)&15;
 	rm_dfl=(opw1   )&15;
@@ -289,6 +290,7 @@ int BJX2_DecodeOpcode_DecD6(BJX2_Context *ctx,
 	op->opn2=opw2;
 
 	op1=BJX2_ContextAllocOpcode(ctx);
+	op1->pc=addr;
 
 	ret=BJX2_DecodeOpcode_DecF2(ctx, op1, addr, opw1, opw2);
 

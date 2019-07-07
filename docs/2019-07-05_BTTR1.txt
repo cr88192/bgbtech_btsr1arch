@@ -1,0 +1,152 @@
+BGB Tiny Register ISA:
+* Assume performance doesn't matter.
+* Favor keeping implementation complexity small.
+* Similar to BTSR1, but aims a little lower.
+
+General:
+* 16x 32-bit registers.
+** Some are SPRs.
+* 16-bit instructions.
+* Load/Store requires proper alignment.
+* (Optional) Partial-width multiplier.
+
+Registers:
+* R0: DLR (Stomp Register)
+* R1: GBR (Global Base Register)
+* R2: Scratch / Return
+* R3: Scratch
+* R4: Scratch / Arg 1
+* R5: Scratch / Arg 2
+* R6: Scratch / Arg 3
+* R7: Scratch / Arg 4
+* R8: Preserve
+* R9: Preserve
+* R10: Preserve
+* R11: Preserve
+* R12: SR (Status/Control Register)
+* R13: SP (Stack Pointer)
+* R14: LR (Link Register)
+* R15: PC (Program Counter)
+
+
+Memory Map:
+  0000..7FFF: ROM (32K)
+  8000..BFFF: SRAM (16K)
+  C000..FFFF: MMIO / MMR
+
+Nominal address space will be 16-bit, but may be expanded.
+High bits of addresses will nominally be ignored, but using them for other purposes will be undefined.
+
+The width of GBR, SP, LR, and PC may be narrowed to the width of the address space.
+The LSB of LR and PC is Must-Be-Zero.
+The low 2 bits of GBR and SP also Must-Be-Zero.
+
+
+=== Interrupt ===
+
+Interrupts will jump to hard-wired addresses relative to the start of ROM.
+
+0000: Reset Vector
+0008: General Fault
+0010: Interrupt / IRQ
+0018: (Reserved) TLB
+
+On fault, the prior values of DLR, SR, PC will be saved into internal registers.
+Returning from an interrupt will restore the values from these registers.
+
+
+=== Special Case Instructions ===
+
+Storing to PC will encode a branch.
+* MOV	Rm, PC	//Branch to address given in Rm
+* ADD	Rm, PC	//Branch to PC+(Rm*2)
+* OR	Rm, PC	//Branch-with-link to PC+(Rm*2)
+* XOR	Rm, PC	//Branch-with-link to address given in Rm
+
+Some of these cases will be given aliases:
+* RTS			= MOV	LR, PC
+* BRA Rm		= MOV	Rm, PC
+* BRA (PC, Rm)	= ADD	Rm, PC
+* BSR Rm		= XOR	Rm, PC
+* BSR (PC, Rm)	= OR	Rm, PC
+
+Branches will not use a delay slot.
+
+If PC is read from, it will give the address of the following instruction.
+
+Some instructions will be special with PC as a source:
+* RTE			= MOV	PC, PC
+* NOT Rn		= TST	PC, Rn
+* NEG Rn		= AND	PC, Rn
+* SHLR1 Rn		= OR	PC, Rn		//Logical Shift Right
+* SHAR1 Rn		= XOR	PC, Rn		//Arithmetic Shift Right
+
+
+== Instruction Set ==
+
+Instructions
+* 00nm  MOV.B	Rn, (Rm)
+* 01nm  MOV.W	Rn, (Rm)
+* 02nm  MOV.L	Rn, (Rm)
+* 03nm  MOVU.B	(Rm), Rn
+* 04nm  MOV.B	Rn, (Rm, R0)
+* 05nm  MOV.W	Rn, (Rm, R0)
+* 06nm  MOV.L	Rn, (Rm, R0)
+* 07nm  MOVU.B	(Rm, R0), Rn
+* 08nm  MOV.B	(Rm), Rn
+* 09nm  MOV.W	(Rm), Rn
+* 0Anm  MOV.L	(Rm), Rn
+* 0Bnm  MOVU.W	(Rm), Rn
+* 0Cnm  MOV.B	(Rm, R0), Rn
+* 0Dnm  MOV.W	(Rm, R0), Rn
+* 0Enm  MOV.L	(Rm, R0), Rn
+* 0Fnm  MOVU.W	(Rm, R0), Rn
+
+* 10nm  ADD		Rm, Rn
+* 11nm  SUB		Rm, Rn
+* 12nm  ADC		Rm, Rn
+* 13nm  SBB		Rm, Rn
+* 14nm  TST		Rm, Rn
+* 15nm  AND		Rm, Rn
+* 16nm  OR		Rm, Rn
+* 17nm  XOR		Rm, Rn
+* 18nm  MOV		Rm, Rn
+* 19nm  -
+* 1Anm  -
+* 1Bnm  -
+* 1Cnm  CMPEQ	Rm, Rn
+* 1Dnm  CMPGT	Rm, Rn
+* 1Enm  CMPHI	Rm, Rn
+* 1Fnm  CMPGE	Rm, Rn
+
+* 20dd  BRA		disp8
+* 21dd  LDISH	#imm8u, DLR			//DLR=(DLR SHL 8) OR Imm8u
+* 22dd  BT		disp8
+* 23dd	BF		disp8
+* 24nd	MOV.L	Rn, (SP, disp4)
+* 25nd	MOV.W	Rn, (SP, disp4)
+* 26nd	MOV.L	(SP, disp4), Rn
+* 27nd	MOV.W	(SP, disp4), Rn
+* 28nd  -
+* 29nd  -
+* 2And  -
+* 2Bnd  -
+* 2Cnd  CMPEQ	#imm4u, Rn
+* 2Dnd  CMPGT	#imm4u, Rn
+* 2End  CMPHI	#imm4u, Rn
+* 2Fnd  CMPGE	#imm4u, Rn
+
+* 3zzz  -
+* 4zzz  -
+* 5zzz  -
+* 6zzz  -
+* 7zzz  -
+* 8zzz  -
+* 9zzz  -
+
+* Ajjj	LDIZ	#imm12u, DLR		//DLR=Imm12u
+* Bjjj	LDIN	#imm12n, DLR		//DLR=Imm12n
+* Cndd  ADD		#imm8s, Rn			//Rn=Rn+Imm8s
+* Dndd  LDI		#imm8s, Rn			//Rn=Imm8s
+* Ezzz  (Reserved, 32b Escape)
+* Fzzz  (Reserved, 32b Escape)

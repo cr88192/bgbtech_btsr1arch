@@ -1173,6 +1173,9 @@ int BJX2_DbgPrintRegs(BJX2_Context *ctx)
 	{
 		if(!BJX2_DbgPrintRegs_KnownReg2(ctx, i*2))
 			continue;
+		
+		if((i>16) && !(ctx->regs[i*2+0]) && !(ctx->regs[i*2+1]))
+			continue;
 	
 		for(j=0; j<2; j++)
 		{
@@ -1190,6 +1193,14 @@ int BJX2_DbgPrintRegs(BJX2_Context *ctx)
 int BJX2_DbgPrintFpRegs(BJX2_Context *ctx)
 {
 	int i, j;
+
+	for(i=0; i<16; i++)
+	{
+		if(ctx->fpreg[i]!=0)
+			break;
+	}
+	if(i>=16)
+		return(0);
 
 	for(i=0; i<(16/2); i++)
 	{

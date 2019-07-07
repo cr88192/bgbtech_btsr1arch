@@ -318,6 +318,9 @@ extern "C" {
 
 #define BGBCC_REGFL_VARCONV			0x0080		//converted to/from variant
 
+#define	BGBCC_MAXSTACKOBJ			0x080000	//maximum allowed stack frame
+#define	BGBCC_MAXSTACKFRAME			0x080000	//maximum allowed stack frame
+
 #ifndef BTK_NAME
 #define BTK_NAME	1
 #define BTK_NUMBER	2
@@ -664,6 +667,7 @@ byte arch_sizeof_valist;
 byte arch_demote_d2f;	//for arch, demote double to float
 byte arch_align_max;	//don't use alignments larger than this
 byte arch_align_objmin;	//minimum alignment for value-objects
+byte arch_has_predops;	//arch has predicated instructions
 
 byte ril3_norec;
 byte cgif_no3ac;
@@ -676,6 +680,7 @@ byte ccxl_var_needsinit;
 byte ccxl_isdef_methodproto;
 
 byte optmode;			//optimization mode
+byte curprd;			//current predication mode
 
 int ccxl_tyc_seen;
 

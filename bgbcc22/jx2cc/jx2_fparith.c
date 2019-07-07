@@ -5,6 +5,7 @@ int BGBCC_JX2C_EmitBinaryVRegVRegFloat(
 	ccxl_type type, ccxl_register dreg,
 	int opr, ccxl_register treg)
 {
+	double f;
 	char *s0;
 	int csreg, ctreg, cdreg;
 	int nm1, nm2;
@@ -15,6 +16,26 @@ int BGBCC_JX2C_EmitBinaryVRegVRegFloat(
 		return(BGBCC_JX2C_EmitBinaryVRegVRegSoftFloat(
 			ctx, sctx, type, dreg, opr, treg));
 	}
+
+	BGBCC_JX2C_NormalizeImmVRegInt(ctx, sctx, type, &treg);
+
+#if 1
+//	if(	BGBCC_CCXL_IsRegImmFloatP(ctx, treg) ||
+	if(
+		BGBCC_CCXL_IsRegImmDoubleP(ctx, treg))
+	{
+		if(opr==CCXL_BINOP_DIV)
+		{
+			f=BGBCC_CCXL_GetRegImmDoubleValue(ctx, treg);
+//			if((f>0.01) && (f<999999.0))
+			if((f>0.1) && (f<9999.0))
+			{
+				BGBCC_CCXL_GetRegForDoubleValue(ctx, &treg, 1.0/f);
+				opr=CCXL_BINOP_MUL;
+			}
+		}
+	}
+#endif
 
 	switch(opr)
 	{
@@ -233,6 +254,9 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegFloat(
 		return(0);
 	}
 
+	BGBCC_JX2C_NormalizeImmVRegInt(ctx, sctx, type, &sreg);
+	BGBCC_JX2C_NormalizeImmVRegInt(ctx, sctx, type, &treg);
+
 #if 0
 //	if(sctx->has_bjx1ari)
 	if(sctx->has_bjx1ari && sctx->has_bjx1mov)
@@ -314,6 +338,8 @@ int BGBCC_JX2C_EmitUnaryVRegVRegFloat(
 		return(BGBCC_JX2C_EmitUnaryVRegVRegSoftFloat(
 			ctx, sctx, type, dreg, opr, sreg));
 	}
+
+	BGBCC_JX2C_NormalizeImmVRegInt(ctx, sctx, type, &sreg);
 
 	if(sctx->fpu_lite)
 	{
@@ -457,9 +483,12 @@ int BGBCC_JX2C_EmitUnaryVRegVRegFloat(
 //		BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_FLOAT,
 //			BGBCC_SH_REG_FPUL, cdreg);
 
-		BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_LDS,
-			ctreg, BGBCC_SH_REG_MACL);
-		BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_FLDCI, cdreg);
+//		BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_LDS,
+//			ctreg, BGBCC_SH_REG_MACL);
+//		BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_FLDCI, cdreg);
+
+		BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_FLDCI,
+			ctreg, cdreg);
 
 		BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, ctreg);
 		BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, czreg);
@@ -546,6 +575,9 @@ int BGBCC_JX2C_EmitCompareVRegVRegVRegFloat(
 		return(BGBCC_JX2C_EmitCompareVRegVRegVRegSoftFloat(
 			ctx, sctx, type, dreg, cmp, sreg, treg));
 	}
+
+	BGBCC_JX2C_NormalizeImmVRegInt(ctx, sctx, type, &sreg);
+	BGBCC_JX2C_NormalizeImmVRegInt(ctx, sctx, type, &treg);
 
 	lfp=0;
 	switch(cmp)
@@ -707,6 +739,9 @@ int BGBCC_JX2C_EmitJCmpVRegVRegFloat(
 		return(BGBCC_JX2C_EmitJCmpVRegVRegSoftFloat(
 			ctx, sctx, type, sreg, treg, cmp, lbl));
 	}
+
+	BGBCC_JX2C_NormalizeImmVRegInt(ctx, sctx, type, &sreg);
+	BGBCC_JX2C_NormalizeImmVRegInt(ctx, sctx, type, &treg);
 
 	lfp=0; sw=0;
 	switch(cmp)

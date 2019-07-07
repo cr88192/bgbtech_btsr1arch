@@ -176,6 +176,7 @@ byte test_lclalign;	//local alignment-sensitivity test
 byte use_padcross;	//use padding across cache lines
 
 byte optmode;		//optimization mode
+byte pred_tfmd;
 
 int simfnsz;		//simulation's function size
 int simfnmsz;		//simulation's min function size
@@ -359,6 +360,8 @@ int lbl_rom_data_strt;
 int lbl_rom_data_end;
 
 int lbl_gbl_ptr;			//label ID for got
+
+int wex_ofs_begin;			//beginning of wexifier segment
 
 BGBCC_CMG_Context *next;
 struct BGBCC_TransState_s *tctx;

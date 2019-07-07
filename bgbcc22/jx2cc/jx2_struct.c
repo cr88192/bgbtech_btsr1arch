@@ -307,7 +307,7 @@ int BGBCC_JX2C_EmitLoadSlotVRegVRegImm(
 
 		ctreg=cdreg;
 
-		if(!sctx->fpu_soft)
+		if(!sctx->fpu_soft && !sctx->fpu_gfp)
 		{
 			if(BGBCC_CCXL_TypeDoubleP(ctx, type))
 			{
@@ -324,16 +324,24 @@ int BGBCC_JX2C_EmitLoadSlotVRegVRegImm(
 			{
 				if((cdreg&BGBCC_SH_REG_RTMASK)!=BGBCC_SH_REG_FR0)
 					{ BGBCC_DBGBREAK }
-				ctreg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
+//				ctreg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
+//				ctreg=BGBCC_SH_REG_R1;
 			}
 		}else
 		{
+#if 0
 			if(BGBCC_CCXL_TypeFloat16P(ctx, type) ||
 				BGBCC_CCXL_TypeBFloat16P(ctx, type))
 			{
 //				ctreg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
 				ctreg=BGBCC_SH_REG_R1;
 			}
+
+			if(BGBCC_CCXL_TypeFloatP(ctx, type) && sctx->fpu_gfp)
+			{
+				ctreg=BGBCC_SH_REG_R1;
+			}
+#endif
 		}
 
 		if(nm4>=0)
@@ -350,6 +358,12 @@ int BGBCC_JX2C_EmitLoadSlotVRegVRegImm(
 					BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, sreg);
 				return(1);
 			}
+		}
+
+		if(nm2>=0)
+		{
+//			ctreg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
+			ctreg=BGBCC_SH_REG_R1;
 		}
 
 		BGBCC_JX2C_EmitLoadBRegOfsReg(ctx, sctx,
@@ -423,6 +437,10 @@ int BGBCC_JX2C_EmitStoreSlotVRegVRegImm(
 		&sz, &nm1, &nm2, &nm3, &nm4);
 	if(nm2==BGBCC_SH_NMID_LDHF16)
 		nm2=BGBCC_SH_NMID_STHF16;
+	if(nm2==BGBCC_SH_NMID_FLDCF)
+		nm2=BGBCC_SH_NMID_FSTCF;
+	if(nm2==BGBCC_SH_NMID_FLDCH)
+		nm2=BGBCC_SH_NMID_FSTCH;
 
 	if(nm1>=0)
 	{
@@ -436,7 +454,7 @@ int BGBCC_JX2C_EmitStoreSlotVRegVRegImm(
 //		if(((cdreg&15)==15) && ((cdreg&BGBCC_SH_REG_RTMASK)!=BGBCC_SH_REG_FR0))
 //			{ BGBCC_DBGBREAK }
 
-		if(!sctx->fpu_soft)
+		if(!sctx->fpu_soft && !sctx->fpu_gfp)
 		{
 			if(BGBCC_CCXL_TypeDoubleP(ctx, type))
 			{
@@ -454,16 +472,23 @@ int BGBCC_JX2C_EmitStoreSlotVRegVRegImm(
 				if((csreg&BGBCC_SH_REG_RTMASK)!=BGBCC_SH_REG_FR0)
 					{ BGBCC_DBGBREAK }
 //				ctreg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
-				ctreg=BGBCC_SH_REG_R1;
+//				ctreg=BGBCC_SH_REG_R1;
 			}
 		}else
 		{
+#if 0
 			if(BGBCC_CCXL_TypeFloat16P(ctx, type) ||
 				BGBCC_CCXL_TypeBFloat16P(ctx, type))
 			{
 //				ctreg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
 				ctreg=BGBCC_SH_REG_R1;
 			}
+
+			if(BGBCC_CCXL_TypeFloatP(ctx, type) && sctx->fpu_gfp)
+			{
+				ctreg=BGBCC_SH_REG_R1;
+			}
+#endif
 		}
 
 #if 1	//Debug: Deref pointers to check validity
@@ -478,6 +503,12 @@ int BGBCC_JX2C_EmitStoreSlotVRegVRegImm(
 
 		BGBCC_JX2C_EmitDebugCheckReg(ctx, sctx, type, csreg);
 #endif
+
+		if(nm2>=0)
+		{
+//			ctreg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
+			ctreg=BGBCC_SH_REG_R1;
+		}
 
 		if(nm2>=0)
 			{ BGBCC_JX2C_EmitConvOpRegReg(ctx, sctx, nm2, csreg, ctreg); }
@@ -630,7 +661,7 @@ int BGBCC_JX2C_EmitLoadSlotRegVRegImm(
 	
 		ctreg=cdreg;
 
-		if(!sctx->fpu_soft)
+		if(!sctx->fpu_soft && !sctx->fpu_gfp)
 		{
 			if(BGBCC_CCXL_TypeDoubleP(ctx, type))
 			{
@@ -647,16 +678,29 @@ int BGBCC_JX2C_EmitLoadSlotRegVRegImm(
 			{
 				if((cdreg&BGBCC_SH_REG_RTMASK)!=BGBCC_SH_REG_FR0)
 					{ BGBCC_DBGBREAK }
-				ctreg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
+//				ctreg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
 			}
 		}else
 		{
+#if 0
 			if(BGBCC_CCXL_TypeFloat16P(ctx, type) ||
 				BGBCC_CCXL_TypeBFloat16P(ctx, type))
 			{
 //				ctreg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
 				ctreg=BGBCC_SH_REG_R1;
 			}
+
+			if(BGBCC_CCXL_TypeFloatP(ctx, type) && sctx->fpu_gfp)
+			{
+				ctreg=BGBCC_SH_REG_R1;
+			}
+#endif
+		}
+		
+		if(nm2>=0)
+		{
+//			ctreg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
+			ctreg=BGBCC_SH_REG_R1;
 		}
 
 		BGBCC_JX2C_EmitLoadBRegOfsReg(ctx, sctx,
@@ -730,6 +774,10 @@ int BGBCC_JX2C_EmitStoreSlotVRegRegImm(
 		&sz, &nm1, &nm2, &nm3, &nm4);
 	if(nm2==BGBCC_SH_NMID_LDHF16)
 		nm2=BGBCC_SH_NMID_STHF16;
+	if(nm2==BGBCC_SH_NMID_FLDCF)
+		nm2=BGBCC_SH_NMID_FSTCF;
+	if(nm2==BGBCC_SH_NMID_FLDCH)
+		nm2=BGBCC_SH_NMID_FSTCH;
 
 	if(nm1>=0)
 	{
@@ -739,7 +787,7 @@ int BGBCC_JX2C_EmitStoreSlotVRegRegImm(
 
 		ctreg=csreg;
 
-		if(!sctx->fpu_soft)
+		if(!sctx->fpu_soft && !sctx->fpu_gfp)
 		{
 			if(BGBCC_CCXL_TypeDoubleP(ctx, type))
 			{
@@ -757,21 +805,34 @@ int BGBCC_JX2C_EmitStoreSlotVRegRegImm(
 				if((csreg&BGBCC_SH_REG_RTMASK)!=BGBCC_SH_REG_FR0)
 					{ BGBCC_DBGBREAK }
 //				ctreg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
-				ctreg=BGBCC_SH_REG_R1;
+//				ctreg=BGBCC_SH_REG_R1;
 			}
 		}else
 		{
+#if 0
 			if(BGBCC_CCXL_TypeFloat16P(ctx, type) ||
 				BGBCC_CCXL_TypeBFloat16P(ctx, type))
 			{
 //				ctreg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
 				ctreg=BGBCC_SH_REG_R1;
 			}
+
+			if(BGBCC_CCXL_TypeFloatP(ctx, type) && sctx->fpu_gfp)
+			{
+				ctreg=BGBCC_SH_REG_R1;
+			}
+#endif
 		}
 
 #if 1	//Debug: Deref pointers to check validity
 		BGBCC_JX2C_EmitDebugCheckReg(ctx, sctx, type, csreg);
 #endif
+
+		if(nm2>=0)
+		{
+//			ctreg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
+			ctreg=BGBCC_SH_REG_R1;
+		}
 
 		if(nm2>=0)
 			{ BGBCC_JX2C_EmitConvOpRegReg(ctx, sctx, nm2, csreg, ctreg); }

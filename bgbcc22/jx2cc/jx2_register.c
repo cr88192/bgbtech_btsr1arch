@@ -1746,7 +1746,7 @@ int BGBCC_JX2C_EmitReleaseRegister(
 	int creg, regfl;
 	int i;
 
-	if(!sctx->no_fpu && !sctx->fpu_soft)
+	if(!sctx->no_fpu && !sctx->fpu_soft && !sctx->fpu_gfp)
 	{
 		if(BGBCC_CCXL_IsRegFloatP(ctx, reg) ||
 			BGBCC_CCXL_IsRegFloat16P(ctx, reg) ||
