@@ -31,11 +31,15 @@ General design summary (BtSR1):
 General design summary of BJX2:
 * Instruction set with variable length 16/32/48 bit instructions.
 * Little endian, supports misaligned.
-* Uses 32x 64-bit GPRs.
+* Uses 32x 64-bit GPRs (27 usable as GPRs).
 * Larger feature-set than BSR1, but is otherwise a similar design.
 * Goal is to be easier to implement in hardware than my older (SH based) BJX1 designs.
+* Supports predicated instructions.
+* Supports explicitly parallel encodings (WEX2).
 
 BJX2 currently has an FPU and MMU, with a 48 bit Virtual Address space and a 32-bit Physical Addresses space. The ISA and MMU design allow for a 48 bit Physical Address space as well. A mode exists where the Virtual Address space is confined to 32-bits, and a subset exists which uses 32-bit addresses.
+
+Some aspects of BJX2 are still in flux and the design is not yet frozen.
 
 
 bgbcc22: C compiler, partly reused from my BJX1 project, but modified to add support for BSR1 and BJX2.
