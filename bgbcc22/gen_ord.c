@@ -245,11 +245,11 @@ int main(int argc, char *argv[])
 			s++;
 		}
 
-		sprintf(buf2, "#define %s_%s", out_suf2, buf, i);
+		sprintf(buf2, "#define %s_%s", out_suf2, buf);
 		j=(47-strlen(buf2))/8; if(!j)j=1;
 
 //		j=(31-strlen(buf))/8;
-		fprintf(fd, "#define %s_%s", out_suf2, buf, i);
+		fprintf(fd, "#define %s_%s", out_suf2, buf);
 
 		while(j--)fprintf(fd, "\t");
 		fprintf(fd, "%d\n", i);

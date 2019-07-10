@@ -29,6 +29,17 @@
 #define BJX2_PtrSetQWordOfsLe(ptr, ix, val)	\
 	(*(s64 *)BJX2_PtrGetOfs(ptr, ix)=(val))
 
+#define	BJX2_PtrGetDWord(ptr)				(*(u32 *)(ptr))
+#define	BJX2_PtrSetDWord(ptr, val)			((*(u32 *)(ptr))=(val))
+
+#define	BJX2_PtrGetFloat(ptr)				(*(float *)(ptr))
+#define	BJX2_PtrSetFloat(ptr, val)			((*(float *)(ptr))=(val))
+
+#define	BJX2_PtrGetDouble(ptr)				(*(double *)(ptr))
+#define	BJX2_PtrSetDouble(ptr, val)			((*(double *)(ptr))=(val))
+#define	BJX2_PtrGetDoubleIx(ptr, ix)		(((double *)(ptr))[ix])
+#define	BJX2_PtrSetDoubleIx(ptr, ix, val)	(((double *)(ptr))[ix]=(val))
+
 #else
 
 #ifdef LITTLEENDIAN
@@ -46,6 +57,27 @@ void BJX2_PtrSetDWordLe(byte *ptr, s32 val)
 	{ memcpy(ptr, &val, 4); }
 void BJX2_PtrSetQWordLe(byte *ptr, s64 val)
 	{ memcpy(ptr, &val, 8); }
+
+
+s32 BJX2_PtrGetDWord(void *ptr)
+	{ s32 i; memcpy(&i, ptr, 4); return(i); }
+void BJX2_PtrSetDWord(void *ptr, s32 val)
+	{ memcpy(ptr, &val, 4); }
+
+float BJX2_PtrGetFloat(void *ptr)
+	{ float f; memcpy(&f, ptr, 4); return(f); }
+void BJX2_PtrSetFloat(void *ptr, float val)
+	{ memcpy(ptr, &val, 4); }
+
+double BJX2_PtrGetDouble(void *ptr)
+	{ double f; memcpy(&f, ptr, 8); return(f); }
+void BJX2_PtrSetDouble(void *ptr, double val)
+	{ memcpy(ptr, &val, 8); }
+
+double BJX2_PtrGetDoubleIx(void *ptr, int ix)
+	{ double f; memcpy(&f, ((byte *)ptr)+(ix*8), 8); return(f); }
+void BJX2_PtrSetDoubleIx(void *ptr, int ix, double val)
+	{ memcpy(((byte *)ptr)+(ix*8), &val, 8); }
 
 #else
 int BJX2_PtrGetSWordLe(byte *ptr)

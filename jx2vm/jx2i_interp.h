@@ -562,6 +562,7 @@ void *data;
 };
 
 struct BJX2_Trace_s {
+// BJX2_Opcode *ops[BJX2_TR_MAXOP+2];
 BJX2_Opcode *ops[BJX2_TR_MAXOP];
 int n_ops;
 int n_cyc;

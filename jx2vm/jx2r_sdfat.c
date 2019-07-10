@@ -1261,7 +1261,11 @@ int btesh2_tkfat_name2lfn(char *name, u16 *lfn)
 			j=((i&0x07)<<18)|(((s[0])&0x3F)<<12)|
 				(((s[1])&0x3F)<<6)|((s[2])&0x3F);
 			s+=3;
+		}else
+		{
+			j=0xFFFF;
 		}
+
 		if(j>=0x10000)
 		{
 			*t++=0xD800+((j>>10)&1023);
@@ -1528,6 +1532,7 @@ int JX2R_TKFAT_WalkDirEntNext(JX2R_TKFAT_ImageInfo *img,
 	
 	bln[0]=0;
 	bln2[0]=0;
+	lh=0; h1=0;
 
 	for(i=sidx; i<65536; i++)
 	{

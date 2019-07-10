@@ -163,6 +163,9 @@ int Sblkau_EncodeBlock(short *ibuf, u32 *obuf, u32 *rpred)
 	
 	pred=*rpred;
 
+	sss=0;	ssc=0;
+	spr=0;	cpr=0;
+
 	for(i=0; i<128; i++)
 	{
 		j=ibuf[i*2+0];

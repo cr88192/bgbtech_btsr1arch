@@ -644,6 +644,9 @@ void BJX2_Op_PUSH_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	ctx->trapc=op->pc;
 	ctx->regs[BJX2_REG_SP]-=8;
+//	printf("PUSH %d, %X %llX\n", op->rn,
+//		(u32)(ctx->regs[BJX2_REG_SP]),
+//		ctx->regs[op->rn]);
 	BJX2_MemSetQWord(ctx,
 		ctx->regs[BJX2_REG_SP],
 		ctx->regs[op->rn]);
@@ -654,6 +657,9 @@ void BJX2_Op_POP_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->trapc=op->pc;
 	ctx->regs[op->rn]=BJX2_MemGetQWord(ctx,
 		ctx->regs[BJX2_REG_SP]);
+//	printf("POP %d, %X %llX\n", op->rn,
+//		(u32)(ctx->regs[BJX2_REG_SP]),
+//		ctx->regs[op->rn]);
 	ctx->regs[BJX2_REG_SP]+=8;
 }
 #endif

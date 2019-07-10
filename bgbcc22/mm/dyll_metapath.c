@@ -513,7 +513,9 @@ void DYLL_MetaPath_LoadDB(char *name)
 
 	while(!feof(fd))
 	{
-		fgets(tb, 255, fd);
+		s=fgets(tb, 255, fd);
+		if(!s)
+			break;
 
 		s=tb;
 		while(*s && (*s<=' '))s++;

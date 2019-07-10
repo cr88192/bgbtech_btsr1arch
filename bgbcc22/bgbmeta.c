@@ -556,7 +556,8 @@ void *bgbcc_loadfile(char *name, int *rsz)
 //	buf=bgbcc_malloc(sz+16);
 	buf=bgbcc_malloc2(sz+16);
 	memset(buf, 0, sz+16);
-	fread(buf, 1, sz, fd);
+	j=fread(buf, 1, sz, fd);
+	if(j<sz)sz=j;
 
 	fclose(fd);
 
@@ -1110,7 +1111,7 @@ u32 BGBCC_GetSubArch()
 int BGBCC_LoadConfig(char *name)
 {
 	char buf[256];
-	char **a;
+	char **a, *s;
 	FILE *fd;
 	int i;
 	
@@ -1125,7 +1126,8 @@ int BGBCC_LoadConfig(char *name)
 	
 	while(!feof(fd))
 	{
-		fgets(buf, 256, fd);
+		s=fgets(buf, 256, fd);
+		if(!s)break;
 		a=bgbcc_split(buf);
 
 		if(!a[0])continue;

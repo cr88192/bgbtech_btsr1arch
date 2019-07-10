@@ -13,7 +13,7 @@ BJX2_Trace *BJX2_DecTraceCb_Run1(BJX2_Context *ctx, BJX2_Trace *tr)
 	BJX2_Opcode **ops;
 	BJX2_DecTraceCb_SetupForTrace(ctx, tr);
 	ops=tr->ops;
-	(*ops)->Run(ctx, *ops); ops++;
+	(*ops)->Run(ctx, *ops); // ops++;
 	return(ctx->tr_rnxt);
 }
 
@@ -23,7 +23,7 @@ BJX2_Trace *BJX2_DecTraceCb_Run2(BJX2_Context *ctx, BJX2_Trace *tr)
 	BJX2_DecTraceCb_SetupForTrace(ctx, tr);
 	ops=tr->ops;
 	(*ops)->Run(ctx, *ops); ops++;
-	(*ops)->Run(ctx, *ops); ops++;
+	(*ops)->Run(ctx, *ops); // ops++;
 	return(ctx->tr_rnxt);
 }
 
@@ -33,7 +33,7 @@ BJX2_Trace *BJX2_DecTraceCb_Run3(BJX2_Context *ctx, BJX2_Trace *tr)
 	BJX2_DecTraceCb_SetupForTrace(ctx, tr);
 	ops=tr->ops;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
-	(*ops)->Run(ctx, *ops); ops++;
+	(*ops)->Run(ctx, *ops); // ops++;
 	return(ctx->tr_rnxt);
 }
 
@@ -43,7 +43,7 @@ BJX2_Trace *BJX2_DecTraceCb_Run4(BJX2_Context *ctx, BJX2_Trace *tr)
 	BJX2_DecTraceCb_SetupForTrace(ctx, tr);
 	ops=tr->ops;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
-	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
+	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); // ops++;
 	return(ctx->tr_rnxt);
 }
 
@@ -54,7 +54,7 @@ BJX2_Trace *BJX2_DecTraceCb_Run5(BJX2_Context *ctx, BJX2_Trace *tr)
 	ops=tr->ops;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
-	(*ops)->Run(ctx, *ops); ops++;
+	(*ops)->Run(ctx, *ops); // ops++;
 	return(ctx->tr_rnxt);
 }
 
@@ -65,7 +65,7 @@ BJX2_Trace *BJX2_DecTraceCb_Run6(BJX2_Context *ctx, BJX2_Trace *tr)
 	ops=tr->ops;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
-	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
+	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); // ops++;
 	return(ctx->tr_rnxt);
 }
 
@@ -77,7 +77,7 @@ BJX2_Trace *BJX2_DecTraceCb_Run7(BJX2_Context *ctx, BJX2_Trace *tr)
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
-	(*ops)->Run(ctx, *ops); ops++;
+	(*ops)->Run(ctx, *ops); // ops++;
 	return(ctx->tr_rnxt);
 }
 
@@ -89,7 +89,7 @@ BJX2_Trace *BJX2_DecTraceCb_Run8(BJX2_Context *ctx, BJX2_Trace *tr)
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
-	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
+	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); // ops++;
 	return(ctx->tr_rnxt);
 }
 
@@ -103,7 +103,7 @@ BJX2_Trace *BJX2_DecTraceCb_Run9(BJX2_Context *ctx, BJX2_Trace *tr)
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
-	(*ops)->Run(ctx, *ops); ops++;
+	(*ops)->Run(ctx, *ops); // ops++;
 	return(ctx->tr_rnxt);
 }
 
@@ -116,7 +116,7 @@ BJX2_Trace *BJX2_DecTraceCb_Run10(BJX2_Context *ctx, BJX2_Trace *tr)
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
-	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
+	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); // ops++;
 	return(ctx->tr_rnxt);
 }
 
@@ -130,7 +130,7 @@ BJX2_Trace *BJX2_DecTraceCb_Run11(BJX2_Context *ctx, BJX2_Trace *tr)
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
-	(*ops)->Run(ctx, *ops); ops++;
+	(*ops)->Run(ctx, *ops); // ops++;
 	return(ctx->tr_rnxt);
 }
 
@@ -144,7 +144,7 @@ BJX2_Trace *BJX2_DecTraceCb_Run12(BJX2_Context *ctx, BJX2_Trace *tr)
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
-	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
+	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); // ops++;
 	return(ctx->tr_rnxt);
 }
 
@@ -159,7 +159,7 @@ BJX2_Trace *BJX2_DecTraceCb_Run13(BJX2_Context *ctx, BJX2_Trace *tr)
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
-	(*ops)->Run(ctx, *ops); ops++;
+	(*ops)->Run(ctx, *ops); // ops++;
 	return(ctx->tr_rnxt);
 }
 
@@ -174,7 +174,7 @@ BJX2_Trace *BJX2_DecTraceCb_Run14(BJX2_Context *ctx, BJX2_Trace *tr)
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
-	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
+	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); // ops++;
 	return(ctx->tr_rnxt);
 }
 
@@ -190,7 +190,7 @@ BJX2_Trace *BJX2_DecTraceCb_Run15(BJX2_Context *ctx, BJX2_Trace *tr)
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
-	(*ops)->Run(ctx, *ops); ops++;
+	(*ops)->Run(ctx, *ops); // ops++;
 	return(ctx->tr_rnxt);
 }
 
@@ -206,7 +206,7 @@ BJX2_Trace *BJX2_DecTraceCb_Run16(BJX2_Context *ctx, BJX2_Trace *tr)
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
-	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
+	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); // ops++;
 	return(ctx->tr_rnxt);
 }
 
@@ -223,7 +223,7 @@ BJX2_Trace *BJX2_DecTraceCb_Run17(BJX2_Context *ctx, BJX2_Trace *tr)
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
-	(*ops)->Run(ctx, *ops); ops++;
+	(*ops)->Run(ctx, *ops); // ops++;
 	return(ctx->tr_rnxt);
 }
 
@@ -240,7 +240,7 @@ BJX2_Trace *BJX2_DecTraceCb_Run18(BJX2_Context *ctx, BJX2_Trace *tr)
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
-	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
+	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); // ops++;
 	return(ctx->tr_rnxt);
 }
 
@@ -258,7 +258,7 @@ BJX2_Trace *BJX2_DecTraceCb_Run19(BJX2_Context *ctx, BJX2_Trace *tr)
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
-	(*ops)->Run(ctx, *ops); ops++;
+	(*ops)->Run(ctx, *ops); // ops++;
 	return(ctx->tr_rnxt);
 }
 
@@ -276,7 +276,7 @@ BJX2_Trace *BJX2_DecTraceCb_Run20(BJX2_Context *ctx, BJX2_Trace *tr)
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
-	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
+	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); // ops++;
 	return(ctx->tr_rnxt);
 }
 
@@ -295,7 +295,7 @@ BJX2_Trace *BJX2_DecTraceCb_Run21(BJX2_Context *ctx, BJX2_Trace *tr)
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
-	(*ops)->Run(ctx, *ops); ops++;
+	(*ops)->Run(ctx, *ops); // ops++;
 	return(ctx->tr_rnxt);
 }
 
@@ -314,7 +314,7 @@ BJX2_Trace *BJX2_DecTraceCb_Run22(BJX2_Context *ctx, BJX2_Trace *tr)
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
-	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
+	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); // ops++;
 	return(ctx->tr_rnxt);
 }
 
@@ -334,7 +334,7 @@ BJX2_Trace *BJX2_DecTraceCb_Run23(BJX2_Context *ctx, BJX2_Trace *tr)
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
-	(*ops)->Run(ctx, *ops); ops++;
+	(*ops)->Run(ctx, *ops); // ops++;
 	return(ctx->tr_rnxt);
 }
 
@@ -354,7 +354,7 @@ BJX2_Trace *BJX2_DecTraceCb_Run24(BJX2_Context *ctx, BJX2_Trace *tr)
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
-	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
+	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); // ops++;
 	return(ctx->tr_rnxt);
 }
 
@@ -375,7 +375,7 @@ BJX2_Trace *BJX2_DecTraceCb_Run25(BJX2_Context *ctx, BJX2_Trace *tr)
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
-	(*ops)->Run(ctx, *ops); ops++;
+	(*ops)->Run(ctx, *ops); // ops++;
 	return(ctx->tr_rnxt);
 }
 
@@ -396,7 +396,7 @@ BJX2_Trace *BJX2_DecTraceCb_Run26(BJX2_Context *ctx, BJX2_Trace *tr)
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
-	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
+	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); // ops++;
 	return(ctx->tr_rnxt);
 }
 
@@ -418,7 +418,7 @@ BJX2_Trace *BJX2_DecTraceCb_Run27(BJX2_Context *ctx, BJX2_Trace *tr)
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
-	(*ops)->Run(ctx, *ops); ops++;
+	(*ops)->Run(ctx, *ops); // ops++;
 	return(ctx->tr_rnxt);
 }
 
@@ -440,7 +440,7 @@ BJX2_Trace *BJX2_DecTraceCb_Run28(BJX2_Context *ctx, BJX2_Trace *tr)
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
-	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
+	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); // ops++;
 	return(ctx->tr_rnxt);
 }
 
@@ -463,7 +463,7 @@ BJX2_Trace *BJX2_DecTraceCb_Run29(BJX2_Context *ctx, BJX2_Trace *tr)
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
-	(*ops)->Run(ctx, *ops); ops++;
+	(*ops)->Run(ctx, *ops); // ops++;
 	return(ctx->tr_rnxt);
 }
 
@@ -486,7 +486,7 @@ BJX2_Trace *BJX2_DecTraceCb_Run30(BJX2_Context *ctx, BJX2_Trace *tr)
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
-	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
+	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); // ops++;
 	return(ctx->tr_rnxt);
 }
 
@@ -510,7 +510,7 @@ BJX2_Trace *BJX2_DecTraceCb_Run31(BJX2_Context *ctx, BJX2_Trace *tr)
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
-	(*ops)->Run(ctx, *ops); ops++;
+	(*ops)->Run(ctx, *ops); // ops++;
 	return(ctx->tr_rnxt);
 }
 
@@ -534,7 +534,7 @@ BJX2_Trace *BJX2_DecTraceCb_Run32(BJX2_Context *ctx, BJX2_Trace *tr)
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
 	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
-	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); ops++;
+	(*ops)->Run(ctx, *ops); ops++;		(*ops)->Run(ctx, *ops); // ops++;
 	return(ctx->tr_rnxt);
 }
 
@@ -657,13 +657,26 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 		}
 	}
 	
+	if(nc>BJX2_TR_MAXOP)
+		{ JX2_DBGBREAK }
+	
+#if 1
 	for(i=0; i<nc; i++)
 	{
+//		if((i+1)>=BJX2_TR_MAXOP)
+//			continue;
+	
+		op1=NULL;
+		op2=NULL;
+	
 		op=tr->ops[i];
-		op1=tr->ops[i+1];
-		op2=tr->ops[i+2];
+		if((i+1)<BJX2_TR_MAXOP)
+			op1=tr->ops[i+1];
+		if((i+1)<BJX2_TR_MAXOP)
+			op2=tr->ops[i+2];
 
-		if(op->fl&BJX2_OPFL_WEX)
+#if 1
+		if((op->fl&BJX2_OPFL_WEX) && op1)
 		{
 			if((i+2)>nc)
 				continue;
@@ -675,6 +688,7 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 			op1->cyc=j;
 			continue;
 		}
+#endif
 
 #if 1
 		if((op->nmid==BJX2_NMID_MOVB) ||
@@ -755,6 +769,7 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 		}
 #endif
 	}
+#endif
 
 	ncyc=0;
 	for(i=0; i<nc; i++)

@@ -928,8 +928,10 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 			BJX2_DbgPrintNameForReg(ctx, op->rn));
 		break;
 	case BJX2_FMID_IMMREG:
-		if((((sbyte)op->imm)!=op->imm) &&
-			(((byte)op->imm)!=op->imm))
+//		if((((sbyte)op->imm)!=op->imm) &&
+//			(((byte)op->imm)!=op->imm))
+		if((((s16)op->imm)!=op->imm) &&
+			(((u16)op->imm)!=op->imm))
 		{
 			printf("#0x%X, %s", op->imm,
 				BJX2_DbgPrintNameForReg(ctx, op->rn));

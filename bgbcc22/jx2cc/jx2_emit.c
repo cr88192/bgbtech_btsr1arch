@@ -3533,18 +3533,25 @@ int BGBCC_JX2_InitShufByte8(BGBCC_JX2_Context *ctx)
 	
 	for(i=0; i<16777216; i++)
 	{
-		fread(&v, 1, 8, fd);
+		j=fread(&v, 1, 8, fd);
+		if(j<=0)
+			break;
 		bgbcc_jx2_shuftab8b[i]=v;
 	}
 
-	fread(&v, 1, 8, fd);
+	j=fread(&v, 1, 8, fd);
+	if(j<=0)
+		v=0;
+	
 	k=(int)v;
 	if((k>0) && (k<16777216))
 	{
 		bgbcc_jx2_shufovf8b=malloc(k*sizeof(u64));
 		for(i=0; i<k; i++)
 		{
-			fread(&v, 1, 8, fd);
+			j=fread(&v, 1, 8, fd);
+			if(j<=0)
+				break;
 			bgbcc_jx2_shufovf8b[i]=v;
 		}
 	}

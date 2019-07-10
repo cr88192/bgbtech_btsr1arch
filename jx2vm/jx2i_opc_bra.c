@@ -15,6 +15,8 @@ void BJX2_Op_BSR_PcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 
 	if(!ctx->regs[BJX2_REG_PC])
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVOP);
+	if(!ctx->regs[BJX2_REG_LR])
+		{ JX2_DBGBREAK }
 }
 
 void BJX2_Op_BT_PcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
@@ -68,6 +70,8 @@ void BJX2_Op_BSR_PcReg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 	if(!ctx->regs[BJX2_REG_PC])
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVOP);
+	if(!ctx->regs[BJX2_REG_LR])
+		{ JX2_DBGBREAK }
 }
 
 void BJX2_Op_BT_PcReg(BJX2_Context *ctx, BJX2_Opcode *op)
@@ -153,6 +157,8 @@ void BJX2_Op_BSR_PcDr(BJX2_Context *ctx, BJX2_Opcode *op)
 
 	if(!ctx->regs[BJX2_REG_PC])
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVOP);
+	if(!ctx->regs[BJX2_REG_LR])
+		{ JX2_DBGBREAK }
 }
 
 void BJX2_Op_BT_PcDr(BJX2_Context *ctx, BJX2_Opcode *op)
@@ -250,6 +256,9 @@ void BJX2_Op_RTS_None(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[BJX2_REG_PC]=
 		ctx->regs[BJX2_REG_LR];
 	ctx->tr_rnxt=NULL;
+
+	if(!ctx->regs[BJX2_REG_PC])
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVOP);
 }
 
 void BJX2_Op_RET_None(BJX2_Context *ctx, BJX2_Opcode *op)
@@ -267,6 +276,9 @@ void BJX2_Op_RET_None(BJX2_Context *ctx, BJX2_Opcode *op)
 //	ctx->regs[BJX2_REG_PC]=
 //		ctx->regs[BJX2_REG_LR];
 	ctx->tr_rnxt=NULL;
+
+	if(!ctx->regs[BJX2_REG_PC])
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVOP);
 }
 
 void BJX2_Op_BREAK_None(BJX2_Context *ctx, BJX2_Opcode *op)
@@ -313,6 +325,8 @@ void BJX2_Op_BSR_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 	if(!ctx->regs[BJX2_REG_PC])
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVOP);
+	if(!ctx->regs[BJX2_REG_LR])
+		{ JX2_DBGBREAK }
 }
 
 void BJX2_Op_BT_Reg(BJX2_Context *ctx, BJX2_Opcode *op)

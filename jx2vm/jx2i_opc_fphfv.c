@@ -4,7 +4,8 @@ u16 bjx2_f2h(float f)
 	u16 v1, vo;
 	int ex, zm, om;
 	
-	v0=*(u32 *)(&f);
+//	v0=*(u32 *)(&f);
+	v0=BJX2_PtrGetDWord(&f);
 
 	ex=((v0>>23)&256)-(127-15);
 	zm=~(ex>>31);
@@ -23,7 +24,8 @@ float bjx2_h2f(u16 v0)
 	
 	v1=((v0&0x8000)<<16) |
 		(((v0&0x7FFF)+0x1C000)<<13);
-	return(*(float *)(&v1));
+//	return(*(float *)(&v1));
+	return(BJX2_PtrGetFloat(&v1));
 }
 
 u64 jx2_mkvec_hf(float f0, float f1, float f2, float f3)
@@ -86,6 +88,10 @@ u64 jx2_dovec_hf(u64 v0, u64 v1, int op)
 		tv2[3]=tv0[3]*tv1[3];
 		break;
 	default:
+		tv2[0]=0;
+		tv2[1]=0;
+		tv2[2]=0;
+		tv2[3]=0;
 		break;
 	}
 	
