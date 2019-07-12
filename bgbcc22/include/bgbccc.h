@@ -698,6 +698,8 @@ BCCX_Node *reduce_tmp;
 
 BGBCC_CCXL_RegisterInfo *cur_func;
 BGBCC_CCXL_LiteralInfo *cur_this;
+BGBCC_CCXL_VirtOp *cur_vop;
+BGBCC_CCXL_VirtTr *cur_vtr;
 
 // BGBCC_CCXL_RegisterInfo *reg_globals[4096];
 // int idx_globals[4096];

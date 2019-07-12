@@ -708,6 +708,7 @@ void S_StaticSound (sfx_t *sfx, vec3_t origin, float vol, float attenuation)
 	VectorCopy (origin, ss->origin);
 	ss->master_vol = vol;
 	ss->dist_mult = (attenuation/64) / sound_nominal_clip_dist;
+//	ss->dist_mult = (attenuation/64.0) / sound_nominal_clip_dist;
     ss->end = paintedtime + sc->length;	
 	
 	SND_Spatialize (ss);
@@ -724,7 +725,7 @@ S_UpdateAmbientSounds
 void S_UpdateAmbientSounds (void)
 {
 	mleaf_t		*l;
-	float		vol;
+	float		vol, dv;
 	int			ambient_channel;
 	channel_t	*chan;
 	int v;
@@ -735,6 +736,8 @@ void S_UpdateAmbientSounds (void)
 // calc ambient sound levels
 	if (!cl.worldmodel)
 		return;
+
+//	return;
 
 	l = Mod_PointInLeaf (listener_origin, cl.worldmodel);
 	if (!l || !ambient_level.value)
@@ -753,23 +756,45 @@ void S_UpdateAmbientSounds (void)
 		if (vol < 8)
 			vol = 0;
 
+#if 0
+		chan->master_vol = vol;
+#else
 	// don't adjust volume too fast
 		if (chan->master_vol < vol)
 		{
-			chan->master_vol += host_frametime * ambient_fade.value;
+//			chan->master_vol += host_frametime * ambient_fade.value;
+			dv = host_frametime * ambient_fade.value;
+			chan->master_vol += dv;
+			
+//			if((dv<0) || (dv>64))
+//				__debugbreak();
+			
 			if (chan->master_vol > vol)
 				chan->master_vol = vol;
 		}
 		else if (chan->master_vol > vol)
 		{
-			chan->master_vol -= host_frametime * ambient_fade.value;
+//			chan->master_vol -= host_frametime * ambient_fade.value;
+			dv = host_frametime * ambient_fade.value;
+			chan->master_vol -= dv;
+
+//			if((dv<0) || (dv>64))
+//				__debugbreak();
+
 			if (chan->master_vol < vol)
 				chan->master_vol = vol;
 		}
+#endif
 		
 //		chan->leftvol = chan->rightvol = chan->master_vol;
 
 		v = chan->master_vol;
+		
+		if(v<0)
+			__debugbreak();
+		
+		if(v<8) v=0;
+		
 		chan->leftvol = v;
 		chan->rightvol = v;
 		

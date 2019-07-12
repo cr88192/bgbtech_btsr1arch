@@ -1185,11 +1185,13 @@ void D_RasterizeAliasPolySmooth (void)
 #if 1
 	d_pdest_base=(byte *)d_viewbuffer;
 	d_pdest_limit=d_pdest_base+
-		(screenwidth*200)*2;
+//		(screenwidth*200)*2;
+		(screenwidth*screenheight)*2;
 
 	d_pz_base=d_pzbuffer;
 	d_pz_limit=d_pz_base+
-		(screenwidth*200);
+//		(screenwidth*200);
+		(screenwidth*screenheight);
 #endif
 
 	if (initialleftheight == 1)

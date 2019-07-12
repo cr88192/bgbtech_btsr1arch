@@ -748,6 +748,58 @@ X(sleep_0):
 
 .ifnarch bjx1_nofpu
 
+.ifarch bjx1_fpu_gfp
+
+.global X(__fpu_frcp)
+X(__fpu_frcp):
+	mov #0x0000, r0
+	fldch r0, r3
+	fcmp/gt r4, r3
+	bf .L0
+	push lr
+	fneg r4
+	bsr __fpu_frcp
+	fneg r2
+	ret
+
+	.L0:
+//	mov r4, r3
+//	mov r4, r6
+	mov #0x7FF0000000000000, r5
+//	sub r6, r5
+	sub r4, r5
+	mov #0x3FF0000000000000, r6
+
+	fmul r5, r4, r7
+	sub r6, r7, r7
+	add r7, r5
+
+	mov r5, r2
+	mov r4, r5
+	
+	mov #0x4000, r0
+	fldch r0, r3
+
+	fmul r2, r5, r6
+	fsub r3, r6, r7
+	fmul r7, r2
+
+	fmul r2, r5, r6
+	fsub r3, r6, r7
+	fmul r7, r2
+
+	fmul r2, r5, r6
+	fsub r3, r6, r7
+	fmul r7, r2
+
+	fmul r2, r5, r6
+	fsub r3, r6, r7
+	fmul r7, r2
+	
+	rts
+
+.else
+
 /* DR4=rv, DR5=a */
 .global X(__fpu_frcp_b0)
 X(__fpu_frcp_b0):
@@ -880,7 +932,9 @@ X(__fpu_frcp):
 	fmul dr7, dr2
 	
 	rts
-	
+
+.endif
+
 .else
 
 .global X(__fpu_frcp)

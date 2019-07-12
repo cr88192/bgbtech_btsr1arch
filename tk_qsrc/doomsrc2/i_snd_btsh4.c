@@ -421,6 +421,8 @@ static u32 snd_dmapred=0;
 
 static short snd_tsblk[256];
 
+int TK_GetApproxMHz(void);
+
 void SNDDMA_Submit(void)
 {
 	static int olddma;
@@ -430,6 +432,10 @@ void SNDDMA_Submit(void)
 	int lv, rv;
 	int b, n, d, b1, n1;
 	int i, j, k, l;
+	
+	l=TK_GetApproxMHz();
+	if(l<75)
+		return;
 
 	dma=SNDDMA_GetDMAPos();
 	idma=SNDDMA_GetDevDMAPos();

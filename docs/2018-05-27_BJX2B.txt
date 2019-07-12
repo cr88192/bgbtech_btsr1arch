@@ -779,8 +779,8 @@ Instruction Space
 ** 31n9  PUSH	Cn
 ** 31nA  POP	Rn
 ** 31nB  POP	Cn
-** 31nC  CMPPL	Rn					//SR.T=(Rn GT 0)
-** 31nD  CMPPZ	Rn					//SR.T=(Rn GE 0)
+** 31nC / CMPPL	Rn					//SR.T=(Rn GT 0)
+** 31nD / CMPPZ	Rn					//SR.T=(Rn GE 0)
 ** 31nE  PUSH	FRn					//(FPU) Push FRn
 ** 31nF  POP	FRn					//(FPU) Pop FRn
 
@@ -916,7 +916,7 @@ Instruction Space
 ** 5Enm  OR			Rm, DLR, Rn
 ** 5Fnm  XOR		Rm, DLR, Rn
 
-* 6zzz  (Additional 'Imm, Reg' ops)
+* 6zzz  (Additional Ops)
 ** 60dd  -
 ** 61dd  -
 ** 62dd  -
@@ -1226,8 +1226,8 @@ F0zz Instruction Block:
 *** F019_3en0  PUSH		Cn
 *** F01A_3en0  POP		Rn
 *** F01B_3en0  POP		Cn
-*** F01C_3en0  CMPPL	Rn
-*** F01D_3en0  CMPPZ	Rn
+*** F01C_3en0 / CMPPL	Rn
+*** F01D_3en0 / CMPPZ	Rn
 
 *** F020_3en0  BRA		Rn
 *** F021_3en0  BSR		Rn

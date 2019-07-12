@@ -573,6 +573,37 @@ s64 TK_GetTimeUs(void)
 	return(us);
 }
 
+s64 TK_GetTimeCycles(void)
+{
+	u32 *sreg;
+	u32 us_lo, us_hi;
+	u64 us;
+	int ms;
+
+	sreg=(int *)0xA000E340;
+	us_lo=sreg[0];
+	us_hi=sreg[1];
+	us=(((u64)us_hi)<<32)|us_lo;
+	return(us);
+}
+
+int TK_GetApproxMHz(void)
+{
+	static int mhz=0;
+	s64 li, lj;
+	int i, j, k;
+	
+	if((mhz>1) && (mhz<4096))
+		return(mhz);
+	
+	li=TK_GetTimeCycles();
+	lj=TK_GetTimeUs();
+	i=(li>>10);
+	j=(lj>>10);
+	k=li/lj;
+	mhz=k;
+	return(k);
+}
 void __datetime(void *ptr)
 {
 	struct dt_s {
@@ -745,7 +776,10 @@ void tk_print_decimal(int val)
 	if(s)*t++='-';
 	
 	if(tb[0]=='-')
-		*(int *)-1=-1;
+	{
+//		*(int *)-1=-1;
+		__debugbreak();
+	}
 	
 	while(t>tb)
 		{ t--; tk_putc(*t); }

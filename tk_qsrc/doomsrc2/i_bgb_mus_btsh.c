@@ -59,9 +59,37 @@ int smus_timer_irq()
 
 static int smus_isinit=0;
 
+double smus_ipow2(double y)
+{
+	double x, z, z1;
+	
+	if(y>0)
+	{
+		x=1; z=y;
+		while(z>1)
+			{ x=x*2; z=z-1; }
+		z1=(z*z+z)*0.5;
+		z1=(z1+z)*0.5;
+//		x=x*(z+1);
+		x=x*(1+z1);
+		return(x);
+	}else
+	{
+		x=1; z=-y;
+		while(z>1)
+			{ x=x*0.5; z=z-1; }
+		z1=(z*z+z)*0.5;
+		z1=(z1+z)*0.5;
+//		x=x*(1-(z*0.5));
+		x=x*(1-(z1*0.5));
+		return(x);
+	}
+}
+
 int SMus_Init()
 {
-	float freq, ph;
+//	float freq, ph;
+	double freq, ph;
 	int i, j, k;
 	
 	if(smus_isinit)
@@ -76,7 +104,9 @@ int SMus_Init()
 	{
 		smus_noteatt[i]=63-(i>>1);
 		
-		freq=pow(2, (i-69)/12.0)*440;
+//		freq=pow(2, (i-69)/12.0)*440;
+//		freq=pow(2.0, (i-69)/12.0)*440.0;
+		freq=smus_ipow2((i-69)/12.0)*440.0;
 		
 //		ph=freq/62500.0;
 		ph=freq/64000.0;
@@ -88,6 +118,8 @@ int SMus_Init()
 		if(j>=(1<<20))j=(1<<20)-1;
 		if(j<1)j=1;
 		smus_notediv[i]=j;
+		
+//		__debugbreak();
 	}
 	return(0);
 }

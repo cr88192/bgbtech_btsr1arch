@@ -192,9 +192,11 @@ The contents of SR.S, and SR.PQRO are undefined following this operation.
 
 === CMPGE ===
 
+* 1Fnm       CMPGE	Rm, Rn
 * 2Fnj       CMPGE	#imm4u, Rn
-* 36nE       CMPGE	DLR, Rn
+* 36nE     / CMPGE	DLR, Rn
 * 6Fnj       CMPGE	#imm4u, Rk
+* F0nm_1gEC  CMPGE	Rm, Rn				//Signed Rn GE Rm
 * F2nA_Cgjj  CMPGE	#imm9u, Rn
 * F2nB_Cgjj  CMPGE	#imm9n, Rn
 
@@ -241,6 +243,7 @@ The contents of SR.S, and SR.PQRO are undefined following this operation.
 === CMPHS ===
 
 * 36nD       CMPHS	DLR, Rn
+* F0nm_1gFC  CMPHS	Rm, Rn				//Unsigned Rn GE Rm
 * F2n6_Cgjj  CMPHS	#imm9u, Rn
 * F2n7_Cgjj  CMPHS	#imm9n, Rn
 
@@ -252,10 +255,10 @@ This updates SR.T based on the result of the comparison.
 The contents of SR.S, and SR.PQRO are undefined following this operation.
 
 
-=== CMPPL ===
+=== CMPPL (Drop) ===
 
-* 31nC       CMPPL	Rn
-* F01C_3en0  CMPPL	Rn		//Fix32
+* 31nC      / CMPPL	Rn
+* F01C_3en0 / CMPPL	Rn		//Fix32
 
 SR.T=(Rn GT 0)
 
@@ -267,11 +270,13 @@ For the unsigned case, this decates to comparing that the value is not equal to 
 This updates SR.T based on the result of the comparison.
 The contents of SR.S, and SR.PQRO are undefined following this operation.
 
+Drop: Same effect can be achieved with "CMPGT #0, Rm".
 
-=== CMPPZ ===
 
-* 31nD       CMPPZ	Rn
-* F01D_3en0  CMPPZ	Rn		//Fix32
+=== CMPPZ (Drop) ===
+
+* 31nD      / CMPPZ	Rn
+* F01D_3en0 / CMPPZ	Rn		//Fix32
 
 SR.T=(Rn GE 0)
 
@@ -282,6 +287,8 @@ For the unsigned case, the result would always be true.
 
 This updates SR.T based on the result of the comparison.
 The contents of SR.S, and SR.PQRO are undefined following this operation.
+
+Drop: Same effect can be achieved with "CMPGE #0, Rm".
 
 
 === CMPQEQ ===
@@ -302,6 +309,7 @@ The contents of SR.S, and SR.PQRO are undefined following this operation.
 
 === CMPQGE ===
 
+* F0nm_1GEC  CMPQGE		Rm, Rn
 * F2nA_CGjj  CMPQGE		#imm9u, Rn
 * F2nB_CGjj  CMPQGE		#imm9n, Rn
 
@@ -345,7 +353,7 @@ The contents of SR.S, and SR.PQRO are undefined following this operation.
 
 === CMPQHS ===
 
-* F0nm_1GDD  CMPQHS		Rm, Rn
+* F0nm_1GFC  CMPQHS		Rm, Rn
 * F2n6_CGjj  CMPQHS		#imm9u, Rn
 * F2n7_CGjj  CMPQHS		#imm9n, Rn
 

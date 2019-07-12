@@ -91,6 +91,7 @@ void Cbuf_AddText (char *text)
 
 	if (cmd_text.cursize + l >= cmd_text.maxsize)
 	{
+//		__debugbreak();
 		Con_Printf ("Cbuf_AddText: overflow\n");
 		return;
 	}

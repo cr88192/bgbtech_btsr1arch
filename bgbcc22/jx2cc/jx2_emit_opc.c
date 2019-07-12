@@ -190,13 +190,15 @@ int BGBCC_JX2_TryEmitOpReg(BGBCC_JX2_Context *ctx, int nmid, int reg)
 		if(!BGBCC_JX2_EmitCheckRegExtGPR(ctx, reg))		break;
 //		opw1=0x3108|((reg&15)<<4); break;
 //		opw1=0x310C|((reg&15)<<4); break;
-		opw1=0x310C|((reg&15)<<4)|((reg&16)<<7); break;
+//		opw1=0x310C|((reg&15)<<4)|((reg&16)<<7); break;
+		opw1=0x2E00|((reg&15)<<4)|((reg&16)<<10); break;
 	case BGBCC_SH_NMID_CMPPZ:
 //		if(!BGBCC_JX2_EmitCheckRegBaseGPR(ctx, reg))		break;
 		if(!BGBCC_JX2_EmitCheckRegExtGPR(ctx, reg))		break;
 //		opw1=0x3109|((reg&15)<<4); break;
 //		opw1=0x310D|((reg&15)<<4); break;
-		opw1=0x310D|((reg&15)<<4)|((reg&16)<<7); break;
+//		opw1=0x310D|((reg&15)<<4)|((reg&16)<<7); break;
+		opw1=0x2F00|((reg&15)<<4)|((reg&16)<<10); break;
 
 //	case BGBCC_SH_NMID_SHLL:
 //		if(!BGBCC_JX2_EmitCheckRegBaseGPR(ctx, reg))		break;
@@ -1077,6 +1079,15 @@ int BGBCC_JX2_TryEmitOpReg(BGBCC_JX2_Context *ctx, int nmid, int reg)
 			opw1=0xF200|((reg&15)<<4)|((reg&15)<<0);
 			opw2=0x88A0|ex2;
 #endif
+
+		case BGBCC_SH_NMID_CMPPL:
+			opw1=0xF20E|((reg&15)<<4);
+			opw2=0xC000|(ex2&0x0400);
+			break;
+		case BGBCC_SH_NMID_CMPPZ:
+			opw1=0xF20A|((reg&15)<<4);
+			opw2=0xC000|(ex2&0x0400);
+			break;
 
 		default:
 			opw1=opw1;

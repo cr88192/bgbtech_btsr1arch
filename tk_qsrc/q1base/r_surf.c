@@ -65,6 +65,12 @@ static void	(*surfmiptable16[4])(void) = {
 
 unsigned		blocklights[18*18];
 
+#ifndef __BGBCC__
+void	__hint_use_egpr()
+{
+}
+#endif
+
 /*
 ===============
 R_AddDynamicLights

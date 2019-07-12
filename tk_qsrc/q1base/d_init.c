@@ -175,12 +175,16 @@ void D_SetupFrame (void)
 		d_viewbuffer = (void *)(byte *)vid.buffer;
 
 	if (r_dowarp)
+	{
 		screenwidth = WARP_WIDTH;
+		screenheight = WARP_HEIGHT;
+	}
 	else
 	{
 		screenwidth = vid.rowbytes;
 		if(r_pixbytes==2)
 			screenwidth=screenwidth>>1;
+		screenheight = vid.height;
 	}
 
 	d_roverwrapped = false;

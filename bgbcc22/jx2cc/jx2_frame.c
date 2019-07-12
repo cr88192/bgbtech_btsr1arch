@@ -2472,8 +2472,12 @@ int BGBCC_JX2C_EmitStoreFrameVRegReg(
 #endif
 
 		treg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
+//		treg=BGBCC_SH_REG_R1;
 //		cdreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, dreg);
 //		cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dreg);
+
+//		if(BGBCC_CCXL_TypeValueObjectP(ctx, tty))
+//			treg=BGBCC_SH_REG_R2;
 
 		if(sctx->is_pic)
 		{

@@ -30,7 +30,7 @@ TK_LDFL= $(TK_CFL)
 
 # BASE_CFLAGS=-Dstricmp=strcasecmp
 # BASE_CFLAGS=/Zi
-BASE_CFLAGS=/Os /MD
+BASE_CFLAGS=/Os /MD /Zi
 
 CFLAGS=$(TK_CFL) $(BASE_CFLAGS)
 LDFLAGS=$(TK_LDFL) opengl32.lib gdi32.lib user32.lib \

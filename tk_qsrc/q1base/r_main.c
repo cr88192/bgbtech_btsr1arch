@@ -75,6 +75,7 @@ float		xscaleshrink, yscaleshrink;
 float		aliasxscale, aliasyscale, aliasxcenter, aliasycenter;
 
 int		screenwidth;
+int		screenheight;
 
 float	pixelAspect;
 float	screenAspect;

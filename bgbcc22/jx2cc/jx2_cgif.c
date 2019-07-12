@@ -1254,6 +1254,8 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 	}
 #endif
 
+	ctx->cur_vtr=tr;
+
 	sctx->is_leaf&=~4;
 	sctx->is_fixed32&=(~16);
 
@@ -1264,6 +1266,7 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 	}
 
 	sctx->is_tr_leaf=0;
+//	if(tr->trfl&1)
 	if(tr->trfl&1)
 		sctx->is_tr_leaf=1;
 
@@ -1306,6 +1309,8 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 		vop1=NULL;
 		if((i+1)<tr->n_ops)
 			vop1=obj->vop[tr->b_ops+i+1];
+
+		ctx->cur_vop=vop;
 
 		j=0;
 //		if(vop->prd==2)j=(sctx->pred_tfmd)?5:4;

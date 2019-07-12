@@ -387,9 +387,16 @@ int BGBCC_JX2C_ScratchAllocReg(
 	int i;
 
 	sctx->is_leaf&=(~4);
+	ctx->cur_vtr->trfl&=~1;
 	
 	if((sctx->is_tr_leaf&1) && !sctx->is_simpass)
 		{ BGBCC_DBGBREAK }
+
+	if(sctx->is_simpass && ((sctx->is_simpass&63)!=1) && !(sctx->is_simpass&64))
+	{
+//		if(sctx->is_tr_leaf&1)
+//			{ BGBCC_DBGBREAK }
+	}
 
 	if(!cls ||
 //		(cls==BGBCC_SH_REGCLS_GR) ||

@@ -914,11 +914,13 @@ void CalcSurfaceExtents (msurface_t *s)
 		s->extents[i] = (bmaxs[i] - bmins[i]) * 16;
 		if ( !(tex->flags & TEX_SPECIAL) && s->extents[i] > 256)
 		{
+#if 0
 			tk_printf("%f %f\n",
 				mins[i], maxs[i]);
 			tk_printf("%d %d %d\n",
 				bmins[i], bmaxs[i],
 				s->extents[i]);
+#endif
 			Sys_Error ("Bad surface extents");
 		}
 	}

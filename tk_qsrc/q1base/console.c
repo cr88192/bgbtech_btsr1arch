@@ -592,6 +592,8 @@ void Con_DrawConsole (int lines, qboolean drawinput)
 	if (lines <= 0)
 		return;
 
+//	__debugbreak();
+
 // draw the background
 	Draw_ConsoleBackground (lines);
 

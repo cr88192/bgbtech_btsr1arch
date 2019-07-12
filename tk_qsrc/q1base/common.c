@@ -839,7 +839,10 @@ float MSG_ReadAngle (void)
 void SZ_Alloc (sizebuf_t *buf, int startsize)
 {
 	if (startsize < 256)
+	{
+//		__debugbreak();
 		startsize = 256;
+	}
 	buf->data = Hunk_AllocName (startsize, "sizebuf");
 	buf->maxsize = startsize;
 	buf->cursize = 0;
@@ -1751,6 +1754,7 @@ pack_t *COM_LoadPackFile (char *packfile)
 	pack_t                  *pack;
 	int                             packhandle;
 	dpackfile_t             info[MAX_FILES_IN_PACK];
+//	static dpackfile_t             info[MAX_FILES_IN_PACK];
 	unsigned short          crc;
 
 	if (Sys_FileOpenRead (packfile, &packhandle) == -1)
@@ -1854,9 +1858,9 @@ void COM_AddGameDirectory (char *dir)
 //
 	for(i=0; i<10; i++)
 	{
-//		sprintf (pakfile, "%s/pak%i.pak", dir, i);
+		sprintf (pakfile, "%s/pak%i.pak", dir, i);
 //		tk_sprintf (pakfile, "%s/pak%i.pak", dir, i);
-		tk_sprintf (pakfile, "%s/pak%d.pak", dir, i);
+//		tk_sprintf (pakfile, "%s/pak%d.pak", dir, i);
 
 		tk_printf("COM_AddGameDirectory: Try %s\n", pakfile);
 

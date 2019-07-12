@@ -701,7 +701,8 @@ I_SubmitSound2(int extra)
   // Write it to DSP device.
 //  write(audio_fd, mixbuffer, SAMPLECOUNT*BUFMUL);
 
-	n=SAMPLECOUNT*1.451247;
+//	n=SAMPLECOUNT*1.451247;
+	n=(SAMPLECOUNT*1486)>>10;
 
 	curms=FRGL_TimeMS();
 	dt=curms-lastms;
@@ -714,17 +715,21 @@ I_SubmitSound2(int extra)
 
 	musvol=snd_MusicVolume;
 
-	n=SAMPLECOUNT*1.451247;
+//	n=SAMPLECOUNT*1.451247;
+	n=(SAMPLECOUNT*1486)>>10;
 	for(i=0; i<n; i++)
 	{
-		j=i/1.451247;
+//		j=i/1.451247;
+		j=(i*2822)>>12;
 		mixbuf2[i*2+0]=mixbuffer[j*2+0];
 		mixbuf2[i*2+1]=mixbuffer[j*2+1];
 
 //		mixbuf2[i*2+0]+=mixbuf_mus[i*2+0]/4;
 //		mixbuf2[i*2+1]+=mixbuf_mus[i*2+1]/4;
-		mixbuf2[i*2+0]+=(mixbuf_mus[i*2+0]*musvol)/16;
-		mixbuf2[i*2+1]+=(mixbuf_mus[i*2+1]*musvol)/16;
+//		mixbuf2[i*2+0]+=(mixbuf_mus[i*2+0]*musvol)/16;
+//		mixbuf2[i*2+1]+=(mixbuf_mus[i*2+1]*musvol)/16;
+		mixbuf2[i*2+0]+=(mixbuf_mus[i*2+0]*musvol)>>4;
+		mixbuf2[i*2+1]+=(mixbuf_mus[i*2+1]*musvol)>>4;
 	}
 
 	if(ns>0)
