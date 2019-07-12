@@ -23,6 +23,7 @@ randbits.txt
 
 *.cxlcpdb
 CacheFile.map
+quakei386.exe
 
 *.tga
 *.png
@@ -45,3 +46,6 @@ vlcore/obj_dir/*
 # bjx1core32/obj_dir/*
 # smalltst/compdec/obj_dir/*
 # bjx1c32b/obj_dir/*
+
+*/obj_dir/*
+*/*/obj_dir/*
