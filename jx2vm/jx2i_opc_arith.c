@@ -912,12 +912,12 @@ void BJX2_Op_SHLL_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_SHLR_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=((u64)ctx->regs[op->rn])>>op->imm;
+	ctx->regs[op->rn]=((u64)(ctx->regs[op->rn]))>>op->imm;
 }
 
 void BJX2_Op_SHAR_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=((s64)ctx->regs[op->rn])>>op->imm;
+	ctx->regs[op->rn]=((s64)(ctx->regs[op->rn]))>>op->imm;
 }
 
 void BJX2_Op_NOT_Reg(BJX2_Context *ctx, BJX2_Opcode *op)

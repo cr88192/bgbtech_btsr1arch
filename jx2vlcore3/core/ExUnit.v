@@ -19,7 +19,9 @@ IF ID1 ID2 EX1 EX2 WB
 `include "DecPreBra.v"
 
 `ifdef jx2_enable_fpu
+`ifdef jx2_enable_fprs
 `include "RegFPR.v"
+`endif
 `include "FpuExOp.v"
 `endif
 
@@ -196,7 +198,7 @@ RegGPR regGpr(
 
 wire[63:0]		crOutSr;
 
-`ifdef jx2_enable_fpu
+`ifdef jx2_enable_fprs
 
 wire[5:0]		gprIdFRs;
 wire[5:0]		gprIdFRt;
@@ -208,13 +210,31 @@ wire[63:0]		gprValFRt;
 reg[5:0]		gprIdFRn;
 reg[63:0]		gprValFRn;
 
+wire[63:0]		gprValFRs2;
+wire[63:0]		gprValFRt2;
+
+assign			gprValFRs = id2IdIxt[4] ? gprValRs : gprValFRs2;
+assign			gprValFRt = id2IdIxt[4] ? gprValRt : gprValFRt2;
+
 RegFPR	regFpr(
 	clock,	reset,
-	gprIdFRs,	gprValFRs,
-	gprIdFRt,	gprValFRt,
+	gprIdFRs,	gprValFRs2,
+	gprIdFRt,	gprValFRt2,
 	gprIdFRn,	gprValFRn,
 	crOutSr,	exHold2
 	);
+
+`else
+
+`ifdef jx2_enable_fpu
+
+wire[63:0]		gprValFRs;
+wire[63:0]		gprValFRt;
+
+assign			gprValFRs = gprValRs;
+assign			gprValFRt = gprValRt;
+
+`endif
 
 `endif
 
@@ -548,7 +568,8 @@ begin
 	crIdCn2			= ex2RegIdCn2;
 	crValCn2		= ex2RegValCn2;
 	
-`ifdef jx2_enable_fpu
+// `ifdef jx2_enable_fpu
+`ifdef jx2_enable_fprs
 	gprIdFRn		= ex1RegIdFRn;
 	gprValFRn		= ex1RegValFRn;
 `endif

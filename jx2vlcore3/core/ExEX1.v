@@ -22,8 +22,14 @@ Holding/Completing a memory access will be the responsibility of EX2.
 `include "ExShad32B.v"
 // `include "ExShad64.v"
 `include "ExShad64B.v"
+
+`ifdef jx2_enable_swapn
 `include "ExSwapN.v"
+`endif
+
+`ifdef jx2_enable_shlln
 `include "ExShllN.v"
+`endif
 
 module ExEX1(
 	clock, reset,
@@ -172,15 +178,19 @@ ExShad64B	exShad64(clock, reset,
 	regValRs[63:0], regValRt[7:0],
 	tValShad64, opUCmd[0]);
 
+`ifdef jx2_enable_swapn
 wire[63:0]	tValSwapN;
 ExSwapN		exSwapN(clock, reset,
 	opUIxt, regValRs, tValSwapN);
+`endif
 
+`ifdef jx2_enable_shlln
 wire[63:0]	tValShllN;
 wire		tShllSrT;
 ExShllN		exShllN(
 	opUIxt, regValRs, tValShllN,
 	regInSr[0], tShllSrT);
+`endif
 
 
 reg[63:0]	tRegSpAdd8;
@@ -249,7 +259,8 @@ begin
 			tHeldIdRn1	= regIdRm;
 		end
 
-`ifdef jx2_enable_fpu
+// `ifdef jx2_enable_fpu
+`ifdef jx2_enable_fprs
 		JX2_UCMD_FMOV_RM: begin
 			tDoMemOpm	= { 2'b10, opUIxt[3], opUIxt[5:4] };
 			tDoMemOp	= 1;
@@ -364,15 +375,21 @@ begin
 			tRegIdRn1	= regIdRm;
 			tRegValRn1	= tValShad64;
 		end
+
+`ifdef jx2_enable_swapn
 		JX2_UCMD_SWAPN: begin
 			tRegIdRn1	= regIdRm;
 			tRegValRn1	= tValSwapN;
 		end
+`endif
+
+`ifdef jx2_enable_shlln
 		JX2_UCMD_SHLLN:	 begin
 			tRegIdRn1		= regIdRm;
 			tRegValRn1		= tValShllN;
 			tRegOutSr[0]	= tShllSrT;
 		end
+`endif
 	
 `ifdef jx2_enable_fpu
 		JX2_UCMD_FSTCX: begin
@@ -383,6 +400,33 @@ begin
 		JX2_UCMD_FCMP: begin
 			tRegOutSr[0]	= regFpuSrT;
 		end
+
+`ifdef jx2_enable_fprs
+		JX2_UCMD_FPU3: begin
+			if(regIdIxt[4])
+			begin
+				tRegIdRn1		= regIdRm;
+				tRegValRn1		= regFpuGRn;
+			end
+		end
+		JX2_UCMD_FIXS: begin
+			if(regIdIxt[4])
+			begin
+				tRegIdRn1		= regIdRm;
+				tRegValRn1		= regFpuGRn;
+			end
+		end
+`else
+		JX2_UCMD_FPU3: begin
+			tRegIdRn1		= regIdRm;
+			tRegValRn1		= regFpuGRn;
+		end
+		JX2_UCMD_FIXS: begin
+			tRegIdRn1		= regIdRm;
+			tRegValRn1		= regFpuGRn;
+		end
+`endif
+
 `endif
 
 		default: begin

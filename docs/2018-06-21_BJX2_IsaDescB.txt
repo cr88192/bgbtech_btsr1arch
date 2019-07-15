@@ -1578,13 +1578,15 @@ Get the absolute value of the double precision value in Rm and store the result 
 
 === FADD (GFP) ===
 
-* F0nm_5go8  FADD		Rm, Ro, Rn			//(GFP) FADD
+* 60nm       FADD		Rm, Rn
+* F0nm_5go8  FADD		Rm, Ro, Rn
 
 Add the double precision value in Ro to the value from Rm and store the resulting value in Rn.
 
 
 === FCMPEQ (GFP) ===
 
+* 64nm       FCMPEQ		Rm, Rn			//(GFP) FCMPEQ
 * F0nm_1eAD  FCMPEQ		Rm, Rn			//SR.T=(Rn EQ Rm)
 
 Compare the double precision values in Rm and Rn for equality, setting SR.T if both values are equal, otherwise clearing SR.T.
@@ -1594,6 +1596,7 @@ If either value encodes a NaN, SR.T will be cleared.
 
 === FCMPGT (GFP) ===
 
+* 65nm       FCMPGT		Rm, Rn			//(GFP) FCMPGT
 * F0nm_1eBD  FCMPGT		Rm, Rn			//SR.T=(Rn GT Rm)
 
 Compare if the double precision value in Rn is greated than the value in Rm, setting SR.T if this is the case, and clearing otherwise.
@@ -1603,6 +1606,7 @@ If either value is NaN, the resulting state of SR.T is undefined.
 
 === FLDCx (GFP) ===
 
+* 63nm       FLDCF		Rm, Rn		//(GFP) Single->Double
 * F0nm_1e0D  FLDCF		Rm, Rn		//Load Convert Float32 (Low Bits, ZX)
 * F0nm_1e1D  FLDCHF		Rm, Rn		//Load Convert Float32 (High Bits)
 * F0nm_1e2D  FLDCI		Rm, Rn		//Load Convert Int
@@ -1619,6 +1623,7 @@ FLDCH will pull a 16-bit half-float value from Rm.
 
 === FMUL (GFP) ===
 
+* 62nm       FMUL		Rm, Rn			//(GFP) FMUL
 * F0nm_5goA  FMUL		Rm, Ro, Rn			//(GFP) FMUL
 
 Multiply the double precision value in Ro with the value from Rm and store the resulting value in Rn.
@@ -1633,6 +1638,7 @@ Negate the value of the double precision value in Rm and store the result in Rn.
 
 === FSTCx (GFP) ===
 
+* 66nm       FSTCF		Rm, Rn		//(GFP) Double->Single
 * F0nm_1e4D  FSTCF		Rm, Rn		//Store Convert Float32 (Low Bits, ZX)
 * F0nm_1e5D  FSTCHF		Rm, Rn		//Store Convert Float32 (High Bits)
 * F0nm_1e6D  FSTCI		Rm, Rn		//Store Convert Int
@@ -1651,7 +1657,8 @@ FSTCH will produce a half precision float, which will be stored into the low 16 
 
 === FSUB (GFP) ===
 
-* F0nm_5go9  FSUB		Rm, Ro, Rn			//(GFP) FSUB
+* 61nm       FSUB		Rm, Rn			//(GFP) FSUB
+* F0nm_5go9  FSUB		Rm, Ro, Rn		//(GFP) FSUB
 
 Subtract the double precision value in Ro from the value from Rm and store the resulting value in Rn.
 

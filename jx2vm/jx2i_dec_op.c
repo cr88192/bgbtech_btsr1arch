@@ -2612,6 +2612,57 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 		op->rm=opw&15;
 		switch((opw>>8)&15)
 		{
+
+		case 0x0:	/* 60nm */
+			op->ro=op->rm;
+			op->rm=op->rn;
+			op->nmid=BJX2_NMID_FADD;
+			op->fmid=BJX2_FMID_REGREGREG;
+			op->Run=BJX2_Op_FADDD_RegRegReg;
+			break;
+		case 0x1:	/* 61nm */
+			op->ro=op->rm;
+			op->rm=op->rn;
+			op->nmid=BJX2_NMID_FSUB;
+			op->fmid=BJX2_FMID_REGREGREG;
+			op->Run=BJX2_Op_FSUBD_RegRegReg;
+			break;
+		case 0x2:	/* 62nm */
+			op->ro=op->rm;
+			op->rm=op->rn;
+			op->nmid=BJX2_NMID_FMUL;
+			op->fmid=BJX2_FMID_REGREGREG;
+			op->Run=BJX2_Op_FMULD_RegRegReg;
+			break;
+		case 0x3:	/* 63nm */
+			op->nmid=BJX2_NMID_FLDCF;
+			op->fmid=BJX2_FMID_REGREG;
+			op->Run=BJX2_Op_FLDCF_GRegReg;
+			break;
+		case 0x4:	/* 64nm */
+			op->nmid=BJX2_NMID_FCMPEQ;
+			op->fmid=BJX2_FMID_REGREG;
+			op->Run=BJX2_Op_FCMPEQ_GRegReg;
+			break;
+		case 0x5:	/* 65nm */
+			op->nmid=BJX2_NMID_FCMPGT;
+			op->fmid=BJX2_FMID_REGREG;
+			op->Run=BJX2_Op_FCMPGT_GRegReg;
+			break;
+		case 0x6:	/* 66nm */
+			op->nmid=BJX2_NMID_FSTCF;
+			op->fmid=BJX2_FMID_REGREG;
+			op->Run=BJX2_Op_FSTCF_GRegReg;
+			break;
+
+		case 0x7:	/* 67nz */
+			switch(opw&15)
+			{
+			default:
+				break;
+			}
+			break;
+
 #if 1
 		case 0x8:	/* 68zz */
 			op->imm=opw&15;

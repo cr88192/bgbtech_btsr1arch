@@ -244,11 +244,11 @@ parameter[4:0] JX2_FMID_REGREG			= 5'h04;	//OOnm	Rm, Rn
 parameter[4:0] JX2_FMID_IMM8REG			= 5'h05;	//Onii	#imm8s, Rn
 parameter[4:0] JX2_FMID_IMM8Z			= 5'h06;	//OOjj	#imm8u, DLR
 parameter[4:0] JX2_FMID_IMM8N			= 5'h07;	//OOjj	#imm8n, DLR
-parameter[4:0] JX2_FMID_REGSTREG		= 5'h08;	//OOnm  Rm, (Rn)
+// parameter[4:0] JX2_FMID_REGSTREG		= 5'h08;	//OOnm  Rm, (Rn)
 parameter[4:0] JX2_FMID_LDREGREG		= 5'h09;	//OOnm  (Rm), Rn
-parameter[4:0] JX2_FMID_REGSTDRREG		= 5'h0A;	//OOnm  Rm, (Rn, DLR)
+// parameter[4:0] JX2_FMID_REGSTDRREG		= 5'h0A;	//OOnm  Rm, (Rn, DLR)
 parameter[4:0] JX2_FMID_LDDRREGREG		= 5'h0B;	//OOnm  (Rm, DLR), Rn
-parameter[4:0] JX2_FMID_REGSTDRPC		= 5'h0C;	//OOnO  Rn, (PC, DLR)
+// parameter[4:0] JX2_FMID_REGSTDRPC		= 5'h0C;	//OOnO  Rn, (PC, DLR)
 parameter[4:0] JX2_FMID_LDDRPCREG		= 5'h0D;	//OOnO  (PC, DLR), Rn
 parameter[4:0] JX2_FMID_IMM4ZREG		= 5'h0E;	//OOnj  #imm4u, Rn
 parameter[4:0] JX2_FMID_IMM4NREG		= 5'h0F;	//OOnj  #imm4n, Rn
@@ -259,12 +259,20 @@ parameter[4:0] JX2_FMID_PCDISP8			= 5'h13;	//OOdd	(PC, disp8s)
 
 parameter[4:0] JX2_FMID_IMM12Z			= 5'h16;	//Ojjj	#imm12u, DLR
 parameter[4:0] JX2_FMID_IMM12N			= 5'h17;	//Ojjj	#imm12n, DLR
-parameter[4:0] JX2_FMID_REGSTDLR		= 5'h18;	//OOnO  Rn, (DLR)
-parameter[4:0] JX2_FMID_REGSTREGDISP	= 5'h18;	//OOnm  Rm, (Rn)
+// parameter[4:0] JX2_FMID_REGSTDLR		= 5'h18;	//OOnO  Rn, (DLR)
+// parameter[4:0] JX2_FMID_REGSTREGDISP	= 5'h18;	//OOnm  Rm, (Rn)
 parameter[4:0] JX2_FMID_LDDLRREG		= 5'h19;	//OOnO  (DLR), Rn
 parameter[4:0] JX2_FMID_LDREGDISPREG	= 5'h19;	//OOnm  (Rm), Rn
-parameter[4:0] JX2_FMID_REGSTDI4SP		= 5'h1E;	//OOnj  Rn, (SP, disp4)
+// parameter[4:0] JX2_FMID_REGSTDI4SP		= 5'h1E;	//OOnj  Rn, (SP, disp4)
 parameter[4:0] JX2_FMID_LDDI4SPREG		= 5'h1F;	//OOnj  (SP, disp4), Rn
+
+parameter[4:0] JX2_FMID_REGSTREG		= JX2_FMID_LDREGREG;
+parameter[4:0] JX2_FMID_REGSTDRREG		= JX2_FMID_LDDRREGREG;
+parameter[4:0] JX2_FMID_REGSTDRPC		= JX2_FMID_LDDRPCREG;
+
+parameter[4:0] JX2_FMID_REGSTDLR		= JX2_FMID_LDDLRREG;
+parameter[4:0] JX2_FMID_REGSTREGDISP	= JX2_FMID_LDREGDISPREG;
+parameter[4:0] JX2_FMID_REGSTDI4SP		= JX2_FMID_LDDI4SPREG;
 
 
 parameter[5:0] JX2_UCMD_NOP			= 6'h00;		//
@@ -366,10 +374,19 @@ parameter[5:0] JX2_UCIX_FPU_FMUL	= 6'h02;		//FPU MUL
 parameter[5:0] JX2_UCIX_FPU_FDIV	= 6'h03;		//FPU DIV
 parameter[5:0] JX2_UCIX_FPU_FMOV	= 6'h04;		//FPU MOV
 
+parameter[5:0] JX2_UCIX_FPU_FADD_G	= 6'h10;		//FPU ADD (GFP)
+parameter[5:0] JX2_UCIX_FPU_FSUB_G	= 6'h11;		//FPU SUB (GFP)
+parameter[5:0] JX2_UCIX_FPU_FMUL_G	= 6'h12;		//FPU MUL (GFP)
+
 parameter[5:0] JX2_UCIX_FPU_CMPNE	= 6'h08;		//ALU Command
 parameter[5:0] JX2_UCIX_FPU_CMPGE	= 6'h0A;		//ALU Command
 parameter[5:0] JX2_UCIX_FPU_CMPEQ	= 6'h0C;		//ALU Command
 parameter[5:0] JX2_UCIX_FPU_CMPGT	= 6'h0E;		//ALU Command
+
+parameter[5:0] JX2_UCIX_FPU_CMPNE_G	= 6'h18;		//ALU Command
+parameter[5:0] JX2_UCIX_FPU_CMPGE_G	= 6'h1A;		//ALU Command
+parameter[5:0] JX2_UCIX_FPU_CMPEQ_G	= 6'h1C;		//ALU Command
+parameter[5:0] JX2_UCIX_FPU_CMPGT_G	= 6'h1E;		//ALU Command
 
 parameter[5:0] JX2_UCIX_FPIX_FNEG	= 6'h00;		//FPU ADD
 parameter[5:0] JX2_UCIX_FPIX_FABS	= 6'h01;		//FPU SUB
@@ -378,10 +395,20 @@ parameter[5:0] JX2_UCIX_FPIX_FSQRT	= 6'h03;		//FPU SUB
 parameter[5:0] JX2_UCIX_FPIX_FRCPA	= 6'h04;		//FPU SUB
 parameter[5:0] JX2_UCIX_FPIX_FSQRTA	= 6'h05;		//FPU SUB
 
-parameter[5:0] JX2_UCIX_FPCX_S		= 6'h00;		//FPU ADD
-parameter[5:0] JX2_UCIX_FPCX_D		= 6'h01;		//FPU ADD
-parameter[5:0] JX2_UCIX_FPCX_I		= 6'h02;		//FPU ADD
-parameter[5:0] JX2_UCIX_FPCX_H		= 6'h03;		//FPU ADD
+parameter[5:0] JX2_UCIX_FPIX_FNEG_G	= 6'h10;		//FPU Negate
+parameter[5:0] JX2_UCIX_FPIX_FABS_G	= 6'h11;		//FPU Absolute
+
+parameter[5:0] JX2_UCIX_FPCX_S		= 6'h00;		//FPU Single
+parameter[5:0] JX2_UCIX_FPCX_D		= 6'h01;		//FPU Double
+parameter[5:0] JX2_UCIX_FPCX_I		= 6'h02;		//FPU Int
+parameter[5:0] JX2_UCIX_FPCX_H		= 6'h03;		//FPU Half
+parameter[5:0] JX2_UCIX_FPCX_S2		= 6'h08;		//FPU Single (High)
+
+parameter[5:0] JX2_UCIX_FPCX_SG		= 6'h10;		//FPU Single
+parameter[5:0] JX2_UCIX_FPCX_DG		= 6'h11;		//FPU Double
+parameter[5:0] JX2_UCIX_FPCX_IG		= 6'h12;		//FPU Int
+parameter[5:0] JX2_UCIX_FPCX_HG		= 6'h13;		//FPU Half
+parameter[5:0] JX2_UCIX_FPCX_S2G	= 6'h18;		//FPU Single (High)
 
 parameter[5:0] JX2_UCIX_IXT_NOP		= 6'h00;		//FPU ADD
 parameter[5:0] JX2_UCIX_IXT_SLEEP	= 6'h01;		//FPU ADD
@@ -404,7 +431,18 @@ parameter[5:0] JX2_UCIX_IXS_LDSRMSK	= 6'h03;		//FPU ADD
 `define def_true
 
 `define jx2_enable_mmu
-// `define jx2_enable_fpu
+`define jx2_enable_fpu
+
+// `define jx2_enable_fprs		//enable dedicated FPU registers.
+
+`ifdef jx2_enable_fpu
+`ifndef jx2_enable_fprs
+`define jx2_enable_gfp			//FPU works via GPRs
+`endif
+`endif
+
+`define jx2_enable_swapn		//Enable SWxP.x ops
+`define jx2_enable_shlln		//Enable SHLLn / SHLRn Ops
 
 `define jx2_enable_ops16
 // `define jx2_enable_ops48

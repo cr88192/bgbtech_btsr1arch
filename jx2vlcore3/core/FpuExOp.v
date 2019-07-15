@@ -4,6 +4,16 @@ FPU Execute Unit
 The FPU is essentially a slave to the main Execute Unit.
 It will recieve copies of some inputs, but it is the main Execute unit which will initiate the action.
 
+opUCmd:
+  [7:6]=CC (AL/NV/CT/CF)
+  [5:0]=Opcode Bits
+
+opUIxt:
+  [7:6]=Resv
+  [  4]=Use GPRs
+  [3:0]=Depends on opcode
+
+
  */
 
 
@@ -75,16 +85,22 @@ assign	regOutSrT	= tRegOutSrT;
 reg[63:0]	tRegValGRn;		//GRn Out
 assign		regValGRn	= tRegValGRn;
 
+wire[31:0]		cnvRegValGRm;
 
+assign			cnvRegValGRm = regIdIxt[3] ?
+	regValGRm[63:32] :
+	regValGRm[31: 0];
 
 wire[63:0]		memDataLd_S2D;		//memory data (Single To Double)
 FpuConvS2D mem_cnv_s2d(memDataLd[31:0], memDataLd_S2D);
 
 wire[63:0]		ctlInDlr_S2D;		//memory data (Single To Double)
-FpuConvS2D dlr_cnv_s2d(regValGRm[31:0], ctlInDlr_S2D);
+// FpuConvS2D dlr_cnv_s2d(regValGRm[31:0], ctlInDlr_S2D);
+FpuConvS2D dlr_cnv_s2d(cnvRegValGRm, ctlInDlr_S2D);
 
 wire[63:0]		ctlInDlr_H2D;		//memory data (Half To Double)
-FpuConvH2D dlr_cnv_h2d(regValGRm[15:0], ctlInDlr_H2D);
+// FpuConvH2D dlr_cnv_h2d(regValGRm[15:0], ctlInDlr_H2D);
+FpuConvH2D dlr_cnv_h2d(cnvRegValGRm[15:0], ctlInDlr_H2D);
 
 wire[31:0]		fstcx_D2S;
 wire[15:0]		fstcx_D2H;
@@ -141,6 +157,7 @@ reg			tOpEnable;
 reg[5:0]	tOpUCmd1;
 
 reg			tExHold;
+reg			tExValidCmd;
 reg[3:0]	tHoldCyc;
 
 always @*
@@ -150,6 +167,7 @@ begin
 	tRegOutOK	= UMEM_OK_READY;
 	tRegValGRn	= UV64_XX;
 	tExHold		= 0;
+	tExValidCmd	= 0;
 	tRegOutSrT	= regInSr[0];
 
 	case(opCmd[7:6])
@@ -162,6 +180,8 @@ begin
 	tOpUCmd1	= tOpEnable ? opCmd[5:0] : JX2_UCMD_NOP;
 
 	case(tOpUCmd1)
+
+`ifdef jx2_enable_fprs
 		JX2_UCMD_FMOV_MR: begin
 			if(regIdIxt[4])
 				tRegOutVal	= memDataLd;
@@ -173,31 +193,37 @@ begin
 		JX2_UCMD_FMOV_RM: begin
 			tRegValGRn	= { UV32_00, fstcx_D2S };
 		end
-		
+`endif
+
 		JX2_UCMD_FPU3: begin
 			tRegOutId	= regIdRn;
+			tExValidCmd	= 1;
 
 			case(regIdIxt[3:0])
 				4'h0: begin
 					if(tHoldCyc != 5)
 						tExHold = 1;
 					tRegOutVal	= tRegAddVal;
+					tRegValGRn	= tRegAddVal;
 				end
 
 				4'h1: begin
 					if(tHoldCyc != 5)
 						tExHold = 1;
 					tRegOutVal	= tRegAddVal;
+					tRegValGRn	= tRegAddVal;
 				end
 
 				4'h2: begin
 					if(tHoldCyc != 5)
 						tExHold = 1;
 					tRegOutVal	= tRegMulVal;
+					tRegValGRn	= tRegMulVal;
 				end
 
 				4'h4: begin
 					tRegOutVal	= regValRs;
+					tRegValGRn	= regValRs;
 				end
 				
 				default: begin
@@ -208,25 +234,31 @@ begin
 		JX2_UCMD_FCMP: begin
 			tExHold		= tCmpExOK[1];
 			tRegOutSrT	= tCmpSrT;
+			tExValidCmd	= 1;
 		end
 
 		JX2_UCMD_FLDCX: begin
 			tRegOutId	= regIdRn;
+			tExValidCmd	= 1;
 
-			case(regIdIxt[3:0])
-				4'h0: begin
+			case(regIdIxt[2:0])
+				3'h0: begin
 					tRegOutVal	= ctlInDlr_S2D;
+					tRegValGRn	= tRegOutVal;
 				end
-				4'h1: begin
+				3'h1: begin
 					tRegOutVal	= regValGRm;
+					tRegValGRn	= tRegOutVal;
 				end
-				4'h2: begin
+				3'h2: begin
 					if(tHoldCyc != 5)
 						tExHold = 1;
 					tRegOutVal	= tRegAddVal;
+					tRegValGRn	= tRegOutVal;
 				end
-				4'h3: begin
+				3'h3: begin
 					tRegOutVal	= ctlInDlr_H2D;
+					tRegValGRn	= tRegOutVal;
 				end
 				
 				default: begin
@@ -236,6 +268,8 @@ begin
 		end
 
 		JX2_UCMD_FSTCX: begin
+			tExValidCmd	= 1;
+
 			case(regIdIxt[3:0])
 				4'h0: begin
 					tRegValGRn	= { UV32_00, fstcx_D2S };
@@ -254,6 +288,10 @@ begin
 				4'h3: begin
 					tRegValGRn	= { UV48_00, fstcx_D2H };
 				end
+
+				4'h8: begin
+					tRegValGRn	= { fstcx_D2S, regValRs[31:0] };
+				end
 				
 				default: begin
 					tRegValGRn	= UV64_XX;
@@ -262,15 +300,21 @@ begin
 		end
 		
 		JX2_UCMD_FIXS: begin
-			case(regIdIxt[5:0])
-				JX2_UCIX_FPIX_FNEG: begin
+			tExValidCmd	= 1;
+
+			case(regIdIxt[3:0])
+//				JX2_UCIX_FPIX_FNEG: begin
+				4'h0: begin
 					tRegOutVal	= { ~regValRs[63], regValRs[62:0] };
 					tRegOutId	= regIdRn;
+					tRegValGRn	= tRegOutVal;
 				end
 
-				JX2_UCIX_FPIX_FABS: begin
+//				JX2_UCIX_FPIX_FABS: begin
+				4'h1: begin
 					tRegOutVal	= { 1'b0, regValRs[62:0] };
 					tRegOutId	= regIdRn;
+					tRegValGRn	= tRegOutVal;
 				end
 				
 				default: begin
@@ -282,7 +326,9 @@ begin
 		end
 	endcase
 
-	tRegOutOK	= tExHold ? UMEM_OK_HOLD : UMEM_OK_OK;
+//	tRegOutOK	= tExHold ? UMEM_OK_HOLD : UMEM_OK_OK;
+	tRegOutOK	= tExHold ? UMEM_OK_HOLD :
+		(tExValidCmd ? UMEM_OK_OK : UMEM_OK_READY);
 
 end
 

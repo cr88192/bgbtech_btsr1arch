@@ -3,6 +3,13 @@ BJX2 Instruction Decoder
 
 Takes a 16/32/48 bit instruction word.
 
+Support for 48-bit encodings is optional.
+
+Ex block is predicated.
+Fx block is unconditional.
+
+Decoder at this stage does not care about WEX vs non-WEX.
+
  */
 
 `include "CoreDefs.v"
@@ -112,33 +119,34 @@ always @*
 begin
 
 	casez(istrWord[15:10])
-		6'b11100z: begin
+		6'b11100z: begin	//E0..E7
 			opIsFx = 1;		opIsFz = 1;
 			opIsFC = 0;		opIsDz = 1;
 			opIsDf = istrWord[10];
 		end
-		6'b111010: begin
+		6'b111010: begin	//E8..EB
 			opIsFx = 1;		opIsFz = 1;
 			opIsFC = 0;		opIsDz = 1;
-			opIsDf = istrWord[9];
+//			opIsDf = istrWord[9];
+			opIsDf = istrWord[8];
 		end
-		6'b111011: begin
+		6'b111011: begin	//EC..EF
 			opIsFx = 1;		opIsFz = 0;
 			opIsFC = 1;		opIsDz = 1;
 			opIsDf = istrWord[9];
 		end
 
-		6'b11110z: begin
+		6'b11110z: begin	//F0..F7
 			opIsFx = 1;		opIsFz = 1;
 			opIsFC = 0;		opIsDz = 0;
 			opIsDf = 0;
 		end
-		6'b110110: begin
+		6'b111110: begin	//F8..FB
 			opIsFx = 1;		opIsFz = 1;
 			opIsFC = 0;		opIsDz = 0;
 			opIsDf = 0;
 		end
-		6'b110111: begin
+		6'b111111: begin	//FC..FF
 			opIsFx = 1;		opIsFz = 0;
 			opIsFC = 1;		opIsDz = 0;
 			opIsDf = 0;

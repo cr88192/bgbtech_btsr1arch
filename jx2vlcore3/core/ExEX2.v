@@ -90,7 +90,7 @@ output[63:0]	regValCn2;		//Destination Value (CR, EX1)
 input[31:0]		regValPc;		//PC Value (Synthesized)
 input[32:0]		regValImm;		//Immediate (Decode)
 
-input[64:0]		regValAluRes;	//Multiplier Result
+input[64:0]		regValAluRes;	//ALU Result
 input[63:0]		regValMulRes;	//Multiplier Result
 input[63:0]		regFpuGRn;		//FPU GPR Result
 	
@@ -181,7 +181,8 @@ begin
 			tRegValRn2	= memDataIn;
 		end
 
-`ifdef jx2_enable_fpu
+// `ifdef jx2_enable_fpu
+`ifdef jx2_enable_fprs
 		JX2_UCMD_FMOV_RM: begin
 			tDoMemOp	= 1;
 		end

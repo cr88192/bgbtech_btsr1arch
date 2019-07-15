@@ -695,7 +695,7 @@ Instruction Space
 ** 1Cnm  CMPEQ	Rm, Rn				//Rn==Rm (Low 32 Bits)
 ** 1Dnm  CMPHI	Rm, Rn				//Unsigned Rn GT Rm (Low 32 Bits)
 ** 1Enm  CMPGT	Rm, Rn				//Signed Rn GT Rm (Low 32 Bits)
-** 1Fnm  CMPGE	Rm, Rn
+** 1Fnm  CMPGE	Rm, Rn				//Signed Rn GE Rm (Low 32 Bits)
 
 * 2zzz
 ** 20dd  BRA	(PC, disp8s)		//Branch, PC=PC+(disp8s*2)
@@ -771,8 +771,8 @@ Instruction Space
 ** 31n1  BSR	(PC, Rn)			//Branch Subroutine given by (PC, Rn)
 ** 31n2  BT		(PC, Rn)			//Branch if True to (PC, Rn)
 ** 31n3  BF		(PC, Rn)			//Branch if False to (PC, Rn)
-** 31n4 ? TST	Rn					//TST Rn, Rn
-** 31n5 ? TSTQ	Rn					//TSTQ Rn, Rn
+** 31n4 / TST	Rn					//TST Rn, Rn
+** 31n5 / TSTQ	Rn					//TSTQ Rn, Rn
 ** 31n6  SHADQ	DLR, Rn				//Barrel Shift, Arithmetic
 ** 31n7  SHLDQ	DLR, Rn				//Barrel Shift, Logical
 ** 31n8  PUSH	Rn
@@ -818,6 +818,7 @@ Instruction Space
 ** 33nE  -
 ** 33nF  -
 
+** (34nz, Partial Drop?)
 ** 34n0  SHLL1	Rn					//Rn=Rn SHL 1
 ** 34n1  SHLL2	Rn					//Rn=Rn SHL 2
 ** 34n2  SHLL4	Rn
@@ -917,14 +918,14 @@ Instruction Space
 ** 5Fnm  XOR		Rm, DLR, Rn
 
 * 6zzz  (Additional Ops)
-** 60dd  -
-** 61dd  -
-** 62dd  -
-** 63dd  -
-** 64dd  -
-** 65dd  -
-** 66dd  -
-** 67dd  -
+** 60nm ? FADD		Rm, Rn			//(GFP) FADD
+** 61nm ? FSUB		Rm, Rn			//(GFP) FSUB
+** 62nm ? FMUL		Rm, Rn			//(GFP) FMUL
+** 63nm ? FLDCF		Rm, Rn			//(GFP) Single->Double
+** 64nm ? FCMPEQ	Rm, Rn			//(GFP) FCMPEQ
+** 65nm ? FCMPGT	Rm, Rn			//(GFP) FCMPGT
+** 66nm ? FSTCF		Rm, Rn			//(GFP) Double->Single
+** 67nz -
 ** 68nj  ADD	#imm4u, Rk
 ** 69nj  ADD	#imm4n, Rk
 ** 6Anj  LDIZ	#imm4u, Rk
