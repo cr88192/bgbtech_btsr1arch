@@ -65,6 +65,10 @@ reg[5:0]	opRegN_ESr;		//S16..S31
 reg[5:0]	opRegN_Xr;		//3znz 1R, R0..R31
 reg[5:0]	opRegN_Yr;		//2znz/6znz 1R, R0..R31
 
+/*
+Fixed registers for certain ops.
+Ro:Rm, may also be used as an immed.
+ */
 reg[5:0]	opRegO_Fix;
 reg[5:0]	opRegN_Fix;
 reg[5:0]	opRegM_Fix;

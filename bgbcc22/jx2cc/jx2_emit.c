@@ -1402,8 +1402,9 @@ int BGBCC_JX2_EmitLoadRegImm64P(
 					shl++;
 				}
 
-				if(	((((imm_fh<<52)>>52)==imm_fh) && !(ctx->is_fixed32   )) &&
-					((((imm_fh<<40)>>40)==imm_fh) && !(ctx->is_fixed32&16)) )
+				if(	((((imm_fh<<52)>>52)==imm_fh) && !(ctx->is_fixed32   )) ||
+					((((imm_fh<<40)>>40)==imm_fh) && !(ctx->is_fixed32&16)) ||
+					(shl>=32))
 				{
 					BGBCC_JX2_EmitLoadDrImm(ctx, imm_fh);
 					opw1=0xF200|((reg&15)<<4);
@@ -1574,8 +1575,9 @@ int BGBCC_JX2_EmitLoadRegImm64P(
 					shl++;
 				}
 
-				if(	((((imm_fh<<52)>>52)==imm_fh) && !(ctx->is_fixed32   )) &&
-					((((imm_fh<<40)>>40)==imm_fh) && !(ctx->is_fixed32&16)) )
+				if(	((((imm_fh<<52)>>52)==imm_fh) && !(ctx->is_fixed32   )) ||
+					((((imm_fh<<40)>>40)==imm_fh) && !(ctx->is_fixed32&16)) ||
+					(shl>=32))
 				{
 					BGBCC_JX2_EmitLoadDrImm(ctx, imm_fh);
 					opw1=0xF200|((reg&15)<<4);

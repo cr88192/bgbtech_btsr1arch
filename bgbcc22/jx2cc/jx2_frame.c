@@ -1629,8 +1629,24 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 		{
 			f=BGBCC_CCXL_GetRegImmDoubleValue(ctx, sreg);
 
+			li=*(u64 *)(&f);
 			*(float *)(&j)=f;
-			if(((*(float *)(&j))==f) && sctx->fpu_gfp)
+			
+			k=1;
+			if(li==0)k=0;
+
+			if(!sctx->is_fixed32 && !sctx->op_is_wex2)
+			{
+				if(((li>>52)<<52)==li)k=0;
+			}
+
+			if(sctx->is_fixed32 || sctx->op_is_wex2)
+			{
+				if(((li>>48)<<48)==li)k=0;
+			}
+
+//			if((li!=0) && ((*(float *)(&j))==f) && sctx->fpu_gfp)
+			if(k && ((*(float *)(&j))==f) && sctx->fpu_gfp)
 			{
 				i=BGBCC_JX2_ConstConvFloatToHalf(j, &usk);
 				if(i>0)
@@ -1643,7 +1659,7 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 				}
 			}
 
-			li=*(u64 *)(&f);
+//			li=*(u64 *)(&f);
 			BGBCC_JX2_EmitLoadRegImm64P(sctx, dreg, li);
 			return(1);
 		}
