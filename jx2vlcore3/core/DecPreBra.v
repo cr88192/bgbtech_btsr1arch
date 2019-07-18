@@ -60,17 +60,23 @@ begin
 		
 	if(tIsBra8)
 	begin
+		$display("PreBra: BRA8, I=%X-%X PC2=%X",
+			istrWord[15:0], istrWord[31:16], tBraDisp8);
 		tPreBraPc	= tBraDisp8;
 		tPreBra		= 1;
 	end
 	if(tIsBra20)
 	begin
+		$display("PreBra: BRA20, I=%X-%X PC2=%X",
+			istrWord[15:0], istrWord[31:16], tBraDisp20);
 		tPreBraPc	= tBraDisp20;
 		tPreBra		= 1;
 	end
 	
 	if(tIsRtsu)
 	begin
+		$display("PreBra: RTSU, I=%X-%X PC2=%X",
+			istrWord[15:0], istrWord[31:16], regValLr);
 		tPreBraPc	= regValLr;
 		tPreBra		= 1;
 	end

@@ -1479,9 +1479,9 @@ begin
 				opUCmd = { opCcty, JX2_UCMD_INVOP };
 				if(!tMsgLatch)
 				begin
-					$display("Jx2DecOpFx: Invalid FMID (32/48)");
-					$display("Jx2DecOpFx: Istr %X-%X-%X",
-						istrWord[15:0], istrWord[31:16], istrWord[47:32]);
+					$display("Jx2DecOpFx: Invalid FMID (32)");
+					$display("Jx2DecOpFx: Istr %X-%X",
+						istrWord[15:0], istrWord[31:16]);
 				end
 				tNextMsgLatch=1;
 			end
@@ -1491,9 +1491,9 @@ begin
 			opUCmd = { opCcty, JX2_UCMD_INVOP };
 			if(!tMsgLatch)
 			begin
-				$display("Jx2DecOpFx: Unhandled FMID (32/48) %X", opFmid);
-				$display("Jx2DecOpFx: Istr %X-%X-%X",
-					istrWord[15:0], istrWord[31:16], istrWord[47:32]);
+				$display("Jx2DecOpFx: Unhandled FMID (32) %X", opFmid);
+				$display("Jx2DecOpFx: Istr %X-%X",
+					istrWord[15:0], istrWord[31:16]);
 			end
 			tNextMsgLatch=1;
 		end

@@ -355,7 +355,7 @@ parameter[5:0] JX2_UCIX_CONV_MOV	= 6'h03;		//MOV
 parameter[5:0] JX2_UCIX_CONV_EXTUB	= 6'h04;		//
 parameter[5:0] JX2_UCIX_CONV_EXTUW	= 6'h05;		//
 parameter[5:0] JX2_UCIX_CONV_EXTUL	= 6'h06;		//
-parameter[5:0] JX2_UCIX_CONV_EXTUQ	= 6'h07;		//MOV
+parameter[5:0] JX2_UCIX_CONV_NOT	= 6'h07;		//NOT
 
 parameter[5:0] JX2_UCIX_MUL3_MUL3S	= 6'h00;		//
 parameter[5:0] JX2_UCIX_MUL3_MUL3U	= 6'h01;		//
@@ -442,7 +442,9 @@ parameter[5:0] JX2_UCIX_IXS_LDSRMSK	= 6'h03;		//FPU ADD
 `endif
 
 `define jx2_enable_swapn		//Enable SWxP.x ops
-`define jx2_enable_shlln		//Enable SHLLn / SHLRn Ops
+// `define jx2_enable_shlln		//Enable SHLLn / SHLRn Ops
+
+`define jx2_shlln_shadq			//Route SHLLn through SHAD.Q
 
 `define jx2_enable_ops16
 // `define jx2_enable_ops48

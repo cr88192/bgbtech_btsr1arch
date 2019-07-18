@@ -519,8 +519,8 @@ The 32-bit encoding is mostly intended for use with WEX2. The high 2 bits of the
 
 === LDISH16 ===
 
-* 30A0       LDISH16	#0x0000, DLR
-* 30B0       LDISH16	#0xFFFF, DLR
+* 30A0     / LDISH16	#0x0000, DLR
+* 30B0     / LDISH16	#0xFFFF, DLR
 * F86n_iiii  LDISH16	#imm16u, Rn
 * F87n_iiii  LDISH16	#imm16u, Rk
 

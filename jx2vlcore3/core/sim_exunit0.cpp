@@ -1,7 +1,7 @@
-#include "VJx2ExUnit.h"
+#include "VExUnit.h"
 #include "verilated.h"
 
-VJx2ExUnit *top = new VJx2ExUnit;
+VExUnit *top = new VExUnit;
 
 vluint64_t main_time = 0;
 
@@ -554,12 +554,16 @@ uint32_t mmio_WriteDWord(BJX2_Context *ctx, uint32_t addr, uint32_t val)
 	return(0);
 }
 
+uint32_t *rombuf;
+uint32_t *srambuf;
 uint32_t *drambuf;
 
 int main(int argc, char **argv, char **env)
 {
 	BJX2_Context *ctx;
+	FILE *fd;
 	uint32_t addr;
+	byte is_rom, is_sram, is_mmio;
 	int opm_latch;
 	int lclk, mhz;
 	int tt_start;
@@ -575,7 +579,17 @@ int main(int argc, char **argv, char **env)
 
 	Verilated::commandArgs(argc, argv);
 
+	rombuf=(uint32_t *)malloc(32768);
+	srambuf=(uint32_t *)malloc(8192);
+
 	drambuf=(uint32_t *)malloc(1<<28);
+
+	fd=fopen("../../tst_jx2boot.bin", "rb");
+	if(fd)
+	{
+		fread(rombuf, 1, 32768, fd);
+		fclose(fd);
+	}
 
 	ctx=(BJX2_Context *)malloc(sizeof(BJX2_Context));
 	jx2_ctx=ctx;
@@ -625,40 +639,89 @@ int main(int argc, char **argv, char **env)
 		{
 			addr=top->memAddr;
 			top->memOK=0;
+			
+			is_rom	= (addr>=0x00000000) && (addr<0x00008000);
+			is_sram	= (addr>=0x0000C000) && (addr<0x0000E000);
+			is_mmio = (addr>=0xA0000000) && (addr<0xC0000000);
 
 			if(top->memOpm&0x08)
-			{			
-				top->memInData[0]=drambuf[((addr>>2)+0)&0x3FFFFFF];
-				top->memInData[1]=drambuf[((addr>>2)+1)&0x3FFFFFF];
-				top->memInData[2]=drambuf[((addr>>2)+2)&0x3FFFFFF];
-				top->memInData[3]=drambuf[((addr>>2)+3)&0x3FFFFFF];
-				top->memOK=1;
+			{
+				if(is_mmio)
+				{
+					top->memDataIn[0]=
+						mmio_ReadDWord(jx2_ctx, addr&0xFFFFFF);
+					top->memOK=1;
+				}
+				if(is_rom)
+				{
+					top->memDataIn[0]=rombuf[((addr>>2)+0)&0x1FFF];
+					top->memDataIn[1]=rombuf[((addr>>2)+1)&0x1FFF];
+					top->memDataIn[2]=rombuf[((addr>>2)+2)&0x1FFF];
+					top->memDataIn[3]=rombuf[((addr>>2)+3)&0x1FFF];
+					top->memOK=1;
+				}else
+					if(is_sram)
+				{
+					top->memDataIn[0]=srambuf[((addr>>2)+0)&0x7FF];
+					top->memDataIn[1]=srambuf[((addr>>2)+1)&0x7FF];
+					top->memDataIn[2]=srambuf[((addr>>2)+2)&0x7FF];
+					top->memDataIn[3]=srambuf[((addr>>2)+3)&0x7FF];
+					top->memOK=1;
+				}else
+				{
+					top->memDataIn[0]=drambuf[((addr>>2)+0)&0x3FFFFFF];
+					top->memDataIn[1]=drambuf[((addr>>2)+1)&0x3FFFFFF];
+					top->memDataIn[2]=drambuf[((addr>>2)+2)&0x3FFFFFF];
+					top->memDataIn[3]=drambuf[((addr>>2)+3)&0x3FFFFFF];
+					top->memOK=1;
+				}
 
-//				printf("DRAM-LD  %08X  %08X %08X %08X %08X\n",
-//					addr,
-//					top->memInData[0], top->memInData[1],
-//					top->memInData[2], top->memInData[3]);
+				printf("DRAM-LD  %08X  %08X %08X %08X %08X\n",
+					addr,
+					top->memDataIn[0], top->memDataIn[1],
+					top->memDataIn[2], top->memDataIn[3]);
 			}
 
 			if(top->memOpm&0x10)
 			{
-				drambuf[((addr>>2)+0)&0x3FFFFFF]=top->memOutData[0];
-				drambuf[((addr>>2)+1)&0x3FFFFFF]=top->memOutData[1];
-				drambuf[((addr>>2)+2)&0x3FFFFFF]=top->memOutData[2];
-				drambuf[((addr>>2)+3)&0x3FFFFFF]=top->memOutData[3];
-				top->memOK=1;
+				if(is_mmio)
+				{
+					mmio_WriteDWord(jx2_ctx, addr&0xFFFFFF,
+						top->memDataOut[0]);
+					top->memOK=1;
+				}else
+					if(is_rom)
+				{
+//					top->memOK=2;
+					top->memOK=1;
+				}else
+					if(is_sram)
+				{
+					srambuf[((addr>>2)+0)&0x7FF]=top->memDataOut[0];
+					srambuf[((addr>>2)+1)&0x7FF]=top->memDataOut[1];
+					srambuf[((addr>>2)+2)&0x7FF]=top->memDataOut[2];
+					srambuf[((addr>>2)+3)&0x7FF]=top->memDataOut[3];
+					top->memOK=1;
+				}else
+				{
+					drambuf[((addr>>2)+0)&0x3FFFFFF]=top->memDataOut[0];
+					drambuf[((addr>>2)+1)&0x3FFFFFF]=top->memDataOut[1];
+					drambuf[((addr>>2)+2)&0x3FFFFFF]=top->memDataOut[2];
+					drambuf[((addr>>2)+3)&0x3FFFFFF]=top->memDataOut[3];
+					top->memOK=1;
+				}
 
-//				printf("DRAM-ST  %08X  %08X %08X %08X %08X\n",
-//					addr,
-//					top->memInData[0], top->memInData[1],
-//					top->memInData[2], top->memInData[3]);
+				printf("DRAM-ST  %08X  %08X %08X %08X %08X\n",
+					addr,
+					top->memDataOut[0], top->memDataOut[1],
+					top->memDataOut[2], top->memDataOut[3]);
 			}
 		}else
 		{
 			top->memOK=0;
 		}
 
-
+#if 0
 //		top->mmioOK = 0;
 		if(top->mmioOpm && !opm_latch)
 		{
@@ -694,6 +757,7 @@ int main(int argc, char **argv, char **env)
 				top->mmioOK = 0;
 			}
 		}
+#endif
 
 		main_time++;
 		

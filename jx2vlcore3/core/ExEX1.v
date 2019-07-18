@@ -202,6 +202,9 @@ reg[4:0]	tDoMemOpm;
 
 reg[5:0]	tOpUCmd1;
 
+reg tMsgLatch;
+reg tNextMsgLatch;
+
 always @*
 begin
 
@@ -226,6 +229,7 @@ begin
 	tDoMemOpm	= UMEM_OPM_READY;
 	tDoMemOp	= 0;
 	tExHold		= 0;
+	tNextMsgLatch	= 0;
 
 
 	tRegSpAdd8 	= { regInSp[63:28], regInSp[27:3]+25'h1, regInSp[2:0]};
@@ -243,6 +247,13 @@ begin
 
 	case(tOpUCmd1)
 		JX2_UCMD_NOP: begin
+		end
+		
+		JX2_UCMD_INVOP: begin
+			if(!tMsgLatch)
+				$display("EX: Invalid Opcode");
+			tNextMsgLatch	= 1;
+			tExHold		= 1;
 		end
 	
 		JX2_UCMD_LEA_MR: begin
@@ -403,14 +414,14 @@ begin
 
 `ifdef jx2_enable_fprs
 		JX2_UCMD_FPU3: begin
-			if(regIdIxt[4])
+			if(opUIxt[4])
 			begin
 				tRegIdRn1		= regIdRm;
 				tRegValRn1		= regFpuGRn;
 			end
 		end
 		JX2_UCMD_FIXS: begin
-			if(regIdIxt[4])
+			if(opUIxt[4])
 			begin
 				tRegIdRn1		= regIdRm;
 				tRegValRn1		= regFpuGRn;
@@ -429,6 +440,35 @@ begin
 
 `endif
 
+		JX2_UCMD_OP_IXT: begin
+			case(opUIxt[5:0])
+				JX2_UCIX_IXT_NOP: begin
+				end
+				JX2_UCIX_IXT_SLEEP: begin
+				end
+				JX2_UCIX_IXT_BREAK: begin
+					if(!tMsgLatch)
+						$display("EX: BREAK");
+					tNextMsgLatch	= 1;
+					tExHold		= 1;
+				end
+				JX2_UCIX_IXT_CLRT: begin
+					tRegOutSr[0]	= 0;
+				end
+				JX2_UCIX_IXT_SETT: begin
+					tRegOutSr[0]	= 1;
+				end
+				JX2_UCIX_IXT_CLRS: begin
+					tRegOutSr[1]	= 0;
+				end
+				JX2_UCIX_IXT_SETS: begin
+					tRegOutSr[1]	= 1;
+				end
+				default: begin
+				end
+			endcase
+		end
+
 		default: begin
 		end
 	
@@ -441,5 +481,9 @@ begin
 
 end
 
+always @(posedge clock)
+begin
+	tMsgLatch	<= tNextMsgLatch;
+end
 
 endmodule

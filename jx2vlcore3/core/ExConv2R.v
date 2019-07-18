@@ -29,6 +29,7 @@ always @*
 begin
 	tRegOutVal	= regValRs;
 	tRegOutSrT	= regInSrT;
+	tRegOutVal	= UV64_XX;
 
 	case(idUIxt[5:0])
 		JX2_UCIX_CONV_EXTSB: tRegOutVal	=
@@ -45,6 +46,8 @@ begin
 			{ UV48_00, regValRs[15:0] };
 		JX2_UCIX_CONV_EXTUL: tRegOutVal	=
 			{ UV32_00, regValRs[31:0] };
+		JX2_UCIX_CONV_NOT:
+			tRegOutVal	= ~regValRs;
 
 		default: begin
 		end

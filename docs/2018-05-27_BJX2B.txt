@@ -726,8 +726,8 @@ Instruction Space
 ** 3070  SETS						//Set SR.S
 ** 3080  NOTT						//SR.T=!SR.T
 ** 3090  NOTS						//SR.S=!SR.S
-** 30A0  LDISH16	#0x0000, DLR	//DLR=(DLR SHL 16)|0x0000
-** 30B0  LDISH16	#0xFFFF, DLR	//DLR=(DLR SHL 16)|0xFFFF
+** 30A0 /? LDISH16	#0x0000, DLR	//DLR=(DLR SHL 16)|0x0000
+** 30B0 /? LDISH16	#0xFFFF, DLR	//DLR=(DLR SHL 16)|0xFFFF
 ** 30C0  RTE						//Return from exception
 ** 30D0 ? DIV0						//Setup SR for divide
 ** 30E0 ? DIV1						//Divide Step (Uses DHR, DLR)
@@ -747,8 +747,8 @@ Instruction Space
 ** 3092 -
 ** 30A2 -
 ** 30B2 -
-** 30C2 ? LDISH32	#0x00000000, DLR	//DLR=(DLR SHL 32)|0x00000000
-** 30D2 ? LDISH32	#0xFFFFFFFF, DLR	//DLR=(DLR SHL 32)|0xFFFFFFFF
+** 30C2 / LDISH32	#0x00000000, DLR	//DLR=(DLR SHL 32)|0x00000000
+** 30D2 / LDISH32	#0xFFFFFFFF, DLR	//DLR=(DLR SHL 32)|0xFFFFFFFF
 ** 30E2  ICFLUSH	//Flush the Instruction Cache
 ** 30F2  TLBFLUSH	//Flush the TLB and L1 Caches
 
@@ -805,13 +805,13 @@ Instruction Space
 ** 33n1  NEG	Rn					//Rn=(~Rn)+1
 ** 33n2  NEGC	Rn					//Rn=(~Rn)+(~SR.T)
 ** 33n3  MOVNT	Rn					//Rn=!SR.T
-** 33n4  ROTL	Rn					//Rn=(Rn SHL 1)|(Rn SHR 63)
-** 33n5  ROTR	Rn					//Rn=(Rn SHR 1)|(Rn SHL 63)
-** 33n6  ROTCL	Rn					//Rn'=(Rn SHL 1)|SR.T; SR.T=Rn.63
-** 33n7  ROTCR	Rn
-** 33n8  SHLL	Rn					//Rn'=(Rn SHL 1); SR.T=Rn.63
-** 33n9  SHLR	Rn					//Rn'=(Rn SHR 1); SR.T=Rn.0
-** 33nA  SHAR	Rn					//Rn'=(Rn SAR 1); SR.T=Rn.0
+** 33n4 ? ROTL	Rn					//Rn=(Rn SHL 1)|(Rn SHR 63)
+** 33n5 ? ROTR	Rn					//Rn=(Rn SHR 1)|(Rn SHL 63)
+** 33n6 ? ROTCL	Rn					//Rn'=(Rn SHL 1)|SR.T; SR.T=Rn.63
+** 33n7 ? ROTCR	Rn
+** 33n8 ? SHLL	Rn					//Rn'=(Rn SHL 1); SR.T=Rn.63
+** 33n9 ? SHLR	Rn					//Rn'=(Rn SHR 1); SR.T=Rn.0
+** 33nA ? SHAR	Rn					//Rn'=(Rn SAR 1); SR.T=Rn.0
 ** 33nB  -
 ** 33nC  NEG	Rn, DLR				//DLR=(~Rn)+1
 ** 33nD  -

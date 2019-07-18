@@ -719,6 +719,19 @@ int BGBCC_JX2_EmitLoadDrImm(
 	}
 #endif
 
+#if 1
+	if(!ctx->is_fixed32 && !ctx->op_is_wex2)
+	{
+		if((imm&0xFFFFFFFFULL)==0x00000000ULL)
+		{
+			opw1=0x3600;
+			BGBCC_JX2_EmitLoadDrImm(ctx, imm>>32);
+			BGBCC_JX2_EmitWord(ctx, opw1);
+			return(1);
+		}
+	}
+#endif
+
 #if 0
 	if((imm&0xFFFFFFFFULL)==0x00000000ULL)
 	{
@@ -754,18 +767,20 @@ int BGBCC_JX2_EmitLoadDrImm(
 		return(1);
 	}
 #endif
-	
+
 #if 1
 	if(!ctx->is_fixed32 && !ctx->op_is_wex2)
 	{
 		if((imm&0xFFFF)==0x0000)
 		{
-			opw1=0x30A0;
+//			opw1=0x30A0;
+			opw1=0x340C;
 			BGBCC_JX2_EmitLoadDrImm(ctx, imm>>16);
 			BGBCC_JX2_EmitWord(ctx, opw1);
 			return(1);
 		}
 
+#if 0
 		if((imm&0xFFFF)==0xFFFF)
 		{
 			opw1=0x30B0;
@@ -773,6 +788,7 @@ int BGBCC_JX2_EmitLoadDrImm(
 			BGBCC_JX2_EmitWord(ctx, opw1);
 			return(1);
 		}
+#endif
 	}
 #endif
 
