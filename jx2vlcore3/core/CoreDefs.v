@@ -452,4 +452,6 @@ parameter[5:0] JX2_UCIX_IXS_LDSRMSK	= 6'h03;		//FPU ADD
 `define jx2_reduce_l1sz
 `define jx2_reduce_l2sz
 
+// `define jx2_debug_l1ds
+
 `endif

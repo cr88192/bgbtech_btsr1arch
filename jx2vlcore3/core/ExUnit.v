@@ -60,7 +60,7 @@ reg[31:0]		ifLastPc;
 wire[63:0]		ifIstrWord;	//source instruction word
 wire[1:0]		ifOutPcOK;
 wire[1:0]		ifOutPcStep;
-wire[1:0]		ifLastPcStep;
+reg[1:0]		ifLastPcStep;
 
 reg [31:0]		dcInAddr;
 reg [ 4:0]		dcInOpm;
@@ -550,16 +550,19 @@ begin
 	nxtBraFlushMask	= { 1'b0, opBraFlushMask[7:1] };
 	if(({1'b1, ex1RegIdCn1} == JX2_CR_PC) && !ex1PreBra)
 	begin
+		$display("EX1 BRA %X", ex1RegValCn1);
 		tValNextPc = ex1RegValCn1[31:0];
 		nxtBraFlushMask = 8'h07;
 	end
 	if(({1'b1, ex2RegIdCn2} == JX2_CR_PC) && !ex2PreBra)
 	begin
+		$display("EX2 BRA %X", ex2RegValCn2);
 		tValNextPc = ex2RegValCn2[31:0];
 		nxtBraFlushMask = 8'h07;
 	end
 	if(id1PreBra)
 	begin
+		$display("PreBra %X", id1PreBraPc);
 		tValNextPc = id1PreBraPc;
 		nxtBraFlushMask[2] = 1;
 	end
@@ -760,6 +763,7 @@ begin
 		ex2OpUIxt		<= ex1OpUIxt;
 		ex2PreBra		<= ex1PreBra;
 		ex2IstrWord		<= ex1IstrWord;
+		ex2ValBPc		<= ex1ValBPc;
 
 		ex2RegIdRs		<= ex1RegIdRs;
 		ex2RegIdRt		<= ex1RegIdRt;

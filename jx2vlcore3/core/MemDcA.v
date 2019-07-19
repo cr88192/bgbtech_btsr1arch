@@ -263,8 +263,10 @@ begin
 		2'b11: tBlkData = { tBlkData2A[63:0], tBlkData2B[127:64] };
 	endcase
 
+`ifdef jx2_debug_l1ds
 	if(tReqOpmNz)
 		$display("Addr=%X tBlkData=%X", tInAddr, tBlkData);
+`endif
 
 // `ifdef def_true
 `ifndef def_true
@@ -291,8 +293,10 @@ begin
 	endcase
 `endif
 
+`ifdef jx2_debug_l1ds
 	if(tReqOpmNz)
 		$display("tInByteIx=%X tBlkExData=%X", tInByteIx, tBlkExData);
+`endif
 	
 	case(tInOpm[2:0])
 		3'b000: tRegOutVal = {
@@ -334,17 +338,21 @@ begin
 		
 	if(tHold)
 	begin
+`ifdef jx2_debug_l1ds
 		$display("L1D$ Hold, Miss=%d(%d,%d) MiBlk=%d",
 			tMiss, tMissA, tMissB, tDoMiBlk);
 		if(tMissA)
 			$display("L1D$ MissA, Blk=%X, Req=%X", tBlkAddrA, tReqAddrA);
 		if(tMissB)
 			$display("L1D$ MissB, Blk=%X, Req=%X", tBlkAddrB, tReqAddrB);
+`endif
 	end
 
 	if(tDoMiBlk)
 	begin
+`ifdef jx2_debug_l1ds
 		$display("L1D$ Update Missed Block");
+`endif
 
 		tStBlkDataA = tMiBlkDataA;
 		tStBlkDataB = tMiBlkDataB;
@@ -362,7 +370,9 @@ begin
 		if(tInOpm[4] && !tReqIsMmio)
 	begin
 
+`ifdef jx2_debug_l1ds
 		$display("L1D$ Do Write Block A=%X D=%X", tInAddr, tBlkDataW);
+`endif
 
 		tStBlkAddrA	= tReqAddrA;
 		tStBlkAddrB	= tReqAddrB;
@@ -399,7 +409,9 @@ begin
 
 	if(tReqIsMmio)
 	begin
+`ifdef jx2_debug_l1ds
 		$display("MMIO");
+`endif
 	
 		if(!tMmioDone || tMmioLatch)
 			tHold = 1;
@@ -450,10 +462,12 @@ begin
 
 	if(tDoStBlkA)
 	begin
+`ifdef jx2_debug_l1ds
 		if(tStBlkAddrA[0])
 			$display("L1D$, DoStBlkA: Even/Odd Mismatch");
 
 		$display("L1D$, DoStBlkA(%X), Data=%X", tStBlkIxA, tStBlkDataA);
+`endif
 	
 		dcCaMemA [tStBlkIxA]	<= tStBlkDataA;
 		dcCaAddrA[tStBlkIxA]	<= { tStBlkFlagA, tStBlkAddrA };
@@ -462,10 +476,12 @@ begin
 
 	if(tDoStBlkB)
 	begin
+`ifdef jx2_debug_l1ds
 		if(!tStBlkAddrB[0])
 			$display("L1D$, DoStBlkB: Even/Odd Mismatch");
 
 		$display("L1D$, DoStBlkB(%X), Data=%X", tStBlkIxB, tStBlkDataB);
+`endif
 
 		dcCaMemB [tStBlkIxB]	<= tStBlkDataB;
 		dcCaAddrB[tStBlkIxB]	<= { tStBlkFlagB, tStBlkAddrB };
@@ -478,15 +494,19 @@ begin
 	if(((tMiss && tMissA) || tMemLatchA) && !tMemLatchB && !tMmioLatch)
 	begin
 
+`ifdef jx2_debug_l1ds
 		$display("L1D$ MissA, Miss=%d Latch=%d OK=%d Dn=%d Wb=%d",
 			tMissA, tMemLatchA, memOK, tMemLatchDnA, tMemLatchWbA);
+`endif
 
 		if(tMemLatchDnA)
 		begin
 			tMemOpm	<= UMEM_OPM_READY;
 			if(memOK==UMEM_OK_READY)
 			begin
+`ifdef jx2_debug_l1ds
 				$display("L1D$: MissA Done");
+`endif
 
 				tMemLatchA		<= 0;
 				tMemLatchDnA	<= 0;
@@ -501,7 +521,9 @@ begin
 			
 			if(!tBlkDirtyA || tMemLatchWdA)
 			begin
+`ifdef jx2_debug_l1ds
 				$display("L1D$: MissA Dn memDataIn=%X", memDataIn);
+`endif
 			
 				tMemLatchDnA	<= 1;
 				tMiBlkDataA		<= memDataIn;
@@ -526,8 +548,10 @@ begin
 		begin
 			if(tBlkDirtyA && !tMemLatchWbA)
 			begin
+`ifdef jx2_debug_l1ds
 				$display("L1D$ MissA ReadySt");
 				$display("L1D$ MissA, Write=%X", tBlkDataA);
+`endif
 			
 				tMemLatchA		<= 1;
 				tMemOpm			<= UMEM_OPM_WR_TILE;
@@ -537,7 +561,9 @@ begin
 			end
 			else
 			begin
+`ifdef jx2_debug_l1ds
 				$display("L1D$ MissA ReadyLd");
+`endif
 
 				tMemLatchA		<= 1;
 				tMemOpm			<= UMEM_OPM_RD_TILE;
@@ -556,14 +582,18 @@ begin
 		if(((tMiss && tMissB) || tMemLatchB) && !tMemLatchA && !tMmioLatch)
 	begin
 
+`ifdef jx2_debug_l1ds
 		$display("L1D$ MissB, Miss=%d Latch=%d", tMissB, tMemLatchB);
+`endif
 
 		if(tMemLatchDnB)
 		begin
 			tMemOpm	<= UMEM_OPM_READY;
 			if(memOK==UMEM_OK_READY)
 			begin
+`ifdef jx2_debug_l1ds
 				$display("L1D$: MissB Done");
+`endif
 
 				tMemLatchB		<= 0;
 				tMemLatchDnB	<= 0;
@@ -578,7 +608,9 @@ begin
 
 			if(!tBlkDirtyB || tMemLatchWdB)
 			begin
+`ifdef jx2_debug_l1ds
 				$display("L1D$: MissB Dn memDataIn=%X", memDataIn);
+`endif
 
 				tMemLatchDnB	<= 1;
 				tMiBlkDataB		<= memDataIn;
@@ -603,8 +635,10 @@ begin
 		begin
 			if(tBlkDirtyB && !tMemLatchWbB)
 			begin
+`ifdef jx2_debug_l1ds
 				$display("L1D$ MissB ReadySt");
 				$display("L1D$ MissB, Write=%X", tBlkDataB);
+`endif
 
 				tMemLatchB		<= 1;
 				tMemOpm			<= UMEM_OPM_WR_TILE;
@@ -614,7 +648,9 @@ begin
 			end
 			else
 			begin
+`ifdef jx2_debug_l1ds
 				$display("L1D$ MissB ReadyLd");
+`endif
 
 				tMemLatchB		<= 1;
 				tMemOpm			<= UMEM_OPM_RD_TILE;
@@ -630,10 +666,12 @@ begin
 
 	end else if(!tReqIsMmio && (tInOpm[4:3]!=0))
 	begin
+`ifdef jx2_debug_l1ds
 		if(tMissA || tMissB)
 			$display("L1D$ Sticky Miss, %d %d", tMissA, tMissB);
 		if(tMemLatchA || tMemLatchB)
 			$display("L1D$ Sticky Latch, %d %d", tMemLatchA, tMemLatchB);
+`endif
 
 		tMemLatchDnA	<= 0;
 		tMemLatchWbA	<= 0;
