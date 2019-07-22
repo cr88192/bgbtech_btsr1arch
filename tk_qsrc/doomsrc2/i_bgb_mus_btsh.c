@@ -98,7 +98,8 @@ int SMus_Init()
 
 	irq_addTimerIrq(smus_timer_irq);
 
-	smus_regs=(u32 *)0xA0081800;
+//	smus_regs=(u32 *)0xA0081800;
+	smus_regs=(u32 *)0xF0081800;
 	
 	for(i=0; i<128; i++)
 	{

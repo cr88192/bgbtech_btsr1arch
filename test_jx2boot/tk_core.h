@@ -32,10 +32,15 @@ typedef volatile u32 vol_u32;
 #define NOMMU_BASE	0xC0000000
 
 
-#define GPIO_BASE	0xA000E100
-#define SPI_BASE	0xA000E030
-#define UART_BASE	0xA000E010
-#define AIC_BASE	0xA000E200
+// #define GPIO_BASE	0xA000E100
+// #define SPI_BASE	0xA000E030
+// #define UART_BASE	0xA000E010
+// #define AIC_BASE	0xA000E200
+
+#define GPIO_BASE	0xF000E100
+#define SPI_BASE	0xF000E030
+#define UART_BASE	0xF000E010
+#define AIC_BASE	0xF000E200
 
 #define UART_RX		(UART_BASE+0x00)
 #define UART_TX		(UART_BASE+0x04)

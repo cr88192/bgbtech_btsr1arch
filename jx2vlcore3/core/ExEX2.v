@@ -49,6 +49,7 @@ module ExEX2(
 	regValAluRes,	//ALU Result
 	regValMulRes,	//Multiplier Result
 	regFpuGRn,		//FPU GPR Result
+	opBraFlush,
 	
 	regOutDlr,	regInDlr,
 	regOutDhr,	regInDhr,
@@ -90,10 +91,11 @@ output[63:0]	regValCn2;		//Destination Value (CR, EX1)
 input[31:0]		regValPc;		//PC Value (Synthesized)
 input[32:0]		regValImm;		//Immediate (Decode)
 
-input[64:0]		regValAluRes;	//ALU Result
+input[65:0]		regValAluRes;	//ALU Result
 input[63:0]		regValMulRes;	//Multiplier Result
 input[63:0]		regFpuGRn;		//FPU GPR Result
-	
+input			opBraFlush;
+
 output[63:0]	regOutDlr;
 input[63:0]		regInDlr;
 output[63:0]	regOutDhr;
@@ -158,11 +160,12 @@ begin
 	tExHold		= 0;
 
 //	case(opUIxt[7:6])
-	case(opUCmd[7:6])
-		2'b00: 	tOpEnable = 1;
-		2'b01: 	tOpEnable = 0;
-		2'b10: 	tOpEnable = regInSr[0];
-		2'b11: 	tOpEnable = !regInSr[0];
+	casez( { opBraFlush, opUCmd[7:6] } )
+		3'b000: 	tOpEnable = 1;
+		3'b001: 	tOpEnable = 0;
+		3'b010: 	tOpEnable = regInSr[0];
+		3'b011: 	tOpEnable = !regInSr[0];
+		3'b1zz: 	tOpEnable = 0;
 	endcase
 	
 	tOpUCmd1	= tOpEnable ? opUCmd[5:0] : JX2_UCMD_NOP;
@@ -203,11 +206,12 @@ begin
 		JX2_UCMD_ALU3: begin
 			tRegIdRn2		= regIdRm;			//
 			tRegValRn2		= regValAluRes[63:0];		//
-			tRegOutSr[0]	= regValAluRes[64];
+			tRegOutSr[1:0]	= regValAluRes[65:64];
 		end
 
 		JX2_UCMD_ALUCMP: begin
-			tRegOutSr[0]	= regValAluRes[64];
+//			tRegOutSr[0]	= regValAluRes[64];
+			tRegOutSr[1:0]	= regValAluRes[65:64];
 		end
 	
 		JX2_UCMD_BRA: begin

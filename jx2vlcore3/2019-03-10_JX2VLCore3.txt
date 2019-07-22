@@ -1,7 +1,8 @@
 Attempt more fundamental redesigns to reduce costs and hopefully improve timing.
 
 Pipeline:
-  IF ID1 ID2 EX MA WB
+  IF ID1 ID2 EX  MA  WB  (MemOp)
+  IF ID1 ID2 EX1 EX2 WB  (General)
 
 Will use a 32-bit address space, with the high 32 bits of addresses being ignored.
 Memory access will use fixed register ports for AGU.

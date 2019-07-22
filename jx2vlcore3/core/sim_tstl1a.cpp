@@ -318,7 +318,7 @@ int main(int argc, char **argv, char **env)
 		{
 			stp=top->icOutPcStep;
 		
-			v=(top->icOutPcVal)&65535;;
+			v=(top->icOutPcVal)&65535;
 			
 			v1=GetRomWord(n1);
 			
@@ -352,7 +352,8 @@ int main(int argc, char **argv, char **env)
 			n++;
 		}
 		
-		if((n*2)>=32752)
+//		if((n*2)>=32752)
+		if((n*8)>=32752)
 			break;
 
 	}

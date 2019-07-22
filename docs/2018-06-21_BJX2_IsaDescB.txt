@@ -365,6 +365,14 @@ This updates SR.T based on the result of the comparison.
 The contents of SR.S, and SR.PQRO are undefined following this operation.
 
 
+=== CSELT ===
+
+* F0nm_5go0  CSELT		Rm, Ro, Rn
+
+Select between Rm or Ro based on the value of SR.T, storing the result in Rn.
+If SR.T is set, the value from Rm is used, otherwise the value from Ro is used.
+
+			
 === EXTS.B ===
 
 * 32n6       EXTS.B	Rn
@@ -1433,6 +1441,10 @@ This instruction is Optional.
 
 These instructions will be considered part of the GPR SIMD Vector Extension (GSV). These instruction forms will be considered optional, and exist mostly to add rudimentary SIMD support to BJX2.
 
+The GSVF variant will also support packed half and single precision floating-point values, whereas GSV by itself will only support packed Word and DWord operations.
+
+Packed byte operations will not be directly supported by GSV.
+
 
 === MOV.xD (GSV) ===
 
@@ -1448,8 +1460,8 @@ Partial Register Move. These MOV part of the bits from Rm into Rn, while leaving
 
 * F0nm_1g0A  PADD.W		Rm, Rn		//(GSV) Packed ADD Word
 * F0nm_1G0A  PADD.L		Rm, Rn		//(GSV) Packed ADD DWord
-* F0nm_1g5A  PADD.H		Rm, Rn		//(GSV) Packed ADD Half
-* F0nm_1G5A  PADD.F		Rm, Rn		//(GSV) Packed ADD Float
+* F0nm_1g5A  PADD.H		Rm, Rn		//(GSVF) Packed ADD Half
+* F0nm_1G5A  PADD.F		Rm, Rn		//(GSVF) Packed ADD Float
 
 Add Packed Elements.
 
@@ -1482,10 +1494,37 @@ With Packed DWord and Float32, The T and S bits will be updated based on the com
 Note that bits other than those defined for the comparison will be undefined following the operation. So, If Q=0 then S and T are undefined, and if Q=1 then P/Q/R/O are undefined.
 
 
-=== PMUL.H (GSV) ===
+=== PCSELT.L (GSV) ===
 
-* F0nm_1g7A  PMUL.H		Rm, Rn				//(GSV) Packed MUL Half
-* F0nm_1G7A  PMUL.F		Rm, Rn				//(GSV) Packed MUL Float
+* F0nm_5Go0  PCSELT.L	Rm, Ro, Rn
+
+Select elements between Rm or Ro based on the value of SR.S and SR.T, storing the result in Rn.
+If SR.T is set, the low 32 bits from Rm is used, otherwise the low 32 bits from Ro are used. If SR.S is set, the high 32 bits from Rm is used, otherwise the high 32 bits from Ro are used.
+
+
+=== PLDxxx.x (GSV) ===
+
+* F0nm_1g0B  PLDSBL.W		Rm, Rn				//Packed Load SB->W (Low)
+* F0nm_1G0B  PLDUBL.W		Rm, Rn				//Packed Load UB->W (Low)
+* F0nm_1g1B  PLDSWL.L		Rm, Rn				//Packed Load SW->L (Low)
+* F0nm_1G1B  PLDUWL.L		Rm, Rn				//Packed Load UW->L (Low)
+* F0nm_1g2B  PLDBX.W		Rm, Rn				//Packed Load B->W (Dup)
+* F0nm_1G2B  PLDBH.W		Rm, Rn				//Packed Load B->W (High)
+* F0nm_1g3B  PLDWX.L		Rm, Rn				//Packed Load W->L (Dup)
+* F0nm_1G3B  PLDWH.L		Rm, Rn				//Packed Load W->L (High)
+
+Packed Widening Conversion.
+Low operations will copy the source element into the low bits of the destination element, with Sign or Zero extension to fill the high bits.
+
+High operations will copy the source element to the high bits of the destination, padding the low bits with zeroes.
+
+Dup operations will duplicate the source element in both the low and high bits.
+
+			
+=== PMUL.H (GSVF) ===
+
+* F0nm_1g7A  PMUL.H		Rm, Rn				//(GSVF) Packed MUL Half
+* F0nm_1G7A  PMUL.F		Rm, Rn				//(GSVF) Packed MUL Float
 
 Multiply the packed Half-Float values in Rm and Rn, storing the result in Rn.
 
@@ -1499,12 +1538,33 @@ The DLR register is updated with the low words of each packed multiply.
 The DHR register is updated with the high words of each packed multiply.
 
 
+=== PSTxxx.x (GSV) ===
+
+* F0nm_1g4B  PSTSBL.W		Rm, Rn				//Packed Store W->SB (Low-Sat)
+* F0nm_1G4B  PSTUBL.W		Rm, Rn				//Packed Store W->UB (Low-Sat)
+* F0nm_1g5B  PSTSWL.L		Rm, Rn				//Packed Store L->SW (Low-Sat)
+* F0nm_1G5B  PSTUWL.L		Rm, Rn				//Packed Store L->UW (Low-Sat)
+* F0nm_1g6B  PSTBL.W		Rm, Rn				//Packed Store W->B (Low)
+* F0nm_1G6B  PSTBH.W		Rm, Rn				//Packed Store W->B (High)
+* F0nm_1g7B  PSTWL.L		Rm, Rn				//Packed Store L->W (Low)
+* F0nm_1G7B  PSTWH.L		Rm, Rn				//Packed Store L->W (High)
+
+Packed narrowing conversion.
+
+Low-sat variants will perform signed or unsigned saturation while narrowing, clamping the value in the low-order bits of the source element to the range for the given type.
+
+Low operations will use the low order bits of the source element as the destination element. These bits will be copied unmodified.
+
+High operations will use the high order bits of the source element as the destination element. These bits will be copied unmodified.
+
+
+
 === PSUB.x (GSV) ===
 
 * F0nm_1g1A  PSUB.W		Rm, Rn		//(GSV) Packed SUB Word
 * F0nm_1G1A  PSUB.L		Rm, Rn		//(GSV) Packed SUB DWord
-* F0nm_1g6A  PSUB.H		Rm, Rn		//(GSV) Packed SUB Half
-* F0nm_1G6A  PSUB.F		Rm, Rn		//(GSV) Packed SUB Float
+* F0nm_1g6A  PSUB.H		Rm, Rn		//(GSVF) Packed SUB Half
+* F0nm_1G6A  PSUB.F		Rm, Rn		//(GSVF) Packed SUB Float
 
 Subtract Packed Elements.
 

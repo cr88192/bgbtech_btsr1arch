@@ -233,6 +233,8 @@ begin
 
 		JX2_UCMD_FCMP: begin
 			tExHold		= tCmpExOK[1];
+			if(tHoldCyc != 1)
+				tExHold = 1;
 			tRegOutSrT	= tCmpSrT;
 			tExValidCmd	= 1;
 		end

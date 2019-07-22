@@ -541,7 +541,8 @@ u32 TK_GetTimeMs(void)
 	u64 us;
 	int ms;
 
-	sreg=(int *)0xA000E000;
+//	sreg=(int *)0xA000E000;
+	sreg=(int *)0xF000E000;
 	us_lo=sreg[0];
 	us_hi=sreg[1];
 	us=(((u64)us_hi)<<32)|us_lo;
@@ -560,7 +561,8 @@ s64 TK_GetTimeUs(void)
 	u64 us;
 	int ms;
 
-	sreg=(int *)0xA000E000;
+//	sreg=(int *)0xA000E000;
+	sreg=(int *)0xF000E000;
 	us_lo=sreg[0];
 	us_hi=sreg[1];
 	us=(((u64)us_hi)<<32)|us_lo;
@@ -580,7 +582,8 @@ s64 TK_GetTimeCycles(void)
 	u64 us;
 	int ms;
 
-	sreg=(int *)0xA000E340;
+//	sreg=(int *)0xA000E340;
+	sreg=(int *)0xF000E340;
 	us_lo=sreg[0];
 	us_hi=sreg[1];
 	us=(((u64)us_hi)<<32)|us_lo;

@@ -131,7 +131,6 @@ reg				tMissA;
 reg				tMissB;
 reg				tMiss;
 reg				tHold;
-reg				tHoldB;
 reg				tReqOpmNz;
 reg				tLstHold;
 
@@ -172,9 +171,6 @@ reg[127:0]		tBlkDataW;
 reg[ 63:0]		tBlkExData;
 reg[ 63:0]		tBlkInData;
 
-reg[127:0]		tBlkData1;
-reg[ 63:0]		tBlkInData1;
-
 reg[ 95:0]		tBlkExData1;
 
 
@@ -188,10 +184,6 @@ reg		tMemLatchWdA;
 reg		tMemLatchWdB;
 reg		tMmioLatch;
 reg		tMmioDone;
-
-reg			tHoldWrCyc;
-reg[2:0]	tHoldCyc;
-reg[2:0]	tNextHoldCyc;
 
 
 
@@ -222,16 +214,14 @@ begin
 
 	/* Stage B */
 
-	tStBlkDataA		= UV128_XX;
-	tStBlkDataB		= UV128_XX;
-	tStBlkAddrA		= UV28_XX;
-	tStBlkAddrB		= UV28_XX;
-	tStBlkFlagA		= 0;
-	tStBlkFlagB		= 0;
-	tDoStBlkA		= 0;
-	tDoStBlkB		= 0;
-	tHoldWrCyc		= 0;
-	tNextHoldCyc	= 0;
+	tStBlkDataA = UV128_XX;
+	tStBlkDataB = UV128_XX;
+	tStBlkAddrA	= UV28_XX;
+	tStBlkAddrB	= UV28_XX;
+	tStBlkFlagA = 0;
+	tStBlkFlagB = 0;
+	tDoStBlkA	= 0;
+	tDoStBlkB	= 0;
 
 `ifdef jx2_reduce_l1sz
 	tStBlkIxA	= UV4_XX;
@@ -332,21 +322,16 @@ begin
 		2'b10: tBlkInData = { tBlkExData [63:32], tDataIn[31:0] };
 		2'b11: tBlkInData = {                     tDataIn[63:0] };
 	endcase
-
-	/* Stage C */
-
-//	tBlkData1		= tBlkData;
-//	tBlkInData1		= tBlkInData;
-
+	
 	case(tInByteIx)
-		3'b000: tBlkDataW = { tBlkData1[127: 64], tBlkInData1                 };
-		3'b001: tBlkDataW = { tBlkData1[127: 72], tBlkInData1, tBlkData1[ 7:0] };
-		3'b010: tBlkDataW = { tBlkData1[127: 80], tBlkInData1, tBlkData1[15:0] };
-		3'b011: tBlkDataW = { tBlkData1[127: 88], tBlkInData1, tBlkData1[23:0] };
-		3'b100: tBlkDataW = { tBlkData1[127: 96], tBlkInData1, tBlkData1[31:0] };
-		3'b101: tBlkDataW = { tBlkData1[127:104], tBlkInData1, tBlkData1[39:0] };
-		3'b110: tBlkDataW = { tBlkData1[127:112], tBlkInData1, tBlkData1[47:0] };
-		3'b111: tBlkDataW = { tBlkData1[127:120], tBlkInData1, tBlkData1[55:0] };
+		3'b000: tBlkDataW = { tBlkData[127: 64], tBlkInData                 };
+		3'b001: tBlkDataW = { tBlkData[127: 72], tBlkInData, tBlkData[ 7:0] };
+		3'b010: tBlkDataW = { tBlkData[127: 80], tBlkInData, tBlkData[15:0] };
+		3'b011: tBlkDataW = { tBlkData[127: 88], tBlkInData, tBlkData[23:0] };
+		3'b100: tBlkDataW = { tBlkData[127: 96], tBlkInData, tBlkData[31:0] };
+		3'b101: tBlkDataW = { tBlkData[127:104], tBlkInData, tBlkData[39:0] };
+		3'b110: tBlkDataW = { tBlkData[127:112], tBlkInData, tBlkData[47:0] };
+		3'b111: tBlkDataW = { tBlkData[127:120], tBlkInData, tBlkData[55:0] };
 	endcase
 
 	if(tReqOpmNz && !tReqIsMmio)
@@ -398,40 +383,27 @@ begin
 		tStBlkIxB	= tReqIxB;
 		tDoStBlkA	= 0;
 		tDoStBlkB	= 0;
-		
-		if(tHoldCyc!=1)
-		begin
-			tNextHoldCyc = tHoldCyc + 1;
-			tHoldWrCyc	= 1;
-			tHold		= 1;
-		end
 
 		case(tInAddr[4:3])
 			2'b00: begin
 				tStBlkDataA = tBlkDataW;
-//				tDoStBlkA	= 1;
-				tDoStBlkA	= !tHoldWrCyc;
+				tDoStBlkA	= 1;
 			end
 			2'b01: begin
 				tStBlkDataA = { tBlkDataW[ 63: 0], tBlkData2A[ 63: 0] };
 				tStBlkDataB = { tBlkData2B[127:64], tBlkDataW[127:64] };
-//				tDoStBlkA	= 1;
-//				tDoStBlkB	= 1;
-				tDoStBlkA	= !tHoldWrCyc;
-				tDoStBlkB	= !tHoldWrCyc;
+				tDoStBlkA	= 1;
+				tDoStBlkB	= 1;
 			end
 			2'b10: begin
 				tStBlkDataB = tBlkDataW;
-//				tDoStBlkB	= 1;
-				tDoStBlkB	= !tHoldWrCyc;
+				tDoStBlkB	= 1;
 			end
 			2'b11: begin
 				tStBlkDataB = { tBlkDataW[ 63: 0], tBlkData2B[ 63: 0] };
 				tStBlkDataA = { tBlkData2A[127:64], tBlkDataW[127:64] };
-//				tDoStBlkA	= 1;
-//				tDoStBlkB	= 1;
-				tDoStBlkA	= !tHoldWrCyc;
-				tDoStBlkB	= !tHoldWrCyc;
+				tDoStBlkA	= 1;
+				tDoStBlkB	= 1;
 			end
 		endcase
 	end
@@ -446,11 +418,7 @@ begin
 			tHold = 1;
 	end
 
-//	tHoldB	= tHold || tHoldWrCyc;
-	tHoldB	= tHold;
-
-//	tRegOutOK = tHold ? UMEM_OK_HOLD :
-	tRegOutOK = tHoldB ? UMEM_OK_HOLD :
+	tRegOutOK = tHold ? UMEM_OK_HOLD :
 		(tReqOpmNz ? UMEM_OK_OK : UMEM_OK_READY);
 
 	tNx2IxA		= tLstHold ? tReqIxA : tNxtIxA;
@@ -463,10 +431,8 @@ begin
 	/* Stage A */
 
 	tLstHold	<= tHold;
-	tHoldCyc	<= tNextHoldCyc;
 
-//	if(!tHold)
-	if(!tHoldB)
+	if(!tHold)
 	begin
 		tInAddr		<= regInAddr;
 		tInOpm		<= regInOpm;
@@ -494,9 +460,6 @@ begin
 	tLstDoStBlkB	<= tDoStBlkB;
 	tLstStBlkIxA	<= tStBlkIxA;
 	tLstStBlkIxB	<= tStBlkIxB;
-
-	tBlkData1		<= tBlkData;
-	tBlkInData1		<= tBlkInData;
 
 	if(tDoStBlkA)
 	begin

@@ -1644,7 +1644,8 @@ void I_FinishUpdate (void)
 //		dirtybox[2],	dirtybox[3],
 //		dirtybox[1],	dirtybox[0]);
 
-	conbufa=(u32 *)0xA00A0000;
+//	conbufa=(u32 *)0xA00A0000;
+	conbufa=(u32 *)0xF00A0000;
 
 	vid_frnum++;
 

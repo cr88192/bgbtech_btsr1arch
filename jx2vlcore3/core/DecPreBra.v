@@ -60,8 +60,8 @@ begin
 		
 	if(tIsBra8)
 	begin
-		$display("PreBra: BRA8, I=%X-%X PC2=%X",
-			istrWord[15:0], istrWord[31:16], tBraDisp8);
+//		$display("PreBra: BRA8, I=%X-%X PC2=%X",
+//			istrWord[15:0], istrWord[31:16], tBraDisp8);
 		tPreBraPc	= tBraDisp8;
 		tPreBra		= 1;
 	end
@@ -80,6 +80,8 @@ begin
 		tPreBraPc	= regValLr;
 		tPreBra		= 1;
 	end
+
+	tPreBra		= 0;
 end
 
 endmodule

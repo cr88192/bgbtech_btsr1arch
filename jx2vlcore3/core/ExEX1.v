@@ -18,10 +18,17 @@ Holding/Completing a memory access will be the responsibility of EX2.
 `include "ExAGU.v"
 // `include "ExALU.v"
 `include "ExConv2R.v"
+
+`ifndef jx2_merge_shadq
 //`include "ExShad32.v"
 `include "ExShad32B.v"
 // `include "ExShad64.v"
 `include "ExShad64B.v"
+`endif
+
+`ifdef jx2_merge_shadq
+`include "ExShad64C.v"
+`endif
 
 `ifdef jx2_enable_swapn
 `include "ExSwapN.v"
@@ -58,6 +65,7 @@ module ExEX1(
 	regValImm,		//Immediate (Decode)
 	regFpuGRn,		//FPU GPR Result
 	regFpuSrT,		//FPU SR.T Result
+	opBraFlush,
 	
 	regOutDlr,	regInDlr,
 	regOutDhr,	regInDhr,
@@ -98,6 +106,7 @@ input[31:0]		regValPc;		//PC Value (Synthesized)
 input[32:0]		regValImm;		//Immediate (Decode)
 input[63:0]		regFpuGRn;		//FPU GPR Result
 input			regFpuSrT;
+input			opBraFlush;
 
 output[63:0]	regOutDlr;
 input[63:0]		regInDlr;
@@ -166,6 +175,7 @@ wire[63:0]	tValCnv;
 wire		tCnvSrT;
 ExConv2R	exConv2R(regValRs, opUIxt, regInSr[0], tValCnv, tCnvSrT);
 
+`ifndef jx2_merge_shadq
 wire[31:0]	tValShad32;
 //ExShad32	exShad32(clock, reset,
 ExShad32B	exShad32(clock, reset,
@@ -177,6 +187,17 @@ wire[63:0]	tValShad64;
 ExShad64B	exShad64(clock, reset,
 	regValRs[63:0], regValRt[7:0],
 	tValShad64, opUCmd[0]);
+`endif
+
+`ifdef jx2_merge_shadq
+wire[63:0]	tValShad64;
+wire[31:0]	tValShad32;
+assign	tValShad32 = tValShad64[31:0];
+
+ExShad64C	exShad64(clock, reset,
+	regValRs[63:0], regValRt[7:0],
+	tValShad64, opUCmd[1:0]);
+`endif
 
 `ifdef jx2_enable_swapn
 wire[63:0]	tValSwapN;
@@ -236,11 +257,13 @@ begin
 	tRegSpSub8 	= { regInSp[63:28], regInSp[27:3]-25'h1, regInSp[2:0]};
 
 //	case(opUIxt[7:6])
-	case(opUCmd[7:6])
-		2'b00: 	tOpEnable = 1;
-		2'b01: 	tOpEnable = 0;
-		2'b10: 	tOpEnable = regInSr[0];
-		2'b11: 	tOpEnable = !regInSr[0];
+//	case(opUCmd[7:6])
+	casez( { opBraFlush, opUCmd[7:6] } )
+		3'b000: 	tOpEnable = 1;
+		3'b001: 	tOpEnable = 0;
+		3'b010: 	tOpEnable = regInSr[0];
+		3'b011: 	tOpEnable = !regInSr[0];
+		3'b1zz: 	tOpEnable = 0;
 	endcase
 	
 	tOpUCmd1	= tOpEnable ? opUCmd[5:0] : JX2_UCMD_NOP;

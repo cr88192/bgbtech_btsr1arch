@@ -235,6 +235,33 @@ parameter[3:0] JX2_ITY_XW		= 4'b1101;
 parameter[3:0] JX2_ITY_XL		= 4'b1110;
 parameter[3:0] JX2_ITY_XQ		= 4'b1111;
 
+/*
+REG, Bz:
+	SB: ZZR, Rx, Rx
+	SW: ZZR, Rn, Rn
+	SL: Rx, ZZR, Rx
+	SQ: Rn, ZZR, Rn
+
+	XB: ZZR, Rx, DLR
+	XW: ZZR, Rn, DLR
+	SL: Rx, FixImm, Rx
+	SQ: Rn, FixImm, Rn
+
+REGREG, Bz:
+	SB: Rm, Rn / Rm, DLR, Rn
+	SW: Rj, Rn / Rj, DLR, Rn
+	SL: Rm, Rk / Rm, DLR, Rk
+	SQ: Rj, Rk / Rj, DLR, Rk
+	
+	UB: Rm, Cn
+	UW: Cm, Rn
+	UL: Rm, Sn
+	UQ: Sn, Rn
+	
+	NB: Rn, Rm, Rn
+	NW: Rm, Rn, Rn
+
+*/
 
 parameter[4:0] JX2_FMID_INV				= 5'h00;	//? (Invalid Opcode) / Custom
 parameter[4:0] JX2_FMID_Z				= 5'h01;	//OOOO	-
@@ -343,6 +370,13 @@ parameter[5:0] JX2_UCIX_ALU_CMPEQ	= 6'h0C;		//ALU Command
 parameter[5:0] JX2_UCIX_ALU_CMPHI	= 6'h0D;		//ALU Command
 parameter[5:0] JX2_UCIX_ALU_CMPGT	= 6'h0E;		//ALU Command
 
+parameter[5:0] JX2_UCIX_ALU_PADDL	= 6'h30;		//Packed ALU ADD
+parameter[5:0] JX2_UCIX_ALU_PSUBL	= 6'h31;		//Packed ALU SUB
+parameter[5:0] JX2_UCIX_ALU_PADCL	= 6'h32;		//Packed ALU ADC
+parameter[5:0] JX2_UCIX_ALU_PSBBL	= 6'h33;		//Packed ALU SBB
+
+parameter[5:0] JX2_UCIX_ALU_PCSELT	= 6'h3F;		//Packed CSELT
+
 parameter[5:0] JX2_UCIX_PUSH_GR		= 6'h00;		//GPR
 parameter[5:0] JX2_UCIX_PUSH_CR		= 6'h01;		//Control Reg
 parameter[5:0] JX2_UCIX_PUSH_FR		= 6'h10;		//FPR
@@ -446,11 +480,15 @@ parameter[5:0] JX2_UCIX_IXS_LDSRMSK	= 6'h03;		//FPU ADD
 
 `define jx2_shlln_shadq			//Route SHLLn through SHAD.Q
 
+`define jx2_enable_gsv			//Enable GSV (Packed Integer) stuff.
+
 `define jx2_enable_ops16
 // `define jx2_enable_ops48
 
 `define jx2_reduce_l1sz
 `define jx2_reduce_l2sz
+
+// `define jx2_merge_shadq		//Merge SHAD and SHAD.Q
 
 // `define jx2_debug_l1ds
 

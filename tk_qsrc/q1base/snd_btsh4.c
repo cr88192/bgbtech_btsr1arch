@@ -450,7 +450,8 @@ void SNDDMA_Submit(void)
 //	sbufr=(short *)0x007F4000;
 	buf=(short *)dma_buffer;
 	
-	snd_dmabuf=(u32 *)0xA0080000;
+//	snd_dmabuf=(u32 *)0xA0080000;
+	snd_dmabuf=(u32 *)0xF0080000;
 
 	b=olddma;
 	n=dma-b;

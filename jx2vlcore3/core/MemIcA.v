@@ -4,6 +4,7 @@ module MemIcA(
 	regInPc,
 	regOutPcVal,	regOutPcOK,
 	regOutPcStep,
+	icInPcHold,
 	memPcData,		memPcAddr,
 	memPcOpm,		memPcOK
 	);
@@ -15,6 +16,7 @@ input [31: 0]	regInPc;		//input PC address
 output[63: 0]	regOutPcVal;	//output PC value
 output[ 1: 0]	regOutPcOK;		//set if we have a valid value.
 output[ 1: 0]	regOutPcStep;	//PC step (Normal Op)
+input			icInPcHold;
 
 input [127:0]	memPcData;		//memory PC data
 input [  1:0]	memPcOK;		//memory PC OK
@@ -215,7 +217,8 @@ always @(posedge clock)
 begin
 
 	/* Stage A */
-	tInAddr		<= regInPc;
+//	tInAddr		<= regInPc;
+	tInAddr		<= icInPcHold ? tInAddr : regInPc;
 
 	tReqAddrA	<= tNxtAddrA;
 	tReqAddrB	<= tNxtAddrB;

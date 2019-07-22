@@ -1124,7 +1124,8 @@ void	VID_Update (vrect_t *rects)
 	int pix, bn;
 	int i, j, k;
 
-	conbufa=(u32 *)0xA00A0000;
+//	conbufa=(u32 *)0xA00A0000;
+	conbufa=(u32 *)0xF00A0000;
 //	conbufb=conbufa+(80*61);
 
 	vid_frnum++;

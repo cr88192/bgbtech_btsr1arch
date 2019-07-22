@@ -606,7 +606,8 @@ begin
 				opNmid		= JX2_UCMD_ALU3;
 				opFmid		= JX2_FMID_REGREG;
 				opIty		= JX2_ITY_UB;
-				opUCmdIx	= JX2_UCIX_ALU_CSELT;
+//				opUCmdIx	= JX2_UCIX_ALU_CSELT;
+				opUCmdIx	= opExQ ? JX2_UCIX_ALU_PCSELT : JX2_UCIX_ALU_CSELT;
 			end
 
 			16'h5zz4: begin		/* F0nm_5eo4 */
@@ -1465,11 +1466,13 @@ begin
 			opImm	= {UV9_00, istrWord[7:0], istrWord[31:16]};
 			opRegN	= JX2_GR_DLR;
 			opRegM	= JX2_GR_IMM;
+			opUIxt	= {opCcty, opUCmdIx[5:0]};
 		end
 		JX2_FMID_IMM12N: begin
 			opImm	= {UV9_FF, istrWord[7:0], istrWord[31:16]};
 			opRegN	= JX2_GR_DLR;
 			opRegM	= JX2_GR_IMM;
+			opUIxt	= {opCcty, opUCmdIx[5:0]};
 		end
 		
 		JX2_FMID_INV: begin

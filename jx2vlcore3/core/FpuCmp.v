@@ -25,21 +25,27 @@ output			regOutSrT;
 
 reg[1:0]		tRegOutOK;			//execute status
 reg				tRegOutSrT;
+reg				tRegOutSrT2;
 
 assign	regOutOK	= tRegOutOK;
-assign	regOutSrT	= tRegOutSrT;
+assign	regOutSrT	= tRegOutSrT2;
 
 reg	tCmpEq;
 reg	tCmpGt;
 
 reg	tCmpSgEq;
+reg	tCmpSgEqP;
+reg	tCmpSgEqN;
 reg	tCmpSgGt;
+reg	tCmpSgLt;
 
 reg	tCmpExEq;
 reg	tCmpExGt;
+reg	tCmpExLt;
 
 reg	tCmpFraEq;
 reg	tCmpFraGt;
+reg	tCmpFraLt;
 
 reg	tCmpFraEq0;
 reg	tCmpFraEq1;
@@ -67,21 +73,26 @@ begin
 
 	case({regValRs[63], regValRt[63]})
 		2'b00: begin
-			tCmpSgEq = 1;	tCmpSgGt = 0;
+			tCmpSgEq = 1;	tCmpSgGt = 0;	tCmpSgLt = 0;
+			tCmpSgEqP = 1;	tCmpSgEqN = 0;
 		end
 		2'b01: begin
-			tCmpSgEq = 0;	tCmpSgGt = 1;
+			tCmpSgEq = 0;	tCmpSgGt = 1;	tCmpSgLt = 0;
+			tCmpSgEqP = 0;	tCmpSgEqN = 0;
 		end
 		2'b10: begin
-			tCmpSgEq = 0;	tCmpSgGt = 0;
+			tCmpSgEq = 0;	tCmpSgGt = 0;	tCmpSgLt = 1;
+			tCmpSgEqP = 0;	tCmpSgEqN = 0;
 		end
 		2'b11: begin
-			tCmpSgEq = 1;	tCmpSgGt = 0;
+			tCmpSgEq = 1;	tCmpSgGt = 0;	tCmpSgLt = 0;
+			tCmpSgEqP = 0;	tCmpSgEqN = 1;
 		end
 	endcase
 	
-	tCmpExEq = (regValRs[62:52] == regValRt[62:52]);
-	tCmpExGt = (regValRs[62:52] >  regValRt[62:52]);
+	tCmpExEq	= (regValRs[62:52] == regValRt[62:52]);
+	tCmpExGt	= (regValRs[62:52] >  regValRt[62:52]);
+	tCmpExLt	= !tCmpExGt && !tCmpExEq;
 
 //	tCmpFraEq = (regValRs[51:32] == regValRt[51:32]);
 //	tCmpFraGt = (regValRs[51:32] >  regValRt[51:32]);
@@ -100,12 +111,15 @@ begin
 	tCmpFraGt	= tCmpFraGt0 ||
 		(tCmpFraGt1 && tCmpFraEq0) ||
 		(tCmpFraGt2 && tCmpFraEq0 && tCmpFraEq1) ;
+	tCmpFraLt	= !tCmpFraGt && !tCmpFraEq;
 	
 	tCmpEq	= tCmpSgEq && tCmpExEq && tCmpFraEq && !tRsIsNaN && !tRtIsNaN;
 	
 	tCmpGt	= tCmpSgGt ||
-		(tCmpExGt && tCmpSgEq) ||
-		(tCmpFraGt && tCmpSgEq && tCmpExEq) ;
+		(tCmpExGt && tCmpSgEqP) ||
+		(tCmpFraGt && tCmpSgEqP && tCmpExEq) ||
+		(tCmpExLt && tCmpSgEqN) ||
+		(tCmpFraLt && tCmpSgEqN && tCmpExEq) ;
 		
 	case(regIdIxt[5:0])
 		JX2_UCIX_FPU_CMPEQ: begin
@@ -125,6 +139,11 @@ begin
 		end
 	endcase
 	
+end
+
+always @(posedge clock)
+begin
+	tRegOutSrT2		<= tRegOutSrT;
 end
 
 endmodule
