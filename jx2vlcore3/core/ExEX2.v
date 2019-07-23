@@ -181,6 +181,7 @@ begin
 		end
 		JX2_UCMD_MOV_MR: begin
 			tDoMemOp	= 1;
+			tRegIdRn2	= regIdRm;
 			tRegValRn2	= memDataIn;
 		end
 
@@ -199,6 +200,12 @@ begin
 		end
 		JX2_UCMD_POPX: begin
 			tDoMemOp	= 1;
+			casez(opUIxt[1:0])
+				2'b00: tRegIdRn2	= regIdRm;
+				2'b01: tRegIdCn2	= regIdRm[4:0];
+				default: begin
+				end
+			endcase
 			tRegValRn2	= memDataIn;
 			tRegValCn2	= memDataIn;
 		end

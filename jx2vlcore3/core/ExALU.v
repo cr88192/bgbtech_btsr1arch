@@ -52,7 +52,9 @@ module ExALU(
 	reset,
 	regValRs,
 	regValRt,
+	idUCmd,
 	idUIxt,
+	exHold,
 	regInSrST,
 	regOutVal,
 	regOutSrST
@@ -63,7 +65,9 @@ input			reset;
 
 input[63:0]		regValRs;
 input[63:0]		regValRt;
+input[7:0]		idUCmd;
 input[7:0]		idUIxt;
+input			exHold;
 input[1:0]		regInSrST;
 
 output[63:0]	regOutVal;
@@ -408,14 +412,24 @@ begin
 		tRegOutSrT = tResult1T;
 		tRegOutSrS = regInSrS;
 	end
+	
+	if(idUCmd[5:0]==JX2_UCMD_ALU3)
+	begin
+		$display("ALU: Op=%X Rs=%X Rt=%X Rn=%X",
+			idUIxt,
+			regValRs, regValRt, tRegOutVal);
+	end
 end
 
 always @(posedge clock)
 begin
-	idUIxt2			<= idUIxt;
-	tRegOutVal2		<= tRegOutVal;
-	tRegOutSrT2		<= tRegOutSrT;
-	tRegOutSrS2		<= tRegOutSrS;
+	if(!exHold)
+	begin
+		idUIxt2			<= idUIxt;
+		tRegOutVal2		<= tRegOutVal;
+		tRegOutSrT2		<= tRegOutSrT;
+		tRegOutSrS2		<= tRegOutSrS;
+	end
 end
 
 endmodule

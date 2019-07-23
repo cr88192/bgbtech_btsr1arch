@@ -394,7 +394,8 @@ wire[65:0]	ex1ValAlu;
 ExALU	exAlu(
 	clock,				reset,
 	ex1RegValRs,		ex1RegValRt,
-	ex1OpUIxt,			ex1RegInSr[1:0],
+	ex1OpUCmd,			ex1OpUIxt,
+	exHold2,			ex1RegInSr[1:0],
 //	ex1ValAlu,			ex1AluSrT);
 	ex1ValAlu[63:0],	ex1ValAlu[65:64]);
 
@@ -555,7 +556,8 @@ begin
 	tValNextPc		= ifLastPc + tValStepPc;
 	tOpNextPc		= tValNextPc;
 	/* Hold current PC if branching. */
-	if(opBraFlushMask[2])
+//	if(opBraFlushMask[2])
+	if(opBraFlushMask[3])
 //	if(opBraFlushMask[2] || exHold1)
 //	if(opBraFlushMask[3] || exHold1)
 //		tValNextPc		= ifValPc;

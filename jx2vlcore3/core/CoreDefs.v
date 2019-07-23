@@ -379,8 +379,8 @@ parameter[5:0] JX2_UCIX_ALU_PCSELT	= 6'h3F;		//Packed CSELT
 
 parameter[5:0] JX2_UCIX_PUSH_GR		= 6'h00;		//GPR
 parameter[5:0] JX2_UCIX_PUSH_CR		= 6'h01;		//Control Reg
-parameter[5:0] JX2_UCIX_PUSH_FR		= 6'h10;		//FPR
-parameter[5:0] JX2_UCIX_PUSH_SR		= 6'h11;		//Shadow Reg
+parameter[5:0] JX2_UCIX_PUSH_FR		= 6'h02;		//FPR
+parameter[5:0] JX2_UCIX_PUSH_SR		= 6'h03;		//Shadow Reg
 
 parameter[5:0] JX2_UCIX_CONV_EXTSB	= 6'h00;		//
 parameter[5:0] JX2_UCIX_CONV_EXTSW	= 6'h01;		//
