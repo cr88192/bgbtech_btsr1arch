@@ -286,11 +286,18 @@ begin
 		JX2_UCMD_MOV_RM: begin
 			tDoMemOpm	= { 2'b10, opUIxt[3], opUIxt[5:4] };
 			tDoMemOp	= 1;
+
+			$display("STORE(1): A=%X R=%X V=%X",
+				tMemAddr, regIdRm, tMemDataOut);
+
 		end
 		JX2_UCMD_MOV_MR: begin
 			tDoMemOpm = { 2'b01, opUIxt[3], opUIxt[5:4] };
 			tDoMemOp	= 1;
 			tHeldIdRn1	= regIdRm;
+
+			$display("LOAD(1): A=%X R=%X",
+				tMemAddr, regIdRm);
 		end
 
 // `ifdef jx2_enable_fpu
@@ -312,11 +319,15 @@ begin
 			tDoMemOp	= 1;
 			
 			case(opUIxt[1:0])
-				2'b00: 	tMemDataOut = regValRm;
+//				2'b00: 	tMemDataOut = regValRm;
+				2'b00: 	tMemDataOut = regValRs;
 				2'b01: 	tMemDataOut = regValCRm;
 				2'b10: 	tMemDataOut = regValFRs;
-				2'b11: 	tMemDataOut = regValRm;
+//				2'b11: 	tMemDataOut = regValRm;
+				2'b11: 	tMemDataOut = regValRs;
 			endcase
+			
+			$display("PUSH: SP=%X R=%X V=%X", tMemAddr, regIdRm, tMemDataOut);
 		end
 		JX2_UCMD_POPX: begin
 			tMemAddr	= regInSp[31:0];
@@ -325,6 +336,8 @@ begin
 			tDoMemOp	= 1;
 			tHeldIdRn1	= regIdRm;
 			tHeldIdCn1	= regIdRm[4:0];
+
+			$display("POP(1): SP=%X R=%X", tMemAddr, regIdRm);
 		end
 
 		JX2_UCMD_ALU3: begin
@@ -360,15 +373,18 @@ begin
 				end
 				2'b01: begin /* LDISH8 */
 					tRegIdRn1	= regIdRm;
-					tRegValRn1	= { regValRm[55:0], regValImm[7:0] };
+//					tRegValRn1	= { regValRm[55:0], regValImm[7:0] };
+					tRegValRn1	= { regValRs[55:0], regValImm[7:0] };
 				end
 				2'b10: begin /* LDISH16 */
 					tRegIdRn1	= regIdRm;
-					tRegValRn1	= { regValRm[47:0], regValImm[15:0] };
+//					tRegValRn1	= { regValRm[47:0], regValImm[15:0] };
+					tRegValRn1	= { regValRs[47:0], regValImm[15:0] };
 				end
 				2'b11: begin /* LDISH32 */
 					tRegIdRn1	= regIdRm;
-					tRegValRn1	= { regValRm[31:0], regValImm[31:0] };
+//					tRegValRn1	= { regValRm[31:0], regValImm[31:0] };
+					tRegValRn1	= { regValRs[31:0], regValImm[31:0] };
 				end
 			endcase
 		end
@@ -488,11 +504,19 @@ begin
 					tRegOutSr[1]	= 1;
 				end
 				default: begin
+					if(!tMsgLatch)
+						$display("EX: Unhandled Op-IXT %X", opUIxt);
+					tNextMsgLatch	= 1;
+					tExHold		= 1;
 				end
 			endcase
 		end
 
 		default: begin
+			if(!tMsgLatch)
+				$display("EX: Unhandled UCmd %X", opUCmd);
+			tNextMsgLatch	= 1;
+			tExHold		= 1;
 		end
 	
 	endcase

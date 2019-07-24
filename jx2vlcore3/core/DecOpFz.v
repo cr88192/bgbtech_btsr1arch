@@ -1066,13 +1066,15 @@ begin
 				3'b010: begin
 					opNmid		= JX2_UCMD_ALU3;
 					opFmid		= JX2_FMID_IMM8REG;
-					opIty		= JX2_ITY_SW;
+//					opIty		= JX2_ITY_SW;
+					opIty		= JX2_ITY_SB;
 					opUCmdIx	= JX2_UCIX_ALU_ADD;
 				end
 				3'b011: begin
 					opNmid		= JX2_UCMD_MOV_IR;
 					opFmid		= JX2_FMID_IMM8REG;
-					opIty		= JX2_ITY_UW;
+//					opIty		= JX2_ITY_UW;
+					opIty		= JX2_ITY_UB;
 					opUCmdIx	= JX2_UCIX_LDI_LDISH16;
 				end
 
@@ -1320,17 +1322,19 @@ begin
 		end
 
 		/*
-			SB: Fzeo_zzii		Imm8s, Ro
-			SW: Fzeo_iiii		Imm16s, Ro
+			SB: / Fzeo_zzii		Imm8s, Ro
+			SB: Fzeo_iiii		Ro, Imm16s, Ro
+			SW: Fzeo_iiii		Imm16s, Ro, Ro
 
-			SB: Fzeo_zzjj		Imm8u, Ro
-			SW: Fzeo_jjjj		Imm16u, Ro
+			UB: / Fzeo_zzjj		Imm8u, Ro
+			UB: Fzeo_jjjj		Ro, Imm16u, Ro
+			UW: Fzeo_jjjj		Imm16u, Ro, Ro
 
-			NB: Fzeo_zzjj		Imm8n, Ro
-			NW: Fzeo_jjjj		Imm16n, Ro
+			NB: / Fzeo_zzjj		Imm8n, Ro
+			NW: Fzeo_jjjj		Imm16n, Ro, Ro
 
-			XB: Fzeo_zzjj		Imm8x, Ro
-			XW: Fzeo_jjjj		Imm16x, Ro
+			XB: / Fzeo_zzjj		Imm8x, Ro
+			XW: / Fzeo_jjjj		Imm16x, Ro
 
 			SQ: Fzze_zznz_iiii	Imm17s, Rn
 			UQ: Fzze_zznz_iiii	Imm17u, Rn
@@ -1345,12 +1349,15 @@ begin
 			opRegO	= opRegO_Df2;
 			
 			case(opIty)
-`ifndef def_true
-				JX2_ITY_SB:
+				JX2_ITY_SB: begin
 					opImm = {
-						istrWord[23] ? UV25_FF : UV25_00,
-						istrWord[23:16] };
-`endif
+						istrWord[31] ? UV17_FF : UV17_00,
+						istrWord[31:16] };
+					opRegM	= opRegO_Df2;
+					opRegO	= JX2_GR_IMM;
+					opRegN	= opRegO_Df2;
+				end
+
 				JX2_ITY_SW:
 					opImm = {
 						istrWord[31] ? UV17_FF : UV17_00,
@@ -1362,10 +1369,13 @@ begin
 					opRegO	= opRegN_Dfl;
 				end
 
-`ifndef def_true
-				JX2_ITY_UB:
-					opImm = { UV25_00, istrWord[23:16] };
-`endif
+				JX2_ITY_UB: begin
+					opImm = { UV17_00, istrWord[31:16] };
+					opRegM	= opRegO_Df2;
+					opRegO	= JX2_GR_IMM;
+					opRegN	= opRegO_Df2;
+				end
+
 				JX2_ITY_UW:
 					opImm = { UV17_00, istrWord[31:16] };
 
@@ -1464,14 +1474,20 @@ begin
 
 		JX2_FMID_IMM12Z: begin
 			opImm	= {UV9_00, istrWord[7:0], istrWord[31:16]};
+//			opRegN	= JX2_GR_DLR;
+//			opRegM	= JX2_GR_IMM;
 			opRegN	= JX2_GR_DLR;
-			opRegM	= JX2_GR_IMM;
+			opRegM	= JX2_GR_DLR;
+			opRegO	= JX2_GR_IMM;
 			opUIxt	= {opCcty, opUCmdIx[5:0]};
 		end
 		JX2_FMID_IMM12N: begin
 			opImm	= {UV9_FF, istrWord[7:0], istrWord[31:16]};
+//			opRegN	= JX2_GR_DLR;
+//			opRegM	= JX2_GR_IMM;
 			opRegN	= JX2_GR_DLR;
-			opRegM	= JX2_GR_IMM;
+			opRegM	= JX2_GR_DLR;
+			opRegO	= JX2_GR_IMM;
 			opUIxt	= {opCcty, opUCmdIx[5:0]};
 		end
 		

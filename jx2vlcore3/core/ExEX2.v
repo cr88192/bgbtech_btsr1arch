@@ -183,6 +183,7 @@ begin
 			tDoMemOp	= 1;
 			tRegIdRn2	= regIdRm;
 			tRegValRn2	= memDataIn;
+			$display("LOAD(2): R=%X V=%X", regIdRm, memDataIn);
 		end
 
 // `ifdef jx2_enable_fpu
@@ -208,6 +209,7 @@ begin
 			endcase
 			tRegValRn2	= memDataIn;
 			tRegValCn2	= memDataIn;
+			$display("POP(2): R=%X V=%X", regIdRm, memDataIn);
 		end
 
 		JX2_UCMD_ALU3: begin

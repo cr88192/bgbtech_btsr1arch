@@ -217,7 +217,7 @@ begin
 `endif
 
 //	tNxtIsMmio=(regInAddr[31:28]==4'hA);
-	tNxtIsMmio=(regInAddr[31:28]==4'hF);
+	tNxtIsMmio=(regInAddr[31:28]==4'hF) && (regInOpm[4:3]!=0);
 
 
 	/* Stage B */
@@ -254,7 +254,8 @@ begin
 
 	tMissA = (tBlkAddrA != tReqAddrA) || (tBlkAddrA[1:0]!=(~tBlkFlagA[1:0]));
 	tMissB = (tBlkAddrB != tReqAddrB) || (tBlkAddrB[1:0]!=(~tBlkFlagB[1:0]));
-	tMiss = tReqOpmNz ? (tMissA || tMissB) : 0;
+//	tMiss = tReqOpmNz ? (tMissA || tMissB) : 0;
+	tMiss = (tReqOpmNz && !tReqIsMmio) ? (tMissA || tMissB) : 0;
 	tHold = 0;
 	
 	tDoMiBlk	= tDoMiBlkA || tDoMiBlkB;
@@ -438,12 +439,15 @@ begin
 
 	if(tReqIsMmio)
 	begin
-`ifdef jx2_debug_l1ds
-		$display("MMIO");
-`endif
 	
 		if(!tMmioDone || tMmioLatch)
+		begin
+`ifdef jx2_debug_l1ds
+			$display("MMIO A=%X", tInAddr);
+`endif
+
 			tHold = 1;
+		end
 	end
 
 //	tHoldB	= tHold || tHoldWrCyc;

@@ -539,10 +539,24 @@ begin
 		exHold1		= exHold1 | (ex1HldIdRn1 != JX2_GR_ZZR);
 	end
 
-	if(ex1HldIdCn1 == crIdCm)
-	begin
-		exHold1		= exHold1 | ({1'b1, ex1HldIdCn1} != JX2_CR_ZZR);
-	end
+//	if(ex1HldIdCn1 == crIdCm)
+//	begin
+//		exHold1		= exHold1 | ({1'b1, ex1HldIdCn1} != JX2_CR_ZZR);
+//	end
+
+	if( ({1'b1, ex1HldIdCn1} != JX2_CR_ZZR) &&
+			({1'b1, ex1HldIdCn1} != JX2_CR_PC))
+		exHold1 = 1;
+
+//	case( {1'b1, ex1HldIdCn1} )
+//		JX2_CR_LR:	 exHold1 = 1;
+//		JX2_CR_SR:	 exHold1 = 1;
+//		JX2_CR_GBR:	 exHold1 = 1;
+//		JX2_CR_TBR:	 exHold1 = 1;
+//		default: begin
+//		end
+//	endcase
+
 
 	ifInPcHold = exHold1;
 
@@ -680,6 +694,7 @@ begin
 		if(!exHold1)
 	begin
 
+`ifndef def_true
 		$display("IF : PC=%X D=%X-%X-%X-%X Step=%X PC2=%X F=%d", ifLastPc,
 			ifIstrWord[15: 0], ifIstrWord[31:16],
 			ifIstrWord[47:32], ifIstrWord[63:48],
@@ -726,6 +741,7 @@ begin
 			ex2RegIdCn2, ex2RegValCn2);
 
 		$display("");
+`endif
 
 		/* IF */
 		ifLastPc		<= ifValPc;
@@ -793,7 +809,35 @@ begin
 	else
 		if(!exHold2)
 	begin
-		ex1OpUCmd		<= { JX2_IXC_NV, ex1OpUCmd[5:0] };
+//		ex1OpUCmd		<= { JX2_IXC_NV, ex1OpUCmd[5:0] };
+		ex1OpUCmd		<= { JX2_IXC_NV, JX2_UCMD_NOP };
+		ex1BraFlush		<= 1;
+
+`ifdef def_true
+		ex1ValBPc		<= UV32_XX;
+//		ex1OpUCmd		<= UV8_XX;
+		ex1OpUIxt		<= UV8_XX;
+		ex1PreBra		<= 0;
+		ex1IstrWord		<= UV32_XX;
+
+		ex1RegValPc		<= UV32_XX;
+		ex1RegValImm	<= UV33_XX;
+
+		ex1RegIdRs		<= UV6_XX;
+		ex1RegIdRt		<= UV6_XX;
+		ex1RegIdRm		<= UV6_XX;
+		ex1RegValRs		<= UV64_XX;
+		ex1RegValRt		<= UV64_XX;
+		ex1RegValRm		<= UV64_XX;
+
+		ex1RegValCRm	<= UV64_XX;
+
+`ifdef jx2_enable_fpu
+		ex1RegValFRs	<= UV64_XX;
+		ex1RegValFRt	<= UV64_XX;
+`endif
+
+`endif
 	end
 
 	if(!exHold2)
