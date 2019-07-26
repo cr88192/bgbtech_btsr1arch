@@ -10,7 +10,7 @@ idUIxt:
   [  4]=ZExt (0=SX, 1=ZX)
   [3:0]=Op1
 
-If GSV is enabled, Q+ZX = Packed Integer Ops
+If GSV is enabled, Q+ZX = Packed DWord Ops
 
 Op1:
   0000: ADD	/ PADD.L
@@ -154,6 +154,10 @@ reg			tSub1BSF;
 reg			tSub1BVF;
 reg			tTst1BZF;
 
+reg			tSub1SxVF;
+reg			tSub2SxVF;
+reg			tSub1BSxVF;
+
 
 always @*
 begin
@@ -248,6 +252,45 @@ begin
 		3'b111: tSub2VF=0;
 	endcase
 
+`ifdef def_true
+	case({regValRs[31], regValRt[31], tSub1SF})
+		3'b000: tSub1SxVF=0;
+		3'b001: tSub1SxVF=0;
+		3'b010: tSub1SxVF=0;
+		3'b011: tSub1SxVF=1;
+		3'b100: tSub1SxVF=0;
+		3'b101: tSub1SxVF=1;
+		3'b110: tSub1SxVF=1;
+		3'b111: tSub1SxVF=1;
+	endcase
+
+`ifdef jx2_enable_gsv
+	case({regValRs[63], regValRt[63], tSub1BSF})
+		3'b000: tSub1BSxVF=0;
+		3'b001: tSub1BSxVF=0;
+		3'b010: tSub1BSxVF=0;
+		3'b011: tSub1BSxVF=1;
+		3'b100: tSub1BSxVF=0;
+		3'b101: tSub1BSxVF=1;
+		3'b110: tSub1BSxVF=1;
+		3'b111: tSub1BSxVF=1;
+	endcase
+`else
+	tSub1BVF=1'bX;
+`endif
+
+	case({regValRs[63], regValRt[63], tSub2SF})
+		3'b000: tSub2SxVF=0;
+		3'b001: tSub2SxVF=0;
+		3'b010: tSub2SxVF=0;
+		3'b011: tSub2SxVF=1;
+		3'b100: tSub2SxVF=0;
+		3'b101: tSub2SxVF=1;
+		3'b110: tSub2SxVF=1;
+		3'b111: tSub2SxVF=1;
+	endcase
+`endif
+
 	tResult1A=UV33_XX;
 	tResult2A=UV65_XX;
 	tResult1T=regInSrT;
@@ -337,9 +380,12 @@ begin
 		4'hA: begin		/* CMPGE */
 //			tResult1A=UV33_XX;
 //			tResult2A=UV65_XX;
-			tResult1T=tSub1ZF || (tSub1SF^tSub1VF);
-			tResult2T=tSub2ZF || (tSub2SF^tSub2VF);
-			tResult1S=tSub1BZF || (tSub1BSF^tSub1BVF);
+//			tResult1T=tSub1ZF || (tSub1SF^tSub1VF);
+//			tResult2T=tSub2ZF || (tSub2SF^tSub2VF);
+//			tResult1S=tSub1BZF || (tSub1BSF^tSub1BVF);
+			tResult1T=tSub1ZF || tSub1SxVF;
+			tResult2T=tSub2ZF || tSub2SxVF;
+			tResult1S=tSub1BZF || tSub1BSxVF;
 		end
 		4'hB: begin		/* NOR */
 //			tResult1A={1'b0, ~(regValRs[31: 0] | regValRt[31: 0])};
@@ -371,9 +417,12 @@ begin
 		4'hE: begin		/* CMPGT */
 //			tResult1A=UV33_XX;
 //			tResult2A=UV65_XX;
-			tResult1T=(tSub1SF^tSub1VF);
-			tResult2T=(tSub2SF^tSub2VF);
-			tResult1S=(tSub1BSF^tSub1BVF);
+//			tResult1T=(tSub1SF^tSub1VF);
+//			tResult2T=(tSub2SF^tSub2VF);
+//			tResult1S=(tSub1BSF^tSub1BVF);
+			tResult1T=tSub1SxVF;
+			tResult2T=tSub2SxVF;
+			tResult1S=tSub1BSxVF;
 		end
 		4'hF: begin		/* CSELT */
 			tResult1A={1'b0, regInSrT ? regValRs[31: 0] : regValRt[31: 0] };
@@ -413,7 +462,7 @@ begin
 		tRegOutSrS = regInSrS;
 	end
 	
-	if(idUCmd[5:0]==JX2_UCMD_ALU3)
+	if((idUCmd[5:0]==JX2_UCMD_ALU3) && !exHold)
 	begin
 		$display("ALU: Op=%X Rs=%X Rt=%X Rn=%X",
 			idUIxt,

@@ -20,9 +20,12 @@ module MemL1A(
 	dcInAddr,		dcInOpm,
 	dcOutVal,		dcInVal,
 	dcOutOK,
+	dcInHold,
 
 	regInDlr,		regInDhr,
 	regInMmcr,		regInKrr,
+	
+	regOutExc,
 
 	memAddr,		memOpm,
 	memDataIn,		memDataOut,
@@ -43,11 +46,14 @@ input [ 4: 0]	dcInOpm;		//input PC address
 output[63: 0]	dcOutVal;		//output PC value
 input [63: 0]	dcInVal;		//output PC value
 output[ 1: 0]	dcOutOK;		//set if we have a valid value.
+input			dcInHold;
 
 input[63:0]		regInDlr;
 input[63:0]		regInDhr;
 input[63:0]		regInMmcr;
 input[63:0]		regInKrr;
+
+output[63:0]	regOutExc;
 
 output[ 31:0]	memAddr;		//Memory address
 output[  4:0]	memOpm;			//Memory Operation
@@ -59,9 +65,14 @@ reg[ 31:0]		tMemAddr;		//Memory address
 reg[  4:0]		tMemOpm;		//Memory Operation
 reg[127:0]		tMemDataOut;	//Memory Data Out
 
+reg[63:0]		tRegOutExc;
+reg[63:0]		tRegOutExc2;
+
 assign	memAddr		= tMemAddr;
 assign	memOpm		= tMemOpm;
 assign	memDataOut	= tMemDataOut;
+
+assign	regOutExc	= tRegOutExc2;
 
 reg[1:0]		tDcOutOK;
 assign	dcOutOK		= tDcOutOK;
@@ -94,7 +105,7 @@ MemDcA		memDc(
 	clock,			reset,
 	dcInAddr,		dcInOpm,
 	dcOutVal,		dcInVal,
-	dfOutOK,
+	dfOutOK,		dcInHold,
 
 	dfMemAddr,		dfMemOpm,
 	dfMemDataIn,	dfMemDataOut,
@@ -112,6 +123,7 @@ always @*
 begin
 	tNxtLatchIc	= 0;
 	tNxtLatchDc	= 0;
+	tRegOutExc	= UV64_00;
 
 	tMemAddr	= UV32_XX;
 	tMemOpm		= UMEM_OPM_READY;
@@ -151,6 +163,13 @@ begin
 		tNxtLatchDc	= tDfNzOpm || (memOK != UMEM_OK_READY);
 	end
 
+	if(memOK==UMEM_OK_FAULT)
+	begin
+		$display("L1$ Fault, Ic=%d Dc=%d", tLatchIc, tLatchDc);
+		
+		tRegOutExc = {UV16_00, tMemAddr, 16'h8000 };
+	end
+
 /*
 	else
 		if((dcInOpm == UMEM_OPM_LDTLB) && !tLatchIc && !tLatchDc)
@@ -165,6 +184,7 @@ end
 
 always @(posedge clock)
 begin
+	tRegOutExc2	<= tRegOutExc;
 	tLatchIc	<= tNxtLatchIc;
 	tLatchDc	<= tNxtLatchDc;
 end

@@ -215,8 +215,8 @@ begin
 //	if(opUCmd == JX2_UCMD_INVOP)
 	if(opUCmd[5:0] == JX2_UCMD_INVOP)
 	begin
-		$display("DecOp: Inv %X-%X-%X",
-			istrWord[15:0], istrWord[31:16], istrWord[47:32]);
+//		$display("DecOp: Inv %X-%X-%X",
+//			istrWord[15:0], istrWord[31:16], istrWord[47:32]);
 	end
 end
 

@@ -143,6 +143,10 @@ reg[3:0]	tHoldCyc;
 reg			tDoMemOp;
 reg			tOpEnable;
 
+reg		tMsgLatch;
+reg		tNextMsgLatch;
+
+
 always @*
 begin
 	tRegIdRn2	= regIdRn1;		//Forward by default
@@ -265,6 +269,9 @@ begin
 		end
 	
 		default: begin
+			if(!tMsgLatch)
+				$display("EX2: Unhandled UCmd %X", opUCmd);
+			tNextMsgLatch	= 1;
 		end
 	
 	endcase
@@ -274,7 +281,15 @@ begin
 		if(tHoldCyc==0)
 			tExHold=1;
 		if(memDataOK[1])
+		begin
+			if(memDataOK[0])
+			begin
+				if(!tMsgLatch)
+					$display("EX2: Memory Fault");
+				tNextMsgLatch	= 1;
+			end
 			tExHold=1;
+		end
 
 //		tMemOpm = tDoMemOpm;
 	end
@@ -282,6 +297,8 @@ end
 
 always @(posedge clock)
 begin
+	tMsgLatch	<= tNextMsgLatch;
+
 	if(tExHold)
 		tHoldCyc <= tHoldCyc + 1;
 	else

@@ -484,7 +484,8 @@ uint32_t mmio_ReadDWord(BJX2_Context *ctx, uint32_t addr)
 		break;
 
 	default:
-		val=0;
+//		val=0;
+		val=0x55AA55AA;
 		break;
 	}
 	return(val);
@@ -580,8 +581,17 @@ void MemUpdateForBus()
 			if(is_mmio)
 			{
 				top->memDataIn[0]=
-					mmio_ReadDWord(jx2_ctx, addr&0xFFFFFF);
+					mmio_ReadDWord(jx2_ctx, addr&0xFFFFFC);
 				top->memOK=1;
+				
+				if((top->memDataIn[0]==0x55AA55AA) || (addr&3))
+				{
+					top->memDataIn[0]=0xFFFFFFFFU;
+					top->memDataIn[1]=0xFFFFFFFFU;
+					top->memDataIn[2]=0xFFFFFFFFU;
+					top->memDataIn[3]=0xFFFFFFFFU;
+					top->memOK=3;
+				}
 			}else if(is_rom)
 			{
 				top->memDataIn[0]=rombuf[((addr>>2)+0)&0x1FFF];
@@ -610,13 +620,16 @@ void MemUpdateForBus()
 				top->memDataIn[1]=0xFFFFFFFFU;
 				top->memDataIn[2]=0xFFFFFFFFU;
 				top->memDataIn[3]=0xFFFFFFFFU;
-				top->memOK=1;
+//				top->memOK=1;
+				top->memOK=3;
 			}
 
+#if 0
 			printf("LD  %08X  %08X %08X %08X %08X\n",
 				addr,
 				top->memDataIn[0], top->memDataIn[1],
 				top->memDataIn[2], top->memDataIn[3]);
+#endif
 		}
 
 		if(top->memOpm&0x10)

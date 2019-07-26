@@ -68,6 +68,9 @@ reg [ 4:0]		dcInOpm;
 wire[63:0]		dcOutVal;
 reg [63:0]		dcInVal;
 wire[ 1:0]		dcOutOK;
+reg				dcInHold;
+
+wire[63:0]		memRegExc;
 
 MemL1A		memL1(
 	clock,			reset,
@@ -78,10 +81,11 @@ MemL1A		memL1(
 
 	dcInAddr,		dcInOpm,
 	dcOutVal,		dcInVal,
-	dcOutOK,
+	dcOutOK,		dcInHold,
 
 	gprOutDlr,		gprOutDhr,
 	crOutMmcr,		crOutKrr,
+	memRegExc,
 
 	memAddr,		memOpm,
 	memDataIn,		memDataOut,
@@ -516,10 +520,15 @@ reg[31:0]	tOpNextPc;
 reg[7:0]	opBraFlushMask;
 reg[7:0]	nxtBraFlushMask;
 
+reg[63:0]	tRegExc;
+reg[7:0]	tRegExcOfs;
+
 always @*
 begin
 	exHold1		= 0;
 	exHold2		= 0;
+	tRegExc		= 0;
+	tRegExcOfs	= 0;
 	
 	if(ex1Hold)
 		exHold2		= 1;
@@ -557,8 +566,12 @@ begin
 //		end
 //	endcase
 
+	if(memRegExc[15])
+		tRegExc = memRegExc;
 
-	ifInPcHold = exHold1;
+
+	ifInPcHold	= exHold1;
+	dcInHold	= exHold2;
 
 //	exHold1		= 0;
 //	exHold2		= 0;
@@ -609,7 +622,28 @@ begin
 	if(reset)
 	begin
 		tValNextPc = UV32_00;
-		nxtBraFlushMask = 8'h07;
+//		nxtBraFlushMask = 8'h07;
+		nxtBraFlushMask = 8'h0F;
+	end
+	
+	case(tRegExc[14:13])
+		2'b00: tRegExcOfs=1;
+		2'b01: tRegExcOfs=3;
+		2'b10: tRegExcOfs=4;
+		2'b11: tRegExcOfs=2;
+	endcase
+	
+	if(tRegExc[15])
+	begin
+		$display("ExUnit: Fault %X", tRegExc);
+	
+//		tValNextPc = crOutVbr;
+		tValNextPc = {
+			crOutVbr[31:11],
+			crOutVbr[10: 3]+tRegExcOfs,
+			crOutVbr[2:0] };
+//		nxtBraFlushMask = 8'h07;
+		nxtBraFlushMask = 8'h0F;
 	end
 
 	ifValPc			= tValNextPc;
@@ -694,7 +728,8 @@ begin
 		if(!exHold1)
 	begin
 
-`ifndef def_true
+// `ifndef def_true
+`ifdef def_true
 		$display("IF : PC=%X D=%X-%X-%X-%X Step=%X PC2=%X F=%d", ifLastPc,
 			ifIstrWord[15: 0], ifIstrWord[31:16],
 			ifIstrWord[47:32], ifIstrWord[63:48],

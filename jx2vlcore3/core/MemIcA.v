@@ -77,6 +77,7 @@ reg[27:0]		tReqAddrB;
 
 reg[31:0]		tInAddr;
 reg[1:0]		tInWordIx;
+reg[31:0]		tRegInPc;		//input PC address
 
 reg				tMissA;
 reg				tMissB;
@@ -92,14 +93,20 @@ reg[2:0]		opLenA3;
 always @*
 begin
 	/* Stage A */
+
+	tRegInPc	= icInPcHold ? tInAddr : regInPc;
+
 	if(regInPc[3])
 	begin
-		tNxtAddrB=regInPc[31:4];
-		tNxtAddrA=tNxtAddrB+1;
+//		tNxtAddrB	= regInPc[31:4];
+		tNxtAddrB	= tRegInPc[31:4];
+		tNxtAddrA	= tNxtAddrB+1;
 	end else begin
-		tNxtAddrA=regInPc[31:4];
-		tNxtAddrB=tNxtAddrA;
+//		tNxtAddrA	= regInPc[31:4];
+		tNxtAddrA	= tRegInPc[31:4];
+		tNxtAddrB	= tNxtAddrA;
 	end
+
 
 `ifdef jx2_reduce_l1sz
 	tNxtIxA=tNxtAddrA[3:0];
@@ -193,6 +200,12 @@ begin
 	endcase
 	
 	tRegOutPcOK = tMiss ? UMEM_OK_HOLD : UMEM_OK_OK;
+	
+	if(memPcOK==UMEM_OK_FAULT)
+	begin
+		$display("L1I$ Fault");
+		tRegOutPcOK = UMEM_OK_FAULT;
+	end
 
 end
 
@@ -217,9 +230,9 @@ always @(posedge clock)
 begin
 
 	/* Stage A */
+//	tInAddr		<= icInPcHold ? tInAddr : regInPc;
 //	tInAddr		<= regInPc;
-	tInAddr		<= icInPcHold ? tInAddr : regInPc;
-
+	tInAddr		<= tRegInPc;
 	tReqAddrA	<= tNxtAddrA;
 	tReqAddrB	<= tNxtAddrB;
 	tReqIxA		<= tNxtIxA;
@@ -232,6 +245,8 @@ begin
 
 	if(tDoStBlk)
 	begin
+//		$display("L1I$: StBlock A=%X D=%X", tStBlkAddr, tStBlkData);
+	
 		icCaMemA[tStBlkIx]	<= tStBlkData[ 63: 0];
 		icCaMemB[tStBlkIx]	<= tStBlkData[127:64];
 		icCaAddrA[tStBlkIx]	<= { tStBlkFlag, tStBlkAddr };
@@ -245,16 +260,20 @@ begin
 	begin
 
 		if(tMemLatchDnA)
+//		if(tMemLatchDnA || (memPcOK==UMEM_OK_FAULT))
 		begin
 			tMemPcOpm	<= UMEM_OPM_READY;
 			if(memPcOK==UMEM_OK_READY)
+//			if((memPcOK==UMEM_OK_READY) || (memPcOK==UMEM_OK_FAULT))
 			begin
 				tMemLatchA		<= 0;
 				tMemLatchDnA	<= 0;
 			end
 		end
 		else
-			if((memPcOK==UMEM_OK_OK) && tMemLatchA)
+//			if((memPcOK==UMEM_OK_OK) && tMemLatchA)
+			if(((memPcOK==UMEM_OK_OK) || (memPcOK==UMEM_OK_FAULT)) &&
+				tMemLatchA)
 		begin
 			tMemPcOpm		<= UMEM_OPM_READY;
 			tMemLatchDnA	<= 1;
@@ -297,7 +316,8 @@ begin
 			end
 		end
 		else
-			if((memPcOK==UMEM_OK_OK) && tMemLatchB)
+//			if((memPcOK==UMEM_OK_OK) && tMemLatchB)
+			if(((memPcOK==UMEM_OK_OK) || (memPcOK==UMEM_OK_FAULT)) && tMemLatchB)
 		begin
 			tMemPcOpm		<= UMEM_OPM_READY;
 			tMemLatchDnB	<= 1;

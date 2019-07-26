@@ -5,7 +5,7 @@ module MemDcA(
 	clock,			reset,
 	regInAddr,		regInOpm,
 	regOutVal,		regInVal,
-	regOutOK,
+	regOutOK,		dcInHold,
 
 	memAddr,		memOpm,
 	memDataIn,		memDataOut,
@@ -21,6 +21,9 @@ input [ 4: 0]	regInOpm;		//input PC address
 output[63: 0]	regOutVal;		//output PC value
 input [63: 0]	regInVal;		//output PC value
 output[ 1: 0]	regOutOK;		//set if we have a valid value.
+
+input			dcInHold;
+
 
 output[ 31:0]	memAddr;		//memory PC address
 output[  4:0]	memOpm;			//memory PC output-enable
@@ -450,12 +453,19 @@ begin
 		end
 	end
 
+
 //	tHoldB	= tHold || tHoldWrCyc;
 	tHoldB	= tHold;
 
 //	tRegOutOK = tHold ? UMEM_OK_HOLD :
 	tRegOutOK = tHoldB ? UMEM_OK_HOLD :
 		(tReqOpmNz ? UMEM_OK_OK : UMEM_OK_READY);
+
+//	if(memOK==UMEM_OK_FAULT)
+//	begin
+//		$display("L1D$ Fault");
+//		tRegOutOK = UMEM_OK_FAULT;
+//	end
 
 	tNx2IxA		= tLstHold ? tReqIxA : tNxtIxA;
 	tNx2IxB		= tLstHold ? tReqIxB : tNxtIxB;
@@ -470,7 +480,8 @@ begin
 	tHoldCyc	<= tNextHoldCyc;
 
 //	if(!tHold)
-	if(!tHoldB)
+//	if(!tHoldB)
+	if(!tHoldB && !dcInHold)
 	begin
 		tInAddr		<= regInAddr;
 		tInOpm		<= regInOpm;
@@ -542,9 +553,11 @@ begin
 `endif
 
 		if(tMemLatchDnA)
+//		if(tMemLatchDnA || (memOK==UMEM_OK_FAULT))
 		begin
 			tMemOpm	<= UMEM_OPM_READY;
 			if(memOK==UMEM_OK_READY)
+//			if((memOK==UMEM_OK_READY) || (memOK==UMEM_OK_FAULT))
 			begin
 `ifdef jx2_debug_l1ds
 				$display("L1D$: MissA Done");
@@ -557,7 +570,8 @@ begin
 			end
 		end
 		else
-			if((memOK==UMEM_OK_OK) && tMemLatchA)
+//			if((memOK==UMEM_OK_OK) && tMemLatchA)
+			if(((memOK==UMEM_OK_OK) || (memOK==UMEM_OK_FAULT)) && tMemLatchA)
 		begin
 			tMemOpm			<= UMEM_OPM_READY;
 			
@@ -629,9 +643,11 @@ begin
 `endif
 
 		if(tMemLatchDnB)
+//		if(tMemLatchDnB || (memOK==UMEM_OK_FAULT))
 		begin
 			tMemOpm	<= UMEM_OPM_READY;
 			if(memOK==UMEM_OK_READY)
+//			if((memOK==UMEM_OK_READY) || (memOK==UMEM_OK_FAULT))
 			begin
 `ifdef jx2_debug_l1ds
 				$display("L1D$: MissB Done");
@@ -644,7 +660,9 @@ begin
 			end
 		end
 		else
-			if((memOK==UMEM_OK_OK) && tMemLatchB)
+//			if((memOK==UMEM_OK_OK) && tMemLatchB)
+			if(((memOK==UMEM_OK_OK) || (memOK==UMEM_OK_FAULT)) &&
+				tMemLatchB)
 		begin
 			tMemOpm			<= UMEM_OPM_READY;
 
