@@ -107,6 +107,13 @@ parameter[1:0] UV2_FF			= 2'h3;	//
 parameter[3:0] UV4_00			= 4'h0;	//
 parameter[3:0] UV4_FF			= 4'hF;	//
 
+parameter[4:0] UV5_00			= 5'h00;	//
+parameter[4:0] UV5_FF			= 5'h1F;	//
+parameter[5:0] UV6_00			= 6'h00;	//
+parameter[5:0] UV6_FF			= 6'h3F;	//
+parameter[6:0] UV7_00			= 7'h00;	//
+parameter[6:0] UV7_FF			= 7'h7F;	//
+
 parameter[7:0] UV8_00			= 8'h00;	//
 parameter[7:0] UV8_FF			= 8'hFF;	//
 
@@ -482,6 +489,8 @@ parameter[5:0] JX2_UCIX_IXS_LDSRMSK	= 6'h03;		//FPU ADD
 
 `define jx2_enable_gsv			//Enable GSV (Packed Integer) stuff.
 
+// `define jx2_enable_prebra			//Enable GSV (Packed Integer) stuff.
+
 `define jx2_enable_ops16
 // `define jx2_enable_ops48
 
@@ -490,6 +499,11 @@ parameter[5:0] JX2_UCIX_IXS_LDSRMSK	= 6'h03;		//FPU ADD
 
 // `define jx2_merge_shadq		//Merge SHAD and SHAD.Q
 
-// `define jx2_debug_l1ds
+// `define jx2_debug_l1ds		//Debug prints for L1 data cache
+
+// `define jx2_debug_ldst		//Debug prints for load/store
+
+// `define jx2_debug_expipe		//Debug execute pipeline
+// `define jx2_debug_exopipe	//Debug execute pipeline (EX2 only)
 
 `endif

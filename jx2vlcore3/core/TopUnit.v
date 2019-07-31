@@ -4,6 +4,8 @@
 `include "MmiModGpio.v"
 `include "MmiModDdr3.v"
 
+`include "ModTxtNtW.v"
+
 module TopUnit(
 	/* verilator lint_off UNUSED */
 	clock,		reset,
@@ -14,7 +16,8 @@ module TopUnit(
 	ddrAddr,
 	ddrBa,
 	ddrCs, ddrRas, ddrCas, ddrWe, ddrCke,
-	ddrClk
+	ddrClk,
+	vgaRed, vgaGrn, vgaBlu, vgaHsync, vgaVsync
 	);
 
 input			clock;
@@ -42,6 +45,13 @@ wire			ddrData_En;		//DDR data pins
 
 assign			ddrData = ddrData_En ? ddrData_O : 16'hzzzz;
 assign			ddrData_I	= ddrData;
+
+output[3:0]		vgaRed;
+output[3:0]		vgaGrn;
+output[3:0]		vgaBlu;
+output			vgaHsync;
+output			vgaVsync;
+
 
 // reg[127:0]	ddrMemDataIn;
 wire[127:0]		ddrMemDataIn;
@@ -81,12 +91,30 @@ wire[31:0]		mmioAddr;
 wire[4:0]		mmioOpm;
 reg[1:0]		mmioOK;
 
+wire[31:0]		dbgOutPc;
+wire[63:0]		dbgOutIstr;
+wire			dbgExHold1;
+wire			dbgExHold2;
+
+wire[31:0]		dbgDcInAddr;
+wire[ 4:0]		dbgDcInOpm;
+wire[63:0]		dbgDcOutVal;
+wire[63:0]		dbgDcInVal;
+wire[ 1:0]		dbgDcOutOK;
+
 ExUnit	cpu(
 	clock, 			reset,
 
 	memAddr,		memOpm,
 	memInData,		memOutData,
-	memOK
+	memOK,
+	
+	dbgOutPc,		dbgOutIstr,
+	dbgExHold1,		dbgExHold2,
+	
+	dbgDcInAddr,	dbgDcInOpm,
+	dbgDcOutVal,	dbgDcInVal,
+	dbgDcOutOK
 	);
 
 
@@ -125,6 +153,21 @@ MemL2A	l2a(
 	mmioOK
 	);
 
+wire[15:0]	scrnPwmOut;
+wire[31:0]	scrnMmioOutData;
+wire[1:0]	scrnMmioOK;
+
+assign	vgaRed		= scrnPwmOut[11:8];
+assign	vgaGrn		= scrnPwmOut[ 7:4];
+assign	vgaBlu		= scrnPwmOut[ 3:0];
+assign	vgaHsync	= scrnPwmOut[12];
+assign	vgaVsync	= scrnPwmOut[13];
+
+ModTxtNtW	scrn(
+	clock,		reset,
+	scrnPwmOut,
+	mmioAddr,	mmioOutData,	scrnMmioOutData,
+	mmioOpm,	scrnMmioOK);
 
 always @*
 begin
@@ -145,8 +188,19 @@ begin
 	gpioAddr	= mmioAddr;
 	gpioOpm		= mmioOpm;
 
-	mmioInData	= gpioOutData;
-	mmioOK		= gpioOK;
+	mmioOK		= UMEM_OK_READY;
+
+	if(gpioOK != UMEM_OK_READY)
+	begin
+		mmioInData	= gpioOutData;
+		mmioOK		= gpioOK;
+	end
+
+	if(scrnMmioOK != UMEM_OK_READY)
+	begin
+		mmioInData	= scrnMmioOutData;
+		mmioOK		= scrnMmioOK;
+	end
 
 //	memInData	= UV128_XX;
 //	memOK		= UMEM_OK_READY;

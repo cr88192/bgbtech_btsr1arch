@@ -49,11 +49,13 @@ begin
 	
 	tIsBra8		=
 		(istrWord[15:12]==4'h2) &&
-		(istrWord[11: 9]==3'b000);
+//		(istrWord[11: 9]==3'b000);
+		(istrWord[11: 8]==4'b0000);
 	tIsBra20		=
 		(istrWord[15:12]==4'hF) &&
 		(istrWord[11: 8]==4'h0) &&
-		(istrWord[31:29]==3'b110);
+//		(istrWord[31:29]==3'b110);
+		(istrWord[31:28]==4'b1100);
 	
 	tIsRtsu			=
 		(istrWord[15:0] == 16'h3012);

@@ -36,6 +36,8 @@ quakei386.exe
 *_inf.txt
 *_pp.txt
 
+*.dat
+
 */*log.txt
 bgbcc22/*.dat
 

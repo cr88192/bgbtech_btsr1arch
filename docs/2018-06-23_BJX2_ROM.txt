@@ -1,7 +1,7 @@
 BJX2 for now will use a 32-bit address space sign-extended to 64 bits.
 
 
-Base Physical Memory Map (32-bit):
+Base Physical Memory Map (32-bit, Old):
 * 00000000 .. 00007FFF: Boot ROM
 * 00008000 .. 0000BFFF: (Reserved)
 * 0000C000 .. 0000DFFF: Boot SRAM
@@ -14,19 +14,40 @@ Base Physical Memory Map (32-bit):
 * C0000000 .. DFFFFFFF: System (No MMU, Repeats 00000000..1FFFFFFF)
 * E0000000 .. FFFFFFFF: Reserved for Processor/Chipset
 
-Logical Memory Map (32-bit):
+Logical Memory Map (32-bit, Old):
 * 00000000 .. 7FFFFFFF: Userland (MMU)
 * 80000000 .. 9FFFFFFF: System (MMU)
 * A0000000 .. BFFFFFFF: MMIO (No MMU, Bypass)
 * C0000000 .. DFFFFFFF: System (No MMU, Repeats 00000000..1FFFFFFF)
 * E0000000 .. FFFFFFFF: Reserved for Processor/Chipset
 
+Base Physical Memory Map (32-bit, New):
+* 00000000 .. 00007FFF: Boot ROM
+* 00008000 .. 0000BFFF: (Reserved)
+* 0000C000 .. 0000DFFF: Boot SRAM
+* 0000E000 .. 0000FFFF: Reserved
+* 00010000 .. 000FFFFF: Reserved
+* 00100000 .. 00FFFFFF: Reserved
+* 01000000 .. 7FFFFFFF: DRAM
+* 80000000 .. EFFFFFFF: Reserved
+* F0000000 .. FFFFFFFF: MMIO (No MMU, Bypass)
+** F0000000 .. FEFFFFFF: MMIO / Chipset
+** FF000000 .. FFFFFFFF: Memory Mapped Registers
+
+Logical Memory Map (32-bit, New):
+* 00000000 .. 7FFFFFFF: Userland (MMU)
+* 80000000 .. EFFFFFFF: System (MMU)
+* F0000000 .. FFFFFFFF: MMIO (No MMU, Bypass)
+
+The System MMU range will be functionally equivalent to the Userland MMU space in terms of how they are treated by the MMU. There may be a difference based on where the TTB/STTB split is located when both page tables are used.
+
+
 Addresses in the MMIO ranges will "bypass" the normal memory access mechanisms and go directly to the MMIO Bus.
 
-Addresses in the MMIO range will be masked to 29 bits, which will be used as the corresponding address on the MMIO Bus.
+Addresses in the MMIO range will be masked to 28 bits, which will be used as the corresponding address on the MMIO Bus.
 
 
-Extended 64-bit Memory Map
+Extended 64-bit Memory Map (Old)
 * 00000000_00000000 .. 00000000_7FFFFFFF: Userland (MMU, Low 2GB)
 * 00000000_80000000 .. 00000000_FFFFFFFF: Maps 32-bit Base Map
 * 00000001_00000000 .. 00007FFF_FFFFFFFF: Userland (MMU, Extended)
@@ -36,6 +57,17 @@ Extended 64-bit Memory Map
 * FFFFA000_00000000 .. FFFFBFFF_FFFFFFFF: Extended MMIO (Bypass)
 * FFFFC000_00000000 .. FFFFDFFF_FFFFFFFF: System (No MMU, Repeats Low 48)
 * FFFFE000_00000000 .. FFFFFFFE_FFFFFFFF: Reserved (Processor/Chipset)
+* FFFFFFFF_00000000 .. FFFFFFFF_7FFFFFFF: System (MMU, Low 2GB)
+* FFFFFFFF_80000000 .. FFFFFFFF_FFFFFFFF: Maps 32-bit Base Map
+
+Extended 64-bit Memory Map (New)
+* 00000000_00000000 .. 00000000_7FFFFFFF: Userland (MMU, Low 2GB)
+* 00000000_80000000 .. 00000000_FFFFFFFF: Maps 32-bit Base Map
+* 00000001_00000000 .. 00007FFF_FFFFFFFF: Userland (MMU, Extended)
+* 00008000_00000000 .. 7FFFFFFF_FFFFFFFF: Reserved (No Man's Land)
+* 80000000_00000000 .. FFFF7FFF_FFFFFFFF: Reserved (No Man's Land)
+* FFFF8000_00000000 .. FFFFEFFF_FFFFFFFF: System (MMU)
+* FFFFF000_00000000 .. FFFFFFFE_FFFFFFFF: Extended MMIO
 * FFFFFFFF_00000000 .. FFFFFFFF_7FFFFFFF: System (MMU, Low 2GB)
 * FFFFFFFF_80000000 .. FFFFFFFF_FFFFFFFF: Maps 32-bit Base Map
 
@@ -199,19 +231,27 @@ Page Table Entries:
 
 
 There will be a User Page Table (TTB) and a System Page Table (STTB).
-Whether STTD is used, and what page-table type is assumed, will depend on the low bits in TTB.
+Whether STTB is used, and what page-table type is assumed, will depend on the low bits in TTB.
 
-The low 2 bits of TTB will give the main page-table type:
+The low 2 bits (1:0) of TTB will give the main page-table type:
 * 00: None / Invalid
 * 01: Two-level, 32-bit PTE; Single Page Table.
 * 10: Three-Level, 64-bit PTE, 39-bit address.
 * 11: Four-Level, 64-bit PTE, 48-bit address.
 
-The next two bits will give the type of STTB table:
+The next two bits (3:2) will give the type of STTB table:
 * 00: None, Reuse TTB.
 * 01: Use Two-Level STTB.
 * 10: Use Three-Level STTB.
 * 11: Use Four-Level STTB.
+
+The next 2 bits (5:4) will give the TTB/STTB split for the low 4GB:
+* 00: 2GB/2GB split (default).
+* 01: 3GB/1GB split.
+* 10: 4GB Userland (STTB only used for 48b addresses)
+* 11: Reserved
+
+TTB bits 11:6 will be reserved.
 
 
 MMCR Bits:

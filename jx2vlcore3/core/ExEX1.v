@@ -287,17 +287,20 @@ begin
 			tDoMemOpm	= { 2'b10, opUIxt[3], opUIxt[5:4] };
 			tDoMemOp	= 1;
 
+`ifdef jx2_debug_ldst
 			$display("STORE(1): A=%X R=%X V=%X",
 				tMemAddr, regIdRm, tMemDataOut);
-
+`endif
 		end
 		JX2_UCMD_MOV_MR: begin
 			tDoMemOpm = { 2'b01, opUIxt[3], opUIxt[5:4] };
 			tDoMemOp	= 1;
 			tHeldIdRn1	= regIdRm;
 
+`ifdef jx2_debug_ldst
 			$display("LOAD(1): A=%X R=%X",
 				tMemAddr, regIdRm);
+`endif
 		end
 
 // `ifdef jx2_enable_fpu
@@ -327,7 +330,9 @@ begin
 				2'b11: 	tMemDataOut = regValRs;
 			endcase
 			
+`ifdef jx2_debug_ldst
 			$display("PUSH: SP=%X R=%X V=%X", tMemAddr, regIdRm, tMemDataOut);
+`endif
 		end
 		JX2_UCMD_POPX: begin
 			tMemAddr	= regInSp[31:0];
@@ -337,7 +342,9 @@ begin
 			tHeldIdRn1	= regIdRm;
 			tHeldIdCn1	= regIdRm[4:0];
 
+`ifdef jx2_debug_ldst
 			$display("POP(1): SP=%X R=%X", tMemAddr, regIdRm);
+`endif
 		end
 
 		JX2_UCMD_ALU3: begin

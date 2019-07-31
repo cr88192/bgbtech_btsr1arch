@@ -196,18 +196,49 @@ reg			tHoldWrCyc;
 reg[2:0]	tHoldCyc;
 reg[2:0]	tNextHoldCyc;
 
+reg[31: 0]	tRegInAddr;		//input PC address
+reg[ 4:0]	tRegInOpm;
+reg[63:0]	tRegInVal;
+
 
 
 always @*
 begin
 	/* Stage A */
 
-	if(regInAddr[4])
+//	tRegInAddr = regInAddr;
+//	tRegInAddr = dcInHold ? tInAddr : regInAddr;
+//	tRegInOpm = dcInHold ? tInOpm : regInOpm;
+//	tRegInVal	= dcInHold ? tDataIn : regInVal;
+
+`ifdef def_true
+// `ifndef def_true
+	if(dcInHold)
 	begin
-		tNxtAddrB=regInAddr[31:4];
+		tRegInAddr	= tInAddr;
+		tRegInOpm	= tInOpm;
+		tRegInVal	= tDataIn;
+	end	else begin
+		tRegInAddr	= regInAddr;
+		tRegInOpm	= regInOpm;
+		tRegInVal	= regInVal;
+	end
+`else
+	tRegInAddr = dcInHold ? tInAddr : regInAddr;
+//	tRegInAddr	= regInAddr;
+	tRegInOpm	= regInOpm;
+	tRegInVal	= regInVal;
+`endif
+
+//	if(regInAddr[4])
+	if(tRegInAddr[4])
+	begin
+//		tNxtAddrB=regInAddr[31:4];
+		tNxtAddrB=tRegInAddr[31:4];
 		tNxtAddrA=tNxtAddrB+1;
 	end else begin
-		tNxtAddrA=regInAddr[31:4];
+//		tNxtAddrA=regInAddr[31:4];
+		tNxtAddrA=tRegInAddr[31:4];
 		tNxtAddrB=tNxtAddrA+1;
 	end
 
@@ -220,7 +251,8 @@ begin
 `endif
 
 //	tNxtIsMmio=(regInAddr[31:28]==4'hA);
-	tNxtIsMmio=(regInAddr[31:28]==4'hF) && (regInOpm[4:3]!=0);
+//	tNxtIsMmio=(regInAddr[31:28]==4'hF) && (regInOpm[4:3]!=0);
+	tNxtIsMmio=(tRegInAddr[31:28]==4'hF) && (tRegInOpm[4:3]!=0);
 
 
 	/* Stage B */
@@ -403,10 +435,13 @@ begin
 		tDoStBlkA	= 0;
 		tDoStBlkB	= 0;
 		
-		if(tHoldCyc!=1)
+		if(tHoldCyc!=2)
+//		if(tHoldCyc!=1)
 		begin
 			tNextHoldCyc = tHoldCyc + 1;
 			tHoldWrCyc	= 1;
+//			tHoldWrCyc	= (tHoldCyc==1);
+//			tHoldWrCyc	= (tHoldCyc!=1);
 			tHold		= 1;
 		end
 
@@ -451,6 +486,10 @@ begin
 
 			tHold = 1;
 		end
+		
+		tRegOutVal = {
+			(memDataIn[31] && !tInOpm[2]) ? UV32_FF : UV32_00,
+			memDataIn[31:0]};
 	end
 
 
@@ -467,8 +506,11 @@ begin
 //		tRegOutOK = UMEM_OK_FAULT;
 //	end
 
-	tNx2IxA		= tLstHold ? tReqIxA : tNxtIxA;
-	tNx2IxB		= tLstHold ? tReqIxB : tNxtIxB;
+//	tNx2IxA		= tLstHold ? tReqIxA : tNxtIxA;
+//	tNx2IxB		= tLstHold ? tReqIxB : tNxtIxB;
+
+	tNx2IxA		= tNxtIxA;
+	tNx2IxB		= tNxtIxB;
 end
 
 always @(posedge clock)
@@ -476,12 +518,16 @@ begin
 
 	/* Stage A */
 
-	tLstHold	<= tHold;
+//	tLstHold	<= tHold;
+	tLstHold	<= dcInHold;
 	tHoldCyc	<= tNextHoldCyc;
 
+`ifndef def_true
+// `ifdef def_true
 //	if(!tHold)
 //	if(!tHoldB)
-	if(!tHoldB && !dcInHold)
+//	if(!tHoldB && !dcInHold)
+	if(!dcInHold)
 	begin
 		tInAddr		<= regInAddr;
 		tInOpm		<= regInOpm;
@@ -493,6 +539,20 @@ begin
 		tReqIxB		<= tNxtIxB;
 		tReqIsMmio	<= tNxtIsMmio;
 	end
+`endif
+
+`ifdef def_true
+// `ifndef def_true
+	tInAddr		<= tRegInAddr;
+	tInOpm		<= tRegInOpm;
+	tDataIn		<= tRegInVal;
+
+	tReqAddrA	<= tNxtAddrA;
+	tReqAddrB	<= tNxtAddrB;
+	tReqIxA		<= tNxtIxA;
+	tReqIxB		<= tNxtIxB;
+	tReqIsMmio	<= tNxtIsMmio;
+`endif
 
 	tBlkDataA	<= dcCaMemA [tNx2IxA];
 	tBlkDataB	<= dcCaMemB [tNx2IxB];

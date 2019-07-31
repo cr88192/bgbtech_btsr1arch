@@ -162,6 +162,7 @@ begin
 
 	tDoMemOp	= 0;
 	tExHold		= 0;
+	tNextMsgLatch	= 0;
 
 //	case(opUIxt[7:6])
 	casez( { opBraFlush, opUCmd[7:6] } )
@@ -177,6 +178,15 @@ begin
 	case(tOpUCmd1)
 		JX2_UCMD_NOP: begin
 		end
+		
+		JX2_UCMD_OP_IXS: begin
+		end
+		
+		JX2_UCMD_OP_IXT: begin
+		end
+		
+		JX2_UCMD_MOV_IR: begin
+		end
 	
 		JX2_UCMD_LEA_MR: begin
 		end
@@ -187,7 +197,9 @@ begin
 			tDoMemOp	= 1;
 			tRegIdRn2	= regIdRm;
 			tRegValRn2	= memDataIn;
+`ifdef jx2_debug_ldst
 			$display("LOAD(2): R=%X V=%X", regIdRm, memDataIn);
+`endif
 		end
 
 // `ifdef jx2_enable_fpu
@@ -213,7 +225,9 @@ begin
 			endcase
 			tRegValRn2	= memDataIn;
 			tRegValCn2	= memDataIn;
+`ifdef jx2_debug_ldst
 			$display("POP(2): R=%X V=%X", regIdRm, memDataIn);
+`endif
 		end
 
 		JX2_UCMD_ALU3: begin
@@ -267,6 +281,21 @@ begin
 				end
 			endcase
 		end
+		
+		JX2_UCMD_SHAD3: begin
+		end
+		JX2_UCMD_SHLD3: begin
+		end
+		JX2_UCMD_SHADQ3: begin
+		end
+		JX2_UCMD_SHLDQ3: begin
+		end
+		
+		JX2_UCMD_CONV_RR: begin
+		end
+		
+		JX2_UCMD_MOV_RC: begin
+		end
 	
 		default: begin
 			if(!tMsgLatch)
@@ -278,6 +307,10 @@ begin
 	
 	if(tDoMemOp)
 	begin
+`ifdef jx2_debug_ldst
+		$display("EX2: DoMemOp, OK=%X", memDataOK);
+`endif
+
 		if(tHoldCyc==0)
 			tExHold=1;
 		if(memDataOK[1])
@@ -288,8 +321,23 @@ begin
 					$display("EX2: Memory Fault");
 				tNextMsgLatch	= 1;
 			end
+			else
+			begin
+`ifdef jx2_debug_ldst
+				$display("EX2: Memory Hold");
+`endif
+			end
 			tExHold=1;
 		end
+`ifndef def_true
+		else if(!memDataOK[0])
+		begin
+`ifdef jx2_debug_ldst
+			$display("EX2: Memory Ready");
+`endif
+			tExHold=1;
+		end
+`endif
 
 //		tMemOpm = tDoMemOpm;
 	end

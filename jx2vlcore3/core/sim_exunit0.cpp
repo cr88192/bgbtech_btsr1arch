@@ -559,8 +559,12 @@ uint32_t *rombuf;
 uint32_t *srambuf;
 uint32_t *drambuf;
 
+uint32_t *srambuf2;
+uint32_t *drambuf2;
+
 void MemUpdateForBus()
 {
+	static byte mmio_latched=0;
 	byte is_rom, is_sram, is_dram, is_mmio;
 	int opm_latch;
 	uint32_t addr;
@@ -636,9 +640,13 @@ void MemUpdateForBus()
 		{
 			if(is_mmio)
 			{
-				mmio_WriteDWord(jx2_ctx, addr&0xFFFFFF,
-					top->memDataOut[0]);
+				if(!mmio_latched)
+				{
+					mmio_WriteDWord(jx2_ctx, addr&0xFFFFFF,
+						top->memDataOut[0]);
+				}
 				top->memOK=1;
+				mmio_latched=1;
 			}else
 				if(is_rom)
 			{
@@ -664,15 +672,329 @@ void MemUpdateForBus()
 				top->memOK=3;
 			}
 
+#if 0
 			printf("ST  %08X  %08X %08X %08X %08X\n",
 				addr,
 				top->memDataOut[0], top->memDataOut[1],
 				top->memDataOut[2], top->memDataOut[3]);
+#endif
 		}
 	}else
 	{
 		top->memOK=0;
+		mmio_latched=0;
 	}
+}
+
+uint32_t MemGetDWord(int addr)
+{
+	byte is_rom, is_sram, is_dram, is_mmio;
+	int opm_latch;
+	uint32_t addr1;
+	uint32_t lo, hi, val;
+
+	if(addr&3)
+	{
+		addr1=addr&(~3);
+		lo=MemGetDWord(addr1+0);
+		hi=MemGetDWord(addr1+4);
+		val=(lo>>((addr&3)*8)) | (hi<<(32-((addr&3)*8)));
+		return(val);
+	}
+
+	is_rom	= (addr>=0x00000000) && (addr<=0x00007FFF);
+	is_sram	= (addr>=0x0000C000) && (addr<=0x0000DFFF);
+	is_dram	= (addr>=0x01000000) && (addr<=0x18000000);
+	is_mmio = (addr>=0xF0000000) && (addr<=0xFFFFFFFF);
+
+	if(is_rom)
+	{
+		val=rombuf[(addr>>2)&0x1FFF];
+		return(val);
+	}
+
+	if(is_sram)
+	{
+//		val=srambuf[(addr>>2)&0x7FF];
+		val=srambuf2[(addr>>2)&0x7FF];
+		return(val);
+	}
+
+	if(is_dram)
+	{
+//		val=drambuf[(addr>>2)&0x3FFFFFF];
+		val=drambuf2[(addr>>2)&0x1FFFFFF];
+		return(val);
+	}
+
+	if(is_mmio)
+	{
+		val=mmio_ReadDWord(jx2_ctx, addr&0x0FFFFFFC);
+		return(val);
+	}
+
+	return(0x55AA55AA);
+
+}
+
+uint64_t MemGetQWord(int addr)
+{
+	uint32_t lo, hi;
+	uint64_t val;
+
+	lo=MemGetDWord(addr+0);
+	hi=MemGetDWord(addr+4);
+	val=((uint64_t)lo) | (((uint64_t)hi)<<32);
+	return(val);
+}
+
+int MemGetWord(int addr)
+{
+	return((int16_t)MemGetDWord(addr));
+}
+
+int MemGetByte(int addr)
+{
+	return((int8_t)MemGetDWord(addr));
+}
+
+int MemSetDWord(int addr, uint32_t val)
+{
+	byte is_rom, is_sram, is_dram, is_mmio;
+	int opm_latch;
+	uint32_t addr1;
+	uint32_t lo, hi;
+
+	if(addr&3)
+	{
+		addr1=addr&(~3);
+		lo=MemGetDWord(addr1+0);
+		hi=MemGetDWord(addr1+4);
+		
+		switch(addr&3)
+		{
+		case 1:
+			lo=(lo&0x000000FF)|(val<< 8);
+			hi=(hi&0xFFFFFF00)|(val>>24);
+			break;
+		case 2:
+			lo=(lo&0x0000FFFF)|(val<<16);
+			hi=(hi&0xFFFF0000)|(val>>16);
+			break;
+		case 3:
+			lo=(lo&0x00FFFFFF)|(val<<24);
+			hi=(hi&0xFF000000)|(val>> 8);
+			break;
+		}
+
+		MemSetDWord(addr1+0, lo);
+		MemSetDWord(addr1+4, hi);
+		return(1);
+	}
+
+	is_rom	= (addr>=0x00000000) && (addr<=0x00007FFF);
+	is_sram	= (addr>=0x0000C000) && (addr<=0x0000DFFF);
+	is_dram	= (addr>=0x01000000) && (addr<=0x18000000);
+
+	if(is_rom)
+	{
+		return(-1);
+	}
+
+	if(is_sram)
+	{
+		srambuf2[(addr>>2)&0x7FF]=val;
+		return(1);
+	}
+
+	if(is_dram)
+	{
+		drambuf2[(addr>>2)&0x1FFFFFF]=val;
+		return(1);
+	}
+
+	return(-1);
+}
+
+int MemSetQWord(int addr, uint64_t val)
+{
+	int i;
+	i=MemSetDWord(addr+0, val);
+	MemSetDWord(addr+4, val>>32);
+	return(i);
+}
+
+int MemSetWord(int addr, int val)
+{
+	uint32_t lo;
+	int i;
+	lo=MemGetDWord(addr);
+	lo=(lo&0xFFFF0000)|(val&0x0000FFFF);
+	i=MemSetDWord(addr, lo);
+	return(i);
+}
+
+int MemSetByte(int addr, int val)
+{
+	uint32_t lo;
+	int i;
+	lo=MemGetDWord(addr);
+	lo=(lo&0xFFFFFF00)|(val&0x000000FF);
+	i=MemSetDWord(addr, lo);
+	return(i);
+}
+
+int CheckDebugSanityIS()
+{
+	uint32_t dpc;
+	uint64_t distr, distr2;
+
+	dpc=top->dbgOutPc;
+	distr=top->dbgOutIstr;
+	
+//	if(!dpc)
+	if(top->dbgExHold1)
+		return(1);
+	
+	distr2=MemGetQWord(dpc);
+	
+	if(distr!=distr2)
+	{
+//		printf("IC Read Mismatch PC=%08X Got %016llX Expect %016llX\n",
+//			dpc,
+//			distr, distr2);
+
+		printf("IC Read Mismatch PC=%08X Got "
+				"%04X_%04X_%04X_%04X Expect %04X_%04X_%04X_%04X\n",
+			dpc,
+			(distr >> 0)&0xFFFF,	(distr >>16)&0xFFFF,
+			(distr >>32)&0xFFFF,	(distr >>48)&0xFFFF,
+			(distr2>> 0)&0xFFFF,	(distr2>>16)&0xFFFF,
+			(distr2>>32)&0xFFFF,	(distr2>>48)&0xFFFF
+			);
+		return(0);
+	}
+	
+	return(1);
+}
+
+int MemSimUpdateCache(
+	uint32_t addr, uint64_t val1, uint64_t val2,
+	int opm, int dcok)
+{
+	static int laddr1, laddr2;
+	static int lopm1, lopm2;
+	uint64_t val3;
+
+	laddr2=laddr1;
+	laddr1=addr;
+	
+	lopm2=lopm1;
+	lopm1=opm;
+
+#if 0
+	if(dcok==0)
+	{
+//		printf("MemSimUpdateCache: D$ OK=Ready\n");
+		return(1);
+	}
+
+	if(dcok==2)
+	{
+		printf("MemSimUpdateCache: D$ OK=Hold\n");
+		return(1);
+	}
+
+	if(dcok==1)
+		printf("MemSimUpdateCache: D$ OK=OK\n");
+	if(dcok==3)
+		printf("MemSimUpdateCache: D$ OK=Fault\n");
+#endif
+
+	if(opm&0x10)
+	{
+		switch(opm&7)
+		{
+		case 0x0:
+		case 0x4:
+			MemSetByte(addr, val1);
+			break;
+		case 0x1:
+		case 0x5:
+			MemSetWord(addr, val1);
+			break;
+		case 0x2:
+		case 0x6:
+			MemSetDWord(addr, val1);
+			break;
+		case 0x3:
+		case 0x7:
+			MemSetQWord(addr, val1);
+			break;
+		}
+	}
+
+	if(lopm2&0x08)
+	{
+		switch(lopm2&7)
+		{
+		case 0x0:	val3=(int8_t)(MemGetByte(laddr2));		break;
+		case 0x1:	val3=(int16_t)(MemGetWord(laddr2));		break;
+		case 0x2:	val3=(int32_t)(MemGetDWord(laddr2));	break;
+		case 0x3:	val3=(int64_t)(MemGetQWord(laddr2));	break;
+		case 0x4:	val3=(uint8_t)(MemGetByte(laddr2));		break;
+		case 0x5:	val3=(uint16_t)(MemGetWord(laddr2));	break;
+		case 0x6:	val3=(uint32_t)(MemGetDWord(laddr2));	break;
+		case 0x7:	val3=(uint64_t)(MemGetQWord(laddr2));	break;
+		}
+		
+//		if(val3!=val2)
+		if((val3!=val2) && (dcok==1))
+		{
+			printf("MemSimUpdateCache: D$ Mismatch "
+				"Addr=%08X Opm=%X Expect %016llX Got %016llX\n",
+				laddr2, lopm2, val3, val2);
+			return(0);
+		}
+	}
+
+	return(1);
+}
+
+int CheckDebugSanityDS()
+{
+	uint32_t addr;
+	uint64_t val1, val2;
+	int dcop, dcok;
+	int i;
+
+//	dpc=top->dbgOutPc;
+//	distr=top->dbgOutIstr;
+	
+	addr=top->dbgDcInAddr;
+	val1=top->dbgDcInVal;
+	val2=top->dbgDcOutVal;
+	dcop=top->dbgDcInOpm;
+	dcok=top->dbgDcOutOK;
+	
+//	if(!dpc)
+	if(top->dbgExHold2)
+		return(1);
+	
+	i=MemSimUpdateCache(addr, val1, val2, dcop, dcok);
+	if(i<=0)
+		return(0);
+	
+	return(1);
+}
+
+int CheckDebugSanity()
+{
+	if(CheckDebugSanityIS()<=0)
+		return(0);
+	if(CheckDebugSanityDS()<=0)
+		return(0);
+	return(1);
 }
 
 int main(int argc, char **argv, char **env)
@@ -696,7 +1018,10 @@ int main(int argc, char **argv, char **env)
 	rombuf=(uint32_t *)malloc(32768);
 	srambuf=(uint32_t *)malloc(8192);
 
-	drambuf=(uint32_t *)malloc(1<<28);
+	drambuf=(uint32_t *)malloc(1<<27);
+
+	srambuf2=(uint32_t *)malloc(8192);
+	drambuf2=(uint32_t *)malloc(1<<27);
 
 	fd=fopen("../../tst_jx2boot.bin", "rb");
 	if(fd)
@@ -747,7 +1072,14 @@ int main(int argc, char **argv, char **env)
 //		top->idxDisp=3;
 
 		if(top->clock)
+		{
+//			printf("Cycle %lld\n", jx2_ctx->tot_cyc);
+		
 			MemUpdateForBus();
+			
+			if(CheckDebugSanity()<=0)
+				break;
+		}
 
 		top->eval();
 

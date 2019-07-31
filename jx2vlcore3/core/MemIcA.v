@@ -96,7 +96,8 @@ begin
 
 	tRegInPc	= icInPcHold ? tInAddr : regInPc;
 
-	if(regInPc[3])
+//	if(regInPc[3])
+	if(tRegInPc[3])
 	begin
 //		tNxtAddrB	= regInPc[31:4];
 		tNxtAddrB	= tRegInPc[31:4];

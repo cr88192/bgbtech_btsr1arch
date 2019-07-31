@@ -464,9 +464,9 @@ begin
 	
 	if((idUCmd[5:0]==JX2_UCMD_ALU3) && !exHold)
 	begin
-		$display("ALU: Op=%X Rs=%X Rt=%X Rn=%X",
-			idUIxt,
-			regValRs, regValRt, tRegOutVal);
+//		$display("ALU: Op=%X Rs=%X Rt=%X Rn=%X",
+//			idUIxt,
+//			regValRs, regValRt, tRegOutVal);
 	end
 end
 

@@ -399,13 +399,28 @@ int main(int argc, char **argv, char **env)
 		top->dcInAddr=addr;
 		top->dcInOpm=0x12;
 		top->dcInVal=membuf[n];
+		top->dcInHold=0;
+
+		if(inh==1)
+			top->dcInHold=1;
+		if(!inh && (top->dcOutOK==2))
+			{ top->dcInHold=1; }
 
 		if(top->clock)
+		{
 			MemUpdateForBus();
+		}
+
 		top->eval();
 
 		if(!top->clock)
 			continue;
+
+		if(inh)
+		{
+			inh--;
+			continue;
+		}
 
 		if(top->dcOutOK==1)
 		{
@@ -413,6 +428,7 @@ int main(int argc, char **argv, char **env)
 			n++;
 			if(n>=2048)
 				break;
+			inh=2;
 		}
 	}
 
@@ -448,12 +464,21 @@ int main(int argc, char **argv, char **env)
 		addr=0xC000|(n*4);
 		top->dcInAddr=addr;
 		top->dcInOpm=0x0A;
+		top->dcInHold=0;
 //		top->dcInVal=membuf[n];
 		v=top->dcOutVal;
 		v1=membuf[n];
 
+		if(inh==1)
+			top->dcInHold=1;
+//		if(top->dcOutOK==2)
+		if(!inh && (top->dcOutOK==2))
+			{ top->dcInHold=1; }
+
 		if(top->clock)
+		{
 			MemUpdateForBus();
+		}
 		top->eval();
 
 		if(!top->clock)
