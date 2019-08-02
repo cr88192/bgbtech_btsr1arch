@@ -116,7 +116,7 @@ initial begin
 //	$readmemh("scrmem_1d.txt", scrCell1D);
 end
 
-always @ (clock)
+always @*
 begin
 	nxtPixCellIx	= pixCellIx;
 

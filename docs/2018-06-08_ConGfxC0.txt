@@ -56,17 +56,17 @@ Base glyphs are organized as 32-bit cells.
 Cell Mode 0:
 * Cells are a text-cell, with a 10-bit font space.
 ** (15:10): Attribute Effect Flags (if ClrTag==0)
-*** (10)=Strike
-*** (11)=Underline
-*** (12)=Overline
-*** (13)=Reserved
 *** (15:14)=Blink
+*** (13)=Reserved
+*** (12)=Overline
+*** (11)=Underline
+*** (10)=Strike
 ** ( 9: 8): Font
 ** ( 7: 0): Glyph
 
 Blink:
 * 00: Non-Blink
-* 01: Blibk, Fast
+* 01: Blink, Fast
 * 10: Blink, Slow/Basic
 * 11: Blink, Alternating Cell
 ** (61:32)=Alternate Cell Contents
@@ -78,8 +78,8 @@ Cell Mode 1:
 * ClrMode is 00.
 
 Mode 0/1:
-* 21,16: ColorA
 * 27,22: ColorB
+* 21,16: ColorA
 ** Colors: rrggbb
 ** 0, 85, 170, 255
 

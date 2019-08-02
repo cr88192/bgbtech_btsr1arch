@@ -187,6 +187,10 @@ begin
 	tBaseNextCv			= 0;
 	tBaseNextCy			= 0;
 
+	tBaseNextCr			= 0;
+	tBaseNextCg			= 0;
+	tBaseNextCb			= 0;
+
 	tPwmNextValR		= 76;	
 	tPwmNextValG		= 76;	
 	tPwmNextValB		= 76;

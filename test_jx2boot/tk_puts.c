@@ -5,6 +5,8 @@ void putc(int val)
 {
 	while(P_MMIO_DEBUG_STS&8);
 	P_MMIO_DEBUG_TX=val;
+	
+	tk_con_putc(val);
 }
 
 

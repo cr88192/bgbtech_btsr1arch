@@ -1,9 +1,19 @@
+/*
+
+Fixed Pins
+	1(I): UART RX
+	0(O): UART TX
+
+ */
+
 `include "CoreDefs.v"
 
 module MmiModGpio(
 	/* verilator lint_off UNUSED */
 	clock,		reset,
-	gpioPins,	fixedPins,
+
+	gpioPinsOut,	gpioPinsIn,		gpioPinsDir,
+	fixedPinsOut,	fixedPinsIn,
 
 	mmioInData,		mmioOutData,	mmioAddr,		
 	mmioOpm,		mmioOK
@@ -11,8 +21,13 @@ module MmiModGpio(
 
 input			clock;
 input			reset;
-inout[31:0]		gpioPins;
-inout[15:0]		fixedPins;
+
+output[31:0]	gpioPinsOut;
+input[31:0]		gpioPinsIn;
+output[31:0]	gpioPinsDir;
+
+output[15:0]	fixedPinsOut;
+input[15:0]		fixedPinsIn;
 
 input[31:0]		mmioInData;
 output[31:0]	mmioOutData;
@@ -36,6 +51,10 @@ reg[31:0]		gpioDir;
 reg[31:0]		gpioNextOut;
 reg[31:0]		gpioNextDir;
 
+assign			gpioPinsOut = gpioOut;
+assign			gpioPinsDir = gpioDir;
+
+`ifndef def_true
 assign			gpioPins = {
 			gpioDir[31]?gpioOut[31]:1'bz,
 			gpioDir[30]?gpioOut[30]:1'bz,
@@ -70,11 +89,12 @@ assign			gpioPins = {
 			gpioDir[ 1]?gpioOut[ 1]:1'bz,
 			gpioDir[ 0]?gpioOut[ 0]:1'bz
 		};
+`endif
 
 reg		uartTx;
 reg		uartRx;
 
-assign	fixedPins = {
+assign	fixedPinsOut = {
 	12'hzzz,
 	2'bz,
 	1'bz,		//UART RX
@@ -164,16 +184,16 @@ begin
 	uartNextRxHoldByte	= uartRxHoldByte;
 
 	uartTx				= uartLastTx;
-	uartRx				= fixedPins[1];
+	uartRx				= fixedPinsIn[1];
 	
-	nextTimer1MHz	= timer100MHz;
+	nextTimer1MHz	= timer1MHz;
 	nextTimer100MHz	= timer100MHz + 1;
 	{ stepTimer1MHz, nextFracTimer1MHz }	=
 		{ 1'b0, fracTimer1MHz } + 17'h0290;
 
 	if(stepTimer1MHz)
 	begin
-		nextTimer1MHz	= timer100MHz+1;
+		nextTimer1MHz	= timer1MHz+1;
 
 		{ uartStepTimer, uartNextFracTimer }	=
 			{ 1'b0, uartFracTimer } +
@@ -427,7 +447,7 @@ begin
 		16'hE100: begin
 			if(mmioInOE)
 				tMmioOK			= UMEM_OK_OK;
-			tMmioOutData	= gpioPins;
+			tMmioOutData	= gpioPinsIn;
 		end
 		16'hE104: begin
 			if(mmioInOE)

@@ -56,6 +56,7 @@ void __start()
 	int (*bootptr)();
 	int ci;
 
+	tk_con_init();
 	puts("Boot 0\n");
 	printf("Print 0 %0X %0X %0X %0X\n",
 		0x12345678, 0x9ABCDEF0, 0x1234CDEF, 0x9ABC5678);

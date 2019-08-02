@@ -1022,6 +1022,12 @@ int main(int argc, char **argv, char **env)
 
 	srambuf2=(uint32_t *)malloc(8192);
 	drambuf2=(uint32_t *)malloc(1<<27);
+	
+	memset(srambuf, 0, 8192);
+	memset(drambuf, 0, 1<<27);
+
+	memset(srambuf2, 0, 8192);
+	memset(drambuf2, 0, 1<<27);
 
 	fd=fopen("../../tst_jx2boot.bin", "rb");
 	if(fd)

@@ -5,6 +5,7 @@
 #include "tk_core.h"
 
 #include "tk_clib.c"
+#include "tk_conprn.c"
 #include "tk_puts.c"
 
 // #include "tk_mmpage.c"

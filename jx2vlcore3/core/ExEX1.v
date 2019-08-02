@@ -433,6 +433,10 @@ begin
 			tRegValRn1	= tValShad64;
 		end
 
+		JX2_UCMD_MUL3: begin
+			tRegIdCn1	= JX2_GR_IMM[4:0];
+		end
+
 `ifdef jx2_enable_swapn
 		JX2_UCMD_SWAPN: begin
 			tRegIdRn1	= regIdRm;

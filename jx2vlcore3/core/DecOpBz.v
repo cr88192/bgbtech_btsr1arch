@@ -283,6 +283,7 @@ begin
 			opNmid		= JX2_UCMD_ALUCMP;
 			opFmid		= JX2_FMID_REGREG;
 			opUCmdIx	= JX2_UCIX_ALU_TST;
+			opIty		= JX2_ITY_NW;
 		end
 		16'h15zz: begin		/* AND Rm, Rn */
 			opNmid		= JX2_UCMD_ALU3;
@@ -1031,24 +1032,28 @@ begin
 		16'h54zz: begin
 			opNmid		= JX2_UCMD_ALUCMP;
 			opFmid		= JX2_FMID_REGREG;
-			opIty		= JX2_ITY_SB;
+//			opIty		= JX2_ITY_SB;
 			opUCmdIx	= JX2_UCIX_ALU_TSTQ;
+			opIty		= JX2_ITY_NW;
 		end
 		16'h55zz: begin
 			opNmid		= JX2_UCMD_ALUCMP;
 			opFmid		= JX2_FMID_REGREG;
 			opUCmdIx	= JX2_UCIX_ALU_CMPQEQ;
+			opIty		= JX2_ITY_NW;
 		end
 		16'h56zz: begin
 			opNmid		= JX2_UCMD_MUL3;
 			opFmid		= JX2_FMID_REGREG;
-			opIty		= JX2_ITY_SB;
+//			opIty		= JX2_ITY_SB;
+			opIty		= JX2_ITY_NW;
 			opUCmdIx	= JX2_UCIX_MUL3_MULS;
 		end
 		16'h57zz: begin
 			opNmid		= JX2_UCMD_MUL3;
 			opFmid		= JX2_FMID_REGREG;
-			opIty		= JX2_ITY_SB;
+//			opIty		= JX2_ITY_SB;
+			opIty		= JX2_ITY_NW;
 			opUCmdIx	= JX2_UCIX_MUL3_MULU;
 		end
 

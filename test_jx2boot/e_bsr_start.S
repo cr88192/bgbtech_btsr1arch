@@ -22,6 +22,8 @@ _start:
 //	mov STACK_BASE, sp
 	mov STACK_BASE_USR, sp
 
+	bsr tk_checksane_asm
+
 	bsr copy_data
 
 	bsr zero_bss

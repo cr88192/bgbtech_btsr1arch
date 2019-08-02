@@ -740,10 +740,15 @@ begin
 
 
 	/* EX1 */
-	ex1RegInDlr		= gprOutDlr;
-	ex1RegInDhr		= gprOutDhr;
-	ex1RegInSp		= gprOutSp;
-	ex1RegInLr		= crOutLr;
+//	ex1RegInDlr		= gprOutDlr;
+//	ex1RegInDhr		= gprOutDhr;
+//	ex1RegInSp		= gprOutSp;
+//	ex1RegInLr		= crOutLr;
+	ex1RegInDlr		= ex2RegOutDlr;
+	ex1RegInDhr		= ex2RegOutDhr;
+	ex1RegInSp		= ex2RegOutSp;
+	ex1RegInLr		= ex2RegOutLr;
+
 //	ex1RegInSr		= crOutSr;
 	ex1RegInSr		= ex2RegOutSr;
 

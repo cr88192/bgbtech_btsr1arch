@@ -9,25 +9,34 @@
 module TopUnit(
 	/* verilator lint_off UNUSED */
 	clock,		reset,
-	gpioPins,
-	fixedPins,
+//	gpioPins,
+//	fixedPins,
 
-	ddrData,
-	ddrAddr,
-	ddrBa,
-	ddrCs, ddrRas, ddrCas, ddrWe, ddrCke,
-	ddrClk,
-	vgaRed, vgaGrn, vgaBlu, vgaHsync, vgaVsync
+	ddrData,	ddrAddr,	ddrBa,
+	ddrCs,		ddrRas,		ddrCas,
+	ddrWe,		ddrCke,		ddrClk,
+
+	vgaRed,		vgaGrn,		vgaBlu,
+	vgaHsync,	vgaVsync,
+
+	uartTxD,	uartRxD,
+	uartCtS,	uartRtS,
+	ps2_clk,	ps2_data,
+
+	sdc_dat,	sdc_clk,	sdc_cmd,	sdc_ena,
+
+	aud_mono_out
 	);
 
 input			clock;
 input			reset;
-inout[31:0]		gpioPins;
-inout[15:0]		fixedPins;
+// inout[31:0]		gpioPins;
+// inout[15:0]		fixedPins;
 
 inout[15:0]		ddrData;		//DDR data pins
 
-output[13:0]	ddrAddr;		//Address pins
+// output[13:0]	ddrAddr;		//Address pins
+output[12:0]	ddrAddr;		//Address pins
 output[2:0]		ddrBa;			//Bank Address pins
 
 output			ddrCs;
@@ -52,6 +61,36 @@ output[3:0]		vgaBlu;
 output			vgaHsync;
 output			vgaVsync;
 
+output			uartTxD;
+input			uartRxD;
+input			uartCtS;
+output			uartRtS;
+
+inout			ps2_clk;
+inout			ps2_data;
+
+inout[3:0]		sdc_dat;
+output			sdc_clk;
+output			sdc_cmd;
+output			sdc_ena;
+
+output			aud_mono_out;
+
+assign			ps2_clk		= 1'bz;
+assign			ps2_data	= 1'bz;
+
+wire			sdc_sclk;		//clock to SDcard
+wire			sdc_do;			//data from SDcard
+wire			sdc_di;			//data to SDcard
+wire			sdc_cs;			//chip-select for SDcard
+
+assign		sdc_clk	= sdc_sclk;
+assign		sdc_do	= sdc_dat[0];
+assign		sdc_dat[1]	= 1'bz;
+assign		sdc_dat[2]	= 1'bz;
+assign		sdc_dat[3]	= sdc_cs;
+assign		sdc_cmd		= sdc_di;
+
 
 // reg[127:0]	ddrMemDataIn;
 wire[127:0]		ddrMemDataIn;
@@ -61,6 +100,9 @@ wire[31:0]		ddrMemAddr;
 // reg[4:0]		ddrMemOpm;
 wire[4:0]		ddrMemOpm;
 wire[1:0]		ddrMemOK;
+
+wire[13:0]		ddrAddr1;		//Address pins
+assign		ddrAddr = ddrAddr1[12:0];
 
 MmiModDdr3		ddr(
 	clock, reset,
@@ -72,7 +114,7 @@ MmiModDdr3		ddr(
 	ddrData_I,
 	ddrData_O,
 	ddrData_En,
-	ddrAddr,
+	ddrAddr1,
 	ddrBa,
 	ddrCs, ddrRas, ddrCas, ddrWe, ddrCke,
 	ddrClk);
@@ -126,9 +168,19 @@ reg[31:0]		gpioAddr;
 reg[4:0]		gpioOpm;
 wire[1:0]		gpioOK;
 
+wire[31:0]		gpioPinsOut;
+wire[31:0]		gpioPinsIn;
+wire[31:0]		gpioPinsDir;
+wire[15:0]		fixedPinsOut;
+wire[15:0]		fixedPinsIn;
+
+assign			uartRxD = fixedPinsOut[0];
+assign			fixedPinsIn[1] = uartTxD;
+
 MmiModGpio	gpio(
 	clock,			reset,
-	gpioPins,		fixedPins,
+	gpioPinsOut,	gpioPinsIn,		gpioPinsDir,
+	fixedPinsOut,	fixedPinsIn,
 	
 	gpioInData,		gpioOutData,	gpioAddr,
 	gpioOpm,		gpioOK
@@ -195,8 +247,7 @@ begin
 		mmioInData	= gpioOutData;
 		mmioOK		= gpioOK;
 	end
-
-	if(scrnMmioOK != UMEM_OK_READY)
+	else if(scrnMmioOK != UMEM_OK_READY)
 	begin
 		mmioInData	= scrnMmioOutData;
 		mmioOK		= scrnMmioOK;
