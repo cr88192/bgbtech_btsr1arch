@@ -233,6 +233,8 @@ byte *TKFAT_GetSectorStaticBuffer(TKFAT_ImageInfo *img,
 		__debugbreak();
 	}
 
+	printf("GetSector: buf=%p\n", buf);
+
 //	printf("GetSector: Index=%02X\n", i);
 	
 	img->sbc_buf[i]=buf;
@@ -333,9 +335,15 @@ void TKFAT_ReadImageMBR(TKFAT_ImageInfo *img)
 		__debugbreak();
 	}
 
+	printf("TKFAT_ReadImageMBR: img=%p, mbr=%p\n", img, img->mbr);
+
 	i=tkfat_getWord(img->mbr->aa55);
 	if(i!=0xAA55)
-		printf("TKFAT_ReadImageMBR: Not 55-AA\n");
+	{
+		printf("TKFAT_ReadImageMBR: Not 55-AA, got %X, %02X-%02X\n", i,
+			((byte *)(img->mbr))[510], ((byte *)(img->mbr))[511]);
+		__debugbreak();
+	}
 
 	for(i=0; i<4; i++)
 	{
@@ -735,7 +743,10 @@ void TKFAT_ReadImageFAT(TKFAT_ImageInfo *img)
 		
 	img->isfat16=false;
 	if(cln<=65525)
+	{
 		img->isfat16=true;
+//		__debugbreak();
+	}
 	
 	printf("TKFAT_ReadImageFAT: Read FAT%d\n", img->isfat16?16:32);
 	printf("  LBA FAT1=%08X (Offs=%08X)\n",

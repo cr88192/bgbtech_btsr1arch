@@ -631,6 +631,14 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 			op->Run=BJX2_Op_CMPGT_RegReg;
 			break;
 
+#if 1
+		case 0xF:	/* 1Fzz */
+			op->nmid=BJX2_NMID_CMPGE;
+			op->fmid=BJX2_FMID_REGREG;
+			op->Run=BJX2_Op_CMPGE_RegReg;
+			break;
+#endif
+
 #if 0
 		case 0xF:	/* 1Fzz */
 			op->nmid=BJX2_NMID_ADDSL;

@@ -241,6 +241,12 @@ begin
 			tRegOutSr[1:0]	= regValAluRes[65:64];
 		end
 	
+		JX2_UCMD_UNARY: begin
+			tRegIdRn2		= regIdRm;			//
+			tRegValRn2		= regValAluRes[63:0];		//
+			tRegOutSr[1:0]	= regValAluRes[65:64];
+		end
+
 		JX2_UCMD_BRA: begin
 		end
 		JX2_UCMD_BSR: begin
@@ -251,7 +257,9 @@ begin
 		end
 		
 		JX2_UCMD_MUL3: begin
-			if(tHoldCyc!=1)
+//			if(tHoldCyc!=1)
+//			if(tHoldCyc!=4)
+			if(tHoldCyc!=3)
 				tExHold=1;
 
 			casez(opUIxt[1:0])
@@ -295,6 +303,8 @@ begin
 		end
 		
 		JX2_UCMD_MOV_RC: begin
+		end
+		JX2_UCMD_MOV_CR: begin
 		end
 	
 		default: begin

@@ -333,32 +333,32 @@ begin
 			opNmid		= JX2_UCMD_ALUCMP;
 			opFmid		= JX2_FMID_REGREG;
 //			opIty		= JX2_ITY_SB;
-//			opIty		= JX2_ITY_NB;
-			opIty		= JX2_ITY_NW;
+			opIty		= JX2_ITY_NB;
+//			opIty		= JX2_ITY_NW;
 			opUCmdIx	= JX2_UCIX_ALU_CMPEQ;
 		end
 		16'h1Dzz: begin
 			opNmid		= JX2_UCMD_ALUCMP;
 			opFmid		= JX2_FMID_REGREG;
 //			opIty		= JX2_ITY_SB;
-//			opIty		= JX2_ITY_NB;
-			opIty		= JX2_ITY_NW;
+			opIty		= JX2_ITY_NB;
+//			opIty		= JX2_ITY_NW;
 			opUCmdIx	= JX2_UCIX_ALU_CMPHI;
 		end
 		16'h1Ezz: begin
 			opNmid		= JX2_UCMD_ALUCMP;
 			opFmid		= JX2_FMID_REGREG;
 //			opIty		= JX2_ITY_SB;
-//			opIty		= JX2_ITY_NB;
-			opIty		= JX2_ITY_NW;
+			opIty		= JX2_ITY_NB;
+//			opIty		= JX2_ITY_NW;
 			opUCmdIx	= JX2_UCIX_ALU_CMPGT;
 		end
 		16'h1Fzz: begin
 			opNmid		= JX2_UCMD_ALUCMP;
 			opFmid		= JX2_FMID_REGREG;
 //			opIty		= JX2_ITY_SB;
-//			opIty		= JX2_ITY_NB;
-			opIty		= JX2_ITY_NW;
+			opIty		= JX2_ITY_NB;
+//			opIty		= JX2_ITY_NW;
 			opUCmdIx	= JX2_UCIX_ALU_CMPGE;
 		end
 
@@ -443,21 +443,25 @@ begin
 		16'h2Czz: begin
 			opNmid		= JX2_UCMD_ALUCMP;
 			opFmid		= JX2_FMID_IMM4ZREG;
+			opIty		= JX2_ITY_SW;
 			opUCmdIx	= JX2_UCIX_ALU_CMPEQ;
 		end
 		16'h2Dzz: begin
 			opNmid		= JX2_UCMD_ALUCMP;
 			opFmid		= JX2_FMID_IMM4NREG;
+			opIty		= JX2_ITY_SW;
 			opUCmdIx	= JX2_UCIX_ALU_CMPEQ;
 		end
 		16'h2Ezz: begin
 			opNmid		= JX2_UCMD_ALUCMP;
 			opFmid		= JX2_FMID_IMM4ZREG;
+			opIty		= JX2_ITY_SW;
 			opUCmdIx	= JX2_UCIX_ALU_CMPGT;
 		end
 		16'h2Fzz: begin
 			opNmid		= JX2_UCMD_ALUCMP;
 			opFmid		= JX2_FMID_IMM4ZREG;
+			opIty		= JX2_ITY_SW;
 			opUCmdIx	= JX2_UCIX_ALU_CMPGE;
 		end
 
@@ -640,20 +644,24 @@ begin
 			11'h2z0: begin
 				opNmid		= JX2_UCMD_JMP;
 				opFmid		= JX2_FMID_REG;
+				opIty		= JX2_ITY_SL;
 			end
 			11'h2z1: begin
 				opNmid		= JX2_UCMD_JSR;
 				opFmid		= JX2_FMID_REG;
+				opIty		= JX2_ITY_SL;
 			end
 			11'h2z2: begin
 				opNmid		= JX2_UCMD_JMP;
 				opFmid		= JX2_FMID_REG;
 				opCcty		= JX2_IXC_CT;
+				opIty		= JX2_ITY_SL;
 			end
 			11'h2z3: begin
 				opNmid		= JX2_UCMD_JMP;
 				opFmid		= JX2_FMID_REG;
 				opCcty		= JX2_IXC_CF;
+				opIty		= JX2_ITY_SL;
 			end
 			11'h2z4: begin
 				opNmid		= JX2_UCMD_CONV_RR;
@@ -877,11 +885,13 @@ begin
 			11'h6zD: begin
 				opNmid		= JX2_UCMD_ALUCMP;
 				opFmid		= JX2_FMID_DRREG;
+				opIty		= JX2_ITY_NB;
 				opUCmdIx	= JX2_UCIX_ALU_CMPHS;
 			end
 			11'h6zE: begin
 				opNmid		= JX2_UCMD_ALUCMP;
 				opFmid		= JX2_FMID_DRREG;
+				opIty		= JX2_ITY_NB;
 				opUCmdIx	= JX2_UCIX_ALU_CMPGE;
 			end
 			11'h6zF: begin
@@ -1034,13 +1044,15 @@ begin
 			opFmid		= JX2_FMID_REGREG;
 //			opIty		= JX2_ITY_SB;
 			opUCmdIx	= JX2_UCIX_ALU_TSTQ;
-			opIty		= JX2_ITY_NW;
+//			opIty		= JX2_ITY_NW;
+			opIty		= JX2_ITY_NB;
 		end
 		16'h55zz: begin
 			opNmid		= JX2_UCMD_ALUCMP;
 			opFmid		= JX2_FMID_REGREG;
 			opUCmdIx	= JX2_UCIX_ALU_CMPQEQ;
-			opIty		= JX2_ITY_NW;
+//			opIty		= JX2_ITY_NW;
+			opIty		= JX2_ITY_NB;
 		end
 		16'h56zz: begin
 			opNmid		= JX2_UCMD_MUL3;
@@ -1078,13 +1090,17 @@ begin
 		16'h5Bzz: begin
 			opNmid		= JX2_UCMD_ALUCMP;
 			opFmid		= JX2_FMID_REGREG;
-			opIty		= JX2_ITY_SB;
+//			opIty		= JX2_ITY_SB;
+//			opIty		= JX2_ITY_NW;
+			opIty		= JX2_ITY_NB;
 			opUCmdIx	= JX2_UCIX_ALU_CMPQHI;
 		end
 		16'h5Czz: begin
 			opNmid		= JX2_UCMD_ALUCMP;
 			opFmid		= JX2_FMID_REGREG;
-			opIty		= JX2_ITY_SB;
+//			opIty		= JX2_ITY_SB;
+//			opIty		= JX2_ITY_NW;
+			opIty		= JX2_ITY_NB;
 			opUCmdIx	= JX2_UCIX_ALU_CMPQGT;
 		end
 
@@ -1150,25 +1166,54 @@ begin
 			opUCmdIx	= JX2_UCIX_FPCX_SG;
 		end
 
+		16'h68zz: begin
+			opNmid		= JX2_UCMD_ALU3;
+			opFmid		= JX2_FMID_IMM4ZREG;
+			opIty		= JX2_ITY_SW;
+			opUCmdIx	= JX2_UCIX_ALU_ADD;
+		end
+		16'h69zz: begin
+			opNmid		= JX2_UCMD_ALU3;
+			opFmid		= JX2_FMID_IMM4NREG;
+			opIty		= JX2_ITY_SW;
+			opUCmdIx	= JX2_UCIX_ALU_ADD;
+		end
+
+		16'h6Azz: begin
+			opNmid		= JX2_UCMD_CONV_RR;
+			opFmid		= JX2_FMID_IMM4ZREG;
+			opIty		= JX2_ITY_SB;
+			opUCmdIx	= JX2_UCIX_CONV_MOV;
+		end
+		16'h6Bzz: begin
+			opNmid		= JX2_UCMD_CONV_RR;
+			opFmid		= JX2_FMID_IMM4NREG;
+			opIty		= JX2_ITY_SB;
+			opUCmdIx	= JX2_UCIX_CONV_MOV;
+		end
 
 		16'h6Czz: begin
 			opNmid		= JX2_UCMD_ALUCMP;
 			opFmid		= JX2_FMID_IMM4ZREG;
+			opIty		= JX2_ITY_SW;
 			opUCmdIx	= JX2_UCIX_ALU_CMPEQ;
 		end
 		16'h6Dzz: begin
 			opNmid		= JX2_UCMD_ALUCMP;
 			opFmid		= JX2_FMID_IMM4NREG;
+			opIty		= JX2_ITY_SW;
 			opUCmdIx	= JX2_UCIX_ALU_CMPEQ;
 		end
 		16'h6Ezz: begin
 			opNmid		= JX2_UCMD_ALUCMP;
 			opFmid		= JX2_FMID_IMM4ZREG;
+			opIty		= JX2_ITY_SW;
 			opUCmdIx	= JX2_UCIX_ALU_CMPGT;
 		end
 		16'h6Fzz: begin
 			opNmid		= JX2_UCMD_ALUCMP;
 			opFmid		= JX2_FMID_IMM4ZREG;
+			opIty		= JX2_ITY_SW;
 			opUCmdIx	= JX2_UCIX_ALU_CMPGE;
 		end
 
@@ -1719,9 +1764,23 @@ begin
 //			opRegN	= opRegN_Dfl;
 //			opRegN	= opRegN_Yr;
 //			opRegM	= JX2_GR_IMM;
-			opRegO	= opRegN_Yr;
-			opRegM	= JX2_GR_IMM;
+
 			opUIxt	= {opCcty, opUCmdIx[5:0]};
+			opRegN	= opRegN_Yr;
+			case(opIty)
+				JX2_ITY_SB: begin
+					opRegO	= opRegN_Yr;
+					opRegM	= JX2_GR_IMM;
+				end
+				JX2_ITY_SW: begin
+					opRegM	= opRegN_Yr;
+					opRegO	= JX2_GR_IMM;
+				end
+				default: begin
+					opRegO	= opRegN_Yr;
+					opRegM	= JX2_GR_IMM;
+				end
+			endcase
 		end
 
 		JX2_FMID_IMM4NREG: begin
@@ -1729,9 +1788,23 @@ begin
 //			opRegN	= opRegN_Dfl;
 //			opRegN	= opRegN_Yr;
 //			opRegM	= JX2_GR_IMM;
-			opRegO	= opRegN_Yr;
-			opRegM	= JX2_GR_IMM;
+
 			opUIxt	= {opCcty, opUCmdIx[5:0]};
+			opRegN	= opRegN_Yr;
+			case(opIty)
+				JX2_ITY_SB: begin
+					opRegO	= opRegN_Yr;
+					opRegM	= JX2_GR_IMM;
+				end
+				JX2_ITY_SW: begin
+					opRegM	= opRegN_Yr;
+					opRegO	= JX2_GR_IMM;
+				end
+				default: begin
+					opRegO	= opRegN_Yr;
+					opRegM	= JX2_GR_IMM;
+				end
+			endcase
 		end
 
 		JX2_FMID_REGPC: begin
@@ -1841,7 +1914,8 @@ begin
 			endcase
 			opRegO	= JX2_GR_IMM;
 			opUIxt	= {opCcty, opBty[1:0], 1'b1, opBty};
-			opImm	= {UV25_00, 3'b0, opBty[2], istrWord[3:0]};
+//			opImm	= {UV25_00, 3'b0, opBty[2], istrWord[3:0]};
+			opImm	= {UV25_00, 4'b0, istrWord[3:0]};
 		end
 
 		default: begin

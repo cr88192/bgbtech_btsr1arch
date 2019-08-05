@@ -559,6 +559,11 @@ int nmid;
 {"mov.w",	BGBCC_SH_NMID_MOVW},
 {"mov.l",	BGBCC_SH_NMID_MOVL},
 {"mov.q",	BGBCC_SH_NMID_MOVQ},
+
+{"movu.b",	BGBCC_SH_NMID_MOVUB},
+{"movu.w",	BGBCC_SH_NMID_MOVUW},
+{"movu.l",	BGBCC_SH_NMID_MOVUL},
+
 {"add",		BGBCC_SH_NMID_ADD},
 {"addc",	BGBCC_SH_NMID_ADDC},
 {"addv",	BGBCC_SH_NMID_ADDV},
@@ -602,7 +607,10 @@ int nmid;
 {"dmuls",	BGBCC_SH_NMID_DMULS},
 {"dmulu.l",	BGBCC_SH_NMID_DMULU},
 {"dmuls.l",	BGBCC_SH_NMID_DMULS},
+{"mulu",	BGBCC_SH_NMID_DMULU},
+{"muls",	BGBCC_SH_NMID_DMULS},
 {"tst",		BGBCC_SH_NMID_TST},
+{"test",	BGBCC_SH_NMID_TST},
 {"and",		BGBCC_SH_NMID_AND},
 {"xor",		BGBCC_SH_NMID_XOR},
 {"or",		BGBCC_SH_NMID_OR},

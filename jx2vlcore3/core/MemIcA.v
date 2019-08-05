@@ -39,15 +39,23 @@ reg[31:0]		tMemPcAddr;		//memory PC address
 reg[ 4:0]		tMemPcOpm;		//memory PC output-enable
 
 `ifdef jx2_reduce_l1sz
-reg[63:0]		icCaMemA[15:0];		//Local L1 tile memory (Even)
-reg[63:0]		icCaMemB[15:0];		//Local L1 tile memory (Odd)
-reg[31:0]		icCaAddrA[15:0];	//Local L1 tile address
-reg[31:0]		icCaAddrB[15:0];	//Local L1 tile address
+(* ram_style = "distributed" *)
+	reg[63:0]		icCaMemA[15:0];		//Local L1 tile memory (Even)
+(* ram_style = "distributed" *)
+	reg[63:0]		icCaMemB[15:0];		//Local L1 tile memory (Odd)
+(* ram_style = "distributed" *)
+	reg[31:0]		icCaAddrA[15:0];	//Local L1 tile address
+(* ram_style = "distributed" *)
+	reg[31:0]		icCaAddrB[15:0];	//Local L1 tile address
 `else
-reg[63:0]		icCaMemA[63:0];		//Local L1 tile memory (Even)
-reg[63:0]		icCaMemB[63:0];		//Local L1 tile memory (Odd)
-reg[31:0]		icCaAddrA[63:0];	//Local L1 tile address
-reg[31:0]		icCaAddrB[63:0];	//Local L1 tile address
+(* ram_style = "distributed" *)
+	reg[63:0]		icCaMemA[63:0];		//Local L1 tile memory (Even)
+(* ram_style = "distributed" *)
+	reg[63:0]		icCaMemB[63:0];		//Local L1 tile memory (Odd)
+(* ram_style = "distributed" *)
+	reg[31:0]		icCaAddrA[63:0];	//Local L1 tile address
+(* ram_style = "distributed" *)
+	reg[31:0]		icCaAddrB[63:0];	//Local L1 tile address
 `endif
 
 reg[27:0]		tNxtAddrA;

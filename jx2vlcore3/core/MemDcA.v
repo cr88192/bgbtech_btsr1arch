@@ -191,6 +191,11 @@ reg		tMemLatchWdA;
 reg		tMemLatchWdB;
 reg		tMmioLatch;
 reg		tMmioDone;
+reg		tMmioDoneHld;
+
+reg		tMsgLatch;
+reg		tNxtMsgLatch;
+reg		tLstMsgLatch;
 
 reg			tHoldWrCyc;
 reg[2:0]	tHoldCyc;
@@ -200,10 +205,13 @@ reg[31: 0]	tRegInAddr;		//input PC address
 reg[ 4:0]	tRegInOpm;
 reg[63:0]	tRegInVal;
 
+reg[31: 0]	tMmioInData;		//input PC address
 
 
 always @*
 begin
+	tNxtMsgLatch = 0;
+
 	/* Stage A */
 
 //	tRegInAddr = regInAddr;
@@ -311,8 +319,12 @@ begin
 	endcase
 
 `ifdef jx2_debug_l1ds
-	if(tReqOpmNz)
-		$display("Addr=%X tBlkData=%X", tInAddr, tBlkData);
+	if(tReqOpmNz && !tReqIsMmio)
+	begin
+		if(!tMsgLatch)
+			$display("Addr=%X tBlkData=%X", tInAddr, tBlkData);
+		tNxtMsgLatch=1;
+	end
 `endif
 
 // `ifdef def_true
@@ -341,8 +353,12 @@ begin
 `endif
 
 `ifdef jx2_debug_l1ds
-	if(tReqOpmNz)
-		$display("tInByteIx=%X tBlkExData=%X", tInByteIx, tBlkExData);
+	if(tReqOpmNz && !tReqIsMmio)
+	begin
+		if(!tMsgLatch)
+			$display("tInByteIx=%X tBlkExData=%X", tInByteIx, tBlkExData);
+		tNxtMsgLatch=1;
+	end
 `endif
 	
 	case(tInOpm[2:0])
@@ -361,6 +377,15 @@ begin
 		3'b110: tRegOutVal = { UV32_00, tBlkExData[31:0] };
 		3'b111: tRegOutVal = tBlkExData[63:0];
 	endcase
+
+`ifdef jx2_debug_l1ds
+	if(tReqOpmNz && !tReqIsMmio)
+	begin
+		if(!!tMsgLatch)
+			$display("tInOpm=%X tRegOutVal=%X", tInOpm, tRegOutVal);
+		tNxtMsgLatch=1;
+	end
+`endif
 	
 	case(tInOpm[1:0])
 		2'b00: tBlkInData = { tBlkExData [63: 8], tDataIn[ 7:0] };
@@ -388,22 +413,30 @@ begin
 	if(tReqOpmNz && !tReqIsMmio)
 		tHold = (tMiss || tDoMiBlk) || (tMemLatchA || tMemLatchB);
 		
+`ifdef jx2_debug_l1ds
 	if(tHold)
 	begin
-`ifdef jx2_debug_l1ds
-		$display("L1D$ Hold, Miss=%d(%d,%d) MiBlk=%d",
-			tMiss, tMissA, tMissB, tDoMiBlk);
-		if(tMissA)
-			$display("L1D$ MissA, Blk=%X, Req=%X", tBlkAddrA, tReqAddrA);
-		if(tMissB)
-			$display("L1D$ MissB, Blk=%X, Req=%X", tBlkAddrB, tReqAddrB);
-`endif
+		if(!tMsgLatch)
+		begin
+			$display("L1D$ Hold, Miss=%d(%d,%d) MiBlk=%d",
+				tMiss, tMissA, tMissB, tDoMiBlk);
+			if(tMissA)
+				$display("L1D$ MissA, Blk=%X, Req=%X", tBlkAddrA, tReqAddrA);
+			if(tMissB)
+				$display("L1D$ MissB, Blk=%X, Req=%X", tBlkAddrB, tReqAddrB);
+		end
+		tNxtMsgLatch=1;
 	end
+`endif
 
 	if(tDoMiBlk)
 	begin
 `ifdef jx2_debug_l1ds
-		$display("L1D$ Update Missed Block");
+		if(!tMsgLatch)
+		begin
+			$display("L1D$ Update Missed Block");
+		end
+		tNxtMsgLatch=1;
 `endif
 
 		tStBlkDataA = tMiBlkDataA;
@@ -419,11 +452,16 @@ begin
 		tDoStBlkB	= tDoMiBlkB;
 	end
 	else
-		if(tInOpm[4] && !tReqIsMmio)
+		if(tInOpm[4] && !tReqIsMmio && !tMiss)
 	begin
 
 `ifdef jx2_debug_l1ds
-		$display("L1D$ Do Write Block A=%X D=%X", tInAddr, tBlkDataW);
+		if(!tMsgLatch)
+		begin
+			$display("L1D$ Do Write Block A=%X D=%X",
+				tInAddr, tBlkDataW);
+		end
+		tNxtMsgLatch=1;
 `endif
 
 		tStBlkAddrA	= tReqAddrA;
@@ -477,19 +515,24 @@ begin
 
 	if(tReqIsMmio)
 	begin
-	
+//		tRegOutVal = {
+//			(memDataIn[31] && !tInOpm[2]) ? UV32_FF : UV32_00,
+//			memDataIn[31:0]};
+		tRegOutVal = {
+			(tMmioInData[31] && !tInOpm[2]) ? UV32_FF : UV32_00,
+			tMmioInData[31:0]};
+
 		if(!tMmioDone || tMmioLatch)
 		begin
 `ifdef jx2_debug_l1ds
-			$display("MMIO A=%X", tInAddr);
+//			if(!tMsgLatch && !tLstMsgLatch)
+			if(!tMsgLatch)
+				$display("MMIO A=%X Opm=%X V=%X", tInAddr, tInOpm, tRegOutVal);
+			tNxtMsgLatch=1;
 `endif
 
 			tHold = 1;
 		end
-		
-		tRegOutVal = {
-			(memDataIn[31] && !tInOpm[2]) ? UV32_FF : UV32_00,
-			memDataIn[31:0]};
 	end
 
 
@@ -515,6 +558,8 @@ end
 
 always @(posedge clock)
 begin
+	tLstMsgLatch	<= tMsgLatch;
+	tMsgLatch		<= tNxtMsgLatch;
 
 	/* Stage A */
 
@@ -620,7 +665,7 @@ begin
 //			if((memOK==UMEM_OK_READY) || (memOK==UMEM_OK_FAULT))
 			begin
 `ifdef jx2_debug_l1ds
-				$display("L1D$: MissA Done");
+				$display("L1D$: MissA Done, A=%X", tBlkAddrA);
 `endif
 
 				tMemLatchA		<= 0;
@@ -638,7 +683,8 @@ begin
 			if(!tBlkDirtyA || tMemLatchWdA)
 			begin
 `ifdef jx2_debug_l1ds
-				$display("L1D$: MissA Dn memDataIn=%X", memDataIn);
+				$display("L1D$: MissA Dn memDataIn=%X A=%X",
+					memDataIn, tBlkAddrA);
 `endif
 			
 				tMemLatchDnA	<= 1;
@@ -665,7 +711,7 @@ begin
 			if(tBlkDirtyA && !tMemLatchWbA)
 			begin
 `ifdef jx2_debug_l1ds
-				$display("L1D$ MissA ReadySt");
+				$display("L1D$ MissA ReadySt, A=%X", tBlkAddrA);
 				$display("L1D$ MissA, Write=%X", tBlkDataA);
 `endif
 			
@@ -678,7 +724,7 @@ begin
 			else
 			begin
 `ifdef jx2_debug_l1ds
-				$display("L1D$ MissA ReadyLd");
+				$display("L1D$ MissA ReadyLd, A=%X", tBlkAddrA);
 `endif
 
 				tMemLatchA		<= 1;
@@ -710,7 +756,7 @@ begin
 //			if((memOK==UMEM_OK_READY) || (memOK==UMEM_OK_FAULT))
 			begin
 `ifdef jx2_debug_l1ds
-				$display("L1D$: MissB Done");
+				$display("L1D$: MissB Done, A=%X", tBlkAddrB);
 `endif
 
 				tMemLatchB		<= 0;
@@ -729,7 +775,8 @@ begin
 			if(!tBlkDirtyB || tMemLatchWdB)
 			begin
 `ifdef jx2_debug_l1ds
-				$display("L1D$: MissB Dn memDataIn=%X", memDataIn);
+				$display("L1D$: MissB Dn memDataIn=%X A=%X",
+					memDataIn, tBlkAddrB);
 `endif
 
 				tMemLatchDnB	<= 1;
@@ -756,7 +803,7 @@ begin
 			if(tBlkDirtyB && !tMemLatchWbB)
 			begin
 `ifdef jx2_debug_l1ds
-				$display("L1D$ MissB ReadySt");
+				$display("L1D$ MissB ReadySt A=%X", tBlkAddrB);
 				$display("L1D$ MissB, Write=%X", tBlkDataB);
 `endif
 
@@ -769,7 +816,7 @@ begin
 			else
 			begin
 `ifdef jx2_debug_l1ds
-				$display("L1D$ MissB ReadyLd");
+				$display("L1D$ MissB ReadyLd A=%X", tBlkAddrB);
 `endif
 
 				tMemLatchB		<= 1;
@@ -809,7 +856,7 @@ begin
 		tMemAddr		<= tInAddr;
 		tMemDataOut		<= { UV64_XX, tDataIn };
 
-		if(tMmioDone)
+		if(tMmioDone || tMmioDoneHld)
 		begin
 			tMemOpm	<= UMEM_OPM_READY;
 			if(memOK==UMEM_OK_READY)
@@ -822,6 +869,8 @@ begin
 		begin
 			tMemOpm			<= UMEM_OPM_READY;
 			tMmioDone		<= 1;
+			tMmioDoneHld	<= 1;
+			tMmioInData		<= memDataIn[31:0];
 		end
 		else
 			if((memOK==UMEM_OK_HOLD) && tMmioLatch)
@@ -843,7 +892,10 @@ begin
 	end
 	else
 	begin
-		tMmioDone	<= 0;
+		tMmioDone		<= 0;
+
+		if(!dcInHold)
+			tMmioDoneHld	<= 0;
 	end
 
 	tRegOutVal2		<= tRegOutVal;	//output PC value

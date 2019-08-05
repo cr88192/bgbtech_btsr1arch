@@ -135,6 +135,9 @@ begin
 	endcase
 	
 	tRegValCm = tValCmA;
+
+// `ifndef def_true
+`ifdef def_true
 	if(!tValCmZz)
 	begin
 		if(regIdCm==regIdCn2)
@@ -142,6 +145,7 @@ begin
 		if(regIdCm==regIdCn1)
 			tRegValCm=regValCn1;
 	end
+`endif
 end
 
 always @(posedge clock)

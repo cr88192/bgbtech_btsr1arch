@@ -613,10 +613,10 @@ void MemUpdateForBus()
 				top->memOK=1;
 			}else if(is_dram)
 			{
-				top->memDataIn[0]=drambuf[((addr>>2)+0)&0x3FFFFFF];
-				top->memDataIn[1]=drambuf[((addr>>2)+1)&0x3FFFFFF];
-				top->memDataIn[2]=drambuf[((addr>>2)+2)&0x3FFFFFF];
-				top->memDataIn[3]=drambuf[((addr>>2)+3)&0x3FFFFFF];
+				top->memDataIn[0]=drambuf[((addr>>2)+0)&0x1FFFFFF];
+				top->memDataIn[1]=drambuf[((addr>>2)+1)&0x1FFFFFF];
+				top->memDataIn[2]=drambuf[((addr>>2)+2)&0x1FFFFFF];
+				top->memDataIn[3]=drambuf[((addr>>2)+3)&0x1FFFFFF];
 				top->memOK=1;
 			}else
 			{
@@ -638,6 +638,11 @@ void MemUpdateForBus()
 
 		if(top->memOpm&0x10)
 		{
+			top->memDataIn[0]=0xFFFFFFFFU;
+			top->memDataIn[1]=0xFFFFFFFFU;
+			top->memDataIn[2]=0xFFFFFFFFU;
+			top->memDataIn[3]=0xFFFFFFFFU;
+
 			if(is_mmio)
 			{
 				if(!mmio_latched)
@@ -662,10 +667,10 @@ void MemUpdateForBus()
 				top->memOK=1;
 			}else if(is_dram)
 			{
-				drambuf[((addr>>2)+0)&0x3FFFFFF]=top->memDataOut[0];
-				drambuf[((addr>>2)+1)&0x3FFFFFF]=top->memDataOut[1];
-				drambuf[((addr>>2)+2)&0x3FFFFFF]=top->memDataOut[2];
-				drambuf[((addr>>2)+3)&0x3FFFFFF]=top->memDataOut[3];
+				drambuf[((addr>>2)+0)&0x1FFFFFF]=top->memDataOut[0];
+				drambuf[((addr>>2)+1)&0x1FFFFFF]=top->memDataOut[1];
+				drambuf[((addr>>2)+2)&0x1FFFFFF]=top->memDataOut[2];
+				drambuf[((addr>>2)+3)&0x1FFFFFF]=top->memDataOut[3];
 				top->memOK=1;
 			}else
 			{
@@ -913,6 +918,8 @@ int MemSimUpdateCache(
 
 	if(opm&0x10)
 	{
+//		printf("MemSimUpdateCache: Store A=%08X V=%08X\n", addr, val1);
+
 		switch(opm&7)
 		{
 		case 0x0:
@@ -1007,8 +1014,8 @@ int main(int argc, char **argv, char **env)
 
 	mhz=100;
 
-//	JX2R_UseImageCreateRamdisk(128*1024);
-	JX2R_UseImageCreateRamdisk(32*1024);
+	JX2R_UseImageCreateRamdisk(128*1024);
+//	JX2R_UseImageCreateRamdisk(32*1024);
 	JX2R_UseImageAddFile(
 		(char *)"BOOTLOAD.SYS",
 		(char *)"../../tk_qsrc/doomsrc2/doom_bjx2.exe");

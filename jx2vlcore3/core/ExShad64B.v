@@ -67,7 +67,7 @@ begin
 			{ tValRor[ 1:0], tValSht4 [63: 2] } : tValSht4 ;
 		tValSht1	= tValShN[0] ?
 			{ tValRor[   0], tValSht2 [63: 1] } : tValSht2 ;
-		tValRn		= { tValRor[0], tValSht2 [63: 1] };
+		tValRn		= { tValRor[0], tValSht1 [63: 1] };
 	end
 	else
 	begin

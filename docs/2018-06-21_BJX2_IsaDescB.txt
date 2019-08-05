@@ -365,6 +365,34 @@ This updates SR.T based on the result of the comparison.
 The contents of SR.S, and SR.PQRO are undefined following this operation.
 
 
+=== CPUID ===
+
+* 36jA  CPUID	#imm4
+
+Load CPUID bits into DHR:DLR.
+The immediate gives an index into a table of CPUID bits.
+
+Index 0:
+* (63:0): Gives an identifier for the processor.
+** 'BJX2xxyy', Identifies core as BJX2.
+** 'xx' gives the major ISA Profile and Profile Version.
+** 'yy' May give an additional version, or '  ' if absent.
+* (127:64): Implementation Specific Identifier.
+** This may be a magic number for a specific implementation or similar.
+** It may also identify who implemented the core.
+** If set to all zeroes, only the low results of CPUID are used.
+
+ISA Profiles:
+* 'A': Full Features
+* 'B': (Drop)
+* 'C': Basic, 32-bit Address Space.
+* 'D': Lite/Fix32 Profile, fixed-Length 32-bit instruction encodings
+* 'E': Lite Profile, No FPU or MMU, 32-bit Address Space
+* 'F': Lite Profile, Has GFP, No MMU, 32-bit Address Space
+
+Lite Profiles will leave out support for 48 bit instruction formats, and will similarly exclude the MMU.
+
+
 === CSELT ===
 
 * F0nm_5go0  CSELT		Rm, Ro, Rn
@@ -1213,6 +1241,19 @@ Perform a bitwise AND of the source and destination registers, updating SR.T bas
 A zero result will cause SR.T to be set, and a nonzero result will cause SR.T to be cleared.
 
 This operation will test all 64 bits.
+
+
+=== WEXMD (WEX) ===
+
+* 36n9  WEXMD	#imm4 //( 0..15)
+* 3En9  WEXMD	#imm4 //(16..31)
+
+Sets the Active WEX Profile.
+This instruction is No-Op if the core does not support WEX.
+
+This instruction will enable or disable WEX based on whether or not the given profile ID is supported by the core. This will be achieved by updating the value for SR.WXE based on the profile ID given as an immediate.
+
+If WEX is disabled, any WEX sequences encountered will be treated as if they were scalar instructions.
 
 
 === XOR ===

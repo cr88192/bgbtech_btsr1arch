@@ -4,6 +4,8 @@ Do Simple MOV+Conv style operation.
 
  */
 
+// `include "ExOpClz.v"
+
 module ExConv2R(
 	/* verilator lint_off UNUSED */
 	regValRs,
@@ -24,6 +26,13 @@ reg[63:0]	tRegOutVal;
 reg			tRegOutSrT;
 assign	regOutVal = tRegOutVal;
 assign	regOutSrT = tRegOutSrT;
+
+`ifndef def_true
+wire[7:0]		tClzVal;
+ExOpClz	clz(0, 0,
+	0, idUIxt,
+	regValRs, tClzVal);
+`endif
 
 always @*
 begin
@@ -48,6 +57,13 @@ begin
 			{ UV32_00, regValRs[31:0] };
 		JX2_UCIX_CONV_NOT:
 			tRegOutVal	= ~regValRs;
+
+`ifndef def_true
+		JX2_UCIX_CONV_CLZ:
+			tRegOutVal	= { UV56_00, tClzVal };
+		JX2_UCIX_CONV_CLZQ:
+			tRegOutVal	= { UV56_00, tClzVal };
+`endif
 
 		default: begin
 		end

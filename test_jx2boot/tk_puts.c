@@ -6,7 +6,7 @@ void putc(int val)
 	while(P_MMIO_DEBUG_STS&8);
 	P_MMIO_DEBUG_TX=val;
 	
-	tk_con_putc(val);
+//	tk_con_putc(val);
 }
 
 
@@ -136,7 +136,15 @@ void print_hex_n(u32 v, int n)
 
 	if(n>8)
 	{
-		puts("!%X!\n");
+//		__debugbreak();
+
+//		puts("!%X!\n");
+		puts("!%X! ");
+		print_hex(n);
+		puts(": ");
+		print_hex(v);
+
+		puts("\n");
 		__debugbreak();
 	}
 
@@ -159,6 +167,8 @@ int print_hex_genw(u32 v)
 	while(v>=16)
 //	while(v>>4)
 		{ v=v>>4; i++; }
+
+//	__debugbreak();
 
 #if 0
 	w=v; i=1;

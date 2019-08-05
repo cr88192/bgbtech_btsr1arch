@@ -177,6 +177,9 @@ parameter[47:0] UV48_FF			= 48'hFFFF_FFFFFFFF;	//
 parameter[55:0] UV56_00			= 56'h000000_00000000;	//
 parameter[55:0] UV56_FF			= 56'hFFFFFF_FFFFFFFF;	//
 
+parameter[56:0] UV57_00			= 57'h00000000_00000000;	//
+parameter[56:0] UV57_FF			= 57'h01FFFFFF_FFFFFFFF;	//
+
 parameter[62:0] UV63_00			= 63'h00000000_00000000;	//
 parameter[62:0] UV63_FF			= 63'h7FFFFFFF_FFFFFFFF;	//
 
@@ -254,6 +257,10 @@ REG, Bz:
 	SL: Rx, FixImm, Rx
 	SQ: Rn, FixImm, Rn
 
+REG, Fz:
+	SB: Ro, ZZR, Ro
+	SW: ZZR, Rm, Rn
+
 REGREG, Bz:
 	SB: Rm, Rn / Rm, DLR, Rn
 	SW: Rj, Rn / Rj, DLR, Rn
@@ -267,6 +274,25 @@ REGREG, Bz:
 	
 	NB: Rn, Rm, Rn
 	NW: Rm, Rn, Rn
+
+REGREG, Fz
+	SB: Rm, Ro, Rn
+	UB: Rm, Rn, Rn
+	NB: Rn, Rm, Rn
+
+
+IMM8REG, Fz
+	SB: Fzeo_iiii		Ro, Imm16s, Ro
+	SW: Fzeo_iiii		Imm16s, Ro, Ro
+
+	UB: Fzeo_jjjj		Ro, Imm16u, Ro
+	UW: Fzeo_jjjj		Imm16u, Ro, Ro
+
+	NW: Fzeo_jjjj		Imm16n, Ro, Ro
+
+	SQ: Fzze_zznz_iiii	Rn, Imm17s, Rn
+	UQ: Fzze_zznz_iiii	Rn, Imm17u, Rn
+	NQ: Fzze_zznz_iiii	Rn, Imm17n, Rn
 
 */
 
@@ -384,6 +410,9 @@ parameter[5:0] JX2_UCIX_ALU_PSBBL	= 6'h33;		//Packed ALU SBB
 
 parameter[5:0] JX2_UCIX_ALU_PCSELT	= 6'h3F;		//Packed CSELT
 
+parameter[5:0] JX2_UCIX_ALUN_CLZ	= 6'h00;		//Packed CSELT
+parameter[5:0] JX2_UCIX_ALUN_CLZQ	= 6'h20;		//Packed CSELT
+
 parameter[5:0] JX2_UCIX_PUSH_GR		= 6'h00;		//GPR
 parameter[5:0] JX2_UCIX_PUSH_CR		= 6'h01;		//Control Reg
 parameter[5:0] JX2_UCIX_PUSH_FR		= 6'h02;		//FPR
@@ -397,6 +426,9 @@ parameter[5:0] JX2_UCIX_CONV_EXTUB	= 6'h04;		//
 parameter[5:0] JX2_UCIX_CONV_EXTUW	= 6'h05;		//
 parameter[5:0] JX2_UCIX_CONV_EXTUL	= 6'h06;		//
 parameter[5:0] JX2_UCIX_CONV_NOT	= 6'h07;		//NOT
+
+parameter[5:0] JX2_UCIX_CONV_CLZ	= 6'h08;		//NOT
+parameter[5:0] JX2_UCIX_CONV_CLZQ	= 6'h09;		//NOT
 
 parameter[5:0] JX2_UCIX_MUL3_MUL3S	= 6'h00;		//
 parameter[5:0] JX2_UCIX_MUL3_MUL3U	= 6'h01;		//
@@ -451,23 +483,24 @@ parameter[5:0] JX2_UCIX_FPCX_IG		= 6'h12;		//FPU Int
 parameter[5:0] JX2_UCIX_FPCX_HG		= 6'h13;		//FPU Half
 parameter[5:0] JX2_UCIX_FPCX_S2G	= 6'h18;		//FPU Single (High)
 
-parameter[5:0] JX2_UCIX_IXT_NOP		= 6'h00;		//FPU ADD
-parameter[5:0] JX2_UCIX_IXT_SLEEP	= 6'h01;		//FPU ADD
-parameter[5:0] JX2_UCIX_IXT_BREAK	= 6'h02;		//FPU ADD
-parameter[5:0] JX2_UCIX_IXT_CLRT	= 6'h03;		//FPU ADD
-parameter[5:0] JX2_UCIX_IXT_SETT	= 6'h04;		//FPU ADD
-parameter[5:0] JX2_UCIX_IXT_CLRS	= 6'h05;		//FPU ADD
-parameter[5:0] JX2_UCIX_IXT_SETS	= 6'h06;		//FPU ADD
-parameter[5:0] JX2_UCIX_IXT_NOTT	= 6'h07;		//FPU ADD
-parameter[5:0] JX2_UCIX_IXT_NOTS	= 6'h08;		//FPU ADD
-parameter[5:0] JX2_UCIX_IXT_RTE		= 6'h09;		//FPU ADD
-parameter[5:0] JX2_UCIX_IXT_TRAPA	= 6'h0A;		//FPU ADD
-parameter[5:0] JX2_UCIX_IXT_PLDMSK	= 6'h0B;		//FPU ADD
-parameter[5:0] JX2_UCIX_IXT_CPUID	= 6'h0C;		//FPU ADD
+parameter[5:0] JX2_UCIX_IXT_NOP		= 6'h00;		//No-Op
+parameter[5:0] JX2_UCIX_IXT_SLEEP	= 6'h01;		//Sleep until Interrupt
+parameter[5:0] JX2_UCIX_IXT_BREAK	= 6'h02;		//Breakpoint
+parameter[5:0] JX2_UCIX_IXT_CLRT	= 6'h03;		//Clear SR.T
+parameter[5:0] JX2_UCIX_IXT_SETT	= 6'h04;		//Set SR.T
+parameter[5:0] JX2_UCIX_IXT_CLRS	= 6'h05;		//Clear SR.S
+parameter[5:0] JX2_UCIX_IXT_SETS	= 6'h06;		//Set SR.S
+parameter[5:0] JX2_UCIX_IXT_NOTT	= 6'h07;		//Invert SR.T
+parameter[5:0] JX2_UCIX_IXT_NOTS	= 6'h08;		//Invert SR.S
+parameter[5:0] JX2_UCIX_IXT_RTE		= 6'h09;		//Return From Exception
+parameter[5:0] JX2_UCIX_IXT_TRAPA	= 6'h0A;		//Trap
+parameter[5:0] JX2_UCIX_IXT_PLDMSK	= 6'h0B;		//
+parameter[5:0] JX2_UCIX_IXT_CPUID	= 6'h0C;		//CPU ID
 
-parameter[5:0] JX2_UCIX_IXS_MOVT	= 6'h01;		//FPU ADD
-parameter[5:0] JX2_UCIX_IXS_MOVNT	= 6'h02;		//FPU ADD
-parameter[5:0] JX2_UCIX_IXS_LDSRMSK	= 6'h03;		//FPU ADD
+parameter[5:0] JX2_UCIX_IXS_NOP		= 6'h00;		//No-Op
+parameter[5:0] JX2_UCIX_IXS_MOVT	= 6'h01;		//Copy SR.T to Reg
+parameter[5:0] JX2_UCIX_IXS_MOVNT	= 6'h02;		//Copy !SR.T to Reg
+parameter[5:0] JX2_UCIX_IXS_LDSRMSK	= 6'h03;		//?
 
 `define def_true
 
@@ -494,7 +527,7 @@ parameter[5:0] JX2_UCIX_IXS_LDSRMSK	= 6'h03;		//FPU ADD
 `define jx2_enable_ops16
 // `define jx2_enable_ops48
 
-// `define jx2_reduce_l1sz
+`define jx2_reduce_l1sz
 `define jx2_reduce_l2sz
 
 // `define jx2_merge_shadq		//Merge SHAD and SHAD.Q
@@ -503,7 +536,9 @@ parameter[5:0] JX2_UCIX_IXS_LDSRMSK	= 6'h03;		//FPU ADD
 
 // `define jx2_debug_ldst		//Debug prints for load/store
 
-`define jx2_debug_expipe		//Debug execute pipeline
+// `define jx2_debug_expipe		//Debug execute pipeline
 // `define jx2_debug_exopipe	//Debug execute pipeline (EX2 only)
+
+// `define jx2_debug_alu		//Debug ALU
 
 `endif

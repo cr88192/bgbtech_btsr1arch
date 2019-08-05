@@ -111,6 +111,8 @@ int TKSPI_ReadData(byte *buf, u32 len)
 	u32 v;
 	byte rv;
 	int n;
+
+//	printf("TKSPI: ReadData: buf=%p len=%d\n", buf, len);
 	
 	count=(1<<16);
 	while(count>0)
@@ -127,21 +129,36 @@ int TKSPI_ReadData(byte *buf, u32 len)
 		return(-1);
 	}
 
+//	printf("TKSPI: ReadData(2): buf=%p len=%d\n", buf, len);
+
 //	printf("<");
 
 	ct=buf; n=len;
+
+//	__debugbreak();
+
+//	printf("TKSPI: ReadData(3): buf=%p ct=%p len=%d\n", buf, ct, len);
+	
+	if(!ct)
+	{
+		__debugbreak();
+	}
+	
 	while((n--)>0)
 	{
-//		rv=TKSPI_XchByte(0xFF);
+		rv=TKSPI_XchByte(0xFF);
 //		printf("%02X ", rv);
-//		*ct++=rv;
+//		printf("*%p=%02X ", ct, rv);
+		*ct++=rv;
 
+#if 0
 		P_SPI_DATA=0xFF;
 		P_SPI_CTRL=tkspi_ctl_status|SPICTRL_XMIT;
 		v=P_SPI_CTRL;
 		while(v&SPICTRL_BUSY) 
 			v=P_SPI_CTRL;
 		*ct++=P_SPI_DATA;
+#endif
 	}
 
 //	printf(">\n");

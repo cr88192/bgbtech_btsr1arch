@@ -444,9 +444,11 @@ ExALU	exAlu(
 
 // ExMul	ex1Mul(
 ExMulB	ex1Mul(
-	clock,			reset,
+	clock,				reset,
 	ex1RegValRs[31:0],	ex1RegValRt[31:0],
-	ex1MulVal,		ex1OpUIxt);
+	ex1OpUCmd,			ex1OpUIxt,
+	exHold2,			ex1MulVal
+	);
 
 `ifdef jx2_enable_fpu
 
@@ -590,15 +592,21 @@ begin
 	begin
 		exHold1		= exHold1 | (ex1HldIdRn1 != JX2_GR_ZZR);
 	end
+	
+//	if((ex1HldIdRn1 == JX2_GR_SP) ||
+//		(ex1HldIdRn1 == JX2_GR_DLR) ||
+//		(ex1HldIdRn1 == JX2_GR_DHR))
+	if(ex1HldIdRn1 == JX2_GR_SP)
+		exHold1 = 1;
 
 //	if(ex1HldIdCn1 == crIdCm)
 //	begin
 //		exHold1		= exHold1 | ({1'b1, ex1HldIdCn1} != JX2_CR_ZZR);
 //	end
 
-//	if( ({1'b1, ex1HldIdCn1} != JX2_CR_ZZR) &&
-//			({1'b1, ex1HldIdCn1} != JX2_CR_PC))
-//		exHold1 = 1;
+	if( ({1'b1, ex1HldIdCn1} != JX2_CR_ZZR) &&
+			({1'b1, ex1HldIdCn1} != JX2_CR_PC))
+		exHold1 = 1;
 
 	if( ({1'b1, ex1RegIdCn1} != JX2_CR_ZZR) &&
 			({1'b1, ex1RegIdCn1} != JX2_CR_PC))

@@ -90,6 +90,15 @@ BS2 Style Vararg:
 * This array will be passed to the called function as a Tag Array.
 
 
+=== SoftFP and HardFP ===
+
+The HardFP ABI will pass floating arguments as double-precision values in FPRs.
+
+The SoftFP ABI (also used for GFP) will pass floating point arguments via GPRs. Nominally floating point values will be passed and returned as double-precision values.
+
+Packed floating point types will be passed in GPRs, with each element represented as an element within the GPR. Elements will be packed with lower numbered elements located in the low-order bits.
+
+
 === 32-bit Sub ABI ===
 
 Is basically the same as the 64-bit ABI, except that 'long' and pointer values are reduced to 32 bits. The address space is nominally zero-extended, and maps to the low 4GB of the Userland space.

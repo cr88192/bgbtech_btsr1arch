@@ -19,6 +19,8 @@ Holding/Completing a memory access will be the responsibility of EX2.
 // `include "ExALU.v"
 `include "ExConv2R.v"
 
+`include "ExCpuId.v"
+
 `ifndef jx2_merge_shadq
 //`include "ExShad32.v"
 `include "ExShad32B.v"
@@ -213,6 +215,9 @@ ExShllN		exShllN(
 	regInSr[0], tShllSrT);
 `endif
 
+wire[63:0]	tValCpuIdLo;
+wire[63:0]	tValCpuIdHi;
+ExCpuId		cpuid(clock, reset, regIdRm[4:0], tValCpuIdLo, tValCpuIdHi);
 
 reg[63:0]	tRegSpAdd8;
 reg[63:0]	tRegSpSub8;
@@ -284,7 +289,8 @@ begin
 			tRegValRn1	= { UV32_00, tValAgu };
 		end
 		JX2_UCMD_MOV_RM: begin
-			tDoMemOpm	= { 2'b10, opUIxt[3], opUIxt[5:4] };
+			tDoMemOpm	= { 2'b10, opUIxt[2], opUIxt[5:4] };
+//			tDoMemOpm	= { 2'b10, opUIxt[3], opUIxt[5:4] };
 			tDoMemOp	= 1;
 
 `ifdef jx2_debug_ldst
@@ -293,7 +299,8 @@ begin
 `endif
 		end
 		JX2_UCMD_MOV_MR: begin
-			tDoMemOpm = { 2'b01, opUIxt[3], opUIxt[5:4] };
+			tDoMemOpm = { 2'b01, opUIxt[2], opUIxt[5:4] };
+//			tDoMemOpm = { 2'b01, opUIxt[3], opUIxt[5:4] };
 			tDoMemOp	= 1;
 			tHeldIdRn1	= regIdRm;
 
@@ -306,11 +313,11 @@ begin
 // `ifdef jx2_enable_fpu
 `ifdef jx2_enable_fprs
 		JX2_UCMD_FMOV_RM: begin
-			tDoMemOpm	= { 2'b10, opUIxt[3], opUIxt[5:4] };
+			tDoMemOpm	= { 2'b10, opUIxt[2], opUIxt[5:4] };
 			tDoMemOp	= 1;
 		end
 		JX2_UCMD_FMOV_MR: begin
-			tDoMemOpm = { 2'b01, opUIxt[3], opUIxt[5:4] };
+			tDoMemOpm = { 2'b01, opUIxt[2], opUIxt[5:4] };
 			tDoMemOp	= 1;
 		end
 `endif
@@ -320,6 +327,8 @@ begin
 			tRegOutSp	= tRegSpSub8;
 			tDoMemOpm	= UMEM_OPM_WR_Q;
 			tDoMemOp	= 1;
+
+			tHeldIdRn1	= JX2_GR_SP;
 			
 			case(opUIxt[1:0])
 //				2'b00: 	tMemDataOut = regValRm;
@@ -339,8 +348,16 @@ begin
 			tRegOutSp	= tRegSpAdd8;
 			tDoMemOpm	= UMEM_OPM_RD_Q;
 			tDoMemOp	= 1;
-			tHeldIdRn1	= regIdRm;
-			tHeldIdCn1	= regIdRm[4:0];
+//			tHeldIdRn1	= regIdRm;
+//			tHeldIdCn1	= regIdRm[4:0];
+
+			tHeldIdCn1	= JX2_GR_IMM[4:0];
+
+//			casez(opUIxt[1:0])
+//				2'b00:		tHeldIdRn1	= regIdRm;
+//				2'b01:		tHeldIdCn1	= regIdRm[4:0];
+//				default:	tHeldIdCn1	= JX2_GR_IMM[4:0];
+//			endcase
 
 `ifdef jx2_debug_ldst
 			$display("POP(1): SP=%X R=%X", tMemAddr, regIdRm);
@@ -355,8 +372,15 @@ begin
 
 		JX2_UCMD_ALUCMP: begin
 //			tRegOutSr[0]	= tAluSrT;
+//			tHeldIdCn1	= JX2_GR_IMM[4:0];
 		end
 	
+		JX2_UCMD_UNARY: begin
+			tHeldIdRn1	= regIdRm;
+//			tRegIdRn1	= regIdRm;
+//			tRegValRn1	= tValAlu;
+		end
+
 		JX2_UCMD_CONV_RR: begin
 			tRegIdRn1		= regIdRm;
 			tRegValRn1		= tValCnv;
@@ -397,19 +421,23 @@ begin
 		end
 	
 		JX2_UCMD_BRA: begin
+//			$display("EX: BRA: PC2=%X", tValAgu);
 			tRegIdCn1	= JX2_CR_PC[4:0];
 			tRegValCn1	= {UV32_00, tValAgu};
 		end
 		JX2_UCMD_BSR: begin
+//			$display("EX: BSR: LR=%X PC2=%X", regValPc, tValAgu);
 			tRegOutLr	= regValPc;
 			tRegIdCn1	= JX2_CR_PC[4:0];
 			tRegValCn1	= {UV32_00, tValAgu};
 		end
 		JX2_UCMD_JMP: begin
+//			$display("EX: JMP: PC2=%X", regValRs);
 			tRegIdCn1	= JX2_CR_PC[4:0];
 			tRegValCn1	= {UV32_00, regValRs[31:0]};
 		end
 		JX2_UCMD_JSR: begin
+//			$display("EX: JSR: LR=%X PC2=%X", regValRs, regValPc);
 			tRegOutLr	= regValPc;
 			tRegIdCn1	= JX2_CR_PC[4:0];
 			tRegValCn1	= {UV32_00, regValRs[31:0]};
@@ -435,6 +463,7 @@ begin
 
 		JX2_UCMD_MUL3: begin
 			tRegIdCn1	= JX2_GR_IMM[4:0];
+//			tHeldIdCn1	= JX2_GR_IMM[4:0];
 		end
 
 `ifdef jx2_enable_swapn
@@ -489,6 +518,26 @@ begin
 `endif
 
 `endif
+		JX2_UCMD_OP_IXS: begin
+			case(opUIxt[5:0])
+				JX2_UCIX_IXS_NOP: begin
+				end
+				JX2_UCIX_IXS_MOVT: begin
+					tRegIdRn1		= regIdRm;
+					tRegValRn1		= {UV63_00, regInSr[0]};
+				end
+				JX2_UCIX_IXS_MOVNT: begin
+					tRegIdRn1		= regIdRm;
+					tRegValRn1		= {UV63_00, !regInSr[0]};
+				end
+				default: begin
+					if(!tMsgLatch)
+						$display("EX: Unhandled Op-IXS %X", opUIxt);
+					tNextMsgLatch	= 1;
+					tExHold		= 1;
+				end
+			endcase
+		end
 
 		JX2_UCMD_OP_IXT: begin
 			case(opUIxt[5:0])
@@ -498,7 +547,7 @@ begin
 				end
 				JX2_UCIX_IXT_BREAK: begin
 					if(!tMsgLatch)
-						$display("EX: BREAK");
+						$display("EX: BREAK, PC=%X", regValPc);
 					tNextMsgLatch	= 1;
 					tExHold		= 1;
 				end
@@ -514,6 +563,20 @@ begin
 				JX2_UCIX_IXT_SETS: begin
 					tRegOutSr[1]	= 1;
 				end
+
+				JX2_UCIX_IXT_NOTT: begin
+					tRegOutSr[0]	= !regInSr[0];
+				end
+				JX2_UCIX_IXT_NOTS: begin
+					tRegOutSr[1]	= !regInSr[1];
+				end
+
+				JX2_UCIX_IXT_CPUID: begin
+					tRegOutDlr	= tValCpuIdLo;
+					tRegOutDhr	= tValCpuIdHi;
+					tRegIdCn1	= JX2_GR_IMM[4:0];
+				end
+
 				default: begin
 					if(!tMsgLatch)
 						$display("EX: Unhandled Op-IXT %X", opUIxt);
@@ -525,7 +588,7 @@ begin
 
 		default: begin
 			if(!tMsgLatch)
-				$display("EX: Unhandled UCmd %X", opUCmd);
+				$display("EX1: Unhandled UCmd %X", opUCmd);
 			tNextMsgLatch	= 1;
 			tExHold		= 1;
 		end

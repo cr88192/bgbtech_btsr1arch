@@ -288,7 +288,8 @@ begin
 							opUCmdIx	= JX2_UCIX_ALU_TST;
 						opNmid	= JX2_UCMD_ALUCMP;
 						opFmid	= JX2_FMID_REGREG;
-						opIty	= JX2_ITY_SB;
+//						opIty	= JX2_ITY_SB;
+						opIty		= JX2_ITY_NB;
 					end
 					4'h5: begin
 						opNmid		= JX2_UCMD_ALU3;
@@ -317,6 +318,7 @@ begin
 						opNmid		= JX2_UCMD_MUL3;
 						opFmid		= JX2_FMID_REGREG;
 						opUCmdIx	= JX2_UCIX_MUL3_MULS;
+						opIty		= JX2_ITY_NB;
 					end
 					4'hA: begin
 						opNmid	= JX2_UCMD_MOV_RC;
@@ -336,6 +338,7 @@ begin
 							opUCmdIx	= JX2_UCIX_ALU_CMPEQ;
 						opNmid	= JX2_UCMD_ALUCMP;
 						opFmid	= JX2_FMID_REGREG;
+						opIty		= JX2_ITY_NB;
 					end
 					4'hD: begin
 						if(opExQ)
@@ -344,6 +347,7 @@ begin
 							opUCmdIx	= JX2_UCIX_ALU_CMPHI;
 						opNmid	= JX2_UCMD_ALUCMP;
 						opFmid	= JX2_FMID_REGREG;
+						opIty		= JX2_ITY_NB;
 					end
 					4'hE: begin
 						if(opExQ)
@@ -352,11 +356,13 @@ begin
 							opUCmdIx	= JX2_UCIX_ALU_CMPGT;
 						opNmid	= JX2_UCMD_ALUCMP;
 						opFmid	= JX2_FMID_REGREG;
+						opIty		= JX2_ITY_NB;
 					end
 					4'hF: begin
 						opNmid		= JX2_UCMD_MUL3;
 						opFmid		= JX2_FMID_REGREG;
 						opUCmdIx	= JX2_UCIX_MUL3_MULU;
+						opIty		= JX2_ITY_NB;
 					end
 				endcase
 			end
@@ -372,15 +378,34 @@ begin
 //						opIty		= JX2_ITY_SW;
 //						opUCmdIx	= JX2_UCIX_ALU_NOR;
 
-						opNmid		= JX2_UCMD_SHLLN;
+//						opNmid		= JX2_UCMD_SHLLN;
+//						opFmid		= JX2_FMID_REGREG;
+//						opUCmdIx	= 6'h13;
+
+						opNmid		= JX2_UCMD_CONV_RR;
 						opFmid		= JX2_FMID_REGREG;
-						opUCmdIx	= 6'h13;
+						opIty		= JX2_ITY_UB;
+						opUCmdIx	= JX2_UCIX_CONV_NOT;
+
 					end
 					4'h1: begin
 						opNmid		= JX2_UCMD_ALU3;
 						opFmid		= JX2_FMID_REG;
 						opIty		= JX2_ITY_SW;
 						opUCmdIx	= JX2_UCIX_ALU_SUB;
+					end
+
+					4'h2: begin
+						if(opExQ)
+//							opUCmdIx	= JX2_UCIX_CONV_CLZQ;
+							opUCmdIx	= JX2_UCIX_ALUN_CLZQ;
+						else
+//							opUCmdIx	= JX2_UCIX_CONV_CLZ;
+							opUCmdIx	= JX2_UCIX_ALUN_CLZ;
+//						opNmid	= JX2_UCMD_CONV_RR;
+						opNmid	= JX2_UCMD_UNARY;
+						opFmid	= JX2_FMID_REGREG;
+						opIty		= JX2_ITY_UB;
 					end
 
 					4'h5: begin
@@ -390,6 +415,7 @@ begin
 							opUCmdIx	= JX2_UCIX_CONV_EXTSL;
 						opNmid	= JX2_UCMD_CONV_RR;
 						opFmid	= JX2_FMID_REGREG;
+						opIty		= JX2_ITY_UB;
 					end
 
 					4'h8: begin
@@ -399,6 +425,7 @@ begin
 							opUCmdIx	= JX2_UCIX_CONV_EXTSB;
 						opNmid	= JX2_UCMD_CONV_RR;
 						opFmid	= JX2_FMID_REGREG;
+						opIty		= JX2_ITY_UB;
 					end
 					4'h9: begin
 						if(opExQ)
@@ -407,6 +434,7 @@ begin
 							opUCmdIx	= JX2_UCIX_CONV_EXTSW;
 						opNmid	= JX2_UCMD_CONV_RR;
 						opFmid	= JX2_FMID_REGREG;
+						opIty		= JX2_ITY_UB;
 					end
 
 					4'hA: begin
@@ -509,27 +537,96 @@ begin
 			16'h3zz0: begin	/* F0zz_1enD */
 				casez(istrWord[7:0])
 
+					8'h00: begin
+						case(istrWord[23:20])
+							4'h0: begin
+								opNmid		= JX2_UCMD_NOP;
+								opFmid		= JX2_FMID_Z;
+							end
+//							4'h1: begin
+//								opNmid		= JX2_UCMD_JMP;
+//								opFmid		= JX2_FMID_Z;
+//								opRegM_Fix	= JX2_GR_LR;
+//							end
+							4'h2: begin
+								opNmid		= JX2_UCMD_OP_IXT;
+								opFmid		= JX2_FMID_Z;
+								opUCmdIx	= JX2_UCIX_IXT_SLEEP;
+							end
+							4'h3: begin
+								opNmid		= JX2_UCMD_OP_IXT;
+								opFmid		= JX2_FMID_Z;
+								opUCmdIx	= JX2_UCIX_IXT_BREAK;
+							end
+							4'h4: begin
+								opNmid		= JX2_UCMD_OP_IXT;
+								opFmid		= JX2_FMID_Z;
+								opUCmdIx	= JX2_UCIX_IXT_CLRT;
+							end
+							4'h5: begin
+								opNmid		= JX2_UCMD_OP_IXT;
+								opFmid		= JX2_FMID_Z;
+								opUCmdIx	= JX2_UCIX_IXT_SETT;
+							end
+							4'h6: begin
+								opNmid		= JX2_UCMD_OP_IXT;
+								opFmid		= JX2_FMID_Z;
+								opUCmdIx	= JX2_UCIX_IXT_CLRS;
+							end
+							4'h7: begin
+								opNmid		= JX2_UCMD_OP_IXT;
+								opFmid		= JX2_FMID_Z;
+								opUCmdIx	= JX2_UCIX_IXT_SETS;
+							end
+							4'h8: begin
+								opNmid		= JX2_UCMD_OP_IXT;
+								opFmid		= JX2_FMID_Z;
+								opUCmdIx	= JX2_UCIX_IXT_NOTT;
+							end
+							4'h9: begin
+								opNmid		= JX2_UCMD_OP_IXT;
+								opFmid		= JX2_FMID_Z;
+								opUCmdIx	= JX2_UCIX_IXT_NOTS;
+							end
+
+							default: begin
+							end
+						endcase
+					end
+
 					8'h10: begin
 						opNmid		= JX2_UCMD_BRA;
 						opFmid		= JX2_FMID_REGPC;
+						opIty		= JX2_ITY_SB;
 						opBty		= JX2_BTY_SW;
 					end
 					8'h11: begin
 						opNmid		= JX2_UCMD_BSR;
 						opFmid		= JX2_FMID_REGPC;
+						opIty		= JX2_ITY_SB;
 						opBty		= JX2_BTY_SW;
 					end
 					8'h12: begin
 						opNmid		= JX2_UCMD_BRA;
 						opFmid		= JX2_FMID_REGPC;
+						opIty		= JX2_ITY_SB;
 						opBty		= JX2_BTY_SW;
 						opCcty		= JX2_IXC_CT;
 					end
 					8'h13: begin
 						opNmid		= JX2_UCMD_BRA;
 						opFmid		= JX2_FMID_REGPC;
+						opIty		= JX2_ITY_SB;
 						opBty		= JX2_BTY_SW;
 						opCcty		= JX2_IXC_CF;
+					end
+
+					8'h14: begin
+						opNmid		= JX2_UCMD_NOP;
+						opFmid		= JX2_FMID_REG;
+						opIty		= JX2_ITY_SB;
+//						opBty		= JX2_BTY_SW;
+//						opCcty		= JX2_IXC_CF;
 					end
 
 
@@ -558,6 +655,7 @@ begin
 						opUCmdIx	= JX2_UCIX_PUSH_GR;
 					end
 
+`ifndef def_true
 					8'h1C: begin
 						opNmid		= JX2_UCMD_ALUCMP;
 						opFmid		= JX2_FMID_REG;
@@ -570,23 +668,28 @@ begin
 						opIty		= JX2_ITY_SB;
 						opUCmdIx	= JX2_UCIX_ALU_CMPGE;
 					end
+`endif
 
 					8'h20: begin
 						opNmid		= JX2_UCMD_JMP;
 						opFmid		= JX2_FMID_REG;
+						opIty		= JX2_ITY_UB;
 					end
 					8'h21: begin
 						opNmid		= JX2_UCMD_JSR;
 						opFmid		= JX2_FMID_REG;
+						opIty		= JX2_ITY_UB;
 					end
 					8'h22: begin
 						opNmid		= JX2_UCMD_JMP;
 						opFmid		= JX2_FMID_REG;
+						opIty		= JX2_ITY_UB;
 						opCcty		= JX2_IXC_CT;
 					end
 					8'h23: begin
 						opNmid		= JX2_UCMD_JMP;
 						opFmid		= JX2_FMID_REG;
+						opIty		= JX2_ITY_UB;
 						opCcty		= JX2_IXC_CF;
 					end
 
@@ -599,7 +702,8 @@ begin
 			16'h3zz7: begin
 				opNmid		= JX2_UCMD_SWAPN;
 				opFmid		= JX2_FMID_REGREG;
-				opUCmdIx	= { 2'h0, istrWord[3:0] };
+//				opUCmdIx	= { 2'h0, istrWord[3:0] };
+				opUCmdIx	= { 2'h0, istrWord[23:20] };
 			end
 
 			16'h5zz0: begin		/* F0nm_5eo0 */
@@ -1139,6 +1243,12 @@ begin
 					opRegO	= opRegM_Dfl;
 				end
 
+				JX2_ITY_UB: begin
+					opRegN	= opRegO_Dfl;
+					opRegM	= opRegO_Dfl;
+					opRegO	= JX2_GR_ZZR;
+				end
+
 				default: begin
 					$display("Jx2DecOpFx: Bad Reg, Ity=%X", opIty);
 					$display("Jx2DecOpFx: Istr %X-%X-%X",
@@ -1336,9 +1446,9 @@ begin
 			XB: / Fzeo_zzjj		Imm8x, Ro
 			XW: / Fzeo_jjjj		Imm16x, Ro
 
-			SQ: Fzze_zznz_iiii	Imm17s, Rn
-			UQ: Fzze_zznz_iiii	Imm17u, Rn
-			NQ: Fzze_zznz_iiii	Imm17n, Rn
+			SQ: Fzze_zznz_iiii	Rn, Imm17s, Rn
+			UQ: Fzze_zznz_iiii	Rn, Imm17u, Rn
+			NQ: Fzze_zznz_iiii	Rn, Imm17n, Rn
 		 */
 	
 		JX2_FMID_IMM8REG: begin
@@ -1366,7 +1476,9 @@ begin
 				JX2_ITY_SQ: begin
 					opImm = opImm_imm10s;
 					opRegN	= opRegN_Dfl;
-					opRegO	= opRegN_Dfl;
+//					opRegO	= opRegN_Dfl;
+					opRegM	= opRegN_Dfl;
+					opRegO	= JX2_GR_IMM;
 				end
 
 				JX2_ITY_UB: begin
@@ -1382,7 +1494,9 @@ begin
 				JX2_ITY_UQ: begin
 					opImm = opImm_imm10u;
 					opRegN	= opRegN_Dfl;
-					opRegO	= opRegN_Dfl;
+//					opRegO	= opRegN_Dfl;
+					opRegM	= opRegN_Dfl;
+					opRegO	= JX2_GR_IMM;
 				end
 
 `ifndef def_true
@@ -1395,7 +1509,9 @@ begin
 				JX2_ITY_NQ: begin
 					opImm = opImm_imm10n;
 					opRegN	= opRegN_Dfl;
-					opRegO	= opRegN_Dfl;
+//					opRegO	= opRegN_Dfl;
+					opRegM	= opRegN_Dfl;
+					opRegO	= JX2_GR_IMM;
 				end
 
 				default: begin

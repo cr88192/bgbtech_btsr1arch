@@ -119,10 +119,14 @@ reg		tNxtLatchDc;
 reg		tIfNzOpm;
 reg		tDfNzOpm;
 
+reg		tMsgLatch;
+reg		tNxtMsgLatch;
+
 always @*
 begin
 	tNxtLatchIc	= 0;
 	tNxtLatchDc	= 0;
+	tNxtMsgLatch	= 0;
 	tRegOutExc	= UV64_00;
 
 	tMemAddr	= UV32_XX;
@@ -165,7 +169,12 @@ begin
 
 	if(memOK==UMEM_OK_FAULT)
 	begin
-		$display("L1$ Fault, Ic=%d Dc=%d", tLatchIc, tLatchDc);
+		if(!tMsgLatch)
+		begin
+//			$display("L1$ Fault, Ic=%d Dc=%d A=%X Opm=%X V=%X",
+//				tLatchIc, tLatchDc, tMemAddr, tMemOpm, tMemDataOut);
+		end
+		tNxtMsgLatch = 1;
 		
 		tRegOutExc = {UV16_00, tMemAddr, 16'h8000 };
 	end
@@ -187,6 +196,7 @@ begin
 	tRegOutExc2	<= tRegOutExc;
 	tLatchIc	<= tNxtLatchIc;
 	tLatchDc	<= tNxtLatchDc;
+	tMsgLatch	<= tNxtMsgLatch;
 end
 
 endmodule

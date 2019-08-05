@@ -14,9 +14,11 @@ Multiple subset profiles will exist, and some features will be optional.
 
 Several ISA Profiles may exist:
 * A: Full, Full Features, 48-bit address space.
-* B: Fix32 with 48-bit address space.
+* B: / Fix32 with 48-bit address space.
+* B: (Unused for Now)
 * C: Basic, Partial Features, 32-bit address space.
-* D: Fix32 with 32-bit address space.
+* D: / Fix32 with 32-bit address space.
+* D: Lite + Fix32
 * E: Lite + SoftFPU
 * F: Lite + GFP
 
@@ -76,9 +78,9 @@ BJX2 Fix32
 * Will only support 32-bit instruction encodings.
 ** The 0R and 1R forms will use 32-bit encodings.
 ** Other encoding ranges will be invalid.
-* Will support either a 32 or 48 bit address space.
-* Support for FPU is optional.
-* Support for MMU will be optional for 32-bit, required for 48-bit.
+* Will use a 32-bit address space.
+* Will have MMU and FPU as optional.
+
 
 ABI: SoftFP
 * Base-Relocatable for boot image
@@ -156,7 +158,7 @@ SR Bits:
 * 4..7: P/Q/R/O Bits, Context Dependent
 ** Used by GSV for Vector Compare.
 * 8..23: Reserved
-* 27: WXD, WEX Disable
+* 27: WXE, WEX Enable
 * 28: BL, Block Interrupts
 * 29: RB, Encodes the ISR register bank.
 ** Set when interrupt occurs.
@@ -177,7 +179,7 @@ The JQ bit will effect the size of the address space:
 ** Memory access will explicitly discard the high-order address bits.
 ** This will be AND'ed with the bit from MMCR.
 
-Setting the WEX Disable flag will cause WEX instructions to be executed as scalar instructions on cores with WEX support. On other cores this flag will be ignored. This flag may be set of cleared depending on the results of the WEXMD operation.
+Clearing the WEX Enable flag will cause WEX instructions to be executed as scalar instructions on cores with WEX support. On other cores this flag will be ignored. This flag may be set of cleared depending on the results of the WEXMD operation.
 
 
 === Special Restrictions ===
@@ -726,8 +728,8 @@ Instruction Space
 ** 3070  SETS						//Set SR.S
 ** 3080  NOTT						//SR.T=!SR.T
 ** 3090  NOTS						//SR.S=!SR.S
-** 30A0 /? LDISH16	#0x0000, DLR	//DLR=(DLR SHL 16)|0x0000
-** 30B0 /? LDISH16	#0xFFFF, DLR	//DLR=(DLR SHL 16)|0xFFFF
+** 30A0 / LDISH16	#0x0000, DLR	//DLR=(DLR SHL 16)|0x0000
+** 30B0 / LDISH16	#0xFFFF, DLR	//DLR=(DLR SHL 16)|0xFFFF
 ** 30C0  RTE						//Return from exception
 ** 30D0 ? DIV0						//Setup SR for divide
 ** 30E0 ? DIV1						//Divide Step (Uses DHR, DLR)
@@ -818,7 +820,6 @@ Instruction Space
 ** 33nE  -
 ** 33nF  -
 
-** (34nz, Partial Drop?)
 ** 34n0  SHLL1	Rn					//Rn=Rn SHL 1
 ** 34n1  SHLL2	Rn					//Rn=Rn SHL 2
 ** 34n2  SHLL4	Rn
@@ -852,7 +853,7 @@ Instruction Space
 ** 36nB  -
 ** 36nC  -
 ** 36nD  CMPHS	DLR, Rn				//Unsigned (Rn GE DLR)
-** 36nE  CMPGE	DLR, Rn				//Signed (Rn GE DLR)
+** 36nE /? CMPGE	DLR, Rn				//Signed (Rn GE DLR)
 ** 36nF  MOVT	Rn					//Rn=SR.T
 
 ** 37n0  SWAP.B		Rn				//(1032) Swap E/O Bytes (Low Four Bytes)
@@ -1672,9 +1673,11 @@ The "WEXMD #imm4" instruction will indicate the WEX2 Profile. It will update the
 * No WEX forms will be allowed within the following 3 instructions.
 
 
-Profile 0: No WEX.
-* Only scalar instructions are to be used.
-* Use of F4zz..F7zz is invalid in this mode.
+Profile 0: No WEX / WEX Disabled.
+* This profile will disable the use of WEX.
+* Only scalar instructions are to be used in this mode.
+* The use of WEX sequences will be technically undefined in this profile.
+** Though, the core will most likely disable WEX, as in an unsupported profile.
 
 Profile 1: Dual Lane ALU, Single IO Lane.
 * YYYY_YYYY XXXX_XXXX

@@ -109,11 +109,14 @@ begin
 
 	casez(regIdRs)
 		6'b0zzzzz:	tValRsA=gprArr[regIdRs[4:0]];
-		JX2_GR_DLR:	tValRsA=gprRegDlr;
-		JX2_GR_DHR:	tValRsA=gprRegDhr;
+//		JX2_GR_DLR:	tValRsA=gprRegDlr;
+		JX2_GR_DLR:	tValRsA=regInDlr;
+//		JX2_GR_DHR:	tValRsA=gprRegDhr;
+		JX2_GR_DHR:	tValRsA=regInDhr;
 		JX2_GR_ELR:	tValRsA=gprRegElr;
 		JX2_GR_EHR:	tValRsA=gprRegEhr;
-		JX2_GR_SP:	tValRsA=gprRegSp;
+//		JX2_GR_SP:	tValRsA=gprRegSp;
+		JX2_GR_SP:	tValRsA=regInSp;
 		JX2_GR_BP:	tValRsA=gprRegBp;
 
 		JX2_GR_PC:	tValRsA={ UV32_00, regValPc };
@@ -136,11 +139,14 @@ begin
 
 	casez(regIdRt)
 		6'b0zzzzz:	tValRtA=gprArr[regIdRt[4:0]];
-		JX2_GR_DLR:	tValRtA=gprRegDlr;
-		JX2_GR_DHR:	tValRtA=gprRegDhr;
+//		JX2_GR_DLR:	tValRtA=gprRegDlr;
+		JX2_GR_DLR:	tValRtA=regInDlr;
+//		JX2_GR_DHR:	tValRtA=gprRegDhr;
+		JX2_GR_DHR:	tValRtA=regInDhr;
 		JX2_GR_ELR:	tValRtA=gprRegElr;
 		JX2_GR_EHR:	tValRtA=gprRegEhr;
-		JX2_GR_SP:	tValRtA=gprRegSp;
+//		JX2_GR_SP:	tValRtA=gprRegSp;
+		JX2_GR_SP:	tValRtA=regInSp;
 		JX2_GR_BP:	tValRtA=gprRegBp;
 
 		JX2_GR_IMM:	begin
@@ -159,11 +165,14 @@ begin
 
 	casez(regIdRm)
 		6'b0zzzzz:	tValRmA=gprArr[regIdRm[4:0]];
-		JX2_GR_DLR:	tValRmA=gprRegDlr;
-		JX2_GR_DHR:	tValRmA=gprRegDhr;
+//		JX2_GR_DLR:	tValRmA=gprRegDlr;
+		JX2_GR_DLR:	tValRmA=regInDlr;
+//		JX2_GR_DHR:	tValRmA=gprRegDhr;
+		JX2_GR_DHR:	tValRmA=regInDhr;
 		JX2_GR_ELR:	tValRmA=gprRegElr;
 		JX2_GR_EHR:	tValRmA=gprRegEhr;
-		JX2_GR_SP:	tValRmA=gprRegSp;
+//		JX2_GR_SP:	tValRmA=gprRegSp;
+		JX2_GR_SP:	tValRmA=regInSp;
 		JX2_GR_BP:	tValRmA=gprRegBp;
 
 		JX2_GR_IMM:begin
