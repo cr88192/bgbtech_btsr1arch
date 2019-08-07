@@ -62,6 +62,10 @@ X(tk_checksane_asm):
 	cmp/eq r6, r8
 	bf _checksane_fail
 
+	add	r4, r5, r18
+	cmp/eq r18, r7
+	bf _checksane_fail
+
 	sub	r4, r5, r6
 	mov r4, r7
 	sub r5, r7
@@ -144,6 +148,15 @@ X(tk_checksane_asm):
 	cmp/eq r6, r12
 	bf _checksane_fail
 
+	neg r4, r16
+	mov r4, r17
+	neg r17
+
+	cmp/eq r16, r17
+	bf _checksane_fail
+	cmp/eq r16, r12
+	bf _checksane_fail
+
 
 	mov	0xE87AD208, r8
 	mov	0x014B6F5A, r9
@@ -189,6 +202,10 @@ X(tk_checksane_asm):
 	cmp/eq r6, r7
 	bf _checksane_fail
 	cmp/eq r6, r8
+	bf _checksane_fail
+
+	add r5, #0x69, r16
+	cmp/eq r16, r7
 	bf _checksane_fail
 
 	add r5, #-0x69, r6
@@ -303,6 +320,29 @@ X(tk_checksane_asm):
 	cmp/eq r6, r13
 	bf _checksane_fail
 	cmp/eq r7, r13
+	bf _checksane_fail
+
+	shad.q  r4, #31, r7
+
+	mov r4, r6
+	shll1 r6
+	shll2 r6
+	shll4 r6
+	shll8 r6
+	shll16 r6
+
+	cmpq/eq r6, r4
+	bt _checksane_fail
+	cmpq/eq r6, r7
+	bf _checksane_fail
+
+	shlr1 r6
+	shlr2 r6
+	shlr4 r6
+	shlr8 r6
+	shlr16 r6
+
+	cmpq/eq r6, r4
 	bf _checksane_fail
 
 
@@ -459,6 +499,7 @@ X(tk_checksane_asm):
 	cmpeq r4, r4
 		break?f
 
+#if 0
 	mov	0x8889, r8
 	mov	0xFFFF8889, r9
 	mov	0x00FF8889, r10
@@ -479,7 +520,7 @@ X(tk_checksane_asm):
 	bf _checksane_fail
 	cmp/eq #32, r7
 	bf _checksane_fail
-
+#endif
 
 	pop lr
 	rts

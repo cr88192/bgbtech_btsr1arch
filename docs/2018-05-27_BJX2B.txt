@@ -15,7 +15,7 @@ Multiple subset profiles will exist, and some features will be optional.
 Several ISA Profiles may exist:
 * A: Full, Full Features, 48-bit address space.
 * B: / Fix32 with 48-bit address space.
-* B: (Unused for Now)
+* B: Lite + GFP + Fix32
 * C: Basic, Partial Features, 32-bit address space.
 * D: / Fix32 with 32-bit address space.
 * D: Lite + Fix32
@@ -1172,7 +1172,7 @@ F0zz Instruction Block:
 ** F0nm_1ezC
 *** F0nm_1e0C  NOT		Rm, Rn				//Rn=~Rn
 *** F0nm_1e1C  NEG		Rm, Rn				//Rn=(~Rn)+1
-*** F0nm_1e2C ? CLZ{Q}	Rm, Rn				//Count Leading Zeroes
+*** F0nm_1e2C ? CLZ{Q}	Rm, Rn				//(CLZ) Count Leading Zeroes
 *** F0nm_1e3C -
 *** F0nm_1g4C ? MUL.W	Rm, Rn				//(DHR,DLR)=Rm*Rn (Signed 18*18=>36)
 *** F0nm_1g5C  EXTS.L	Rm, Rn				//Q=0

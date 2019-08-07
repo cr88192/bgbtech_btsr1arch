@@ -1173,6 +1173,11 @@ begin
 //					opIty		= JX2_ITY_SW;
 					opIty		= JX2_ITY_SB;
 					opUCmdIx	= JX2_UCIX_ALU_ADD;
+
+//					if(istrWord[4:0]==5'hF)
+//					begin
+//						opNmid		= JX2_UCMD_ADDSP;
+//					end
 				end
 				3'b011: begin
 					opNmid		= JX2_UCMD_MOV_IR;

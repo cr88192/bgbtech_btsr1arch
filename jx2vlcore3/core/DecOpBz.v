@@ -1451,6 +1451,11 @@ begin
 			opFmid		= JX2_FMID_IMM8REG;
 			opIty		= JX2_ITY_SB;
 			opUCmdIx	= JX2_UCIX_ALU_ADD;
+
+//			if(istrWord[11:8]==4'hF)
+//			begin
+//				opNmid		= JX2_UCMD_ADDSP;
+//			end
 		end
 
 		16'hDzzz: begin

@@ -16,6 +16,8 @@ void tk_putc(int val)
 	while(P_UART_STAT&8);
 //	*(int *)(GPIO_BASE+0x104)=val;
 	P_UART_TX=val;
+	
+	tk_con_putc();
 }
 
 void sleep_0();
@@ -666,6 +668,11 @@ void __exec(char *cmd, void *env)
 
 int __start_init();
 
+
+int __start_first()
+{
+	tk_con_init();
+}
 
 int __start_early()
 {

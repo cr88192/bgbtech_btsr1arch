@@ -68,6 +68,13 @@ parameter[5:0] JX2_CR_KRR		= 6'h2D;
 
 parameter[5:0] JX2_CR_ZZR		= 6'h2E;
 
+parameter[2:0] JX2_SCHM_DLR		= 3'h0;
+parameter[2:0] JX2_SCHM_DHR		= 3'h1;
+parameter[2:0] JX2_SCHM_SP		= 3'h2;
+parameter[2:0] JX2_SCHM_BP		= 3'h3;
+parameter[2:0] JX2_SCHM_ELR		= 3'h4;
+parameter[2:0] JX2_SCHM_EHR		= 3'h5;
+
 parameter[1:0] JX2_IXC_AL	= 2'b00;	//Execute Always
 parameter[1:0] JX2_IXC_NV	= 2'b01;	//Execute Never
 parameter[1:0] JX2_IXC_CT	= 2'b10;	//Execute If True
@@ -345,6 +352,7 @@ parameter[5:0] JX2_UCMD_PUSHX		= 6'h06;		//
 parameter[5:0] JX2_UCMD_POPX		= 6'h07;		//
 parameter[5:0] JX2_UCMD_FMOV_RM		= 6'h08;		//FPU Store
 parameter[5:0] JX2_UCMD_FMOV_MR		= 6'h09;		//FPU Load
+parameter[5:0] JX2_UCMD_ADDSP		= 6'h0A;		//ADD Imm, SP
 
 parameter[5:0] JX2_UCMD_INVOP		= 6'h0F;		//
 parameter[5:0] JX2_UCMD_ALU3		= 6'h10;		//ALU Command (3R)

@@ -1,4 +1,4 @@
-#if 0
+#if 1
 /*
 Count Leading Zeroes
   R4=Input
@@ -45,6 +45,8 @@ _fcn_clz32:
 // u32 __udivsi3(u32 n, u32 d)
 .global	__udivsi3
 __udivsi3:
+	push	lr
+
 	tst		r4, r4
 	bt		.Ret_Zero
 	tst		r5, r5
@@ -60,8 +62,14 @@ __udivsi3:
 	 */
 
 
-	clz		r17, r18
-	clz		r16, r2
+//	clz		r17, r18
+	mov		r17, r4
+	bsr		_fcn_clz32
+	mov		r2, r18
+
+//	clz		r16, r2
+	mov		r16, r4
+	bsr		_fcn_clz32
 
 	sub		r2, r18
 	extu.b	r18
@@ -165,14 +173,17 @@ __udivsi3:
 
 	extu.l	r4, r2
 
+	pop lr
 	rts
 
 .Ret_Zero:
 	mov #0, r2
+	pop lr
 	rts
 
 .Ret_R16:
 	mov r16, r2
+	pop lr
 	rts
 #endif
 

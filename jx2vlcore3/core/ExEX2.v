@@ -56,7 +56,8 @@ module ExEX2(
 	regOutSp,	regInSp,
 	regOutLr,	regInLr,
 	regOutSr,	regInSr,
-	
+	regOutSchm,	regInSchm,
+
 	memDataIn,
 	memDataOK
 	);
@@ -108,6 +109,9 @@ input[31:0]		regInLr;
 output[63:0]	regOutSr;
 input[63:0]		regInSr;
 
+output[7:0]		regOutSchm;
+input[7:0]		regInSchm;
+
 input[63:0]		memDataIn;
 input[ 1:0]		memDataOK;
 
@@ -124,6 +128,7 @@ reg[63:0]		tRegOutDhr;
 reg[63:0]		tRegOutSp;
 reg[31:0]		tRegOutLr;
 reg[63:0]		tRegOutSr;
+reg[7:0]		tRegOutSchm;
 
 assign	regIdRn2	= tRegIdRn2;
 assign	regValRn2	= tRegValRn2;
@@ -134,6 +139,7 @@ assign	regOutDhr	= tRegOutDhr;
 assign	regOutSp	= tRegOutSp;
 assign	regOutLr	= tRegOutLr;
 assign	regOutSr	= tRegOutSr;
+assign	regOutSchm	= tRegOutSchm;
 
 
 
@@ -159,6 +165,7 @@ begin
 	tRegOutSp	= regInSp;
 	tRegOutLr	= regInLr;
 	tRegOutSr	= regInSr;
+	tRegOutSchm	= regInSchm;
 
 	tDoMemOp	= 0;
 	tExHold		= 0;
@@ -228,6 +235,9 @@ begin
 `ifdef jx2_debug_ldst
 			$display("POP(2): R=%X V=%X", regIdRm, memDataIn);
 `endif
+		end
+
+		JX2_UCMD_ADDSP: begin
 		end
 
 		JX2_UCMD_ALU3: begin

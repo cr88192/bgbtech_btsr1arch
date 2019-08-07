@@ -27,6 +27,7 @@
 #include "tk_core/tk_vfile.c"
 #include "tk_core/tk_divi.c"
 #include "tk_core/tk_msgbuf.c"
+#include "tk_core/tk_conprn.c"
 
 #include "tk_core/lva_array.c"
 #include "tk_core/lva_strdup.c"

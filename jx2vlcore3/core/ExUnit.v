@@ -404,6 +404,9 @@ wire[31:0]		ex1MemAddr;
 wire[ 4:0]		ex1MemOpm;
 wire[63:0]		ex1MemDataOut;
 
+wire[7:0]		ex1RegOutSchm;
+reg[7:0]		ex1RegInSchm;
+
 ExEX1	ex1(
 	clock,			reset,
 	ex1OpUCmd,		ex1OpUIxt,
@@ -427,6 +430,7 @@ ExEX1	ex1(
 
 	ex1RegOutLr,	ex1RegInLr,
 	ex1RegOutSr,	ex1RegInSr,
+	ex1RegOutSchm,	ex1RegInSchm,
 
 	ex1MemAddr,		ex1MemOpm,
 	ex1MemDataOut
@@ -520,6 +524,9 @@ reg[31:0]		ex2RegInLr;
 wire[63:0]		ex2RegOutSr;
 reg[63:0]		ex2RegInSr;
 
+wire[7:0]		ex2RegOutSchm;
+reg[7:0]		ex2RegInSchm;
+
 // reg[63:0]		ex2MemDataIn;
 // reg[1:0]		ex2MemDataOK;
 
@@ -549,6 +556,7 @@ ExEX2	ex2(
 
 	ex2RegOutLr,	ex2RegInLr,
 	ex2RegOutSr,	ex2RegInSr,
+	ex2RegOutSchm,	ex2RegInSchm,
 
 	ex2MemDataIn,	ex2MemDataOK
 	);
@@ -615,6 +623,28 @@ begin
 	if( ({1'b1, ex2RegIdCn2} != JX2_CR_ZZR) &&
 			({1'b1, ex2RegIdCn2} != JX2_CR_PC))
 		exHold1 = 1;
+
+	if(ex1RegOutSchm[JX2_SCHM_DLR])
+	begin
+		if(	(gprIdRs==JX2_GR_DLR) ||
+			(gprIdRt==JX2_GR_DLR) ||
+			(gprIdRm==JX2_GR_DLR) )
+				exHold1 = 1;
+	end
+	if(ex1RegOutSchm[JX2_SCHM_DHR])
+	begin
+		if(	(gprIdRs==JX2_GR_DHR) ||
+			(gprIdRt==JX2_GR_DHR) ||
+			(gprIdRm==JX2_GR_DHR) )
+				exHold1 = 1;
+	end
+	if(ex1RegOutSchm[JX2_SCHM_SP])
+	begin
+		if(	(gprIdRs==JX2_GR_SP) ||
+			(gprIdRt==JX2_GR_SP) ||
+			(gprIdRm==JX2_GR_SP) )
+				exHold1 = 1;
+	end
 
 //	case( {1'b1, ex1HldIdCn1} )
 //		JX2_CR_LR:	 exHold1 = 1;
@@ -759,6 +789,7 @@ begin
 
 //	ex1RegInSr		= crOutSr;
 	ex1RegInSr		= ex2RegOutSr;
+	ex1RegInSchm	= ex2RegOutSchm;
 
 	ex2RegAluRes	= ex1ValAlu;
 	ex2RegMulRes	= ex1MulVal;
@@ -779,6 +810,7 @@ begin
 	ex2RegInSp		= gprOutSp;
 	ex2RegInLr		= crOutLr;
 	ex2RegInSr		= crOutSr;
+	ex2RegInSchm	= 0;
 
 end
 

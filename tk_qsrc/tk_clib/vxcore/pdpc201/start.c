@@ -99,6 +99,7 @@ __PDPCLIB_API__ int CTYP __start()
 	char *p;
 	char **penv;
 
+	__start_first();
 	tk_puts("TK: Start A0\n");
 	__start_early();
 

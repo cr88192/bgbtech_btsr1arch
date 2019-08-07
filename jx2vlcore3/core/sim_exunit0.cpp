@@ -433,6 +433,11 @@ uint32_t mmio_ReadDWord(BJX2_Context *ctx, uint32_t addr)
 	s64 rvq, dcyc;
 	int val;
 
+	if((addr&0xF0000)==0xA0000)
+	{
+		return(0);
+	}
+
 	mmio=mmgp_data;
 
 	switch(addr&0xFFFFFF)
@@ -495,6 +500,11 @@ uint32_t mmio_WriteDWord(BJX2_Context *ctx, uint32_t addr, uint32_t val)
 {
 	u32 *mmio;
 	int v;
+
+	if((addr&0xF0000)==0xA0000)
+	{
+		return(0);
+	}
 
 	mmio=mmgp_data;
 
@@ -1019,6 +1029,9 @@ int main(int argc, char **argv, char **env)
 	JX2R_UseImageAddFile(
 		(char *)"BOOTLOAD.SYS",
 		(char *)"../../tk_qsrc/doomsrc2/doom_bjx2.exe");
+	JX2R_UseImageAddFile(
+		(char *)"DOOM1.WAD",
+		(char *)"../../tk_qsrc/doomsrc2/doom1.wad");
 
 	Verilated::commandArgs(argc, argv);
 

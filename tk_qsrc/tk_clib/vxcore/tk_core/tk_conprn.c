@@ -1,5 +1,6 @@
 byte tk_con_x;
 byte tk_con_y;
+byte tk_con_ena;
 volatile u32 *tk_con_buf;
 
 void tk_con_init()
@@ -7,6 +8,12 @@ void tk_con_init()
 	tk_con_buf=(u32 *)0xF00A0000;
 	tk_con_x=0;
 	tk_con_y=0;
+	tk_con_ena=1;
+}
+
+void tk_con_disable()
+{
+	tk_con_ena=0;
 }
 
 void tk_con_scroll_up()
@@ -19,16 +26,14 @@ void tk_con_scroll_up()
 		for(j=0; j<40; j++)
 	{
 		i0=((i+0)*40+j)*8;		i1=((i+1)*40+j)*8;
-		p0=tk_con_buf[i1+0];
-//		p1=tk_con_buf[i1+1];
-//		p2=tk_con_buf[i1+2];	p3=tk_con_buf[i1+3];
-		tk_con_buf[i0+0]=p0;
-//		tk_con_buf[i0+1]=p1;
-//		tk_con_buf[i0+2]=p2;	tk_con_buf[i0+3]=p3;
-//		p0=tk_con_buf[i1+4];	p1=tk_con_buf[i1+5];
-//		p2=tk_con_buf[i1+6];	p3=tk_con_buf[i1+7];
-//		tk_con_buf[i0+4]=p0;	tk_con_buf[i0+5]=p1;
-//		tk_con_buf[i0+6]=p2;	tk_con_buf[i0+7]=p3;
+		p0=tk_con_buf[i1+0];	p1=tk_con_buf[i1+1];
+		p2=tk_con_buf[i1+2];	p3=tk_con_buf[i1+3];
+		tk_con_buf[i0+0]=p0;	tk_con_buf[i0+1]=p1;
+		tk_con_buf[i0+2]=p2;	tk_con_buf[i0+3]=p3;
+		p0=tk_con_buf[i1+4];	p1=tk_con_buf[i1+5];
+		p2=tk_con_buf[i1+6];	p3=tk_con_buf[i1+7];
+		tk_con_buf[i0+4]=p0;	tk_con_buf[i0+5]=p1;
+		tk_con_buf[i0+6]=p2;	tk_con_buf[i0+7]=p3;
 	}
 
 	for(j=0; j<40; j++)
@@ -51,6 +56,9 @@ void tk_con_newline()
 void tk_con_putc(int ch)
 {
 	u32 px;
+	
+	if(!tk_con_ena)
+		return;
 	
 	if(ch<' ')
 	{

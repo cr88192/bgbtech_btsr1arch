@@ -263,7 +263,9 @@ void I_InitGraphics (void)
 //		(BASEWIDTH/2-1)|
 //		((BASEHEIGHT-1)<<10)|
 //		((BASEWIDTH/2+1)<<20);
-		
+	
+	tk_con_disable();
+	
 	screens[0]=malloc(BASEWIDTH*BASEHEIGHT*2);
 	
 	vid_lastscreen=malloc(BASEWIDTH*BASEHEIGHT*2);
