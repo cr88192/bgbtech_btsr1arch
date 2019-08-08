@@ -302,6 +302,14 @@ wire[31:0]	crOutLr;
 reg [31:0]	crInLr;
 // wire[63:0]	crOutSr;
 reg [63:0]	crInSr;
+
+wire[63:0]	crOutExsr;
+reg [63:0]	crInExsr;
+wire[31:0]	crOutSpc;
+reg [31:0]	crInSpc;
+wire[31:0]	crOutSsp;
+reg [31:0]	crInSsp;
+
 wire[31:0]	crOutVbr;
 wire[31:0]	crOutGbr;
 wire[31:0]	crOutTbr;
@@ -322,6 +330,10 @@ RegCR regCr(
 	crOutPc,	crInPc,
 	crOutLr,	crInLr,
 	crOutSr,	crInSr,
+
+	crOutExsr,	crInExsr,
+	crOutSpc,	crInSpc,
+	crOutSsp,	crInSsp,
 
 	crOutVbr,
 	crOutGbr,
@@ -573,12 +585,21 @@ reg[63:0]	tNxtRegExc;
 reg[63:0]	tRegExc;
 reg[7:0]	tRegExcOfs;
 
+reg			tPreHold1;
+reg			tNxtPreHold1;
+reg			tLstPreHold1;
+
 always @*
 begin
-	exHold1		= 0;
-	exHold2		= 0;
-	tNxtRegExc	= 0;
-	tRegExcOfs	= 0;
+	exHold1			= 0;
+	exHold2			= 0;
+	tNxtRegExc		= 0;
+	tRegExcOfs		= 0;
+	tNxtPreHold1	= 0;
+
+	crInExsr		= crOutExsr;
+	crInSpc			= crOutSpc;
+	crInSsp			= crOutSsp;
 	
 	if(ex1Hold)
 		exHold2		= 1;
@@ -604,8 +625,23 @@ begin
 //	if((ex1HldIdRn1 == JX2_GR_SP) ||
 //		(ex1HldIdRn1 == JX2_GR_DLR) ||
 //		(ex1HldIdRn1 == JX2_GR_DHR))
-	if(ex1HldIdRn1 == JX2_GR_SP)
+
+//	if(ex1HldIdRn1 == JX2_GR_SP)
+	if(ex1RegIdRm == JX2_GR_SP)
 		exHold1 = 1;
+
+`ifndef def_true
+// `ifdef def_true
+	if(gprIdRm == JX2_GR_SP)
+		tNxtPreHold1 = 1;
+
+	if(tPreHold1 && !tLstPreHold1)
+//	if(tPreHold1)
+	begin
+		exHold1 = 1;
+		tNxtPreHold1 = 0;
+	end
+`endif
 
 //	if(ex1HldIdCn1 == crIdCm)
 //	begin
@@ -624,6 +660,7 @@ begin
 			({1'b1, ex2RegIdCn2} != JX2_CR_PC))
 		exHold1 = 1;
 
+`ifndef def_true
 	if(ex1RegOutSchm[JX2_SCHM_DLR])
 	begin
 		if(	(gprIdRs==JX2_GR_DLR) ||
@@ -645,6 +682,7 @@ begin
 			(gprIdRm==JX2_GR_SP) )
 				exHold1 = 1;
 	end
+`endif
 
 //	case( {1'b1, ex1HldIdCn1} )
 //		JX2_CR_LR:	 exHold1 = 1;
@@ -724,9 +762,11 @@ begin
 	case(tRegExc[14:13])
 		2'b00: tRegExcOfs=1;
 		2'b01: tRegExcOfs=3;
-		2'b10: tRegExcOfs=4;
-		2'b11: tRegExcOfs=2;
+		2'b10: tRegExcOfs=2;
+		2'b11: tRegExcOfs=4;
 	endcase
+
+	crInSr			= ex1RegOutSr;
 	
 	if(tRegExc[15])
 	begin
@@ -741,12 +781,18 @@ begin
 			crOutVbr[2:0] };
 //		nxtBraFlushMask = 8'h07;
 		nxtBraFlushMask = 8'h0F;
+
+		crInExsr		= tRegExc;
+		crInSpc			= ifLastPc;
+		crInSsp			= gprOutSp[31:0];
+		crInSr			= crOutSr;
+		crInSr[30:28]	= 3'b111;
 	end
 
 	ifValPc			= tValNextPc;
 
 	crInPc			= tValNextPc;
-	crInSr			= ex1RegOutSr;
+//	crInSr			= ex1RegOutSr;
 	crInLr			= ex1RegOutLr;
 
 	gprIdRn1		= ex1RegIdRn1;
@@ -822,6 +868,9 @@ begin
 		ex1RegValFRt	<= UV64_XX;
 `endif
 
+	tPreHold1		<= tNxtPreHold1;
+	tLstPreHold1	<= tPreHold1;
+
 	if(reset)
 	begin
 //		ifValPc			<= UV32_00;
@@ -831,7 +880,7 @@ begin
 	else
 		if(!exHold1)
 	begin
-		tRegExc		<= tNxtRegExc;
+		tRegExc			<= tNxtRegExc;
 
 // `ifndef def_true
 // `ifdef def_true

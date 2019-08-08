@@ -46,7 +46,9 @@ S1, S2, S3 -> V
 
 `include "CoreDefs.v"
 
-// `include "ExOpClz.v"
+`ifdef jx2_enable_clz
+`include "ExOpClz.v"
+`endif
 
 module ExALU(
 	/* verilator lint_off UNUSED */
@@ -94,7 +96,8 @@ reg			tRegOutSrT;
 reg			tRegOutSrS;
 
 // `ifdef def_true
-`ifndef def_true
+// `ifndef def_true
+`ifdef jx2_enable_clz
 wire[7:0]		tClzVal;
 ExOpClz	clz(
 	clock,		reset,
@@ -533,10 +536,12 @@ begin
 	tResultu2A=0;
 
 	case(idUIxt[3:0])
-//		4'h0: begin
-//			tResultu1A = { UV25_00, tClzVal };
-//			tResultu2A = { UV57_00, tClzVal };
-//		end
+`ifdef jx2_enable_clz
+		4'h0: begin
+			tResultu1A = { UV25_00, tClzVal };
+			tResultu2A = { UV57_00, tClzVal };
+		end
+`endif
 		
 		default: begin
 		end

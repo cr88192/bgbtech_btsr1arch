@@ -535,7 +535,9 @@ parameter[5:0] JX2_UCIX_IXS_LDSRMSK	= 6'h03;		//?
 `define jx2_enable_ops16
 // `define jx2_enable_ops48
 
-`define jx2_reduce_l1sz
+// `define jx2_enable_clz
+
+// `define jx2_reduce_l1sz
 `define jx2_reduce_l2sz
 
 // `define jx2_merge_shadq		//Merge SHAD and SHAD.Q

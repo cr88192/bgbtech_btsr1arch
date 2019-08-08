@@ -339,7 +339,8 @@ begin
 			tDoMemOpm	= UMEM_OPM_WR_Q;
 			tDoMemOp	= 1;
 
-			tHeldIdRn1	= JX2_GR_SP;
+//			tHeldIdRn1	= JX2_GR_SP;
+			tHeldIdCn1	= JX2_GR_IMM[4:0];
 			tRegOutSchm[JX2_SCHM_SP]	= 1;
 			
 			case(opUIxt[1:0])
