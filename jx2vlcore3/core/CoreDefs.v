@@ -86,8 +86,10 @@ parameter[  5:0] UV6_XX			= 6'hXX;	//
 parameter[  6:0] UV7_XX			= 7'hXX;	//
 parameter[  7:0] UV8_XX			= 8'hXX;	//
 parameter[  8:0] UV9_XX			= 9'hXXX;	//
-
+parameter[  9:0] UV10_XX		= 10'hXXX;	//
+parameter[ 10:0] UV11_XX		= 11'hXXX;	//
 parameter[ 11:0] UV12_XX		= 12'hXXX;	//
+
 parameter[ 15:0] UV16_XX		= 16'hXXXX;	//
 parameter[ 27:0] UV28_XX		= 28'hXXXXXXX;	//
 parameter[ 31:0] UV32_XX		= 32'hXXXXXXXX;	//
@@ -504,6 +506,7 @@ parameter[5:0] JX2_UCIX_IXT_RTE		= 6'h09;		//Return From Exception
 parameter[5:0] JX2_UCIX_IXT_TRAPA	= 6'h0A;		//Trap
 parameter[5:0] JX2_UCIX_IXT_PLDMSK	= 6'h0B;		//
 parameter[5:0] JX2_UCIX_IXT_CPUID	= 6'h0C;		//CPU ID
+parameter[5:0] JX2_UCIX_IXT_WEXMD	= 6'h0D;		//WEX Profile
 
 parameter[5:0] JX2_UCIX_IXS_NOP		= 6'h00;		//No-Op
 parameter[5:0] JX2_UCIX_IXS_MOVT	= 6'h01;		//Copy SR.T to Reg
@@ -523,22 +526,45 @@ parameter[5:0] JX2_UCIX_IXS_LDSRMSK	= 6'h03;		//?
 `endif
 `endif
 
-`define jx2_enable_swapn		//Enable SWxP.x ops
+// `define jx2_sprs_elrehr			//ELR/EHR/BP as special registers?
+`define jx2_bra2stage				//Use 2-stage branch initiation
+
+// `define jx2_enable_swapn		//Enable SWxP.x ops
 // `define jx2_enable_shlln		//Enable SHLLn / SHLRn Ops
 
 `define jx2_shlln_shadq			//Route SHLLn through SHAD.Q
 
-`define jx2_enable_gsv			//Enable GSV (Packed Integer) stuff.
+// `define jx2_enable_gsv			//Enable GSV (Packed Integer) stuff.
 
 // `define jx2_enable_prebra			//Enable GSV (Packed Integer) stuff.
 
 `define jx2_enable_ops16
 // `define jx2_enable_ops48
 
+// `define jx2_enable_aluunary
 // `define jx2_enable_clz
+// `define jx2_enable_addsp
+
+`define jx2_enable_wex2w				//Enable 2-wide WEX support
+
+// `define jx2_cpu_halfclock;				//Reduce CPU core clock speed by half
+
+
+`ifdef jx2_enable_wex2w
+/* If we are using WEX, assume 16 and 48 bit ops also exist. */
+`ifndef jx2_enable_ops16
+`define jx2_enable_ops16
+`endif
+`ifndef jx2_enable_ops48
+`define jx2_enable_ops48
+`endif
+`endif
+
+`define jx2_ddr_bl64b			//DDR interface is 64-bit (DDR2)
+
 
 // `define jx2_reduce_l1sz
-`define jx2_reduce_l2sz
+// `define jx2_reduce_l2sz
 
 // `define jx2_merge_shadq		//Merge SHAD and SHAD.Q
 
@@ -550,5 +576,11 @@ parameter[5:0] JX2_UCIX_IXS_LDSRMSK	= 6'h03;		//?
 // `define jx2_debug_exopipe	//Debug execute pipeline (EX2 only)
 
 // `define jx2_debug_alu		//Debug ALU
+
+`ifdef jx2_bra2stage
+parameter[7:0] JX2_BRA_FLUSHMSK	= 8'h1F;		//
+`else
+parameter[7:0] JX2_BRA_FLUSHMSK	= 8'h0F;		//
+`endif
 
 `endif

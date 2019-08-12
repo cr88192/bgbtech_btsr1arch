@@ -129,15 +129,28 @@ begin
 //	opRegO_Er	= {2'b01, istrWord[11:8]};
 //	opRegN_Er	= {2'b01, istrWord[ 7:4]};
 //	opRegM_Er	= {2'b01, istrWord[ 3:0]};
+`ifdef jx2_sprs_elrehr
 	opRegO_Er	= {tRegRoIsRs, 1'b1, istrWord[11:8]};
 	opRegN_Er	= {tRegRnIsRs, 1'b1, istrWord[ 7:4]};
 	opRegM_Er	= {tRegRmIsRs, 1'b1, istrWord[ 3:0]};
+`else
+	opRegO_Er	= {2'b01, istrWord[11:8]};
+	opRegN_Er	= {2'b01, istrWord[ 7:4]};
+	opRegM_Er	= {2'b01, istrWord[ 3:0]};
+`endif
 
 	opRegN_ECr	= opRegN_Cr;
 	opRegN_ESr	= opRegN_Sr;
 	
+`ifdef jx2_sprs_elrehr
 	opRegN_Xr	= {tRegRnIsRs, istrWord[11], istrWord[ 7:4]};
 	opRegN_Yr	= {tRegRnIsRs, istrWord[14], istrWord[ 7:4]};
+`else
+	opRegN_Xr	= {tRegRnIsRs & (!istrWord[11]),
+		istrWord[11], istrWord[ 7:4]};
+	opRegN_Yr	= {tRegRnIsRs & (!istrWord[14]),
+		istrWord[14], istrWord[ 7:4]};
+`endif
 
 	opRegN_Fix	= JX2_GR_ZZR;
 	opRegM_Fix	= JX2_GR_ZZR;
@@ -873,8 +886,12 @@ begin
 
 
 			11'h6z9: begin
-				opNmid		= JX2_UCMD_NOP;
-				opFmid		= JX2_FMID_Z;
+//				opNmid		= JX2_UCMD_NOP;
+//				opFmid		= JX2_FMID_Z;
+
+				opNmid		= JX2_UCMD_OP_IXT;
+				opFmid		= JX2_FMID_REG;
+				opUCmdIx	= JX2_UCIX_IXT_WEXMD;
 			end
 			11'h6zA: begin
 				opNmid		= JX2_UCMD_OP_IXT;
@@ -1452,10 +1469,13 @@ begin
 			opIty		= JX2_ITY_SB;
 			opUCmdIx	= JX2_UCIX_ALU_ADD;
 
-//			if(istrWord[11:8]==4'hF)
-//			begin
-//				opNmid		= JX2_UCMD_ADDSP;
-//			end
+`ifdef jx2_enable_addsp
+			if(istrWord[11:8]==4'hF)
+			begin
+				opNmid		= JX2_UCMD_ADDSP;
+				opFmid		= JX2_FMID_IMM8;
+			end
+`endif
 		end
 
 		16'hDzzz: begin
@@ -1699,10 +1719,26 @@ begin
 //			opRegN	= opRegO_Dfl;
 //			opRegO	= opRegO_Dfl;
 //			opUIxt	= opUCmdIx;
-			opRegN	= opRegO_Dfl;
 			opRegM	= opRegO_Dfl;
 			opRegO	= JX2_GR_IMM;
+			opRegN	= opRegO_Dfl;
 			opUIxt	= {opCcty, opUCmdIx[5:0]};
+			
+`ifndef def_true
+			case(opIty)
+				JX2_ITY_SB: begin
+				end
+
+				JX2_ITY_SL: begin
+					opRegM	= JX2_GR_DLR;
+					opRegO	= JX2_GR_IMM;
+					opRegN	= opRegO_Dfl;
+				end
+
+				default: begin
+				end
+			endcase
+`endif
 		end
 
 		JX2_FMID_IMM8Z: begin

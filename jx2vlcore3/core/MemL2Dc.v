@@ -7,6 +7,7 @@ Caches 128-bit tiles,
 `include "CoreDefs.v"
 
 module MemL2Dc(
+	/* verilator lint_off UNUSED */
 	clock,
 	reset,
 	
@@ -93,6 +94,7 @@ reg		tHold;
 reg		tAccess;
 
 reg		tAddrIsRam;
+reg 	tOpmIsNz;
 
 always @*
 begin
@@ -107,7 +109,8 @@ begin
 	tAddrIsRam	= (tReqAddr[25:20]!=6'h00) &&
 		(tReqAddr[27:26]==2'b00);
 	
-	tMiss		= (tReqAddr != tBlkAddr);
+	tOpmIsNz	= (tReqOpm[4:3]!=0);
+	tMiss		= (tReqAddr != tBlkAddr) && tOpmIsNz;
 	tMemDataOut	= tBlkData;
 	tBlkDirty	= tBlkFlag[0];
 	
@@ -116,7 +119,7 @@ begin
 
 	tBlkStData	= UV128_XX;
 	tBlkStAddr	= UV28_XX;
-	tBlkStIx	= UV12_XX;
+	tBlkStIx	= UV10_XX;
 	tBlkStDirty	= 0;
 	tBlkDoSt	= 0;
 
@@ -158,7 +161,11 @@ end
 
 reg tAccLatch;
 reg tAccDone;
+reg tAccStDone;
+reg tNxtStDone;
 reg tAccSticky;
+reg	tAccBlkHalf;
+reg	tNxtBlkHalf;
 
 always @(posedge clock)
 begin
@@ -187,14 +194,47 @@ begin
 		begin
 			tDdrMemOpm		<= UMEM_OPM_READY;
 
-			if(!tBlkDirty)
+			if(!tBlkDirty || tAccStDone)
 			begin
+`ifdef jx2_ddr_bl64b
+				if(tAccBlkHalf)
+				begin
+					tBlkLdData[127:64]	<= ddrMemDataIn[63:0];
+					tBlkLdAddr	<= tReqAddr;
+					tBlkLdIx	<= tReqIx;
+					tAccDone	<= 1;
+					tAccSticky	<= 1;
+					tAccLatch	<= 0;
+				end
+				else
+				begin
+					tBlkLdData[63:0]	<= ddrMemDataIn[63:0];
+					tNxtBlkHalf			<= 1;
+				end
+`else
 				tBlkLdData	<= ddrMemDataIn;
 				tBlkLdAddr	<= tReqAddr;
 				tBlkLdIx	<= tReqIx;
 				tAccDone	<= 1;
 				tAccSticky	<= 1;
 				tAccLatch	<= 0;
+`endif
+			end
+			else if(tBlkDirty)
+			begin
+`ifdef jx2_ddr_bl64b
+				if(tAccBlkHalf)
+				begin
+					tNxtStDone	<= 0;
+					tNxtBlkHalf	<= 0;
+				end
+				else
+				begin
+					tNxtBlkHalf	<= 1;
+				end
+`else
+				tNxtStDone	<= 0;
+`endif
 			end
 		end
 		else if((ddrMemOK==UMEM_OK_HOLD) && tAccLatch)
@@ -206,17 +246,33 @@ begin
 		else
 			if(ddrMemOK==UMEM_OK_READY)
 		begin
-			if(tBlkDirty)
+			tAccStDone	<= tNxtStDone;
+
+			if(tBlkDirty && !tNxtStDone)
 			begin
+`ifdef jx2_ddr_bl64b
+
+				tDdrMemDataOut	<= { UV64_XX,
+					tNxtBlkHalf ? tBlkData[127:64] : tBlkData[63:0] };
+
+				tDdrMemAddr		<= {tBlkAddr, tNxtBlkHalf, 3'b000};
+				tAccBlkHalf		<= tNxtBlkHalf;
+`else
 				tDdrMemDataOut	<= tBlkData;
 				tDdrMemAddr		<= {tBlkAddr, 4'b0000};
+`endif
 				tDdrMemOpm		<= UMEM_OPM_WR_TILE;
 				tAccLatch		<= 1;
 			end
-			else
+			else if(!tAccStDone)
 			begin
 				tDdrMemDataOut	<= UV128_XX;
+`ifdef jx2_ddr_bl64b
+				tDdrMemAddr		<= {tReqAddr, tNxtBlkHalf, 3'b000};
+				tAccBlkHalf		<= tNxtBlkHalf;
+`else
 				tDdrMemAddr		<= {tReqAddr, 4'b0000};
+`endif
 				tDdrMemOpm		<= UMEM_OPM_RD_TILE;
 				tAccLatch		<= 1;
 			end
@@ -224,7 +280,13 @@ begin
 	end
 	else
 	begin
-		tAccDone	<= 0;
+		tAccDone		<= 0;
+		tAccStDone		<= 0;
+		tNxtStDone		<= 0;
+`ifdef jx2_ddr_bl64b
+		tAccBlkHalf		<= 0;
+		tNxtBlkHalf		<= 0;
+`endif
 	end
 end
 

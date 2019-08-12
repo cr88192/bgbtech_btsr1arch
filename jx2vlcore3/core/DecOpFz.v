@@ -5,7 +5,7 @@ Redo to use new F0 block, and merge F0/F1/F2.
 module DecOpFz(
 	/* verilator lint_off UNUSED */
 	clock,		reset,
-	istrWord,
+	istrWord,	isAltOp,
 	idRegN,		idRegM,		idRegO,
 	idImm,		idUCmd,
 	idUIxt
@@ -15,6 +15,7 @@ input			clock;		//clock
 input			reset;		//clock
 
 input[63:0]		istrWord;	//source instruction word
+input			isAltOp;
 
 output[5:0]		idRegN;
 output[5:0]		idRegM;
@@ -97,11 +98,19 @@ begin
 	opExM		= istrWord[25];
 	opExI		= istrWord[24];
 
+`ifdef jx2_sprs_elrehr
 	opRegN_Dfl	= {tRegRnIsRs, opExN, istrWord[ 7: 4]};
 	opRegM_Dfl	= {tRegRmIsRs, opExM, istrWord[ 3: 0]};
 	opRegO_Dfl	= {tRegRoIsRs, opExI, istrWord[23:20]};
 
 	opRegO_Df2	= {tRegRmIsRs, istrWord[ 4], istrWord[3:0]};
+`else
+	opRegN_Dfl	= {tRegRnIsRs & (!opExN), opExN, istrWord[ 7: 4]};
+	opRegM_Dfl	= {tRegRmIsRs & (!opExM), opExM, istrWord[ 3: 0]};
+	opRegO_Dfl	= {tRegRoIsRs & (!opExI), opExI, istrWord[23:20]};
+
+	opRegO_Df2	= {tRegRmIsRs & !(istrWord[ 4]), istrWord[ 4], istrWord[3:0]};
+`endif
 
 	opIsNotFx	= (istrWord[15:13]!=3'b111);
 	
@@ -1174,10 +1183,13 @@ begin
 					opIty		= JX2_ITY_SB;
 					opUCmdIx	= JX2_UCIX_ALU_ADD;
 
-//					if(istrWord[4:0]==5'hF)
-//					begin
-//						opNmid		= JX2_UCMD_ADDSP;
-//					end
+`ifdef jx2_enable_addsp
+					if(istrWord[4:0]==5'hF)
+					begin
+						opNmid		= JX2_UCMD_ADDSP;
+						opIty		= JX2_ITY_SL;
+					end
+`endif
 				end
 				3'b011: begin
 					opNmid		= JX2_UCMD_MOV_IR;
@@ -1437,23 +1449,24 @@ begin
 		end
 
 		/*
-			SB: / Fzeo_zzii		Imm8s, Ro
 			SB: Fzeo_iiii		Ro, Imm16s, Ro
 			SW: Fzeo_iiii		Imm16s, Ro, Ro
+			SL: Fzeo_iiii		Imm16s, DLR, DLR
+			SQ: Fzze_zznz_iiii	Rn, Imm10s, Rn
 
-			UB: / Fzeo_zzjj		Imm8u, Ro
 			UB: Fzeo_jjjj		Ro, Imm16u, Ro
 			UW: Fzeo_jjjj		Imm16u, Ro, Ro
+			UL:
+			UQ: Fzze_zznz_iiii	Rn, Imm10u, Rn
 
-			NB: / Fzeo_zzjj		Imm8n, Ro
+			NB: Fzeo_jjjj		Ro, Imm16n, Ro
 			NW: Fzeo_jjjj		Imm16n, Ro, Ro
+			NL:
+			NQ: Fzze_zznz_iiii	Rn, Imm10n, Rn
 
 			XB: / Fzeo_zzjj		Imm8x, Ro
 			XW: / Fzeo_jjjj		Imm16x, Ro
 
-			SQ: Fzze_zznz_iiii	Rn, Imm17s, Rn
-			UQ: Fzze_zznz_iiii	Rn, Imm17u, Rn
-			NQ: Fzze_zznz_iiii	Rn, Imm17n, Rn
 		 */
 	
 		JX2_FMID_IMM8REG: begin
@@ -1478,12 +1491,20 @@ begin
 						istrWord[31] ? UV17_FF : UV17_00,
 						istrWord[31:16] };
 
+				JX2_ITY_SL: begin
+					opImm = {
+						istrWord[31] ? UV17_FF : UV17_00,
+						istrWord[31:16] };
+					opRegM	= JX2_GR_DLR;
+					opRegO	= JX2_GR_IMM;
+					opRegN	= JX2_GR_DLR;
+				end
+
 				JX2_ITY_SQ: begin
 					opImm = opImm_imm10s;
-					opRegN	= opRegN_Dfl;
-//					opRegO	= opRegN_Dfl;
 					opRegM	= opRegN_Dfl;
 					opRegO	= JX2_GR_IMM;
+					opRegN	= opRegN_Dfl;
 				end
 
 				JX2_ITY_UB: begin
@@ -1498,25 +1519,26 @@ begin
 
 				JX2_ITY_UQ: begin
 					opImm = opImm_imm10u;
-					opRegN	= opRegN_Dfl;
-//					opRegO	= opRegN_Dfl;
 					opRegM	= opRegN_Dfl;
 					opRegO	= JX2_GR_IMM;
+					opRegN	= opRegN_Dfl;
 				end
 
-`ifndef def_true
-				JX2_ITY_NB:
-					opImm = { UV25_FF, istrWord[23:16] };
-`endif
+				JX2_ITY_NB: begin
+					opImm = { UV17_FF, istrWord[31:16] };
+					opRegM	= opRegO_Df2;
+					opRegO	= JX2_GR_IMM;
+					opRegN	= opRegO_Df2;
+				end
+
 				JX2_ITY_NW:
 					opImm = { UV17_FF, istrWord[31:16] };
 
 				JX2_ITY_NQ: begin
 					opImm = opImm_imm10n;
-					opRegN	= opRegN_Dfl;
-//					opRegO	= opRegN_Dfl;
 					opRegM	= opRegN_Dfl;
 					opRegO	= JX2_GR_IMM;
+					opRegN	= opRegN_Dfl;
 				end
 
 				default: begin
@@ -1617,7 +1639,7 @@ begin
 			if(!opIsNotFx)
 			begin
 				opUCmd = { opCcty, JX2_UCMD_INVOP };
-				if(!tMsgLatch)
+				if(!tMsgLatch && !isAltOp)
 				begin
 					$display("Jx2DecOpFx: Invalid FMID (32)");
 					$display("Jx2DecOpFx: Istr %X-%X",
@@ -1629,7 +1651,7 @@ begin
 		
 		default: begin
 			opUCmd = { opCcty, JX2_UCMD_INVOP };
-			if(!tMsgLatch)
+			if(!tMsgLatch && !isAltOp)
 			begin
 				$display("Jx2DecOpFx: Unhandled FMID (32) %X", opFmid);
 				$display("Jx2DecOpFx: Istr %X-%X",

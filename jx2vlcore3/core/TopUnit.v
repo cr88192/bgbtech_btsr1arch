@@ -91,6 +91,14 @@ assign		sdc_dat[2]	= 1'bz;
 assign		sdc_dat[3]	= sdc_cs;
 assign		sdc_cmd		= sdc_di;
 
+reg			clock_halfMhz;
+
+wire		clock_cpu;
+`ifdef jx2_cpu_halfclock
+assign	clock_cpu	= clock_halfMhz;
+`else
+assign	clock_cpu	= clock;
+`endif
 
 // reg[127:0]	ddrMemDataIn;
 wire[127:0]		ddrMemDataIn;
@@ -145,7 +153,7 @@ wire[63:0]		dbgDcInVal;
 wire[ 1:0]		dbgDcOutOK;
 
 ExUnit	cpu(
-	clock, 			reset,
+	clock_cpu, 		reset,
 
 	memAddr,		memOpm,
 	memInData,		memOutData,
@@ -174,8 +182,10 @@ wire[31:0]		gpioPinsDir;
 wire[15:0]		fixedPinsOut;
 wire[15:0]		fixedPinsIn;
 
-assign			uartRxD = fixedPinsOut[0];
-assign			fixedPinsIn[1] = uartTxD;
+// assign			uartRxD = fixedPinsOut[0];
+// assign			fixedPinsIn[1] = uartTxD;
+assign			uartTxD = fixedPinsOut[0];
+assign			fixedPinsIn[1] = uartRxD;
 
 MmiModGpio	gpio(
 	clock,			reset,
@@ -240,6 +250,7 @@ begin
 	gpioAddr	= mmioAddr;
 	gpioOpm		= mmioOpm;
 
+	mmioInData	= UV32_XX;
 	mmioOK		= UMEM_OK_READY;
 
 	if(gpioOK != UMEM_OK_READY)
@@ -263,6 +274,11 @@ begin
 //		memInData	= { UV96_XX, gpioOutData };
 //		memOK		= gpioOK;
 //	end
+end
+
+always @(posedge clock)
+begin
+	clock_halfMhz	<= !clock_halfMhz;
 end
 
 

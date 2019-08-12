@@ -893,8 +893,8 @@ Instruction Space
 ** 47nd  MOV.Q		(SP, disp4u), Rk	//Stack-Relative Load
 ** 48nm  MOV		Rm, Cn				//Cn=Rm
 ** 49nm  MOV		Cm, Rn				//Rn=Cm
-** 4Anm  MOV		Rm, Sn				//Store to Shadow Register
-** 4Bnm  MOV		Sm, Rn				//Load from Shadow Register
+** 4Anm ? MOV		Rm, Sn				//Store to Shadow Register
+** 4Bnm ? MOV		Sm, Rn				//Load from Shadow Register
 ** 4Cnm  LEA.B		(Rm, DLR), Rn
 ** 4Dnm  LEA.W		(Rm, DLR), Rn
 ** 4Enm  LEA.L		(Rm, DLR), Rn
@@ -1473,7 +1473,7 @@ F8zz Instruction Block:
 FAzz/FBzz Instructions:
 
 * FAjj_jjjj	 LDIZ	#imm24u, DLR		//Zero Extend
-* FBjj_jjjj	 LDIN	#imm24u, DLR		//One Extend
+* FBjj_jjjj	 LDIN	#imm24n, DLR		//One Extend
 
 
 === 48-bit Instruction Forms ===

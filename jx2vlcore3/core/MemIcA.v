@@ -4,7 +4,7 @@ module MemIcA(
 	regInPc,
 	regOutPcVal,	regOutPcOK,
 	regOutPcStep,
-	icInPcHold,
+	icInPcHold,		icInPcWxe,
 	memPcData,		memPcAddr,
 	memPcOpm,		memPcOK
 	);
@@ -15,8 +15,9 @@ input			reset;
 input [31: 0]	regInPc;		//input PC address
 output[63: 0]	regOutPcVal;	//output PC value
 output[ 1: 0]	regOutPcOK;		//set if we have a valid value.
-output[ 1: 0]	regOutPcStep;	//PC step (Normal Op)
+output[ 2: 0]	regOutPcStep;	//PC step (Normal Op)
 input			icInPcHold;
+input			icInPcWxe;
 
 input [127:0]	memPcData;		//memory PC data
 input [  1:0]	memPcOK;		//memory PC OK
@@ -26,7 +27,7 @@ output[  4:0]	memPcOpm;		//memory PC output-enable
 
 reg[63:0]		tRegOutPcVal;	//output PC value
 reg[ 1:0]		tRegOutPcOK;	//set if we have a valid value.
-reg[ 1: 0]		tRegOutPcStep;	//PC step (Normal Op)
+reg[ 2: 0]		tRegOutPcStep;	//PC step (Normal Op)
 
 assign	regOutPcVal		= tRegOutPcVal;
 assign	regOutPcOK		= tRegOutPcOK;
@@ -90,6 +91,7 @@ reg[31:0]		tRegInPc;		//input PC address
 reg				tMissA;
 reg				tMissB;
 reg				tMiss;
+reg				tPcStepW;
 
 reg[127:0]		tBlkData;
 
@@ -142,34 +144,78 @@ begin
 	end
 
 `ifdef jx2_enable_ops48
+
+`ifdef def_true
+	casez({tBlkData[15:13], tBlkData[11:10], tBlkData[ 8] })
+		6'b111_11z:	opLenA0=3'b011;
+		6'b111_101:	opLenA0=3'b110;
+		6'b111_100:	opLenA0=3'b010;
+		6'b111_01z:	opLenA0=3'b110;
+		6'b111_00z:	opLenA0=3'b010;
+		default:	opLenA0=3'b001; 
+	endcase
+	casez({tBlkData[31:29], tBlkData[27:26], tBlkData[24] })
+		6'b111_11z:	opLenA1=3'b011;
+		6'b111_101:	opLenA1=3'b110;
+		6'b111_100:	opLenA1=3'b010;
+		6'b111_01z:	opLenA1=3'b110;
+		6'b111_00z:	opLenA1=3'b010;
+		default:	opLenA1=3'b001; 
+	endcase
+	casez({tBlkData[47:45], tBlkData[43:42], tBlkData[40] })
+		6'b111_11z:	opLenA2=3'b011;
+		6'b111_101:	opLenA2=3'b110;
+		6'b111_100:	opLenA2=3'b010;
+		6'b111_01z:	opLenA2=3'b110;
+		6'b111_00z:	opLenA2=3'b010;
+		default:	opLenA2=3'b001; 
+	endcase
+	casez({tBlkData[63:61], tBlkData[59:58], tBlkData[56] })
+		6'b111_11z:	opLenA3=3'b011;
+		6'b111_101:	opLenA3=3'b110;
+		6'b111_100:	opLenA3=3'b010;
+		6'b111_01z:	opLenA3=3'b110;
+		6'b111_00z:	opLenA3=3'b010;
+		default:	opLenA3=3'b001; 
+	endcase
+`endif
+
+
+`ifndef def_true
 	casez(tBlkData[15:10])
 		6'b111z11:	opLenA0=3'b011;
-		6'b111z10:	opLenA0=3'b010;
+//		6'b111z10:	opLenA0=3'b010;
+		6'b111z10:	opLenA0={tBlkData[9], 2'b10 };
 		6'b111z01:	opLenA0=3'b110;
 		6'b111z00:	opLenA0=3'b010;
 		default:	opLenA0=3'b001; 
 	endcase
 	casez(tBlkData[31:26])
-		6'b111z11: opLenA1=3'b011;
-		6'b111z10: opLenA1=3'b010;
-		6'b111z01: opLenA1=3'b110;
-		6'b111z00: opLenA1=3'b010;
-		default:   opLenA1=3'b001; 
+		6'b111z11:	opLenA1=3'b011;
+//		6'b111z10:	opLenA1=3'b010;
+		6'b111z10:	opLenA1={tBlkData[25], 2'b10 };
+		6'b111z01:	opLenA1=3'b110;
+		6'b111z00:	opLenA1=3'b010;
+		default:	opLenA1=3'b001; 
 	endcase
 	casez(tBlkData[47:42])
-		6'b111z11: opLenA2=3'b011;
-		6'b111z10: opLenA2=3'b010;
-		6'b111z01: opLenA2=3'b110;
-		6'b111z00: opLenA2=3'b010;
-		default:   opLenA2=3'b001; 
+		6'b111z11:	opLenA2=3'b011;
+//		6'b111z10:	opLenA2=3'b010;
+		6'b111z10:	opLenA2={tBlkData[41], 2'b10 };
+		6'b111z01:	opLenA2=3'b110;
+		6'b111z00:	opLenA2=3'b010;
+		default:	opLenA2=3'b001; 
 	endcase
 	casez(tBlkData[63:58])
-		6'b111z11: opLenA3=3'b011;
-		6'b111z10: opLenA3=3'b010;
-		6'b111z01: opLenA3=3'b110;
-		6'b111z00: opLenA3=3'b010;
-		default:   opLenA3=3'b001; 
+		6'b111z11:	opLenA3=3'b011;
+//		6'b111z10:	opLenA3=3'b010;
+		6'b111z10:	opLenA3={tBlkData[57], 2'b10 };
+		6'b111z01:	opLenA3=3'b110;
+		6'b111z00:	opLenA3=3'b010;
+		default:	opLenA3=3'b001; 
 	endcase
+`endif
+
 `else
 	casez(tBlkData[15:13])
 		3'b111:    opLenA0=3'b010;
@@ -189,24 +235,37 @@ begin
 	endcase
 `endif
 
+	tRegOutPcVal	= UV64_XX;
+	tRegOutPcStep	= 0;
+	tPcStepW		= 0;
+
 	case(tInWordIx)
 		2'b00: begin
-			tRegOutPcVal=tBlkData[ 63:  0];
-			tRegOutPcStep=opLenA0[1:0];
+			tRegOutPcVal	= tBlkData[ 63:  0];
+			tRegOutPcStep	= { 1'b0, opLenA0[1:0] };
+			tPcStepW		= opLenA0[2] && tBlkData[12];
 		end
 		2'b01: begin
-			tRegOutPcVal=tBlkData[ 79: 16];
-			tRegOutPcStep=opLenA1[1:0];
+			tRegOutPcVal	= tBlkData[ 79: 16];
+			tRegOutPcStep	= {1'b0, opLenA1[1:0] };
+			tPcStepW		= opLenA1[2] && tBlkData[28];
 		end
 		2'b10: begin
-			tRegOutPcVal=tBlkData[ 95: 32];
-			tRegOutPcStep=opLenA2[1:0];
+			tRegOutPcVal	= tBlkData[ 95: 32];
+			tRegOutPcStep	= {1'b0, opLenA2[1:0] };
+			tPcStepW		= opLenA2[2] && tBlkData[44];
 		end
 		2'b11: begin
-			tRegOutPcVal=tBlkData[111: 48];
-			tRegOutPcStep=opLenA3[1:0];
+			tRegOutPcVal	= tBlkData[111: 48];
+			tRegOutPcStep	= {1'b0, opLenA3[1:0] };
+			tPcStepW		= opLenA3[2] && tBlkData[60];
 		end
 	endcase
+	
+`ifdef jx2_enable_wex2w
+	if(icInPcWxe && tPcStepW)
+		tRegOutPcStep = 3'b100;
+`endif
 	
 	tRegOutPcOK = tMiss ? UMEM_OK_HOLD : UMEM_OK_OK;
 	

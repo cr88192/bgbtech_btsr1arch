@@ -59,6 +59,8 @@ These exist because verilator lacks tristate IO.
 
 `include "CoreDefs.v"
 
+`define mod_ddr3_isddr2		//We are dealing with DDR2, not DDR3
+
 module MmiModDdr3(
 	clock,	reset,
 	memDataIn,	memDataOut,
@@ -673,6 +675,9 @@ begin
 		$display("Read Word3 %X", ddrData);
 		accNextState			= 6'b100100;
 		accNextReadBlk[63:48]	= ddrData;
+`ifdef mod_ddr3_isddr2
+		accNextState			= 6'b000001;
+`endif
 	end
 	6'b100100: begin
 		$display("Read Word4 %X", ddrData);
@@ -717,6 +722,9 @@ begin
 		accNextState			= 6'b110100;
 		tDdrData 				= accReadBlk[63:48];
 		tDdrOut					= 1;
+`ifdef mod_ddr3_isddr2
+		accNextState			= 6'b000001;
+`endif
 	end
 	6'b110100: begin
 		accNextState			= 6'b110101;

@@ -103,7 +103,7 @@ begin
 
 	opIsFC0		= (istrWord[11:9]==3'b110);
 	
-	opIsNotFx	= (istrWord[15:12]!=4'b11x1);
+	opIsNotFx	= (istrWord[15:10]!=6'b111x11);
 	
 	tNextMsgLatch	= 0;
 	opIsImm16		= 0;
@@ -484,7 +484,7 @@ begin
 				end
 				
 				default: begin
-					$display("Jx2DecOpFx: RegReg, Bad Ity=%X", opIty);
+					$display("Jx2DecOpFC: RegReg, Bad Ity=%X", opIty);
 				end
 
 			endcase
@@ -505,23 +505,6 @@ begin
 
 `ifdef def_true
 		/*
-			Rm, (Rn, Disp9u/17s)
-		 */
-		JX2_FMID_REGSTREGDISP: begin
-			opRegN	= opRegM_Dfl;
-			opRegM	= opRegN_Dfl;
-			opRegO	= JX2_GR_IMM;
-			opUIxt	= {opCcty, opBty[1:0], 1'b0, opBty};
-			opImm	= opImm_imm17s;
-
-			if(tRegRnIsRz)
-			begin
-				opRegM	= tRegRnIsR1 ? JX2_GR_GBR : JX2_GR_PC;
-				opUIxt	= {opCcty, opBty[1:0], 1'b0, opBty[2], 2'b00};
-			end
-		end
-
-		/*
 			SW: Rm, (Rn, Disp9u/17s)
 		 */
 		JX2_FMID_LDREGDISPREG: begin
@@ -538,22 +521,6 @@ begin
 			end
 		end
 `endif
-
-		/*
-			FCXX_Xndd_dddd
-		 */
-		JX2_FMID_REGSTDRPC: begin
-			opRegM	= JX2_GR_PC;
-			opRegN	= opRegP_DfFC;
-
-			opRegO	= JX2_GR_IMM;
-//			opUIxt	= {opCcty, JX2_IX2_RRI, 1'b0, opBty};
-			opUIxt	= {opCcty, opBty[1:0], 1'b0, opBty};
-			opImm = {
-				istrWord[23] ? UV9_FF : UV9_00,
-				istrWord[23:16],
-				istrWord[47:32] };
-		end
 
 		/*
 			FCXX_Xndd_dddd
@@ -638,7 +605,7 @@ begin
 				opUCmd = {opCcty, JX2_UCMD_INVOP};
 				if(!tMsgLatch)
 				begin
-					$display("Jx2DecOpFx: Invalid FMID (32/48)");
+					$display("Jx2DecOpFx: Invalid FMID (48)");
 					$display("Jx2DecOpFx: Istr %X-%X-%X",
 						istrWord[15:0], istrWord[31:16], istrWord[47:32]);
 				end
@@ -650,8 +617,8 @@ begin
 			opUCmd = {opCcty, JX2_UCMD_INVOP};
 			if(!tMsgLatch)
 			begin
-				$display("Jx2DecOpFx: Unhandled FMID (32/48) %X", opFmid);
-				$display("Jx2DecOpFx: Istr %X-%X-%X",
+				$display("Jx2DecOpFC: Unhandled FMID (48) %X", opFmid);
+				$display("Jx2DecOpFC: Istr %X-%X-%X",
 					istrWord[15:0], istrWord[31:16], istrWord[47:32]);
 			end
 			tNextMsgLatch=1;

@@ -15,7 +15,7 @@ module MemL1A(
 
 	icInPcAddr,		icOutPcVal,
 	icOutPcOK,		icOutPcStep,
-	icInPcHold,
+	icInPcHold,		icInPcWxe,
 
 	dcInAddr,		dcInOpm,
 	dcOutVal,		dcInVal,
@@ -38,8 +38,9 @@ input			reset;
 input [31: 0]	icInPcAddr;		//input PC address
 output[63: 0]	icOutPcVal;		//output PC value
 output[ 1: 0]	icOutPcOK;		//set if we have a valid value.
-output[ 1: 0]	icOutPcStep;	//PC step (Normal Op)
+output[ 2: 0]	icOutPcStep;	//PC step (Normal Op)
 input			icInPcHold;
+input			icInPcWxe;
 
 input [31: 0]	dcInAddr;		//input PC address
 input [ 4: 0]	dcInOpm;		//input PC address
@@ -87,7 +88,7 @@ MemIcA		memIc(
 	clock,			reset,
 	icInPcAddr,		icOutPcVal,
 	icOutPcOK,		icOutPcStep,
-	icInPcHold,
+	icInPcHold,		icInPcWxe,
 	ifMemData,		ifMemAddr,
 	ifMemOpm,		ifMemOK
 	);

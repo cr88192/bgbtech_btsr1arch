@@ -22,10 +22,12 @@ module RegGPR(
 	
 	regOutDlr,	regInDlr,
 	regOutDhr,	regInDhr,
+`ifdef jx2_sprs_elrehr
 	regOutElr,	regInElr,
 	regOutEhr,	regInEhr,
-	regOutSp,	regInSp,
-	regOutBp,	regInBp
+	regOutBp,	regInBp,
+`endif
+	regOutSp,	regInSp
 	);
 
 
@@ -55,15 +57,17 @@ output[63:0]	regOutDlr;
 input [63:0]	regInDlr;
 output[63:0]	regOutDhr;
 input [63:0]	regInDhr;
+output[63:0]	regOutSp;
+input [63:0]	regInSp;
+
+`ifdef jx2_sprs_elrehr
 output[63:0]	regOutElr;
 input [63:0]	regInElr;
 output[63:0]	regOutEhr;
 input [63:0]	regInEhr;
-output[63:0]	regOutSp;
-input [63:0]	regInSp;
 output[63:0]	regOutBp;
 input [63:0]	regInBp;
-
+`endif
 
 reg[63:0]	tRegValRs;
 reg[63:0]	tRegValRt;
@@ -87,11 +91,13 @@ reg[63:0]	gprRegBp;
 
 assign	regOutDlr = gprRegDlr;
 assign	regOutDhr = gprRegDhr;
+assign	regOutSp  = gprRegSp;
+
+`ifdef jx2_sprs_elrehr
 assign	regOutElr = gprRegElr;
 assign	regOutEhr = gprRegEhr;
-assign	regOutSp  = gprRegSp;
 assign	regOutBp  = gprRegBp;
-
+`endif
 
 reg[63:0]	tValRsA;
 reg[63:0]	tValRtA;
@@ -113,11 +119,14 @@ begin
 //		JX2_GR_DLR:	tValRsA=regInDlr;
 		JX2_GR_DHR:	tValRsA=gprRegDhr;
 //		JX2_GR_DHR:	tValRsA=regInDhr;
-		JX2_GR_ELR:	tValRsA=gprRegElr;
-		JX2_GR_EHR:	tValRsA=gprRegEhr;
 		JX2_GR_SP:	tValRsA=gprRegSp;
 //		JX2_GR_SP:	tValRsA=regInSp;
+
+`ifdef jx2_sprs_elrehr
+		JX2_GR_ELR:	tValRsA=gprRegElr;
+		JX2_GR_EHR:	tValRsA=gprRegEhr;
 		JX2_GR_BP:	tValRsA=gprRegBp;
+`endif
 
 		JX2_GR_PC:	tValRsA={ UV32_00, regValPc };
 		JX2_GR_GBR:	tValRsA={ UV32_00, regValGbr };
@@ -143,11 +152,14 @@ begin
 //		JX2_GR_DLR:	tValRtA=regInDlr;
 		JX2_GR_DHR:	tValRtA=gprRegDhr;
 //		JX2_GR_DHR:	tValRtA=regInDhr;
-		JX2_GR_ELR:	tValRtA=gprRegElr;
-		JX2_GR_EHR:	tValRtA=gprRegEhr;
 		JX2_GR_SP:	tValRtA=gprRegSp;
 //		JX2_GR_SP:	tValRtA=regInSp;
+
+`ifdef jx2_sprs_elrehr
+		JX2_GR_ELR:	tValRtA=gprRegElr;
+		JX2_GR_EHR:	tValRtA=gprRegEhr;
 		JX2_GR_BP:	tValRtA=gprRegBp;
+`endif
 
 		JX2_GR_IMM:	begin
 			tValRtA={
@@ -169,11 +181,14 @@ begin
 //		JX2_GR_DLR:	tValRmA=regInDlr;
 		JX2_GR_DHR:	tValRmA=gprRegDhr;
 //		JX2_GR_DHR:	tValRmA=regInDhr;
-		JX2_GR_ELR:	tValRmA=gprRegElr;
-		JX2_GR_EHR:	tValRmA=gprRegEhr;
 		JX2_GR_SP:	tValRmA=gprRegSp;
 //		JX2_GR_SP:	tValRmA=regInSp;
+
+`ifdef jx2_sprs_elrehr
+		JX2_GR_ELR:	tValRmA=gprRegElr;
+		JX2_GR_EHR:	tValRmA=gprRegEhr;
 		JX2_GR_BP:	tValRmA=gprRegBp;
+`endif
 
 		JX2_GR_IMM:begin
 			tValRmA={
@@ -224,11 +239,14 @@ begin
 	begin
 		gprRegDlr	<= (regIdRn2==JX2_GR_DLR) ? regValRn2 : regInDlr;
 		gprRegDhr	<= (regIdRn2==JX2_GR_DHR) ? regValRn2 : regInDhr;
+		gprRegSp	<= (regIdRn2==JX2_GR_SP ) ? regValRn2 : regInSp;
+
+`ifdef jx2_sprs_elrehr
 		gprRegElr	<= (regIdRn2==JX2_GR_ELR) ? regValRn2 : regInElr;
 		gprRegEhr	<= (regIdRn2==JX2_GR_EHR) ? regValRn2 : regInEhr;
-		gprRegSp	<= (regIdRn2==JX2_GR_SP ) ? regValRn2 : regInSp;
 		gprRegBp	<= (regIdRn2==JX2_GR_BP ) ? regValRn2 : regInBp;
-		
+`endif
+
 		if(!regIdRn2[5])
 		begin
 			gprArr[regIdRn2[4:0]] <= regValRn2;

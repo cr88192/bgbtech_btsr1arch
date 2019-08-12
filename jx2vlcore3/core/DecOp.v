@@ -29,8 +29,7 @@ module DecOp(
 	clock,		reset,
 	istrWord,
 	idRegN,		idRegM,		idRegO,
-	idImm,		idUCmd,
-	idUIxt
+	idImm,		idUCmd,		idUIxt
 	);
 
 input			clock;		//clock
@@ -86,7 +85,7 @@ wire[7:0]		decOpFz_idUIxt;
 
 DecOpFz	decOpFz(
 	clock,		reset,
-	istrWord,
+	istrWord,	1'b0,
 	decOpFz_idRegN,		decOpFz_idRegM,
 	decOpFz_idRegO,		decOpFz_idImm,
 	decOpFz_idUCmd,		decOpFz_idUIxt
@@ -112,8 +111,8 @@ DecOpFC	decOpFC(
 reg opIsFx;
 reg opIsFz;
 reg opIsFC;
-reg opIsDz;
-reg opIsDf;
+reg opIsDz;		//Predicated Ops
+reg opIsDf;		//Pred-False or WEX
 
 always @*
 begin
@@ -139,17 +138,20 @@ begin
 		6'b11110z: begin	//F0..F7
 			opIsFx = 1;		opIsFz = 1;
 			opIsFC = 0;		opIsDz = 0;
-			opIsDf = 0;
+//			opIsDf = 0;
+			opIsDf = istrWord[10];
 		end
 		6'b111110: begin	//F8..FB
 			opIsFx = 1;		opIsFz = 1;
 			opIsFC = 0;		opIsDz = 0;
-			opIsDf = 0;
+//			opIsDf = 0;
+			opIsDf = istrWord[8];
 		end
 		6'b111111: begin	//FC..FF
 			opIsFx = 1;		opIsFz = 0;
 			opIsFC = 1;		opIsDz = 0;
-			opIsDf = 0;
+//			opIsDf = 0;
+			opIsDf = istrWord[9];
 		end
 
 		default: begin
@@ -211,6 +213,11 @@ begin
 //		opUIxt[7:6]=opIsDf?JX2_IXC_CF:JX2_IXC_CT;
 		opUCmd[7:6]=opIsDf?JX2_IXC_CF:JX2_IXC_CT;
 	end
+`ifndef def_true
+	else if(opIsDf)
+	begin
+	end
+`endif
 	
 //	if(opUCmd == JX2_UCMD_INVOP)
 	if(opUCmd[5:0] == JX2_UCMD_INVOP)

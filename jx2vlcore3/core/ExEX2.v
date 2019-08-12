@@ -240,7 +240,8 @@ begin
 		JX2_UCMD_ADDSP: begin
 		end
 
-		JX2_UCMD_ALU3: begin
+//		JX2_UCMD_ALU3: begin
+		JX2_UCMD_ALU3, JX2_UCMD_UNARY: begin
 			tRegIdRn2		= regIdRm;			//
 			tRegValRn2		= regValAluRes[63:0];		//
 			tRegOutSr[1:0]	= regValAluRes[65:64];
@@ -250,12 +251,14 @@ begin
 //			tRegOutSr[0]	= regValAluRes[64];
 			tRegOutSr[1:0]	= regValAluRes[65:64];
 		end
-	
+
+`ifndef def_true
 		JX2_UCMD_UNARY: begin
 			tRegIdRn2		= regIdRm;			//
 			tRegValRn2		= regValAluRes[63:0];		//
 			tRegOutSr[1:0]	= regValAluRes[65:64];
 		end
+`endif
 
 		JX2_UCMD_BRA: begin
 		end

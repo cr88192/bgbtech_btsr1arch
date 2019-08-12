@@ -1,8 +1,10 @@
 /*
-ALU
+ALU (Lane 2+)
 
 Perform some ALU Operations
 May Sign or Zero Extend output.
+
+Leaves out operations which update SR.
 
 idUIxt:
   [7:6]=CC (AL/NV/CT/CF)
@@ -17,17 +19,17 @@ Op1:
   0001: SUB	/ PSUB.L
   0010: ADC	/ PADC.L
   0011: SBB	/ PSBB.L
-  0100: TST
+  0100: - TST
   0101: AND
   0110: OR
   0111: XOR
-  1000: CMPNE
-  1001: CMPHS
-  1010: CMPGE
+  1000: - CMPNE
+  1001: - CMPHS
+  1010: - CMPGE
   1011: NOR
-  1100: CMPEQ
-  1101: CMPHI
-  1110: CMPGT
+  1100: - CMPEQ
+  1101: - CMPHI
+  1110: - CMPGT
   1111: CSELT / PCSELT.L
 
 V=!(S1^S2) & (S2^S3)
@@ -50,7 +52,7 @@ S1, S2, S3 -> V
 `include "ExOpClz.v"
 `endif
 
-module ExALU(
+module ExALUB(
 	/* verilator lint_off UNUSED */
 	clock,
 	reset,
@@ -150,32 +152,6 @@ reg			tResult1S;
 reg[64:0]	tResult2A;
 reg			tResult2T;
 
-reg			tAdd1SF;
-reg			tAdd2SF;
-reg			tAdd1BSF;
-
-reg			tSub1ZF;
-reg			tSub1CF;
-reg			tSub1SF;
-reg			tSub1VF;
-reg			tTst1ZF;
-
-reg			tSub2ZF;
-reg			tSub2CF;
-reg			tSub2SF;
-reg			tSub2VF;
-reg			tTst2ZF;
-
-reg			tSub1BZF;
-reg			tSub1BCF;
-reg			tSub1BSF;
-reg			tSub1BVF;
-reg			tTst1BZF;
-
-reg			tSub1SxVF;
-reg			tSub2SxVF;
-reg			tSub1BSxVF;
-
 
 reg[32:0]	tResultu1A;
 reg[32:0]	tResultu1B;
@@ -216,160 +192,6 @@ begin
 	tAdd3A1 = { tAdd2A1[32]?tAdd2B1:tAdd2B0, tAdd2A1[31:0] };
 	tSub3A0 = { tSub2A0[32]?tSub2B1:tSub2B0, tSub2A0[31:0] };
 	tSub3A1 = { tSub2A1[32]?tSub2B1:tSub2B0, tSub2A1[31:0] };
-
-
-	tSub1ZF		= (tSub2A1[15:0]==0) && (tSub2A1[31:16]==0);
-	tSub1BZF	= (tSub3A1[47:32]==0) && (tSub3A1[63:48]==0);
-	tSub2ZF		= tSub1ZF && tSub1BZF;
-	tSub1CF = tSub2A1[32];
-	tSub2CF = tSub3A1[64];
-	tSub1SF = tSub2A1[31];
-	tSub2SF = tSub3A1[63];
-
-	tSub1BCF = tSub2B1[32];
-	tSub1BSF = tSub2B1[31];
-	
-	tAdd1SF = tAdd2A1[31];
-	tAdd2SF = tAdd3A1[63];
-	tAdd1BSF = tAdd2B1[31];
-
-	tTst1ZF =
-		((regValRs[15: 0]&regValRt[15: 0])==0) &&
-		((regValRs[31:16]&regValRt[31:16])==0) ;
-	tTst1BZF =
-		((regValRs[47:32]&regValRt[47:32])==0) &&
-		((regValRs[63:48]&regValRt[63:48])==0) ;
-	tTst2ZF =
-		tTst1ZF && tTst1BZF;
-
-`ifdef def_true
-	case({regValRs[31], regValRt[31], tSub1SF})
-		3'b000: tSub1VF=0;
-		3'b001: tSub1VF=0;
-		3'b010: tSub1VF=0;
-		3'b011: tSub1VF=1;
-		3'b100: tSub1VF=1;
-		3'b101: tSub1VF=0;
-		3'b110: tSub1VF=0;
-		3'b111: tSub1VF=0;
-	endcase
-
-	case({regValRs[63], regValRt[63], tSub2SF})
-		3'b000: tSub2VF=0;
-		3'b001: tSub2VF=0;
-		3'b010: tSub2VF=0;
-		3'b011: tSub2VF=1;
-		3'b100: tSub2VF=1;
-		3'b101: tSub2VF=0;
-		3'b110: tSub2VF=0;
-		3'b111: tSub2VF=0;
-	endcase
-
-`ifdef jx2_enable_gsv
-	case({regValRs[63], regValRt[63], tSub1BSF})
-		3'b000: tSub1BVF=0;
-		3'b001: tSub1BVF=0;
-		3'b010: tSub1BVF=0;
-		3'b011: tSub1BVF=1;
-		3'b100: tSub1BVF=1;
-		3'b101: tSub1BVF=0;
-		3'b110: tSub1BVF=0;
-		3'b111: tSub1BVF=0;
-	endcase
-`else
-	tSub1BVF=1'bX;
-`endif
-
-	tSub1SxVF = tSub1SF ^ tSub1VF;
-	tSub2SxVF = tSub2SF ^ tSub2VF;
-	tSub1BSxVF = tSub1BSF ^ tSub1BVF;
-
-`endif
-
-`ifndef def_true
-
-//	case({regValRs[31], regValRt[31], tSub1SF})
-	case({regValRs[31], regValRt[31], tAdd1SF})
-		3'b000: tSub1VF=0;
-		3'b001: tSub1VF=1;
-		3'b010: tSub1VF=0;
-		3'b011: tSub1VF=0;
-		3'b100: tSub1VF=0;
-		3'b101: tSub1VF=0;
-		3'b110: tSub1VF=1;
-		3'b111: tSub1VF=0;
-	endcase
-
-`ifdef jx2_enable_gsv
-//	case({regValRs[63], regValRt[63], tSub1BSF})
-	case({regValRs[63], regValRt[63], tAdd1BSF})
-		3'b000: tSub1BVF=0;
-		3'b001: tSub1BVF=1;
-		3'b010: tSub1BVF=0;
-		3'b011: tSub1BVF=0;
-		3'b100: tSub1BVF=0;
-		3'b101: tSub1BVF=0;
-		3'b110: tSub1BVF=1;
-		3'b111: tSub1BVF=0;
-	endcase
-`else
-	tSub1BVF=1'bX;
-`endif
-
-//	case({regValRs[63], regValRt[63], tSub2SF})
-	case({regValRs[63], regValRt[63], tAdd2SF})
-		3'b000: tSub2VF=0;
-		3'b001: tSub2VF=1;
-		3'b010: tSub2VF=0;
-		3'b011: tSub2VF=0;
-		3'b100: tSub2VF=0;
-		3'b101: tSub2VF=0;
-		3'b110: tSub2VF=1;
-		3'b111: tSub2VF=0;
-	endcase
-
-`ifdef def_true
-//	case({regValRs[31], regValRt[31], tSub1SF})
-	case({regValRs[31], regValRt[31], tAdd1SF})
-		3'b000: tSub1SxVF=0;
-		3'b001: tSub1SxVF=0;
-		3'b010: tSub1SxVF=0;
-		3'b011: tSub1SxVF=1;
-		3'b100: tSub1SxVF=0;
-		3'b101: tSub1SxVF=1;
-		3'b110: tSub1SxVF=1;
-		3'b111: tSub1SxVF=1;
-	endcase
-
-`ifdef jx2_enable_gsv
-//	case({regValRs[63], regValRt[63], tSub1BSF})
-	case({regValRs[63], regValRt[63], tAdd1BSF})
-		3'b000: tSub1BSxVF=0;
-		3'b001: tSub1BSxVF=0;
-		3'b010: tSub1BSxVF=0;
-		3'b011: tSub1BSxVF=1;
-		3'b100: tSub1BSxVF=0;
-		3'b101: tSub1BSxVF=1;
-		3'b110: tSub1BSxVF=1;
-		3'b111: tSub1BSxVF=1;
-	endcase
-`else
-	tSub1BVF=1'bX;
-`endif
-
-	case({regValRs[63], regValRt[63], tSub2SF})
-		3'b000: tSub2SxVF=0;
-		3'b001: tSub2SxVF=0;
-		3'b010: tSub2SxVF=0;
-		3'b011: tSub2SxVF=1;
-		3'b100: tSub2SxVF=0;
-		3'b101: tSub2SxVF=1;
-		3'b110: tSub2SxVF=1;
-		3'b111: tSub2SxVF=1;
-	endcase
-`endif
-
-`endif
 
 	tResult1A=UV33_XX;
 	tResult2A=UV65_XX;
@@ -418,11 +240,6 @@ begin
 		end
 		
 		4'h4: begin		/* TST */
-			tResult1A=UV33_XX;
-			tResult2A=UV65_XX;
-			tResult1T=tTst1ZF;
-			tResult2T=tTst2ZF;
-			tResult1S=tTst1BZF;
 		end
 		4'h5: begin		/* AND */
 			tResult1A={1'b0, regValRs[31:0] & regValRt[31:0]};
@@ -444,84 +261,19 @@ begin
 		end
 
 		4'h8: begin		/* CMPNE */
-//			tResult1A=UV33_XX;
-//			tResult2A=UV65_XX;
-			tResult1T=!tSub1ZF;
-			tResult2T=!tSub2ZF;
-			tResult1S=!tSub1BZF;
 		end
 		4'h9: begin		/* CMPHS */
-//			tResult1A=UV33_XX;
-//			tResult2A=UV65_XX;
-//			tResult1T=!tSub1CF;
-//			tResult2T=!tSub2CF;
-//			tResult1S=!tSub1BCF;
-			tResult1T=tSub1CF;
-			tResult2T=tSub2CF;
-			tResult1S=tSub1BCF;
 		end
 		4'hA: begin		/* CMPGE */
-//			tResult1A=UV33_XX;
-//			tResult2A=UV65_XX;
-//			tResult1T=tSub1ZF || (tSub1SF^tSub1VF);
-//			tResult2T=tSub2ZF || (tSub2SF^tSub2VF);
-//			tResult1S=tSub1BZF || (tSub1BSF^tSub1BVF);
-//			tResult1T=tSub1ZF || tSub1SxVF;
-//			tResult2T=tSub2ZF || tSub2SxVF;
-//			tResult1S=tSub1BZF || tSub1BSxVF;
-
-			tResult1T=!(tSub1SF^tSub1VF);
-			tResult2T=!(tSub2SF^tSub2VF);
-			tResult1S=!(tSub1BSF^tSub1BVF);
-
 		end
 		4'hB: begin		/* NOR */
-//			tResult1A={1'b0, ~(regValRs[31: 0] | regValRt[31: 0])};
-//			tResult2A={1'b0, ~(regValRs[63:32] | regValRt[63:32]),
-//				tResult1A[31:0]};
-//			tResult1T=regInSrT;
-//			tResult2T=regInSrT;
-
-//			tResult1A=UV33_XX;
-//			tResult2A=UV65_XX;
-//			tResult1T=regInSrT;
-//			tResult2T=regInSrT;
 		end
 
 		4'hC: begin		/* CMPEQ */
-//			tResult1A=UV33_XX;
-//			tResult2A=UV65_XX;
-			tResult1T=tSub1ZF;
-			tResult2T=tSub2ZF;
-			tResult1S=tSub1BZF;
 		end
 		4'hD: begin		/* CMPHI */
-//			tResult1A=UV33_XX;
-//			tResult2A=UV65_XX;
-//			tResult1T=!tSub1CF && !tSub1ZF;
-//			tResult2T=!tSub2CF && !tSub2ZF;
-//			tResult1S=!tSub1BCF && !tSub1BZF;
-
-			tResult1T=tSub1CF && !tSub1ZF;
-			tResult2T=tSub2CF && !tSub2ZF;
-			tResult1S=tSub1BCF && !tSub1BZF;
-
 		end
 		4'hE: begin		/* CMPGT */
-//			tResult1A=UV33_XX;
-//			tResult2A=UV65_XX;
-
-//			tResult1T=(tSub1SF^tSub1VF);
-//			tResult2T=(tSub2SF^tSub2VF);
-//			tResult1S=(tSub1BSF^tSub1BVF);
-
-			tResult1T=!tSub1ZF && !(tSub1SF^tSub1VF);
-			tResult2T=!tSub2ZF && !(tSub2SF^tSub2VF);
-			tResult1S=!tSub1BZF && !(tSub1BSF^tSub1BVF);
-
-//			tResult1T=tSub1SxVF;
-//			tResult2T=tSub2SxVF;
-//			tResult1S=tSub1BSxVF;
 		end
 		4'hF: begin		/* CSELT */
 			tResult1A={1'b0, regInSrT ? regValRs[31: 0] : regValRt[31: 0] };
@@ -531,6 +283,7 @@ begin
 	endcase
 
 `ifdef jx2_enable_aluunary
+// `ifndef def_true
 	tResultu1A=0;
 	tResultu1B=0;
 	tResultu2A=0;

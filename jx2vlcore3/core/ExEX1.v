@@ -268,9 +268,15 @@ begin
 
 	tRegSpAdd8		= { regInSp[63:28], regInSp[27:3]+25'h1, regInSp[2:0]};
 	tRegSpSub8		= { regInSp[63:28], regInSp[27:3]-25'h1, regInSp[2:0]};
+
+`ifdef jx2_enable_addsp
 	tRegSpAddImm	=  { regInSp[63:28],
-		regInSp[27:3]+regValImm[27:3],
-		regInSp[2:0]};
+//		regInSp[27:3]+regValImm[27:3],
+//		regInSp[2:0]};
+		regInSp[27:0] + {
+			regValImm[15] ? UV12_FF : UV12_00,
+			regValImm[15:3], 3'h0 } };
+`endif
 
 //	case(opUIxt[7:6])
 //	case(opUCmd[7:6])
@@ -378,13 +384,16 @@ begin
 `endif
 		end
 
+`ifdef jx2_enable_addsp
 		JX2_UCMD_ADDSP: begin
-//			tRegOutSp	= tRegSpAddImm;
-//			tHeldIdCn1	= JX2_GR_IMM[4:0];
-//			tRegOutSchm[JX2_SCHM_SP]	= 1;
+			tRegOutSp	= tRegSpAddImm;
+			tHeldIdCn1	= JX2_GR_IMM[4:0];
+			tRegOutSchm[JX2_SCHM_SP]	= 1;
 		end
+`endif
 
-		JX2_UCMD_ALU3: begin
+//		JX2_UCMD_ALU3: begin
+		JX2_UCMD_ALU3, JX2_UCMD_UNARY: begin
 			tHeldIdRn1	= regIdRm;
 //			tRegIdRn1	= regIdRm;
 //			tRegValRn1	= tValAlu;
@@ -395,11 +404,13 @@ begin
 //			tHeldIdCn1	= JX2_GR_IMM[4:0];
 		end
 	
+`ifndef def_true
 		JX2_UCMD_UNARY: begin
 			tHeldIdRn1	= regIdRm;
 //			tRegIdRn1	= regIdRm;
 //			tRegValRn1	= tValAlu;
 		end
+`endif
 
 		JX2_UCMD_CONV_RR: begin
 			tRegIdRn1		= regIdRm;
@@ -610,6 +621,14 @@ begin
 					tRegOutDlr	= tValCpuIdLo;
 					tRegOutDhr	= tValCpuIdHi;
 					tRegIdCn1	= JX2_GR_IMM[4:0];
+				end
+
+				JX2_UCIX_IXT_WEXMD: begin
+					case(regIdRm[3:0])
+						4'h0:		tRegOutSr[27]	= 0;
+						4'h1:		tRegOutSr[27]	= 1;
+						default:	tRegOutSr[27]	= 0;
+					endcase
 				end
 
 				default: begin
