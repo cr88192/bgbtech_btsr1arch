@@ -516,6 +516,9 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_LDISH20:		s0="LDISH20";	break;
 	case BJX2_NMID_SHAD:		s0="SHAD";		break;
 	case BJX2_NMID_SHLD:		s0="SHLD";		break;
+
+	case BJX2_NMID_WEXMD:		s0="WEXMD";		break;
+
 	case BJX2_NMID_SWAPB:		s0="SWAP.B";	break;
 	case BJX2_NMID_SWAPW:		s0="SWAP.W";	break;
 

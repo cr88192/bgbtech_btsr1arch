@@ -4134,6 +4134,15 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 		k+=sctx->is_addr64?2:1;
 #endif
 
+		if(obj->regflags&BGBCC_REGFL_ALIASPTR)
+		{
+			if(sctx->use_wexmd)
+			{
+				BGBCC_JX2_EmitOpImm(sctx,
+					BGBCC_SH_NMID_WEXMD, sctx->use_wexmd);
+			}
+		}
+
 //		if(sctx->is_pbo)
 		if(sctx->is_pbo && (obj->regflags&BGBCC_REGFL_ALIASPTR))
 		{
@@ -4199,6 +4208,15 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 			k+=sctx->is_addr64?2:1;
 		}
 #endif
+
+		if(obj->regflags&BGBCC_REGFL_ALIASPTR)
+		{
+			if(sctx->use_wexmd)
+			{
+				BGBCC_JX2_EmitOpImm(sctx,
+					BGBCC_SH_NMID_WEXMD, sctx->use_wexmd);
+			}
+		}
 
 //		if(sctx->is_pbo)
 		if(sctx->is_pbo && (obj->regflags&BGBCC_REGFL_ALIASPTR))

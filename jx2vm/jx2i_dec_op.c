@@ -1833,6 +1833,14 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 				op->Run=BJX2_Op_TRAP_Reg;
 				break;
 
+			case 0x9:	/* 36z9 */
+				op->nmid=BJX2_NMID_WEXMD;
+				op->fmid=BJX2_FMID_IMM;
+				op->Run=BJX2_Op_WEXMD_Imm;
+				op->imm=op->rn;
+				ctx->v_wexmd=op->imm;
+				break;
+
 #if 0
 			case 0x8:	/* 36z8 */
 				op->rm=BJX2_REG_DLR;

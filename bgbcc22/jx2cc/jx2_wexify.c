@@ -595,7 +595,8 @@ ccxl_status BGBCC_JX2_CheckWexify(
 ccxl_status BGBCC_JX2_BeginWex(
 	BGBCC_JX2_Context *sctx)
 {
-//	return(0);
+	if(!sctx->use_wexmd)
+		return(0);
 
 	if(!(sctx->is_fixed32&16))
 	{

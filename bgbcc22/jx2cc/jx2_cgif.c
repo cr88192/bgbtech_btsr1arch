@@ -89,6 +89,10 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	shctx->no_ops48=0;
 
 	shctx->is_pbo=0;
+	shctx->use_wexmd=1;
+
+	if(ctx->optmode==BGBCC_OPT_SIZE)
+		shctx->use_wexmd=0;
 
 //	ctx->arch_has_predops=0;
 	ctx->arch_has_predops=1;
@@ -3992,6 +3996,11 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 					if(!strncmp(obj->name, "__lvo_", 6))
 						continue;
 				}
+
+				if(!strcmp(obj->name, "__start"))
+				{
+					obj->regflags|=BGBCC_REGFL_ALIASPTR;
+				}
 				
 				BGBCC_CCXL_GlobalMarkReachable(ctx, obj);
 				continue;
@@ -3999,6 +4008,7 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 
 			if(!strcmp(obj->name, "main"))
 			{
+				obj->regflags|=BGBCC_REGFL_ALIASPTR;
 				BGBCC_CCXL_GlobalMarkReachable(ctx, obj);
 				continue;
 			}

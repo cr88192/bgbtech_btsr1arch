@@ -1229,6 +1229,19 @@ int BGBCC_JX2_TryEmitOpImm(BGBCC_JX2_Context *ctx, int nmid, int imm)
 		opw1=0x3608; odr=1;
 		break;
 
+	case BGBCC_SH_NMID_WEXMD:
+		if((imm&15)==imm)
+			{ opw1=0x3609|((imm&15)<<4); break; }
+		if((imm&31)==imm)
+			{ opw1=0x3E09|((imm&15)<<4); break; }
+		break;
+	case BGBCC_SH_NMID_CPUID:
+		if((imm&15)==imm)
+			{ opw1=0x360A|((imm&15)<<4); break; }
+		if((imm&31)==imm)
+			{ opw1=0x3E0A|((imm&15)<<4); break; }
+		break;
+
 	default:
 		break;
 	}

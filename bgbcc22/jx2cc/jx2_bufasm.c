@@ -719,6 +719,9 @@ int nmid;
 {"bra8b",	BGBCC_SH_NMID_BRA8B},
 {"ret",		BGBCC_SH_NMID_RET},
 
+{"wexmd",	BGBCC_SH_NMID_WEXMD},
+{"cpuid",	BGBCC_SH_NMID_CPUID},
+
 {"fabs",	BGBCC_SH_NMID_FABS},
 {"fadd",	BGBCC_SH_NMID_FADD},
 {"fcmp/eq",	BGBCC_SH_NMID_FCMPEQ},

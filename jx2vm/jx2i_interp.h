@@ -194,6 +194,7 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_SHLD		0x45		//
 
 #define BJX2_NMID_TRAP		0x46		//
+#define BJX2_NMID_WEXMD		0x47		//
 
 // #define BJX2_NMID_SWAPB		0x46		//
 // #define BJX2_NMID_SWAPW		0x47		//
@@ -469,6 +470,8 @@ u32 pclog[64];
 byte pclogrov;
 
 byte use_jit;
+byte wexmd;
+byte v_wexmd;
 
 int status;
 bjx2_addr trapc;

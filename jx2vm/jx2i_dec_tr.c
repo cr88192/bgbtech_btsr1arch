@@ -549,7 +549,7 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 {
 	static int rec=0;
 	BJX2_Opcode *op, *op1, *op2;
-	int ldrl, vdrl, brk;
+	int ldrl, vdrl, brk, wexmd;
 	int pc, nc, ncyc, npc, jpc;
 	int i, j;
 	
@@ -563,6 +563,8 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 	}
 	
 	rec++;
+	
+//	ctx->v_wexmd=0xFF;
 	
 	ldrl=0; vdrl=0;
 	nc=0; ncyc=0;
@@ -663,6 +665,10 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 #if 1
 	for(i=0; i<nc; i++)
 	{
+		wexmd=ctx->wexmd;
+		if(ctx->v_wexmd!=0xFF)
+			wexmd=ctx->v_wexmd;
+
 //		if((i+1)>=BJX2_TR_MAXOP)
 //			continue;
 	
@@ -680,6 +686,12 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 		{
 			if((i+2)>nc)
 				continue;
+			
+			if(!wexmd)
+			{
+				op->nmid=BJX2_NMID_BREAK;
+				op->Run=BJX2_Op_BREAK_None;
+			}
 			
 			j=op->cyc;
 			if(op1->cyc>j)

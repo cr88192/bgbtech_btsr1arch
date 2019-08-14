@@ -119,7 +119,11 @@ begin
 
 	tBlkStData	= UV128_XX;
 	tBlkStAddr	= UV28_XX;
+`ifdef jx2_reduce_l2sz
 	tBlkStIx	= UV10_XX;
+`else
+	tBlkStIx	= UV12_XX;
+`endif
 	tBlkStDirty	= 0;
 	tBlkDoSt	= 0;
 

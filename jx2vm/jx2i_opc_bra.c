@@ -363,3 +363,24 @@ void BJX2_Op_TRAP_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	BJX2_ThrowFaultStatus(ctx, ctx->regs[op->rn]);
 }
+
+void BJX2_Op_WEXMD_Imm(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->wexmd=op->imm;
+
+	switch(ctx->wexmd)
+	{
+	case 0:
+		ctx->regs[BJX2_REG_SR]&=~(1<<27);
+		break;
+	case 1:
+	case 2:
+		ctx->regs[BJX2_REG_SR]|=(1<<27);
+		break;
+
+	default:
+		ctx->regs[BJX2_REG_SR]&=~(1<<27);
+		ctx->wexmd=0;
+		break;
+	}
+}

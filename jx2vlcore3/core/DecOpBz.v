@@ -889,9 +889,14 @@ begin
 //				opNmid		= JX2_UCMD_NOP;
 //				opFmid		= JX2_FMID_Z;
 
+`ifdef jx2_enable_wex
 				opNmid		= JX2_UCMD_OP_IXT;
 				opFmid		= JX2_FMID_REG;
 				opUCmdIx	= JX2_UCIX_IXT_WEXMD;
+`else
+				opNmid		= JX2_UCMD_NOP;
+				opFmid		= JX2_FMID_Z;
+`endif
 			end
 			11'h6zA: begin
 				opNmid		= JX2_UCMD_OP_IXT;
