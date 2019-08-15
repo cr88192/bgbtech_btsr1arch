@@ -94,6 +94,13 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	if(ctx->optmode==BGBCC_OPT_SIZE)
 		shctx->use_wexmd=0;
 
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "nowex"))
+		shctx->use_wexmd=0;
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "wex2w"))
+		shctx->use_wexmd=1;
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "wex3w"))
+		shctx->use_wexmd=2;
+
 //	ctx->arch_has_predops=0;
 	ctx->arch_has_predops=1;
 

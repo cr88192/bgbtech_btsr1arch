@@ -738,6 +738,7 @@ BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_GetTypedef(BGBCC_TransState *ctx, char *name,
 BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_LookupNamespace(BGBCC_TransState *ctx, char *str);
 BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_GetNamespace(BGBCC_TransState *ctx, char *str);
 void BGBCC_CCXL_GetNamespaceBuildPath(BGBCC_TransState *ctx, char *str);
+int BGBCC_CCXL_CheckForOptStr(BGBCC_TransState *ctx, char *str);
 //AHSRC:ccxl/ccxl_expr.c
 char *BGBCC_CCXL_CIfy(char *s);
 void BGBCC_CCXL_CompileAssign(BGBCC_TransState *ctx, BCCX_Node *l);
@@ -2796,12 +2797,16 @@ int BGBCC_JX2C_EmitPredCmpVRegVRegInt(BGBCC_TransState *ctx, BGBCC_JX2_Context *
 int BGBCC_JX2C_EmitPredCmpVRegVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp);
 //AHSRC:jx2cc/jx2_wexify.c
 int BGBCC_JX2_CheckOps32GetRegs(BGBCC_JX2_Context *sctx, int opw1, int opw2, byte *rrs, byte *rrt, byte *rrn, byte *rspr, byte *rspw);
+int BGBCC_JX2_CheckOps32ReadsRn(BGBCC_JX2_Context *sctx, int opw1, int opw2);
 int BGBCC_JX2_CheckOps32SequenceOnlyB(BGBCC_JX2_Context *sctx, int opw1, int opw2, int opw3, int opw4, int fl);
 int BGBCC_JX2_CheckOps32SequenceOnly(BGBCC_JX2_Context *sctx, int opw1, int opw2, int opw3, int opw4);
 int BGBCC_JX2_CheckOps32Immovable(BGBCC_JX2_Context *sctx, int opw1, int opw2);
 int BGBCC_JX2_CheckCanSwapOps32(BGBCC_JX2_Context *sctx, int opw1, int opw2, int opw3, int opw4);
 int BGBCC_JX2_CheckOps32ValidWexSuffix(BGBCC_JX2_Context *sctx, int opw1, int opw2);
+int BGBCC_JX2_CheckOps32ValidWexSuffix3W(BGBCC_JX2_Context *sctx, int opw1, int opw2);
+int BGBCC_JX2_CheckOps32ValidWexSuffixFl(BGBCC_JX2_Context *sctx, int opw1, int opw2, int fl);
 int BGBCC_JX2_CheckOps32ValidWexPrefix(BGBCC_JX2_Context *sctx, int opw1, int opw2);
+ccxl_status BGBCC_JX2_AdjustWexifyOp(BGBCC_JX2_Context *sctx, int *ropw1, int *ropw2);
 ccxl_status BGBCC_JX2_CheckWexify(BGBCC_JX2_Context *sctx, int spos, int epos);
 ccxl_status BGBCC_JX2_BeginWex(BGBCC_JX2_Context *sctx);
 ccxl_status BGBCC_JX2_EndWex(BGBCC_JX2_Context *sctx);
@@ -2959,6 +2964,7 @@ int BGBCC_LoadCSourcesCCXL(char **names, int nnames, byte *obuf, int *rsz, fourc
 u32 BGBCC_GetArch();
 u32 BGBCC_GetSubArch();
 int BGBCC_LoadConfig(char *name);
+int BGBCC_CheckArgIsAbsPath(char *str);
 int BGBCC_InitEnv(int argc, char **argv, char **env);
 int BGBCC_Init();
 void ccAddInclude(char *path);

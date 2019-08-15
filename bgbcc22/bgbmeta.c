@@ -40,6 +40,8 @@ int bgbcc_msec_cp;
 int bgbcc_msec_cc;
 int bgbcc_msec_tot;
 
+char *bgbcc_opts[256];
+int bgbcc_nopts;
 
 
 #if 0
@@ -932,6 +934,9 @@ int BGBCC_LoadCSourcesCCXL(
 	ctx->imgbasename=dllname;
 	ctx->imgname=bgbcc_strdup(bgbcc_imgname);
 	ctx->optmode=bgbcc_optmode;
+	
+	ctx->optstrs=bgbcc_opts;
+	ctx->noptstrs=bgbcc_nopts;
 
 	BGBCC_CCXL_SetupContextForArch(ctx);
 
@@ -1172,6 +1177,42 @@ int BGBCC_LoadConfig(char *name)
 	return(0);
 }
 
+int BGBCC_CheckArgIsAbsPath(char *str)
+{
+	char *s;
+	int ispath;
+	int c;
+	
+	if(
+		(((str[0]>='A') && (str[0]<='Z')) ||
+			((str[0]>='a') && (str[0]<='z'))) &&
+		(str[1]==':') && ((str[2]=='\\') || (str[2]=='/')))
+	{
+		s=str+3;
+	}else
+		if(*str=='/')
+	{
+		s=str+1;
+	}else
+	{
+		return(0);
+	}
+	
+	ispath=0;
+	while(*s)
+	{
+		if((*s=='=') || (*s==':') || (*s=='&') || (*s=='|') ||
+			(*s=='<') || (*s=='>') || (*s=='\"') ||
+			(*s=='?') || (*s=='*') || (*s<' '))
+				{ ispath=0; break; }
+		if(*s=='/')
+			ispath=1; break;
+		if(*s=='.')
+			ispath=1; break;
+	}
+	return(ispath);
+}
+
 int BGBCC_InitEnv(int argc, char **argv, char **env)
 {
 	char *ta[16];
@@ -1190,6 +1231,8 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 
 	mach_name=NULL; gcc_ver=NULL;
 	cfg=NULL;
+	
+	bgbcc_nopts=0;
 
 #if 0
 #ifdef __GNUC__
@@ -1221,7 +1264,8 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 			bgbcc_gshash=(bgbcc_gshash*65521+1)+argv[i][j];
 
 #if 1
-		if((argv[i][0]=='/') || (argv[i][0]=='-'))
+		if(((argv[i][0]=='/') || (argv[i][0]=='-')) &&
+			!BGBCC_CheckArgIsAbsPath(argv[i]))
 		{
 			if(!strncmp(argv[i]+1, "FZx", 3))
 			{
@@ -1303,6 +1347,11 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 			{
 				bgbcc_optmode=BGBCC_OPT_DEBUG;
 				continue;
+			}
+			
+			if(argv[i][1]=='f')
+			{
+				bgbcc_opts[bgbcc_nopts++]=bgbcc_strdup(argv[i]+2);
 			}
 
 
@@ -1793,7 +1842,8 @@ int main(int argc, char *argv[], char **env)
 	for(i=1; i<argc; i++)
 	{
 #if 1
-		if((argv[i][0]=='/') || (argv[i][0]=='-'))
+		if(((argv[i][0]=='/') || (argv[i][0]=='-')) &&
+			!BGBCC_CheckArgIsAbsPath(argv[i]))
 		{
 			if(!strncmp(argv[i]+1, "I", 1))
 			{

@@ -756,6 +756,9 @@ BGBCC_CCXL_VirtTr *virttr_free;
 char *imgname;
 char *imgbasename;
 
+char **optstrs;
+int noptstrs;
+
 BGBCC_CCXL_BackendFuncs_vt *back_vt;
 void *uctx;		//context for backend
 };

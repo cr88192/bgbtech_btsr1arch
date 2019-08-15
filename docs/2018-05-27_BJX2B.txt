@@ -1679,12 +1679,13 @@ Profile 0: No WEX / WEX Disabled.
 * The use of WEX sequences will be technically undefined in this profile.
 ** Though, the core will most likely disable WEX, as in an unsupported profile.
 
-Profile 1: Dual Lane ALU, Single IO Lane.
+Profile 1 (WEX 2-Wide): Dual Lane ALU, Single IO Lane.
 * YYYY_YYYY XXXX_XXXX
 * Second lane precedes first lane.
 * Second lane only has ALU ops.
+* Restrictions on the use of memory store.
 
-Profile 2: Triple Lane ALU, Single IO Lane.
+Profile 2 (WEX 3-Wide): Triple Lane ALU, Single IO Lane.
 * ZZZZ_ZZZZ YYYY_YYYY XXXX_XXXX
 * Lanes are in a 3/2/1 ordering.
 * The second and third lanes only have ALU ops.
@@ -1705,3 +1706,10 @@ The result is that the second and third lanes will only have a subset of ALU ope
 
 The processor may behave in an implementation specific manner when faced with combinations of instructions which are not defined for the given active profile.
 
+Note that the core is only required to provide two GPR Read ports per lane, and as such operations which use all 3 read ports (such as memory store) will face restrictions.
+
+In Profile 1, operations which use the second read port may not be executed in parallel with an operation which uses 3 reads.
+
+In Profile 2, only single-port ops may be used in Lane 3 if the op in Lane 1 uses 3 read ports. Nothing is allowed in Lane 3 if the operation in Lane 2 uses 3 read ports.
+
+Note that in these scenarios, register values may "alias" in an implementation specific manner.

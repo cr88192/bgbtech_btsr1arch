@@ -2,7 +2,7 @@
 GPR Module with 4 read ports and 2 write ports.
  */
  
-// `include "RegSpr_2W.v"
+`include "RegSpr_2W.v"
 
 module RegGPR_4R2W(
 	clock,
@@ -106,7 +106,8 @@ reg[63:0]	gprArrA[31:0];
 reg[63:0]	gprArrB[31:0];
 reg[31:0]	gprArrM;
 
-`ifdef def_true
+// `ifdef def_true
+`ifndef def_true
 reg[63:0]	gprRegDlr;
 reg[63:0]	gprRegDhr;
 reg[63:0]	gprRegElr;
@@ -115,7 +116,8 @@ reg[63:0]	gprRegSp;
 reg[63:0]	gprRegBp;
 `endif
 
-`ifndef def_true
+// `ifndef def_true
+`ifdef def_true
 wire[63:0]	gprRegDlr;
 wire[63:0]	gprRegDhr;
 wire[63:0]	gprRegSp;
@@ -125,26 +127,50 @@ RegSpr_2W	gprModDlr(
 	JX2_GR_DLR,	gprRegDlr,
 	regIdRnA2,	regValRnA2,
 	regIdRnB2,	regValRnB2,
-	regInDlr);
+	regInDlr,	hold);
 
 RegSpr_2W	gprModDhr(
 	clock,		reset,
 	JX2_GR_DHR,	gprRegDhr,
 	regIdRnA2,	regValRnA2,
 	regIdRnB2,	regValRnB2,
-	regInDhr);
+	regInDhr,	hold);
 
 RegSpr_2W	gprModSp(
 	clock,		reset,
 	JX2_GR_SP,	gprRegSp,
 	regIdRnA2,	regValRnA2,
 	regIdRnB2,	regValRnB2,
-	regInSp);
-`endif	
+	regInSp,	hold);
 
-// reg[63:0]	gprRegElr;
-// reg[63:0]	gprRegEhr;
-// reg[63:0]	gprRegBp;
+`ifdef jx2_sprs_elrehr
+wire[63:0]	gprRegElr;
+wire[63:0]	gprRegEhr;
+wire[63:0]	gprRegBp;
+
+RegSpr_2W	gprModElr(
+	clock,		reset,
+	JX2_GR_ELR,	gprRegElr,
+	regIdRnA2,	regValRnA2,
+	regIdRnB2,	regValRnB2,
+	regInElr,	hold);
+
+RegSpr_2W	gprModEhr(
+	clock,		reset,
+	JX2_GR_EHR,	gprRegEhr,
+	regIdRnA2,	regValRnA2,
+	regIdRnB2,	regValRnB2,
+	regInEhr,	hold);
+
+RegSpr_2W	gprModBp(
+	clock,		reset,
+	JX2_GR_BP,	gprRegBp,
+	regIdRnA2,	regValRnA2,
+	regIdRnB2,	regValRnB2,
+	regInBp,	hold);
+`endif
+
+`endif	
 
 
 assign	regOutDlr = gprRegDlr;
@@ -373,7 +399,8 @@ begin
 	if(!hold)
 	begin
 
-`ifdef def_true
+// `ifdef def_true
+`ifndef def_true
 		gprRegDlr	<= (regIdRnA2==JX2_GR_DLR) ? regValRnA2 : regInDlr;
 		gprRegDhr	<= (regIdRnA2==JX2_GR_DHR) ? regValRnA2 : regInDhr;
 		gprRegSp	<= (regIdRnA2==JX2_GR_SP ) ? regValRnA2 : regInSp;

@@ -827,3 +827,17 @@ void BGBCC_CCXL_GetNamespaceBuildPath(
 	*t=0;
 	BGBCC_CCXL_GetNamespace(ctx, tb);
 }
+
+
+int BGBCC_CCXL_CheckForOptStr(
+	BGBCC_TransState *ctx, char *str)
+{
+	int i;
+	
+	for(i=0; i<ctx->noptstrs; i++)
+	{
+		if(!strcmp(ctx->optstrs[i], str))
+			return(i+1);
+	}
+	return(0);
+}

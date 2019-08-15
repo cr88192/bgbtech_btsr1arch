@@ -3,7 +3,7 @@ module RegSpr_2W(
 	regId,	regOutVal,
 	wrIdA,	wrValA,
 	wrIdB,	wrValB,
-	regInVal
+	regInVal, regHold
 	);
 
 input			clock;
@@ -15,6 +15,7 @@ input[63:0]		wrValA;
 input[5:0]		wrIdB;
 input[63:0]		wrValB;
 input[63:0]		regInVal;
+input			regHold;
 
 reg[63:0]		tRegVal;
 reg[63:0]		tNxtRegVal;
@@ -38,7 +39,10 @@ end
 
 always @(posedge clock)
 begin
-	tRegVal		<= tNxtRegVal;
+	if(!regHold)
+	begin
+		tRegVal		<= tNxtRegVal;
+	end
 end
 
 endmodule
