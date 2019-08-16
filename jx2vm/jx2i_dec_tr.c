@@ -544,6 +544,18 @@ BJX2_Trace *BJX2_DecTraceCb_Bad(BJX2_Context *ctx, BJX2_Trace *tr)
 	return(NULL);
 }
 
+int BJX2_CheckWexSanity3W(BJX2_Context *ctx,
+	BJX2_Opcode *op1, BJX2_Opcode *op2, BJX2_Opcode *op3)
+{
+	return(1);
+}
+
+int BJX2_CheckWexSanity2W(BJX2_Context *ctx,
+	BJX2_Opcode *op1, BJX2_Opcode *op2)
+{
+	return(1);
+}
+
 int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 	BJX2_Trace *tr, bjx2_addr addr)
 {
@@ -678,7 +690,7 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 		op=tr->ops[i];
 		if((i+1)<BJX2_TR_MAXOP)
 			op1=tr->ops[i+1];
-		if((i+1)<BJX2_TR_MAXOP)
+		if((i+2)<BJX2_TR_MAXOP)
 			op2=tr->ops[i+2];
 
 #if 1
@@ -692,6 +704,23 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 				op->nmid=BJX2_NMID_BREAK;
 				op->Run=BJX2_Op_BREAK_None;
 			}
+
+			if((op1->fl&BJX2_OPFL_WEX) && op2)
+			{
+				if(BJX2_CheckWexSanity3W(ctx, op, op1, op2)<=0)
+				{
+					op->nmid=BJX2_NMID_BREAK;
+					op->Run=BJX2_Op_BREAK_None;
+				}
+			}else
+			{
+				if(BJX2_CheckWexSanity2W(ctx, op, op1)<=0)
+				{
+					op->nmid=BJX2_NMID_BREAK;
+					op->Run=BJX2_Op_BREAK_None;
+				}
+			}
+
 			
 			j=op->cyc;
 			if(op1->cyc>j)

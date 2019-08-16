@@ -91,7 +91,8 @@ reg[31:0]		tRegInPc;		//input PC address
 reg				tMissA;
 reg				tMissB;
 reg				tMiss;
-reg				tPcStepW;
+reg				tPcStepWA;
+reg				tPcStepWB;
 
 // reg[127:0]		tBlkData;
 reg[159:0]		tBlkData;
@@ -109,7 +110,8 @@ begin
 
 	tRegInPc	= icInPcHold ? tInAddr : regInPc;
 
-	if(tRegInPc[3])
+//	if(tRegInPc[3])
+	if(tRegInPc[4])
 	begin
 		tNxtAddrB	= tRegInPc[31:4];
 		tNxtAddrA	= tNxtAddrB+1;
@@ -120,11 +122,15 @@ begin
 
 
 `ifdef jx2_reduce_l1sz
-	tNxtIxA=tNxtAddrA[3:0];
-	tNxtIxB=tNxtAddrB[3:0];
+//	tNxtIxA=tNxtAddrA[3:0];
+//	tNxtIxB=tNxtAddrB[3:0];
+	tNxtIxA=tNxtAddrA[4:1];
+	tNxtIxB=tNxtAddrB[4:1];
 `else
-	tNxtIxA=tNxtAddrA[5:0];
-	tNxtIxB=tNxtAddrB[5:0];
+//	tNxtIxA=tNxtAddrA[5:0];
+//	tNxtIxB=tNxtAddrB[5:0];
+	tNxtIxA=tNxtAddrA[6:1];
+	tNxtIxB=tNxtAddrB[6:1];
 `endif
 
 
@@ -149,6 +155,9 @@ begin
 		2'b10: tBlkData = { tBlkDataA[31:0], tBlkDataB[127: 0] };
 		2'b11: tBlkData = { tBlkDataA[95:0], tBlkDataB[127:64] };
 	endcase
+
+//	$display("BA=%X BB=%X", tBlkDataA, tBlkDataB);
+//	$display("A=%X BD=%X Ix=%X",tInAddr, tBlkData, tInWordIx);
 
 	casez({tBlkData[15:13], tBlkData[11:10], tBlkData[ 8] })
 		6'b111_11z:	opLenA0=3'b011;
@@ -201,7 +210,7 @@ begin
 	endcase
 
 
-	tRegOutPcVal	= UV64_XX;
+	tRegOutPcVal	= UV96_XX;
 	tRegOutPcStep	= 0;
 	tPcStepWA		= 0;
 	tPcStepWB		= 0;
@@ -289,7 +298,7 @@ begin
 
 	if(tDoStBlkA)
 	begin
-//		$display("L1I$: StBlock A=%X D=%X", tStBlkAddr, tStBlkData);
+//		$display("L1I$: StBlockA A=%X D=%X", tStBlkAddrA, tStBlkDataA);
 	
 		icCaMemA[tStBlkIxA]		<= tStBlkDataA;
 		icCaAddrA[tStBlkIxA]	<= { tStBlkFlagA, tStBlkAddrA };
@@ -298,7 +307,7 @@ begin
 
 	if(tDoStBlkB)
 	begin
-//		$display("L1I$: StBlock A=%X D=%X", tStBlkAddr, tStBlkData);
+//		$display("L1I$: StBlockB A=%X D=%X", tStBlkAddrB, tStBlkDataB);
 	
 		icCaMemB[tStBlkIxB]		<= tStBlkDataB;
 		icCaAddrB[tStBlkIxB]	<= { tStBlkFlagB, tStBlkAddrB };

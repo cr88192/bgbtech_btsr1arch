@@ -13,7 +13,8 @@ input			clock;
 input			reset;
 
 input [31: 0]	regInPc;		//input PC address
-output[63: 0]	regOutPcVal;	//output PC value
+// output[63: 0]	regOutPcVal;	//output PC value
+output[95: 0]	regOutPcVal;	//output PC value
 output[ 1: 0]	regOutPcOK;		//set if we have a valid value.
 output[ 2: 0]	regOutPcStep;	//PC step (Normal Op)
 input			icInPcHold;
@@ -29,7 +30,8 @@ reg[63:0]		tRegOutPcVal;	//output PC value
 reg[ 1:0]		tRegOutPcOK;	//set if we have a valid value.
 reg[ 2: 0]		tRegOutPcStep;	//PC step (Normal Op)
 
-assign	regOutPcVal		= tRegOutPcVal;
+// assign	regOutPcVal		= tRegOutPcVal;
+assign	regOutPcVal		= { UV32_XX, tRegOutPcVal };
 assign	regOutPcOK		= tRegOutPcOK;
 assign	regOutPcStep	= tRegOutPcStep;
 
@@ -262,7 +264,7 @@ begin
 		end
 	endcase
 	
-`ifdef jx2_enable_wex2w
+`ifdef jx2_enable_wex
 	if(icInPcWxe && tPcStepW)
 		tRegOutPcStep = 3'b100;
 `endif

@@ -3,7 +3,8 @@ module RegSpr_3W(
 	regId,	regVal,
 	wrIdA,	wrValA,
 	wrIdB,	wrValB,
-	wrIdC,	wrValC
+	wrIdC,	wrValC,
+	regInVal, regHold
 	);
 
 input			clock;
@@ -16,6 +17,8 @@ input[5:0]		wrIdB;
 input[63:0]		wrValB;
 input[5:0]		wrIdC;
 input[63:0]		wrValC;
+input[63:0]		regInVal;
+input			regHold;
 
 reg[63:0]		tRegVal;
 reg[63:0]		tNxtRegVal;
@@ -33,7 +36,7 @@ begin
 	tIsIdC	= (wrIdC == regId);
 	
 	casez( {tIsIdC, tIsIdB, tIsIdA} )
-		3'b000:		tNxtRegVal	= tRegVal;
+		3'b000:		tNxtRegVal	= regInVal;
 		3'b001:		tNxtRegVal	= wrValA;
 		3'b01z:		tNxtRegVal	= wrValB;
 		3'b1zz:		tNxtRegVal	= wrValC;
@@ -42,7 +45,10 @@ end
 
 always @(posedge clock)
 begin
-	tRegVal		<= tNxtRegVal;
+	if(!regHold)
+	begin
+		tRegVal		<= tNxtRegVal;
+	end
 end
 
 endmodule

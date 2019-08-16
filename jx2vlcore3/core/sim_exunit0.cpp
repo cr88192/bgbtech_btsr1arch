@@ -865,7 +865,9 @@ int CheckDebugSanityIS()
 	uint64_t distr, distr2;
 
 	dpc=top->dbgOutPc;
-	distr=top->dbgOutIstr;
+//	distr=top->dbgOutIstr;
+	distr=((uint64_t)top->dbgOutIstr[0]) |
+		(((uint64_t)top->dbgOutIstr[1])<<32);
 	
 //	if(!dpc)
 	if(top->dbgExHold1)

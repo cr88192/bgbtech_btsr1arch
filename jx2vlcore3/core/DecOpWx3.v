@@ -23,14 +23,14 @@ For scalar Ops, Lane 2/3 will hold:
 `include "DecOpFz.v"
 `include "DecOpFC.v"
 
-module DecOpWx2(
+module DecOpWx3(
 	/* verilator lint_off UNUSED */
 	clock,		reset,
 	istrWord,	srWxe,
 	idRegS,		idRegT,		idRegM,
 	idImmA,		idUCmdA,	idUIxtA,
 	idRegU,		idRegV,		idRegN,
-	idImmB,		idUCmdB,	idUIxtB
+	idImmB,		idUCmdB,	idUIxtB,
 	idRegX,		idRegY,		idRegO,
 	idImmC,		idUCmdC,	idUIxtC
 	);
@@ -123,7 +123,7 @@ wire[7:0]		decOpBz_idUIxt;
 
 DecOpBz	decOpBz(
 	clock,		reset,
-	istrWord,
+	istrWord[63:0],
 	decOpBz_idRegN,		decOpBz_idRegM,
 	decOpBz_idRegO,		decOpBz_idImm,
 	decOpBz_idUCmd,		decOpBz_idUIxt
@@ -183,7 +183,7 @@ wire[7:0]		decOpFC_idUIxt;
 
 DecOpFC	decOpFC(
 	clock,		reset,
-	istrWord,
+	istrWord[63:0],
 	decOpFC_idRegN,		decOpFC_idRegM,
 	decOpFC_idRegO,		decOpFC_idImm,
 	decOpFC_idUCmd,		decOpFC_idUIxt

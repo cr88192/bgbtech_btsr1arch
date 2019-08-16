@@ -7,7 +7,12 @@ These will produce a Hold signal if the request can't be handled immediately, an
 */
 
 `include "MemDcA.v"
+
+`ifdef jx2_enable_wex3w
+`include "MemIcWxA.v"
+`else
 `include "MemIcA.v"
+`endif
 
 module MemL1A(
 	/* verilator lint_off UNUSED */
@@ -36,7 +41,8 @@ input			clock;
 input			reset;
 
 input [31: 0]	icInPcAddr;		//input PC address
-output[63: 0]	icOutPcVal;		//output PC value
+// output[63: 0]	icOutPcVal;		//output PC value
+output[95: 0]	icOutPcVal;		//output PC value
 output[ 1: 0]	icOutPcOK;		//set if we have a valid value.
 output[ 2: 0]	icOutPcStep;	//PC step (Normal Op)
 input			icInPcHold;
@@ -84,6 +90,16 @@ reg [  1:0]		ifMemOK;
 wire[ 31:0]		ifMemAddr;
 wire[  4:0]		ifMemOpm;
 
+`ifdef jx2_enable_wex3w
+MemIcWxA		memIc(
+	clock,			reset,
+	icInPcAddr,		icOutPcVal,
+	icOutPcOK,		icOutPcStep,
+	icInPcHold,		icInPcWxe,
+	ifMemData,		ifMemAddr,
+	ifMemOpm,		ifMemOK
+	);
+`else
 MemIcA		memIc(
 	clock,			reset,
 	icInPcAddr,		icOutPcVal,
@@ -92,6 +108,7 @@ MemIcA		memIc(
 	ifMemData,		ifMemAddr,
 	ifMemOpm,		ifMemOK
 	);
+`endif
 
 
 wire[  1:0]		dfOutOK;

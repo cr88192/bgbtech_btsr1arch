@@ -545,14 +545,15 @@ parameter[5:0] JX2_UCIX_IXS_LDSRMSK	= 6'h03;		//?
 // `define jx2_enable_clz
 // `define jx2_enable_addsp
 
-`define jx2_enable_wex2w				//Enable 2-wide WEX support
+// `define jx2_enable_wex2w				//Enable 2-wide WEX support
+`define jx2_enable_wex3w				//Enable 3-wide WEX support
 
 `define jx2_enable_wex					//Enable WEX support (general)
 
 `define jx2_cpu_halfclock;				//Reduce CPU core clock speed by half
 
 
-`ifdef jx2_enable_wex2w
+`ifdef jx2_enable_wex
 /* If we are using WEX, assume 16 and 48 bit ops also exist. */
 `ifndef jx2_enable_ops16
 `define jx2_enable_ops16

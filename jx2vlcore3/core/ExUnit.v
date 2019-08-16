@@ -9,12 +9,17 @@ IF ID1 ID2 EX1 EX2 WB
 `include "MemL1A.v"
 `include "RegCR.v"
 
+`ifdef jx2_enable_wex3w
+`include "DecOpWx3.v"
+`include "RegGPR_6R3W.v"
+`else
 `ifdef jx2_enable_wex2w
 `include "DecOpWx2.v"
 `include "RegGPR_4R2W.v"
 `else
 `include "DecOp.v"
 `include "RegGPR.v"
+`endif
 `endif
 
 `include "ExEX1.v"
@@ -23,7 +28,7 @@ IF ID1 ID2 EX1 EX2 WB
 // `include "ExMul.v"
 `include "ExMulB.v"
 
-`ifdef jx2_enable_wex2w
+`ifdef jx2_enable_wex
 `include "ExEXB1.v"
 `include "ExEXB2.v"
 `include "ExALUB.v"
@@ -66,7 +71,7 @@ output[4:0]		memOpm;
 input[1:0]		memOK;
 
 output[31:0]	dbgOutPc;
-output[63:0]	dbgOutIstr;
+output[95:0]	dbgOutIstr;
 
 output			dbgExHold1;
 output			dbgExHold2;
@@ -99,7 +104,8 @@ wire[63:0]		crOutKrr;
 
 reg[31:0]		ifValPc;
 reg[31:0]		ifLastPc;
-wire[63:0]		ifIstrWord;	//source instruction word
+// wire[63:0]		ifIstrWord;	//source instruction word
+wire[95:0]		ifIstrWord;	//source instruction word
 wire[1:0]		ifOutPcOK;
 wire[2:0]		ifOutPcStep;
 reg[2:0]		ifLastPcStep;
@@ -107,7 +113,7 @@ reg				ifInPcHold;
 
 wire			ifInPcWxe;
 
-`ifdef jx2_enable_wex2w
+`ifdef jx2_enable_wex
 assign	ifInPcWxe = crOutSr[27];
 `else
 assign	ifInPcWxe = 1'b0;
@@ -160,9 +166,10 @@ wire[31:0]		gprValLr;
 
 reg[31:0]		id1ValBPc;
 reg[31:0]		id1ValPc;
-reg[63:0]		id1IstrWord;	//source instruction word
+// reg[63:0]		id1IstrWord;	//source instruction word
+reg[95:0]		id1IstrWord;	//source instruction word
 
-`ifdef jx2_enable_wex2w
+`ifdef jx2_enable_wex
 
 wire[5:0]		idA1IdRegM;
 wire[5:0]		idA1IdRegO;
@@ -178,7 +185,15 @@ wire[32:0]		idB1IdImm;
 wire[7:0]		idB1IdUCmd;
 wire[7:0]		idB1IdUIxt;
 
-DecOpWx2	decOp(
+`ifdef jx2_enable_wex3w
+wire[5:0]		idC1IdRegM;
+wire[5:0]		idC1IdRegO;
+wire[5:0]		idC1IdRegN;
+wire[32:0]		idC1IdImm;
+wire[7:0]		idC1IdUCmd;
+wire[7:0]		idC1IdUIxt;
+
+DecOpWx3	decOp(
 	clock,	reset,
 	id1IstrWord,	ifInPcWxe,
 
@@ -188,8 +203,28 @@ DecOpWx2	decOp(
 
 	idB1IdRegM,		idB1IdRegO,
 	idB1IdRegN,		idB1IdImm,
+	idB1IdUCmd,		idB1IdUIxt,
+
+	idC1IdRegM,		idC1IdRegO,
+	idC1IdRegN,		idC1IdImm,
+	idC1IdUCmd,		idC1IdUIxt
+	);
+`endif
+
+`ifdef jx2_enable_wex2w
+DecOpWx2	decOp(
+	clock,	reset,
+	id1IstrWord[63:0],	ifInPcWxe,
+
+	idA1IdRegM,		idA1IdRegO,
+	idA1IdRegN,		idA1IdImm,
+	idA1IdUCmd,		idA1IdUIxt,
+
+	idB1IdRegM,		idB1IdRegO,
+	idB1IdRegN,		idB1IdImm,
 	idB1IdUCmd,		idB1IdUIxt
 	);
+`endif
 
 `else
 
@@ -202,7 +237,7 @@ wire[7:0]		id1IdUIxt;
 
 DecOp	decOp(
 	clock,	reset,
-	id1IstrWord,
+	id1IstrWord[63:0],
 	id1IdRegN,	id1IdRegM,
 	id1IdRegO,	id1IdImm,
 	id1IdUCmd,	id1IdUIxt
@@ -235,12 +270,17 @@ reg[31:0]		id2IstrWord;	//source instruction word
 
 /* ID2, GPR */
 
-`ifdef jx2_enable_wex2w
+// `ifdef jx2_enable_wex2w
+`ifdef jx2_enable_wex
 
 reg[7:0]		idA2IdUCmd;
 reg[7:0]		idA2IdUIxt;
 reg[7:0]		idB2IdUCmd;
 reg[7:0]		idB2IdUIxt;
+`ifdef jx2_enable_wex3w
+reg[7:0]		idC2IdUCmd;
+reg[7:0]		idC2IdUIxt;
+`endif
 
 reg[5:0]		gprIdRs;		//Source A, ALU / Base
 reg[5:0]		gprIdRt;		//Source B, ALU / Index
@@ -248,18 +288,35 @@ reg[5:0]		gprIdRu;		//Source C
 reg[5:0]		gprIdRv;		//Source D, MemStore
 reg[5:0]		gprIdRm;		//Dest A
 reg[5:0]		gprIdRn;		//Dest B
+reg[5:0]		gprIdRo;		//Dest B
 
 wire[63:0]		gprValRs;
 wire[63:0]		gprValRt;
 wire[63:0]		gprValRu;
 wire[63:0]		gprValRv;
 
-//wire[5:0]		gprIdRm;		//Source A, ALU / Base
+`ifdef jx2_enable_wex3w
+
+reg[5:0]		gprIdRx;		//Source C
+reg[5:0]		gprIdRy;		//Source D, MemStore
+wire[63:0]		gprValRx;
+wire[63:0]		gprValRy;
+
 wire[63:0]		gprValRm;
 wire[63:0]		gprValRn;
-//assign		gprIdRm		= gprIdRv;
+wire[63:0]		gprValRo;
+assign		gprValRm	= gprValRy;
+assign		gprValRn	= gprValRx;
+assign		gprValRo	= gprValRy;
+
+`else
+
+wire[63:0]		gprValRm;
+wire[63:0]		gprValRn;
 assign		gprValRm	= gprValRv;
 assign		gprValRn	= gprValRv;
+
+`endif
 
 reg[5:0]		gprIdRn1;
 reg[63:0]		gprValRn1;
@@ -271,9 +328,17 @@ reg[63:0]		gprValRnB1;
 reg[5:0]		gprIdRnB2;
 reg[63:0]		gprValRnB2;
 
+`ifdef jx2_enable_wex3w
+reg[5:0]		gprIdRnC1;
+reg[63:0]		gprValRnC1;
+reg[5:0]		gprIdRnC2;
+reg[63:0]		gprValRnC2;
+`endif
+
 reg [31:0]		gprValPc;
 reg [32:0]		gprValImm;
 reg [32:0]		gprValImmB;
+reg [32:0]		gprValImmC;
 
 assign		gprValGbr = crOutGbr;
 assign		gprValLr = crOutLr;
@@ -292,6 +357,59 @@ wire[63:0]		gprOutBp;
 reg [63:0]		gprInBp;
 `endif
 
+`ifdef jx2_enable_wex3w
+
+RegGPR_6R3W regGpr(
+	clock,
+	reset,
+	exHold2,
+
+	gprIdRs,		//Source A, ALU / Base
+	gprIdRt,		//Source B, ALU / Index
+	gprIdRu,		//Source C
+	gprIdRv,		//Source D
+	gprIdRx,		//Source E
+	gprIdRy,		//Source F, MemStore
+	gprValRs,		//Source A Value
+	gprValRt,		//Source B Value
+	gprValRu,		//Source C Value
+	gprValRv,		//Source D Value
+	gprValRx,		//Source E Value
+	gprValRy,		//Source F Value
+
+	gprIdRn1,		//Destination ID (EX1, L1)
+	gprValRn1,		//Destination Value (EX1, L1)
+	gprIdRn2,		//Destination ID (EX2, L1)
+	gprValRn2,		//Destination Value (EX2, L1)
+	
+	gprIdRnB1,		//Destination ID (EX1, L2)
+	gprValRnB1,		//Destination Value (EX1, L2)
+	gprIdRnB2,		//Destination ID (EX2, L2)
+	gprValRnB2,		//Destination Value (EX2, L2)
+	
+	gprIdRnC1,		//Destination ID (EX1, L3)
+	gprValRnC1,		//Destination Value (EX1, L3)
+	gprIdRnC2,		//Destination ID (EX2, L3)
+	gprValRnC2,		//Destination Value (EX2, L3)
+	
+	gprValPc,		//PC Value (Synthesized)
+	gprValGbr,		//GBR Value (CR)
+	gprValImm,		//Immediate (Decode, A)
+	gprValImmB,		//Immediate (Decode, B)
+	gprValImmC,		//Immediate (Decode, C)
+	gprValLr,		//LR Value (CR)
+	
+	gprOutDlr,	gprInDlr,
+	gprOutDhr,	gprInDhr,
+`ifdef jx2_sprs_elrehr
+	gprOutElr,	gprInElr,
+	gprOutEhr,	gprInEhr,
+	gprOutBp,	gprInBp,
+`endif
+	gprOutSp,	gprInSp
+	);
+
+`else
 RegGPR_4R2W regGpr(
 	clock,
 	reset,
@@ -331,6 +449,7 @@ RegGPR_4R2W regGpr(
 `endif
 	gprOutSp,	gprInSp
 	);
+`endif
 
 `else
 
@@ -740,7 +859,7 @@ ExEX2	ex2(
 	);
 
 
-`ifdef jx2_enable_wex2w
+`ifdef jx2_enable_wex
 /* EX1, Lane 2 */
 
 reg[7:0]		exB1OpUCmd;
@@ -789,7 +908,7 @@ ExALUB	exAluB(
 
 `endif
 
-`ifdef jx2_enable_wex2w
+`ifdef jx2_enable_wex
 
 /* EX2, Lane 2 */
 
@@ -825,6 +944,97 @@ ExEXB2		exb2(
 	
 	ex2RegValPc,
 	exB2RegValImm,	exB2RegAluRes,
+	ex2BraFlush,	ex2RegInSr
+	);
+
+`endif
+
+
+`ifdef jx2_enable_wex3w
+/* EX1, Lane 3 */
+
+reg[7:0]		exC1OpUCmd;
+reg[7:0]		exC1OpUIxt;
+wire			exC1Hold;
+
+reg[5:0]		exC1RegIdRs;		//Source A, ALU / Base
+reg[5:0]		exC1RegIdRt;		//Source B, ALU / Index
+reg[5:0]		exC1RegIdRm;		//Source C, MemStore
+reg[63:0]		exC1RegValRs;		//Source A Value
+reg[63:0]		exC1RegValRt;		//Source B Value
+reg[63:0]		exC1RegValRm;		//Source C Value
+
+wire[5:0]		exC1RegIdRn1;		//Destination ID (EX1)
+wire[63:0]		exC1RegValRn1;		//Destination Value (EX1)
+wire[5:0]		exC1HldIdRn1;		//Held Dest ID (EX1)
+
+reg[32:0]		exC1RegValImm;		//Immediate (Decode)
+
+ExEXB1	exc1(
+	clock,			reset,
+	exC1OpUCmd,		exC1OpUIxt,
+	exC1Hold,
+	
+	exC1RegIdRs,	exC1RegIdRt,
+	exC1RegIdRm,	exC1RegValRs,
+	exC1RegValRt,	exC1RegValRm,
+
+	exC1RegIdRn1,	exC1RegValRn1,
+	exC1HldIdRn1,
+	
+	ex1RegValPc,	exC1RegValImm,
+	ex1BraFlush,	ex1RegInSr
+	);
+	
+
+wire[65:0]	exC1ValAlu;
+// ExALU	exAluC(
+ExALUB	exAluC(
+	clock,				reset,
+	exC1RegValRs,		exC1RegValRt,
+	exC1OpUCmd,			exC1OpUIxt,
+	exHold2,			ex1RegInSr[1:0],
+	exC1ValAlu[63:0],	exC1ValAlu[65:64]);
+
+
+`endif
+
+`ifdef jx2_enable_wex3w
+
+/* EX2, Lane 3 */
+
+reg[7:0]		exC2OpUCmd;
+reg[7:0]		exC2OpUIxt;
+wire			exC2Hold;
+
+reg[5:0]		exC2RegIdRs;		//Source A, ALU / Base
+reg[5:0]		exC2RegIdRt;		//Source B, ALU / Index
+reg[5:0]		exC2RegIdRm;		//Source C, MemStore
+reg[63:0]		exC2RegValRs;		//Source A Value
+reg[63:0]		exC2RegValRt;		//Source B Value
+reg[63:0]		exC2RegValRm;		//Source C Value
+
+reg[5:0]		exC2RegIdRn1;		//Destination ID (EX1)
+reg[63:0]		exC2RegValRn1;		//Destination Value (EX1)
+wire[5:0]		exC2RegIdRn2;		//Destination ID (EX1)
+wire[63:0]		exC2RegValRn2;		//Destination Value (EX1)
+	
+reg[32:0]		exC2RegValImm;		//Immediate (Decode)
+reg[65:0]		exC2RegAluRes;		//Arithmetic Result
+
+ExEXB2		exc2(
+	clock,		reset,
+	exC2OpUCmd,	exC2OpUIxt,
+	exC2Hold,
+	
+	exC2RegIdRs,	exC2RegIdRt,
+	exC2RegIdRm,	exC2RegValRs,
+	exC2RegValRt,	exC2RegValRm,
+	exC2RegIdRn1,	exC2RegValRn1,
+	exC2RegIdRn2,	exC2RegValRn2,
+	
+	ex2RegValPc,
+	exC2RegValImm,	exC2RegAluRes,
 	ex2BraFlush,	ex2RegInSr
 	);
 
@@ -901,6 +1111,30 @@ begin
 	end
 `endif
 
+`ifdef jx2_enable_wex3w
+	exHold1B	=
+		((	(ex1RegIdRm == gprIdRs) |
+			(ex1RegIdRm == gprIdRt) |
+			(ex1RegIdRm == gprIdRu) |
+			(ex1RegIdRm == gprIdRv) |
+			(ex1RegIdRm == gprIdRx) |
+			(ex1RegIdRm == gprIdRy)	) &
+			(ex1HldIdRn1 != JX2_GR_ZZR)) |
+		((	(exB1RegIdRm == gprIdRs) |
+			(exB1RegIdRm == gprIdRt) |
+			(exB1RegIdRm == gprIdRu) |
+			(exB1RegIdRm == gprIdRv) |
+			(exB1RegIdRm == gprIdRx) |
+			(exB1RegIdRm == gprIdRy)	) &
+			(exB1HldIdRn1 != JX2_GR_ZZR)) |
+		((	(exC1RegIdRm == gprIdRs) |
+			(exC1RegIdRm == gprIdRt) |
+			(exC1RegIdRm == gprIdRu) |
+			(exC1RegIdRm == gprIdRv) |
+			(exC1RegIdRm == gprIdRx) |
+			(exC1RegIdRm == gprIdRy)	) &
+			(exC1HldIdRn1 != JX2_GR_ZZR));
+`else
 `ifdef jx2_enable_wex2w
 	exHold1B	=
 		((	(ex1RegIdRm == gprIdRs) |
@@ -919,6 +1153,7 @@ begin
 			(ex1RegIdRm == gprIdRt) |
 			(ex1RegIdRm == gprIdRm)	) &
 		(ex1HldIdRn1 != JX2_GR_ZZR);
+`endif
 `endif
 	
 //	if((ex1HldIdRn1 == JX2_GR_SP) ||
@@ -1129,13 +1364,22 @@ begin
 	gprIdRn2		= ex2RegIdRn2;
 	gprValRn2		= ex2RegValRn2;
 
-`ifdef jx2_enable_wex2w
+`ifdef jx2_enable_wex
 	gprIdRnB1		= exB1RegIdRn1;
 	gprValRnB1		= exB1RegValRn1;
 	gprIdRnB2		= exB2RegIdRn2;
 	gprValRnB2		= exB2RegValRn2;
 	
 	exB2RegAluRes	= exB1ValAlu;
+`endif
+
+`ifdef jx2_enable_wex3w
+	gprIdRnC1		= exC1RegIdRn1;
+	gprValRnC1		= exC1RegValRn1;
+	gprIdRnC2		= exC2RegIdRn2;
+	gprValRnC2		= exC2RegValRn2;
+	
+	exC2RegAluRes	= exC1ValAlu;
 `endif
 
 	crIdCn1			= ex1RegIdCn1;
@@ -1237,7 +1481,7 @@ begin
 			ifIstrWord[47:32], ifIstrWord[63:48],
 			ifOutPcStep, tValNextPc, opBraFlushMask[3]);
 
-`ifdef jx2_enable_wex2w
+`ifdef jx2_enable_wex
 		$display("ID1: PC0=%X PC2=%X D=%X-%X OpA=%X-%X OpB=%X-%X F=%d",
 			id1ValBPc,	id1ValPc,
 			id1IstrWord[15: 0], id1IstrWord[31:16],
@@ -1319,7 +1563,7 @@ begin
 
 		/* ID2 */
 
-`ifdef jx2_enable_wex2w
+`ifdef jx2_enable_wex
 		gprIdRs			<= idA1IdRegM;
 		gprIdRt			<= idA1IdRegO;
 		gprIdRu			<= idB1IdRegM;
@@ -1334,6 +1578,15 @@ begin
 		idA2IdUIxt		<= idA1IdUIxt;
 		idB2IdUCmd		<= idB1IdUCmd;
 		idB2IdUIxt		<= idB1IdUIxt;
+
+`ifdef jx2_enable_wex3w
+		gprIdRx			<= idC1IdRegM;
+		gprIdRy			<= idC1IdRegO;
+		gprIdRo			<= idC1IdRegN;
+		gprValImmC		<= idC1IdImm;
+		idC2IdUCmd		<= idC1IdUCmd;
+		idC2IdUIxt		<= idC1IdUIxt;
+`endif
 
 		crIdCm			<= idA1IdRegM[4:0];
 
@@ -1371,7 +1624,7 @@ begin
 		ex1RegValImm	<= gprValImm;
 		ex1BraFlush		<= nxtBraFlushMask[0];
 
-`ifdef jx2_enable_wex2w
+`ifdef jx2_enable_wex
 		ex1OpUCmd		<= idA2IdUCmd;
 		ex1OpUIxt		<= idA2IdUIxt;
 		exB1OpUCmd		<= idB2IdUCmd;
@@ -1390,6 +1643,18 @@ begin
 		exB1RegValRs	<= gprValRu;
 		exB1RegValRt	<= gprValRv;
 		exB1RegValRm	<= gprValRm;
+
+`ifdef jx2_enable_wex3w
+		exC1OpUCmd		<= idC2IdUCmd;
+		exC1OpUIxt		<= idC2IdUIxt;
+
+		exC1RegIdRs		<= gprIdRx;
+		exC1RegIdRt		<= gprIdRy;
+		exC1RegIdRm		<= gprIdRo;
+		exC1RegValRs	<= gprValRx;
+		exC1RegValRt	<= gprValRy;
+		exC1RegValRm	<= gprValRo;
+`endif
 
 `else
 		ex1OpUCmd		<= id2IdUCmd;
@@ -1418,8 +1683,12 @@ begin
 		ex1OpUCmd		<= { JX2_IXC_NV, JX2_UCMD_NOP };
 		ex1BraFlush		<= 1;
 
-`ifdef jx2_enable_wex2w
+`ifdef jx2_enable_wex
 		exB1OpUCmd		<= { JX2_IXC_NV, JX2_UCMD_NOP };
+`endif
+
+`ifdef jx2_enable_wex3w
+		exC1OpUCmd		<= { JX2_IXC_NV, JX2_UCMD_NOP };
 `endif
 
 `ifdef def_true
@@ -1446,7 +1715,7 @@ begin
 		ex1RegValFRt	<= UV64_XX;
 `endif
 
-`ifdef jx2_enable_wex2w
+`ifdef jx2_enable_wex
 		exB1RegValImm	<= UV33_XX;
 
 		exB1RegIdRs		<= UV6_XX;
@@ -1455,6 +1724,17 @@ begin
 		exB1RegValRs	<= UV64_XX;
 		exB1RegValRt	<= UV64_XX;
 		exB1RegValRm	<= UV64_XX;
+`endif
+
+`ifdef jx2_enable_wex3w
+		exC1RegValImm	<= UV33_XX;
+
+		exC1RegIdRs		<= UV6_XX;
+		exC1RegIdRt		<= UV6_XX;
+		exC1RegIdRm		<= UV6_XX;
+		exC1RegValRs	<= UV64_XX;
+		exC1RegValRt	<= UV64_XX;
+		exC1RegValRm	<= UV64_XX;
 `endif
 
 `endif
@@ -1535,7 +1815,7 @@ begin
 		ex2RegValPc		<= ex1RegValPc;
 		ex2RegValImm	<= ex1RegValImm;
 
-`ifdef jx2_enable_wex2w
+`ifdef jx2_enable_wex
 		exB2OpUCmd		<= exB1OpUCmd;
 		exB2OpUIxt		<= exB1OpUIxt;
 
@@ -1548,6 +1828,22 @@ begin
 		exB2RegIdRn1	<= exB1RegIdRn1;
 		exB2RegValRn1	<= exB1RegValRn1;
 		exB2RegValImm	<= exB1RegValImm;
+
+`ifdef jx2_enable_wex3w
+		exC2OpUCmd		<= exC1OpUCmd;
+		exC2OpUIxt		<= exC1OpUIxt;
+
+		exC2RegIdRs		<= exC1RegIdRs;
+		exC2RegIdRt		<= exC1RegIdRt;
+		exC2RegIdRm		<= exC1RegIdRm;
+		exC2RegValRs	<= exC1RegValRs;
+		exC2RegValRt	<= exC1RegValRt;
+		exC2RegValRm	<= exC1RegValRm;
+		exC2RegIdRn1	<= exC1RegIdRn1;
+		exC2RegValRn1	<= exC1RegValRn1;
+		exC2RegValImm	<= exC1RegValImm;
+`endif
+
 `endif
 
 		/* WB */

@@ -1,7 +1,10 @@
 /*
-GPR Module with 4 read ports and 2 write ports.
+GPR Module with 6 read ports and 3 write ports.
  */
-module RegGPR_4R2W(
+
+`include "RegSpr_3W.v"
+
+module RegGPR_6R3W(
 	clock,
 	reset,
 	hold,
@@ -129,13 +132,73 @@ reg[63:0]	gprArrC[31:0];
 reg[31:0]	gprArrMA;
 reg[31:0]	gprArrMB;
 
-reg[63:0]	gprRegDlr;
-reg[63:0]	gprRegDhr;
-reg[63:0]	gprRegElr;
-reg[63:0]	gprRegEhr;
+// reg[63:0]	gprRegDlr;
+// reg[63:0]	gprRegDhr;
+// reg[63:0]	gprRegElr;
+// reg[63:0]	gprRegEhr;
+// reg[63:0]	gprRegSp;
+// reg[63:0]	gprRegBp;
 
-reg[63:0]	gprRegSp;
-reg[63:0]	gprRegBp;
+`ifdef def_true
+wire[63:0]	gprRegDlr;
+wire[63:0]	gprRegDhr;
+wire[63:0]	gprRegSp;
+
+RegSpr_3W	gprModDlr(
+	clock,		reset,
+	JX2_GR_DLR,	gprRegDlr,
+	regIdRnA2,	regValRnA2,
+	regIdRnB2,	regValRnB2,
+	regIdRnC2,	regValRnC2,
+	regInDlr,	hold);
+
+RegSpr_3W	gprModDhr(
+	clock,		reset,
+	JX2_GR_DHR,	gprRegDhr,
+	regIdRnA2,	regValRnA2,
+	regIdRnB2,	regValRnB2,
+	regIdRnC2,	regValRnC2,
+	regInDhr,	hold);
+
+RegSpr_3W	gprModSp(
+	clock,		reset,
+	JX2_GR_SP,	gprRegSp,
+	regIdRnA2,	regValRnA2,
+	regIdRnB2,	regValRnB2,
+	regIdRnC2,	regValRnC2,
+	regInSp,	hold);
+
+`ifdef jx2_sprs_elrehr
+wire[63:0]	gprRegElr;
+wire[63:0]	gprRegEhr;
+wire[63:0]	gprRegBp;
+
+RegSpr_3W	gprModElr(
+	clock,		reset,
+	JX2_GR_ELR,	gprRegElr,
+	regIdRnA2,	regValRnA2,
+	regIdRnB2,	regValRnB2,
+	regIdRnC2,	regValRnC2,
+	regInElr,	hold);
+
+RegSpr_3W	gprModEhr(
+	clock,		reset,
+	JX2_GR_EHR,	gprRegEhr,
+	regIdRnA2,	regValRnA2,
+	regIdRnB2,	regValRnB2,
+	regIdRnC2,	regValRnC2,
+	regInEhr,	hold);
+
+RegSpr_3W	gprModBp(
+	clock,		reset,
+	JX2_GR_BP,	gprRegBp,
+	regIdRnA2,	regValRnA2,
+	regIdRnB2,	regValRnB2,
+	regIdRnC2,	regValRnC2,
+	regInBp,	hold);
+`endif
+
+`endif	
 
 
 assign	regOutDlr = gprRegDlr;
@@ -147,6 +210,13 @@ assign	regOutElr = gprRegElr;
 assign	regOutEhr = gprRegEhr;
 assign	regOutBp  = gprRegBp;
 `endif
+
+reg[63:0]	tValRsA0;
+reg[63:0]	tValRtA0;
+reg[63:0]	tValRuA0;
+reg[63:0]	tValRvA0;
+reg[63:0]	tValRxA0;
+reg[63:0]	tValRyA0;
 
 reg[63:0]	tValRsA;
 reg[63:0]	tValRtA;
@@ -171,12 +241,40 @@ begin
 	tValRxZz=0;
 	tValRyZz=0;
 
+	tValRsA0=gprArrMB[regIdRs[4:0]] ?
+		gprArrC[regIdRs[4:0]] :
+		(	gprArrMA[regIdRs[4:0]] ?
+			gprArrB[regIdRs[4:0]] :
+			gprArrA[regIdRs[4:0]]);
+	tValRtA0=gprArrMB[regIdRt[4:0]] ?
+		gprArrC[regIdRt[4:0]] :
+		(	gprArrMA[regIdRt[4:0]] ?
+			gprArrB[regIdRt[4:0]] :
+			gprArrA[regIdRt[4:0]]);
+	tValRuA0=gprArrMB[regIdRu[4:0]] ?
+		gprArrC[regIdRu[4:0]] :
+		(	gprArrMA[regIdRu[4:0]] ?
+			gprArrB[regIdRu[4:0]] :
+			gprArrA[regIdRu[4:0]]);
+	tValRvA0=gprArrMB[regIdRv[4:0]] ?
+		gprArrC[regIdRv[4:0]] :
+		(	gprArrMA[regIdRv[4:0]] ?
+			gprArrB[regIdRv[4:0]] :
+			gprArrA[regIdRv[4:0]]);
+	tValRxA0=gprArrMB[regIdRx[4:0]] ?
+		gprArrC[regIdRx[4:0]] :
+		(	gprArrMA[regIdRx[4:0]] ?
+			gprArrB[regIdRx[4:0]] :
+			gprArrA[regIdRx[4:0]]);
+	tValRyA0=gprArrMB[regIdRy[4:0]] ?
+		gprArrC[regIdRy[4:0]] :
+		(	gprArrMA[regIdRy[4:0]] ?
+			gprArrB[regIdRy[4:0]] :
+			gprArrA[regIdRy[4:0]]);
+
 	casez(regIdRs)
 //		6'b0zzzzz:	tValRsA=gprArr[regIdRs[4:0]];
-		6'b0zzzzz:
-			tValRsA=gprArrM[regIdRs[4:0]] ?
-				gprArrB[regIdRs[4:0]] :
-				gprArrA[regIdRs[4:0]];
+		6'b0zzzzz:	tValRsA=tValRsA0;
 		JX2_GR_DLR:	tValRsA=gprRegDlr;
 //		JX2_GR_DLR:	tValRsA=regInDlr;
 		JX2_GR_DHR:	tValRsA=gprRegDhr;
@@ -209,11 +307,7 @@ begin
 	endcase
 
 	casez(regIdRt)
-//		6'b0zzzzz:	tValRtA=gprArr[regIdRt[4:0]];
-		6'b0zzzzz:
-			tValRtA=gprArrM[regIdRt[4:0]] ?
-				gprArrB[regIdRt[4:0]] :
-				gprArrA[regIdRt[4:0]];
+		6'b0zzzzz:	tValRtA=tValRtA0;
 		JX2_GR_DLR:	tValRtA=gprRegDlr;
 //		JX2_GR_DLR:	tValRtA=regInDlr;
 		JX2_GR_DHR:	tValRtA=gprRegDhr;
@@ -242,11 +336,7 @@ begin
 	endcase
 
 	casez(regIdRu)
-//		6'b0zzzzz:	tValRuA=gprArr[regIdRu[4:0]];
-		6'b0zzzzz:
-			tValRuA=gprArrM[regIdRu[4:0]] ?
-				gprArrB[regIdRu[4:0]] :
-				gprArrA[regIdRu[4:0]];
+		6'b0zzzzz:	tValRuA=tValRuA0;
 		JX2_GR_DLR:	tValRuA=gprRegDlr;
 //		JX2_GR_DLR:	tValRuA=regInDlr;
 		JX2_GR_DHR:	tValRuA=gprRegDhr;
@@ -275,11 +365,7 @@ begin
 	endcase
 
 	casez(regIdRv)
-//		6'b0zzzzz:	tValRvA=gprArr[regIdRv[4:0]];
-		6'b0zzzzz:
-			tValRvA=gprArrM[regIdRv[4:0]] ?
-				gprArrB[regIdRv[4:0]] :
-				gprArrA[regIdRv[4:0]];
+		6'b0zzzzz:	tValRvA=tValRvA0;
 		JX2_GR_DLR:	tValRvA=gprRegDlr;
 //		JX2_GR_DLR:	tValRvA=regInDlr;
 		JX2_GR_DHR:	tValRvA=gprRegDhr;
@@ -308,11 +394,7 @@ begin
 	endcase
 
 	casez(regIdRx)
-//		6'b0zzzzz:	tValRxA=gprArr[regIdRx[4:0]];
-		6'b0zzzzz:
-			tValRxA=gprArrM[regIdRx[4:0]] ?
-				gprArrB[regIdRx[4:0]] :
-				gprArrA[regIdRx[4:0]];
+		6'b0zzzzz:	tValRxA=tValRxA0;
 		JX2_GR_DLR:	tValRxA=gprRegDlr;
 //		JX2_GR_DLR:	tValRxA=regInDlr;
 		JX2_GR_DHR:	tValRxA=gprRegDhr;
@@ -328,8 +410,8 @@ begin
 
 		JX2_GR_IMM:begin
 			tValRxA={
-				regValImmB[32]?UV32_FF:UV32_00,
-				regValImmB[31:0] };
+				regValImmC[32]?UV32_FF:UV32_00,
+				regValImmC[31:0] };
 			tValRxZz=1;
 		end
 		JX2_GR_ZZR:	begin
@@ -341,11 +423,7 @@ begin
 	endcase
 
 	casez(regIdRy)
-//		6'b0zzzzz:	tValRyA=gprArr[regIdRy[4:0]];
-		6'b0zzzzz:
-			tValRyA=gprArrM[regIdRy[4:0]] ?
-				gprArrB[regIdRy[4:0]] :
-				gprArrA[regIdRy[4:0]];
+		6'b0zzzzz:	tValRyA=tValRyA0;
 		JX2_GR_DLR:	tValRyA=gprRegDlr;
 //		JX2_GR_DLR:	tValRyA=regInDlr;
 		JX2_GR_DHR:	tValRyA=gprRegDhr;
@@ -361,8 +439,8 @@ begin
 
 		JX2_GR_IMM:begin
 			tValRyA={
-				regValImmB[32]?UV32_FF:UV32_00,
-				regValImmB[31:0] };
+				regValImmC[32]?UV32_FF:UV32_00,
+				regValImmC[31:0] };
 			tValRyZz=1;
 		end
 		JX2_GR_ZZR:	begin
@@ -494,6 +572,8 @@ always @(posedge clock)
 begin
 	if(!hold)
 	begin
+`ifndef def_true
+
 		gprRegDlr	<= (regIdRnA2==JX2_GR_DLR) ? regValRnA2 : regInDlr;
 		gprRegDhr	<= (regIdRnA2==JX2_GR_DHR) ? regValRnA2 : regInDhr;
 		gprRegSp	<= (regIdRnA2==JX2_GR_SP ) ? regValRnA2 : regInSp;
@@ -502,6 +582,8 @@ begin
 		gprRegElr	<= (regIdRnA2==JX2_GR_ELR) ? regValRnA2 : regInElr;
 		gprRegEhr	<= (regIdRnA2==JX2_GR_EHR) ? regValRnA2 : regInEhr;
 		gprRegBp	<= (regIdRnA2==JX2_GR_BP ) ? regValRnA2 : regInBp;
+`endif
+
 `endif
 
 		if(!regIdRnA2[5])
