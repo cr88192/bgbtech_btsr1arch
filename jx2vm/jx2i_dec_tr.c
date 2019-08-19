@@ -1,3 +1,11 @@
+void BJX2_MemSimTraceIS(BJX2_Context *ctx, BJX2_Trace *tr)
+{
+	int i;
+	
+	for(i=0; i<tr->n_ops; i++)
+		BJX2_MemSimAddrL1I(ctx, tr->ops[i]->pc);
+}
+
 force_inline void BJX2_DecTraceCb_SetupForTrace(
 	BJX2_Context *ctx, BJX2_Trace *tr)
 {
@@ -6,6 +14,11 @@ force_inline void BJX2_DecTraceCb_SetupForTrace(
 	ctx->tr_rnxt=tr->lnknext;
 	ctx->tr_rjmp=tr->jmpnext;
 	ctx->regs[BJX2_REG_PC]=tr->addr_nxt;
+
+#ifdef X86_64
+	if(!(ctx->use_jit))
+		{ BJX2_MemSimTraceIS(ctx, tr); }
+#endif
 }
 
 BJX2_Trace *BJX2_DecTraceCb_Run1(BJX2_Context *ctx, BJX2_Trace *tr)

@@ -702,6 +702,13 @@ begin
 						opCcty		= JX2_IXC_CF;
 					end
 
+					8'h6F: begin
+						opNmid		= JX2_UCMD_OP_IXS;
+						opUCmdIx	= JX2_UCIX_IXS_MOVT;
+						opFmid		= JX2_FMID_REG;
+						opIty		= JX2_ITY_SB;
+					end
+
 					default: begin
 					end
 

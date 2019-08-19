@@ -1382,6 +1382,31 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 	pcnt=(100.0*ctx->tot_cyc_miss_l2)/(ctx->tot_cyc);
 	printf("Cycles Spent, Cache Miss L2: %.2f%%\n", pcnt);
 
+	pcnt=(100.0*(ctx->tot_cnt_mem_l1i-ctx->tot_cnt_miss_l1i))/
+		(ctx->tot_cnt_mem_l1i);
+	printf("Total Count, Cache Hit  L1 I$: %.2f%%\n", pcnt);
+	pcnt=(100.0*ctx->tot_cnt_miss_l1i)/(ctx->tot_cnt_mem_l1i);
+	printf("Total Count, Cache Miss L1 I$: %.2f%%\n", pcnt);
+
+	pcnt=(100.0*(ctx->tot_cnt_mem_l1-ctx->tot_cnt_miss_l1))/
+		(ctx->tot_cnt_mem_l1);
+	printf("Total Count, Cache Hit  L1 D$: %.2f%%\n", pcnt);
+	pcnt=(100.0*ctx->tot_cnt_miss_l1)/(ctx->tot_cnt_mem_l1);
+	printf("Total Count, Cache Miss L1 D$: %.2f%%\n", pcnt);
+
+	pcnt=(100.0*(ctx->tot_cnt_mem_l2-ctx->tot_cnt_miss_l2))/
+		(ctx->tot_cnt_mem_l2);
+	printf("Total Count, Cache Hit  L2   : %.2f%%\n", pcnt);
+	pcnt=(100.0*ctx->tot_cnt_miss_l2)/(ctx->tot_cnt_mem_l2);
+	printf("Total Count, Cache Miss L2   : %.2f%%\n", pcnt);
+
+	pcnt=(100.0*(ctx->tot_cnt_mem_l1i-ctx->tot_cnt_mem_dri))/
+		(ctx->tot_cnt_mem_l1i);
+	printf("Total Count, Cache Hit Combined I$: %.2f%%\n", pcnt);
+	pcnt=(100.0*(ctx->tot_cnt_mem_l1-ctx->tot_cnt_mem_drd))/
+		(ctx->tot_cnt_mem_l1);
+	printf("Total Count, Cache Hit Combined D$: %.2f%%\n", pcnt);
+
 	return(0);
 }
 
@@ -1535,17 +1560,37 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 //		nc+=ctx->iodel_cyc;
 //		ctx->iodel_cyc=0;
 
+#ifdef X86_64
 		ctx->tot_cyc_mem+=ctx->mem_cyc;
 		ctx->tot_cyc_miss+=ctx->miss_cyc;
 		ctx->tot_cyc_miss_l1+=ctx->miss_cyc_l1;
 		ctx->tot_cyc_miss_l2+=ctx->miss_cyc_l2;
+
+		ctx->tot_cnt_mem_l1+=ctx->mem_cnt_l1;
+		ctx->tot_cnt_mem_l1i+=ctx->mem_cnt_l1i;
+		ctx->tot_cnt_mem_l2+=ctx->mem_cnt_l2;
+		ctx->tot_cnt_miss_l1+=ctx->miss_cnt_l1;
+		ctx->tot_cnt_miss_l1i+=ctx->miss_cnt_l1i;
+		ctx->tot_cnt_miss_l2+=ctx->miss_cnt_l2;
+		ctx->tot_cnt_mem_dri+=ctx->mem_cnt_dri;
+		ctx->tot_cnt_mem_drd+=ctx->mem_cnt_drd;
 
 		nc+=ctx->miss_cyc;
 		ctx->mem_cyc=0;
 		ctx->miss_cyc=0;
 		ctx->miss_cyc_l1=0;
 		ctx->miss_cyc_l2=0;
-		
+
+		ctx->mem_cnt_l1=0;
+		ctx->mem_cnt_l2=0;
+		ctx->mem_cnt_l1i=0;
+		ctx->miss_cnt_l1=0;
+		ctx->miss_cnt_l2=0;
+		ctx->miss_cnt_l1i=0;
+		ctx->mem_cnt_dri=0;
+		ctx->mem_cnt_drd=0;
+#endif
+
 		ctx->tot_cyc+=nc;
 		ctx->tot_ops+=no;
 		ctx->ttick_hk-=nc;

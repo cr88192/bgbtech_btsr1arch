@@ -39,6 +39,16 @@ assign	memPcOpm	= tMemPcOpm;
 reg[31:0]		tMemPcAddr;		//memory PC address
 reg[ 4:0]		tMemPcOpm;		//memory PC output-enable
 
+`ifdef jx2_expand_l1sz
+(* ram_style = "distributed" *)
+	reg[127:0]		icCaMemA[255:0];		//Local L1 tile memory (Even)
+(* ram_style = "distributed" *)
+	reg[127:0]		icCaMemB[255:0];		//Local L1 tile memory (Odd)
+(* ram_style = "distributed" *)
+	reg[31:0]		icCaAddrA[255:0];	//Local L1 tile address
+(* ram_style = "distributed" *)
+	reg[31:0]		icCaAddrB[255:0];	//Local L1 tile address
+`else
 `ifdef jx2_reduce_l1sz
 (* ram_style = "distributed" *)
 	reg[127:0]		icCaMemA[15:0];		//Local L1 tile memory (Even)
@@ -58,10 +68,17 @@ reg[ 4:0]		tMemPcOpm;		//memory PC output-enable
 (* ram_style = "distributed" *)
 	reg[31:0]		icCaAddrB[63:0];	//Local L1 tile address
 `endif
+`endif
 
 reg[27:0]		tNxtAddrA;
 reg[27:0]		tNxtAddrB;
 
+`ifdef jx2_expand_l1sz
+reg[7:0]		tNxtIxA;
+reg[7:0]		tNxtIxB;
+reg[7:0]		tReqIxA;
+reg[7:0]		tReqIxB;
+`else
 `ifdef jx2_reduce_l1sz
 reg[3:0]		tNxtIxA;
 reg[3:0]		tNxtIxB;
@@ -72,6 +89,7 @@ reg[5:0]		tNxtIxA;
 reg[5:0]		tNxtIxB;
 reg[5:0]		tReqIxA;
 reg[5:0]		tReqIxB;
+`endif
 `endif
 
 reg[127:0]		tBlkDataA;
@@ -121,6 +139,10 @@ begin
 	end
 
 
+`ifdef jx2_expand_l1sz
+	tNxtIxA=tNxtAddrA[8:1];
+	tNxtIxB=tNxtAddrB[8:1];
+`else
 `ifdef jx2_reduce_l1sz
 //	tNxtIxA=tNxtAddrA[3:0];
 //	tNxtIxB=tNxtAddrB[3:0];
@@ -131,6 +153,7 @@ begin
 //	tNxtIxB=tNxtAddrB[5:0];
 	tNxtIxA=tNxtAddrA[6:1];
 	tNxtIxB=tNxtAddrB[6:1];
+`endif
 `endif
 
 
@@ -270,12 +293,17 @@ reg[27:0]		tStBlkAddrB;
 reg[3:0]		tStBlkFlagB;
 reg				tDoStBlkB;
 
+`ifdef jx2_expand_l1sz
+reg[7:0]		tStBlkIxA;
+reg[7:0]		tStBlkIxB;
+`else
 `ifdef jx2_reduce_l1sz
 reg[3:0]		tStBlkIxA;
 reg[3:0]		tStBlkIxB;
 `else
 reg[5:0]		tStBlkIxA;
 reg[5:0]		tStBlkIxB;
+`endif
 `endif
 
 

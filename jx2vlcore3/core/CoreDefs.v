@@ -565,8 +565,9 @@ parameter[5:0] JX2_UCIX_IXS_LDSRMSK	= 6'h03;		//?
 
 `define jx2_ddr_bl64b			//DDR interface is 64-bit (DDR2)
 
+`define jx2_expand_l1sz			//Make L1 bigger
 
-// `define jx2_reduce_l1sz
+// `define jx2_reduce_l1sz		//Make L1 smaller
 // `define jx2_reduce_l2sz
 
 // `define jx2_merge_shadq		//Merge SHAD and SHAD.Q

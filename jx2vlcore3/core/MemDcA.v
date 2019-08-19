@@ -53,6 +53,16 @@ assign	memAddr		= tMemAddr;
 assign	memOpm		= tMemOpm;
 assign	memDataOut	= tMemDataOut;
 
+`ifdef jx2_expand_l1sz
+(* ram_style = "distributed" *)
+	reg[127:0]		dcCaMemA[255:0];	//Local L1 tile memory (Even)
+(* ram_style = "distributed" *)
+	reg[127:0]		dcCaMemB[255:0];	//Local L1 tile memory (Odd)
+(* ram_style = "distributed" *)
+	reg[ 31:0]		dcCaAddrA[255:0];	//Local L1 tile address
+(* ram_style = "distributed" *)
+	reg[ 31:0]		dcCaAddrB[255:0];	//Local L1 tile address
+`else
 `ifdef jx2_reduce_l1sz
 (* ram_style = "distributed" *)
 	reg[127:0]		dcCaMemA[15:0];		//Local L1 tile memory (Even)
@@ -72,11 +82,28 @@ assign	memDataOut	= tMemDataOut;
 (* ram_style = "distributed" *)
 	reg[ 31:0]		dcCaAddrB[63:0];	//Local L1 tile address
 `endif
+`endif
 
 reg[27:0]		tNxtAddrA;
 reg[27:0]		tNxtAddrB;
 reg				tNxtIsMmio;
 
+`ifdef jx2_expand_l1sz
+reg[ 7:0]		tNxtIxA;
+reg[ 7:0]		tNxtIxB;
+reg[ 7:0]		tReqIxA;
+reg[ 7:0]		tReqIxB;
+reg[ 7:0]		tLstIxA;
+reg[ 7:0]		tLstIxB;
+reg[ 7:0]		tNx2IxA;
+reg[ 7:0]		tNx2IxB;
+reg[ 7:0]		tStBlkIxA;
+reg[ 7:0]		tStBlkIxB;
+reg[ 7:0]		tMiBlkIxA;
+reg[ 7:0]		tMiBlkIxB;
+reg[ 7:0]		tLstStBlkIxA;
+reg[ 7:0]		tLstStBlkIxB;
+`else
 `ifdef jx2_reduce_l1sz
 reg[ 3:0]		tNxtIxA;
 reg[ 3:0]		tNxtIxB;
@@ -103,10 +130,11 @@ reg[ 5:0]		tNx2IxA;
 reg[ 5:0]		tNx2IxB;
 reg[ 5:0]		tStBlkIxA;
 reg[ 5:0]		tStBlkIxB;
-reg[  5:0]		tMiBlkIxA;
-reg[  5:0]		tMiBlkIxB;
+reg[ 5:0]		tMiBlkIxA;
+reg[ 5:0]		tMiBlkIxB;
 reg[ 5:0]		tLstStBlkIxA;
 reg[ 5:0]		tLstStBlkIxB;
+`endif
 `endif
 
 reg[127:0]		tBlkDataA;
@@ -250,12 +278,17 @@ begin
 		tNxtAddrB=tNxtAddrA+1;
 	end
 
+`ifdef jx2_expand_l1sz
+	tNxtIxA=tNxtAddrA[8:1];
+	tNxtIxB=tNxtAddrB[8:1];
+`else
 `ifdef jx2_reduce_l1sz
 	tNxtIxA=tNxtAddrA[4:1];
 	tNxtIxB=tNxtAddrB[4:1];
 `else
 	tNxtIxA=tNxtAddrA[6:1];
 	tNxtIxB=tNxtAddrB[6:1];
+`endif
 `endif
 
 //	tNxtIsMmio=(regInAddr[31:28]==4'hA);
@@ -276,12 +309,17 @@ begin
 	tHoldWrCyc		= 0;
 	tNextHoldCyc	= 0;
 
+`ifdef jx2_expand_l1sz
+	tStBlkIxA	= UV8_XX;
+	tStBlkIxB	= UV8_XX;
+`else
 `ifdef jx2_reduce_l1sz
 	tStBlkIxA	= UV4_XX;
 	tStBlkIxB	= UV4_XX;
 `else
 	tStBlkIxA	= UV6_XX;
 	tStBlkIxB	= UV6_XX;
+`endif
 `endif
 
 //	tBlkDataA	= dcCaMemA [tReqIxA];

@@ -267,6 +267,90 @@ BJX2_MemSpan *BJX2_MemSpanForAddr(BJX2_Context *ctx, bjx2_addr addr)
 //	return(ctx->MemSpanForAddr(ctx, addr));
 }
 
+int BJX2_MemSimAddrL1I(BJX2_Context *ctx, bjx2_addr addr)
+{
+#if 1
+	bjx2_addr t0, t1;
+	int h, p1, p2;
+	
+	if(ctx->use_jit)
+		return(0);
+	
+	if(((addr>>28)&0xF)==0xF)
+		return(0);
+	
+//	h=(addr>>4)&63;
+//	h=(addr>>5)&63;
+//	h=(addr>>5)&255;
+	h=(addr>>5)&511;
+
+//	ctx->mem_cyc+=3;
+//	ctx->mem_cyc+=2;
+	ctx->mem_cnt_l1i++;
+
+//	if((addr>>4)==ctx->mem_l1ih4k[(h<<2)|0])
+//		return(0);
+	if((addr>>5)==ctx->mem_l1ih4k[(h<<2)|0])
+		return(0);
+
+	p1=5;
+	p2=24;
+
+	ctx->miss_cyc+=p1;
+	ctx->miss_cyc_l1+=p1;
+	ctx->miss_cnt_l1i++;
+
+	if(ctx->tr_cur)
+		ctx->tr_cur->acc_pencyc+=p1;
+
+//	ctx->mem_l1h4k[(h<<2)|3]=ctx->mem_l1h4k[(h<<2)|2];
+//	ctx->mem_l1h4k[(h<<2)|2]=ctx->mem_l1h4k[(h<<2)|1];
+//	ctx->mem_l1h4k[(h<<2)|1]=ctx->mem_l1h4k[(h<<2)|0];
+
+//	ctx->mem_l1ih4k[(h<<2)|0]=addr>>4;
+	ctx->mem_l1ih4k[(h<<2)|0]=addr>>5;
+
+
+	/* L2 Cache */
+
+	ctx->mem_cnt_l2++;
+
+//	h=(addr>>4)&1023;
+//	h=(addr>>4)&2047;
+	h=(addr>>4)&4095;
+//	h=(addr>>4)&8191;
+
+	if((addr>>4)==ctx->mem_l2h32k[(h<<1)|0])
+		return(0);
+
+#if 0
+	if((addr>>4)==ctx->mem_l2h32k[(h<<1)|1])
+	{
+		t0=ctx->mem_l2h32k[(h<<1)|0];
+		t1=ctx->mem_l2h32k[(h<<1)|1];
+		ctx->mem_l2h32k[(h<<1)|0]=t1;
+		ctx->mem_l2h32k[(h<<1)|1]=t0;
+		return(0);
+	}
+#endif
+
+	ctx->mem_l2h32k[(h<<1)|1]=ctx->mem_l2h32k[(h<<1)|0];
+	ctx->mem_l2h32k[(h<<1)|0]=addr>>4;
+
+	/* Main RAM */
+
+	ctx->miss_cyc+=p2;
+	ctx->miss_cyc_l2+=p2;
+	ctx->miss_cnt_l2++;
+	ctx->mem_cnt_dri++;
+
+	if(ctx->tr_cur)
+		ctx->tr_cur->acc_pencyc+=p2;
+#endif
+
+	return(1);
+}
+
 
 int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr)
 {
@@ -277,10 +361,17 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr)
 	if(ctx->use_jit)
 		return(0);
 	
-	h=(addr>>4)&63;
+	if(((addr>>28)&0xF)==0xF)
+		return(0);
+	
+//	h=(addr>>4)&63;
+//	h=(addr>>5)&63;
+//	h=(addr>>5)&255;
+	h=(addr>>5)&511;
 
 //	ctx->mem_cyc+=3;
 	ctx->mem_cyc+=2;
+	ctx->mem_cnt_l1++;
 
 #if 0
 	if((addr>>4)==ctx->mem_l1h4k[(h<<2)|0])
@@ -293,9 +384,13 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr)
 		return(0);
 #endif
 
-	if((addr>>4)==ctx->mem_l1h4k[(h<<2)|0])
+//	if((addr>>4)==ctx->mem_l1h4k[(h<<2)|0])
+//		return(0);
+
+	if((addr>>5)==ctx->mem_l1h4k[(h<<2)|0])
 		return(0);
 
+#if 0
 	if((addr>>4)==ctx->mem_l1h4k[(h<<2)|1])
 	{
 		t0=ctx->mem_l1h4k[(h<<2)|0];
@@ -304,6 +399,7 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr)
 		ctx->mem_l1h4k[(h<<2)|1]=t0;
 		return(0);
 	}
+#endif
 	
 #if 0
 	if((addr>>4)==ctx->mem_l1h4k[(h<<2)|2])
@@ -329,15 +425,21 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr)
 
 	ctx->miss_cyc+=p1;
 	ctx->miss_cyc_l1+=p1;
+	ctx->miss_cnt_l1++;
+
 	if(ctx->tr_cur)
 		ctx->tr_cur->acc_pencyc+=p1;
 
-	ctx->mem_l1h4k[(h<<2)|3]=ctx->mem_l1h4k[(h<<2)|2];
-	ctx->mem_l1h4k[(h<<2)|2]=ctx->mem_l1h4k[(h<<2)|1];
-	ctx->mem_l1h4k[(h<<2)|1]=ctx->mem_l1h4k[(h<<2)|0];
-	ctx->mem_l1h4k[(h<<2)|0]=addr>>4;
+//	ctx->mem_l1h4k[(h<<2)|3]=ctx->mem_l1h4k[(h<<2)|2];
+//	ctx->mem_l1h4k[(h<<2)|2]=ctx->mem_l1h4k[(h<<2)|1];
+//	ctx->mem_l1h4k[(h<<2)|1]=ctx->mem_l1h4k[(h<<2)|0];
+//	ctx->mem_l1h4k[(h<<2)|0]=addr>>4;
+
+	ctx->mem_l1h4k[(h<<2)|0]=addr>>5;
 
 	/* L2 Cache */
+
+	ctx->mem_cnt_l2++;
 
 //	h=(addr>>4)&1023;
 //	h=(addr>>4)&2047;
@@ -347,6 +449,7 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr)
 	if((addr>>4)==ctx->mem_l2h32k[(h<<1)|0])
 		return(0);
 
+#if 1
 	if((addr>>4)==ctx->mem_l2h32k[(h<<1)|1])
 	{
 		t0=ctx->mem_l2h32k[(h<<1)|0];
@@ -355,6 +458,7 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr)
 		ctx->mem_l2h32k[(h<<1)|1]=t0;
 		return(0);
 	}
+#endif
 
 	ctx->mem_l2h32k[(h<<1)|1]=ctx->mem_l2h32k[(h<<1)|0];
 	ctx->mem_l2h32k[(h<<1)|0]=addr>>4;
@@ -363,8 +467,12 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr)
 
 	ctx->miss_cyc+=p2;
 	ctx->miss_cyc_l2+=p2;
+	ctx->miss_cnt_l2++;
+	ctx->mem_cnt_drd++;
+
 	if(ctx->tr_cur)
 		ctx->tr_cur->acc_pencyc+=p2;
+
 #endif
 
 #if 0

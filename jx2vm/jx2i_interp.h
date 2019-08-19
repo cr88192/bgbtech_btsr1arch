@@ -500,13 +500,34 @@ int miss_cyc;				//cache miss cycles
 int miss_cyc_l1;			//cache miss cycles (L1 miss)
 int miss_cyc_l2;			//cache miss cycles (L2 miss)
 
+int mem_cnt_l1;				//cache miss cycles
+int mem_cnt_l2;				//cache miss cycles
+int mem_cnt_l1i;			//cache miss cycles
+int miss_cnt_l1;			//cache miss cycles (L1 miss D$)
+int miss_cnt_l2;			//cache miss cycles (L2 miss)
+int miss_cnt_l1i;			//cache miss cycles (L1 miss I$)
+int mem_cnt_dri;				//cache miss cycles
+int mem_cnt_drd;				//cache miss cycles
+
+s64 tot_cnt_mem_l1;
+s64 tot_cnt_mem_l2;
+s64 tot_cnt_mem_l1i;
+s64 tot_cnt_miss_l1;
+s64 tot_cnt_miss_l2;
+s64 tot_cnt_miss_l1i;
+int tot_cnt_mem_dri;		//total I$ to DRAM misses
+int tot_cnt_mem_drd;		//total D$ to DRAM misses
+
 bjx2_addr mem_l1addr1;		//L1 addr
 bjx2_addr mem_l1addr2;		//L1 addr
 bjx2_addr mem_l1addr3;		//L1 addr
 bjx2_addr mem_l1addr4;		//L1 addr
 
-bjx2_addr mem_l1h4k[256];		//L1 addr (4kB)
-bjx2_addr mem_l2h32k[8192];		//L2 addr (32/64kB)
+bjx2_addr mem_l1h4k[4096];		//L1 addr (4kB)
+// bjx2_addr mem_l2h32k[8192];	//L2 addr (32/64kB)
+bjx2_addr mem_l2h32k[16384];	//L2 addr (32/64kB)
+
+bjx2_addr mem_l1ih4k[4096];		//L1 addr (4kB)
 
 u64 mem_tlb_hi[64];
 u64 mem_tlb_lo[64];

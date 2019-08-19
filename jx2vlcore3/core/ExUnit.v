@@ -1493,6 +1493,10 @@ begin
 		$display("     Rs=%X Rt=%X Ru=%X Rv=%X Rm=%X Rn=%X",
 			idA1IdRegM, idA1IdRegO, idB1IdRegM, idB1IdRegO,
 			idA1IdRegN, idB1IdRegN);
+`ifdef jx2_enable_wex3w
+		$display("     Rx=%X Ry=%X Ro=%X",
+			idC1IdRegM, idC1IdRegO, idC1IdRegN);
+`endif
 
 		$display("ID2: PC0=%X PC2=%X D=%X-%X OpA=%X-%X OpB=%X-%X F=%d",
 			id2ValBPc,	gprValPc,
@@ -1507,6 +1511,13 @@ begin
 			gprIdRu, gprValRu,
 			gprIdRv, gprValRv,
 			gprIdRn, gprValRn);
+`ifdef jx2_enable_wex3w
+		$display("     Rx=%X(%X) Ry=%X(%X) Ro=%X(%X)",
+			gprIdRx, gprValRx,
+			gprIdRy, gprValRy,
+			gprIdRo, gprValRo);
+`endif
+
 `else
 		$display("ID1: PC0=%X PC2=%X D=%X-%X Op=%X-%X F=%d",
 			id1ValBPc,	id1ValPc,

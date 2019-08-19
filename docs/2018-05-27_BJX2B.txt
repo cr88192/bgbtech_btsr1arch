@@ -936,7 +936,7 @@ Instruction Space
 ** 6Enj  CMPGT	#imm4u, Rk			//Rn==Imm4, Zero Extend
 ** 6Fnj  CMPGE	#imm4u, Rk			//Rn==Imm4, Zero Extend
 
-* 7zzz (Reserved)
+* 7zzz ( Reserved )
 
 * 8zzz ( MOV.L 1000-rddd-nnnn-mmmm, r=Store/Load )
 ** 80nm  MOVU.L		(Rm), Rn

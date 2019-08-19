@@ -1005,6 +1005,8 @@ int main (int argc, char **argv)
 		parms.memsize,
 		parms.membase, parms.membase+parms.memsize);
 
+	tk_con_disable();
+
 	tk_puts("Q A1\n");
 
 	COM_InitArgv (argc, argv);
