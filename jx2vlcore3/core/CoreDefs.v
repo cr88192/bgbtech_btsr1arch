@@ -267,8 +267,11 @@ REG, Bz:
 	SQ: Rn, FixImm, Rn
 
 REG, Fz:
-	SB: Ro, ZZR, Ro
+	SB: // Ro, ZZR, Ro
+	SB: ZZR, Ro, Ro
 	SW: ZZR, Rm, Rn
+
+	UB: Ro, ZZR, Ro
 
 REGREG, Bz:
 	SB: Rm, Rn / Rm, DLR, Rn

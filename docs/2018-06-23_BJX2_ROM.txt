@@ -117,6 +117,14 @@ MMIO Space:
 * 0000E030(W): SPI Slave Control
 * 0000E034(R/W): SPI Slave Data
 
+* 0000E040(R): PS2 KB RX
+* 0000E044(R): PS2 KB TX
+* 0000E048(R): PS2 KB Status
+
+* 0000E050(R): PS2 Mouse RX
+* 0000E054(R): PS2 Mouse TX
+* 0000E058(R): PS2 Mouse Status
+
 * 0000E100(R): GPIO In
 * 0000E104(R/W): GPIO Out
 * 0000E108(R/W): GPIO Direction

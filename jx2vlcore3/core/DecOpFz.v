@@ -702,6 +702,13 @@ begin
 						opCcty		= JX2_IXC_CF;
 					end
 
+					8'h33: begin
+						opNmid		= JX2_UCMD_OP_IXS;
+						opUCmdIx	= JX2_UCIX_IXS_MOVNT;
+						opFmid		= JX2_FMID_REG;
+						opIty		= JX2_ITY_SB;
+					end
+
 					8'h6F: begin
 						opNmid		= JX2_UCMD_OP_IXS;
 						opUCmdIx	= JX2_UCIX_IXS_MOVT;
@@ -1256,21 +1263,21 @@ begin
 			opUIxt	= { opCcty, opUCmdIx };
 			case(opIty)
 				JX2_ITY_SB: begin
-					opRegN	= opRegO_Dfl;
 					opRegM	= JX2_GR_ZZR;
 					opRegO	= opRegO_Dfl;
+					opRegN	= opRegO_Dfl;
 				end
 
 				JX2_ITY_SW: begin
-					opRegN	= opRegN_Dfl;
 					opRegM	= JX2_GR_ZZR;
 					opRegO	= opRegM_Dfl;
+					opRegN	= opRegN_Dfl;
 				end
 
 				JX2_ITY_UB: begin
-					opRegN	= opRegO_Dfl;
 					opRegM	= opRegO_Dfl;
 					opRegO	= JX2_GR_ZZR;
+					opRegN	= opRegO_Dfl;
 				end
 
 				default: begin

@@ -102,6 +102,44 @@ s32 BJX2_MemMmgpCb_GetDWord(BJX2_Context *ctx,
 //		printf("SPI_D(R): D=%08X\n", rv);
 		break;
 
+
+	case 0x0040:
+		rv=0;
+		if(ctx->ps2kbirov!=ctx->ps2kbrov)
+		{
+			rv=ctx->ps2kbbuf[ctx->ps2kbirov];
+			ctx->ps2kbirov=(ctx->ps2kbirov+1)&255;
+		}
+		break;
+	case 0x0044:
+		rv=0; break;
+	case 0x0048:
+		rv=0;
+		if(ctx->ps2kbirov!=ctx->ps2kbrov)
+			rv|=1;
+		break;
+	case 0x004C:
+		rv=0; break;
+
+	case 0x0050:
+		rv=0;
+		if(ctx->ps2msirov!=ctx->ps2msrov)
+		{
+			rv=ctx->ps2msbuf[ctx->ps2msirov];
+			ctx->ps2msirov=(ctx->ps2msirov+1)&255;
+		}
+		break;
+	case 0x0054:
+		rv=0; break;
+	case 0x0058:
+		rv=0;
+		if(ctx->ps2msirov!=ctx->ps2msrov)
+			rv|=1;
+		break;
+	case 0x005C:
+		rv=0; break;
+
+
 	case 0x0300:
 		rv=ctx->msgbuf_rxspos;
 		break;
