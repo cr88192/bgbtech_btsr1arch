@@ -3,7 +3,8 @@ TOOLPATH=/opt/cross/bin/
 CC=bgbcc
 
 # TK_CFL=-DARCH_SH4 -DARCH_SH4LE -mBJX2E /Os
-TK_CFL=-DARCH_SH4 -DARCH_SH4LE -mBJX2E /O2 /fwex3w
+# TK_CFL=-DARCH_SH4 -DARCH_SH4LE -mBJX2E /O2 /fwex3w
+TK_CFL=-DARCH_SH4 -DARCH_SH4LE -mBJX2F /O2 /fwex3w
 TK_LDFL= $(TK_CFL)
 
 BASE_CFLAGS=-I. -I../tk_clib/include -L../tk_clib 

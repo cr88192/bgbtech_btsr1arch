@@ -353,7 +353,14 @@ int BGBCC_JX2A_ParseOperand(char **rcs, BGBCC_JX2_OpcodeArg *opv)
 		return(0);
 	}
 
-	if((*cs==';') || (*cs=='|'))
+	if(*cs=='|')
+	{
+		*rcs=cs;
+		return(0);
+	}
+
+//	if((*cs==';') || (*cs=='|'))
+	if(*cs==';')
 	{
 		cs++;
 		cs=BGBCC_JX2A_EatWhite(cs);
@@ -1161,6 +1168,13 @@ int BGBCC_JX2A_ParseCheckFeature(BGBCC_JX2_Context *ctx, char *sym)
 
 	if(!bgbcc_stricmp(sym, "bjx1_fpu_gfp"))
 		return(ctx->fpu_gfp);
+
+	if(!bgbcc_stricmp(sym, "bjx2_wex"))
+		return(ctx->use_wexmd!=0);
+	if(!bgbcc_stricmp(sym, "bjx2_wex2"))
+		return(ctx->use_wexmd==1);
+	if(!bgbcc_stricmp(sym, "bjx2_wex3"))
+		return(ctx->use_wexmd==2);
 
 	tctx=ctx->tctx;
 

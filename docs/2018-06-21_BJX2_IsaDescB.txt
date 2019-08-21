@@ -43,6 +43,8 @@ The instructions in the F0zz..F3zz range will repeat in F4zz..F7zz (Parallel), E
 
 Add with Carry, Rn=Rn+Rm+SR.T, with SR.T being updated to reflect the carry-out bit.
 
+WEX: ADC will only update SR.T in Lane 1. If an ADC is in another lane, the state of SR.T will be undefined following the operation.
+
 
 === ADD ===
 
@@ -967,6 +969,9 @@ Rn=Rn+(~Rm)+(!SR.T)
 
 Subtract with Borrow.
 SR.T is updated with the borrow result of this operation.
+
+WEX: SBB will only update SR.T in Lane 1. If an SBB is in another lane, the state of SR.T will be undefined following the operation.
+
 
 
 === SETS ===
