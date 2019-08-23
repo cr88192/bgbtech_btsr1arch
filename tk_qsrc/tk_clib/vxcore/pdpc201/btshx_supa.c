@@ -23,13 +23,17 @@ void tk_putc(int val)
 void sleep_0();
 
 int tk_kbhit(void)
-	{ return(P_UART_STAT&1); }
+{
+	return(tk_ps2kb_kbhit());
+//	return(P_UART_STAT&1);
+}
 
 int tk_getch(void)
 {
-	while(!(P_UART_STAT&1))
-		sleep_0();
-	return(P_UART_RX);
+	return(tk_ps2getch());
+//	while(!(P_UART_STAT&1))
+//		sleep_0();
+//	return(P_UART_RX);
 }
 
 int tk_ptrIsRam(void *ptr)

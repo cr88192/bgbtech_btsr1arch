@@ -231,6 +231,7 @@ void *udata1;
 #include <tk_fatfs.h>
 #include <tk_dummyavi.h>
 #include <tk_varobj.h>
+#include <tk_keys.h>
 
 void *TKMM_Malloc(int sz);
 int TKMM_Free(void *ptr);

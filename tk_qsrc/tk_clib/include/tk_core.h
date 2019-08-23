@@ -37,6 +37,8 @@ typedef volatile u32 vol_u32;
 #define UART_BASE	0xF000E010
 #define AIC_BASE	0xF000E200
 
+#define PS2_BASE	0xF000E040
+
 #define UART_RX		(UART_BASE+0x00)
 #define UART_TX		(UART_BASE+0x04)
 #define UART_STAT	(UART_BASE+0x08)
@@ -44,6 +46,15 @@ typedef volatile u32 vol_u32;
 
 #define SPI_CTRL	(SPI_BASE+0x00)
 #define SPI_DATA	(SPI_BASE+0x04)
+
+#define PS2KB_RX	(PS2_BASE+0x00)
+#define PS2KB_TX	(PS2_BASE+0x04)
+#define PS2KB_STAT	(PS2_BASE+0x08)
+#define PS2KB_CTRL	(PS2_BASE+0x0C)
+#define PS2MS_RX	(PS2_BASE+0x10)
+#define PS2MS_TX	(PS2_BASE+0x14)
+#define PS2MS_STAT	(PS2_BASE+0x18)
+#define PS2MS_CTRL	(PS2_BASE+0x1C)
 
 #define AIC_CTRL0			(AIC_BASE+0x00)
 #define AIC_BRKADD			(AIC_BASE+0x04)
@@ -68,6 +79,16 @@ typedef volatile u32 vol_u32;
 #define P_AIC_RTC_SEC_HI	(*(vol_u32 *)AIC_RTC_SEC_HI)
 #define P_AIC_RTC_SEC_LO	(*(vol_u32 *)AIC_RTC_SEC_LO)
 #define P_AIC_RTC_NSEC		(*(vol_u32 *)AIC_RTC_NSEC)
+
+#define P_PS2KB_RX		(*(vol_u32 *)PS2KB_RX)
+#define P_PS2KB_TX		(*(vol_u32 *)PS2KB_TX)
+#define P_PS2KB_STAT	(*(vol_u32 *)PS2KB_STAT)
+#define P_PS2KB_CTRL	(*(vol_u32 *)PS2KB_CTRL)
+
+#define P_PS2MS_RX		(*(vol_u32 *)PS2MS_RX)
+#define P_PS2MS_TX		(*(vol_u32 *)PS2MS_TX)
+#define P_PS2MS_STAT	(*(vol_u32 *)PS2MS_STAT)
+#define P_PS2MS_CTRL	(*(vol_u32 *)PS2MS_CTRL)
 
 #define MMREG_BASE 0xFF000000
 #define MMREG_PTEH	(MMREG_BASE+0x00)
@@ -210,6 +231,7 @@ void *udata1;
 #include <tk_fatfs.h>
 #include <tk_dummyavi.h>
 #include <tk_varobj.h>
+#include <tk_keys.h>
 
 void *TKMM_Malloc(int sz);
 int TKMM_Free(void *ptr);
