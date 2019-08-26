@@ -791,6 +791,22 @@ BCCX_Node *BGBCP_ExpressionLit(BGBCP_ParseState *ctx, char **str)
 	return(NULL);
 }
 
+/**
+ * Check if function name refers to a known intrinsic function.
+ * These are functions which map fairly directly to CPU instructions.
+ * This excludes builtins with more complex logic (ex: memcpy or similar).
+ * Also excludes functions which may effect predication state.
+ *
+ * This is primarily intended for the front-end.
+ * For the back-end, intrinsics are handled elsewhere.
+ */
+int BGBCP_FunctionNameIsIntrinsicP(BGBCP_ParseState *ctx, char *str)
+{
+	if(!strcmp(str, "__debugbreak"))
+		return(1);
+	return(0);
+}
+
 BCCX_Node *BGBCP_ExpressionPostfix(BGBCP_ParseState *ctx, char **str)
 {
 	char b[256], b2[256];
@@ -873,8 +889,16 @@ BCCX_Node *BGBCP_ExpressionPostfix(BGBCP_ParseState *ctx, char **str)
 			if(BCCX_TagIsP(n, "ref"))
 			{
 				s0=BCCX_GetCst(n, &bgbcc_rcst_name, "name");
-				n=BCCX_NewCst1(&bgbcc_rcst_funcall, "funcall",
-					BCCX_NewCst1V(&bgbcc_rcst_args, "args", n1));
+				if(BGBCP_FunctionNameIsIntrinsicP(ctx, s0))
+				{
+					n=BCCX_NewCst1(
+						&bgbcc_rcst_funcall_intrin, "funcall_intrin",
+						BCCX_NewCst1V(&bgbcc_rcst_args, "args", n1));
+				}else
+				{
+					n=BCCX_NewCst1(&bgbcc_rcst_funcall, "funcall",
+						BCCX_NewCst1V(&bgbcc_rcst_args, "args", n1));
+				}
 				BCCX_SetCst(n, &bgbcc_rcst_name, "name", s0);
 				continue;
 			}

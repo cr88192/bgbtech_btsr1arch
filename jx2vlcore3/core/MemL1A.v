@@ -8,10 +8,14 @@ These will produce a Hold signal if the request can't be handled immediately, an
 
 `include "MemDcA.v"
 
-`ifdef jx2_enable_wex3w
+`ifdef jx2_enable_wex
 `include "MemIcWxA.v"
 `else
 `include "MemIcA.v"
+`endif
+
+`ifdef jx2_enable_mmu
+`include "MmuTlb.v"
 `endif
 
 module MemL1A(
@@ -29,6 +33,7 @@ module MemL1A(
 
 	regInDlr,		regInDhr,
 	regInMmcr,		regInKrr,
+	regInSr,
 	
 	regOutExc,
 
@@ -59,6 +64,7 @@ input[63:0]		regInDlr;
 input[63:0]		regInDhr;
 input[63:0]		regInMmcr;
 input[63:0]		regInKrr;
+input[63:0]		regInSr;
 
 output[63:0]	regOutExc;
 
@@ -75,27 +81,56 @@ reg[127:0]		tMemDataOut;	//Memory Data Out
 reg[63:0]		tRegOutExc;
 reg[63:0]		tRegOutExc2;
 
+`ifdef jx2_enable_mmu
+
+wire[31:0]		tTlbAddr;
+wire[63:0]		tTlbExc;
+wire[1:0]		tTlbOK;
+wire[4:0]		tTlbOpm;
+
+assign	memAddr		= tTlbAddr;
+assign	memOpm		= tTlbOpm;
+assign	memDataOut	= tMemDataOut;
+
+`else
+
 assign	memAddr		= tMemAddr;
 assign	memOpm		= tMemOpm;
 assign	memDataOut	= tMemDataOut;
+
+`endif
 
 assign	regOutExc	= tRegOutExc2;
 
 reg[1:0]		tDcOutOK;
 assign	dcOutOK		= tDcOutOK;
 
+`ifdef jx2_enable_mmu
+
+wire[127:0]		tTlbLdtlbData;
+assign	tTlbLdtlbData = { regInDhr, regInDlr };
+
+MmuTlb	tlb(
+	clock,			reset,
+	tMemAddr,		tTlbAddr,	tTlbLdtlbData,
+	tMemOpm,		tTlbOpm,
+	tTlbExc,		tTlbOK,
+	regInMmcr,		regInKrr,
+	regInSr);
+
+`endif
 
 reg [127:0]		ifMemData;
 reg [  1:0]		ifMemOK;
 wire[ 31:0]		ifMemAddr;
 wire[  4:0]		ifMemOpm;
 
-`ifdef jx2_enable_wex3w
+`ifdef jx2_enable_wex
 MemIcWxA		memIc(
 	clock,			reset,
 	icInPcAddr,		icOutPcVal,
 	icOutPcOK,		icOutPcStep,
-	icInPcHold,		icInPcWxe,
+	icInPcHold,		icInPcWxe,		dcInOpm,
 	ifMemData,		ifMemAddr,
 	ifMemOpm,		ifMemOK
 	);
@@ -105,7 +140,7 @@ MemIcA		memIc(
 	icInPcAddr,		icOutPcVal,
 	icOutPcOK,		icOutPcStep,
 	icInPcHold,		icInPcWxe,
-	ifMemData,		ifMemAddr,
+	ifMemData,		ifMemAddr,		dcInOpm,
 	ifMemOpm,		ifMemOK
 	);
 `endif

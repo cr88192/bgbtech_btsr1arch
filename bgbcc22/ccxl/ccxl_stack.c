@@ -1219,6 +1219,24 @@ ccxl_status BGBCC_CCXL_StackCallName(BGBCC_TransState *ctx,
 	return(BGBCC_CCXL_StackCallName2(ctx, name, NULL, flag));
 }
 
+int BGBCC_CCXL_CheckFuncNameInstrinsicP(BGBCC_TransState *ctx, char *name)
+{
+	if(!name)
+		return(0);
+
+	if(!strcmp(name, "__debugbreak")		||
+		!strcmp(name, "__halt")				||
+		!strcmp(name, "__hint_use_egpr")	)
+		return(1);
+
+	if(	!strcmp(name, "__int_min")			||
+		!strcmp(name, "__int_max")			||
+		!strcmp(name, "__int_clamp")		)
+			return(1);
+
+	return(0);
+}
+
 ccxl_status BGBCC_CCXL_StackCallName2(BGBCC_TransState *ctx,
 	char *name, char *dname, int flag)
 {
@@ -1226,6 +1244,7 @@ ccxl_status BGBCC_CCXL_StackCallName2(BGBCC_TransState *ctx,
 	ccxl_type bty, dty;
 	BGBCC_CCXL_RegisterInfo *ri;
 	char *tsig;
+	int is_intrin;
 	int i, j, k, n;
 
 	BGBCC_CCXL_DebugPrintStackLLn(ctx, "CallName", __FILE__, __LINE__);
@@ -1273,6 +1292,8 @@ ccxl_status BGBCC_CCXL_StackCallName2(BGBCC_TransState *ctx,
 	{
 		tsig=BGBCC_CCXL_StackGetSigCallArgs(ctx);
 	}
+
+	is_intrin=BGBCC_CCXL_CheckFuncNameInstrinsicP(ctx, name);
 
 	i=BGBCC_CCXL_LookupLocalIndex(ctx, name);
 	if(i<0)
@@ -1341,31 +1362,63 @@ ccxl_status BGBCC_CCXL_StackCallName2(BGBCC_TransState *ctx,
 	n=BGBCC_CCXL_StackGetConvCallArgs(ctx, treg);
 //	n=BGBCC_CCXL_StackGetCntCallArgs(ctx);
 
-	if(flag&4)
-		BGBCC_CCXL_EmitObjCallOp(ctx, bty, dreg, treg, oreg, n);
-	else
-		BGBCC_CCXL_EmitCallOp(ctx, bty, dreg, treg, n);
-	BGBCC_CCXL_StackTransforCallArgs(ctx);
-	if(dname)
+	if(is_intrin)
 	{
-		BGBCC_CCXL_EmitCallCsrvOp(ctx, bty, dreg, treg);
-		if(flag&2)
+		BGBCC_CCXL_EmitCallIntrinOp(ctx, bty, dreg, treg, n);
+		BGBCC_CCXL_StackTransforCallArgs(ctx);
+		if(dname)
 		{
-			BGBCC_CCXL_EmitConv(ctx, dty, bty, dreg2, dreg);
-			BGBCC_CCXL_RegisterCheckRelease(ctx, dreg2);
+			if(flag&2)
+			{
+				BGBCC_CCXL_EmitConv(ctx, dty, bty, dreg2, dreg);
+				BGBCC_CCXL_RegisterCheckRelease(ctx, dreg2);
+			}
+			BGBCC_CCXL_RegisterCheckRelease(ctx, dreg);
 		}
-		BGBCC_CCXL_RegisterCheckRelease(ctx, dreg);
-	}
-	else if(!(flag&1))
+		else if(!(flag&1))
+		{
+			BGBCC_CCXL_PushRegister(ctx, dreg);
+		}else if(BGBCC_CCXL_TypeValueObjectP(ctx, bty))
+		{
+			BGBCC_CCXL_RegisterCheckRelease(ctx, dreg);
+		}
+		BGBCC_CCXL_RegisterCheckRelease(ctx, treg);
+		return(CCXL_STATUS_YES);
+	}else
 	{
-		BGBCC_CCXL_EmitCallCsrvOp(ctx, bty, dreg, treg);
-		BGBCC_CCXL_PushRegister(ctx, dreg);
-	}else if(BGBCC_CCXL_TypeValueObjectP(ctx, bty))
-	{
-		BGBCC_CCXL_EmitCallCsrvOp(ctx, bty, dreg, treg);
-		BGBCC_CCXL_RegisterCheckRelease(ctx, dreg);
+		if(flag&4)
+		{
+			BGBCC_CCXL_EmitObjCallOp(ctx, bty, dreg, treg, oreg, n);
+			BGBCC_CCXL_RegisterCheckRelease(ctx, oreg);
+		}
+		else
+		{
+			BGBCC_CCXL_EmitCallOp(ctx, bty, dreg, treg, n);
+		}
+		BGBCC_CCXL_StackTransforCallArgs(ctx);
+		if(dname)
+		{
+			BGBCC_CCXL_EmitCallCsrvOp(ctx, bty, dreg, treg);
+			if(flag&2)
+			{
+				BGBCC_CCXL_EmitConv(ctx, dty, bty, dreg2, dreg);
+				BGBCC_CCXL_RegisterCheckRelease(ctx, dreg2);
+			}
+			BGBCC_CCXL_RegisterCheckRelease(ctx, dreg);
+		}
+		else if(!(flag&1))
+		{
+			BGBCC_CCXL_EmitCallCsrvOp(ctx, bty, dreg, treg);
+			BGBCC_CCXL_PushRegister(ctx, dreg);
+		}else if(BGBCC_CCXL_TypeValueObjectP(ctx, bty))
+		{
+			BGBCC_CCXL_EmitCallCsrvOp(ctx, bty, dreg, treg);
+			BGBCC_CCXL_RegisterCheckRelease(ctx, dreg);
+		}
+		BGBCC_CCXL_RegisterCheckRelease(ctx, treg);
+		return(CCXL_STATUS_YES);
 	}
-	BGBCC_CCXL_RegisterCheckRelease(ctx, treg);
+
 	return(CCXL_STATUS_YES);
 }
 

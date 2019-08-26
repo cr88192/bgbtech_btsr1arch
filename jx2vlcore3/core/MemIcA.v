@@ -1,3 +1,9 @@
+/*
+L1 Instruction Cache
+ */
+
+`include "CoreDefs.v"
+
 module MemIcA(
 	/* verilator lint_off UNUSED */
 	clock,			reset,
@@ -5,6 +11,7 @@ module MemIcA(
 	regOutPcVal,	regOutPcOK,
 	regOutPcStep,
 	icInPcHold,		icInPcWxe,
+	icInPcOpm,
 	memPcData,		memPcAddr,
 	memPcOpm,		memPcOK
 	);
@@ -19,6 +26,7 @@ output[ 1: 0]	regOutPcOK;		//set if we have a valid value.
 output[ 2: 0]	regOutPcStep;	//PC step (Normal Op)
 input			icInPcHold;
 input			icInPcWxe;
+input[4:0]		icInPcOpm;		//OPM (Used for cache-control)
 
 input [127:0]	memPcData;		//memory PC data
 input [  1:0]	memPcOK;		//memory PC OK
@@ -50,6 +58,10 @@ reg[ 4:0]		tMemPcOpm;		//memory PC output-enable
 	reg[31:0]		icCaAddrA[15:0];	//Local L1 tile address
 (* ram_style = "distributed" *)
 	reg[31:0]		icCaAddrB[15:0];	//Local L1 tile address
+reg[15:0]			icFlushMskA;
+reg[15:0]			icFlushMskB;
+reg[15:0]			icNxtFlushMskA;
+reg[15:0]			icNxtFlushMskB;
 `else
 (* ram_style = "distributed" *)
 	reg[63:0]		icCaMemA[63:0];		//Local L1 tile memory (Even)
@@ -59,6 +71,10 @@ reg[ 4:0]		tMemPcOpm;		//memory PC output-enable
 	reg[31:0]		icCaAddrA[63:0];	//Local L1 tile address
 (* ram_style = "distributed" *)
 	reg[31:0]		icCaAddrB[63:0];	//Local L1 tile address
+reg[63:0]			icFlushMskA;
+reg[63:0]			icFlushMskB;
+reg[63:0]			icNxtFlushMskA;
+reg[63:0]			icNxtFlushMskB;
 `endif
 
 reg[27:0]		tNxtAddrA;
@@ -90,6 +106,9 @@ reg[31:0]		tInAddr;
 reg[1:0]		tInWordIx;
 reg[31:0]		tRegInPc;		//input PC address
 
+reg[4:0]		tInOpm;			//OPM (Used for cache-control)
+reg[4:0]		tInPcOpm;		//OPM (Used for cache-control)
+
 reg				tMissA;
 reg				tMissB;
 reg				tMiss;
@@ -107,6 +126,7 @@ begin
 	/* Stage A */
 
 	tRegInPc	= icInPcHold ? tInAddr : regInPc;
+	tInPcOpm	= icInPcHold ? tInOpm : icInPcOpm;
 
 //	if(regInPc[3])
 	if(tRegInPc[3])
@@ -130,12 +150,35 @@ begin
 `endif
 
 
+	icNxtFlushMskA	= icFlushMskA;
+	icNxtFlushMskB	= icFlushMskB;
+
+	if(tDoStBlk)
+	begin
+		icNxtFlushMskA[tStBlkIx]=0;
+		icNxtFlushMskB[tStBlkIx]=0;
+	end
+
+	if((tInOpm==UMEM_OPM_FLUSHIS) || reset)
+	begin
+		icNxtFlushMskA = JX2_L1_FLUSHMSK;
+		icNxtFlushMskB = JX2_L1_FLUSHMSK;
+	end
+
 	/* Stage B */
 	
 	tInWordIx = tInAddr[2:1];
 	
-	tMissA = (tBlkAddrA != tReqAddrA) || (tBlkAddrA[1:0]!=(~tBlkFlagA[1:0]));
-	tMissB = (tBlkAddrB != tReqAddrB) || (tBlkAddrB[1:0]!=(~tBlkFlagB[1:0]));
+//	tMissA = (tBlkAddrA != tReqAddrA) || (tBlkAddrA[1:0]!=(~tBlkFlagA[1:0]));
+//	tMissB = (tBlkAddrB != tReqAddrB) || (tBlkAddrB[1:0]!=(~tBlkFlagB[1:0]));
+
+	tMissA = (tBlkAddrA != tReqAddrA) ||
+		(tBlkAddrA[1:0]!=(~tBlkFlagA[1:0])) ||
+		icFlushMskA[tReqIxA];
+	tMissB = (tBlkAddrB != tReqAddrB) ||
+		(tBlkAddrB[1:0]!=(~tBlkFlagB[1:0])) ||
+		icFlushMskB[tReqIxB];
+
 	tMiss = tMissA || tMissB;
 	
 	if(tInAddr[3])
@@ -307,6 +350,10 @@ begin
 	tReqAddrB	<= tNxtAddrB;
 	tReqIxA		<= tNxtIxA;
 	tReqIxB		<= tNxtIxB;
+
+	tInOpm		<= tInPcOpm;
+	icFlushMskA	<= icNxtFlushMskA;
+	icFlushMskB	<= icNxtFlushMskB;
 
 	tBlkDataA	<= icCaMemA[tNxtIxA];
 	tBlkDataB	<= icCaMemB[tNxtIxB];

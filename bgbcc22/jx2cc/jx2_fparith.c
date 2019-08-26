@@ -108,7 +108,13 @@ int BGBCC_JX2C_EmitBinaryVRegVRegFloat(
 	case CCXL_BINOP_ADD:	s0="__fpu_fadd";	break;
 	case CCXL_BINOP_SUB:	s0="__fpu_fsub";	break;
 	case CCXL_BINOP_MUL:	s0="__fpu_fmul";	break;
-	case CCXL_BINOP_DIV:	s0="__fpu_fdiv";	break;
+//	case CCXL_BINOP_DIV:	s0="__fpu_fdiv";	break;
+	case CCXL_BINOP_DIV:
+		if(BGBCC_CCXL_TypeDoubleP(ctx, type))
+			s0="__fpu_fdiv";
+		else
+			s0="__fpu_fdiv_s";
+		break;
 	default:				s0=NULL; break;
 	}
 

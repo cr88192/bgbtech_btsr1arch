@@ -1,3 +1,24 @@
+/*
+L1 Data Cache.
+
+Reads in blocks, and marks written to blocks as dirty.
+Dirty blocks will be written back whenever there is a cache miss.
+
+Flushing the cache will set all the the indices to be flushed.
+Flushing an index will cause accesses to always miss.
+
+The behavior will depend on the address during the Flush operation:
+	MMIO range: Flush entire cache
+	Otherwise: Flush cache lines corresponding to the address given.
+
+
+Note that a "proper" L1 flush will be a process:
+  Flush the L1 D$
+  Do a range of memory loads to cause writeback of every dirty cache line.
+  Flush the L1 D$ again, effectively invalidating whatever was just loaded.
+
+*/
+
 `include "CoreDefs.v"
 
 module MemDcA(
@@ -62,6 +83,10 @@ assign	memDataOut	= tMemDataOut;
 	reg[ 31:0]		dcCaAddrA[255:0];	//Local L1 tile address
 (* ram_style = "distributed" *)
 	reg[ 31:0]		dcCaAddrB[255:0];	//Local L1 tile address
+reg[255:0]			dcFlushMskA;
+reg[255:0]			dcFlushMskB;
+reg[255:0]			dcNxtFlushMskA;
+reg[255:0]			dcNxtFlushMskB;
 `else
 `ifdef jx2_reduce_l1sz
 (* ram_style = "distributed" *)
@@ -72,6 +97,10 @@ assign	memDataOut	= tMemDataOut;
 	reg[ 31:0]		dcCaAddrA[15:0];	//Local L1 tile address
 (* ram_style = "distributed" *)
 	reg[ 31:0]		dcCaAddrB[15:0];	//Local L1 tile address
+reg[15:0]			dcFlushMskA;
+reg[15:0]			dcFlushMskB;
+reg[15:0]			dcNxtFlushMskA;
+reg[15:0]			dcNxtFlushMskB;
 `else
 (* ram_style = "distributed" *)
 	reg[127:0]		dcCaMemA[63:0];		//Local L1 tile memory (Even)
@@ -81,6 +110,10 @@ assign	memDataOut	= tMemDataOut;
 	reg[ 31:0]		dcCaAddrA[63:0];	//Local L1 tile address
 (* ram_style = "distributed" *)
 	reg[ 31:0]		dcCaAddrB[63:0];	//Local L1 tile address
+reg[63:0]			dcFlushMskA;
+reg[63:0]			dcFlushMskB;
+reg[63:0]			dcNxtFlushMskA;
+reg[63:0]			dcNxtFlushMskB;
 `endif
 `endif
 
@@ -145,6 +178,8 @@ reg[  3:0]		tBlkFlagA;
 reg[  3:0]		tBlkFlagB;
 reg				tBlkDirtyA;
 reg				tBlkDirtyB;
+reg				tBlkFlushA;
+reg				tBlkFlushB;
 
 reg[127:0]		tBlkData2A;
 reg[127:0]		tBlkData2B;
@@ -164,6 +199,7 @@ reg				tMiss;
 reg				tHold;
 reg				tHoldB;
 reg				tReqOpmNz;
+reg				tReqOpmCcmd;
 reg				tLstHold;
 
 reg[127:0]		tStBlkDataA;
@@ -291,9 +327,30 @@ begin
 `endif
 `endif
 
+	dcNxtFlushMskA	= dcFlushMskA;
+	dcNxtFlushMskB	= dcFlushMskB;
+	
+	if((tRegInOpm==UMEM_OPM_FLUSHDS) || reset)
+	begin
+		if((tRegInAddr[31:28]==4'hF) || reset)
+		begin
+			dcNxtFlushMskA = JX2_L1_FLUSHMSK;
+			dcNxtFlushMskB = JX2_L1_FLUSHMSK;
+		end
+		else
+		begin
+			dcNxtFlushMskA[tNxtIxA]=1;
+			dcNxtFlushMskB[tNxtIxB]=1;
+		end
+	end
+
 //	tNxtIsMmio=(regInAddr[31:28]==4'hA);
 //	tNxtIsMmio=(regInAddr[31:28]==4'hF) && (regInOpm[4:3]!=0);
 	tNxtIsMmio=(tRegInAddr[31:28]==4'hF) && (tRegInOpm[4:3]!=0);
+
+	tReqOpmCcmd	= (tRegInOpm!=UMEM_OPM_READY) && (tRegInOpm[4:3]==0);	
+	if(tReqOpmCcmd)
+		tNxtIsMmio = 1;
 
 
 	/* Stage B */
@@ -328,13 +385,27 @@ begin
 //	{ tBlkFlagB, tBlkAddrB }	= dcCaAddrB[tReqIxB];
 
 	tInByteIx	= tInAddr[2:0];
-	tReqOpmNz	= (tInOpm[4:3]!=0);
+//	tReqOpmNz	= (tInOpm[4:3]!=0);
+	tReqOpmNz	= (tInOpm!=UMEM_OPM_READY);
+	
+//	tReqOpmCcmd	= tReqOpmNz && (tInOpm[4:3]==0);
+	
+//	if(tReqOpmCcmd)
+//		tNxtIsMmio = 1;
 
 	tBlkDirtyA	= tBlkFlagA[2];
 	tBlkDirtyB	= tBlkFlagB[2];
+	tBlkFlushA	= dcFlushMskA[tReqIxA];
+	tBlkFlushB	= dcFlushMskB[tReqIxB];
 
-	tMissA = (tBlkAddrA != tReqAddrA) || (tBlkAddrA[1:0]!=(~tBlkFlagA[1:0]));
-	tMissB = (tBlkAddrB != tReqAddrB) || (tBlkAddrB[1:0]!=(~tBlkFlagB[1:0]));
+//	tMissA = (tBlkAddrA != tReqAddrA) || (tBlkAddrA[1:0]!=(~tBlkFlagA[1:0]));
+//	tMissB = (tBlkAddrB != tReqAddrB) || (tBlkAddrB[1:0]!=(~tBlkFlagB[1:0]));
+
+	tMissA = (tBlkAddrA != tReqAddrA) ||
+		(tBlkAddrA[1:0]!=(~tBlkFlagA[1:0])) || tBlkFlushA;
+	tMissB = (tBlkAddrB != tReqAddrB) ||
+		(tBlkAddrB[1:0]!=(~tBlkFlagB[1:0])) || tBlkFlushB;
+
 //	tMiss = tReqOpmNz ? (tMissA || tMissB) : 0;
 	tMiss = (tReqOpmNz && !tReqIsMmio) ? (tMissA || tMissB) : 0;
 	tHold = 0;
@@ -483,6 +554,9 @@ begin
 		tStBlkAddrB	= tMiBlkAddrB;
 		tStBlkFlagA	= { 2'b00, ~tStBlkAddrA[1:0] };
 		tStBlkFlagB	= { 2'b00, ~tStBlkAddrB[1:0] };
+
+		dcNxtFlushMskA[tMiBlkIxA] = 0;
+		dcNxtFlushMskB[tMiBlkIxB] = 0;
 
 		tStBlkIxA	= tMiBlkIxA;
 		tStBlkIxB	= tMiBlkIxB;
@@ -636,6 +710,9 @@ begin
 	tReqIxB		<= tNxtIxB;
 	tReqIsMmio	<= tNxtIsMmio;
 `endif
+
+	dcFlushMskA	<= dcNxtFlushMskA;
+	dcFlushMskB	<= dcNxtFlushMskB;
 
 	tBlkDataA	<= dcCaMemA [tNx2IxA];
 	tBlkDataB	<= dcCaMemB [tNx2IxB];

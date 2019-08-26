@@ -1,3 +1,11 @@
+/*
+TLB:
+Sits between the L1 and L2 caches.
+
+Filters output from the L1's memory interface, so that L1 operates with virtual addresses and L2 with physical addresses.
+
+ */
+
 `include "CoreDefs.v"
 
 `include "MmuChkAcc.v"
@@ -5,11 +13,9 @@
 module MmuTlb(
 	/* verilator lint_off UNUSED */
 	clock,			reset,
-	regInAddr,		regOutAddr,
-	regInData,		regInOpm,
-	regOutExc,		regOutTea,
-	regOutOK,		
-	
+	regInAddr,		regOutAddr,		regInData,
+	regInOpm,		regOutOpm,
+	regOutExc,		regOutOK,
 	regInMMCR,		regInKRR,		regInSR
 	);
 
@@ -23,9 +29,11 @@ output[31:0]	regOutAddr;		//output Address
 input[127:0]	regInData;		//input data (LDTLB)
 
 input[4:0]		regInOpm;		//Operation Size/Type
-output[15:0]	regOutExc;		//Raise Exception
-output[63:0]	regOutTea;		//Exception TEA
+// output[15:0]	regOutExc;		//Raise Exception
+// output[63:0]	regOutTea;		//Exception TEA
+output[63:0]	regOutExc;		//Exception EXC+TEA
 output[1:0]		regOutOK;		//set if operation suceeds
+output[4:0]		regOutOpm;		//Operation Size/Type
 
 input[63:0]		regInMMCR;		//MMU Control Register
 input[63:0]		regInKRR;		//Keyring Register
@@ -36,11 +44,14 @@ reg[31:0]		tRegOutAddr2;
 reg[15:0]		tRegOutExc2;
 reg[63:0]		tRegOutTea2;
 reg[1:0]		tRegOutOK2;
+reg[4:0]		tRegOutOpm2;
 
 assign		regOutAddr = tRegOutAddr2;
 assign		regOutOK = tRegOutOK2;
-assign		regOutExc = tRegOutExc2;
-assign		regOutTea = tRegOutTea2;
+assign		regOutOpm = tRegOutOpm2;
+// assign		regOutExc = tRegOutExc2;
+// assign		regOutTea = tRegOutTea2;
+assign		regOutExc = { tRegOutTea2[47:0], tRegOutExc2 };
 
 // assign		regOutAddr = tRegOutAddr;
 // assign		regOutOK = tRegOutOK;
@@ -51,8 +62,9 @@ reg[31:0]		tRegOutAddr;
 reg[15:0]		tRegOutExc;
 reg[63:0]		tRegOutTea;
 reg[1:0]		tRegOutOK;
+reg[4:0]		tRegOutOpm;
 
-reg[47:0]		tRegInAddr;		//input Address
+reg[31:0]		tRegInAddr;		//input Address
 
 reg[63:0]	tlbBlkHiA[63:0];
 reg[63:0]	tlbBlkHiB[63:0];
@@ -63,6 +75,9 @@ reg[63:0]	tlbBlkLoA[63:0];
 reg[63:0]	tlbBlkLoB[63:0];
 reg[63:0]	tlbBlkLoC[63:0];
 reg[63:0]	tlbBlkLoD[63:0];
+
+reg[63:0]	tlbFlushMask;
+reg[63:0]	tlbNxtFlushMask;
 
 reg[5:0]	tlbHixA;
 reg[5:0]	tlbHixB;
@@ -108,7 +123,10 @@ wire[15:0]	tTlbExc;
 wire		regInIsLDTLB;
 assign		regInIsLDTLB = (regInOpm==UMEM_OPM_LDTLB);
 
-Jx2MmuChkAcc tlbChkAcc(
+wire		regInIsINVTLB;
+assign		regInIsINVTLB = (regInOpm==UMEM_OPM_INVTLB);
+
+MmuChkAcc tlbChkAcc(
 	clock,	reset,
 	regInMMCR,
 	regInKRR,
@@ -122,6 +140,7 @@ begin
 	tlbDoLdtlb		= 0;
 	tRegOutTea		= UV64_XX;
 	tlbAcc			= UV32_XX;
+	tlbNxtFlushMask	= tlbFlushMask;
 
 	icPageEq		= (tRegInAddr[31:12] == regInAddr[31:12]);
 
@@ -144,6 +163,14 @@ begin
 	tlbHdatB = { tlbBlkHiB[tlbHixA], tlbBlkLoB[tlbHixA]};
 	tlbHdatC = { tlbBlkHiC[tlbHixA], tlbBlkLoC[tlbHixA]};
 	tlbHdatD = { tlbBlkHiD[tlbHixA], tlbBlkLoD[tlbHixA]};
+	
+	if(tlbFlushMask[tlbHixA])
+	begin
+		tlbHdatA[0] = 0;
+		tlbHdatB[0] = 0;
+		tlbHdatC[0] = 0;
+		tlbHdatD[0] = 0;
+	end
 	
 	tlbHitA = (regInAddr [31:12] == tlbHdatA[95:76]) && tlbHdatA[0];
 	tlbHitB = (regInAddr [31:12] == tlbHdatB[95:76]) && tlbHdatB[0];
@@ -217,10 +244,16 @@ begin
 	end
 	
 	tRegOutAddr = tlbAddr;
+	tRegOutOpm = regInOpm;
 
 	if(regInAddr[31:0]!=tlbAddr[31:0])
 	begin
 		$display("TLB %X -> %X", regInAddr, tlbAddr);
+	end
+	
+	if(regInIsINVTLB || reset)
+	begin
+		tlbNxtFlushMask = UV64_FF;
 	end
 
 	if(regInIsLDTLB)
@@ -230,6 +263,7 @@ begin
 			regInData[127:64],
 			regInData[ 63: 0]);
 		tlbDoLdtlb	= 1;
+		tlbNxtFlushMask[tlbHixA] = 0;
 		tRegOutOK = tlbLdtlbOK ?
 			UMEM_OK_OK : UMEM_OK_HOLD;
 	end
@@ -249,8 +283,10 @@ begin
 	tRegOutExc2		<= tRegOutExc;
 	tRegOutTea2		<= tRegOutTea;
 	tRegOutOK2		<= tRegOutOK;
+	tRegOutOpm2		<= tRegOutOpm;
 
 	tRegInAddr		<= regInAddr;
+	tlbFlushMask	<= tlbNxtFlushMask;
 
 	if(tlbDoLdtlb && !tlbLdtlbOK)
 	begin

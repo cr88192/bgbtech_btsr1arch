@@ -1326,7 +1326,7 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 			if(!strcmp(argv[i]+1, "O2") ||
 				!strcmp(argv[i]+1, "O3"))
 			{
-				bgbcc_optmode=BGBCC_OPT_SPEED;
+				bgbcc_optmode=BGBCC_OPT_SPEED2;
 				continue;
 			}
 

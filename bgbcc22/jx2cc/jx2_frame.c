@@ -3170,6 +3170,8 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		if(ctx->optmode==BGBCC_OPT_SPEED)
 //			k=32;
 			k=24;
+//			k=16;
+//			k=4;
 		if(ctx->optmode==BGBCC_OPT_SIZE)
 			k=96;
 
@@ -3198,7 +3200,10 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 
 //		sctx->use_egpr=1;
 	}
-	
+
+	if(ctx->optmode==BGBCC_OPT_SPEED2)
+		sctx->use_egpr=1;
+
 	if(sctx->is_fixed32)
 		sctx->use_egpr=1;
 

@@ -82,9 +82,17 @@ double __fpu_frcp(double a)
 }
 #endif
 
+#if 0
 double __fpu_frcp(double a);
+double __fpu_frcp_s(double a);
 
 double __fpu_fdiv(double x, double y)
 {
 	return(x*__fpu_frcp(y));
 }
+
+double __fpu_fdiv_s(double x, double y)
+{
+	return(x*__fpu_frcp_s(y));
+}
+#endif

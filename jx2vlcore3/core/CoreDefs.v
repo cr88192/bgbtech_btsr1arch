@@ -204,8 +204,11 @@ parameter[1:0] UMEM_OK_FAULT	= 2'h3;		//FAULT (Request Failed)
 
 parameter[4:0] UMEM_OPM_READY	= 5'b00000;		//Ready/Idle
 
-parameter[4:0] UMEM_OPM_CTRLF	= 5'b00010;		//Control Flow
+// parameter[4:0] UMEM_OPM_CTRLF	= 5'b00010;		//Control Flow
+parameter[4:0] UMEM_OPM_INVTLB	= 5'b00010;		//Flush TLB
 parameter[4:0] UMEM_OPM_LDTLB	= 5'b00011;		//Load TLB
+parameter[4:0] UMEM_OPM_FLUSHIS	= 5'b00100;		//Flush I$ Request
+parameter[4:0] UMEM_OPM_FLUSHDS	= 5'b00101;		//Flush D$ Request
 
 parameter[4:0] UMEM_OPM_RD_SB	= 5'b01000;		//Read Byte
 parameter[4:0] UMEM_OPM_RD_SW	= 5'b01001;		//Read Word
@@ -568,7 +571,7 @@ parameter[5:0] JX2_UCIX_IXS_LDSRMSK	= 6'h03;		//?
 
 `define jx2_ddr_bl64b			//DDR interface is 64-bit (DDR2)
 
-`define jx2_expand_l1sz			//Make L1 bigger
+// `define jx2_expand_l1sz			//Make L1 bigger
 
 // `define jx2_reduce_l1sz		//Make L1 smaller
 // `define jx2_reduce_l2sz
@@ -583,6 +586,16 @@ parameter[5:0] JX2_UCIX_IXS_LDSRMSK	= 6'h03;		//?
 // `define jx2_debug_exopipe	//Debug execute pipeline (EX2 only)
 
 // `define jx2_debug_alu		//Debug ALU
+
+`ifdef jx2_expand_l1sz
+parameter[255:0] JX2_L1_FLUSHMSK	= UV256_FF;		//
+`else
+`ifdef jx2_reduce_l1sz
+parameter[15:0] JX2_L1_FLUSHMSK	= UV16_FF;		//
+`else
+parameter[63:0] JX2_L1_FLUSHMSK	= UV64_FF;		//
+`endif
+`endif
 
 `ifdef jx2_bra2stage
 parameter[7:0] JX2_BRA_FLUSHMSK	= 8'h1F;		//

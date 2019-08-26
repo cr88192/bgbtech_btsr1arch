@@ -124,6 +124,7 @@ BCCX_Node *BGBCP_NumberXF(BGBCP_ParseState *ctx, char *str);
 BCCX_Node *BGBCP_ExpressionLitString(BGBCP_ParseState *ctx, char **str);
 BCCX_Node *BGBCP_ExpressionLitStringQQQ(BGBCP_ParseState *ctx, char **str);
 BCCX_Node *BGBCP_ExpressionLit(BGBCP_ParseState *ctx, char **str);
+int BGBCP_FunctionNameIsIntrinsicP(BGBCP_ParseState *ctx, char *str);
 BCCX_Node *BGBCP_ExpressionPostfix(BGBCP_ParseState *ctx, char **str);
 BCCX_Node *BGBCP_ExpressionUnary(BGBCP_ParseState *ctx, char **str);
 BCCX_Node *BGBCP_ExpressionCast(BGBCP_ParseState *ctx, char **str);
@@ -589,6 +590,7 @@ ccxl_status BGBCC_CCXL_EmitJumpRegCmpI(BGBCC_TransState *ctx,ccxl_type type, int
 ccxl_status BGBCC_CCXL_EmitJumpRegCmp(BGBCC_TransState *ctx,ccxl_type type, int cmpop, ccxl_register sreg, ccxl_register treg, ccxl_label lbl);
 ccxl_status BGBCC_CCXL_EmitMov(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dreg, ccxl_register sreg);
 ccxl_status BGBCC_CCXL_EmitCallOp(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register src, int na);
+ccxl_status BGBCC_CCXL_EmitCallIntrinOp(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register src, int na);
 ccxl_status BGBCC_CCXL_EmitObjCallOp(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register src, ccxl_register obj, int na);
 ccxl_status BGBCC_CCXL_EmitCallCsrvOp(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register src);
 ccxl_status BGBCC_CCXL_EmitCallArg(BGBCC_TransState *ctx,ccxl_register reg);
@@ -1084,6 +1086,7 @@ char *BGBCC_CCXL_StackGetSigBinary(BGBCC_TransState *ctx,ccxl_type lty, ccxl_typ
 char *BGBCC_CCXL_StackGetNameBinaryOverload(BGBCC_TransState *ctx, char *op);
 char *BGBCC_CCXL_StackGetMangleNameBinaryOverload(BGBCC_TransState *ctx, char *op, ccxl_type lty, ccxl_type rty);
 ccxl_status BGBCC_CCXL_StackCallName(BGBCC_TransState *ctx,char *name, int flag);
+int BGBCC_CCXL_CheckFuncNameInstrinsicP(BGBCC_TransState *ctx, char *name);
 ccxl_status BGBCC_CCXL_StackCallName2(BGBCC_TransState *ctx,char *name, char *dname, int flag);
 ccxl_status BGBCC_CCXL_StackPopCall(BGBCC_TransState *ctx, int flag);
 ccxl_status BGBCC_CCXL_StackPopCall2(BGBCC_TransState *ctx,char *dname, int flag);
@@ -2249,6 +2252,7 @@ int BGBCC_JX2C_EmitCallBuiltin(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, c
 int BGBCC_JX2C_EmitCallBuiltinArgs(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dst, char *name, int narg, ccxl_register *args);
 int BGBCC_JX2C_EmitCallFcnVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register fcn);
 int BGBCC_JX2C_EmitCallName(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, char *name);
+int BGBCC_JX2C_EmitCallIntrinVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dst, ccxl_register fcn, ccxl_register thisobj, int narg, ccxl_register *args);
 int BGBCC_JX2C_EmitCallVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dst, ccxl_register fcn, ccxl_register thisobj, int narg, ccxl_register *args);
 int BGBCC_JX2C_EmitCSeltSelectVRegVRegVRegInt(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg);
 int BGBCC_JX2C_EmitCSeltCompareVRegVRegInt(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, int cmp, ccxl_register sreg, ccxl_register treg);

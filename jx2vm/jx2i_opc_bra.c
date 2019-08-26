@@ -353,6 +353,18 @@ void BJX2_Op_BF_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 	}
 }
 
+void BJX2_Op_INVIC_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->cc_flush|=1;
+	ctx->tr_rnxt=NULL;
+	BJX2_ThrowFaultStatus(ctx, BJX2_FLT_CCFLUSH);
+}
+
+void BJX2_Op_INVDC_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->cc_flush|=2;
+	BJX2_ThrowFaultStatus(ctx, BJX2_FLT_CCFLUSH);
+}
 
 void BJX2_Op_TRAP_Imm(BJX2_Context *ctx, BJX2_Opcode *op)
 {

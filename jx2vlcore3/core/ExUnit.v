@@ -150,7 +150,7 @@ MemL1A		memL1(
 	dcOutOK,		dcInHold,
 
 	gprOutDlr,		gprOutDhr,
-	crOutMmcr,		crOutKrr,
+	crOutMmcr,		crOutKrr,		crOutSr,
 	memRegExc,
 
 	memAddr,		memOpm,

@@ -750,6 +750,97 @@ X(sleep_0):
 
 .ifarch bjx1_fpu_gfp
 
+.ifarch bjx2_wex
+
+/*
+	Stomps r2, r3, r5, r6, r7
+ */
+.global X(__fpu_frcp)
+X(__fpu_frcp):
+	mov #0, r3
+	fcmp/gt r4, r3
+	bf .L0
+	mov lr, r17		| fneg r4
+	bsr __fpu_frcp
+//	fneg r2, r2		| jmp r17
+	mov r17, lr		| fneg r2
+	rts
+
+	.L0:
+	mov #0x7FF, r5		| mov #0x3FF, r6
+	shld.q r5, #52, r5	| mov #0x400, r3
+	shld.q r6, #52, r6	| sub r5, r4, r5
+	shld.q r3, #52, r3	| fmul r5, r4, r7
+	sub r6, r7, r7
+	add r7, r5, r2
+
+	fmul r2, r4, r6
+	fsub r3, r6, r7
+	fmul r7, r2
+
+	fmul r2, r4, r6
+	fsub r3, r6, r7
+	fmul r7, r2
+
+	fmul r2, r4, r6
+	fsub r3, r6, r7
+	fmul r7, r2
+
+	fmul r2, r4, r6
+	fsub r3, r6, r7
+	fmul r7, r2
+
+	rts
+
+.global X(__fpu_frcp_s)
+X(__fpu_frcp_s):
+	mov #0, r3
+	fcmp/gt r4, r3
+	bf .L0
+	mov lr, r17		| fneg r4
+	bsr __fpu_frcp_s
+//	fneg r2, r2		| jmp r17
+	mov r17, lr		| fneg r2
+	rts
+
+	.L0:
+	mov #0x7FF, r5		| mov #0x3FF, r6
+	shld.q r5, #52, r5	| mov #0x400, r3
+	shld.q r6, #52, r6	| sub r5, r4, r5
+	shld.q r3, #52, r3	| fmul r5, r4, r7
+	sub r6, r7, r7
+	add r7, r5, r2
+
+	fmul r2, r4, r6
+	fsub r3, r6, r7
+	fmul r7, r2
+
+	fmul r2, r4, r6
+	fsub r3, r6, r7
+	fmul r7, r2
+	
+	rts
+
+.global X(__fpu_fdiv)
+X(__fpu_fdiv):
+	mov lr, r16		| mov r4, r18
+	mov r5, r4
+	bsr __fpu_frcp
+	mov r16, lr		| fmul r18, r2
+	rts
+.global X(__fpu_fdiv_s)
+X(__fpu_fdiv_s):
+	mov lr, r16		| mov r4, r18
+	mov r5, r4
+	bsr __fpu_frcp_s
+	mov r16, lr		| fmul r18, r2
+	rts
+
+.else
+
+/*
+	Stomps r2, r3, r5, r6, r7
+ */
 .global X(__fpu_frcp)
 X(__fpu_frcp):
 	mov #0x0000, r0
@@ -797,6 +888,73 @@ X(__fpu_frcp):
 	fmul r7, r2
 	
 	rts
+
+.global X(__fpu_frcp_s)
+X(__fpu_frcp_s):
+	mov #0x0000, r0
+	fldch r0, r3
+	fcmp/gt r4, r3
+	bf .L0
+	push lr
+	fneg r4
+	bsr __fpu_frcp_s
+	fneg r2
+	ret
+
+	.L0:
+	mov #0x7FF0000000000000, r5
+	sub r4, r5
+	mov #0x3FF0000000000000, r6
+
+	fmul r5, r4, r7
+	sub r6, r7, r7
+	add r7, r5
+
+	mov r5, r2
+	mov r4, r5
+	
+	mov #0x4000, r0
+	fldch r0, r3
+
+	fmul r2, r5, r6
+	fsub r3, r6, r7
+	fmul r7, r2
+
+	fmul r2, r5, r6
+	fsub r3, r6, r7
+	fmul r7, r2
+
+//	fmul r2, r5, r6
+//	fsub r3, r6, r7
+//	fmul r7, r2
+
+//	fmul r2, r5, r6
+//	fsub r3, r6, r7
+//	fmul r7, r2
+	
+	rts
+
+.global X(__fpu_fdiv)
+X(__fpu_fdiv):
+	mov lr, r16
+	mov r4, r18
+	mov r5, r4
+	bsr __fpu_frcp
+	fmul r18, r2
+	mov r16, lr
+	rts
+
+.global X(__fpu_fdiv_s)
+X(__fpu_fdiv_s):
+	mov lr, r16
+	mov r4, r18
+	mov r5, r4
+	bsr __fpu_frcp_s
+	fmul r18, r2
+	mov r16, lr
+	rts
+
+.endif
 
 .else
 

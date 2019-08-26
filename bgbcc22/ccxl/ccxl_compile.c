@@ -1238,7 +1238,8 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 		if(ni)
 			{ BGBCC_CCXL_CompileStatement(ctx, ni); }
 
-		if(ctx->optmode==BGBCC_OPT_SPEED)
+		if(	(ctx->optmode==BGBCC_OPT_SPEED) ||
+			(ctx->optmode==BGBCC_OPT_SPEED2))
 		{
 			if(nc)
 				{ BGBCC_CCXL_CompileJCF(ctx, nc, l2); }
@@ -1312,7 +1313,8 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 			return;
 		}
 
-		if(ctx->optmode==BGBCC_OPT_SPEED)
+		if(	(ctx->optmode==BGBCC_OPT_SPEED) ||
+			(ctx->optmode==BGBCC_OPT_SPEED2))
 		{
 			ctx->contstack[ctx->contstackpos++]=l3;
 			ctx->breakstack[ctx->breakstackpos++]=l2;
@@ -1388,6 +1390,12 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 	}
 
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_funcall, "funcall"))
+	{
+		BGBCC_CCXL_CompileFuncallStmt(ctx, l);
+		return;
+	}
+
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_funcall_intrin, "funcall_intrin"))
 	{
 		BGBCC_CCXL_CompileFuncallStmt(ctx, l);
 		return;
@@ -3051,6 +3059,7 @@ int BGBCC_CCXL_CompileVarDummyP(BGBCC_TransState *ctx, BCCX_Node *l)
 		BCCX_TagIsCstP(l, &bgbcc_rcst_enumdef, "enumdef") ||
 		BCCX_TagIsCstP(l, &bgbcc_rcst_for, "for") ||
 		BCCX_TagIsCstP(l, &bgbcc_rcst_funcall, "funcall") ||
+		BCCX_TagIsCstP(l, &bgbcc_rcst_funcall_intrin, "funcall_intrin") ||
 		BCCX_TagIsCstP(l, &bgbcc_rcst_goto, "goto") ||
 		BCCX_TagIsCstP(l, &bgbcc_rcst_goto_case, "goto_case") ||
 		BCCX_TagIsCstP(l, &bgbcc_rcst_if, "if") ||
@@ -4969,6 +4978,9 @@ void BGBCC_CCXL_CompileTopStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 		{ return; }
 
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_funcall, "funcall"))
+		{ return; }
+
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_funcall_intrin, "funcall_intrin"))
 		{ return; }
 
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_linecomment, "linecomment"))

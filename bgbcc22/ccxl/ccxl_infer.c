@@ -665,6 +665,8 @@ int BGBCC_CCXL_InferExprCleanP(BGBCC_TransState *ctx, BCCX_Node *l)
 Determine if block-statement is safe to be compiled as predicated instructions.
 
 There is a small limit for block length here, and the range of operations which can be performed is quite limited.
+
+Return value is a cost heuristic.
  */
 int BGBCC_CCXL_InferBlockPredSafeP(BGBCC_TransState *ctx, BCCX_Node *l)
 {
@@ -687,13 +689,17 @@ int BGBCC_CCXL_InferBlockPredSafeP(BGBCC_TransState *ctx, BCCX_Node *l)
 				break;
 //			BGBCC_CCXL_CompileStatement(ctx, c);
 			j=BGBCC_CCXL_InferBlockPredSafeP(ctx, c);
-			if(!j) { i=0; break; }
+//			if(!j) { i=0; break; }
+			if(j<=0) { i=0; break; }
 			c=BCCX_Next(c);
+			i+=j;
 			k++;
 		}
 		
 		if(k>3)
 			i=0;
+		if(i>12)
+			return(0);
 		
 		return(i);
 	}
@@ -711,7 +717,8 @@ int BGBCC_CCXL_InferBlockPredSafeP(BGBCC_TransState *ctx, BCCX_Node *l)
 
 		i0=BGBCC_CCXL_InferBlockPredSafeP(ctx, ln);
 		i1=BGBCC_CCXL_InferBlockPredSafeP(ctx, rn);
-		if(!i0 || !i1)
+//		if(!i0 || !i1)
+		if((i0<=0) || (i1<=0))
 			return(0);
 
 		if(s0)
@@ -726,7 +733,8 @@ int BGBCC_CCXL_InferBlockPredSafeP(BGBCC_TransState *ctx, BCCX_Node *l)
 				return(0);
 		}
 		
-		return(1);
+//		return(1);
+		return(i0+i1+1);
 	}
 
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_binary, "binary"))
@@ -742,7 +750,8 @@ int BGBCC_CCXL_InferBlockPredSafeP(BGBCC_TransState *ctx, BCCX_Node *l)
 
 		i0=BGBCC_CCXL_InferBlockPredSafeP(ctx, ln);
 		i1=BGBCC_CCXL_InferBlockPredSafeP(ctx, rn);
-		if(!i0 || !i1)
+//		if(!i0 || !i1)
+		if((i0<=0) || (i1<=0))
 			return(0);
 
 		if(!s0)
@@ -757,7 +766,8 @@ int BGBCC_CCXL_InferBlockPredSafeP(BGBCC_TransState *ctx, BCCX_Node *l)
 		if(!i)
 			return(0);
 		
-		return(1);
+//		return(1);
+		return(i0+i1+1);
 	}
 
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_unary, "unary"))
@@ -765,8 +775,9 @@ int BGBCC_CCXL_InferBlockPredSafeP(BGBCC_TransState *ctx, BCCX_Node *l)
 		s0=BCCX_GetCst(l, &bgbcc_rcst_op, "op");
 		t=BCCX_FetchCst(l, &bgbcc_rcst_value, "value");
 
-		i=BGBCC_CCXL_InferBlockPredSafeP(ctx, t);
-		if(!i)
+		i0=BGBCC_CCXL_InferBlockPredSafeP(ctx, t);
+//		if(!i)
+		if(i0<=0)
 			return(0);
 
 		i=0;
@@ -777,7 +788,33 @@ int BGBCC_CCXL_InferBlockPredSafeP(BGBCC_TransState *ctx, BCCX_Node *l)
 		if(!i)
 			return(0);
 		
-		return(1);
+//		return(1);
+		return(i0+1);
+	}
+
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_funcall_intrin, "funcall_intrin"))
+	{
+		i=2; k=0;
+		c=BCCX_FetchCst(l, &bgbcc_rcst_args, "args");
+		while(c)
+		{
+			if(k>3)
+				break;
+//			BGBCC_CCXL_CompileStatement(ctx, c);
+			j=BGBCC_CCXL_InferBlockPredSafeP(ctx, c);
+//			if(!j) { i=0; break; }
+			if(j<=0) { i=0; break; }
+			c=BCCX_Next(c);
+			i+=j;
+			k++;
+		}
+		
+		if(k>3)
+			i=0;
+		if(i>12)
+			return(0);
+		
+		return(i);
 	}
 
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_int, "int"))

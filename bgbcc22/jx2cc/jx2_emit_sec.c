@@ -1075,6 +1075,27 @@ int BGBCC_JX2_EmitPadCheckExpandLastOp(
 	opw1=-1; opw2=-1;
 	switch((op0>>8)&255)
 	{
+#if 1
+	case 0x10:		opw1=0xF000|(op0&255); opw2=0x1009;	break;
+	case 0x11:		opw1=0xF000|(op0&255); opw2=0x1019;	break;
+	case 0x12:		opw1=0xF000|(op0&255); opw2=0x1029;	break;
+	case 0x13:		opw1=0xF000|(op0&255); opw2=0x1039;	break;
+	case 0x14:		opw1=0xF000|(op0&255); opw2=0x1049;	break;
+	case 0x15:		opw1=0xF000|(op0&255); opw2=0x1059;	break;
+	case 0x16:		opw1=0xF000|(op0&255); opw2=0x1069;	break;
+	case 0x17:		opw1=0xF000|(op0&255); opw2=0x1079;	break;
+
+	case 0x18:		opw1=0xF000|(op0&255); opw2=0x1089;	break;
+	case 0x19:		opw1=0xF000|(op0&255); opw2=0x1289;	break;
+	case 0x1A:		opw1=0xF000|(op0&255); opw2=0x1489;	break;
+	case 0x1B:		opw1=0xF000|(op0&255); opw2=0x1689;	break;
+
+	case 0x1C:		opw1=0xF000|(op0&255); opw2=0x10C9;	break;
+	case 0x1D:		opw1=0xF000|(op0&255); opw2=0x10D9;	break;
+	case 0x1E:		opw1=0xF000|(op0&255); opw2=0x10E9;	break;
+#endif
+
+#if 0
 	case 0x10:		opw1=0xF000; opw2=0x1900|(op0&255);	break;
 	case 0x11:		opw1=0xF001; opw2=0x1900|(op0&255);	break;
 	case 0x12:		opw1=0xF002; opw2=0x1900|(op0&255);	break;
@@ -1118,6 +1139,7 @@ int BGBCC_JX2_EmitPadCheckExpandLastOp(
 			break;
 		}
 		break;
+#endif
 
 	default:
 		k=-1;

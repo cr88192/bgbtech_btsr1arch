@@ -820,6 +820,7 @@ ccxl_status BGBCC_JX2C_PrintVirtOp(BGBCC_TransState *ctx,
 			case CCXL_VOP_CSELCMP_Z:		s0="CSELCMP_Z"; break;
 			case CCXL_VOP_OBJCALL:			s0="OBJCALL"; break;
 			case CCXL_VOP_PREDCMP:			s0="PREDCMP"; break;
+			case CCXL_VOP_CALL_INTRIN:		s0="CALL_INTRIN"; break;
 		}
 
 		if(s0)
@@ -920,7 +921,9 @@ ccxl_status BGBCC_JX2C_PrintVirtOp(BGBCC_TransState *ctx,
 		fflush(sctx->cgen_log);
 		
 //		if(op->opn==CCXL_VOP_CALL)
-		if((op->opn==CCXL_VOP_CALL) || (op->opn==CCXL_VOP_OBJCALL))
+		if((op->opn==CCXL_VOP_CALL) ||
+			(op->opn==CCXL_VOP_OBJCALL) ||
+			(op->opn==CCXL_VOP_CALL_INTRIN))
 		{
 			na=op->imm.call.na;
 			ca=op->imm.call.args;
@@ -1041,6 +1044,13 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 		BGBCC_JX2C_EmitCsrvVReg(ctx, sctx,
 			op->type, op->dst);
 		break;
+
+	case CCXL_VOP_CALL_INTRIN:
+		BGBCC_JX2C_EmitCallIntrinVReg(ctx, sctx,
+			op->type, op->dst, op->srca, op->srcb,
+			op->imm.call.na, op->imm.call.args);
+		break;
+
 	case CCXL_VOP_RETDFL:
 		BGBCC_JX2C_EmitSyncRegisters(ctx, sctx);
 //		BGBCC_JX2C_ResetFpscrLocal(ctx, sctx);
@@ -1285,21 +1295,28 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 
 //	if(tr->n_ops>10)
 	if(tr->n_ops>5)
+//	if(tr->n_ops>4)
 //	if(tr->n_ops>3)
 	{
-//		if(sctx->use_egpr)
-		if(sctx->use_egpr && sctx->is_tr_leaf)
+		if(sctx->use_egpr)
+//		if(sctx->use_egpr && sctx->is_tr_leaf)
 //		if(sctx->is_tr_leaf)
 		{
 //			sctx->is_fixed32|=16;
 			usewex=1;
 		}
-		
-		if((ctx->optmode==BGBCC_OPT_SPEED) && sctx->is_tr_leaf)
+	}
+
+	if(tr->n_ops>2)
+	{
+#if 1
+//		if((ctx->optmode==BGBCC_OPT_SPEED) && sctx->is_tr_leaf)
+		if(ctx->optmode==BGBCC_OPT_SPEED2)
 		{
 //			sctx->is_fixed32|=16;
 			usewex=1;
 		}
+#endif
 	}
 
 	if(usewex)
@@ -1395,6 +1412,14 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 #endif
 
 	BGBCC_JX2_EndWex(sctx);
+
+	if(sctx->use_egpr)
+	{
+		if(!BGBCC_JX2_CheckPadAlign32(sctx))
+		{
+			BGBCC_JX2_EmitPadCheckExpandLastOp(sctx);
+		}
+	}
 
 	BGBCC_JX2_EmitCheckFlushIndexImm(sctx);
 

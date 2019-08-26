@@ -1642,6 +1642,12 @@ void BGBCC_CCXL_CompileForm(BGBCC_TransState *ctx, BCCX_Node *l)
 		return;
 	}
 
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_funcall_intrin, "funcall_intrin"))
+	{
+		BGBCC_CCXL_CompileFuncall(ctx, l);
+		return;
+	}
+
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_methodcall, "methodcall"))
 	{
 		BGBCC_CCXL_CompileMethodcall(ctx, l);

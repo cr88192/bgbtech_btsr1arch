@@ -280,9 +280,9 @@ int BJX2_MemSimAddrL1I(BJX2_Context *ctx, bjx2_addr addr)
 		return(0);
 	
 //	h=(addr>>4)&63;
-//	h=(addr>>5)&63;
+	h=(addr>>5)&63;
 //	h=(addr>>5)&255;
-	h=(addr>>5)&511;
+//	h=(addr>>5)&511;
 
 //	ctx->mem_cyc+=3;
 //	ctx->mem_cyc+=2;
@@ -365,9 +365,9 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr)
 		return(0);
 	
 //	h=(addr>>4)&63;
-//	h=(addr>>5)&63;
+	h=(addr>>5)&63;
 //	h=(addr>>5)&255;
-	h=(addr>>5)&511;
+//	h=(addr>>5)&511;
 
 //	ctx->mem_cyc+=3;
 	ctx->mem_cyc+=2;

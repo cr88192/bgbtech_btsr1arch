@@ -296,6 +296,32 @@ ccxl_status BGBCC_CCXL_EmitCallOp(BGBCC_TransState *ctx,
 	return(0);
 }
 
+ccxl_status BGBCC_CCXL_EmitCallIntrinOp(BGBCC_TransState *ctx,
+	ccxl_type type, ccxl_register dst, ccxl_register src, int na)
+{
+	BGBCC_CCXL_VirtOp *op;
+
+	if(ctx->cgif_no3ac)
+		return(0);
+
+	if(BGBCC_CCXL_IsRegZzP(ctx, src))
+		{ BGBCC_DBGBREAK }
+
+	op=BGBCC_CCXL_AllocVirtOp(ctx);
+	op->opn=CCXL_VOP_CALL_INTRIN;
+	op->prd=ctx->curprd;
+	op->type=type;
+	op->dst=dst;
+	op->srca=src;
+	op->srcb.val=CCXL_REGID_REG_Z;
+	op->imm.call.na=na;
+	op->imm.call.ca=0;
+	op->imm.call.args=bgbcc_malloc(na*sizeof(ccxl_register));
+	BGBCC_CCXL_AddVirtOp(ctx, op);
+//	BGBCC_CCXL_EmitMarkEndTrace(ctx);
+	return(0);
+}
+
 ccxl_status BGBCC_CCXL_EmitObjCallOp(BGBCC_TransState *ctx,
 	ccxl_type type, ccxl_register dst,
 	ccxl_register src, ccxl_register obj, int na)
@@ -355,7 +381,8 @@ ccxl_status BGBCC_CCXL_EmitCallArg(BGBCC_TransState *ctx,
 
 //	if(op->opn!=CCXL_VOP_CALL)
 	if((op->opn!=CCXL_VOP_CALL) &&
-		(op->opn!=CCXL_VOP_OBJCALL))
+		(op->opn!=CCXL_VOP_OBJCALL) &&
+		(op->opn!=CCXL_VOP_CALL_INTRIN))
 			{ BGBCC_DBGBREAK }
 
 	i=op->imm.call.ca++;

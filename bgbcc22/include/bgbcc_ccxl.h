@@ -362,6 +362,7 @@
 #define CCXL_VOP_PREDCMP			0x2C
 #define CCXL_VOP_PREDCMP_Z			0x2D
 #define CCXL_VOP_PREDSYNC			0x2E		//sync registers
+#define CCXL_VOP_CALL_INTRIN		0x2F
 
 
 #define CCXL_LBL_GLOBALBASE			0x000000	//globals (main context)
@@ -596,6 +597,7 @@ bccx_cxstate bgbcc_rcst_for;
 bccx_cxstate bgbcc_rcst_fproto;
 bccx_cxstate bgbcc_rcst_func;
 bccx_cxstate bgbcc_rcst_funcall;
+bccx_cxstate bgbcc_rcst_funcall_intrin;
 
 bccx_cxstate bgbcc_rcst_gcc_asm;
 bccx_cxstate bgbcc_rcst_get;

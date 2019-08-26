@@ -342,10 +342,11 @@ extern "C" {
 
 #endif
 
-#define BGBCC_OPT_DEFAULT	0
-#define BGBCC_OPT_SIZE		1
-#define BGBCC_OPT_SPEED		2
-#define BGBCC_OPT_DEBUG		3
+#define BGBCC_OPT_DEFAULT	0	//balance
+#define BGBCC_OPT_SIZE		1	//smallest binary
+#define BGBCC_OPT_SPEED		2	//fast binary, balance
+#define BGBCC_OPT_SPEED2	3	//maximize speed
+#define BGBCC_OPT_DEBUG		4
 
 #if 0
 #define BGBCC_LANG_C		1	//C

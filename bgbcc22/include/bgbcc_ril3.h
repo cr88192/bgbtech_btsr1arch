@@ -74,7 +74,6 @@
 #define BGBCC_RIL3OP_STBINOP	0x34	//name=lval op rval
 #define BGBCC_RIL3OP_STCMPOP	0x35
 #define BGBCC_RIL3OP_LDUNOP		0x36	//name=op name;
-
 #define BGBCC_RIL3OP_LDCONSTV	0x37	//load a void / placeholder
 #define BGBCC_RIL3OP_LDCONSTI	0x38
 #define BGBCC_RIL3OP_LDCONSTL	0x39
@@ -127,7 +126,6 @@
 #define BGBCC_RIL3OP_XOR		0x65
 #define BGBCC_RIL3OP_SHL		0x66
 #define BGBCC_RIL3OP_SAR		0x67
-
 #define BGBCC_RIL3OP_STLDSLOT	0x68
 #define BGBCC_RIL3OP_STLDSLOTA	0x69
 #define BGBCC_RIL3OP_STLDIXC	0x6A
@@ -143,15 +141,15 @@
 #define BGBCC_RIL3OP_MKTMPOBJ	0x73	//New Temporary Object
 #define BGBCC_RIL3OP_EXCH		0x74	//Exchange stack items
 #define BGBCC_RIL3OP_LDSLOTSIG	0x75	//Load Slot, Signature
-
 #define BGBCC_RIL3OP_OBJCALLP	0x76	//Call Object, Return on stack
 #define BGBCC_RIL3OP_OBJCALLPV	0x77	//Call Object, Return Void
 #define BGBCC_RIL3OP_STOBJCALLP	0x78	//Call Object, Resturn Store
 #define BGBCC_RIL3OP_OBJCALLN	0x79	//Call Obj, Non-Virt, Ret Stack
 #define BGBCC_RIL3OP_OBJCALLNV	0x7A	//Call Obj, Non-Virt, Ret Void
 #define BGBCC_RIL3OP_STOBJCALLN	0x7B	//Call Obj, Non-Virt, Ret Store
-
 #define BGBCC_RIL3OP_SETPRED	0x7C	//Set Predicate Mode
 #define BGBCC_RIL3OP_PRCMP		0x7D	//Predicate Compare (A op B)
 #define BGBCC_RIL3OP_PRCMPT		0x7E	//Predicate Compare (A!=0)
 #define BGBCC_RIL3OP_PRCMPF		0x7F	//Predicate Compare (A==0)
+
+#define BGBCC_RIL3OP_CALLN_INT	0x80

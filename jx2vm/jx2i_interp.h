@@ -103,6 +103,7 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_FLT_INVOP		0x8006		//Invalid Opcode
 
 #define BJX2_FLT_PCMISH		0x8801		//PC doesn't match trace addr
+#define BJX2_FLT_CCFLUSH	0x8802		//Cache Flush
 
 #define BJX2_FLT_TLBGF		0xA000		//TLB General Fault
 #define BJX2_FLT_TLBMISS	0xA001		//TLB Miss
@@ -192,12 +193,8 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_LDISH20	0x43		//
 #define BJX2_NMID_SHAD		0x44		//
 #define BJX2_NMID_SHLD		0x45		//
-
 #define BJX2_NMID_TRAP		0x46		//
 #define BJX2_NMID_WEXMD		0x47		//
-
-// #define BJX2_NMID_SWAPB		0x46		//
-// #define BJX2_NMID_SWAPW		0x47		//
 #define BJX2_NMID_FADD		0x48		//
 #define BJX2_NMID_FSUB		0x49		//
 #define BJX2_NMID_FMUL		0x4A		//
@@ -279,6 +276,10 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_PADDH		0x91		//
 #define BJX2_NMID_PSUBH		0x92		//
 #define BJX2_NMID_PMULH		0x93		//
+
+#define BJX2_NMID_INVDC		0x94		//
+#define BJX2_NMID_INVIC		0x95		//
+#define BJX2_NMID_INVTLB	0x96		//
 
 #define BJX2_NMID_CMOVTB	0xA0		//CMOVT.B
 #define BJX2_NMID_CMOVTW	0xA1		//CMOVT.W
@@ -472,6 +473,7 @@ byte pclogrov;
 byte use_jit;
 byte wexmd;
 byte v_wexmd;
+byte cc_flush;
 
 int status;
 bjx2_addr trapc;

@@ -751,8 +751,8 @@ Instruction Space
 ** 30B2 -
 ** 30C2 / LDISH32	#0x00000000, DLR	//DLR=(DLR SHL 32)|0x00000000
 ** 30D2 / LDISH32	#0xFFFFFFFF, DLR	//DLR=(DLR SHL 32)|0xFFFFFFFF
-** 30E2  ICFLUSH	//Flush the Instruction Cache
-** 30F2  TLBFLUSH	//Flush the TLB and L1 Caches
+** 30E2 / INVIC		//Flush the Instruction Cache (Whole Cache)
+** 30F2  INVTLB		//Flush the TLB
 
 ** 30z3  -
 
@@ -781,8 +781,8 @@ Instruction Space
 ** 31n9  PUSH	Cn
 ** 31nA  POP	Rn
 ** 31nB  POP	Cn
-** 31nC / CMPPL	Rn					//SR.T=(Rn GT 0)
-** 31nD / CMPPZ	Rn					//SR.T=(Rn GE 0)
+** 31nC  INVIC	Rn					//Flush I-Cache for Address
+** 31nD  INVDC	Rn					//Flush D-Cache for Address
 ** 31nE  PUSH	FRn					//(FPU) Push FRn
 ** 31nF  POP	FRn					//(FPU) Pop FRn
 
@@ -1237,6 +1237,7 @@ F0zz Instruction Block:
 *** F000_30F0  LDTLB
 
 *** F002_3010  RTSU
+*** F002_30F0  INVTLB
 
 *** F010_3en0  BRA		(PC, Rn)
 *** F011_3en0  BSR		(PC, Rn)
@@ -1250,6 +1251,9 @@ F0zz Instruction Block:
 *** F01B_3en0  POP		Cn
 *** F01C_3en0 / CMPPL	Rn
 *** F01D_3en0 / CMPPZ	Rn
+
+*** F01C_3en0  INVIC	Rn
+*** F01D_3en0  INVDC	Rn
 
 *** F020_3en0  BRA		Rn
 *** F021_3en0  BSR		Rn

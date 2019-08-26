@@ -67,6 +67,9 @@ assign	mmioOpm			= tMmioOpm;
 wire	reqIsMmio;
 assign	reqIsMmio	= (memOpm[2:0] != 3'b111);
 
+wire	reqIsCcmd;
+assign	reqIsCcmd	= (memOpm[4:3] == 2'b00) && (memOpm[2:0] != 3'b000);
+
 wire[4:0]		l2MemOpm;
 assign			l2MemOpm = reqIsMmio ? UMEM_OPM_READY : memOpm;
 
@@ -102,14 +105,34 @@ MemL2Rom	l2rom(
 	l2rMemOK
 	);
 
+reg[1:0]	tCcmdOK;
+reg[31:0]	tCcmdData;
+
 always @*
 begin
+	tCcmdOK		= UMEM_OK_READY;
+	tCcmdData	= UV32_XX;
+	
+	case(memOpm)
+		UMEM_OPM_LDTLB, UMEM_OPM_INVTLB: begin
+			/* These simply get OK here; MMU has already seen it. */
+			tCcmdOK		= UMEM_OK_OK;
+			tCcmdData	= UV32_00;
+		end
+		default: begin
+		end
+	endcase
 end
 
 always @(posedge clock)
 begin
-
-	if(reqIsMmio)
+	if(reqIsCcmd)
+	begin
+		tMemDataOut		<= { UV96_XX, tCcmdData };
+		tMemOK			<= tCcmdOK;
+	end
+	else
+		if(reqIsMmio)
 	begin
 		tMemDataOut		<= { UV96_XX, mmioInData };
 		tMemOK			<= mmioOK;

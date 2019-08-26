@@ -3189,6 +3189,47 @@ int BGBCC_JX2C_EmitCallName(
 #endif
 }
 
+int BGBCC_JX2C_EmitCallIntrinVReg(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	ccxl_type type,
+	ccxl_register dst,
+	ccxl_register fcn,
+	ccxl_register thisobj,
+	int narg, ccxl_register *args)
+{
+	ccxl_register treg;
+	ccxl_type tty;
+	char *fname;
+	int tr0, tr1;
+	int ni, nf, ns, rcls, retrcls;
+	int i, j, k;
+
+//	if(BGBCC_CCXL_TypeSmallIntP(ctx, type) ||
+//		BGBCC_CCXL_TypePointerP(ctx, type))
+//	{
+//		BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, BGBCC_SH_REG_R0);
+//		return(1);
+//	}
+
+	fname=NULL;
+	if((fcn.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_GLOBAL)
+	{
+		i=(int)(fcn.val&CCXL_REGID_REGMASK);
+		fname=ctx->reg_globals[i]->name;
+	}
+	
+	if(fname && BGBCC_JX2C_EmitCallBuiltinArgs(
+		ctx, sctx, type, dst, fname, narg, args))
+	{
+		sctx->csrv_skip=0;		//No CSRV for intrinsics
+		return(1);
+	}
+
+	BGBCC_CCXL_StubError(ctx);
+	return(0);
+}
+
 int BGBCC_JX2C_EmitCallVReg(
 	BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx,

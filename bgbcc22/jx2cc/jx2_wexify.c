@@ -23,10 +23,13 @@ int BGBCC_JX2_CheckOps32GetRegs(
 //		return(-1);
 
 		if((opw2&0xF000)>=0xC000)
-			return(0);
+//			return(0);
+			return(-1);
 
 		if((opw2&0xF008)==0x1008)
 		{
+//			return(-1);
+
 			if((opw2&0xF00F)==0x1009)
 			{
 				switch((opw2>>4)&15)
@@ -105,22 +108,43 @@ int BGBCC_JX2_CheckOps32GetRegs(
 
 		if((opw2&0xF00F)==0x5000)
 		{
+//			return(-1);
 			spr=BGBCC_SH_REG_SR;
 			spw=BGBCC_SH_REG_SR;
 		}
 
 		if((opw2&0xF00F)==0x900C)
 		{
+//			return(-1);
 			spr=BGBCC_SH_REG_SR;
 			spw=BGBCC_SH_REG_SR;
 		}
 
 		if((opw2&0xF000)==0x0000)
 		{
+			if((opw2&0xF808)==0x0000)
+				return(-1);
+		
+//			return(-1);
+
 			if(rs==0)
-				{ rs=BGBCC_SH_REG_PC; }
+			{
+				rs=BGBCC_SH_REG_PC;
+				if(rt==1)
+					{ rs=0; rt=BGBCC_SH_REG_ZZR; }
+				return(-1);
+			}
 			if(rs==1)
-				{ rs=BGBCC_SH_REG_GBR; }
+			{
+				rs=BGBCC_SH_REG_GBR;
+				if(rt==1)
+				{
+//					rs=BGBCC_SH_REG_TBR; rt=0;
+					rt=0;
+				}
+//				return(-1);
+			}
+
 		}
 
 		*rrs=rs;
@@ -247,10 +271,15 @@ int BGBCC_JX2_CheckOps32SequenceOnlyB(
 		&rs1, &rt1, &rn1, &rspr1, &rspw1);
 	ret2=BGBCC_JX2_CheckOps32GetRegs(sctx, opw3, opw4,
 		&rs2, &rt2, &rn2, &rspr2, &rspw2);
+
+	if(ret1<0)
+		return(ret1);
+	if(ret2<0)
+		return(ret2);
 	
-	if(ret1<=0)
+	if(!ret1)
 		return(1);
-	if(ret2<=0)
+	if(!ret2)
 		return(1);
 	
 	if(rn1!=BGBCC_SH_REG_ZZR)
@@ -306,6 +335,9 @@ int BGBCC_JX2_CheckOps32Immovable(
 	BGBCC_JX2_Context *sctx,
 	int opw1, int opw2)
 {
+	if((opw1&0xE000)!=0xE000)
+		return(1);
+
 	if((opw1&0xFE00)==0xFA00)
 		return(1);
 	if((opw1&0xFC00)==0xF400)
@@ -317,12 +349,20 @@ int BGBCC_JX2_CheckOps32Immovable(
 	{
 		if((opw2&0xF000)>=0xC000)
 			return(1);
+
+		if((opw2&0xF000)==0x0000)
+		{
+			if((opw1&0x000F)==0x0000)
+				return(1);
+		}
 		return(0);
 	}
 
 	if((opw1&0xEB00)==0xE100)
 	{
 		if((opw2&0xF000)>=0xC000)
+			return(1);
+		if((opw1&0x000F)==0x0000)
 			return(1);
 		return(0);
 	}
@@ -569,6 +609,12 @@ ccxl_status BGBCC_JX2_CheckWexify(
 		opw4=BGBCC_JX2_EmitGetOffsWord(sctx, cp+ 6);
 		opw5=BGBCC_JX2_EmitGetOffsWord(sctx, cp+ 8);
 		opw6=BGBCC_JX2_EmitGetOffsWord(sctx, cp+10);
+		
+		if(!((cp+11)<epos))
+		{
+			opw5=0;
+			opw6=0;
+		}
 
 		if((opw1&0xE000)!=0xE000)
 			{ BGBCC_DBGBREAK }
@@ -626,7 +672,7 @@ ccxl_status BGBCC_JX2_CheckWexify(
 		}
 
 		if(!BGBCC_JX2_CheckOps32ValidWexPrefix(sctx, opw3, opw4) &&
-			!sctx->is_simpass)
+			!sctx->is_simpass && ((cp+11)<epos))
 		{
 #if 1
 			if(	BGBCC_JX2_CheckOps32ValidWexPrefix(sctx, opw5, opw6) &&
@@ -742,6 +788,11 @@ ccxl_status BGBCC_JX2_BeginWex(
 
 	if(!(sctx->is_fixed32&16))
 	{
+		if(!BGBCC_JX2_CheckPadAlign32(sctx))
+		{
+			BGBCC_JX2_EmitWord(sctx, 0x3000);
+		}
+
 		sctx->is_fixed32|=16;
 		sctx->wex_ofs_begin=BGBCC_JX2_EmitGetOffs(sctx);
 		return(1);

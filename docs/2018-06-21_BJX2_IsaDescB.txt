@@ -402,7 +402,7 @@ Lite Profiles will leave out support for 48 bit instruction formats, and will si
 Select between Rm or Ro based on the value of SR.T, storing the result in Rn.
 If SR.T is set, the value from Rm is used, otherwise the value from Ro is used.
 
-			
+
 === EXTS.B ===
 
 * 32n6       EXTS.B	Rn
@@ -449,6 +449,36 @@ Zero extend the value in the low 32 bits of the register to the width of the reg
 * F0nm_1G9C  EXTU.W	Rm, Rn				//Q=1, I=0
 
 Zero extend the value in the low 16 bits of the register to the width of the register.
+
+
+=== INVxx ===
+
+* 30F2       INVTLB				//Flush the TLB
+* 31nC       INVIC	Rn			//Flush L1 I-Cache for Address
+* 31nD       INVDC	Rn			//Flush L1 D-Cache for Address
+* F01C_3en0  INVIC	Rn
+* F01D_3en0  INVDC	Rn
+
+Flush or Invalidate parts of the cache.
+
+The INVIC instruction effects the Instruction Cache, whereas INVDC effects the Data Cache.
+
+Invalidating the instruction cache causes any subsequent execution of instructions within the given cache line to be reloaded from memory. This instruction only effects the L1 and its associated state.
+
+The INVIC instruction, as such, is primarily intended for self-modifying code, or to prepare for execution when new code has been loaded into memory (potentially over the top of existing code).
+
+
+The INVDC instruction will mark cache lines as "flushed" within the L1 data-cache. On subsequent access, they will be written back to L2 if internally marked as dirty, otherwise the corresponding cache lines will be reloaded from the L2 cache.
+
+Doing a proper flush of an address, as such, will involve a process:
+  Invalidate the address (to mark it as flushed);
+  Load from the address (causing it to be stored back to L2);
+  Invalidate the address again (to discard anything just loaded).
+
+
+If INVIC or INVDC is given an address in the MMIO range, additional special behaviors may be triggered. Using these with FFFFFFFF will cause the whole cache to be flushed.
+
+The INVTLB instruction will flush the TLB. This would be done as part of changing the active page tables.
 
 
 === LDTLB ===
