@@ -4,6 +4,8 @@ Cell size may vary with screen type.
 * 40 x 25 x 256 bit: 32kB
 * 80 x 25 x 128 bit: 32kB
 * 80 x 25 x 256 bit: 64kB
+* 80 x 50 x 128 bit: 64kB
+* 80 x 50 x 256 bit: 128kB
 
 The cell will be organized as 8 consecutive DWORD values.
 * The first DWORD will identify the Cell Mode (In bits 31:30).
@@ -14,6 +16,39 @@ It may depend on the hardware which modes are supported.
 
 If the hardware cell is narrower than an 8 DWORD stride, then some of the DWORD values may simply be absent. Writing to these addresses will be no-op and reads will return an undefined value.
 
+
+== Bitmapped Modes ==
+
+These will use the cells as a bitmapped pixel block.
+The mode bits will select which of the formats is used.
+
+256 bit:
+* 4x4x16b, 4x4 cell of YVU655 endpoints.
+** An alternate mode may use RGB565.
+* 8x8x4b, 8x8 cell of RGBI endpoints.
+** Basic layout is the same as the 16bpp mode, just further split into 2x2.
+
+128-bit:
+* 4x4x8b, 4x4 cell of Y4C4 or Y3C5 endpoints.
+
+Pixels will be organized in the cells in raster order starting from the top-left, with the first pixel in the LSB. This will match a typical in-memory order in the 16-bit case.
+
+Y4C4:
+* Will have a 4 bit luma.
+* The other 4 bits will define a Chroma:
+** 1..6: High saturation Colors
+*** 1=Red, 2=Green, 3=Yellow, 4=Blue, 5=Magenta, 6=Cyan
+** 9..E: Low Saturation Colors
+** 7, 8, F: Faint Colors (Cyan, Magenta, Yellow)
+** 0: Gray
+* Alternatively:
+* 0: Gray
+* 1..6: Red, Yellow, Green, Cyan, Blue, Magenta (High Sat)
+* 7..C: Red, Yellow, Green, Cyan, Blue, Magenta (Low Sat)
+* D..F: Yellow, Cyan, Magenta (Faint)
+
+
+== Color Cell Mode ==
 
 For 1-bit pixel formats:
 * If pixel bit is set, it will select ColorA, otherwise ColorB will be used.

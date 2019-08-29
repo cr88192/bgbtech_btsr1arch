@@ -123,9 +123,19 @@ reg[6:0]	tNextClr32Dy;		//Y Delta
 reg[1:0]	tClrIx32;
 
 
+reg[2:0]	tScrMode;
+
 reg[31:0]	tCellData33;
 reg[31:0]	tNextCellData33;
 reg[1:0]	tClrIx33;
+
+reg[15:0]	tPixClrBmYv16;
+reg[15:0]	tNextPixClrBmYv16;
+reg[3:0]	tPixClrBmRgbi;
+
+reg[11:0]	tPixClrBmRgbiYV12;
+reg[15:0]	tPixClrBmRgbiYV16;
+
 
 reg[7:0]	tPixCy;
 reg[7:0]	tPixCu;
@@ -133,7 +143,10 @@ reg[7:0]	tPixCv;
 
 reg[11:0]	cbClrTab[63:0];
 
+reg[11:0]	cbClrTabRgbi[15:0];
+
 reg		useCol80;
+reg		useRow50;
 reg		useHalfCell;
 
 reg		tCellIsOdd;
@@ -180,6 +193,15 @@ begin
 	cbClrTab[58]=12'hB8A;	cbClrTab[59]=12'hDAA;
 	cbClrTab[60]=12'hB08;	cbClrTab[61]=12'hD28;
 	cbClrTab[62]=12'hE58;	cbClrTab[63]=12'hF88;
+	
+	cbClrTabRgbi[ 0]=12'h000;	cbClrTabRgbi[ 1]=12'h28D;
+	cbClrTabRgbi[ 2]=12'h522;	cbClrTabRgbi[ 3]=12'h728;
+	cbClrTabRgbi[ 4]=12'h2D8;	cbClrTabRgbi[ 5]=12'h5DD;
+	cbClrTabRgbi[ 6]=12'h782;	cbClrTabRgbi[ 7]=12'hA88;
+	cbClrTabRgbi[ 8]=12'h588;	cbClrTabRgbi[ 9]=12'h78D;
+	cbClrTabRgbi[10]=12'hA22;	cbClrTabRgbi[11]=12'hD28;
+	cbClrTabRgbi[12]=12'h7D8;	cbClrTabRgbi[13]=12'hADD;
+	cbClrTabRgbi[14]=12'hD82;	cbClrTabRgbi[15]=12'hF88;
 end
 
 // always @ (clock)
@@ -192,25 +214,48 @@ begin
 //	useCol80 = 1;
 //	useCol80 = 0;
 
-	useCol80 = ctrlRegVal[0];
+	useCol80	= ctrlRegVal[0];
 	useHalfCell = ctrlRegVal[1];
+	useRow50	= ctrlRegVal[2];
+	
+	tScrMode	= ctrlRegVal[6:4];
 
 	tClrYuvC = 0;
 	tNextCellIsOdd	= 0;
+	
+	if(useRow50)
+	begin
+		tPixCellY[6:0] = tPixPosY[8:2];
+	end
+	else
+	begin
+		tPixCellY[6:0] = tPixPosY[9:3];
+	end
 
 	if(useCol80 && !useHalfCell)
 	begin
 		tPixCellX[6:0] = tPixPosX[9:3];
-		tPixCellY[6:0] = tPixPosY[9:3];
+//		tPixCellY[6:0] = tPixPosY[9:3];
 		tPixCellNextIx = tPixCellY*80 + tPixCellX - 160;
 		tNextCellIsOdd = 0;
 	end
 	else
 	begin
 		tPixCellX[5:0] = tPixPosX[9:4];
-		tPixCellY[6:0] = tPixPosY[9:3];
+//		tPixCellY[6:0] = tPixPosY[9:3];
 		tPixCellNextIx = tPixCellY*40 + tPixCellX - 80;
 		tNextCellIsOdd = tPixPosX[3];
+	end
+	
+	id(useRow50)
+	begin
+		tPixCellNextFx[3:2] = 2'h3 - tPixPosY[1:0];
+		tPixCellNextGx[5:3]	= 3'h7 - { tPixPosY[1:0], pixLineOdd };
+	end
+	else
+	begin
+		tPixCellNextFx[3:2] = 2'h3 - tPixPosY[2:1];
+		tPixCellNextGx[5:3]	= 3'h7 - tPixPosY[2:0];
 	end
 	
 	if(useCol80)
@@ -221,10 +266,10 @@ begin
 //		tPixCellNextIx = tPixCellY*80 + tPixCellX - 160;
 
 		tPixCellNextFx[1:0] = 2'h2 - tPixPosX[2:1];
-		tPixCellNextFx[3:2] = 2'h2 - tPixPosY[2:1];
+//		tPixCellNextFx[3:2] = 2'h2 - tPixPosY[2:1];
 		
 		tPixCellNextGx[2:0]	= 3'h7 - tPixPosX[2:0];
-		tPixCellNextGx[5:3]	= 3'h7 - tPixPosY[2:0];
+//		tPixCellNextGx[5:3]	= 3'h7 - tPixPosY[2:0];
 	end
 	else
 	begin
@@ -233,10 +278,10 @@ begin
 //		tPixCellNextIx = tPixCellY*40 + tPixCellX - 80;
 
 		tPixCellNextFx[1:0] = 2'h3 - tPixPosX[3:2];
-		tPixCellNextFx[3:2] = 2'h3 - tPixPosY[2:1];
+//		tPixCellNextFx[3:2] = 2'h3 - tPixPosY[2:1];
 		
 		tPixCellNextGx[2:0]	= 3'h7 - tPixPosX[3:1];
-		tPixCellNextGx[5:3]	= 3'h7 - tPixPosY[2:0];
+//		tPixCellNextGx[5:3]	= 3'h7 - tPixPosY[2:0];
 	end
 	
 	tCellData = cellData;
@@ -524,6 +569,72 @@ begin
 			tClrYuvC = (tFontGlyph[tPixCellNextFx]) ? tClrYuvA : tClrYuvB;
 	end
 
+`ifdef FBUF_ENBM
+
+	case(tPixCellFx)
+`ifndef def_true
+		4'h0: tNextPixClrBmYv16 = tCellData[ 15:  0];
+		4'h1: tNextPixClrBmYv16 = tCellData[ 31: 16];
+		4'h2: tNextPixClrBmYv16 = tCellData[ 47: 32];
+		4'h3: tNextPixClrBmYv16 = tCellData[ 63: 48];
+		4'h4: tNextPixClrBmYv16 = tCellData[ 79: 64];
+		4'h5: tNextPixClrBmYv16 = tCellData[ 95: 80];
+		4'h6: tNextPixClrBmYv16 = tCellData[111: 96];
+		4'h7: tNextPixClrBmYv16 = tCellData[127:112];
+		4'h8: tNextPixClrBmYv16 = tCellData[143:128];
+		4'h9: tNextPixClrBmYv16 = tCellData[159:144];
+		4'hA: tNextPixClrBmYv16 = tCellData[175:160];
+		4'hB: tNextPixClrBmYv16 = tCellData[191:176];
+		4'hC: tNextPixClrBmYv16 = tCellData[207:192];
+		4'hD: tNextPixClrBmYv16 = tCellData[223:208];
+		4'hE: tNextPixClrBmYv16 = tCellData[239:224];
+		4'hF: tNextPixClrBmYv16 = tCellData[255:240];
+`endif
+
+`ifndef def_true
+		4'hF: tNextPixClrBmYv16 = tCellData[ 15:  0];
+		4'hE: tNextPixClrBmYv16 = tCellData[ 31: 16];
+		4'hD: tNextPixClrBmYv16 = tCellData[ 47: 32];
+		4'hC: tNextPixClrBmYv16 = tCellData[ 63: 48];
+		4'hB: tNextPixClrBmYv16 = tCellData[ 79: 64];
+		4'hA: tNextPixClrBmYv16 = tCellData[ 95: 80];
+		4'h9: tNextPixClrBmYv16 = tCellData[111: 96];
+		4'h8: tNextPixClrBmYv16 = tCellData[127:112];
+		4'h7: tNextPixClrBmYv16 = tCellData[143:128];
+		4'h6: tNextPixClrBmYv16 = tCellData[159:144];
+		4'h5: tNextPixClrBmYv16 = tCellData[175:160];
+		4'h4: tNextPixClrBmYv16 = tCellData[191:176];
+		4'h3: tNextPixClrBmYv16 = tCellData[207:192];
+		4'h2: tNextPixClrBmYv16 = tCellData[223:208];
+		4'h1: tNextPixClrBmYv16 = tCellData[239:224];
+		4'h0: tNextPixClrBmYv16 = tCellData[255:240];
+`endif
+	endcase
+
+	case( { tPixCellGx[3], tPixCellGx[0] } )
+		2'b00: tPixClrBmRgbi = tPixClrBmYv16[ 3: 0];
+		2'b01: tPixClrBmRgbi = tPixClrBmYv16[ 7: 4];
+		2'b10: tPixClrBmRgbi = tPixClrBmYv16[11: 8];
+		2'b11: tPixClrBmRgbi = tPixClrBmYv16[15:12];
+	endcase
+
+	tPixClrBmRgbiYV12=cbClrTabRgbi[tPixClrBmRgbi];
+	tPixClrBmRgbiYV16={
+		tPixClrBmRgbiYV12[11:8], tPixClrBmRgbiYV12[11:10],
+		tPixClrBmRgbiYV12[7:4], 1'b0,
+		tPixClrBmRgbiYV12[3:0], 1'b0 };
+
+	if(tScrMode==1)
+	begin
+		tClrYuvC	= tPixClrBmYv16;
+	end
+		else if(tScrMode==2)
+	begin
+		tClrYuvC	= tPixClrBmRgbiYV16;
+	end
+
+`endif
+
 	
 //	tPixCy[7:4] = tClrYuvC[11:8];	tPixCy[3:0] = tClrYuvC[11:8];
 //	tPixCu[7:4] = tClrYuvC[7:4];	tPixCu[3:0] = tClrYuvC[7:4];
@@ -577,7 +688,8 @@ begin
 	tClr32E			<= tNextClr32E;
 	tClr32CV		<= tNextClr32CV;	//Center
 	tClr32Dy		<= tNextClr32Dy;	//Y Delta
-
+	
+	tPixClrBmYv16	<= tNextPixClrBmYv16;
 end
 
 endmodule

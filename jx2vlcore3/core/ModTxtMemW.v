@@ -56,6 +56,16 @@ assign		ctrlRegVal = tCtrlRegVal;
 reg[13:0]	tPixCellIx;			//base cell index
 reg[13:0]	nxtPixCellIx;			//base cell index
 
+`ifdef FBUF_EN128K
+(* ram_style="block" *) reg[31:0]	scrCell1A[0:4095];
+(* ram_style="block" *) reg[31:0]	scrCell1B[0:4095];
+(* ram_style="block" *) reg[31:0]	scrCell1C[0:4095];
+(* ram_style="block" *) reg[31:0]	scrCell1D[0:4095];
+(* ram_style="block" *) reg[31:0]	scrCell1E[0:4095];
+(* ram_style="block" *) reg[31:0]	scrCell1F[0:4095];
+(* ram_style="block" *) reg[31:0]	scrCell1G[0:4095];
+(* ram_style="block" *) reg[31:0]	scrCell1H[0:4095];
+`else
 `ifdef FBUF_EN64K
 (* ram_style="block" *) reg[31:0]	scrCell1A[0:2047];
 (* ram_style="block" *) reg[31:0]	scrCell1B[0:2047];
@@ -74,6 +84,7 @@ reg[13:0]	nxtPixCellIx;			//base cell index
 (* ram_style="block" *) reg[31:0]	scrCell1F[0:1023];
 (* ram_style="block" *) reg[31:0]	scrCell1G[0:1023];
 (* ram_style="block" *) reg[31:0]	scrCell1H[0:1023];
+`endif
 `endif
 
 reg[63:0]	fontMem[255:0];
@@ -194,6 +205,16 @@ begin
 
 	tPixCellIx		<= nxtPixCellIx;
 
+`ifdef FBUF_EN128K
+	tCell1[ 31:  0]	<= scrCell1A[tPixCellIx[11:0]];
+	tCell1[ 63: 32]	<= scrCell1B[tPixCellIx[11:0]];
+	tCell1[ 95: 64]	<= scrCell1C[tPixCellIx[11:0]];
+	tCell1[127: 96]	<= scrCell1D[tPixCellIx[11:0]];
+	tCell1[159:128]	<= scrCell1E[tPixCellIx[11:0]];
+	tCell1[191:160]	<= scrCell1F[tPixCellIx[11:0]];
+	tCell1[223:192]	<= scrCell1G[tPixCellIx[11:0]];
+	tCell1[255:224]	<= scrCell1H[tPixCellIx[11:0]];
+`else
 `ifdef FBUF_EN64K
 	tCell1[ 31:  0]	<= scrCell1A[tPixCellIx[10:0]];
 	tCell1[ 63: 32]	<= scrCell1B[tPixCellIx[10:0]];
@@ -212,6 +233,7 @@ begin
 	tCell1[191:160]	<= scrCell1F[tPixCellIx[9:0]];
 	tCell1[223:192]	<= scrCell1G[tPixCellIx[9:0]];
 	tCell1[255:224]	<= scrCell1H[tPixCellIx[9:0]];
+`endif
 `endif
 
 	tFontDataAsc1	<= fontMem[tFontGlyph[7:0]];
@@ -254,6 +276,18 @@ begin
 //				2'b11: scrCell1D[busAddr[13:4]] <= busData;
 //			endcase
 
+`ifdef FBUF_EN128K
+			case(busAddr[4:2])
+				3'b000: scrCell1A[busAddr[16:5]] <= busData;
+				3'b001: scrCell1B[busAddr[16:5]] <= busData;
+				3'b010: scrCell1C[busAddr[16:5]] <= busData;
+				3'b011: scrCell1D[busAddr[16:5]] <= busData;
+				3'b100: scrCell1E[busAddr[16:5]] <= busData;
+				3'b101: scrCell1F[busAddr[16:5]] <= busData;
+				3'b110: scrCell1G[busAddr[16:5]] <= busData;
+				3'b111: scrCell1H[busAddr[16:5]] <= busData;
+			endcase
+`else
 `ifdef FBUF_EN64K
 			case(busAddr[4:2])
 				3'b000: scrCell1A[busAddr[15:5]] <= busData;
@@ -276,6 +310,7 @@ begin
 				3'b110: scrCell1G[busAddr[14:5]] <= busData;
 				3'b111: scrCell1H[busAddr[14:5]] <= busData;
 			endcase
+`endif
 `endif
 		end
 	end

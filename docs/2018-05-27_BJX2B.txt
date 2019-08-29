@@ -47,7 +47,7 @@ BJX2 Basic Profile
 * Will support 16, 32, and 48 bit instruction encodings.
 * Support for GSV, GFP, and JCMP is optional.
 * Will not support MULQ.
-* Will not support WEX.
+* Support for WEX is optional.
 
 ABI: HardFP, Base-Relocatable.
 
@@ -60,7 +60,7 @@ BJX2 Lite Profile
 * Will not support GSV, JCMP, or most other optional features.
 * Will support 16 and 32 bit instruction encodings.
 * Will not support 48 bit instruction encodings.
-* Will not support WEX.
+* Support for WEX is optional.
 
 ABI: SoftFP
 * Absolute Addressing for ROM
@@ -297,18 +297,16 @@ Base Physical Memory Map (32-bit):
 * 00010000 .. 000FFFFF: Reserved
 * 00100000 .. 00FFFFFF: Reserved
 * 01000000 .. 7FFFFFFF: DRAM
-* 80000000 .. 9FFFFFFF: System (MMU Range 00000000..1FFFFFFF)
-* A0000000 .. BFFFFFFF: MMIO (No MMU, Bypass)
-* C0000000 .. DFFFFFFF: System (No MMU, Repeats 00000000..1FFFFFFF)
-* E0000000 .. FFFFFFFF: Reserved for Processor/Chipset
+* 80000000 .. EFFFFFFF: Reserved
+* F0000000 .. FFFFFFFF: MMIO (No MMU, Bypass)
+** F0000000 .. FEFFFFFF: MMIO / Chipset
+** FF000000 .. FFFFFFFF: Memory Mapped Registers
 
 
 Logical Memory Map (32-bit):
 * 00000000 .. 7FFFFFFF: Userland (MMU)
-* 80000000 .. 9FFFFFFF: System (MMU)
-* A0000000 .. BFFFFFFF: MMIO (No MMU, Bypass)
-* C0000000 .. DFFFFFFF: System (No MMU, Repeats 00000000..1FFFFFFF)
-* E0000000 .. FFFFFFFF: Reserved for Processor/Chipset
+* 80000000 .. EFFFFFFF: System (MMU)
+* F0000000 .. FFFFFFFF: MMIO (No MMU, Bypass)
 
 
 Addresses in the MMIO ranges will "bypass" the normal memory access mechanisms and go directly to the MMIO Bus.
