@@ -1,4 +1,5 @@
 int GfxDrv_PrepareFramebuf();
+int JX2I_GfxCon_UpdateForRegs();
 
 u64 gfxfont[256]={
 0x0000000000000000ULL,		//00
@@ -485,6 +486,7 @@ byte jx2i_gfxcon_ncy;
 
 u64 jx2i_gfxcon_ctrlreg[64];
 
+
 u64 jx2i_gfxcon_seed=0;
 
 u32 JX2I_GfxCon_Rng32(void)
@@ -536,8 +538,8 @@ int JX2I_GfxCon_Startup()
 //	jx2i_gfxcon_conbuf=malloc(8192*sizeof(u32));
 //	jx2i_gfxcon_conbuf=malloc(16384*sizeof(u32));
 //	jx2i_gfxcon_lconbuf=malloc(16384*sizeof(u32));
-	jx2i_gfxcon_conbuf=malloc(32768*sizeof(u32));
-	jx2i_gfxcon_lconbuf=malloc(32768*sizeof(u32));
+	jx2i_gfxcon_conbuf=(u32 *)malloc(32768*sizeof(u32));
+	jx2i_gfxcon_lconbuf=(u32 *)malloc(32768*sizeof(u32));
 	
 //	for(i=0; i<40*25*4; i++)
 //	for(i=0; i<40*25*8; i++)
@@ -564,7 +566,6 @@ int JX2I_GfxCon_PutPix200(int px, int py, int clrc)
 	
 	fbxs=btesh2_gfxcon_fbxs;
 //	((u32 *)btesh2_gfxcon_framebuf)[(py*320)+px]=clrc;
-//	fbxs=640;
 
 #if 0
 	if(btesh2_gfxcon_swaprb)
@@ -670,6 +671,9 @@ u32 JX2I_GfxCon_Yvu16ToRgb24(int yuv)
 		clrc=0xFF000000|(cb0<<16)|(cg0<<8)|cr0;
 	return(clrc);
 }
+
+// byte jx2i_gfxcon_ncx;
+// byte jx2i_gfxcon_ncy;
 
 u32 JX2I_GfxCon_Rgb565ToRgb24(int rgb)
 {
@@ -905,7 +909,6 @@ int JX2I_GfxCon_UpdateCell(int cx, int cy)
 		return(0);
 	
 	if(jx2i_gfxcon_isbmap)
-//	if(0)
 	{
 		return(JX2I_GfxCon_UpdateCellBM(cx, cy));
 	}
@@ -1715,6 +1718,8 @@ int JX2I_GfxCon_UpdateCell(int cx, int cy)
 	return(0);
 }
 
+// u64 jx2i_gfxcon_ctrlreg[64];
+
 int JX2I_GfxCon_UpdateForRegs()
 {
 	int ncx, ncy;
@@ -1823,7 +1828,14 @@ s32 BJX2_MemGfxConCb_GetDWord(BJX2_Context *ctx,
 	s64 rvq;
 	int ra, rv;
 
-	ra=addr-sp->addr_base;
+	if(sp)
+	{
+		ra=addr-sp->addr_base;
+	}
+	else
+	{
+		ra=addr;
+	}
 	
 	rv=0;
 
@@ -1859,7 +1871,11 @@ int BJX2_MemGfxConCb_SetDWord(BJX2_Context *ctx,
 	BJX2_MemSpan *sp, bjx2_addr addr, s32 val)
 {
 	int ra;
-	ra=addr-sp->addr_base;
+	
+	if(sp)
+		ra=addr-sp->addr_base;
+	else
+		ra=addr;
 
 	if((addr&0x1FF00)==0x1FF00)
 	{
@@ -1874,7 +1890,7 @@ int BJX2_MemGfxConCb_SetDWord(BJX2_Context *ctx,
 				if(!jx2i_gfxcon_cblfrnum)
 					jx2i_gfxcon_cbffms=FRGL_TimeMS();
 				jx2i_gfxcon_cblfrnum=val;
-				BJX2_ThrowFaultStatus(ctx, BJX2_FLT_SCRPOKE);
+//				BJX2_ThrowFaultStatus(ctx, BJX2_FLT_SCRPOKE);
 			}
 		}
 
@@ -1909,6 +1925,7 @@ int BJX2_MemGfxConCb_SetDWord(BJX2_Context *ctx,
 	return(0);
 }
 
+#if 0
 int BJX2_MemDefineGfxCon(BJX2_Context *ctx,
 	char *name, bjx2_addr base, bjx2_addr lim)
 {
@@ -1933,4 +1950,4 @@ int BJX2_MemDefineGfxCon(BJX2_Context *ctx,
 	BJX2_MemAddSpan(ctx, sp);
 	return(0);
 }
-
+#endif

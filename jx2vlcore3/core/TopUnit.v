@@ -5,6 +5,8 @@
 `include "MmiModDdr3.v"
 
 `include "ModTxtNtW.v"
+`include "ModAudPcm.v"
+`include "ModPs2Kb.v"
 
 module TopUnit(
 	/* verilator lint_off UNUSED */
@@ -231,6 +233,27 @@ ModTxtNtW	scrn(
 	mmioAddr,	mmioOutData,	scrnMmioOutData,
 	mmioOpm,	scrnMmioOK);
 
+wire[1:0]	audPwmOut;
+wire[31:0]	audMmioOutData;
+wire[1:0]	audMmioOK;
+assign		aud_mono_out	= audPwmOut[0];
+
+ModAudPcm	pcm(
+	clock,		reset,
+	audPwmOut,
+	mmioAddr,	mmioOutData,	audMmioOutData,
+	mmioOpm,	audMmioOK);
+
+wire[31:0]	kbMmioOutData;
+wire[1:0]	kbMmioOK;
+
+ModPs2Kb	ps2kb(
+	clock,			reset,
+	ps2_clk_i,		ps2_clk_o,		ps2_clk_d,	
+	ps2_data_i,		ps2_data_o,		ps2_data_d,
+	mmioAddr,		mmioOutData,	kbMmioOutData,
+	mmioOpm,		kbMmioOK);
+
 always @*
 begin
 
@@ -262,6 +285,16 @@ begin
 	begin
 		mmioInData	= scrnMmioOutData;
 		mmioOK		= scrnMmioOK;
+	end
+	else if(audMmioOK != UMEM_OK_READY)
+	begin
+		mmioInData	= audMmioOutData;
+		mmioOK		= audMmioOK;
+	end
+	else if(kbMmioOK != UMEM_OK_READY)
+	begin
+		mmioInData	= kbMmioOutData;
+		mmioOK		= kbMmioOK;
 	end
 
 //	memInData	= UV128_XX;

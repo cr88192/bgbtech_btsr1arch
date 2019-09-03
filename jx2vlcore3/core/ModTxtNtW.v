@@ -34,6 +34,7 @@ assign	busWR = busOpm[4];
 wire[7:0]	pixCy;
 wire[7:0]	pixCu;
 wire[7:0]	pixCv;
+wire[15:0]	pixAux;
 
 wire[9:0]	pixPosX;
 wire[9:0]	pixPosY;
@@ -51,7 +52,7 @@ wire[63:0] ctrlRegVal;
 ModVga fbvga(
 	clock,		reset,
 	pixCy,		pixCu,		pixCv,
-	ctrlRegVal,
+	ctrlRegVal,	pixAux,
 	pwmOut,
 	pixPosX,	pixPosY,
 	pixLineOdd);
@@ -64,7 +65,7 @@ ModTxtMemW fbmem(clock, reset,
 
 ModFbTxtW fbcc(clock, reset,
 	pixPosX,	pixPosY,
-	pixCy,		pixCu,		pixCv,
+	pixCy,		pixCu,		pixCv,	pixAux,
 	pixCellIx,	cellData1,
 	fontGlyph,	fontData1,
 	ctrlRegVal,	pixLineOdd);

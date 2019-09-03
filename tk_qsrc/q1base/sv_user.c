@@ -69,10 +69,10 @@ void SV_SetIdealPitch (void)
 	sinval = sin(angleval);
 	cosval = cos(angleval);
 
-	if(sinval<-1.0)		__debugbreak();
-	if(sinval>1.0)		__debugbreak();
-	if(cosval<-1.0)		__debugbreak();
-	if(cosval>1.0)		__debugbreak();
+//	if(sinval<-1.0)		__debugbreak();
+//	if(sinval>1.0)		__debugbreak();
+//	if(cosval<-1.0)		__debugbreak();
+//	if(cosval>1.0)		__debugbreak();
 
 	for (i=0 ; i<MAX_FORWARD ; i++)
 	{

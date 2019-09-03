@@ -1,0 +1,41 @@
+Small Audio PCM
+
+Intended to have a lower CPU-side encoding cost than the SblkAud design.
+Will instead use PCM loop buffers.
+
+MMIO Space
+* 0xF0090000: Audio Loop Buffers
+** 0000: Left / Mono
+** 4000: Right / Side
+* 0xF009F000: Audio Control Registers
+
+This design will provide PCM, either 8-bit linear PCM or A-law, nominally at 16kHz.
+
+Control Register 0:
+* (1:0):
+** 00=PCM (8-bit, Unsigned)
+** 01=A-Law (8-bit)
+** 10=PCM (16-bit, Unsigned)
+** 11=PCM (16-bit, Signed)
+* (3:2): Output Mode
+** 00=Mute / Disabled
+** 01=Reserved (Disabled)
+** 10=Mono
+** 11=Stereo (if supported by hardware)
+* (7:4): Sample Rate
+** 0000:  8kHz
+** 0001: 11kHz
+** 0010: 16kHz
+** 0011: 22kHz
+** 0100: 32kHz
+** 0101: 44kHz
+** 0110: 64kHz
+** 0111: 88kHz
+** 1000: ?
+** 1001: 48kHz
+** 1010: ?
+** 1011: 96kHz
+** 1100: ?
+** 1101: ?
+** 1110: ?
+** 1111: ?

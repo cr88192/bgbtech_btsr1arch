@@ -38,9 +38,13 @@ assign	idImm = opImm;
 assign	idUCmd = opUCmd;
 assign	idUIxt = opUIxt;
 
+reg[5:0]	opRegM_Dfl;
 reg[5:0]	opRegO_Dfl;
 reg[5:0]	opRegN_Dfl;
-reg[5:0]	opRegM_Dfl;
+
+reg[5:0]	opRegM_Fix;
+reg[5:0]	opRegO_Fix;
+reg[5:0]	opRegN_Fix;
 
 reg[5:0]	opRegO_Df2;
 
@@ -150,6 +154,9 @@ begin
 	opBty		= 0;
 	opIty		= 0;
 	opCcty		= JX2_IXC_AL;
+	opRegM_Fix	= JX2_GR_ZZR;
+	opRegO_Fix	= JX2_GR_ZZR;
+	opRegN_Fix	= JX2_GR_ZZR;
 
 	casez(istrWord[11:8])
 
@@ -552,11 +559,11 @@ begin
 								opNmid		= JX2_UCMD_NOP;
 								opFmid		= JX2_FMID_Z;
 							end
-//							4'h1: begin
-//								opNmid		= JX2_UCMD_JMP;
-//								opFmid		= JX2_FMID_Z;
-//								opRegM_Fix	= JX2_GR_LR;
-//							end
+							4'h1: begin
+								opNmid		= JX2_UCMD_JMP;
+								opFmid		= JX2_FMID_Z;
+								opRegM_Fix	= JX2_GR_LR;
+							end
 							4'h2: begin
 								opNmid		= JX2_UCMD_OP_IXT;
 								opFmid		= JX2_FMID_Z;
@@ -1257,6 +1264,10 @@ begin
 	
 	case(opFmid)
 		JX2_FMID_Z: begin
+			opUIxt	= {opCcty, opUCmdIx[5:0]};
+			opRegM	= opRegM_Fix;
+			opRegO	= opRegO_Fix;
+			opRegN	= opRegN_Fix;
 		end
 
 		JX2_FMID_REG: begin

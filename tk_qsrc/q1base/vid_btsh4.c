@@ -61,6 +61,8 @@ viddef_t	vid;				// global video state
 
 #endif
 
+#define I_SCR_BMP128K
+
 //byte	vid_buffer[BASEWIDTH*(BASEHEIGHT+4)];
 // byte	vid_buffer[BASEWIDTH*BASEHEIGHT*2];
 // short	zbuffer[BASEWIDTH*(BASEHEIGHT+4)];
@@ -388,6 +390,15 @@ void	VID_Init (unsigned char *palette)
 //	D_InitCaches (surfcache, sizeof(surfcache));
 //	D_InitCaches (surfcache, 512*1024);
 	D_InitCaches (surfcache, BASEWIDTH*BASEHEIGHT*3*2);
+
+#ifdef I_SCR_BMP128K
+	((u32 *)0xF00BFF00)[0]=0x0015;		//320x200x16bpp
+//	((u32 *)0xF00BFF00)[0]=0x0025;		//320x200x16bpp
+//	((u32 *)0xF00BFF00)[0]=0x0005;		//320x200x16bpp
+//	((u32 *)0xF00BFF00)[0]=0x0010;		//320x200x16bpp
+#else
+	((u32 *)0xF00BFF00)[0]=0x0000;		//320x200
+#endif
 
 // #ifndef CONGFX
 #if 0
@@ -1120,6 +1131,7 @@ void	VID_Update (vrect_t *rects)
 	u16 *ict16, *ics16, *lcs16, *ics16b, *lcs16b;
 	u16 *icz16;
 	u32 *ict;
+	u64 pxa, pxb, pxc, pxd;
 	u32 bxa, bxb, bxc, bxd;
 	int pix, bn;
 	int i, j, k;
@@ -1128,6 +1140,7 @@ void	VID_Update (vrect_t *rects)
 	conbufa=(u32 *)0xF00A0000;
 //	conbufb=conbufa+(80*61);
 
+	((u32 *)0xF00BFF00)[8]=vid_frnum;
 	vid_frnum++;
 
 	if(host_colormap16)
@@ -1147,6 +1160,38 @@ void	VID_Update (vrect_t *rects)
 		}
 #endif
 		
+// #if 1
+#ifdef I_SCR_BMP128K
+// #if 0
+		bn=0;
+		for(by=0; by<50; by++)
+		{
+			ics16b=ics16;
+//			icl16b=icl16;
+			for(bx=0; bx<80; bx++)
+			{
+				pxa=*(u64 *)(ics16b+0*BASEWIDTH);
+				pxb=*(u64 *)(ics16b+1*BASEWIDTH);
+				pxc=*(u64 *)(ics16b+2*BASEWIDTH);
+				pxd=*(u64 *)(ics16b+3*BASEWIDTH);
+				ict[0]=pxa;			ict[2]=pxb;
+				ict[4]=pxc;			ict[6]=pxd;
+				ict[1]=pxa>>32;		ict[3]=pxb>>32;
+				ict[5]=pxc>>32;		ict[7]=pxd>>32;
+				
+				bn++;
+				ict+=8;
+				ics16b+=4;
+//				icl16b+=4;
+			}
+
+			ics16+=4*BASEWIDTH;
+//			icl16+=4*BASEWIDTH;
+		}
+#endif
+
+// #if 1
+#ifndef I_SCR_BMP128K
 		for(by=0; by<25; by++)
 //		for(by=0; by<25; by+=2)
 		{
@@ -1183,7 +1228,8 @@ void	VID_Update (vrect_t *rects)
 //			ict+=8*40;
 		}
 
-		conbufa[8100]=vid_frnum;
+//		conbufa[8100]=vid_frnum;
+#endif
 	}
 	
 //	memset(vid.buffer, 0, 320*200*2);

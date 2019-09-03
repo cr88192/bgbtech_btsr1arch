@@ -18,6 +18,11 @@ vluint64_t main_time = 0;
 #include <sys/time.h>
 #endif
 
+#ifdef __linux
+// #define USE_SDL
+#endif
+
+
 typedef unsigned char byte;
 typedef signed char sbyte;
 
@@ -44,12 +49,13 @@ typedef signed char sbyte;
 byte kbbuf[256];
 byte kbrov;
 byte kbirov;
-byte gfxdrv_kill;
+// byte gfxdrv_kill;
 byte fkey;
 
 byte fmode;
 
-#ifdef __linux
+#if 0
+// #ifdef __linux
 static struct termios old_termios;
 
 void btesh2_ttynoncanon(void)
@@ -72,7 +78,6 @@ void btesh2_resettermios(void)
 	return;
 }
 #endif
-
 
 int BTSR1_MainAddKey(int key)
 {
@@ -193,6 +198,7 @@ void BTSR1_ProcessEscKey(int v)
 
 int BTSR1_MainPollKeyboard(void)
 {
+	u16 *kb;
 	int i, j, k, l;
 
 #ifdef _WIN32
@@ -315,6 +321,42 @@ int BTSR1_MainPollKeyboard(void)
 		j=fgetc(stdin);
 	}
 #endif
+
+#if 1
+	kb=FRGL_GetKeybuf();
+	while(*kb)
+	{
+		k=*kb++;
+//		BJX2_MainAddTranslateKey(ctx, k);
+		BTSR1_MainAddKey(k);
+
+#if 0
+		if(k&0x8000)
+		{
+			j=k&4095;
+			if(j<0x7F)
+			{
+				BJX2_MainAddKeyByte(ctx, j|0x80);
+			}else if(j<0xFF)
+			{
+				BJX2_MainAddKeyByte(ctx, 0xFF);
+				BJX2_MainAddKeyByte(ctx, j);
+			}
+		}else
+		{
+			j=k&4095;
+			if(j<0x7F)
+			{
+				BJX2_MainAddKeyByte(ctx, j);
+			}else if(j<0xFF)
+			{
+				BJX2_MainAddKeyByte(ctx, 0x7F);
+				BJX2_MainAddKeyByte(ctx, j);
+			}
+		}
+#endif
+	}
+#endif
 }
 
 int BTSR1_MainInitKeyboard(void)
@@ -378,6 +420,7 @@ char *BTSR1_CheckGetString()
 	return(NULL);
 }
 
+#if 0
 int FRGL_TimeMS()
 {
 #ifdef _WIN32
@@ -421,6 +464,7 @@ int FRGL_TimeMS()
 #endif
 #endif
 }
+#endif
 
 
 BJX2_Context	*jx2_ctx;
@@ -433,9 +477,15 @@ uint32_t mmio_ReadDWord(BJX2_Context *ctx, uint32_t addr)
 	s64 rvq, dcyc;
 	int val;
 
-	if((addr&0xF0000)==0xA0000)
+//	if((addr&0xF0000)==0xA0000)
+//	{
+//		return(0);
+//	}
+
+	if((addr&0x0FFE0000)==0xA0000)
 	{
-		return(0);
+		val=BJX2_MemGfxConCb_GetDWord(ctx, NULL, addr&0x1FFFF);
+		return(val);
 	}
 
 	mmio=mmgp_data;
@@ -501,8 +551,9 @@ uint32_t mmio_WriteDWord(BJX2_Context *ctx, uint32_t addr, uint32_t val)
 	u32 *mmio;
 	int v;
 
-	if((addr&0xF0000)==0xA0000)
+	if((addr&0x0FFE0000)==0xA0000)
 	{
+		BJX2_MemGfxConCb_SetDWord(ctx, NULL, addr&0x1FFFF, val);
 		return(0);
 	}
 
@@ -1023,6 +1074,7 @@ int main(int argc, char **argv, char **env)
 	int lclk, mhz;
 	int tt_start;
 	int t0, t1, t2;
+	int tt_frame;
 
 	mhz=100;
 
@@ -1066,15 +1118,37 @@ int main(int argc, char **argv, char **env)
 	ctx->ttick_rst=(ctx->tgt_mhz*1000000)/1024;
 	ctx->ttick_hk=ctx->ttick_rst;
 
+	GfxDrv_Start();
+	SoundDev_Init();
+	JX2I_GfxCon_Startup();
+
 	printf("Start ExUnit\n");
 
 	BTSR1_MainInitKeyboard();
 
 	tt_start=FRGL_TimeMS();
+	tt_frame=tt_start;
 
 	while (!Verilated::gotFinish())
 	{
-		BTSR1_MainPollKeyboard();
+		t1=FRGL_TimeMS();
+		t2=t1-tt_frame;
+
+		if(t2>16)
+		{
+			BTSR1_MainPollKeyboard();
+
+			jx2i_gfxcon_dirty=1;
+			JX2I_GfxCon_Update();
+
+			GfxDrv_BeginDrawing();
+
+			GfxDrv_EndDrawing();
+			
+			tt_frame=t1;
+//			continue;
+		}
+
 	
 		top->clock = (main_time>>0)&1;
 		
@@ -1131,6 +1205,8 @@ int main(int argc, char **argv, char **env)
 	t2=t1-tt_start;
 	
 	printf("%.3fMHz\n", jx2_ctx->tot_cyc/(t2*1000.0));
+
+	SoundDev_DeInit();
 	
 	BTSR1_MainDeinitKeyboard();
 	

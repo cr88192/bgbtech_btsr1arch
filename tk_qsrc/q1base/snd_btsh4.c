@@ -420,6 +420,43 @@ void SNDDMA_Shutdown(void)
 {
 }
 
+int sblk0_enc(int v)
+{
+	int e, v0, v1;
+
+	if(v<0)
+	{
+		v1=sblk0_enc(-v);
+		return(0x80|v1);
+	}
+	
+	if(v>=256)
+	{
+		e=0;
+		v0=v>>3;
+		if(v0&(~31))	{ v0=v0>>1; e++; }
+		if(v0&(~31))	{ v0=v0>>1; e++; }
+		if(v0&(~31))	{ v0=v0>>1; e++; }
+		if(v0&(~31))	{ v0=v0>>1; e++; }
+		if(v0&(~31))	{ v0=v0>>1; e++; }
+		if(v0&(~31))	{ v0=v0>>1; e++; }
+		if(v0&(~31))	{ v0=v0>>1; e++; }
+//		if(v0&(~31))	{ v0=v0>>1; e++; }
+//		if(v0&(~31))	{ v0=v0>>1; e++; }
+//		if(v0&(~31))	{ v0=v0>>1; e++; }
+
+		v1=(e<<4)|(v0&15);
+		if(v0&(~31))	{ v1=0x7F; }
+//		if(e>7)
+//			v1=0x7F;
+	}else
+	{
+		v1=v>>4;
+	}
+	
+	return(v1);
+}
+
 static u32 *snd_dmabuf=NULL;
 static byte snd_dmarov=0;
 static u32 snd_dmapred=0;
@@ -432,7 +469,8 @@ void SNDDMA_Submit(void)
 //	short *sbufl, *sbufr;
 	short *buf;
 	int dma, idma, tdma;
-	int b, n, d, b1, n1;
+	int s0, s1, s2, s3;
+	int b, n, d, b1, n1, d1;
 	int i, j, k, l;
 
 	dma=SNDDMA_GetDMAPos();
@@ -451,7 +489,8 @@ void SNDDMA_Submit(void)
 	buf=(short *)dma_buffer;
 	
 //	snd_dmabuf=(u32 *)0xA0080000;
-	snd_dmabuf=(u32 *)0xF0080000;
+//	snd_dmabuf=(u32 *)0xF0080000;
+	snd_dmabuf=(u32 *)0xF0090000;
 
 	b=olddma;
 	n=dma-b;
@@ -473,6 +512,57 @@ void SNDDMA_Submit(void)
 	d=d^(d>>31);
 	if(d>2200)
 		dmarov=tdma;
+
+#if 1
+	b1=b&(~3); n1=(n+3)&(~3);
+	d1=dmarov&(~3);
+
+//	((u32 *)0xF009F000)[0]=0x002B;
+//	((u32 *)0xF009F000)[0]=0x002A;
+//	((u32 *)0xF009F000)[0]=0x0028;
+	((u32 *)0xF009F000)[0]=0x0029;
+//	for(i=0; i<n; i+=2)
+//	for(i=0; i<n; i+=4)
+	for(i=0; i<n1; i+=4)
+	{
+//		j=(i+b)&8191;
+		j=(i+b1)&8191;
+//		k=(dmarov+i)&8191;
+//		k=(dmarov+i)&16383;
+//		k=(d1+i)&16383;
+		k=(d1+i)&8191;
+
+		if(BUFFER_CHAN==2)
+		{
+//			sbufl[k]=buf[j*2+0];
+//			sbufr[k]=buf[j*2+1];
+		}else
+		{
+//			sbufl[k]=buf[j];
+//			sbufr[k]=buf[j];
+
+//			sbuf[k]=buf[j];
+//			s0=(buf[j+0]+32768)&65535;
+//			s1=(buf[j+1]+32768)&65535;
+
+//			s0=((buf[j+0]+32768)>>8)&255;
+//			s1=((buf[j+1]+32768)>>8)&255;
+//			s2=((buf[j+2]+32768)>>8)&255;
+//			s3=((buf[j+3]+32768)>>8)&255;
+
+			s0=sblk0_enc(buf[j+0]);
+			s1=sblk0_enc(buf[j+1]);
+			s2=sblk0_enc(buf[j+2]);
+			s3=sblk0_enc(buf[j+3]);
+
+//			s0=64;		s1=64;
+//			s2=192;		s3=192;
+
+//			snd_dmabuf[k>>1]=s0|(s1<<16);
+			snd_dmabuf[k>>2]=s0|(s1<<8)|(s2<<16)|(s3<<24);
+		}
+	}
+#endif
 
 #if 0
 //	for(i=0; i<8192; i++)
@@ -500,6 +590,7 @@ void SNDDMA_Submit(void)
 	}
 #endif
 
+#if 0
 	b1=(b>>7); n1=(n+(b&127)+255)>>7;
 	snd_dmapred=0;
 
@@ -528,6 +619,7 @@ void SNDDMA_Submit(void)
 //		Sblkau_EncodeBlock(buf+(k<<1),
 //			snd_dmabuf+(j<<4), &snd_dmapred);
 	}
+#endif
 
 
 	olddma=dma;

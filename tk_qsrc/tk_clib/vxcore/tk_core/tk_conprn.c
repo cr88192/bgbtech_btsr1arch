@@ -3,6 +3,9 @@ byte tk_con_y;
 byte tk_con_ena;
 volatile u32 *tk_con_buf;
 
+// #define TK_CONWIDTH		40
+#define TK_CONWIDTH		80
+
 void tk_con_init()
 {
 	tk_con_buf=(u32 *)0xF00A0000;
@@ -23,9 +26,9 @@ void tk_con_scroll_up()
 	int i, j, k;
 
 	for(i=0; i<24; i++)
-		for(j=0; j<40; j++)
+		for(j=0; j<TK_CONWIDTH; j++)
 	{
-		i0=((i+0)*40+j)*8;		i1=((i+1)*40+j)*8;
+		i0=((i+0)*TK_CONWIDTH+j)*8;		i1=((i+1)*TK_CONWIDTH+j)*8;
 		p0=tk_con_buf[i1+0];	p1=tk_con_buf[i1+1];
 		p2=tk_con_buf[i1+2];	p3=tk_con_buf[i1+3];
 		tk_con_buf[i0+0]=p0;	tk_con_buf[i0+1]=p1;
@@ -36,9 +39,9 @@ void tk_con_scroll_up()
 		tk_con_buf[i0+6]=p2;	tk_con_buf[i0+7]=p3;
 	}
 
-	for(j=0; j<40; j++)
+	for(j=0; j<TK_CONWIDTH; j++)
 	{
-		tk_con_buf[((24*40)+j)*8]=0;
+		tk_con_buf[((24*TK_CONWIDTH)+j)*8]=0;
 	}
 }
 
@@ -72,7 +75,7 @@ void tk_con_putc(int ch)
 		if(ch=='\t')
 		{
 			tk_con_x=(tk_con_x+8)&(~7);
-			if(tk_con_x>=40)
+			if(tk_con_x>=TK_CONWIDTH)
 				{ tk_con_newline(); }
 			return;
 		}
@@ -81,10 +84,10 @@ void tk_con_putc(int ch)
 	
 //	px=0x0FC00000|ch;
 	px=0x003F0000|ch;
-	tk_con_buf[(tk_con_y*40+tk_con_x)*8+0]=px;
+	tk_con_buf[(tk_con_y*TK_CONWIDTH+tk_con_x)*8+0]=px;
 
 	tk_con_x++;
-	if(tk_con_x>=40)
+	if(tk_con_x>=TK_CONWIDTH)
 	{
 		tk_con_newline();
 	}

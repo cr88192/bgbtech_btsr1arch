@@ -155,6 +155,9 @@ reg				mmioInWR;
 reg				mmioInLastOE;
 reg				mmioInLastWR;
 
+wire		tMmioLowCSel;
+assign		tMmioLowCSel = (mmioAddr[27:16]==12'h000);
+
 always @*
 begin
 	gpioNextOut		= gpioOut;
@@ -163,8 +166,8 @@ begin
 	tMmioOK			= UMEM_OK_READY;
 	tMmioOutData	= UV32_XX;
 
-	mmioInOE			= mmioOpm[3];
-	mmioInWR			= mmioOpm[4];
+	mmioInOE			= (mmioOpm[3]) && tMmioLowCSel;
+	mmioInWR			= (mmioOpm[4]) && tMmioLowCSel;
 
 	uartNextFracTimer	= uartFracTimer;
 	uartStepTimer		= 0;

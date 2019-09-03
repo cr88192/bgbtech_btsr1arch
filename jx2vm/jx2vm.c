@@ -865,19 +865,21 @@ int main(int argc, char *argv[])
 		JX2R_UseImageAddFile(rd_exp[i], NULL);
 	
 	ctx=BJX2_AllocContext();
-	BJX2_MemDefineROM(ctx,		"ROM",	0x00000000, 0x00007FFF);
-	BJX2_MemDefineRAM(ctx,		"SRAM",	0x0000C000, 0x0000DFFF);
-//	BJX2_MemDefineMmgp(ctx,		"MMGP",	0x0000E000, 0x0000E3FF);
-//	BJX2_MemDefineGfxCon(ctx,	"CGFX",	0x000A0000, 0x000AFFFF);
-	BJX2_MemDefineRAM(ctx,		"DRAM",	0x01000000, 0x18000000);
+	BJX2_MemDefineROM(ctx,		"ROM",	0x00000000U, 0x00007FFFU);
+	BJX2_MemDefineRAM(ctx,		"SRAM",	0x0000C000U, 0x0000DFFFU);
+//	BJX2_MemDefineMmgp(ctx,		"MMGP",	0x0000E000U, 0x0000E3FFU);
+//	BJX2_MemDefineGfxCon(ctx,	"CGFX",	0x000A0000U, 0x000AFFFFU);
+	BJX2_MemDefineRAM(ctx,		"DRAM",	0x01000000U, 0x18000000U);
 
-//	BJX2_MemDefineMmgp(ctx,		"MMGP",	0xA000E000, 0xA000E3FF);
-//	BJX2_MemDefineSndSblk(ctx,	"SBAU",	0xA0080000, 0xA0081FFF);
-//	BJX2_MemDefineGfxCon(ctx,	"CGFX",	0xA00A0000, 0xA00AFFFF);
+//	BJX2_MemDefineMmgp(ctx,		"MMGP",	0xA000E000U, 0xA000E3FFU);
+//	BJX2_MemDefineSndSblk(ctx,	"SBAU",	0xA0080000U, 0xA0081FFFU);
+//	BJX2_MemDefineGfxCon(ctx,	"CGFX",	0xA00A0000U, 0xA00AFFFFU);
 
-	BJX2_MemDefineMmgp(ctx,		"MMGP",	0xF000E000, 0xF000E3FF);
-	BJX2_MemDefineSndSblk(ctx,	"SBAU",	0xF0080000, 0xF0081FFF);
-	BJX2_MemDefineGfxCon(ctx,	"CGFX",	0xF00A0000, 0xF00AFFFF);
+	BJX2_MemDefineMmgp(ctx,		"MMGP",	0xF000E000U, 0xF000E3FFU);
+	BJX2_MemDefineSndSblk(ctx,	"SBAU",	0xF0080000U, 0xF0081FFFU);
+//	BJX2_MemDefineGfxCon(ctx,	"CGFX",	0xF00A0000U, 0xF00AFFFFU);
+	BJX2_MemDefineSndAuPcm(ctx,	"SPCM",	0xF0090000U, 0xF009FFFFU);
+	BJX2_MemDefineGfxCon(ctx,	"CGFX",	0xF00A0000U, 0xF00BFFFFU);
 
 #ifndef BJX2_ADDR32
 //	BJX2_MemDefineMmgp(ctx,		"MMGP",	0xFFFFFFFFA000E000, 0xFFFFFFFFA000E3FF);
@@ -886,7 +888,9 @@ int main(int argc, char *argv[])
 
 	BJX2_MemDefineMmgp(ctx,		"MMGP",	0xFFFFFFFFF000E000, 0xFFFFFFFFF000E3FF);
 	BJX2_MemDefineSndSblk(ctx,	"SBAU",	0xFFFFFFFFF0080000, 0xFFFFFFFFF0081FFF);
-	BJX2_MemDefineGfxCon(ctx,	"CGFX",	0xFFFFFFFFF00A0000, 0xFFFFFFFFF00AFFFF);
+//	BJX2_MemDefineGfxCon(ctx,	"CGFX",	0xFFFFFFFFF00A0000, 0xFFFFFFFFF00AFFFF);
+	BJX2_MemDefineSndAuPcm(ctx,	"SPCM",	0xFFFFFFFFF0090000, 0xFFFFFFFFF009FFFF);
+	BJX2_MemDefineGfxCon(ctx,	"CGFX",	0xFFFFFFFFF00A0000, 0xFFFFFFFFF00BFFFF);
 #endif
 	
 	if(ifn)

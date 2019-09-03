@@ -17,6 +17,23 @@ It may depend on the hardware which modes are supported.
 If the hardware cell is narrower than an 8 DWORD stride, then some of the DWORD values may simply be absent. Writing to these addresses will be no-op and reads will return an undefined value.
 
 
+Control Register 0 Bits:
+* 0: Horizontal Resolution Adjust
+** 0=40/50 Column, 1=80/100 Column
+* 1: Half-Width Cell (0=256b, 1=128b)
+* 2: Vertical Resolution Adjust
+** 0=25 Rows, 1=50 Rows
+* 3: Basic Display Resolution
+** 0=640x480, 1=800x600
+** Implicitly selects between 80 and 100 columns.
+* (7:4): Screen Buffer Mode
+** 0=Color Cell, CLR15=YVU654.
+** 1=4x4x16bpp (256b) or 4x4x8bpp (128b)
+** 2=8x8x4bpp (256b)
+** 8=ColorCell, CLR15=RGB555.
+** 9=4x4x16bpp RGB565
+
+
 == Bitmapped Modes ==
 
 These will use the cells as a bitmapped pixel block.
@@ -26,26 +43,13 @@ The mode bits will select which of the formats is used.
 * 4x4x16b, 4x4 cell of YVU655 endpoints.
 ** An alternate mode may use RGB565.
 * 8x8x4b, 8x8 cell of RGBI endpoints.
-** Basic layout is the same as the 16bpp mode, just further split into 2x2.
+** Basic layout is the same as the 16bpp mode.
+** Each 16-bit element is further split into 2x2 RGBI values.
 
 128-bit:
-* 4x4x8b, 4x4 cell of Y4C4 or Y3C5 endpoints.
+* 4x4x8b, 4x4 cell of 256-color endpoints.
 
 Pixels will be organized in the cells in raster order starting from the top-left, with the first pixel in the LSB. This will match a typical in-memory order in the 16-bit case.
-
-Y4C4:
-* Will have a 4 bit luma.
-* The other 4 bits will define a Chroma:
-** 1..6: High saturation Colors
-*** 1=Red, 2=Green, 3=Yellow, 4=Blue, 5=Magenta, 6=Cyan
-** 9..E: Low Saturation Colors
-** 7, 8, F: Faint Colors (Cyan, Magenta, Yellow)
-** 0: Gray
-* Alternatively:
-* 0: Gray
-* 1..6: Red, Yellow, Green, Cyan, Blue, Magenta (High Sat)
-* 7..C: Red, Yellow, Green, Cyan, Blue, Magenta (Low Sat)
-* D..F: Yellow, Cyan, Magenta (Faint)
 
 
 == Color Cell Mode ==

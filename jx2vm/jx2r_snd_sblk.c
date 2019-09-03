@@ -1,6 +1,7 @@
 // #include "sblk_multi.c"
 
 #include "jx2r_snd_smus.c"
+#include "jx2r_snd_aupcm.c"
 
 void SoundDev_Submit();
 int SoundDev_WriteStereoSamples(short *buffer, int cnt);
@@ -665,6 +666,7 @@ int BJX2_SndSblk_Update(BJX2_Context *ctx, int dt)
 {
 	static short tsblk[256];
 	static short tsblk1b[512*2];
+	static short tsblk1c[512*2];
 	static short tsblk2[65536];
 	static int llv, lrv;
 	static s64 lus;
@@ -797,6 +799,9 @@ int BJX2_SndSblk_Update(BJX2_Context *ctx, int dt)
 #if 1
 		SMus_GetStepSamples(tsblk1b, 256, 32);
 //		SMus_GetStepSamples(tsblk1b, 353, 32);
+
+		SndAuPcm_GetStepSamples(tsblk1c, 256, 32);
+
 		for(i=0; i<353; i++)
 		{		
 //			k=(i*0.3628);
@@ -805,6 +810,10 @@ int BJX2_SndSblk_Update(BJX2_Context *ctx, int dt)
 
 			lv=ct[i*2+0]; lv+=tsblk1b[k*2+0];
 			rv=ct[i*2+1]; rv+=tsblk1b[k*2+1];
+
+			lv+=tsblk1c[k*2+0];
+			rv+=tsblk1c[k*2+1];
+
 			ct[i*2+0]=smus_clamp16s(lv);
 			ct[i*2+1]=smus_clamp16s(rv);
 		}
@@ -813,6 +822,7 @@ int BJX2_SndSblk_Update(BJX2_Context *ctx, int dt)
 		ct+=353*2;
 	}
 	SMus_SyncTimeUsec(ctx);
+	SndAuPcm_SyncTimeUsec(ctx);
 #endif
 
 	if(n>0)

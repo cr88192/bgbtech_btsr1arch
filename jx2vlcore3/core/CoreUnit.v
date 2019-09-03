@@ -5,6 +5,8 @@
 `include "MmiModDdr3.v"
 
 `include "ModTxtNtW.v"
+`include "ModAudPcm.v"
+`include "ModPs2Kb.v"
 
 module CoreUnit(
 	/* verilator lint_off UNUSED */
@@ -87,10 +89,12 @@ output			sdc_ena;
 
 output			aud_mono_out;
 
-assign			ps2_clk_o	= 1'bz;
-assign			ps2_data_o	= 1'bz;
-assign			ps2_clk_d	= 1'b0;
-assign			ps2_data_d	= 1'b0;
+// assign			ps2_clk_o	= 1'bz;
+// assign			ps2_data_o	= 1'bz;
+// assign			ps2_clk_d	= 1'b0;
+// assign			ps2_data_d	= 1'b0;
+
+// assign			aud_mono_out	= 1'bz;
 
 wire			sdc_sclk;		//clock to SDcard
 wire			sdc_do;			//data from SDcard
@@ -98,12 +102,13 @@ wire			sdc_di;			//data to SDcard
 wire			sdc_cs;			//chip-select for SDcard
 
 assign		sdc_clk	= sdc_sclk;
-assign		sdc_do	= sdc_dat[0];
+assign		sdc_do	= sdc_dat_i[0];
 assign		sdc_dat_o[1]	= 1'bz;
 assign		sdc_dat_o[2]	= 1'bz;
 assign		sdc_dat_o[3]	= sdc_cs;
 assign		sdc_cmd		= sdc_di;
 assign		sdc_dat_d	= 4'b1000;
+assign		sdc_ena		= sdc_cs;
 
 reg			clock_halfMhz;
 
@@ -151,7 +156,7 @@ wire[4:0]		mmioOpm;
 reg[1:0]		mmioOK;
 
 wire[31:0]		dbgOutPc;
-wire[63:0]		dbgOutIstr;
+wire[95:0]		dbgOutIstr;
 wire			dbgExHold1;
 wire			dbgExHold2;
 
@@ -194,6 +199,7 @@ wire[15:0]		fixedPinsIn;
 // assign			uartRxD = fixedPinsOut[0];
 // assign			fixedPinsIn[1] = uartTxD;
 assign			uartTxD = fixedPinsOut[0];
+assign			uartRtS = 1'b0;
 assign			fixedPinsIn[1] = uartRxD;
 
 MmiModGpio	gpio(
@@ -239,6 +245,27 @@ ModTxtNtW	scrn(
 	mmioAddr,	mmioOutData,	scrnMmioOutData,
 	mmioOpm,	scrnMmioOK);
 
+wire[1:0]	audPwmOut;
+wire[31:0]	audMmioOutData;
+wire[1:0]	audMmioOK;
+assign		aud_mono_out	= audPwmOut[0];
+
+ModAudPcm	pcm(
+	clock,		reset,
+	audPwmOut,
+	mmioAddr,	mmioOutData,	audMmioOutData,
+	mmioOpm,	audMmioOK);
+
+wire[31:0]	kbMmioOutData;
+wire[1:0]	kbMmioOK;
+
+ModPs2Kb	ps2kb(
+	clock,			reset,
+	ps2_clk_i,		ps2_clk_o,		ps2_clk_d,	
+	ps2_data_i,		ps2_data_o,		ps2_data_d,
+	mmioAddr,		mmioOutData,	kbMmioOutData,
+	mmioOpm,		kbMmioOK);
+
 always @*
 begin
 
@@ -258,6 +285,16 @@ begin
 	begin
 		mmioInData	= scrnMmioOutData;
 		mmioOK		= scrnMmioOK;
+	end
+	else if(audMmioOK != UMEM_OK_READY)
+	begin
+		mmioInData	= audMmioOutData;
+		mmioOK		= audMmioOK;
+	end
+	else if(kbMmioOK != UMEM_OK_READY)
+	begin
+		mmioInData	= kbMmioOutData;
+		mmioOK		= kbMmioOK;
 	end
 
 end

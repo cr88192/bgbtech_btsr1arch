@@ -91,6 +91,11 @@ reg[63:0]	fontMem[255:0];
 reg[63:0]	fontGfx1Mem[127:0];
 reg[63:0]	fontGfx2Mem[127:0];
 
+reg[15:0]	fontRamA[511:0];
+reg[15:0]	fontRamB[511:0];
+reg[15:0]	fontRamC[511:0];
+reg[15:0]	fontRamD[511:0];
+
 // reg[31:0]	scrRegCtrl[7:0];	//Control Registers
 
 reg[31:0]	scrRegCtrl0;	//Control Registers
@@ -112,6 +117,7 @@ reg[63:0]	tFontData2;
 reg[63:0]	tFontDataAsc1;
 reg[63:0]	tFontDataGfx1;
 reg[63:0]	tFontDataGfx2;
+reg[63:0]	tFontDataRam;
 
 
 assign cellData = tCell1;
@@ -191,9 +197,10 @@ begin
 	3'b001:	tFontData2 = tFontDataAsc1;
 	3'b010:	tFontData2 = tFontDataGfx2;
 	3'b011:	tFontData2 = tFontDataGfx1;
-//	3'b100:	tFontData2 = tFontDataAsc1;
-//	3'b101:	tFontData2 = tFontDataGfx2;
-	default: tFontData2 = tFontDataAsc1;
+	3'b100:	tFontData2 = tFontDataRam;
+	3'b101:	tFontData2 = tFontDataRam;
+	3'b110:	tFontData2 = tFontDataRam;
+	3'b111:	tFontData2 = tFontDataRam;
 	endcase
 
 end
@@ -239,6 +246,11 @@ begin
 	tFontDataAsc1	<= fontMem[tFontGlyph[7:0]];
 	tFontDataGfx1	<= fontGfx1Mem[tFontGlyph[6:0]];
 	tFontDataGfx2	<= fontGfx2Mem[tFontGlyph[6:0]];
+	tFontDataRam	<= {
+		fontRamD[tFontGlyph[8:0]],
+		fontRamC[tFontGlyph[8:0]],
+		fontRamB[tFontGlyph[8:0]],
+		fontRamA[tFontGlyph[8:0]] };
 	
 	tFontGlyph		<= fontGlyph;
 	tFontData1		<= tFontData2;
@@ -255,16 +267,23 @@ begin
 	
 		if(busAddr[16:8]==9'h1FF)
 		begin
-//			scrRegCtrl[busAddr[4:2]] <= busData;
-			case(busAddr[4:2])
-				3'b000: scrRegCtrl0	<= busData;
-				3'b001: scrRegCtrl1	<= busData;
-				3'b010: scrRegCtrl2	<= busData;
-				3'b011: scrRegCtrl3	<= busData;
-				3'b100: scrRegCtrl4	<= busData;
-				3'b101: scrRegCtrl5	<= busData;
-				3'b110: scrRegCtrl6	<= busData;
-				3'b111: scrRegCtrl7	<= busData;
+			case(busAddr[7:2])
+				6'b000000: scrRegCtrl0	<= busData;
+				6'b000001: scrRegCtrl1	<= busData;
+				6'b000010: scrRegCtrl2	<= busData;
+				6'b000011: scrRegCtrl3	<= busData;
+				6'b000100: scrRegCtrl4	<= busData;
+				6'b000101: scrRegCtrl5	<= busData;
+				6'b000110: scrRegCtrl6	<= busData;
+				6'b000111: scrRegCtrl7	<= busData;
+				6'b001000: begin
+				end
+				6'b001100: fontRamA[busData[24:16]]	<= busData[15:0];
+				6'b001101: fontRamB[busData[24:16]]	<= busData[15:0];
+				6'b001110: fontRamC[busData[24:16]]	<= busData[15:0];
+				6'b001111: fontRamD[busData[24:16]]	<= busData[15:0];
+				default: begin
+				end
 			endcase
 		end
 		else

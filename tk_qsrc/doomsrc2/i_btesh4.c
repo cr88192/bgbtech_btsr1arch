@@ -1623,11 +1623,14 @@ byte	i_scr_bnc[40*25];
 
 void R_CellMarkBox (int bx0, int bx1, int by0, int by1);
 
+// #define I_SCR_BMP128K
+
 void I_FinishUpdate (void)
 {
 	u32 *conbufa;
 	int bx, by, by2;
 
+	u64 pxa, pxb, pxc, pxd;
 	u64 colmask;
 	byte *ics;
 	u16 *ict16, *ics16, *ics16b;
@@ -1649,12 +1652,54 @@ void I_FinishUpdate (void)
 //	conbufa=(u32 *)0xA00A0000;
 	conbufa=(u32 *)0xF00A0000;
 
+	((u32 *)0xF00BFF00)[8]=vid_frnum;
 	vid_frnum++;
+
+#ifdef I_SCR_BMP128K
+	((u32 *)0xF00BFF00)[0]=0x0015;		//320x200x16bpp
+//	((u32 *)0xF00BFF00)[0]=0x0025;		//320x200x16bpp
+//	((u32 *)0xF00BFF00)[0]=0x0005;		//320x200x16bpp
+//	((u32 *)0xF00BFF00)[0]=0x0010;		//320x200x16bpp
+#else
+	((u32 *)0xF00BFF00)[0]=0x0000;		//320x200
+#endif
 
 	ics16=(u16 *)screens[0];
 	icl16=vid_lastscreen;
 	ict=conbufa;
 
+// #if 1
+#ifdef I_SCR_BMP128K
+// #if 0
+	bn=0;
+	for(by=0; by<50; by++)
+	{
+		ics16b=ics16;
+		icl16b=icl16;
+		for(bx=0; bx<80; bx++)
+		{
+			pxa=*(u64 *)(ics16b+0*BASEWIDTH);
+			pxb=*(u64 *)(ics16b+1*BASEWIDTH);
+			pxc=*(u64 *)(ics16b+2*BASEWIDTH);
+			pxd=*(u64 *)(ics16b+3*BASEWIDTH);
+			ict[0]=pxa;			ict[2]=pxb;
+			ict[4]=pxc;			ict[6]=pxd;
+			ict[1]=pxa>>32;		ict[3]=pxb>>32;
+			ict[5]=pxc>>32;		ict[7]=pxd>>32;
+			
+			bn++;
+			ict+=8;
+			ics16b+=4;
+			icl16b+=4;
+		}
+
+		ics16+=4*BASEWIDTH;
+		icl16+=4*BASEWIDTH;
+	}
+#endif
+
+// #if 1
+#ifndef I_SCR_BMP128K
 	bn=0;
 	for(by=0; by<25; by++)
 	{
@@ -1681,7 +1726,7 @@ void I_FinishUpdate (void)
 //			if(colmask&(1LL<<bx))
 			brt=VID_ConGfx_EncBlock16Q(ics16b, icl16b, ict);
 
-#if 1
+#if 0
 			if(brt)
 			{
 #if 0
@@ -1732,9 +1777,10 @@ void I_FinishUpdate (void)
 		ics16+=8*BASEWIDTH;
 		icl16+=8*BASEWIDTH;
 	}
+#endif
 	
 //	ict[0]=vid_frnum;
-	conbufa[8100]=vid_frnum;
+//	conbufa[8100]=vid_frnum;
 	
 //	if(i_scrflash)
 //		i_scrflash--;
