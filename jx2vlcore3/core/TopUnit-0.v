@@ -9,12 +9,13 @@
 `include "ModPs2Kb.v"
 `include "ModSdSpi.v"
 
-module CoreUnit(
+module TopUnit(
 	/* verilator lint_off UNUSED */
 	clock,		reset,
+//	gpioPins,
+//	fixedPins,
 
-	ddrDataI,	ddrDataO,	ddrDataEn,
-	ddrAddr,	ddrBa,
+	ddrData,	ddrAddr,	ddrBa,
 	ddrCs,		ddrRas,		ddrCas,
 	ddrWe,		ddrCke,		ddrClk,
 
@@ -23,13 +24,9 @@ module CoreUnit(
 
 	uartTxD,	uartRxD,
 	uartCtS,	uartRtS,
+	ps2_clk,	ps2_data,
 
-	ps2_clk_i,	ps2_data_i,
-	ps2_clk_o,	ps2_data_o,
-	ps2_clk_d,	ps2_data_d,
-
-	sdc_dat_i,	sdc_dat_o,	sdc_dat_d,
-	sdc_clk,	sdc_cmd,	sdc_ena,
+	sdc_dat,	sdc_clk,	sdc_cmd,	sdc_ena,
 
 	aud_mono_out
 	);
@@ -39,9 +36,7 @@ input			reset;
 // inout[31:0]		gpioPins;
 // inout[15:0]		fixedPins;
 
-input[15:0]		ddrDataI;		//DDR data pins
-output[15:0]	ddrDataO;		//DDR data pins
-output			ddrDataEn;
+inout[15:0]		ddrData;		//DDR data pins
 
 // output[13:0]	ddrAddr;		//Address pins
 output[12:0]	ddrAddr;		//Address pins
@@ -60,9 +55,8 @@ wire[15:0]		ddrData_I;		//DDR data pins
 wire[15:0]		ddrData_O;		//DDR data pins
 wire			ddrData_En;		//DDR data pins
 
-assign			ddrDataO	= ddrData_O;
-assign			ddrData_I	= ddrDataI;
-assign			ddrDataEn	= ddrData_En;
+assign			ddrData = ddrData_En ? ddrData_O : 16'hzzzz;
+assign			ddrData_I	= ddrData;
 
 output[3:0]		vgaRed;
 output[3:0]		vgaGrn;
@@ -75,28 +69,18 @@ input			uartRxD;
 input			uartCtS;
 output			uartRtS;
 
-input			ps2_clk_i;
-output			ps2_clk_o;
-output			ps2_clk_d;
-input			ps2_data_i;
-output			ps2_data_o;
-output			ps2_data_d;
+inout			ps2_clk;
+inout			ps2_data;
 
-input[3:0]		sdc_dat_i;
-output[3:0]		sdc_dat_o;
-output[3:0]		sdc_dat_d;
+inout[3:0]		sdc_dat;
 output			sdc_clk;
 output			sdc_cmd;
 output			sdc_ena;
 
 output			aud_mono_out;
 
-// assign			ps2_clk_o	= 1'bz;
-// assign			ps2_data_o	= 1'bz;
-// assign			ps2_clk_d	= 1'b0;
-// assign			ps2_data_d	= 1'b0;
-
-// assign			aud_mono_out	= 1'bz;
+// assign			ps2_clk		= 1'bz;
+// assign			ps2_data	= 1'bz;
 
 wire			sdc_sclk;		//clock to SDcard
 wire			sdc_do;			//data from SDcard
@@ -104,13 +88,11 @@ wire			sdc_di;			//data to SDcard
 wire			sdc_cs;			//chip-select for SDcard
 
 assign		sdc_clk	= sdc_sclk;
-assign		sdc_do	= sdc_dat_i[0];
-assign		sdc_dat_o[1]	= 1'bz;
-assign		sdc_dat_o[2]	= 1'bz;
-assign		sdc_dat_o[3]	= sdc_cs;
+assign		sdc_do	= sdc_dat[0];
+assign		sdc_dat[1]	= 1'bz;
+assign		sdc_dat[2]	= 1'bz;
+assign		sdc_dat[3]	= sdc_cs;
 assign		sdc_cmd		= sdc_di;
-assign		sdc_dat_d	= 4'b1000;
-assign		sdc_ena		= sdc_cs;
 
 reg			clock_halfMhz;
 
@@ -121,9 +103,12 @@ assign	clock_cpu	= clock_halfMhz;
 assign	clock_cpu	= clock;
 `endif
 
+// reg[127:0]	ddrMemDataIn;
 wire[127:0]		ddrMemDataIn;
 wire[127:0]		ddrMemDataOut;
+// reg[31:0]	ddrMemAddr;
 wire[31:0]		ddrMemAddr;
+// reg[4:0]		ddrMemOpm;
 wire[4:0]		ddrMemOpm;
 wire[1:0]		ddrMemOK;
 
@@ -145,10 +130,12 @@ MmiModDdr3		ddr(
 	ddrCs, ddrRas, ddrCas, ddrWe, ddrCke,
 	ddrClk);
 
+// reg[127:0]		memInData;
 wire[127:0]		memInData;
 wire[127:0]		memOutData;
 wire[31:0]		memAddr;
 wire[4:0]		memOpm;
+// reg[1:0]		memOK;
 wire[1:0]		memOK;
 
 reg[31:0]		mmioInData;
@@ -158,7 +145,7 @@ wire[4:0]		mmioOpm;
 reg[1:0]		mmioOK;
 
 wire[31:0]		dbgOutPc;
-wire[95:0]		dbgOutIstr;
+wire[63:0]		dbgOutIstr;
 wire			dbgExHold1;
 wire			dbgExHold2;
 
@@ -201,7 +188,6 @@ wire[15:0]		fixedPinsIn;
 // assign			uartRxD = fixedPinsOut[0];
 // assign			fixedPinsIn[1] = uartTxD;
 assign			uartTxD = fixedPinsOut[0];
-assign			uartRtS = 1'b0;
 assign			fixedPinsIn[1] = uartRxD;
 
 MmiModGpio	gpio(
@@ -223,6 +209,7 @@ MemL2A	l2a(
 	memOK,
 
 	ddrMemAddr,		ddrMemOpm,
+//	ddrMemDataIn,	ddrMemDataOut,
 	ddrMemDataOut,	ddrMemDataIn,
 	ddrMemOK,
 
@@ -242,9 +229,10 @@ assign	vgaHsync	= scrnPwmOut[12];
 assign	vgaVsync	= scrnPwmOut[13];
 
 ModTxtNtW	scrn(
-	clock,			reset,				scrnPwmOut,
-	mmioOutData,	scrnMmioOutData,	mmioAddr,
-	mmioOpm,		scrnMmioOK);
+	clock,		reset,
+	scrnPwmOut,
+	mmioAddr,	mmioOutData,	scrnMmioOutData,
+	mmioOpm,	scrnMmioOK);
 
 wire[1:0]	audPwmOut;
 wire[31:0]	audMmioOutData;
@@ -254,8 +242,8 @@ assign		aud_mono_out	= audPwmOut[0];
 ModAudPcm	pcm(
 	clock,		reset,
 	audPwmOut,
-	mmioOutData,	audMmioOutData,		mmioAddr,
-	mmioOpm,		audMmioOK);
+	mmioAddr,	mmioOutData,	audMmioOutData,
+	mmioOpm,	audMmioOK);
 
 wire[31:0]	kbMmioOutData;
 wire[1:0]	kbMmioOK;
@@ -264,21 +252,33 @@ ModPs2Kb	ps2kb(
 	clock,			reset,
 	ps2_clk_i,		ps2_clk_o,		ps2_clk_d,	
 	ps2_data_i,		ps2_data_o,		ps2_data_d,
-	mmioOutData,	kbMmioOutData,	mmioAddr,
+	mmioAddr,		mmioOutData,	kbMmioOutData,
 	mmioOpm,		kbMmioOK);
 
 wire[31:0]	sdMmioOutData;
 wire[1:0]	sdMmioOK;
 
 ModSdSpi	sdspi(
-	clock,			reset,
-	sdc_sclk,		sdc_do,
-	sdc_di,			sdc_cs,
-	mmioOutData,	sdMmioOutData,	mmioAddr,
-	mmioOpm,		sdMmioOK,		12'hE04);
+	clock,		reset,
+	sdc_sclk,	sdc_do,
+	sdc_di,		sdc_cs,
+	mmioAddr,	mmioOutData,	sdMmioOutData,
+	mmioOpm,	sdMmioOK,		12'hE04);
 
 always @*
 begin
+
+//	ddrData_I	= ddrData;
+
+//	memInData	= UV128_XX;
+//	memOK		= 0;
+
+//	ddrMemDataIn	= memOutData;
+//	memInData		= ddrMemDataOut;
+//	ddrMemAddr		= memAddr;
+//	ddrMemOpm		= memOpm;
+//	memOK			= ddrMemOK;
+
 
 	gpioInData	= mmioOutData[31:0];
 	gpioAddr	= mmioAddr;
@@ -313,6 +313,16 @@ begin
 		mmioOK		= sdMmioOK;
 	end
 
+//	memInData	= UV128_XX;
+//	memOK		= UMEM_OK_READY;
+	
+//	if(gpioOK==UMEM_OK_OK)
+//	if(memAddr[31:29]==3'b101)
+//	if(0)
+//	begin
+//		memInData	= { UV96_XX, gpioOutData };
+//		memOK		= gpioOK;
+//	end
 end
 
 always @(posedge clock)

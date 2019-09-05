@@ -25,7 +25,7 @@ S.E3.M4
 module ModAudPcm(
 	/* verilator lint_off UNUSED */
 	clock, reset, pwmOut,
-	busAddr, busInData, busOutData, busOpm, busOK);
+	busInData, busOutData, busAddr, busOpm, busOK);
 
 input			clock;
 input			reset;

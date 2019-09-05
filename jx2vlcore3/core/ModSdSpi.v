@@ -4,7 +4,7 @@ Deal with SPI.
 
 `include "CoreDefs.v"
 
-module ModPs2Kb(
+module ModSdSpi(
 	/* verilator lint_off UNUSED */
 	clock,			reset,
 	spi_sclk,		spi_mosi,
@@ -38,9 +38,12 @@ reg			tOutMosi2;
 reg			tOutMosi;
 reg			tOutSclk2;
 reg			tOutSclk;
+reg			tOutCs2;
+reg			tOutCs;
 
 assign	spi_sclk = tOutSclk2;
 assign	spi_mosi = tOutMosi2;
+assign	spi_cs = tOutCs2;
 
 assign		mmioOutData = tMmioOutData2;
 assign		mmioOK		= tMmioOK2;
@@ -49,7 +52,7 @@ wire		tMmioLowCSel;
 assign		tMmioLowCSel = (mmioAddr[27:16]==12'h000);
 
 wire		tMmioSelfCSel;
-assign		tMmioSelfCSel = tMmioLowCSel && (mmioAddr[15:12]==mmioSelfAddr);
+assign		tMmioSelfCSel = tMmioLowCSel && (mmioAddr[15:4]==mmioSelfAddr);
 
 reg				mmioInOE;
 reg				mmioInWR;
@@ -80,6 +83,8 @@ begin
 
 	mmioInOE		= (mmioOpm[3]) && tMmioSelfCSel;
 	mmioInWR		= (mmioOpm[4]) && tMmioSelfCSel;
+	mmioNxtLatchWR	= mmioInWR && mmioLatchWR;
+
 	
 	tNxtRegCtrl		= tRegCtrl;
 //	tNxtDivCnt		= tDivCnt - 1;
@@ -88,7 +93,12 @@ begin
 	tNxtOutSclk		= tOutSclk;
 	tNxtBitCnt		= tBitCnt;
 	
-	tDivRstH		= { 1'b0, tDivRst[13, 1] };
+	tDivRstH		= { 1'b0, tDivRst[13:1] };
+
+	tOutCs = tRegCtrl[0];
+	tNxtDivRst = { 2'b00, tRegCtrl[31:27], 7'h00 };
+
+	tNxtRegExch		= tRegExch;
 
 	if(tBitCnt!=0)
 	begin
@@ -112,13 +122,27 @@ begin
 	if((mmioAddr[3:2]==2'b00) && mmioInOE)
 	begin
 		tMmioOutData	= tRegCtrl;
+		tMmioOutData[1]	= (tBitCnt!=0);
+		
 		tMmioOK			= UMEM_OK_OK;
 	end
 
 	if((mmioAddr[3:2]==2'b00) && mmioInWR)
 	begin
-		tNxtRegCtrl		= mmioInData;
-		tMmioOK			= UMEM_OK_OK;
+		if(tBitCnt==0)
+		begin
+			tNxtRegCtrl		= mmioInData;
+			tMmioOK			= UMEM_OK_OK;
+			mmioNxtLatchWR	= 1;
+
+			if(mmioInData[1] && (tBitCnt==0))
+				tNxtBitCnt			= 8;
+		end
+		else
+		begin
+//			mmioNxtLatchWR	= mmioLatchWR;
+			tMmioOK			= mmioLatchWR ? UMEM_OK_OK : UMEM_OK_HOLD;
+		end
 	end
 
 	if((mmioAddr[3:2]==2'b01) && mmioInOE)
@@ -133,26 +157,26 @@ begin
 			tMmioOK			= UMEM_OK_HOLD;
 		end
 	end
-
+	
 	if((mmioAddr[3:2]==2'b01) && mmioInWR)
 	begin
 		if(tBitCnt==0)
 		begin
-			tRegExch[7:0]	= mmioInData[7:0];
-			tNxtBitCnt		= 8;
-			tMmioOK			= UMEM_OK_OK;
-			mmioNxtLatchWR	= 1;
+			tNxtRegExch[7:0]	= mmioInData[7:0];
+//			tNxtBitCnt			= 8;
+			tMmioOK				= UMEM_OK_OK;
+			mmioNxtLatchWR		= 1;
 		end
 		else
 		begin
-			mmioNxtLatchWR	= mmioLatchWR;
+//			mmioNxtLatchWR	= mmioLatchWR;
 			tMmioOK			= mmioLatchWR ? UMEM_OK_OK : UMEM_OK_HOLD;
 		end
 	end
-	else
-	begin
-		mmioNxtLatchWR		= 0;
-	end
+//	else
+//	begin
+//		mmioNxtLatchWR		= 0;
+//	end
 
 end
 
@@ -162,6 +186,7 @@ begin
 	tMmioOK2		<= tMmioOK;
 	tOutMosi2		<= tOutMosi;
 	tOutSclk2		<= tOutSclk;
+	tOutCs2			<= tOutCs;
 
 	tRegCtrl		<= tNxtRegCtrl;
 	tRegExch		<= tNxtRegExch;

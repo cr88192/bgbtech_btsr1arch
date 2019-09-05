@@ -12,7 +12,7 @@
 
 
 module ModTxtNtW(clock, reset, pwmOut,
-	busAddr, busInData, busOutData, busOpm, busOK);
+	busInData, busOutData, busAddr, busOpm, busOK);
 
 /* verilator lint_off UNUSED */
 
