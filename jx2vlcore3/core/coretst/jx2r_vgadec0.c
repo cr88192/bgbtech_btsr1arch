@@ -184,7 +184,8 @@ int pwmtab_init()
 
 // #define CDEC_LINE_RAWXMAX 820
 #define CDEC_LINE_RAWXMAX 1440
-#define CDEC_LINE_RAWYMAX 530
+//#define CDEC_LINE_RAWYMAX 530
+#define CDEC_LINE_RAWYMAX 720
 
 #define CDEC_LINE_XOFS 58
 //#define CDEC_LINE_XOFS 60
@@ -197,6 +198,7 @@ struct cdec_imgbuf_s
 u16 *bits;
 int bpos;
 int bpsz;
+int epos;
 
 int lcy, lcu, lcv;
 
@@ -213,6 +215,30 @@ int frame;
 byte bsmode;	//bitstream mode
 };
 
+int cdec_decode0y(cdec_imgbuf *ctx);
+
+int CDEC_SetupForStream(cdec_imgbuf *ctx)
+{
+	ctx->bits=(u16 *)malloc(4096*2);
+	ctx->bpos=0;
+	ctx->epos=0;
+}
+
+int CDEC_UpdateForStreamCycle(cdec_imgbuf *ctx, int bits)
+{
+	if(ctx->epos>=4088)
+	{
+		while(ctx->bpos<ctx->epos)
+			{ cdec_decode0y(ctx); }
+		ctx->bpos=0;
+		ctx->epos=0;
+	}
+
+	ctx->bits[ctx->epos++]=bits;
+	while((ctx->bpos+4)<=ctx->epos)
+		{ cdec_decode0y(ctx); }
+	return(0);
+}
 
 int CDEC_PeekPwm8I(cdec_imgbuf *ctx, int ofs, int shl)
 {
@@ -352,7 +378,8 @@ int cdec_decode0y(cdec_imgbuf *ctx)
 			ctx->ypos=0;
 			ctx->xpos=0;
 //			ctx->bpos+=8;
-			ctx->bpos+=4;
+//			ctx->bpos+=4;
+			ctx->bpos++;
 			ctx->neqp=0;
 			return(0);
 		}
@@ -363,7 +390,8 @@ int cdec_decode0y(cdec_imgbuf *ctx)
 				ctx->ypos++;
 			ctx->xpos=0;
 //			ctx->bpos+=8;
-			ctx->bpos+=4;
+//			ctx->bpos+=4;
+			ctx->bpos++;
 			return(0);
 		}
 
@@ -449,20 +477,36 @@ int cdec_decode0y(cdec_imgbuf *ctx)
 //	ctx->bpos+=8;
 	ctx->bpos+=4;
 
+#if 0
 	if(ctx->frame>1)
 	{
 		lcy=ctx->ybuf[ctx->ypos*CDEC_LINE_RAWXMAX+ctx->xpos];
 		lcu=ctx->ubuf[ctx->ypos*CDEC_LINE_RAWXMAX+ctx->xpos];
 		lcv=ctx->vbuf[ctx->ypos*CDEC_LINE_RAWXMAX+ctx->xpos];
 
-		cy=(lcy+cy)/2;
-		cu=(lcu+cu)/2;
-		cv=(lcv+cv)/2;
+//		cy=(lcy+cy)/2;
+//		cu=(lcu+cu)/2;
+//		cv=(lcv+cv)/2;
+
+		cy=(lcy+3*cy)/4;
+		cu=(lcu+3*cu)/4;
+		cv=(lcv+3*cv)/4;
 	}
+#endif
 
 	ctx->ybuf[ctx->ypos*CDEC_LINE_RAWXMAX+ctx->xpos]=cy;
 	ctx->ubuf[ctx->ypos*CDEC_LINE_RAWXMAX+ctx->xpos]=cu;
 	ctx->vbuf[ctx->ypos*CDEC_LINE_RAWXMAX+ctx->xpos]=cv;
+
+	ctx->ybuf[ctx->ypos*CDEC_LINE_RAWXMAX+ctx->xpos+1]=255;
+	ctx->ybuf[ctx->ypos*CDEC_LINE_RAWXMAX+ctx->xpos+2]=255;
+	ctx->ybuf[ctx->ypos*CDEC_LINE_RAWXMAX+ctx->xpos+3]=255;
+	ctx->ybuf[ctx->ypos*CDEC_LINE_RAWXMAX+ctx->xpos+4]=255;
+
+//	ctx->ybuf[ctx->ypos*CDEC_LINE_RAWXMAX+ctx->xpos+1]=0;
+//	ctx->ubuf[ctx->ypos*CDEC_LINE_RAWXMAX+ctx->xpos+1]=255;
+//	ctx->vbuf[ctx->ypos*CDEC_LINE_RAWXMAX+ctx->xpos+1]=255;
+
 	ctx->xpos++;
 	if(ctx->xpos>=CDEC_LINE_RAWXMAX)
 	{
@@ -481,19 +525,24 @@ int cdec_decode0y(cdec_imgbuf *ctx)
 	return(0);
 }
 
-int cdec_getimage(cdec_imgbuf *ctx, byte *obuf)
+int cdec_getimage(cdec_imgbuf *ctx, byte *obuf, int xs, int ys)
 {
 	int cy, cu, cv, cu1, cv1;
-	int cr, cg, cb;
+	int cr, cg, cb, vf;
 	int i, j, k;
 	
-	for(i=0; i<480; i++)
-		for(j=0; j<640; j++)
+//	for(i=0; i<480; i++)
+//		for(j=0; j<640; j++)
+
+	for(i=0; i<ys; i++)
+		for(j=0; j<xs; j++)
 	{
 //		k=(i+2*CDEC_LINE_YOFS)*CDEC_LINE_RAWXMAX+(j+CDEC_LINE_XOFS);
 //		k=(479-(i&(~1)))+2*CDEC_LINE_YOFS;
 //		k=(479-(i|1))+2*CDEC_LINE_YOFS;
-		k=(479-i)+2*CDEC_LINE_YOFS;
+//		k=(479-i)+2*CDEC_LINE_YOFS;
+//		k=(ys-i-1)+2*CDEC_LINE_YOFS;
+		k=i+2*CDEC_LINE_YOFS;
 		k=(k*CDEC_LINE_RAWXMAX)+(j+CDEC_LINE_XOFS);
 		cy=ctx->ybuf[k];
 		cu=ctx->ubuf[k];
@@ -524,10 +573,15 @@ int cdec_getimage(cdec_imgbuf *ctx, byte *obuf)
 		cg=clamp255(cg);
 		cb=clamp255(cb);
 		
-		obuf[(i*640+j)*4+0]=cr;
-		obuf[(i*640+j)*4+1]=cg;
-		obuf[(i*640+j)*4+2]=cb;
-		obuf[(i*640+j)*4+3]=255;
+//		obuf[(i*640+j)*4+0]=cr;
+//		obuf[(i*640+j)*4+1]=cg;
+//		obuf[(i*640+j)*4+2]=cb;
+//		obuf[(i*640+j)*4+3]=255;
+
+		obuf[(i*xs+j)*4+0]=cr;
+		obuf[(i*xs+j)*4+1]=cg;
+		obuf[(i*xs+j)*4+2]=cb;
+		obuf[(i*xs+j)*4+3]=255;
 	}
 	return(0);
 }

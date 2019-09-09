@@ -69,6 +69,9 @@ reg				ps2NxtWinP;
 reg				ps2WinAdv;
 reg				ps2NxtWinAdv;
 
+reg[3:0]		ps2WinCnt;
+reg[3:0]		ps2NxtWinCnt;
+
 reg				ps2_lstClk_i;
 
 always @*
@@ -84,12 +87,16 @@ begin
 	scanNxtSpAdv	= 0;
 	scanEpAdv		= 0;
 	ps2NxtWinAdv	= 0;
+	ps2NxtWinCnt	= ps2WinCnt;
 
 	ps2NxtWin = ps2Win;
 	if(ps2_lstClk_i && !ps2_clk_i)
 	begin
 		ps2NxtWin = { ps2_data_i, ps2Win[11:1] };
 		ps2NxtWinAdv	= 1;
+
+		if((ps2WinCnt != 0) || !ps2_data_i)
+			ps2NxtWinCnt	= ps2WinCnt+1;
 		
 		ps2NxtWinP =
 			ps2NxtWin[2] ^ ps2NxtWin[3] ^
@@ -98,7 +105,7 @@ begin
 			ps2NxtWin[8] ^ ps2NxtWin[9];
 	end
 
-	if(ps2WinAdv)
+	if(ps2WinAdv && (ps2WinCnt==11))
 	begin
 		if((ps2Win[1:0]==2'b01) && (ps2Win[11]==1'b1) &&
 			(ps2Win[10]==ps2WinP))
@@ -106,6 +113,7 @@ begin
 			ps2ScanAdv		= ps2Win[9:2];
 			scanNxtEpos		= scanEpos + 1;
 			scanEpAdv		= 1;
+			ps2NxtWinCnt	= 0;
 		end
 	end
 
@@ -138,6 +146,7 @@ begin
 	scanSpAdv		<= scanNxtSpAdv;
 	ps2WinAdv		<= ps2NxtWinAdv;
 	ps2WinP			<= ps2NxtWinP;
+	ps2WinCnt		<= ps2NxtWinCnt;
 
 	ps2_lstClk_i	<= ps2_clk_i;
 	ps2Win			<= ps2NxtWin;

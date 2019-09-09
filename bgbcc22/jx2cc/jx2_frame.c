@@ -4014,6 +4014,8 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 
 	BGBCC_JX2_EmitLabel(sctx, fcnlbl);
 
+	sctx->cur_fcnbase=BGBCC_JX2_EmitGetOffs(sctx);
+
 	BGBCC_JX2C_EmitLabelFlushRegisters(ctx, sctx);
 
 	sctx->cur_fpscr=0;

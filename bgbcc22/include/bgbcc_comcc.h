@@ -279,6 +279,7 @@ byte stat_opc_issfx;
 
 
 int sim_voffs;		//est' offset between real PC and sim PC
+int cur_fcnbase;
 
 s32 dfl_fpscr;		//default FPSCR state
 s32 cur_fpscr;		//current FPSCR state

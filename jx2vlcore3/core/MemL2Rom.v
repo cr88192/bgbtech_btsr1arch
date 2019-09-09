@@ -31,8 +31,11 @@ output[1:0]		memOK;
 
 reg[127:0]		tMemDataOut;
 reg[  1:0]		tMemOK;
-assign		memDataOut	= tMemDataOut;
-assign		memOK		= tMemOK;
+reg[127:0]		tMemDataOut2;
+reg[  1:0]		tMemOK2;
+
+assign		memDataOut	= tMemDataOut2;
+assign		memOK		= tMemOK2;
 
 reg[127:0]	romTileData[2047:0];
 reg[127:0]	ramTileData[ 511:0];
@@ -77,12 +80,16 @@ begin
 	
 	if(tAddrIsRom && tMemOpm[3])
 	begin
+//		$display("L2 ROM");
+
 		tMemDataOut		= tRomBlkData;
 		tMemOK			= UMEM_OK_OK;
 	end
 
 	if(tAddrIsRam && (tMemOpm[4:3]!=2'b00))
 	begin
+//		$display("L2 SRAM");
+
 		tMemDataOut		= tRamBlkData;
 		tMemOK			= UMEM_OK_OK;
 		
@@ -97,9 +104,12 @@ end
 
 always @(posedge clock)
 begin
-	tMemAddr	<= memAddr;
-	tMemDataIn	<= memDataIn;
-	tMemOpm		<= memOpm;
+	tMemDataOut2	<= tMemDataOut;
+	tMemOK2			<= tMemOK;
+
+	tMemAddr		<= memAddr;
+	tMemDataIn		<= memDataIn;
+	tMemOpm			<= memOpm;
 	
 	tRomBlkData	<= romTileData[tRomBlkIx];
 	tRamBlkData	<= ramTileData[tRamBlkIx];

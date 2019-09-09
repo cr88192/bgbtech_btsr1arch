@@ -1623,7 +1623,7 @@ byte	i_scr_bnc[40*25];
 
 void R_CellMarkBox (int bx0, int bx1, int by0, int by1);
 
-// #define I_SCR_BMP128K
+#define I_SCR_BMP128K
 
 void I_FinishUpdate (void)
 {
@@ -1682,11 +1682,16 @@ void I_FinishUpdate (void)
 			pxb=*(u64 *)(ics16b+1*BASEWIDTH);
 			pxc=*(u64 *)(ics16b+2*BASEWIDTH);
 			pxd=*(u64 *)(ics16b+3*BASEWIDTH);
+#if 0
 			ict[0]=pxa;			ict[2]=pxb;
 			ict[4]=pxc;			ict[6]=pxd;
 			ict[1]=pxa>>32;		ict[3]=pxb>>32;
 			ict[5]=pxc>>32;		ict[7]=pxd>>32;
-			
+#else
+			((u64 *)ict)[0]=pxa;	((u64 *)ict)[1]=pxb;
+			((u64 *)ict)[2]=pxc;	((u64 *)ict)[3]=pxd;
+#endif
+
 			bn++;
 			ict+=8;
 			ics16b+=4;

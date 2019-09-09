@@ -44,12 +44,13 @@ typedef signed char sbyte;
 byte kbbuf[256];
 byte kbrov;
 byte kbirov;
-byte gfxdrv_kill;
+// byte gfxdrv_kill;
 byte fkey;
 
 byte fmode;
 
-#ifdef __linux
+// #ifdef __linux
+#if 0
 static struct termios old_termios;
 
 void btesh2_ttynoncanon(void)
@@ -378,6 +379,7 @@ char *BTSR1_CheckGetString()
 	return(NULL);
 }
 
+#if 0
 int FRGL_TimeMS()
 {
 #ifdef _WIN32
@@ -421,6 +423,7 @@ int FRGL_TimeMS()
 #endif
 #endif
 }
+#endif
 
 
 uint32_t *rombuf;
@@ -430,14 +433,68 @@ uint32_t *drambuf;
 uint32_t *srambuf2;
 uint32_t *drambuf2;
 
+int sdc_spibit(int bit, int cs)
+{
+	static int init=0;
+	static int pos, tvi, tvo, tvn;
+	int ret;
+
+	if(!init)
+	{
+		init=1;
+		tvo=0xFFFF;
+		pos=8;
+	}
+
+	if(!cs)
+	{
+//		pos++;
+//		pos--;
+//		if(pos>=8)
+//		if(pos==0)
+		if(pos<=0)
+		{
+//			if(pos<0)
+//				tvi=0xFF;
+
+//			tvo=tvn;
+//			tvn=btesh2_spimmc_XrByte(NULL, tvi);
+//			tvo=(tvo<<8)|btesh2_spimmc_XrByte(NULL, tvi);
+			tvo=tvo|btesh2_spimmc_XrByte(NULL, tvi);
+			printf("sdc_spibit: tvi=%02X tvo=%02X\n", tvi, tvo);
+//			pos=0; tvi=0;
+			pos=8; tvi=0;
+		}
+		
+//		printf("sdc_spibit bit=%d\n", pos);
+
+//		tvi=(tvi>>1)|(bit<<7);
+//		ret=tvo&1;	tvo>>=1;
+		tvi=(tvi<<1)|(bit&1);
+//		ret=(tvo>>7)&1;
+		ret=(tvo>>14)&1;
+		tvo=tvo<<1;
+		pos--;
+	}else
+	{
+		tvo=0xFFFF;
+		tvi=0xFF;
+//		tvn=0xFF;
+		pos=8;
+	}
+	return(ret);
+}
 
 int main(int argc, char **argv, char **env)
 {
 	BJX2_Context *ctx;
+	cdec_imgbuf *vgactx;
 	FILE *fd;
 	int lclk, mhz;
-	int tt_start;
+	int sdc_lclk;
+	int tt_start, tt_frame;
 	int t0, t1, t2;
+	int i, j, k;
 
 	mhz=100;
 
@@ -474,14 +531,25 @@ int main(int argc, char **argv, char **env)
 	}
 
 	ctx=(BJX2_Context *)malloc(sizeof(BJX2_Context));
-	jx2_ctx=ctx;
+//	jx2_ctx=ctx;
+
+	vgactx=(cdec_imgbuf *)malloc(sizeof(cdec_imgbuf));
+	memset(vgactx, 0, sizeof(cdec_imgbuf));
+
+	CDEC_SetupForStream(vgactx);
 
 	ctx->tgt_mhz=mhz;
 	ctx->rcp_mhz=((1048576/ctx->tgt_mhz)+7)>>4;
 	ctx->ttick_rst=(ctx->tgt_mhz*1000000)/1024;
 	ctx->ttick_hk=ctx->ttick_rst;
 
-	printf("Start ExUnit\n");
+	printf("Start CoreUnit\n");
+
+	btesh2_gfxcon_fbxs = 800;
+	btesh2_gfxcon_fbys = 600;
+
+	GfxDrv_Start();
+	SoundDev_Init();
 
 	BTSR1_MainInitKeyboard();
 
@@ -489,12 +557,38 @@ int main(int argc, char **argv, char **env)
 
 	while (!Verilated::gotFinish())
 	{
-		BTSR1_MainPollKeyboard();
+		t1=FRGL_TimeMS();
+		t2=t1-tt_frame;
+
+		if(t2>16)
+		{
+			BTSR1_MainPollKeyboard();
+
+//			jx2i_gfxcon_dirty=1;
+//			JX2I_GfxCon_Update();
+
+			GfxDrv_PrepareFramebuf();
+			
+			cdec_getimage(vgactx, btesh2_gfxcon_framebuf, 800, 600);
+
+			GfxDrv_BeginDrawing();
+
+			GfxDrv_EndDrawing();
+			
+			tt_frame=t1;
+//			continue;
+		}
+
+//		BTSR1_MainPollKeyboard();
 	
 		top->clock = (main_time>>0)&1;
 		
 		if(top->clock && (lclk!=top->clock))
 		{
+			i=(top->vgaRed<<8)|(top->vgaGrn<<4)|(top->vgaBlu<<0)|
+				(top->vgaHsync<<12)|(top->vgaVsync<<13);
+			CDEC_UpdateForStreamCycle(vgactx, i);
+
 //			printf("Cycle\n");
 
 			ctx->ttick_hk--;
@@ -503,9 +597,20 @@ int main(int argc, char **argv, char **env)
 //				printf("Clock IRQ\n");
 				ctx->ttick_hk=ctx->ttick_rst;
 			}
+			
+			if(top->sdc_clk!=sdc_lclk)
+			{
+				if(top->sdc_clk)
+				{
+					top->sdc_dat_i=
+						sdc_spibit(top->sdc_cmd, top->sdc_dat_o&8);
+				}
+			
+				sdc_lclk=top->sdc_clk;
+			}
 		}
 		
-		jx2_ctx->tot_cyc=main_time>>1;
+		ctx->tot_cyc=main_time>>1;
 		
 		lclk = top->clock;
 //		top->mode = 3;
@@ -518,26 +623,17 @@ int main(int argc, char **argv, char **env)
 		{
 //			printf("Cycle %lld\n", jx2_ctx->tot_cyc);
 		
-			MemUpdateForBus();
-			
-			if(CheckDebugSanity()<=0)
-				break;
+//			MemUpdateForBus();
+//			if(CheckDebugSanity()<=0)
+//				break;
 		}
 
 		top->eval();
 
 		main_time++;
 		
-//		if(main_time>256)
-//		if(main_time>1024)
-//		if(main_time>2048)
-//		if(main_time>4096)
-//		if(main_time>16384)
-//		if(main_time>65536)
-//		if(main_time>(1<<20))
 		if(gfxdrv_kill)
 		{
-//			printf("%llX\n", (long long)(top->outAddr));
 			break;
 		}
 	}
@@ -545,7 +641,7 @@ int main(int argc, char **argv, char **env)
 	t1=FRGL_TimeMS();
 	t2=t1-tt_start;
 	
-	printf("%.3fMHz\n", jx2_ctx->tot_cyc/(t2*1000.0));
+	printf("%.3fMHz\n", ctx->tot_cyc/(t2*1000.0));
 	
 	BTSR1_MainDeinitKeyboard();
 	

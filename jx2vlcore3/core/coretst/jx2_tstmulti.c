@@ -14,6 +14,8 @@ extern "C" {
 
 #include "jx2i_gfxcon.c"
 
+#include "jx2r_vgadec0.c"
+
 #include "gfxdrv_w32.c"
 #include "gfxdrv_sdl.c"
 

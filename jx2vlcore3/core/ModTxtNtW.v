@@ -21,15 +21,19 @@ input reset;
 
 output[15:0] 	pwmOut;
 input[31:0]		busAddr;
-input[31:0]		busInData;
-output[31:0]	busOutData;
+// input[31:0]		busInData;
+// output[31:0]	busOutData;
+input[63:0]		busInData;
+output[63:0]	busOutData;
 input[4:0]		busOpm;
 output[1:0]		busOK;
 
 wire	busOE;
 wire	busWR;
+wire	busQW;
 assign	busOE = busOpm[3];
 assign	busWR = busOpm[4];
+assign	busQW = (busOpm[2:0] == 3'b011);
 
 wire[7:0]	pixCy;
 wire[7:0]	pixCu;
@@ -61,7 +65,7 @@ ModTxtMemW fbmem(clock, reset,
 	pixCellIx, cellData1,
 	fontGlyph, fontData1,
 	ctrlRegVal,
-	busAddr, busInData, busOutData, busOE, busWR, busOK);
+	busAddr, busInData, busOutData, busOE, busWR, busQW, busOK);
 
 ModFbTxtW fbcc(clock, reset,
 	pixPosX,	pixPosY,

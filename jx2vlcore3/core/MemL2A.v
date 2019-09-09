@@ -38,8 +38,10 @@ output[31:0]	ddrMemAddr;
 output[4:0]		ddrMemOpm;
 input[1:0]		ddrMemOK;
 
-input[31:0]		mmioInData;
-output[31:0]	mmioOutData;
+// input[31:0]		mmioInData;
+// output[31:0]	mmioOutData;
+input[63:0]		mmioInData;
+output[63:0]	mmioOutData;
 output[31:0]	mmioAddr;
 output[4:0]		mmioOpm;
 input[1:0]		mmioOK;
@@ -51,7 +53,8 @@ reg[1:0]		tMemOK;
 // reg[127:0]		tDdrMemDataOut;
 // reg[31:0]		tDdrMemAddr;
 // reg[4:0]		tDdrMemOpm;
-reg[31:0]		tMmioOutData;
+// reg[31:0]		tMmioOutData;
+reg[63:0]		tMmioOutData;
 reg[31:0]		tMmioAddr;
 reg[4:0]		tMmioOpm;
 
@@ -92,7 +95,7 @@ wire	tAddrIsLo64k;
 assign	tAddrIsLo64k	= (memAddr[31:16] == UV16_00);
 
 wire[4:0]		l2rMemOpm;
-assign			l2rMemOpm = tAddrIsLo64k ? UMEM_OPM_READY : memOpm;
+assign			l2rMemOpm = tAddrIsLo64k ? memOpm : UMEM_OPM_READY ;
 
 wire[127:0]		l2rMemDataOut;
 wire[1:0]		l2rMemOK;
@@ -134,7 +137,8 @@ begin
 	else
 		if(reqIsMmio)
 	begin
-		tMemDataOut		<= { UV96_XX, mmioInData };
+//		tMemDataOut		<= { UV96_XX, mmioInData };
+		tMemDataOut		<= { UV64_XX, mmioInData };
 		tMemOK			<= mmioOK;
 	end
 	else
@@ -152,9 +156,25 @@ begin
 //	tDdrMemDataOut;
 //	tDdrMemAddr;
 
-	tMmioOutData		<= memDataIn[31:0];
+//	tMmioOutData		<= memDataIn[31:0];
+	tMmioOutData		<= memDataIn[63:0];
 	tMmioAddr			<= memAddr;
 	tMmioOpm			<= reqIsMmio ? memOpm : UMEM_OPM_READY;
+
+`ifndef def_true
+	if(memOpm!=0)
+	begin
+		$display("L2 A=%X Opm=%X OK=%X  Do=%X Di=%X",
+			memAddr, memOpm, tMemOK,
+			tMemDataOut, memDataIn);
+		if(l2rMemOpm!=0)
+			$display("L2r Opm=%X", l2rMemOpm);
+		if(l2MemOpm!=0)
+			$display("L2 Opm=%X", l2MemOpm);
+		if(tMmioOpm!=0)
+			$display("L2 MMIO Opm=%X", tMmioOpm);
+	end
+`endif
 
 end
 

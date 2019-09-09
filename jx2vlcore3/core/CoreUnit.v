@@ -107,10 +107,12 @@ assign		sdc_clk	= sdc_sclk;
 assign		sdc_do	= sdc_dat_i[0];
 assign		sdc_dat_o[1]	= 1'bz;
 assign		sdc_dat_o[2]	= 1'bz;
-assign		sdc_dat_o[3]	= sdc_cs;
+// assign		sdc_dat_o[3]	= sdc_cs;
+assign		sdc_dat_o[3]	= !sdc_cs;
 assign		sdc_cmd		= sdc_di;
 assign		sdc_dat_d	= 4'b1000;
-assign		sdc_ena		= sdc_cs;
+// assign		sdc_ena		= sdc_cs;
+assign		sdc_ena		= 1'b1;
 
 reg			clock_halfMhz;
 
@@ -151,11 +153,14 @@ wire[31:0]		memAddr;
 wire[4:0]		memOpm;
 wire[1:0]		memOK;
 
-reg[31:0]		mmioInData;
+// reg[31:0]		mmioInData;
 wire[31:0]		mmioOutData;
+reg[63:0]		mmioInData;
+wire[63:0]		mmioOutDataQ;
 wire[31:0]		mmioAddr;
 wire[4:0]		mmioOpm;
 reg[1:0]		mmioOK;
+assign		mmioOutData = mmioOutDataQ[31:0];
 
 wire[31:0]		dbgOutPc;
 wire[95:0]		dbgOutIstr;
@@ -227,12 +232,13 @@ MemL2A	l2a(
 	ddrMemOK,
 
 	mmioAddr,		mmioOpm,
-	mmioInData,		mmioOutData,
+	mmioInData,		mmioOutDataQ,
 	mmioOK
 	);
 
 wire[15:0]	scrnPwmOut;
-wire[31:0]	scrnMmioOutData;
+// wire[31:0]	scrnMmioOutData;
+wire[63:0]	scrnMmioOutData;
 wire[1:0]	scrnMmioOK;
 
 assign	vgaRed		= scrnPwmOut[11:8];
@@ -243,7 +249,7 @@ assign	vgaVsync	= scrnPwmOut[13];
 
 ModTxtNtW	scrn(
 	clock,			reset,				scrnPwmOut,
-	mmioOutData,	scrnMmioOutData,	mmioAddr,
+	mmioOutDataQ,	scrnMmioOutData,	mmioAddr,
 	mmioOpm,		scrnMmioOK);
 
 wire[1:0]	audPwmOut;
@@ -272,10 +278,16 @@ wire[1:0]	sdMmioOK;
 
 ModSdSpi	sdspi(
 	clock,			reset,
-	sdc_sclk,		sdc_do,
-	sdc_di,			sdc_cs,
+	sdc_sclk,		sdc_di,
+	sdc_do,			sdc_cs,
 	mmioOutData,	sdMmioOutData,	mmioAddr,
-	mmioOpm,		sdMmioOK,		12'hE04);
+	mmioOpm,		sdMmioOK,		12'hE03);
+
+
+reg[31:0]		mmioAddrL1;
+reg[31:0]		mmioAddrL2;
+reg[31:0]		mmioAddrL3;
+reg[31:0]		mmioAddrL4;
 
 always @*
 begin
@@ -284,12 +296,14 @@ begin
 	gpioAddr	= mmioAddr;
 	gpioOpm		= mmioOpm;
 
-	mmioInData	= UV32_XX;
+//	mmioInData	= UV32_XX;
+	mmioInData	= UV64_XX;
 	mmioOK		= UMEM_OK_READY;
 
 	if(gpioOK != UMEM_OK_READY)
 	begin
-		mmioInData	= gpioOutData;
+//		mmioInData	= gpioOutData;
+		mmioInData	= { UV32_XX, gpioOutData };
 		mmioOK		= gpioOK;
 	end
 	else if(scrnMmioOK != UMEM_OK_READY)
@@ -299,18 +313,23 @@ begin
 	end
 	else if(audMmioOK != UMEM_OK_READY)
 	begin
-		mmioInData	= audMmioOutData;
+		mmioInData	= { UV32_XX, audMmioOutData };
 		mmioOK		= audMmioOK;
 	end
 	else if(kbMmioOK != UMEM_OK_READY)
 	begin
-		mmioInData	= kbMmioOutData;
+		mmioInData	= { UV32_XX, kbMmioOutData };
 		mmioOK		= kbMmioOK;
 	end
 	else if(sdMmioOK != UMEM_OK_READY)
 	begin
-		mmioInData	= sdMmioOutData;
+		mmioInData	= { UV32_XX, sdMmioOutData };
 		mmioOK		= sdMmioOK;
+	end
+	else if(mmioOpm!=0)
+	begin
+		if(mmioAddr == mmioAddrL4)
+			$display("MMIO Bus Miss A=%X", mmioAddr);
 	end
 
 end
@@ -318,6 +337,11 @@ end
 always @(posedge clock)
 begin
 	clock_halfMhz	<= !clock_halfMhz;
+
+	mmioAddrL1	<= mmioAddr;
+	mmioAddrL2	<= mmioAddrL1;
+	mmioAddrL3	<= mmioAddrL2;
+	mmioAddrL4	<= mmioAddrL3;
 end
 
 

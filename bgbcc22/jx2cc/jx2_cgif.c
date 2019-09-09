@@ -1469,13 +1469,18 @@ ccxl_status BGBCC_JX2C_BuildFunctionBody(
 	BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx,
 	BGBCC_CCXL_RegisterInfo *obj, int fcnlbl)
 {
-	int bo, co, bo1, co1;
+	int bs, bt, bo, co, ce, bo1, co1;
+	int plsz, fnsz;
 	int i, j, k;
 
 	ctx->cur_func=obj;
 	sctx->is_tr_leaf=0;
 
+	bs=BGBCC_JX2_EmitGetOffs(sctx);
+
 	BGBCC_JX2C_EmitFrameProlog(ctx, sctx, obj, fcnlbl);
+	
+	bt=sctx->cur_fcnbase;
 	
 	bo=BGBCC_JX2_EmitGetOffs(sctx);
 
@@ -1500,6 +1505,26 @@ ccxl_status BGBCC_JX2C_BuildFunctionBody(
 	sctx->is_tr_leaf=0;
 
 	BGBCC_JX2C_EmitFrameEpilog(ctx, sctx, obj);
+
+	ce=BGBCC_JX2_EmitGetOffs(sctx);
+
+	plsz=(bo-bt)/2;
+	fnsz=(ce-bt)/2;
+
+//	if(!sctx->is_simpass)
+	if(1)
+	{
+		BGBCC_JX2_SetSectionName(sctx, ".pdata");
+
+		BGBCC_JX2_EmitRelocTy(sctx, fcnlbl, BGBCC_SH_RLC_RVA32);
+		BGBCC_JX2_EmitDWord(sctx, 0);	//start of function
+
+		k=plsz | (fnsz<<8);
+		BGBCC_JX2_EmitDWord(sctx, k);	//function size / etc.
+
+		BGBCC_JX2_SetSectionName(sctx, ".text");
+	}
+
 	return(0);
 }
 

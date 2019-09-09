@@ -333,14 +333,29 @@ void GfxDrv_EndDrawing()
 
 void GfxDrv_Start()
 {
+	int xs, ys;
+	
+	xs=btesh2_gfxcon_fbxs;
+	ys=btesh2_gfxcon_fbys;
+	
+	if(!xs || !ys)
+	{
+		xs=640;
+		ys=400;
+	}
+	
 	SDL_Init(SDL_INIT_VIDEO);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
 	btesh_main_screen =
-		SDL_SetVideoMode(640, 400, 32, SDL_SWSURFACE);
+		SDL_SetVideoMode(xs, ys, 32, SDL_SWSURFACE);
+//		SDL_SetVideoMode(640, 400, 32, SDL_SWSURFACE);
 //		SDL_SetVideoMode(640, 480, 32, SDL_OPENGL);
-	btesh2_gfxcon_fbxs=640;
-	btesh2_gfxcon_fbys=400;
+//	btesh2_gfxcon_fbxs=640;
+//	btesh2_gfxcon_fbys=400;
+	btesh2_gfxcon_fbxs=xs;
+	btesh2_gfxcon_fbys=ys;
+
 	btesh2_gfxcon_swaprb=1;
 //	btesh2_gfxcon_fbsz=btesh2_gfxcon_fbxs*btesh2_gfxcon_fbys;
 }

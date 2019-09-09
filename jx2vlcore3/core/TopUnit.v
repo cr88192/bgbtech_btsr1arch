@@ -99,6 +99,9 @@ assign	sdc_dat_i[1]	= sdc_dat[1];
 assign	sdc_dat_i[2]	= sdc_dat[2];
 assign	sdc_dat_i[3]	= sdc_dat[3];
 
+wire aud_mono_out1;
+assign	aud_mono_out = aud_mono_out1 ? 1'bz : 1'b0;
+
 CoreUnit core(
 	clock, 		reset,
 	ddrData_I,	ddrData_O,	ddrData_En,
@@ -114,7 +117,7 @@ CoreUnit core(
 	ps2_clk_d,	ps2_data_d,
 	sdc_dat_i,	sdc_dat_o,	sdc_dat_d,
 	sdc_clk,	sdc_cmd,	sdc_ena,
-	aud_mono_out
+	aud_mono_out1
 	);
 
 endmodule

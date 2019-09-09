@@ -486,11 +486,12 @@ struct PePData
 </pre>
 
 szFuncLength:
-* 0..21: Length of function in WORD or DWORD units.
-* 22: Set to indicate a DWORD instruction unit, otherwise WORD.
+* ( 7: 0): Prolog Length
+* (29: 8): Length of function in WORD or DWORD units.
+* (   30): Set to indicate a DWORD instruction unit, otherwise WORD.
 ** BJX2: Will be Set for the Fixed32 subset.
-** BJX2: Will be Clear for the variable-length ISA.
-* 23: Set to indicate an exception handler exists.
+** BJX2: Will be Clear otherwise.
+* (   31): Set to indicate an exception handler exists.
 
 Directly following the function, there will be one of:
 * A branch to the start of the Epilog sequence.

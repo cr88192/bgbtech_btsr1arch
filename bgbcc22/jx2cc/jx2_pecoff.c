@@ -1197,6 +1197,7 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 	int nm, fl, lva, rva, lsz, sn_strs, imty;
 	int lpg, szrlc, ofsrlc, nrlce, mach, lbl;
 	int ofsimp, szimp, ofsexp, szexp;
+	int ofsexc, szexc, ofsrsrc, szrsrc;
 	int i, j, k;
 
 	sctx=ctx->uctx;
@@ -1526,6 +1527,18 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 	{	ofsexp=sctx->sec_rva[i];
 		szexp=sctx->sec_lsz[i];		}
 
+	ofsexc=0;	szexc=0;
+	i=BGBCC_JX2_LookupSectionID(sctx, ".pdata");
+	if(i>=0)
+	{	ofsexc=sctx->sec_rva[i];
+		szexc=sctx->sec_lsz[i];		}
+
+	ofsrsrc=0;	szrsrc=0;
+	i=BGBCC_JX2_LookupSectionID(sctx, ".rsrc");
+	if(i>=0)
+	{	ofsrsrc=sctx->sec_rva[i];
+		szrsrc=sctx->sec_lsz[i];		}
+
 
 	ofsrlc=sctx->sec_rva[BGBCC_SH_CSEG_RELOC]+ofsrlc;
 	ctb=obuf+ofsrlc;
@@ -1672,6 +1685,10 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		bgbcc_setu32en(ct+0x7C, en, szexp);		//szExportTable
 		bgbcc_setu32en(ct+0x80, en, ofsimp);	//rvaImportTable
 		bgbcc_setu32en(ct+0x84, en, szimp);		//szImportTable
+		bgbcc_setu32en(ct+0x88, en, ofsrsrc);	//rvaBaseResourceTable
+		bgbcc_setu32en(ct+0x8C, en, szrsrc);	//szBaseResourceTable
+		bgbcc_setu32en(ct+0x90, en, ofsexc);	//rvaBaseExceptionTable
+		bgbcc_setu32en(ct+0x94, en, szexc);		//szBaseExceptionTable
 
 		bgbcc_setu32en(ct+0xA0, en, ofsrlc);	//rvaBaseRelocTable
 		bgbcc_setu32en(ct+0xA4, en, szrlc);		//szBaseRelocTable
@@ -1723,6 +1740,10 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		bgbcc_setu32en(ct+0x8C, en, szexp);		//szExportTable
 		bgbcc_setu32en(ct+0x90, en, ofsimp);	//rvaImportTable
 		bgbcc_setu32en(ct+0x94, en, szimp);		//szImportTable
+		bgbcc_setu32en(ct+0x98, en, ofsrsrc);	//rvaBaseResourceTable
+		bgbcc_setu32en(ct+0x9C, en, szrsrc);	//szBaseResourceTable
+		bgbcc_setu32en(ct+0xA0, en, ofsexc);	//rvaBaseExceptionTable
+		bgbcc_setu32en(ct+0xA4, en, szexc);		//szBaseExceptionTable
 
 		bgbcc_setu32en(ct+0xB0, en, ofsrlc);	//rvaBaseRelocTable
 		bgbcc_setu32en(ct+0xB4, en, szrlc);		//szBaseRelocTable

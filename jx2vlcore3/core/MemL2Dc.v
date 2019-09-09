@@ -108,14 +108,25 @@ begin
 	
 	tAddrIsRam	= (tReqAddr[25:20]!=6'h00) &&
 		(tReqAddr[27:26]==2'b00);
+
+//	tAddrIsRam	= (tReqAddr[25:24]!=2'b00) &&
+//	tAddrIsRam	= (tReqAddr[27:24]!=4'h0);
+	
+//	$display("tAddrIsRam = %X, A=%X", tAddrIsRam, tReqAddr);
 	
 	tOpmIsNz	= (tReqOpm[4:3]!=0);
-	tMiss		= (tReqAddr != tBlkAddr) && tOpmIsNz;
+//	tMiss		= (tReqAddr != tBlkAddr) && tOpmIsNz;
+	tMiss		= (tReqAddr != tBlkAddr) && tOpmIsNz && tAddrIsRam;
 	tMemDataOut	= tBlkData;
 	tBlkDirty	= tBlkFlag[0];
 	
 	tHold		= tMiss || tAccLatch;
 	tAccess		= 0;
+	
+	if(tHold)
+	begin
+//		$display("L2 Hold tMiss=%d tAccLatch=%d", tMiss, tAccLatch);
+	end
 
 	tBlkStData	= UV128_XX;
 	tBlkStAddr	= UV28_XX;
@@ -129,6 +140,8 @@ begin
 
 	if(tAccSticky)
 	begin
+//		$display("L2 Sticky");
+
 		tBlkStData	= tBlkLdData;
 		tBlkStAddr	= tBlkLdAddr;
 		tBlkStIx	= tBlkLdIx;
@@ -190,6 +203,7 @@ begin
 		memTileData[tBlkStIx]	<= tBlkStData;
 		memTileAddr[tBlkStIx]	<= tBlkStAddr;
 		memTileFlag[tBlkStIx]	<= { 3'b100, tBlkStDirty};
+		tAccSticky	<= 0;
 	end
 	
 	if((tAccess && tMiss) || tAccLatch)

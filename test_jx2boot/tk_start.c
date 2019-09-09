@@ -63,6 +63,7 @@ void __start()
 		
 	sanity_a();
 	
+//	TKSPI_InitDevice();
 	tk_vfile_init();
 
 	puts("Boot 1\n");

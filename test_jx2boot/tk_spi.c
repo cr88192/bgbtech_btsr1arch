@@ -376,18 +376,25 @@ int TKSPI_InitDevice(void)
 	byte s, cmd, ty;
 	u32 n, count;
 	
-	if(init)return(0);
+	if(init)
+		return(tkspi_init_ok);
 	init=1;
+
+	printf("TKSPI_InitDevice: Init 1\n");
 
 	TKSPI_SetSpeed(0);
 	TKSPI_SendCmd(MMC_CMD52, 1);
 	for (n=0; n<10; n++)
 		TKSPI_XchByte(0xFF);
 
+	printf("TKSPI_InitDevice: Init 2\n");
+
 	ty=0;
 	n=TKSPI_SendCmd(MMC_CMD0, 0);
 	if(n==1)
 	{
+		printf("TKSPI_InitDevice: Init 3A\n");
+
 		s=TKSPI_SendCmd(MMC_CMD8, 0x1AA);
 		if(s==1)
 		{
@@ -416,6 +423,8 @@ int TKSPI_InitDevice(void)
 		}
 		else
 		{
+			printf("TKSPI_InitDevice: Init 3B\n");
+
 			s=TKSPI_SendCmd(MMC_ACMD41, 0);
 			if(s<=1)
 			{

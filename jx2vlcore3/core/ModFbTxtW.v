@@ -685,17 +685,17 @@ begin
 		tPixClrBmRgbiYV12[ 3:0], tPixClrBmRgbiYV12[  3]
 	};
 
+	case(tPixClrBmYv8[1:0])
+		2'b00: tPixClrBmPalYV16=fontData[15: 0];
+		2'b01: tPixClrBmPalYV16=fontData[31:16];
+		2'b10: tPixClrBmPalYV16=fontData[47:32];
+		2'b11: tPixClrBmPalYV16=fontData[63:48];
+	endcase
+
 	if((tScrMode!=0) && useHalfCell)
 	begin
 		tFontGlyph = { 10'b0000001111, tPixClrBmYv8[7:2] };
-		case(tPixClrBmYv8[1:0])
-			2'b00: tPixClrBmPalYV16=fontData[15: 0];
-			2'b01: tPixClrBmPalYV16=fontData[31:16];
-			2'b10: tPixClrBmPalYV16=fontData[47:32];
-			2'b11: tPixClrBmPalYV16=fontData[63:48];
-		endcase
 	end
-	
 
 	case(tScrMode)
 		4'h0: begin
@@ -745,6 +745,7 @@ begin
 	end
 
 `ifndef def_true
+// `ifdef def_true
 //	tPixCy=128;
 	tPixCy	=	(tPixCellX[0]^tPixCellY[0]) ? 255 : 0;
 //	tPixCy	=	(pixPosX[3]^pixPosY[3]) ? 255 : 0;

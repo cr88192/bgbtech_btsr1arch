@@ -1838,6 +1838,16 @@ s32 BJX2_MemGfxConCb_GetDWord(BJX2_Context *ctx,
 	return(rv);
 }
 
+s64 BJX2_MemGfxConCb_GetQWord(BJX2_Context *ctx,
+	BJX2_MemSpan *sp, bjx2_addr addr)
+{
+	u32 lo, hi;
+
+	lo=BJX2_MemGfxConCb_GetDWord(ctx, sp, addr+0);
+	hi=BJX2_MemGfxConCb_GetDWord(ctx, sp, addr+4);
+	return((((u64)hi)<<32)|lo);
+}
+
 
 int BJX2_MemGfxConCb_SetByte(BJX2_Context *ctx,
 	BJX2_MemSpan *sp, bjx2_addr addr, int val)
@@ -1909,6 +1919,14 @@ int BJX2_MemGfxConCb_SetDWord(BJX2_Context *ctx,
 	return(0);
 }
 
+int BJX2_MemGfxConCb_SetQWord(BJX2_Context *ctx,
+	BJX2_MemSpan *sp, bjx2_addr addr, s64 val)
+{
+	BJX2_MemGfxConCb_SetDWord(ctx, sp, addr+0, val);
+	BJX2_MemGfxConCb_SetDWord(ctx, sp, addr+4, val>>32);
+	return(0);
+}
+
 int BJX2_MemDefineGfxCon(BJX2_Context *ctx,
 	char *name, bjx2_addr base, bjx2_addr lim)
 {
@@ -1925,10 +1943,12 @@ int BJX2_MemDefineGfxCon(BJX2_Context *ctx,
 	sp->GetByte=BJX2_MemGfxConCb_GetByte;
 	sp->GetWord=BJX2_MemGfxConCb_GetWord;
 	sp->GetDWord=BJX2_MemGfxConCb_GetDWord;
+	sp->GetQWord=BJX2_MemGfxConCb_GetQWord;
 	
 	sp->SetByte=BJX2_MemGfxConCb_SetByte;
 	sp->SetWord=BJX2_MemGfxConCb_SetWord;
 	sp->SetDWord=BJX2_MemGfxConCb_SetDWord;
+	sp->SetQWord=BJX2_MemGfxConCb_SetQWord;
 	
 	BJX2_MemAddSpan(ctx, sp);
 	return(0);

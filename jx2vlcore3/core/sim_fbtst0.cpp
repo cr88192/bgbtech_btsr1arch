@@ -82,8 +82,11 @@ int main(int argc, char **argv, char **env)
 
 	for(i=0; i<(40*25); i++)
 	{
-		imgbuf[i*8+0]|=0xC0000000UL;
-		imgbuf[i*8+1]|=0xC0000000UL;
+		imgbuf[i*8+0]&=~0xC0000000UL;
+		imgbuf[i*8+1]&=~0xC0000000UL;
+
+//		imgbuf[i*8+0]|=0xC0000000UL;
+//		imgbuf[i*8+1]|=0xC0000000UL;
 	}
 
 	dste=0;

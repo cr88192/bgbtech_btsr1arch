@@ -282,7 +282,7 @@ begin
 
 		if(tMemOpm[3] && !driStillInit && !dreIsZero)	/* Load Request */
 		begin
-			$display("ModDdr: Read Req, A=%X", tMemAddr);
+//			$display("ModDdr: Read Req, A=%X", tMemAddr);
 
 			tMemOK		= UMEM_OK_HOLD;
 			if(accCkLo)
@@ -311,7 +311,7 @@ begin
 		else
 			if(tMemOpm[4] && !driStillInit && !dreIsZero)	/* Store Request */
 		begin
-			$display("ModDdr: Store Req");
+			$display("ModDdr: Store Req, A=%X", tMemAddr);
 
 			accNextReadBlk	= tMemDataIn;
 			tMemOK			= UMEM_OK_HOLD;
@@ -371,7 +371,7 @@ begin
 	6'b000001: begin	/* Access Complete, Hold */
 		if(tMemOpm[4] || tMemOpm[3])
 		begin
-			$display("ReadBlk %X", accReadBlk);
+//			$display("DDR ReadBlk %X", accReadBlk);
 			/* Hang out here until released. */
 			tMemDataOut		= accReadBlk;
 			tMemOK			= UMEM_OK_OK;
@@ -535,7 +535,7 @@ begin
 		/* Column Read (Rise) */
 		/* BA2 BA1 BA0 C2 C1 r r Hi Lo Hi */
 
-		$display("Read ColA %X", accColAddr);
+//		$display("DDR Read ColA %X", accColAddr);
 
 //		tDdrCmd			= {accBaAddr[2:0], accColAddr[2:1], 5'b00101};
 
@@ -554,7 +554,7 @@ begin
 		/* Column Read (Fall) */
 		/* C11 C10 C9 C8 C7 C6 C5 C4 C3 AP */
 
-		$display("Read ColB %X", accColAddr);
+//		$display("DDR Read ColB %X", accColAddr);
 
 //		tDdrCmd			= {accColAddr[11:3], 1'b1};
 		accNextState	= 6'b010110;
@@ -657,22 +657,22 @@ begin
 	/* Read Burst States */
 	
 	6'b100000: begin
-		$display("Read Word0 %X (Ck=%d)", ddrData, clock);
+//		$display("DDR Read Word0 %X (Ck=%d)", ddrData, clock);
 		accNextState			= 6'b100001;
 		accNextReadBlk[15:0]	= ddrData;
 	end
 	6'b100001: begin
-		$display("Read Word1 %X (Ck=%d)", ddrData, clock);
+//		$display("DDR Read Word1 %X (Ck=%d)", ddrData, clock);
 		accNextState			= 6'b100010;
 		accNextReadBlk[31:16]	= ddrData;
 	end
 	6'b100010: begin
-		$display("Read Word2 %X", ddrData);
+//		$display("DDR Read Word2 %X", ddrData);
 		accNextState			= 6'b100011;
 		accNextReadBlk[47:32]	= ddrData;
 	end
 	6'b100011: begin
-		$display("Read Word3 %X", ddrData);
+//		$display("DDR Read Word3 %X", ddrData);
 		accNextState			= 6'b100100;
 		accNextReadBlk[63:48]	= ddrData;
 `ifdef mod_ddr3_isddr2

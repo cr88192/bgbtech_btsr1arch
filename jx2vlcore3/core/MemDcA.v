@@ -269,7 +269,8 @@ reg[31: 0]	tRegInAddr;		//input PC address
 reg[ 4:0]	tRegInOpm;
 reg[63:0]	tRegInVal;
 
-reg[31: 0]	tMmioInData;		//input PC address
+// reg[31: 0]	tMmioInData;		//input PC address
+reg[63: 0]	tMmioInData;		//input PC address
 
 
 always @*
@@ -630,9 +631,21 @@ begin
 //		tRegOutVal = {
 //			(memDataIn[31] && !tInOpm[2]) ? UV32_FF : UV32_00,
 //			memDataIn[31:0]};
-		tRegOutVal = {
-			(tMmioInData[31] && !tInOpm[2]) ? UV32_FF : UV32_00,
-			tMmioInData[31:0]};
+//		tRegOutVal = {
+//			(tMmioInData[31] && !tInOpm[2]) ? UV32_FF : UV32_00,
+//			tMmioInData[31:0]};
+//		tRegOutVal = tMmioInData;
+
+		casez(tInOpm[2:0])
+			3'b011:
+				tRegOutVal = tMmioInData;
+			3'b1zz:
+				tRegOutVal = { UV32_00, tMmioInData[31:0] };
+			default:
+				tRegOutVal = {
+					tMmioInData[31] ? UV32_FF : UV32_00,
+					tMmioInData[31:0]};
+		endcase
 
 		if(!tMmioDone || tMmioLatch)
 		begin
@@ -985,7 +998,8 @@ begin
 			tMemOpm			<= UMEM_OPM_READY;
 			tMmioDone		<= 1;
 			tMmioDoneHld	<= 1;
-			tMmioInData		<= memDataIn[31:0];
+//			tMmioInData		<= memDataIn[31:0];
+			tMmioInData		<= memDataIn[63:0];
 		end
 		else
 			if((memOK==UMEM_OK_HOLD) && tMmioLatch)
