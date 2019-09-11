@@ -194,6 +194,8 @@ begin
 		tReqDataIn	<= memDataIn;
 	end
 
+//	tAccBlkHalf	<= tNxtBlkHalf;
+
 	tBlkData	<= memTileData[nxtReqIx];
 	tBlkAddr	<= memTileAddr[nxtReqIx];
 	tBlkFlag	<= memTileFlag[nxtReqIx];
@@ -243,7 +245,7 @@ begin
 `ifdef jx2_ddr_bl64b
 				if(tAccBlkHalf)
 				begin
-					tNxtStDone	<= 0;
+					tNxtStDone	<= 1;
 					tNxtBlkHalf	<= 0;
 				end
 				else
@@ -251,7 +253,7 @@ begin
 					tNxtBlkHalf	<= 1;
 				end
 `else
-				tNxtStDone	<= 0;
+				tNxtStDone	<= 1;
 `endif
 			end
 		end
@@ -282,7 +284,8 @@ begin
 				tDdrMemOpm		<= UMEM_OPM_WR_TILE;
 				tAccLatch		<= 1;
 			end
-			else if(!tAccStDone)
+//			else if(!tAccStDone)
+			else if(!tAccDone)
 			begin
 				tDdrMemDataOut	<= UV128_XX;
 `ifdef jx2_ddr_bl64b
@@ -294,6 +297,10 @@ begin
 				tDdrMemOpm		<= UMEM_OPM_RD_TILE;
 				tAccLatch		<= 1;
 			end
+		end
+		else
+		begin
+			tDdrMemOpm		<= UMEM_OPM_READY;
 		end
 	end
 	else

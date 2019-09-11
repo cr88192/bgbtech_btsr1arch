@@ -426,12 +426,17 @@ int FRGL_TimeMS()
 #endif
 
 
+#if 1
 uint32_t *rombuf;
 uint32_t *srambuf;
 uint32_t *drambuf;
 
 uint32_t *srambuf2;
 uint32_t *drambuf2;
+#endif
+
+// uint16_t *drambuf;
+
 
 int sdc_spibit(int bit, int cs)
 {
@@ -485,6 +490,180 @@ int sdc_spibit(int bit, int cs)
 	return(ret);
 }
 
+#define	SIMDDR_BUSRT	4
+// #define	SIMDDR_BUSRT	8
+
+#define SIMDDR_SHL_CS	20
+#define SIMDDR_SHL_RAS	19
+#define SIMDDR_SHL_CAS	18
+#define SIMDDR_SHL_WE	17
+#define SIMDDR_SHL_CKE	16
+#define SIMDDR_SHL_BA	14
+
+#define SIMDDR_MSK_CS	(1<<20)
+#define SIMDDR_MSK_RAS	(1<<19)
+#define SIMDDR_MSK_CAS	(1<<18)
+#define SIMDDR_MSK_WE	(1<<17)
+#define SIMDDR_MSK_CKE	(1<<16)
+#define SIMDDR_MSK_BA	(3<<14)
+
+
+int ddr_cmdhi, ddr_cmdlo;
+int ddr_cyc;
+
+int ddr_parm_wl=3;	//CAS WL*2+1
+int ddr_parm_rl=7;	//CAS RL*2+1
+int ddr_row, ddr_col, ddr_bank;
+int ddr_state, ddr_cas, ddr_burst;
+
+uint16_t	*ddr_ram;
+
+#if 1
+int SimDdr(int clk, int cmd, int *rdata)
+{
+	int		data, row, col, bank, pos;
+	int addr;
+
+//Cs;
+//			cmd=(cmd<<1)|top->ddrRas;
+//			cmd=(cmd<<1)|top->ddrCas;
+//			cmd=(cmd<<1)|top->ddrWe;
+//			cmd=(cmd<<1)|top->ddrCke;
+//			cmd=(cmd<<2)|top->ddrBa
+
+	data=*rdata;
+#if 0
+//	printf("%03X %04X\n", cmd, data);
+	printf("Cs=%d Ras=%d Cas=%d We=%d Cke=%d Ba=%d A=%04X D=%04X\n",
+		(cmd>>20)&1,	
+		(cmd>>19)&1,	(cmd>>18)&1,
+		(cmd>>17)&1,	(cmd>>16)&1,
+		(cmd>>14)&3,	(cmd&0x3FFF),
+		data);
+#endif
+	
+	if(ddr_cas>=0)
+	{
+		ddr_cas--;
+	}else if(ddr_state==1)
+	{
+		if(ddr_burst>0)
+		{
+			ddr_burst--;
+
+			pos=(ddr_row<<13)+(ddr_bank<<10)+ddr_col;
+			pos&=(1<<27)-1;
+			data=ddr_ram[pos>>1];
+			ddr_col+=2;
+
+			*rdata=data;
+		}
+	}else if(ddr_state==2)
+	{
+		if(ddr_burst>0)
+		{
+			ddr_burst--;
+
+			data=*rdata;
+			pos=(ddr_row<<13)+(ddr_bank<<10)+ddr_col;
+			pos&=(1<<27)-1;
+			ddr_ram[pos>>1]=data;
+			ddr_col+=2;
+		}
+	}
+		
+	addr=(cmd&0x3FFF);
+	
+	if(cmd&SIMDDR_MSK_CS)
+	{
+//		printf("Command Inhibit\n");
+		return(0);
+	}
+
+	if(cmd&SIMDDR_MSK_RAS)
+	{
+		if(cmd&SIMDDR_MSK_CAS)
+		{
+			if(cmd&SIMDDR_MSK_WE)
+			{
+				printf("No-Op\n");
+			}else
+			{
+				printf("Burst Terminate\n");
+			}
+		}else
+		{
+			if(cmd&SIMDDR_MSK_WE)
+			{
+//				printf("Read Active Row\n");
+				ddr_col=addr;
+				ddr_state=1;
+//				ddr_cas=ddr_parm_rl*2+1;
+				ddr_cas=4*2+1;
+				ddr_burst=SIMDDR_BUSRT;
+			}else
+			{
+				printf("Write Active Row\n");
+				ddr_col=addr;
+				ddr_state=2;
+				ddr_cas=ddr_parm_wl*2+1;
+				ddr_burst=SIMDDR_BUSRT;
+			}
+		}
+	}else
+	{
+		if(cmd&SIMDDR_MSK_CAS)
+		{
+			if(cmd&SIMDDR_MSK_WE)
+			{
+//				printf("Activate Row\n");
+				ddr_row=addr;
+			}else
+			{
+//				printf("Precharge Row\n");
+			}
+		}else
+		{
+			if(cmd&SIMDDR_MSK_WE)
+			{
+				printf("Auto-Refresh Row\n");
+			}else
+			{
+				printf("Load Mode Register\n");
+			}
+		}
+	}
+}
+#endif
+
+int update_ddr()
+{
+	int ddrlclk, cmd, data;
+	int n, inh;
+	int i, j, k;
+
+	if(top->ddrClk!=ddrlclk)
+	{
+		ddrlclk=top->ddrClk;
+//			cmd=top->ddrCmd;
+
+		cmd=0;
+		cmd=(cmd<<1)|top->ddrCs;
+		cmd=(cmd<<1)|top->ddrRas;
+		cmd=(cmd<<1)|top->ddrCas;
+		cmd=(cmd<<1)|top->ddrWe;
+		cmd=(cmd<<1)|top->ddrCke;
+		cmd=(cmd<<2)|top->ddrBa;
+		cmd=(cmd<<14)|top->ddrAddr;
+
+//			data=top->ddrData;
+		data=top->ddrDataO;
+		SimDdr(top->ddrClk, cmd, &data);
+//			top->ddrData=data;
+		top->ddrDataI=data;
+	}
+}
+
 int main(int argc, char **argv, char **env)
 {
 	BJX2_Context *ctx;
@@ -511,24 +690,26 @@ int main(int argc, char **argv, char **env)
 
 	rombuf=(uint32_t *)malloc(32768);
 	srambuf=(uint32_t *)malloc(8192);
-
 	drambuf=(uint32_t *)malloc(1<<27);
-
 	srambuf2=(uint32_t *)malloc(8192);
-	drambuf2=(uint32_t *)malloc(1<<27);
-	
+	drambuf2=(uint32_t *)malloc(1<<27);	
+
 	memset(srambuf, 0, 8192);
 	memset(drambuf, 0, 1<<27);
-
 	memset(srambuf2, 0, 8192);
 	memset(drambuf2, 0, 1<<27);
 
+//	ddr_ram=(uint16_t *)malloc(1<<27);
+	ddr_ram=(uint16_t *)malloc(1<<28);
+
+#if 1
 	fd=fopen("../../tst_jx2boot.bin", "rb");
 	if(fd)
 	{
 		t2=fread(rombuf, 1, 32768, fd);
 		fclose(fd);
 	}
+#endif
 
 	ctx=(BJX2_Context *)malloc(sizeof(BJX2_Context));
 //	jx2_ctx=ctx;
@@ -629,6 +810,8 @@ int main(int argc, char **argv, char **env)
 		}
 
 		top->eval();
+
+		update_ddr();
 
 		main_time++;
 		
