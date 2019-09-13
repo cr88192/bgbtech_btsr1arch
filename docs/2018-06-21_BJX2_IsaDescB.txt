@@ -790,6 +790,19 @@ Note that these instruction forms will be specific to the 32-bit ISA.
 Performs a narrow multiply (32 bit).
 Only the low 32 bits are used from the input registers, and the resulting value is 32-bit sign extended.
 
+This operation only exists in Lane 1.
+
+
+=== MULx.x (3R) ===
+
+* F0nm_5goE  MULS.W	Rm, Ro, Rn			//(MULW) Sx 16b Mul (16*16->32)
+* F0nm_5GoE  MULU.W	Rm, Ro, Rn			//(MULW) Zx 16b Mul (16*16->32)
+* F0nm_5goF  MULS.L	Rm, Ro, Rn			//(MULL) Sx 32b Mul (32*32->64)
+* F0nm_5GoF  MULU.L	Rm, Ro, Rn			//(MULL) Zx 32b Mul (32*32->64)
+
+These produce widening multiplies of a given input size.
+
+
 
 === MULS ===
 
@@ -802,6 +815,8 @@ Perform a signed multiply storing the result of the multiplication in the DHR,DL
 
 Each register contains 32 bits of the result, with DHR being 32-bit sign extended.
 
+This operation only exists in Lane 1.
+
 
 === MULU (3R) ===
 
@@ -810,6 +825,8 @@ Each register contains 32 bits of the result, with DHR being 32-bit sign extende
 
 Performs a narrow multiply (32 bit).
 Only the low 32 bits are used from the input registers, and the resulting value is 32-bit zero extended.
+
+This operation only exists in Lane 1.
 
 
 === MULU ===
@@ -822,6 +839,8 @@ Only the low 32 bits are used from the input registers, and the resulting value 
 Perform an unsigned multiply storing the result of the multiplication in the DHR,DLR pair.
 
 Each register contains 32 bits of the result, with both DLR and DHR being 32-bit zero extended.
+
+This operation only exists in Lane 1.
 
 
 === NEG ===

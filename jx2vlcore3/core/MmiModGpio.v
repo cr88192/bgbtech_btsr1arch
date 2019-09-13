@@ -198,12 +198,19 @@ begin
 	begin
 		nextTimer1MHz	= timer1MHz+1;
 
+//		{ uartStepTimer, uartNextFracTimer }	=
+//			{ 1'b0, uartFracTimer } +
+//			17'h0275;
+//		{ uartRxStepTimer, uartNextRxFracTimer }	=
+//			{ 1'b0, uartRxFracTimer } +
+//			17'h0275;
+
 		{ uartStepTimer, uartNextFracTimer }	=
 			{ 1'b0, uartFracTimer } +
-			17'h0275;
+			17'h0EBF;
 		{ uartRxStepTimer, uartNextRxFracTimer }	=
 			{ 1'b0, uartRxFracTimer } +
-			17'h0275;
+			17'h0EBF;
 	end
 	
 	uartTxFifoFull		=  uartTxFifo[79];

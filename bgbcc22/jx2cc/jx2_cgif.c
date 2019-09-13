@@ -1512,7 +1512,7 @@ ccxl_status BGBCC_JX2C_BuildFunctionBody(
 	fnsz=(ce-bt)/2;
 
 //	if(!sctx->is_simpass)
-	if(1)
+	if(!sctx->is_rom)
 	{
 		BGBCC_JX2_SetSectionName(sctx, ".pdata");
 

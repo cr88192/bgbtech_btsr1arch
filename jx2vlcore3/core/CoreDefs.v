@@ -295,6 +295,9 @@ REGREG, Fz
 	UB: Rm, Rn, Rn
 	NB: Rn, Rm, Rn
 
+	UL: Rm, Cn, Cn
+	UQ: Cm, Rn, Rn
+
 
 IMM8REG, Fz
 	SB: Fzeo_iiii		Ro, Imm16s, Ro
@@ -386,6 +389,7 @@ parameter[5:0] JX2_UCMD_FLDCX		= 6'h23;		//FPU Convert (GR->FPR)
 parameter[5:0] JX2_UCMD_FSTCX		= 6'h24;		//FPU Convert (FPR->GR)
 parameter[5:0] JX2_UCMD_FIXS		= 6'h25;		//FPU Unary Op (FPR)
 parameter[5:0] JX2_UCMD_FCMP		= 6'h26;		//FPU Compare
+parameter[5:0] JX2_UCMD_MULW3		= 6'h27;		//Multiply (Word)
 
 
 parameter[5:0] JX2_UCIX_ALU_ADD		= 6'h20;		//ALU ADD

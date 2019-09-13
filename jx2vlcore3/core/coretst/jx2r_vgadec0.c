@@ -371,7 +371,7 @@ int cdec_decode0y(cdec_imgbuf *ctx)
 		{
 			if(ctx->ypos>200)
 			{
-				printf("Frame %d %d\n", ctx->xpos, ctx->ypos);
+//				printf("Frame %d %d\n", ctx->xpos, ctx->ypos);
 				ctx->frame++;
 			}
 

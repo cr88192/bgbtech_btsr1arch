@@ -48,6 +48,9 @@ reg[5:0]	opRegN_Fix;
 
 reg[5:0]	opRegO_Df2;
 
+reg[5:0]	opRegM_Cr;
+reg[5:0]	opRegN_Cr;
+
 reg[32:0]		opImm_imm17s;
 reg[32:0]		opImm_imm17u;
 reg[32:0]		opImm_imm17n;
@@ -115,6 +118,9 @@ begin
 
 	opRegO_Df2	= {tRegRmIsRs & !(istrWord[ 4]), istrWord[ 4], istrWord[3:0]};
 `endif
+
+	opRegN_Cr	= {1'b1, opExN, istrWord[ 7: 4]};
+	opRegM_Cr	= {1'b1, opExM, istrWord[ 3: 0]};
 
 	opIsNotFx	= (istrWord[15:13]!=3'b111);
 	
@@ -336,15 +342,16 @@ begin
 						opUCmdIx	= JX2_UCIX_MUL3_MULS;
 						opIty		= JX2_ITY_NB;
 					end
+
 					4'hA: begin
 						opNmid	= JX2_UCMD_MOV_RC;
 						opFmid	= JX2_FMID_REGREG;
-						opIty	= JX2_ITY_UB;
+						opIty	= JX2_ITY_UL;
 					end
 					4'hB: begin
 						opNmid	= JX2_UCMD_MOV_CR;
 						opFmid	= JX2_FMID_REGREG;
-						opIty	= JX2_ITY_UW;
+						opIty	= JX2_ITY_UQ;
 					end
 
 					4'hC: begin
@@ -1327,6 +1334,18 @@ begin
 					opRegN	= opRegN_Dfl;
 					opRegM	= opRegN_Dfl;
 					opRegO	= opRegM_Dfl;
+				end
+
+
+				JX2_ITY_UL: begin
+					opRegM	= opRegM_Dfl;
+					opRegO	= opRegN_Cr;
+					opRegN	= opRegN_Cr;
+				end
+				JX2_ITY_UQ: begin
+					opRegM	= opRegM_Cr;
+					opRegO	= opRegN_Dfl;
+					opRegN	= opRegN_Dfl;
 				end
 				
 				default: begin

@@ -113,12 +113,31 @@ int BGBCC_JX2_SetSection(BGBCC_JX2_Context *ctx, int sec)
 
 int BGBCC_JX2_IsSectionReadOnly(BGBCC_JX2_Context *ctx, int sec)
 {
+	char *s0;
+
 	if(sec==BGBCC_SH_CSEG_TEXT)
 		return(1);
 	if(sec==BGBCC_SH_CSEG_STRTAB)
 		return(1);
 	if(sec==BGBCC_SH_CSEG_RODATA)
 		return(1);
+	if(sec==BGBCC_SH_CSEG_RELOC)
+		return(1);
+//	if(sec==BGBCC_SH_CSEG_GOT)
+//		return(1);
+
+	if(sec==BGBCC_SH_CSEG_DATA)
+		return(0);
+	if(sec==BGBCC_SH_CSEG_BSS)
+		return(0);
+
+	s0=ctx->sec_name[sec];
+	if(s0)
+	{
+		if(!strcmp(s0, ".pdata"))
+			return(1);
+	}
+
 	return(0);
 }
 

@@ -28,6 +28,7 @@ module ExEXB2(
 	regValPc,		//PC Value (Synthesized)
 	regValImm,		//Immediate (Decode)
 	regValAluRes,	//ALU Result
+	regValMulwRes,	//ALU Result
 	opBraFlush,
 	
 	regInSr
@@ -55,6 +56,7 @@ input[31:0]		regValPc;		//PC Value (Synthesized)
 input[32:0]		regValImm;		//Immediate (Decode)
 
 input[65:0]		regValAluRes;	//ALU Result
+input[63:0]		regValMulwRes;	//MUL.W Result
 input			opBraFlush;
 
 input[63:0]		regInSr;
@@ -127,7 +129,12 @@ begin
 		
 		JX2_UCMD_MUL3: begin
 		end
-		
+
+		JX2_UCMD_MULW3: begin
+			tRegIdRn2	= regIdRm;			//
+			tRegValRn2	= regValMulwRes;		//
+		end
+
 		JX2_UCMD_SHAD3: begin
 		end
 		JX2_UCMD_SHLD3: begin
@@ -147,7 +154,7 @@ begin
 	
 		default: begin
 			if(!tMsgLatch)
-				$display("EX2: Unhandled UCmd %X", opUCmd);
+				$display("EX2B: Unhandled UCmd %X", opUCmd);
 			tNextMsgLatch	= 1;
 		end
 	

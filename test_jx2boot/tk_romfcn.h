@@ -1,0 +1,4 @@
+
+#define TK_UMSG_ROMFCN			0x1000
+
+#define TK_UMSG_GETCONPARAM		0x1001

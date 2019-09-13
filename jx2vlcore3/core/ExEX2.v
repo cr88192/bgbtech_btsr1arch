@@ -48,6 +48,7 @@ module ExEX2(
 	regValImm,		//Immediate (Decode)
 	regValAluRes,	//ALU Result
 	regValMulRes,	//Multiplier Result
+	regValMulwRes,	//Multiplier Word Result
 	regFpuGRn,		//FPU GPR Result
 	opBraFlush,
 	
@@ -94,6 +95,7 @@ input[32:0]		regValImm;		//Immediate (Decode)
 
 input[65:0]		regValAluRes;	//ALU Result
 input[63:0]		regValMulRes;	//Multiplier Result
+input[63:0]		regValMulwRes;	//Multiplier Result
 input[63:0]		regFpuGRn;		//FPU GPR Result
 input			opBraFlush;
 
@@ -303,6 +305,11 @@ begin
 			endcase
 		end
 		
+		JX2_UCMD_MULW3: begin
+			tRegIdRn2	= regIdRm;			//
+			tRegValRn2	= regValMulwRes;		//
+		end
+		
 		JX2_UCMD_SHAD3: begin
 		end
 		JX2_UCMD_SHLD3: begin
@@ -318,6 +325,17 @@ begin
 		JX2_UCMD_MOV_RC: begin
 		end
 		JX2_UCMD_MOV_CR: begin
+		end
+		
+		JX2_UCMD_FPU3: begin
+		end
+		JX2_UCMD_FLDCX: begin
+		end
+		JX2_UCMD_FSTCX: begin
+		end
+		JX2_UCMD_FIXS: begin
+		end
+		JX2_UCMD_FCMP: begin
 		end
 	
 		default: begin

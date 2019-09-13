@@ -27,6 +27,7 @@ IF ID1 ID2 EX1 EX2 WB
 `include "ExALU.v"
 // `include "ExMul.v"
 `include "ExMulB.v"
+`include "ExMulW.v"
 
 `ifdef jx2_enable_wex
 `include "ExEXB1.v"
@@ -632,6 +633,7 @@ RegCR regCr(
 
 
 wire[63:0]		ex1MulVal;
+wire[63:0]		ex1MulWVal;
 
 // `ifdef jx2_enable_fpu
 wire[5:0]		ex1RegIdFRn;
@@ -751,6 +753,13 @@ ExMulB	ex1Mul(
 	exHold2,			ex1MulVal
 	);
 
+ExMulW	ex1MulW(
+	clock,				reset,
+	ex1RegValRs[31:0],	ex1RegValRt[31:0],
+	ex1OpUCmd,			ex1OpUIxt,
+	exHold2,			ex1MulWVal
+	);
+
 `ifdef jx2_enable_fpu
 
 FpuExOp	ex1Fpu(
@@ -806,6 +815,7 @@ reg[31:0]		ex2RegValPc;		//PC Value (Synthesized)
 reg[32:0]		ex2RegValImm;		//Immediate (Decode)
 reg[65:0]		ex2RegAluRes;		//Arithmetic Result
 reg[63:0]		ex2RegMulRes;		//Multiplier Result
+reg[63:0]		ex2RegMulWRes;		//Multiplier Result (Word)
 // reg[63:0]		ex2RegFpuGRn;		//FPU GPR Result
 reg				ex2BraFlush;		//Flush EX2
 
@@ -844,6 +854,7 @@ ExEX2	ex2(
 	
 	ex2RegValPc,	ex2RegValImm,
 	ex2RegAluRes,	ex2RegMulRes,
+	ex2RegMulWRes,
 	ex1FpuValGRn,
 	ex2BraFlush,
 	
@@ -861,6 +872,8 @@ ExEX2	ex2(
 
 `ifdef jx2_enable_wex
 /* EX1, Lane 2 */
+
+reg[63:0]		exB1MulWVal;
 
 reg[7:0]		exB1OpUCmd;
 reg[7:0]		exB1OpUIxt;
@@ -905,6 +918,13 @@ ExALUB	exAluB(
 	exHold2,			ex1RegInSr[1:0],
 	exB1ValAlu[63:0],	exB1ValAlu[65:64]);
 
+ExMulW	exB1MulW(
+	clock,				reset,
+	exB1RegValRs[31:0],	exB1RegValRt[31:0],
+	exB1OpUCmd,			exB1OpUIxt,
+	exHold2,			exB1MulWVal
+	);
+
 
 `endif
 
@@ -930,6 +950,7 @@ wire[63:0]		exB2RegValRn2;		//Destination Value (EX1)
 	
 reg[32:0]		exB2RegValImm;		//Immediate (Decode)
 reg[65:0]		exB2RegAluRes;		//Arithmetic Result
+reg[63:0]		exB2RegMulWRes;		//Word Multiply Result
 
 ExEXB2		exb2(
 	clock,		reset,
@@ -944,6 +965,7 @@ ExEXB2		exb2(
 	
 	ex2RegValPc,
 	exB2RegValImm,	exB2RegAluRes,
+	exB2RegMulWRes,
 	ex2BraFlush,	ex2RegInSr
 	);
 
@@ -952,6 +974,8 @@ ExEXB2		exb2(
 
 `ifdef jx2_enable_wex3w
 /* EX1, Lane 3 */
+
+reg[63:0]		exC1MulWVal;
 
 reg[7:0]		exC1OpUCmd;
 reg[7:0]		exC1OpUIxt;
@@ -996,6 +1020,13 @@ ExALUB	exAluC(
 	exHold2,			ex1RegInSr[1:0],
 	exC1ValAlu[63:0],	exC1ValAlu[65:64]);
 
+ExMulW	exC1MulW(
+	clock,				reset,
+	exC1RegValRs[31:0],	exC1RegValRt[31:0],
+	exC1OpUCmd,			exC1OpUIxt,
+	exHold2,			exC1MulWVal
+	);
+
 
 `endif
 
@@ -1021,6 +1052,7 @@ wire[63:0]		exC2RegValRn2;		//Destination Value (EX1)
 	
 reg[32:0]		exC2RegValImm;		//Immediate (Decode)
 reg[65:0]		exC2RegAluRes;		//Arithmetic Result
+reg[63:0]		exC2RegMulWRes;		//Word Multiply Result
 
 ExEXB2		exc2(
 	clock,		reset,
@@ -1035,6 +1067,7 @@ ExEXB2		exc2(
 	
 	ex2RegValPc,
 	exC2RegValImm,	exC2RegAluRes,
+	exC2RegMulWRes,
 	ex2BraFlush,	ex2RegInSr
 	);
 
@@ -1425,6 +1458,7 @@ begin
 
 	ex2RegAluRes	= ex1ValAlu;
 	ex2RegMulRes	= ex1MulVal;
+	ex2RegMulWRes	= ex1MulWVal;
 //	ex2RegFpuGRn	= ex1FpuValGRn;
 
 	dcInAddr		= ex1MemAddr;

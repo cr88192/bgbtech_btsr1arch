@@ -235,7 +235,7 @@ begin
 				end
 				default: begin
 					if(!tMsgLatch)
-						$display("EX: Unhandled Op-IXS %X", opUIxt);
+						$display("EX1B: Unhandled Op-IXS %X", opUIxt);
 					tNextMsgLatch	= 1;
 					tExHold		= 1;
 				end
@@ -257,7 +257,7 @@ begin
 
 				default: begin
 					if(!tMsgLatch)
-						$display("EX: Unhandled Op-IXT %X", opUIxt);
+						$display("EX1B: Unhandled Op-IXT %X", opUIxt);
 					tNextMsgLatch	= 1;
 					tExHold		= 1;
 				end
@@ -266,7 +266,7 @@ begin
 
 		default: begin
 			if(!tMsgLatch)
-				$display("EX1: Unhandled UCmd %X", opUCmd);
+				$display("EX1B: Unhandled UCmd %X", opUCmd);
 			tNextMsgLatch	= 1;
 			tExHold		= 1;
 		end

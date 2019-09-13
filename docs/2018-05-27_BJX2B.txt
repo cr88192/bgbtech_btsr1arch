@@ -1082,8 +1082,8 @@ F0zz Instruction Block:
 ** F0nm_1go1  SUB		Rm, Ro, Rn				//Rn=Rm-Ro
 ** F0nm_1go2  MULS		Rm, Ro, Rn				//Rn=Rm*Ro (Signed Result)
 ** F0nm_1Go2  MULU		Rm, Ro, Rn				//Rn=Rm*Ro (Unsigned Result)
-** F0nm_1go3  MULQS		Rm, Ro, Rn				//(MULQ) Signed 64b Result
-** F0nm_1Go3  MULQU		Rm, Ro, Rn				//(MULQ) Unsigned 64b Result
+** F0nm_1go3  MULS.Q	Rm, Ro, Rn				//(MULQ) Signed 64b Result
+** F0nm_1Go3  MULU.Q	Rm, Ro, Rn				//(MULQ) Unsigned 64b Result
 ** F0nm_1eo4  -
 ** F0nm_1go5  AND		Rm, Ro, Rn				//Rn=Rm AND Ro
 ** F0nm_1go6  OR		Rm, Ro, Rn				//Rn=Rm OR  Ro
@@ -1107,14 +1107,14 @@ F0zz Instruction Block:
 *** F0nm_1g89 MOV		Rm, Rn				//Rn=Rm
 *** F0nm_1G89 MOVD		Rm, Rn				//Rn=Rm (High Undefined)
 *** F0nm_1g99 MULS		Rm, Rn				//(DHR,DLR)=Rm*Rn (Signed Result)
-*** F0nm_1G99 ? MULSQ	Rm, Rn				//(MULQ) (Signed 64*64=>128)
+*** F0nm_1G99 ? MULS.Q	Rm, Rn				//(MULQ) (Signed 64*64=>128)
 *** F0nm_1gA9 MOV		Rm, Cn				//Cn=Rm
 *** F0nm_1gB9 MOV		Cm, Rn				//Rn=Cm
 *** F0nm_1eC9 CMP{Q}EQ	Rm, Rn				//Rn==Rm
 *** F0nm_1eD9 CMP{Q}HI	Rm, Rn				//Unsigned Rn GT Rm
 *** F0nm_1eE9 CMP{Q}GT	Rm, Rn				//Signed Rn GT Rm
 *** F0nm_1gF9 MULU		Rm, Rn				//(DHR,DLR)=Rm*Rn (Unsigned Result)
-*** F0nm_1GF9 ? MULUQ	Rm, Rn				//(MULQ) (Unsigned 64*64=>128)
+*** F0nm_1GF9 ? MULU.Q	Rm, Rn				//(MULQ) (Unsigned 64*64=>128)
 
 ** F0nm_1ezA  (GSV Block)
 *** F0nm_1g0A ? PADD.W		Rm, Rn				//(GSV) Packed Add Word
@@ -1172,7 +1172,9 @@ F0zz Instruction Block:
 *** F0nm_1e1C  NEG		Rm, Rn				//Rn=(~Rn)+1
 *** F0nm_1e2C ? CLZ{Q}	Rm, Rn				//(CLZ) Count Leading Zeroes
 *** F0nm_1e3C -
-*** F0nm_1g4C ? MUL.W	Rm, Rn				//(DHR,DLR)=Rm*Rn (Signed 18*18=>36)
+*** F0nm_1g4C / MUL.W	Rm, Rn				//(DHR,DLR)=Rm*Rn (Signed 18*18=>36)
+*** F0nm_1g4C  MULS.W	Rm, Rn				//(DHR,DLR)=Rm*Rn (Sx 16*16=>32)
+*** F0nm_1G4C  MULU.W	Rm, Rn				//(DHR,DLR)=Rm*Rn (Zx 16*16=>32)
 *** F0nm_1g5C  EXTS.L	Rm, Rn				//Q=0
 *** F0nm_1G5C  EXTU.L	Rm, Rn				//Q=1
 *** F0nm_1e6C  SHAD{Q}	Rm, Rn				//Barrel Shift, Arithmetic
@@ -1299,14 +1301,16 @@ F0zz Instruction Block:
 ** F0nm_5GoC  ADDU.L	Rm, Ro, Rn			//Rn=Rm+Ro, ADD 32-bit, Zero Extend
 ** F0nm_5goD  SUBS.L	Rm, Ro, Rn			//Rn=Rm-Ro, ADD 32-bit, Sign Extend
 ** F0nm_5GoD  SUBU.L	Rm, Ro, Rn			//Rn=Rm-Ro, ADD 32-bit, Zero Extend
-** F0nm_5eoE  -
-** F0nm_5eoF  -
+** F0nm_5goE  MULS.W	Rm, Ro, Rn			//(MULW) Sx 16b Mul (16*16->32)
+** F0nm_5GoE  MULU.W	Rm, Ro, Rn			//(MULW) Zx 16b Mul (16*16->32)
+** F0nm_5goF  MULS.L	Rm, Ro, Rn			//(MULL) Sx 32b Mul (32*32->64)
+** F0nm_5GoF  MULU.L	Rm, Ro, Rn			//(MULL) Zx 32b Mul (32*32->64)
 
 * F0zz_6zzz
 * F0zz_7zzz
 * F0zz_8zzz
 
-* F0ez_9zzz (FPU Block)
+* F0ez_9zzz (FPU Block, FPRS)
 ** F0nm_9ed0  /
 ** F0nm_9ed1  /
 ** F0nm_9eo2  FMOV.S		FRm, (Rm, Ro)

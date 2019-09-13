@@ -1051,6 +1051,9 @@ int CheckDebugSanityDS()
 	if(top->dbgExHold2)
 		return(1);
 	
+	if((addr&0xF0000000)==0xF0000000)
+		return(1);
+	
 	i=MemSimUpdateCache(addr, val1, val2, dcop, dcok);
 	if(i<=0)
 		return(0);

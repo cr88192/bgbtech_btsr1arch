@@ -552,12 +552,24 @@ begin
 				tRegValRn1		= regFpuGRn;
 			end
 		end
+		JX2_UCMD_FLDCX: begin
+			if(opUIxt[4])
+			begin
+				tRegIdRn1		= regIdRm;
+				tRegValRn1		= regFpuGRn;
+			end
+		end
 `else
 		JX2_UCMD_FPU3: begin
 			tRegIdRn1		= regIdRm;
 			tRegValRn1		= regFpuGRn;
 		end
 		JX2_UCMD_FIXS: begin
+			tRegIdRn1		= regIdRm;
+			tRegValRn1		= regFpuGRn;
+		end
+
+		JX2_UCMD_FLDCX: begin
 			tRegIdRn1		= regIdRm;
 			tRegValRn1		= regFpuGRn;
 		end
