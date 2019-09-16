@@ -15,6 +15,12 @@ int ddr_parm_rl=7;	//CAS RL*2+1
 int ddr_row, ddr_col, ddr_bank;
 int ddr_state, ddr_cas, ddr_burst;
 
+int ddr_burstlen;
+int ddr_mr0;
+int ddr_mr1;
+int ddr_mr2;
+int ddr_mr3;
+
 #if 0
 int SimDdr(int clk, int cmd, int *rdata)
 {
@@ -211,7 +217,7 @@ int SimDdr(int clk, int cmd, int *rdata)
 int SimDdr(int clk, int cmd, int *rdata)
 {
 	int		data, row, col, bank, pos;
-	int addr;
+	int addr, cas;
 
 //Cs;
 //			cmd=(cmd<<1)|top->ddrRas;
@@ -285,16 +291,16 @@ int SimDdr(int clk, int cmd, int *rdata)
 				printf("Read Active Row\n");
 				ddr_col=addr;
 				ddr_state=1;
-//				ddr_cas=ddr_parm_rl*2+1;
-				ddr_cas=4*2+1;
-				ddr_burst=SIMDDR_BUSRT;
+				ddr_cas=ddr_parm_rl*2+1;
+//				ddr_cas=4*2+1;
+				ddr_burst=ddr_burstlen;
 			}else
 			{
 				printf("Write Active Row\n");
 				ddr_col=addr;
 				ddr_state=2;
 				ddr_cas=ddr_parm_wl*2+1;
-				ddr_burst=SIMDDR_BUSRT;
+				ddr_burst=ddr_burstlen;
 			}
 		}
 	}else
@@ -316,7 +322,24 @@ int SimDdr(int clk, int cmd, int *rdata)
 				printf("Auto-Refresh Row\n");
 			}else
 			{
-				printf("Load Mode Register\n");
+				printf("Load Mode Register C=%04X\n", cmd&0xFFFF);
+				switch((cmd>>14)&3)
+				{
+				case 0:		ddr_mr0=addr;	break;
+				case 1:		ddr_mr1=addr;	break;
+				case 2:		ddr_mr2=addr;	break;
+				case 3:		ddr_mr3=addr;	break;
+				}
+				
+				ddr_burstlen=(ddr_mr0&1)?8:4;
+				
+				cas=(ddr_mr0>>4)&7;
+//				ddr_parm_rl=cas*2+1;		//CAS RL*2+1
+//				ddr_parm_wl=ddr_parm_rl-2;	//CAS WL=RL-1
+				ddr_parm_rl=cas;			//CAS RL*2+1
+				ddr_parm_wl=ddr_parm_rl-1;	//CAS WL=RL-1
+				
+				printf("BurstLen=%d, CAS=%d\n", ddr_burstlen, cas);
 			}
 		}
 	}

@@ -260,7 +260,7 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_MOVHLD	0x82		//
 #define BJX2_NMID_MOVLHD	0x83		//
 #define BJX2_NMID_MOVD		0x84		//
-
+#define BJX2_NMID_FMOVUS	0x85		//
 #define BJX2_NMID_PRED_T	0x86		//
 #define BJX2_NMID_PRED_F	0x87		//
 #define BJX2_NMID_ADDSL		0x88		//
@@ -276,7 +276,6 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_PADDH		0x91		//
 #define BJX2_NMID_PSUBH		0x92		//
 #define BJX2_NMID_PMULH		0x93		//
-
 #define BJX2_NMID_INVDC		0x94		//
 #define BJX2_NMID_INVIC		0x95		//
 #define BJX2_NMID_INVTLB	0x96		//

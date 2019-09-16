@@ -486,7 +486,6 @@ byte jx2i_gfxcon_ncy;
 
 u64 jx2i_gfxcon_ctrlreg[64];
 
-
 u64 jx2i_gfxcon_seed=0;
 
 u32 JX2I_GfxCon_Rng32(void)
@@ -565,7 +564,6 @@ int JX2I_GfxCon_PutPix200(int px, int py, int clrc)
 	int fbxs;
 	
 	fbxs=btesh2_gfxcon_fbxs;
-//	((u32 *)btesh2_gfxcon_framebuf)[(py*320)+px]=clrc;
 
 #if 0
 	if(btesh2_gfxcon_swaprb)
@@ -671,9 +669,6 @@ u32 JX2I_GfxCon_Yvu16ToRgb24(int yuv)
 		clrc=0xFF000000|(cb0<<16)|(cg0<<8)|cr0;
 	return(clrc);
 }
-
-// byte jx2i_gfxcon_ncx;
-// byte jx2i_gfxcon_ncy;
 
 u32 JX2I_GfxCon_Rgb565ToRgb24(int rgb)
 {
@@ -1713,8 +1708,6 @@ int JX2I_GfxCon_UpdateCell(int cx, int cy)
 		}
 	}
 
-
-
 	return(0);
 }
 
@@ -1850,6 +1843,16 @@ s32 BJX2_MemGfxConCb_GetDWord(BJX2_Context *ctx,
 	return(rv);
 }
 
+s64 BJX2_MemGfxConCb_GetQWord(BJX2_Context *ctx,
+	BJX2_MemSpan *sp, bjx2_addr addr)
+{
+	u32 lo, hi;
+
+	lo=BJX2_MemGfxConCb_GetDWord(ctx, sp, addr+0);
+	hi=BJX2_MemGfxConCb_GetDWord(ctx, sp, addr+4);
+	return((((u64)hi)<<32)|lo);
+}
+
 
 int BJX2_MemGfxConCb_SetByte(BJX2_Context *ctx,
 	BJX2_MemSpan *sp, bjx2_addr addr, int val)
@@ -1922,6 +1925,14 @@ int BJX2_MemGfxConCb_SetDWord(BJX2_Context *ctx,
 #endif
 	}
 
+	return(0);
+}
+
+int BJX2_MemGfxConCb_SetQWord(BJX2_Context *ctx,
+	BJX2_MemSpan *sp, bjx2_addr addr, s64 val)
+{
+	BJX2_MemGfxConCb_SetDWord(ctx, sp, addr+0, val);
+	BJX2_MemGfxConCb_SetDWord(ctx, sp, addr+4, val>>32);
 	return(0);
 }
 

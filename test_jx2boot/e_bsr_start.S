@@ -72,15 +72,27 @@ copy_data:
 __isr_except:
 	break
 //	rte
+	nop
+	nop
+	nop
 
 __isr_inter:
 	rte
+	nop
+	nop
+	nop
 
 __isr_mmu:
 	rte
+	nop
+	nop
+	nop
 
 __isr_syscall:
 	rte
+	nop
+	nop
+	nop
 
 isr_table:
 	bra8b _start

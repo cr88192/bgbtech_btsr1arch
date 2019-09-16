@@ -3,9 +3,11 @@
 
 `include "MmiModGpio.v"
 `include "MmiModDdr3.v"
+`include "MmiModClkp.v"
 
 `include "ModTxtNtW.v"
 `include "ModAudPcm.v"
+`include "ModAudFm.v"
 `include "ModPs2Kb.v"
 `include "ModSdSpi.v"
 
@@ -123,6 +125,18 @@ assign	clock_cpu	= clock_halfMhz;
 assign	clock_cpu	= clock;
 `endif
 
+wire	timer1MHz;
+wire	timer64kHz;
+wire	timer1kHz;
+wire	timer256Hz;
+
+MmiModClkp		clkp(
+	clock,	reset,
+	timer1MHz,
+	timer64kHz,
+	timer1kHz,
+	timer256Hz);
+
 wire[127:0]		ddrMemDataIn;
 wire[127:0]		ddrMemDataOut;
 wire[31:0]		ddrMemAddr;
@@ -152,6 +166,7 @@ wire[127:0]		memOutData;
 wire[31:0]		memAddr;
 wire[4:0]		memOpm;
 wire[1:0]		memOK;
+reg[63:0]		memBusExc;
 
 // reg[31:0]		mmioInData;
 wire[31:0]		mmioOutData;
@@ -178,7 +193,7 @@ ExUnit	cpu(
 
 	memAddr,		memOpm,
 	memInData,		memOutData,
-	memOK,
+	memOK,			memBusExc,
 	
 	dbgOutPc,		dbgOutIstr,
 	dbgExHold1,		dbgExHold2,
@@ -202,6 +217,8 @@ wire[31:0]		gpioPinsIn;
 wire[31:0]		gpioPinsDir;
 wire[15:0]		fixedPinsOut;
 wire[15:0]		fixedPinsIn;
+wire[63:0]		outTimer1MHz;
+wire[63:0]		outTimer100MHz;
 
 // assign			uartRxD = fixedPinsOut[0];
 // assign			fixedPinsIn[1] = uartTxD;
@@ -213,7 +230,8 @@ MmiModGpio	gpio(
 	clock,			reset,
 	gpioPinsOut,	gpioPinsIn,		gpioPinsDir,
 	fixedPinsOut,	fixedPinsIn,
-	
+	outTimer1MHz,	outTimer100MHz,
+
 	gpioInData,		gpioOutData,	gpioAddr,
 	gpioOpm,		gpioOK
 	);
@@ -257,11 +275,24 @@ wire[31:0]	audMmioOutData;
 wire[1:0]	audMmioOK;
 assign		aud_mono_out	= audPwmOut[0];
 
+wire[7:0]	audAuxPcmL;
+wire[7:0]	audAuxPcmR;
+
 ModAudPcm	pcm(
-	clock,		reset,
-	audPwmOut,
+	clock,			reset,
+	audPwmOut,		audAuxPcmL,			audAuxPcmR,
 	mmioOutData,	audMmioOutData,		mmioAddr,
 	mmioOpm,		audMmioOK);
+
+wire[31:0]	fmMmioOutData;
+wire[1:0]	fmMmioOK;
+
+ModAudFm	fmsyn(
+	clock,			reset,
+	audAuxPcmL,		audAuxPcmR,
+	mmioOutData,	fmMmioOutData,		mmioAddr,
+	mmioOpm,		fmMmioOK);
+
 
 wire[31:0]	kbMmioOutData;
 wire[1:0]	kbMmioOK;
@@ -289,6 +320,11 @@ reg[31:0]		mmioAddrL2;
 reg[31:0]		mmioAddrL3;
 reg[31:0]		mmioAddrL4;
 
+reg				tBusMissLatch;
+reg				tNxtBusMissLatch;
+
+reg			timer1kHzL;
+
 always @*
 begin
 
@@ -299,6 +335,26 @@ begin
 //	mmioInData	= UV32_XX;
 	mmioInData	= UV64_XX;
 	mmioOK		= UMEM_OK_READY;
+
+	memBusExc	= UV64_00;
+	tNxtBusMissLatch	= 0;
+
+//	if(timer1MHz)
+//		$display("timer1MHz");
+//	if(timer64kHz)
+//		$display("timer64kHz");
+//	if(timer1kHz)
+//		$display("timer1kHz");
+
+//	if(timer1kHz && timer1kHzL)
+//		$display("Timer: kHz multi-clock pulse");
+
+//	if(timer1kHz)
+//		$display("1kHz at %dus, %dns", outTimer1MHz, outTimer100MHz*10);
+
+//	if(timer1kHz && !timer1kHzL)
+	if(timer256Hz)
+		memBusExc	= { UV48_00, 16'hC001 };
 
 	if(gpioOK != UMEM_OK_READY)
 	begin
@@ -311,37 +367,50 @@ begin
 		mmioInData	= scrnMmioOutData;
 		mmioOK		= scrnMmioOK;
 	end
+	else if(sdMmioOK != UMEM_OK_READY)
+	begin
+		mmioInData	= { UV32_XX, sdMmioOutData };
+		mmioOK		= sdMmioOK;
+	end
 	else if(audMmioOK != UMEM_OK_READY)
 	begin
 		mmioInData	= { UV32_XX, audMmioOutData };
 		mmioOK		= audMmioOK;
+	end
+	else if(fmMmioOK != UMEM_OK_READY)
+	begin
+		mmioInData	= { UV32_XX, fmMmioOutData };
+		mmioOK		= fmMmioOK;
 	end
 	else if(kbMmioOK != UMEM_OK_READY)
 	begin
 		mmioInData	= { UV32_XX, kbMmioOutData };
 		mmioOK		= kbMmioOK;
 	end
-	else if(sdMmioOK != UMEM_OK_READY)
-	begin
-		mmioInData	= { UV32_XX, sdMmioOutData };
-		mmioOK		= sdMmioOK;
-	end
 	else if(mmioOpm!=0)
 	begin
 		if(mmioAddr == mmioAddrL4)
-			$display("MMIO Bus Miss A=%X", mmioAddr);
+		begin
+			if(!tBusMissLatch)
+				$display("MMIO Bus Miss A=%X", mmioAddr);
+			tNxtBusMissLatch = 1;
+		end
 	end
 
 end
 
 always @(posedge clock)
 begin
+//	$display("Clock Edge");
+
 	clock_halfMhz	<= !clock_halfMhz;
+	timer1kHzL		<= timer1kHz;
 
 	mmioAddrL1	<= mmioAddr;
 	mmioAddrL2	<= mmioAddrL1;
 	mmioAddrL3	<= mmioAddrL2;
 	mmioAddrL4	<= mmioAddrL3;
+	tBusMissLatch	<= tNxtBusMissLatch;
 end
 
 

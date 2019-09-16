@@ -18,6 +18,7 @@ module RegCR(
 	regOutExsr,	regInExsr,
 	regOutSpc,	regInSpc,
 	regOutSsp,	regInSsp,
+	regOutTea,	regInTea,
 
 	regOutVbr,
 	regOutGbr,
@@ -53,6 +54,8 @@ output[31:0]	regOutSpc;
 input [31:0]	regInSpc;
 output[31:0]	regOutSsp;
 input [31:0]	regInSsp;
+output[31:0]	regOutTea;
+input [31:0]	regInTea;
 
 output[31:0]	regOutVbr;
 output[31:0]	regOutGbr;
@@ -189,13 +192,14 @@ begin
 		crRegExsr	<= (regIdCn2B==JX2_CR_EXSR) ? regValCn2[63:0] : regInExsr;
 		crRegSpc	<= (regIdCn2B==JX2_CR_SPC ) ? regValCn2[31:0] : regInSpc;
 		crRegSsp	<= (regIdCn2B==JX2_CR_SSP ) ? regValCn2[31:0] : regInSsp;
+		crRegTea	<= (regIdCn2B==JX2_CR_TEA ) ? regValCn2[31:0] : regInTea;
 
 		crRegVbr	<= (regIdCn2B==JX2_CR_VBR ) ? regValCn2[31:0] : crRegVbr;
 //		crRegSpc	<= (regIdCn2B==JX2_CR_SPC ) ? regValCn2[31:0] : crRegSpc;
 //		crRegSsp	<= (regIdCn2B==JX2_CR_SSP ) ? regValCn2[31:0] : crRegSsp;
 		crRegGbr	<= (regIdCn2B==JX2_CR_GBR ) ? regValCn2[31:0] : crRegGbr;
 		crRegTbr	<= (regIdCn2B==JX2_CR_TBR ) ? regValCn2[31:0] : crRegTbr;
-		crRegTea	<= (regIdCn2B==JX2_CR_TEA ) ? regValCn2[31:0] : crRegTea;
+//		crRegTea	<= (regIdCn2B==JX2_CR_TEA ) ? regValCn2[31:0] : crRegTea;
 //		crRegExsr	<= (regIdCn2B==JX2_CR_EXSR) ? regValCn2[63:0] : crRegExsr;
 
 `ifdef jx2_enable_mmu
@@ -205,6 +209,14 @@ begin
 		crRegKrr	<= (regIdCn2B==JX2_CR_KRR ) ? regValCn2[63:0] : crRegKrr;
 `endif
 
+	end
+	else
+	begin
+		crRegSr		<= regInSr;
+		crRegExsr	<= regInExsr;
+		crRegSpc	<= regInSpc;
+		crRegSsp	<= regInSsp;
+		crRegTea	<= regInTea;
 	end
 end
 

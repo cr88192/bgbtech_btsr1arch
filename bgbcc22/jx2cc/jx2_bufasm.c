@@ -618,6 +618,8 @@ int nmid;
 {"muls",	BGBCC_SH_NMID_DMULS},
 {"tst",		BGBCC_SH_NMID_TST},
 {"test",	BGBCC_SH_NMID_TST},
+{"tstq",	BGBCC_SH_NMID_TSTQ},
+{"test.q",	BGBCC_SH_NMID_TSTQ},
 {"and",		BGBCC_SH_NMID_AND},
 {"xor",		BGBCC_SH_NMID_XOR},
 {"or",		BGBCC_SH_NMID_OR},

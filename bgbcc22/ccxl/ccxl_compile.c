@@ -2070,6 +2070,7 @@ int BGBCC_CCXL_VarTypeString_ModifierChar(BGBCC_TransState *ctx, s64 i)
 
 	case BGBCC_TYFL_EVENT:			c=('C'<<8)|'e'; break;
 	case BGBCC_TYFL_INTERRUPT:		c=('C'<<8)|'f'; break;
+	case BGBCC_TYFL_SYSCALL:		c=('C'<<8)|'g'; break;
 
 	case BGBCC_TYFL_INTERFACE:		c=('C'<<8)|'i'; break;
 
@@ -2711,6 +2712,7 @@ char *BGBCC_CCXL_VarMangleName(BGBCC_TransState *ctx,
 void BGBCC_CCXL_EmitVarFunc(BGBCC_TransState *ctx,
 	char *name, BCCX_Node *ty, BCCX_Node *args)
 {
+	BCCX_Node *t, *t1;
 	char *s, *s1, *s2;
 	s64 li;
 	int i;
@@ -2737,10 +2739,26 @@ void BGBCC_CCXL_EmitVarFunc(BGBCC_TransState *ctx,
 
 	li=BCCX_GetIntCst(ty, &bgbcc_rcst_flags, "flags");
 	
-	if(BGBCC_CCXL_GetNodeAttribute(ctx, ty, "dllexport") ||
-		!strcmp(s1, "main") || !strcmp(s1, "WinMain"))
+//	if(BGBCC_CCXL_GetNodeAttribute(ctx, ty, "dllexport") ||
+//		!strcmp(s1, "main") || !strcmp(s1, "WinMain"))
+	if(!strcmp(s1, "main") || !strcmp(s1, "WinMain"))
+		{ li|=BGBCC_TYFL_EXPNAME|BGBCC_TYFL_DLLEXPORT; }
+
+
+	t=BCCX_FindTagCst(ty, &bgbcc_rcst_declspec, "declspec");
+	t1=BCCX_FindTagCst(ty, &bgbcc_rcst_attribute, "attribute");
+
+	if(t || t1)
 	{
-		li|=BGBCC_TYFL_EXPNAME|BGBCC_TYFL_DLLEXPORT;
+		if(BGBCC_CCXL_GetNodeAttribute(ctx, ty, "dllexport"))
+			{ li|=BGBCC_TYFL_EXPNAME|BGBCC_TYFL_DLLEXPORT; }
+
+		if(BGBCC_CCXL_GetNodeAttribute(ctx, ty, "dllimport"))
+			{ li|=BGBCC_TYFL_DLLIMPORT; }
+		if(BGBCC_CCXL_GetNodeAttribute(ctx, ty, "interrupt"))
+			{ li|=BGBCC_TYFL_INTERRUPT; }
+		if(BGBCC_CCXL_GetNodeAttribute(ctx, ty, "syscall"))
+			{ li|=BGBCC_TYFL_SYSCALL; }
 	}
 	
 	BGBCC_CCXL_AttribLong(ctx, CCXL_ATTR_FLAGS, li);

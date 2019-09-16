@@ -30,6 +30,11 @@ void tk_con_init()
 	((u32 *)0xF00BFF00)[0]=0x0001;		//
 }
 
+void *tk_con_getctx()
+{
+	return(&tk_con);
+}
+
 void tk_con_scroll_up()
 {
 	volatile u32 *buf;

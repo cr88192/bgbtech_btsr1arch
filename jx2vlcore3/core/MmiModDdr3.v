@@ -59,7 +59,9 @@ These exist because verilator lacks tristate IO.
 
 `include "CoreDefs.v"
 
-`define mod_ddr3_isddr2		//We are dealing with DDR2, not DDR3
+// `define mod_ddr3_isddr2		//We are dealing with DDR2, not DDR3
+
+// `define mod_ddr_dbgprn		//Debug DDR module
 
 module MmiModDdr3(
 	clock,	reset,
@@ -101,14 +103,17 @@ output			ddrCke;
 // output[9:0]		ddrCmd;			//Command/Address pins
 output[1:0]		ddrClk;			//clock pins
 
-parameter[7:0]	DDR_CAS_RL_M1	= 4;	//CAS RL Minus 1
-parameter[7:0]	DDR_CAS_WL_M1	= 4;	//CAS WL Minus 1
+// parameter[7:0]	DDR_CAS_RL_M1	= 4;	//CAS RL Minus 1
+parameter[7:0]	DDR_CAS_RL_M1	= 3;	//CAS RL Minus 1
+// parameter[7:0]	DDR_CAS_WL_M1	= 4;	//CAS WL Minus 1
+parameter[7:0]	DDR_CAS_WL_M1	= 2;	//CAS WL Minus 1
 parameter[7:0]	DDR_RAS_M1		= 8;	//RAS Minus 1
 
 parameter[7:0]	DDR_RAS_INIT	= 128;	//Wait several uS
 
 // parameter[63:0]	DDR_DRI_INIT	= 64'h0000_0122_0201_0AFF;
-parameter[63:0]	DDR_DRI_INIT	= 64'h4000_2000_0010_8200;
+// parameter[63:0]	DDR_DRI_INIT	= 64'h4000_2000_0010_8200;
+parameter[63:0]	DDR_DRI_INIT	= 64'h4000_2000_0033_8200;
 
 /* verilator lint_off UNOPTFLAT */
 
@@ -630,7 +635,7 @@ begin
 		accNextState	= 6'b011101;
 	end
 	6'b011101: begin
-		/* Column Read (Fall) */
+		/* Column Write (Fall) */
 		/* C11 C10 C9 C8 C7 C6 C5 C4 C3 AP */
 //		tDdrCmd			= {accColAddr[11:3], 1'b1};
 		accNextState	= 6'b011110;
@@ -657,45 +662,62 @@ begin
 	/* Read Burst States */
 	
 	6'b100000: begin
-//		$display("DDR Read Word0 %X (Ck=%d)", ddrData, clock);
+`ifdef mod_ddr_dbgprn
+		$display("DDR Read Word0 %X (Ck=%d)", ddrData, clock);
+`endif
 		accNextState			= 6'b100001;
 		accNextReadBlk[15:0]	= ddrData;
 	end
 	6'b100001: begin
-//		$display("DDR Read Word1 %X (Ck=%d)", ddrData, clock);
+`ifdef mod_ddr_dbgprn
+		$display("DDR Read Word1 %X (Ck=%d)", ddrData, clock);
+`endif
 		accNextState			= 6'b100010;
 		accNextReadBlk[31:16]	= ddrData;
 	end
 	6'b100010: begin
-//		$display("DDR Read Word2 %X", ddrData);
+`ifdef mod_ddr_dbgprn
+		$display("DDR Read Word2 %X", ddrData);
+`endif
 		accNextState			= 6'b100011;
 		accNextReadBlk[47:32]	= ddrData;
 	end
 	6'b100011: begin
-//		$display("DDR Read Word3 %X", ddrData);
+`ifdef mod_ddr_dbgprn
+		$display("DDR Read Word3 %X", ddrData);
+`endif
 		accNextState			= 6'b100100;
 		accNextReadBlk[63:48]	= ddrData;
-`ifdef mod_ddr3_isddr2
+// `ifdef mod_ddr3_isddr2
+`ifdef jx2_ddr_bl64b
 		accNextState			= 6'b000001;
 `endif
 	end
 	6'b100100: begin
-		$display("Read Word4 %X", ddrData);
+`ifdef mod_ddr_dbgprn
+		$display("DDR Read Word4 %X", ddrData);
+`endif
 		accNextState			= 6'b100101;
 		accNextReadBlk[79:64]	= ddrData;
 	end
 	6'b100101: begin
-		$display("Read Word5 %X", ddrData);
+`ifdef mod_ddr_dbgprn
+		$display("DDR Read Word5 %X", ddrData);
+`endif
 		accNextState			= 6'b100110;
 		accNextReadBlk[95:80]	= ddrData;
 	end
 	6'b100110: begin
-		$display("Read Word6 %X", ddrData);
+`ifdef mod_ddr_dbgprn
+		$display("DDR Read Word6 %X", ddrData);
+`endif
 		accNextState			= 6'b100111;
 		accNextReadBlk[111:96]	= ddrData;
 	end
 	6'b100111: begin
-		$display("Read Word7 %X", ddrData);
+`ifdef mod_ddr_dbgprn
+		$display("DDR Read Word7 %X", ddrData);
+`endif
 		accNextState			= 6'b000001;
 		accNextReadBlk[127:112]	= ddrData;
 	end
@@ -722,7 +744,8 @@ begin
 		accNextState			= 6'b110100;
 		tDdrData 				= accReadBlk[63:48];
 		tDdrOut					= 1;
-`ifdef mod_ddr3_isddr2
+// `ifdef mod_ddr3_isddr2
+`ifdef jx2_ddr_bl64b
 		accNextState			= 6'b000001;
 `endif
 	end

@@ -142,8 +142,8 @@ begin
 			begin
 			end
 			
-			$display("SdSpi Bit=%d Mosi=%d Miso=%d ExchI=%X ExchO=%X",
-				tBitCnt, tOutMosi, spi_miso, tRegExchI, tRegExchO);
+//			$display("SdSpi Bit=%d Mosi=%d Miso=%d ExchI=%X ExchO=%X",
+//				tBitCnt, tOutMosi, spi_miso, tRegExchI, tRegExchO);
 		end
 	end
 

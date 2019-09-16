@@ -43,7 +43,7 @@ Holding/Completing a memory access will be the responsibility of EX2.
 module ExEX1(
 	clock, reset,
 	opUCmd, opUIxt,
-	exHold,
+	exHold,	exTrapExc,
 
 	regIdRs,		//Source A, ALU / Base
 	regIdRt,		//Source B, ALU / Index
@@ -86,6 +86,7 @@ input			reset;
 input[7:0]		opUCmd;
 input[7:0]		opUIxt;
 output			exHold;
+output[15:0]	exTrapExc;
 
 input[5:0]		regIdRs;		//Source A, ALU / Base
 input[5:0]		regIdRt;		//Source B, ALU / Index
@@ -145,6 +146,8 @@ reg[7:0]		tRegOutSchm;
 reg[ 5:0]		tHeldIdRn1;		//Destination ID (EX1)
 reg[ 4:0]		tHeldIdCn1;		//Destination ID (CR, EX1)
 
+reg[15:0]		tExTrapExc;
+
 assign	regIdRn1	= tRegIdRn1;		//Destination ID (EX1)
 assign	regValRn1	= tRegValRn1;		//Destination Value (EX1)
 assign	regIdCn1	= tRegIdCn1;		//Destination ID (CR, EX1)
@@ -158,6 +161,7 @@ assign	regOutSp	= tRegOutSp;
 assign	regOutLr	= tRegOutLr;
 assign	regOutSr	= tRegOutSr;
 assign	regOutSchm	= tRegOutSchm;
+assign	exTrapExc	= tExTrapExc;
 
 reg[31:0]		tMemAddr;
 reg[ 4:0]		tMemOpm;
@@ -260,10 +264,11 @@ begin
 	tMemOpm		= UMEM_OPM_READY;
 	tMemDataOut	= regValRm;
 	
-	tDoMemOpm	= UMEM_OPM_READY;
-	tDoMemOp	= 0;
-	tExHold		= 0;
+	tDoMemOpm		= UMEM_OPM_READY;
+	tDoMemOp		= 0;
+	tExHold			= 0;
 	tNextMsgLatch	= 0;
+	tExTrapExc		= 0;
 
 
 	tRegSpAdd8		= { regInSp[63:28], regInSp[27:3]+25'h1, regInSp[2:0]};
@@ -629,6 +634,16 @@ begin
 					tRegOutSr[1]	= !regInSr[1];
 				end
 
+				JX2_UCIX_IXT_RTE: begin
+					$display("EX1: RTE, PC=%X", regValPc);
+					tExTrapExc = 16'hFF00;
+//					tRegIdCn1	= JX2_GR_IMM[4:0];
+				end
+				JX2_UCIX_IXT_TRAPA: begin
+					tExTrapExc = { 12'hC08, regIdRm[3:0] };
+//					tRegIdCn1	= JX2_GR_IMM[4:0];
+				end
+
 				JX2_UCIX_IXT_CPUID: begin
 					tRegOutDlr	= tValCpuIdLo;
 					tRegOutDhr	= tValCpuIdHi;
@@ -641,6 +656,11 @@ begin
 						4'h1:		tRegOutSr[27]	= 1;
 						default:	tRegOutSr[27]	= 0;
 					endcase
+				end
+
+				JX2_UCIX_IXT_SYSE: begin
+					tExTrapExc = { 4'hE, regInDlr[11:0] };
+//					tRegIdCn1	= JX2_GR_IMM[4:0];
 				end
 
 				default: begin

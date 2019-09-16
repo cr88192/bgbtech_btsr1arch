@@ -24,8 +24,10 @@ S.E3.M4
 
 module ModAudPcm(
 	/* verilator lint_off UNUSED */
-	clock, reset, pwmOut,
-	busInData, busOutData, busAddr, busOpm, busOK);
+	clock,		reset,
+	pwmOut,		auxPcmL,	auxPcmR,
+	busInData,	busOutData,	busAddr,
+	busOpm,		busOK);
 
 input			clock;
 input			reset;
@@ -36,6 +38,9 @@ input[4:0]		busOpm;
 output[1:0]		pwmOut;
 output[31:0]	busOutData;
 output[1:0]		busOK;
+
+input[7:0]		auxPcmL;
+input[7:0]		auxPcmR;
 
 reg[1:0]	tPwmOut;
 reg[1:0]	tPwmOut2;
@@ -238,6 +243,9 @@ begin
 		tPwmNextValL	= tSamp12c;
 		tPwmNextValR	= tSamp12c;
 	end
+	
+	tPwmNextValL	= tPwmNextValL + { auxPcmL, 4'h0 };
+	tPwmNextValR	= tPwmNextValR + { auxPcmR, 4'h0 };
 
 	if(tDevCSel && (busOpm[4:3]!=0))
 		tOutOK	= UMEM_OK_OK;

@@ -1,4 +1,5 @@
 int GfxDrv_PrepareFramebuf();
+int JX2I_GfxCon_UpdateForRegs();
 
 u64 gfxfont[256]={
 0x0000000000000000ULL,		//00
@@ -563,8 +564,6 @@ int JX2I_GfxCon_PutPix200(int px, int py, int clrc)
 	int fbxs;
 	
 	fbxs=btesh2_gfxcon_fbxs;
-//	((u32 *)btesh2_gfxcon_framebuf)[(py*320)+px]=clrc;
-//	fbxs=640;
 
 #if 0
 	if(btesh2_gfxcon_swaprb)
@@ -1709,8 +1708,6 @@ int JX2I_GfxCon_UpdateCell(int cx, int cy)
 			}
 		}
 	}
-
-
 
 	return(0);
 }

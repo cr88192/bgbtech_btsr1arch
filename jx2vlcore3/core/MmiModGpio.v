@@ -14,6 +14,7 @@ module MmiModGpio(
 
 	gpioPinsOut,	gpioPinsIn,		gpioPinsDir,
 	fixedPinsOut,	fixedPinsIn,
+	outTimer1MHz,	outTimer100MHz,
 
 	mmioInData,		mmioOutData,	mmioAddr,		
 	mmioOpm,		mmioOK
@@ -28,6 +29,9 @@ output[31:0]	gpioPinsDir;
 
 output[15:0]	fixedPinsOut;
 input[15:0]		fixedPinsIn;
+
+output[63:0]	outTimer1MHz;
+output[63:0]	outTimer100MHz;
 
 input[31:0]		mmioInData;
 output[31:0]	mmioOutData;
@@ -106,6 +110,9 @@ reg[63:0]		nextTimer1MHz;
 
 reg[63:0]		timer100MHz;
 reg[63:0]		nextTimer100MHz;
+
+assign		outTimer1MHz	= timer1MHz;
+assign		outTimer100MHz	= timer100MHz;
 
 reg[15:0]		fracTimer1MHz;
 reg[15:0]		nextFracTimer1MHz;

@@ -13,8 +13,12 @@ uMsg: Will identify the request.
 vParm1/vParm2: Will be message-specific parameters (such as user-provided structures).
 
 */
+
+__declspec(syscall)
 int __isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 {
+	int ret;
+
 //	u64 ttb, tea;
 //	u16 exsr;
 	
@@ -22,5 +26,29 @@ int __isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 //	tea=__arch_tea;
 //	exsr=(u16)(__arch_exsr);
 //	ptetlb_rethow_exc=0;
+
+	ret=TK_URES_ERR_BADMSG;
 	
+	switch((uMsg>>12)&15)
+	{
+	case 1:
+		switch((uMsg>>8)&15)
+		{
+		case 0:
+			switch(uMsg&255)
+			{
+			case 0x01:
+				*((void **)vParm1)=tk_con_getctx();
+				break;
+			}
+			break;
+		default:
+			break;
+		}
+		break;
+	default:
+		break;
+	}
+	
+	return(ret);
 }

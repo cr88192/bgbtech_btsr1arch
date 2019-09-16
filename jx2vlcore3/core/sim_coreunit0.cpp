@@ -466,7 +466,7 @@ int sdc_spibit(int bit, int cs)
 //			tvn=btesh2_spimmc_XrByte(NULL, tvi);
 //			tvo=(tvo<<8)|btesh2_spimmc_XrByte(NULL, tvi);
 			tvo=tvo|btesh2_spimmc_XrByte(NULL, tvi);
-			printf("sdc_spibit: tvi=%02X tvo=%02X\n", tvi, tvo);
+//			printf("sdc_spibit: tvi=%02X tvo=%02X\n", tvi, tvo);
 //			pos=0; tvi=0;
 			pos=8; tvi=0;
 		}
@@ -516,13 +516,19 @@ int ddr_parm_rl=7;	//CAS RL*2+1
 int ddr_row, ddr_col, ddr_bank;
 int ddr_state, ddr_cas, ddr_burst;
 
+int ddr_burstlen;
+int ddr_mr0;
+int ddr_mr1;
+int ddr_mr2;
+int ddr_mr3;
+
 uint16_t	*ddr_ram;
 
 #if 1
 int SimDdr(int clk, int cmd, int *rdata)
 {
 	int		data, row, col, bank, pos;
-	int addr;
+	int addr, cas;
 
 //Cs;
 //			cmd=(cmd<<1)|top->ddrRas;
@@ -598,16 +604,18 @@ int SimDdr(int clk, int cmd, int *rdata)
 //				printf("Read Active Row\n");
 				ddr_col=addr;
 				ddr_state=1;
-//				ddr_cas=ddr_parm_rl*2+1;
-				ddr_cas=4*2+1;
-				ddr_burst=SIMDDR_BUSRT;
+				ddr_cas=ddr_parm_rl*2+1;
+//				ddr_cas=4*2+1;
+//				ddr_burst=SIMDDR_BUSRT;
+				ddr_burst=ddr_burstlen;
 			}else
 			{
 				printf("Write Active Row\n");
 				ddr_col=addr;
 				ddr_state=2;
 				ddr_cas=ddr_parm_wl*2+1;
-				ddr_burst=SIMDDR_BUSRT;
+//				ddr_burst=SIMDDR_BUSRT;
+				ddr_burst=ddr_burstlen;
 			}
 		}
 	}else
@@ -629,7 +637,25 @@ int SimDdr(int clk, int cmd, int *rdata)
 				printf("Auto-Refresh Row\n");
 			}else
 			{
-				printf("Load Mode Register\n");
+//				printf("Load Mode Register A=%04X V=%04X\n", addr, data);
+				printf("Load Mode Register C=%04X\n", cmd&0xFFFF);
+				switch((cmd>>14)&3)
+				{
+				case 0:		ddr_mr0=addr;	break;
+				case 1:		ddr_mr1=addr;	break;
+				case 2:		ddr_mr2=addr;	break;
+				case 3:		ddr_mr3=addr;	break;
+				}
+				
+				ddr_burstlen=(ddr_mr0&1)?8:4;
+				
+				cas=(ddr_mr0>>4)&7;
+//				ddr_parm_rl=cas*2+1;		//CAS RL*2+1
+//				ddr_parm_wl=ddr_parm_rl-2;	//CAS WL=RL-1
+				ddr_parm_rl=cas;			//CAS RL*2+1
+				ddr_parm_wl=ddr_parm_rl-1;	//CAS WL=RL-1
+				
+				printf("BurstLen=%d, CAS=%d\n", ddr_burstlen, cas);
 			}
 		}
 	}
@@ -689,15 +715,15 @@ int main(int argc, char **argv, char **env)
 	Verilated::commandArgs(argc, argv);
 
 	rombuf=(uint32_t *)malloc(32768);
-	srambuf=(uint32_t *)malloc(8192);
-	drambuf=(uint32_t *)malloc(1<<27);
-	srambuf2=(uint32_t *)malloc(8192);
-	drambuf2=(uint32_t *)malloc(1<<27);	
+//	srambuf=(uint32_t *)malloc(8192);
+//	drambuf=(uint32_t *)malloc(1<<27);
+//	srambuf2=(uint32_t *)malloc(8192);
+//	drambuf2=(uint32_t *)malloc(1<<27);	
 
-	memset(srambuf, 0, 8192);
-	memset(drambuf, 0, 1<<27);
-	memset(srambuf2, 0, 8192);
-	memset(drambuf2, 0, 1<<27);
+//	memset(srambuf, 0, 8192);
+//	memset(drambuf, 0, 1<<27);
+//	memset(srambuf2, 0, 8192);
+//	memset(drambuf2, 0, 1<<27);
 
 //	ddr_ram=(uint16_t *)malloc(1<<27);
 	ddr_ram=(uint16_t *)malloc(1<<28);

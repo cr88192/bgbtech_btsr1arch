@@ -488,6 +488,16 @@ uint32_t mmio_ReadDWord(BJX2_Context *ctx, uint32_t addr)
 		return(val);
 	}
 
+	if((addr&0x0FFF0000)==0x90000)
+	{
+		return(0);
+	}
+
+	if((addr&0x0FFF0000)==0x80000)
+	{
+		return(0);
+	}
+
 	mmio=mmgp_data;
 
 	switch(addr&0xFFFFFF)
@@ -554,6 +564,16 @@ uint32_t mmio_WriteDWord(BJX2_Context *ctx, uint32_t addr, uint32_t val)
 	if((addr&0x0FFE0000)==0xA0000)
 	{
 		BJX2_MemGfxConCb_SetDWord(ctx, NULL, addr&0x1FFFF, val);
+		return(0);
+	}
+
+	if((addr&0x0FFF0000)==0x80000)
+	{
+		return(0);
+	}
+
+	if((addr&0x0FFF0000)==0x90000)
+	{
 		return(0);
 	}
 
@@ -645,8 +665,17 @@ void MemUpdateForBus()
 		{
 			if(is_mmio)
 			{
-				top->memDataIn[0]=
-					mmio_ReadDWord(jx2_ctx, addr&0xFFFFFC);
+				if((top->memOpm&0x07)==0x03)
+				{
+					top->memDataIn[0]=
+						mmio_ReadDWord(jx2_ctx, (addr+0)&0xFFFFFC);
+					top->memDataIn[1]=
+						mmio_ReadDWord(jx2_ctx, (addr+4)&0xFFFFFC);
+				}else
+				{
+					top->memDataIn[0]=
+						mmio_ReadDWord(jx2_ctx, addr&0xFFFFFC);
+				}
 				top->memOK=1;
 				
 				if((top->memDataIn[0]==0x55AA55AA) || (addr&3))
@@ -708,8 +737,19 @@ void MemUpdateForBus()
 			{
 				if(!mmio_latched)
 				{
-					mmio_WriteDWord(jx2_ctx, addr&0xFFFFFF,
-						top->memDataOut[0]);
+					if((top->memOpm&0x07)==0x03)
+					{
+						mmio_WriteDWord(jx2_ctx,
+							(addr+0)&0xFFFFFF,
+							top->memDataOut[0]);
+						mmio_WriteDWord(jx2_ctx,
+							(addr+4)&0xFFFFFF,
+							top->memDataOut[1]);
+					}else
+					{
+						mmio_WriteDWord(jx2_ctx, addr&0xFFFFFF,
+							top->memDataOut[0]);
+					}
 				}
 				top->memOK=1;
 				mmio_latched=1;
@@ -1083,12 +1123,24 @@ int main(int argc, char **argv, char **env)
 
 	JX2R_UseImageCreateRamdisk(128*1024);
 //	JX2R_UseImageCreateRamdisk(32*1024);
+
+#if 1
 	JX2R_UseImageAddFile(
 		(char *)"BOOTLOAD.SYS",
 		(char *)"../../tk_qsrc/doomsrc2/doom_bjx2.exe");
 	JX2R_UseImageAddFile(
 		(char *)"DOOM1.WAD",
 		(char *)"../../tk_qsrc/doomsrc2/doom1.wad");
+#endif
+
+#if 0
+	JX2R_UseImageAddFile(
+		(char *)"BOOTLOAD.SYS",
+		(char *)"../../tk_qsrc/quake_b64b.exe");
+	JX2R_UseImageAddFile(
+		(char *)"ID1/PAK0.PAK",
+		(char *)"../../tk_qsrc/id1/pak0.pak");
+#endif
 
 	Verilated::commandArgs(argc, argv);
 

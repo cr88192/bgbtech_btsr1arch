@@ -166,6 +166,11 @@ int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
 		op->nmid=BJX2_NMID_FMOVS;
 		op->fmid=BJX2_FMID_REGSTREGDISP;
 		op->Run=BJX2_Op_FMOVS_RegStRegDisp;
+		if(eq)
+		{
+			op->nmid=BJX2_NMID_FMOVUS;
+			op->Run=BJX2_Op_FMOVS_GRegStRegDisp;
+		}
 		break;
 	case 0x5:	/* F1nm_5gnm */
 		if(op->rn==1)
@@ -184,6 +189,11 @@ int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
 		op->nmid=BJX2_NMID_FMOVS;
 		op->fmid=BJX2_FMID_LDREGDISPREG;
 		op->Run=BJX2_Op_FMOVS_LdRegDispReg;
+		if(eq)
+		{
+			op->nmid=BJX2_NMID_FMOVUS;
+			op->Run=BJX2_Op_FMOVS_LdRegDispGReg;
+		}
 		break;
 	case 0x7:	/* F1nm_7gdd */
 		if(op->rm==0)

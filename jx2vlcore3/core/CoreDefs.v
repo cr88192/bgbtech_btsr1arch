@@ -517,6 +517,7 @@ parameter[5:0] JX2_UCIX_IXT_TRAPA	= 6'h0A;		//Trap
 parameter[5:0] JX2_UCIX_IXT_PLDMSK	= 6'h0B;		//
 parameter[5:0] JX2_UCIX_IXT_CPUID	= 6'h0C;		//CPU ID
 parameter[5:0] JX2_UCIX_IXT_WEXMD	= 6'h0D;		//WEX Profile
+parameter[5:0] JX2_UCIX_IXT_SYSE	= 6'h0E;		//System Call
 
 parameter[5:0] JX2_UCIX_IXS_NOP		= 6'h00;		//No-Op
 parameter[5:0] JX2_UCIX_IXS_MOVT	= 6'h01;		//Copy SR.T to Reg
@@ -573,7 +574,7 @@ parameter[5:0] JX2_UCIX_IXS_LDSRMSK	= 6'h03;		//?
 `endif
 `endif
 
-`define jx2_ddr_bl64b			//DDR interface is 64-bit (DDR2)
+// `define jx2_ddr_bl64b			//DDR interface is 64-bit (DDR2)
 
 // `define jx2_expand_l1sz			//Make L1 bigger
 

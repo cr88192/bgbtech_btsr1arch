@@ -737,7 +737,7 @@ Instruction Space
 
 ** 3002 -
 ** 3012 RTSU						//PC=LR, Hint
-** 3022 -
+** 3022 SYSCALL						//Throw(DLR)
 ** 3032 -
 ** 3042 -
 ** 3052 -
@@ -1313,12 +1313,14 @@ F0zz Instruction Block:
 * F0ez_9zzz (FPU Block, FPRS)
 ** F0nm_9ed0  /
 ** F0nm_9ed1  /
-** F0nm_9eo2  FMOV.S		FRm, (Rm, Ro)
-** F0nm_9eo3  FMOV.D		FRm, (Rm, Ro)
+** F0nm_9go2  FMOV.S		FRm, (Rm, Ro)
+** F0nm_9Go2  FMOV.S		Rm, (Rm, Ro)		//(GFP?)
+** F0nm_9go3  FMOV.D		FRm, (Rm, Ro)
 ** F0nm_9ed4  /
 ** F0nm_9ed5  /
-** F0nm_9eo6  FMOV.S		(Rm, Ro), FRn
-** F0nm_9eo7  FMOV.D		(Rm, Ro), FRn
+** F0nm_9go6  FMOV.S		(Rm, Ro), FRn
+** F0nm_9Go6  FMOV.S		(Rm, Ro), Rn		//(GFP?)
+** F0nm_9go7  FMOV.D		(Rm, Ro), FRn
 ** F0nm_9go8  FADD			FRm, FRo, FRn
 ** F0nm_9go9  FSUB			FRm, FRo, FRn
 ** F0nm_9goA  FMUL			FRm, FRo, FRn
@@ -1371,8 +1373,10 @@ F1zz Instruction Block:
 ** F1nm_3gdd  MOV.Q		Rn, (Rm, disp9u)
 ** F1nm_3Gdd  LEA.Q		(Rm, disp9u), Rn
 ** F1nm_4gdd  FMOV.S	FRn, (Rm, disp9u)	//(FPU)
+** F1nm_4Gdd  FMOV.S	Rn, (Rm, disp9u)	//? (GFP)
 ** F1nm_5gdd  FMOV.D	FRn, (Rm, disp9u)	//(FPU)
 ** F1nm_6gdd  FMOV.S	(Rm, disp9u), FRn	//(FPU)
+** F1nm_6Gdd  FMOV.S	(Rm, disp9u), Rn	//? (GFP)
 ** F1nm_7gdd  FMOV.D	(Rm, disp9u), FRn	//(FPU)
 ** F1nm_8gdd  MOV.B		(Rm, disp9u), Rn
 ** F1nm_8Gdd  MOVU.B	(Rm, disp9u), Rn
@@ -1426,9 +1430,9 @@ F2zz Instruction Block  (Imm9 Block, New):
 * F2nz_Bejj
 
 * F2nz_Cfjj
-** F2n0_Cfjj / LDIZ{D}	#imm10u, Rn				//Alt (WEX2)
-** F2n1_Cfjj / LDIN{D}	#imm10n, Rn				//Alt (WEX2)
-** F2n2_Cfjj / LDISH	#imm8u, Rn				//Rn=(Rn<<8)|Imm8 (WEX2)
+** F2n0_Cfjj / LDIZ{D}	#imm10u, Rn				//Alt
+** F2n1_Cfjj / LDIN{D}	#imm10n, Rn				//Alt
+** F2n2_Cfjj / LDISH	#imm8u, Rn				//Rn=(Rn<<8)|Imm8
 ** F2n3_Cfjj  -
 ** F2n4_Cfjj  TST{Q}	#imm10u, Rn				//SR.T=!(Imm AND Rn)
 ** F2n5_Cfjj  TST{Q}	#imm10n, Rn				//SR.T=!(Imm AND Rn)
@@ -1447,7 +1451,7 @@ F2zz Instruction Block  (Imm9 Block, New):
 * F2nz_Efjj
 * F2nz_Ffjj
 
-Within the F2 block, if the operation is conditional and the MSB of the second word is set, then Em will be used as the true/false flag rather than Ei.
+/ Within the F2 block, if the operation is conditional and the MSB of the second word is set, then Em will be used as the true/false flag rather than Ei.
 
 
 ==== F8zz Instruction Block ====
@@ -1471,7 +1475,7 @@ F8zz Instruction Block:
 * F8En_iiii  -
 * F8Fn_iiii  -
 
-(Possible) The F9zz block will repeat the F8zz block, but with the primary difference that F9zz will indicate a WEX2 form.
+The F9zz block will repeat the F8zz block, but with the primary difference that F9zz will indicate a WEX2 form.
 
 
 ==== FAzz/FBzz Instruction Block ====
