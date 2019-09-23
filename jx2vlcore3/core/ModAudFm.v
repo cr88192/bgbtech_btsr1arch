@@ -62,6 +62,8 @@ reg[3:0]	chRovL4;
 reg[3:0]	chRovL5;
 reg[3:0]	chRovL6;
 reg[3:0]	chRovL7;
+reg[3:0]	chRovL8;
+reg[3:0]	chRovL9;
 
 reg			chClkStrobe;
 reg			chNxtClkStrobe;
@@ -102,13 +104,21 @@ reg[7:0]	chTabPcmA;
 reg[7:0]	chTabPcmB;
 reg[7:0]	chTabPcmC;
 reg[7:0]	chTabPcmD;
+
 reg[7:0]	chTabPcmA1;
 reg[7:0]	chTabPcmB1;
+reg[7:0]	chTabPcmA1B;
+reg[7:0]	chTabPcmB1B;
+
 reg[7:0]	chTabPcmA2;
 reg[7:0]	chTabPcmB2;
+reg[7:0]	chTabPcmA2A;
+reg[7:0]	chTabPcmB2A;
 
 reg[7:0]	chTabPcmA3;
 reg[7:0]	chTabPcmB3;
+reg[7:0]	chTabPcmA3A;
+reg[7:0]	chTabPcmB3A;
 
 reg[7:0]	chPcmA;
 
@@ -199,10 +209,10 @@ begin
 	end
 	
 	/* First Clock */
-	chCtr0A		= regCtr0A[chRov];
-	chCtr0B		= regCtr0B[chRov];
-	chStsA		= regStsA[chRov];
-	chStsB		= regStsB[chRov];
+//	chCtr0A		= regCtr0A[chRov];
+//	chCtr0B		= regCtr0B[chRov];
+//	chStsA		= regStsA[chRov];
+//	chStsB		= regStsB[chRov];
 	
 	chNxtStsA	= chStsA;
 	chNxtStsB	= chStsB;
@@ -236,26 +246,28 @@ begin
 		default: chTabPcmB1	= chTabPcmB;
 	endcase
 
+	/* Clock Edge */
 
-	chTabPcmB2 = chTabPcmB1;
+	chTabPcmB2A = chTabPcmB1B;
 	if(chCtr0B[22])
-		chTabPcmB2 = chTabPcmB2 - (chTabPcmB1>>3);
+		chTabPcmB2A = chTabPcmB2A - (chTabPcmB1>>3);
 	if(chCtr0B[23])
-		chTabPcmB2 = chTabPcmB2 - (chTabPcmB1>>2);
+		chTabPcmB2A = chTabPcmB2A - (chTabPcmB1>>2);
 	if(chCtr0B[24])
-		chTabPcmB2 = chTabPcmB2 - (chTabPcmB1>>1);
+		chTabPcmB2A = chTabPcmB2A - (chTabPcmB1>>1);
 		
-	case(chCtr0B[27:25])
-		3'b000: chTabPcmB2 = chTabPcmB2;
-		3'b001: chTabPcmB2 = chTabPcmB2>>1;
-		3'b010: chTabPcmB2 = chTabPcmB2>>2;
-		3'b011: chTabPcmB2 = chTabPcmB2>>3;
-		3'b100: chTabPcmB2 = chTabPcmB2>>4;
-		3'b101: chTabPcmB2 = chTabPcmB2>>5;
-		3'b110: chTabPcmB2 = chTabPcmB2>>6;
-		3'b111: chTabPcmB2 = chTabPcmB2>>7;
-	endcase
+	/* Clock Edge */
 
+	case(chCtr0B[27:25])
+		3'b000: chTabPcmB3A = chTabPcmB2;
+		3'b001: chTabPcmB3A = chTabPcmB2>>1;
+		3'b010: chTabPcmB3A = chTabPcmB2>>2;
+		3'b011: chTabPcmB3A = chTabPcmB2>>3;
+		3'b100: chTabPcmB3A = chTabPcmB2>>4;
+		3'b101: chTabPcmB3A = chTabPcmB2>>5;
+		3'b110: chTabPcmB3A = chTabPcmB2>>6;
+		3'b111: chTabPcmB3A = chTabPcmB2>>7;
+	endcase
 
 	/* Clock Edge */
 
@@ -285,23 +297,27 @@ begin
 		default: chTabPcmA1	= chTabPcmA;
 	endcase
 
-	chTabPcmA2 = chTabPcmA1;
+	/* Clock Edge */
+
+	chTabPcmA2A = chTabPcmA1B;
 	if(chCtr0A[22])
-		chTabPcmA2 = chTabPcmA2 - (chTabPcmA1>>3);
+		chTabPcmA2A = chTabPcmA2A - (chTabPcmA1>>3);
 	if(chCtr0A[23])
-		chTabPcmA2 = chTabPcmA2 - (chTabPcmA1>>2);
+		chTabPcmA2A = chTabPcmA2A - (chTabPcmA1>>2);
 	if(chCtr0A[24])
-		chTabPcmA2 = chTabPcmA2 - (chTabPcmA1>>1);
+		chTabPcmA2A = chTabPcmA2A - (chTabPcmA1>>1);
 		
+	/* Clock Edge */
+
 	case(chCtr0A[27:25])
-		3'b000: chTabPcmA2 = chTabPcmA2;
-		3'b001: chTabPcmA2 = chTabPcmA2>>1;
-		3'b010: chTabPcmA2 = chTabPcmA2>>2;
-		3'b011: chTabPcmA2 = chTabPcmA2>>3;
-		3'b100: chTabPcmA2 = chTabPcmA2>>4;
-		3'b101: chTabPcmA2 = chTabPcmA2>>5;
-		3'b110: chTabPcmA2 = chTabPcmA2>>6;
-		3'b111: chTabPcmA2 = chTabPcmA2>>7;
+		3'b000: chTabPcmA3A = chTabPcmA2;
+		3'b001: chTabPcmA3A = chTabPcmA2>>1;
+		3'b010: chTabPcmA3A = chTabPcmA2>>2;
+		3'b011: chTabPcmA3A = chTabPcmA2>>3;
+		3'b100: chTabPcmA3A = chTabPcmA2>>4;
+		3'b101: chTabPcmA3A = chTabPcmA2>>5;
+		3'b110: chTabPcmA3A = chTabPcmA2>>6;
+		3'b111: chTabPcmA3A = chTabPcmA2>>7;
 	endcase
 
 	/* Clock Edge */
@@ -309,7 +325,8 @@ begin
 	chPcmA = (chCtr0A[21]) ? chTabPcmA3 : (chTabPcmA3 + chTabPcmB3);
 	
 //	if(chRovL3==chRov)
-	if((chRovL6==chRov) && (chRovL7!=chRov))
+//	if((chRovL6==chRov) && (chRovL7!=chRov))
+	if((chRovL8==chRov) && (chRovL9!=chRov))
 	begin
 		tNxtChAccumL = tChAccumL + { (chPcmA[7] ? 4'hF : 4'h0), chPcmA };
 		tNxtChAccumR = tChAccumR + { (chPcmA[7] ? 4'hF : 4'h0), chPcmA };
@@ -361,6 +378,11 @@ begin
 //	fracTimer32MHz	<= nextFracTimer32MHz;
 	fracTimer64kHz	<= nextFracTimer64kHz;
 
+	chCtr0A			<= regCtr0A[chRov];
+	chCtr0B			<= regCtr0B[chRov];
+	chStsA			<= regStsA[chRov];
+	chStsB			<= regStsB[chRov];
+
 	regStsA[chRov]	<= chNxtStsA;
 	regStsB[chRov]	<= chNxtStsB;
 
@@ -372,13 +394,20 @@ begin
 	chRovL5			<= chRovL4;
 	chRovL6			<= chRovL5;
 	chRovL7			<= chRovL6;
+	chRovL8			<= chRovL7;
+	chRovL9			<= chRovL8;
 
 	chClkStrobe		<= chNxtClkStrobe;
 	chClkLatch		<= chNxtClkLatch;
 	tChAccumL		<= tNxtChAccumL;
 	tChAccumR		<= tNxtChAccumR;
-	chTabPcmA3		<= chTabPcmA2;
-	chTabPcmB3		<= chTabPcmB2;
+
+	chTabPcmA1B		<= chTabPcmA1;
+	chTabPcmB1B		<= chTabPcmB1;
+	chTabPcmA2		<= chTabPcmA2A;
+	chTabPcmB2		<= chTabPcmB2A;
+	chTabPcmA3		<= chTabPcmA3A;
+	chTabPcmB3		<= chTabPcmB3A;
 
 	if(tDevCSel && busOpm[4])
 	begin

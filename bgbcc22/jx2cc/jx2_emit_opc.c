@@ -26,6 +26,7 @@ int BGBCC_JX2_TryEmitOpNone(BGBCC_JX2_Context *ctx, int nmid)
 	case BGBCC_SH_NMID_NOP:		opw1=0x3000; break;
 	case BGBCC_SH_NMID_RTS:		opw1=0x3010; break;
 	case BGBCC_SH_NMID_RTSN:	opw1=0x3010; break;
+	case BGBCC_SH_NMID_RTSU:	opw1=0x3012; break;
 	case BGBCC_SH_NMID_SLEEP:	opw1=0x3020; break;
 	case BGBCC_SH_NMID_BRK:		opw1=0x3030; break;
 	case BGBCC_SH_NMID_CLRT:	opw1=0x3040; break;

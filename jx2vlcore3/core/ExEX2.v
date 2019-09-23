@@ -50,6 +50,7 @@ module ExEX2(
 	regValMulRes,	//Multiplier Result
 	regValMulwRes,	//Multiplier Word Result
 	regFpuGRn,		//FPU GPR Result
+	regFpuLdGRn,		//FPU GPR Result
 	opBraFlush,
 	
 	regOutDlr,	regInDlr,
@@ -97,6 +98,7 @@ input[65:0]		regValAluRes;	//ALU Result
 input[63:0]		regValMulRes;	//Multiplier Result
 input[63:0]		regValMulwRes;	//Multiplier Result
 input[63:0]		regFpuGRn;		//FPU GPR Result
+input[63:0]		regFpuLdGRn;	//FPU GPR Result (Mem Load)
 input			opBraFlush;
 
 output[63:0]	regOutDlr;
@@ -212,12 +214,24 @@ begin
 		end
 
 // `ifdef jx2_enable_fpu
-`ifdef jx2_enable_fprs
+`ifdef jx2_enable_fmov
+// `ifdef jx2_enable_fprs
 		JX2_UCMD_FMOV_RM: begin
 			tDoMemOp	= 1;
 		end
 		JX2_UCMD_FMOV_MR: begin
 			tDoMemOp	= 1;
+			
+`ifdef jx2_enable_fprs
+			if(opUIxt[2])
+			begin
+				tRegIdRn2		= regIdRm;
+				tRegValRn2		= regFpuLdGRn;
+			end
+`else
+			tRegIdRn2		= regIdRm;
+			tRegValRn2		= regFpuLdGRn;
+`endif
 		end
 `endif
 

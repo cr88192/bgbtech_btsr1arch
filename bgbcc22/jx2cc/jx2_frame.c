@@ -4002,7 +4002,8 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 //		if(sctx->has_bjx1jmp)
 		if(1)
 		{
-			BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_RTSN);
+//			BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_RTSN);
+			BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_RTSU);
 		}else
 		{
 			BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_RTS);
@@ -5328,7 +5329,8 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 		if(1)
 //		if(sctx->has_bjx1jmp)
 		{
-			BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_RTSN);
+//			BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_RTSN);
+			BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_RTSU);
 		}else
 		{
 			BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_RTS);

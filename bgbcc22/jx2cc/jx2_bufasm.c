@@ -727,6 +727,7 @@ int nmid;
 {"pop",		BGBCC_SH_NMID_POP},
 {"bra8b",	BGBCC_SH_NMID_BRA8B},
 {"ret",		BGBCC_SH_NMID_RET},
+{"rtsu",	BGBCC_SH_NMID_RTSU},
 
 {"wexmd",	BGBCC_SH_NMID_WEXMD},
 {"cpuid",	BGBCC_SH_NMID_CPUID},
@@ -735,6 +736,8 @@ int nmid;
 {"fadd",	BGBCC_SH_NMID_FADD},
 {"fcmp/eq",	BGBCC_SH_NMID_FCMPEQ},
 {"fcmp/gt",	BGBCC_SH_NMID_FCMPGT},
+{"fcmpeq",	BGBCC_SH_NMID_FCMPEQ},
+{"fcmpgt",	BGBCC_SH_NMID_FCMPGT},
 {"fcnvds",	BGBCC_SH_NMID_FCNVDS},
 {"fcnvsd",	BGBCC_SH_NMID_FCNVSD},
 {"fdiv",	BGBCC_SH_NMID_FDIV},

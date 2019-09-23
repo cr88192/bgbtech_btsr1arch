@@ -1282,6 +1282,7 @@ begin
 
 // `ifdef jx2_enable_fpu
 `ifdef jx2_enable_fprs
+// `ifdef jx2_enable_fmov
 		16'h90zz: begin
 			opNmid	= JX2_UCMD_FMOV_RM;
 			opFmid	= JX2_FMID_REGSTREG;
@@ -1322,6 +1323,9 @@ begin
 			opFmid	= JX2_FMID_LDDRREGREG;
 			opBty	= JX2_BTY_SQ;
 		end
+
+// `endif
+// `ifdef jx2_enable_fprs
 
 		16'h98zz: begin
 			opNmid		= JX2_UCMD_FPU3;

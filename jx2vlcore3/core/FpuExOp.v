@@ -42,6 +42,7 @@ module FpuExOp(
 	regInSr,
 
 	regValGRm,	regValGRn,
+	regValLdGRn,
 	memDataLd,	memDataOK
 	);
 
@@ -60,7 +61,8 @@ input[63:0]		regValRt;		//Rt input value (FPR)
 input[63:0]		regValRn;		//Rn input value (FPR, Duplicate)
 
 input[63:0]		regValGRm;		//Rm input value (GPR)
-output[63:0]	regValGRn;		//Rn output value (GPR, via EX2)
+output[63:0]	regValGRn;		//Rn output value (GPR, via EX1)
+output[63:0]	regValLdGRn;	//Rn output (Mem Load)
 
 output[63:0]	regOutVal;		//Ro output value
 output[5:0]		regOutId;		//Ro, register to write (FPR)
@@ -82,8 +84,10 @@ assign	regOutId	= tRegOutId;
 assign	regOutOK	= tRegOutOK;
 assign	regOutSrT	= tRegOutSrT;
 
-reg[63:0]	tRegValGRn;		//GRn Out
+reg[63:0]	tRegValGRn;			//GRn Out
+reg[63:0]	tRegValLdGRn;		//GRn Out
 assign		regValGRn	= tRegValGRn;
+assign		regValLdGRn	= tRegValLdGRn;
 
 wire[31:0]		cnvRegValGRm;
 
@@ -91,8 +95,10 @@ assign			cnvRegValGRm = regIdIxt[3] ?
 	regValGRm[63:32] :
 	regValGRm[31: 0];
 
+`ifdef jx2_enable_fmov
 wire[63:0]		memDataLd_S2D;		//memory data (Single To Double)
 FpuConvS2D mem_cnv_s2d(memDataLd[31:0], memDataLd_S2D);
+`endif
 
 wire[63:0]		ctlInDlr_S2D;		//memory data (Single To Double)
 // FpuConvS2D dlr_cnv_s2d(regValGRm[31:0], ctlInDlr_S2D);
@@ -112,9 +118,13 @@ FpuConvD2I mem_cnv_d2i(clock, reset, regValRs[63:0], fstcx_D2I);
 
 
 wire[63:0]	tRegAddRn;		//Rn input value
+`ifdef jx2_enable_fprs
 assign tRegAddRn =
 	(opCmd[5:0]==JX2_UCMD_FLDCX) ?
 		regValGRm : regValRs;
+`else
+assign tRegAddRn = regValRs;
+`endif
 
 wire[63:0]	tRegAddVal;		//Rn output value
 wire[1:0]	tRegAddExOp;	
@@ -138,8 +148,8 @@ assign	tFpuIsFpu3 = (opCmd[5:0]==JX2_UCMD_FPU3);
 assign	tFpuIsFldcx = (opCmd[5:0]==JX2_UCMD_FLDCX);
 
 assign	tRegAddExOp	=
-	(tFpuIsFpu3 && (regIdIxt[5:0]==JX2_UCIX_FPU_FADD)) ? 2'h1 :
-	(tFpuIsFpu3 && (regIdIxt[5:0]==JX2_UCIX_FPU_FSUB)) ? 2'h2 :
+	(tFpuIsFpu3 && (regIdIxt[3:0]==JX2_UCIX_FPU_FADD[3:0])) ? 2'h1 :
+	(tFpuIsFpu3 && (regIdIxt[3:0]==JX2_UCIX_FPU_FSUB[3:0])) ? 2'h2 :
 	(tFpuIsFldcx && (regIdIxt[3:0]==4'h2)) ? 2'h3 :
 	2'h0;
 
@@ -149,7 +159,7 @@ wire		tCmpSrT;
 FpuCmp	fpu_cmp(
 	clock,		reset,
 	opCmd,		regIdIxt,	
-	regValRt,	regValRs,
+	regValRs,	regValRt,
 	tCmpExOK,	tCmpSrT);
 	
 
@@ -162,13 +172,18 @@ reg[3:0]	tHoldCyc;
 
 always @*
 begin
-	tRegOutVal	= UV64_XX;
-	tRegOutId	= JX2_GR_ZZR;
-	tRegOutOK	= UMEM_OK_READY;
-	tRegValGRn	= UV64_XX;
-	tExHold		= 0;
-	tExValidCmd	= 0;
-	tRegOutSrT	= regInSr[0];
+	tRegOutVal		= UV64_XX;
+	tRegOutId		= JX2_GR_ZZR;
+	tRegOutOK		= UMEM_OK_READY;
+	tRegValGRn		= UV64_XX;
+	tExHold			= 0;
+	tExValidCmd		= 0;
+	tRegOutSrT		= regInSr[0];
+`ifdef jx2_enable_fmov
+	tRegValLdGRn	= memDataLd_S2D;
+`else
+	tRegValLdGRn	= UV64_XX;
+`endif
 
 	case(opCmd[7:6])
 		2'b00: 	tOpEnable = 1;
@@ -181,12 +196,15 @@ begin
 
 	case(tOpUCmd1)
 
-`ifdef jx2_enable_fprs
+// `ifdef jx2_enable_fprs
+// `ifdef def_true
+`ifdef jx2_enable_fmov
 		JX2_UCMD_FMOV_MR: begin
 			if(regIdIxt[4])
 				tRegOutVal	= memDataLd;
 			else
 				tRegOutVal	= memDataLd_S2D;
+			tRegValGRn	= tRegOutVal;
 			tRegOutId	= regIdRn;
 		end
 
@@ -202,6 +220,7 @@ begin
 			case(regIdIxt[3:0])
 				4'h0: begin
 					if(tHoldCyc != 5)
+//					if(tHoldCyc != 7)
 						tExHold = 1;
 					tRegOutVal	= tRegAddVal;
 					tRegValGRn	= tRegAddVal;
@@ -209,6 +228,7 @@ begin
 
 				4'h1: begin
 					if(tHoldCyc != 5)
+//					if(tHoldCyc != 7)
 						tExHold = 1;
 					tRegOutVal	= tRegAddVal;
 					tRegValGRn	= tRegAddVal;
@@ -229,6 +249,9 @@ begin
 				default: begin
 				end
 			endcase
+			
+//			$display("FPU3: UIxt=%X Rs=%X, Rt=%X, Rn=%X",
+//				regIdIxt, regValRs, regValRt, tRegValGRn);
 		end
 
 		JX2_UCMD_FCMP: begin
@@ -327,6 +350,9 @@ begin
 		default: begin
 		end
 	endcase
+
+//	if(tExHold)
+//		$display("FPU Hold %d", tHoldCyc);
 
 //	tRegOutOK	= tExHold ? UMEM_OK_HOLD : UMEM_OK_OK;
 	tRegOutOK	= tExHold ? UMEM_OK_HOLD :

@@ -68,6 +68,7 @@ module ExEX1(
 	regFpuGRn,		//FPU GPR Result
 	regFpuSrT,		//FPU SR.T Result
 	opBraFlush,
+	opPreBra,
 	
 	regOutDlr,	regInDlr,
 	regOutDhr,	regInDhr,
@@ -111,6 +112,7 @@ input[32:0]		regValImm;		//Immediate (Decode)
 input[63:0]		regFpuGRn;		//FPU GPR Result
 input			regFpuSrT;
 input			opBraFlush;
+input			opPreBra;
 
 output[63:0]	regOutDlr;
 input[63:0]		regInDlr;
@@ -238,6 +240,7 @@ reg			tDoMemOp;
 reg[4:0]	tDoMemOpm;
 
 reg[5:0]	tOpUCmd1;
+reg[5:0]	tOpUCmdF;
 
 reg tMsgLatch;
 reg tNextMsgLatch;
@@ -293,7 +296,17 @@ begin
 		3'b1zz: 	tOpEnable = 0;
 	endcase
 	
-	tOpUCmd1	= tOpEnable ? opUCmd[5:0] : JX2_UCMD_NOP;
+	tOpUCmdF	= JX2_UCMD_NOP;
+	if(!opBraFlush)
+	begin
+		case(opUCmd[5:0])
+			JX2_UCMD_BRA:	tOpUCmdF	= JX2_UCMD_BRA_NB;
+			default:		tOpUCmdF	= JX2_UCMD_NOP;
+		endcase
+	end
+	
+//	tOpUCmd1	= tOpEnable ? opUCmd[5:0] : JX2_UCMD_NOP;
+	tOpUCmd1	= tOpEnable ? opUCmd[5:0] : tOpUCmdF;
 
 	case(tOpUCmd1)
 		JX2_UCMD_NOP: begin
@@ -333,10 +346,12 @@ begin
 		end
 
 // `ifdef jx2_enable_fpu
-`ifdef jx2_enable_fprs
+`ifdef jx2_enable_fmov
+// `ifdef jx2_enable_fprs
 		JX2_UCMD_FMOV_RM: begin
 			tDoMemOpm	= { 2'b10, opUIxt[2], opUIxt[5:4] };
 			tDoMemOp	= 1;
+			tMemDataOut = (opUIxt[1:0]==3) ? regValFRs : regFpuGRn;
 		end
 		JX2_UCMD_FMOV_MR: begin
 			tDoMemOpm = { 2'b01, opUIxt[2], opUIxt[5:4] };
@@ -455,17 +470,32 @@ begin
 				end
 			endcase
 		end
+
+		JX2_UCMD_BRA_NB: begin
+			if(opPreBra)
+			begin
+//				$display("EX: BRA_NB: PC2=%X", regValPc);
+				tRegIdCn1	= JX2_CR_PC[4:0];
+				tRegValCn1	= {UV32_00, regValPc};
+			end
+		end
 	
 		JX2_UCMD_BRA: begin
-//			$display("EX: BRA: PC2=%X", tValAgu);
-			tRegIdCn1	= JX2_CR_PC[4:0];
-			tRegValCn1	= {UV32_00, tValAgu};
+			if(!opPreBra)
+			begin
+//				$display("EX: BRA: PC2=%X", tValAgu);
+				tRegIdCn1	= JX2_CR_PC[4:0];
+				tRegValCn1	= {UV32_00, tValAgu};
+			end
 		end
 		JX2_UCMD_BSR: begin
 //			$display("EX: BSR: LR=%X PC2=%X", regValPc, tValAgu);
 			tRegOutLr	= regValPc;
-			tRegIdCn1	= JX2_CR_PC[4:0];
-			tRegValCn1	= {UV32_00, tValAgu};
+			if(!opPreBra)
+			begin
+				tRegIdCn1	= JX2_CR_PC[4:0];
+				tRegValCn1	= {UV32_00, tValAgu};
+			end
 		end
 		JX2_UCMD_JMP: begin
 //			$display("EX: JMP: PC2=%X", regValRs);

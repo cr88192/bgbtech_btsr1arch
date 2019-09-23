@@ -196,6 +196,8 @@ int BTSR1_MainPollKeyboard(void)
 {
 	int i, j, k, l;
 
+	FRGL_GetKeybuf();
+
 #ifdef _WIN32
 	while(_kbhit())
 	{
@@ -578,7 +580,14 @@ int SimDdr(int clk, int cmd, int *rdata)
 		}
 	}
 		
-	addr=(cmd&0x3FFF);
+	if(!clk)
+	{
+		return(0);
+	}
+	
+//	addr=(cmd&0x3FFF);
+	addr=(cmd&0x1FFF);
+	bank=(cmd>>13)&7;
 	
 	if(cmd&SIMDDR_MSK_CS)
 	{
@@ -603,17 +612,21 @@ int SimDdr(int clk, int cmd, int *rdata)
 			{
 //				printf("Read Active Row\n");
 				ddr_col=addr;
+				ddr_bank=bank;
 				ddr_state=1;
-				ddr_cas=ddr_parm_rl*2+1;
+//				ddr_cas=ddr_parm_rl*2+1;
+				ddr_cas=ddr_parm_rl*2;
 //				ddr_cas=4*2+1;
 //				ddr_burst=SIMDDR_BUSRT;
 				ddr_burst=ddr_burstlen;
 			}else
 			{
-				printf("Write Active Row\n");
+//				printf("Write Active Row\n");
 				ddr_col=addr;
+				ddr_bank=bank;
 				ddr_state=2;
-				ddr_cas=ddr_parm_wl*2+1;
+//				ddr_cas=ddr_parm_wl*2+1;
+				ddr_cas=ddr_parm_wl*2;
 //				ddr_burst=SIMDDR_BUSRT;
 				ddr_burst=ddr_burstlen;
 			}
@@ -639,7 +652,8 @@ int SimDdr(int clk, int cmd, int *rdata)
 			{
 //				printf("Load Mode Register A=%04X V=%04X\n", addr, data);
 				printf("Load Mode Register C=%04X\n", cmd&0xFFFF);
-				switch((cmd>>14)&3)
+//				switch((cmd>>14)&3)
+				switch((cmd>>13)&7)
 				{
 				case 0:		ddr_mr0=addr;	break;
 				case 1:		ddr_mr1=addr;	break;
@@ -679,8 +693,11 @@ int update_ddr()
 		cmd=(cmd<<1)|top->ddrCas;
 		cmd=(cmd<<1)|top->ddrWe;
 		cmd=(cmd<<1)|top->ddrCke;
-		cmd=(cmd<<2)|top->ddrBa;
-		cmd=(cmd<<14)|top->ddrAddr;
+//		cmd=(cmd<<2)|top->ddrBa;
+//		cmd=(cmd<<14)|top->ddrAddr;
+
+		cmd=(cmd<<3)|top->ddrBa;
+		cmd=(cmd<<13)|top->ddrAddr;
 
 //			data=top->ddrData;
 		data=top->ddrDataO;
@@ -703,6 +720,8 @@ int main(int argc, char **argv, char **env)
 
 	mhz=100;
 
+	Verilated::commandArgs(argc, argv);
+
 	JX2R_UseImageCreateRamdisk(128*1024);
 //	JX2R_UseImageCreateRamdisk(32*1024);
 	JX2R_UseImageAddFile(
@@ -711,8 +730,6 @@ int main(int argc, char **argv, char **env)
 	JX2R_UseImageAddFile(
 		(char *)"DOOM1.WAD",
 		(char *)"../../tk_qsrc/doomsrc2/doom1.wad");
-
-	Verilated::commandArgs(argc, argv);
 
 	rombuf=(uint32_t *)malloc(32768);
 //	srambuf=(uint32_t *)malloc(8192);
@@ -726,21 +743,34 @@ int main(int argc, char **argv, char **env)
 //	memset(drambuf2, 0, 1<<27);
 
 //	ddr_ram=(uint16_t *)malloc(1<<27);
-	ddr_ram=(uint16_t *)malloc(1<<28);
+//	ddr_ram=(uint16_t *)malloc(1<<28);
 
-#if 1
+#if 0
 	fd=fopen("../../tst_jx2boot.bin", "rb");
 	if(fd)
 	{
-		t2=fread(rombuf, 1, 32768, fd);
+//		t2=fread(rombuf, 1, 32768, fd);
 		fclose(fd);
 	}
 #endif
 
-	ctx=(BJX2_Context *)malloc(sizeof(BJX2_Context));
+//	fd=NULL;
+
+	btesh2_gfxcon_fbxs = 800;
+	btesh2_gfxcon_fbys = 600;
+
+	GfxDrv_Start();
+	SoundDev_Init();
+	BTSR1_MainInitKeyboard();
+
+	ddr_ram=(uint16_t *)malloc(1<<28);
+	memset(ddr_ram, 0, 1<<28);
+
+	ctx=(BJX2_Context *)malloc(sizeof(BJX2_Context)+256);
+	memset(ctx, 0, sizeof(BJX2_Context));
 //	jx2_ctx=ctx;
 
-	vgactx=(cdec_imgbuf *)malloc(sizeof(cdec_imgbuf));
+	vgactx=(cdec_imgbuf *)malloc(sizeof(cdec_imgbuf)+256);
 	memset(vgactx, 0, sizeof(cdec_imgbuf));
 
 	CDEC_SetupForStream(vgactx);
@@ -752,15 +782,16 @@ int main(int argc, char **argv, char **env)
 
 	printf("Start CoreUnit\n");
 
-	btesh2_gfxcon_fbxs = 800;
-	btesh2_gfxcon_fbys = 600;
+//	btesh2_gfxcon_fbxs = 800;
+//	btesh2_gfxcon_fbys = 600;
 
-	GfxDrv_Start();
-	SoundDev_Init();
+//	GfxDrv_Start();
+//	SoundDev_Init();
 
-	BTSR1_MainInitKeyboard();
+//	BTSR1_MainInitKeyboard();
 
 	tt_start=FRGL_TimeMS();
+	tt_frame=tt_start;
 
 	while (!Verilated::gotFinish())
 	{

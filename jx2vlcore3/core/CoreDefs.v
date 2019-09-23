@@ -391,6 +391,8 @@ parameter[5:0] JX2_UCMD_FIXS		= 6'h25;		//FPU Unary Op (FPR)
 parameter[5:0] JX2_UCMD_FCMP		= 6'h26;		//FPU Compare
 parameter[5:0] JX2_UCMD_MULW3		= 6'h27;		//Multiply (Word)
 
+parameter[5:0] JX2_UCMD_BRA_NB		= 6'h2C;		//No Branch
+
 
 parameter[5:0] JX2_UCIX_ALU_ADD		= 6'h20;		//ALU ADD
 parameter[5:0] JX2_UCIX_ALU_SUB		= 6'h21;		//ALU SUB
@@ -535,10 +537,17 @@ parameter[5:0] JX2_UCIX_IXS_LDSRMSK	= 6'h03;		//?
 `ifndef jx2_enable_fprs
 `define jx2_enable_gfp			//FPU works via GPRs
 `endif
+
+`ifdef jx2_enable_fprs
+`ifndef jx2_enable_fmov
+`define jx2_enable_fmov			//FPU works via GPRs
+`endif
+`endif
+
 `endif
 
 // `define jx2_sprs_elrehr			//ELR/EHR/BP as special registers?
-`define jx2_bra2stage				//Use 2-stage branch initiation
+// `define jx2_bra2stage				//Use 2-stage branch initiation
 
 // `define jx2_enable_swapn		//Enable SWxP.x ops
 // `define jx2_enable_shlln		//Enable SHLLn / SHLRn Ops
@@ -547,7 +556,7 @@ parameter[5:0] JX2_UCIX_IXS_LDSRMSK	= 6'h03;		//?
 
 // `define jx2_enable_gsv			//Enable GSV (Packed Integer) stuff.
 
-// `define jx2_enable_prebra			//Enable GSV (Packed Integer) stuff.
+`define jx2_enable_prebra			//Enable PreBranch
 
 `define jx2_enable_ops16
 // `define jx2_enable_ops48
@@ -591,6 +600,8 @@ parameter[5:0] JX2_UCIX_IXS_LDSRMSK	= 6'h03;		//?
 // `define jx2_debug_exopipe	//Debug execute pipeline (EX2 only)
 
 // `define jx2_debug_alu		//Debug ALU
+
+// `define jx2_debug_hitmiss		//Debug Branch Predictor
 
 `ifdef jx2_expand_l1sz
 parameter[255:0] JX2_L1_FLUSHMSK	= UV256_FF;		//

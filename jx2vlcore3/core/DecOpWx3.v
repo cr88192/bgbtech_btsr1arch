@@ -193,6 +193,7 @@ reg opIsFxA;
 reg opIsFzA;
 reg opIsFCA;
 reg opIsDzA;	//Predicated Ops
+reg opIsDwA;		//PrWEX Ops
 reg opIsDfA;	//Pred-False or WEX
 reg opIsWfA;	//WEX
 
@@ -200,11 +201,24 @@ reg opIsFxB;
 reg opIsFzB;
 reg opIsFCB;
 reg opIsDzB;		//Predicated Ops
+reg opIsDwB;		//PrWEX Ops
 reg opIsDfB;		//Pred-False or WEX
 reg opIsWfB;		//WEX
 
+reg opIsFxC;
+reg opIsFzC;
+reg opIsFCC;
+reg opIsDzC;		//Predicated Ops
+reg opIsDwC;		//PrWEX Ops
+reg opIsDfC;		//Pred-False or WEX
+reg opIsWfC;		//WEX
+
 always @*
 begin
+
+	opIsDwA = 0;
+	opIsDwB = 0;
+	opIsDwC = 0;
 
 	casez(istrWord[15:10])
 		6'b11100z: begin	//E0..E7
@@ -216,6 +230,7 @@ begin
 			opIsFxA = 1;		opIsFzA = 1;
 			opIsFCA = 0;		opIsDzA = 1;
 			opIsDfA = istrWord[8];
+			opIsDwA = istrWord[9];
 		end
 		6'b111011: begin	//EC..EF
 			opIsFxA = 1;		opIsFzA = 0;
@@ -231,7 +246,8 @@ begin
 		6'b111110: begin	//F8..FB
 			opIsFxA = 1;		opIsFzA = 1;
 			opIsFCA = 0;		opIsDzA = 0;
-			opIsDfA = istrWord[8];
+//			opIsDfA = istrWord[8];
+			opIsDfA = istrWord[8] && !istrWord[9];
 		end
 		6'b111111: begin	//FC..FF
 			opIsFxA = 1;		opIsFzA = 0;
@@ -256,6 +272,7 @@ begin
 			opIsFxB = 1;		opIsFzB = 1;
 			opIsFCB = 0;		opIsDzB = 1;
 			opIsDfB = istrWord[40];
+			opIsDwB = istrWord[41];
 		end
 		6'b111011: begin	//EC..EF
 			opIsFxB = 1;		opIsFzB = 0;
@@ -271,7 +288,8 @@ begin
 		6'b111110: begin	//F8..FB
 			opIsFxB = 1;		opIsFzB = 1;
 			opIsFCB = 0;		opIsDzB = 0;
-			opIsDfB = istrWord[40];
+//			opIsDfB = istrWord[40];
+			opIsDfB = istrWord[40] && !istrWord[41];
 		end
 		6'b111111: begin	//FC..FF
 			opIsFxB = 1;		opIsFzB = 0;
@@ -286,8 +304,53 @@ begin
 		end
 	endcase
 
-	opIsWfA = opIsDfA && !opIsDzA && srWxe;
-	opIsWfB = opIsDfB && !opIsDzB && srWxe;
+	casez(istrWord[79:74])
+		6'b11100z: begin	//E0..E7
+			opIsFxC = 1;		opIsFzC = 1;
+			opIsFCC = 0;		opIsDzC = 1;
+			opIsDfC = istrWord[74];
+		end
+		6'b111010: begin	//E8..EB
+			opIsFxC = 1;		opIsFzC = 1;
+			opIsFCC = 0;		opIsDzC = 1;
+			opIsDfC = istrWord[72];
+			opIsDwC = istrWord[73];
+		end
+		6'b111011: begin	//EC..EF
+			opIsFxC = 1;		opIsFzC = 0;
+			opIsFCC = 1;		opIsDzC = 1;
+			opIsDfC = istrWord[73];
+		end
+
+		6'b11110z: begin	//F0..F7
+			opIsFxC = 1;		opIsFzC = 1;
+			opIsFCC = 0;		opIsDzC = 0;
+			opIsDfC = istrWord[74];
+		end
+		6'b111110: begin	//F8..FB
+			opIsFxC = 1;		opIsFzC = 1;
+			opIsFCC = 0;		opIsDzC = 0;
+//			opIsDfC = istrWord[72];
+			opIsDfC = istrWord[72] && !istrWord[73];
+		end
+		6'b111111: begin	//FC..FF
+			opIsFxC = 1;		opIsFzC = 0;
+			opIsFCC = 1;		opIsDzC = 0;
+			opIsDfC = istrWord[73];
+		end
+
+		default: begin
+			opIsFxC = 0;	opIsFzC = 0;
+			opIsFCC = 0;	opIsDzC = 0;
+			opIsDfC = 0;
+		end
+	endcase
+
+//	opIsWfA = opIsDfA && !opIsDzA && srWxe;
+//	opIsWfB = opIsDfB && !opIsDzB && srWxe;
+
+	opIsWfA = opIsDfA && (!opIsDzA || opIsDwA) && srWxe;
+	opIsWfB = opIsDfB && (!opIsDzB || opIsDwB) && srWxe;
 
 	if(opIsFxA)
 	begin
@@ -313,11 +376,18 @@ begin
 			opImmC	= UV33_XX;
 			opUCmdC	= UV8_00;
 			opUIxtC	= UV8_00;
+
+			if(opIsDzA)
+			begin
+				opUCmdA[7:6]=opIsDfA?JX2_IXC_CF:JX2_IXC_CT;
+			end
 		end
 		else
 		begin
 			if(opIsWfA && opIsWfB)
 			begin
+				$display("DecOpWz3: WEX3");
+			
 				opRegAM	= decOpFzC_idRegM;
 				opRegAO	= decOpFzC_idRegO;
 				opRegAN	= decOpFzC_idRegN;
@@ -338,10 +408,27 @@ begin
 				opImmC	= decOpFzA_idImm;
 				opUCmdC	= decOpFzA_idUCmd;
 				opUIxtC	= decOpFzA_idUIxt;
+
+				if(opIsDzA)
+				begin
+					opUCmdC[7:6]=opIsDfA?JX2_IXC_CF:JX2_IXC_CT;
+				end
+				if(opIsDzB)
+				begin
+					opUCmdB[7:6]=opIsDfB?JX2_IXC_CF:JX2_IXC_CT;
+				end
+				if(opIsDzC)
+				begin
+					opUCmdA[7:6]=opIsDfC?JX2_IXC_CF:JX2_IXC_CT;
+				end
 			end
 			else
 			if(opIsWfA)
 			begin
+				$display("DecOpWz3: WEX2 %X-%X %X-%X",
+					istrWord[15:0], istrWord[31:16],
+					istrWord[47:32], istrWord[63:48]);
+
 				opRegAM	= decOpFzB_idRegM;
 				opRegAO	= decOpFzB_idRegO;
 				opRegAN	= decOpFzB_idRegN;
@@ -362,6 +449,16 @@ begin
 				opImmC	= UV33_XX;
 				opUCmdC	= UV8_00;
 				opUIxtC	= UV8_00;
+
+				if(opIsDzA)
+				begin
+					opUCmdB[7:6]=opIsDfA?JX2_IXC_CF:JX2_IXC_CT;
+				end
+				if(opIsDzB)
+				begin
+					opUCmdA[7:6]=opIsDfB?JX2_IXC_CF:JX2_IXC_CT;
+				end
+
 			end
 			else
 			begin
@@ -385,6 +482,11 @@ begin
 				opImmC	= UV33_XX;
 				opUCmdC	= UV8_00;
 				opUIxtC	= UV8_00;
+
+				if(opIsDzA)
+				begin
+					opUCmdA[7:6]=opIsDfA?JX2_IXC_CF:JX2_IXC_CT;
+				end
 				
 			end
 		end
@@ -411,11 +513,6 @@ begin
 		opImmC	= UV33_XX;
 		opUCmdC	= UV8_00;
 		opUIxtC	= UV8_00;
-	end
-	
-	if(opIsDzA)
-	begin
-		opUCmdA[7:6]=opIsDfA?JX2_IXC_CF:JX2_IXC_CT;
 	end
 end
 

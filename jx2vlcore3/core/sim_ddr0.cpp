@@ -227,6 +227,8 @@ int SimDdr(int clk, int cmd, int *rdata)
 //			cmd=(cmd<<2)|top->ddrBa
 
 	data=*rdata;
+
+#if 0
 //	printf("%03X %04X\n", cmd, data);
 	printf("Cs=%d Ras=%d Cas=%d We=%d Cke=%d Ba=%d A=%04X D=%04X\n",
 		(cmd>>20)&1,	
@@ -234,7 +236,8 @@ int SimDdr(int clk, int cmd, int *rdata)
 		(cmd>>17)&1,	(cmd>>16)&1,
 		(cmd>>14)&3,	(cmd&0x3FFF),
 		data);
-	
+#endif
+
 	if(ddr_cas>=0)
 	{
 		ddr_cas--;
@@ -250,6 +253,9 @@ int SimDdr(int clk, int cmd, int *rdata)
 			ddr_col+=2;
 
 			*rdata=data;
+
+//			printf("RD %08X: %04X\n", pos, data);
+
 		}
 	}else if(ddr_state==2)
 	{
@@ -262,10 +268,19 @@ int SimDdr(int clk, int cmd, int *rdata)
 			pos&=(1<<28)-1;
 			ddr_ram[pos>>1]=data;
 			ddr_col+=2;
+			
+//			printf("ST %08X = %04X\n", pos, data);
 		}
 	}
-		
-	addr=(cmd&0x3FFF);
+	
+	if(!clk)
+	{
+		return(0);
+	}
+	
+//	addr=(cmd&0x3FFF);
+	addr=(cmd&0x1FFF);
+	bank=(cmd>>13)&7;
 	
 	if(cmd&SIMDDR_MSK_CS)
 	{
@@ -288,18 +303,22 @@ int SimDdr(int clk, int cmd, int *rdata)
 		{
 			if(cmd&SIMDDR_MSK_WE)
 			{
-				printf("Read Active Row\n");
+//				printf("Read Active Row\n");
 				ddr_col=addr;
+				ddr_bank=bank;
 				ddr_state=1;
-				ddr_cas=ddr_parm_rl*2+1;
+//				ddr_cas=ddr_parm_rl*2+1;
+				ddr_cas=ddr_parm_rl*2;
 //				ddr_cas=4*2+1;
 				ddr_burst=ddr_burstlen;
 			}else
 			{
-				printf("Write Active Row\n");
+//				printf("Write Active Row\n");
 				ddr_col=addr;
+				ddr_bank=bank;
 				ddr_state=2;
-				ddr_cas=ddr_parm_wl*2+1;
+//				ddr_cas=ddr_parm_wl*2+1;
+				ddr_cas=ddr_parm_wl*2;
 				ddr_burst=ddr_burstlen;
 			}
 		}
@@ -309,11 +328,11 @@ int SimDdr(int clk, int cmd, int *rdata)
 		{
 			if(cmd&SIMDDR_MSK_WE)
 			{
-				printf("Activate Row\n");
+//				printf("Activate Row\n");
 				ddr_row=addr;
 			}else
 			{
-				printf("Precharge Row\n");
+//				printf("Precharge Row\n");
 			}
 		}else
 		{
@@ -323,7 +342,8 @@ int SimDdr(int clk, int cmd, int *rdata)
 			}else
 			{
 				printf("Load Mode Register C=%04X\n", cmd&0xFFFF);
-				switch((cmd>>14)&3)
+//				switch((cmd>>14)&3)
+				switch((cmd>>13)&7)
 				{
 				case 0:		ddr_mr0=addr;	break;
 				case 1:		ddr_mr1=addr;	break;
@@ -348,17 +368,43 @@ int SimDdr(int clk, int cmd, int *rdata)
 
 int main(int argc, char **argv, char **env)
 {
+	uint32_t *imgbuf;
 	int ddrlclk, cmd, data;
 	int n, inh;
+	int wn, rn, wdn, rdn, lim, bn1;
 	int i, j, k;
 
 	Verilated::commandArgs(argc, argv);
 	
 	ddr_ram=(uint16_t *)malloc(256<<20);
 	
-	for(i=0; i<(128<<20); i++)
-		ddr_ram[i]=rand();
+//	for(i=0; i<(128<<20); i++)
+//		ddr_ram[i]=rand();
 
+	memset(ddr_ram, 0, 256<<20);
+
+
+	imgbuf=(uint32_t *)malloc((1<<26)+128);
+	
+	for(i=0; i<16777216; i++)
+	{
+		k=rand();
+		k=k*65521+rand();
+		k=k*65521+rand();
+		imgbuf[i]=k;
+	}
+
+	wn=0;	rn=0;
+	wdn=0;	rdn=0;
+	
+//	lim=4194304;
+//	lim=1<<18;
+	lim=16;
+//	lim=64;
+//	lim=65;
+//	lim=128;
+
+	printf("Begin\n");
 	top->memOpm=0x0;
 	n=0;
 	inh=256;
@@ -367,8 +413,111 @@ int main(int argc, char **argv, char **env)
 		top->clock = (main_time>>0)&1;
 		main_time++;
 
+//		if(!top->clock)
+//		{
+//			top->eval();
+//			continue;
+//		}
+
 		top->eval();
 
+		if((wn<lim) || wdn)
+		{
+			if(top->memOK==1)
+			{
+				top->memOpm=0;
+//				printf("Wr OK\n");
+				if(!wdn)
+				{
+					printf("\r%d/%d", wn, lim);
+					fflush(stdout);
+					wdn=1;
+					wn++;
+				}
+			}else
+				if(top->memOK==2)
+			{
+//				printf("Wr Hold\n");
+			}else
+				if(top->memOK==0)
+			{
+//				bn1=wn^(0x5A5A5A5A&(lim-1));
+				bn1=wn;
+			
+//				printf("Wr Ready\n");
+				top->memAddr=0x1000000 + (bn1*16);
+				top->memDataIn[0]=imgbuf[bn1*4+0];
+				top->memDataIn[1]=imgbuf[bn1*4+1];
+				top->memDataIn[2]=imgbuf[bn1*4+2];
+				top->memDataIn[3]=imgbuf[bn1*4+3];
+				top->memOpm=0x17;
+				wdn=0;
+
+				if(wn>=lim)
+				{
+					printf("\n");
+				}
+			}
+		}else
+			if((rn<lim) || rdn)
+		{
+//			bn1=rn^(0xA5A5A5A5&(lim-1));
+			bn1=rn;
+
+			if(top->memOK==1)
+			{
+//				printf("Rd OK\n");
+				if(!rdn)
+				{
+					if(	(top->memDataOut[0]!=imgbuf[bn1*4+0]) ||
+						(top->memDataOut[1]!=imgbuf[bn1*4+1]) ||
+						(top->memDataOut[2]!=imgbuf[bn1*4+2]) ||
+						(top->memDataOut[3]!=imgbuf[bn1*4+3]) )
+					{
+						printf("\nExpect %08X-%08X-%08X-%08X\n",
+							imgbuf[bn1*4+0], imgbuf[bn1*4+1],
+							imgbuf[bn1*4+2], imgbuf[bn1*4+3]);
+						printf("Got %08X-%08X-%08X-%08X\n",
+							top->memDataOut[0], top->memDataOut[1],
+							top->memDataOut[2], top->memDataOut[3]);
+						break;
+					}
+				
+					printf("\r%d/%d", rn, lim);
+					fflush(stdout);
+					top->memOpm=0;
+					rdn=1;
+					rn++;
+				}
+			}else
+				if(top->memOK==2)
+			{
+//				printf("Rd Hold\n");
+			}else
+				if(top->memOK==0)
+			{
+//				printf("Rd OK\n");
+
+				top->memAddr=0x1000000 + (bn1*16);
+//				top->memDataIn[0]=imgbuf[wn*4+0];
+//				top->memDataIn[1]=imgbuf[wn*4+1];
+//				top->memDataIn[2]=imgbuf[wn*4+2];
+//				top->memDataIn[3]=imgbuf[wn*4+3];
+//				top->memOpm=0x17;
+				top->memOpm=0x0F;
+				rdn=0;
+
+				if(rn>=lim)
+				{
+					printf("\n");
+					break;
+				}
+			}
+		}
+
+//		top->eval();
+
+#if 1
 		if(top->ddrClk!=ddrlclk)
 		{
 			ddrlclk=top->ddrClk;
@@ -380,8 +529,10 @@ int main(int argc, char **argv, char **env)
 			cmd=(cmd<<1)|top->ddrCas;
 			cmd=(cmd<<1)|top->ddrWe;
 			cmd=(cmd<<1)|top->ddrCke;
-			cmd=(cmd<<2)|top->ddrBa;
-			cmd=(cmd<<14)|top->ddrAddr;
+//			cmd=(cmd<<2)|top->ddrBa;
+			cmd=(cmd<<3)|top->ddrBa;
+//			cmd=(cmd<<14)|top->ddrAddr;
+			cmd=(cmd<<13)|top->ddrAddr;
 
 //			data=top->ddrData;
 			data=top->ddrData_O;
@@ -389,7 +540,9 @@ int main(int argc, char **argv, char **env)
 //			top->ddrData=data;
 			top->ddrData_I=data;
 		}
-		
+#endif
+
+#if 0	
 		if(inh>0)
 		{
 			inh--;
@@ -415,6 +568,10 @@ int main(int argc, char **argv, char **env)
 //		if(main_time>768)
 		if(main_time>1536)
 			break;
+#endif
+
+//		top->eval();
+
 	}
 	delete top;
 	exit(0);

@@ -18,7 +18,7 @@ begin
 //		regValFRm[29] ? 4'b1111 : 4'b0000,
 		(!regValFRm[30] && !tExpIsZero) ? 4'b1111 : 4'b0000,
 		regValFRm[28:23],
-		regValFRm[22:0],
+		regValFRm[22: 0],
 		29'h0 };
 end
 

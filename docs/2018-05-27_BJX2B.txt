@@ -557,8 +557,8 @@ Predicated Ranges will exist:
 * E7zz_zzzz (Execute if False, Repeats F3)
 * E8zz_zzzz (Execute if True, Repeats F8)
 * E9zz_zzzz (Execute if False, Repeats F8)
-* EAzz_zzzz (Reserved)
-* EBzz_zzzz (Reserved)
+* EAzz_zzzz (Optional, PrWEX Block, Execute if True)
+* EBzz_zzzz (Optional, PrWEX Block, Execute if False)
 * ECzz_zzzz (Execute if True, Repeats FC)
 * EDzz_zzzz (Execute if True, Repeats FD)
 * EEzz_zzzz (Execute if False, Repeats FC)
@@ -1029,8 +1029,8 @@ Additionally, Predicated Ranges will exist:
 * E7zz_zzzz (Execute if False, Repeats F3)
 * E8zz_zzzz (Execute if True, Repeats F8)
 * E9zz_zzzz (Execute if False, Repeats F8)
-* EAzz_zzzz (Reserved)
-* EBzz_zzzz (Reserved)
+* EAzz_zzzz (Optional, PrWEX, Execute if True)
+* EBzz_zzzz (Optional, PrWEX, Execute if False)
 * ECzz_zzzz (Execute if True, Repeats FC)
 * EDzz_zzzz (Execute if True, Repeats FD)
 * EEzz_zzzz (Execute if False, Repeats FC)
@@ -1079,15 +1079,20 @@ F0zz Instruction Block:
 
 * F0zz_1zzz
 ** F0nm_1go0  ADD		Rm, Ro, Rn				//Rn=Rm+Ro
+** F0nm_1Go0  ADD		Rm, #imm5, Rn			//(PrWEX) Rn=Rm+Imm
 ** F0nm_1go1  SUB		Rm, Ro, Rn				//Rn=Rm-Ro
+** F0nm_1Go1  SUB		Rm, #imm5, Rn			//(PrWEX) Rn=Rm-Imm
 ** F0nm_1go2  MULS		Rm, Ro, Rn				//Rn=Rm*Ro (Signed Result)
 ** F0nm_1Go2  MULU		Rm, Ro, Rn				//Rn=Rm*Ro (Unsigned Result)
 ** F0nm_1go3  MULS.Q	Rm, Ro, Rn				//(MULQ) Signed 64b Result
 ** F0nm_1Go3  MULU.Q	Rm, Ro, Rn				//(MULQ) Unsigned 64b Result
 ** F0nm_1eo4  -
 ** F0nm_1go5  AND		Rm, Ro, Rn				//Rn=Rm AND Ro
+** F0nm_1Go5  AND		Rm, #imm5, Rn			//(PrWEX) Rn=Rm AND Imm
 ** F0nm_1go6  OR		Rm, Ro, Rn				//Rn=Rm OR  Ro
+** F0nm_1Go6  OR		Rm, #imm5, Rn			//(PrWEX) Rn=Rm OR Imm
 ** F0nm_1go7  XOR		Rm, Ro, Rn				//Rn=Rm XOR Ro
+** F0nm_1Go7  XOR		Rm, #imm5, Rn			//(PrWEX) Rn=Rm XOR Imm
 
 ** F0nm_1ez8
 
@@ -1314,12 +1319,12 @@ F0zz Instruction Block:
 ** F0nm_9ed0  /
 ** F0nm_9ed1  /
 ** F0nm_9go2  FMOV.S		FRm, (Rm, Ro)
-** F0nm_9Go2  FMOV.S		Rm, (Rm, Ro)		//(GFP?)
+** F0nm_9Go2  FMOV.S		Rm, (Rm, Ro)		//(GFMOV)
 ** F0nm_9go3  FMOV.D		FRm, (Rm, Ro)
 ** F0nm_9ed4  /
 ** F0nm_9ed5  /
 ** F0nm_9go6  FMOV.S		(Rm, Ro), FRn
-** F0nm_9Go6  FMOV.S		(Rm, Ro), Rn		//(GFP?)
+** F0nm_9Go6  FMOV.S		(Rm, Ro), Rn		//(GFMOV)
 ** F0nm_9go7  FMOV.D		(Rm, Ro), FRn
 ** F0nm_9go8  FADD			FRm, FRo, FRn
 ** F0nm_9go9  FSUB			FRm, FRo, FRn
@@ -1373,10 +1378,10 @@ F1zz Instruction Block:
 ** F1nm_3gdd  MOV.Q		Rn, (Rm, disp9u)
 ** F1nm_3Gdd  LEA.Q		(Rm, disp9u), Rn
 ** F1nm_4gdd  FMOV.S	FRn, (Rm, disp9u)	//(FPU)
-** F1nm_4Gdd  FMOV.S	Rn, (Rm, disp9u)	//? (GFP)
+** F1nm_4Gdd  FMOV.S	Rn, (Rm, disp9u)	//(GFMOV)
 ** F1nm_5gdd  FMOV.D	FRn, (Rm, disp9u)	//(FPU)
 ** F1nm_6gdd  FMOV.S	(Rm, disp9u), FRn	//(FPU)
-** F1nm_6Gdd  FMOV.S	(Rm, disp9u), Rn	//? (GFP)
+** F1nm_6Gdd  FMOV.S	(Rm, disp9u), Rn	//(GFMOV)
 ** F1nm_7gdd  FMOV.D	(Rm, disp9u), FRn	//(FPU)
 ** F1nm_8gdd  MOV.B		(Rm, disp9u), Rn
 ** F1nm_8Gdd  MOVU.B	(Rm, disp9u), Rn
@@ -1430,9 +1435,9 @@ F2zz Instruction Block  (Imm9 Block, New):
 * F2nz_Bejj
 
 * F2nz_Cfjj
-** F2n0_Cfjj / LDIZ{D}	#imm10u, Rn				//Alt
-** F2n1_Cfjj / LDIN{D}	#imm10n, Rn				//Alt
-** F2n2_Cfjj / LDISH	#imm8u, Rn				//Rn=(Rn<<8)|Imm8
+** F2n0_Cfjj  LDIZ{D}	#imm10u, Rn				//(PrWEX) Alt
+** F2n1_Cfjj  LDIN{D}	#imm10n, Rn				//(PrWEX) Alt
+** F2n2_Cfjj  LDISH		#imm8u, Rn				//(PrWEX) Rn=(Rn<<8)|Imm8
 ** F2n3_Cfjj  -
 ** F2n4_Cfjj  TST{Q}	#imm10u, Rn				//SR.T=!(Imm AND Rn)
 ** F2n5_Cfjj  TST{Q}	#imm10n, Rn				//SR.T=!(Imm AND Rn)
@@ -1484,6 +1489,32 @@ FAzz/FBzz Instructions:
 
 * FAjj_jjjj	 LDIZ	#imm24u, DLR		//Zero Extend
 * FBjj_jjjj	 LDIN	#imm24n, DLR		//One Extend
+
+
+==== EAzz/EBzz Instruction Block (PrWEX) ====
+
+* EAnm_0eoz..EAnm_7eoz
+** Maps to the same instruction space as F0nm_0eoz..F0nm_7eoz.
+* EAnm_8fjj..EAnm_Ffjj
+** Maps to the same instruction space as F2nm_8fjj..F2nm_Ffjj.
+
+
+The PrWEX Block will be special:
+* 0zzz..7zzz: Equivalent to encodings in the F0 block.
+* 8zzz..Fzzz: Equivalent to encodings in the F2 block.
+* Support for PrWEX is optional.
+* PrWEX Block does not exist in Lane 1.
+
+
+The sole purpose of the PrWEX block will be to make WEX usable with predicated instructions. PrWEX instructions will exist in the same lanes as normal WEX instructions, and will follow similar restrictions.
+
+PrWEX may be mixed with unconditional instructions, and may be used with a predicated op in Lane 1. The predication state of each execute lane will be independent.
+
+Support for PrWEX will be optional.
+
+The EBzz block will repeat the EAzz block, but differ in their predicate.
+* EAzz will be Execute if True.
+* EBzz will be Execute if False.
 
 
 === 48-bit Instruction Forms ===

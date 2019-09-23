@@ -150,12 +150,14 @@ reg opIsFx;
 reg opIsFz;
 reg opIsFC;
 reg opIsDz;		//Predicated Ops
+reg opIsDw;		//PrWEX Ops
 reg opIsDf;		//Pred-False or WEX
 reg opIsWf;		//WEX
 
 always @*
 begin
 
+	opIsDw = 0;
 	casez(istrWord[15:10])
 		6'b11100z: begin	//E0..E7
 			opIsFx = 1;		opIsFz = 1;
@@ -165,6 +167,7 @@ begin
 		6'b111010: begin	//E8..EB
 			opIsFx = 1;		opIsFz = 1;
 			opIsFC = 0;		opIsDz = 1;
+			opIsDw = istrWord[9];
 			opIsDf = istrWord[8];
 		end
 		6'b111011: begin	//EC..EF
@@ -181,7 +184,8 @@ begin
 		6'b111110: begin	//F8..FB
 			opIsFx = 1;		opIsFz = 1;
 			opIsFC = 0;		opIsDz = 0;
-			opIsDf = istrWord[8];
+//			opIsDf = istrWord[8];
+			opIsDf = istrWord[8] && !istrWord[9];
 		end
 		6'b111111: begin	//FC..FF
 			opIsFx = 1;		opIsFz = 0;
@@ -196,7 +200,7 @@ begin
 		end
 	endcase
 
-	opIsWf = opIsDf && !opIsDz && srWxe;
+	opIsWf = opIsDf && (!opIsDz || opIsDw) && srWxe;
 
 	if(opIsFx)
 	begin
@@ -215,6 +219,11 @@ begin
 			opImmB	= UV33_XX;
 			opUCmdB	= UV8_00;
 			opUIxtB	= UV8_00;
+
+			if(opIsDz)
+			begin
+				opUCmdA[7:6]=opIsDf?JX2_IXC_CF:JX2_IXC_CT;
+			end
 		end
 		else
 		begin
@@ -233,6 +242,15 @@ begin
 				opImmB	= decOpFzA_idImm;
 				opUCmdB	= decOpFzA_idUCmd;
 				opUIxtB	= decOpFzA_idUIxt;
+
+				if(opIsDzA)
+				begin
+					opUCmdB[7:6]=opIsDfA?JX2_IXC_CF:JX2_IXC_CT;
+				end
+				if(opIsDzB)
+				begin
+					opUCmdA[7:6]=opIsDfB?JX2_IXC_CF:JX2_IXC_CT;
+				end
 			end
 			else
 			begin
@@ -250,6 +268,10 @@ begin
 				opUCmdB	= UV8_00;
 				opUIxtB	= UV8_00;
 				
+				if(opIsDz)
+				begin
+					opUCmdA[7:6]=opIsDf?JX2_IXC_CF:JX2_IXC_CT;
+				end
 			end
 		end
 	end
@@ -268,11 +290,6 @@ begin
 		opImmB	= UV33_XX;
 		opUCmdB	= UV8_00;
 		opUIxtB	= UV8_00;
-	end
-	
-	if(opIsDz)
-	begin
-		opUCmdA[7:6]=opIsDf?JX2_IXC_CF:JX2_IXC_CT;
 	end
 end
 

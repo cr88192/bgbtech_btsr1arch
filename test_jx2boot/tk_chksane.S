@@ -7,6 +7,8 @@ This is assumed to be called prior to transferring control to C land.
 
 #define X(n)	n
 
+#include "tk_chksane_gfp.S"
+
 _checksane_fail:
 	break
 	bra _checksane_fail
@@ -560,6 +562,8 @@ X(tk_checksane_asm):
 	cmp/eq #32, r7
 	bf _checksane_fail
 #endif
+
+	bsr X(tk_checksane_gfp_asm)
 
 	pop lr
 	rts

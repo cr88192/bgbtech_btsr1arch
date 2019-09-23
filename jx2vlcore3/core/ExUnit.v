@@ -247,14 +247,19 @@ DecOp	decOp(
 
 `endif
 
+reg[31:0]		ex1ValBPc;
+reg[2:0]		ex1ValBraDir;
+
 `ifdef jx2_enable_prebra
 wire[31:0]		id1PreBraPc;
 wire			id1PreBra;
 
 DecPreBra	preBra(
-	id1IstrWord,	id1ValPc,
-	id1PreBraPc,	id1PreBra,
-	gprValLr);
+	clock,				reset,
+	id1IstrWord[63:0],	id1ValBPc,	id1ValPc,
+	id1PreBraPc,		id1PreBra,
+	gprValLr,			ifLastPc,
+	ex1ValBPc,			ex1ValBraDir);
 `else
 wire			id1PreBra;
 assign		id1PreBra = 0;
@@ -550,8 +555,19 @@ reg[63:0]		gprValFRn;
 wire[63:0]		gprValFRs2;
 wire[63:0]		gprValFRt2;
 
-assign			gprValFRs = id2IdIxt[4] ? gprValRs : gprValFRs2;
-assign			gprValFRt = id2IdIxt[4] ? gprValRt : gprValFRt2;
+wire			id2FprIsGpr;
+wire			id2UCmdIsFmov;
+
+assign		id2UCmdIsFmov =
+	(id2IdUCmd[5:0]==JX2_UCMD_FMOV_RM) ||
+	(id2IdUCmd[5:0]==JX2_UCMD_FMOV_MR) ;
+assign		id2FprIsGpr =  id2UCmdIsFmov ? id2IdIxt[2] : id2IdIxt[4];
+
+// assign		gprValFRs = id2IdIxt[4] ? gprValRs : gprValFRs2;
+// assign		gprValFRt = id2IdIxt[4] ? gprValRt : gprValFRt2;
+
+assign			gprValFRs = id2FprIsGpr ? gprValRs : gprValFRs2;
+assign			gprValFRt = id2FprIsGpr ? gprValRt : gprValFRt2;
 
 RegFPR	regFpr(
 	clock,	reset,
@@ -643,12 +659,14 @@ wire[63:0]		ex1MulWVal;
 wire[5:0]		ex1RegIdFRn;
 wire[63:0]		ex1RegValFRn;
 wire[63:0]		ex1FpuValGRn;
+wire[63:0]		ex1FpuValLdGRn;
 wire[1:0]		ex1FpuOK;
 wire			ex1FpuSrT;
 // `endif
 
 `ifndef jx2_enable_fpu
 assign	ex1FpuValGRn	= UV64_XX;
+assign	ex1FpuValLdGRn	= UV64_XX;
 assign	ex1FpuOK		= UMEM_OK_READY;
 assign	ex1FpuSrT		= 0;
 `endif
@@ -657,7 +675,7 @@ reg[63:0]		ex2MemDataIn;
 reg[1:0]		ex2MemDataOK;
 
 
-reg[31:0]		ex1ValBPc;
+// reg[31:0]		ex1ValBPc;
 
 reg[7:0]		ex1OpUCmd;
 reg[7:0]		ex1OpUIxt;
@@ -726,7 +744,7 @@ ExEX1	ex1(
 	
 	ex1RegValPc,	ex1RegValImm,
 	ex1FpuValGRn,	ex1FpuSrT,
-	ex1BraFlush,
+	ex1BraFlush,	ex1PreBra,
 	
 	ex1RegOutDlr,	ex1RegInDlr,
 	ex1RegOutDhr,	ex1RegInDhr,
@@ -780,6 +798,7 @@ FpuExOp	ex1Fpu(
 	ex1RegInSr,
 	
 	ex1RegValRs,	ex1FpuValGRn,
+	ex1FpuValLdGRn,
 	ex2MemDataIn,	ex2MemDataOK
 	);
 
@@ -861,6 +880,7 @@ ExEX2	ex2(
 	ex2RegAluRes,	ex2RegMulRes,
 	ex2RegMulWRes,
 	ex1FpuValGRn,
+	ex1FpuValLdGRn,
 	ex2BraFlush,
 	
 	ex2RegOutDlr,	ex2RegInDlr,
@@ -878,7 +898,7 @@ ExEX2	ex2(
 `ifdef jx2_enable_wex
 /* EX1, Lane 2 */
 
-reg[63:0]		exB1MulWVal;
+wire[63:0]		exB1MulWVal;
 
 reg[7:0]		exB1OpUCmd;
 reg[7:0]		exB1OpUIxt;
@@ -980,7 +1000,7 @@ ExEXB2		exb2(
 `ifdef jx2_enable_wex3w
 /* EX1, Lane 3 */
 
-reg[63:0]		exC1MulWVal;
+wire[63:0]		exC1MulWVal;
 
 reg[7:0]		exC1OpUCmd;
 reg[7:0]		exC1OpUIxt;
@@ -1101,6 +1121,14 @@ reg			tNxtPreHold1;
 reg			tLstPreHold1;
 reg			tRegSkipExc;
 
+`ifdef jx2_debug_hitmiss
+reg[15:0]	tBraHitMiss;
+reg[15:0]	tBraNxtHitMiss;
+
+reg[15:0]	tBraCycCnt;
+reg[15:0]	tBraNxtCycCnt;
+`endif
+
 always @*
 begin
 	exHold1			= 0;
@@ -1118,6 +1146,12 @@ begin
 	crInSsp			= crOutSsp;
 	crInTea			= crOutTea;
 	tValNextBraPc	= UV32_XX;
+
+`ifdef jx2_debug_hitmiss
+	tBraNxtHitMiss	= tBraHitMiss;
+//	tBraNxtCycCnt	= tBraCycCnt + 1;
+	tBraNxtCycCnt	= tBraCycCnt;
+`endif
 
 `ifndef def_true
 	if(ex1Hold)
@@ -1328,23 +1362,84 @@ begin
 //		tValNextPc		= ifValPc;
 		tValNextPc		= ifLastPc;
 
+	nxtBraFlushMask	= { 1'b0, opBraFlushMask[7:1] };
+
 `ifdef jx2_enable_prebra
+// `ifndef def_true
 //	if(id1PreBra)
-	if(id1PreBra && !opBraFlushMask[2])
-//	if(id1PreBra && !opBraFlushMask[1])
+//	if(id1PreBra && !opBraFlushMask[3])		//IF
+	if(id1PreBra && !opBraFlushMask[2])		//ID1
+//	if(id1PreBra && !opBraFlushMask[1])		//ID2
+//	if(id1PreBra && !opBraFlushMask[0])		//EX1
 	begin
-//		$display("PreBra %X", id1PreBraPc);
+//		$display("ExUnit PreBra %X", id1PreBraPc);
 		tValNextPc = id1PreBraPc;
 //		tValNextBraPc = id1PreBraPc;
+`ifdef jx2_bra2stage
 		nxtBraFlushMask[2] = 1;
-		nxtBraFlushMask[3] = 1;
+//		nxtBraFlushMask[3] = 1;
+//		nxtBraFlushMask[4] = 1;
+`else
+//		nxtBraFlushMask[1] = 1;
+		nxtBraFlushMask[2] = 1;
+//		nxtBraFlushMask[3] = 1;
+`endif
 //		nxtBraFlushMask = 8'h0F;
+//		nxtBraFlushMask = JX2_BRA_FLUSHMSK;
 	end
 `endif
 
+//	if((idA1IdUCmd[5:0]==JX2_UCMD_BRA) && idA1IdUCmd[7] && id1PreBra)
+//	begin
+//		$display("ExUnit: Predict CC Branch ID1");
+//	end
+
+	ex1ValBraDir = 3'b001;
+//	if(ex1OpUCmd[5:0]==JX2_UCMD_BRA)
+//	if(ex1OpUCmd[5:0]==JX2_UCMD_BRA)
+	if((ex1OpUCmd[5:0]==JX2_UCMD_BRA) && ex1OpUCmd[7] &&
+		!ex1BraFlush && !exHold2)
+	begin
+		ex1ValBraDir[1:0] = ex1OpUCmd[7:6];
+//		ex1ValBraDir[2]	= !(ex1OpUCmd[6]^ex2RegOutSr[0]);
+		ex1ValBraDir[2]	= (ex1OpUCmd[6]^ex2RegOutSr[0]);
+
+`ifdef jx2_debug_hitmiss
+		if({1'b1, ex1RegIdCn1} == JX2_CR_PC)
+		begin
+			if(tBraHitMiss!=UV16_00)
+				tBraNxtHitMiss = tBraHitMiss - 1;
+		end
+		else
+		begin
+			if(tBraHitMiss!=UV16_FF)
+				tBraNxtHitMiss = tBraHitMiss + 1;
+		end
+
+		tBraNxtCycCnt	= tBraCycCnt + 1;
+`endif
+
+	end
+
+`ifdef jx2_debug_hitmiss
+	if(tBraCycCnt[15]!=tBraNxtCycCnt[15])
+//	if(tBraCycCnt[12]!=tBraNxtCycCnt[12])
+	begin
+		$display("ExUnit: Branch Hit/Miss Count (Mid=8000): %X",
+			tBraHitMiss);
+		tBraNxtHitMiss	= 16'h8000;
+	end
+`endif
+
+//	if((ex1OpUCmd[5:0]==JX2_UCMD_BRA) && ex1OpUCmd[7] && ex1PreBra)
+//	begin
+//		$display("ExUnit: Predict CC Branch EX1");
+//	end
+
 	/* Handle if EX1 unit has initiated a branch. */
-	nxtBraFlushMask	= { 1'b0, opBraFlushMask[7:1] };
-	if(({1'b1, ex1RegIdCn1} == JX2_CR_PC) && !ex1PreBra)
+//	nxtBraFlushMask	= { 1'b0, opBraFlushMask[7:1] };
+//	if(({1'b1, ex1RegIdCn1} == JX2_CR_PC) && !ex1PreBra)
+	if({1'b1, ex1RegIdCn1} == JX2_CR_PC)
 	begin
 //		$display("EX1 BRA %X", ex1RegValCn1);
 //		tValNextPc = ex1RegValCn1[31:0];
@@ -1352,6 +1447,16 @@ begin
 //		nxtBraFlushMask = 8'h07;
 //		nxtBraFlushMask = 8'h0F;
 		nxtBraFlushMask = JX2_BRA_FLUSHMSK;
+//		ex1ValBraDir[2]	= 1;
+
+`ifndef def_true
+//		if(ex1PreBra)
+		if((ex1OpUCmd[5:0]==JX2_UCMD_BRA) && ex1OpUCmd[7])
+			$display("ExUnit: Branch Miss, CC=%X, Rat=%X, PC=%X Istr=%X-%X",
+				ex1OpUCmd[7:6], tBraHitMiss,
+				ex1ValBPc,
+				ex1IstrWord[15: 0], ex1IstrWord[31:16]);
+`endif
 	end
 
 `ifndef def_true
@@ -1588,6 +1693,11 @@ begin
 
 //	tRegExc			<= tNxtRegExc;
 	tDelayExc		<= tNxtDelayExc;
+
+`ifdef jx2_debug_hitmiss
+	tBraHitMiss		<= tBraNxtHitMiss;
+	tBraCycCnt		<= tBraNxtCycCnt;
+`endif
 
 	if(reset)
 	begin

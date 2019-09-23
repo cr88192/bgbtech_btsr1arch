@@ -104,6 +104,7 @@ output			ddrCke;
 output[1:0]		ddrClk;			//clock pins
 
 // parameter[7:0]	DDR_CAS_RL_M1	= 4;	//CAS RL Minus 1
+// parameter[7:0]	DDR_CAS_RL_M1	= 3;	//CAS RL Minus 1
 parameter[7:0]	DDR_CAS_RL_M1	= 3;	//CAS RL Minus 1
 // parameter[7:0]	DDR_CAS_WL_M1	= 4;	//CAS WL Minus 1
 parameter[7:0]	DDR_CAS_WL_M1	= 2;	//CAS WL Minus 1
@@ -129,8 +130,10 @@ assign			ddrData_En = tDdrOut;
 
 // reg[9:0]		tDdrCmd;			//Command/Address pins
 reg[1:0]		tDdrClk;			//clock pins
+reg[1:0]		tDdrClk2;			//clock pins
 // assign			ddrCmd = tDdrCmd;
-assign			ddrClk = tDdrClk;
+// assign			ddrClk = tDdrClk;
+assign			ddrClk = tDdrClk2;
 
 reg[13:0]		tDdrAddr;		//Address pins
 reg[2:0]		tDdrBa;			//Bank Address pins
@@ -140,6 +143,7 @@ reg				tDdrCas;
 reg				tDdrWe;
 reg				tDdrCke;
 
+`ifndef def_true
 assign		ddrAddr	= tDdrAddr;
 assign		ddrBa	= tDdrBa;
 assign		ddrCs	= tDdrCs;
@@ -147,6 +151,7 @@ assign		ddrRas	= tDdrRas;
 assign		ddrCas	= tDdrCas;
 assign		ddrWe	= tDdrWe;
 assign		ddrCke	= tDdrCke;
+`endif
 
 reg[13:0]		tDdrLastAddr;	//Address pins
 reg[2:0]		tDdrLastBa;		//Bank Address pins
@@ -155,6 +160,16 @@ reg				tDdrLastRas;
 reg				tDdrLastCas;
 reg				tDdrLastWe;
 reg				tDdrLastCke;
+
+`ifdef def_true
+assign		ddrAddr	= tDdrLastAddr;
+assign		ddrBa	= tDdrLastBa;
+assign		ddrCs	= tDdrLastCs;
+assign		ddrRas	= tDdrLastRas;
+assign		ddrCas	= tDdrLastCas;
+assign		ddrWe	= tDdrLastWe;
+assign		ddrCke	= tDdrLastCke;
+`endif
 
 reg[1:0]		tMemOK;
 reg[1:0]		tMemOK2;
@@ -212,8 +227,8 @@ begin
 
 	accNextReadBlk	= accReadBlk;
 	tDdrOut			= 0;
-//	tDdrData		= 0;
-	tDdrData		= 16'hzzzz;
+	tDdrData		= 0;
+//	tDdrData		= 16'hzzzz;
 	
 	tMemDataOut		= UV128_XX;
 
@@ -316,7 +331,7 @@ begin
 		else
 			if(tMemOpm[4] && !driStillInit && !dreIsZero)	/* Store Request */
 		begin
-			$display("ModDdr: Store Req, A=%X", tMemAddr);
+//			$display("ModDdr: Store Req, A=%X", tMemAddr);
 
 			accNextReadBlk	= tMemDataIn;
 			tMemOK			= UMEM_OK_HOLD;
@@ -563,6 +578,7 @@ begin
 
 //		tDdrCmd			= {accColAddr[11:3], 1'b1};
 		accNextState	= 6'b010110;
+//		accNextState	= 6'b010111;
 		accNextCkCas	= DDR_CAS_RL_M1;
 	end
 
@@ -729,21 +745,34 @@ begin
 		accNextState			= 6'b110001;
 		tDdrData 				= accReadBlk[15:0];
 		tDdrOut					= 1;
+`ifdef mod_ddr_dbgprn
+		$display("DDR Write Word0 %X (Ck=%d)", tDdrData, clock);
+`endif
 	end
 	6'b110001: begin
 		accNextState			= 6'b110010;
 		tDdrData 				= accReadBlk[31:16];
 		tDdrOut					= 1;
+`ifdef mod_ddr_dbgprn
+		$display("DDR Write Word1 %X (Ck=%d)", tDdrData, clock);
+`endif
 	end
 	6'b110010: begin
 		accNextState			= 6'b110011;
 		tDdrData 				= accReadBlk[47:32];
 		tDdrOut					= 1;
+`ifdef mod_ddr_dbgprn
+		$display("DDR Write Word2 %X (Ck=%d)", tDdrData, clock);
+`endif
 	end
 	6'b110011: begin
 		accNextState			= 6'b110100;
 		tDdrData 				= accReadBlk[63:48];
 		tDdrOut					= 1;
+`ifdef mod_ddr_dbgprn
+		$display("DDR Write Word3 %X (Ck=%d)", tDdrData, clock);
+`endif
+
 // `ifdef mod_ddr3_isddr2
 `ifdef jx2_ddr_bl64b
 		accNextState			= 6'b000001;
@@ -753,21 +782,33 @@ begin
 		accNextState			= 6'b110101;
 		tDdrData 				= accReadBlk[79:64];
 		tDdrOut					= 1;
+`ifdef mod_ddr_dbgprn
+		$display("DDR Write Word4 %X (Ck=%d)", tDdrData, clock);
+`endif
 	end
 	6'b110101: begin
 		accNextState			= 6'b110110;
 		tDdrData 				= accReadBlk[95:80];
 		tDdrOut					= 1;
+`ifdef mod_ddr_dbgprn
+		$display("DDR Write Word5 %X (Ck=%d)", tDdrData, clock);
+`endif
 	end
 	6'b110110: begin
 		accNextState			= 6'b110111;
 		tDdrData 				= accReadBlk[111:96];
 		tDdrOut					= 1;
+`ifdef mod_ddr_dbgprn
+		$display("DDR Write Word6 %X (Ck=%d)", tDdrData, clock);
+`endif
 	end
 	6'b110111: begin
 		accNextState			= 6'b000001;
 		tDdrData 				= accReadBlk[127:112];
 		tDdrOut					= 1;
+`ifdef mod_ddr_dbgprn
+		$display("DDR Write Word7 %X (Ck=%d)", tDdrData, clock);
+`endif
 	end
 
 	default: begin
@@ -801,6 +842,7 @@ begin
 	dreRowAddr	<= dreNextRowAddr;
 	dreCount	<= dreNextCount;
 
+	tDdrClk2		<= tDdrClk;
 	tDdrLastAddr	<= tDdrAddr;	//Address pins
 	tDdrLastBa		<= tDdrBa;		//Bank Address pins
 	tDdrLastCs		<= tDdrCs;

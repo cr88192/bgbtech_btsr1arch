@@ -654,6 +654,7 @@
 
 #define BGBCC_SH_NMID_WEXMD			0x0124	//
 #define BGBCC_SH_NMID_CPUID			0x0125	//
+#define BGBCC_SH_NMID_RTSU			0x0126	//
 
 
 #define BGBCC_SH_FMID_REGREG		0x01	//Rm, Rn

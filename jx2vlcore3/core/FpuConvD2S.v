@@ -7,7 +7,8 @@ output[31:0]	regValFRn;
 
 reg[31:0]		tRegValFRn;
 reg[31:0]		tRegValFRn1;
-reg[4:0]		tRound;
+// reg[4:0]		tRound;
+reg[8:0]		tRound;
 
 assign	regValFRn = tRegValFRn;
 
@@ -19,9 +20,15 @@ begin
 //		regValFRm[51:29]+(regValFRm[28]?23'h1:23'h0) };
 		regValFRm[51:29] };
 		
-	tRound = { 1'b0, regValFRm[32:29] } + 1;
-	if(regValFRm[28] && !tRound[4])
-		tRegValFRn1[3:0]=tRound[3:0];
+//	tRound = { 1'b0, regValFRm[32:29] } + 1;
+//	if(regValFRm[28] && !tRound[4])
+//		tRegValFRn1[3:0]=tRound[3:0];
+
+//	tRound				= { 1'b0, regValFRm[32:29] } + { 4'b0, regValFRm[28] };
+//	tRegValFRn1[3:0]	= tRound[4] ? regValFRm[32:29] : tRound[3:0];
+
+	tRound				= { 1'b0, regValFRm[36:29] } + { 8'b0, regValFRm[28] };
+	tRegValFRn1[7:0]	= tRound[8] ? regValFRm[36:29] : tRound[7:0];
 
 	casez(regValFRm[62:59])
 	4'b0111:	tRegValFRn = tRegValFRn1;

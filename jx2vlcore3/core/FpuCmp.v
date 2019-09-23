@@ -121,17 +121,17 @@ begin
 		(tCmpExLt && tCmpSgEqN) ||
 		(tCmpFraLt && tCmpSgEqN && tCmpExEq) ;
 		
-	case(regIdIxt[5:0])
-		JX2_UCIX_FPU_CMPEQ: begin
+	case(regIdIxt[3:0])
+		JX2_UCIX_FPU_CMPEQ[3:0]: begin
 			tRegOutSrT = tCmpEq;
 		end
-		JX2_UCIX_FPU_CMPGT: begin
+		JX2_UCIX_FPU_CMPGT[3:0]: begin
 			tRegOutSrT = tCmpGt;
 		end
-		JX2_UCIX_FPU_CMPNE: begin
+		JX2_UCIX_FPU_CMPNE[3:0]: begin
 			tRegOutSrT = !tCmpEq;
 		end
-		JX2_UCIX_FPU_CMPGE: begin
+		JX2_UCIX_FPU_CMPGE[3:0]: begin
 			tRegOutSrT = tCmpGt || tCmpEq;
 		end
 		
