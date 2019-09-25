@@ -527,6 +527,22 @@ s64 tot_cnt_miss_l1i;
 int tot_cnt_mem_dri;		//total I$ to DRAM misses
 int tot_cnt_mem_drd;		//total D$ to DRAM misses
 
+byte bpr_tab[256];			//state tables
+byte bpr_sctab[256];		//state tables
+s64 bpr_hit;
+s64 bpr_cnt;
+
+byte *bpr_gatab[256];		//state tables for GA
+byte *bpr_gatab_buf;
+
+byte *bpr_ga_adjt[256];		//true-state update table
+byte *bpr_ga_adjf[256];		//false-state update table
+u16 bpr_ga_hit[256];		//true-state update table
+byte *bpr_ga_adj_buf;
+byte bpr_ga_rov;
+int bpr_ga_cnt;
+int bpr_ga_gencnt;
+
 bjx2_addr mem_l1addr1;		//L1 addr
 bjx2_addr mem_l1addr2;		//L1 addr
 bjx2_addr mem_l1addr3;		//L1 addr

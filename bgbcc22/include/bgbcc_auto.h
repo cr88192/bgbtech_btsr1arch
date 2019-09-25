@@ -2506,6 +2506,7 @@ int BGBCC_JX2_CheckPadCross32(BGBCC_JX2_Context *ctx);
 int BGBCC_JX2_CheckPadCross48(BGBCC_JX2_Context *ctx);
 int BGBCC_JX2_CheckPadAlign32(BGBCC_JX2_Context *ctx);
 int BGBCC_JX2_EmitPadCheckExpandLastOp(BGBCC_JX2_Context *ctx);
+int BGBCC_JX2_CheckPipelineMin(BGBCC_JX2_Context *ctx, int cnt);
 int BGBCC_JX2_EmitPadForOpWord(BGBCC_JX2_Context *ctx, int val);
 int BGBCC_JX2_EmitCheckRepackOp(BGBCC_JX2_Context *ctx);
 int BGBCC_JX2_EmitWordI(BGBCC_JX2_Context *ctx, int val);

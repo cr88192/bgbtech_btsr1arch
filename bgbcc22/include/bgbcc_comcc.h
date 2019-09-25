@@ -229,6 +229,11 @@ int pos_pad_op1;
 int pos_pad_op2;
 int pos_pad_op3;
 
+int pos_pad_op4;
+int pos_pad_op5;
+int pos_pad_op6;
+int pos_pad_op7;
+
 u32		arch_pad_op32;		//padding ".text" for 32-bit pads
 u16		arch_pad_op16;		//padding ".text" for 16-bit pads
 byte	arch_pad_op8;		//padding ".text" for 8-bit pads

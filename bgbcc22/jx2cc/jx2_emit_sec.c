@@ -1175,6 +1175,29 @@ int BGBCC_JX2_EmitPadCheckExpandLastOp(
 	return(0);
 }
 
+int BGBCC_JX2_CheckPipelineMin(BGBCC_JX2_Context *ctx, int cnt)
+{
+	if((ctx->pos_pad_op7>=0) && (cnt<=8))
+		return(1);
+	if((ctx->pos_pad_op6>=0) && (cnt<=7))
+		return(1);
+	if((ctx->pos_pad_op5>=0) && (cnt<=6))
+		return(1);
+	if((ctx->pos_pad_op4>=0) && (cnt<=5))
+		return(1);
+	if((ctx->pos_pad_op3>=0) && (cnt<=4))
+		return(1);
+	if((ctx->pos_pad_op2>=0) && (cnt<=3))
+		return(1);
+	if((ctx->pos_pad_op1>=0) && (cnt<=2))
+		return(1);
+	if((ctx->pos_pad_op0>=0) && (cnt<=1))
+		return(1);
+	if(cnt<=0)
+		return(1);
+	return(0);
+}
+
 /* If the instruction would cross a 32B boundary, pad-align. */
 int BGBCC_JX2_EmitPadForOpWord(BGBCC_JX2_Context *ctx, int val)
 {
@@ -1232,6 +1255,10 @@ int BGBCC_JX2_EmitPadForOpWord(BGBCC_JX2_Context *ctx, int val)
 		}
 		
 		i=BGBCC_JX2_EmitGetOffs(ctx);
+		ctx->pos_pad_op7=ctx->pos_pad_op6;
+		ctx->pos_pad_op6=ctx->pos_pad_op5;
+		ctx->pos_pad_op5=ctx->pos_pad_op4;
+		ctx->pos_pad_op4=ctx->pos_pad_op3;
 		ctx->pos_pad_op3=ctx->pos_pad_op2;
 		ctx->pos_pad_op2=ctx->pos_pad_op1;
 		ctx->pos_pad_op1=ctx->pos_pad_op0;

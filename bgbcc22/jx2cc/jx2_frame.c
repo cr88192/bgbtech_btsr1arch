@@ -5265,7 +5265,8 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 	}
 
 //	if(!(sctx->is_leaf&1) && !(obj->flagsint&BGBCC_TYFL_INTERRUPT))
-	if(!(sctx->is_leaf&1) || (obj->flagsint&BGBCC_TYFL_INTERRUPT))
+	if(!(sctx->is_leaf&1) || (obj->flagsint&BGBCC_TYFL_INTERRUPT) ||
+		(obj->flagsint&BGBCC_TYFL_SYSCALL))
 	{
 		if(sctx->is_addr64)
 			k+=8;
@@ -5284,7 +5285,8 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 		{ BGBCC_DBGBREAK; }
 #endif
 
-	if(obj->flagsint&BGBCC_TYFL_INTERRUPT)
+	if((obj->flagsint&BGBCC_TYFL_INTERRUPT) ||
+		(obj->flagsint&BGBCC_TYFL_SYSCALL))
 	{
 		BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_POP, BGBCC_SH_REG_PR);
 		BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_RTE);
@@ -5315,6 +5317,7 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 
 	}else
 	{
+#if 0
 //		if(sctx->reg_save || sctx->freg_save)
 		if(0)
 		{
@@ -5326,7 +5329,12 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 		}else
 //			if(sctx->has_movi20)
 //			if(0)
-		if(1)
+#endif
+
+//		if(1)
+//		if(ctx->pos_pad_op3>=0)
+		if(BGBCC_JX2_CheckPipelineMin(sctx, 4))
+//		if(BGBCC_JX2_CheckPipelineMin(sctx, 5))
 //		if(sctx->has_bjx1jmp)
 		{
 //			BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_RTSN);

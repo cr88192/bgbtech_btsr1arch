@@ -1437,6 +1437,10 @@ int BJX2_DbgDump(BJX2_Context *ctx)
 	{
 		BJX2_DbgTopTraces(ctx);
 	}
+	
+	printf("Branch Pred Hit %.2f%%\n",
+		(100.0*ctx->bpr_hit)/ctx->bpr_cnt);
+	
 	return(0);
 }
 
