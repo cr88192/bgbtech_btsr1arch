@@ -531,6 +531,7 @@ byte bpr_tab[256];			//state tables
 byte bpr_sctab[256];		//state tables
 s64 bpr_hit;
 s64 bpr_cnt;
+int bpr_hist;
 
 byte *bpr_gatab[256];		//state tables for GA
 byte *bpr_gatab_buf;

@@ -238,7 +238,8 @@ void BJX2_Op_BpredUpdateBranchGA(BJX2_Context *ctx, BJX2_Opcode *op, int take)
 		ctx->bpr_ga_gencnt++;
 		
 #if 1
-		for(i=0; i<64; i++)
+//		for(i=0; i<64; i++)
+		for(i=0; i<256; i++)
 //			printf("%d", bjx2_bpred_srbtab[i]>=0x80);
 			printf("%X", (bjx2_bpred_srbtab[i]>>12)&15);
 		printf("\n");
@@ -246,6 +247,7 @@ void BJX2_Op_BpredUpdateBranchGA(BJX2_Context *ctx, BJX2_Opcode *op, int take)
 	}
 }
 
+#if 0
 void BJX2_Op_BpredUpdateBranch(BJX2_Context *ctx, BJX2_Opcode *op, int take)
 {
 	static u64 srbmsk = 0x513713671B677F7FULL;
@@ -260,10 +262,10 @@ void BJX2_Op_BpredUpdateBranch(BJX2_Context *ctx, BJX2_Opcode *op, int take)
 
 	sc=ctx->bpr_sctab[pri];	
 	sc1=(sc<<1)|(take!=0);
-//	srb=bjx2_bpred_srbtab[sc];
-//	if(!srb)srb=0x7FFF;
+	srb=bjx2_bpred_srbtab[sc];
+	if(!srb)srb=0x7FFF;
 
-	srb=((srbmsk>>(63-sc))&1)? 0xFFFF : 0x0001;
+//	srb=((srbmsk>>(63-sc))&1)? 0xFFFF : 0x0001;
 
 	ctx->bpr_cnt++;
 	
@@ -292,9 +294,103 @@ void BJX2_Op_BpredUpdateBranch(BJX2_Context *ctx, BJX2_Opcode *op, int take)
 	
 	bjx2_bpred_srbtab[sc]=srb;
 	ctx->bpr_tab[pri]=pr;
-	ctx->bpr_sctab[pri]=sc1&63;
-//	ctx->bpr_sctab[pri]=sc1&255;
+//	ctx->bpr_sctab[pri]=sc1&63;
+	ctx->bpr_sctab[pri]=sc1&255;
 }
+#endif
+
+#if 0
+void BJX2_Op_BpredUpdateBranch(BJX2_Context *ctx, BJX2_Opcode *op, int take)
+{
+	int pr, prb, pri, prj;
+	int sc, sc1, srb, prc;
+
+	pri=((op->pc)>>1)&63;
+//	pri=((op->pc)>>1)&255;
+
+	sc=ctx->bpr_hist;
+	sc1=(sc<<1)|(take!=0);
+	ctx->bpr_hist=sc1;
+	
+	pr=ctx->bpr_tab[pri];
+
+	ctx->bpr_cnt++;
+	
+	if(take)
+	{
+		if(pr&4)
+			ctx->bpr_hit++;
+		pr=bjx2_bpred_adjt[pr];
+	}else
+	{
+		if(!(pr&4))
+			ctx->bpr_hit++;
+		pr=bjx2_bpred_adjf[pr];
+	}
+	
+	ctx->bpr_tab[pri]=pr;
+}
+#endif
+
+#if 1
+void BJX2_Op_BpredUpdateBranch(BJX2_Context *ctx, BJX2_Opcode *op, int take)
+{
+//	static byte adjt[8]={ 6, 0, 7, 7, 5, 5, 5, 6 };
+//	static byte adjf[8]={ 1, 1, 1, 2, 2, 4, 3, 3 };
+	static byte adjt[8]={ 6, 0, 7, 7, 5, 5, 4, 6 };
+	static byte adjf[8]={ 1, 1, 0, 2, 2, 4, 3, 3 };
+	static u64 srbmsk = 0x513713671B677F7FULL;
+	int pr, prb, pri, prj;
+	int sc, sc1, srb, prc;
+
+	pri=((op->pc)>>1)&63;
+//	pri=((op->pc)>>1)&255;
+
+	sc=ctx->bpr_hist;
+	sc1=(sc<<1)|(take!=0);
+	ctx->bpr_hist=sc1;
+	
+	prj=(pri^sc)&63;
+	pr=ctx->bpr_tab[prj];
+	prb=take ? adjt[pr] : adjf[pr];
+	ctx->bpr_tab[prj]=prb;
+
+	sc=ctx->bpr_sctab[pri];	
+	sc1=(sc<<1)|(take!=0);
+	ctx->bpr_sctab[pri]=sc1&63;
+	srb=(srbmsk>>(63-sc))&1;
+
+	ctx->bpr_cnt++;
+	if(take)
+	{
+		if(pr&2)
+		{
+//			if(srb)
+//				ctx->bpr_hit++;
+			if(!(pr&4))
+				ctx->bpr_hit++;
+		}else
+		{
+			if(pr&4)
+				ctx->bpr_hit++;
+		}
+	}else
+	{
+		if(pr&2)
+		{
+//			if(!srb)
+//				ctx->bpr_hit++;
+			if(pr&4)
+				ctx->bpr_hit++;
+		}else
+		{
+			if(!(pr&4))
+				ctx->bpr_hit++;
+		}
+	}
+}
+#endif
+
 
 void BJX2_Op_BT_PcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 {

@@ -80,7 +80,7 @@ reg[2:0]	tPreExCntB;
 reg[2:0]	tPreExDir;
 reg[31:0]	tPreExBPc;
 
-// reg[5:0]	preBits[63:0];
+reg[5:0]	preBits[63:0];
 reg[5:0]	tPreIfBit;
 reg[5:0]	tPreExBit;
 reg[5:0]	tPreExBitB;
@@ -91,6 +91,12 @@ reg[5:0]	tPreIdIx;
 reg[5:0]	tPreIbIx;
 reg[5:0]	tPreExIx;
 reg[5:0]	tPreExIxA;
+
+reg[5:0]	tPatIfIx;
+reg[5:0]	tPatIdIx;
+reg[5:0]	tPatIbIx;
+reg[5:0]	tPatExIx;
+reg[5:0]	tPatExIxA;
 
 //reg[11:0]	tPreIfIx;
 //reg[11:0]	tPreIdIx;
@@ -111,6 +117,10 @@ begin
 	tPreIbIx	= istrBasePc[6:1]	^ tHistBits;
 	tPreExIxA	= exBraBPc[6:1]		^ tHistBits;
 
+	tPatIfIx	= ifBraBPc[6:1];
+	tPatIbIx	= istrBasePc[6:1];
+	tPatExIxA	= exBraBPc[6:1];
+
 //	tPreIfIx	= ifBraBPc[12:1];
 //	tPreIbIx	= istrBasePc[12:1];
 //	tPreExIxA	= exBraBPc[12:1];
@@ -123,10 +133,32 @@ begin
 		tHistBitsB = { tHistBits[4:0], tPreExDir[2] };
 		tPreExBitB = { tPreExBit[4:0], tPreExDir[2] };
 
+`ifndef def_true
+		case( {tPreExDir[2], tPreExCnt[2:0]} )
+			4'b0000: tPreExCntB=3'b001;
+			4'b0001: tPreExCntB=3'b010;
+			4'b0010: tPreExCntB=3'b011;
+			4'b0011: tPreExCntB=3'b011;
+			4'b0100: tPreExCntB=3'b101;
+			4'b0101: tPreExCntB=3'b110;
+			4'b0110: tPreExCntB=3'b111;
+			4'b0111: tPreExCntB=3'b000;
+			4'b1000: tPreExCntB=3'b111;
+			4'b1001: tPreExCntB=3'b000;
+			4'b1010: tPreExCntB=3'b001;
+			4'b1011: tPreExCntB=3'b010;
+			4'b1100: tPreExCntB=3'b100;
+			4'b1101: tPreExCntB=3'b100;
+			4'b1110: tPreExCntB=3'b101;
+			4'b1111: tPreExCntB=3'b110;
+		endcase
+`endif
+
+`ifdef def_true
 		case( {tPreExDir[2], tPreExCnt[2:0]} )
 			4'b0000: tPreExCntB=3'b001;
 			4'b0001: tPreExCntB=3'b001;
-			4'b0010: tPreExCntB=3'b000;
+			4'b0010: tPreExCntB=3'b001;
 			4'b0011: tPreExCntB=3'b010;
 			4'b0100: tPreExCntB=3'b010;
 			4'b0101: tPreExCntB=3'b100;
@@ -138,15 +170,85 @@ begin
 			4'b1011: tPreExCntB=3'b111;
 			4'b1100: tPreExCntB=3'b101;
 			4'b1101: tPreExCntB=3'b101;
-			4'b1110: tPreExCntB=3'b100;
+			4'b1110: tPreExCntB=3'b101;
 			4'b1111: tPreExCntB=3'b110;
 		endcase
+`endif
 
 //		$display("PreBra: Predict State %X, BPc=%X",
 //			{tPreExDir[2], tPreExCnt[2:0]},
 //			tPreExBPc);
 	end
-		
+	
+/*
+F0F0 F000 F00FF0FFF000F00FF0FF00FFF000FF0FF0FF00FFF0FFFFFFF0FFFFFF
+
+0..7
+0F0F 000F 00FF 0FFF  000F 00FF 0FF0 0FFF
+0F0F 000F 00FF 0F7F  100F 00FF 0FF0 0FFF
+0F0F 000F 00FF 0FBF  F00F 10FF 0FF0 0FFF
+0F0F 000F 00FF 0DFF  F00F 80FF 0CF0 0FFF
+0F0F 000F 00FE 0FFF  000F 00FF 0EF0 0FFF
+0F0F 000F 00FF 0FFF  200F 00FF 0FF0 0FFF
+0F0F 000F 00FF 0FDF  000F 00FF 0FF0 0FFF
+0E0F 000F 00FF 0FCF  000F 00FF 0FF0 0FFF
+
+000F 000F 00F6 0D0F  0000 F0FF 0FF0 0FFF
+000F 000F 00F1 0F0F  0000 F0FF 0FF0 0FFF
+000F 000F 00F4 0F0F  00C2 F0FF 0FF0 2FFF
+
+8..F
+03CF F0FF 08F5 0FFF  0FFF FCFF 0FFF FFFF
+01CF F09F 03F1 0FFF  0FEF EFFF 0FFF FFFF
+00EF F0FF 07F2 0FFF  0FFF FDF0 0FFF FF0F
+005F F0FF 0CFB 0FFF  0FFF F2FF 0FFF FFFF
+000F F0FF 0FFF 0FFF  0FFF FBFF 0FFF FFFF
+000F F0FF 0DF6 0FFF  0FFF EFFF 0FFF FFFF
+030F F0FF 0BFF 0FFF  0FFF F5FF 0FFF FFFF
+0F0F E0FF 0FFF 0FFF  0FFF F3FF 0FFF FFFF
+000F F00F 00F0 FFFF  0D0F FFFF 0FFF FFFF
+000F F00F 00F0 FFFF  0A0F FFF0 0FFF FFFF
+000F F01F 00F0 FFFF  0F2F C2F0 0FFF FFFF
+*/
+
+	case(tPreIfBit)
+		6'b000000: tPreBit=0;	6'b000001: tPreBit=0;
+		6'b000010: tPreBit=0;	6'b000011: tPreBit=1;
+		6'b000100: tPreBit=0;	6'b000101: tPreBit=0;
+		6'b000110: tPreBit=0;	6'b000111: tPreBit=1;
+		6'b001000: tPreBit=0;	6'b001001: tPreBit=0;
+		6'b001010: tPreBit=1;	6'b001011: tPreBit=1;
+		6'b001100: tPreBit=0;	6'b001101: tPreBit=1;
+		6'b001110: tPreBit=0;	6'b001111: tPreBit=1;
+
+		6'b010000: tPreBit=1;	6'b010001: tPreBit=0;
+		6'b010010: tPreBit=0;	6'b010011: tPreBit=1;
+		6'b010100: tPreBit=0;	6'b010101: tPreBit=0;
+		6'b010110: tPreBit=1;	6'b010111: tPreBit=1;
+		6'b011000: tPreBit=0;	6'b011001: tPreBit=1;
+		6'b011010: tPreBit=1;	6'b011011: tPreBit=0;
+		6'b011100: tPreBit=0;	6'b011101: tPreBit=1;
+		6'b011110: tPreBit=1;	6'b011111: tPreBit=1;
+
+		6'b100000: tPreBit=0;	6'b100001: tPreBit=0;
+		6'b100010: tPreBit=0;	6'b100011: tPreBit=1;
+		6'b100100: tPreBit=1;	6'b100101: tPreBit=0;
+		6'b100110: tPreBit=1;	6'b100111: tPreBit=1;
+		6'b101000: tPreBit=0;	6'b101001: tPreBit=1;
+		6'b101010: tPreBit=1;	6'b101011: tPreBit=0;
+		6'b101100: tPreBit=0;	6'b101101: tPreBit=1;
+		6'b101110: tPreBit=1;	6'b101111: tPreBit=1;
+
+		6'b110000: tPreBit=0;	6'b110001: tPreBit=1;
+		6'b110010: tPreBit=1;	6'b110011: tPreBit=1;
+		6'b110100: tPreBit=1;	6'b110101: tPreBit=1;
+		6'b110110: tPreBit=1;	6'b110111: tPreBit=1;
+		6'b111000: tPreBit=0;	6'b111001: tPreBit=1;
+		6'b111010: tPreBit=1;	6'b111011: tPreBit=1;
+		6'b111100: tPreBit=1;	6'b111101: tPreBit=1;
+		6'b111110: tPreBit=1;	6'b111111: tPreBit=1;
+	endcase
+	
 	tDisp8		= { istrWord[7]?UV24_FF:UV24_00, istrWord[7:0] };
 	tDisp20		= {
 		istrWord[7]?UV12_FF:UV12_00,
@@ -187,8 +289,7 @@ begin
 `ifdef def_true
 	if(tIsBraCc8 && (tPreIbIx==tPreIdIx))
 	begin
-//		tDoBraCc8 = tPreExCntB[1] ? tPreBit : tPreIfCnt[2];
-		tDoBraCc8 = tPreIfCnt[2] ^ tPreIfCnt[1];
+		tDoBraCc8 = tPreExCntB[1] ? tPreBit : tPreIfCnt[2];
 		
 //		tDoBraCc8 = tPreBit;
 //		tDoBraCc8 = tPreIfCnt[2];
@@ -199,8 +300,7 @@ begin
 
 	if(tIsBraCc20 && (tPreIbIx==tPreIdIx))
 	begin
-//		tDoBraCc20 = tPreExCntB[1] ? tPreBit : tPreIfCnt[2];
-		tDoBraCc20 = tPreIfCnt[2] ^ tPreIfCnt[1];
+		tDoBraCc20 = tPreExCntB[1] ? tPreBit : tPreIfCnt[2];
 		
 //		tDoBraCc20 = tPreBit;
 //		tDoBraCc20 = tPreIfCnt[2];
@@ -245,11 +345,16 @@ begin
 	tHistBits	<= tHistBitsB;
 
 	tPreIfCnt	<= preCnts[tPreIfIx];
+	tPreIfBit	<= preBits[tPatIfIx];
 	tPreIdIx	<= tPreIfIx;
+	tPatIdIx	<= tPatIfIx;
 
 	tPreExCnt			<= preCnts[tPreExIxA];
+	tPreExBit			<= preBits[tPatExIxA];
 	preCnts[tPreExIx]	<= tPreExCntB;
+	preBits[tPatExIx]	<= tPreExBitB;
 	tPreExIx			<= tPreExIxA;
+	tPatExIx			<= tPatExIxA;
 	tPreExDir			<= exBraDir;
 	tPreExBPc			<= exBraBPc;
 end
