@@ -18,6 +18,20 @@ One scheme may operate as:
 
 */
 
+#include <setjmp.h>
+
+jmp_buf	tk_sysc_exit;
+
+int tk_sysc_exitpt()
+{
+	return(setjmp(tk_sysc_exit));
+}
+
+void tk_sysc_exitpgm(int val)
+{
+	longjmp(tk_sysc_exit, val|0x10000);
+}
+
 __declspec(syscall)
 int __isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 {
@@ -51,12 +65,16 @@ int __isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 				tk_con_reset();
 				ret=TK_URES_TRUE;
 				break;
+			
+			case 0x03:
+				tk_sysc_exitpgm(args[0].i);
+				break;
 
 			case 0x04:
-//				*((void **)vParm1)=TKMM_PageAlloc(args[0].i);
+				*((void **)vParm1)=TKMM_PageAlloc(args[0].i);
 				break;
 			case 0x05:
-//				ret=TKMM_PageFree(args[0].p, args[1].i);
+				ret=TKMM_PageFree(args[0].p, args[1].i);
 				break;
 			}
 			break;

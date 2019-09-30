@@ -1116,6 +1116,7 @@ int main(int argc, char **argv, char **env)
 	FILE *fd;
 	int lclk, mhz;
 	int tt_start;
+	int ctick, ctick_rst;
 	int t0, t1, t2;
 	int tt_frame;
 
@@ -1127,6 +1128,7 @@ int main(int argc, char **argv, char **env)
 #if 1
 	JX2R_UseImageAddFile(
 		(char *)"BOOTLOAD.SYS",
+//		(char *)"DOOM.EXE",
 		(char *)"../../tk_qsrc/doomsrc2/doom_bjx2.exe");
 	JX2R_UseImageAddFile(
 		(char *)"DOOM1.WAD",
@@ -1183,6 +1185,9 @@ int main(int argc, char **argv, char **env)
 
 	tt_start=FRGL_TimeMS();
 	tt_frame=tt_start;
+	
+//	ctick_rst=48828;
+//	ctick=ctick_rst;
 
 	while (!Verilated::gotFinish())
 	{
@@ -1204,8 +1209,10 @@ int main(int argc, char **argv, char **env)
 //			continue;
 		}
 
-	
 		top->clock = (main_time>>0)&1;
+
+		if(top->clock)
+			top->memBusExc=0x0000;
 		
 		if(top->clock && (lclk!=top->clock))
 		{
@@ -1214,6 +1221,8 @@ int main(int argc, char **argv, char **env)
 			ctx->ttick_hk--;
 			if(ctx->ttick_hk<=0)
 			{
+				top->memBusExc=0xC001;
+			
 //				printf("Clock IRQ\n");
 				ctx->ttick_hk=ctx->ttick_rst;
 			}

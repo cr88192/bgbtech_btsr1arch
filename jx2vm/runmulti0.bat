@@ -1,0 +1,1 @@
+jx2vm ../tst_jx2boot.bin --rd_add bootload.sys=../tk_qsrc/tk_clib/tkshell.sys doom.exe=../tk_qsrc/doomsrc2/doom_bjx2.exe doom1.wad=../tk_qsrc/doomsrc2/doom1.wad quake.exe=../tk_qsrc/quake_b64b.exe id1/pak0.pak=../tk_qsrc/id1/pak0.pak id1/pak1.pak=../tk_qsrc/id1_1/pak1.pak --rd_map ../tk_qsrc/tk_clib/vxcore/tkshell.sys.map %1 %2 %3 %4 %5 

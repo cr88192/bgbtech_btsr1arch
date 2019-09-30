@@ -42,6 +42,8 @@ typedef volatile u32 vol_u32;
 #define UART_BASE	0xF000E010
 #define AIC_BASE	0xF000E200
 
+#define PS2_BASE	0xF000E040
+
 #define UART_RX		(UART_BASE+0x00)
 #define UART_TX		(UART_BASE+0x04)
 #define UART_STAT	(UART_BASE+0x08)
@@ -49,6 +51,15 @@ typedef volatile u32 vol_u32;
 
 #define SPI_CTRL	(SPI_BASE+0x00)
 #define SPI_DATA	(SPI_BASE+0x04)
+
+#define PS2KB_RX	(PS2_BASE+0x00)
+#define PS2KB_TX	(PS2_BASE+0x04)
+#define PS2KB_STAT	(PS2_BASE+0x08)
+#define PS2KB_CTRL	(PS2_BASE+0x0C)
+#define PS2MS_RX	(PS2_BASE+0x10)
+#define PS2MS_TX	(PS2_BASE+0x14)
+#define PS2MS_STAT	(PS2_BASE+0x18)
+#define PS2MS_CTRL	(PS2_BASE+0x1C)
 
 #define AIC_CTRL0			(AIC_BASE+0x00)
 #define AIC_BRKADD			(AIC_BASE+0x04)
@@ -77,6 +88,16 @@ typedef volatile u32 vol_u32;
 #define P_AIC_RTC_SEC_HI	(*(vol_u32 *)AIC_RTC_SEC_HI)
 #define P_AIC_RTC_SEC_LO	(*(vol_u32 *)AIC_RTC_SEC_LO)
 #define P_AIC_RTC_NSEC		(*(vol_u32 *)AIC_RTC_NSEC)
+
+#define P_PS2KB_RX		(*(vol_u32 *)PS2KB_RX)
+#define P_PS2KB_TX		(*(vol_u32 *)PS2KB_TX)
+#define P_PS2KB_STAT	(*(vol_u32 *)PS2KB_STAT)
+#define P_PS2KB_CTRL	(*(vol_u32 *)PS2KB_CTRL)
+
+#define P_PS2MS_RX		(*(vol_u32 *)PS2MS_RX)
+#define P_PS2MS_TX		(*(vol_u32 *)PS2MS_TX)
+#define P_PS2MS_STAT	(*(vol_u32 *)PS2MS_STAT)
+#define P_PS2MS_CTRL	(*(vol_u32 *)PS2MS_CTRL)
 
 #define MMREG_BASE 0xFF000000
 #define MMREG_PTEH	(MMREG_BASE+0x00)
@@ -168,8 +189,9 @@ u32 data[1];	//start of data
 typedef struct TK_FILE_VT_s TK_FILE_VT;
 typedef struct TK_FILE_s TK_FILE;
 typedef struct TK_FSTAT_s TK_FSTAT;
-typedef struct TK_DIR_s TK_DIR;
+typedef struct TK_FILE_s TK_DIR;
 typedef struct TK_MOUNT_s TK_MOUNT;
+typedef struct TK_DIRENT_s TK_DIRENT;
 
 struct TK_FILE_VT_s {
 char *fsname;
@@ -179,10 +201,10 @@ TK_MOUNT *(*mount)(char *devfn, char *mntfn,
 	char *fsty, char *mode, char **opts);
 
 TK_FILE *(*fopen)(TK_MOUNT *mnt, char *name, char *mode);
-TK_FILE *(*fopendir)(TK_MOUNT *mnt, char *name);
-TK_FILE *(*unlink)(TK_MOUNT *mnt, char *name);
-TK_FILE *(*rename)(TK_MOUNT *mnt, char *oldfn, char *newfn);
-TK_FILE *(*fstat)(TK_MOUNT *mnt, char *name, TK_FSTAT *st);
+TK_DIR *(*fopendir)(TK_MOUNT *mnt, char *name);
+int (*unlink)(TK_MOUNT *mnt, char *name);
+int (*rename)(TK_MOUNT *mnt, char *oldfn, char *newfn);
+int (*fstat)(TK_MOUNT *mnt, char *name, TK_FSTAT *st);
 
 /* FILE Ops */
 int (*fread)(void *buf, int sz1, int sz2, TK_FILE *fd);
@@ -192,6 +214,9 @@ int (*ftell)(TK_FILE *fd);
 int (*fclose)(TK_FILE *fd);
 int (*fgetc)(TK_FILE *fd);
 int (*fputc)(int ch, TK_FILE *fd);
+
+/* DIR ops */
+TK_DIRENT *(*readdir)(TK_DIR *dir);
 };
 
 struct TK_FILE_s {
@@ -214,8 +239,18 @@ void *udata0;
 void *udata1;
 };
 
+struct TK_DIRENT_s {
+int d_ino;
+int d_off;
+u16 d_reclen;
+byte d_type;
+char d_name[256];
+};
+
 #include <tk_fatfs.h>
 #include <tk_dummyavi.h>
+#include <tk_keys.h>
+#include <tk_romfcn.h>
 
 void *TKMM_Malloc(int sz);
 int TKMM_Free(void *ptr);

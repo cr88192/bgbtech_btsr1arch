@@ -1293,7 +1293,9 @@ F0zz Instruction Block:
 ** F0nm_5Go0  PCSELT.L	Rm, Ro, Rn			//(GSV) Packed CSELT (DWord)
 ** F0nm_5eo1  -
 ** F0nm_5eo2  -
-** F0nm_5eo3  -
+** F0nm_5go2  MULS.L	Rm, Ro, Rn			//(MULL) Sx 32b Mul (32*32->64)
+** F0nm_5go3  MULU.L	Rm, Ro, Rn			//(MULL) Zx 32b Mul (32*32->64)
+
 ** F0nm_5eo4  SHAD{Q}	Rm, Ro, Rn
 ** F0nm_5eo5  SHLD{Q}	Rm, Ro, Rn
 ** F0nm_5eo6  -
@@ -1307,9 +1309,9 @@ F0zz Instruction Block:
 ** F0nm_5goD  SUBS.L	Rm, Ro, Rn			//Rn=Rm-Ro, ADD 32-bit, Sign Extend
 ** F0nm_5GoD  SUBU.L	Rm, Ro, Rn			//Rn=Rm-Ro, ADD 32-bit, Zero Extend
 ** F0nm_5goE  MULS.W	Rm, Ro, Rn			//(MULW) Sx 16b Mul (16*16->32)
-** F0nm_5GoE  MULU.W	Rm, Ro, Rn			//(MULW) Zx 16b Mul (16*16->32)
-** F0nm_5goF  MULS.L	Rm, Ro, Rn			//(MULL) Sx 32b Mul (32*32->64)
-** F0nm_5GoF  MULU.L	Rm, Ro, Rn			//(MULL) Zx 32b Mul (32*32->64)
+** F0nm_5GoE  MULS.W	Rm, Imm5, Rn		//(MULW) Sx 16b Mul (16*16->32)
+** F0nm_5goF  MULU.W	Rm, Ro, Rn			//(MULW) Zx 16b Mul (16*16->32)
+** F0nm_5GoF  MULU.W	Rm, Imm5, Rn		//(MULW) Zx 16b Mul (16*16->32)
 
 * F0zz_6zzz
 * F0zz_7zzz
@@ -1428,8 +1430,8 @@ F2zz Instruction Block  (Imm9 Block, New):
 * F2nm_5gjj  AND		Rm, #imm9u, Rn		//
 * F2nm_6gjj  OR			Rm, #imm9u, Rn		//
 * F2nm_7gjj  XOR		Rm, #imm9u, Rn		//
-* F2nm_8ejj  SHAD{Q}	Rm, #imm9u, Rn
-* F2nm_9ejj  SHLD{Q}	Rm, #imm9u, Rn
+* F2nm_8ejj  SHAD{Q}	Rm, #imm8, Rn		//E.i=0
+* F2nm_9ejj  SHLD{Q}	Rm, #imm8, Rn		//E.i=0
 
 * F2nz_Aejj
 * F2nz_Bejj
@@ -1453,6 +1455,10 @@ F2zz Instruction Block  (Imm9 Block, New):
 ** F2nF_Cfjj  CMP{Q}GT	#imm10n, Rn				//Signed Rn GT Imm
 
 * F2nz_Dfjj
+** F2n0_Dfjj  ADD{D}	#imm10u, Rn				//Rn=Rn+Imm10u
+** F2n1_Dfjj  ADD{D}	#imm10n, Rn				//Rn=Rn+Imm10n
+** F2n2_Dfjj  MULS.W	#imm10u, Rn				//Rn=Rn*Imm10u
+** F2n3_Dfjj  MULS.W	#imm10n, Rn				//Rn=Rn*Imm10n
 * F2nz_Efjj
 * F2nz_Ffjj
 

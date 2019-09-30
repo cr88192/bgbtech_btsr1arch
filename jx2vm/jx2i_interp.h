@@ -279,6 +279,10 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_INVDC		0x94		//
 #define BJX2_NMID_INVIC		0x95		//
 #define BJX2_NMID_INVTLB	0x96		//
+#define BJX2_NMID_RTSU		0x97		//
+
+#define BJX2_NMID_MULSW		0x98		//
+#define BJX2_NMID_MULUW		0x99		//
 
 #define BJX2_NMID_CMOVTB	0xA0		//CMOVT.B
 #define BJX2_NMID_CMOVTW	0xA1		//CMOVT.W

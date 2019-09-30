@@ -438,6 +438,7 @@ extern "C" {
 #define BGBCC_IMGFMT_ELXE	BGBCC_FOURCC('E', 'L', 'X', 'E')
 #define BGBCC_IMGFMT_ELSO	BGBCC_FOURCC('E', 'L', 'S', 'O')
 #define BGBCC_IMGFMT_ROM	BGBCC_FOURCC('R', 'O', 'M', ' ')
+#define BGBCC_IMGFMT_SYS	BGBCC_FOURCC('S', 'Y', 'S', ' ')
 
 #define BGBCC_IMGFMT_ASM	BGBCC_FOURCC('A', 'S', 'M', ' ')
 
@@ -758,6 +759,7 @@ BGBCC_CCXL_VirtTr *virttr_free;
 
 char *imgname;
 char *imgbasename;
+fourcc imgfmt;
 
 char **optstrs;
 int noptstrs;

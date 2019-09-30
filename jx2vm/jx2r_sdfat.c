@@ -1433,6 +1433,7 @@ int btesh2_tkfat_sfn2utf8(byte *sfn, int lcase, byte *dst)
 	
 	*ct++='.';
 
+	cs=sfn+8;
 	for(i=0; i<3; i++)
 	{
 		j=*cs++;
@@ -1453,7 +1454,7 @@ int btesh2_tkfat_sfn2utf8(byte *sfn, int lcase, byte *dst)
 //		*ct++=j;
 
 		j=btesh2_tkfat_asc2ucs(j);
-		ct=btesh2_tkfat_emitUtf8(ct, i);
+		ct=btesh2_tkfat_emitUtf8(ct, j);
 	}
 	*ct++=0;
 
@@ -2009,6 +2010,7 @@ int JX2R_TKFAT_CreateDirEntPathR(JX2R_TKFAT_ImageInfo *img,
 	char tb[256];
 	char *s, *t;
 	jx2_bool mkd;
+	int dcli;
 	int i;
 	
 	mkd=false;
@@ -2022,6 +2024,8 @@ int JX2R_TKFAT_CreateDirEntPathR(JX2R_TKFAT_ImageInfo *img,
 	if(*s=='/')
 		{ s++; mkd=true; }
 
+	memset(&tdee, 0, sizeof(JX2R_TKFAT_FAT_DirEntExt));
+	
 //	if(*s)
 	if(mkd)
 	{
@@ -2034,8 +2038,19 @@ int JX2R_TKFAT_CreateDirEntPathR(JX2R_TKFAT_ImageInfo *img,
 		}
 		JX2R_TKFAT_SetupDirEntNewDirectory(&tdee);
 		
-		i=JX2R_TKFAT_CreateDirEntPathR(img, tdee.clid, create, dee, s);
+		dcli=JX2R_TKFAT_GetDirEntCluster(&tdee);
+
+//		i=JX2R_TKFAT_CreateDirEntPathR(img, tdee.clid, create, dee, s);
+		i=JX2R_TKFAT_CreateDirEntPathR(img, dcli, create, dee, s);
 		return(i);
+	}
+
+	if(!tb[0])
+	{
+		dee->clid=clid;
+		JX2R_TKFAT_SetDirEntCluster(
+			dee, clid);
+		return(1);
 	}
 
 	i=JX2R_TKFAT_CreateDirEntName(img, clid, create, dee, tb);
@@ -2049,6 +2064,9 @@ int JX2R_TKFAT_CreateDirEntPath(
 {
 	int clid;
 	int i;
+	
+	if(*name=='/')
+		name++;
 	
 //	clid=img->isfat16?1:2;
 	clid=img->clid_root;
@@ -2064,6 +2082,9 @@ int JX2R_TKFAT_LookupDirEntPath(
 {
 	int clid;
 	int i;
+	
+	if(*name=='/')
+		name++;
 	
 //	clid=img->isfat16?1:2;
 	clid=img->clid_root;

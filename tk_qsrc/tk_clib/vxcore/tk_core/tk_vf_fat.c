@@ -1,6 +1,7 @@
 TK_MOUNT *tk_fat_mount(char *devfn, char *mntfn,
 	char *fsty, char *mode, char **opts);
 TK_FILE *tk_fat_fopen(TK_MOUNT *mnt, char *name, char *mode);
+TK_DIR *tk_fat_opendir(TK_MOUNT *mnt, char *name);
 
 int tk_fat_fread(void *buf, int sz1, int sz2, TK_FILE *fd);
 int tk_fat_fwrite(void *buf, int sz1, int sz2, TK_FILE *fd);
@@ -10,12 +11,14 @@ int tk_fat_fclose(TK_FILE *fd);
 int tk_fat_fgetc(TK_FILE *fd);
 int tk_fat_fputc(int ch, TK_FILE *fd);
 
+TK_DIRENT *tk_fat_readdir(TK_DIR *fd);
+
 TK_FILE_VT tk_vfile_fat_vt={
 "vfat",				//fsname
 NULL,				//next
 tk_fat_mount,		//mount
 tk_fat_fopen,		//fopen
-NULL,				//fopendir
+tk_fat_opendir,		//fopendir
 NULL,				//unlink
 NULL,				//rename
 NULL,				//fstat
@@ -27,7 +30,10 @@ tk_fat_fseek,		//fseek
 tk_fat_ftell,		//ftell
 tk_fat_fclose,		//fclose
 tk_fat_fgetc,		//fgetc
-tk_fat_fputc		//fputc
+tk_fat_fputc,		//fputc
+
+/* DIR ops */
+tk_fat_readdir		//readdir
 };
 
 int tk_fat_init()
@@ -75,6 +81,9 @@ TK_FILE *tk_fat_fopen(TK_MOUNT *mnt, char *name, char *mode)
 		tk_printf("tk_fat_fopen: fail %s\n", name);
 		return(NULL);
 	}
+
+	if(dee->deb.attrib&0x10)
+		return(NULL);
 
 	dee2=malloc(sizeof(TKFAT_FAT_DirEntExt));
 	memcpy(dee2, dee, sizeof(TKFAT_FAT_DirEntExt));
@@ -172,4 +181,72 @@ int tk_fat_fputc(int ch, TK_FILE *fd)
 	buf[0]=ch;
 	tk_fat_fwrite(buf, 1, 1, fd);
 	return(ch);
+}
+
+
+TK_DIR *tk_fat_opendir(TK_MOUNT *mnt, char *name)
+{
+	TKFAT_FAT_DirEntExt tdee;
+	TKFAT_FAT_DirEntExt *dee, *dee2;
+	TKFAT_ImageInfo *img;
+	TK_DIRENT *tde;
+	TK_DIR *fd;
+	int dcli;
+	int i;
+
+	tk_printf("tk_fat_opendir: %s\n", name);
+
+	img=mnt->udata0;
+	dee=&tdee;
+	memset(dee, 0, sizeof(TKFAT_FAT_DirEntExt));
+	i=TKFAT_LookupDirEntPath(img, dee, name);
+	if(i<0)
+	{
+		tk_printf("tk_fat_opendir: fail %s\n", name);
+		return(NULL);
+	}
+
+	if(!(dee->deb.attrib&0x10))
+		return(NULL);
+
+	dcli=TKFAT_GetDirEntCluster(dee);
+
+	dee2=malloc(sizeof(TKFAT_FAT_DirEntExt));
+	memset(dee2, 0, sizeof(TKFAT_FAT_DirEntExt));
+//	memcpy(dee2, dee, sizeof(TKFAT_FAT_DirEntExt));
+	dee2->img=img;
+//	dee2->clid=dee->clid;
+	dee2->clid=dcli;
+	dee2->idx=-1;
+
+	tde=malloc(sizeof(TK_DIRENT));
+	memset(tde, 0, sizeof(TK_DIRENT));
+
+	fd=tk_alloc_dir();
+	fd->vt=&tk_vfile_fat_vt;
+	fd->udata0=img;
+	fd->udata1=dee2;
+	fd->udata2=tde;
+	fd->ofs=0;
+	fd->size=TKFAT_GetDirEntSize(dee2);
+
+	return(fd);
+}
+
+TK_DIRENT *tk_fat_readdir(TK_DIR *fd)
+{
+	TKFAT_FAT_DirEntExt *dee;
+	TKFAT_ImageInfo *img;
+	TK_DIRENT *tde;
+	int i;
+
+	img=fd->udata0;
+	dee=fd->udata1;
+	tde=fd->udata2;
+
+	i=TKFAT_WalkDirEntNext(img, dee);
+	if(i<0)
+		return(NULL);
+	memcpy(tde->d_name, dee->de_name, 256);
+	return(tde);
 }

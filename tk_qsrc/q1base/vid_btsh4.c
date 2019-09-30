@@ -61,7 +61,7 @@ viddef_t	vid;				// global video state
 
 #endif
 
-#define I_SCR_BMP128K
+// #define I_SCR_BMP128K
 
 //byte	vid_buffer[BASEWIDTH*(BASEHEIGHT+4)];
 // byte	vid_buffer[BASEWIDTH*BASEHEIGHT*2];

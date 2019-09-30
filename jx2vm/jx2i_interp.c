@@ -477,6 +477,7 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_CMPHI:		s0="CMPHI";		break;
 	case BJX2_NMID_CMPGT:		s0="CMPGT";		break;
 	case BJX2_NMID_RTS:			s0="RTS";		break;
+	case BJX2_NMID_RTSU:		s0="RTSU";		break;
 	case BJX2_NMID_EXTUB:		s0="EXTU.B";	break;
 	case BJX2_NMID_EXTUW:		s0="EXTU.W";	break;
 	case BJX2_NMID_EXTSB:		s0="EXTS.B";	break;

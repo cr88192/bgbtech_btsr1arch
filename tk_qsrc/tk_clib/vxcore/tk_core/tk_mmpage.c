@@ -96,7 +96,17 @@ int TKMM_PointerToPage(void *ptr)
 	return(d>>12);
 }
 
+void *(*TKMM_PageAlloc_f)(int sz);
+int (*TKMM_PageFree_f)(void *ptr, int sz);
+
+#if 1
 void *TKMM_PageAlloc(int sz)
+	{ return(TKMM_PageAlloc_f(sz)); }
+int TKMM_PageFree(void *ptr, int sz)
+	{ return(TKMM_PageFree_f(ptr, sz)); }
+#endif
+
+void *TKMM_PageAllocL(int sz)
 {
 	void *p;
 	int pg;
@@ -107,6 +117,71 @@ void *TKMM_PageAlloc(int sz)
 	return(p);
 }
 
+int TKMM_PageFreeL(void *ptr, int sz)
+{
+	void *p;
+	int pg;
+
+	pg=TKMM_PointerToPage(ptr);
+	TKMM_FreePages(pg, (sz+4095)>>12);
+	return(0);
+	
+//	pg=TKMM_AllocPages((sz+4095)>>12);
+//	if(pg<0)return(NULL);
+//	p=TKMM_PageToPointer(pg);
+//	return(p);
+}
+
+#if 0
+void *TKMM_PageAlloc(int sz)
+	{ return(TKMM_PageAllocL(sz)); }
+int TKMM_PageFree(void *ptr, int sz)
+	{ return(TKMM_PageFreeL(ptr, sz)); }
+#endif
+
+void *tk_getsavedvbr(void);
+int tk_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2);
+
+bool tk_iskernel(void)
+{
+	if(tk_getsavedvbr())
+		return(0);
+	return(1);
+}
+
+
+void *TKMM_PageAllocV(int sz)
+{
+	TK_SysArg ar[4];
+	void *p;
+	
+	ar[0].i=sz;
+	tk_syscall(NULL, TK_UMSG_PAGEALLOC, &p, ar);
+	return(p);
+}
+
+int TKMM_PageFreeV(void *ptr, int sz)
+{
+	TK_SysArg ar[4];
+	void *p;
+	
+	ar[0].p=ptr;
+	ar[1].i=sz;
+	tk_syscall(NULL, TK_UMSG_PAGEFREE, &p, ar);
+	return(p);
+}
+
+void TK_ExitV(int res)
+{
+	TK_SysArg ar[4];
+	void *p;
+	
+	ar[0].i=res;
+	tk_syscall(NULL, TK_UMSG_PGMEXIT, &p, ar);
+	return(p);
+}
+
+
 
 void TKMM_Init()
 {
@@ -115,7 +190,18 @@ void TKMM_Init()
 
 	if(init)return;
 	init=1;
-		
+
+	TKMM_PageAlloc_f=TKMM_PageAllocL;
+	TKMM_PageFree_f=TKMM_PageFreeL;
+	
+//	if(tk_getsavedvbr())
+	if(!tk_iskernel())
+//	if(0)
+	{
+		TKMM_PageAlloc_f=TKMM_PageAllocV;
+		TKMM_PageFree_f=TKMM_PageFreeV;
+	}
+
 //	tk_ird_init();
 	
 	tkmm_pagebase=TKMM_PAGEBASE;
@@ -154,6 +240,7 @@ void *TKMM_Malloc(int sz)
 		return(ptr);
 	}
 
+#if 0
 	np=(sz+sizeof(TKMM_MemLnkObj)+4095)>>12;
 	pg=TKMM_AllocPages(np);
 	if(pg<0)
@@ -162,7 +249,14 @@ void *TKMM_Malloc(int sz)
 		return(NULL);
 	}
 	ptr=TKMM_PageToPointer(pg);
-	
+#endif
+
+#if 1
+	np=(sz+sizeof(TKMM_MemLnkObj)+4095)>>12;
+//	ptr=TKMM_PageAlloc(sz+sizeof(TKMM_MemLnkObj));
+	ptr=TKMM_PageAlloc(np<<12);
+#endif
+
 //	__debugbreak();
 	
 	if(!ptr)
@@ -200,8 +294,9 @@ int TKMM_Free(void *ptr)
 
 	if(obj->fl&4)
 	{
-		b=TKMM_PointerToPage(obj);
-		TKMM_FreePages(b, obj->ix);
+//		b=TKMM_PointerToPage(obj);
+//		TKMM_FreePages(b, obj->ix);
+		TKMM_PageFree(obj, obj->ix<<12);
 		return(0);
 	}
 	

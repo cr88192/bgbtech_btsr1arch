@@ -6,6 +6,10 @@
 
 #define STACK_BASE_USR	0x010FFFF0
 
+.section .bss
+
+__tk_saved_vbr: .quad 0 
+
 .section .text
 .align 2
 .global _start
@@ -22,14 +26,27 @@ _start:
 //	mov STACK_BASE, sp
 	mov STACK_BASE_USR, sp
 
-//	bsr copy_data
+	mov		vbr, r2
+	mov		__tk_saved_vbr, r3
+	mov.q	r2, @r3
 
-	bsr zero_bss
+	mov		isr_table, r4
+	tst		r2, r2
+	mov?t	r4, vbr
 
-	mov STACK_BASE_ISR, r0
-	mov r0, ssp
-	mov isr_table, r0
-	mov r0, vbr
+//	bsr		copy_data
+
+	bsr		zero_bss
+
+	mov		STACK_BASE_ISR, r0
+	mov		r0, ssp
+
+//	mov		isr_table, r0
+//	mov		r0, vbr
+
+//	mov		isr_table, r4
+//	tst		r2, r2
+//	mov?t	r4, vbr
 
 	bsr X(__start)
 	bra _exit
@@ -76,12 +93,33 @@ isr_inter:
 //	rte
 	bra __isr_interrupt
 
+isr_tlbfault:
+	mov		__tk_saved_vbr, r3
+	mov.q	@r3, r2
+//	lea.b	@(r2, 24), r3
+	add		r2, #24, r3
+	jmp		r3
+
 isr_table:
 	bra8b _start
 	bra8b isr_except
 	bra8b isr_inter
-	bra8b isr_inter
+	bra8b isr_tlbfault
+	bra8b X(__isr_syscall)
 
+
+.global X(tk_getsavedvbr)
+X(tk_getsavedvbr):
+	mov		__tk_saved_vbr, r3
+	mov.q	@r3, r2
+	rts
+
+.global X(tk_syscall)
+X(tk_syscall):
+	push lr
+	syscall	#0
+	pop lr
+	rts
 
 /*
 	umullq: Unsigned Multiply, Long to Quad

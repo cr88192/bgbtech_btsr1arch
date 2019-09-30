@@ -125,13 +125,15 @@ begin
 		if(tFraJ2[63])
 		begin
 			tSgnC2	= 1;
-			tExpC2	= 1086;
+//			tExpC2	= 1086;
+			tExpC2	= 1085;
 			tFraC2	= -regValRn;
 		end
 		else
 		begin
 			tSgnC2	= 0;
-			tExpC2	= 1086;
+//			tExpC2	= 1086;
+			tExpC2	= 1085;
 			tFraC2	= regValRn;
 		end
 	end

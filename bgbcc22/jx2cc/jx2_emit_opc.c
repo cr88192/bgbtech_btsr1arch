@@ -41,6 +41,8 @@ int BGBCC_JX2_TryEmitOpNone(BGBCC_JX2_Context *ctx, int nmid)
 	case BGBCC_SH_NMID_DIV1:	opw1=0x30E0; break;
 	case BGBCC_SH_NMID_LDTLB:	opw1=0x30F0; break;
 
+	case BGBCC_SH_NMID_SYSCALL:	opw1=0x3022; break;
+
 //	case BGBCC_SH_NMID_CLRMAC:	opw1=0x0028; break;
 
 //	case BGBCC_SH_NMID_RET:		opw1=0x300B; break;
@@ -1241,6 +1243,10 @@ int BGBCC_JX2_TryEmitOpImm(BGBCC_JX2_Context *ctx, int nmid, int imm)
 			{ opw1=0x360A|((imm&15)<<4); break; }
 		if((imm&31)==imm)
 			{ opw1=0x3E0A|((imm&15)<<4); break; }
+		break;
+
+	case BGBCC_SH_NMID_SYSCALL:
+		odr=1; opw1=0x3022;
 		break;
 
 	default:

@@ -82,6 +82,7 @@ __isr_inter:
 	nop
 	nop
 
+#if 0
 __isr_mmu:
 	rte
 	nop
@@ -98,6 +99,7 @@ isr_table:
 	bra8b _start
 	bra8b __isr_except
 	bra8b __isr_inter
+#endif
 
 .global X(__umulsq)
 .global X(__smulsq)

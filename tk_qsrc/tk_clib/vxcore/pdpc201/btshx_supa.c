@@ -11,6 +11,7 @@ void tk_setGpioOutputs(int val)
 	*(int *)GPIO_BASE=val;
 }
 
+#if 0
 void tk_putc(int val)
 {
 	while(P_UART_STAT&8);
@@ -19,9 +20,11 @@ void tk_putc(int val)
 	
 	tk_con_putc();
 }
+#endif
 
 void sleep_0();
 
+#if 0
 int tk_kbhit(void)
 {
 	return(tk_ps2kb_kbhit());
@@ -35,6 +38,7 @@ int tk_getch(void)
 //		sleep_0();
 //	return(P_UART_RX);
 }
+#endif
 
 int tk_ptrIsRam(void *ptr)
 {
@@ -48,6 +52,7 @@ int tk_ptrIsRam(void *ptr)
 	return(1);
 }
 
+#if 0
 int tk_puts(char *msg)
 {
 	char *s;
@@ -103,6 +108,7 @@ void tk_gets_n(char *msg, int n)
 	while(n--)
 		{ *s++=tk_getch(); }
 }
+#endif
 
 u32 __moddi3(u32 a, u32 b)
 {
@@ -536,6 +542,8 @@ void __rename(const char *oldfn, const char *newfn)
 
 void __exita(int status)
 {
+	if(!tk_iskernel())
+		TK_ExitV(status);
 	*(int *)-1=-1;
 //	vx_exit(status);
 }

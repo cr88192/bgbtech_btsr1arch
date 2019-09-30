@@ -795,10 +795,10 @@ This operation only exists in Lane 1.
 
 === MULx.x (3R) ===
 
+* F0nm_5go2  MULS.L	Rm, Ro, Rn			//(MULL) Sx 32b Mul (32*32->64)
+* F0nm_5go3  MULU.L	Rm, Ro, Rn			//(MULL) Zx 32b Mul (32*32->64)
 * F0nm_5goE  MULS.W	Rm, Ro, Rn			//(MULW) Sx 16b Mul (16*16->32)
-* F0nm_5GoE  MULU.W	Rm, Ro, Rn			//(MULW) Zx 16b Mul (16*16->32)
-* F0nm_5goF  MULS.L	Rm, Ro, Rn			//(MULL) Sx 32b Mul (32*32->64)
-* F0nm_5GoF  MULU.L	Rm, Ro, Rn			//(MULL) Zx 32b Mul (32*32->64)
+* F0nm_5goF  MULU.W	Rm, Ro, Rn			//(MULW) Zx 16b Mul (16*16->32)
 
 These produce widening multiplies of a given input size.
 

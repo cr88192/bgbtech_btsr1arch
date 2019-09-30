@@ -430,6 +430,40 @@ void BJX2_Op_MULU_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=(u32)(((u32)ctx->regs[op->rm])*op->imm);
 }
 
+#if 1
+void BJX2_Op_MULSW_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+//	s64 va, vb, vc;
+	s32 va, vb, vc;
+	va=(s16)(ctx->regs[op->ro]);
+	vb=(s16)(ctx->regs[op->rm]);
+	vc=va*vb;
+	ctx->regs[op->rn]=vc;
+}
+
+void BJX2_Op_MULSW_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+//	ctx->regs[op->rn]=((s64)((s32)ctx->regs[op->rm]))*op->imm;
+	ctx->regs[op->rn]=(s32)(((s16)ctx->regs[op->rm])*op->imm);
+}
+
+void BJX2_Op_MULUW_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+//	s64 va, vb, vc;
+	u32 va, vb, vc;
+	va=(u16)(ctx->regs[op->ro]);
+	vb=(u16)(ctx->regs[op->rm]);
+	vc=va*vb;
+	ctx->regs[op->rn]=vc;
+}
+
+void BJX2_Op_MULUW_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+//	ctx->regs[op->rn]=((u64)((u32)ctx->regs[op->rm]))*op->imm;
+	ctx->regs[op->rn]=(u32)(((u16)ctx->regs[op->rm])*op->imm);
+}
+#endif
+
 void BJX2_Op_CMPEQ_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	if(((u32)ctx->regs[op->rn])==((u32)ctx->regs[op->rm]))

@@ -946,7 +946,7 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 					op->Run=BJX2_Op_NOP_None;
 					break;
 				case 0x1:
-					op->nmid=BJX2_NMID_RTS;
+					op->nmid=BJX2_NMID_RTSU;
 					op->Run=BJX2_Op_RTS_None;
 					op->fl|=BJX2_OPFL_CTRLF;
 					break;
@@ -3213,7 +3213,8 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 		case BJX2_NMID_SUB:
 		case BJX2_NMID_ADC:
 		case BJX2_NMID_SBB:
-			op->cyc=2;
+//			op->cyc=2;
+			op->cyc=1;
 			break;
 
 		case BJX2_NMID_CMPQEQ:
@@ -3226,12 +3227,22 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 
 		case BJX2_NMID_BRA:
 		case BJX2_NMID_BSR:
+			op->cyc=2;
+			break;
+
 		case BJX2_NMID_BT:
 		case BJX2_NMID_BF:
 			op->cyc=3;
+//			op->cyc=2;
 			break;
 		case BJX2_NMID_RTS:
-			op->cyc=3;
+			op->cyc=5;
+//			op->cyc=3;
+//			op->cyc=2;
+			break;
+		case BJX2_NMID_RTSU:
+//			op->cyc=3;
+			op->cyc=2;
 			break;
 
 		case BJX2_NMID_FADD:

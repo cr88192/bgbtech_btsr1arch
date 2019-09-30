@@ -22,6 +22,10 @@ typedef signed long long s64;
 
 typedef volatile u32 vol_u32;
 
+#define	bool				_Bool
+#define	true				1
+#define	false				0
+
 // #define GPIO_BASE 0xABCD0000
 // #define SPI_BASE 0xABCD0040
 // #define UART_BASE 0xABCD0100
@@ -72,6 +76,10 @@ typedef volatile u32 vol_u32;
 #define P_UART_TX	(*(vol_u32 *)UART_TX)
 #define P_UART_STAT	(*(vol_u32 *)UART_STAT)
 #define P_UART_CTRL	(*(vol_u32 *)UART_CTRL)
+
+#define	P_MMIO_DEBUG_RX		P_UART_RX
+#define	P_MMIO_DEBUG_TX		P_UART_TX
+#define	P_MMIO_DEBUG_STS	P_UART_STAT
 
 #define P_SPI_CTRL	(*(vol_u32 *)SPI_CTRL)
 #define P_SPI_DATA	(*(vol_u32 *)SPI_DATA)
@@ -182,8 +190,10 @@ u32 data[1];	//start of data
 typedef struct TK_FILE_VT_s TK_FILE_VT;
 typedef struct TK_FILE_s TK_FILE;
 typedef struct TK_FSTAT_s TK_FSTAT;
-typedef struct TK_DIR_s TK_DIR;
+// typedef struct TK_DIR_s TK_DIR;
+typedef struct TK_FILE_s TK_DIR;
 typedef struct TK_MOUNT_s TK_MOUNT;
+typedef struct TK_DIRENT_s TK_DIRENT;
 
 struct TK_FILE_VT_s {
 char *fsname;
@@ -193,10 +203,10 @@ TK_MOUNT *(*mount)(char *devfn, char *mntfn,
 	char *fsty, char *mode, char **opts);
 
 TK_FILE *(*fopen)(TK_MOUNT *mnt, char *name, char *mode);
-TK_FILE *(*fopendir)(TK_MOUNT *mnt, char *name);
-TK_FILE *(*unlink)(TK_MOUNT *mnt, char *name);
-TK_FILE *(*rename)(TK_MOUNT *mnt, char *oldfn, char *newfn);
-TK_FILE *(*fstat)(TK_MOUNT *mnt, char *name, TK_FSTAT *st);
+TK_DIR *(*opendir)(TK_MOUNT *mnt, char *name);
+int (*unlink)(TK_MOUNT *mnt, char *name);
+int (*rename)(TK_MOUNT *mnt, char *oldfn, char *newfn);
+int (*fstat)(TK_MOUNT *mnt, char *name, TK_FSTAT *st);
 
 /* FILE Ops */
 int (*fread)(void *buf, int sz1, int sz2, TK_FILE *fd);
@@ -206,6 +216,9 @@ int (*ftell)(TK_FILE *fd);
 int (*fclose)(TK_FILE *fd);
 int (*fgetc)(TK_FILE *fd);
 int (*fputc)(int ch, TK_FILE *fd);
+
+/* DIR ops */
+TK_DIRENT *(*readdir)(TK_DIR *dir);
 };
 
 struct TK_FILE_s {
@@ -228,10 +241,19 @@ void *udata0;
 void *udata1;
 };
 
+struct TK_DIRENT_s {
+int d_ino;
+int d_off;
+u16 d_reclen;
+byte d_type;
+char d_name[256];
+};
+
 #include <tk_fatfs.h>
 #include <tk_dummyavi.h>
 #include <tk_varobj.h>
 #include <tk_keys.h>
+#include <tk_romfcn.h>
 
 void *TKMM_Malloc(int sz);
 int TKMM_Free(void *ptr);

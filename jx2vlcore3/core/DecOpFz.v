@@ -286,32 +286,38 @@ begin
 			16'h1zz0: begin		/* F0nm_1eo0 */
 				opNmid		= JX2_UCMD_ALU3;
 				opFmid		= JX2_FMID_REGREG;
+				opIty		= JX2_ITY_SW;
 				opUCmdIx	= JX2_UCIX_ALU_ADD;
 			end
 			16'h1zz1: begin		/* F0nm_1eo1 */
 				opNmid		= JX2_UCMD_ALU3;
 				opFmid		= JX2_FMID_REGREG;
+				opIty		= JX2_ITY_SW;
 				opUCmdIx	= JX2_UCIX_ALU_SUB;
 			end
 			16'h1zz2: begin		/* F0nm_1eo2 */
 				opNmid		= JX2_UCMD_MUL3;
 				opFmid		= JX2_FMID_REGREG;
+//				opIty		= JX2_ITY_SW;
 				opUCmdIx	= JX2_UCIX_MUL3_MUL3S;
 			end
 
 			16'h1zz5: begin		/* F0nm_1eo5 */
 				opNmid		= JX2_UCMD_ALU3;
 				opFmid		= JX2_FMID_REGREG;
+				opIty		= JX2_ITY_SW;
 				opUCmdIx	= JX2_UCIX_ALU_AND;
 			end
 			16'h1zz6: begin		/* F0nm_1eo6 */
 				opNmid		= JX2_UCMD_ALU3;
 				opFmid		= JX2_FMID_REGREG;
+				opIty		= JX2_ITY_SW;
 				opUCmdIx	= JX2_UCIX_ALU_OR;
 			end
 			16'h1zz7: begin		/* F0nm_1eo7 */
 				opNmid		= JX2_UCMD_ALU3;
 				opFmid		= JX2_FMID_REGREG;
+				opIty		= JX2_ITY_SW;
 				opUCmdIx	= JX2_UCIX_ALU_XOR;
 			end
 
@@ -833,6 +839,19 @@ begin
 				opUCmdIx	= opExQ ? JX2_UCIX_ALU_SUBUL : JX2_UCIX_ALU_SUBSL;
 			end
 
+			16'h5zzE: begin		/* F0nm_5eoE */
+				opNmid		= JX2_UCMD_MULW3;
+				opFmid		= JX2_FMID_REGREG;
+				opUCmdIx	= JX2_UCIX_MUL3_MULS;
+				opIty		= JX2_ITY_SW;
+			end
+			16'h5zzF: begin		/* F0nm_5eoF */
+				opNmid		= JX2_UCMD_MULW3;
+				opFmid		= JX2_FMID_REGREG;
+				opUCmdIx	= JX2_UCIX_MUL3_MULU;
+				opIty		= JX2_ITY_SW;
+			end
+
 
 // `ifdef jx2_enable_fpu
 `ifdef jx2_enable_fprs
@@ -1286,6 +1305,31 @@ begin
 			end
 `endif
 
+`ifdef def_true
+			4'hD: begin		/* F2nz_Dejj */
+				opIty	= istrWord[0] ?
+					JX2_ITY_NQ :
+					JX2_ITY_UQ;
+				opFmid = JX2_FMID_IMM8REG;
+
+				casez(istrWord[3:0])
+					4'b000z: begin
+						opNmid		= JX2_UCMD_ALU3;
+						opUCmdIx	= JX2_UCIX_ALU_ADD;
+					end
+					4'b001z: begin
+						opNmid		= JX2_UCMD_MULW3;
+						opUCmdIx	= opExQ ?
+							JX2_UCIX_MUL3_MULU :
+							JX2_UCIX_MUL3_MULS;
+					end
+
+					default: begin
+					end
+				endcase
+			end
+`endif
+
 			default: begin
 			end
 		endcase
@@ -1418,17 +1462,25 @@ begin
 			SB: Rm, Ro, Rn
 			UB: Rm, Rn, Rn
 			NB: Rn, Rm, Rn
+
+			SW: Rm, Eq?Imm5:Ro, Rn
 		*/
 
 		JX2_FMID_REGREG: begin
 			opRegN	= opRegN_Dfl;
 			opRegM	= opRegM_Dfl;
 			opRegO	= opRegO_Dfl;
-			opImm	= {UV28_00, istrWord[4:0]};
+//			opImm	= {UV28_00, istrWord[4:0]};
+			opImm	= {UV28_00, opRegO_Dfl[4:0]};
 			opUIxt	= { opCcty, opUCmdIx };
 
 			case(opIty)
 				JX2_ITY_SB: begin
+				end
+
+				JX2_ITY_SW: begin
+					if(opExQ)
+						opRegO	= JX2_GR_IMM;
 				end
 
 				JX2_ITY_UB: begin

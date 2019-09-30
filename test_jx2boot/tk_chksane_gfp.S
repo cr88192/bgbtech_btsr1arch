@@ -67,5 +67,17 @@ X(tk_checksane_gfp_asm):
 	cmpqeq r9, r19
 	bf _checksane_gfp_fail
 
+	mov #1234567, r20
+	mov #0x4132d68700000000, r21
+	
+	fldci r20, r8
+	fstci r8, r9
+
+	cmpqeq r8, r21
+	bf _checksane_gfp_fail
+
+	cmpqeq r9, r20
+	bf _checksane_gfp_fail
+
 	pop lr
 	rts

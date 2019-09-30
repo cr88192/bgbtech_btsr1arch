@@ -150,6 +150,11 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		shctx->is_pbo=1;
 	}
 
+	if(ctx->imgfmt==BGBCC_IMGFMT_SYS)
+	{
+		shctx->is_pbo=0;
+	}
+
 	BGBPP_AddStaticDefine(NULL, "__jx2__", "");
 
 	BGBPP_AddStaticDefine(NULL, "__BGBCC__", "");
@@ -4685,7 +4690,8 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	}
 
 	if((imgfmt==BGBCC_IMGFMT_EXE) ||
-		(imgfmt==BGBCC_IMGFMT_DLL))
+		(imgfmt==BGBCC_IMGFMT_DLL) ||
+		(imgfmt==BGBCC_IMGFMT_SYS))
 	{
 		BGBCC_JX2C_FlattenImagePECOFF(ctx, obuf, rosz, imgfmt);
 

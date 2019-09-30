@@ -106,6 +106,21 @@ void *TKMM_PageAlloc(int sz)
 	return(p);
 }
 
+int TKMM_PageFree(void *ptr, int sz)
+{
+	void *p;
+	int pg;
+
+	pg=TKMM_PointerToPage(ptr);
+	TKMM_FreePages(pg, (sz+4095)>>12);
+	return(0);
+	
+//	pg=TKMM_AllocPages((sz+4095)>>12);
+//	if(pg<0)return(NULL);
+//	p=TKMM_PageToPointer(pg);
+	return(p);
+}
+
 
 void TKMM_Init()
 {

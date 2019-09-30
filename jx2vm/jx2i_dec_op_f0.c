@@ -2189,6 +2189,27 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				op->Run=BJX2_Op_SUBUL_RegRegReg;
 			}
 			break;
+
+		case 0xE:	/* F0ez_5Ezz */
+			op->nmid=BJX2_NMID_MULSW;
+			op->fmid=BJX2_FMID_REGREGREG;
+			op->Run=BJX2_Op_MULSW_RegRegReg;
+			if(eq)
+			{
+				op->fmid=BJX2_FMID_REGIMMREG;
+				op->Run=BJX2_Op_MULSW_RegImmReg;
+			}
+			break;
+		case 0xF:	/* F0ez_5Fzz */
+			op->nmid=BJX2_NMID_MULUW;
+			op->fmid=BJX2_FMID_REGREGREG;
+			op->Run=BJX2_Op_MULUW_RegRegReg;
+			if(eq)
+			{
+				op->fmid=BJX2_FMID_REGIMMREG;
+				op->Run=BJX2_Op_MULUW_RegImmReg;
+			}
+			break;
 		}
 		break;
 

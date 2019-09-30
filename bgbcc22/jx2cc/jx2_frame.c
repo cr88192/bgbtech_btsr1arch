@@ -3795,8 +3795,9 @@ int BGBCC_JX2C_CalcFrameEpiKey(BGBCC_TransState *ctx,
 //	if(!sctx->has_bjx1jmp)
 //		return(0);
 
-	if(obj->flagsint&BGBCC_TYFL_INTERRUPT)
-		return(0);
+	if(	(obj->flagsint&BGBCC_TYFL_INTERRUPT) ||
+		(obj->flagsint&BGBCC_TYFL_SYSCALL))
+			return(0);
 
 //	if(ctx->optmode==BGBCC_OPT_SPEED)
 //		return(0);
@@ -4208,7 +4209,8 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 	{
 #if 1
 //		if(!(sctx->is_leaf&1) && !(obj->flagsint&BGBCC_TYFL_INTERRUPT))
-		if(!(sctx->is_leaf&1) || (obj->flagsint&BGBCC_TYFL_INTERRUPT))
+		if(!(sctx->is_leaf&1) || (obj->flagsint&BGBCC_TYFL_INTERRUPT) ||
+			(obj->flagsint&BGBCC_TYFL_SYSCALL))
 		{
 //			BGBCC_JX2_EmitOpRegStDecReg(sctx, BGBCC_SH_NMID_STSL,
 //				BGBCC_SH_REG_PR, BGBCC_SH_REG_SP);

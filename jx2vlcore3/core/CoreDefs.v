@@ -292,12 +292,18 @@ REGREG, Bz:
 
 REGREG, Fz
 	SB: Rm, Ro, Rn
+	SW: Rm, Q?Imm5u:Ro, Rn
+
 	UB: Rm, Rn, Rn
 	NB: Rn, Rm, Rn
 
 	UL: Rm, Cn, Cn
 	UQ: Cm, Rn, Rn
 
+REGIMMREG, Fz:
+	SW:	Rm, Imm9s, Rn
+	UW:	Rm, Imm9u, Rn
+	NW:	Rm, Imm9n, Rn
 
 IMM8REG, Fz
 	SB: Fzeo_iiii		Ro, Imm16s, Ro

@@ -44,7 +44,40 @@ int tk_cmd2idx(char *s)
 		if(!strcmp(s, "test"))
 			return(0);
 	}
+
+	if(*s=='l')
+	{
+		if(!strcmp(s, "load"))
+			return(1);
+	}
+
+	if(*s=='r')
+	{
+		if(!strcmp(s, "run"))
+			return(1);
+	}
+
 	return(-1);
+}
+
+void tk_tryload(char *img, char **args)
+{
+	TK_FILE *fd;
+	u64 bootgbr;
+	int (*bootptr)();
+
+	fd=tk_fopen(img, "rb");	
+	if(fd)
+	{
+		TKPE_LoadStaticPE(fd, &bootptr, &bootgbr);
+		printf("Boot Pointer %p, GBR=%p\n", bootptr, (void *)bootgbr);
+		
+		if(bootptr)
+		{
+			__arch_gbr=bootgbr;
+			bootptr();
+		}
+	}
 }
 
 void __start()
@@ -67,14 +100,11 @@ void __start()
 	tk_vfile_init();
 
 	puts("Boot 1\n");
-	
-	fd=tk_fopen("bootload.sys", "rb");
-	if(!fd)
-	{
-		puts("Fail Open BOOTLOAD.SYS\n");
-//		return;
-	}
-	
+
+	tk_tryload("bootload.sys", NULL);
+
+#if 0
+	fd=tk_fopen("bootload.sys", "rb");	
 	if(fd)
 	{
 		TKPE_LoadStaticPE(fd, &bootptr, &bootgbr);
@@ -85,9 +115,16 @@ void __start()
 			__arch_gbr=bootgbr;
 			bootptr();
 		}
+	}else
+//	if(!fd)
+	{
+		puts("Fail Open BOOTLOAD.SYS\n");
+//		return;
 	}
+#endif
 
-	puts("Boot Failed\n");
+//	puts("Boot Failed\n");
+	puts("No BOOTLOAD.SYS found\n");
 	while(1)
 	{
 		puts("$ ");
@@ -96,12 +133,23 @@ void __start()
 		if(!a[0])
 			continue;
 		ci=tk_cmd2idx(a[0]);
-#if 0
+
+#if 1
 		switch(ci)
 		{
 		case 0:
 			printf("Test Command '%s'\n", a[0]);
 			break;
+		case 1:
+			if(a[1])
+			{
+				tk_tryload(a[1], a+1);
+			}else
+			{
+				printf("usage: %s <image> [args*]\n", a[0]);
+			}
+			break;
+
 		default:
 			printf("Unhandled Command '%s'\n", a[0]);
 			break;

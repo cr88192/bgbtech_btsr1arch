@@ -1214,7 +1214,16 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 	BGBCC_JX2C_CoffBuildImports(ctx, sctx);
 
 //	img_base=0x0C000000;
+//	img_base=0x01100000;
 	img_base=0x01100000;
+	
+	if(imgfmt==BGBCC_IMGFMT_EXE)
+		img_base=0x02000000;
+	if(imgfmt==BGBCC_IMGFMT_SYS)
+		img_base=0x01100000;
+	if(imgfmt==BGBCC_IMGFMT_DLL)
+		img_base=0x00010000;
+	
 	img_base_hi=0;
 	sctx->image_base=img_base;
 	

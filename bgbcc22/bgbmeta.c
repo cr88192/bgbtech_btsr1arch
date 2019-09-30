@@ -934,6 +934,7 @@ int BGBCC_LoadCSourcesCCXL(
 	ctx->imgbasename=dllname;
 	ctx->imgname=bgbcc_strdup(bgbcc_imgname);
 	ctx->optmode=bgbcc_optmode;
+	ctx->imgfmt=imgfmt;
 	
 	ctx->optstrs=bgbcc_opts;
 	ctx->noptstrs=bgbcc_nopts;

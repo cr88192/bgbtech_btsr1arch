@@ -1409,6 +1409,7 @@ int tkfat_sfn2utf8(byte *sfn, int lcase, byte *dst)
 	
 	*ct++='.';
 
+	cs=sfn+8;
 	for(i=0; i<3; i++)
 	{
 		j=*cs++;
@@ -1429,7 +1430,7 @@ int tkfat_sfn2utf8(byte *sfn, int lcase, byte *dst)
 //		*ct++=j;
 
 		j=tkfat_asc2ucs(j);
-		ct=tkfat_emitUtf8(ct, i);
+		ct=tkfat_emitUtf8(ct, j);
 	}
 	*ct++=0;
 
@@ -1649,13 +1650,13 @@ int TKFAT_LookupDirEntName(TKFAT_ImageInfo *img,
 	deb=&tdeb;
 	del=(TKFAT_FAT_DirLfnEnt *)(&tdeb);
 	
-	printf("TKFAT_LookupDirEntName: %s clid=%d\n", name, clid);
+//	printf("TKFAT_LookupDirEntName: %s clid=%d\n", name, clid);
 	
 	lh=-1;
 	i=tkfat_name2sfn(name, tsn);
 	if(i>=0)
 	{
-		printf("TKFAT_LookupDirEntName: SFN=%11s\n", tsn);
+//		printf("TKFAT_LookupDirEntName: SFN=%11s\n", tsn);
 
 		for(i=0; i<65536; i++)
 		{
@@ -1669,7 +1670,7 @@ int TKFAT_LookupDirEntName(TKFAT_ImageInfo *img,
 
 //			k=!memcmp(deb->name, tsn, 11);
 			k=!tkfat_memcmp11(deb->name, tsn);
-			printf("DE=%11s TS=%11s %d\n", deb->name, tsn, k);
+//			printf("DE=%11s TS=%11s %d\n", deb->name, tsn, k);
 
 			if(k)
 			{
@@ -1801,7 +1802,7 @@ int TKFAT_LookupDirEntName(TKFAT_ImageInfo *img,
 }
 
 int TKFAT_CreateDirEntName(TKFAT_ImageInfo *img,
-	int clid, TKFAT_FAT_DirEntExt *dee, char *name)
+	int clid, bool create, TKFAT_FAT_DirEntExt *dee, char *name)
 {
 	TKFAT_FAT_DirEnt tdeb;
 	TKFAT_FAT_DirEnt *deb;
@@ -1816,6 +1817,9 @@ int TKFAT_CreateDirEntName(TKFAT_ImageInfo *img,
 	i=TKFAT_LookupDirEntName(img, clid, dee, name);
 	if(i>=0)
 		return(i);
+
+	if(!create)
+		return(-1);
 
 	deb=&tdeb;
 	del=(TKFAT_FAT_DirLfnEnt *)(&tdeb);
@@ -1940,36 +1944,74 @@ int TKFAT_CreateDirEntName(TKFAT_ImageInfo *img,
 }
 
 int TKFAT_CreateDirEntPathR(TKFAT_ImageInfo *img,
-	int clid, TKFAT_FAT_DirEntExt *dee, char *name)
+	int clid, bool crea, TKFAT_FAT_DirEntExt *dee, char *name)
 {
 	TKFAT_FAT_DirEntExt tdee;
 	char tb[256];
 	char *s, *t;
+	byte mkd;
+	int dcli;
 	int i;
 	
+	mkd=false;
 	s=name;
+
+//	if((s[0]=='.') && (s[1]=='/'))
+//		s+=2;
+	while(*s && (*s=='/'))
+		{ s++; }
+	
 	t=tb;
 	while(*s && (*s!='/'))
 		{ *t++=*s++; }
 	*t++=0;
-	if(*s=='/')s++;
+	
+//	if(*s=='/')s++;
+	while(*s=='/')
+		{ s++; mkd=true; }
 
-	if(*s)
+	memset(&tdee, 0, sizeof(TKFAT_FAT_DirEntExt));
+
+//	if(*s)
+	if(mkd)
 	{
-		i=TKFAT_CreateDirEntName(img, clid, &tdee, tb);
+		i=TKFAT_CreateDirEntName(img, clid, crea, &tdee, tb);
 		if(i<0)
 		{
-			printf("TKFAT_CreateDirEntPathR: "
+			tk_printf("TKFAT_CreateDirEntPathR: "
 				"Failed Recurse %s\n", tb);
 			return(i);
 		}
-		TKFAT_SetupDirEntNewDirectory(&tdee);
 		
-		i=TKFAT_CreateDirEntPathR(img, tdee.clid, dee, s);
+		if(crea)
+		{
+//			tk_printf("");
+			TKFAT_SetupDirEntNewDirectory(&tdee);
+		}
+
+		if(!(tdee.deb.attrib&0x10))
+		{
+			tk_printf("TKFAT_CreateDirEntPathR: Not a directory '%s'\n", tb);
+			return(-1);
+		}
+		
+		dcli=TKFAT_GetDirEntCluster(&tdee);
+
+//		i=TKFAT_CreateDirEntPathR(img, tdee.clid, dee, s);
+		i=TKFAT_CreateDirEntPathR(img, dcli, crea, dee, s);
 		return(i);
 	}
 
-	i=TKFAT_CreateDirEntName(img, clid, dee, tb);
+	if(!tb[0])
+	{
+		dee->clid=clid;
+		dee->deb.attrib=0x10;
+		TKFAT_SetDirEntCluster(
+			dee, clid);
+		return(1);
+	}
+
+	i=TKFAT_CreateDirEntName(img, clid, crea, dee, tb);
 	return(i);
 }
 
@@ -1981,28 +2023,40 @@ int TKFAT_CreateDirEntPath(
 	int clid;
 	int i;
 	
-	clid=img->isfat16?1:2;
+	while(*name=='/')
+		name++;
 	
-	i=TKFAT_CreateDirEntPathR(img, clid, dee, name);
+//	clid=img->isfat16?1:2;
+	clid=img->clid_root;
+	
+//	i=TKFAT_CreateDirEntPathR(img, clid, dee, name);
+	i=TKFAT_CreateDirEntPathR(img, clid, true, dee, name);
 	return(i);
 }
 
-
+#if 1
 int TKFAT_LookupDirEntPathR(TKFAT_ImageInfo *img,
 	int clid, TKFAT_FAT_DirEntExt *dee, char *name)
 {
 	TKFAT_FAT_DirEntExt tdee;
 	char tb[256];
 	char *s, *t;
+	int dcli;
 	int i;
-	
+
 	s=name;
 	t=tb;
+
+//	while(*s=='/')
+//		{ s++; }
+
 	while(*s && (*s!='/'))
 		{ *t++=*s++; }
 	*t++=0;
-	if(*s=='/')s++;
+	while(*s=='/')s++;
 
+	memset(&tdee, 0, sizeof(TKFAT_FAT_DirEntExt));
+	
 	if(*s)
 	{
 		i=TKFAT_LookupDirEntName(img, clid, &tdee, tb);
@@ -2013,14 +2067,34 @@ int TKFAT_LookupDirEntPathR(TKFAT_ImageInfo *img,
 			return(i);
 		}
 //		TKFAT_SetupDirEntNewDirectory(&tdee);
+
+		if(!(tdee.deb.attrib&0x10))
+		{
+			tk_printf("TKFAT_LookupDirEntPathR: Not a directory '%s'\n", tb);
+			return(-1);
+		}
 		
-		i=TKFAT_LookupDirEntPathR(img, tdee.clid, dee, s);
+		dcli=TKFAT_GetDirEntCluster(&tdee);
+
+//		tk_printf("TKFAT_LookupDirEntPathR: Enter '%s' %d\n", tb, dcli);
+
+//		i=TKFAT_LookupDirEntPathR(img, tdee.clid, dee, s);
+		i=TKFAT_LookupDirEntPathR(img, dcli, dee, s);
 		return(i);
+	}
+
+	if(!tb[0])
+	{
+		dee->clid=clid;
+		TKFAT_SetDirEntCluster(
+			dee, clid);
+		return(1);
 	}
 
 	i=TKFAT_LookupDirEntName(img, clid, dee, tb);
 	return(i);
 }
+#endif
 
 int TKFAT_LookupDirEntPath(
 	TKFAT_ImageInfo *img,
@@ -2030,8 +2104,16 @@ int TKFAT_LookupDirEntPath(
 	int clid;
 	int i;
 	
-	clid=img->isfat16?1:2;
-	i=TKFAT_LookupDirEntPathR(img, clid, dee, name);
+	if(!name)
+		return(-1);
+	
+	while(*name=='/')
+		name++;
+	
+//	clid=img->isfat16?1:2;
+	clid=img->clid_root;
+//	i=TKFAT_LookupDirEntPathR(img, clid, dee, name);
+	i=TKFAT_CreateDirEntPathR(img, clid, false, dee, name);
 	return(i);
 }
 

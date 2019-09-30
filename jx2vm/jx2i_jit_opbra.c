@@ -1420,7 +1420,8 @@ int BJX2_TryJitOpcode_BranchOp(UAX_Context *jctx,
 #endif
 
 #if 1
-	if((op->nmid==BJX2_NMID_RTS) &&
+	if(((op->nmid==BJX2_NMID_RTS) ||
+		(op->nmid==BJX2_NMID_RTSU)) &&
 //		(op->fmid==BJX2_FMID_NONE))
 		(op->fmid==BJX2_FMID_Z))
 	{

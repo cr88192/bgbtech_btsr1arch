@@ -919,13 +919,21 @@ void Sys_CheckSanityB(void)
 		__debugbreak();
 	if((t_arr[0]%10)!=6)
 		__debugbreak();
-		
+
+	tk_puts("Q Pt0 OK 5-1\n");
+
+#if 1
 	*((int *)b_arr0)=10;
 	i=*((int *)b_arr0);
 	if((t_arr[0]/i)!=0x1D208A5)
 		__debugbreak();
+
+	tk_puts("Q Pt0 OK 5-2\n");
+
 	if((t_arr[0]%i)!=6)
 		__debugbreak();
+#endif
+
 #endif
 
 	tk_puts("Q Pt0 OK 6\n");

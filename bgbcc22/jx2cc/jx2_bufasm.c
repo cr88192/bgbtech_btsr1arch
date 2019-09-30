@@ -728,6 +728,7 @@ int nmid;
 {"bra8b",	BGBCC_SH_NMID_BRA8B},
 {"ret",		BGBCC_SH_NMID_RET},
 {"rtsu",	BGBCC_SH_NMID_RTSU},
+{"syscall",	BGBCC_SH_NMID_SYSCALL},
 
 {"wexmd",	BGBCC_SH_NMID_WEXMD},
 {"cpuid",	BGBCC_SH_NMID_CPUID},

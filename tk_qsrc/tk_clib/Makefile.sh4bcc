@@ -27,6 +27,8 @@ libs: FORCE
 
 apps: libs FORCE
 	make -C vxcore -f Makefile.sh4bcc apps
+	cp vxcore/*.sys		$(BUILD)
+#	cp -rf $(BUILD)/*.ril $(INST_LIB)
 
 build: includes libs apps FORCE
 

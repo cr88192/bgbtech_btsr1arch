@@ -1,7 +1,7 @@
 void __halt(void);
 
 
-void putc(int val)
+void tk_putc(int val)
 {
 	while(P_MMIO_DEBUG_STS&8);
 	P_MMIO_DEBUG_TX=val;
@@ -10,36 +10,35 @@ void putc(int val)
 }
 
 
-int kbhit(void)
+int tk_kbhit(void)
 {
 	return(tk_ps2kb_kbhit());
-//	return(P_MMIO_DEBUG_STS&1);
 }
 
-int getch(void)
+int tk_getch(void)
 {
 	return(tk_ps2getch());
-
-#if 0
-	while(!(P_MMIO_DEBUG_STS&1))
-	{
-		__halt();
-//		sleep_0();
-	}
-	return(P_MMIO_DEBUG_RX);
-#endif
 }
 
-void puts(char *msg)
+void tk_puts(char *msg)
 {
 	char *s;
 	
 	s=msg;
 	while(*s)
-		{ putc(*s++); }
+		{ tk_putc(*s++); }
 }
 
-void gets(char *buf)
+void tk_puts_n(char *msg, int n)
+{
+	char *s;
+	
+	s=msg;
+	while(n--)
+		{ tk_putc(*s++); }
+}
+
+void tk_gets(char *buf)
 {
 	char *t;
 	int i;
@@ -47,7 +46,7 @@ void gets(char *buf)
 	t=buf;
 	while(1)
 	{
-		i=getch();
+		i=tk_getch();
 		
 		if(i>=0x80)
 			continue;
@@ -56,24 +55,32 @@ void gets(char *buf)
 		{
 			if(t>buf)
 			{
-				puts("\b \b");
+				tk_puts("\b \b");
 				t--;
 			}
 			*t=0;
 			continue;
 		}
 		if(i=='\r')
-			{ putc('\n'); break; }
+			{ tk_putc('\n'); break; }
 		if(i=='\n')
-			{ putc('\n'); break; }
-		putc(i);
+			{ tk_putc('\n'); break; }
+		tk_putc(i);
 		*t++=i;
 	}
 	*t=0;
 }
 
+void tk_gets_n(char *msg, int n)
+{
+	char *s;
+	
+	s=msg;
+	while(n--)
+		{ *s++=tk_getch(); }
+}
 
-char *async_gets(char *buf)
+char *tk_async_gets(char *buf)
 {
 	char *t;
 	int i, eol;
@@ -84,25 +91,25 @@ char *async_gets(char *buf)
 
 	while(1)
 	{
-		if(!kbhit())
+		if(!tk_kbhit())
 			break;
 
-		i=getch();
+		i=tk_getch();
 		if((i=='\b') || (i==127))
 		{
 			if(t>buf)
 			{
-				puts("\b \b");
+				tk_puts("\b \b");
 				t--;
 			}
 			*t=0;
 			continue;
 		}
 		if(i=='\r')
-			{ putc('\n'); eol=1; break; }
+			{ tk_putc('\n'); eol=1; break; }
 		if(i=='\n')
-			{ putc('\n'); eol=1; break; }
-		putc(i);
+			{ tk_putc('\n'); eol=1; break; }
+		tk_putc(i);
 		*t++=i;
 	}
 	*t=0;
@@ -111,7 +118,7 @@ char *async_gets(char *buf)
 	return(NULL);
 }
 
-void print_hex(u32 v)
+void tk_print_hex(u32 v)
 {
 	static char *chrs="0123456789ABCDEF";
 //	int i;
@@ -122,23 +129,23 @@ void print_hex(u32 v)
 //	i=chrs[(v>>28)&15];
 //	__debugbreak();
 
-	putc(chrs[(v>>28)&15]);
-	putc(chrs[(v>>24)&15]);
-	putc(chrs[(v>>20)&15]);
-	putc(chrs[(v>>16)&15]);
-	putc(chrs[(v>>12)&15]);
-	putc(chrs[(v>> 8)&15]);
-	putc(chrs[(v>> 4)&15]);
-	putc(chrs[(v    )&15]);
+	tk_putc(chrs[(v>>28)&15]);
+	tk_putc(chrs[(v>>24)&15]);
+	tk_putc(chrs[(v>>20)&15]);
+	tk_putc(chrs[(v>>16)&15]);
+	tk_putc(chrs[(v>>12)&15]);
+	tk_putc(chrs[(v>> 8)&15]);
+	tk_putc(chrs[(v>> 4)&15]);
+	tk_putc(chrs[(v    )&15]);
 }
 
-void print_hex_u64(u64 v)
+void tk_print_hex_u64(u64 v)
 {
-	print_hex(v>>32);
-	print_hex(v);
+	tk_print_hex(v>>32);
+	tk_print_hex(v);
 }
 
-void print_hex_n(u32 v, int n)
+void tk_print_hex_n(u32 v, int n)
 {
 	static char *chrs="0123456789ABCDEF";
 
@@ -149,27 +156,27 @@ void print_hex_n(u32 v, int n)
 	{
 //		__debugbreak();
 
-//		puts("!%X!\n");
-		puts("!%X! ");
-		print_hex(n);
-		puts(": ");
-		print_hex(v);
+//		tk_puts("!%X!\n");
+		tk_puts("!%X! ");
+		tk_print_hex(n);
+		tk_puts(": ");
+		tk_print_hex(v);
 
-		puts("\n");
+		tk_puts("\n");
 		__debugbreak();
 	}
 
-	if(n>7)putc(chrs[(v>>28)&15]);
-	if(n>6)putc(chrs[(v>>24)&15]);
-	if(n>5)putc(chrs[(v>>20)&15]);
-	if(n>4)putc(chrs[(v>>16)&15]);
-	if(n>3)putc(chrs[(v>>12)&15]);
-	if(n>2)putc(chrs[(v>> 8)&15]);
-	if(n>1)putc(chrs[(v>> 4)&15]);
-	if(n>0)putc(chrs[(v    )&15]);
+	if(n>7)tk_putc(chrs[(v>>28)&15]);
+	if(n>6)tk_putc(chrs[(v>>24)&15]);
+	if(n>5)tk_putc(chrs[(v>>20)&15]);
+	if(n>4)tk_putc(chrs[(v>>16)&15]);
+	if(n>3)tk_putc(chrs[(v>>12)&15]);
+	if(n>2)tk_putc(chrs[(v>> 8)&15]);
+	if(n>1)tk_putc(chrs[(v>> 4)&15]);
+	if(n>0)tk_putc(chrs[(v    )&15]);
 }
 
-int print_hex_genw(u32 v)
+int tk_print_hex_genw(u32 v)
 {
 	u32 w;
 	int i;
@@ -195,7 +202,7 @@ int print_hex_genw(u32 v)
 	return(i);
 }
 
-void print_decimal(int val)
+void tk_print_decimal(int val)
 {
 	char tb[256];
 	char *t;
@@ -220,10 +227,10 @@ void print_decimal(int val)
 	if(s)*t++='-';
 	
 	while(t>tb)
-		{ t--; putc(*t); }
+		{ t--; tk_putc(*t); }
 }
 
-void print_decimal_n(int val, int num)
+void tk_print_decimal_n(int val, int num)
 {
 	char tb[256];
 	char *t;
@@ -246,11 +253,11 @@ void print_decimal_n(int val, int num)
 //	if(s)*t++='-';
 	
 	while(t>tb)
-		{ t--; putc(*t); }
+		{ t--; tk_putc(*t); }
 }
 
 #ifdef ARCH_HAS_FPU
-void print_float(double val)
+void tk_print_float(double val)
 {
 	int ip, fp, sg;
 	
@@ -270,14 +277,14 @@ void print_float(double val)
 	ip=(int)val;
 	fp=(int)((val-ip)*1000000);
 
-	if(sg)putc('-');
-	print_decimal(ip);
-	putc('.');
-	print_decimal_n(fp, 6);
+	if(sg)tk_putc('-');
+	tk_print_decimal(ip);
+	tk_putc('.');
+	tk_print_decimal_n(fp, 6);
 }
 #endif
 
-void printf(char *str, ...)
+void tk_printf(char *str, ...)
 {
 //	void **plst;
 	va_list lst;
@@ -295,9 +302,9 @@ void printf(char *str, ...)
 	while(*s)
 	{
 		if(*s!='%')
-			{ putc(*s++); continue; }
+			{ tk_putc(*s++); continue; }
 		if(s[1]=='%')
-			{ s+=2; putc('%'); continue; }
+			{ s+=2; tk_putc('%'); continue; }
 		s++;
 		
 		if(*s=='0')
@@ -323,10 +330,10 @@ void printf(char *str, ...)
 			v=va_arg(lst, int);
 			if(w)
 			{
-				print_decimal_n(v, w);
+				tk_print_decimal_n(v, w);
 			}else
 			{
-				print_decimal(v);
+				tk_print_decimal(v);
 			}
 			break;
 		case 'X':
@@ -336,27 +343,27 @@ void printf(char *str, ...)
 
 //			__debugbreak();
 
-			if(!w)w=print_hex_genw(v);
+			if(!w)w=tk_print_hex_genw(v);
 
 //			__debugbreak();
 //			print_hex(v);
-			print_hex_n(v, w);
+			tk_print_hex_n(v, w);
 //			__debugbreak();
 			break;
 		case 's':
 //			s1=*plst++;
 			s1=va_arg(lst, char *);
-			puts(s1);
+			tk_puts(s1);
 			break;
 
 		case 'p':
 			s1=va_arg(lst, char *);
-			print_hex((u32)s1);
+			tk_print_hex((u32)s1);
 			break;
 
 #ifdef ARCH_HAS_FPU
 		case 'f':
-			print_float(va_arg(lst, double));
+			tk_print_float(va_arg(lst, double));
 			break;
 #endif
 

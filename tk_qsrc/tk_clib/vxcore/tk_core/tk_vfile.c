@@ -54,6 +54,11 @@ TK_FILE *tk_alloc_file()
 	return(tmp);
 }
 
+TK_DIR *tk_alloc_dir()
+{
+	return((TK_FILE *)tk_alloc_file());
+}
+
 void tk_free_file(TK_FILE *tmp)
 {
 	tmp->udata0=tk_vf_freelist;
@@ -163,4 +168,38 @@ int tk_fputc(int ch, TK_FILE *fd)
 	if(fd->vt->fputc)
 		return(fd->vt->fputc(ch, fd));
 	return(-1);
+}
+
+
+TK_DIR *tk_opendir(char *name)
+{
+	TK_MOUNT *mnt;
+	TK_DIR *fd;
+
+	tk_vfile_init();
+
+	if((name[0]=='.') && (name[1]=='/'))
+		name+=2;
+	if(*name=='/')
+		name++;
+
+	mnt=tk_vf_mount;
+	while(mnt)
+	{
+		fd=mnt->vt->opendir(mnt, name);
+		if(fd)
+			return(fd);
+		mnt=mnt->next;
+	}
+
+	tk_printf("tk_opendir: Fail %s\n", name);
+
+	return(NULL);
+}
+
+TK_DIRENT *tk_readdir(TK_DIR *fd)
+{
+	if(fd->vt->readdir)
+		return(fd->vt->readdir(fd));
+	return(NULL);
 }

@@ -2,7 +2,9 @@ BUILD = .
 PATH := $(BUILD):$(PATH)
 
 TK_CFL=-DARCH_SH4 -DARCH_SH4LE -O3
-TK_LDFL= $TK_CFL
+# TK_LDFL= $TK_CFL
+
+TK_LDFL64= -L. -lvxcore64
 
 TOOLPATH=
 
@@ -11,7 +13,7 @@ AR=$(TOOLPATH)bgbcc
 AS=$(TOOLPATH)bgbcc
 
 COPTS= -g -c -O2 -Iinclude -I. -Itk_core $(TK_CFL)
-COPTS64= -g -c -O2 -Iinclude -I. -Itk_core $(TK_CFL) -DARCH_BJX1_64 -mBJX2
+COPTS64= -g -c -O2 -Iinclude -I. -Itk_core $(TK_CFL) -DARCH_BJX1_64 -mBJX2F
 
 SRCS_CLIB = \
 	pdpc201/stdio.c \
@@ -39,12 +41,16 @@ SRCS_CLIB = \
 	tk_core/tk_fat.c \
 	tk_core/tk_mmllist.c \
 	tk_core/tk_mmpage.c \
+	tk_core/tk_msgbuf.c \
+	tk_core/tk_puts.c \
 	tk_core/tk_spi.c \
 	tk_core/tk_vf_fat.c \
 	tk_core/tk_vf_ird.c \
 	tk_core/tk_vfile.c \
 	tk_core/tk_conprn.c \
 	tk_core/tk_ps2keyb.c \
+	tk_core/tk_peload.c \
+	tk_core/tk_syscall.c \
 	\
 	tk_core/lva_array.c \
 	tk_core/lva_strdup.c \
@@ -68,7 +74,9 @@ SRCS_ASM_2 = \
 
 SRCS_BS2 = \
 	tk_bs2/bscore_io.bs
-	
+
+SRCS_TKSH = \
+		tk_shell/tk_shell.c
 
 all: includes libs apps
 
@@ -83,7 +91,9 @@ libs2: FORCE
 
 libs: libs2 libvxcore.ril libvxcore64.ril libvxcore_bjx2.ril
 
-apps: FORCE
+bins: tkshell.sys
+
+apps: bins FORCE
 #	make -C pdpc201 -f Makefile.vx86 apps
 #	cp pdpc201/*.exe	$(BUILD)
 
@@ -95,6 +105,9 @@ libvxcore64.ril: $(SRCS_CLIB) $(SRCS_ASM) $(SRCS_BS2) $(SRCS_ASM_2)
 
 libvxcore_bjx2.ril: $(SRCS_CLIB) $(SRCS_ASM) $(SRCS_BS2) $(SRCS_ASM_2)
 	$(CC) -o libvxcore_bjx2.ril vxcore_multi.c $(SRCS_ASM) $(SRCS_BS2) $(COPTS64)
+
+tkshell.sys: $(SRCS_TKSH)
+	$(CC) -o tkshell.sys tkshell_multi.c $(COPTS64) $(TK_LDFL64)
 
 FORCE:
 

@@ -361,6 +361,8 @@ fourcc BGBCP_LangForName(char *name)
 		if(!bgbcp_strcmp(s, ".bin"))lang=BGBCC_IMGFMT_ROM;
 		if(!bgbcp_strcmp(s, ".BIN"))lang=BGBCC_IMGFMT_ROM;
 
+		if(!bgbcp_strcmp(s, ".SYS"))lang=BGBCC_IMGFMT_EXE;
+
 		if(!bgbcp_strcmp(s, ".asm"))lang=BGBCC_IMGFMT_ASM;
 		if(!bgbcp_strcmp(s, ".ASM"))lang=BGBCC_IMGFMT_ASM;
 		if(!bgbcp_strcmp(s, ".as"))lang=BGBCC_IMGFMT_ASM;
@@ -706,6 +708,8 @@ fourcc BGBCP_ImageFormatForName(char *name)
 
 		if(!bgbcc_stricmp(s, ".rom"))fmt=BGBCC_IMGFMT_ROM;
 		if(!bgbcc_stricmp(s, ".bin"))fmt=BGBCC_IMGFMT_ROM;
+
+		if(!bgbcp_strcmp(s, ".sys"))fmt=BGBCC_IMGFMT_SYS;
 
 		if(!bgbcc_stricmp(s, ".asm"))fmt=BGBCC_IMGFMT_ASM;
 		if(!bgbcc_stricmp(s, ".s"))fmt=BGBCC_IMGFMT_ASM;
