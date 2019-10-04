@@ -54,3 +54,7 @@ vlcore: Verilog implementation of the BSR1 processor.
 jx2vlcore: Verilog attempts at a BJX2 processor.
 * jx2vlcore2: Partial rework of the former.
 * jx2vlcore3: Another attempt.
+
+tk_qsrc: Source for Quake, Doom, and C library.
+* A lot of the code here was not written by me; check licensing more carefully in here.
+* A lot of this is code for testing stuff, ...
