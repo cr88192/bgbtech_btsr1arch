@@ -139,7 +139,7 @@ TK_FILE *tk_ird_fopen(TK_MOUNT *mnt, char *name, char *mode)
 	return(NULL);
 }
 
-int tk_ird_fseek(TK_FILE *fd, int ofs, int rel)
+s64 tk_ird_fseek(TK_FILE *fd, s64 ofs, int rel)
 {
 	if(fd->ram_base)
 	{
@@ -224,7 +224,7 @@ int tk_ird_fgetc(TK_FILE *fd)
 	return(-1);
 }
 
-int tk_ird_ftell(TK_FILE *fd)
+s64 tk_ird_ftell(TK_FILE *fd)
 {
 	int i;
 	if(fd->ram_base)

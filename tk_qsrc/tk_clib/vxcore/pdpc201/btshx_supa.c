@@ -544,7 +544,8 @@ void __exita(int status)
 {
 	if(!tk_iskernel())
 		TK_ExitV(status);
-	*(int *)-1=-1;
+	__debugbreak();
+//	*(int *)-1=-1;
 //	vx_exit(status);
 }
 

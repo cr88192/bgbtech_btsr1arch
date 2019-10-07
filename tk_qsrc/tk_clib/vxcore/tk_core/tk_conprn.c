@@ -84,6 +84,17 @@ void tk_con_reset()
 	tk_con_clear();
 }
 
+void tk_con_chkreset()
+{
+	if(!tk_con || !tk_con->ena)
+	{
+		tk_con_init();
+		tk_con_clear();
+//		((u32 *)0xF009F000)[0]=0x0029;
+		((u32 *)0xF009F000)[0]=0x0000;
+	}
+}
+
 void tk_con_scroll_up()
 {
 	u64 q0, q1;

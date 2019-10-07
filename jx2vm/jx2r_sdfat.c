@@ -1,5 +1,12 @@
 JX2R_TKFAT_ImageInfo *spimmc_img=NULL;
 
+u32 JX2R_TKFAT_GetDirEntCluster(
+	JX2R_TKFAT_FAT_DirEntExt *dee);
+
+int JX2R_TKFAT_SetDirEntCluster(
+	JX2R_TKFAT_FAT_DirEntExt *dee,
+	u32 clid);
+
 
 void btesh2_tkfat_setChs(byte *chs, int lba)
 {
@@ -1310,7 +1317,9 @@ int btesh2_tkfat_lfnchecksum(char *name)
 
 	s=(byte *)name; h=0;
 	for(i=0; i<11; i++)
-		h=((h&1)<<7)+(h>>1)+(*s++);
+//		h=((h&1)<<7)+(h>>1)+(*s++);
+//		h=(((h&1)<<7)+(h>>1)+(*s++))&255;
+		h=((h&1)<<7)+((h&255)>>1)+(*s++);
 	return(h&255);
 }
 
@@ -1389,6 +1398,9 @@ int btesh2_tkfat_sfn2utf8(byte *sfn, int lcase, byte *dst)
 	int i, j, k;
 
 	cs=sfn; ct=dst;
+	
+	if(lcase==0x00)
+		lcase|=0x18;
 	
 	if(*cs<=' ')
 		return(-1);
@@ -1904,6 +1916,7 @@ int JX2R_TKFAT_CreateDirEntName(JX2R_TKFAT_ImageInfo *img,
 			{
 				memset(deb, 0, 32);
 				memcpy(deb->name, tsn, 11);
+				deb->lncase=0x18;
 				JX2R_TKFAT_ReadWriteDirEntOffset(
 					img, clid, i, 1, deb);
 				
@@ -1935,7 +1948,8 @@ int JX2R_TKFAT_CreateDirEntName(JX2R_TKFAT_ImageInfo *img,
 	tsn[0]=' ';
 	tsn[1]=0;
 	btesh2_tkfat_setDWord((byte *)(tsn+2), h0);
-	tsn[5]=':';
+//	tsn[5]=':';
+	tsn[6]=':';
 	h1=btesh2_tkfat_lfnchecksum(tsn);
 
 	li=0;

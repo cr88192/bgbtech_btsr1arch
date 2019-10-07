@@ -142,6 +142,28 @@ BJX2_Trace *BJX2_GetTraceForAddr(BJX2_Context *ctx, bjx2_addr addr)
 	return(cur);
 }
 
+int BJX2_DecodeTraceFlushCache(BJX2_Context *ctx)
+{
+	BJX2_Trace *cur, *nxt;
+	int i;
+	
+	for(i=0; i<64; i++)
+		ctx->rttr[i]=NULL;
+	
+	for(i=0; i<1024; i++)
+	{
+		cur=ctx->trhash[i];
+		ctx->trhash[i]=NULL;
+		while(cur)
+		{
+			nxt=cur->hnext;
+			BJX2_ContextFreeTrace(ctx, cur);
+			cur=nxt;
+		}
+	}
+	return(0);
+}
+
 int BJX2_ThrowFaultStatus(BJX2_Context *ctx, int status)
 {
 	int i;
@@ -174,6 +196,11 @@ int BJX2_ThrowFaultStatus(BJX2_Context *ctx, int status)
 			ctx->ex_fpreg[i]=ctx->fpreg[i];
 	}
 #endif
+
+	if((status&0xF000)==0xE000)
+	{
+//		printf("Syscall\n");
+	}
 
 //	ctx->regs[BJX2_REG_EXSR]=status;
 	ctx->regs[BJX2_REG_EXSR]=
@@ -255,7 +282,7 @@ int BJX2_FaultSwapRegs2(BJX2_Context *ctx)
 	return(0);
 }
 
-int BJX2_FaultEnterRegs(BJX2_Context *ctx)
+int BJX2_FaultEnterRegs(BJX2_Context *ctx, int exsr)
 {
 	u64 va, vb;
 	int i;
@@ -272,10 +299,14 @@ int BJX2_FaultEnterRegs(BJX2_Context *ctx)
 //	ctx->regs[BJX2_REG_PC]=vb;
 	ctx->regs[BJX2_REG_SPC]=va;
 
-	va=ctx->regs[BJX2_REG_SP];
-	vb=ctx->regs[BJX2_REG_SSP];
-	ctx->regs[BJX2_REG_SP]=vb;
-	ctx->regs[BJX2_REG_SSP]=va;
+//	if((exsr&0xF000)!=0xE000)
+	if(1)
+	{
+		va=ctx->regs[BJX2_REG_SP];
+		vb=ctx->regs[BJX2_REG_SSP];
+		ctx->regs[BJX2_REG_SP]=vb;
+		ctx->regs[BJX2_REG_SSP]=va;
+	}
 
 //	va=ctx->regs[BJX2_REG_LR];
 //	vb=ctx->regs[BJX2_REG_SLR];
@@ -295,7 +326,7 @@ int BJX2_FaultEnterRegs(BJX2_Context *ctx)
 	return(0);
 }
 
-int BJX2_FaultExitRegs(BJX2_Context *ctx)
+int BJX2_FaultExitRegs(BJX2_Context *ctx, int exsr)
 {
 	u64 va, vb;
 	int i;
@@ -312,10 +343,14 @@ int BJX2_FaultExitRegs(BJX2_Context *ctx)
 	ctx->regs[BJX2_REG_PC]=vb;
 //	ctx->regs[BJX2_REG_SPC]=va;
 
-	va=ctx->regs[BJX2_REG_SP];
-	vb=ctx->regs[BJX2_REG_SSP];
-	ctx->regs[BJX2_REG_SP]=vb;
-	ctx->regs[BJX2_REG_SSP]=va;
+//	if((exsr&0xF000)!=0xE000)
+	if(1)
+	{
+		va=ctx->regs[BJX2_REG_SP];
+		vb=ctx->regs[BJX2_REG_SSP];
+		ctx->regs[BJX2_REG_SP]=vb;
+		ctx->regs[BJX2_REG_SSP]=va;
+	}
 
 //	va=ctx->regs[BJX2_REG_LR];
 //	vb=ctx->regs[BJX2_REG_SLR];
@@ -361,14 +396,17 @@ int BJX2_FaultEnterInterrupt(BJX2_Context *ctx)
 			for(i=0; i<32; i++)
 				ctx->fpreg[i]=ctx->ex_fpreg[i];
 		}
-		ctx->ex_regs[BJX2_REG_EXSR]=0;
+//		ctx->ex_regs[BJX2_REG_EXSR]=0;
 #endif
 
 //		BJX2_FaultSwapRegs(ctx);
-		BJX2_FaultEnterRegs(ctx);
+		BJX2_FaultEnterRegs(ctx, exsr);
+
+//		if((exsr&0xF000)!=0xE000)
 		ctx->regs[BJX2_REG_SR]|=(1<<29);	//Set RB
 	}
 
+//	if((exsr&0xF000)!=0xE000)
 	ctx->regs[BJX2_REG_SR]|=(1<<28);	//BL
 	ctx->regs[BJX2_REG_SR]|=(1<<30);	//MD
 	
@@ -401,7 +439,7 @@ int BJX2_FaultLeaveInterrupt(BJX2_Context *ctx)
 	if(ctx->regs[BJX2_REG_SR]&(1<<29))
 	{
 //		BJX2_FaultSwapRegs(ctx);
-		BJX2_FaultExitRegs(ctx);
+		BJX2_FaultExitRegs(ctx, ctx->regs[BJX2_REG_EXSR]);
 		ctx->regs[BJX2_REG_SR]&=~(1<<29);	//Clear RB
 	}
 	ctx->regs[BJX2_REG_SR]&=~(1<<29);	//Clear RB
@@ -519,6 +557,7 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_SHLD:		s0="SHLD";		break;
 
 	case BJX2_NMID_WEXMD:		s0="WEXMD";		break;
+	case BJX2_NMID_SYSCALL:		s0="SYSCALL";	break;
 
 	case BJX2_NMID_SWAPB:		s0="SWAP.B";	break;
 	case BJX2_NMID_SWAPW:		s0="SWAP.W";	break;
@@ -642,6 +681,7 @@ char *BJX2_DbgPrintNameForReg(BJX2_Context *ctx, int reg)
 	case BJX2_REG_TEA:		s="TEA";	break;
 	case BJX2_REG_MMCR:		s="MMCR";	break;
 	case BJX2_REG_EXSR:		s="EXSR";	break;
+	case BJX2_REG_KRR:		s="KRR";	break;
 
 
 	case BJX2_REG_R0B:		s="R0B";	break;
@@ -1463,6 +1503,17 @@ int BJX2_UpdateForStatus(BJX2_Context *ctx)
 
 	if(ctx->status==BJX2_FLT_SCRPOKE)
 	{
+		ctx->status=0;
+		return(0);
+	}
+
+	if(ctx->status==BJX2_FLT_CCFLUSH)
+	{
+		if(ctx->cc_flush&1)
+		{
+			BJX2_DecodeTraceFlushCache(ctx);
+		}
+
 		ctx->status=0;
 		return(0);
 	}

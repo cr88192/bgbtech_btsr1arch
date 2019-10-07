@@ -119,7 +119,10 @@ typedef volatile u32 vol_u32;
 //#define TKMM_PAGEEND	0x18000000
 //#endif
 
-#define TKMM_PAGEBASE	0x10000000
+// #define TKMM_PAGEBASE	0x10000000
+// #define TKMM_PAGEEND	0x18000000
+
+#define TKMM_PAGEBASE	0x04000000
 #define TKMM_PAGEEND	0x18000000
 
 // #define INITRD_ADDR	0x1003F010
@@ -211,14 +214,16 @@ int (*fstat)(TK_MOUNT *mnt, char *name, TK_FSTAT *st);
 /* FILE Ops */
 int (*fread)(void *buf, int sz1, int sz2, TK_FILE *fd);
 int (*fwrite)(void *buf, int sz1, int sz2, TK_FILE *fd);
-int (*fseek)(TK_FILE *fd, int ofs, int rel);
-int (*ftell)(TK_FILE *fd);
+s64 (*fseek)(TK_FILE *fd, s64 ofs, int rel);
+s64 (*ftell)(TK_FILE *fd);
 int (*fclose)(TK_FILE *fd);
 int (*fgetc)(TK_FILE *fd);
 int (*fputc)(int ch, TK_FILE *fd);
+int (*fioctl)(TK_FILE *fd, int cmd, void *ptr);
 
 /* DIR ops */
 TK_DIRENT *(*readdir)(TK_DIR *dir);
+int (*closedir)(TK_DIR *dir);
 };
 
 struct TK_FILE_s {
@@ -230,6 +235,7 @@ void *udata3;		//user-data (VFS driver)
 byte *ram_base;		//ram base (ramdisk)
 byte *ram_end;		//ram end (ramdisk)
 byte *ram_ofs;		//ram offset (ramdisk)
+int ifd;			//file handle
 u32 ofs;			//current file offset
 u32 size;			//file size
 };
@@ -237,6 +243,9 @@ u32 size;			//file size
 struct TK_MOUNT_s {
 TK_FILE_VT *vt;
 TK_MOUNT *next;
+char *src;
+char *tgt;
+int szSrc;
 void *udata0;
 void *udata1;
 };

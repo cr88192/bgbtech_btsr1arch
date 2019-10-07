@@ -40,6 +40,7 @@ int BGBCC_JX2_TryEmitOpNone(BGBCC_JX2_Context *ctx, int nmid)
 	case BGBCC_SH_NMID_DIV0U:	opw1=0x30D0; break;
 	case BGBCC_SH_NMID_DIV1:	opw1=0x30E0; break;
 	case BGBCC_SH_NMID_LDTLB:	opw1=0x30F0; break;
+	case BGBCC_SH_NMID_INVTLB:	opw1=0x30F2; break;
 
 	case BGBCC_SH_NMID_SYSCALL:	opw1=0x3022; break;
 
@@ -157,6 +158,17 @@ int BGBCC_JX2_TryEmitOpReg(BGBCC_JX2_Context *ctx, int nmid, int reg)
 //		opw1=0x3608|((reg&15)<<4); break;
 //		opw1=0x3100|((reg&15)<<4); break;
 		opw1=0x3100|((reg&15)<<4)|((reg&16)<<7); break;
+
+	case BGBCC_SH_NMID_INVIC:
+		if(ctx->is_fixed32 || ctx->op_is_wex2)
+			break;
+		if(!BGBCC_JX2_EmitCheckRegExtGPR(ctx, reg))	break;
+		opw1=0x310C|((reg&15)<<4)|((reg&16)<<7); break;
+	case BGBCC_SH_NMID_INVDC:
+		if(ctx->is_fixed32 || ctx->op_is_wex2)
+			break;
+		if(!BGBCC_JX2_EmitCheckRegExtGPR(ctx, reg))	break;
+		opw1=0x310D|((reg&15)<<4)|((reg&16)<<7); break;
 
 	case BGBCC_SH_NMID_MOVT:
 //		if(!BGBCC_JX2_EmitCheckRegBaseGPR(ctx, reg))	break;
@@ -1249,6 +1261,13 @@ int BGBCC_JX2_TryEmitOpImm(BGBCC_JX2_Context *ctx, int nmid, int imm)
 		odr=1; opw1=0x3022;
 		break;
 
+	case BGBCC_SH_NMID_INVIC:
+		odr=1; opw1=0x310C;
+		break;
+	case BGBCC_SH_NMID_INVDC:
+		odr=1; opw1=0x310D;
+		break;
+
 	default:
 		break;
 	}
@@ -1405,6 +1424,7 @@ int BGBCC_JX2_TryMapRegCn(BGBCC_JX2_Context *ctx, int reg)
 	case BGBCC_SH_REG_SGR:		reg1=0x25; break;
 
 	case BGBCC_SH_REG_GBR:		reg1=0x26; break;
+	case BGBCC_SH_REG_TBR:		reg1=0x27; break;
 
 	case BGBCC_SH_REG_TTB:		reg1=0x28; break;
 	case BGBCC_SH_REG_TEA:		reg1=0x29; break;

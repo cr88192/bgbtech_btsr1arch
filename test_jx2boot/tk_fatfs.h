@@ -162,6 +162,14 @@ int cl_rov;			//cluster rover
 int walk_clid;		//walk starting cluster
 int walk_clofs;		//walk cluster offset
 int walk_clcur;		//walk cluster current
+
+int walk2_clid;		//walk starting cluster
+int walk2_clofs;	//walk cluster offset
+int walk2_clcur;	//walk cluster current
+
+int walk3_clid;		//walk starting cluster
+int walk3_clofs;	//walk cluster offset
+int walk3_clcur;	//walk cluster current
 };
 
 

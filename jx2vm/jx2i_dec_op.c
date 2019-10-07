@@ -912,6 +912,8 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 				break;
 
 			case 0x2:	/* 30z2 */
+				op->fmid=BJX2_FMID_Z;
+
 				switch((opw>>4)&15)
 				{
 #if 0
@@ -943,11 +945,19 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 
 				case 0x0:
 					op->nmid=BJX2_NMID_NOP;
+					op->fmid=BJX2_FMID_Z;
 					op->Run=BJX2_Op_NOP_None;
 					break;
 				case 0x1:
 					op->nmid=BJX2_NMID_RTSU;
+					op->fmid=BJX2_FMID_Z;
 					op->Run=BJX2_Op_RTS_None;
+					op->fl|=BJX2_OPFL_CTRLF;
+					break;
+				case 0x2:
+					op->nmid=BJX2_NMID_SYSCALL;
+					op->fmid=BJX2_FMID_Z;
+					op->Run=BJX2_Op_SYSCALL_None;
 					op->fl|=BJX2_OPFL_CTRLF;
 					break;
 

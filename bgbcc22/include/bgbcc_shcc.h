@@ -117,6 +117,8 @@
 #define BGBCC_SH_REG_SSR		0x63
 #define BGBCC_SH_REG_SPC		0x64
 
+#define BGBCC_SH_REG_TBR		0x65	//placeholder
+
 #define BGBCC_SH_REG_R0B		0x68
 #define BGBCC_SH_REG_R1B		0x69
 #define BGBCC_SH_REG_R2B		0x6A
@@ -656,6 +658,10 @@
 #define BGBCC_SH_NMID_CPUID			0x0125	//
 #define BGBCC_SH_NMID_RTSU			0x0126	//
 #define BGBCC_SH_NMID_SYSCALL		0x0127	//
+
+#define BGBCC_SH_NMID_INVIC			0x0128	//
+#define BGBCC_SH_NMID_INVDC			0x0129	//
+#define BGBCC_SH_NMID_INVTLB		0x012A	//
 
 
 #define BGBCC_SH_FMID_REGREG		0x01	//Rm, Rn

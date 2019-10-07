@@ -45,7 +45,7 @@ byte *TKFAT_GetSectorTempBuffer(TKFAT_ImageInfo *img,
 
 	n=num&255;
 
-#if 0
+#if 1
 	for(i=0; i<img->tbc_num; i++)
 	{
 		if((img->tbc_lba[i]==lba) &&
@@ -69,7 +69,7 @@ byte *TKFAT_GetSectorTempBuffer(TKFAT_ImageInfo *img,
 	}
 #endif
 
-#if 1
+#if 0
 //	i=255;
 	i=img->tbc_pred0;
 
@@ -385,6 +385,11 @@ int TKFAT_GetFatEntry(TKFAT_ImageInfo *img, int clid)
 		puts("TKFAT_GetFatEntry: Image Is NULL\n");
 		__debugbreak();
 	}
+	
+	if(clid<0)
+	{
+		printf("TKFAT_GetFatEntry: Bad CLID %d\n", clid);
+	}
 
 	if(img->isfat16)
 	{
@@ -406,9 +411,15 @@ int TKFAT_GetFatEntry(TKFAT_ImageInfo *img, int clid)
 	ofs=TKFAT_GetSectorTempBuffer(img, lba, 1);
 	ofs+=(clid&127)*4;
 
+//	printf("clid=%d ofs=%X\n", clid, ofs);
+
 	i=ofs[0]+(ofs[1]<<8)+(ofs[2]<<16)+(ofs[3]<<24);
 	if(i>=0x0FFFFFF0)
 		i=(i<<4)>>4;
+	
+//	printf("ofs=%p clid=%d->%d\n", ofs, clid, i);
+//	printf("%d->%d ", clid, i);
+		
 	return(i);
 }
 
@@ -795,14 +806,19 @@ int TKFAT_GetWalkCluster(
 {
 	int i, j, n, o;
 
-	if(!clid)
+	if(clid<=0)
+	{
+		printf("TKFAT_GetWalkCluster: CLID is %d\n", clid);
 		return(-1);
+	}
 
 	if(!img)
 	{
 		puts("TKFAT_GetWalkCluster: Image Is NULL\n");
 		__debugbreak();
 	}
+
+//	printf("TKFAT_GetWalkCluster: clid=%d clofs=%d\n", clid, cloffs);
 
 	i=clid; n=cloffs;
 	o=0;
@@ -815,72 +831,42 @@ int TKFAT_GetWalkCluster(
 //		n=cloffs-img->walk_clofs;
 		o=img->walk_clofs;
 		n=cloffs-o;
-		
-#if 0
-//		if((n>512) && (cloffs<=img->walk_lumax))
-		if(n>192)
-		{
-			if(cloffs<=img->walk_lumax)
-			{
-	//			j=cloffs>>8;
-				j=cloffs>>7;
-				i=img->walk_luhint[j];
-	//			o=j<<8;
-				o=j<<7;
-				n=cloffs-o;
-			}else if(img->walk_lumax>0)
-			{
-				j=img->walk_lumax>>7;
-				i=img->walk_luhint[j];
-				o=j<<7;
-				n=cloffs-o;
-			}
-		}
+	}
 #endif
-	}else
+
+#if 1
+	else if((img->walk2_clid==clid) &&
+		(cloffs>=img->walk2_clofs))
 	{
-#if 0
-		if(img->walk_clid==clid)
-//		if(0)
-		{
-			if(cloffs<=img->walk_lumax)
-			{
-//				j=cloffs>>8;
-				j=cloffs>>7;
-				i=img->walk_luhint[j];
-//				o=j<<8;
-				o=j<<7;
-				n=cloffs-o;
-			}else if(img->walk_lumax>0)
-			{
-				j=img->walk_lumax>>7;
-				i=img->walk_luhint[j];
-				o=j<<7;
-				n=cloffs-o;
-			}else
-			{
-				i=clid; n=cloffs;
-				o=0;
-			}
-		}else
-		{
-			img->walk_lumax=-1;
-			i=clid; n=cloffs;
-			o=0;
-		}
-#endif
+		i=img->walk2_clcur;
+		o=img->walk2_clofs;
+		n=cloffs-o;
+	}
+	else if((img->walk3_clid==clid) &&
+		(cloffs>=img->walk3_clofs))
+	{
+		i=img->walk3_clcur;
+		o=img->walk3_clofs;
+		n=cloffs-o;
 	}
 #endif
 
 //	i=clid; n=cloffs;
 	while(n>0)
 	{
+		if(n>>31)
+			{ __debugbreak(); }
+//		printf("%d ", i);
+	
 		j=TKFAT_GetFatEntry(img, i);
-		if(j<0)
+		if(j<=0)
 		{
 #ifndef TKFAT_READONLY
 			if(!expand)
+			{
+				puts("TKFAT_GetWalkCluster: EOF-1A\n");
 				return(-1);
+			}
 
 			j=TKFAT_AllocFreeCluster(img);
 			if(j<=0)
@@ -888,24 +874,25 @@ int TKFAT_GetWalkCluster(
 			TKFAT_SetFatEntry(img, i, j);
 //			TKFAT_SetFatEntry(img, j, 0x0FFFFFFF);
 #else
+			printf("TKFAT_GetWalkCluster: EOF-1B, i=%d, j=%d, n=%d\n",
+				i, j, n);
 			return(-1);
 #endif
 		}
-
-#if 0
-//		if(!(o&255) && (o>img->walk_lumax))
-		if(!(o&127) && (o>img->walk_lumax))
-		{
-//			img->walk_luhint[o>>8]=i;
-			img->walk_luhint[o>>7]=i;
-			img->walk_lumax=o;
-		}
-#endif
 		
 		i=j;
 		n--;
 		o++;
 	}
+
+#if 1
+	img->walk3_clid=img->walk2_clid;
+	img->walk3_clofs=img->walk2_clofs;
+	img->walk3_clcur=img->walk2_clcur;
+	img->walk2_clid=img->walk_clid;
+	img->walk2_clofs=img->walk_clofs;
+	img->walk2_clcur=img->walk_clcur;
+#endif
 
 	img->walk_clid=clid;
 	img->walk_clofs=cloffs;
@@ -919,12 +906,26 @@ int TKFAT_GetClusterFileOffs(TKFAT_ImageInfo *img,
 	int *rclid, int *rclfrac)
 {
 	int cloffs, clfrac;
-	int cl2;
-	
-	cloffs=foffs>>img->shclust;
-	clfrac=foffs&((1<<img->shclust)-1);
+	int cl2, clsh;
+
+	clsh=img->shclust;
+	if((clsh<9) || (clsh>16))
+	{
+		puts("Invalid Cluster Size\n");
+		__debugbreak();
+	}
+
+//	cloffs=foffs>>img->shclust;
+//	clfrac=foffs&((1<<img->shclust)-1);
+
+	cloffs=foffs>>clsh;
+	clfrac=foffs&((1<<clsh)-1);
+
 	cl2=TKFAT_GetWalkCluster(img, clid, cloffs, expand);
-	if(cl2<0)return(-1);
+	if(cl2<=0)
+	{
+		return(-1);
+	}
 	
 	*rclid=cl2;
 	*rclfrac=clfrac;
@@ -936,6 +937,12 @@ int TKFAT_ReadWriteSector(TKFAT_ImageInfo *img,
 {
 	byte *clbuf;
 //	lba=TKFAT_GetClusterLBA(img, clid);
+
+	if(lba<0)
+	{
+		printf("TKFAT_ReadWriteSector: Bad LBA %d\n", lba);
+		return(-1);
+	}
 
 	if(iswrite)
 	{
@@ -963,6 +970,12 @@ int TKFAT_ReadWriteCluster(TKFAT_ImageInfo *img,
 {
 	byte *clbuf;
 	int lba;
+	
+	if(clid<=0)
+	{
+		printf("TKFAT_ReadWriteCluster: Bad CLID %d\n", clid);
+		return(-1);
+	}
 	
 	lba=TKFAT_GetClusterLBA(img, clid);
 
@@ -992,6 +1005,11 @@ int TKFAT_ReadWriteClusterOffset(TKFAT_ImageInfo *img,
 	int offs1, offs2, szcl;
 	int i, j, k;
 
+	if(clid<=0)
+	{
+		puts("TKFAT_ReadWriteClusterOffset: CLID is Zero\n");
+	}
+
 	if(!img)
 	{
 		puts("TKFAT_ReadWriteClusterOffset: Image Is NULL\n");
@@ -1004,7 +1022,11 @@ int TKFAT_ReadWriteClusterOffset(TKFAT_ImageInfo *img,
 	{
 		i=TKFAT_GetClusterFileOffs(img, clid, foffs, iswrite,
 			&clid1, &offs1);
-		if(i<0)return(i);
+		if(i<0)
+		{
+			puts("TKFAT_ReadWriteClusterOffset: Fail-1\n");
+			return(i);
+		}
 		i=TKFAT_ReadWriteCluster(img,
 			clid1, offs1, iswrite, data, size);
 		return(i);
@@ -1014,8 +1036,21 @@ int TKFAT_ReadWriteClusterOffset(TKFAT_ImageInfo *img,
 		foffs, iswrite, &clid1, &offs1);
 	j=TKFAT_GetClusterFileOffs(img, clid,
 		foffs+(size-1), iswrite, &clid2, &offs2);
-	if(i<0)return(i);
-	if(j<0)return(j);
+	if(i<0)
+	{
+		puts("TKFAT_ReadWriteClusterOffset: Fail-2A\n");
+		return(i);
+	}
+	if(j<0)
+	{
+		puts("TKFAT_ReadWriteClusterOffset: Fail-2B\n");
+		return(j);
+	}
+	
+	if(clid1<=0)
+	{
+		printf("TKFAT_ReadWriteClusterOffset: Fail-2C\n");
+	}
 	
 	szcl=(1<<img->shclust);
 	ct=data; cte=data+size;
@@ -1030,7 +1065,11 @@ int TKFAT_ReadWriteClusterOffset(TKFAT_ImageInfo *img,
 			clidt, 0, iswrite, ct, szcl);
 		clidt=TKFAT_GetWalkCluster(img, clidt, 1, iswrite);
 		if(clidt<0)
+		{
+			printf("TKFAT_ReadWriteClusterOffset: Fail-3, ofs=%d sz=%d\n",
+				ct-data, cte-data);
 			return(-1);
+		}
 		ct+=szcl;
 	}
 	if(ct<cte)
@@ -1047,7 +1086,10 @@ int TKFAT_ReadWriteDirEntOffset(TKFAT_ImageInfo *img,
 	int i, j, k, n;
 
 	if(clid<=0)
+	{
+		puts("TKFAT_ReadWriteDirEntOffset: CLID is Zero\n");
 		return(-1);
+	}
 
 	if(!img)
 	{
@@ -1391,6 +1433,9 @@ int TKFAT_WalkDirEntNext(TKFAT_ImageInfo *img,
 		bln[k]=0xFFFF;
 		bln2[k]=0xFFFF;
 	}
+	
+	h0=-1;
+	h1=-1;
 	
 	bln[0]=0;
 	bln2[0]=0;
@@ -2068,6 +2113,9 @@ int TKFAT_ReadWriteDirEntFile(
 	sz=size;
 	if((offs+size)>dsz)
 		{ sz=dsz-offs; }
+
+	if(sz<0)
+		{ __debugbreak(); }
 
 	i=TKFAT_ReadWriteClusterOffset(dee->img,
 		dcli, offs, 0, data, sz);

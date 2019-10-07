@@ -269,6 +269,7 @@ void __exit(int status)
 {
 	int x;
 
+#if 0
 	for (x = 0; x < __NFILE; x++)
 	{
 		if (__userFiles[x] != NULL)
@@ -278,7 +279,7 @@ void __exit(int status)
 	}
 	if (stdout != NULL) fflush(stdout);
 	if (stderr != NULL) fflush(stderr);
-
+#endif
 
 #if USE_MEMMGR
 	memmgrTerm(&__memmgr);

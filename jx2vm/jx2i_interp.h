@@ -58,6 +58,8 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_REG_TEA	41
 #define BJX2_REG_MMCR	42
 #define BJX2_REG_EXSR	43
+#define BJX2_REG_STTB	44
+#define BJX2_REG_KRR	45
 
 #define BJX2_REG_ZZR	63
 
@@ -283,6 +285,7 @@ Will use direct linking and assume a non-modifiable program space.
 
 #define BJX2_NMID_MULSW		0x98		//
 #define BJX2_NMID_MULUW		0x99		//
+#define BJX2_NMID_SYSCALL	0x9A		//
 
 #define BJX2_NMID_CMOVTB	0xA0		//CMOVT.B
 #define BJX2_NMID_CMOVTW	0xA1		//CMOVT.W
@@ -347,6 +350,8 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_FMID_CHAIN			0x27		//Chained Opcode
 
 #define BJX2_FLIPSTNM
+
+// #define BJX2_EM_BPRED
 
 #if 0
 typedef unsigned char byte;

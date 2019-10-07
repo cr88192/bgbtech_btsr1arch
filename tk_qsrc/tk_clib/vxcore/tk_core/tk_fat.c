@@ -928,6 +928,7 @@ int TKFAT_GetWalkCluster(
 	TKFAT_ImageInfo *img,
 	int clid, int cloffs, bool expand)
 {
+	int is_c;
 	int i, j, n, o;
 
 	if(!clid)
@@ -936,6 +937,54 @@ int TKFAT_GetWalkCluster(
 	if(!img)
 		__debugbreak();
 
+	i=clid; n=cloffs; o=0;	is_c=0;
+
+	if((img->walk_clid==clid) &&
+		(cloffs>=img->walk_clofs))
+	{
+		i=img->walk_clcur;
+		o=img->walk_clofs;
+		n=cloffs-o;
+		is_c=1;
+	}
+
+	if((img->walk2_clid==clid) &&
+		(cloffs>=img->walk2_clofs))
+	{
+		if(!is_c || (o<img->walk2_clofs))
+		{
+			i=img->walk2_clcur;
+			o=img->walk2_clofs;
+			n=cloffs-o;
+			is_c=1;
+		}
+	}
+	
+	if((img->walk3_clid==clid) &&
+		(cloffs>=img->walk3_clofs))
+	{
+		if(!is_c || (o<img->walk3_clofs))
+		{
+			i=img->walk3_clcur;
+			o=img->walk3_clofs;
+			n=cloffs-o;
+			is_c=1;
+		}
+	}
+	
+	if((img->walk4_clid==clid) &&
+		(cloffs>=img->walk4_clofs))
+	{
+		if(!is_c || (o<img->walk4_clofs))
+		{
+			i=img->walk4_clcur;
+			o=img->walk4_clofs;
+			n=cloffs-o;
+			is_c=1;
+		}
+	}
+
+#if 0
 	if((img->walk_clid==clid) &&
 		(cloffs>=img->walk_clofs))
 	{
@@ -943,7 +992,12 @@ int TKFAT_GetWalkCluster(
 //		n=cloffs-img->walk_clofs;
 		o=img->walk_clofs;
 		n=cloffs-o;
-		
+#else
+//	if(is_c)
+	if(is_c && (img->walk_clid==clid))
+	{
+#endif
+	
 //		if((n>512) && (cloffs<=img->walk_lumax))
 		if(n>192)
 		{
@@ -990,8 +1044,8 @@ int TKFAT_GetWalkCluster(
 		}else
 		{
 			img->walk_lumax=-1;
-			i=clid; n=cloffs;
-			o=0;
+//			i=clid; n=cloffs;
+//			o=0;
 		}
 	}
 
@@ -1023,6 +1077,18 @@ int TKFAT_GetWalkCluster(
 		n--;
 		o++;
 	}
+
+#if 1
+	img->walk4_clid=img->walk3_clid;
+	img->walk4_clofs=img->walk3_clofs;
+	img->walk4_clcur=img->walk3_clcur;
+	img->walk3_clid=img->walk2_clid;
+	img->walk3_clofs=img->walk2_clofs;
+	img->walk3_clcur=img->walk2_clcur;
+	img->walk2_clid=img->walk_clid;
+	img->walk2_clofs=img->walk_clofs;
+	img->walk2_clcur=img->walk_clcur;
+#endif
 
 	img->walk_clid=clid;
 	img->walk_clofs=cloffs;
@@ -1286,7 +1352,9 @@ int tkfat_lfnchecksum(char *name)
 
 	s=(byte *)name; h=0;
 	for(i=0; i<11; i++)
-		h=((h&1)<<7)+(h>>1)+(*s++);
+//		h=((h&1)<<7)+(h>>1)+(*s++);
+//		h=(((h&1)<<7)+(h>>1)+(*s++))&255;
+		h=((h&1)<<7)+((h&255)>>1)+(*s++);
 	return(h&255);
 }
 
@@ -1484,6 +1552,8 @@ int TKFAT_WalkDirEntNext(TKFAT_ImageInfo *img,
 	
 	bln[0]=0;
 	bln2[0]=0;
+	h0=-1;
+	h1=-1;
 
 	for(i=sidx; i<65536; i++)
 	{
@@ -1603,7 +1673,17 @@ int TKFAT_WalkDirEntNext(TKFAT_ImageInfo *img,
 				j=tkfat_sfn2utf8(deb->name, deb->lncase, dee->de_name);
 				if(j<0)
 				{
-					printf("TKFAT_WalkDirEntNext: Reject DirEnt\n");
+					tk_printf("DBN: %02X %02X %02X %02X "
+						"%02X %02X %02X %02X .  %02X %02X %02X\n",
+						deb->name[0],	deb->name[1],
+						deb->name[2],	deb->name[3],
+						deb->name[4],	deb->name[5],
+						deb->name[6],	deb->name[7],
+						deb->name[8],	deb->name[9],
+						deb->name[10]);
+
+					tk_printf("H0: %02X %02X\n", h0, h1);
+					tk_printf("TKFAT_WalkDirEntNext: Reject DirEnt\n");
 					continue;
 				}
 				dee->de_aname[0]=0;
@@ -1652,6 +1732,8 @@ int TKFAT_LookupDirEntName(TKFAT_ImageInfo *img,
 	
 //	printf("TKFAT_LookupDirEntName: %s clid=%d\n", name, clid);
 	
+	h0=-1;
+	h1=-1;
 	lh=-1;
 	i=tkfat_name2sfn(name, tsn);
 	if(i>=0)
@@ -1875,7 +1957,8 @@ int TKFAT_CreateDirEntName(TKFAT_ImageInfo *img,
 	tsn[0]=' ';
 	tsn[1]=0;
 	tkfat_setDWord(tsn+2, h0);
-	tsn[5]=':';
+//	tsn[5]=':';
+	tsn[6]=':';
 	h1=tkfat_lfnchecksum(tsn);
 
 	li=0;

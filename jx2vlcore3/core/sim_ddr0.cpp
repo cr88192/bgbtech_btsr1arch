@@ -399,10 +399,10 @@ int main(int argc, char **argv, char **env)
 	
 //	lim=4194304;
 //	lim=1<<18;
-	lim=16;
+//	lim=16;
 //	lim=64;
 //	lim=65;
-//	lim=128;
+	lim=128;
 
 	printf("Begin\n");
 	top->memOpm=0x0;

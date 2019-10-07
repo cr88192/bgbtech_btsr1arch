@@ -278,6 +278,9 @@ int BGBCC_CCXLR3_TextLookupMatch(
 		p=ctx->ril_txhash[h*4+i];
 		d=(ctx->ril_txrov-p)&16383;
 		
+//		if(d>12288)
+//			continue;
+		
 		s=str;
 //		se=str+252;
 		se=str+4088;
@@ -588,8 +591,8 @@ void BGBCC_CCXLR3_EmitArgBlob(
 #endif
 
 //	if(len<8)
-//	if(1)
-	if(len<24)
+	if(1)
+//	if(len<24)
 	{
 #if 0
 		i=ctx->ril_psrov;

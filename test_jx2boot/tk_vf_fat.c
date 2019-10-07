@@ -138,6 +138,9 @@ int tk_fat_fread(void *buf, int sz1, int sz2, TK_FILE *fd)
 	sz=sz1*sz2;
 	sz=TKFAT_ReadWriteDirEntFile(
 		fd->udata1, fd->ofs, false, buf, sz);
+	
+//	printf("tk_fat_fread: ofs=%d sz=%d\n", fd->ofs, sz);
+	
 	if(sz>0)
 		fd->ofs+=sz;
 	return(sz);

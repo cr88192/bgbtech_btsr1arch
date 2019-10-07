@@ -24,16 +24,26 @@ jmp_buf	tk_sysc_exit;
 
 int tk_sysc_exitpt()
 {
-	return(setjmp(tk_sysc_exit));
+	int i;
+	i=setjmp(tk_sysc_exit);
+	if(i)
+	{
+//		__debugbreak();
+	}
+	return(i);
 }
 
 void tk_sysc_exitpgm(int val)
 {
+//	__debugbreak();
 	longjmp(tk_sysc_exit, val|0x10000);
 }
 
-__declspec(syscall)
-int __isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
+// __declspec(syscall)
+// int __isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
+
+__declspec(dllexport)
+int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 {
 	TK_SysArg *args;
 	int ret;
@@ -75,6 +85,47 @@ int __isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 				break;
 			case 0x05:
 				ret=TKMM_PageFree(args[0].p, args[1].i);
+				break;
+			
+			case 0x20:
+				ret=tk_hfopen(args[0].p, args[1].p);
+				break;
+			case 0x21:
+				ret=tk_hopendir(args[0].p);
+				break;
+			case 0x22:
+				ret=tk_unlink(args[0].p);
+				break;
+			case 0x23:
+				ret=tk_rename(args[0].p, args[1].p);
+				break;
+			case 0x24:
+				ret=tk_fstat(args[0].p, args[1].p);
+				break;
+			case 0x25:
+				ret=tk_fmount(args[0].p, args[1].p, args[2].p, args[3].p);
+				break;
+			case 0x26:
+				ret=tk_hreaddir(args[0].i, args[1].p, args[2].i, args[3].i);
+				break;
+			case 0x27:
+				ret=tk_hclosedir(args[0].i);
+				break;
+			case 0x28:
+				ret=tk_hread(args[0].i, args[1].p, args[2].i);
+				break;
+			case 0x29:
+				ret=tk_hwrite(args[0].i, args[1].p, args[2].i);
+				break;
+			case 0x2A:
+				*((s64 *)vParm1)=tk_hseek(args[0].i, args[1].l, args[2].i);
+				ret=TK_URES_TRUE;
+				break;
+			case 0x2B:
+				ret=tk_hclose(args[0].i);
+				break;
+			case 0x2C:
+				ret=tk_hioctl(args[0].i, args[1].i, args[2].p);
 				break;
 			}
 			break;

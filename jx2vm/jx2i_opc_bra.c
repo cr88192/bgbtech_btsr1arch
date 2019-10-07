@@ -394,7 +394,9 @@ void BJX2_Op_BpredUpdateBranch(BJX2_Context *ctx, BJX2_Opcode *op, int take)
 
 void BJX2_Op_BT_PcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+#ifdef BJX2_EM_BPRED
 	BJX2_Op_BpredUpdateBranch(ctx, op, (ctx->regs[BJX2_REG_SR]&1));
+#endif
 
 	if(ctx->regs[BJX2_REG_SR]&1)
 	{
@@ -418,7 +420,9 @@ void BJX2_Op_BSR_PcDisp2(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_BF_PcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+#ifdef BJX2_EM_BPRED
 	BJX2_Op_BpredUpdateBranch(ctx, op, !(ctx->regs[BJX2_REG_SR]&1));
+#endif
 
 	if(!(ctx->regs[BJX2_REG_SR]&1))
 	{
@@ -740,17 +744,26 @@ void BJX2_Op_INVIC_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 void BJX2_Op_INVDC_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	ctx->cc_flush|=2;
+	ctx->trapc=op->pc2;
 	BJX2_ThrowFaultStatus(ctx, BJX2_FLT_CCFLUSH);
 }
 
 void BJX2_Op_TRAP_Imm(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+	ctx->trapc=op->pc2;
 	BJX2_ThrowFaultStatus(ctx, op->imm);
 }
 
 void BJX2_Op_TRAP_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+	ctx->trapc=op->pc2;
 	BJX2_ThrowFaultStatus(ctx, ctx->regs[op->rn]);
+}
+
+void BJX2_Op_SYSCALL_None(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->trapc=op->pc2;
+	BJX2_ThrowFaultStatus(ctx, 0xE000|(ctx->regs[0]&0xFFF));
 }
 
 void BJX2_Op_WEXMD_Imm(BJX2_Context *ctx, BJX2_Opcode *op)

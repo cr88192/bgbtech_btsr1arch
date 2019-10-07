@@ -678,7 +678,8 @@ int SimDdr(int clk, int cmd, int *rdata)
 
 int update_ddr()
 {
-	int ddrlclk, cmd, data;
+	static int ddrlclk;
+	int cmd, data;
 	int n, inh;
 	int i, j, k;
 
@@ -724,8 +725,14 @@ int main(int argc, char **argv, char **env)
 
 	JX2R_UseImageCreateRamdisk(128*1024);
 //	JX2R_UseImageCreateRamdisk(32*1024);
+
 	JX2R_UseImageAddFile(
 		(char *)"BOOTLOAD.SYS",
+		(char *)"../../tk_qsrc/tk_clib/tkshell.sys");
+
+	JX2R_UseImageAddFile(
+//		(char *)"BOOTLOAD.SYS",
+		(char *)"DOOM.EXE",
 		(char *)"../../tk_qsrc/doomsrc2/doom_bjx2.exe");
 	JX2R_UseImageAddFile(
 		(char *)"DOOM1.WAD",

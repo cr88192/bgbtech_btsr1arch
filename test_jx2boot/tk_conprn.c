@@ -43,12 +43,33 @@ void tk_con_reset()
 void tk_con_scroll_up()
 {
 	volatile u32 *buf;
-	u32 p0, p1, p2, p3;
+	u64 q0;
+//	u32 p0, p1, p2, p3;
 	int i0, i1;
 	int i, j, k;
 
 	buf=tk_con.buf;
 
+#if 1
+	for(i=0; i<TK_CONHEIGHTN1; i++)
+	{
+		i0=((i+0)*TK_CONWIDTH)*8;
+		i1=((i+1)*TK_CONWIDTH)*8;
+		for(j=0; j<TK_CONWIDTH; j++)
+		{
+			q0=*(u64 *)(buf+i1);
+			*(u64 *)(buf+i0)=q0;
+			i0+=8;
+			i1+=8;
+		}
+	}
+
+	i0=(TK_CONHEIGHTN1*TK_CONWIDTH)*8;
+	for(j=0; j<TK_CONWIDTH; j++)
+		{ *(u64 *)(buf+i0)=0; i0+=8; }
+#endif
+
+#if 0
 //	for(i=0; i<24; i++)
 	for(i=0; i<TK_CONHEIGHTN1; i++)
 		for(j=0; j<TK_CONWIDTH; j++)
@@ -77,6 +98,7 @@ void tk_con_scroll_up()
 //		tk_con_buf[((TK_CONHEIGHTN1*TK_CONWIDTH)+j)*8]=0;
 		buf[((TK_CONHEIGHTN1*TK_CONWIDTH)+j)*8]=0;
 	}
+#endif
 }
 
 void tk_con_newline()

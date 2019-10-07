@@ -10,8 +10,10 @@ int tk_fat_ftell(TK_FILE *fd);
 int tk_fat_fclose(TK_FILE *fd);
 int tk_fat_fgetc(TK_FILE *fd);
 int tk_fat_fputc(int ch, TK_FILE *fd);
+int tk_fat_fioctl(TK_FILE *fd, int cmd, void *ptr);
 
 TK_DIRENT *tk_fat_readdir(TK_DIR *fd);
+int tk_fat_closedir(TK_DIR *fd);
 
 TK_FILE_VT tk_vfile_fat_vt={
 "vfat",				//fsname
@@ -31,9 +33,11 @@ tk_fat_ftell,		//ftell
 tk_fat_fclose,		//fclose
 tk_fat_fgetc,		//fgetc
 tk_fat_fputc,		//fputc
+tk_fat_fioctl,		//ioctl
 
 /* DIR ops */
-tk_fat_readdir		//readdir
+tk_fat_readdir,		//readdir
+tk_fat_closedir		//closedir
 };
 
 int tk_fat_init()
@@ -53,8 +57,9 @@ int tk_mount_sdfat()
 	mnt->vt=&tk_vfile_fat_vt;
 	mnt->udata0=img;
 	
-	mnt->next=tk_vf_mount;
-	tk_vf_mount=mnt;
+//	mnt->next=tk_vf_mount;
+//	tk_vf_mount=mnt;
+	tk_vf_addmount(mnt);
 }
 
 TK_MOUNT *tk_fat_mount(char *devfn, char *mntfn,
@@ -99,7 +104,7 @@ TK_FILE *tk_fat_fopen(TK_MOUNT *mnt, char *name, char *mode)
 	return(fd);
 }
 
-int tk_fat_fseek(TK_FILE *fd, int ofs, int rel)
+s64 tk_fat_fseek(TK_FILE *fd, s64 ofs, int rel)
 {
 	if(rel==0)
 	{
@@ -134,7 +139,7 @@ int tk_fat_fseek(TK_FILE *fd, int ofs, int rel)
 	return(-1);
 }
 
-int tk_fat_ftell(TK_FILE *fd)
+s64 tk_fat_ftell(TK_FILE *fd)
 {
 	return(fd->ofs);
 }
@@ -142,6 +147,7 @@ int tk_fat_ftell(TK_FILE *fd)
 int tk_fat_fclose(TK_FILE *fd)
 {
 	free(fd->udata1);
+	tk_free_file(fd);
 	return(0);
 }
 
@@ -183,6 +189,11 @@ int tk_fat_fputc(int ch, TK_FILE *fd)
 	return(ch);
 }
 
+int tk_fat_fioctl(TK_FILE *fd, int cmd, void *ptr)
+{
+	return(-1);
+}
+
 
 TK_DIR *tk_fat_opendir(TK_MOUNT *mnt, char *name)
 {
@@ -194,7 +205,7 @@ TK_DIR *tk_fat_opendir(TK_MOUNT *mnt, char *name)
 	int dcli;
 	int i;
 
-	tk_printf("tk_fat_opendir: %s\n", name);
+//	tk_printf("tk_fat_opendir: %s\n", name);
 
 	img=mnt->udata0;
 	dee=&tdee;
@@ -249,4 +260,12 @@ TK_DIRENT *tk_fat_readdir(TK_DIR *fd)
 		return(NULL);
 	memcpy(tde->d_name, dee->de_name, 256);
 	return(tde);
+}
+
+int tk_fat_closedir(TK_DIR *fd)
+{
+	free(fd->udata1);
+	free(fd->udata2);
+	tk_free_dir(fd);
+	return(0);
 }

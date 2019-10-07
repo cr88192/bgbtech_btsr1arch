@@ -305,3 +305,8 @@ int TKMM_MMList_GetSize(void *ptr)
 	sz1=TKMM_FxiToSize(obj->ix);
 	return(sz1);
 }
+
+void *tk_malloc(int sz)
+{
+	return(TKMM_MMList_Malloc(sz));
+}

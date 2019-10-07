@@ -3,7 +3,7 @@ byte *tk_ird_imgbuf=NULL;
 u32 tkmm_pagebase, tkmm_pageend;
 //static int tkmm_initvar=0;
 
-byte tkmm_pagebmp[4096];
+byte tkmm_pagebmp[16384];
 int tkmm_maxpage;
 int tkmm_pagerov;
 
@@ -178,7 +178,6 @@ void TK_ExitV(int res)
 	
 	ar[0].i=res;
 	tk_syscall(NULL, TK_UMSG_PGMEXIT, &p, ar);
-	return(p);
 }
 
 

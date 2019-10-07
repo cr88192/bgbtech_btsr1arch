@@ -303,8 +303,8 @@ int BGBCC_JX2A_GetRegId(char *str)
 			return(BGBCC_SH_REG_GBR);
 		if(!bgbcc_stricmp(str, "vbr"))
 			return(BGBCC_SH_REG_VBR);
-//		if(!bgbcc_stricmp(str, "tbr"))
-//			return(BGBCC_SH_REG_TBR);
+		if(!bgbcc_stricmp(str, "tbr"))
+			return(BGBCC_SH_REG_TBR);
 
 		if(!bgbcc_stricmp(str, "lr"))
 			return(BGBCC_SH_REG_PR);
@@ -712,7 +712,6 @@ int nmid;
 {"clrs",	BGBCC_SH_NMID_CLRS},
 {"sets",	BGBCC_SH_NMID_SETS},
 {"nott",	BGBCC_SH_NMID_NOTT},
-{"ldtlb",	BGBCC_SH_NMID_LDTLB},
 {"brk",		BGBCC_SH_NMID_BRK},
 {"movrt",	BGBCC_SH_NMID_MOVRT},
 {"movca.l",	BGBCC_SH_NMID_MOVCAL},
@@ -729,6 +728,11 @@ int nmid;
 {"ret",		BGBCC_SH_NMID_RET},
 {"rtsu",	BGBCC_SH_NMID_RTSU},
 {"syscall",	BGBCC_SH_NMID_SYSCALL},
+
+{"ldtlb",	BGBCC_SH_NMID_LDTLB},
+{"invic",	BGBCC_SH_NMID_INVIC},
+{"invdc",	BGBCC_SH_NMID_INVDC},
+{"invtlb",	BGBCC_SH_NMID_INVTLB},
 
 {"wexmd",	BGBCC_SH_NMID_WEXMD},
 {"cpuid",	BGBCC_SH_NMID_CPUID},

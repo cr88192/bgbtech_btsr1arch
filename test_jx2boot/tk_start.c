@@ -69,6 +69,7 @@ void tk_tryload(char *img, char **args)
 	fd=tk_fopen(img, "rb");	
 	if(fd)
 	{
+		bootgbr=0;
 		TKPE_LoadStaticPE(fd, &bootptr, &bootgbr);
 		printf("Boot Pointer %p, GBR=%p\n", bootptr, (void *)bootgbr);
 		

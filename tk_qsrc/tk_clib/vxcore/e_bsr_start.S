@@ -5,8 +5,9 @@
 // #define STACK_BASE_USR	0x0000DF00
 
 #define STACK_BASE_USR	0x010FFFF0
+#define STACK_BASE_SYS	0x0101FFF0
 
-.section .bss
+.section .data
 
 __tk_saved_vbr: .quad 0 
 
@@ -24,22 +25,33 @@ __tk_saved_vbr: .quad 0
 // start:
 _start:
 //	mov STACK_BASE, sp
-	mov STACK_BASE_USR, sp
+//	mov STACK_BASE_USR, sp
 
 	mov		vbr, r2
+//	mov.q	r2, __tk_saved_vbr
+
 	mov		__tk_saved_vbr, r3
 	mov.q	r2, @r3
+	
+//	break
+
+	mov		STACK_BASE_USR, r5
+	mov		STACK_BASE_ISR, r6
 
 	mov		isr_table, r4
 	tst		r2, r2
 	mov?t	r4, vbr
+	mov?t	r5, sp
+	mov?t	r6, ssp
+
+//	break?f
 
 //	bsr		copy_data
 
 	bsr		zero_bss
 
-	mov		STACK_BASE_ISR, r0
-	mov		r0, ssp
+//	mov		STACK_BASE_ISR, r0
+//	mov		r0, ssp
 
 //	mov		isr_table, r0
 //	mov		r0, vbr
@@ -52,9 +64,15 @@ _start:
 	bra _exit
 
 _exit:
-	mov #-1, r0
-	jmp r0
-	nop
+	mov 0, r4
+	mov 0x1003, r5
+	mov 0, r6
+	mov sp, r7
+	syscall #0
+	break
+//	mov #-1, r0
+//	jmp r0
+//	nop
 
 zero_bss:
 	mov __bss_start, r2
@@ -100,25 +118,47 @@ isr_tlbfault:
 	add		r2, #24, r3
 	jmp		r3
 
+isr_syscall:
+	mov sp, r16
+	mov STACK_BASE_SYS, sp
+	push r16
+//	push gbr
+	push lr
+
+//	break
+
+	bsr X(tk_isr_syscall)
+	
+	pop lr
+//	pop gbr
+	pop r16
+	mov r16, sp
+
+//	break
+	
+	rte
+
 isr_table:
 	bra8b _start
 	bra8b isr_except
 	bra8b isr_inter
 	bra8b isr_tlbfault
-	bra8b X(__isr_syscall)
+	bra8b isr_syscall
+//	bra8b X(__isr_syscall)
 
 
 .global X(tk_getsavedvbr)
 X(tk_getsavedvbr):
-	mov		__tk_saved_vbr, r3
-	mov.q	@r3, r2
+//	mov		__tk_saved_vbr, r3
+//	mov.q	@r3, r2
+	mov.q	__tk_saved_vbr, r2
 	rts
 
 .global X(tk_syscall)
 X(tk_syscall):
-	push lr
+//	push lr
 	syscall	#0
-	pop lr
+//	pop lr
 	rts
 
 /*
@@ -463,17 +503,52 @@ ashl_list:
 	rts
 .endif
 
+//void __tk_farcall(void *fptr, void *gbr, void *newstack)
+.global X(__tk_farcall)
+X(__tk_farcall):
+	invic	#-1
+	mov		r5, gbr
+	mov		r6, sp
+	jmp		r4
+
 
 .global X(__longj)
 X(__longj):
-	mov r4, r1
+//	mov r4, r1
 	mov r5, r2
 
-	mov.q  @(16,r4), r0
-	lds r0, pr
+//	mov.q  @(16,r4), r0
+//	lds r0, pr
 
-	mov.q  @(  0,r4), r0
-	mov.q  @(  8,r4), r1
+	mov.q  @(r4, 0), r1
+	mov r1, lr
+
+	mov.q  @(r4, 8), r1
+	mov r1, gbr
+
+	mov.q  @(r4, 16), r1
+	mov r1, sr
+
+	mov.q  @(r4, 24), r1
+	mov r1, ssp
+
+//	mov		STACK_BASE_ISR, r0
+//	mov		r0, ssp
+
+	mov.q  @(r4, 32), r1
+	mov r1, tbr
+
+	mov.q  @(r4, 40), r1
+	mov r1, ttb
+
+	mov.q  @(r4, 48), r1
+	mov r1, mmcr
+
+	mov.q  @(r4, 56), r1
+	mov r1, krr
+
+//	mov.q  @(  0,r4), r0
+//	mov.q  @(  8,r4), r1
 //	
 	mov.q  @( 24,r4), r3
 //	
@@ -505,6 +580,9 @@ X(__longj):
 	mov.q  @(232,r4), r29
 	mov.q  @(240,r4), r30
 	mov.q  @(248,r4), r31
+
+//	break
+
 
 //	mov r2, r0
 	rts
@@ -547,10 +625,33 @@ X(__setj):
 	mov.q r30, @(240,r4)
 	mov.q r31, @(248,r4)
 	
-	sts pr, r1
+//	sts pr, r1
 //	mov #16, r0
 //	mov.q  r1, @(r0,r4)
-	mov.q  r1, @(16,r4)
+
+	mov lr, r1
+	mov.q  r1, @(r4, 0)
+
+	mov gbr, r1
+	mov.q  r1, @(r4, 8)
+
+	mov sr, r1
+	mov.q  r1, @(r4, 16)
+
+	mov ssp, r1
+	mov.q  r1, @(r4, 24)
+
+	mov tbr, r1
+	mov.q  r1, @(r4, 32)
+
+	mov ttb, r1
+	mov.q  r1, @(r4, 40)
+
+	mov mmcr, r1
+	mov.q  r1, @(r4, 48)
+
+	mov krr, r1
+	mov.q  r1, @(r4, 56)
 	
 //	mov #0, r0
 	mov #0, r2

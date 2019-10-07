@@ -42,29 +42,44 @@ int tk_cmd2idx(char *s)
 	return(-1);
 }
 
-void tk_tryload(char *img, char **args)
+void __tk_farcall(void *fptr, void *gbr, void *newstack);
+
+int tk_tryload(char *img, char **args)
 {
 	TK_FILE *fd;
-	u64 bootgbr;
+//	u64 bootgbr;
+	void *bootgbr;
+	byte *boot_newspb, *boot_newsp;
 	int (*bootptr)();
 	int rv;
 
 	fd=tk_fopen(img, "rb");	
 	if(fd)
 	{
+		bootgbr=0;
 		TKPE_LoadStaticPE(fd, &bootptr, &bootgbr);
 		printf("Boot Pointer %p, GBR=%p\n", bootptr, (void *)bootgbr);
 		
 		if(bootptr)
 		{
+			boot_newspb=TKMM_PageAlloc(1<<18);
+			boot_newsp=boot_newspb+((1<<18)-1024);
+		
 			rv=tk_sysc_exitpt();
 			if(rv)
-				{ return(rv); }
+			{
+				tk_con_chkreset();
+//				__debugbreak();
+				return(rv);
+			}
 		
-			__arch_gbr=bootgbr;
-			bootptr();
+//			__arch_gbr=bootgbr;
+//			bootptr();
+			__tk_farcall(bootptr, bootgbr, boot_newsp);
 		}
 	}
+	
+	return(-1);
 }
 
 void tk_dir(char *path, char **args)
@@ -151,7 +166,7 @@ int main(int argc, char *argv[])
 	char tbuf[256];
 	char tb[256], tb1[256];
 	char **a;
-	int ci;
+	int ci, ri;
 
 	tk_con_reset();
 
@@ -171,7 +186,7 @@ int main(int argc, char *argv[])
 		switch(ci)
 		{
 		case 0:
-			printf("Test Command '%s'\n", a[0]);
+			tk_printf("Test Command '%s'\n", a[0]);
 			break;
 		case 1:
 			if(a[1])
@@ -179,7 +194,7 @@ int main(int argc, char *argv[])
 				tk_tryload(a[1], a+1);
 			}else
 			{
-				printf("usage: %s <image> [args*]\n", a[0]);
+				tk_printf("usage: %s <image> [args*]\n", a[0]);
 			}
 			break;
 
@@ -239,9 +254,15 @@ int main(int argc, char *argv[])
 			strcat(tb, "/");
 			strcat(tb, a[0]);
 			strcat(tb, ".exe");
-			tk_tryload(tb, a);
+			ri=tk_tryload(tb, a);
+			if(ri>0)
+			{
+				if(ri&65535)
+					{ tk_printf("Return Status=%d\n", (ri&65535)); }
+				break;
+			}
 			
-			printf("Unhandled Command '%s'\n", a[0]);
+			tk_printf("Unhandled Command '%s'\n", a[0]);
 			break;
 		}
 #endif
