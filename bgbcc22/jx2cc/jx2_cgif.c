@@ -89,7 +89,8 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	shctx->no_ops48=0;
 
 	shctx->is_pbo=0;
-	shctx->use_wexmd=1;
+//	shctx->use_wexmd=1;
+	shctx->use_wexmd=0;
 
 	if(ctx->optmode==BGBCC_OPT_SIZE)
 		shctx->use_wexmd=0;

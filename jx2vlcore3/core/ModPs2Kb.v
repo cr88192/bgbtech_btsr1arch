@@ -62,6 +62,8 @@ reg				scanNxtSpAdv;
 reg				scanEpAdv;
 reg[7:0]		ps2ScanAdv;
 
+reg[7:0]		ps2ScanCur;
+
 reg[11:0]		ps2Win;
 reg[11:0]		ps2NxtWin;
 reg				ps2WinP;
@@ -73,6 +75,7 @@ reg[3:0]		ps2WinCnt;
 reg[3:0]		ps2NxtWinCnt;
 
 reg				ps2_lstClk_i;
+reg				ps2_lstClk2_i;
 
 always @*
 begin
@@ -90,7 +93,9 @@ begin
 	ps2NxtWinCnt	= ps2WinCnt;
 
 	ps2NxtWin = ps2Win;
-	if(ps2_lstClk_i && !ps2_clk_i)
+//	if(ps2_lstClk_i && !ps2_clk_i)
+	if(ps2_lstClk2_i && !ps2_lstClk_i)
+//	if(!ps2_lstClk_i && ps2_clk_i)
 	begin
 		ps2NxtWin = { ps2_data_i, ps2Win[11:1] };
 		ps2NxtWinAdv	= 1;
@@ -99,23 +104,48 @@ begin
 			ps2NxtWinCnt	= ps2WinCnt+1;
 		
 		ps2NxtWinP =
-			ps2NxtWin[2] ^ ps2NxtWin[3] ^
-			ps2NxtWin[4] ^ ps2NxtWin[5] ^
-			ps2NxtWin[6] ^ ps2NxtWin[7] ^
-			ps2NxtWin[8] ^ ps2NxtWin[9];
+			!(ps2NxtWin[2] ^ ps2NxtWin[3] ^
+			  ps2NxtWin[4] ^ ps2NxtWin[5] ^
+			  ps2NxtWin[6] ^ ps2NxtWin[7] ^
+			  ps2NxtWin[8] ^ ps2NxtWin[9]);
+
+//		ps2NxtWinP =
+//			!(ps2NxtWin[1] ^ ps2NxtWin[2] ^
+//			  ps2NxtWin[3] ^ ps2NxtWin[4] ^
+//			  ps2NxtWin[5] ^ ps2NxtWin[6] ^
+//			  ps2NxtWin[7] ^ ps2NxtWin[8]);
+
+		$display("ModPs2Kb: bit=%X win=%B", ps2_data_i, ps2NxtWin);
 	end
 
-	if(ps2WinAdv && (ps2WinCnt==11))
+//	if(ps2WinAdv && (ps2WinCnt==11))
+//	if(ps2WinAdv && (ps2WinCnt==11))
+	if(ps2WinAdv && (ps2WinCnt>=11))
+//	if(ps2WinAdv && (ps2WinCnt==9))
+//	if(ps2WinAdv)
 	begin
-		if((ps2Win[1:0]==2'b01) && (ps2Win[11]==1'b1) &&
+		if((ps2Win[1]==1'b0) && (ps2Win[11]==1'b1) &&
 			(ps2Win[10]==ps2WinP))
+//		if((ps2Win[1:0]==2'b01) && (ps2Win[11]==1'b1) &&
+//			(ps2Win[10]==ps2WinP))
+//		if((ps2Win[0]==1'b0) &&
+//			(ps2Win[9]==ps2WinP))
+//		if((ps2Win[1:0]==2'b01) && (ps2Win[11]==1'b1))
+//		if((ps2Win[2:1]==2'b01))
 		begin
+//			ps2ScanAdv		= ps2Win[10:3];
 			ps2ScanAdv		= ps2Win[9:2];
+//			ps2ScanAdv		= ps2Win[8:1];
 			scanNxtEpos		= scanEpos + 1;
 			scanEpAdv		= 1;
 			ps2NxtWinCnt	= 0;
+			
+			$display("ModPs2Kb: Scan=%X Cnt=%d", ps2ScanAdv, ps2WinCnt);
 		end
 	end
+	
+//	if(ps2WinCnt>11)
+//		ps2NxtWinCnt = 0;
 
 	if(scanSpAdv && !mmioInOE)
 	begin
@@ -124,7 +154,8 @@ begin
 	
 	if((mmioAddr[3:2]==2'b00) && mmioInOE)
 	begin
-		tMmioOutData	= { UV24_00, scanBuf[scanSpos] };
+//		tMmioOutData	= { UV24_00, scanBuf[scanSpos] };
+		tMmioOutData	= { UV24_00, ps2ScanCur };
 		scanNxtSpAdv	= 1;
 		tMmioOK			= UMEM_OK_OK;
 	end
@@ -149,7 +180,10 @@ begin
 	ps2WinCnt		<= ps2NxtWinCnt;
 
 	ps2_lstClk_i	<= ps2_clk_i;
+	ps2_lstClk2_i	<= ps2_lstClk_i;
 	ps2Win			<= ps2NxtWin;
+	
+	ps2ScanCur		<= scanBuf[scanSpos];
 	
 	if(scanEpAdv)
 	begin

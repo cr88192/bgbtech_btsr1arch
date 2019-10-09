@@ -26,9 +26,9 @@ module CoreUnit(
 	uartTxD,	uartRxD,
 	uartCtS,	uartRtS,
 
-	ps2_clk_i,	ps2_data_i,
-	ps2_clk_o,	ps2_data_o,
-	ps2_clk_d,	ps2_data_d,
+	ps2kb_clk_i,	ps2kb_data_i,
+	ps2kb_clk_o,	ps2kb_data_o,
+	ps2kb_clk_d,	ps2kb_data_d,
 
 	sdc_dat_i,	sdc_dat_o,	sdc_dat_d,
 	sdc_clk,	sdc_cmd,	sdc_ena,
@@ -77,12 +77,12 @@ input			uartRxD;
 input			uartCtS;
 output			uartRtS;
 
-input			ps2_clk_i;
-output			ps2_clk_o;
-output			ps2_clk_d;
-input			ps2_data_i;
-output			ps2_data_o;
-output			ps2_data_d;
+input			ps2kb_clk_i;
+output			ps2kb_clk_o;
+output			ps2kb_clk_d;
+input			ps2kb_data_i;
+output			ps2kb_data_o;
+output			ps2kb_data_d;
 
 input[3:0]		sdc_dat_i;
 output[3:0]		sdc_dat_o;
@@ -93,10 +93,10 @@ output			sdc_ena;
 
 output			aud_mono_out;
 
-// assign			ps2_clk_o	= 1'bz;
-// assign			ps2_data_o	= 1'bz;
-// assign			ps2_clk_d	= 1'b0;
-// assign			ps2_data_d	= 1'b0;
+// assign			ps2kb_clk_o	= 1'bz;
+// assign			ps2kb_data_o	= 1'bz;
+// assign			ps2kb_clk_d	= 1'b0;
+// assign			ps2kb_data_d	= 1'b0;
 
 // assign			aud_mono_out	= 1'bz;
 
@@ -296,11 +296,21 @@ ModAudFm	fmsyn(
 
 wire[31:0]	kbMmioOutData;
 wire[1:0]	kbMmioOK;
+reg			ps2kb_lclk_i;
+reg			ps2kb_lclk2_i;
+
+reg			ps2kb_clki;
+reg			ps2kb_dati;
+// assign	ps2kb_clki = ps2kb_clk_i;
+// assign	ps2kb_dati = ps2kb_data_i;
+
 
 ModPs2Kb	ps2kb(
 	clock,			reset,
-	ps2_clk_i,		ps2_clk_o,		ps2_clk_d,	
-	ps2_data_i,		ps2_data_o,		ps2_data_d,
+//	ps2kb_clk_i,		ps2kb_clk_o,		ps2kb_clk_d,	
+	ps2kb_clki,		ps2kb_clk_o,		ps2kb_clk_d,	
+//	ps2kb_data_i,		ps2kb_data_o,		ps2kb_data_d,
+	ps2kb_dati,		ps2kb_data_o,		ps2kb_data_d,
 	mmioOutData,	kbMmioOutData,	mmioAddr,
 	mmioOpm,		kbMmioOK);
 
@@ -338,6 +348,12 @@ begin
 
 	memBusExc	= UV64_00;
 	tNxtBusMissLatch	= 0;
+
+//	if(ps2kb_lclk_i!=ps2kb_clk_i)
+//	if(ps2kb_lclk2_i!=ps2kb_lclk_i)
+//	begin
+//		$display("CoreUnit: ps2clk=%d ps2dat=%d", ps2kb_clk_i, ps2kb_data_i);
+//	end
 
 //	if(timer1MHz)
 //		$display("timer1MHz");
@@ -411,6 +427,12 @@ begin
 	mmioAddrL3	<= mmioAddrL2;
 	mmioAddrL4	<= mmioAddrL3;
 	tBusMissLatch	<= tNxtBusMissLatch;
+	ps2kb_lclk_i	<= ps2kb_clk_i;
+	ps2kb_lclk2_i	<= ps2kb_lclk_i;
+
+	ps2kb_clki		<= ps2kb_clk_i;
+	ps2kb_dati		<= ps2kb_data_i;
+
 end
 
 

@@ -222,17 +222,17 @@ begin
 				tScanPixClk[11:2] +
 				{2'b00, tScanPixClk[11:4]} - 59;
 
-//			tPixNextPosY = tScanNextRowClk[9:0] - 20;
-			tPixNextPosY = tScanNextRowClk[9:0] - 2;
+			tPixNextPosY = tScanNextRowClk[9:0] - 20;
+//			tPixNextPosY = tScanNextRowClk[9:0] - 2;
 //			tPixNextPosY = tScanNextRowClk[10:1] - 20;
 		end
 		else
 		begin
 			tPixNextPosX = tScanPixClk[11:2] - 59;
 
-//			tPixNextPosY = tScanNextRowClk[9:0] - 20;
+			tPixNextPosY = tScanNextRowClk[9:0] - 20;
 //			tPixNextPosY = tScanNextRowClk[9:0] - 2;
-			tPixNextPosY = tScanNextRowClk[9:0] - 3;
+//			tPixNextPosY = tScanNextRowClk[9:0] - 3;
 //			tPixNextPosY = tScanNextRowClk[10:1] - 20;
 		end
 

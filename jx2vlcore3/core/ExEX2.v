@@ -52,6 +52,7 @@ module ExEX2(
 	regFpuGRn,		//FPU GPR Result
 	regFpuLdGRn,		//FPU GPR Result
 	opBraFlush,
+	regInLastSr,
 	
 	regOutDlr,	regInDlr,
 	regOutDhr,	regInDhr,
@@ -59,6 +60,7 @@ module ExEX2(
 	regOutLr,	regInLr,
 	regOutSr,	regInSr,
 	regOutSchm,	regInSchm,
+	
 
 	memDataIn,
 	memDataOK
@@ -100,6 +102,7 @@ input[63:0]		regValMulwRes;	//Multiplier Result
 input[63:0]		regFpuGRn;		//FPU GPR Result
 input[63:0]		regFpuLdGRn;	//FPU GPR Result (Mem Load)
 input			opBraFlush;
+input[7:0]		regInLastSr;
 
 output[63:0]	regOutDlr;
 input[63:0]		regInDlr;
@@ -179,8 +182,10 @@ begin
 	casez( { opBraFlush, opUCmd[7:6] } )
 		3'b000: 	tOpEnable = 1;
 		3'b001: 	tOpEnable = 0;
-		3'b010: 	tOpEnable = regInSr[0];
-		3'b011: 	tOpEnable = !regInSr[0];
+//		3'b010: 	tOpEnable = regInSr[0];
+		3'b010: 	tOpEnable = regInLastSr[0];
+//		3'b011: 	tOpEnable = !regInSr[0];
+		3'b011: 	tOpEnable = !regInLastSr[0];
 		3'b1zz: 	tOpEnable = 0;
 	endcase
 	

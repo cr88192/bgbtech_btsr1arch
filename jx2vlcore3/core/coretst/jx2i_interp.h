@@ -360,6 +360,10 @@ byte kbrov;					//debug keyboard rover
 byte kbirov;				//debug keyboard rover
 byte kbirq;					//keyboard IRQ
 
+byte ps2kbbuf[256];			//debug keyboard buffer
+byte ps2kbrov;				//debug keyboard rover
+byte ps2kbirov;				//debug keyboard rover
+
 int ttick_hk;				//timer ticks until IRQ
 int ttick_rst;				//timer ticks reset
 s64 tot_cyc;

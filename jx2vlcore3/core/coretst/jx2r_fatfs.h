@@ -158,7 +158,7 @@ char *exp_ename[256];
 int exp_cnt;
 
 char *seg_base;
-//FILE *seg_fd[256];
+//BJX2_FILE *seg_fd[256];
 //u32 seg_id[256];
 JX2R_TKFAT_SegmentInfo *seg[256];
 int seg_n;
@@ -197,3 +197,12 @@ int JX2R_TKFAT_WriteSectors(JX2R_TKFAT_ImageInfo *img,
 
 int JX2R_TKFAT_SetupDirEntNewDirectory(
 	JX2R_TKFAT_FAT_DirEntExt *dee);
+
+typedef FILE BJX2_FILE;
+#define bjx2_fopen	fopen
+#define bjx2_fread	fread
+#define bjx2_fwrite	fwrite
+#define bjx2_fseek	fseek
+#define bjx2_fclose	fclose
+#define bjx2_fflush	fflush
+#define bjx2_ftell	ftell

@@ -857,6 +857,7 @@ reg[63:0]		ex2RegInSr;
 
 wire[7:0]		ex2RegOutSchm;
 reg[7:0]		ex2RegInSchm;
+reg[7:0]		ex2RegInLastSr;
 
 // reg[63:0]		ex2MemDataIn;
 // reg[1:0]		ex2MemDataOK;
@@ -882,6 +883,7 @@ ExEX2	ex2(
 	ex1FpuValGRn,
 	ex1FpuValLdGRn,
 	ex2BraFlush,
+	ex2RegInLastSr,
 	
 	ex2RegOutDlr,	ex2RegInDlr,
 	ex2RegOutDhr,	ex2RegInDhr,
@@ -2054,6 +2056,7 @@ begin
 		ex2IstrWord		<= ex1IstrWord;
 		ex2ValBPc		<= ex1ValBPc;
 		ex2BraFlush		<= ex1BraFlush;
+		ex2RegInLastSr	<= ex1RegInSr[7:0];
 
 		ex2RegIdRs		<= ex1RegIdRs;
 		ex2RegIdRt		<= ex1RegIdRt;

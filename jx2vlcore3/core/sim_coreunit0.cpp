@@ -49,6 +49,10 @@ byte fkey;
 
 byte fmode;
 
+byte ps2kbbuf[256];
+byte ps2kbrov;
+byte ps2kbirov;
+
 // #ifdef __linux
 #if 0
 static struct termios old_termios;
@@ -192,11 +196,78 @@ void BTSR1_ProcessEscKey(int v)
 	}
 }
 
+
+int BTSR1_MainAddScanKeyByte(int k)
+{
+	ps2kbbuf[ps2kbrov]=k;
+	ps2kbrov=(ps2kbrov+1)&255;
+	return(0);
+}
+
+int BTSR1_MainAddTranslateKey(int key)
+{
+	static const short ps2_key2scan[256]={
+		0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000,		//00..07
+		0x066, 0x00D, 0x000, 0x000, 0x000, 0x05A, 0x000, 0x000,		//08..0F
+		0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000,		//10..17
+		0x000, 0x000, 0x000, 0x076, 0x000, 0x000, 0x000, 0x000,		//18..1F
+		0x029, 0x016, 0x052, 0x026, 0x025, 0x02E, 0x03D, 0x052,		//20..27
+		0x046, 0x045, 0x03E, 0x055, 0x041, 0x04E, 0x049, 0x04A,		//28..2F
+		0x045, 0x016, 0x01E, 0x026, 0x025, 0x02E, 0x036, 0x03D,		//30..37
+		0x03E, 0x046, 0x04C, 0x04C, 0x041, 0x055, 0x049, 0x04A,		//38..3F
+		0x01E, 0x01C, 0x032, 0x021, 0x023, 0x024, 0x02B, 0x034,		//40..47
+		0x033, 0x043, 0x03B, 0x042, 0x04B, 0x03A, 0x031, 0x044,		//48..4F
+		0x04D, 0x015, 0x02D, 0x01B, 0x02C, 0x03C, 0x02A, 0x01D,		//50..57
+		0x022, 0x035, 0x01A, 0x054, 0x05D, 0x05B, 0x036, 0x04E,		//58..5F
+		0x00E, 0x01C, 0x032, 0x021, 0x023, 0x024, 0x02B, 0x034,		//60..67
+		0x033, 0x043, 0x03B, 0x042, 0x04B, 0x03A, 0x031, 0x044,		//68..6F
+		0x04D, 0x015, 0x02D, 0x01B, 0x02C, 0x03C, 0x02A, 0x01D,		//70..77
+		0x022, 0x035, 0x01A, 0x054, 0x05D, 0x05B, 0x00E, 0x171,		//78..7F
+		0x175, 0x172, 0x16B, 0x174, 0x011, 0x014, 0x012, 0x005,		//80..87
+		0x006, 0x004, 0x00C, 0x003, 0x00B, 0x083, 0x00A, 0x001,		//88..8F
+		0x009, 0x078, 0x007, 0x170, 0x000, 0x17A, 0x17D, 0x16C,		//90..97
+		0x169, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000,		//98..9F
+		0x058, 0x07E, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000,		//A0..A7
+		0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000,		//A8..AF
+		0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000,		//B0..B7
+		0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000,		//B8..BF
+		0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000,		//C0..C7
+		0x000, 0x000, 0x000, 0x000, 0x079, 0x07B, 0x07C, 0x14A,		//C8..CF
+		0x070, 0x069, 0x072, 0x07A, 0x06B, 0x073, 0x074, 0x06C,		//D0..D7
+		0x075, 0x07D, 0x15A, 0x071, 0x000, 0x000, 0x000, 0x000,		//D8..DF
+		0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000,		//E0..E7
+		0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000,		//E8..EF
+		0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000,		//F0..F7
+		0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000,		//F8..FF
+	};
+	
+	int sc;
+	
+	sc=ps2_key2scan[key&0xFF];
+	if(!sc)
+		return(0);
+
+	if(key&0x8000)
+	{
+		if(sc&0x100)
+			BTSR1_MainAddScanKeyByte(0xE0);
+		BTSR1_MainAddScanKeyByte(0xF0);
+		BTSR1_MainAddScanKeyByte(sc&0xFF);
+		return(0);
+	}
+
+	if(sc&0x100)
+		BTSR1_MainAddScanKeyByte(0xE0);
+	BTSR1_MainAddScanKeyByte(sc&0xFF);
+	return(0);
+}
+
 int BTSR1_MainPollKeyboard(void)
 {
+	u16 *kb;
 	int i, j, k, l;
 
-	FRGL_GetKeybuf();
+//	FRGL_GetKeybuf();
 
 #ifdef _WIN32
 	while(_kbhit())
@@ -318,6 +389,17 @@ int BTSR1_MainPollKeyboard(void)
 		j=fgetc(stdin);
 	}
 #endif
+
+#if 1
+	kb=FRGL_GetKeybuf();
+	while(*kb)
+	{
+		k=*kb++;
+		BTSR1_MainAddTranslateKey(k);
+		BTSR1_MainAddKey(k);
+	}
+#endif
+
 }
 
 int BTSR1_MainInitKeyboard(void)
@@ -708,6 +790,97 @@ int update_ddr()
 	}
 }
 
+int update_ps2kb()
+{
+	static byte xmit;
+	static byte xmitpos;
+	static byte xmitclk_val;
+	static int xmitclk_cnt;
+	static byte xmit_upd;
+	static byte tclk, tdat, lclk, tlclk;
+	static byte b, pb;
+	
+	if(top->clock && !tlclk)
+	{
+		if(xmitpos<=0)
+		{
+			if(ps2kbirov!=ps2kbrov)
+			{
+				xmit=ps2kbbuf[ps2kbirov];
+				ps2kbirov=(ps2kbirov+1)&255;
+				xmitpos=11;
+				
+				printf("update_ps2kb: scan=%02X\n", xmit);
+			}
+
+	//		top->ps2_clk_i=1;
+	//		top->ps2_data_i=1;
+			tclk=1;
+			tdat=1;
+
+			xmitclk_val=1;
+			xmitclk_cnt=6250;
+			xmit_upd=1;
+		}else
+		{
+			if(xmit_upd)
+			{
+				switch(xmitpos)
+				{
+					case 11: b=0; pb=1; break;
+					case 10: b=(xmit>>0)&1; break;
+					case  9: b=(xmit>>1)&1; break;
+					case  8: b=(xmit>>2)&1; break;
+					case  7: b=(xmit>>3)&1; break;
+					case  6: b=(xmit>>4)&1; break;
+					case  5: b=(xmit>>5)&1; break;
+					case  4: b=(xmit>>6)&1; break;
+					case  3: b=(xmit>>7)&1; break;
+					case  2: b=pb; break;
+					case  1: b=1; break;
+				}
+	//			top->ps2_data_i=b;
+				tdat=b;
+				xmit_upd=0;
+			}
+
+			xmitclk_cnt--;
+			if(xmitclk_cnt<=0)
+			{
+				xmitclk_val=!xmitclk_val;
+				xmitclk_cnt=6250;
+	//			top->ps2_clk_i=xmitclk_val;
+				tclk=xmitclk_val;
+				xmit_upd=1;
+
+	//			if(xmitclk_val)
+				if(!xmitclk_val)
+				{
+					pb=pb^b;
+					xmitpos--;
+					xmit_upd=0;
+				}
+				
+	//			printf("update_ps2kb: clk=%d data=%d\n",
+	//				top->ps2_clk_i, top->ps2_data_i);
+	//				tclk, tdat);
+			}
+		}
+	}
+
+	tlclk=top->clock;
+
+	top->ps2kb_clk_i=tclk;
+	top->ps2kb_data_i=tdat;
+	
+	if(tclk!=lclk)
+	{
+//		printf("update_ps2kb: clk=%d data=%d\n",
+//			tclk, tdat);
+		lclk=tclk;
+	}
+}
+
 int main(int argc, char **argv, char **env)
 {
 	BJX2_Context *ctx;
@@ -853,7 +1026,13 @@ int main(int argc, char **argv, char **env)
 			
 				sdc_lclk=top->sdc_clk;
 			}
+			
 		}
+		
+//		if(!top->ps2kb_clk_i)
+//			printf("sim: ps2kb_clk_i=%d\n", top->ps2kb_clk_i);
+
+		update_ps2kb();
 		
 		ctx->tot_cyc=main_time>>1;
 		
