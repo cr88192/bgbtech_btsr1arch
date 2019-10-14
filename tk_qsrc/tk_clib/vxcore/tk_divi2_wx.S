@@ -94,7 +94,8 @@ __udivsi3:
 		R22=__sdivsi3 . lr
 		R23=lr
 	 */
-	
+
+#if 0
 	tst		#-4, r18
 	bt		.L1
 	.L4:
@@ -114,6 +115,7 @@ __udivsi3:
 	movnt	r6			| sub		r5, r17, r7
 	cselt	r5, r7, r5	| tst		#-4, r18
 	bf		.L4
+#endif
 
 	.L1:
 	add		#-1, r18		| shll1		r5

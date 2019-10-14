@@ -145,7 +145,8 @@ begin
 			if(!tMsgLatch)
 				$display("EX: Invalid Opcode");
 			tNextMsgLatch	= 1;
-			tExHold		= 1;
+//			tExHold		= 1;
+			tExHold		= !reset;
 		end
 	
 		JX2_UCMD_LEA_MR: begin
@@ -237,7 +238,8 @@ begin
 					if(!tMsgLatch)
 						$display("EX1B: Unhandled Op-IXS %X", opUIxt);
 					tNextMsgLatch	= 1;
-					tExHold		= 1;
+//					tExHold		= 1;
+					tExHold		= !reset;
 				end
 			endcase
 		end
@@ -252,14 +254,16 @@ begin
 					if(!tMsgLatch)
 						$display("EX1B: BREAK");
 					tNextMsgLatch	= 1;
-					tExHold		= 1;
+//					tExHold		= 1;
+					tExHold		= !reset;
 				end
 
 				default: begin
 					if(!tMsgLatch)
 						$display("EX1B: Unhandled Op-IXT %X", opUIxt);
 					tNextMsgLatch	= 1;
-					tExHold		= 1;
+//					tExHold		= 1;
+					tExHold		= !reset;
 				end
 			endcase
 		end
@@ -268,7 +272,8 @@ begin
 			if(!tMsgLatch)
 				$display("EX1B: Unhandled UCmd %X", opUCmd);
 			tNextMsgLatch	= 1;
-			tExHold		= 1;
+//			tExHold		= 1;
+			tExHold		= !reset;
 		end
 	
 	endcase

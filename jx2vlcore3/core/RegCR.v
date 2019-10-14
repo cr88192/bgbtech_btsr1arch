@@ -95,6 +95,7 @@ assign	regOutSsp	= crRegSsp;
 assign	regOutVbr	= crRegVbr;
 assign	regOutGbr	= crRegGbr;
 assign	regOutTbr	= crRegTbr;
+assign	regOutTea	= crRegTea;
 
 `ifdef jx2_enable_mmu
 assign	regOutMmcr	= crRegMmcr;

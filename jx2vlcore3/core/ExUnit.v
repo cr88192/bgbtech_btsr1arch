@@ -59,7 +59,10 @@ module ExUnit(
 
 	dbgDcInAddr,	dbgDcInOpm,
 	dbgDcOutVal,	dbgDcInVal,
-	dbgDcOutOK
+	dbgDcOutOK,
+	
+	dbgOutStatus1,	dbgOutStatus2,
+	dbgOutStatus3,	dbgOutStatus4
 	);
 
 input			clock;
@@ -84,6 +87,11 @@ output[63:0]	dbgDcOutVal;
 output[63:0]	dbgDcInVal;
 output[ 1:0]	dbgDcOutOK;
 
+output			dbgOutStatus1;
+output			dbgOutStatus2;
+output			dbgOutStatus3;
+output			dbgOutStatus4;
+
 reg				exHold1;
 reg				exHold2;
 
@@ -95,6 +103,16 @@ reg				exHold1D;
 assign		dbgExHold1 = exHold1;
 assign		dbgExHold2 = exHold2;
 
+reg			tDbgOutStatus1;
+reg			tDbgOutStatus2;
+reg			tDbgOutStatus3;
+reg			tDbgOutStatus4;
+assign		dbgOutStatus1 = tDbgOutStatus1;
+assign		dbgOutStatus2 = tDbgOutStatus2;
+assign		dbgOutStatus3 = tDbgOutStatus3;
+assign		dbgOutStatus4 = tDbgOutStatus4;
+
+
 
 /* IF */
 
@@ -103,6 +121,7 @@ wire[63:0]		gprOutDhr;
 
 wire[63:0]		crOutMmcr;
 wire[63:0]		crOutKrr;
+wire[63:0]		crOutSr;
 
 reg[31:0]		ifValPc;
 reg[31:0]		ifLastPc;
@@ -538,7 +557,7 @@ RegGPR regGpr(
 
 /* ID2, FPR */
 
-wire[63:0]		crOutSr;
+// wire[63:0]		crOutSr;
 
 `ifdef jx2_enable_fprs
 
@@ -1142,6 +1161,11 @@ begin
 	tNxtRegExc		= 0;
 	tRegExcOfs		= 0;
 	tNxtPreHold1	= 0;
+	
+	tDbgOutStatus1	= 0;
+	tDbgOutStatus2	= 0;
+	tDbgOutStatus3	= 0;
+	tDbgOutStatus4	= 0;
 
 	crInExsr		= crOutExsr;
 	crInSpc			= crOutSpc;
@@ -1165,6 +1189,9 @@ begin
 	if(ex1FpuOK[1])
 		exHold2		= 1;
 `endif
+
+//	tDbgOutStatus1	= 0;
+//	tDbgOutStatus2	= 0;
 
 	exHold2	=
 		(ex1Hold)		|	(ex2Hold)		|
@@ -1192,45 +1219,45 @@ begin
 
 `ifdef jx2_enable_wex3w
 	exHold1B	=
-		((	(ex1RegIdRm == gprIdRs) |
-			(ex1RegIdRm == gprIdRt) |
-			(ex1RegIdRm == gprIdRu) |
-			(ex1RegIdRm == gprIdRv) |
-			(ex1RegIdRm == gprIdRx) |
-			(ex1RegIdRm == gprIdRy)	) &
-			(ex1HldIdRn1 != JX2_GR_ZZR)) |
-		((	(exB1RegIdRm == gprIdRs) |
-			(exB1RegIdRm == gprIdRt) |
-			(exB1RegIdRm == gprIdRu) |
-			(exB1RegIdRm == gprIdRv) |
-			(exB1RegIdRm == gprIdRx) |
-			(exB1RegIdRm == gprIdRy)	) &
-			(exB1HldIdRn1 != JX2_GR_ZZR)) |
-		((	(exC1RegIdRm == gprIdRs) |
-			(exC1RegIdRm == gprIdRt) |
-			(exC1RegIdRm == gprIdRu) |
-			(exC1RegIdRm == gprIdRv) |
-			(exC1RegIdRm == gprIdRx) |
-			(exC1RegIdRm == gprIdRy)	) &
+		((	(ex1RegIdRm == gprIdRs) ||
+			(ex1RegIdRm == gprIdRt) ||
+			(ex1RegIdRm == gprIdRu) ||
+			(ex1RegIdRm == gprIdRv) ||
+			(ex1RegIdRm == gprIdRx) ||
+			(ex1RegIdRm == gprIdRy)	) &&
+			(ex1HldIdRn1 != JX2_GR_ZZR)) ||
+		((	(exB1RegIdRm == gprIdRs) ||
+			(exB1RegIdRm == gprIdRt) ||
+			(exB1RegIdRm == gprIdRu) ||
+			(exB1RegIdRm == gprIdRv) ||
+			(exB1RegIdRm == gprIdRx) ||
+			(exB1RegIdRm == gprIdRy)	) &&
+			(exB1HldIdRn1 != JX2_GR_ZZR)) ||
+		((	(exC1RegIdRm == gprIdRs) ||
+			(exC1RegIdRm == gprIdRt) ||
+			(exC1RegIdRm == gprIdRu) ||
+			(exC1RegIdRm == gprIdRv) ||
+			(exC1RegIdRm == gprIdRx) ||
+			(exC1RegIdRm == gprIdRy)	) &&
 			(exC1HldIdRn1 != JX2_GR_ZZR));
 `else
 `ifdef jx2_enable_wex2w
 	exHold1B	=
-		((	(ex1RegIdRm == gprIdRs) |
-			(ex1RegIdRm == gprIdRt) |
-			(ex1RegIdRm == gprIdRu) |
-			(ex1RegIdRm == gprIdRv)	) &
-			(ex1HldIdRn1 != JX2_GR_ZZR)) |
-		((	(exB1RegIdRm == gprIdRs) |
-			(exB1RegIdRm == gprIdRt) |
-			(exB1RegIdRm == gprIdRu) |
-			(exB1RegIdRm == gprIdRv)	) &
+		((	(ex1RegIdRm == gprIdRs) ||
+			(ex1RegIdRm == gprIdRt) ||
+			(ex1RegIdRm == gprIdRu) ||
+			(ex1RegIdRm == gprIdRv)	) &&
+			(ex1HldIdRn1 != JX2_GR_ZZR)) ||
+		((	(exB1RegIdRm == gprIdRs) ||
+			(exB1RegIdRm == gprIdRt) ||
+			(exB1RegIdRm == gprIdRu) ||
+			(exB1RegIdRm == gprIdRv)	) &&
 			(exB1HldIdRn1 != JX2_GR_ZZR));
 `else
 	exHold1B	=
-		(	(ex1RegIdRm == gprIdRs) |
-			(ex1RegIdRm == gprIdRt) |
-			(ex1RegIdRm == gprIdRm)	) &
+		(	(ex1RegIdRm == gprIdRs) ||
+			(ex1RegIdRm == gprIdRt) ||
+			(ex1RegIdRm == gprIdRm)	) &&
 		(ex1HldIdRn1 != JX2_GR_ZZR);
 `endif
 `endif
@@ -1243,8 +1270,9 @@ begin
 //	if(ex1RegIdRm == JX2_GR_SP)
 //		exHold1C = 1;
 
-	exHold1C = (ex1RegOutSchm[JX2_SCHM_SP]) |
+	exHold1C = (ex1RegOutSchm[JX2_SCHM_SP]) ||
 		(ex1RegIdRm == JX2_GR_SP);
+//		(ex1HldIdRn1 == JX2_GR_SP);
 
 `ifndef def_true
 // `ifdef def_true
@@ -1303,7 +1331,13 @@ begin
 	end
 `endif
 
-	exHold1		= exHold1A | exHold1B | exHold1C | exHold1D;
+//	exHold1		= exHold1A | exHold1B | exHold1C | exHold1D;
+	exHold1		= exHold1A || exHold1B || exHold1C || exHold1D;
+
+	tDbgOutStatus1	= exHold1A;
+	tDbgOutStatus2	= exHold1B;
+	tDbgOutStatus3	= exHold1C;
+	tDbgOutStatus4	= exHold1D;
 
 //	case( {1'b1, ex1HldIdCn1} )
 //		JX2_CR_LR:	 exHold1 = 1;
@@ -1341,6 +1375,12 @@ begin
 
 	if(ex1TrapExc[15])
 		tNxtRegExc = { UV48_00, ex1TrapExc };
+
+	if(reset)
+	begin
+		exHold1		= 0;
+		exHold2		= 0;
+	end
 
 
 	ifInPcHold	= exHold1;
@@ -1494,6 +1534,12 @@ begin
 	crInSr			= ex1RegOutSr;
 	gprInSp			= ex1RegOutSp;
 
+	if(reset)
+	begin
+		crInSr			= 0;
+		gprInSp			= 64'h00000DFF0;
+	end
+
 //	tDelayExc		<= tNxtDelayExc;
 
 	tNxtDelayExc	= 0;
@@ -1561,6 +1607,9 @@ begin
 				crInSpc			= id1ValBPc;
 			else
 				crInSpc		= ifLastPc;
+
+			if(tRegExc[15:12]==4'b1110)
+				crInSpc			= id1ValBPc;
 
 //			crInSsp			= gprOutSp[31:0];
 			crInSsp			= ex1RegOutSp[31:0];
@@ -1682,6 +1731,8 @@ begin
 
 end
 
+
+
 always @(posedge clock)
 begin
 
@@ -1707,6 +1758,11 @@ begin
 //		opBraFlushMask	<= 8'h07;
 //		opBraFlushMask	<= 8'h0F;
 		opBraFlushMask	<= JX2_BRA_FLUSHMSK;
+		ifLastPc		<= 0;
+		ifLastPcStep	<= 0;
+		ex1BraFlush		<= 1;
+		ex2BraFlush		<= 1;
+
 	end
 	else
 		if(!exHold1)
@@ -1886,6 +1942,7 @@ begin
 		ex1OpUIxt		<= idA2IdUIxt;
 		exB1OpUCmd		<= idB2IdUCmd;
 		exB1OpUIxt		<= idB2IdUIxt;
+		exB1RegValImm	<= gprValImmB;
 
 		ex1RegIdRs		<= gprIdRs;
 		ex1RegIdRt		<= gprIdRt;
@@ -1904,6 +1961,7 @@ begin
 `ifdef jx2_enable_wex3w
 		exC1OpUCmd		<= idC2IdUCmd;
 		exC1OpUIxt		<= idC2IdUIxt;
+		exC1RegValImm	<= gprValImmC;
 
 		exC1RegIdRs		<= gprIdRx;
 		exC1RegIdRt		<= gprIdRy;
@@ -1959,9 +2017,9 @@ begin
 		ex1RegValPc		<= UV32_XX;
 		ex1RegValImm	<= UV33_XX;
 
-		ex1RegIdRs		<= UV6_XX;
-		ex1RegIdRt		<= UV6_XX;
-		ex1RegIdRm		<= UV6_XX;
+		ex1RegIdRs		<= UV6_00;
+		ex1RegIdRt		<= UV6_00;
+		ex1RegIdRm		<= UV6_00;
 		ex1RegValRs		<= UV64_XX;
 		ex1RegValRt		<= UV64_XX;
 		ex1RegValRm		<= UV64_XX;
@@ -2028,6 +2086,28 @@ begin
 			ex2RegIdRn2, ex2RegValRn2,
 			ex2RegIdCn2, ex2RegValCn2);
 
+`ifdef jx2_enable_wex
+		$display("  EX2-B: Op=%X-%X",
+			exB2OpUCmd, exB2OpUIxt);
+		$display("     Rs=%X(%X) Rt=%X(%X) Rn=%X(%X)",
+			exB2RegIdRs, exB2RegValRs,
+			exB2RegIdRt, exB2RegValRt,
+			exB2RegIdRm, exB2RegValRm);
+		$display("     Rn1=%X(%X)",
+			exB2RegIdRn2, exB2RegValRn2);
+
+`ifdef jx2_enable_wex3w
+		$display("  EX2-C: Op=%X-%X",
+			exC2OpUCmd, exC2OpUIxt);
+		$display("     Rs=%X(%X) Rt=%X(%X) Rn=%X(%X)",
+			exC2RegIdRs, exC2RegValRs,
+			exC2RegIdRt, exC2RegValRt,
+			exC2RegIdRm, exC2RegValRm);
+		$display("     Rn1=%X(%X)",
+			exC2RegIdRn2, exC2RegValRn2);
+`endif
+`endif
+
 		$display("");
 `endif
 
@@ -2045,6 +2125,35 @@ begin
 		$display("     Rn1=%X(%X) Cn1=%X(%X)",
 			ex2RegIdRn2, ex2RegValRn2,
 			ex2RegIdCn2, ex2RegValCn2);
+
+`ifdef jx2_enable_wex
+
+		if(exB2OpUCmd[5:0]!=0)
+		begin
+			$display("  EX2-B: Op=%X-%X",
+				exB2OpUCmd, exB2OpUIxt);
+			$display("     Rs=%X(%X) Rt=%X(%X) Rn=%X(%X)",
+				exB2RegIdRs, exB2RegValRs,
+				exB2RegIdRt, exB2RegValRt,
+				exB2RegIdRm, exB2RegValRm);
+			$display("     Rn1=%X(%X)",
+				exB2RegIdRn2, exB2RegValRn2);
+		end
+
+`ifdef jx2_enable_wex3w
+		if(exC2OpUCmd[5:0]!=0)
+		begin
+			$display("  EX2-C: Op=%X-%X",
+				exC2OpUCmd, exC2OpUIxt);
+			$display("     Rs=%X(%X) Rt=%X(%X) Rn=%X(%X)",
+				exC2RegIdRs, exC2RegValRs,
+				exC2RegIdRt, exC2RegValRt,
+				exC2RegIdRm, exC2RegValRm);
+			$display("     Rn1=%X(%X)",
+				exC2RegIdRn2, exC2RegValRn2);
+		end
+`endif
+`endif
 
 //		$display("");
 `endif

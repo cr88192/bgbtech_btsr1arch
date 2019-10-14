@@ -102,7 +102,8 @@ begin
 
 //	tOutCs = tRegCtrl[0];
 //	tNxtDivRst = { 2'b00, tRegCtrl[31:27], 7'h00 };
-	tNxtDivRst = { 2'b00, tRegCtrl[31:27], 7'h40 };
+//	tNxtDivRst = { 2'b00, tRegCtrl[31:27], 7'h40 };
+	tNxtDivRst = 1000;
 
 	tNxtRegExchI	= tRegExchI;
 	tNxtRegExchO	= tRegExchO;

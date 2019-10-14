@@ -139,8 +139,8 @@ MemIcA		memIc(
 	clock,			reset,
 	icInPcAddr,		icOutPcVal,
 	icOutPcOK,		icOutPcStep,
-	icInPcHold,		icInPcWxe,
-	ifMemData,		ifMemAddr,		dcInOpm,
+	icInPcHold,		icInPcWxe,		dcInOpm,
+	ifMemData,		ifMemAddr,
 	ifMemOpm,		ifMemOK
 	);
 `endif

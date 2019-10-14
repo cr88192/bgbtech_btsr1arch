@@ -105,7 +105,7 @@ __udivsi3:
 		R18=sr
 	 */
 	
-#if 1
+#if 0
 	tst		#-4, r18
 	bt		.L1
 

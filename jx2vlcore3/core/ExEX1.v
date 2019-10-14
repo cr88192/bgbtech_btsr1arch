@@ -316,7 +316,8 @@ begin
 			if(!tMsgLatch)
 				$display("EX: Invalid Opcode");
 			tNextMsgLatch	= 1;
-			tExHold		= 1;
+//			tExHold		= 1;
+			tExHold		= !reset;
 		end
 	
 		JX2_UCMD_LEA_MR: begin
@@ -623,11 +624,22 @@ begin
 					tRegIdRn1		= regIdRm;
 					tRegValRn1		= {UV63_00, !regInSr[0]};
 				end
+
+				JX2_UCIX_IXS_INVIC: begin
+					tMemOpm		= UMEM_OPM_FLUSHIS;
+					tMemAddr	= regValRm[31:0];
+				end
+				JX2_UCIX_IXS_INVDC: begin
+					tMemOpm		= UMEM_OPM_FLUSHDS;
+					tMemAddr	= regValRm[31:0];
+				end
+
 				default: begin
 					if(!tMsgLatch)
 						$display("EX: Unhandled Op-IXS %X", opUIxt);
 					tNextMsgLatch	= 1;
-					tExHold		= 1;
+//					tExHold		= 1;
+					tExHold		= !reset;
 				end
 			endcase
 		end
@@ -642,7 +654,8 @@ begin
 					if(!tMsgLatch)
 						$display("EX: BREAK, PC=%X", regValPc);
 					tNextMsgLatch	= 1;
-					tExHold		= 1;
+//					tExHold		= 1;
+					tExHold		= !reset;
 				end
 				JX2_UCIX_IXT_CLRT: begin
 					tRegOutSr[0]	= 0;
@@ -692,12 +705,20 @@ begin
 					tExTrapExc = { 4'hE, regInDlr[11:0] };
 //					tRegIdCn1	= JX2_GR_IMM[4:0];
 				end
+				
+				JX2_UCIX_IXT_LDTLB: begin
+					tMemOpm = UMEM_OPM_LDTLB;
+				end
+				JX2_UCIX_IXT_INVTLB: begin
+					tMemOpm = UMEM_OPM_INVTLB;
+				end
 
 				default: begin
 					if(!tMsgLatch)
 						$display("EX: Unhandled Op-IXT %X", opUIxt);
 					tNextMsgLatch	= 1;
-					tExHold		= 1;
+//					tExHold		= 1;
+					tExHold		= !reset;
 				end
 			endcase
 		end
@@ -706,7 +727,8 @@ begin
 			if(!tMsgLatch)
 				$display("EX1: Unhandled UCmd %X", opUCmd);
 			tNextMsgLatch	= 1;
-			tExHold		= 1;
+//			tExHold		= 1;
+			tExHold		= !reset;
 		end
 	
 	endcase

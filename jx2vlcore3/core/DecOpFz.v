@@ -115,6 +115,10 @@ begin
 	tRegRnIsRs	= (istrWord[ 7: 5]==3'b000) || (istrWord[ 7: 4]==4'b1111);
 	tRegRmIsRs	= (istrWord[ 3: 1]==3'b000) || (istrWord[ 3: 0]==4'b1111);
 
+//	tRegRoIsRs	= (istrWord[23:21]==3'b000) | (istrWord[23:20]==4'b1111);
+//	tRegRnIsRs	= (istrWord[ 7: 5]==3'b000) | (istrWord[ 7: 4]==4'b1111);
+//	tRegRmIsRs	= (istrWord[ 3: 1]==3'b000) | (istrWord[ 3: 0]==4'b1111);
+
 	opExQ		= istrWord[27];
 	opExN		= istrWord[26];
 	opExM		= istrWord[25];
@@ -127,11 +131,15 @@ begin
 
 	opRegO_Df2	= {tRegRmIsRs, istrWord[ 4], istrWord[3:0]};
 `else
-	opRegN_Dfl	= {tRegRnIsRs & (!opExN), opExN, istrWord[ 7: 4]};
-	opRegM_Dfl	= {tRegRmIsRs & (!opExM), opExM, istrWord[ 3: 0]};
-	opRegO_Dfl	= {tRegRoIsRs & (!opExI), opExI, istrWord[23:20]};
+	opRegN_Dfl	= {tRegRnIsRs && (!opExN), opExN, istrWord[ 7: 4]};
+	opRegM_Dfl	= {tRegRmIsRs && (!opExM), opExM, istrWord[ 3: 0]};
+	opRegO_Dfl	= {tRegRoIsRs && (!opExI), opExI, istrWord[23:20]};
+	opRegO_Df2	= {tRegRmIsRs && !(istrWord[ 4]), istrWord[ 4], istrWord[3:0]};
 
-	opRegO_Df2	= {tRegRmIsRs & !(istrWord[ 4]), istrWord[ 4], istrWord[3:0]};
+//	opRegN_Dfl	= {tRegRnIsRs & (!opExN), opExN, istrWord[ 7: 4]};
+//	opRegM_Dfl	= {tRegRmIsRs & (!opExM), opExM, istrWord[ 3: 0]};
+//	opRegO_Dfl	= {tRegRoIsRs & (!opExI), opExI, istrWord[23:20]};
+//	opRegO_Df2	= {tRegRmIsRs & !(istrWord[ 4]), istrWord[ 4], istrWord[3:0]};
 `endif
 
 	opRegN_Cr	= {1'b1, opExN, istrWord[ 7: 4]};
@@ -163,6 +171,13 @@ begin
 	tRegRmIsR1	= tRegRmIsRz &&  opRegM_Dfl[0];
 	tRegRoIsR0	= tRegRoIsRz && !opRegO_Dfl[0];
 	tRegRoIsR1	= tRegRoIsRz &&  opRegO_Dfl[0];
+
+//	tRegRnIsR0	= tRegRnIsRz & !opRegN_Dfl[0];
+//	tRegRnIsR1	= tRegRnIsRz &  opRegN_Dfl[0];
+//	tRegRmIsR0	= tRegRmIsRz & !opRegM_Dfl[0];
+//	tRegRmIsR1	= tRegRmIsRz &  opRegM_Dfl[0];
+//	tRegRoIsR0	= tRegRoIsRz & !opRegO_Dfl[0];
+//	tRegRoIsR1	= tRegRoIsRz &  opRegO_Dfl[0];
 
 	opNmid		= JX2_UCMD_INVOP;
 	opRegN		= JX2_GR_ZZR;

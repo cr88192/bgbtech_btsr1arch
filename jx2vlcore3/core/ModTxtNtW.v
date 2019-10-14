@@ -40,8 +40,8 @@ wire[7:0]	pixCu;
 wire[7:0]	pixCv;
 wire[15:0]	pixAux;
 
-wire[9:0]	pixPosX;
-wire[9:0]	pixPosY;
+wire[11:0]	pixPosX;
+wire[11:0]	pixPosY;
 wire		pixLineOdd;
 
 wire[13:0] pixCellIx;

@@ -158,6 +158,9 @@ X(tk_getsavedvbr):
 X(tk_syscall):
 //	push lr
 	syscall	#0
+	nop
+	nop
+	nop
 //	pop lr
 	rts
 

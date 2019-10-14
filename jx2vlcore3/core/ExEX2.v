@@ -401,6 +401,9 @@ begin
 
 //		tMemOpm = tDoMemOpm;
 	end
+	
+	if(reset)
+		tExHold=0;
 end
 
 always @(posedge clock)

@@ -290,7 +290,8 @@ byte TKSPI_SendCmd(byte cmd, u32 arg)
 
 	if (cmd==MMC_CMD12)
 		{ TKSPI_XchByte(0xFF); }
-	n=10;
+//	n=10;
+	n=1000;
 	while(n>0)
 	{
 		res=TKSPI_XchByte(0xFF);
@@ -367,18 +368,18 @@ int TKSPI_WriteSectors(byte *buf, s64 lba, int cnt)
 }
 
 
+static int tkspi_init=0;
 
 int TKSPI_InitDevice(void)
 {
 	static const char *hexchars="0123456789ABCDEF";
-	static int init=0;
 	byte ocr[4];
 	byte s, cmd, ty;
 	u32 n, count;
 	
-	if(init)
+	if(tkspi_init)
 		return(tkspi_init_ok);
-	init=1;
+	tkspi_init=1;
 
 	printf("TKSPI_InitDevice: Init 1\n");
 

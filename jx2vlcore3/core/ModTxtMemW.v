@@ -169,10 +169,11 @@ initial begin
 	$readmemh("fontmem.txt", fontMem);
 	$readmemh("gfxfont0.txt", fontGfx1Mem);
 	$readmemh("gfxfont1.txt", fontGfx2Mem);
-//	$readmemh("scrmem_1a.txt", scrCell1A);
-//	$readmemh("scrmem_1b.txt", scrCell1B);
-//	$readmemh("scrmem_1c.txt", scrCell1C);
-//	$readmemh("scrmem_1d.txt", scrCell1D);
+
+	$readmemh("scrmem_1a.txt", scrCell1A);
+	$readmemh("scrmem_1b.txt", scrCell1B);
+	$readmemh("scrmem_1c.txt", scrCell1C);
+	$readmemh("scrmem_1d.txt", scrCell1D);
 end
 
 always @*
@@ -220,6 +221,8 @@ begin
 				7: tBusData = { UV32_XX, scrRegCtrl7 };
 //				8: tBusData = {18'h0, pixCellIx};
 				8: tBusData = { UV32_XX, 18'h0, pixCellIx};
+
+				default: tBusData = UV64_00;
 
 			endcase
 		end

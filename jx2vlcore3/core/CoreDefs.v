@@ -526,11 +526,15 @@ parameter[5:0] JX2_UCIX_IXT_PLDMSK	= 6'h0B;		//
 parameter[5:0] JX2_UCIX_IXT_CPUID	= 6'h0C;		//CPU ID
 parameter[5:0] JX2_UCIX_IXT_WEXMD	= 6'h0D;		//WEX Profile
 parameter[5:0] JX2_UCIX_IXT_SYSE	= 6'h0E;		//System Call
+parameter[5:0] JX2_UCIX_IXT_LDTLB	= 6'h0F;		//Load TLB
+parameter[5:0] JX2_UCIX_IXT_INVTLB	= 6'h10;		//Flush TLB
 
 parameter[5:0] JX2_UCIX_IXS_NOP		= 6'h00;		//No-Op
 parameter[5:0] JX2_UCIX_IXS_MOVT	= 6'h01;		//Copy SR.T to Reg
 parameter[5:0] JX2_UCIX_IXS_MOVNT	= 6'h02;		//Copy !SR.T to Reg
 parameter[5:0] JX2_UCIX_IXS_LDSRMSK	= 6'h03;		//?
+parameter[5:0] JX2_UCIX_IXS_INVIC	= 6'h10;		//Flush I$
+parameter[5:0] JX2_UCIX_IXS_INVDC	= 6'h11;		//Flush D$
 
 `define def_true
 

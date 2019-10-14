@@ -40,8 +40,8 @@ module ModFbTxtW(clock, reset,
 input clock;
 input reset;
 
-input[9:0] pixPosX;
-input[9:0] pixPosY;
+input[11:0] pixPosX;
+input[11:0] pixPosY;
 
 output[7:0]		pixCy;
 output[7:0]		pixCu;
@@ -56,8 +56,8 @@ input[63:0]		fontData;
 input[63:0]		ctrlRegVal;
 input			pixLineOdd;
 
-reg[9:0]	tPixPosX;
-reg[9:0]	tPixPosY;
+reg[11:0]	tPixPosX;
+reg[11:0]	tPixPosY;
 
 reg[13:0]	tPixCellX;			//base cell X
 reg[13:0]	tPixCellY;			//base cell Y
@@ -742,6 +742,13 @@ begin
 		tPixCu		= { tClrYuvC[ 9: 5], tClrYuvC[ 9: 7] };
 		tPixCv		= { tClrYuvC[ 4: 0], tClrYuvC[ 4: 2] };
 		tPixAux[0]	= 0;
+	end
+	
+	if(tPixPosX[11] || tPixPosY[11])
+	begin
+		tPixCy=0;
+		tPixCu=128;
+		tPixCv=128;
 	end
 
 `ifndef def_true

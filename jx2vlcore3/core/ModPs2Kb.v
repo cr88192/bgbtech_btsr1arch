@@ -89,8 +89,10 @@ begin
 	scanNxtEpos		= scanEpos;
 	scanNxtSpAdv	= 0;
 	scanEpAdv		= 0;
+	ps2ScanAdv		= 0;
 	ps2NxtWinAdv	= 0;
 	ps2NxtWinCnt	= ps2WinCnt;
+	ps2NxtWinP		= 0;
 
 	ps2NxtWin = ps2Win;
 //	if(ps2_lstClk_i && !ps2_clk_i)

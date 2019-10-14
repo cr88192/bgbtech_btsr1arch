@@ -122,6 +122,11 @@ begin
 			tCcmdOK		= UMEM_OK_OK;
 			tCcmdData	= UV32_00;
 		end
+		UMEM_OPM_FLUSHIS, UMEM_OPM_FLUSHDS: begin
+			/* These simply get OK here. */
+			tCcmdOK		= UMEM_OK_OK;
+			tCcmdData	= UV32_00;
+		end
 		default: begin
 		end
 	endcase

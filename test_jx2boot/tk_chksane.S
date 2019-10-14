@@ -8,10 +8,104 @@ This is assumed to be called prior to transferring control to C land.
 #define X(n)	n
 
 #include "tk_chksane_gfp.S"
+#include "tk_chksane_wex.S"
 
 _checksane_fail:
 	break
+	break
 	bra _checksane_fail
+	break
+
+_checksane_fail_alu:
+	break
+	break
+	bra _checksane_fail_alu
+	break
+
+_checksane_fail_bra:
+	break
+	break
+	bra _checksane_fail_bra
+	break
+
+_checksane_fail_mem:
+	break
+	break
+	bra _checksane_fail_mem
+	break
+
+_checksane_fail_logic:
+	break
+	break
+	bra _checksane_fail_logic
+	break
+
+_checksane_fail_shad:
+	break
+	break
+	bra _checksane_fail_shad
+	break
+
+_checksane_fail_mul:
+	break
+	break
+	bra _checksane_fail_mul
+	break
+
+_checksane_fail_alu2a:
+	break
+	break
+	bra _checksane_fail_alu2a
+	break
+
+_checksane_fail_alu2b:
+	break
+	break
+	bra _checksane_fail_alu2b
+	break
+
+_checksane_fail_alu2c:
+	break
+	break
+	bra _checksane_fail_alu2c
+	break
+
+_checksane_fail_alu2d:
+	break
+	break
+	bra _checksane_fail_alu2d
+	break
+
+_checksane_fail_alu2e:
+	break
+	break
+	bra _checksane_fail_alu2e
+	break
+
+_checksane_fail_alu2f:
+	break
+	break
+	bra _checksane_fail_alu2f
+	break
+	break
+
+_checksane_fail_alu3:
+	break
+	break
+	bra _checksane_fail_alu3
+	break
+	break
+
+
+_checksane_fail_alu4:
+	break
+	break
+	bra _checksane_fail_alu4
+	break
+
+
+	break
+	break
 	break
 
 .global X(tk_checksane_asm)
@@ -26,13 +120,13 @@ X(tk_checksane_asm):
 	exts.l	r9, r10
 
 	cmp/eq r4, r5
-	bt _checksane_fail
+	bt _checksane_fail_alu
 
 	cmp/gt r4, r5
-	bf _checksane_fail
+	bf _checksane_fail_alu
 
 	cmp/gt r4, r9
-	bt _checksane_fail
+	bt _checksane_fail_alu
 
 	cmp/hi r4, r9
 	bf _checksane_fail
@@ -67,39 +161,39 @@ X(tk_checksane_asm):
 	mov r4, r7
 	add r5, r7
 	cmp/eq r6, r7
-	bf _checksane_fail
+	bf _checksane_fail_alu
 	cmp/eq r6, r8
-	bf _checksane_fail
+	bf _checksane_fail_alu
 
 	add	r4, r5, r18
 	cmp/eq r18, r7
-	bf _checksane_fail
+	bf _checksane_fail_alu
 
 	sub	r4, r5, r6
 	mov r4, r7
 	sub r5, r7
 	cmp/eq r6, r7
-	bf _checksane_fail
+	bf _checksane_fail_alu
 	cmp/eq r6, r9
-	bf _checksane_fail
+	bf _checksane_fail_alu
 	cmpq/eq r6, r10
-	bf _checksane_fail
+	bf _checksane_fail_alu
 
 	adds.l	r4, r5, r6
 	addu.l	r4, r5, r7
 
 	cmp/eq r6, r7
-	bf _checksane_fail
+	bf _checksane_fail_alu
 	cmp/eq r6, r8
-	bf _checksane_fail
+	bf _checksane_fail_alu
 
 	subs.l	r4, r5, r6
 	subu.l	r4, r5, r7
 
 	cmpq/eq r6, r10
-	bf _checksane_fail
+	bf _checksane_fail_alu
 	cmpq/eq r9, r9
-	bf _checksane_fail
+	bf _checksane_fail_alu
 
 
 	mov	0x12344468, r8
@@ -110,29 +204,29 @@ X(tk_checksane_asm):
 	mov r4, r7
 	and r5, r7
 	cmp/eq r6, r7
-	bf _checksane_fail
+	bf _checksane_fail_alu
 
 	cmp/eq r6, r8
-	bf _checksane_fail
+	bf _checksane_fail_alu
 
 	or	r4, r5, r6
 	mov r4, r7
 	or r5, r7
 	cmp/eq r6, r7
-	bf _checksane_fail
+	bf _checksane_fail_alu
 
 	cmp/eq r6, r9
-	bf _checksane_fail
+	bf _checksane_fail_alu
 
 
 	xor	r4, r5, r6
 	mov r4, r7
 	xor r5, r7
 	cmp/eq r6, r7
-	bf _checksane_fail
+	bf _checksane_fail_alu
 
 	cmp/eq r6, r10
-	bf _checksane_fail
+	bf _checksane_fail_alu
 
 
 	mov	0xEDCBA987, r11
@@ -142,9 +236,9 @@ X(tk_checksane_asm):
 	not r7
 
 	cmp/eq r6, r7
-	bf _checksane_fail
+	bf _checksane_fail_alu
 	cmp/eq r6, r11
-	bf _checksane_fail
+	bf _checksane_fail_alu
 
 	mov	0xEDCBA988, r12
 
@@ -153,18 +247,18 @@ X(tk_checksane_asm):
 	neg r7
 
 	cmp/eq r6, r7
-	bf _checksane_fail
+	bf _checksane_fail_alu
 	cmp/eq r6, r12
-	bf _checksane_fail
+	bf _checksane_fail_alu
 
 	neg r4, r16
 	mov r4, r17
 	neg r17
 
 	cmp/eq r16, r17
-	bf _checksane_fail
+	bf _checksane_fail_alu
 	cmp/eq r16, r12
-	bf _checksane_fail
+	bf _checksane_fail_alu
 
 
 	mov	0xE87AD208, r8
@@ -175,10 +269,10 @@ X(tk_checksane_asm):
 	mov r1, r7
 	
 	cmp/eq r6, r8
-	bf _checksane_fail
+	bf _checksane_fail_mul
 	
 	cmp/eq r7, r9
-	bf _checksane_fail
+	bf _checksane_fail_mul
 
 	mov	0x75C123C0, r10
 	mov	0x10882A3D, r11
@@ -188,17 +282,17 @@ X(tk_checksane_asm):
 	mov r0, r6
 	mov r1, r7
 	cmp/eq r6, r10
-	bf _checksane_fail
+	bf _checksane_fail_mul
 	cmp/eq r7, r11
-	bf _checksane_fail
+	bf _checksane_fail_mul
 
 	muls	r4, r8
 	mov r0, r6
 	mov r1, r7
 	cmp/eq r6, r10
-	bf _checksane_fail
+	bf _checksane_fail_mul
 	cmp/eq r7, r12
-	bf _checksane_fail
+	bf _checksane_fail_mul
 
 
 	mov	0x1234CE58, r8
@@ -209,61 +303,62 @@ X(tk_checksane_asm):
 	add #0x69, r7
 
 	cmp/eq r6, r7
-	bf _checksane_fail
+	bf _checksane_fail_alu2a
 	cmp/eq r6, r8
-	bf _checksane_fail
+	bf _checksane_fail_alu2a
 
 	add r5, #0x69, r16
 	cmp/eq r16, r7
-	bf _checksane_fail
+	bf _checksane_fail_alu2a
 
 	add r5, #-0x69, r6
 	mov r5, r7
 	add #-0x69, r7
 
 	cmp/eq r6, r7
-	bf _checksane_fail
+	bf _checksane_fail_alu2a
 	cmp/eq r6, r9
-	bf _checksane_fail
+	bf _checksane_fail_alu2a
 
 	mov #0x69, r6
 	cmp/eq #0x69, r6
-	bf _checksane_fail
+	bf _checksane_fail_alu2b
 	cmp/eq #0x73, r6
-	bt _checksane_fail
+	bt _checksane_fail_alu2b
 	cmp/gt #0x73, r6
-	bt _checksane_fail
+	bt _checksane_fail_alu2b
 	
 	tst #0x31, r6
-	bt _checksane_fail
+	bt _checksane_fail_alu2b
 	tst #0x96, r6
-	bf _checksane_fail
+	bf _checksane_fail_alu2b
+
 
 	mov #0x6, r6
 	cmp/eq #0x6, r6
-	bf _checksane_fail
+	bf _checksane_fail_alu2c
 	cmp/eq #0x9, r6
-	bt _checksane_fail
+	bt _checksane_fail_alu2c
 
 	cmp/gt #0x5, r6
-	bf _checksane_fail
+	bf _checksane_fail_alu2c
 	cmp/gt #0x6, r6
-	bt _checksane_fail
+	bt _checksane_fail_alu2c
 	cmp/gt #0x7, r6
-	bt _checksane_fail
+	bt _checksane_fail_alu2c
 
 	cmp/ge #0x5, r6
-	bf _checksane_fail
+	bf _checksane_fail_alu2d
 	cmp/ge #0x6, r6
-	bf _checksane_fail
+	bf _checksane_fail_alu2d
 	cmp/ge #0x7, r6
-	bt _checksane_fail
+	bt _checksane_fail_alu2d
 
 	mov #-0x6, r6
 	cmp/eq #-0x6, r6
-	bf _checksane_fail
+	bf _checksane_fail_alu2e
 	cmp/eq #-0x9, r6
-	bt _checksane_fail
+	bt _checksane_fail_alu2f
 
 
 	mov	0x23456780, r8
@@ -273,9 +368,9 @@ X(tk_checksane_asm):
 	shad  r4, #-4, r7
 
 	cmpq/eq r6, r8
-	bf _checksane_fail
+	bf _checksane_fail_shad
 	cmpq/eq r7, r9
-	bf _checksane_fail
+	bf _checksane_fail_shad
 
 
 	mov	0x68ACF000, r8
@@ -285,15 +380,15 @@ X(tk_checksane_asm):
 	shad  r4, #-9, r7
 
 	cmpq/eq r6, r8
-	bf _checksane_fail
+	bf _checksane_fail_shad
 	
 	cmpq/eq r7, r9
-	bf _checksane_fail
+	bf _checksane_fail_shad
 
 	mov #9, r22
 	shad  r4, r22, r6
 	cmpq/eq r6, r8
-	bf _checksane_fail
+	bf _checksane_fail_shad
 
 	mov	0x2468ACF000, r10
 	mov	0xE87AD208, r11
@@ -302,37 +397,37 @@ X(tk_checksane_asm):
 	mov 0xC00000000, r14
 
 	cmp/eq r8, r10
-	bf _checksane_fail
+	bf _checksane_fail_shad
 
 	cmpq/eq r8, r10
-	bt _checksane_fail
+	bt _checksane_fail_shad
 
 	cmp/gt r8, r11
-	bt _checksane_fail
+	bt _checksane_fail_shad
 
 	cmp/hi r8, r11
-	bf _checksane_fail
+	bf _checksane_fail_shad
 
 //	cmpq/eq #0xE87AD208, r11
 //	bf _checksane_fail
 	
 	tst r14, r14
-	bf _checksane_fail
+	bf _checksane_fail_logic
 
 	tstq r14, r14
-	bt _checksane_fail
+	bt _checksane_fail_logic
 
 	shad.q  r4, #9, r6
 	cmpq/eq r6, r10
-	bf _checksane_fail
+	bf _checksane_fail_shad
 
 	shld  r11, #-7, r6
 	cmp/eq r6, r12
-	bf _checksane_fail
+	bf _checksane_fail_shad
 
 	shad  r11, #-7, r6
 	cmp/eq r6, r13
-	bf _checksane_fail
+	bf _checksane_fail_shad
 
 	mov #-7, r2
 	mov #7, r3
@@ -341,9 +436,9 @@ X(tk_checksane_asm):
 	shar  r11, r3, r7
 
 	cmp/eq r6, r13
-	bf _checksane_fail
+	bf _checksane_fail_shad
 	cmp/eq r7, r13
-	bf _checksane_fail
+	bf _checksane_fail_shad
 
 	shad.q  r4, #31, r7
 
@@ -355,9 +450,9 @@ X(tk_checksane_asm):
 	shll16 r6
 
 	cmpq/eq r6, r4
-	bt _checksane_fail
+	bt _checksane_fail_shad
 	cmpq/eq r6, r7
-	bf _checksane_fail
+	bf _checksane_fail_shad
 
 	shlr1 r6
 	shlr2 r6
@@ -366,8 +461,17 @@ X(tk_checksane_asm):
 	shlr16 r6
 
 	cmpq/eq r6, r4
-	bf _checksane_fail
+	bf _checksane_fail_shad
 
+#if 1
+	shld	r13, #-31, r6
+	shad	r13, #-31, r7
+
+	cmpeq	#1, r6
+	bf		_checksane_fail_shad
+	cmpeq	#-1, r7
+	bf		_checksane_fail_shad
+#endif
 
 	push r4
 	push r5
@@ -375,25 +479,25 @@ X(tk_checksane_asm):
 	pop r6
 
 	cmp/eq r4, r6
-	bf _checksane_fail
+	bf _checksane_fail_bra
 	cmp/eq r5, r7
-	bf _checksane_fail
+	bf _checksane_fail_bra
 
 	push r4
 	pop lr
 	mov lr, r6
 	cmp/eq r4, r6
-	bf _checksane_fail
+	bf _checksane_fail_bra
 
 	mov r5, lr
 	mov lr, r6
 	cmp/eq r5, r6
-	bf _checksane_fail
+	bf _checksane_fail_bra
 
 	cmp/eq r5, r6
 	cselt	r13, r5, r19
 	cmp/eq r13, r19
-	bf _checksane_fail
+	bf _checksane_fail_alu3
 
 	cmp/eq r12, r19
 	cselt	r5, r12, r19
@@ -424,27 +528,27 @@ X(tk_checksane_asm):
 	extu.l	r9, r11
 
 	cmpq/eq r9, r10
-	bt _checksane_fail
+	bt _checksane_fail_alu3
 	cmpq/eq r9, r11
-	bf _checksane_fail
+	bf _checksane_fail_alu3
 	cmpq/eq r10, r11
-	bt _checksane_fail
+	bt _checksane_fail_alu3
 
 	exts.b	r5, r6
 	extu.b	r5, r7
 
 	cmpq/eq #-0x11, r6
-	bf _checksane_fail
+	bf _checksane_fail_alu3
 	cmpq/eq #0xEF, r7
-	bf _checksane_fail
+	bf _checksane_fail_alu3
 
 	exts.w	r5, r6
 	extu.w	r5, r7
 
 	cmpq/eq #-0x3211, r6
-	bf _checksane_fail
+	bf _checksane_fail_alu3
 	cmpq/eq #0xCDEF, r7
-	bf _checksane_fail
+	bf _checksane_fail_alu3
 	
 	mov .L6, r6
 	jmp r6
@@ -476,49 +580,49 @@ X(tk_checksane_asm):
 	movu.l (sp, 0), r7
 
 	cmpq/eq r6, r7
-	bt _checksane_fail
+	bt _checksane_fail_mem
 	cmpq/eq r6, r9
-	bf _checksane_fail
+	bf _checksane_fail_mem
 	cmpq/eq r7, r8
-	bf _checksane_fail
+	bf _checksane_fail_mem
 	cmpq/eq r8, r10
-	bt _checksane_fail
+	bt _checksane_fail_mem
 
 	mov.q (sp, 0), r6
 	cmpq/eq r6, r10
-	bf _checksane_fail
+	bf _checksane_fail_mem
 
 	exts.b r8, r12
 	exts.w r8, r13
 	mov.b (sp, 0), r6
 	mov.w (sp, 0), r7
 	cmpq/eq r6, r12
-	bf _checksane_fail
+	bf _checksane_fail_mem
 	cmpq/eq r7, r13
-	bf _checksane_fail
+	bf _checksane_fail_mem
 
 	extu.b r8, r12
 	extu.w r8, r13
 	movu.b (sp, 0), r6
 	movu.w (sp, 0), r7
 	cmpq/eq r6, r12
-	bf _checksane_fail
+	bf _checksane_fail_mem
 	cmpq/eq r7, r13
-	bf _checksane_fail
+	bf _checksane_fail_mem
 
 	mov sp, r3
 	mov.l (sp, 4), r6
 	mov.l (r3, 4), r7
 
 	cmpq/eq r6, r7
-	bf _checksane_fail
+	bf _checksane_fail_mem
 	cmpq/eq r7, r11
-	bf _checksane_fail
+	bf _checksane_fail_mem
 
 	mov.l r10, (sp, 12)
 	mov.q (sp, 8), r6
 	cmpq/eq r6, r14
-	bf _checksane_fail
+	bf _checksane_fail_mem
 	
 
 	pop r2
@@ -534,11 +638,11 @@ X(tk_checksane_asm):
 	mov #28, r18
 	add #3, r18
 	cmpeq #31, r18
-	bf _checksane_fail
+	bf _checksane_fail_alu4
 
 	neg r18, r19
 	cmpeq #-31, r19
-	bf _checksane_fail
+	bf _checksane_fail_alu4
 
 #if 0
 	mov	0x8889, r8
@@ -564,6 +668,8 @@ X(tk_checksane_asm):
 #endif
 
 	bsr X(tk_checksane_gfp_asm)
+
+	bsr X(tk_checksane_wex_asm)
 
 	pop lr
 	rts

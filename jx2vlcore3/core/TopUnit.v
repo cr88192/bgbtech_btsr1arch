@@ -24,7 +24,16 @@ module TopUnit(
 
 	sdc_dat,	sdc_clk,	sdc_cmd,	sdc_ena,
 
-	aud_mono_out
+	aud_mono_out,
+	seg_outCharBit,
+	seg_outSegBit,
+
+	dbg_exHold1,
+	dbg_exHold2,
+	dbg_outStatus1,
+	dbg_outStatus2,
+	dbg_outStatus3,
+	dbg_outStatus4
 	);
 
 input			clock;
@@ -46,6 +55,8 @@ output			ddrCke;
 
 output[1:0]		ddrClk;			//clock pins
 
+wire	reset2;
+assign	reset2 = !reset;
 
 wire[15:0]		ddrData_I;		//DDR data pins
 wire[15:0]		ddrData_O;		//DDR data pins
@@ -74,6 +85,16 @@ output			sdc_cmd;
 output			sdc_ena;
 
 output			aud_mono_out;
+output[7:0]		seg_outCharBit;
+output[7:0]		seg_outSegBit;
+
+output			dbg_exHold1;
+output			dbg_exHold2;
+
+output			dbg_outStatus1;
+output			dbg_outStatus2;
+output			dbg_outStatus3;
+output			dbg_outStatus4;
 
 wire		ps2_clk_i;
 wire		ps2_data_i;
@@ -103,7 +124,7 @@ wire aud_mono_out1;
 assign	aud_mono_out = aud_mono_out1 ? 1'bz : 1'b0;
 
 CoreUnit core(
-	clock, 		reset,
+	clock, 		reset2,
 	ddrData_I,	ddrData_O,	ddrData_En,
 	ddrAddr,	ddrBa,
 	ddrCs,		ddrRas,		ddrCas,
@@ -117,7 +138,17 @@ CoreUnit core(
 	ps2_clk_d,	ps2_data_d,
 	sdc_dat_i,	sdc_dat_o,	sdc_dat_d,
 	sdc_clk,	sdc_cmd,	sdc_ena,
-	aud_mono_out1
+
+	aud_mono_out1,
+	seg_outCharBit,
+	seg_outSegBit,
+
+	dbg_exHold1,
+	dbg_exHold2,
+	dbg_outStatus1,
+	dbg_outStatus2,
+	dbg_outStatus3,
+	dbg_outStatus4
 	);
 
 endmodule

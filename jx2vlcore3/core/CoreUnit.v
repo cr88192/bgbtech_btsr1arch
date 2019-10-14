@@ -11,6 +11,8 @@
 `include "ModPs2Kb.v"
 `include "ModSdSpi.v"
 
+`include "Mod7Seg.v"
+
 module CoreUnit(
 	/* verilator lint_off UNUSED */
 	clock,		reset,
@@ -33,7 +35,16 @@ module CoreUnit(
 	sdc_dat_i,	sdc_dat_o,	sdc_dat_d,
 	sdc_clk,	sdc_cmd,	sdc_ena,
 
-	aud_mono_out
+	aud_mono_out,
+	seg_outCharBit,
+	seg_outSegBit,
+
+	dbg_exHold1,
+	dbg_exHold2,
+	dbg_outStatus1,
+	dbg_outStatus2,
+	dbg_outStatus3,
+	dbg_outStatus4
 	);
 
 input			clock;
@@ -92,6 +103,42 @@ output			sdc_cmd;
 output			sdc_ena;
 
 output			aud_mono_out;
+output[7:0]		seg_outCharBit;
+output[7:0]		seg_outSegBit;
+
+output			dbg_exHold1;
+output			dbg_exHold2;
+
+output			dbg_outStatus1;
+output			dbg_outStatus2;
+output			dbg_outStatus3;
+output			dbg_outStatus4;
+
+reg[7:0]		tSegOutCharBit;
+reg[7:0]		tSegOutSegBit;
+assign	seg_outCharBit = tSegOutCharBit;
+assign	seg_outSegBit = tSegOutSegBit;
+
+reg				tDbgExHold1B;
+reg				tDbgExHold2B;
+reg				tDbgExHold1;
+reg				tDbgExHold2;
+assign	dbg_exHold1 = tDbgExHold1B;
+assign	dbg_exHold2 = tDbgExHold2B;
+
+
+reg				tDbgOutStatus1B;
+reg				tDbgOutStatus2B;
+reg				tDbgOutStatus3B;
+reg				tDbgOutStatus4B;
+reg				tDbgOutStatus1;
+reg				tDbgOutStatus2;
+reg				tDbgOutStatus3;
+reg				tDbgOutStatus4;
+assign	dbg_outStatus1 = tDbgOutStatus1B;
+assign	dbg_outStatus2 = tDbgOutStatus2B;
+assign	dbg_outStatus3 = tDbgOutStatus3B;
+assign	dbg_outStatus4 = tDbgOutStatus4B;
 
 // assign			ps2kb_clk_o	= 1'bz;
 // assign			ps2kb_data_o	= 1'bz;
@@ -129,6 +176,7 @@ wire	timer1MHz;
 wire	timer64kHz;
 wire	timer1kHz;
 wire	timer256Hz;
+wire	timerNoise;
 
 MmiModClkp		clkp(
 	clock,	reset,
@@ -188,6 +236,11 @@ wire[63:0]		dbgDcOutVal;
 wire[63:0]		dbgDcInVal;
 wire[ 1:0]		dbgDcOutOK;
 
+wire			dbgOutStatus1;
+wire			dbgOutStatus2;
+wire			dbgOutStatus3;
+wire			dbgOutStatus4;
+
 ExUnit	cpu(
 	clock_cpu, 		reset,
 
@@ -200,7 +253,10 @@ ExUnit	cpu(
 	
 	dbgDcInAddr,	dbgDcInOpm,
 	dbgDcOutVal,	dbgDcInVal,
-	dbgDcOutOK
+	dbgDcOutOK,
+
+	dbgOutStatus1,	dbgOutStatus2,
+	dbgOutStatus3,	dbgOutStatus4
 	);
 
 
@@ -264,6 +320,8 @@ assign	vgaGrn		= scrnPwmOut[ 7:4];
 assign	vgaBlu		= scrnPwmOut[ 3:0];
 assign	vgaHsync	= scrnPwmOut[12];
 assign	vgaVsync	= scrnPwmOut[13];
+
+assign		timerNoise = scrnPwmOut[8] ^ scrnPwmOut[4] ^ scrnPwmOut[0];
 
 ModTxtNtW	scrn(
 	clock,			reset,				scrnPwmOut,
@@ -334,6 +392,15 @@ reg				tBusMissLatch;
 reg				tNxtBusMissLatch;
 
 reg			timer1kHzL;
+
+reg[31:0]		sevSegVal;
+wire[7:0]		ssOutCharBit;
+wire[7:0]		ssOutSegBit;
+
+Mod7Seg		sevSeg(
+	clock,			reset,
+	sevSegVal,		timer1kHz,	timerNoise,
+	ssOutCharBit,	ssOutSegBit);
 
 always @*
 begin
@@ -415,6 +482,20 @@ begin
 
 end
 
+
+always @(posedge clock_cpu)
+begin
+	tDbgExHold1			<= dbgExHold1;
+	tDbgExHold2			<= dbgExHold2;
+
+	tDbgOutStatus1		<= dbgOutStatus1;
+	tDbgOutStatus2		<= dbgOutStatus2;
+	tDbgOutStatus3		<= dbgOutStatus3;
+	tDbgOutStatus4		<= dbgOutStatus4;
+	
+	sevSegVal			<= dbgOutPc;
+end
+
 always @(posedge clock)
 begin
 //	$display("Clock Edge");
@@ -432,6 +513,17 @@ begin
 
 	ps2kb_clki		<= ps2kb_clk_i;
 	ps2kb_dati		<= ps2kb_data_i;
+
+	tDbgExHold1B		<= tDbgExHold1;
+	tDbgExHold2B		<= tDbgExHold2;
+
+	tDbgOutStatus1B		<= tDbgOutStatus1;
+	tDbgOutStatus2B		<= tDbgOutStatus2;
+	tDbgOutStatus3B		<= tDbgOutStatus3;
+	tDbgOutStatus4B		<= tDbgOutStatus4;
+
+	tSegOutCharBit		<= ssOutCharBit;
+	tSegOutSegBit		<= ssOutSegBit;
 
 end
 

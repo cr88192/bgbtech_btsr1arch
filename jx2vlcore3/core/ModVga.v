@@ -29,8 +29,8 @@ input[15:0]		pixAux;			//Pixel Aux Bits
 
 output[15:0] pwmOut;
 
-output[9:0] pixPosX;
-output[9:0] pixPosY;
+output[11:0] pixPosX;
+output[11:0] pixPosY;
 output		pixLineOdd;
 
 
@@ -112,10 +112,10 @@ reg[15:0]	tScPwmCtR;
 reg[15:0]	tScPwmCtG;
 reg[15:0]	tScPwmCtB;
 
-reg[9:0]	tPixPosX;
-reg[9:0]	tPixPosY;
-reg[9:0]	tPixNextPosX;
-reg[9:0]	tPixNextPosY;
+reg[11:0]	tPixPosX;
+reg[11:0]	tPixPosY;
+reg[11:0]	tPixNextPosX;
+reg[11:0]	tPixNextPosY;
 reg			tPixLineOdd;
 
 reg[7:0]	tPixCy;
@@ -219,21 +219,30 @@ begin
 		if(tHsync800)
 		begin
 			tPixNextPosX =
-				tScanPixClk[11:2] +
-				{2'b00, tScanPixClk[11:4]} - 59;
+//				tScanPixClk[13:2] +
+//				{2'b00, tScanPixClk[13:4]} - 59;
+				{1'b0,  tScanPixClk[12:2]} +
+				{3'b00, tScanPixClk[12:4]} - 59;
 
-			tPixNextPosY = tScanNextRowClk[9:0] - 20;
-//			tPixNextPosY = tScanNextRowClk[9:0] - 2;
-//			tPixNextPosY = tScanNextRowClk[10:1] - 20;
+//			tPixNextPosY = tScanNextRowClk[11:0] - 20;
+//			tPixNextPosY = tScanNextRowClk[11:0] - 30;
+			tPixNextPosY = {1'b0, tScanNextRowClk[10:0]} - 30;
+//			tPixNextPosY = tScanNextRowClk[11:0] - 2;
+//			tPixNextPosY = tScanNextRowClk[12:1] - 20;
 		end
 		else
 		begin
-			tPixNextPosX = tScanPixClk[11:2] - 59;
+//			tPixNextPosX = tScanPixClk[13:2] - 59;
+//			tPixNextPosX = tScanPixClk[13:2] - 69;
+//			tPixNextPosX = {1'b0, tScanPixClk[12:2]} - 69;
+			tPixNextPosX = {1'b0, tScanPixClk[12:2]} - 79;
 
-			tPixNextPosY = tScanNextRowClk[9:0] - 20;
-//			tPixNextPosY = tScanNextRowClk[9:0] - 2;
-//			tPixNextPosY = tScanNextRowClk[9:0] - 3;
-//			tPixNextPosY = tScanNextRowClk[10:1] - 20;
+//			tPixNextPosY = tScanNextRowClk[11:0] - 20;
+//			tPixNextPosY = tScanNextRowClk[11:0] - 30;
+			tPixNextPosY = {1'b0, tScanNextRowClk[10:0]} - 30;
+//			tPixNextPosY = tScanNextRowClk[11:0] - 2;
+//			tPixNextPosY = tScanNextRowClk[11:0] - 3;
+//			tPixNextPosY = tScanNextRowClk[12:1] - 20;
 		end
 
 		if(pixAux[0])
