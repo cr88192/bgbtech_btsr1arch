@@ -212,12 +212,19 @@ begin
 //			{ 1'b0, uartRxFracTimer } +
 //			17'h0275;
 
+//		{ uartStepTimer, uartNextFracTimer }	=
+//			{ 1'b0, uartFracTimer } +
+//			17'h0EBF;
+//		{ uartRxStepTimer, uartNextRxFracTimer }	=
+//			{ 1'b0, uartRxFracTimer } +
+//			17'h0EBF;
+
 		{ uartStepTimer, uartNextFracTimer }	=
 			{ 1'b0, uartFracTimer } +
-			17'h0EBF;
+			17'h1D7E;
 		{ uartRxStepTimer, uartNextRxFracTimer }	=
 			{ 1'b0, uartRxFracTimer } +
-			17'h0EBF;
+			17'h1D7E;
 	end
 	
 	uartTxFifoFull		=  uartTxFifo[79];

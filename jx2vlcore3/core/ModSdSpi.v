@@ -40,6 +40,7 @@ reg			tOutSclk2;
 reg			tOutSclk;
 reg			tOutCs2;
 reg			tOutCs;
+reg			tInMiso;
 
 assign	spi_sclk = tOutSclk2;
 assign	spi_mosi = tOutMosi2;
@@ -66,10 +67,13 @@ reg[31:0]		tNxtRegCtrl;
 //reg[15:0]		tRegExch;
 //reg[15:0]		tNxtRegExch;
 
-reg[7:0]		tRegExchI;
+//reg[7:0]		tRegExchI;
+reg[15:0]		tRegExchI;
 reg[7:0]		tRegExchO;
-reg[7:0]		tNxtRegExchI;
+//reg[7:0]		tNxtRegExchI;
+reg[15:0]		tNxtRegExchI;
 reg[7:0]		tNxtRegExchO;
+reg[7:0]		tRegValIn;
 
 reg[13:0]		tDivCnt;
 reg[13:0]		tNxtDivCnt;
@@ -130,7 +134,9 @@ begin
 				tOutMosi		= tRegExchO[7];
 //				tNxtRegExch		= { spi_miso, tRegExch[15:1] };
 //				tNxtRegExch		= { tRegExch[14:0], spi_miso };
-				tNxtRegExchI	= { tRegExchI[6:0], spi_miso };
+//				tNxtRegExchI	= { tRegExchI[6:0], spi_miso };
+//				tNxtRegExchI	= { tRegExchI[6:0], tInMiso };
+				tNxtRegExchI	= { tRegExchI[14:0], tInMiso };
 				tNxtRegExchO	= { tRegExchO[6:0], 1'b0 };
 				tNxtDivCnt		= tDivRst;
 				tNxtOutSclk		= 0;
@@ -177,6 +183,9 @@ begin
 		end
 	end
 
+//	tRegValIn = tRegExchI[7:0];
+	tRegValIn = tRegExchI[14:7];
+
 	if((mmioAddr[3:2]==2'b01) && mmioInOE)
 	begin
 		if(tBitCnt==0)
@@ -184,8 +193,10 @@ begin
 //			$display("SdSpi Rd=%X", tRegExch[15:8]);
 //			tMmioOutData	= { UV24_00, tRegExch[15:8] };
 //			$display("SdSpi Rd=%X", tRegExchI[7:0]);
+			$display("SdSpi Rd=%X", tRegValIn);
 //			tMmioOutData	= { UV24_00, tRegExch[7:0] };
-			tMmioOutData	= { UV24_00, tRegExchI[7:0] };
+//			tMmioOutData	= { UV24_00, tRegExchI[7:0] };
+			tMmioOutData	= { UV24_00, tRegValIn };
 			tMmioOK			= UMEM_OK_OK;
 		end
 		else
@@ -227,6 +238,7 @@ begin
 	tOutMosi2		<= tOutMosi;
 	tOutSclk2		<= tOutSclk;
 	tOutCs2			<= tOutCs;
+	tInMiso			<= spi_miso;
 
 	tRegCtrl		<= tNxtRegCtrl;
 	tRegExchI		<= tNxtRegExchI;

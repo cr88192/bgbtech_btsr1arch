@@ -521,6 +521,7 @@ uint32_t *drambuf2;
 
 // uint16_t *drambuf;
 
+int sdc_spipos;
 
 int sdc_spibit(int bit, int cs)
 {
@@ -571,6 +572,8 @@ int sdc_spibit(int bit, int cs)
 //		tvn=0xFF;
 		pos=8;
 	}
+	
+	sdc_spipos=pos;
 	return(ret);
 }
 
@@ -887,7 +890,7 @@ int main(int argc, char **argv, char **env)
 	cdec_imgbuf *vgactx;
 	FILE *fd;
 	int lclk, mhz;
-	int sdc_lclk;
+	int sdc_lclk, sdc_lbit;
 	int tt_start, tt_frame;
 	int t0, t1, t2;
 	int i, j, k;
@@ -1020,9 +1023,19 @@ int main(int argc, char **argv, char **env)
 			{
 				if(top->sdc_clk)
 				{
-					top->sdc_dat_i=
+//					top->sdc_dat_i=
+					sdc_lbit=
 						sdc_spibit(top->sdc_cmd, top->sdc_dat_o&8);
+				}else
+				{
+					top->sdc_dat_i=sdc_lbit;
 				}
+			
+				printf("sd-spi: clk=%d mosi=%d miso=%d cs=%d pos=%d\n",
+					top->sdc_clk,
+					(top->sdc_cmd)&1, (top->sdc_dat_i)&1,
+					(top->sdc_dat_o&8)!=0,
+					sdc_spipos);
 			
 				sdc_lclk=top->sdc_clk;
 			}

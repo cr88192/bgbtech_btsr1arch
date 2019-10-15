@@ -1,0 +1,6 @@
+#define TK_RAMCHK_BASE	0x01000000U
+#define TK_RAMCHK_LIM	0x08000000U
+
+int TK_RamChk()
+{
+}

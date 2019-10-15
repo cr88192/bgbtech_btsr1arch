@@ -161,7 +161,8 @@ assign		sdc_dat_o[3]	= !sdc_cs;
 assign		sdc_cmd		= sdc_di;
 assign		sdc_dat_d	= 4'b1000;
 // assign		sdc_ena		= sdc_cs;
-assign		sdc_ena		= 1'b1;
+// assign		sdc_ena		= 1'b1;
+assign		sdc_ena		= 1'b0;
 
 reg			clock_halfMhz;
 
