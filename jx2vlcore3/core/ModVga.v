@@ -95,10 +95,21 @@ reg[15:0]	tBaseNextCv;
 reg[15:0]	tBaseCr;
 reg[15:0]	tBaseCg;
 reg[15:0]	tBaseCb;
+reg[15:0]	tBaseCrL;
+reg[15:0]	tBaseCgL;
+reg[15:0]	tBaseCbL;
 
 reg[15:0]	tBaseNextCr;
 reg[15:0]	tBaseNextCg;
 reg[15:0]	tBaseNextCb;
+
+reg[15:0]	tBaseCrB;
+reg[15:0]	tBaseCgB;
+reg[15:0]	tBaseCbB;
+
+reg[15:0]	tBaseNextCrB;
+reg[15:0]	tBaseNextCgB;
+reg[15:0]	tBaseNextCbB;
 
 reg[17:0]	tScPwmCy;
 reg[15:0]	tScPwmCu;
@@ -166,6 +177,10 @@ begin
 	tPwmOut[11:8] = (tPwmCarryR && !tPwmOutCarryR) ? tPwmOutBR : tPwmOutAR;
 	tPwmOut[ 7:4] = (tPwmCarryG && !tPwmOutCarryG) ? tPwmOutBG : tPwmOutAG;
 	tPwmOut[ 3:0] = (tPwmCarryB && !tPwmOutCarryB) ? tPwmOutBB : tPwmOutAB;
+
+//	tPwmOut[11:8] = tPwmOutAR;
+//	tPwmOut[ 7:4] = tPwmOutAG;
+//	tPwmOut[ 3:0] = tPwmOutAB;
 
 	tPwmOut[12] = !tHsync;
 	tPwmOut[13] = !tVsync;
@@ -250,6 +265,10 @@ begin
 			tBaseNextCg	= { 8'h0, tPixCy };
 			tBaseNextCr = { 8'h0, tPixCv };
 			tBaseNextCb = { 8'h0, tPixCu };
+
+			tBaseNextCrB	= tBaseCrL;
+			tBaseNextCgB	= tBaseCgL;
+			tBaseNextCbB	= tBaseCbL;
 		end
 		else
 		begin
@@ -260,11 +279,15 @@ begin
 			tBaseNextCg	= tBaseCy - (tBaseCu>>1) - (tBaseCv>>1);
 			tBaseNextCr = tBaseCg + (tBaseCv<<1);
 			tBaseNextCb = tBaseCg + (tBaseCu<<1);
+			
+			tBaseNextCrB	= tBaseCr;
+			tBaseNextCgB	= tBaseCgL;
+			tBaseNextCbB	= tBaseCb;
 		end
 
-		tScPwmCtR[15:0] = 144 * tBaseCr + 19456;
-		tScPwmCtG[15:0] = 144 * tBaseCg + 19456;
-		tScPwmCtB[15:0] = 144 * tBaseCb + 19456;
+		tScPwmCtR[15:0] = 144 * tBaseCrB + 19456;
+		tScPwmCtG[15:0] = 144 * tBaseCgB + 19456;
+		tScPwmCtB[15:0] = 144 * tBaseCbB + 19456;
 	end
 
 	if(tVSyncClk>0)		/* VSync */
@@ -381,6 +404,14 @@ begin
 	tBaseCr			<= tBaseNextCr;
 	tBaseCg			<= tBaseNextCg;
 	tBaseCb			<= tBaseNextCb;
+
+	tBaseCrL		<= tBaseCr;
+	tBaseCgL		<= tBaseCg;
+	tBaseCbL		<= tBaseCb;
+
+	tBaseCrB		<= tBaseNextCrB;
+	tBaseCgB		<= tBaseNextCgB;
+	tBaseCbB		<= tBaseNextCbB;
 
 end
 

@@ -97,6 +97,8 @@ void __start()
 		
 	sanity_a();
 	
+	TK_RamChk();
+	
 //	TKSPI_InitDevice();
 	tk_vfile_init();
 

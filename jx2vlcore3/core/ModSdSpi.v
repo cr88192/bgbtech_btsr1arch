@@ -106,8 +106,8 @@ begin
 
 //	tOutCs = tRegCtrl[0];
 //	tNxtDivRst = { 2'b00, tRegCtrl[31:27], 7'h00 };
-//	tNxtDivRst = { 2'b00, tRegCtrl[31:27], 7'h40 };
-	tNxtDivRst = 1000;
+	tNxtDivRst = { 2'b00, tRegCtrl[31:27], 7'h40 };
+//	tNxtDivRst = 1000;
 
 	tNxtRegExchI	= tRegExchI;
 	tNxtRegExchO	= tRegExchO;
@@ -193,7 +193,7 @@ begin
 //			$display("SdSpi Rd=%X", tRegExch[15:8]);
 //			tMmioOutData	= { UV24_00, tRegExch[15:8] };
 //			$display("SdSpi Rd=%X", tRegExchI[7:0]);
-			$display("SdSpi Rd=%X", tRegValIn);
+//			$display("SdSpi Rd=%X", tRegValIn);
 //			tMmioOutData	= { UV24_00, tRegExch[7:0] };
 //			tMmioOutData	= { UV24_00, tRegExchI[7:0] };
 			tMmioOutData	= { UV24_00, tRegValIn };

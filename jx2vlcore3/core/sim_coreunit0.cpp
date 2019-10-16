@@ -1030,12 +1030,14 @@ int main(int argc, char **argv, char **env)
 				{
 					top->sdc_dat_i=sdc_lbit;
 				}
-			
+
+#if 0
 				printf("sd-spi: clk=%d mosi=%d miso=%d cs=%d pos=%d\n",
 					top->sdc_clk,
 					(top->sdc_cmd)&1, (top->sdc_dat_i)&1,
 					(top->sdc_dat_o&8)!=0,
 					sdc_spipos);
+#endif
 			
 				sdc_lclk=top->sdc_clk;
 			}

@@ -18,6 +18,7 @@
 
 #include "tk_ptetlb.c"
 #include "tk_syscall.c"
+#include "tk_ramchk.c"
 
 #include "tk_peload.c"
 
