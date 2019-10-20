@@ -1716,6 +1716,12 @@ begin
 	dcInOpm			= ex1MemOpm;
 	dcInVal			= ex1MemDataOut;
 
+`ifdef jx2_enable_wex
+	exB2RegMulWRes	= exB1MulWVal;
+`ifdef jx2_enable_wex3w
+	exC2RegMulWRes	= exC1MulWVal;
+`endif
+`endif
 
 	/* EX2 */
 

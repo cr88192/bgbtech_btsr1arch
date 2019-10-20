@@ -243,6 +243,7 @@ end
 always @(posedge clock)
 begin
 	tHistBits	<= tHistBitsB;
+	tPreExBit	<= tPreExBitB;
 
 	tPreIfCnt	<= preCnts[tPreIfIx];
 	tPreIdIx	<= tPreIfIx;

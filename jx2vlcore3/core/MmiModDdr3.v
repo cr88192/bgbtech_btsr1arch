@@ -1,5 +1,5 @@
 /*
-LPDDR3 Interface Module
+DDR3 Interface Module
 
 State Machine, Transmit/Recieve Words
 
@@ -55,6 +55,14 @@ Note: ddrData_I/ddrData_O;
 These exist because verilator lacks tristate IO.
 
 
+DRI Init:
+	0mma-aaaa-aaaa-aaaa:	Load Mode Register
+		mm: MR/EMR to Load
+		aa: Bits to Load into MR
+	1000-0kss-dddd-dddd:	Delay
+		ss: Shift Delay left 0/4/8 bits
+		k: Disable CKE
+
 */
 
 `include "CoreDefs.v"
@@ -69,14 +77,12 @@ module MmiModDdr3(
 	memAddr,	memOpm,
 	memOK,
 	
-//	ddrData,
-	ddrData_I,
-	ddrData_O,
-	ddrData_En,
-	ddrAddr,
-	ddrBa,
-	ddrCs, ddrRas, ddrCas, ddrWe, ddrCke,
-	ddrClk);
+	ddrData_I,	ddrData_O,	ddrData_En,
+	ddrAddr,	ddrBa,
+	ddrCs,		ddrRas,		ddrCas,
+	ddrWe,		ddrCke,		ddrClk,
+	ddrDqsP_I,	ddrDqsN_I,
+	ddrDqsP_O,	ddrDqsN_O,	ddrDqs_En);
 
 input			clock;
 input			reset;
@@ -103,18 +109,49 @@ output			ddrCke;
 // output[9:0]		ddrCmd;			//Command/Address pins
 output[1:0]		ddrClk;			//clock pins
 
-// parameter[7:0]	DDR_CAS_RL_M1	= 4;	//CAS RL Minus 1
-// parameter[7:0]	DDR_CAS_RL_M1	= 3;	//CAS RL Minus 1
-parameter[7:0]	DDR_CAS_RL_M1	= 3;	//CAS RL Minus 1
-// parameter[7:0]	DDR_CAS_WL_M1	= 4;	//CAS WL Minus 1
-parameter[7:0]	DDR_CAS_WL_M1	= 2;	//CAS WL Minus 1
-parameter[7:0]	DDR_RAS_M1		= 8;	//RAS Minus 1
+input[1:0]		ddrDqsP_I;
+input[1:0]		ddrDqsN_I;
+output[1:0]		ddrDqsP_O;
+output[1:0]		ddrDqsN_O;
+output			ddrDqs_En;
 
-parameter[7:0]	DDR_RAS_INIT	= 128;	//Wait several uS
+// parameter[15:0]	DDR_CAS_RL_M1	= 4;	//CAS RL Minus 1
+// parameter[15:0]	DDR_CAS_RL_M1	= 3;	//CAS RL Minus 1
+parameter[15:0]	DDR_CAS_RL_M1	= 3;	//CAS RL Minus 1
+// parameter[15:0]	DDR_CAS_RL_M1	= 2;	//CAS RL Minus 1
+// parameter[15:0]	DDR_CAS_WL_M1	= 4;	//CAS WL Minus 1
+// parameter[15:0]	DDR_CAS_WL_M1	= 2;	//CAS WL Minus 1
+parameter[15:0]	DDR_CAS_WL_M1	= 1;	//CAS WL Minus 1
+parameter[15:0]	DDR_RAS_M1		= 8;	//RAS Minus 1
+
+parameter[15:0]	DDR_RAS_INIT	= 128;	//Wait several uS
 
 // parameter[63:0]	DDR_DRI_INIT	= 64'h0000_0122_0201_0AFF;
 // parameter[63:0]	DDR_DRI_INIT	= 64'h4000_2000_0010_8200;
-parameter[63:0]	DDR_DRI_INIT	= 64'h4000_2000_0033_8200;
+// parameter[63:0]	DDR_DRI_INIT	= 64'h4000_2000_0033_8200;
+//parameter[127:0]	DDR_DRI_INIT	= 
+//	128'h2000_2380_0033_8202_0133_2000_6000_4000_8201_8628;
+
+
+parameter[15:0]	DDR_DRI_INIT_13	=	16'h8201;	/* Delay, NOP, 200+ cyc */
+// parameter[15:0]	DDR_DRI_INIT_12	=	16'h2004;	/* Load EMR, OCD Exit */
+parameter[15:0]	DDR_DRI_INIT_12	=	16'h2005;	/* Load EMR, OCD Exit */
+// parameter[15:0]	DDR_DRI_INIT_11	=	16'h2384;	/* Load EMR, OCD Default */
+parameter[15:0]	DDR_DRI_INIT_11	=	16'h2385;	/* Load EMR, OCD Default */
+parameter[15:0]	DDR_DRI_INIT_10	=	16'h0233;	/* Load MR, Normal */
+parameter[15:0]	DDR_DRI_INIT_9	=	16'h8900;	/* REFRESH */
+parameter[15:0]	DDR_DRI_INIT_8	=	16'h8900;	/* REFRESH */
+parameter[15:0]	DDR_DRI_INIT_7	=	16'h8800;	/* PRELOAD ALL */
+parameter[15:0]	DDR_DRI_INIT_6	=	16'h0333;	/* Load MR, Reset DLL */
+// parameter[15:0]	DDR_DRI_INIT_5	=	16'h2004;	/* Load EMR */
+parameter[15:0]	DDR_DRI_INIT_5	=	16'h2005;	/* Load EMR, DLL Disable */
+parameter[15:0]	DDR_DRI_INIT_4	=	16'h6000;	/* Load EMR3 */
+parameter[15:0]	DDR_DRI_INIT_3	=	16'h4000;	/* Load EMR2 */
+parameter[15:0]	DDR_DRI_INIT_2	=	16'h8800;	/* PRELOAD ALL */
+parameter[15:0]	DDR_DRI_INIT_1	=	16'h8201;	/* Delay, NOP, 200+ cyc */
+parameter[15:0]	DDR_DRI_INIT_0	=	16'h8628;	/* Delay, CKE=0, 200+ us */
+
+// parameter[127:0]	DDR_DRI_INIT	= 
 
 /* verilator lint_off UNOPTFLAT */
 
@@ -128,12 +165,33 @@ assign			ddrData_O = tDdrData;
 assign			ddrData = ddrData_I;
 assign			ddrData_En = tDdrOut;
 
+reg[15:0]		ddrData2;
+reg[15:0]		ddrData2A;
+
 // reg[9:0]		tDdrCmd;			//Command/Address pins
 reg[1:0]		tDdrClk;			//clock pins
 reg[1:0]		tDdrClk2;			//clock pins
+reg[1:0]		tDdrClk3;			//clock pins
 // assign			ddrCmd = tDdrCmd;
 // assign			ddrClk = tDdrClk;
-assign			ddrClk = tDdrClk2;
+// assign			ddrClk = tDdrClk2;
+assign			ddrClk = tDdrClk3;
+
+reg[1:0]	tDdrDqs;
+reg			tDdrDqs_En;
+
+reg[1:0]	tDdrDqs2;
+reg			tDdrDqs2_En;
+reg[1:0]	tDdrDqs3;
+reg			tDdrDqs3_En;
+
+// assign		ddrDqsP_O	= tDdrDqs2[0] ? 2'b11 : 2'b00;
+// assign		ddrDqsN_O	= tDdrDqs2[1] ? 2'b11 : 2'b00;
+// assign		ddrDqs_En	= tDdrDqs2_En;
+
+assign		ddrDqsP_O	= tDdrDqs3[0] ? 2'b11 : 2'b00;
+assign		ddrDqsN_O	= tDdrDqs3[1] ? 2'b11 : 2'b00;
+assign		ddrDqs_En	= tDdrDqs3_En;
 
 reg[13:0]		tDdrAddr;		//Address pins
 reg[2:0]		tDdrBa;			//Bank Address pins
@@ -203,8 +261,11 @@ reg[15:0]		accNextRowAddr;
 reg[15:0]		accNextColAddr;
 reg[ 2:0]		accNextBaAddr;
 
-reg[7:0]		accCkCas;		//Clock-CAS / Wait Time
-reg[7:0]		accNextCkCas;
+// reg[7:0]		accCkCas;		//Clock-CAS / Wait Time
+// reg[7:0]		accNextCkCas;
+
+reg[15:0]		accCkCas;		//Clock-CAS / Wait Time
+reg[15:0]		accNextCkCas;
 
 
 reg[15:0]		dreRowAddr;			//DRAM Refresh, Current Row
@@ -213,8 +274,15 @@ reg[15:0]		dreCount;			//DRAM Refresh, Cycle Count
 reg[15:0]		dreNextCount;		//DRAM Refresh, Next Cycle Count
 reg				dreIsZero;
 
-reg[63:0]		driModeOut;			//DRAM Init, Mode Out
-reg[63:0]		driNextModeOut;		//DRAM Init, Next Out
+// reg[63:0]		driModeOut;			//DRAM Init, Mode Out
+// reg[63:0]		driNextModeOut;		//DRAM Init, Next Out
+// reg[127:0]		driModeOut;			//DRAM Init, Mode Out
+// reg[127:0]		driNextModeOut;		//DRAM Init, Next Out
+
+reg[4:0]		driInitState;
+reg[4:0]		driNextInitState;
+reg[15:0]		driInitCmd;
+
 reg				driStillInit;
 
 /* verilator lint_on UNOPTFLAT */
@@ -234,6 +302,11 @@ begin
 
 //	tDdrCmd			= 10'b0000000111;
 	tDdrClk			= accNextCkLo ? 2'b10 : 2'b01;
+//	tDdrClk			= accNextCkLo ? 2'b01 : 2'b10;
+//	tDdrClk			= (!accState[0]) ? 2'b10 : 2'b01;
+
+	tDdrDqs			= tDdrClk;
+	tDdrDqs_En		= 0;
 
 	if(accState[0])
 	begin
@@ -250,7 +323,8 @@ begin
 		tDdrAddr	= 0;
 		tDdrBa		= 0;
 		tDdrCke		= 1;
-		tDdrCs		= 1;
+//		tDdrCs		= 1;
+		tDdrCs		= 0;
 		tDdrRas		= 1;
 		tDdrCas		= 1;
 		tDdrWe		= 1;
@@ -266,12 +340,39 @@ begin
 	dreNextRowAddr	= dreRowAddr;
 	dreNextCount	= dreCount;
 	
-	driNextModeOut	= driModeOut;
+//	driNextModeOut	= driModeOut;
 
 	tMemOK			= UMEM_OK_READY;
 
-	driStillInit	= (driModeOut[15:0]!=0);
+//	driStillInit	= (driModeOut[15:0]!=0);
 	dreIsZero		= (dreCount == 0);
+
+//	driStillInit	= (driInitState != 5'h1F);
+	driNextInitState	= driInitState;
+
+	case(driInitState)
+		5'h00:		driInitCmd=DDR_DRI_INIT_0;
+		5'h01:		driInitCmd=DDR_DRI_INIT_1;
+		5'h02:		driInitCmd=DDR_DRI_INIT_2;
+		5'h03:		driInitCmd=DDR_DRI_INIT_3;
+		5'h04:		driInitCmd=DDR_DRI_INIT_4;
+		5'h05:		driInitCmd=DDR_DRI_INIT_5;
+		5'h06:		driInitCmd=DDR_DRI_INIT_6;
+		5'h07:		driInitCmd=DDR_DRI_INIT_7;
+		5'h08:		driInitCmd=DDR_DRI_INIT_8;
+		5'h09:		driInitCmd=DDR_DRI_INIT_9;
+		5'h0A:		driInitCmd=DDR_DRI_INIT_10;
+		5'h0B:		driInitCmd=DDR_DRI_INIT_11;
+		5'h0C:		driInitCmd=DDR_DRI_INIT_12;
+		5'h0D:		driInitCmd=DDR_DRI_INIT_13;
+		default:	driInitCmd=0;
+	endcase
+
+	driStillInit	= (driInitCmd != 0);
+
+// reg[4:0]		driInitState;
+// reg[4:0]		driNextInitState;
+// reg[15:0]		driInitCmd;
 
 	if(!dreIsZero && accCkLo)
 	begin
@@ -293,6 +394,11 @@ begin
 	end
 
 //	$display("ModDdr: State %X", accState);
+
+	if(accState!=0)
+	begin
+//		$display("ModDdr: State %X", accState);
+	end
 
 	case(accState)
 	6'b000000: begin	/* Waiting for request */
@@ -360,11 +466,17 @@ begin
 			begin
 //				$display("ModDdr: IdleClk");
 
-				if(driModeOut[15:0]!=0)
+//				if(driModeOut[15:0]!=0)
+//				if(driInitCmd!=0)
+				if(driStillInit)
 				begin
 					accNextState	= 6'b000010;
-					accNextRowAddr	= driModeOut[15:0];
-					driNextModeOut	= { 16'h0000, driModeOut[63:16] };
+//					accNextRowAddr	= driModeOut[15:0];
+//					driNextModeOut	= { 16'h0000, driModeOut[63:16] };
+//					driNextModeOut	= { 16'h0000, driModeOut[127:16] };
+
+					accNextRowAddr		= driInitCmd;
+					driNextInitState	= driInitState + 1;
 				end
 				else
 //				if(dreCount == 0)
@@ -379,16 +491,18 @@ begin
 					dreNextRowAddr	= { 3'b000, dreRowAddr[12:0] + 13'h1 };
 					dreNextCount = 8192;
 				end
-//				else
-//				begin
+				else
+				begin
 //					dreNextCount = dreCount - 1;
-//				end
+					tDdrCs	= 1;
+				end
 			end
 		end
 
 	end
 
 	6'b000001: begin	/* Access Complete, Hold */
+		tDdrCs	= 1;
 		if(tMemOpm[4] || tMemOpm[3])
 		begin
 //			$display("DDR ReadBlk %X", accReadBlk);
@@ -417,13 +531,38 @@ begin
 		tDdrCs	= 0;	tDdrRas	= 0;
 		tDdrCas	= 0;	tDdrWe	= 0;
 
+		accNextState	= 6'b000011;
+
 		if(accRowAddr[15:12]==4'h8)
 		begin
-			tDdrCs	= 0;	tDdrRas	= 1;
-			tDdrCas	= 1;	tDdrWe	= 0;
+			case(accRowAddr[11:8])
+				4'h6: begin		/* NOP Delay with CKE Disabled */
+					tDdrCke	= 0;
+					tDdrCs	= 0;	tDdrRas	= 1;
+					tDdrCas	= 1;	tDdrWe	= 1;
+				end
+
+				4'h8: begin		/* PRECHARGE */
+					tDdrCs	= 0;	tDdrRas	= 0;
+					tDdrCas	= 1;	tDdrWe	= 0;
+				end
+
+				4'h9: begin		/* REFRESH */
+					tDdrCs	= 0;	tDdrRas	= 0;
+					tDdrCas	= 0;	tDdrWe	= 1;
+				end
+
+				default: begin	/* NOP Delay */
+					tDdrCs	= 0;	tDdrRas	= 1;
+					tDdrCas	= 1;	tDdrWe	= 1;
+				end
+			endcase
+
+//			tDdrCs	= 0;	tDdrRas	= 1;
+//			tDdrCas	= 1;	tDdrWe	= 0;
+			
 		end
 
-		accNextState	= 6'b000011;
 	end
 	6'b000011: begin
 		/* Mode Register Write (Fall) */
@@ -433,7 +572,30 @@ begin
 		accNextCkCas	= DDR_RAS_M1;	/* RAS Latency (-1) */
 //		if(accRowAddr[15:8]==8'h0A)
 		if(accRowAddr[15:12]==4'h8)
-			accNextCkCas	= DDR_RAS_INIT;
+		begin
+//			accNextCkCas	= DDR_RAS_INIT;
+			case(accRowAddr[11:8])
+				4'h0:	accNextCkCas	= { 8'h0, accRowAddr[7:0]       };
+				4'h1:	accNextCkCas	= { 4'h0, accRowAddr[7:0], 4'h0 };
+				4'h2: 	accNextCkCas	= {       accRowAddr[7:0], 8'h0 };
+				4'h6: 
+				begin
+					tDdrCke			= 0;
+					accNextCkCas	= {       accRowAddr[7:0], 8'h0 };
+				end
+
+//				4'h8: 
+//				begin
+//				end
+
+//				default:	accNextCkCas	= DDR_RAS_INIT;
+
+				default: 
+				begin
+				end
+
+			endcase
+		end
 		accNextState	= 6'b001110;
 	end
 	
@@ -501,10 +663,12 @@ begin
 	6'b001110: begin
 		/* CAS Hold (Rise) */
 		accNextState	= 6'b001111;
+		tDdrCke			= tDdrLastCke;
 	end
 	6'b001111: begin
 		/* CAS Hold (Fall) */
 		accNextState	= 6'b000000;
+		tDdrCke			= tDdrLastCke;
 		if(accCkCas!=0)
 		begin
 			accNextCkCas	= accCkCas - 1;
@@ -583,11 +747,11 @@ begin
 	end
 
 	6'b010110: begin
-		/* CAS Hold (Rise) */
+		/* Read CAS Hold (Rise) */
 		accNextState	= 6'b010111;
 	end
 	6'b010111: begin
-		/* CAS Hold (Fall) */
+		/* Read CAS Hold (Fall) */
 		accNextState	= 6'b100000;
 		if(accCkCas!=0)
 		begin
@@ -660,16 +824,21 @@ begin
 	end
 
 	6'b011110: begin
-		/* CAS Hold (Rise) */
+		/* Write CAS Hold (Rise) */
 		accNextState	= 6'b011111;
+		tDdrDqs			= 2'b10;
+		tDdrDqs_En		= 1;
 	end
 	6'b011111: begin
-		/* CAS Hold (Fall) */
+		/* Write CAS Hold (Fall) */
 		accNextState	= 6'b110000;
+//		tDdrDqs			= 2'b10;
+		tDdrDqs_En		= 1;
 		if(accCkCas!=0)
 		begin
 			accNextCkCas	= accCkCas - 1;
 			accNextState	= 6'b011110;
+			tDdrDqs			= 2'b10;
 		end
 	end
 	
@@ -679,31 +848,35 @@ begin
 	
 	6'b100000: begin
 `ifdef mod_ddr_dbgprn
-		$display("DDR Read Word0 %X (Ck=%d)", ddrData, clock);
+		$display("DDR Read Word0 %X (Ck=%d)", ddrData2, clock);
 `endif
 		accNextState			= 6'b100001;
-		accNextReadBlk[15:0]	= ddrData;
+		accNextReadBlk[15:0]	= ddrData2;
+//		tDdrDqs_En		= 1;
 	end
 	6'b100001: begin
 `ifdef mod_ddr_dbgprn
-		$display("DDR Read Word1 %X (Ck=%d)", ddrData, clock);
+		$display("DDR Read Word1 %X (Ck=%d)", ddrData2, clock);
 `endif
 		accNextState			= 6'b100010;
-		accNextReadBlk[31:16]	= ddrData;
+		accNextReadBlk[31:16]	= ddrData2;
+//		tDdrDqs_En		= 1;
 	end
 	6'b100010: begin
 `ifdef mod_ddr_dbgprn
-		$display("DDR Read Word2 %X", ddrData);
+		$display("DDR Read Word2 %X", ddrData2);
 `endif
 		accNextState			= 6'b100011;
-		accNextReadBlk[47:32]	= ddrData;
+		accNextReadBlk[47:32]	= ddrData2;
+//		tDdrDqs_En		= 1;
 	end
 	6'b100011: begin
 `ifdef mod_ddr_dbgprn
-		$display("DDR Read Word3 %X", ddrData);
+		$display("DDR Read Word3 %X", ddrData2);
 `endif
 		accNextState			= 6'b100100;
-		accNextReadBlk[63:48]	= ddrData;
+		accNextReadBlk[63:48]	= ddrData2;
+//		tDdrDqs_En		= 1;
 // `ifdef mod_ddr3_isddr2
 `ifdef jx2_ddr_bl64b
 		accNextState			= 6'b000001;
@@ -711,31 +884,35 @@ begin
 	end
 	6'b100100: begin
 `ifdef mod_ddr_dbgprn
-		$display("DDR Read Word4 %X", ddrData);
+		$display("DDR Read Word4 %X", ddrData2);
 `endif
 		accNextState			= 6'b100101;
-		accNextReadBlk[79:64]	= ddrData;
+		accNextReadBlk[79:64]	= ddrData2;
+//		tDdrDqs_En		= 1;
 	end
 	6'b100101: begin
 `ifdef mod_ddr_dbgprn
-		$display("DDR Read Word5 %X", ddrData);
+		$display("DDR Read Word5 %X", ddrData2);
 `endif
 		accNextState			= 6'b100110;
-		accNextReadBlk[95:80]	= ddrData;
+		accNextReadBlk[95:80]	= ddrData2;
+//		tDdrDqs_En		= 1;
 	end
 	6'b100110: begin
 `ifdef mod_ddr_dbgprn
-		$display("DDR Read Word6 %X", ddrData);
+		$display("DDR Read Word6 %X", ddrData2);
 `endif
 		accNextState			= 6'b100111;
-		accNextReadBlk[111:96]	= ddrData;
+		accNextReadBlk[111:96]	= ddrData2;
+//		tDdrDqs_En		= 1;
 	end
 	6'b100111: begin
 `ifdef mod_ddr_dbgprn
-		$display("DDR Read Word7 %X", ddrData);
+		$display("DDR Read Word7 %X", ddrData2);
 `endif
 		accNextState			= 6'b000001;
-		accNextReadBlk[127:112]	= ddrData;
+		accNextReadBlk[127:112]	= ddrData2;
+//		tDdrDqs_En		= 1;
 	end
 
 
@@ -745,6 +922,7 @@ begin
 		accNextState			= 6'b110001;
 		tDdrData 				= accReadBlk[15:0];
 		tDdrOut					= 1;
+		tDdrDqs_En				= 1;
 `ifdef mod_ddr_dbgprn
 		$display("DDR Write Word0 %X (Ck=%d)", tDdrData, clock);
 `endif
@@ -753,6 +931,7 @@ begin
 		accNextState			= 6'b110010;
 		tDdrData 				= accReadBlk[31:16];
 		tDdrOut					= 1;
+		tDdrDqs_En				= 1;
 `ifdef mod_ddr_dbgprn
 		$display("DDR Write Word1 %X (Ck=%d)", tDdrData, clock);
 `endif
@@ -761,6 +940,7 @@ begin
 		accNextState			= 6'b110011;
 		tDdrData 				= accReadBlk[47:32];
 		tDdrOut					= 1;
+		tDdrDqs_En				= 1;
 `ifdef mod_ddr_dbgprn
 		$display("DDR Write Word2 %X (Ck=%d)", tDdrData, clock);
 `endif
@@ -769,6 +949,7 @@ begin
 		accNextState			= 6'b110100;
 		tDdrData 				= accReadBlk[63:48];
 		tDdrOut					= 1;
+		tDdrDqs_En				= 1;
 `ifdef mod_ddr_dbgprn
 		$display("DDR Write Word3 %X (Ck=%d)", tDdrData, clock);
 `endif
@@ -782,6 +963,7 @@ begin
 		accNextState			= 6'b110101;
 		tDdrData 				= accReadBlk[79:64];
 		tDdrOut					= 1;
+		tDdrDqs_En				= 1;
 `ifdef mod_ddr_dbgprn
 		$display("DDR Write Word4 %X (Ck=%d)", tDdrData, clock);
 `endif
@@ -790,6 +972,7 @@ begin
 		accNextState			= 6'b110110;
 		tDdrData 				= accReadBlk[95:80];
 		tDdrOut					= 1;
+		tDdrDqs_En				= 1;
 `ifdef mod_ddr_dbgprn
 		$display("DDR Write Word5 %X (Ck=%d)", tDdrData, clock);
 `endif
@@ -798,6 +981,7 @@ begin
 		accNextState			= 6'b110111;
 		tDdrData 				= accReadBlk[111:96];
 		tDdrOut					= 1;
+		tDdrDqs_En				= 1;
 `ifdef mod_ddr_dbgprn
 		$display("DDR Write Word6 %X (Ck=%d)", tDdrData, clock);
 `endif
@@ -806,6 +990,7 @@ begin
 		accNextState			= 6'b000001;
 		tDdrData 				= accReadBlk[127:112];
 		tDdrOut					= 1;
+		tDdrDqs_En				= 1;
 `ifdef mod_ddr_dbgprn
 		$display("DDR Write Word7 %X (Ck=%d)", tDdrData, clock);
 `endif
@@ -819,6 +1004,18 @@ end
 
 reg[7:0]	regInitSanity;
 
+initial begin
+	regInitSanity = 0;
+end
+
+always @(negedge clock)
+begin
+	tDdrClk3		<= tDdrClk2;
+	tDdrDqs3		<= tDdrDqs2;
+	tDdrDqs3_En		<= tDdrDqs2_En;
+//	ddrData2		<= ddrData;
+end
+
 always @(posedge clock)
 begin
 
@@ -828,6 +1025,10 @@ begin
 	tMemDataIn		<= memDataIn;
 	tMemAddr		<= memAddr;
 	tMemOpm			<= memOpm;
+
+	ddrData2		<= ddrData;
+//	ddrData2A		<= ddrData;
+//	ddrData2		<= ddrData2A;
 
 	accState	<= accNextState;
 	accCkLo		<= accNextCkLo;
@@ -843,6 +1044,10 @@ begin
 	dreCount	<= dreNextCount;
 
 	tDdrClk2		<= tDdrClk;
+	tDdrDqs2		<= tDdrDqs;
+	tDdrDqs2_En		<= tDdrDqs_En;
+
+
 	tDdrLastAddr	<= tDdrAddr;	//Address pins
 	tDdrLastBa		<= tDdrBa;		//Bank Address pins
 	tDdrLastCs		<= tDdrCs;
@@ -853,12 +1058,14 @@ begin
 
 	if(reset || (regInitSanity!=8'h55))
 	begin
-		driModeOut	<= DDR_DRI_INIT;
+//		driModeOut	<= DDR_DRI_INIT;
+		driInitState	<= 0;
 		accState <= 0;
 	end
 	else
 	begin
-		driModeOut	<= driNextModeOut;
+//		driModeOut	<= driNextModeOut;
+		driInitState	<= driNextInitState;
 	end
 
 	if(reset)

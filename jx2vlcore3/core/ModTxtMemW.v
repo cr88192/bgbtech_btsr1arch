@@ -162,7 +162,13 @@ reg[9:0]	tBusCellIx;			//base cell index
 `endif
 
 
-assign cellData = tCell1;
+wire[255:0]		tCellData;
+reg[255:0]		tCellDataL;
+
+assign		tCellData = (pixCellIx==tPixCellIx) ? tCell1 : tCellDataL;
+
+// assign cellData = tCell1;
+assign cellData = tCellData;
 assign fontData = tFontData1;
 
 initial begin
@@ -289,6 +295,7 @@ begin
 //	tPixCellIx		<= pixCellIx;
 
 	tPixCellIx		<= nxtPixCellIx;
+	tCellDataL		<= tCellData;
 
 `ifdef FBUF_EN128K
 	tCell1[ 31:  0]	<= scrCell1A[tPixCellIx[11:0]];

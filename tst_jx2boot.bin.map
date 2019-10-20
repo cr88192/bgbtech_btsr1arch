@@ -1,5 +1,5 @@
-00005850 T __rom_data_start
-00005BA0 T __rom_data_end
+00005870 T __rom_data_start
+00005BC0 T __rom_data_end
 00000040 T __text_start
 0000C000 T __data_start
 0000C350 T __bss_start
@@ -43,7 +43,7 @@
 00000516 T tk_checksane_asm
 00000080 T copy_data
 00000066 T zero_bss
-00004DC8 T __start
+00004DDC T __start
 00000062 T _exit
 0000C49A T _end
 00000074 T zero_bss.L0
@@ -188,12 +188,12 @@
 000043CC T __isr_mmu
 0000447C T __isr_syscall
 00004514 T TK_RamChk
-00004600 T TKPE_UnpackL4
-00004794 T TKPE_LoadStaticPE
-00004BFC T sanity_a
-00004CE0 T tk_cmd2idx
-00004D50 T tk_tryload
-00004EE8 T __start_init
-00004EEE T __text_end
+00004614 T TKPE_UnpackL4
+000047A8 T TKPE_LoadStaticPE
+00004C10 T sanity_a
+00004CF4 T tk_cmd2idx
+00004D64 T tk_tryload
+00004F00 T __start_init
+00004F06 T __text_end
 0000C344 T __data_end
 0000C49A T __bss_end

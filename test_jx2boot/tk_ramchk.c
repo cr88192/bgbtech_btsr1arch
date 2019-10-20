@@ -22,6 +22,7 @@ int TK_RamChk()
 		while(ct<ct1e)
 		{
 			ct[0]=(u32)ct;
+			ct[1]=0x5555AAAAU;
 //			ct+=4;
 			ct+=256;
 		}
@@ -71,8 +72,8 @@ int TK_RamChk()
 
 	if(ct<cte)
 	{
-		printf("RAM Check Fail, A=%p, expect=%X got=%X",
-			ct, ((u32)ct), ct[0]);
+		printf("RAM Check Fail, A=%p, expect=%X got=%X-%X",
+			ct, ((u32)ct), ct[0], ct[1]);
 		__debugbreak();
 		return(-1);
 	}

@@ -594,6 +594,8 @@ int sdc_spibit(int bit, int cs)
 #define SIMDDR_MSK_CKE	(1<<16)
 #define SIMDDR_MSK_BA	(3<<14)
 
+#define SIMDDR_MSK_NOP	(SIMDDR_MSK_RAS|SIMDDR_MSK_CAS|SIMDDR_MSK_WE)
+
 
 int ddr_cmdhi, ddr_cmdlo;
 int ddr_cyc;
@@ -612,7 +614,7 @@ int ddr_mr3;
 uint16_t	*ddr_ram;
 
 #if 1
-int SimDdr(int clk, int cmd, int *rdata)
+int SimDdr(int clk, int cmd, int dqs, int *rdata)
 {
 	int		data, row, col, bank, pos;
 	int addr, cas;
@@ -655,6 +657,11 @@ int SimDdr(int clk, int cmd, int *rdata)
 	{
 		if(ddr_burst>0)
 		{
+			if((dqs&3)!=(clk&3))
+			{
+				printf("DDR DQS Issue %d!=%d\n", dqs&3, clk&3);
+			}
+			
 			ddr_burst--;
 
 			data=*rdata;
@@ -665,7 +672,8 @@ int SimDdr(int clk, int cmd, int *rdata)
 		}
 	}
 		
-	if(!clk)
+//	if(!clk)
+	if(!(clk&1))
 	{
 		return(0);
 	}
@@ -686,7 +694,7 @@ int SimDdr(int clk, int cmd, int *rdata)
 		{
 			if(cmd&SIMDDR_MSK_WE)
 			{
-				printf("No-Op\n");
+//				printf("No-Op\n");
 			}else
 			{
 				printf("Burst Terminate\n");
@@ -700,7 +708,8 @@ int SimDdr(int clk, int cmd, int *rdata)
 				ddr_bank=bank;
 				ddr_state=1;
 //				ddr_cas=ddr_parm_rl*2+1;
-				ddr_cas=ddr_parm_rl*2;
+//				ddr_cas=ddr_parm_rl*2;
+				ddr_cas=ddr_parm_rl*2-2;
 //				ddr_cas=4*2+1;
 //				ddr_burst=SIMDDR_BUSRT;
 				ddr_burst=ddr_burstlen;
@@ -711,7 +720,8 @@ int SimDdr(int clk, int cmd, int *rdata)
 				ddr_bank=bank;
 				ddr_state=2;
 //				ddr_cas=ddr_parm_wl*2+1;
-				ddr_cas=ddr_parm_wl*2;
+//				ddr_cas=ddr_parm_wl*2;
+				ddr_cas=ddr_parm_wl*2-2;
 //				ddr_burst=SIMDDR_BUSRT;
 				ddr_burst=ddr_burstlen;
 			}
@@ -755,6 +765,15 @@ int SimDdr(int clk, int cmd, int *rdata)
 				ddr_parm_wl=ddr_parm_rl-1;	//CAS WL=RL-1
 				
 				printf("BurstLen=%d, CAS=%d\n", ddr_burstlen, cas);
+
+#if 1
+				printf("  DLL=%s\n", (ddr_mr1&1)?"Disable":"Enable");
+				printf("  ODS=%s\n", (ddr_mr1&2)?"Reduce":"Full");
+
+				printf("  DQS#=%s\n", (ddr_mr1&1024)?"Disable":"Enable");
+				printf("  RDQS=%s\n", (ddr_mr1&2048)?"Yes":"No");
+				printf("  Outp=%s\n", (ddr_mr1&4096)?"Disable":"Enable");
+#endif
 			}
 		}
 	}
@@ -764,7 +783,7 @@ int SimDdr(int clk, int cmd, int *rdata)
 int update_ddr()
 {
 	static int ddrlclk;
-	int cmd, data;
+	int cmd, data, dqs;
 	int n, inh;
 	int i, j, k;
 
@@ -772,6 +791,10 @@ int update_ddr()
 	{
 		ddrlclk=top->ddrClk;
 //			cmd=top->ddrCmd;
+
+		dqs=((top->ddrDqsP_O)&1)|((top->ddrDqsN_O)&2);
+		if(!top->ddrDqs_En)
+			dqs=0;
 
 		cmd=0;
 		cmd=(cmd<<1)|top->ddrCs;
@@ -787,9 +810,18 @@ int update_ddr()
 
 //			data=top->ddrData;
 		data=top->ddrDataO;
-		SimDdr(top->ddrClk, cmd, &data);
+		SimDdr(top->ddrClk, cmd, dqs, &data);
 //			top->ddrData=data;
 		top->ddrDataI=data;
+
+#if 0
+		if((cmd&SIMDDR_MSK_NOP)!=SIMDDR_MSK_NOP)
+		{
+			printf("update_ddr: cmd=%04X clk=%d dqs=%d data=%04X->%04X\n",
+				cmd, top->ddrClk, dqs,
+				top->ddrDataO, top->ddrDataI);
+		}
+#endif
 	}
 }
 

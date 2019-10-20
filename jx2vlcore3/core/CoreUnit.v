@@ -21,6 +21,8 @@ module CoreUnit(
 	ddrAddr,	ddrBa,
 	ddrCs,		ddrRas,		ddrCas,
 	ddrWe,		ddrCke,		ddrClk,
+	ddrDqsP_I,	ddrDqsN_I,
+	ddrDqsP_O,	ddrDqsN_O,	ddrDqs_En,
 
 	vgaRed,		vgaGrn,		vgaBlu,
 	vgaHsync,	vgaVsync,
@@ -67,6 +69,13 @@ output			ddrWe;
 output			ddrCke;
 
 output[1:0]		ddrClk;			//clock pins
+
+input[1:0]		ddrDqsP_I;
+input[1:0]		ddrDqsN_I;
+output[1:0]		ddrDqsP_O;
+output[1:0]		ddrDqsN_O;
+output			ddrDqs_En;
+
 
 // reg[15:0]		ddrData_I;		//DDR data pins
 wire[15:0]		ddrData_I;		//DDR data pins
@@ -154,6 +163,7 @@ wire			sdc_cs;			//chip-select for SDcard
 
 assign		sdc_clk	= sdc_sclk;
 assign		sdc_do	= sdc_dat_i[0];
+assign		sdc_dat_o[0]	= 1'bz;
 assign		sdc_dat_o[1]	= 1'bz;
 assign		sdc_dat_o[2]	= 1'bz;
 // assign		sdc_dat_o[3]	= sdc_cs;
@@ -199,16 +209,15 @@ MmiModDdr3		ddr(
 	clock, reset,
 
 	ddrMemDataIn,	ddrMemDataOut,
-	ddrMemAddr,	ddrMemOpm,
+	ddrMemAddr,		ddrMemOpm,
 	ddrMemOK,
 	
-	ddrData_I,
-	ddrData_O,
-	ddrData_En,
-	ddrAddr1,
-	ddrBa,
-	ddrCs, ddrRas, ddrCas, ddrWe, ddrCke,
-	ddrClk);
+	ddrData_I,	ddrData_O,	ddrData_En,
+	ddrAddr1,	ddrBa,
+	ddrCs,		ddrRas,		ddrCas,
+	ddrWe,		ddrCke,		ddrClk,
+	ddrDqsP_I,	ddrDqsN_I,
+	ddrDqsP_O,	ddrDqsN_O,	ddrDqs_En);
 
 wire[127:0]		memInData;
 wire[127:0]		memOutData;
@@ -282,6 +291,10 @@ wire[63:0]		outTimer100MHz;
 assign			uartTxD = fixedPinsOut[0];
 assign			uartRtS = 1'b0;
 assign			fixedPinsIn[1] = uartRxD;
+
+assign			fixedPinsIn[0] = 0;
+assign			fixedPinsIn[15:2] = 0;
+assign			gpioPinsIn = 0;
 
 MmiModGpio	gpio(
 	clock,			reset,

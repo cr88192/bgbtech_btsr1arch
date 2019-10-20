@@ -14,6 +14,7 @@ module TopUnit(
 	ddrData,	ddrAddr,	ddrBa,
 	ddrCs,		ddrRas,		ddrCas,
 	ddrWe,		ddrCke,		ddrClk,
+	ddrDqsP,	ddrDqsN,
 
 	vgaRed,		vgaGrn,		vgaBlu,
 	vgaHsync,	vgaVsync,
@@ -55,6 +56,9 @@ output			ddrCke;
 
 output[1:0]		ddrClk;			//clock pins
 
+inout[1:0]		ddrDqsP;
+inout[1:0]		ddrDqsN;
+
 wire	reset2;
 assign	reset2 = !reset;
 
@@ -62,8 +66,19 @@ wire[15:0]		ddrData_I;		//DDR data pins
 wire[15:0]		ddrData_O;		//DDR data pins
 wire			ddrData_En;		//DDR data pins
 
+wire			ddrDqs_En;
+wire[1:0]		ddrDqsP_O;
+wire[1:0]		ddrDqsN_O;
+wire[1:0]		ddrDqsP_I;
+wire[1:0]		ddrDqsN_I;
+
 assign			ddrData		= ddrData_En ? ddrData_O : 16'hzzzz;
 assign			ddrData_I	= ddrData;
+
+assign			ddrDqsP		= ddrDqs_En ? ddrDqsP_O : 2'bzz;
+assign			ddrDqsN		= ddrDqs_En ? ddrDqsN_O : 2'bzz;
+assign			ddrDqsP_I	= ddrDqsP;
+assign			ddrDqsN_I	= ddrDqsN;
 
 output[3:0]		vgaRed;
 output[3:0]		vgaGrn;
@@ -129,6 +144,9 @@ CoreUnit core(
 	ddrAddr,	ddrBa,
 	ddrCs,		ddrRas,		ddrCas,
 	ddrWe,		ddrCke,		ddrClk,
+	ddrDqsP_I,	ddrDqsN_I,
+	ddrDqsP_O,	ddrDqsN_O,	ddrDqs_En,
+
 	vgaRed,		vgaGrn,		vgaBlu,
 	vgaHsync,	vgaVsync,
 	uartTxD,	uartRxD,

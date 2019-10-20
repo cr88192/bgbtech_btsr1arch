@@ -59,6 +59,12 @@ input			pixLineOdd;
 reg[11:0]	tPixPosX;
 reg[11:0]	tPixPosY;
 
+reg[11:0]	tPixPosX_Z;
+reg[11:0]	tPixPosY_Z;
+
+reg[11:0]	tPixPosX_Y;
+reg[11:0]	tPixPosY_Y;
+
 reg[13:0]	tPixCellX;			//base cell X
 reg[13:0]	tPixCellY;			//base cell Y
 
@@ -271,21 +277,23 @@ begin
 	tPixAux			= 0;
 	tPixRgb565		= 0;
 	
+	/* Z Stage */
+	
 	if(useRow50)
 	begin
-//		tPixCellY[6:0] = tPixPosY[8:2];
-		tPixCellY[6:0] = tPixPosY[9:3];
+//		tPixCellY[6:0] = tPixPosY_Z[8:2];
+		tPixCellY[6:0] = tPixPosY_Z[9:3];
 	end
 	else
 	begin
-//		tPixCellY[6:0] = tPixPosY[9:3];
-		tPixCellY[6:0] = { 1'b0, tPixPosY[9:4] };
+//		tPixCellY[6:0] = tPixPosY_Z[9:3];
+		tPixCellY[6:0] = { 1'b0, tPixPosY_Z[9:4] };
 	end
 
 	if(useCol80 && !useHalfCell)
 	begin
-		tPixCellX[6:0] = tPixPosX[9:3];
-//		tPixCellY[6:0] = tPixPosY[9:3];
+		tPixCellX[6:0] = tPixPosX_Z[9:3];
+//		tPixCellY[6:0] = tPixPosY_Z[9:3];
 		if(useHorz800)
 			tPixCellIx_A = tPixCellY*100 + tPixCellX - 200;
 		else
@@ -294,14 +302,17 @@ begin
 	end
 	else
 	begin
-		tPixCellX[5:0] = tPixPosX[9:4];
-//		tPixCellY[6:0] = tPixPosY[9:3];
+		tPixCellX[5:0] = tPixPosX_Z[9:4];
+//		tPixCellY[6:0] = tPixPosY_Z[9:3];
 		if(useHorz800)
 			tPixCellIx_A = tPixCellY*50 + tPixCellX - 100;
 		else
 			tPixCellIx_A = tPixCellY*40 + tPixCellX - 80;
-		tNextCellIsOdd = tPixPosX[3];
+		tNextCellIsOdd = tPixPosX_Z[3];
 	end
+	
+	
+	/* Stage A */
 	
 	if(useRow50)
 	begin
@@ -328,8 +339,6 @@ begin
 		tPixCellFx_A[1:0] = 2'h3 - tPixPosX[3:2];		
 		tPixCellGx_A[2:0]	= 3'h7 - tPixPosX[3:1];
 	end
-	
-	/* Stage A */
 	
 	tCellData = cellData;
 	if(useHalfCell)
@@ -766,8 +775,16 @@ begin
 	tPixCv2			<= tPixCv;
 	tPixAux2		<= tPixAux;
 
-	tPixPosX		<= pixPosX;
-	tPixPosY		<= pixPosY;
+	tPixPosX_Z		<= pixPosX;
+	tPixPosY_Z		<= pixPosY;
+
+//	tPixPosX		<= tPixPosX_Z;
+//	tPixPosY		<= tPixPosY_Z;
+
+	tPixPosX_Y		<= tPixPosX_Z;
+	tPixPosY_Y		<= tPixPosY_Z;
+	tPixPosX		<= tPixPosX_Y;
+	tPixPosY		<= tPixPosY_Y;
 
 	tPixCellIx_B		<= tPixCellIx_A;
 	tPixCellFx_B		<= tPixCellFx_A;
