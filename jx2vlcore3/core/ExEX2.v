@@ -371,8 +371,11 @@ begin
 		$display("EX2: DoMemOp, OK=%X", memDataOK);
 `endif
 
+`ifndef jx2_do_ld1cyc
 		if(tHoldCyc==0)
 			tExHold=1;
+`endif
+
 		if(memDataOK[1])
 		begin
 			if(memDataOK[0])

@@ -2,8 +2,12 @@ extern u64 __arch_gbr;
 
 void sanity_a()
 {
-	int i, j, k;
-	
+	int *pi, *pj;
+	int i, j, k, l;
+
+	pi=&i;
+	pj=&j;
+
 	*(int *)(&i)=0x12345678;
 	*(int *)(&j)=0x1234CDEF;
 
@@ -35,6 +39,20 @@ void sanity_a()
 		__debugbreak();
 
 	puts("A3\n");
+
+	*pi=123456;
+	*pj=10;
+	k=i/j;
+	
+	if(k!=12345)
+		__debugbreak();
+
+	l=i%j;
+
+	if(l!=6)
+		__debugbreak();
+
+	puts("A4\n");
 }
 
 int tk_cmd2idx(char *s)

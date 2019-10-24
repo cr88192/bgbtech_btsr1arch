@@ -36,6 +36,12 @@ Single register forms in 30zz..37zz will be mirrored in 38zz..3Fzz, but will enc
 The instructions in the F0zz..F3zz range will repeat in F4zz..F7zz (Parallel), E0zz..E3zz (Execute if True), and E4zz..E7zz (Execute if False) ranges.
 
 
+Immediates may have a suffix to indicate how the value is extended:
+* u: Value is extended with zeroes.
+* n: Value is extended with ones.
+* s: Value is sign extended.
+
+
 === ADC ===
 
 * 12nm       ADC		Rm, Rn
@@ -51,13 +57,13 @@ WEX: ADC will only update SR.T in Lane 1. If an ADC is in another lane, the stat
 * 10nm            ADD		Rm, Rn
 * 58nm            ADD		Rm, DLR, Rn			//Rn=Rm+DLR
 * Cnii            ADD		#imm8s, Rn
-* F0nm_1go0       ADD		Rm, Ro, Rn			//Rn=Rm+Ro, Q=0
+* F0nm_1go0       ADD		Rm, Ro, Rn			//Rn=Rm+Ro
 * F0nm_1e09       ADD		Rm, Rn				//Rn=Rn+Rm
-* F2nm_0gjj       ADD		Rm, disp9u, Rn		//
-* F2nm_1gjj       ADD		Rm, disp9n, Rn		//
+* F2nm_0gjj       ADD		Rm, #imm9u, Rn		//
+* F2nm_1gjj       ADD		Rm, #imm9n, Rn		//
 * F84n_iiii       ADD		#imm16s, Rn
 * F85n_iiii       ADD		#imm16s, Rk
-* FC0G_10nm_jjjj  ADD		Rm, imm17u, Rn		//Rn=Rm+DLR
+* FC0G_10nm_jjjj  ADD		Rm, #imm17u, Rn		//Rn=Rm+DLR
 * FCCn_iiii_iiii  ADD		#imm32s, Rn
 * FDCn_iiii_iiii  ADD		#imm32s, Rn
 
@@ -68,10 +74,10 @@ Add the source and destination values and store the result in the destination re
 
 * F0nm_5goC       ADDS.L	Rm, Ro, Rn
 * F0nm_5GoC       ADDU.L	Rm, Ro, Rn
-* F2gj_3gjj       ADDS.L	Rm, disp9u, Rn
-* F2nm_3Gjj       ADDU.L	Rm, disp9u, Rn
-* F2nm_4gjj       ADDS.L	Rm, disp9n, Rn
-* F2nm_4Gjj       ADDU.L	Rm, disp9n, Rn
+* F2gj_3gjj       ADDS.L	Rm, #imm9u, Rn
+* F2nm_3Gjj       ADDU.L	Rm, #imm9u, Rn
+* F2nm_4gjj       ADDS.L	Rm, #imm9n, Rn
+* F2nm_4Gjj       ADDU.L	Rm, #imm9n, Rn
 
 Add the source and destination values and store the result in the destination register.
 
@@ -85,7 +91,7 @@ This form sign or zero extends the 32-bit result to 64 bits.
 * F0nm_1go5       AND		Rm, Ro, Rn
 * F0nm_1e59       AND		Rm, Rn
 * F2nm_5gjj       AND		Rm, #imm9u, Rn
-* FC0G_15nm_dddd  AND		Rm, imm17s, Rn
+* FC0G_15nm_dddd  AND		Rm, #imm17s, Rn
 
 Perform a bitwise AND of the source and destination values and store the result in the destination register.
 
@@ -798,9 +804,14 @@ This operation only exists in Lane 1.
 * F0nm_5go2  MULS.L	Rm, Ro, Rn			//(MULL) Sx 32b Mul (32*32->64)
 * F0nm_5go3  MULU.L	Rm, Ro, Rn			//(MULL) Zx 32b Mul (32*32->64)
 * F0nm_5goE  MULS.W	Rm, Ro, Rn			//(MULW) Sx 16b Mul (16*16->32)
+* F0nm_5GoE  MULS.W	Rm, #imm5u, Rn		//(MULW) Sx 16b Mul (16*16->32)
 * F0nm_5goF  MULU.W	Rm, Ro, Rn			//(MULW) Zx 16b Mul (16*16->32)
+* F0nm_5GoF  MULU.W	Rm, #imm5u, Rn		//(MULW) Zx 16b Mul (16*16->32)
 
 These produce widening multiplies of a given input size.
+The values in Rm and Ro are multiplied, and the result is stored in Rn.
+
+The WORD multiplies will exist in all lanes.
 
 
 
@@ -909,7 +920,7 @@ Invert the SR.T flag.
 * F0nm_1go6       OR	Rm, Ro, Rn
 * F0nm_1e69       OR	Rm, Rn
 * F2nm_6gjj       OR	Rm, #imm9u, Rn
-* FC0G_16nm_dddd  OR	Rm, imm17s, Rn
+* FC0G_16nm_dddd  OR	Rm, #imm17s, Rn
 
 Perform a bitwise OR of the source and destination, storing the result in the destination.
 
@@ -927,7 +938,7 @@ Load the value from the top of the stack into the destination register and incre
 
 For a 32-bit architecture, this will add 4 to the value of SP.
 
-Note that POP into PC will be treated as a special case "RET" instruction.
+Note that POP into PC may be treated as a special case "RET" instruction (optional).
 
 
 === PUSH ===
@@ -1325,6 +1336,8 @@ Perform a bitwise XOR of the source and destination registers, storing the resul
 == FPU Instructions (FPU, Optional) ==
 
 The BJX2 FPU aims more to be "sufficient" and "reasonably cheap" than strict adherence to IEEE 754. An FPU is allowed, but not required, to be IEEE 754 conformant.
+
+This is the version which uses dedicated FPU registers, and should not to be confused with the GFP FPU which uses GPRs instead.
 
 These will reuse the existing IEEE formats, with some noted divergences:
 * Rounding should be within +/- 2 ULP (rather than 0.5 ULP).

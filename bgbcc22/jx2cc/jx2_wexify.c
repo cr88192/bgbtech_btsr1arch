@@ -514,6 +514,7 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix(
 			case 0x0:
 			case 0x4:	case 0x5:
 			case 0xC:	case 0xD:
+			case 0xE:	case 0xF:
 				ret=1;
 				break;
 			default:
@@ -543,6 +544,26 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix(
 		case 0x8:	case 0x9:
 			ret=1;
 			break;
+			
+		case 0x2:
+			ret=0;
+			break;
+
+		case 0xC:
+			ret=0;
+			switch(opw&15)
+			{
+			case 0x0:
+			case 0x1:
+			case 0x2:
+				ret=1;
+				break;
+
+			default:
+				break;
+			}
+			break;
+
 		}
 		return(ret);
 	}

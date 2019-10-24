@@ -196,6 +196,15 @@ s64 __ashrdi3(s64 a, int b)
 }
 #endif
 
+s32 __smodsi3(s32 a, s32 b)
+{
+	s32 q, r;
+	
+	q=a/b;
+	r=a-(q*b);
+	return(r);
+}
+
 byte *malloc_heaprov;
 
 void *malloc(int sz)

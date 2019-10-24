@@ -4,8 +4,8 @@ Add With Scale
 idUIxt:
   [7:6]=CC (AL/NV/CT/CF)
   [5:4]=Type (B/W/L/Q)
-  [  3]=ZExt (0=SX, 1=ZX)
-  [  2]=?
+  [  3]=?
+  [  2]=ZExt (0=SX, 1=ZX)
   [1:0]=Scale (B/W/L/Q)
 
  */

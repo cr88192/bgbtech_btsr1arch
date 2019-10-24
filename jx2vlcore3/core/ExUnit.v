@@ -1270,8 +1270,8 @@ begin
 //	if(ex1RegIdRm == JX2_GR_SP)
 //		exHold1C = 1;
 
-	exHold1C = (ex1RegOutSchm[JX2_SCHM_SP]) ||
-		(ex1RegIdRm == JX2_GR_SP);
+	exHold1C = ((ex1RegOutSchm[JX2_SCHM_SP]) ||
+		(ex1RegIdRm == JX2_GR_SP)) && !ex1BraFlush;
 //		(ex1HldIdRn1 == JX2_GR_SP);
 
 `ifndef def_true
@@ -1609,7 +1609,10 @@ begin
 				crInSpc		= ifLastPc;
 
 			if(tRegExc[15:12]==4'b1110)
-				crInSpc			= id1ValBPc;
+			begin
+//				crInSpc			= id1ValBPc;
+				crInSpc			= ex1ValBPc;
+			end
 
 //			crInSsp			= gprOutSp[31:0];
 			crInSsp			= ex1RegOutSp[31:0];
@@ -1768,6 +1771,34 @@ begin
 		ifLastPcStep	<= 0;
 		ex1BraFlush		<= 1;
 		ex2BraFlush		<= 1;
+
+		ex1OpUCmd		<= UV8_00;
+		ex1OpUIxt		<= UV8_00;
+		ex1PreBra		<= 0;
+
+//		ex1IstrWord		<= UV32_XX;
+//		ex1RegValPc		<= UV32_XX;
+//		ex1RegValImm	<= UV33_XX;
+
+		ex1RegIdRs		<= UV6_00;
+		ex1RegIdRt		<= UV6_00;
+		ex1RegIdRm		<= UV6_00;
+
+`ifdef jx2_enable_wex
+		exB1OpUCmd		<= UV8_00;
+		exB1OpUIxt		<= UV8_00;
+		exB1RegIdRs		<= UV6_00;
+		exB1RegIdRt		<= UV6_00;
+		exB1RegIdRm		<= UV6_00;
+
+`ifdef jx2_enable_wex3w
+		exC1OpUCmd		<= UV8_00;
+		exC1OpUIxt		<= UV8_00;
+		exC1RegIdRs		<= UV6_00;
+		exC1RegIdRt		<= UV6_00;
+		exC1RegIdRm		<= UV6_00;
+`endif
+`endif
 
 	end
 	else
@@ -2093,24 +2124,30 @@ begin
 			ex2RegIdCn2, ex2RegValCn2);
 
 `ifdef jx2_enable_wex
-		$display("  EX2-B: Op=%X-%X",
-			exB2OpUCmd, exB2OpUIxt);
-		$display("     Rs=%X(%X) Rt=%X(%X) Rn=%X(%X)",
-			exB2RegIdRs, exB2RegValRs,
-			exB2RegIdRt, exB2RegValRt,
-			exB2RegIdRm, exB2RegValRm);
-		$display("     Rn1=%X(%X)",
-			exB2RegIdRn2, exB2RegValRn2);
+		if(exB2OpUCmd[5:0]!=6'h00)
+		begin
+			$display("  EX2-B: Op=%X-%X",
+				exB2OpUCmd, exB2OpUIxt);
+			$display("     Rs=%X(%X) Rt=%X(%X) Rn=%X(%X)",
+				exB2RegIdRs, exB2RegValRs,
+				exB2RegIdRt, exB2RegValRt,
+				exB2RegIdRm, exB2RegValRm);
+			$display("     Rn1=%X(%X)",
+				exB2RegIdRn2, exB2RegValRn2);
+		end
 
 `ifdef jx2_enable_wex3w
-		$display("  EX2-C: Op=%X-%X",
-			exC2OpUCmd, exC2OpUIxt);
-		$display("     Rs=%X(%X) Rt=%X(%X) Rn=%X(%X)",
-			exC2RegIdRs, exC2RegValRs,
-			exC2RegIdRt, exC2RegValRt,
-			exC2RegIdRm, exC2RegValRm);
-		$display("     Rn1=%X(%X)",
-			exC2RegIdRn2, exC2RegValRn2);
+		if(exC2OpUCmd[5:0]!=6'h00)
+		begin
+			$display("  EX2-C: Op=%X-%X",
+				exC2OpUCmd, exC2OpUIxt);
+			$display("     Rs=%X(%X) Rt=%X(%X) Rn=%X(%X)",
+				exC2RegIdRs, exC2RegValRs,
+				exC2RegIdRt, exC2RegValRt,
+				exC2RegIdRm, exC2RegValRm);
+			$display("     Rn1=%X(%X)",
+				exC2RegIdRn2, exC2RegValRn2);
+		end
 `endif
 `endif
 
@@ -2134,7 +2171,7 @@ begin
 
 `ifdef jx2_enable_wex
 
-		if(exB2OpUCmd[5:0]!=0)
+		if(exB2OpUCmd[5:0]!=6'h00)
 		begin
 			$display("  EX2-B: Op=%X-%X",
 				exB2OpUCmd, exB2OpUIxt);
@@ -2147,7 +2184,7 @@ begin
 		end
 
 `ifdef jx2_enable_wex3w
-		if(exC2OpUCmd[5:0]!=0)
+		if(exC2OpUCmd[5:0]!=6'h00)
 		begin
 			$display("  EX2-C: Op=%X-%X",
 				exC2OpUCmd, exC2OpUIxt);

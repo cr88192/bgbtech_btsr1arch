@@ -438,8 +438,8 @@ parameter[5:0] JX2_UCIX_ALU_PSBBL	= 6'h33;		//Packed ALU SBB
 
 parameter[5:0] JX2_UCIX_ALU_PCSELT	= 6'h3F;		//Packed CSELT
 
-parameter[5:0] JX2_UCIX_ALUN_CLZ	= 6'h00;		//Packed CSELT
-parameter[5:0] JX2_UCIX_ALUN_CLZQ	= 6'h20;		//Packed CSELT
+parameter[5:0] JX2_UCIX_ALUN_CLZ	= 6'h00;		//Count Leading Zeroes
+parameter[5:0] JX2_UCIX_ALUN_CLZQ	= 6'h20;		//Count Leading Zeroes (QW)
 
 parameter[5:0] JX2_UCIX_PUSH_GR		= 6'h00;		//GPR
 parameter[5:0] JX2_UCIX_PUSH_CR		= 6'h01;		//Control Reg
@@ -541,6 +541,8 @@ parameter[5:0] JX2_UCIX_IXS_INVDC	= 6'h11;		//Flush D$
 `define jx2_enable_mmu
 `define jx2_enable_fpu
 
+// `define jx2_do_ld1cyc			//do single-cycle Load/Store
+
 // `define jx2_enable_fprs		//enable dedicated FPU registers.
 
 `ifdef jx2_enable_fpu
@@ -564,6 +566,8 @@ parameter[5:0] JX2_UCIX_IXS_INVDC	= 6'h11;		//Flush D$
 
 `define jx2_shlln_shadq			//Route SHLLn through SHAD.Q
 
+// `define jx2_addxl_agu			//Do ADDx.L via AGU
+
 // `define jx2_enable_gsv			//Enable GSV (Packed Integer) stuff.
 
 `define jx2_enable_prebra			//Enable PreBranch
@@ -571,8 +575,8 @@ parameter[5:0] JX2_UCIX_IXS_INVDC	= 6'h11;		//Flush D$
 `define jx2_enable_ops16
 // `define jx2_enable_ops48
 
-// `define jx2_enable_aluunary
-// `define jx2_enable_clz
+`define jx2_enable_aluunary
+`define jx2_enable_clz
 // `define jx2_enable_addsp
 
 // `define jx2_enable_wex2w				//Enable 2-wide WEX support

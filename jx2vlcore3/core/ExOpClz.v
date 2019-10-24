@@ -1,3 +1,6 @@
+`ifndef HAS_EXOPCLZ
+`define HAS_EXOPCLZ
+
 module ExOpClz(
 	clock,		reset,
 	idUCmd,		idUIxt,
@@ -93,3 +96,5 @@ begin
 end
 
 endmodule
+
+`endif

@@ -709,7 +709,8 @@ int SimDdr(int clk, int cmd, int dqs, int *rdata)
 				ddr_state=1;
 //				ddr_cas=ddr_parm_rl*2+1;
 //				ddr_cas=ddr_parm_rl*2;
-				ddr_cas=ddr_parm_rl*2-2;
+				ddr_cas=ddr_parm_rl*2-1;
+//				ddr_cas=ddr_parm_rl*2-2;
 //				ddr_cas=4*2+1;
 //				ddr_burst=SIMDDR_BUSRT;
 				ddr_burst=ddr_burstlen;
@@ -980,6 +981,9 @@ int main(int argc, char **argv, char **env)
 
 	ddr_ram=(uint16_t *)malloc(1<<28);
 	memset(ddr_ram, 0, 1<<28);
+	
+//	for(i=0; i<(1<<26); i++)
+//		ddr_ram[i]=rand();
 
 	ctx=(BJX2_Context *)malloc(sizeof(BJX2_Context)+256);
 	memset(ctx, 0, sizeof(BJX2_Context));

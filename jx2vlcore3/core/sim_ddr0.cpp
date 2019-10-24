@@ -318,8 +318,8 @@ int SimDdr(int clk, int cmd, int dqs, int *rdata)
 				ddr_state=1;
 //				ddr_cas=ddr_parm_rl*2+1;
 //				ddr_cas=ddr_parm_rl*2;
-//				ddr_cas=ddr_parm_rl*2-1;
-				ddr_cas=ddr_parm_rl*2-2;
+				ddr_cas=ddr_parm_rl*2-1;
+//				ddr_cas=ddr_parm_rl*2-2;
 //				ddr_cas=4*2+1;
 				ddr_burst=ddr_burstlen;
 			}else

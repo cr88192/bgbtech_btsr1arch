@@ -1,3 +1,7 @@
+/*
+MULx.W
+ */
+
 module ExMulW(
 	clock,		reset,
 	valRs,		valRt,

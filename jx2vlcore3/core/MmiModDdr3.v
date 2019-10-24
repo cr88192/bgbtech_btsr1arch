@@ -1,7 +1,11 @@
 /*
-DDR3 Interface Module
+DDR2 / DDR3 Interface Module
 
 State Machine, Transmit/Recieve Words
+
+Assumes a 16-bit wide DDR interface, with a nominal burst length of 8.
+This will move 128 bits to or from DRAM.
+
 
 CAS = Column Activate Strobe
   Divided into RL and WL.
@@ -14,6 +18,9 @@ RAS = Row Activate Strobe
   This is how many cycles between row activation and beginning a Read/Write.
 
 
+Note that for most states, the LSB will encode which clock-edge the state is active on. Where 0 is for Rising-Edge, and 1 is for Falling Edge.
+
+States:
 	00-0000		//Idle, Awaiting Request
 	00-0001		//Hold, Waiting to return to Idle
 	00-0010		//Mode Register Write (Rise)

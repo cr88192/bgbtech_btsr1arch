@@ -321,8 +321,23 @@ begin
 		end
 	
 		JX2_UCMD_LEA_MR: begin
+`ifdef jx2_addxl_agu
+			tRegIdRn1	= regIdRm;
+			if(opUIxt[2])
+			begin
+				tRegValRn1	= {
+					(opUIxt[3] && tValAgu[31]) ?
+						UV32_FF : UV32_00,
+					tValAgu[31:0] };
+			end
+			else
+			begin
+				tRegValRn1	= { UV32_00, tValAgu };
+			end
+`else
 			tRegIdRn1	= regIdRm;
 			tRegValRn1	= { UV32_00, tValAgu };
+`endif
 		end
 		JX2_UCMD_MOV_RM: begin
 			tDoMemOpm	= { 2'b10, opUIxt[2], opUIxt[5:4] };

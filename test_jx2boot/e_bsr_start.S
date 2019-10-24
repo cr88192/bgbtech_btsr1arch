@@ -698,3 +698,5 @@ X(__do_rethrow_fault):
 	mov vbr, r2
 	add #8, r2
 	jmp r2
+
+#include "tk_divi2.S"

@@ -57,14 +57,15 @@ input [  1:0]	memOK;			//memory PC OK
 reg[63:0]		tRegOutVal;	//output PC value
 reg[ 1:0]		tRegOutOK;	//set if we have a valid value.
 
+`ifdef jx2_do_ld1cyc
+assign			regOutVal		= tRegOutVal;
+assign			regOutOK		= tRegOutOK;
+`else
 reg[63:0]		tRegOutVal2;	//output PC value
 reg[ 1:0]		tRegOutOK2;	//set if we have a valid value.
-
-// assign	regOutVal		= tRegOutVal;
-// assign	regOutOK		= tRegOutOK;
-
-assign	regOutVal		= tRegOutVal2;
-assign	regOutOK		= tRegOutOK2;
+assign			regOutVal		= tRegOutVal2;
+assign			regOutOK		= tRegOutOK2;
+`endif
 
 reg[31:0]		tMemAddr;		//memory PC address
 reg[ 4:0]		tMemOpm;		//memory PC output-enable
@@ -1027,9 +1028,11 @@ begin
 			tMmioDoneHld	<= 0;
 	end
 
+`ifndef jx2_do_ld1cyc
 	tRegOutVal2		<= tRegOutVal;	//output PC value
 	tRegOutOK2		<= tRegOutOK;	//set if we have a valid value.
-	
+`endif
+
 end
 
 endmodule
