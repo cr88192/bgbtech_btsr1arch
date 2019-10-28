@@ -208,7 +208,19 @@ begin
 		tAccSticky	<= 0;
 	end
 	
-	if((tAccess && tMiss) || tAccLatch)
+	if(reset)
+	begin
+		tAccLatch		<= 0;
+		tAccDone		<= 0;
+		tAccStDone		<= 0;
+		tNxtStDone		<= 0;
+`ifdef jx2_ddr_bl64b
+		tAccBlkHalf		<= 0;
+		tNxtBlkHalf		<= 0;
+`endif
+	end
+	else
+		if((tAccess && tMiss) || tAccLatch)
 	begin
 		if((ddrMemOK==UMEM_OK_OK) && tAccLatch)
 		begin

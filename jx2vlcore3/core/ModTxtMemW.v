@@ -43,10 +43,13 @@ reg[1:0]	tBusOK;				//Read OK State
 reg[63:0] 	tBusData;			//Output Data
 wire		tBusCSel;			//Bus Chip-Select (Addr Matches)
 
+reg[1:0]	tBusOK2;			//Read OK State
+reg[63:0] 	tBusData2;			//Output Data
+
 // assign		busOK = (busOE && tBusCSel) ? tBusOK : 1'bZ;
 // assign		busData = (busOE && tBusCSel) ? tBusData : 32'hZZZZ_ZZZZ;
-assign		busOK = tBusOK;
-assign		busOutData = tBusData;
+assign		busOK = tBusOK2;
+assign		busOutData = tBusData2;
 assign		tBusCSel =
 		(busAddr[27:16]==12'h00A) ||
 		(busAddr[27:16]==12'h00B);
@@ -86,6 +89,7 @@ reg[63:0]	tCtrlRegVal;
 assign		ctrlRegVal = tCtrlRegVal;
 
 reg[13:0]	tPixCellIx;			//base cell index
+reg[13:0]	tPixCellIx2;		//base cell index (last cycle)
 reg[13:0]	nxtPixCellIx;			//base cell index
 
 `ifdef FBUF_EN128K
@@ -201,7 +205,9 @@ begin
 `endif
 
 	tBusOK = 0;
-	tBusData = 0;
+//	tBusData = 0;
+	tBusData = tBusData2;
+
 	if(busOE && tBusCSel)
 	begin
 //		nxtPixCellIx	= busAddr[15:2];
@@ -242,7 +248,8 @@ begin
 //				2'b11: tBusData = tCell1[127:96];
 //			endcase
 
-			tBusOK = (tPixCellIx[11:0] == busAddr[16:5]) ? 2'b01 : 2'b10;
+//			tBusOK = (tPixCellIx[11:0] == busAddr[16:5]) ? 2'b01 : 2'b10;
+			tBusOK = (tPixCellIx2[11:0] == busAddr[16:5]) ? 2'b01 : 2'b10;
 			if(busQW)
 			begin
 				case(busAddr[4:3])
@@ -291,11 +298,15 @@ end
 
 always @ (posedge clock)
 begin
+ 	tBusData2		<= tBusData;
+	tBusOK2			<= tBusOK;
+
 //	tCell1			<= tNextCell1;
 //	tPixCellIx		<= pixCellIx;
 
 	tPixCellIx		<= nxtPixCellIx;
 	tCellDataL		<= tCellData;
+	tPixCellIx2		<= tPixCellIx;
 
 `ifdef FBUF_EN128K
 	tCell1[ 31:  0]	<= scrCell1A[tPixCellIx[11:0]];

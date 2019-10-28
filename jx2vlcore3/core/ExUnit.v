@@ -814,7 +814,7 @@ FpuExOp	ex1Fpu(
 	ex1RegIdFRn,	ex1RegValFRn,
 	ex1FpuOK,		ex1FpuSrT,
 	
-	ex1RegInSr,
+	ex1RegInSr,		ex1BraFlush,
 	
 	ex1RegValRs,	ex1FpuValGRn,
 	ex1FpuValLdGRn,

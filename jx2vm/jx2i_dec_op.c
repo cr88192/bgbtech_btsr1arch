@@ -3213,7 +3213,8 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 		case BJX2_NMID_POP:
 		case BJX2_NMID_FPUSH:
 		case BJX2_NMID_FPOP:
-			op->cyc=2;
+			op->cyc=1;
+//			op->cyc=2;
 //			op->cyc=3;
 //			op->cyc=4;
 //			op->cyc=6;

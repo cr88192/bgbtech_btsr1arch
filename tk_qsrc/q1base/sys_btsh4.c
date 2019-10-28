@@ -562,6 +562,8 @@ void Sys_CheckSanity(void)
 
 	i=-6972; j=1;
 
+	if(!rec)	tk_puts("Sanity I1\n");
+
 	f=i; ff=i;
 	if(f!=(-6972.0))
 		__debugbreak();
@@ -576,6 +578,8 @@ void Sys_CheckSanity(void)
 		__debugbreak();
 	if(j!=3)
 		__debugbreak();
+
+	if(!rec)	tk_puts("Sanity J1\n");
 
 	i=0; k=-1;
 

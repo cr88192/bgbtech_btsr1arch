@@ -551,7 +551,7 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix(
 
 		case 0xC:
 			ret=0;
-			switch(opw&15)
+			switch(opw1&15)
 			{
 			case 0x0:
 			case 0x1:

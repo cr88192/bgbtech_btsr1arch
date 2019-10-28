@@ -543,7 +543,7 @@ begin
 
 	/* Stage B */
 	
-	if((tMissA || tMemLatchA) && !tMemLatchB)
+	if((tMissA || tMemLatchA) && !tMemLatchB && !reset)
 	begin
 
 		if(tMemLatchDnA)
@@ -590,7 +590,7 @@ begin
 
 	end
 	else
-		if((tMissB || tMemLatchB) && !tMemLatchA)
+		if((tMissB || tMemLatchB) && !tMemLatchA && !reset)
 	begin
 
 		if(tMemLatchDnB)
@@ -639,6 +639,11 @@ begin
 			$display("L1I$ Sticky Miss, %d %d", tMissA, tMissB);
 		if(tMemLatchA || tMemLatchB)
 			$display("L1I$ Sticky Latch, %d %d", tMemLatchA, tMemLatchB);
+
+		tMemLatchA		<= 0;
+		tMemLatchDnA	<= 0;
+		tMemLatchB		<= 0;
+		tMemLatchDnB	<= 0;
 	end
 end
 

@@ -95,7 +95,7 @@ __udivsi3:
 		R23=lr
 	 */
 
-#if 0
+#if 1
 	tst		#-4, r18
 	bt		.L1
 	.L4:

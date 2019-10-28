@@ -764,6 +764,7 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 				if((i+3)>nc)
 					continue;
 
+#if 0
 				if(	(op->rn!=op1->rm) &&
 					(op->rn!=op1->rn) &&
 					(op->rn!=op1->ro))
@@ -778,6 +779,17 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 						op->cyc=2;
 					}
 				}
+#else
+				if(	(op->rn!=op1->rm) &&
+					(op->rn!=op1->rn) &&
+					(op->rn!=op1->ro))
+				{
+					op->cyc=1;
+				}else
+				{
+					op->cyc=2;
+				}
+#endif
 			}
 
 			if((op->fmid==BJX2_FMID_REGSTREG) ||

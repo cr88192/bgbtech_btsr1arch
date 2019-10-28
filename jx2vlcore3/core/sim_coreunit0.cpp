@@ -614,9 +614,9 @@ int ddr_mr3;
 uint16_t	*ddr_ram;
 
 #if 1
-int SimDdr(int clk, int cmd, int dqs, int *rdata)
+int SimDdr(int clk, int cmd, int *rdqs, int *rdata)
 {
-	int		data, row, col, bank, pos;
+	int		data, row, col, bank, pos, dqs;
 	int addr, cas;
 
 //Cs;
@@ -626,6 +626,7 @@ int SimDdr(int clk, int cmd, int dqs, int *rdata)
 //			cmd=(cmd<<1)|top->ddrCke;
 //			cmd=(cmd<<2)|top->ddrBa
 
+	dqs=*rdqs;
 	data=*rdata;
 #if 0
 //	printf("%03X %04X\n", cmd, data);
@@ -640,6 +641,8 @@ int SimDdr(int clk, int cmd, int dqs, int *rdata)
 	if(ddr_cas>=0)
 	{
 		ddr_cas--;
+		if(ddr_state==1)
+			*rdqs=2;
 	}else if(ddr_state==1)
 	{
 		if(ddr_burst>0)
@@ -652,6 +655,7 @@ int SimDdr(int clk, int cmd, int dqs, int *rdata)
 			ddr_col+=2;
 
 			*rdata=data;
+			*rdqs=(ddr_burst&1)?1:2;
 		}
 	}else if(ddr_state==2)
 	{
@@ -811,9 +815,11 @@ int update_ddr()
 
 //			data=top->ddrData;
 		data=top->ddrDataO;
-		SimDdr(top->ddrClk, cmd, dqs, &data);
+		SimDdr(top->ddrClk, cmd, &dqs, &data);
 //			top->ddrData=data;
 		top->ddrDataI=data;
+		top->ddrDqsP_I=(dqs&1)?3:0;
+		top->ddrDqsN_I=(dqs&2)?3:0;
 
 #if 0
 		if((cmd&SIMDDR_MSK_NOP)!=SIMDDR_MSK_NOP)
@@ -935,9 +941,11 @@ int main(int argc, char **argv, char **env)
 	JX2R_UseImageCreateRamdisk(128*1024);
 //	JX2R_UseImageCreateRamdisk(32*1024);
 
+#if 1
 	JX2R_UseImageAddFile(
 		(char *)"BOOTLOAD.SYS",
 		(char *)"../../tk_qsrc/tk_clib/tkshell.sys");
+#endif
 
 	JX2R_UseImageAddFile(
 //		(char *)"BOOTLOAD.SYS",

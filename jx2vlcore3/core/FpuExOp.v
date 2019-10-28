@@ -39,7 +39,7 @@ module FpuExOp(
 	regOutId,	regOutVal,
 	regOutOK,	regOutSrT,
 
-	regInSr,
+	regInSr,	braFlush,
 
 	regValGRm,	regValGRn,
 	regValLdGRn,
@@ -73,6 +73,8 @@ input[1:0]		memDataOK;		//memory status (load)
 
 input[63:0]		regInSr;		//input SR
 output			regOutSrT;
+
+input			braFlush;
 
 reg[63:0]	tRegOutVal;			//Rn output value
 reg[5:0]	tRegOutId;			//Rn, value to write
@@ -185,11 +187,12 @@ begin
 	tRegValLdGRn	= UV64_XX;
 `endif
 
-	case(opCmd[7:6])
-		2'b00: 	tOpEnable = 1;
-		2'b01: 	tOpEnable = 0;
-		2'b10: 	tOpEnable = regInSr[0];
-		2'b11: 	tOpEnable = !regInSr[0];
+	casez( { braFlush || reset, opCmd[7:6] } )
+		3'b000: 	tOpEnable = 1;
+		3'b001: 	tOpEnable = 0;
+		3'b010: 	tOpEnable = regInSr[0];
+		3'b011: 	tOpEnable = !regInSr[0];
+		3'b1zz:		tOpEnable = 0;
 	endcase
 
 	tOpUCmd1	= tOpEnable ? opCmd[5:0] : JX2_UCMD_NOP;
@@ -350,6 +353,9 @@ begin
 		default: begin
 		end
 	endcase
+
+	if(reset)
+		tExHold = 0;
 
 //	if(tExHold)
 //		$display("FPU Hold %d", tHoldCyc);

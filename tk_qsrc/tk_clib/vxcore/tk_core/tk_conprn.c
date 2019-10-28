@@ -24,6 +24,7 @@ void *TK_ConGetCtxV(void)
 	void *p;
 	
 //	ar[0].i=sz;
+	p=NULL;
 	tk_syscall(NULL, TK_UMSG_GETCONPARAM, &p, ar);
 	return(p);
 }
@@ -41,6 +42,8 @@ void tk_con_init()
 	}else
 	{
 		tk_con=TK_ConGetCtxV();
+		if(!tk_con)
+			tk_con=&tk_con_bss;
 	}
 
 	tk_con->buf=(u32 *)0xF00A0000;
@@ -132,10 +135,10 @@ void tk_con_scroll_up()
 
 void tk_con_newline()
 {
-	if(!tk_con)
-		tk_con_init();
+//	if(!tk_con)
+//		tk_con_init();
 	
-	tk_con->x=0;
+//	tk_con->x=0;
 	tk_con->y++;
 	if(tk_con->y>=25)
 	{

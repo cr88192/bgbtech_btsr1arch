@@ -1143,9 +1143,9 @@ void R_FillBackScreen (void)
 		return;
 	
 	if ( gamemode == commercial)
-	name = name2;
+		name = name2;
 	else
-	name = name1;
+		name = name1;
 	
 	src = W_CacheLumpName (name, PU_CACHE); 
 	dest = screens[1]; 
@@ -1171,14 +1171,16 @@ void R_FillBackScreen (void)
 			for (x=0 ; x<SCREENWIDTH/64 ; x++) 
 			{ 
 				for(w=0; w<64; w++)
-					dest[w]=(src+((y&63)<<6))[w];
+//					dest[w]=(src+((y&63)<<6))[w];
+					dest[w]=ds_colormap[(src+((y&63)<<6))[w]];
 				dest += 64; 
 			} 
 
 			if (SCREENWIDTH&63) 
 			{ 
 				for(w=0; w<(SCREENWIDTH&63); w++)
-					dest[w]=(src+((y&63)<<6))[w];
+//					dest[w]=(src+((y&63)<<6))[w];
+					dest[w]=ds_colormap[(src+((y&63)<<6))[w]];
 				dest += (SCREENWIDTH&63); 
 			}
 		}

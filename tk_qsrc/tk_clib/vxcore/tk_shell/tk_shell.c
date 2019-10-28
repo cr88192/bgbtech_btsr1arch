@@ -161,6 +161,25 @@ void tk_normalize_path(char *dst, char *src)
 	*ct++=0;
 }
 
+int tk_shell_chksane()
+{
+	int *pi, *pj;
+	int i, j, k, l;
+	
+	pi=&i;
+	pj=&j;
+	
+	*pi=123456;
+	*pj=10;
+	k=i/j;
+	l=i%j;
+	
+	if(k!=12345)
+		__debugbreak();
+	if(l!=6)
+		__debugbreak();
+}
+
 int main(int argc, char *argv[])
 {
 	char tbuf[256];
@@ -168,12 +187,15 @@ int main(int argc, char *argv[])
 	char **a;
 	int ci, ri;
 
+	tk_shell_chksane();
+
 	tk_con_reset();
 
 	strcpy(tb_cwd, "/");
 
 	while(1)
 	{
+		tk_con_chkreset();
 		tk_puts(tb_cwd);
 		tk_puts("$ ");
 		tk_gets(tbuf);

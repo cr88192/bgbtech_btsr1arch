@@ -283,7 +283,7 @@ V_DrawPatchCmap
 			}
 #endif
 
-#if 1
+#if 0
 			while (count>=4) 
 			{ 
 				*dest = tcol[source[0]];
@@ -297,6 +297,20 @@ V_DrawPatchCmap
 
 				*dest = tcol[source[3]];
 				dest += SCREENWIDTH; 
+				
+				source+=4;
+				count-=4;
+			}
+#endif
+
+#if 1
+			while (count>=4) 
+			{ 
+				dest[0*SCREENWIDTH] = tcol[source[0]];
+				dest[1*SCREENWIDTH] = tcol[source[1]];
+				dest[2*SCREENWIDTH] = tcol[source[2]];
+				dest[3*SCREENWIDTH] = tcol[source[3]];
+				dest += 4*SCREENWIDTH; 
 				
 				source+=4;
 				count-=4;

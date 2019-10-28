@@ -67,9 +67,9 @@ s32 __sdivsi3(s32 a, s32 b)
 #if 1
 static int _fcn_clz64(u64 v)
 {
-	const u32 m1=0x8000000000000000ULL;
-	const u32 m8=0xFF00000000000000ULL;
-	const u32 m16=0xFFFF000000000000ULL;
+	const u64 m1=0x8000000000000000ULL;
+	const u64 m8=0xFF00000000000000ULL;
+	const u64 m16=0xFFFF000000000000ULL;
 	const u64 m32=0xFFFFFFFF00000000ULL;
 	u64 c;
 	int n;

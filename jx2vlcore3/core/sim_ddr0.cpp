@@ -217,10 +217,10 @@ int SimDdr(int clk, int cmd, int *rdata)
 
 
 #if 1
-int SimDdr(int clk, int cmd, int dqs, int *rdata)
+int SimDdr(int clk, int cmd, int *rdqs, int *rdata)
 {
 	int		data, row, col, bank, pos;
-	int addr, cas;
+	int addr, cas, dqs;
 
 //Cs;
 //			cmd=(cmd<<1)|top->ddrRas;
@@ -229,6 +229,7 @@ int SimDdr(int clk, int cmd, int dqs, int *rdata)
 //			cmd=(cmd<<1)|top->ddrCke;
 //			cmd=(cmd<<2)|top->ddrBa
 
+	dqs=*rdqs;
 	data=*rdata;
 
 #if 0
@@ -244,6 +245,8 @@ int SimDdr(int clk, int cmd, int dqs, int *rdata)
 	if(ddr_cas>=0)
 	{
 		ddr_cas--;
+		if(ddr_state==1)
+			*rdqs=2;
 	}else if(ddr_state==1)
 	{
 		if(ddr_burst>0)
@@ -256,6 +259,7 @@ int SimDdr(int clk, int cmd, int dqs, int *rdata)
 			ddr_col+=2;
 
 			*rdata=data;
+			*rdqs=(ddr_burst&1)?1:2;
 
 //			printf("RD %08X: %04X\n", pos, data);
 
@@ -566,6 +570,8 @@ int main(int argc, char **argv, char **env)
 			SimDdr(top->ddrClk, cmd, dqs, &data);
 //			top->ddrData=data;
 			top->ddrData_I=data;
+			top->ddrDqsP_I=(dqs&1)?3:0;
+			top->ddrDqsN_I=(dqs&2)?3:0;
 		}
 
 #if 1

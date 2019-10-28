@@ -778,7 +778,22 @@ begin
 
 	/* Stage B */
 	
-	if(((tMiss && tMissA) || tMemLatchA) && !tMemLatchB && !tMmioLatch)
+	if(reset)
+	begin
+		tMmioLatch		<= 0;
+
+		tMemLatchA		<= 0;
+		tMemLatchDnA	<= 0;
+		tMemLatchWbA	<= 0;
+		tMemLatchWdA	<= 0;
+
+		tMemLatchB		<= 0;
+		tMemLatchDnB	<= 0;
+		tMemLatchWbB	<= 0;
+		tMemLatchWdB	<= 0;
+	end
+	else
+		if(((tMiss && tMissA) || tMemLatchA) && !tMemLatchB && !tMmioLatch)
 	begin
 
 `ifdef jx2_debug_l1ds

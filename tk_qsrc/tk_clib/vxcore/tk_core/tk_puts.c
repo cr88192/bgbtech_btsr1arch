@@ -1,11 +1,19 @@
 void __halt(void);
 
-
-void tk_putc(int val)
+void tk_dbg_putc(int val)
 {
 	while(P_MMIO_DEBUG_STS&8);
 	P_MMIO_DEBUG_TX=val;
-	
+}
+
+void tk_putc(int val)
+{
+	if(val=='\n')
+	{
+		tk_dbg_putc('\r');
+		tk_con_putc('\r');
+	}
+	tk_dbg_putc(val);
 	tk_con_putc(val);
 }
 
