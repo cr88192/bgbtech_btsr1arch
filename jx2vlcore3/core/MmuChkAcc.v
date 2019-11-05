@@ -18,7 +18,8 @@ module MmuChkAcc(
 	regInSR,
 	regInOpm,
 	tlbInAcc,
-	accOutExc
+	accOutExc,
+	regOutNoRwx
 	);
 
 /* verilator lint_off UNUSED */
@@ -35,11 +36,16 @@ input[4:0]		regInOpm;		//Operation Size/Type
 input[31:0]		tlbInAcc;		//TLB Access Mode
 
 output[15:0]	accOutExc;		//Output Exception Code
+output[3:0]		regOutNoRwx;	//No R/W/X
 
 reg[15:0]		tAccOutExc2;	//Output Exception Code
 assign			accOutExc = tAccOutExc2;
 
 reg[15:0]		tAccOutExc;		//Output Exception Code
+
+reg[3:0]		tRegOutNoRwx;	//No R/W/X
+reg[3:0]		tRegOutNoRwx2;	//No R/W/X
+assign			regOutNoRwx = tRegOutNoRwx2;
 
 reg			tVugidEnA;
 reg			tVugidEnB;
@@ -79,7 +85,8 @@ reg[4:0]		tRegInOpm;		//Operation Size/Type
 
 always @*
 begin
-	tAccOutExc	= 0;
+	tAccOutExc		= 0;
+	tRegOutNoRwx	= 0;
 
 	tKrrA		= tRegInKRR[15: 0];
 	tKrrB		= tRegInKRR[31:16];
@@ -118,16 +125,26 @@ begin
 	begin
 		case(tTlbInAcc[6:4])
 			3'b000: begin
-				if(tRegInOpm[4])
-					tAccOutExc	= 16'h8002;
-				if(tRegInOpm[3])
-					tAccOutExc	= 16'h8001;
+//				if(tRegInOpm[4])
+//					tAccOutExc	= 16'h8002;
+//				if(tRegInOpm[3])
+//					tAccOutExc	= 16'h8001;
+				tRegOutNoRwx[2] = 1;
+				tRegOutNoRwx[1] = 1;
+				tRegOutNoRwx[0] = 1;
 			end
 			3'b001: begin
-				if(tRegInOpm[4] && !tKrrAccFl[1])
-					tAccOutExc	= 16'h8002;
-				if(tRegInOpm[3] && !tKrrAccFl[0])
-					tAccOutExc	= 16'h8001;
+//				if(tRegInOpm[4] && !tKrrAccFl[1])
+//					tAccOutExc	= 16'h8002;
+//				if(tRegInOpm[3] && !tKrrAccFl[0])
+//					tAccOutExc	= 16'h8001;
+
+				if(!tKrrAccFl[2])
+					tRegOutNoRwx[2] = 1;
+				if(!tKrrAccFl[1])
+					tRegOutNoRwx[1] = 1;
+				if(!tKrrAccFl[0])
+					tRegOutNoRwx[0] = 1;
 			end
 			3'b010: begin
 				tAccOutExc	= 16'hA002;
@@ -146,10 +163,19 @@ begin
 
 	tUsDeny = (tlbInAcc[3] && !regInSR[30]);
 
-	if(tRegInOpm[4] && (tlbInAcc[1] || tUsDeny))
-		tAccOutExc	= 16'h8002;
-	if(tRegInOpm[3] && (tlbInAcc[0] || tUsDeny))
-		tAccOutExc	= 16'h8001;
+	if(tUsDeny)
+		tRegOutNoRwx[3] = 1;
+	if(tlbInAcc[2] || tUsDeny)
+		tRegOutNoRwx[2] = 1;
+	if(tlbInAcc[1] || tUsDeny)
+		tRegOutNoRwx[1] = 1;
+	if(tlbInAcc[0] || tUsDeny)
+		tRegOutNoRwx[0] = 1;
+
+//	if(tRegInOpm[4] && (tlbInAcc[1] || tUsDeny))
+//		tAccOutExc	= 16'h8002;
+//	if(tRegInOpm[3] && (tlbInAcc[0] || tUsDeny))
+//		tAccOutExc	= 16'h8001;
 
 end
 
@@ -159,7 +185,8 @@ begin
 	tRegInKRR	<= regInKRR;		//Keyring Register
 	tRegInOpm	<= regInOpm;
 
-	tAccOutExc2	<= tAccOutExc;
+	tAccOutExc2		<= tAccOutExc;
+	tRegOutNoRwx2	<= tRegOutNoRwx;
 	
 //	tKrrAccFl	<= tNextKrrAccFl;
 end

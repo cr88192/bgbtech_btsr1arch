@@ -11,8 +11,11 @@ Every data section within a process will point to every other data section withi
 
 int tkpe_npboix=1;
 
-char *tkpe_binpath[256];
-int tkpe_n_binpath;
+// char *tkpe_binpath[256];
+// int tkpe_n_binpath;
+
+char **tk_env_pathlst;
+int tk_env_npathlst;
 
 TKPE_ImageInfo	*tkpe_pbo_image[256];
 
@@ -120,6 +123,7 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, char *imgname)
 	int cb, nb;
 	int i, l;
 	
+	tk_fseek(fd, 0, 0);
 	tk_fread(tbuf, 1, 1024, fd);
 
 	is_pel4=0;

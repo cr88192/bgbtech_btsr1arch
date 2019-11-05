@@ -30,6 +30,10 @@ reg[1:0]		tOutOK2;
 assign		busOutData	= tOutData2;
 assign		busOK		= tOutOK2;
 
+reg[31:0]		tBusAddr;
+reg[31:0]		tBusInData;
+reg[4:0]		tBusOpm;
+
 reg[7:0]	tOutPcmL;
 reg[7:0]	tOutPcmR;
 reg[7:0]	tOutPcmL2;
@@ -40,9 +44,11 @@ assign		outPcmR		= tOutPcmR2;
 wire		tDevCSel;
 // wire		tDevCSelCtr;
 wire		tDevCSelChn;
-assign		tDevCSel = (busAddr[27:16] == 12'h008);
+// assign		tDevCSel = (busAddr[27:16] == 12'h008);
+assign		tDevCSel = (tBusAddr[27:16] == 12'h008);
 // assign		tDevCSelCtr = (busAddr[15:12] == 4'hC);
-assign		tDevCSelChn = (busAddr[15:10] == 6'b1100_00);
+// assign		tDevCSelChn = (busAddr[15:10] == 6'b1100_00);
+assign		tDevCSelChn = (tBusAddr[15:10] == 6'b1100_00);
 
 reg[31:0]	regCtr0A[15:0];
 reg[31:0]	regCtr1A[15:0];
@@ -165,7 +171,8 @@ end
 
 always @*
 begin
-	tOutData	= UV32_XX;
+//	tOutData	= UV32_XX;
+	tOutData	= UV32_00;
 	tOutOK		= UMEM_OK_READY;
 
 	{ stepTimer1MHz, nextFracTimer1MHz }	=
@@ -348,22 +355,30 @@ begin
 		tNxtChAccumR	= 0;
 	end
 
-	if(tDevCSel && busOpm[3])
+	if(tDevCSel && tBusOpm[3])
 	begin
+		tOutOK		= UMEM_OK_OK;
+
 		if(tDevCSelChn)
 		begin
-			case(busAddr[4:2])
-				3'b000: tOutData = regCtr0A[busAddr[8:5]];
-				3'b001: tOutData = regCtr1A[busAddr[8:5]];
-				3'b010: tOutData = regCtr2A[busAddr[8:5]];
-				3'b011: tOutData = regStsA[busAddr[8:5]];
-				3'b100: tOutData = regCtr0B[busAddr[8:5]];
-				3'b101: tOutData = regCtr1B[busAddr[8:5]];
-				3'b110: tOutData = regCtr2B[busAddr[8:5]];
-				3'b111: tOutData = regStsB[busAddr[8:5]];
+			case(tBusAddr[4:2])
+				3'b000: tOutData = regCtr0A[tBusAddr[8:5]];
+				3'b001: tOutData = regCtr1A[tBusAddr[8:5]];
+				3'b010: tOutData = regCtr2A[tBusAddr[8:5]];
+				3'b011: tOutData = regStsA[tBusAddr[8:5]];
+				3'b100: tOutData = regCtr0B[tBusAddr[8:5]];
+				3'b101: tOutData = regCtr1B[tBusAddr[8:5]];
+				3'b110: tOutData = regCtr2B[tBusAddr[8:5]];
+				3'b111: tOutData = regStsB[tBusAddr[8:5]];
 			endcase
 		end
 	end
+
+	if(tDevCSel && tBusOpm[4])
+	begin
+		tOutOK		= UMEM_OK_OK;
+	end
+
 end
 
 always @(posedge clock)
@@ -372,6 +387,10 @@ begin
 	tOutOK2			<= tOutOK;
 	tOutPcmL2		<= tOutPcmL;
 	tOutPcmR2		<= tOutPcmR;
+
+	tBusAddr		<= busAddr;
+	tBusInData		<= busInData;
+	tBusOpm			<= busOpm;
 
 	fracTimer1MHz	<= nextFracTimer1MHz;
 	fracTimer4MHz	<= nextFracTimer4MHz;
@@ -409,17 +428,17 @@ begin
 	chTabPcmA3		<= chTabPcmA3A;
 	chTabPcmB3		<= chTabPcmB3A;
 
-	if(tDevCSel && busOpm[4])
+	if(tDevCSel && tBusOpm[4])
 	begin
 		if(tDevCSelChn)
 		begin
-			case(busAddr[4:2])
-				3'b000: regCtr0A[busAddr[8:5]]	<= busInData;
-				3'b001: regCtr1A[busAddr[8:5]]	<= busInData;
-				3'b010: regCtr2A[busAddr[8:5]]	<= busInData;
-				3'b100: regCtr0B[busAddr[8:5]]	<= busInData;
-				3'b101: regCtr1B[busAddr[8:5]]	<= busInData;
-				3'b110: regCtr2B[busAddr[8:5]]	<= busInData;
+			case(tBusAddr[4:2])
+				3'b000: regCtr0A[busAddr[8:5]]	<= tBusInData;
+				3'b001: regCtr1A[busAddr[8:5]]	<= tBusInData;
+				3'b010: regCtr2A[busAddr[8:5]]	<= tBusInData;
+				3'b100: regCtr0B[busAddr[8:5]]	<= tBusInData;
+				3'b101: regCtr1B[busAddr[8:5]]	<= tBusInData;
+				3'b110: regCtr2B[busAddr[8:5]]	<= tBusInData;
 				default: begin
 				end
 			endcase

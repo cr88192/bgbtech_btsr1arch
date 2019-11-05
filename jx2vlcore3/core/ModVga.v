@@ -241,7 +241,8 @@ begin
 
 //			tPixNextPosY = tScanNextRowClk[11:0] - 20;
 //			tPixNextPosY = tScanNextRowClk[11:0] - 30;
-			tPixNextPosY = {1'b0, tScanNextRowClk[10:0]} - 30;
+//			tPixNextPosY = {1'b0, tScanNextRowClk[10:0]} - 30;
+			tPixNextPosY = {1'b0, tScanRowClk[10:0]} - 30;
 //			tPixNextPosY = tScanNextRowClk[11:0] - 2;
 //			tPixNextPosY = tScanNextRowClk[12:1] - 20;
 		end
@@ -254,7 +255,8 @@ begin
 
 //			tPixNextPosY = tScanNextRowClk[11:0] - 20;
 //			tPixNextPosY = tScanNextRowClk[11:0] - 30;
-			tPixNextPosY = {1'b0, tScanNextRowClk[10:0]} - 30;
+//			tPixNextPosY = {1'b0, tScanNextRowClk[10:0]} - 30;
+			tPixNextPosY = {1'b0, tScanRowClk[10:0]} - 30;
 //			tPixNextPosY = tScanNextRowClk[11:0] - 2;
 //			tPixNextPosY = tScanNextRowClk[11:0] - 3;
 //			tPixNextPosY = tScanNextRowClk[12:1] - 20;
@@ -332,7 +334,8 @@ begin
 	else		/* VBlank or Scanline */
 	begin
 //		if(tScanPixClk>=6352)
-		if(tScanPixClk>=3178)
+//		if(tScanPixClk>=3178)
+		if(tScanPixClk>=3200)
 		begin
 			tScanNextRowClk = tScanRowClk + 1;
 			tScanNextPixClk = 0;
@@ -349,7 +352,8 @@ begin
 			end
 		end
 //		else if(tScanPixClk>=5880)
-		else if(tScanPixClk>=2940)
+//		else if(tScanPixClk>=2940)
+		else if(tScanPixClk>=2944)
 		begin
 			tPwmNextValR	= 0;
 			tPwmNextValG	= 0;
@@ -357,7 +361,8 @@ begin
 			tNextHsync		= 1;
 		end
 //		else if((tScanPixClk>=472) && (tScanPixClk<5592))
-		else if((tScanPixClk>=236) && (tScanPixClk<2796))
+//		else if((tScanPixClk>=236) && (tScanPixClk<2796))
+		else if((tScanPixClk>=240) && (tScanPixClk<2816))
 		begin
 
 			tPwmNextValR = tScPwmCtR[15:8];

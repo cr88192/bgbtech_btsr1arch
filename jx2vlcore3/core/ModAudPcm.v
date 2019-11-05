@@ -42,14 +42,20 @@ output[1:0]		busOK;
 input[7:0]		auxPcmL;
 input[7:0]		auxPcmR;
 
+reg[31:0]		tBusAddr;
+reg[31:0]		tBusInData;
+reg[4:0]		tBusOpm;
+
 reg[1:0]	tPwmOut;
 reg[1:0]	tPwmOut2;
 reg[31:0]	tOutData;
+reg[31:0]	tOutData2;
 reg[1:0]	tOutOK;
+reg[1:0]	tOutOK2;
 
 assign		pwmOut		= tPwmOut2;
-assign		busOutData	= tOutData;
-assign		busOK		= tOutOK;
+assign		busOutData	= tOutData2;
+assign		busOK		= tOutOK2;
 
 `ifdef JX2_AUD_16K
 reg[31:0]	pcmMemA[2047:0];
@@ -129,14 +135,20 @@ wire		tDevCSel;
 wire		tDevCSelAuL;
 wire		tDevCSelAuR;
 wire		tDevCSelCtr;
-assign		tDevCSel = (busAddr[27:16] == 12'h009);
-assign		tDevCSelAuL = (busAddr[15:14] == 2'h0);
-assign		tDevCSelAuR = (busAddr[15:14] == 2'h1);
-assign		tDevCSelCtr = (busAddr[15:12] == 4'hF);
+// assign		tDevCSel = (busAddr[27:16] == 12'h009);
+// assign		tDevCSelAuL = (busAddr[15:14] == 2'h0);
+// assign		tDevCSelAuR = (busAddr[15:14] == 2'h1);
+// assign		tDevCSelCtr = (busAddr[15:12] == 4'hF);
+
+assign		tDevCSel = (tBusAddr[27:16] == 12'h009);
+assign		tDevCSelAuL = (tBusAddr[15:14] == 2'h0);
+assign		tDevCSelAuR = (tBusAddr[15:14] == 2'h1);
+assign		tDevCSelCtr = (tBusAddr[15:12] == 4'hF);
 
 always @*
 begin
-	tOutData		= UV32_XX;
+//	tOutData		= UV32_XX;
+	tOutData		= UV32_00;
 	tOutOK			= UMEM_OK_READY;
 	tPwmNextValL	= tPwmValL;
 	tPwmNextValR	= tPwmValR;
@@ -247,7 +259,7 @@ begin
 	tPwmNextValL	= tPwmNextValL + { auxPcmL, 4'h0 };
 	tPwmNextValR	= tPwmNextValR + { auxPcmR, 4'h0 };
 
-	if(tDevCSel && (busOpm[4:3]!=0))
+	if(tDevCSel && (tBusOpm[4:3]!=0))
 		tOutOK	= UMEM_OK_OK;
 		
 end
@@ -265,6 +277,13 @@ begin
 	tSamp8b		<= tNxtSamp8b;
 	tSamp16b	<= tNxtSamp16b;
 
+	tOutData2	<= tOutData;
+	tOutOK2		<= tOutOK;
+
+	tBusAddr	<= busAddr;
+	tBusInData	<= busInData;
+	tBusOpm		<= busOpm;
+
 `ifdef JX2_AUD_STEREO
 	tPcmBlkL	<= { pcmMemB[tPcmIdx], pcmMemA[tPcmIdx] };
 	tPcmBlkR	<= { pcmMemD[tPcmIdx], pcmMemC[tPcmIdx] };
@@ -272,12 +291,12 @@ begin
 	tPcmBlk		<= { pcmMemB[tPcmIdx], pcmMemA[tPcmIdx] };
 `endif
 	
-	if(tDevCSel && busOpm[4])
+	if(tDevCSel && tBusOpm[4])
 	begin
 		if(tDevCSelCtr)
 		begin
-			case(busAddr[7:2])
-				6'h00: tRegCtrl0	<= busInData;
+			case(tBusAddr[7:2])
+				6'h00: tRegCtrl0	<= tBusInData;
 
 				default: begin
 				end
@@ -287,15 +306,15 @@ begin
 		if(tDevCSelAuL)
 		begin
 `ifdef JX2_AUD_16K
-			if(busAddr[2])
-				pcmMemB[busAddr[13:3]]	<= busInData;
+			if(tBusAddr[2])
+				pcmMemB[tBusAddr[13:3]]	<= tBusInData;
 			else
-				pcmMemA[busAddr[13:3]]	<= busInData;
+				pcmMemA[tBusAddr[13:3]]	<= tBusInData;
 `else
 			if(busAddr[2])
-				pcmMemB[busAddr[12:3]]	<= busInData;
+				pcmMemB[tBusAddr[12:3]]	<= tBusInData;
 			else
-				pcmMemA[busAddr[12:3]]	<= busInData;
+				pcmMemA[tBusAddr[12:3]]	<= tBusInData;
 `endif
 		end
 
@@ -303,15 +322,15 @@ begin
 		if(tDevCSelAuR)
 		begin
 `ifdef JX2_AUD_16K
-			if(busAddr[2])
-				pcmMemD[busAddr[13:3]]	<= busInData;
+			if(tBusAddr[2])
+				pcmMemD[tBusAddr[13:3]]	<= tBusInData;
 			else
-				pcmMemC[busAddr[13:3]]	<= busInData;
+				pcmMemC[tBusAddr[13:3]]	<= tBusInData;
 `else
 			if(busAddr[2])
-				pcmMemD[busAddr[12:3]]	<= busInData;
+				pcmMemD[tBusAddr[12:3]]	<= tBusInData;
 			else
-				pcmMemC[busAddr[12:3]]	<= busInData;
+				pcmMemC[tBusAddr[12:3]]	<= tBusInData;
 `endif
 		end
 `endif

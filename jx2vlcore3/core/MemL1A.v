@@ -81,6 +81,8 @@ reg[127:0]		tMemDataOut;	//Memory Data Out
 reg[63:0]		tRegOutExc;
 reg[63:0]		tRegOutExc2;
 
+wire[3:0]		tMemAccNoRwx;
+
 `ifdef jx2_enable_mmu
 
 wire[31:0]		tTlbAddr;
@@ -98,6 +100,8 @@ assign	memAddr		= tMemAddr;
 assign	memOpm		= tMemOpm;
 assign	memDataOut	= tMemDataOut;
 
+assign	tMemAccNoRwx	= 0;
+
 `endif
 
 assign	regOutExc	= tRegOutExc2;
@@ -114,7 +118,7 @@ MmuTlb	tlb(
 	clock,			reset,
 	tMemAddr,		tTlbAddr,	tTlbLdtlbData,
 	tMemOpm,		tTlbOpm,
-	tTlbExc,		tTlbOK,
+	tTlbExc,		tTlbOK,		tMemAccNoRwx,
 	regInMmcr,		regInKrr,
 	regInSr);
 
@@ -153,6 +157,7 @@ wire[  4:0]		dfMemOpm;
 reg [127:0]		dfMemDataIn;
 wire[127:0]		dfMemDataOut;
 reg [  1:0]		dfMemOK;
+reg [  3:0]		dfMemNoRwx;
 
 MemDcA		memDc(
 	clock,			reset,
@@ -162,7 +167,7 @@ MemDcA		memDc(
 
 	dfMemAddr,		dfMemOpm,
 	dfMemDataIn,	dfMemDataOut,
-	dfMemOK
+	dfMemOK,		dfMemNoRwx
 	);
 
 reg		tLatchIc;
@@ -197,6 +202,18 @@ begin
 	
 	ifMemOK	= tIfNzOpm ? UMEM_OK_HOLD : UMEM_OK_READY;
 	dfMemOK	= tDfNzOpm ? UMEM_OK_HOLD : UMEM_OK_READY;
+	dfMemNoRwx	= 0;
+
+	if(dfMemOpm == UMEM_OPM_FAULT)
+	begin
+//		if(dfMemAddr[0])
+//			tRegOutExc = {UV16_00, dfMemAddr, 16'h8001 };
+//		if(dfMemAddr[1])
+//			tRegOutExc = {UV16_00, dfMemAddr, 16'h8002 };
+
+		tRegOutExc = { UV16_00, dfMemAddr, 12'h800, 
+			(dfMemAddr[1]) ? 4'h2 : 4'h1 };
+	end
 
 	if((tIfNzOpm && !tLatchDc) || tLatchIc)
 	begin
@@ -207,6 +224,9 @@ begin
 		tMemOpm		= ifMemOpm;
 		tMemDataOut	= UV128_XX;
 		tNxtLatchIc	= tIfNzOpm || (memOK != UMEM_OK_READY);
+		
+		if(tMemAccNoRwx[2])
+			tRegOutExc = {UV16_00, ifMemAddr, 16'h8003 };
 	end
 	else
 		if((tDfNzOpm && !tLatchIc) || tLatchDc)
@@ -214,10 +234,14 @@ begin
 //		$display("L1$, Latch D$, Opm=%X", dfMemOpm);
 
 		dfMemOK		= memOK;
+		dfMemNoRwx	= tMemAccNoRwx;
 		tMemAddr	= dfMemAddr;
 		tMemOpm		= dfMemOpm;
 		tMemDataOut	= dfMemDataOut;
 		tNxtLatchDc	= tDfNzOpm || (memOK != UMEM_OK_READY);
+
+		if(tMemAccNoRwx[0] && tMemAccNoRwx[1])
+			tRegOutExc = {UV16_00, dfMemAddr, 16'h8001 };
 	end
 
 	if(memOK==UMEM_OK_FAULT)

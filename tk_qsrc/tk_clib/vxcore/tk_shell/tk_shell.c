@@ -46,15 +46,43 @@ void __tk_farcall(void *fptr, void *gbr, void *newstack);
 
 int tk_tryload(char *img, char **args)
 {
+	byte tb[256];
 	TK_FILE *fd;
+	char *cs, *ct;
 //	u64 bootgbr;
 	void *bootgbr;
 	byte *boot_newspb, *boot_newsp;
 	int (*bootptr)();
+	int sig_is_pe;
 	int rv;
 
-	fd=tk_fopen(img, "rb");	
-	if(fd)
+	fd=tk_fopen(img, "rb");
+	
+	while(fd)
+	{
+		tk_fseek(fd, 0, 0);
+		tk_fread(tb, 1, 256, fd);
+		
+		if((tb[0]!='#') || (tb[1]!='!'))
+			break;
+
+		cs=tb+2; ct=tb;
+		while(*cs>=' ')
+			*ct++=*cs++;
+		*ct++=0;
+		
+		tk_fclose(fd);
+		fd=tk_fopen(tb, "rb");
+	}
+	
+	sig_is_pe=0;
+	if((tb[0]=='M') && (tb[1]=='Z'))
+		sig_is_pe=1;
+	if((tb[0]=='P') && (tb[1]=='E'))
+		sig_is_pe=1;
+	
+//	if(fd)
+	if(fd && sig_is_pe)
 	{
 		bootgbr=0;
 		TKPE_LoadStaticPE(fd, &bootptr, &bootgbr);
@@ -80,6 +108,40 @@ int tk_tryload(char *img, char **args)
 	}
 	
 	return(-1);
+}
+
+int tk_tryload_n(char *img, char **args)
+{
+	char **path;
+	char tb[256];
+	int npath, ri;
+	int i;
+
+#if 1
+	TK_Env_GetCwd(tb_cwd, 256);
+//	strcpy(tb, a[0]);
+	strcpy(tb, tb_cwd);
+	strcat(tb, "/");
+	strcat(tb, args[0]);
+	strcat(tb, ".exe");
+	ri=tk_tryload(tb, args);
+	if(ri>0)
+		return(ri);
+#endif
+
+	TK_Env_GetPathList(&path, &npath);
+	for(i=0; i<npath; i++)
+	{
+		strcpy(tb, path[i]);
+		strcat(tb, "/");
+		strcat(tb, args[0]);
+		strcat(tb, ".exe");
+		ri=tk_tryload(tb, args);
+		if(ri>0)
+			return(ri);
+	}
+
+	return(ri);
 }
 
 void tk_dir(char *path, char **args)
@@ -263,6 +325,7 @@ int main(int argc, char *argv[])
 //				tk_dir(tb_cwd, a+1);
 //				printf("usage: %s <path> [args*]\n", a[0]);
 				strcpy(tb_cwd, "/");
+				TK_Env_SetCwd(tb_cwd);
 			}
 			break;
 
@@ -271,12 +334,18 @@ int main(int argc, char *argv[])
 			break;
 
 		default:
+#if 0
+			TK_Env_GetCwd(tb_cwd, 256);
 //			strcpy(tb, a[0]);
 			strcpy(tb, tb_cwd);
 			strcat(tb, "/");
 			strcat(tb, a[0]);
 			strcat(tb, ".exe");
 			ri=tk_tryload(tb, a);
+#endif
+
+			ri=tk_tryload_n(tb, a);
+
 			if(ri>0)
 			{
 				if(ri&65535)

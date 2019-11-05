@@ -73,6 +73,7 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 	int cb, nb;
 	int i, l;
 	
+	tk_fseek(fd, 0, 0);
 	tk_fread(tbuf, 1, 1024, fd);
 
 	is_pel4=0;

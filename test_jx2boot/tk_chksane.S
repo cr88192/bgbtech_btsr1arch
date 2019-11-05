@@ -726,6 +726,9 @@ X(tk_checksane_asm):
 
 	bsr X(tk_checksane_wex_asm)
 
+	mov #-1, r2
+	invic r2
+
 	pop lr
 	rts
 

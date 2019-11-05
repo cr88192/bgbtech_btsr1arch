@@ -1,0 +1,310 @@
+/*
+Environment Variables via Context.
+ */
+
+typedef struct TK_EnvContext_s		TK_EnvContext;
+
+struct TK_EnvContext_s {
+TK_EnvContext *next;
+
+char *cwd;
+
+char *pathbuf;
+char **pathlst;
+int npathlst;
+
+char *envbufs;
+char *envbufe;
+char *envbufc;
+char **envlst_var;
+char **envlst_val;
+int nenvlst;
+int menvlst;
+};
+
+TK_EnvContext *tk_envctx_free;
+
+TK_EnvContext *TK_EnvCtx_AllocContext(void)
+{
+	TK_EnvContext *tmp;
+	
+	tmp=tk_envctx_free;
+	if(tmp)
+	{
+		tk_envctx_free=tmp->next;
+		memset(tmp, 0, sizeof(TK_EnvContext));
+		return(tmp);
+	}
+	
+	tmp=tk_malloc(sizeof(TK_EnvContext));
+	memset(tmp, 0, sizeof(TK_EnvContext));
+	return(tmp);
+}
+
+void TK_EnvCtx_FreeContext(TK_EnvContext *ctx)
+{
+	ctx->next=tk_envctx_free;
+	tk_envctx_free=ctx;
+}
+
+char *TK_EnvCtx_SetEnvVarI_StrDup(TK_EnvContext *ctx, char *val)
+{
+	char *ct;
+	int l;
+	
+	l=strlen(val);
+	if((ctx->envbufc+l)>=ctx->envbufe)
+		return(NULL);
+
+	ct=ctx->envbufc;
+	ctx->envbufc=ct+l+1;
+	strcpy(ct, val);
+	return(ct);
+}
+
+int TK_EnvCtx_RepackEnvbuf(TK_EnvContext *ctx)
+{
+	char *oldenv;
+	char *cn0, *cv0, *cn1, *cv1;
+	int i, j, k;
+
+	oldenv=ctx->envbufs;
+	
+	k=ctx->envbufe-ctx->envbufs;
+	k=k+(k>>1);
+	ctx->envbufs=tk_malloc(k);
+	ctx->envbufe=ctx->envbufs+k;
+	ctx->envbufc=ctx->envbufs;
+	
+	for(i=0; i<ctx->nenvlst; i++)
+	{
+		cn0=ctx->envlst_var[i];
+		cv0=ctx->envlst_val[i];
+		cn1=TK_EnvCtx_SetEnvVarI_StrDup(cn0);
+		cv1=TK_EnvCtx_SetEnvVarI_StrDup(cv0);
+		ctx->envlst_var[i]=cn1;
+		ctx->envlst_val[i]=cv1;
+	}
+	
+	tk_free(oldenv);
+
+	return(0);
+}
+
+int TK_EnvCtx_SetEnvVarI(TK_EnvContext *ctx, char *varn, char *varv)
+{
+	char *cn1, *cv1;
+	int i, j, k;
+
+	if(!ctx->envbufs)
+	{
+		ctx->envbufs=tk_malloc(65536);
+		ctx->envbufe=ctx->envbufs+65536;
+		ctx->envbufc=ctx->envbufs;
+
+		ctx->envlst_var=tk_malloc(256*sizeof(char *));
+		ctx->envlst_val=tk_malloc(256*sizeof(char *));
+		ctx->nenvlst=0;
+		ctx->menvlst=256;
+	}
+	
+	for(i=0; i<ctx->nenvlst; i++)
+	{
+		if(!strcmp(ctx->envlst_var[i], varn))
+		{
+			cv1=TK_EnvCtx_SetEnvVarI_StrDup(varv);
+			
+			if(cv1)
+			{
+				ctx->envlst_val[i]=cv1;
+				return(1);
+			}
+			break;
+		}
+	}
+	
+	if(i>=ctx->nenvlst)
+	{
+		if((ctx->nenvlst+1)>=ctx->menvlst)
+		{
+			k=ctx->menvlst; k=k+(k>>1);
+			ctx->envlst_var=tk_realloc(
+				ctx->envlst_var, k*sizeof(char *));
+			ctx->envlst_val=tk_realloc(
+				ctx->envlst_val, k*sizeof(char *));
+			ctx->menvlst=k;
+		}
+
+		cn1=TK_EnvCtx_SetEnvVarI_StrDup(varn);
+		cv1=TK_EnvCtx_SetEnvVarI_StrDup(varv);
+
+		if(cn1 && cv1)
+		{
+			i=ctx->nenvlst++;
+			ctx->envlst_var[i]=cn1;
+			ctx->envlst_val[i]=cv1;
+			return(1);
+		}
+	}
+
+	TK_EnvCtx_RepackEnvbuf();
+	TK_EnvCtx_SetEnvVarI(varn, varv);
+	return(1);
+}
+
+int TK_EnvCtx_SetCwd(TK_EnvContext *ctx, char *cwd)
+{
+	if(cwd)
+		ctx->cwd=TKMM_LVA_Strdup(cwd);
+	else
+		ctx->cwd=NULL;
+}
+
+char *TK_EnvCtx_GetCwd(TK_EnvContext *ctx, char *buf, int sz)
+{
+	char *cwd;
+	int l;
+	
+	cwd=ctx->cwd;
+	if(!cwd)cwd="/";
+	
+	l=strlen(cwd);
+	
+	if(!buf)
+	{
+		if(!sz)
+			sz=l+1;
+		if(l>=sz)
+			return(NULL);
+		buf=malloc(sz);
+		strcpy(buf, cwd);
+		return(buf);
+	}
+	
+	if(strlen(cwd)>=sz)
+		return(NULL);
+	strcpy(buf, cwd);
+	
+	return(buf);
+}
+
+int TK_EnvCtx_GetPathList(TK_EnvContext *ctx, char ***rlst, int *rnlst)
+{
+	*rlst=ctx->pathlst;
+	*rnlst=ctx->npathlst;
+	return(1);
+}
+
+int TK_EnvCtx_SetPath(TK_EnvContext *ctx, char *path)
+{
+//	char tb[1024];
+	char **tba;
+	int ntb;
+	
+	char *cs, *ct, *csb, *ctb;
+	
+	if(!ctx->pathbuf)
+		ctx->pathbuf=malloc(65536);
+	if(!ctx->pathlst)
+		ctx->pathlst=malloc(256*sizeof(char *));
+	
+	tba=ctx->pathlst;
+	ctb=ctx->pathbuf;
+	cs=path; ct=ctb;
+	ntb=0;
+	while(*cs)
+	{
+		if(*cs==':')
+		{
+			cs++;
+
+			*ct++=0;
+			tba[ntb]=ctb;
+			ntb++;
+			ctb=ct;
+			continue;
+		}
+		
+		*ct++=*cs++;
+	}
+	
+	*ct=0;
+	if(*ctb)
+	{
+		tba[ntb]=ctb;
+		ntb++;
+		ctb=ct;
+		continue;
+	}
+	
+	ctx->npathlst=ntb;
+	return(0);
+}
+
+int TK_EnvCtx_SplitVar(char *str, char *bvar, char **rval)
+{
+	char *cs, *ct;
+	
+	cs=str;
+	ct=bvar;
+	
+	while(*cs && (*cs!='='))
+		{ *ct++=*cs++; }
+	*ct=0;
+	
+	if(*cs=='=')
+		cs++;
+	rval=cs;
+	return(0);
+}
+
+int TK_EnvCtx_UpdateForSet(TK_EnvContext *ctx, char *estr)
+{
+	char tbn[64];
+	char *tbv;
+
+	TK_EnvCtx_SplitVar(estr, tbn, &tbv);
+	
+	if(!strcmp(tbn, "CWD"))
+	{
+		TK_EnvCtx_SetCwd(ctx, tbv);
+		return(1);
+	}
+	
+	if(!strcmp(tbn, "PATH"))
+	{
+		TK_EnvCtx_SetPath(ctx, tbv);
+		TK_EnvCtx_SetEnvVarI(ctx, tbn, tbv);
+		return(1);
+	}
+	
+	TK_EnvCtx_SetEnvVarI(ctx, tbn, tbv);
+
+	return(0);
+}
+
+int TK_EnvCtx_GetEnvListBuffer(TK_EnvContext *ctx, void *buf, int szbuf)
+{
+	char **env;
+	char *ct;
+	int menv;
+	
+	env=buf;
+	menv=ctx->nenvlst;
+	ct=((char *)buf)+(menv+2)*sizeof(char *);
+
+	return(0);
+}
+
+int TK_EnvCtx_InitForEnv(TK_EnvContext *ctx, char **envv)
+{
+	char **csa;
+	
+	csa=envv;
+	while(*csa)
+	{
+		TK_EnvCtx_UpdateForSet(*csa++);
+	}
+	
+	return(0);
+}

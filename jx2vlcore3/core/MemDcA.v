@@ -30,7 +30,7 @@ module MemDcA(
 
 	memAddr,		memOpm,
 	memDataIn,		memDataOut,
-	memOK
+	memOK,			memNoRwx
 	);
 
 input			clock;
@@ -52,6 +52,7 @@ output[  4:0]	memOpm;			//memory PC output-enable
 input [127:0]	memDataIn;		//memory PC data
 output[127:0]	memDataOut;		//memory PC data
 input [  1:0]	memOK;			//memory PC OK
+input [  3:0]	memNoRwx;		//No Read/Write/Execute
 
 
 reg[63:0]		tRegOutVal;	//output PC value
@@ -230,6 +231,8 @@ reg[127:0]		tMiBlkDataA;
 reg[127:0]		tMiBlkDataB;
 reg[ 27:0]		tMiBlkAddrA;
 reg[ 27:0]		tMiBlkAddrB;
+reg[3:0]		tMiNoRwxA;
+reg[3:0]		tMiNoRwxB;
 reg				tDoMiBlkA;
 reg				tDoMiBlkB;
 reg				tDoMiBlk;
@@ -272,6 +275,10 @@ reg[63:0]	tRegInVal;
 
 // reg[31: 0]	tMmioInData;		//input PC address
 reg[63: 0]	tMmioInData;		//input PC address
+
+reg			tAccFltR;
+reg			tAccFltW;
+reg			tAccFlt;
 
 
 always @*
@@ -368,6 +375,10 @@ begin
 	tHoldWrCyc		= 0;
 	tNextHoldCyc	= 0;
 
+	tAccFltR		= 0;
+	tAccFltW		= 0;
+//	tAccFlt;
+
 `ifdef jx2_expand_l1sz
 	tStBlkIxA	= UV8_XX;
 	tStBlkIxB	= UV8_XX;
@@ -413,6 +424,14 @@ begin
 	tHold = 0;
 	
 	tDoMiBlk	= tDoMiBlkA || tDoMiBlkB;
+
+	if(tInOpm[4] && tBlkFlagA[3] && !tMissA)
+		tAccFltW	= 1;
+
+//	tAccFltR	= 0;
+//	tAccFltW	= 0;
+
+	tAccFlt		= tAccFltR || tAccFltW;
 
 	tBlkData2A = tBlkDataA;
 	tBlkData2B = tBlkDataB;
@@ -554,8 +573,11 @@ begin
 		tStBlkDataB = tMiBlkDataB;
 		tStBlkAddrA	= tMiBlkAddrA;
 		tStBlkAddrB	= tMiBlkAddrB;
-		tStBlkFlagA	= { 2'b00, ~tStBlkAddrA[1:0] };
-		tStBlkFlagB	= { 2'b00, ~tStBlkAddrB[1:0] };
+//		tStBlkFlagA	= { 2'b00, ~tStBlkAddrA[1:0] };
+//		tStBlkFlagB	= { 2'b00, ~tStBlkAddrB[1:0] };
+
+		tStBlkFlagA	= { tMiNoRwxA[1], 1'b0, ~tStBlkAddrA[1:0] };
+		tStBlkFlagB	= { tMiNoRwxA[1], 1'b0, ~tStBlkAddrB[1:0] };
 
 		dcNxtFlushMskA[tMiBlkIxA] = 0;
 		dcNxtFlushMskB[tMiBlkIxB] = 0;
@@ -793,6 +815,12 @@ begin
 		tMemLatchWdB	<= 0;
 	end
 	else
+		if(tAccFlt && !tMemLatchA && !tMemLatchB && !tMmioLatch)
+	begin
+		tMemOpm		<= UMEM_OPM_FAULT;
+		tMemAddr	<= { UV28_00, 2'b00, tAccFltW, tAccFltR };
+	end
+	else
 		if(((tMiss && tMissA) || tMemLatchA) && !tMemLatchB && !tMmioLatch)
 	begin
 
@@ -835,6 +863,7 @@ begin
 				tMiBlkDataA		<= memDataIn;
 				tMiBlkAddrA		<= tReqAddrA;
 				tMiBlkIxA		<= tReqIxA;
+				tMiNoRwxA		<= memNoRwx;
 				tDoMiBlkA		<= 1;
 			end
 			else if(tBlkDirtyA)
@@ -927,6 +956,7 @@ begin
 				tMiBlkDataB		<= memDataIn;
 				tMiBlkAddrB		<= tReqAddrB;
 				tMiBlkIxB		<= tReqIxB;
+				tMiNoRwxB		<= memNoRwx;
 				tDoMiBlkB		<= 1;
 			end
 			else if(tBlkDirtyB)

@@ -15,7 +15,7 @@ module MmuTlb(
 	clock,			reset,
 	regInAddr,		regOutAddr,		regInData,
 	regInOpm,		regOutOpm,
-	regOutExc,		regOutOK,
+	regOutExc,		regOutOK,		regOutNoRwx,
 	regInMMCR,		regInKRR,		regInSR
 	);
 
@@ -34,6 +34,7 @@ input[4:0]		regInOpm;		//Operation Size/Type
 output[63:0]	regOutExc;		//Exception EXC+TEA
 output[1:0]		regOutOK;		//set if operation suceeds
 output[4:0]		regOutOpm;		//Operation Size/Type
+output[3:0]		regOutNoRwx;	//No R/W/X
 
 input[63:0]		regInMMCR;		//MMU Control Register
 input[63:0]		regInKRR;		//Keyring Register
@@ -133,7 +134,8 @@ MmuChkAcc tlbChkAcc(
 	regInSR,
 	regInOpm,
 	tlbAcc,
-	tTlbExc);
+	tTlbExc,
+	regOutNoRwx);
 
 always @*
 begin

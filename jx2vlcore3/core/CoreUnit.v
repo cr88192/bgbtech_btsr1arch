@@ -405,6 +405,9 @@ reg[31:0]		mmioAddrL4;
 reg				tBusMissLatch;
 reg				tNxtBusMissLatch;
 
+reg[5:0]		tBusMissCnt;
+reg[5:0]		tNxtBusMissCnt;
+
 reg			timer1kHzL;
 
 reg[31:0]		sevSegVal;
@@ -429,6 +432,7 @@ begin
 
 	memBusExc	= UV64_00;
 	tNxtBusMissLatch	= 0;
+	tNxtBusMissCnt		= 0;
 
 //	if(ps2kb_lclk_i!=ps2kb_clk_i)
 //	if(ps2kb_lclk2_i!=ps2kb_lclk_i)
@@ -486,12 +490,23 @@ begin
 	end
 	else if(mmioOpm!=0)
 	begin
-		if(mmioAddr == mmioAddrL4)
+		tNxtBusMissCnt = tBusMissCnt + 1;
+//		if(tBusMissCnt == 63)
+		if(tBusMissCnt == 15)
+		begin
+			tNxtBusMissCnt	= tBusMissCnt;
+			mmioInData		= UV64_00;
+			mmioOK			= UMEM_OK_OK;
+		end
+
+//		if(mmioAddr == mmioAddrL4)
+//		if(tBusMissCnt == 63)
+		if(tBusMissCnt == 15)
 		begin
 			if(!tBusMissLatch)
 				$display("MMIO Bus Miss A=%X", mmioAddr);
 			tNxtBusMissLatch = 1;
-		end
+		end		
 	end
 
 end
@@ -522,6 +537,8 @@ begin
 	mmioAddrL3	<= mmioAddrL2;
 	mmioAddrL4	<= mmioAddrL3;
 	tBusMissLatch	<= tNxtBusMissLatch;
+	tBusMissCnt		<= tNxtBusMissCnt;
+
 	ps2kb_lclk_i	<= ps2kb_clk_i;
 	ps2kb_lclk2_i	<= ps2kb_lclk_i;
 

@@ -127,6 +127,7 @@ reg[31:0]		tInAddr;
 reg[1:0]		tInWordIx;
 reg[31:0]		tRegInPc;		//input PC address
 reg[4:0]		tInOpm;			//OPM (Used for cache-control)
+reg[4:0]		tInOpmB;		//OPM (Used for cache-control)
 reg[4:0]		tInPcOpm;		//OPM (Used for cache-control)
 
 reg				tMissA;
@@ -218,7 +219,7 @@ begin
 	if(tDoStBlkB)
 		icNxtFlushMskB[tStBlkIxB]=0;
 
-	if((tInOpm==UMEM_OPM_FLUSHIS) || reset)
+	if(((tInOpm==UMEM_OPM_FLUSHIS) && (tInOpmB!=UMEM_OPM_FLUSHIS)) || reset)
 	begin
 		icNxtFlushMskA = JX2_L1_FLUSHMSK;
 		icNxtFlushMskB = JX2_L1_FLUSHMSK;
@@ -515,6 +516,7 @@ begin
 	tReqIxB		<= tNxtIxB;
 
 	tInOpm		<= tInPcOpm;
+	tInOpmB		<= tInOpm;
 	icFlushMskA	<= icNxtFlushMskA;
 	icFlushMskB	<= icNxtFlushMskB;
 

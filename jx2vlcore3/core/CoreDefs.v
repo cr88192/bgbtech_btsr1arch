@@ -204,6 +204,8 @@ parameter[1:0] UMEM_OK_FAULT	= 2'h3;		//FAULT (Request Failed)
 
 parameter[4:0] UMEM_OPM_READY	= 5'b00000;		//Ready/Idle
 
+parameter[4:0] UMEM_OPM_FAULT	= 5'b00001;		//Access Fault
+
 // parameter[4:0] UMEM_OPM_CTRLF	= 5'b00010;		//Control Flow
 parameter[4:0] UMEM_OPM_INVTLB	= 5'b00010;		//Flush TLB
 parameter[4:0] UMEM_OPM_LDTLB	= 5'b00011;		//Load TLB
