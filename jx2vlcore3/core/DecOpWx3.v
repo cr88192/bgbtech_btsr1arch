@@ -213,12 +213,20 @@ reg opIsDwC;		//PrWEX Ops
 reg opIsDfC;		//Pred-False or WEX
 reg opIsWfC;		//WEX
 
+reg			opIsWexJumbo;
+reg			opIsWexJumbo96;
+reg			opIsWexJumboLdi;
+reg[5:0]	opWexJumboRn;
+
 always @*
 begin
 
 	opIsDwA = 0;
 	opIsDwB = 0;
 	opIsDwC = 0;
+	opIsWexJumbo	= 0;
+	opIsWexJumbo96	= 0;
+	opIsWexJumboLdi	= 0;
 
 	casez(istrWord[15:10])
 		6'b11100z: begin	//E0..E7
@@ -352,6 +360,53 @@ begin
 	opIsWfA = opIsDfA && (!opIsDzA || opIsDwA) && srWxe;
 	opIsWfB = opIsDfB && (!opIsDzB || opIsDwB) && srWxe;
 
+`ifdef jx2_enable_wexjumbo
+	opIsWexJumbo =
+		(istrWord[15: 8] == 8'b1111_0100) &&
+		(istrWord[31:30] == 2'b11       ) ;
+	opIsWexJumbo96 = opIsWexJumbo && istrWord[42];
+
+	opIsWexJumboLdi = opIsWexJumbo96 &&
+//		(istrWord[47:40] == 8'b1111_0100) &&
+		(istrWord[79:73] == 7'b1111_101 );
+
+	opWexJumboRn[3:2] = istrWord[29:28];
+	opWexJumboRn[1:0] = istrWord[61:60];
+	opWexJumboRn[  4] = istrWord[72];
+	opWexJumboRn[  5] = (opWexJumboRn[4:1] == 0);
+`endif
+
+`ifdef jx2_enable_wexjumbo
+	if(opIsWexJumbo96)
+	begin
+		opImmA	= decOpFzC_idImm;
+		
+		if(opIsWexJumboLdi)
+		begin
+			opRegAM	= opWexJumboRn;
+			opRegAO	= JX2_GR_JIMM;
+			opRegAN	= opWexJumboRn;
+
+			opUCmdA	= { JX2_IXC_AL, JX2_UCMD_MOV_IR };
+			opUIxtA	= { JX2_IXC_AL, JX2_UCIX_LDI_JLDIX };
+		end
+
+		opRegBM	= JX2_GR_ZZR;
+		opRegBO	= JX2_GR_ZZR;
+		opRegBN	= JX2_GR_ZZR;
+		opImmB	= decOpFzB_idImm;
+		opUCmdB	= UV8_00;
+		opUIxtB	= UV8_00;
+
+		opRegCM	= JX2_GR_ZZR;
+		opRegCO	= JX2_GR_ZZR;
+		opRegCN	= JX2_GR_ZZR;
+		opImmC	= decOpFzA_idImm;
+		opUCmdC	= UV8_00;
+		opUIxtC	= UV8_00;
+	end
+	else
+`endif
 	if(opIsFxA)
 	begin
 		if(opIsFCA)

@@ -612,6 +612,18 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 //			ncyc+=2;
 			pc+=4;
 		}
+
+		if(op->fl&BJX2_OPFL_JUMBO64)
+		{
+//			ncyc+=2;
+			pc+=6;
+		}
+
+		if(op->fl&BJX2_OPFL_JUMBO96)
+		{
+//			ncyc+=2;
+			pc+=10;
+		}
 		
 		op->pc2=pc;
 		if(op->fmid==BJX2_FMID_CHAIN)

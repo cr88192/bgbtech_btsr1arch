@@ -1,0 +1,1650 @@
+== Instructions Organized by Name with Descriptions ==
+
+Register Aliases:
+* DLR will be an alias for R0.
+* DHR will be an alias for R1.
+* SP will be an alias for R15.
+
+
+Notation:
+* 0..9, A..F: Literal Hexadecimal Values
+* e: The 'E' bits 'QNMI'
+** Q will give an operation size or type.
+** N will give Bit 4 of the N field (usually Rn).
+** M will give Bit 4 of the M field (usually Rm).
+** I will give Bit 4 of the O field (usually Ro).
+*** Alternately may serve as the MSB for an immediate.
+*** If no Ro or Imm, serves a role similar to Q.
+* f: -
+* g: E bits (3R), but Q=0, thus 0nmi
+* G: E bits (3R), but Q=1, thus 1nmi
+* h: E bits (I,R), but Q=0, thus 0nii or 0iin
+* H: E bits (I,R), but Q=1, thus 1nii or 1iin
+** Two of the register fields will be interpreted as an immediate.
+* i: Immediate (Signed)
+* j: Immediate (Unsigned)
+* m: Source Register
+* n: Destination Register
+* o: Index or Secondary Register
+* p: E bits (2R), but Q=0, I=0, thus 0nm0
+* P: E bits (2R), but Q=1, I=0, thus 1nm0
+* q: E bits (2R), but Q=0, I=1, thus 0nm1
+* Q: E bits (2R), but Q=1, I=1, thus 1nm1
+
+Single register forms in 30zz..37zz will be mirrored in 38zz..3Fzz, but will encode on R16..R31 rather than R0..R15.
+
+The instructions in the F0zz..F3zz range will repeat in F4zz..F7zz (Parallel), E0zz..E3zz (Execute if True), and E4zz..E7zz (Execute if False) ranges.
+
+
+Immediates may have a suffix to indicate how the value is extended:
+* u: Value is extended with zeroes.
+* n: Value is extended with ones.
+* s: Value is sign extended.
+
+
+=== ADC ===
+
+* 12nm       ADC		Rm, Rn
+* F0nm_1g29  ADC		Rm, Rn
+
+Add with Carry, Rn=Rn+Rm+SR.T, with SR.T being updated to reflect the carry-out bit.
+
+WEX: ADC will only update SR.T in Lane 1. If an ADC is in another lane, the state of SR.T will be undefined following the operation.
+
+
+=== ADD ===
+
+* 10nm            ADD		Rm, Rn
+* 58nm            ADD		Rm, DLR, Rn			//Rn=Rm+DLR
+* Cnii            ADD		#imm8s, Rn
+* F0nm_1go0       ADD		Rm, Ro, Rn			//Rn=Rm+Ro
+* F0nm_1e09       ADD		Rm, Rn				//Rn=Rn+Rm
+* F2nm_0gjj       ADD		Rm, #imm9u, Rn		//
+* F2nm_1gjj       ADD		Rm, #imm9n, Rn		//
+* F84n_iiii       ADD		#imm16s, Rn
+* F85n_iiii       ADD		#imm16s, Rk
+* FC0G_10nm_jjjj  ADD		Rm, #imm17u, Rn		//Rn=Rm+DLR
+* FCCn_iiii_iiii  ADD		#imm32s, Rn
+* FDCn_iiii_iiii  ADD		#imm32s, Rk
+
+Add the source and destination values and store the result in the destination register.
+
+
+=== ADDx.L ===
+
+* F0nm_5goC       ADDS.L	Rm, Ro, Rn
+* F0nm_5GoC       ADDU.L	Rm, Ro, Rn
+* F2gj_3gjj       ADDS.L	Rm, #imm9u, Rn
+* F2nm_3Gjj       ADDU.L	Rm, #imm9u, Rn
+* F2nm_4gjj       ADDS.L	Rm, #imm9n, Rn
+* F2nm_4Gjj       ADDU.L	Rm, #imm9n, Rn
+
+Add the source and destination values and store the result in the destination register.
+
+This form sign or zero extends the 32-bit result to 64 bits.
+
+
+=== AND ===
+
+* 15nm            AND		Rm, Rn
+* 5Anm            AND		Rm, DLR, Rn
+* F0nm_1go5       AND		Rm, Ro, Rn
+* F0nm_1e59       AND		Rm, Rn
+* F2nm_5gjj       AND		Rm, #imm9u, Rn
+* FC0G_15nm_dddd  AND		Rm, #imm17s, Rn
+
+Perform a bitwise AND of the source and destination values and store the result in the destination register.
+
+
+=== BF ===
+
+* 23dd            BF		(PC, disp8s)
+* 31n3            BF		(PC, Rn)
+* 32n3            BF		Rn
+* F013_3en0       BF		(PC, Rn)			//Fix32
+* F023_3en0       BF		Rn					//Fix32
+* F0dd_Fddd       BF		(PC, disp20s)		//Branch False, +/- 1MB
+* FC23_dddd_dddd  BF		(PC, disp32s)
+
+Branch if False (SR.T is 0).
+The target address is computed and PC is updated to the new address if the condition is met.
+
+
+=== BRA ===
+
+* 20dd            BRA		(PC, disp8s)
+* 31n0            BRA		(PC, Rn)
+* 32n0            BRA		Rn
+* F010_3en0       BRA		(PC, Rn)			//Fix32
+* F020_3en0       BRA		Rn					//Fix32
+* F0dd_Cddd       BRA		(PC, disp20s)		//Fix32
+* FC20_dddd_dddd  BRA		(PC, disp32s)
+
+Branch to Address.
+The target address is computed and PC is updated to the new address.
+
+
+=== BREAK ===
+
+* 3030            BREAK
+* F000_3030       BREAK2	//Fix32
+
+Trigger a Breakpoint exception.
+
+The BREAK1/2/3 forms overlap with MOV.B, but will be regarded as invalid special cases which will result in an exception rather than a MOV.
+
+
+=== BSR ===
+
+* 21dd            BSR		(PC, disp8s)
+* 31n1            BSR		(PC, Rn)
+* 32n1            BSR		Rn
+* F011_3en0       BSR		(PC, Rn)			//Fix32
+* F021_3en0       BSR		Rn					//Fix32
+* F0dd_Dddd       BSR		(PC, disp20s)		//Fix32
+* FC21_dddd_dddd  BSR		(PC, disp32s)
+
+Branch to subroutine.
+The target address is computed and PC is updated to the new address, with the prior value for PC being stored in LR.
+
+
+=== BT ===
+
+* 22dd            BT		(PC, disp8s)		//Branch True
+* 31n2            BT		(PC, Rn)			//Branch True to PC+(Rn*2)
+* 32n2            BT		Rn
+* F012_3en0       BT		(PC, Rn)			//Fix32
+* F022_3en0       BT		Rn					//Fix32
+* F0dd_Eddd       BT		(PC, disp20s)		//Branch True, +/- 1MB
+* FC22_dddd_dddd  BT		(PC, disp32s)
+
+Branch if True (SR.T is 1).
+The target address is computed and PC is updated to the new address if the condition is met.
+
+
+=== CLRS ===
+
+* 3060       CLRS
+* F000_3060  CLRS	//Fix32
+
+Clear the SR.S flag.
+
+
+=== CLRT ===
+
+* 3040       CLRT
+* F000_3040  CLRT	//Fix32
+
+Clear the SR.T flag.
+
+
+=== CMPEQ ===
+
+* 1Cnm       CMPEQ		Rm, Rn
+* 2Cnj       CMPEQ		#imm4u, Rn
+* 2Dnj       CMPEQ		#imm4n, Rn
+* 6Cnj       CMPEQ		#imm4u, Rk
+* 6Dnj       CMPEQ		#imm4n, Rk
+* F0nm_1gC9  CMPEQ		Rm, Rn
+* F2nC_Cgjj  CMPEQ		#imm9u, Rn
+* F2nD_Cgjj  CMPEQ		#imm9n, Rn
+
+Compare if source and destination are Equal.
+
+This provides both zero and one extended immediates, allowing a direct immediate to express values ranging between -16 and 15.
+
+
+This updates SR.T based on the result of the comparison.
+The contents of SR.S, and SR.PQRO are undefined following this operation.
+
+
+=== CMPGE ===
+
+* 1Fnm       CMPGE	Rm, Rn
+* 2Fnj       CMPGE	#imm4u, Rn
+* 36nE     / CMPGE	DLR, Rn
+* 6Fnj       CMPGE	#imm4u, Rk
+* F0nm_1gEC  CMPGE	Rm, Rn				//Signed Rn GE Rm
+* F2nA_Cgjj  CMPGE	#imm9u, Rn
+* F2nB_Cgjj  CMPGE	#imm9n, Rn
+
+Compare if Rn is Greater or Equal to the immediate.
+
+Only exists for immediates because this can be easily emulated for the two-register forms via swapping the registers and inverting the branch condition.
+
+This updates SR.T based on the result of the comparison.
+The contents of SR.S, and SR.PQRO are undefined following this operation.
+
+
+=== CMPGT ===
+
+* 1Enm       CMPGT	Rm, Rn
+* 2Enj       CMPGT	#imm4u, Rn
+* 6Enj       CMPGT	#imm4u, Rk
+* F0nm_1gE9  CMPGT	Rm, Rn
+* F2nE_Cgjj  CMPGT	#imm9u, Rn
+* F2nF_Cgjj  CMPGT	#imm9n, Rn
+
+Signed Rn GT Rm.
+
+Compare if destination is greater than the source using a signed comparison.
+
+This updates SR.T based on the result of the comparison.
+The contents of SR.S, and SR.PQRO are undefined following this operation.
+
+
+=== CMPHI ===
+
+* 1Dnm       CMPHI	Rm, Rn
+* F0nm_1gD9  CMPHI	Rm, Rn
+* F2n8_Cgjj  CMPHI	#imm9u, Rn
+* F2n8_Cgjj  CMPHI	#imm9n, Rn
+
+Unsigned Rn GT Rm.
+
+Compare if destination is greater than the source using an unsigned comparison.
+
+This updates SR.T based on the result of the comparison.
+The contents of SR.S, and SR.PQRO are undefined following this operation.
+
+
+=== CMPHS ===
+
+* 36nD       CMPHS	DLR, Rn
+* F0nm_1gFC  CMPHS	Rm, Rn				//Unsigned Rn GE Rm
+* F2n6_Cgjj  CMPHS	#imm9u, Rn
+* F2n7_Cgjj  CMPHS	#imm9n, Rn
+
+Unsigned (Rn GE DLR)
+
+Compare if destination is greater than or equal to the source using an unsigned comparison.
+
+This updates SR.T based on the result of the comparison.
+The contents of SR.S, and SR.PQRO are undefined following this operation.
+
+
+=== CMPPL (Drop) ===
+
+* 31nC      / CMPPL	Rn
+* F01C_3en0 / CMPPL	Rn		//Fix32
+
+SR.T=(Rn GT 0)
+
+Compare if the value is greater than zero (Signed).
+
+This operation is specific to the use of signed values.
+For the unsigned case, this decates to comparing that the value is not equal to zero.
+
+This updates SR.T based on the result of the comparison.
+The contents of SR.S, and SR.PQRO are undefined following this operation.
+
+Drop: Same effect can be achieved with "CMPGT #0, Rm".
+
+
+=== CMPPZ (Drop) ===
+
+* 31nD      / CMPPZ	Rn
+* F01D_3en0 / CMPPZ	Rn		//Fix32
+
+SR.T=(Rn GE 0)
+
+Compare if the value is greater than equal to zero.
+
+This operation is specific to the use of signed values.
+For the unsigned case, the result would always be true.
+
+This updates SR.T based on the result of the comparison.
+The contents of SR.S, and SR.PQRO are undefined following this operation.
+
+Drop: Same effect can be achieved with "CMPGE #0, Rm".
+
+
+=== CMPQEQ ===
+
+* 5Fnm       CMPQEQ		Rm, Rn
+* F0nm_1GC9  CMPQEQ		Rm, Rn
+* F2nC_CGjj  CMPQEQ		#imm9u, Rn
+* F2nD_CGjj  CMPQEQ		#imm9n, Rn
+
+Compare if source and destination are Equal.
+
+This provides both zero and one extended immediates, allowing a direct immediate to express values ranging between -16 and 15.
+
+
+This updates SR.T based on the result of the comparison.
+The contents of SR.S, and SR.PQRO are undefined following this operation.
+
+
+=== CMPQGE ===
+
+* F0nm_1GEC  CMPQGE		Rm, Rn
+* F2nA_CGjj  CMPQGE		#imm9u, Rn
+* F2nB_CGjj  CMPQGE		#imm9n, Rn
+
+Compare if Rn is Greater or Equal to the immediate.
+
+Only exists for immediates because this can be easily emulated for the two-register forms via swapping the registers and inverting the branch condition.
+
+This updates SR.T based on the result of the comparison.
+The contents of SR.S, and SR.PQRO are undefined following this operation.
+
+
+=== CMPQGT ===
+
+* 5Enm       CMPQGT		Rm, Rn
+* F0nm_1GE9  CMPQGT		Rm, Rn
+* F2nE_Cejj  CMPQGT		#imm9u, Rn
+* F2nF_Cejj  CMPQGT		#imm9n, Rn
+
+Signed Rn GT Rm.
+
+Compare if destination is greater than the source using a signed comparison.
+
+This updates SR.T based on the result of the comparison.
+The contents of SR.S, and SR.PQRO are undefined following this operation.
+
+
+=== CMPQHI ===
+
+* 5Dnm       CMPQHI		Rm, Rn
+* F0nm_1GD9  CMPQHI		Rm, Rn
+* F2n8_CGjj  CMPQHI		#imm9u, Rn
+* F2n8_CGjj  CMPQHI		#imm9n, Rn
+
+Unsigned Rn GT Rm.
+
+Compare if destination is greater than the source using an unsigned comparison.
+
+This updates SR.T based on the result of the comparison.
+The contents of SR.S, and SR.PQRO are undefined following this operation.
+
+
+=== CMPQHS ===
+
+* F0nm_1GFC  CMPQHS		Rm, Rn
+* F2n6_CGjj  CMPQHS		#imm9u, Rn
+* F2n7_CGjj  CMPQHS		#imm9n, Rn
+
+Unsigned (Rn GE DLR)
+
+Compare if destination is greater than or equal to the source using an unsigned comparison.
+
+This updates SR.T based on the result of the comparison.
+The contents of SR.S, and SR.PQRO are undefined following this operation.
+
+
+=== CPUID ===
+
+* 36jA  CPUID	#imm4
+
+Load CPUID bits into DHR:DLR.
+The immediate gives an index into a table of CPUID bits.
+
+Index 0:
+* (63:0): Gives an identifier for the processor.
+** 'BJX2xxyy', Identifies core as BJX2.
+** 'xx' gives the major ISA Profile and Profile Version.
+** 'yy' May give an additional version, or '  ' if absent.
+* (127:64): Implementation Specific Identifier.
+** This may be a magic number for a specific implementation or similar.
+** It may also identify who implemented the core.
+** If set to all zeroes, only the low results of CPUID are used.
+
+ISA Profiles:
+* 'A': Full Features
+* 'B': (Drop)
+* 'C': Basic, 32-bit Address Space.
+* 'D': Lite/Fix32 Profile, fixed-Length 32-bit instruction encodings
+* 'E': Lite Profile, No FPU or MMU, 32-bit Address Space
+* 'F': Lite Profile, Has GFP, No MMU, 32-bit Address Space
+
+Lite Profiles will leave out support for 48 bit instruction formats, and will similarly exclude the MMU.
+
+
+=== CSELT ===
+
+* F0nm_5go0  CSELT		Rm, Ro, Rn
+
+Select between Rm or Ro based on the value of SR.T, storing the result in Rn.
+If SR.T is set, the value from Rm is used, otherwise the value from Ro is used.
+
+
+=== EXTS.B ===
+
+* 32n6       EXTS.B	Rn
+* F0nm_1g8C  EXTS.B	Rm, Rn				//Q=0, I=0
+
+Sign extend the value in the low 8 bits of the register to the width of the register.
+
+
+=== EXTS.L ===
+
+* 36n5       EXTS.L	Rn
+* F0nm_1e5C  EXTS.L	Rm, Rn				//Q=0, I=0
+
+Sign extend the value in the low 32 bits of the register to the width of the register.
+
+
+=== EXTS.W ===
+
+* 32n7       EXTS.W	Rn
+* F0nm_1g9C  EXTS.W	Rm, Rn				//Q=0, I=0
+
+Sign extend the value in the low 16 bits of the register to the width of the register.
+
+
+=== EXTU.B ===
+
+* 32n4       EXTU.B	Rn
+* F0nm_1G8C  EXTU.B	Rm, Rn				//Q=1, I=0
+
+Zero extend the value in the low 8 bits of the register to the width of the register.
+
+
+=== EXTU.L ===
+
+* 36n4       EXTU.L	Rn
+* F0nm_1e5C  EXTU.L	Rm, Rn				//Q=1, I=0
+
+Zero extend the value in the low 32 bits of the register to the width of the register.
+
+
+=== EXTU.W ===
+
+* 32n5       EXTU.W	Rn
+* F0nm_1G9C  EXTU.W	Rm, Rn				//Q=1, I=0
+
+Zero extend the value in the low 16 bits of the register to the width of the register.
+
+
+=== INVxx ===
+
+* 30F2       INVTLB				//Flush the TLB
+* 31nC       INVIC	Rn			//Flush L1 I-Cache for Address
+* 31nD       INVDC	Rn			//Flush L1 D-Cache for Address
+* F01C_3en0  INVIC	Rn
+* F01D_3en0  INVDC	Rn
+
+Flush or Invalidate parts of the cache.
+
+The INVIC instruction effects the Instruction Cache, whereas INVDC effects the Data Cache.
+
+Invalidating the instruction cache causes any subsequent execution of instructions within the given cache line to be reloaded from memory. This instruction only effects the L1 and its associated state.
+
+The INVIC instruction, as such, is primarily intended for self-modifying code, or to prepare for execution when new code has been loaded into memory (potentially over the top of existing code).
+
+
+The INVDC instruction will mark cache lines as "flushed" within the L1 data-cache. On subsequent access, they will be written back to L2 if internally marked as dirty, otherwise the corresponding cache lines will be reloaded from the L2 cache.
+
+Doing a proper flush of an address, as such, will involve a process:
+  Invalidate the address (to mark it as flushed);
+  Load from the address (causing it to be stored back to L2);
+  Invalidate the address again (to discard anything just loaded).
+
+
+If INVIC or INVDC is given an address in the MMIO range, additional special behaviors may be triggered. Using these with FFFFFFFF will cause the whole cache to be flushed.
+
+The INVTLB instruction will flush the TLB. This would be done as part of changing the active page tables.
+
+
+=== LDTLB ===
+
+* 30F0       LDTLB
+* F000_30F0  LDTLB
+
+Copy DHR:DLR into the TLB.
+
+This instruction form is intended for use in a TLB Miss handler.
+
+This instruction is invalid outside of an ISR. Its behavior is undefined, but should behave like a BREAK.
+
+
+=== LEA.B ===
+
+* 4Cnm            LEA.B		(Rm, DLR), Rn
+* F0nm_0Go4       LEA.B		(Rm, Ro), Rn
+* F1nm_0Gdd       LEA.B		(Rm, disp9u), Rn
+* FC27_4ndd_dddd  LEA.B		(PC, disp24s), Rn	//PC-Rel Load
+
+Load the effective address of the Base register added to the displacement and store the result into the destination register.
+
+This will use a scale factor of 1.
+
+Note that the effective precision of LEA will be relative to the size of the address space. The effective precision of a LEA may be smaller than 64 bits.
+
+
+=== LEA.L ===
+
+* 4Enm       LEA.L	(Rm, DLR), Rn
+* F0nm_0Go6  LEA.L	(Rm, Ro), Rn
+* F1nm_2Gdd  LEA.L	(Rm, disp9u), Rn
+
+Load the effective address of the Base register added to the scaled displacement and store the result into the destination register.
+
+This will use a scale factor of 4.
+
+
+=== LEA.Q ===
+
+* 4Fnm       LEA.Q	(Rm, DLR), Rn
+* F0nm_0Go7  LEA.Q	(Rm, Ro), Rn
+* F1nm_3Gdd  LEA.Q	(Rm, disp9u), Rn
+
+Load the effective address of the Base register added to the scaled displacement and store the result into the destination register.
+
+This will use a scale factor of 8.
+
+
+=== LEA.W ===
+
+* 4Dnm       LEA.W	(Rm, DLR), Rn
+* F0nm_0Go5  LEA.W	(Rm, Ro), Rn
+* F1nm_1Gdd  LEA.W	(Rm, disp9u), Rn
+
+Load the effective address of the Base register added to the scaled displacement and store the result into the destination register.
+
+This will use a scale factor of 2.
+
+
+=== LDIN / LDIZ ===
+
+Targeting R0/DLR:
+* Ajjj       LDIZ	#imm12u, DLR
+* Bjjj       LDIN	#imm12n, DLR
+* FAjj_jjjj	 LDIZ	#imm24u, DLR		//Zero Extend
+* FBjj_jjjj	 LDIN	#imm24n, DLR		//One Extend
+
+Targeting GPRs:
+* Dnii            LDI		#imm8s, Rn		//Rn=Imm8s
+* F2n0_Chjj       LDIZ		#imm10u, Rn		//(WEX2), Rn=Imm10u
+* F2n0_CHjj       LDIZD		#imm10u, Rn		//(WEX2), Rn=Imm10u (Hi=Undef)
+* F2n1_Chjj       LDIN		#imm10n, Rn		//(WEX2), Rn=Imm10n
+* F2n1_CHjj       LDIND		#imm10n, Rn		//(WEX2), Rn=Imm10n (Hi=Undef)
+* F80n_iiii       LDIZ		#imm16u, Rn
+* F81n_iiii       LDIZ		#imm16u, Rk
+* F82n_iiii       LDIN		#imm16n, Rn
+* F83n_iiii       LDIN		#imm16n, Rk
+* FCEn_iiii_iiii  LDIZ		#imm32u, Rn
+* FDEn_iiii_iiii  LDIZ		#imm32u, Rk
+* FCFn_iiii_iiii  LDIN		#imm32n, Rn
+* FDFn_iiii_iiii  LDIN		#imm32n, Rk
+
+Load an 8, 12, or 24 bit value into DLR.
+Load an 8, 10, 16, or 32 bit value into a GPR.
+
+LDIZ will zero extend the value up to the size of the register.
+
+LDIN will extend the value with ones up to the size of the register.
+
+
+=== LDISH ===
+
+* 26jj       LDISH	#imm8u, DLR
+* F2n2_Chjj  LDISH	#imm8u, Rn
+
+Load Immediate with Shift.
+
+The value in DLR is shifted left 8 bits, and the immediate value is coppied into the low bits.
+
+The 32-bit encoding is mostly intended for use with WEX2. The high 2 bits of the imm10 field are reserved and must be zero.
+
+
+=== LDISH16 ===
+
+* F86n_iiii  LDISH16	#imm16u, Rn
+* F87n_iiii  LDISH16	#imm16u, Rk
+
+Load Immediate with Shift.
+
+The value in DLR is shifted left 16 bits, and the low bits are set according to the pattern value given.
+
+
+=== MOV ===
+
+MOV, GPR
+* 18nm            MOV		Rm, Rn
+* 19zz            MOV		Rj, Rn
+* 1Azz            MOV		Rm, Rk
+* 1Bzz            MOV		Rj, Rk
+* F0nm_1g89       MOV		Rm, Rn				//Rn=Rm
+* F0nm_1G89       MOVD		Rm, Rn				//Rn=Rm (Low32, Hi=Undef)
+
+MOV, Control Register
+* 48nm            MOV		Rm, Cn
+* 49nm            MOV		Cm, Rn
+* 4Anm            MOV		Rm, Sn
+* 4Bnm            MOV		Sm, Rn
+* F0nm_1eA9       MOV		Rm, Cn				//Cn=Rm
+* F0nm_1eB9       MOV		Cm, Rn				//Rn=Cm
+* F0nm_1eAC       MOV		Rm, Sn				//Cn=Rm
+* F0nm_1eBC       MOV		Sm, Rn				//Rn=Cm
+
+Move a value from the source to the destination register.
+
+
+=== MOV.B ===
+
+* 00nm            MOV.B		Rn, (Rm)
+* 04nm            MOV.B		Rn, (Rm, DLR)		//(Rn==0): PC-Rel
+* 08nm            MOV.B		(Rm), Rn
+* 0Cnm            MOV.B		(Rm, DLR), Rn		//(Rm==0): PC-Rel
+* F0nm_0go4       MOV.B		Rn, (Rm, Ro)		//Q=0	//(Rn==0): PC-Rel
+* F0nm_0goC       MOV.B		(Rm, Ro), Rn		//Q=0	//(Rm==0): PC-Rel
+* F1nm_0gdd       MOV.B		Rn, (Rm, disp9u)
+* F1nm_8gdd       MOV.B		(Rm, disp9u), Rn
+* FC0g_00nm_dddd  MOV.B		Rn, (Rm, disp17s)
+* FC0g_08nm_dddd  MOV.B		(Rm, disp17s), Rn
+* FC27_0ndd_dddd  MOV.B		Rn, (PC, disp24s)	//PC-Rel Store (R0..R15)
+* FC27_8ndd_dddd  MOV.B		(PC, disp24s), Rn	//PC-Rel Load (R0..R15)
+* FD27_0ndd_dddd  MOV.B		Rk, (PC, disp24s)	//PC-Rel Store (R16..R31)
+* FD27_8ndd_dddd  MOV.B		(PC, disp24s), Rk	//PC-Rel Load (R16..R31)
+
+Load or store a Byte to/from memory.
+The byte is sign extended to the size of the register.
+
+
+=== MOV.L ===
+
+* 02nm            MOV.L		Rn, (Rm)
+* 06nm            MOV.L		Rn, (Rm, DLR)		//(Rn==0): PC-Rel
+* 0Anm            MOV.L		(Rm), Rn
+* 0Enm            MOV.L		(Rm, DLR), Rn		//(Rm==0): PC-Rel
+* 40nd            MOV.L		Rn, (SP, disp4u)	//Stack-Relative Store
+* 42nd            MOV.L		Rk, (SP, disp4u)	//Stack-Relative Store
+* 44nd            MOV.L		(SP, disp4u), Rn	//Stack-Relative Load
+* 46nd            MOV.L		(SP, disp4u), Rk	//Stack-Relative Load
+* F0nm_0go6       MOV.L		Rn, (Rm, Ro)		//(Rn==0): PC-Rel
+* F0nm_0goE       MOV.L		(Rm, Ro), Rn		//(Rm==0): PC-Rel
+* F1nm_2gdd       MOV.L		Rn, (Rm, disp9u)
+* F1nm_Agdd       MOV.L		(Rm, disp9u), Rn
+* FC0g_02nm_dddd  MOV.L		Rn, (Rm, disp17s)
+* FC0g_0Anm_dddd  MOV.L		(Rm, disp17s), Rn
+* FC27_2ndd_dddd  MOV.L		Rn, (PC, disp24s)	//PC-Rel Store
+* FC27_Andd_dddd  MOV.L		(PC, disp24s), Rn	//PC-Rel Load
+* FD27_2ndd_dddd  MOV.L		Rk, (PC, disp24s)	//PC-Rel Store
+* FD27_Andd_dddd  MOV.L		(PC, disp24s), Rk	//PC-Rel Load
+
+Load or store a DWord to/from memory.
+
+Thought: This is a stupid number of MOV.L forms, it may be relevant to prune some of them.
+
+For example, F0-28 and F1-2 could both achieve a similar purpose, so don't need to both exist in the case of SP. The Disp9 cases don't save much on average vs disp17s when F0-28 exists, but save a bit more if it does not exist.
+
+
+=== MOV.Q ===
+
+* 03nm            MOV.Q		Rn, (Rm)
+* 07nm            MOV.Q		Rn, (Rm, DLR)
+* 0Bnm            MOV.Q		(Rm), Rn
+* 0Fnm            MOV.Q		(Rm, DLR), Rn
+* 41nd            MOV.Q		Rn, (SP, disp4u)
+* 43nd            MOV.Q		Rk, (SP, disp4u)
+* 45nd            MOV.Q		(SP, disp4u), Rn
+* 47nd            MOV.Q		(SP, disp4u), Rk
+* F0nm_0go7       MOV.Q		Rn, (Rm, Ro)
+* F0nm_0goF       MOV.Q		(Rm, Ro), Rn
+* F1nm_3gdd       MOV.Q		Rn, (Rm, disp9u)
+* F1nm_Bgdd       MOV.Q		(Rm, disp9u), Rn
+* FC0g_03nm_dddd  MOV.Q		Rn, (Rm, disp17s)
+* FC0g_0Bnm_dddd  MOV.Q		(Rm, disp17s), Rn
+* FC27_3ndd_dddd  MOV.Q		Rn, (PC, disp24s)
+* FC27_Bndd_dddd  MOV.Q		(PC, disp24s), Rn
+* FD27_3ndd_dddd  MOV.Q		Rk, (PC, disp24s)
+* FD27_Bndd_dddd  MOV.Q		(PC, disp24s), Rk
+
+Load or store a QWord to/from memory.
+
+
+=== MOV.W ===
+
+* 01nm            MOV.W		Rn, (Rm)
+* 05nm            MOV.W		Rn, (Rm, DLR)
+* 09nm            MOV.W		(Rm), Rn
+* 0Dnm            MOV.W		(Rm, DLR), Rn
+* F0nm_0go5       MOV.W		Rn, (Rm, Ro)
+* F0nm_0goD       MOV.W		(Rm, Ro), Rn
+* F1nm_1gdd       MOV.W		Rn, (Rm, disp9u)
+* F1nm_9gdd       MOV.W		(Rm, disp9u), Rn
+* FC0e_01nm_dddd  MOV.W		Rn, (Rm, disp17s)
+* FC0g_09nm_dddd  MOV.W		(Rm, disp17s), Rn
+* FC27_1ndd_dddd  MOV.W		Rn, (PC, disp24s)
+* FC27_9ndd_dddd  MOV.W		(PC, disp24s), Rn
+* FD27_1ndd_dddd  MOV.W		Rk, (PC, disp24s)
+* FD27_9ndd_dddd  MOV.W		(PC, disp24s), Rk
+
+Load or store a Word to/from memory.
+The Word value is sign extended to the size of the register.
+
+
+
+=== MOVD.L ===
+
+* F0nm_0GoF       MOVD.L	(Rm, Ro), Rn
+* F1nm_BGdd       MOVD.L	(Rm, disp9u), Rn
+* FC0G_0Bnm_dddd  MOVD.L	(Rm, disp17s), Rn
+
+Load a DWord from memory, but leaves the high order bits in an undefined state.
+
+The contents of the high order bits will be undefined following the memory load (the implementation may use whichever form of a DWord load is cheapest). 
+
+These bits will remain undefined following arithmetic operations, and any bits which depend on the high order bits of the register will themselves be undefined. This situation may exist de-facto, or be treated as a hint by the implementation. Note that this status effect would be removed following an explicit sign or zero extension.
+
+This operation is intended for cases where the high order bits of the register are considered as irrelevant.
+This may be relevant on implementations where leaving the high bits undefined can be more efficient than using either sign or zero extension.
+
+
+
+=== MOVU.B ===
+
+* 50nm            MOVU.B	(Rm), Rn
+* 52nm            MOVU.B	(Rm, DLR), Rn
+* F0nm_0GoC       MOVU.B	(Rm, Ro), Rn
+* F1nm_8Gdd       MOVU.B	(Rm, disp9u), Rn
+* FC0G_08nm_dddd  MOVU.B	(Rm, disp17s), Rn
+* FC27_Cndd_dddd  MOVU.B	(PC, disp24s), Rn
+* FD27_Cndd_dddd  MOVU.B	(PC, disp24s), Rk
+
+Load or store a Byte to/from memory.
+The byte is zero extended to the size of the register.
+
+Note that these instruction forms will be specific to the 32-bit ISA.
+
+
+=== MOVU.L ===
+
+* 28nd            MOVU.L	(SP, disp4u), Rn
+* 2And            MOVU.L	(SP, disp4u), Rk
+* 80nm            MOVU.L	(Rm), Rn
+* 88nm            MOVU.L	(Rm, DLR), Rn
+* F0nm_0GoE       MOVU.L	(Rm, Ro), Rn
+* F1nm_AGdd       MOVU.L	(Rm, disp9u), Rn
+* FC0G_0Anm_dddd  MOVU.L	(Rm, disp17s), Rn
+* FC27_Endd_dddd  MOVU.L	(PC, disp24s), Rn
+* FD27_Endd_dddd  MOVU.L	(PC, disp24s), Rk
+
+Load or store a Byte to/from memory.
+The byte is zero extended to the size of the register.
+
+Note that these instruction forms will be specific to the 32-bit ISA.
+
+
+=== MOVU.W ===
+
+* 51nm            MOVU.W	(Rm), Rn
+* 53nm            MOVU.W	(Rm, DLR), Rn
+* F0nm_0GoD       MOVU.W	(Rm, Ro), Rn
+* F1nm_9Gdd       MOVU.W	(Rm, disp9u), Rn
+* FC0G_09nm_dddd  MOVU.W	(Rm, disp17s), Rn
+* FC27_Dndd_dddd  MOVU.W	(PC, disp24s), Rn
+* FD27_Dndd_dddd  MOVU.W	(PC, disp24s), Rk
+
+Load or store a Word to/from memory.
+The word is zero extended to the size of the register.
+
+Note that these instruction forms will be specific to the 32-bit ISA.
+
+
+=== MULS (3R) ===
+
+* 5Anm            MULS	Rm, DLR, Rn
+* F0nm_1go2       MULS	Rm, Ro, Rn
+* F2nm_2gjj       MULS	Rm, #imm9u, Rn
+* FC0G_12nm_dddd  MULS	Rm, #imm17s, Rn
+
+Performs a narrow multiply (32 bit).
+Only the low 32 bits are used from the input registers, and the resulting value is 32-bit sign extended.
+
+This operation only exists in Lane 1.
+
+
+=== MULx.x (3R) ===
+
+* F0nm_5go2  MULS.L	Rm, Ro, Rn			//(MULL) Sx 32b Mul (32*32->64)
+* F0nm_5go3  MULU.L	Rm, Ro, Rn			//(MULL) Zx 32b Mul (32*32->64)
+* F0nm_5goE  MULS.W	Rm, Ro, Rn			//(MULW) Sx 16b Mul (16*16->32)
+* F0nm_5GoE  MULS.W	Rm, #imm5u, Rn		//(MULW) Sx 16b Mul (16*16->32)
+* F0nm_5goF  MULU.W	Rm, Ro, Rn			//(MULW) Zx 16b Mul (16*16->32)
+* F0nm_5GoF  MULU.W	Rm, #imm5u, Rn		//(MULW) Zx 16b Mul (16*16->32)
+
+These produce widening multiplies of a given input size.
+The values in Rm and Ro are multiplied, and the result is stored in Rn.
+
+The WORD multiplies will exist in all lanes.
+
+
+
+=== MULS ===
+
+* 56nm       MULS	Rm, Rn
+* F0nm_1e99  MULS	Rm, Rn
+
+(DHR,DLR)=Rm*Rn (Signed Result).
+
+Perform a signed multiply storing the result of the multiplication in the DHR,DLR pair.
+
+Each register contains 32 bits of the result, with DHR being 32-bit sign extended.
+
+This operation only exists in Lane 1.
+
+
+=== MULU (3R) ===
+
+* F0nm_1Go2       MULU	Rm, Ro, Rn
+* F2nm_2Gjj       MULU	Rm, #imm9u, Rn
+
+Performs a narrow multiply (32 bit).
+Only the low 32 bits are used from the input registers, and the resulting value is 32-bit zero extended.
+
+This operation only exists in Lane 1.
+
+
+=== MULU ===
+
+* 57nm       MULU	Rm, Rn
+* F0nm_1eF9  MULU	Rm, Rn
+
+(DHR,DLR)=Rm*Rn (Unsigned Result).
+
+Perform an unsigned multiply storing the result of the multiplication in the DHR,DLR pair.
+
+Each register contains 32 bits of the result, with both DLR and DHR being 32-bit zero extended.
+
+This operation only exists in Lane 1.
+
+
+=== NEG ===
+
+* 33n1       NEG	Rn
+* 33nC       NEG	Rn, DLR
+* F0nm_1e1C  NEG	Rm, Rn				//Rn=(~Rn)+1
+
+Rn=(~Rn)+1
+
+Negate the value in Rn.
+
+
+=== NEGC ===
+
+* 33n2	NEGC	Rn
+
+Rn=(~Rn)+(!SR.T).
+
+Negate value in Rn and subtract the SR.T flag.
+The value of SR.T is updated to reflect the borrow status of the bit.
+
+
+=== NOP ===
+
+* 3000            NOP
+* F000_3000       NOP		//Fix32
+
+Does Nothing.
+
+
+=== NOT ===
+
+* 33n0       NOT	Rn
+* F0nm_1e0C  NOT	Rm, Rn				//Rn=~Rn
+
+Rn=~Rn
+
+Perform a bitwise NOT of the value in Rn.
+
+
+=== NOTS ===
+
+* 3090       NOTS
+* F000_3090  NOTS		//Fix32
+
+SR.S=!SR.S
+
+Invert the SR.S flag.
+
+
+=== NOTT ===
+
+* 3080       NOTT
+* F000_3080  NOTT		//Fix32
+
+SR.T=!SR.T
+
+Invert the SR.T flag.
+
+
+=== OR ===
+
+* 16nm            OR	Rm, Rn
+* 5Bnm            OR	Rm, DLR, Rn
+* F0nm_1go6       OR	Rm, Ro, Rn
+* F0nm_1e69       OR	Rm, Rn
+* F2nm_6gjj       OR	Rm, #imm9u, Rn
+* FC0G_16nm_dddd  OR	Rm, #imm17s, Rn
+
+Perform a bitwise OR of the source and destination, storing the result in the destination.
+
+
+=== POP ===
+
+* 31nA       POP		Rn
+* 31nB       POP		Cn
+* 39nA       POP		Rk			//R16..R31
+* 39nB       POP		Ck			//C16..C31
+* F01A_3en0  POP		Rn			//Fix32
+* F01B_3en0  POP		Cn			//Fix32
+
+Load the value from the top of the stack into the destination register and increment the stack position.
+
+For a 32-bit architecture, this will add 4 to the value of SP.
+
+Note that POP into PC may be treated as a special case "RET" instruction (optional).
+
+
+=== PUSH ===
+
+* 31n8       PUSH		Rn
+* 31n9       PUSH		Cn
+* 39n8       PUSH		Rk		//R16..R31
+* 39n9       PUSH		Ck		//C16..C31
+* F018_3en0  PUSH		Rn		//Fix32
+* F019_3en0  PUSH		Cn		//Fix32
+
+Decrement the stack position and store the value from the register to this location.
+
+
+=== RET ===
+
+* 300B ? RET
+
+Load the value from the top of the stack into PC and increment the stack position.
+
+Note that this is an alias for "POP PC".
+Support for this case is optional.
+
+
+=== ROTCL ===
+
+* 33n6	ROTCL	Rn
+
+Rn'=(Rn SHL 1)|SR.T; SR.T=Rn.31
+
+Rotate the value in Rn left by 1 bit, pulling SR.T into the LSB, and putting the shifted out bit into SR.T.
+
+
+=== ROTCR ===
+
+* 33n7	ROTCR	Rn
+
+Rotate the value in Rn right by 1 bit, pulling SR.T into the MSB, and putting the shifted out bit into SR.T.
+
+
+=== ROTL ===
+
+* 33n4	ROTL	Rn
+
+Rn=(Rn SHL 1)|(Rn SHR 31)
+
+Rotate the value in Rn left by 1 bit.
+
+
+=== ROTR ===
+
+* 33n5	ROTR	Rn
+
+Rn=(Rn SHR 1)|(Rn SHL 31)
+
+Rotate the value in Rn right by 1 bit.
+
+
+=== RTE ===
+
+* 30C0       RTE
+* F000_30C0  RTE	//Fix32
+
+Return from exception.
+
+Initiates the behavior for returning from an exception handler (described elsewhere).
+
+
+=== RTS / RTSU ===
+
+* 3010       RTS
+* 3012       RTSU
+* F000_3010  RTS	//Fix32
+* F002_3010  RTSU	//Fix32
+
+Return from Subroutine.
+This effectively restores the value from LR into PC, transferring control back to LR.
+
+RTSU will be functionally equivalent to RTS with the main exception that LR may not have been modified within an implementation-dependent number of instructions (based on the number of instructions which may be "in-flight" in the processor's execution pipeline). This is to allow the instruction to be treated like a direct unconditional branch.
+
+
+=== SBB ===
+
+* 13nm       SBB	Rm, Rn
+* F0nm_1e39  SBB	Rm, Rn
+
+Rn=Rn+(~Rm)+(!SR.T)
+
+Subtract with Borrow.
+SR.T is updated with the borrow result of this operation.
+
+WEX: SBB will only update SR.T in Lane 1. If an SBB is in another lane, the state of SR.T will be undefined following the operation.
+
+
+
+=== SETS ===
+
+* 3070       SETS
+* F000_3070  SETS		//Fix32
+
+Set the SR.S flag.
+
+
+=== SETT ===
+
+* 3050       SETT
+* F000_3050  SETT		//Fix32
+
+Set the SR.T flag.
+
+
+=== SHAD ===
+
+* 36n6       SHAD	DLR, Rn
+* F0nm_1g6C  SHAD	Rm, Rn
+* F0nm_5go4  SHAD	Rm, Ro, Rn
+* F2nm_8gjj  SHAD	Rm, #imm9, Rn
+
+Barrel Shift, Arithmetic.
+Operates on a 32-bit value.
+The input is 32-bit sign extended prior to performing the shift.
+
+The Shift Value will behave as if it were a sign-extended byte. Positive values will encode left-shifts whereas negative values will encode right shifts.
+
+For SHAD, the shift will be 32-bit modular.
+
+
+=== SHADQ ===
+
+* 31n6       SHADQ	DLR, Rn
+* F0nm_1G6C  SHADQ	Rm, Rn
+* F0nm_5Go4  SHADQ	Rm, Ro, Rn
+* F2nm_8Gjj  SHADQ	Rm, #imm9, Rn
+
+Barrel Shift, Arithmetic.
+Operates on a 64-bit value.
+
+The Shift Value will behave as if it were a sign-extended byte. Positive values will encode left-shifts whereas negative values will encode right shifts.
+
+For SHADQ, the shift will be 64-bit modular.
+
+
+=== SHAR ===
+
+* 33nA SHAR	Rn
+
+Rn'=(Rn SAR 1); SR.T=Rn.0
+
+Shift Arithmetic Right by 1 bit.
+This updates SR.T with the bit shifted out of the LSB.
+
+
+=== SHARx ===
+
+* 34n8 SHAR1	Rn
+* 34n9 SHAR2	Rn
+* 34nA SHAR4	Rn
+* 34nB SHAR8	Rn
+* 34nE SHAR16	Rn
+* 34nF SHARSX	Rn					//Copy sign bit to all other bits.
+* 36n2 SHAR32	Rn
+
+Rn=Rn SAR x;
+
+Perform an arithmetic shift right by the given number of bits.
+These may be combined to form a shift by a different number of bits.
+
+
+=== SHLD ===
+
+* 36n7       SHLD	DLR, Rn
+* F0nm_1g7C  SHLD	Rm, Rn
+* F0nm_5go5  SHLD	Rm, Ro, Rn
+* F2nm_9gjj  SHLD	Rm, #imm9u, Rn
+
+Barrel Shift, Logical.
+Operates on a 32-bit value.
+The input is 32-bit zero extended prior to performing the shift.
+
+
+=== SHLDQ ===
+
+* 31n7       SHLDQ	DLR, Rn
+* F0nm_1G7C  SHLDQ	Rm, Rn
+* F0nm_5Go5  SHADQ	Rm, Ro, Rn
+* F2nm_9ejj  SHLDQ	Rm, #imm9u, Rn
+
+Barrel Shift, Logical.
+Operates on a 64-bit value.
+
+
+=== SHLL ===
+
+* 33n8 SHLL	Rn
+
+Rn'=(Rn SHL 1); SR.T=Rn.31
+
+Shift Logical Left by 1 bit.
+This updates SR.T with the bit shifted out of the MSB.
+
+
+=== SHLLx ===
+
+* 34n0 SHLL1	Rn
+* 34n1 SHLL2	Rn
+* 34n2 SHLL4	Rn
+* 34n3 SHLL8	Rn
+* 34nC SHLL16	Rn
+* 36n0 SHLL32	Rn
+
+Rn=Rn SHL x;
+
+Perform an logical shift left by the given number of bits.
+These may be combined to form a shift by a different number of bits.
+
+
+=== SHLR ===
+
+* 33n9 SHLR	Rn
+
+Rn'=(Rn SHR 1); SR.T=Rn.0
+
+Shift Logical Right by 1 bit.
+This updates SR.T with the bit shifted out of the LSB.
+
+
+=== SHLRx ===
+
+* 34n4 SHLR1	Rn
+* 34n5 SHLR2	Rn
+* 34n6 SHLR4	Rn
+* 34n7 SHLR8	Rn
+* 34nD SHLR16	Rn
+* 36n1 SHLR32	Rn					//Rn=Rn SHR 32, Logical
+
+Rn=Rn SHR x;
+
+Perform an logical shift right by the given number of bits.
+These may be combined to form a shift by a different number of bits.
+
+
+=== SLEEP ===
+
+* 3020       SLEEP
+* F000_3020  SLEEP		//Fix32
+
+Causes the processor to sleep until the next interrupt.
+
+May generate an fault if used in a context where this would halt the processor indefinitely.
+
+
+=== SUB ===
+
+* 11nm            SUB		Rm, Rn
+* 59nm            SUB		Rm, DLR, Rn
+* F0nm_1go1       SUB		Rm, Ro, Rn			//Rn=Rm-Ro, Q=0
+* F0nm_1e19       SUB		Rm, Rn				//Rn=Rn-Rm
+* FC0G_11nm_dddd  SUB		Rm, imm17u, Rn
+
+Rn=Rn-Rm
+Rn=Rm-Ro
+Rn=Rm-Imm
+
+Subtract the source from the destination, storing the result in the destination register.
+
+
+=== SUBx.L ===
+
+* F0nm_5goD       SUBS.L	Rm, Ro, Rn
+* F0nm_5GoD       SUBU.L	Rm, Ro, Rn
+
+Subtract the source from the destination, storing the result in the destination register.
+
+This variant sign or zero extends the 32 bit result to 64 bits.
+
+
+=== SWAP.B ===
+
+* 37n0 SWAP.B	Rn
+
+Rn'= (Rn AND 0xFFFFFFFF00000000)        OR
+	((Rn AND 0x00000000FF00FF00) SHR 8) OR
+	((Rn AND 0x0000000000FF00FF) SHL 8);
+
+Swap the Even/Odd Bytes within the low four bytes of Rn.
+
+
+=== SWAP.W ===
+
+* 37n1 SWAP.W	Rn
+
+Rn'=((Rn AND 0xFFFF0000FFFF0000) SHR 16) OR
+	((Rn AND 0x0000FFFF0000FFFF) SHL 16);
+
+Swap the Words within Rn.
+
+
+=== SWAP.8B ===
+
+* 37n2 SWAP.8B	Rn
+
+Rn'=((Rn AND 0xFF00FF00FF00FF00) SHR 8) OR
+	((Rn AND 0x00FF00FF00FF00FF) SHL 8);
+
+Swap the Even/Odd Bytes within the all eight bytes of Rn.
+
+
+=== SWAP.L ===
+
+* 37n3 SWAP.L	Rn
+
+Rn'=((Rn AND 0xFFFFFFFF00000000) SHR 32) OR
+	((Rn AND 0x00000000FFFFFFFF) SHL 32);
+
+Swap the DWords within Rn.
+
+
+=== TRAP ===
+
+* 36j3       TRAP	#imm4u
+* 36n8       TRAP	Rn
+* F068_3en0  TRAP	Rn
+
+Generate an Interrupt.
+
+Trap with an Imm4 uses the bits from the immediate as part of the bit-pattern for EXSR (0xC08j).
+
+
+The register trap gives the full EXSR bit pattern (in the low 16 bits).
+
+In user mode, only SysCall patterns will be allowed, other patterns will result either in a fault or some other implementation-defined behavior. In supervisor mode, patterns representing a valid EXSR pattern will behave as-if this exception had occured.
+
+Patterns which do not represent a valid EXSR pattern may result in a fault or some other implementation-defined behavior.
+
+In a VM, an EXSR with the pattern 0xFzzz will correspond to a VM trap call. This will call a handler outside of the emulated environment. Use of a VM trap within a bare-metal implementation is undefined and should not be used.
+
+
+=== TST ===
+
+* 14nm       TST	Rm, Rn
+* F0nm_1g49  TST	Rm, Rn				//SR.T=!(Rm&Rn)
+* F2n4_Cgjj  TST	#imm9u, Rn			//SR.T=!(Rm&Rn)
+* F2n5_Cgjj  TST	#imm9n, Rn			//SR.T=!(Rm&Rn)
+
+SR.T=!(Rm AND Rn)
+
+Perform a bitwise AND of the source and destination registers, updating SR.T based on whether the result of this operation is equal to zero.
+
+A zero result will cause SR.T to be set, and a nonzero result will cause SR.T to be cleared.
+
+This operation will only test the low 32 bits.
+
+
+=== TSTQ ===
+
+* 54nm       TSTQ	Rm, Rn
+* F0nm_1G49  TSTQ	Rm, Rn				//SR.T=!(Rm&Rn)
+* F2n4_CGjj  TSTQ	#imm9u, Rn			//SR.T=!(Rm&Rn)
+* F2n5_CGjj  TSTQ	#imm9n, Rn			//SR.T=!(Rm&Rn)
+
+SR.T=!(Rm AND Rn)
+
+Perform a bitwise AND of the source and destination registers, updating SR.T based on whether the result of this operation is equal to zero.
+
+A zero result will cause SR.T to be set, and a nonzero result will cause SR.T to be cleared.
+
+This operation will test all 64 bits.
+
+
+=== WEXMD (WEX) ===
+
+* 36n9  WEXMD	#imm4 //( 0..15)
+* 3En9  WEXMD	#imm4 //(16..31)
+
+Sets the Active WEX Profile.
+This instruction is No-Op if the core does not support WEX.
+
+This instruction will enable or disable WEX based on whether or not the given profile ID is supported by the core. This will be achieved by updating the value for SR.WXE based on the profile ID given as an immediate.
+
+If WEX is disabled, any WEX sequences encountered will be treated as if they were scalar instructions.
+
+
+=== XOR ===
+
+* 17nm            XOR		Rm, Rn
+* 5Cnm            XOR		Rm, DLR, Rn
+* F0nm_1go7       XOR		Rm, Ro, Rn				//Rn=Rm XOR Ro, Q=0
+* F0nm_1e79       XOR		Rm, Rn
+* F2nm_7gjj       XOR		Rm, #imm9u, Rn		//
+* FC0G_17nm_dddd  XOR		Rm, imm17s, Rn
+
+Perform a bitwise XOR of the source and destination registers, storing the result in the destination.
+
+
+== FPU Instructions (FPU, Drop) ==
+
+The older FPU has been removed from BJX2, the GFP FPU will be used instead.
+
+
+== GPR SIMD Extension (GSV, Optional) ==
+
+These instructions will be considered part of the GPR SIMD Vector Extension (GSV). These instruction forms will be considered optional, and exist mostly to add rudimentary SIMD support to BJX2.
+
+The GSVF variant will also support packed half and single precision floating-point values, whereas GSV by itself will only support packed Word and DWord operations.
+
+Packed byte operations will not be directly supported by GSV.
+
+
+=== MOV.xD (GSV) ===
+
+* F0nm_1g8A  MOVHD		Rm, Rn			//(GSV) Move High DWord
+* F0nm_1G8A  MOVLD		Rm, Rn			//(GSV) Move Low DWord
+* F0nm_1gAA  MOVHLD		Rm, Rn			//(GSV) Rn=Rm (MOV High to Low)
+* F0nm_1GAA  MOVLHD		Rm, Rn			//(GSV) Rn=Rm (MOV Low to High)
+
+Partial Register Move. These MOV part of the bits from Rm into Rn, while leaving the other bits in Rn as their original value.
+
+
+=== PADD.x (GSV) ===
+
+* F0nm_1g0A  PADD.W		Rm, Rn		//(GSV) Packed ADD Word
+* F0nm_1G0A  PADD.L		Rm, Rn		//(GSV) Packed ADD DWord
+* F0nm_1g5A  PADD.H		Rm, Rn		//(GSVF) Packed ADD Half
+* F0nm_1G5A  PADD.F		Rm, Rn		//(GSVF) Packed ADD Float
+
+Add Packed Elements.
+
+Each element from Rm is added to the corresponding element of Rn.
+
+
+=== PCMPx.x (GSV) ===
+
+* F0nm_1pCA  PCMPEQ.W	Rm, Rn		//Pack Compare Word, Equal
+* F0nm_1qCA  PCMPEQ.H	Rm, Rn		//Pack Compare Half, Equal
+* F0nm_1pDA  PCMPHI.W	Rm, Rn		//Pack Compare Word, Above
+* F0nm_1pEA  PCMPGT.W	Rm, Rn		//Pack Compare Word, Greater
+* F0nm_1qEA  PCMPGT.H	Rm, Rn		//Pack Compare Half, Greater
+
+* F0nm_1PCA  PCMPEQ.L	Rm, Rn		//Pack Compare DWord, Equal
+* F0nm_1QCA  PCMPEQ.F	Rm, Rn		//Pack Compare Float32, Equal
+* F0nm_1PDA  PCMPHI.L	Rm, Rn		//Pack Compare DWord, Above
+* F0nm_1PEA  PCMPGT.L	Rm, Rn		//Pack Compare DWord, Greater
+* F0nm_1QEA  PCMPGT.F	Rm, Rn		//Pack Compare Float32, Greater
+
+Packed Compare.
+
+With Word and Half will update the P/Q/R/O bits in SR depending on the result of each comparison. These will compare each element Rn with the corresponding element in Rm. The SR.P bit will correspond with the low-order element, and SR.O will correspond with the high order element.
+
+Half comparisons will be similar to Word comparisons, but will differ in that values are sign magnitude.
+
+With Packed DWord and Float32, The T and S bits will be updated based on the comparison (T for the low element, and S for the high element).
+
+
+Note that bits other than those defined for the comparison will be undefined following the operation. So, If Q=0 then S and T are undefined, and if Q=1 then P/Q/R/O are undefined.
+
+
+=== PCSELT.L (GSV) ===
+
+* F0nm_5Go0  PCSELT.L	Rm, Ro, Rn
+
+Select elements between Rm or Ro based on the value of SR.S and SR.T, storing the result in Rn.
+If SR.T is set, the low 32 bits from Rm is used, otherwise the low 32 bits from Ro are used. If SR.S is set, the high 32 bits from Rm is used, otherwise the high 32 bits from Ro are used.
+
+
+=== PLDxxx.x (GSV) ===
+
+* F0nm_1g0B  PLDSBL.W		Rm, Rn				//Packed Load SB->W (Low)
+* F0nm_1G0B  PLDUBL.W		Rm, Rn				//Packed Load UB->W (Low)
+* F0nm_1g1B  PLDSWL.L		Rm, Rn				//Packed Load SW->L (Low)
+* F0nm_1G1B  PLDUWL.L		Rm, Rn				//Packed Load UW->L (Low)
+* F0nm_1g2B  PLDBX.W		Rm, Rn				//Packed Load B->W (Dup)
+* F0nm_1G2B  PLDBH.W		Rm, Rn				//Packed Load B->W (High)
+* F0nm_1g3B  PLDWX.L		Rm, Rn				//Packed Load W->L (Dup)
+* F0nm_1G3B  PLDWH.L		Rm, Rn				//Packed Load W->L (High)
+
+Packed Widening Conversion.
+Low operations will copy the source element into the low bits of the destination element, with Sign or Zero extension to fill the high bits.
+
+High operations will copy the source element to the high bits of the destination, padding the low bits with zeroes.
+
+Dup operations will duplicate the source element in both the low and high bits.
+
+			
+=== PMUL.H (GSVF) ===
+
+* F0nm_1g7A  PMUL.H		Rm, Rn				//(GSVF) Packed MUL Half
+* F0nm_1G7A  PMUL.F		Rm, Rn				//(GSVF) Packed MUL Float
+
+Multiply the packed Half-Float values in Rm and Rn, storing the result in Rn.
+
+
+=== PMULU.W (GSV) ===
+
+* F0nm_1gFA  PMULU.W	Rm, Rn		//(GSV) (DHR,DLR)=Rm*Rn (Vector)
+
+Packed Multiply of Unsigned Words.
+The DLR register is updated with the low words of each packed multiply.
+The DHR register is updated with the high words of each packed multiply.
+
+
+=== PSTxxx.x (GSV) ===
+
+* F0nm_1g4B  PSTSBL.W		Rm, Rn				//Packed Store W->SB (Low-Sat)
+* F0nm_1G4B  PSTUBL.W		Rm, Rn				//Packed Store W->UB (Low-Sat)
+* F0nm_1g5B  PSTSWL.L		Rm, Rn				//Packed Store L->SW (Low-Sat)
+* F0nm_1G5B  PSTUWL.L		Rm, Rn				//Packed Store L->UW (Low-Sat)
+* F0nm_1g6B  PSTBL.W		Rm, Rn				//Packed Store W->B (Low)
+* F0nm_1G6B  PSTBH.W		Rm, Rn				//Packed Store W->B (High)
+* F0nm_1g7B  PSTWL.L		Rm, Rn				//Packed Store L->W (Low)
+* F0nm_1G7B  PSTWH.L		Rm, Rn				//Packed Store L->W (High)
+
+Packed narrowing conversion.
+
+Low-sat variants will perform signed or unsigned saturation while narrowing, clamping the value in the low-order bits of the source element to the range for the given type.
+
+Low operations will use the low order bits of the source element as the destination element. These bits will be copied unmodified.
+
+High operations will use the high order bits of the source element as the destination element. These bits will be copied unmodified.
+
+
+
+=== PSUB.x (GSV) ===
+
+* F0nm_1g1A  PSUB.W		Rm, Rn		//(GSV) Packed SUB Word
+* F0nm_1G1A  PSUB.L		Rm, Rn		//(GSV) Packed SUB DWord
+* F0nm_1g6A  PSUB.H		Rm, Rn		//(GSVF) Packed SUB Half
+* F0nm_1G6A  PSUB.F		Rm, Rn		//(GSVF) Packed SUB Float
+
+Subtract Packed Elements.
+
+Each element from Rm is subtracted from the corresponding element of Rn.
+
+
+=== PSELx.x (GSV) ===
+
+* F0nm_1pBA  PSELT.W	Rm, Rn		//Packed Select Word
+* F0nm_1qBA  PSELF.W	Rm, Rn		//Packed Select Word
+* F0nm_1PBA  PSELT.L	Rm, Rn		//Packed Select DWord
+* F0nm_1QBA  PSELF.L	Rm, Rn		//Packed Select DWord
+
+Select each Word element from Rm or Rn depending on the corresponding P/Q/R/O bits in SR, or each DWord element depending on the corresponding T or S bit.
+
+PSELT will select the Word from Rm if the corresponding bit is Set, selecting the Rn otherwise. PSELF will instead select from Rn if the bit is set, selecting from Rm otherwise.
+
+
+=== SWxP.x (GSV) ===
+
+* 37n4       SWAP.LB	Rn			//(1023) Swap Low Two Bytes (GSV)
+* 37n5       SWAP.LW	Rn			//(1023) Swap Low Two Words (GSV)
+* 37n6       SWCP.LB	Rn			//(0023) Copy Low Bytes (GSV)
+* 37n7       SWCP.LW	Rn			//(0023) Copy Low Words (GSV)
+* 37n8       SWAP.MB	Rn			//(2103) Swap Low and Middle Byte (GSV)
+* 37n9       SWAP.MW	Rn			//(2103) Swap Low and Middle Word (GSV)
+* 37nA       SWCP.MB	Rn			//(0103) Copy Low To Middle Byte (GSV)
+* 37nB       SWCP.MW	Rn			//(0103) Copy Low To Middle Word (GSV)
+* 37nC       SWAP.HB	Rn			//(3120) Swap Low and High Byte (GSV)
+* 37nD       SWAP.HW	Rn			//(3120) Swap Low and High Word (GSV)
+* 37nE       SWCP.HB	Rn			//(0120) Copy Low To High Bytes (GSV)
+* 37nF       SWCP.HW	Rn			//(0120) Copy Low To High Word (GSV)
+
+* F0nm_3e07  SWAP.B		Rm, Rn		//(1032) Swap E/O Bytes (Low Four Bytes)
+* F0nm_3e17  SWAP.W		Rm, Rn		//(1032) Swap E/O Words (All words)
+* F0nm_3e27  SWAP.8B	Rm, Rn		//       Swap E/O Bytes (All Eight Bytes)
+* F0nm_3e37  SWAP.L		Rm, Rn		//(2301) Swap DWord
+* F0nm_3e47  SWAP.LB	Rm, Rn		//(1023) Swap Low Two Bytes (GSV)
+* F0nm_3e57  SWAP.LW	Rm, Rn		//(1023) Swap Low Two Words (GSV)
+* F0nm_3e67  SWCP.LB	Rm, Rn		//(0023) Copy Low Bytes (GSV)
+* F0nm_3e77  SWCP.LW	Rm, Rn		//(0023) Copy Low Words (GSV)
+* F0nm_3e87  SWAP.MB	Rm, Rn		//(2103) Swap Low and Middle Byte (GSV)
+* F0nm_3e97  SWAP.MW	Rm, Rn		//(2103) Swap Low and Middle Word (GSV)
+* F0nm_3eA7  SWCP.MB	Rm, Rn		//(0103) Copy Low To Middle Byte (GSV)
+* F0nm_3eB7  SWCP.MW	Rm, Rn		//(0103) Copy Low To Middle Word (GSV)
+* F0nm_3eC7  SWAP.HB	Rm, Rn		//(3120) Swap Low and High Byte (GSV)
+* F0nm_3eD7  SWAP.HW	Rm, Rn		//(3120) Swap Low and High Word (GSV)
+* F0nm_3eE7  SWCP.HB	Rm, Rn		//(0120) Copy Low To High Bytes (GSV)
+* F0nm_3eF7  SWCP.HW	Rm, Rn		//(0120) Copy Low To High Word (GSV)
+
+Swap or Copy elements within a register.
+
+SWAP.x will exchange a the low element with another element, whereas SWCP.x will copy the low element into another element.
+
+Other than the first element, the others will be labeled as Low, Middle, and High. Low will correspond to the lower-order bits of the register, and High will correspond with the higher order bits.
+
+
+
+== GFP Instructions (GPR FPU Ops, Optional) ==
+
+GFP will perform FPU operations with GPRs.
+
+The BJX2 FPU aims more to be "sufficient" and "reasonably cheap" than strict adherence to IEEE 754. An FPU is allowed, but not required, to be IEEE 754 conformant.
+
+These will reuse the existing IEEE formats, with some noted divergences:
+* Rounding should be within +/- 2 ULP (rather than 0.5 ULP).
+** No user-defined rounding behavior is provided for.
+* The exact handling of denormals is undefined.
+** Zero is to behave as Zero.
+** Non-Zero denormals may behave either as zero or some tiny non-zero value.
+* The results of operations involving NaN or Inf values are undefined.
+** Operations on these values giving garbage results will be acceptable.
+* Inf vs NaN need only check the high 4 bits of the mantissa.
+** If these bits are 0, Inf may be assumed regardless of the other bits.
+* Divide and Square Root are omitted.
+* Handling of range overflow or underflow is required:
+** If the operation exceeds the valid range, an Inf is produced.
+** If the value underflows, a zero will be produced.
+
+The nominal format of the BJX2 FPU is 64-bit Double.
+
+
+=== FABS (GFP) ===
+
+* F0nm_1e9D  FABS		Rm, Rn		//Absolute
+
+Get the absolute value of the double precision value in Rm and store the result in Rn. This effectively amounts to clearing bit 63 and leaving the other bits unchanged.
+
+
+=== FADD (GFP) ===
+
+* 60nm       FADD		Rm, Rn
+* F0nm_5go8  FADD		Rm, Ro, Rn
+
+Add the double precision value in Ro to the value from Rm and store the resulting value in Rn.
+
+
+=== FCMPEQ (GFP) ===
+
+* 64nm       FCMPEQ		Rm, Rn			//(GFP) FCMPEQ
+* F0nm_1eAD  FCMPEQ		Rm, Rn			//SR.T=(Rn EQ Rm)
+
+Compare the double precision values in Rm and Rn for equality, setting SR.T if both values are equal, otherwise clearing SR.T.
+
+If either value encodes a NaN, SR.T will be cleared.
+
+
+=== FCMPGT (GFP) ===
+
+* 65nm       FCMPGT		Rm, Rn			//(GFP) FCMPGT
+* F0nm_1eBD  FCMPGT		Rm, Rn			//SR.T=(Rn GT Rm)
+
+Compare if the double precision value in Rn is greated than the value in Rm, setting SR.T if this is the case, and clearing otherwise.
+
+If either value is NaN, the resulting state of SR.T is undefined.
+
+
+=== FLDCx (GFP) ===
+
+* 63nm       FLDCF		Rm, Rn		//(GFP) Single->Double
+* F0nm_1e0D  FLDCF		Rm, Rn		//Load Convert Float32 (Low Bits, ZX)
+* F0nm_1e1D  FLDCHF		Rm, Rn		//Load Convert Float32 (High Bits)
+* F0nm_1e2D  FLDCI		Rm, Rn		//Load Convert Int
+* F0nm_1e3D  FLDCH		Rm, Rn		//Load Convert Half (Low16)
+
+Load and convert the value from Rm and store the resulting double precision value in Rn.
+
+FLDCF will pull a single precision value from the low 32 bits of Rm.
+FLDCHF will pull a single precision value from the high 32 bits of Rm.
+
+FLDCI will pull a 64-bit integer value from Rm.
+FLDCH will pull a 16-bit half-float value from Rm.
+
+When converting a narrower floating point type to a wider one:
+* The low order bits will be filled with zeroes.
+* The exponent will be widened with appropriate bias adjustment.
+* A zero exponent will be copied as 0.
+** Mantissa bits will be copied diectly.
+** Essentially, denormals are ignored.
+* An Inf or NaN exponent will be copied as its equivalent.
+** Mantissa bits still copied directly.
+
+=== FMUL (GFP) ===
+
+* 62nm       FMUL		Rm, Rn			//(GFP) FMUL
+* F0nm_5goA  FMUL		Rm, Ro, Rn			//(GFP) FMUL
+
+Multiply the double precision value in Ro with the value from Rm and store the resulting value in Rn.
+
+
+=== FNEG (GFP) ===
+
+* F0nm_1e8D  FNEG		Rm, Rn		//Negate
+
+Negate the value of the double precision value in Rm and store the result in Rn. This effectively amounts to inverting bit 63 and leaving the other bits unchanged.
+
+
+=== FSTCx (GFP) ===
+
+* 66nm       FSTCF		Rm, Rn		//(GFP) Double->Single
+* F0nm_1e4D  FSTCF		Rm, Rn		//Store Convert Float32 (Low Bits, ZX)
+* F0nm_1e5D  FSTCHF		Rm, Rn		//Store Convert Float32 (High Bits)
+* F0nm_1e6D  FSTCI		Rm, Rn		//Store Convert Int
+* F0nm_1e7D  FSTCH		Rm, Rn		//Store Convert Half (Low16)
+
+Convert the double precision value from Rm into the destination value and store the result in Rn.
+
+FSTCF will produce a single precision float, which will be stored into the low 32 bits of the destination register. The high 32 bits of the register will be set to zero.
+
+FSTCHF will produce a single precision float, which will be stored into the high 32 bits of the destination register. The low 32 bits of Rn will be kept unmodified.
+
+FSTCI will produce a 64-bit integer output with truncation towards zero.
+
+FSTCH will produce a half precision float, which will be stored into the low 16 bits of the destination register. The high 48 bits of the register will be set to zero.
+
+
+=== FSUB (GFP) ===
+
+* 61nm       FSUB		Rm, Rn			//(GFP) FSUB
+* F0nm_5go9  FSUB		Rm, Ro, Rn		//(GFP) FSUB
+
+Subtract the double precision value in Ro from the value from Rm and store the resulting value in Rn.
+
+

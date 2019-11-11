@@ -699,6 +699,39 @@ X(tk_checksane_asm):
 	tst		#-4, r20
 	bt _checksane_fail_alu4
 
+	mov	0x08889, r8
+	mov 0x11112‬, r9
+	mov 0x11113‬, r10
+	
+	mov r8, r18
+	addc r8, r18
+
+	cmpeq r9, r18
+	bf _checksane_fail_alu4
+
+	mov r8, r18
+	addc r8, r18
+
+	cmpeq r10, r18
+	bf _checksane_fail_alu4
+
+	xor r6, r6
+	cmpeq r8, r8
+	addc r6, r6
+	cmpgt r8, r8
+	addc r6, r6
+	cmpeq r8, r8
+	addc r6, r6
+	cmpgt r8, r8
+	addc r6, r6
+
+//	mov 0xA, r7
+//	cmpeq r7, r6
+	cmpeq 0xA, r6
+	bf _checksane_fail_alu4
+
+//	break
+
 #if 0
 	mov	0x8889, r8
 	mov	0xFFFF8889, r9

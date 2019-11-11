@@ -80,6 +80,22 @@ double z;
 {JX2_UCMD_FPU3, JX2_UCIX_FPU_FSUB, -3.14,  2.73, -5.870000000},
 {JX2_UCMD_FPU3, JX2_UCIX_FPU_FMUL, -3.14,  2.73, -8.572200000},
 
+{JX2_UCMD_FPU3, JX2_UCIX_FPU_FADD,  3.14,  0,  3.14},
+{JX2_UCMD_FPU3, JX2_UCIX_FPU_FSUB,  3.14,  0,  3.14},
+{JX2_UCMD_FPU3, JX2_UCIX_FPU_FMUL,  3.14,  0,  0},
+
+{JX2_UCMD_FPU3, JX2_UCIX_FPU_FADD,  3.141592654, -3.14,  0.001592654},
+{JX2_UCMD_FPU3, JX2_UCIX_FPU_FADD,  3.141592654, -3.141,  0.000592654},
+{JX2_UCMD_FPU3, JX2_UCIX_FPU_FADD,  3.141592654, -3.1415,  0.000092654},
+{JX2_UCMD_FPU3, JX2_UCIX_FPU_FADD,  3.141592654, -3.14159,  0.00002654},
+{JX2_UCMD_FPU3, JX2_UCIX_FPU_FADD,  3.141592654, -3.141592,  0.00000654},
+{JX2_UCMD_FPU3, JX2_UCIX_FPU_FADD,  3.141592654, -3.1415926,  0.00000054},
+{JX2_UCMD_FPU3, JX2_UCIX_FPU_FADD,  3.141592654, -3.14159265,  0.00000004},
+
+
+{JX2_UCMD_FLDCX, JX2_UCIX_FPCX_I,  6972, 0,  6972.0},
+{JX2_UCMD_FLDCX, JX2_UCIX_FPCX_I,  -6972, 0,  -6972.0},
+
 #if 0
 {0x57, 0,  3.14,  2.73, -3.140000000},
 {0x57, 1,  3.14,  2.73,  3.140000000},
@@ -129,7 +145,7 @@ int main(int argc, char **argv, char **env)
 
 			printf(
 				"%02X-%02X Rn=%lX(%f) Rm=%lX(%f)\n"
-				"Ro=%lX(%f) Expect=%lX(%f)\n",
+				"Ro=%016lX(%f) Expect=%016lX(%f)\n",
 				top->opCmd, top->regIdIxt,
 				tx, fx, ty, fy, tz, fz, tw, fw);
 			printf("\n");
@@ -183,6 +199,16 @@ int main(int argc, char **argv, char **env)
 			tx=*(vluint64_t *)(&fx);
 			ty=*(vluint64_t *)(&fy);
 			tw=*(vluint64_t *)(&fw);
+			
+			if(op==JX2_UCMD_FLDCX)
+			{
+				switch(ixt&15)
+				{
+				case JX2_UCIX_FPCX_I:
+					tx=fx;
+					break;
+				}
+			}
 		
 //			top->opCmd=JX2_UCMD_FPU_FADD3;
 			top->opCmd=op;

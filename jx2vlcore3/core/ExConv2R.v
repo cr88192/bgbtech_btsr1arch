@@ -65,6 +65,48 @@ begin
 			tRegOutVal	= { UV56_00, tClzVal };
 `endif
 
+		JX2_UCIX_CONV_LDIHI: begin
+			tRegOutVal	= { UV32_00, regValRs[9:0], UV22_00};
+		end
+		JX2_UCIX_CONV_LDIQHI: begin
+			tRegOutVal	= { regValRs[9:0], UV54_00};
+		end
+
+// `ifdef def_true
+`ifndef def_true
+		JX2_UCIX_CONV_LDISIZ: begin
+			case(regValRs[9:8])
+				2'b00: tRegOutVal	= { UV56_00, regValRs[7:0]         };
+				2'b01: tRegOutVal	= { UV48_00, regValRs[7:0], UV8_00 };
+				2'b10: tRegOutVal	= { UV40_00, regValRs[7:0], UV16_00 };
+				2'b11: tRegOutVal	= { UV32_00, regValRs[7:0], UV24_00 };
+			endcase
+		end
+		JX2_UCIX_CONV_LDIQSIZ: begin
+			case(regValRs[9:8])
+				2'b00: tRegOutVal	= { UV24_00, regValRs[7:0], UV32_00 };
+				2'b01: tRegOutVal	= { UV16_00, regValRs[7:0], UV40_00 };
+				2'b10: tRegOutVal	= { UV8_00,  regValRs[7:0], UV48_00 };
+				2'b11: tRegOutVal	= {          regValRs[7:0], UV56_00 };
+			endcase
+		end
+		JX2_UCIX_CONV_LDISIN: begin
+			case(regValRs[9:8])
+				2'b00: tRegOutVal	= { UV56_FF, regValRs[7:0]          };
+				2'b01: tRegOutVal	= { UV48_FF, regValRs[7:0], UV8_00  };
+				2'b10: tRegOutVal	= { UV40_FF, regValRs[7:0], UV16_00 };
+				2'b11: tRegOutVal	= { UV32_FF, regValRs[7:0], UV24_00 };
+			endcase
+		end
+		JX2_UCIX_CONV_LDIQSIN: begin
+			case(regValRs[9:8])
+				2'b00: tRegOutVal	= { UV24_FF, regValRs[7:0], UV32_00 };
+				2'b01: tRegOutVal	= { UV16_FF, regValRs[7:0], UV40_00 };
+				2'b10: tRegOutVal	= { UV8_FF , regValRs[7:0], UV48_00 };
+				2'b11: tRegOutVal	= {          regValRs[7:0], UV56_00 };
+			endcase
+		end
+`endif
 		default: begin
 		end
 	endcase

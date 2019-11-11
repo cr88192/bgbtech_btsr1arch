@@ -201,6 +201,9 @@ reg		useHorz800;
 reg		tCellIsOdd;
 reg		tNextCellIsOdd;
 
+reg		tCellLimitX;
+reg		tCellLimitY;
+
 assign	pixCellIx = tPixCellIx_B;
 assign	fontGlyph = tFontGlyph;
 
@@ -276,18 +279,23 @@ begin
 	tNextCellIsOdd	= 0;
 	tPixAux			= 0;
 	tPixRgb565		= 0;
+
+	tCellLimitX		= 0;
+	tCellLimitY		= 0;
 	
 	/* Z Stage */
 	
 	if(useRow50)
 	begin
-//		tPixCellY[6:0] = tPixPosY_Z[8:2];
-		tPixCellY[6:0] = tPixPosY_Z[9:3];
+//		tPixCellY[6:0]	= tPixPosY_Z[8:2];
+		tPixCellY[6:0]	= tPixPosY_Z[9:3];
+		tCellLimitY		= tPixCellY[5:0] >= 52;
 	end
 	else
 	begin
-//		tPixCellY[6:0] = tPixPosY_Z[9:3];
-		tPixCellY[6:0] = { 1'b0, tPixPosY_Z[9:4] };
+//		tPixCellY[6:0]	= tPixPosY_Z[9:3];
+		tPixCellY[6:0]	= { 1'b0, tPixPosY_Z[9:4] };
+		tCellLimitY		= tPixCellY[5:0] >= 27;
 	end
 
 	if(useCol80 && !useHalfCell)
@@ -295,9 +303,15 @@ begin
 		tPixCellX[6:0] = tPixPosX_Z[9:3];
 //		tPixCellY[6:0] = tPixPosY_Z[9:3];
 		if(useHorz800)
-			tPixCellIx_A = tPixCellY*100 + tPixCellX - 200;
+		begin
+			tPixCellIx_A	= tPixCellY*100 + tPixCellX - 200;
+			tCellLimitX		= tPixCellX[6:0] >= 100;
+		end
 		else
-			tPixCellIx_A = tPixCellY*80 + tPixCellX - 160;
+		begin
+			tPixCellIx_A	= tPixCellY*80 + tPixCellX - 160;
+			tCellLimitX		= tPixCellX[6:0] >= 80;
+		end
 		tNextCellIsOdd = 0;
 	end
 	else
@@ -305,9 +319,15 @@ begin
 		tPixCellX[5:0] = tPixPosX_Z[9:4];
 //		tPixCellY[6:0] = tPixPosY_Z[9:3];
 		if(useHorz800)
-			tPixCellIx_A = tPixCellY*50 + tPixCellX - 100;
+		begin
+			tPixCellIx_A	= tPixCellY*50 + tPixCellX - 100;
+			tCellLimitX		= tPixCellX[5:0] >= 50;
+		end
 		else
-			tPixCellIx_A = tPixCellY*40 + tPixCellX - 80;
+		begin
+			tPixCellIx_A	= tPixCellY*40 + tPixCellX - 80;
+			tCellLimitX		= tPixCellX[5:0] >= 40;
+		end
 		tNextCellIsOdd = tPixPosX_Z[3];
 	end
 	
@@ -344,13 +364,16 @@ begin
 	if(useHalfCell)
 	begin
 		tCellData = tCellIsOdd ?
-			{ UV128_XX, cellData[255:128] } :
-			{ UV128_XX, cellData[127:  0] };
+			{ UV128_00, cellData[255:128] } :
+			{ UV128_00, cellData[127:  0] };
 	end
 
-	if(tPixCellIx_B >= 2000)
-		tCellData = 0;
-	if(!useCol80 && (tPixCellIx_B>=1000))
+//	if(tPixCellIx_B >= 2000)
+//		tCellData = 0;
+//	if(!useCol80 && (tPixCellIx_B>=1000))
+//		tCellData = 0;
+
+	if(tCellLimitX || tCellLimitY)
 		tCellData = 0;
 
 	tFontGlyph = tCellData[15:0];
@@ -423,26 +446,31 @@ begin
 	end
 
 
-	case( { tPixCellFx_A[3], tPixCellFx_A[1] } )
+//	case( { tPixCellFx_A[3], tPixCellFx_A[1] } )
+	case( { ~tPixCellFx_A[3], ~tPixCellFx_A[1] } )
 		2'b00: begin
+//		2'b10: begin
 			tClr33B		= { tCellData[125:111], tCellData[114] };
 			tClr33A		= { tCellData[110: 96], tCellData[ 99] };
 			tNextCellData33	= tCellData[255:224];
 			tClr32YD	= tCellData[125:111];
 		end
 		2'b01: begin
+//		2'b11: begin
 			tClr33B		= { tCellData[ 93: 79], tCellData[82] };
 			tClr33A		= { tCellData[ 78: 64], tCellData[67] };
 			tNextCellData33	= tCellData[223:192];
 			tClr32YD	= tCellData[110:96];
 		end
 		2'b10: begin
+//		2'b00: begin
 			tClr33B		= { tCellData[ 61: 47], tCellData[50] };
 			tClr33A		= { tCellData[ 46: 32], tCellData[35] };
 			tNextCellData33	= tCellData[191:160];
 			tClr32YD	= tCellData[93:79];
 		end
 		2'b11: begin
+//		2'b01: begin
 			tClr33B		= { tCellData[ 29: 15], tCellData[18] };
 			tClr33A		= { tCellData[ 14:  0], tCellData[ 3] };
 			tNextCellData33	= tCellData[159:128];
@@ -489,7 +517,8 @@ begin
 
 	/* Stage B */
 
-	case( { tPixCellGx_B[4:3], tPixCellGx_B[1:0] } )
+//	case( { tPixCellGx_B[4:3], tPixCellGx_B[1:0] } )
+	case( { ~tPixCellGx_B[4:3], ~tPixCellGx_B[1:0] } )
 		4'h0: tClrNxtIx33=tCellData33[31:30];
 		4'h1: tClrNxtIx33=tCellData33[29:28];
 		4'h2: tClrNxtIx33=tCellData33[27:26];

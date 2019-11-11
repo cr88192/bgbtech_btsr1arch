@@ -125,5 +125,14 @@ X(tk_checksane_gfp_asm):
 	bf _checksane_gfp_fail
 #endif
 
+#if 1
+	mov #0xC0BB3C0000000000, r24
+	mov #-6972, r25
+
+	fstci r24, r12
+	cmpqeq r12, r25
+	bf _checksane_gfp_fail
+#endif
+
 	pop lr
 	rts

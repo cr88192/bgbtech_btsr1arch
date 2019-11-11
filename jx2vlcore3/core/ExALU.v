@@ -181,6 +181,10 @@ reg[32:0]	tResultu1A;
 reg[32:0]	tResultu1B;
 reg[64:0]	tResultu2A;
 
+reg[32:0]	tResultw1A;
+reg[32:0]	tResultw1B;
+reg[64:0]	tResult2W;
+
 
 always @*
 begin
@@ -388,6 +392,10 @@ begin
 
 			tResult1B=tAdd2B0;
 			tResult1S=regInSrS;
+			
+			tResult2W = { 1'b0,
+				tAdd1D0[15:0], tAdd1C0[15:0],
+				tAdd1B0[15:0], tAdd1A0[15:0] };
 		end
 		4'h1: begin		/* SUB */
 			tResult1A=tSub2A1;
@@ -397,6 +405,10 @@ begin
 
 			tResult1B=tSub2B1;
 			tResult1S=regInSrS;
+
+			tResult2W = { 1'b0,
+                tSub1D1[15:0], tSub1C1[15:0],
+				tSub1B1[15:0], tSub1A1[15:0] };
 		end
 		4'h2: begin		/* ADC */
 			tResult1A=regInSrT ? tAdd2A1 : tAdd2A0;
@@ -552,6 +564,15 @@ begin
 		tResult1A = tResultu1A;
 		tResult1B = tResultu1B;
 		tResult2A = tResultu2A;
+	end
+`endif
+
+`ifdef jx2_enable_gsv
+	if(idUCmd[5:0]==JX2_UCMD_ALUW3)
+	begin
+//		tResult1A = tResultu1A;
+//		tResult1B = tResultu1B;
+		tResult2A = tResult2W;
 	end
 `endif
 

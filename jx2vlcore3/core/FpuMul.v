@@ -80,6 +80,9 @@ reg				tSgnC4B;
 reg[11:0]		tExpC4B;
 reg[53:0]		tFraC4B;
 
+reg				tFraRbit4B;
+reg[8:0]		tFraRnd4B;
+
 reg[63:0]		tValC4;
 
 //reg[1:0]		tExEn1;
@@ -109,13 +112,21 @@ begin
 	tSgnB1	= regValRm[63];
 	tExpA1	= regValRn[62:52];
 	tExpB1	= regValRm[62:52];
-	tFraA1	= {1'b0, (tExpA1!=0), regValRn[51:0]};
-	tFraB1	= {1'b0, (tExpB1!=0), regValRm[51:0]};
+//	tFraA1	= {1'b0, (tExpA1!=0), regValRn[51:0]};
+//	tFraB1	= {1'b0, (tExpB1!=0), regValRm[51:0]};
+	tFraA1	= {2'b01, regValRn[51:0]};
+	tFraB1	= {2'b01, regValRm[51:0]};
 	
 	tSgnC1	= tSgnA1 ^ tSgnB1;
 	tExpC1	=
 		{1'b0, tExpA1} +
 		{1'b0, tExpB1} - 1023;
+	
+	if((tExpA1==0) || (tExpB1==0))
+		tExpC1	= 0;
+
+
+//	$display("FpuMul: Exp %X %X %X", tExpA1, tExpB1, tExpC1);
 
 	tFraC1_AC	=
 		{ 18'h0, tFraA1[17: 0]} *
@@ -163,29 +174,43 @@ begin
 
 	/* Stage 4 */
 
-	if(tExpC4[11])
+//	if(tExpC4[11])
+	if(tExpC4[11] || (tExpC4==0))
 	begin
 		tSgnC4B = 0;
 		tExpC4B = 0;
 		tFraC4B = 0;
+		tFraRbit4B	= 0;
 	end
 	else
 	if(tFraC4_S[61])
 	begin
 		tSgnC4B = tSgnC4;
 		tExpC4B = tExpC4+1;
-		tFraC4B = tFraC4_S[62:9] +
-			(tFraC4_S[8]?54'h1:54'h0);
+//		tFraC4B = tFraC4_S[62:9] +
+//			(tFraC4_S[8]?54'h1:54'h0);
+		tFraC4B = tFraC4_S[62:9];
+		tFraRbit4B	= tFraC4_S[8];
 	end
 	else
 	begin
 		tSgnC4B = tSgnC4;
 		tExpC4B = tExpC4;
-		tFraC4B = tFraC4_S[61:8] +
-			(tFraC4_S[7]?54'h1:54'h0);
+//		tFraC4B = tFraC4_S[61:8] +
+//			(tFraC4_S[7]?54'h1:54'h0);
+		tFraC4B = tFraC4_S[61:8];
+		tFraRbit4B	= tFraC4_S[7];
 	end
 	
+	tFraRnd4B = { 1'b0, tFraC4B[7:0] } + { 8'b0, tFraRbit4B };
+	if(!tFraRnd4B[8])
+		tFraC4B[7:0] = tFraRnd4B[7:0];
+
+//	$display("FpuMul: ExpB %X %X", tExpC4, tExpC4B);
+
 	tValC4 = { tSgnC4B, tExpC4B[10:0], tFraC4B[51:0] };
+	
+//	$display("FpuMul: Val=%X", tValC4);
 	
 end
 

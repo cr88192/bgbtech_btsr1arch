@@ -462,27 +462,36 @@ begin
 			tRegValRn1	= regValCRm;
 		end
 		JX2_UCMD_MOV_IR: begin
-			case(opUIxt[1:0])
-				2'b00: begin /* LDIx */
+			case(opUIxt[3:0])
+				4'b0000: begin /* LDIx */
 					tRegIdRn1	= regIdRm;
 					tRegValRn1	= {
 						regValImm[32] ? UV32_FF : UV32_00,
 						regValImm[31:0] };
 				end
-				2'b01: begin /* LDISH8 */
+				4'b0001: begin /* LDISH8 */
 					tRegIdRn1	= regIdRm;
 //					tRegValRn1	= { regValRm[55:0], regValImm[7:0] };
 					tRegValRn1	= { regValRs[55:0], regValImm[7:0] };
 				end
-				2'b10: begin /* LDISH16 */
+				4'b0010: begin /* LDISH16 */
 					tRegIdRn1	= regIdRm;
 //					tRegValRn1	= { regValRm[47:0], regValImm[15:0] };
 					tRegValRn1	= { regValRs[47:0], regValImm[15:0] };
 				end
-				2'b11: begin /* LDISH32 */
+				4'b0011: begin /* LDISH32 */
 					tRegIdRn1	= regIdRm;
 //					tRegValRn1	= { regValRm[31:0], regValImm[31:0] };
 					tRegValRn1	= { regValRs[31:0], regValImm[31:0] };
+				end
+				4'b0100: begin /* JLDIX */
+					tRegIdRn1	= regIdRm;
+					tRegValRn1	= regValRt;
+				end
+				
+				default: begin
+					tRegIdRn1	= regIdRm;
+					tRegValRn1	= regValRt;
 				end
 			endcase
 		end
@@ -643,6 +652,11 @@ begin
 				JX2_UCIX_IXS_INVIC: begin
 					tMemOpm		= UMEM_OPM_FLUSHIS;
 					tMemAddr	= regValRm[31:0];
+
+//					tRegOutLr	= regValPc;
+					tRegIdCn1	= JX2_CR_PC[4:0];
+					tRegValCn1	= {UV32_00, regValPc};
+
 				end
 				JX2_UCIX_IXS_INVDC: begin
 					tMemOpm		= UMEM_OPM_FLUSHDS;
@@ -709,11 +723,18 @@ begin
 				end
 
 				JX2_UCIX_IXT_WEXMD: begin
+`ifdef jx2_enable_wex
 					case(regIdRm[3:0])
 						4'h0:		tRegOutSr[27]	= 0;
 						4'h1:		tRegOutSr[27]	= 1;
+`ifdef jx2_enable_wex3w
+//						4'h2:		tRegOutSr[27]	= 1;
+`endif
 						default:	tRegOutSr[27]	= 0;
 					endcase
+`else
+					tRegOutSr[27]	= 0;
+`endif
 				end
 
 				JX2_UCIX_IXT_SYSE: begin

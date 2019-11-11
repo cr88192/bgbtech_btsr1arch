@@ -1230,8 +1230,8 @@ int main(int argc, char **argv, char **env)
 
 #if 1
 	JX2R_UseImageAddFile(
-		(char *)"BOOTLOAD.SYS",
-//		(char *)"DOOM.EXE",
+//		(char *)"BOOTLOAD.SYS",
+		(char *)"DOOM.EXE",
 		(char *)"../../tk_qsrc/doomsrc2/doom_bjx2.exe");
 	JX2R_UseImageAddFile(
 		(char *)"DOOM1.WAD",
@@ -1240,8 +1240,8 @@ int main(int argc, char **argv, char **env)
 
 #if 1
 	JX2R_UseImageAddFile(
-//		(char *)"BOOTLOAD.SYS",
-		(char *)"QUAKE.EXE",
+		(char *)"BOOTLOAD.SYS",
+//		(char *)"QUAKE.EXE",
 		(char *)"../../tk_qsrc/quake_b64b.exe");
 	JX2R_UseImageAddFile(
 		(char *)"ID1/PAK0.PAK",

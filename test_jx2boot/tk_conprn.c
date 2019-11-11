@@ -1,6 +1,7 @@
 struct conparm_s {
 byte x;
 byte y;
+byte ena;
 volatile u32 *buf;
 };
 

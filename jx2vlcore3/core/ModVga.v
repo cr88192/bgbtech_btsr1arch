@@ -362,7 +362,9 @@ begin
 		end
 //		else if((tScanPixClk>=472) && (tScanPixClk<5592))
 //		else if((tScanPixClk>=236) && (tScanPixClk<2796))
-		else if((tScanPixClk>=240) && (tScanPixClk<2816))
+//		else if((tScanPixClk>=240) && (tScanPixClk<2816))
+		else if((tScanPixClk>=240) && (tScanPixClk<2880))
+//		else if(tScanPixClk>=240)
 		begin
 
 			tPwmNextValR = tScPwmCtR[15:8];

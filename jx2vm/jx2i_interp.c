@@ -761,6 +761,19 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		brpc=op->pc2;
 	}else
 	{
+		if(op->fl&BJX2_OPFL_JUMBO96)
+		{
+			op1=op->data;
+
+			printf("%08X  (%2d) %04X_%04X_%04X -\n",
+				(u32)op->pc, op->cyc,
+				op->opn, op->opn2, op->opn3);
+			printf("%08X        %04X_%04X_%04X   %-8s ",
+				(u32)op1->pc,
+				op1->opn, op1->opn2, op1->opn3,
+				BJX2_DbgPrintNameForNmid(ctx, op->nmid));
+			brpc=op->pc+6;
+		}else
 		if(op->fl&BJX2_OPFL_TRIWORD)
 		{
 			printf("%08X  (%2d) %04X_%04X_%04X %c %-8s ",
@@ -985,6 +998,15 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 				BJX2_DbgPrintNameForReg(ctx, op->rn));
 		}
 		break;
+
+	case BJX2_FMID_IMMJREG:
+		op1=op->data;
+		li=((u32)op1->imm)|
+			(((u64)op->imm)<<32);
+		printf("#0x%llX, %s", li,
+			BJX2_DbgPrintNameForReg(ctx, op->rn));
+		break;
+
 #if 0
 	case BJX2_FMID_IMMXREG:
 		li=((u32)op->imm)|

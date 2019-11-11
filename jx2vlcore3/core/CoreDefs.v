@@ -48,6 +48,7 @@ parameter[5:0] JX2_GR_PC		= 6'h34;
 parameter[5:0] JX2_GR_GBR		= 6'h35;
 parameter[5:0] JX2_GR_TBR		= 6'h36;
 
+parameter[5:0] JX2_GR_JIMM		= 6'h3E;
 parameter[5:0] JX2_GR_BP		= 6'h3F;
 
 
@@ -150,6 +151,9 @@ parameter[19:0] UV20_FF			= 20'hFFFFF;	//
 parameter[20:0] UV21_00			= 21'h000000;	//
 parameter[20:0] UV21_FF			= 21'h1FFFFF;	//
 
+parameter[21:0] UV22_00			= 22'h000000;	//
+parameter[21:0] UV22_FF			= 22'h3FFFFF;	//
+
 parameter[22:0] UV23_00			= 23'h000000;	//
 parameter[22:0] UV23_FF			= 23'h7FFFFF;	//
 
@@ -180,8 +184,14 @@ parameter[31:0] UV32_FF			= 32'hFFFFFFFF;	//
 parameter[32:0] UV33_00			= 33'h000000000;	//
 parameter[32:0] UV33_FF			= 33'h1FFFFFFFF;	//
 
+parameter[39:0] UV40_00			= 40'h00_00000000;	//
+parameter[39:0] UV40_FF			= 40'hFF_FFFFFFFF;	//
+
 parameter[47:0] UV48_00			= 48'h0000_00000000;	//
 parameter[47:0] UV48_FF			= 48'hFFFF_FFFFFFFF;	//
+
+parameter[53:0] UV54_00			= 54'h000000_00000000;	//
+parameter[53:0] UV54_FF			= 54'h3FFFFF_FFFFFFFF;	//
 
 parameter[55:0] UV56_00			= 56'h000000_00000000;	//
 parameter[55:0] UV56_FF			= 56'hFFFFFF_FFFFFFFF;	//
@@ -194,6 +204,9 @@ parameter[62:0] UV63_FF			= 63'h7FFFFFFF_FFFFFFFF;	//
 
 parameter[63:0] UV64_00			= 64'h00000000_00000000;	//
 parameter[63:0] UV64_FF			= 64'hFFFFFFFF_FFFFFFFF;	//
+
+parameter[127:0] UV128_00		= { UV64_00, UV64_00 };	//
+parameter[127:0] UV128_FF		= { UV64_FF, UV64_FF };	//
 
 
 parameter[1:0] UMEM_OK_READY	= 2'h0;		//Ready (Awaiting Request)
@@ -399,6 +412,8 @@ parameter[5:0] JX2_UCMD_FIXS		= 6'h25;		//FPU Unary Op (FPR)
 parameter[5:0] JX2_UCMD_FCMP		= 6'h26;		//FPU Compare
 parameter[5:0] JX2_UCMD_MULW3		= 6'h27;		//Multiply (Word)
 
+parameter[5:0] JX2_UCMD_ALUW3		= 6'h28;		//ALU, Packed Word (3R)
+
 parameter[5:0] JX2_UCMD_BRA_NB		= 6'h2C;		//No Branch
 
 
@@ -460,6 +475,13 @@ parameter[5:0] JX2_UCIX_CONV_NOT	= 6'h07;		//NOT
 parameter[5:0] JX2_UCIX_CONV_CLZ	= 6'h08;		//NOT
 parameter[5:0] JX2_UCIX_CONV_CLZQ	= 6'h09;		//NOT
 
+parameter[5:0] JX2_UCIX_CONV_LDIHI		= 6'h0A;		//Load High Bits
+parameter[5:0] JX2_UCIX_CONV_LDIQHI		= 6'h0B;		//Load High Bits
+parameter[5:0] JX2_UCIX_CONV_LDISIZ		= 6'h0C;		//Load Shift Imm
+parameter[5:0] JX2_UCIX_CONV_LDIQSIZ	= 6'h0D;		//Load Shift Imm
+parameter[5:0] JX2_UCIX_CONV_LDISIN		= 6'h0E;		//Load Shift Imm
+parameter[5:0] JX2_UCIX_CONV_LDIQSIN	= 6'h0F;		//Load Shift Imm
+
 parameter[5:0] JX2_UCIX_MUL3_MUL3S	= 6'h00;		//
 parameter[5:0] JX2_UCIX_MUL3_MUL3U	= 6'h01;		//
 parameter[5:0] JX2_UCIX_MUL3_MULS	= 6'h02;		//
@@ -469,6 +491,7 @@ parameter[5:0] JX2_UCIX_LDI_LDIX	= 6'h00;		//
 parameter[5:0] JX2_UCIX_LDI_LDISH8	= 6'h01;		//
 parameter[5:0] JX2_UCIX_LDI_LDISH16	= 6'h02;		//
 parameter[5:0] JX2_UCIX_LDI_LDISH32	= 6'h03;		//
+parameter[5:0] JX2_UCIX_LDI_JLDIX	= 6'h04;		//
 
 
 parameter[5:0] JX2_UCIX_FPU_FADD	= 6'h00;		//FPU ADD
@@ -585,6 +608,9 @@ parameter[5:0] JX2_UCIX_IXS_INVDC	= 6'h11;		//Flush D$
 `define jx2_enable_wex3w				//Enable 3-wide WEX support
 
 `define jx2_enable_wex					//Enable WEX support (general)
+
+`define jx2_enable_wexjumbo				//Enable Jumbo-Load
+
 
 `define jx2_cpu_halfclock;				//Reduce CPU core clock speed by half
 

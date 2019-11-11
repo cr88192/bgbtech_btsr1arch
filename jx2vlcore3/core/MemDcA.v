@@ -1069,7 +1069,7 @@ begin
 	begin
 		tMmioDone		<= 0;
 
-		if(!dcInHold)
+//		if(!dcInHold)
 			tMmioDoneHld	<= 0;
 	end
 

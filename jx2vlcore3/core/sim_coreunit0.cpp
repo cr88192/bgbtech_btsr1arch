@@ -941,12 +941,13 @@ int main(int argc, char **argv, char **env)
 	JX2R_UseImageCreateRamdisk(128*1024);
 //	JX2R_UseImageCreateRamdisk(32*1024);
 
-#if 1
+#if 0
 	JX2R_UseImageAddFile(
 		(char *)"BOOTLOAD.SYS",
 		(char *)"../../tk_qsrc/tk_clib/tkshell.sys");
 #endif
 
+#if 1
 	JX2R_UseImageAddFile(
 //		(char *)"BOOTLOAD.SYS",
 		(char *)"DOOM.EXE",
@@ -954,6 +955,17 @@ int main(int argc, char **argv, char **env)
 	JX2R_UseImageAddFile(
 		(char *)"DOOM1.WAD",
 		(char *)"../../tk_qsrc/doomsrc2/doom1.wad");
+#endif
+
+#if 1
+	JX2R_UseImageAddFile(
+		(char *)"BOOTLOAD.SYS",
+//		(char *)"QUAKE.EXE",
+		(char *)"../../tk_qsrc/quake_b64b.exe");
+	JX2R_UseImageAddFile(
+		(char *)"ID1/PAK0.PAK",
+		(char *)"../../tk_qsrc/id1/pak0.pak");
+#endif
 
 	rombuf=(uint32_t *)malloc(32768);
 //	srambuf=(uint32_t *)malloc(8192);

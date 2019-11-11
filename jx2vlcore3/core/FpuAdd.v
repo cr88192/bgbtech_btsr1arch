@@ -259,8 +259,9 @@ begin
 	end
 	else
 	begin
-		tValC4 = { tSgnC4B, tExpC4B[10:0], tFraC4B[61:10] } +
-			(tFraC4B[9]?64'h1:64'h0);
+//		tValC4 = { tSgnC4B, tExpC4B[10:0], tFraC4B[61:10] } +
+//			(tFraC4B[9]?64'h1:64'h0);
+		tValC4 = { tSgnC4B, tExpC4B[10:0], tFraC4B[61:10] };
 	end
 	
 end

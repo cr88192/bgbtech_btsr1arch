@@ -225,6 +225,8 @@ reg[63:0]	tValRvA;
 reg[63:0]	tValRxA;
 reg[63:0]	tValRyA;
 
+reg[63:0]	tValJimm;
+
 reg	tValRsZz;
 reg	tValRtZz;
 reg	tValRuZz;
@@ -240,6 +242,13 @@ begin
 	tValRvZz=0;
 	tValRxZz=0;
 	tValRyZz=0;
+
+`ifdef jx2_enable_wexjumbo
+	tValJimm={
+		regValImmC[19:0],
+		regValImmB[19:0],
+		regValImmA[23:0] };
+`endif
 
 	tValRsA0=gprArrMB[regIdRs[4:0]] ?
 		gprArrC[regIdRs[4:0]] :
@@ -303,6 +312,13 @@ begin
 			tValRsZz=1;
 		end
 
+`ifdef jx2_enable_wexjumbo
+		JX2_GR_JIMM: begin
+			tValRsA=tValJimm;
+			tValRsZz=1;
+		end
+`endif
+
 		default: 	tValRsA=UV64_XX;
 	endcase
 
@@ -331,6 +347,17 @@ begin
 			tValRtA=UV64_00;
 			tValRtZz=1;
 		end
+		
+`ifdef jx2_enable_wexjumbo
+		JX2_GR_JIMM: begin
+			tValRtA=tValJimm;
+//			tValRtA={
+//				regValImmC[19:0],
+//				regValImmB[19:0],
+//				regValImmA[23:0] };
+			tValRtZz=1;
+		end
+`endif
 
 		default: 	tValRtA=UV64_XX;
 	endcase

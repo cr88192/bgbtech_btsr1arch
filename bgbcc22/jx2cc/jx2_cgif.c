@@ -92,6 +92,9 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 //	shctx->use_wexmd=1;
 	shctx->use_wexmd=0;
 
+//	shctx->fpu_gfp=1;
+//	shctx->is_pbo=1;
+
 	if(ctx->optmode==BGBCC_OPT_SIZE)
 		shctx->use_wexmd=0;
 
@@ -106,10 +109,19 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	ctx->arch_has_predops=1;
 
 	shctx->optmode=ctx->optmode;
-	
+
+	if(ctx->sub_arch==BGBCC_ARCH_BJX2_JX2A)
+	{
+		shctx->fpu_gfp=1;
+		shctx->is_pbo=1;
+	}
+
 	if(ctx->sub_arch==BGBCC_ARCH_BJX2_JX2B)
 	{
 		shctx->is_fixed32=1;
+
+		shctx->fpu_gfp=1;
+		shctx->is_pbo=1;
 	}
 
 	if(ctx->sub_arch==BGBCC_ARCH_BJX2_JX2C)
@@ -117,7 +129,11 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		ctx->arch_sizeof_long=4;
 		ctx->arch_sizeof_ptr=4;
 		shctx->is_addr_x32=1;
-		shctx->no_ops48=1;
+//		shctx->no_ops48=1;
+		shctx->no_ops48=0;
+
+		shctx->fpu_gfp=1;
+		shctx->is_pbo=1;
 	}
 
 	if(ctx->sub_arch==BGBCC_ARCH_BJX2_JX2D)
@@ -126,6 +142,9 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		ctx->arch_sizeof_ptr=4;
 		shctx->is_fixed32=1;
 		shctx->is_addr_x32=1;
+
+		shctx->fpu_gfp=1;
+		shctx->is_pbo=1;
 	}
 
 	if(ctx->sub_arch==BGBCC_ARCH_BJX2_JX2E)

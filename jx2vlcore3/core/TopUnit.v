@@ -147,7 +147,8 @@ CoreUnit core(
 	ddrDqsP_I,	ddrDqsN_I,
 	ddrDqsP_O,	ddrDqsN_O,	ddrDqs_En,
 
-	vgaRed,		vgaGrn,		vgaBlu,
+//	vgaRed,		vgaGrn,		vgaBlu,
+	vgaBlu,		vgaGrn,		vgaRed,
 	vgaHsync,	vgaVsync,
 	uartTxD,	uartRxD,
 	uartCtS,	uartRtS,

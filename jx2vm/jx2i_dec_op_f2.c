@@ -149,15 +149,29 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 		if(opw1&1)
 			op->imm=imm10n;
 
-		switch(opw1&0xE)
+		switch(opw1&0xF)
 		{
 		case 0x0:
+		case 0x1:
 			op->nmid=BJX2_NMID_LDI;
 			op->fmid=BJX2_FMID_IMMREG;
 			op->Run=BJX2_Op_MOV_ImmReg;
 			break;
 
+		case 0x3:
+			op->nmid=BJX2_NMID_LDI;
+			op->fmid=BJX2_FMID_IMMREG;
+			op->Run=BJX2_Op_MOV_ImmReg;
+			op->imm=imm10u<<22;
+			if(eq)
+			{
+				op->nmid=BJX2_NMID_LDIQ;
+				op->Run=BJX2_Op_MOV_ImmHiReg;
+			}
+			break;
+
 		case 0x4:
+		case 0x5:
 			op->nmid=BJX2_NMID_TST;
 			op->fmid=BJX2_FMID_IMMREG;
 			op->Run=BJX2_Op_TST_ImmReg;
@@ -167,7 +181,9 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 				op->Run=BJX2_Op_TSTQ_ImmReg;
 			}
 			break;
+
 		case 0x6:
+		case 0x7:
 			op->nmid=BJX2_NMID_CMPHS;
 			op->fmid=BJX2_FMID_IMMREG;
 			op->Run=BJX2_Op_CMPHS_ImmReg;
@@ -178,6 +194,7 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 			}
 			break;
 		case 0x8:
+		case 0x9:
 			op->nmid=BJX2_NMID_CMPHI;
 			op->fmid=BJX2_FMID_IMMREG;
 			op->Run=BJX2_Op_CMPHI_ImmReg;
@@ -188,6 +205,7 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 			}
 			break;
 		case 0xA:
+		case 0xB:
 			op->nmid=BJX2_NMID_CMPGE;
 			op->fmid=BJX2_FMID_IMMREG;
 			op->Run=BJX2_Op_CMPGE_ImmReg;
@@ -198,6 +216,7 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 			}
 			break;
 		case 0xC:
+		case 0xD:
 			op->nmid=BJX2_NMID_CMPEQ;
 			op->fmid=BJX2_FMID_IMMREG;
 			op->Run=BJX2_Op_CMPEQ_ImmReg;
@@ -208,6 +227,7 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 			}
 			break;
 		case 0xE:
+		case 0xF:
 			op->nmid=BJX2_NMID_CMPGT;
 			op->fmid=BJX2_FMID_IMMREG;
 			op->Run=BJX2_Op_CMPGT_ImmReg;
@@ -218,6 +238,41 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 			}
 			break;
 			
+		default:
+			break;
+		}
+		break;
+
+	case 0xD:	/* F2nz_Dejj */
+		op->imm=imm10u;
+		if(opw1&1)
+			op->imm=imm10n;
+
+		switch(opw1&0xF)
+		{
+		case 0x4:
+			op->nmid=BJX2_NMID_LDIZ;
+			op->fmid=BJX2_FMID_IMMREG;
+			op->Run=BJX2_Op_MOV_ImmuReg;
+			op->imm=(imm10u&255)<<((imm10u>>8)*8);
+			if(eq)
+			{
+				op->nmid=BJX2_NMID_LDIQ;
+				op->Run=BJX2_Op_MOV_ImmHiReg;
+			}
+			break;
+		case 0x5:
+			op->nmid=BJX2_NMID_LDIN;
+			op->fmid=BJX2_FMID_IMMREG;
+			op->Run=BJX2_Op_MOV_ImmnReg;
+			op->imm=(imm10u|(~255))<<((imm10u>>8)*8);
+//			op->imm=(imm10u|(-256))<<((imm10u>>8)*8);
+			if(eq)
+			{
+				op->nmid=BJX2_NMID_LDIQ;
+				op->Run=BJX2_Op_MOV_ImmHiReg;
+			}
+			break;
 		default:
 			break;
 		}

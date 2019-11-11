@@ -354,15 +354,17 @@ void BJX2_Op_FSTCI_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 u32 BJX2_CvtHalfToFloat(u16 v)
 {
 	u32 v1;
-	int ex, fr, sg;
+	int ex, ex0, fr, sg;
 	
 	if(!v)
 		return(0);
 
 	sg=(v>>15)&1;
-	ex=(v>>10)&31;
+	ex0=(v>>10)&31;
 	fr=v&1023;
-	ex=(ex-15)+127;
+	ex=(ex0-15)+127;
+	if(ex0==0)ex=0;
+	if(ex0==31)ex=255;
 	fr=fr<<13;
 	v1=(sg<<31)|(ex<<23)|fr;
 	return(v1);
@@ -384,7 +386,8 @@ u16 BJX2_CvtFloatToHalf(u32 v)
 	
 	if(ex<0)
 		return(0);
-	if(ex>=15)
+//	if(ex>=15)
+	if(ex>=31)
 		return(0x7C00|(sg<<15));
 	v1=(sg<<15)|(ex<<10)|fr;
 	return(v1);

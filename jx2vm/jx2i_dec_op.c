@@ -3139,6 +3139,11 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 
 #if 1
 		case 0x4:	/* F4zz */
+			if((opw2&0xF000)==0xC000)
+			{
+				ret=BJX2_DecodeOpcode_DecFJ(ctx, op, addr, opw, opw2);
+				break;
+			}
 			ret=BJX2_DecodeOpcode_DecF0(ctx, op, addr, opw, opw2);
 			op->fl|=BJX2_OPFL_WEX;
 			break;

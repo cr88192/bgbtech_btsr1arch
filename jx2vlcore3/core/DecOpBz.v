@@ -1801,9 +1801,10 @@ begin
 //			opRegN	= JX2_GR_DLR;
 //			opRegM	= JX2_GR_IMM;
 //			opUIxt	= opUCmdIx;
-			opRegN	= JX2_GR_DLR;
+
 			opRegM	= JX2_GR_DLR;
 			opRegO	= JX2_GR_IMM;
+			opRegN	= JX2_GR_DLR;
 
 			opUIxt	= {opCcty, opUCmdIx[5:0]};
 		end

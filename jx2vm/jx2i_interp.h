@@ -118,8 +118,10 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_OPFL_CTRLF		0x01		//Control-Flow Opcode
 #define BJX2_OPFL_TWOWORD	0x02		//Uses two instruction words
 #define BJX2_OPFL_TRIWORD	0x04		//Uses three instruction words
-
 #define BJX2_OPFL_WEX		0x08		//Uses three instruction words
+#define BJX2_OPFL_JUMBO64	0x10		//Uses three instruction words
+#define BJX2_OPFL_JUMBO96	0x20		//Uses three instruction words
+
 
 #define BJX2_NMID_NONE		0x00		//
 #define BJX2_NMID_MOVB		0x01		//
@@ -286,6 +288,8 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_MULSW		0x98		//
 #define BJX2_NMID_MULUW		0x99		//
 #define BJX2_NMID_SYSCALL	0x9A		//
+#define BJX2_NMID_LDIQ		0x9B		//
+#define BJX2_NMID_JLDI		0x9C		//
 
 #define BJX2_NMID_CMOVTB	0xA0		//CMOVT.B
 #define BJX2_NMID_CMOVTW	0xA1		//CMOVT.W
@@ -343,6 +347,8 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_FMID_FREG			0x20		//FRn
 #define BJX2_FMID_FREGREG		0x21		//FRm, FRn
 #define BJX2_FMID_FREGREGREG	0x22		//FRm, FRo, FRn
+
+#define BJX2_FMID_IMMJREG		0x23		//#jimm, Rn
 
 #define BJX2_FMID_FREGGREG		0x24		//FRm, Rn
 #define BJX2_FMID_GREGFREG		0x25		//Rm, FRn
