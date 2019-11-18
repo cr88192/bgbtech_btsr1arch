@@ -85,6 +85,7 @@ double sin(double ang)
 	t+=x*sintab_c02; x*=th2;
 	t+=x*sintab_c03; x*=th2;
 
+#if 1
 	t+=x*sintab_c04; x*=th2;
 	t+=x*sintab_c05; x*=th2;
 	t+=x*sintab_c06; x*=th2;
