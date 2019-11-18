@@ -755,6 +755,28 @@ X(tk_checksane_asm):
 	bf _checksane_fail
 #endif
 
+	mov		#0x12345678, r4
+	mov		#0x5678ABCD, r5
+	mov		#0x123456789ABCDEF0, r6
+	jldi	#0x123456789ABCDEF0, r7
+	mov.l tk_checksane_const, r8
+	mov.l tk_checksane_const2, r9
+
+	cmpqeq r4, r8
+	bf _checksane_fail_alu4
+
+	cmpqeq r5, r9
+	bf _checksane_fail_alu4
+	
+	mov.q tk_checksane_const3, r10
+
+	cmpqeq r6, r10
+	bf _checksane_fail_alu4
+
+	cmpqeq r6, r7
+	bf _checksane_fail_alu4
+
+
 	bsr X(tk_checksane_gfp_asm)
 
 	bsr X(tk_checksane_wex_asm)
@@ -765,3 +787,12 @@ X(tk_checksane_asm):
 	pop lr
 	rts
 
+.section .rodata
+
+tk_checksane_const: .long 0x12345678
+nop
+tk_checksane_const2: .long 0x5678ABCD
+
+tk_checksane_const3: .quad 0x123456789ABCDEF0
+
+.section .text

@@ -85,7 +85,7 @@ wire[7:0]		decOpFz_idUIxt;
 
 DecOpFz	decOpFz(
 	clock,		reset,
-	istrWord,	1'b0,
+	istrWord,	1'b0,	UV23_00,
 	decOpFz_idRegN,		decOpFz_idRegM,
 	decOpFz_idRegO,		decOpFz_idImm,
 	decOpFz_idUCmd,		decOpFz_idUIxt

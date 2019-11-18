@@ -67,6 +67,7 @@ int ixt;
 double x;
 double y;
 double z;
+vluint64_t grn;
 }fputest[]={
 {JX2_UCMD_FPU3, JX2_UCIX_FPU_FADD,  3.14,  2.73,  5.870000000},
 {JX2_UCMD_FPU3, JX2_UCIX_FPU_FSUB,  3.14,  2.73,  0.410000000},
@@ -84,17 +85,51 @@ double z;
 {JX2_UCMD_FPU3, JX2_UCIX_FPU_FSUB,  3.14,  0,  3.14},
 {JX2_UCMD_FPU3, JX2_UCIX_FPU_FMUL,  3.14,  0,  0},
 
-{JX2_UCMD_FPU3, JX2_UCIX_FPU_FADD,  3.141592654, -3.14,  0.001592654},
-{JX2_UCMD_FPU3, JX2_UCIX_FPU_FADD,  3.141592654, -3.141,  0.000592654},
-{JX2_UCMD_FPU3, JX2_UCIX_FPU_FADD,  3.141592654, -3.1415,  0.000092654},
-{JX2_UCMD_FPU3, JX2_UCIX_FPU_FADD,  3.141592654, -3.14159,  0.00002654},
-{JX2_UCMD_FPU3, JX2_UCIX_FPU_FADD,  3.141592654, -3.141592,  0.00000654},
-{JX2_UCMD_FPU3, JX2_UCIX_FPU_FADD,  3.141592654, -3.1415926,  0.00000054},
+{JX2_UCMD_FPU3, JX2_UCIX_FPU_FADD,  3.141592654, -3.14      ,  0.001592654},
+{JX2_UCMD_FPU3, JX2_UCIX_FPU_FADD,  3.141592654, -3.141     ,  0.000592654},
+{JX2_UCMD_FPU3, JX2_UCIX_FPU_FADD,  3.141592654, -3.1415    ,  0.000092654},
+{JX2_UCMD_FPU3, JX2_UCIX_FPU_FADD,  3.141592654, -3.14159   ,  0.00002654},
+{JX2_UCMD_FPU3, JX2_UCIX_FPU_FADD,  3.141592654, -3.141592  ,  0.00000654},
+{JX2_UCMD_FPU3, JX2_UCIX_FPU_FADD,  3.141592654, -3.1415926 ,  0.00000054},
 {JX2_UCMD_FPU3, JX2_UCIX_FPU_FADD,  3.141592654, -3.14159265,  0.00000004},
 
+{JX2_UCMD_FPU3, JX2_UCIX_FPU_FADD,  -3.141592654, 3.14      ,  -0.001592654},
+{JX2_UCMD_FPU3, JX2_UCIX_FPU_FADD,  -3.141592654, 3.141     ,  -0.000592654},
+{JX2_UCMD_FPU3, JX2_UCIX_FPU_FADD,  -3.141592654, 3.1415    ,  -0.000092654},
+{JX2_UCMD_FPU3, JX2_UCIX_FPU_FADD,  -3.141592654, 3.14159   ,  -0.00002654},
+{JX2_UCMD_FPU3, JX2_UCIX_FPU_FADD,  -3.141592654, 3.141592  ,  -0.00000654},
+{JX2_UCMD_FPU3, JX2_UCIX_FPU_FADD,  -3.141592654, 3.1415926 ,  -0.00000054},
+{JX2_UCMD_FPU3, JX2_UCIX_FPU_FADD,  -3.141592654, 3.14159265,  -0.00000004},
+
+
+{JX2_UCMD_FPU3, JX2_UCIX_FPU_FADD,  2.634884, -3.048831,  -0.413947},
+
+
+{JX2_UCMD_FPU3, JX2_UCIX_FPU_FMUL,  0.00000004, 0.00000004, 0.0000000000000016},
 
 {JX2_UCMD_FLDCX, JX2_UCIX_FPCX_I,  6972, 0,  6972.0},
 {JX2_UCMD_FLDCX, JX2_UCIX_FPCX_I,  -6972, 0,  -6972.0},
+
+{JX2_UCMD_FSTCX, JX2_UCIX_FPCX_I,  6972.0, 0,  6972.0, 6972},
+{JX2_UCMD_FSTCX, JX2_UCIX_FPCX_I,  -6972.0, 0,  -6972.0, -6972},
+
+{JX2_UCMD_FSTCX, JX2_UCIX_FPCX_I,  6972.005, 0,  6972.0, 6972},
+{JX2_UCMD_FSTCX, JX2_UCIX_FPCX_I,  6972.375, 0,  6972.0, 6972},
+{JX2_UCMD_FSTCX, JX2_UCIX_FPCX_I,  6972.995, 0,  6972.0, 6972},
+
+{JX2_UCMD_FSTCX, JX2_UCIX_FPCX_I,  -6972.005, 0,  6972.0, -6972},
+{JX2_UCMD_FSTCX, JX2_UCIX_FPCX_I,  -6972.375, 0,  6972.0, -6972},
+{JX2_UCMD_FSTCX, JX2_UCIX_FPCX_I,  -6972.995, 0,  6972.0, -6972},
+
+{JX2_UCMD_FLDCX, JX2_UCIX_FPCX_I,  123, 0,  123.0},
+{JX2_UCMD_FLDCX, JX2_UCIX_FPCX_I,  -123, 0,  -123.0},
+{JX2_UCMD_FSTCX, JX2_UCIX_FPCX_I,  123.0, 0,  6972.0, 123},
+{JX2_UCMD_FSTCX, JX2_UCIX_FPCX_I,  -123.0, 0,  -6972.0, -123},
+
+{JX2_UCMD_FLDCX, JX2_UCIX_FPCX_I,  13, 0,  13.0},
+{JX2_UCMD_FLDCX, JX2_UCIX_FPCX_I,  -13, 0,  -13.0},
+{JX2_UCMD_FSTCX, JX2_UCIX_FPCX_I,  13.0, 0,  6972.0, 13},
+{JX2_UCMD_FSTCX, JX2_UCIX_FPCX_I,  -13.0, 0,  -6972.0, -13},
 
 #if 0
 {0x57, 0,  3.14,  2.73, -3.140000000},
@@ -115,7 +150,11 @@ int main(int argc, char **argv, char **env)
 {
 	double fx, fy, fz, fw;
 	vluint64_t tx, ty, tz, tw;
+	vluint64_t grn, egrn;
+	int64_t dst;
+	
 	int tst, op, ixt;
+	int n, isz_x, isz_y, isnan_x, isnan_y;
 	
 	printf("FPU Test\n");
 	
@@ -130,15 +169,18 @@ int main(int argc, char **argv, char **env)
 	{
 		top->clock = (main_time>>0)&1;
 //		top->mode = 3;
+
+		top->exHold=0;
 		
 		if(top->regOutOK==2)
 		{
+			top->exHold=1;
 			top->eval();
 			main_time++;
 			continue;
 		}
 
-		if(top->regOutOK==1)
+		if((top->regOutOK==1) && top->opCmd)
 		{
 			tz=top->regOutVal;
 			fz=*(double *)(&tz);
@@ -148,6 +190,14 @@ int main(int argc, char **argv, char **env)
 				"Ro=%016lX(%f) Expect=%016lX(%f)\n",
 				top->opCmd, top->regIdIxt,
 				tx, fx, ty, fy, tz, fz, tw, fw);
+
+			if(op==JX2_UCMD_FSTCX)
+			{
+				grn=top->regValGRn;
+				printf("GRn=%llX (%lld), Expect=%llX(%lld)\n",
+					grn, grn, egrn, egrn);
+			}
+
 			printf("\n");
 
 			top->opCmd=0x00;
@@ -167,6 +217,7 @@ int main(int argc, char **argv, char **env)
 			fx=fputest[tst].x;
 			fy=fputest[tst].y;
 			fw=fputest[tst].z;
+			egrn=fputest[tst].grn;
 			
 			if(!op)
 				break;
@@ -240,6 +291,101 @@ int main(int argc, char **argv, char **env)
 			break;
 		}
 	}
+
+	while (!Verilated::gotFinish())
+	{
+		if(top->regOutOK==0)
+			break;
+
+		top->clock = (main_time>>0)&1;
+		main_time++;
+		top->eval();
+	}
+
+#if 0
+	n=4096; op=0;
+	while (!Verilated::gotFinish())
+	{
+		printf("%d %d\r", n, op);
+		fflush(stdout);
+	
+		if(top->regOutOK==1)
+		{
+			top->opCmd=0x00;
+			top->regIdIxt=0;
+
+			tz=top->regOutVal;
+			fz=*(double *)(&tz);
+			
+			dst=tz-tw;
+			if(dst<0)dst=-dst;
+			
+			isz_x = ((tz>>52)&2047)==0;
+			isz_y = ((tw>>52)&2047)==0;
+
+			isnan_x = ((tz>>52)&2047)==2047;
+			isnan_y = ((tw>>52)&2047)==2047;
+			
+			if((dst>4) && (!isz_x || !isz_y) && (!isnan_x || !isnan_y))
+			{
+				printf("x=%016llX y=%016llX op=%d rn=%016llX exp=%016llX\n",
+					tx, ty, op, tz, tw);
+			}
+
+			if(n>0)
+			{
+				n--;
+			}else if(op<2)
+			{
+				op++;
+				n=4096;
+			}else
+			{
+				break;
+			}
+		}
+
+		if(top->regOutOK==0)
+		{
+			tx=rand();
+			tx=(tx*65521)+(rand());
+			tx=(tx*65521)+(rand());
+			tx=(tx*65521)+(rand());
+			tx=(tx*65521)+(rand());
+
+			ty=rand();
+			ty=(ty*65521)+(rand());
+			ty=(ty*65521)+(rand());
+			ty=(ty*65521)+(rand());
+			ty=(ty*65521)+(rand());
+
+			fx=*(double *)(&tx);
+			fy=*(double *)(&ty);
+			
+			switch(op)
+			{
+			case 0: fw=fx+fy; break;
+			case 1: fw=fx-fy; break;
+			case 2: fw=fx*fy; break;
+			}
+			tw=*(vluint64_t *)(&fw);
+
+			top->opCmd=JX2_UCMD_FPU3;
+			top->regIdIxt=op;
+
+			top->regIdRs=3;
+			top->regValRs=tx;
+
+			top->regIdRt=11;
+			top->regValRt=ty;
+		}
+
+		top->clock = (main_time>>0)&1;
+		main_time++;
+		top->eval();
+	}
+#endif
+
 	delete top;
 	exit(0);
 }

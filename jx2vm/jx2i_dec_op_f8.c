@@ -1,5 +1,5 @@
 int BJX2_DecodeOpcode_DecF8(BJX2_Context *ctx,
-	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2)
+	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2, u32 jbits)
 {
 	s32 imm16u, imm16n, imm16s;
 	int rn_i16;
@@ -74,7 +74,7 @@ int BJX2_DecodeOpcode_DecD8(BJX2_Context *ctx,
 	op1=BJX2_ContextAllocOpcode(ctx);
 	op1->pc=addr;
 
-	ret=BJX2_DecodeOpcode_DecF8(ctx, op1, addr, opw1, opw2);
+	ret=BJX2_DecodeOpcode_DecF8(ctx, op1, addr, opw1, opw2, 0);
 
 //	if(opw1&0x0200)
 	if(opw1&0x0100)

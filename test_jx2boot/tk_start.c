@@ -55,6 +55,24 @@ void sanity_a()
 	puts("A4\n");
 }
 
+void sanity_b()
+{
+	int *pi, *pj;
+	int i, j, k, l;
+	double a, b;
+
+#if 1
+	for(i=0; i<32; i++)
+	{
+		a=(i*(1.0/31.0))*(2*M_PI);
+		printf("a=%f", a);
+
+		b=sin(a);	
+		printf(" b=%f\n", b);
+	}
+#endif
+}
+
 int tk_cmd2idx(char *s)
 {
 	if(*s=='t')
@@ -114,6 +132,7 @@ void __start()
 		0x12345678, 0x9ABCDEF0, 0x1234CDEF, 0x9ABC5678);
 		
 	sanity_a();
+	sanity_b();
 	
 	TK_RamChk();
 	

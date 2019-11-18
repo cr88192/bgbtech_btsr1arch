@@ -86,6 +86,9 @@ assign	idImmB = opImmB;
 assign	idUCmdB = opUCmdB;
 assign	idUIxtB = opUIxtB;
 
+reg[22:0]		tOpJBitsA;
+reg[22:0]		tOpJBitsB;
+
 wire[5:0]		decOpBz_idRegN;
 wire[5:0]		decOpBz_idRegM;
 wire[5:0]		decOpBz_idRegO;
@@ -110,7 +113,7 @@ wire[7:0]		decOpFzB_idUIxt;
 
 DecOpFz	decOpFzB(
 	clock,		reset,
-	{ UV32_XX, istrWord[63:32] },	1'b1,
+	{ UV32_XX, istrWord[63:32] },	1'b1, tOpJBitsB,
 	decOpFzB_idRegN,		decOpFzB_idRegM,
 	decOpFzB_idRegO,		decOpFzB_idImm,
 	decOpFzB_idUCmd,		decOpFzB_idUIxt
@@ -125,7 +128,7 @@ wire[7:0]		decOpFzA_idUIxt;
 
 DecOpFz	decOpFzA(
 	clock,		reset,
-	{ UV32_XX, istrWord[31: 0] },	1'b0,
+	{ UV32_XX, istrWord[31: 0] },	1'b0, tOpJBitsA,
 	decOpFzA_idRegN,		decOpFzA_idRegM,
 	decOpFzA_idRegO,		decOpFzA_idImm,
 	decOpFzA_idUCmd,		decOpFzA_idUIxt
@@ -156,6 +159,8 @@ reg opIsWf;		//WEX
 
 always @*
 begin
+	tOpJBitsA		= 0;
+	tOpJBitsB		= 0;
 
 	opIsDw = 0;
 	casez(istrWord[15:10])

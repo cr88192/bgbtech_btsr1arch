@@ -737,6 +737,8 @@ int nmid;
 {"wexmd",	BGBCC_SH_NMID_WEXMD},
 {"cpuid",	BGBCC_SH_NMID_CPUID},
 
+{"jldi",	BGBCC_SH_NMID_JLDI},
+
 {"fabs",	BGBCC_SH_NMID_FABS},
 {"fadd",	BGBCC_SH_NMID_FADD},
 {"fcmp/eq",	BGBCC_SH_NMID_FCMPEQ},

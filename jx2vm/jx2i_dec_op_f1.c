@@ -1,14 +1,15 @@
 int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
-	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2)
+	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2, u32 jbits)
 {
 	int rn_dfl, rm_dfl, ro_dfl;
 	int disp5, eq, eo;
 //	int imm8u, imm8n;
 //	int imm10u, imm10n;
-	int imm9u, imm9n;
+	int imm9u, imm9n, imm9us;
 	int ret, fnm;
 
 	op->fl|=BJX2_OPFL_TWOWORD;
+	op->fl|=BJX2_OPFL_NOWEX;
 	op->opn=opw1;
 	op->opn2=opw2;
 	op->pc=addr;
@@ -55,10 +56,18 @@ int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
 	imm9u=(opw2&511);
 //	imm9n=(opw2&511)|((-1)<<9);
 	imm9n=(opw2&511)|(~511);
+	imm9us=imm9u;
+
+	if(jbits)
+	{
+		imm9u=(opw2&511)|(jbits<<9);
+		imm9n=(opw2&511)|(jbits<<9)|((~0U)<<31);
+		imm9us=((s32)(imm9u<<1))>>1;
+	}
 
 	op->rn=rn_dfl;
 	op->rm=rm_dfl;
-	op->imm=imm9u;
+	op->imm=imm9us;
 
 	ret=0;
 	switch((opw2>>12)&15)
@@ -355,7 +364,7 @@ int BJX2_DecodeOpcode_DecF5(BJX2_Context *ctx,
 		op1->pc=addr;
 
 		opw2b=opw2&0xFEFF;
-		ret=BJX2_DecodeOpcode_DecF1(ctx, op1, addr, opw1, opw2b);
+		ret=BJX2_DecodeOpcode_DecF1(ctx, op1, addr, opw1, opw2b, 0);
 
 		if(opw2&0x0100)
 		{
@@ -374,7 +383,7 @@ int BJX2_DecodeOpcode_DecF5(BJX2_Context *ctx,
 		return(ret);
 	}
 	
-	ret=BJX2_DecodeOpcode_DecF1(ctx, op, addr, opw1, opw2);
+	ret=BJX2_DecodeOpcode_DecF1(ctx, op, addr, opw1, opw2, 0);
 	return(ret);
 }
 
@@ -391,7 +400,7 @@ int BJX2_DecodeOpcode_DecD5(BJX2_Context *ctx,
 	op1=BJX2_ContextAllocOpcode(ctx);
 	op1->pc=addr;
 
-	ret=BJX2_DecodeOpcode_DecF1(ctx, op1, addr, opw1, opw2);
+	ret=BJX2_DecodeOpcode_DecF1(ctx, op1, addr, opw1, opw2, 0);
 
 	if(opw1&0x0400)
 	{

@@ -1228,10 +1228,10 @@ int main(int argc, char **argv, char **env)
 		(char *)"../../tk_qsrc/tk_clib/tkshell.sys");
 #endif
 
-#if 1
+#if 0
 	JX2R_UseImageAddFile(
-//		(char *)"BOOTLOAD.SYS",
-		(char *)"DOOM.EXE",
+		(char *)"BOOTLOAD.SYS",
+//		(char *)"DOOM.EXE",
 		(char *)"../../tk_qsrc/doomsrc2/doom_bjx2.exe");
 	JX2R_UseImageAddFile(
 		(char *)"DOOM1.WAD",

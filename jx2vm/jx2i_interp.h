@@ -118,9 +118,10 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_OPFL_CTRLF		0x01		//Control-Flow Opcode
 #define BJX2_OPFL_TWOWORD	0x02		//Uses two instruction words
 #define BJX2_OPFL_TRIWORD	0x04		//Uses three instruction words
-#define BJX2_OPFL_WEX		0x08		//Uses three instruction words
-#define BJX2_OPFL_JUMBO64	0x10		//Uses three instruction words
-#define BJX2_OPFL_JUMBO96	0x20		//Uses three instruction words
+#define BJX2_OPFL_WEX		0x08		//Wide-Executed Op
+#define BJX2_OPFL_JUMBO64	0x10		//Uses four instruction words
+#define BJX2_OPFL_JUMBO96	0x20		//Uses six instruction words
+#define BJX2_OPFL_NOWEX		0x40		//Invalid as a WEX form
 
 
 #define BJX2_NMID_NONE		0x00		//

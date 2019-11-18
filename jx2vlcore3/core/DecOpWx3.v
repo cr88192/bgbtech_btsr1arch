@@ -114,6 +114,17 @@ assign	idImmC = opImmC;
 assign	idUCmdC = opUCmdC;
 assign	idUIxtC = opUIxtC;
 
+wire[21:0]		tOpJBitsA;
+wire[21:0]		tOpJBitsB;
+wire[21:0]		tOpJBitsC;
+
+wire		opIsWexJumboA;
+wire		opIsWexJumboB;
+wire		opIsWexJumbo96;
+reg			opIsWexJumboLdi;
+reg[5:0]	opWexJumboRn;
+
+
 wire[5:0]		decOpBz_idRegN;
 wire[5:0]		decOpBz_idRegM;
 wire[5:0]		decOpBz_idRegO;
@@ -138,7 +149,7 @@ wire[7:0]		decOpFzC_idUIxt;
 
 DecOpFz	decOpFzC(
 	clock,		reset,
-	{ UV32_XX, istrWord[95:64] },	1'b1,
+	{ UV32_XX, istrWord[95:64] },	1'b1,	{ opIsWexJumboB, tOpJBitsC },
 	decOpFzC_idRegN,		decOpFzC_idRegM,
 	decOpFzC_idRegO,		decOpFzC_idImm,
 	decOpFzC_idUCmd,		decOpFzC_idUIxt
@@ -153,7 +164,7 @@ wire[7:0]		decOpFzB_idUIxt;
 
 DecOpFz	decOpFzB(
 	clock,		reset,
-	{ UV32_XX, istrWord[63:32] },	1'b1,
+	{ UV32_XX, istrWord[63:32] },	1'b1,	{ opIsWexJumboA, tOpJBitsB },
 	decOpFzB_idRegN,		decOpFzB_idRegM,
 	decOpFzB_idRegO,		decOpFzB_idImm,
 	decOpFzB_idUCmd,		decOpFzB_idUIxt
@@ -168,7 +179,7 @@ wire[7:0]		decOpFzA_idUIxt;
 
 DecOpFz	decOpFzA(
 	clock,		reset,
-	{ UV32_XX, istrWord[31: 0] },	1'b0,
+	{ UV32_XX, istrWord[31: 0] },	1'b0,	UV23_00,
 	decOpFzA_idRegN,		decOpFzA_idRegM,
 	decOpFzA_idRegO,		decOpFzA_idImm,
 	decOpFzA_idUCmd,		decOpFzA_idUIxt
@@ -213,10 +224,31 @@ reg opIsDwC;		//PrWEX Ops
 reg opIsDfC;		//Pred-False or WEX
 reg opIsWfC;		//WEX
 
-reg			opIsWexJumbo;
-reg			opIsWexJumbo96;
-reg			opIsWexJumboLdi;
-reg[5:0]	opWexJumboRn;
+`ifdef jx2_enable_wexjumbo
+assign	opIsWexJumboA =
+		(istrWord[15: 8] == 8'b1111_0100) &&
+		(istrWord[31:30] == 2'b11       ) ;
+assign	opIsWexJumboB =
+		(istrWord[47:40] == 8'b1111_0100) &&
+		(istrWord[63:62] == 2'b11       ) ;
+
+assign	opIsWexJumbo96 =
+	opIsWexJumboA && istrWord[42];
+
+assign	tOpJBitsA		= 0;
+assign	tOpJBitsB		= { istrWord [7: 0], istrWord[29:16] };
+assign	tOpJBitsC		= { istrWord[39:32], istrWord[61:48] };
+
+`else
+
+assign	opIsWexJumboA	= 0;
+assign	opIsWexJumboB	= 0;
+assign	opIsWexJumbo96	= 0;
+assign	tOpJBitsA		= 0;
+assign	tOpJBitsB		= 0;
+assign	tOpJBitsC		= 0;
+
+`endif
 
 always @*
 begin
@@ -224,8 +256,6 @@ begin
 	opIsDwA = 0;
 	opIsDwB = 0;
 	opIsDwC = 0;
-	opIsWexJumbo	= 0;
-	opIsWexJumbo96	= 0;
 	opIsWexJumboLdi	= 0;
 
 	casez(istrWord[15:10])
@@ -361,11 +391,6 @@ begin
 	opIsWfB = opIsDfB && (!opIsDzB || opIsDwB) && srWxe;
 
 `ifdef jx2_enable_wexjumbo
-	opIsWexJumbo =
-		(istrWord[15: 8] == 8'b1111_0100) &&
-		(istrWord[31:30] == 2'b11       ) ;
-	opIsWexJumbo96 = opIsWexJumbo && istrWord[42];
-
 	opIsWexJumboLdi = opIsWexJumbo96 &&
 //		(istrWord[47:40] == 8'b1111_0100) &&
 		(istrWord[79:73] == 7'b1111_101 );
@@ -441,7 +466,7 @@ begin
 		begin
 			if(opIsWfA && opIsWfB)
 			begin
-				$display("DecOpWz3: WEX3");
+//				$display("DecOpWz3: WEX3");
 			
 				opRegAM	= decOpFzC_idRegM;
 				opRegAO	= decOpFzC_idRegO;
@@ -478,11 +503,15 @@ begin
 				end
 			end
 			else
-			if(opIsWfA)
+			if(opIsWfA || opIsWexJumboA)
 			begin
-				$display("DecOpWz3: WEX2 %X-%X %X-%X",
-					istrWord[15:0], istrWord[31:16],
-					istrWord[47:32], istrWord[63:48]);
+			
+				if(!opIsWexJumboA)
+				begin
+//					$display("DecOpWz3: WEX2 %X-%X %X-%X",
+//						istrWord[15:0], istrWord[31:16],
+//						istrWord[47:32], istrWord[63:48]);
+				end
 
 				opRegAM	= decOpFzB_idRegM;
 				opRegAO	= decOpFzB_idRegO;

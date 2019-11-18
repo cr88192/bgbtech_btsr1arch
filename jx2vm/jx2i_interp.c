@@ -768,9 +768,22 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 			printf("%08X  (%2d) %04X_%04X_%04X -\n",
 				(u32)op->pc, op->cyc,
 				op->opn, op->opn2, op->opn3);
-			printf("%08X        %04X_%04X_%04X   %-8s ",
+			printf("%08X       %04X_%04X_%04X   %-8s ",
 				(u32)op1->pc,
 				op1->opn, op1->opn2, op1->opn3,
+				BJX2_DbgPrintNameForNmid(ctx, op->nmid));
+			brpc=op->pc+6;
+		}else
+		if(op->fl&BJX2_OPFL_JUMBO64)
+		{
+			op1=op->data;
+
+			printf("%08X  (%2d) %04X_%04X   -\n",
+				(u32)op->pc, op->cyc,
+				op->opn, op->opn2);
+			printf("%08X       %04X_%04X   %-8s ",
+				(u32)op1->pc,
+				op1->opn, op1->opn2,
 				BJX2_DbgPrintNameForNmid(ctx, op->nmid));
 			brpc=op->pc+6;
 		}else

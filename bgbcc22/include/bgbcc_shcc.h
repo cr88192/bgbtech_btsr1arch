@@ -27,7 +27,7 @@
 #define BGBCC_SH_REG_R21		0x15
 #define BGBCC_SH_REG_R22		0x16
 #define BGBCC_SH_REG_R23		0x17
-#define BGBCC_SH_REG_R24		0x18	
+#define BGBCC_SH_REG_R24		0x18
 #define BGBCC_SH_REG_R25		0x19
 #define BGBCC_SH_REG_R26		0x1A
 #define BGBCC_SH_REG_R27		0x1B
@@ -65,7 +65,7 @@
 #define BGBCC_SH_REG_RQ21		0x35
 #define BGBCC_SH_REG_RQ22		0x36
 #define BGBCC_SH_REG_RQ23		0x37
-#define BGBCC_SH_REG_RQ24		0x38	
+#define BGBCC_SH_REG_RQ24		0x38
 #define BGBCC_SH_REG_RQ25		0x39
 #define BGBCC_SH_REG_RQ26		0x3A
 #define BGBCC_SH_REG_RQ27		0x3B
@@ -99,7 +99,7 @@
 #define BGBCC_SH_REG_RD21		0x55
 #define BGBCC_SH_REG_RD22		0x56
 #define BGBCC_SH_REG_RD23		0x57
-#define BGBCC_SH_REG_RD24		0x58	
+#define BGBCC_SH_REG_RD24		0x58
 #define BGBCC_SH_REG_RD25		0x59
 #define BGBCC_SH_REG_RD26		0x5A
 #define BGBCC_SH_REG_RD27		0x5B
@@ -159,7 +159,7 @@
 #define BGBCC_SH_REG_DR5		0x85
 #define BGBCC_SH_REG_DR6		0x86
 #define BGBCC_SH_REG_DR7		0x87
-#define BGBCC_SH_REG_DR8		0x88	
+#define BGBCC_SH_REG_DR8		0x88
 #define BGBCC_SH_REG_DR9		0x89
 #define BGBCC_SH_REG_DR10		0x8A
 #define BGBCC_SH_REG_DR11		0x8B
@@ -175,7 +175,7 @@
 #define BGBCC_SH_REG_DR21		0x95
 #define BGBCC_SH_REG_DR22		0x96
 #define BGBCC_SH_REG_DR23		0x97
-#define BGBCC_SH_REG_DR24		0x98	
+#define BGBCC_SH_REG_DR24		0x98
 #define BGBCC_SH_REG_DR25		0x99
 #define BGBCC_SH_REG_DR26		0x9A
 #define BGBCC_SH_REG_DR27		0x9B
@@ -662,6 +662,8 @@
 #define BGBCC_SH_NMID_INVIC			0x0128	//
 #define BGBCC_SH_NMID_INVDC			0x0129	//
 #define BGBCC_SH_NMID_INVTLB		0x012A	//
+
+#define BGBCC_SH_NMID_JLDI		0x012B	//
 
 
 #define BGBCC_SH_FMID_REGREG		0x01	//Rm, Rn

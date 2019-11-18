@@ -730,6 +730,12 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 				op->Run=BJX2_Op_BREAK_None;
 			}
 
+			if(op->fl&BJX2_OPFL_NOWEX)
+			{
+				op->nmid=BJX2_NMID_BREAK;
+				op->Run=BJX2_Op_BREAK_None;
+			}
+
 			if((op1->fl&BJX2_OPFL_WEX) && op2)
 			{
 				if(BJX2_CheckWexSanity3W(ctx, op, op1, op2)<=0)

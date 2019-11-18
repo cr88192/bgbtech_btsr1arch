@@ -5,6 +5,7 @@
 module FpuMul(
 	/* verilator lint_off UNUSED */
 	clock,		reset,
+	exHold,
 	regValRm,
 	regValRn,
 	regValRo
@@ -12,6 +13,7 @@ module FpuMul(
 
 input	clock;
 input	reset;
+input	exHold;
 
 input[63:0]		regValRm;
 input[63:0]		regValRn;
@@ -25,7 +27,7 @@ reg				tSgnB1;
 reg				tSgnC1;
 reg[10:0]		tExpA1;
 reg[10:0]		tExpB1;
-reg[11:0]		tExpC1;
+reg[12:0]		tExpC1;
 reg[53:0]		tFraA1;
 reg[53:0]		tFraB1;
 
@@ -43,7 +45,7 @@ reg[9:0]		tFraC1_BA_C5;
 
 
 reg				tSgnC2;
-reg[11:0]		tExpC2;
+reg[12:0]		tExpC2;
 
 reg[35:0]		tFraC2_AC;
 reg[35:0]		tFraC2_BB;
@@ -63,7 +65,7 @@ reg[63:0]		tFraC2_R;
 
 
 reg				tSgnC3;
-reg[11:0]		tExpC3;
+reg[12:0]		tExpC3;
 
 reg[63:0]		tFraC3_P;
 reg[63:0]		tFraC3_Q;
@@ -73,11 +75,11 @@ wire[63:0]		tFraC3_S;
 ExCsAdd64F		fpmulAdd(tFraC3_Q, tFraC3_R, tFraC3_S);
 
 reg				tSgnC4;
-reg[11:0]		tExpC4;
+reg[12:0]		tExpC4;
 reg[63:0]		tFraC4_S;
 
 reg				tSgnC4B;
-reg[11:0]		tExpC4B;
+reg[12:0]		tExpC4B;
 reg[53:0]		tFraC4B;
 
 reg				tFraRbit4B;
@@ -119,8 +121,8 @@ begin
 	
 	tSgnC1	= tSgnA1 ^ tSgnB1;
 	tExpC1	=
-		{1'b0, tExpA1} +
-		{1'b0, tExpB1} - 1023;
+		{2'b00, tExpA1} +
+		{2'b00, tExpB1} - 1023;
 	
 	if((tExpA1==0) || (tExpB1==0))
 		tExpC1	= 0;
@@ -161,8 +163,8 @@ begin
 		{36'h0, tFraC2_AC[35:8]} +
 		{36'h0, tFraC2_CA[35:8]};
 	tFraC2_Q =
-		{18'h0, tFraC2_BC, tFraC1_AB_C5} +
-		{18'h0, tFraC2_CB, tFraC1_BA_C5} ;
+		{18'h0, tFraC2_BC, tFraC2_AB_C5} +
+		{18'h0, tFraC2_CB, tFraC2_BA_C5} ;
 	tFraC2_R =
 		{tFraC2_CC, tFraC2_BB[35:8]} +
 		{36'h0, tFraC2_AC[35:8]} +
@@ -175,10 +177,19 @@ begin
 	/* Stage 4 */
 
 //	if(tExpC4[11])
-	if(tExpC4[11] || (tExpC4==0))
+//	if(tExpC4[11] || (tExpC4==0))
+	if(tExpC4[12] || (tExpC4==0))
 	begin
 		tSgnC4B = 0;
 		tExpC4B = 0;
+		tFraC4B = 0;
+		tFraRbit4B	= 0;
+	end
+	else
+	if(tExpC4[11] || (tExpC4==2047))
+	begin
+		tSgnC4B = tSgnC4;
+		tExpC4B = 2047;
 		tFraC4B = 0;
 		tFraRbit4B	= 0;
 	end
@@ -216,20 +227,23 @@ end
 
 always @(posedge clock)
 begin
-	tSgnC2		<= tSgnC1;
-	tExpC2		<= tExpC1;
+	if(!exHold)
+	begin
+		tSgnC2		<= tSgnC1;
+		tExpC2		<= tExpC1;
 
-	tFraC2_AC	<= tFraC1_AC;
-	tFraC2_BB	<= tFraC1_BB;
-	tFraC2_BC	<= tFraC1_BC;
-	tFraC2_CA	<= tFraC1_CA;
-	tFraC2_CB	<= tFraC1_CB;
-	tFraC2_CC	<= tFraC1_CC;
+		tFraC2_AC	<= tFraC1_AC;
+		tFraC2_BB	<= tFraC1_BB;
+		tFraC2_BC	<= tFraC1_BC;
+		tFraC2_CA	<= tFraC1_CA;
+		tFraC2_CB	<= tFraC1_CB;
+		tFraC2_CC	<= tFraC1_CC;
 
-	tFraC2_AB_Co	<= tFraC1_AB_Co;
-	tFraC2_BA_Co	<= tFraC1_BA_Co;
-	tFraC2_AB_C5	<= tFraC1_AB_C5;
-	tFraC2_BA_C5	<= tFraC1_BA_C5;
+		tFraC2_AB_Co	<= tFraC1_AB_Co;
+		tFraC2_BA_Co	<= tFraC1_BA_Co;
+		tFraC2_AB_C5	<= tFraC1_AB_C5;
+		tFraC2_BA_C5	<= tFraC1_BA_C5;
+	end
 
 	tSgnC3		<= tSgnC2;
 	tExpC3		<= tExpC2;

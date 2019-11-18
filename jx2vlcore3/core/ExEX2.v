@@ -49,8 +49,12 @@ module ExEX2(
 	regValAluRes,	//ALU Result
 	regValMulRes,	//Multiplier Result
 	regValMulwRes,	//Multiplier Word Result
+
 	regFpuGRn,		//FPU GPR Result
 	regFpuLdGRn,		//FPU GPR Result
+	regFpuSrT,
+	regFpuOK,
+
 	opBraFlush,
 	regInLastSr,
 	
@@ -60,7 +64,6 @@ module ExEX2(
 	regOutLr,	regInLr,
 	regOutSr,	regInSr,
 	regOutSchm,	regInSchm,
-	
 
 	memDataIn,
 	memDataOK
@@ -99,17 +102,21 @@ input[32:0]		regValImm;		//Immediate (Decode)
 input[65:0]		regValAluRes;	//ALU Result
 input[63:0]		regValMulRes;	//Multiplier Result
 input[63:0]		regValMulwRes;	//Multiplier Result
+
 input[63:0]		regFpuGRn;		//FPU GPR Result
 input[63:0]		regFpuLdGRn;	//FPU GPR Result (Mem Load)
+input			regFpuSrT;
+input[ 1:0]		regFpuOK;		//FPU Status
+
 input			opBraFlush;
-input[7:0]		regInLastSr;
+input[ 7:0]		regInLastSr;
 
 output[63:0]	regOutDlr;
-input[63:0]		regInDlr;
+input [63:0]	regInDlr;
 output[63:0]	regOutDhr;
-input[63:0]		regInDhr;
+input [63:0]	regInDhr;
 output[63:0]	regOutSp;
-input[63:0]		regInSp;
+input [63:0]	regInSp;
 
 output[31:0]	regOutLr;
 input[31:0]		regInLr;
@@ -347,14 +354,39 @@ begin
 		end
 		
 		JX2_UCMD_FPU3: begin
+//			if(regFpuOK[1])
+			if(regFpuOK != UMEM_OK_OK)
+				tExHold			= 1;
+			tRegIdRn2		= regIdRm;
+			tRegValRn2		= regFpuGRn;
 		end
 		JX2_UCMD_FLDCX: begin
+//			if(regFpuOK[1])
+			if(regFpuOK != UMEM_OK_OK)
+				tExHold			= 1;
+			tRegIdRn2		= regIdRm;
+			tRegValRn2		= regFpuGRn;
 		end
 		JX2_UCMD_FSTCX: begin
+//			if(regFpuOK[1])
+			if(regFpuOK != UMEM_OK_OK)
+				tExHold			= 1;
+			tRegIdRn2		= regIdRm;
+			tRegValRn2		= regFpuGRn;
 		end
 		JX2_UCMD_FIXS: begin
+//			if(regFpuOK[1])
+			if(regFpuOK != UMEM_OK_OK)
+				tExHold			= 1;
+			tRegIdRn2		= regIdRm;
+			tRegValRn2		= regFpuGRn;
 		end
+
 		JX2_UCMD_FCMP: begin
+//			if(regFpuOK[1])
+			if(regFpuOK != UMEM_OK_OK)
+				tExHold			= 1;
+			tRegOutSr[0]	= regFpuSrT;
 		end
 	
 		default: begin

@@ -814,7 +814,9 @@ FpuExOp	ex1Fpu(
 	ex1RegIdFRn,	ex1RegValFRn,
 	ex1FpuOK,		ex1FpuSrT,
 	
-	ex1RegInSr,		ex1BraFlush,
+//	ex1RegInSr,		ex1BraFlush,
+	ex2RegInSr,		ex1BraFlush,
+	exHold2,
 	
 	ex1RegValRs,	ex1FpuValGRn,
 	ex1FpuValLdGRn,
@@ -899,8 +901,10 @@ ExEX2	ex2(
 	ex2RegValPc,	ex2RegValImm,
 	ex2RegAluRes,	ex2RegMulRes,
 	ex2RegMulWRes,
-	ex1FpuValGRn,
-	ex1FpuValLdGRn,
+
+	ex1FpuValGRn,	ex1FpuValLdGRn,
+	ex1FpuSrT,		ex1FpuOK,
+	
 	ex2BraFlush,
 	ex2RegInLastSr,
 	
@@ -1186,8 +1190,8 @@ begin
 		exHold2		= 1;
 	if(ifOutPcOK[1])
 		exHold2		= 1;
-	if(ex1FpuOK[1])
-		exHold2		= 1;
+//	if(ex1FpuOK[1])
+//		exHold2		= 1;
 `endif
 
 //	tDbgOutStatus1	= 0;
@@ -1195,7 +1199,8 @@ begin
 
 	exHold2	=
 		(ex1Hold)		|	(ex2Hold)		|
-		(ifOutPcOK[1])	|	(ex1FpuOK[1])	;
+//		(ifOutPcOK[1])	|	(ex1FpuOK[1])	;
+		(ifOutPcOK[1])	;
 	exHold1A	= exHold2;
 
 //	if(exHold2)
@@ -1338,6 +1343,28 @@ begin
 	tDbgOutStatus2	= exHold1B;
 	tDbgOutStatus3	= exHold1C;
 	tDbgOutStatus4	= exHold1D;
+
+`ifdef jx2_debug_expipe
+// `ifndef def_true
+//	if(exHold1)
+	if(exHold1 &&
+		!((ex1OpUCmd[5:0]==JX2_UCMD_OP_IXT) && 
+			(ex1OpUIxt[5:0]==JX2_UCIX_IXT_BREAK)))
+	begin
+		$display("ExHold: A=%d B=%d C=%d D=%d",
+			exHold1A, exHold1B, exHold1C, exHold1D);
+
+//		exHold2	=
+//			(ex1Hold)		|	(ex2Hold)		|
+//			(ifOutPcOK[1])	|	(ex1FpuOK[1])	;
+	
+		if(exHold2)
+		begin
+			$display("ExHold2: Ex1=%d Ex2=%d I$=%d FPU=%d",
+				ex1Hold, ex2Hold, ifOutPcOK[1], ex1FpuOK[1]);
+		end
+	end
+`endif
 
 //	case( {1'b1, ex1HldIdCn1} )
 //		JX2_CR_LR:	 exHold1 = 1;

@@ -156,6 +156,7 @@ byte has_bjx1r3mov;	//has BJX1 Reg3 ops
 
 byte has_addsl;		//has ADDS.L and similar
 // byte has_jcmp;		//has JMPCC
+byte has_jumbo;		//has ADDS.L and similar
 
 byte use_egpr;		//enable use of extended GPRs
 byte maxreg_gpr;	//current number of GPR register-slots

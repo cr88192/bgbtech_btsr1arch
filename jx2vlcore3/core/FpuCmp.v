@@ -6,13 +6,14 @@ Compare Rs and Rt
 
 module FpuCmp(
 	/* verilator lint_off UNUSED */
-	clock,		reset,
+	clock,		reset,		exHold,
 	opCmd,		regIdIxt,
 	regValRs,	regValRt,
 	regOutOK,	regOutSrT);
 
 input			clock;
 input			reset;
+input			exHold;
 
 input[7:0]		opCmd;			//command opcode
 input[7:0]		regIdIxt;		//ALU Index / Opcode Extension
@@ -143,7 +144,10 @@ end
 
 always @(posedge clock)
 begin
-	tRegOutSrT2		<= tRegOutSrT;
+	if(!exHold)
+	begin
+		tRegOutSrT2		<= tRegOutSrT;
+	end
 end
 
 endmodule

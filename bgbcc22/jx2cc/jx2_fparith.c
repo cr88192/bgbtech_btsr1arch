@@ -229,6 +229,7 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegFloat(
 	int opr,
 	ccxl_register sreg, ccxl_register treg)
 {
+	double f;
 	char *s0;
 	int csreg, ctreg, cdreg;
 	int nm1, nm2;
@@ -263,16 +264,32 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegFloat(
 	BGBCC_JX2C_NormalizeImmVRegInt(ctx, sctx, type, &sreg);
 	BGBCC_JX2C_NormalizeImmVRegInt(ctx, sctx, type, &treg);
 
-#if 0
-//	if(sctx->has_bjx1ari)
-	if(sctx->has_bjx1ari && sctx->has_bjx1mov)
+#if 1
+	if(1)
 	{
+#if 1
+//		if(	BGBCC_CCXL_IsRegImmFloatP(ctx, treg) ||
+		if(	BGBCC_CCXL_IsRegImmDoubleP(ctx, treg))
+		{
+			if(opr==CCXL_BINOP_DIV)
+			{
+				f=BGBCC_CCXL_GetRegImmDoubleValue(ctx, treg);
+//				if((f>0.01) && (f<999999.0))
+				if((f>0.1) && (f<9999.0))
+				{
+					BGBCC_CCXL_GetRegForDoubleValue(ctx, &treg, 1.0/f);
+					opr=CCXL_BINOP_MUL;
+				}
+			}
+		}
+#endif
+
 		switch(opr)
 		{
 		case CCXL_BINOP_ADD:	nm1=BGBCC_SH_NMID_FADD;	nm2=-1; break;
 		case CCXL_BINOP_SUB:	nm1=BGBCC_SH_NMID_FSUB;	nm2=-1; break;
 		case CCXL_BINOP_MUL:	nm1=BGBCC_SH_NMID_FMUL;	nm2=-1; break;
-		case CCXL_BINOP_DIV:	nm1=BGBCC_SH_NMID_FDIV;	nm2=-1; break;
+//		case CCXL_BINOP_DIV:	nm1=BGBCC_SH_NMID_FDIV;	nm2=-1; break;
 
 		default:		nm1=-1; nm2=-1; break;
 		}
@@ -296,6 +313,7 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegFloat(
 			ctreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, treg);
 			cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dreg);
 
+#if 0
 			if(BGBCC_CCXL_TypeDoubleP(ctx, type))
 			{
 				BGBCC_JX2C_SetStatusFpscrDouble(ctx, sctx);
@@ -312,6 +330,7 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegFloat(
 				if((ctreg&BGBCC_SH_REG_RTMASK)!=BGBCC_SH_REG_FR0)
 					{ BGBCC_DBGBREAK }
 			}
+#endif
 
 			BGBCC_JX2_EmitOpRegRegReg(sctx, nm1, csreg, ctreg, cdreg);
 			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);

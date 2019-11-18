@@ -267,6 +267,14 @@ int BGBCC_JX2_CheckOps32SequenceOnlyB(
 	byte rs2, rt2, rn2, rspr2, rspw2;
 	int ret1, ret2;
 
+	if((opw1&0xFF00)==0xF400)
+	{
+		if((opw1&0xC000)==0xC000)
+		{
+			return(1);
+		}
+	}
+
 	ret1=BGBCC_JX2_CheckOps32GetRegs(sctx, opw1, opw2,
 		&rs1, &rt1, &rn1, &rspr1, &rspw1);
 	ret2=BGBCC_JX2_CheckOps32GetRegs(sctx, opw3, opw4,
@@ -650,6 +658,20 @@ ccxl_status BGBCC_JX2_CheckWexify(
 		if((opw1&0xFE00)==0xFA00)
 			{ cp+=4; continue; }
 
+		if(((opw1&0xFF00)==0xF400) &&
+			((opw2&0xC000)==0xC000))
+		{
+			if(((opw3&0xFF00)==0xF400) &&
+				((opw4&0xC000)==0xC000))
+			{
+				cp+=12;
+				continue;
+			}
+
+			cp+=8;
+			continue;
+		}
+
 		if(((opw1&0xFC00)==0xF400) ||
 			((opw1&0xFF00)==0xF900))
 		{
@@ -747,9 +769,9 @@ ccxl_status BGBCC_JX2_CheckWexify(
 			BGBCC_JX2_AdjustWexifyOp(sctx, &opw3, &opw4);
 
 			BGBCC_JX2_EmitSetOffsWord(sctx, cp+0, opw1);
-//			BGBCC_JX2_EmitSetOffsWord(sctx, cp+2, opw2);
+			BGBCC_JX2_EmitSetOffsWord(sctx, cp+2, opw2);
 			BGBCC_JX2_EmitSetOffsWord(sctx, cp+4, opw3);
-//			BGBCC_JX2_EmitSetOffsWord(sctx, cp+6, opw4);
+			BGBCC_JX2_EmitSetOffsWord(sctx, cp+6, opw4);
 			cp+=12;
 			continue;
 		}
@@ -761,10 +783,11 @@ ccxl_status BGBCC_JX2_CheckWexify(
 				!BGBCC_JX2_CheckOps32SequenceOnly(sctx,
 					opw1, opw2, opw3, opw4))
 			{
-				opw1|=0x0100;
+//				opw1|=0x0100;
+//				sctx->opcnt_hi8[0xF8]--;
+//				sctx->opcnt_hi8[0xF9]++;
 
-				sctx->opcnt_hi8[0xF8]--;
-				sctx->opcnt_hi8[0xF9]++;
+				BGBCC_JX2_AdjustWexifyOp(sctx, &opw1, &opw2);
 
 				BGBCC_JX2_EmitSetOffsWord(sctx, cp+0, opw1);
 				cp+=8;
@@ -778,13 +801,17 @@ ccxl_status BGBCC_JX2_CheckWexify(
 		if(((opw1&0xFF00)==0xF000) ||
 			((opw1&0xFF00)==0xF200))
 		{
-			if(BGBCC_JX2_CheckOps32ValidWexSuffix(sctx, opw3, opw4) &&
+			if(	BGBCC_JX2_CheckOps32ValidWexPrefix(sctx, opw1, opw2) &&
+				BGBCC_JX2_CheckOps32ValidWexSuffix(sctx, opw3, opw4) &&
 				!BGBCC_JX2_CheckOps32SequenceOnly(sctx,
 					opw1, opw2, opw3, opw4))
 			{
-				sctx->opcnt_hi8[(opw1>>8)&255]--;
-				opw1|=0x0400;
-				sctx->opcnt_hi8[(opw1>>8)&255]++;
+//				sctx->opcnt_hi8[(opw1>>8)&255]--;
+//				opw1|=0x0400;
+//				sctx->opcnt_hi8[(opw1>>8)&255]++;
+
+				BGBCC_JX2_AdjustWexifyOp(sctx, &opw1, &opw2);
+
 				BGBCC_JX2_EmitSetOffsWord(sctx, cp+0, opw1);
 				cp+=8;
 				continue;

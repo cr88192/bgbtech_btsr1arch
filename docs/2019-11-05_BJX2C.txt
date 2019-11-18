@@ -1719,15 +1719,43 @@ In Profile 2, only single-port ops may be used in Lane 3 if the op in Lane 1 use
 Note that in these scenarios, register values may "alias" in an implementation specific manner.
 
 
-==== Jumbo Load (Optional / Experimental) ====
+=== Jumbo Instructions (Optional / Experimental) ===
+
+Jumbo Instructions will be large instructions (64 or 96 bits), composed of multiple conjoined instruction words.
+Jumbo instructions will begin with F4zz_Czzz .. F4zz_Fzzz, which will serve as a "jumbo prefix".
+The following 32-bit instructions will be considered part of the same logical instruction.
+The final instruction in the sequence will encode the operation.
+
+If the instruction following the prefix is a WEX form, the instruction will be 96 bits, otherwise it will be 64.
+All instruction words in the sequence will be required to be 32-bit encodings.
+
+Jumbo64 forms of F1, F2, or F8 block instructions will match their 32-bit counterparts, but with the immediate field expanded.
+F1 and F2 block Imm9/Disp9 will have a 31 bit immediate, whereas Imm10 forms will expand to 32 bits.
+
+F1 block immediates will be expanded to being 31-bit sign-extended.
+* The disp8s instructions will become disp30s.
+
+F2 block immediates will be expanded, but retain the zero or one extension from the base instruction.
+
+The F0 block Branch ops will expand to a 32-bit sign-extended branch, gaining 12 bits from the prefix.
+The other bits are reserved, and are to be set to the sign extension of the branch displacement.
+
+
+==== JLDI (Jumbo Load) ====
 
 Jumbo Load is an "instruction" which loads a 64-bit constant all at once.
 
 Basic Encoding:
-* F4zz_Czzz-F4yy_Cyyy-FAxx_xxxx
+* F4jj_Cjjj-F2n0_Cfjj            LDIZ	#imm32u, Rn
+* F4jj_Cjjj-F2n1_Cfjj            LDIN	#imm32n, Rn
+* F4zz_Czzz-F4yy_Cyyy-FAxx_xxxx  JLDI	#imm64, Rn
 
-Which will be interpreted as a 64-bit value:
+
+The immediate fields for JLDI will be interpreted as a 64-bit value:
 * zzzz_zyyy_yyxx_xxxx
+* Or, essentially, the three immedite fields glued together.
 
-The opcode bits will be used to encode the destination register:
+The bits which would have otherwise been part of the opcode will be used to encode the destination register:
 * 11nn (bits 3:2), 11nn (bits 1:0), 101n (bit 4)
+
+JLDI will not need zero or one extended forms given the immediate fills an entire 64-bit register.

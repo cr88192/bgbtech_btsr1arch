@@ -1,10 +1,12 @@
 module FpuConvD2I(
 	clock,		 reset,
+	exHold,
 	regValFRm,
 	regValFRn);
 
 input			clock;
 input			reset;
+input			exHold;
 
 input[63:0]		regValFRm;
 output[63:0]	regValFRn;
@@ -125,6 +127,14 @@ end
 
 always @(posedge clock)
 begin
+	if(!exHold)
+	begin
+		tRegSgn2		<= tRegSgn1;
+		tRegExp2		<= tRegExp1;
+		tRegFra2		<= tRegFra1;
+		tRegFraExt2		<= tRegFraExt1;
+	end
+
 //	tRegValFRm		<= regValFRm;
 //	tRegValFRnB		<= tRegValFRn;
 
@@ -132,10 +142,6 @@ begin
 //	tRegValFRnB		<= tRegValFRn3;
 	tRegValFRnB		<= tRegSgn2 ? (-tRegValFRn3) : tRegValFRn3;
 
-	tRegSgn2		<= tRegSgn1;
-	tRegExp2		<= tRegExp1;
-	tRegFra2		<= tRegFra1;
-	tRegFraExt2		<= tRegFraExt1;
 end
 
 endmodule

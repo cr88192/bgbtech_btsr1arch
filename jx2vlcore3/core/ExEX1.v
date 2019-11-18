@@ -589,49 +589,53 @@ begin
 	
 `ifdef jx2_enable_fpu
 		JX2_UCMD_FSTCX: begin
-			tRegIdRn1		= regIdRm;
-			tRegValRn1		= regFpuGRn;
+//			tRegIdRn1		= regIdRm;
+//			tRegValRn1		= regFpuGRn;
+			tHeldIdRn1	= regIdRm;
 		end
 		
 		JX2_UCMD_FCMP: begin
-			tRegOutSr[0]	= regFpuSrT;
+//			tRegOutSr[0]	= regFpuSrT;
 		end
 
 `ifdef jx2_enable_fprs
 		JX2_UCMD_FPU3: begin
-			if(opUIxt[4])
-			begin
-				tRegIdRn1		= regIdRm;
-				tRegValRn1		= regFpuGRn;
-			end
+//			if(opUIxt[4])
+//			begin
+//				tRegIdRn1		= regIdRm;
+//				tRegValRn1		= regFpuGRn;
+//			end
 		end
 		JX2_UCMD_FIXS: begin
-			if(opUIxt[4])
-			begin
-				tRegIdRn1		= regIdRm;
-				tRegValRn1		= regFpuGRn;
-			end
+//			if(opUIxt[4])
+//			begin
+//				tRegIdRn1		= regIdRm;
+//				tRegValRn1		= regFpuGRn;
+//			end
 		end
 		JX2_UCMD_FLDCX: begin
-			if(opUIxt[4])
-			begin
-				tRegIdRn1		= regIdRm;
-				tRegValRn1		= regFpuGRn;
-			end
+//			if(opUIxt[4])
+//			begin
+//				tRegIdRn1		= regIdRm;
+//				tRegValRn1		= regFpuGRn;
+//			end
 		end
 `else
 		JX2_UCMD_FPU3: begin
-			tRegIdRn1		= regIdRm;
-			tRegValRn1		= regFpuGRn;
+//			tRegIdRn1		= regIdRm;
+//			tRegValRn1		= regFpuGRn;
+			tHeldIdRn1	= regIdRm;
 		end
 		JX2_UCMD_FIXS: begin
-			tRegIdRn1		= regIdRm;
-			tRegValRn1		= regFpuGRn;
+//			tRegIdRn1		= regIdRm;
+//			tRegValRn1		= regFpuGRn;
+			tHeldIdRn1	= regIdRm;
 		end
 
 		JX2_UCMD_FLDCX: begin
-			tRegIdRn1		= regIdRm;
-			tRegValRn1		= regFpuGRn;
+//			tRegIdRn1		= regIdRm;
+//			tRegValRn1		= regFpuGRn;
+			tHeldIdRn1	= regIdRm;
 		end
 `endif
 
@@ -728,7 +732,7 @@ begin
 						4'h0:		tRegOutSr[27]	= 0;
 						4'h1:		tRegOutSr[27]	= 1;
 `ifdef jx2_enable_wex3w
-//						4'h2:		tRegOutSr[27]	= 1;
+						4'h2:		tRegOutSr[27]	= 1;
 `endif
 						default:	tRegOutSr[27]	= 0;
 					endcase

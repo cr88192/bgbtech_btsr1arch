@@ -17,6 +17,7 @@ ExOp:
 module FpuAdd(
 	/* verilator lint_off UNUSED */
 	clock,		reset,
+	exHold,
 	regValRm,
 	regValRn,
 	regValRo,
@@ -26,6 +27,7 @@ module FpuAdd(
 
 input	clock;
 input	reset;
+input	exHold;
 
 input[63:0]		regValRm;
 input[63:0]		regValRn;
@@ -42,6 +44,7 @@ assign	regExOK		= tRegExOK2;
 reg[63:0]		tRegValRo;
 reg[1:0]		tRegExOK;
 
+reg[1:0]		tRegExOp1;
 reg				tExEn1;
 reg				tSgnA1;
 reg				tSgnB1;
@@ -49,8 +52,10 @@ reg[10:0]		tExpA1;
 reg[10:0]		tExpB1;
 reg[63:0]		tFraA1;
 reg[63:0]		tFraB1;
+reg				tFraGe1;
 
 reg[63:0]		tFraJ1;
+reg[63:0]		tRegValRn1;
 
 reg[11:0]		tExpA1D;
 reg[11:0]		tExpB1D;
@@ -58,6 +63,7 @@ reg[63:0]		tFraA1D;
 reg[63:0]		tFraB1D;
 
 
+reg[1:0]		tRegExOp2;
 reg				tExEn2;
 reg				tSgnA2;
 reg				tSgnB2;
@@ -66,6 +72,7 @@ reg[10:0]		tExpB2;
 reg[63:0]		tFraA2;
 reg[63:0]		tFraB2;
 reg[63:0]		tFraJ2;
+reg[63:0]		tRegValRn2;
 
 reg				tSgnC2;
 reg[10:0]		tExpC2;
@@ -94,7 +101,9 @@ reg				tExEn5;
 
 always @*
 begin
-	tExEn1	= regExOp != 0;
+	tRegExOp1	= regExOp;
+	tExEn1		= regExOp != 0;
+	tRegValRn1	= regValRn;
 
 	tRegExOK=UMEM_OK_READY;
 //	if(tExEn1)
@@ -108,6 +117,7 @@ begin
 	/* Stage 1 */
 	tSgnA1	= regValRn[63];
 	tSgnB1	= regValRm[63] ^ regExOp[1];
+//	tSgnB1	= regValRm[63];
 	tExpA1	= regValRn[62:52];
 	tExpB1	= regValRm[62:52];
 	tFraA1	= {1'b0, (tExpA1!=0), regValRn[51:0], 10'h0};
@@ -117,24 +127,29 @@ begin
 	tFraA1D	= (tExpB1D<=52) ? (tFraA1 >> tExpB1D[5:0]) : 0;
 	tFraB1D	= (tExpA1D<=52) ? (tFraB1 >> tExpA1D[5:0]) : 0;
 
+	tFraGe1 = (tFraA1 >= tFraB1);
+
 	tFraJ1	= regValRn;
 
 	/* Stage 2 */
-	if(regExOp == 3)
+//	if(regExOp == 3)
+	if(tRegExOp2 == 3)
 	begin
 		if(tFraJ2[63])
 		begin
 			tSgnC2	= 1;
 //			tExpC2	= 1086;
 			tExpC2	= 1085;
-			tFraC2	= -regValRn;
+//			tFraC2	= -regValRn;
+			tFraC2	= -tRegValRn2;
 		end
 		else
 		begin
 			tSgnC2	= 0;
 //			tExpC2	= 1086;
 			tExpC2	= 1085;
-			tFraC2	= regValRn;
+//			tFraC2	= regValRn;
+			tFraC2	= tRegValRn2;
 		end
 	end
 	else
@@ -271,9 +286,10 @@ begin
 	tRegValRo2	<= tRegValRo;
 	tRegExOK2	<= tRegExOK;
 
-	if(tExEn1)
+	if(tExEn1 && !exHold)
 	begin
-		if(tExpA1>=tExpB1)
+//		if(tExpA1>=tExpB1)
+		if((tExpA1>tExpB1) || ((tExpA1==tExpB1) && tFraGe1))
 		begin
 			tSgnA2 <= tSgnA1;	tSgnB2 <= tSgnB1;
 			tExpA2 <= tExpA1;	tExpB2 <= tExpB1;
@@ -285,18 +301,27 @@ begin
 			tExpA2 <= tExpB1;	tExpB2 <= tExpA1;
 			tFraA2 <= tFraB1;	tFraB2 <= tFraA1D;
 		end
-
-		tFraJ2	<= tFraJ1;
-
-		tSgnC3	<= tSgnC2;
-		tExpC3	<= tExpC2;
-		tFraC3	<= tFraC2;
-
-		tSgnC4	<= tSgnC3B;
-		tExpC4	<= tExpC3B;
-		tFraC4	<= tFraC3B;
 		
+		tRegExOp2	<= tRegExOp1;
+		tFraJ2		<= tFraJ1;
 		tExEn2		<= tExEn1;
+		tRegValRn2	<= tRegValRn1;
+	end
+	else if(!exHold)
+	begin
+		tExEn2		<= 0;
+	end
+
+	if(tExEn2)
+	begin
+		tSgnC3		<= tSgnC2;
+		tExpC3		<= tExpC2;
+		tFraC3		<= tFraC2;
+
+		tSgnC4		<= tSgnC3B;
+		tExpC4		<= tExpC3B;
+		tFraC4		<= tFraC3B;
+		
 		tExEn3		<= tExEn2;
 		tExEn4		<= tExEn3;
 		tExEn5		<= tExEn4;
@@ -305,11 +330,11 @@ begin
 	end
 	else
 	begin
-		tExEn2		<= 0;
+//		tExEn2		<= 0;
 		tExEn3		<= 0;
 		tExEn4		<= 0;
 		tExEn5		<= 0;
-		tRegValRo	<= UV64_XX;
+		tRegValRo	<= UV64_00;
 	end
 end
 

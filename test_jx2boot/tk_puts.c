@@ -249,7 +249,8 @@ void print_decimal_n(int val, int num)
 		{ t--; putc(*t); }
 }
 
-#ifdef ARCH_HAS_FPU
+// #ifdef ARCH_HAS_FPU
+#if 1
 void print_float(double val)
 {
 	int ip, fp, sg;
@@ -354,7 +355,8 @@ void printf(char *str, ...)
 			print_hex((u32)s1);
 			break;
 
-#ifdef ARCH_HAS_FPU
+// #ifdef ARCH_HAS_FPU
+#if 1
 		case 'f':
 			print_float(va_arg(lst, double));
 			break;
