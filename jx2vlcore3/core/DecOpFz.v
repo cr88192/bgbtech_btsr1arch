@@ -1914,16 +1914,17 @@ begin
 `endif
 		
 		/*
-			SB: PC, Ro, ZZR
+			SB: (PC, Ro), ZZR
 			UB: Rm, #imm8s, Rn
 		 */
 		JX2_FMID_REGPC: begin
 			case(opIty)
 				JX2_ITY_SB: begin
-					opRegN	= JX2_GR_ZZR;
 					opRegM	= JX2_GR_PC;
 					opRegO	= opRegO_Dfl;
-					opUIxt	= {opCcty, opBty[1:0], 1'b1, opBty};
+					opRegN	= JX2_GR_ZZR;
+//					opUIxt	= {opCcty, opBty[1:0], 1'b1, opBty};
+					opUIxt	= {opCcty, opBty[1:0], 1'b0, opBty};
 				end
 
 `ifdef JX2_EX_ALU_JMPCC

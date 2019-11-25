@@ -490,6 +490,7 @@ begin
 				end
 				
 				default: begin
+					$display("ExEX1: MOV_IR, Invalid UIxt %X", opUIxt);
 					tRegIdRn1	= regIdRm;
 					tRegValRn1	= regValRt;
 				end
@@ -739,6 +740,8 @@ begin
 `else
 					tRegOutSr[27]	= 0;
 `endif
+
+//					tRegOutSr[27]	= 0;
 				end
 
 				JX2_UCIX_IXT_SYSE: begin

@@ -923,6 +923,115 @@ int update_ps2kb()
 	}
 }
 
+int sim_fb_drawled(uint32_t *fbuf, int xs, int ys,
+	int led_x, int led_y, int led_r, uint32_t led_c)
+{
+	int lx, ly, tx, ty, ld, lr2;
+	
+	lr2=led_r*led_r;
+	
+	for(ly=-led_r; ly<led_r; ly++)
+	{
+		for(lx=-led_r; lx<led_r; lx++)
+		{
+			ld=(lx*lx)+(ly*ly);
+			if(ld>lr2)
+				continue;
+			tx=led_x+lx;
+			ty=led_y+ly;
+			
+			fbuf[ty*xs+tx]=led_c;
+		}
+	}
+	return(0);
+}
+
+int sim_fb_drawbox(uint32_t *fbuf, int xs, int ys,
+	int x0, int y0, int x1, int y1, uint32_t clr)
+{
+	int lx, ly, tx, ty;
+	
+	if(y0>y1)
+		{ tx=y0; y0=y1; y1=tx; }
+	if(x0>x1)
+		{ tx=x0; x0=x1; x1=tx; }
+	
+	for(ly=y0; ly<=y1; ly++)
+	{
+		for(lx=x0; lx<=x1; lx++)
+		{
+			fbuf[ly*xs+lx]=clr;
+		}
+	}
+	return(0);
+}
+
+int sim_fb_draw7seg(uint32_t *fbuf, int xs, int ys,
+	int led_x, int led_y, int led_r,
+	uint32_t led_clo, uint32_t led_chi, int mask)
+{
+	int lw;
+	
+	lw=led_r>>2;
+	
+	/* Top */
+	sim_fb_drawbox(
+		fbuf, xs, ys,
+		led_x+lw, led_y-led_r*2, led_x+led_r, led_y-led_r*2-lw,
+		(mask&1)?led_chi:led_clo);
+
+	/* Top-Right */
+	sim_fb_drawbox(
+		fbuf, xs, ys,
+		led_x+led_r, led_y-led_r*2, led_x+led_r+lw, led_y-led_r-lw,
+		(mask&2)?led_chi:led_clo);
+
+	/* Lower-Right */
+	sim_fb_drawbox(
+		fbuf, xs, ys,
+		led_x+led_r, led_y-led_r, led_x+led_r+lw, led_y-lw,
+		(mask&4)?led_chi:led_clo);
+	
+	/* Bottom */
+	sim_fb_drawbox(
+		fbuf, xs, ys,
+		led_x+lw, led_y-lw, led_x+led_r, led_y,
+		(mask&8)?led_chi:led_clo);
+
+	/* Top-Left */
+	sim_fb_drawbox(
+		fbuf, xs, ys,
+		led_x, led_y-led_r*2, led_x+lw, led_y-led_r-lw,
+		(mask&0x20)?led_chi:led_clo);
+
+	/* Lower-Left */
+	sim_fb_drawbox(
+		fbuf, xs, ys,
+		led_x, led_y-led_r, led_x+lw, led_y-lw,
+		(mask&0x10)?led_chi:led_clo);
+
+	/* Middle */
+	sim_fb_drawbox(
+		fbuf, xs, ys,
+		led_x+lw, led_y-led_r, led_x+led_r, led_y-led_r-lw,
+		(mask&0x40)?led_chi:led_clo);
+}
+
+int sim_fb_draw7seg_8x(uint32_t *fbuf, int xs, int ys,
+	int led_x, int led_y, int led_r,
+	uint32_t led_clo, uint32_t led_chi,
+	int mask1, int mask2)
+{
+	int i;
+	
+	for(i=0; i<8; i++)
+	{
+		sim_fb_draw7seg(fbuf, xs, ys,
+			led_x+i*led_r*2, led_y, led_r, led_clo, led_chi,
+			!(mask2&(1<<i))?(~mask1):0);
+	}
+}
+
 int main(int argc, char **argv, char **env)
 {
 	BJX2_Context *ctx;
@@ -931,6 +1040,9 @@ int main(int argc, char **argv, char **env)
 	int lclk, mhz;
 	int sdc_lclk, sdc_lbit;
 	int tt_start, tt_frame;
+	int cnt_dled, cnt_h1, cnt_h2,
+		cnt_d1, cnt_d2, cnt_d3, cnt_d4,
+		cnt_d5, cnt_d6, cnt_d7, cnt_d8;
 	int t0, t1, t2;
 	int i, j, k;
 
@@ -1037,6 +1149,18 @@ int main(int argc, char **argv, char **env)
 		t1=FRGL_TimeMS();
 		t2=t1-tt_frame;
 
+		cnt_dled++;
+		cnt_h1+=(top->dbg_exHold1!=0);
+		cnt_h2+=(top->dbg_exHold2!=0);
+		cnt_d1+=(top->dbg_outStatus1!=0);
+		cnt_d2+=(top->dbg_outStatus2!=0);
+		cnt_d3+=(top->dbg_outStatus3!=0);
+		cnt_d4+=(top->dbg_outStatus4!=0);
+		cnt_d5+=(top->dbg_outStatus5!=0);
+		cnt_d6+=(top->dbg_outStatus6!=0);
+		cnt_d7+=(top->dbg_outStatus7!=0);
+		cnt_d8+=(top->dbg_outStatus8!=0);
+
 		if(t2>16)
 		{
 			BTSR1_MainPollKeyboard();
@@ -1047,6 +1171,84 @@ int main(int argc, char **argv, char **env)
 			GfxDrv_PrepareFramebuf();
 			
 			cdec_getimage(vgactx, btesh2_gfxcon_framebuf, 800, 600);
+
+			cnt_h1=(256*cnt_h1)/cnt_dled;
+			cnt_h2=(256*cnt_h2)/cnt_dled;
+			cnt_d1=(256*cnt_d1)/cnt_dled;
+			cnt_d2=(256*cnt_d2)/cnt_dled;
+			cnt_d3=(256*cnt_d3)/cnt_dled;
+			cnt_d4=(256*cnt_d4)/cnt_dled;
+			cnt_d5=(256*cnt_d5)/cnt_dled;
+			cnt_d6=(256*cnt_d6)/cnt_dled;
+			cnt_d7=(256*cnt_d7)/cnt_dled;
+			cnt_d8=(256*cnt_d8)/cnt_dled;
+			
+			cnt_h1=0xFF000000+(cnt_h1<<16)+(cnt_h1<<8);
+			cnt_h2=0xFF000000+(cnt_h2<<16)+(cnt_h2<<8);
+
+			cnt_d1=0xFF000000+(cnt_d1<<16)+(cnt_d1<<8);
+			cnt_d2=0xFF000000+(cnt_d2<<16)+(cnt_d2<<8);
+			cnt_d3=0xFF000000+(cnt_d3<<16)+(cnt_d3<<8);
+			cnt_d4=0xFF000000+(cnt_d4<<16)+(cnt_d4<<8);
+			cnt_d5=0xFF000000+(cnt_d5<<16)+(cnt_d5<<8);
+			cnt_d6=0xFF000000+(cnt_d6<<16)+(cnt_d6<<8);
+			cnt_d7=0xFF000000+(cnt_d7<<16)+(cnt_d7<<8);
+			cnt_d8=0xFF000000+(cnt_d8<<16)+(cnt_d8<<8);
+
+			sim_fb_drawled(
+				(uint32_t *)btesh2_gfxcon_framebuf, 800, 600,
+//				1*16, 600-16, 6, top->dbg_exHold1?0xFFFFFF00:0xFF000000);
+				1*16, 600-16, 6, cnt_h1);
+			sim_fb_drawled(
+				(uint32_t *)btesh2_gfxcon_framebuf, 800, 600,
+//				2*16, 600-16, 6, top->dbg_exHold2?0xFFFFFF00:0xFF000000);
+				2*16, 600-16, 6, cnt_h2);
+
+			sim_fb_drawled(
+				(uint32_t *)btesh2_gfxcon_framebuf, 800, 600,
+//				4*16, 600-16, 6, top->dbg_outStatus1?0xFFFFFF00:0xFF000000);
+				4*16, 600-16, 6, cnt_d1);
+			sim_fb_drawled(
+				(uint32_t *)btesh2_gfxcon_framebuf, 800, 600,
+//				5*16, 600-16, 6, top->dbg_outStatus2?0xFFFFFF00:0xFF000000);
+				5*16, 600-16, 6, cnt_d2);
+			sim_fb_drawled(
+				(uint32_t *)btesh2_gfxcon_framebuf, 800, 600,
+//				6*16, 600-16, 6, top->dbg_outStatus3?0xFFFFFF00:0xFF000000);
+				6*16, 600-16, 6, cnt_d3);
+			sim_fb_drawled(
+				(uint32_t *)btesh2_gfxcon_framebuf, 800, 600,
+//				7*16, 600-16, 6, top->dbg_outStatus4?0xFFFFFF00:0xFF000000);
+				7*16, 600-16, 6, cnt_d4);
+
+			sim_fb_drawled(
+				(uint32_t *)btesh2_gfxcon_framebuf, 800, 600,
+//				9*16, 600-16, 6, top->dbg_outStatus5?0xFFFFFF00:0xFF000000);
+				9*16, 600-16, 6, cnt_d5);
+			sim_fb_drawled(
+				(uint32_t *)btesh2_gfxcon_framebuf, 800, 600,
+//				10*16, 600-16, 6, top->dbg_outStatus6?0xFFFFFF00:0xFF000000);
+				10*16, 600-16, 6, cnt_d6);
+			sim_fb_drawled(
+				(uint32_t *)btesh2_gfxcon_framebuf, 800, 600,
+//				11*16, 600-16, 6, top->dbg_outStatus7?0xFFFFFF00:0xFF000000);
+				11*16, 600-16, 6, cnt_d7);
+			sim_fb_drawled(
+				(uint32_t *)btesh2_gfxcon_framebuf, 800, 600,
+//				12*16, 600-16, 6, top->dbg_outStatus8?0xFFFFFF00:0xFF000000);
+				12*16, 600-16, 6, cnt_d8);
+
+			sim_fb_draw7seg_8x(
+				(uint32_t *)btesh2_gfxcon_framebuf, 800, 600,
+				14*16, 600-16, 12, 0xFF000000, 0xFFFFFF00,
+				top->seg_outSegBit,
+				top->seg_outCharBit
+				);
+
+				cnt_dled=0;
+				cnt_h1=0;	cnt_h2=0;
+				cnt_d1=0;	cnt_d2=0;	cnt_d3=0;	cnt_d4=0;
+				cnt_d5=0;	cnt_d6=0;	cnt_d7=0;	cnt_d8=0;
 
 			GfxDrv_BeginDrawing();
 

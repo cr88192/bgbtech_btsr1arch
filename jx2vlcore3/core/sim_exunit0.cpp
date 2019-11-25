@@ -410,7 +410,7 @@ int BTSR1_MainPollKeyboard(void)
 	{
 		k=*kb++;
 		BJX2_MainAddTranslateKey(jx2_ctx, k);
-		BTSR1_MainAddKey(k);
+//		BTSR1_MainAddKey(k);
 
 #if 0
 		if(k&0x8000)
@@ -744,12 +744,15 @@ void MemUpdateForBus()
 {
 	static byte mmio_latched=0;
 	byte is_rom, is_sram, is_dram, is_mmio;
+	byte is_sram_b, is_dram_b;
 	int opm_latch;
 	uint32_t addr;
+	uint32_t addrb;
 
 	if(top->memOpm)
 	{
 		addr=top->memAddr;
+		addrb=top->memAddrB;
 		top->memOK=0;
 		
 		is_rom	= (addr>=0x00000000) && (addr<=0x00007FFF);
@@ -758,7 +761,61 @@ void MemUpdateForBus()
 //		is_mmio = (addr>=0xA0000000) && (addr<=0xC0000000);
 		is_mmio = (addr>=0xF0000000) && (addr<=0xFFFFFFFF);
 
-		if(top->memOpm&0x08)
+		is_sram_b	= (addrb>=0x0000C000) && (addrb<=0x0000DFFF);
+		is_dram_b	= (addrb>=0x01000000) && (addrb<=0x18000000);
+
+		if((top->memOpm&0x18)==0x18)
+		{
+			if(is_rom)
+			{
+				top->memDataIn[0]=rombuf[((addr>>2)+0)&0x1FFF];
+				top->memDataIn[1]=rombuf[((addr>>2)+1)&0x1FFF];
+				top->memDataIn[2]=rombuf[((addr>>2)+2)&0x1FFF];
+				top->memDataIn[3]=rombuf[((addr>>2)+3)&0x1FFF];
+				top->memOK=1;
+			}else
+				if(is_sram)
+			{
+				top->memDataIn[0]=srambuf[((addr>>2)+0)&0x7FF];
+				top->memDataIn[1]=srambuf[((addr>>2)+1)&0x7FF];
+				top->memDataIn[2]=srambuf[((addr>>2)+2)&0x7FF];
+				top->memDataIn[3]=srambuf[((addr>>2)+3)&0x7FF];
+				top->memOK=1;
+			}else if(is_dram)
+			{
+				top->memDataIn[0]=drambuf[((addr>>2)+0)&0x1FFFFFF];
+				top->memDataIn[1]=drambuf[((addr>>2)+1)&0x1FFFFFF];
+				top->memDataIn[2]=drambuf[((addr>>2)+2)&0x1FFFFFF];
+				top->memDataIn[3]=drambuf[((addr>>2)+3)&0x1FFFFFF];
+				top->memOK=1;
+			}else
+			{
+				top->memDataIn[0]=0xFFFFFFFFU;
+				top->memDataIn[1]=0xFFFFFFFFU;
+				top->memDataIn[2]=0xFFFFFFFFU;
+				top->memDataIn[3]=0xFFFFFFFFU;
+//				top->memOK=1;
+				top->memOK=3;
+			}
+
+			if(is_sram_b)
+			{
+				srambuf[((addrb>>2)+0)&0x7FF]=top->memDataOut[0];
+				srambuf[((addrb>>2)+1)&0x7FF]=top->memDataOut[1];
+				srambuf[((addrb>>2)+2)&0x7FF]=top->memDataOut[2];
+				srambuf[((addrb>>2)+3)&0x7FF]=top->memDataOut[3];
+				top->memOK=1;
+			}else if(is_dram_b)
+			{
+				drambuf[((addrb>>2)+0)&0x1FFFFFF]=top->memDataOut[0];
+				drambuf[((addrb>>2)+1)&0x1FFFFFF]=top->memDataOut[1];
+				drambuf[((addrb>>2)+2)&0x1FFFFFF]=top->memDataOut[2];
+				drambuf[((addrb>>2)+3)&0x1FFFFFF]=top->memDataOut[3];
+				top->memOK=1;
+			}
+
+		}else
+			if(top->memOpm&0x08)
 		{
 			if(is_mmio)
 			{
@@ -821,8 +878,7 @@ void MemUpdateForBus()
 				top->memDataIn[0], top->memDataIn[1],
 				top->memDataIn[2], top->memDataIn[3]);
 #endif
-		}
-
+		}else
 		if(top->memOpm&0x10)
 		{
 			top->memDataIn[0]=0xFFFFFFFFU;

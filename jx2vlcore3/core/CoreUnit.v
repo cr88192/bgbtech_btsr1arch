@@ -46,7 +46,11 @@ module CoreUnit(
 	dbg_outStatus1,
 	dbg_outStatus2,
 	dbg_outStatus3,
-	dbg_outStatus4
+	dbg_outStatus4,
+	dbg_outStatus5,
+	dbg_outStatus6,
+	dbg_outStatus7,
+	dbg_outStatus8
 	);
 
 input			clock;
@@ -123,6 +127,11 @@ output			dbg_outStatus2;
 output			dbg_outStatus3;
 output			dbg_outStatus4;
 
+output			dbg_outStatus5;
+output			dbg_outStatus6;
+output			dbg_outStatus7;
+output			dbg_outStatus8;
+
 reg[7:0]		tSegOutCharBit;
 reg[7:0]		tSegOutSegBit;
 assign	seg_outCharBit = tSegOutCharBit;
@@ -140,14 +149,28 @@ reg				tDbgOutStatus1B;
 reg				tDbgOutStatus2B;
 reg				tDbgOutStatus3B;
 reg				tDbgOutStatus4B;
+reg				tDbgOutStatus5B;
+reg				tDbgOutStatus6B;
+reg				tDbgOutStatus7B;
+reg				tDbgOutStatus8B;
+
 reg				tDbgOutStatus1;
 reg				tDbgOutStatus2;
 reg				tDbgOutStatus3;
 reg				tDbgOutStatus4;
+reg				tDbgOutStatus5;
+reg				tDbgOutStatus6;
+reg				tDbgOutStatus7;
+reg				tDbgOutStatus8;
+
 assign	dbg_outStatus1 = tDbgOutStatus1B;
 assign	dbg_outStatus2 = tDbgOutStatus2B;
 assign	dbg_outStatus3 = tDbgOutStatus3B;
 assign	dbg_outStatus4 = tDbgOutStatus4B;
+assign	dbg_outStatus5 = tDbgOutStatus5B;
+assign	dbg_outStatus6 = tDbgOutStatus6B;
+assign	dbg_outStatus7 = tDbgOutStatus7B;
+assign	dbg_outStatus8 = tDbgOutStatus8B;
 
 // assign			ps2kb_clk_o	= 1'bz;
 // assign			ps2kb_data_o	= 1'bz;
@@ -222,6 +245,7 @@ MmiModDdr3		ddr(
 wire[127:0]		memInData;
 wire[127:0]		memOutData;
 wire[31:0]		memAddr;
+wire[31:0]		memAddrB;
 wire[4:0]		memOpm;
 wire[1:0]		memOK;
 reg[63:0]		memBusExc;
@@ -250,13 +274,18 @@ wire			dbgOutStatus1;
 wire			dbgOutStatus2;
 wire			dbgOutStatus3;
 wire			dbgOutStatus4;
+wire			dbgOutStatus5;
+wire			dbgOutStatus6;
+wire			dbgOutStatus7;
+wire			dbgOutStatus8;
 
 ExUnit	cpu(
 	clock_cpu, 		reset,
 
-	memAddr,		memOpm,
+	memAddr,		memAddrB,
 	memInData,		memOutData,
-	memOK,			memBusExc,
+	memOpm,			memOK,
+	memBusExc,
 	
 	dbgOutPc,		dbgOutIstr,
 	dbgExHold1,		dbgExHold2,
@@ -266,7 +295,9 @@ ExUnit	cpu(
 	dbgDcOutOK,
 
 	dbgOutStatus1,	dbgOutStatus2,
-	dbgOutStatus3,	dbgOutStatus4
+	dbgOutStatus3,	dbgOutStatus4,
+	dbgOutStatus5,	dbgOutStatus6,
+	dbgOutStatus7,	dbgOutStatus8
 	);
 
 
@@ -311,9 +342,9 @@ MmiModGpio	gpio(
 MemL2A	l2a(
 	clock,		reset,
 
-	memAddr,	memOpm,
-	memOutData,	memInData,
-	memOK,
+	memAddr,		memAddrB,
+	memOutData,		memInData,
+	memOpm,			memOK,
 
 	ddrMemAddr,		ddrMemOpm,
 	ddrMemDataOut,	ddrMemDataIn,
@@ -522,6 +553,11 @@ begin
 	tDbgOutStatus3		<= dbgOutStatus3;
 	tDbgOutStatus4		<= dbgOutStatus4;
 	
+	tDbgOutStatus5		<= dbgOutStatus5;
+	tDbgOutStatus6		<= dbgOutStatus6;
+	tDbgOutStatus7		<= dbgOutStatus7;
+	tDbgOutStatus8		<= dbgOutStatus8;
+	
 	sevSegVal			<= dbgOutPc;
 end
 
@@ -552,6 +588,11 @@ begin
 	tDbgOutStatus2B		<= tDbgOutStatus2;
 	tDbgOutStatus3B		<= tDbgOutStatus3;
 	tDbgOutStatus4B		<= tDbgOutStatus4;
+
+	tDbgOutStatus5B		<= tDbgOutStatus5;
+	tDbgOutStatus6B		<= tDbgOutStatus6;
+	tDbgOutStatus7B		<= tDbgOutStatus7;
+	tDbgOutStatus8B		<= tDbgOutStatus8;
 
 	tSegOutCharBit		<= ssOutCharBit;
 	tSegOutSegBit		<= ssOutSegBit;

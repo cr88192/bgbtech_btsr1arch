@@ -146,8 +146,9 @@ reg				uartRxFifoReady;
 reg				uartLastRx;
 reg				uartLastTx;
 
+reg[9:0]		uartRxNextByte;
 reg[9:0]		uartRxByte;
-reg[9:0]		uartLastRxByte;
+reg				uartRxStrobe;
 
 reg[9:0]		uartAddByte;
 reg[9:0]		uartHoldByte;
@@ -186,7 +187,8 @@ begin
 	uartRxStepTimer		= 0;
 	uartRxNextFifo		= uartRxFifo;
 	uartNextRxBitPos	= uartRxBitPos;
-	uartRxByte			= uartLastRxByte;
+	uartRxNextByte		= uartRxByte;
+	uartRxStrobe		= 0;
 	
 	uartNextHoldByte	= uartHoldByte;
 	uartAddByte			= 0;
@@ -225,6 +227,7 @@ begin
 		{ uartRxStepTimer, uartNextRxFracTimer }	=
 			{ 1'b0, uartRxFracTimer } +
 			17'h1D7E;
+		uartRxStrobe = uartNextRxFracTimer[15] && !uartRxFracTimer[15];
 	end
 	
 	uartTxFifoFull		=  uartTxFifo[79];
@@ -341,82 +344,91 @@ begin
 			uartNextRxBitPos	= 0;
 			uartNextRxFracTimer	= 0;
 			uartRxStepTimer		= 0;
-			uartRxByte			= 0;
+			uartRxNextByte			= 0;
 		end
 	end
 
 	if(uartRxStepTimer)
 	begin
 		uartNextRxBitPos = uartRxBitPos + 1;
-		if(uartRxBitPos>=9)
+		if(uartRxBitPos==9)
 		begin
 			uartNextRxBitPos	= uartRxBitPos;
-			uartRxByte[9]		= 1;
+		end
+		else if(uartRxBitPos==8)
+		begin
+//			uartNextRxBitPos	= uartRxBitPos;
+			uartRxNextByte[9]		= 1;
 		end
 	end
 	
-	case(uartRxBitPos)
-		4'h1:	uartRxByte[0]=uartRx;
-		4'h2:	uartRxByte[1]=uartRx;
-		4'h3:	uartRxByte[2]=uartRx;
-		4'h4:	uartRxByte[3]=uartRx;
-		4'h5:	uartRxByte[4]=uartRx;
-		4'h6:	uartRxByte[5]=uartRx;
-		4'h7:	uartRxByte[6]=uartRx;
-		4'h8:	uartRxByte[7]=uartRx;
-		default: begin
-		end
-	endcase
+	if(uartRxStrobe)
+	begin
+		case(uartRxBitPos)
+			4'h1:	uartRxNextByte[0]=uartRx;
+			4'h2:	uartRxNextByte[1]=uartRx;
+			4'h3:	uartRxNextByte[2]=uartRx;
+			4'h4:	uartRxNextByte[3]=uartRx;
+			4'h5:	uartRxNextByte[4]=uartRx;
+			4'h6:	uartRxNextByte[5]=uartRx;
+			4'h7:	uartRxNextByte[6]=uartRx;
+			4'h8:	uartRxNextByte[7]=uartRx;
+			default: begin
+			end
+		endcase
+	end
 	
 	if(uartRxByte[9])
 	begin
-			if(!uartRxFifo[ 9])
-			begin
-				uartRxNextFifo[ 9: 0]=uartRxByte;
-				uartRxByte=0;
-			end
-			else
-			if(!uartRxFifo[19])
-			begin
-				uartRxNextFifo[19:10]=uartRxByte;
-				uartRxByte=0;
-			end
-			else
-			if(!uartRxFifo[29])
-			begin
-				uartRxNextFifo[29:20]=uartRxByte;
-				uartRxByte=0;
-			end
-			else
-			if(!uartRxFifo[39])
-			begin
-				uartRxNextFifo[39:30]=uartRxByte;
-				uartRxByte=0;
-			end
-			else
-			if(!uartRxFifo[49])
-			begin
-				uartRxNextFifo[49:40]=uartRxByte;
-				uartRxByte=0;
-			end
-			else
-			if(!uartRxFifo[59])
-			begin
-				uartRxNextFifo[59:50]=uartRxByte;
-				uartRxByte=0;
-			end
-			else
-			if(!uartRxFifo[69])
-			begin
-				uartRxNextFifo[69:60]=uartRxByte;
-				uartRxByte=0;
-			end
-			else
-			if(!uartRxFifo[79])
-			begin
-				uartRxNextFifo[79:70]=uartRxByte;
-				uartRxByte=0;
-			end
+		$display("UART GetByte %02X", uartRxByte[7:0]);
+
+		if(!uartRxFifo[ 9])
+		begin
+			uartRxNextFifo[ 9: 0]=uartRxByte;
+			uartRxNextByte=0;
+		end
+		else
+		if(!uartRxFifo[19])
+		begin
+			uartRxNextFifo[19:10]=uartRxByte;
+			uartRxNextByte=0;
+		end
+		else
+		if(!uartRxFifo[29])
+		begin
+			uartRxNextFifo[29:20]=uartRxByte;
+			uartRxNextByte=0;
+		end
+		else
+		if(!uartRxFifo[39])
+		begin
+			uartRxNextFifo[39:30]=uartRxByte;
+			uartRxNextByte=0;
+		end
+		else
+		if(!uartRxFifo[49])
+		begin
+			uartRxNextFifo[49:40]=uartRxByte;
+			uartRxNextByte=0;
+		end
+		else
+		if(!uartRxFifo[59])
+		begin
+			uartRxNextFifo[59:50]=uartRxByte;
+			uartRxNextByte=0;
+		end
+		else
+		if(!uartRxFifo[69])
+		begin
+			uartRxNextFifo[69:60]=uartRxByte;
+			uartRxNextByte=0;
+		end
+		else
+		if(!uartRxFifo[79])
+		begin
+			uartRxNextFifo[79:70]=uartRxByte;
+			uartRxNextByte=0;
+		end
 	end
 
 	casez(mmioAddr[15:0])
@@ -534,7 +546,7 @@ begin
 	uartRxFracTimer	<= uartNextRxFracTimer;
 	uartRxBitPos	<= uartNextRxBitPos;
 	uartRxFifo		<= uartRxNextFifo;
-	uartLastRxByte	<= uartRxByte;
+	uartRxByte		<= uartRxNextByte;
 
 	uartLastTx		<= uartTx;
 	uartLastRx		<= uartRx;

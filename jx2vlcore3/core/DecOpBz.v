@@ -1907,7 +1907,8 @@ begin
 		JX2_FMID_REGPC: begin
 			opRegM	= JX2_GR_PC;
 			opRegO	= opRegN_Xr;
-			opUIxt	= {opCcty, opBty[1:0], 1'b1, opBty};
+//			opUIxt	= {opCcty, opBty[1:0], 1'b1, opBty};
+			opUIxt	= {opCcty, opBty[1:0], 1'b0, opBty};
 		end
 
 		JX2_FMID_DRREG: begin

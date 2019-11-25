@@ -179,24 +179,30 @@ begin
 //			tRegOutSr[0]	= tCnvSrT;
 		end
 		JX2_UCMD_MOV_IR: begin
-			case(opUIxt[1:0])
-				2'b00: begin /* LDIx */
+			case(opUIxt[3:0])
+				4'b0000: begin /* LDIx */
 					tRegIdRn1	= regIdRm;
 					tRegValRn1	= {
 						regValImm[32] ? UV32_FF : UV32_00,
 						regValImm[31:0] };
 				end
-				2'b01: begin /* LDISH8 */
+				4'b0001: begin /* LDISH8 */
 					tRegIdRn1	= regIdRm;
 					tRegValRn1	= { regValRs[55:0], regValImm[7:0] };
 				end
-				2'b10: begin /* LDISH16 */
+				4'b0010: begin /* LDISH16 */
 					tRegIdRn1	= regIdRm;
 					tRegValRn1	= { regValRs[47:0], regValImm[15:0] };
 				end
-				2'b11: begin /* LDISH32 */
+				4'b0011: begin /* LDISH32 */
 					tRegIdRn1	= regIdRm;
 					tRegValRn1	= { regValRs[31:0], regValImm[31:0] };
+				end
+
+				default: begin
+					$display("ExEXB1: MOV_IR, Invalid UIxt %X", opUIxt);
+					tRegIdRn1	= regIdRm;
+					tRegValRn1	= regValRt;
 				end
 			endcase
 		end

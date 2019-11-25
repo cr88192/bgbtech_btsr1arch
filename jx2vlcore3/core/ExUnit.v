@@ -50,9 +50,10 @@ module ExUnit(
 	clock,
 	reset,
 	
-	memAddr,		memOpm,
+	memAddr,		memAddrB,
 	memDataIn,		memDataOut,
-	memOK,			memBusExc,
+	memOpm,			memOK,
+	memBusExc,
 	
 	dbgOutPc,		dbgOutIstr,
 	dbgExHold1,		dbgExHold2,
@@ -62,13 +63,16 @@ module ExUnit(
 	dbgDcOutOK,
 	
 	dbgOutStatus1,	dbgOutStatus2,
-	dbgOutStatus3,	dbgOutStatus4
+	dbgOutStatus3,	dbgOutStatus4,
+	dbgOutStatus5,	dbgOutStatus6,
+	dbgOutStatus7,	dbgOutStatus8
 	);
 
 input			clock;
 input			reset;
 
 output[31:0]	memAddr;
+output[31:0]	memAddrB;
 input[127:0]	memDataIn;
 output[127:0]	memDataOut;
 output[4:0]		memOpm;
@@ -91,6 +95,10 @@ output			dbgOutStatus1;
 output			dbgOutStatus2;
 output			dbgOutStatus3;
 output			dbgOutStatus4;
+output			dbgOutStatus5;
+output			dbgOutStatus6;
+output			dbgOutStatus7;
+output			dbgOutStatus8;
 
 reg				exHold1;
 reg				exHold2;
@@ -107,10 +115,18 @@ reg			tDbgOutStatus1;
 reg			tDbgOutStatus2;
 reg			tDbgOutStatus3;
 reg			tDbgOutStatus4;
+reg			tDbgOutStatus5;
+reg			tDbgOutStatus6;
+reg			tDbgOutStatus7;
+reg			tDbgOutStatus8;
 assign		dbgOutStatus1 = tDbgOutStatus1;
 assign		dbgOutStatus2 = tDbgOutStatus2;
 assign		dbgOutStatus3 = tDbgOutStatus3;
 assign		dbgOutStatus4 = tDbgOutStatus4;
+assign		dbgOutStatus5 = tDbgOutStatus5;
+assign		dbgOutStatus6 = tDbgOutStatus6;
+assign		dbgOutStatus7 = tDbgOutStatus7;
+assign		dbgOutStatus8 = tDbgOutStatus8;
 
 
 
@@ -174,9 +190,9 @@ MemL1A		memL1(
 	crOutMmcr,		crOutKrr,		crOutSr,
 	memRegExc,
 
-	memAddr,		memOpm,
+	memAddr,		memAddrB,
 	memDataIn,		memDataOut,
-	memOK
+	memOpm,			memOK
 	);
 
 /* ID1 */
@@ -1154,6 +1170,9 @@ reg[15:0]	tBraCycCnt;
 reg[15:0]	tBraNxtCycCnt;
 `endif
 
+reg[15:0]	tHoldCycCnt;
+reg[15:0]	tHoldNxtCycCnt;
+
 always @*
 begin
 	exHold1			= 0;
@@ -1170,6 +1189,13 @@ begin
 	tDbgOutStatus2	= 0;
 	tDbgOutStatus3	= 0;
 	tDbgOutStatus4	= 0;
+
+	tDbgOutStatus5	= 0;
+	tDbgOutStatus6	= 0;
+	tDbgOutStatus7	= 0;
+	tDbgOutStatus8	= 0;
+
+	tHoldNxtCycCnt	= 0;
 
 	crInExsr		= crOutExsr;
 	crInSpc			= crOutSpc;
@@ -1344,6 +1370,11 @@ begin
 	tDbgOutStatus3	= exHold1C;
 	tDbgOutStatus4	= exHold1D;
 
+	tDbgOutStatus5	= ifOutPcOK[1];
+	tDbgOutStatus6	= dcOutOK[1];
+	tDbgOutStatus7	= memOK[1];
+	tDbgOutStatus8	= memOpm[3] || memOpm[4];
+
 `ifdef jx2_debug_expipe
 // `ifndef def_true
 //	if(exHold1)
@@ -1362,6 +1393,132 @@ begin
 		begin
 			$display("ExHold2: Ex1=%d Ex2=%d I$=%d FPU=%d",
 				ex1Hold, ex2Hold, ifOutPcOK[1], ex1FpuOK[1]);
+		end
+	end
+`endif
+
+`ifdef def_true
+	if(exHold1)
+	begin
+		tHoldNxtCycCnt	= tHoldCycCnt + 1;
+		if(tHoldCycCnt==65535)
+		begin
+			tHoldNxtCycCnt	= 65535;
+		end
+		else
+		if(tHoldCycCnt>65280)
+		begin
+//			tHoldNxtCycCnt	= tHoldCycCnt;
+			tHoldNxtCycCnt	= 65535;
+			$display("ExUnit: Deadlock Detected");
+
+`ifdef jx2_enable_wex
+			$display("ID1: PC0=%X PC2=%X D=%X-%X OpA=%X-%X OpB=%X-%X F=%d",
+				id1ValBPc,	id1ValPc,
+				id1IstrWord[15: 0], id1IstrWord[31:16],
+				idA1IdUCmd, idA1IdUIxt,
+				idB1IdUCmd, idB1IdUIxt,
+				opBraFlushMask[2]);
+			$display("     Rs=%X Rt=%X Ru=%X Rv=%X Rm=%X Rn=%X",
+				idA1IdRegM, idA1IdRegO, idB1IdRegM, idB1IdRegO,
+				idA1IdRegN, idB1IdRegN);
+`ifdef jx2_enable_wex3w
+			$display("     Rx=%X Ry=%X Ro=%X",
+				idC1IdRegM, idC1IdRegO, idC1IdRegN);
+`endif
+
+			$display("ID2: PC0=%X PC2=%X D=%X-%X OpA=%X-%X OpB=%X-%X F=%d",
+				id2ValBPc,	gprValPc,
+				id2IstrWord[15: 0], id2IstrWord[31:16],
+				idA2IdUCmd, idA2IdUIxt, idB2IdUCmd, idB2IdUIxt,
+				opBraFlushMask[1]);
+			$display("     Rs=%X(%X) Rt=%X(%X) Rm=%X(%X)",
+				gprIdRs, gprValRs,
+				gprIdRt, gprValRt,
+				gprIdRm, gprValRm);
+			$display("     Ru=%X(%X) Rv=%X(%X) Rn=%X(%X)",
+				gprIdRu, gprValRu,
+				gprIdRv, gprValRv,
+				gprIdRn, gprValRn);
+`ifdef jx2_enable_wex3w
+			$display("     Rx=%X(%X) Ry=%X(%X) Ro=%X(%X)",
+				gprIdRx, gprValRx,
+				gprIdRy, gprValRy,
+				gprIdRo, gprValRo);
+`endif
+
+`else
+			$display("ID1: PC0=%X PC2=%X D=%X-%X Op=%X-%X F=%d",
+				id1ValBPc,	id1ValPc,
+				id1IstrWord[15: 0], id1IstrWord[31:16],
+				id1IdUCmd, id1IdUIxt, opBraFlushMask[2]);
+			$display("     Rs=%X Rt=%X Rn=%X",
+				id1IdRegM, id1IdRegO, id1IdRegN);
+
+			$display("ID2: PC0=%X PC2=%X D=%X-%X Op=%X-%X F=%d",
+				id2ValBPc,	gprValPc,
+				id2IstrWord[15: 0], id2IstrWord[31:16],
+				id2IdUCmd, id2IdUIxt, opBraFlushMask[1]);
+			$display("     Rs=%X(%X) Rt=%X(%X) Rm=%X(%X)",
+				gprIdRs, gprValRs,
+				gprIdRt, gprValRt,
+				gprIdRm, gprValRm);
+`endif
+
+			$display("EX1: PC0=%X PC2=%X D=%X-%X Op=%X-%X F=%d",
+				ex1ValBPc,	ex1RegValPc,
+				ex1IstrWord[15: 0], ex1IstrWord[31:16],
+				ex1OpUCmd, ex1OpUIxt, ex1BraFlush);
+			$display("     Rs=%X(%X) Rt=%X(%X) Rn0=%X(%X)",
+				ex1RegIdRs, ex1RegValRs,
+				ex1RegIdRt, ex1RegValRt,
+				ex1RegIdRm, ex1RegValRm);
+			$display("     Rn1=%X(%X) Cn1=%X(%X)",
+				ex1RegIdRn1, ex1RegValRn1,
+				ex1RegIdCn1, ex1RegValCn1);
+
+			$display("EX2: PC0=%X PC2=%X D=%X-%X Op=%X-%X F=%d",
+				ex2ValBPc,	ex2RegValPc,
+				ex2IstrWord[15: 0], ex2IstrWord[31:16],
+				ex2OpUCmd, ex2OpUIxt, ex2BraFlush);
+			$display("     Rs=%X(%X) Rt=%X(%X) Rn=%X(%X)",
+				ex2RegIdRs, ex2RegValRs,
+				ex2RegIdRt, ex2RegValRt,
+				ex2RegIdRm, ex2RegValRm);
+			$display("     Rn1=%X(%X) Cn1=%X(%X)",
+				ex2RegIdRn2, ex2RegValRn2,
+				ex2RegIdCn2, ex2RegValCn2);
+
+`ifdef jx2_enable_wex
+			if(exB2OpUCmd[5:0]!=6'h00)
+			begin
+				$display("  EX2-B: Op=%X-%X",
+					exB2OpUCmd, exB2OpUIxt);
+				$display("     Rs=%X(%X) Rt=%X(%X) Rn=%X(%X)",
+					exB2RegIdRs, exB2RegValRs,
+					exB2RegIdRt, exB2RegValRt,
+					exB2RegIdRm, exB2RegValRm);
+				$display("     Rn1=%X(%X)",
+					exB2RegIdRn2, exB2RegValRn2);
+			end
+
+`ifdef jx2_enable_wex3w
+			if(exC2OpUCmd[5:0]!=6'h00)
+			begin
+				$display("  EX2-C: Op=%X-%X",
+					exC2OpUCmd, exC2OpUIxt);
+				$display("     Rs=%X(%X) Rt=%X(%X) Rn=%X(%X)",
+					exC2RegIdRs, exC2RegValRs,
+					exC2RegIdRt, exC2RegValRt,
+					exC2RegIdRm, exC2RegValRm);
+				$display("     Rn1=%X(%X)",
+					exC2RegIdRn2, exC2RegValRn2);
+			end
+`endif
+`endif
+
+			$display("");
+
 		end
 	end
 `endif
@@ -1782,6 +1939,8 @@ begin
 
 //	tRegExc			<= tNxtRegExc;
 	tDelayExc		<= tNxtDelayExc;
+
+	tHoldCycCnt		<= tHoldNxtCycCnt;
 
 `ifdef jx2_debug_hitmiss
 	tBraHitMiss		<= tBraNxtHitMiss;

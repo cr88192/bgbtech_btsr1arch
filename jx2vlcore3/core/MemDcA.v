@@ -28,9 +28,10 @@ module MemDcA(
 	regOutVal,		regInVal,
 	regOutOK,		dcInHold,
 
-	memAddr,		memOpm,
+	memAddr,		memAddrB,
 	memDataIn,		memDataOut,
-	memOK,			memNoRwx
+	memOpm,			memOK,
+	memNoRwx
 	);
 
 input			clock;
@@ -47,6 +48,7 @@ input			dcInHold;
 
 
 output[ 31:0]	memAddr;		//memory PC address
+output[ 31:0]	memAddrB;		//memory PC address
 output[  4:0]	memOpm;			//memory PC output-enable
 
 input [127:0]	memDataIn;		//memory PC data
@@ -68,11 +70,13 @@ assign			regOutVal		= tRegOutVal2;
 assign			regOutOK		= tRegOutOK2;
 `endif
 
-reg[31:0]		tMemAddr;		//memory PC address
+reg[31:0]		tMemAddr;		//memory PC address (primary)
+reg[31:0]		tMemAddrB;		//memory PC address (secondary)
 reg[ 4:0]		tMemOpm;		//memory PC output-enable
 reg[127:0]		tMemDataOut;	//memory PC address
 
 assign	memAddr		= tMemAddr;
+assign	memAddrB	= tMemAddrB;
 assign	memOpm		= tMemOpm;
 assign	memDataOut	= tMemDataOut;
 
@@ -888,11 +892,35 @@ begin
 				$display("L1D$ MissA, Write=%X", tBlkDataA);
 `endif
 			
+`ifdef jx2_mem_fulldpx
+// `ifndef def_true
+//				if((tReqAddrA[27:12]!=0) && (tBlkAddrA[27:12]!=0))
+				if((tReqAddrA[27:16]!=0) && (tBlkAddrA[27:16]!=0) &&
+					!tReqAddrA[27] && !tBlkAddrA[27] &&
+					(tReqAddrA[11:6]!=tBlkAddrA[11:6]))
+				begin
+					tMemLatchA		<= 1;
+					tMemOpm			<= UMEM_OPM_SW_TILE;
+					tMemAddr		<= { tReqAddrA, 4'b0 };
+					tMemAddrB		<= { tBlkAddrA, 4'b0 };
+					tMemDataOut		<= tBlkDataA;
+					tMemLatchWdA	<= 1;
+				end
+				else
+				begin
+					tMemLatchA		<= 1;
+					tMemOpm			<= UMEM_OPM_WR_TILE;
+					tMemAddr		<= { tBlkAddrA, 4'b0 };
+					tMemDataOut		<= tBlkDataA;
+					tMemLatchWdA	<= 0;
+				end
+`else
 				tMemLatchA		<= 1;
 				tMemOpm			<= UMEM_OPM_WR_TILE;
 				tMemAddr		<= { tBlkAddrA, 4'b0 };
 				tMemDataOut		<= tBlkDataA;
 				tMemLatchWdA	<= 0;
+`endif
 			end
 			else
 			begin
@@ -981,11 +1009,35 @@ begin
 				$display("L1D$ MissB, Write=%X", tBlkDataB);
 `endif
 
+`ifdef jx2_mem_fulldpx
+// `ifndef def_true
+//				if((tReqAddrB[27:12]!=0) && (tBlkAddrB[27:12]!=0))
+				if((tReqAddrB[27:16]!=0) && (tBlkAddrB[27:16]!=0) &&
+					!tReqAddrB[27] && !tBlkAddrB[27] &&
+					(tReqAddrB[11:6]!=tBlkAddrB[11:6]))
+				begin
+					tMemLatchB		<= 1;
+					tMemOpm			<= UMEM_OPM_SW_TILE;
+					tMemAddr		<= { tReqAddrB, 4'b0 };
+					tMemAddrB		<= { tBlkAddrB, 4'b0 };
+					tMemDataOut		<= tBlkDataB;
+					tMemLatchWdB	<= 1;
+				end
+				else
+				begin
+					tMemLatchB		<= 1;
+					tMemOpm			<= UMEM_OPM_WR_TILE;
+					tMemAddr		<= { tBlkAddrB, 4'b0 };
+					tMemDataOut		<= tBlkDataB;
+					tMemLatchWdB	<= 0;
+				end
+`else
 				tMemLatchB		<= 1;
 				tMemOpm			<= UMEM_OPM_WR_TILE;
 				tMemAddr		<= { tBlkAddrB, 4'b0 };
 				tMemDataOut		<= tBlkDataB;
 				tMemLatchWdB	<= 0;
+`endif
 			end
 			else
 			begin

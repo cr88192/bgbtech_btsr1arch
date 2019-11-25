@@ -10,9 +10,9 @@ module MemL2A(
 	clock,
 	reset,
 	
-	memAddr,	memOpm,
+	memAddr,	memAddrB,
 	memDataIn,	memDataOut,
-	memOK,
+	memOpm,		memOK,
 
 	ddrMemAddr,		ddrMemOpm,
 	ddrMemDataIn,	ddrMemDataOut,
@@ -27,6 +27,7 @@ input			clock;
 input			reset;
 	
 input[31:0]		memAddr;
+input[31:0]		memAddrB;
 input[127:0]	memDataIn;
 output[127:0]	memDataOut;
 input[4:0]		memOpm;
@@ -82,9 +83,9 @@ wire[1:0]		l2MemOK;
 MemL2Dc		l2dc(
 	clock,		reset,
 
-	memAddr,	l2MemOpm,
+	memAddr,	memAddrB,
 	memDataIn,	l2MemDataOut,
-	l2MemOK,
+	l2MemOpm,	l2MemOK,
 
 	ddrMemAddr,		ddrMemOpm,
 	ddrMemDataIn,	ddrMemDataOut,

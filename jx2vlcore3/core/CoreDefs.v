@@ -208,6 +208,9 @@ parameter[63:0] UV64_FF			= 64'hFFFFFFFF_FFFFFFFF;	//
 parameter[127:0] UV128_00		= { UV64_00, UV64_00 };	//
 parameter[127:0] UV128_FF		= { UV64_FF, UV64_FF };	//
 
+parameter[255:0] UV256_00		= { UV128_00, UV128_00 };	//
+parameter[255:0] UV256_FF		= { UV128_FF, UV128_FF };	//
+
 
 parameter[1:0] UMEM_OK_READY	= 2'h0;		//Ready (Awaiting Request)
 parameter[1:0] UMEM_OK_OK		= 2'h1;		//OK (Request Successful)
@@ -624,6 +627,8 @@ parameter[5:0] JX2_UCIX_IXS_INVDC	= 6'h11;		//Flush D$
 `define jx2_enable_ops48
 `endif
 `endif
+
+`define jx2_mem_fulldpx			//Full Duplex Mode
 
 // `define jx2_ddr_bl64b			//DDR interface is 64-bit (DDR2)
 

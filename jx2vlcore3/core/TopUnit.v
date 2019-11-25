@@ -34,7 +34,11 @@ module TopUnit(
 	dbg_outStatus1,
 	dbg_outStatus2,
 	dbg_outStatus3,
-	dbg_outStatus4
+	dbg_outStatus4,
+	dbg_outStatus5,
+	dbg_outStatus6,
+	dbg_outStatus7,
+	dbg_outStatus8
 	);
 
 input			clock;
@@ -110,6 +114,10 @@ output			dbg_outStatus1;
 output			dbg_outStatus2;
 output			dbg_outStatus3;
 output			dbg_outStatus4;
+output			dbg_outStatus5;
+output			dbg_outStatus6;
+output			dbg_outStatus7;
+output			dbg_outStatus8;
 
 wire		ps2_clk_i;
 wire		ps2_data_i;
@@ -167,7 +175,11 @@ CoreUnit core(
 	dbg_outStatus1,
 	dbg_outStatus2,
 	dbg_outStatus3,
-	dbg_outStatus4
+	dbg_outStatus4,
+	dbg_outStatus5,
+	dbg_outStatus6,
+	dbg_outStatus7,
+	dbg_outStatus8
 	);
 
 endmodule

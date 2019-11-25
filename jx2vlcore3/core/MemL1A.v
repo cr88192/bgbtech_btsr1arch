@@ -37,9 +37,9 @@ module MemL1A(
 	
 	regOutExc,
 
-	memAddr,		memOpm,
+	memAddr,		memAddrB,
 	memDataIn,		memDataOut,
-	memOK
+	memOpm,			memOK
 	);
 
 input			clock;
@@ -68,13 +68,15 @@ input[63:0]		regInSr;
 
 output[63:0]	regOutExc;
 
-output[ 31:0]	memAddr;		//Memory address
+output[ 31:0]	memAddr;		//Memory address (Primary)
+output[ 31:0]	memAddrB;		//Memory address (Secondary)
 output[  4:0]	memOpm;			//Memory Operation
 input [127:0]	memDataIn;		//Memory Data In
 output[127:0]	memDataOut;		//Memory Data Out
 input [  1:0]	memOK;			//Memory OK
 
 reg[ 31:0]		tMemAddr;		//Memory address
+reg[ 31:0]		tMemAddrB;		//Memory address
 reg[  4:0]		tMemOpm;		//Memory Operation
 reg[127:0]		tMemDataOut;	//Memory Data Out
 
@@ -86,17 +88,20 @@ wire[3:0]		tMemAccNoRwx;
 `ifdef jx2_enable_mmu
 
 wire[31:0]		tTlbAddr;
+wire[31:0]		tTlbAddrB;
 wire[63:0]		tTlbExc;
 wire[1:0]		tTlbOK;
 wire[4:0]		tTlbOpm;
 
 assign	memAddr		= tTlbAddr;
+assign	memAddrB	= tTlbAddrB;
 assign	memOpm		= tTlbOpm;
 assign	memDataOut	= tMemDataOut;
 
 `else
 
 assign	memAddr		= tMemAddr;
+assign	memAddrB	= tMemAddrB;
 assign	memOpm		= tMemOpm;
 assign	memDataOut	= tMemDataOut;
 
@@ -116,7 +121,8 @@ assign	tTlbLdtlbData = { regInDhr, regInDlr };
 
 MmuTlb	tlb(
 	clock,			reset,
-	tMemAddr,		tTlbAddr,	tTlbLdtlbData,
+	tMemAddr,		tTlbAddr,
+	tMemAddrB,		tTlbAddrB,	tTlbLdtlbData,
 	tMemOpm,		tTlbOpm,
 	tTlbExc,		tTlbOK,		tMemAccNoRwx,
 	regInMmcr,		regInKrr,
@@ -153,6 +159,7 @@ MemIcA		memIc(
 wire[  1:0]		dfOutOK;
 
 wire[ 31:0]		dfMemAddr;
+wire[ 31:0]		dfMemAddrB;
 wire[  4:0]		dfMemOpm;
 reg [127:0]		dfMemDataIn;
 wire[127:0]		dfMemDataOut;
@@ -165,9 +172,10 @@ MemDcA		memDc(
 	dcOutVal,		dcInVal,
 	dfOutOK,		dcInHold,
 
-	dfMemAddr,		dfMemOpm,
+	dfMemAddr,		dfMemAddrB,
 	dfMemDataIn,	dfMemDataOut,
-	dfMemOK,		dfMemNoRwx
+	dfMemOpm,		dfMemOK,
+	dfMemNoRwx
 	);
 
 reg		tLatchIc;
@@ -188,6 +196,7 @@ begin
 	tRegOutExc	= UV64_00;
 
 	tMemAddr	= UV32_XX;
+	tMemAddrB	= UV32_XX;
 	tMemOpm		= UMEM_OPM_READY;
 	tMemDataOut	= UV128_XX;
 	
@@ -221,6 +230,7 @@ begin
 	
 		ifMemOK		= memOK;
 		tMemAddr	= ifMemAddr;
+		tMemAddrB	= 0;
 		tMemOpm		= ifMemOpm;
 		tMemDataOut	= UV128_XX;
 		tNxtLatchIc	= tIfNzOpm || (memOK != UMEM_OK_READY);
@@ -236,6 +246,7 @@ begin
 		dfMemOK		= memOK;
 		dfMemNoRwx	= tMemAccNoRwx;
 		tMemAddr	= dfMemAddr;
+		tMemAddrB	= dfMemAddrB;
 		tMemOpm		= dfMemOpm;
 		tMemDataOut	= dfMemDataOut;
 		tNxtLatchDc	= tDfNzOpm || (memOK != UMEM_OK_READY);

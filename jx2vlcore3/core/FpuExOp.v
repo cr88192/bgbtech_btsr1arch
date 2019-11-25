@@ -270,10 +270,10 @@ begin
 	casez( { tBraFlushL || reset, tOpCmdL[7:6] } )
 		3'b000: 	tOpEnable = 1;
 		3'b001: 	tOpEnable = 0;
-//		3'b010: 	tOpEnable = tRegInSr[0];
-		3'b010: 	tOpEnable = tRegInSrL[0];
-//		3'b011: 	tOpEnable = !tRegInSr[0];
-		3'b011: 	tOpEnable = !tRegInSrL[0];
+		3'b010: 	tOpEnable = tRegInSr[0];
+//		3'b010: 	tOpEnable = tRegInSrL[0];
+		3'b011: 	tOpEnable = !tRegInSr[0];
+//		3'b011: 	tOpEnable = !tRegInSrL[0];
 		3'b1zz:		tOpEnable = 0;
 	endcase
 

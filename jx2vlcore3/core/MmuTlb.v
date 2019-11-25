@@ -13,7 +13,8 @@ Filters output from the L1's memory interface, so that L1 operates with virtual 
 module MmuTlb(
 	/* verilator lint_off UNUSED */
 	clock,			reset,
-	regInAddr,		regOutAddr,		regInData,
+	regInAddr,		regOutAddr,
+	regInAddrB,		regOutAddrB,	regInData,
 	regInOpm,		regOutOpm,
 	regOutExc,		regOutOK,		regOutNoRwx,
 	regInMMCR,		regInKRR,		regInSR
@@ -24,8 +25,10 @@ module MmuTlb(
 input			clock;			//clock
 input			reset;			//reset
 
-input[31:0]		regInAddr;		//input Address
-output[31:0]	regOutAddr;		//output Address
+input[31:0]		regInAddr;		//input Address (Primary)
+output[31:0]	regOutAddr;		//output Address (Primary)
+input[31:0]		regInAddrB;		//input Address (Secondary)
+output[31:0]	regOutAddrB;	//output Address (Secondary)
 input[127:0]	regInData;		//input data (LDTLB)
 
 input[4:0]		regInOpm;		//Operation Size/Type
@@ -42,12 +45,14 @@ input[63:0]		regInSR;		//Status Register
 
 
 reg[31:0]		tRegOutAddr2;
+reg[31:0]		tRegOutAddrB2;
 reg[15:0]		tRegOutExc2;
 reg[63:0]		tRegOutTea2;
 reg[1:0]		tRegOutOK2;
 reg[4:0]		tRegOutOpm2;
 
 assign		regOutAddr = tRegOutAddr2;
+assign		regOutAddrB = tRegOutAddrB2;
 assign		regOutOK = tRegOutOK2;
 assign		regOutOpm = tRegOutOpm2;
 // assign		regOutExc = tRegOutExc2;
@@ -60,12 +65,14 @@ assign		regOutExc = { tRegOutTea2[47:0], tRegOutExc2 };
 // assign		regOutTea = tRegOutTea;
 
 reg[31:0]		tRegOutAddr;
+reg[31:0]		tRegOutAddrB;
 reg[15:0]		tRegOutExc;
 reg[63:0]		tRegOutTea;
 reg[1:0]		tRegOutOK;
 reg[4:0]		tRegOutOpm;
 
 reg[31:0]		tRegInAddr;		//input Address
+reg[31:0]		tRegInAddrB;	//input Address
 
 reg[63:0]	tlbBlkHiA[63:0];
 reg[63:0]	tlbBlkHiB[63:0];
@@ -88,6 +95,11 @@ reg[127:0]	tlbHdatB;
 reg[127:0]	tlbHdatC;
 reg[127:0]	tlbHdatD;
 
+reg[127:0]	tlbHdatE;
+reg[127:0]	tlbHdatF;
+reg[127:0]	tlbHdatG;
+reg[127:0]	tlbHdatH;
+
 reg			tlbMmuEnable;
 reg			tlbMmuSkipA;
 reg			tlbMmuSkipB;
@@ -97,8 +109,15 @@ reg			tlbHitB;
 reg			tlbHitC;
 reg			tlbHitD;
 
+reg			tlbHitE;
+reg			tlbHitF;
+reg			tlbHitG;
+reg			tlbHitH;
+
 reg			tlbHitAB;
 reg			tlbHitCD;
+reg			tlbHitEF;
+reg			tlbHitGH;
 reg			tlbHit;
 
 reg			tlbMiss;
@@ -112,11 +131,17 @@ reg			icPageEq;
 
 reg[31:0]	tlbAddrAB;
 reg[31:0]	tlbAddrCD;
+reg[31:0]	tlbAddrEF;
+reg[31:0]	tlbAddrGH;
 reg[31:0]	tlbAccAB;
 reg[31:0]	tlbAccCD;
+reg[31:0]	tlbAccEF;
+reg[31:0]	tlbAccGH;
 
 reg[31:0]	tlbAddr;
 reg[31:0]	tlbAcc;
+reg[31:0]	tlbAddrB;
+reg[31:0]	tlbAccB;
 reg			tlbIs32b;
 
 wire[15:0]	tTlbExc;
@@ -159,13 +184,25 @@ begin
 	end
 		
 	tlbHixA = regInAddr[17:12]^regInAddr[21:16];
-	tlbHixB = regOutAddr[17:12]^regOutAddr[21:16];
+	tlbHixB = regInAddrB[17:12]^regInAddrB[21:16];
 
 	tlbHdatA = { tlbBlkHiA[tlbHixA], tlbBlkLoA[tlbHixA]};
 	tlbHdatB = { tlbBlkHiB[tlbHixA], tlbBlkLoB[tlbHixA]};
 	tlbHdatC = { tlbBlkHiC[tlbHixA], tlbBlkLoC[tlbHixA]};
 	tlbHdatD = { tlbBlkHiD[tlbHixA], tlbBlkLoD[tlbHixA]};
-	
+
+`ifdef jx2_mem_fulldpx
+	tlbHdatE = { tlbBlkHiA[tlbHixB], tlbBlkLoA[tlbHixB]};
+	tlbHdatF = { tlbBlkHiB[tlbHixB], tlbBlkLoB[tlbHixB]};
+	tlbHdatG = { tlbBlkHiC[tlbHixB], tlbBlkLoC[tlbHixB]};
+	tlbHdatH = { tlbBlkHiD[tlbHixB], tlbBlkLoD[tlbHixB]};
+`else
+	tlbHdatE = 0;
+	tlbHdatF = 0;
+	tlbHdatG = 0;
+	tlbHdatH = 0;
+`endif
+
 	if(tlbFlushMask[tlbHixA])
 	begin
 		tlbHdatA[0] = 0;
@@ -173,15 +210,40 @@ begin
 		tlbHdatC[0] = 0;
 		tlbHdatD[0] = 0;
 	end
+
+`ifdef jx2_mem_fulldpx
+	if(tlbFlushMask[tlbHixB])
+	begin
+		tlbHdatE[0] = 0;
+		tlbHdatF[0] = 0;
+		tlbHdatG[0] = 0;
+		tlbHdatH[0] = 0;
+	end
+`endif
 	
 	tlbHitA = (regInAddr [31:12] == tlbHdatA[95:76]) && tlbHdatA[0];
 	tlbHitB = (regInAddr [31:12] == tlbHdatB[95:76]) && tlbHdatB[0];
 	tlbHitC = (regInAddr [31:12] == tlbHdatC[95:76]) && tlbHdatC[0];
 	tlbHitD = (regInAddr [31:12] == tlbHdatD[95:76]) && tlbHdatD[0];
+
+`ifdef jx2_mem_fulldpx
+	tlbHitE = (regInAddrB[31:12] == tlbHdatE[95:76]) && tlbHdatE[0];
+	tlbHitF = (regInAddrB[31:12] == tlbHdatF[95:76]) && tlbHdatF[0];
+	tlbHitG = (regInAddrB[31:12] == tlbHdatG[95:76]) && tlbHdatG[0];
+	tlbHitH = (regInAddrB[31:12] == tlbHdatH[95:76]) && tlbHdatH[0];
+`else
+	tlbHitE = 1;
+	tlbHitF = 1;
+	tlbHitG = 1;
+	tlbHitH = 1;
+`endif
 	
 	tlbHitAB = tlbHitA || tlbHitB;
 	tlbHitCD = tlbHitC || tlbHitD;
-	tlbHit = tlbHitAB || tlbHitCD;
+	tlbHitEF = tlbHitE || tlbHitF;
+	tlbHitGH = tlbHitG || tlbHitH;
+//	tlbHit = tlbHitAB || tlbHitCD;
+	tlbHit = (tlbHitAB || tlbHitCD) && (tlbHitEF || tlbHitGH);
 
 	tlbAddrAB =
 		tlbHitA ? { tlbHdatA[31:12], regInAddr[11:0] } :
@@ -200,6 +262,28 @@ begin
 	tlbAddr = tlbHitAB ? tlbAddrAB : tlbAddrCD;
 	tlbAcc = tlbHitAB ? tlbAccAB : tlbAccCD;
 
+`ifdef jx2_mem_fulldpx
+	tlbAddrEF =
+		tlbHitE ? { tlbHdatE[31:12], regInAddrB[11:0] } :
+			{ tlbHdatF[31:12], regInAddrB[11:0] };
+	tlbAccEF = 
+		tlbHitE ? { tlbHdatE[127:112], tlbHdatE[75:64], tlbHdatE[7:4] } :
+			{ tlbHdatF[127:112], tlbHdatF[75:64], tlbHdatF[7:4] };
+
+	tlbAddrGH =
+		tlbHitG ? { tlbHdatG[31:12], regInAddrB[11:0] } :
+			{ tlbHdatH[31:12], regInAddrB[11:0] };
+	tlbAccGH = 
+		tlbHitG ? { tlbHdatG[127:112], tlbHdatG[75:64], tlbHdatG[7:4] } :
+			{ tlbHdatH[127:112], tlbHdatH[75:64], tlbHdatH[7:4] };
+
+	tlbAddrB = tlbHitEF ? tlbAddrEF : tlbAddrGH;
+	tlbAccB = tlbHitEF ? tlbAccEF : tlbAccGH;
+`else
+	tlbAddrB = regInAddrB;
+	tlbAccB = 0;
+`endif
+
 	tlbMmuSkip = 0;
 	if(regInAddr[31])
 		tlbMmuSkip = 1;
@@ -210,12 +294,14 @@ begin
 	end
 	else
 	begin
-		tlbAddr = regInAddr[31:0];
-		tlbMiss = 0;
+		tlbAddr		= regInAddr [31:0];
+		tlbAddrB	= regInAddrB[31:0];
+		tlbMiss		= 0;
 	end
 
 	tRegOutExc = 0;
-	tRegOutTea[31:0] = regInAddr;
+//	tRegOutTea[31:0] = regInAddr;
+	tRegOutTea[31:0] = (tlbHitAB || tlbHitCD) ? regInAddrB : regInAddr;
 
 	if(tlbMmuEnable)
 	begin
@@ -245,12 +331,18 @@ begin
 		tRegOutExc = 16'hA001;
 	end
 	
-	tRegOutAddr = tlbAddr;
-	tRegOutOpm = regInOpm;
+	tRegOutAddr  = tlbAddr;
+	tRegOutAddrB = tlbAddrB;
+	tRegOutOpm   = regInOpm;
 
 	if(regInAddr[31:0]!=tlbAddr[31:0])
 	begin
-		$display("TLB %X -> %X", regInAddr, tlbAddr);
+		$display("TLB(A) %X -> %X", regInAddr, tlbAddr);
+	end
+
+	if(regInAddrB[31:0]!=tlbAddrB[31:0])
+	begin
+		$display("TLB(B) %X -> %X", regInAddrB, tlbAddrB);
 	end
 	
 	if(regInIsINVTLB || reset)
@@ -282,12 +374,14 @@ end
 always @ (posedge clock)
 begin
 	tRegOutAddr2	<= tRegOutAddr;
+	tRegOutAddrB2	<= tRegOutAddrB;
 	tRegOutExc2		<= tRegOutExc;
 	tRegOutTea2		<= tRegOutTea;
 	tRegOutOK2		<= tRegOutOK;
 	tRegOutOpm2		<= tRegOutOpm;
 
 	tRegInAddr		<= regInAddr;
+	tRegInAddrB		<= regInAddrB;
 	tlbFlushMask	<= tlbNxtFlushMask;
 
 	if(tlbDoLdtlb && !tlbLdtlbOK)
