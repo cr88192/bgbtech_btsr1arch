@@ -5,7 +5,8 @@ byte ena;
 volatile u32 *buf;
 };
 
-struct conparm_s tk_con;
+struct conparm_s tk_con_base;
+struct conparm_s *tk_con;
 
 // byte tk_con_x;
 // byte tk_con_y;
@@ -18,13 +19,14 @@ struct conparm_s tk_con;
 
 void tk_con_init()
 {
+	tk_con=&tk_con_base;
 //	tk_con_buf=(u32 *)0xF00A0000;
 //	tk_con_x=0;
 //	tk_con_y=0;
 
-	tk_con.buf=(u32 *)0xF00A0000;
-	tk_con.x=0;
-	tk_con.y=0;
+	tk_con->buf=(u32 *)0xF00A0000;
+	tk_con->x=0;
+	tk_con->y=0;
 
 //	((u32 *)0xF00BFF00)[0]=0x0015;		//320x200x16bpp
 //	((u32 *)0xF00BFF00)[0]=0x0005;		//
@@ -49,7 +51,7 @@ void tk_con_scroll_up()
 	int i0, i1;
 	int i, j, k;
 
-	buf=tk_con.buf;
+	buf=tk_con->buf;
 
 #if 1
 	for(i=0; i<TK_CONHEIGHTN1; i++)
@@ -105,15 +107,15 @@ void tk_con_scroll_up()
 void tk_con_newline()
 {
 //	tk_con_x=0;
-	tk_con.x=0;
+	tk_con->x=0;
 //	tk_con_y++;
-	tk_con.y++;
+	tk_con->y++;
 //	if(tk_con_y>=25)
-	if(tk_con.y>=25)
+	if(tk_con->y>=25)
 	{
 		tk_con_scroll_up();
 //		tk_con_y--;
-		tk_con.y--;
+		tk_con->y--;
 	}
 }
 
@@ -125,7 +127,7 @@ void tk_con_putc(int ch)
 	{
 		if(ch=='\r')
 //			{ tk_con_x=0; return; }
-			{ tk_con.x=0; return; }
+			{ tk_con->x=0; return; }
 		if(ch=='\n')
 		{
 			tk_con_newline();
@@ -134,9 +136,9 @@ void tk_con_putc(int ch)
 		if(ch=='\t')
 		{
 //			tk_con_x=(tk_con_x+8)&(~7);
-			tk_con.x=(tk_con.x+8)&(~7);
+			tk_con->x=(tk_con->x+8)&(~7);
 //			if(tk_con_x>=TK_CONWIDTH)
-			if(tk_con.x>=TK_CONWIDTH)
+			if(tk_con->x>=TK_CONWIDTH)
 				{ tk_con_newline(); }
 			return;
 		}
@@ -146,12 +148,12 @@ void tk_con_putc(int ch)
 //	px=0x0FC00000|ch;
 	px=0x003F0000|ch;
 //	tk_con_buf[(tk_con_y*TK_CONWIDTH+tk_con_x)*8+0]=px;
-	tk_con.buf[(tk_con.y*TK_CONWIDTH+tk_con.x)*8+0]=px;
+	tk_con->buf[(tk_con->y*TK_CONWIDTH+tk_con->x)*8+0]=px;
 
 //	tk_con_x++;
-	tk_con.x++;
+	tk_con->x++;
 //	if(tk_con_x>=TK_CONWIDTH)
-	if(tk_con.x>=TK_CONWIDTH)
+	if(tk_con->x>=TK_CONWIDTH)
 	{
 		tk_con_newline();
 	}

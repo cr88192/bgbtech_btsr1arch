@@ -12,10 +12,12 @@ int TK_RamChk()
 	cte=(u32 *)TK_RAMCHK_LIM;
 	ct=cts;
 
+//	__debugbreak();
+
 #if 1
 	while(ct<cte)
 	{
-		printf("DRAM %d\r", (ct-cts)<<2);
+//		printf("DRAM %d\r", (ct-cts)<<2);
 //		ct1e=ct+16384;
 		ct1e=ct+262144;
 //		ct1e=ct+1024;
@@ -25,9 +27,14 @@ int TK_RamChk()
 			ct[1]=0x5555AAAAU;
 //			ct+=4;
 			ct+=256;
+//			__debugbreak();
 		}
 	}
 #endif
+
+//	putc('\n');
+
+//	__debugbreak();
 
 #if 0
 	while(ct<cte)
@@ -57,12 +64,15 @@ int TK_RamChk()
 	cte=(u32 *)TK_RAMCHK_LIM;
 	while(ct<cte)
 	{
-		printf("DRAM %d\r", (ct-cts)<<2);
+//		printf("DRAM %d\r", (ct-cts)<<2);
 		ct1e=ct+262144;
 		while(ct<ct1e)
 		{
 			if(ct[0]!=((u32)ct))
+			{
+				__debugbreak();
 				break;
+			}
 			ct+=256;
 		}
 		if(ct<ct1e)

@@ -489,16 +489,15 @@ begin
 	begin
 		if(regIdRs==regIdRnA2)
 			tRegValRs=regValRnA2;
-		if(regIdRs==regIdRnA1)
-			tRegValRs=regValRnA1;
-
 		if(regIdRs==regIdRnB2)
 			tRegValRs=regValRnB2;
-		if(regIdRs==regIdRnB1)
-			tRegValRs=regValRnB1;
-
 		if(regIdRs==regIdRnC2)
 			tRegValRs=regValRnC2;
+
+		if(regIdRs==regIdRnA1)
+			tRegValRs=regValRnA1;
+		if(regIdRs==regIdRnB1)
+			tRegValRs=regValRnB1;
 		if(regIdRs==regIdRnC1)
 			tRegValRs=regValRnC1;
 	end
@@ -507,16 +506,15 @@ begin
 	begin
 		if(regIdRt==regIdRnA2)
 			tRegValRt=regValRnA2;
-		if(regIdRt==regIdRnA1)
-			tRegValRt=regValRnA1;
-
 		if(regIdRt==regIdRnB2)
 			tRegValRt=regValRnB2;
-		if(regIdRt==regIdRnB1)
-			tRegValRt=regValRnB1;
-
 		if(regIdRt==regIdRnC2)
 			tRegValRt=regValRnC2;
+
+		if(regIdRt==regIdRnA1)
+			tRegValRt=regValRnA1;
+		if(regIdRt==regIdRnB1)
+			tRegValRt=regValRnB1;
 		if(regIdRt==regIdRnC1)
 			tRegValRt=regValRnC1;
 	end
@@ -525,16 +523,15 @@ begin
 	begin
 		if(regIdRu==regIdRnA2)
 			tRegValRu=regValRnA2;
-		if(regIdRu==regIdRnA1)
-			tRegValRu=regValRnA1;
-
 		if(regIdRu==regIdRnB2)
 			tRegValRu=regValRnB2;
-		if(regIdRu==regIdRnB1)
-			tRegValRu=regValRnB1;
-
 		if(regIdRu==regIdRnC2)
 			tRegValRu=regValRnC2;
+
+		if(regIdRu==regIdRnA1)
+			tRegValRu=regValRnA1;
+		if(regIdRu==regIdRnB1)
+			tRegValRu=regValRnB1;
 		if(regIdRu==regIdRnC1)
 			tRegValRu=regValRnC1;
 	end
@@ -543,16 +540,15 @@ begin
 	begin
 		if(regIdRv==regIdRnA2)
 			tRegValRv=regValRnA2;
-		if(regIdRv==regIdRnA1)
-			tRegValRv=regValRnA1;
-
 		if(regIdRv==regIdRnB2)
 			tRegValRv=regValRnB2;
-		if(regIdRv==regIdRnB1)
-			tRegValRv=regValRnB1;
-
 		if(regIdRv==regIdRnC2)
 			tRegValRv=regValRnC2;
+
+		if(regIdRv==regIdRnA1)
+			tRegValRv=regValRnA1;
+		if(regIdRv==regIdRnB1)
+			tRegValRv=regValRnB1;
 		if(regIdRv==regIdRnC1)
 			tRegValRv=regValRnC1;
 	end
@@ -562,16 +558,15 @@ begin
 	begin
 		if(regIdRx==regIdRnA2)
 			tRegValRx=regValRnA2;
-		if(regIdRx==regIdRnA1)
-			tRegValRx=regValRnA1;
-
 		if(regIdRx==regIdRnB2)
 			tRegValRx=regValRnB2;
-		if(regIdRx==regIdRnB1)
-			tRegValRx=regValRnB1;
-
 		if(regIdRx==regIdRnC2)
 			tRegValRx=regValRnC2;
+
+		if(regIdRx==regIdRnA1)
+			tRegValRx=regValRnA1;
+		if(regIdRx==regIdRnB1)
+			tRegValRx=regValRnB1;
 		if(regIdRx==regIdRnC1)
 			tRegValRx=regValRnC1;
 	end
@@ -580,16 +575,15 @@ begin
 	begin
 		if(regIdRy==regIdRnA2)
 			tRegValRy=regValRnA2;
-		if(regIdRy==regIdRnA1)
-			tRegValRy=regValRnA1;
-
 		if(regIdRy==regIdRnB2)
 			tRegValRy=regValRnB2;
-		if(regIdRy==regIdRnB1)
-			tRegValRy=regValRnB1;
-
 		if(regIdRy==regIdRnC2)
 			tRegValRy=regValRnC2;
+
+		if(regIdRy==regIdRnA1)
+			tRegValRy=regValRnA1;
+		if(regIdRy==regIdRnB1)
+			tRegValRy=regValRnB1;
 		if(regIdRy==regIdRnC1)
 			tRegValRy=regValRnC1;
 	end

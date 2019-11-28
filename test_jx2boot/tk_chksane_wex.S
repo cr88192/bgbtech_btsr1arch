@@ -7,6 +7,7 @@ _checksane_wex_fail:
 .global X(tk_checksane_wex_asm)
 X(tk_checksane_wex_asm):
 	push lr
+	add #-24, sp
 
 	mov #-1, r0
 	invic r0
@@ -39,8 +40,57 @@ X(tk_checksane_wex_asm):
 
 	cmpeq r3, r9
 	bf _checksane_wex_fail
+
+
+	mov #0x1234, r4			| mov #0x89AB, r5
+	ldish16 #0x5678, r4		| ldish16 #0xCDEF, r5
+	add r4, r5, r2			| sub r5, r4, r3
+
+	mov 0x9BE02467, r6
+	mov 0x77777777, r7
+	
+	cmpeq r2, r6
+	bf _checksane_wex_fail
+
+	cmpeq r3, r7
+	bf _checksane_wex_fail
+
+
+	mov #0x89AB, r1
+	mov.l r1, (sp, 12)
+
+	mov #0x1234, r0			| movd.l (sp, 12), r20
+	ldish16 #0x5678, r0
+	or r20, r0, r19
+	mov 0x29530, r0
+
+	mov 0x1234DFFB, r8
+
+	
+	cmpeq r19, r8
+	bf _checksane_wex_fail
+
+	wexmd #2
+
+	mov #0x1234, r4		| mov #0x5678, r5	| mov #0x89AB, r6
+	add r4, r5, r2		| sub r5, r4, r3	| xor r6, r5, r7
+
+	mov 0x68AC, r8
+	mov 0x4444, r9
+	mov 0xDFD3, r10
+	
+	cmpeq r2, r8
+	bf _checksane_wex_fail
+
+	cmpeq r3, r9
+	bf _checksane_wex_fail
+
+	cmpeq r7, r10
+	bf _checksane_wex_fail
+	
 	
 	wexmd #0
 
+	add #24, sp
 	pop lr
 	rts

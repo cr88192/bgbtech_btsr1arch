@@ -123,6 +123,8 @@ reg[63:0]			dcNxtFlushMskB;
 `endif
 `endif
 
+reg[1:0]	memOKL;			//memory PC OK
+
 reg[27:0]		tNxtAddrA;
 reg[27:0]		tNxtAddrB;
 reg				tNxtIsMmio;
@@ -675,6 +677,7 @@ begin
 		endcase
 
 		if(!tMmioDone || tMmioLatch)
+//		if(!tMmioDoneHld || tMmioLatch)
 		begin
 `ifdef jx2_debug_l1ds
 //			if(!tMsgLatch && !tLstMsgLatch)
@@ -718,6 +721,8 @@ begin
 //	tLstHold	<= tHold;
 	tLstHold	<= dcInHold;
 	tHoldCyc	<= tNextHoldCyc;
+	
+	memOKL		<= memOK;
 
 `ifndef def_true
 // `ifdef def_true
@@ -735,6 +740,8 @@ begin
 		tReqIxA		<= tNxtIxA;
 		tReqIxB		<= tNxtIxB;
 		tReqIsMmio	<= tNxtIsMmio;
+		tMmioDone		<= 0;
+		tMmioDoneHld	<= 0;
 	end
 `endif
 
@@ -807,6 +814,8 @@ begin
 	if(reset)
 	begin
 		tMmioLatch		<= 0;
+		tMmioDone		<= 0;
+		tMmioDoneHld	<= 0;
 
 		tMemLatchA		<= 0;
 		tMemLatchDnA	<= 0;
@@ -1076,16 +1085,26 @@ begin
 
 	end
 	
+	if(!dcInHold)
+	begin
+		tMmioDone		<= 0;
+		tMmioDoneHld	<= 0;
+	end
+
 	if((tReqIsMmio && !tMemLatchA && !tMemLatchB) || tMmioLatch)
 	begin
 		tMemOpm			<= tInOpm;
 		tMemAddr		<= tInAddr;
-		tMemDataOut		<= { UV64_XX, tDataIn };
+//		tMemDataOut		<= { UV64_XX, tDataIn };
+		tMemDataOut		<= { UV64_00, tDataIn };
 
-		if(tMmioDone || tMmioDoneHld)
+//		if(tMmioDone || tMmioDoneHld)
+		if(tMmioDone)
 		begin
+//			$display("MMIO Done Hold");
 			tMemOpm	<= UMEM_OPM_READY;
 			if(memOK==UMEM_OK_READY)
+//			if(memOKL==UMEM_OK_READY)
 			begin
 				tMmioLatch	<= 0;
 			end
@@ -1093,6 +1112,8 @@ begin
 		else
 			if((memOK==UMEM_OK_OK) && tMmioLatch)
 		begin
+//			$display("MMIO Done OK");
+
 			tMemOpm			<= UMEM_OPM_READY;
 			tMmioDone		<= 1;
 			tMmioDoneHld	<= 1;
@@ -1102,27 +1123,39 @@ begin
 		else
 			if((memOK==UMEM_OK_HOLD) && tMmioLatch)
 		begin
+//			$display("MMIO Hold");
+
 			tMemOpm			<= tInOpm;
 			tMemAddr		<= tInAddr;
 		end
 		else
 			if(memOK==UMEM_OK_READY)
 		begin
+//			$display("MMIO Ready, Latch");
+
 			tMmioLatch		<= 1;
 			tMemOpm			<= tInOpm;
 			tMemAddr		<= tInAddr;
 		end
 		else
 		begin
+//			$display("MMIO Other");
 			tMemOpm			<= UMEM_OPM_READY;
 		end
 	end
 	else
 	begin
+//		if(tMmioDone)
+//			$display("MMIO Clear Done");
 		tMmioDone		<= 0;
 
 //		if(!dcInHold)
+		if(!tMmioDone)
+		begin
+//			if(tMmioDoneHld)
+//				$display("MMIO Clear Done Hold");
 			tMmioDoneHld	<= 0;
+		end
 	end
 
 `ifndef jx2_do_ld1cyc

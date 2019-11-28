@@ -62,8 +62,8 @@ input[15:0]		ddrDataI;		//DDR data pins
 output[15:0]	ddrDataO;		//DDR data pins
 output			ddrDataEn;
 
-// output[13:0]	ddrAddr;		//Address pins
-output[12:0]	ddrAddr;		//Address pins
+output[13:0]	ddrAddr;		//Address pins
+// output[12:0]	ddrAddr;		//Address pins
 output[2:0]		ddrBa;			//Bank Address pins
 
 output			ddrCs;
@@ -226,7 +226,8 @@ wire[4:0]		ddrMemOpm;
 wire[1:0]		ddrMemOK;
 
 wire[13:0]		ddrAddr1;		//Address pins
-assign		ddrAddr = ddrAddr1[12:0];
+// assign		ddrAddr = ddrAddr1[12:0];
+assign		ddrAddr = ddrAddr1[13:0];
 
 MmiModDdr3		ddr(
 	clock, reset,
@@ -458,7 +459,8 @@ begin
 	gpioOpm		= mmioOpm;
 
 //	mmioInData	= UV32_XX;
-	mmioInData	= UV64_XX;
+//	mmioInData	= UV64_XX;
+	mmioInData	= UV64_00;
 	mmioOK		= UMEM_OK_READY;
 
 	memBusExc	= UV64_00;
@@ -501,22 +503,22 @@ begin
 	end
 	else if(sdMmioOK != UMEM_OK_READY)
 	begin
-		mmioInData	= { UV32_XX, sdMmioOutData };
+		mmioInData	= { UV32_00, sdMmioOutData };
 		mmioOK		= sdMmioOK;
 	end
 	else if(audMmioOK != UMEM_OK_READY)
 	begin
-		mmioInData	= { UV32_XX, audMmioOutData };
+		mmioInData	= { UV32_00, audMmioOutData };
 		mmioOK		= audMmioOK;
 	end
 	else if(fmMmioOK != UMEM_OK_READY)
 	begin
-		mmioInData	= { UV32_XX, fmMmioOutData };
+		mmioInData	= { UV32_00, fmMmioOutData };
 		mmioOK		= fmMmioOK;
 	end
 	else if(kbMmioOK != UMEM_OK_READY)
 	begin
-		mmioInData	= { UV32_XX, kbMmioOutData };
+		mmioInData	= { UV32_00, kbMmioOutData };
 		mmioOK		= kbMmioOK;
 	end
 	else if(mmioOpm!=0)

@@ -1061,15 +1061,15 @@ int main(int argc, char **argv, char **env)
 
 #if 1
 	JX2R_UseImageAddFile(
-//		(char *)"BOOTLOAD.SYS",
-		(char *)"DOOM.EXE",
+		(char *)"BOOTLOAD.SYS",
+//		(char *)"DOOM.EXE",
 		(char *)"../../tk_qsrc/doomsrc2/doom_bjx2.exe");
 	JX2R_UseImageAddFile(
 		(char *)"DOOM1.WAD",
 		(char *)"../../tk_qsrc/doomsrc2/doom1.wad");
 #endif
 
-#if 1
+#if 0
 	JX2R_UseImageAddFile(
 		(char *)"BOOTLOAD.SYS",
 //		(char *)"QUAKE.EXE",

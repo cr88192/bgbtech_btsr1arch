@@ -1,14 +1,43 @@
 void __halt(void);
 
 
-void putc(int val)
+void tk_dbg_putc(int val)
 {
 	while(P_MMIO_DEBUG_STS&8);
 	P_MMIO_DEBUG_TX=val;
-	
+}
+
+int tk_dbg_kbhit(void)
+{
+	return(P_MMIO_DEBUG_STS&1);
+}
+
+int tk_dbg_getch(void)
+{
+	while(!(P_MMIO_DEBUG_STS&1))
+	{
+		__halt();
+//		sleep_0();
+	}
+	return(P_MMIO_DEBUG_RX);
+}
+
+void tk_putc(int val)
+{
+	if(val=='\n')
+	{
+		tk_dbg_putc('\r');
+		tk_con_putc('\r');
+	}
+
+	tk_dbg_putc(val);
 	tk_con_putc(val);
 }
 
+void putc(int val)
+{
+	tk_putc(val);
+}
 
 int kbhit(void)
 {
@@ -435,4 +464,34 @@ char *tk_rsplit(char *str)
 		ta2[i]=ta[i];
 	ta2[i]=NULL;
 	return(ta2);
+}
+
+
+u32 TK_GetTimeMs(void)
+{
+	volatile u32 *sreg;
+	u32 us_lo, us_hi;
+	u64 us;
+	int ms;
+
+	sreg=(volatile u32 *)0xF000E000;
+	us_lo=sreg[0];
+//	us=0;
+	us_hi=sreg[1];
+	us=(((u64)us_hi)<<32)|us_lo;
+	ms=us>>10;
+
+//	__debugbreak();
+
+	return(ms);
+}
+
+int I_GetTime (void)
+{
+	int t;
+	t = TK_GetTimeMs();
+//	t=t>>5;
+//	t=t*(TICRATE/1000.0);
+	t=(t*35LL)>>10;
+	return(t);
 }

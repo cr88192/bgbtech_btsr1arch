@@ -1263,6 +1263,29 @@ int CheckDebugSanity()
 	return(1);
 }
 
+int sim_fb_drawled(uint32_t *fbuf, int xs, int ys,
+	int led_x, int led_y, int led_r, uint32_t led_c)
+{
+	int lx, ly, tx, ty, ld, lr2;
+	
+	lr2=led_r*led_r;
+	
+	for(ly=-led_r; ly<led_r; ly++)
+	{
+		for(lx=-led_r; lx<led_r; lx++)
+		{
+			ld=(lx*lx)+(ly*ly);
+			if(ld>lr2)
+				continue;
+			tx=led_x+lx;
+			ty=led_y+ly;
+			
+			fbuf[ty*xs+tx]=led_c;
+		}
+	}
+	return(0);
+}
+
 int main(int argc, char **argv, char **env)
 {
 	BJX2_Context *ctx;
@@ -1270,6 +1293,7 @@ int main(int argc, char **argv, char **env)
 	int lclk, mhz;
 	int tt_start;
 	int ctick, ctick_rst;
+	int x0, x1, x2, x3;
 	int t0, t1, t2;
 	int tt_frame;
 
@@ -1284,7 +1308,7 @@ int main(int argc, char **argv, char **env)
 		(char *)"../../tk_qsrc/tk_clib/tkshell.sys");
 #endif
 
-#if 0
+#if 1
 	JX2R_UseImageAddFile(
 		(char *)"BOOTLOAD.SYS",
 //		(char *)"DOOM.EXE",
@@ -1294,7 +1318,7 @@ int main(int argc, char **argv, char **env)
 		(char *)"../../tk_qsrc/doomsrc2/doom1.wad");
 #endif
 
-#if 1
+#if 0
 	JX2R_UseImageAddFile(
 		(char *)"BOOTLOAD.SYS",
 //		(char *)"QUAKE.EXE",
@@ -1360,6 +1384,116 @@ int main(int argc, char **argv, char **env)
 
 			jx2i_gfxcon_dirty=1;
 			JX2I_GfxCon_Update();
+
+			sim_fb_drawled(
+				(uint32_t *)btesh2_gfxcon_framebuf,
+				btesh2_gfxcon_fbxs, btesh2_gfxcon_fbys,
+				btesh2_gfxcon_fbxs-6, btesh2_gfxcon_fbys-1*8, 3,
+				top->dbgExHold1?0xFFFFFF00:0xFF00007F);
+
+			sim_fb_drawled(
+				(uint32_t *)btesh2_gfxcon_framebuf,
+				btesh2_gfxcon_fbxs, btesh2_gfxcon_fbys,
+				btesh2_gfxcon_fbxs-6, btesh2_gfxcon_fbys-2*8, 3,
+				top->dbgExHold2?0xFFFFFF00:0xFF00007F);
+
+
+			sim_fb_drawled(
+				(uint32_t *)btesh2_gfxcon_framebuf,
+				btesh2_gfxcon_fbxs, btesh2_gfxcon_fbys,
+				btesh2_gfxcon_fbxs-6, btesh2_gfxcon_fbys-4*8, 3,
+				top->dbgOutStatus1?0xFFFFFF00:0xFF00007F);
+
+			sim_fb_drawled(
+				(uint32_t *)btesh2_gfxcon_framebuf,
+				btesh2_gfxcon_fbxs, btesh2_gfxcon_fbys,
+				btesh2_gfxcon_fbxs-6, btesh2_gfxcon_fbys-5*8, 3,
+				top->dbgOutStatus3?0xFFFFFF00:0xFF00007F);
+
+			sim_fb_drawled(
+				(uint32_t *)btesh2_gfxcon_framebuf,
+				btesh2_gfxcon_fbxs, btesh2_gfxcon_fbys,
+				btesh2_gfxcon_fbxs-6, btesh2_gfxcon_fbys-6*8, 3,
+				top->dbgOutStatus3?0xFFFFFF00:0xFF00007F);
+
+			sim_fb_drawled(
+				(uint32_t *)btesh2_gfxcon_framebuf,
+				btesh2_gfxcon_fbxs, btesh2_gfxcon_fbys,
+				btesh2_gfxcon_fbxs-6, btesh2_gfxcon_fbys-7*8, 3,
+				top->dbgOutStatus4?0xFFFFFF00:0xFF00007F);
+
+
+			sim_fb_drawled(
+				(uint32_t *)btesh2_gfxcon_framebuf,
+				btesh2_gfxcon_fbxs, btesh2_gfxcon_fbys,
+				btesh2_gfxcon_fbxs-6, btesh2_gfxcon_fbys-9*8, 3,
+				top->dbgOutStatus5?0xFFFFFF00:0xFF00007F);
+
+			sim_fb_drawled(
+				(uint32_t *)btesh2_gfxcon_framebuf,
+				btesh2_gfxcon_fbxs, btesh2_gfxcon_fbys,
+				btesh2_gfxcon_fbxs-6, btesh2_gfxcon_fbys-10*8, 3,
+				top->dbgOutStatus6?0xFFFFFF00:0xFF00007F);
+
+			sim_fb_drawled(
+				(uint32_t *)btesh2_gfxcon_framebuf,
+				btesh2_gfxcon_fbxs, btesh2_gfxcon_fbys,
+				btesh2_gfxcon_fbxs-6, btesh2_gfxcon_fbys-11*8, 3,
+				top->dbgOutStatus7?0xFFFFFF00:0xFF00007F);
+
+			sim_fb_drawled(
+				(uint32_t *)btesh2_gfxcon_framebuf,
+				btesh2_gfxcon_fbxs, btesh2_gfxcon_fbys,
+				btesh2_gfxcon_fbxs-6, btesh2_gfxcon_fbys-12*8, 3,
+				top->dbgOutStatus8?0xFFFFFF00:0xFF00007F);
+
+
+#if 0
+			x0=((btesh2_gfxcon_fbys-2)*btesh2_gfxcon_fbxs-1*2)*4;
+			x1=((btesh2_gfxcon_fbys-2)*btesh2_gfxcon_fbxs-2*2)*4;
+			btesh2_gfxcon_framebuf[x0+0]=top->dbgExHold1?0xFF:0x00;
+			btesh2_gfxcon_framebuf[x0+1]=top->dbgExHold1?0xFF:0x00;
+			btesh2_gfxcon_framebuf[x0+2]=0x00;
+			btesh2_gfxcon_framebuf[x1+0]=top->dbgExHold2?0xFF:0x00;
+			btesh2_gfxcon_framebuf[x1+1]=top->dbgExHold2?0xFF:0x00;
+			btesh2_gfxcon_framebuf[x1+2]=0x00;
+
+			x0=((btesh2_gfxcon_fbys-2)*btesh2_gfxcon_fbxs-4*2)*4;
+			x1=((btesh2_gfxcon_fbys-2)*btesh2_gfxcon_fbxs-5*2)*4;
+			x2=((btesh2_gfxcon_fbys-2)*btesh2_gfxcon_fbxs-6*2)*4;
+			x3=((btesh2_gfxcon_fbys-2)*btesh2_gfxcon_fbxs-7*2)*4;
+
+			btesh2_gfxcon_framebuf[x0+0]=top->dbgOutStatus1?0xFF:0x00;
+			btesh2_gfxcon_framebuf[x0+1]=top->dbgOutStatus1?0xFF:0x00;
+			btesh2_gfxcon_framebuf[x0+2]=0x00;
+			btesh2_gfxcon_framebuf[x1+0]=top->dbgOutStatus2?0xFF:0x00;
+			btesh2_gfxcon_framebuf[x1+1]=top->dbgOutStatus2?0xFF:0x00;
+			btesh2_gfxcon_framebuf[x1+2]=0x00;
+			btesh2_gfxcon_framebuf[x2+0]=top->dbgOutStatus3?0xFF:0x00;
+			btesh2_gfxcon_framebuf[x2+1]=top->dbgOutStatus3?0xFF:0x00;
+			btesh2_gfxcon_framebuf[x2+2]=0x00;
+			btesh2_gfxcon_framebuf[x3+0]=top->dbgOutStatus4?0xFF:0x00;
+			btesh2_gfxcon_framebuf[x3+1]=top->dbgOutStatus4?0xFF:0x00;
+			btesh2_gfxcon_framebuf[x3+2]=0x00;
+
+			x0=((btesh2_gfxcon_fbys-2)*btesh2_gfxcon_fbxs- 9*2)*4;
+			x1=((btesh2_gfxcon_fbys-2)*btesh2_gfxcon_fbxs-10*2)*4;
+			x2=((btesh2_gfxcon_fbys-2)*btesh2_gfxcon_fbxs-11*2)*4;
+			x3=((btesh2_gfxcon_fbys-2)*btesh2_gfxcon_fbxs-12*2)*4;
+
+			btesh2_gfxcon_framebuf[x0+0]=top->dbgOutStatus5?0xFF:0x00;
+			btesh2_gfxcon_framebuf[x0+1]=top->dbgOutStatus5?0xFF:0x00;
+			btesh2_gfxcon_framebuf[x0+2]=0x00;
+			btesh2_gfxcon_framebuf[x1+0]=top->dbgOutStatus6?0xFF:0x00;
+			btesh2_gfxcon_framebuf[x1+1]=top->dbgOutStatus6?0xFF:0x00;
+			btesh2_gfxcon_framebuf[x1+2]=0x00;
+			btesh2_gfxcon_framebuf[x2+0]=top->dbgOutStatus7?0xFF:0x00;
+			btesh2_gfxcon_framebuf[x2+1]=top->dbgOutStatus7?0xFF:0x00;
+			btesh2_gfxcon_framebuf[x2+2]=0x00;
+			btesh2_gfxcon_framebuf[x3+0]=top->dbgOutStatus8?0xFF:0x00;
+			btesh2_gfxcon_framebuf[x3+1]=top->dbgOutStatus8?0xFF:0x00;
+			btesh2_gfxcon_framebuf[x3+2]=0x00;
+#endif
 
 			GfxDrv_BeginDrawing();
 

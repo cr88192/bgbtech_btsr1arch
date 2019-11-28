@@ -205,6 +205,9 @@ parameter[62:0] UV63_FF			= 63'h7FFFFFFF_FFFFFFFF;	//
 parameter[63:0] UV64_00			= 64'h00000000_00000000;	//
 parameter[63:0] UV64_FF			= 64'hFFFFFFFF_FFFFFFFF;	//
 
+parameter[95:0] UV96_00			= { UV32_00, UV64_00 };	//
+parameter[95:0] UV96_FF			= { UV32_FF, UV64_FF };	//
+
 parameter[127:0] UV128_00		= { UV64_00, UV64_00 };	//
 parameter[127:0] UV128_FF		= { UV64_FF, UV64_FF };	//
 

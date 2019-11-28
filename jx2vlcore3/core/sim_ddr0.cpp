@@ -199,6 +199,10 @@ int SimDdr(int clk, int cmd, int *rdata)
 #define	SIMDDR_BUSRT	4
 // #define	SIMDDR_BUSRT	8
 
+#define SIMDDR_SHL_A15	23
+#define SIMDDR_SHL_A14	22
+#define SIMDDR_SHL_A13	21
+
 #define SIMDDR_SHL_CS	20
 #define SIMDDR_SHL_RAS	19
 #define SIMDDR_SHL_CAS	18
@@ -281,7 +285,7 @@ int SimDdr(int clk, int cmd, int *rdqs, int *rdata)
 			ddr_ram[pos>>1]=data;
 			ddr_col+=2;
 			
-			printf("ST %08X = %04X\n", pos, data);
+//			printf("ST %08X = %04X\n", pos, data);
 		}
 	}
 	
@@ -294,6 +298,7 @@ int SimDdr(int clk, int cmd, int *rdqs, int *rdata)
 //	addr=(cmd&0x3FFF);
 	addr=(cmd&0x1FFF);
 	bank=(cmd>>13)&7;
+	addr|=((cmd>>SIMDDR_SHL_A13)&7)<<13;
 	
 	if(cmd&SIMDDR_MSK_CS)
 	{
@@ -410,9 +415,10 @@ int main(int argc, char **argv, char **env)
 	memset(ddr_ram, 0, 256<<20);
 
 
-	imgbuf=(uint32_t *)malloc((1<<26)+128);
+	imgbuf=(uint32_t *)malloc((1<<28)+128);
 	
-	for(i=0; i<16777216; i++)
+//	for(i=0; i<16777216; i++)
+	for(i=0; i<(1<<26); i++)
 	{
 		k=rand();
 		k=k*65521+rand();
@@ -423,9 +429,13 @@ int main(int argc, char **argv, char **env)
 	wn=0;	rn=0;
 	wdn=0;	rdn=0;
 	
+//	lim=8388608-4;
+
+	lim=6144*1024;
+
 //	lim=4194304;
 //	lim=1<<18;
-	lim=8;
+//	lim=8;
 //	lim=16;
 //	lim=64;
 //	lim=65;
@@ -555,6 +565,7 @@ int main(int argc, char **argv, char **env)
 //			cmd=top->ddrCmd;
 
 			cmd=0;
+			cmd=(cmd<<3)|((top->ddrAddr>>13)&0x7);
 			cmd=(cmd<<1)|top->ddrCs;
 			cmd=(cmd<<1)|top->ddrRas;
 			cmd=(cmd<<1)|top->ddrCas;
@@ -563,18 +574,19 @@ int main(int argc, char **argv, char **env)
 //			cmd=(cmd<<2)|top->ddrBa;
 			cmd=(cmd<<3)|top->ddrBa;
 //			cmd=(cmd<<14)|top->ddrAddr;
-			cmd=(cmd<<13)|top->ddrAddr;
+//			cmd=(cmd<<13)|top->ddrAddr;
+			cmd=(cmd<<13)|(top->ddrAddr&0x1FFF);
 
 //			data=top->ddrData;
 			data=top->ddrData_O;
-			SimDdr(top->ddrClk, cmd, dqs, &data);
+			SimDdr(top->ddrClk, cmd, &dqs, &data);
 //			top->ddrData=data;
 			top->ddrData_I=data;
 			top->ddrDqsP_I=(dqs&1)?3:0;
 			top->ddrDqsN_I=(dqs&2)?3:0;
 		}
 
-#if 1
+#if 0
 //		if((cmd&SIMDDR_MSK_NOP)!=SIMDDR_MSK_NOP)
 		if(1)
 		{

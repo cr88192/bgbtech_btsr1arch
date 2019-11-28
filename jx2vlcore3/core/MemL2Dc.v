@@ -502,7 +502,7 @@ begin
 			begin
 `ifdef jx2_ddr_bl64b
 
-				tDdrMemDataOut	<= { UV64_XX,
+				tDdrMemDataOut	<= { UV64_00,
 					tNxtBlkHalf ? tBlkData[127:64] : tBlkData[63:0] };
 
 				tDdrMemAddr		<= {tBlkAddr, tNxtBlkHalf, 3'b000};
@@ -517,7 +517,8 @@ begin
 //			else if(!tAccStDone)
 			else if(!tAccDone)
 			begin
-				tDdrMemDataOut	<= UV128_XX;
+//				tDdrMemDataOut	<= UV128_XX;
+				tDdrMemDataOut	<= UV128_00;
 `ifdef jx2_ddr_bl64b
 				tDdrMemAddr		<= {tAccAddr, tNxtBlkHalf, 3'b000};
 				tAccBlkHalf		<= tNxtBlkHalf;

@@ -195,10 +195,13 @@ begin
 	tNxtMsgLatch	= 0;
 	tRegOutExc	= UV64_00;
 
-	tMemAddr	= UV32_XX;
-	tMemAddrB	= UV32_XX;
+//	tMemAddr	= UV32_XX;
+	tMemAddr	= UV32_00;
+//	tMemAddrB	= UV32_XX;
+	tMemAddrB	= UV32_00;
 	tMemOpm		= UMEM_OPM_READY;
-	tMemDataOut	= UV128_XX;
+//	tMemDataOut	= UV128_XX;
+	tMemDataOut	= UV128_00;
 	
 	tDcOutOK	= dfOutOK;
 
@@ -232,7 +235,8 @@ begin
 		tMemAddr	= ifMemAddr;
 		tMemAddrB	= 0;
 		tMemOpm		= ifMemOpm;
-		tMemDataOut	= UV128_XX;
+//		tMemDataOut	= UV128_XX;
+		tMemDataOut	= UV128_00;
 		tNxtLatchIc	= tIfNzOpm || (memOK != UMEM_OK_READY);
 		
 		if(tMemAccNoRwx[2])

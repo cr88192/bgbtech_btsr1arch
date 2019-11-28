@@ -48,8 +48,8 @@ input			reset;
 
 inout[15:0]		ddrData;		//DDR data pins
 
-// output[13:0]	ddrAddr;		//Address pins
-output[12:0]	ddrAddr;		//Address pins
+output[13:0]	ddrAddr;		//Address pins
+// output[12:0]	ddrAddr;		//Address pins
 output[2:0]		ddrBa;			//Bank Address pins
 
 output			ddrCs;

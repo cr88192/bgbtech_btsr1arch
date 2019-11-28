@@ -99,7 +99,7 @@ int tk_cmd2idx(char *s)
 void tk_tryload(char *img, char **args)
 {
 	TK_FILE *fd;
-	u64 bootgbr;
+	u64 bootgbr, pb_gbr;
 	int (*bootptr)();
 
 	fd=tk_fopen(img, "rb");	
@@ -108,6 +108,12 @@ void tk_tryload(char *img, char **args)
 		bootgbr=0;
 		TKPE_LoadStaticPE(fd, &bootptr, &bootgbr);
 		printf("Boot Pointer %p, GBR=%p\n", bootptr, (void *)bootgbr);
+		
+		pb_gbr=*(u64 *)bootgbr;
+		if(pb_gbr!=bootgbr)
+		{
+			printf("Boot GBR Mismatch, Got=%p Expect=%p\n", pb_gbr, bootgbr);
+		}
 		
 		if(bootptr)
 		{
@@ -126,6 +132,9 @@ void __start()
 	int (*bootptr)();
 	int ci;
 
+	ci = TK_GetTimeMs();
+//	__debugbreak();
+
 	tk_con_init();
 	puts("Boot 0\n");
 	printf("Print 0 %0X %0X %0X %0X\n",
@@ -133,8 +142,27 @@ void __start()
 		
 	sanity_a();
 	sanity_b();
+
+//	ci=I_GetTime();
+	ci = TK_GetTimeMs();
+	printf("%d\n", ci);
 	
 	TK_RamChk();
+	
+//	ci=I_GetTime();
+	ci = TK_GetTimeMs();
+
+	printf("%d\n", ci);
+	
+	while(tk_dbg_kbhit())
+		{ tk_dbg_getch(); }
+	while(kbhit())
+		{ getch(); }
+
+//	ci=I_GetTime();
+	ci = TK_GetTimeMs();
+
+	printf("%d\n", ci);
 	
 //	TKSPI_InitDevice();
 	tk_vfile_init();

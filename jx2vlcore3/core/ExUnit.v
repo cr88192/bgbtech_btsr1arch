@@ -2240,9 +2240,9 @@ begin
 		ex1RegValPc		<= UV32_XX;
 		ex1RegValImm	<= UV33_XX;
 
-		ex1RegIdRs		<= UV6_00;
-		ex1RegIdRt		<= UV6_00;
-		ex1RegIdRm		<= UV6_00;
+		ex1RegIdRs		<= JX2_GR_ZZR;
+		ex1RegIdRt		<= JX2_GR_ZZR;
+		ex1RegIdRm		<= JX2_GR_ZZR;
 		ex1RegValRs		<= UV64_XX;
 		ex1RegValRt		<= UV64_XX;
 		ex1RegValRm		<= UV64_XX;
@@ -2257,9 +2257,9 @@ begin
 `ifdef jx2_enable_wex
 		exB1RegValImm	<= UV33_XX;
 
-		exB1RegIdRs		<= UV6_XX;
-		exB1RegIdRt		<= UV6_XX;
-		exB1RegIdRm		<= UV6_XX;
+		exB1RegIdRs		<= JX2_GR_ZZR;
+		exB1RegIdRt		<= JX2_GR_ZZR;
+		exB1RegIdRm		<= JX2_GR_ZZR;
 		exB1RegValRs	<= UV64_XX;
 		exB1RegValRt	<= UV64_XX;
 		exB1RegValRm	<= UV64_XX;
@@ -2268,9 +2268,9 @@ begin
 `ifdef jx2_enable_wex3w
 		exC1RegValImm	<= UV33_XX;
 
-		exC1RegIdRs		<= UV6_XX;
-		exC1RegIdRt		<= UV6_XX;
-		exC1RegIdRm		<= UV6_XX;
+		exC1RegIdRs		<= JX2_GR_ZZR;
+		exC1RegIdRt		<= JX2_GR_ZZR;
+		exC1RegIdRm		<= JX2_GR_ZZR;
 		exC1RegValRs	<= UV64_XX;
 		exC1RegValRt	<= UV64_XX;
 		exC1RegValRm	<= UV64_XX;

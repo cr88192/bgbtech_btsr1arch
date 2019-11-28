@@ -287,9 +287,13 @@ begin
 			tBaseNextCbB	= tBaseCb;
 		end
 
-		tScPwmCtR[15:0] = 144 * tBaseCrB + 19456;
-		tScPwmCtG[15:0] = 144 * tBaseCgB + 19456;
-		tScPwmCtB[15:0] = 144 * tBaseCbB + 19456;
+//		tScPwmCtR[15:0] = 144 * tBaseCrB + 19456;
+//		tScPwmCtG[15:0] = 144 * tBaseCgB + 19456;
+//		tScPwmCtB[15:0] = 144 * tBaseCbB + 19456;
+
+		tScPwmCtR[15:0] = (tBaseCrB << 7) + 19456;
+		tScPwmCtG[15:0] = (tBaseCgB << 7) + 19456;
+		tScPwmCtB[15:0] = (tBaseCbB << 7) + 19456;
 	end
 
 	if(tVSyncClk>0)		/* VSync */

@@ -71,6 +71,8 @@ assign	mmioOpm			= tMmioOpm;
 wire	reqIsMmio;
 assign	reqIsMmio	= (memOpm[2:0] != 3'b111);
 
+reg		reqMmioLatch;
+
 wire	reqIsCcmd;
 assign	reqIsCcmd	= (memOpm[4:3] == 2'b00) && (memOpm[2:0] != 3'b000);
 
@@ -115,7 +117,8 @@ reg[31:0]	tCcmdData;
 always @*
 begin
 	tCcmdOK		= UMEM_OK_READY;
-	tCcmdData	= UV32_XX;
+//	tCcmdData	= UV32_XX;
+	tCcmdData	= UV32_00;
 	
 	case(memOpm)
 		UMEM_OPM_LDTLB, UMEM_OPM_INVTLB: begin
@@ -137,15 +140,18 @@ always @(posedge clock)
 begin
 	if(reqIsCcmd)
 	begin
-		tMemDataOut		<= { UV96_XX, tCcmdData };
+//		tMemDataOut		<= { UV96_XX, tCcmdData };
+		tMemDataOut		<= { UV96_00, tCcmdData };
 		tMemOK			<= tCcmdOK;
 	end
 	else
-		if(reqIsMmio)
+//		if(reqIsMmio)
+		if(reqIsMmio || reqMmioLatch)
 	begin
 //		tMemDataOut		<= { UV96_XX, mmioInData };
-		tMemDataOut		<= { UV64_XX, mmioInData };
+		tMemDataOut		<= { UV64_00, mmioInData };
 		tMemOK			<= mmioOK;
+		reqMmioLatch	<= reqIsMmio || (mmioOK != UMEM_OK_READY);
 	end
 	else
 		if(tAddrIsLo64k)
