@@ -5,8 +5,8 @@ TK_DIR *tk_sysc_opendir(TK_MOUNT *mnt, char *name);
 
 int tk_sysc_fread(void *buf, int sz1, int sz2, TK_FILE *fd);
 int tk_sysc_fwrite(void *buf, int sz1, int sz2, TK_FILE *fd);
-int tk_sysc_fseek(TK_FILE *fd, int ofs, int rel);
-int tk_sysc_ftell(TK_FILE *fd);
+s64 tk_sysc_fseek(TK_FILE *fd, s64 ofs, int rel);
+s64 tk_sysc_ftell(TK_FILE *fd);
 int tk_sysc_fclose(TK_FILE *fd);
 int tk_sysc_fgetc(TK_FILE *fd);
 int tk_sysc_fputc(int ch, TK_FILE *fd);

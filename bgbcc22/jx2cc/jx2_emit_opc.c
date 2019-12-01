@@ -1268,6 +1268,14 @@ int BGBCC_JX2_TryEmitOpImm(BGBCC_JX2_Context *ctx, int nmid, int imm)
 		odr=1; opw1=0x310D;
 		break;
 
+#if 1
+	case BGBCC_SH_NMID_LDSH8:	
+		if(((byte)imm)!=imm)
+			break;
+		opw1=0x2600|(imm&255);
+		break;
+#endif
+
 	default:
 		break;
 	}
@@ -2909,12 +2917,28 @@ int BGBCC_JX2_TryEmitOpImmReg(BGBCC_JX2_Context *ctx,
 
 	switch(nmid)
 	{
-#if 0
+#if 1
 	case BGBCC_SH_NMID_LDSH8:	
 		if(((byte)imm)!=imm)
 			break;
-		if(!BGBCC_JX2_EmitCheckRegBaseGPR(ctx, reg))	break;
+		if((reg!=BGBCC_SH_REG_R0) &&
+			(reg!=BGBCC_SH_REG_RD0) &&
+			(reg!=BGBCC_SH_REG_RQ0) &&
+			(reg!=BGBCC_SH_REG_DLR))
+				break;
+//		if(!BGBCC_JX2_EmitCheckRegBaseGPR(ctx, reg))	break;
 //		opw1=0xD000|((reg&15)<<8)|(imm&255);			break;
+		opw1=0x2600|(imm&255);			break;
+		break;
+#endif
+
+#if 1
+	case BGBCC_SH_NMID_LDSH16:	
+		if(((u16)imm)!=imm)
+			break;
+		if(!BGBCC_JX2_EmitCheckRegBaseGPR(ctx, reg))	break;
+		opw1=0xF860|(reg&15);
+		opw2=imm&65535;
 		break;
 #endif
 

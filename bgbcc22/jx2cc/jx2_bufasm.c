@@ -739,6 +739,11 @@ int nmid;
 
 {"jldi",	BGBCC_SH_NMID_JLDI},
 
+{"ldish8",	BGBCC_SH_NMID_LDSH8},
+{"ldish16",	BGBCC_SH_NMID_LDSH16},
+{"ldsh8",	BGBCC_SH_NMID_LDSH8},
+{"ldsh16",	BGBCC_SH_NMID_LDSH16},
+
 {"fabs",	BGBCC_SH_NMID_FABS},
 {"fadd",	BGBCC_SH_NMID_FADD},
 {"fcmp/eq",	BGBCC_SH_NMID_FCMPEQ},

@@ -2335,6 +2335,7 @@ int BGBCC_JX2_EmitOpCheckRepack5(BGBCC_JX2_Context *ctx, int *ropw1, int *ropw2,
 int BGBCC_JX2_EmitOpCheckRepack6(BGBCC_JX2_Context *ctx, int *ropw1, int *ropw2, int *ropw3, int *ropw4, int *ropw5, int *ropw6);
 int BGBCC_JX2_EmitLoadDrImm(BGBCC_JX2_Context *ctx, s64 imm);
 int BGBCC_JX2_EmitLoadRegImm(BGBCC_JX2_Context *ctx, int nmid, int reg, s32 imm);
+int BGBCC_JX2_EmitLoadRegImm(BGBCC_JX2_Context *ctx, int nmid, int reg, s32 imm);
 int BGBCC_JX2_ConstConvDoubleToFloat(u64 v, u32 *rv);
 int BGBCC_JX2_ConstConvFloatToHalf(u32 v, u16 *rv);
 int BGBCC_JX2_ConstIsFull64(BGBCC_JX2_Context *ctx, s64 v);
@@ -2640,9 +2641,10 @@ int BGBCC_JX2C_EmitStoreFrameVRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *s
 int BGBCC_JX2C_EmitLdaValSyncFrameVRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg, int dreg);
 int BGBCC_JX2C_EmitLdaFrameVRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg, int dreg);
 int BGBCC_JX2C_GetFrameVRegFlags(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg);
+int BGBCC_JX2C_GetFrameVRegVspanFlags(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg);
 int BGBCC_JX2C_BeginSetupFrameVRegSpan(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
 int BGBCC_JX2C_EndSetupFrameVRegSpan(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
-int BGBCC_JX2C_SetupFrameVRegSpan(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg);
+int BGBCC_JX2C_SetupFrameVRegSpan(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg, int dstfl);
 int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj);
 int BGBCC_JX2C_CalcFrameEpiKey(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, int rqt, int *repik, int *repix);
 int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, int fcnlbl);
@@ -2802,7 +2804,7 @@ int BGBCC_JX2C_SizeofVar(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_ty
 int BGBCC_JX2C_EmitPredCmpVRegVRegInt(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp);
 int BGBCC_JX2C_EmitPredCmpVRegVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp);
 //AHSRC:jx2cc/jx2_wexify.c
-int BGBCC_JX2_CheckOps32GetRegs(BGBCC_JX2_Context *sctx, int opw1, int opw2, byte *rrs, byte *rrt, byte *rrn, byte *rspr, byte *rspw);
+int BGBCC_JX2_CheckOps32GetRegs(BGBCC_JX2_Context *sctx, int opw1, int opw2, byte *rrs, byte *rrt, byte *rrn, byte *rspr, byte *rspw, int *rspfl);
 int BGBCC_JX2_CheckOps32ReadsRn(BGBCC_JX2_Context *sctx, int opw1, int opw2);
 int BGBCC_JX2_CheckOps32SequenceOnlyB(BGBCC_JX2_Context *sctx, int opw1, int opw2, int opw3, int opw4, int fl);
 int BGBCC_JX2_CheckOps32SequenceOnly(BGBCC_JX2_Context *sctx, int opw1, int opw2, int opw3, int opw4);

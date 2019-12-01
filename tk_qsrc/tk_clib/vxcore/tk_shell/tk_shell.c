@@ -2,35 +2,59 @@ extern u64 __arch_gbr;
 
 char tb_cwd[256];
 
+#define TK_CMD_RUN		0x01
+#define TK_CMD_LS		0x02
+#define TK_CMD_CD		0x03
+#define TK_CMD_CLS		0x04
+#define TK_CMD_RECVXM	0x05
+#define TK_CMD_RM		0x06
+#define TK_CMD_MV		0x07
+#define TK_CMD_CP		0x08
+
 int tk_cmd2idx(char *s)
 {
 	if(*s=='c')
 	{
 		if(!strcmp(s, "cd"))
-			return(3);
+			return(TK_CMD_CD);
+
+		if(!strcmp(s, "cp"))
+			return(TK_CMD_CP);
 
 		if(!strcmp(s, "cls"))
-			return(4);
+			return(TK_CMD_CLS);
 	}
 
 	if(*s=='d')
 	{
 		if(!strcmp(s, "dir"))
-			return(2);
+			return(TK_CMD_LS);
 	}
 
 	if(*s=='l')
 	{
 		if(!strcmp(s, "load"))
-			return(1);
+			return(TK_CMD_RUN);
 		if(!strcmp(s, "ls"))
-			return(2);
+			return(TK_CMD_LS);
+	}
+
+	if(*s=='m')
+	{
+		if(!strcmp(s, "mv"))
+			return(TK_CMD_MV);
 	}
 
 	if(*s=='r')
 	{
 		if(!strcmp(s, "run"))
-			return(1);
+			return(TK_CMD_RUN);
+
+		if(!strcmp(s, "recvxm"))
+			return(TK_CMD_RECVXM);
+
+		if(!strcmp(s, "rm"))
+			return(TK_CMD_RM);
 	}
 
 	if(*s=='t')
@@ -146,6 +170,7 @@ int tk_tryload_n(char *img, char **args)
 
 void tk_dir(char *path, char **args)
 {
+	char tb[128];
 	TK_DIR *dir;
 	TK_DIRENT *tde;
 	
@@ -158,7 +183,12 @@ void tk_dir(char *path, char **args)
 	tde=tk_readdir(dir);
 	while(tde)
 	{
-		tk_printf("%s\n", tde->d_name);
+//		memset(tb, 0x20, 128);
+//		memcpy(tb, tde->d_name, strlen(tde->d_name));
+//		tb[32]=0;
+//		tk_printf("%032s %8d\n", tde->d_name, tde->st_size);
+//		printf("%032s %9d\n", tb, tde->st_size);
+		printf("%-32s %9d %08X\n", tde->d_name, tde->st_size, tde->st_mtime);
 		tde=tk_readdir(dir);
 	}
 }
@@ -270,9 +300,9 @@ int main(int argc, char *argv[])
 		switch(ci)
 		{
 		case 0:
-			tk_printf("Test Command '%s'\n", a[0]);
+//			tk_printf("Test Command '%s'\n", a[0]);
 			break;
-		case 1:
+		case TK_CMD_RUN:
 			if(a[1])
 			{
 				tk_tryload(a[1], a+1);
@@ -282,7 +312,7 @@ int main(int argc, char *argv[])
 			}
 			break;
 
-		case 2:
+		case TK_CMD_LS:
 			if(a[1])
 			{
 				if(a[1][0]=='/')
@@ -303,7 +333,7 @@ int main(int argc, char *argv[])
 			}
 			break;
 
-		case 3:
+		case TK_CMD_CD:
 			if(a[1])
 			{
 				if(a[1][0]=='/')
@@ -329,8 +359,92 @@ int main(int argc, char *argv[])
 			}
 			break;
 
-		case 4:
+		case TK_CMD_CLS:
 			tk_con_reset();
+			break;
+
+		case TK_CMD_RECVXM:
+			if(a[1])
+			{
+				if(a[1][0]=='/')
+				{
+					strcpy(tb, a[1]);
+				}else
+				{
+					strcpy(tb, tb_cwd);
+					strcat(tb, "/");
+					strcat(tb, a[1]);
+				}
+				TK_Dbg_RecvFileXM(tb);
+			}
+			break;
+
+		case TK_CMD_RM:
+			if(a[1])
+			{
+				if(a[1][0]=='/')
+				{
+					strcpy(tb, a[1]);
+				}else
+				{
+					strcpy(tb, tb_cwd);
+					strcat(tb, "/");
+					strcat(tb, a[1]);
+				}
+				tk_unlink(tb);
+			}
+			break;
+
+		case TK_CMD_MV:
+			if(a[1])
+			{
+				if(a[1][0]=='/')
+				{
+					strcpy(tb, a[1]);
+				}else
+				{
+					strcpy(tb, tb_cwd);
+					strcat(tb, "/");
+					strcat(tb, a[1]);
+				}
+
+				if(a[2][0]=='/')
+				{
+					strcpy(tb1, a[2]);
+				}else
+				{
+					strcpy(tb1, tb_cwd);
+					strcat(tb1, "/");
+					strcat(tb1, a[2]);
+				}
+				tk_rename(tb, tb1);
+			}
+			break;
+
+		case TK_CMD_CP:
+			if(a[1])
+			{
+				if(a[1][0]=='/')
+				{
+					strcpy(tb, a[1]);
+				}else
+				{
+					strcpy(tb, tb_cwd);
+					strcat(tb, "/");
+					strcat(tb, a[1]);
+				}
+
+				if(a[2][0]=='/')
+				{
+					strcpy(tb1, a[2]);
+				}else
+				{
+					strcpy(tb1, tb_cwd);
+					strcat(tb1, "/");
+					strcat(tb1, a[2]);
+				}
+				tk_fcopy(tb, tb1);
+			}
 			break;
 
 		default:

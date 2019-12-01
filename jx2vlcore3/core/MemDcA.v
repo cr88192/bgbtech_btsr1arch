@@ -196,6 +196,48 @@ reg[27:0]		tReqAddrA;
 reg[27:0]		tReqAddrB;
 reg				tReqIsMmio;
 
+// wire[11:0]		tReqL2IxA;
+// wire[11:0]		tReqL2IxB;
+// wire[11:0]		tBlkL2IxA;
+// wire[11:0]		tBlkL2IxB;
+
+wire[5:0]		tReqL2IxA;
+wire[5:0]		tReqL2IxB;
+wire[5:0]		tBlkL2IxA;
+wire[5:0]		tBlkL2IxB;
+
+`ifdef def_true
+assign		tReqL2IxA = tReqAddrA[11:6];
+assign		tReqL2IxB = tReqAddrB[11:6];
+assign		tBlkL2IxA = tBlkAddrA[11:6];
+assign		tBlkL2IxB = tBlkAddrB[11:6];
+`endif
+
+`ifndef def_true
+assign		tReqL2IxA = tReqAddrA[11:6] ^ tReqAddrA[17:12] ^ tReqAddrA[23:18];
+assign		tReqL2IxB = tReqAddrB[11:6] ^ tReqAddrB[17:12] ^ tReqAddrB[23:18];
+assign		tBlkL2IxA = tBlkAddrA[11:6] ^ tBlkAddrA[17:12] ^ tBlkAddrA[23:18];
+assign		tBlkL2IxB = tBlkAddrB[11:6] ^ tBlkAddrB[17:12] ^ tBlkAddrB[23:18];
+`endif
+
+`ifndef def_true
+assign		tReqL2IxA = tReqAddrA[11:0];
+assign		tReqL2IxB = tReqAddrB[11:0];
+assign		tBlkL2IxA = tBlkAddrA[11:0];
+assign		tBlkL2IxB = tBlkAddrB[11:0];
+`endif
+
+`ifndef def_true
+assign		tReqL2IxA = tReqAddrA[11:0] ^
+	{ tReqAddrA[15:12], tReqAddrA[19:16], tReqAddrA[23:20] };
+assign		tReqL2IxB = tReqAddrB[11:0] ^
+	{ tReqAddrB[15:12], tReqAddrB[19:16], tReqAddrB[23:20] };
+assign		tBlkL2IxA = tBlkAddrA[11:0] ^
+	{ tBlkAddrA[15:12], tBlkAddrA[19:16], tBlkAddrA[23:20] };
+assign		tBlkL2IxB = tBlkAddrB[11:0] ^
+	{ tBlkAddrB[15:12], tBlkAddrB[19:16], tBlkAddrB[23:20] };
+`endif
+
 reg[31:0]		tInAddr;
 reg[ 2:0]		tInByteIx;
 reg[ 4:0]		tInOpm;
@@ -900,13 +942,16 @@ begin
 				$display("L1D$ MissA ReadySt, A=%X", tBlkAddrA);
 				$display("L1D$ MissA, Write=%X", tBlkDataA);
 `endif
-			
+
 `ifdef jx2_mem_fulldpx
 // `ifndef def_true
 //				if((tReqAddrA[27:12]!=0) && (tBlkAddrA[27:12]!=0))
 				if((tReqAddrA[27:16]!=0) && (tBlkAddrA[27:16]!=0) &&
+//					!tReqAddrA[27] && !tBlkAddrA[27] )
+//					!tReqAddrA[27] && !tBlkAddrA[27] &&
+//					(tReqAddrA[11:6]!=tBlkAddrA[11:6]))
 					!tReqAddrA[27] && !tBlkAddrA[27] &&
-					(tReqAddrA[11:6]!=tBlkAddrA[11:6]))
+					(tReqL2IxA!=tBlkL2IxA))
 				begin
 					tMemLatchA		<= 1;
 					tMemOpm			<= UMEM_OPM_SW_TILE;
@@ -1022,8 +1067,10 @@ begin
 // `ifndef def_true
 //				if((tReqAddrB[27:12]!=0) && (tBlkAddrB[27:12]!=0))
 				if((tReqAddrB[27:16]!=0) && (tBlkAddrB[27:16]!=0) &&
+//					!tReqAddrB[27] && !tBlkAddrB[27] &&
+//					(tReqAddrB[11:6]!=tBlkAddrB[11:6]))
 					!tReqAddrB[27] && !tBlkAddrB[27] &&
-					(tReqAddrB[11:6]!=tBlkAddrB[11:6]))
+					(tReqL2IxB!=tBlkL2IxB))
 				begin
 					tMemLatchB		<= 1;
 					tMemOpm			<= UMEM_OPM_SW_TILE;

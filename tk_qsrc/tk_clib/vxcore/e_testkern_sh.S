@@ -899,7 +899,7 @@ X(__ashiftrt_r4_0):		rts
 #if 1
 .global X(__ashrdi3)
 X(__ashrdi3):
-	iclrmd.dq
+//	iclrmd.dq
 
 	tst r6, r6
 	bt __ashrdi3_L0
@@ -1750,7 +1750,7 @@ __ldhf16:
 //	fldi0 fr0
 	xor r0, r0
 	lds r0, fpul
-	fsts fr0
+	fsts fpul, fr0
 	rts
 	nop
 __ldhf16.L0:
@@ -1768,17 +1768,19 @@ __ldhf16.L0:
 	mov r4, r2
 	and r0, r2
 	or r2, r1
-	push r1
+//	push r1
+	mov.l r1, @-r15
 	lds.l @r15+, fpul
-	fsts fr0
+	fsts fpul, fr0
 	rts
 	nop
 
 .global X(__sthf16)
 __sthf16:
-	flds fr4
+	flds fr4, fpul
 	sts.l fpul, @-r15
-	pop r4
+//	pop r4
+	mov.l @r15+, r4
 
 	mov r4, r1
 	
@@ -1843,6 +1845,29 @@ _gdb_int_isr:
 	nop
 _gdb_tlb_isr:
 	bra _gdb_illegalinst_isr
+	nop
+
+.global X(__int_min)
+.global X(__int_max)
+.global X(__int_clamp)
+
+X(__int_min):
+X(__int_max):
+X(__int_clamp):
+
+.global X(__ashldi3)
+.global X(__lshrdi3)
+.global X(__divdi3)
+
+X(__ashldi3):
+X(__lshrdi3):
+X(__divdi3):
+	rts
+	nop
+
+.global X(tk_syscall)
+X(tk_syscall):
+	rts
 	nop
 
 .align 4
@@ -1951,5 +1976,8 @@ _int_isr_L0: .long _gdb_int_isr	/* 0x608 */
 X(__fpscr_values):
 	.long   0
 	.long   0x80000
+
+.global X(__arch_exsr)
+X(__arch_exsr): .long 0
 
 .end

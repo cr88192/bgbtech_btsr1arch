@@ -25,6 +25,7 @@ int main(int argc, char **argv, char **env)
 	uint8_t *imgbuf;
 	int bpos, bplim;
 	int imgba, imgba0, irq, irqtck, irqsblk;
+	int lstok, isinit;
 	int pcmacc, pcmdiv, pcmrst;
 	int xs, ys, cxs, cys, ystr, cblks;
 	int y, x;
@@ -51,15 +52,19 @@ int main(int argc, char **argv, char **env)
 	}
 
 	obuf=(uint8_t *)malloc(1<<20);
-	memset(obuf, 0, 1<<23);
-	bpos=8;
-//	bplim=(1<<22)*8;
-//	bplim=(1<<23)*2;
-	bplim=(1<<23)/2;
-	obuf[0]=0x55AA4100;
+	memset(obuf, 0, 1<<20);
+	bpos=0;
+//	bplim=(1<<20)/2;
+	bplim=(1<<16);
+//	obuf[0]=0x55AA4100;
 
 	imgbuf=(uint8_t *)malloc(1<<20);
 	imgba=0;
+
+	for(i=0; i<8192; i++)
+	{
+		imgbuf[i]=(i&8)?255:0;
+	}
 
 	dbuf=(byte *)malloc(xs*ys*4);
 
@@ -77,49 +82,66 @@ int main(int argc, char **argv, char **env)
 	pcmrst=2268;
 	pcmdiv=0;
 	pcmacc=0;
+	isinit=0;
 
 	while (!Verilated::gotFinish())
 	{
 		top->clock = main_time&1;
 
-#if 0
-		if(irq)
+		if(imgba<8192)
 		{
-			blk=imgbuf[imgba&16383];
-			if(blk)
+			if(top->busOK==0)
 			{
-//				printf("Blk %08X\n", blk);
-				top->busAddr=0x0000ACA00000LL+((imgba*4)&4095);
-				top->busInData=blk;
-//				top->busWR=1;
-//				top->busOE=0;
+//				printf("MMIO Ready\n");
+			
 				top->busOpm=0x12;
-			}else
-			{
-//				top->busWR=0;
-//				top->busOE=0;
-				top->busOpm=0x00;
+				top->busAddr=0xF0090000+imgba;
+				top->busInData=*(uint32_t *)(imgbuf+imgba);
+
+				if(!isinit)
+				{
+					top->busOpm=0x12;
+					top->busAddr=0xF009F000;
+					top->busInData=0x0029;
+				}
 			}
-		}else
-		{
-#if 0
-			top->busAddr=0x0000ACA1FF20LL;
-			top->busWR=0;
-			top->busOE=1;
-			if(!top->busHold && top->clock)
-				imgba0=top->busData;
-#endif
+			
+			if(top->busOK==1)
+			{
+//				printf("MMIO OK\n");
+
+				top->busOpm=0;
+				top->busAddr=0;
+				top->busInData=0;
+				isinit=1;
+				
+				if(top->busOK!=lstok)
+				{
+//					printf("%d/%d\n", imgba, 4096);
+					imgba++;
+				}
+			}
+
+			if(top->busOK==2)
+			{
+//				printf("MMIO Hold\n");
+			}
 		}
-#endif
+
+		lstok=top->busOK;
 
 		top->eval();
 
 		main_time++;
-		
+
+#if 1
 		if(top->clock)
 		{
 			if(pcmdiv<=0)
 			{
+				printf("%d/%d\r", bpos, bplim);
+				fflush(stdout);
+				
 				obuf[bpos++]=(255*pcmacc)/pcmrst;
 				pcmdiv=pcmrst;
 				pcmacc=0;
@@ -128,22 +150,6 @@ int main(int argc, char **argv, char **env)
 				pcmacc+=top->pwmOut&1;
 				pcmdiv--;
 			}
-		}
-
-#if 0
-		if(!(main_time&15))
-		{
-//			if(top->pwmOut)
-//				obuf[bpos>>5]|=(1<<(bpos&31));
-
-//			j=top->pwmOut&15;
-//			obuf[bpos>>3]|=(j<<((bpos&7)*4));
-
-//			j=top->pwmOut&65535;
-//			obuf[bpos*2+0]=j;
-//			obuf[bpos*2+1]=j>>8;
-
-			bpos++;
 		}
 #endif
 		

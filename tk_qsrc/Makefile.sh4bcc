@@ -34,7 +34,9 @@ CFLAGS=$(TK_CFL) $(BASE_CFLAGS) -mBSR1
 LDFLAGS=$(TK_LDFL) -lvxcore
 
 # CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2E
-CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2F -O2 -fwex3w
+CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2F -O2 -fwex3w -fwexj
+# CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2F -O2
+# CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2F -Os
 # CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2
 LDFLAGS64=$(TK_LDFL) -lvxcore64
 
@@ -42,7 +44,7 @@ all: targets
 
 # targets: quake_sh4b.elf quake_cgfx_sh4b.elf primecnt_sh4b.elf \
 #	quake_b64b.exe primecnt_b64b.exe
-targets: quake_b64b.exe
+targets: quake_b64b.exe dhry_b64b.exe
 
 SQUAKE_SRCS = \
 	q1base/cl_demo.c \
@@ -149,6 +151,10 @@ SKIP_SRCS=\
 	q1base/snd_mixa.c \
 	q1base/sys_dosa.o
 
+DHRY_SRCS =			\
+	dhry/dhry_1.c	\
+	dhry/dhry_2.c
+
 quake_sh4b.elf: $(SQUAKE_SRCS)
 	$(CC) $(CFLAGS) -o $@ $(SQUAKE_SRCS) $(LDFLAGS)
 #	$(OBJDUMP) -t $@ > quake_sh4b.map
@@ -160,6 +166,10 @@ quake_cgfx_sh4b.elf: $(SQUAKE_SRCS)
 primecnt_sh4b.elf: primecnt.c
 	$(CC) $(CFLAGS) -o $@ primecnt.c $(LDFLAGS)
 #	$(OBJDUMP) -t primecnt_sh4b.elf > primecnt_sh4b.map
+
+
+dhry_b64b.exe: $(DHRY_SRCS)
+	$(CC) $(CFLAGS64) -o $@ $(DHRY_SRCS) $(LDFLAGS64) -DTIME
 
 
 quake_b64b.exe: $(SQUAKE_SRCS)

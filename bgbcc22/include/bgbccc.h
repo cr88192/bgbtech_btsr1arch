@@ -323,6 +323,16 @@ extern "C" {
 #define	BGBCC_MAXSTACKOBJ			0x080000	//maximum allowed stack frame
 #define	BGBCC_MAXSTACKFRAME			0x080000	//maximum allowed stack frame
 
+#define BGBCC_LOOPFL_CONTINUE		0x0001
+#define BGBCC_LOOPFL_BREAK			0x0002
+#define BGBCC_LOOPFL_MASK			0x0003
+
+#define BGBCC_RSPFL_NONLOCAL		0x0001		//Not Local Variable
+#define BGBCC_RSPFL_NONBASIC		0x0002		//Non-basic type
+#define BGBCC_RSPFL_SINGLETRACE		0x0004		//Only spans a single trace
+#define BGBCC_RSPFL_NONOVTRACE		0x0008		//No overlap within trace.
+#define BGBCC_RSPFL_CROSSTRACE		0x0010		//Cross-trace spans seen.
+
 #ifndef BTK_NAME
 #define BTK_NAME	1
 #define BTK_NUMBER	2
@@ -685,6 +695,7 @@ byte ccxl_isdef_methodproto;
 
 byte optmode;			//optimization mode
 byte curprd;			//current predication mode
+int loop_localstate;	
 
 int ccxl_tyc_seen;
 

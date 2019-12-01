@@ -39,6 +39,7 @@ int smus_irq_tt;
 int smus_timer_irq()
 {
 	int i;
+
 //	return(0);
 
 	if(smus_irq_tt>0)

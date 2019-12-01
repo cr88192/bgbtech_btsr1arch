@@ -566,7 +566,8 @@ int BJX2_MainPollKeyboard(BJX2_Context *ctx)
 	{
 		k=*kb++;
 		BJX2_MainAddTranslateKey(ctx, k);
-		
+
+#if 0
 		if(k&0x8000)
 		{
 			j=k&4095;
@@ -590,6 +591,7 @@ int BJX2_MainPollKeyboard(BJX2_Context *ctx)
 				BJX2_MainAddKeyByte(ctx, j);
 			}
 		}
+#endif
 	}
 #endif
 

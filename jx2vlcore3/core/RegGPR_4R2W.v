@@ -343,54 +343,54 @@ begin
 	
 	if(!tValRsZz)
 	begin
-		if(regIdRs==regIdRnA2)
-			tRegValRs=regValRnA2;
 		if(regIdRs==regIdRnB2)
 			tRegValRs=regValRnB2;
+		if(regIdRs==regIdRnA2)
+			tRegValRs=regValRnA2;
 
-		if(regIdRs==regIdRnA1)
-			tRegValRs=regValRnA1;
 		if(regIdRs==regIdRnB1)
 			tRegValRs=regValRnB1;
+		if(regIdRs==regIdRnA1)
+			tRegValRs=regValRnA1;
 	end
 
 	if(!tValRtZz)
 	begin
-		if(regIdRt==regIdRnA2)
-			tRegValRt=regValRnA2;
 		if(regIdRt==regIdRnB2)
 			tRegValRt=regValRnB2;
+		if(regIdRt==regIdRnA2)
+			tRegValRt=regValRnA2;
 
-		if(regIdRt==regIdRnA1)
-			tRegValRt=regValRnA1;
 		if(regIdRt==regIdRnB1)
 			tRegValRt=regValRnB1;
+		if(regIdRt==regIdRnA1)
+			tRegValRt=regValRnA1;
 	end
 
 	if(!tValRuZz)
 	begin
-		if(regIdRu==regIdRnA2)
-			tRegValRu=regValRnA2;
 		if(regIdRu==regIdRnB2)
 			tRegValRu=regValRnB2;
+		if(regIdRu==regIdRnA2)
+			tRegValRu=regValRnA2;
 
-		if(regIdRu==regIdRnA1)
-			tRegValRu=regValRnA1;
 		if(regIdRu==regIdRnB1)
 			tRegValRu=regValRnB1;
+		if(regIdRu==regIdRnA1)
+			tRegValRu=regValRnA1;
 	end
 
 	if(!tValRvZz)
 	begin
-		if(regIdRv==regIdRnA2)
-			tRegValRv=regValRnA2;
 		if(regIdRv==regIdRnB2)
 			tRegValRv=regValRnB2;
+		if(regIdRv==regIdRnA2)
+			tRegValRv=regValRnA2;
 
-		if(regIdRv==regIdRnA1)
-			tRegValRv=regValRnA1;
 		if(regIdRv==regIdRnB1)
 			tRegValRv=regValRnB1;
+		if(regIdRv==regIdRnA1)
+			tRegValRv=regValRnA1;
 	end
 end
 

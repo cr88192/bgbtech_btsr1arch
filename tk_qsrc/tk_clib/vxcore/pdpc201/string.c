@@ -14,6 +14,7 @@
 #include "string.h"
 #include "stddef.h"
 #include "errno.h"
+#include "stdint.h"
 
 #ifdef memmove
 #undef memmove
@@ -139,6 +140,8 @@ __PDPCLIB_API__ int memcmp(const void *s1, const void *s2, size_t n)
 #ifdef strcmp
 #undef strcmp
 #endif
+
+#if 0
 __PDPCLIB_API__ int strcmp(const char *s1, const char *s2)
 {
 	const unsigned char *p1;
@@ -156,6 +159,88 @@ __PDPCLIB_API__ int strcmp(const char *s1, const char *s2)
 	if (*p2 == '\0') return (0);
 	else return (-1);
 }
+#endif
+
+#if 0
+__PDPCLIB_API__ int strcmp(const char *s1, const char *s2)
+{
+	const unsigned char *p1;
+	const unsigned char *p2;
+//	uint64_t l1, l2;
+	uint32_t i1, i2;
+	int ze;
+
+	p1 = (const unsigned char *)s1;
+	p2 = (const unsigned char *)s2;
+
+#if 0
+	while(1)
+	{
+		l1=*(uint64_t *)p1;
+		l2=*(uint64_t *)p2;
+		
+		if(l1==l2)
+		{
+			ze=	(!(l1&0x00000000000000FFULL)) |
+				(!(l1&0x000000000000FF00ULL)) |
+				(!(l1&0x0000000000FF0000ULL)) |
+				(!(l1&0x00000000FF000000ULL)) |
+				(!(l1&0x000000FF00000000ULL)) |
+				(!(l1&0x0000FF0000000000ULL)) |
+				(!(l1&0x00FF000000000000ULL)) |
+				(!(l1&0xFF00000000000000ULL)) ;
+			if(ze)
+				return(0);
+			p1+=8;
+			p2+=8;
+			continue;
+		}
+		break;
+	}
+#endif
+
+#if 1
+	while(1)
+	{
+		i1=*(uint32_t *)p1;
+		i2=*(uint32_t *)p2;
+		
+		if(i1==i2)
+		{
+			ze=	(!(l1&0x000000FFU)) |
+				(!(l1&0x0000FF00U)) |
+				(!(l1&0x00FF0000U)) |
+				(!(l1&0xFF000000U)) ;
+			if(ze)
+				break;
+//				return(0);
+			p1+=4;
+			p2+=4;
+			continue;
+		}
+		break;
+	}
+#endif
+	
+	i1=*p1++; i2=*p2++;
+	while((i1==i2) && (i1!=0))
+		{ i1=*p1++; i2=*p2++; }
+	ze=0;
+	if(i1<i2)ze=-1;
+	if(i1>i2)ze= 1;
+	return(ze);
+
+//	while (*p1 != '\0')
+//	{
+//		if (*p1 < *p2) return (-1);
+//		else if (*p1 > *p2) return (1);
+//		p1++;
+//		p2++;
+//	}
+//	if (*p2 == '\0') return (0);
+//	else return (-1);
+}
+#endif
 
 #ifdef strcoll
 #undef strcoll
@@ -400,8 +485,11 @@ __PDPCLIB_API__ void *memset(void *s, int c, size_t n)
 	v=c; v|=(v<<8); v|=(v<<16);
 	ct=s; cte=s+n;
 
-	cte0=s+(n&(~15));
-	while(ct<cte0)
+//	cte0=s+(n&(~15));
+//	while(ct<cte0)
+//	while((ct+16)<=cte)
+	cte0=cte-16;
+	while(ct<=cte0)
 	{
 		((int *)ct)[0]=v;
 		((int *)ct)[1]=v;
@@ -410,8 +498,11 @@ __PDPCLIB_API__ void *memset(void *s, int c, size_t n)
 		ct+=16;
 	}
 
-	cte0=s+(n&(~3));
-	while(ct<cte0)
+//	cte0=s+(n&(~3));
+//	while(ct<cte0)
+//	while((ct+4)<=cte)
+	cte0=cte-4;
+	while(ct<=cte0)
 		{ *(int *)ct=v; ct+=4; }
 
 	while(ct<cte)
@@ -553,6 +644,7 @@ __PDPCLIB_API__ int strnicmp(const char *s1, const char *s2, size_t n)
 #undef memcpy
 #endif
 
+#if 1
 // #ifndef __32BIT__
 #if 0
 __PDPCLIB_API__ void *memcpy(void *s1, const void *s2, size_t n)
@@ -576,12 +668,33 @@ __PDPCLIB_API__ void *memcpy(void *s1, const void *s2, size_t n)
 	register unsigned int *p = (unsigned int *)s1;
 	register unsigned int *cs2 = (unsigned int *)s2;
 	register unsigned int *endi;
+	register long long li0, li1;
 
 //	n=(int)n;
 	if(n!=((int)n))
 		__debugbreak();
 
 	endi = (unsigned int *)((char *)p + (n & ~0x03));
+
+#if 1
+	while ((p+4) <= endi)
+	{
+		li0 = ((long long *)cs2)[0];
+		li1 = ((long long *)cs2)[1];
+		((long long *)p)[0] = li0;
+		((long long *)p)[1] = li1;
+
+//		((long long *)p)[0] = ((long long *)cs2)[0];
+//		((long long *)p)[1] = ((long long *)cs2)[1];
+//		p[0] = cs2[0];
+//		p[1] = cs2[1];
+//		p[2] = cs2[2];
+//		p[3] = cs2[3];
+		p+=4; cs2+=4;
+//		__debugbreak();
+	}
+#endif
+
 //	while (p != endi)
 	while (p < endi)
 	{
@@ -614,3 +727,83 @@ __PDPCLIB_API__ void *memcpy(void *s1, const void *s2, size_t n)
 }
 #endif /* 32BIT */
 #endif /* USE_ASSEMBLER */
+#endif
+
+#if 0
+__PDPCLIB_API__ void *memcpy(void *s1, const void *s2, size_t n)
+{
+	register long long *p = (long long *)s1;
+	register long long *cs2 = (long long *)s2;
+	register long long *endi;
+
+//	n=(int)n;
+	if(n!=((int)n))
+		__debugbreak();
+
+	endi = (long long *)((char *)p + (n & (~0x07)));
+
+#if 0
+	while ((p+4) <= endi)
+	{
+		p[0] = cs2[0];
+		p[1] = cs2[1];
+		p[2] = cs2[2];
+		p[3] = cs2[3];
+		p+=4;	cs2+=4;
+	}
+	if ((p+2) <= endi)
+	{
+		p[0] = cs2[0];
+		p[1] = cs2[1];
+		p+=2;	cs2+=2;
+	}
+	if (p < endi)
+	{
+		*p++ = *cs2++;
+	}
+#endif
+
+#if 1
+//	while (p != endi)
+	while (p < endi)
+	{
+		*p++ = *cs2++;
+	}
+#endif
+
+	switch (n & 0x07)
+	{
+		case 0:
+			break;
+		case 1:
+			*(char *)p = *(char *)cs2;
+			break;
+		case 2:
+			*(short *)p = *(short *)cs2;
+			break;
+		case 3:
+			((short *)p)[0] = ((short *)cs2)[0];
+			((char *)p)[2] = ((char *)cs2)[2];
+			break;
+		case 4:
+			*(int *)p = *(int *)cs2;
+			break;
+		case 5:
+			((int *)p)[0] = ((int *)cs2)[0];
+			((char *)p)[4] = ((char *)cs2)[4];
+			break;
+		case 6:
+			((int *)p)[0] = ((int *)cs2)[0];
+			((short *)p)[2] = ((short *)cs2)[2];
+			break;
+		case 7:
+			((int *)p)[0] = ((int *)cs2)[0];
+			((short *)p)[2] = ((short *)cs2)[2];
+			((char *)p)[7] = ((char *)cs2)[7];
+			break;
+		default:
+			break;
+	}
+	return (s1);
+}
+#endif

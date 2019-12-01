@@ -2788,6 +2788,39 @@ int BGBCC_JX2C_GetFrameVRegFlags(
 	return(0);
 }
 
+int BGBCC_JX2C_GetFrameVRegVspanFlags(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	ccxl_register sreg)
+{
+	BGBCC_JX2_VarSpan *vsp, *vsp1;
+	BGBCC_JX2_VarSpan2 *vspb;
+	int fl;
+	int i, j, k;
+
+	if(!sreg.val)
+		return(0);
+	if((sreg.val&4095)==4095)
+		return(0);
+	
+	for(i=0; i<sctx->vspan_num; i++)
+	{
+		vsp=sctx->vspan[i];
+		if(BGBCC_CCXL_RegisterIdentEqualP(ctx, vsp->reg, sreg))
+		{
+			j=(sreg.val>>12)&4095;
+			if(j<0)j=0;
+			if(j>63)j=63;
+			vspb=vsp->seq+j;
+			
+			if(vspb->cnt>0)
+				return(vspb->flag | vsp->flag);
+		}
+	}
+	
+	return(0);
+}
+
 int BGBCC_JX2C_BeginSetupFrameVRegSpan(
 	BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx)
@@ -2800,6 +2833,7 @@ int BGBCC_JX2C_EndSetupFrameVRegSpan(
 	BGBCC_JX2_Context *sctx)
 {
 	BGBCC_JX2_VarSpan *vsp, *vsp1;
+	BGBCC_JX2_VarSpan2 *vspb, *vspb1;
 	ccxl_register vreg;
 	int v, h;
 	int i, j, k;
@@ -2822,6 +2856,67 @@ int BGBCC_JX2C_EndSetupFrameVRegSpan(
 		sctx->vspan_chn[i]=sctx->vspan_hash[h];
 		sctx->vspan_hash[h]=i;
 
+		if((vsp->tbeg)==(vsp->tend))
+		{
+			vsp->flag|=BGBCC_RSPFL_SINGLETRACE;
+			
+//			if(vsp->nseq==1)
+//				{ vsp->flag|=BGBCC_RSPFL_NONOVTRACE; }
+		}
+
+		for(j=0; j<vsp->nseq; j++)
+		{
+			vspb=vsp->seq+j;
+			if(!(vspb->cnt))
+				continue;
+
+			if(vspb->flag&BGBCC_RSPFL_CROSSTRACE)
+				{ vsp->flag|=BGBCC_RSPFL_CROSSTRACE; }
+			
+			if((vspb->tbeg)!=(vspb->tend))
+				{ vsp->flag|=BGBCC_RSPFL_CROSSTRACE; }
+		}
+
+		for(j=0; j<vsp->nseq; j++)
+		{
+			vspb=vsp->seq+j;
+			if(!(vspb->cnt))
+				continue;
+			
+			if((vspb->tbeg)==(vspb->tend))
+			{
+				vspb->flag|=BGBCC_RSPFL_SINGLETRACE;
+				
+				if(vsp->flag&BGBCC_RSPFL_CROSSTRACE)
+					continue;
+
+#if 1
+				for(k=0; k<vsp->nseq; k++)
+				{
+					if(k==j)
+						continue;
+					vspb1=vsp->seq+k;
+					if(!(vspb1->cnt))
+						continue;
+					if(((vspb->tbeg)>=(vspb1->tbeg)) &&
+						((vspb->tbeg)<=(vspb1->tend)))
+							break;
+				}
+				
+				if(k>=vsp->nseq)
+				{
+					if(BGBCC_CCXL_IsRegTempP(ctx, vreg))
+//					if(BGBCC_CCXL_IsRegTempP(ctx, vreg) ||
+//						BGBCC_CCXL_IsRegLocalP(ctx, vreg))
+//					if(vsp->flag&BGBCC_RSPFL_LOCAL)
+						vspb->flag|=BGBCC_RSPFL_NONOVTRACE;
+
+//					vspb->flag|=BGBCC_RSPFL_NONOVTRACE;
+				}
+#endif
+			}
+		}
+
 //		if((vreg.val&CCXL_REGTY_REGMASK)!=(reg.val&CCXL_REGTY_REGMASK))
 //			continue;
 		
@@ -2835,7 +2930,7 @@ int BGBCC_JX2C_EndSetupFrameVRegSpan(
 int BGBCC_JX2C_SetupFrameVRegSpan(
 	BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx,
-	ccxl_register sreg)
+	ccxl_register sreg, int dstfl)
 {
 	BGBCC_JX2_VarSpan *vsp, *vsp1;
 	BGBCC_JX2_VarSpan2 *vspb;
@@ -2887,10 +2982,13 @@ int BGBCC_JX2C_SetupFrameVRegSpan(
 				i--;
 			}
 			
-			j=(sreg.val>>12)&4093;
+//			j=(sreg.val>>12)&4093;
+			j=(sreg.val>>12)&4095;
 			if(j<0)j=0;
 			if(j>63)j=63;
 			vspb=vsp->seq+j;
+			if(j>=vsp->nseq)
+				vsp->nseq=j+1;
 
 			if(vspb->cnt)
 			{
@@ -2910,6 +3008,9 @@ int BGBCC_JX2C_SetupFrameVRegSpan(
 				vspb->tbeg=sctx->tr_trnum;
 				vspb->tend=sctx->tr_trnum;
 				vspb->cnt=1;
+				vspb->flag=0;
+				if(!(dstfl&1))
+					{ vspb->flag=BGBCC_RSPFL_CROSSTRACE; }
 			}
 			
 			return(1);
@@ -2925,13 +3026,18 @@ int BGBCC_JX2C_SetupFrameVRegSpan(
 	fl=0;
 	if(	!BGBCC_CCXL_IsRegTempP(ctx, sreg) &&
 		!BGBCC_CCXL_IsRegLocalP(ctx, sreg))
-			fl|=1;
+			fl|=BGBCC_RSPFL_NONLOCAL;
+
+//	if(	BGBCC_CCXL_TypeValueObjectP(ctx, tty) ||
+//		BGBCC_CCXL_TypeArrayP(ctx, tty) ||
+//		BGBCC_CCXL_TypeSgLongP(ctx, tty) ||
+//		BGBCC_CCXL_TypeRealP(ctx, tty) ||
+//		BGBCC_CCXL_TypeSgInt128P(ctx, tty))
 
 	if(	BGBCC_CCXL_TypeValueObjectP(ctx, tty) ||
 		BGBCC_CCXL_TypeArrayP(ctx, tty) ||
-		BGBCC_CCXL_TypeSgLongP(ctx, tty) ||
-		BGBCC_CCXL_TypeRealP(ctx, tty))
-		fl|=2;
+		BGBCC_CCXL_TypeSgInt128P(ctx, tty))
+			fl|=BGBCC_RSPFL_NONBASIC;
 
 	i=sctx->vspan_num++;
 	vsp=sctx->vspan[i];
@@ -2951,6 +3057,7 @@ int BGBCC_JX2C_SetupFrameVRegSpan(
 	vsp->tend=sctx->tr_trnum;
 	vsp->cnt=1;
 	vsp->flag=fl;
+	vsp->nseq=0;
 
 	if(BGBCC_CCXL_IsRegLocalP(ctx, sreg))
 	{
@@ -2977,12 +3084,17 @@ int BGBCC_JX2C_SetupFrameVRegSpan(
 	if(j<0)j=0;
 	if(j>63)j=63;
 	vspb=vsp->seq+j;
+	if(j>=vsp->nseq)
+		vsp->nseq=j+1;
 
 	vspb->bbeg=sctx->tr_opnum;
 	vspb->bend=sctx->tr_opnum;
 	vspb->tbeg=sctx->tr_trnum;
 	vspb->tend=sctx->tr_trnum;
 	vspb->cnt=1;
+	vspb->flag=fl;
+	if(!(dstfl&1))
+		{ vspb->flag=BGBCC_RSPFL_CROSSTRACE; }
 
 	return(1);
 }
@@ -3145,9 +3257,9 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		sctx->tr_trnum=trn;
 		sctx->tr_opnum=i;
 		
-		BGBCC_JX2C_SetupFrameVRegSpan(ctx, sctx, vop->dst);
-		BGBCC_JX2C_SetupFrameVRegSpan(ctx, sctx, vop->srca);
-		BGBCC_JX2C_SetupFrameVRegSpan(ctx, sctx, vop->srcb);
+		BGBCC_JX2C_SetupFrameVRegSpan(ctx, sctx, vop->dst, 1);
+		BGBCC_JX2C_SetupFrameVRegSpan(ctx, sctx, vop->srca, 0);
+		BGBCC_JX2C_SetupFrameVRegSpan(ctx, sctx, vop->srcb, 0);
 
 
 		if(vop->opn==CCXL_VOP_CALL)
@@ -3155,7 +3267,7 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 			for(j=0; j<vop->imm.call.na; j++)
 			{
 				BGBCC_JX2C_SetupFrameVRegSpan(ctx, sctx,
-					vop->imm.call.args[j]);
+					vop->imm.call.args[j], 0);
 			}
 		}
 	}
@@ -3801,8 +3913,8 @@ int BGBCC_JX2C_CalcFrameEpiKey(BGBCC_TransState *ctx,
 
 //	if(ctx->optmode==BGBCC_OPT_SPEED)
 //		return(0);
-	if(ctx->optmode!=BGBCC_OPT_SIZE)
-		return(0);
+//	if(ctx->optmode!=BGBCC_OPT_SIZE)
+//		return(0);
 
 	if((sctx->is_leaf&1) && (rqt&1))
 //	if(1)

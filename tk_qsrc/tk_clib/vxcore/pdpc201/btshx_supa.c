@@ -714,6 +714,7 @@ char **__get_cmdenv()
 // { }
 
 
+#if 0
 void tk_print_hex(u32 v)
 {
 	static char *chrs="0123456789ABCDEF";
@@ -984,6 +985,7 @@ void tk_printf(char *str, ...)
 	}
 	va_end(lst);
 }
+#endif
 
 
 void tk_vprintf(char *str, va_list lst)
@@ -1292,7 +1294,10 @@ int irq_addTimerIrq(void *fcn)
 extern int __arch_exsr;
 
 // int __isr_interrupt(int irq)
-__interrupt void __isr_interrupt(void)
+#ifdef __BGBCC__
+__interrupt
+#endif
+void __isr_interrupt(void)
 {
 	int i, irq;
 

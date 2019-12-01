@@ -29,6 +29,7 @@ SRCS_CLIB = \
 	pdpc201/ctype.c \
 	pdpc201/setjmp.c \
 	pdpc201/math.c \
+	pdpc201/math2.c \
 	pdpc201/__memmgr.c \
 	pdpc201/btshx_supa.c \
 	pdpc201/btshx_softfpu.c \

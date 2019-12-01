@@ -25,7 +25,7 @@ module TopUnit(
 
 	sdc_dat,	sdc_clk,	sdc_cmd,	sdc_ena,
 
-	aud_mono_out,
+	aud_mono_out,	aud_mono_en,
 	seg_outCharBit,
 	seg_outSegBit,
 
@@ -104,6 +104,7 @@ output			sdc_cmd;
 output			sdc_ena;
 
 output			aud_mono_out;
+output			aud_mono_en;
 output[7:0]		seg_outCharBit;
 output[7:0]		seg_outSegBit;
 
@@ -144,7 +145,9 @@ assign	sdc_dat_i[2]	= sdc_dat[2];
 assign	sdc_dat_i[3]	= sdc_dat[3];
 
 wire aud_mono_out1;
-assign	aud_mono_out = aud_mono_out1 ? 1'bz : 1'b0;
+assign	aud_mono_out	= aud_mono_out1 ? 1'bz : 1'b0;
+// assign	aud_mono_out = aud_mono_out1;
+assign	aud_mono_en		= 1'b1;
 
 CoreUnit core(
 	clock, 		reset2,

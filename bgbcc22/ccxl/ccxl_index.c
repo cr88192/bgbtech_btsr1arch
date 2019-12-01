@@ -98,6 +98,7 @@ void BGBCC_CCXL_CompileBreak(BGBCC_TransState *ctx)
 {
 	ccxl_label l;
 
+	ctx->loop_localstate|=BGBCC_LOOPFL_BREAK;
 	l=ctx->breakstack[ctx->breakstackpos-1];
 
 	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_JMP);
@@ -111,6 +112,7 @@ void BGBCC_CCXL_CompileContinue(BGBCC_TransState *ctx)
 {
 	ccxl_label l;
 
+	ctx->loop_localstate|=BGBCC_LOOPFL_CONTINUE;
 	l=ctx->contstack[ctx->contstackpos-1];
 
 	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_JMP);

@@ -726,7 +726,7 @@ void R_DrawSurfaceBlock16_mipN (int mip)
 #if 1
 void R_DrawSurfaceBlock16_mip0 (void)
 {
-	int				v, i, b, l, d;
+	int				v, i, l, d;
 	int				lighttemp;
 
 	register int lightstep, light;
@@ -734,6 +734,8 @@ void R_DrawSurfaceBlock16_mip0 (void)
 	register unsigned short *prowdest;
 	register unsigned short *cmap16;
 	register int pix;
+//	register int pix0, pix1, pix2, pix3;
+	register int b;
 
 	int pixa, pixb;
 //	 shr0, shp2, shp2n1;
@@ -761,6 +763,9 @@ void R_DrawSurfaceBlock16_mip0 (void)
 			lighttemp = lightleft - lightright;
 			lightstep = lighttemp >> 4;
 			light = lightright;
+			
+//			light &= 0xFF00;
+//			lightstep &= 0xFF00;
 
 #if 0
 			for (b=15; b>=0; b--)
@@ -796,11 +801,43 @@ void R_DrawSurfaceBlock16_mip0 (void)
 				prowdest[b] = pix;	b--;
 			}
 #endif
+
+#if 0
+			for (b=15; b>0; )
+			{
+				pix0 = psource[b-0];
+				pix1 = psource[b-1];
+				pix2 = psource[b-2];
+				pix3 = psource[b-3];
+
+//				pix0 = cmap16[(light & 0xFF00) + pix0];
+				pix0 += light & 0xFF00;
+				light += lightstep;
+				pix1 += light & 0xFF00;
+				light += lightstep;
+				pix2 += light & 0xFF00;
+				light += lightstep;
+				pix3 += light & 0xFF00;
+				light += lightstep;
+
+				pix0 = cmap16[pix0];
+				pix1 = cmap16[pix1];
+				pix2 = cmap16[pix2];
+				pix3 = cmap16[pix3];
+				prowdest[b-0] = pix0;
+				prowdest[b-1] = pix1;
+				prowdest[b-2] = pix2;
+				prowdest[b-3] = pix3;
+
+				b-=4;
+			}
+#endif
 	
 			psource += sourcetstep;
 			lightright += lightrightstep;
 			lightleft += lightleftstep;
-			prowdest += surfrowbytes/2;
+//			prowdest += surfrowbytes/2;
+			prowdest += surfrowbytes >> 1;
 		}
 
 		if (psource >= r_sourcemax)

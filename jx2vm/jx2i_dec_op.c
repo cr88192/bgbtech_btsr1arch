@@ -285,9 +285,9 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 	op->opn=opw;
 	op->pc=addr;
 	op->cyc=-1;
-	op->rn=0;
-	op->rm=0;
-	op->ro=0;
+	op->rn=BJX2_REG_ZZR;
+	op->rm=BJX2_REG_ZZR;
+	op->ro=BJX2_REG_ZZR;
 	op->imm=0;
 	
 #ifdef BJX2_FLIPSTNM

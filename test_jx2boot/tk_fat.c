@@ -1635,7 +1635,7 @@ int TKFAT_LookupDirEntName(TKFAT_ImageInfo *img,
 
 //			k=!memcmp(deb->name, tsn, 11);
 			k=!tkfat_memcmp11(deb->name, tsn);
-			printf("DE=%11s TS=%11s %d\n", deb->name, tsn, k);
+//			printf("DE=%11s TS=%11s %d\n", deb->name, tsn, k);
 
 			if(k)
 			{

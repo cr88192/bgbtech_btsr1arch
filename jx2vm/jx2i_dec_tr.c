@@ -560,12 +560,38 @@ BJX2_Trace *BJX2_DecTraceCb_Bad(BJX2_Context *ctx, BJX2_Trace *tr)
 int BJX2_CheckWexSanity3W(BJX2_Context *ctx,
 	BJX2_Opcode *op1, BJX2_Opcode *op2, BJX2_Opcode *op3)
 {
+	if(op1->rn!=BJX2_REG_ZZR)
+	{
+		if((op1->rn==op2->rm) || (op1->rn==op2->ro))
+			return(-1);
+		if((op1->rn==op3->rm) || (op1->rn==op3->ro))
+			return(-1);
+	}
+
+	if(op2->rn!=BJX2_REG_ZZR)
+	{
+		if((op2->rn==op3->rm) || (op2->rn==op3->ro))
+			return(-1);
+	}
+
 	return(1);
 }
 
 int BJX2_CheckWexSanity2W(BJX2_Context *ctx,
 	BJX2_Opcode *op1, BJX2_Opcode *op2)
 {
+	if(op1->rn!=BJX2_REG_ZZR)
+	{
+		if((op1->rn==op2->rm) || (op1->rn==op2->ro))
+			return(-1);
+	}
+
+	if(op2->rn!=BJX2_REG_ZZR)
+	{
+//		if((op2->rn==op1->rm) || (op2->rn==op1->ro))
+//			return(-1);
+	}
+
 	return(1);
 }
 

@@ -122,8 +122,10 @@ typedef volatile u32 vol_u32;
 // #define TKMM_PAGEBASE	0x10000000
 // #define TKMM_PAGEEND	0x18000000
 
-#define TKMM_PAGEBASE	0x04000000
-#define TKMM_PAGEEND	0x18000000
+// #define TKMM_PAGEBASE	0x04000000
+#define TKMM_PAGEBASE	0x03000000
+// #define TKMM_PAGEEND	0x18000000
+#define TKMM_PAGEEND	0x08000000
 
 // #define INITRD_ADDR	0x1003F010
 // #define INITRD_SIZE	0x1003F014
@@ -156,7 +158,8 @@ typedef __builtin_va_list va_list;
 
 #ifndef _BOOL_T
 #define _BOOL_T
-typedef unsigned char bool;
+// typedef unsigned char tk_bool;
+// #define bool tk_bool
 #endif
 
 #ifndef true
@@ -256,7 +259,25 @@ int d_off;
 u16 d_reclen;
 byte d_type;
 char d_name[256];
+
+/* Stat Stuff */
+char st_link[256];
+u32 st_mode;
+u16 st_uid;
+u16 st_gid;
+u32 st_ctime;
+u32 st_mtime;
+u32 st_size;
 };
+
+
+#ifndef TK_APIEXPORT
+#ifdef __BGBCC__
+#define TK_APIEXPORT	__declspec(dllexport)
+#else
+#define TK_APIEXPORT
+#endif
+#endif
 
 #include <tk_fatfs.h>
 #include <tk_dummyavi.h>
@@ -264,8 +285,14 @@ char d_name[256];
 #include <tk_keys.h>
 #include <tk_romfcn.h>
 
+u32 __float32_getbits(float f);
+float __float32_frombits(u32 f);
+u64 __float64_getbits(double f);
+double __float64_frombits(u64 f);
+
 void *TKMM_Malloc(int sz);
 int TKMM_Free(void *ptr);
+char *TKMM_LVA_Strdup(char *str);
 
 // void printf(char *str, ...);
 

@@ -24,7 +24,7 @@ double __float64_frombits(u64 f)
 
 s64 __int32_dmuls(s32 x, s32 y)
 	{ return(((s64)x)*y); }
-u64 __int32_dmulu(u32 x, u32 y);
+u64 __int32_dmulu(u32 x, u32 y)
 	{ return(((u64)x)*y); }
 
 #endif

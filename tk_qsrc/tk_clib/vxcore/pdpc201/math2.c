@@ -68,6 +68,8 @@ double sin(double ang)
 	t+=x*sintab_c19; x*=th2;
 	t+=x*sintab_c20; x*=th2;
 
+//	__debugbreak();
+
 	return(t);
 }
 

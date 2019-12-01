@@ -168,8 +168,8 @@ u64 TKMM_LVA_WrapFixnum(s64 val)
 {
 	u64 v;
 	v=((s64)val);
-	v&=0x3FFF_FFFF_FFFF_FFFFULL;
-	v|=0x4000_0000_0000_0000ULL;
+	v&=0x3FFFFFFFFFFFFFFFULL;
+	v|=0x4000000000000000ULL;
 	return(v);
 }
 
@@ -182,7 +182,7 @@ u64 TKMM_LVA_WrapFlonum(double val)
 //	v=(*(u64 *)(&f));
 	v=__float64_getbits(val);
 	v=v>>2;
-	v|=0x8000_0000_0000_0000ULL;
+	v|=0x8000000000000000ULL;
 	return(v);
 }
 

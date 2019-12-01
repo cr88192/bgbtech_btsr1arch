@@ -605,6 +605,9 @@ void D_DrawSpans8 (espan_t *pspan)
 	} while ((pspan = pspan->pnext) != NULL);
 }
 
+float __fpu_fdiv_sf(float x, float y);
+float __fpu_frcp_sf(float x);
+
 /*
 =============
 D_DrawSpans16
@@ -625,7 +628,7 @@ void D_DrawSpans16 (espan_t *pspan)
 
 //	return;	//BGB Debug
 
-//	__hint_use_egpr();
+	__hint_use_egpr();
 
 	sstep = 0;	// keep compiler happy
 	tstep = 0;	// ditto
@@ -665,7 +668,8 @@ void D_DrawSpans16 (espan_t *pspan)
 		tdivz = d_tdivzorigin + dv*d_tdivzstepv + du*d_tdivzstepu;
 		zi = d_ziorigin + dv*d_zistepv + du*d_zistepu;
 //		z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
-		z = 65536.0 / zi;	// prescale to 16.16 fixed-point
+//		z = 65536.0 / zi;	// prescale to 16.16 fixed-point
+		z = __fpu_frcp_sf(zi) * 65536.0;
 
 //		tk_printf("zio=%f %f %f\n", d_ziorigin, d_zistepv, d_zistepu);
 
@@ -699,7 +703,9 @@ void D_DrawSpans16 (espan_t *pspan)
 				tdivz += tdivz8stepu;
 				zi += zi8stepu;
 //				z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
-				z = 65536.0 / zi;	// prescale to 16.16 fixed-point
+//				z = 65536.0 / zi;	// prescale to 16.16 fixed-point
+//				z = __fpu_fdiv_sf(65536.0, zi);
+				z = __fpu_frcp_sf(zi) * 65536.0;
 
 				snext = (int)(sdivz * z) + sadjust;
 //				snext = (sdivz * z) + sadjust;
@@ -730,7 +736,10 @@ void D_DrawSpans16 (espan_t *pspan)
 				tdivz += d_tdivzstepu * spancountminus1;
 				zi += d_zistepu * spancountminus1;
 //				z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
-				z = 65536.0 / zi;	// prescale to 16.16 fixed-point
+//				z = 65536.0 / zi;	// prescale to 16.16 fixed-point
+//				z = __fpu_fdiv_sf(65536.0, zi);
+				z = __fpu_frcp_sf(zi) * 65536.0;
+
 				snext = (int)(sdivz * z) + sadjust;
 //				snext = (sdivz * z) + sadjust;
 				if (snext > bbextents)

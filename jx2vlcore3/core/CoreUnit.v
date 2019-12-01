@@ -210,7 +210,15 @@ wire	timer1MHz;
 wire	timer64kHz;
 wire	timer1kHz;
 wire	timer256Hz;
-wire	timerNoise;
+reg		timerNoise;
+wire	timerNoiseL0;
+reg		timerNoiseL1;
+reg		timerNoiseL2;
+reg		timerNoiseL3;
+reg		timerNoiseL4;
+reg		timerNoiseL5;
+reg		timerNoiseL6;
+reg		timerNoiseL7;
 
 MmiModClkp		clkp(
 	clock,	reset,
@@ -367,17 +375,19 @@ assign	vgaBlu		= scrnPwmOut[ 3:0];
 assign	vgaHsync	= scrnPwmOut[12];
 assign	vgaVsync	= scrnPwmOut[13];
 
-assign		timerNoise = scrnPwmOut[8] ^ scrnPwmOut[4] ^ scrnPwmOut[0];
-
 ModTxtNtW	scrn(
 	clock,			reset,				scrnPwmOut,
 	mmioOutDataQ,	scrnMmioOutData,	mmioAddr,
-	mmioOpm,		scrnMmioOK);
+	mmioOpm,		scrnMmioOK,
+	timerNoise);
 
 wire[1:0]	audPwmOut;
 wire[31:0]	audMmioOutData;
 wire[1:0]	audMmioOK;
-assign		aud_mono_out	= audPwmOut[0];
+
+reg			audPwmOut2;
+// assign		aud_mono_out	= audPwmOut[0];
+assign		aud_mono_out	= audPwmOut2;
 
 wire[7:0]	audAuxPcmL;
 wire[7:0]	audAuxPcmR;
@@ -386,7 +396,9 @@ ModAudPcm	pcm(
 	clock,			reset,
 	audPwmOut,		audAuxPcmL,			audAuxPcmR,
 	mmioOutData,	audMmioOutData,		mmioAddr,
-	mmioOpm,		audMmioOK);
+	mmioOpm,		audMmioOK,
+	timer1MHz,		timer64kHz,
+	timer1kHz,		timerNoise);
 
 wire[31:0]	fmMmioOutData;
 wire[1:0]	fmMmioOK;
@@ -396,6 +408,28 @@ ModAudFm	fmsyn(
 	audAuxPcmL,		audAuxPcmR,
 	mmioOutData,	fmMmioOutData,		mmioAddr,
 	mmioOpm,		fmMmioOK);
+
+wire		timerNoise_NS0;
+reg			timerNoise_S0;
+wire		timerNoise_NS1;
+reg			timerNoise_S1;
+wire		timerNoise_NS2;
+reg			timerNoise_S2;
+wire		timerNoise_NS3;
+reg			timerNoise_S3;
+
+assign		timerNoise_NS0 = (scrnPwmOut[8] ^ scrnPwmOut[4] ^ scrnPwmOut[0]);
+assign		timerNoise_NS1 = (sdc_di ^ sdc_do);
+assign		timerNoise_NS2 = dbg_exHold1 ^ audPwmOut2;
+assign		timerNoise_NS3 =
+	memAddr[1] ^ memAddr[2] ^ memAddr[3] ^
+	memAddr[5] ^ memAddr[7] ^ memAddr[11];
+
+assign		timerNoiseL0 =
+	timerNoiseL2	^ timerNoiseL4 ^
+	timerNoiseL5	^ timerNoiseL7 ^
+	timerNoise_S0	^ timerNoise_S1 ^
+	timerNoise_S2	^ timerNoise_S3;
 
 
 wire[31:0]	kbMmioOutData;
@@ -569,6 +603,19 @@ begin
 
 	clock_halfMhz	<= !clock_halfMhz;
 	timer1kHzL		<= timer1kHz;
+	
+	timerNoise		<= timerNoiseL7;
+	timerNoiseL1	<= timerNoiseL0;
+	timerNoiseL2	<= timerNoiseL1;
+	timerNoiseL3	<= timerNoiseL2;
+	timerNoiseL4	<= timerNoiseL3;
+	timerNoiseL5	<= timerNoiseL4;
+	timerNoiseL6	<= timerNoiseL5;
+	timerNoiseL7	<= timerNoiseL6;
+	timerNoise_S0	<= timerNoise_NS0;
+	timerNoise_S1	<= timerNoise_NS1;
+	timerNoise_S2	<= timerNoise_NS2;
+	timerNoise_S3	<= timerNoise_NS3;
 
 	mmioAddrL1	<= mmioAddr;
 	mmioAddrL2	<= mmioAddrL1;
@@ -598,6 +645,8 @@ begin
 
 	tSegOutCharBit		<= ssOutCharBit;
 	tSegOutSegBit		<= ssOutSegBit;
+	
+	audPwmOut2			<= audPwmOut[0];
 
 end
 

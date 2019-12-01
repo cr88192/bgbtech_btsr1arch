@@ -63,10 +63,10 @@ apps: FORCE
 #	make -C pdpc201 -f Makefile.vx86 apps
 #	cp pdpc201/*.exe	$(BUILD)
 
-libvxcore.a: $(SRCS_CLIB) e_testkern.S
+libvxcore.a: $(SRCS_CLIB) e_testkern_sh.S
 	$(CC) -o vxcore.o vxcore_multi.c $(COPTS)
 	$(AR) -r libvxcore.a vxcore.o
-	$(CC) -o crt0.o e_testkern.S $(COPTS)
+	$(CC) -o crt0.o e_testkern_sh.S $(COPTS)
 
 FORCE:
 

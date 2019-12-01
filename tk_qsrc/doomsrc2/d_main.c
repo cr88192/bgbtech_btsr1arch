@@ -396,7 +396,7 @@ void D_DoomLoop (void)
 			D_ProcessEvents ();
 			G_BuildTiccmd (&netcmds[consoleplayer][maketic%BACKUPTICS]);
 			if (advancedemo)
-			D_DoAdvanceDemo ();
+				D_DoAdvanceDemo ();
 			M_Ticker ();
 			G_Ticker ();
 			gametic++;
@@ -464,7 +464,7 @@ char                    *pagename;
 void D_PageTicker (void)
 {
     if (--pagetic < 0)
-	D_AdvanceDemo ();
+		D_AdvanceDemo ();
 }
 
 
@@ -495,6 +495,8 @@ void D_AdvanceDemo (void)
 //
  void D_DoAdvanceDemo (void)
 {
+	tk_puts("D_DoAdvanceDemo\n");
+
     players[consoleplayer].playerstate = PST_LIVE;  // not reborn
     advancedemo = false;
     usergame = false;               // no save / end game here

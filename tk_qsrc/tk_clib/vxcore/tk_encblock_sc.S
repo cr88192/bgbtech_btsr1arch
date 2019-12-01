@@ -164,8 +164,11 @@ TK_EncBlock16P:
 
 	add r16, r22, r4
 	add r17, r22, r5
-	shlr1 r4
-	shlr1 r5
+//	shlr1 r4
+//	shlr1 r5
+
+	shad r4, #-1, r4
+	shad r5, #-1, r5
 
 
 	xor r1, r1
@@ -329,7 +332,11 @@ TK_EncBlock16P:
 	shlr1 r2
 	or r17, r2
 	
+//	xor r3, r3
+	
 	mov.l r2, @r6
+	nop
+	nop
 	mov.l r3, @r7
 
 	mov #1, r2

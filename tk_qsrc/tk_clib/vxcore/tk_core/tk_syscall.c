@@ -42,10 +42,12 @@ void tk_sysc_exitpgm(int val)
 // __declspec(syscall)
 // int __isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 
-__declspec(dllexport)
+// __declspec(dllexport)
+TK_APIEXPORT
 int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 {
 	TK_SysArg *args;
+	void *p;
 	int ret;
 
 //	u64 ttb, tea;
@@ -81,7 +83,9 @@ int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 				break;
 
 			case 0x04:
-				*((void **)vParm1)=TKMM_PageAlloc(args[0].i);
+				p=TKMM_PageAlloc(args[0].i);
+				*((void **)vParm1)=p;
+				tk_printf("SYSC: Page Alloc, vParm=%p, p=%p\n", vParm1, p);
 				break;
 			case 0x05:
 				ret=TKMM_PageFree(args[0].p, args[1].i);

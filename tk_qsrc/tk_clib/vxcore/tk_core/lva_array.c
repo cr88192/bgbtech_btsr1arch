@@ -98,17 +98,17 @@ LVA_TagArray *TKMM_LVA_NewTagArray(int n, int mt)
 	return(arr);
 }
 
-__object TKMM_LVA_WrapVarArray(LVA_TagArray *arr)
+tk_lva_object TKMM_LVA_WrapVarArray(LVA_TagArray *arr)
 {
 	u64 b;
 	b=((long)arr)&0x0000FFFFFFFFFFFFULL;
 	b|=12LL<<60;
 //	b|=((u64)tkmm_lvatyi_tagarray)<<48;
-	return(__object_frombits(b));
+	return(tk_lva_object_frombits(b));
 }
 
 
-void *TKMM_LVA_GetArrayIndexPtr(__object obj, int idx, int sc)
+void *TKMM_LVA_GetArrayIndexPtr(tk_lva_object obj, int idx, int sc)
 {
 	LVA_TagArray *arr;
 	byte *arrd;
@@ -116,7 +116,7 @@ void *TKMM_LVA_GetArrayIndexPtr(__object obj, int idx, int sc)
 	u32 bsi, ix2;
 	int bti;
 
-	obits=__object_getbits(obj);
+	obits=tk_lva_object_getbits(obj);
 	if((obits>>60)==12)
 	{
 		bsi=(obits>>48)&4095;
@@ -183,13 +183,13 @@ void *TKMM_LVA_GetArrayIndexPtr(__object obj, int idx, int sc)
 	return(NULL);
 }
 
-int __lvo_get_length(__object obj)
+int __lvo_get_length(tk_lva_object obj)
 {
 	LVA_TagArray *arr;
 	u64 obits;
 	int bsi, bti;
 
-	obits=__object_getbits(obj);
+	obits=tk_lva_object_getbits(obj);
 
 	if((obits>>60)==12)
 	{
@@ -221,71 +221,71 @@ int __lvo_get_length(__object obj)
 	return(NULL);
 }
 
-__object __lvo_newvararray_0(void)
+tk_lva_object __lvo_newvararray_0(void)
 {
-	return(__object_null);
+	return(tk_lva_object_null);
 }
 
-__object __lvo_newvararray_1(__object a0)
+tk_lva_object __lvo_newvararray_1(tk_lva_object a0)
 {
 	LVA_TagArray *arr;
-	__object	*arrd;
+	tk_lva_object	*arrd;
 
 	arr=TKMM_LVA_NewVarArray(1);
-	arrd=(__object *)(arr->p.data);
+	arrd=(tk_lva_object *)(arr->p.data);
 	arrd[0]=a0;
 	
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newvararray_2(__object a0, __object a1)
+tk_lva_object __lvo_newvararray_2(tk_lva_object a0, tk_lva_object a1)
 {
 	LVA_TagArray *arr;
-	__object	*arrd;
+	tk_lva_object	*arrd;
 
 	arr=TKMM_LVA_NewVarArray(2);
-	arrd=(__object *)(arr->p.data);
+	arrd=(tk_lva_object *)(arr->p.data);
 	arrd[0]=a0;		arrd[1]=a1;
 	
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newvararray_3(__object a0, __object a1, __object a2)
+tk_lva_object __lvo_newvararray_3(tk_lva_object a0, tk_lva_object a1, tk_lva_object a2)
 {
 	LVA_TagArray *arr;
-	__object	*arrd;
+	tk_lva_object	*arrd;
 
 	arr=TKMM_LVA_NewVarArray(3);
-	arrd=(__object *)(arr->p.data);
+	arrd=(tk_lva_object *)(arr->p.data);
 	arrd[0]=a0;		arrd[1]=a1;
 	arrd[2]=a2;
 	
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newvararray_4(
-	__object a0, __object a1, __object a2, __object a3)
+tk_lva_object __lvo_newvararray_4(
+	tk_lva_object a0, tk_lva_object a1, tk_lva_object a2, tk_lva_object a3)
 {
 	LVA_TagArray *arr;
-	__object	*arrd;
+	tk_lva_object	*arrd;
 
 	arr=TKMM_LVA_NewVarArray(4);
-	arrd=(__object *)(arr->p.data);
+	arrd=(tk_lva_object *)(arr->p.data);
 	arrd[0]=a0;		arrd[1]=a1;
 	arrd[2]=a2;		arrd[3]=a3;
 	
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newvararray_5(
-	__object a0, __object a1, __object a2, __object a3,
-	__object a4)
+tk_lva_object __lvo_newvararray_5(
+	tk_lva_object a0, tk_lva_object a1, tk_lva_object a2, tk_lva_object a3,
+	tk_lva_object a4)
 {
 	LVA_TagArray *arr;
-	__object	*arrd;
+	tk_lva_object	*arrd;
 
 	arr=TKMM_LVA_NewVarArray(5);
-	arrd=(__object *)(arr->p.data);
+	arrd=(tk_lva_object *)(arr->p.data);
 	arrd[0]=a0;		arrd[1]=a1;
 	arrd[2]=a2;		arrd[3]=a3;
 	arrd[4]=a4;
@@ -293,15 +293,15 @@ __object __lvo_newvararray_5(
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newvararray_6(
-	__object a0, __object a1, __object a2, __object a3,
-	__object a4, __object a5)
+tk_lva_object __lvo_newvararray_6(
+	tk_lva_object a0, tk_lva_object a1, tk_lva_object a2, tk_lva_object a3,
+	tk_lva_object a4, tk_lva_object a5)
 {
 	LVA_TagArray *arr;
-	__object	*arrd;
+	tk_lva_object	*arrd;
 
 	arr=TKMM_LVA_NewVarArray(6);
-	arrd=(__object *)(arr->p.data);
+	arrd=(tk_lva_object *)(arr->p.data);
 	arrd[0]=a0;		arrd[1]=a1;
 	arrd[2]=a2;		arrd[3]=a3;
 	arrd[4]=a4;		arrd[5]=a5;
@@ -309,15 +309,15 @@ __object __lvo_newvararray_6(
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newvararray_7(
-	__object a0, __object a1, __object a2, __object a3,
-	__object a4, __object a5, __object a6)
+tk_lva_object __lvo_newvararray_7(
+	tk_lva_object a0, tk_lva_object a1, tk_lva_object a2, tk_lva_object a3,
+	tk_lva_object a4, tk_lva_object a5, tk_lva_object a6)
 {
 	LVA_TagArray *arr;
-	__object	*arrd;
+	tk_lva_object	*arrd;
 
 	arr=TKMM_LVA_NewVarArray(7);
-	arrd=(__object *)(arr->p.data);
+	arrd=(tk_lva_object *)(arr->p.data);
 	arrd[0]=a0;		arrd[1]=a1;
 	arrd[2]=a2;		arrd[3]=a3;
 	arrd[4]=a4;		arrd[5]=a5;
@@ -326,15 +326,15 @@ __object __lvo_newvararray_7(
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newvararray_8(
-	__object a0, __object a1, __object a2, __object a3,
-	__object a4, __object a5, __object a6, __object a7)
+tk_lva_object __lvo_newvararray_8(
+	tk_lva_object a0, tk_lva_object a1, tk_lva_object a2, tk_lva_object a3,
+	tk_lva_object a4, tk_lva_object a5, tk_lva_object a6, tk_lva_object a7)
 {
 	LVA_TagArray *arr;
-	__object	*arrd;
+	tk_lva_object	*arrd;
 
 	arr=TKMM_LVA_NewVarArray(8);
-	arrd=(__object *)(arr->p.data);
+	arrd=(tk_lva_object *)(arr->p.data);
 	arrd[0]=a0;		arrd[1]=a1;
 	arrd[2]=a2;		arrd[3]=a3;
 	arrd[4]=a4;		arrd[5]=a5;
@@ -343,140 +343,140 @@ __object __lvo_newvararray_8(
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-s32 __lvo_loadindex_i(__object obj, int idx)
+s32 __lvo_loadindex_i(tk_lva_object obj, int idx)
 {
 	return(*(s32 *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 2));
 }
 
-s64 __lvo_loadindex_l(__object obj, int idx)
+s64 __lvo_loadindex_l(tk_lva_object obj, int idx)
 {
 	return(*(s64 *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 3));
 }
 
-float __lvo_loadindex_f(__object obj, int idx)
+float __lvo_loadindex_f(tk_lva_object obj, int idx)
 {
 	return(*(float *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 2));
 }
 
-double __lvo_loadindex_d(__object obj, int idx)
+double __lvo_loadindex_d(tk_lva_object obj, int idx)
 {
 	return(*(double *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 3));
 }
 
-void *__lvo_loadindex_p(__object obj, int idx)
+void *__lvo_loadindex_p(tk_lva_object obj, int idx)
 {
 	return(*(void **)TKMM_LVA_GetArrayIndexPtr(obj, idx, 3));
 }
 
-__object __lvo_loadindex_v(__object obj, int idx)
+tk_lva_object __lvo_loadindex_v(tk_lva_object obj, int idx)
 {
-	return(*(__object *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 3));
+	return(*(tk_lva_object *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 3));
 }
 
-int __lvo_loadindex_sb(__object obj, int idx)
+int __lvo_loadindex_sb(tk_lva_object obj, int idx)
 {
 	return(*(sbyte *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 0));
 }
 
-int __lvo_loadindex_ub(__object obj, int idx)
+int __lvo_loadindex_ub(tk_lva_object obj, int idx)
 {
 	return(*(byte *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 0));
 }
 
-int __lvo_loadindex_ss(__object obj, int idx)
+int __lvo_loadindex_ss(tk_lva_object obj, int idx)
 {
 	return(*(s16 *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 1));
 }
 
-int __lvo_loadindex_us(__object obj, int idx)
+int __lvo_loadindex_us(tk_lva_object obj, int idx)
 {
 	return(*(u16 *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 1));
 }
 
-u32 __lvo_loadindex_ui(__object obj, int idx)
+u32 __lvo_loadindex_ui(tk_lva_object obj, int idx)
 {
 	return(*(u32 *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 2));
 }
 
-u64 __lvo_loadindex_ul(__object obj, int idx)
+u64 __lvo_loadindex_ul(tk_lva_object obj, int idx)
 {
 	return(*(u64 *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 3));
 }
 
-__variant __lvo_loadindex_va(__object obj, int idx)
+tk_lva_variant __lvo_loadindex_va(tk_lva_object obj, int idx)
 {
-	return(*(__variant *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 3));
+	return(*(tk_lva_variant *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 3));
 }
 
-void __lvo_storeindex_i(__object obj, int idx, int val)
+void __lvo_storeindex_i(tk_lva_object obj, int idx, int val)
 {
 	*(u32 *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 2)=val;
 }
 
-void __lvo_storeindex_l(__object obj, int idx, long long val)
+void __lvo_storeindex_l(tk_lva_object obj, int idx, long long val)
 {
 	*(u64 *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 3)=val;
 }
 
-void __lvo_storeindex_f(__object obj, int idx, float val)
+void __lvo_storeindex_f(tk_lva_object obj, int idx, float val)
 {
 	*(float *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 2)=val;
 }
 
-void __lvo_storeindex_d(__object obj, int idx, double val)
+void __lvo_storeindex_d(tk_lva_object obj, int idx, double val)
 {
 	*(double *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 3)=val;
 }
 
-void __lvo_storeindex_p(__object obj, int idx, void *val)
+void __lvo_storeindex_p(tk_lva_object obj, int idx, void *val)
 {
 	*(void **)TKMM_LVA_GetArrayIndexPtr(obj, idx, 3)=val;
 }
 
-void __lvo_storeindex_v(__object obj, int idx, __object val)
+void __lvo_storeindex_v(tk_lva_object obj, int idx, tk_lva_object val)
 {
-	*(__object *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 3)=val;
+	*(tk_lva_object *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 3)=val;
 }
 
-void __lvo_storeindex_b(__object obj, int idx, int val)
+void __lvo_storeindex_b(tk_lva_object obj, int idx, int val)
 {
 	*(byte *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 0)=val;
 }
 
-void __lvo_storeindex_s(__object obj, int idx, int val)
+void __lvo_storeindex_s(tk_lva_object obj, int idx, int val)
 {
 	*(short *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 1)=val;
 }
 
-void __lvo_storeindex_va(__object obj, int idx, __variant val)
+void __lvo_storeindex_va(tk_lva_object obj, int idx, tk_lva_variant val)
 {
-	*(__variant *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 3)=val;
+	*(tk_lva_variant *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 3)=val;
 }
 
 
-__object __lvo_newarray_sb_0(void)
-	{ return(__object_null); }
-__object __lvo_newarray_ub_0(void)
-	{ return(__object_null); }
-__object __lvo_newarray_ss_0(void)
-	{ return(__object_null); }
-__object __lvo_newarray_us_0(void)
-	{ return(__object_null); }
-__object __lvo_newarray_si_0(void)
-	{ return(__object_null); }
-__object __lvo_newarray_ui_0(void)
-	{ return(__object_null); }
-__object __lvo_newarray_sl_0(void)
-	{ return(__object_null); }
-__object __lvo_newarray_ul_0(void)
-	{ return(__object_null); }
-__object __lvo_newarray_f_0(void)
-	{ return(__object_null); }
-__object __lvo_newarray_d_0(void)
-	{ return(__object_null); }
+tk_lva_object __lvo_newarray_sb_0(void)
+	{ return(tk_lva_object_null); }
+tk_lva_object __lvo_newarray_ub_0(void)
+	{ return(tk_lva_object_null); }
+tk_lva_object __lvo_newarray_ss_0(void)
+	{ return(tk_lva_object_null); }
+tk_lva_object __lvo_newarray_us_0(void)
+	{ return(tk_lva_object_null); }
+tk_lva_object __lvo_newarray_si_0(void)
+	{ return(tk_lva_object_null); }
+tk_lva_object __lvo_newarray_ui_0(void)
+	{ return(tk_lva_object_null); }
+tk_lva_object __lvo_newarray_sl_0(void)
+	{ return(tk_lva_object_null); }
+tk_lva_object __lvo_newarray_ul_0(void)
+	{ return(tk_lva_object_null); }
+tk_lva_object __lvo_newarray_f_0(void)
+	{ return(tk_lva_object_null); }
+tk_lva_object __lvo_newarray_d_0(void)
+	{ return(tk_lva_object_null); }
 
 
-__object __lvo_newarray_sb_1(int a0)
+tk_lva_object __lvo_newarray_sb_1(int a0)
 {
 	LVA_TagArray *arr;
 	byte	*arrd;
@@ -486,7 +486,7 @@ __object __lvo_newarray_sb_1(int a0)
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_sb_2(int a0, int a1)
+tk_lva_object __lvo_newarray_sb_2(int a0, int a1)
 {
 	LVA_TagArray *arr;
 	byte	*arrd;
@@ -496,7 +496,7 @@ __object __lvo_newarray_sb_2(int a0, int a1)
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_sb_3(int a0, int a1, int a2)
+tk_lva_object __lvo_newarray_sb_3(int a0, int a1, int a2)
 {
 	LVA_TagArray *arr;
 	byte	*arrd;
@@ -507,7 +507,7 @@ __object __lvo_newarray_sb_3(int a0, int a1, int a2)
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_sb_4(int a0, int a1, int a2, int a3)
+tk_lva_object __lvo_newarray_sb_4(int a0, int a1, int a2, int a3)
 {
 	LVA_TagArray *arr;
 	byte	*arrd;
@@ -518,7 +518,7 @@ __object __lvo_newarray_sb_4(int a0, int a1, int a2, int a3)
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_sb_5(int a0, int a1, int a2, int a3, int a4)
+tk_lva_object __lvo_newarray_sb_5(int a0, int a1, int a2, int a3, int a4)
 {
 	LVA_TagArray *arr;
 	byte	*arrd;
@@ -530,7 +530,7 @@ __object __lvo_newarray_sb_5(int a0, int a1, int a2, int a3, int a4)
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_sb_6(int a0, int a1, int a2, int a3,
+tk_lva_object __lvo_newarray_sb_6(int a0, int a1, int a2, int a3,
 	int a4, int a5)
 {
 	LVA_TagArray *arr;
@@ -543,7 +543,7 @@ __object __lvo_newarray_sb_6(int a0, int a1, int a2, int a3,
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_sb_7(int a0, int a1, int a2, int a3,
+tk_lva_object __lvo_newarray_sb_7(int a0, int a1, int a2, int a3,
 	int a4, int a5, int a6)
 {
 	LVA_TagArray *arr;
@@ -557,7 +557,7 @@ __object __lvo_newarray_sb_7(int a0, int a1, int a2, int a3,
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_sb_8(int a0, int a1, int a2, int a3,
+tk_lva_object __lvo_newarray_sb_8(int a0, int a1, int a2, int a3,
 	int a4, int a5, int a6, int a7)
 {
 	LVA_TagArray *arr;
@@ -571,7 +571,7 @@ __object __lvo_newarray_sb_8(int a0, int a1, int a2, int a3,
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_ub_1(int a0)
+tk_lva_object __lvo_newarray_ub_1(int a0)
 {
 	LVA_TagArray *arr;
 	byte	*arrd;
@@ -581,7 +581,7 @@ __object __lvo_newarray_ub_1(int a0)
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_ub_2(int a0, int a1)
+tk_lva_object __lvo_newarray_ub_2(int a0, int a1)
 {
 	LVA_TagArray *arr;
 	byte	*arrd;
@@ -591,7 +591,7 @@ __object __lvo_newarray_ub_2(int a0, int a1)
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_ub_3(int a0, int a1, int a2)
+tk_lva_object __lvo_newarray_ub_3(int a0, int a1, int a2)
 {
 	LVA_TagArray *arr;
 	byte	*arrd;
@@ -602,7 +602,7 @@ __object __lvo_newarray_ub_3(int a0, int a1, int a2)
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_ub_4(int a0, int a1, int a2, int a3)
+tk_lva_object __lvo_newarray_ub_4(int a0, int a1, int a2, int a3)
 {
 	LVA_TagArray *arr;
 	byte	*arrd;
@@ -613,7 +613,7 @@ __object __lvo_newarray_ub_4(int a0, int a1, int a2, int a3)
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_ub_5(int a0, int a1, int a2, int a3, int a4)
+tk_lva_object __lvo_newarray_ub_5(int a0, int a1, int a2, int a3, int a4)
 {
 	LVA_TagArray *arr;
 	byte	*arrd;
@@ -625,7 +625,7 @@ __object __lvo_newarray_ub_5(int a0, int a1, int a2, int a3, int a4)
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_ub_6(int a0, int a1, int a2, int a3,
+tk_lva_object __lvo_newarray_ub_6(int a0, int a1, int a2, int a3,
 	int a4, int a5)
 {
 	LVA_TagArray *arr;
@@ -638,7 +638,7 @@ __object __lvo_newarray_ub_6(int a0, int a1, int a2, int a3,
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_ub_7(int a0, int a1, int a2, int a3,
+tk_lva_object __lvo_newarray_ub_7(int a0, int a1, int a2, int a3,
 	int a4, int a5, int a6)
 {
 	LVA_TagArray *arr;
@@ -652,7 +652,7 @@ __object __lvo_newarray_ub_7(int a0, int a1, int a2, int a3,
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_ub_8(int a0, int a1, int a2, int a3,
+tk_lva_object __lvo_newarray_ub_8(int a0, int a1, int a2, int a3,
 	int a4, int a5, int a6, int a7)
 {
 	LVA_TagArray *arr;
@@ -666,7 +666,7 @@ __object __lvo_newarray_ub_8(int a0, int a1, int a2, int a3,
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_ss_1(int a0)
+tk_lva_object __lvo_newarray_ss_1(int a0)
 {
 	LVA_TagArray *arr;
 	short	*arrd;
@@ -676,7 +676,7 @@ __object __lvo_newarray_ss_1(int a0)
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_ss_2(int a0, int a1)
+tk_lva_object __lvo_newarray_ss_2(int a0, int a1)
 {
 	LVA_TagArray *arr;
 	short	*arrd;
@@ -686,7 +686,7 @@ __object __lvo_newarray_ss_2(int a0, int a1)
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_ss_3(int a0, int a1, int a2)
+tk_lva_object __lvo_newarray_ss_3(int a0, int a1, int a2)
 {
 	LVA_TagArray *arr;
 	short	*arrd;
@@ -697,7 +697,7 @@ __object __lvo_newarray_ss_3(int a0, int a1, int a2)
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_ss_4(int a0, int a1, int a2, int a3)
+tk_lva_object __lvo_newarray_ss_4(int a0, int a1, int a2, int a3)
 {
 	LVA_TagArray *arr;
 	short	*arrd;
@@ -708,7 +708,7 @@ __object __lvo_newarray_ss_4(int a0, int a1, int a2, int a3)
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_ss_5(int a0, int a1, int a2, int a3, int a4)
+tk_lva_object __lvo_newarray_ss_5(int a0, int a1, int a2, int a3, int a4)
 {
 	LVA_TagArray *arr;
 	short	*arrd;
@@ -720,7 +720,7 @@ __object __lvo_newarray_ss_5(int a0, int a1, int a2, int a3, int a4)
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_ss_6(int a0, int a1, int a2, int a3,
+tk_lva_object __lvo_newarray_ss_6(int a0, int a1, int a2, int a3,
 	int a4, int a5)
 {
 	LVA_TagArray *arr;
@@ -733,7 +733,7 @@ __object __lvo_newarray_ss_6(int a0, int a1, int a2, int a3,
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_ss_7(int a0, int a1, int a2, int a3,
+tk_lva_object __lvo_newarray_ss_7(int a0, int a1, int a2, int a3,
 	int a4, int a5, int a6)
 {
 	LVA_TagArray *arr;
@@ -747,7 +747,7 @@ __object __lvo_newarray_ss_7(int a0, int a1, int a2, int a3,
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_ss_8(int a0, int a1, int a2, int a3,
+tk_lva_object __lvo_newarray_ss_8(int a0, int a1, int a2, int a3,
 	int a4, int a5, int a6, int a7)
 {
 	LVA_TagArray *arr;
@@ -762,7 +762,7 @@ __object __lvo_newarray_ss_8(int a0, int a1, int a2, int a3,
 }
 
 
-__object __lvo_newarray_us_1(int a0)
+tk_lva_object __lvo_newarray_us_1(int a0)
 {
 	LVA_TagArray *arr;
 	short	*arrd;
@@ -772,7 +772,7 @@ __object __lvo_newarray_us_1(int a0)
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_us_2(int a0, int a1)
+tk_lva_object __lvo_newarray_us_2(int a0, int a1)
 {
 	LVA_TagArray *arr;
 	short	*arrd;
@@ -782,7 +782,7 @@ __object __lvo_newarray_us_2(int a0, int a1)
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_us_3(int a0, int a1, int a2)
+tk_lva_object __lvo_newarray_us_3(int a0, int a1, int a2)
 {
 	LVA_TagArray *arr;
 	short	*arrd;
@@ -793,7 +793,7 @@ __object __lvo_newarray_us_3(int a0, int a1, int a2)
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_us_4(int a0, int a1, int a2, int a3)
+tk_lva_object __lvo_newarray_us_4(int a0, int a1, int a2, int a3)
 {
 	LVA_TagArray *arr;
 	short	*arrd;
@@ -804,7 +804,7 @@ __object __lvo_newarray_us_4(int a0, int a1, int a2, int a3)
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_us_5(int a0, int a1, int a2, int a3, int a4)
+tk_lva_object __lvo_newarray_us_5(int a0, int a1, int a2, int a3, int a4)
 {
 	LVA_TagArray *arr;
 	short	*arrd;
@@ -816,7 +816,7 @@ __object __lvo_newarray_us_5(int a0, int a1, int a2, int a3, int a4)
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_us_6(int a0, int a1, int a2, int a3,
+tk_lva_object __lvo_newarray_us_6(int a0, int a1, int a2, int a3,
 	int a4, int a5)
 {
 	LVA_TagArray *arr;
@@ -829,7 +829,7 @@ __object __lvo_newarray_us_6(int a0, int a1, int a2, int a3,
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_us_7(int a0, int a1, int a2, int a3,
+tk_lva_object __lvo_newarray_us_7(int a0, int a1, int a2, int a3,
 	int a4, int a5, int a6)
 {
 	LVA_TagArray *arr;
@@ -843,7 +843,7 @@ __object __lvo_newarray_us_7(int a0, int a1, int a2, int a3,
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_us_8(int a0, int a1, int a2, int a3,
+tk_lva_object __lvo_newarray_us_8(int a0, int a1, int a2, int a3,
 	int a4, int a5, int a6, int a7)
 {
 	LVA_TagArray *arr;
@@ -858,7 +858,7 @@ __object __lvo_newarray_us_8(int a0, int a1, int a2, int a3,
 }
 
 
-__object __lvo_newarray_si_1(int a0)
+tk_lva_object __lvo_newarray_si_1(int a0)
 {
 	LVA_TagArray *arr;
 	int	*arrd;
@@ -868,7 +868,7 @@ __object __lvo_newarray_si_1(int a0)
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_si_2(int a0, int a1)
+tk_lva_object __lvo_newarray_si_2(int a0, int a1)
 {
 	LVA_TagArray *arr;
 	int	*arrd;
@@ -878,7 +878,7 @@ __object __lvo_newarray_si_2(int a0, int a1)
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_si_3(int a0, int a1, int a2)
+tk_lva_object __lvo_newarray_si_3(int a0, int a1, int a2)
 {
 	LVA_TagArray *arr;
 	int	*arrd;
@@ -889,7 +889,7 @@ __object __lvo_newarray_si_3(int a0, int a1, int a2)
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_si_4(int a0, int a1, int a2, int a3)
+tk_lva_object __lvo_newarray_si_4(int a0, int a1, int a2, int a3)
 {
 	LVA_TagArray *arr;
 	int	*arrd;
@@ -900,7 +900,7 @@ __object __lvo_newarray_si_4(int a0, int a1, int a2, int a3)
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_si_5(int a0, int a1, int a2, int a3, int a4)
+tk_lva_object __lvo_newarray_si_5(int a0, int a1, int a2, int a3, int a4)
 {
 	LVA_TagArray *arr;
 	int	*arrd;
@@ -912,7 +912,7 @@ __object __lvo_newarray_si_5(int a0, int a1, int a2, int a3, int a4)
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_si_6(int a0, int a1, int a2, int a3,
+tk_lva_object __lvo_newarray_si_6(int a0, int a1, int a2, int a3,
 	int a4, int a5)
 {
 	LVA_TagArray *arr;
@@ -925,7 +925,7 @@ __object __lvo_newarray_si_6(int a0, int a1, int a2, int a3,
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_si_7(int a0, int a1, int a2, int a3,
+tk_lva_object __lvo_newarray_si_7(int a0, int a1, int a2, int a3,
 	int a4, int a5, int a6)
 {
 	LVA_TagArray *arr;
@@ -939,7 +939,7 @@ __object __lvo_newarray_si_7(int a0, int a1, int a2, int a3,
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_si_8(int a0, int a1, int a2, int a3,
+tk_lva_object __lvo_newarray_si_8(int a0, int a1, int a2, int a3,
 	int a4, int a5, int a6, int a7)
 {
 	LVA_TagArray *arr;
@@ -953,7 +953,7 @@ __object __lvo_newarray_si_8(int a0, int a1, int a2, int a3,
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_ui_1(int a0)
+tk_lva_object __lvo_newarray_ui_1(int a0)
 {
 	LVA_TagArray *arr;
 	int	*arrd;
@@ -963,7 +963,7 @@ __object __lvo_newarray_ui_1(int a0)
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_ui_2(int a0, int a1)
+tk_lva_object __lvo_newarray_ui_2(int a0, int a1)
 {
 	LVA_TagArray *arr;
 	int	*arrd;
@@ -973,7 +973,7 @@ __object __lvo_newarray_ui_2(int a0, int a1)
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_ui_3(int a0, int a1, int a2)
+tk_lva_object __lvo_newarray_ui_3(int a0, int a1, int a2)
 {
 	LVA_TagArray *arr;
 	int	*arrd;
@@ -984,7 +984,7 @@ __object __lvo_newarray_ui_3(int a0, int a1, int a2)
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_ui_4(int a0, int a1, int a2, int a3)
+tk_lva_object __lvo_newarray_ui_4(int a0, int a1, int a2, int a3)
 {
 	LVA_TagArray *arr;
 	int	*arrd;
@@ -995,7 +995,7 @@ __object __lvo_newarray_ui_4(int a0, int a1, int a2, int a3)
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_ui_5(int a0, int a1, int a2, int a3, int a4)
+tk_lva_object __lvo_newarray_ui_5(int a0, int a1, int a2, int a3, int a4)
 {
 	LVA_TagArray *arr;
 	int	*arrd;
@@ -1007,7 +1007,7 @@ __object __lvo_newarray_ui_5(int a0, int a1, int a2, int a3, int a4)
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_ui_6(int a0, int a1, int a2, int a3,
+tk_lva_object __lvo_newarray_ui_6(int a0, int a1, int a2, int a3,
 	int a4, int a5)
 {
 	LVA_TagArray *arr;
@@ -1020,7 +1020,7 @@ __object __lvo_newarray_ui_6(int a0, int a1, int a2, int a3,
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_ui_7(int a0, int a1, int a2, int a3,
+tk_lva_object __lvo_newarray_ui_7(int a0, int a1, int a2, int a3,
 	int a4, int a5, int a6)
 {
 	LVA_TagArray *arr;
@@ -1034,7 +1034,7 @@ __object __lvo_newarray_ui_7(int a0, int a1, int a2, int a3,
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_ui_8(int a0, int a1, int a2, int a3,
+tk_lva_object __lvo_newarray_ui_8(int a0, int a1, int a2, int a3,
 	int a4, int a5, int a6, int a7)
 {
 	LVA_TagArray *arr;
@@ -1048,85 +1048,85 @@ __object __lvo_newarray_ui_8(int a0, int a1, int a2, int a3,
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_sl_1(__int64 a0)
+tk_lva_object __lvo_newarray_sl_1(s64 a0)
 {
 	LVA_TagArray *arr;
-	__int64	*arrd;
+	s64	*arrd;
 	arr=TKMM_LVA_NewTagArray(1, 1);
-	arrd=(__int64 *)(arr->p.data);
+	arrd=(s64 *)(arr->p.data);
 	arrd[0]=a0;
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_sl_2(__int64 a0, __int64 a1)
+tk_lva_object __lvo_newarray_sl_2(s64 a0, s64 a1)
 {
 	LVA_TagArray *arr;
-	__int64	*arrd;
+	s64	*arrd;
 	arr=TKMM_LVA_NewTagArray(2, 1);
-	arrd=(__int64 *)(arr->p.data);
+	arrd=(s64 *)(arr->p.data);
 	arrd[0]=a0;		arrd[1]=a1;
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_sl_3(__int64 a0, __int64 a1, __int64 a2)
+tk_lva_object __lvo_newarray_sl_3(s64 a0, s64 a1, s64 a2)
 {
 	LVA_TagArray *arr;
-	__int64	*arrd;
+	s64	*arrd;
 	arr=TKMM_LVA_NewTagArray(3, 1);
-	arrd=(__int64 *)(arr->p.data);
+	arrd=(s64 *)(arr->p.data);
 	arrd[0]=a0;		arrd[1]=a1;
 	arrd[2]=a2;
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_sl_4(
-	__int64 a0, __int64 a1, __int64 a2, __int64 a3)
+tk_lva_object __lvo_newarray_sl_4(
+	s64 a0, s64 a1, s64 a2, s64 a3)
 {
 	LVA_TagArray *arr;
-	__int64	*arrd;
+	s64	*arrd;
 	arr=TKMM_LVA_NewTagArray(4, 1);
-	arrd=(__int64 *)(arr->p.data);
+	arrd=(s64 *)(arr->p.data);
 	arrd[0]=a0;		arrd[1]=a1;
 	arrd[2]=a2;		arrd[3]=a3;
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_sl_5(
-	__int64 a0, __int64 a1, __int64 a2, __int64 a3,
-	__int64 a4)
+tk_lva_object __lvo_newarray_sl_5(
+	s64 a0, s64 a1, s64 a2, s64 a3,
+	s64 a4)
 {
 	LVA_TagArray *arr;
-	__int64	*arrd;
+	s64	*arrd;
 	arr=TKMM_LVA_NewTagArray(5, 1);
-	arrd=(__int64 *)(arr->p.data);
+	arrd=(s64 *)(arr->p.data);
 	arrd[0]=a0;		arrd[1]=a1;
 	arrd[2]=a2;		arrd[3]=a3;
 	arrd[4]=a4;
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_sl_6(
-	__int64 a0, __int64 a1, __int64 a2, __int64 a3,
-	__int64 a4, __int64 a5)
+tk_lva_object __lvo_newarray_sl_6(
+	s64 a0, s64 a1, s64 a2, s64 a3,
+	s64 a4, s64 a5)
 {
 	LVA_TagArray *arr;
-	__int64	*arrd;
+	s64	*arrd;
 	arr=TKMM_LVA_NewTagArray(6, 1);
-	arrd=(__int64 *)(arr->p.data);
+	arrd=(s64 *)(arr->p.data);
 	arrd[0]=a0;		arrd[1]=a1;
 	arrd[2]=a2;		arrd[3]=a3;
 	arrd[4]=a4;		arrd[5]=a5;
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_sl_7(
-	__int64 a0, __int64 a1, __int64 a2, __int64 a3,
-	__int64 a4, __int64 a5, __int64 a6)
+tk_lva_object __lvo_newarray_sl_7(
+	s64 a0, s64 a1, s64 a2, s64 a3,
+	s64 a4, s64 a5, s64 a6)
 {
 	LVA_TagArray *arr;
-	__int64	*arrd;
+	s64	*arrd;
 	arr=TKMM_LVA_NewTagArray(7, 1);
-	arrd=(__int64 *)(arr->p.data);
+	arrd=(s64 *)(arr->p.data);
 	arrd[0]=a0;		arrd[1]=a1;
 	arrd[2]=a2;		arrd[3]=a3;
 	arrd[4]=a4;		arrd[5]=a5;
@@ -1134,14 +1134,14 @@ __object __lvo_newarray_sl_7(
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_sl_8(
-	__int64 a0, __int64 a1, __int64 a2, __int64 a3,
-	__int64 a4, __int64 a5, __int64 a6, __int64 a7)
+tk_lva_object __lvo_newarray_sl_8(
+	s64 a0, s64 a1, s64 a2, s64 a3,
+	s64 a4, s64 a5, s64 a6, s64 a7)
 {
 	LVA_TagArray *arr;
-	__int64	*arrd;
+	s64	*arrd;
 	arr=TKMM_LVA_NewTagArray(8, 1);
-	arrd=(__int64 *)(arr->p.data);
+	arrd=(s64 *)(arr->p.data);
 	arrd[0]=a0;		arrd[1]=a1;
 	arrd[2]=a2;		arrd[3]=a3;
 	arrd[4]=a4;		arrd[5]=a5;
@@ -1149,85 +1149,85 @@ __object __lvo_newarray_sl_8(
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_ul_1(__uint64 a0)
+tk_lva_object __lvo_newarray_ul_1(u64 a0)
 {
 	LVA_TagArray *arr;
-	__int64	*arrd;
+	s64	*arrd;
 	arr=TKMM_LVA_NewTagArray(1, 13);
-	arrd=(__int64 *)(arr->p.data);
+	arrd=(s64 *)(arr->p.data);
 	arrd[0]=a0;
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_ul_2(__uint64 a0, __uint64 a1)
+tk_lva_object __lvo_newarray_ul_2(u64 a0, u64 a1)
 {
 	LVA_TagArray *arr;
-	__int64	*arrd;
+	s64	*arrd;
 	arr=TKMM_LVA_NewTagArray(2, 13);
-	arrd=(__int64 *)(arr->p.data);
+	arrd=(s64 *)(arr->p.data);
 	arrd[0]=a0;		arrd[1]=a1;
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_ul_3(__uint64 a0, __uint64 a1, __uint64 a2)
+tk_lva_object __lvo_newarray_ul_3(u64 a0, u64 a1, u64 a2)
 {
 	LVA_TagArray *arr;
-	__int64	*arrd;
+	s64	*arrd;
 	arr=TKMM_LVA_NewTagArray(3, 13);
-	arrd=(__int64 *)(arr->p.data);
+	arrd=(s64 *)(arr->p.data);
 	arrd[0]=a0;		arrd[1]=a1;
 	arrd[2]=a2;
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_ul_4(
-	__uint64 a0, __uint64 a1, __uint64 a2, __uint64 a3)
+tk_lva_object __lvo_newarray_ul_4(
+	u64 a0, u64 a1, u64 a2, u64 a3)
 {
 	LVA_TagArray *arr;
-	__int64	*arrd;
+	s64	*arrd;
 	arr=TKMM_LVA_NewTagArray(4, 13);
-	arrd=(__int64 *)(arr->p.data);
+	arrd=(s64 *)(arr->p.data);
 	arrd[0]=a0;		arrd[1]=a1;
 	arrd[2]=a2;		arrd[3]=a3;
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_ul_5(
-	__uint64 a0, __uint64 a1, __uint64 a2, __uint64 a3,
-	__uint64 a4)
+tk_lva_object __lvo_newarray_ul_5(
+	u64 a0, u64 a1, u64 a2, u64 a3,
+	u64 a4)
 {
 	LVA_TagArray *arr;
-	__int64	*arrd;
+	s64	*arrd;
 	arr=TKMM_LVA_NewTagArray(5, 13);
-	arrd=(__int64 *)(arr->p.data);
+	arrd=(s64 *)(arr->p.data);
 	arrd[0]=a0;		arrd[1]=a1;
 	arrd[2]=a2;		arrd[3]=a3;
 	arrd[4]=a4;
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_ul_6(
-	__uint64 a0, __uint64 a1, __uint64 a2, __uint64 a3,
-	__uint64 a4, __uint64 a5)
+tk_lva_object __lvo_newarray_ul_6(
+	u64 a0, u64 a1, u64 a2, u64 a3,
+	u64 a4, u64 a5)
 {
 	LVA_TagArray *arr;
-	__int64	*arrd;
+	s64	*arrd;
 	arr=TKMM_LVA_NewTagArray(6, 13);
-	arrd=(__int64 *)(arr->p.data);
+	arrd=(s64 *)(arr->p.data);
 	arrd[0]=a0;		arrd[1]=a1;
 	arrd[2]=a2;		arrd[3]=a3;
 	arrd[4]=a4;		arrd[5]=a5;
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_ul_7(
-	__uint64 a0, __uint64 a1, __uint64 a2, __uint64 a3,
-	__uint64 a4, __uint64 a5, __uint64 a6)
+tk_lva_object __lvo_newarray_ul_7(
+	u64 a0, u64 a1, u64 a2, u64 a3,
+	u64 a4, u64 a5, u64 a6)
 {
 	LVA_TagArray *arr;
-	__int64	*arrd;
+	s64	*arrd;
 	arr=TKMM_LVA_NewTagArray(7, 13);
-	arrd=(__int64 *)(arr->p.data);
+	arrd=(s64 *)(arr->p.data);
 	arrd[0]=a0;		arrd[1]=a1;
 	arrd[2]=a2;		arrd[3]=a3;
 	arrd[4]=a4;		arrd[5]=a5;
@@ -1235,14 +1235,14 @@ __object __lvo_newarray_ul_7(
 	return(TKMM_LVA_WrapVarArray(arr));
 }
 
-__object __lvo_newarray_ul_8(
-	__uint64 a0, __uint64 a1, __uint64 a2, __uint64 a3,
-	__uint64 a4, __uint64 a5, __uint64 a6, __uint64 a7)
+tk_lva_object __lvo_newarray_ul_8(
+	u64 a0, u64 a1, u64 a2, u64 a3,
+	u64 a4, u64 a5, u64 a6, u64 a7)
 {
 	LVA_TagArray *arr;
-	__int64	*arrd;
+	s64	*arrd;
 	arr=TKMM_LVA_NewTagArray(8, 13);
-	arrd=(__int64 *)(arr->p.data);
+	arrd=(s64 *)(arr->p.data);
 	arrd[0]=a0;		arrd[1]=a1;
 	arrd[2]=a2;		arrd[3]=a3;
 	arrd[4]=a4;		arrd[5]=a5;
@@ -1251,42 +1251,42 @@ __object __lvo_newarray_ul_8(
 }
 
 
-__object __lvo_newarray_f_1(float a0)
+tk_lva_object __lvo_newarray_f_1(float a0)
 {
 }
 
-__object __lvo_newarray_f_2(float a0, float a1)
+tk_lva_object __lvo_newarray_f_2(float a0, float a1)
 {
 }
 
-__object __lvo_newarray_f_3(float a0, float a1, float a2)
+tk_lva_object __lvo_newarray_f_3(float a0, float a1, float a2)
 {
 }
 
-__object __lvo_newarray_f_4(
+tk_lva_object __lvo_newarray_f_4(
 	float a0, float a1, float a2, float a3)
 {
 }
 
-__object __lvo_newarray_f_5(
+tk_lva_object __lvo_newarray_f_5(
 	float a0, float a1, float a2, float a3,
 	float a4)
 {
 }
 
-__object __lvo_newarray_f_6(
+tk_lva_object __lvo_newarray_f_6(
 	float a0, float a1, float a2, float a3,
 	float a4, float a5)
 {
 }
 
-__object __lvo_newarray_f_7(
+tk_lva_object __lvo_newarray_f_7(
 	float a0, float a1, float a2, float a3,
 	float a4, float a5, float a6)
 {
 }
 
-__object __lvo_newarray_f_8(
+tk_lva_object __lvo_newarray_f_8(
 	float a0, float a1, float a2, float a3,
 	float a4, float a5, float a6, float a7)
 {
@@ -1302,38 +1302,38 @@ __object __lvo_newarray_f_8(
 }
 
 
-__object __lvo_newarray_d_1(double a0)
+tk_lva_object __lvo_newarray_d_1(double a0)
 {
 }
 
-__object __lvo_newarray_d_2(double a0, double a1)
+tk_lva_object __lvo_newarray_d_2(double a0, double a1)
 {
 }
 
-__object __lvo_newarray_d_3(double a0, double a1, double a2)
+tk_lva_object __lvo_newarray_d_3(double a0, double a1, double a2)
 {
 }
 
-__object __lvo_newarray_d_4(double a0, double a1, double a2, double a3)
+tk_lva_object __lvo_newarray_d_4(double a0, double a1, double a2, double a3)
 {
 }
 
-__object __lvo_newarray_d_5(double a0, double a1, double a2, double a3,
+tk_lva_object __lvo_newarray_d_5(double a0, double a1, double a2, double a3,
 	double a4)
 {
 }
 
-__object __lvo_newarray_d_6(double a0, double a1, double a2, double a3,
+tk_lva_object __lvo_newarray_d_6(double a0, double a1, double a2, double a3,
 	double a4, double a5)
 {
 }
 
-__object __lvo_newarray_d_7(double a0, double a1, double a2, double a3,
+tk_lva_object __lvo_newarray_d_7(double a0, double a1, double a2, double a3,
 	double a4, double a5, double a6)
 {
 }
 
-__object __lvo_newarray_d_8(double a0, double a1, double a2, double a3,
+tk_lva_object __lvo_newarray_d_8(double a0, double a1, double a2, double a3,
 	double a4, double a5, double a6, double a7)
 {
 }
@@ -1341,38 +1341,38 @@ __object __lvo_newarray_d_8(double a0, double a1, double a2, double a3,
 
 
 
-__object __lvo_newarray_sb_n(int n, ...)
+tk_lva_object __lvo_newarray_sb_n(int n, ...)
 {
 }
-__object __lvo_newarray_ub_n(int n, ...)
+tk_lva_object __lvo_newarray_ub_n(int n, ...)
 {
 }
-__object __lvo_newarray_ss_n(int n, ...)
+tk_lva_object __lvo_newarray_ss_n(int n, ...)
 {
 }
-__object __lvo_newarray_us_n(int n, ...)
+tk_lva_object __lvo_newarray_us_n(int n, ...)
 {
 }
-__object __lvo_newarray_si_n(int n, ...)
+tk_lva_object __lvo_newarray_si_n(int n, ...)
 {
 }
-__object __lvo_newarray_ui_n(int n, ...)
-{
-}
-
-__object __lvo_newarray_sl_n(int n, ...)
+tk_lva_object __lvo_newarray_ui_n(int n, ...)
 {
 }
 
-__object __lvo_newarray_ul_n(int n, ...)
+tk_lva_object __lvo_newarray_sl_n(int n, ...)
 {
 }
 
-__object __lvo_newarray_f_n(int n, ...)
+tk_lva_object __lvo_newarray_ul_n(int n, ...)
 {
 }
 
-__object __lvo_newarray_d_n(int n, ...)
+tk_lva_object __lvo_newarray_f_n(int n, ...)
+{
+}
+
+tk_lva_object __lvo_newarray_d_n(int n, ...)
 {
 }
 

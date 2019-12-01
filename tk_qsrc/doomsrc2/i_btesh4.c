@@ -158,7 +158,8 @@ int I_GetTime (void)
 	int t;
 	t = TK_GetTimeMs();
 //	t=t>>5;
-	t=t*(TICRATE/1000.0);
+//	t=t*(TICRATE/1000.0);
+	t=(t*35LL)>>10;
 	return(t);
 }
 

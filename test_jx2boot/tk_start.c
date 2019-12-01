@@ -141,7 +141,7 @@ void __start()
 		0x12345678, 0x9ABCDEF0, 0x1234CDEF, 0x9ABC5678);
 		
 	sanity_a();
-	sanity_b();
+//	sanity_b();
 
 //	ci=I_GetTime();
 	ci = TK_GetTimeMs();

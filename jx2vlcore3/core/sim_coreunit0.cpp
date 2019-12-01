@@ -1238,6 +1238,11 @@ int main(int argc, char **argv, char **env)
 //				12*16, 600-16, 6, top->dbg_outStatus8?0xFFFFFF00:0xFF000000);
 				12*16, 600-16, 6, cnt_d8);
 
+			sim_fb_drawled(
+				(uint32_t *)btesh2_gfxcon_framebuf, 800, 600,
+				14*16, 600-16, 6, top->aud_mono_out?0xFFFFFF00:0xFF000000);
+//				12*16, 600-16, 6, cnt_d8);
+
 			sim_fb_draw7seg_8x(
 				(uint32_t *)btesh2_gfxcon_framebuf, 800, 600,
 				14*16, 600-16, 12, 0xFF000000, 0xFFFFFF00,

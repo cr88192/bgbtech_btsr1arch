@@ -9,6 +9,8 @@ int tkmm_pagerov;
 
 void *TKMM_MMList_Malloc(int sz);
 
+// static int tkmm_findfree_rec=0;
+
 int TKMM_FindFreePages(int n)
 {
 	int i0, i1;
@@ -58,7 +60,11 @@ int TKMM_AllocPages(int n)
 	int i, j, k;
 	
 	i=TKMM_FindFreePages(n);
-	if(i<0)return(-1);
+	if(i<0)
+	{
+		tk_printf("TKMM_AllocPages: Out Of Memory, n=%d\n", n);
+		return(-1);
+	}
 	
 	j=i; k=j+n;
 	while(j<k)
@@ -73,10 +79,17 @@ int TKMM_FreePages(int b, int n)
 {
 	int i;
 	
+	if((b<0) || (n<=0))
+		return(-1);
+	
 	for(i=b; i<(b+n); i++)
 	{
 		tkmm_pagebmp[i>>3]&=~(1<<(i&7));
 	}
+	
+	if(b<tkmm_pagerov)
+		tkmm_pagerov=b;
+	
 	return(0);
 }
 
@@ -112,7 +125,11 @@ void *TKMM_PageAllocL(int sz)
 	int pg;
 	
 	pg=TKMM_AllocPages((sz+4095)>>12);
-	if(pg<0)return(NULL);
+	if(pg<0)
+	{
+		tk_printf("TKMM_PageAlloc: Failed Alloc %d\n", sz);
+		return(NULL);
+	}
 	p=TKMM_PageToPointer(pg);
 	return(p);
 }
@@ -155,8 +172,14 @@ void *TKMM_PageAllocV(int sz)
 	TK_SysArg ar[4];
 	void *p;
 	
+	tk_printf("TKMM_PageAllocV: sz=%d\n", sz);
+	
+	p=NULL;
 	ar[0].i=sz;
 	tk_syscall(NULL, TK_UMSG_PAGEALLOC, &p, ar);
+
+	tk_printf("TKMM_PageAllocV: Vp=%p, p=%p\n", &p, p);
+
 	return(p);
 }
 
@@ -164,11 +187,12 @@ int TKMM_PageFreeV(void *ptr, int sz)
 {
 	TK_SysArg ar[4];
 	void *p;
+	int i;
 	
 	ar[0].p=ptr;
 	ar[1].i=sz;
-	tk_syscall(NULL, TK_UMSG_PAGEFREE, &p, ar);
-	return(p);
+	i=tk_syscall(NULL, TK_UMSG_PAGEFREE, &p, ar);
+	return(i);
 }
 
 void TK_ExitV(int res)
@@ -181,41 +205,46 @@ void TK_ExitV(int res)
 }
 
 
+static int tkmm_is_init=0;
 
 void TKMM_Init()
 {
-	static int init=0;
 	int i;
 
-	if(init)return;
-	init=1;
+	if(tkmm_is_init)return;
+	tkmm_is_init=1;
 
-	TKMM_PageAlloc_f=TKMM_PageAllocL;
-	TKMM_PageFree_f=TKMM_PageFreeL;
-	
 //	if(tk_getsavedvbr())
 	if(!tk_iskernel())
 //	if(0)
 	{
 		TKMM_PageAlloc_f=TKMM_PageAllocV;
 		TKMM_PageFree_f=TKMM_PageFreeV;
-	}
-
-//	tk_ird_init();
-	
-	tkmm_pagebase=TKMM_PAGEBASE;
-	tkmm_pageend=TKMM_PAGEEND;
-	
-	if(tk_ird_imgbuf)
+	}else
 	{
-		if(	(((u32)tk_ird_imgbuf)<tkmm_pageend) &&
-			(((u32)tk_ird_imgbuf)>tkmm_pagebase))
-		{
-			tkmm_pageend=(u32)tk_ird_imgbuf;
-		}
-	}
+		TKMM_PageAlloc_f=TKMM_PageAllocL;
+		TKMM_PageFree_f=TKMM_PageFreeL;
+
+//		tk_ird_init();
 	
-	tkmm_maxpage=(tkmm_pageend-tkmm_pagebase)>>12;
+		tkmm_pagebase=TKMM_PAGEBASE;
+		tkmm_pageend=TKMM_PAGEEND;
+		memset(tkmm_pagebmp, 0, 16384);
+
+#if 0
+		if(tk_ird_imgbuf)
+		{
+			if(	(((u32)tk_ird_imgbuf)<tkmm_pageend) &&
+				(((u32)tk_ird_imgbuf)>tkmm_pagebase))
+			{
+				tkmm_pageend=(u32)tk_ird_imgbuf;
+			}
+		}
+#endif
+	
+		tkmm_maxpage=(tkmm_pageend-tkmm_pagebase)>>12;
+		tk_printf("TKMM_Heap %dkB\n", tkmm_maxpage<<2);
+	}
 	
 //	printf("TKMM_Init: heap=%dMB\n",
 //		(tkmm_pageend-tkmm_pagebase)>>20);
@@ -254,6 +283,8 @@ void *TKMM_Malloc(int sz)
 	np=(sz+sizeof(TKMM_MemLnkObj)+4095)>>12;
 //	ptr=TKMM_PageAlloc(sz+sizeof(TKMM_MemLnkObj));
 	ptr=TKMM_PageAlloc(np<<12);
+	
+//	memset(ptr, 0, np<<12);
 #endif
 
 //	__debugbreak();

@@ -452,7 +452,7 @@ int sblk0_enc(int v)
 	return(v1);
 }
 
-static u32 *snd_dmabuf=NULL;
+static volatile u32 *snd_dmabuf=NULL;
 static byte snd_dmarov=0;
 static u32 snd_dmapred=0;
 

@@ -1,6 +1,6 @@
-#define		LVA_MAGIC_NULL			0x0000_0000_0000_0000ULL
-#define		LVA_MAGIC_UNDEFINED		0x0000_0000_0000_0001ULL
-#define		LVA_POINTER_MASK		0x0000_FFFF_FFFF_FFFFULL
+#define		LVA_MAGIC_NULL			0x0000000000000000ULL
+#define		LVA_MAGIC_UNDEFINED		0x0000000000000001ULL
+#define		LVA_POINTER_MASK		0x0000FFFFFFFFFFFFULL
 
 typedef struct LVA_FieldInfo_s		LVA_FieldInfo;
 typedef struct LVA_FieldInfoD_s	LVA_FieldInfoD;
@@ -78,6 +78,15 @@ union LVA_TagArray_s {
 	}n;
 };
 
+#ifdef _BGBMETA
+typedef __object tk_lva_object;
+typedef __variant tk_lva_variant;
+#define tk_lva_object_null __object_null
+#else
+typedef long long tk_lva_object;
+typedef long long tk_lva_variant;
+#define tk_lva_object_null 0
+#endif
 
 void TKMM_LVA_ArrayInit(void);
 

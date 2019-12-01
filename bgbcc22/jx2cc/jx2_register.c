@@ -1170,7 +1170,7 @@ int BGBCC_JX2C_EmitTryGetRegister(
 		{
 			i=bi;
 
-			BGBCC_JX2C_EmitSyncRegisterIndex(ctx, sctx, i);
+			BGBCC_JX2C_EmitSyncRegisterIndex2(ctx, sctx, i, 7);
 			BGBCC_JX2C_StompLpRegisterIndex(ctx, sctx, i);
 
 			sctx->regalc_save|=1<<i;
@@ -1408,7 +1408,7 @@ int BGBCC_JX2C_EmitGetRegister(
 	{
 		i=bi;
 
-		BGBCC_JX2C_EmitSyncRegisterIndex(ctx, sctx, i);
+		BGBCC_JX2C_EmitSyncRegisterIndex2(ctx, sctx, i, 7);
 		BGBCC_JX2C_StompLpRegisterIndex(ctx, sctx, i);
 
 //		if(((reg.val&0xFFF)==0xFFF) && ((reg.val>>56)<4))
@@ -1798,7 +1798,7 @@ int BGBCC_JX2C_EmitReleaseRegister(
 
 				if((regfl&BGBCC_REGFL_ALIASPTR))
 				{
-					BGBCC_JX2C_EmitSyncRegisterIndex(ctx, sctx, i);
+					BGBCC_JX2C_EmitSyncRegisterIndex2(ctx, sctx, i, 7);
 				}
 
 				sctx->regalc_live&=~(1<<i);
@@ -1832,7 +1832,7 @@ int BGBCC_JX2C_EmitSyncRegisterIndex2(
 	static int rchk=0;
 	ccxl_register reg;
 	ccxl_type tty;
-	int creg, regfl, userq, usepq, rcls;
+	int creg, regfl, userq, usepq, rcls, vspfl;
 	int i;
 
 	i=rgix;
@@ -1919,7 +1919,22 @@ int BGBCC_JX2C_EmitSyncRegisterIndex2(
 			{
 				//discard
 				sctx->regalc_dirty&=~(1<<i);
-				return(0);
+//				return(0);
+			}
+		}
+#endif
+
+#if 1
+		if(!(sfl&4))
+		{
+			vspfl=BGBCC_JX2C_GetFrameVRegVspanFlags(ctx, sctx, reg);
+			if((vspfl&BGBCC_RSPFL_NONOVTRACE) &&
+				!(vspfl&BGBCC_RSPFL_NONBASIC) &&
+				!(regfl&BGBCC_REGFL_ALIASPTR))
+			{
+				//discard
+				sctx->regalc_dirty&=~(1<<i);
+	//			return(0);
 			}
 		}
 #endif
@@ -1931,7 +1946,8 @@ int BGBCC_JX2C_EmitSyncRegisterIndex2(
 				creg=bgbcc_jx2_lcachereg[i+1];
 		}
 
-		if(!rchk)
+//		if(!rchk)
+		if(!rchk && ((sctx->regalc_dirty)&(1<<i)))
 		{
 			rchk=1;
 			BGBCC_JX2C_EmitStoreFrameVRegReg(ctx, sctx, reg, creg);
@@ -1972,7 +1988,7 @@ int BGBCC_JX2C_EmitSyncRegisters(
 //	for(i=0; i<sctx->maxreg_gpr; i++)
 	for(i=0; i<sctx->maxreg_gpr_lf; i++)
 	{
-		BGBCC_JX2C_EmitSyncRegisterIndex(ctx, sctx, i);
+		BGBCC_JX2C_EmitSyncRegisterIndex2(ctx, sctx, i, 3);
 		sctx->regalc_utcnt[i]=0;
 		sctx->regalc_live&=~(1<<i);
 	}

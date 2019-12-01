@@ -117,7 +117,8 @@ main ()
   printf ("Please give the number of runs through the benchmark: ");
   {
     int n;
-#ifdef SH4
+// #ifdef SH4
+#if 1
 	n=4000000;
 #else
 	n=300000000;

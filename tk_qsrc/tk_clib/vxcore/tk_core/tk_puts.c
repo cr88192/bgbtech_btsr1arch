@@ -1,30 +1,71 @@
 void __halt(void);
 
+byte tk_dbg_iscopy;
+
 void tk_dbg_putc(int val)
 {
 	while(P_MMIO_DEBUG_STS&8);
 	P_MMIO_DEBUG_TX=val;
 }
 
+int tk_dbg_kbhit(void)
+{
+//	return(tk_ps2kb_kbhit());
+	return(P_MMIO_DEBUG_STS&1);
+}
+
+int tk_dbg_getch(void)
+{
+	while(!(P_MMIO_DEBUG_STS&1))
+	{
+		__halt();
+//		sleep_0();
+	}
+	return(P_MMIO_DEBUG_RX);
+}
+
+
 void tk_putc(int val)
 {
 	if(val=='\n')
 	{
-		tk_dbg_putc('\r');
+		if(!tk_dbg_iscopy)
+			tk_dbg_putc('\r');
 		tk_con_putc('\r');
 	}
-	tk_dbg_putc(val);
+	if(!tk_dbg_iscopy)
+		tk_dbg_putc(val);
 	tk_con_putc(val);
 }
 
 
 int tk_kbhit(void)
 {
+#if 1
+	if(!tk_dbg_iscopy)
+	{
+		if(tk_dbg_kbhit())
+			return(1);
+	}
+#endif
 	return(tk_ps2kb_kbhit());
 }
 
 int tk_getch(void)
 {
+#if 1
+	if(!tk_dbg_iscopy)
+	{
+		while(1)
+		{
+			if(tk_dbg_kbhit())
+				return(tk_dbg_getch());
+			if(tk_ps2kb_kbhit())
+				return(tk_ps2getch());
+			__halt();
+		}
+	}
+#endif
 	return(tk_ps2getch());
 }
 
@@ -55,11 +96,21 @@ void tk_gets(char *buf)
 	while(1)
 	{
 		i=tk_getch();
-		
-		if(i>=0x80)
+		if(i<=0)
 			continue;
 		
-		if((i=='\b') || (i==127))
+//		if(i>=0x80)
+//			continue;
+
+		if(i>=0x7F)
+		{
+			if((i==0x7F) || (i==0xFF))
+				i=tk_getch();
+			continue;
+		}
+		
+//		if((i=='\b') || (i==127))
+		if(i=='\b')
 		{
 			if(t>buf)
 			{
@@ -103,7 +154,14 @@ char *tk_async_gets(char *buf)
 			break;
 
 		i=tk_getch();
-		if((i=='\b') || (i==127))
+		if(i<=0)
+			continue;
+
+		if(i>=0x7F)
+			continue;
+
+//		if((i=='\b') || (i==127))
+		if(i=='\b')
 		{
 			if(t>buf)
 			{
@@ -448,4 +506,130 @@ char *tk_rsplit(char *str)
 		ta2[i]=ta[i];
 	ta2[i]=NULL;
 	return(ta2);
+}
+
+
+TK_FILE *tk_dbg_recvfile;
+
+int TK_Dbg_RecvFileXM(char *name)
+{
+	byte buf[256];
+	int ch, state, nbufb, blkn, blkn2, blkskp, csum;
+	int i, j, k;
+
+	tk_dbg_recvfile=tk_fopen(name, "wb");
+	if(!tk_dbg_recvfile)
+	{
+		tk_printf("Fail Open %s\n", name);
+//		return(-1);
+	}
+	
+	tk_dbg_iscopy=1;
+	state=1;
+	nbufb=0;
+	blkn=1;
+	blkskp=0;
+	
+	while(state>0)
+	{
+		if(!tk_dbg_kbhit())
+		{
+			__halt();
+			continue;
+		}
+
+		ch=tk_dbg_getch();
+		
+		switch(state)
+		{
+		case 1:
+			if(ch==0x01)	/* SOH: Start of Packet */
+			{
+				if(tk_dbg_recvfile && (nbufb>=128))
+					{ fwrite(buf, 1, 128, tk_dbg_recvfile); }
+				state=2; break;
+			}
+			if(ch==0x04)	/* EOT: End of Data */
+			{
+				while((nbufb>0) && (buf[nbufb-1]==0x1A))
+					nbufb--;
+				if(tk_dbg_recvfile && (nbufb>=0))
+					{ fwrite(buf, 1, nbufb, tk_dbg_recvfile); }
+				state=0;
+				break;
+			}
+
+			if(ch==0x03)	/* ETX: CTRL-C / Cancel */
+			{
+				state=0;
+				break;
+			}
+			
+			/* Unknown Byte, Ignore. */
+			break;
+
+		case 2:		/* First byte of header */
+			blkskp=0;
+			blkn2=(ch&255);
+			if((blkn2!=blkn) && (blkn2!=((blkn-1)&255)))
+			{
+				state=1;
+				tk_dbg_putc(0x15);	/* NAK */
+				break;
+			}
+			state=3;
+			break;
+
+		case 3:		/* Second byte of header */
+//			if((255-(ch&255))!=blkn)
+			if((255-(ch&255))!=blkn2)
+			{
+				state=1;
+				tk_dbg_putc(0x15);	/* NAK */
+				break;
+			}
+			state=4;
+			nbufb=0;
+			csum=0;
+			break;
+
+		case 4:		/* Packet Data */
+			buf[nbufb++]=ch;
+			csum=(csum+ch)&255;
+			if(nbufb>=128)
+				state=5;
+			break;
+
+		case 5:		/* Checksum Byte */
+//			k=0;
+//			for(j=0; j<128j j++)
+//				k+=buf[j];
+//			if((k&255)!=(ch&255))
+			if(csum!=(ch&255))
+			{
+				tk_dbg_putc(0x15);	/* NAK */
+				break;
+			}
+			
+			if(blkn!=blkn2)
+			{
+				nbufb=0;
+			}
+			
+//			blkn=(blkn+1)&255;
+			blkn=(blkn2+1)&255;
+			tk_dbg_putc(0x06);	/* ACK */
+			state=1;
+			break;
+		}
+	}
+
+	tk_dbg_iscopy=0;
+	
+	if(tk_dbg_recvfile)
+	{
+		tk_fclose(tk_dbg_recvfile);
+		tk_dbg_recvfile=NULL;
+	}
+	return(0);
 }

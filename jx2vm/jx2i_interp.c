@@ -608,6 +608,7 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_CLZQ:		s0="CLZQ";		break;
 	case BJX2_NMID_MOVDL:		s0="MOVD.L";	break;
 	case BJX2_NMID_LDI:			s0="LDI";		break;
+	case BJX2_NMID_JLDI:		s0="JLDI";		break;
 
 	case BJX2_NMID_ADDSL:		s0="ADDS.L";	break;
 	case BJX2_NMID_ADDUL:		s0="ADDU.L";	break;
@@ -751,7 +752,7 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 	char tb1[64];
 	BJX2_Opcode *op1;
 	s64 li;
-	int msc, psc, brpc;
+	int msc, psc, brpc, nonl;
 
 //	printf("%05X  %04X %-8s ", op->pc, op->opn,
 //		BJX2_DbgPrintNameForNmid(ctx, op->nmid));
@@ -898,6 +899,7 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 	}
 
 	op1=NULL;
+	nonl=0;
 
 	switch(op->fmid)
 	{
@@ -1147,6 +1149,7 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 	case BJX2_FMID_CHAIN:
 		op1=op->data;
 		BJX2_DbgPrintOp(ctx, op1, 4);
+		nonl=1;
 		break;
 
 	default:
@@ -1157,7 +1160,8 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 //	if(op->fl&BJX2_OPFL_WEX)
 //		printf("\t|");
 
-	if(!op1)
+//	if(!op1)
+	if(!nonl)
 		printf("\n");
 	return(0);
 }
@@ -1173,6 +1177,10 @@ int BJX2_DbgPrintTraceOps(BJX2_Context *ctx, BJX2_Trace *tr)
 	for(i=0; i<tr->n_ops; i++)
 	{
 		op=tr->ops[i];
+
+		if(op->fl&BJX2_OPFL_JUMBO96) fl|=2;
+		if(op->fl&BJX2_OPFL_JUMBO64) fl|=1;
+
 		if(op->fl&BJX2_OPFL_TRIWORD) fl|=2;
 		if(op->fl&BJX2_OPFL_TWOWORD) fl|=1;
 	}

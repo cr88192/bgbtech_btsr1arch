@@ -17,6 +17,7 @@ void *TKMM_MMList_AllocBrk(int sz)
 	{
 		tk_puts("TKMM_MMList_AllocBrk A\n");
 		ptr=TKMM_PageAlloc(sz);
+//		memset(ptr, 0, sz);
 
 		i=tkmm_mmlist_n_vrm++;
 		tkmm_mmlist_vrm_brkbuf[i]=ptr;
@@ -36,8 +37,19 @@ void *TKMM_MMList_AllocBrk(int sz)
 	if(!tkmm_mmlist_brkbuf)
 	{
 		tk_puts("TKMM_MMList_AllocBrk C\n");
-		tkmm_mmlist_brkbuf=TKMM_PageAlloc(1<<20);
-		tkmm_mmlist_brkend=tkmm_mmlist_brkbuf+(1<<20);
+//		tkmm_mmlist_brkbuf=TKMM_PageAlloc(1<<20);
+		tkmm_mmlist_brkbuf=TKMM_PageAlloc(1<<18);
+		
+		if(!tkmm_mmlist_brkbuf)
+		{
+			tk_puts("TKMM_MMList_AllocBrk C: Fail\n");
+			return(NULL);
+		}
+		
+//		memset(tkmm_mmlist_brkbuf, 0, 1<<20);
+
+//		tkmm_mmlist_brkend=tkmm_mmlist_brkbuf+(1<<20);
+		tkmm_mmlist_brkend=tkmm_mmlist_brkbuf+(1<<18);
 		tkmm_mmlist_brkpos=tkmm_mmlist_brkbuf;
 
 		i=tkmm_mmlist_n_vrm++;
@@ -89,7 +101,7 @@ int TKMM_FxiToSize(int ix)
 	int sz;
 	
 	if(ix<8)return(ix);
-	fr=(ix&7)|8; ex=ix>>3;
+	fr=(ix&7)|8; ex=(ix>>3)&31;
 	sz=fr<<ex;
 	return(sz);
 }
@@ -309,4 +321,9 @@ int TKMM_MMList_GetSize(void *ptr)
 void *tk_malloc(int sz)
 {
 	return(TKMM_MMList_Malloc(sz));
+}
+
+int tk_free(void *ptr)
+{
+	return(TKMM_MMList_Free(ptr));
 }

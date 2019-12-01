@@ -37,9 +37,12 @@ begin
 	
 	casez( {tIsIdC, tIsIdB, tIsIdA} )
 		3'b000:		tNxtRegVal	= regInVal;
-		3'b001:		tNxtRegVal	= wrValA;
-		3'b01z:		tNxtRegVal	= wrValB;
-		3'b1zz:		tNxtRegVal	= wrValC;
+//		3'b001:		tNxtRegVal	= wrValA;
+//		3'b01z:		tNxtRegVal	= wrValB;
+//		3'b1zz:		tNxtRegVal	= wrValC;
+		3'bzz1:		tNxtRegVal	= wrValA;
+		3'bz10:		tNxtRegVal	= wrValB;
+		3'b100:		tNxtRegVal	= wrValC;
 	endcase
 end
 

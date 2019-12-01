@@ -321,6 +321,7 @@ void Sys_CheckSanity(void)
 	static int rec=0;
 	char tb[256];
 	int *pj, *pk;
+	long long li, lj;
 	double		time, oldtime, newtime;
 	double f, g, h;
 	float ff, gf, hf;
@@ -564,11 +565,29 @@ void Sys_CheckSanity(void)
 
 	if(!rec)	tk_puts("Sanity I1\n");
 
+	g=-6972.0;
+	gf=-6972.0;
+
 	f=i; ff=i;
-	if(f!=(-6972.0))
+//	if(f!=(-6972.0))
+	if(f!=g)
+	{
+//		g=-6972.0;
+		li=*(long long *)(&f);
+		lj=*(long long *)(&g);
+		printf("I1-0: i=%d f=%08X-%08X g=%08X-%08X\n", i,
+			(int)(li>>32), (int)li,
+			(int)(lj>>32), (int)lj);
 		__debugbreak();
-	if(ff!=(-6972.0))
+	}
+//	if(ff!=(-6972.0))
+	if(ff!=gf)
+	{
+//		gf=-6972.0;
+		printf("I1-1: i=%d ff=%08X exp=%08X\n", i,
+			*(int *)(&ff), *(int *)(&gf));
 		__debugbreak();
+	}
 
 	if(!rec)	tk_puts("Sanity J\n");
 

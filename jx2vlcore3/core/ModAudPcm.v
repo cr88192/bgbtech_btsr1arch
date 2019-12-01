@@ -27,7 +27,9 @@ module ModAudPcm(
 	clock,		reset,
 	pwmOut,		auxPcmL,	auxPcmR,
 	busInData,	busOutData,	busAddr,
-	busOpm,		busOK);
+	busOpm,		busOK,
+	timer1MHz,	timer64kHz,
+	timer1kHz,	timerNoise);
 
 input			clock;
 input			reset;
@@ -41,6 +43,11 @@ output[1:0]		busOK;
 
 input[7:0]		auxPcmL;
 input[7:0]		auxPcmR;
+
+input			timer1MHz;
+input			timer64kHz;
+input			timer1kHz;
+input			timerNoise;
 
 reg[31:0]		tBusAddr;
 reg[31:0]		tBusInData;
@@ -89,6 +96,7 @@ reg[10:0]	tPcmIdx;
 reg[9:0]	tPcmIdx;
 `endif
 
+`ifndef def_true
 reg[11:0]	tPwmStL;
 reg[11:0]	tPwmStR;
 reg[11:0]	tPwmNextStL;
@@ -97,6 +105,19 @@ reg[11:0]	tPwmValL;
 reg[11:0]	tPwmValR;
 reg[11:0]	tPwmNextValL;
 reg[11:0]	tPwmNextValR;
+`endif
+
+`ifdef def_true
+reg[15:0]	tPwmStL;
+reg[15:0]	tPwmStR;
+reg[15:0]	tPwmNextStL;
+reg[15:0]	tPwmNextStR;
+reg[15:0]	tPwmValL;
+reg[15:0]	tPwmValR;
+reg[15:0]	tPwmNextValL;
+reg[15:0]	tPwmNextValR;
+`endif
+
 reg			tPwmStCfL;
 reg			tPwmStCfR;
 
@@ -105,6 +126,8 @@ reg[13:0]	tNxtClkDivCnt;
 reg[13:0]	tClkDivRst;
 reg[13:0]	tNxtClkDivRst;
 
+reg			tClk1kHz;
+reg			tNxtClk1kHz;
 
 `ifdef JX2_AUD_16K
 reg[13:0]	tSampPos;
@@ -145,6 +168,13 @@ assign		tDevCSelAuL = (tBusAddr[15:14] == 2'h0);
 assign		tDevCSelAuR = (tBusAddr[15:14] == 2'h1);
 assign		tDevCSelCtr = (tBusAddr[15:12] == 4'hF);
 
+initial begin
+	pcmMemA[0] = UV32_FF;
+	pcmMemB[0] = UV32_00;
+	pcmMemA[1] = UV32_FF;
+	pcmMemB[1] = UV32_00;
+end
+
 always @*
 begin
 //	tOutData		= UV32_XX;
@@ -164,9 +194,17 @@ begin
 
 	tIsStereoR		= tClkDivCnt[6];
 
+//	tOutEnable = 1;
+
+//	tNxtClk1kHz		= timer1kHz ? !tClk1kHz : tClk1kHz;
+
 	{tPwmStCfL, tPwmNextStL} = {1'b0, tPwmStL} + {1'b0, tPwmValL};
 	{tPwmStCfR, tPwmNextStR} = {1'b0, tPwmStR} + {1'b0, tPwmValR};
 	tPwmOut = tOutEnable ? { tPwmStCfR, tPwmStCfL } : 2'b11;
+//	tPwmOut = tOutEnable ? { tPwmStCfR, tPwmStCfL } : { tClk1kHz, tClk1kHz };
+
+//	if(tOutEnable)
+//		$display("Ctrl=%X, Vl=%X, pwm=%d", tRegCtrl0, tPwmValL, tPwmStCfL);
 
 	case(tRegCtrl0[7:4])
 		4'h0: tNxtClkDivRst=12500;
@@ -246,18 +284,26 @@ begin
 	if(tIsStereo)
 	begin
 		if(tIsStereoR)
-			tPwmNextValR	= tSamp12c;
+//			tPwmNextValR	= tSamp12c;
+			tPwmNextValR	= { tSamp12c, tSamp12c[11:8] };
 		else
-			tPwmNextValL	= tSamp12c;
+//			tPwmNextValL	= tSamp12c;
+			tPwmNextValL	= { tSamp12c, tSamp12c[11:8] };
 	end
 	else
 	begin
-		tPwmNextValL	= tSamp12c;
-		tPwmNextValR	= tSamp12c;
+//		tPwmNextValL	= tSamp12c;
+//		tPwmNextValR	= tSamp12c;
+
+		tPwmNextValL	= { tSamp12c, tSamp12c[11:8] };
+		tPwmNextValR	= { tSamp12c, tSamp12c[11:8] };
 	end
 	
-	tPwmNextValL	= tPwmNextValL + { auxPcmL, 4'h0 };
-	tPwmNextValR	= tPwmNextValR + { auxPcmR, 4'h0 };
+//	tPwmNextValL	= tPwmNextValL + { auxPcmL, 3'h0, timerNoise };
+//	tPwmNextValR	= tPwmNextValR + { auxPcmR, 3'h0, timerNoise };
+
+	tPwmNextValL	= tPwmNextValL + { auxPcmL, 7'h0, timerNoise };
+	tPwmNextValR	= tPwmNextValR + { auxPcmR, 7'h0, timerNoise };
 
 	if(tDevCSel && (tBusOpm[4:3]!=0))
 		tOutOK	= UMEM_OK_OK;
@@ -267,8 +313,14 @@ end
 always @(posedge clock)
 begin
 	tPwmOut2	<= tPwmOut;
-	tPwmStL		<= tPwmNextStL;
-	tPwmStR		<= tPwmNextStR;
+//	tClk1kHz	<= tNxtClk1kHz;
+
+//	if(timer1MHz)
+//	begin
+		tPwmStL		<= tPwmNextStL;
+		tPwmStR		<= tPwmNextStR;
+//	end
+
 	tPwmValL	<= tPwmNextValL;
 	tPwmValR	<= tPwmNextValR;
 	tClkDivCnt	<= tNxtClkDivCnt;
@@ -284,6 +336,10 @@ begin
 	tBusInData	<= busInData;
 	tBusOpm		<= busOpm;
 
+//	$display("A=%X D=%X Opm=%X, Cs=%d CsAuL=%d CsAuR=%d CsCtl=%d",
+//		tBusAddr, tBusInData, tBusOpm,
+//		tDevCSel, tDevCSelAuL, tDevCSelAuR, tDevCSelCtr);
+
 `ifdef JX2_AUD_STEREO
 	tPcmBlkL	<= { pcmMemB[tPcmIdx], pcmMemA[tPcmIdx] };
 	tPcmBlkR	<= { pcmMemD[tPcmIdx], pcmMemC[tPcmIdx] };
@@ -296,7 +352,11 @@ begin
 		if(tDevCSelCtr)
 		begin
 			case(tBusAddr[7:2])
-				6'h00: tRegCtrl0	<= tBusInData;
+				6'h00:
+				begin
+					$display("ModAudPcm: Ctrl0=%X", tRegCtrl0);
+					tRegCtrl0	<= tBusInData;
+				end
 
 				default: begin
 				end

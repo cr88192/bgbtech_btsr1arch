@@ -172,6 +172,21 @@ begin
 `else
 	nxtReqIx	= memAddr [15:4];
 	nxtReqIxB	= memAddrB[15:4];
+//	nxtReqIx	= memAddr [15:4] ^ memAddr[27:16];
+//	nxtReqIxB	= memAddrB[15:4] ^ memAddrB[27:16];
+
+//	nxtReqIx	= memAddr [15:4] ^
+//		{ memAddr[19:16], memAddr[23:20], memAddr[27:24] };
+//	nxtReqIxB	= memAddrB[15:4] ^
+//		{ memAddrB[19:16], memAddrB[23:20], memAddrB[27:24] };
+
+//	nxtReqIx	= {
+//		memAddr [15:10] ^ memAddr [21:16] ^ memAddr [27:22],
+//		memAddr [9:4] };
+//	nxtReqIxB	= {
+//		memAddrB[15:10] ^ memAddrB[21:16] ^ memAddrB[27:22],
+//		memAddrB[9:4] };
+
 `endif
 
 	/* Swap State */

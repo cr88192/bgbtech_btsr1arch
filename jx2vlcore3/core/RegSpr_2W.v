@@ -32,8 +32,10 @@ begin
 	
 	casez( {tIsIdB, tIsIdA} )
 		2'b00:		tNxtRegVal	= regInVal;
-		2'b01:		tNxtRegVal	= wrValA;
-		2'b1z:		tNxtRegVal	= wrValB;
+//		2'b01:		tNxtRegVal	= wrValA;
+//		2'b1z:		tNxtRegVal	= wrValB;
+		2'bz1:		tNxtRegVal	= wrValA;
+		2'b10:		tNxtRegVal	= wrValB;
 	endcase
 end
 

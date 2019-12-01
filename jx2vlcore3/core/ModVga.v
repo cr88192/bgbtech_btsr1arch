@@ -14,7 +14,7 @@ module ModVga(
 	pixCy,		pixCu,		pixCv,
 	ctrlRegVal,	pixAux,
 	pwmOut,		pixPosX,	pixPosY,
-	pixLineOdd);
+	pixLineOdd,	timerNoise);
 
 /* verilator lint_off UNUSED */
 
@@ -26,6 +26,7 @@ input[7:0]		pixCu;			//U Component
 input[7:0]		pixCv;			//V Component
 input[63:0]		ctrlRegVal;		//Control Register
 input[15:0]		pixAux;			//Pixel Aux Bits
+input			timerNoise;
 
 output[15:0] pwmOut;
 
@@ -38,23 +39,26 @@ reg[7:0]	cbPwmTab[31:0];
 
 reg[15:0]	tPwmOut;			//PWM output bits
 
-reg[3:0]	tPwmStR;			//PWM State
-reg[3:0]	tPwmNextStR;		//Next PWM State
+reg[4:0]	tPwmStR;			//PWM State
+reg[4:0]	tPwmNextStR;		//Next PWM State
 reg[7:0]	tPwmValR;			//PWM Value
 reg[7:0]	tPwmNextValR;		//Next PWM Value
 reg			tPwmCarryR;
 
-reg[3:0]	tPwmStG;			//PWM State
-reg[3:0]	tPwmNextStG;		//Next PWM State
+reg[4:0]	tPwmStG;			//PWM State
+reg[4:0]	tPwmNextStG;		//Next PWM State
 reg[7:0]	tPwmValG;			//PWM Value
 reg[7:0]	tPwmNextValG;		//Next PWM Value
 reg			tPwmCarryG;
 
-reg[3:0]	tPwmStB;			//PWM State
-reg[3:0]	tPwmNextStB;		//Next PWM State
+reg[4:0]	tPwmStB;			//PWM State
+reg[4:0]	tPwmNextStB;		//Next PWM State
 reg[7:0]	tPwmValB;			//PWM Value
 reg[7:0]	tPwmNextValB;		//Next PWM Value
 reg			tPwmCarryB;
+
+reg			tNextPwmEn;
+reg			tPwmEn;
 
 
 // reg[21:0]	tCbAcc;				//Colorburst Accumulator
@@ -163,10 +167,14 @@ reg			tPwmOutCarryB;
 always @*
 begin
 //	pwmIs4bit = 0;
+	tNextPwmEn = 0;
 
-	{tPwmCarryR, tPwmNextStR} = {1'b0, tPwmStR} + {1'b0, tPwmValR[3:0]};
-	{tPwmCarryG, tPwmNextStG} = {1'b0, tPwmStG} + {1'b0, tPwmValG[3:0]};
-	{tPwmCarryB, tPwmNextStB} = {1'b0, tPwmStB} + {1'b0, tPwmValB[3:0]};
+	{tPwmCarryR, tPwmNextStR} = {1'b0, tPwmStR} +
+		{1'b0, tPwmValR[3:0], timerNoise};
+	{tPwmCarryG, tPwmNextStG} = {1'b0, tPwmStG} +
+		{1'b0, tPwmValG[3:0], timerNoise};
+	{tPwmCarryB, tPwmNextStB} = {1'b0, tPwmStB} +
+		{1'b0, tPwmValB[3:0], timerNoise};
 
 	tPwmOutAR = tPwmValR[7:4];
 	tPwmOutAG = tPwmValG[7:4];
@@ -174,13 +182,20 @@ begin
 	{tPwmOutCarryR, tPwmOutBR} = {1'b0, tPwmOutAR} + 1;
 	{tPwmOutCarryG, tPwmOutBG} = {1'b0, tPwmOutAG} + 1;
 	{tPwmOutCarryB, tPwmOutBB} = {1'b0, tPwmOutAB} + 1;
-	tPwmOut[11:8] = (tPwmCarryR && !tPwmOutCarryR) ? tPwmOutBR : tPwmOutAR;
-	tPwmOut[ 7:4] = (tPwmCarryG && !tPwmOutCarryG) ? tPwmOutBG : tPwmOutAG;
-	tPwmOut[ 3:0] = (tPwmCarryB && !tPwmOutCarryB) ? tPwmOutBB : tPwmOutAB;
 
-//	tPwmOut[11:8] = tPwmOutAR;
-//	tPwmOut[ 7:4] = tPwmOutAG;
-//	tPwmOut[ 3:0] = tPwmOutAB;
+// `ifndef def_true
+`ifdef def_true
+	tPwmOut[11:8] = (tPwmCarryR && !tPwmOutCarryR && tPwmEn) ?
+		tPwmOutBR : tPwmOutAR;
+	tPwmOut[ 7:4] = (tPwmCarryG && !tPwmOutCarryG && tPwmEn) ?
+		tPwmOutBG : tPwmOutAG;
+	tPwmOut[ 3:0] = (tPwmCarryB && !tPwmOutCarryB && tPwmEn) ?
+		tPwmOutBB : tPwmOutAB;
+`else
+	tPwmOut[11:8] = tPwmOutAR;
+	tPwmOut[ 7:4] = tPwmOutAG;
+	tPwmOut[ 3:0] = tPwmOutAB;
+`endif
 
 	tPwmOut[12] = !tHsync;
 	tPwmOut[13] = !tVsync;
@@ -370,11 +385,15 @@ begin
 		else if((tScanPixClk>=240) && (tScanPixClk<2880))
 //		else if(tScanPixClk>=240)
 		begin
+			tPwmNextValR	= tScPwmCtR[15:8];
+			tPwmNextValG	= tScPwmCtG[15:8];
+			tPwmNextValB	= tScPwmCtB[15:8];
 
-			tPwmNextValR = tScPwmCtR[15:8];
-			tPwmNextValG = tScPwmCtG[15:8];
-			tPwmNextValB = tScPwmCtB[15:8];
+//			tPwmNextValR	= { tScPwmCtR[15:9], timerNoise };
+//			tPwmNextValG	= { tScPwmCtG[15:9], timerNoise };
+//			tPwmNextValB	= { tScPwmCtB[15:9], timerNoise };
 
+			tNextPwmEn		= 1;
 		end
 	end
 end
@@ -391,6 +410,7 @@ begin
 	tPwmValR		<= tPwmNextValR;
 	tPwmValG		<= tPwmNextValG;
 	tPwmValB		<= tPwmNextValB;
+	tPwmEn			<= tNextPwmEn;
 
 //	tCbAcc			<= tCbNextAcc;
 

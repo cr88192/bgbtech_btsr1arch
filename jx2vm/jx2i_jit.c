@@ -1239,6 +1239,8 @@ int BJX2_TryJitOpcode(UAX_Context *jctx,
 	if(BJX2_TryJitOpcode_MovMem(jctx, cpu, tr, op)>0)
 		return(1);
 
+//	return(0);
+
 	if(BJX2_TryJitOpcode_CmpOp(jctx, cpu, tr, op)>0)
 		return(1);
 	if(BJX2_TryJitOpcode_BranchOp(jctx, cpu, tr, op)>0)

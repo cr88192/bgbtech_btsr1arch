@@ -1,0 +1,180 @@
+BJX3 Idea:
+* Similar to BJX2, but with some cleanup.
+* Try to make more consistent and with fewer edge-case encodings.
+
+Registers:
+* R0..R31
+** R0: DLR / PC
+** R1: DHR / GBR
+** R15: SP
+** R16: LR / TBR
+** R17:
+** R31: IMM / ZZR
+*** Reads from ZZR: Zero (most ops).
+*** Writes to ZZR: No Effect
+
+
+Several registers will be special if used as a base register in memory ops:
+* R0 will be treated as PC.
+* R1 will be treated as GBR.
+* R16 will be treated as TBR.
+* R17 is reserved.
+
+Using ZZR as a source register will return zero for most operations.
+Using ZZR as a destination will discard the result. For some operations, using ZZR as a destination will be reserved.
+
+
+
+Encoding:
+* zzzz_zznm_nnnn_mmmm	//2R, Full-Range
+* zzzz_zznz_nnnn_zzzz	//1R, Full Range
+* zzzz_zzni_nnnn_iiii	//Imm5, Rn
+* zzzz_zzzz_nnnn_mmmm	//2R, Partial Range
+
+* 00nm	MOV.B	Rn, (Rm)
+* 01nm	MOV.W	Rn, (Rm)
+* 02nm	MOV.L	Rn, (Rm)
+* 03nm	MOV.Q	Rn, (Rm)
+* 04nm	MOV.B	Rn, (Rm, DLR)
+* 05nm	MOV.W	Rn, (Rm, DLR)
+* 06nm	MOV.L	Rn, (Rm, DLR)
+* 07nm	MOV.Q	Rn, (Rm, DLR)
+* 08nm	MOV.B	(Rm), Rn
+* 09nm	MOV.W	(Rm), Rn
+* 0Anm	MOV.L	(Rm), Rn
+* 0Bnm	MOV.Q	(Rm), Rn
+* 0Cnm	MOV.B	(Rm, DLR), Rn
+* 0Dnm	MOV.W	(Rm, DLR), Rn
+* 0Enm	MOV.L	(Rm, DLR), Rn
+* 0Fnm	MOV.Q	(Rm, DLR), Rn
+
+* 10nm	MOV		Rm, Rn
+* 11nm	MOV		Rj, Rn
+* 12nm	MOV		Rm, Rk
+* 13nm	MOV		Rj, Rk
+* 14nm	LEA.B	Rn, (Rm, DLR)
+* 15nm	LEA.W	Rn, (Rm, DLR)
+* 16nm	LEA.L	Rn, (Rm, DLR)
+* 17nm	LEA.Q	Rn, (Rm, DLR)
+* 18nm	MOVU.B	(Rm), Rn
+* 19nm	MOVU.W	(Rm), Rn
+* 1Anm	MOVU.L	(Rm), Rn
+* 1Bnm	MOVD.L	(Rm), Rn
+* 1Cnm	MOVU.B	(Rm, DLR), Rn
+* 1Dnm	MOVU.W	(Rm, DLR), Rn
+* 1Enm	MOVU.L	(Rm, DLR), Rn
+* 1Fnm	MOVD.L	(Rm, DLR), Rn
+
+* 20dd  BRA		disp8
+* 21dd	BSR		disp8
+* 22dd	BT		disp8
+* 23dd	BF		disp8
+* 24zz  -
+* 25zz  -
+* 26jj  LDISH	#imm8u, DLR
+
+* 28nj	ADD		#imm4u, Rn
+* 29nj	ADD		#imm4n, Rn
+* 2Anj	ADD		#imm4u, Rk
+* 2Bnj	ADD		#imm4n, Rk
+* 2Cnj	LDIZ	#imm4u, Rn
+* 2Dnj	LDIN	#imm4n, Rn
+* 2Enj	LDIZ	#imm4u, Rk
+* 2Fnj	LDIN	#imm4n, Rk
+
+* 30nj	MOV.L	(SP, disp4), Rn
+* 31nj	MOV.Q	(SP, disp4), Rn
+* 32nj	MOV.L	(SP, disp4), Rk
+* 33nj	MOV.Q	(SP, disp4), Rk
+* 34nj	MOV.L	(SP, disp4), Rn
+* 35nj	MOV.Q	(SP, disp4), Rn
+* 36nj	MOV.L	(SP, disp4), Rk
+* 37nj	MOV.Q	(SP, disp4), Rk
+* 38nj	CMPEQ	#imm4u, Rn
+* 39nj	CMPEQ	#imm4n, Rn
+* 3Anj	CMPEQ	#imm4u, Rk
+* 3Bnj	CMPEQ	#imm4n, Rk
+* 3Cnj	CMPQEQ	#imm4u, Rn
+* 3Dnj	CMPQEQ	#imm4n, Rn
+* 3Enj	CMPQEQ	#imm4u, Rk
+* 3Fnj	CMPQEQ	#imm4n, Rk
+
+* 40nm	ADD		Rm, Rn
+* 41nm	SUB		Rm, Rn
+* 42nm	-
+* 43nm	-
+* 44nm	-
+* 45nm	AND		Rm, Rn
+* 46nm	OR		Rm, Rn
+* 47nm	XOR		Rm, Rn
+* 48nm  CMPEQ	Rm, Rn
+* 49nm  CMPGT	Rm, Rn
+* 4Anm  CMPHI	Rm, Rn
+* 4Bnm  TST		Rm, Rn
+* 4Cnm  CMPQEQ	Rm, Rn
+* 4Dnm  CMPQGT	Rm, Rn
+* 4Enm  CMPQHI	Rm, Rn
+* 4Fnm  TSTQ	Rm, Rn
+
+* 50nm	(More 2R Ops)
+
+* 7znz	(0R/1R Ops)
+
+* 8dnm	(Load/Store Disp3)
+* 80nm  -
+* 81nm  MOV.L Rn, (Rm, 4)
+* 82nm  MOV.L Rn, (Rm, 8)
+* 83nm  MOV.L Rn, (Rm, 12)
+* 84nm  MOV.L Rn, (Rm, 16)
+* 85nm  MOV.L Rn, (Rm, 20)
+* 86nm  MOV.L Rn, (Rm, 24)
+* 87nm  MOV.L Rn, (Rm, 28)
+* 88nm  -
+* 89nm  MOV.L (Rm, 4), Rn
+* 8Anm  MOV.L (Rm, 8), Rn
+* 8Bnm  MOV.L (Rm, 12), Rn
+* 8Cnm  MOV.L (Rm, 16), Rn
+* 8Dnm  MOV.L (Rm, 20), Rn
+* 8Enm  MOV.L (Rm, 24), Rn
+* 8Fnm  MOV.L (Rm, 28), Rn
+
+* Azzz	LDIZ #imm12u, DLR
+* Bzzz	LDIN #imm12n, DLR
+
+* 1110_zztz_xxxx_xxxx	//32/48 Predicate Block
+* 1111_zztz_xxxx_xxxx	//32/48 Block
+** 111z_11tz_zzzz_xxxx	//Op48
+
+** F0zz..F3zz: Scalar
+** F4zz..F7zz: WEX
+** F8zz..FBzz: Scalar
+** FCzz..FFzz: WEX
+
+* F0nm_zeoz			//3R
+* F1nm_zedd			//Mem Ld/St, Disp9
+* F2zz_zzzz			//Mirror F0zz (WEX)
+* F3zz_zzzz			//Mirror F1zz (WEX)
+* F4nm_zejj			//RIR, Imm9/Imm10
+* F5jj_jjjj			//LDIZ	#imm24, DLR
+* F6zz_zzzz			//Mirror F4zz (WEX)
+* F7zz_zzzz			//LDIN	#imm24, DLR
+* F8zn_jjjj			//Imm16, Rn
+* F9zn_jjjj			//Imm16, Rk
+* FAzz_zzzz			//Mirror F8zz (WEX)
+* FBzz_zzzz			//Mirror F9zz (WEX)
+* FCzn_zzzz_jjjj	//Op48
+* FDzn_zzzz_jjjj	//Op48
+* FEzn_zzzz_jjjj	//Mirror FCzn
+* FFzn_zzzz_jjjj	//Mirror FDzn
+
+** FC0n_zemz_jjjj	//Op48, RIR Imm17
+
+** FCCn_jjjj_jjjj	ADD			Imm32s, Rn
+** FCDn_jjjj_jjjj	LDISH32		Imm32u, Rn
+** FCEn_jjjj_jjjj	LDIZ		Imm32u, Rn
+** FCFn_jjjj_jjjj	LDIN		Imm32u, Rn
+
+** FDCn_jjjj_jjjj	ADD			Imm32s, Rk
+** FDDn_jjjj_jjjj	LDISH32		Imm32u, Rk
+** FDEn_jjjj_jjjj	LDIZ		Imm32u, Rk
+** FDFn_jjjj_jjjj	LDIN		Imm32u, Rk

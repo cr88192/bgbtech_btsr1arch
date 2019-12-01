@@ -30,6 +30,8 @@ _start:
 	mov		vbr, r2
 //	mov.q	r2, __tk_saved_vbr
 
+//	xor		r2, r2
+
 	mov		__tk_saved_vbr, r3
 	mov.q	r2, @r3
 	
@@ -550,6 +552,9 @@ X(__longj):
 	mov.q  @(r4, 56), r1
 	mov r1, krr
 
+	mov.q  @(r4, 128), r1
+	mov r1, vbr
+
 //	mov.q  @(  0,r4), r0
 //	mov.q  @(  8,r4), r1
 //	
@@ -655,6 +660,9 @@ X(__setj):
 
 	mov krr, r1
 	mov.q  r1, @(r4, 56)
+
+	mov vbr, r1
+	mov.q  r1, @(r4, 128)
 	
 //	mov #0, r0
 	mov #0, r2
@@ -677,6 +685,7 @@ X(__va64_arg_i):
 	mov r6, r2
 	rts
 	nop
+
 __va64_arg_i.L0:
 	mov.q @(r4, 112), r3
 	mov.l @r3+, r6
@@ -901,12 +910,20 @@ X(sleep_0):
 X(__fpu_frcp):
 	mov #0, r3
 	fcmp/gt r4, r3
+
+#if 0
 	bf .L0
-	mov lr, r17		| fneg r4
+	mov lr, r17
+	fneg r4
 	bsr __fpu_frcp
 //	fneg r2, r2		| jmp r17
-	mov r17, lr		| fneg r2
+	mov r17, lr
+	fneg r2
 	rts
+#endif
+
+	nop
+	fneg?t r4
 
 	.L0:
 	mov #0x7FF, r5		| mov #0x3FF, r6
@@ -932,18 +949,28 @@ X(__fpu_frcp):
 	fsub r3, r6, r7
 	fmul r7, r2
 
-	rts
+	fneg?t r2
+
+	rtsu
 
 .global X(__fpu_frcp_s)
 X(__fpu_frcp_s):
 	mov #0, r3
 	fcmp/gt r4, r3
+
+#if 0
 	bf .L0
-	mov lr, r17		| fneg r4
+	mov lr, r17
+	fneg r4
 	bsr __fpu_frcp_s
 //	fneg r2, r2		| jmp r17
-	mov r17, lr		| fneg r2
+	mov r17, lr
+	fneg r2
 	rts
+#endif
+
+	nop
+	fneg?t r4
 
 	.L0:
 	mov #0x7FF, r5		| mov #0x3FF, r6
@@ -960,22 +987,74 @@ X(__fpu_frcp_s):
 	fmul r2, r4, r6
 	fsub r3, r6, r7
 	fmul r7, r2
+
+	fneg?t r2
 	
-	rts
+	rtsu
 
 .global X(__fpu_fdiv)
 X(__fpu_fdiv):
-	mov lr, r16		| mov r4, r18
+	mov lr, r16
+	mov r4, r18
 	mov r5, r4
 	bsr __fpu_frcp
-	mov r16, lr		| fmul r18, r2
+	fmul r18, r2
+	mov r16, lr
 	rts
 .global X(__fpu_fdiv_s)
 X(__fpu_fdiv_s):
-	mov lr, r16		| mov r4, r18
+	mov lr, r16
+	mov r4, r18
 	mov r5, r4
 	bsr __fpu_frcp_s
-	mov r16, lr		| fmul r18, r2
+	fmul r18, r2
+	mov r16, lr
+	rts
+
+
+.global X(__fpu_frcp_sf)
+X(__fpu_frcp_sf):
+	mov #0, r3
+	fcmp/gt r4, r3
+
+#if 0
+	bf .L0
+	mov lr, r17
+	fneg r4
+	bsr __fpu_frcp_sf
+//	fneg r2, r2		| jmp r17
+	mov r17, lr
+	fneg r2
+	rts
+#endif
+
+	nop
+	fneg?t r4
+
+	.L0:
+	mov #0x7FF, r5		| mov #0x3FF, r6
+	shld.q r5, #52, r5	| mov #0x400, r3
+	shld.q r6, #52, r6	| sub r5, r4, r5
+	shld.q r3, #52, r3	| fmul r5, r4, r7
+	sub r6, r7, r7
+	add r7, r5, r2
+
+	fmul r2, r4, r6
+	fsub r3, r6, r7
+	fmul r7, r2
+
+	fneg?t r2
+	
+	rtsu
+
+.global X(__fpu_fdiv_sf)
+X(__fpu_fdiv_sf):
+	mov lr, r16
+	mov r4, r18
+	mov r5, r4
+	bsr __fpu_frcp_sf
+	fmul r18, r2
+	mov r16, lr
 	rts
 
 .else
@@ -1092,6 +1171,50 @@ X(__fpu_fdiv_s):
 	mov r4, r18
 	mov r5, r4
 	bsr __fpu_frcp_s
+	fmul r18, r2
+	mov r16, lr
+	rts
+
+
+.global X(__fpu_frcp_sf)
+X(__fpu_frcp_sf):
+	mov #0x0000, r0
+	fldch r0, r3
+	fcmp/gt r4, r3
+	bf .L0
+	push lr
+	fneg r4
+	bsr __fpu_frcp_s
+	fneg r2
+	ret
+
+	.L0:
+	mov #0x7FF0000000000000, r5
+	sub r4, r5
+	mov #0x3FF0000000000000, r6
+
+	fmul r5, r4, r7
+	sub r6, r7, r7
+	add r7, r5
+
+	mov r5, r2
+	mov r4, r5
+	
+	mov #0x4000, r0
+	fldch r0, r3
+
+	fmul r2, r5, r6
+	fsub r3, r6, r7
+	fmul r7, r2
+	
+	rts
+
+.global X(__fpu_fdiv_sf)
+X(__fpu_fdiv_sf):
+	mov lr, r16
+	mov r4, r18
+	mov r5, r4
+	bsr __fpu_frcp_sf
 	fmul r18, r2
 	mov r16, lr
 	rts
@@ -1243,4 +1366,51 @@ X(__fpu_frcp):
 
 .endif
 
+#endif
+
+#if 1
+.global X(strcmp)
+X(strcmp):
+
+	xor r2, r2
+
+.L0:
+	mov.l @r4, r6
+	mov.l @r5, r7
+	cmpeq r6, r7
+	bf .L1
+	
+	tst #0x000000FF, r6
+	movt r3
+	tst #0x0000FF00, r6
+	addc r3, r3
+	tst #0x00FF0000, r6
+	addc r3, r3
+	tst #0xFF000000, r6
+	addc r3, r3
+	
+	tst r3, r3
+	bf .L2
+	
+	add #4, r4
+	add #4, r5
+	bra .L0
+
+.L1:
+	mov.b @r4, r6
+	mov.b @r5, r7
+	cmpeq r6, r7
+	bf .L3
+	tst r6, r6
+	bt .L2
+	add #1, r4
+	add #1, r5
+	bra .L1
+.L3:
+	cmpgt r7, r6
+	mov?t #1, r2
+	mov?f #-1, r2
+
+.L2:
+	rts
 #endif

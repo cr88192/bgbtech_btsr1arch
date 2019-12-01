@@ -437,9 +437,10 @@ char *name;		//name
 struct BGBCC_CMG_VarSpan2_s {
 int bbeg;				//begin (vop)
 int bend;				//end (vop)
-int tbeg;				//begin (vop)
-int tend;				//end (vop)
+int tbeg;				//begin (trace)
+int tend;				//end (trace)
 int cnt;				//total times used
+int flag;				//sub-span flags
 };
 
 struct BGBCC_CMG_VarSpan_s {

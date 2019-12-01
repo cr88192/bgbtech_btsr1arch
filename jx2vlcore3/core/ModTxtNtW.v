@@ -12,7 +12,8 @@
 
 
 module ModTxtNtW(clock, reset, pwmOut,
-	busInData, busOutData, busAddr, busOpm, busOK);
+	busInData, busOutData, busAddr, busOpm, busOK,
+	timerNoise);
 
 /* verilator lint_off UNUSED */
 
@@ -27,6 +28,7 @@ input[63:0]		busInData;
 output[63:0]	busOutData;
 input[4:0]		busOpm;
 output[1:0]		busOK;
+input			timerNoise;
 
 wire	busOE;
 wire	busWR;
@@ -59,7 +61,7 @@ ModVga fbvga(
 	ctrlRegVal,	pixAux,
 	pwmOut,
 	pixPosX,	pixPosY,
-	pixLineOdd);
+	pixLineOdd,	timerNoise);
 
 ModTxtMemW fbmem(clock, reset,
 	pixCellIx, cellData1,

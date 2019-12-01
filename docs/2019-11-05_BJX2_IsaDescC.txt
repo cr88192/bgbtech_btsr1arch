@@ -1606,6 +1606,9 @@ When converting a narrower floating point type to a wider one:
 * An Inf or NaN exponent will be copied as its equivalent.
 ** Mantissa bits still copied directly.
 
+Conversion to integer will truncate towards zero. Its output will be a 64-bit integer with undefined results if the value overflows the allowed range.
+
+
 === FMUL (GFP) ===
 
 * 62nm       FMUL		Rm, Rn			//(GFP) FMUL

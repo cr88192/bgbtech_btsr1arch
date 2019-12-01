@@ -1410,8 +1410,8 @@ F2zz Instruction Block  (Imm9 Block, New):
 ** F2n1_Dfjj  ADD{D}	#imm10n, Rn				//Rn=Rn+Imm10n
 ** F2n2_Dfjj  MULS.W	#imm10u, Rn				//Rn=Rn*Imm10u
 ** F2n3_Dfjj  MULS.W	#imm10n, Rn				//Rn=Rn*Imm10n
-** F2n4_Dfjj  LDI{Q}SIZ	#imm10u, Rn				//
-** F2n5_Dfjj  LDI{Q}SIN	#imm10u, Rn				//
+** F2n4_Dfjj / LDI{Q}SIZ	#imm10u, Rn			//
+** F2n5_Dfjj / LDI{Q}SIN	#imm10u, Rn			//
 * F2nz_Efjj
 * F2nz_Ffjj
 
@@ -1737,9 +1737,6 @@ F1 block immediates will be expanded to being 31-bit sign-extended.
 
 F2 block immediates will be expanded, but retain the zero or one extension from the base instruction.
 
-The F0 block Branch ops will expand to a 32-bit sign-extended branch, gaining 12 bits from the prefix.
-The other bits are reserved, and are to be set to the sign extension of the branch displacement.
-
 
 ==== JLDI (Jumbo Load) ====
 
@@ -1755,7 +1752,7 @@ The immediate fields for JLDI will be interpreted as a 64-bit value:
 * zzzz_zyyy_yyxx_xxxx
 * Or, essentially, the three immedite fields glued together.
 
-The bits which would have otherwise been part of the opcode will be used to encode the destination register:
+The opcode bits will be used to encode the destination register:
 * 11nn (bits 3:2), 11nn (bits 1:0), 101n (bit 4)
 
-JLDI will not need zero or one extended forms given the immediate fills an entire 64-bit register.
+JLDI will not need one or zero extension given the immediate fills an entire 64-bit register.

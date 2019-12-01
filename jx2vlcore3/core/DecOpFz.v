@@ -51,6 +51,7 @@ reg[5:0]	opRegO_Df2;
 
 reg[5:0]	opRegM_Cr;
 reg[5:0]	opRegN_Cr;
+reg[5:0]	opRegO_Cr;
 
 reg[32:0]		opImm_imm9s;
 reg[32:0]		opImm_imm9u;
@@ -156,6 +157,7 @@ begin
 
 	opRegN_Cr	= {1'b1, opExN, istrWord[ 7: 4]};
 	opRegM_Cr	= {1'b1, opExM, istrWord[ 3: 0]};
+	opRegO_Cr	= {1'b1, opExI, istrWord[23:20]};
 
 	opIsNotFx	= (istrWord[15:13]!=3'b111);
 	
@@ -817,8 +819,8 @@ begin
 					8'h1B: begin
 						opNmid		= JX2_UCMD_POPX;
 						opFmid		= JX2_FMID_REG;
-						opIty		= JX2_ITY_UB;
-						opUCmdIx	= JX2_UCIX_PUSH_GR;
+						opIty		= JX2_ITY_NB;
+						opUCmdIx	= JX2_UCIX_PUSH_CR;
 					end
 
 `ifndef def_true
@@ -1586,6 +1588,12 @@ begin
 					opRegM	= opRegO_Dfl;
 					opRegO	= JX2_GR_ZZR;
 					opRegN	= opRegO_Dfl;
+				end
+
+				JX2_ITY_NB: begin
+					opRegM	= opRegO_Cr;
+					opRegO	= JX2_GR_ZZR;
+					opRegN	= opRegO_Cr;
 				end
 
 				default: begin

@@ -2,9 +2,9 @@ int BGBCC_JX2_CheckOps32GetRegs(
 	BGBCC_JX2_Context *sctx,
 	int opw1, int opw2,
 	byte *rrs, byte *rrt, byte *rrn,
-	byte *rspr, byte *rspw)
+	byte *rspr, byte *rspw, int *rspfl)
 {
-	byte rs, rt, rn, spr, spw;
+	byte rs, rt, rn, spr, spw, spfl;
 	
 	if((opw1&0xE000)!=0xE000)
 		return(-1);
@@ -15,6 +15,7 @@ int BGBCC_JX2_CheckOps32GetRegs(
 	
 	spr=BGBCC_SH_REG_ZZR;
 	spw=BGBCC_SH_REG_ZZR;
+	spfl=0;
 
 //	return(-1);
 	
@@ -28,6 +29,8 @@ int BGBCC_JX2_CheckOps32GetRegs(
 
 		if((opw2&0xF008)==0x1008)
 		{
+			rt=rn;
+
 //			return(-1);
 
 			if((opw2&0xF00F)==0x1009)
@@ -72,6 +75,7 @@ int BGBCC_JX2_CheckOps32GetRegs(
 			*rrn=rn;
 			*rspr=spr;
 			*rspw=spw;
+			*rspfl=spfl;
 			return(1);
 		}
 
@@ -103,6 +107,7 @@ int BGBCC_JX2_CheckOps32GetRegs(
 			*rrn=rt;
 			*rspr=spr;
 			*rspw=spw;
+			*rspfl=spfl;
 			return(1);
 		}
 
@@ -125,6 +130,8 @@ int BGBCC_JX2_CheckOps32GetRegs(
 			if((opw2&0xF808)==0x0000)
 				return(-1);
 		
+			spfl|=1;
+
 //			return(-1);
 
 			if(rs==0)
@@ -152,6 +159,7 @@ int BGBCC_JX2_CheckOps32GetRegs(
 		*rrn=rn;
 		*rspr=spr;
 		*rspw=spw;
+		*rspfl=spfl;
 		return(1);
 	}
 
@@ -163,6 +171,8 @@ int BGBCC_JX2_CheckOps32GetRegs(
 		{
 			return(-1);
 		}
+
+		spfl|=1;
 
 //		return(-1);
 
@@ -176,6 +186,7 @@ int BGBCC_JX2_CheckOps32GetRegs(
 		*rrn=rn;
 		*rspr=spr;
 		*rspw=spw;
+		*rspfl=spfl;
 		return(1);
 	}
 
@@ -198,6 +209,7 @@ int BGBCC_JX2_CheckOps32GetRegs(
 		*rrn=rn;
 		*rspr=spr;
 		*rspw=spw;
+		*rspfl=spfl;
 		return(1);
 	}
 
@@ -219,6 +231,7 @@ int BGBCC_JX2_CheckOps32GetRegs(
 		*rrn=rn;
 		*rspr=spr;
 		*rspw=spw;
+		*rspfl=spfl;
 		return(1);
 	}
 
@@ -232,6 +245,7 @@ int BGBCC_JX2_CheckOps32GetRegs(
 		*rrn=rn;
 		*rspr=spr;
 		*rspw=spw;
+		*rspfl=spfl;
 		return(1);
 	}
 
@@ -265,6 +279,7 @@ int BGBCC_JX2_CheckOps32SequenceOnlyB(
 {
 	byte rs1, rt1, rn1, rspr1, rspw1;
 	byte rs2, rt2, rn2, rspr2, rspw2;
+	int rspfl1, rspfl2;
 	int ret1, ret2;
 
 	if((opw1&0xFF00)==0xF400)
@@ -276,9 +291,9 @@ int BGBCC_JX2_CheckOps32SequenceOnlyB(
 	}
 
 	ret1=BGBCC_JX2_CheckOps32GetRegs(sctx, opw1, opw2,
-		&rs1, &rt1, &rn1, &rspr1, &rspw1);
+		&rs1, &rt1, &rn1, &rspr1, &rspw1, &rspfl1);
 	ret2=BGBCC_JX2_CheckOps32GetRegs(sctx, opw3, opw4,
-		&rs2, &rt2, &rn2, &rspr2, &rspw2);
+		&rs2, &rt2, &rn2, &rspr2, &rspw2, &rspfl2);
 
 	if(ret1<0)
 		return(ret1);
@@ -288,6 +303,9 @@ int BGBCC_JX2_CheckOps32SequenceOnlyB(
 	if(!ret1)
 		return(1);
 	if(!ret2)
+		return(1);
+		
+	if((rspfl1&1) && (rspfl2&1))
 		return(1);
 	
 	if(rn1!=BGBCC_SH_REG_ZZR)
@@ -419,6 +437,9 @@ int BGBCC_JX2_CheckOps32ValidWexSuffixFl(
 
 	if((opw1&0xFF00)==0xF000)
 	{
+		if((opw2&0xF000)>=0xC000)
+			return(0);
+
 //		if((sctx->use_wexmd==1) || (fl&1))
 		if(1)
 		{
@@ -426,6 +447,16 @@ int BGBCC_JX2_CheckOps32ValidWexSuffixFl(
 //			if((opw2&0xF808)==0x0000)
 				return(0);
 		}
+
+		if((opw2&0xF00F)==0x3000)
+		{
+			if((opw1&0x00F0)==0x0000)
+			{
+				return(0);
+			}
+			return(0);
+		}
+
 		return(1);
 	}
 
@@ -464,6 +495,8 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix(
 
 	if((opw1&0xFF00)==0xF000)
 	{
+//		return(0);
+
 		ret=0;
 		switch((opw2>>12)&15)
 		{
@@ -542,6 +575,8 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix(
 
 	if((opw1&0xFF00)==0xF200)
 	{
+//		return(0);
+
 		ret=0;
 		switch((opw2>>12)&15)
 		{
@@ -578,6 +613,25 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix(
 
 	if((opw1&0xFF00)==0xF800)
 	{
+//		if((opw1&0xE)==0x0)
+//			return(0);
+//		if((opw1&0xF)==0xF)
+//			return(0);
+	
+		ret=0;
+		switch((opw1>>4)&15)
+		{
+		case 0:		case 1:		ret=1;	break;
+		case 2:		case 3:		ret=1;	break;
+		case 4:		case 5:		ret=1;	break;
+		case 6:		case 7:		ret=1;	break;
+		default:
+			break;
+		}
+		return(ret);
+
+//		return(0);
+
 		return(1);
 	}
 	return(0);

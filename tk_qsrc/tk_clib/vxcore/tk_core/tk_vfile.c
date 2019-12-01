@@ -196,12 +196,142 @@ int tk_fmount(char *src, char *dst, char *fsty, char *parm)
 
 int tk_unlink(char *name)
 {
+	TK_MOUNT *mnt;
+	TK_FILE *fd;
+	char *s1;
+	int i;
+
+	tk_vfile_init();
+
+	if((name[0]=='.') && (name[1]=='/'))
+		name+=2;
+	if(*name=='/')
+		name++;
+
+//	fd=tk_ird_fopen(NULL, name, mode);
+//	if(fd)return(fd);
+
+	mnt=tk_vf_mount;
+	while(mnt)
+	{
+		s1=name;
+		if(mnt->src)
+		{
+			if(strncmp(mnt->src, name, mnt->szSrc))
+			{
+				mnt=mnt->next;
+				continue;
+			}
+			s1+=mnt->szSrc;
+		}
+	
+//		fd=mnt->vt->fopen(mnt, name, mode);
+		if(mnt->vt->unlink)
+		{
+			i=mnt->vt->unlink(mnt, s1);
+			if(i>=0)
+				return(i);
+		}
+		mnt=mnt->next;
+	}
+
+	tk_printf("tk_unlink: Fail %s\n", name);
 	return(-1);
 }
 
 int tk_rename(char *oldname, char *newname)
 {
+	TK_MOUNT *mnt;
+	TK_FILE *fd;
+	char *s1, *t1;
+	int i;
+
+	tk_vfile_init();
+
+	if((oldname[0]=='.') && (oldname[1]=='/'))
+		oldname+=2;
+	if(*oldname=='/')
+		oldname++;
+
+	if((newname[0]=='.') && (newname[1]=='/'))
+		newname+=2;
+	if(*oldname=='/')
+		newname++;
+
+//	fd=tk_ird_fopen(NULL, name, mode);
+//	if(fd)return(fd);
+
+	mnt=tk_vf_mount;
+	while(mnt)
+	{
+		s1=oldname;
+		t1=newname;
+		if(mnt->src)
+		{
+			if(strncmp(mnt->src, oldname, mnt->szSrc) ||
+				strncmp(mnt->src, newname, mnt->szSrc))
+			{
+				mnt=mnt->next;
+				continue;
+			}
+			s1+=mnt->szSrc;
+			t1+=mnt->szSrc;
+		}
+	
+		if(mnt->vt->rename)
+		{
+	//		fd=mnt->vt->fopen(mnt, name, mode);
+			i=mnt->vt->rename(mnt, s1, t1);
+			if(i>=0)
+				return(i);
+		}
+		mnt=mnt->next;
+	}
+
+	tk_printf("tk_rename: Fail %s %s\n", oldname, newname);
 	return(-1);
+}
+
+int tk_fcopy(char *oldname, char *newname)
+{
+	char tb[1024];
+	TK_FILE *oldfd, *newfd;
+	int n;
+	
+	oldfd=tk_fopen(oldname, "rb");
+
+	if(!oldfd)
+	{
+		tk_printf("fail open %s\n", oldname);
+		return(-1);
+	}
+
+	newfd=tk_fopen(newname, "wb");
+	
+	if(!newfd)
+	{
+		tk_printf("fail open %s\n", newname);
+		tk_fclose(oldfd);
+		return(-1);
+	}
+
+//	while(!tk_feof(oldfd))
+	while(1)
+	{
+		n=tk_fread(tb, 1, 1024, oldfd);
+		if(n<1024)
+		{
+			if(n<=0)
+				break;
+			tk_fwrite(tb, 1, n, newfd);
+			break;
+		}
+		tk_fwrite(tb, 1, 1024, newfd);
+	}
+
+	tk_fclose(oldfd);
+	tk_fclose(newfd);
+	return(1);
 }
 
 int tk_fstat(char *name, TK_FSTAT *st)
@@ -243,10 +373,13 @@ TK_FILE *tk_fopen(char *name, char *mode)
 			s1+=mnt->szSrc;
 		}
 	
-//		fd=mnt->vt->fopen(mnt, name, mode);
-		fd=mnt->vt->fopen(mnt, s1, mode);
-		if(fd)
-			return(fd);
+		if(mnt->vt->fopen)
+		{
+	//		fd=mnt->vt->fopen(mnt, name, mode);
+			fd=mnt->vt->fopen(mnt, s1, mode);
+			if(fd)
+				return(fd);
+		}
 		mnt=mnt->next;
 	}
 
@@ -435,10 +568,13 @@ TK_DIR *tk_opendir(char *name)
 			s1+=mnt->szSrc;
 		}
 	
-//		fd=mnt->vt->opendir(mnt, name);
-		fd=mnt->vt->opendir(mnt, s1);
-		if(fd)
-			return(fd);
+		if(mnt->vt->opendir)
+		{
+	//		fd=mnt->vt->opendir(mnt, name);
+			fd=mnt->vt->opendir(mnt, s1);
+			if(fd)
+				return(fd);
+		}
 		mnt=mnt->next;
 	}
 

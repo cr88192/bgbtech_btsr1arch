@@ -1174,7 +1174,7 @@ void	VID_Update (vrect_t *rects)
 				pxb=*(u64 *)(ics16b+1*BASEWIDTH);
 				pxc=*(u64 *)(ics16b+2*BASEWIDTH);
 				pxd=*(u64 *)(ics16b+3*BASEWIDTH);
-#if 0
+#if 1
 				ict[0]=pxa;			ict[2]=pxb;
 				ict[4]=pxc;			ict[6]=pxd;
 				ict[1]=pxa>>32;		ict[3]=pxb>>32;

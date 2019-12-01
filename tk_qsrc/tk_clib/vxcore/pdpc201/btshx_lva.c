@@ -200,8 +200,8 @@ u64 __lva_conv_fromi32(s32 val)
 	tk_printf("__lva_conv_fromi32 A %X\n", val);
 	
 	v=((s64)val);
-	v&=0x3FFF_FFFF_FFFF_FFFFULL;
-	v|=0x4000_0000_0000_0000ULL;
+	v&=0x3FFFFFFFFFFFFFFFULL;
+	v|=0x4000000000000000ULL;
 
 	tk_printf("__lva_conv_fromi32 B %8X_%8X\n",
 		(int)(v>>32), (int)v);
@@ -216,8 +216,8 @@ u64 __lva_conv_fromi64(s64 val)
 	tk_printf("__lva_conv_fromi64 %X_%X\n", (int)(val>>32), (int)val);
 	
 	v=((s64)val);
-	v&=0x3FFF_FFFF_FFFF_FFFFULL;
-	v|=0x4000_0000_0000_0000ULL;
+	v&=0x3FFFFFFFFFFFFFFFULL;
+	v|=0x4000000000000000ULL;
 
 	tk_printf("__lva_conv_fromi64 B %8X_%8X\n",
 		(int)(v>>32), (int)v);
@@ -235,7 +235,7 @@ u64 __lva_conv_fromf32(float val)
 	f=val;
 	v=(*(u64 *)(&f));
 	v=v>>2;
-	v|=0x8000_0000_0000_0000ULL;
+	v|=0x8000000000000000ULL;
 
 	tk_printf("__lva_conv_fromf32 B %8X_%8X\n",
 		(int)(v>>32), (int)v);
@@ -259,7 +259,7 @@ u64 __lva_conv_fromf64(double val)
 		(int)(v>>32), (int)v);
 
 	v=v>>2;
-	v|=0x8000_0000_0000_0000ULL;
+	v|=0x8000000000000000ULL;
 
 	tk_printf("__lva_conv_fromf64 C %8X_%8X\n",
 		(int)(v>>32), (int)v);
