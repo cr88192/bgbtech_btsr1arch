@@ -1,11 +1,16 @@
 # bgbtech_btsr1arch
-BtSR1 (and BJX2) ISA / CPU Architecture
+BtSR1 and BJX2 ISA / CPU Architecture
 
 BtSR1, or BSR1, is a CPU architecture primarily intended for soft-core microcontroller applications.
 The initial use case is intended to be loosely similar to that of a 32-bit analog of an MSP430, but with the option to
 have higher performance and implement some peripherals directly in Verilog.
 
-BJX2 is a larger and more advanced ISA. It is a 64-bit ISA with 32 GPRs. It will be higher performance, but requires a larger FPGA.
+BJX2 is a larger and more advanced ISA based on a similar design. It is a 64-bit ISA with 32 GPRs. It will be higher performance, but requires a larger FPGA.
+
+For these, I am generally targeting FPGA's in the 25k to 100k LUT range (currently mostly Spartan-7 and Artix-7).
+
+
+Side note, this is a personal / hobby project of Brendan G Bohannon ( cr88192@gmail.com ).
 
 
 Also intended to be a free/open arch which (if anyone actually cares) may be modified/extended as appropriate for various
@@ -19,6 +24,8 @@ As of 2018-05-20, This is still at a fairly early stage of development and is no
 initial results look promising, and I am making better progress than I was with BJX1 (if anything, because BSR1 is a bit simpler
 from an implementation perspective, and also represents a somewhat lower target).
 
+As of 2019-12-01, I have reached a stage where I can more-or-less run Doom and Quake on the BJX2 Verilog implementation on an FPGA. Work continues on this front.
+
 
 General design summary (BtSR1):
 * Instruction set with a fixed 16-bit instruction format.
@@ -30,7 +37,7 @@ General design summary (BtSR1):
 
 General design summary of BJX2:
 * Instruction set with variable length 16/32/48 bit instructions.
-* Little endian, supports misaligned.
+* Little endian, supports misaligned load/store.
 * Uses 32x 64-bit GPRs (27 usable as GPRs).
 * Larger feature-set than BSR1, but is otherwise a similar design.
 * Goal is to be easier to implement in hardware than my older (SH based) BJX1 designs.
@@ -50,10 +57,11 @@ vmbase: Holds an emulator for the BSR1 ISA.
 jx2vm: Emulator for the BJX2 ISA.
 
 vlcore: Verilog implementation of the BSR1 processor.
+* Fairly limited, BSR1 was meant as a small microcontroller ISA.
 
 jx2vlcore: Verilog attempts at a BJX2 processor.
-* jx2vlcore2: Partial rework of the former.
-* jx2vlcore3: Another attempt.
+* jx2vlcore2: Partial rework of the former (old).
+* jx2vlcore3: Another attempt (current).
 
 tk_qsrc: Source for Quake, Doom, and C library.
 * A lot of the code here was not written by me; check licensing more carefully in here.
