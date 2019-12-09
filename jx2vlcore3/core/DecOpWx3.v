@@ -233,7 +233,8 @@ assign	opIsWexJumboB =
 		(istrWord[63:62] == 2'b11       ) ;
 
 assign	opIsWexJumbo96 =
-	opIsWexJumboA && istrWord[42];
+//	opIsWexJumboA && istrWord[42];
+	opIsWexJumboA && opIsWexJumboB;
 
 assign	tOpJBitsA		= 0;
 assign	tOpJBitsB		= { istrWord [7: 0], istrWord[29:16] };
@@ -252,6 +253,18 @@ assign	tOpJBitsC		= 0;
 
 always @*
 begin
+
+	opRegAM	= JX2_GR_ZZR;
+	opRegAO	= JX2_GR_ZZR;
+	opRegAN	= JX2_GR_ZZR;
+
+	opRegBM	= JX2_GR_ZZR;
+	opRegBO	= JX2_GR_ZZR;
+	opRegBN	= JX2_GR_ZZR;
+
+	opRegCM	= JX2_GR_ZZR;
+	opRegCO	= JX2_GR_ZZR;
+	opRegCN	= JX2_GR_ZZR;
 
 	opIsDwA = 0;
 	opIsDwB = 0;
@@ -414,6 +427,15 @@ begin
 
 			opUCmdA	= { JX2_IXC_AL, JX2_UCMD_MOV_IR };
 			opUIxtA	= { JX2_IXC_AL, JX2_UCIX_LDI_JLDIX };
+		end
+		else
+		begin
+			opRegAN	= decOpFC_idRegN;
+			opRegAM	= decOpFC_idRegM;
+			opRegAO	= decOpFC_idRegO;
+			opImmA	= decOpFC_idImm;
+			opUCmdA	= decOpFC_idUCmd;
+			opUIxtA	= decOpFC_idUIxt;
 		end
 
 		opRegBM	= JX2_GR_ZZR;

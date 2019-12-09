@@ -66,7 +66,8 @@ int tk_cmd2idx(char *s)
 	return(-1);
 }
 
-void __tk_farcall(void *fptr, void *gbr, void *newstack);
+void __tk_farcall(void *fptr, void *gbr, void *newstack, void *tbr);
+int TK_DestroyTaskInfo(void *tkptr);
 
 int tk_tryload(char *img, char **args)
 {
@@ -74,8 +75,10 @@ int tk_tryload(char *img, char **args)
 	TK_FILE *fd;
 	char *cs, *ct;
 //	u64 bootgbr;
+	TKPE_TaskInfo *task;
 	void *bootgbr;
 	byte *boot_newspb, *boot_newsp;
+	void *boottbr;
 	int (*bootptr)();
 	int sig_is_pe;
 	int rv;
@@ -116,10 +119,17 @@ int tk_tryload(char *img, char **args)
 		{
 			boot_newspb=TKMM_PageAlloc(1<<18);
 			boot_newsp=boot_newspb+((1<<18)-1024);
+
+			boottbr=TK_AllocNewTask();
+			task=boottbr;
+			task->bootptr=bootptr;
+			task->basegbr=bootgbr;
+			task->boottbr=boottbr;
 		
 			rv=tk_sysc_exitpt();
 			if(rv)
 			{
+				TK_DestroyTaskInfo(task);
 				tk_con_chkreset();
 //				__debugbreak();
 				return(rv);
@@ -127,10 +137,11 @@ int tk_tryload(char *img, char **args)
 		
 //			__arch_gbr=bootgbr;
 //			bootptr();
-			__tk_farcall(bootptr, bootgbr, boot_newsp);
+			__tk_farcall(bootptr, bootgbr, boot_newsp, boottbr);
 		}
 	}
 	
+//	TK_DestroyTaskInfo(NULL);
 	return(-1);
 }
 
@@ -255,6 +266,8 @@ void tk_normalize_path(char *dst, char *src)
 
 int tk_shell_chksane()
 {
+	char tb[64];
+
 	int *pi, *pj;
 	int i, j, k, l;
 	
@@ -270,6 +283,43 @@ int tk_shell_chksane()
 		__debugbreak();
 	if(l!=6)
 		__debugbreak();
+		
+	strcpy(tb, "0123456789ABCDEF");
+	*pi=1;
+	memcpy(tb, "GHIJKLMN", *pi);
+	if(memcmp(tb, "G1234567", 8))
+		__debugbreak();
+	*pi=3;
+	memcpy(tb, "GHIJKLMN", *pi);
+	if(memcmp(tb, "GHI34567", 8))
+		__debugbreak();
+	*pi=5;
+	memcpy(tb, "GHIJKLMN", *pi);
+	if(memcmp(tb, "GHIJK567", 8))
+		__debugbreak();
+	*pi=7;
+	memcpy(tb, "GHIJKLMN", *pi);
+	if(memcmp(tb, "GHIJKLM7", 8))
+		__debugbreak();
+
+	strcpy(tb, "0123456789ABCDEF");
+	*pi=1;
+	memset(tb, ' ', *pi);
+	if(memcmp(tb, " 1234567", 8))
+		__debugbreak();
+	*pi=3;
+	memset(tb, ' ', *pi);
+	if(memcmp(tb, "   34567", 8))
+		__debugbreak();
+	*pi=5;
+	memset(tb, ' ', *pi);
+	if(memcmp(tb, "     567", 8))
+		__debugbreak();
+	*pi=7;
+	memset(tb, ' ', *pi);
+	if(memcmp(tb, "       7", 8))
+		__debugbreak();
+
 }
 
 int main(int argc, char *argv[])
@@ -287,7 +337,7 @@ int main(int argc, char *argv[])
 
 	while(1)
 	{
-		tk_con_chkreset();
+//		tk_con_chkreset();
 		tk_puts(tb_cwd);
 		tk_puts("$ ");
 		tk_gets(tbuf);

@@ -91,7 +91,9 @@ void tk_gets(char *buf)
 {
 	char *t;
 	int i;
-	
+
+	tk_puts("\x1f\b");
+
 	t=buf;
 	while(1)
 	{
@@ -114,18 +116,24 @@ void tk_gets(char *buf)
 		{
 			if(t>buf)
 			{
-				tk_puts("\b \b");
+//				tk_puts("\b \b");
+				tk_puts("\b\x1f \b\b");
 				t--;
 			}
 			*t=0;
 			continue;
 		}
-		if(i=='\r')
-			{ tk_putc('\n'); break; }
-		if(i=='\n')
-			{ tk_putc('\n'); break; }
+//		if(i=='\r')
+//			{ tk_putc('\n'); break; }
+//		if(i=='\n')
+//			{ tk_putc('\n'); break; }
+
+		if((i=='\r') || (i=='\n'))
+			{ tk_puts(" \b\n"); break; }
+
 		tk_putc(i);
 		*t++=i;
+		tk_puts("\x1f\b");
 	}
 	*t=0;
 }

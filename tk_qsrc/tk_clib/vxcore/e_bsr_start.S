@@ -40,11 +40,16 @@ _start:
 	mov		STACK_BASE_USR, r5
 	mov		STACK_BASE_ISR, r6
 
+	mov		sr, r7
+	or 		#0x00C0, r7
+
 	mov		isr_table, r4
 	tst		r2, r2
 	mov?t	r4, vbr
 	mov?t	r5, sp
 	mov?t	r6, ssp
+	mov?t	r7, sr
+	
 
 //	break?f
 
@@ -508,10 +513,11 @@ ashl_list:
 	rts
 .endif
 
-//void __tk_farcall(void *fptr, void *gbr, void *newstack)
+//void __tk_farcall(void *fptr, void *gbr, void *newstack, void *tbr)
 .global X(__tk_farcall)
 X(__tk_farcall):
 	invic	#-1
+	mov		r6, tbr
 	mov		r5, gbr
 	mov		r6, sp
 	jmp		r4
@@ -1015,7 +1021,8 @@ X(__fpu_fdiv_s):
 .global X(__fpu_frcp_sf)
 X(__fpu_frcp_sf):
 	mov #0, r3
-	fcmp/gt r4, r3
+//	fcmp/gt r4, r3
+	cmpqgt #0, r4
 
 #if 0
 	bf .L0
@@ -1029,7 +1036,8 @@ X(__fpu_frcp_sf):
 #endif
 
 	nop
-	fneg?t r4
+//	fneg?t r4
+	fneg?f r4
 
 	.L0:
 	mov #0x7FF, r5		| mov #0x3FF, r6
@@ -1043,7 +1051,8 @@ X(__fpu_frcp_sf):
 	fsub r3, r6, r7
 	fmul r7, r2
 
-	fneg?t r2
+//	fneg?t r2
+	fneg?f r2
 	
 	rtsu
 

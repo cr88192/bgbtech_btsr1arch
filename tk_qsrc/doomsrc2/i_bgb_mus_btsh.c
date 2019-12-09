@@ -8,7 +8,7 @@
 
 // #include "bgbmid1/bgbmid.h"
 
-u32 *smus_regs;
+volatile u32 *smus_regs;
 
 byte *i_smus_css;		//start position (active song)
 byte *i_smus_cse;		//end position (active song)
@@ -100,7 +100,8 @@ int SMus_Init()
 	irq_addTimerIrq(smus_timer_irq);
 
 //	smus_regs=(u32 *)0xA0081800;
-	smus_regs=(u32 *)0xF0081800;
+//	smus_regs=(u32 *)0xF0081800;
+	smus_regs=(u32 *)0xF008C000;
 	
 	for(i=0; i<128; i++)
 	{
@@ -141,10 +142,19 @@ int SMus_SilenceAll()
 
 	for(i=0; i<16; i++)
 	{
-		smus_regs[i*4+0]=0;
-		smus_regs[i*4+1]=0;
-		smus_regs[i*4+2]=0;
-		smus_regs[i*4+3]=0;
+//		smus_regs[i*4+0]=0;
+//		smus_regs[i*4+1]=0;
+//		smus_regs[i*4+2]=0;
+//		smus_regs[i*4+3]=0;
+
+		smus_regs[i*8+0]=0;
+		smus_regs[i*8+1]=0;
+		smus_regs[i*8+2]=0;
+		smus_regs[i*8+3]=0;
+		smus_regs[i*8+4]=0;
+		smus_regs[i*8+5]=0;
+		smus_regs[i*8+6]=0;
+		smus_regs[i*8+7]=0;
 	}
 
 	for(i=0; i<16; i++)
@@ -171,15 +181,18 @@ int SMus_NoteOff(int ch, int d0, int d1)
 		return(0);
 
 	smus_chanvn[ch]=0xFF;
+
+	vn1=(cvn&15)*2+0;
+	vn2=(cvn&15)*2+1;
 	
 	if(cvn&16)
 	{
-		vn1=(cvn&7)|0;
-		vn2=(cvn&7)|8;
+//		vn1=(cvn&7)|0;
+//		vn2=(cvn&7)|8;
 	}else
 	{
-		vn1=cvn&15;
-		vn2=vn1;
+//		vn1=cvn&15;
+//		vn2=vn1;
 	}
 
 
@@ -209,9 +222,11 @@ int SMus_FindFreeVoice(int fl)
 	{
 //		for(i=0; i<6; i++)
 //		for(i=0; i<5; i++)
-		for(i=0; i<8; i++)
+//		for(i=0; i<8; i++)
+		for(i=0; i<16; i++)
 		{
-			if(!smus_vnflg[i] && !smus_vnflg[8+i])
+//			if(!smus_vnflg[i] && !smus_vnflg[8+i])
+			if(!smus_vnflg[i])
 			{
 				return(16|i);
 			}
@@ -228,7 +243,8 @@ int SMus_FindFreeVoice(int fl)
 
 //	for(i=0; i<6; i++)
 //	for(i=0; i<5; i++)
-	for(i=0; i<8; i++)
+//	for(i=0; i<8; i++)
+	for(i=0; i<16; i++)
 	{
 		if(!smus_vnflg[i])
 		{
@@ -244,6 +260,7 @@ int SMus_FindFreeVoice(int fl)
 	}
 #endif
 
+#if 0
 //	for(i=8; i<14; i++)
 	for(i=8; i<16; i++)
 //	for(i=8; i<13; i++)
@@ -253,6 +270,7 @@ int SMus_FindFreeVoice(int fl)
 			return(i);
 		}
 	}
+#endif
 
 #if 0
 	i=15;
@@ -325,17 +343,19 @@ int SMus_NoteOn(int ch, int d0, int d1)
 	}
 
 	smus_channt[ch]=note;
+	vn1=(fvn&15)*2+0;
+	vn2=(fvn&15)*2+1;
 
 	if(fvn&16)
 	{
 		smus_chanvn[ch]=fvn;
-		vn1=(fvn&7);
-		vn2=(fvn&7)|8;
+//		vn1=(fvn&7);
+//		vn2=(fvn&7)|8;
 	}else
 	{
 		smus_chanvn[ch]=fvn;
-		vn1=fvn&7;
-		vn2=vn1;
+//		vn1=fvn&7;
+//		vn2=vn1;
 	}
 	
 //	if(smus_vnflg[vn1]&3)

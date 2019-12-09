@@ -52,11 +52,11 @@ assign		tMmioPs2CSel = tMmioLowCSel && (mmioAddr[15:4]==12'hE04);
 reg				mmioInOE;
 reg				mmioInWR;
 
-reg[7:0]		scanBuf[7:0];
-reg[2:0]		scanSpos;
-reg[2:0]		scanEpos;
-reg[2:0]		scanNxtSpos;
-reg[2:0]		scanNxtEpos;
+reg[7:0]		scanBuf[15:0];
+reg[3:0]		scanSpos;
+reg[3:0]		scanEpos;
+reg[3:0]		scanNxtSpos;
+reg[3:0]		scanNxtEpos;
 reg				scanSpAdv;
 reg				scanNxtSpAdv;
 reg				scanEpAdv;
@@ -139,7 +139,8 @@ begin
 			ps2ScanAdv		= ps2Win[9:2];
 //			ps2ScanAdv		= ps2Win[8:1];
 			scanNxtEpos		= scanEpos + 1;
-			scanEpAdv		= 1;
+//			scanEpAdv		= 1;
+			scanEpAdv		= (scanNxtEpos != scanSpos);
 			ps2NxtWinCnt	= 0;
 			
 			$display("ModPs2Kb: Scan=%X Cnt=%d", ps2ScanAdv, ps2WinCnt);
@@ -158,7 +159,8 @@ begin
 	begin
 //		tMmioOutData	= { UV24_00, scanBuf[scanSpos] };
 		tMmioOutData	= { UV24_00, ps2ScanCur };
-		scanNxtSpAdv	= 1;
+//		scanNxtSpAdv	= 1;
+		scanNxtSpAdv	= (scanSpos != scanEpos);
 		tMmioOK			= UMEM_OK_OK;
 	end
 

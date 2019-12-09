@@ -169,7 +169,7 @@ void Sys_Error (char *error, ...)
 //	char tb[1024];
 	va_list         argptr;
 
-	__debugbreak();
+//	__debugbreak();
 
 	tk_printf("Sys_Error: ");   
 	va_start(argptr, error);

@@ -40,7 +40,9 @@ SRCS_CLIB = \
 	\
 	tk_core/tk_clib.c \
 	tk_core/tk_divi.c \
+	tk_core/tk_env.c \
 	tk_core/tk_fat.c \
+	tk_core/tk_irq.c \
 	tk_core/tk_mmllist.c \
 	tk_core/tk_mmpage.c \
 	tk_core/tk_msgbuf.c \

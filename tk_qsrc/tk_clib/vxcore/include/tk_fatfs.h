@@ -1,5 +1,45 @@
 #define TKFAT_SFL_DIRTY		0x00000200
 
+#define TKFAT_ATTR_LFNENT		0x0F
+#define TKFAT_ATTR_READONLY		0x01
+#define TKFAT_ATTR_HIDDEN		0x02
+#define TKFAT_ATTR_SYSTEM		0x04
+#define TKFAT_ATTR_VOLLABEL		0x08
+#define TKFAT_ATTR_DIRECTORY	0x10
+#define TKFAT_ATTR_ARCHIVE		0x20
+#define TKFAT_ATTR_DEVICE		0x40
+#define TKFAT_ATTR_RESERVED		0x80
+
+#define TKFAT_EMETA_BASE		0x01
+#define TKFAT_EMETA_LINK		0x04
+#define TKFAT_EMETA_LINKEXT		0x05
+
+#define TKFAT_EMODE_IFMT		0x00017000
+#define TKFAT_EMODE_SOCK		0x00014000
+#define TKFAT_EMODE_LINK		0x00012000
+#define TKFAT_EMODE_BLOCK		0x00006000
+#define TKFAT_EMODE_REG			0x00010000
+#define TKFAT_EMODE_DIR			0x00004000
+#define TKFAT_EMODE_CHAR		0x00002000
+#define TKFAT_EMODE_FIFO		0x00001000
+
+#define TKFAT_EMODE_SETUID		0x00000800
+#define TKFAT_EMODE_SETGID		0x00000400
+#define TKFAT_EMODE_STICKY		0x00000200
+
+#define TKFAT_EMODE_ACC_USR		0x000001C0
+#define TKFAT_EMODE_ACC_GRP		0x00000038
+#define TKFAT_EMODE_ACC_OTH		0x00000007
+#define TKFAT_EMODE_ACC_RU		0x00000100
+#define TKFAT_EMODE_ACC_WU		0x00000080
+#define TKFAT_EMODE_ACC_XU		0x00000040
+#define TKFAT_EMODE_ACC_RG		0x00000020
+#define TKFAT_EMODE_ACC_WG		0x00000010
+#define TKFAT_EMODE_ACC_XG		0x00000008
+#define TKFAT_EMODE_ACC_RO		0x00000004
+#define TKFAT_EMODE_ACC_WO		0x00000002
+#define TKFAT_EMODE_ACC_XO		0x00000001
+
 typedef struct TKFAT_MBR_Entry_s TKFAT_MBR_Entry;
 typedef struct TKFAT_MBR_s TKFAT_MBR;
 typedef struct TKFAT_FAT16_Boot_s TKFAT_FAT16_Boot;
@@ -9,6 +49,8 @@ typedef struct TKFAT_FAT_DirLfnEnt_s TKFAT_FAT_DirLfnEnt;
 
 typedef struct TKFAT_FAT_DirEntExt_s TKFAT_FAT_DirEntExt;
 typedef struct TKFAT_FAT_DirInfo_s TKFAT_FAT_DirInfo;
+
+typedef struct TKFAT_FAT_MetaEnt_s TKFAT_FAT_MetaEnt;
 
 struct TKFAT_MBR_Entry_s {
 	byte flag;				//0x80|=active
@@ -109,6 +151,16 @@ byte cluster_lo[2];				//0x1A
 byte name3[4];					//0x1C
 };
 
+
+struct TKFAT_FAT_MetaEnt_s {
+byte name[8];		//8.3 Name, Base Entry
+byte ext[3];		//8.3 Ext, Base Entry
+byte etype;			//Entry Type
+byte eseq;			//Entry Sequence or Count
+byte eflag;			//Entry Flag
+byte data[50];		//Payload Data
+};
+
 struct TKFAT_Volume_s {
 TKFAT_FAT32_Boot boot;
 };
@@ -203,12 +255,20 @@ int walk_lumax;
 
 struct TKFAT_FAT_DirEntExt_s {
 TKFAT_FAT_DirEnt deb;	//basic dirent
+TKFAT_FAT_MetaEnt meb;	//metadata entry
 TKFAT_ImageInfo *img;
 int clid;				//cluster ID of parent directory
+int mclid;				//cluster ID of parent directory
 int idx;				//index within directory
+int midx;				//index within metadata
 
 u32 de_clid;			//dirent cluster (cache)
 u32 de_size;
+u32 de_mclid;			//metadata cluster (cache)
+
+u16 me_uid;
+u16 me_gid;
+u32 me_mode;
 
 bool is_write;
 bool is_dirty;

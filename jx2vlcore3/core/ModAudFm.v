@@ -49,6 +49,7 @@ assign		tDevCSel = (tBusAddr[27:16] == 12'h008);
 // assign		tDevCSelCtr = (busAddr[15:12] == 4'hC);
 // assign		tDevCSelChn = (busAddr[15:10] == 6'b1100_00);
 assign		tDevCSelChn = (tBusAddr[15:10] == 6'b1100_00);
+// assign		tDevCSelChn = (tBusAddr[15:10] == 6'b0001_10);
 
 reg[31:0]	regCtr0A[15:0];
 reg[31:0]	regCtr1A[15:0];

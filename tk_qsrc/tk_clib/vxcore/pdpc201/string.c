@@ -485,6 +485,7 @@ __PDPCLIB_API__ void *memset(void *s, int c, size_t n)
 	v=c; v|=(v<<8); v|=(v<<16);
 	ct=s; cte=s+n;
 
+#if 1
 //	cte0=s+(n&(~15));
 //	while(ct<cte0)
 //	while((ct+16)<=cte)
@@ -497,13 +498,16 @@ __PDPCLIB_API__ void *memset(void *s, int c, size_t n)
 		((int *)ct)[3]=v;
 		ct+=16;
 	}
+#endif
 
+#if 1
 //	cte0=s+(n&(~3));
 //	while(ct<cte0)
 //	while((ct+4)<=cte)
 	cte0=cte-4;
 	while(ct<=cte0)
 		{ *(int *)ct=v; ct+=4; }
+#endif
 
 	while(ct<cte)
 		{ *ct++=c; }

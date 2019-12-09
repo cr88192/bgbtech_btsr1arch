@@ -177,6 +177,7 @@ begin
 		crRegTbr	<= UV32_00;
 
 		crRegSr		<= UV64_00;
+		crRegSr[30]	<= 1;
 
 `ifdef jx2_enable_mmu
 		crRegMmcr	<= UV64_00;

@@ -163,8 +163,9 @@ Z_Malloc
 void *Z_Malloc (int size)
 {
 	void	*buf;
-	
-Z_CheckHeap ();	// DEBUG
+
+	Z_CheckHeap ();	// DEBUG
+
 	buf = Z_TagMalloc (size, 1);
 	if (!buf)
 		Sys_Error ("Z_Malloc: failed on allocation of %i bytes",size);
@@ -186,8 +187,12 @@ void *Z_TagMalloc (int size, int tag)
 // of sufficient size
 //
 	size += sizeof(memblock_t);	// account for size of block header
+
 	size += 4;					// space for memory trash tester
 	size = (size + 7) & ~7;		// align to 8-byte boundary
+
+//	size += 8;					// space for memory trash tester
+//	size = (size + 15) & (~7);	// align to 8-byte boundary
 	
 	base = rover = mainzone->rover;
 	start = base->prev;
@@ -433,6 +438,7 @@ void *Hunk_AllocName (int size, char *name)
 		Sys_Error ("Hunk_Alloc: bad size: %i", size);
 		
 	size = sizeof(hunk_t) + ((size+15)&~15);
+//	size = sizeof(hunk_t) + ((size+31)&(~31));
 	
 	if (hunk_size - hunk_low_used - hunk_high_used < size)
 		Sys_Error ("Hunk_Alloc: failed on %i bytes",size);
@@ -984,7 +990,10 @@ void Memory_Init (void *buf, int size)
 		else
 			Sys_Error ("Memory_Init: you must specify a size in KB after -zone");
 	}
-	mainzone = Hunk_AllocName (zonesize, "zone" );
+
+//	mainzone = Hunk_AllocName (zonesize, "zone" );
+	mainzone = malloc (zonesize);		//BGB: debug
+
 	Z_ClearZone (mainzone, zonesize);
 }
 

@@ -481,6 +481,9 @@ u32 jx2i_gfxcon_cbfrnum;
 u32 jx2i_gfxcon_cblfrnum;
 int jx2i_gfxcon_cbffms;
 
+int jx2i_gfxcon_curms;
+int jx2i_gfxcon_lastms;
+
 byte jx2i_gfxcon_ncx;
 byte jx2i_gfxcon_ncy;
 
@@ -1048,7 +1051,18 @@ int JX2I_GfxCon_UpdateCell(int cx, int cy)
 	pixbits=(((u64)c3)<<32)|c2;
 
 	if(((c0>>30)&3)==0)
-	{		
+	{
+		if(((c0>>14)&3)==1)
+		{
+			if(jx2i_gfxcon_curms&256)
+				{ fontbits=0; }
+		}
+		if(((c0>>14)&3)==2)
+		{
+			if(jx2i_gfxcon_curms&512)
+				{ fontbits=0; }
+		}
+	
 		for(py=0; py<8; py++)
 			for(px=0; px<8; px++)
 		{
@@ -1769,6 +1783,10 @@ int JX2I_GfxCon_Update()
 {
 	int ncx, ncy;
 	int x, y;
+
+	jx2i_gfxcon_curms=FRGL_TimeMS();
+	if((jx2i_gfxcon_curms^jx2i_gfxcon_lastms)&256)
+		jx2i_gfxcon_dirty=1;
 
 	if(!jx2i_gfxcon_dirty)
 		return(0);

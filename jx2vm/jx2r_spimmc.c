@@ -307,7 +307,7 @@ int btesh2_spimmc_XrByte(BJX2_Context *cpu, int val)
 	
 			spimmc_imsgirov=(ib+6)&4095;
 			
-			printf("Read Single %08X\n", lba);
+//			printf("Write Single %08X\n", lba);
 
 			btesh2_spimmc_SendByte(cpu, 0xFF);
 			btesh2_spimmc_SendByte(cpu, 0xFF);

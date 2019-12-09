@@ -1282,35 +1282,3 @@ void tk_sprintf(char *dst, char *str, ...)
 	tk_vsprintf(dst, str, lst);
 	va_end(lst);
 }
-
-static int (*irq_timer[16])();
-static int n_irq_timer=0;
-
-int irq_addTimerIrq(void *fcn)
-{
-	irq_timer[n_irq_timer++]=fcn;
-}
-
-extern int __arch_exsr;
-
-// int __isr_interrupt(int irq)
-#ifdef __BGBCC__
-__interrupt
-#endif
-void __isr_interrupt(void)
-{
-	int i, irq;
-
-//	irq=__get_exsr();
-	irq=__arch_exsr;
-
-	if(((u16)irq)==0xC001)
-	{
-		for(i=0; i<n_irq_timer; i++)
-			irq_timer[i]();
-		return;
-	}
-
-	tk_printf("IRQ %X?\n", irq);
-//	return;
-}

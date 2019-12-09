@@ -312,6 +312,10 @@ int TKSPI_ReadSectors(byte *buf, s64 lba, int cnt)
 //	if(((s32)lba)!=lba)
 	if(lba>>32)
 		__debugbreak();
+	
+	if(cnt!=(cnt&255))
+		__debugbreak();
+	
 
 //	tk_printf("TKSPI_ReadSectors: %d %d\n", lba, cnt);
 
@@ -358,6 +362,13 @@ int TKSPI_WriteSectors(byte *buf, s64 lba, int cnt)
 	u64 la;
 	int n, h;
 
+//	if(((s32)lba)!=lba)
+	if(lba>>32)
+		__debugbreak();
+	
+	if(cnt!=(cnt&255))
+		__debugbreak();
+	
 	ct=buf; la=lba; n=cnt;
 	while(n>0)
 	{

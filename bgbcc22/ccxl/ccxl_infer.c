@@ -817,6 +817,9 @@ int BGBCC_CCXL_InferBlockPredSafeP(BGBCC_TransState *ctx, BCCX_Node *l)
 		return(i);
 	}
 
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_return, "return"))
+		{ return(0); }
+
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_int, "int"))
 		{ return(1); }
 

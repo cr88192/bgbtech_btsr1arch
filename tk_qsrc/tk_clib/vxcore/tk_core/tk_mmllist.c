@@ -37,8 +37,8 @@ void *TKMM_MMList_AllocBrk(int sz)
 	if(!tkmm_mmlist_brkbuf)
 	{
 		tk_puts("TKMM_MMList_AllocBrk C\n");
-//		tkmm_mmlist_brkbuf=TKMM_PageAlloc(1<<20);
-		tkmm_mmlist_brkbuf=TKMM_PageAlloc(1<<18);
+		tkmm_mmlist_brkbuf=TKMM_PageAlloc(1<<20);
+//		tkmm_mmlist_brkbuf=TKMM_PageAlloc(1<<18);
 		
 		if(!tkmm_mmlist_brkbuf)
 		{
@@ -48,8 +48,8 @@ void *TKMM_MMList_AllocBrk(int sz)
 		
 //		memset(tkmm_mmlist_brkbuf, 0, 1<<20);
 
-//		tkmm_mmlist_brkend=tkmm_mmlist_brkbuf+(1<<20);
-		tkmm_mmlist_brkend=tkmm_mmlist_brkbuf+(1<<18);
+		tkmm_mmlist_brkend=tkmm_mmlist_brkbuf+(1<<20);
+//		tkmm_mmlist_brkend=tkmm_mmlist_brkbuf+(1<<18);
 		tkmm_mmlist_brkpos=tkmm_mmlist_brkbuf;
 
 		i=tkmm_mmlist_n_vrm++;
@@ -120,6 +120,7 @@ void *TKMM_MMList_Malloc(int sz)
 //	putc('<');
 //	sz=(sz+TKMM_OFFS_DATA+7)&(~7);
 	sz=(sz+TKMM_OFFS_DATA+15)&(~7);
+//	sz=(sz+TKMM_OFFS_DATA+31)&(~7);
 
 	ix=TKMM_SizeToFxiU(sz);
 //	printf("%d", ix);
@@ -320,10 +321,12 @@ int TKMM_MMList_GetSize(void *ptr)
 
 void *tk_malloc(int sz)
 {
-	return(TKMM_MMList_Malloc(sz));
+//	return(TKMM_MMList_Malloc(sz));
+	return(TKMM_Malloc(sz));
 }
 
 int tk_free(void *ptr)
 {
-	return(TKMM_MMList_Free(ptr));
+//	return(TKMM_MMList_Free(ptr));
+	return(TKMM_Free(ptr));
 }

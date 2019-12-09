@@ -137,6 +137,8 @@ reg[15:0]	tClr33B;		//B
 reg[15:0]	tClr33C;		//(2/3)A + (1/3)B
 reg[15:0]	tClr33D;		//(1/3)A + (2/3)B
 reg[15:0]	tClr33E;		//(1/2)A + (1/2)B
+reg[15:0]	tNextClr33A;//A
+reg[15:0]	tNextClr33B;		//B
 reg[15:0]	tNextClr33C;	//(2/3)A + (1/3)B
 reg[15:0]	tNextClr33D;	//(1/3)A + (2/3)B
 reg[15:0]	tNextClr33E;	//(1/2)A + (1/2)B
@@ -148,8 +150,8 @@ reg[15:0]	tClr32B;		//B
 reg[15:0]	tClr32C;		//(2/3)A + (1/3)B
 reg[15:0]	tClr32D;		//(1/3)A + (2/3)B
 reg[15:0]	tClr32E;		//(1/2)A + (1/2)B
-reg[15:0]	tNextClr32A;		//A
-reg[15:0]	tNextClr32B;		//B
+reg[15:0]	tNextClr32A;	//A
+reg[15:0]	tNextClr32B;	//B
 reg[15:0]	tNextClr32C;	//(2/3)A + (1/3)B
 reg[15:0]	tNextClr32D;	//(1/3)A + (2/3)B
 reg[15:0]	tNextClr32E;	//(1/2)A + (1/2)B
@@ -438,6 +440,10 @@ begin
 
 	tFontData_A = fontData;
 
+	tFontGlyphY_A = tCellData[127:64];
+	tFontGlyphU_A = tCellData[63:48];
+	tFontGlyphV_A = tCellData[47:32];
+
 	if(tCellData[31:30]==2'b10)
 	begin
 		tClrYuvB[11:8]=tCellData[27:24];
@@ -446,10 +452,6 @@ begin
 		tClrYuvA[ 7:4]=tCellData[11: 8];
 		tClrYuvB[ 3:0]=tCellData[ 7: 4];
 		tClrYuvA[ 3:0]=tCellData[ 3: 0];
-		
-		tFontGlyphY_A = tCellData[127:64];
-		tFontGlyphU_A = tCellData[63:48];
-		tFontGlyphV_A = tCellData[47:32];
 	end
 
 
@@ -457,29 +459,29 @@ begin
 	case( { ~tPixCellFx_A[3], ~tPixCellFx_A[1] } )
 		2'b00: begin
 //		2'b10: begin
-			tClr33B		= { tCellData[125:111], tCellData[114] };
-			tClr33A		= { tCellData[110: 96], tCellData[ 99] };
+			tNextClr33B		= { tCellData[125:111], tCellData[114] };
+			tNextClr33A		= { tCellData[110: 96], tCellData[ 99] };
 			tNextCellData33	= tCellData[255:224];
 			tClr32YD	= tCellData[125:111];
 		end
 		2'b01: begin
 //		2'b11: begin
-			tClr33B		= { tCellData[ 93: 79], tCellData[82] };
-			tClr33A		= { tCellData[ 78: 64], tCellData[67] };
+			tNextClr33B		= { tCellData[ 93: 79], tCellData[82] };
+			tNextClr33A		= { tCellData[ 78: 64], tCellData[67] };
 			tNextCellData33	= tCellData[223:192];
 			tClr32YD	= tCellData[110:96];
 		end
 		2'b10: begin
 //		2'b00: begin
-			tClr33B		= { tCellData[ 61: 47], tCellData[50] };
-			tClr33A		= { tCellData[ 46: 32], tCellData[35] };
+			tNextClr33B		= { tCellData[ 61: 47], tCellData[50] };
+			tNextClr33A		= { tCellData[ 46: 32], tCellData[35] };
 			tNextCellData33	= tCellData[191:160];
 			tClr32YD	= tCellData[93:79];
 		end
 		2'b11: begin
 //		2'b01: begin
-			tClr33B		= { tCellData[ 29: 15], tCellData[18] };
-			tClr33A		= { tCellData[ 14:  0], tCellData[ 3] };
+			tNextClr33B		= { tCellData[ 29: 15], tCellData[18] };
+			tNextClr33A		= { tCellData[ 14:  0], tCellData[ 3] };
 			tNextCellData33	= tCellData[159:128];
 			tClr32YD	= tCellData[78:64];
 		end
@@ -487,8 +489,14 @@ begin
 	
 	if(tPixRgb565)
 	begin
-		tClr33A={ tClr33A[15:11], tClr33A[10:6], tClr33A[10], tClr33A[5:1] };
-		tClr33B={ tClr33B[15:11], tClr33B[10:6], tClr33B[10], tClr33B[5:1] };
+		tNextClr33A={
+			tNextClr33A[15:11],
+			tNextClr33A[10:6], tNextClr33A[10],
+			tNextClr33A[5:1] };
+		tNextClr33B={
+			tNextClr33B[15:11],
+			tNextClr33B[10:6], tNextClr33B[10],
+			tNextClr33B[5:1] };
 	end
 
 	tNextClr32CV	= tPixCellFx_A[2] ? tClr33A : tClr33B;
@@ -496,6 +504,29 @@ begin
 
 	if(tPixRgb565)
 	begin
+		tNextClr32A = {
+			tClr32CV[15:11] + { 1'b0, tClr32Dy[6:3] },
+			tClr32CV[10: 5] + { 1'b0, tClr32Dy[6:2] },
+			tClr32CV[ 4: 0] + { 1'b0, tClr32Dy[6:3] } };
+		tNextClr32B = {
+			tClr32CV[15:11] - { 1'b0, tClr32Dy[6:3] },
+			tClr32CV[10: 5] - { 1'b0, tClr32Dy[6:2] },
+			tClr32CV[ 4: 0] - { 1'b0, tClr32Dy[6:3] } };
+
+`ifndef def_true
+		tNextClr32C = {
+			{ 1'b0, tClr32A[15:12] } + { 1'b0, tClr32E[15:12] },
+			{ 1'b0, tClr32A[10: 6] } + { 1'b0, tClr32E[10: 6] } ,
+			{ 1'b0, tClr32A[ 4: 1] } + { 1'b0, tClr32E[ 4: 1] } };
+		tNextClr32D = {
+			{ 1'b0, tClr32E[15:12] } + { 1'b0, tClr32B[15:12] },
+			{ 1'b0, tClr32E[10: 6] } + { 1'b0, tClr32B[10: 6] } ,
+			{ 1'b0, tClr32E[ 4: 1] } + { 1'b0, tClr32B[ 4: 1] } };
+		tNextClr32E = {
+			{ 1'b0, tClr32A[15:12] } + { 1'b0, tClr32B[15:12] } ,
+			{ 1'b0, tClr32A[10: 6] } + { 1'b0, tClr32B[10: 6] } ,
+			{ 1'b0, tClr32A[ 4: 1] } + { 1'b0, tClr32B[ 4: 1] } };
+`endif
 	end
 	else
 	begin
@@ -506,6 +537,7 @@ begin
 			tClr32CV[15:10] - { 1'b0, tClr32Dy[6:2] },
 			tClr32CV[9:0] };
 
+`ifndef def_true
 		tNextClr32C = {
 			{ 1'b0, tClr32A[15:11] } + { 1'b0, tClr32E[15:11] },
 			{ 1'b0, tClr32A[ 9: 6] } + { 1'b0, tClr32E[ 9: 6] } ,
@@ -518,6 +550,13 @@ begin
 			{ 1'b0, tClr32A[15:11] } + { 1'b0, tClr32B[15:11] } ,
 			{ 1'b0, tClr32A[ 9: 6] } + { 1'b0, tClr32B[ 9: 6] } ,
 			{ 1'b0, tClr32A[ 4: 1] } + { 1'b0, tClr32B[ 4: 1] } };
+`endif
+	end
+
+	if(tCellData[63:62]==2'b10)
+	begin
+		tNextClr33A = tNextClr32A;
+		tNextClr33B = tNextClr32B;
 	end
 
 	if(tPixRgb565)
@@ -550,6 +589,10 @@ begin
 			{ 1'b0, tClr33A[ 9: 6] } + { 1'b0, tClr33B[ 9: 6] } ,
 			{ 1'b0, tClr33A[ 4: 1] } + { 1'b0, tClr33B[ 4: 1] } };
 	end
+
+	tNextClr32C = tNextClr33C;
+	tNextClr32D = tNextClr33D;
+	tNextClr32E = tNextClr33E;
 
 
 	/* Stage B */
@@ -607,10 +650,13 @@ begin
 
 
 	/* Stage C */
+	
+	tClrYuvC_C = UV16_00;
 
 	if(tCellData_C[31:30]==2'b11)
 	begin
-		if(tCellData_C[29:28]==2'b01)
+//		if(tCellData_C[29:28]==2'b01)
+		if(tCellData_C[63:62]==2'b01)
 		begin
 			tClrYuvC_C = (pixLineOdd) ?
 				((tClrIx33[0]) ? tClr33A : tClr33B) :
@@ -886,6 +932,8 @@ begin
 	tClrIx33		<= tClrNxtIx33;
 	tClrIx32		<= tClrNxtIx32;
 
+	tClr33A			<= tNextClr33A;		//A
+	tClr33B			<= tNextClr33B;		//B
 	tClr33C			<= tNextClr33C;
 	tClr33D			<= tNextClr33D;
 	tClr33E			<= tNextClr33E;

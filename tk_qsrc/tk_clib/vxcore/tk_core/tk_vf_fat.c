@@ -224,9 +224,14 @@ int tk_fat_fclose(TK_FILE *fd)
 {
 	TKFAT_FAT_DirEntExt *dee;
 
+	printf("tk_fat_fclose: %p\n", fd);
+
 	dee=fd->udata1;
 	if(dee->is_dirty)
+	{
+		printf("tk_fat_sync: %p\n", fd);
 		TKFAT_SyncDirEntFile(dee);
+	}
 	free(fd->udata1);
 	tk_free_file(fd);
 	return(0);
@@ -249,7 +254,10 @@ int tk_fat_fwrite(void *buf, int sz1, int sz2, TK_FILE *fd)
 	int sz;
 
 	if(!(dee->is_write))
+	{
+		tk_printf("tk_fat_fwrite: write to file in read mode\n");
 		return(-1);
+	}
 
 	dee=fd->udata1;
 	sz=sz1*sz2;
@@ -284,19 +292,21 @@ int tk_fat_fioctl(TK_FILE *fd, int cmd, void *ptr)
 
 TK_DIR *tk_fat_opendir(TK_MOUNT *mnt, char *name)
 {
-	TKFAT_FAT_DirEntExt tdee;
-	TKFAT_FAT_DirEntExt *dee, *dee2;
+	TKFAT_FAT_DirEntExt tdee, tdee1;
+	TKFAT_FAT_DirEntExt *dee, *dee1, *dee2;
 	TKFAT_ImageInfo *img;
 	TK_DIRENT *tde;
 	TK_DIR *fd;
-	int dcli;
+	int dcli, mcli;
 	int i;
 
 //	tk_printf("tk_fat_opendir: %s\n", name);
 
 	img=mnt->udata0;
 	dee=&tdee;
+	dee1=&tdee1;
 	memset(dee, 0, sizeof(TKFAT_FAT_DirEntExt));
+	memset(dee1, 0, sizeof(TKFAT_FAT_DirEntExt));
 	i=TKFAT_LookupDirEntPath(img, dee, name);
 	if(i<0)
 	{
@@ -308,6 +318,13 @@ TK_DIR *tk_fat_opendir(TK_MOUNT *mnt, char *name)
 		return(NULL);
 
 	dcli=TKFAT_GetDirEntCluster(dee);
+	mcli=0;
+	
+	if(dcli>0)
+	{
+//		mcli=TKFAT_LookupDirEntNameQuick(img, dcli, dee1, "TKDIREXT.---");
+		mcli=TKFAT_LookupDirEntNameQuick(img, dcli, dee1, "!!TKMETA.!!!");
+	}
 
 	dee2=malloc(sizeof(TKFAT_FAT_DirEntExt));
 	memset(dee2, 0, sizeof(TKFAT_FAT_DirEntExt));
@@ -315,7 +332,9 @@ TK_DIR *tk_fat_opendir(TK_MOUNT *mnt, char *name)
 	dee2->img=img;
 //	dee2->clid=dee->clid;
 	dee2->clid=dcli;
+	dee2->mclid=mcli;
 	dee2->idx=-1;
+	dee2->midx=-1;
 
 	tde=malloc(sizeof(TK_DIRENT));
 	memset(tde, 0, sizeof(TK_DIRENT));
@@ -346,6 +365,7 @@ TK_DIRENT *tk_fat_readdir(TK_DIR *fd)
 	if(i<0)
 		return(NULL);
 	memcpy(tde->d_name, dee->de_name, 256);
+	memcpy(tde->st_link, dee->de_aname, 256);
 	
 	tde->st_mode=TKFAT_GetDirEntMode(dee);
 	tde->st_uid=TKFAT_GetDirEntUid(dee);

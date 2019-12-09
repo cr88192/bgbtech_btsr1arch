@@ -520,8 +520,8 @@ begin
 //	if(timer1kHz)
 //		$display("1kHz at %dus, %dns", outTimer1MHz, outTimer100MHz*10);
 
-//	if(timer1kHz && !timer1kHzL)
-	if(timer256Hz)
+	if(timer1kHz && !timer1kHzL)
+//	if(timer256Hz)
 		memBusExc	= { UV48_00, 16'hC001 };
 
 	if(gpioOK != UMEM_OK_READY)

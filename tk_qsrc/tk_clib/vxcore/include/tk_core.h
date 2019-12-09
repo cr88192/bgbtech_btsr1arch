@@ -284,6 +284,7 @@ u32 st_size;
 #include <tk_varobj.h>
 #include <tk_keys.h>
 #include <tk_romfcn.h>
+#include <tk_pgmimg.h>
 
 u32 __float32_getbits(float f);
 float __float32_frombits(u32 f);

@@ -242,10 +242,10 @@ byte *TKFAT_GetSectorStaticBuffer(TKFAT_ImageInfo *img,
 		if(!img->sbc_buf[i])
 			break;
 
-	if((i>=img->sbc_num) && (i<256))
+	if((i>=img->sbc_num) && (i<64))
 		i=img->sbc_num++;
 	
-	if(i>=256)
+	if(i>=64)
 	{
 		tk_printf("TKFAT_GetSectorStaticBuffer: Out of buffers\n");
 		return(NULL);
@@ -1375,6 +1375,22 @@ int TKFAT_ReadWriteDirEntOffset(TKFAT_ImageInfo *img,
 	return(i);
 }
 
+int TKFAT_ReadWriteMetaEntOffset(TKFAT_ImageInfo *img,
+	int clid, int idx, bool iswrite, void *de)
+{
+	int i, n;
+
+	if(clid<=0)
+		return(-1);
+
+	if(!img)
+		__debugbreak();
+	
+	i=TKFAT_ReadWriteClusterOffset(img,
+		clid, idx<<6, iswrite, de, 64);
+	return(i);
+}
+
 int tkfat_name2sfn(char *name, char *sfn)
 {
 	char *s, *t;
@@ -1552,9 +1568,12 @@ int tkfat_lfn2utf8(u16 *lfn, byte *dst)
 	int i;
 	
 	cs=lfn; ct=dst;
-	while(*cs)
+//	while(*cs)
+	while(1)
 	{
 		i=*cs++;
+		if((!i) || (i==0xFFFF))
+			break;
 		ct=tkfat_emitUtf8(ct, i);
 	}
 	*ct++=0;
@@ -1655,28 +1674,124 @@ int tkfat_lfn2bytes(u16 *lfn, int sz, byte *dst)
 	return(0);
 }
 
+int tkfat_memcmp11(byte *s1, byte *s2)
+{
+	if(((u32 *)s1)[0]!=((u32 *)s2)[0])
+		return(-1);
+	if(((u32 *)s1)[1]!=((u32 *)s2)[1])
+		return(-1);
+	if((((u32 *)s1)[2]&0xFFFFFF)!=(((u32 *)s2)[2]&0xFFFFFF))
+		return(-1);
+	return(0);
+}
+
+int TKFAT_CheckDebMebMatch(TKFAT_ImageInfo *img,
+	TKFAT_FAT_DirEnt *deb,
+	TKFAT_FAT_MetaEnt *meb)
+{
+	if(!tkfat_memcmp11(deb, meb))
+		return(1);
+	return(0);
+}
+
+int TKFAT_SetupDirEntMeta(TKFAT_ImageInfo *img,
+	TKFAT_FAT_DirEntExt *dee, TKFAT_FAT_MetaEnt *meb)
+{
+	TKFAT_FAT_MetaEnt tmeb1;
+	TKFAT_FAT_MetaEnt *meb1;
+	char tbuf[512];
+	char *ct;
+	int mclid, midx;
+	int i, j, k, n;
+
+	if(!meb->etype)
+		return(0);
+
+	mclid=dee->mclid;
+	midx=dee->midx;
+	meb1=&tmeb1;
+
+	if(meb->etype==TKFAT_EMETA_BASE)
+	{
+		dee->me_uid=tkfat_getWord(meb->data+0);
+		dee->me_gid=tkfat_getWord(meb->data+2);
+		dee->me_mode=tkfat_getDWord(meb->data+4);
+
+		ct=tbuf;
+		n=meb->eseq;
+		for(i=1; i<n; i++)
+		{
+			j=TKFAT_ReadWriteMetaEntOffset(img, mclid, midx+i, 0, meb1);
+			if(meb1->etype==TKFAT_EMETA_LINKEXT)
+			{
+				memcpy(ct, meb1->name, 11);
+				ct+=11;
+				memcpy(ct, meb1->data, 50);
+				ct+=50;
+			}
+		}
+		
+		*ct=0;
+		memcpy(dee->de_aname, tbuf, 256);
+
+		return(1);
+	}
+
+	if(meb->etype==TKFAT_EMETA_LINK)
+	{
+		ct=tbuf;
+		memcpy(ct, meb->data, 50);
+		ct+=50;
+	
+		n=meb->eseq;
+		for(i=1; i<n; i++)
+		{
+			j=TKFAT_ReadWriteMetaEntOffset(img, mclid, midx+i, 0, meb1);
+			if(meb1->etype==TKFAT_EMETA_LINKEXT)
+			{
+				memcpy(ct, meb1->name, 11);
+				ct+=11;
+				memcpy(ct, meb1->data, 50);
+				ct+=50;
+			}
+		}
+		
+		*ct=0;
+//		strcpy(dee->de_aname, tbuf);
+		memcpy(dee->de_aname, tbuf, 256);
+		
+		dee->me_mode=TKFAT_EMODE_LINK;
+		
+		return(1);
+	}
+}
+
 int TKFAT_WalkDirEntNext(TKFAT_ImageInfo *img,
 	TKFAT_FAT_DirEntExt *dee)
 {
 	TKFAT_FAT_DirEnt tdeb;
+	TKFAT_FAT_MetaEnt tmeb;
 	TKFAT_FAT_DirEnt *deb;
+	TKFAT_FAT_MetaEnt *meb;
 	TKFAT_FAT_DirLfnEnt *del;
 	u16 bln[288];	//buffer for longname
 	u16 bln2[420];	//buffer for longname (alt)
 	u16 tln[288];	//temp longname
 	char tsn[12];	//temp shortname
 	char *s;
-	int h0, h1, lh, clid, sidx;
-	int i, j, k;
+	int h0, h1, lh, clid, sidx, mclid;
+	int i, j, k, l;
 	
 	if(!img)
 		img=dee->img;
 	
 	clid=dee->clid;
+	mclid=dee->mclid;
 	sidx=(dee->idx>=0)?(dee->idx+1):0;
 
 	deb=&tdeb;
 	del=(TKFAT_FAT_DirLfnEnt *)(&tdeb);
+	meb=&tmeb;
 
 	for(k=0; k<288; k++)
 	{
@@ -1699,7 +1814,8 @@ int TKFAT_WalkDirEntNext(TKFAT_ImageInfo *img,
 		if(deb->name[0]==0xE5)
 			continue;
 		
-		if(deb->attrib==0x0F)
+//		if(deb->attrib==0x0F)
+		if(deb->attrib==TKFAT_ATTR_LFNENT)
 		{
 //			j=(del->seq)&0x1F;
 //			j=del->seq;
@@ -1786,7 +1902,12 @@ int TKFAT_WalkDirEntNext(TKFAT_ImageInfo *img,
 			
 			continue;
 		}
-		
+
+		if(deb->attrib&TKFAT_ATTR_VOLLABEL)
+		{
+			continue;
+		}
+
 		h0=tkfat_lfnchecksum(deb->name);
 //		if(!memcmp(deb.name, tsn, 11))
 //		if((h0==h1) && !tkfat_matchlfn(bln, tln))
@@ -1830,6 +1951,21 @@ int TKFAT_WalkDirEntNext(TKFAT_ImageInfo *img,
 			dee->de_size=0;
 //			break;
 //			strcpy(dee->de_name, name);
+			dee->me_mode=0;
+
+			dee->midx=-1;
+			if(mclid>0)
+			{
+				k=tkfat_getWord(deb->ugid);
+				j=TKFAT_ReadWriteMetaEntOffset(img, mclid, k, 0, meb);
+				if((j>=0) && (TKFAT_CheckDebMebMatch(img, deb, meb)>0))
+				{
+					dee->midx=k;
+					dee->meb=*meb;
+					TKFAT_SetupDirEntMeta(img, dee, meb);
+				}
+			}
+
 			return(i);
 		}
 	}
@@ -1837,35 +1973,45 @@ int TKFAT_WalkDirEntNext(TKFAT_ImageInfo *img,
 	return(-1);
 }
 
-int tkfat_memcmp11(byte *s1, byte *s2)
-{
-	if(((u32 *)s1)[0]!=((u32 *)s2)[0])
-		return(-1);
-	if(((u32 *)s1)[1]!=((u32 *)s2)[1])
-		return(-1);
-	if((((u32 *)s1)[2]&0xFFFFFF)!=(((u32 *)s2)[2]&0xFFFFFF))
-		return(-1);
-	return(0);
-}
-
 int TKFAT_LookupDirEntName(TKFAT_ImageInfo *img,
 	int clid, TKFAT_FAT_DirEntExt *dee, char *name)
 {
+	return(TKFAT_LookupDirEntNameFlag(img, clid, 0, dee, name, 0));
+}
+
+int TKFAT_LookupDirEntNameQuick(TKFAT_ImageInfo *img,
+	int clid, TKFAT_FAT_DirEntExt *dee, char *name)
+{
+	return(TKFAT_LookupDirEntNameFlag(img, clid, 0, dee, name, 1));
+}
+
+int TKFAT_LookupDirEntNameFlag(TKFAT_ImageInfo *img,
+	int clid, int mclid, TKFAT_FAT_DirEntExt *dee, char *name, int flag)
+{
 	TKFAT_FAT_DirEnt tdeb;
+	TKFAT_FAT_MetaEnt tmeb;
 	TKFAT_FAT_DirEnt *deb;
+	TKFAT_FAT_MetaEnt *meb;
 	TKFAT_FAT_DirLfnEnt *del;
 	u16 bln[288];	//buffer for longname
 	u16 bln2[420];	//buffer for longname (alt)
 	u16 tln[288];	//temp longname
 	char tsn[12];	//temp shortname
 	char *s;
-	int h0, h1, lh;
+	int h0, h1, lh, max, mclid;
 	int i, j, k;
 	
 	deb=&tdeb;
 	del=(TKFAT_FAT_DirLfnEnt *)(&tdeb);
+	meb=&tmeb;
 	
 //	printf("TKFAT_LookupDirEntName: %s clid=%d\n", name, clid);
+	
+	max=65536;
+	if(flag&1)
+		max=16;
+	
+//	mclid=0;
 	
 	h0=-1;
 	h1=-1;
@@ -1875,7 +2021,7 @@ int TKFAT_LookupDirEntName(TKFAT_ImageInfo *img,
 	{
 //		printf("TKFAT_LookupDirEntName: SFN=%11s\n", tsn);
 
-		for(i=0; i<65536; i++)
+		for(i=0; i<max; i++)
 		{
 			j=TKFAT_ReadWriteDirEntOffset(img, clid, i, 0, deb);
 			if(j<0)break;
@@ -1896,6 +2042,21 @@ int TKFAT_LookupDirEntName(TKFAT_ImageInfo *img,
 				dee->clid=clid;
 				dee->idx=i;
 				strcpy(dee->de_name, name);
+				dee->me_mode=0;
+
+				if(mclid>0)
+				{
+					k=tkfat_getWord(deb->ugid);
+					j=TKFAT_ReadWriteMetaEntOffset(img, mclid, k, 0, meb);
+					if((j>=0) && (TKFAT_CheckDebMebMatch(img, deb, meb)>0))
+					{
+						dee->meb=*meb;
+						dee->mclid=mclid;
+						dee->midx=k;
+						TKFAT_SetupDirEntMeta(img, dee, meb);
+					}
+				}
+
 				return(i);
 			}
 		}
@@ -1904,7 +2065,7 @@ int TKFAT_LookupDirEntName(TKFAT_ImageInfo *img,
 
 	tkfat_name2lfn(name, tln);
 
-	for(i=0; i<65536; i++)
+	for(i=0; i<max; i++)
 	{
 		j=TKFAT_ReadWriteDirEntOffset(img, clid, i, 0, deb);
 		if(j<0)break;
@@ -2001,6 +2162,24 @@ int TKFAT_LookupDirEntName(TKFAT_ImageInfo *img,
 			
 			continue;
 		}
+
+		if(deb->attrib&TKFAT_ATTR_VOLLABEL)
+		{
+			continue;
+		}
+
+#if 0
+		if((mclid<=0) && (i<16))
+		{
+			k=!tkfat_memcmp11(deb->name, "!!TKMETA.!!!");
+			if(k)
+			{
+				mclid=tkfat_getWord(deb->cluster_lo);
+				if(!(img->isfat16))
+					mclid|=(tkfat_getWord(deb->cluster_hi)<<16);
+			}
+		}
+#endif
 		
 		h0=tkfat_lfnchecksum(deb->name);
 //		if(!memcmp(deb.name, tsn, 11))
@@ -2010,7 +2189,23 @@ int TKFAT_LookupDirEntName(TKFAT_ImageInfo *img,
 			dee->img=img;
 			dee->clid=clid;
 			dee->idx=i;
-			strcpy(dee->de_name, name);
+//			strcpy(dee->de_name, name);
+			tkfat_lfn2utf8(bln, dee->de_name);
+			dee->me_mode=0;
+
+			if(mclid>0)
+			{
+				k=tkfat_getWord(deb->ugid);
+				j=TKFAT_ReadWriteMetaEntOffset(img, mclid, k, 0, meb);
+				if((j>=0) && (TKFAT_CheckDebMebMatch(img, deb, meb)>0))
+				{
+					dee->meb=*meb;
+					dee->mclid=mclid;
+					dee->midx=k;
+					TKFAT_SetupDirEntMeta(img, dee, meb);
+				}
+			}
+
 			return(i);
 		}
 	}
@@ -2167,8 +2362,9 @@ int TKFAT_CreateDirEntPathR(TKFAT_ImageInfo *img,
 	int clid, bool crea, TKFAT_FAT_DirEntExt *dee, char *name)
 {
 	TKFAT_FAT_DirEntExt tdee;
-	char tb[256];
-	char *s, *t;
+	TKFAT_FAT_DirEntExt *dee1;
+	char tb[256], tb1[256];
+	char *s, *t, *s1, *t1;
 	byte mkd;
 	int dcli;
 	int i;
@@ -2190,12 +2386,13 @@ int TKFAT_CreateDirEntPathR(TKFAT_ImageInfo *img,
 	while(*s=='/')
 		{ s++; mkd=true; }
 
-	memset(&tdee, 0, sizeof(TKFAT_FAT_DirEntExt));
+	dee1=&tdee;
+	memset(dee1, 0, sizeof(TKFAT_FAT_DirEntExt));
 
 //	if(*s)
 	if(mkd)
 	{
-		i=TKFAT_CreateDirEntName(img, clid, crea, &tdee, tb);
+		i=TKFAT_CreateDirEntName(img, clid, crea, dee1, tb);
 		if(i<0)
 		{
 			tk_printf("TKFAT_CreateDirEntPathR: "
@@ -2206,7 +2403,23 @@ int TKFAT_CreateDirEntPathR(TKFAT_ImageInfo *img,
 		if(crea)
 		{
 //			tk_printf("");
-			TKFAT_SetupDirEntNewDirectory(&tdee);
+			TKFAT_SetupDirEntNewDirectory(dee1);
+		}
+
+		if((tdee.me_mode&TKFAT_EMODE_IFMT)==TKFAT_EMODE_LINK)
+		{
+			s1=tdee.de_aname; t1=tb1;
+			while(*s1)
+				{ *t1++=*s1++; }
+			*t1++='/';
+			s1=s;
+			while(*s1)
+				{ *t1++=*s1++; }
+			*t1++=0;
+
+			dcli=img->clid_root;
+			i=TKFAT_CreateDirEntName(img, dcli, crea, dee1, tb1);
+			return(i);
 		}
 
 		if(!(tdee.deb.attrib&0x10))
@@ -2215,7 +2428,7 @@ int TKFAT_CreateDirEntPathR(TKFAT_ImageInfo *img,
 			return(-1);
 		}
 		
-		dcli=TKFAT_GetDirEntCluster(&tdee);
+		dcli=TKFAT_GetDirEntCluster(dee1);
 
 //		i=TKFAT_CreateDirEntPathR(img, tdee.clid, dee, s);
 		i=TKFAT_CreateDirEntPathR(img, dcli, crea, dee, s);
@@ -2259,8 +2472,8 @@ int TKFAT_LookupDirEntPathR(TKFAT_ImageInfo *img,
 	int clid, TKFAT_FAT_DirEntExt *dee, char *name)
 {
 	TKFAT_FAT_DirEntExt tdee;
-	char tb[256];
-	char *s, *t;
+	char tb[256], tb1[256];
+	char *s, *t, *s1, *t1;
 	int dcli;
 	int i;
 
@@ -2287,6 +2500,22 @@ int TKFAT_LookupDirEntPathR(TKFAT_ImageInfo *img,
 			return(i);
 		}
 //		TKFAT_SetupDirEntNewDirectory(&tdee);
+
+		if((tdee.me_mode&TKFAT_EMODE_IFMT)==TKFAT_EMODE_LINK)
+		{
+			s1=tdee.de_aname; t1=tb1;
+			while(*s1)
+				{ *t1++=*s1++; }
+			*t1++='/';
+			s1=s;
+			while(*s1)
+				{ *t1++=*s1++; }
+			*t1++=0;
+
+			dcli=img->clid_root;
+			i=TKFAT_LookupDirEntPathR(img, dcli, dee, tb1);
+			return(i);
+		}
 
 		if(!(tdee.deb.attrib&0x10))
 		{
@@ -2369,7 +2598,9 @@ u32 TKFAT_GetDirEntCluster(
 		return(dee->de_clid);
 	
 	i=tkfat_getWord(dee->deb.cluster_lo);
-	j=tkfat_getWord(dee->deb.cluster_hi);
+	j=0;
+	if(!(dee->img->isfat16))
+		{ j=tkfat_getWord(dee->deb.cluster_hi); }
 	k=i|(j<<16);
 	dee->de_clid=k;
 	return(k);
@@ -2452,6 +2683,23 @@ u32 TKFAT_GetDirEntMode(
 	byte attr;
 	u32 mode;
 	
+	if(dee->me_mode)
+	{
+		attr=dee->deb.attrib;
+		mode=dee->me_mode;
+
+		if(!(mode&TKFAT_EMODE_IFMT))
+		{
+			if(attr&TKFAT_ATTR_DIRECTORY)
+				{ mode|=TKFAT_EMODE_DIR; }
+		}
+
+		if(!(mode&TKFAT_EMODE_IFMT))
+			{ mode|=TKFAT_EMODE_REG; }
+
+		return(mode);
+	}
+	
 	attr=dee->deb.attrib;
 	mode=0777;
 	if(attr&0x01)
@@ -2459,10 +2707,8 @@ u32 TKFAT_GetDirEntMode(
 		mode&=~0222;
 	}
 
-	if(attr&0x10)
-	{
-		mode|=0x4000;
-	}
+	if(attr&TKFAT_ATTR_DIRECTORY)
+		{ mode|=TKFAT_EMODE_DIR; }
 	
 	return(mode);
 }
@@ -2472,6 +2718,12 @@ int TKFAT_GetDirEntUid(
 {
 	byte *ct;
 	int i;
+
+	if(dee->me_mode)
+	{
+		return(dee->me_uid);
+	}
+
 	ct=&(dee->deb.ugid);
 	i=ct[0];
 	return(i);
@@ -2482,6 +2734,12 @@ int TKFAT_GetDirEntGid(
 {
 	byte *ct;
 	int i;
+
+	if(dee->me_mode)
+	{
+		return(dee->me_gid);
+	}
+
 	ct=dee->deb.ugid;
 	i=ct[1];
 	return(i);
@@ -2577,6 +2835,9 @@ int TKFAT_ReadWriteDirEntFile(
 	sz=size;
 	if((offs+size)>dsz)
 		{ sz=dsz-offs; }
+	
+	if(sz<0)
+		__debugbreak();
 
 	if((offs_n511==offs_sz_n511) &&
 		((offs_n511+512)<=dsz))

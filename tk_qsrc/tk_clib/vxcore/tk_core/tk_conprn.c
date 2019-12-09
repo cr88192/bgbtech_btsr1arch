@@ -180,18 +180,33 @@ void tk_con_newline()
 
 void tk_con_putc(int ch)
 {
-	u32 px;
+	int tx, ty, tz;
+	u32 px, py;
 	
 	if(!tk_con)
 		tk_con_init();
 	
 	if(!tk_con->ena)
 		return;
-	
+
 	if(ch<' ')
 	{
 		if(ch=='\b')
-			{ if(tk_con->x>0)tk_con->x--; return; }
+		{
+			if(tk_con->x>0)tk_con->x--;
+
+#if 0
+			px=0x003F8000|'_';
+			py=0x003F0000|' ';
+			
+			ty=tk_con->y;
+			tx=tk_con->x;
+			tz=(ty*TK_CONWIDTH+tx)*8;
+			tk_con->buf[tz+0]=px;
+			tk_con->buf[tz+8]=py;
+#endif
+			return;
+		}
 
 		if(ch=='\r')
 			{ tk_con->x=0; return; }
@@ -207,18 +222,38 @@ void tk_con_putc(int ch)
 				{ tk_con_newline(); }
 			return;
 		}
+
+		if(ch=='\x1f')
+		{
+#if 1
+			px=0x003F8000|'_';
+			ty=tk_con->y;
+			tx=tk_con->x;
+			tz=(ty*TK_CONWIDTH+tx)*8;
+			tk_con->buf[tz+0]=px;
+			tx++;
+			tk_con->x=tx;
+#endif
+		}
 		return;
 	}
 	
 //	px=0x0FC00000|ch;
 	px=0x003F0000|ch;
+//	py=0x003F8000|'_';
 	
-	tk_con->buf[(tk_con->y*TK_CONWIDTH+tk_con->x)*8+0]=px;
+	ty=tk_con->y;
+	tx=tk_con->x;
+	tz=(ty*TK_CONWIDTH+tx)*8;
+	tk_con->buf[tz]=px;
+//	tk_con->buf[tz+8]=py;
 
 //	__debugbreak();
 	
-	tk_con->x++;
-	if(tk_con->x>=TK_CONWIDTH)
+	tx++;
+	tk_con->x=tx;
+//	if(tk_con->x>=TK_CONWIDTH)
+	if(tx>=TK_CONWIDTH)
 	{
 		tk_con_newline();
 	}

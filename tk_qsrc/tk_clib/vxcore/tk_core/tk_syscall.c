@@ -46,9 +46,10 @@ void tk_sysc_exitpgm(int val)
 TK_APIEXPORT
 int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 {
+	TKPE_TaskInfo *task;
 	TK_SysArg *args;
 	void *p;
-	int ret;
+	int ret, sz;
 
 //	u64 ttb, tea;
 //	u16 exsr;
@@ -57,6 +58,8 @@ int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 //	tea=__arch_tea;
 //	exsr=(u16)(__arch_exsr);
 //	ptetlb_rethow_exc=0;
+
+	task=TK_GetCurrentTask();
 
 	ret=TK_URES_ERR_BADMSG;
 	args=(TK_SysArg *)vParm2;
@@ -83,12 +86,18 @@ int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 				break;
 
 			case 0x04:
-				p=TKMM_PageAlloc(args[0].i);
+				sz=args[0].i;
+				p=TKMM_PageAlloc(sz);
 				*((void **)vParm1)=p;
+				TK_TaskAddPageAlloc(task, p, sz);
 				tk_printf("SYSC: Page Alloc, vParm=%p, p=%p\n", vParm1, p);
 				break;
 			case 0x05:
 				ret=TKMM_PageFree(args[0].p, args[1].i);
+				break;
+			
+			case 0x06:
+				tk_irq_setUserIrq(args[0].i, args[1].p);
 				break;
 			
 			case 0x20:

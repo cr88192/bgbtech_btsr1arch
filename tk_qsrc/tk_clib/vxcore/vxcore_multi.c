@@ -34,6 +34,7 @@
 #include "tk_core/tk_syscall.c"
 
 #include "tk_core/tk_env.c"
+#include "tk_core/tk_irq.c"
 
 #include "tk_core/lva_array.c"
 #include "tk_core/lva_strdup.c"
