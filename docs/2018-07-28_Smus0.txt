@@ -5,7 +5,7 @@ Simple Music
 ** Other voices are reserved.
 
 
-Registers:
+Registers (Old):
 * A0081800 .. A0081FFF: SMUS Registers
 ** A0081800: Voice Control Register A, Voice  0
 ** A0081804: Voice Control Register B, Voice  0
@@ -16,6 +16,20 @@ Registers:
 ** A00818FC: Voice Status Register,    Voice 15
 * A0081900: Master Control Register A
 
+Registers (New):
+* F008C000: SMUS Channel Registers
+** F008C000: Voice Control Register A, Voice  0 Base
+** F008C004: Voice Control Register B, Voice  0 Base
+** F008C008: Voice Control Register C, Voice  0 Base
+** F008C00C: Voice Status Register,    Voice  0 Base
+** F008C010: Voice Control Register A, Voice  0 Modulator
+** F008C014: Voice Control Register B, Voice  0 Modulator
+** F008C018: Voice Control Register C, Voice  0 Modulator
+** F008C01C: Voice Status Register,    Voice  0 Modulator
+** F008C020: Channel 1
+** F008C040: Channel 2
+** ...
+** F008C1E0: Channel 15
 
 
 Control Register A:

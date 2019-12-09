@@ -1,0 +1,73 @@
+TestKern FAT Extensions
+
+Goals:
+* Does not cause excessive compatibility issues with Windows.
+** Basic files should remain readable.
+** File copying or directory ops should not ruin the volume.
+
+While it could be more possible to hack the directory structure to add features, copying things around via Windows would lose any extended metadata.
+
+Could reuse the ctimems field in the main directory entry or similar as a hint.
+* Would give the index into the DIREXT table for the matching file.
+** Will be a match if the 8.3 name matches.
+
+
+Possible: DirExt Table
+* / "TKDIREXT.---", System+Hidden
+* "!!TKMETA.!!!", System+Hidden
+* Structure will be superficially similar to FAT directories (32B entries).
+** Will use 8.3 names as keys to the external directory.
+** Metadata may span multiple table entries.
+
+
+MetaEnt_File {
+  BYTE name[8];		//File Name
+  BYTE ext[3];		//File Extension
+  BYTE etype;		//Entry Type
+  BYTE eseq;		//Entry Sequence or Count
+  BYTE eflag;		//Entry Flags
+  BYTE data[50];	//Depends on 'recty'
+};
+
+MetaEnt_Internal {
+  BYTE data1[11];
+  BYTE etype;
+  BYTE eseq;		//Entry Sequence or Count
+  BYTE eflag;		//Entry Flags
+  BYTE data[50];	//Depends on 'recty'
+};
+
+Entry Type:
+* 0, Entry is empty.
+* 1, Basic File Data (External File).
+* 2, Basic File Data (Internal Entry)
+* 3, ?
+* 4, Symlink Base
+** 50 chars of target
+* 5, Symlink Ext
+** 61 chars of target
+
+
+The Basic entry will match to a corresponding file.
+
+BasicData {
+  U16 uid;
+  U16 gid;
+  U32 mode;
+  ...
+};
+
+
+Symbolic Links will span multiple entries, and need not have a corresponding external file.
+
+MetaEnt_Link {
+  BYTE name1[8];	//File Name or Destination
+  BYTE baseIdx[2];	//Base Index (of first entry, ID)
+  BYTE seq;			//Sequence Number
+  BYTE etype;		//Entry Type
+  BYTE name2[20];	//File Name or Destination
+};
+
+Link entries will be applied in sequence order.
+The corresponding field will be appended to the prior entries.
+

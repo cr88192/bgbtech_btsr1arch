@@ -1176,8 +1176,10 @@ F0zz Instruction Block:
 *** F0nm_1g9C  EXTS.W	Rm, Rn				//Q=0, I=0
 *** F0nm_1G9C  EXTU.W	Rm, Rn				//Q=1, I=0
 
-*** F0nm_1eAC  MOV		Rm, Sn				//Cn=Rm
-*** F0nm_1eBC  MOV		Sm, Rn				//Rn=Cm
+*** F0nm_1gAC  MOV		Rm, Sn				//Cn=Rm
+*** F0nm_1GAC  SWAP.L	(Rm), Rn			//Exchange Rn with memory at (Rm)
+*** F0nm_1gBC  MOV		Sm, Rn				//Rn=Cm
+*** F0nm_1GBC  SWAP.Q	(Rm), Rn			//Exchange Rn with memory at (Rm)
 
 *** F0nm_1eCC  -
 *** F0nm_1eDC  -
@@ -1391,6 +1393,7 @@ F2zz Instruction Block  (Imm9 Block, New):
 ** F2n0_Cfjj  LDIZ{D}	#imm10u, Rn				//(PrWEX) Alt
 ** F2n1_Cfjj  LDIN{D}	#imm10n, Rn				//(PrWEX) Alt
 ** F2n2_Cfjj  LDISH		#imm8u, Rn				//(PrWEX) Rn=(Rn<<8)|Imm8
+*** Jumbo: LDISH32	#imm32, Rn
 ** F2n3_Cfjj  LDIHI{Q}	#imm10u, Rn				//Load immed into High bits (31:22) or (63:54)
 ** F2n4_Cfjj  TST{Q}	#imm10u, Rn				//SR.T=!(Imm AND Rn)
 ** F2n5_Cfjj  TST{Q}	#imm10n, Rn				//SR.T=!(Imm AND Rn)
