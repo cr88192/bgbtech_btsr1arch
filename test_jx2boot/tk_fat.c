@@ -49,7 +49,7 @@ byte *TKFAT_GetSectorTempBuffer(TKFAT_ImageInfo *img,
 	for(i=0; i<img->tbc_num; i++)
 	{
 		if((img->tbc_lba[i]==lba) &&
-			(img->tbc_lbn[i]==n))
+			((img->tbc_lbn[i]&255)==n))
 		{
 			if(num&TKFAT_SFL_DIRTY)
 				img->tbc_lbn[i]|=TKFAT_SFL_DIRTY;
@@ -175,7 +175,7 @@ byte *TKFAT_GetSectorTempBuffer(TKFAT_ImageInfo *img,
 		}
 #endif
 		
-		if(n!=img->tbc_lbn[i])
+		if(n!=(img->tbc_lbn[i]&255))
 		{
 			free(img->tbc_buf[i]);
 			img->tbc_buf[i]=malloc(n*512);
@@ -377,7 +377,8 @@ void TKFAT_ReadImageMBR(TKFAT_ImageInfo *img)
 int TKFAT_GetFatEntry(TKFAT_ImageInfo *img, int clid)
 {
 	byte *ofs;
-	int lba;
+	int lba, shc1, szc;
+//	int lba;
 	int i;
 
 	if(!img)
@@ -396,9 +397,15 @@ int TKFAT_GetFatEntry(TKFAT_ImageInfo *img, int clid)
 //		ofs=TKFAT_GetSectorStaticBuffer(img, 0, 1);
 //		ofs=img->pImgData+(img->lba_fat1*512)+(clid*2);
 
-		lba=img->lba_fat1+(clid>>8);
-		ofs=TKFAT_GetSectorTempBuffer(img, lba, 1);
-		ofs+=(clid&255)*2;
+//		lba=img->lba_fat1+(clid>>8);
+//		ofs=TKFAT_GetSectorTempBuffer(img, lba, 1);
+//		ofs+=(clid&255)*2;
+
+		shc1=img->shclust-1;
+		szc=img->szclust;
+		lba=img->lba_fat1+((clid>>shc1)<<(shc1-8));
+		ofs=TKFAT_GetSectorTempBuffer(img, lba, szc);
+		ofs+=(clid&((1<<shc1)-1))*2;
 
 		i=ofs[0]+(ofs[1]<<8);
 		if(i>=0xFFF0)
@@ -407,9 +414,17 @@ int TKFAT_GetFatEntry(TKFAT_ImageInfo *img, int clid)
 	}
 
 //	ofs=img->pImgData+(img->lba_fat1*512)+(clid*4);
-	lba=img->lba_fat1+(clid>>7);
-	ofs=TKFAT_GetSectorTempBuffer(img, lba, 1);
-	ofs+=(clid&127)*4;
+//	lba=img->lba_fat1+(clid>>7);
+//	ofs=TKFAT_GetSectorTempBuffer(img, lba, 1);
+//	ofs+=(clid&127)*4;
+
+#if 1
+	shc1=img->shclust-2;
+	szc=img->szclust;
+	lba=img->lba_fat1+((clid>>shc1)<<(shc1-7));
+	ofs=TKFAT_GetSectorTempBuffer(img, lba, szc);
+	ofs+=(clid&((1<<shc1)-1))*4;
+#endif
 
 //	printf("clid=%d ofs=%X\n", clid, ofs);
 
@@ -985,6 +1000,8 @@ int TKFAT_ReadWriteCluster(TKFAT_ImageInfo *img,
 		clbuf=TKFAT_GetSectorTempBuffer(img,
 			lba, img->szclust|TKFAT_SFL_DIRTY);
 		memcpy(clbuf+offs, data, size);
+#else
+		__debugbreak();
 #endif
 	}
 	else

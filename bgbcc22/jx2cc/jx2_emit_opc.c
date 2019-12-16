@@ -844,6 +844,9 @@ int BGBCC_JX2_TryEmitOpReg(BGBCC_JX2_Context *ctx, int nmid, int reg)
 				opw2=0x3011;
 			}else
 			{
+				if(ctx->is_fixed32 || ctx->op_is_wex2)
+					break;
+
 				opw1=0x3000;
 				opw2=0xF000|(reg&31);
 //				opw3=0x3069;
@@ -858,6 +861,9 @@ int BGBCC_JX2_TryEmitOpReg(BGBCC_JX2_Context *ctx, int nmid, int reg)
 				opw2=0x3010; break;
 			}else
 			{
+				if(ctx->is_fixed32 || ctx->op_is_wex2)
+					break;
+
 				opw1=0x3000;
 				opw2=0xF000|(reg&31);
 //				opw3=0x3068;

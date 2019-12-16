@@ -30,6 +30,7 @@ begin
 	tRound				= { 1'b0, regValFRm[36:29] } + { 8'b0, regValFRm[28] };
 	tRegValFRn1[7:0]	= tRound[8] ? regValFRm[36:29] : tRound[7:0];
 
+`ifndef def_true
 	casez(regValFRm[62:59])
 	4'b0111:	tRegValFRn = tRegValFRn1;
 	4'b1000:	tRegValFRn = tRegValFRn1;
@@ -39,6 +40,36 @@ begin
 		else
 			tRegValFRn = 0;
 	endcase
+`endif
+
+`ifdef def_true
+	casez(regValFRm[62:58])
+	5'b0111z:	tRegValFRn = tRegValFRn1;
+	5'b1000z:	tRegValFRn = tRegValFRn1;
+
+	5'b11111:
+	begin
+		if(regValFRm[57:52]==6'h3F)
+			tRegValFRn	= { regValFRm[63], 8'hFF, regValFRm[51:29] };
+		else
+			tRegValFRn	= { regValFRm[63], 31'h7F800000 };
+	end
+
+	5'b00000:
+	begin
+		if(regValFRm[57:52]==6'h00)
+			tRegValFRn	= { regValFRm[63], 8'h00, regValFRm[51:29] };
+		else
+			tRegValFRn	= 0;
+	end
+
+	default:
+		if(regValFRm[62])
+			tRegValFRn	= { regValFRm[63], 31'h7F800000 };
+		else
+			tRegValFRn = 0;
+	endcase
+`endif
 end
 
 endmodule

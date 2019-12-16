@@ -1302,13 +1302,13 @@ int main(int argc, char **argv, char **env)
 	JX2R_UseImageCreateRamdisk(128*1024);
 //	JX2R_UseImageCreateRamdisk(32*1024);
 
-#if 1
+#if 0
 	JX2R_UseImageAddFile(
 		(char *)"BOOTLOAD.SYS",
 		(char *)"../../tk_qsrc/tk_clib/tkshell.sys");
 #endif
 
-#if 1
+#if 0
 	JX2R_UseImageAddFile(
 //		(char *)"BOOTLOAD.SYS",
 		(char *)"DOOM.EXE",
@@ -1320,12 +1320,15 @@ int main(int argc, char **argv, char **env)
 
 #if 1
 	JX2R_UseImageAddFile(
-//		(char *)"BOOTLOAD.SYS",
-		(char *)"QUAKE.EXE",
+		(char *)"BOOTLOAD.SYS",
+//		(char *)"QUAKE.EXE",
 		(char *)"../../tk_qsrc/quake_b64b.exe");
 	JX2R_UseImageAddFile(
 		(char *)"ID1/PAK0.PAK",
 		(char *)"../../tk_qsrc/id1/pak0.pak");
+	JX2R_UseImageAddFile(
+		(char *)"ID1/AUTOEXEC.CFG",
+		(char *)"../../tk_qsrc/id1/autoexec1.cfg");
 #endif
 
 	Verilated::commandArgs(argc, argv);

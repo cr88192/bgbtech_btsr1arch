@@ -2450,6 +2450,12 @@ ccxl_status BGBCC_JX2C_BuildGlobal(BGBCC_TransState *ctx,
 		sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, obj->type);
 		al=BGBCC_CCXL_TypeGetLogicalAlign(ctx, obj->type);
 
+		if(BGBCC_CCXL_TypeArrayP(ctx, obj->type))
+		{
+			BGBCC_CCXL_TypeDerefType(ctx, obj->type, &tty);
+			al=BGBCC_CCXL_TypeGetLogicalAlign(ctx, tty);
+		}
+
 		if(al<1)al=1;
 		if(sctx->is_addr64)
 			{ if(al>8)al=8; }
@@ -2461,7 +2467,7 @@ ccxl_status BGBCC_JX2C_BuildGlobal(BGBCC_TransState *ctx,
 //		sz=(sz+3)&(~3);
 		sz=(sz+(al-1))&(~(al-1));
 
-		BGBCC_JX2_EmitCommSym(sctx, l0, sz);
+		BGBCC_JX2_EmitCommSym(sctx, l0, sz, al);
 
 //		BGBCC_JX2_SetSectionName(sctx, ".bss");
 //		BGBCC_JX2_EmitBAlign(sctx, 4);

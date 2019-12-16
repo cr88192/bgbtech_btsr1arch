@@ -959,13 +959,15 @@ int BGBCC_JX2_TryEmitOpRegStRegDisp(
 		if(!BGBCC_JX2_EmitCheckRegAddrGPR(ctx, rn))		break;
 		if(!BGBCC_JX2_EmitCheckRegBaseGPR(ctx, rm))
 		{
-			if(!BGBCC_JX2_EmitCheckRegExtGPR(ctx, rm))
+//			if(!BGBCC_JX2_EmitCheckRegExtGPR(ctx, rm))
+			if(!BGBCC_JX2_EmitCheckRegExtGPR(ctx, rm) || !(rm&16))
 				break;
 
 //			if((rn==BGBCC_SH_REG_SP) && ((disp&0x3C)==disp))
 //				{ odr=0; opw1=0x3C00|((rm&15)<<4)|((disp>>2)&15); break; }
 //			if((rn==BGBCC_SH_REG_SP) && ((disp&0x3C)==disp))
 //				{ odr=0; opw1=0x4100|((rm&15)<<4)|((disp>>2)&15); break; }
+
 			if((rn==BGBCC_SH_REG_SP) && ((disp&0x3C)==disp))
 				{ odr=0; opw1=0x4200|((rm&15)<<4)|((disp>>2)&15); break; }
 			break;
@@ -973,6 +975,7 @@ int BGBCC_JX2_TryEmitOpRegStRegDisp(
 
 		if((rn==BGBCC_SH_REG_SP) && ((disp&0x3C)==disp))
 			{ odr=0; opw1=0x4000|((rm&15)<<4)|((disp>>2)&15); break; }		
+
 //		if((rn==BGBCC_SH_REG_SP) && ((disp&0x3C)==disp))
 //			{ odr=0; opw1=0x2800|((rm&15)<<4)|((disp>>2)&15); break; }
 //		if((rn==BGBCC_SH_REG_SP) && (((disp&0x3C)|0x40)==disp))
@@ -1995,6 +1998,40 @@ int BGBCC_JX2_TryEmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,
 			break;
 #endif
 
+#if 1
+		case BGBCC_SH_NMID_LEAB:
+			if(((disp&0x1FF)==disp) && !(nowxi>>0))
+			{
+				opw1=0xF100|((rn&15)<<4)|((rm&15)<<0);
+				opw2=0x0800|ex2|((disp>>0)&511);
+				break;	}
+			opw1=0xF080|ex;	odr=1;
+			opw2=0x0400|((rn&15)<<4)|((rm&15)<<0);			break;
+		case BGBCC_SH_NMID_LEAW:
+			if(((disp&0x3FE)==disp) && !(nowxi>>1))
+			{
+				opw1=0xF100|((rn&15)<<4)|((rm&15)<<0);
+				opw2=0x1800|ex2|((disp>>1)&511);
+				break;	}
+			opw1=0xF080|ex;	odr=2;
+			opw2=0x0500|((rn&15)<<4)|((rm&15)<<0);			break;
+		case BGBCC_SH_NMID_LEAL:
+			if(((disp&0x7FC)==disp) && !(nowxi>>2))
+			{
+				opw1=0xF100|((rn&15)<<4)|((rm&15)<<0);
+				opw2=0x2800|ex2|((disp>>2)&511);
+				break;	}
+			opw1=0xF080|ex;	odr=4;
+			opw2=0x0600|((rn&15)<<4)|((rm&15)<<0);			break;
+		case BGBCC_SH_NMID_LEAQ:
+			if(((disp&0xFF8)==disp) && !(nowxi>>3))
+			{
+				opw1=0xF100|((rn&15)<<4)|((rm&15)<<0);
+				opw2=0x3800|ex2|((disp>>3)&511);
+				break;	}
+			opw1=0xF080|ex;	odr=8;
+			opw2=0x0700|((rn&15)<<4)|((rm&15)<<0);			break;
+#endif
 		}
 	}
 

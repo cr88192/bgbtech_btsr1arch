@@ -26,6 +26,7 @@ void *memset(void *dest, int val, size_t size)
 	
 	ct=dest; cte=ct+size;
 
+#if 0
 	i=(int)ct;
 	switch(i&3)
 	{
@@ -35,6 +36,7 @@ void *memset(void *dest, int val, size_t size)
 	case 0: break;
 	default: break;
 	}
+#endif
 	
 	i=val|(val<<8); i=i|(i<<16);
 	while((ct+8)<=cte)
@@ -47,6 +49,36 @@ void *memset(void *dest, int val, size_t size)
 	return(dest);
 }
 
+#if 1
+void *memcpy(void *dest, const void *src, size_t size)
+{
+	byte *ct, *cs, *cte;
+	int i, j;
+	
+	ct=dest; cte=ct+size;
+	cs=(byte *)src;
+
+	while((ct+16)<=cte)
+	{
+		((u64 *)ct)[0]=((u64 *)cs)[0];
+		((u64 *)ct)[1]=((u64 *)cs)[1];
+
+		ct+=16; cs+=16;
+	}
+	while((ct+8)<=cte)
+	{
+		((u64 *)ct)[0]=((u64 *)cs)[0];
+		ct+=8; cs+=8;
+	}
+	if((ct+4)<=cte)
+		{ (*(u32 *)ct)=(*(u32 *)cs); ct+=4; cs+=4; }
+	while(ct<cte)
+		{ *ct++=*cs++; }
+	return(dest);
+}
+#endif
+
+#if 0
 void *memcpy(void *dest, const void *src, size_t size)
 {
 	byte *ct, *cs, *cte;
@@ -119,6 +151,7 @@ void *memcpy(void *dest, const void *src, size_t size)
 		{ *ct++=*cs++; }
 	return(dest);
 }
+#endif
 
 int memcmp(byte *s1, byte *s2, size_t size)
 {

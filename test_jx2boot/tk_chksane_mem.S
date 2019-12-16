@@ -34,6 +34,10 @@ X(tk_checksane_mem_asm):
 	cmpq/eq r6, r10
 	bf _checksane_fail_mem
 
+	movd.l (sp, 0), r6
+	cmp/eq r6, r8
+	bf _checksane_fail_mem
+
 	exts.b r8, r12
 	exts.w r8, r13
 	mov.b (sp, 0), r6
@@ -64,6 +68,13 @@ X(tk_checksane_mem_asm):
 	mov.l r10, (sp, 12)
 	mov.q (sp, 8), r6
 	cmpq/eq r6, r14
+	bf _checksane_fail_mem
+
+//	mov	0xE87AD208, r8
+	mov	0xE87AD268, r11
+	lea.q (r8, 96), r6
+
+	cmpq/eq r6, r11
 	bf _checksane_fail_mem
 	
 

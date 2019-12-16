@@ -1059,7 +1059,7 @@ int main(int argc, char **argv, char **env)
 		(char *)"../../tk_qsrc/tk_clib/tkshell.sys");
 #endif
 
-#if 1
+#if 0
 	JX2R_UseImageAddFile(
 		(char *)"BOOTLOAD.SYS",
 //		(char *)"DOOM.EXE",
@@ -1069,7 +1069,7 @@ int main(int argc, char **argv, char **env)
 		(char *)"../../tk_qsrc/doomsrc2/doom1.wad");
 #endif
 
-#if 0
+#if 1
 	JX2R_UseImageAddFile(
 		(char *)"BOOTLOAD.SYS",
 //		(char *)"QUAKE.EXE",
@@ -1077,6 +1077,9 @@ int main(int argc, char **argv, char **env)
 	JX2R_UseImageAddFile(
 		(char *)"ID1/PAK0.PAK",
 		(char *)"../../tk_qsrc/id1/pak0.pak");
+	JX2R_UseImageAddFile(
+		(char *)"ID1/AUTOEXEC.CFG",
+		(char *)"../../tk_qsrc/id1/autoexec1.cfg");
 #endif
 
 	rombuf=(uint32_t *)malloc(32768);

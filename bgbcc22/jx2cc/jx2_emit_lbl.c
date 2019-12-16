@@ -353,7 +353,7 @@ int BGBCC_JX2_EmitNamedGlobal(BGBCC_JX2_Context *ctx, char *name)
 	return(0);
 }
 
-int BGBCC_JX2_EmitCommSym(BGBCC_JX2_Context *ctx, int lblid, int sz)
+int BGBCC_JX2_EmitCommSym(BGBCC_JX2_Context *ctx, int lblid, int sz, int al)
 {
 	int i;
 
@@ -369,6 +369,7 @@ int BGBCC_JX2_EmitCommSym(BGBCC_JX2_Context *ctx, int lblid, int sz)
 //	BGBCC_JX2_EmitBAlign(ctx, 4);
 //	BGBCC_JX2_EmitBAlign(ctx, 8);
 
+#if 0
 	if(sz>=8)
 	{
 		BGBCC_JX2_EmitBAlign(ctx, 8);
@@ -379,6 +380,25 @@ int BGBCC_JX2_EmitCommSym(BGBCC_JX2_Context *ctx, int lblid, int sz)
 	{
 		BGBCC_JX2_EmitBAlign(ctx, 2);
 	}
+#endif
+
+#if 1
+
+	if(al<=0)
+	{
+		if(sz>=8)
+			{ al=8; }
+		else if(sz>=4)
+			{ al=4; }
+		else if(sz>=2)
+			{ al=2; }
+		else
+			{ al=1; }
+	}
+
+	if(al>1)
+		BGBCC_JX2_EmitBAlign(ctx, al);
+#endif
 
 	BGBCC_JX2_EmitLabel(ctx, lblid);
 	BGBCC_JX2_EmitRawBytes(ctx, NULL, sz);
@@ -387,12 +407,13 @@ int BGBCC_JX2_EmitCommSym(BGBCC_JX2_Context *ctx, int lblid, int sz)
 	return(1);
 }
 
-int BGBCC_JX2_EmitNamedCommSym(BGBCC_JX2_Context *ctx, char *name, int sz)
+int BGBCC_JX2_EmitNamedCommSym(BGBCC_JX2_Context *ctx, char *name,
+	int sz, int al)
 {
 	int lbl;
 	
 	lbl=BGBCC_JX2_LookupNamedLabel(ctx, name);
-	return(BGBCC_JX2_EmitCommSym(ctx, lbl, sz));
+	return(BGBCC_JX2_EmitCommSym(ctx, lbl, sz, al));
 
 //	BGBCC_JX2_SetSectionName(sctx, ".bss");
 //	BGBCC_JX2_EmitBAlign(sctx, 4);

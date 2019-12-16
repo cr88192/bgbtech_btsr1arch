@@ -1379,9 +1379,12 @@ int BGBCC_JX2_ConstIsFull64(BGBCC_JX2_Context *ctx, s64 v)
 		return(0);
 	if(v==((s64)((u32)v)))
 		return(0);
-		
-	if(((u32)v)==0)
+
+	if(v==((v>>48)<<48))
 		return(0);
+		
+//	if(((u32)v)==0)
+//		return(0);
 
 	return(1);
 }
@@ -1392,7 +1395,7 @@ int BGBCC_JX2_EmitLoadRegImm64P(
 	u32 imm_f32;
 	u16 imm_f16;
 	s32 lo, hi;
-	s64 imm_fh;
+	s64 imm_fh, imm1;
 	int rt1, rt2, shl;
 	int opw1, opw2, opw3, opw4, opw5, opw6;
 
@@ -1600,6 +1603,19 @@ int BGBCC_JX2_EmitLoadRegImm64P(
 				opw3=0xF201|((reg&15)<<4);
 				opw4=0xC000|((reg&16)<<6)|(imm&0x3FF);
 			}
+
+#if 1
+			if((opw1<0) && ((imm&0xFFFFFFFF00000000ULL)==imm))
+			{
+				imm1=imm>>32;
+				opw1=0xF400|((imm1>>24)&0x00FF);
+				opw2=0xC000|((imm1>>10)&0x3FFF);
+				opw3=0xF201|((reg&15)<<4);
+				opw4=0xC000|((reg&16)<<6)|(imm1&0x3FF);
+				opw5=0xF200|((reg&15)<<4)|(reg&15);
+				opw6=0x8800|((reg&16)?0x0600:0x0000)|32;
+			}
+#endif
 
 			if(	(opw1<0) &&
 				BGBCC_JX2_EmitCheckRegBaseGPR(ctx, reg) &&

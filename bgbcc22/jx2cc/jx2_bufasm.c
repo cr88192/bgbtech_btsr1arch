@@ -1748,7 +1748,7 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 
 			j=j*k;
 
-			BGBCC_JX2_EmitNamedCommSym(ctx, tk0+1, j);
+			BGBCC_JX2_EmitNamedCommSym(ctx, tk0+1, j, 0);
 			*rcs=cs2;
 			return(1);
 		}

@@ -825,7 +825,8 @@ int main(int argc, char *argv[])
 	rd_n_exp=0;
 	rd_n_map=0;
 	ifn=NULL;
-	ifmd=0; rdsz=128;
+//	ifmd=0; rdsz=128;
+	ifmd=0; rdsz=256;
 	mhz=100;
 	for(i=1; i<argc; i++)
 	{
