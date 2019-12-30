@@ -617,6 +617,7 @@ Register Notation:
 * Rn, Destination Register
 * Rj, Source Register (R16..R31)
 * Rk, Destination Register (R16..R31)
+* Rx, Source/Destination Register (Even, LSB: 0=R0..R6, 1=R16..R30)
 * Cm, Source Register (Control Register)
 * Cn, Destination Register (Control Register)
 * Sm, Source Register (Shadow Register)
@@ -726,9 +727,9 @@ Instruction Space
 ** 26jj  LDISH	#imm8u, DLR			//DLR=(DLR SHL 8)|Imm8u
 ** 27nj  -
 ** 28nd  MOVU.L	(SP, disp4u), Rn	//Stack-Relative ZX Load
-** 29nj  -
+** 29nj  MOV.X	Rx, (SP, disp4u)	//(MOVX2) Stack-Relative Store Pair
 ** 2And  MOVU.L	(SP, disp4u), Rk	//Stack-Relative ZX Load
-** 2Bnj  -
+** 2Bnj  MOV.X	(SP, disp4u), Rx	//(MOVX2) Stack-Relative Load Pair
 ** 2Cnj  CMPEQ	#imm4u, Rn			//Rn==Imm4, Zero Extend
 ** 2Dnj  CMPEQ	#imm4n, Rn			//Rn==Imm4, One Extend
 ** 2Enj  CMPGT	#imm4u, Rn			//Rn==Imm4, Zero Extend
@@ -815,9 +816,9 @@ Instruction Space
 ** 32n9  -
 ** 32nA  -
 ** 32nB  -
-** 32nC  -
+** 32nC ? PUSH.X	Rn				//(MOVX2) Push register pair
 ** 32nD  -
-** 32nE  -
+** 32nE ? POP.X		Rn				//(MOVX2) Pop register pair
 ** 32nF  -
 
 ** 33n0  NOT	Rn					//Rn=~Rn
@@ -1031,13 +1032,13 @@ The encoding of predicated forms will be otherwise equivalent to their Fz counte
 
 F0zz Instruction Block:
 * F0zz_0zzz
-** F0nm_0gd0  /
+** F0nm_0gd0 ? MOV.B	Rn, (Rm, Disp5)
 ** F0nm_0Gd0  /
-** F0nm_0gd1  /
+** F0nm_0gd1 ? MOV.W	Rn, (Rm, Disp5)
 ** F0nm_0Gd1  /
-** F0nm_0gd2  /
+** F0nm_0gd2 ? MOV.L	Rn, (Rm, Disp5)
 ** F0nm_0Gd2  /
-** F0nm_0gd3  /
+** F0nm_0gd3 ? MOV.Q	Rn, (Rm, Disp5)
 ** F0nm_0Gd3  /
 ** F0nm_0go4  MOV.B		Rn, (Rm, Ro)		//Q=0
 ** F0nm_0Go4  LEA.B		(Rm, Ro), Rn		//Q=1
@@ -1047,13 +1048,13 @@ F0zz Instruction Block:
 ** F0nm_0Go6  LEA.L		(Rm, Ro), Rn		//Q=1
 ** F0nm_0go7  MOV.Q		Rn, (Rm, Ro)		//Q=0
 ** F0nm_0Go7  LEA.Q		(Rm, Ro), Rn		//Q=1
-** F0nm_0gd8  /
+** F0nm_0gd8 ? MOV.B	(Rm, Disp5), Rn
 ** F0nm_0Gd8  /
-** F0nm_0gd9  /
+** F0nm_0gd9 ? MOV.W	(Rm, Disp5), Rn
 ** F0nm_0Gd9  /
-** F0nm_0gdA  /
+** F0nm_0gdA ? MOV.L	(Rm, Disp5), Rn
 ** F0nm_0GdA  /
-** F0nm_0gdB  /
+** F0nm_0gdB ? MOV.Q	(Rm, Disp5), Rn
 ** F0nm_0GdB  /
 ** F0nm_0goC  MOV.B		(Rm, Ro), Rn		//Q=0
 ** F0nm_0GoC  MOVU.B	(Rm, Ro), Rn		//Q=1
@@ -1275,7 +1276,23 @@ F0zz Instruction Block:
 *** ...
 *** F0nm_3ezF  (2R Block)
 
-** F0en_4Xdd  
+* F0nm_4eoz (Follows same pattern as F0nm_0zz0)
+** F0nm_4eo0 ? MOV.X	Rn, (Rm, Disp5)		//(MOVX2) Store Pair
+** F0nm_4eo1  -
+** F0nm_4eo2  -
+** F0nm_4eo3  -
+** F0nm_4eo4  MOV.X		Rn, (Rm, Ro)		//(MOVX2) Store Pair
+** F0nm_4eo5  -
+** F0nm_4eo6  -
+** F0nm_4eo7  -
+** F0nm_4eo8 ? MOV.X	(Rm, Disp5), Rn		//(MOVX2) Load Pair
+** F0nm_4eo9  -
+** F0nm_4eoA  -
+** F0nm_4eoB  -
+** F0nm_4eoC  MOV.X		(Rm, Ro), Rn		//(MOVX2) Load Pair
+** F0nm_4eoD  -
+** F0nm_4eoE  -
+** F0nm_4eoF  -
 
 * F0zz_5zzz
 ** F0nm_5go0  CSELT		Rm, Ro, Rn			//Rn=SR.T?Rm:Ro

@@ -196,6 +196,9 @@ begin
 	tOutOK			= UMEM_OK_READY;
 	tPwmNextValL	= tPwmValL;
 	tPwmNextValR	= tPwmValR;
+	tPcmNextValL	= tPcmValL;
+	tPcmNextValR	= tPcmValR;
+
 //	tNxtClkDivCnt	= tClkDivCnt + 1;
 	tNxtClkDivCnt	= tClkDivCnt - 1;
 	tNxtSampPos		= tSampPos;
@@ -327,13 +330,24 @@ begin
 //	tPwmNextValL	= tPcmNextValL + { auxPcmL, 7'h0, timerNoise };
 //	tPwmNextValR	= tPcmNextValR + { auxPcmR, 7'h0, timerNoise };
 
-`ifdef def_true
+`ifndef def_true
 	tPwmAddValL = 
 		{ tPcmValL[15] ? 2'b11 : 2'b00, tPcmValL[15:2] } +
 		{ tAuxPcmL[ 7] ? 2'b11 : 2'b00, tAuxPcmL, 5'h0, timerNoise };
 	tPwmAddValR =
 		{ tPcmValR[15] ? 2'b11 : 2'b00, tPcmValR[15:2] } +
 		{ tAuxPcmR[ 7] ? 2'b11 : 2'b00, tAuxPcmR, 5'h0, timerNoise };
+	tPwmNextValL = tPwmAddValL;
+	tPwmNextValR = tPwmAddValR;
+`endif
+
+`ifdef def_true
+	tPwmAddValL = 
+		{ tPcmValL[15], tPcmValL[15:1] } +
+		{ tAuxPcmL[ 7], tAuxPcmL[7:0], 6'h0, timerNoise };
+	tPwmAddValR =
+		{ tPcmValR[15], tPcmValR[15:1] } +
+		{ tAuxPcmR[ 7], tAuxPcmR[7:0], 6'h0, timerNoise };
 	tPwmNextValL = tPwmAddValL;
 	tPwmNextValR = tPwmAddValR;
 `endif
@@ -391,11 +405,11 @@ begin
 
 	tPcmValL	<= tPcmNextValL;
 	tPcmValR	<= tPcmNextValR;
-//	tAuxPcmL	<= auxPcmL;
-//	tAuxPcmR	<= auxPcmR;
 
-	tAuxPcmL	<= { ~auxPcmL[7], auxPcmL[6:0] };
-	tAuxPcmR	<= { ~auxPcmR[7], auxPcmR[6:0] };
+	tAuxPcmL	<= auxPcmL;
+	tAuxPcmR	<= auxPcmR;
+//	tAuxPcmL	<= { ~auxPcmL[7], auxPcmL[6:0] };
+//	tAuxPcmR	<= { ~auxPcmR[7], auxPcmR[6:0] };
 
 //	tPwmValL	<= tPwmNextValL;
 //	tPwmValR	<= tPwmNextValR;

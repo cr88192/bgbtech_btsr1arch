@@ -61,13 +61,34 @@ BasicData {
 Symbolic Links will span multiple entries, and need not have a corresponding external file.
 
 MetaEnt_Link {
-  BYTE name1[8];	//File Name or Destination
-  BYTE baseIdx[2];	//Base Index (of first entry, ID)
-  BYTE seq;			//Sequence Number
+  BYTE name1[11];	//File Name or Destination
   BYTE etype;		//Entry Type
-  BYTE name2[20];	//File Name or Destination
+  BYTE eseq;		//Sequence Number
+  BYTE eflag;		//Flags
+  BYTE name2[30];	//File Name or Destination
 };
 
 Link entries will be applied in sequence order.
 The corresponding field will be appended to the prior entries.
+
+
+Link entries may also be used for small inline files.
+
+
+=== TKPAK FAT ===
+
+Partial VFS built on top of FAT32.
+* Will use a special directory in the root of the volume.
+** Will hold various image-scope files.
+* Will represent entire directory trees.
+** Merged with host-level directories.
+* Will use virtual clusters, which may be compressed.
+* Directories will reuse the same base format as FAT.
+* Larger files will be stored externally.
+* Multiple small files may share the same clusters.
+** File Size will be interpreted as 16b offset+size.
+** Offset will be in multiples of 64 bytes.
+
+There will be one or more files contailing the FAT.
+There will be one or more files containing the compressed data area.
 

@@ -36,6 +36,11 @@ reg[31:0]		tValRtSx;
 
 always @*
 begin
+	tIdUCmd	= idUCmd;
+	tIdUIxt	= idUIxt;
+	tValRs	= valRs;
+	tValRt	= valRt;
+
 	if(tIdUIxt[0])
 	begin
 		tValRsSx= { UV16_00, tValRs[15:0] };
@@ -54,17 +59,20 @@ end
 
 always @(posedge clock)
 begin
+//	if(!exHold)
+//	begin
+//		tIdUCmd	<= idUCmd;
+//		tIdUIxt	<= idUIxt;
+//		tValRs	<= valRs;
+//		tValRt	<= valRt;
+//	end
+	
 	if(!exHold)
 	begin
-		tIdUCmd	<= idUCmd;
-		tIdUIxt	<= idUIxt;
-		tValRs	<= valRs;
-		tValRt	<= valRt;
+		tIdUCmdB	<= tIdUCmd;
+		tIdUIxtB	<= tIdUIxt;
+		tValRn1		<= tValRsSx * tValRtSx;
 	end
-	
-	tIdUCmdB	<= tIdUCmd;
-	tIdUIxtB	<= tIdUIxt;
-	tValRn1		<= tValRsSx * tValRtSx;
 end
 
 endmodule

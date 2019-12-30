@@ -125,8 +125,8 @@ MMIO Space:
 * 0000E054(R): PS2 Mouse TX
 * 0000E058(R): PS2 Mouse Status
 
-* 0000E060(R): LCD Read Data
-* 0000E064(R): LCD Write Data / Command
+* 0000E060(R/W): LCD Status / Control
+* 0000E064(R/W): LCD Read/Write Data/Command
 * 0000E068(R): LCD Status
 
 * 0000E100(R): GPIO In

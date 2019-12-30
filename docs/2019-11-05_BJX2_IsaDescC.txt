@@ -747,8 +747,6 @@ This may be relevant on implementations where leaving the high bits undefined ca
 Load or store a Byte to/from memory.
 The byte is zero extended to the size of the register.
 
-Note that these instruction forms will be specific to the 32-bit ISA.
-
 
 === MOVU.L ===
 
@@ -762,10 +760,8 @@ Note that these instruction forms will be specific to the 32-bit ISA.
 * FC27_Endd_dddd  MOVU.L	(PC, disp24s), Rn
 * FD27_Endd_dddd  MOVU.L	(PC, disp24s), Rk
 
-Load or store a Byte to/from memory.
+Load or store a DWord to/from memory.
 The byte is zero extended to the size of the register.
-
-Note that these instruction forms will be specific to the 32-bit ISA.
 
 
 === MOVU.W ===
@@ -781,7 +777,16 @@ Note that these instruction forms will be specific to the 32-bit ISA.
 Load or store a Word to/from memory.
 The word is zero extended to the size of the register.
 
-Note that these instruction forms will be specific to the 32-bit ISA.
+
+=== MOV.X (MOVX2) ===
+
+* 29nd            MOV.X		(SP, disp4u), Rx
+* 2Bnd            MOV.X		Rx, (SP, disp4u)
+* F0nm_4eo0       MOV.X		Rn, (Rm, Ro)
+* F0nm_4eo4       MOV.X		(Rm, Ro), Rn
+
+Load or Store a 128-bit Register Pair.
+Register pair is Even/Odd, and the target memory address is required to have an 8 byte alignment.
 
 
 === MULS (3R) ===
@@ -949,6 +954,19 @@ Note that POP into PC may be treated as a special case "RET" instruction (option
 * F019_3en0  PUSH		Cn		//Fix32
 
 Decrement the stack position and store the value from the register to this location.
+
+
+=== PUSH.X/POP.X (MOVX2) ===
+
+* 32nC       PUSH.X		Rn
+* 32nE       POP.X		Rn
+* F02C_3en0  PUSH.X		Rn
+* F02E_3en0  POP.X		Rn
+
+Push or pop a pair of registers (optional extension).
+The register given will have the LSB clear, and the registers pushed/popped will be Rn and Rn|1.
+
+Implicitly, these operations will be scalar only, and will span multiple execute lanes.
 
 
 === RET ===
