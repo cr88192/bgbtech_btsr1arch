@@ -616,6 +616,8 @@ int nmid;
 {"dmuls.l",	BGBCC_SH_NMID_DMULS},
 {"mulu",	BGBCC_SH_NMID_DMULU},
 {"muls",	BGBCC_SH_NMID_DMULS},
+{"mulu.l",	BGBCC_SH_NMID_MULUL},
+{"muls.l",	BGBCC_SH_NMID_MULSL},
 {"tst",		BGBCC_SH_NMID_TST},
 {"test",	BGBCC_SH_NMID_TST},
 {"tstq",	BGBCC_SH_NMID_TSTQ},
@@ -728,6 +730,10 @@ int nmid;
 {"ret",		BGBCC_SH_NMID_RET},
 {"rtsu",	BGBCC_SH_NMID_RTSU},
 {"syscall",	BGBCC_SH_NMID_SYSCALL},
+
+{"push.x",	BGBCC_SH_NMID_PUSHX2},
+{"pop.x",	BGBCC_SH_NMID_POPX2},
+{"mov.x",	BGBCC_SH_NMID_MOVX2},
 
 {"ldtlb",	BGBCC_SH_NMID_LDTLB},
 {"invic",	BGBCC_SH_NMID_INVIC},
@@ -931,6 +937,8 @@ int BGBCC_JX2A_LookupOpcodeFmid(
 				fm=BGBCC_SH_FMID_REGSTR0N; break;
 			case BGBCC_SH_OPVTY_RDMEM:
 				fm=BGBCC_SH_FMID_REGSTDISP; break;
+			case BGBCC_SH_OPVTY_NAME:
+				fm=BGBCC_SH_FMID_REGLBL; break;
 			default: fm=0; break;
 			}
 			break;
@@ -1157,6 +1165,11 @@ int BGBCC_JX2A_TryAssembleOpcode(
 	case BGBCC_SH_FMID_LBLREG:
 		lbl=BGBCC_JX2_GetNamedLabel(ctx, arg0->name);
 		rt=BGBCC_JX2_TryEmitOpLblReg(ctx, nmid, lbl, arg1->breg);
+		break;
+
+	case BGBCC_SH_FMID_REGLBL:
+		lbl=BGBCC_JX2_GetNamedLabel(ctx, arg1->name);
+		rt=BGBCC_JX2_TryEmitOpRegLbl(ctx, nmid, lbl, arg0->breg);
 		break;
 
 	default:

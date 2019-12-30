@@ -11,6 +11,9 @@ X(tk_checksane_wex_asm):
 
 	mov #-1, r0
 	invic r0
+	nop
+	nop
+	nop
 
 	wexmd #1
 	nop
@@ -18,17 +21,29 @@ X(tk_checksane_wex_asm):
 	nop
 	nop
 
+	.L0A:
+
 	mov #0x1234, r4 | mov #0x5678, r5
 	add r4, r5, r2 | sub r5, r4, r3
 
+	.L0B:
+
 	mov 0x68AC, r6
 	mov 0x4444, r7
+
+	.L0C:
 	
 	cmpeq r2, r6
-	bf _checksane_wex_fail
+//	bf _checksane_wex_fail
+	break?f
+
+	.L0D:
 
 	cmpeq r3, r7
-	bf _checksane_wex_fail
+//	bf _checksane_wex_fail
+	break?f
+	
+	.L1:
 	
 	and r4, 0x7F, r2	| xor r5, 0x78, r3
 
@@ -36,11 +51,14 @@ X(tk_checksane_wex_asm):
 	mov 0x5600, r9
 	
 	cmpeq r2, r8
-	bf _checksane_wex_fail
+//	bf _checksane_wex_fail
+	break?f
 
 	cmpeq r3, r9
-	bf _checksane_wex_fail
+//	bf _checksane_wex_fail
+	break?f
 
+	.L2:
 
 	mov #0x1234, r4			| mov #0x89AB, r5
 	ldish16 #0x5678, r4		| ldish16 #0xCDEF, r5
@@ -50,11 +68,14 @@ X(tk_checksane_wex_asm):
 	mov 0x77777777, r7
 	
 	cmpeq r2, r6
-	bf _checksane_wex_fail
+//	bf _checksane_wex_fail
+	break?f
 
 	cmpeq r3, r7
-	bf _checksane_wex_fail
+//	bf _checksane_wex_fail
+	break?f
 
+	.L3:
 
 	mov #0x89AB, r1
 	mov.l r1, (sp, 12)
@@ -68,7 +89,8 @@ X(tk_checksane_wex_asm):
 
 	
 	cmpeq r19, r8
-	bf _checksane_wex_fail
+//	bf _checksane_wex_fail
+	break?f
 
 	wexmd #2
 
@@ -80,14 +102,18 @@ X(tk_checksane_wex_asm):
 	mov 0xDFD3, r10
 	
 	cmpeq r2, r8
-	bf _checksane_wex_fail
+//	bf _checksane_wex_fail
+	break?f
 
 	cmpeq r3, r9
-	bf _checksane_wex_fail
+//	bf _checksane_wex_fail
+	break?f
 
 	cmpeq r7, r10
-	bf _checksane_wex_fail
+//	bf _checksane_wex_fail
+	break?f
 	
+	.L4:
 	
 	wexmd #0
 

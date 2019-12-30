@@ -108,7 +108,8 @@ int NUM_FOR_EDICT(edict_t *e);
 #define G_EDICTNUM(o) NUM_FOR_EDICT(G_EDICT(o))
 #define	G_VECTOR(o) (&pr_globals[o])
 // #define	G_STRING(o) (pr_strings + *(string_t *)&pr_globals[o])
-#define	G_STRING(o) (pr_strings + ((string_t *)pr_globals)[o])
+// #define	G_STRING(o) (pr_strings + ((string_t *)pr_globals)[o])
+#define	G_STRING(o) (PR_GString(o))
 #define	G_FUNCTION(o) (*(func_t *)&pr_globals[o])
 
 #define	E_FLOAT(e,o) (((float*)&e->v)[o])

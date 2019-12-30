@@ -206,6 +206,7 @@ void *tbc_buf[256];
 //void *tbc_buf[1024];
 
 int tbc_num;
+int tbc_max;
 int tbc_pred0;
 int tbc_pred1;
 int tbc_rov;

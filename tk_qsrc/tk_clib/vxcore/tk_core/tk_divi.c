@@ -64,7 +64,7 @@ s32 __sdivsi3(s32 a, s32 b)
 }
 #endif
 
-#if 1
+#if 0
 static int _fcn_clz64(u64 v)
 {
 	const u64 m1=0x8000000000000000ULL;
@@ -84,7 +84,9 @@ static int _fcn_clz64(u64 v)
 		{ n++; c+=c; }
 	return(n);
 }
+#endif
 
+#if 0
 u64 __udivdi3(u64 n, u64 d)
 {
 	u64 q, r;
@@ -117,7 +119,9 @@ u64 __udivdi3(u64 n, u64 d)
 	q=(q<<1)|c;
 	return(q);
 }
+#endif
 
+#if 0
 s64 __sdivdi3(s64 a, s64 b)
 {
 	s64 sga, sgb;

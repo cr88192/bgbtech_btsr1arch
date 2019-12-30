@@ -385,6 +385,27 @@ void BJX2_Op_MOVUL_LdRegDispReg(BJX2_Context *ctx, BJX2_Opcode *op)
 		(bjx2_addr)(ctx->regs[op->rm])+(op->imm*4));
 }
 
+void BJX2_Op_MOVX2_RegStRegDisp(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->trapc=op->pc;
+	BJX2_MemSetQWord(ctx,
+		(bjx2_addr)(ctx->regs[op->rn])+(op->imm*8+0),
+		ctx->regs[op->rm+0]);
+	BJX2_MemSetQWord(ctx,
+		(bjx2_addr)(ctx->regs[op->rn])+(op->imm*8+8),
+		ctx->regs[op->rm+1]);
+}
+
+void BJX2_Op_MOVX2_LdRegDispReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->trapc=op->pc;
+	ctx->regs[op->rn+0]=BJX2_MemGetQWord(ctx,
+		(bjx2_addr)(ctx->regs[op->rm])+(op->imm*8+0));
+	ctx->regs[op->rn+1]=BJX2_MemGetQWord(ctx,
+		(bjx2_addr)(ctx->regs[op->rm])+(op->imm*8+8));
+}
+
+
 void BJX2_Op_MOVB_RegStDrAbs(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	ctx->trapc=op->pc;
@@ -680,6 +701,31 @@ void BJX2_Op_POP_FpReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->fpreg[op->rn]=BJX2_MemGetQWord(ctx,
 		ctx->regs[BJX2_REG_SP]);
 	ctx->regs[BJX2_REG_SP]+=8;
+}
+#endif
+
+#if 1
+void BJX2_Op_PUSHX2_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->trapc=op->pc;
+	ctx->regs[BJX2_REG_SP]-=16;
+
+	BJX2_MemSetQWord(ctx,
+		ctx->regs[BJX2_REG_SP]+8,
+		ctx->regs[op->rn+1]);
+	BJX2_MemSetQWord(ctx,
+		ctx->regs[BJX2_REG_SP]+0,
+		ctx->regs[op->rn+0]);
+}
+
+void BJX2_Op_POPX2_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->trapc=op->pc;
+	ctx->regs[op->rn+0]=BJX2_MemGetQWord(ctx,
+		ctx->regs[BJX2_REG_SP]+0);
+	ctx->regs[op->rn+1]=BJX2_MemGetQWord(ctx,
+		ctx->regs[BJX2_REG_SP]+8);
+	ctx->regs[BJX2_REG_SP]+=16;
 }
 #endif
 

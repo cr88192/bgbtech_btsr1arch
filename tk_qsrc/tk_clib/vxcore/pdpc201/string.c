@@ -648,7 +648,7 @@ __PDPCLIB_API__ int strnicmp(const char *s1, const char *s2, size_t n)
 #undef memcpy
 #endif
 
-#if 1
+#if 0
 // #ifndef __32BIT__
 #if 0
 __PDPCLIB_API__ void *memcpy(void *s1, const void *s2, size_t n)

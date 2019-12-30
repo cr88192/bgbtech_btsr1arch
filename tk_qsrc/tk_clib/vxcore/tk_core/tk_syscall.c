@@ -143,10 +143,14 @@ int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 			}
 			break;
 		default:
+			tk_printf("SYSC: BAD sObj=%p, uMsg=%X, vParm1=%p, vParm1=%p\n",
+				sObj, uMsg, vParm1, vParm2);
 			break;
 		}
 		break;
 	default:
+		tk_printf("SYSC: BAD sObj=%p, uMsg=%X, vParm1=%p, vParm1=%p\n",
+			sObj, uMsg, vParm1, vParm2);
 		break;
 	}
 	

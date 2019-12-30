@@ -273,8 +273,13 @@ void BGBCC_JX2_UpdatePszxWord(BGBCC_JX2_Context *ctx, int val)
 		{
 		case 0: case 1: case 2: case 3:
 			break;
-		case 4: case 5: case 6: case 7:
+//		case 4: case 5: case 6: case 7:
+		case 4: case 5: case 7:
 			break;
+
+		case 6:
+			rn=rn_dfl;	sx=BGBCC_PSZX_UNK;	break;
+
 //		case 8: case 9:
 //			break;
 //		case 0xA:
@@ -286,6 +291,9 @@ void BGBCC_JX2_UpdatePszxWord(BGBCC_JX2_Context *ctx, int val)
 			rn=rn_dfl;	sx=BGBCC_PSZX_ZX;	break;
 		case 0xA:
 			rn=rk_dfl;	sx=BGBCC_PSZX_ZX;	break;
+		case 0x9:
+		case 0xB:
+			rn=rn_dfl;	sx=BGBCC_PSZX_UNK;	break;
 
 		case 0xC: case 0xD: case 0xE: case 0xF:
 			break;
@@ -505,10 +513,32 @@ void BGBCC_JX2_UpdatePszxWordF0(BGBCC_JX2_Context *ctx,
 			}
 			break;
 
+		case 0xA:
+		case 0xB:
+			rn=rn_dfl;	sx=BGBCC_PSZX_UNK;
+			break;
+
 		case 0xC:	
 //			switch((opw1>>0)&15)
 			switch((opw2>>4)&15)
 			{
+			case 0:
+				rn=rn_dfl;	sx=rm_sx;
+				break;
+			case 1:
+				rn=rn_dfl;	sx=rm_sx;
+				break;
+			case 2:
+				rn=rn_dfl;
+				sx=BGBCC_PSZX_SZX;
+				break;
+
+			case 4:
+				rn=rn_dfl;	sx=eq?BGBCC_PSZX_ZX:BGBCC_PSZX_SX;
+				break;
+			case 5:
+				rn=rn_dfl;	sx=eq?BGBCC_PSZX_ZX:BGBCC_PSZX_SX;
+				break;
 			case 6:
 				rn=rn_dfl;	sx=eq?BGBCC_PSZX_QW:BGBCC_PSZX_SX;
 				break;
@@ -535,6 +565,10 @@ void BGBCC_JX2_UpdatePszxWordF0(BGBCC_JX2_Context *ctx,
 			}
 			break;
 
+		case 0xD:
+			rn=rn_dfl;	sx=BGBCC_PSZX_UNK;
+			break;
+
 		default:
 			rn=rn_dfl;	sx=BGBCC_PSZX_UNK;
 			break;
@@ -558,6 +592,11 @@ void BGBCC_JX2_UpdatePszxWordF0(BGBCC_JX2_Context *ctx,
 		if(((opw2>>0)&15)==0)
 			{ rn=ro_dfl;	sx=BGBCC_PSZX_UNK; break; }
 		rn=rn_dfl;	sx=BGBCC_PSZX_UNK;
+		break;
+
+	case 0x4:
+		if(((opw2>>0)&15)>=8)
+			{ rn=rn_dfl;	sx=BGBCC_PSZX_UNK; }
 		break;
 
 	case 0x5:
@@ -713,6 +752,39 @@ void BGBCC_JX2_UpdatePszxWordF2(BGBCC_JX2_Context *ctx,
 		break;
 
 	case 0xC:
+		switch(opw1&15)
+		{
+		case 0x0:
+			rn=rn_dfl;	sx=BGBCC_PSZX_SX;
+			break;
+		case 0x1:
+			rn=rn_dfl;	sx=BGBCC_PSZX_ZX;
+			break;
+		case 0x2:	case 0x3:
+			rn=rn_dfl;	sx=BGBCC_PSZX_UNK;
+			break;
+		case 0x4:	case 0x5:	case 0x6:	case 0x7:
+		case 0x8:	case 0x9:	case 0xA:	case 0xB:
+		case 0xC:	case 0xD:	case 0xE:	case 0xF:
+			break;
+		}
+		break;
+
+	case 0xD:
+		switch(opw1&15)
+		{
+		case 0x0:
+		case 0x1:
+			rn=rn_dfl;	sx=BGBCC_PSZX_UNK;
+			break;
+		case 0x2:
+		case 0x3:
+			rn=rn_dfl;	sx=eq?BGBCC_PSZX_ZX:BGBCC_PSZX_SX;
+			break;
+		default:
+			rn=rn_dfl;	sx=BGBCC_PSZX_UNK;
+			break;
+		}
 		break;
 
 #if 0

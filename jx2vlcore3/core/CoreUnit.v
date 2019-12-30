@@ -379,7 +379,7 @@ ModTxtNtW	scrn(
 	clock,			reset,				scrnPwmOut,
 	mmioOutDataQ,	scrnMmioOutData,	mmioAddr,
 	mmioOpm,		scrnMmioOK,
-	timerNoise);
+	timerNoise,		timer256Hz);
 
 wire[1:0]	audPwmOut;
 wire[31:0]	audMmioOutData;

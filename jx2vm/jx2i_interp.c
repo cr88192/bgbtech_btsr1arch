@@ -610,6 +610,10 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_LDI:			s0="LDI";		break;
 	case BJX2_NMID_JLDI:		s0="JLDI";		break;
 
+	case BJX2_NMID_MOVX2:		s0="MOV.X";		break;
+	case BJX2_NMID_PUSHX2:		s0="PUSH.X";	break;
+	case BJX2_NMID_POPX2:		s0="POP.X";		break;
+
 	case BJX2_NMID_ADDSL:		s0="ADDS.L";	break;
 	case BJX2_NMID_ADDUL:		s0="ADDU.L";	break;
 	case BJX2_NMID_SUBSL:		s0="SUBS.L";	break;

@@ -636,7 +636,8 @@ char HU_dequeueChatChar(void)
 boolean HU_Responder(event_t *ev)
 {
 
-    static char		lastmessage[HU_MAXLINELENGTH+1];
+//    static char		lastmessage[HU_MAXLINELENGTH+1];
+    static char		lastmessage[HU_MAXLINELENGTH+31];
     char*		macromessage;
     boolean		eatkey = false;
     static boolean	shiftdown = false;

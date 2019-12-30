@@ -37,6 +37,12 @@ int				r_lightwidth;
 int				r_numhblocks, r_numvblocks;
 unsigned char	*r_source, *r_sourcemax;
 
+
+unsigned short *r_vid_colormap16;
+//	r_vid_colormap16=vid.colormap16;
+
+
+
 void R_DrawSurfaceBlock8_mip0 (void);
 void R_DrawSurfaceBlock8_mip1 (void);
 void R_DrawSurfaceBlock8_mip2 (void);
@@ -340,6 +346,8 @@ void R_DrawSurface (void)
 
 	r_sourcemax = r_source + (tmax * smax);
 //	r_sourcemax = r_source + (tmax * smax * r_pixbytes);
+
+	r_vid_colormap16 = vid.colormap16;
 
 	soffset = r_drawsurf.surf->texturemins[0];
 	basetoffset = r_drawsurf.surf->texturemins[1];
@@ -724,6 +732,8 @@ void R_DrawSurfaceBlock16_mipN (int mip)
 }
 
 #if 1
+
+#if 0
 void R_DrawSurfaceBlock16_mip0 (void)
 {
 	int				v, i, l, d;
@@ -844,7 +854,9 @@ void R_DrawSurfaceBlock16_mip0 (void)
 			{ psource -= r_stepback; }
 	}
 }
+#endif
 
+#if 0
 void R_DrawSurfaceBlock16_mip1 (void)
 {
 	int				v, i, b, l, d;
@@ -910,6 +922,8 @@ void R_DrawSurfaceBlock16_mip1 (void)
 			{ psource -= r_stepback; }
 	}
 }
+#endif
+
 #endif
 
 //void R_DrawSurfaceBlock16_mip0 (void)

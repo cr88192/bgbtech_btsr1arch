@@ -39,9 +39,12 @@
 #define PU_DAVE		4	// anything else Dave wants static
 #define PU_LEVEL		50	// static until level exited
 #define PU_LEVSPEC		51      // a special thinker in a level
+#define PU_LEVELMOBJ	52	// static until level exited
+
 // Tags >= 100 are purgable whenever needed.
 #define PU_PURGELEVEL	100
 #define PU_CACHE		101
+#define PU_CACHELUMP	102
 
 
 void	Z_Init (void);

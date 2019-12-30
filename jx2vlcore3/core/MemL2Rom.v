@@ -44,6 +44,8 @@ reg[127:0]	tRomBlkData;
 reg[127:0]	tRamBlkData;
 reg[10:0]	tRomBlkIx;
 reg[8:0]	tRamBlkIx;
+reg[10:0]	tRomBlkIxL;
+reg[8:0]	tRamBlkIxL;
 
 reg[127:0]	tRamStBlkData;
 reg[8:0]	tRamStBlkIx;
@@ -83,15 +85,17 @@ begin
 //		$display("L2 ROM");
 
 		tMemDataOut		= tRomBlkData;
-		tMemOK			= UMEM_OK_OK;
+//		tMemOK			= UMEM_OK_OK;
+		tMemOK			= (tRomBlkIxL==tRomBlkIx) ? UMEM_OK_OK : UMEM_OK_HOLD;
 	end
-
-	if(tAddrIsRam && (tMemOpm[4:3]!=2'b00))
+	else
+		if(tAddrIsRam && (tMemOpm[4:3]!=2'b00))
 	begin
 //		$display("L2 SRAM");
 
 		tMemDataOut		= tRamBlkData;
-		tMemOK			= UMEM_OK_OK;
+//		tMemOK			= UMEM_OK_OK;
+		tMemOK			= (tRamBlkIxL==tRamBlkIx) ? UMEM_OK_OK : UMEM_OK_HOLD;
 		
 		if(tMemOpm[4])
 		begin
@@ -110,6 +114,9 @@ begin
 	tMemAddr		<= memAddr;
 	tMemDataIn		<= memDataIn;
 	tMemOpm			<= memOpm;
+
+	tRomBlkIxL		<= tRomBlkIx;
+	tRamBlkIxL		<= tRamBlkIx;
 	
 	tRomBlkData	<= romTileData[tRomBlkIx];
 	tRamBlkData	<= ramTileData[tRamBlkIx];

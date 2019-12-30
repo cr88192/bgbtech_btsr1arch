@@ -204,6 +204,10 @@ V_CopyRect
 // Masks a column based masked pic to the screen. 
 //
 
+void V_DrawPatchCmap_Col(
+	byte *src, dt_scrpix *dst,
+	lighttable_t *tcol, int cnt);
+
 void
 V_DrawPatchCmap
 ( int		x,
@@ -220,7 +224,9 @@ V_DrawPatchCmap
     dt_scrpix	*dest;
     byte*	source; 
     int		w; 
-	
+
+	__hint_use_egpr();
+
 	if(!patch)
 		return;
 	 
@@ -303,7 +309,28 @@ V_DrawPatchCmap
 			}
 #endif
 
-#if 1
+#if 0
+			while (count>=8) 
+			{ 
+				dest[0*SCREENWIDTH] = tcol[source[0]];
+				dest[1*SCREENWIDTH] = tcol[source[1]];
+				dest[2*SCREENWIDTH] = tcol[source[2]];
+				dest[3*SCREENWIDTH] = tcol[source[3]];
+				dest += 4*SCREENWIDTH; 
+				source+=4;
+
+				dest[0*SCREENWIDTH] = tcol[source[0]];
+				dest[1*SCREENWIDTH] = tcol[source[1]];
+				dest[2*SCREENWIDTH] = tcol[source[2]];
+				dest[3*SCREENWIDTH] = tcol[source[3]];
+				dest += 4*SCREENWIDTH; 
+				source+=4;
+
+				count-=8;
+			}
+#endif
+
+#if 0
 			while (count>=4) 
 			{ 
 				dest[0*SCREENWIDTH] = tcol[source[0]];
@@ -317,12 +344,17 @@ V_DrawPatchCmap
 			}
 #endif
 
+#if 0
 			while (count--) 
 			{ 
 //				*dest = *source++; 
 				*dest = tcol[*source++];
 				dest += SCREENWIDTH; 
 			} 
+#endif
+
+			V_DrawPatchCmap_Col(source, dest, tcol, count);
+
 			column = (column_t *)(  (byte *)column + column->length 
 						+ 4 ); 
 		} 

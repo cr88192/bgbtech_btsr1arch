@@ -30,8 +30,11 @@ module ExEXB2(
 	regValAluRes,	//ALU Result
 	regValMulwRes,	//ALU Result
 	opBraFlush,
-	
-	regInSr
+
+	regInLastSr,	
+	regInSr,
+	memDataIn,
+	memDataInB
 	);
 
 input			clock;
@@ -60,6 +63,10 @@ input[63:0]		regValMulwRes;	//MUL.W Result
 input			opBraFlush;
 
 input[63:0]		regInSr;
+input[ 7:0]		regInLastSr;
+
+input[63:0]		memDataIn;
+input[63:0]		memDataInB;
 
 reg				tExHold;
 assign	exHold		= tExHold;
@@ -92,8 +99,10 @@ begin
 	casez( { opBraFlush, opUCmd[7:6] } )
 		3'b000: 	tOpEnable = 1;
 		3'b001: 	tOpEnable = 0;
-		3'b010: 	tOpEnable = regInSr[0];
-		3'b011: 	tOpEnable = !regInSr[0];
+//		3'b010: 	tOpEnable = regInSr[0];
+		3'b010: 	tOpEnable = regInLastSr[0];
+//		3'b011: 	tOpEnable = !regInSr[0];
+		3'b011: 	tOpEnable = !regInLastSr[0];
 		3'b1zz: 	tOpEnable = 0;
 	endcase
 	
@@ -113,6 +122,13 @@ begin
 		end
 	
 		JX2_UCMD_LEA_MR: begin
+		end
+
+		JX2_UCMD_MOV_RM: begin
+		end
+		JX2_UCMD_MOV_MR: begin
+			tRegIdRn2	= regIdRm;
+			tRegValRn2	= memDataInB;
 		end
 
 		JX2_UCMD_ADDSP: begin
@@ -151,7 +167,15 @@ begin
 		end
 		JX2_UCMD_MOV_CR: begin
 		end
-	
+
+		JX2_UCMD_PUSHX: begin
+		end
+
+		JX2_UCMD_POPX: begin
+			tRegIdRn2	= regIdRm;
+			tRegValRn2	= memDataInB;
+		end
+
 		default: begin
 			if(!tMsgLatch)
 				$display("EX2B: Unhandled UCmd %X", opUCmd);

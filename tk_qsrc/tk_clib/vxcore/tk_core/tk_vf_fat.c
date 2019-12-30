@@ -253,18 +253,29 @@ int tk_fat_fwrite(void *buf, int sz1, int sz2, TK_FILE *fd)
 	TKFAT_FAT_DirEntExt *dee;
 	int sz;
 
+	dee=fd->udata1;
+
 	if(!(dee->is_write))
 	{
 		tk_printf("tk_fat_fwrite: write to file in read mode\n");
+//		__debugbreak();
 		return(-1);
 	}
 
-	dee=fd->udata1;
+//	if((dee->is_write))
+//	{
+//		__debugbreak();
+//		tk_printf("tk_fat_fwrite: write to file in read mode\n");
+//		return(-1);
+//	}
+
 	sz=sz1*sz2;
 	sz=TKFAT_ReadWriteDirEntFile(
 		dee, fd->ofs, true, buf, sz);
 	dee->is_dirty=1;
 	if(sz>0)fd->ofs+=sz;
+	if(fd->ofs>fd->size)
+		fd->size=fd->ofs;
 	return(sz);
 }
 

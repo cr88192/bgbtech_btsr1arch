@@ -16,7 +16,13 @@ void *baseptr;		//base pointer for main binary
 void *bootptr;		//entry point for main binary
 void *basegbr;		//GBR for main binary, set on program startup.
 void *boottbr;		//main process TBR (threads), self-pointer for main thread.
-char tlsdat[2048];	//data for TLS
+
+void *boot_sps;		//Stack Start
+void *boot_spe;		//Stack End
+char **argv;
+char **env;
+
+char *tlsdat[2048];	//data for TLS
 
 void *span_ptr[256];
 int span_sz[256];

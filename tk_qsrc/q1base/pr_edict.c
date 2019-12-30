@@ -73,8 +73,17 @@ Sets everything to NULL
 */
 void ED_ClearEdict (edict_t *e)
 {
-	memset (&e->v, 0, progs->entityfields * 4);
+	void *p;
+	int i;
+
+	i = progs->entityfields * 4;
+	p = &e->v;
+//	__debugbreak();
+	
+	memset (p, 0, i);
 	e->free = false;
+
+//	__debugbreak();
 }
 
 /*
@@ -105,7 +114,8 @@ edict_t *ED_Alloc (void)
 		}
 	}
 	
-	if (i == MAX_EDICTS)
+//	if (i == MAX_EDICTS)
+	if (i >= MAX_EDICTS)
 		Sys_Error ("ED_Alloc: no free edicts");
 		
 	sv.num_edicts++;
@@ -298,8 +308,8 @@ char *PR_ValueString (etype_t type, eval_t *val)
 		sprintf (line, "%s", pr_strings + val->string);
 		break;
 	case ev_entity:	
-//		sprintf (line, "entity %i", NUM_FOR_EDICT(PROG_TO_EDICT(val->edict)) );
-		sprintf (line, "entity %i", val->edict );
+		sprintf (line, "entity %i", NUM_FOR_EDICT(PROG_TO_EDICT(val->edict)) );
+//		sprintf (line, "entity %i", val->edict );
 		break;
 	case ev_function:
 		if((val->function<0) || (val->function>=progs->numfunctions))
@@ -851,7 +861,9 @@ char *ED_ParseEdict (char *data, edict_t *ent)
 
 // clear it
 	if (ent != sv.edicts)	// hack
-		memset (&ent->v, 0, progs->entityfields * 4);
+	{
+//		memset (&ent->v, 0, progs->entityfields * 4);
+	}
 
 // go through all the dictionary pairs
 	while (1)

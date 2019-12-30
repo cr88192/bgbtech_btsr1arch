@@ -78,7 +78,7 @@ module ExEX1(
 	regOutSchm,	regInSchm,
 	
 	memAddr,	memOpm,
-	memDataOut
+	memDataOut,	memDataOutB
 	);
 
 
@@ -132,6 +132,7 @@ input[7:0]		regInSchm;
 output[31:0]	memAddr;
 output[ 4:0]	memOpm;
 output[63:0]	memDataOut;
+output[63:0]	memDataOutB;
 
 
 reg[ 5:0]		tRegIdRn1;		//Destination ID (EX1)
@@ -168,10 +169,12 @@ assign	exTrapExc	= tExTrapExc;
 reg[31:0]		tMemAddr;
 reg[ 4:0]		tMemOpm;
 reg[63:0]		tMemDataOut;
+reg[63:0]		tMemDataOutB;
 
 assign	memAddr		= tMemAddr;
 assign	memOpm		= tMemOpm;
 assign	memDataOut	= tMemDataOut;
+assign	memDataOutB	= tMemDataOutB;
 
 reg				tExHold;
 assign	exHold		= tExHold;
@@ -235,6 +238,9 @@ reg[63:0]	tRegSpAdd8;
 reg[63:0]	tRegSpSub8;
 reg[63:0]	tRegSpAddImm;
 
+reg[63:0]	tRegSpAdd16;
+reg[63:0]	tRegSpSub16;
+
 reg			tOpEnable;
 reg			tDoMemOp;
 reg[4:0]	tDoMemOpm;
@@ -263,9 +269,10 @@ begin
 	tRegOutSr	= regInSr;
 	tRegOutSchm	= regInSchm;
 
-	tMemAddr	= tValAgu;
-	tMemOpm		= UMEM_OPM_READY;
-	tMemDataOut	= regValRm;
+	tMemAddr		= tValAgu;
+	tMemOpm			= UMEM_OPM_READY;
+	tMemDataOut		= regValRm;
+	tMemDataOutB	= regValRt;
 	
 	tDoMemOpm		= UMEM_OPM_READY;
 	tDoMemOp		= 0;
@@ -276,6 +283,8 @@ begin
 
 	tRegSpAdd8		= { regInSp[63:28], regInSp[27:3]+25'h1, regInSp[2:0]};
 	tRegSpSub8		= { regInSp[63:28], regInSp[27:3]-25'h1, regInSp[2:0]};
+	tRegSpAdd16		= { regInSp[63:28], regInSp[27:4]+24'h1, regInSp[3:0]};
+	tRegSpSub16		= { regInSp[63:28], regInSp[27:4]-24'h1, regInSp[3:0]};
 
 `ifdef jx2_enable_addsp
 	tRegSpAddImm	=  { regInSp[63:28],
@@ -385,13 +394,28 @@ begin
 			tHeldIdCn1	= JX2_GR_IMM[4:0];
 			tRegOutSchm[JX2_SCHM_SP]	= 1;
 			
-			case(opUIxt[1:0])
-//				2'b00: 	tMemDataOut = regValRm;
-				2'b00: 	tMemDataOut = regValRs;
-				2'b01: 	tMemDataOut = regValCRm;
-				2'b10: 	tMemDataOut = regValFRs;
-//				2'b11: 	tMemDataOut = regValRm;
-				2'b11: 	tMemDataOut = regValRs;
+			case(opUIxt[2:0])
+//				3'b000: 	tMemDataOut = regValRm;
+				3'b000: 	tMemDataOut = regValRs;
+				3'b001: 	tMemDataOut = regValCRm;
+				3'b010: 	tMemDataOut = regValFRs;
+//				3'b011: 	tMemDataOut = regValRm;
+//				3'b011: 	tMemDataOut = regValRs;
+				3'b011: 	tMemDataOut = regValCRm;
+
+				3'b100: begin
+//					$display("EXA1: PushX Id=%d Rm=%X", regIdRm, regValRm);
+
+					tMemAddr	= tRegSpSub16[31:0];
+					tRegOutSp	= tRegSpSub16;
+					tDoMemOpm	= UMEM_OPM_WR_TILE;
+				 	tMemDataOut		= regValRm;
+//				 	tMemDataOut		= regValRs;
+//				 	tMemDataOutB	= regValRt;
+				end
+				
+				default: begin
+				end
 			endcase
 			
 `ifdef jx2_debug_ldst
@@ -414,6 +438,16 @@ begin
 //				2'b01:		tHeldIdCn1	= regIdRm[4:0];
 //				default:	tHeldIdCn1	= JX2_GR_IMM[4:0];
 //			endcase
+
+			case(opUIxt[2:0])
+				3'b100: begin
+					tRegOutSp	= tRegSpAdd16;
+					tDoMemOpm	= UMEM_OPM_RD_TILE;
+				end
+				
+				default: begin
+				end
+			endcase
 
 `ifdef jx2_debug_ldst
 			$display("POP(1): SP=%X R=%X", tMemAddr, regIdRm);
@@ -535,6 +569,12 @@ begin
 			tRegValCn1	= {UV32_00, regValRs[31:0]};
 		end
 		
+		JX2_UCMD_MULW3: begin
+			tHeldIdRn1	= regIdRm;
+//			tRegIdRn1	= regIdRm;			//
+//			tRegValRn1	= regValMulwRes;		//
+		end
+
 		JX2_UCMD_SHAD3: begin
 			tRegIdRn1	= regIdRm;
 			tRegValRn1	= { tValShad32[31]?UV32_FF:UV32_00, tValShad32 };

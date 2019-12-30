@@ -27,7 +27,8 @@ byte smus_chanmod[16];		//modulation wheel
 byte smus_chanvn[16];
 byte smus_channt[16];
 
-byte smus_vnflg[16];		//voice flag
+//byte smus_vnflg[16];		//voice flag
+byte smus_vnflg[32];		//voice flag
 
 u32 smus_fmregdata[256*16];
 

@@ -429,12 +429,12 @@ while (1)
 		__debugbreak();
 
 	st = &pr_statements[s];
-	a = (eval_t *)&pr_globals[st->a];
-	b = (eval_t *)&pr_globals[st->b];
-	c = (eval_t *)&pr_globals[st->c];
-//	a = (eval_t *)(pr_globals+st->a);
-//	b = (eval_t *)(pr_globals+st->b);
-//	c = (eval_t *)(pr_globals+st->c);
+//	a = (eval_t *)&pr_globals[st->a];
+//	b = (eval_t *)&pr_globals[st->b];
+//	c = (eval_t *)&pr_globals[st->c];
+	a = (eval_t *)(pr_globals+st->a);
+	b = (eval_t *)(pr_globals+st->b);
+	c = (eval_t *)(pr_globals+st->c);
 
 	if(st->a >= progs->numglobals)
 		__debugbreak();
@@ -450,6 +450,8 @@ while (1)
 //	tk_printf("PR_ExecuteProgram: a=%d b=%d c=%d\n", st->a, st->b, st->c);
 //	tk_printf("PR_ExecuteProgram: gbls=%p a=%p b=%p c=%p\n",
 //		pr_globals, a, b, c);
+//	tk_printf("PR_ExecuteProgram: a.i=%08X b.i=%08X c.i=%08X\n",
+//		a->_int, b->_int, c->_int);
 
 //	tk_puts("PR_ExecuteProgram: B1\n");
 
@@ -654,10 +656,10 @@ while (1)
 		break;
 	case OP_STORE_V:
 //		tk_puts("PR_ExecuteProgram: OP_STORE_V\n");
-		b->vector[0] = a->vector[0];
-		b->vector[1] = a->vector[1];
-		b->vector[2] = a->vector[2];
-//		memcpy(b->vector, a->vector, 3*sizeof(float));
+//		b->vector[0] = a->vector[0];
+//		b->vector[1] = a->vector[1];
+//		b->vector[2] = a->vector[2];
+		memcpy(b->vector, a->vector, 3*sizeof(float));
 		break;
 		
 	case OP_STOREP_F:
@@ -674,10 +676,10 @@ while (1)
 //		tk_puts("PR_ExecuteProgram: OP_STOREP_V\n");
 //		ptr = (eval_t *)((byte *)sv.edicts + b->_int);
 		ptr = (eval_t *)(((byte *)sv.edicts) + b->_int);
-		ptr->vector[0] = a->vector[0];
-		ptr->vector[1] = a->vector[1];
-		ptr->vector[2] = a->vector[2];
-//		memcpy(ptr->vector, a->vector, 3*sizeof(float));
+//		ptr->vector[0] = a->vector[0];
+//		ptr->vector[1] = a->vector[1];
+//		ptr->vector[2] = a->vector[2];
+		memcpy(ptr->vector, a->vector, 3*sizeof(float));
 		break;
 		
 	case OP_ADDRESS:
@@ -721,10 +723,10 @@ while (1)
 #endif
 //		a = (eval_t *)((int *)&ed->v + b->_int);
 		a = (eval_t *)(((int *)(&ed->v)) + b->_int);
-		c->vector[0] = a->vector[0];
-		c->vector[1] = a->vector[1];
-		c->vector[2] = a->vector[2];
-//		memcpy(c->vector, a->vector, 3*sizeof(float));
+//		c->vector[0] = a->vector[0];
+//		c->vector[1] = a->vector[1];
+//		c->vector[2] = a->vector[2];
+		memcpy(c->vector, a->vector, 3*sizeof(float));
 		break;
 		
 //==================

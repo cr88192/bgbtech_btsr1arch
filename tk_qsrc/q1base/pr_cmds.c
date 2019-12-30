@@ -244,6 +244,19 @@ int PR_CheckBadString(char *s)
 	return(0);
 }
 
+char *PR_GString(int o)
+{
+	char *s;
+	int v;
+
+	v=((string_t *)pr_globals)[o];
+//	v=*(string_t *)(&pr_globals[o]);
+	s=(pr_strings + v);
+//	tk_printf("PR_GString: o=%d v=%d s=%s\n", o, v, s);
+
+	return(s);
+}
+
 /*
 =================
 PF_setmodel
@@ -1115,7 +1128,13 @@ void PF_Find (void)
 		PR_RunError ("PF_Find: bad search string");
 
 	if(PR_CheckBadString(s))
+	{
+		tk_printf("PF_Find: Bad String: e=%d f=%d\n", e, f, s); //BGB
+		RETURN_EDICT(sv.edicts);
 		return;
+	}
+
+//	tk_printf("PF_Find: e=%d f=%d s=%s\n", e, f, s); //BGB
 
 	for (e++ ; e < sv.num_edicts ; e++)
 	{

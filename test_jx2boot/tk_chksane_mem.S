@@ -83,6 +83,22 @@ X(tk_checksane_mem_asm):
 	pop r2
 #endif
 
+#if 1
+	push.x	r10
+//	push	r11
+//	push	r10
+
+	pop.x	r6
+//	pop		r6
+//	pop		r7
+
+	cmpq/eq r6, r10
+	bf _checksane_fail_mem
+
+	cmpq/eq r7, r11
+	bf _checksane_fail_mem
+#endif
+
 	cmpeq r4, r5
 		break?t
 	cmpeq r4, r4

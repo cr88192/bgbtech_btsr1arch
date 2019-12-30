@@ -1624,6 +1624,8 @@ byte	i_scr_bnc[40*25];
 
 void R_CellMarkBox (int bx0, int bx1, int by0, int by1);
 
+void I_FinishUpdate_ScanCopy(u16 *ics, u32 *ict, int blkn);
+
 #define I_SCR_BMP128K
 
 void I_FinishUpdate (void)
@@ -1631,7 +1633,8 @@ void I_FinishUpdate (void)
 	u32 *conbufa;
 	int bx, by, by2;
 
-	u64 pxa, pxb, pxc, pxd;
+//	u64 pxa, pxb, pxc, pxd;
+	register u64 pxa, pxb, pxc, pxd;
 	u64 colmask;
 	byte *ics;
 	u16 *ict16, *ics16, *ics16b;
@@ -1641,6 +1644,8 @@ void I_FinishUpdate (void)
 	u32 bxa, bxb, bxc, bxd;
 	int pix, bn, brt;
 	int i, j, k;
+
+	__hint_use_egpr();
 
 //	R_CellMarkBox(
 //		dirtybox[BOXLEFT],		dirtybox[BOXRIGHT],
@@ -1676,15 +1681,27 @@ void I_FinishUpdate (void)
 	for(by=0; by<50; by++)
 	{
 		ics16b=ics16;
-		icl16b=icl16;
-		for(bx=0; bx<80; bx++)
-		{
-			pxa=*(u64 *)(ics16b+0*BASEWIDTH);
-			pxb=*(u64 *)(ics16b+1*BASEWIDTH);
-			pxc=*(u64 *)(ics16b+2*BASEWIDTH);
-			pxd=*(u64 *)(ics16b+3*BASEWIDTH);
+//		icl16b=icl16;
 
 #if 1
+		I_FinishUpdate_ScanCopy(ics16, ict, 80);
+		ict+=80*8;
+#endif
+
+#if 0
+		for(bx=0; bx<80; bx++)
+		{
+//			pxa=*(u64 *)(ics16b+0*BASEWIDTH);
+//			pxb=*(u64 *)(ics16b+1*BASEWIDTH);
+//			pxc=*(u64 *)(ics16b+2*BASEWIDTH);
+//			pxd=*(u64 *)(ics16b+3*BASEWIDTH);
+
+			pxa=((u64 *)ics16b)[(0*BASEWIDTH)/4];
+			pxb=((u64 *)ics16b)[(1*BASEWIDTH)/4];
+			pxc=((u64 *)ics16b)[(2*BASEWIDTH)/4];
+			pxd=((u64 *)ics16b)[(3*BASEWIDTH)/4];
+
+#if 0
 			ict[0]=pxa;			ict[2]=pxb;
 			ict[4]=pxc;			ict[6]=pxd;
 			ict[1]=pxa>>32;		ict[3]=pxb>>32;
@@ -1694,14 +1711,41 @@ void I_FinishUpdate (void)
 			((u64 *)ict)[2]=pxc;	((u64 *)ict)[3]=pxd;
 #endif
 
-			bn++;
+//			bn++;
 			ict+=8;
 			ics16b+=4;
-			icl16b+=4;
+//			icl16b+=4;
 		}
+#endif
+
+#if 0
+		for(bx=0; bx<40; bx++)
+		{
+			pxa=((u64 *)ics16b)[(0*BASEWIDTH)/4];
+			pxb=((u64 *)ics16b)[(1*BASEWIDTH)/4];
+			pxc=((u64 *)ics16b)[(2*BASEWIDTH)/4];
+			pxd=((u64 *)ics16b)[(3*BASEWIDTH)/4];
+
+			((u64 *)ict)[0]=pxa;	((u64 *)ict)[1]=pxb;
+			((u64 *)ict)[2]=pxc;	((u64 *)ict)[3]=pxd;
+//			ict+=8;
+//			ics16b+=4;
+
+			pxa=((u64 *)ics16b)[(0*BASEWIDTH)/4+1];
+			pxb=((u64 *)ics16b)[(1*BASEWIDTH)/4+1];
+			pxc=((u64 *)ics16b)[(2*BASEWIDTH)/4+1];
+			pxd=((u64 *)ics16b)[(3*BASEWIDTH)/4+1];
+
+			((u64 *)ict)[4]=pxa;	((u64 *)ict)[5]=pxb;
+			((u64 *)ict)[6]=pxc;	((u64 *)ict)[7]=pxd;
+
+			ict+=16;
+			ics16b+=8;
+		}
+#endif
 
 		ics16+=4*BASEWIDTH;
-		icl16+=4*BASEWIDTH;
+//		icl16+=4*BASEWIDTH;
 	}
 #endif
 

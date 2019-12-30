@@ -4053,15 +4053,18 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 	//		if(!(sctx->reg_vsave&((2<<i)-1)))
 	//			break;
 
-#if 0
-			if((sctx->reg_vsave&(3<<(i-1)))==(3<<(i-1)))
+#if 1
+			if(sctx->has_pushx2 && (i&1))
 			{
-				sctx->reg_save|=(3<<(i-1));
-				BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_PUSHX2,
-					BGBCC_SH_REG_R0+(i-1));
-				k+=sctx->is_addr64?4:2;
-				i--;
-				continue;
+				if((sctx->reg_vsave&(3<<(i-1)))==(3<<(i-1)))
+				{
+					sctx->reg_save|=(3<<(i-1));
+					BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_PUSHX2,
+						BGBCC_SH_REG_R0+(i-1));
+					k+=sctx->is_addr64?4:2;
+					i--;
+					continue;
+				}
 			}
 #endif
 
@@ -5312,14 +5315,18 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 		if(i==15)
 			continue;
 
-#if 0
-		if(((sctx->reg_save&(3<<i))==(3<<i)) && (i!=14) && (i!=31))
+#if 1
+		if(sctx->has_pushx2 && !(i&1))
+//		if(0)
 		{
-			BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_POPX2,
-				BGBCC_SH_REG_R0+i);
-			k+=sctx->is_addr64?16:8;
-			i++;
-			continue;
+			if(((sctx->reg_save&(3<<i))==(3<<i)) && (i!=14) && (i!=31))
+			{
+				BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_POPX2,
+					BGBCC_SH_REG_R0+i);
+				k+=sctx->is_addr64?16:8;
+				i++;
+				continue;
+			}
 		}
 #endif
 

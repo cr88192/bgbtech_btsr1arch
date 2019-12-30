@@ -166,6 +166,9 @@ reg [63:0]		dcInVal;
 wire[ 1:0]		dcOutOK;
 reg				dcInHold;
 
+wire[63:0]		dcOutValB;
+reg [63:0]		dcInValB;
+
 assign	dbgDcInAddr	= dcInAddr;
 assign	dbgDcInOpm	= dcInOpm;
 assign	dbgDcOutVal	= dcOutVal;
@@ -184,6 +187,7 @@ MemL1A		memL1(
 
 	dcInAddr,		dcInOpm,
 	dcOutVal,		dcInVal,
+	dcOutValB,		dcInValB,
 	dcOutOK,		dcInHold,
 
 	gprOutDlr,		gprOutDhr,
@@ -707,6 +711,7 @@ assign	ex1FpuSrT		= 0;
 `endif
 
 reg[63:0]		ex2MemDataIn;
+reg[63:0]		ex2MemDataInB;
 reg[1:0]		ex2MemDataOK;
 
 
@@ -759,6 +764,7 @@ reg[63:0]		ex1RegInSr;
 wire[31:0]		ex1MemAddr;
 wire[ 4:0]		ex1MemOpm;
 wire[63:0]		ex1MemDataOut;
+wire[63:0]		ex1MemDataOutB;
 
 wire[ 7:0]		ex1RegOutSchm;
 reg [ 7:0]		ex1RegInSchm;
@@ -790,7 +796,7 @@ ExEX1	ex1(
 	ex1RegOutSchm,	ex1RegInSchm,
 
 	ex1MemAddr,		ex1MemOpm,
-	ex1MemDataOut
+	ex1MemDataOut,	ex1MemDataOutB
 	);
 
 wire[65:0]	ex1ValAlu;
@@ -932,7 +938,9 @@ ExEX2	ex2(
 	ex2RegOutSr,	ex2RegInSr,
 	ex2RegOutSchm,	ex2RegInSchm,
 
-	ex2MemDataIn,	ex2MemDataOK
+	ex2MemDataIn,
+	ex2MemDataInB,
+	ex2MemDataOK
 	);
 
 
@@ -1032,7 +1040,10 @@ ExEXB2		exb2(
 	ex2RegValPc,
 	exB2RegValImm,	exB2RegAluRes,
 	exB2RegMulWRes,
-	ex2BraFlush,	ex2RegInSr
+	ex2BraFlush,
+
+	ex2RegInLastSr,	ex2RegInSr,
+	ex2MemDataIn,	ex2MemDataInB
 	);
 
 `endif
@@ -1134,7 +1145,10 @@ ExEXB2		exc2(
 	ex2RegValPc,
 	exC2RegValImm,	exC2RegAluRes,
 	exC2RegMulWRes,
-	ex2BraFlush,	ex2RegInSr
+	ex2BraFlush,
+
+	ex2RegInLastSr,	ex2RegInSr,
+	ex2MemDataIn,	ex2MemDataInB
 	);
 
 `endif
@@ -1902,6 +1916,11 @@ begin
 	dcInAddr		= ex1MemAddr;
 	dcInOpm			= ex1MemOpm;
 	dcInVal			= ex1MemDataOut;
+//	dcInValB		= ex1MemDataOutB;
+	dcInValB		= exB1RegValRn1;
+
+//	if(exB1RegIdRn1 == JX2_GR_DCINB)
+//		dcInValB	= exB1RegValRn1;
 
 `ifdef jx2_enable_wex
 	exB2RegMulWRes	= exB1MulWVal;
@@ -1913,6 +1932,7 @@ begin
 	/* EX2 */
 
 	ex2MemDataIn	= dcOutVal;
+	ex2MemDataInB	= dcOutValB;
 	ex2MemDataOK	= dcOutOK;
 
 	ex2RegInDlr		= gprOutDlr;
@@ -2179,7 +2199,7 @@ begin
 		exB1RegIdRm		<= gprIdRn;
 		exB1RegValRs	<= gprValRu;
 		exB1RegValRt	<= gprValRv;
-		exB1RegValRm	<= gprValRm;
+		exB1RegValRm	<= gprValRn;
 
 `ifdef jx2_enable_wex3w
 		exC1OpUCmd		<= idC2IdUCmd;

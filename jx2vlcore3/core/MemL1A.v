@@ -28,6 +28,7 @@ module MemL1A(
 
 	dcInAddr,		dcInOpm,
 	dcOutVal,		dcInVal,
+	dcOutValB,		dcInValB,
 	dcOutOK,
 	dcInHold,
 
@@ -55,10 +56,13 @@ input			icInPcWxe;
 
 input [31: 0]	dcInAddr;		//input PC address
 input [ 4: 0]	dcInOpm;		//input PC address
-output[63: 0]	dcOutVal;		//output PC value
-input [63: 0]	dcInVal;		//output PC value
+output[63: 0]	dcOutVal;		//output data value
+input [63: 0]	dcInVal;		//input data value
 output[ 1: 0]	dcOutOK;		//set if we have a valid value.
 input			dcInHold;
+
+output[63: 0]	dcOutValB;		//output data value (alternate)
+input [63: 0]	dcInValB;		//input data value (alternate)
 
 input[63:0]		regInDlr;
 input[63:0]		regInDhr;
@@ -170,6 +174,7 @@ MemDcA		memDc(
 	clock,			reset,
 	dcInAddr,		dcInOpm,
 	dcOutVal,		dcInVal,
+	dcOutValB,		dcInValB,
 	dfOutOK,		dcInHold,
 
 	dfMemAddr,		dfMemAddrB,
@@ -229,7 +234,8 @@ begin
 
 	if((tIfNzOpm && !tLatchDc) || tLatchIc)
 	begin
-//		$display("L1$, Latch I$, Opm=%X", ifMemOpm);
+//		$display("L1$, Latch I$, A=%X Opm=%X, OK=%d",
+//			ifMemAddr, ifMemOpm, memOK);
 	
 		ifMemOK		= memOK;
 		tMemAddr	= ifMemAddr;

@@ -496,6 +496,21 @@ void I_UpdateSound( void )
 	// Mixing channel index.
 	int				chan;
 	
+	unsigned int chstp;
+	byte 	**chanptr;
+	unsigned int *chanstp;
+	byte	*chancur;
+	int		**clvl;
+	int		**crvl;
+	int		nchan;
+	
+#if 1
+	chanptr = channels;
+	clvl	= channelleftvol_lookup;
+	crvl	= channelrightvol_lookup;
+	chanstp	= channelstepremainder;
+#endif
+		
 	// Left and right channel
 	//	are in global mixbuffer, alternating.
 	leftout = mixbuffer;
@@ -506,6 +521,16 @@ void I_UpdateSound( void )
 	//	(right channel is implicit).
 	leftend = mixbuffer + SAMPLECOUNT*step;
 
+	//BGB: count channels
+	nchan = 0;
+	for ( chan = 0; chan < NUM_CHANNELS; chan++ )
+	{
+		chancur = chanptr[ chan ];
+		if (!chancur)
+			continue;
+		nchan=chan+1;
+	}
+
 	// Mix sounds into the mixing buffer.
 	// Loop over step*SAMPLECOUNT,
 	//	that is 512 values for two channels.
@@ -515,6 +540,7 @@ void I_UpdateSound( void )
 		dl = 0;
 		dr = 0;
 
+#if 0
 		// Love thy L2 chache - made this a loop.
 		// Now more channels could be set at compile time
 		//	as well. Thus loop those	channels.
@@ -543,13 +569,38 @@ void I_UpdateSound( void )
 					channels[ chan ] = 0;
 			}
 		}
-		
+#endif
+
+#if 1
+//		for ( chan = 0; chan < NUM_CHANNELS; chan++ )
+		for ( chan = 0; chan < nchan; chan++ )
+		{
+			chancur = chanptr[ chan ];
+			if (!chancur)
+				continue;
+			chstp = chanstp[ chan ];
+
+			sample = *chancur;
+			dl += clvl[ chan ][sample];
+			dr += crvl[ chan ][sample];
+			chstp += channelstep[ chan ];
+			chancur += chstp >> 16;
+			chstp &= 65535;
+			if (chancur >= channelsend[ chan ])
+				chancur = NULL;
+
+			chanptr[ chan ] = chancur;
+			chanstp[ chan ] = chstp;
+		}
+#endif
+
 		// Clamp to range. Left hardware channel.
 		// Has been char instead of short.
 		// if (dl > 127) *leftout = 127;
 		// else if (dl < -128) *leftout = -128;
 		// else *leftout = dl;
 
+#if 0
 		if (dl > 0x7fff)
 			*leftout = 0x7fff;
 		else if (dl < -0x8000)
@@ -564,6 +615,18 @@ void I_UpdateSound( void )
 			*rightout = -0x8000;
 		else
 			*rightout = dr;
+#endif
+
+//		if(dl<(-32767)) dl=-32767;
+//		if(dl>( 32767)) dl= 32767;
+//		if(dr<(-32767)) dr=-32767;
+//		if(dr>( 32767)) dr= 32767;
+
+		dl = __int_clamp(dl, -32000, 32000);
+		dr = __int_clamp(dr, -32000, 32000);
+
+		*leftout = dl;
+		*rightout = dr;
 
 		// Increment current pointers in mixbuffer.
 		leftout += step;
@@ -600,13 +663,16 @@ I_SubmitSound2(int extra)
 {
 	static short mixbuf2[SAMPLECOUNT*2*2];
 //	static short mixbuf_mus[SAMPLECOUNT*2*2];
+
+	short *mix1, *mix2, *mix3, *mix4;
 	
-	int i, j;
+	int i, j, k;
 	int n, ns, dt, musvol;
 	// Write it to DSP device.
 //	write(audio_fd, mixbuffer, SAMPLECOUNT*BUFMUL);
 
-	n=SAMPLECOUNT*1.451247;
+//	n=SAMPLECOUNT*1.451247;
+	n=(SAMPLECOUNT*1486)>>10;
 
 	iss_curms=TK_GetTimeMs();
 	dt=iss_curms-iss_lastms;
@@ -614,28 +680,32 @@ I_SubmitSound2(int extra)
 	ns=dt*16;
 	if(ns<0)ns=0;
 	if(ns>n)ns=n;
+	
+	if(ns<=0)
+		return;
 
 //	printf("dt=%d ns=%d\n", dt, ns);
 
 //	I_MusicGetAdvanceSamples(mixbuf_mus, ns, SAMPLECOUNT*1.5);
 
-	musvol=snd_MusicVolume;
+//	musvol=snd_MusicVolume;
 
 #if 1
-	n=SAMPLECOUNT*1.451247;
+//	n=SAMPLECOUNT*1.451247;
+	n=(SAMPLECOUNT*1486)>>10;
+	mix1=mixbuffer; mix2=mixbuf2;
+	k=0;
 	for(i=0; i<n; i++)
 	{
-		j=i*(1.0/1.451247);
-		mixbuf2[i*2+0]=mixbuffer[j*2+0];
-		mixbuf2[i*2+1]=mixbuffer[j*2+1];
-
-//		mixbuf2[i*2+0]=(i&4)?2048:-2048;
-//		mixbuf2[i*2+1]=(i&4)?2048:-2048;
-
-//		mixbuf2[i*2+0]+=mixbuf_mus[i*2+0]/4;
-//		mixbuf2[i*2+1]+=mixbuf_mus[i*2+1]/4;
-//		mixbuf2[i*2+0]+=(mixbuf_mus[i*2+0]*musvol)/16;
-//		mixbuf2[i*2+1]+=(mixbuf_mus[i*2+1]*musvol)/16;
+//		j=i*(1.0/1.451247);
+//		j=(i*2822)>>12;
+		j=k>>12;
+		k+=2822;
+//		mixbuf2[i*2+0]=mixbuffer[j*2+0];
+//		mixbuf2[i*2+1]=mixbuffer[j*2+1];
+//		mix3=mix1+j*2;	mix4=mix2+i*2;
+//		*((u32 *)mix4)=*((u32 *)mix3);
+		((u32 *)mix2)[i]=((u32 *)mix1)[j];
 	}
 #endif
 

@@ -1059,7 +1059,7 @@ int main(int argc, char **argv, char **env)
 		(char *)"../../tk_qsrc/tk_clib/tkshell.sys");
 #endif
 
-#if 0
+#if 1
 	JX2R_UseImageAddFile(
 		(char *)"BOOTLOAD.SYS",
 //		(char *)"DOOM.EXE",
@@ -1069,7 +1069,7 @@ int main(int argc, char **argv, char **env)
 		(char *)"../../tk_qsrc/doomsrc2/doom1.wad");
 #endif
 
-#if 1
+#if 0
 	JX2R_UseImageAddFile(
 		(char *)"BOOTLOAD.SYS",
 //		(char *)"QUAKE.EXE",

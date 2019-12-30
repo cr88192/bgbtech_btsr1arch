@@ -21,6 +21,11 @@
 _start:
 //	mov STACK_BASE, sp
 	mov STACK_BASE_USR, sp
+	
+	xor r1, r1
+	mov r1, vbr
+	mov r1, gbr
+	mov r1, tbr
 
 	bsr tk_checksane_asm
 

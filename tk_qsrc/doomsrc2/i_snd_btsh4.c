@@ -23,6 +23,7 @@ void	SoundDev_WriteStereoSamples(short *mixbuf, int nsamp)
 
 void	SoundDev_WriteStereoSamples2(short *mixbuf, int nsamp, int nsamp2)
 {
+	short *dmabuf;
 	int b;
 	int i;
 	
@@ -30,13 +31,18 @@ void	SoundDev_WriteStereoSamples2(short *mixbuf, int nsamp, int nsamp2)
 
 //	printf("ns=%d\n", nsamp);
 	
+	dmabuf=dma_buffer;
+	
 //	b=dma_pos;
 	b=(dma_pos+512)&8191;
 //	b=(dma_pos+1024)&8191;
 	for(i=0; i<nsamp2; i++)
 	{
-		dma_buffer[b*2+0]=mixbuf[i*2+0];
-		dma_buffer[b*2+1]=mixbuf[i*2+1];
+//		dma_buffer[b*2+0]=mixbuf[i*2+0];
+//		dma_buffer[b*2+1]=mixbuf[i*2+1];
+//		dmabuf[b*2+0]=mixbuf[i*2+0];
+//		dmabuf[b*2+1]=mixbuf[i*2+1];
+		((u32 *)dmabuf)[b]=((u32 *)mixbuf)[i];
 		b=(b+1)&8191;
 	}
 	

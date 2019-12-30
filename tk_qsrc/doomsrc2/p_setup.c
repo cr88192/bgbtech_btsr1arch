@@ -161,6 +161,8 @@ void P_LoadVertexes (int lump)
 	li->y = SHORT(ml->y)<<FRACBITS;
     }
 
+	Z_ChangeTag (vertexes, PU_LEVEL);  //BGB: Debug
+
     // Free buffer memory.
     Z_Free (data);
 }
@@ -209,6 +211,8 @@ void P_LoadSegs (int lump)
 	else
 	    li->backsector = 0;
     }
+
+	Z_ChangeTag (segs, PU_LEVEL);  //BGB: Debug
 	
     Z_Free (data);
 }
@@ -241,6 +245,8 @@ void P_LoadSubsectors (int lump)
 		ss->numlines = SHORT(ms->numsegs);
 		ss->firstline = SHORT(ms->firstseg);
     }
+
+	Z_ChangeTag (subsectors, PU_LEVEL);  //BGB: Debug
 	
     Z_Free (data);
 }
@@ -279,6 +285,8 @@ void P_LoadSectors (int lump)
 		ss->tag = SHORT(ms->tag);
 		ss->thinglist = NULL;
     }
+
+	Z_ChangeTag (sectors, PU_LEVEL);  //BGB: Debug
 	
     Z_Free (data);
 }
@@ -321,6 +329,8 @@ void P_LoadNodes (int lump)
 		no->bbox[j][k] = SHORT(mn->bbox[j][k])<<FRACBITS;
 	}
     }
+
+	Z_ChangeTag (nodes, PU_LEVEL);  //BGB: Debug
 	
     Z_Free (data);
 }
@@ -741,6 +751,8 @@ void P_LoadThings (int lump)
 		P_SpawnMapThing (&mtt);
 #endif
     }
+
+//	Z_ChangeTag (things, PU_LEVEL);  //BGB: Debug
 	
     Z_Free (data);
 }
@@ -936,7 +948,9 @@ void P_LoadLineDefs (int lump)
 		else
 			ld->backsector = 0;
     }
-	
+
+	Z_ChangeTag (lines, PU_LEVEL);  //BGB: Debug
+
     Z_Free (data);
 }
 
@@ -971,7 +985,9 @@ void P_LoadSideDefs (int lump)
 		sd->midtexture = R_TextureNumForName(msd->midtexture);
 		sd->sector = &sectors[SHORT(msd->sector)];
     }
-	
+
+	Z_ChangeTag (sides, PU_LEVEL);  //BGB: Debug
+
     Z_Free (data);
 }
 
@@ -1051,6 +1067,7 @@ void P_LoadBehavior (int lump)
 void P_GroupLines (void)
 {
     line_t**		linebuffer;
+    line_t**		linebuf;
     int			i;
     int			j;
     int			total;
@@ -1085,7 +1102,9 @@ void P_GroupLines (void)
     }
 	
     // build line tables for each sector	
-    linebuffer = Z_Malloc (total*4, PU_LEVEL, 0);
+//    linebuffer = Z_Malloc (total*4, PU_LEVEL, 0);
+    linebuffer = Z_Malloc (total*sizeof(void *), PU_LEVEL, 0);
+    linebuf	= linebuffer;
     sector = sectors;
     for (i=0 ; i<numsectors ; i++, sector++)
     {
@@ -1125,7 +1144,9 @@ void P_GroupLines (void)
 		block = block < 0 ? 0 : block;
 		sector->blockbox[BOXLEFT]=block;
     }
-	
+
+	Z_ChangeTag (linebuf, PU_LEVEL);  //BGB: Debug
+
 }
 
 

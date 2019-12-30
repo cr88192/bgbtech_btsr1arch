@@ -1256,10 +1256,10 @@ int CheckDebugSanityDS()
 
 int CheckDebugSanity()
 {
-	if(CheckDebugSanityIS()<=0)
-		return(0);
-	if(CheckDebugSanityDS()<=0)
-		return(0);
+//	if(CheckDebugSanityIS()<=0)
+//		return(0);
+//	if(CheckDebugSanityDS()<=0)
+//		return(0);
 	return(1);
 }
 
@@ -1308,20 +1308,23 @@ int main(int argc, char **argv, char **env)
 		(char *)"../../tk_qsrc/tk_clib/tkshell.sys");
 #endif
 
-#if 0
+#if 1
 	JX2R_UseImageAddFile(
-//		(char *)"BOOTLOAD.SYS",
-		(char *)"DOOM.EXE",
+		(char *)"BOOTLOAD.SYS",
+//		(char *)"DOOM.EXE",
 		(char *)"../../tk_qsrc/doomsrc2/doom_bjx2.exe");
+//	JX2R_UseImageAddFile(
+//		(char *)"DOOM1.WAD",
+//		(char *)"../../tk_qsrc/doomsrc2/doom1.wad");
 	JX2R_UseImageAddFile(
-		(char *)"DOOM1.WAD",
-		(char *)"../../tk_qsrc/doomsrc2/doom1.wad");
+		(char *)"DOOMU.WAD",
+		(char *)"../../tk_qsrc/doomsrc2/doom.wad");
 #endif
 
 #if 1
 	JX2R_UseImageAddFile(
-		(char *)"BOOTLOAD.SYS",
-//		(char *)"QUAKE.EXE",
+//		(char *)"BOOTLOAD.SYS",
+		(char *)"QUAKE.EXE",
 		(char *)"../../tk_qsrc/quake_b64b.exe");
 	JX2R_UseImageAddFile(
 		(char *)"ID1/PAK0.PAK",

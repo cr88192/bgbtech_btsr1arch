@@ -61,7 +61,7 @@ viddef_t	vid;				// global video state
 
 #endif
 
-// #define I_SCR_BMP128K
+#define I_SCR_BMP128K
 
 //byte	vid_buffer[BASEWIDTH*(BASEHEIGHT+4)];
 // byte	vid_buffer[BASEWIDTH*BASEHEIGHT*2];
@@ -1119,6 +1119,7 @@ int VID_ConGfx_EncBlock16Q2(u16 *src, u16 *lsrc, u32 *rdst)
 
 void tk_putc(int val);
 int tk_puts(char *msg);
+void I_FinishUpdate_ScanCopy(u16 *ics, u32 *ict, int blkn);
 
 int vid_frnum;
 
@@ -1166,6 +1167,13 @@ void	VID_Update (vrect_t *rects)
 		bn=0;
 		for(by=0; by<50; by++)
 		{
+
+#if 1
+			I_FinishUpdate_ScanCopy(ics16, ict, 80);
+			ict+=80*8;
+#endif
+
+#if 0
 			ics16b=ics16;
 //			icl16b=icl16;
 			for(bx=0; bx<80; bx++)
@@ -1174,7 +1182,7 @@ void	VID_Update (vrect_t *rects)
 				pxb=*(u64 *)(ics16b+1*BASEWIDTH);
 				pxc=*(u64 *)(ics16b+2*BASEWIDTH);
 				pxd=*(u64 *)(ics16b+3*BASEWIDTH);
-#if 1
+#if 0
 				ict[0]=pxa;			ict[2]=pxb;
 				ict[4]=pxc;			ict[6]=pxd;
 				ict[1]=pxa>>32;		ict[3]=pxb>>32;
@@ -1188,6 +1196,7 @@ void	VID_Update (vrect_t *rects)
 				ics16b+=4;
 //				icl16b+=4;
 			}
+#endif
 
 			ics16+=4*BASEWIDTH;
 //			icl16+=4*BASEWIDTH;

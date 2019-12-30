@@ -258,7 +258,8 @@ boolean HGetPacket (void)
 //
 // GetPackets
 //
-char	exitmsg[80];
+// char	exitmsg[80];
+char	exitmsg[128];
 
 void GetPackets (void)
 {

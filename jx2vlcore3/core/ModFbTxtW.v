@@ -33,7 +33,8 @@ module ModFbTxtW(clock, reset,
 	pixCy,		pixCu,		pixCv,	pixAux,
 	pixCellIx,	cellData,
 	fontGlyph,	fontData,
-	ctrlRegVal,	pixLineOdd);
+	ctrlRegVal,	pixLineOdd,
+	blinkSlow,	blinkFast);
 
 /* verilator lint_off UNUSED */
 
@@ -55,6 +56,9 @@ output[15:0]	fontGlyph;
 input[63:0]		fontData;
 input[63:0]		ctrlRegVal;
 input			pixLineOdd;
+
+input			blinkSlow;
+input			blinkFast;
 
 reg[11:0]	tPixPosX;
 reg[11:0]	tPixPosY;
@@ -184,6 +188,8 @@ reg[15:0]	tPixClrBmPalYV16_C;
 reg[15:0]	tPixClrBmPalYV16_D;
 
 reg			tPixRgb565;
+reg			tBlinkStrobeA;
+reg			tBlinkStrobeB;
 
 
 reg[7:0]	tPixCy;
@@ -394,6 +400,17 @@ begin
 	
 	tClrRgbA = 0;
 	tClrRgbB = 0;
+	tBlinkStrobeA	= 0;
+
+	if(tCellData[31:30]==2'b00)
+	begin
+		case(tCellData[15:14])
+			2'b00: 	tBlinkStrobeA	= 0;
+			2'b01: 	tBlinkStrobeA	= blinkFast;
+			2'b10: 	tBlinkStrobeA	= blinkSlow;
+			2'b11: 	tBlinkStrobeA	= 0;
+		endcase
+	end
 	
 	case(tCellData[29:28])
 		2'b00: begin
@@ -911,14 +928,16 @@ begin
 	tPixCellFx_C		<= tPixCellFx_B;
 	tPixCellGx_C		<= tPixCellGx_B;
 
-	tCellIsOdd		<= tNextCellIsOdd;
+	tCellIsOdd			<= tNextCellIsOdd;
+	tBlinkStrobeB		<= tBlinkStrobeA;
 	
 	tCellData_B		<= tCellData;
 	tCellData_C		<= tCellData_B;
 
 //	tFontData_B		<= tFontData_A;
 //	tFontData_C		<= (tCellData_B[31:30]==2'b10) ? tFontData_B : fontData;
-	tFontData_C		<= fontData;
+//	tFontData_C		<= fontData;
+	tFontData_C		<= tBlinkStrobeB ? UV64_00 : fontData;
 	tFontGlyph_C	<= tFontGlyph;
 
 	tFontGlyphY_B	<= tFontGlyphY_A;

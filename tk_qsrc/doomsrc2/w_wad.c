@@ -175,22 +175,63 @@ int w_open(char *name, char *mode)
 
 int w_read(int hdl, void *buf, int sz)
 {
+	FILE *fd;
 	int i;
-	i=fread(buf, 1, sz, w_openfiles[hdl]);
+	
+	if(hdl<0)
+		__debugbreak();
+//		return(-1);
+	if(hdl>=32)
+		__debugbreak();
+//		return(-1);
+	
+	fd=w_openfiles[hdl];
+	if(!fd)
+		__debugbreak();
+//		return(-1);
+	
+	i=fread(buf, 1, sz, fd);
 	return(i);
 }
 
 int w_lseek(int hdl, int ofs, int set)
 {
+	FILE *fd;
 	int i;
-	i=fseek(w_openfiles[hdl], ofs, set);
+	
+	if(hdl<0)
+		__debugbreak();
+//		return(-1);
+	if(hdl>=32)
+		__debugbreak();
+//		return(-1);
+	
+	fd=w_openfiles[hdl];
+	if(!fd)
+		__debugbreak();
+//		return(-1);
+	
+	i=fseek(fd, ofs, set);
 	return(i);
 }
 
 int w_close(int hdl)
 {
+	FILE *fd;
+	int i;
+	
 	if(hdl<0)
-		return(-1);
+		__debugbreak();
+//		return(-1);
+	if(hdl>=32)
+		__debugbreak();
+//		return(-1);
+	
+	fd=w_openfiles[hdl];
+	if(!fd)
+		__debugbreak();
+//		return(-1);
+	
 	fclose(w_openfiles[hdl]);
 	w_m_openfiles&=~(1<<hdl);
 	w_openfiles[hdl]=NULL;
@@ -199,10 +240,24 @@ int w_close(int hdl)
 
 int w_filelength (int hdl) 
 {
+	FILE *fd;
 	int i;
-	fseek(w_openfiles[hdl], 0, 2);
-	i=ftell(w_openfiles[hdl]);
-	fseek(w_openfiles[hdl], 0, 0);
+	
+	if(hdl<0)
+		__debugbreak();
+//		return(-1);
+	if(hdl>=32)
+		__debugbreak();
+//		return(-1);
+	
+	fd=w_openfiles[hdl];
+	if(!fd)
+		__debugbreak();
+//		return(-1);
+	
+	fseek(fd, 0, 2);
+	i=ftell(fd);
+	fseek(fd, 0, 0);
 	return(i);
 }
 
@@ -314,7 +369,7 @@ void W_Reload (void)
 	filelump_t*		fileinfo;
 	
 	if (!reloadname)
-	return;
+		return;
 		
 //	if ( (handle = open (reloadname,O_RDONLY | O_BINARY)) == -1)
 	if ( (handle = w_open (reloadname, "rb")) == -1)
@@ -372,17 +427,18 @@ void W_InitMultipleFiles (char** filenames)
 	lumpinfo = malloc(1);	
 
 	for ( ; *filenames ; filenames++)
-	W_AddFile (*filenames);
+		W_AddFile (*filenames);
 
 	if (!numlumps)
-	I_Error ("W_InitFiles: no files found");
+		I_Error ("W_InitFiles: no files found");
 	
 	// set up caching
-	size = numlumps * sizeof(*lumpcache);
+//	size = numlumps * sizeof(*lumpcache);
+	size = (numlumps + 64) * sizeof(*lumpcache);
 	lumpcache = malloc (size);
 	
 	if (!lumpcache)
-	I_Error ("Couldn't allocate lumpcache");
+		I_Error ("Couldn't allocate lumpcache");
 
 	memset (lumpcache,0, size);
 }
@@ -428,7 +484,8 @@ int W_CheckNumForName (char* name)
 int W_CheckNumForNameBase (int base, char* name)
 {
 	union {
-	char	s[9];
+//	char	s[9];
+	char	s[12];
 	int	x[2];
 	
 	} name8;
@@ -456,11 +513,11 @@ int W_CheckNumForNameBase (int base, char* name)
 
 	while (lump_p-- != lumpinfo)
 	{
-	if ( *(int *)lump_p->name == v1
-		 && *(int *)&lump_p->name[4] == v2)
-	{
-		return lump_p - lumpinfo;
-	}
+		if ( *(int *)lump_p->name == v1
+			 && *(int *)&lump_p->name[4] == v2)
+		{
+			return lump_p - lumpinfo;
+		}
 	}
 
 	// TFB. Not found.
@@ -517,8 +574,11 @@ int W_GetNumForNameBase (int base, char *name)
 //
 int W_LumpLength (int lump)
 {
+	if(lump<0)
+		__debugbreak();
+
 	if (lump >= numlumps)
-	I_Error ("W_LumpLength: %i >= numlumps",lump);
+		I_Error ("W_LumpLength: %i >= numlumps",lump);
 
 	return lumpinfo[lump].size;
 }
@@ -535,6 +595,10 @@ W_ReadLump
 ( int		lump,
 	void*		dest )
 {
+	static void *tbuf=NULL;
+	byte *ct;
+	int n;
+	
 	int		c;
 	lumpinfo_t*	l;
 	int		handle;
@@ -554,14 +618,34 @@ W_ReadLump
 			I_Error ("W_ReadLump: couldn't open %s",reloadname);
 	}
 	else
-	handle = l->handle;
+		handle = l->handle;
 		
 	w_lseek (handle, l->position, SEEK_SET);
 	c = w_read (handle, dest, l->size);
-
-	if (c < l->size)
+//	if (c < l->size)
+	if (c != l->size)
 		I_Error ("W_ReadLump: only read %i of %i on lump %i",
 			 c,l->size,lump);	
+
+#if 0
+	//BGB debug
+	if(!tbuf)
+	{
+		tbuf=malloc(65536+256);
+	}
+	
+	ct=dest; n=l->size;	
+	while(n>65536)
+	{
+		w_read (handle, tbuf, 65536);
+		memcpy(ct, tbuf, 65536);
+		ct+=65536;
+		n-=65536;
+	}
+
+	w_read (handle, tbuf, n);
+	memcpy(ct, tbuf, n);
+#endif
 
 	if (l->handle == -1)
 		w_close (handle);
@@ -585,21 +669,24 @@ W_CacheLumpNum
 	if(lump<0)
 		return(NULL);
 
+	if(tag == PU_CACHE)		//BGB
+		tag = PU_CACHELUMP;
+
 	if ((unsigned)lump >= numlumps)
 	I_Error ("W_CacheLumpNum: %i >= numlumps",lump);
 		
 	if (!lumpcache[lump])
 	{
-	// read the lump in
-	
-	//printf ("cache miss on lump %i\n",lump);
-	ptr = Z_Malloc (W_LumpLength (lump), tag, &lumpcache[lump]);
-	W_ReadLump (lump, lumpcache[lump]);
+		// read the lump in
+		
+		//printf ("cache miss on lump %i\n",lump);
+		ptr = Z_Malloc (W_LumpLength (lump), tag, &lumpcache[lump]);
+		W_ReadLump (lump, lumpcache[lump]);
 	}
 	else
 	{
-	//printf ("cache hit on lump %i\n",lump);
-	Z_ChangeTag (lumpcache[lump],tag);
+		//printf ("cache hit on lump %i\n",lump);
+		Z_ChangeTag (lumpcache[lump],tag);
 	}
 	
 	return lumpcache[lump];

@@ -69,9 +69,13 @@ assign	mmioAddr		= tMmioAddr;
 assign	mmioOpm			= tMmioOpm;
 
 wire	reqIsMmio;
-assign	reqIsMmio	= (memOpm[2:0] != 3'b111);
+// assign	reqIsMmio	= (memOpm[2:0] != 3'b111);
+assign	reqIsMmio	= (memOpm[4:3] != 2'b00) && (memOpm[2:0] != 3'b111);
 
 reg		reqMmioLatch;
+reg		reqLo64Latch;
+reg		reqRamLatch;
+reg		reqIsLatch;
 
 wire	reqIsCcmd;
 assign	reqIsCcmd	= (memOpm[4:3] == 2'b00) && (memOpm[2:0] != 3'b000);
@@ -97,6 +101,9 @@ MemL2Dc		l2dc(
 wire	tAddrIsLo64k;
 assign	tAddrIsLo64k	= (memAddr[31:16] == UV16_00);
 
+wire	tAddrIsRam;
+assign	tAddrIsRam	= (memAddr[31:24] != UV8_00) && (!memAddr[31]);
+
 wire[4:0]		l2rMemOpm;
 assign			l2rMemOpm = tAddrIsLo64k ? memOpm : UMEM_OPM_READY ;
 
@@ -113,9 +120,16 @@ MemL2Rom	l2rom(
 
 reg[1:0]	tCcmdOK;
 reg[31:0]	tCcmdData;
+reg			reqCcmdLatch;
+
+reg[4:0]	tCcmdOpmA;
+reg[4:0]	tCcmdOpmB;
+reg[4:0]	tCcmdOpmC;
 
 always @*
 begin
+	reqIsLatch = reqMmioLatch || reqLo64Latch || reqRamLatch || reqCcmdLatch;
+
 	tCcmdOK		= UMEM_OK_READY;
 //	tCcmdData	= UV32_XX;
 	tCcmdData	= UV32_00;
@@ -123,12 +137,14 @@ begin
 	case(memOpm)
 		UMEM_OPM_LDTLB, UMEM_OPM_INVTLB: begin
 			/* These simply get OK here; MMU has already seen it. */
-			tCcmdOK		= UMEM_OK_OK;
+//			tCcmdOK		= UMEM_OK_OK;
+			tCcmdOK		= (memOpm==tCcmdOpmC)?UMEM_OK_OK:UMEM_OK_HOLD;
 			tCcmdData	= UV32_00;
 		end
 		UMEM_OPM_FLUSHIS, UMEM_OPM_FLUSHDS: begin
 			/* These simply get OK here. */
-			tCcmdOK		= UMEM_OK_OK;
+//			tCcmdOK		= UMEM_OK_OK;
+			tCcmdOK		= (memOpm==tCcmdOpmC)?UMEM_OK_OK:UMEM_OK_HOLD;
 			tCcmdData	= UV32_00;
 		end
 		default: begin
@@ -138,31 +154,62 @@ end
 
 always @(posedge clock)
 begin
-	if(reqIsCcmd)
+	tCcmdOpmA	<= memOpm;
+	tCcmdOpmB	<= tCcmdOpmA;
+	tCcmdOpmC	<= tCcmdOpmB;
+
+	if(reset)
+	begin
+		reqCcmdLatch	<= 0;
+		reqMmioLatch	<= 0;
+		reqLo64Latch	<= 0;
+		reqRamLatch		<= 0;
+	end
+	else
+		if((reqIsCcmd && !reqIsLatch) || reqCcmdLatch)
 	begin
 //		tMemDataOut		<= { UV96_XX, tCcmdData };
 		tMemDataOut		<= { UV96_00, tCcmdData };
 		tMemOK			<= tCcmdOK;
+		reqCcmdLatch	<= reqIsCcmd || (tCcmdOK != UMEM_OK_READY);
 	end
 	else
 //		if(reqIsMmio)
-		if(reqIsMmio || reqMmioLatch)
+		if((reqIsMmio && !reqIsLatch) || reqMmioLatch)
 	begin
 //		tMemDataOut		<= { UV96_XX, mmioInData };
 		tMemDataOut		<= { UV64_00, mmioInData };
 		tMemOK			<= mmioOK;
-		reqMmioLatch	<= reqIsMmio || (mmioOK != UMEM_OK_READY);
+		reqMmioLatch	<= (reqIsMmio && (memOpm[4:3]!=0)) ||
+			(mmioOK != UMEM_OK_READY);
 	end
 	else
-		if(tAddrIsLo64k)
+		if((tAddrIsLo64k && !reqIsLatch) || reqLo64Latch)
 	begin
+		if((tAddrIsLo64k && (memOpm[4:3]!=0)) || reqLo64Latch)
+		begin
+//			$display("Lo64K A=%X Opm=%X OK=%X D=%X",
+//				memAddr, memOpm, l2rMemOK, l2rMemDataOut);
+		end
+
 		tMemDataOut		<= l2rMemDataOut;
 		tMemOK			<= l2rMemOK;
+//		reqLo64Latch	<= tAddrIsLo64k || (l2rMemOK != UMEM_OK_READY);
+		reqLo64Latch	<= (tAddrIsLo64k && (memOpm[4:3]!=0)) ||
+			(l2rMemOK != UMEM_OK_READY);
 	end
 	else
+		if((tAddrIsRam && !reqIsLatch) || reqRamLatch)
 	begin
 		tMemDataOut		<= l2MemDataOut;
 		tMemOK			<= l2MemOK;
+		reqRamLatch		<= (tAddrIsRam && (memOpm[4:3]!=0)) ||
+			(l2MemOK != UMEM_OK_READY);
+	end
+	else
+	begin
+		tMemDataOut		<= UV128_00;
+		tMemOK			<= UMEM_OK_READY;
 	end
 
 //	tDdrMemDataOut;
@@ -174,6 +221,7 @@ begin
 	tMmioOpm			<= reqIsMmio ? memOpm : UMEM_OPM_READY;
 
 `ifndef def_true
+// `ifdef def_true
 	if(memOpm!=0)
 	begin
 		$display("L2 A=%X Opm=%X OK=%X  Do=%X Di=%X",

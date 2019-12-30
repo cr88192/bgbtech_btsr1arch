@@ -13,7 +13,7 @@
 
 module ModTxtNtW(clock, reset, pwmOut,
 	busInData, busOutData, busAddr, busOpm, busOK,
-	timerNoise);
+	timerNoise, timer256Hz);
 
 /* verilator lint_off UNUSED */
 
@@ -29,6 +29,7 @@ output[63:0]	busOutData;
 input[4:0]		busOpm;
 output[1:0]		busOK;
 input			timerNoise;
+input			timer256Hz;
 
 wire	busOE;
 wire	busWR;
@@ -54,6 +55,11 @@ wire[15:0] fontGlyph;
 wire[63:0] fontData1;
 wire[63:0] ctrlRegVal;
 
+reg[7:0]	tTimer8Acc;
+reg[7:0]	tNxtTimer8Acc;
+reg			tBlinkSlow;
+reg			tBlinkFast;
+
 // ModNtsc ntsc(
 ModVga fbvga(
 	clock,		reset,
@@ -74,6 +80,22 @@ ModFbTxtW fbcc(clock, reset,
 	pixCy,		pixCu,		pixCv,	pixAux,
 	pixCellIx,	cellData1,
 	fontGlyph,	fontData1,
-	ctrlRegVal,	pixLineOdd);
+	ctrlRegVal,	pixLineOdd,
+	tBlinkSlow,	tBlinkFast);
+
+always @*
+begin
+	tNxtTimer8Acc = tTimer8Acc;
+	if(timer256Hz)
+		tNxtTimer8Acc = tTimer8Acc + 1;
+
+	tBlinkSlow = tTimer8Acc[7];
+	tBlinkFast = tTimer8Acc[5];
+end
+
+always @(posedge clock)
+begin
+	tTimer8Acc	<= tNxtTimer8Acc;
+end
 
 endmodule

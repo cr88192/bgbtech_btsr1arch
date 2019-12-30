@@ -122,6 +122,28 @@ int BGBCC_JX2_ProbeEmitOpReg(BGBCC_JX2_Context *ctx, int nmid, int reg)
 int BGBCC_JX2_TryEmitOpReg(BGBCC_JX2_Context *ctx, int nmid, int reg)
 {
 	int opw1, opw2, opw3, reg2, ex, ex2;
+	int i;
+
+#if 0
+	if(!(ctx->has_pushx2))
+	{
+		if(nmid==BGBCC_SH_NMID_PUSHX2)
+		{
+			i=BGBCC_JX2_TryEmitOpReg(ctx, BGBCC_SH_NMID_PUSH, reg+1);
+			if(i<=0)return(i);
+			i=BGBCC_JX2_TryEmitOpReg(ctx, BGBCC_SH_NMID_PUSH, reg+0);
+			return(i);
+		}
+
+		if(nmid==BGBCC_SH_NMID_POPX2)
+		{
+			i=BGBCC_JX2_TryEmitOpReg(ctx, BGBCC_SH_NMID_POP, reg+0);
+			if(i<=0)return(i);
+			i=BGBCC_JX2_TryEmitOpReg(ctx, BGBCC_SH_NMID_POP, reg+1);
+			return(i);
+		}
+	}
+#endif
 
 	ex=0;
 	if(BGBCC_JX2_EmitCheckRegExt4(ctx, reg)) ex|=0x0040;
@@ -487,22 +509,18 @@ int BGBCC_JX2_TryEmitOpReg(BGBCC_JX2_Context *ctx, int nmid, int reg)
 			{ opw1=0x390F|((reg&15)<<4); break; }
 		break;
 
-#if 0
+#if 1
 	case BGBCC_SH_NMID_PUSHX2:
 		if(ctx->is_fixed32 || ctx->op_is_wex2)
 			break;
-		if(BGBCC_JX2_EmitCheckRegBaseGPR(ctx, reg))
-			{ opw1=0x320C|((reg&15)<<4); break; }
 		if(BGBCC_JX2_EmitCheckRegExtGPR(ctx, reg))
-			{ opw1=0x320D|((reg&15)<<4); break; }
+			{ opw1=0x320C|((reg&15)<<4)|((reg&16)<<7); break; }
 		break;
 	case BGBCC_SH_NMID_POPX2:
 		if(ctx->is_fixed32 || ctx->op_is_wex2)
 			break;
-		if(BGBCC_JX2_EmitCheckRegBaseGPR(ctx, reg))
-			{ opw1=0x320E|((reg&15)<<4); break; }
 		if(BGBCC_JX2_EmitCheckRegExtGPR(ctx, reg))
-			{ opw1=0x320F|((reg&15)<<4); break; }
+			{ opw1=0x320E|((reg&15)<<4)|((reg&16)<<7); break; }
 		break;
 #endif
 
@@ -2623,8 +2641,31 @@ int BGBCC_JX2_TryEmitOpRegRegReg(
 			opw2=0x1100|((rn&15)<<4)|((rs&15)<<0);
 			break;
 		case BGBCC_SH_NMID_MULL:
+		case BGBCC_SH_NMID_DMULS:
 			opw1=0xF000|ex|(rt&15);
 			opw2=0x1200|((rn&15)<<4)|((rs&15)<<0);
+			break;
+		case BGBCC_SH_NMID_DMULU:
+			opw1=0xF080|ex|(rt&15);
+			opw2=0x1200|((rn&15)<<4)|((rs&15)<<0);
+			break;
+
+		case BGBCC_SH_NMID_MULSL:
+			opw1=0xF000|ex|(rt&15);
+			opw2=0x5200|((rn&15)<<4)|((rs&15)<<0);
+			break;
+		case BGBCC_SH_NMID_MULUL:
+			opw1=0xF080|ex|(rt&15);
+			opw2=0x5300|((rn&15)<<4)|((rs&15)<<0);
+			break;
+
+		case BGBCC_SH_NMID_MULSW:
+			opw1=0xF000|ex|(rt&15);
+			opw2=0x5E00|((rn&15)<<4)|((rs&15)<<0);
+			break;
+		case BGBCC_SH_NMID_MULUW:
+			opw1=0xF000|ex|(rt&15);
+			opw2=0x5F00|((rn&15)<<4)|((rs&15)<<0);
 			break;
 
 		case BGBCC_SH_NMID_AND:
@@ -4130,6 +4171,7 @@ int BGBCC_JX2_TryEmitOpRegImmReg(
 		break;
 
 #if 1
+	case BGBCC_SH_NMID_MULL:
 	case BGBCC_SH_NMID_DMULS:
 		if(!BGBCC_JX2_EmitCheckRegBaseGPR(ctx, rm))		break;
 		if(!BGBCC_JX2_EmitCheckRegBaseGPR(ctx, rn))		break;
@@ -4608,6 +4650,7 @@ int BGBCC_JX2_TryEmitOpRegImmReg(
 			}
 			break;
 
+		case BGBCC_SH_NMID_MULL:
 		case BGBCC_SH_NMID_DMULS:
 			if((imm>=0) && (imm<=511))
 			{
@@ -4627,6 +4670,57 @@ int BGBCC_JX2_TryEmitOpRegImmReg(
 			}
 			opw1=0xF080|ex; odr=1;
 			opw2=0x1200|((rn&15)<<4)|((rm&15)<<0);
+			break;
+
+		case BGBCC_SH_NMID_MULSL:
+			opw1=0xF000|ex; odr=1;
+			opw2=0x5200|((rn&15)<<4)|((rm&15)<<0);
+			break;
+		case BGBCC_SH_NMID_MULUL:
+			opw1=0xF000|ex; odr=1;
+			opw2=0x5300|((rn&15)<<4)|((rm&15)<<0);
+			break;
+
+
+		case BGBCC_SH_NMID_MULSW:
+#if 0
+			if((imm>=0) && (imm<=511))
+			{
+				opw1=0xF200|((rn&15)<<4)|((rm&15)<<0);
+				opw2=0x2000|ex2|(imm&511);
+				break;
+			}
+#endif
+#if 1
+			if((imm>=0) && (imm<=31))
+			{
+				opw1=0xF080|ex|(imm&31);
+				opw2=0x5E00|((rn&15)<<4)|((rm&15)<<0);
+				break;
+			}
+#endif
+			opw1=0xF000|ex; odr=1;
+			opw2=0x5E00|((rn&15)<<4)|((rm&15)<<0);
+			break;
+		case BGBCC_SH_NMID_MULUW:
+#if 0
+			if((imm>=0) && (imm<=511))
+			{
+				opw1=0xF200|((rn&15)<<4)|((rm&15)<<0);
+				opw2=0x2800|ex2|(imm&511);
+				break;
+			}
+#endif
+#if 1
+			if((imm>=0) && (imm<=31))
+			{
+				opw1=0xF080|ex|(imm&31);
+				opw2=0x5F00|((rn&15)<<4)|((rm&15)<<0);
+				break;
+			}
+#endif
+			opw1=0xF000|ex; odr=1;
+			opw2=0x5F00|((rn&15)<<4)|((rm&15)<<0);
 			break;
 		}
 	}

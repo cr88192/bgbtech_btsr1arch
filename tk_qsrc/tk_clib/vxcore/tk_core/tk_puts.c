@@ -499,6 +499,36 @@ char *tk_rsplit(char *str)
 	{
 		while(*s && (*s<=' '))
 			s++;
+		
+		if(*s=='\"')
+		{
+			s++;
+			
+			t=tb;
+			while(*s && (*s!='\"'))
+			{
+				if(*s=='\\')
+				{
+					s++;
+					i=*s++;
+					switch(i)
+					{
+					case '\\':	*t++='\\'; break;
+					case 'r':	*t++='\r'; break;
+					case 'n':	*t++='\n'; break;
+					case 't':	*t++='\t'; break;
+					default:	*t++=i; break;
+					}
+					continue;
+				}
+				*t++=*s++;
+			}
+			if(*s=='\"')s++;
+			*t++=0;
+			ta[nta++]=tk_rstrdup(tb);
+			continue;
+		}
+			
 		if(*s>' ')
 		{
 			t=tb;
@@ -506,6 +536,7 @@ char *tk_rsplit(char *str)
 				*t++=*s++;
 			*t++=0;
 			ta[nta++]=tk_rstrdup(tb);
+			continue;
 		}
 	}
 	

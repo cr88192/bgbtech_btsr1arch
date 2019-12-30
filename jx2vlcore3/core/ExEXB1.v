@@ -151,7 +151,10 @@ begin
 	
 		JX2_UCMD_LEA_MR: begin
 		end
+
 		JX2_UCMD_MOV_RM: begin
+			tRegIdRn1		= JX2_GR_ZZR;
+			tRegValRn1		= regValRs;
 		end
 		JX2_UCMD_MOV_MR: begin
 		end
@@ -162,6 +165,9 @@ begin
 		end
 
 		JX2_UCMD_PUSHX: begin
+//			$display("EXB1: PushX Id=%d Rm=%X", regIdRm, regValRm);
+			tRegIdRn1		= JX2_GR_ZZR;
+			tRegValRn1		= regValRm;
 		end
 		JX2_UCMD_POPX: begin
 		end
@@ -207,6 +213,12 @@ begin
 			endcase
 		end
 		
+		JX2_UCMD_MULW3: begin
+			tHeldIdRn1	= regIdRm;
+//			tRegIdRn1	= regIdRm;			//
+//			tRegValRn1	= regValMulwRes;		//
+		end
+
 		JX2_UCMD_SHAD3: begin
 			tRegIdRn1	= regIdRm;
 			tRegValRn1	= { tValShad32[31]?UV32_FF:UV32_00, tValShad32 };

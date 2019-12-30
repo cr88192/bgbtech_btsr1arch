@@ -152,7 +152,7 @@ S_AdjustSoundParams
 
 void S_StopChannel(int cnum);
 
-
+static int s_init_wasinit = 314;
 
 //
 // Initializes sound stuff, including volume
@@ -164,6 +164,10 @@ void S_Init
 	int		musicVolume )
 {	
 	int		i;
+	
+	if(s_init_wasinit != 314)
+		__debugbreak();
+	s_init_wasinit = 1;
 
 	fprintf( stderr, "S_Init: default sfx volume %d\n", sfxVolume);
 
@@ -178,11 +182,12 @@ void S_Init
 	// (the maximum numer of sounds rendered
 	// simultaneously) within zone memory.
 	s_channels =
-		(channel_t *) Z_Malloc(numChannels*sizeof(channel_t), PU_STATIC, 0);
+//		(channel_t *) Z_Malloc(numChannels*sizeof(channel_t), PU_STATIC, 0);
+		(channel_t *) Z_Malloc(10*sizeof(channel_t), PU_STATIC, 0);
 	
 	// Free all channels for use
-	for (i=0 ; i<numChannels ; i++)
-
+//	for (i=0 ; i<numChannels ; i++)
+	for (i=0 ; i<10 ; i++)
 		s_channels[i].sfxinfo = 0;
 	
 	// no sounds are playing, and they are not mus_paused

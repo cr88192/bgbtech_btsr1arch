@@ -26,6 +26,7 @@ module MemDcA(
 	clock,			reset,
 	regInAddr,		regInOpm,
 	regOutVal,		regInVal,
+	regOutValB,		regInValB,
 	regOutOK,		dcInHold,
 
 	memAddr,		memAddrB,
@@ -37,36 +38,43 @@ module MemDcA(
 input			clock;
 input			reset;
 
-input [31: 0]	regInAddr;		//input PC address
-input [ 4: 0]	regInOpm;		//input PC address
+input [31: 0]	regInAddr;		//input address
+input [ 4: 0]	regInOpm;		//operation mode
 
-output[63: 0]	regOutVal;		//output PC value
-input [63: 0]	regInVal;		//output PC value
+output[63: 0]	regOutVal;		//output data value
+input [63: 0]	regInVal;		//input data value
 output[ 1: 0]	regOutOK;		//set if we have a valid value.
+
+output[63: 0]	regOutValB;		//output data value (alternate)
+input [63: 0]	regInValB;		//input data value (alternate)
 
 input			dcInHold;
 
 
-output[ 31:0]	memAddr;		//memory PC address
-output[ 31:0]	memAddrB;		//memory PC address
-output[  4:0]	memOpm;			//memory PC output-enable
+output[ 31:0]	memAddr;		//memory address
+output[ 31:0]	memAddrB;		//memory address (alternate)
+output[  4:0]	memOpm;			//memory operation mode
 
-input [127:0]	memDataIn;		//memory PC data
-output[127:0]	memDataOut;		//memory PC data
-input [  1:0]	memOK;			//memory PC OK
+input [127:0]	memDataIn;		//memory input data
+output[127:0]	memDataOut;		//memory output data
+input [  1:0]	memOK;			//memory OK
 input [  3:0]	memNoRwx;		//No Read/Write/Execute
 
 
-reg[63:0]		tRegOutVal;	//output PC value
-reg[ 1:0]		tRegOutOK;	//set if we have a valid value.
+reg[63:0]		tRegOutVal;		//output data value
+reg[63:0]		tRegOutValB;	//output data value (alternate)
+reg[ 1:0]		tRegOutOK;		//set if we have a valid value.
 
 `ifdef jx2_do_ld1cyc
 assign			regOutVal		= tRegOutVal;
+assign			regOutValB		= tRegOutValB;
 assign			regOutOK		= tRegOutOK;
 `else
-reg[63:0]		tRegOutVal2;	//output PC value
+reg[63:0]		tRegOutVal2;	//output data value
+reg[63:0]		tRegOutValB2;	//output data value (alternate)
 reg[ 1:0]		tRegOutOK2;	//set if we have a valid value.
 assign			regOutVal		= tRegOutVal2;
+assign			regOutValB		= tRegOutValB2;
 assign			regOutOK		= tRegOutOK2;
 `endif
 
@@ -242,6 +250,7 @@ reg[31:0]		tInAddr;
 reg[ 2:0]		tInByteIx;
 reg[ 4:0]		tInOpm;
 reg[63:0]		tDataIn;
+reg[63:0]		tDataInB;
 
 reg				tMissA;
 reg				tMissB;
@@ -317,12 +326,23 @@ reg			tHoldWrCyc;
 reg[2:0]	tHoldCyc;
 reg[2:0]	tNextHoldCyc;
 
-reg[31: 0]	tRegInAddr;		//input PC address
-reg[ 4:0]	tRegInOpm;
-reg[63:0]	tRegInVal;
+// reg[31: 0]	tRegInAddr;		//input address
+// reg[ 4:0]	tRegInOpm;
+// reg[63:0]	tRegInVal;
 
-// reg[31: 0]	tMmioInData;		//input PC address
-reg[63: 0]	tMmioInData;		//input PC address
+wire[31: 0]		tRegInAddr;		//input address
+wire[ 4: 0]		tRegInOpm;
+wire[63: 0]		tRegInVal;
+wire[63: 0]		tRegInValB;
+
+assign	tRegInAddr	= dcInHold ? tInAddr : regInAddr;
+assign	tRegInOpm	= dcInHold ? tInOpm : regInOpm;
+assign	tRegInVal	= dcInHold ? tDataIn : regInVal;
+assign	tRegInValB	= dcInHold ? tDataInB : regInValB;
+
+
+// reg[31: 0]	tMmioInData;
+reg[63: 0]	tMmioInData;
 
 reg			tAccFltR;
 reg			tAccFltW;
@@ -340,6 +360,7 @@ begin
 //	tRegInOpm = dcInHold ? tInOpm : regInOpm;
 //	tRegInVal	= dcInHold ? tDataIn : regInVal;
 
+`ifndef def_true
 `ifdef def_true
 // `ifndef def_true
 	if(dcInHold)
@@ -357,6 +378,7 @@ begin
 //	tRegInAddr	= regInAddr;
 	tRegInOpm	= regInOpm;
 	tRegInVal	= regInVal;
+`endif
 `endif
 
 //	if(regInAddr[4])
@@ -412,10 +434,16 @@ begin
 
 	/* Stage B */
 
-	tStBlkDataA		= UV128_XX;
-	tStBlkDataB		= UV128_XX;
-	tStBlkAddrA		= UV28_XX;
-	tStBlkAddrB		= UV28_XX;
+//	tStBlkDataA		= UV128_XX;
+//	tStBlkDataB		= UV128_XX;
+//	tStBlkAddrA		= UV28_XX;
+//	tStBlkAddrB		= UV28_XX;
+
+	tStBlkDataA		= UV128_00;
+	tStBlkDataB		= UV128_00;
+	tStBlkAddrA		= UV28_00;
+	tStBlkAddrB		= UV28_00;
+
 	tStBlkFlagA		= 0;
 	tStBlkFlagB		= 0;
 	tDoStBlkA		= 0;
@@ -427,16 +455,26 @@ begin
 	tAccFltW		= 0;
 //	tAccFlt;
 
+	tRegOutVal		= UV64_00;
+//	tRegOutValB		= UV64_00;
+	tRegOutValB		= UV64_XX;
+
 `ifdef jx2_expand_l1sz
-	tStBlkIxA	= UV8_XX;
-	tStBlkIxB	= UV8_XX;
+//	tStBlkIxA	= UV8_XX;
+//	tStBlkIxB	= UV8_XX;
+	tStBlkIxA	= UV8_00;
+	tStBlkIxB	= UV8_00;
 `else
 `ifdef jx2_reduce_l1sz
-	tStBlkIxA	= UV4_XX;
-	tStBlkIxB	= UV4_XX;
+//	tStBlkIxA	= UV4_XX;
+//	tStBlkIxB	= UV4_XX;
+	tStBlkIxA	= UV4_00;
+	tStBlkIxB	= UV4_00;
 `else
-	tStBlkIxA	= UV6_XX;
-	tStBlkIxB	= UV6_XX;
+//	tStBlkIxA	= UV6_XX;
+//	tStBlkIxB	= UV6_XX;
+	tStBlkIxA	= UV6_00;
+	tStBlkIxB	= UV6_00;
 `endif
 `endif
 
@@ -553,9 +591,13 @@ begin
 		3'b100: tRegOutVal = { UV56_00, tBlkExData[ 7:0] };
 		3'b101: tRegOutVal = { UV48_00, tBlkExData[15:0] };
 		3'b110: tRegOutVal = { UV32_00, tBlkExData[31:0] };
-		3'b111: tRegOutVal = tBlkExData[63:0];
+		3'b111: begin
+//			tRegOutVal = tBlkExData[63:0];
+			tRegOutVal  = tBlkData[ 63: 0];
+			tRegOutValB = tBlkData[127:64];
+		end
 	endcase
-
+	
 `ifdef jx2_debug_l1ds
 	if(tReqOpmNz && !tReqIsMmio)
 	begin
@@ -574,19 +616,34 @@ begin
 
 	/* Stage C */
 
-//	tBlkData1		= tBlkData;
-//	tBlkInData1		= tBlkInData;
+`ifndef jx2_mem_do_st2cyc
+	tBlkData1		= tBlkData;
+	tBlkInData1		= tBlkInData;
+`endif
 
 	case(tInByteIx)
-		3'b000: tBlkDataW = { tBlkData1[127: 64], tBlkInData1                 };
-		3'b001: tBlkDataW = { tBlkData1[127: 72], tBlkInData1, tBlkData1[ 7:0] };
-		3'b010: tBlkDataW = { tBlkData1[127: 80], tBlkInData1, tBlkData1[15:0] };
-		3'b011: tBlkDataW = { tBlkData1[127: 88], tBlkInData1, tBlkData1[23:0] };
-		3'b100: tBlkDataW = { tBlkData1[127: 96], tBlkInData1, tBlkData1[31:0] };
-		3'b101: tBlkDataW = { tBlkData1[127:104], tBlkInData1, tBlkData1[39:0] };
-		3'b110: tBlkDataW = { tBlkData1[127:112], tBlkInData1, tBlkData1[47:0] };
-		3'b111: tBlkDataW = { tBlkData1[127:120], tBlkInData1, tBlkData1[55:0] };
+		3'b000: tBlkDataW =
+			{ tBlkData1[127: 64], tBlkInData1                 };
+		3'b001: tBlkDataW =
+			{ tBlkData1[127: 72], tBlkInData1, tBlkData1[ 7:0] };
+		3'b010: tBlkDataW =
+			{ tBlkData1[127: 80], tBlkInData1, tBlkData1[15:0] };
+		3'b011: tBlkDataW =
+			{ tBlkData1[127: 88], tBlkInData1, tBlkData1[23:0] };
+		3'b100: tBlkDataW =
+			{ tBlkData1[127: 96], tBlkInData1, tBlkData1[31:0] };
+		3'b101: tBlkDataW =
+			{ tBlkData1[127:104], tBlkInData1, tBlkData1[39:0] };
+		3'b110: tBlkDataW =
+			{ tBlkData1[127:112], tBlkInData1, tBlkData1[47:0] };
+		3'b111: tBlkDataW =
+			{ tBlkData1[127:120], tBlkInData1, tBlkData1[55:0] };
 	endcase
+	
+	if(tInOpm[2:0]==3'b111)
+	begin
+		tBlkDataW = { tDataInB[63:0], tDataIn[63:0] };
+	end
 
 	if(tReqOpmNz && !tReqIsMmio)
 		tHold = (tMiss || tDoMiBlk) || (tMemLatchA || tMemLatchB);
@@ -657,8 +714,11 @@ begin
 		tDoStBlkA	= 0;
 		tDoStBlkB	= 0;
 		
+`ifdef jx2_mem_do_st2cyc
 		if(tHoldCyc!=2)
-//		if(tHoldCyc!=1)
+`else
+		if(tHoldCyc!=1)
+`endif
 		begin
 			tNextHoldCyc = tHoldCyc + 1;
 			tHoldWrCyc	= 1;
@@ -792,6 +852,7 @@ begin
 	tInAddr		<= tRegInAddr;
 	tInOpm		<= tRegInOpm;
 	tDataIn		<= tRegInVal;
+	tDataInB	<= tRegInValB;
 
 	tReqAddrA	<= tNxtAddrA;
 	tReqAddrB	<= tNxtAddrB;
@@ -819,8 +880,10 @@ begin
 	tLstStBlkIxA	<= tStBlkIxA;
 	tLstStBlkIxB	<= tStBlkIxB;
 
+`ifdef jx2_mem_do_st2cyc
 	tBlkData1		<= tBlkData;
 	tBlkInData1		<= tBlkInData;
+`endif
 
 	if(tDoStBlkA)
 	begin
@@ -1207,6 +1270,7 @@ begin
 
 `ifndef jx2_do_ld1cyc
 	tRegOutVal2		<= tRegOutVal;	//output PC value
+	tRegOutValB2	<= tRegOutValB;	//output PC value
 	tRegOutOK2		<= tRegOutOK;	//set if we have a valid value.
 `endif
 

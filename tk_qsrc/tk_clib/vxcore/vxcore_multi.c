@@ -23,6 +23,7 @@
 #include "tk_core/tk_mmllist.c"
 
 #include "tk_core/tk_spi.c"
+#include "tk_core/tk_epoch.c"
 #include "tk_core/tk_fat.c"
 #include "tk_core/tk_vfile.c"
 #include "tk_core/tk_divi.c"

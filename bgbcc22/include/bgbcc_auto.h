@@ -2375,6 +2375,8 @@ int BGBCC_JX2_ModelIsLabel24P(BGBCC_JX2_Context *ctx);
 int BGBCC_JX2_ModelIsLabel20P(BGBCC_JX2_Context *ctx);
 int BGBCC_JX2_ModelIsData24P(BGBCC_JX2_Context *ctx);
 int BGBCC_JX2_ModelIsAbs16P(BGBCC_JX2_Context *ctx);
+int BGBCC_JX2_EmitOpRegLbl(BGBCC_JX2_Context *ctx,int nmid, int lbl, int reg);
+int BGBCC_JX2_TryEmitOpRegLbl(BGBCC_JX2_Context *ctx,int nmid, int lbl, int reg);
 int BGBCC_JX2_EmitOpLblReg(BGBCC_JX2_Context *ctx,int nmid, int lbl, int reg);
 int BGBCC_JX2_TryEmitOpLblReg(BGBCC_JX2_Context *ctx,int nmid, int lbl, int reg);
 int BGBCC_JX2_EmitOpLabel(BGBCC_JX2_Context *ctx, int nmid, int lbl);

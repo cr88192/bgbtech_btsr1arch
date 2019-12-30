@@ -1,3 +1,6 @@
+int tk_tryload(char *img, char **args);
+int tk_tryload_n(char *img, char **args);
+
 extern u64 __arch_gbr;
 
 char tb_cwd[256];
@@ -10,6 +13,7 @@ char tb_cwd[256];
 #define TK_CMD_RM		0x06
 #define TK_CMD_MV		0x07
 #define TK_CMD_CP		0x08
+#define TK_CMD_ECHO		0x09
 
 int tk_cmd2idx(char *s)
 {
@@ -29,6 +33,12 @@ int tk_cmd2idx(char *s)
 	{
 		if(!strcmp(s, "dir"))
 			return(TK_CMD_LS);
+	}
+
+	if(*s=='e')
+	{
+		if(!strcmp(s, "echo"))
+			return(TK_CMD_ECHO);
 	}
 
 	if(*s=='l')
@@ -66,6 +76,263 @@ int tk_cmd2idx(char *s)
 	return(-1);
 }
 
+int TkSh_ExecCmd(char *cmd)
+{
+	char tb[256], tb1[256];
+	char **a;
+	char *s0, *s1;
+	int ci, ri;
+	int i, j, k;
+
+	a=tk_rsplit(cmd);
+	if(!a[0])
+		return(0);
+	ci=tk_cmd2idx(a[0]);
+
+#if 1
+	switch(ci)
+	{
+	case 0:
+//			tk_printf("Test Command '%s'\n", a[0]);
+		break;
+	case TK_CMD_RUN:
+		if(a[1])
+		{
+			tk_tryload(a[1], a+1);
+		}else
+		{
+			tk_printf("usage: %s <image> [args*]\n", a[0]);
+		}
+		break;
+
+	case TK_CMD_LS:
+		if(a[1])
+		{
+			if(a[1][0]=='/')
+			{
+				strcpy(tb, a[1]);
+			}else
+			{
+				strcpy(tb, tb_cwd);
+				strcat(tb, "/");
+				strcat(tb, a[1]);
+			}
+//				tk_dir(a[1], a+1);
+			tk_dir(tb, a+1);
+		}else
+		{
+			tk_dir(tb_cwd, a+1);
+//				printf("usage: %s <path> [args*]\n", a[0]);
+		}
+		break;
+
+	case TK_CMD_CD:
+		if(a[1])
+		{
+			if(a[1][0]=='/')
+			{
+				strcpy(tb, a[1]);
+			}else
+			{
+				strcpy(tb, tb_cwd);
+				if(tb[strlen(tb)-1]!='/')
+					strcat(tb, "/");
+				strcat(tb, a[1]);
+			}
+//				tk_dir(a[1], a+1);
+//				tk_dir(tb, a+1);
+//				strcpy(tb_cwd, tb);
+			tk_normalize_path(tb_cwd, tb);
+		}else
+		{
+//				tk_dir(tb_cwd, a+1);
+//				printf("usage: %s <path> [args*]\n", a[0]);
+			strcpy(tb_cwd, "/");
+			TK_Env_SetCwd(tb_cwd);
+		}
+		break;
+
+	case TK_CMD_CLS:
+		tk_con_reset();
+		break;
+
+	case TK_CMD_ECHO:
+		for(i=1; a[i]; i++)
+		{
+			s0=a[i];
+			
+			if(*s0=='$')
+			{
+				s1=TK_Env_GetEnvVarI(s0+1);
+				if(*s1)
+					{ tk_puts(s1); }
+				continue;
+			}
+			
+			puts(s0);
+		}
+		tk_putc('\n');
+		break;
+
+	case TK_CMD_RECVXM:
+		if(a[1])
+		{
+			if(a[1][0]=='/')
+			{
+				strcpy(tb, a[1]);
+			}else
+			{
+				strcpy(tb, tb_cwd);
+				strcat(tb, "/");
+				strcat(tb, a[1]);
+			}
+			TK_Dbg_RecvFileXM(tb);
+		}
+		break;
+
+	case TK_CMD_RM:
+		if(a[1])
+		{
+			if(a[1][0]=='/')
+			{
+				strcpy(tb, a[1]);
+			}else
+			{
+				strcpy(tb, tb_cwd);
+				strcat(tb, "/");
+				strcat(tb, a[1]);
+			}
+			tk_unlink(tb);
+		}
+		break;
+
+	case TK_CMD_MV:
+		if(a[1])
+		{
+			if(a[1][0]=='/')
+			{
+				strcpy(tb, a[1]);
+			}else
+			{
+				strcpy(tb, tb_cwd);
+				strcat(tb, "/");
+				strcat(tb, a[1]);
+			}
+
+			if(a[2][0]=='/')
+			{
+				strcpy(tb1, a[2]);
+			}else
+			{
+				strcpy(tb1, tb_cwd);
+				strcat(tb1, "/");
+				strcat(tb1, a[2]);
+			}
+			tk_rename(tb, tb1);
+		}
+		break;
+
+	case TK_CMD_CP:
+		if(a[1])
+		{
+			if(a[1][0]=='/')
+			{
+				strcpy(tb, a[1]);
+			}else
+			{
+				strcpy(tb, tb_cwd);
+				strcat(tb, "/");
+				strcat(tb, a[1]);
+			}
+
+			if(a[2][0]=='/')
+			{
+				strcpy(tb1, a[2]);
+			}else
+			{
+				strcpy(tb1, tb_cwd);
+				strcat(tb1, "/");
+				strcat(tb1, a[2]);
+			}
+			tk_fcopy(tb, tb1);
+		}
+		break;
+
+	default:
+#if 0
+		TK_Env_GetCwd(tb_cwd, 256);
+//			strcpy(tb, a[0]);
+		strcpy(tb, tb_cwd);
+		strcat(tb, "/");
+		strcat(tb, a[0]);
+		strcat(tb, ".exe");
+		ri=tk_tryload(tb, a);
+#endif
+
+		ri=tk_tryload_n(tb, a);
+
+		if(ri>0)
+		{
+			if(ri&65535)
+				{ tk_printf("Return Status=%d\n", (ri&65535)); }
+			break;
+		}
+		
+		tk_printf("Unhandled Command '%s'\n", a[0]);
+		break;
+	}
+#endif
+
+	return(1);
+}
+
+int TkSh_ExecCmdBuf(char *cmd)
+{
+	byte tb[256];
+	char *cs, *ct;
+	int i;
+	
+	cs=cmd;
+	while(*cs)
+	{
+		ct=tb;
+		while(*cs && (*cs!='\r') && (*cs!='\n'))
+			{ *ct++=*cs++; }
+		*ct++=0;
+		
+		if(tb[0])
+		{
+			tk_printf("cmd: %s\n", tb);
+			TkSh_ExecCmd(tb);
+		}
+
+		i=*cs;
+		if(i=='\r')i=*(++cs);
+		if(i=='\n')cs++;
+//		while(*cs && (*cs<=' '))cs++;
+	}
+}
+
+void *tk_rovalloc(int sz, void **rov)
+{
+	byte *ptr;
+	int sz1;
+	
+	sz1=(sz+8)&(~7);
+	ptr=*rov;
+	*rov=ptr+sz1;
+	return(ptr);
+}
+
+char *tk_rovstrdup(char *str, void **rov)
+{
+	char *s1;
+
+	s1=tk_rovalloc(strlen(str)+1, rov);
+	strcpy(s1, str);
+	return(s1);
+}
+
 void __tk_farcall(void *fptr, void *gbr, void *newstack, void *tbr);
 int TK_DestroyTaskInfo(void *tkptr);
 
@@ -73,22 +340,29 @@ int tk_tryload(char *img, char **args)
 {
 	byte tb[256];
 	TK_FILE *fd;
+	char **a1;
 	char *cs, *ct;
+	char *buf;
 //	u64 bootgbr;
 	TKPE_TaskInfo *task;
 	void *bootgbr;
 	byte *boot_newspb, *boot_newsp;
 	void *boottbr;
 	int (*bootptr)();
-	int sig_is_pe;
-	int rv;
+	int sig_is_pe, sig_is_asc;
+	int rv, nl, sz;
+	int i, j, k;
 
 	fd=tk_fopen(img, "rb");
+	
+	if(!fd)
+		return(-1);
 	
 	while(fd)
 	{
 		tk_fseek(fd, 0, 0);
-		tk_fread(tb, 1, 256, fd);
+		memset(tb, 0, 256);
+		tk_fread(tb, 1, 255, fd);
 		
 		if((tb[0]!='#') || (tb[1]!='!'))
 			break;
@@ -125,7 +399,26 @@ int tk_tryload(char *img, char **args)
 			task->bootptr=bootptr;
 			task->basegbr=bootgbr;
 			task->boottbr=boottbr;
-		
+
+			task->boot_sps=boot_newspb;
+			task->boot_spe=boot_newsp;
+			
+			ct=boot_newspb;
+			a1=tk_rovalloc(256, &ct);
+			if(args)
+			{
+				for(i=0; args[i]; i++)
+				{
+					a1[i]=tk_rovstrdup(args[i], &ct);
+				}
+				a1[i]=NULL;
+			}else
+			{
+				a1[0]=tk_rovstrdup(img, &ct);
+				a1[1]=NULL;
+			}
+			task->argv=a1;
+
 			rv=tk_sysc_exitpt();
 			if(rv)
 			{
@@ -141,9 +434,92 @@ int tk_tryload(char *img, char **args)
 		}
 	}
 	
+	if(fd)
+	{
+		sig_is_asc=0; nl=0;
+		cs=tb;
+		while(*cs)
+		{
+			i=*cs;
+			if(i<' ')
+			{
+				if(i=='\r')
+				{
+					cs++;
+					i=*cs;
+					if(i=='\n')
+						cs++;
+					nl++;
+					continue;
+				}
+				if(i=='\n')
+				{
+					cs++;
+					nl++;
+					continue;
+				}
+				if(i=='\t')
+					{ cs++; continue; }
+	//			if((i=='\r') || (i=='\n') || (i=='\t'))
+	//				{ cs++; continue; }
+				break;
+			}
+			
+			if((i&255)>=127)
+				break;
+			cs++;
+		}
+		
+		if(!(*cs) && (nl>0))
+			sig_is_asc=1;
+		
+		if(sig_is_asc)
+		{
+	//		TkSh_ExecCmdFd(fd);
+			tk_fseek(fd, 0, 2);
+			sz=tk_ftell(fd);
+			tk_fseek(fd, 0, 0);
+			buf=tk_malloc(sz+16);
+			memset(tb, 0, 256);
+			tk_fread(buf, 1, sz, fd);
+			tk_fclose(fd);
+
+			TkSh_ExecCmdBuf(buf);
+			tk_free(buf);
+			return(1);
+		}
+	}
+	
 //	TK_DestroyTaskInfo(NULL);
 	return(-1);
 }
+
+int tk_tryload_ext(char *img, char **args)
+{
+	char **path;
+	char tb[256];
+	int npath, ri;
+	int i;
+
+	ri=tk_tryload(img, args);
+	if(ri>0)
+		return(ri);
+	
+	strcpy(tb, img);
+	strcat(tb, ".exe");
+	ri=tk_tryload(tb, args);
+	if(ri>0)
+		return(ri);
+
+	strcpy(tb, img);
+	strcat(tb, ".pf");
+	ri=tk_tryload(tb, args);
+	if(ri>0)
+		return(ri);
+	
+	return(-1);
+}
+
 
 int tk_tryload_n(char *img, char **args)
 {
@@ -158,8 +534,9 @@ int tk_tryload_n(char *img, char **args)
 	strcpy(tb, tb_cwd);
 	strcat(tb, "/");
 	strcat(tb, args[0]);
-	strcat(tb, ".exe");
-	ri=tk_tryload(tb, args);
+//	strcat(tb, ".exe");
+//	ri=tk_tryload(tb, args);
+	ri=tk_tryload_ext(tb, args);
 	if(ri>0)
 		return(ri);
 #endif
@@ -170,8 +547,9 @@ int tk_tryload_n(char *img, char **args)
 		strcpy(tb, path[i]);
 		strcat(tb, "/");
 		strcat(tb, args[0]);
-		strcat(tb, ".exe");
-		ri=tk_tryload(tb, args);
+//		strcat(tb, ".exe");
+//		ri=tk_tryload(tb, args);
+		ri=tk_tryload_ext(tb, args);
 		if(ri>0)
 			return(ri);
 	}
@@ -194,6 +572,12 @@ void tk_dir(char *path, char **args)
 	tde=tk_readdir(dir);
 	while(tde)
 	{
+//		if((tde->d_name[0]=='!') && (tde->d_name[1]=='!'))
+//		{
+//			tde=tk_readdir(dir);
+//			continue;
+//		}
+	
 //		memset(tb, 0x20, 128);
 //		memcpy(tb, tde->d_name, strlen(tde->d_name));
 //		tb[32]=0;
@@ -325,13 +709,12 @@ int tk_shell_chksane()
 int main(int argc, char *argv[])
 {
 	char tbuf[256];
-	char tb[256], tb1[256];
-	char **a;
-	int ci, ri;
 
 	tk_shell_chksane();
 
 	tk_con_reset();
+
+	tk_tryload("autoexec.pf", NULL);
 
 	strcpy(tb_cwd, "/");
 
@@ -341,186 +724,7 @@ int main(int argc, char *argv[])
 		tk_puts(tb_cwd);
 		tk_puts("$ ");
 		tk_gets(tbuf);
-		a=tk_rsplit(tbuf);
-		if(!a[0])
-			continue;
-		ci=tk_cmd2idx(a[0]);
-
-#if 1
-		switch(ci)
-		{
-		case 0:
-//			tk_printf("Test Command '%s'\n", a[0]);
-			break;
-		case TK_CMD_RUN:
-			if(a[1])
-			{
-				tk_tryload(a[1], a+1);
-			}else
-			{
-				tk_printf("usage: %s <image> [args*]\n", a[0]);
-			}
-			break;
-
-		case TK_CMD_LS:
-			if(a[1])
-			{
-				if(a[1][0]=='/')
-				{
-					strcpy(tb, a[1]);
-				}else
-				{
-					strcpy(tb, tb_cwd);
-					strcat(tb, "/");
-					strcat(tb, a[1]);
-				}
-//				tk_dir(a[1], a+1);
-				tk_dir(tb, a+1);
-			}else
-			{
-				tk_dir(tb_cwd, a+1);
-//				printf("usage: %s <path> [args*]\n", a[0]);
-			}
-			break;
-
-		case TK_CMD_CD:
-			if(a[1])
-			{
-				if(a[1][0]=='/')
-				{
-					strcpy(tb, a[1]);
-				}else
-				{
-					strcpy(tb, tb_cwd);
-					if(tb[strlen(tb)-1]!='/')
-						strcat(tb, "/");
-					strcat(tb, a[1]);
-				}
-//				tk_dir(a[1], a+1);
-//				tk_dir(tb, a+1);
-//				strcpy(tb_cwd, tb);
-				tk_normalize_path(tb_cwd, tb);
-			}else
-			{
-//				tk_dir(tb_cwd, a+1);
-//				printf("usage: %s <path> [args*]\n", a[0]);
-				strcpy(tb_cwd, "/");
-				TK_Env_SetCwd(tb_cwd);
-			}
-			break;
-
-		case TK_CMD_CLS:
-			tk_con_reset();
-			break;
-
-		case TK_CMD_RECVXM:
-			if(a[1])
-			{
-				if(a[1][0]=='/')
-				{
-					strcpy(tb, a[1]);
-				}else
-				{
-					strcpy(tb, tb_cwd);
-					strcat(tb, "/");
-					strcat(tb, a[1]);
-				}
-				TK_Dbg_RecvFileXM(tb);
-			}
-			break;
-
-		case TK_CMD_RM:
-			if(a[1])
-			{
-				if(a[1][0]=='/')
-				{
-					strcpy(tb, a[1]);
-				}else
-				{
-					strcpy(tb, tb_cwd);
-					strcat(tb, "/");
-					strcat(tb, a[1]);
-				}
-				tk_unlink(tb);
-			}
-			break;
-
-		case TK_CMD_MV:
-			if(a[1])
-			{
-				if(a[1][0]=='/')
-				{
-					strcpy(tb, a[1]);
-				}else
-				{
-					strcpy(tb, tb_cwd);
-					strcat(tb, "/");
-					strcat(tb, a[1]);
-				}
-
-				if(a[2][0]=='/')
-				{
-					strcpy(tb1, a[2]);
-				}else
-				{
-					strcpy(tb1, tb_cwd);
-					strcat(tb1, "/");
-					strcat(tb1, a[2]);
-				}
-				tk_rename(tb, tb1);
-			}
-			break;
-
-		case TK_CMD_CP:
-			if(a[1])
-			{
-				if(a[1][0]=='/')
-				{
-					strcpy(tb, a[1]);
-				}else
-				{
-					strcpy(tb, tb_cwd);
-					strcat(tb, "/");
-					strcat(tb, a[1]);
-				}
-
-				if(a[2][0]=='/')
-				{
-					strcpy(tb1, a[2]);
-				}else
-				{
-					strcpy(tb1, tb_cwd);
-					strcat(tb1, "/");
-					strcat(tb1, a[2]);
-				}
-				tk_fcopy(tb, tb1);
-			}
-			break;
-
-		default:
-#if 0
-			TK_Env_GetCwd(tb_cwd, 256);
-//			strcpy(tb, a[0]);
-			strcpy(tb, tb_cwd);
-			strcat(tb, "/");
-			strcat(tb, a[0]);
-			strcat(tb, ".exe");
-			ri=tk_tryload(tb, a);
-#endif
-
-			ri=tk_tryload_n(tb, a);
-
-			if(ri>0)
-			{
-				if(ri&65535)
-					{ tk_printf("Return Status=%d\n", (ri&65535)); }
-				break;
-			}
-			
-			tk_printf("Unhandled Command '%s'\n", a[0]);
-			break;
-		}
-#endif
+		TkSh_ExecCmd(tbuf);
 	}
 
 	puts("Loop Terminate\n");

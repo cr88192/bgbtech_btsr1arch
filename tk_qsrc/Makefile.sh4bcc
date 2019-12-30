@@ -116,6 +116,9 @@ SQUAKE_SRCS = \
 	q1base/snd_mem.c \
 	q1base/snd_mix.c \
 	q1base/snd_btsh4.c \
+	\
+	q1base/r_surf_bjx2.S \
+
 
 SKIP_SRCS=\
 	q1base/d_fill.c \

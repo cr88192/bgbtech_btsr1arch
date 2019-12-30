@@ -66,7 +66,19 @@ void ResampleSfx (sfx_t *sfx, int inrate, int inwidth, byte *data)
 			((signed char *)sc->data)[i]
 			= (int)( (unsigned char)(data[i]) - 128);
 	}
-	else
+	else if ( (inwidth == 1) && (sc->width == 2) )
+	{
+		samplefrac = 0;
+		fracstep = stepscale*256;
+		for (i=0 ; i<outcount ; i++)
+		{
+			srcsample = samplefrac >> 8;
+			samplefrac += fracstep;
+//			sample = (int)( (unsigned char)(data[srcsample]) - 128) << 8;
+			sample = (data[srcsample] - 128) << 8;
+			((short *)sc->data)[i] = sample;
+		}
+	}else
 	{
 // general case
 		samplefrac = 0;

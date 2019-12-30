@@ -613,6 +613,7 @@ float __fpu_frcp_sf(float x);
 D_DrawSpans16
 =============
 */
+#if 0
 void D_DrawSpans16 (espan_t *pspan)
 {
 	int				count, spancount;
@@ -841,12 +842,638 @@ void D_DrawSpans16 (espan_t *pspan)
 
 	} while ((pspan = pspan->pnext) != NULL);
 }
+#endif
+
+
+#if 0
+
+unsigned short		*d_pbase;
+unsigned short		*d_pdest;
+float			d_sdivz8stepu, d_tdivz8stepu, d_zi8stepu;
+int				d_count;
+fixed16_t		d_sstep, d_tstep;
+float		d_sdivz, d_tdivz;
+float		d_zi;
+fixed16_t	d_s, d_t;
+// float	d_du, d_dv;
+
+//	register int		px;
+//	fixed16_t		snext, tnext;
+//	register fixed16_t		s, t, sstep, tstep;
+//	register int			t_cachewidth;
+//	float			sdivz, tdivz, zi, z, du, dv, spancountminus1;
+
+void D_DrawSpans16_Inner ()
+{
+	unsigned short		*pbase;
+	unsigned short		*pdest;
+	float			sdivz8stepu, tdivz8stepu, zi8stepu;
+	int				count;
+	fixed16_t		sstep, tstep;
+	float		sdivz, tdivz;
+	float		zi;
+	fixed16_t	s, t;
+
+	int			spancount;
+	int			px;
+	fixed16_t	snext, tnext;
+	int			t_cachewidth;
+	float		z, spancountminus1;
+
+
+	sdivz8stepu		= d_sdivz8stepu;
+	tdivz8stepu		= d_tdivz8stepu;
+	zi8stepu		= d_zi8stepu;
+
+	pbase	= d_pbase;
+	pdest	= d_pdest;
+	count	= d_count;
+	sstep	= d_sstep;
+	tstep	= d_tstep;
+	sdivz	= d_sdivz;
+	tdivz	= d_tdivz;
+	zi		= d_zi;
+//	z		= d_z;
+	s		= d_s;
+	t		= d_t;
+
+#if 1
+	z = __fpu_frcp_sf(zi) * 65536.0;
+
+	s = (int)(sdivz * z) + sadjust;
+		if (s > bbextents)
+			s = bbextents;
+		else if (s < 0)
+			s = 0;
+
+		t = (int)(tdivz * z) + tadjust;
+		if (t > bbextentt)
+			t = bbextentt;
+		else if (t < 0)
+			t = 0;
+#endif
+
+	t_cachewidth = cachewidth;
+
+	do
+	{
+		if (count >= 8)
+			spancount = 8;
+		else
+			spancount = count;
+
+		count -= spancount;
+
+		if (count)
+		{
+			sdivz += sdivz8stepu;
+			tdivz += tdivz8stepu;
+			zi += zi8stepu;
+			z = __fpu_frcp_sf(zi) * 65536.0;
+
+			snext = (int)(sdivz * z) + sadjust;
+			if (snext > bbextents)
+				snext = bbextents;
+			else if (snext < 8)
+				snext = 8;
+			tnext = (int)(tdivz * z) + tadjust;
+			if (tnext > bbextentt)
+				tnext = bbextentt;
+			else if (tnext < 8)
+				tnext = 8;
+			sstep = (snext - s) >> 3;
+			tstep = (tnext - t) >> 3;
+		}
+		else
+		{
+			spancountminus1 = (float)(spancount - 1);
+			sdivz += d_sdivzstepu * spancountminus1;
+			tdivz += d_tdivzstepu * spancountminus1;
+			zi += d_zistepu * spancountminus1;
+			z = __fpu_frcp_sf(zi) * 65536.0;
+
+			snext = (int)(sdivz * z) + sadjust;
+			if (snext > bbextents)
+				snext = bbextents;
+			else if (snext < 8)
+				snext = 8;
+			tnext = (int)(tdivz * z) + tadjust;
+			if (tnext > bbextentt)
+				tnext = bbextentt;
+			else if (tnext < 8)
+				tnext = 8;
+			if (spancount > 1)
+			{
+				sstep = D_SoftDiv((snext - s), (spancount - 1));
+				tstep = D_SoftDiv((tnext - t), (spancount - 1));
+			}
+		}
+	
+#if 0
+		while(spancount>=4)
+		{
+			px = *(pbase + (s >> 16) + (t >> 16) * t_cachewidth);
+			s += sstep;		t += tstep;
+			*pdest++ = px;
+
+			px = *(pbase + (s >> 16) + (t >> 16) * t_cachewidth);
+			s += sstep;		t += tstep;
+			*pdest++ = px;
+
+			px = *(pbase + (s >> 16) + (t >> 16) * t_cachewidth);
+			s += sstep;		t += tstep;
+			*pdest++ = px;
+
+			px = *(pbase + (s >> 16) + (t >> 16) * t_cachewidth);
+			s += sstep;		t += tstep;
+			*pdest++ = px;
+
+			spancount-=4;
+		}
+#endif
+
+//		if(spancount>=2)
+		while(spancount>=2)
+		{
+			px = *(pbase + (s >> 16) + (t >> 16) * t_cachewidth);
+			s += sstep;		t += tstep;
+			*pdest++ = px;
+
+			px = *(pbase + (s >> 16) + (t >> 16) * t_cachewidth);
+			s += sstep;		t += tstep;
+			*pdest++ = px;
+
+			spancount-=2;
+		}
+		if(spancount>0)
+		{
+			px = *(pbase + (s >> 16) + (t >> 16) * t_cachewidth);
+			s += sstep;		t += tstep;
+			*pdest++ = px;
+		}
+
+		s = snext;
+		t = tnext;
+
+	} while (count > 0);
+}
+
+void D_DrawSpans16 (espan_t *pspan)
+{
+//	int				count, spancount;
+//	register int		px;
+//	fixed16_t		snext, tnext;
+//	register fixed16_t		s, t, sstep, tstep;
+//	register int			t_cachewidth;
+//	float			sdivz, tdivz, zi, z, du, dv, spancountminus1;
+	float z;
+	float du, dv;
+
+	__hint_use_egpr();
+
+	d_sstep = 0;	// keep compiler happy
+	d_tstep = 0;	// ditto
+
+	d_pbase = (unsigned short *)cacheblock;
+
+	d_sdivz8stepu = d_sdivzstepu * 8;
+	d_tdivz8stepu = d_tdivzstepu * 8;
+	d_zi8stepu = d_zistepu * 8;
+
+	do
+	{
+		d_pdest = (unsigned short *)((short *)d_viewbuffer +
+				(screenwidth * pspan->v) + pspan->u);
+
+		d_count = pspan->count;
+
+		du = (float)pspan->u;
+		dv = (float)pspan->v;
+
+		d_sdivz = d_sdivzorigin + dv*d_sdivzstepv + du*d_sdivzstepu;
+		d_tdivz = d_tdivzorigin + dv*d_tdivzstepv + du*d_tdivzstepu;
+		d_zi = d_ziorigin + dv*d_zistepv + du*d_zistepu;
+
+#if 0
+		z = __fpu_frcp_sf(d_zi) * 65536.0;
+
+		d_s = (int)(d_sdivz * z) + sadjust;
+		if (d_s > bbextents)
+			d_s = bbextents;
+		else if (d_s < 0)
+			d_s = 0;
+
+		d_t = (int)(d_tdivz * z) + tadjust;
+		if (d_t > bbextentt)
+			d_t = bbextentt;
+		else if (d_t < 0)
+			d_t = 0;
+#endif
+
+		D_DrawSpans16_Inner();
+
+	} while ((pspan = pspan->pnext) != NULL);
+}
+#endif
+
+
+
+#if 1
+#if 0
+unsigned short		*d_pbase2;
+unsigned short		*d_pdest2;
+int				d_spancount2;
+fixed16_t		d_s2, d_t2, d_sstep2, d_tstep2;
+#endif
+
+void D_DrawSpans16_InnerPx();
+
+#if 0
+void D_DrawSpans16_InnerPx()
+{
+	unsigned short		*pbase;
+	unsigned short		*pdest;
+	int				spancount;
+	fixed16_t		s, t, sstep, tstep;
+	int				px, t_cachewidth;
+
+	__hint_use_egpr();
+
+	pbase		= d_pbase2;
+	pdest		= d_pdest2;
+	spancount	= d_spancount2;
+	s			= d_s2;
+	t			= d_t2;
+	sstep		= d_sstep2;
+	tstep		= d_tstep2;
+
+	t_cachewidth = cachewidth;
+
+//	if(spancount>=2)
+	while(spancount>=2)
+	{
+//		px = *(pbase + (s >> 16) + (t >> 16) * t_cachewidth);
+		px = pbase[(s >> 16) + (t >> 16) * t_cachewidth];
+		s += sstep;		t += tstep;
+		*pdest++ = px;
+
+//		px = *(pbase + (s >> 16) + (t >> 16) * t_cachewidth);
+		px = pbase[(s >> 16) + (t >> 16) * t_cachewidth];
+		s += sstep;		t += tstep;
+		*pdest++ = px;
+
+		spancount-=2;
+	}
+
+	if(spancount>0)
+	{
+//		px = *(pbase + (s >> 16) + (t >> 16) * t_cachewidth);
+		px = pbase[(s >> 16) + (t >> 16) * t_cachewidth];
+//		s += sstep;		t += tstep;
+		*pdest++ = px;
+	}
+
+	d_pdest2 = pdest;
+}
+#endif
+
+#if 0
+void D_DrawSpans16_InnerPx2(
+	unsigned short		*pbase,
+	unsigned short		*pdest,
+	int				spancount,
+	int 			t_cachewidth,
+	fixed16_t		s,
+	fixed16_t		t,
+	fixed16_t		sstep,
+	fixed16_t		tstep)
+{
+//	int				px, t_cachewidth;
+	int				px;
+
+	__hint_use_egpr();
+
+//	if(spancount>=2)
+	while(spancount>=2)
+	{
+//		px = *(pbase + (s >> 16) + (t >> 16) * t_cachewidth);
+		px = pbase[(s >> 16) + (t >> 16) * t_cachewidth];
+		s += sstep;		t += tstep;
+		*pdest++ = px;
+
+//		px = *(pbase + (s >> 16) + (t >> 16) * t_cachewidth);
+		px = pbase[(s >> 16) + (t >> 16) * t_cachewidth];
+		s += sstep;		t += tstep;
+		*pdest++ = px;
+
+		spancount-=2;
+	}
+
+	if(spancount>0)
+	{
+//		px = *(pbase + (s >> 16) + (t >> 16) * t_cachewidth);
+		px = pbase[(s >> 16) + (t >> 16) * t_cachewidth];
+//		s += sstep;		t += tstep;
+		*pdest++ = px;
+	}
+
+//	d_pdest2 = pdest;
+}
+#endif
+
+#if 0
+void D_DrawSpans16 (espan_t *pspan)
+{
+	unsigned short		*pbase;
+	unsigned short		*pdest;
+	int				count, spancount;
+	int		px;
+	fixed16_t		snext, tnext;
+	fixed16_t		s, t, sstep, tstep;
+	int			t_cachewidth;
+	float			sdivz, tdivz, zi, z, du, dv, spancountminus1;
+	float			sdivz8stepu, tdivz8stepu, zi8stepu;
+
+	__hint_use_egpr();
+
+	sstep = 0;	// keep compiler happy
+	tstep = 0;	// ditto
+
+	pbase = (unsigned short *)cacheblock;
+
+	sdivz8stepu = d_sdivzstepu * 8;
+	tdivz8stepu = d_tdivzstepu * 8;
+	zi8stepu = d_zistepu * 8;
+
+	do
+	{
+		pdest = (unsigned short *)((short *)d_viewbuffer +
+				(screenwidth * pspan->v) + pspan->u);
+
+//		d_pbase2		= pbase;
+//		d_pdest2		= pdest;
+
+		count = pspan->count;
+
+		du = (float)pspan->u;
+		dv = (float)pspan->v;
+
+		sdivz = d_sdivzorigin + dv*d_sdivzstepv + du*d_sdivzstepu;
+		tdivz = d_tdivzorigin + dv*d_tdivzstepv + du*d_tdivzstepu;
+		zi = d_ziorigin + dv*d_zistepv + du*d_zistepu;
+		z = __fpu_frcp_sf(zi) * 65536.0;
+
+		s = (int)(sdivz * z) + sadjust;
+		if (s > bbextents)
+			s = bbextents;
+		else if (s < 0)
+			s = 0;
+
+		t = (int)(tdivz * z) + tadjust;
+		if (t > bbextentt)
+			t = bbextentt;
+		else if (t < 0)
+			t = 0;
+
+		do
+		{
+			if (count >= 8)
+				spancount = 8;
+			else
+				spancount = count;
+
+			count -= spancount;
+
+			if (count)
+			{
+				sdivz += sdivz8stepu;
+				tdivz += tdivz8stepu;
+				zi += zi8stepu;
+				z = __fpu_frcp_sf(zi) * 65536.0;
+
+				snext = (int)(sdivz * z) + sadjust;
+				if (snext > bbextents)
+					snext = bbextents;
+				else if (snext < 8)
+					snext = 8;
+
+				tnext = (int)(tdivz * z) + tadjust;
+				if (tnext > bbextentt)
+					tnext = bbextentt;
+				else if (tnext < 8)
+					tnext = 8;
+
+				sstep = (snext - s) >> 3;
+				tstep = (tnext - t) >> 3;
+			}
+			else
+			{
+				spancountminus1 = (float)(spancount - 1);
+				sdivz += d_sdivzstepu * spancountminus1;
+				tdivz += d_tdivzstepu * spancountminus1;
+				zi += d_zistepu * spancountminus1;
+				z = __fpu_frcp_sf(zi) * 65536.0;
+
+				snext = (int)(sdivz * z) + sadjust;
+				if (snext > bbextents)
+					snext = bbextents;
+				else if (snext < 8)
+					snext = 8;
+
+				tnext = (int)(tdivz * z) + tadjust;
+				if (tnext > bbextentt)
+					tnext = bbextentt;
+				else if (tnext < 8)
+					tnext = 8;
+
+				if (spancount > 1)
+				{
+					sstep = D_SoftDiv((snext - s), (spancount - 1));
+					tstep = D_SoftDiv((tnext - t), (spancount - 1));
+				}
+			}
+
+#if 0
+//			d_pbase2		= pbase;
+			d_pdest2		= pdest;
+			d_spancount2	= spancount;
+			d_s2			= s;
+			d_t2			= t;
+			d_sstep2		= sstep;
+			d_tstep2		= tstep;
+
+			D_DrawSpans16_InnerPx();
+#endif
+
+			D_DrawSpans16_InnerPx2(
+				pbase,			pdest,
+				spancount,		cachewidth,
+				s,				t,
+				sstep,			tstep);
+
+
+			pdest += spancount;
+			
+//			pdest = d_pdest2;
+
+			s = snext;
+			t = tnext;
+		} while (count > 0);
+
+	} while ((pspan = pspan->pnext) != NULL);
+}
+#endif
+
+#if 1
+void D_DrawSpans16 (espan_t *pspan)
+{
+	unsigned short		*pbase;
+	unsigned short		*pdest;
+	int				count, spancount;
+	int		px;
+	fixed16_t		snext, tnext;
+	fixed16_t		s, t, sstep, tstep;
+	int			t_cachewidth;
+	float			sdivz, tdivz, zi, z, du, dv, spancountminus1;
+	float			sdivz8stepu, tdivz8stepu, zi8stepu;
+	float			z8stepu, zstepu;
+
+	__hint_use_egpr();
+
+	sstep = 0;	// keep compiler happy
+	tstep = 0;	// ditto
+
+	pbase = (unsigned short *)cacheblock;
+
+	sdivz8stepu = d_sdivzstepu * 16;
+	tdivz8stepu = d_tdivzstepu * 16;
+	zi8stepu = d_zistepu * 16;
+	
+	zstepu = __fpu_frcp_sf(d_zistepu) * 65536.0;
+	z8stepu = __fpu_frcp_sf(zi8stepu) * 65536.0;
+
+	do
+	{
+		pdest = (unsigned short *)((short *)d_viewbuffer +
+				(screenwidth * pspan->v) + pspan->u);
+
+		count = pspan->count;
+
+		du = (float)pspan->u;
+		dv = (float)pspan->v;
+
+		sdivz = d_sdivzorigin + dv*d_sdivzstepv + du*d_sdivzstepu;
+		tdivz = d_tdivzorigin + dv*d_tdivzstepv + du*d_tdivzstepu;
+		zi = d_ziorigin + dv*d_zistepv + du*d_zistepu;
+//		z = __fpu_frcp_sf(zi) * 65536.0;
+		z = __fpu_fdiv_sf(65536.0, zi);
+
+		s = (int)(sdivz * z) + sadjust;
+		t = (int)(tdivz * z) + tadjust;
+		s = __int_clamp(s, 0, bbextents);
+		t = __int_clamp(t, 0, bbextentt);
+
+		do
+		{
+			if (count >= 16)
+				spancount = 16;
+			else
+				spancount = count;
+
+			count -= spancount;
+
+			if (count)
+			{
+				sdivz += sdivz8stepu;
+				tdivz += tdivz8stepu;
+				zi += zi8stepu;
+//				z = __fpu_frcp_sf(zi) * 65536.0;
+				z = __fpu_fdiv_sf(65536.0, zi);
+//				z += z8stepu;
+
+				snext = (int)(sdivz * z) + sadjust;
+				tnext = (int)(tdivz * z) + tadjust;
+				snext = __int_clamp(snext, 0, bbextents);
+				tnext = __int_clamp(tnext, 0, bbextentt);
+
+				sstep = (snext - s) >> 4;
+				tstep = (tnext - t) >> 4;
+			}
+			else
+			{
+//				spancountminus1 = (float)(spancount - 1);
+				spancountminus1 = (float)(spancount);
+				sdivz += d_sdivzstepu * spancountminus1;
+				tdivz += d_tdivzstepu * spancountminus1;
+				zi += d_zistepu * spancountminus1;
+//				z = __fpu_frcp_sf(zi) * 65536.0;
+				z = __fpu_fdiv_sf(65536.0, zi);
+//				z += zstepu * spancountminus1;
+
+				snext = (int)(sdivz * z) + sadjust;
+				tnext = (int)(tdivz * z) + tadjust;
+				snext = __int_clamp(snext, 0, bbextents);
+				tnext = __int_clamp(tnext, 0, bbextentt);
+
+				if (spancount > 1)
+				{
+//					sstep = D_SoftDiv((snext - s), (spancount - 1));
+//					tstep = D_SoftDiv((tnext - t), (spancount - 1));
+
+					sstep = D_SoftDiv((snext - s), spancount);
+					tstep = D_SoftDiv((tnext - t), spancount);
+				}
+			}
+
+			D_DrawSpans16_InnerPx2(
+				pbase,			pdest,
+				spancount,		cachewidth,
+				s,				t,
+				sstep,			tstep);
+
+			pdest += spancount;
+
+			s = snext;
+			t = tnext;
+		} while (count > 0);
+
+	} while ((pspan = pspan->pnext) != NULL);
+}
+#endif
+
+#endif
+
 
 #endif
 
 
 // #if	!id386
 #if 1
+
+#if 0
+void D_DrawZSpans_Inner (
+	short *pdest, int izi,
+	int izistep, int count)
+{
+	unsigned		ltemp;
+
+#if 1
+	while (count>=2)
+	{
+		ltemp = izi >> 16;
+		izi += izistep;
+		ltemp |= izi & 0xFFFF0000;
+		izi += izistep;
+		*(int *)pdest = ltemp;
+		pdest += 2;
+		count -= 2;
+	}
+#endif
+
+	if (count & 1)
+		*pdest = (short)(izi >> 16);
+}
+#endif
 
 /*
 =============
@@ -880,6 +1507,10 @@ void D_DrawZSpans (espan_t *pspan)
 	// we count on FP exceptions being turned off to avoid range problems
 		izi = (int)(zi * 0x8000 * 0x10000);
 
+		D_DrawZSpans_Inner(pdest, izi, izistep, count);
+
+#if 0
+#if 0
 		if ((nlint)pdest & 0x02)
 		{
 			*pdest++ = (short)(izi >> 16);
@@ -899,9 +1530,24 @@ void D_DrawZSpans (espan_t *pspan)
 				pdest += 2;
 			} while (--doublecount > 0);
 		}
+#endif
+
+#if 1
+		while (count>=2)
+		{
+			ltemp = izi >> 16;
+			izi += izistep;
+			ltemp |= izi & 0xFFFF0000;
+			izi += izistep;
+			*(int *)pdest = ltemp;
+			pdest += 2;
+			count -= 2;
+		}
+#endif
 
 		if (count & 1)
 			*pdest = (short)(izi >> 16);
+#endif
 
 	} while ((pspan = pspan->pnext) != NULL);
 }

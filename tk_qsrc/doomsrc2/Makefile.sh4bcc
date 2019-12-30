@@ -4,8 +4,8 @@ CC=bgbcc
 
 # TK_CFL=-DARCH_SH4 -DARCH_SH4LE -mBJX2E /Os
 # TK_CFL=-DARCH_SH4 -DARCH_SH4LE -mBJX2E /O2 /fwex3w
-# TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2F /O2 /fwex3w -fwexj
-TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2F /O2 /fwex3w
+TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2F /O2 /fwex3w /fwexj
+# TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2F /O2 /fwex3w
 # TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2F /O2
 TK_LDFL= $(TK_CFL)
 
@@ -86,6 +86,8 @@ SRCS=				\
 		z_zone.c			\
 		info.c				\
 		sounds.c		\
+		\
+		r_draw_bjx2.S		\
 		\
 		tst_bs2a.bs		\
 		tst_cpp1a.cpp

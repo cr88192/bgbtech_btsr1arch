@@ -70,8 +70,8 @@ void *memcpy(void *dest, const void *src, size_t size)
 		((u64 *)ct)[0]=((u64 *)cs)[0];
 		ct+=8; cs+=8;
 	}
-	if((ct+4)<=cte)
-		{ (*(u32 *)ct)=(*(u32 *)cs); ct+=4; cs+=4; }
+//	if((ct+4)<=cte)
+//		{ (*(u32 *)ct)=(*(u32 *)cs); ct+=4; cs+=4; }
 	while(ct<cte)
 		{ *ct++=*cs++; }
 	return(dest);

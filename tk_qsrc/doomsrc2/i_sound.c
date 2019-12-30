@@ -121,8 +121,8 @@ unsigned int	channelstepremainder[NUM_CHANNELS];
 
 
 // The channel data pointers, start and end.
-unsigned char*	channels[NUM_CHANNELS];
-unsigned char*	channelsend[NUM_CHANNELS];
+unsigned char*		channels[NUM_CHANNELS];
+unsigned char*		channelsend[NUM_CHANNELS];
 
 
 // Time/gametic that the channel started playing,
@@ -561,7 +561,6 @@ void I_UpdateSound( void )
 	static int misses = 0;
 #endif
 
-	
 	// Mix current sound data.
 	// Data, from raw sound, for right and left.
 	register unsigned int	sample;
@@ -577,97 +576,143 @@ void I_UpdateSound( void )
 
 	// Mixing channel index.
 	int				chan;
+	
+	unsigned int chstp;
+	byte 	**chanptr;
+	unsigned int *chanstp;
+	byte	*chancur;
+	int		**clvl;
+	int		**crvl;
+	
+#if 1
+	chanptr = channels;
+	clvl	= channelleftvol_lookup;
+	crvl	= channelrightvol_lookup;
+	chanstp	= channelstepremainder;
+#endif
 		
-		// Left and right channel
-		//	are in global mixbuffer, alternating.
-		leftout = mixbuffer;
-		rightout = mixbuffer+1;
-		step = 2;
+	// Left and right channel
+	//	are in global mixbuffer, alternating.
+	leftout = mixbuffer;
+	rightout = mixbuffer+1;
+	step = 2;
 
-		// Determine end, for left channel only
-		//	(right channel is implicit).
-		leftend = mixbuffer + SAMPLECOUNT*step;
+	// Determine end, for left channel only
+	//	(right channel is implicit).
+	leftend = mixbuffer + SAMPLECOUNT*step;
 
-		// Mix sounds into the mixing buffer.
-		// Loop over step*SAMPLECOUNT,
-		//	that is 512 values for two channels.
-		while (leftout != leftend)
-		{
-	// Reset left/right value. 
-	dl = 0;
-	dr = 0;
-
-	// Love thy L2 chache - made this a loop.
-	// Now more channels could be set at compile time
-	//	as well. Thus loop those	channels.
-	for ( chan = 0; chan < NUM_CHANNELS; chan++ )
+	// Mix sounds into the mixing buffer.
+	// Loop over step*SAMPLECOUNT,
+	//	that is 512 values for two channels.
+	while (leftout != leftend)
 	{
+		// Reset left/right value. 
+		dl = 0;
+		dr = 0;
+
+		// Love thy L2 chache - made this a loop.
+		// Now more channels could be set at compile time
+		//	as well. Thus loop those	channels.
+#if 0
+		for ( chan = 0; chan < NUM_CHANNELS; chan++ )
+		{
 			// Check channel, if active.
 			if (channels[ chan ])
 			{
-		// Get the raw data from the channel. 
-		sample = *channels[ chan ];
-		// Add left and right part
-		//	for this channel (sound)
-		//	to the current data.
-		// Adjust volume accordingly.
-		dl += channelleftvol_lookup[ chan ][sample];
-		dr += channelrightvol_lookup[ chan ][sample];
-		// Increment index ???
-		channelstepremainder[ chan ] += channelstep[ chan ];
-		// MSB is next sample???
-		channels[ chan ] += channelstepremainder[ chan ] >> 16;
-		// Limit to LSB???
-		channelstepremainder[ chan ] &= 65536-1;
+				// Get the raw data from the channel. 
+				sample = *channels[ chan ];
+				// Add left and right part
+				//	for this channel (sound)
+				//	to the current data.
+				// Adjust volume accordingly.
+				dl += channelleftvol_lookup[ chan ][sample];
+				dr += channelrightvol_lookup[ chan ][sample];
+				// Increment index ???
+				channelstepremainder[ chan ] += channelstep[ chan ];
+				// MSB is next sample???
+				channels[ chan ] += channelstepremainder[ chan ] >> 16;
+				// Limit to LSB???
+				channelstepremainder[ chan ] &= 65536-1;
 
-		// Check whether we are done.
-		if (channels[ chan ] >= channelsend[ chan ])
-				channels[ chan ] = 0;
+				// Check whether we are done.
+				if (channels[ chan ] >= channelsend[ chan ])
+					channels[ chan ] = 0;
 			}
-	}
-	
-	// Clamp to range. Left hardware channel.
-	// Has been char instead of short.
-	// if (dl > 127) *leftout = 127;
-	// else if (dl < -128) *leftout = -128;
-	// else *leftout = dl;
+		}
+#endif
 
-	if (dl > 0x7fff)
+#if 1
+		for ( chan = 0; chan < NUM_CHANNELS; chan++ )
+		{
+			chancur = chanptr[ chan ];
+			if (!chancur)
+				continue;
+			chstp = chanstp[ chan ];
+
+			sample = *chancur;
+			dl += clvl[ chan ][sample];
+			dr += crvl[ chan ][sample];
+			chstp += channelstep[ chan ];
+			chancur += chstp >> 16;
+			chstp &= 65535;
+			if (chancur >= channelsend[ chan ])
+				chancur = NULL;
+
+			chanptr[ chan ] = chancur;
+			chanstp[ chan ] = chstp;
+		}
+#endif
+	
+		// Clamp to range. Left hardware channel.
+		// Has been char instead of short.
+		// if (dl > 127) *leftout = 127;
+		// else if (dl < -128) *leftout = -128;
+		// else *leftout = dl;
+#if 0
+		if (dl > 0x7fff)
 			*leftout = 0x7fff;
-	else if (dl < -0x8000)
+		else if (dl < -0x8000)
 			*leftout = -0x8000;
-	else
+		else
 			*leftout = dl;
 
-	// Same for right hardware channel.
-	if (dr > 0x7fff)
+		// Same for right hardware channel.
+		if (dr > 0x7fff)
 			*rightout = 0x7fff;
-	else if (dr < -0x8000)
+		else if (dr < -0x8000)
 			*rightout = -0x8000;
-	else
+		else
 			*rightout = dr;
+#endif
 
-	// Increment current pointers in mixbuffer.
-	leftout += step;
-	rightout += step;
-		}
+		if(dl<(-32767)) dl=-32767;
+		if(dl>( 32767)) dl= 32767;
+		if(dr<(-32767)) dr=-32767;
+		if(dr>( 32767)) dr= 32767;
+		*leftout = dl;
+		*rightout = dr;
+
+		// Increment current pointers in mixbuffer.
+		leftout += step;
+		rightout += step;
+	}
 
 #ifdef SNDINTR
-		// Debug check.
-		if ( flag )
-		{
-			misses += flag;
-			flag = 0;
-		}
-		
-		if ( misses > 10 )
-		{
-			fprintf( stderr, "I_SoundUpdate: missed 10 buffer writes\n");
-			misses = 0;
-		}
-		
-		// Increment flag for update.
-		flag++;
+	// Debug check.
+	if ( flag )
+	{
+		misses += flag;
+		flag = 0;
+	}
+	
+	if ( misses > 10 )
+	{
+		fprintf( stderr, "I_SoundUpdate: missed 10 buffer writes\n");
+		misses = 0;
+	}
+	
+	// Increment flag for update.
+	flag++;
 #endif
 }
 
@@ -711,7 +756,9 @@ I_SubmitSound2(int extra)
 	if(ns<0)ns=0;
 	if(ns>n)ns=n;
 
+#ifndef __BGBCC
 	I_MusicGetAdvanceSamples(mixbuf_mus, ns, SAMPLECOUNT*1.5);
+#endif
 
 	musvol=snd_MusicVolume;
 
@@ -724,12 +771,14 @@ I_SubmitSound2(int extra)
 		mixbuf2[i*2+0]=mixbuffer[j*2+0];
 		mixbuf2[i*2+1]=mixbuffer[j*2+1];
 
+#ifndef __BGBCC
 //		mixbuf2[i*2+0]+=mixbuf_mus[i*2+0]/4;
 //		mixbuf2[i*2+1]+=mixbuf_mus[i*2+1]/4;
 //		mixbuf2[i*2+0]+=(mixbuf_mus[i*2+0]*musvol)/16;
 //		mixbuf2[i*2+1]+=(mixbuf_mus[i*2+1]*musvol)/16;
 		mixbuf2[i*2+0]+=(mixbuf_mus[i*2+0]*musvol)>>4;
 		mixbuf2[i*2+1]+=(mixbuf_mus[i*2+1]*musvol)>>4;
+#endif
 	}
 
 	if(ns>0)

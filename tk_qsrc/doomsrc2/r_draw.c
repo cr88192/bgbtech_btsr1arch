@@ -78,7 +78,7 @@ u16		*ylookup_zb[MAXHEIGHT];
 //  (color ramps used for  suit colors).
 //
 byte		translations[3][256];	
- 
+
  
 
 
@@ -206,7 +206,7 @@ void R_DrawColumn (void)
 
 // UNUSED.
 // Loop unrolled.
-#if 1
+#if 0
 void R_DrawColumn (void) 
 { 
 	int				count; 
@@ -906,7 +906,7 @@ void R_DrawSpan (void)
 
 // UNUSED.
 // Loop unrolled by 4.
-#if 1
+#if 0
 void R_DrawSpan (void) 
 { 
 	register unsigned	position, step;
@@ -1089,6 +1089,19 @@ R_InitBuffer
 { 
 	int		i; 
 
+	//BGB: Clear to Zero
+	for (i=0 ; i<MAXWIDTH ; i++)
+		{ columnofs[i] = 0; }
+
+	for (i=0 ; i<MAXHEIGHT ; i++)
+	{
+		ylookup[i] = 0;
+		ylookup_zb[i] = 0;
+	}
+	
+	if( (width >= MAXWIDTH) || (height >= MAXHEIGHT) )
+		__debugbreak();
+
 	// Handle resize,
 	//  e.g. smaller view windows
 	//  with border and/or status bar.
@@ -1096,13 +1109,14 @@ R_InitBuffer
 
 	// Column offset. For windows.
 	for (i=0 ; i<width ; i++) 
-	columnofs[i] = viewwindowx + i;
+		columnofs[i] = viewwindowx + i;
 
 	// Samw with base row offset.
 	if (width == SCREENWIDTH) 
-	viewwindowy = 0; 
+		viewwindowy = 0; 
 	else 
-	viewwindowy = (SCREENHEIGHT-SBARHEIGHT-height) >> 1; 
+		viewwindowy = (SCREENHEIGHT-SBARHEIGHT-height) >> 1; 
+
 
 	// Preclaculate all row offsets.
 	for (i=0 ; i<height ; i++) 

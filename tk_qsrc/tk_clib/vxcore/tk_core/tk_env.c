@@ -61,6 +61,20 @@ int TK_Env_RepackEnvbuf()
 	return(0);
 }
 
+char *TK_Env_GetEnvVarI(char *varn)
+{
+	int i, j, k;
+
+	for(i=0; i<tk_env_nenvlst; i++)
+	{
+		if(!strcmp(tk_env_envlst_var[i], varn))
+		{
+			return(tk_env_envlst_val[i]);
+		}
+	}
+	return(NULL);
+}
+
 int TK_Env_SetEnvVarI(char *varn, char *varv)
 {
 	char *cn1, *cv1;

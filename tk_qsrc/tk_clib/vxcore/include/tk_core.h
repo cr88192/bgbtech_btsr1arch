@@ -200,6 +200,7 @@ typedef struct TK_FSTAT_s TK_FSTAT;
 typedef struct TK_FILE_s TK_DIR;
 typedef struct TK_MOUNT_s TK_MOUNT;
 typedef struct TK_DIRENT_s TK_DIRENT;
+typedef struct TK_DATETIME_s TK_DATETIME;
 
 struct TK_FILE_VT_s {
 char *fsname;
@@ -270,6 +271,16 @@ u32 st_mtime;
 u32 st_size;
 };
 
+struct TK_DATETIME_s {
+s16 year;
+byte mon;
+byte day;
+byte hour;
+byte min;
+byte sec;
+byte msc4;		//multiple of ~4 milliseconds
+u16 usc4;		//microseconds, range=4096
+};
 
 #ifndef TK_APIEXPORT
 #ifdef __BGBCC__

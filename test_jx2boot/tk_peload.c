@@ -11,6 +11,9 @@ byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz)
 	
 	__hint_use_egpr();
 	
+	tg=0;	lr=0;
+	ll=0;	ld=0;
+	
 	cs=ibuf; cse=ibuf+isz;
 	while(cs<cse)
 	{
@@ -50,8 +53,8 @@ byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz)
 		}
 		
 		cs1=ct-ld; cs1e=cs1+ll;
-		if(ld>=8)
-//		if(ld>8)
+//		if(ld>=8)
+		if(ld>8)
 //		if(ld>4)
 //		if(0)
 		{
@@ -67,8 +70,8 @@ byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz)
 			ct+=ll;
 //			__debugbreak();
 		}else
-//			if(ld>4)
-			if(ld>=4)
+			if(ld>4)
+//			if(ld>=4)
 		{
 			ct1=ct;
 			while(cs1<cs1e)
@@ -85,6 +88,9 @@ byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz)
 				{ *ct++=*cs1++; }
 		}
 	}
+	
+	tg=0;	lr=0;
+	ll=0;	ld=0;
 	
 	return(ct);
 }

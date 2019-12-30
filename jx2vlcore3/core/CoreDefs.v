@@ -1,6 +1,8 @@
 `ifndef HAS_COREDEFS
 `define HAS_COREDEFS
 
+`include "CoreConfig.v"
+
 parameter[5:0] JX2_GR_R0		= 6'h00;
 parameter[5:0] JX2_GR_R1		= 6'h01;
 parameter[5:0] JX2_GR_R2		= 6'h02;
@@ -37,6 +39,7 @@ parameter[5:0] JX2_GR_R31		= 6'h1F;
 parameter[5:0] JX2_GR_DLR		= 6'h20;
 parameter[5:0] JX2_GR_DHR		= 6'h21;
 
+// parameter[5:0] JX2_GR_DCINB		= 6'h2D;
 parameter[5:0] JX2_GR_ZZR		= 6'h2E;
 parameter[5:0] JX2_GR_SP		= 6'h2F;
 
@@ -468,6 +471,7 @@ parameter[5:0] JX2_UCIX_PUSH_GR		= 6'h00;		//GPR
 parameter[5:0] JX2_UCIX_PUSH_CR		= 6'h01;		//Control Reg
 parameter[5:0] JX2_UCIX_PUSH_FR		= 6'h02;		//FPR
 parameter[5:0] JX2_UCIX_PUSH_SR		= 6'h03;		//Shadow Reg
+parameter[5:0] JX2_UCIX_PUSH_GRX2	= 6'h04;		//GPR Pair
 
 parameter[5:0] JX2_UCIX_CONV_EXTSB	= 6'h00;		//
 parameter[5:0] JX2_UCIX_CONV_EXTSW	= 6'h01;		//
@@ -569,13 +573,6 @@ parameter[5:0] JX2_UCIX_IXS_INVDC	= 6'h11;		//Flush D$
 
 `define def_true
 
-`define jx2_enable_mmu
-`define jx2_enable_fpu
-
-// `define jx2_do_ld1cyc			//do single-cycle Load/Store
-
-// `define jx2_enable_fprs		//enable dedicated FPU registers.
-
 `ifdef jx2_enable_fpu
 `ifndef jx2_enable_fprs
 `define jx2_enable_gfp			//FPU works via GPRs
@@ -589,38 +586,6 @@ parameter[5:0] JX2_UCIX_IXS_INVDC	= 6'h11;		//Flush D$
 
 `endif
 
-// `define jx2_sprs_elrehr			//ELR/EHR/BP as special registers?
-// `define jx2_bra2stage				//Use 2-stage branch initiation
-
-// `define jx2_enable_swapn		//Enable SWxP.x ops
-// `define jx2_enable_shlln		//Enable SHLLn / SHLRn Ops
-
-`define jx2_shlln_shadq			//Route SHLLn through SHAD.Q
-
-// `define jx2_addxl_agu			//Do ADDx.L via AGU
-
-// `define jx2_enable_gsv			//Enable GSV (Packed Integer) stuff.
-
-`define jx2_enable_prebra			//Enable PreBranch
-
-`define jx2_enable_ops16
-// `define jx2_enable_ops48
-
-`define jx2_enable_aluunary
-`define jx2_enable_clz
-// `define jx2_enable_addsp
-
-// `define jx2_enable_wex2w				//Enable 2-wide WEX support
-`define jx2_enable_wex3w				//Enable 3-wide WEX support
-
-`define jx2_enable_wex					//Enable WEX support (general)
-
-`define jx2_enable_wexjumbo				//Enable Jumbo-Load
-
-
-`define jx2_cpu_halfclock;				//Reduce CPU core clock speed by half
-
-
 `ifdef jx2_enable_wex
 /* If we are using WEX, assume 16 and 48 bit ops also exist. */
 `ifndef jx2_enable_ops16
@@ -631,27 +596,6 @@ parameter[5:0] JX2_UCIX_IXS_INVDC	= 6'h11;		//Flush D$
 `endif
 `endif
 
-`define jx2_mem_fulldpx			//Full Duplex Mode
-
-// `define jx2_ddr_bl64b			//DDR interface is 64-bit (DDR2)
-
-// `define jx2_expand_l1sz			//Make L1 bigger
-
-// `define jx2_reduce_l1sz		//Make L1 smaller
-// `define jx2_reduce_l2sz
-
-// `define jx2_merge_shadq		//Merge SHAD and SHAD.Q
-
-// `define jx2_debug_l1ds		//Debug prints for L1 data cache
-
-// `define jx2_debug_ldst		//Debug prints for load/store
-
-// `define jx2_debug_expipe		//Debug execute pipeline
-// `define jx2_debug_exopipe	//Debug execute pipeline (EX2 only)
-
-// `define jx2_debug_alu		//Debug ALU
-
-// `define jx2_debug_hitmiss		//Debug Branch Predictor
 
 `ifdef jx2_expand_l1sz
 parameter[255:0] JX2_L1_FLUSHMSK	= UV256_FF;		//

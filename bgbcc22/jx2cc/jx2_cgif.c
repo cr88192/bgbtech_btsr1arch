@@ -78,6 +78,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 //	shctx->has_bjx1breq=0;
 	shctx->has_bjx1breq=1;
 	shctx->has_addsl=1;
+	shctx->has_pushx2=0;
 	
 //	shctx->no_fpu=1;
 	shctx->no_ext32=0;
@@ -112,6 +113,11 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	{
 //		shctx->use_wexmd=2;
 		shctx->has_jumbo=1;
+
+		if(shctx->use_wexmd==2)
+		{
+			shctx->has_pushx2=1;
+		}
 	}
 
 //	ctx->arch_has_predops=0;

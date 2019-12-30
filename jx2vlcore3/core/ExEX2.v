@@ -66,6 +66,7 @@ module ExEX2(
 	regOutSchm,	regInSchm,
 
 	memDataIn,
+	memDataInB,
 	memDataOK
 	);
 
@@ -127,6 +128,7 @@ output[7:0]		regOutSchm;
 input[7:0]		regInSchm;
 
 input[63:0]		memDataIn;
+input[63:0]		memDataInB;
 input[ 1:0]		memDataOK;
 
 
