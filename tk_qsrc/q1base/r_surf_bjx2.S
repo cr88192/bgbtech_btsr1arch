@@ -8,6 +8,7 @@ X(R_DrawSurfaceBlock16_mip0):
 
 	PUSH.X	R26
 	PUSH.X	R24
+	PUSH.X	R12
 	PUSH.X	R10
 	PUSH.X	R8
 
@@ -25,7 +26,10 @@ X(R_DrawSurfaceBlock16_mip0):
 	MOV.L	X(r_sourcemax), R10
 	MOV.L	X(r_stepback), R11
 
+	MOV		#0xFF00, R13
 
+// R2: scratch
+// R3: scratch
 // R4: lighttemp
 // R5: lightstep
 // R6: light
@@ -35,7 +39,10 @@ X(R_DrawSurfaceBlock16_mip0):
 // R9: surfrowbytes
 // R10: r_sourcemax
 // R11: r_stepback
-
+// R12: scratch
+// R13: 0xFF00
+// R14: -
+// R15: SP
 // R16: v
 // R17: i
 // R18: colormap
@@ -48,34 +55,52 @@ X(R_DrawSurfaceBlock16_mip0):
 // R25: lightright
 // R26: lightleftstep
 // R27: lightrightstep
+// R28: -
+// R29: -
+// R30: -
 
 	.L0:
 
-	MOVU.L	(R22, 0), R24
-	MOVU.L	(R22, 4), R25
-	LEA.L	(R22, R23), R22
-
-	MOV.L	(R22, 0), R26
-	SUB		R24, R26		| MOV.L		(R22, 4), R27
-	SUB		R25, R27		| SHLD	R26, #-4, R26
-	SHLD	R27, #-4, R27	| MOV #16, R17
-	MOV		#0xFF00, R1
+	SHAD	R23, #2, R2		| MOVU.L	(R22, 0), R24
+	ADDS.L	R22, R2, R12	| MOVU.L	(R22, 4), R25
+	MOV		R12, R22		| MOV.L		(R12, 0), R26
+	SUBU.L	R26, R24, R26	| MOV.L		(R12, 4), R27
+	SUBU.L	R27, R25, R27	| SHLD		R26, #-4, R26
+	SHLD	R27, #-4, R27	| MOV		#16, R17
 
 	.L1:
-	SUB		R24, R25, R4	| MOV		#16, R21
+	SUBS.L	R24, R25, R4	| MOV		#16, R21
 	SHAD	R4, #-4, R5		| MOV		R25, R6
+
+#if 0
 	.L2:
 	ADD		#-1, R21
-	AND		R6, R1, R2		| MOVU.B	(R19, R21), R7
+	AND		R6, R13, R2		| MOVU.B	(R19, R21), R7
 	OR		R2, R7, R3
 	ADD		R5, R6			| MOVU.W	(R18, R3), R2
-	AND		R6, R1, R3		| MOV.W		R2, (R20, R21)
+	AND		R6, R13, R3		| MOV.W		R2, (R20, R21)
 	ADD		#-1, R21
-	OR		R3, R7, R3		| MOVU.B	(R19, R21), R7
+	MOVU.B	(R19, R21), R7
+	OR		R3, R7, R3
 	ADD		R5, R6			| MOVU.W	(R18, R3), R2
 	MOV.W	R2, (R20, R21)
 	CMP/GT	#0, R21
 	BT		.L2
+#endif
+
+#if 1
+	.L2:
+	ADDS.L	R21, #-1, R12	| ADDS.L	R21, #-2, R21
+	AND		R6, R13, R2		| MOVU.B	(R19, R12), R7
+	OR		R2, R7, R3		| CMP/GT	#0, R21
+	ADDS.L	R6, R5, R6		| MOVU.W	(R18, R3), R2
+	AND		R6, R13, R3		| MOV.W		R2, (R20, R12)
+	MOVU.B	(R19, R21), R7
+	OR		R3, R7, R3	
+	ADDS.L	R6, R5, R6		| MOVU.W	(R18, R3), R2
+	MOV.W	R2, (R20, R21)
+	BT		.L2
+#endif
 
 	ADD		#-1, R17	| ADD		R8, R19
 	ADD		R27, R25	| ADD		R26, R24
@@ -89,6 +114,7 @@ X(R_DrawSurfaceBlock16_mip0):
 
 	POP.X	R8
 	POP.X	R10
+	POP.X	R12
 	POP.X	R24
 	POP.X	R26
 	RTSU
@@ -103,6 +129,7 @@ X(R_DrawSurfaceBlock16_mip1):
 
 	PUSH.X	R26
 	PUSH.X	R24
+	PUSH.X	R12
 	PUSH.X	R10
 	PUSH.X	R8
 
@@ -153,7 +180,8 @@ X(R_DrawSurfaceBlock16_mip1):
 	SUB		R24, R26		| MOV.L		(R22, 4), R27
 	SUB		R25, R27		| SHLD		R26, #-3, R26
 	SHLD	R27, #-3, R27	| MOV		#8, R17
-	MOV		#0xFF00, R1
+//	MOV		#0xFF00, R1
+	MOV		#0xFF00, R13
 
 	.L1:
 
@@ -163,21 +191,111 @@ X(R_DrawSurfaceBlock16_mip1):
 
 #if 1
 	.L2:
+	ADDS.L	R21, #-1, R12	| ADDS.L	R21, #-2, R21
+	AND		R6, R13, R2		| MOVU.B	(R19, R12), R7
+	OR		R2, R7, R3		| CMP/GT	#0, R21
+	ADDS.L	R6, R5, R6		| MOVU.W	(R18, R3), R2
+	AND		R6, R13, R3		| MOV.W		R2, (R20, R12)
+	MOVU.B	(R19, R21), R7
+	OR		R3, R7, R3
+	ADDS.L	R6, R5, R6		| MOVU.W	(R18, R3), R2
+	MOV.W	R2, (R20, R21)
+	BT		.L2
+#endif
+
+#if 0
+	.L2:
 	ADD		#-1, R21
-	AND		R6, R1, R2		| MOVU.B	(R19, R21), R7
+	AND		R6, R13, R2		| MOVU.B	(R19, R21), R7
 	OR		R2, R7, R3
 	ADD		R5, R6			| MOVU.W	(R18, R3), R2
-	AND		R6, R1, R3		| MOV.W		R2, (R20, R21)
+	MOV.W		R2, (R20, R21)
 	ADD		#-1, R21
-	OR		R3, R7, R3		| MOVU.B	(R19, R21), R7
+	AND		R6, R13, R3		| MOVU.B	(R19, R21), R7
+	OR		R3, R7, R3
 	ADD		R5, R6			| MOVU.W	(R18, R3), R2
 	MOV.W	R2, (R20, R21)
+
 	CMP/GT	#0, R21
 	BT		.L2
 #endif
 
 #if 0
 	.L2:
+	ADD		#-1, R21
+	MOVU.B	(R19, R21), R7
+	AND		R6, R13, R2
+	OR		R2, R7, R3
+	MOVU.W	(R18, R3), R2
+	MOV.W	R2, (R20, R21)
+	
+	ADD		R5, R6
+	CMP/GE	#0, R21
+	BT		.L2
+#endif
+
+	ADD		R8, R19		| ADD		R27, R25
+	ADD		R26, R24	| ADD		#-1, R17
+	ADD		R9, R20		| CMP/GT	#0, R17
+	BT	.L1
+
+	CMP/GE	R10, R19
+	SUB?T	R11, R19
+	
+	ADD		#-1, R16
+	CMP/GT	#0, R16
+	BT	.L0
+
+	POP.X	R8
+	POP.X	R10
+	POP.X	R12
+	POP.X	R24
+	POP.X	R26
+	RTSU
+
+#endif
+
+#if 1
+.global X(R_DrawSurfaceBlock16_mip2)
+X(R_DrawSurfaceBlock16_mip2):
+	PUSH.X	R26
+	PUSH.X	R24
+	PUSH.X	R10
+	PUSH.X	R8
+
+	MOV.L	X(r_numvblocks), R16
+
+	MOV.L	X(r_vid_colormap16), R18
+	MOV.L	X(pbasesource), R19
+	MOV.L	X(prowdestbase), R20
+
+	MOV.L	X(r_lightptr), R22
+	MOV.L	X(r_lightwidth), R23
+
+	MOV.L	X(sourcetstep), R8
+	MOV.L	X(surfrowbytes), R9
+	MOV.L	X(r_sourcemax), R10
+	MOV.L	X(r_stepback), R11
+
+	.L0:
+
+	MOVU.L	(R22, 0), R24
+	MOVU.L	(R22, 4), R25
+	LEA.L	(R22, R23), R22
+
+	MOV.L	(R22, 0), R26
+	SUB		R24, R26		| MOV.L		(R22, 4), R27
+	SUB		R25, R27		| SHLD		R26, #-2, R26
+	SHLD	R27, #-2, R27	| MOV		#4, R17
+	MOV		#0xFF00, R1
+
+	.L1:
+
+	SUB		R24, R25, R4	| MOV		#4, R21
+	SHAD	R4, #-2, R5		| MOV		R25, R6
+
+	.L2:
+	ADD		#-1, R21
 	MOVU.B	(R19, R21), R7
 	MOV		#0xFF00, R1
 	AND		R6, R1, R2
@@ -186,10 +304,79 @@ X(R_DrawSurfaceBlock16_mip1):
 	MOV.W	R2, (R20, R21)
 	
 	ADD		R5, R6
-	ADD		#-1, R21
 	CMP/GE	#0, R21
 	BT		.L2
+
+	ADD		R8, R19		| ADD		R27, R25
+	ADD		R26, R24	| ADD		#-1, R17
+	ADD		R9, R20		| CMP/GT	#0, R17
+	BT	.L1
+
+	CMP/GE	R10, R19
+	SUB?T	R11, R19
+	
+	ADD		#-1, R16
+	CMP/GT	#0, R16
+	BT	.L0
+
+	POP.X	R8
+	POP.X	R10
+	POP.X	R24
+	POP.X	R26
+	RTSU
 #endif
+
+#if 1
+.global X(R_DrawSurfaceBlock16_mip3)
+X(R_DrawSurfaceBlock16_mip3):
+	PUSH.X	R26
+	PUSH.X	R24
+	PUSH.X	R10
+	PUSH.X	R8
+
+	MOV.L	X(r_numvblocks), R16
+
+	MOV.L	X(r_vid_colormap16), R18
+	MOV.L	X(pbasesource), R19
+	MOV.L	X(prowdestbase), R20
+
+	MOV.L	X(r_lightptr), R22
+	MOV.L	X(r_lightwidth), R23
+
+	MOV.L	X(sourcetstep), R8
+	MOV.L	X(surfrowbytes), R9
+	MOV.L	X(r_sourcemax), R10
+	MOV.L	X(r_stepback), R11
+
+	.L0:
+
+	MOVU.L	(R22, 0), R24
+	MOVU.L	(R22, 4), R25
+	LEA.L	(R22, R23), R22
+
+	MOV.L	(R22, 0), R26
+	SUB		R24, R26		| MOV.L		(R22, 4), R27
+	SUB		R25, R27		| SHLD		R26, #-1, R26
+	SHLD	R27, #-1, R27	| MOV		#2, R17
+	MOV		#0xFF00, R1
+
+	.L1:
+
+	SUB		R24, R25, R4	| MOV		#2, R21
+	SHAD	R4, #-1, R5		| MOV		R25, R6
+
+	.L2:
+	ADD		#-1, R21
+	MOVU.B	(R19, R21), R7
+	MOV		#0xFF00, R1
+	AND		R6, R1, R2
+	OR		R2, R7, R3
+	MOVU.W	(R18, R3), R2
+	MOV.W	R2, (R20, R21)
+	
+	ADD		R5, R6
+	CMP/GE	#0, R21
+	BT		.L2
 
 	ADD		R8, R19		| ADD		R27, R25
 	ADD		R26, R24	| ADD		#-1, R17
@@ -210,6 +397,7 @@ X(R_DrawSurfaceBlock16_mip1):
 	RTSU
 
 #endif
+
 
 
 #if 1
@@ -256,15 +444,15 @@ X(D_DrawSpans16_InnerPx):
 	BF .L1
 	.L0:
 	SHAD	R20, #-16, R4	| SHAD		R21, #-16, R5
-	ADD		R16, R20		| MULS.W	R5, R23, R6
-	ADD		R17, R21		| ADD		R4, R6, R7
+	ADDS.L	R20, R16, R20	| MULS.W	R5, R23, R6
+	ADDS.L	R21, R17, R21	| ADDS.L	R4, R6, R7
 	SHAD	R20, #-16, R4	| MOVU.W	(R18, R7), R2
 	SHAD	R21, #-16, R5	| MOV.W		R2, (R19, 0)
-	ADD		R16, R20		| MULS.W	R5, R23, R6
-	ADD		#-2, R22		| ADD		R4, R6, R7
-	ADD		R17, R21		| MOVU.W	(R18, R7), R2
+	ADDS.L	R20, R16, R20	| MULS.W	R5, R23, R6
+	ADDS.L	R22, #-2, R22	| ADDS.L	R4, R6, R7
+	ADDS.L	R21, R17, R21	| MOVU.W	(R18, R7), R2
 	MOV.W	R2, (R19, 2)
-	ADD		#4, R19			| CMP/GE	#2, R22
+	ADDS.L	#4, R19			| CMP/GE	#2, R22
 	BT .L0
 	.L1:
 	
@@ -292,33 +480,29 @@ X(D_DrawSpans16_InnerPx):
 .global X(D_DrawSpans16_InnerPx2)
 
 X(D_DrawSpans16_InnerPx2):
-
 	CMP/GE	#2, R6
 	BF .L1
 	.L0:
 	SHAD	R20, #-16, R2	| SHAD		R21, #-16, R3
-	ADD		R22, R20		| MULS.W	R3, R7, R18
-	ADD		R23, R21		| ADD		R2, R18, R19
+	ADDS.L	R20, R22, R20	| MULS.W	R3, R7, R18
+	ADDS.L	R21, R23, R21	| ADDS.L	R2, R18, R19
 	SHAD	R20, #-16, R2	| MOVU.W	(R4, R19), R16
 	SHAD	R21, #-16, R3	| MOV.W		R16, (R5, 0)
-	ADD		R22, R20		| MULS.W	R3, R7, R18
-	ADD		#-2, R6			| ADD		R2, R18, R19
-	ADD		R23, R21		| MOVU.W	(R4, R19), R16
+	ADDS.L	R20, R22, R20	| MULS.W	R3, R7, R18
+	ADDS.L	R6, #-2, R6		| ADDS.L	R2, R18, R19
+	ADDS.L	R21, R23, R21	| MOVU.W	(R4, R19), R16
 	MOV.W	R16, (R5, 2)
-	ADD		#4, R5			| CMP/GE	#2, R6
+	ADDS.L	R5, #4, R5		| CMP/GE	#2, R6
 	BT .L0
 	.L1:
-	
 	TEST R6, R6
 	BT .L2
-
 	SHAD	R20, #-16, R2	| SHAD	R21, #-16, R3
 	MULS.W	R3, R7, R18
-	ADD		R2, R18, R19
+	ADDS.L	R2, R18, R19
 	MOVU.W	(R4, R19), R16
 	MOV.W	R16, (R5)
-	ADD		#2, R5
-
+	ADDS.L	R5, #2, R5
 	.L2:
 	RTSU
 
@@ -328,6 +512,25 @@ X(D_DrawSpans16_InnerPx2):
 #if 1
 .global X(D_DrawZSpans_Inner)
 X(D_DrawZSpans_Inner):
+
+#if 1
+	MOV		#-65536, R16	| CMP/GE	#4, R7
+	BF		.L3
+	.L2:
+	SHLD	R5, #-16, R2	| ADDU.L	R6, R5
+	AND		R5, R16, R3		| ADDU.L	R6, R5
+	OR		R3, R2
+	SHLD	R5, #-16, R18	| ADDU.L	R6, R5
+	AND		R5, R16, R17	| ADDU.L	R6, R5
+	OR		R17, R18
+	SHLD.Q	R18, #32, R3
+	OR		R3, R2
+
+	ADDS.L	#-4, R7			| MOV.Q		R2, (R4)
+	ADDU.L	#8, R4			| CMP/GE	#4, R7
+	BT		.L2
+	.L3:
+#endif
 
 	MOV		#-65536, R16	| CMP/GE	#2, R7
 	BF		.L1
@@ -342,5 +545,109 @@ X(D_DrawZSpans_Inner):
 	SHLD		R5, #-16, R2	| TEST		R7, R7
 	MOV.W?F		R2, (R4)
 	RTSU
+
+#endif
+
+#if 1
+.global X(SND_PaintChannelFrom8_Inner)
+X(SND_PaintChannelFrom8_Inner):
+
+	CMP/GT #0, R20
+	BF .L0
+	.L0:
+	MOV.B	(R4), R2
+	MULS.W	R2, R6, R18		|	MOV.L	(R5, 0), R16
+	MULS.W	R2, R7, R19		|	MOV.L	(R5, 4), R17
+	ADD #1, R4				|	ADDS.L	R16, R18, R16
+	ADDS.L	R17, R19, R17	|	MOV.L	R16, (R5, 0)
+	ADD #-1, R20			|	MOV.L	R17, (R5, 4)
+	ADD #8, R5				|	CMP/GT #0, R20
+	BT .L0
+	.L1:
+
+	RTSU
+#endif
+
+
+#if 1
+D_SoftDivB_Dn:
+	BRA D_SoftDiv
+D_SoftDivB_Df:
+	MULS	R4, R6
+	EXTS.L	R1, R2
+	RTSU
+
+D_SoftDivB_D0:
+D_SoftDivB_D1:
+	MOV R4, R2
+	RTSU
+D_SoftDivB_D2:
+	SHAD R4, #-1, R2
+	RTSU
+D_SoftDivB_D3:
+	MOV #0x55555555, R6
+	BRA	D_SoftDivB_Df
+D_SoftDivB_D4:
+	SHAD R4, #-2, R2
+	RTSU
+D_SoftDivB_D5:
+	MOV #0x33333333, R6
+	BRA	D_SoftDivB_Df
+D_SoftDivB_D6:
+	MOV #0x2AAAAAAA, R6
+	BRA	D_SoftDivB_Df
+D_SoftDivB_D7:
+	MOV #0x24924925, R6
+	BRA	D_SoftDivB_Df
+D_SoftDivB_D8:
+	SHAD R4, #-3, R2
+	RTSU
+D_SoftDivB_D9:
+	MOV #0x1C71C71C, R6
+	BRA	D_SoftDivB_Df
+D_SoftDivB_D10:
+	MOV #0x1999999A, R6
+	BRA	D_SoftDivB_Df
+D_SoftDivB_D11:
+	MOV #0x1745D174, R6
+	BRA	D_SoftDivB_Df
+D_SoftDivB_D12:
+	MOV #0x15555555, R6
+	BRA	D_SoftDivB_Df
+D_SoftDivB_D13:
+	MOV #0x13B13B14, R6
+	BRA	D_SoftDivB_Df
+D_SoftDivB_D14:
+	MOV #0x12492492, R6
+	BRA	D_SoftDivB_Df
+D_SoftDivB_D15:
+	MOV #0x11111111, R6
+	BRA	D_SoftDivB_Df
+D_SoftDivB_D16:
+	SHAD R4, #-4, R2
+	RTSU
+
+.global X(D_SoftDivB)
+X(D_SoftDivB):
+	CMP/HI #16, R5
+	BT		D_SoftDivB_Dn
+	BRAF	R5
+	BRA2B	D_SoftDivB_D0
+	BRA2B	D_SoftDivB_D1
+	BRA2B	D_SoftDivB_D2
+	BRA2B	D_SoftDivB_D3
+	BRA2B	D_SoftDivB_D4
+	BRA2B	D_SoftDivB_D5
+	BRA2B	D_SoftDivB_D6
+	BRA2B	D_SoftDivB_D7
+	BRA2B	D_SoftDivB_D8
+	BRA2B	D_SoftDivB_D9
+	BRA2B	D_SoftDivB_D10
+	BRA2B	D_SoftDivB_D11
+	BRA2B	D_SoftDivB_D12
+	BRA2B	D_SoftDivB_D13
+	BRA2B	D_SoftDivB_D14
+	BRA2B	D_SoftDivB_D15
+	BRA2B	D_SoftDivB_D16
 
 #endif

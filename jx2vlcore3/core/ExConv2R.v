@@ -66,10 +66,17 @@ begin
 `endif
 
 		JX2_UCIX_CONV_LDIHI: begin
-			tRegOutVal	= { UV32_00, regValRs[9:0], UV22_00};
+//			tRegOutVal	= { UV32_00, regValRs[9:0], UV22_00};
+			tRegOutVal	= { regValRs[41:0], UV22_00};
 		end
 		JX2_UCIX_CONV_LDIQHI: begin
 			tRegOutVal	= { regValRs[9:0], UV54_00};
+		end
+		JX2_UCIX_CONV_LDIQHI16: begin
+			tRegOutVal	= { regValRs[47:0], UV16_00};
+		end
+		JX2_UCIX_CONV_LDIQHI32: begin
+			tRegOutVal	= { regValRs[31:0], UV32_00};
 		end
 
 // `ifdef def_true
@@ -107,6 +114,12 @@ begin
 			endcase
 		end
 `endif
+
+		JX2_UCIX_CONV_FNEG:
+			tRegOutVal	= { ~regValRs[63], regValRs[62:0] };
+		JX2_UCIX_CONV_FABS:
+			tRegOutVal	= { 1'b0, regValRs[62:0] };
+
 		default: begin
 		end
 	endcase

@@ -818,7 +818,7 @@ int main(int argc, char *argv[])
 	char *ifn;
 	double tsec;
 	int t0, t1, tt, fbtt, tvus;
-	int ifmd, rdsz, mhz;
+	int ifmd, rdsz, mhz, usejit;
 	int i;
 	
 	rd_n_add=0;
@@ -827,7 +827,7 @@ int main(int argc, char *argv[])
 	ifn=NULL;
 //	ifmd=0; rdsz=128;
 	ifmd=0; rdsz=256;
-	mhz=100;
+	mhz=100; usejit=0;
 	for(i=1; i<argc; i++)
 	{
 		if(argv[i][0]=='-')
@@ -843,6 +843,11 @@ int main(int argc, char *argv[])
 
 			if(!strcmp(argv[i], "--mhz"))
 				{ mhz=atoi(argv[i+1]); i++; continue; }
+
+			if(!strcmp(argv[i], "--jit"))
+				{ usejit=1; continue; }
+			if(!strcmp(argv[i], "--nojit"))
+				{ usejit=2; continue; }
 
 			continue;
 		}
@@ -872,7 +877,8 @@ int main(int argc, char *argv[])
 	BJX2_MemDefineRAM(ctx,		"SRAM",	0x0000C000U, 0x0000DFFFU);
 //	BJX2_MemDefineMmgp(ctx,		"MMGP",	0x0000E000U, 0x0000E3FFU);
 //	BJX2_MemDefineGfxCon(ctx,	"CGFX",	0x000A0000U, 0x000AFFFFU);
-	BJX2_MemDefineRAM(ctx,		"DRAM",	0x01000000U, 0x18000000U);
+//	BJX2_MemDefineRAM(ctx,		"DRAM",	0x01000000U, 0x18000000U);
+	BJX2_MemDefineRAM(ctx,		"DRAM",	0x01000000U, 0x08000000U);
 
 //	BJX2_MemDefineMmgp(ctx,		"MMGP",	0xA000E000U, 0xA000E3FFU);
 //	BJX2_MemDefineSndSblk(ctx,	"SBAU",	0xA0080000U, 0xA0081FFFU);
@@ -909,12 +915,15 @@ int main(int argc, char *argv[])
 	}
 
 	ctx->use_jit=0;
-	if(mhz>100)
+	if(mhz>200)
 		ctx->use_jit=1;
 
 #if defined(ARM) || defined(ARM64)
 	ctx->use_jit=1;
 #endif
+
+	if(usejit)
+		ctx->use_jit=(usejit&1);
 
 //	ctx->ttick_hk=3052;
 //	ctx->ttick_rst=3052;

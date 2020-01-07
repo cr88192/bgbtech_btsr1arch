@@ -757,16 +757,26 @@ begin
 						opUCmdIx	= JX2_UCIX_FPCX_HG;
 					end
 					4'h8: begin
-						opNmid		= JX2_UCMD_FIXS;
+//						opNmid		= JX2_UCMD_FIXS;
+//						opFmid		= JX2_FMID_REGREG;
+//						opIty		= JX2_ITY_UB;
+//						opUCmdIx	= JX2_UCIX_FPIX_FNEG_G;
+
+						opNmid		= JX2_UCMD_CONV_RR;
 						opFmid		= JX2_FMID_REGREG;
 						opIty		= JX2_ITY_UB;
-						opUCmdIx	= JX2_UCIX_FPIX_FNEG_G;
+						opUCmdIx	= JX2_UCIX_CONV_FNEG;
 					end
 					4'h9: begin
-						opNmid		= JX2_UCMD_FIXS;
+//						opNmid		= JX2_UCMD_FIXS;
+//						opFmid		= JX2_FMID_REGREG;
+//						opIty		= JX2_ITY_UB;
+//						opUCmdIx	= JX2_UCIX_FPIX_FABS_G;
+
+						opNmid		= JX2_UCMD_CONV_RR;
 						opFmid		= JX2_FMID_REGREG;
 						opIty		= JX2_ITY_UB;
-						opUCmdIx	= JX2_UCIX_FPIX_FABS_G;
+						opUCmdIx	= JX2_UCIX_CONV_FABS;
 					end
 					4'hA: begin
 						opNmid		= JX2_UCMD_FCMP;
@@ -1506,6 +1516,10 @@ begin
 						opUCmdIx	= opExQ ?
 							JX2_UCIX_CONV_LDIQHI :
 							JX2_UCIX_CONV_LDIHI;
+						if(opIsJumbo)
+							opUCmdIx	= opExQ ?
+								JX2_UCIX_CONV_LDIQHI32 :
+								JX2_UCIX_CONV_LDIQHI16;							
 					end
 
 					4'b010z: begin

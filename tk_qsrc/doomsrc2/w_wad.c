@@ -584,6 +584,7 @@ int W_LumpLength (int lump)
 }
 
 
+// #define W_READLUMP_CHUNKSZ	4096
 
 //
 // W_ReadLump
@@ -621,26 +622,31 @@ W_ReadLump
 		handle = l->handle;
 		
 	w_lseek (handle, l->position, SEEK_SET);
+
+// #if 0
+#ifndef W_READLUMP_CHUNKSZ
 	c = w_read (handle, dest, l->size);
 //	if (c < l->size)
 	if (c != l->size)
 		I_Error ("W_ReadLump: only read %i of %i on lump %i",
 			 c,l->size,lump);	
+#endif
 
-#if 0
+// #if 1
+#ifdef W_READLUMP_CHUNKSZ
 	//BGB debug
 	if(!tbuf)
 	{
-		tbuf=malloc(65536+256);
+		tbuf=malloc(W_READLUMP_CHUNKSZ+256);
 	}
 	
 	ct=dest; n=l->size;	
-	while(n>65536)
+	while(n>W_READLUMP_CHUNKSZ)
 	{
-		w_read (handle, tbuf, 65536);
-		memcpy(ct, tbuf, 65536);
-		ct+=65536;
-		n-=65536;
+		w_read (handle, tbuf, W_READLUMP_CHUNKSZ);
+		memcpy(ct, tbuf, W_READLUMP_CHUNKSZ);
+		ct+=W_READLUMP_CHUNKSZ;
+		n-=W_READLUMP_CHUNKSZ;
 	}
 
 	w_read (handle, tbuf, n);

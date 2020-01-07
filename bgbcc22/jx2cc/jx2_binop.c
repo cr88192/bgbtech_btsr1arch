@@ -2960,6 +2960,28 @@ int BGBCC_JX2C_EmitCallBuiltinArgs(
 		return(1);
 	}
 
+	if((!strcmp(name, "__int_mulsw") ||
+		!strcmp(name, "__int_muluw")) && (narg==2))
+	{
+		nm1=-1; tr1=BGBCC_SH_REG_DLR;
+
+		if(!strcmp(name, "__int_mulsw"))
+			nm1=BGBCC_SH_NMID_MULSW;
+		if(!strcmp(name, "__int_muluw"))
+			nm1=BGBCC_SH_NMID_MULUW;
+	
+		csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[0]);
+		ctreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[1]);
+		cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dst);
+		BGBCC_JX2C_EmitOpRegRegReg(ctx, sctx, nm1, csreg, ctreg, cdreg);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dst);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[0]);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[1]);
+
+		sctx->csrv_skip=1;
+		return(1);
+	}
+
 #if 1
 	if(!strcmp(name, "memcpy") && (narg==3))
 	{

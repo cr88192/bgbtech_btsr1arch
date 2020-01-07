@@ -21,8 +21,16 @@ void BGBCP_Warn(char *se, char *str, ...)
 	va_start(lst, str);
 
 	bgbcp_warn++;
-	fn=BGBCP_GetLastFileName();
-	ln=BGBCP_GetLastLineNumber();
+
+	fn=BGBCP_GetFilename();
+	if(fn)
+	{
+		ln=BGBCP_CalcLinenum(se);
+	}else
+	{
+		fn=BGBCP_GetLastFileName();
+		ln=BGBCP_GetLastLineNumber();
+	}
 
 	printf("%s:%d: warning: ", fn, ln);
 	vprintf(str, lst);
@@ -39,8 +47,16 @@ void BGBCP_Error(char *se, char *str, ...)
 	va_start(lst, str);
 
 	bgbcp_err++;
-	fn=BGBCP_GetLastFileName();
-	ln=BGBCP_GetLastLineNumber();
+
+	fn=BGBCP_GetFilename();
+	if(fn)
+	{
+		ln=BGBCP_CalcLinenum(se);
+	}else
+	{
+		fn=BGBCP_GetLastFileName();
+		ln=BGBCP_GetLastLineNumber();
+	}
 
 	printf("%s:%d: error: ", fn, ln);
 	vprintf(str, lst);
@@ -61,8 +77,16 @@ void BGBCP_WarnCtx(BGBCP_ParseState *ctx, char *se, char *str, ...)
 	va_start(lst, str);
 
 	bgbcp_warn++;
-	fn=BGBCP_GetLastFileName();
-	ln=BGBCP_GetLastLineNumber();
+
+	fn=BGBCP_GetFilename();
+	if(fn)
+	{
+		ln=BGBCP_CalcLinenum(se);
+	}else
+	{
+		fn=BGBCP_GetLastFileName();
+		ln=BGBCP_GetLastLineNumber();
+	}
 
 	printf("%s:%d: warning: ", fn, ln);
 	vprintf(str, lst);
@@ -83,8 +107,16 @@ void BGBCP_ErrorCtx(BGBCP_ParseState *ctx, char *se, char *str, ...)
 	va_start(lst, str);
 
 	bgbcp_err++;
-	fn=BGBCP_GetLastFileName();
-	ln=BGBCP_GetLastLineNumber();
+
+	fn=BGBCP_GetFilename();
+	if(fn)
+	{
+		ln=BGBCP_CalcLinenum(se);
+	}else
+	{
+		fn=BGBCP_GetLastFileName();
+		ln=BGBCP_GetLastLineNumber();
+	}
 
 	printf("%s:%d: error: ", fn, ln);
 	vprintf(str, lst);

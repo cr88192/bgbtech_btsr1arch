@@ -38,14 +38,20 @@ int BGBCP_CalcLinenum(char *se)
 	{
 		s=bgbcp_pbase;
 		i=bgbcp_linenum;
+		
+		if(se<s)
+			return(0);
 	}
 
-	while(s<se)
+	while(*s && (s<se))
 	{
 		if(*s=='\n')i++;
 		if((s[0]=='\r') && (s[1]!='\n'))i++;
 		s++;
 	}
+	
+	if(!(*s))
+		return(0);
 
 	bgbcp_csfn=se;
 	bgbcp_csln=i;
@@ -171,6 +177,26 @@ int BGBCP_GetPredictLineNumber(char *tgt)
 }
 
 
+int BGBCP_CheckUtfWhite(int cp)
+{
+	if(cp<0x80)
+		return(0);
+	if((cp>=0x7F) && (cp<0xB0))
+	{
+		return(1);
+	}
+	
+	switch(cp)
+	{
+		case 0x061C:	case 0x200E:	case 0x200F:	case 0x202A:
+		case 0x202B:	case 0x202C:	case 0x202D:	case 0x202E:
+		case 0x2066:	case 0x2067:	case 0x2068:	case 0x2069:
+			return(1);
+	}
+	
+	return(0);
+}
+
 char *BGBCP_EatWhiteOnly(char *s)
 {
 	if(!s)
@@ -192,13 +218,25 @@ char *BGBCP_EatWhiteOnly2(char *s)
 char *BGBCP_EatWhite(char *s)
 {
 	char *fn;
-	int ln;
+	int ln, ch;
 	int i;
 
 	if(!s)
 		return(s);
 
 	while(*s && (*s<=' '))s++;
+
+	if((ch=*s)&0x80)
+		ch=BGBCP_PeekChar(&s);
+	if(BGBCP_CheckUtfWhite(ch))
+	{
+		BGBCP_Warn(s, "Unicode control characters encountered\n");
+		while(*s && ((ch<=' ') || BGBCP_CheckUtfWhite(ch)))
+		{
+			BGBCP_ParseChar(&s);
+			ch=BGBCP_PeekChar(&s);
+		}
+	}
 
 	if(s[0]=='/')
 	{
@@ -590,6 +628,8 @@ int bgbcp_strcmp(char *s1, char *s2)
 #endif
 }
 
+#ifdef BGBCC_MISAL_YES
+
 int bgbcp_strcmp1(char *s1, char *s2)
 {
 	return((*(s16 *)s1)-(*(s16 *)s2));
@@ -800,6 +840,55 @@ int bgbcp_strncmp12(char *s1, char *s2)
 	return((*(s32 *)s1)-(*(s32 *)s2));
 }
 
+#else
+
+int bgbcp_strcmp1(char *s1, char *s2)
+	{ return(strcmp(s1, s2)); }
+int bgbcp_strcmp2(char *s1, char *s2)
+	{ return(strcmp(s1, s2)); }
+int bgbcp_strcmp3(char *s1, char *s2)
+	{ return(strcmp(s1, s2)); }
+int bgbcp_strcmp4(char *s1, char *s2)
+	{ return(strcmp(s1, s2)); }
+int bgbcp_strcmp5(char *s1, char *s2)
+	{ return(strcmp(s1, s2)); }
+int bgbcp_strcmp6(char *s1, char *s2)
+	{ return(strcmp(s1, s2)); }
+int bgbcp_strcmp7(char *s1, char *s2)
+	{ return(strcmp(s1, s2)); }
+int bgbcp_strcmp8(char *s1, char *s2)
+	{ return(strcmp(s1, s2)); }
+int bgbcp_strcmp9(char *s1, char *s2)
+	{ return(strcmp(s1, s2)); }
+int bgbcp_strcmp10(char *s1, char *s2)
+	{ return(strcmp(s1, s2)); }
+int bgbcp_strcmp11(char *s1, char *s2)
+	{ return(strcmp(s1, s2)); }
+
+int bgbcp_strncmp2(char *s1, char *s2)
+	{ return(strncmp(s1, s2, 2)); }
+int bgbcp_strncmp3(char *s1, char *s2)
+	{ return(strncmp(s1, s2, 3)); }
+int bgbcp_strncmp4(char *s1, char *s2)
+	{ return(strncmp(s1, s2, 4)); }
+int bgbcp_strncmp5(char *s1, char *s2)
+	{ return(strncmp(s1, s2, 5)); }
+int bgbcp_strncmp6(char *s1, char *s2)
+	{ return(strncmp(s1, s2, 6)); }
+int bgbcp_strncmp7(char *s1, char *s2)
+	{ return(strncmp(s1, s2, 7)); }
+int bgbcp_strncmp8(char *s1, char *s2)
+	{ return(strncmp(s1, s2, 8)); }
+int bgbcp_strncmp9(char *s1, char *s2)
+	{ return(strncmp(s1, s2, 9)); }
+int bgbcp_strncmp10(char *s1, char *s2)
+	{ return(strncmp(s1, s2, 10)); }
+int bgbcp_strncmp11(char *s1, char *s2)
+	{ return(strncmp(s1, s2, 11)); }
+int bgbcp_strncmp12(char *s1, char *s2)
+	{ return(strncmp(s1, s2, 12)); }
+
+#endif
 
 
 int BGBCP_StrlenUTF8(char *str)
@@ -884,7 +973,7 @@ int BGBCP_ParseChar(char **str)
 		i+=(*s++)&63;
 	}else if(i>=0x80)
 	{
-		BGBCC_DBGBREAK
+//		BGBCC_DBGBREAK
 //		continue;
 	}
 
@@ -953,7 +1042,7 @@ int BGBCP_EmitChar(char **str, int j)
 
 int BGBCP_NameInitChar(int c, int lang)
 {
-	static int vals[]={
+	static const int vals[]={
 	0x00AA, 0x00BA, 0x207F, 0x0386, 0x038C, 0x03DA, 0x03DC, 0x03DE,
 	0x03E0, 0x1F59, 0x1F5B, 0x1F5D, 0x05BF, 0x09B2, 0x0A02, 0x0A5E,
 	0x0A74, 0x0A8D, 0x0AD0, 0x0AE0,
@@ -962,7 +1051,7 @@ int BGBCP_NameInitChar(int c, int lang)
 	0x02BB, 0x037A, 0x0559, 0x093D, 0x0B3D, 0x1FBE, 0x2102, 0x2107,
 	0x2115, 0x2124,	0x2126, 0x2128, 0}; 
 
-	static int rngs[]={
+	static const int rngs[]={
 	0x0388, 0x038A, 0x038E, 0x03A1, 0x03A3, 0x03CE, 0x03D0, 0x03D6,
 	0x03E2, 0x03F3, 0x1F00, 0x1F15, 0x1F18, 0x1F1D, 0x1F20, 0x1F45,
 	0x1F48, 0x1F4D, 0x1F50, 0x1F57, 0x1F5F, 0x1F7D, 0x1F80, 0x1FB4,
@@ -1152,7 +1241,7 @@ char *BGBCP_TokenI(char *s, char *b, int *ty, int lang, int sz)
 	}
 #endif
 
-#if 1
+#if 0
 //	i=*s;
 //	if((i<=' ') || (i=='/'))
 	if((*s<=' ') || (*s=='/'))
@@ -1163,6 +1252,24 @@ char *BGBCP_TokenI(char *s, char *b, int *ty, int lang, int sz)
 			*ty=BTK_NULL;
 			return(s);
 		}
+	}
+#endif
+
+#if 1
+	if((ch=*s)&0x80)
+		ch=BGBCP_PeekChar(&s);
+	if((ch<=' ') || (ch=='/') || BGBCP_CheckUtfWhite(ch))
+//	if((*s<=' ') || (*s=='/'))
+	{
+		s=BGBCP_EatWhite(s);
+		if(!*s)
+		{
+			*ty=BTK_NULL;
+			return(s);
+		}
+
+		if((ch=*s)&0x80)
+			ch=BGBCP_PeekChar(&s);
 	}
 #endif
 

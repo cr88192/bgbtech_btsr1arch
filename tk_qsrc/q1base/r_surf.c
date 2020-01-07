@@ -353,15 +353,26 @@ void R_DrawSurface (void)
 	basetoffset = r_drawsurf.surf->texturemins[1];
 
 // << 16 components are to guarantee positive values for %
-	soffset = ((soffset >> r_drawsurf.surfmip) + (smax << 16)) % smax;
+//	soffset = ((soffset >> r_drawsurf.surfmip) + (smax << 16)) % smax;
+
+	soffset = ((soffset >> r_drawsurf.surfmip) + (smax << 16));
+	if(!(smax&(smax-1)))
+		soffset = soffset & (smax-1);
+	else
+		soffset = soffset % smax;
 	
 //	soffset=0;
 	
-	basetptr = &r_source[((((basetoffset >> r_drawsurf.surfmip) 
-		+ (tmax << 16)) % tmax) * twidth)];
+//	basetptr = &r_source[((((basetoffset >> r_drawsurf.surfmip) 
+//		+ (tmax << 16)) % tmax) * twidth)];
 
-//	basetptr = r_source + (((((basetoffset >> r_drawsurf.surfmip) 
-//		+ (tmax << 16)) % tmax) * twidth));
+	u = ((basetoffset >> r_drawsurf.surfmip) 
+		+ (tmax << 16));
+	if(!(tmax&(tmax-1)))
+		u = u & (tmax-1);
+	else
+		u = u % tmax;
+	basetptr = r_source + (u * twidth);
 
 //	basetptr = r_source;
 
@@ -930,10 +941,11 @@ void R_DrawSurfaceBlock16_mip1 (void)
 //	{ R_DrawSurfaceBlock16_mipN(0); }
 //void R_DrawSurfaceBlock16_mip1 (void)
 //	{ R_DrawSurfaceBlock16_mipN(1); }
-void R_DrawSurfaceBlock16_mip2 (void)
-	{ R_DrawSurfaceBlock16_mipN(2); }
-void R_DrawSurfaceBlock16_mip3 (void)
-	{ R_DrawSurfaceBlock16_mipN(3); }
+
+//void R_DrawSurfaceBlock16_mip2 (void)
+//	{ R_DrawSurfaceBlock16_mipN(2); }
+//void R_DrawSurfaceBlock16_mip3 (void)
+//	{ R_DrawSurfaceBlock16_mipN(3); }
 
 //void R_DrawSurfaceBlock16_mip1 (void)
 //	{ R_DrawSurfaceBlock16(); }

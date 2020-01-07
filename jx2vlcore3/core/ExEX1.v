@@ -570,7 +570,7 @@ begin
 		end
 		
 		JX2_UCMD_MULW3: begin
-			tHeldIdRn1	= regIdRm;
+			tHeldIdRn1	= regIdRm;			//
 //			tRegIdRn1	= regIdRm;			//
 //			tRegValRn1	= regValMulwRes;		//
 		end

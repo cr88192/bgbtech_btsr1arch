@@ -1464,7 +1464,7 @@ int BGBCC_JX2_EmitLoadRegImm64P(
 	if(BGBCC_JX2_EmitCheckRegExtGPR(ctx, reg))
 //	if(0)
 	{
-#if 0
+#if 1
 		if(!ctx->is_fixed32 && !ctx->op_is_wex2)
 		{
 			if(((imm&15)==imm) && (reg&16))
@@ -1614,7 +1614,7 @@ int BGBCC_JX2_EmitLoadRegImm64P(
 				opw4=0xC000|((reg&16)<<6)|(imm&0x3FF);
 			}
 
-#if 1
+#if 0
 			if((opw1<0) && ((imm&0xFFFFFFFF00000000ULL)==imm))
 			{
 				imm1=imm>>32;
@@ -1624,6 +1624,28 @@ int BGBCC_JX2_EmitLoadRegImm64P(
 				opw4=0xC000|((reg&16)<<6)|(imm1&0x3FF);
 				opw5=0xF200|((reg&15)<<4)|(reg&15);
 				opw6=0x8800|((reg&16)?0x0600:0x0000)|32;
+			}
+#endif
+
+#if 1
+			if((opw1<0) && ((imm&0xFFFFFFFF00000000ULL)==imm))
+			{
+				imm1=imm>>32;
+				opw1=0xF400|((imm1>>24)&0x00FF);
+				opw2=0xC000|((imm1>>10)&0x3FFF);
+				opw3=0xF203|((reg&15)<<4);
+				opw4=0xC800|((reg&16)<<6)|(imm1&0x3FF);
+			}
+#endif
+
+#if 1
+			if((opw1<0) && ((imm&0x0000FFFFFFFF0000ULL)==imm))
+			{
+				imm1=imm>>16;
+				opw1=0xF400|((imm1>>24)&0x00FF);
+				opw2=0xC000|((imm1>>10)&0x3FFF);
+				opw3=0xF203|((reg&15)<<4);
+				opw4=0xC800|((reg&16)<<6)|(imm1&0x3FF);
 			}
 #endif
 

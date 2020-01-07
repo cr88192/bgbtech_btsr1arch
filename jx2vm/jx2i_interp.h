@@ -285,17 +285,16 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_INVIC		0x95		//
 #define BJX2_NMID_INVTLB	0x96		//
 #define BJX2_NMID_RTSU		0x97		//
-
 #define BJX2_NMID_MULSW		0x98		//
 #define BJX2_NMID_MULUW		0x99		//
 #define BJX2_NMID_SYSCALL	0x9A		//
 #define BJX2_NMID_LDIQ		0x9B		//
 #define BJX2_NMID_JLDI		0x9C		//
-
 #define BJX2_NMID_MOVX2		0x9D		//
 #define BJX2_NMID_PUSHX2	0x9E		//
 #define BJX2_NMID_POPX2		0x9F		//
 
+#if 0
 #define BJX2_NMID_CMOVTB	0xA0		//CMOVT.B
 #define BJX2_NMID_CMOVTW	0xA1		//CMOVT.W
 #define BJX2_NMID_CMOVTL	0xA2		//CMOVT.L
@@ -312,6 +311,11 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_CMOVUFW	0xAD		//CMOVUF.W
 #define BJX2_NMID_CMOVUFL	0xAE		//CMOVUF.L
 #define BJX2_NMID_CMOVDFL	0xAF		//CMOVDF.L
+#endif
+
+#define BJX2_NMID_MULSL		0xA0		//
+#define BJX2_NMID_MULUL		0xA1		//
+#define BJX2_NMID_LDIL		0xA2		//
 
 
 #define BJX2_FMID_NONE			0x00		//?

@@ -2162,6 +2162,26 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			op->Run=BJX2_Op_CSELT_RegRegReg;
 			break;
 
+		case 0x2:	/* F0ez_52zz */
+			op->nmid=BJX2_NMID_MULSL;
+			op->fmid=BJX2_FMID_REGREGREG;
+			op->Run=BJX2_Op_MULSL_RegRegReg;
+			if(eq)
+			{
+				op->fmid=BJX2_FMID_REGIMMREG;
+				op->Run=BJX2_Op_MULSL_RegImmReg;
+			}
+			break;
+		case 0x3:	/* F0ez_53zz */
+			op->nmid=BJX2_NMID_MULUL;
+			op->fmid=BJX2_FMID_REGREGREG;
+			op->Run=BJX2_Op_MULUL_RegRegReg;
+			if(eq)
+			{
+				op->fmid=BJX2_FMID_REGIMMREG;
+				op->Run=BJX2_Op_MULUL_RegImmReg;
+			}
+			break;
 
 		case 0x4:	/* F0eo_54nm */
 			op->nmid=BJX2_NMID_SHAD;

@@ -482,8 +482,8 @@ parameter[5:0] JX2_UCIX_CONV_EXTUW	= 6'h05;		//
 parameter[5:0] JX2_UCIX_CONV_EXTUL	= 6'h06;		//
 parameter[5:0] JX2_UCIX_CONV_NOT	= 6'h07;		//NOT
 
-parameter[5:0] JX2_UCIX_CONV_CLZ	= 6'h08;		//NOT
-parameter[5:0] JX2_UCIX_CONV_CLZQ	= 6'h09;		//NOT
+parameter[5:0] JX2_UCIX_CONV_CLZ	= 6'h08;		//Count Leading Zeroes (L)
+parameter[5:0] JX2_UCIX_CONV_CLZQ	= 6'h09;		//Count Leading Zeroes (Q)
 
 parameter[5:0] JX2_UCIX_CONV_LDIHI		= 6'h0A;		//Load High Bits
 parameter[5:0] JX2_UCIX_CONV_LDIQHI		= 6'h0B;		//Load High Bits
@@ -491,6 +491,10 @@ parameter[5:0] JX2_UCIX_CONV_LDISIZ		= 6'h0C;		//Load Shift Imm
 parameter[5:0] JX2_UCIX_CONV_LDIQSIZ	= 6'h0D;		//Load Shift Imm
 parameter[5:0] JX2_UCIX_CONV_LDISIN		= 6'h0E;		//Load Shift Imm
 parameter[5:0] JX2_UCIX_CONV_LDIQSIN	= 6'h0F;		//Load Shift Imm
+parameter[5:0] JX2_UCIX_CONV_LDIQHI16	= 6'h10;		//Load High Bits
+parameter[5:0] JX2_UCIX_CONV_LDIQHI32	= 6'h11;		//Load High Bits
+parameter[5:0] JX2_UCIX_CONV_FNEG		= 6'h12;		//Load High Bits
+parameter[5:0] JX2_UCIX_CONV_FABS		= 6'h13;		//Load High Bits
 
 parameter[5:0] JX2_UCIX_MUL3_MUL3S	= 6'h00;		//
 parameter[5:0] JX2_UCIX_MUL3_MUL3U	= 6'h01;		//

@@ -50,6 +50,9 @@ int     D_SurfaceCacheForRes (int width, int height)
 	
 	size = size * r_pixbytes;
 
+//	size *= 2;
+	size *= 6;
+
 	return size;
 }
 
@@ -296,8 +299,18 @@ surfcache_t *D_CacheSurface (msurface_t *surface, int miplevel)
 //
 	cache = surface->cachespots[miplevel];
 
+#if 1	//BGB perf hack
+//	t = ((int) cache)>>4;
+	if ( cache && (r_framecount & 3))
+//	if ( cache && ((r_framecount^t) & 3))
+		return cache;
+#endif
+
 #if 1	//BGB Debug
-	if (cache && !cache->dlight && surface->dlightframe != r_framecount
+	if (cache
+			&& !cache->dlight
+			&& (surface->dlightframe != r_framecount)
+//			&&  ((surface->dlightframe != r_framecount) || (r_framecount & 3))
 			&& cache->texture == r_drawsurf.texture
 			&& cache->lightadj[0] == r_drawsurf.lightadj[0]
 			&& cache->lightadj[1] == r_drawsurf.lightadj[1]

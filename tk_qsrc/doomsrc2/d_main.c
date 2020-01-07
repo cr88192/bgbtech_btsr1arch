@@ -502,10 +502,12 @@ void D_AdvanceDemo (void)
 	paused = false;
 	gameaction = ga_nothing;
 
-	if ( gamemode == retail )
-	  demosequence = (demosequence+1)%7;
-	else
+//	if ( gamemode == retail )
+//	  demosequence = (demosequence+1)%7;
+//	else
 	  demosequence = (demosequence+1)%6;
+	
+	demosequence = __int_clamp(demosequence, 0, 5);
 	
 	switch (demosequence)
 	{

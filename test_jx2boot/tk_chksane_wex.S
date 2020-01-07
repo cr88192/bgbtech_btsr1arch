@@ -115,6 +115,23 @@ X(tk_checksane_wex_asm):
 	
 	.L4:
 	
+	mov 0x1234, r8
+	mov 0xABCD, r9
+	mov 0x0C374FA4, r10
+	mov 0xFA034FA4, r11
+	
+	mulu.w		r8, r9, r4
+	muls.w		r8, r9, r5
+
+	cmpeq r4, r10
+	break?f
+
+	cmpeq r5, r11
+	break?f
+
+	.L5:
+
+	
 	wexmd #0
 
 	add #24, sp

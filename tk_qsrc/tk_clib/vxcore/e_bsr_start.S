@@ -1140,13 +1140,20 @@ X(__fpu_frcp_sf):
 .global X(__fpu_fdiv_sf)
 X(__fpu_fdiv_sf):
 	cmpqgt #0, r5
+//	nop
 	fneg?f r5
+	mov		#0x4000000000000000, r1
 	mov		#0x7FF0000000000000, r3
 	mov		#0x3FF0000000000000, r6
 	sub		r3, r5, r3
 	fmul	r3, r5, r7
 	sub		r6, r7, r7
 	add		r7, r3, r2
+
+	fmul	r2, r5, r6
+	fsub	r1, r6, r7
+	fmul	r7, r2
+
 	fneg?f	r2
 	fmul	r2, r4, r2	
 	rtsu

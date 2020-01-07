@@ -589,6 +589,20 @@ The value in DLR is shifted left 8 bits, and the immediate value is coppied into
 The 32-bit encoding is mostly intended for use with WEX2. The high 2 bits of the imm10 field are reserved and must be zero.
 
 
+=== LDIHI{Q} ===
+
+* F2n3_Chjj  LDIHI	#imm10u, Rn
+* F2n3_CHjj  LDIHIQ	#imm10u, Rn
+
+Load High Immediate.
+
+LDIHI will load the immediate into bits (31:22), with the result zero extended.
+LDIHIQ will load the immediate into bits (63:54).
+
+If used with a Jumbo Prefix, LDIHI will load a 32 bit immediate into (47:16) and LDIHIQ into (63:32).
+
+
+
 === LDISH16 ===
 
 * F86n_iiii  LDISH16	#imm16u, Rn
@@ -1668,4 +1682,50 @@ FSTCH will produce a half precision float, which will be stored into the low 16 
 
 Subtract the double precision value in Ro from the value from Rm and store the resulting value in Rn.
 
+
+== Jumbo Instructions (Optional / Experimental) ==
+
+Jumbo Instructions will be large instructions (64 or 96 bits), composed of multiple conjoined instruction words.
+Jumbo instructions will begin with F4zz_Czzz .. F4zz_Fzzz, which will serve as a "jumbo prefix".
+The following 32-bit instructions will be considered part of the same logical instruction.
+The final instruction in the sequence will encode the operation.
+
+If the instruction following the prefix is a WEX form, the instruction will be 96 bits, otherwise it will be 64.
+All instruction words in the sequence will be required to be 32-bit encodings.
+
+Jumbo64 forms of F1, F2, or F8 block instructions will match their 32-bit counterparts, but with the immediate field expanded.
+F1 and F2 block Imm9/Disp9 will have a 31 bit immediate, whereas Imm10 forms will expand to 32 bits.
+
+F1 block immediates will be expanded to being 31-bit sign-extended.
+* The disp8s instructions will become disp30s.
+
+F2 block immediates will be expanded, but retain the zero or one extension from the base instruction.
+
+
+Use with the F0 block will depend on the instruction:
+* Branch ops will extend the size of the displacement to 42 bits.
+** However, branches beyond 32-bits are currently undefined.
+* Imm5u/Disp5u ops will be expanded to 27-bits sign-extended.
+
+=== JLDI (Jumbo Load) ===
+
+Jumbo Load is an "instruction" which loads a 64-bit constant all at once.
+
+Basic Encoding:
+* F4jj_Cjjj-F2n0_Cfjj            LDIZ		#imm32u, Rn
+* F4jj_Cjjj-F2n1_Cfjj            LDIN		#imm32n, Rn
+* F4zz_Czzz-F4yy_Cyyy-FAxx_xxxx  JLDI		#imm64, Rn
+* F4jj_Cjjj-F2n3_Chjj            LDIHI.L	#imm32u, Rn		//Rn=Imm32u<<16
+* F4jj_Cjjj-F2n3_CHjj            LDIHI.Q	#imm32u, Rn		//Rn=Imm32u<<32
+
+The immediate fields for JLDI will be interpreted as a 64-bit value:
+* zzzz_zyyy_yyxx_xxxx
+* Or, essentially, the three immedite fields glued together.
+
+The opcode bits will be used to encode the destination register:
+* 11nn (bits 3:2), 11nn (bits 1:0), 101n (bit 4)
+
+JLDI will not need one or zero extension given the immediate fills an entire 64-bit register.
+
+Jumbo LDIHI will load a 32-bit immediate with a constant shift. The Q bit will encode whether to shift the immediate left by 16 or 32 bits.
 

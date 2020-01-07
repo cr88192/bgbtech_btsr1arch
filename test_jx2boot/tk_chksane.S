@@ -631,8 +631,8 @@ X(tk_checksane_asm):
 	bt _checksane_fail_alu4
 
 	mov	0x08889, r8
-	mov 0x11112‬, r9
-	mov 0x11113‬, r10
+	mov 0x11112, r9
+	mov 0x11113, r10
 	
 	mov r8, r18
 	addc r8, r18

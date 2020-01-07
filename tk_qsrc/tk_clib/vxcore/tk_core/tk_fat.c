@@ -1192,7 +1192,8 @@ int TKFAT_GetWalkCluster(
 			is_c=1;
 		}
 	}
-	
+
+#if 1
 	if((img->walk3_clid==clid) &&
 		(cloffs>=img->walk3_clofs))
 	{
@@ -1216,6 +1217,7 @@ int TKFAT_GetWalkCluster(
 			is_c=1;
 		}
 	}
+#endif
 	
 	if(i<=0)
 //	if(1)
@@ -1224,6 +1226,9 @@ int TKFAT_GetWalkCluster(
 		i=clid; n=cloffs;
 		o=0;	is_c=0;
 	}
+
+
+#if 0
 
 #if 0
 	if((img->walk_clid==clid) &&
@@ -1285,10 +1290,11 @@ int TKFAT_GetWalkCluster(
 		}else
 		{
 			img->walk_lumax=-1;
-//			i=clid; n=cloffs;
-//			o=0;
+			i=clid; n=cloffs;
+			o=0;	is_c=0;
 		}
 	}
+#endif
 	
 	if(i<=0)
 //	if(1)
@@ -1326,7 +1332,8 @@ int TKFAT_GetWalkCluster(
 			TKFAT_SetFatEntry(img, i, j);
 //			TKFAT_SetFatEntry(img, j, 0x0FFFFFFF);
 		}
-		
+
+#if 0
 //		if(!(o&255) && (o>img->walk_lumax))
 		if(!(o&127) && (o>img->walk_lumax))
 		{
@@ -1334,6 +1341,7 @@ int TKFAT_GetWalkCluster(
 			img->walk_luhint[o>>7]=i;
 			img->walk_lumax=o;
 		}
+#endif
 		
 		i=j;
 		n--;
@@ -1344,9 +1352,11 @@ int TKFAT_GetWalkCluster(
 	img->walk4_clid=img->walk3_clid;
 	img->walk4_clofs=img->walk3_clofs;
 	img->walk4_clcur=img->walk3_clcur;
+
 	img->walk3_clid=img->walk2_clid;
 	img->walk3_clofs=img->walk2_clofs;
 	img->walk3_clcur=img->walk2_clcur;
+
 	img->walk2_clid=img->walk_clid;
 	img->walk2_clofs=img->walk_clofs;
 	img->walk2_clcur=img->walk_clcur;
@@ -1390,7 +1400,12 @@ int TKFAT_GetClusterFileOffs(TKFAT_ImageInfo *img,
 	cloffs=foffs>>img->shclust;
 	clfrac=foffs&((1<<img->shclust)-1);
 	cl2=TKFAT_GetWalkCluster(img, clid, cloffs, expand);
-	if(cl2<0)return(-1);
+	if(cl2<0)
+	{
+		*rclid=-1;
+		*rclfrac=-1;
+		return(-1);
+	}
 	
 	*rclid=cl2;
 	*rclfrac=clfrac;
@@ -1458,6 +1473,7 @@ int TKFAT_ReadWriteClusterOffset(TKFAT_ImageInfo *img,
 	shcl=img->shclust;
 	if((foffs>>shcl)==(offs2>>shcl))
 	{
+		clid1=-1;
 		offs1=-1;
 		i=TKFAT_GetClusterFileOffs(img, clid, foffs, iswrite,
 			&clid1, &offs1);
@@ -1469,11 +1485,15 @@ int TKFAT_ReadWriteClusterOffset(TKFAT_ImageInfo *img,
 		}
 		if(offs1<0)
 			__debugbreak();
+		if(clid1<0)
+			__debugbreak();
 		i=TKFAT_ReadWriteCluster(img,
 			clid1, offs1, iswrite, data, size);
 		return(i);
 	}
 
+	clid1=-1;
+	clid2=-1;
 	offs1=-1;
 	offs2=-1;
 
@@ -1496,6 +1516,11 @@ int TKFAT_ReadWriteClusterOffset(TKFAT_ImageInfo *img,
 			foffs2);
 		return(j);
 	}
+
+	if(offs1<0)
+		__debugbreak();
+	if(clid1<0)
+		__debugbreak();
 
 	if((offs1<0) || (offs2<0))
 		__debugbreak();

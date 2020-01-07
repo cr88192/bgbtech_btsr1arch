@@ -350,18 +350,40 @@ void SND_InitScaletable (void)
 
 #if	!id386
 
+void SND_PaintChannelFrom8_Inner(
+	void *sfx, void *pbuf,
+	int lvol, int rvol,
+	int count);
+
 void SND_PaintChannelFrom8 (channel_t *ch, sfxcache_t *sc, int count)
 {
-	int 	data;
+	register int 	data;
+	int		count1;
 	int		*lscale, *rscale;
-	unsigned char *sfx;
-	int		i;
+	register unsigned char *sfx;
+	register portable_samplepair_t *pbuf;
+	register int		i, lvol, rvol;
+
+	__hint_use_egpr();
 
 	if (ch->leftvol > 255)
 		ch->leftvol = 255;
 	if (ch->rightvol > 255)
 		ch->rightvol = 255;
-		
+
+	lvol = ch->leftvol;
+	rvol = ch->rightvol;
+	sfx = (signed char *)sc->data + ch->pos;
+	pbuf = paintbuffer;
+
+#if 1
+	SND_PaintChannelFrom8_Inner(sfx, pbuf, lvol, rvol, count);
+	ch->pos += count;
+	return;
+#endif
+
+// #if 0
+#ifndef _BGBCC
 	lscale = snd_scaletable[ch->leftvol >> 3];
 	rscale = snd_scaletable[ch->rightvol >> 3];
 	sfx = (signed char *)sc->data + ch->pos;
@@ -372,6 +394,48 @@ void SND_PaintChannelFrom8 (channel_t *ch, sfxcache_t *sc, int count)
 		paintbuffer[i].left += lscale[data];
 		paintbuffer[i].right += rscale[data];
 	}
+#endif
+
+#ifdef _BGBCC
+// #if 0
+	lvol = ch->leftvol;
+	rvol = ch->rightvol;
+	sfx = (signed char *)sc->data + ch->pos;
+
+	i=0;
+	pbuf = paintbuffer;
+
+#if 1
+	count1 = count-4;
+	while (i<count1)
+	{
+		data = (signed char)(sfx[i]);
+		pbuf->left += __int_mulsw(data, lvol);
+		pbuf->right += __int_mulsw(data, rvol);
+		i++; pbuf++;
+		data = (signed char)(sfx[i]);
+		pbuf->left += __int_mulsw(data, lvol);
+		pbuf->right += __int_mulsw(data, rvol);
+		i++; pbuf++;
+		data = (signed char)(sfx[i]);
+		pbuf->left += __int_mulsw(data, lvol);
+		pbuf->right += __int_mulsw(data, rvol);
+		i++; pbuf++;
+		data = (signed char)(sfx[i]);
+		pbuf->left += __int_mulsw(data, lvol);
+		pbuf->right += __int_mulsw(data, rvol);
+		i++; pbuf++;
+	}
+#endif
+
+	for (; i<count ; i++)
+	{
+		data = (signed char)(sfx[i]);
+		pbuf->left += __int_mulsw(data, lvol);
+		pbuf->right += __int_mulsw(data, rvol);
+		pbuf++;
+	}
+#endif
 	
 	ch->pos += count;
 }

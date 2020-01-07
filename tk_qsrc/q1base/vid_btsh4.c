@@ -184,18 +184,22 @@ int VID_ColorMap16(int pix, int light)
 	int d, m, m1, sc, scuv;
 	int y1, u1, v1;
 
-#if 0
+#ifdef _BGBCC
 //	d = ((l+(l>>2)) & 0xFC00);
 //	d = (light & 0xFC00)-(8<<10);
 
 	d = (light & 0xFC00)-(6<<10);
-	d=(d+(d>>1))&((s16)0xFC00);
+//	d=(d+(d>>1))&((s16)0xFC00);
+	d=(d-(d>>1))&((s16)0xFC00);
 
 	pix= pix - d;
 //	if(pix<0x0000)pix=0x01EF;
 //	if(pix>0xFFFF)pix=0xFDEF;
-	if(pix<0x0210)pix=0x0210;
-	if(pix>0xFE10)pix=0xFE10;
+
+//	if(pix<0x0210)pix=0x0210;
+//	if(pix>0xFE10)pix=0xFE10;
+	pix = __int_clamp(pix, 0x0210, 0xFE10);
+	return(pix);
 #endif
 
 #if 0
@@ -251,7 +255,8 @@ int VID_ColorMap16(int pix, int light)
 	pix=(y1&0xFC00)|(pix&0x03FF);
 #endif
 
-#if 1
+// #if 0
+#ifndef _BGBCC
 	sc=(512+128)-((light>>8)&255)*10;
 	scuv=sc;
 
@@ -365,7 +370,8 @@ void	VID_Init (unsigned char *palette)
 	vid_buffer=malloc(BASEWIDTH*BASEHEIGHT*2);
 	vid_backbuffer=malloc(BASEWIDTH*BASEHEIGHT*2);
 	zbuffer=malloc(BASEWIDTH*BASEHEIGHT*2);
-	surfcache=malloc(BASEWIDTH*BASEHEIGHT*3*2);
+//	surfcache=malloc(BASEWIDTH*BASEHEIGHT*3*2);
+	surfcache=malloc(BASEWIDTH*BASEHEIGHT*3*4);
 //	surfcache=malloc(512*1024);
 
 	printf("VID_Init:\n");
@@ -389,7 +395,8 @@ void	VID_Init (unsigned char *palette)
 	d_pzbuffer = zbuffer;
 //	D_InitCaches (surfcache, sizeof(surfcache));
 //	D_InitCaches (surfcache, 512*1024);
-	D_InitCaches (surfcache, BASEWIDTH*BASEHEIGHT*3*2);
+//	D_InitCaches (surfcache, BASEWIDTH*BASEHEIGHT*3*2);
+	D_InitCaches (surfcache, BASEWIDTH*BASEHEIGHT*3*4);
 
 #ifdef I_SCR_BMP128K
 	((u32 *)0xF00BFF00)[0]=0x0015;		//320x200x16bpp

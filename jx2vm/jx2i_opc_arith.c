@@ -23,6 +23,11 @@ void BJX2_Op_MOV_ImmHiReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=((u64)(op->imm))<<32;
 }
 
+void BJX2_Op_MOV_ImmMidReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[op->rn]=((u64)((u32)(op->imm)))<<16;
+}
+
 void BJX2_Op_MOV_JImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	BJX2_Opcode *op1;
@@ -474,6 +479,40 @@ void BJX2_Op_MULUW_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 //	ctx->regs[op->rn]=((u64)((u32)ctx->regs[op->rm]))*op->imm;
 	ctx->regs[op->rn]=(u32)(((u16)ctx->regs[op->rm])*op->imm);
+}
+#endif
+
+#if 1
+void BJX2_Op_MULSL_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+//	s64 va, vb, vc;
+	s64 va, vb, vc;
+	va=(s32)(ctx->regs[op->ro]);
+	vb=(s32)(ctx->regs[op->rm]);
+	vc=va*vb;
+	ctx->regs[op->rn]=vc;
+}
+
+void BJX2_Op_MULSL_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[op->rn]=((s64)((s32)ctx->regs[op->rm]))*op->imm;
+//	ctx->regs[op->rn]=(s32)(((s32)ctx->regs[op->rm])*op->imm);
+}
+
+void BJX2_Op_MULUL_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	s64 va, vb, vc;
+//	u32 va, vb, vc;
+	va=(u32)(ctx->regs[op->ro]);
+	vb=(u32)(ctx->regs[op->rm]);
+	vc=va*vb;
+	ctx->regs[op->rn]=vc;
+}
+
+void BJX2_Op_MULUL_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[op->rn]=((u64)((u32)ctx->regs[op->rm]))*op->imm;
+//	ctx->regs[op->rn]=(u32)(((u32)ctx->regs[op->rm])*op->imm);
 }
 #endif
 

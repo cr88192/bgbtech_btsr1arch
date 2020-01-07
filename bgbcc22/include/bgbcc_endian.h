@@ -39,13 +39,20 @@
 #endif
 #endif
 
+#ifdef __GNUC__
+#define BGBCC_MISAL_NO
+#endif
+
 #ifndef force_inline
 #define force_inline
 #define default_inline
 #endif
 
-#if defined(X86) || defined(X86_64) || defined(ARM)
+#if (defined(X86) || defined(X86_64) || defined(ARM)) && \
+	!defined(BGBCC_MISAL_NO)
 // #if 0
+
+#define BGBCC_MISAL_YES
 
 #define bgbcc_getu16le(ptr)		(*(u16 *)(ptr))
 #define bgbcc_getu32le(ptr)		(*(u32 *)(ptr))

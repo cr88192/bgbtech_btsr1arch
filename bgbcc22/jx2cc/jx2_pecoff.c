@@ -692,7 +692,8 @@ int BGBCC_JX2C_PackBlockLZ4(BGBCC_TransState *ctx,
 //			break;
 
 		rl=cs-cs0;
-		if((ct+rl+9)>=cte)
+//		if((ct+rl+9)>=cte)
+		if((ct+rl+(rl>>8)+(bl>>8)+5)>=cte)
 		{
 			/* Near the end of a block, check if we need to stop. */
 			if(i0>0)
@@ -1041,7 +1042,7 @@ int BGBCC_JX2C_PackImagePEL4(BGBCC_TransState *ctx,
 
 byte bgbcc_tkpe_endseen;
 
-byte *BGBCC_TKPE_UnpackL4(byte *obuf, byte *ibuf, int isz)
+byte *BGBCC_TKPE_UnpackL4(byte *obuf, byte *ibuf, int isz, byte *imgbase)
 {
 	byte *cs, *ct, *cse, *cs1, *cs1e, *ct1, *cs0, *ct0;
 	byte *cs0a, *ct0a;
@@ -1079,6 +1080,8 @@ byte *BGBCC_TKPE_UnpackL4(byte *obuf, byte *ibuf, int isz)
 		
 //		ld=tkfat_getWord(cs);
 		ld=*(u16 *)cs;
+//		if(!ld)
+//			break;
 		cs+=2;
 		if(!ld)
 		{
@@ -1112,8 +1115,26 @@ byte *BGBCC_TKPE_UnpackL4(byte *obuf, byte *ibuf, int isz)
 		{
 			ct1=ct;
 			while(cs1<cs1e)
-				{ *(u64 *)ct1=*(u64 *)cs1; ct1+=8; cs1+=8; }
+			{
+//				*(u64 *)ct1=*(u64 *)cs1; ct1+=8; cs1+=8;
+				((u64 *)ct1)[0]=((u64 *)cs1)[0];
+				((u64 *)ct1)[1]=((u64 *)cs1)[1];
+				ct1+=16; cs1+=16;
+			}
 			ct+=ll;
+		}else
+			if(ld>=4)
+//			if(0)
+		{
+			ct1=ct;
+			while(cs1<cs1e)
+			{
+				((u32 *)ct1)[0]=((u32 *)cs1)[0];
+				((u32 *)ct1)[1]=((u32 *)cs1)[1];
+				ct1+=8; cs1+=8;
+			}
+			ct+=ll;
+//			__debugbreak();
 		}else
 		{
 			while(cs1<cs1e)
@@ -1149,7 +1170,7 @@ int BGBCC_JX2C_VerifyImagePEL4(BGBCC_TransState *ctx,
 		if(k>1024)k=1024;
 //		k=1024;
 //		ct=BGBCC_TKPE_UnpackL4(ct, cs, k);
-		ct=BGBCC_TKPE_UnpackL4(ct, cs, 1024);
+		ct=BGBCC_TKPE_UnpackL4(ct, cs, 1024, obuf);
 		cs+=k;
 		cb++;
 		if(bgbcc_tkpe_endseen)
@@ -1172,6 +1193,90 @@ int BGBCC_JX2C_VerifyImagePEL4(BGBCC_TransState *ctx,
 	return(0);
 }
 
+/* Calculate PE/COFF checksum.
+ * This algorithm is pretty weak.
+ */
+u32 BGBCC_JX2C_CalculateImagePeChecksum(byte *buf, int size, int en)
+{
+	byte *cs, *cse, *cs1e;
+	u64 acc;
+	u32 csum;
+	
+	cs=buf;
+	cse=cs+size;
+	acc=0;
+	while(cs<cse)
+	{
+		acc=acc+bgbcc_getu32en(cs, en);
+		acc=((u32)acc)+(acc>>32);
+		cs+=4;
+	}
+	acc=((u32)acc)+(acc>>32);
+	acc=((u32)acc)+(acc>>32);
+	csum=acc;
+	csum=((u16)csum)+(csum>>16);
+	csum=((u16)csum)+(csum>>16);
+	
+	csum+=size;
+	return(csum);
+}
+
+u32 BGBCC_JX2C_CalculateImagePel4Checksum(byte *buf, int size, int en)
+{
+	byte *cs, *cse;
+//	u64 acc;
+	u32 acc_lo, acc_hi;
+	u32 csum;
+	
+	cs=buf;
+	cse=cs+size;
+	acc_lo=1;
+	acc_hi=0;
+	while(cs<cse)
+	{
+		acc_lo=acc_lo+(*cs++);
+		if(acc_lo>=65521)
+			acc_lo-=65521;
+		acc_hi=acc_hi+acc_lo;
+		if(acc_hi>=65521)
+			acc_hi-=65521;
+	}
+	csum=acc_lo|(acc_hi<<16);
+//	csum+=size;
+	return(csum);
+}
+
+u32 BGBCC_JX2C_CalculateImagePel4BChecksum(byte *buf, int size, int en)
+{
+	byte *cs, *cse;
+//	u64 acc;
+	u32 v;
+	u64 acc_lo, acc_hi;
+	u32 csum;
+	
+	cs=buf;
+	cse=cs+size;
+	acc_lo=1;
+	acc_hi=0;
+	while(cs<cse)
+	{
+		v=bgbcc_getu32en(cs, en);
+		acc_lo=acc_lo+v;
+		acc_lo=((u32)acc_lo)+(acc_lo>>32);
+
+		acc_hi=acc_hi+acc_lo;
+		acc_hi=((u32)acc_hi)+(acc_hi>>32);
+		cs+=4;
+	}
+	acc_lo=((u32)acc_lo)+(acc_lo>>32);
+	acc_lo=((u32)acc_lo)+(acc_lo>>32);
+	acc_hi=((u32)acc_hi)+(acc_hi>>32);
+	acc_hi=((u32)acc_hi)+(acc_hi>>32);
+	csum=(u32)(acc_lo^acc_hi);
+//	csum+=size;
+	return(csum);
+}
+
 ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 	byte *obuf, int *rosz, fourcc imgfmt)
 {
@@ -1189,6 +1294,8 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 	char *s0;
 	byte *ct, *ct0, *ct1, *ctb;
 	byte no_mz, is_pel4;
+	u32 csum;
+
 	int en, ofs, ofs_sdat, ofs_iend, ofs_mend;
 	int of_phdr, ne_phdr;
 	int of_shdr, ne_shdr;
@@ -1425,6 +1532,23 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 	ofs_sdat=of_shdr+(ne_shdr*40);
 	ofs_sdat=(ofs_sdat+63)&(~63);
 
+#if 1
+	k=0x400;
+	for(i=0; i<sctx->nsec; i++)
+	{
+//		if(i==BGBCC_SH_CSEG_BSS)
+//			continue;
+
+		j=sctx->sec_pos[i]-sctx->sec_buf[i];
+//		sctx->sec_rva[i]=k;
+//		sctx->sec_lva[i]=img_base+k;
+//		sctx->sec_lsz[i]=j;
+		k+=j;
+		k=(k+63)&(~63);
+	}
+	memset(obuf, 0, k);
+#endif
+
 //	k=ofs_sdat;
 	k=0x400;
 	for(i=0; i<sctx->nsec; i++)
@@ -1616,6 +1740,7 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 	{
 //		memset(ct, 0, 0x400);
 		ct[0x00]='P';	ct[0x01]='E';	ct[0x02]=0;		ct[0x03]=0;
+		of_phdr=0x00;
 	}else
 	{
 //		memset(ct, 0, 0x400);
@@ -1623,6 +1748,7 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		ct[0x3C]=0x40;	ct[0x3D]=0;		ct[0x3E]=0;		ct[0x3F]=0;
 		ct[0x40]='P';	ct[0x41]='E';	ct[0x42]=0;		ct[0x43]=0;
 		ct+=0x40;
+		of_phdr=0x40;
 	}
 
 	k=sctx->is_le?0x0080:0x8000;
@@ -1954,19 +2080,35 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 #endif
 
 	if(is_pel4)
-	{
-		ctb=malloc(ofs_iend*2);
+//		csum=BGBCC_JX2C_CalculateImagePel4Checksum(obuf, ofs_mend, en);
+		csum=BGBCC_JX2C_CalculateImagePel4BChecksum(obuf, ofs_mend, en);
+	else
+		csum=BGBCC_JX2C_CalculateImagePeChecksum(obuf, ofs_mend, en);
+
+	ct=obuf+of_phdr;
+	bgbcc_setu32en(ct+0x58, en, csum);	//mCheckSum
 	
-		j=BGBCC_JX2C_PackImagePEL4(ctx, ctb, obuf, ofs_iend*2, ofs_iend);
+	printf("PE Checksum: %08X / %dkB\n", csum, ofs_mend>>10);
+
+	if(is_pel4)
+	{
+//		ctb=malloc(ofs_iend*2);
+		ctb=malloc(ofs_mend*2);
+	
+//		j=BGBCC_JX2C_PackImagePEL4(ctx, ctb, obuf, ofs_iend*2, ofs_iend);
+		j=BGBCC_JX2C_PackImagePEL4(ctx, ctb, obuf, ofs_mend*2, ofs_mend);
 		ctb[2]='L';
 		ctb[3]='4';
 		
-		BGBCC_JX2C_VerifyImagePEL4(ctx, ctb, obuf, j, ofs_iend);
+//		BGBCC_JX2C_VerifyImagePEL4(ctx, ctb, obuf, j, ofs_iend);
+		BGBCC_JX2C_VerifyImagePEL4(ctx, ctb, obuf, j, ofs_mend);
 		
-		if(j<ofs_iend)
+//		if(j<ofs_iend)
+		if(j<ofs_mend)
 		{
 			printf("PEL4: %d->%d %d%%\n",
-				ofs_iend, j, (j*100)/ofs_iend);
+//				ofs_iend, j, (j*100)/ofs_iend);
+				ofs_mend, j, (j*100)/ofs_mend);
 		
 			memcpy(obuf, ctb, j);
 			*rosz=j;

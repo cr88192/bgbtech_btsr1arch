@@ -610,14 +610,21 @@ int nmid;
 {"bt/s",	BGBCC_SH_NMID_BTS},
 {"bf/s",	BGBCC_SH_NMID_BFS},
 {"div1",	BGBCC_SH_NMID_DIV1},
-{"dmulu",	BGBCC_SH_NMID_DMULU},
-{"dmuls",	BGBCC_SH_NMID_DMULS},
-{"dmulu.l",	BGBCC_SH_NMID_DMULU},
-{"dmuls.l",	BGBCC_SH_NMID_DMULS},
+
+{"dmulu",	BGBCC_SH_NMID_MULUL},
+{"dmuls",	BGBCC_SH_NMID_MULSL},
+{"dmulu.l",	BGBCC_SH_NMID_MULUL},
+{"dmuls.l",	BGBCC_SH_NMID_MULSL},
 {"mulu",	BGBCC_SH_NMID_DMULU},
 {"muls",	BGBCC_SH_NMID_DMULS},
-{"mulu.l",	BGBCC_SH_NMID_MULUL},
-{"muls.l",	BGBCC_SH_NMID_MULSL},
+{"mulu.l",	BGBCC_SH_NMID_DMULU},
+{"muls.l",	BGBCC_SH_NMID_DMULS},
+
+{"mulu.w",	BGBCC_SH_NMID_MULUW},
+{"muls.w",	BGBCC_SH_NMID_MULSW},
+{"dmulu.w",	BGBCC_SH_NMID_MULUW},
+{"dmuls.w",	BGBCC_SH_NMID_MULSW},
+
 {"tst",		BGBCC_SH_NMID_TST},
 {"test",	BGBCC_SH_NMID_TST},
 {"tstq",	BGBCC_SH_NMID_TSTQ},
@@ -627,8 +634,6 @@ int nmid;
 {"or",		BGBCC_SH_NMID_OR},
 {"div0s",	BGBCC_SH_NMID_DIV0S},
 {"cmp/str",	BGBCC_SH_NMID_CMPSTR},
-{"mulu.w",	BGBCC_SH_NMID_MULUW},
-{"muls.w",	BGBCC_SH_NMID_MULSW},
 {"mac.l",	BGBCC_SH_NMID_MACL},
 {"bsrf",	BGBCC_SH_NMID_BSRF},
 {"braf",	BGBCC_SH_NMID_BRAF},
@@ -726,6 +731,8 @@ int nmid;
 
 {"push",	BGBCC_SH_NMID_PUSH},
 {"pop",		BGBCC_SH_NMID_POP},
+{"bra2b",	BGBCC_SH_NMID_BRA2B},
+{"bra4b",	BGBCC_SH_NMID_BRA4B},
 {"bra8b",	BGBCC_SH_NMID_BRA8B},
 {"ret",		BGBCC_SH_NMID_RET},
 {"rtsu",	BGBCC_SH_NMID_RTSU},
@@ -1242,7 +1249,7 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 	char tb0[256];
 //	BTSHAS_ListingOp *op;
 	char *tk0, *tk1;
-	char *cs, *cs1, *cs2;
+	char *cs, *cs1, *cs2, *cs3;
 	s64 li;
 	f32 ff;
 	f64 fd;
@@ -1321,6 +1328,12 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 		cs2=BGBCC_JX2A_EatWhiteNoLinebreak(cs2);
 		if(*cs2=='|')
 			{ wx=1; }
+		else
+		{
+			cs3=BGBCC_JX2A_EatWhite(cs2);
+			if(cs3 && (*cs3=='|'))
+				{ wx=1; cs2=cs3; }
+		}
 			
 		if(wx)
 		{
@@ -1338,7 +1351,11 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 			if(*cs2==';')
 				cs2++;
 			if(*cs2=='|')
+			{
 				cs2++;
+				if(*cs2=='|')
+					cs2++;
+			}
 			
 			ctx->op_is_wex2=wx?2:0;
 			if(pfc)

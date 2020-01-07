@@ -527,23 +527,26 @@ void *bgbcc_loadfile(char *name, int *rsz)
 	void *buf;
 	int i, j, k, sz;
 
-	if(!strcmp(name, "$protos$.c"))
+	if(name[0]=='$')
 	{
-		sz=0;
-		for(i=0; bgbcc_protos_c[i]; i++)
-			sz+=strlen(bgbcc_protos_c[i]);
-	
-		buf=bgbcc_malloc2(sz+8);
-		t=buf;
-		for(i=0; bgbcc_protos_c[i]; i++)
+		if(!strcmp(name, "$protos$.c"))
 		{
-			j=strlen(bgbcc_protos_c[i]);
-			memcpy(t, bgbcc_protos_c[i], j+1);
-			t+=j;
-		}
+			sz=0;
+			for(i=0; bgbcc_protos_c[i]; i++)
+				sz+=strlen(bgbcc_protos_c[i]);
+		
+			buf=bgbcc_malloc2(sz+8);
+			t=buf;
+			for(i=0; bgbcc_protos_c[i]; i++)
+			{
+				j=strlen(bgbcc_protos_c[i]);
+				memcpy(t, bgbcc_protos_c[i], j+1);
+				t+=j;
+			}
 
-		*rsz=sz;
-		return(buf);
+			*rsz=sz;
+			return(buf);
+		}
 	}
 
 //	printf("bgbcc_loadfile: %s\n", name);
@@ -567,45 +570,145 @@ void *bgbcc_loadfile(char *name, int *rsz)
 	return(buf);
 }
 
+int bgbcc_loadfile_checkbinary(byte *buf)
+{
+	int i, j, k;
+
+//	i=BGBCC_GET_U16LE(buf);
+//	if(i==)
+	if((buf[0]=='M') && (buf[1]=='Z'))
+		return(1);
+	if((buf[0]=='P') && (buf[1]=='E'))
+		return(1);
+	if((buf[0]=='\x7F') && (buf[1]=='E') &&
+			(buf[2]=='L') && (buf[3]=='F'))
+		return(1);
+	if((buf[0]=='R') && (buf[1]=='I') &&
+			(buf[2]=='L') && (buf[3]=='3'))
+		return(1);
+	if((buf[0]=='R') && (buf[1]=='I') &&
+			(buf[2]=='F') && (buf[3]=='F'))
+		return(1);
+
+	return(0);
+}
+
+/*
+Categorize buffer by characters:
+  0: Plain ASCII Text
+  1: Valid UTF-8 (BMP)
+  2/3: Probably codepage text.
+  4/5: UTF-8 (Non-BMP)
+  8..15: Binary Data
+ */
+int bgbcc_loadfile_CheckCategory(byte *buf, int sz)
+{
+	byte *cs, *cse;
+	int ret;
+	int i, j, k;
+	
+	cs=buf; cse=buf+sz; ret=0;
+	while(cs<cse)
+	{
+		i=*cs++;
+		if((i>=0x20) && (i<0x7F))
+			continue;
+		if((i=='\r') || (i=='\n') || (i=='\t'))
+			continue;
+		if(i<0x20)
+			{ ret|=8; continue; }
+			
+		if((i&0xE0)==0xC0)
+		{
+			j=*cs;
+			if((j&0xC0)==0x80)
+				{ ret|=1; cs++; continue; }
+			ret|=2;
+			continue;
+		}
+		if((i&0xF0)==0xE0)
+		{
+			j=cs[0];
+			k=cs[1];
+			if(((j&0xC0)==0x80) && ((k&0xC0)==0x80))
+				{ ret|=1; cs+=2; continue; }
+			ret|=2;
+			continue;
+		}
+		if((i&0xF8)==0xF0)
+		{
+			j=cs[0];	k=cs[1];
+			if(((j&0xC0)==0x80) && ((k&0xC0)==0x80) && ((cs[2]&0xC0)==0x80))
+				{ ret|=4; cs+=3; continue; }
+			ret|=2;
+			continue;
+		}
+		ret|=2;
+	}
+	return(ret);
+}
+
+static const int bgbcc_tuc52[32]={
+	0x20AC, 0x0081, 0x201A, 0x0192, 0x201E, 0x2026, 0x2020, 0x2021,
+	0x02C6, 0x2030, 0x0160, 0x2039, 0x0152, 0x008D, 0x017D, 0xFFFF,
+	0x0090, 0x2018, 0x2019, 0x201C, 0x201D, 0x2022, 0x2013, 0x2014,
+	0x02DC, 0x2122, 0x0161, 0x203A, 0x0153, 0x009C, 0x017E, 0x0178};
+
+int bgbcc_asc2ucs(int v)
+{
+	if(!(v&0x80))
+		return(v);
+	if(v&0x60)
+		return(v);
+	return(bgbcc_tuc52[v&0x1F]);
+}
+
 void *bgbcc_loadfile_txt(char *name, int *rsz)
 {
 	byte *buf, *buf1, *s, *se, *t;
-	int i, en, sz, sz1;
+	int i, j, k, en, sz, sz1;
 
 	buf=bgbcc_loadfile(name, &sz);
+	buf1=NULL;
 
-	if(buf)
+	if(buf && !bgbcc_loadfile_checkbinary(buf))
 	{
 		/* Attempt Normalization */
 	
 		en=-1;
 		i=BGBCC_GET_U16LE(buf);
+		j=BGBCC_GET_U16LE(buf+2);
+		k=BGBCC_GET_U16LE(buf+4);
 		if(i==0xFEFF)en=0;
 		if(i==0xFFFE)en=1;
 		
+		if(!(i&0xFF00) && !(j&0xFF00) && !(k&0xFF00) &&
+			(i&0x00FF) && (j&0x00FF) && (k&0x00FF))
+				en=2;
+		if(!(i&0x00FF) && !(j&0x00FF) && !(k&0x00FF) &&
+			(i&0xFF00) && (j&0xFF00) && (k&0xFF00))
+				en=3;
+		
 		if(en>=0)
 		{
-			/* File has UTF16 BOM; Convert to UTF8 */
+			/* File has UTF16 BOM or identified as UCS2; Convert to UTF8 */
 
 			buf1=bgbcc_malloc2(sz*2);
 			
-			s=buf+2; se=buf+sz;
+			s=buf+((en&2)?0:2); se=buf+sz;
 			t=buf1;
 			
 			while(s<se)
 			{
-				i=BGBCC_GET_U16EN(s, en);
+				i=BGBCC_GET_U16EN(s+0, (en&1));
+				j=BGBCC_GET_U16EN(s+2, (en&1));
+				if((i=='\r') && (j=='\n'))
+					{ s+=2; continue; }
 				BGBCP_EmitChar((char **)(&t), i);
 				s+=2;
 			}
 			
 			sz1=t-buf1;
-			
-			bgbcc_free(buf);
-			buf=bgbcc_malloc2(sz1);
-			memcpy(buf, buf1, sz1);
-			sz=sz1;
-			bgbcc_free(buf1);
 		}
 		else
 			if((buf[0]==0xEF) && (buf[1]==0xBB) && (buf[2]==0xBF))
@@ -615,9 +718,95 @@ void *bgbcc_loadfile_txt(char *name, int *rsz)
 			s=buf+3; se=buf+sz;
 			t=buf;
 			while(s<se)
-				{ *t++=*s++; }
+			{
+				i=*s++;
+				if((i=='\r') && (s[1]=='\n'))
+					continue;
+				*t++=i;
+			}
+			*t=0;
 			sz=sz-3;
+		}else
+		{
+#if 1
+			i=bgbcc_loadfile_CheckCategory(buf, sz);
+//			printf("category: %s %d\n", name, i);
+			
+			if((i==0) || (i==1))
+			{
+				/* ASCII or UTF-8 */
+				/* Normalize CRLF to LF */
+
+				s=buf; se=buf+sz;
+				t=buf;
+				while(s<se)
+				{
+					if((s[0]=='\r') && (s[1]=='\n'))
+						{ s++; continue; }
+//					i=*s++;
+//					*t++=i;
+					i=BGBCP_ParseChar((char **)(&s));
+//					if(i>0x80)
+//						printf("U%04X\n", i);
+					BGBCP_EmitChar((char **)(&t), i);
+				}
+				*t=0;
+				sz=t-buf;
+			}
+			else if((i==2) || (i==3))
+			{
+				/* Codepage Text */
+
+				buf1=bgbcc_malloc2(sz*2);
+				s=buf; se=buf+sz;
+				t=buf1;
+				while(s<se)
+				{
+					i=*s++;
+					i=bgbcc_asc2ucs(i);
+					BGBCP_EmitChar((char **)(&t), i);
+				}				
+				sz1=t-buf1;
+			}
+			else if((i==4) || (i==5))
+			{
+				/* Non-BMP UTF-8 */
+
+				buf1=bgbcc_malloc2(sz*2);
+				s=buf; se=buf+sz;
+				t=buf1;
+				while(s<se)
+				{
+					if((s[0]=='\r') && (s[1]=='\n'))
+						{ s++; continue; }
+					i=BGBCP_ParseChar((char **)(&s));
+					if(i>0xFFFF)
+					{
+						BGBCP_EmitChar((char **)(&t), 0xD800|((i>>10)&0x3FF));
+						BGBCP_EmitChar((char **)(&t), 0xDC00|((i    )&0x3FF));
+					}else
+					{
+						BGBCP_EmitChar((char **)(&t), i);
+					}
+				}				
+				sz1=t-buf1;
+			}else
+			{
+				/* Probably binary data or similar. */
+				/* Leave as-is */
+			}
+#endif
 		}
+	}
+	
+	if(buf1)
+	{
+		bgbcc_free(buf);
+		buf=bgbcc_malloc2(sz1+4);
+		memcpy(buf, buf1, sz1);
+		buf[sz1]=0;
+		sz=sz1;
+		bgbcc_free(buf1);
 	}
 
 	*rsz=sz;
@@ -800,6 +989,9 @@ BCCX_Node *BGBCC_LoadCSourceAST(char *name)
 	char *s, *buf, *buf1, *buf2, *mod;
 	int i, sz, t0, t1, dt;
 
+	buf=bgbcc_loadfile2(name, &sz);
+
+#if 0
 	buf=bgbcc_loadfile(name, &sz);
 
 	if(!buf)
@@ -826,6 +1018,7 @@ BCCX_Node *BGBCC_LoadCSourceAST(char *name)
 			if(buf)break;
 		}
 	}
+#endif
 
 	if(!buf)
 	{

@@ -250,7 +250,7 @@ Z_Malloc
 			I_Error ("Z_Malloc: failed on allocation of %i bytes", size);
 		}
 
-#if 0
+#if 1
 		if (rover->id && (rover->id != ZONEID))		//BGB
 		{
 			Z_DumpHeap(0, 127);
@@ -488,7 +488,7 @@ Z_ChangeTag2
 
 	other = block->next;
 
-#if 0	//BGB: Debug
+#if 1	//BGB: Debug
 	if ( other->prev != block)
 	{
 		__debugbreak();

@@ -2905,10 +2905,13 @@ int BGBCC_JX2C_EndSetupFrameVRegSpan(
 				
 				if(k>=vsp->nseq)
 				{
-					if(BGBCC_CCXL_IsRegTempP(ctx, vreg))
+//					if(BGBCC_CCXL_IsRegTempP(ctx, vreg))
 //					if(BGBCC_CCXL_IsRegTempP(ctx, vreg) ||
 //						BGBCC_CCXL_IsRegLocalP(ctx, vreg))
 //					if(vsp->flag&BGBCC_RSPFL_LOCAL)
+//						vspb->flag|=BGBCC_RSPFL_NONOVTRACE;
+
+					if(BGBCC_CCXL_IsRegTempP(ctx, vreg))
 						vspb->flag|=BGBCC_RSPFL_NONOVTRACE;
 
 //					vspb->flag|=BGBCC_RSPFL_NONOVTRACE;

@@ -819,7 +819,7 @@ int TKFAT_GetWalkCluster(
 	TKFAT_ImageInfo *img,
 	int clid, int cloffs, bool expand)
 {
-	int i, j, n, o;
+	int i, j, n, o, is_c;
 
 	if(clid<=0)
 	{
@@ -836,7 +836,7 @@ int TKFAT_GetWalkCluster(
 //	printf("TKFAT_GetWalkCluster: clid=%d clofs=%d\n", clid, cloffs);
 
 	i=clid; n=cloffs;
-	o=0;
+	o=0;	is_c=0;
 
 #if 1
 	if((img->walk_clid==clid) &&
@@ -846,6 +846,7 @@ int TKFAT_GetWalkCluster(
 //		n=cloffs-img->walk_clofs;
 		o=img->walk_clofs;
 		n=cloffs-o;
+		is_c=1;
 	}
 #endif
 
@@ -853,16 +854,24 @@ int TKFAT_GetWalkCluster(
 	else if((img->walk2_clid==clid) &&
 		(cloffs>=img->walk2_clofs))
 	{
-		i=img->walk2_clcur;
-		o=img->walk2_clofs;
-		n=cloffs-o;
+		if(!is_c || (o<img->walk2_clofs))
+		{
+			i=img->walk2_clcur;
+			o=img->walk2_clofs;
+			n=cloffs-o;
+			is_c=1;
+		}
 	}
 	else if((img->walk3_clid==clid) &&
 		(cloffs>=img->walk3_clofs))
 	{
-		i=img->walk3_clcur;
-		o=img->walk3_clofs;
-		n=cloffs-o;
+		if(!is_c || (o<img->walk3_clofs))
+		{
+			i=img->walk3_clcur;
+			o=img->walk3_clofs;
+			n=cloffs-o;
+			is_c=1;
+		}
 	}
 #endif
 
@@ -904,6 +913,7 @@ int TKFAT_GetWalkCluster(
 	img->walk3_clid=img->walk2_clid;
 	img->walk3_clofs=img->walk2_clofs;
 	img->walk3_clcur=img->walk2_clcur;
+
 	img->walk2_clid=img->walk_clid;
 	img->walk2_clofs=img->walk_clofs;
 	img->walk2_clcur=img->walk_clcur;
@@ -991,7 +1001,10 @@ int TKFAT_ReadWriteCluster(TKFAT_ImageInfo *img,
 		printf("TKFAT_ReadWriteCluster: Bad CLID %d\n", clid);
 		return(-1);
 	}
-	
+
+	if((clid<=0) || (offs<0))
+		__debugbreak();
+
 	lba=TKFAT_GetClusterLBA(img, clid);
 
 	if(iswrite)
@@ -1033,6 +1046,9 @@ int TKFAT_ReadWriteClusterOffset(TKFAT_ImageInfo *img,
 		__debugbreak();
 	}
 
+	clid1=-1;	offs1=-1;
+	clid2=-1;	offs2=-1;
+
 	/* First, check if access is within a single cluster. */
 	offs2=foffs+(size-1);
 	if((foffs>>img->shclust)==(offs2>>img->shclust))
@@ -1044,6 +1060,8 @@ int TKFAT_ReadWriteClusterOffset(TKFAT_ImageInfo *img,
 			puts("TKFAT_ReadWriteClusterOffset: Fail-1\n");
 			return(i);
 		}
+		if((clid1<0) || (offs1<0))
+			__debugbreak();
 		i=TKFAT_ReadWriteCluster(img,
 			clid1, offs1, iswrite, data, size);
 		return(i);
@@ -1063,6 +1081,11 @@ int TKFAT_ReadWriteClusterOffset(TKFAT_ImageInfo *img,
 		puts("TKFAT_ReadWriteClusterOffset: Fail-2B\n");
 		return(j);
 	}
+
+	if((clid1<0) || (offs1<0))
+		__debugbreak();
+	if((clid2<0) || (offs2<0))
+		__debugbreak();
 	
 	if(clid1<=0)
 	{
@@ -1452,7 +1475,8 @@ int TKFAT_WalkDirEntNext(TKFAT_ImageInfo *img,
 	}
 	
 	h0=-1;
-	h1=-1;
+	h1=-2;
+	lh=-3;
 	
 	bln[0]=0;
 	bln2[0]=0;
@@ -1634,6 +1658,8 @@ int TKFAT_LookupDirEntName(TKFAT_ImageInfo *img,
 	deb=&tdeb;
 	del=(TKFAT_FAT_DirLfnEnt *)(&tdeb);
 	
+	h0=-2; h1=-3;
+	
 	lh=-1;
 	i=tkfat_name2sfn(name, tsn);
 	if(i>=0)
@@ -1666,6 +1692,10 @@ int TKFAT_LookupDirEntName(TKFAT_ImageInfo *img,
 		}
 		return(-1);
 	}
+
+#ifdef TKFAT_NOLFN
+	__debugbreak();
+#endif
 
 #ifndef TKFAT_NOLFN
 	tkfat_name2lfn(name, tln);
@@ -1844,6 +1874,10 @@ int TKFAT_CreateDirEntName(TKFAT_ImageInfo *img,
 		}
 		return(-1);
 	}
+
+#ifdef TKFAT_NOLFN
+	__debugbreak();
+#endif
 
 #ifndef TKFAT_NOLFN
 //	for(i=0; i<258; i++)
@@ -2046,6 +2080,8 @@ u32 TKFAT_GetDirEntCluster(
 	int i, j;
 	i=tkfat_getWord(dee->deb.cluster_lo);
 	j=tkfat_getWord(dee->deb.cluster_hi);
+	if(dee->img->isfat16)
+		j=0;
 	return(i|(j<<16));
 }
 
@@ -2119,6 +2155,10 @@ int TKFAT_ReadWriteDirEntFile(
 			dcli, offs, 1, data, size);
 		return(i);
 	}
+#else
+	if(iswrite)
+		__debugbreak();
+
 #endif
 
 	dcli=TKFAT_GetDirEntCluster(dee);

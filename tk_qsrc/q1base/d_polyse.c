@@ -219,7 +219,13 @@ void D_PolysetDrawFinalVerts (finalvert_t *fv, int numverts)
 //					pix = d_8to16table[pix];
 //					pix= pix - d;
 //					if(pix<0)pix=0x01EF;
+#ifdef _BGBCC
+					d = (fv->v[4] & 0xFC00)-(6<<10);
+//					d = (d-(d>>1))&((s16)0xFC00);
+					pix = __int_clamp(pix - d, 0x0210, 0xFE10);
+#else
 					pix = VID_ColorMap16(pix, fv->v[4]);
+#endif
 
 					j = (d_scantable[fv->v[1]]>>1) + fv->v[0];
 					((u16 *)d_viewbuffer)[j] = pix;
@@ -454,12 +460,19 @@ split:
 		int		pix;
 		
 		*zbuf = z;
-		if(r_pixbytes==2)
-//		if(0)
+//		if(r_pixbytes==2)
+		if(1)
 		{
 //			pix = d_pcolormap[];
 			pix=((u16 *)skintable[new[3]>>16])[new[2]>>16];
+
+#ifdef _BGBCC
+			d = (d_light & 0xFC00)-(6<<10);
+//			d = (d-(d>>1))&((s16)0xFC00);
+			pix = __int_clamp(pix - d, 0x0210, 0xFE10);
+#else
 			pix = VID_ColorMap16(pix, d_light);
+#endif
 //			pix = d_8to16table[pix];
 			((u16 *)d_viewbuffer)[(d_scantable[new[1]]>>1) + new[0]] = pix;
 		}else
@@ -1026,7 +1039,13 @@ void D_PolysetDrawSpans16 (spanpackage_t *pspanpackage)
 //					px = px - d;
 //					if(px<0)px=0x01EF;
 
+#ifdef _BGBCC
+					d = (llight & 0xFC00)-(6<<10);
+//					d = (d-(d>>1))&((s16)0xFC00);
+					px = __int_clamp(px - d, 0x0210, 0xFE10);
+#else
 					px = VID_ColorMap16(px, llight);
+#endif
 
 //					px = ((byte *)acolormap)[*lptex + (llight & 0xFF00)];
 //					px = d_8to16table[px];
@@ -1062,7 +1081,7 @@ void D_PolysetDrawSpans16 (spanpackage_t *pspanpackage)
 
 /*
 ================
-D_PolysetFillSpans8
+D_PolysetFillSpans16
 ================
 */
 void D_PolysetFillSpans16 (spanpackage_t *pspanpackage)

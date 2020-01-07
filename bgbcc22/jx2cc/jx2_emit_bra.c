@@ -395,9 +395,12 @@ int BGBCC_JX2_TryEmitOpLabel(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 //		if(ctx->is_fixed32)
 		if(ctx->is_fixed32 || ctx->op_is_wex2)
 		{
-			rlty=BGBCC_SH_RLC_RELW16_BSR;
+//			rlty=BGBCC_SH_RLC_RELW16_BSR;
+//			opw1=0xF000;
+//			opw2=0x2000;
+			rlty=BGBCC_SH_RLC_RELW20_BJX;
 			opw1=0xF000;
-			opw2=0x2000;
+			opw2=0xC000;
 			break;
 		}
 		rlty=BGBCC_SH_RLC_RELW8_BSR;
@@ -406,9 +409,12 @@ int BGBCC_JX2_TryEmitOpLabel(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 //		if(ctx->is_fixed32)
 		if(ctx->is_fixed32 || ctx->op_is_wex2)
 		{
-			rlty=BGBCC_SH_RLC_RELW16_BSR;
+//			rlty=BGBCC_SH_RLC_RELW16_BSR;
+//			opw1=0xF000;
+//			opw2=0x2100;
+			rlty=BGBCC_SH_RLC_RELW20_BJX;
 			opw1=0xF000;
-			opw2=0x2100;
+			opw2=0xD000;
 			break;
 		}
 		rlty=BGBCC_SH_RLC_RELW8_BSR;
@@ -417,9 +423,12 @@ int BGBCC_JX2_TryEmitOpLabel(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 //		if(ctx->is_fixed32)
 		if(ctx->is_fixed32 || ctx->op_is_wex2)
 		{
-			rlty=BGBCC_SH_RLC_RELW16_BSR;
+//			rlty=BGBCC_SH_RLC_RELW16_BSR;
+//			opw1=0xF000;
+//			opw2=0x2200;
+			rlty=BGBCC_SH_RLC_RELW20_BJX;
 			opw1=0xF000;
-			opw2=0x2200;
+			opw2=0xE000;
 			break;
 		}
 		rlty=BGBCC_SH_RLC_RELW8_BSR;
@@ -428,14 +437,28 @@ int BGBCC_JX2_TryEmitOpLabel(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 //		if(ctx->is_fixed32)
 		if(ctx->is_fixed32 || ctx->op_is_wex2)
 		{
-			rlty=BGBCC_SH_RLC_RELW16_BSR;
+//			rlty=BGBCC_SH_RLC_RELW16_BSR;
+//			opw1=0xF000;
+//			opw2=0x2300;
+			rlty=BGBCC_SH_RLC_RELW20_BJX;
 			opw1=0xF000;
-			opw2=0x2300;
+			opw2=0xF000;
 			break;
 		}
 		rlty=BGBCC_SH_RLC_RELW8_BSR;
 		opw1=0x2300; break;
 
+	case BGBCC_SH_NMID_BRA2B:
+		if(ctx->is_fixed32 || ctx->op_is_wex2)
+			break;
+		rlty=BGBCC_SH_RLC_RELW8_BSR;
+		opw1=0x2000;
+		break;
+	case BGBCC_SH_NMID_BRA4B:
+		rlty=BGBCC_SH_RLC_RELW20_BJX;
+		opw1=0xF000;
+		opw2=0xC000;
+		break;
 	case BGBCC_SH_NMID_BRA8B:
 		if(1)
 		{

@@ -1166,8 +1166,8 @@ F0zz Instruction Block:
 *** F0nm_1e1C  NEG		Rm, Rn				//Rn=(~Rn)+1
 *** F0nm_1e2C ? CLZ{Q}	Rm, Rn				//(CLZ) Count Leading Zeroes
 *** F0nm_1e3C -
-*** F0nm_1g4C  MULS.W	Rm, Rn				//(DHR,DLR)=Rm*Rn (Sx 16*16=>32)
-*** F0nm_1G4C  MULU.W	Rm, Rn				//(DHR,DLR)=Rm*Rn (Zx 16*16=>32)
+*** F0nm_1g4C / MULS.W	Rm, Rn				//(DHR,DLR)=Rm*Rn (Sx 16*16=>32)
+*** F0nm_1G4C / MULU.W	Rm, Rn				//(DHR,DLR)=Rm*Rn (Zx 16*16=>32)
 *** F0nm_1g5C  EXTS.L	Rm, Rn				//Q=0
 *** F0nm_1G5C  EXTU.L	Rm, Rn				//Q=1
 *** F0nm_1e6C  SHAD{Q}	Rm, Rn				//Barrel Shift, Arithmetic
@@ -1297,10 +1297,10 @@ F0zz Instruction Block:
 * F0zz_5zzz
 ** F0nm_5go0  CSELT		Rm, Ro, Rn			//Rn=SR.T?Rm:Ro
 ** F0nm_5Go0  PCSELT.L	Rm, Ro, Rn			//(GSV) Packed CSELT (DWord)
-** F0nm_5eo1  -
-** F0nm_5eo2  -
-** F0nm_5go2  MULS.L	Rm, Ro, Rn			//(MULL) Sx 32b Mul (32*32->64)
-** F0nm_5go3  MULU.L	Rm, Ro, Rn			//(MULL) Zx 32b Mul (32*32->64)
+** F0nm_5go1 ? PMULS.W	Rm, Ro, Rn			//(GSV) Packed Multiply (2x16->2x32)
+** F0nm_5Go1 ? PMULU.W	Rm, Ro, Rn			//(GSV) Packed Multiply (2x16->2x32)
+** F0nm_5go2  DMULS.L	Rm, Ro, Rn			//(MULL) Sx 32b Mul (32*32->64)
+** F0nm_5go3  DMULU.L	Rm, Ro, Rn			//(MULL) Zx 32b Mul (32*32->64)
 
 ** F0nm_5eo4  SHAD{Q}	Rm, Ro, Rn
 ** F0nm_5eo5  SHLD{Q}	Rm, Ro, Rn
@@ -1332,6 +1332,9 @@ F0zz Instruction Block:
 * F0dd_Dddd  BSR	(PC, disp20s)		//Call, +/- 1MB
 * F0dd_Eddd  BT		(PC, disp20s)		//Branch True, +/- 1MB
 * F0dd_Fddd  BF		(PC, disp20s)		//Branch False, +/- 1MB
+
+Branch ops may only exist in lane 1.
+The encoding space for branch will be reused as a Jumbo Prefix in other lanes.
 
 
 ==== F1zz Instruction Block ====
@@ -1739,40 +1742,3 @@ In Profile 2, only single-port ops may be used in Lane 3 if the op in Lane 1 use
 Note that in these scenarios, register values may "alias" in an implementation specific manner.
 
 
-=== Jumbo Instructions (Optional / Experimental) ===
-
-Jumbo Instructions will be large instructions (64 or 96 bits), composed of multiple conjoined instruction words.
-Jumbo instructions will begin with F4zz_Czzz .. F4zz_Fzzz, which will serve as a "jumbo prefix".
-The following 32-bit instructions will be considered part of the same logical instruction.
-The final instruction in the sequence will encode the operation.
-
-If the instruction following the prefix is a WEX form, the instruction will be 96 bits, otherwise it will be 64.
-All instruction words in the sequence will be required to be 32-bit encodings.
-
-Jumbo64 forms of F1, F2, or F8 block instructions will match their 32-bit counterparts, but with the immediate field expanded.
-F1 and F2 block Imm9/Disp9 will have a 31 bit immediate, whereas Imm10 forms will expand to 32 bits.
-
-F1 block immediates will be expanded to being 31-bit sign-extended.
-* The disp8s instructions will become disp30s.
-
-F2 block immediates will be expanded, but retain the zero or one extension from the base instruction.
-
-
-==== JLDI (Jumbo Load) ====
-
-Jumbo Load is an "instruction" which loads a 64-bit constant all at once.
-
-Basic Encoding:
-* F4jj_Cjjj-F2n0_Cfjj            LDIZ	#imm32u, Rn
-* F4jj_Cjjj-F2n1_Cfjj            LDIN	#imm32n, Rn
-* F4zz_Czzz-F4yy_Cyyy-FAxx_xxxx  JLDI	#imm64, Rn
-
-
-The immediate fields for JLDI will be interpreted as a 64-bit value:
-* zzzz_zyyy_yyxx_xxxx
-* Or, essentially, the three immedite fields glued together.
-
-The opcode bits will be used to encode the destination register:
-* 11nn (bits 3:2), 11nn (bits 1:0), 101n (bit 4)
-
-JLDI will not need one or zero extension given the immediate fills an entire 64-bit register.

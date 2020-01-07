@@ -1725,19 +1725,62 @@ int BGBPP_Expand(BGBCP_ParseState *ctx,
 	return(1);
 }
 
+static char *bgbpp_lbuf=NULL;
+static char *bgbpp_lbufe;
+
+int BGBPP_CheckExpandLBuf(int sz, char **rt)
+{
+	char *t;
+	int i, j, ret;
+	
+	if(!bgbpp_lbuf)
+	{
+		bgbpp_lbuf=malloc(16384);
+		bgbpp_lbufe=bgbpp_lbuf+16384;
+	}
+	
+	if(!sz)
+		return(0);
+
+	ret=0;
+	t=bgbpp_lbuf;
+	if(rt)t=*rt;
+
+	if((t+(sz+16))>=bgbpp_lbufe)
+	{
+		i=bgbpp_lbufe-bgbpp_lbuf;
+		j=t-bgbpp_lbuf;
+		while((j+(sz+16))>=i)
+			i=i+(i>>1);
+		bgbpp_lbuf=realloc(bgbpp_lbuf, i);
+		bgbpp_lbufe=bgbpp_lbuf+i;
+//		te=bgbpp_lbufe;
+		t=bgbpp_lbuf+j;
+		ret=1;
+	}
+
+	if(rt)*rt=t;
+	return(ret);
+}
+
+
 int BGBPP_Line(BGBCP_ParseState *ctx, char *str)
 {
-	static char lbuf[1<<20];
+//	static char lbuf[1<<20];
 //	char lbuf[16384];
 //	char lbuf[65536];
 	char b[4096], b2[4096];
-	char *s, *t, *t1, *te;
+	char *s, *t, *t1, *te, *t1e;
 	int i, ty, ty2, ni;
+
+	BGBPP_CheckExpandLBuf(0, NULL);
 
 	BGBCP_FlushToken(str);
 
 	ni=0;
-	s=str; t=lbuf; te=lbuf+((1<<20)-4096);
+	s=str; t=bgbpp_lbuf;
+//	te=bgbpp_lbuf+((1<<20)-4096);
+	te=bgbpp_lbufe;
 	while(*s)
 	{
 		s=BGBCP_TokenCtx(ctx, s, b, &ty);
@@ -1749,8 +1792,8 @@ int BGBPP_Line(BGBCP_ParseState *ctx, char *str)
 		{
 			if(ty==BTK_NAME)
 			{
-				t1=t+1;
-				i=BGBPP_Expand(ctx, &s, &t1, b, te);
+				t1=t+1;	t1e=t1+2044;
+				i=BGBPP_Expand(ctx, &s, &t1, b, t1e);
 				if(i>0) { strcpy(b, t+1); ni++; }
 			}
 
@@ -1760,8 +1803,8 @@ int BGBPP_Line(BGBCP_ParseState *ctx, char *str)
 
 			if(ty2==BTK_NAME)
 			{
-				t1=t+1;
-				i=BGBPP_Expand(ctx, &s, &t1, b2, te);
+				t1=t+1;	t1e=t1+2044;
+				i=BGBPP_Expand(ctx, &s, &t1, b2, t1e);
 				if(i>0) { strcpy(b2, t+1); ni++; }
 			}
 
@@ -1770,11 +1813,14 @@ int BGBPP_Line(BGBCP_ParseState *ctx, char *str)
 			*t=0;
 			strcat(b, b2);
 			
-			if((t+strlen(b)+16)>=te)
-			{
-				BGBPP_Error(ctx, "BGBPP_Line: Buffer Overflow\n");
-				return(-1);
-			}
+//			if((t+strlen(b)+16)>=te)
+//			{
+//				BGBPP_Error(ctx, "BGBPP_Line: Buffer Overflow\n");
+//				return(-1);
+//			}
+
+			BGBPP_CheckExpandLBuf(strlen(b), &t);
+			te=bgbpp_lbufe;
 			
 			if((ty==BTK_STRING)||(ty2==BTK_STRING))
 			{
@@ -1793,11 +1839,15 @@ int BGBPP_Line(BGBCP_ParseState *ctx, char *str)
 			continue;
 		}
 
-		if((t+strlen(b)+16)>=te)
-		{
-			BGBPP_Error(ctx, "BGBPP_Line: Buffer Overflow\n");
-			return(-1);
-		}
+//		if((t+strlen(b)+16)>=te)
+//		{
+//			BGBPP_Error(ctx, "BGBPP_Line: Buffer Overflow\n");
+//			return(-1);
+//		}
+
+//		BGBPP_CheckExpandLBuf(strlen(b), &t);
+		BGBPP_CheckExpandLBuf(8192, &t);
+		te=bgbpp_lbufe;
 
 		if(ty==BTK_NAME)
 		{
@@ -1901,23 +1951,25 @@ int BGBPP_Line(BGBCP_ParseState *ctx, char *str)
 	BGBCP_FlushToken(str);
 
 	memset(str, 0, 256);
-	strcpy(str, lbuf);
+	strcpy(str, bgbpp_lbuf);
 	return(ni);
 }
 
 int BGBPP_LineDigraph(BGBCP_ParseState *ctx, char *str)
 {
 //	char lbuf[16384], b[4096];
-	static char lbuf[1<<20];
+//	static char lbuf[1<<20];
 	char b[4096];
 	char *s, *t;
-	int i, ty;
+	int i, j, ty, l;
 
 	//limit digraphs to C/C++
 	if((ctx->lang!=BGBCC_LANG_C) && (ctx->lang!=BGBCC_LANG_CPP))
 		return(0);
 
-	s=str; t=lbuf;
+	BGBPP_CheckExpandLBuf(0, NULL);
+
+	s=str; t=bgbpp_lbuf;
 	while(*s)
 	{
 		s=BGBCP_TokenCtx(ctx, s, b, &ty);
@@ -1943,11 +1995,27 @@ int BGBPP_LineDigraph(BGBCP_ParseState *ctx, char *str)
 #endif
 		}
 
+#if 0
+		l=strlen(b);
+		if((t+(l+16))>bgbpp_lbufe)
+		{
+			i=bgbpp_lbufe-bgbpp_lbuf;
+			j=t-bgbpp_lbuf;
+			while((j+(l+16))>=i)
+				i=i+(i>>1);
+			bgbpp_lbuf=realloc(bgbpp_lbuf, i);
+			bgbpp_lbufe=lbuf+i;
+			t=lbuf+j;
+		}
+#endif
+
+		BGBPP_CheckExpandLBuf(strlen(b), &t);
+
 		t=BGBPP_PrintToken(t, b, ty);
 	}
 	*t=0;
 
-	strcpy(str, lbuf);
+	strcpy(str, bgbpp_lbuf);
 	return(0);
 }
 
@@ -2416,7 +2484,8 @@ int BGBPP_Buffer(BGBCP_ParseState *ctx, char *ibuf)
 
 int BGBPP_Filter(BGBCP_ParseState *ctx, char *ibuf, char *obuf, int osz)
 {
-	char tb[4096];
+//	char tb[4096];
+	char tb[512];
 	char *s, *t;
 	int i;
 

@@ -181,7 +181,19 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 			{
 				op->nmid=BJX2_NMID_LDIQ;
 				op->Run=BJX2_Op_MOV_ImmHiReg;
+				
+				if(jbits)
+				{
+					op->imm=imm10u;
+				}
+			}else
+				if(jbits)
+			{
+				op->nmid=BJX2_NMID_LDIL;
+				op->Run=BJX2_Op_MOV_ImmMidReg;
+				op->imm=imm10u;
 			}
+
 			break;
 
 		case 0x4:

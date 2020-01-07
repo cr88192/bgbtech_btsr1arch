@@ -556,6 +556,11 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_SHAD:		s0="SHAD";		break;
 	case BJX2_NMID_SHLD:		s0="SHLD";		break;
 
+	case BJX2_NMID_MULSL:		s0="DMULS.L";	break;
+	case BJX2_NMID_MULUL:		s0="DMULU.L";	break;
+	case BJX2_NMID_MULSW:		s0="DMULS.W";	break;
+	case BJX2_NMID_MULUW:		s0="DMULU.W";	break;
+
 	case BJX2_NMID_WEXMD:		s0="WEXMD";		break;
 	case BJX2_NMID_SYSCALL:		s0="SYSCALL";	break;
 
@@ -609,6 +614,7 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_MOVDL:		s0="MOVD.L";	break;
 	case BJX2_NMID_LDI:			s0="LDI";		break;
 	case BJX2_NMID_JLDI:		s0="JLDI";		break;
+	case BJX2_NMID_LDIQ:		s0="LDIQ";		break;
 
 	case BJX2_NMID_MOVX2:		s0="MOV.X";		break;
 	case BJX2_NMID_PUSHX2:		s0="PUSH.X";	break;

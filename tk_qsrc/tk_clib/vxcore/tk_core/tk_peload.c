@@ -86,6 +86,61 @@ byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz)
 	return(ct);
 }
 
+u32 TKPE_CalculateImagePel4Checksum(byte *buf, int size)
+{
+	byte *cs, *cse;
+//	u64 acc;
+	u32 acc_lo, acc_hi;
+	u32 csum;
+	
+	cs=buf;
+	cse=cs+size;
+	acc_lo=1;
+	acc_hi=0;
+	while(cs<cse)
+	{
+		acc_lo=acc_lo+(*cs++);
+		if(acc_lo>=65521)
+			acc_lo-=65521;
+		acc_hi=acc_hi+acc_lo;
+		if(acc_hi>=65521)
+			acc_hi-=65521;
+	}
+	csum=acc_lo|(acc_hi<<16);
+//	csum+=size;
+	return(csum);
+}
+
+u32 TKPE_CalculateImagePel4BChecksum(byte *buf, int size)
+{
+	byte *cs, *cse;
+	u32 v;
+	u64 acc_lo, acc_hi;
+	u32 csum;
+	
+	cs=buf;
+	cse=cs+size;
+	acc_lo=1;
+	acc_hi=0;
+	while(cs<cse)
+	{
+		v=*(u32 *)cs;
+		acc_lo=acc_lo+v;
+		acc_lo=((u32)acc_lo)+(acc_lo>>32);
+
+		acc_hi=acc_hi+acc_lo;
+		acc_hi=((u32)acc_hi)+(acc_hi>>32);
+		cs+=4;
+	}
+	acc_lo=((u32)acc_lo)+(acc_lo>>32);
+	acc_lo=((u32)acc_lo)+(acc_lo>>32);
+	acc_hi=((u32)acc_hi)+(acc_hi>>32);
+	acc_hi=((u32)acc_hi)+(acc_hi>>32);
+	csum=(u32)(acc_lo^acc_hi);
+//	csum+=size;
+	return(csum);
+}
+
 int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 {
 	byte tbuf[1024];
@@ -93,9 +148,10 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 	u64 imgbase;
 	u32 imgsz, startrva, gbr_rva;
 	byte is64, is_pel4;
+	u32 csum1, csum2;
 	int sig_mz, sig_pe, mach, mmagic;
 	int ofs_pe;
-	int cb, nb;
+	int cb, nb, kb;
 	int i, l;
 	
 	tk_fseek(fd, 0, 0);
@@ -203,7 +259,9 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 		l=1024;
 		while((ct+1024)<=cte)
 		{
-			printf("%d/%dkB\r", cb, nb);
+			kb=(ct-imgptr)>>10;
+//			printf("%d/%dkB\r", cb, nb);
+			printf("%d/%dkB\r", kb, nb);
 //			tk_fread(ct, 1, 1024, fd);
 //			ct+=1024;
 			l=tk_fread(tbuf, 1, 1024, fd);
@@ -214,7 +272,9 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 //			ct+=1024;
 			cb++;
 		}
-		printf("%d/%dkB\r", cb, nb);
+		kb=(ct-imgptr)>>10;
+//		printf("%d/%dkB\r", cb, nb);
+		printf("%d/%dkB\r", kb, nb);
 		if(l>=1024)
 		{
 //			tk_fread(ct, 1, cte-ct, fd);
@@ -224,7 +284,29 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 		printf("\n");
 #endif
 	}
+
+	if(is_pel4)
+	{
+		if(ct!=cte)
+		{
+			printf("Image Size Mismatch %08X -> %08X\n",
+				cte-imgptr, ct-imgptr);
+			__debugbreak();
+		}
 	
+		csum1=*(u32 *)(imgptr+ofs_pe+0x58);
+		*(u16 *)(imgptr+ofs_pe+0x02)=0;		
+		*(u32 *)(imgptr+ofs_pe+0x58)=0;
+		
+//		csum2=TKPE_CalculateImagePel4Checksum(imgptr, imgsz);
+		csum2=TKPE_CalculateImagePel4BChecksum(imgptr, imgsz);
+		if(csum1 && (csum1!=csum2))
+		{
+			printf("Image Checksum Mismatch %08X -> %08X\n", csum1, csum2);
+			__debugbreak();
+		}
+	}
+
 	*rbootptr=imgptr+startrva;
 	*rbootgbr=imgptr+gbr_rva;
 #endif

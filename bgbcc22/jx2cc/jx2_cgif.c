@@ -111,6 +111,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "wexj"))
 	{
+#if 1
 //		shctx->use_wexmd=2;
 		shctx->has_jumbo=1;
 
@@ -118,6 +119,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		{
 			shctx->has_pushx2=1;
 		}
+#endif
 	}
 
 //	ctx->arch_has_predops=0;

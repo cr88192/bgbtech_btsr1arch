@@ -117,8 +117,11 @@ reg[15:0]	tPwmValR;
 reg[15:0]	tPwmNextValL;
 reg[15:0]	tPwmNextValR;
 
-reg[15:0]	tPwmAddValL;
-reg[15:0]	tPwmAddValR;
+reg[15:0]	tPcmAddValL;
+reg[15:0]	tPcmAddValR;
+
+reg[15:0]	tPcmAddVal2L;
+reg[15:0]	tPcmAddVal2R;
 
 reg[15:0]	tPcmValL;
 reg[15:0]	tPcmValR;
@@ -294,9 +297,13 @@ begin
 //		{ 1'b1,  tSamp11a } :
 //		{ 1'b0, ~tSamp11a };
 
+//	tSamp12b = (tSamp8b[7]) ?
+//		{ 1'b0,  tSamp11a } :
+//		{ 1'b1, ~tSamp11a };
+
 	tSamp12b = (tSamp8b[7]) ?
-		{ 1'b0,  tSamp11a } :
-		{ 1'b1, ~tSamp11a };
+		{ ~tSamp11a, ~tSamp11a[10] } :
+		{  tSamp11a,  tSamp11a[10] };
 	
 //	tSamp12c = tUse16b ?
 //		{ tSamp16b[15]^tUseCompand, tSamp16b[14:4] } :
@@ -330,33 +337,46 @@ begin
 //	tPwmNextValL	= tPcmNextValL + { auxPcmL, 7'h0, timerNoise };
 //	tPwmNextValR	= tPcmNextValR + { auxPcmR, 7'h0, timerNoise };
 
+`ifdef def_true
+	tPcmAddValL = 
+		{ tPcmValL[15] ? 4'b1111 : 4'b0000, tPcmValL[15:4] } +
+		{ tAuxPcmL[ 7] ? 4'b1111 : 4'b0000, tAuxPcmL, 3'h0, timerNoise };
+	tPcmAddValR =
+		{ tPcmValR[15] ? 4'b1111 : 4'b0000, tPcmValR[15:4] } +
+		{ tAuxPcmR[ 7] ? 4'b1111 : 4'b0000, tAuxPcmR, 3'h0, timerNoise };
+`endif
+
 `ifndef def_true
-	tPwmAddValL = 
+	tPcmAddValL = 
 		{ tPcmValL[15] ? 2'b11 : 2'b00, tPcmValL[15:2] } +
 		{ tAuxPcmL[ 7] ? 2'b11 : 2'b00, tAuxPcmL, 5'h0, timerNoise };
-	tPwmAddValR =
+	tPcmAddValR =
 		{ tPcmValR[15] ? 2'b11 : 2'b00, tPcmValR[15:2] } +
 		{ tAuxPcmR[ 7] ? 2'b11 : 2'b00, tAuxPcmR, 5'h0, timerNoise };
-	tPwmNextValL = tPwmAddValL;
-	tPwmNextValR = tPwmAddValR;
-`endif
-
-`ifdef def_true
-	tPwmAddValL = 
-		{ tPcmValL[15], tPcmValL[15:1] } +
-		{ tAuxPcmL[ 7], tAuxPcmL[7:0], 6'h0, timerNoise };
-	tPwmAddValR =
-		{ tPcmValR[15], tPcmValR[15:1] } +
-		{ tAuxPcmR[ 7], tAuxPcmR[7:0], 6'h0, timerNoise };
-	tPwmNextValL = tPwmAddValL;
-	tPwmNextValR = tPwmAddValR;
+//	tPwmNextValL = tPwmAddValL;
+//	tPwmNextValR = tPwmAddValR;
 `endif
 
 `ifndef def_true
-	{ tPcmCarryL, tPwmAddValL }	= 
-		{ 1'b0, tPcmValL } + { 1'b0, tAuxPcmL, 7'h0, timerNoise };
-	{ tPcmCarryR, tPwmAddValR }	=
-		{ 1'b0, tPcmValR } + { 1'b0, tAuxPcmR, 7'h0, timerNoise };
+	tPcmAddValL = 
+		{ tPcmValL[15], tPcmValL[15:1] } +
+		{ tAuxPcmL[ 7], tAuxPcmL[7:0], 6'h0, timerNoise };
+	tPcmAddValR =
+		{ tPcmValR[15], tPcmValR[15:1] } +
+		{ tAuxPcmR[ 7], tAuxPcmR[7:0], 6'h0, timerNoise };
+`endif
+
+//	tPwmNextValL = tPcmAddValL;
+//	tPwmNextValR = tPcmAddValR;
+
+	tPwmNextValL = {~tPcmAddVal2L[15], tPcmAddVal2L[15:0]};
+	tPwmNextValR = {~tPcmAddVal2R[15], tPcmAddVal2R[15:0]};
+
+`ifndef def_true
+//	{ tPcmCarryL, tPwmAddValL }	= 
+//		{ 1'b0, tPcmValL } + { 1'b0, tAuxPcmL, 7'h0, timerNoise };
+//	{ tPcmCarryR, tPwmAddValR }	=
+//		{ 1'b0, tPcmValR } + { 1'b0, tAuxPcmR, 7'h0, timerNoise };
 
 	case({tPwmAddValL[15], tPcmValL[15], tAuxPcmL[7]})
 		3'b000: tPwmNextValL = tPwmAddValL;
@@ -405,16 +425,19 @@ begin
 
 	tPcmValL	<= tPcmNextValL;
 	tPcmValR	<= tPcmNextValR;
+	
+	tPcmAddVal2L	<= tPcmAddValL;
+	tPcmAddVal2R	<= tPcmAddValR;
 
 	tAuxPcmL	<= auxPcmL;
 	tAuxPcmR	<= auxPcmR;
 //	tAuxPcmL	<= { ~auxPcmL[7], auxPcmL[6:0] };
 //	tAuxPcmR	<= { ~auxPcmR[7], auxPcmR[6:0] };
 
-//	tPwmValL	<= tPwmNextValL;
-//	tPwmValR	<= tPwmNextValR;
-	tPwmValL	<= { ~tPwmNextValL[15], tPwmNextValL[14:0] };
-	tPwmValR	<= { ~tPwmNextValR[15], tPwmNextValR[14:0] };
+	tPwmValL	<= tPwmNextValL;
+	tPwmValR	<= tPwmNextValR;
+//	tPwmValL	<= { ~tPwmNextValL[15], tPwmNextValL[14:0] };
+//	tPwmValR	<= { ~tPwmNextValR[15], tPwmNextValR[14:0] };
 
 	tClkDivCnt	<= tNxtClkDivCnt;
 	tClkDivRst	<= tNxtClkDivRst;

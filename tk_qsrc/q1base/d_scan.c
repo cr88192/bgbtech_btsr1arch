@@ -34,6 +34,11 @@ int				r_turb_spancount;
 void D_DrawTurbulent8Span (void);
 
 
+int D_SoftDivB(int a, int b);
+
+float __fpu_fdiv_sf(float x, float y);
+float __fpu_frcp_sf(float x);
+
 /*
 =============
 D_WarpScreen
@@ -226,7 +231,8 @@ void Turbulent8 (espan_t *pspan)
 		sdivz = d_sdivzorigin + dv*d_sdivzstepv + du*d_sdivzstepu;
 		tdivz = d_tdivzorigin + dv*d_tdivzstepv + du*d_tdivzstepu;
 		zi = d_ziorigin + dv*d_zistepv + du*d_zistepu;
-		z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
+//		z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
+		z = __fpu_fdiv_sf(65536.0, zi);
 
 		r_turb_s = (int)(sdivz * z) + sadjust;
 		if (r_turb_s > bbextents)
@@ -257,7 +263,8 @@ void Turbulent8 (espan_t *pspan)
 				sdivz += sdivz16stepu;
 				tdivz += tdivz16stepu;
 				zi += zi16stepu;
-				z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
+//				z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
+				z = __fpu_fdiv_sf(65536.0, zi);
 
 				snext = (int)(sdivz * z) + sadjust;
 				if (snext > bbextents)
@@ -286,7 +293,8 @@ void Turbulent8 (espan_t *pspan)
 				sdivz += d_sdivzstepu * spancountminus1;
 				tdivz += d_tdivzstepu * spancountminus1;
 				zi += d_zistepu * spancountminus1;
-				z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
+//				z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
+				z = __fpu_fdiv_sf(65536.0, zi);
 				snext = (int)(sdivz * z) + sadjust;
 				if (snext > bbextents)
 					snext = bbextents;
@@ -306,9 +314,9 @@ void Turbulent8 (espan_t *pspan)
 //					r_turb_sstep = (snext - r_turb_s) / (r_turb_spancount - 1);
 //					r_turb_tstep = (tnext - r_turb_t) / (r_turb_spancount - 1);
 
-					r_turb_sstep = D_SoftDiv((snext - r_turb_s),
+					r_turb_sstep = D_SoftDivB((snext - r_turb_s),
 						(r_turb_spancount - 1));
-					r_turb_tstep = D_SoftDiv((tnext - r_turb_t),
+					r_turb_tstep = D_SoftDivB((tnext - r_turb_t),
 						(r_turb_spancount - 1));
 				}
 			}
@@ -365,7 +373,8 @@ void Turbulent16 (espan_t *pspan)
 		sdivz = d_sdivzorigin + dv*d_sdivzstepv + du*d_sdivzstepu;
 		tdivz = d_tdivzorigin + dv*d_tdivzstepv + du*d_tdivzstepu;
 		zi = d_ziorigin + dv*d_zistepv + du*d_zistepu;
-		z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
+//		z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
+		z = __fpu_fdiv_sf(65536.0, zi);
 
 		r_turb_s = (int)(sdivz * z) + sadjust;
 		if (r_turb_s > bbextents)
@@ -396,7 +405,8 @@ void Turbulent16 (espan_t *pspan)
 				sdivz += sdivz16stepu;
 				tdivz += tdivz16stepu;
 				zi += zi16stepu;
-				z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
+//				z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
+				z = __fpu_fdiv_sf(65536.0, zi);
 
 				snext = (int)(sdivz * z) + sadjust;
 				if (snext > bbextents)
@@ -425,7 +435,8 @@ void Turbulent16 (espan_t *pspan)
 				sdivz += d_sdivzstepu * spancountminus1;
 				tdivz += d_tdivzstepu * spancountminus1;
 				zi += d_zistepu * spancountminus1;
-				z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
+//				z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
+				z = __fpu_fdiv_sf(65536.0, zi);
 				snext = (int)(sdivz * z) + sadjust;
 				if (snext > bbextents)
 					snext = bbextents;
@@ -445,9 +456,9 @@ void Turbulent16 (espan_t *pspan)
 //					r_turb_sstep = (snext - r_turb_s) / (r_turb_spancount - 1);
 //					r_turb_tstep = (tnext - r_turb_t) / (r_turb_spancount - 1);
 
-					r_turb_sstep = D_SoftDiv((snext - r_turb_s),
+					r_turb_sstep = D_SoftDivB((snext - r_turb_s),
 						(r_turb_spancount - 1));
-					r_turb_tstep = D_SoftDiv((tnext - r_turb_t),
+					r_turb_tstep = D_SoftDivB((tnext - r_turb_t),
 						(r_turb_spancount - 1));
 				}
 			}
@@ -505,7 +516,8 @@ void D_DrawSpans8 (espan_t *pspan)
 		sdivz = d_sdivzorigin + dv*d_sdivzstepv + du*d_sdivzstepu;
 		tdivz = d_tdivzorigin + dv*d_tdivzstepv + du*d_tdivzstepu;
 		zi = d_ziorigin + dv*d_zistepv + du*d_zistepu;
-		z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
+//		z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
+		z = __fpu_fdiv_sf(65536.0, zi);
 
 		s = (int)(sdivz * z) + sadjust;
 		if (s > bbextents)
@@ -536,7 +548,8 @@ void D_DrawSpans8 (espan_t *pspan)
 				sdivz += sdivz8stepu;
 				tdivz += tdivz8stepu;
 				zi += zi8stepu;
-				z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
+//				z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
+				z = __fpu_fdiv_sf(65536.0, zi);
 
 				snext = (int)(sdivz * z) + sadjust;
 				if (snext > bbextents)
@@ -565,7 +578,8 @@ void D_DrawSpans8 (espan_t *pspan)
 				sdivz += d_sdivzstepu * spancountminus1;
 				tdivz += d_tdivzstepu * spancountminus1;
 				zi += d_zistepu * spancountminus1;
-				z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
+//				z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
+				z = __fpu_fdiv_sf(65536.0, zi);
 				snext = (int)(sdivz * z) + sadjust;
 				if (snext > bbextents)
 					snext = bbextents;
@@ -585,8 +599,8 @@ void D_DrawSpans8 (espan_t *pspan)
 //					sstep = (snext - s) / (spancount - 1);
 //					tstep = (tnext - t) / (spancount - 1);
 
-					sstep = D_SoftDiv((snext - s), (spancount - 1));
-					tstep = D_SoftDiv((tnext - t), (spancount - 1));
+					sstep = D_SoftDivB((snext - s), (spancount - 1));
+					tstep = D_SoftDivB((tnext - t), (spancount - 1));
 				}
 			}
 
@@ -604,9 +618,6 @@ void D_DrawSpans8 (espan_t *pspan)
 
 	} while ((pspan = pspan->pnext) != NULL);
 }
-
-float __fpu_fdiv_sf(float x, float y);
-float __fpu_frcp_sf(float x);
 
 /*
 =============
@@ -670,7 +681,8 @@ void D_DrawSpans16 (espan_t *pspan)
 		zi = d_ziorigin + dv*d_zistepv + du*d_zistepu;
 //		z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
 //		z = 65536.0 / zi;	// prescale to 16.16 fixed-point
-		z = __fpu_frcp_sf(zi) * 65536.0;
+//		z = __fpu_frcp_sf(zi) * 65536.0;
+		z = __fpu_fdiv_sf(65536.0, zi);
 
 //		tk_printf("zio=%f %f %f\n", d_ziorigin, d_zistepv, d_zistepu);
 
@@ -761,8 +773,8 @@ void D_DrawSpans16 (espan_t *pspan)
 //					sstep = (snext - s) / (spancount - 1);
 //					tstep = (tnext - t) / (spancount - 1);
 
-					sstep = D_SoftDiv((snext - s), (spancount - 1));
-					tstep = D_SoftDiv((tnext - t), (spancount - 1));
+					sstep = D_SoftDivB((snext - s), (spancount - 1));
+					tstep = D_SoftDivB((tnext - t), (spancount - 1));
 				}
 			}
 
@@ -843,239 +855,6 @@ void D_DrawSpans16 (espan_t *pspan)
 	} while ((pspan = pspan->pnext) != NULL);
 }
 #endif
-
-
-#if 0
-
-unsigned short		*d_pbase;
-unsigned short		*d_pdest;
-float			d_sdivz8stepu, d_tdivz8stepu, d_zi8stepu;
-int				d_count;
-fixed16_t		d_sstep, d_tstep;
-float		d_sdivz, d_tdivz;
-float		d_zi;
-fixed16_t	d_s, d_t;
-// float	d_du, d_dv;
-
-//	register int		px;
-//	fixed16_t		snext, tnext;
-//	register fixed16_t		s, t, sstep, tstep;
-//	register int			t_cachewidth;
-//	float			sdivz, tdivz, zi, z, du, dv, spancountminus1;
-
-void D_DrawSpans16_Inner ()
-{
-	unsigned short		*pbase;
-	unsigned short		*pdest;
-	float			sdivz8stepu, tdivz8stepu, zi8stepu;
-	int				count;
-	fixed16_t		sstep, tstep;
-	float		sdivz, tdivz;
-	float		zi;
-	fixed16_t	s, t;
-
-	int			spancount;
-	int			px;
-	fixed16_t	snext, tnext;
-	int			t_cachewidth;
-	float		z, spancountminus1;
-
-
-	sdivz8stepu		= d_sdivz8stepu;
-	tdivz8stepu		= d_tdivz8stepu;
-	zi8stepu		= d_zi8stepu;
-
-	pbase	= d_pbase;
-	pdest	= d_pdest;
-	count	= d_count;
-	sstep	= d_sstep;
-	tstep	= d_tstep;
-	sdivz	= d_sdivz;
-	tdivz	= d_tdivz;
-	zi		= d_zi;
-//	z		= d_z;
-	s		= d_s;
-	t		= d_t;
-
-#if 1
-	z = __fpu_frcp_sf(zi) * 65536.0;
-
-	s = (int)(sdivz * z) + sadjust;
-		if (s > bbextents)
-			s = bbextents;
-		else if (s < 0)
-			s = 0;
-
-		t = (int)(tdivz * z) + tadjust;
-		if (t > bbextentt)
-			t = bbextentt;
-		else if (t < 0)
-			t = 0;
-#endif
-
-	t_cachewidth = cachewidth;
-
-	do
-	{
-		if (count >= 8)
-			spancount = 8;
-		else
-			spancount = count;
-
-		count -= spancount;
-
-		if (count)
-		{
-			sdivz += sdivz8stepu;
-			tdivz += tdivz8stepu;
-			zi += zi8stepu;
-			z = __fpu_frcp_sf(zi) * 65536.0;
-
-			snext = (int)(sdivz * z) + sadjust;
-			if (snext > bbextents)
-				snext = bbextents;
-			else if (snext < 8)
-				snext = 8;
-			tnext = (int)(tdivz * z) + tadjust;
-			if (tnext > bbextentt)
-				tnext = bbextentt;
-			else if (tnext < 8)
-				tnext = 8;
-			sstep = (snext - s) >> 3;
-			tstep = (tnext - t) >> 3;
-		}
-		else
-		{
-			spancountminus1 = (float)(spancount - 1);
-			sdivz += d_sdivzstepu * spancountminus1;
-			tdivz += d_tdivzstepu * spancountminus1;
-			zi += d_zistepu * spancountminus1;
-			z = __fpu_frcp_sf(zi) * 65536.0;
-
-			snext = (int)(sdivz * z) + sadjust;
-			if (snext > bbextents)
-				snext = bbextents;
-			else if (snext < 8)
-				snext = 8;
-			tnext = (int)(tdivz * z) + tadjust;
-			if (tnext > bbextentt)
-				tnext = bbextentt;
-			else if (tnext < 8)
-				tnext = 8;
-			if (spancount > 1)
-			{
-				sstep = D_SoftDiv((snext - s), (spancount - 1));
-				tstep = D_SoftDiv((tnext - t), (spancount - 1));
-			}
-		}
-	
-#if 0
-		while(spancount>=4)
-		{
-			px = *(pbase + (s >> 16) + (t >> 16) * t_cachewidth);
-			s += sstep;		t += tstep;
-			*pdest++ = px;
-
-			px = *(pbase + (s >> 16) + (t >> 16) * t_cachewidth);
-			s += sstep;		t += tstep;
-			*pdest++ = px;
-
-			px = *(pbase + (s >> 16) + (t >> 16) * t_cachewidth);
-			s += sstep;		t += tstep;
-			*pdest++ = px;
-
-			px = *(pbase + (s >> 16) + (t >> 16) * t_cachewidth);
-			s += sstep;		t += tstep;
-			*pdest++ = px;
-
-			spancount-=4;
-		}
-#endif
-
-//		if(spancount>=2)
-		while(spancount>=2)
-		{
-			px = *(pbase + (s >> 16) + (t >> 16) * t_cachewidth);
-			s += sstep;		t += tstep;
-			*pdest++ = px;
-
-			px = *(pbase + (s >> 16) + (t >> 16) * t_cachewidth);
-			s += sstep;		t += tstep;
-			*pdest++ = px;
-
-			spancount-=2;
-		}
-		if(spancount>0)
-		{
-			px = *(pbase + (s >> 16) + (t >> 16) * t_cachewidth);
-			s += sstep;		t += tstep;
-			*pdest++ = px;
-		}
-
-		s = snext;
-		t = tnext;
-
-	} while (count > 0);
-}
-
-void D_DrawSpans16 (espan_t *pspan)
-{
-//	int				count, spancount;
-//	register int		px;
-//	fixed16_t		snext, tnext;
-//	register fixed16_t		s, t, sstep, tstep;
-//	register int			t_cachewidth;
-//	float			sdivz, tdivz, zi, z, du, dv, spancountminus1;
-	float z;
-	float du, dv;
-
-	__hint_use_egpr();
-
-	d_sstep = 0;	// keep compiler happy
-	d_tstep = 0;	// ditto
-
-	d_pbase = (unsigned short *)cacheblock;
-
-	d_sdivz8stepu = d_sdivzstepu * 8;
-	d_tdivz8stepu = d_tdivzstepu * 8;
-	d_zi8stepu = d_zistepu * 8;
-
-	do
-	{
-		d_pdest = (unsigned short *)((short *)d_viewbuffer +
-				(screenwidth * pspan->v) + pspan->u);
-
-		d_count = pspan->count;
-
-		du = (float)pspan->u;
-		dv = (float)pspan->v;
-
-		d_sdivz = d_sdivzorigin + dv*d_sdivzstepv + du*d_sdivzstepu;
-		d_tdivz = d_tdivzorigin + dv*d_tdivzstepv + du*d_tdivzstepu;
-		d_zi = d_ziorigin + dv*d_zistepv + du*d_zistepu;
-
-#if 0
-		z = __fpu_frcp_sf(d_zi) * 65536.0;
-
-		d_s = (int)(d_sdivz * z) + sadjust;
-		if (d_s > bbextents)
-			d_s = bbextents;
-		else if (d_s < 0)
-			d_s = 0;
-
-		d_t = (int)(d_tdivz * z) + tadjust;
-		if (d_t > bbextentt)
-			d_t = bbextentt;
-		else if (d_t < 0)
-			d_t = 0;
-#endif
-
-		D_DrawSpans16_Inner();
-
-	} while ((pspan = pspan->pnext) != NULL);
-}
-#endif
-
 
 
 #if 1
@@ -1288,8 +1067,8 @@ void D_DrawSpans16 (espan_t *pspan)
 
 				if (spancount > 1)
 				{
-					sstep = D_SoftDiv((snext - s), (spancount - 1));
-					tstep = D_SoftDiv((tnext - t), (spancount - 1));
+					sstep = D_SoftDivB((snext - s), (spancount - 1));
+					tstep = D_SoftDivB((tnext - t), (spancount - 1));
 				}
 			}
 
@@ -1327,14 +1106,22 @@ void D_DrawSpans16 (espan_t *pspan)
 #if 1
 void D_DrawSpans16 (espan_t *pspan)
 {
+	const int maxcount	= 16;
+	const int maxcshr	= 4;
+//	const int maxcount	= 8;
+//	const int maxcshr	= 3;
+	const int maxcount2	= 24;
+	
 	unsigned short		*pbase;
 	unsigned short		*pdest;
 	int				count, spancount;
-	int		px;
+	int				px, ycnt;
 	fixed16_t		snext, tnext;
-	fixed16_t		s, t, sstep, tstep;
+	fixed16_t		s, t, s1, t1, sstep, tstep;
+	fixed16_t		bbmins, bbmaxs, bbmint, bbmaxt;
 	int			t_cachewidth;
 	float			sdivz, tdivz, zi, z, du, dv, spancountminus1;
+	float			sdivzstepu, tdivzstepu, zistepu;
 	float			sdivz8stepu, tdivz8stepu, zi8stepu;
 	float			z8stepu, zstepu;
 
@@ -1345,12 +1132,20 @@ void D_DrawSpans16 (espan_t *pspan)
 
 	pbase = (unsigned short *)cacheblock;
 
-	sdivz8stepu = d_sdivzstepu * 16;
-	tdivz8stepu = d_tdivzstepu * 16;
-	zi8stepu = d_zistepu * 16;
+	sdivzstepu = d_sdivzstepu;
+	tdivzstepu = d_tdivzstepu;
+	zistepu = d_zistepu;
+
+	sdivz8stepu = sdivzstepu * maxcount;
+	tdivz8stepu = tdivzstepu * maxcount;
+	zi8stepu = zistepu * maxcount;
 	
-	zstepu = __fpu_frcp_sf(d_zistepu) * 65536.0;
-	z8stepu = __fpu_frcp_sf(zi8stepu) * 65536.0;
+//	zstepu = __fpu_frcp_sf(d_zistepu) * 65536.0;
+//	z8stepu = __fpu_frcp_sf(zi8stepu) * 65536.0;
+
+	bbmins = 1;		bbmaxs = bbextents-1;
+	bbmint = 1;		bbmaxt = bbextentt-1;
+	ycnt=1024;
 
 	do
 	{
@@ -1370,19 +1165,67 @@ void D_DrawSpans16 (espan_t *pspan)
 
 		s = (int)(sdivz * z) + sadjust;
 		t = (int)(tdivz * z) + tadjust;
-		s = __int_clamp(s, 0, bbextents);
-		t = __int_clamp(t, 0, bbextentt);
+		s = __int_clamp(s, bbmins, bbmaxs);
+		t = __int_clamp(t, bbmint, bbmaxt);
+
+		if(!(ycnt&15))
+			sstep=0;
+		ycnt--;
+
+//		sstep=0;
+//		tstep=0;
+
+#if 1
+//		if((count>maxcount) && (count<48))
+//		if(1)
+		if(count<48)
+//		if(count<32)
+		{
+			spancount = count;
+
+			spancountminus1 = (float)(spancount);
+			sdivz += sdivzstepu * spancountminus1;
+			tdivz += tdivzstepu * spancountminus1;
+			zi += zistepu * spancountminus1;
+			z = __fpu_fdiv_sf(65536.0, zi);
+
+			snext = (int)(sdivz * z) + sadjust;
+			tnext = (int)(tdivz * z) + tadjust;
+			snext = __int_clamp(snext, bbmins, bbmaxs);
+			tnext = __int_clamp(tnext, bbmint, bbmaxt);
+
+			if (spancount > 1)
+			{
+				sstep = D_SoftDivB((snext - s), spancount);
+				tstep = D_SoftDivB((tnext - t), spancount);
+			}
+
+			D_DrawSpans16_InnerPx2(
+				pbase,			pdest,
+				spancount,		cachewidth,
+				s,				t,
+				sstep,			tstep);
+
+//			pdest += spancount;
+			
+			continue;
+		}
+#endif
 
 		do
 		{
-			if (count >= 16)
-				spancount = 16;
+//			if (count >= maxcount)
+			if (count >= maxcount2)
+			{
+				spancount = maxcount;
+			}
 			else
 				spancount = count;
 
 			count -= spancount;
 
-			if (count)
+//			if (count)
+			if (spancount == maxcount)
 			{
 				sdivz += sdivz8stepu;
 				tdivz += tdivz8stepu;
@@ -1393,35 +1236,52 @@ void D_DrawSpans16 (espan_t *pspan)
 
 				snext = (int)(sdivz * z) + sadjust;
 				tnext = (int)(tdivz * z) + tadjust;
-				snext = __int_clamp(snext, 0, bbextents);
-				tnext = __int_clamp(tnext, 0, bbextentt);
+				snext = __int_clamp(snext, bbmins, bbmaxs);
+				tnext = __int_clamp(tnext, bbmint, bbmaxt);
 
-				sstep = (snext - s) >> 4;
-				tstep = (tnext - t) >> 4;
+				sstep = (snext - s) >> maxcshr;
+				tstep = (tnext - t) >> maxcshr;
 			}
 			else
+//				if(spancount>4)
+//				if((spancount>4) || !sstep)
+				if((spancount>=8) || !sstep)
+//				if((spancount>=12) || !sstep)
+//				if(!sstep)
 			{
 //				spancountminus1 = (float)(spancount - 1);
 				spancountminus1 = (float)(spancount);
-				sdivz += d_sdivzstepu * spancountminus1;
-				tdivz += d_tdivzstepu * spancountminus1;
-				zi += d_zistepu * spancountminus1;
+				sdivz += sdivzstepu * spancountminus1;
+				tdivz += tdivzstepu * spancountminus1;
+				zi += zistepu * spancountminus1;
 //				z = __fpu_frcp_sf(zi) * 65536.0;
+//				if(spancount>=4)
 				z = __fpu_fdiv_sf(65536.0, zi);
 //				z += zstepu * spancountminus1;
 
 				snext = (int)(sdivz * z) + sadjust;
 				tnext = (int)(tdivz * z) + tadjust;
-				snext = __int_clamp(snext, 0, bbextents);
-				tnext = __int_clamp(tnext, 0, bbextentt);
+				snext = __int_clamp(snext, bbmins, bbmaxs);
+				tnext = __int_clamp(tnext, bbmint, bbmaxt);
 
 				if (spancount > 1)
 				{
-//					sstep = D_SoftDiv((snext - s), (spancount - 1));
-//					tstep = D_SoftDiv((tnext - t), (spancount - 1));
+					sstep = D_SoftDivB((snext - s), spancount);
+					tstep = D_SoftDivB((tnext - t), spancount);
+				}
+			}else
+			{
+				s1 = s + spancount * sstep;
+				t1 = t + spancount * tstep;
+				snext = __int_clamp(s1, bbmins, bbmaxs);
+				tnext = __int_clamp(t1, bbmint, bbmaxt);
+				px=(snext^s1)|(tnext^t1);
 
-					sstep = D_SoftDiv((snext - s), spancount);
-					tstep = D_SoftDiv((tnext - t), spancount);
+//				if (spancount > 1)
+				if ((spancount > 1) && px)
+				{
+					sstep = D_SoftDivB((snext - s), spancount);
+					tstep = D_SoftDivB((tnext - t), spancount);
 				}
 			}
 

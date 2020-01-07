@@ -245,7 +245,8 @@ void *malloc(int sz)
 	void *ptr;
 	
 	if(!malloc_heaprov)
-		{ malloc_heaprov=(byte *)0x11000000; }
+//		{ malloc_heaprov=(byte *)0x11000000; }
+		{ malloc_heaprov=(byte *)0x03000000; }
 	
 	sz=(sz+15)&(~15);
 	ptr=malloc_heaprov;

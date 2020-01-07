@@ -1778,6 +1778,7 @@ int BGBCC_JX2_TryEmitOpRegReg(BGBCC_JX2_Context *ctx, int nmid, int rm, int rn)
 #if 1
 	case BGBCC_SH_NMID_MULL:
 	case BGBCC_SH_NMID_DMULS:
+	case BGBCC_SH_NMID_MULSL:
 		if(!BGBCC_JX2_EmitCheckRegBaseGPR(ctx, rm))		break;
 		if(!BGBCC_JX2_EmitCheckRegBaseGPR(ctx, rn))		break;
 //		opw1=0x1900|((rn&15)<<4)|((rm&15)<<0);			break;
@@ -1799,6 +1800,7 @@ int BGBCC_JX2_TryEmitOpRegReg(BGBCC_JX2_Context *ctx, int nmid, int rm, int rn)
 		if(!BGBCC_JX2_EmitCheckRegBaseGPR(ctx, rm))		break;
 		if(!BGBCC_JX2_EmitCheckRegBaseGPR(ctx, rn))		break;
 		opw1=0x1F00|((rn&15)<<4)|((rm&15)<<0);			break;
+	case BGBCC_SH_NMID_MULUL:
 	case BGBCC_SH_NMID_DMULU:
 		if(!BGBCC_JX2_EmitCheckRegBaseGPR(ctx, rm))		break;
 		if(!BGBCC_JX2_EmitCheckRegBaseGPR(ctx, rn))		break;
@@ -2235,6 +2237,7 @@ int BGBCC_JX2_TryEmitOpRegReg(BGBCC_JX2_Context *ctx, int nmid, int rm, int rn)
 
 		case BGBCC_SH_NMID_MULL:
 		case BGBCC_SH_NMID_DMULS:
+		case BGBCC_SH_NMID_MULSL:
 			opw1=0xF009|ex;
 			opw2=0x1900|((rn&15)<<4)|((rm&15)<<0);			break;
 		
@@ -2248,6 +2251,7 @@ int BGBCC_JX2_TryEmitOpRegReg(BGBCC_JX2_Context *ctx, int nmid, int rm, int rn)
 			opw1=0xF00E|ex;
 			opw2=0x1900|((rn&15)<<4)|((rm&15)<<0);			break;
 		case BGBCC_SH_NMID_DMULU:
+		case BGBCC_SH_NMID_MULUL:
 			opw1=0xF00F|ex;
 			opw2=0x1900|((rn&15)<<4)|((rm&15)<<0);			break;
 

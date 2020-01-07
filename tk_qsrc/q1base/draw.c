@@ -749,7 +749,7 @@ void R_DrawRect16 (vrect_t *prect, int rowbytes, byte *psrc,
 	int transparent)
 {
 	byte			t;
-	int				i, j, srcdelta, destdelta;
+	int				i, j, w, srcdelta, destdelta;
 	unsigned short	*pdest;
 
 // FIXME: would it be better to pre-expand native-format versions?
@@ -764,6 +764,39 @@ void R_DrawRect16 (vrect_t *prect, int rowbytes, byte *psrc,
 	{
 		for (i=0 ; i<prect->height ; i++)
 		{
+#if 1
+			w=prect->width&(~3);
+			for (j=0 ; j<w ; j+=4)
+			{
+				t = psrc[0];
+				if (t != TRANSPARENT_COLOR)
+					{ pdest[0] = d_8to16table[t]; }
+				t = psrc[1];
+				if (t != TRANSPARENT_COLOR)
+					{ pdest[1] = d_8to16table[t]; }
+				t = psrc[2];
+				if (t != TRANSPARENT_COLOR)
+					{ pdest[2] = d_8to16table[t]; }
+				t = psrc[3];
+				if (t != TRANSPARENT_COLOR)
+					{ pdest[3] = d_8to16table[t]; }
+
+				psrc+=4;
+				pdest+=4;
+			}
+			w=prect->width&3;
+			if(w)
+				for (j=0; j<w ; j++)
+			{
+				t = psrc[j];
+				if (t != TRANSPARENT_COLOR)
+				{
+					pdest[j] = d_8to16table[t];
+				}
+			}
+#endif
+
+#if 0
 			for (j=0 ; j<prect->width ; j++)
 			{
 				t = *psrc;
@@ -775,6 +808,7 @@ void R_DrawRect16 (vrect_t *prect, int rowbytes, byte *psrc,
 				psrc++;
 				pdest++;
 			}
+#endif
 
 			psrc += srcdelta;
 			pdest += destdelta;
@@ -784,12 +818,33 @@ void R_DrawRect16 (vrect_t *prect, int rowbytes, byte *psrc,
 	{
 		for (i=0 ; i<prect->height ; i++)
 		{
+#if 1
+			w=prect->width&(~3);
+			for (j=0 ; j<w ; j+=4)
+			{
+				pdest[0] = d_8to16table[psrc[0]];
+				pdest[1] = d_8to16table[psrc[1]];
+				pdest[2] = d_8to16table[psrc[2]];
+				pdest[3] = d_8to16table[psrc[3]];
+				psrc+=4;
+				pdest+=4;
+			}
+			w=prect->width&3;
+			if(w)
+				for (j=0; j<w ; j++)
+			{
+				pdest[j] = d_8to16table[psrc[j]];
+			}
+#endif
+
+#if 0
 			for (j=0 ; j<prect->width ; j++)
 			{
 				*pdest = d_8to16table[*psrc];
 				psrc++;
 				pdest++;
 			}
+#endif
 
 			psrc += srcdelta;
 			pdest += destdelta;
