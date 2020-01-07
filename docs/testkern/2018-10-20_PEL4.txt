@@ -269,6 +269,21 @@ The Image starts with an 'MZ' header for traditional PE/COFF.
 This header is unused and the image will begin directly at the 'PE' header in Testkern PE and PEL4 images.
 
 
+The mSizeOfImage field, for non-PBO images, will include the entire in-memory footprint of the image (including the ".bss" section).
+
+For PBO images, this may exclude the size of ".bss", and instead the BSS size will be given indirectly via szGlobalPtr.
+
+
+The mCheckSum field may hold an image checksum:
+* Will hold 0x00000000 if a checksum is not used.
+* PE/COFF: Will use the traditional PE/COFF checksum algorithm.
+* PEL4: Will use a modified (double sum) checksum.
+
+The traditional PE/COFF checksum will be a sum of all of the WORD values in the image, with carry values added back in to the LSB. The resulting sum will then have the image size added to it.
+
+The PEL4 checksum will be a sum of all the DWORD values, with carry values fed back into the LSB. Another sum will add together all of the prior sums, also with the carry folded back into the LSB. Afterwards, both sums will be carry-normalized, and the results will be XORed into a single DWORD value.
+
+
 === Section Headers ===
 
 The main PE header are followed by section headers.

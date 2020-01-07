@@ -1296,7 +1296,7 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 	byte no_mz, is_pel4;
 	u32 csum;
 
-	int en, ofs, ofs_sdat, ofs_iend, ofs_mend;
+	int en, ofs, ofs_sdat, ofs_iend, ofs_mend, ofs_iend2;
 	int of_phdr, ne_phdr;
 	int of_shdr, ne_shdr;
 	int lb_strt, va_strt, lbl_gptr;
@@ -1631,6 +1631,10 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 
 	ofs_mend=k;
 	
+	ofs_iend2=ofs_mend;
+	if(is_pel4)
+		ofs_iend2=ofs_iend;
+	
 	lb_strt=0;
 //	lb_strt=BGBCC_JX2_LookupNamedLabel(sctx, "__start");
 //	if(lb_strt<=0)
@@ -1803,7 +1807,8 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		bgbcc_setu32en(ct+0x3C, en, 64);		//mFileAlignment
 
 
-		bgbcc_setu32en(ct+0x50, en, ofs_mend);	//mSizeOfImage
+//		bgbcc_setu32en(ct+0x50, en, ofs_mend);	//mSizeOfImage
+		bgbcc_setu32en(ct+0x50, en, ofs_iend2);	//mSizeOfImage
 		bgbcc_setu32en(ct+0x54, en, ofs_sdat);	//mSizeOfHeaders
 
 		bgbcc_setu16en(ct+0x5C, en, 1);			//mSubsystem
@@ -1857,7 +1862,8 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		bgbcc_setu32en(ct+0x3C, en, 64);		//mFileAlignment
 
 
-		bgbcc_setu32en(ct+0x50, en, ofs_mend);	//mSizeOfImage
+//		bgbcc_setu32en(ct+0x50, en, ofs_mend);	//mSizeOfImage
+		bgbcc_setu32en(ct+0x50, en, ofs_iend2);	//mSizeOfImage
 		bgbcc_setu32en(ct+0x54, en, ofs_sdat);	//mSizeOfHeaders
 
 		bgbcc_setu16en(ct+0x5C, en, 1);			//mSubsystem
@@ -1922,7 +1928,8 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		bgbcc_setu32en(ct+0x7C, en, 64);		//mFileAlignment
 
 
-		bgbcc_setu32en(ct+0x90, en, ofs_mend);	//mSizeOfImage
+//		bgbcc_setu32en(ct+0x90, en, ofs_mend);	//mSizeOfImage
+		bgbcc_setu32en(ct+0x90, en, ofs_iend2);	//mSizeOfImage
 		bgbcc_setu32en(ct+0x94, en, ofs_sdat);	//mSizeOfHeaders
 
 		bgbcc_setu16en(ct+0x9C, en, 1);			//mSubsystem
@@ -1967,7 +1974,8 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		bgbcc_setu32en(ct+0x7C, en, 64);		//mFileAlignment
 
 
-		bgbcc_setu32en(ct+0x90, en, ofs_mend);	//mSizeOfImage
+//		bgbcc_setu32en(ct+0x90, en, ofs_mend);	//mSizeOfImage
+		bgbcc_setu32en(ct+0x90, en, ofs_iend2);	//mSizeOfImage
 		bgbcc_setu32en(ct+0x94, en, ofs_sdat);	//mSizeOfHeaders
 
 		bgbcc_setu16en(ct+0x9C, en, 1);			//mSubsystem
@@ -2080,35 +2088,35 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 #endif
 
 	if(is_pel4)
-//		csum=BGBCC_JX2C_CalculateImagePel4Checksum(obuf, ofs_mend, en);
-		csum=BGBCC_JX2C_CalculateImagePel4BChecksum(obuf, ofs_mend, en);
+//		csum=BGBCC_JX2C_CalculateImagePel4Checksum(obuf, ofs_iend2, en);
+		csum=BGBCC_JX2C_CalculateImagePel4BChecksum(obuf, ofs_iend2, en);
 	else
-		csum=BGBCC_JX2C_CalculateImagePeChecksum(obuf, ofs_mend, en);
+		csum=BGBCC_JX2C_CalculateImagePeChecksum(obuf, ofs_iend2, en);
 
 	ct=obuf+of_phdr;
 	bgbcc_setu32en(ct+0x58, en, csum);	//mCheckSum
 	
-	printf("PE Checksum: %08X / %dkB\n", csum, ofs_mend>>10);
+	printf("PE Checksum: %08X / %dkB\n", csum, ofs_iend2>>10);
 
 	if(is_pel4)
 	{
 //		ctb=malloc(ofs_iend*2);
-		ctb=malloc(ofs_mend*2);
+		ctb=malloc(ofs_iend2*2);
 	
 //		j=BGBCC_JX2C_PackImagePEL4(ctx, ctb, obuf, ofs_iend*2, ofs_iend);
-		j=BGBCC_JX2C_PackImagePEL4(ctx, ctb, obuf, ofs_mend*2, ofs_mend);
+		j=BGBCC_JX2C_PackImagePEL4(ctx, ctb, obuf, ofs_iend2*2, ofs_iend2);
 		ctb[2]='L';
 		ctb[3]='4';
 		
 //		BGBCC_JX2C_VerifyImagePEL4(ctx, ctb, obuf, j, ofs_iend);
-		BGBCC_JX2C_VerifyImagePEL4(ctx, ctb, obuf, j, ofs_mend);
+		BGBCC_JX2C_VerifyImagePEL4(ctx, ctb, obuf, j, ofs_iend2);
 		
 //		if(j<ofs_iend)
-		if(j<ofs_mend)
+		if(j<ofs_iend2)
 		{
 			printf("PEL4: %d->%d %d%%\n",
 //				ofs_iend, j, (j*100)/ofs_iend);
-				ofs_mend, j, (j*100)/ofs_mend);
+				ofs_iend2, j, (j*100)/ofs_iend2);
 		
 			memcpy(obuf, ctb, j);
 			*rosz=j;
