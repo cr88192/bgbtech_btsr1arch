@@ -72,6 +72,8 @@ parameter[5:0] JX2_CR_KRR		= 6'h2D;
 
 parameter[5:0] JX2_CR_ZZR		= 6'h2E;
 
+parameter[5:0] JX2_CR_IMM		= 6'h32;
+
 parameter[2:0] JX2_SCHM_DLR		= 3'h0;
 parameter[2:0] JX2_SCHM_DHR		= 3'h1;
 parameter[2:0] JX2_SCHM_SP		= 3'h2;

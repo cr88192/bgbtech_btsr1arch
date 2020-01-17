@@ -292,7 +292,8 @@ void R_TransformFrustum (void)
 }
 
 
-#if	!id386
+// #if	!id386
+#ifndef	__BGBCC_BJX2__
 
 /*
 ================

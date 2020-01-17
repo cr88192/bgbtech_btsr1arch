@@ -96,6 +96,7 @@ void *TK_AllocNewTask()
 		return(NULL);
 
 	task=tk_malloc(sizeof(TKPE_TaskInfo));
+	memset(task, 0, sizeof(TKPE_TaskInfo));
 	task->pid=pid;
 	tk_task_list[pid]=task;
 	

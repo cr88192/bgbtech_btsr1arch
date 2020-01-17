@@ -120,6 +120,8 @@ __PDPCLIB_API__ char *strncat(char *s1, const char *s2, size_t n)
 #ifdef memcmp
 #undef memcmp
 #endif
+
+#if 0
 __PDPCLIB_API__ int memcmp(const void *s1, const void *s2, size_t n)
 {
 	const unsigned char *p1;
@@ -136,6 +138,43 @@ __PDPCLIB_API__ int memcmp(const void *s1, const void *s2, size_t n)
 	}
 	return (0);
 }
+#endif
+
+#if 1
+__PDPCLIB_API__ int memcmp(const void *s1, const void *s2, size_t n)
+{
+	const unsigned char *p1;
+	const unsigned char *p2;
+	unsigned long long v1, v2;
+	int u1, u2;
+	size_t x = 0;
+
+	p1 = (const unsigned char *)s1;
+	p2 = (const unsigned char *)s2;
+
+#if 1
+	while ((x+8) <= n)
+	{
+		v1=*(unsigned long long *)p1;
+		v2=*(unsigned long long *)p2;
+		if(v1!=v2)
+			break;
+		x+=8;
+	}
+#endif
+
+	while (x < n)
+	{
+		u1=p1[x];	u2=p2[x];
+		if(u1 != u2)
+			return(((u1-u2)>>31)*2+1);
+//		if (u1<u2) return (-1);
+//		else if (u1 > u2) return (1);
+		x++;
+	}
+	return (0);
+}
+#endif
 
 #ifdef strcmp
 #undef strcmp

@@ -145,9 +145,11 @@ assign	sdc_dat_i[2]	= sdc_dat[2];
 assign	sdc_dat_i[3]	= sdc_dat[3];
 
 wire aud_mono_out1;
+wire aud_mono_ena1;
 assign	aud_mono_out	= aud_mono_out1 ? 1'bz : 1'b0;
 // assign	aud_mono_out = aud_mono_out1;
-assign	aud_mono_en		= 1'b1;
+// assign	aud_mono_en		= 1'b1;
+assign	aud_mono_en		= aud_mono_ena1;
 
 CoreUnit core(
 	clock, 		reset2,
@@ -169,7 +171,7 @@ CoreUnit core(
 	sdc_dat_i,	sdc_dat_o,	sdc_dat_d,
 	sdc_clk,	sdc_cmd,	sdc_ena,
 
-	aud_mono_out1,
+	aud_mono_out1,	aud_mono_ena1,
 	seg_outCharBit,
 	seg_outSegBit,
 

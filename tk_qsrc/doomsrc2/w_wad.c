@@ -59,6 +59,8 @@ rcsid[] = "$Id: w_wad.c,v 1.5 1997/02/03 16:47:57 b1 Exp $";
 lumpinfo_t*		lumpinfo;		
 int			numlumps;
 
+int			lumphash[64];
+
 void**			lumpcache;
 
 
@@ -68,6 +70,15 @@ void**			lumpcache;
 void w_strupr (char *s)
 {
 	while (*s) { *s = toupper(*s); s++; }
+}
+
+void w_strupr_n (char *t, char *s, int n)
+{
+	int i;
+	for(i=0; *s && (i<n); i++)
+		{ *t++ = toupper(*s++); }
+	for(; i<n; i++)
+		*t++=0;
 }
 
 int w_chkaccess(char *name)
@@ -401,7 +412,14 @@ void W_Reload (void)
 	w_close (handle);
 }
 
-
+int W_HashIndexForName(char *s)
+{
+	int j, h;
+	j = *(int *)(s);
+//	h = ((j*65521)>>16)&63;
+	h = ((j*16777213)>>24)&63;
+	return(h);
+}
 
 //
 // W_InitMultipleFiles
@@ -418,7 +436,9 @@ void W_Reload (void)
 //
 void W_InitMultipleFiles (char** filenames)
 {	
+	lumpinfo_t*		lump_p;
 	int		size;
+	int		i, j, h;
 	
 	// open all the files, load headers, and count lumps
 	numlumps = 0;
@@ -431,6 +451,21 @@ void W_InitMultipleFiles (char** filenames)
 
 	if (!numlumps)
 		I_Error ("W_InitFiles: no files found");
+	
+	for(i=0; i<64; i++)
+	{
+		lumphash[i] = -1;
+	}
+	
+	for(i=0; i<numlumps; i++)
+	{
+		lump_p = lumpinfo + i;
+//		j = *(int *)(lump_p->name);
+//		h = ((j*65521)>>16)&63;
+		h = W_HashIndexForName(lump_p->name);
+		lump_p->chain = lumphash[h];
+		lumphash[h] = i;
+	}
 	
 	// set up caching
 //	size = numlumps * sizeof(*lumpcache);
@@ -492,6 +527,7 @@ int W_CheckNumForNameBase (int base, char* name)
 	
 	int		v1;
 	int		v2;
+	int 	i, h;
 	lumpinfo_t*	lump_p;
 
 	// make the name into two integers for easy compares
@@ -506,7 +542,48 @@ int W_CheckNumForNameBase (int base, char* name)
 	v1 = name8.x[0];
 	v2 = name8.x[1];
 
+#if 1
+	h = W_HashIndexForName(name8.s);
+//	h=((v1*65521)>>16)&63;
+	i=lumphash[h];
 
+#if 1
+	while(i >= base)
+	{
+		lump_p = lumpinfo + i;
+		i = lump_p->chain;
+		continue;
+	}
+#endif
+
+	while(i >= 0)
+	{
+//		if(i >= numlumps)
+//			__debugbreak();
+	
+		lump_p = lumpinfo + i;
+#if 0
+		if(i >= base)
+		{
+			i = lump_p->chain;
+			continue;
+		}
+#endif
+		
+		if ( *(int *)lump_p->name == v1
+			 && *(int *)&lump_p->name[4] == v2)
+		{
+//			return(i);
+			break;
+		}
+		i = lump_p->chain;
+	}
+	if(i>=0)
+		return(i);
+		
+#endif
+
+#if 0
 	// scan backwards so patch lump files take precedence
 //	lump_p = lumpinfo + numlumps;
 	lump_p = lumpinfo + base;
@@ -519,6 +596,7 @@ int W_CheckNumForNameBase (int base, char* name)
 			return lump_p - lumpinfo;
 		}
 	}
+#endif
 
 	// TFB. Not found.
 	return -1;
@@ -536,7 +614,8 @@ int W_GetNumForName (char* name)
 	int	i;
 
 //	if(!name || !*name || (name[0]<' '))
-//		__debugbreak();
+	if(!name || (*name<' '))
+		__debugbreak();
 
 	i = W_CheckNumForName (name);
 	
@@ -671,6 +750,7 @@ W_CacheLumpNum
 	int		tag )
 {
 	byte*	ptr;
+	int		sz;
 
 	if(lump<0)
 		return(NULL);
@@ -686,7 +766,10 @@ W_CacheLumpNum
 		// read the lump in
 		
 		//printf ("cache miss on lump %i\n",lump);
-		ptr = Z_Malloc (W_LumpLength (lump), tag, &lumpcache[lump]);
+		sz = W_LumpLength (lump);
+		ptr = Z_Malloc (sz+256, tag, &lumpcache[lump]);
+		memset(ptr, 0, sz);
+		
 		W_ReadLump (lump, lumpcache[lump]);
 	}
 	else

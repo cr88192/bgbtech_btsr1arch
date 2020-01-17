@@ -651,3 +651,71 @@ X(D_SoftDivB):
 	BRA2B	D_SoftDivB_D16
 
 #endif
+
+#if 1
+.global X(VID_BlendEven16)
+X(VID_BlendEven16):
+	MOV		#0xFBDF, R3
+	AND		R4, R3, R6
+	AND		R5, R3, R7
+	ADD		R6, R7, R2
+	SHAD	R2, #-1, R2
+	RTSU
+#endif
+
+#if 1
+.global X(TransformVector)
+X(TransformVector):
+	MOV.Q	(R4, 0), R2
+	MOVD.L	(R4, 8), R3
+	FLDCF	R2, R21
+	FLDCFH	R2, R22
+	FLDCF	R3, R23
+
+	MOV		X(vright), R6
+	MOV.Q	(R6, 0), R16
+	MOVD.L	(R6, 8), R17
+	FLDCF	R16, R18
+	FLDCFH	R16, R19
+	FLDCF	R17, R20
+
+	FMUL	R18, R21, R2
+	FMUL	R19, R22, R3
+	FMUL	R20, R23, R7
+	FADD	R2, R3, R2
+	FADD	R2, R7, R2
+	FSTCF	R2, R3
+	MOV.L	R3, (R5, 0)
+
+	MOV		X(vup), R6
+	MOV.Q	(R6, 0), R16
+	MOVD.L	(R6, 8), R17
+	FLDCF	R16, R18
+	FLDCFH	R16, R19
+	FLDCF	R17, R20
+
+	FMUL	R18, R21, R2
+	FMUL	R19, R22, R3
+	FMUL	R20, R23, R7
+	FADD	R2, R3, R2
+	FADD	R2, R7, R2
+	FSTCF	R2, R3
+	MOV.L	R3, (R5, 4)
+
+	MOV		X(vpn), R6
+	MOV.Q	(R6, 0), R16
+	MOVD.L	(R6, 8), R17
+	FLDCF	R16, R18
+	FLDCFH	R16, R19
+	FLDCF	R17, R20
+
+	FMUL	R18, R21, R2
+	FMUL	R19, R22, R3
+	FMUL	R20, R23, R7
+	FADD	R2, R3, R2
+	FADD	R2, R7, R2
+	FSTCF	R2, R3
+	MOV.L	R3, (R5, 8)
+	
+	RTSU
+#endif

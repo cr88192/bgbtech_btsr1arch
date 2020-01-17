@@ -41,6 +41,16 @@
 #define PU_LEVSPEC		51      // a special thinker in a level
 #define PU_LEVELMOBJ	52	// static until level exited
 
+#define PU_LEVEL_VTX	53	// static until level exited
+#define PU_LEVEL_SEGS	54	// static until level exited
+#define PU_LEVEL_SUBS	55	// static until level exited
+#define PU_LEVEL_SECT	56	// static until level exited
+#define PU_LEVEL_NODE	57	// static until level exited
+#define PU_LEVEL_LINES	58	// static until level exited
+#define PU_LEVEL_SIDES	59	// static until level exited
+#define PU_LEVEL_BMAP	60	// static until level exited
+#define PU_LEVEL_GLINE	61	// static until level exited
+
 // Tags >= 100 are purgable whenever needed.
 #define PU_PURGELEVEL	100
 #define PU_CACHE		101

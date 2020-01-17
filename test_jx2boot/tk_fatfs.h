@@ -1,7 +1,45 @@
+#ifndef TK_FATFS_H
+#define TK_FATFS_H
+
 #define TKFAT_SFL_DIRTY		0x00000200
 
 #define TKFAT_READONLY
 #define TKFAT_NOLFN
+
+#ifndef BYTE_T
+#define BYTE_T
+typedef unsigned char byte;
+#endif
+
+#ifndef PDLIB_INT_BITS_T
+#define PDLIB_INT_BITS_T
+typedef signed char sbyte;
+typedef unsigned short u16;
+typedef signed short s16;
+typedef unsigned int u32;
+typedef signed int s32;
+typedef unsigned long long u64;
+typedef signed long long s64;
+#endif
+
+#ifndef __cplusplus
+
+#ifndef _BOOL_T
+#define _BOOL_T
+typedef unsigned char bool;
+#endif
+
+#ifndef true
+#define true 1
+#define false 0
+#endif
+
+#endif
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
 
 typedef struct TKFAT_MBR_Entry_s TKFAT_MBR_Entry;
 typedef struct TKFAT_MBR_s TKFAT_MBR;
@@ -151,7 +189,7 @@ s16 tbc_lbn[256];
 void *tbc_buf[256];
 int tbc_num;
 
-int tbc_num;
+// int tbc_num;
 int tbc_pred0;
 int tbc_pred1;
 int tbc_pred2;
@@ -186,3 +224,5 @@ struct TKFAT_FAT_DirInfo_s {
 TKFAT_ImageInfo *img;
 int clid;			//cluster ID of current directory
 };
+
+#endif

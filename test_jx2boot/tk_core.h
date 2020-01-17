@@ -1,3 +1,7 @@
+#ifndef TK_CORE_H
+#define TK_CORE_H
+
+
 // #ifdef ARCH_SH4
 #if defined(ARCH_SH4) || defined(ARCH_BJX1) || defined(ARCH_BJX1_64)
 
@@ -11,7 +15,13 @@
 
 #endif
 
+#ifndef BYTE_T
+#define BYTE_T
 typedef unsigned char byte;
+#endif
+
+#ifndef PDLIB_INT_BITS_T
+#define PDLIB_INT_BITS_T
 typedef signed char sbyte;
 typedef unsigned short u16;
 typedef signed short s16;
@@ -19,6 +29,7 @@ typedef unsigned int u32;
 typedef signed int s32;
 typedef unsigned long long u64;
 typedef signed long long s64;
+#endif
 
 typedef long nlint;
 
@@ -262,3 +273,5 @@ int TKMM_Free(void *ptr);
 
 // void *malloc(int sz);
 // int free(void *ptr);
+
+#endif

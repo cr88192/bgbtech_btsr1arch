@@ -1,3 +1,10 @@
+#ifndef TK_CORE_H
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "tk_fatfs.h"
+#endif
+
 void tkfat_setChs(byte *chs, int lba)
 {
 	int c, h, s, ts;
@@ -28,7 +35,7 @@ u32 tkfat_getDWord(byte *ptr)
   * The buffer will be released implicitly following the call.
   */
 byte *TKFAT_GetSectorTempBuffer(TKFAT_ImageInfo *img,
-	int lba, int num)
+	u32 lba, int num)
 {
 	u32 *tbc_lba, *tbca;
 	s16 *tbc_lbn;
@@ -151,7 +158,7 @@ byte *TKFAT_GetSectorTempBuffer(TKFAT_ImageInfo *img,
 		tbd=malloc(n*512);
 		img->tbc_buf[i]=tbd;
 		img->tbc_lba[i]=lba;
-		img->tbc_lbn[i]=n;
+		img->tbc_lbn[i]=num;
 
 		img->tbc_pred3=img->tbc_pred2;
 		img->tbc_pred2=img->tbc_pred1;
@@ -181,7 +188,7 @@ byte *TKFAT_GetSectorTempBuffer(TKFAT_ImageInfo *img,
 			img->tbc_buf[i]=malloc(n*512);
 		}
 		img->tbc_lba[i]=lba;
-		img->tbc_lbn[i]=n;
+		img->tbc_lbn[i]=num;
 		tbd=img->tbc_buf[i];
 
 		img->tbc_pred3=img->tbc_pred2;
@@ -202,7 +209,7 @@ byte *TKFAT_GetSectorTempBuffer(TKFAT_ImageInfo *img,
   * Static buffers will need to be released explicitly.
   */
 byte *TKFAT_GetSectorStaticBuffer(TKFAT_ImageInfo *img,
-	int lba, int num)
+	u32 lba, int num)
 {
 	byte *buf;
 	int i, n;
@@ -239,6 +246,7 @@ byte *TKFAT_GetSectorStaticBuffer(TKFAT_ImageInfo *img,
 	
 	img->sbc_buf[i]=buf;
 	img->sbc_lba[i]=lba;
+	img->sbc_lbn[i]=num;
 
 	TKSPI_ReadSectors(buf, lba, n);
 	return(buf);
@@ -949,6 +957,8 @@ int TKFAT_GetClusterFileOffs(TKFAT_ImageInfo *img,
 	cl2=TKFAT_GetWalkCluster(img, clid, cloffs, expand);
 	if(cl2<=0)
 	{
+		*rclid=-1;
+		*rclfrac=-1;
 		return(-1);
 	}
 	
@@ -1107,7 +1117,7 @@ int TKFAT_ReadWriteClusterOffset(TKFAT_ImageInfo *img,
 		if(clidt<0)
 		{
 			printf("TKFAT_ReadWriteClusterOffset: Fail-3, ofs=%d sz=%d\n",
-				ct-data, cte-data);
+				(int)(ct-data), (int)(cte-data));
 			return(-1);
 		}
 		ct+=szcl;
@@ -1585,7 +1595,7 @@ int TKFAT_WalkDirEntNext(TKFAT_ImageInfo *img,
 			continue;
 #endif
 		
-		h0=tkfat_lfnchecksum(deb->name);
+		h0=tkfat_lfnchecksum((char *)(deb->name));
 //		if(!memcmp(deb.name, tsn, 11))
 //		if((h0==h1) && !tkfat_matchlfn(bln, tln))
 //		if(h0==h1)
@@ -1677,7 +1687,7 @@ int TKFAT_LookupDirEntName(TKFAT_ImageInfo *img,
 				continue;
 
 //			k=!memcmp(deb->name, tsn, 11);
-			k=!tkfat_memcmp11(deb->name, tsn);
+			k=!tkfat_memcmp11(deb->name, (byte *)tsn);
 //			printf("DE=%11s TS=%11s %d\n", deb->name, tsn, k);
 
 			if(k)
@@ -1686,7 +1696,7 @@ int TKFAT_LookupDirEntName(TKFAT_ImageInfo *img,
 				dee->img=img;
 				dee->clid=clid;
 				dee->idx=i;
-				strcpy(dee->de_name, name);
+				strcpy((char *)(dee->de_name), name);
 				return(i);
 			}
 		}
@@ -2153,7 +2163,7 @@ int TKFAT_ReadWriteDirEntFile(
 		
 		i=TKFAT_ReadWriteClusterOffset(dee->img,
 			dcli, offs, 1, data, size);
-		return(i);
+		return(size);
 	}
 #else
 	if(iswrite)
@@ -2165,7 +2175,11 @@ int TKFAT_ReadWriteDirEntFile(
 	dsz=TKFAT_GetDirEntSize(dee);
 
 	if(offs>=dsz)
-		return(0);
+	{
+		printf("TKFAT_ReadWriteDirEntFile: Offset past EOF %X %X\n",
+			offs, dsz);
+		return(-1);
+	}
 	
 	sz=size;
 	if((offs+size)>dsz)

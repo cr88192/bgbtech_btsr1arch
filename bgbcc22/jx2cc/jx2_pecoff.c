@@ -1262,10 +1262,10 @@ u32 BGBCC_JX2C_CalculateImagePel4BChecksum(byte *buf, int size, int en)
 	{
 		v=bgbcc_getu32en(cs, en);
 		acc_lo=acc_lo+v;
-		acc_lo=((u32)acc_lo)+(acc_lo>>32);
+//		acc_lo=((u32)acc_lo)+(acc_lo>>32);
 
 		acc_hi=acc_hi+acc_lo;
-		acc_hi=((u32)acc_hi)+(acc_hi>>32);
+//		acc_hi=((u32)acc_hi)+(acc_hi>>32);
 		cs+=4;
 	}
 	acc_lo=((u32)acc_lo)+(acc_lo>>32);

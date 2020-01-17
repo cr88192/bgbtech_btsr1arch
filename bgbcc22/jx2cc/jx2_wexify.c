@@ -381,6 +381,12 @@ int BGBCC_JX2_CheckOps32Immovable(
 			if((opw1&0x000F)==0x0000)
 				return(1);
 		}
+
+		if((opw2&0xF000)==0x4000)
+		{
+			if((opw1&0x000F)==0x0000)
+				return(1);
+		}
 		return(0);
 	}
 
@@ -712,6 +718,7 @@ ccxl_status BGBCC_JX2_CheckWexify(
 		if((opw1&0xFE00)==0xFA00)
 			{ cp+=4; continue; }
 
+		/* Skip Jumbo Forms */
 		if(((opw1&0xFF00)==0xF400) &&
 			((opw2&0xC000)==0xC000))
 		{

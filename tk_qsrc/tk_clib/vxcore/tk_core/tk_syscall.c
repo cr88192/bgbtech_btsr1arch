@@ -51,6 +51,8 @@ int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 	void *p;
 	int ret, sz;
 
+//	__debugbreak();
+
 //	u64 ttb, tea;
 //	u16 exsr;
 	
@@ -58,6 +60,8 @@ int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 //	tea=__arch_tea;
 //	exsr=(u16)(__arch_exsr);
 //	ptetlb_rethow_exc=0;
+
+//	tk_printf("SYSC: uMsg=%X vParm1=%p, vParm2=%p\n", uMsg, vParm1, vParm2);
 
 	task=TK_GetCurrentTask();
 
@@ -89,7 +93,7 @@ int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 				sz=args[0].i;
 				p=TKMM_PageAlloc(sz);
 				*((void **)vParm1)=p;
-				TK_TaskAddPageAlloc(task, p, sz);
+//				TK_TaskAddPageAlloc(task, p, sz);
 				tk_printf("SYSC: Page Alloc, vParm=%p, p=%p\n", vParm1, p);
 				break;
 			case 0x05:
@@ -139,6 +143,10 @@ int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 				break;
 			case 0x2C:
 				ret=tk_hioctl(args[0].i, args[1].i, args[2].p);
+				break;
+			default:
+				tk_printf("SYSC: BAD sObj=%p, uMsg=%X, vParm1=%p, vParm1=%p\n",
+					sObj, uMsg, vParm1, vParm2);
 				break;
 			}
 			break;

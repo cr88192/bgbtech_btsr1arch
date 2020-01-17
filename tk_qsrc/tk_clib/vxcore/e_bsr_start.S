@@ -130,7 +130,7 @@ isr_syscall:
 	mov sp, r16
 	mov STACK_BASE_SYS, sp
 	push r16
-//	push gbr
+	push gbr
 	push lr
 
 //	break
@@ -138,7 +138,7 @@ isr_syscall:
 	bsr X(tk_isr_syscall)
 	
 	pop lr
-//	pop gbr
+	pop gbr
 	pop r16
 	mov r16, sp
 
@@ -169,6 +169,9 @@ X(tk_syscall):
 	nop
 	nop
 	nop
+	
+//	break
+	
 //	pop lr
 	rts
 

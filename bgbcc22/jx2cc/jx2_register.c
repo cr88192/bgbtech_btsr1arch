@@ -1389,7 +1389,8 @@ int BGBCC_JX2C_EmitGetRegister(
 	if(bi>=0)
 	{
 		reg1=sctx->regalc_map[bi];
-		if((nsv>=2) && (sctx->regalc_ltcnt[bi]<=2) &&
+//		if((nsv>=2) && (sctx->regalc_ltcnt[bi]<=2) &&
+		if((nsv>=1) && (sctx->regalc_ltcnt[bi]<=2) &&
 			sctx->is_simpass &&
 			!BGBCC_JX2C_CheckVRegIsZRegP(ctx, sctx, reg1))
 		{

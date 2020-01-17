@@ -302,6 +302,229 @@ X(R_DrawSpan):
 #endif
 
 
+
+
+#if 1
+
+.global X(R_DrawColumnLow)
+X(R_DrawColumnLow):
+
+	MOV.L		X(dc_yh), R4
+	MOV.L		X(dc_yl), R20
+	ADD			#1, R4	
+	SUB			R4, R20, R16
+
+	CMP/GE		#0, R16
+	BF			.done
+
+	MOV			X(ylookup), R18
+	MOV.L		X(dc_x), R7
+	MOV			X(columnofs), R6
+	MOV.L		X(dc_iscale), R5
+	MOV.L		X(centery), R21
+	MOV.L		X(dc_texturemid), R22
+	
+	ADD			R7, R7
+
+	SHLD.Q		R16, #-1, R17		| MOV.L		(R18, R20), R23
+	SUB			R20, R21			| MOV.L		(R6, R7), R19
+
+	MOV.L		X(dc_iscale), R7
+	SHLD		R7, #9, R7			| MUL.L		R21, R5, R4
+	SUB			R22, R4, R22		| LEA.W		(R23, R19), R23
+
+// R4		aligned colormap
+// R7		aligned colormap
+// R5,R6	scratch
+// R22		virtual source
+// R23		moving destination pointer
+// R20		frac
+// R16		pixelcount
+// R17		loopcount
+
+	MOV		R7, R21			| SHLD	R22, #9, R18
+	ADD		R18, R7, R19	| SHLD	R18, #-25, R5
+	ADD		R19, R7, R20	| SHLD	R19, #-25, R6
+
+	MOV.L	X(dc_colormap), R4
+	MOV.L	X(dc_source), R22
+
+	MOVU.B	(R22, R5), R18		// get first pixel
+	MOVU.B	(R22, R6), R19		// get second pixel
+	MOVU.W	(R4, R18), R18		// color translate first pixel
+	MOVU.W	(R4, R19), R19		// color translate second pixel
+	
+	TEST	0xFFFFFFFE, R16
+	BT		.checklast
+	
+#if 0
+.doubleloop:
+	MOV		R20, R5				// begin calculating third pixel
+
+	ADD		R21, R20			// advance frac pointer
+	MOV.W	R18, (R23)			// write first pixel
+	SHLD	R5, #-25, R5		// finish calculation for third pixel
+	MOV		R20, R6				// begin calculating fourth pixel
+
+	ADD		R21, R20			// advance frac pointer
+	MOV.W	R19, (R23, 640)		// write second pixel
+	SHLD	R6, #-25, R6		// finish calculation for fourth pixel
+	MOVU.B	(R22, R5), R18		// get third pixel
+	ADD		#1280, R23			// advance to third pixel destination
+	MOVU.B	(R22, R6), R19		// get fourth pixel
+	MOVU.W	(R4, R18), R18		// color translate first pixel
+	MOVU.W	(R4, R19), R19		// color translate second pixel
+	ADD		#-1, R17
+	TEST	R17, R17
+	BF		.doubleloop
+#endif
+
+#if 1
+.doubleloop:
+	SHLD	R20, #-25, R5	| MOV.W		R18, (R23)
+	MOV.W	R18, (R23, 2)
+	ADD		R21, R20		| MOV.W		R19, (R23, 640)
+	MOV.W	R19, (R23, 642)
+	SHLD	R20, #-25, R6	| MOVU.B	(R22, R5), R18
+	ADD		R21, R20		| MOVU.B	(R22, R6), R19
+	ADD		#1280, R23		| MOVU.W	(R4, R18), R18
+	ADD		#-1, R17		| MOVU.W	(R4, R19), R19
+	TEST	R17, R17
+	BF		.doubleloop
+#endif
+
+// check for final pixel
+.checklast:
+	TEST	#1, R16
+	MOV.W?F	R18, (R23, 0)		// write final pixel
+	MOV.W?F	R18, (R23, 2)		// write final pixel
+
+.done:
+	RTSU
+	
+
+
+.global X(R_DrawSpanLow)
+X(R_DrawSpanLow):
+	MOV.L		X(ds_x2), R4
+	ADD			#1, R4
+	MOV.L		X(ds_x1), R3
+	SUB			R3, R4					// pixel count
+//	SHLL1		R3
+	
+	MOV			R4, R16
+	CMP/GE		#0, R4
+	BF			.hdone
+
+	SHLD		R4, #-1, R4						// double pixel count
+	MOV			R4, R17
+
+	MOV.L	X(ds_xfrac), R20
+	SHLD	R20, #10, R20
+	AND		#0xffff0000, R20
+	MOV.L	X(ds_yfrac), R4
+	SHLD	R4, #-6, R4
+	EXTU.W	R4
+	OR		R4, R20
+
+	MOV.L	X(ds_source), R22
+
+
+	MOV.L	X(ds_y), R23
+	MOV		X(ylookup), R3
+	MOV.L	(R3, R23), R23
+	MOV.L	X(ds_x1), R4
+	ADD		R4, R4
+	MOV		X(columnofs), R3
+	MOV.L	(R3, R4), R2
+	LEA.W	(R23, R2), R23
+
+	MOV.L	X(ds_xstep), R7
+	SHLD	R7, #10, R7
+	AND		#0xFFFF0000, R7
+	MOV.L	X(ds_ystep), R4
+	SHLD	R4, #-6, R4
+	EXTU.W	R4
+	OR		R4, R7
+
+	MOV		R7, R21
+	
+// R4		aligned colormap
+// R7		aligned colormap
+// R5,R6	scratch
+// R22		virtual source
+// R23		moving destination pointer
+// R20		frac
+// R16		pixelcount
+// R17		loopcount
+
+	SHLD	R5, #22, R5
+	SHLD	R20, #-10, R3
+	OR		R3, R5
+	SHLD	R5, #6, R5
+	SHLD	R20, #-26, R3
+	OR		R3, R5
+
+	ADD		R7, R20					// advance frac pointer
+	AND		#4095, R5				// finish calculation for third pixel
+
+	SHLD	R6, #22, R6
+	SHLD	R20, #-10, R3
+	OR		R3, R6
+	SHLD	R6, #6, R6
+	SHLD	R20, #-26, R3
+	OR		R3, R6
+
+	ADD		R7, R20					// advance frac pointer
+	AND		#4095, R6				// finish calculation for fourth pixel
+	MOV.L	X(ds_colormap), R4
+	MOV		R4, R7
+
+	MOVU.B	(R22, R5), R18			// get first pixel
+	MOVU.B	(R22, R6), R19			// get second pixel
+	MOVU.W	(R4, R18), R18			// color translate first pixel
+	MOVU.W	(R7, R19), R19			// color translate second pixel
+	
+	TEST	0xFFFFFFFE, R16
+	BT		.hchecklast
+
+#if 1
+.hdoubleloop:
+	SHLD	R20, #-10, R2		|	SHLD	R5, #22, R5
+	SHLD	R20, #-26, R3		|	SHLD	R6, #22, R6
+	ADD		R21, R20
+	SHLD	R20, #-10, R0		|	SHLD	R20, #-26, R1
+	OR		R2, R5				|	OR		R0, R6
+	SHLD	R5, #6, R5			|	SHLD	R6, #6, R6
+	OR		R3, R5				|	OR		R1, R6
+	MOV		#4095, R3
+	AND		R3, R5
+	MOV.W	R18, (R23, 0)
+	MOV.W	R18, (R23, 2)
+	MOV.W	R19, (R23, 4)	
+	MOV.W	R19, (R23, 6)	
+	AND		R3, R6				|	MOVU.B	(R22, R5), R18	
+	ADD		R21, R20			|	MOVU.B	(R22, R6), R19	
+	ADD		#-1, R17			|	MOVU.W	(R4, R18), R18
+	ADD		#8, R23				|	MOVU.W	(R7, R19), R19
+	TEST	R17, R17
+	BF		.hdoubleloop
+#endif
+
+.hchecklast:
+	TEST	#1, R16
+	MOV.W?F		R18, (R23, 0)				// write final pixel
+	MOV.W?F		R18, (R23, 2)				// write final pixel
+//	NOP
+
+.hdone:
+	RTSU
+
+#endif
+
+
+
+
 #if 1
 .global X(I_FinishUpdate_ScanCopy)
 

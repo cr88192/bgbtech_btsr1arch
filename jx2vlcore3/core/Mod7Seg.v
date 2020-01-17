@@ -45,9 +45,9 @@ reg			tNxtStrobe;
 always @*
 begin
 //	tNxtDutyStrobe	= 8'h3F;
-//	tNxtDutyStrobe	= inStrobeNoise ? 8'h44 : 8'h3F;
+	tNxtDutyStrobe	= inStrobeNoise ? 8'h44 : 8'h3F;
 //	tNxtDutyStrobe	= inStrobeNoise ? 8'h22 : 8'h1F;
-	tNxtDutyStrobe	= inStrobeNoise ? 8'h11 : 8'h0F;
+//	tNxtDutyStrobe	= inStrobeNoise ? 8'h11 : 8'h0F;
 
 	tOutCharBit		= 8'hFF;
 	tOutSegBit		= 8'hFF;
@@ -61,7 +61,7 @@ begin
 //	if(inStrobe1kHz)
 //		tNxtAccStrobe = ~tAccStrobe;
 	
-	if(!tStrobe)
+	if(tStrobe)
 		tOutCharBit[tCharPos] = 0;
 
 	case(tCharPos)

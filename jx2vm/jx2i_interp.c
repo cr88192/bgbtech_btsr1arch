@@ -586,6 +586,8 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_FLDCD:		s0="FLDCD";		break;
 	case BJX2_NMID_FSTCD:		s0="FSTCD";		break;
 	case BJX2_NMID_FABS:		s0="FABS";		break;
+	case BJX2_NMID_FLDCFH:		s0="FLDCFH";	break;
+	case BJX2_NMID_FSTCFH:		s0="FSTCFH";	break;
 
 	case BJX2_NMID_INV:			s0="Invalid";	break;
 	case BJX2_NMID_MOVUL:		s0="MOVU.L";	break;

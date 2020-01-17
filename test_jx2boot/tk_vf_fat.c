@@ -133,16 +133,25 @@ int tk_fat_fclose(TK_FILE *fd)
 
 int tk_fat_fread(void *buf, int sz1, int sz2, TK_FILE *fd)
 {
-	int sz;
+	int sz, sz0;
 
-	sz=sz1*sz2;
+	sz0=sz1*sz2;
+	if(sz0<=0)
+		{ __debugbreak(); }
+	
 	sz=TKFAT_ReadWriteDirEntFile(
-		fd->udata1, fd->ofs, false, buf, sz);
+		fd->udata1, fd->ofs, false, buf, sz0);
 	
 //	printf("tk_fat_fread: ofs=%d sz=%d\n", fd->ofs, sz);
 	
 	if(sz>0)
+	{
+		if(sz>sz0)
+		{
+			__debugbreak();
+		}
 		fd->ofs+=sz;
+	}
 	return(sz);
 }
 

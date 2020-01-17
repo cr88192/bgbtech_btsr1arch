@@ -147,7 +147,9 @@ void Z_Free (void* ptr)
 		// Note: OS-dependend?
 		
 		// clear the user's mark
-		*block->user = 0;
+//		*block->user = 0;
+		*(void **)(block->user) = NULL;
+//		__debugbreak();
 	}
 
 	// mark as free
@@ -157,7 +159,8 @@ void Z_Free (void* ptr)
 	
 	other = block->prev;
 
-	if (!other->user)
+//	if (!other->user)
+	if (other->id == 0)
 	{
 		// merge with previous free block
 		other->size += block->size;
@@ -186,7 +189,8 @@ void Z_Free (void* ptr)
 	}
 #endif
 
-	if (!other->user)
+//	if (!other->user)
+	if (other->id == 0)
 	{
 		// merge the next free block onto the end
 		block->size += other->size;

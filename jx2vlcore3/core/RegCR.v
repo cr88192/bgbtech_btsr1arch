@@ -140,16 +140,21 @@ begin
 		JX2_CR_KRR:		tValCmA=UV64_00;
 `endif
 		
-//		JX2_CR_IMM:	begin
-//			tValCmA=UV64_00;
-//			tValCmZz=1;
-//		end
+		JX2_CR_IMM:	begin
+			tValCmA=UV64_00;
+			tValCmZz=1;
+		end
+
 		JX2_CR_ZZR:	begin
 			tValCmA=UV64_00;
 			tValCmZz=1;
 		end
 		
-		default:		tValCmA=UV64_XX;
+		default: begin
+//			$display("Reg CR: Unhandled %X", regIdCm);
+//			tValCmA=UV64_XX;
+			tValCmA=UV64_00;
+		end
 	endcase
 	
 	tRegValCm = tValCmA;

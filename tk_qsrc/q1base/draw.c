@@ -288,9 +288,9 @@ Draw_Pic
 */
 void Draw_Pic (int x, int y, qpic_t *pic)
 {
-	byte			*dest, *source;
-	unsigned short	*pusdest;
-	int				v, u;
+	byte			*dest, *source, *cs;
+	unsigned short	*pusdest, *ct;
+	int				v, u, w;
 
 	if(!pic)
 	{
@@ -328,10 +328,30 @@ void Draw_Pic (int x, int y, qpic_t *pic)
 
 		for (v=0 ; v<pic->height ; v++)
 		{
+#if 1
+			cs=source; ct=pusdest;
+			w=pic->width>>2;
+			for (u=0 ; u<w ; u++)
+			{
+				ct[0] = d_8to16table[cs[0]];
+				ct[1] = d_8to16table[cs[1]];
+				ct[2] = d_8to16table[cs[2]];
+				ct[3] = d_8to16table[cs[3]];
+				cs+=4; ct+=4;
+			}
+			w=pic->width&3;
+			for (u=0 ;u<w ; u++)
+			{
+				ct[u] = d_8to16table[cs[u]];
+			}
+#endif
+
+#if 0
 			for (u=0 ; u<pic->width ; u++)
 			{
 				pusdest[u] = d_8to16table[source[u]];
 			}
+#endif
 
 			pusdest += vid.rowbytes >> 1;
 			source += pic->width;

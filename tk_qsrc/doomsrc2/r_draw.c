@@ -437,14 +437,15 @@ void R_DrawColumn_ZB (void)
 }
 #endif
 
-
+#if 0
 void R_DrawColumnLow (void) 
 { 
 	int			count; 
 	dt_scrpix	*dest; 
 	dt_scrpix	*dest2;
 	fixed_t		frac;
-	fixed_t		fracstep;	 
+	fixed_t		fracstep;
+	int			x1;
  
 	count = dc_yh - dc_yl; 
 
@@ -463,12 +464,15 @@ void R_DrawColumnLow (void)
 	//	dccount++; 
 #endif 
 	// Blocky mode, need to multiply by 2.
-	dc_x <<= 1;
+//	dc_x <<= 1;
+	x1 = dc_x << 1;
 
 //	R_CellMarkColumn();
 	
-	dest = ylookup[dc_yl] + columnofs[dc_x];
-	dest2 = ylookup[dc_yl] + columnofs[dc_x+1];
+//	dest = ylookup[dc_yl] + columnofs[dc_x];
+//	dest2 = ylookup[dc_yl] + columnofs[dc_x+1];
+	dest = ylookup[dc_yl] + columnofs[x1];
+	dest2 = ylookup[dc_yl] + columnofs[x1+1];
 	
 	fracstep = dc_iscale; 
 	frac = dc_texturemid + (dc_yl-centery)*fracstep;
@@ -482,7 +486,7 @@ void R_DrawColumnLow (void)
 		frac += fracstep; 
 	} while (count--);
 }
-
+#endif
 
 //
 // Spectre/Invisibility.
@@ -515,19 +519,22 @@ int	fuzzpos = 0;
 //
 void R_DrawFuzzColumn (void) 
 { 
+	static u64	fuzzseed;		//BGB
+	u64			fuzzmask;
 	int			count; 
 	dt_scrpix	*dest; 
 	fixed_t		frac;
 	fixed_t		fracstep;
-	int px;	 
+	int			px;
+	int			fuzzofs;		//BGB
 
 	// Adjust borders. Low... 
 	if (!dc_yl) 
-	dc_yl = 1;
+		dc_yl = 1;
 
 	// .. and high.
 	if (dc_yh == viewheight-1) 
-	dc_yh = viewheight - 2; 
+		dc_yh = viewheight - 2; 
 		 
 	count = dc_yh - dc_yl; 
 
@@ -535,6 +542,10 @@ void R_DrawFuzzColumn (void)
 	if (count < 0) 
 		return; 
 
+	
+	fuzzmask = fuzzseed >> 16;
+	fuzzseed = (fuzzseed + 1) * 65521;
+	fuzzmask += fuzzseed;
 	
 #ifdef RANGECHECK 
 	if ((unsigned)dc_x >= SCREENWIDTH
@@ -590,11 +601,83 @@ void R_DrawFuzzColumn (void)
 		// Add index from colormap to index.
 //		*dest = colormaps[6*256+dest[fuzzoffset[fuzzpos]]]; 
 
-		px=dest[fuzzoffset[fuzzpos]];
+		//BGB: using dynamic mask is faster than lookup table on BJX2
+		fuzzofs = -FUZZOFF;
+		if((fuzzmask>>fuzzpos)&1)
+			fuzzofs = FUZZOFF;
+
+//		px=dest[fuzzoffset[fuzzpos]];
+		px=dest[fuzzofs];
 		px-=1<<10;
 		if(px<0x0210)
 			px=0x0210;
 		*dest = px; 
+
+		// Clamp table lookup index.
+		if (++fuzzpos == FUZZTABLE) 
+			fuzzpos = 0;
+		
+		dest += SCREENWIDTH;
+
+		frac += fracstep; 
+	} while (count--); 
+} 
+ 
+
+void R_DrawFuzzColumnLow (void) 
+{ 
+	static u64	fuzzseed;		//BGB
+	u64			fuzzmask;
+	int			count; 
+	dt_scrpix	*dest; 
+	fixed_t		frac;
+	fixed_t		fracstep;
+	int			px;
+	int			fuzzofs;		//BGB
+
+	// Adjust borders. Low... 
+	if (!dc_yl) 
+		dc_yl = 1;
+
+	// .. and high.
+	if (dc_yh == viewheight-1) 
+		dc_yh = viewheight - 2; 
+		 
+	count = dc_yh - dc_yl; 
+
+	// Zero length.
+	if (count < 0) 
+		return; 
+
+	
+	fuzzmask = fuzzseed >> 16;
+	fuzzseed = (fuzzseed + 1) * 65521;
+	fuzzmask += fuzzseed;
+	
+	// Does not work with blocky mode.
+	dest = ylookup[dc_yl] + columnofs[dc_x<<1];
+
+	// Looks familiar.
+	fracstep = dc_iscale; 
+	frac = dc_texturemid + (dc_yl-centery)*fracstep; 
+
+	// Looks like an attempt at dithering,
+	//  using the colormap #6 (of 0-31, a bit
+	//  brighter than average).
+	do 
+	{
+		//BGB: using dynamic mask is faster than lookup table on BJX2
+		fuzzofs = -FUZZOFF;
+		if((fuzzmask>>fuzzpos)&1)
+			fuzzofs = FUZZOFF;
+
+//		px=dest[fuzzoffset[fuzzpos]];
+		px=dest[fuzzofs];
+		px-=1<<10;
+		if(px<0x0210)
+			px=0x0210;
+		dest[0] = px; 
+		dest[1] = px; 
 
 		// Clamp table lookup index.
 		if (++fuzzpos == FUZZTABLE) 
@@ -1025,6 +1108,7 @@ void R_DrawSpan_ZB (void)
 #endif
 
 
+#if 0
 //
 // Again..
 //
@@ -1034,7 +1118,8 @@ void R_DrawSpanLow (void)
 	fixed_t		yfrac; 
 	dt_scrpix	*dest; 
 	int			count;
-	int			spot; 
+	int			spot;
+	int			x1, x2;
 	 
 #ifdef RANGECHECK 
 	if (ds_x2 < ds_x1
@@ -1047,20 +1132,34 @@ void R_DrawSpanLow (void)
 	}
 //	dscount++; 
 #endif 
+	
+//	return;
 	 
 	xfrac = ds_xfrac; 
 	yfrac = ds_yfrac; 
 
 	// Blocky mode, need to multiply by 2.
-	ds_x1 <<= 1;
-	ds_x2 <<= 1;
+//	ds_x1 <<= 1;
+//	ds_x2 <<= 1;
+
+	x1 = ds_x1 << 1;
+	x2 = ds_x2 << 1;
+
+//	if(x1 < 0) x1 = 0;
+//	if(x2 >= SCREENWIDTH) x2 = SCREENWIDTH-1;
+
+//	x1 = ds_x1;
+//	x2 = ds_x2;
 
 //	R_CellMarkSpan();
 	
-	dest = ylookup[ds_y] + columnofs[ds_x1];
+//	dest = ylookup[ds_y] + columnofs[ds_x1];
+	dest = ylookup[ds_y] + columnofs[x1];
   
 	
-	count = ds_x2 - ds_x1; 
+//	count = ds_x2 - ds_x1; 
+//	count = x2 - x1; 
+	count = (x2 - x1)>>1; 
 	do 
 	{ 
 		spot = ((yfrac>>(16-6))&(63*64)) + ((xfrac>>16)&63);
@@ -1074,6 +1173,7 @@ void R_DrawSpanLow (void)
 
 	} while (count--); 
 }
+#endif
 
 //
 // R_InitBuffer 
@@ -1140,16 +1240,20 @@ void R_FillBackScreen (void)
 { 
 	byte*	src;
 	dt_scrpix	*dest; 
+	dt_scrpix	*cmap; 
 	int		x;
 	int		y;
 	int		w;
 	patch_t*	patch;
 
 	// DOOM border patch.
-	char	name1[] = "FLOOR7_2";
+//	char	name1[] = "FLOOR7_2";
 
 	// DOOM II border patch.
-	char	name2[] = "GRNROCK";	
+//	char	name2[] = "GRNROCK";	
+
+	static const char	*name1 = "FLOOR7_2";
+	static const char	*name2 = "GRNROCK";
 
 	char*	name;
 	
@@ -1163,6 +1267,9 @@ void R_FillBackScreen (void)
 	
 	src = W_CacheLumpName (name, PU_CACHE); 
 	dest = screens[1]; 
+	
+//	cmap = ds_colormap;
+	cmap = colormaps;
 	 
 	for (y=0 ; y<SCREENHEIGHT-SBARHEIGHT ; y++) 
 	{ 
@@ -1186,7 +1293,7 @@ void R_FillBackScreen (void)
 			{ 
 				for(w=0; w<64; w++)
 //					dest[w]=(src+((y&63)<<6))[w];
-					dest[w]=ds_colormap[(src+((y&63)<<6))[w]];
+					dest[w]=cmap[(src+((y&63)<<6))[w]];
 				dest += 64; 
 			} 
 
@@ -1194,7 +1301,7 @@ void R_FillBackScreen (void)
 			{ 
 				for(w=0; w<(SCREENWIDTH&63); w++)
 //					dest[w]=(src+((y&63)<<6))[w];
-					dest[w]=ds_colormap[(src+((y&63)<<6))[w]];
+					dest[w]=cmap[(src+((y&63)<<6))[w]];
 				dest += (SCREENWIDTH&63); 
 			}
 		}

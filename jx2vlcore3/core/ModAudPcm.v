@@ -25,7 +25,8 @@ S.E3.M4
 module ModAudPcm(
 	/* verilator lint_off UNUSED */
 	clock,		reset,
-	pwmOut,		auxPcmL,	auxPcmR,
+	pwmOut,		pwmEna,
+	auxPcmL,	auxPcmR,
 	busInData,	busOutData,	busAddr,
 	busOpm,		busOK,
 	timer1MHz,	timer64kHz,
@@ -38,6 +39,7 @@ input[31:0]		busInData;
 input[4:0]		busOpm;
 
 output[1:0]		pwmOut;
+output			pwmEna;
 output[31:0]	busOutData;
 output[1:0]		busOK;
 
@@ -55,12 +57,16 @@ reg[4:0]		tBusOpm;
 
 reg[1:0]	tPwmOut;
 reg[1:0]	tPwmOut2;
+reg			tPwmEna;
+reg			tPwmEna2;
+
 reg[31:0]	tOutData;
 reg[31:0]	tOutData2;
 reg[1:0]	tOutOK;
 reg[1:0]	tOutOK2;
 
 assign		pwmOut		= tPwmOut2;
+assign		pwmEna		= tPwmEna2;
 assign		busOutData	= tOutData2;
 assign		busOK		= tOutOK2;
 
@@ -216,6 +222,8 @@ begin
 
 //	tOutEnable = 1;
 
+	tPwmEna			= tOutEnable;
+
 //	tNxtClk1kHz		= timer1kHz ? !tClk1kHz : tClk1kHz;
 
 	{tPwmStCfL, tPwmNextStL} = {1'b0, tPwmStL} + {1'b0, tPwmValL};
@@ -369,8 +377,8 @@ begin
 //	tPwmNextValL = tPcmAddValL;
 //	tPwmNextValR = tPcmAddValR;
 
-	tPwmNextValL = {~tPcmAddVal2L[15], tPcmAddVal2L[15:0]};
-	tPwmNextValR = {~tPcmAddVal2R[15], tPcmAddVal2R[15:0]};
+	tPwmNextValL = {~tPcmAddVal2L[15], tPcmAddVal2L[14:0]};
+	tPwmNextValR = {~tPcmAddVal2R[15], tPcmAddVal2R[14:0]};
 
 `ifndef def_true
 //	{ tPcmCarryL, tPwmAddValL }	= 
@@ -415,6 +423,7 @@ end
 always @(posedge clock)
 begin
 	tPwmOut2	<= tPwmOut;
+	tPwmEna2	<= tPwmEna;
 //	tClk1kHz	<= tNxtClk1kHz;
 
 //	if(timer1MHz)

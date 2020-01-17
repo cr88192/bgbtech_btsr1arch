@@ -116,6 +116,9 @@ int		vol_lookup[128*256];
 int*		channelleftvol_lookup[NUM_CHANNELS];
 int*		channelrightvol_lookup[NUM_CHANNELS];
 
+int			channelleftvol[NUM_CHANNELS];
+int			channelrightvol[NUM_CHANNELS];
+
 
 //
 // This function loads the sound data from the WAD lump,
@@ -326,6 +329,9 @@ addsfx
 	channelleftvol_lookup[slot] = &vol_lookup[leftvol*256];
 	channelrightvol_lookup[slot] = &vol_lookup[rightvol*256];
 
+	channelleftvol[slot] = (leftvol*240)>>7;
+	channelrightvol[slot] = (rightvol*240)>>7;
+
 	// Preserve sound SFX id,
 	//	e.g. for avoiding duplicates of chainsaw.
 	channelids[slot] = sfxid;
@@ -478,11 +484,12 @@ int I_SoundIsPlaying(int handle)
 //
 void I_UpdateSound( void )
 {
+	int tmixbuf[64];
 
 #if 1
 	// Mix current sound data.
 	// Data, from raw sound, for right and left.
-	register unsigned int	sample;
+	register int		sample;
 	register int		dl;
 	register int		dr;
 	
@@ -490,24 +497,42 @@ void I_UpdateSound( void )
 	signed short*		leftout;
 	signed short*		rightout;
 	signed short*		leftend;
+
+	register	int*		tmixl;
+	register	int*		tmixr;
+
 	// Step in mixbuffer, left and right, thus two.
 	int				step;
 
 	// Mixing channel index.
 	int				chan;
+	int				samp;
 	
 	unsigned int chstp;
 	byte 	**chanptr;
 	unsigned int *chanstp;
 	byte	*chancur;
+	byte	*chanend;
 	int		**clvl;
 	int		**crvl;
+
+	int		**clv;
+	int		**crv;
 	int		nchan;
+	int		nsamp;
+	
+	register int		lvol;
+	register int		rvol;
+	int		chanstep;
+	
+	__hint_use_egpr();
 	
 #if 1
 	chanptr = channels;
 	clvl	= channelleftvol_lookup;
 	crvl	= channelrightvol_lookup;
+	clv		= channelleftvol;
+	crv		= channelrightvol;
 	chanstp	= channelstepremainder;
 #endif
 		
@@ -516,6 +541,9 @@ void I_UpdateSound( void )
 	leftout = mixbuffer;
 	rightout = mixbuffer+1;
 	step = 2;
+	
+	tmixl	= tmixbuf+0;
+	tmixr	= tmixbuf+1;
 
 	// Determine end, for left channel only
 	//	(right channel is implicit).
@@ -530,7 +558,21 @@ void I_UpdateSound( void )
 			continue;
 		nchan=chan+1;
 	}
+	
+	if(!nchan)
+	{
+		nsamp = leftend - leftout;
 
+		for(samp=0; samp < nsamp; samp += step)
+		{
+			leftout[samp] = 0;
+			rightout[samp] = 0;
+		}
+		
+		return;
+	}
+
+#if 0
 	// Mix sounds into the mixing buffer.
 	// Loop over step*SAMPLECOUNT,
 	//	that is 512 values for two channels.
@@ -581,8 +623,12 @@ void I_UpdateSound( void )
 			chstp = chanstp[ chan ];
 
 			sample = *chancur;
-			dl += clvl[ chan ][sample];
-			dr += crvl[ chan ][sample];
+//			dl += clvl[ chan ][sample];
+//			dr += crvl[ chan ][sample];
+
+			dl += __int_mulsw(clv[chan], sample-128);
+			dr += __int_mulsw(crv[chan], sample-128);
+
 			chstp += channelstep[ chan ];
 			chancur += chstp >> 16;
 			chstp &= 65535;
@@ -633,6 +679,87 @@ void I_UpdateSound( void )
 		rightout += step;
 	}
 #endif
+
+
+#if 1
+	while (leftout != leftend)
+	{
+		nsamp = leftend - leftout;
+		if(nsamp > 64)
+			nsamp = 64;
+
+#if 1
+		for(samp=0; samp < nsamp; samp += step)
+		{
+//			leftout[samp] = 0;
+//			rightout[samp] = 0;
+			tmixl[samp] = 0;
+			tmixr[samp] = 0;
+		}
+#endif
+
+		for ( chan = 0; chan < nchan; chan++ )
+		{
+			chancur = chanptr[ chan ];
+			if (!chancur)
+				continue;
+			chanend = channelsend[ chan ];
+				
+			chstp = chanstp[ chan ];
+			lvol = clv[chan];
+			rvol = crv[chan];
+			chanstep = channelstep[ chan ];
+
+			for(samp=0; samp < nsamp; samp += step)
+			{
+//				dl = leftout[samp];
+//				dr = rightout[samp];
+				dl = tmixl[samp];
+				dr = tmixr[samp];
+				sample = *chancur;
+				dl += __int_mulsw(lvol, sample-128);
+				dr += __int_mulsw(rvol, sample-128);
+//				dl = __int_clamp(dl, -32000, 32000);
+//				dr = __int_clamp(dr, -32000, 32000);
+//				leftout[samp] = dl;
+//				rightout[samp] = dr;
+				tmixl[samp] = dl;
+				tmixr[samp] = dr;
+
+				chstp += chanstep;
+				chancur += chstp >> 16;
+				chstp &= 65535;
+
+//				if (chancur >= chanend)
+//					break;
+			}
+
+			if (chancur >= chanend)
+				chancur = NULL;
+			chanptr[ chan ] = chancur;
+			chanstp[ chan ] = chstp;
+		}
+
+#if 1
+		for(samp=0; samp < nsamp; samp += step)
+		{
+			dl = tmixl[samp];
+			dr = tmixr[samp];
+			dl = __int_clamp(dl, -32000, 32000);
+			dr = __int_clamp(dr, -32000, 32000);
+			leftout[samp] = dl;
+			rightout[samp] = dr;
+		}
+#endif
+
+		leftout += nsamp;
+		rightout += nsamp;
+	}
+#endif
+
+
+#endif
+
 }
 
 
@@ -780,9 +907,19 @@ void I_ShutdownSound(void)
 
 void
 I_InitSound()
-{ 
+{
+	static int init=0;
+	
 #if 1 
 	int i;
+
+	if(init)
+	{
+		printf("I_InitSound: Skip\n");
+		return;
+	}
+	init=1;
+
 	
 	// Secure and configure sound device first.
 	fprintf( stderr, "I_InitSound: ");

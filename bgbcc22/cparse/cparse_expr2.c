@@ -1,8 +1,10 @@
 #include <bgbccc.h>
 
 //Lit:		Literal values/builtin expressions
-//PE:		(<expr>) <expr>[<expr>] <expr>.<name>
-//IncDec:	++<name> --<name> + - ! ~ ... <name>++ <name>-- <expr>(<args>)       
+//PE:		(<expr>) <expr>[<expr>]
+//Postfix:	<name>++ <name>-- <expr>(<args>)  <expr>.<name>
+//Unary:	++<name> --<name> + - ! ~ *
+//Cast:		(<Type>)<Unary>
 //E:		<expr>**<expr>
 //MD:		* / % \ &	*. /. %. \. &.
 //AS:		+ - | ^		+. -. |. ^.

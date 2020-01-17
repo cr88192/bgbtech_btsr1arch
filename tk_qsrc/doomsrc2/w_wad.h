@@ -59,6 +59,7 @@ typedef struct
     int		handle;
     int		position;
     int		size;
+    int		chain;
 } lumpinfo_t;
 
 

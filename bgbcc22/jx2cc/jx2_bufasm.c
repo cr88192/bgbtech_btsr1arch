@@ -801,6 +801,9 @@ int nmid;
 {"fstci",	BGBCC_SH_NMID_FSTCI},
 {"fstch",	BGBCC_SH_NMID_FSTCH},
 
+{"fldcfh",	BGBCC_SH_NMID_FLDCFH},
+{"fstcfh",	BGBCC_SH_NMID_FSTCFH},
+
 {"movd.l",	BGBCC_SH_NMID_MOVDL},
 {"movd",	BGBCC_SH_NMID_MOVD},
 {"movhd",	BGBCC_SH_NMID_MOVHD},

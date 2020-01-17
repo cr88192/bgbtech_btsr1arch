@@ -1420,6 +1420,10 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				op->fl|=BJX2_OPFL_NOWEX;
 				break;
 			case 0x1:	/* F0e1_1Dnm */
+				op->nmid=BJX2_NMID_FLDCFH;
+				op->fmid=BJX2_FMID_REGREG;
+				op->Run=BJX2_Op_FLDCFH_GRegReg;
+				op->fl|=BJX2_OPFL_NOWEX;
 				break;
 			case 0x2:	/* F0e2_1Dnm */
 				op->nmid=BJX2_NMID_FLDCI;
@@ -1440,6 +1444,10 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				op->fl|=BJX2_OPFL_NOWEX;
 				break;
 			case 0x5:	/* F0e5_1Dnm */
+				op->nmid=BJX2_NMID_FSTCFH;
+				op->fmid=BJX2_FMID_REGREG;
+				op->Run=BJX2_Op_FSTCFH_GRegReg;
+				op->fl|=BJX2_OPFL_NOWEX;
 				break;
 			case 0x6:	/* F0e6_1Dnm */
 				op->nmid=BJX2_NMID_FSTCI;

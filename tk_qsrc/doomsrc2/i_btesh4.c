@@ -6,6 +6,11 @@
 
 #include <stdarg.h>
 
+#ifndef BASEWIDTH
+#define BASEWIDTH SCREENWIDTH
+#define BASEHEIGHT SCREENHEIGHT
+#endif
+
 typedef unsigned short u16;
 typedef signed short s16;
 typedef unsigned int u32;
@@ -170,6 +175,53 @@ int I_GetTimeMs (void)
 
 void I_StartFrame (void)
 {
+#if 0
+	static int frnum=0;
+
+	dt_scrpix *cs;
+	u32 *ct;
+	int px1, px2, width;
+	u64 px3;
+	int x, y, p, frn;
+	
+	frnum = (frnum+1)&7;
+	frn = frnum^(frnum>>1);
+	width = scaledviewwidth / 16;
+
+	for(y=0; y<viewheight; y++)
+	{
+//		if((y&7)!=frnum)
+		if((y&7)!=frn)
+			continue;
+	
+		if(y&2)
+		{
+			px1=(18<<10)|(16<<5)|16;
+			px2=(14<<10)|(16<<5)|16;
+		}else
+		{
+			px1=(14<<10)|(16<<5)|16;
+			px2=(18<<10)|(16<<5)|16;
+		}
+		
+		px1|=(px1<<16);
+		px2|=(px2<<16);
+		px3=((u32)px1)|(((u64)((u32)px2))<<32);
+
+		cs=screens[0]+((y+viewwindowy)*BASEWIDTH)+viewwindowx;
+//		for(x=0; x<viewwidth; x++)
+//		for(x=0; x<(BASEWIDTH/4); x++)
+//		for(x=0; x<(BASEWIDTH/16); x++)
+		for(x=0; x<width; x++)
+		{
+			((u64 *)cs)[0]=px3;
+			((u64 *)cs)[1]=px3;
+			((u64 *)cs)[2]=px3;
+			((u64 *)cs)[3]=px3;
+			cs+=16;
+		}
+	}
+#endif
 }
 
 void I_StartTic (void)
@@ -225,11 +277,6 @@ void I_Error (char *error, ...)
     exit(-1);
 }
 
-
-#ifndef BASEWIDTH
-#define BASEWIDTH SCREENWIDTH
-#define BASEHEIGHT SCREENHEIGHT
-#endif
 
 unsigned short	d_8to16table[256];
 u32 *vid_vram;

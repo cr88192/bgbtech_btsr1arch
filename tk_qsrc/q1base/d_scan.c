@@ -1115,7 +1115,7 @@ void D_DrawSpans16 (espan_t *pspan)
 	unsigned short		*pbase;
 	unsigned short		*pdest;
 	int				count, spancount;
-	int				px, ycnt;
+	int				px, pu, pv;
 	fixed16_t		snext, tnext;
 	fixed16_t		s, t, s1, t1, sstep, tstep;
 	fixed16_t		bbmins, bbmaxs, bbmint, bbmaxt;
@@ -1145,17 +1145,19 @@ void D_DrawSpans16 (espan_t *pspan)
 
 	bbmins = 1;		bbmaxs = bbextents-1;
 	bbmint = 1;		bbmaxt = bbextentt-1;
-	ycnt=1024;
+//	ycnt=1024;
 
 	do
 	{
+		pu = pspan->u;
+		pv = pspan->v;
 		pdest = (unsigned short *)((short *)d_viewbuffer +
-				(screenwidth * pspan->v) + pspan->u);
+				(screenwidth * pv) + pu);
 
 		count = pspan->count;
 
-		du = (float)pspan->u;
-		dv = (float)pspan->v;
+		du = (float)pu;
+		dv = (float)pv;
 
 		sdivz = d_sdivzorigin + dv*d_sdivzstepv + du*d_sdivzstepu;
 		tdivz = d_tdivzorigin + dv*d_tdivzstepv + du*d_tdivzstepu;
@@ -1168,12 +1170,39 @@ void D_DrawSpans16 (espan_t *pspan)
 		s = __int_clamp(s, bbmins, bbmaxs);
 		t = __int_clamp(t, bbmint, bbmaxt);
 
-		if(!(ycnt&15))
-			sstep=0;
-		ycnt--;
+		if(!(pv&15))
+			{ sstep=0; tstep=0; }
+
+//		if(!(ycnt&15))
+//			sstep=0;
+//		ycnt--;
 
 //		sstep=0;
 //		tstep=0;
+
+#if 1
+		if((count<12) && (sstep|tstep))
+		{
+			s1 = s + count * sstep;
+			t1 = t + count * tstep;
+			snext = __int_clamp(s1, bbmins, bbmaxs);
+			tnext = __int_clamp(t1, bbmint, bbmaxt);
+			px=(snext^s1)|(tnext^t1);
+
+			if ((count > 1) && px)
+			{
+				sstep = D_SoftDivB((snext - s), count);
+				tstep = D_SoftDivB((tnext - t), count);
+			}
+
+			D_DrawSpans16_InnerPx2(
+				pbase,			pdest,
+				count,			cachewidth,
+				s,				t,
+				sstep,			tstep);
+			continue;
+		}
+#endif
 
 #if 1
 //		if((count>maxcount) && (count<48))

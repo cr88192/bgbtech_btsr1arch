@@ -690,6 +690,8 @@ RegCR regCr(
 
 /* EX1 */	
 
+reg[63:0]		ex2RegInSr;
+
 
 wire[63:0]		ex1MulVal;
 wire[63:0]		ex1MulWVal;
@@ -896,7 +898,7 @@ reg[63:0]		ex2RegInSp;
 wire[31:0]		ex2RegOutLr;
 reg[31:0]		ex2RegInLr;
 wire[63:0]		ex2RegOutSr;
-reg[63:0]		ex2RegInSr;
+// reg[63:0]		ex2RegInSr;
 
 wire[7:0]		ex2RegOutSchm;
 reg[7:0]		ex2RegInSchm;
@@ -1215,7 +1217,8 @@ begin
 	crInSpc			= crOutSpc;
 	crInSsp			= crOutSsp;
 	crInTea			= crOutTea;
-	tValNextBraPc	= UV32_XX;
+//	tValNextBraPc	= UV32_XX;
+	tValNextBraPc	= UV32_00;
 
 `ifdef jx2_debug_hitmiss
 	tBraNxtHitMiss	= tBraHitMiss;
@@ -1806,6 +1809,8 @@ begin
 			else
 				crInSpc		= ifLastPc;
 
+			$display("ISR PC=%X, SPC=%X", tValNextBraPc, crInSpc);
+
 			if(tRegExc[15:12]==4'b1110)
 			begin
 //				crInSpc			= id1ValBPc;
@@ -1821,19 +1826,23 @@ begin
 		end
 		else
 		begin
-			$display("ExUnit: Double-Fault EXC=%X, PC=%X",
-				tRegExc, ex1ValBPc);
+			$display("ExUnit: Double-Fault EXC=%X, id2.PC=%X ex1.PC=%X ex2.PC=%X",
+				tRegExc, id2ValBPc, ex1ValBPc, ex2ValBPc);
 		end
 	end
 
 `ifdef jx2_bra2stage
 	if(opBraFlushMask[4])
 	begin
+//		if(crOutSr[28])
+//			$display("Branch %X", tValNextBraPc);
 		tValNextPc = tValBraPc;
 	end
 `else
 	if(nxtBraFlushMask[3])
 	begin
+//		if(crOutSr[28])
+//			$display("Branch %X", tValNextBraPc);
 		tValNextPc = tValNextBraPc;
 	end
 `endif
@@ -2243,17 +2252,20 @@ begin
 
 `ifdef jx2_enable_wex
 		exB1OpUCmd		<= { JX2_IXC_NV, JX2_UCMD_NOP };
+		exB1OpUIxt		<= UV8_00;
 `endif
 
 `ifdef jx2_enable_wex3w
 		exC1OpUCmd		<= { JX2_IXC_NV, JX2_UCMD_NOP };
+		exC1OpUIxt		<= UV8_00;
 `endif
 
 `ifdef def_true
 //		ex1ValBPc		<= UV32_XX;
 		ex1ValBPc		<= ex1ValBPc;
 //		ex1OpUCmd		<= UV8_XX;
-		ex1OpUIxt		<= UV8_XX;
+//		ex1OpUIxt		<= UV8_XX;
+		ex1OpUIxt		<= UV8_00;
 		ex1PreBra		<= 0;
 		ex1IstrWord		<= UV32_XX;
 

@@ -317,6 +317,9 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_MULUL		0xA1		//
 #define BJX2_NMID_LDIL		0xA2		//
 
+#define BJX2_NMID_FLDCFH	0xA4		//
+#define BJX2_NMID_FSTCFH	0xA5		//
+
 
 #define BJX2_FMID_NONE			0x00		//?
 #define BJX2_FMID_REG			0x01		//Rn

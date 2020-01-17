@@ -453,7 +453,8 @@ begin
 `endif
 
 
-	tRegOutPcVal	= UV96_XX;
+//	tRegOutPcVal	= UV96_XX;
+	tRegOutPcVal	= UV96_00;
 	tRegOutPcStep	= 0;
 	tPcStepWA		= 0;
 	tPcStepWB		= 0;

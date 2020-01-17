@@ -126,10 +126,10 @@ u32 TKPE_CalculateImagePel4BChecksum(byte *buf, int size)
 	{
 		v=*(u32 *)cs;
 		acc_lo=acc_lo+v;
-		acc_lo=((u32)acc_lo)+(acc_lo>>32);
+//		acc_lo=((u32)acc_lo)+(acc_lo>>32);
 
 		acc_hi=acc_hi+acc_lo;
-		acc_hi=((u32)acc_hi)+(acc_hi>>32);
+//		acc_hi=((u32)acc_hi)+(acc_hi>>32);
 		cs+=4;
 	}
 	acc_lo=((u32)acc_lo)+(acc_lo>>32);
@@ -287,23 +287,27 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 
 	if(is_pel4)
 	{
-		if(ct!=cte)
-		{
-			printf("Image Size Mismatch %08X -> %08X\n",
-				cte-imgptr, ct-imgptr);
-			__debugbreak();
-		}
-	
 		csum1=*(u32 *)(imgptr+ofs_pe+0x58);
-		*(u16 *)(imgptr+ofs_pe+0x02)=0;		
-		*(u32 *)(imgptr+ofs_pe+0x58)=0;
 		
-//		csum2=TKPE_CalculateImagePel4Checksum(imgptr, imgsz);
-		csum2=TKPE_CalculateImagePel4BChecksum(imgptr, imgsz);
-		if(csum1 && (csum1!=csum2))
+		if(csum1)
 		{
-			printf("Image Checksum Mismatch %08X -> %08X\n", csum1, csum2);
-			__debugbreak();
+			if(ct!=cte)
+			{
+				printf("Image Size Mismatch %08X -> %08X\n",
+					cte-imgptr, ct-imgptr);
+				__debugbreak();
+			}
+		
+			*(u16 *)(imgptr+ofs_pe+0x02)=0;		
+			*(u32 *)(imgptr+ofs_pe+0x58)=0;
+			
+	//		csum2=TKPE_CalculateImagePel4Checksum(imgptr, imgsz);
+			csum2=TKPE_CalculateImagePel4BChecksum(imgptr, imgsz);
+			if(csum1!=csum2)
+			{
+				printf("Image Checksum Mismatch %08X -> %08X\n", csum1, csum2);
+				__debugbreak();
+			}
 		}
 	}
 

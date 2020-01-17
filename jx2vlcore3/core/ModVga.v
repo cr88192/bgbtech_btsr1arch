@@ -9,6 +9,8 @@ pwmOut
 	[ 3:0]=Blue
  */
 
+`include "ModVgaDith.v"
+
 module ModVga(
 	clock,		reset,
 	pixCy,		pixCu,		pixCv,
@@ -91,6 +93,8 @@ reg[15:0]	tModNextCv;
 reg[15:0]	tBaseCy;
 reg[15:0]	tBaseCu;
 reg[15:0]	tBaseCv;
+reg[15:0]	tBaseCuL;
+reg[15:0]	tBaseCvL;
 
 reg[15:0]	tBaseNextCy;
 reg[15:0]	tBaseNextCu;
@@ -164,6 +168,25 @@ reg			tPwmOutCarryB;
 
 //reg			pwmIs4bit;
 
+// reg[1:0]	dithPixXor;
+// reg			dithRndUpR;
+// reg			dithRndUpG;
+// reg			dithRndUpB;
+
+wire		dithRndUpR;
+wire		dithRndUpG;
+wire		dithRndUpB;
+
+ModVgaDith	dithR(
+	tPixPosX[1:0], tPixPosY[1:0], tVFieldCnt,
+	tPwmValR[3:0], dithRndUpR);
+ModVgaDith	dithG(
+	tPixPosX[1:0], tPixPosY[1:0], tVFieldCnt,
+	tPwmValG[3:0], dithRndUpG);
+ModVgaDith	dithB(
+	tPixPosX[1:0], tPixPosY[1:0], tVFieldCnt,
+	tPwmValB[3:0], dithRndUpB);
+
 always @*
 begin
 //	pwmIs4bit = 0;
@@ -176,6 +199,78 @@ begin
 	{tPwmCarryB, tPwmNextStB} = {1'b0, tPwmStB} +
 		{1'b0, tPwmValB[3:0], timerNoise};
 
+`ifndef def_true
+	dithPixXor = tPixPosX[1:0] ^ tPixPosY[1:0];
+	case({tVFieldCnt^dithPixXor, tPwmValR[3:1]})
+		/* 75.0% */
+		5'b00000: dithRndUpR = 0;		5'b00001: dithRndUpR = 0;
+		5'b00010: dithRndUpR = 0;		5'b00011: dithRndUpR = 0;
+		5'b00100: dithRndUpR = 0;		5'b00101: dithRndUpR = 0;
+		5'b00110: dithRndUpR = 1;		5'b00111: dithRndUpR = 1;
+		/* 37.5% */
+		5'b01000: dithRndUpR = 0;		5'b01001: dithRndUpR = 0;
+		5'b01010: dithRndUpR = 0;		5'b01011: dithRndUpR = 1;
+		5'b01100: dithRndUpR = 1;		5'b01101: dithRndUpR = 1;
+		5'b01110: dithRndUpR = 1;		5'b01111: dithRndUpR = 1;
+		/* 25.0% */
+		5'b10000: dithRndUpR = 0;		5'b10001: dithRndUpR = 0;
+		5'b10010: dithRndUpR = 1;		5'b10011: dithRndUpR = 1;
+		5'b10100: dithRndUpR = 1;		5'b10101: dithRndUpR = 1;
+		5'b10110: dithRndUpR = 1;		5'b10111: dithRndUpR = 1;
+		/* 62.5% */
+		5'b11000: dithRndUpR = 0;		5'b11001: dithRndUpR = 0;
+		5'b11010: dithRndUpR = 0;		5'b11011: dithRndUpR = 0;
+		5'b11100: dithRndUpR = 0;		5'b11101: dithRndUpR = 1;
+		5'b11110: dithRndUpR = 1;		5'b11111: dithRndUpR = 1;
+	endcase
+
+	case({tVFieldCnt^dithPixXor, tPwmValG[3:1]})
+		/* 75.0% */
+		5'b00000: dithRndUpG = 0;		5'b00001: dithRndUpG = 0;
+		5'b00010: dithRndUpG = 0;		5'b00011: dithRndUpG = 0;
+		5'b00100: dithRndUpG = 0;		5'b00101: dithRndUpG = 0;
+		5'b00110: dithRndUpG = 1;		5'b00111: dithRndUpG = 1;
+		/* 37.5% */
+		5'b01000: dithRndUpG = 0;		5'b01001: dithRndUpG = 0;
+		5'b01010: dithRndUpG = 0;		5'b01011: dithRndUpG = 1;
+		5'b01100: dithRndUpG = 1;		5'b01101: dithRndUpG = 1;
+		5'b01110: dithRndUpG = 1;		5'b01111: dithRndUpG = 1;
+		/* 25.0% */
+		5'b10000: dithRndUpG = 0;		5'b10001: dithRndUpG = 0;
+		5'b10010: dithRndUpG = 1;		5'b10011: dithRndUpG = 1;
+		5'b10100: dithRndUpG = 1;		5'b10101: dithRndUpG = 1;
+		5'b10110: dithRndUpG = 1;		5'b10111: dithRndUpG = 1;
+		/* 62.5% */
+		5'b11000: dithRndUpG = 0;		5'b11001: dithRndUpG = 0;
+		5'b11010: dithRndUpG = 0;		5'b11011: dithRndUpG = 0;
+		5'b11100: dithRndUpG = 0;		5'b11101: dithRndUpG = 1;
+		5'b11110: dithRndUpG = 1;		5'b11111: dithRndUpG = 1;
+	endcase
+
+	case({tVFieldCnt^dithPixXor, tPwmValB[3:1]})
+		/* 75.0% */
+		5'b00000: dithRndUpB = 0;		5'b00001: dithRndUpB = 0;
+		5'b00010: dithRndUpB = 0;		5'b00011: dithRndUpB = 0;
+		5'b00100: dithRndUpB = 0;		5'b00101: dithRndUpB = 0;
+		5'b00110: dithRndUpB = 1;		5'b00111: dithRndUpB = 1;
+		/* 37.5% */
+		5'b01000: dithRndUpB = 0;		5'b01001: dithRndUpB = 0;
+		5'b01010: dithRndUpB = 0;		5'b01011: dithRndUpB = 1;
+		5'b01100: dithRndUpB = 1;		5'b01101: dithRndUpB = 1;
+		5'b01110: dithRndUpB = 1;		5'b01111: dithRndUpB = 1;
+		/* 25.0% */
+		5'b10000: dithRndUpB = 0;		5'b10001: dithRndUpB = 0;
+		5'b10010: dithRndUpB = 1;		5'b10011: dithRndUpB = 1;
+		5'b10100: dithRndUpB = 1;		5'b10101: dithRndUpB = 1;
+		5'b10110: dithRndUpB = 1;		5'b10111: dithRndUpB = 1;
+		/* 62.5% */
+		5'b11000: dithRndUpB = 0;		5'b11001: dithRndUpB = 0;
+		5'b11010: dithRndUpB = 0;		5'b11011: dithRndUpB = 0;
+		5'b11100: dithRndUpB = 0;		5'b11101: dithRndUpB = 1;
+		5'b11110: dithRndUpB = 1;		5'b11111: dithRndUpB = 1;
+	endcase
+`endif
+
 	tPwmOutAR = tPwmValR[7:4];
 	tPwmOutAG = tPwmValG[7:4];
 	tPwmOutAB = tPwmValB[7:4];
@@ -183,18 +278,30 @@ begin
 	{tPwmOutCarryG, tPwmOutBG} = {1'b0, tPwmOutAG} + 1;
 	{tPwmOutCarryB, tPwmOutBB} = {1'b0, tPwmOutAB} + 1;
 
-// `ifndef def_true
-`ifdef def_true
+`ifndef def_true
+// `ifdef def_true
 	tPwmOut[11:8] = (tPwmCarryR && !tPwmOutCarryR && tPwmEn) ?
 		tPwmOutBR : tPwmOutAR;
 	tPwmOut[ 7:4] = (tPwmCarryG && !tPwmOutCarryG && tPwmEn) ?
 		tPwmOutBG : tPwmOutAG;
 	tPwmOut[ 3:0] = (tPwmCarryB && !tPwmOutCarryB && tPwmEn) ?
 		tPwmOutBB : tPwmOutAB;
-`else
+// `else
+`endif
+
+`ifndef def_true
 	tPwmOut[11:8] = tPwmOutAR;
 	tPwmOut[ 7:4] = tPwmOutAG;
 	tPwmOut[ 3:0] = tPwmOutAB;
+`endif
+
+`ifdef def_true
+	tPwmOut[11:8] = (dithRndUpR && !tPwmOutCarryR && tPwmEn) ?
+		tPwmOutBR : tPwmOutAR;
+	tPwmOut[ 7:4] = (dithRndUpG && !tPwmOutCarryG && tPwmEn) ?
+		tPwmOutBG : tPwmOutAG;
+	tPwmOut[ 3:0] = (dithRndUpB && !tPwmOutCarryB && tPwmEn) ?
+		tPwmOutBB : tPwmOutAB;
 `endif
 
 	tPwmOut[12] = !tHsync;
@@ -294,8 +401,8 @@ begin
 			tBaseNextCv = { 8'h0, tPixCv } - 128;
 
 			tBaseNextCg	= tBaseCy - (tBaseCu>>1) - (tBaseCv>>1);
-			tBaseNextCr = tBaseCg + (tBaseCv<<1);
-			tBaseNextCb = tBaseCg + (tBaseCu<<1);
+			tBaseNextCr = tBaseCg + (tBaseCvL<<1);
+			tBaseNextCb = tBaseCg + (tBaseCuL<<1);
 			
 			tBaseNextCrB	= tBaseCr;
 			tBaseNextCgB	= tBaseCgL;
@@ -431,6 +538,8 @@ begin
 	tBaseCy			<= tBaseNextCy;
 	tBaseCu			<= tBaseNextCu;
 	tBaseCv			<= tBaseNextCv;
+	tBaseCuL		<= tBaseCu;
+	tBaseCvL		<= tBaseCv;
 
 	tBaseCr			<= tBaseNextCr;
 	tBaseCg			<= tBaseNextCg;

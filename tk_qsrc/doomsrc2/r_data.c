@@ -121,6 +121,7 @@ typedef struct
 	char	name[8];		
 	short	width;
 	short	height;
+	short	next;		//BGB: next texture in hash chain
 	
 	// All the patches[patchcount]
 	//	are drawn back to front into the cached texture.
@@ -145,6 +146,8 @@ int		numspritelumps;
 
 int		numtextures;
 texture_t**	textures;
+
+short	texturehash[64];
 
 
 int*			texturewidthmask;
@@ -455,6 +458,7 @@ void R_InitTextures (void)
 
 	int			i;
 	int			j;
+	int			k;
 
 	int*		maptex;
 	int*		maptex2;
@@ -480,7 +484,6 @@ void R_InitTextures (void)
 	int			temp2;
 	int			temp3;
 
-	
 	// Load the patch names from pnames.lmp.
 	name[8] = 0;	
 	names = W_CacheLumpName ("PNAMES", PU_STATIC);
@@ -528,6 +531,8 @@ void R_InitTextures (void)
 
 	totalwidth = 0;
 	
+	printf("\n");
+	
 	//	Really complex printing shit...
 	temp1 = W_GetNumForName ("S_START");	// P_???????
 	temp2 = W_GetNumForName ("S_END") - 1;
@@ -536,9 +541,15 @@ void R_InitTextures (void)
 	for (i = 0; i < temp3; i++)
 	printf(" ");
 	printf("		 ]");
-	for (i = 0; i < temp3; i++)
-	printf("\x8");
-	printf("\x8\x8\x8\x8\x8\x8\x8\x8\x8\x8");	
+//	for (i = 0; i < temp3; i++)
+//		printf("\x8");
+//	printf("\x8\x8\x8\x8\x8\x8\x8\x8\x8\x8");	
+
+	printf("\r[");
+
+	//BGB: keep hash chains for texture lookups.
+	for(i=0; i < 64; i++)
+		texturehash[i] = -1;
 	
 	for (i=0 ; i<numtextures ; i++, directory++)
 	{
@@ -569,7 +580,14 @@ void R_InitTextures (void)
 		texture->height = SHORT(mtexture->height);
 		texture->patchcount = SHORT(mtexture->patchcount);
 
-		memcpy (texture->name, mtexture->name, sizeof(texture->name));
+//		memcpy (texture->name, mtexture->name, sizeof(texture->name));
+
+		w_strupr_n(texture->name, mtexture->name, sizeof(texture->name));
+		
+		j = W_HashIndexForName(texture->name);
+		texture->next = texturehash[j];
+		texturehash[j] = i;
+		
 		mpatch = &mtexture->patches[0];
 		patch = &texture->patches[0];
 
@@ -629,7 +647,7 @@ void R_InitFlats (void)
 	flattranslation = Z_Malloc ((numflats+1)*4, PU_STATIC, 0);
 	
 	for (i=0 ; i<numflats ; i++)
-	flattranslation[i] = i;
+		flattranslation[i] = i;
 }
 
 
@@ -827,15 +845,34 @@ int R_FlatNumForName (char* name)
 //
 int	R_CheckTextureNumForName (char *name)
 {
-	int		i;
+	char tname[9];
+	int		i, h;
 
 	// "NoTexture" marker.
 	if (name[0] == '-')		
-	return 0;
-		
+		return 0;
+	
+	w_strupr_n(tname, name, 8);
+	h = W_HashIndexForName(tname);
+
+#if 1
+	i = texturehash[h];
+	while(i>=0)
+	{
+		if (!memcmp (textures[i]->name, tname, 8) )
+			return(i);
+		i = textures[i]->next;
+	}
+#endif
+
+#if 0
 	for (i=0 ; i<numtextures ; i++)
-	if (!strnicmp (textures[i]->name, name, 8) )
-		return i;
+	{
+//		if (!strnicmp (textures[i]->name, name, 8) )
+		if (!memcmp (textures[i]->name, tname, 8) )
+			return i;
+	}
+#endif
 		
 	return -1;
 }

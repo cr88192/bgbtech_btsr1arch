@@ -88,12 +88,14 @@ int vid_clamp255(int v)
 	return(v);
 }
 
+#ifndef __BGBCC_JX2__
 int VID_BlendEven16(int pixa, int pixb)
 {
 	int pix;
 	pix=((pixa&0xFBDF)+(pixb&0xFBDF))>>1;
 	return(pix);
 }
+#endif
 
 int VID_Blend66_16(int pixa, int pixb)
 {

@@ -38,6 +38,7 @@ module CoreUnit(
 	sdc_clk,	sdc_cmd,	sdc_ena,
 
 	aud_mono_out,
+	aud_mono_ena,
 	seg_outCharBit,
 	seg_outSegBit,
 
@@ -116,6 +117,7 @@ output			sdc_cmd;
 output			sdc_ena;
 
 output			aud_mono_out;
+output			aud_mono_ena;
 output[7:0]		seg_outCharBit;
 output[7:0]		seg_outSegBit;
 
@@ -382,19 +384,23 @@ ModTxtNtW	scrn(
 	timerNoise,		timer256Hz);
 
 wire[1:0]	audPwmOut;
+wire		audPwmEna;
 wire[31:0]	audMmioOutData;
 wire[1:0]	audMmioOK;
 
 reg			audPwmOut2;
+reg			audPwmEna2;
 // assign		aud_mono_out	= audPwmOut[0];
 assign		aud_mono_out	= audPwmOut2;
+assign		aud_mono_ena	= audPwmEna2;
 
 wire[7:0]	audAuxPcmL;
 wire[7:0]	audAuxPcmR;
 
 ModAudPcm	pcm(
 	clock,			reset,
-	audPwmOut,		audAuxPcmL,			audAuxPcmR,
+	audPwmOut,		audPwmEna,
+	audAuxPcmL,		audAuxPcmR,
 	mmioOutData,	audMmioOutData,		mmioAddr,
 	mmioOpm,		audMmioOK,
 	timer1MHz,		timer64kHz,
@@ -647,6 +653,7 @@ begin
 	tSegOutSegBit		<= ssOutSegBit;
 	
 	audPwmOut2			<= audPwmOut[0];
+	audPwmEna2			<= audPwmEna;
 
 end
 

@@ -669,6 +669,9 @@
 #define BGBCC_SH_NMID_BRA2B			0x012E	//BRA (16-bit)
 #define BGBCC_SH_NMID_BRA4B			0x012F	//BRA (32-bit)
 
+#define BGBCC_SH_NMID_FLDCFH		0x0130	//
+#define BGBCC_SH_NMID_FSTCFH		0x0131	//
+
 
 #define BGBCC_SH_FMID_REGREG		0x01	//Rm, Rn
 #define BGBCC_SH_FMID_REGRM			0x02	//Rm

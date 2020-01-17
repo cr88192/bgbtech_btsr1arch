@@ -182,12 +182,14 @@ int TKSPI_ReadData(byte *buf, u32 len)
 	
 	while((n--)>0)
 	{
+#if 0
 		rv=TKSPI_XchByte(0xFF);
 //		printf("%02X ", rv);
 //		printf("*%p=%02X ", ct, rv);
 		*ct++=rv;
+#endif
 
-#if 0
+#if 1
 		P_SPI_DATA=0xFF;
 		P_SPI_CTRL=tkspi_ctl_status|SPICTRL_XMIT;
 		v=P_SPI_CTRL;
@@ -300,7 +302,7 @@ int TKSPI_AddCRC(int crc, int v)
 
 byte TKSPI_SendCmd(byte cmd, u32 arg)
 {
-	byte b0, b1, b2, b3, b4, b5;
+//	byte b0, b1, b2, b3, b4, b5;
 	byte n, h, res;
 
 	if(cmd&0x80)

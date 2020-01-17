@@ -737,7 +737,7 @@ void R_ExecuteSetViewSize (void)
 	else
 	{
 		colfunc = basecolfunc = R_DrawColumnLow;
-		fuzzcolfunc = R_DrawFuzzColumn;
+		fuzzcolfunc = R_DrawFuzzColumnLow;
 		transcolfunc = R_DrawTranslatedColumn;
 		spanfunc = R_DrawSpanLow;
 	}
@@ -882,6 +882,12 @@ void R_SetupFrame (player_t* player)
 			colfunc = basecolfunc = R_DrawColumn_ZB;
 			spanfunc = R_DrawSpan_ZB;
 		}
+	}else
+	{
+		colfunc = basecolfunc = R_DrawColumnLow;
+		fuzzcolfunc = R_DrawFuzzColumnLow;
+		transcolfunc = R_DrawTranslatedColumn;
+		spanfunc = R_DrawSpanLow;
 	}
 
 	viewplayer = player;

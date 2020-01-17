@@ -109,8 +109,8 @@ int SMus_Init()
 		smus_noteatt[i]=63-(i>>1);
 		
 //		freq=pow(2, (i-69)/12.0)*440;
-//		freq=pow(2.0, (i-69)/12.0)*440.0;
-		freq=smus_ipow2((i-69)/12.0)*440.0;
+		freq=pow(2.0, (i-69)/12.0)*440.0;
+//		freq=smus_ipow2((i-69)/12.0)*440.0;
 		
 //		ph=freq/62500.0;
 		ph=freq/64000.0;
@@ -163,9 +163,15 @@ int SMus_SilenceAll()
 		smus_chanvol[i]=127;
 		smus_chanpbl[i]=128;
 		
-		smus_vnflg[i]=0;
+//		smus_vnflg[i]=0;
 		smus_chanvn[i]=0xFF;
 	}
+
+	for(i=0; i<32; i++)
+	{
+		smus_vnflg[i]=0;
+	}
+
 	return(0);
 }
 
@@ -227,7 +233,8 @@ int SMus_FindFreeVoice(int fl)
 		for(i=0; i<16; i++)
 		{
 //			if(!smus_vnflg[i] && !smus_vnflg[8+i])
-			if(!smus_vnflg[i])
+//			if(!smus_vnflg[i*2+0])
+			if(!smus_vnflg[i*2+0] && !smus_vnflg[i*2+1])
 			{
 				return(16|i);
 			}
@@ -247,7 +254,7 @@ int SMus_FindFreeVoice(int fl)
 //	for(i=0; i<8; i++)
 	for(i=0; i<16; i++)
 	{
-		if(!smus_vnflg[i])
+		if(!smus_vnflg[i*2+0])
 		{
 			return(i);
 		}
@@ -440,17 +447,24 @@ int SMus_NoteOn(int ch, int d0, int d1)
 
 //		if(!(fbconn&1) && (vn1<4))
 		if(!(fbconn&1))
+//		if(1)
 		{
 			rv1|=0x00200000;
-			smus_vnflg[vn1]|=1;
-			smus_vnflg[vn2]|=2;
+//			smus_vnflg[vn1]|=1;
+//			smus_vnflg[vn2]|=2;
 		}
+
+		smus_vnflg[vn1]|=1;
+		smus_vnflg[vn2]|=2;
 
 //		smus_regs[vn1]=rv1;
 //		smus_regs[vn2]=rv2;
 
 		smus_regs[vn1*4+0]=rv1;
 		smus_regs[vn2*4+0]=rv2;
+
+//		smus_regs[vn2*4+0]=rv1;
+//		smus_regs[vn1*4+0]=rv2;
 	}else
 	{
 //		dv=smus_notediv[d0];

@@ -188,7 +188,7 @@ byte *TKFAT_GetSectorTempBuffer(TKFAT_ImageInfo *img,
 		tbd=tk_malloc(n*512);
 		img->tbc_buf[i]=tbd;
 		img->tbc_lba[i]=lba;
-		img->tbc_lbn[i]=n;
+		img->tbc_lbn[i]=num;
 
 		img->tbc_pred1=img->tbc_pred0;
 		img->tbc_pred0=i;
@@ -216,7 +216,7 @@ byte *TKFAT_GetSectorTempBuffer(TKFAT_ImageInfo *img,
 			img->tbc_buf[i]=tk_malloc(n*512);
 		}
 		img->tbc_lba[i]=lba;
-		img->tbc_lbn[i]=n;
+		img->tbc_lbn[i]=num;
 		tbd=img->tbc_buf[i];
 
 		img->tbc_pred1=img->tbc_pred0;
@@ -432,7 +432,7 @@ byte *TKFAT_GetSectorTempFatBuffer(TKFAT_ImageInfo *img,
 
 		tbc_buf[i]=tbd;
 		tbc_lba[i]=lba;
-		tbc_lbn[i]=n;
+		tbc_lbn[i]=num;
 
 		img->tfbc_pred1=img->tfbc_pred0;
 		img->tfbc_pred0=i;
@@ -462,7 +462,7 @@ byte *TKFAT_GetSectorTempFatBuffer(TKFAT_ImageInfo *img,
 			img->tfbc_buf[i]=tk_malloc(n*512);
 		}
 		img->tfbc_lba[i]=lba;
-		img->tfbc_lbn[i]=n;
+		img->tfbc_lbn[i]=num;
 		tbd=img->tfbc_buf[i];
 
 		img->tfbc_pred1=img->tfbc_pred0;

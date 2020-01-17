@@ -126,11 +126,16 @@ void D_DrawSolidSurface (surf_t *surf, int color)
 void D_DrawSolidSurface16 (surf_t *surf, int color)
 {
 	espan_t	*span;
-	u16		*pdest;
-	int		u, u2, pix;
+	u16		*pdest, *ct, *cte, *ct1e;
+	int 	*ct32;
+	u64 	*ct64;
+	u64		pix64;
+	int		u, u1, u2, pix;
+	int		i;
 	
 //	pix = (color<<24) | (color<<16) | (color<<8) | color;
 	pix = (color<<16) | color;
+	pix64	= (((u64)((u32)pix))<<32)|((u32)pix);
 	for (span=surf->spans ; span ; span=span->pnext)
 	{
 		pdest = (u16 *)d_viewbuffer + screenwidth*span->v;
@@ -145,19 +150,64 @@ void D_DrawSolidSurface16 (surf_t *surf, int color)
 		}
 		else
 		{
+#if 0
 			for (u++ ; u & 3 ; u++)
 				pdest[u] = pix;
-
 			u2 -= 4;
 			for ( ; u <= u2 ; u+=2)
 				*(int *)(pdest + u) = pix;
 			u2 += 4;
 			for ( ; u <= u2 ; u++)
 				pdest[u] = pix;
+#endif
+
+#if 1
+//			ct = pdest;
+			ct = (pdest + u + 1);
+			cte = (pdest + u2);
+//			u1 = (u2-u)&(~7);
+//			ct32 = (int *)(pdest + u);
+//			for ( i = 0; i < u1 ; i += 8)
+			ct1e=cte-16;
+//			while((ct+16)<cte)
+			while(ct<ct1e)
+			{
+//				ct32 = (int *)ct;
+//				ct32[0] = pix;	ct32[1] = pix;
+//				ct32[2] = pix;	ct32[3] = pix;
+//				ct32 += 4;
+
+				ct64 = (u64 *)ct;
+				ct64[0] = pix64;
+				ct64[1] = pix64;
+				ct64[2] = pix64;
+				ct64[3] = pix64;
+
+				ct += 16;
+			}
+//			ct = (u16 *)ct32;
+//			u1 = (u2-u)&7;
+//			for ( i = 0; i <= u1 ; i ++)
+//				ct[u] = pix;
+
+			ct1e=cte-4;
+//			while((ct+4)<cte)
+			while(ct<ct1e)
+			{
+				*(u64 *)ct=pix64;
+				ct += 4;
+			}
+
+			while(ct<=cte)
+				*ct++=pix;
+#endif
 		}
 	}
 }
 
+
+float __fpu_fdiv_sf(float x, float y);
+float __fpu_frcp_sf(float x);
 
 /*
 ==============
@@ -179,7 +229,8 @@ void D_CalcGradients (msurface_t *pface)
 
 //	i = 1 << miplevel;
 //	mipscale = 1.0 / ((float)i);
-	mipscale = 1.0 / (float)(1 << miplevel);
+//	mipscale = 1.0 / (float)(1 << miplevel);
+	mipscale = __fpu_frcp_sf((float)(1 << miplevel));
 
 //	tk_printf("mipscape = %f\n", mipscale);
 

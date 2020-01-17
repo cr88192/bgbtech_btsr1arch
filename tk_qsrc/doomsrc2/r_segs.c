@@ -759,18 +759,18 @@ R_StoreWallRange
   
 	if (frontsector->floorheight >= viewz)
 	{
-	// above view plane
-	markfloor = false;
+		// above view plane
+		markfloor = false;
 	}
 	
 	if (frontsector->ceilingheight <= viewz 
 	&& frontsector->ceilingpic != skyflatnum)
 	{
-	// below view plane
-	markceiling = false;
+		// below view plane
+		markceiling = false;
 	}
 
-#if 1
+#if 1	//BGB: PolyObj
 	if(r_ispolyobj)
 	{
 		//drawing a PolyObj
@@ -807,13 +807,15 @@ R_StoreWallRange
 			pixlowstep = -FixedMul (rw_scalestep,worldlow);
 		}
 	}
-	
+
+#if 1
 	// render it
 	if (markceiling)
 		ceilingplane = R_CheckPlane (ceilingplane, rw_x, rw_stopx-1);
 	
 	if (markfloor)
 		floorplane = R_CheckPlane (floorplane, rw_x, rw_stopx-1);
+#endif
 
 	R_RenderSegLoop ();
 
