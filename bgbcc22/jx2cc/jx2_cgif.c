@@ -1983,7 +1983,37 @@ ccxl_status BGBCC_JX2C_BuildGlobal_EmitLitAsType(
 			{
 				n=asz;
 			}
-				
+
+			if((n==1) && BGBCC_CCXL_TypeSmallIntP(ctx, tty) &&
+				BGBCC_CCXL_IsRegImmStringP(ctx, litobj->decl->listdata[0]))
+			{
+				s0=BGBCC_CCXL_GetRegImmStringValue(ctx,
+					litobj->decl->listdata[0]);
+
+				BGBCC_JX2_EmitBAlign(sctx, al);
+
+				j=BGBCP_StrlenUTF8(s0);
+				if(j>asz)j=asz;
+
+				for(i=0; i<j; i++)
+				{
+					k=BGBCP_ParseChar(&s0);
+					BGBCC_CCXL_GetRegForIntValue(ctx, &treg, k);
+					BGBCC_JX2C_BuildGlobal_EmitLitAsType(ctx, sctx,
+						tty, treg);
+				}
+
+				BGBCC_CCXL_GetRegForIntValue(ctx, &treg, 0);
+				for(i=j; i<asz; i++)
+				{
+					BGBCC_JX2_EmitBAlign(sctx, al);
+					BGBCC_JX2C_BuildGlobal_EmitLitAsType(ctx, sctx,
+						tty, treg);
+				}
+
+				return(1);
+			}
+
 			for(i=0; i<n; i++)
 			{
 				BGBCC_JX2_EmitBAlign(sctx, al);
@@ -2156,6 +2186,21 @@ ccxl_status BGBCC_JX2C_BuildGlobal_EmitLitAsType(
 			return(1);
 		}
 
+		if(BGBCC_CCXL_IsRegImmStringP(ctx, value))
+		{
+			s0=BGBCC_CCXL_GetRegImmStringValue(ctx, value);
+
+			if(type.val==CCXL_VTY_PCHAR)
+				k=BGBCC_JX2_EmitGetStrtabLabelUTF2ASCII(sctx, s0);
+			if(type.val==CCXL_VTY_PWCHAR)
+				k=BGBCC_JX2_EmitGetStrtabLabelUTF2UCS2(sctx, s0);				
+			else
+				k=BGBCC_JX2_EmitGetStrtabLabel(sctx, s0);
+
+			BGBCC_JX2_EmitDWordAbs32(sctx, k);
+			return(1);
+		}
+
 		BGBCC_CCXL_StubError(ctx);
 		return(0);
 	}
@@ -2173,6 +2218,21 @@ ccxl_status BGBCC_JX2C_BuildGlobal_EmitLitAsType(
 		{
 			li=BGBCC_CCXL_GetRegImmLongValue(ctx, value);
 			BGBCC_JX2_EmitQWord(sctx, li);
+			return(1);
+		}
+
+		if(BGBCC_CCXL_IsRegImmStringP(ctx, value))
+		{
+			s0=BGBCC_CCXL_GetRegImmStringValue(ctx, value);
+
+			if(type.val==CCXL_VTY_PCHAR)
+				k=BGBCC_JX2_EmitGetStrtabLabelUTF2ASCII(sctx, s0);
+			if(type.val==CCXL_VTY_PWCHAR)
+				k=BGBCC_JX2_EmitGetStrtabLabelUTF2UCS2(sctx, s0);				
+			else
+				k=BGBCC_JX2_EmitGetStrtabLabel(sctx, s0);
+
+			BGBCC_JX2_EmitQWordAbs64(sctx, k);
 			return(1);
 		}
 

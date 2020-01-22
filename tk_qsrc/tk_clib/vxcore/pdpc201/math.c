@@ -53,9 +53,9 @@
   (These should I guess be in math.h)
 
 */
-static const double pi   = 3.1415926535897932384626433832795;
-static const double ln10 = 2.3025850929940456840179914546844;
-static const double ln2 = 0.69314718055994530941723212145818 ;
+// static const double pi   = 3.1415926535897932384626433832795;
+// static const double ln10 = 2.3025850929940456840179914546844;
+// static const double ln2 = 0.69314718055994530941723212145818 ;
 
 
 __PDPCLIB_API__ double ceil(double x)
@@ -128,7 +128,7 @@ __PDPCLIB_API__ double acos(double x)
         errno=EDOM;
         return (HUGE_VAL);
     }
-    if ( x < 0.0 ) return ( pi - acos(-x) ) ;
+    if ( x < 0.0 ) return ( M_PI - acos(-x) ) ;
 
     return ( asin ( sqrt(1.0 - x*x) ) );
 
@@ -143,7 +143,7 @@ __PDPCLIB_API__ double acos(double x)
 
    Note if "x" is close to "1" the series converges slowly.
    To avoid this we use (sin(x)**2 + cos(x)**2)=1
-   and fact cos(x)=sin(x+pi/2)
+   and fact cos(x)=sin(x+M_PI/2)
 
 */
 
@@ -177,7 +177,7 @@ __PDPCLIB_API__ double asin (double y)
     if( x > 0.75 )
     {
         x = ( sqrt(1.0 - (x*x) ) );
-        return((pi/2.0)-asin(x));
+        return((M_PI/2.0)-asin(x));
     }
 
 /*
@@ -222,7 +222,7 @@ __PDPCLIB_API__ double asin (double y)
 
      2. Reduce further so that |x| less than tan(PI/12)
 
-        atan(x)=pi/6+atan((X*sqrt(3)-1)/(x+sqrt(3)))
+        atan(x)=M_PI/6+atan((X*sqrt(3)-1)/(x+sqrt(3)))
 
      3. Then use the taylor series
 
@@ -249,20 +249,20 @@ __PDPCLIB_API__ double atan (double x)
  use atan(1/x)=PI/2-atan(x)
 */
 
-    if ( x > 1.0 ) return ((pi/2.0) - atan(1.0/x));
+    if ( x > 1.0 ) return ((M_PI/2.0) - atan(1.0/x));
 
 /*
  now check for large(ish) x > tan(15) (0.26794919243112)
- if so use atan(x)=pi/6+atan((X*SQRT3-1)/(X+SQRT3))
+ if so use atan(x)=M_PI/6+atan((X*SQRT3-1)/(X+SQRT3))
 */
 
 //    if( x > (2.0 - sqrt(3.0)))
-//    return( (pi/6.0) + atan( ( x * sqrt(3.0)-1.0 ) / (x + sqrt(3.0) ) ) );
+//    return( (M_PI/6.0) + atan( ( x * sqrt(3.0)-1.0 ) / (x + sqrt(3.0) ) ) );
 
 	sqrt3 = 1.7320508075688772935274463415059;
 
     if( x > (2.0 - sqrt3))
-    return( (pi/6.0) + atan( ( x * sqrt3-1.0 ) / (x + sqrt3 ) ) );
+    return( (M_PI/6.0) + atan( ( x * sqrt3-1.0 ) / (x + sqrt3 ) ) );
 
 /*
 *       atan(x) = x - x**3 + x**5 - x**7
@@ -297,11 +297,11 @@ __PDPCLIB_API__ double atan (double x)
 __PDPCLIB_API__ double atan2(double y,double x)
 {
     return (x >= y) ?
-               (x >= -y ? atan(y/x) : -pi/2 - atan(x/y))
+               (x >= -y ? atan(y/x) : -M_PI/2 - atan(x/y))
               :
-               (x >= -y ? pi/2 - atan(x/y)
-                        : (y >= 0) ? pi + atan(y/x)
-                                   : -pi + atan(y/x));
+               (x >= -y ? M_PI/2 - atan(x/y)
+                        : (y >= 0) ? M_PI + atan(y/x)
+                                   : -M_PI + atan(y/x));
 }
 
 #if 0
@@ -328,11 +328,11 @@ __PDPCLIB_API__ double cos(double x)
     double term,answer,work,x1;
 
 /*
-    Scale arguments to be in range 1 => pi
+    Scale arguments to be in range 1 => M_PI
 */
 
-    i = x/(2*pi);
-    x1 =  x - (i * (2.0 * pi));
+    i = x/(2*M_PI);
+    x1 =  x - (i * (2.0 * M_PI));
 
     i=1;
     term=answer=1;
@@ -376,8 +376,8 @@ __PDPCLIB_API__ double sin(double x)
 /*
   scale so series converges pretty quickly
 */
-    i = x/(2.0*pi);
-    x1 =  x - (i * (2.0 * pi));
+    i = x/(2.0*M_PI);
+    x1 =  x - (i * (2.0 * M_PI));
 
 //	__debugbreak();
 /*
@@ -552,14 +552,14 @@ __PDPCLIB_API__ double log (double x)
         i++;
     }
 
-    answer = answer + (double)scale * ln2;
+    answer = answer + (double)scale * M_LN2;
     return(answer);
 }
 
 
 __PDPCLIB_API__ double log10(double x)
 {
-    return ( log(x) / ln10 );
+    return ( log(x) / M_LN10 );
 }
 
 
@@ -570,7 +570,7 @@ __PDPCLIB_API__ double log10(double x)
 
 */
 
-__PDPCLIB_API__ double pow(double x,double y)
+__PDPCLIB_API__ double pow(double x, double y)
 {
     int j, n, neg;
     double yy,xx;
@@ -627,7 +627,7 @@ double fsqrt_approx(double x)
 
 __PDPCLIB_API__ double sqrt(double x)
 {
-    double xs, yn, ynn;
+    double xs, yn, xsr, ynn;
     double pow1;
     int i, n;
 
@@ -650,12 +650,15 @@ __PDPCLIB_API__ double sqrt(double x)
 /* BGB: just doing this, original doesn't really work. */
 	xs=fsqrt_approx(x);
 //	__debugbreak();
+//	xsr=0.5/xs;
+	xsr=0.5f/((float)xs);		//faster approximate
 
-#if 0
-	for(i=0; i<12; i++)
+#if 1
+	for(i=0; i<6; i++)
 	{
 		yn=xs*xs;
-		xs-=(yn-x)*0.5;
+//		xs-=(yn-x)*0.125;
+		xs-=(yn-x)*xsr;
 	}
 #endif
 

@@ -1471,6 +1471,15 @@ BCCX_Node *BGBCP_DefTypeC(BGBCP_ParseState *ctx, char **str)
 				{
 					bty=bgbcc_strdup("float");
 				}
+			}else if(!bgbcp_strcmp5(b, "double"))
+			{
+				if(bty && !bgbcp_strcmp5(bty, "long"))
+				{
+					bty=bgbcc_strdup("float128");
+				}else
+				{
+					bty=bgbcc_strdup("double");
+				}
 			}else
 			{
 				bty=bgbcc_strdup(b);

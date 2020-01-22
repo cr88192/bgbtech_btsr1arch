@@ -270,6 +270,8 @@ V_DrawPatchCmap
 			dest = desttop + column->topdelta*SCREENWIDTH; 
 			count = column->length; 
 
+#ifndef __BGBCC__
+
 #if 0
 			while (count>=4) 
 			{ 
@@ -330,7 +332,7 @@ V_DrawPatchCmap
 			}
 #endif
 
-#if 0
+#if 1
 			while (count>=4) 
 			{ 
 				dest[0*SCREENWIDTH] = tcol[source[0]];
@@ -344,7 +346,7 @@ V_DrawPatchCmap
 			}
 #endif
 
-#if 0
+#if 1
 			while (count--) 
 			{ 
 //				*dest = *source++; 
@@ -353,7 +355,11 @@ V_DrawPatchCmap
 			} 
 #endif
 
+#else
+
 			V_DrawPatchCmap_Col(source, dest, tcol, count);
+
+#endif
 
 			column = (column_t *)(  (byte *)column + column->length 
 						+ 4 ); 
@@ -368,6 +374,9 @@ V_DrawPatch
   int		scrn,
   patch_t*	patch ) 
 {
+	if(!patch)
+		return;
+
 //	V_DrawPatchCmap(x, y,
 //		scrn, patch,
 //		colormaps);
@@ -395,6 +404,9 @@ V_DrawPatchFlipped
     dt_scrpix	*dest;
     byte*	source; 
     int		w; 
+
+	if(!patch)
+		return;
 	 
     y -= SHORT(patch->topoffset); 
     x -= SHORT(patch->leftoffset); 
@@ -465,6 +477,9 @@ V_DrawPatchDirect
 		return;
 	}
 	
+	if(!patch)
+		return;
+
 	lump = W_GetNumForCache(patch);
     tcol = R_ColormapForLump (lump, 0);
     
@@ -542,13 +557,29 @@ V_DrawPatchDirectName
 {
 	patch_t			*patch;
 	lighttable_t	*tcol;
-	int				lump;
+	int				lump, size;
 	
 //	pat = W_CacheLumpName(skullName[whichSkull],PU_CACHE);
 	lump = W_GetNumForName (name);
+
+	if(lump < 0)
+		return;
+	
     patch = W_CacheLumpNum (lump, PU_CACHE);
     tcol = R_ColormapForLump (lump, 0);
 //    V_DrawPatchDirect(x, y, scrn, patch);
+
+	size = W_LumpLength(lump);
+	
+	if(size == 64000)
+	{
+		if(tcol)
+			V_DrawBlockCmap(0, 0, scrn, 320, 200, (byte *)patch, tcol);
+		else
+			V_DrawBlockCmap(0, 0, scrn, 320, 200, (byte *)patch, colormaps);
+//			V_DrawBlock(0, 0, scrn, 320, 200, (byte *)patch);
+		return;
+	}
 
 	if(tcol)
 		V_DrawPatchCmap(x, y, scrn, patch, tcol);
@@ -597,6 +628,49 @@ V_DrawBlock
 		{
 			for(i=0; i<width; i++)
 				dest[i]=src[i];
+		}
+		src += width; 
+		dest += SCREENWIDTH; 
+    } 
+} 
+
+void
+V_DrawBlockCmap
+( int		x,
+  int		y,
+  int		scrn,
+  int		width,
+  int		height,
+  byte*		src,
+  dt_scrpix	*cmap) 
+{ 
+    dt_scrpix	*dest;
+    int i;
+	 
+#ifdef RANGECHECK 
+    if (x<0
+	||x+width >SCREENWIDTH
+	|| y<0
+	|| y+height>SCREENHEIGHT 
+	|| (unsigned)scrn>4 )
+    {
+	I_Error ("Bad V_DrawBlock");
+    }
+#endif 
+ 
+    V_MarkRect (x, y, width, height); 
+ 
+    dest = screens[scrn] + y*SCREENWIDTH+x; 
+
+    while (height--) 
+    {
+		if(sizeof(*src)==sizeof(*dest))
+		{
+			memcpy (dest, src, width*sizeof(dt_scrpix)); 
+		}else
+		{
+			for(i=0; i<width; i++)
+				dest[i]=cmap[src[i]];
 		}
 		src += width; 
 		dest += SCREENWIDTH; 

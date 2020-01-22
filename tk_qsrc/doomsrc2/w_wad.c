@@ -336,25 +336,37 @@ void W_AddFile (char *filename)
 		w_lseek (handle, header.infotableofs, SEEK_SET);
 		w_read (handle, fileinfo, length);
 		numlumps += header.numlumps;
+
+		lump_p = malloc (numlumps*sizeof(lumpinfo_t));
+		if(lumpinfo)
+		{
+			memcpy(lump_p, lumpinfo, startlump*sizeof(lumpinfo_t));
+			free(lumpinfo);
+		}
+		lumpinfo = lump_p;
 	}
 
 	
 	// Fill in lumpinfo
-	lumpinfo = realloc (lumpinfo, numlumps*sizeof(lumpinfo_t));
+//	lumpinfo = realloc (lumpinfo, numlumps*sizeof(lumpinfo_t));
 
 	if (!lumpinfo)
 		I_Error ("Couldn't realloc lumpinfo");
 
-	lump_p = &lumpinfo[startlump];
+//	lump_p = &lumpinfo[startlump];
+	lump_p = lumpinfo + startlump;
 	
 	storehandle = reloadname ? -1 : handle;
 	
-	for (i=startlump ; i<numlumps ; i++,lump_p++, fileinfo++)
+//	for (i=startlump ; i<numlumps ; i++,lump_p++, fileinfo++)
+	for (i=startlump ; i<numlumps ; i++)
 	{
 		lump_p->handle = storehandle;
 		lump_p->position = LONG(fileinfo->filepos);
 		lump_p->size = LONG(fileinfo->size);
 		strncpy (lump_p->name, fileinfo->name, 8);
+		lump_p++;
+		fileinfo++;
 	}
 	
 	if (reloadname)
@@ -402,11 +414,11 @@ void W_Reload (void)
 	 i<reloadlump+lumpcount ;
 	 i++,lump_p++, fileinfo++)
 	{
-	if (lumpcache[i])
-		Z_Free (lumpcache[i]);
+		if (lumpcache[i])
+			Z_Free (lumpcache[i]);
 
-	lump_p->position = LONG(fileinfo->filepos);
-	lump_p->size = LONG(fileinfo->size);
+		lump_p->position = LONG(fileinfo->filepos);
+		lump_p->size = LONG(fileinfo->size);
 	}
 	
 	w_close (handle);
@@ -531,13 +543,14 @@ int W_CheckNumForNameBase (int base, char* name)
 	lumpinfo_t*	lump_p;
 
 	// make the name into two integers for easy compares
-	strncpy (name8.s,name,8);
+//	strncpy (name8.s,name,8);
+	w_strupr_n(name8.s, name, 8);
 
 	// in case the name was a fill 8 chars
-	name8.s[8] = 0;
+//	name8.s[8] = 0;
 
 	// case insensitive
-	w_strupr (name8.s);		
+//	w_strupr (name8.s);		
 
 	v1 = name8.x[0];
 	v2 = name8.x[1];
@@ -603,6 +616,7 @@ int W_CheckNumForNameBase (int base, char* name)
 }
 
 
+void W_PrintLumps (void);
 
 
 //
@@ -623,6 +637,9 @@ int W_GetNumForName (char* name)
 	{
 //		I_Error ("W_GetNumForName: %s not found!", name);
 		printf("W_GetNumForName: %s not found!\n", name);
+
+//		W_PrintLumps();
+
 //		__debugbreak();
 		return(-1);
 	}
@@ -660,6 +677,18 @@ int W_LumpLength (int lump)
 		I_Error ("W_LumpLength: %i >= numlumps",lump);
 
 	return lumpinfo[lump].size;
+}
+
+
+int W_LumpHandle (int lump)
+{
+	if(lump<0)
+		__debugbreak();
+
+	if (lump >= numlumps)
+		I_Error ("W_LumpLength: %i >= numlumps",lump);
+
+	return lumpinfo[lump].handle;
 }
 
 
@@ -827,60 +856,152 @@ int		profilecount;
 
 void W_Profile (void)
 {
-// #ifndef __BGBCC		//BGB: Don't bother in this case
-#if 0
-	int		i;
+#ifndef __BGBCC__		//BGB: Don't bother in this case
+// #if 0
+	int		i, lhdl;
 	memblock_t*	block;
 	void*	ptr;
 	char	ch;
 	FILE*	f;
 	int		j;
+	int 	xs, ys, xo, yo;
 	char	name[9];
+	byte	tbuf[256];
 	
 	
 	for (i=0 ; i<numlumps ; i++)
 	{	
-	ptr = lumpcache[i];
-	if (!ptr)
-	{
-		ch = ' ';
-		continue;
-	}
-	else
-	{
-		block = (memblock_t *) ( (byte *)ptr - sizeof(memblock_t));
-		if (block->tag < PU_PURGELEVEL)
-		ch = 'S';
+		ptr = lumpcache[i];
+		if (!ptr)
+		{
+			ch = ' ';
+//			continue;
+		}
 		else
-		ch = 'P';
-	}
-	info[i][profilecount] = ch;
+		{
+			block = (memblock_t *) ( (byte *)ptr - sizeof(memblock_t));
+			if (block->tag < PU_PURGELEVEL)
+			ch = 'S';
+			else
+			ch = 'P';
+		}
+		info[i][profilecount] = ch;
 	}
 	profilecount++;
 	
 	f = fopen ("waddump.txt","w");
-	name[8] = 0;
+//	name[8] = 0;
+
+	lhdl=-1;
 
 	for (i=0 ; i<numlumps ; i++)
 	{
-	memcpy (name,lumpinfo[i].name,8);
+		if(lumpinfo[i].handle != lhdl)
+		{
+			lhdl = lumpinfo[i].handle;
+			fprintf (f, "\nHandle=%d\n", lhdl);
+			continue;
+		}
 
-	for (j=0 ; j<8 ; j++)
-		if (!name[j])
-		break;
+		memcpy (name,lumpinfo[i].name,8);
 
-	for ( ; j<8 ; j++)
-		name[j] = ' ';
+		for (j=0 ; j<8 ; j++)
+			if (!name[j])
+				break;
 
-	fprintf (f,"%s ",name);
+		for ( ; j<8 ; j++)
+			name[j] = ' ';
+		name[8] = 0;
 
-	for (j=0 ; j<profilecount ; j++)
-		fprintf (f,"	%c",info[i][j]);
+		fprintf (f,"%s ",name);
 
-	fprintf (f,"\n");
+		for (j=0 ; j<profilecount ; j++)
+			fprintf (f,"	%c",info[i][j]);
+
+		if(lumpinfo[i].handle < 0)
+		{
+			fprintf (f,"\n");
+			continue;
+		}
+
+		fprintf (f,"ofs=%08X, sz=%d; ",
+			lumpinfo[i].position, lumpinfo[i].size);
+
+		w_lseek(lumpinfo[i].handle, lumpinfo[i].position, 0);
+		w_read(lumpinfo[i].handle, tbuf, 256);
+		xs=(short)(tbuf[0] | (tbuf[1]<<8));
+		ys=(short)(tbuf[2] | (tbuf[3]<<8));
+		xo=(short)(tbuf[4] | (tbuf[5]<<8));
+		yo=(short)(tbuf[6] | (tbuf[7]<<8));
+		
+		if((xs>0) && (xs<1024) && (ys>0) && (ys<1024))
+		{
+			fprintf (f,"PIC? xs=%d,ys=%d,xo=%d,yo=%d", xs, ys, xo, yo);
+			
+		}
+
+		fprintf (f,"\n");
 	}
 	fclose (f);
 #endif
+}
+
+
+
+void W_PrintLumps (void)
+{
+	int		i;
+	memblock_t*	block;
+	void*	ptr;
+	char	ch;
+//	FILE*	f;
+	int		j;
+	char	name[9];
+	
+#if 0
+	for (i=0 ; i<numlumps ; i++)
+	{	
+		ptr = lumpcache[i];
+		if (!ptr)
+		{
+			ch = ' ';
+			continue;
+		}
+		else
+		{
+			block = (memblock_t *) ( (byte *)ptr - sizeof(memblock_t));
+			if (block->tag < PU_PURGELEVEL)
+				ch = 'S';
+			else
+				ch = 'P';
+		}
+		info[i][profilecount] = ch;
+	}
+	profilecount++;
+#endif
+	
+//	f = fopen ("waddump.txt","w");
+//	name[8] = 0;
+
+	for (i=0 ; i<numlumps ; i++)
+	{
+		memcpy (name,lumpinfo[i].name,8);
+
+		for (j=0 ; j<8 ; j++)
+			if (!name[j])
+			break;
+
+		for ( ; j<8 ; j++)
+			name[j] = ' ';
+
+		printf ("%s ",name);
+
+//		for (j=0 ; j<profilecount ; j++)
+//			printf ("	%c",info[i][j]);
+
+		printf ("\n");
+	}
+//	fclose (f);
 }
 
 

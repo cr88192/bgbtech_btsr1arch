@@ -80,7 +80,23 @@ u16		*ylookup_zb[MAXHEIGHT];
 byte		translations[3][256];	
 
  
+#ifndef __BGBCC__
 
+int __int_clamp(int val, int min, int max)
+{
+	if(val<min)
+		return(min);
+	if(val>max)
+		return(max);
+	return(val);
+}
+
+int __hint_use_egpr()
+{
+	return(0);
+}
+
+#endif
 
 //
 // R_DrawColumn
@@ -206,7 +222,8 @@ void R_DrawColumn (void)
 
 // UNUSED.
 // Loop unrolled.
-#if 0
+// #if 0
+#ifndef __BGBCC__
 void R_DrawColumn (void) 
 { 
 	int				count; 
@@ -437,7 +454,8 @@ void R_DrawColumn_ZB (void)
 }
 #endif
 
-#if 0
+// #if 0
+#ifndef __BGBCC__
 void R_DrawColumnLow (void) 
 { 
 	int			count; 
@@ -883,6 +901,7 @@ void R_CellMarkBox (int bx0, int bx1, int by0, int by1)
 //
 // Draws the actual span.
 #if 0
+// #ifndef __BGBCC__
 void R_DrawSpan (void) 
 { 
 	fixed_t		xfrac;
@@ -989,7 +1008,8 @@ void R_DrawSpan (void)
 
 // UNUSED.
 // Loop unrolled by 4.
-#if 0
+// #if 0
+#ifndef __BGBCC__
 void R_DrawSpan (void) 
 { 
 	register unsigned	position, step;
@@ -1108,7 +1128,9 @@ void R_DrawSpan_ZB (void)
 #endif
 
 
-#if 0
+// #if 0
+#ifndef __BGBCC__
+
 //
 // Again..
 //

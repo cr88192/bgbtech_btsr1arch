@@ -84,6 +84,7 @@ reg[13:0]	tPixCellIx_C;			//base cell index
 reg[3:0]	tPixCellFx_C;			//base cell index
 reg[5:0]	tPixCellGx_C;			//base cell index
 
+reg[5:0]	tPixCellGx_D;			//base cell index
 
 reg[255:0]	tCellData;
 reg[255:0]	tCellData_B;
@@ -872,6 +873,8 @@ begin
 		tPixCv		= { tClrYuvC[ 4: 0], tClrYuvC[ 4: 2] };
 		tPixAux[0]	= 0;
 	end
+
+	tPixAux[1]	= (tPixCellGx_D != tPixCellGx_C);
 	
 	if(tPixPosX[11] || tPixPosY[11])
 	begin
@@ -927,6 +930,8 @@ begin
 	tPixCellIx_C		<= tPixCellIx_B;
 	tPixCellFx_C		<= tPixCellFx_B;
 	tPixCellGx_C		<= tPixCellGx_B;
+
+	tPixCellGx_D		<= tPixCellGx_C;
 
 	tCellIsOdd			<= tNextCellIsOdd;
 	tBlinkStrobeB		<= tBlinkStrobeA;

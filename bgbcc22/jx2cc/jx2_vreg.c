@@ -1767,6 +1767,18 @@ int BGBCC_JX2C_EmitJmpTab(
 		BGBCC_JX2C_EmitOpImmReg(ctx, sctx,
 			BGBCC_SH_NMID_CMPHI, nlbl, ctreg);
 		BGBCC_JX2_EmitOpAutoLabel(sctx, BGBCC_SH_NMID_BT, dfl.id);
+	}else
+	{
+		dfl=lbls[nlbl];
+		if(dfl.id)
+		{
+			BGBCC_JX2C_EmitOpImmReg(ctx, sctx,
+				BGBCC_SH_NMID_CMPHI, nlbl, ctreg);
+			BGBCC_JX2_EmitOpAutoLabel(sctx, BGBCC_SH_NMID_BT, dfl.id);
+		}else
+		{
+			BGBCC_DBGBREAK
+		}
 	}
 
 	BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_SHLL1, ctreg);

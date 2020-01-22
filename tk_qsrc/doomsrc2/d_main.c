@@ -494,7 +494,7 @@ void D_AdvanceDemo (void)
 //
  void D_DoAdvanceDemo (void)
 {
-	tk_puts("D_DoAdvanceDemo\n");
+//	tk_puts("D_DoAdvanceDemo\n");
 
 	players[consoleplayer].playerstate = PST_LIVE;  // not reborn
 	advancedemo = false;
@@ -518,9 +518,14 @@ void D_AdvanceDemo (void)
 		pagetic = 170;
 	gamestate = GS_DEMOSCREEN;
 	pagename = "TITLEPIC";
+
+	if(gamemode == hexen)
+		pagename = "TITLE";
+
 	if ( W_CheckNumForName(pagename) == -1 )
 	{
-		pagename = "TITLE";
+		if((gamemode == heretic) || (gamemode == hexen))
+			pagename = "TITLE";
 	}
 
 	if ( gamemode == commercial )

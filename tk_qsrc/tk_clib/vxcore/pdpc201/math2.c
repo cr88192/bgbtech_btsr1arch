@@ -77,3 +77,94 @@ double cos(double ang)
 {
 	return(sin(ang+M_PI_2));
 }
+
+
+float ceilf(float x)
+	{ return(ceil(x)); }
+float fabsf(float x)
+	{ return(fabs(x)); }
+float floorf(float x)
+	{ return(floor(x)); }
+float fmodf(float x, float y)
+	{ return(fmod(x, y)); }
+float atan2f(float y, float x)
+	{ return(atan2(x, y)); }
+float frexpf(float value, int *exp)
+	{ return(frexp(value, exp)); }
+float ldexpf(float x, int exp)
+	{ return(ldexp(x, exp)); }
+float modff(float value, float *iptr)
+	{ return(modf(value, iptr)); }
+float powf(float x, float y)
+	{ return(pow(x, y)); }
+float sqrtf(float x)
+	{ return(sqrt(x)); }
+float acosf(float x)
+	{ return(acos(x)); }
+float asinf(float x)
+	{ return(asin(x)); }
+float atanf(float x)
+	{ return(atan(x)); }
+float cosf(float x)
+	{ return(cos(x)); }
+float sinf(float x)
+	{ return(sin(x)); }
+float tanf(float x)
+	{ return(tan(x)); }
+float coshf(float x)
+	{ return(cosh(x)); }
+float sinhf(float x)
+	{ return(sinh(x)); }
+float tanhf(float x)
+	{ return(tanh(x)); }
+float expf(float x)
+	{ return(exp(x)); }
+float logf(float x)
+	{ return(log(x)); }
+float log10f(float x)
+	{ return(log10(x)); }
+
+long double ceill(long double x)
+	{ return(ceil(x)); }
+long double fabsl(long double x)
+	{ return(fabs(x)); }
+long double floorl(long double x)
+	{ return(floor(x)); }
+long double fmodl(long double x, long double y)
+	{ return(fmod(x, y)); }
+long double atan2l(long double y, long double x)
+	{ return(atan2(x, y)); }
+long double frexpl(long double value, int *exp)
+	{ return(frexp(value, exp)); }
+long double ldexpl(long double x, int exp)
+	{ return(ldexp(x, exp)); }
+long double modfl(long double value, long double *iptr)
+	{ return(modf(value, iptr)); }
+long double powl(long double x, long double y)
+	{ return(pow(x, y)); }
+long double sqrtl(long double x)
+	{ return(sqrt(x)); }
+long double acosl(long double x)
+	{ return(acos(x)); }
+long double asinl(long double x)
+	{ return(asin(x)); }
+long double atanl(long double x)
+	{ return(atan(x)); }
+long double cosl(long double x)
+	{ return(cos(x)); }
+long double sinl(long double x)
+	{ return(sin(x)); }
+long double tanl(long double x)
+	{ return(tan(x)); }
+long double coshl(long double x)
+	{ return(cosh(x)); }
+long double sinhl(long double x)
+	{ return(sinh(x)); }
+long double tanhl(long double x)
+	{ return(tanh(x)); }
+long double expl(long double x)
+	{ return(exp(x)); }
+long double logl(long double x)
+	{ return(log(x)); }
+long double log10l(long double x)
+	{ return(log10(x)); }

@@ -177,6 +177,15 @@ wire		dithRndUpR;
 wire		dithRndUpG;
 wire		dithRndUpB;
 
+reg[3:0]	tBayerIx;
+// reg[3:0]	tNxtBayerIx;
+
+wire[3:0]	tNxtBayerIx;
+assign	tNxtBayerIx =
+	{ tPixPosY[1:0], tPixPosX[1:0] } ^ { tVFieldCnt, tVFieldCnt };
+// assign	tNxtBayerIx = { tPixPosY[1:0], tPixPosX[1:0] };
+
+`ifndef def_true
 ModVgaDith	dithR(
 	tPixPosX[1:0], tPixPosY[1:0], tVFieldCnt,
 	tPwmValR[3:0], dithRndUpR);
@@ -186,6 +195,14 @@ ModVgaDith	dithG(
 ModVgaDith	dithB(
 	tPixPosX[1:0], tPixPosY[1:0], tVFieldCnt,
 	tPwmValB[3:0], dithRndUpB);
+`endif
+
+`ifdef def_true
+ModVgaDith	dithR(tBayerIx, tPwmValR[3:0], dithRndUpR);
+ModVgaDith	dithG(tBayerIx, tPwmValG[3:0], dithRndUpG);
+ModVgaDith	dithB(tBayerIx, tPwmValB[3:0], dithRndUpB);
+`endif
+
 
 always @*
 begin
@@ -198,6 +215,26 @@ begin
 		{1'b0, tPwmValG[3:0], timerNoise};
 	{tPwmCarryB, tPwmNextStB} = {1'b0, tPwmStB} +
 		{1'b0, tPwmValB[3:0], timerNoise};
+
+// `ifdef def_true
+`ifndef def_true
+	case(tVFieldCnt)
+		2'b00: tNxtBayerIx = {
+			 tPixPosY[1],  tPixPosY[0],
+			 tPixPosX[1],  tPixPosX[0] };
+		2'b01: tNxtBayerIx = {
+			 tPixPosY[1], !tPixPosY[0],
+			!tPixPosX[1],  tPixPosX[0] };
+		2'b10: tNxtBayerIx = {
+			!tPixPosY[1], !tPixPosY[0],
+			!tPixPosX[1], !tPixPosX[0] };
+		2'b11: tNxtBayerIx = {
+			!tPixPosY[1],  tPixPosY[0],
+			 tPixPosX[1], !tPixPosX[0] };
+	endcase
+//assign	tNxtBayerIx =
+//	{ tPixPosY[1:0], tPixPosX[1:0] } ^ { tVFieldCnt, tVFieldCnt };
+`endif
 
 `ifndef def_true
 	dithPixXor = tPixPosX[1:0] ^ tPixPosY[1:0];
@@ -552,6 +589,11 @@ begin
 	tBaseCrB		<= tBaseNextCrB;
 	tBaseCgB		<= tBaseNextCgB;
 	tBaseCbB		<= tBaseNextCbB;
+
+	if(pixAux[1])
+	begin
+		tBayerIx		<= tNxtBayerIx;
+	end
 
 end
 

@@ -102,6 +102,16 @@ V_DrawBlock
   int		height,
   byte*		src );
 
+void
+V_DrawBlockCmap
+( int		x,
+  int		y,
+  int		scrn,
+  int		width,
+  int		height,
+  byte*		src,
+  dt_scrpix	*cmap);
+
 // Reads a linear block of pixels into the view buffer.
 void
 V_GetBlock

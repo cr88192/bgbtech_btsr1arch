@@ -1,0 +1,97 @@
+TOOLPATH=/opt/cross/bin/
+
+CC=bgbcc
+
+# TK_CFL=-DARCH_SH4 -DARCH_SH4LE -mBJX2E /Os
+# TK_CFL=-DARCH_SH4 -DARCH_SH4LE -mBJX2E /O2 /fwex3w
+TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2F /O2 /fwex3w /fwexj
+# TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2F /O2 /fwex3w
+# TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2F /O2
+TK_LDFL= $(TK_CFL)
+
+BASE_CFLAGS=-I. -I../tk_clib/include -L../tk_clib 
+
+# -DNORMALUNIX
+
+CFLAGS=$(TK_CFL) $(BASE_CFLAGS)
+LDFLAGS=$(TK_LDFL) -lvxcore64
+
+#		i_system.c		\
+#		i_sound.c		\
+#		i_video.c		\
+#		i_net.c			\
+
+# not too sophisticated dependency
+SRCS=				\
+		i_btesh4.c		\
+		i_sound_btsh.c	\
+		i_snd_btsh4.c	\
+		i_bgb_mus_btsh.c	\
+		\
+		i_main.c		\
+		h2_main.c		\
+		tables.c		\
+		f_finale.c		\
+		d_net.c			\
+		g_game.c		\
+		m_misc.c		\
+		am_map.c		\
+		p_ceilng.c		\
+		p_doors.c		\
+		p_enemy.c		\
+		p_floor.c		\
+		p_inter.c		\
+		p_lights.c		\
+		p_map.c			\
+		p_maputl.c		\
+		p_plats.c		\
+		p_pspr.c		\
+		p_setup.c		\
+		p_sight.c		\
+		p_spec.c		\
+		p_switch.c		\
+		p_mobj.c		\
+		p_telept.c		\
+		p_tick.c		\
+		p_user.c		\
+		r_bsp.c			\
+		r_data.c		\
+		r_draw.c		\
+		r_main.c		\
+		r_plane.c		\
+		r_segs.c		\
+		r_things.c		\
+		w_wad.c			\
+		v_video.c		\
+		z_zone.c		\
+		info.c			\
+		sounds.c		\
+		m_fixed.c		\
+		\
+		s_sound.c		\
+		\
+		a_action.c		\
+		ct_chat.c		\
+		in_lude.c		\
+		mn_menu.c		\
+		p_acs.c			\
+		p_anim.c		\
+		p_things.c		\
+		po_man.c		\
+		sb_bar.c		\
+		sc_man.c		\
+		sn_sonix.c		\
+		st_start.c		\
+		sv_save.c		\
+
+#		\
+#		r_draw_bjx2.S
+
+
+all:	 hexen_bjx2.exe
+
+clean:
+
+hexen_bjx2.exe:	$(SRCS)
+	$(CC) $(CFLAGS) $(LDFLAGS) $(SRCS) \
+	/Fehexen_bjx2.exe $(LIBS)

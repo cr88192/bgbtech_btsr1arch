@@ -154,16 +154,20 @@ getsfx
 	//	default sound for replacement.
 	if ( W_CheckNumForName(name) == -1 )
 	{
-		if ( W_CheckNumForName("dspistol") != -1 )
+		if ( W_CheckNumForName("DSPISTOL") != -1 )
 		{
-			sfxlump = W_GetNumForName("dspistol");
+			sfxlump = W_GetNumForName("DSPISTOL");
 		}else
-		if ( W_CheckNumForName("STFPOW") != -1 )
+			if ( W_CheckNumForName("STFPOW") != -1 )
 		{
 			sfxlump = W_GetNumForName("STFPOW");
 		}else
+			if ( W_CheckNumForName("TICTOC") != -1 )
 		{
-			sfxlump = W_GetNumForName("dspistol");
+			sfxlump = W_GetNumForName("TICTOC");
+		}else
+		{
+			sfxlump = W_GetNumForName("DSPISTOL");
 		}
 	}
 	else

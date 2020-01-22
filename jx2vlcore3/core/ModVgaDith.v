@@ -1,7 +1,9 @@
-module ModVgaDith(posX, posY, frNum, pixFrac, dithRndUp);
-input[1:0]	posX;
-input[1:0]	posY;
-input[1:0]	frNum;
+// module ModVgaDith(posX, posY, frNum, pixFrac, dithRndUp);
+module ModVgaDith(bayerIx, pixFrac, dithRndUp);
+// input[1:0]	posX;
+// input[1:0]	posY;
+// input[1:0]	frNum;
+input[3:0]	bayerIx;
 input[3:0]	pixFrac;
 output		dithRndUp;
 
@@ -34,7 +36,8 @@ begin
 		4'hF: tBayerMask=16'hFBFF;
 	endcase
 	
-	tBayerIx = { posY, posX } ^ { frNum, frNum };
+	tBayerIx = bayerIx;
+//	tBayerIx = { posY, posX } ^ { frNum, frNum };
 	tDithRndUp = tBayerMask[tBayerIx];
 `endif
 

@@ -702,7 +702,7 @@ void R_InitColormaps (void)
 {
 	byte *tbuf;
 	lighttable_t *tcol;
-	int	lump, length, blen;
+	int	lump, length, blen, hdl, lump1, hdl1;
 	int i, j;
 
 	I_SetPalette (W_CacheLumpName ("PLAYPAL",PU_CACHE));
@@ -713,13 +713,25 @@ void R_InitColormaps (void)
 	blen = W_LumpLength (lump);
 	length = blen + 255; 
 	
+	hdl=W_LumpHandle(lump);
+
+	lump1=lump;
+	hdl1=W_LumpHandle(lump1);
+	while(lump1>0)
+	{
+		lump1--;
+		hdl1=W_LumpHandle(lump1);
+		if(hdl1!=hdl)
+			{ lump1++; break; }
+	}
+	
 	tbuf=malloc(length);
 
 	colormaps = Z_Malloc (length*sizeof(lighttable_t), PU_STATIC, 0); 
 	colormaps = (lighttable_t *)( ((nlint)colormaps + 255)&~0xff); 
 
 	colormaps_alt[0]=colormaps;
-	colormaps_aidx[0]=lump;
+	colormaps_aidx[0]=lump1;
 	for(j=0; j<256; j++)
 		d_8to16table_alt[0][j]=d_8to16table[j];
 	n_colormaps_alt=1;
@@ -740,6 +752,18 @@ void R_InitColormaps (void)
 
 		blen = W_LumpLength (lump);
 		length = blen + 255; 
+
+		hdl=W_LumpHandle(lump);
+
+		lump1=lump;
+		hdl1=W_LumpHandle(lump1);
+		while(lump1>0)
+		{
+			lump1--;
+			hdl1=W_LumpHandle(lump1);
+			if(hdl1!=hdl)
+				{ lump1++; break; }
+		}
 		
 //		tbuf=malloc(length);
 
@@ -747,7 +771,7 @@ void R_InitColormaps (void)
 		tcol = (lighttable_t *)( ((nlint)tcol + 255)&~0xff); 
 
 		colormaps_alt[n_colormaps_alt]=tcol;
-		colormaps_aidx[n_colormaps_alt]=lump;
+		colormaps_aidx[n_colormaps_alt]=lump1;
 		for(j=0; j<256; j++)
 			d_8to16table_alt[n_colormaps_alt][j]=d_8to16table[j];
 		n_colormaps_alt++;
@@ -830,7 +854,8 @@ int R_FlatNumForName (char* name)
 	{
 		namet[8] = 0;
 		memcpy (namet, name,8);
-		I_Error ("R_FlatNumForName: %s not found",namet);
+//		I_Error ("R_FlatNumForName: %s not found",namet);
+		return(skyflatnum);	//BGB: debug
 	}
 	return i - firstflat;
 }

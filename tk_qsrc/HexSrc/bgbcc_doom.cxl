@@ -1,0 +1,1041 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<FileVersion>1</FileVersion>
+<CodeXL>
+    <ProjectName>bgbcc</ProjectName>
+    <ApplicationPath>j:\usrlib\bin\bgbcc.exe</ApplicationPath>
+    <StoreApp>no</StoreApp>
+    <WorkingDirectory>J:\bgb.proj.btsr1vm\tk_qsrc\doomsrc2</WorkingDirectory>
+    <SourceFilesDirectory>J:\bgb.proj.btsr1vm\tk_qsrc\doomsrc2</SourceFilesDirectory>
+    <SourceCodeRootDirectory>CodeXLEmptyString</SourceCodeRootDirectory>
+    <ApplicationArguments>-DARCH_SH4 -DARCH_SH4LE -mBJX2_F -I. -I../tk_clib/include -L../tk_clib -lvxcore64 i_btesh4.c i_sound_btsh.c i_snd_btsh4.c i_bgb_mus_btsh.c doomdef.c doomstat.c dstrings.c tables.c f_finale.c f_wipe.c d_main.c d_net.c d_items.c g_game.c m_menu.c m_misc.c m_argv.c m_bbox.c m_fixed.c m_swap.c m_cheat.c m_random.c am_map.c p_acspec.c p_ceilng.c p_doors.c p_enemy.c p_floor.c p_inter.c p_lights.c p_map.c p_maputl.c p_plats.c p_pspr.c p_setup.c p_sight.c p_spec.c p_switch.c p_mobj.c p_telept.c p_tick.c p_saveg.c p_user.c r_bsp.c r_data.c r_draw.c r_main.c r_plane.c r_polyobj.c r_segs.c r_sky.c r_things.c w_wad.c wi_stuff.c v_video.c st_lib.c st_stuff.c hu_stuff.c hu_lib.c s_sound.c z_zone.c info.c sounds.c tst_bs2a.bs tst_cpp1a.cpp i_main.c /Fedoom_bjx2.exe</ApplicationArguments>
+    <LastActiveMode>Profile Mode</LastActiveMode>
+    <IsRemoteSession>no</IsRemoteSession>
+    <RemoteDaemonHostName>CodeXLEmptyString</RemoteDaemonHostName>
+    <RemoteDaemonPortNumber>27015</RemoteDaemonPortNumber>
+    <RecentlyUsedRemoteIPAddresses>;</RecentlyUsedRemoteIPAddresses>
+    <LastSessionType>CPU: Time-based Sampling</LastSessionType>
+    <ProfileName>CodeXLEmptyString</ProfileName>
+    <ApplicationEnvironmentVariables></ApplicationEnvironmentVariables>
+    <ProductExtensions>
+        <GPUDebug>
+            <InterceptionMethod>0</InterceptionMethod>
+            <DebuggerBreakpoints>
+                <Breakpoints />
+            </DebuggerBreakpoints>
+            <OpenGLStateVariables>
+                <StateVariables />
+            </OpenGLStateVariables>
+            <FrameTerminators>131073</FrameTerminators>
+            <GLDebugOutput>
+                <GLDebugOutputLoggingEnabled>false</GLDebugOutputLoggingEnabled>
+                <GLDebugOutputBreakOnReports>false</GLDebugOutputBreakOnReports>
+                <GLDebugOutputMessagesMask>0</GLDebugOutputMessagesMask>
+                <GLDebugOutputSeverity>N/A</GLDebugOutputSeverity>
+            </GLDebugOutput>
+        </GPUDebug>
+        <SharedProfile>
+            <ProfileScope>0</ProfileScope>
+            <ProfileEntireDuration>true</ProfileEntireDuration>
+            <ProfilePaused>false</ProfilePaused>
+            <ProfileStartDelay>0</ProfileStartDelay>
+            <ProfileEndAfter>0</ProfileEndAfter>
+            <ProfileTerminateAfter>false</ProfileTerminateAfter>
+        </SharedProfile>
+        <CpuProfile>
+            <Session type="Current">
+                <profileName />
+                <profilePath />
+                <profileType>CPU: Time-based Sampling</profileType>
+                <isImported>0</isImported>
+                <launchTarget />
+                <commandArguments />
+                <workingDir />
+                <envVariables />
+                <startTime />
+                <endTime />
+                <startAffinity>255</startAffinity>
+                <css>T</css>
+                <cssInterval>1</cssInterval>
+                <cssScope>0x1</cssScope>
+                <cssFpoTimeBased>T</cssFpoTimeBased>
+                <cssFpo>F</cssFpo>
+                <cssUnwindTimeBased>128</cssUnwindTimeBased>
+                <cssUnwind>32</cssUnwind>
+                <saveRawFiles>F</saveRawFiles>
+                <profileScope>0</profileScope>
+                <startDelay>0</startDelay>
+                <startPaused>F</startPaused>
+                <profileEntire>T</profileEntire>
+                <duration>0</duration>
+                <terminateProcess>F</terminateProcess>
+                <msInterval>0.000000</msInterval>
+                <EventCount>0</EventCount>
+                <fetchSample>F</fetchSample>
+                <opSample>F</opSample>
+                <opCycleCount>F</opCycleCount>
+                <fetchInterval>250000l</fetchInterval>
+                <opInterval>250000l</opInterval>
+                <cluSample>F</cluSample>
+                <cluCycleCount>F</cluCycleCount>
+                <cluInterval>250000l</cluInterval>
+                <cacheLineUtilChecked>F</cacheLineUtilChecked>
+                <cacheLineUtilEnabled>F</cacheLineUtilEnabled>
+                <ldstChecked>F</ldstChecked>
+                <ldstEnabled>F</ldstEnabled>
+                <applyFilter>F</applyFilter>
+                <utilMask>0</utilMask>
+            </Session>
+            <Session type="Profile">
+                <profileName>Oct-01-2018_22-51</profileName>
+                <profilePath>J:\bgb.proj.btsr1vm\tk_qsrc\doomsrc2\bgbcc_doom_ProfilerOutput\Oct-01-2018_22-51\Oct-01-2018_22-51.cxlcpdb</profilePath>
+                <profileType>Time-based Sampling</profileType>
+                <isImported>0</isImported>
+                <launchTarget>j:\usrlib\bin\bgbcc.exe</launchTarget>
+                <commandArguments>-DARCH_SH4 -DARCH_SH4LE -mBJX2_F -I. -I../tk_clib/include -L../tk_clib -lvxcore64 i_btesh4.c i_sound_btsh.c i_snd_btsh4.c i_bgb_mus_btsh.c doomdef.c doomstat.c dstrings.c tables.c f_finale.c f_wipe.c d_main.c d_net.c d_items.c g_game.c m_menu.c m_misc.c m_argv.c m_bbox.c m_fixed.c m_swap.c m_cheat.c m_random.c am_map.c p_acspec.c p_ceilng.c p_doors.c p_enemy.c p_floor.c p_inter.c p_lights.c p_map.c p_maputl.c p_plats.c p_pspr.c p_setup.c p_sight.c p_spec.c p_switch.c p_mobj.c p_telept.c p_tick.c p_saveg.c p_user.c r_bsp.c r_data.c r_draw.c r_main.c r_plane.c r_polyobj.c r_segs.c r_sky.c r_things.c w_wad.c wi_stuff.c v_video.c st_lib.c st_stuff.c hu_stuff.c hu_lib.c s_sound.c z_zone.c info.c sounds.c tst_bs2a.bs tst_cpp1a.cpp i_main.c /Fedoom_bjx2.exe</commandArguments>
+                <workingDir>J:\bgb.proj.btsr1vm\tk_qsrc\doomsrc2</workingDir>
+                <envVariables />
+                <startTime>Oct-01-2018_22-51-48</startTime>
+                <endTime>Oct-01-2018_22-51-57</endTime>
+                <startAffinity>255</startAffinity>
+                <css>T</css>
+                <cssInterval>1</cssInterval>
+                <cssScope>0x1</cssScope>
+                <cssFpoTimeBased>T</cssFpoTimeBased>
+                <cssFpo>F</cssFpo>
+                <cssUnwindTimeBased>128</cssUnwindTimeBased>
+                <cssUnwind>32</cssUnwind>
+                <saveRawFiles>F</saveRawFiles>
+                <profileScope>0</profileScope>
+                <startDelay>0</startDelay>
+                <startPaused>F</startPaused>
+                <profileEntire>T</profileEntire>
+                <duration>8</duration>
+                <terminateProcess>F</terminateProcess>
+                <msInterval>1.000000</msInterval>
+                <EventCount>0</EventCount>
+                <fetchSample>F</fetchSample>
+                <opSample>F</opSample>
+                <opCycleCount>T</opCycleCount>
+                <fetchInterval>0l</fetchInterval>
+                <opInterval>0l</opInterval>
+                <cluSample>F</cluSample>
+                <cluCycleCount>F</cluCycleCount>
+                <cluInterval>0l</cluInterval>
+                <cacheLineUtilChecked>F</cacheLineUtilChecked>
+                <cacheLineUtilEnabled>F</cacheLineUtilEnabled>
+                <ldstChecked>F</ldstChecked>
+                <ldstEnabled>F</ldstEnabled>
+                <applyFilter>F</applyFilter>
+                <utilMask>0</utilMask>
+            </Session>
+            <Session type="Profile">
+                <profileName>Oct-01-2018_22-59</profileName>
+                <profilePath>J:\bgb.proj.btsr1vm\tk_qsrc\doomsrc2\bgbcc_doom_ProfilerOutput\Oct-01-2018_22-59\Oct-01-2018_22-59.cxlcpdb</profilePath>
+                <profileType>Time-based Sampling</profileType>
+                <isImported>0</isImported>
+                <launchTarget>j:\usrlib\bin\bgbcc.exe</launchTarget>
+                <commandArguments>-DARCH_SH4 -DARCH_SH4LE -mBJX2_F -I. -I../tk_clib/include -L../tk_clib -lvxcore64 i_btesh4.c i_sound_btsh.c i_snd_btsh4.c i_bgb_mus_btsh.c doomdef.c doomstat.c dstrings.c tables.c f_finale.c f_wipe.c d_main.c d_net.c d_items.c g_game.c m_menu.c m_misc.c m_argv.c m_bbox.c m_fixed.c m_swap.c m_cheat.c m_random.c am_map.c p_acspec.c p_ceilng.c p_doors.c p_enemy.c p_floor.c p_inter.c p_lights.c p_map.c p_maputl.c p_plats.c p_pspr.c p_setup.c p_sight.c p_spec.c p_switch.c p_mobj.c p_telept.c p_tick.c p_saveg.c p_user.c r_bsp.c r_data.c r_draw.c r_main.c r_plane.c r_polyobj.c r_segs.c r_sky.c r_things.c w_wad.c wi_stuff.c v_video.c st_lib.c st_stuff.c hu_stuff.c hu_lib.c s_sound.c z_zone.c info.c sounds.c tst_bs2a.bs tst_cpp1a.cpp i_main.c /Fedoom_bjx2.exe</commandArguments>
+                <workingDir>J:\bgb.proj.btsr1vm\tk_qsrc\doomsrc2</workingDir>
+                <envVariables />
+                <startTime>Oct-01-2018_22-59-35</startTime>
+                <endTime>Oct-01-2018_22-59-42</endTime>
+                <startAffinity>255</startAffinity>
+                <css>T</css>
+                <cssInterval>1</cssInterval>
+                <cssScope>0x1</cssScope>
+                <cssFpoTimeBased>T</cssFpoTimeBased>
+                <cssFpo>F</cssFpo>
+                <cssUnwindTimeBased>128</cssUnwindTimeBased>
+                <cssUnwind>32</cssUnwind>
+                <saveRawFiles>F</saveRawFiles>
+                <profileScope>0</profileScope>
+                <startDelay>0</startDelay>
+                <startPaused>F</startPaused>
+                <profileEntire>T</profileEntire>
+                <duration>7</duration>
+                <terminateProcess>F</terminateProcess>
+                <msInterval>1.000000</msInterval>
+                <EventCount>0</EventCount>
+                <fetchSample>F</fetchSample>
+                <opSample>F</opSample>
+                <opCycleCount>T</opCycleCount>
+                <fetchInterval>0l</fetchInterval>
+                <opInterval>0l</opInterval>
+                <cluSample>F</cluSample>
+                <cluCycleCount>F</cluCycleCount>
+                <cluInterval>0l</cluInterval>
+                <cacheLineUtilChecked>F</cacheLineUtilChecked>
+                <cacheLineUtilEnabled>F</cacheLineUtilEnabled>
+                <ldstChecked>F</ldstChecked>
+                <ldstEnabled>F</ldstEnabled>
+                <applyFilter>F</applyFilter>
+                <utilMask>0</utilMask>
+            </Session>
+            <Session type="Profile">
+                <profileName>Oct-01-2018_23-23</profileName>
+                <profilePath>J:\bgb.proj.btsr1vm\tk_qsrc\doomsrc2\bgbcc_doom_ProfilerOutput\Oct-01-2018_23-23\Oct-01-2018_23-23.cxlcpdb</profilePath>
+                <profileType>Time-based Sampling</profileType>
+                <isImported>0</isImported>
+                <launchTarget>j:\usrlib\bin\bgbcc.exe</launchTarget>
+                <commandArguments>-DARCH_SH4 -DARCH_SH4LE -mBJX2_F -I. -I../tk_clib/include -L../tk_clib -lvxcore64 i_btesh4.c i_sound_btsh.c i_snd_btsh4.c i_bgb_mus_btsh.c doomdef.c doomstat.c dstrings.c tables.c f_finale.c f_wipe.c d_main.c d_net.c d_items.c g_game.c m_menu.c m_misc.c m_argv.c m_bbox.c m_fixed.c m_swap.c m_cheat.c m_random.c am_map.c p_acspec.c p_ceilng.c p_doors.c p_enemy.c p_floor.c p_inter.c p_lights.c p_map.c p_maputl.c p_plats.c p_pspr.c p_setup.c p_sight.c p_spec.c p_switch.c p_mobj.c p_telept.c p_tick.c p_saveg.c p_user.c r_bsp.c r_data.c r_draw.c r_main.c r_plane.c r_polyobj.c r_segs.c r_sky.c r_things.c w_wad.c wi_stuff.c v_video.c st_lib.c st_stuff.c hu_stuff.c hu_lib.c s_sound.c z_zone.c info.c sounds.c tst_bs2a.bs tst_cpp1a.cpp i_main.c /Fedoom_bjx2.exe</commandArguments>
+                <workingDir>J:\bgb.proj.btsr1vm\tk_qsrc\doomsrc2</workingDir>
+                <envVariables />
+                <startTime>Oct-01-2018_23-23-36</startTime>
+                <endTime>Oct-01-2018_23-23-44</endTime>
+                <startAffinity>255</startAffinity>
+                <css>T</css>
+                <cssInterval>1</cssInterval>
+                <cssScope>0x1</cssScope>
+                <cssFpoTimeBased>T</cssFpoTimeBased>
+                <cssFpo>F</cssFpo>
+                <cssUnwindTimeBased>128</cssUnwindTimeBased>
+                <cssUnwind>32</cssUnwind>
+                <saveRawFiles>F</saveRawFiles>
+                <profileScope>0</profileScope>
+                <startDelay>0</startDelay>
+                <startPaused>F</startPaused>
+                <profileEntire>T</profileEntire>
+                <duration>7</duration>
+                <terminateProcess>F</terminateProcess>
+                <msInterval>1.000000</msInterval>
+                <EventCount>0</EventCount>
+                <fetchSample>F</fetchSample>
+                <opSample>F</opSample>
+                <opCycleCount>T</opCycleCount>
+                <fetchInterval>0l</fetchInterval>
+                <opInterval>0l</opInterval>
+                <cluSample>F</cluSample>
+                <cluCycleCount>F</cluCycleCount>
+                <cluInterval>0l</cluInterval>
+                <cacheLineUtilChecked>F</cacheLineUtilChecked>
+                <cacheLineUtilEnabled>F</cacheLineUtilEnabled>
+                <ldstChecked>F</ldstChecked>
+                <ldstEnabled>F</ldstEnabled>
+                <applyFilter>F</applyFilter>
+                <utilMask>0</utilMask>
+            </Session>
+            <Session type="Profile">
+                <profileName>Oct-01-2018_23-30</profileName>
+                <profilePath>J:\bgb.proj.btsr1vm\tk_qsrc\doomsrc2\bgbcc_doom_ProfilerOutput\Oct-01-2018_23-30\Oct-01-2018_23-30.cxlcpdb</profilePath>
+                <profileType>Time-based Sampling</profileType>
+                <isImported>0</isImported>
+                <launchTarget>j:\usrlib\bin\bgbcc.exe</launchTarget>
+                <commandArguments>-DARCH_SH4 -DARCH_SH4LE -mBJX2_F -I. -I../tk_clib/include -L../tk_clib -lvxcore64 i_btesh4.c i_sound_btsh.c i_snd_btsh4.c i_bgb_mus_btsh.c doomdef.c doomstat.c dstrings.c tables.c f_finale.c f_wipe.c d_main.c d_net.c d_items.c g_game.c m_menu.c m_misc.c m_argv.c m_bbox.c m_fixed.c m_swap.c m_cheat.c m_random.c am_map.c p_acspec.c p_ceilng.c p_doors.c p_enemy.c p_floor.c p_inter.c p_lights.c p_map.c p_maputl.c p_plats.c p_pspr.c p_setup.c p_sight.c p_spec.c p_switch.c p_mobj.c p_telept.c p_tick.c p_saveg.c p_user.c r_bsp.c r_data.c r_draw.c r_main.c r_plane.c r_polyobj.c r_segs.c r_sky.c r_things.c w_wad.c wi_stuff.c v_video.c st_lib.c st_stuff.c hu_stuff.c hu_lib.c s_sound.c z_zone.c info.c sounds.c tst_bs2a.bs tst_cpp1a.cpp i_main.c /Fedoom_bjx2.exe</commandArguments>
+                <workingDir>J:\bgb.proj.btsr1vm\tk_qsrc\doomsrc2</workingDir>
+                <envVariables />
+                <startTime>Oct-01-2018_23-30-21</startTime>
+                <endTime>Oct-01-2018_23-30-29</endTime>
+                <startAffinity>255</startAffinity>
+                <css>T</css>
+                <cssInterval>1</cssInterval>
+                <cssScope>0x1</cssScope>
+                <cssFpoTimeBased>T</cssFpoTimeBased>
+                <cssFpo>F</cssFpo>
+                <cssUnwindTimeBased>128</cssUnwindTimeBased>
+                <cssUnwind>32</cssUnwind>
+                <saveRawFiles>F</saveRawFiles>
+                <profileScope>0</profileScope>
+                <startDelay>0</startDelay>
+                <startPaused>F</startPaused>
+                <profileEntire>T</profileEntire>
+                <duration>8</duration>
+                <terminateProcess>F</terminateProcess>
+                <msInterval>1.000000</msInterval>
+                <EventCount>0</EventCount>
+                <fetchSample>F</fetchSample>
+                <opSample>F</opSample>
+                <opCycleCount>T</opCycleCount>
+                <fetchInterval>0l</fetchInterval>
+                <opInterval>0l</opInterval>
+                <cluSample>F</cluSample>
+                <cluCycleCount>F</cluCycleCount>
+                <cluInterval>0l</cluInterval>
+                <cacheLineUtilChecked>F</cacheLineUtilChecked>
+                <cacheLineUtilEnabled>F</cacheLineUtilEnabled>
+                <ldstChecked>F</ldstChecked>
+                <ldstEnabled>F</ldstEnabled>
+                <applyFilter>F</applyFilter>
+                <utilMask>0</utilMask>
+            </Session>
+            <Session type="Profile">
+                <profileName>Oct-01-2018_23-33</profileName>
+                <profilePath>J:\bgb.proj.btsr1vm\tk_qsrc\doomsrc2\bgbcc_doom_ProfilerOutput\Oct-01-2018_23-33\Oct-01-2018_23-33.cxlcpdb</profilePath>
+                <profileType>Time-based Sampling</profileType>
+                <isImported>0</isImported>
+                <launchTarget>j:\usrlib\bin\bgbcc.exe</launchTarget>
+                <commandArguments>-DARCH_SH4 -DARCH_SH4LE -mBJX2_F -I. -I../tk_clib/include -L../tk_clib -lvxcore64 i_btesh4.c i_sound_btsh.c i_snd_btsh4.c i_bgb_mus_btsh.c doomdef.c doomstat.c dstrings.c tables.c f_finale.c f_wipe.c d_main.c d_net.c d_items.c g_game.c m_menu.c m_misc.c m_argv.c m_bbox.c m_fixed.c m_swap.c m_cheat.c m_random.c am_map.c p_acspec.c p_ceilng.c p_doors.c p_enemy.c p_floor.c p_inter.c p_lights.c p_map.c p_maputl.c p_plats.c p_pspr.c p_setup.c p_sight.c p_spec.c p_switch.c p_mobj.c p_telept.c p_tick.c p_saveg.c p_user.c r_bsp.c r_data.c r_draw.c r_main.c r_plane.c r_polyobj.c r_segs.c r_sky.c r_things.c w_wad.c wi_stuff.c v_video.c st_lib.c st_stuff.c hu_stuff.c hu_lib.c s_sound.c z_zone.c info.c sounds.c tst_bs2a.bs tst_cpp1a.cpp i_main.c /Fedoom_bjx2.exe</commandArguments>
+                <workingDir>J:\bgb.proj.btsr1vm\tk_qsrc\doomsrc2</workingDir>
+                <envVariables />
+                <startTime>Oct-01-2018_23-33-06</startTime>
+                <endTime>Oct-01-2018_23-33-14</endTime>
+                <startAffinity>255</startAffinity>
+                <css>T</css>
+                <cssInterval>1</cssInterval>
+                <cssScope>0x1</cssScope>
+                <cssFpoTimeBased>T</cssFpoTimeBased>
+                <cssFpo>F</cssFpo>
+                <cssUnwindTimeBased>128</cssUnwindTimeBased>
+                <cssUnwind>32</cssUnwind>
+                <saveRawFiles>F</saveRawFiles>
+                <profileScope>0</profileScope>
+                <startDelay>0</startDelay>
+                <startPaused>F</startPaused>
+                <profileEntire>T</profileEntire>
+                <duration>7</duration>
+                <terminateProcess>F</terminateProcess>
+                <msInterval>1.000000</msInterval>
+                <EventCount>0</EventCount>
+                <fetchSample>F</fetchSample>
+                <opSample>F</opSample>
+                <opCycleCount>T</opCycleCount>
+                <fetchInterval>0l</fetchInterval>
+                <opInterval>0l</opInterval>
+                <cluSample>F</cluSample>
+                <cluCycleCount>F</cluCycleCount>
+                <cluInterval>0l</cluInterval>
+                <cacheLineUtilChecked>F</cacheLineUtilChecked>
+                <cacheLineUtilEnabled>F</cacheLineUtilEnabled>
+                <ldstChecked>F</ldstChecked>
+                <ldstEnabled>F</ldstEnabled>
+                <applyFilter>F</applyFilter>
+                <utilMask>0</utilMask>
+            </Session>
+            <Session type="Profile">
+                <profileName>Oct-01-2018_23-38</profileName>
+                <profilePath>J:\bgb.proj.btsr1vm\tk_qsrc\doomsrc2\bgbcc_doom_ProfilerOutput\Oct-01-2018_23-38\Oct-01-2018_23-38.cxlcpdb</profilePath>
+                <profileType>Time-based Sampling</profileType>
+                <isImported>0</isImported>
+                <launchTarget>j:\usrlib\bin\bgbcc.exe</launchTarget>
+                <commandArguments>-DARCH_SH4 -DARCH_SH4LE -mBJX2_F -I. -I../tk_clib/include -L../tk_clib -lvxcore64 i_btesh4.c i_sound_btsh.c i_snd_btsh4.c i_bgb_mus_btsh.c doomdef.c doomstat.c dstrings.c tables.c f_finale.c f_wipe.c d_main.c d_net.c d_items.c g_game.c m_menu.c m_misc.c m_argv.c m_bbox.c m_fixed.c m_swap.c m_cheat.c m_random.c am_map.c p_acspec.c p_ceilng.c p_doors.c p_enemy.c p_floor.c p_inter.c p_lights.c p_map.c p_maputl.c p_plats.c p_pspr.c p_setup.c p_sight.c p_spec.c p_switch.c p_mobj.c p_telept.c p_tick.c p_saveg.c p_user.c r_bsp.c r_data.c r_draw.c r_main.c r_plane.c r_polyobj.c r_segs.c r_sky.c r_things.c w_wad.c wi_stuff.c v_video.c st_lib.c st_stuff.c hu_stuff.c hu_lib.c s_sound.c z_zone.c info.c sounds.c tst_bs2a.bs tst_cpp1a.cpp i_main.c /Fedoom_bjx2.exe</commandArguments>
+                <workingDir>J:\bgb.proj.btsr1vm\tk_qsrc\doomsrc2</workingDir>
+                <envVariables />
+                <startTime>Oct-01-2018_23-38-10</startTime>
+                <endTime>Oct-01-2018_23-38-18</endTime>
+                <startAffinity>255</startAffinity>
+                <css>T</css>
+                <cssInterval>1</cssInterval>
+                <cssScope>0x1</cssScope>
+                <cssFpoTimeBased>T</cssFpoTimeBased>
+                <cssFpo>F</cssFpo>
+                <cssUnwindTimeBased>128</cssUnwindTimeBased>
+                <cssUnwind>32</cssUnwind>
+                <saveRawFiles>F</saveRawFiles>
+                <profileScope>0</profileScope>
+                <startDelay>0</startDelay>
+                <startPaused>F</startPaused>
+                <profileEntire>T</profileEntire>
+                <duration>7</duration>
+                <terminateProcess>F</terminateProcess>
+                <msInterval>1.000000</msInterval>
+                <EventCount>0</EventCount>
+                <fetchSample>F</fetchSample>
+                <opSample>F</opSample>
+                <opCycleCount>T</opCycleCount>
+                <fetchInterval>0l</fetchInterval>
+                <opInterval>0l</opInterval>
+                <cluSample>F</cluSample>
+                <cluCycleCount>F</cluCycleCount>
+                <cluInterval>0l</cluInterval>
+                <cacheLineUtilChecked>F</cacheLineUtilChecked>
+                <cacheLineUtilEnabled>F</cacheLineUtilEnabled>
+                <ldstChecked>F</ldstChecked>
+                <ldstEnabled>F</ldstEnabled>
+                <applyFilter>F</applyFilter>
+                <utilMask>0</utilMask>
+            </Session>
+            <Session type="Profile">
+                <profileName>Oct-01-2018_23-44</profileName>
+                <profilePath>J:\bgb.proj.btsr1vm\tk_qsrc\doomsrc2\bgbcc_doom_ProfilerOutput\Oct-01-2018_23-44\Oct-01-2018_23-44.cxlcpdb</profilePath>
+                <profileType>Time-based Sampling</profileType>
+                <isImported>0</isImported>
+                <launchTarget>j:\usrlib\bin\bgbcc.exe</launchTarget>
+                <commandArguments>-DARCH_SH4 -DARCH_SH4LE -mBJX2_F -I. -I../tk_clib/include -L../tk_clib -lvxcore64 i_btesh4.c i_sound_btsh.c i_snd_btsh4.c i_bgb_mus_btsh.c doomdef.c doomstat.c dstrings.c tables.c f_finale.c f_wipe.c d_main.c d_net.c d_items.c g_game.c m_menu.c m_misc.c m_argv.c m_bbox.c m_fixed.c m_swap.c m_cheat.c m_random.c am_map.c p_acspec.c p_ceilng.c p_doors.c p_enemy.c p_floor.c p_inter.c p_lights.c p_map.c p_maputl.c p_plats.c p_pspr.c p_setup.c p_sight.c p_spec.c p_switch.c p_mobj.c p_telept.c p_tick.c p_saveg.c p_user.c r_bsp.c r_data.c r_draw.c r_main.c r_plane.c r_polyobj.c r_segs.c r_sky.c r_things.c w_wad.c wi_stuff.c v_video.c st_lib.c st_stuff.c hu_stuff.c hu_lib.c s_sound.c z_zone.c info.c sounds.c tst_bs2a.bs tst_cpp1a.cpp i_main.c /Fedoom_bjx2.exe</commandArguments>
+                <workingDir>J:\bgb.proj.btsr1vm\tk_qsrc\doomsrc2</workingDir>
+                <envVariables />
+                <startTime>Oct-01-2018_23-44-17</startTime>
+                <endTime>Oct-01-2018_23-44-24</endTime>
+                <startAffinity>255</startAffinity>
+                <css>T</css>
+                <cssInterval>1</cssInterval>
+                <cssScope>0x1</cssScope>
+                <cssFpoTimeBased>T</cssFpoTimeBased>
+                <cssFpo>F</cssFpo>
+                <cssUnwindTimeBased>128</cssUnwindTimeBased>
+                <cssUnwind>32</cssUnwind>
+                <saveRawFiles>F</saveRawFiles>
+                <profileScope>0</profileScope>
+                <startDelay>0</startDelay>
+                <startPaused>F</startPaused>
+                <profileEntire>T</profileEntire>
+                <duration>6</duration>
+                <terminateProcess>F</terminateProcess>
+                <msInterval>1.000000</msInterval>
+                <EventCount>0</EventCount>
+                <fetchSample>F</fetchSample>
+                <opSample>F</opSample>
+                <opCycleCount>T</opCycleCount>
+                <fetchInterval>0l</fetchInterval>
+                <opInterval>0l</opInterval>
+                <cluSample>F</cluSample>
+                <cluCycleCount>F</cluCycleCount>
+                <cluInterval>0l</cluInterval>
+                <cacheLineUtilChecked>F</cacheLineUtilChecked>
+                <cacheLineUtilEnabled>F</cacheLineUtilEnabled>
+                <ldstChecked>F</ldstChecked>
+                <ldstEnabled>F</ldstEnabled>
+                <applyFilter>F</applyFilter>
+                <utilMask>0</utilMask>
+            </Session>
+            <Session type="Profile">
+                <profileName>Oct-02-2018_00-04</profileName>
+                <profilePath>J:\bgb.proj.btsr1vm\tk_qsrc\doomsrc2\bgbcc_doom_ProfilerOutput\Oct-02-2018_00-04\Oct-02-2018_00-04.cxlcpdb</profilePath>
+                <profileType>Time-based Sampling</profileType>
+                <isImported>0</isImported>
+                <launchTarget>j:\usrlib\bin\bgbcc.exe</launchTarget>
+                <commandArguments>-DARCH_SH4 -DARCH_SH4LE -mBJX2_F -I. -I../tk_clib/include -L../tk_clib -lvxcore64 i_btesh4.c i_sound_btsh.c i_snd_btsh4.c i_bgb_mus_btsh.c doomdef.c doomstat.c dstrings.c tables.c f_finale.c f_wipe.c d_main.c d_net.c d_items.c g_game.c m_menu.c m_misc.c m_argv.c m_bbox.c m_fixed.c m_swap.c m_cheat.c m_random.c am_map.c p_acspec.c p_ceilng.c p_doors.c p_enemy.c p_floor.c p_inter.c p_lights.c p_map.c p_maputl.c p_plats.c p_pspr.c p_setup.c p_sight.c p_spec.c p_switch.c p_mobj.c p_telept.c p_tick.c p_saveg.c p_user.c r_bsp.c r_data.c r_draw.c r_main.c r_plane.c r_polyobj.c r_segs.c r_sky.c r_things.c w_wad.c wi_stuff.c v_video.c st_lib.c st_stuff.c hu_stuff.c hu_lib.c s_sound.c z_zone.c info.c sounds.c tst_bs2a.bs tst_cpp1a.cpp i_main.c /Fedoom_bjx2.exe</commandArguments>
+                <workingDir>J:\bgb.proj.btsr1vm\tk_qsrc\doomsrc2</workingDir>
+                <envVariables />
+                <startTime>Oct-02-2018_00-04-46</startTime>
+                <endTime>Oct-02-2018_00-04-53</endTime>
+                <startAffinity>255</startAffinity>
+                <css>T</css>
+                <cssInterval>1</cssInterval>
+                <cssScope>0x1</cssScope>
+                <cssFpoTimeBased>T</cssFpoTimeBased>
+                <cssFpo>F</cssFpo>
+                <cssUnwindTimeBased>128</cssUnwindTimeBased>
+                <cssUnwind>32</cssUnwind>
+                <saveRawFiles>F</saveRawFiles>
+                <profileScope>0</profileScope>
+                <startDelay>0</startDelay>
+                <startPaused>F</startPaused>
+                <profileEntire>T</profileEntire>
+                <duration>7</duration>
+                <terminateProcess>F</terminateProcess>
+                <msInterval>1.000000</msInterval>
+                <EventCount>0</EventCount>
+                <fetchSample>F</fetchSample>
+                <opSample>F</opSample>
+                <opCycleCount>T</opCycleCount>
+                <fetchInterval>0l</fetchInterval>
+                <opInterval>0l</opInterval>
+                <cluSample>F</cluSample>
+                <cluCycleCount>F</cluCycleCount>
+                <cluInterval>0l</cluInterval>
+                <cacheLineUtilChecked>F</cacheLineUtilChecked>
+                <cacheLineUtilEnabled>F</cacheLineUtilEnabled>
+                <ldstChecked>F</ldstChecked>
+                <ldstEnabled>F</ldstEnabled>
+                <applyFilter>F</applyFilter>
+                <utilMask>0</utilMask>
+            </Session>
+            <Session type="Profile">
+                <profileName>Oct-02-2018_00-17</profileName>
+                <profilePath>J:\bgb.proj.btsr1vm\tk_qsrc\doomsrc2\bgbcc_doom_ProfilerOutput\Oct-02-2018_00-17\Oct-02-2018_00-17.cxlcpdb</profilePath>
+                <profileType>Time-based Sampling</profileType>
+                <isImported>0</isImported>
+                <launchTarget>j:\usrlib\bin\bgbcc.exe</launchTarget>
+                <commandArguments>-DARCH_SH4 -DARCH_SH4LE -mBJX2_F -I. -I../tk_clib/include -L../tk_clib -lvxcore64 i_btesh4.c i_sound_btsh.c i_snd_btsh4.c i_bgb_mus_btsh.c doomdef.c doomstat.c dstrings.c tables.c f_finale.c f_wipe.c d_main.c d_net.c d_items.c g_game.c m_menu.c m_misc.c m_argv.c m_bbox.c m_fixed.c m_swap.c m_cheat.c m_random.c am_map.c p_acspec.c p_ceilng.c p_doors.c p_enemy.c p_floor.c p_inter.c p_lights.c p_map.c p_maputl.c p_plats.c p_pspr.c p_setup.c p_sight.c p_spec.c p_switch.c p_mobj.c p_telept.c p_tick.c p_saveg.c p_user.c r_bsp.c r_data.c r_draw.c r_main.c r_plane.c r_polyobj.c r_segs.c r_sky.c r_things.c w_wad.c wi_stuff.c v_video.c st_lib.c st_stuff.c hu_stuff.c hu_lib.c s_sound.c z_zone.c info.c sounds.c tst_bs2a.bs tst_cpp1a.cpp i_main.c /Fedoom_bjx2.exe</commandArguments>
+                <workingDir>J:\bgb.proj.btsr1vm\tk_qsrc\doomsrc2</workingDir>
+                <envVariables />
+                <startTime>Oct-02-2018_00-17-19</startTime>
+                <endTime>Oct-02-2018_00-17-27</endTime>
+                <startAffinity>255</startAffinity>
+                <css>T</css>
+                <cssInterval>1</cssInterval>
+                <cssScope>0x1</cssScope>
+                <cssFpoTimeBased>T</cssFpoTimeBased>
+                <cssFpo>F</cssFpo>
+                <cssUnwindTimeBased>128</cssUnwindTimeBased>
+                <cssUnwind>32</cssUnwind>
+                <saveRawFiles>F</saveRawFiles>
+                <profileScope>0</profileScope>
+                <startDelay>0</startDelay>
+                <startPaused>F</startPaused>
+                <profileEntire>T</profileEntire>
+                <duration>7</duration>
+                <terminateProcess>F</terminateProcess>
+                <msInterval>1.000000</msInterval>
+                <EventCount>0</EventCount>
+                <fetchSample>F</fetchSample>
+                <opSample>F</opSample>
+                <opCycleCount>T</opCycleCount>
+                <fetchInterval>0l</fetchInterval>
+                <opInterval>0l</opInterval>
+                <cluSample>F</cluSample>
+                <cluCycleCount>F</cluCycleCount>
+                <cluInterval>0l</cluInterval>
+                <cacheLineUtilChecked>F</cacheLineUtilChecked>
+                <cacheLineUtilEnabled>F</cacheLineUtilEnabled>
+                <ldstChecked>F</ldstChecked>
+                <ldstEnabled>F</ldstEnabled>
+                <applyFilter>F</applyFilter>
+                <utilMask>0</utilMask>
+            </Session>
+            <Session type="Profile">
+                <profileName>Oct-02-2018_01-17</profileName>
+                <profilePath>J:\bgb.proj.btsr1vm\tk_qsrc\doomsrc2\bgbcc_doom_ProfilerOutput\Oct-02-2018_01-17\Oct-02-2018_01-17.cxlcpdb</profilePath>
+                <profileType>Time-based Sampling</profileType>
+                <isImported>0</isImported>
+                <launchTarget>j:\usrlib\bin\bgbcc.exe</launchTarget>
+                <commandArguments>-DARCH_SH4 -DARCH_SH4LE -mBJX2_F -I. -I../tk_clib/include -L../tk_clib -lvxcore64 i_btesh4.c i_sound_btsh.c i_snd_btsh4.c i_bgb_mus_btsh.c doomdef.c doomstat.c dstrings.c tables.c f_finale.c f_wipe.c d_main.c d_net.c d_items.c g_game.c m_menu.c m_misc.c m_argv.c m_bbox.c m_fixed.c m_swap.c m_cheat.c m_random.c am_map.c p_acspec.c p_ceilng.c p_doors.c p_enemy.c p_floor.c p_inter.c p_lights.c p_map.c p_maputl.c p_plats.c p_pspr.c p_setup.c p_sight.c p_spec.c p_switch.c p_mobj.c p_telept.c p_tick.c p_saveg.c p_user.c r_bsp.c r_data.c r_draw.c r_main.c r_plane.c r_polyobj.c r_segs.c r_sky.c r_things.c w_wad.c wi_stuff.c v_video.c st_lib.c st_stuff.c hu_stuff.c hu_lib.c s_sound.c z_zone.c info.c sounds.c tst_bs2a.bs tst_cpp1a.cpp i_main.c /Fedoom_bjx2.exe</commandArguments>
+                <workingDir>J:\bgb.proj.btsr1vm\tk_qsrc\doomsrc2</workingDir>
+                <envVariables />
+                <startTime>Oct-02-2018_01-17-44</startTime>
+                <endTime>Oct-02-2018_01-17-51</endTime>
+                <startAffinity>255</startAffinity>
+                <css>T</css>
+                <cssInterval>1</cssInterval>
+                <cssScope>0x1</cssScope>
+                <cssFpoTimeBased>T</cssFpoTimeBased>
+                <cssFpo>F</cssFpo>
+                <cssUnwindTimeBased>128</cssUnwindTimeBased>
+                <cssUnwind>32</cssUnwind>
+                <saveRawFiles>F</saveRawFiles>
+                <profileScope>0</profileScope>
+                <startDelay>0</startDelay>
+                <startPaused>F</startPaused>
+                <profileEntire>T</profileEntire>
+                <duration>7</duration>
+                <terminateProcess>F</terminateProcess>
+                <msInterval>1.000000</msInterval>
+                <EventCount>0</EventCount>
+                <fetchSample>F</fetchSample>
+                <opSample>F</opSample>
+                <opCycleCount>T</opCycleCount>
+                <fetchInterval>0l</fetchInterval>
+                <opInterval>0l</opInterval>
+                <cluSample>F</cluSample>
+                <cluCycleCount>F</cluCycleCount>
+                <cluInterval>0l</cluInterval>
+                <cacheLineUtilChecked>F</cacheLineUtilChecked>
+                <cacheLineUtilEnabled>F</cacheLineUtilEnabled>
+                <ldstChecked>F</ldstChecked>
+                <ldstEnabled>F</ldstEnabled>
+                <applyFilter>F</applyFilter>
+                <utilMask>0</utilMask>
+            </Session>
+            <Session type="Profile">
+                <profileName>Oct-02-2018_01-27</profileName>
+                <profilePath>J:\bgb.proj.btsr1vm\tk_qsrc\doomsrc2\bgbcc_doom_ProfilerOutput\Oct-02-2018_01-27\Oct-02-2018_01-27.cxlcpdb</profilePath>
+                <profileType>Time-based Sampling</profileType>
+                <isImported>0</isImported>
+                <launchTarget>j:\usrlib\bin\bgbcc.exe</launchTarget>
+                <commandArguments>-DARCH_SH4 -DARCH_SH4LE -mBJX2_F -I. -I../tk_clib/include -L../tk_clib -lvxcore64 i_btesh4.c i_sound_btsh.c i_snd_btsh4.c i_bgb_mus_btsh.c doomdef.c doomstat.c dstrings.c tables.c f_finale.c f_wipe.c d_main.c d_net.c d_items.c g_game.c m_menu.c m_misc.c m_argv.c m_bbox.c m_fixed.c m_swap.c m_cheat.c m_random.c am_map.c p_acspec.c p_ceilng.c p_doors.c p_enemy.c p_floor.c p_inter.c p_lights.c p_map.c p_maputl.c p_plats.c p_pspr.c p_setup.c p_sight.c p_spec.c p_switch.c p_mobj.c p_telept.c p_tick.c p_saveg.c p_user.c r_bsp.c r_data.c r_draw.c r_main.c r_plane.c r_polyobj.c r_segs.c r_sky.c r_things.c w_wad.c wi_stuff.c v_video.c st_lib.c st_stuff.c hu_stuff.c hu_lib.c s_sound.c z_zone.c info.c sounds.c tst_bs2a.bs tst_cpp1a.cpp i_main.c /Fedoom_bjx2.exe</commandArguments>
+                <workingDir>J:\bgb.proj.btsr1vm\tk_qsrc\doomsrc2</workingDir>
+                <envVariables />
+                <startTime>Oct-02-2018_01-27-57</startTime>
+                <endTime>Oct-02-2018_01-28-04</endTime>
+                <startAffinity>255</startAffinity>
+                <css>T</css>
+                <cssInterval>1</cssInterval>
+                <cssScope>0x1</cssScope>
+                <cssFpoTimeBased>T</cssFpoTimeBased>
+                <cssFpo>F</cssFpo>
+                <cssUnwindTimeBased>128</cssUnwindTimeBased>
+                <cssUnwind>32</cssUnwind>
+                <saveRawFiles>F</saveRawFiles>
+                <profileScope>0</profileScope>
+                <startDelay>0</startDelay>
+                <startPaused>F</startPaused>
+                <profileEntire>T</profileEntire>
+                <duration>6</duration>
+                <terminateProcess>F</terminateProcess>
+                <msInterval>1.000000</msInterval>
+                <EventCount>0</EventCount>
+                <fetchSample>F</fetchSample>
+                <opSample>F</opSample>
+                <opCycleCount>T</opCycleCount>
+                <fetchInterval>0l</fetchInterval>
+                <opInterval>0l</opInterval>
+                <cluSample>F</cluSample>
+                <cluCycleCount>F</cluCycleCount>
+                <cluInterval>0l</cluInterval>
+                <cacheLineUtilChecked>F</cacheLineUtilChecked>
+                <cacheLineUtilEnabled>F</cacheLineUtilEnabled>
+                <ldstChecked>F</ldstChecked>
+                <ldstEnabled>F</ldstEnabled>
+                <applyFilter>F</applyFilter>
+                <utilMask>0</utilMask>
+            </Session>
+            <Session type="Profile">
+                <profileName>Oct-02-2018_01-51</profileName>
+                <profilePath>J:\bgb.proj.btsr1vm\tk_qsrc\doomsrc2\bgbcc_doom_ProfilerOutput\Oct-02-2018_01-51\Oct-02-2018_01-51.cxlcpdb</profilePath>
+                <profileType>Time-based Sampling</profileType>
+                <isImported>0</isImported>
+                <launchTarget>j:\usrlib\bin\bgbcc.exe</launchTarget>
+                <commandArguments>-DARCH_SH4 -DARCH_SH4LE -mBJX2_F -I. -I../tk_clib/include -L../tk_clib -lvxcore64 i_btesh4.c i_sound_btsh.c i_snd_btsh4.c i_bgb_mus_btsh.c doomdef.c doomstat.c dstrings.c tables.c f_finale.c f_wipe.c d_main.c d_net.c d_items.c g_game.c m_menu.c m_misc.c m_argv.c m_bbox.c m_fixed.c m_swap.c m_cheat.c m_random.c am_map.c p_acspec.c p_ceilng.c p_doors.c p_enemy.c p_floor.c p_inter.c p_lights.c p_map.c p_maputl.c p_plats.c p_pspr.c p_setup.c p_sight.c p_spec.c p_switch.c p_mobj.c p_telept.c p_tick.c p_saveg.c p_user.c r_bsp.c r_data.c r_draw.c r_main.c r_plane.c r_polyobj.c r_segs.c r_sky.c r_things.c w_wad.c wi_stuff.c v_video.c st_lib.c st_stuff.c hu_stuff.c hu_lib.c s_sound.c z_zone.c info.c sounds.c tst_bs2a.bs tst_cpp1a.cpp i_main.c /Fedoom_bjx2.exe</commandArguments>
+                <workingDir>J:\bgb.proj.btsr1vm\tk_qsrc\doomsrc2</workingDir>
+                <envVariables />
+                <startTime>Oct-02-2018_01-51-15</startTime>
+                <endTime>Oct-02-2018_01-51-23</endTime>
+                <startAffinity>255</startAffinity>
+                <css>T</css>
+                <cssInterval>1</cssInterval>
+                <cssScope>0x1</cssScope>
+                <cssFpoTimeBased>T</cssFpoTimeBased>
+                <cssFpo>F</cssFpo>
+                <cssUnwindTimeBased>128</cssUnwindTimeBased>
+                <cssUnwind>32</cssUnwind>
+                <saveRawFiles>F</saveRawFiles>
+                <profileScope>0</profileScope>
+                <startDelay>0</startDelay>
+                <startPaused>F</startPaused>
+                <profileEntire>T</profileEntire>
+                <duration>7</duration>
+                <terminateProcess>F</terminateProcess>
+                <msInterval>1.000000</msInterval>
+                <EventCount>0</EventCount>
+                <fetchSample>F</fetchSample>
+                <opSample>F</opSample>
+                <opCycleCount>T</opCycleCount>
+                <fetchInterval>0l</fetchInterval>
+                <opInterval>0l</opInterval>
+                <cluSample>F</cluSample>
+                <cluCycleCount>F</cluCycleCount>
+                <cluInterval>0l</cluInterval>
+                <cacheLineUtilChecked>F</cacheLineUtilChecked>
+                <cacheLineUtilEnabled>F</cacheLineUtilEnabled>
+                <ldstChecked>F</ldstChecked>
+                <ldstEnabled>F</ldstEnabled>
+                <applyFilter>F</applyFilter>
+                <utilMask>0</utilMask>
+            </Session>
+            <Session type="Profile">
+                <profileName>Oct-02-2018_01-57</profileName>
+                <profilePath>J:\bgb.proj.btsr1vm\tk_qsrc\doomsrc2\bgbcc_doom_ProfilerOutput\Oct-02-2018_01-57\Oct-02-2018_01-57.cxlcpdb</profilePath>
+                <profileType>Time-based Sampling</profileType>
+                <isImported>0</isImported>
+                <launchTarget>j:\usrlib\bin\bgbcc.exe</launchTarget>
+                <commandArguments>-DARCH_SH4 -DARCH_SH4LE -mBJX2_F -I. -I../tk_clib/include -L../tk_clib -lvxcore64 i_btesh4.c i_sound_btsh.c i_snd_btsh4.c i_bgb_mus_btsh.c doomdef.c doomstat.c dstrings.c tables.c f_finale.c f_wipe.c d_main.c d_net.c d_items.c g_game.c m_menu.c m_misc.c m_argv.c m_bbox.c m_fixed.c m_swap.c m_cheat.c m_random.c am_map.c p_acspec.c p_ceilng.c p_doors.c p_enemy.c p_floor.c p_inter.c p_lights.c p_map.c p_maputl.c p_plats.c p_pspr.c p_setup.c p_sight.c p_spec.c p_switch.c p_mobj.c p_telept.c p_tick.c p_saveg.c p_user.c r_bsp.c r_data.c r_draw.c r_main.c r_plane.c r_polyobj.c r_segs.c r_sky.c r_things.c w_wad.c wi_stuff.c v_video.c st_lib.c st_stuff.c hu_stuff.c hu_lib.c s_sound.c z_zone.c info.c sounds.c tst_bs2a.bs tst_cpp1a.cpp i_main.c /Fedoom_bjx2.exe</commandArguments>
+                <workingDir>J:\bgb.proj.btsr1vm\tk_qsrc\doomsrc2</workingDir>
+                <envVariables />
+                <startTime>Oct-02-2018_01-57-44</startTime>
+                <endTime>Oct-02-2018_01-57-51</endTime>
+                <startAffinity>255</startAffinity>
+                <css>T</css>
+                <cssInterval>1</cssInterval>
+                <cssScope>0x1</cssScope>
+                <cssFpoTimeBased>T</cssFpoTimeBased>
+                <cssFpo>F</cssFpo>
+                <cssUnwindTimeBased>128</cssUnwindTimeBased>
+                <cssUnwind>32</cssUnwind>
+                <saveRawFiles>F</saveRawFiles>
+                <profileScope>0</profileScope>
+                <startDelay>0</startDelay>
+                <startPaused>F</startPaused>
+                <profileEntire>T</profileEntire>
+                <duration>6</duration>
+                <terminateProcess>F</terminateProcess>
+                <msInterval>1.000000</msInterval>
+                <EventCount>0</EventCount>
+                <fetchSample>F</fetchSample>
+                <opSample>F</opSample>
+                <opCycleCount>T</opCycleCount>
+                <fetchInterval>0l</fetchInterval>
+                <opInterval>0l</opInterval>
+                <cluSample>F</cluSample>
+                <cluCycleCount>F</cluCycleCount>
+                <cluInterval>0l</cluInterval>
+                <cacheLineUtilChecked>F</cacheLineUtilChecked>
+                <cacheLineUtilEnabled>F</cacheLineUtilEnabled>
+                <ldstChecked>F</ldstChecked>
+                <ldstEnabled>F</ldstEnabled>
+                <applyFilter>F</applyFilter>
+                <utilMask>0</utilMask>
+            </Session>
+            <Session type="Profile">
+                <profileName>Oct-02-2018_02-19</profileName>
+                <profilePath>J:\bgb.proj.btsr1vm\tk_qsrc\doomsrc2\bgbcc_doom_ProfilerOutput\Oct-02-2018_02-19\Oct-02-2018_02-19.cxlcpdb</profilePath>
+                <profileType>Time-based Sampling</profileType>
+                <isImported>0</isImported>
+                <launchTarget>j:\usrlib\bin\bgbcc.exe</launchTarget>
+                <commandArguments>-DARCH_SH4 -DARCH_SH4LE -mBJX2_F -I. -I../tk_clib/include -L../tk_clib -lvxcore64 i_btesh4.c i_sound_btsh.c i_snd_btsh4.c i_bgb_mus_btsh.c doomdef.c doomstat.c dstrings.c tables.c f_finale.c f_wipe.c d_main.c d_net.c d_items.c g_game.c m_menu.c m_misc.c m_argv.c m_bbox.c m_fixed.c m_swap.c m_cheat.c m_random.c am_map.c p_acspec.c p_ceilng.c p_doors.c p_enemy.c p_floor.c p_inter.c p_lights.c p_map.c p_maputl.c p_plats.c p_pspr.c p_setup.c p_sight.c p_spec.c p_switch.c p_mobj.c p_telept.c p_tick.c p_saveg.c p_user.c r_bsp.c r_data.c r_draw.c r_main.c r_plane.c r_polyobj.c r_segs.c r_sky.c r_things.c w_wad.c wi_stuff.c v_video.c st_lib.c st_stuff.c hu_stuff.c hu_lib.c s_sound.c z_zone.c info.c sounds.c tst_bs2a.bs tst_cpp1a.cpp i_main.c /Fedoom_bjx2.exe</commandArguments>
+                <workingDir>J:\bgb.proj.btsr1vm\tk_qsrc\doomsrc2</workingDir>
+                <envVariables />
+                <startTime>Oct-02-2018_02-19-23</startTime>
+                <endTime>Oct-02-2018_02-19-31</endTime>
+                <startAffinity>255</startAffinity>
+                <css>T</css>
+                <cssInterval>1</cssInterval>
+                <cssScope>0x1</cssScope>
+                <cssFpoTimeBased>T</cssFpoTimeBased>
+                <cssFpo>F</cssFpo>
+                <cssUnwindTimeBased>128</cssUnwindTimeBased>
+                <cssUnwind>32</cssUnwind>
+                <saveRawFiles>F</saveRawFiles>
+                <profileScope>0</profileScope>
+                <startDelay>0</startDelay>
+                <startPaused>F</startPaused>
+                <profileEntire>T</profileEntire>
+                <duration>7</duration>
+                <terminateProcess>F</terminateProcess>
+                <msInterval>1.000000</msInterval>
+                <EventCount>0</EventCount>
+                <fetchSample>F</fetchSample>
+                <opSample>F</opSample>
+                <opCycleCount>T</opCycleCount>
+                <fetchInterval>0l</fetchInterval>
+                <opInterval>0l</opInterval>
+                <cluSample>F</cluSample>
+                <cluCycleCount>F</cluCycleCount>
+                <cluInterval>0l</cluInterval>
+                <cacheLineUtilChecked>F</cacheLineUtilChecked>
+                <cacheLineUtilEnabled>F</cacheLineUtilEnabled>
+                <ldstChecked>F</ldstChecked>
+                <ldstEnabled>F</ldstEnabled>
+                <applyFilter>F</applyFilter>
+                <utilMask>0</utilMask>
+            </Session>
+            <Session type="Profile">
+                <profileName>Oct-02-2018_03-54</profileName>
+                <profilePath>J:\bgb.proj.btsr1vm\tk_qsrc\doomsrc2\bgbcc_doom_ProfilerOutput\Oct-02-2018_03-54\Oct-02-2018_03-54.cxlcpdb</profilePath>
+                <profileType>Time-based Sampling</profileType>
+                <isImported>0</isImported>
+                <launchTarget>j:\usrlib\bin\bgbcc.exe</launchTarget>
+                <commandArguments>-DARCH_SH4 -DARCH_SH4LE -mBJX2_F -I. -I../tk_clib/include -L../tk_clib -lvxcore64 i_btesh4.c i_sound_btsh.c i_snd_btsh4.c i_bgb_mus_btsh.c doomdef.c doomstat.c dstrings.c tables.c f_finale.c f_wipe.c d_main.c d_net.c d_items.c g_game.c m_menu.c m_misc.c m_argv.c m_bbox.c m_fixed.c m_swap.c m_cheat.c m_random.c am_map.c p_acspec.c p_ceilng.c p_doors.c p_enemy.c p_floor.c p_inter.c p_lights.c p_map.c p_maputl.c p_plats.c p_pspr.c p_setup.c p_sight.c p_spec.c p_switch.c p_mobj.c p_telept.c p_tick.c p_saveg.c p_user.c r_bsp.c r_data.c r_draw.c r_main.c r_plane.c r_polyobj.c r_segs.c r_sky.c r_things.c w_wad.c wi_stuff.c v_video.c st_lib.c st_stuff.c hu_stuff.c hu_lib.c s_sound.c z_zone.c info.c sounds.c tst_bs2a.bs tst_cpp1a.cpp i_main.c /Fedoom_bjx2.exe</commandArguments>
+                <workingDir>J:\bgb.proj.btsr1vm\tk_qsrc\doomsrc2</workingDir>
+                <envVariables />
+                <startTime>Oct-02-2018_03-54-35</startTime>
+                <endTime>Oct-02-2018_03-54-42</endTime>
+                <startAffinity>255</startAffinity>
+                <css>T</css>
+                <cssInterval>1</cssInterval>
+                <cssScope>0x1</cssScope>
+                <cssFpoTimeBased>T</cssFpoTimeBased>
+                <cssFpo>F</cssFpo>
+                <cssUnwindTimeBased>128</cssUnwindTimeBased>
+                <cssUnwind>32</cssUnwind>
+                <saveRawFiles>F</saveRawFiles>
+                <profileScope>0</profileScope>
+                <startDelay>0</startDelay>
+                <startPaused>F</startPaused>
+                <profileEntire>T</profileEntire>
+                <duration>6</duration>
+                <terminateProcess>F</terminateProcess>
+                <msInterval>1.000000</msInterval>
+                <EventCount>0</EventCount>
+                <fetchSample>F</fetchSample>
+                <opSample>F</opSample>
+                <opCycleCount>T</opCycleCount>
+                <fetchInterval>0l</fetchInterval>
+                <opInterval>0l</opInterval>
+                <cluSample>F</cluSample>
+                <cluCycleCount>F</cluCycleCount>
+                <cluInterval>0l</cluInterval>
+                <cacheLineUtilChecked>F</cacheLineUtilChecked>
+                <cacheLineUtilEnabled>F</cacheLineUtilEnabled>
+                <ldstChecked>F</ldstChecked>
+                <ldstEnabled>F</ldstEnabled>
+                <applyFilter>F</applyFilter>
+                <utilMask>0</utilMask>
+            </Session>
+            <Session type="Profile">
+                <profileName>Oct-02-2018_22-41</profileName>
+                <profilePath>J:\bgb.proj.btsr1vm\tk_qsrc\doomsrc2\bgbcc_doom_ProfilerOutput\Oct-02-2018_22-41\Oct-02-2018_22-41.cxlcpdb</profilePath>
+                <profileType>Time-based Sampling</profileType>
+                <isImported>0</isImported>
+                <launchTarget>j:\usrlib\bin\bgbcc.exe</launchTarget>
+                <commandArguments>-DARCH_SH4 -DARCH_SH4LE -mBJX2_F -I. -I../tk_clib/include -L../tk_clib -lvxcore64 i_btesh4.c i_sound_btsh.c i_snd_btsh4.c i_bgb_mus_btsh.c doomdef.c doomstat.c dstrings.c tables.c f_finale.c f_wipe.c d_main.c d_net.c d_items.c g_game.c m_menu.c m_misc.c m_argv.c m_bbox.c m_fixed.c m_swap.c m_cheat.c m_random.c am_map.c p_acspec.c p_ceilng.c p_doors.c p_enemy.c p_floor.c p_inter.c p_lights.c p_map.c p_maputl.c p_plats.c p_pspr.c p_setup.c p_sight.c p_spec.c p_switch.c p_mobj.c p_telept.c p_tick.c p_saveg.c p_user.c r_bsp.c r_data.c r_draw.c r_main.c r_plane.c r_polyobj.c r_segs.c r_sky.c r_things.c w_wad.c wi_stuff.c v_video.c st_lib.c st_stuff.c hu_stuff.c hu_lib.c s_sound.c z_zone.c info.c sounds.c tst_bs2a.bs tst_cpp1a.cpp i_main.c /Fedoom_bjx2.exe</commandArguments>
+                <workingDir>J:\bgb.proj.btsr1vm\tk_qsrc\doomsrc2</workingDir>
+                <envVariables />
+                <startTime>Oct-02-2018_22-41-27</startTime>
+                <endTime>Oct-02-2018_22-41-32</endTime>
+                <startAffinity>255</startAffinity>
+                <css>T</css>
+                <cssInterval>1</cssInterval>
+                <cssScope>0x1</cssScope>
+                <cssFpoTimeBased>T</cssFpoTimeBased>
+                <cssFpo>F</cssFpo>
+                <cssUnwindTimeBased>128</cssUnwindTimeBased>
+                <cssUnwind>32</cssUnwind>
+                <saveRawFiles>F</saveRawFiles>
+                <profileScope>0</profileScope>
+                <startDelay>0</startDelay>
+                <startPaused>F</startPaused>
+                <profileEntire>T</profileEntire>
+                <duration>5</duration>
+                <terminateProcess>F</terminateProcess>
+                <msInterval>1.000000</msInterval>
+                <EventCount>0</EventCount>
+                <fetchSample>F</fetchSample>
+                <opSample>F</opSample>
+                <opCycleCount>T</opCycleCount>
+                <fetchInterval>0l</fetchInterval>
+                <opInterval>0l</opInterval>
+                <cluSample>F</cluSample>
+                <cluCycleCount>F</cluCycleCount>
+                <cluInterval>0l</cluInterval>
+                <cacheLineUtilChecked>F</cacheLineUtilChecked>
+                <cacheLineUtilEnabled>F</cacheLineUtilEnabled>
+                <ldstChecked>F</ldstChecked>
+                <ldstEnabled>F</ldstEnabled>
+                <applyFilter>F</applyFilter>
+                <utilMask>0</utilMask>
+            </Session>
+            <Session type="Profile">
+                <profileName>Oct-02-2018_22-47</profileName>
+                <profilePath>J:\bgb.proj.btsr1vm\tk_qsrc\doomsrc2\bgbcc_doom_ProfilerOutput\Oct-02-2018_22-47\Oct-02-2018_22-47.cxlcpdb</profilePath>
+                <profileType>Time-based Sampling</profileType>
+                <isImported>0</isImported>
+                <launchTarget>j:\usrlib\bin\bgbcc.exe</launchTarget>
+                <commandArguments>-DARCH_SH4 -DARCH_SH4LE -mBJX2_F -I. -I../tk_clib/include -L../tk_clib -lvxcore64 i_btesh4.c i_sound_btsh.c i_snd_btsh4.c i_bgb_mus_btsh.c doomdef.c doomstat.c dstrings.c tables.c f_finale.c f_wipe.c d_main.c d_net.c d_items.c g_game.c m_menu.c m_misc.c m_argv.c m_bbox.c m_fixed.c m_swap.c m_cheat.c m_random.c am_map.c p_acspec.c p_ceilng.c p_doors.c p_enemy.c p_floor.c p_inter.c p_lights.c p_map.c p_maputl.c p_plats.c p_pspr.c p_setup.c p_sight.c p_spec.c p_switch.c p_mobj.c p_telept.c p_tick.c p_saveg.c p_user.c r_bsp.c r_data.c r_draw.c r_main.c r_plane.c r_polyobj.c r_segs.c r_sky.c r_things.c w_wad.c wi_stuff.c v_video.c st_lib.c st_stuff.c hu_stuff.c hu_lib.c s_sound.c z_zone.c info.c sounds.c tst_bs2a.bs tst_cpp1a.cpp i_main.c /Fedoom_bjx2.exe</commandArguments>
+                <workingDir>J:\bgb.proj.btsr1vm\tk_qsrc\doomsrc2</workingDir>
+                <envVariables />
+                <startTime>Oct-02-2018_22-47-48</startTime>
+                <endTime>Oct-02-2018_22-47-51</endTime>
+                <startAffinity>255</startAffinity>
+                <css>T</css>
+                <cssInterval>1</cssInterval>
+                <cssScope>0x1</cssScope>
+                <cssFpoTimeBased>T</cssFpoTimeBased>
+                <cssFpo>F</cssFpo>
+                <cssUnwindTimeBased>128</cssUnwindTimeBased>
+                <cssUnwind>32</cssUnwind>
+                <saveRawFiles>F</saveRawFiles>
+                <profileScope>0</profileScope>
+                <startDelay>0</startDelay>
+                <startPaused>F</startPaused>
+                <profileEntire>T</profileEntire>
+                <duration>2</duration>
+                <terminateProcess>F</terminateProcess>
+                <msInterval>1.000000</msInterval>
+                <EventCount>0</EventCount>
+                <fetchSample>F</fetchSample>
+                <opSample>F</opSample>
+                <opCycleCount>T</opCycleCount>
+                <fetchInterval>0l</fetchInterval>
+                <opInterval>0l</opInterval>
+                <cluSample>F</cluSample>
+                <cluCycleCount>F</cluCycleCount>
+                <cluInterval>0l</cluInterval>
+                <cacheLineUtilChecked>F</cacheLineUtilChecked>
+                <cacheLineUtilEnabled>F</cacheLineUtilEnabled>
+                <ldstChecked>F</ldstChecked>
+                <ldstEnabled>F</ldstEnabled>
+                <applyFilter>F</applyFilter>
+                <utilMask>0</utilMask>
+            </Session>
+        </CpuProfile>
+        <CpuProfileCustom />
+        <OpenCLAppTrace>
+            <Session type="Current">
+                <APIType>OpenCL</APIType>
+                <GenerateOccupancyInfo>T</GenerateOccupancyInfo>
+                <AlwaysShowAPIErrorCode>F</AlwaysShowAPIErrorCode>
+                <CollapseAllclGetEventInfoCalls>T</CollapseAllclGetEventInfoCalls>
+                <EnableNavigationToSourceCode>F</EnableNavigationToSourceCode>
+                <GenerateSummaryPage>T</GenerateSummaryPage>
+                <APIsToTrace>F</APIsToTrace>
+                <MaximumNumberOfAPIs>400000</MaximumNumberOfAPIs>
+                <WriteDataTimeOut>F</WriteDataTimeOut>
+                <TimeOutInterval>100</TimeOutInterval>
+                <RuleTree>
+                    <Detect_failed_API_calls>T</Detect_failed_API_calls>
+                    <Detect_non-optimized_work_size>T</Detect_non-optimized_work_size>
+                    <Detect_resource_leaks>T</Detect_resource_leaks>
+                    <Detect_redundant_synchronization>T</Detect_redundant_synchronization>
+                    <Detect_non-optimized_data_transfer>T</Detect_non-optimized_data_transfer>
+                    <Detect_deprecated_API_calls>T</Detect_deprecated_API_calls>
+                    <Detect_unnecessary_blocking_writes>T</Detect_unnecessary_blocking_writes>
+                </RuleTree>
+                <APIsFilterTree>
+                    <clGetPlatformIDs>T</clGetPlatformIDs>
+                    <clGetPlatformInfo>T</clGetPlatformInfo>
+                    <clGetDeviceIDs>T</clGetDeviceIDs>
+                    <clGetDeviceInfo>T</clGetDeviceInfo>
+                    <clCreateContext>T</clCreateContext>
+                    <clCreateContextFromType>T</clCreateContextFromType>
+                    <clRetainContext>T</clRetainContext>
+                    <clReleaseContext>T</clReleaseContext>
+                    <clGetContextInfo>T</clGetContextInfo>
+                    <clCreateCommandQueue>T</clCreateCommandQueue>
+                    <clRetainCommandQueue>T</clRetainCommandQueue>
+                    <clReleaseCommandQueue>T</clReleaseCommandQueue>
+                    <clGetCommandQueueInfo>T</clGetCommandQueueInfo>
+                    <clCreateBuffer>T</clCreateBuffer>
+                    <clCreateSubBuffer>T</clCreateSubBuffer>
+                    <clCreateImage2D>T</clCreateImage2D>
+                    <clCreateImage3D>T</clCreateImage3D>
+                    <clRetainMemObject>T</clRetainMemObject>
+                    <clReleaseMemObject>T</clReleaseMemObject>
+                    <clGetSupportedImageFormats>T</clGetSupportedImageFormats>
+                    <clGetMemObjectInfo>T</clGetMemObjectInfo>
+                    <clGetImageInfo>T</clGetImageInfo>
+                    <clSetMemObjectDestructorCallback>T</clSetMemObjectDestructorCallback>
+                    <clCreateSampler>T</clCreateSampler>
+                    <clRetainSampler>T</clRetainSampler>
+                    <clReleaseSampler>T</clReleaseSampler>
+                    <clGetSamplerInfo>T</clGetSamplerInfo>
+                    <clCreateProgramWithSource>T</clCreateProgramWithSource>
+                    <clCreateProgramWithBinary>T</clCreateProgramWithBinary>
+                    <clRetainProgram>T</clRetainProgram>
+                    <clReleaseProgram>T</clReleaseProgram>
+                    <clBuildProgram>T</clBuildProgram>
+                    <clUnloadCompiler>T</clUnloadCompiler>
+                    <clGetProgramInfo>T</clGetProgramInfo>
+                    <clGetProgramBuildInfo>T</clGetProgramBuildInfo>
+                    <clCreateKernel>T</clCreateKernel>
+                    <clCreateKernelsInProgram>T</clCreateKernelsInProgram>
+                    <clRetainKernel>T</clRetainKernel>
+                    <clReleaseKernel>T</clReleaseKernel>
+                    <clSetKernelArg>T</clSetKernelArg>
+                    <clGetKernelInfo>T</clGetKernelInfo>
+                    <clGetKernelWorkGroupInfo>T</clGetKernelWorkGroupInfo>
+                    <clWaitForEvents>T</clWaitForEvents>
+                    <clGetEventInfo>T</clGetEventInfo>
+                    <clCreateUserEvent>T</clCreateUserEvent>
+                    <clRetainEvent>T</clRetainEvent>
+                    <clReleaseEvent>T</clReleaseEvent>
+                    <clSetUserEventStatus>T</clSetUserEventStatus>
+                    <clSetEventCallback>T</clSetEventCallback>
+                    <clGetEventProfilingInfo>T</clGetEventProfilingInfo>
+                    <clFlush>T</clFlush>
+                    <clFinish>T</clFinish>
+                    <clEnqueueReadBuffer>T</clEnqueueReadBuffer>
+                    <clEnqueueReadBufferRect>T</clEnqueueReadBufferRect>
+                    <clEnqueueWriteBuffer>T</clEnqueueWriteBuffer>
+                    <clEnqueueWriteBufferRect>T</clEnqueueWriteBufferRect>
+                    <clEnqueueCopyBuffer>T</clEnqueueCopyBuffer>
+                    <clEnqueueCopyBufferRect>T</clEnqueueCopyBufferRect>
+                    <clEnqueueReadImage>T</clEnqueueReadImage>
+                    <clEnqueueWriteImage>T</clEnqueueWriteImage>
+                    <clEnqueueCopyImage>T</clEnqueueCopyImage>
+                    <clEnqueueCopyImageToBuffer>T</clEnqueueCopyImageToBuffer>
+                    <clEnqueueCopyBufferToImage>T</clEnqueueCopyBufferToImage>
+                    <clEnqueueMapBuffer>T</clEnqueueMapBuffer>
+                    <clEnqueueMapImage>T</clEnqueueMapImage>
+                    <clEnqueueUnmapMemObject>T</clEnqueueUnmapMemObject>
+                    <clEnqueueNDRangeKernel>T</clEnqueueNDRangeKernel>
+                    <clEnqueueTask>T</clEnqueueTask>
+                    <clEnqueueNativeKernel>T</clEnqueueNativeKernel>
+                    <clEnqueueAcquireD3D10ObjectsKHR>T</clEnqueueAcquireD3D10ObjectsKHR>
+                    <clEnqueueReleaseD3D10ObjectsKHR>T</clEnqueueReleaseD3D10ObjectsKHR>
+                    <clEnqueueAcquireGLObjects>T</clEnqueueAcquireGLObjects>
+                    <clEnqueueReleaseGLObjects>T</clEnqueueReleaseGLObjects>
+                    <clEnqueueMarker>T</clEnqueueMarker>
+                    <clEnqueueWaitForEvents>T</clEnqueueWaitForEvents>
+                    <clEnqueueBarrier>T</clEnqueueBarrier>
+                    <clCreateFromGLBuffer>T</clCreateFromGLBuffer>
+                    <clCreateFromGLTexture2D>T</clCreateFromGLTexture2D>
+                    <clCreateFromGLTexture3D>T</clCreateFromGLTexture3D>
+                    <clCreateFromGLRenderbuffer>T</clCreateFromGLRenderbuffer>
+                    <clGetGLObjectInfo>T</clGetGLObjectInfo>
+                    <clGetGLTextureInfo>T</clGetGLTextureInfo>
+                    <clCreateEventFromGLsyncKHR>T</clCreateEventFromGLsyncKHR>
+                    <clGetGLContextInfoKHR>T</clGetGLContextInfoKHR>
+                    <clCreateSubDevicesEXT>T</clCreateSubDevicesEXT>
+                    <clRetainDeviceEXT>T</clRetainDeviceEXT>
+                    <clReleaseDeviceEXT>T</clReleaseDeviceEXT>
+                    <clGetDeviceIDsFromD3D10KHR>T</clGetDeviceIDsFromD3D10KHR>
+                    <clCreateFromD3D10BufferKHR>T</clCreateFromD3D10BufferKHR>
+                    <clCreateFromD3D10Texture2DKHR>T</clCreateFromD3D10Texture2DKHR>
+                    <clCreateFromD3D10Texture3DKHR>T</clCreateFromD3D10Texture3DKHR>
+                    <clSetCommandQueueProperty>T</clSetCommandQueueProperty>
+                    <clCreateSubDevices>T</clCreateSubDevices>
+                    <clRetainDevice>T</clRetainDevice>
+                    <clReleaseDevice>T</clReleaseDevice>
+                    <clCreateImage>T</clCreateImage>
+                    <clCreateProgramWithBuiltInKernels>T</clCreateProgramWithBuiltInKernels>
+                    <clCompileProgram>T</clCompileProgram>
+                    <clLinkProgram>T</clLinkProgram>
+                    <clUnloadPlatformCompiler>T</clUnloadPlatformCompiler>
+                    <clGetKernelArgInfo>T</clGetKernelArgInfo>
+                    <clEnqueueFillBuffer>T</clEnqueueFillBuffer>
+                    <clEnqueueFillImage>T</clEnqueueFillImage>
+                    <clEnqueueMigrateMemObjects>T</clEnqueueMigrateMemObjects>
+                    <clEnqueueMarkerWithWaitList>T</clEnqueueMarkerWithWaitList>
+                    <clEnqueueBarrierWithWaitList>T</clEnqueueBarrierWithWaitList>
+                    <clGetExtensionFunctionAddressForPlatform>T</clGetExtensionFunctionAddressForPlatform>
+                    <clCreateFromGLTexture>T</clCreateFromGLTexture>
+                    <clGetExtensionFunctionAddress>T</clGetExtensionFunctionAddress>
+                    <clCreateCommandQueueWithProperties>T</clCreateCommandQueueWithProperties>
+                    <clCreatePipe>T</clCreatePipe>
+                    <clGetPipeInfo>T</clGetPipeInfo>
+                    <clSVMAlloc>T</clSVMAlloc>
+                    <clSVMFree>T</clSVMFree>
+                    <clEnqueueSVMFree>T</clEnqueueSVMFree>
+                    <clEnqueueSVMMemcpy>T</clEnqueueSVMMemcpy>
+                    <clEnqueueSVMMemFill>T</clEnqueueSVMMemFill>
+                    <clEnqueueSVMMap>T</clEnqueueSVMMap>
+                    <clEnqueueSVMUnmap>T</clEnqueueSVMUnmap>
+                    <clCreateSamplerWithProperties>T</clCreateSamplerWithProperties>
+                    <clSetKernelArgSVMPointer>T</clSetKernelArgSVMPointer>
+                    <clSetKernelExecInfo>T</clSetKernelExecInfo>
+                    <clSVMAllocAMD>T</clSVMAllocAMD>
+                    <clSVMFreeAMD>T</clSVMFreeAMD>
+                    <clEnqueueSVMFreeAMD>T</clEnqueueSVMFreeAMD>
+                    <clEnqueueSVMMemcpyAMD>T</clEnqueueSVMMemcpyAMD>
+                    <clEnqueueSVMMemFillAMD>T</clEnqueueSVMMemFillAMD>
+                    <clEnqueueSVMMapAMD>T</clEnqueueSVMMapAMD>
+                    <clEnqueueSVMUnmapAMD>T</clEnqueueSVMUnmapAMD>
+                    <clSetKernelArgSVMPointerAMD>T</clSetKernelArgSVMPointerAMD>
+                    <clSetKernelExecInfoAMD>T</clSetKernelExecInfoAMD>
+                    <>T
+                </APIsFilterTree>
+            </Session>
+        </OpenCLAppTrace>
+        <GPUPerformanceCounters>
+            <Session type="Current">
+                <APIType>OpenCL</APIType>
+                <IsRemoteSession>F</IsRemoteSession>
+                <GenerateOccupancyInfo>T</GenerateOccupancyInfo>
+                <GpuTimeCollect>T</GpuTimeCollect>
+                <ProfileSpecificKernels />
+                <CallXInitThreads>F</CallXInitThreads>
+                <CounterTree>
+                    <CacheHit>T</CacheHit>
+                    <FetchSize>T</FetchSize>
+                    <FlatLDSInsts>T</FlatLDSInsts>
+                    <FlatVMemInsts>T</FlatVMemInsts>
+                    <GDSInsts>T</GDSInsts>
+                    <L1CacheHit>T</L1CacheHit>
+                    <L2CacheHit>T</L2CacheHit>
+                    <LDSBankConflict>T</LDSBankConflict>
+                    <LDSInsts>T</LDSInsts>
+                    <MemUnitBusy>T</MemUnitBusy>
+                    <MemUnitStalled>T</MemUnitStalled>
+                    <SALUBusy>T</SALUBusy>
+                    <SALUInsts>T</SALUInsts>
+                    <SFetchInsts>T</SFetchInsts>
+                    <VALUBusy>T</VALUBusy>
+                    <VALUInsts>T</VALUInsts>
+                    <VALUUtilization>T</VALUUtilization>
+                    <VFetchInsts>T</VFetchInsts>
+                    <VWriteInsts>T</VWriteInsts>
+                    <Wavefronts>T</Wavefronts>
+                    <WriteSize>T</WriteSize>
+                    <WriteUnitStalled>T</WriteUnitStalled>
+                </CounterTree>
+            </Session>
+        </GPUPerformanceCounters>
+        <FrameAnalysis>
+            <AutoSelect>1</AutoSelect>
+            <Connection>2</Connection>
+            <PortNumber>8080</PortNumber>
+            <ProcessNumber>1</ProcessNumber>
+            <ProcessName />
+            <NumberFrames>1</NumberFrames>
+        </FrameAnalysis>
+        <KernelAnalyzer>
+            <ProjectArchitecture>32-bit GPU Build​</ProjectArchitecture>
+            <FilesSection />
+            <ProgramSection />
+            <BuildOptions />
+            <ShaderCompileType>D3D</ShaderCompileType>
+            <ShaderBuildOptions />
+            <ShaderD3dBuilderPath>D3DCompiler_47.dll (bundled with CodeXL)</ShaderD3dBuilderPath>
+            <ShaderFxcBuilderPath>C:\Program Files (x86)\Windows Kits\8.1\bin\x64\fxc.exe</ShaderFxcBuilderPath>
+            <ShaderMacros />
+            <ShaderIncludes />
+            <KernelMacros />
+            <EnableD3D11ShaderIntrinsics>false</EnableD3D11ShaderIntrinsics>
+        </KernelAnalyzer>
+        <KernelAnalyzerOther />
+        <ShaderAnalyzer />
+        <PowerProfile>
+            <EnabledCounters />
+            <SamplingInterval>100</SamplingInterval>
+        </PowerProfile>
+    </ProductExtensions>
+</CodeXL>
