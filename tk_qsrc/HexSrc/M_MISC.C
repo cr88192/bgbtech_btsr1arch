@@ -259,7 +259,8 @@ static int ReadFile(char const *name, byte **buffer, int mallocType)
 //	struct stat fileinfo;
 	byte *buf;
 
-	handle = w_open(name, O_RDONLY|O_BINARY, 0666);
+//	handle = open(name, O_RDONLY|O_BINARY, 0666);
+	handle = w_open(name, "rb");
 	if(handle == -1)
 	{
 		I_Error("Couldn't read file %s", name);

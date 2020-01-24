@@ -574,15 +574,56 @@ int BGBCC_CCXL_CompileInitArrayMultiR(BGBCC_TransState *ctx,
 {
 	BCCX_Node *cur;
 	ccxl_type bty;
-	char *s1;
-	int i, idx;
+	char *s0, *s1;
+	int i, j, k, idx, asz, len;
 
 	BGBCC_CCXL_TypeDerefType(ctx, ty, &bty);
-	
+	asz=BGBCC_CCXL_TypeGetArraySize(ctx, ty);
+
 	s1=NULL;
 	if(!BGBCC_CCXL_TypeArrayP(ctx, bty))
 		s1=BGBCC_CCXL_TypeGetSig(ctx, bty);
 
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_string, "string"))
+	{
+		s0=BCCX_GetCst(l, &bgbcc_rcst_value, "value");
+		len=BGBCP_StrlenUTF8(s0);
+		
+		if(len>asz)
+			len=asz;
+			
+		idx=0;
+
+		for(i=0; i<len; i++)
+		{
+			k=BGBCP_ParseChar(&s0);
+//			BGBCC_CCXL_GetRegForIntValue(ctx, &treg, k);
+//			BGBCC_JX2C_BuildGlobal_EmitLitAsType(ctx, sctx,
+//				tty, treg);
+			BGBCC_CCXL_StackPushConstInt(ctx, k);
+
+			BGBCC_CCXL_StackCastSig(ctx, s1);
+
+			BGBCC_CCXL_PushLoad(ctx, name);
+			for(j=0; j<nidx; j++)
+				BGBCC_CCXL_StackLoadIndexConst(ctx, cidx[j]);
+			BGBCC_CCXL_StackStoreIndexConst(ctx, idx);
+			idx++;
+		}
+		for(i=len; i<asz; i++)
+		{
+			BGBCC_CCXL_StackPushConstInt(ctx, 0);
+			BGBCC_CCXL_StackCastSig(ctx, s1);
+			BGBCC_CCXL_PushLoad(ctx, name);
+			for(j=0; j<nidx; j++)
+				BGBCC_CCXL_StackLoadIndexConst(ctx, cidx[j]);
+			BGBCC_CCXL_StackStoreIndexConst(ctx, idx);
+			idx++;
+		}
+
+		return(0);
+	}
+	
 	cur=BCCX_Child(l); idx=0;
 	while(cur)
 	{
@@ -1698,6 +1739,9 @@ char *BGBCC_CCXL_VarTypeString_FlattenName(BGBCC_TransState *ctx,
 				{ *t++='C'; *t++='n'; }
 			if(!strcmp(s, "float16"))
 				{ *t++='C'; *t++='k'; }
+
+			if(!strcmp(s, "long_double"))
+				{ *t++='C'; *t++='n'; }
 		}
 	}
 
@@ -1841,6 +1885,7 @@ char *BGBCC_CCXL_VarTypeString_FlattenName(BGBCC_TransState *ctx,
 		if(!strcmp(s, "float128"))*t++='g';
 		if(!strcmp(s, "float16"))*t++='k';
 		if(!strcmp(s, "bfloat16"))*t++='u';
+		if(!strcmp(s, "long_double"))*t++='g';
 
 		if(!strcmp(s, "variant"))*t++='r';
 		if(!strcmp(s, "variantf"))

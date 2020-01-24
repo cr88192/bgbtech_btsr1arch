@@ -2166,7 +2166,9 @@ ccxl_status BGBCC_JX2C_BuildGlobal_EmitLitAsType(
 	}
 
 	if((bty==CCXL_TY_I) || (bty==CCXL_TY_UI) ||
-		(((bty==CCXL_TY_NL) || (bty==CCXL_TY_UNL)) && !sctx->is_addr64))
+//		(((bty==CCXL_TY_NL) || (bty==CCXL_TY_UNL)) && !sctx->is_addr64))
+		(((bty==CCXL_TY_NL) || (bty==CCXL_TY_UNL)) &&
+			(ctx->arch_sizeof_long==4)))
 	{
 		BGBCC_JX2_EmitBAlign(sctx, 4);
 
@@ -2206,7 +2208,9 @@ ccxl_status BGBCC_JX2C_BuildGlobal_EmitLitAsType(
 	}
 
 	if((bty==CCXL_TY_L) || (bty==CCXL_TY_UL) ||
-		(((bty==CCXL_TY_NL) || (bty==CCXL_TY_UNL)) && sctx->is_addr64))
+//		(((bty==CCXL_TY_NL) || (bty==CCXL_TY_UNL)) && sctx->is_addr64))
+		(((bty==CCXL_TY_NL) || (bty==CCXL_TY_UNL)) &&
+			(ctx->arch_sizeof_long==8)))
 	{
 		if(sctx->is_addr64)
 			BGBCC_JX2_EmitBAlign(sctx, 8);
@@ -2584,7 +2588,10 @@ ccxl_status BGBCC_JX2C_BuildGlobal(BGBCC_TransState *ctx,
 	BGBCC_JX2_EmitBAlign(sctx, al);
 	BGBCC_JX2_EmitLabel(sctx, l0);
 	
-	if(BGBCC_CCXL_TypeSmallIntP(ctx, obj->type))
+//	if(BGBCC_CCXL_TypeSmallIntP(ctx, obj->type))
+	if(BGBCC_CCXL_TypeSgIntP(ctx, obj->type) ||
+		(BGBCC_CCXL_TypeSgNLongP(ctx, obj->type) &&
+			(ctx->arch_sizeof_long==4)))
 	{
 		if(BGBCC_CCXL_IsRegImmIntP(ctx, obj->value))
 		{
@@ -2610,7 +2617,9 @@ ccxl_status BGBCC_JX2C_BuildGlobal(BGBCC_TransState *ctx,
 	}
 
 	if(BGBCC_CCXL_TypeSgLongP(ctx, obj->type) ||
-		(BGBCC_CCXL_TypeSgNLongP(ctx, obj->type) && sctx->is_addr64))
+//		(BGBCC_CCXL_TypeSgNLongP(ctx, obj->type) && sctx->is_addr64))
+		(BGBCC_CCXL_TypeSgNLongP(ctx, obj->type) &&
+			(ctx->arch_sizeof_long==8)))
 	{
 		if(BGBCC_CCXL_IsRegImmIntP(ctx, obj->value))
 		{
@@ -2629,6 +2638,13 @@ ccxl_status BGBCC_JX2C_BuildGlobal(BGBCC_TransState *ctx,
 
 	if(BGBCC_CCXL_TypeFloatP(ctx, obj->type) ||
 		BGBCC_CCXL_TypeDoubleP(ctx, obj->type))
+	{
+		BGBCC_JX2C_BuildGlobal_EmitLitAsType(ctx, sctx,
+			obj->type, obj->value);
+		return(1);
+	}
+
+	if(BGBCC_CCXL_TypeSmallIntP(ctx, obj->type))
 	{
 		BGBCC_JX2C_BuildGlobal_EmitLitAsType(ctx, sctx,
 			obj->type, obj->value);
@@ -2718,6 +2734,11 @@ ccxl_status BGBCC_JX2C_BuildGlobal(BGBCC_TransState *ctx,
 
 	if(BGBCC_CCXL_TypeArrayP(ctx, obj->type))
 	{
+		BGBCC_JX2C_BuildGlobal_EmitLitAsType(ctx, sctx,
+			obj->type, obj->value);
+		return(1);
+
+#if 0
 		BGBCC_CCXL_TypeDerefType(ctx, obj->type, &tty);
 
 //		al1=BGBCC_CCXL_TypeGetLogicalAlign(ctx, tty);
@@ -2758,8 +2779,16 @@ ccxl_status BGBCC_JX2C_BuildGlobal(BGBCC_TransState *ctx,
 			}
 			return(1);
 		}
+#endif
 	}
 	
+	if(BGBCC_CCXL_TypeValueObjectP(ctx, obj->type))
+	{
+		BGBCC_JX2C_BuildGlobal_EmitLitAsType(ctx, sctx,
+			obj->type, obj->value);
+		return(1);
+	}
+
 	BGBCC_CCXL_StubError(ctx);
 	BGBCC_JX2_EmitRawBytes(sctx, NULL, sz);
 	return(1);

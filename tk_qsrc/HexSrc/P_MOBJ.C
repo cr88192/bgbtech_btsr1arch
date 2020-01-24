@@ -91,13 +91,14 @@ dt_bool P_SetMobjState(mobj_t *mobj, statenum_t state)
 		P_RemoveMobj(mobj);
 		return(false);
 	}
-	st = &states[state];
+//	st = &states[state];
+	st = states + state;
 	mobj->state = st;
 	mobj->tics = st->tics;
 	mobj->sprite = st->sprite;
 	mobj->frame = st->frame;
 
-#if 0
+#if 1
 	if(st->action)
 	{ // Call action function
 		st->action(mobj);
@@ -126,7 +127,8 @@ dt_bool P_SetMobjStateNF(mobj_t *mobj, statenum_t state)
 		P_RemoveMobj(mobj);
 		return(false);
 	}
-	st = &states[state];
+//	st = &states[state];
+	st = states + state;
 	mobj->state = st;
 	mobj->tics = st->tics;
 	mobj->sprite = st->sprite;
