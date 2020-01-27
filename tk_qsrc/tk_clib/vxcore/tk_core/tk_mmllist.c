@@ -17,7 +17,14 @@ void *TKMM_MMList_AllocBrk(int sz)
 	{
 		tk_puts("TKMM_MMList_AllocBrk A\n");
 		ptr=TKMM_PageAlloc(sz);
-//		memset(ptr, 0, sz);
+		
+		if(!ptr)
+		{
+			tk_puts("TKMM_MMList_AllocBrk A: Fail\n");
+			return(NULL);
+		}
+		
+		memset(ptr, 0, sz);
 
 		i=tkmm_mmlist_n_vrm++;
 		tkmm_mmlist_vrm_brkbuf[i]=ptr;
@@ -329,4 +336,24 @@ int tk_free(void *ptr)
 {
 //	return(TKMM_MMList_Free(ptr));
 	return(TKMM_Free(ptr));
+}
+
+void *tk_realloc(void *ptr, int sz)
+{
+	int osz;
+	void *ptr1;
+	
+	if(!ptr)
+	{
+		return(tk_malloc(sz));
+	}
+	
+	osz=TKMM_MMList_GetSize(ptr);
+	if(osz>=sz)
+		return(ptr);
+	
+	ptr1=tk_malloc(ptr, sz);
+	memcpy(ptr1, ptr, osz);
+	tk_free(ptr);
+	return(ptr1);
 }

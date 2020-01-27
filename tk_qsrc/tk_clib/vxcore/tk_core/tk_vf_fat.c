@@ -53,6 +53,8 @@ int tk_mount_sdfat()
 	TKFAT_ImageInfo *img;
 	TK_MOUNT *mnt;
 
+	tk_puts("tk_mount_sdfat\n");
+
 	img=TKFAT_CreateSdFatContext();
 
 	mnt=tk_alloc_mount();

@@ -20,7 +20,8 @@ typedef signed short s16;
 typedef unsigned int u32;
 typedef signed int s32;
 
-int	mb_used = 12;
+// int	mb_used = 12;
+int	mb_used = 24;
 
 
 void I_InitNetwork (void)
@@ -146,7 +147,8 @@ void I_UnRegisterSong(int handle)
 
 void I_Init (void)
 {
-//    I_InitSound();
+    I_InitSound();
+	S_Init();
 }
 
 int  I_GetHeapSize (void)

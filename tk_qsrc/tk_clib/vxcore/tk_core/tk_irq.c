@@ -125,12 +125,35 @@ int TK_DestroyTaskInfo(void *tkptr)
 #endif
 }
 
+void TK_SetCurrentTask(TKPE_TaskInfo *task)
+{
+	__arch_tbr=task;
+}
+
 TKPE_TaskInfo *TK_GetCurrentTask()
 {
 	TKPE_TaskInfo *task;
 
 	task=__arch_tbr;
 	return(task);
+}
+
+TK_EnvContext *TK_GetCurrentEnvContext()
+{
+	TKPE_TaskInfo *task;
+	TK_EnvContext *env;
+
+	task=__arch_tbr;
+	if(!task)
+		return(NULL);
+	if(task->envctx)
+		return(task->envctx);
+
+	tk_printf("TK_GetCurrentEnvContext: New %p:%p", task, env);
+
+	env=TK_EnvCtx_AllocContext();
+	task->envctx=env;
+	return(env);
 }
 
 int TK_TaskAddPageAlloc(TKPE_TaskInfo *task, void *base, int size)
@@ -144,4 +167,27 @@ int TK_TaskAddPageAlloc(TKPE_TaskInfo *task, void *base, int size)
 	task->span_ptr[i]=base;
 	task->span_sz[i]=size;
 	return(i);
+}
+
+int TK_TaskGetCwd(TKPE_TaskInfo *task, char *buf, int sz)
+{
+	if(task->envctx)
+	{
+//		strncpy(buf, task->envctx->cwd, sz);
+		TK_EnvCtx_GetCwd(task->envctx, buf, sz);
+		return(1);
+	}
+	
+	return(-1);
+}
+
+int TK_TaskSetCwd(TKPE_TaskInfo *task, char *buf)
+{
+	if(task->envctx)
+	{
+		TK_EnvCtx_SetCwd(task->envctx, buf);
+		return(1);
+	}
+	
+	return(-1);
 }

@@ -41,6 +41,7 @@ SRCS_CLIB = \
 	tk_core/tk_clib.c \
 	tk_core/tk_divi.c \
 	tk_core/tk_env.c \
+	tk_core/tk_envctx.c \
 	tk_core/tk_epoch.c \
 	tk_core/tk_fat.c \
 	tk_core/tk_irq.c \

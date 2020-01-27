@@ -699,7 +699,24 @@ int __start_late()
 
 char *__get_cmdline()
 {
-	return("");
+	static char tbuf[1024];
+	TKPE_TaskInfo *task;
+	char **argv;
+	char *ct;
+	int i, j, k;
+	
+	task=TK_GetCurrentTask();
+	if(!task)
+		return("");
+
+	argv=task->argv;
+	ct=tbuf;
+	for(i=0; argv[i]; i++)
+	{
+		if(i)*ct++=' ';
+		strcpy(ct, argv[i]);
+		ct+=strlen(ct);
+	}
 }
 
 char **__get_cmdenv()

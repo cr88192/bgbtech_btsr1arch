@@ -730,6 +730,7 @@ void IdentifyVersion (void)
 		return;
 	}
 
+#if 0
 	if ( !w_chkaccess (hex1wad) )
 	{
 		gamemode = hexen;
@@ -737,6 +738,7 @@ void IdentifyVersion (void)
 		D_AddFile (hex1wad);
 		return;
 	}
+#endif
 
 //	if ( !access (doom2fwad,R_OK) )
 	if ( !w_chkaccess (doom2fwad) )

@@ -2,26 +2,6 @@
 Environment Variables via Context.
  */
 
-typedef struct TK_EnvContext_s		TK_EnvContext;
-
-struct TK_EnvContext_s {
-TK_EnvContext *next;
-
-char *cwd;
-
-char *pathbuf;
-char **pathlst;
-int npathlst;
-
-char *envbufs;
-char *envbufe;
-char *envbufc;
-char **envlst_var;
-char **envlst_val;
-int nenvlst;
-int menvlst;
-};
-
 TK_EnvContext *tk_envctx_free;
 
 TK_EnvContext *TK_EnvCtx_AllocContext(void)
@@ -45,6 +25,32 @@ void TK_EnvCtx_FreeContext(TK_EnvContext *ctx)
 {
 	ctx->next=tk_envctx_free;
 	tk_envctx_free=ctx;
+}
+
+TK_EnvContext *TK_EnvCtx_CloneContext(TK_EnvContext *ctx)
+{
+	TK_EnvContext *tmp;
+	int i, j, k;
+
+	tmp=TK_EnvCtx_AllocContext();	
+	if(!ctx)
+	{
+		tk_puts("TK_EnvCtx_CloneContext: Clone Null Context\n");
+		return(tmp);
+	}
+
+	for(i=0; i<ctx->nenvlst; i++)
+	{
+		TK_EnvCtx_SetEnvVar(tmp,
+			ctx->envlst_var[i],
+			ctx->envlst_val[i]);
+	}
+
+	tk_printf("TK_EnvCtx_CloneContext: Cwd=%s\n", ctx->cwd);
+
+	TK_EnvCtx_SetCwd(tmp, ctx->cwd);
+	
+	return(tmp);
 }
 
 char *TK_EnvCtx_SetEnvVarI_StrDup(TK_EnvContext *ctx, char *val)
@@ -89,6 +95,21 @@ int TK_EnvCtx_RepackEnvbuf(TK_EnvContext *ctx)
 	tk_free(oldenv);
 
 	return(0);
+}
+
+int TK_EnvCtx_GetEnvVarI(TK_EnvContext *ctx, char *varn, char *bufv, int sz)
+{
+	int i, j, k;
+
+	for(i=0; i<ctx->nenvlst; i++)
+	{
+		if(!strcmp(ctx->envlst_var[i], varn))
+		{
+			strncpy(bufv, ctx->envlst_val[i], sz);
+			return(1);
+		}
+	}
+	return(-1);
 }
 
 int TK_EnvCtx_SetEnvVarI(TK_EnvContext *ctx, char *varn, char *varv)
@@ -258,27 +279,31 @@ int TK_EnvCtx_SplitVar(char *str, char *bvar, char **rval)
 	return(0);
 }
 
+int TK_EnvCtx_SetEnvVar(TK_EnvContext *ctx, char *varn, char *varv)
+{
+	if(!strcmp(varn, "CWD"))
+	{
+		TK_EnvCtx_SetCwd(ctx, varv);
+		return(1);
+	}
+	
+	if(!strcmp(varn, "PATH"))
+	{
+		TK_EnvCtx_SetPath(ctx, varv);
+		TK_EnvCtx_SetEnvVarI(ctx, varn, varv);
+		return(1);
+	}
+	
+	TK_EnvCtx_SetEnvVarI(ctx, varn, varv);
+}
+
 int TK_EnvCtx_UpdateForSet(TK_EnvContext *ctx, char *estr)
 {
 	char tbn[64];
 	char *tbv;
 
 	TK_EnvCtx_SplitVar(estr, tbn, &tbv);
-	
-	if(!strcmp(tbn, "CWD"))
-	{
-		TK_EnvCtx_SetCwd(ctx, tbv);
-		return(1);
-	}
-	
-	if(!strcmp(tbn, "PATH"))
-	{
-		TK_EnvCtx_SetPath(ctx, tbv);
-		TK_EnvCtx_SetEnvVarI(ctx, tbn, tbv);
-		return(1);
-	}
-	
-	TK_EnvCtx_SetEnvVarI(ctx, tbn, tbv);
+	TK_EnvCtx_SetEnvVar(ctx, tbn, tbv);
 
 	return(0);
 }

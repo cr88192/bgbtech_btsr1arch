@@ -43,8 +43,8 @@ _fcn_clz32:
 
 #if 1
 // u32 __udivsi3(u32 n, u32 d)
-.global	__udivsi3
-__udivsi3:
+.global	__udivsi3_i
+__udivsi3_i:
 	push	lr
 
 	tst		r4, r4
@@ -185,6 +185,15 @@ __udivsi3:
 	mov r16, r2
 	pop lr
 	rts
+
+.global	__udivsi3
+__udivsi3:
+	or		r4, r5, r6
+	tst		#0x80000000, r6
+	bt		__udivsi3_i
+	extu.l	r4
+	extu.l	r5
+	bra		__udivdi3
 #endif
 
 #if 1

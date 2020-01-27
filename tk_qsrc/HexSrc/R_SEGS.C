@@ -230,8 +230,8 @@ void R_RenderSegLoop (void)
 			dc_x = rw_x;
 //			dc_iscale = 0xffffffffu / (unsigned)rw_scale;
 
-			dc_iscale = 0x7fffffffu / (unsigned)rw_scale;
-			dc_iscale += dc_iscale + 1;
+			dc_iscale = 0x7fffffffu / (((unsigned)rw_scale)>>1);
+//			dc_iscale += dc_iscale + 1;
 		}
 
 //

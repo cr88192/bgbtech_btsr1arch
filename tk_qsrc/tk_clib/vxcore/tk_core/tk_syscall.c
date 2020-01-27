@@ -93,7 +93,7 @@ int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 				sz=args[0].i;
 				p=TKMM_PageAlloc(sz);
 				*((void **)vParm1)=p;
-//				TK_TaskAddPageAlloc(task, p, sz);
+				TK_TaskAddPageAlloc(task, p, sz);
 				tk_printf("SYSC: Page Alloc, vParm=%p, p=%p\n", vParm1, p);
 				break;
 			case 0x05:

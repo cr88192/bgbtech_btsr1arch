@@ -521,7 +521,7 @@ ashl_list:
 .global X(__tk_farcall)
 X(__tk_farcall):
 	invic	#-1
-	mov		r6, tbr
+	mov		r7, tbr
 	mov		r5, gbr
 	mov		r6, sp
 	jmp		r4

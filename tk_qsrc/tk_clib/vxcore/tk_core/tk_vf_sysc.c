@@ -50,6 +50,8 @@ int tk_mount_sysc()
 {
 	TK_MOUNT *mnt;
 
+	tk_puts("tk_mount_sysc\n");
+
 	mnt=tk_alloc_mount();
 	mnt->vt=&tk_vfile_sysc_vt;
 //	mnt->udata0=img;
@@ -66,12 +68,18 @@ TK_MOUNT *tk_sysc_mount(char *devfn, char *mntfn,
 
 TK_FILE *tk_sysc_fopen(TK_MOUNT *mnt, char *name, char *mode)
 {
+	char tfname[512];
 	TK_SysArg ar[4];
 	TK_FILE *fd;
 	void *p;
 	int i;
 	
-	ar[0].p=name;
+	TK_Env_GetCwdQualifyName(tfname, 512, name);
+	
+	tk_printf("tk_sysc_fopen: %s -> %s\n", name, tfname);
+	
+//	ar[0].p=name;
+	ar[0].p=tfname;
 	ar[1].p=mode;
 	i=tk_syscall(NULL, TK_UMSG_VFOPEN, &p, ar);
 	if(i<=0)
@@ -86,13 +94,19 @@ TK_FILE *tk_sysc_fopen(TK_MOUNT *mnt, char *name, char *mode)
 
 TK_DIR *tk_sysc_opendir(TK_MOUNT *mnt, char *name)
 {
+	char tfname[512];
 	TK_SysArg ar[4];
 	TK_DIR *fd;
 	TK_DIRENT *tde;
 	void *p;
 	int i;
+
+	TK_Env_GetCwdQualifyName(tfname, 512, name);
+
+	tk_printf("tk_sysc_opendir: %s -> %s\n", name, tfname);
 	
-	ar[0].p=name;
+//	ar[0].p=name;
+	ar[0].p=tfname;
 	i=tk_syscall(NULL, TK_UMSG_VFOPENDIR, &p, ar);
 	if(i<=0)
 		return(NULL);

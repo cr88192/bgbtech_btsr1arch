@@ -284,7 +284,7 @@ void *TKMM_Malloc(int sz)
 //	ptr=TKMM_PageAlloc(sz+sizeof(TKMM_MemLnkObj));
 	ptr=TKMM_PageAlloc(np<<12);
 	
-//	memset(ptr, 0, np<<12);
+	memset(ptr, 0, np<<12);
 #endif
 
 //	__debugbreak();

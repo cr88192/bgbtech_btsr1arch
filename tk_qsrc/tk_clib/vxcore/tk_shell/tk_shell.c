@@ -143,6 +143,7 @@ int TkSh_ExecCmd(char *cmd)
 //				tk_dir(tb, a+1);
 //				strcpy(tb_cwd, tb);
 			tk_normalize_path(tb_cwd, tb);
+			TK_Env_SetCwd(tb_cwd);
 		}else
 		{
 //				tk_dir(tb_cwd, a+1);
@@ -345,6 +346,7 @@ int tk_tryload(char *img, char **args)
 	char *buf;
 //	u64 bootgbr;
 	TKPE_TaskInfo *task;
+	TK_EnvContext *env0, *env1;
 	void *bootgbr;
 	byte *boot_newspb, *boot_newsp;
 	void *boottbr;
@@ -394,6 +396,9 @@ int tk_tryload(char *img, char **args)
 			boot_newspb=TKMM_PageAlloc(1<<18);
 			boot_newsp=boot_newspb+((1<<18)-1024);
 
+			env0=TK_GetCurrentEnvContext();
+			env1=TK_EnvCtx_CloneContext(env0);
+
 			boottbr=TK_AllocNewTask();
 			task=boottbr;
 			task->bootptr=bootptr;
@@ -402,6 +407,10 @@ int tk_tryload(char *img, char **args)
 
 			task->boot_sps=boot_newspb;
 			task->boot_spe=boot_newsp;
+			
+			task->envctx=env1;
+			
+			tk_printf("tk_tryload: task=%p, env=%p\n", task, env1);
 			
 			ct=boot_newspb;
 			a1=tk_rovalloc(256, &ct);
@@ -480,7 +489,7 @@ int tk_tryload(char *img, char **args)
 			sz=tk_ftell(fd);
 			tk_fseek(fd, 0, 0);
 			buf=tk_malloc(sz+16);
-			memset(tb, 0, 256);
+			memset(buf, 0, sz+8);
 			tk_fread(buf, 1, sz, fd);
 			tk_fclose(fd);
 
@@ -708,15 +717,20 @@ int tk_shell_chksane()
 
 int main(int argc, char *argv[])
 {
+	TKPE_TaskInfo *task;
 	char tbuf[256];
 
 	tk_shell_chksane();
 
 	tk_con_reset();
 
-	tk_tryload("autoexec.pf", NULL);
+	task=TK_AllocNewTask();
+	TK_SetCurrentTask(task);
 
 	strcpy(tb_cwd, "/");
+	TK_Env_SetCwd(tb_cwd);
+
+	tk_tryload("autoexec.pf", NULL);
 
 	while(1)
 	{

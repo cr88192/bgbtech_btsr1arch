@@ -31,8 +31,8 @@ _fcn_clz32:
 Unsigned Divide, Preserve R21 and R22
  */
 // u32 __udivsi3(u32 n, u32 d)
-.global	__udivsi3
-__udivsi3:
+.global	__udivsi3_i
+__udivsi3_i:
 //	push	lr
 	mov		lr, r23
 
@@ -138,6 +138,18 @@ __udivsi3:
 .Ret_R16:
 	mov		r16, r2		| mov		r23, lr
 	rts
+
+.global	__udivsi3
+__udivsi3:
+	or		r4, r5, r6
+	tst		#0x80000000, r6
+	bt		__udivsi3_i
+	extu.l	r4
+	extu.l	r5
+	bra		__udivdi3
+#endif
+
+#if 1
 #endif
 
 #if 1
@@ -152,7 +164,7 @@ __sdivsi3:
 	xor r4, r6, r2		| xor r5, r7, r3
 	sub r2, r6, r4		| sub r3, r7, r5
 	xor r7, r6, r21
-	bsr __udivsi3
+	bsr __udivsi3_i
 	xor r2, r21, r3
 	sub r3, r21, r2
 

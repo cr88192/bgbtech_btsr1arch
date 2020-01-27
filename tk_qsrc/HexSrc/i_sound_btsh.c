@@ -149,44 +149,18 @@ getsfx
 {
 	unsigned char*		sfx;
 	unsigned char*		paddedsfx;
-	int				 i;
-	int				 size;
-	int				 paddedsize;
+	int					i;
+	int					size;
+	int					paddedsize;
 	char				name[40];
-	int				 sfxlump;
+	int					sfxlump;
 
 	
-	// Get the sound data from the WAD, allocate lump
-	//	in zone memory.
-	sprintf(name, "ds%s", sfxname);
+	strcpy(name, sfxname);
 
-	// Now, there is a severe problem with the
-	//	sound handling, in it is not (yet/anymore)
-	//	gamemode aware. That means, sounds from
-	//	DOOM II will be requested even with DOOM
-	//	shareware.
-	// The sound list is wired into sounds.c,
-	//	which sets the external variable.
-	// I do not do runtime patches to that
-	//	variable. Instead, we will use a
-	//	default sound for replacement.
 	if ( W_CheckNumForName(name) == -1 )
 	{
-		if ( W_CheckNumForName("DSPISTOL") != -1 )
-		{
-			sfxlump = W_GetNumForName("DSPISTOL");
-		}else
-			if ( W_CheckNumForName("STFPOW") != -1 )
-		{
-			sfxlump = W_GetNumForName("STFPOW");
-		}else
-			if ( W_CheckNumForName("TICTOC") != -1 )
-		{
-			sfxlump = W_GetNumForName("TICTOC");
-		}else
-		{
-			sfxlump = W_GetNumForName("DSPISTOL");
-		}
+		sfxlump = W_GetNumForName("TICTOC");
 	}
 	else
 	{
@@ -194,38 +168,21 @@ getsfx
 	}
 	
 	size = W_LumpLength( sfxlump );
-
-	// Debug.
-	// fprintf( stderr, "." );
-	//fprintf( stderr, " -loading	%s (lump %d, %d bytes)\n",
-	//		 sfxname, sfxlump, size );
-	//fflush( stderr );
 	
 	sfx = (unsigned char*)W_CacheLumpNum( sfxlump, PU_STATIC );
 
-	// Pads the sound effect out to the mixing buffer size.
-	// The original realloc would interfere with zone memory.
 	paddedsize = ((size-8 + (SAMPLECOUNT-1)) / SAMPLECOUNT) * SAMPLECOUNT;
 
-	// Allocate from zone memory.
-//	paddedsfx = (unsigned char*)Z_Malloc( paddedsize+8, PU_STATIC, 0 );
 	paddedsfx = (unsigned char*)Z_Malloc( paddedsize+16, PU_STATIC, 0 );
-	// ddt: (unsigned char *) realloc(sfx, paddedsize+8);
-	// This should interfere with zone memory handling,
-	//	which does not kick in in the soundserver.
 
-	// Now copy and pad.
 	memcpy(	paddedsfx, sfx, size );
 	for (i=size ; i<paddedsize+8 ; i++)
 		paddedsfx[i] = 128;
 
-	// Remove the cached lump.
 	Z_Free( sfx );
 	
-	// Preserve padded length.
 	*len = paddedsize;
 
-	// Return allocated padded data.
 	return (void *) (paddedsfx + 8);
 }
 
@@ -936,7 +893,11 @@ I_InitSound()
 	static int init=0;
 	
 #if 1 
-	int i;
+	char tb[256], tb1[256], tb2[256];
+	char *sndinfo;
+	char *cs, *ct, *cse;
+	int lump, size;
+	int i, j, k;
 
 	if(init)
 	{
@@ -955,7 +916,52 @@ I_InitSound()
 	
 	fprintf(stderr, " configured audio device\n" );
 
-	
+
+	lump = W_GetNumForName("SNDINFO");
+	if(lump>=0)
+	{
+		size = W_LumpLength(lump);
+		sndinfo = W_CacheLumpNum(lump, PU_CACHE);
+
+		cs=sndinfo; cse=cs+size;
+		while(cs<cse)
+		{
+			ct=tb;
+			while(cs<cse)
+			{
+				if((*cs=='\r') || (*cs=='\n'))
+					break;
+				*ct++=*cs++;
+			}
+			*ct=0;
+			if(*cs=='\r')cs++;
+			if(*cs=='\n')cs++;
+			
+			if(tb[0]==';')
+				continue;
+			if(tb[0]=='$')
+				continue;
+				
+			tb1[0]=0;
+			tb2[0]=0;
+			sscanf(tb, "%s %s", tb1, tb2);
+			if(!tb1[0] || !tb2[0])
+				continue;
+			
+			for(i=0; i<NUMSFX; i++)
+			{
+				if(!strcmp(S_sfx[i].tagName, tb1))
+				{
+					printf("Snd %s=%s\n", tb1, tb2);
+					strcpy(S_sfx[i].lumpname, tb2);
+					break;
+				}
+			}
+			
+		}
+	}
+
+
 	// Initialize external data (all sounds) at start, keep static.
 	fprintf( stderr, "I_InitSound: ");
 	
