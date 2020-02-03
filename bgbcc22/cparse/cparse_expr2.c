@@ -1143,6 +1143,7 @@ BCCX_Node *BGBCP_IfExpr(BCCX_Node *cond, BCCX_Node *ln, BCCX_Node *rn)
 	return(n);
 }
 
+#if 0
 BCCX_Node *BGBCP_ExpressionExp(BGBCP_ParseState *ctx, char **str)
 {
 	char b[256], b2[256];
@@ -1178,6 +1179,7 @@ BCCX_Node *BGBCP_ExpressionExp(BGBCP_ParseState *ctx, char **str)
 	*str=s;
 	return(n);
 }
+#endif
 
 BCCX_Node *BGBCP_ExpressionMD(BGBCP_ParseState *ctx, char **str)
 {
@@ -1187,7 +1189,8 @@ BCCX_Node *BGBCP_ExpressionMD(BGBCP_ParseState *ctx, char **str)
 	BCCX_Node *n, *n1, *n2, *n3;
 
 	s=*str;
-	n=BGBCP_ExpressionExp(ctx, &s);
+//	n=BGBCP_ExpressionExp(ctx, &s);
+	n=BGBCP_ExpressionCast(ctx, &s);
 	if(!n) { *str=NULL; return(n); }
 
 	while(1)
@@ -1205,7 +1208,8 @@ BCCX_Node *BGBCP_ExpressionMD(BGBCP_ParseState *ctx, char **str)
 				break;
 
 		s=BGBCP_Token(s, b, &ty);
-		n1=BGBCP_ExpressionExp(ctx, &s);
+//		n1=BGBCP_ExpressionExp(ctx, &s);
+		n1=BGBCP_ExpressionCast(ctx, &s);
 		n=BGBCP_BinaryExpr(b, n, n1);
 	}
 

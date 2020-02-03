@@ -268,7 +268,8 @@ ccxl_type BGBCC_CCXL_GetRegType(
 			{
 //				tty.val=CCXL_TY_I;
 //				tty.val=(reg.val>>32)&0xFFFF;
-				switch(reg.val>>44)
+//				switch(reg.val>>44)
+				switch((reg.val>>52)&15)
 				{
 					case 0: tty.val=CCXL_TY_I ; break;
 					case 1: tty.val=CCXL_TY_UI; break;

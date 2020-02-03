@@ -14,6 +14,7 @@ char tb_cwd[256];
 #define TK_CMD_MV		0x07
 #define TK_CMD_CP		0x08
 #define TK_CMD_ECHO		0x09
+#define TK_CMD_SET		0x0A
 
 int tk_cmd2idx(char *s)
 {
@@ -67,6 +68,12 @@ int tk_cmd2idx(char *s)
 			return(TK_CMD_RM);
 	}
 
+	if(*s=='s')
+	{
+		if(!strcmp(s, "set"))
+			return(TK_CMD_SET);
+	}
+
 	if(*s=='t')
 	{
 		if(!strcmp(s, "test"))
@@ -78,7 +85,7 @@ int tk_cmd2idx(char *s)
 
 int TkSh_ExecCmd(char *cmd)
 {
-	char tb[256], tb1[256];
+	char tb[256], tb1[256], tb2[256];
 	char **a;
 	char *s0, *s1;
 	int ci, ri;
@@ -164,13 +171,15 @@ int TkSh_ExecCmd(char *cmd)
 			
 			if(*s0=='$')
 			{
-				s1=TK_Env_GetEnvVarI(s0+1);
-				if(*s1)
-					{ tk_puts(s1); }
+				s1=TK_Env_GetEnvVarI(s0+1, tb1, 256);
+//				if(*s1)
+//					{ tk_puts(s1); }
+				if(s1)
+					{ tk_puts(tb1); }
 				continue;
 			}
 			
-			puts(s0);
+			tk_puts(s0);
 		}
 		tk_putc('\n');
 		break;
@@ -256,6 +265,21 @@ int TkSh_ExecCmd(char *cmd)
 				strcat(tb1, a[2]);
 			}
 			tk_fcopy(tb, tb1);
+		}
+		break;
+
+	case TK_CMD_SET:
+		if(a[1])
+		{
+			TK_Env_UpdateForSet(a[1]);
+		}else
+		{
+			for(i=0;; i++)
+			{
+				j=TK_Env_GetEnvVarIdx(i, tb1, tb2, 256, 256);
+				if(j<=0)break;
+				tk_printf("%s=%s\n", tb1, tb2);
+			}
 		}
 		break;
 

@@ -424,7 +424,8 @@ void R_InitFlats (void)
 	numflats = lastflat - firstflat + 1;
 	
 // translation table for global animation
-	flattranslation = Z_Malloc ((numflats+1)*4, PU_STATIC, 0);
+//	flattranslation = Z_Malloc ((numflats+1)*4, PU_STATIC, 0);
+	flattranslation = Z_Malloc ((numflats+1)*sizeof(int), PU_STATIC, 0);
 	for (i=0 ; i<numflats ; i++)
 		flattranslation[i] = i;
 }
@@ -520,6 +521,7 @@ void R_InitData (void)
 int	R_FlatNumForName (char *name)
 {
 	int		i;
+	int 	j;
 	char	namet[9];
 
 	i = W_CheckNumForName (name);
@@ -529,7 +531,13 @@ int	R_FlatNumForName (char *name)
 		memcpy (namet, name,8);
 		I_Error ("R_FlatNumForName: %s not found",namet);
 	}
-	return i - firstflat;
+//	return i - firstflat;
+
+	j = i - firstflat;
+	if((j<0) || (j>numflats))
+		__debugbreak();
+
+	return j;
 }
 
 

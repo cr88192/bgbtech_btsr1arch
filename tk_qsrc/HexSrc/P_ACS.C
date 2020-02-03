@@ -289,6 +289,8 @@ static int (*PCodeCmds[])(void) =
 	CmdEndPrintBold
 };
 
+int n_PCodeCmds = sizeof(PCodeCmds) / sizeof(void *);
+
 // CODE --------------------------------------------------------------------
 
 //==========================================================================
@@ -626,6 +628,15 @@ void T_InterpretACS(acs_t *script)
 	do
 	{
 		cmd = *PCodePtr++;
+		
+		if((cmd<0) || (cmd>=n_PCodeCmds))
+		{
+			//BGB: Debug
+			printf("ACS Bad Opcode Number\n");
+			action = SCRIPT_TERMINATE;
+			break;
+		}
+		
 		action = PCodeCmds[cmd]();
 	} while(action == SCRIPT_CONTINUE);
 	ACScript->ip = PCodePtr;
@@ -768,7 +779,14 @@ static void Push(int value)
 
 static int Pop(void)
 {
-	return ACScript->stack[--ACScript->stackPtr];
+	int pos;
+
+	pos=--ACScript->stackPtr;
+	if(pos<0)
+		__debugbreak();
+	return ACScript->stack[pos];
+
+//	return ACScript->stack[--ACScript->stackPtr];
 }
 
 //==========================================================================
@@ -881,6 +899,10 @@ static int CmdLSpec5(void)
 	SpecArgs[2] = Pop();
 	SpecArgs[1] = Pop();
 	SpecArgs[0] = Pop();
+	
+	if(!SpecArgs[0])
+		__debugbreak();
+	
 	P_ExecuteLineSpecial(special, SpecArgs, ACScript->line,
 		ACScript->side, ACScript->activator);
 	return SCRIPT_CONTINUE;
@@ -1040,162 +1062,244 @@ static int CmdGE(void)
 
 static int CmdAssignScriptVar(void)
 {
+//	int i;
+//	i = *PCodePtr++;
+//	ACScript->vars[i] = Pop();
 	ACScript->vars[*PCodePtr++] = Pop();
 	return SCRIPT_CONTINUE;
 }
 
 static int CmdAssignMapVar(void)
 {
+//	int i;
+//	i = *PCodePtr++;
+//	MapVars[i] = Pop();
 	MapVars[*PCodePtr++] = Pop();
 	return SCRIPT_CONTINUE;
 }
 
 static int CmdAssignWorldVar(void)
 {
+//	int i;
+//	i = *PCodePtr++;
+//	WorldVars[i] = Pop();
 	WorldVars[*PCodePtr++] = Pop();
 	return SCRIPT_CONTINUE;
 }
 
 static int CmdPushScriptVar(void)
 {
+//	int i;
+//	i = *PCodePtr++;
+//	Push(ACScript->vars[i]);
 	Push(ACScript->vars[*PCodePtr++]);
 	return SCRIPT_CONTINUE;
 }
 
 static int CmdPushMapVar(void)
 {
+//	int i;
+//	i = *PCodePtr++;
+//	Push(MapVars[i]);
 	Push(MapVars[*PCodePtr++]);
 	return SCRIPT_CONTINUE;
 }
 
 static int CmdPushWorldVar(void)
 {
+//	int i;
+//	i = *PCodePtr++;
+//	Push(WorldVars[i]);
 	Push(WorldVars[*PCodePtr++]);
 	return SCRIPT_CONTINUE;
 }
 
 static int CmdAddScriptVar(void)
 {
+//	int i;
+//	i = *PCodePtr++;
+//	ACScript->vars[i] += Pop();
 	ACScript->vars[*PCodePtr++] += Pop();
 	return SCRIPT_CONTINUE;
 }
 
 static int CmdAddMapVar(void)
 {
+//	int i;
+//	i = *PCodePtr++;
+//	MapVars[i] += Pop();
 	MapVars[*PCodePtr++] += Pop();
 	return SCRIPT_CONTINUE;
 }
 
 static int CmdAddWorldVar(void)
 {
+//	int i;
+//	i = *PCodePtr++;
+//	WorldVars[i] += Pop();
 	WorldVars[*PCodePtr++] += Pop();
 	return SCRIPT_CONTINUE;
 }
 
 static int CmdSubScriptVar(void)
 {
+//	int i;
+//	i = *PCodePtr++;
+//	ACScript->vars[i] -= Pop();
 	ACScript->vars[*PCodePtr++] -= Pop();
 	return SCRIPT_CONTINUE;
 }
 
 static int CmdSubMapVar(void)
 {
+//	int i;
+//	i = *PCodePtr++;
+//	MapVars[i] -= Pop();
 	MapVars[*PCodePtr++] -= Pop();
 	return SCRIPT_CONTINUE;
 }
 
 static int CmdSubWorldVar(void)
 {
+//	int i;
+//	i = *PCodePtr++;
+//	WorldVars[i] -= Pop();
 	WorldVars[*PCodePtr++] -= Pop();
 	return SCRIPT_CONTINUE;
 }
 
 static int CmdMulScriptVar(void)
 {
+//	int i;
+//	i = *PCodePtr++;
+//	ACScript->vars[i] *= Pop();
 	ACScript->vars[*PCodePtr++] *= Pop();
 	return SCRIPT_CONTINUE;
 }
 
 static int CmdMulMapVar(void)
 {
+//	int i;
+//	i = *PCodePtr++;
+//	MapVars[i] *= Pop();
 	MapVars[*PCodePtr++] *= Pop();
 	return SCRIPT_CONTINUE;
 }
 
 static int CmdMulWorldVar(void)
 {
+//	int i;
+//	i = *PCodePtr++;
+//	WorldVars[i] *= Pop();
 	WorldVars[*PCodePtr++] *= Pop();
 	return SCRIPT_CONTINUE;
 }
 
 static int CmdDivScriptVar(void)
 {
+//	int i;
+//	i = *PCodePtr++;
+//	ACScript->vars[i] /= Pop();
 	ACScript->vars[*PCodePtr++] /= Pop();
 	return SCRIPT_CONTINUE;
 }
 
 static int CmdDivMapVar(void)
 {
+//	int i;
+//	i = *PCodePtr++;
+//	MapVars[i] /= Pop();
 	MapVars[*PCodePtr++] /= Pop();
 	return SCRIPT_CONTINUE;
 }
 
 static int CmdDivWorldVar(void)
 {
+//	int i;
+//	i = *PCodePtr++;
+//	WorldVars[i] /= Pop();
 	WorldVars[*PCodePtr++] /= Pop();
 	return SCRIPT_CONTINUE;
 }
 
 static int CmdModScriptVar(void)
 {
+//	int i;
+//	i = *PCodePtr++;
+//	ACScript->vars[i] %= Pop();
 	ACScript->vars[*PCodePtr++] %= Pop();
 	return SCRIPT_CONTINUE;
 }
 
 static int CmdModMapVar(void)
 {
+//	int i;
+//	i = *PCodePtr++;
+//	MapVars[i] %= Pop();
 	MapVars[*PCodePtr++] %= Pop();
 	return SCRIPT_CONTINUE;
 }
 
 static int CmdModWorldVar(void)
 {
+//	int i;
+//	i = *PCodePtr++;
+//	WorldVars[i] %= Pop();
 	WorldVars[*PCodePtr++] %= Pop();
 	return SCRIPT_CONTINUE;
 }
 
 static int CmdIncScriptVar(void)
 {
+//	int i;
+//	i = *PCodePtr++;
+//	ACScript->vars[i]++;
 	ACScript->vars[*PCodePtr++]++;
 	return SCRIPT_CONTINUE;
 }
 
 static int CmdIncMapVar(void)
 {
+//	int i;
+//	i = *PCodePtr++;
+//	MapVars[i]++;
 	MapVars[*PCodePtr++]++;
 	return SCRIPT_CONTINUE;
 }
 
 static int CmdIncWorldVar(void)
 {
+//	int i;
+//	i = *PCodePtr++;
+//	WorldVars[i]++;
 	WorldVars[*PCodePtr++]++;
+//	__debugbreak();
 	return SCRIPT_CONTINUE;
 }
 
 static int CmdDecScriptVar(void)
 {
+//	int i;
+//	i = *PCodePtr++;
+//	ACScript->vars[i]--;
 	ACScript->vars[*PCodePtr++]--;
 	return SCRIPT_CONTINUE;
 }
 
 static int CmdDecMapVar(void)
 {
+//	int i;
+//	i = *PCodePtr++;
+//	MapVars[i]--;
 	MapVars[*PCodePtr++]--;
 	return SCRIPT_CONTINUE;
 }
 
 static int CmdDecWorldVar(void)
 {
+//	int i;
+//	i = *PCodePtr++;
+//	WorldVars[i]--;
 	WorldVars[*PCodePtr++]--;
 	return SCRIPT_CONTINUE;
 }

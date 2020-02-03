@@ -790,6 +790,8 @@ int BGBCC_CCXL_CheckCompileLoadIndex(BGBCC_TransState *ctx,BCCX_Node *arr, BCCX_
 int BGBCC_CCXL_CheckCompileStoreIndex(BGBCC_TransState *ctx,BCCX_Node *arr, BCCX_Node *idx);
 void BGBCC_CCXL_CompileNewBasic(BGBCC_TransState *ctx,BCCX_Node *type, BCCX_Node *args);
 void BGBCC_CCXL_CompileFormJmpTF(BGBCC_TransState *ctx, BCCX_Node *l,ccxl_label brt, ccxl_label brf);
+void BGBCC_CCXL_CompileExprRef(BGBCC_TransState *ctx, BCCX_Node *l);
+void BGBCC_CCXL_CompileExprDeref(BGBCC_TransState *ctx, BCCX_Node *l);
 void BGBCC_CCXL_CompileForm(BGBCC_TransState *ctx, BCCX_Node *l);
 void BGBCC_CCXL_CompileExprT(BGBCC_TransState *ctx, BCCX_Node *l);
 void BGBCC_CCXL_CompileExpr(BGBCC_TransState *ctx, BCCX_Node *l);
@@ -981,6 +983,7 @@ int BGBCC_CCXL_GetTypeOperationBaseZ(BGBCC_TransState *ctx, ccxl_type ty);
 //AHSRC:ccxl/ccxl_reduce.c
 int BGBCC_CCXL_IsUnaryP(BGBCC_TransState *ctx, BCCX_Node *l, char *op);
 int BGBCC_CCXL_IsBinaryP(BGBCC_TransState *ctx, BCCX_Node *l, char *op);
+int BGBCC_CCXL_IsBinaryCompareP(BGBCC_TransState *ctx, BCCX_Node *l);
 int BGBCC_CCXL_BoolExpr(BGBCC_TransState *ctx, BCCX_Node *l);
 int BGBCC_CCXL_IsFixIntAssignRVP(BGBCC_TransState *ctx, BCCX_Node *l, char **rname, int *rval);
 int BGBCC_CCXL_IsFixIntCompareRVP(BGBCC_TransState *ctx, BCCX_Node *l, char **rname, char **rcmp, int *rval);

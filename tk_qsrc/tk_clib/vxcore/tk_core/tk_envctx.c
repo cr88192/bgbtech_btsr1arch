@@ -58,6 +58,13 @@ char *TK_EnvCtx_SetEnvVarI_StrDup(TK_EnvContext *ctx, char *val)
 	char *ct;
 	int l;
 	
+	if(!(ctx->envbufs))
+	{
+		ctx->envbufs=tk_malloc(4096);
+		ctx->envbufe=ctx->envbufs+4096;
+		ctx->envbufc=ctx->envbufs;
+	}
+	
 	l=strlen(val);
 	if((ctx->envbufc+l)>=ctx->envbufe)
 		return(NULL);
@@ -86,8 +93,8 @@ int TK_EnvCtx_RepackEnvbuf(TK_EnvContext *ctx)
 	{
 		cn0=ctx->envlst_var[i];
 		cv0=ctx->envlst_val[i];
-		cn1=TK_EnvCtx_SetEnvVarI_StrDup(cn0);
-		cv1=TK_EnvCtx_SetEnvVarI_StrDup(cv0);
+		cn1=TK_EnvCtx_SetEnvVarI_StrDup(ctx, cn0);
+		cv1=TK_EnvCtx_SetEnvVarI_StrDup(ctx, cv0);
 		ctx->envlst_var[i]=cn1;
 		ctx->envlst_val[i]=cv1;
 	}
@@ -95,6 +102,33 @@ int TK_EnvCtx_RepackEnvbuf(TK_EnvContext *ctx)
 	tk_free(oldenv);
 
 	return(0);
+}
+
+int TK_EnvCtx_GetEnvVarIdx(TK_EnvContext *ctx, int idx,
+	char *bufn, char *bufv, int szn, int szv)
+{
+	int i, j, k;
+
+	if(idx<0)
+		return(-1);
+	if(idx>=ctx->nenvlst)
+		return(-1);
+
+	strcpy(bufn, ctx->envlst_var[idx]);
+	strcpy(bufv, ctx->envlst_val[idx]);
+	return(1);
+
+#if 0
+	for(i=0; i<ctx->nenvlst; i++)
+	{
+		if(!strcmp(ctx->envlst_var[i], varn))
+		{
+			strncpy(bufv, ctx->envlst_val[i], sz);
+			return(1);
+		}
+	}
+#endif
+	return(-1);
 }
 
 int TK_EnvCtx_GetEnvVarI(TK_EnvContext *ctx, char *varn, char *bufv, int sz)
@@ -117,6 +151,8 @@ int TK_EnvCtx_SetEnvVarI(TK_EnvContext *ctx, char *varn, char *varv)
 	char *cn1, *cv1;
 	int i, j, k;
 
+	tk_printf("TK_EnvCtx_SetEnvVarI: %s=%s\n", varn, varv);
+	
 	if(!ctx->envbufs)
 	{
 		ctx->envbufs=tk_malloc(65536);
@@ -133,7 +169,7 @@ int TK_EnvCtx_SetEnvVarI(TK_EnvContext *ctx, char *varn, char *varv)
 	{
 		if(!strcmp(ctx->envlst_var[i], varn))
 		{
-			cv1=TK_EnvCtx_SetEnvVarI_StrDup(varv);
+			cv1=TK_EnvCtx_SetEnvVarI_StrDup(ctx, varv);
 			
 			if(cv1)
 			{
@@ -156,8 +192,8 @@ int TK_EnvCtx_SetEnvVarI(TK_EnvContext *ctx, char *varn, char *varv)
 			ctx->menvlst=k;
 		}
 
-		cn1=TK_EnvCtx_SetEnvVarI_StrDup(varn);
-		cv1=TK_EnvCtx_SetEnvVarI_StrDup(varv);
+		cn1=TK_EnvCtx_SetEnvVarI_StrDup(ctx, varn);
+		cv1=TK_EnvCtx_SetEnvVarI_StrDup(ctx, varv);
 
 		if(cn1 && cv1)
 		{
@@ -275,7 +311,7 @@ int TK_EnvCtx_SplitVar(char *str, char *bvar, char **rval)
 	
 	if(*cs=='=')
 		cs++;
-	rval=cs;
+	*rval=cs;
 	return(0);
 }
 
@@ -302,6 +338,7 @@ int TK_EnvCtx_UpdateForSet(TK_EnvContext *ctx, char *estr)
 	char tbn[64];
 	char *tbv;
 
+	tbv=NULL;
 	TK_EnvCtx_SplitVar(estr, tbn, &tbv);
 	TK_EnvCtx_SetEnvVar(ctx, tbn, tbv);
 

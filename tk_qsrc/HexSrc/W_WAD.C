@@ -617,11 +617,16 @@ int	W_GetNumForName (char *name)
 {
 	int	i;
 
+	if((name[0]<=' ') || (name[0]>'~'))
+		__debugbreak();
+
 	i = W_CheckNumForName(name);
 	if(i != -1)
 	{
 		return i;
 	}
+	
+	__debugbreak();
 	I_Error("W_GetNumForName: %s not found!", name);
 	return -1;
 }

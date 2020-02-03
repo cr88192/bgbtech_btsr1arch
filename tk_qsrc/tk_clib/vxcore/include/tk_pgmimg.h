@@ -28,6 +28,8 @@ void *imgname;
 byte *bootptr;		//entry point for image
 byte *bootgbr;		//pointer to start of data section
 byte *bootgbre;		//pointer to end of data section
+int  gbr_szcpy;
+int  gbr_sz;
 };
 
 struct TKPE_TaskInfo_s {

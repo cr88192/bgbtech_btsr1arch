@@ -168,6 +168,12 @@ int M_Random (void)
 	return rndtable[rndindex];
 }
 
+int P_Random (void)
+{
+	prndindex = (prndindex+1)&0xff;
+	return rndtable[prndindex];
+}
+
 void M_ClearRandom (void)
 {
 	rndindex = prndindex = 0;
@@ -207,6 +213,8 @@ void M_AddToBox (fixed_t *box, fixed_t x, fixed_t y)
 dt_bool M_WriteFile (char const *name, void *source, int length)
 {
 	int handle, count;
+
+//	return false;
 
 //	handle = open (name, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0666);
 	handle = w_open (name, "wb");

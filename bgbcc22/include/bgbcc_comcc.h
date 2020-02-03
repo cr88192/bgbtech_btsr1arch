@@ -142,6 +142,7 @@ byte fpu_gfp;		//use GprFPU design.
 byte is_fixed32;	//uses only 32-bit instruction forms
 byte op_is_wex2;	//encoding a WEX2 instruction (0/2/3).
 byte no_ops48;		//Disable 48-bit opcodes.
+byte op_wex_align;	//Need to align for WEX
 
 byte has_shad;		//has SHAD/SHLD
 byte has_movi20;	//has MOVI20 and friends

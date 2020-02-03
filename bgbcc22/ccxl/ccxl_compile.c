@@ -899,10 +899,26 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 				return;
 			}
 
-			BGBCC_CCXL_CompileExpr(ctx, ln);
-			BGBCC_CCXL_CompileExpr(ctx, rn);
-			BGBCC_CCXL_StackBinaryOp(ctx, s0);
-			BGBCC_CCXL_CompileAssign(ctx, ln);
+			if(BGBCC_CCXL_InferExprCleanP(ctx, ln))
+//			if(1)
+			{
+				BGBCC_CCXL_CompileExpr(ctx, ln);
+				BGBCC_CCXL_CompileExpr(ctx, rn);
+				BGBCC_CCXL_StackBinaryOp(ctx, s0);
+				BGBCC_CCXL_CompileAssign(ctx, ln);
+			}else
+			{
+				BGBCC_CCXL_CompileExprRef(ctx, ln);
+				BGBCC_CCXL_StackDupClean(ctx);
+				BGBCC_CCXL_StackLoadIndexConst(ctx, 0);
+				BGBCC_CCXL_CompileExpr(ctx, rn);
+				BGBCC_CCXL_StackBinaryOp(ctx, s0);
+//				BGBCC_CCXL_StackDupClean(ctx);
+				BGBCC_CCXL_StackDupIdx(ctx, 1);
+				BGBCC_CCXL_StackStoreIndexConst(ctx, 0);
+//				BGBCC_CCXL_StackExch(ctx);
+				BGBCC_CCXL_StackPop(ctx);
+			}
 			return;
 		}
 
@@ -1095,9 +1111,22 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 			return;
 		}
 
-		BGBCC_CCXL_CompileExpr(ctx, t);
-		BGBCC_CCXL_StackUnaryOp(ctx, "++");
-		BGBCC_CCXL_CompileAssign(ctx, t);
+		if(BGBCC_CCXL_InferExprCleanP(ctx, t))
+//		if(0)
+		{
+			BGBCC_CCXL_CompileExpr(ctx, t);
+			BGBCC_CCXL_StackUnaryOp(ctx, "++");
+			BGBCC_CCXL_CompileAssign(ctx, t);
+		}else
+		{
+			BGBCC_CCXL_CompileExprRef(ctx, t);
+			BGBCC_CCXL_StackDupB(ctx);
+			BGBCC_CCXL_StackLoadIndexConst(ctx, 0);
+			BGBCC_CCXL_StackUnaryOp(ctx, "++");
+			BGBCC_CCXL_StackDupIdx(ctx, 1);
+			BGBCC_CCXL_StackStoreIndexConst(ctx, 0);
+			BGBCC_CCXL_StackPop(ctx);
+		}
 		return;
 	}
 
@@ -1114,9 +1143,22 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 			return;
 		}
 
-		BGBCC_CCXL_CompileExpr(ctx, t);
-		BGBCC_CCXL_StackUnaryOp(ctx, "--");
-		BGBCC_CCXL_CompileAssign(ctx, t);
+		if(BGBCC_CCXL_InferExprCleanP(ctx, t))
+//		if(0)
+		{
+			BGBCC_CCXL_CompileExpr(ctx, t);
+			BGBCC_CCXL_StackUnaryOp(ctx, "--");
+			BGBCC_CCXL_CompileAssign(ctx, t);
+		}else
+		{
+			BGBCC_CCXL_CompileExprRef(ctx, t);
+			BGBCC_CCXL_StackDupB(ctx);
+			BGBCC_CCXL_StackLoadIndexConst(ctx, 0);
+			BGBCC_CCXL_StackUnaryOp(ctx, "--");
+			BGBCC_CCXL_StackDupIdx(ctx, 1);
+			BGBCC_CCXL_StackStoreIndexConst(ctx, 0);
+			BGBCC_CCXL_StackPop(ctx);
+		}
 		return;
 	}
 

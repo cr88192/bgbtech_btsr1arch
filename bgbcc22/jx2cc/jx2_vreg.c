@@ -1781,6 +1781,8 @@ int BGBCC_JX2C_EmitJmpTab(
 		}
 	}
 
+	sctx->op_wex_align|=1;
+
 	BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_SHLL1, ctreg);
 	BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_BRA2F, ctreg);
 //	BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_BRK);

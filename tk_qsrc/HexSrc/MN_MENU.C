@@ -1725,6 +1725,7 @@ static void SetMenu(MenuType_t menu)
 
 static void DrawSlider(Menu_t *menu, int item, int width, int slot)
 {
+	char *sldr;
 	int x;
 	int y;
 	int x2;
@@ -1735,8 +1736,15 @@ static void DrawSlider(Menu_t *menu, int item, int width, int slot)
 	V_DrawPatch(x-32, y, W_CacheLumpName("M_SLDLT", PU_CACHE));
 	for(x2 = x, count = width; count--; x2 += 8)
 	{
-		V_DrawPatch(x2, y, W_CacheLumpName(count&1 ? "M_SLDMD1"
-			: "M_SLDMD2", PU_CACHE));
+		if(count&1)
+			sldr="M_SLDMD1";
+		else
+			sldr="M_SLDMD2";
+		V_DrawPatch(x2, y, W_CacheLumpName(sldr, PU_CACHE));
+
+//		BGB: TODO: ?: doesn't work with strings.
+//		V_DrawPatch(x2, y, W_CacheLumpName(count&1 ? "M_SLDMD1"
+//			: "M_SLDMD2", PU_CACHE));
 	}
 	V_DrawPatch(x2, y, W_CacheLumpName("M_SLDRT", PU_CACHE));
 	V_DrawPatch(x+4+slot*8, y+7, W_CacheLumpName("M_SLDKB", PU_CACHE));

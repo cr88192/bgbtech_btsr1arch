@@ -502,47 +502,54 @@ void R_DrawPlanes(void)
 		// Regular flat
 		tempSource = W_CacheLumpNum(firstflat+
 			flattranslation[pl->picnum], PU_STATIC);
-		scrollOffset = leveltime>>1&63;
+//		scrollOffset = (leveltime>>1)&63;
+		scrollOffset = leveltime>>1 & 63;
 //		switch(pl->special)
 
 		x=pl->special&255;
 		switch(x)
 		{ // Handle scrolling flats
 			case 201: case 202: case 203: // Scroll_North_xxx
+//				ds_source = tempSource+(((scrollOffset
+//					<<(pl->special-201))&63)<<6);
 				ds_source = tempSource+((scrollOffset
 					<<(pl->special-201)&63)<<6);
 				break;
 			case 204: case 205: case 206: // Scroll_East_xxx
+//				ds_source = tempSource+(((63-scrollOffset)
+//					<<(pl->special-204))&63);
 				ds_source = tempSource+((63-scrollOffset)
 					<<(pl->special-204)&63);
 				break;
 			case 207: case 208: case 209: // Scroll_South_xxx
+//				ds_source = tempSource+((((63-scrollOffset)
+//					<<(pl->special-207))&63)<<6);
 				ds_source = tempSource+(((63-scrollOffset)
 					<<(pl->special-207)&63)<<6);
 				break;
 			case 210: case 211: case 212: // Scroll_West_xxx
-				ds_source = tempSource+(scrollOffset
-					<<(pl->special-210)&63);
+				ds_source = tempSource+((scrollOffset
+					<<(pl->special-210))&63);
 				break;
 			case 213: case 214: case 215: // Scroll_NorthWest_xxx
-				ds_source = tempSource+(scrollOffset
-					<<(pl->special-213)&63)+((scrollOffset
-					<<(pl->special-213)&63)<<6);
+				ds_source = tempSource+((scrollOffset
+					<<(pl->special-213))&63)+(((scrollOffset
+					<<(pl->special-213))&63)<<6);
 				break;
 			case 216: case 217: case 218: // Scroll_NorthEast_xxx
-				ds_source = tempSource+((63-scrollOffset)
-					<<(pl->special-216)&63)+((scrollOffset
-					<<(pl->special-216)&63)<<6);
+				ds_source = tempSource+(((63-scrollOffset)
+					<<(pl->special-216))&63)+(((scrollOffset
+					<<(pl->special-216))&63)<<6);
 				break;
 			case 219: case 220: case 221: // Scroll_SouthEast_xxx
-				ds_source = tempSource+((63-scrollOffset)
-					<<(pl->special-219)&63)+(((63-scrollOffset)
-					<<(pl->special-219)&63)<<6);
+				ds_source = tempSource+(((63-scrollOffset)
+					<<(pl->special-219))&63)+((((63-scrollOffset)
+					<<(pl->special-219))&63)<<6);
 				break;
 			case 222: case 223: case 224: // Scroll_SouthWest_xxx
-				ds_source = tempSource+(scrollOffset
-					<<(pl->special-222)&63)+(((63-scrollOffset)
-					<<(pl->special-222)&63)<<6);
+				ds_source = tempSource+
+					((scrollOffset<<(pl->special-222))&63)+
+					((((63-scrollOffset)<<(pl->special-222))&63)<<6);
 				break;
 			default:
 				ds_source = tempSource;

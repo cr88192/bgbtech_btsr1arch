@@ -2557,6 +2557,9 @@ ccxl_status BGBCC_CCXL_StackBinaryOpStore(BGBCC_TransState *ctx,
 
 //	BGBCC_CCXL_DebugPrintStackLLn(ctx, "BinaryOpStore", __FILE__, __LINE__);
 
+//	if(name && !strcmp(name, "dc_iscale"))
+//		__debugbreak();
+
 //	i=BGBCC_CCXL_PopRegister(ctx, &treg);
 	j=BGBCC_CCXL_LookupAsRegister(ctx, name, &dreg);
 	if(j<=0)
@@ -2844,9 +2847,11 @@ ccxl_status BGBCC_CCXL_StackBinaryOpStore(BGBCC_TransState *ctx,
 //			BGBCC_CCXL_TypeEqualP(ctx, dty, tty))
 		if(BGBCC_CCXL_TypeCompatibleP(ctx, dty, sty) &&
 			BGBCC_CCXL_TypeCompatibleP(ctx, dty, tty) &&
+			BGBCC_CCXL_TypeCompatibleP(ctx, dty, dty2) &&
 			!BGBCC_CCXL_RegisterIdentEqualP(ctx, dreg, treg))
 		{
-			BGBCC_CCXL_EmitBinaryOp(ctx, dty, opr, dreg, sreg, treg);
+//			BGBCC_CCXL_EmitBinaryOp(ctx, dty, opr, dreg, sreg, treg);
+			BGBCC_CCXL_EmitBinaryOp(ctx, dty2, opr, dreg, sreg, treg);
 			BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
 			BGBCC_CCXL_RegisterCheckRelease(ctx, treg);
 			BGBCC_CCXL_RegisterCheckRelease(ctx, dreg);

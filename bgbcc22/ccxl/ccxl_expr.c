@@ -1067,6 +1067,51 @@ void BGBCC_CCXL_CompileFormJmpTF(BGBCC_TransState *ctx, BCCX_Node *l,
 	BGBCC_CCXL_CompileForm(ctx, l);
 }
 
+void BGBCC_CCXL_CompileExprRef(BGBCC_TransState *ctx, BCCX_Node *l)
+{
+	char *s0, *s1, *s2, *s3;
+	BCCX_Node *c, *d, *t, *u, *v, *ln, *rn;
+	t=l;
+
+	if(BCCX_TagIsCstP(t, &bgbcc_rcst_ref, "ref"))
+	{
+		s0=BCCX_GetCst(t, &bgbcc_rcst_name, "name");
+		s0=BGBCC_CCXL_CompileRemapName(ctx, s0);
+		BGBCC_CCXL_StackLoadAddr(ctx, s0);
+		return;
+	}
+
+	if(BCCX_TagIsCstP(t, &bgbcc_rcst_objref, "objref"))
+	{
+		BGBCC_CCXL_CompileExpr(ctx,
+			BCCX_FetchCst(t, &bgbcc_rcst_value, "value"));
+		s0=BCCX_GetCst(t, &bgbcc_rcst_name, "name");
+		BGBCC_CCXL_StackLoadSlotAddr(ctx, s0);
+		return;
+	}
+
+	if(BCCX_TagIsCstP(t, &bgbcc_rcst_getindex, "getindex") ||
+		BCCX_TagIsCstP(t, &bgbcc_rcst_vector_ref, "vector-ref"))
+	{
+		BGBCC_CCXL_CompileExpr(ctx,
+			BCCX_FetchCst(t, &bgbcc_rcst_array, "array"));
+		BGBCC_CCXL_CompileExpr(ctx,
+			BCCX_FetchCst(t, &bgbcc_rcst_index, "index"));
+		BGBCC_CCXL_StackLoadIndexAddr(ctx);
+		return;
+	}
+
+	s1=BCCX_Tag(t);
+	BGBCC_CCXL_Error(ctx, "Bad expression type for '&', %s\n", s1);
+	return;
+}
+
+void BGBCC_CCXL_CompileExprDeref(BGBCC_TransState *ctx, BCCX_Node *l)
+{
+	BGBCC_CCXL_CompileExpr(ctx, l);
+	BGBCC_CCXL_StackLoadIndexConst(ctx, 0);
+}
+
 void BGBCC_CCXL_CompileForm(BGBCC_TransState *ctx, BCCX_Node *l)
 {
 	byte *ips[64];
@@ -1169,12 +1214,28 @@ void BGBCC_CCXL_CompileForm(BGBCC_TransState *ctx, BCCX_Node *l)
 
 		if(s0)
 		{
-			BGBCC_CCXL_CompileExpr(ctx, ln);
-			BGBCC_CCXL_CompileExpr(ctx, rn);
-			BGBCC_CCXL_StackBinaryOp(ctx, s0);
-//			BGBCC_CCXL_StackDup(ctx);
-			BGBCC_CCXL_StackDupClean(ctx);
-			BGBCC_CCXL_CompileAssign(ctx, ln);
+			if(BGBCC_CCXL_InferExprCleanP(ctx, ln))
+			{
+				BGBCC_CCXL_CompileExpr(ctx, ln);
+				BGBCC_CCXL_CompileExpr(ctx, rn);
+				BGBCC_CCXL_StackBinaryOp(ctx, s0);
+	//			BGBCC_CCXL_StackDup(ctx);
+				BGBCC_CCXL_StackDupClean(ctx);
+				BGBCC_CCXL_CompileAssign(ctx, ln);
+			}else
+			{
+				BGBCC_CCXL_CompileExprRef(ctx, ln);
+				BGBCC_CCXL_StackDupClean(ctx);
+				BGBCC_CCXL_StackLoadIndexConst(ctx, 0);
+				BGBCC_CCXL_CompileExpr(ctx, rn);
+				BGBCC_CCXL_StackBinaryOp(ctx, s0);
+				BGBCC_CCXL_StackDupClean(ctx);
+				BGBCC_CCXL_StackDupIdx(ctx, 2);
+				BGBCC_CCXL_StackStoreIndexConst(ctx, 0);
+				BGBCC_CCXL_StackExch(ctx);
+				BGBCC_CCXL_StackPop(ctx);
+//				BGBCC_CCXL_CompileAssign(ctx, ln);
+			}
 			return;
 		}
 
@@ -1243,12 +1304,36 @@ void BGBCC_CCXL_CompileForm(BGBCC_TransState *ctx, BCCX_Node *l)
 			BGBCC_CCXL_StackUnaryOpNameB(ctx, "++", s0, 1);
 			return;
 		}
-		
+
+#if 0
 		BGBCC_CCXL_CompileExpr(ctx, t);
 		BGBCC_CCXL_StackUnaryOp(ctx, "++");
 //		BGBCC_CCXL_StackDup(ctx);
 		BGBCC_CCXL_StackDupClean(ctx);
 		BGBCC_CCXL_CompileAssign(ctx, t);
+#endif
+
+		if(BGBCC_CCXL_InferExprCleanP(ctx, t))
+//		if(0)
+		{
+			BGBCC_CCXL_CompileExpr(ctx, t);
+			BGBCC_CCXL_StackUnaryOp(ctx, "++");
+	//		BGBCC_CCXL_StackDup(ctx);
+			BGBCC_CCXL_StackDupClean(ctx);
+			BGBCC_CCXL_CompileAssign(ctx, t);
+		}else
+		{
+			BGBCC_CCXL_CompileExprRef(ctx, t);
+			BGBCC_CCXL_StackDupB(ctx);
+			BGBCC_CCXL_StackLoadIndexConst(ctx, 0);
+			BGBCC_CCXL_StackUnaryOp(ctx, "++");
+			BGBCC_CCXL_StackDupB(ctx);
+			BGBCC_CCXL_StackDupIdx(ctx, 2);
+			BGBCC_CCXL_StackStoreIndexConst(ctx, 0);
+			BGBCC_CCXL_StackExch(ctx);
+			BGBCC_CCXL_StackPop(ctx);
+		}
+
 		return;
 	}
 
@@ -1265,11 +1350,35 @@ void BGBCC_CCXL_CompileForm(BGBCC_TransState *ctx, BCCX_Node *l)
 			return;
 		}
 
+#if 0
 		BGBCC_CCXL_CompileExpr(ctx, t);
 		BGBCC_CCXL_StackUnaryOp(ctx, "--");
 //		BGBCC_CCXL_StackDup(ctx);
 		BGBCC_CCXL_StackDupClean(ctx);
 		BGBCC_CCXL_CompileAssign(ctx, t);
+#endif
+
+		if(BGBCC_CCXL_InferExprCleanP(ctx, t))
+//		if(0)
+		{
+			BGBCC_CCXL_CompileExpr(ctx, t);
+			BGBCC_CCXL_StackUnaryOp(ctx, "--");
+	//		BGBCC_CCXL_StackDup(ctx);
+			BGBCC_CCXL_StackDupClean(ctx);
+			BGBCC_CCXL_CompileAssign(ctx, t);
+		}else
+		{
+			BGBCC_CCXL_CompileExprRef(ctx, t);
+			BGBCC_CCXL_StackDupB(ctx);
+			BGBCC_CCXL_StackLoadIndexConst(ctx, 0);
+			BGBCC_CCXL_StackUnaryOp(ctx, "--");
+			BGBCC_CCXL_StackDupB(ctx);
+			BGBCC_CCXL_StackDupIdx(ctx, 2);
+			BGBCC_CCXL_StackStoreIndexConst(ctx, 0);
+			BGBCC_CCXL_StackExch(ctx);
+			BGBCC_CCXL_StackPop(ctx);
+		}
+
 		return;
 	}
 
@@ -1286,11 +1395,35 @@ void BGBCC_CCXL_CompileForm(BGBCC_TransState *ctx, BCCX_Node *l)
 			return;
 		}
 
+#if 0
 		BGBCC_CCXL_CompileExpr(ctx, t);
 //		BGBCC_CCXL_StackDup(ctx);
 		BGBCC_CCXL_StackDupB(ctx);
 		BGBCC_CCXL_StackUnaryOp(ctx, "++");
 		BGBCC_CCXL_CompileAssign(ctx, t);
+#endif
+
+		if(BGBCC_CCXL_InferExprCleanP(ctx, t))
+//		if(0)
+		{
+			BGBCC_CCXL_CompileExpr(ctx, t);
+	//		BGBCC_CCXL_StackDup(ctx);
+			BGBCC_CCXL_StackDupB(ctx);
+			BGBCC_CCXL_StackUnaryOp(ctx, "++");
+			BGBCC_CCXL_CompileAssign(ctx, t);
+		}else
+		{
+			BGBCC_CCXL_CompileExprRef(ctx, t);
+			BGBCC_CCXL_StackDupB(ctx);
+			BGBCC_CCXL_StackLoadIndexConst(ctx, 0);
+			BGBCC_CCXL_StackDupB(ctx);
+			BGBCC_CCXL_StackUnaryOp(ctx, "++");
+			BGBCC_CCXL_StackDupIdx(ctx, 2);
+			BGBCC_CCXL_StackStoreIndexConst(ctx, 0);
+			BGBCC_CCXL_StackExch(ctx);
+			BGBCC_CCXL_StackPop(ctx);
+		}
+
 		return;
 	}
 
@@ -1307,11 +1440,35 @@ void BGBCC_CCXL_CompileForm(BGBCC_TransState *ctx, BCCX_Node *l)
 			return;
 		}
 
+#if 0
 		BGBCC_CCXL_CompileExpr(ctx, t);
 //		BGBCC_CCXL_StackDup(ctx);
 		BGBCC_CCXL_StackDupB(ctx);
 		BGBCC_CCXL_StackUnaryOp(ctx, "--");
 		BGBCC_CCXL_CompileAssign(ctx, t);
+#endif
+
+		if(BGBCC_CCXL_InferExprCleanP(ctx, t))
+//		if(0)
+		{
+			BGBCC_CCXL_CompileExpr(ctx, t);
+	//		BGBCC_CCXL_StackDup(ctx);
+			BGBCC_CCXL_StackDupB(ctx);
+			BGBCC_CCXL_StackUnaryOp(ctx, "--");
+			BGBCC_CCXL_CompileAssign(ctx, t);
+		}else
+		{
+			BGBCC_CCXL_CompileExprRef(ctx, t);
+			BGBCC_CCXL_StackDupB(ctx);
+			BGBCC_CCXL_StackLoadIndexConst(ctx, 0);
+			BGBCC_CCXL_StackDupB(ctx);
+			BGBCC_CCXL_StackUnaryOp(ctx, "--");
+			BGBCC_CCXL_StackDupIdx(ctx, 2);
+			BGBCC_CCXL_StackStoreIndexConst(ctx, 0);
+			BGBCC_CCXL_StackExch(ctx);
+			BGBCC_CCXL_StackPop(ctx);
+		}
+
 		return;
 	}
 
@@ -1338,6 +1495,31 @@ void BGBCC_CCXL_CompileForm(BGBCC_TransState *ctx, BCCX_Node *l)
 
 		ln=BGBCC_CCXL_ReduceExpr(ctx, ln);
 		rn=BGBCC_CCXL_ReduceExpr(ctx, rn);
+
+#if 0
+		if(	ctx->arch_has_predops &&
+			!BGBCC_CCXL_CheckIsStaticLib(ctx) &&
+			BGBCC_CCXL_InferExprCleanP(ctx, ln) &&
+			BGBCC_CCXL_InferExprCleanP(ctx, rn) &&
+			BGBCC_CCXL_IsBinaryCompareP(ctx, t))
+		{
+//			BGBCC_CCXL_CompilePredExpr(ctx, t);
+//			BGBCC_CCXL_StackSetPred(ctx, 2);
+//			BGBCC_CCXL_CompileStatement(ctx, ln);
+//			if(rn)
+//			{
+//				BGBCC_CCXL_StackSetPred(ctx, 3);
+//				BGBCC_CCXL_CompileStatement(ctx, rn);
+//			}
+//			BGBCC_CCXL_StackSetPred(ctx, 0);
+//			return;
+
+			BGBCC_CCXL_CompileExpr(ctx, ln);
+			BGBCC_CCXL_CompileExpr(ctx, rn);
+			BGBCC_CCXL_CompileCSel(ctx, t);
+			return;
+		}
+#endif
 		
 		i0=BGBCC_CCXL_InferExpr(ctx, ln, &lty);
 		i1=BGBCC_CCXL_InferExpr(ctx, rn, &rty);
@@ -1511,36 +1693,7 @@ void BGBCC_CCXL_CompileForm(BGBCC_TransState *ctx, BCCX_Node *l)
 		{
 			t=BGBCC_CCXL_ReduceExpr(ctx, BCCX_FetchCst(l, &bgbcc_rcst_value, "value"));
 
-			if(BCCX_TagIsCstP(t, &bgbcc_rcst_ref, "ref"))
-			{
-				s0=BCCX_GetCst(t, &bgbcc_rcst_name, "name");
-				s0=BGBCC_CCXL_CompileRemapName(ctx, s0);
-				BGBCC_CCXL_StackLoadAddr(ctx, s0);
-				return;
-			}
-
-			if(BCCX_TagIsCstP(t, &bgbcc_rcst_objref, "objref"))
-			{
-				BGBCC_CCXL_CompileExpr(ctx,
-					BCCX_FetchCst(t, &bgbcc_rcst_value, "value"));
-				s0=BCCX_GetCst(t, &bgbcc_rcst_name, "name");
-				BGBCC_CCXL_StackLoadSlotAddr(ctx, s0);
-				return;
-			}
-
-			if(BCCX_TagIsCstP(t, &bgbcc_rcst_getindex, "getindex") ||
-				BCCX_TagIsCstP(t, &bgbcc_rcst_vector_ref, "vector-ref"))
-			{
-				BGBCC_CCXL_CompileExpr(ctx,
-					BCCX_FetchCst(t, &bgbcc_rcst_array, "array"));
-				BGBCC_CCXL_CompileExpr(ctx,
-					BCCX_FetchCst(t, &bgbcc_rcst_index, "index"));
-				BGBCC_CCXL_StackLoadIndexAddr(ctx);
-				return;
-			}
-
-			s1=BCCX_Tag(t);
-			BGBCC_CCXL_Error(ctx, "Bad expression type for '&', %s\n", s1);
+			BGBCC_CCXL_CompileExprRef(ctx, t);
 			return;
 		}
 

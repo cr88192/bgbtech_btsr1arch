@@ -640,6 +640,9 @@ void BJX2_Op_RTS_None(BJX2_Context *ctx, BJX2_Opcode *op)
 
 	if(!ctx->regs[BJX2_REG_PC])
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVOP);
+
+	if(ctx->regs[BJX2_REG_PC]==ctx->tr_cur->addr)
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVOP);
 }
 
 void BJX2_Op_RET_None(BJX2_Context *ctx, BJX2_Opcode *op)

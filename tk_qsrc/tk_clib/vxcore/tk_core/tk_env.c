@@ -1,3 +1,10 @@
+int TK_Env_GetEnvVarIdx(int idx, char *bufn, char *bufv, int szn, int szv)
+{
+	TK_EnvContext *env;
+	env=TK_GetCurrentEnvContext();
+	return(TK_EnvCtx_GetEnvVarIdx(env, idx, bufn, bufv, szn, szv));
+}
+
 int TK_Env_GetEnvVarI(char *varn, char *buf, int sz)
 {
 	TK_EnvContext *env;
@@ -85,6 +92,6 @@ int TK_Env_UpdateForSet(char *estr)
 	char tbn[64];
 	char *tbv;
 
-	TK_Env_SplitVar(estr, tbn, &tbv);
+	TK_EnvCtx_SplitVar(estr, tbn, &tbv);
 	TK_Env_SetEnvVar(tbn, tbv);
 }

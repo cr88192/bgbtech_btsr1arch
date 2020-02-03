@@ -450,6 +450,106 @@ void tk_printf(char *str, ...)
 }
 
 
+void tk_sprintf(char *buf, char *str, ...)
+{
+//	void **plst;
+	va_list lst;
+	char pcfill;
+	char *s, *s1, *ct;
+	int v, w;
+
+//	plst=(void **)(&str);
+//	plst++;
+	va_start(lst, str);
+	
+//	__debugbreak();
+	
+	ct=buf;
+	s=str;
+	while(*s)
+	{
+		if(*s!='%')
+			{ *ct++=(*s++); continue; }
+		if(s[1]=='%')
+			{ s+=2; *ct++='%'; continue; }
+		s++;
+		
+		if(*s=='0')
+		{
+			pcfill='0';
+			s++;
+		}else
+		{
+			pcfill=' ';
+		}
+		
+		w=0;
+		if((*s>='0') && (*s<='9'))
+		{
+			while((*s>='0') && (*s<='9'))
+				w=(w*10)+((*s++)-'0');
+		}
+		
+		switch(*s++)
+		{
+		case 'd':
+#if 0
+//			v=(int)(*plst++);
+			v=va_arg(lst, int);
+			if(w)
+			{
+				tk_print_decimal_n(v, w);
+			}else
+			{
+				tk_print_decimal(v);
+			}
+#endif
+			break;
+		case 'X':
+#if 0
+//			if(!w)w=8;
+//			v=(int)(*plst++);
+			v=va_arg(lst, int);
+
+//			__debugbreak();
+
+			if(!w)w=tk_print_hex_genw(v);
+
+//			__debugbreak();
+//			print_hex(v);
+			tk_print_hex_n(v, w);
+//			__debugbreak();
+#endif
+			break;
+		case 's':
+//			s1=*plst++;
+			s1=va_arg(lst, char *);
+//			tk_puts(s1);
+			while(*s1)
+				*ct++=*s1++;
+			break;
+
+		case 'p':
+			s1=va_arg(lst, char *);
+//			tk_print_hex((u32)s1);
+			break;
+
+#ifdef ARCH_HAS_FPU
+//		case 'f':
+//			tk_print_float(va_arg(lst, double));
+//			break;
+#endif
+
+		default:
+//			plst++;
+			break;
+		}
+	}
+	*ct=0;
+	va_end(lst);
+}
+
+
 byte *tk_ralloc_bufs=NULL;
 byte *tk_ralloc_bufe;
 byte *tk_ralloc_bufr;

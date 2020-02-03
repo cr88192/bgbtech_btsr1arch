@@ -924,9 +924,14 @@ static void SetMobjArchiveNums(void)
 
 static void ArchiveMobjs(void)
 {
+//	static mobj_t tempMobj;
+	mobj_t tempMobj;
+
 	int count;
 	thinker_t *thinker;
-	mobj_t tempMobj;
+	mobj_t *tMobj;
+	
+	tMobj=&tempMobj;
 
 	StreamOutLong(ASEG_MOBJS);
 	StreamOutLong(MobjCount);
@@ -943,9 +948,15 @@ static void ArchiveMobjs(void)
 			continue;
 		}
 		count++;
-		memcpy(&tempMobj, thinker, sizeof(mobj_t));
-		MangleMobj(&tempMobj);
-		StreamOutBuffer(&tempMobj, sizeof(mobj_t));
+		
+		//BGB: TODO: Debug Local &obj
+//		memcpy(&tempMobj, thinker, sizeof(mobj_t));
+//		MangleMobj(&tempMobj);
+//		StreamOutBuffer(&tempMobj, sizeof(mobj_t));
+
+		memcpy(tMobj, thinker, sizeof(mobj_t));
+		MangleMobj(tMobj);
+		StreamOutBuffer(tMobj, sizeof(mobj_t));
 	}
 	if(count != MobjCount)
 	{

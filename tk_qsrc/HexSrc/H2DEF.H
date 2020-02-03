@@ -1338,7 +1338,7 @@ int M_Random (void);
 
 extern unsigned char rndtable[256];
 extern int prndindex;
-#define P_Random() rndtable[(++prndindex)&0xff]
+// #define P_Random() rndtable[(++prndindex)&0xff]
 // as M_Random, but used only by the play simulation
 
 void M_ClearRandom (void);

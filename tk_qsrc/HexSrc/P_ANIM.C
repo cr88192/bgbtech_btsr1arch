@@ -382,12 +382,14 @@ void P_InitFTAnims(void)
 		if(ad->type == ANIM_FLAT)
 		{
 			if(W_CheckNumForName(sc_String) == -1)
+//			if(R_CheckFlatNumForName(sc_String) == -1)
 			{
 				ignore = true;
 			}
 			else
 			{
 				ad->index = R_FlatNumForName(sc_String);
+//				ad->index = 0;
 			}
 		}
 		else

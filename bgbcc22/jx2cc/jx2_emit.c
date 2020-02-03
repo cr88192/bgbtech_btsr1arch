@@ -2150,18 +2150,34 @@ int BGBCC_JX2_TryEmitLoadRegLabelVarPbo24(
 
 	if(lbl==ctx->lbl_gbl_ptr)
 	{
+#if 0
+		opw1=0xF121;
+		if(ctx->is_addr_x32)
+			opw2=0xA000;
+		else
+			opw2=0xB000;
+		BGBCC_JX2_EmitWord(ctx, opw1);
+		BGBCC_JX2_EmitWord(ctx, opw2);
+#endif
+
 		rlty=BGBCC_SH_RLC_TBR12_BJX;
 		opw1=0xA000;
 		if(ctx->is_addr_x32)
 			opw2=0x0E01|((reg&15)<<4);
+//			opw2=0x0E02|((reg&15)<<4);
 		else
 			opw2=0x0F01|((reg&15)<<4);
+//			opw2=0x0F02|((reg&15)<<4);
 
 		BGBCC_JX2DA_EmitLoadRegLabelVarRel24(ctx, nmid, reg, lbl);
 
 		BGBCC_JX2_EmitRelocTy(ctx, lbl, rlty);
 		BGBCC_JX2_EmitWord(ctx, opw1);
 		BGBCC_JX2_EmitWord(ctx, opw2);
+
+		/* NOP4 */
+		BGBCC_JX2_EmitWord(ctx, 0xF000);
+		BGBCC_JX2_EmitWord(ctx, 0x3000);
 		return(1);
 	}
 

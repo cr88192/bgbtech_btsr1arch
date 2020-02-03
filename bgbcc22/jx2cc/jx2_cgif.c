@@ -1322,6 +1322,8 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 	sctx->is_leaf&=~4;
 	sctx->is_fixed32&=(~16);
 
+	sctx->op_wex_align&=~1;
+
 //	if(sctx->is_simpass==1)
 	if((sctx->is_simpass==1) || (sctx->is_simpass&64))
 	{
@@ -1330,8 +1332,13 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 
 	sctx->is_tr_leaf=0;
 //	if(tr->trfl&1)
-	if(tr->trfl&1)
+	if(tr->trfl&CCXL_TRFL_LEAF)
 		sctx->is_tr_leaf=1;
+
+//	if(tr->trfl&CCXL_TRFL_WEXALIGN)
+	if((tr->trfl&CCXL_TRFL_WEXALIGN) || (sctx->is_simpass&64))
+		sctx->op_wex_align|=1;
+	
 
 	usewex=0;
 
@@ -1469,11 +1476,16 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 	if((sctx->is_simpass==1) || (sctx->is_simpass&64))
 	{
 		if(sctx->is_leaf&4)
-			tr->trfl|=1;
+//			tr->trfl|=1;
+			tr->trfl|=CCXL_TRFL_LEAF;
 		else
-			tr->trfl&=~1;
+//			tr->trfl&=~1;
+			tr->trfl&=~CCXL_TRFL_LEAF;
 		sctx->is_leaf&=(~4);
 	}
+	
+	if(sctx->op_wex_align&1)
+		tr->trfl|=CCXL_TRFL_WEXALIGN;
 
 	return(0);
 }
@@ -3983,6 +3995,8 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 	return(0);
 }
 
+extern byte bgbcc_dumpast;
+
 ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	byte *obuf, int *rosz, fourcc imgfmt)
 {
@@ -4003,8 +4017,11 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	sctx->stat_tot_dq1=0;
 	sctx->stat_tot_dqi=0;
 
-//	if(!sctx->cgen_log)
-//		sctx->cgen_log=fopen("bgbcc_shxlog.txt", "wt");
+	if(bgbcc_dumpast)
+	{
+		if(!sctx->cgen_log)
+			sctx->cgen_log=fopen("bgbcc_shxlog.txt", "wt");
+	}
 
 	sctx->do_asm=0;
 	if(imgfmt==BGBCC_IMGFMT_ASM)

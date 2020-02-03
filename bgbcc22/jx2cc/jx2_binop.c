@@ -1581,11 +1581,22 @@ int BGBCC_JX2C_EmitUnaryVRegVRegInt(
 	if((opr==CCXL_UNOP_INC) ||
 		(opr==CCXL_UNOP_DEC))
 	{
+		nm1=BGBCC_SH_NMID_ADD;
+
+		if(sctx->has_addsl)
+		{
+			if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
+				nm1=BGBCC_SH_NMID_ADDUL;
+			else
+				nm1=BGBCC_SH_NMID_ADDSL;
+		}
+
 		if(BGBCC_CCXL_RegisterIdentEqualP(ctx, dreg, sreg))
 		{
 			j=(opr==CCXL_UNOP_INC)?1:(-1);
 			cdreg=BGBCC_JX2C_EmitGetRegisterDirty(ctx, sctx, dreg);
-			BGBCC_JX2_EmitOpImmReg(sctx, BGBCC_SH_NMID_ADD, j, cdreg);
+//			BGBCC_JX2_EmitOpImmReg(sctx, BGBCC_SH_NMID_ADD, j, cdreg);
+			BGBCC_JX2_EmitOpImmReg(sctx, nm1, j, cdreg);
 			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
 			return(1);
 		}
@@ -1595,7 +1606,9 @@ int BGBCC_JX2C_EmitUnaryVRegVRegInt(
 		cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dreg);
 
 		i=BGBCC_JX2_TryEmitOpRegImmReg(sctx,
-			BGBCC_SH_NMID_ADD, csreg, j, cdreg);
+			nm1, csreg, j, cdreg);
+//		i=BGBCC_JX2_TryEmitOpRegImmReg(sctx,
+//			BGBCC_SH_NMID_ADD, csreg, j, cdreg);
 		if(i<=0)
 //		if(1)
 		{

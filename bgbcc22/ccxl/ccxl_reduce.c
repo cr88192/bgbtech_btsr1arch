@@ -19,6 +19,27 @@ int BGBCC_CCXL_IsBinaryP(BGBCC_TransState *ctx, BCCX_Node *l, char *op)
 //	return(BCCX_TagAttrIsP(l, "binary", "op", op));
 }
 
+int BGBCC_CCXL_IsBinaryCompareP(BGBCC_TransState *ctx, BCCX_Node *l)
+{
+	char *s0;
+
+	if(!BCCX_TagIsCstP(l, &bgbcc_rcst_binary, "binary"))
+		return(0);
+
+	s0=BCCX_GetCst(l, &bgbcc_rcst_op, "op");
+	if(!s0)
+		return(0);
+	
+	if(!strcmp(s0, "=="))	return(1);
+	if(!strcmp(s0, "!="))	return(1);
+	if(!strcmp(s0, "<"))	return(1);
+	if(!strcmp(s0, ">"))	return(1);
+	if(!strcmp(s0, "<="))	return(1);
+	if(!strcmp(s0, ">="))	return(1);
+	if(!strcmp(s0, "&"))	return(1);
+	return(0);
+}
+
 int BGBCC_CCXL_BoolExpr(BGBCC_TransState *ctx, BCCX_Node *l)
 {
 	BCCX_Node *t;

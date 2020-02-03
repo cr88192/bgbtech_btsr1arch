@@ -463,6 +463,7 @@ static void QueueStairSector(sector_t *sec, int type, int height)
 {
 	if((QueueTail+1)%STAIR_QUEUE_SIZE == QueueHead)
 	{
+		__debugbreak();
 		I_Error("BuildStairs:  Too many branches located.\n");
 	}
 	StairQueue[QueueTail].sector = sec;
@@ -601,7 +602,15 @@ int EV_BuildStairs(line_t *line, byte *args, int direction,
 	int resetDelay;
 	sector_t        *sec;
 	sector_t *qSec;
-	int type;
+	int type, tag;
+
+	QueueHead = 0;  //BGB: Debug
+	QueueTail = 0;  //BGB: Debug
+
+	tag = args[0];
+	
+	if(!tag)
+		__debugbreak();
 
 	// Set global stairs variables
 	TextureChange = 0;
@@ -622,7 +631,8 @@ int EV_BuildStairs(line_t *line, byte *args, int direction,
 	secnum = -1;
 
 	validcount++; 
-	while ((secnum = P_FindSectorFromTag(args[0], secnum)) >= 0)
+//	while ((secnum = P_FindSectorFromTag(args[0], secnum)) >= 0)
+	while ((secnum = P_FindSectorFromTag(tag, secnum)) >= 0)
 	{
 		sec = &sectors[secnum];
 

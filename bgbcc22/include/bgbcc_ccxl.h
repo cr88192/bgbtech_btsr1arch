@@ -388,6 +388,9 @@
 #define CCXL_FID_TAG_REGS			0x03000000	//FieldID, Tag
 #define CCXL_FID_TAG_STATICS		0x04000000	//FieldID, Tag
 
+#define CCXL_TRFL_LEAF				0x00000001	//Trace Is Leaf
+#define CCXL_TRFL_WEXALIGN			0x00000002	//Need to align WEX
+
 
 typedef struct { u64 val; } ccxl_register;
 typedef struct { u32 val; } ccxl_type;
