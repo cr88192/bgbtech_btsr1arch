@@ -205,7 +205,10 @@ typedef unsigned int uint;
 
 typedef long long nlint;
 
-typedef unsigned char dt_scrpix;
+// typedef unsigned char dt_scrpix;
+typedef unsigned short dt_scrpix;
+
+typedef dt_scrpix    lighttable_t;           // this could be wider for >8 bit display
 
 //#define ANGLE_1		0x01000000
 #define ANGLE_45	0x20000000
@@ -926,7 +929,9 @@ extern int mouseSensitivity;
 
 extern dt_bool precache; // if true, load all graphics at level load
 
-extern byte *screen; // off screen work buffer, from V_video.c
+// extern byte *screen; // off screen work buffer, from V_video.c
+extern dt_scrpix *screen; // off screen work buffer, from V_video.c
+extern  lighttable_t    *colormaps;
 
 extern dt_bool singledemo; // quit after playing a demo from cmdline
 
@@ -1025,8 +1030,11 @@ Z_ChangeTag2(p,t); \
 //-------
 typedef struct
 {
-	char		name[8];
-	int			handle,position,size;
+	char	name[8];
+	int		handle;
+	int		position;
+	int		size;
+	int		chain;
 } lumpinfo_t;
 
 extern lumpinfo_t *lumpinfo;

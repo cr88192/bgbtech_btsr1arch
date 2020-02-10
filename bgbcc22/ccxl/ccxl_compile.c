@@ -105,13 +105,58 @@ void BGBCC_CCXL_TagWarnLLn(BGBCC_TransState *ctx, int tag,
 		BGBCC_CCXL_TagGetMessage(tag));
 }
 
+int BGBCC_CCXL_IndexFName(BGBCC_TransState *ctx, char *str)
+{
+	int i;
+	
+	for(i=0; i<ctx->fnidx_num; i++)
+	{
+		if(!strcmp(ctx->fnidx_str[i], str))
+			return(i);
+	}
+	
+	i=ctx->fnidx_num++;
+	ctx->fnidx_str[i]=bgbcc_strdup(str);
+	return(i);
+}
+
+int BGBCC_CCXL_IndexForCurLfn(BGBCC_TransState *ctx)
+{
+	int i;
+	
+	if(ctx->fnidx_str[ctx->lfni]==ctx->lfn)
+		return(ctx->lfni);
+	i=BGBCC_CCXL_IndexFName(ctx, ctx->lfn);
+	ctx->lfni=i;
+	return(i);
+}
+
 ccxl_label BGBCC_CCXL_GenSym(BGBCC_TransState *ctx)
 {
 //	char buf[32];
 	ccxl_label l;
+	int i, j;
 //	int id;
 
-	l.id=CCXL_LBL_GENSYMBASE+(ctx->gs_seq++);
+	if(!(ctx->gs_srcpos))
+	{
+		ctx->gs_srcpos=bgbcc_malloc(1024*sizeof(int));
+		ctx->gs_srcmax=1024;
+	}
+
+	if((ctx->gs_seq+1)>=(ctx->gs_srcmax))
+	{
+		i=ctx->gs_srcmax+((ctx->gs_srcmax)>>1);
+		ctx->gs_srcpos=bgbcc_realloc(ctx->gs_srcpos, i*sizeof(int));
+		ctx->gs_srcmax=i;
+	}
+
+	i=BGBCC_CCXL_IndexForCurLfn(ctx);
+	j=(ctx->gs_seq++);
+	ctx->gs_srcpos[j]=(i<<16)|((ctx->lln)&65535);
+	
+	l.id=CCXL_LBL_GENSYMBASE+j;
+//	l.id=CCXL_LBL_GENSYMBASE+(ctx->gs_seq++);
 	return(l);
 
 //	sprintf(buf, "GS%d", ctx->gs_seq++);
@@ -849,6 +894,11 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_continue, "continue"))
 	{
+		if(ctx->contstackpos<=0)
+		{
+			BGBCC_CCXL_Error(ctx, "'continue' outside a loop\n");
+			return;
+		}
 		ctx->loop_localstate|=BGBCC_LOOPFL_CONTINUE;
 		l0=ctx->contstack[ctx->contstackpos-1];
 		BGBCC_CCXL_CompileJmp(ctx, l0);
@@ -857,6 +907,11 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_break, "break"))
 	{
+		if(ctx->breakstackpos<=0)
+		{
+			BGBCC_CCXL_Error(ctx, "'break' outside a loop or switch\n");
+			return;
+		}
 		ctx->loop_localstate|=BGBCC_LOOPFL_BREAK;
 		l0=ctx->breakstack[ctx->breakstackpos-1];
 		BGBCC_CCXL_CompileJmp(ctx, l0);

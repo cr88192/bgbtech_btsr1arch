@@ -299,7 +299,7 @@ surfcache_t *D_CacheSurface (msurface_t *surface, int miplevel)
 //
 	cache = surface->cachespots[miplevel];
 
-#if 1	//BGB perf hack
+#if 0	//BGB perf hack
 //	t = ((int) cache)>>4;
 	if ( cache && (r_framecount & 3))
 //	if ( cache && ((r_framecount^t) & 3))

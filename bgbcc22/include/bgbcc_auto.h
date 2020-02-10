@@ -666,6 +666,8 @@ void BGBCC_CCXL_StubErrorLLn(BGBCC_TransState *ctx,char *file, int line);
 char *BGBCC_CCXL_TagGetMessage(int tag);
 void BGBCC_CCXL_TagErrorLLn(BGBCC_TransState *ctx, int tag,char *file, int line);
 void BGBCC_CCXL_TagWarnLLn(BGBCC_TransState *ctx, int tag,char *file, int line);
+int BGBCC_CCXL_IndexFName(BGBCC_TransState *ctx, char *str);
+int BGBCC_CCXL_IndexForCurLfn(BGBCC_TransState *ctx);
 ccxl_label BGBCC_CCXL_GenSym(BGBCC_TransState *ctx);
 ccxl_label BGBCC_CCXL_GenSym2(BGBCC_TransState *ctx);
 int BGBCC_CCXL_CompileSwitchJmpR(BGBCC_TransState *ctx, ccxl_label *cl, s64 *clv, int clm, int cln, ccxl_label dfl, ccxl_label dfl2);

@@ -520,7 +520,8 @@ begin
 	tNextClr32CV	= tPixCellFx_A[2] ? tClr33A : tClr33B;
 	tNextClr32Dy	= tPixCellFx_A[2] ? tClr32YD[6:0] : tClr32YD[13:7];
 
-	if(tPixRgb565)
+//	if(tPixRgb565)
+	if(1'b0)
 	begin
 		tNextClr32A = {
 			tClr32CV[15:11] + { 1'b0, tClr32Dy[6:3] },
@@ -577,7 +578,8 @@ begin
 		tNextClr33B = tNextClr32B;
 	end
 
-	if(tPixRgb565)
+//	if(tPixRgb565)
+	if(1'b0)
 	begin
 		tNextClr33C = {
 			{ 1'b0, tClr33A[15:12] } + { 1'b0, tClr33E[15:12] },
@@ -861,9 +863,11 @@ begin
 
 	if(tPixRgb565)
 	begin
-		tPixCy		= { tClrYuvC[10: 5], tClrYuvC[10: 9] };
+//		tPixCy		= { tClrYuvC[10: 5], tClrYuvC[10: 9] };
+		tPixCy		= { tClrYuvC[ 9: 4], tClrYuvC[ 9: 8] };
 		tPixCu		= { tClrYuvC[ 4: 0], tClrYuvC[ 4: 2] };
-		tPixCv		= { tClrYuvC[15:11], tClrYuvC[15:13] };
+//		tPixCv		= { tClrYuvC[15:11], tClrYuvC[15:13] };
+		tPixCv		= { tClrYuvC[14:10], tClrYuvC[14:12] };
 		tPixAux[0]	= 1;
 	end
 	else

@@ -95,7 +95,8 @@ static void CheatTrackFunc2(player_t *player, Cheat_t *cheat);
 
 // EXTERNAL DATA DECLARATIONS ----------------------------------------------
 
-extern byte *screen;
+// extern byte *screen;
+extern dt_scrpix *screen;
 extern int ArmorIncrement[NUMCLASSES][NUMARMOR];
 extern int AutoArmorSave[NUMCLASSES];
 
@@ -1227,6 +1228,7 @@ void SB_PaletteFlash(dt_bool forceChange)
 		sb_palette = palette;
 		pal = (byte *)W_CacheLumpNum(PlayPalette, PU_CACHE)+palette*768;
 		I_SetPalette(pal);
+		I_SetPaletteIndex(palette);
 	}
 }
 

@@ -282,6 +282,8 @@ unsigned short	d_8to16table[256];
 u32 *vid_vram;
 u32 *vid_vreg;
 
+int vid_flashblend;
+
 // extern int		dirtybox[4]; 
 
 u16 *vid_lastscreen;
@@ -338,6 +340,8 @@ void I_SetPalette (byte* palette)
 		cg=palette[i*3+1];
 		cb=palette[i*3+2];
 		
+#if 0
+
 //#ifdef CONGFX
 // #if 1
 #if 0
@@ -354,6 +358,12 @@ void I_SetPalette (byte* palette)
 		cu=vid_clamp255(cu+4)>>3;
 		cv=vid_clamp255(cv+4)>>3;
 		d_8to16table[i]=(cy<<10)|(cv<<5)|cu;
+#endif
+
+		d_8to16table[i]=
+			((cr<<7)&0x7C00)|
+			((cg<<2)&0x03E0)|
+			((cb>>3)&0x001F);
 
 //		d2d_8to24table[i]=0xFF000000|(cr<<16)|(cg<<8)|cb;
 	}
@@ -361,6 +371,50 @@ void I_SetPalette (byte* palette)
 //	d_8to16table[255]=0x7FFF;
 }
 
+#if 1
+#define I_PIX16_RED		0x7C00
+#define I_PIX16_GREEN	0x03E0
+#define I_PIX16_BLUE	0x001F
+#define I_PIX16_PURP	0x7C1F
+#define I_PIX16_YEL		0x7FE0
+#endif
+
+void I_SetPaletteIndex (int idx)
+{
+	switch(idx)
+	{
+	case 0:		vid_flashblend = 0;						break;
+	case 1:		vid_flashblend = (1<<16)|I_PIX16_RED;	break;
+	case 2:		vid_flashblend = (1<<16)|I_PIX16_RED;	break;
+	case 3:		vid_flashblend = (2<<16)|I_PIX16_RED;	break;
+	case 4:		vid_flashblend = (3<<16)|I_PIX16_RED;	break;
+	case 5:		vid_flashblend = (4<<16)|I_PIX16_RED;	break;
+	case 6:		vid_flashblend = (5<<16)|I_PIX16_RED;	break;
+	case 7:		vid_flashblend = (6<<16)|I_PIX16_RED;	break;
+	case 8:		vid_flashblend = (7<<16)|I_PIX16_RED;	break;
+
+	case 9:		vid_flashblend = (1<<16)|I_PIX16_YEL;	break;
+	case 10:	vid_flashblend = (1<<16)|I_PIX16_YEL;	break;
+	case 11:	vid_flashblend = (2<<16)|I_PIX16_YEL;	break;
+	case 12:	vid_flashblend = (2<<16)|I_PIX16_YEL;	break;
+
+	case 13:	vid_flashblend = (1<<16)|I_PIX16_PURP;	break;
+	case 14:	vid_flashblend = (1<<16)|I_PIX16_PURP;	break;
+	case 15:	vid_flashblend = (2<<16)|I_PIX16_PURP;	break;
+	case 16:	vid_flashblend = (3<<16)|I_PIX16_PURP;	break;
+	case 17:	vid_flashblend = (4<<16)|I_PIX16_PURP;	break;
+	case 18:	vid_flashblend = (5<<16)|I_PIX16_PURP;	break;
+	case 19:	vid_flashblend = (6<<16)|I_PIX16_PURP;	break;
+	case 20:	vid_flashblend = (7<<16)|I_PIX16_PURP;	break;
+
+	case 21:	vid_flashblend = (2<<16)|I_PIX16_BLUE;	break;
+	case 22:	vid_flashblend = (2<<16)|I_PIX16_YEL;	break;
+
+	default:
+		vid_flashblend = 0;
+		break;
+	}
+}
 
 void I_UpdateNoBlit (void)
 {
@@ -1663,6 +1717,108 @@ int VID_ConGfx_EncBlock16HQ(u16 *src, u16 *lsrc, u32 *rdst)
 }
 #endif
 
+int VID_BlendEven16(int pixa, int pixb)
+{
+	int pix;
+	pix=((pixa&0xFBDF)+(pixb&0xFBDF))>>1;
+	return(pix);
+}
+
+u64 VID_BlendEven4x16(u64 pixa, u64 pixb)
+{
+	u64 pix;
+	pix=((pixa&0xFBDEFBDEFBDEFBDEULL)>>1)+
+		((pixb&0xFBDEFBDEFBDEFBDEULL)>>1);
+	return(pix);
+}
+
+int VID_BlendFlash(int pix, int flash)
+{
+	int pix1;
+	switch((flash>>16)&7)
+	{
+	case 0:
+		pix1=pix;
+		break;
+	case 1:
+		pix1=VID_BlendEven16(pix, flash);
+		pix1=VID_BlendEven16(pix, pix1);
+		pix1=VID_BlendEven16(pix, pix1);
+		break;
+	case 2:
+		pix1=VID_BlendEven16(pix, flash);
+		pix1=VID_BlendEven16(pix, pix1);
+		break;
+	case 3:
+		pix1=VID_BlendEven16(pix, flash);
+		pix1=VID_BlendEven16(pix1, flash);
+		pix1=VID_BlendEven16(pix, pix1);
+		break;
+	case 4:
+		pix1=VID_BlendEven16(pix, flash);
+		break;
+	case 5:
+		pix1=VID_BlendEven16(pix, flash);
+		pix1=VID_BlendEven16(pix1, flash);
+		break;
+	case 6:
+		pix1=VID_BlendEven16(pix, flash);
+		pix1=VID_BlendEven16(pix1, flash);
+		pix1=VID_BlendEven16(pix1, flash);
+		break;
+	case 7:
+		pix1=flash&65535;
+		break;
+	}
+	return(pix1);
+}
+
+u64 VID_BlendFlash4x(u64 pix, int flash)
+{
+	u64 pix1, fpix;
+	
+	fpix=(u16)flash;
+	fpix|=(fpix<<16);
+	fpix|=(fpix<<32);
+	
+	switch((flash>>16)&7)
+	{
+	case 0:
+		pix1=pix;
+		break;
+	case 1:
+		pix1=VID_BlendEven4x16(pix, fpix);
+		pix1=VID_BlendEven4x16(pix, pix1);
+		pix1=VID_BlendEven4x16(pix, pix1);
+		break;
+	case 2:
+		pix1=VID_BlendEven4x16(pix, fpix);
+		pix1=VID_BlendEven4x16(pix, pix1);
+		break;
+	case 3:
+		pix1=VID_BlendEven4x16(pix, fpix);
+		pix1=VID_BlendEven4x16(pix1, fpix);
+		pix1=VID_BlendEven4x16(pix, pix1);
+		break;
+	case 4:
+		pix1=VID_BlendEven4x16(pix, fpix);
+		break;
+	case 5:
+		pix1=VID_BlendEven4x16(pix, fpix);
+		pix1=VID_BlendEven4x16(pix1, fpix);
+		break;
+	case 6:
+		pix1=VID_BlendEven4x16(pix, fpix);
+		pix1=VID_BlendEven4x16(pix1, fpix);
+		pix1=VID_BlendEven4x16(pix1, fpix);
+		break;
+	case 7:
+		pix1=fpix;
+		break;
+	}
+	return(pix1);
+}
+
 int vid_frnum=0;
 
 u64		r_colmask[32];
@@ -1709,7 +1865,9 @@ void I_FinishUpdate (void)
 	vid_frnum++;
 
 #ifdef I_SCR_BMP128K
-	((u32 *)0xF00BFF00)[0]=0x0015;		//320x200x16bpp
+//	((u32 *)0xF00BFF00)[0]=0x0015;		//320x200x16bpp, YUV655
+	((u32 *)0xF00BFF00)[0]=0x0095;		//320x200x16bpp, RGB555
+
 //	((u32 *)0xF00BFF00)[0]=0x0025;		//320x200x16bpp
 //	((u32 *)0xF00BFF00)[0]=0x0005;		//320x200x16bpp
 //	((u32 *)0xF00BFF00)[0]=0x0010;		//320x200x16bpp
@@ -1730,12 +1888,22 @@ void I_FinishUpdate (void)
 		ics16b=ics16;
 //		icl16b=icl16;
 
-#if 1
+#if 0
 		I_FinishUpdate_ScanCopy(ics16, ict, 80);
 		ict+=80*8;
 #endif
 
-#if 0
+#if 1
+			if(!vid_flashblend)
+			{
+				I_FinishUpdate_ScanCopy(ics16, ict, 80);
+				ict+=80*8;
+				ics16+=4*BASEWIDTH;
+				continue;
+			}
+#endif
+
+#if 1
 		for(bx=0; bx<80; bx++)
 		{
 //			pxa=*(u64 *)(ics16b+0*BASEWIDTH);
@@ -1747,6 +1915,14 @@ void I_FinishUpdate (void)
 			pxb=((u64 *)ics16b)[(1*BASEWIDTH)/4];
 			pxc=((u64 *)ics16b)[(2*BASEWIDTH)/4];
 			pxd=((u64 *)ics16b)[(3*BASEWIDTH)/4];
+
+			if(vid_flashblend)
+			{
+				pxa=VID_BlendFlash4x(pxa, vid_flashblend);
+				pxb=VID_BlendFlash4x(pxb, vid_flashblend);
+				pxc=VID_BlendFlash4x(pxc, vid_flashblend);
+				pxd=VID_BlendFlash4x(pxd, vid_flashblend);
+			}
 
 #if 0
 			ict[0]=pxa;			ict[2]=pxb;

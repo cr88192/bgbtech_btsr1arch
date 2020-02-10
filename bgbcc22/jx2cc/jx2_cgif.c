@@ -3270,8 +3270,8 @@ int BGBCC_JX2C_LookupLabelImgVA(
 	return(k);
 }
 
-extern char *bgbcc_shx_srcidx[256];
-extern int bgbcc_shx_nsrcidx;
+extern char *bgbcc_jx2_srcidx[256];
+extern int bgbcc_jx2_nsrcidx;
 
 void bgbcc_jx2cc_setu16en(byte *ct, int en, u16 v)
 {
@@ -3318,8 +3318,15 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 				{
 					b=k&65535;
 					b1=sctx->genlabel_srcpos[b];
-					printf("\t%s:%d\n",
-						bgbcc_shx_srcidx[b1>>16], (u16)b1);
+					printf("\t%s:%d (Backend)\n",
+						bgbcc_jx2_srcidx[b1>>16], (u16)b1);
+				}else if((k&(~65535))==CCXL_LBL_GENSYMBASE)
+				{
+//					printf("\tMiddle GenSym\n");
+					b=k&65535;
+					b1=ctx->gs_srcpos[b];
+					printf("\t%s:%d (Middle)\n",
+						ctx->fnidx_str[b1>>16], (u16)b1);
 				}
 			}
 //			__debugbreak();

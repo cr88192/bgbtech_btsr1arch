@@ -1204,11 +1204,11 @@ void D_DrawSpans16 (espan_t *pspan)
 		}
 #endif
 
-#if 1
+#if 0
 //		if((count>maxcount) && (count<48))
 //		if(1)
-		if(count<48)
-//		if(count<32)
+//		if(count<48)
+		if(count<32)
 		{
 			spancount = count;
 

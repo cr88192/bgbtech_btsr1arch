@@ -409,7 +409,12 @@ void NetUpdate (void)
 //
 // check time
 //
-	nowtime = I_GetTime () / ticdup;
+
+//	nowtime = I_GetTime () / ticdup;
+	nowtime = I_GetTime ();
+	if(ticdup>1)
+		nowtime = nowtime / ticdup;
+
 	newtics = nowtime - gametime;
 	gametime = nowtime;
 

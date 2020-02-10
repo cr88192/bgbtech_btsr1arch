@@ -656,14 +656,18 @@ void P_GroupLines (void)
 	extern dt_bool i_CDMusic;
 #endif
 
+extern unsigned short	d_8to16table[256];
+
 void P_SetupLevel(int episode, int map, int playermask, skill_t skill)
 {
-	int i;
+	int i, j;
 	int parm;
 	char lumpname[9];
 	char auxName[128];
 	int lumpnum;
+	int	length;
 	mobj_t *mobj;
+	byte *data;
 
 	for(i = 0; i < MAXPLAYERS; i++)
 	{
@@ -753,7 +757,20 @@ void P_SetupLevel(int episode, int map, int playermask, skill_t skill)
 
 // Load colormap and set the fullbright flag
 	i = P_GetMapFadeTable(gamemap);
-	W_ReadLump(i, colormaps);
+	if(sizeof(dt_scrpix)==1)
+	{
+		W_ReadLump(i, colormaps);
+	}else
+	{
+		length = W_LumpLength (i);
+		data = Z_Malloc (length, PU_STATIC, 0);
+		W_ReadLump (i, data);
+		
+		for(j=0; j<length; j++)
+			{ colormaps[j] = d_8to16table[data[j]]; }
+		Z_Free (data);
+	}
+
 	if(i == W_GetNumForName("COLORMAP"))
 	{
 		LevelUseFullBright = true;

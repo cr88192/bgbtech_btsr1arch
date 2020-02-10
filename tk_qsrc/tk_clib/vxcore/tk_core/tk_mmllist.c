@@ -83,6 +83,10 @@ int TKMM_SizeToFxiU(int sz)
 	while(fr>=16)
 		{ fr=(fr+1)>>1; ex++; }
 	i=(fr&7)|(ex<<3);
+
+	if(i&(~255))
+		__debugbreak();
+
 	return(i);
 }
 
@@ -98,6 +102,10 @@ int TKMM_SizeToFxiD(int sz)
 	while(fr>=16)
 		{ fr=fr>>1; ex++; }
 	i=(fr&7)|(ex<<3);
+	
+	if(i&(~255))
+		__debugbreak();
+	
 	return(i);
 }
 
@@ -247,7 +255,11 @@ int TKMM_MMList_FreeLnkObj(TKMM_MemLnkObj *obj)
 	}
 
 	if((obj->ix)&(~255))
-		__debugbreak();
+	{
+//		__debugbreak();
+		tk_puts("TKMM_MMList_FreeLnkObj: List Index Fail\n");
+		return(-1);
+	}
 
 	obj->fl|=1;
 	*(TKMM_MemLnkObj **)(obj->data)=tkmm_mmlist_freelist[obj->ix];
@@ -322,7 +334,14 @@ int TKMM_MMList_GetSize(void *ptr)
 
 	if(!ptr)return(-1);
 	obj=(TKMM_MemLnkObj *)(((byte *)ptr)-TKMM_OFFS_DATA);
-	sz1=TKMM_FxiToSize(obj->ix);
+
+	if(obj->fl&4)
+	{
+		sz1=obj->ix<<12;
+	}else
+	{
+		sz1=TKMM_FxiToSize(obj->ix);
+	}
 	return(sz1);
 }
 
@@ -356,4 +375,10 @@ void *tk_realloc(void *ptr, int sz)
 	memcpy(ptr1, ptr, osz);
 	tk_free(ptr);
 	return(ptr1);
+}
+
+
+char *tk_strdup_in(char *str)
+{
+	return(TKMM_LVA_Strdup(str));
 }

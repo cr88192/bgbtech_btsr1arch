@@ -173,7 +173,8 @@ u32 TKPE_CalculateImagePel4BChecksum(byte *buf, int size)
 
 int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 {
-	byte tbuf[1024];
+//	byte tbuf[1024];
+	byte tbuf[1024+32];
 	byte *imgptr, *ct, *cte;
 	u64 imgbase;
 	u32 imgsz, startrva, gbr_rva;
@@ -294,6 +295,7 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 			printf("%d/%dkB\r", kb, nb);
 //			tk_fread(ct, 1, 1024, fd);
 //			ct+=1024;
+			memset(tbuf, 0, 1024);
 			l=tk_fread(tbuf, 1, 1024, fd);
 //			ct=TKPE_UnpackL4(ct, tbuf, 1024);
 			ct=TKPE_UnpackL4(ct, tbuf, l);

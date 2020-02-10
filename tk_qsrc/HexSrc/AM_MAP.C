@@ -29,7 +29,7 @@ static int finit_height = SCREENHEIGHT-SBARHEIGHT-3;
 static int f_x, f_y; // location of window on screen
 static int f_w, f_h; // size of window on screen
 static int lightlev; // used for funky strobing effect
-static byte *fb; // pseudo-frame buffer
+static dt_scrpix *fb; // pseudo-frame buffer
 static int amclock;
 
 static mpoint_t m_paninc; // how far the window pans each tic (map coords)

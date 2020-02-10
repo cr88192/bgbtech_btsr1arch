@@ -701,7 +701,14 @@ int ccxl_tyc_seen;
 
 int gs_seq;
 char *lfn;
+int lfni;
 int lln;
+
+int *gs_srcpos;
+int gs_srcmax;
+
+char *fnidx_str[256];
+int fnidx_num;
 
 int reqlfn;
 // int reqlln;

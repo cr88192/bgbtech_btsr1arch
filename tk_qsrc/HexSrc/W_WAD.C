@@ -64,6 +64,8 @@ lumpinfo_t *lumpinfo;
 int numlumps;
 void **lumpcache;
 
+int			lumphash[64];
+
 // PRIVATE DATA DEFINITIONS ------------------------------------------------
 
 static lumpinfo_t *PrimaryLumpInfo;
@@ -369,7 +371,9 @@ void W_AddFile(char *filename)
 
 void W_InitMultipleFiles(char **filenames)
 {
+	lumpinfo_t*		lump_p;
 	int size;
+	int		i, j, h;
 
 	// Open all the files, load headers, and count lumps
 	numlumps = 0;
@@ -385,6 +389,21 @@ void W_InitMultipleFiles(char **filenames)
 		I_Error("W_InitMultipleFiles: no files found");
 	}
 
+	for(i=0; i<64; i++)
+	{
+		lumphash[i] = -1;
+	}
+	
+	for(i=0; i<numlumps; i++)
+	{
+		lump_p = lumpinfo + i;
+//		j = *(int *)(lump_p->name);
+//		h = ((j*65521)>>16)&63;
+		h = W_HashIndexForName(lump_p->name);
+		lump_p->chain = lumphash[h];
+		lumphash[h] = i;
+	}
+	
 	// Set up caching
 	size = numlumps*sizeof(*lumpcache);
 	lumpcache = malloc(size);
@@ -580,6 +599,7 @@ int	W_NumLumps(void)
 //
 //==========================================================================
 
+#if 0
 int W_CheckNumForName(char *name)
 {
 	char name8[9];
@@ -604,6 +624,90 @@ int W_CheckNumForName(char *name)
 	}
 	return -1;
 }
+#endif
+
+int W_HashIndexForName(char *s)
+{
+	int j, h;
+	j = *(int *)(s);
+//	h = ((j*65521)>>16)&63;
+	h = ((j*16777213)>>24)&63;
+	return(h);
+}
+
+int W_CheckNumForName (char* name)
+{
+	return(W_CheckNumForNameBase(numlumps, name));
+}
+
+int W_CheckNumForNameBase (int base, char* name)
+{
+	union {
+//	char	s[9];
+	char	s[12];
+	int	x[2];
+	
+	} name8;
+	
+	int		v1;
+	int		v2;
+	int 	i, h;
+	lumpinfo_t*	lump_p;
+
+	// make the name into two integers for easy compares
+	w_strupr_n(name8.s, name, 8);
+
+	v1 = name8.x[0];
+	v2 = name8.x[1];
+
+#if 1
+	h = W_HashIndexForName(name8.s);
+	i=lumphash[h];
+
+#if 1
+	while(i >= base)
+	{
+		lump_p = lumpinfo + i;
+		i = lump_p->chain;
+		continue;
+	}
+#endif
+
+	while(i >= 0)
+	{
+		lump_p = lumpinfo + i;
+		
+		if ( *(int *)lump_p->name == v1
+			 && *(int *)&lump_p->name[4] == v2)
+		{
+			break;
+		}
+		i = lump_p->chain;
+	}
+	if(i>=0)
+		return(i);
+		
+#endif
+
+#if 0
+	// scan backwards so patch lump files take precedence
+//	lump_p = lumpinfo + numlumps;
+	lump_p = lumpinfo + base;
+
+	while (lump_p-- != lumpinfo)
+	{
+		if ( *(int *)lump_p->name == v1
+			 && *(int *)&lump_p->name[4] == v2)
+		{
+			return lump_p - lumpinfo;
+		}
+	}
+#endif
+
+	// TFB. Not found.
+	return -1;
+}
+
 
 //==========================================================================
 //

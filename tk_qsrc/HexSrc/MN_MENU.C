@@ -87,6 +87,8 @@ static void SCMouseSensi(int option);
 static void SCSfxVolume(int option);
 static void SCMusicVolume(int option);
 static void SCScreenSize(int option);
+static void SCScreenDetail(int option);
+
 static dt_bool SCNetCheck(int option);
 static void SCNetCheck2(int option);
 static void SCLoadGame(int option);
@@ -276,6 +278,8 @@ static MenuItem_t Options2Items[] =
 	{ ITT_LRFUNC, "SFX VOLUME", SCSfxVolume, 0, MENU_NONE },
 	{ ITT_EMPTY, NULL, NULL, 0, MENU_NONE },
 	{ ITT_LRFUNC, "MUSIC VOLUME", SCMusicVolume, 0, MENU_NONE },
+	{ ITT_EMPTY, NULL, NULL, 0, MENU_NONE },
+	{ ITT_LRFUNC, "SCREEN DETAIL", SCScreenDetail, 0, MENU_NONE },
 	{ ITT_EMPTY, NULL, NULL, 0, MENU_NONE }
 };
 
@@ -283,7 +287,8 @@ static Menu_t Options2Menu =
 {
 	90, 20,
 	DrawOptions2Menu,
-	6, Options2Items,
+//	6, Options2Items,
+	8, Options2Items,
 	0,
 	MENU_OPTIONS
 };
@@ -794,9 +799,30 @@ static void DrawOptionsMenu(void)
 
 static void DrawOptions2Menu(void)
 {
+	Menu_t *menu;
+	int		x, y;
+
 	DrawSlider(&Options2Menu, 1, 9, screenblocks-3);
 	DrawSlider(&Options2Menu, 3, 16, snd_MaxVolume);
 	DrawSlider(&Options2Menu, 5, 16, snd_MusicVolume);
+
+
+#if 1
+	menu = &Options2Menu;
+//	x = menu->x+24;
+	y = menu->y+2+(6*ITEM_HEIGHT);
+//	x = 196;
+	x = 224;
+
+	if(detailLevel)
+	{
+		MN_DrTextB("LOW", x, y);
+	}
+	else
+	{
+		MN_DrTextB("HIGH", x, y);
+	}
+#endif
 }
 
 //---------------------------------------------------------------------------
@@ -1111,6 +1137,18 @@ static void SCScreenSize(int option)
 	else if(screenblocks > 3)
 	{
 		screenblocks--;
+	}
+	R_SetViewSize(screenblocks, detailLevel);
+}
+
+static void SCScreenDetail(int option)
+{
+	if(option == RIGHT_DIR)
+	{
+		detailLevel = 1;
+	}else
+	{
+		detailLevel = 0;
 	}
 	R_SetViewSize(screenblocks, detailLevel);
 }

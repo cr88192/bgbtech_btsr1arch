@@ -141,12 +141,17 @@ __udivsi3_i:
 
 .global	__udivsi3
 __udivsi3:
+#if 0
 	or		r4, r5, r6
 	tst		#0x80000000, r6
 	bt		__udivsi3_i
 	extu.l	r4
 	extu.l	r5
 	bra		__udivdi3
+#else
+	bra		__udivsi3_i
+#endif
+
 #endif
 
 #if 1

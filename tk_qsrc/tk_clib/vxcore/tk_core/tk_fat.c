@@ -1479,8 +1479,8 @@ int TKFAT_ReadWriteClusterOffset(TKFAT_ImageInfo *img,
 			&clid1, &offs1);
 		if(i<0)
 		{
-			tk_printf("TKFAT_ReadWriteClusterOffset: Offset Fail %X\n",
-				foffs);
+//			tk_printf("TKFAT_ReadWriteClusterOffset: Offset Fail %X\n",
+//				foffs);
 			return(i);
 		}
 		if(offs1<0)

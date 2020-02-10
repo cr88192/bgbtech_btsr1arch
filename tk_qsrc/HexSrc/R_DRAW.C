@@ -22,7 +22,7 @@ files only know about ccordinates, not the architecture of the frame buffer.
 
 byte *viewimage;
 int viewwidth, scaledviewwidth, viewheight, viewwindowx, viewwindowy;
-byte *ylookup[MAXHEIGHT];
+dt_scrpix *ylookup[MAXHEIGHT];
 int columnofs[MAXWIDTH];
 //byte translations[3][256]; // color tables for different players
 byte *tinttable; // used for translucent sprites
@@ -47,13 +47,20 @@ byte			*dc_source;		// first pixel in a column (possibly virtual)
 
 int				dccount;		// just for profiling
 
-#ifndef __WATCOMC__
-#ifndef __i386
-#ifndef __m68k
+#ifdef __BGBCC__
+#define R_DRAW_ASM
+#endif
+
+#ifndef R_DRAW_ASM
+
+//#ifndef __WATCOMC__
+//#ifndef __i386
+// #ifndef __m68k
+
 void R_DrawColumn (void)
 {
 	int			count;
-	byte		*dest;
+	dt_scrpix	*dest;
 	fixed_t		frac, fracstep;	
 
 	count = dc_yh - dc_yl;
@@ -77,15 +84,18 @@ void R_DrawColumn (void)
 		frac += fracstep;
 	} while (count--);
 }
-#endif		// __m68k
-#endif		// __i386
+//#endif		// __m68k
+//#endif		// __i386
+
 #endif
 
+#ifndef R_DRAW_ASM
 void R_DrawColumnLow (void)
 {
 	int			count;
-	byte		*dest;
+	dt_scrpix	*dest;
 	fixed_t		frac, fracstep;	
+	int			x1, pix;
 
 	count = dc_yh - dc_yl;
 	if (count < 0)
@@ -97,18 +107,25 @@ void R_DrawColumnLow (void)
 //	dccount++;
 #endif
 
-	dest = ylookup[dc_yl] + columnofs[dc_x]; 
+	x1 = dc_x<<1;
+//	dest = ylookup[dc_yl] + columnofs[dc_x]; 
+	dest = ylookup[dc_yl] + columnofs[x1]; 
 	
 	fracstep = dc_iscale;
 	frac = dc_texturemid + (dc_yl-centery)*fracstep;
 
 	do
 	{
-		*dest = dc_colormap[dc_source[(frac>>FRACBITS)&127]];
+		pix = dc_colormap[dc_source[(frac>>FRACBITS)&127]];
+		dest[0] = pix;
+		dest[1] = pix;
+
+//		*dest = dc_colormap[dc_source[(frac>>FRACBITS)&127]];
 		dest += SCREENWIDTH;
 		frac += fracstep;
 	} while (count--);
 }
+#endif
 
 /*
 #define FUZZTABLE	50
@@ -123,8 +140,9 @@ int fuzzpos = 0;
 void R_DrawFuzzColumn (void)
 {
 	int			count;
-	byte		*dest;
-	fixed_t		frac, fracstep;	
+	dt_scrpix	*dest;
+	fixed_t		frac, fracstep;
+	int			pix;
 
 	if (!dc_yl)
 		dc_yl = 1;
@@ -140,7 +158,8 @@ void R_DrawFuzzColumn (void)
 		I_Error ("R_DrawFuzzColumn: %i to %i at %i", dc_yl, dc_yh, dc_x);
 #endif
 
-	dest = ylookup[dc_yl] + columnofs[dc_x];
+//	dest = ylookup[dc_yl] + columnofs[dc_x];
+	dest = ylookup[dc_yl] + columnofs[dc_x << detailshift];
 
 	fracstep = dc_iscale;
 	frac = dc_texturemid + (dc_yl-centery)*fracstep;
@@ -158,8 +177,16 @@ void R_DrawFuzzColumn (void)
 
 	do
 	{
-		*dest = tinttable[*dest+
-			(dc_colormap[dc_source[(frac>>FRACBITS)&127]]<<8)];
+		pix = dc_colormap[dc_source[(frac>>FRACBITS)&127]];
+//		pix = tinttable[*dest+(pix<<8)];
+		pix = V_BlendEven(*dest, pix);
+			
+		dest[0] = pix;
+		if(detailshift)
+			dest[1] = pix;
+
+//		*dest = tinttable[*dest+
+//			(dc_colormap[dc_source[(frac>>FRACBITS)&127]]<<8)];
 		dest += SCREENWIDTH;
 		frac += fracstep;
 	} while(count--);
@@ -175,7 +202,7 @@ void R_DrawFuzzColumn (void)
 void R_DrawAltFuzzColumn (void)
 {
 	int			count;
-	byte		*dest;
+	dt_scrpix	*dest;
 	fixed_t		frac, fracstep;	
 
 	if (!dc_yl)
@@ -199,8 +226,10 @@ void R_DrawAltFuzzColumn (void)
 
 	do
 	{
-		*dest = tinttable[((*dest)<<8)
-			+dc_colormap[dc_source[(frac>>FRACBITS)&127]]];
+//		*dest = tinttable[((*dest)<<8)
+//			+dc_colormap[dc_source[(frac>>FRACBITS)&127]]];
+		*dest = V_BlendEven((*dest),
+			dc_colormap[dc_source[(frac>>FRACBITS)&127]]);
 		dest += SCREENWIDTH;
 		frac += fracstep;
 	} while(count--);
@@ -220,7 +249,7 @@ byte *translationtables;
 void R_DrawTranslatedColumn (void)
 {
 	int			count;
-	byte		*dest;
+	dt_scrpix	*dest;
 	fixed_t		frac, fracstep;	
 
 	count = dc_yh - dc_yl;
@@ -254,7 +283,7 @@ void R_DrawTranslatedColumn (void)
 void R_DrawTranslatedFuzzColumn (void)
 {
 	int			count;
-	byte		*dest;
+	dt_scrpix	*dest;
 	fixed_t		frac, fracstep;	
 
 	count = dc_yh - dc_yl;
@@ -273,8 +302,10 @@ void R_DrawTranslatedFuzzColumn (void)
 
 	do
 	{
-		*dest = tinttable[((*dest)<<8)
-			+dc_colormap[dc_translation[dc_source[frac>>FRACBITS]]]];
+//		*dest = tinttable[((*dest)<<8)
+//			+dc_colormap[dc_translation[dc_source[frac>>FRACBITS]]]];
+		*dest = V_BlendEven((*dest),
+			dc_colormap[dc_translation[dc_source[frac>>FRACBITS]]]);
 		dest += SCREENWIDTH;
 		frac += fracstep;
 	} while (count--);
@@ -309,8 +340,8 @@ void R_DrawTranslatedAltFuzzColumn (void)
 
 	do
 	{
-		*dest = tinttable[*dest
-			+(dc_colormap[dc_translation[dc_source[frac>>FRACBITS]]]<<8)];
+//		*dest = tinttable[*dest
+//			+(dc_colormap[dc_translation[dc_source[frac>>FRACBITS]]]<<8)];
 		dest += SCREENWIDTH;
 		frac += fracstep;
 	} while (count--);
@@ -364,13 +395,15 @@ byte			*ds_source;		// start of a 64*64 tile image
 
 int				dscount;		// just for profiling
 
-#ifndef __WATCOMC__
-#ifndef __i386
-#ifndef __m68k
+//#ifndef __WATCOMC__
+#ifndef R_DRAW_ASM
+
+//#ifndef __i386
+//#ifndef __m68k
 void R_DrawSpan (void)
 {
 	fixed_t		xfrac, yfrac;
-	byte		*dest;
+	dt_scrpix	*dest;
 	int			count, spot;
 	
 #ifdef RANGECHECK
@@ -393,15 +426,17 @@ void R_DrawSpan (void)
 		yfrac += ds_ystep;
 	} while (count--);
 }
-#endif
-#endif
+// #endif
+// #endif
 #endif
 
+#ifndef R_DRAW_ASM
 void R_DrawSpanLow (void)
 {
 	fixed_t		xfrac, yfrac;
-	byte		*dest;
+	dt_scrpix	*dest;
 	int			count, spot;
+	int			pix;
 	
 #ifdef RANGECHECK
 	if (ds_x2 < ds_x1 || ds_x1<0 || ds_x2>=SCREENWIDTH 
@@ -413,17 +448,23 @@ void R_DrawSpanLow (void)
 	xfrac = ds_xfrac;
 	yfrac = ds_yfrac;
 	
-	dest = ylookup[ds_y] + columnofs[ds_x1];	
+//	dest = ylookup[ds_y] + columnofs[ds_x1];
+	dest = ylookup[ds_y] + columnofs[ds_x1<<1];
 	count = ds_x2 - ds_x1;
 	do
 	{
 		spot = ((yfrac>>(16-6))&(63*64)) + ((xfrac>>16)&63);
-		*dest++ = ds_colormap[ds_source[spot]];
+//		*dest++ = ds_colormap[ds_source[spot]];
+		pix = ds_colormap[ds_source[spot]];
+//		*dest++ = pix;
+//		*dest++ = pix;
+		dest[0] = pix;	dest[1] = pix;	dest += 2;
+
 		xfrac += ds_xstep;
 		yfrac += ds_ystep;
 	} while (count--);
 }
-
+#endif
 
 
 /*
@@ -463,8 +504,9 @@ dt_bool BorderNeedRefresh;
 
 void R_DrawViewBorder (void)
 {
-	byte	*src, *dest;
-	int		x,y;
+	byte		*src;
+	dt_scrpix	*dest;
+	int			x,y;
 	
 	if (scaledviewwidth == SCREENWIDTH)
 		return;
@@ -474,6 +516,13 @@ void R_DrawViewBorder (void)
 	
 	for (y=0 ; y<SCREENHEIGHT-SBARHEIGHT ; y++)
 	{
+		for (x=0 ; x<SCREENWIDTH; x++)
+		{
+			dest[x]=colormaps[src[((y&63)<<6)+(x&63)]];
+		}
+		dest+=SCREENWIDTH;
+
+#if 0
 		for (x=0 ; x<SCREENWIDTH/64 ; x++)
 		{
 			memcpy (dest, src+((y&63)<<6), 64);
@@ -484,6 +533,7 @@ void R_DrawViewBorder (void)
 			memcpy (dest, src+((y&63)<<6), SCREENWIDTH&63);
 			dest += (SCREENWIDTH&63);
 		}
+#endif
 	}
 	for(x=viewwindowx; x < viewwindowx+viewwidth; x += 16)
 	{
@@ -520,7 +570,8 @@ dt_bool BorderTopRefresh;
 
 void R_DrawTopBorder (void)
 {
-	byte	*src, *dest;
+	byte		*src;
+	dt_scrpix	*dest;
 	int		x,y;
 	
 	if (scaledviewwidth == SCREENWIDTH)
@@ -542,12 +593,13 @@ void R_DrawTopBorder (void)
 	{
 		for (x=0 ; x<SCREENWIDTH/64 ; x++)
 		{
-			memcpy (dest, src+((y&63)<<6), 64);
+			memcpy (dest, src+((y&63)<<6), 64 * sizeof(dt_scrpix));
 			dest += 64;
 		}
 		if (SCREENWIDTH&63)
 		{
-			memcpy (dest, src+((y&63)<<6), SCREENWIDTH&63);
+			memcpy (dest, src+((y&63)<<6),
+				(SCREENWIDTH&63) * sizeof(dt_scrpix));
 			dest += (SCREENWIDTH&63);
 		}
 	}

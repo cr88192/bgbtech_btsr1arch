@@ -472,9 +472,13 @@ void R_InitSpriteLumps (void)
 =================
 */
 
+extern unsigned short	d_8to16table[256];
+
 void R_InitColormaps (void)
 {
-	int	lump, length;
+	byte *data;
+	int	lump, length, baselen;
+	int i, j, k;
 
 	I_SetPalette(W_CacheLumpName("PLAYPAL", PU_CACHE));
 
@@ -482,11 +486,28 @@ void R_InitColormaps (void)
 // load in the light tables
 // 256 byte align tables
 //
-	lump = W_GetNumForName("COLORMAP");
-	length = W_LumpLength (lump) + 255;
-	colormaps = Z_Malloc (length, PU_STATIC, 0);
-	colormaps = (byte *)( ((nlint)colormaps + 255)&~0xff);
-	W_ReadLump (lump,colormaps);
+	if(sizeof(dt_scrpix)==1)
+	{
+		lump = W_GetNumForName("COLORMAP");
+		length = W_LumpLength (lump) + 255;
+		colormaps = Z_Malloc (length, PU_STATIC, 0);
+		colormaps = (dt_scrpix *)( ((nlint)colormaps + 255)&~0xff);
+		W_ReadLump (lump,colormaps);
+	}else
+	{
+		lump = W_GetNumForName("COLORMAP");
+		baselen = W_LumpLength (lump);
+		length = baselen + 255;
+		colormaps = Z_Malloc (length*2, PU_STATIC, 0);
+		colormaps = (dt_scrpix *)( ((nlint)colormaps + 255)&(~0xff));
+
+		data = Z_Malloc (length, PU_STATIC, 0);
+		W_ReadLump (lump, data);
+		
+		for(i=0; i<baselen; i++)
+			{ colormaps[i] = d_8to16table[data[i]]; }
+		Z_Free (data);
+	}
 }
 
 

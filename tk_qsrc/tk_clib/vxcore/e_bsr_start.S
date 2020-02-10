@@ -162,6 +162,7 @@ X(tk_getsavedvbr):
 	mov.q	__tk_saved_vbr, r2
 	rts
 
+#if 0
 .global X(tk_syscall)
 X(tk_syscall):
 //	push lr
@@ -174,6 +175,7 @@ X(tk_syscall):
 	
 //	pop lr
 	rts
+#endif
 
 /*
 	umullq: Unsigned Multiply, Long to Quad

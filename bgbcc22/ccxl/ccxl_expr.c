@@ -1234,7 +1234,6 @@ void BGBCC_CCXL_CompileForm(BGBCC_TransState *ctx, BCCX_Node *l)
 				BGBCC_CCXL_StackStoreIndexConst(ctx, 0);
 				BGBCC_CCXL_StackExch(ctx);
 				BGBCC_CCXL_StackPop(ctx);
-//				BGBCC_CCXL_CompileAssign(ctx, ln);
 			}
 			return;
 		}

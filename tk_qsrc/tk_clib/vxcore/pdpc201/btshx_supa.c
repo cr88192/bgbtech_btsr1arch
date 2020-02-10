@@ -143,7 +143,7 @@ s32 __smodsi3(s32 a, s32 b)
 	return(r);
 }
 
-#if 1
+#if 0
 typedef struct u64_obj_s u64_obj_t;
 struct u64_obj_s {
 u32 lo;

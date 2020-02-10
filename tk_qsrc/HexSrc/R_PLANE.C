@@ -362,7 +362,7 @@ void R_MakeSpans(int x, int t1, int b1, int t2, int b2)
 
 #define SKYTEXTUREMIDSHIFTED 200
 
-extern byte *ylookup[MAXHEIGHT];
+extern dt_scrpix *ylookup[MAXHEIGHT];
 extern int columnofs[MAXWIDTH];
 
 void R_DrawPlanes(void)
@@ -374,13 +374,14 @@ void R_DrawPlanes(void)
 	byte *tempSource;
 	byte *source;
 	byte *source2;
-	byte *dest;
+	dt_scrpix	*dest;
 	int count;
 	int offset;
 	int skyTexture;
 	int offset2;
 	int skyTexture2;
 	int scrollOffset;
+	int spix1, spix2, spix;
 
 #ifdef RANGECHECK
 	if(ds_p-drawsegs > MAXDRAWSEGS)
@@ -436,9 +437,24 @@ void R_DrawPlanes(void)
 							+SKYTEXTUREMIDSHIFTED+(dc_yl-centery);
 						source2 = R_GetColumn(skyTexture2, angle+offset2)
 							+SKYTEXTUREMIDSHIFTED+(dc_yl-centery);
-						dest = ylookup[dc_yl]+columnofs[x];
+//						dest = ylookup[dc_yl]+columnofs[x];
+						dest = ylookup[dc_yl]+columnofs[x<<detailshift];
 						do
 						{
+#if 1
+							spix1 = *source++;
+							spix2 = *source2++;
+							if(spix1)
+								spix = spix1;
+							else
+								spix = spix2;
+							spix = colormaps[spix];
+							dest[0] = spix;
+							if(detailshift)
+								dest[1] = spix;
+#endif
+
+#if 0
 							if(*source)
 							{
 								*dest = *source++;
@@ -449,6 +465,7 @@ void R_DrawPlanes(void)
 								*dest = *source2++;
 								source++;
 							}
+#endif
 							dest += SCREENWIDTH;
 						} while(count--);
 					}
@@ -488,10 +505,17 @@ void R_DrawPlanes(void)
 							>>ANGLETOSKYSHIFT;
 						source = R_GetColumn(skyTexture, angle+offset)
 							+SKYTEXTUREMIDSHIFTED+(dc_yl-centery);
-						dest = ylookup[dc_yl]+columnofs[x];
+//						dest = ylookup[dc_yl]+columnofs[x];
+						dest = ylookup[dc_yl]+columnofs[x<<detailshift];
 						do
 						{
-							*dest = *source++;
+							spix = *source++;
+							spix = colormaps[spix];
+							dest[0] = spix;
+							if(detailshift)
+								dest[1] = spix;
+
+//							*dest = *source++;
 							dest += SCREENWIDTH;
 						} while(count--);
 					}

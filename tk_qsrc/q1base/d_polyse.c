@@ -125,6 +125,8 @@ void D_PolysetSetEdgeTable (void);
 void D_RasterizeAliasPolySmooth (void);
 void D_PolysetScanLeftEdge (int height);
 
+int VID_ColorMap16(int pix, int light);
+
 // #if	!id386
 #if 1
 
@@ -219,7 +221,8 @@ void D_PolysetDrawFinalVerts (finalvert_t *fv, int numverts)
 //					pix = d_8to16table[pix];
 //					pix= pix - d;
 //					if(pix<0)pix=0x01EF;
-#ifdef _BGBCC
+// #ifdef _BGBCC
+#if 0
 					d = (fv->v[4] & 0xFC00)-(6<<10);
 //					d = (d-(d>>1))&((s16)0xFC00);
 					pix = __int_clamp(pix - d, 0x0210, 0xFE10);
@@ -466,7 +469,8 @@ split:
 //			pix = d_pcolormap[];
 			pix=((u16 *)skintable[new[3]>>16])[new[2]>>16];
 
-#ifdef _BGBCC
+// #ifdef _BGBCC
+#if 0
 			d = (d_light & 0xFC00)-(6<<10);
 //			d = (d-(d>>1))&((s16)0xFC00);
 			pix = __int_clamp(pix - d, 0x0210, 0xFE10);
@@ -1039,7 +1043,8 @@ void D_PolysetDrawSpans16 (spanpackage_t *pspanpackage)
 //					px = px - d;
 //					if(px<0)px=0x01EF;
 
-#ifdef _BGBCC
+// #ifdef _BGBCC
+#if 0
 					d = (llight & 0xFC00)-(6<<10);
 //					d = (d-(d>>1))&((s16)0xFC00);
 					px = __int_clamp(px - d, 0x0210, 0xFE10);

@@ -83,9 +83,8 @@ SRCS=				\
 		sn_sonix.c		\
 		st_start.c		\
 		sv_save.c		\
-
-#		\
-#		r_draw_bjx2.S
+		\
+		r_draw_bjx2.S
 
 
 all:	 hexen_bjx2.exe

@@ -689,6 +689,22 @@ u32 JX2I_GfxCon_Rgb565ToRgb24(int rgb)
 	return(clrc);
 }
 
+u32 JX2I_GfxCon_Rgb555ToRgb24(int rgb)
+{
+	int cr, cg, cb;
+	u32 clrc;
+	
+	cr=(rgb>>10)&31; cr=(cr<<3)|(cr>>2);
+	cg=(rgb>> 5)&31; cg=(cg<<3)|(cg>>2);
+	cb=(rgb>> 0)&31; cb=(cb<<3)|(cb>>2);
+
+	if(btesh2_gfxcon_swaprb)
+		clrc=0xFF000000|(cr<<16)|(cg<<8)|cb;
+	else
+		clrc=0xFF000000|(cb<<16)|(cg<<8)|cr;
+	return(clrc);
+}
+
 int JX2I_GfxCon_UpdateCellBM(int cx, int cy)
 {
 	static const u32 rgbitab[16]={
@@ -746,10 +762,15 @@ int JX2I_GfxCon_UpdateCellBM(int cx, int cy)
 		
 			if(jx2i_gfxcon_isbmap&8)
 			{
-				px0=JX2I_GfxCon_Rgb565ToRgb24((p0>> 0)&0xFFFF);
-				px1=JX2I_GfxCon_Rgb565ToRgb24((p0>>16)&0xFFFF);
-				px2=JX2I_GfxCon_Rgb565ToRgb24((p1>> 0)&0xFFFF);
-				px3=JX2I_GfxCon_Rgb565ToRgb24((p1>>16)&0xFFFF);
+//				px0=JX2I_GfxCon_Rgb565ToRgb24((p0>> 0)&0xFFFF);
+//				px1=JX2I_GfxCon_Rgb565ToRgb24((p0>>16)&0xFFFF);
+//				px2=JX2I_GfxCon_Rgb565ToRgb24((p1>> 0)&0xFFFF);
+//				px3=JX2I_GfxCon_Rgb565ToRgb24((p1>>16)&0xFFFF);
+
+				px0=JX2I_GfxCon_Rgb555ToRgb24((p0>> 0)&0xFFFF);
+				px1=JX2I_GfxCon_Rgb555ToRgb24((p0>>16)&0xFFFF);
+				px2=JX2I_GfxCon_Rgb555ToRgb24((p1>> 0)&0xFFFF);
+				px3=JX2I_GfxCon_Rgb555ToRgb24((p1>>16)&0xFFFF);
 			}else
 			{
 				px0=JX2I_GfxCon_Yvu16ToRgb24((p0>> 0)&0xFFFF);

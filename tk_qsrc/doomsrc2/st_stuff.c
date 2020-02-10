@@ -1078,9 +1078,10 @@ void ST_doPaletteStuff(void)
 
     if (palette != st_palette)
     {
-	st_palette = palette;
-	pal = (byte *) W_CacheLumpNum (lu_palette, PU_CACHE)+palette*768;
-	I_SetPalette (pal);
+		st_palette = palette;
+		pal = (byte *) W_CacheLumpNum (lu_palette, PU_CACHE)+palette*768;
+		I_SetPalette (pal);
+		I_SetPaletteIndex (palette);
     }
 
 }
@@ -1518,6 +1519,7 @@ void ST_Stop (void)
 	return;
 
     I_SetPalette (W_CacheLumpNum (lu_palette, PU_CACHE));
+	I_SetPaletteIndex (0);
 
     st_stopped = true;
 }

@@ -57,6 +57,7 @@ SRCS_CLIB = \
 	tk_core/tk_ps2keyb.c \
 	tk_core/tk_peload.c \
 	tk_core/tk_syscall.c \
+	tk_core/tk_shcmd.c \
 	\
 	tk_core/lva_array.c \
 	tk_core/lva_strdup.c \

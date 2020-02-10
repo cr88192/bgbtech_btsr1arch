@@ -626,9 +626,18 @@ void R_DrawFuzzColumn (void)
 
 //		px=dest[fuzzoffset[fuzzpos]];
 		px=dest[fuzzofs];
-		px-=1<<10;
-		if(px<0x0210)
-			px=0x0210;
+//		px-=1<<10;
+//		if(px<0x0210)
+//			px=0x0210;
+
+//		px=((px&0x7BDE)>>1) + ((px&0x739C)>>2);
+		px= px - ((px&0x739C)>>2);
+//		px= px - ((px&0x6318)>>3);
+
+//		px-=0x0421;
+//		if(px<0)
+//			px=0;
+
 		*dest = px; 
 
 		// Clamp table lookup index.

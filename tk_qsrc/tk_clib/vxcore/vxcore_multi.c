@@ -36,6 +36,7 @@
 
 #include "tk_core/tk_env.c"
 #include "tk_core/tk_envctx.c"
+#include "tk_core/tk_shcmd.c"
 #include "tk_core/tk_irq.c"
 
 #include "tk_core/lva_array.c"

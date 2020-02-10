@@ -23,6 +23,7 @@ ccxl_status BGBCC_CCXL_RegisterBackend(BGBCC_CCXL_BackendFuncs_vt *ivt)
 ccxl_status BGBCC_CCXL_StackFn(BGBCC_TransState *ctx, char *name)
 {
 	BGBCC_CCXL_VirtOp *op;
+	char *stn;
 
 	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_STKFN);
 	BGBCC_CCXLR3_EmitArgString(ctx, name);
@@ -30,10 +31,14 @@ ccxl_status BGBCC_CCXL_StackFn(BGBCC_TransState *ctx, char *name)
 	if(ctx->cgif_no3ac)
 		return(0);
 
+	stn=bgbcc_strdup(name);
+	ctx->lfn=stn;
+
 	op=BGBCC_CCXL_AllocVirtOp(ctx);
 	op->opn=CCXL_VOP_DBGFN;
 	op->prd=ctx->curprd;
-	op->imm.str=bgbcc_strdup(name);
+//	op->imm.str=bgbcc_strdup(name);
+	op->imm.str=stn;
 	BGBCC_CCXL_AddVirtOp(ctx, op);
 	return(0);
 }
@@ -47,6 +52,8 @@ ccxl_status BGBCC_CCXL_StackLn(BGBCC_TransState *ctx, int line)
 
 	if(ctx->cgif_no3ac)
 		return(0);
+
+	ctx->lln=line;
 
 	op=BGBCC_CCXL_AllocVirtOp(ctx);
 	op->opn=CCXL_VOP_DBGLN;

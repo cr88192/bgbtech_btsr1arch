@@ -863,7 +863,7 @@ void WritePCXfile (char *filename, byte *data, int width, int height, byte *pale
 void M_ScreenShot (void)
 {
 	int     i;
-	byte    *linear;
+	dt_scrpix    *linear;
 	char    lbmname[12];
 	byte *pal;
 
@@ -908,8 +908,8 @@ void M_ScreenShot (void)
 	pal = (byte *)W_CacheLumpName("PLAYPAL", PU_CACHE);
 #endif
 
-	WritePCXfile (lbmname, linear, SCREENWIDTH, SCREENHEIGHT
-		, pal);
+//	WritePCXfile (lbmname, linear, SCREENWIDTH, SCREENHEIGHT
+//		, pal);
 
 	P_SetMessage(&players[consoleplayer], "SCREEN SHOT", false);
 #ifdef __WATCOMC__

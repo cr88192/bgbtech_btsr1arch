@@ -291,7 +291,6 @@ int TK_EnvCtx_SetPath(TK_EnvContext *ctx, char *path)
 		tba[ntb]=ctb;
 		ntb++;
 		ctb=ct;
-		continue;
 	}
 	
 	ctx->npathlst=ntb;
