@@ -199,6 +199,7 @@ A few special-case restrictions will be defined as part of this ISA:
 ** Loading a program image across 4GB a boundary is undefined.
 ** This will apply both to branch instructions and PC-relative load/store.
 * PC is required to be aligned to a 16-bit boundary.
+** Setting the low bit of PC is Undefined.
 * SP will also have some restrictions:
 ** The stack may not cross a 4GB boundary.
 ** SP will have a minimum alignment of 8 bytes.
@@ -210,12 +211,8 @@ Explicit addressing via MOV.x instructions or LEA.x will respect the full addres
 
 === Interrupts ===
 
+A simple interrupt mechanism will be used, whereby some registers are copied around, and the processor will branch to a displacement relative to the VBR control register. This destination will (typically) contain a branch to the entry point to the interrupt.
 
-On an interrupt:
-* The registers will be swapped with their shadow-register counterparts.
-* SR.RB, SR.BL, and SR.MD will be set.
-* The status code for the interrupt will be loaded into EXSR.
-* An displacement will be added to VBR and the result will be loaded into PC.
 
 VBR Displacements:
 * VBR+0x00: Reset Vector
@@ -257,27 +254,19 @@ EXSR Codes:
 * Syscall
 ** 0xExxx: System Call, xxx gives the SysCall ID (12 bits).
 
-Change:
-* Drop Shadow Registers.
-** C4 and C5 become SPC and SSP
-** SSR overlaps with EXSR
-* PC is copied to SPC, and copied back on RTE.
-* SP and SSP are swapped.
-* The low 32 bits of SR are saved into the high 32 bits of EXSR.
-** EXSR holds both the saed SR bits, and also the Exception Code.
-** The remaining 16 bits may be used for internal status flags.
-
 The relevant Control Registers will be swapped depending on the state of the SR.RB status.
 
 On interrupt Entry:
 * (If SR.RB=0) Exchange SP with SSP
 * Copy PC to SPC.
 * Copy low 32 bits of SR into high 32 bits of EXSR.
+* The status code for the interrupt will be loaded into EXSR.
 ** Set SR.BL, SR.MD, and SR.RB
 * TEA will be set to the Fault Address (if relevant for the interrupt).
 * EXSR will be set to the exception code in the low 16 bits.
 ** The high 32 bits will hold the saved bits from SR.
 ** The remaining 16 bits may be used by the handler mechanism.
+* An displacement will be added to VBR and the result will be loaded into PC.
 
 Interrupt Return:
 * (If EXSR.SR.RB=0) Exchange SP with SSP
@@ -325,15 +314,21 @@ Addresses in the MMIO ranges will "bypass" the normal memory access mechanisms a
 
 Addresses in the MMIO range will be masked to 28 bits, which will be used as the corresponding address on the MMIO Bus.
 
-Access to MMIO will require being in Supervisor mode, and will not be subject to address translation.
+Access to MMIO will require being in Supervisor mode, and will not be subject to address translation via the MMU.
 
 In 48-bit Mode, the address space will be extended (bits 32..47):
 * 0000: Behaves the same as in 32-bit mode.
 * 0001..7FFF: Userland (MMU).
-* 8000..9FFF: System (MMU).
-* A000..BFFF: MMIO.
-* C000..DFFF: System (No MMU; Absolute 45-bit address).
-* E000..FFFF: Reserved for Processor/Chipset.
+* / 8000..9FFF: System (MMU).
+* / A000..BFFF: MMIO.
+* 8000..BFFF: System (MMU).
+* / C000..DFFF: System (No MMU; Absolute 45-bit address).
+* / E000..FFFF: Reserved for Processor/Chipset.
+* C000..FBFF: System (No MMU; Absolute ~ 46-bit address).
+* FC00..FFFF: Expanded Processor/Chipset/MMIO.
+** This supports a 42-bit MMIO Space.
+** FC00_0zzz_zzzz will identity map to Fzzz_zzzz.
+
 
 If more DRAM exists than fits into the low 2GB, then addresses above the 4GB mark will be used for DRAM. It will be implementation defined how the DRAM region below the 2GB mark maps into this larger space.
 
@@ -479,6 +474,8 @@ Addressing Modes (32-bit Instruction Forms):
 * (Rm, Ri), Register with a scaled index.
 * (Rm, Disp9u), Register with a 9 bit displacement.
 
+For memory operations, Rm will serve as the Base Register, and Rn will serve as a Source or Destination register.
+
 Additional addressing modes may be faked by the assembler.
 * Larger displacements will involve loading a value into DLR.
 
@@ -521,7 +518,8 @@ R1 and R15 will be special and reserved as Index Registers.
 R16 and R17 will be reserved as base or index registers, similar to R0 and R1.
 
 Byte and Word loads may not target R15.
-Possible: MOV.B load with R15 as the destination will be interpreted as a PREFETCH instruction.
+
+Possible: MOV.B load with R15 as the destination will be interpreted as a PREFETCH instruction. This will not perform a load, but will instead request that the processor retrieve the associated cache lines.
 
 
 Depending on the implementation and mode, LEA may be computed either as 32-bit address, or with a full 48 or 64 bits.
@@ -537,10 +535,12 @@ If 32-bit wraparound is used with 48 bit addressing:
 
 In an implementation with 32-bit addressing, or in 32-bit address mode:
 * Bits 0..31 will contain the computed address;
-* Bits 32..63 will be zero.
+* Bits 32..63 will be cleared to zero.
 
 Note that the address mode used is not required to match the pointer width used by the C ABI. However, it may be presumed that the address width matches between the address mode, C ABI, and the width specified in executable images.
 
+
+For branches and other instructions which directly use PC-relative addressing, only the low 32 bits are required to be computed. These instructions will be undefined if the target address crosses a 4GB boundary.
 
 
 === Predicated Instructions ===
@@ -816,9 +816,9 @@ Instruction Space
 ** 32n9  -
 ** 32nA  -
 ** 32nB  -
-** 32nC ? PUSH.X	Rn				//(MOVX2) Push register pair
+** 32nC  PUSH.X	Rn					//(MOVX2) Push register pair
 ** 32nD  -
-** 32nE ? POP.X		Rn				//(MOVX2) Pop register pair
+** 32nE  POP.X	Rn					//(MOVX2) Pop register pair
 ** 32nF  -
 
 ** 33n0  NOT	Rn					//Rn=~Rn
@@ -941,8 +941,8 @@ Instruction Space
 ** 61nm  FSUB		Rm, Rn			//(GFP) FSUB
 ** 62nm  FMUL		Rm, Rn			//(GFP) FMUL
 ** 63nm  FLDCF		Rm, Rn			//(GFP) Single->Double
-** 64nm  FCMPEQ	Rm, Rn			//(GFP) FCMPEQ
-** 65nm  FCMPGT	Rm, Rn			//(GFP) FCMPGT
+** 64nm  FCMPEQ		Rm, Rn			//(GFP) FCMPEQ
+** 65nm  FCMPGT		Rm, Rn			//(GFP) FCMPGT
 ** 66nm  FSTCF		Rm, Rn			//(GFP) Double->Single
 ** 67nz  -
 ** 68nj  ADD	#imm4u, Rk
@@ -1404,6 +1404,8 @@ F2zz Instruction Block  (Imm9 Block, New):
 * F2nm_6gjj  OR			Rm, #imm9u, Rn		//
 * F2nm_7gjj  XOR		Rm, #imm9u, Rn		//
 * F2nm_8ejj  SHAD{Q}	Rm, #imm8, Rn		//E.i=0
+** F2nm_8ejj ? PSHUF{B/W}	Rm, #imm8, Rn		//E.i=1
+
 * F2nm_9ejj  SHLD{Q}	Rm, #imm8, Rn		//E.i=0
 
 * F2nz_Aejj

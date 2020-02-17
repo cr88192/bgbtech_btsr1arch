@@ -124,11 +124,13 @@ General:
 Example of a GBR reload (64 bit address space):
  LDI #offs_pbo_base, R0		//special reloc
  MOV.Q (GBR, DLR), R1
+ NOP4
  MOV R1, GBR
 
 Example of a GBR reload (32 bit address space):
  LDI #offs_pbo_base, R0		//special reloc
  MOV.L (GBR, DLR), R1
+ NOP4
  MOV R1, GBR
 
 As emitted by the compiler, the PBO base offset will point to the start of the PBO data region, which will hold a pointer back to itself.
@@ -138,6 +140,8 @@ During fixup, this base offset will be replaced with a negative offset relative 
 This table will be mirrored between all data regions within a given process (with the index assignments shared between processes). Sufficient space is to be provided to manage both statically and dynamically loaded libraries.
 
 If a 12-bit displacement is used as the base address, this allows up to 512 binary images to be assigned an index.
+
+The NOP4 will be a 32-bit NOP instruction, and may be provided to allow space for double-indirect GBR reloads or similar.
 
 The specifics of intra and inter-process index assignment will depend on the implementation.
 

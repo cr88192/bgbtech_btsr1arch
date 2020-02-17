@@ -92,3 +92,62 @@ Partial VFS built on top of FAT32.
 There will be one or more files contailing the FAT.
 There will be one or more files containing the compressed data area.
 
+
+=== Compressed Virtual Disk ===
+
+Also possible:
+* Will exist as separate mount-points from the main filesystem, and the on-disk files will mostly serve as a compressed virtual block device.
+
+
+=== TK Mini Block LZ ===
+
+LZ+AdRice:
+* 0,k		k--
+* 10,k		k=k
+* 110,k		k++
+* 1110,k	k++
+* 1111,esc	k+=2
+
+Escape case is a fixed 8-bit suffix.
+
+STF:
+* 00..07: Swap(n, n-1)
+* 08..7F: Swap(n, (7*n)/8)
+* 80..FF: Rotate by 1, Swap(n+1, 0)
+
+VLN:
+* High 4 bits: ExtraBits
+* Low 4 bits: Mod16
+* 00..1F  0000.. 001F, 0
+* 20..2F  0020.. 003F, 1
+* 30..3F  0040.. 007F, 2
+* 40..4F  0080.. 00FF, 3
+* 50..5F  0100.. 01FF, 4
+* 60..6F  0200.. 03FF, 5
+* 70..7F  0400.. 07FF, 6
+* 80..8F  0800.. 0FFF, 7
+* 90..9F  1000.. 1FFF, 8
+* A0..AF  2000.. 3FFF, 9
+* B0..BF  4000.. 7FFF, 10
+* C0..CF  8000.. FFFF, 11
+* D0..DF 10000..1FFFF, 12
+* E0..EF 20000..3FFFF, 13
+* F0..FF 40000..7FFFF, 14
+
+Tag:
+* High 4: Literal Bytes (0..14, VLN)
+* Low 4: Match Bytes (4..18, VLN)
+
+Distance is also encoded as a VLN.
+* Distance=0: Escape/EOB
+
+Format: Tag LiteralBytes* MatchLength Distance
+
+Data will be encoded as a LSB-first bitstream, with a 6-bit tag.
+* 00: End of Coded Stream.
+* 08..0F: Tag/Lit/Dist: AdRice, defaults.
+** STF initialized to default 00..FF ordering
+** Use AdRice, with initial k of 6.
+** |1: Tag=Raw Bytes
+** |2: Lit=Raw Bytes
+** |4: Dist=Raw Bytes
