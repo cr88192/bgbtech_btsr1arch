@@ -40,18 +40,18 @@ module DecPreBra(
 input			clock;
 input			reset;
 input[63:0]		istrWord;	//Instruction Word
-input[31:0]		istrBasePc;	//Instruction Base PC
-input[31:0]		istrBraPc;	//Branch Base PC
-input[31:0]		regValLr;	//Link Register
+input[47:0]		istrBasePc;	//Instruction Base PC
+input[47:0]		istrBraPc;	//Branch Base PC
+input[47:0]		regValLr;	//Link Register
 
-input[31:0]		ifBraBPc;	//Fetch Branch PC
-input[31:0]		exBraBPc;	//Fetch Base PC
+input[47:0]		ifBraBPc;	//Fetch Branch PC
+input[47:0]		exBraBPc;	//Fetch Base PC
 input[2:0]		exBraDir;
 
-output[31:0]	preBraPc;
+output[47:0]	preBraPc;
 output			preIsBra;
 
-reg[31:0]	tPreBraPc;
+reg[47:0]	tPreBraPc;
 reg			tPreBra;
 assign	preBraPc	= tPreBraPc;
 assign	preIsBra	= tPreBra;
@@ -78,7 +78,7 @@ reg[2:0]	tPreIfCnt;
 reg[2:0]	tPreExCnt;
 reg[2:0]	tPreExCntB;
 reg[2:0]	tPreExDir;
-reg[31:0]	tPreExBPc;
+reg[47:0]	tPreExBPc;
 
 // reg[5:0]	preBits[63:0];
 reg[5:0]	tPreIfBit;
@@ -103,7 +103,7 @@ reg[5:0]	tHistBitsB;
 
 always @*
 begin
-	tPreBraPc	= UV32_XX;
+	tPreBraPc	= UV48_XX;
 	tPreBra		= 0;
 	tHistBitsB	= tHistBits;
 	
@@ -152,8 +152,8 @@ begin
 		istrWord[7]?UV12_FF:UV12_00,
 		istrWord[7:0], istrWord[27:16] };
 	
-	tBraDisp8	= istrBraPc + { tDisp8[30:0], 1'b0 };
-	tBraDisp20	= istrBraPc + { tDisp20[30:0], 1'b0 };
+	tBraDisp8	= istrBraPc[31:0] + { tDisp8[30:0], 1'b0 };
+	tBraDisp20	= istrBraPc[31:0] + { tDisp20[30:0], 1'b0 };
 	
 	tIsBra8		=
 		(istrWord[15:12]==4'h2) &&
@@ -216,7 +216,8 @@ begin
 //			istrBasePc,
 //			istrWord[15:0], istrWord[31:16],
 //			tBraDisp8);
-		tPreBraPc	= tBraDisp8;
+//		tPreBraPc	= tBraDisp8;
+		tPreBraPc	= { istrBraPc[47:32], tBraDisp8 };
 		tPreBra		= 1;
 	end
 
@@ -225,7 +226,8 @@ begin
 	begin
 //		$display("PreBra: BRA20, I=%X-%X PC2=%X",
 //			istrWord[15:0], istrWord[31:16], tBraDisp20);
-		tPreBraPc	= tBraDisp20;
+//		tPreBraPc	= tBraDisp20;
+		tPreBraPc	= { istrBraPc[47:32], tBraDisp20 };
 		tPreBra		= 1;
 	end
 	

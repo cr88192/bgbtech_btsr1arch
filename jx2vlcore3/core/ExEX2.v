@@ -97,7 +97,7 @@ output[63:0]	regValRn2;		//Destination Value (EX1)
 output[4:0]		regIdCn2;		//Destination ID (CR, EX1)
 output[63:0]	regValCn2;		//Destination Value (CR, EX1)
 	
-input[31:0]		regValPc;		//PC Value (Synthesized)
+input[47:0]		regValPc;		//PC Value (Synthesized)
 input[32:0]		regValImm;		//Immediate (Decode)
 
 input[65:0]		regValAluRes;	//ALU Result
@@ -119,8 +119,8 @@ input [63:0]	regInDhr;
 output[63:0]	regOutSp;
 input [63:0]	regInSp;
 
-output[31:0]	regOutLr;
-input[31:0]		regInLr;
+output[47:0]	regOutLr;
+input[47:0]		regInLr;
 output[63:0]	regOutSr;
 input[63:0]		regInSr;
 
@@ -142,7 +142,7 @@ reg[63:0]		tRegValCn2;
 reg[63:0]		tRegOutDlr;
 reg[63:0]		tRegOutDhr;
 reg[63:0]		tRegOutSp;
-reg[31:0]		tRegOutLr;
+reg[47:0]		tRegOutLr;
 reg[63:0]		tRegOutSr;
 reg[7:0]		tRegOutSchm;
 

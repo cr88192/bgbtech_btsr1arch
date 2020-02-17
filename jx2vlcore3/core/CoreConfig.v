@@ -34,6 +34,8 @@
 
 `define jx2_enable_wexjumbo				//Enable Jumbo-Load
 
+`define jx2_enable_vaddr48				//Enable 48-bit virtual addresses
+
 
 `define jx2_cpu_halfclock;				//Reduce CPU core clock speed by half
 

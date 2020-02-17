@@ -267,9 +267,13 @@ void TKSH_ListDir(char *path, char **args)
 					{ *ct++=' '; }
 				*ct++=0;
 				
-				printf("%s", tb);
+				if(tde->st_mode&TKFAT_EMODE_DIR)
+					tk_puts("\x1B[34m");
+				
+				tk_printf("%s", tb);
+				tk_puts("\x1B[39m");
 			}
-			printf("\n");
+			tk_printf("\n");
 		}
 	}
 }
@@ -777,6 +781,7 @@ int TKSH_TryLoad(char *img, char **args)
 	char *cs, *ct;
 	char *buf;
 //	u64 bootgbr;
+	u64	pb_gbr;
 	TKPE_TaskInfo *task;
 	TK_EnvContext *env0, *env1;
 	void *bootgbr;
@@ -821,7 +826,18 @@ int TKSH_TryLoad(char *img, char **args)
 	{
 		bootgbr=0;
 		TKPE_LoadStaticPE(fd, &bootptr, &bootgbr);
-		printf("Boot Pointer %p, GBR=%p\n", bootptr, (void *)bootgbr);
+		tk_printf("Boot Pointer %p, GBR=%p\n", bootptr, (void *)bootgbr);
+		
+		if(bootgbr)
+		{
+			pb_gbr=*(u64 *)bootgbr;
+			if(((u64)pb_gbr)!=((u64)bootgbr))
+			{
+				tk_printf("Boot GBR Mismatch, Got=%p Expect=%p\n",
+					(void *)pb_gbr, (void *)bootgbr);
+				__debugbreak();
+			}
+		}
 		
 		if(bootptr)
 		{

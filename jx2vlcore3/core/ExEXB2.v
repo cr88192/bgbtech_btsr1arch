@@ -55,7 +55,7 @@ input[63:0]		regValRn1;		//Destination Value (EX1)
 output[5:0]		regIdRn2;		//Destination ID (EX1)
 output[63:0]	regValRn2;		//Destination Value (EX1)
 	
-input[31:0]		regValPc;		//PC Value (Synthesized)
+input[47:0]		regValPc;		//PC Value (Synthesized)
 input[32:0]		regValImm;		//Immediate (Decode)
 
 input[65:0]		regValAluRes;	//ALU Result

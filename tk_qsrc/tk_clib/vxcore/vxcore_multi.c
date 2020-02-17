@@ -32,6 +32,7 @@
 #include "tk_core/tk_conprn.c"
 #include "tk_core/tk_ps2keyb.c"
 #include "tk_core/tk_peload.c"
+#include "tk_core/tk_peload_pbo.c"
 #include "tk_core/tk_syscall.c"
 
 #include "tk_core/tk_env.c"

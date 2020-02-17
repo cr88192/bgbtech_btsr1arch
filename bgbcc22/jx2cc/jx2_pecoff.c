@@ -1393,6 +1393,8 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 			sctx->rlc_ofs[i];
 		lbl=sctx->rlc_id[i];
 
+		rva=(j<<24)|(sctx->rlc_ofs[i]);
+
 		lva=rva&0x0FFFFFFF;
 		if(sctx->rlc_ty[i]==BGBCC_SH_RLC_ABS64)
 			lva|=0x10000000;
@@ -1426,6 +1428,9 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 //			lva|=0x70000000;
 			lva|=0x30000000;
 		}
+		
+		if(nrlce>=65536)
+			{ BGBCC_DBGBREAK }
 
 		rlctab[nrlce++]=lva;
 
@@ -1440,12 +1445,13 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 #endif
 
 	}
-	
-#if 0
+
+#if 1
 	for(i=0; i<nrlce; i++)
 		for(j=i+1; j<nrlce; j++)
 	{
-		if(rlctab[j]<rlctab[i])
+//		if(rlctab[j]<rlctab[i])
+		if((rlctab[j]&0x0FFFFFFF)<(rlctab[i]&0x0FFFFFFF))
 		{
 			k=rlctab[i];
 			rlctab[i]=rlctab[j];
@@ -1454,7 +1460,7 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 	}
 #endif
 
-	bgbcc_jx2c_qrsort(rlctab, nrlce, 0);
+//	bgbcc_jx2c_qrsort(rlctab, nrlce, 0);
 
 #if 1
 	lpg=-1; szrlc=0;
@@ -1693,7 +1699,10 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 //			sctx->rlc_ofs[i];
 
 		k=rlctab[i];
-		rva=k&0x0FFFFFFF;
+//		rva=k&0x0FFFFFFF;
+
+		j=(k>>24)&15;
+		rva=sctx->sec_rva[j]+(k&0x00FFFFFF);
 
 		if((rva>>12)!=lpg)
 		{

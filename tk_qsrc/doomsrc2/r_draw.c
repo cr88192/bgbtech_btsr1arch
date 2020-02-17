@@ -631,7 +631,8 @@ void R_DrawFuzzColumn (void)
 //			px=0x0210;
 
 //		px=((px&0x7BDE)>>1) + ((px&0x739C)>>2);
-		px= px - ((px&0x739C)>>2);
+		px= px - ((px&0x739C)>>1);
+//		px= px - ((px&0x739C)>>2);
 //		px= px - ((px&0x6318)>>3);
 
 //		px-=0x0421;
@@ -700,9 +701,12 @@ void R_DrawFuzzColumnLow (void)
 
 //		px=dest[fuzzoffset[fuzzpos]];
 		px=dest[fuzzofs];
-		px-=1<<10;
-		if(px<0x0210)
-			px=0x0210;
+
+//		px-=1<<10;
+//		if(px<0x0210)
+//			px=0x0210;
+		px= px - ((px&0x739C)>>1);
+
 		dest[0] = px; 
 		dest[1] = px; 
 

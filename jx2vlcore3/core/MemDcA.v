@@ -38,7 +38,7 @@ module MemDcA(
 input			clock;
 input			reset;
 
-input [31: 0]	regInAddr;		//input address
+input [47: 0]	regInAddr;		//input address
 input [ 4: 0]	regInOpm;		//operation mode
 
 output[63: 0]	regOutVal;		//output data value
@@ -51,8 +51,8 @@ input [63: 0]	regInValB;		//input data value (alternate)
 input			dcInHold;
 
 
-output[ 31:0]	memAddr;		//memory address
-output[ 31:0]	memAddrB;		//memory address (alternate)
+output[ 47:0]	memAddr;		//memory address
+output[ 47:0]	memAddrB;		//memory address (alternate)
 output[  4:0]	memOpm;			//memory operation mode
 
 input [127:0]	memDataIn;		//memory input data
@@ -78,8 +78,8 @@ assign			regOutValB		= tRegOutValB2;
 assign			regOutOK		= tRegOutOK2;
 `endif
 
-reg[31:0]		tMemAddr;		//memory PC address (primary)
-reg[31:0]		tMemAddrB;		//memory PC address (secondary)
+reg[47:0]		tMemAddr;		//memory PC address (primary)
+reg[47:0]		tMemAddrB;		//memory PC address (secondary)
 reg[ 4:0]		tMemOpm;		//memory PC output-enable
 reg[127:0]		tMemDataOut;	//memory PC address
 
@@ -93,10 +93,17 @@ assign	memDataOut	= tMemDataOut;
 	reg[127:0]		dcCaMemA[255:0];	//Local L1 tile memory (Even)
 (* ram_style = "distributed" *)
 	reg[127:0]		dcCaMemB[255:0];	//Local L1 tile memory (Odd)
+`ifdef jx2_enable_vaddr48
+(* ram_style = "distributed" *)
+	reg[ 47:0]		dcCaAddrA[255:0];	//Local L1 tile address
+(* ram_style = "distributed" *)
+	reg[ 47:0]		dcCaAddrB[255:0];	//Local L1 tile address
+`else
 (* ram_style = "distributed" *)
 	reg[ 31:0]		dcCaAddrA[255:0];	//Local L1 tile address
 (* ram_style = "distributed" *)
 	reg[ 31:0]		dcCaAddrB[255:0];	//Local L1 tile address
+`endif
 reg[255:0]			dcFlushMskA;
 reg[255:0]			dcFlushMskB;
 reg[255:0]			dcNxtFlushMskA;
@@ -107,10 +114,17 @@ reg[255:0]			dcNxtFlushMskB;
 	reg[127:0]		dcCaMemA[15:0];		//Local L1 tile memory (Even)
 (* ram_style = "distributed" *)
 	reg[127:0]		dcCaMemB[15:0];		//Local L1 tile memory (Odd)
+`ifdef jx2_enable_vaddr48
+(* ram_style = "distributed" *)
+	reg[ 47:0]		dcCaAddrA[15:0];	//Local L1 tile address
+(* ram_style = "distributed" *)
+	reg[ 47:0]		dcCaAddrB[15:0];	//Local L1 tile address
+`else
 (* ram_style = "distributed" *)
 	reg[ 31:0]		dcCaAddrA[15:0];	//Local L1 tile address
 (* ram_style = "distributed" *)
 	reg[ 31:0]		dcCaAddrB[15:0];	//Local L1 tile address
+`endif
 reg[15:0]			dcFlushMskA;
 reg[15:0]			dcFlushMskB;
 reg[15:0]			dcNxtFlushMskA;
@@ -120,10 +134,17 @@ reg[15:0]			dcNxtFlushMskB;
 	reg[127:0]		dcCaMemA[63:0];		//Local L1 tile memory (Even)
 (* ram_style = "distributed" *)
 	reg[127:0]		dcCaMemB[63:0];		//Local L1 tile memory (Odd)
+`ifdef jx2_enable_vaddr48
+(* ram_style = "distributed" *)
+	reg[ 47:0]		dcCaAddrA[63:0];	//Local L1 tile address
+(* ram_style = "distributed" *)
+	reg[ 47:0]		dcCaAddrB[63:0];	//Local L1 tile address
+`else
 (* ram_style = "distributed" *)
 	reg[ 31:0]		dcCaAddrA[63:0];	//Local L1 tile address
 (* ram_style = "distributed" *)
 	reg[ 31:0]		dcCaAddrB[63:0];	//Local L1 tile address
+`endif
 reg[63:0]			dcFlushMskA;
 reg[63:0]			dcFlushMskB;
 reg[63:0]			dcNxtFlushMskA;
@@ -133,8 +154,8 @@ reg[63:0]			dcNxtFlushMskB;
 
 reg[1:0]	memOKL;			//memory PC OK
 
-reg[27:0]		tNxtAddrA;
-reg[27:0]		tNxtAddrB;
+reg[43:0]		tNxtAddrA;
+reg[43:0]		tNxtAddrB;
 reg				tNxtIsMmio;
 
 `ifdef jx2_expand_l1sz
@@ -188,8 +209,8 @@ reg[ 5:0]		tLstStBlkIxB;
 
 reg[127:0]		tBlkDataA;
 reg[127:0]		tBlkDataB;
-reg[ 27:0]		tBlkAddrA;
-reg[ 27:0]		tBlkAddrB;
+reg[ 43:0]		tBlkAddrA;
+reg[ 43:0]		tBlkAddrB;
 reg[  3:0]		tBlkFlagA;
 reg[  3:0]		tBlkFlagB;
 reg				tBlkDirtyA;
@@ -200,8 +221,8 @@ reg				tBlkFlushB;
 reg[127:0]		tBlkData2A;
 reg[127:0]		tBlkData2B;
 
-reg[27:0]		tReqAddrA;
-reg[27:0]		tReqAddrB;
+reg[ 43:0]		tReqAddrA;
+reg[ 43:0]		tReqAddrB;
 reg				tReqIsMmio;
 
 // wire[11:0]		tReqL2IxA;
@@ -246,7 +267,7 @@ assign		tBlkL2IxB = tBlkAddrB[11:0] ^
 	{ tBlkAddrB[15:12], tBlkAddrB[19:16], tBlkAddrB[23:20] };
 `endif
 
-reg[31:0]		tInAddr;
+reg[47:0]		tInAddr;
 reg[ 2:0]		tInByteIx;
 reg[ 4:0]		tInOpm;
 reg[63:0]		tDataIn;
@@ -263,8 +284,8 @@ reg				tLstHold;
 
 reg[127:0]		tStBlkDataA;
 reg[127:0]		tStBlkDataB;
-reg[ 27:0]		tStBlkAddrA;
-reg[ 27:0]		tStBlkAddrB;
+reg[ 43:0]		tStBlkAddrA;
+reg[ 43:0]		tStBlkAddrB;
 reg[  3:0]		tStBlkFlagA;
 reg[  3:0]		tStBlkFlagB;
 
@@ -274,8 +295,8 @@ reg				tDoStBlkB;
 
 reg[127:0]		tLstStBlkDataA;
 reg[127:0]		tLstStBlkDataB;
-reg[ 27:0]		tLstStBlkAddrA;
-reg[ 27:0]		tLstStBlkAddrB;
+reg[ 43:0]		tLstStBlkAddrA;
+reg[ 43:0]		tLstStBlkAddrB;
 reg[  3:0]		tLstStBlkFlagA;
 reg[  3:0]		tLstStBlkFlagB;
 reg				tLstDoStBlkA;
@@ -286,8 +307,8 @@ reg				tLstDoStBlkB;
 
 reg[127:0]		tMiBlkDataA;
 reg[127:0]		tMiBlkDataB;
-reg[ 27:0]		tMiBlkAddrA;
-reg[ 27:0]		tMiBlkAddrB;
+reg[ 43:0]		tMiBlkAddrA;
+reg[ 43:0]		tMiBlkAddrB;
 reg[3:0]		tMiNoRwxA;
 reg[3:0]		tMiNoRwxB;
 reg				tDoMiBlkA;
@@ -330,12 +351,13 @@ reg[2:0]	tNextHoldCyc;
 // reg[ 4:0]	tRegInOpm;
 // reg[63:0]	tRegInVal;
 
-wire[31: 0]		tRegInAddr;		//input address
+wire[47: 0]		tRegInAddr;		//input address
 wire[ 4: 0]		tRegInOpm;
 wire[63: 0]		tRegInVal;
 wire[63: 0]		tRegInValB;
 
 assign	tRegInAddr	= dcInHold ? tInAddr : regInAddr;
+// assign	tRegInAddr	= dcInHold ? tInAddr : regInAddr[31:0];
 assign	tRegInOpm	= dcInHold ? tInOpm : regInOpm;
 assign	tRegInVal	= dcInHold ? tDataIn : regInVal;
 assign	tRegInValB	= dcInHold ? tDataInB : regInValB;
@@ -385,11 +407,13 @@ begin
 	if(tRegInAddr[4])
 	begin
 //		tNxtAddrB=regInAddr[31:4];
-		tNxtAddrB=tRegInAddr[31:4];
+//		tNxtAddrB=tRegInAddr[31:4];
+		tNxtAddrB=tRegInAddr[47:4];
 		tNxtAddrA=tNxtAddrB+1;
 	end else begin
 //		tNxtAddrA=regInAddr[31:4];
-		tNxtAddrA=tRegInAddr[31:4];
+//		tNxtAddrA=tRegInAddr[31:4];
+		tNxtAddrA=tRegInAddr[47:4];
 		tNxtAddrB=tNxtAddrA+1;
 	end
 
@@ -441,8 +465,10 @@ begin
 
 	tStBlkDataA		= UV128_00;
 	tStBlkDataB		= UV128_00;
-	tStBlkAddrA		= UV28_00;
-	tStBlkAddrB		= UV28_00;
+//	tStBlkAddrA		= UV28_00;
+	tStBlkAddrA		= UV44_00;
+//	tStBlkAddrB		= UV28_00;
+	tStBlkAddrB		= UV44_00;
 
 	tStBlkFlagA		= 0;
 	tStBlkFlagB		= 0;
@@ -936,7 +962,8 @@ begin
 		if(tAccFlt && !tMemLatchA && !tMemLatchB && !tMmioLatch)
 	begin
 		tMemOpm		<= UMEM_OPM_FAULT;
-		tMemAddr	<= { UV28_00, 2'b00, tAccFltW, tAccFltR };
+//		tMemAddr	<= { UV28_00, 2'b00, tAccFltW, tAccFltR };
+		tMemAddr	<= { UV44_00, 2'b00, tAccFltW, tAccFltR };
 	end
 	else
 		if(((tMiss && tMissA) || tMemLatchA) && !tMemLatchB && !tMmioLatch)
@@ -1201,7 +1228,8 @@ begin
 		tMmioDoneHld	<= 0;
 	end
 
-	if((tReqIsMmio && !tMemLatchA && !tMemLatchB) || tMmioLatch)
+//	if((tReqIsMmio && !tMemLatchA && !tMemLatchB) || tMmioLatch)
+	if(((tReqIsMmio && !tMemLatchA && !tMemLatchB) || tMmioLatch) && !reset)
 	begin
 		tMemOpm			<= tInOpm;
 		tMemAddr		<= tInAddr;

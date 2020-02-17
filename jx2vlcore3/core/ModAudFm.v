@@ -236,8 +236,8 @@ begin
 
 	chTabIxB	= chStsB[19:14];
 	chTabIxD	= chStsB[18:13];
-	chTabPcmB	= cbSinTab[chTabIxB];
-	chTabPcmD	= cbSinTab[chTabIxD];
+//	chTabPcmB	= cbSinTab[chTabIxB];
+//	chTabPcmD	= cbSinTab[chTabIxD];
 	chTabPcmB1	= chTabPcmB;
 
 	case(chCtr0B[31:28])
@@ -288,8 +288,8 @@ begin
 		chTabIxC = chTabIxC + chTabPcmB3[7:2];
 	end
 
-	chTabPcmA	= cbSinTab[chTabIxA];
-	chTabPcmC	= cbSinTab[chTabIxC];
+//	chTabPcmA	= cbSinTab[chTabIxA];
+//	chTabPcmC	= cbSinTab[chTabIxC];
 	chTabPcmA1	= chTabPcmA;
 	
 	case(chCtr0A[31:28])
@@ -416,6 +416,11 @@ begin
 	chRovL7			<= chRovL6;
 	chRovL8			<= chRovL7;
 	chRovL9			<= chRovL8;
+
+	chTabPcmA		<= cbSinTab[chTabIxA];
+	chTabPcmB		<= cbSinTab[chTabIxB];
+	chTabPcmC		<= cbSinTab[chTabIxC];
+	chTabPcmD		<= cbSinTab[chTabIxD];
 
 	chClkStrobe		<= chNxtClkStrobe;
 	chClkLatch		<= chNxtClkLatch;

@@ -26,8 +26,8 @@ module MemL2A(
 input			clock;
 input			reset;
 	
-input[31:0]		memAddr;
-input[31:0]		memAddrB;
+input[47:0]		memAddr;
+input[47:0]		memAddrB;
 input[127:0]	memDataIn;
 output[127:0]	memDataOut;
 input[4:0]		memOpm;
@@ -89,7 +89,8 @@ wire[1:0]		l2MemOK;
 MemL2Dc		l2dc(
 	clock,		reset,
 
-	memAddr,	memAddrB,
+//	memAddr,	memAddrB,
+	memAddr[31:0],	memAddrB[31:0],
 	memDataIn,	l2MemDataOut,
 	l2MemOpm,	l2MemOK,
 
@@ -113,7 +114,8 @@ wire[1:0]		l2rMemOK;
 MemL2Rom	l2rom(
 	clock,		reset,
 
-	memAddr,	l2rMemOpm,
+//	memAddr,	l2rMemOpm,
+	memAddr[31:0],	l2rMemOpm,
 	memDataIn,	l2rMemDataOut,
 	l2rMemOK
 	);
@@ -217,7 +219,8 @@ begin
 
 //	tMmioOutData		<= memDataIn[31:0];
 	tMmioOutData		<= memDataIn[63:0];
-	tMmioAddr			<= memAddr;
+//	tMmioAddr			<= memAddr;
+	tMmioAddr			<= memAddr[31:0];
 	tMmioOpm			<= reqIsMmio ? memOpm : UMEM_OPM_READY;
 
 `ifndef def_true

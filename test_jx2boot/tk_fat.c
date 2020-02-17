@@ -858,8 +858,8 @@ int TKFAT_GetWalkCluster(
 	}
 #endif
 
-#if 1
-	else if((img->walk2_clid==clid) &&
+#if 0
+	if((img->walk2_clid==clid) &&
 		(cloffs>=img->walk2_clofs))
 	{
 		if(!is_c || (o<img->walk2_clofs))
@@ -870,7 +870,8 @@ int TKFAT_GetWalkCluster(
 			is_c=1;
 		}
 	}
-	else if((img->walk3_clid==clid) &&
+
+	if((img->walk3_clid==clid) &&
 		(cloffs>=img->walk3_clofs))
 	{
 		if(!is_c || (o<img->walk3_clofs))

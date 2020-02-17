@@ -43,12 +43,12 @@ int TKPE_ApplyBaseRelocs(byte *imgptr, byte *rlc, int szrlc,
 
 	gbr_end_rva=gbr_rva+gbr_sz;
 
-	cs=rlc;		cse=rlc+sz_rlc;
+	cs=rlc;		cse=rlc+szrlc;
 	while(cs<cse)
 	{
 		rva_page=((u32 *)cs)[0];
 		sz_blk=((u32 *)cs)[1];
-		cs1=cs+8; cs1e=sz_blk;
+		cs1=cs+8; cs1e=cs+sz_blk;
 		cs+=sz_blk;
 		
 		while(cs1<cs1e)
@@ -140,12 +140,12 @@ int TKPE_ApplyDataRelocs(
 
 	gbr_end_rva=gbr_rva+gbr_sz;
 
-	cs=rlc;		cse=rlc+sz_rlc;
+	cs=rlc;		cse=rlc+szrlc;
 	while(cs<cse)
 	{
 		rva_page=((u32 *)cs)[0];
 		sz_blk=((u32 *)cs)[1];
-		cs1=cs+8; cs1e=sz_blk;
+		cs1=cs+8; cs1e=cs+sz_blk;
 		cs+=sz_blk;
 		
 		while(cs1<cs1e)
@@ -197,28 +197,34 @@ int TKPE_ApplyDataRelocs(
 	return(0);
 }
 
-
+#if 1
 // byte *TKPE_LoadDynPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, char *imgname)
 {
+#if 1
 	byte tbuf[1024];
 	TKPE_ImageInfo *img;
 	byte *imgptr, *ct, *cte;
 	byte *cs, *cse;
 	u64 imgbase;
 	u32 imgsz, startrva, gbr_rva, gbr_sz;
-	byte is64, is_pel4;
+	byte is64;
+	byte is_pel4;
 	int sig_mz, sig_pe, mach, mmagic;
 	int rva_rlc, sz_rlc, rlc_disp;
 	int ofs_pe, pboix, szcpy;
 	int cb, nb;
 	int i, l;
+#endif
 	
+#if 1
 	tk_fseek(fd, 0, 0);
 	tk_fread(tbuf, 1, 1024, fd);
 
 	is_pel4=0;
+#endif
 
+#if 1
 	sig_mz=tkfat_getWord(tbuf);
 	if(sig_mz!=0x4550)
 	{
@@ -269,7 +275,9 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, char *imgname)
 		tk_printf("TKPE: Unexpected mMagic %04X\n", mach);
 		return(-1);
 	}
-	
+#endif
+
+#if 1
 	if(is64)
 	{
 //		puts("TKPE: PE64\n");
@@ -317,13 +325,13 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, char *imgname)
 		ct=imgptr; cte=imgptr+imgsz;
 		while((ct+1024)<=cte)
 		{
-			printf("%d/%dkB\r", cb, nb);
+			tk_printf("%d/%dkB\r", cb, nb);
 			tk_fread(ct, 1, 1024, fd);
 			ct+=1024; cb++;
 		}
-		printf("%d/%dkB\r", cb, nb);
+		tk_printf("%d/%dkB\r", cb, nb);
 		tk_fread(ct, 1, cte-ct, fd);
-		printf("\n", cb, nb);
+		tk_printf("\n", cb, nb);
 #endif
 	}else
 	{
@@ -334,23 +342,29 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, char *imgname)
 		l=1024;
 		while((ct+1024)<=cte)
 		{
-			printf("%d/%dkB\r", cb, nb);
+			kb=(ct-imgptr)>>10;
+//			tk_printf("%d/%dkB\r", cb, nb);
+			tk_printf("%d/%dkB\r", kb, nb);
 			l=tk_fread(tbuf, 1, 1024, fd);
 			ct=TKPE_UnpackL4(ct, tbuf, l);
 			if(l<1024)
 				break;
 			cb++;
 		}
-		printf("%d/%dkB\r", cb, nb);
+		kb=(ct-imgptr)>>10;
+//		tk_printf("%d/%dkB\r", cb, nb);
+		tk_printf("%d/%dkB\r", kb, nb);
 		if(l>=1024)
 		{
 			l=tk_fread(tbuf, 1, 1024, fd);
 			ct=TKPE_UnpackL4(ct, tbuf, l);
 		}
-		printf("\n");
+		tk_printf("\n");
 #endif
 	}
+#endif
 	
+#if 1
 	pboix=0;
 	if(gbr_sz!=0)
 	{
@@ -378,19 +392,23 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, char *imgname)
 		szcpy=gbr_sz;
 	img->gbr_szcpy=szcpy;
 	img->gbr_sz=gbr_sz;
-	
+#endif
+
 //	*rbootptr=imgptr+startrva;
 //	*rbootgbr=imgptr+gbr_rva;
 
 	return(img);
 }
+#endif
 
+#if 1
 TK_FILE *TKPE_TryOpenImage(char *imgname)
 {
-	chat tbuf[512];
+	char tbuf[512];
 	TK_FILE *fd;
 	char **path;
 	int npath;
+	int i;
 
 	TK_Env_GetPathList(&path, &npath);
 	for(i=0; i<npath; i++)
@@ -475,3 +493,4 @@ int TKPE_TryLoadProgramInstance(char *imgname,
 	void **rboottbr)
 {
 }
+#endif

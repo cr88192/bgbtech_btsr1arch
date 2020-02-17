@@ -882,7 +882,7 @@ int JX2I_GfxCon_UpdateCell(int cx, int cy)
 	u64 fontbits, pixbits;
 	u16 pxubits, pxvbits;
 	u32 px2;
-	int celbits, ncx, ncy;
+	int celbits, ncx, ncy, docurblnk;
 	int clra6, clrb6, clra9, clrb9;
 	int px, py, qx, qy, by, bx;
 	int i, j, k;
@@ -932,6 +932,10 @@ int JX2I_GfxCon_UpdateCell(int cx, int cy)
 	{
 		return(JX2I_GfxCon_UpdateCellBM(cx, cy));
 	}
+
+	i=jx2i_gfxcon_ctrlreg[1];
+	px=(i&255); py=(i>>8)&255;
+	docurblnk=(cx==px)&&(cy==py);
 
 //	ncx=40;
 //	if(jx2i_gfxcon_is80col)
@@ -1082,6 +1086,12 @@ int JX2I_GfxCon_UpdateCell(int cx, int cy)
 		{
 			if(jx2i_gfxcon_curms&512)
 				{ fontbits=0; }
+		}
+		
+		if(docurblnk)
+		{
+			if(jx2i_gfxcon_curms&512)
+				fontbits|=0x000000000000FF00ULL;
 		}
 	
 		for(py=0; py<8; py++)

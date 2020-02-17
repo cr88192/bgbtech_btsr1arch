@@ -132,6 +132,9 @@ void *bgbcc_tmalloc(char *ty, int sz)
 		sz+=2*sizeof(void *);
 		sz=(sz+255)&(~255);
 
+		tsz=(sz<(262144-256))?(0x800|((sz+255)>>8)):(0xC00|((sz+65535)>>16));
+		sz=(!(tsz&0x400))?((tsz&0x3FF)<<8):((tsz&0x3FF)<<16);
+
 		p=malloc(sz);
 		if(!p)
 		{
@@ -146,7 +149,7 @@ void *bgbcc_tmalloc(char *ty, int sz)
 
 		tyi=bgbcc_strdup_i(ty, 0);
 //		tsz=(sz<524288)?(sz>>8):(0x800|(sz>>16));
-		tsz=(sz<262144)?(0x800|(sz>>8)):(0xC00|(sz>>16));
+//		tsz=(sz<262144)?(0x800|(sz>>8)):(0xC00|(sz>>16));
 		tty=tsz|(tyi<<12);
 		((void **)p)[1]=(void *)(nlint)tty;
 

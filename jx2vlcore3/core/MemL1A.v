@@ -46,7 +46,7 @@ module MemL1A(
 input			clock;
 input			reset;
 
-input [31: 0]	icInPcAddr;		//input PC address
+input [47: 0]	icInPcAddr;		//input PC address
 // output[63: 0]	icOutPcVal;		//output PC value
 output[95: 0]	icOutPcVal;		//output PC value
 output[ 1: 0]	icOutPcOK;		//set if we have a valid value.
@@ -54,7 +54,7 @@ output[ 2: 0]	icOutPcStep;	//PC step (Normal Op)
 input			icInPcHold;
 input			icInPcWxe;
 
-input [31: 0]	dcInAddr;		//input PC address
+input [47: 0]	dcInAddr;		//input PC address
 input [ 4: 0]	dcInOpm;		//input PC address
 output[63: 0]	dcOutVal;		//output data value
 input [63: 0]	dcInVal;		//input data value
@@ -72,15 +72,15 @@ input[63:0]		regInSr;
 
 output[63:0]	regOutExc;
 
-output[ 31:0]	memAddr;		//Memory address (Primary)
-output[ 31:0]	memAddrB;		//Memory address (Secondary)
+output[ 47:0]	memAddr;		//Memory address (Primary)
+output[ 47:0]	memAddrB;		//Memory address (Secondary)
 output[  4:0]	memOpm;			//Memory Operation
 input [127:0]	memDataIn;		//Memory Data In
 output[127:0]	memDataOut;		//Memory Data Out
 input [  1:0]	memOK;			//Memory OK
 
-reg[ 31:0]		tMemAddr;		//Memory address
-reg[ 31:0]		tMemAddrB;		//Memory address
+reg[ 47:0]		tMemAddr;		//Memory address
+reg[ 47:0]		tMemAddrB;		//Memory address
 reg[  4:0]		tMemOpm;		//Memory Operation
 reg[127:0]		tMemDataOut;	//Memory Data Out
 
@@ -91,8 +91,8 @@ wire[3:0]		tMemAccNoRwx;
 
 `ifdef jx2_enable_mmu
 
-wire[31:0]		tTlbAddr;
-wire[31:0]		tTlbAddrB;
+wire[47:0]		tTlbAddr;
+wire[47:0]		tTlbAddrB;
 wire[63:0]		tTlbExc;
 wire[1:0]		tTlbOK;
 wire[4:0]		tTlbOpm;
@@ -136,7 +136,7 @@ MmuTlb	tlb(
 
 reg [127:0]		ifMemData;
 reg [  1:0]		ifMemOK;
-wire[ 31:0]		ifMemAddr;
+wire[ 47:0]		ifMemAddr;
 wire[  4:0]		ifMemOpm;
 
 `ifdef jx2_enable_wex
@@ -162,8 +162,8 @@ MemIcA		memIc(
 
 wire[  1:0]		dfOutOK;
 
-wire[ 31:0]		dfMemAddr;
-wire[ 31:0]		dfMemAddrB;
+wire[ 47:0]		dfMemAddr;
+wire[ 47:0]		dfMemAddrB;
 wire[  4:0]		dfMemOpm;
 reg [127:0]		dfMemDataIn;
 wire[127:0]		dfMemDataOut;
@@ -201,9 +201,11 @@ begin
 	tRegOutExc	= UV64_00;
 
 //	tMemAddr	= UV32_XX;
-	tMemAddr	= UV32_00;
+//	tMemAddr	= UV32_00;
+	tMemAddr	= UV48_00;
 //	tMemAddrB	= UV32_XX;
-	tMemAddrB	= UV32_00;
+//	tMemAddrB	= UV32_00;
+	tMemAddrB	= UV48_00;
 	tMemOpm		= UMEM_OPM_READY;
 //	tMemDataOut	= UV128_XX;
 	tMemDataOut	= UV128_00;
@@ -228,7 +230,8 @@ begin
 //		if(dfMemAddr[1])
 //			tRegOutExc = {UV16_00, dfMemAddr, 16'h8002 };
 
-		tRegOutExc = { UV16_00, dfMemAddr, 12'h800, 
+//		tRegOutExc = { UV16_00, dfMemAddr, 12'h800, 
+		tRegOutExc = { dfMemAddr, 12'h800, 
 			(dfMemAddr[1]) ? 4'h2 : 4'h1 };
 	end
 
@@ -246,7 +249,8 @@ begin
 		tNxtLatchIc	= tIfNzOpm || (memOK != UMEM_OK_READY);
 		
 		if(tMemAccNoRwx[2])
-			tRegOutExc = {UV16_00, ifMemAddr, 16'h8003 };
+//			tRegOutExc = {UV16_00, ifMemAddr, 16'h8003 };
+			tRegOutExc = { ifMemAddr, 16'h8003 };
 	end
 	else
 		if((tDfNzOpm && !tLatchIc) || tLatchDc)
@@ -262,7 +266,8 @@ begin
 		tNxtLatchDc	= tDfNzOpm || (memOK != UMEM_OK_READY);
 
 		if(tMemAccNoRwx[0] && tMemAccNoRwx[1])
-			tRegOutExc = {UV16_00, dfMemAddr, 16'h8001 };
+//			tRegOutExc = {UV16_00, dfMemAddr, 16'h8001 };
+			tRegOutExc = { dfMemAddr, 16'h8001 };
 	end
 
 	if(memOK==UMEM_OK_FAULT)
@@ -274,7 +279,8 @@ begin
 		end
 		tNxtMsgLatch = 1;
 		
-		tRegOutExc = {UV16_00, tMemAddr, 16'h8000 };
+//		tRegOutExc = {UV16_00, tMemAddr, 16'h8000 };
+		tRegOutExc = { tMemAddr, 16'h8000 };
 	end
 
 /*
@@ -290,11 +296,21 @@ begin
 end
 
 always @(posedge clock)
-begin
-	tRegOutExc2	<= tRegOutExc;
-	tLatchIc	<= tNxtLatchIc;
-	tLatchDc	<= tNxtLatchDc;
-	tMsgLatch	<= tNxtMsgLatch;
+begin	
+	if(reset)
+	begin
+		tRegOutExc2	<= 0;
+		tLatchIc	<= 0;
+		tLatchDc	<= 0;
+		tMsgLatch	<= 0;
+	end
+	else
+	begin
+		tRegOutExc2	<= tRegOutExc;
+		tLatchIc	<= tNxtLatchIc;
+		tLatchDc	<= tNxtLatchDc;
+		tMsgLatch	<= tNxtMsgLatch;
+	end
 end
 
 endmodule

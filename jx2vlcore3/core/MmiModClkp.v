@@ -46,9 +46,14 @@ reg			nxtClk256Hz;
 reg			stepTimer512Hz;
 reg			stepTimer256Hz;
 
-assign	timer1MHz	= stepTimer1MHz;
-assign	timer64kHz	= stepTimer64kHz;
-assign	timer1kHz	= stepTimer1kHz;
+reg			stepTimer1MHzB;
+reg			stepTimer64kHzB;
+reg			stepTimer1kHzB;
+reg			stepTimer256HzB;
+
+assign	timer1MHz	= stepTimer1MHzB;
+assign	timer64kHz	= stepTimer64kHzB;
+assign	timer1kHz	= stepTimer1kHzB;
 
 assign	timer256Hz	= stepTimer256Hz;
 
@@ -92,6 +97,11 @@ end
 
 always @(posedge clock)
 begin
+	stepTimer1MHzB	<= stepTimer1MHz;
+	stepTimer64kHzB	<= stepTimer64kHz;
+	stepTimer1kHzB	<= stepTimer1kHz;
+	stepTimer256HzB	<= stepTimer256Hz;
+
 	fracTimer1MHz	<= nextFracTimer1MHz;
 //	fracTimer4MHz	<= nextFracTimer4MHz;
 //	fracTimer32MHz	<= nextFracTimer32MHz;

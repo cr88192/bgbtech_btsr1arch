@@ -394,9 +394,9 @@ void I_SetPaletteIndex (int idx)
 	case 8:		vid_flashblend = (7<<16)|I_PIX16_RED;	break;
 
 	case 9:		vid_flashblend = (1<<16)|I_PIX16_YEL;	break;
-	case 10:	vid_flashblend = (1<<16)|I_PIX16_YEL;	break;
-	case 11:	vid_flashblend = (2<<16)|I_PIX16_YEL;	break;
-	case 12:	vid_flashblend = (2<<16)|I_PIX16_YEL;	break;
+	case 10:	vid_flashblend = (2<<16)|I_PIX16_YEL;	break;
+	case 11:	vid_flashblend = (3<<16)|I_PIX16_YEL;	break;
+	case 12:	vid_flashblend = (4<<16)|I_PIX16_YEL;	break;
 
 	case 13:	vid_flashblend = (1<<16)|I_PIX16_PURP;	break;
 	case 14:	vid_flashblend = (1<<16)|I_PIX16_PURP;	break;
@@ -1828,6 +1828,7 @@ byte	i_scr_bnc[40*25];
 void R_CellMarkBox (int bx0, int bx1, int by0, int by1);
 
 void I_FinishUpdate_ScanCopy(u16 *ics, u32 *ict, int blkn);
+void I_FinishUpdate_ScanCopyVbl(u16 *ics, u32 *ict, int blkn, int vblend);
 
 #define I_SCR_BMP128K
 
@@ -1894,16 +1895,22 @@ void I_FinishUpdate (void)
 #endif
 
 #if 1
-			if(!vid_flashblend)
-			{
-				I_FinishUpdate_ScanCopy(ics16, ict, 80);
-				ict+=80*8;
-				ics16+=4*BASEWIDTH;
-				continue;
-			}
+		if(!vid_flashblend)
+		{
+			I_FinishUpdate_ScanCopy(ics16, ict, 80);
+			ict+=80*8;
+			ics16+=4*BASEWIDTH;
+			continue;
+		}else
+		{
+			I_FinishUpdate_ScanCopyVbl(ics16, ict, 80, vid_flashblend);
+			ict+=80*8;
+			ics16+=4*BASEWIDTH;
+			continue;
+		}
 #endif
 
-#if 1
+#if 0
 		for(bx=0; bx<80; bx++)
 		{
 //			pxa=*(u64 *)(ics16b+0*BASEWIDTH);

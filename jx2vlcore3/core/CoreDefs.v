@@ -100,6 +100,7 @@ parameter[ 15:0] UV16_XX		= 16'hXXXX;	//
 parameter[ 27:0] UV28_XX		= 28'hXXXXXXX;	//
 parameter[ 31:0] UV32_XX		= 32'hXXXXXXXX;	//
 parameter[ 32:0] UV33_XX		= 33'hXXXXXXXXX;	//
+parameter[ 43:0] UV44_XX		= 44'hXXXXXXX_XXXX;	//
 parameter[ 47:0] UV48_XX		= 48'hXXXXXXXX_XXXX;	//
 parameter[ 63:0] UV64_XX		= 64'hXXXXXXXX_XXXXXXXX;	//
 parameter[ 64:0] UV65_XX		= 65'hX_XXXXXXXX_XXXXXXXX;	//
@@ -191,6 +192,9 @@ parameter[32:0] UV33_FF			= 33'h1FFFFFFFF;	//
 
 parameter[39:0] UV40_00			= 40'h00_00000000;	//
 parameter[39:0] UV40_FF			= 40'hFF_FFFFFFFF;	//
+
+parameter[43:0] UV44_00			= 44'h000_00000000;	//
+parameter[43:0] UV44_FF			= 44'hFFF_FFFFFFFF;	//
 
 parameter[47:0] UV48_00			= 48'h0000_00000000;	//
 parameter[47:0] UV48_FF			= 48'hFFFF_FFFFFFFF;	//

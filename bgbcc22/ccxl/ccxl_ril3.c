@@ -83,6 +83,7 @@ void BGBCC_CCXLR3_CheckExpandOutput(
 	{
 		i=sz;
 		j=65536;
+//		j=1<<20;
 		while(i>=j)
 			j=j+(j>>1);
 		ctx->ril_ips=bgbcc_malloc(j);
@@ -1181,6 +1182,8 @@ ccxl_label BGBCC_CCXLR3_ReadLabel(BGBCC_TransState *ctx, byte **rcs)
 void BGBCC_CCXLR3_DecodeBufCmd(
 	BGBCC_TransState *ctx, byte **rcs)
 {
+	static int lop, lop1, lop2, lop3;
+	static int lop4, lop5, lop6, lop7;
 	char tb[4096];
 	s64 vala[256];
 	ccxl_label lbla[256];
@@ -1799,6 +1802,15 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		__debugbreak();
 		break;
 	}
+	
+	lop7=lop6;
+	lop6=lop5;
+	lop5=lop4;
+	lop4=lop3;
+	lop3=lop2;
+	lop2=lop1;
+	lop1=lop;
+	lop=op;
 	
 	*rcs=cs;
 }

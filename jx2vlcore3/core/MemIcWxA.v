@@ -20,7 +20,7 @@ module MemIcWxA(
 input			clock;
 input			reset;
 
-input [31: 0]	regInPc;		//input PC address
+input [47: 0]	regInPc;		//input PC address
 output[95: 0]	regOutPcVal;	//output PC value
 output[ 1: 0]	regOutPcOK;		//set if we have a valid value.
 output[ 2: 0]	regOutPcStep;	//PC step (Normal Op)
@@ -30,7 +30,7 @@ input[4:0]		icInPcOpm;		//OPM (Used for cache-control)
 
 input [127:0]	memPcData;		//memory PC data
 input [  1:0]	memPcOK;		//memory PC OK
-output[ 31:0]	memPcAddr;		//memory PC address
+output[ 47:0]	memPcAddr;		//memory PC address
 output[  4:0]	memPcOpm;		//memory PC output-enable
 
 
@@ -45,7 +45,7 @@ assign	regOutPcStep	= tRegOutPcStep;
 assign	memPcAddr	= tMemPcAddr;
 assign	memPcOpm	= tMemPcOpm;
 
-reg[31:0]		tMemPcAddr;		//memory PC address
+reg[47:0]		tMemPcAddr;		//memory PC address
 reg[ 4:0]		tMemPcOpm;		//memory PC output-enable
 
 `ifdef jx2_expand_l1sz
@@ -53,10 +53,17 @@ reg[ 4:0]		tMemPcOpm;		//memory PC output-enable
 	reg[127:0]		icCaMemA[255:0];		//Local L1 tile memory (Even)
 (* ram_style = "distributed" *)
 	reg[127:0]		icCaMemB[255:0];		//Local L1 tile memory (Odd)
+`ifdef jx2_enable_vaddr48
+(* ram_style = "distributed" *)
+	reg[47:0]		icCaAddrA[255:0];	//Local L1 tile address
+(* ram_style = "distributed" *)
+	reg[47:0]		icCaAddrB[255:0];	//Local L1 tile address
+`else
 (* ram_style = "distributed" *)
 	reg[31:0]		icCaAddrA[255:0];	//Local L1 tile address
 (* ram_style = "distributed" *)
 	reg[31:0]		icCaAddrB[255:0];	//Local L1 tile address
+`endif
 reg[255:0]			icFlushMskA;
 reg[255:0]			icFlushMskB;
 reg[255:0]			icNxtFlushMskA;
@@ -67,10 +74,17 @@ reg[255:0]			icNxtFlushMskB;
 	reg[127:0]		icCaMemA[15:0];		//Local L1 tile memory (Even)
 (* ram_style = "distributed" *)
 	reg[127:0]		icCaMemB[15:0];		//Local L1 tile memory (Odd)
+`ifdef jx2_enable_vaddr48
+(* ram_style = "distributed" *)
+	reg[47:0]		icCaAddrA[15:0];	//Local L1 tile address
+(* ram_style = "distributed" *)
+	reg[47:0]		icCaAddrB[15:0];	//Local L1 tile address
+`else
 (* ram_style = "distributed" *)
 	reg[31:0]		icCaAddrA[15:0];	//Local L1 tile address
 (* ram_style = "distributed" *)
 	reg[31:0]		icCaAddrB[15:0];	//Local L1 tile address
+`endif
 reg[15:0]			icFlushMskA;
 reg[15:0]			icFlushMskB;
 reg[15:0]			icNxtFlushMskA;
@@ -80,10 +94,17 @@ reg[15:0]			icNxtFlushMskB;
 	reg[127:0]		icCaMemA[63:0];		//Local L1 tile memory (Even)
 (* ram_style = "distributed" *)
 	reg[127:0]		icCaMemB[63:0];		//Local L1 tile memory (Odd)
+`ifdef jx2_enable_vaddr48
+(* ram_style = "distributed" *)
+	reg[47:0]		icCaAddrA[63:0];	//Local L1 tile address
+(* ram_style = "distributed" *)
+	reg[47:0]		icCaAddrB[63:0];	//Local L1 tile address
+`else
 (* ram_style = "distributed" *)
 	reg[31:0]		icCaAddrA[63:0];	//Local L1 tile address
 (* ram_style = "distributed" *)
 	reg[31:0]		icCaAddrB[63:0];	//Local L1 tile address
+`endif
 reg[63:0]			icFlushMskA;
 reg[63:0]			icFlushMskB;
 reg[63:0]			icNxtFlushMskA;
@@ -91,8 +112,13 @@ reg[63:0]			icNxtFlushMskB;
 `endif
 `endif
 
+`ifdef jx2_enable_vaddr48
+reg[43:0]		tNxtAddrA;
+reg[43:0]		tNxtAddrB;
+`else
 reg[27:0]		tNxtAddrA;
 reg[27:0]		tNxtAddrB;
+`endif
 
 `ifdef jx2_expand_l1sz
 reg[7:0]		tNxtIxA;
@@ -115,17 +141,27 @@ reg[5:0]		tReqIxB;
 
 reg[127:0]		tBlkDataA;
 reg[127:0]		tBlkDataB;
+`ifdef jx2_enable_vaddr48
+reg[43:0]		tBlkAddrA;
+reg[43:0]		tBlkAddrB;
+`else
 reg[27:0]		tBlkAddrA;
 reg[27:0]		tBlkAddrB;
+`endif
 reg[ 3:0]		tBlkFlagA;
 reg[ 3:0]		tBlkFlagB;
 
+`ifdef jx2_enable_vaddr48
+reg[43:0]		tReqAddrA;
+reg[43:0]		tReqAddrB;
+`else
 reg[27:0]		tReqAddrA;
 reg[27:0]		tReqAddrB;
+`endif
 
-reg[31:0]		tInAddr;
+reg[47:0]		tInAddr;
 reg[1:0]		tInWordIx;
-reg[31:0]		tRegInPc;		//input PC address
+reg[47:0]		tRegInPc;		//input PC address
 reg[4:0]		tInOpm;			//OPM (Used for cache-control)
 reg[4:0]		tInOpmB;		//OPM (Used for cache-control)
 reg[4:0]		tInPcOpm;		//OPM (Used for cache-control)
@@ -182,15 +218,18 @@ begin
 	/* Stage A */
 
 	tRegInPc	= icInPcHold ? tInAddr : regInPc;
+//	tRegInPc	= icInPcHold ? tInAddr : regInPc[31:0];
 	tInPcOpm	= icInPcHold ? tInOpm : icInPcOpm;
 
 //	if(tRegInPc[3])
 	if(tRegInPc[4])
 	begin
-		tNxtAddrB	= tRegInPc[31:4];
+//		tNxtAddrB	= tRegInPc[31:4];
+		tNxtAddrB	= tRegInPc[47:4];
 		tNxtAddrA	= tNxtAddrB+1;
 	end else begin
-		tNxtAddrA	= tRegInPc[31:4];
+//		tNxtAddrA	= tRegInPc[31:4];
+		tNxtAddrA	= tRegInPc[47:4];
 		tNxtAddrB	= tNxtAddrA+1;
 	end
 
@@ -534,14 +573,20 @@ reg		tMemLatchDnA;
 reg		tMemLatchDnB;
 
 reg[127:0]		tStBlkDataA;
-reg[27:0]		tStBlkAddrA;
 reg[3:0]		tStBlkFlagA;
 reg				tDoStBlkA;
 
 reg[127:0]		tStBlkDataB;
-reg[27:0]		tStBlkAddrB;
 reg[3:0]		tStBlkFlagB;
 reg				tDoStBlkB;
+
+`ifdef jx2_enable_vaddr48
+reg[43:0]		tStBlkAddrA;
+reg[43:0]		tStBlkAddrB;
+`else
+reg[27:0]		tStBlkAddrA;
+reg[27:0]		tStBlkAddrB;
+`endif
 
 `ifdef jx2_expand_l1sz
 reg[7:0]		tStBlkIxA;

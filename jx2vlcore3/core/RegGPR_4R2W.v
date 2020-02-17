@@ -69,11 +69,11 @@ input[63:0]		regValRnB1;		//Destination Value
 input[5:0]		regIdRnB2;		//Destination ID
 input[63:0]		regValRnB2;		//Destination Value
 
-input [31:0]	regValPc;		//PC Value (Synthesized)
-input [31:0]	regValGbr;		//GBR Value (CR)
+input [47:0]	regValPc;		//PC Value (Synthesized)
+input [47:0]	regValGbr;		//GBR Value (CR)
 input [32:0]	regValImmA;		//Immediate (Decode)
 input [32:0]	regValImmB;		//Immediate (Decode)
-input [31:0]	regValLr;		//GBR Value (CR)
+input [47:0]	regValLr;		//GBR Value (CR)
 	
 output[63:0]	regOutDlr;
 input [63:0]	regInDlr;
@@ -219,9 +219,15 @@ begin
 		JX2_GR_BP:	tValRsA=gprRegBp;
 `endif
 
-		JX2_GR_PC:	tValRsA={ UV32_00, regValPc };
-		JX2_GR_GBR:	tValRsA={ UV32_00, regValGbr };
-		JX2_GR_LR:	tValRsA={ UV32_00, regValLr };
+`ifdef jx2_enable_vaddr48
+		JX2_GR_PC:	tValRsA={ UV16_00, regValPc };
+		JX2_GR_GBR:	tValRsA={ UV16_00, regValGbr };
+		JX2_GR_LR:	tValRsA={ UV16_00, regValLr };
+`else
+		JX2_GR_PC:	tValRsA={ UV32_00, regValPc[31:0] };
+		JX2_GR_GBR:	tValRsA={ UV32_00, regValGbr[31:0] };
+		JX2_GR_LR:	tValRsA={ UV32_00, regValLr[31:0] };
+`endif
 
 		JX2_GR_IMM: begin
 			tValRsA={

@@ -550,6 +550,123 @@ X(I_FinishUpdate_ScanCopy):
 
 #endif
 
+#if 1
+// (src, dst, cnt, vbl)
+.global X(I_FinishUpdate_ScanCopyVbl)
+X(I_FinishUpdate_ScanCopyVbl):
+	PUSH	LR
+	PUSH.X	R30
+	PUSH.X	R28
+	PUSH.X	R26
+	PUSH.X	R24
+
+	CMP/GT	#0, R6
+	BF .done
+
+	// R2=0xFBDEFBDEFBDEFBDE
+	// R3=blend_4x
+	// R4=src
+	// R5=dst
+	// R6=cnt
+	// R7=blend
+	// R16=scratch
+	// R17=scratch
+	// R18=vbl_alpha
+	// R19=scratch
+	// R20=s_pix1
+	// R21=s_pix2
+	// R22=s_pix3
+	// R23=s_pix4
+	// R24=d_pix1
+	// R25=d_pix2
+	// R26=d_pix3
+	// R27=d_pix4
+
+	EXTU.W	R7, R3
+	SHLD	R3, 16, R2
+	OR		R2, R3
+	SHLD.Q	R3, 32, R2
+	OR		R2, R3
+	MOV		0xFBDEFBDEFBDEFBDE, R2
+	AND		R2, R3
+	SHLD.Q	R3, #-1, R3
+	
+	SHLD	R7, #-16, R18
+
+	.loop:
+	MOV.Q	(R4,    0), R20
+	MOV.Q	(R4,  640), R21
+	MOV.Q	(R4, 1280), R22
+	MOV.Q	(R4, 1920), R23
+
+#if 1
+	AND		R20, R2, R20	|	AND		R21, R2, R21
+	AND		R22, R2, R22	|	AND		R23, R2, R23
+	SHLD.Q	R20, #-1, R20	|	SHLD.Q	R21, #-1, R21
+	SHLD.Q	R22, #-1, R22	|	SHLD.Q	R23, #-1, R23
+	MOV		R3, R19
+
+	TEST	#0x4, R18
+	MOV?F	R19, R24
+	MOV?F	R19, R25
+	MOV?F	R19, R26
+	MOV?F	R19, R27
+	MOV?T	R20, R24
+	MOV?T	R21, R25
+	MOV?T	R22, R26
+	MOV?T	R23, R27
+
+	AND		R20, R2, R20	|	AND		R21, R2, R21
+	AND		R22, R2, R22	|	AND		R23, R2, R23
+	AND		R19, R2, R19
+	SHLD.Q	R20, #-1, R20	|	SHLD.Q	R21, #-1, R21
+	SHLD.Q	R22, #-1, R22	|	SHLD.Q	R23, #-1, R23
+	SHLD.Q	R19, #-1, R19
+
+	TEST	#0x2, R18
+	ADD?F	R19, R24
+	ADD?F	R19, R25
+	ADD?F	R19, R26
+	ADD?F	R19, R27
+	ADD?T	R20, R24
+	ADD?T	R21, R25
+	ADD?T	R22, R26
+	ADD?T	R23, R27
+
+	AND		R20, R2, R20	|	AND		R21, R2, R21
+	AND		R22, R2, R22	|	AND		R23, R2, R23
+	AND		R19, R2, R19
+	SHLD.Q	R20, #-1, R20	|	SHLD.Q	R21, #-1, R21
+	SHLD.Q	R22, #-1, R22	|	SHLD.Q	R23, #-1, R23
+	SHLD.Q	R19, #-1, R19
+
+	TEST	#0x1, R18
+	ADD?F	R19, R24
+	ADD?F	R19, R25
+	ADD?F	R19, R26
+	ADD?F	R19, R27
+	ADD?T	R20, R24
+	ADD?T	R21, R25
+	ADD?T	R22, R26
+	ADD?T	R23, R27
+#endif
+
+	MOV.Q	R24, (R5,  0)
+	MOV.Q	R25, (R5,  8)
+	ADD		#-1, R6			| MOV.Q		R26, (R5, 16)
+	ADD		#8, R4			| MOV.Q		R27, (R5, 24)
+	ADD		#32, R5			| TEST		R6, R6
+	BF .loop
+
+	.done:
+	POP.X	R24
+	POP.X	R26
+	POP.X	R28
+	POP.X	R30
+	POP		LR
+	RTS
+#endif
+
 
 #if 1
 .global X(V_DrawPatchCmap_Col)

@@ -578,9 +578,11 @@ int cdec_getimage(cdec_imgbuf *ctx, byte *obuf, int xs, int ys)
 //		obuf[(i*640+j)*4+2]=cb;
 //		obuf[(i*640+j)*4+3]=255;
 
-		obuf[(i*xs+j)*4+0]=cr;
+//		obuf[(i*xs+j)*4+0]=cr;
+		obuf[(i*xs+j)*4+0]=cb;
 		obuf[(i*xs+j)*4+1]=cg;
-		obuf[(i*xs+j)*4+2]=cb;
+//		obuf[(i*xs+j)*4+2]=cb;
+		obuf[(i*xs+j)*4+2]=cr;
 		obuf[(i*xs+j)*4+3]=255;
 	}
 	return(0);

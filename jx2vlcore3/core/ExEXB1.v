@@ -64,7 +64,7 @@ output[63:0]	regValRn1;		//Destination Value (EX1)
 output[5:0]		heldIdRn1;		//Held Destination ID (EX1)
 	
 input[32:0]		regValImm;		//Immediate (Decode)
-input[31:0]		regValPc;
+input[47:0]		regValPc;
 input			opBraFlush;
 
 input[63:0]		regInSr;

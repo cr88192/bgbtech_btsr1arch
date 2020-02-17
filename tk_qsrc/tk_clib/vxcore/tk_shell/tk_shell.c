@@ -86,6 +86,7 @@ int main(int argc, char *argv[])
 //		tk_con_chkreset();
 		tk_puts(tb_cwd);
 		tk_puts("$ ");
+//		tk_puts("$  \b");
 		tk_gets(tbuf);
 		TKSH_ExecCmd(tbuf);
 	}

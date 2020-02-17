@@ -77,7 +77,9 @@ int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 			switch(uMsg&255)
 			{
 			case 0x01:
-				*((void **)vParm1)=tk_con_getctx();
+				p=tk_con_getctx();
+				*((void **)vParm1)=p;
+				tk_printf("SYSC: ConGetCtx vParm=%p, p=%p\n", vParm1, p);
 				ret=TK_URES_TRUE;
 				break;
 			case 0x02:

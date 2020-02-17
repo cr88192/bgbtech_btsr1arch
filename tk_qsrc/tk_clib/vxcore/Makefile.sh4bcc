@@ -13,8 +13,8 @@ CC=$(TOOLPATH)bgbcc
 AR=$(TOOLPATH)bgbcc
 AS=$(TOOLPATH)bgbcc
 
-COPTS= -g -c -O2 -Iinclude -I. -Itk_core $(TK_CFL)
-COPTS64= -g -c -O2 -Iinclude -I. -Itk_core $(TK_CFL) -DARCH_BJX1_64 -mBJX2F
+COPTS= -g -c -O2 -Iinclude -I. -Itk_core $(TK_CFL) -Zz
+COPTS64= -g -c -O2 -Iinclude -I. -Itk_core $(TK_CFL) -DARCH_BJX1_64 -mBJX2F -Zz
 
 SRCS_CLIB = \
 	pdpc201/stdio.c \
@@ -56,6 +56,7 @@ SRCS_CLIB = \
 	tk_core/tk_conprn.c \
 	tk_core/tk_ps2keyb.c \
 	tk_core/tk_peload.c \
+	tk_core/tk_peload_pbo.c \
 	tk_core/tk_syscall.c \
 	tk_core/tk_shcmd.c \
 	\

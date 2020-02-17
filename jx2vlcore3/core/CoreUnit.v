@@ -255,8 +255,8 @@ MmiModDdr3		ddr(
 
 wire[127:0]		memInData;
 wire[127:0]		memOutData;
-wire[31:0]		memAddr;
-wire[31:0]		memAddrB;
+wire[47:0]		memAddr;
+wire[47:0]		memAddrB;
 wire[4:0]		memOpm;
 wire[1:0]		memOK;
 reg[63:0]		memBusExc;
@@ -270,12 +270,12 @@ wire[4:0]		mmioOpm;
 reg[1:0]		mmioOK;
 assign		mmioOutData = mmioOutDataQ[31:0];
 
-wire[31:0]		dbgOutPc;
+wire[47:0]		dbgOutPc;
 wire[95:0]		dbgOutIstr;
 wire			dbgExHold1;
 wire			dbgExHold2;
 
-wire[31:0]		dbgDcInAddr;
+wire[47:0]		dbgDcInAddr;
 wire[ 4:0]		dbgDcInOpm;
 wire[63:0]		dbgDcOutVal;
 wire[63:0]		dbgDcInVal;
@@ -600,7 +600,7 @@ begin
 	tDbgOutStatus7		<= dbgOutStatus7;
 	tDbgOutStatus8		<= dbgOutStatus8;
 	
-	sevSegVal			<= dbgOutPc;
+	sevSegVal			<= dbgOutPc[31:0];
 end
 
 always @(posedge clock)

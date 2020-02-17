@@ -25,10 +25,10 @@ module MmuTlb(
 input			clock;			//clock
 input			reset;			//reset
 
-input[31:0]		regInAddr;		//input Address (Primary)
-output[31:0]	regOutAddr;		//output Address (Primary)
-input[31:0]		regInAddrB;		//input Address (Secondary)
-output[31:0]	regOutAddrB;	//output Address (Secondary)
+input[47:0]		regInAddr;		//input Address (Primary)
+output[47:0]	regOutAddr;		//output Address (Primary)
+input[47:0]		regInAddrB;		//input Address (Secondary)
+output[47:0]	regOutAddrB;	//output Address (Secondary)
 input[127:0]	regInData;		//input data (LDTLB)
 
 input[4:0]		regInOpm;		//Operation Size/Type
@@ -44,8 +44,8 @@ input[63:0]		regInKRR;		//Keyring Register
 input[63:0]		regInSR;		//Status Register
 
 
-reg[31:0]		tRegOutAddr2;
-reg[31:0]		tRegOutAddrB2;
+reg[47:0]		tRegOutAddr2;
+reg[47:0]		tRegOutAddrB2;
 reg[15:0]		tRegOutExc2;
 reg[63:0]		tRegOutTea2;
 reg[1:0]		tRegOutOK2;
@@ -64,15 +64,15 @@ assign		regOutExc = { tRegOutTea2[47:0], tRegOutExc2 };
 // assign		regOutExc = tRegOutExc;
 // assign		regOutTea = tRegOutTea;
 
-reg[31:0]		tRegOutAddr;
-reg[31:0]		tRegOutAddrB;
+reg[47:0]		tRegOutAddr;
+reg[47:0]		tRegOutAddrB;
 reg[15:0]		tRegOutExc;
 reg[63:0]		tRegOutTea;
 reg[1:0]		tRegOutOK;
 reg[4:0]		tRegOutOpm;
 
-reg[31:0]		tRegInAddr;		//input Address
-reg[31:0]		tRegInAddrB;	//input Address
+reg[47:0]		tRegInAddr;		//input Address
+reg[47:0]		tRegInAddrB;	//input Address
 
 reg[63:0]	tlbBlkHiA[63:0];
 reg[63:0]	tlbBlkHiB[63:0];
@@ -129,18 +129,18 @@ reg			tlbLdtlbOK;
 
 reg			icPageEq;
 
-reg[31:0]	tlbAddrAB;
-reg[31:0]	tlbAddrCD;
-reg[31:0]	tlbAddrEF;
-reg[31:0]	tlbAddrGH;
+reg[47:0]	tlbAddrAB;
+reg[47:0]	tlbAddrCD;
+reg[47:0]	tlbAddrEF;
+reg[47:0]	tlbAddrGH;
 reg[31:0]	tlbAccAB;
 reg[31:0]	tlbAccCD;
 reg[31:0]	tlbAccEF;
 reg[31:0]	tlbAccGH;
 
-reg[31:0]	tlbAddr;
+reg[47:0]	tlbAddr;
 reg[31:0]	tlbAcc;
-reg[31:0]	tlbAddrB;
+reg[47:0]	tlbAddrB;
 reg[31:0]	tlbAccB;
 reg			tlbIs32b;
 
@@ -169,7 +169,8 @@ begin
 	tlbAcc			= UV32_XX;
 	tlbNxtFlushMask	= tlbFlushMask;
 
-	icPageEq		= (tRegInAddr[31:12] == regInAddr[31:12]);
+//	icPageEq		= (tRegInAddr[31:12] == regInAddr[31:12]);
+	icPageEq		= (tRegInAddr[47:12] == regInAddr[47:12]);
 
 	tlbMmuEnable	= regInMMCR[0];
 	tlbIs32b		= regInSR[31];
@@ -246,15 +247,15 @@ begin
 	tlbHit = (tlbHitAB || tlbHitCD) && (tlbHitEF || tlbHitGH);
 
 	tlbAddrAB =
-		tlbHitA ? { tlbHdatA[31:12], regInAddr[11:0] } :
-			{ tlbHdatB[31:12], regInAddr[11:0] };
+		tlbHitA ? { tlbHdatA[47:12], regInAddr[11:0] } :
+			{ tlbHdatB[47:12], regInAddr[11:0] };
 	tlbAccAB = 
 		tlbHitA ? { tlbHdatA[127:112], tlbHdatA[75:64], tlbHdatA[7:4] } :
 			{ tlbHdatB[127:112], tlbHdatB[75:64], tlbHdatB[7:4] };
 
 	tlbAddrCD =
-		tlbHitC ? { tlbHdatC[31:12], regInAddr[11:0] } :
-			{ tlbHdatD[31:12], regInAddr[11:0] };
+		tlbHitC ? { tlbHdatC[47:12], regInAddr[11:0] } :
+			{ tlbHdatD[47:12], regInAddr[11:0] };
 	tlbAccCD = 
 		tlbHitC ? { tlbHdatC[127:112], tlbHdatC[75:64], tlbHdatC[7:4] } :
 			{ tlbHdatD[127:112], tlbHdatD[75:64], tlbHdatD[7:4] };
@@ -264,15 +265,15 @@ begin
 
 `ifdef jx2_mem_fulldpx
 	tlbAddrEF =
-		tlbHitE ? { tlbHdatE[31:12], regInAddrB[11:0] } :
-			{ tlbHdatF[31:12], regInAddrB[11:0] };
+		tlbHitE ? { tlbHdatE[47:12], regInAddrB[11:0] } :
+			{ tlbHdatF[47:12], regInAddrB[11:0] };
 	tlbAccEF = 
 		tlbHitE ? { tlbHdatE[127:112], tlbHdatE[75:64], tlbHdatE[7:4] } :
 			{ tlbHdatF[127:112], tlbHdatF[75:64], tlbHdatF[7:4] };
 
 	tlbAddrGH =
-		tlbHitG ? { tlbHdatG[31:12], regInAddrB[11:0] } :
-			{ tlbHdatH[31:12], regInAddrB[11:0] };
+		tlbHitG ? { tlbHdatG[47:12], regInAddrB[11:0] } :
+			{ tlbHdatH[47:12], regInAddrB[11:0] };
 	tlbAccGH = 
 		tlbHitG ? { tlbHdatG[127:112], tlbHdatG[75:64], tlbHdatG[7:4] } :
 			{ tlbHdatH[127:112], tlbHdatH[75:64], tlbHdatH[7:4] };
@@ -294,14 +295,14 @@ begin
 	end
 	else
 	begin
-		tlbAddr		= regInAddr [31:0];
-		tlbAddrB	= regInAddrB[31:0];
+		tlbAddr		= regInAddr [47:0];
+		tlbAddrB	= regInAddrB[47:0];
 		tlbMiss		= 0;
 	end
 
 	tRegOutExc = 0;
 //	tRegOutTea[31:0] = regInAddr;
-	tRegOutTea[31:0] = (tlbHitAB || tlbHitCD) ? regInAddrB : regInAddr;
+	tRegOutTea[47:0] = (tlbHitAB || tlbHitCD) ? regInAddrB : regInAddr;
 
 	if(tlbMmuEnable)
 	begin
@@ -335,12 +336,12 @@ begin
 	tRegOutAddrB = tlbAddrB;
 	tRegOutOpm   = regInOpm;
 
-	if(regInAddr[31:0]!=tlbAddr[31:0])
+	if(regInAddr[47:0]!=tlbAddr[47:0])
 	begin
 		$display("TLB(A) %X -> %X", regInAddr, tlbAddr);
 	end
 
-	if(regInAddrB[31:0]!=tlbAddrB[31:0])
+	if(regInAddrB[47:0]!=tlbAddrB[47:0])
 	begin
 		$display("TLB(B) %X -> %X", regInAddrB, tlbAddrB);
 	end

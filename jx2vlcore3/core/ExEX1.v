@@ -15,7 +15,12 @@ Holding/Completing a memory access will be the responsibility of EX2.
 
 `include "CoreDefs.v"
 
+`ifdef jx2_enable_vaddr48
+`include "ExAGUB.v"
+`else
 `include "ExAGU.v"
+`endif
+
 // `include "ExALU.v"
 `include "ExConv2R.v"
 
@@ -107,7 +112,7 @@ output[63:0]	regValCn1;		//Destination Value (CR, EX1)
 output[5:0]		heldIdRn1;		//Held Destination ID (EX1)
 output[4:0]		heldIdCn1;		//Held Destination ID (CR, EX1)
 	
-input[31:0]		regValPc;		//PC Value (Synthesized)
+input[47:0]		regValPc;		//PC Value (Synthesized)
 input[32:0]		regValImm;		//Immediate (Decode)
 input[63:0]		regFpuGRn;		//FPU GPR Result
 input			regFpuSrT;
@@ -121,15 +126,15 @@ input[63:0]		regInDhr;
 output[63:0]	regOutSp;
 input[63:0]		regInSp;
 
-output[31:0]	regOutLr;
-input[31:0]		regInLr;
+output[47:0]	regOutLr;
+input[47:0]		regInLr;
 output[63:0]	regOutSr;
 input[63:0]		regInSr;
 
 output[7:0]		regOutSchm;
 input[7:0]		regInSchm;
 
-output[31:0]	memAddr;
+output[47:0]	memAddr;
 output[ 4:0]	memOpm;
 output[63:0]	memDataOut;
 output[63:0]	memDataOutB;
@@ -142,7 +147,7 @@ reg[63:0]		tRegValCn1;		//Destination Value (CR, EX1)
 reg[63:0]		tRegOutDlr;
 reg[63:0]		tRegOutDhr;
 reg[63:0]		tRegOutSp;
-reg[31:0]		tRegOutLr;
+reg[47:0]		tRegOutLr;
 reg[63:0]		tRegOutSr;
 reg[7:0]		tRegOutSchm;
 
@@ -166,7 +171,7 @@ assign	regOutSr	= tRegOutSr;
 assign	regOutSchm	= tRegOutSchm;
 assign	exTrapExc	= tExTrapExc;
 
-reg[31:0]		tMemAddr;
+reg[47:0]		tMemAddr;
 reg[ 4:0]		tMemOpm;
 reg[63:0]		tMemDataOut;
 reg[63:0]		tMemDataOutB;
@@ -179,10 +184,16 @@ assign	memDataOutB	= tMemDataOutB;
 reg				tExHold;
 assign	exHold		= tExHold;
 
+reg		tAguFlagJq;
 
-
-wire[31:0]	tValAgu;
-ExAGU	exAgu(regValRs[31:0], regValRt[31:0], opUIxt, tValAgu);
+`ifdef jx2_enable_vaddr48
+wire[47:0]	tValAgu;
+ExAGUB	exAgu(regValRs[47:0], regValRt[47:0], opUIxt, tValAgu, tAguFlagJq);
+`else
+wire[47:0]	tValAgu;
+assign	tValAgu[47:32] = UV16_00;
+ExAGU	exAgu(regValRs[31:0], regValRt[31:0], opUIxt, tValAgu[31:0]);
+`endif
 
 // wire[63:0]	tValAlu;
 // wire		tAluSrT;
@@ -248,6 +259,8 @@ reg[4:0]	tDoMemOpm;
 reg[5:0]	tOpUCmd1;
 reg[5:0]	tOpUCmdF;
 
+reg[63:0]	tValAguBra;
+
 reg tMsgLatch;
 reg tNextMsgLatch;
 
@@ -279,6 +292,10 @@ begin
 	tExHold			= 0;
 	tNextMsgLatch	= 0;
 	tExTrapExc		= 0;
+
+	tValAguBra		= { UV16_00, regValPc[47:32], tValAgu[31:0] };
+//	tValAguBra		= { UV16_00, regValPc[47:32],
+//		regValPc[31:1] + regValRt[30:0], 1'b0 };
 
 
 	tRegSpAdd8		= { regInSp[63:28], regInSp[27:3]+25'h1, regInSp[2:0]};
@@ -345,7 +362,7 @@ begin
 			end
 `else
 			tRegIdRn1	= regIdRm;
-			tRegValRn1	= { UV32_00, tValAgu };
+			tRegValRn1	= { UV16_00, tValAgu };
 `endif
 		end
 		JX2_UCMD_MOV_RM: begin
@@ -385,7 +402,7 @@ begin
 `endif
 
 		JX2_UCMD_PUSHX: begin
-			tMemAddr	= tRegSpSub8[31:0];
+			tMemAddr	= tRegSpSub8[47:0];
 			tRegOutSp	= tRegSpSub8;
 			tDoMemOpm	= UMEM_OPM_WR_Q;
 			tDoMemOp	= 1;
@@ -406,7 +423,7 @@ begin
 				3'b100: begin
 //					$display("EXA1: PushX Id=%d Rm=%X", regIdRm, regValRm);
 
-					tMemAddr	= tRegSpSub16[31:0];
+					tMemAddr	= tRegSpSub16[47:0];
 					tRegOutSp	= tRegSpSub16;
 					tDoMemOpm	= UMEM_OPM_WR_TILE;
 				 	tMemDataOut		= regValRm;
@@ -423,7 +440,7 @@ begin
 `endif
 		end
 		JX2_UCMD_POPX: begin
-			tMemAddr	= regInSp[31:0];
+			tMemAddr	= regInSp[47:0];
 			tRegOutSp	= tRegSpAdd8;
 			tDoMemOpm	= UMEM_OPM_RD_Q;
 			tDoMemOp	= 1;
@@ -536,7 +553,7 @@ begin
 			begin
 //				$display("EX: BRA_NB: PC2=%X", regValPc);
 				tRegIdCn1	= JX2_CR_PC[4:0];
-				tRegValCn1	= {UV32_00, regValPc};
+				tRegValCn1	= {UV16_00, regValPc};
 			end
 		end
 	
@@ -545,7 +562,8 @@ begin
 			begin
 //				$display("EX: BRA: PC2=%X", tValAgu);
 				tRegIdCn1	= JX2_CR_PC[4:0];
-				tRegValCn1	= {UV32_00, tValAgu};
+//				tRegValCn1	= {UV16_00, tValAgu};
+				tRegValCn1	= tValAguBra;
 			end
 		end
 		JX2_UCMD_BSR: begin
@@ -554,19 +572,28 @@ begin
 			if(!opPreBra)
 			begin
 				tRegIdCn1	= JX2_CR_PC[4:0];
-				tRegValCn1	= {UV32_00, tValAgu};
+//				tRegValCn1	= {UV16_00, tValAgu};
+				tRegValCn1	= tValAguBra;
 			end
 		end
 		JX2_UCMD_JMP: begin
 //			$display("EX: JMP: PC2=%X", regValRs);
 			tRegIdCn1	= JX2_CR_PC[4:0];
+`ifdef jx2_enable_vaddr48
+			tRegValCn1	= {UV16_00, regValRs[47:0]};
+`else
 			tRegValCn1	= {UV32_00, regValRs[31:0]};
+`endif
 		end
 		JX2_UCMD_JSR: begin
 //			$display("EX: JSR: LR=%X PC2=%X", regValRs, regValPc);
 			tRegOutLr	= regValPc;
 			tRegIdCn1	= JX2_CR_PC[4:0];
+`ifdef jx2_enable_vaddr48
+			tRegValCn1	= {UV16_00, regValRs[47:0]};
+`else
 			tRegValCn1	= {UV32_00, regValRs[31:0]};
+`endif
 		end
 		
 		JX2_UCMD_MULW3: begin
@@ -696,16 +723,16 @@ begin
 
 				JX2_UCIX_IXS_INVIC: begin
 					tMemOpm		= UMEM_OPM_FLUSHIS;
-					tMemAddr	= regValRm[31:0];
+					tMemAddr	= regValRm[47:0];
 
 //					tRegOutLr	= regValPc;
 					tRegIdCn1	= JX2_CR_PC[4:0];
-					tRegValCn1	= {UV32_00, regValPc};
+					tRegValCn1	= {UV16_00, regValPc};
 
 				end
 				JX2_UCIX_IXS_INVDC: begin
 					tMemOpm		= UMEM_OPM_FLUSHDS;
-					tMemAddr	= regValRm[31:0];
+					tMemAddr	= regValRm[47:0];
 				end
 
 				default: begin
@@ -825,6 +852,7 @@ end
 
 always @(posedge clock)
 begin
+	tAguFlagJq	<= regInSr[31];
 	tMsgLatch	<= tNextMsgLatch;
 end
 

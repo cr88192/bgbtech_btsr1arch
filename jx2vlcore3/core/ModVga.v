@@ -358,6 +358,8 @@ begin
 		tVsync600	= 1;
 	end
 
+//	tHsync800	= 1;
+
 //	tCbNextAcc			= tCbAcc + 150137;
 	tScanNextPixClk		= tScanPixClk + 1;
 	tScanNextRowClk		= tScanRowClk;
@@ -396,7 +398,8 @@ begin
 //				tScanPixClk[13:2] +
 //				{2'b00, tScanPixClk[13:4]} - 59;
 				{1'b0,  tScanPixClk[12:2]} +
-				{3'b00, tScanPixClk[12:4]} - 59;
+//				{3'b00, tScanPixClk[12:4]} - 59;
+				{3'b00, tScanPixClk[12:4]} - 79;
 
 //			tPixNextPosY = tScanNextRowClk[11:0] - 20;
 //			tPixNextPosY = tScanNextRowClk[11:0] - 30;
@@ -411,6 +414,8 @@ begin
 //			tPixNextPosX = tScanPixClk[13:2] - 69;
 //			tPixNextPosX = {1'b0, tScanPixClk[12:2]} - 69;
 			tPixNextPosX = {1'b0, tScanPixClk[12:2]} - 79;
+//			tPixNextPosX = {1'b0, tScanPixClk[12:2]} +
+//				{8'b00000000, tScanPixClk[12:9]} - 79;
 
 //			tPixNextPosY = tScanNextRowClk[11:0] - 20;
 //			tPixNextPosY = tScanNextRowClk[11:0] - 30;
@@ -461,8 +466,13 @@ begin
 		tNextVsync		= 1;
 
 //		if(tScanPixClk>=3176)
-		if(tScanPixClk>=1588)
+//		if(tScanPixClk>=1588)
+//		if((tScanPixClk>=1588) && pixAux[1])
+//		if((tScanPixClk>=3173) && pixAux[1])
+//		if((tScanPixClk>=3175) && pixAux[1])
+		if((tScanPixClk>=3176) && pixAux[1])
 		begin
+//			if(pixAux[1])
 			tVSyncNextClk = tVSyncClk - 1;
 			tScanNextPixClk = 0;
 		end
@@ -498,15 +508,26 @@ begin
 	begin
 //		if(tScanPixClk>=6352)
 //		if(tScanPixClk>=3178)
-		if(tScanPixClk>=3200)
+//		if((tScanPixClk>=3178) && pixAux[1])
+//		if((tScanPixClk>=3173) && pixAux[1])
+//		if((tScanPixClk>=3175) && pixAux[1])
+		if((tScanPixClk>=3176) && pixAux[1])
+//		if(tScanPixClk>=3200)
 		begin
-			tScanNextRowClk = tScanRowClk + 1;
-			tScanNextPixClk = 0;
+//			if(pixAux[1])
+//			begin
+				tScanNextRowClk = tScanRowClk + 1;
+				tScanNextPixClk = 0;
+//			end
 			
 //			if(tScanNextRowClk>=262)
 //			if(tScanNextRowClk>=524)
-			if(	((tScanNextRowClk>=524) && !tVsync600) ||
-				((tScanNextRowClk>=624) && tVsync600))
+//			if(	((tScanNextRowClk>=524) && !tVsync600) ||
+//				((tScanNextRowClk>=624) && tVsync600))
+			if(	((tScanNextRowClk>=525) && !tVsync600) ||
+				((tScanNextRowClk>=625) && tVsync600))
+//			if(	((tScanNextRowClk>=526) && !tVsync600) ||
+//				((tScanNextRowClk>=626) && tVsync600))
 			begin
 				tVFieldNextCnt = tVFieldCnt + 1;
 //				tVSyncNextClk = 5;
@@ -539,6 +560,12 @@ begin
 
 			tNextPwmEn		= 1;
 		end
+		else
+		begin
+			tPwmNextValR	= 76;
+			tPwmNextValG	= 76;
+			tPwmNextValB	= 76;
+		end
 	end
 end
 
@@ -551,9 +578,9 @@ begin
 	tPwmStG			<= tPwmNextStG;
 	tPwmStB			<= tPwmNextStB;
 
-	tPwmValR		<= tPwmNextValR;
-	tPwmValG		<= tPwmNextValG;
-	tPwmValB		<= tPwmNextValB;
+//	tPwmValR		<= tPwmNextValR;
+//	tPwmValG		<= tPwmNextValG;
+//	tPwmValB		<= tPwmNextValB;
 	tPwmEn			<= tNextPwmEn;
 
 //	tCbAcc			<= tCbNextAcc;
@@ -568,9 +595,9 @@ begin
 	tPixPosX		<= tPixNextPosX;
 	tPixPosY		<= tPixNextPosY;
 
-	tPixCy			<= pixCy;
-	tPixCu			<= pixCu;
-	tPixCv			<= pixCv;
+//	tPixCy			<= pixCy;
+//	tPixCu			<= pixCu;
+//	tPixCv			<= pixCv;
 
 	tBaseCy			<= tBaseNextCy;
 	tBaseCu			<= tBaseNextCu;
@@ -593,6 +620,14 @@ begin
 	if(pixAux[1])
 	begin
 		tBayerIx		<= tNxtBayerIx;
+
+		tPixCy			<= pixCy;
+		tPixCu			<= pixCu;
+		tPixCv			<= pixCv;
+
+		tPwmValR		<= tPwmNextValR;
+		tPwmValG		<= tPwmNextValG;
+		tPwmValB		<= tPwmNextValB;
 	end
 
 end

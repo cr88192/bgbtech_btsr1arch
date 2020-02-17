@@ -192,7 +192,7 @@ typedef struct
 */
 
 // typedef byte    lighttable_t;           // this could be wider for >8 bit display
-typedef dt_scrpix    lighttable_t;           // this could be wider for >8 bit display
+// typedef dt_scrpix    lighttable_t;           // this could be wider for >8 bit display
 
 #define MAXVISPLANES    160
 #define MAXOPENINGS             SCREENWIDTH*64

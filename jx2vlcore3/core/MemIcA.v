@@ -19,7 +19,7 @@ module MemIcA(
 input			clock;
 input			reset;
 
-input [31: 0]	regInPc;		//input PC address
+input [47: 0]	regInPc;		//input PC address
 // output[63: 0]	regOutPcVal;	//output PC value
 output[95: 0]	regOutPcVal;	//output PC value
 output[ 1: 0]	regOutPcOK;		//set if we have a valid value.

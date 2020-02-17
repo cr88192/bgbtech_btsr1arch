@@ -204,7 +204,8 @@ int VID_ColorMap16(int pix, int light)
 //	llv=light>>10;
 //	llv=15-((light>>12)&15);
 //	llv=15-((light>>10)&15);
-	llv = 255-(((light>>8)&255)*3);
+//	llv = 255-(((light>>8)&255)*3);
+	llv = 255-((byte)(light>>8)*3u);
 	llv >>= 4;
 
 	if((llv&15)==15)
