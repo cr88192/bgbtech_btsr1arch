@@ -825,6 +825,7 @@ void BGBCC_CCXL_CompileInitVar(BGBCC_TransState *ctx,
 
 void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 {
+	static int warn_rov;
 	BCCX_Node *c, *ct, *cv, *t, *n, *u, *v, *n1;
 	BCCX_Node *ln, *rn, *ln2, *rn2;
 	BCCX_Node *ni, *nc, *ns, *nb;
@@ -866,7 +867,14 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 	l=BGBCC_CCXL_ReduceExpr(ctx, l);
 	if(!l)
 	{
-		printf("BGBCC_CCXL_CompileStatement: Statement Reduced Away\n");
+//		BGBCC_CCXL_Warn(ctx,
+//			"BGBCC_CCXL_CompileStatement: Statement Reduced Away\n");
+
+		warn_rov++;
+		if(!(warn_rov&63))
+			BGBCC_CCXL_Warn(ctx, "There was a statement here, it's gone now\n");
+		else
+			BGBCC_CCXL_Warn(ctx, "Statement Reduced Away\n");
 		return;
 	}
 
@@ -2007,6 +2015,33 @@ char *BGBCC_CCXL_VarTypeString_FlattenName(BGBCC_TransState *ctx,
 			{ *t++='C'; *t++='c'; }
 		if(!strcmp(s, "quat"))
 			{ *t++='C'; *t++='q'; }
+
+		if(!strcmp(s, "vec2f"))
+			{ *t++='C'; *t++='a'; }
+		if(!strcmp(s, "vec3f"))
+			{ *t++='C'; *t++='b'; }
+		if(!strcmp(s, "vec4f"))
+			{ *t++='C'; *t++='c'; }
+		if(!strcmp(s, "quatf"))
+			{ *t++='C'; *t++='q'; }
+
+		if(!strcmp(s, "m64"))
+			{ *t++='C'; *t++='m'; }
+		if(!strcmp(s, "m128"))
+			{ *t++='C'; *t++='n'; }
+
+		if(!strcmp(s, "vec4w"))
+			{ *t++='C'; *t++='w'; }
+		if(!strcmp(s, "vec4i"))
+			{ *t++='C'; *t++='j'; }
+		if(!strcmp(s, "vec4sw"))
+			{ *t++='C'; *t++='v'; }
+		if(!strcmp(s, "vec4si"))
+			{ *t++='C'; *t++='i'; }
+		if(!strcmp(s, "vec4uw"))
+			{ *t++='C'; *t++='w'; }
+		if(!strcmp(s, "vec4ui"))
+			{ *t++='C'; *t++='j'; }
 
 		if(!strcmp(s, "vec2d"))
 			{ *t++='D'; *t++='a'; }
@@ -3341,7 +3376,10 @@ int BGBCC_CCXL_CompileVarStatementCompound(
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_if, "if"))
 	{
 		c=BCCX_FetchCst(l, &bgbcc_rcst_then, "then");
-		BGBCC_CCXL_CompileVarStatement(ctx, c);
+		if(c)
+		{
+			BGBCC_CCXL_CompileVarStatement(ctx, c);
+		}
 
 		c=BCCX_FetchCst(l, &bgbcc_rcst_else, "else");
 		if(c)
@@ -5207,6 +5245,14 @@ void BGBCC_CCXL_CompileTopStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 		{ return; }
 
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_asm_blob, "asm_blob"))
+	{
+		c=BCCX_Child(l);
+		BGBCC_CCXL_AddAsmBlob(ctx, BCCX_Text(c));
+//		BGBCC_CCXL_Warn(ctx, "inline ASM is unsupported\n");
+		return;
+	}
+
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_msvc_asm, "msvc_asm"))
 	{
 		c=BCCX_Child(l);
 		BGBCC_CCXL_AddAsmBlob(ctx, BCCX_Text(c));

@@ -422,17 +422,22 @@ static char *bgbcp_basetypes_c[]={
 "__int128",	"__uint128",
 
 "__float128", "__float16", "__m64", "__m128",
-"__vec2", "__vec3", "__vec4", "__quat", 
+// "__vec2", "__vec3", "__vec4", "__quat", 
+"__vec2f", "__vec3f", "__vec4f", "__quatf", 
 "__vec2d", "__vec3d", "__vec4d", "__quatd", 
-"__mat2", "__mat3", "__mat4",
+// "__mat2", "__mat3", "__mat4",
+"__mat2f", "__mat3f", "__mat4f",
 
+ "__vec4w", "__vec4sw", "__vec4uw",
+ "__vec4i", "__vec4si", "__vec4ui",
+ 
 "__bfloat16",
 
 // "_Float128",	"_Float64",
 // "_Float32",	"_Float16",
 
-"__v2f", "__v3f", "__v4f",
-"__m2f", "__m3f", "__m4f",
+// "__v2f", "__v3f", "__v4f",
+// "__m2f", "__m3f", "__m4f",
 "__variant", "__variantf",
 "__variant_va", "__variant_this", "__variant_cls",
 "__gnuc_va_list", "__builtin_va_list",

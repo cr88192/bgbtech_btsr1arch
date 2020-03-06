@@ -45,6 +45,8 @@ Holding/Completing a memory access will be the responsibility of EX2.
 `include "ExShllN.v"
 `endif
 
+/* verilator lint_off DEFPARAM */
+
 module ExEX1(
 	clock, reset,
 	opUCmd, opUIxt,
@@ -118,6 +120,9 @@ input[63:0]		regFpuGRn;		//FPU GPR Result
 input			regFpuSrT;
 input			opBraFlush;
 input			opPreBra;
+
+parameter		isAltCore = 0;
+defparam		cpuid.isAltCore = isAltCore;
 
 output[63:0]	regOutDlr;
 input[63:0]		regInDlr;

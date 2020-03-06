@@ -214,6 +214,9 @@ parameter[62:0] UV63_FF			= 63'h7FFFFFFF_FFFFFFFF;	//
 parameter[63:0] UV64_00			= 64'h00000000_00000000;	//
 parameter[63:0] UV64_FF			= 64'hFFFFFFFF_FFFFFFFF;	//
 
+parameter[64:0] UV65_00			= 65'h000000000_00000000;	//
+parameter[64:0] UV65_FF			= 65'h1FFFFFFFF_FFFFFFFF;	//
+
 parameter[95:0] UV96_00			= { UV32_00, UV64_00 };	//
 parameter[95:0] UV96_FF			= { UV32_FF, UV64_FF };	//
 
@@ -426,7 +429,6 @@ parameter[5:0] JX2_UCMD_FSTCX		= 6'h24;		//FPU Convert (FPR->GR)
 parameter[5:0] JX2_UCMD_FIXS		= 6'h25;		//FPU Unary Op (FPR)
 parameter[5:0] JX2_UCMD_FCMP		= 6'h26;		//FPU Compare
 parameter[5:0] JX2_UCMD_MULW3		= 6'h27;		//Multiply (Word)
-
 parameter[5:0] JX2_UCMD_ALUW3		= 6'h28;		//ALU, Packed Word (3R)
 
 parameter[5:0] JX2_UCMD_BRA_NB		= 6'h2C;		//No Branch
@@ -473,6 +475,17 @@ parameter[5:0] JX2_UCIX_ALU_PCSELT	= 6'h3F;		//Packed CSELT
 parameter[5:0] JX2_UCIX_ALUN_CLZ	= 6'h00;		//Count Leading Zeroes
 parameter[5:0] JX2_UCIX_ALUN_CLZQ	= 6'h20;		//Count Leading Zeroes (QW)
 
+parameter[5:0] JX2_UCIX_ALUW_PADDW	= 6'h20;		//ALU ADD
+parameter[5:0] JX2_UCIX_ALUW_PSUBW	= 6'h21;		//ALU SUB
+
+parameter[5:0] JX2_UCIX_ALUW_MOVHLD	= 6'h22;		//ALU (High, Low)
+parameter[5:0] JX2_UCIX_ALUW_MOVLHD	= 6'h23;		//ALU (Low, High)
+
+parameter[5:0] JX2_UCIX_ALUW_PSHUFB	= 6'h45;		//ALU PSHUF.B
+parameter[5:0] JX2_UCIX_ALUW_PSHUFW	= 6'h25;		//ALU PSHUF.W
+parameter[5:0] JX2_UCIX_ALUW_MOVLD	= 6'h26;		//ALU (Low DWords)
+parameter[5:0] JX2_UCIX_ALUW_MOVHD	= 6'h27;		//ALU (High DWords)
+
 parameter[5:0] JX2_UCIX_PUSH_GR		= 6'h00;		//GPR
 parameter[5:0] JX2_UCIX_PUSH_CR		= 6'h01;		//Control Reg
 parameter[5:0] JX2_UCIX_PUSH_FR		= 6'h02;		//FPR
@@ -499,13 +512,28 @@ parameter[5:0] JX2_UCIX_CONV_LDISIN		= 6'h0E;		//Load Shift Imm
 parameter[5:0] JX2_UCIX_CONV_LDIQSIN	= 6'h0F;		//Load Shift Imm
 parameter[5:0] JX2_UCIX_CONV_LDIQHI16	= 6'h10;		//Load High Bits
 parameter[5:0] JX2_UCIX_CONV_LDIQHI32	= 6'h11;		//Load High Bits
-parameter[5:0] JX2_UCIX_CONV_FNEG		= 6'h12;		//Load High Bits
-parameter[5:0] JX2_UCIX_CONV_FABS		= 6'h13;		//Load High Bits
+parameter[5:0] JX2_UCIX_CONV_FNEG		= 6'h12;		//Float FNEG
+parameter[5:0] JX2_UCIX_CONV_FABS		= 6'h13;		//Float FABS
+
+parameter[5:0] JX2_UCIX_CONV_RGBSHR1		= 6'h18;	//RGB555, Shift Right 1
+parameter[5:0] JX2_UCIX_CONV_RGB5PCK32		= 6'h1A;	//RGB32->RGB555
+parameter[5:0] JX2_UCIX_CONV_RGB5UPCK32		= 6'h1B;	//RGB555->RGB32
+parameter[5:0] JX2_UCIX_CONV_RGB5PCK64		= 6'h1C;	//RGB64->RGB555
+parameter[5:0] JX2_UCIX_CONV_RGB5UPCK64		= 6'h1D;	//RGB555->RGB64
+parameter[5:0] JX2_UCIX_CONV_RGB32PCK64		= 6'h1E;	//RGB64->RGB32
+parameter[5:0] JX2_UCIX_CONV_RGB32UPCK64	= 6'h1F;	//RGB32->RGB64
 
 parameter[5:0] JX2_UCIX_MUL3_MUL3S	= 6'h00;		//
 parameter[5:0] JX2_UCIX_MUL3_MUL3U	= 6'h01;		//
 parameter[5:0] JX2_UCIX_MUL3_MULS	= 6'h02;		//
 parameter[5:0] JX2_UCIX_MUL3_MULU	= 6'h03;		//
+
+parameter[5:0] JX2_UCIX_MUL3_PWMULS	= 6'h06;		//Packed-Widen
+parameter[5:0] JX2_UCIX_MUL3_PWMULU	= 6'h07;		//Packed-Widen
+parameter[5:0] JX2_UCIX_MUL3_PLMULS	= 6'h08;		//Packed-High
+parameter[5:0] JX2_UCIX_MUL3_PLMULU	= 6'h09;		//Packed-High
+parameter[5:0] JX2_UCIX_MUL3_PHMULS	= 6'h0A;		//Packed-High
+parameter[5:0] JX2_UCIX_MUL3_PHMULU	= 6'h0B;		//Packed-High
 
 parameter[5:0] JX2_UCIX_LDI_LDIX	= 6'h00;		//
 parameter[5:0] JX2_UCIX_LDI_LDISH8	= 6'h01;		//
@@ -519,6 +547,14 @@ parameter[5:0] JX2_UCIX_FPU_FSUB	= 6'h01;		//FPU SUB
 parameter[5:0] JX2_UCIX_FPU_FMUL	= 6'h02;		//FPU MUL
 parameter[5:0] JX2_UCIX_FPU_FDIV	= 6'h03;		//FPU DIV
 parameter[5:0] JX2_UCIX_FPU_FMOV	= 6'h04;		//FPU MOV
+
+parameter[5:0] JX2_UCIX_FPU_PADD	= 6'h05;		//FPU ADD
+parameter[5:0] JX2_UCIX_FPU_PSUB	= 6'h06;		//FPU SUB
+parameter[5:0] JX2_UCIX_FPU_PMUL	= 6'h07;		//FPU MUL
+
+parameter[5:0] JX2_UCIX_FPU_PADDX	= 6'h25;		//FPU ADD
+parameter[5:0] JX2_UCIX_FPU_PSUBX	= 6'h26;		//FPU SUB
+parameter[5:0] JX2_UCIX_FPU_PMULX	= 6'h27;		//FPU MUL
 
 parameter[5:0] JX2_UCIX_FPU_FADD_G	= 6'h10;		//FPU ADD (GFP)
 parameter[5:0] JX2_UCIX_FPU_FSUB_G	= 6'h11;		//FPU SUB (GFP)

@@ -34,6 +34,25 @@
 #define CCXL_TY_VARSTRING		0x1B		//Variant String
 #define CCXL_TY_VAROBJECT		0x1C		//Variant Object
 
+#define CCXL_TY_M64				0x1E		//64-bit vector
+#define CCXL_TY_M128			0x1F		//128-bit vector
+#define CCXL_TY_VEC2F			0x20		//64-bit float2 vector
+#define CCXL_TY_VEC3F			0x21		//128-bit float4 vector
+#define CCXL_TY_VEC4F			0x22		//128-bit float4 vector
+#define CCXL_TY_QUATF			0x23		//128-bit float4 vector
+#define CCXL_TY_VEC2D			0x24		//128-bit double2 vector
+#define CCXL_TY_VEC3D			0x25		//256-bit double4 vector
+#define CCXL_TY_VEC4D			0x26		//256-bit double4 vector
+#define CCXL_TY_QUATD			0x27		//256-bit double4 vector
+
+#define CCXL_TY_FCOMPLEX		0x28		//64-bit float2 complex
+#define CCXL_TY_DCOMPLEX		0x29		//128-bit double2 complex
+
+#define CCXL_TY_VEC4SW			0x2C		//64-bit 4x short vector
+#define CCXL_TY_VEC4UW			0x2D		//64-bit 4x ushort vector
+#define CCXL_TY_VEC4SI			0x2E		//128-bit 4x int vector
+#define CCXL_TY_VEC4UI			0x2F		//128-bit 4x uint vector
+
 #define CCXL_VTY_PCHAR			0x00001008	//'char *'
 #define CCXL_VTY_PWCHAR			0x0000100B	//'wchar_t *'
 

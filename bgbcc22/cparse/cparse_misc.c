@@ -590,6 +590,27 @@ char *BGBCP_NameForSubArch(fourcc arch, fourcc subarch)
 	return(s);
 }
 
+char *BGBCP_NameSuffixForArch(fourcc arch)
+{
+	char *s;
+	
+	switch(arch)
+	{
+	case BGBCC_ARCH_DEFAULT: s="default"; break;
+	case BGBCC_ARCH_X86:	s="x86"; break;
+	case BGBCC_ARCH_X64:	s="x64"; break;
+	case BGBCC_ARCH_ARM:	s="arm"; break;
+	case BGBCC_ARCH_PPC:	s="ppc"; break;
+	case BGBCC_ARCH_SH:		s="sh"; break;
+	case BGBCC_ARCH_SH64:	s="sh64"; break;
+	case BGBCC_ARCH_BSR:	s="bsr"; break;
+	case BGBCC_ARCH_BJX2:	s="bjx2"; break;
+
+	default: s=NULL; break;
+	}
+	return(s);
+}
+
 char *BGBCP_DescForSubArch(fourcc arch, fourcc subarch)
 {
 	char *s;

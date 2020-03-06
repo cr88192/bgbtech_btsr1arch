@@ -1455,9 +1455,13 @@ char *BGBPP_PrintName(char *t, char *s)
 	int i;
 
 	i=*(t-1);
-	if((i=='_') || ((i>='0') && (i<='9')) ||
+	if((i=='_') || (i=='$') || ((i>='0') && (i<='9')) ||
 		((i>='A') && (i<='Z')) || ((i>='a') && (i<='z')))
 			*t++=' ';
+
+	if(BGBCP_OpChar(i) && BGBCP_OpChar(*s))
+		*t++=' ';
+
 	strcpy(t, s);
 	t+=strlen(s);
 	return(t);
@@ -1473,6 +1477,9 @@ char *BGBPP_PrintToken(char *t, char *s, int ty)
 
 	if(ty==BTK_NUMBER)
 	{
+		if(BGBCP_OpChar(*(t-1)) && BGBCP_OpChar(*s))
+			*t++=' ';
+
 		t=BGBPP_PrintName(t, s);
 		return(t);
 	}
@@ -1498,6 +1505,9 @@ char *BGBPP_PrintToken(char *t, char *s, int ty)
 		t=BGBCC_StrPrintRawStr(t, s);
 		return(t);
 	}
+
+	if(BGBCP_OpChar(*(t-1)) && BGBCP_OpChar(*s))
+		*t++=' ';
 
 //	sprintf(t, "%s", s);
 //	t+=strlen(t);

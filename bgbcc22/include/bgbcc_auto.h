@@ -95,6 +95,7 @@ fourcc BGBCP_ArchForName(char *name);
 fourcc BGBCP_SubArchForName(int arch, char *name);
 char *BGBCP_NameForArch(fourcc arch);
 char *BGBCP_NameForSubArch(fourcc arch, fourcc subarch);
+char *BGBCP_NameSuffixForArch(fourcc arch);
 char *BGBCP_DescForSubArch(fourcc arch, fourcc subarch);
 int BGBCP_QueryArchList(fourcc *rarch, int narch);
 int BGBCP_DumpTargets(void);
@@ -1297,6 +1298,9 @@ bool BGBCC_CCXL_TypeValueObjectP(BGBCC_TransState *ctx, ccxl_type ty);
 bool BGBCC_CCXL_TypeIsRefObjectP(BGBCC_TransState *ctx, ccxl_type ty);
 bool BGBCC_CCXL_TypeRefStringP(BGBCC_TransState *ctx, ccxl_type ty);
 bool BGBCC_CCXL_TypeIsObjectP(BGBCC_TransState *ctx, ccxl_type ty);
+bool BGBCC_CCXL_TypeVec64P(BGBCC_TransState *ctx, ccxl_type ty);
+bool BGBCC_CCXL_TypeVec128P(BGBCC_TransState *ctx, ccxl_type ty);
+bool BGBCC_CCXL_TypeVecP(BGBCC_TransState *ctx, ccxl_type ty);
 bool BGBCC_CCXL_TypeIsTypedefP(BGBCC_TransState *ctx, ccxl_type ty);
 bool BGBCC_CCXL_TypeGetTypedefType(BGBCC_TransState *ctx, ccxl_type ty, ccxl_type *rty);
 int BGBCC_CCXL_TypeAsOprBasic(BGBCC_TransState *ctx, ccxl_type ty);
@@ -2297,7 +2301,8 @@ char *BGBCC_JX2A_ParseTokenAlt(char *cs, char **rstr);
 char *BGBCC_JX2A_ParseToken(char *cs, char **rtok);
 char *BGBCC_JX2A_ParseTokenAlt(char *cs, char **rtok);
 int BGBCC_JX2A_GetRegId(char *str);
-int BGBCC_JX2A_ParseOperand(char **rcs, BGBCC_JX2_OpcodeArg *opv);
+int BGBCC_JX2A_ParseOperand_OffsetOf(BGBCC_JX2_Context *ctx,char *objn, char *fldn);
+int BGBCC_JX2A_ParseOperand(BGBCC_JX2_Context *ctx, char **rcs, BGBCC_JX2_OpcodeArg *opv);
 int BGBCC_JX2A_Init();
 int BGBCC_JX2A_LookupOpcodeNmid(char *name);
 int BGBCC_JX2A_LookupOpcodeFmid(BGBCC_JX2_OpcodeArg *arg0, BGBCC_JX2_OpcodeArg *arg1, BGBCC_JX2_OpcodeArg *arg2);
@@ -2384,6 +2389,8 @@ int BGBCC_JX2_TryEmitStoreRegLabelVarPbo24(BGBCC_JX2_Context *ctx, int nmid, int
 int BGBCC_JX2_EmitLoadRegLabelVarRel24(BGBCC_JX2_Context *ctx, int nmid, int reg, int lbl);
 int BGBCC_JX2_TryEmitLoadRegLabelVarRel24(BGBCC_JX2_Context *ctx, int nmid, int reg, int lbl);
 int BGBCC_JX2_EmitStoreRegLabelVarRel24(BGBCC_JX2_Context *ctx, int nmid, int reg, int lbl);
+int BGBCC_JX2_EmitShufDWord(BGBCC_JX2_Context *ctx, int reg, int shuf);
+int BGBCC_JX2_EmitShufDWordRegReg(BGBCC_JX2_Context *ctx,int sreg, int shuf, int dreg);
 int BGBCC_JX2_EmitShufWord_IdToOp(BGBCC_JX2_Context *ctx, int id);
 int BGBCC_JX2_EmitShufByte_IdToOp(BGBCC_JX2_Context *ctx, int id);
 int BGBCC_JX2_EmitShufWord(BGBCC_JX2_Context *ctx, int reg, int shuf);
@@ -2732,6 +2739,10 @@ int BGBCC_JX2C_IndexLitInt128(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, s6
 int BGBCC_JX2C_EmitBinaryVRegVRegInt128(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
 int BGBCC_JX2C_EmitBinaryVRegVRegVRegInt128(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
 int BGBCC_JX2C_EmitUnaryVRegVRegInt128(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
+//AHSRC:jx2cc/jx2_v4arith.c
+int BGBCC_JX2C_EmitBinaryVRegVRegVReg_Vec64F(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
+int BGBCC_JX2C_EmitBinaryVRegVRegVReg_Vec128F(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
+int BGBCC_JX2C_EmitBinaryVRegVRegVReg_Vec(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
 //AHSRC:jx2cc/jx2_pecoff.c
 int BGBCC_JX2C_CoffLoadBufferDLL(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, byte *buf, int sz);
 int BGBCC_JX2C_CoffBuildExports(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);

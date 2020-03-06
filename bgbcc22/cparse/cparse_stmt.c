@@ -673,19 +673,43 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 
 			if(!bgbcp_strcmp(b, "__asm"))
 			{
+				s2=malloc(65536);
+
 				i=0;
+				t=s2;
 				while(1)
 				{
 					s=BGBCP_Token2(s, b, &ty, ctx->lang);
-					if(!bgbcp_strcmp1(b, "{"))i++;
+					if(!bgbcp_strcmp1(b, "{"))
+					{
+						i++;
+						if(i==1)
+						{
+							s=BGBCP_EatWhite(s);
+							continue;
+						}
+					}
 					if(!bgbcp_strcmp1(b, "}"))
 					{
 						i--;
 						if(!i)break;
+						continue;
+					}
+					
+					t=BGBPP_PrintToken(t, b, ty);
+					while(*s && *s<=' ')
+					{
+						*t++=*s++;
 					}
 				}
 
-				n=BCCX_NewCst(&bgbcc_rcst_msvc_asm, "msvc_asm");
+				*t=0;
+
+				n1=BCCX_NewText(s2);
+				n=BCCX_NewCst1(&bgbcc_rcst_msvc_asm, "msvc_asm", n1);
+//				BCCX_SetCst(n, &bgbcc_rcst_value, "value", stbuf);
+
+				free(s2);
 
 				*str=s;
 				return(n);

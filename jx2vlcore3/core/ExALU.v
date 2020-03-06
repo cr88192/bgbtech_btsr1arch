@@ -181,9 +181,10 @@ reg[32:0]	tResultu1A;
 reg[32:0]	tResultu1B;
 reg[64:0]	tResultu2A;
 
-reg[32:0]	tResultw1A;
-reg[32:0]	tResultw1B;
+reg[32:0]	tResult1W;
 reg[64:0]	tResult2W;
+reg[32:0]	tResultShufB;
+reg[64:0]	tResultShufW;
 
 
 always @*
@@ -290,6 +291,63 @@ begin
 
 `endif
 
+	tResultShufB = UV33_00;
+	tResultShufW = UV65_00;
+
+`ifdef def_true
+	case(regValRt[1:0])
+		2'b00: tResultShufB[ 7: 0]=regValRs[ 7: 0];
+		2'b01: tResultShufB[ 7: 0]=regValRs[15: 8];
+		2'b10: tResultShufB[ 7: 0]=regValRs[23:16];
+		2'b11: tResultShufB[ 7: 0]=regValRs[31:24];
+	endcase
+	case(regValRt[3:2])
+		2'b00: tResultShufB[15: 8]=regValRs[ 7: 0];
+		2'b01: tResultShufB[15: 8]=regValRs[15: 8];
+		2'b10: tResultShufB[15: 8]=regValRs[23:16];
+		2'b11: tResultShufB[15: 8]=regValRs[31:24];
+	endcase
+	case(regValRt[5:4])
+		2'b00: tResultShufB[23:16]=regValRs[ 7: 0];
+		2'b01: tResultShufB[23:16]=regValRs[15: 8];
+		2'b10: tResultShufB[23:16]=regValRs[23:16];
+		2'b11: tResultShufB[23:16]=regValRs[31:24];
+	endcase
+	case(regValRt[7:6])
+		2'b00: tResultShufB[31:24]=regValRs[ 7: 0];
+		2'b01: tResultShufB[31:24]=regValRs[15: 8];
+		2'b10: tResultShufB[31:24]=regValRs[23:16];
+		2'b11: tResultShufB[31:24]=regValRs[31:24];
+	endcase
+`endif
+
+`ifdef def_true
+	case(regValRt[1:0])
+		2'b00: tResultShufW[15: 0]=regValRs[15: 0];
+		2'b01: tResultShufW[15: 0]=regValRs[31:16];
+		2'b10: tResultShufW[15: 0]=regValRs[47:32];
+		2'b11: tResultShufW[15: 0]=regValRs[63:48];
+	endcase
+	case(regValRt[3:2])
+		2'b00: tResultShufW[31:16]=regValRs[15: 0];
+		2'b01: tResultShufW[31:16]=regValRs[31:16];
+		2'b10: tResultShufW[31:16]=regValRs[47:32];
+		2'b11: tResultShufW[31:16]=regValRs[63:48];
+	endcase
+	case(regValRt[5:4])
+		2'b00: tResultShufW[47:32]=regValRs[15: 0];
+		2'b01: tResultShufW[47:32]=regValRs[31:16];
+		2'b10: tResultShufW[47:32]=regValRs[47:32];
+		2'b11: tResultShufW[47:32]=regValRs[63:48];
+	endcase
+	case(regValRt[7:6])
+		2'b00: tResultShufW[63:48]=regValRs[15: 0];
+		2'b01: tResultShufW[63:48]=regValRs[31:16];
+		2'b10: tResultShufW[63:48]=regValRs[47:32];
+		2'b11: tResultShufW[63:48]=regValRs[63:48];
+	endcase
+`endif
+
 `ifndef def_true
 
 //	case({regValRs[31], regValRt[31], tSub1SF})
@@ -383,6 +441,10 @@ begin
 	tResult1B=UV33_XX;
 	tResult1S=regInSrS;
 
+	tResult1W=UV33_XX;
+	tResult2W=UV65_XX;
+
+
 	case(idUIxt[3:0])
 		4'h0: begin		/* ADD */
 			tResult1A=tAdd2A0;
@@ -418,6 +480,8 @@ begin
 
 			tResult1B=regInSrS ? tAdd2B1 : tAdd2B0;
 			tResult1S=tResult1B[32];
+
+			tResult2W = { 1'b0, regValRs[63:32], regValRt[31:0] };
 		end
 		4'h3: begin		/* SBB */
 			tResult1A=regInSrT ? tSub2A0 : tSub2A1;
@@ -427,6 +491,8 @@ begin
 
 			tResult1B=regInSrS ? tSub2B0 : tSub2B1;
 			tResult1S=!tResult1B[32];
+
+			tResult2W = { 1'b0, regValRs[31:0], regValRt[63:32] };
 		end
 		
 		4'h4: begin		/* TST */
@@ -441,18 +507,22 @@ begin
 			tResult2A={1'b0, regValRs[63:32] & regValRt[63:32], tResult1A[31:0]};
 			tResult1T=regInSrT;
 			tResult2T=regInSrT;
+			tResult1W = tResultShufB;
+			tResult2W = tResultShufW;
 		end
 		4'h6: begin		/* OR */
 			tResult1A={1'b0, regValRs[31:0] | regValRt[31:0]};
 			tResult2A={1'b0, regValRs[63:32] | regValRt[63:32], tResult1A[31:0]};
 			tResult1T=regInSrT;
 			tResult2T=regInSrT;
+			tResult2W = { 1'b0, regValRs[31:0], regValRt[31:0] };
 		end
 		4'h7: begin		/* XOR */
 			tResult1A={1'b0, regValRs[31:0] ^ regValRt[31:0]};
 			tResult2A={1'b0, regValRs[63:32] ^ regValRt[63:32], tResult1A[31:0]};
 			tResult1T=regInSrT;
 			tResult2T=regInSrT;
+			tResult2W = { 1'b0, regValRs[63:32], regValRt[63:32] };
 		end
 
 		4'h8: begin		/* CMPNE */
@@ -572,6 +642,7 @@ begin
 	begin
 //		tResult1A = tResultu1A;
 //		tResult1B = tResultu1B;
+		tResult1A = tResult1W;
 		tResult2A = tResult2W;
 	end
 `endif

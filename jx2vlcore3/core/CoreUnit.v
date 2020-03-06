@@ -1,6 +1,10 @@
 `include "ExUnit.v"
 `include "MemL2A.v"
 
+`ifdef jx2_enable_dualcore
+`include "ExMemJoin.v"
+`endif
+
 `include "MmiModGpio.v"
 `include "MmiModDdr3.v"
 `include "MmiModClkp.v"
@@ -253,6 +257,9 @@ MmiModDdr3		ddr(
 	ddrDqsP_I,	ddrDqsN_I,
 	ddrDqsP_O,	ddrDqsN_O,	ddrDqs_En);
 
+
+`ifdef jx2_enable_dualcore
+
 wire[127:0]		memInData;
 wire[127:0]		memOutData;
 wire[47:0]		memAddr;
@@ -261,14 +268,175 @@ wire[4:0]		memOpm;
 wire[1:0]		memOK;
 reg[63:0]		memBusExc;
 
-// reg[31:0]		mmioInData;
-wire[31:0]		mmioOutData;
-reg[63:0]		mmioInData;
-wire[63:0]		mmioOutDataQ;
-wire[31:0]		mmioAddr;
-wire[4:0]		mmioOpm;
-reg[1:0]		mmioOK;
-assign		mmioOutData = mmioOutDataQ[31:0];
+wire[47:0]		dbgOutPc;
+wire[95:0]		dbgOutIstr;
+wire			dbgExHold1;
+wire			dbgExHold2;
+
+wire[47:0]		dbgDcInAddr;
+wire[ 4:0]		dbgDcInOpm;
+wire[63:0]		dbgDcOutVal;
+wire[63:0]		dbgDcInVal;
+wire[ 1:0]		dbgDcOutOK;
+
+wire			dbgOutStatus1;
+wire			dbgOutStatus2;
+wire			dbgOutStatus3;
+wire			dbgOutStatus4;
+wire			dbgOutStatus5;
+wire			dbgOutStatus6;
+wire			dbgOutStatus7;
+wire			dbgOutStatus8;
+
+
+wire[127:0]		mem1InData;
+wire[127:0]		mem1OutData;
+wire[47:0]		mem1AddrA;
+wire[47:0]		mem1AddrB;
+wire[4:0]		mem1Opm;
+wire[1:0]		mem1OK;
+wire[63:0]		mem1BusExc;
+
+wire[47:0]		dbg1OutPc;
+wire[95:0]		dbg1OutIstr;
+wire			dbg1ExHold1;
+wire			dbg1ExHold2;
+
+wire[47:0]		dbg1DcInAddr;
+wire[ 4:0]		dbg1DcInOpm;
+wire[63:0]		dbg1DcOutVal;
+wire[63:0]		dbg1DcInVal;
+wire[ 1:0]		dbg1DcOutOK;
+
+wire			dbg1OutStatus1;
+wire			dbg1OutStatus2;
+wire			dbg1OutStatus3;
+wire			dbg1OutStatus4;
+wire			dbg1OutStatus5;
+wire			dbg1OutStatus6;
+wire			dbg1OutStatus7;
+wire			dbg1OutStatus8;
+
+ExUnit	cpu1(
+	clock_cpu, 		reset,
+
+	mem1AddrA,		mem1AddrB,
+	mem1InData,		mem1OutData,
+	mem1Opm,		mem1OK,
+	mem1BusExc,
+	
+	dbg1OutPc,		dbg1OutIstr,
+	dbg1ExHold1,	dbg1ExHold2,
+	
+	dbg1DcInAddr,	dbg1DcInOpm,
+	dbg1DcOutVal,	dbg1DcInVal,
+	dbg1DcOutOK,
+
+	dbg1OutStatus1,	dbg1OutStatus2,
+	dbg1OutStatus3,	dbg1OutStatus4,
+	dbg1OutStatus5,	dbg1OutStatus6,
+	dbg1OutStatus7,	dbg1OutStatus8
+	);
+
+
+wire[127:0]		mem2InData;
+wire[127:0]		mem2OutData;
+wire[47:0]		mem2AddrA;
+wire[47:0]		mem2AddrB;
+wire[4:0]		mem2Opm;
+wire[1:0]		mem2OK;
+wire[63:0]		mem2BusExc;
+
+wire[47:0]		dbg2OutPc;
+wire[95:0]		dbg2OutIstr;
+wire			dbg2ExHold1;
+wire			dbg2ExHold2;
+
+wire[47:0]		dbg2DcInAddr;
+wire[ 4:0]		dbg2DcInOpm;
+wire[63:0]		dbg2DcOutVal;
+wire[63:0]		dbg2DcInVal;
+wire[ 1:0]		dbg2DcOutOK;
+
+wire			dbg2OutStatus1;
+wire			dbg2OutStatus2;
+wire			dbg2OutStatus3;
+wire			dbg2OutStatus4;
+wire			dbg2OutStatus5;
+wire			dbg2OutStatus6;
+wire			dbg2OutStatus7;
+wire			dbg2OutStatus8;
+
+ExUnit	cpu2(
+	clock_cpu, 		reset,
+
+	mem2AddrA,		mem2AddrB,
+	mem2InData,		mem2OutData,
+	mem2Opm,		mem2OK,
+	mem2BusExc,
+	
+	dbg2OutPc,		dbg2OutIstr,
+	dbg2ExHold1,	dbg2ExHold2,
+	
+	dbg2DcInAddr,	dbg2DcInOpm,
+	dbg2DcOutVal,	dbg2DcInVal,
+	dbg2DcOutOK,
+
+	dbg2OutStatus1,	dbg2OutStatus2,
+	dbg2OutStatus3,	dbg2OutStatus4,
+	dbg2OutStatus5,	dbg2OutStatus6,
+	dbg2OutStatus7,	dbg2OutStatus8
+	);
+
+defparam cpu1.isAltCore = 0;
+defparam cpu2.isAltCore = 1;
+
+assign		dbgOutPc		= dbg1OutPc;
+assign		dbgOutIstr		= dbg1OutIstr;
+assign		dbgExHold1		= dbg1ExHold1;
+assign		dbgExHold2		= dbg1ExHold2;
+assign		dbgDcInAddr		= dbg1DcInAddr;
+assign		dbgDcInOpm		= dbg1DcInOpm;
+assign		dbgDcOutVal		= dbg1DcOutVal;
+assign		dbgDcInVal		= dbg1DcInVal;
+assign		dbgDcOutOK		= dbg1DcOutOK;
+
+assign		dbgOutStatus1 = dbg1OutStatus1 || dbg2OutStatus1;
+assign		dbgOutStatus2 = dbg1OutStatus2 || dbg2OutStatus2;
+assign		dbgOutStatus3 = dbg1OutStatus3 || dbg2OutStatus3;
+assign		dbgOutStatus4 = dbg1OutStatus4 || dbg2OutStatus4;
+assign		dbgOutStatus5 = dbg1OutStatus5 || dbg2OutStatus5;
+assign		dbgOutStatus6 = dbg1OutStatus6 || dbg2OutStatus6;
+assign		dbgOutStatus7 = dbg1OutStatus7 || dbg2OutStatus7;
+assign		dbgOutStatus8 = dbg1OutStatus8 || dbg2OutStatus8;
+
+ExMemJoin	cpuJoin(
+	clock_cpu,	reset,
+	memInData,	memOutData,
+	memAddr,	memAddrB,
+	memOpm,		memOK,
+	memBusExc,
+
+	mem1InData,	mem1OutData,
+	mem1AddrA,	mem1AddrB,
+	mem1Opm,	mem1OK,
+	mem1BusExc,
+
+	mem2InData,	mem2OutData,
+	mem2AddrA,	mem2AddrB,
+	mem2Opm,	mem2OK,
+	mem2BusExc
+	);
+
+`else
+
+wire[127:0]		memInData;
+wire[127:0]		memOutData;
+wire[47:0]		memAddr;
+wire[47:0]		memAddrB;
+wire[4:0]		memOpm;
+wire[1:0]		memOK;
+reg[63:0]		memBusExc;
 
 wire[47:0]		dbgOutPc;
 wire[95:0]		dbgOutIstr;
@@ -311,6 +479,17 @@ ExUnit	cpu(
 	dbgOutStatus7,	dbgOutStatus8
 	);
 
+`endif
+
+
+// reg[31:0]		mmioInData;
+wire[31:0]		mmioOutData;
+reg[63:0]		mmioInData;
+wire[63:0]		mmioOutDataQ;
+wire[31:0]		mmioAddr;
+wire[4:0]		mmioOpm;
+reg[1:0]		mmioOK;
+assign		mmioOutData = mmioOutDataQ[31:0];
 
 `ifdef def_true
 

@@ -643,6 +643,11 @@ begin
 		begin
 			opIsDualLane = (decOpBz_idUIxt[2:0]==3'b111);
 		end
+
+		if(opUCmdA[5:0]==JX2_UCMD_FPU3)
+		begin
+			opIsDualLane = decOpBz_idUIxt[5];
+		end
 	end
 	
 	if(opIsDualLane)

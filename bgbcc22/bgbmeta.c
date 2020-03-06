@@ -1087,6 +1087,7 @@ int BGBCC_LoadCSourcesCCXL(
 	BCCX_Node *t, *c, *n;
 	byte *buf;
 	char *dllname;
+	char *archsfx;
 	char *s0, *s1;
 	fourcc lang;
 	int i, j, k, sz, omsz;
@@ -1111,6 +1112,7 @@ int BGBCC_LoadCSourcesCCXL(
 	*s1++=0;
 	
 	dllname=bgbcc_strdup(tb);
+	archsfx=BGBCP_NameSuffixForArch(bgbcc_arch);
 
 //	BIPRO_ProfilerSetActive(1);
 
@@ -1153,10 +1155,28 @@ int BGBCC_LoadCSourcesCCXL(
 
 		if((names[i][0]=='-') && (names[i][1]=='l'))
 		{
+			if(archsfx)
+			{
+				sprintf(tb, "lib%s.%s.ril", names[i]+2, archsfx);
+				buf=bgbcc_loadfile2(tb, &sz);
+				if(buf)
+				{
+					BGBCC_CCXLR3_LoadBufferRIL(ctx, buf, sz);
+					if(ctx->n_error)
+						break;
+					continue;
+				}
+			}
+			
 			sprintf(tb, "lib%s.ril", names[i]+2);
 			buf=bgbcc_loadfile2(tb, &sz);
 			if(buf)
-				{ BGBCC_CCXLR3_LoadBufferRIL(ctx, buf, sz); continue; }
+			{
+				BGBCC_CCXLR3_LoadBufferRIL(ctx, buf, sz);
+				if(ctx->n_error)
+					break;
+				continue;
+			}
 
 			sprintf(tb, "%s.dll", names[i]+2);
 			buf=bgbcc_loadfile2(tb, &sz);
@@ -1205,12 +1225,16 @@ int BGBCC_LoadCSourcesCCXL(
 			t0=clock();
 			BGBCC_CCXL_CompileModuleCTX(ctx, names[i], t);
 			BCCX_DeleteTree(t);
+			
 			t1=clock();
 			t2=t1-t0;
 	//		printf("Compile Module %dms\n", t2);
 
 			bgbcc_msec_cc+=t2;
 			bgbcc_msec_tot++;
+			
+			if(ctx->n_error)
+				break;
 			
 			c=ctx->reduce_tmp;
 			ctx->reduce_tmp=NULL;
@@ -1929,7 +1953,7 @@ void ccAddInclude(char *path)
 {
 	int i;
 
-	printf("Add include '%s'\n", path);
+	printf("Add include path '%s'\n", path);
 
 	BGBCC_Init();
 	i=bgbcc_ninc++;
@@ -1940,6 +1964,8 @@ void ccAddInclude(char *path)
 void ccAddLibrary(char *path)
 {
 	int i;
+
+	printf("Add library path '%s'\n", path);
 
 	BGBCC_Init();
 	i=bgbcc_nlib++;
@@ -2094,6 +2120,16 @@ int main(int argc, char *argv[], char **env)
 				sprintf(tb, "-l%s", argv[i]+2);
 //				sprintf(tb, "lib%s.ril", argv[i]+2);
 //				uds[nuds++]=bgbcc_strdup(tb);
+
+				for(j=0; j<nuds; j++)
+				{
+					if(!strcmp(uds[j], tb))
+						break;
+				}
+				
+				if(j<nuds)
+					continue;
+
 				j=nuds++;
 				while(j>0)
 					{ uds[j]=uds[j-1]; j--; }
@@ -2298,7 +2334,30 @@ int main(int argc, char *argv[], char **env)
 	
 //		fmt=BGBCC_IMGFMT_OBJ;
 		fmt=BGBCP_ImageFormatForName(frbcfn);
-	
+
+		if((fmt==BGBCC_IMGFMT_EXE) || (fmt==BGBCC_IMGFMT_DLL))
+		{
+			/* Try to infer if we need implicit libc */
+			for(i=0; i<nuds; i++)
+			{
+				s0=uds[i];
+				if((s0[0]!='-') || (s0[1]!='l'))
+					continue;
+				if(!strcmp(s0, "-lc"))
+					break;
+				if(!strncmp(s0+2, "vxcore", 6))
+					break;
+			}
+			
+			if(!(i<nuds))
+			{
+				j=nuds++;
+				while(j>0)
+					{ uds[j]=uds[j-1]; j--; }
+				uds[0]=bgbcc_strdup("-lc");
+			}
+		}
+
 		obuf=malloc(1<<24); sz=1<<24;
 		i=BGBCC_LoadCSourcesCCXL(uds, nuds, obuf, &sz, fmt);
 		if((i>=0) && (sz>0))

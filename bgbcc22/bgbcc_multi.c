@@ -177,6 +177,7 @@
 #include "jx2cc/jx2_lqarith.c"
 #include "jx2cc/jx2_lvarith.c"
 #include "jx2cc/jx2_lxarith.c"
+#include "jx2cc/jx2_v4arith.c"
 #include "jx2cc/jx2_pecoff.c"
 #include "jx2cc/jx2_register.c"
 #include "jx2cc/jx2_softfpu.c"

@@ -139,14 +139,17 @@ reg [  1:0]		ifMemOK;
 wire[ 47:0]		ifMemAddr;
 wire[  4:0]		ifMemOpm;
 
+reg [127:0]		ifMemData2;
+reg [  1:0]		ifMemOK2;
+
 `ifdef jx2_enable_wex
 MemIcWxA		memIc(
 	clock,			reset,
 	icInPcAddr,		icOutPcVal,
 	icOutPcOK,		icOutPcStep,
 	icInPcHold,		icInPcWxe,		dcInOpm,
-	ifMemData,		ifMemAddr,
-	ifMemOpm,		ifMemOK
+	ifMemData2,		ifMemAddr,
+	ifMemOpm,		ifMemOK2
 	);
 `else
 MemIcA		memIc(
@@ -297,6 +300,9 @@ end
 
 always @(posedge clock)
 begin	
+	ifMemData2		<= ifMemData;
+	ifMemOK2		<= ifMemOK;
+
 	if(reset)
 	begin
 		tRegOutExc2	<= 0;

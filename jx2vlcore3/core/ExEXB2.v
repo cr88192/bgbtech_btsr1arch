@@ -29,6 +29,7 @@ module ExEXB2(
 	regValImm,		//Immediate (Decode)
 	regValAluRes,	//ALU Result
 	regValMulwRes,	//ALU Result
+	regFpuGRn,		//FPU GPR Result
 	opBraFlush,
 
 	regInLastSr,	
@@ -60,6 +61,8 @@ input[32:0]		regValImm;		//Immediate (Decode)
 
 input[65:0]		regValAluRes;	//ALU Result
 input[63:0]		regValMulwRes;	//MUL.W Result
+input[63:0]		regFpuGRn;		//FPU GPR Result
+
 input			opBraFlush;
 
 input[63:0]		regInSr;
@@ -174,6 +177,14 @@ begin
 		JX2_UCMD_POPX: begin
 			tRegIdRn2	= regIdRm;
 			tRegValRn2	= memDataInB;
+		end
+
+		JX2_UCMD_FPU3: begin
+//			if(regFpuOK[1])
+//			if(regFpuOK != UMEM_OK_OK)
+//				tExHold			= 1;
+			tRegIdRn2		= regIdRm;
+			tRegValRn2		= regFpuGRn;
 		end
 
 		default: begin

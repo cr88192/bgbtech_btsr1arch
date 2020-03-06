@@ -35,6 +35,14 @@ quakei386.exe
 
 *.wad
 *.pak
+
+*.rts
+*.rtc
+*.rot
+*.rtl
+*.ini
+*.dmo
+
 *_ast.txt
 *_inf.txt
 *_pp.txt

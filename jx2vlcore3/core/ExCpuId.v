@@ -11,6 +11,9 @@ input[4:0]		index;
 output[63:0]	resLo;
 output[63:0]	resHi;
 
+parameter		isAltCore = 0;
+
+
 reg[63:0]		tResLo;
 reg[63:0]		tResHi;
 
@@ -32,6 +35,8 @@ begin
 	arrCpuIdLo[5]=UV64_XX;
 	arrCpuIdLo[6]=UV64_XX;
 	arrCpuIdLo[7]=UV64_XX;
+
+	arrCpuIdLo[1][0] = isAltCore;
 
 `ifndef def_true
 	arrCpuIdHi[0]=UV64_00;

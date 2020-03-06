@@ -337,12 +337,43 @@ int BGBCC_JX2A_GetRegId(char *str)
 
 static char *bgbcc_jx2a_lastlbl;
 
-int BGBCC_JX2A_ParseOperand(char **rcs, BGBCC_JX2_OpcodeArg *opv)
+int BGBCC_JX2A_ParseOperand_OffsetOf(BGBCC_JX2_Context *ctx,
+	char *objn, char *fldn)
+{
+	BGBCC_CCXL_LiteralInfo *st;
+	BGBCC_CCXL_RegisterInfo *fi;
+	ccxl_register sreg, dreg;
+	ccxl_type bty;
+	int fn;
+	int i;
+
+	st=BGBCC_CCXL_LookupStructure(ctx->tctx, objn);
+	if(!st)
+	{
+		BGBCC_DBGBREAK
+		return(0);
+	}
+	
+	fn=BGBCC_CCXL_LookupStructFieldID(ctx->tctx, st, fldn);
+	fi=st->decl->fields[fn];
+
+	if(fi->fxmoffs==fi->fxnoffs)
+	{
+		return(fi->fxmoffs);
+	}
+	
+	BGBCC_DBGBREAK
+	return(0);
+}
+
+int BGBCC_JX2A_ParseOperand(
+	BGBCC_JX2_Context *ctx, char **rcs,
+	BGBCC_JX2_OpcodeArg *opv)
 {
 	char tb0[256];
-	char *tk0, *tk1;
+	char *tk0, *tk1, *tk2, *tk3;
 	char *cs, *cs1, *cs2;
-	int i;
+	int i, scale;
 
 	cs=*rcs;
 	cs=BGBCC_JX2A_EatWhiteNoLinebreak(cs);
@@ -419,12 +450,39 @@ int BGBCC_JX2A_ParseOperand(char **rcs, BGBCC_JX2_OpcodeArg *opv)
 			cs++;
 			cs=BGBCC_JX2A_ParseToken(cs, &tk0);
 			tk1=NULL;
+			tk2=NULL;
+			tk3=NULL;
+			scale=0;
+
+			cs=BGBCC_JX2A_EatWhiteNoLinebreak(cs);
+			if(*cs=='*')
+			{
+				cs++;
+				cs=BGBCC_JX2A_ParseTokenAlt(cs, &cs2);
+				scale=atoi(cs2);
+			}
+
 			cs=BGBCC_JX2A_EatWhiteNoLinebreak(cs);
 			if(*cs==',')
 			{
 				cs++;
 				cs=BGBCC_JX2A_ParseToken(cs, &tk1);
 			}
+
+			if(tk1 && !strcmp(tk1, "Ioffsetof"))
+			{
+				cs=BGBCC_JX2A_ParseTokenAlt(cs, &tk2);
+				cs=BGBCC_JX2A_ParseTokenAlt(cs, &tk3);
+			}
+			
+			cs=BGBCC_JX2A_EatWhiteNoLinebreak(cs);
+			if(*cs=='*')
+			{
+				cs++;
+				cs=BGBCC_JX2A_ParseTokenAlt(cs, &cs2);
+				scale=atoi(cs2);
+			}
+
 			cs=BGBCC_JX2A_EatWhiteNoLinebreak(cs);
 			if(*cs==')')
 				cs++;
@@ -436,12 +494,25 @@ int BGBCC_JX2A_ParseOperand(char **rcs, BGBCC_JX2_OpcodeArg *opv)
 					opv->ty=BGBCC_SH_OPVTY_RDMEM;
 					opv->breg=BGBCC_JX2A_GetRegId(tk1+1);
 					opv->disp=bgbcc_atoi(tk0+1);
+					if(scale>0)
+						opv->disp*=scale;
 					*rcs=cs;
 					return(1);
 				}
-
+				
 				if(*tk1=='I')
 				{
+					if(!strcmp(tk1, "Ioffsetof"))
+					{
+						opv->ty=BGBCC_SH_OPVTY_RDMEM;
+						opv->breg=BGBCC_JX2A_GetRegId(tk0+1);
+//						opv->disp=bgbcc_atoi(tk1+1);
+						opv->disp=BGBCC_JX2A_ParseOperand_OffsetOf(
+							ctx, tk2+1, tk3+1);
+						*rcs=cs;
+						return(1);
+					}
+
 					opv->ty=BGBCC_SH_OPVTY_RRMEM;
 //					opv->rb=BGBCC_JX2A_GetRegId(tk0+1);
 //					opv->ri=BGBCC_JX2A_GetRegId(tk1+1);
@@ -451,6 +522,7 @@ int BGBCC_JX2A_ParseOperand(char **rcs, BGBCC_JX2_OpcodeArg *opv)
 
 					opv->breg=BGBCC_JX2A_GetRegId(tk0+1);
 					opv->ireg=BGBCC_JX2A_GetRegId(tk1+1);
+					opv->sc=scale;
 
 					*rcs=cs;
 					return(1);
@@ -460,6 +532,8 @@ int BGBCC_JX2A_ParseOperand(char **rcs, BGBCC_JX2_OpcodeArg *opv)
 					opv->ty=BGBCC_SH_OPVTY_RDMEM;
 					opv->breg=BGBCC_JX2A_GetRegId(tk0+1);
 					opv->disp=bgbcc_atoi(tk1+1);
+					if(scale>0)
+						opv->disp*=scale;
 					*rcs=cs;
 					return(1);
 				}
@@ -836,7 +910,32 @@ int nmid;
 {"psub.h",		BGBCC_SH_NMID_PSUBH},
 {"pmul.h",		BGBCC_SH_NMID_PMULH},
 
+{"padd.f",		BGBCC_SH_NMID_PADDF},
+{"psub.f",		BGBCC_SH_NMID_PSUBF},
+{"pmul.f",		BGBCC_SH_NMID_PMULF},
+
+{"paddx.f",		BGBCC_SH_NMID_PADDFX},
+{"psubx.f",		BGBCC_SH_NMID_PSUBFX},
+{"pmulx.f",		BGBCC_SH_NMID_PMULFX},
+
+{"pshuf.b",		BGBCC_SH_NMID_PSHUFB},
+{"pshuf.w",		BGBCC_SH_NMID_PSHUFW},
+
 {"pmulu.w",		BGBCC_SH_NMID_PMULUW},
+{"pmuls.w",		BGBCC_SH_NMID_PMULSW},
+{"pmulu.lw",	BGBCC_SH_NMID_PMULULW},
+{"pmuls.lw",	BGBCC_SH_NMID_PMULSLW},
+{"pmulu.hw",	BGBCC_SH_NMID_PMULUHW},
+{"pmuls.hw",	BGBCC_SH_NMID_PMULSHW},
+
+{"rgb5shr1",	BGBCC_SH_NMID_RGB5SHR1},
+
+{"rgb5pck32",	BGBCC_SH_NMID_RGB5PCK32},
+{"rgb5pck64",	BGBCC_SH_NMID_RGB5PCK64},
+{"rgb5upck32",	BGBCC_SH_NMID_RGB5UPCK32},
+{"rgb5upck64",	BGBCC_SH_NMID_RGB5UPCK64},
+{"rgb32pck64",	BGBCC_SH_NMID_RGB32PCK64},
+{"rgb32upck64",	BGBCC_SH_NMID_RGB32UPCK64},
 
 {"adds.l",		BGBCC_SH_NMID_ADDSL},
 {"addu.l",		BGBCC_SH_NMID_ADDUL},
@@ -849,7 +948,7 @@ int nmid;
 {NULL, 0}
 };
 
-int bgbcc_jx2a_nmidtab_chn[256];
+int bgbcc_jx2a_nmidtab_chn[1024];
 int bgbcc_jx2a_nmidtab_hash[256];
 int bgbcc_jx2a_init=0;
 
@@ -1305,7 +1404,7 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 		arg[0].ty=0; arg[1].ty=0; arg[2].ty=0;
 		for(i=0; i<3; i++)
 		{
-			if(BGBCC_JX2A_ParseOperand(&cs2, &arg[i])<=0)
+			if(BGBCC_JX2A_ParseOperand(ctx, &cs2, &arg[i])<=0)
 				break;
 			cs2=BGBCC_JX2A_EatWhiteNoLinebreak(cs2);
 			if(*cs2==',')
@@ -1926,11 +2025,13 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 			return(1);
 		}
 		
+		ctx->tctx->n_error++;
 		printf("unexpected token '%s'\n", tk0+1);
 		*rcs=cs;
 		return(-1);
 	}
 
+	ctx->tctx->n_error++;
 	printf("unexpected token '%s'\n", tk0+1);
 	return(-1);
 }

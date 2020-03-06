@@ -207,6 +207,9 @@ int BGBCC_JX2_TryEmitOpRegStReg(BGBCC_JX2_Context *ctx,
 
 	if(opw1>=0)
 	{
+		if(ctx->emit_isprobe)
+			return(1);
+
 		BGBCC_JX2DA_EmitOpRegStReg(ctx, nmid, rm, rn);
 	
 		BGBCC_JX2_EmitOpCheckRepack(ctx, &opw1, &opw2);
@@ -490,6 +493,9 @@ int BGBCC_JX2_TryEmitOpLdRegReg(BGBCC_JX2_Context *ctx,
 
 	if(opw1>=0)
 	{
+		if(ctx->emit_isprobe)
+			return(1);
+
 		BGBCC_JX2DA_EmitOpLdRegReg(ctx, nmid, rm, rn);
 
 		BGBCC_JX2_EmitOpCheckRepack(ctx, &opw1, &opw2);
@@ -620,6 +626,9 @@ int BGBCC_JX2_TryEmitOpRegStDecReg(BGBCC_JX2_Context *ctx,
 
 	if(opw1>=0)
 	{
+		if(ctx->emit_isprobe)
+			return(1);
+
 		BGBCC_JX2DA_EmitOpRegStDecReg(ctx, nmid, rm, rn);
 	
 //		BGBCC_JX2_EmitOpCheckRepack(ctx, &opw1, &opw2);
@@ -823,6 +832,9 @@ int BGBCC_JX2_TryEmitOpLdIncRegReg(BGBCC_JX2_Context *ctx,
 
 	if(opw1>=0)
 	{
+		if(ctx->emit_isprobe)
+			return(1);
+
 		BGBCC_JX2DA_EmitOpLdIncRegReg(ctx, nmid, rm, rn);
 	
 //		BGBCC_JX2_EmitOpCheckRepack(ctx, &opw1, &opw2);
@@ -1390,6 +1402,9 @@ int BGBCC_JX2_TryEmitOpRegStRegDisp(
 
 	if(opw1>=0)
 	{
+		if(ctx->emit_isprobe)
+			return(1);
+
 		BGBCC_JX2DA_EmitOpRegStRegDisp(ctx, nmid, rm, rn, disp);
 	
 		if(odr)
@@ -2119,6 +2134,9 @@ int BGBCC_JX2_TryEmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,
 
 	if(opw1>=0)
 	{
+		if(ctx->emit_isprobe)
+			return(1);
+
 		BGBCC_JX2DA_EmitOpLdRegDispReg(ctx, nmid, rm, disp, rn);
 
 		if(odr)
@@ -2426,6 +2444,9 @@ int BGBCC_JX2_TryEmitOpRegStReg2(
 
 	if(opw1>=0)
 	{
+		if(ctx->emit_isprobe)
+			return(1);
+
 		BGBCC_JX2DA_EmitOpRegStReg2(ctx, nmid, rm, ro, rn);
 
 //		BGBCC_JX2_EmitOpCheckRepack(ctx, &opw1, &opw2);
@@ -2887,6 +2908,9 @@ int BGBCC_JX2_TryEmitOpLdReg2Reg(
 
 	if(opw1>=0)
 	{
+		if(ctx->emit_isprobe)
+			return(1);
+
 		BGBCC_JX2DA_EmitOpLdReg2Reg(ctx, nmid, rm, ro, rn);
 
 //		BGBCC_JX2_EmitOpCheckRepack(ctx, &opw1, &opw2);
@@ -2994,6 +3018,9 @@ int BGBCC_JX2_TryEmitOpRegStReg2Disp(
 
 	if(opw1>=0)
 	{
+		if(ctx->emit_isprobe)
+			return(1);
+
 		BGBCC_JX2DA_EmitOpRegStReg2Disp(ctx, nmid, rm, ro, rn, disp);
 	
 		if(odr)
@@ -3089,6 +3116,9 @@ int BGBCC_JX2_TryEmitOpLdReg2DispReg(
 
 	if(opw1>=0)
 	{
+		if(ctx->emit_isprobe)
+			return(1);
+
 		BGBCC_JX2DA_EmitOpLdReg2DispReg(ctx, nmid, rm, ro, disp, rn);
 
 		if(odr)

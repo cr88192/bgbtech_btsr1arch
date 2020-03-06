@@ -2184,7 +2184,9 @@ ccxl_status BGBCC_JX2C_BuildGlobal_EmitLitAsType(
 	{
 		BGBCC_JX2_EmitBAlign(sctx, 4);
 
-		if(BGBCC_CCXL_IsRegImmIntP(ctx, value))
+//		if(BGBCC_CCXL_IsRegImmIntP(ctx, value))
+		if(BGBCC_CCXL_IsRegImmIntP(ctx, value) ||
+			BGBCC_CCXL_IsRegImmLongP(ctx, value))
 		{
 			i=BGBCC_CCXL_GetRegImmIntValue(ctx, value);
 			BGBCC_JX2_EmitDWord(sctx, i);
@@ -3304,6 +3306,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 		j=BGBCC_JX2C_LookupLabelIndex(ctx, sctx, sctx->rlc_id[i]);
 		if(j<0)
 		{
+			ctx->n_error++;
 			k=sctx->rlc_id[i];
 			s0=BGBCC_JX2_LookupNameForLabel(sctx, k);
 			if(s0)

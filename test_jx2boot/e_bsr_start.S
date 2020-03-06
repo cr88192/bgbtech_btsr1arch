@@ -29,6 +29,10 @@ _start:
 
 	bsr tk_checksane_asm
 
+	cpuid #1
+	test #15, r0
+	bf _iscore2
+
 	bsr copy_data
 
 	bsr zero_bss
@@ -47,6 +51,25 @@ _exit:
 //	mov #-1, r0
 //	jmp r0
 //	nop
+
+_iscore2:
+
+	mov #999999, r2
+	.L0:
+	nop
+	nop
+	nop
+	add		#-1, r2
+	cmpgt	#0, r2
+	bt		.L0
+	
+	mov		#0xF00BFF00, r2
+	mov.l	(r2, 0x24), r3
+	test	r3, r3
+	bf		.L1
+	bra _iscore2
+	.L1:
+	jmp		r3
 
 zero_bss:
 	mov __bss_start, r2

@@ -108,6 +108,7 @@ SRCS=\
 	jx2cc/jx2_lqarith.c \
 	jx2cc/jx2_lvarith.c \
 	jx2cc/jx2_lxarith.c \
+	jx2cc/jx2_v4arith.c \
 	jx2cc/jx2_pecoff.c \
 	jx2cc/jx2_register.c \
 	jx2cc/jx2_softfpu.c \

@@ -6,6 +6,8 @@
 
 // `define jx2_enable_fprs		//enable dedicated FPU registers.
 
+`define	jx2_use_fpu_w			//use wide FPU
+
 // `define jx2_sprs_elrehr			//ELR/EHR/BP as special registers?
 // `define jx2_bra2stage				//Use 2-stage branch initiation
 
@@ -16,9 +18,11 @@
 
 // `define jx2_addxl_agu			//Do ADDx.L via AGU
 
-// `define jx2_enable_gsv			//Enable GSV (Packed Integer) stuff.
+`define jx2_enable_gsv			//Enable GSV (Packed Integer) stuff.
 
 `define jx2_enable_prebra			//Enable PreBranch
+
+`define jx2_enable_dualcore			//Enable Second Core
 
 `define jx2_enable_ops16
 // `define jx2_enable_ops48

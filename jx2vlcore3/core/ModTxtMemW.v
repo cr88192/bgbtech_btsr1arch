@@ -143,6 +143,8 @@ reg[31:0]	scrRegCtrl5;	//Control Registers
 reg[31:0]	scrRegCtrl6;	//Control Registers
 reg[31:0]	scrRegCtrl7;	//Control Registers
 
+reg[31:0]	scrRegCtrl9;	//CR9, Secondary Boot Vector
+
 
 reg[255:0]	tCell1;
 reg[255:0]	tNextCell1;
@@ -234,6 +236,8 @@ begin
 				7: tBusData = { UV32_XX, scrRegCtrl7 };
 //				8: tBusData = {18'h0, pixCellIx};
 				8: tBusData = { UV32_XX, 18'h0, pixCellIx};
+				
+				9: tBusData = { UV32_00, scrRegCtrl9 };
 
 				default: tBusData = UV64_00;
 
@@ -375,6 +379,8 @@ begin
 				6'b000111: scrRegCtrl7	<= busData[31:0];
 				6'b001000: begin
 				end
+				6'b001001: scrRegCtrl9	<= busData[31:0];
+
 				6'b001100: fontRamA[busData[24:16]]	<= busData[15:0];
 				6'b001101: fontRamB[busData[24:16]]	<= busData[15:0];
 				6'b001110: fontRamC[busData[24:16]]	<= busData[15:0];

@@ -43,8 +43,14 @@ IF ID1 ID2 EX1 EX2 WB
 `ifdef jx2_enable_fprs
 `include "RegFPR.v"
 `endif
+`ifdef jx2_use_fpu_w
+`include "FpuExOpW.v"
+`else
 `include "FpuExOp.v"
 `endif
+`endif
+
+/* verilator lint_off DEFPARAM */
 
 module ExUnit(
 	clock,
@@ -101,6 +107,11 @@ output			dbgOutStatus5;
 output			dbgOutStatus6;
 output			dbgOutStatus7;
 output			dbgOutStatus8;
+
+parameter		isAltCore = 0;
+// defparam		ex1.cpuid.isAltCore = isAltCore;
+defparam		ex1.isAltCore = isAltCore;
+
 
 reg				exHold1;
 reg				exHold2;
@@ -702,6 +713,8 @@ wire[63:0]		ex1MulWVal;
 wire[5:0]		ex1RegIdFRn;
 wire[63:0]		ex1RegValFRn;
 wire[63:0]		ex1FpuValGRn;
+wire[63:0]		exB1FpuValGRn;
+wire[63:0]		exC1FpuValGRn;
 wire[63:0]		ex1FpuValLdGRn;
 wire[1:0]		ex1FpuOK;
 wire			ex1FpuSrT;
@@ -709,10 +722,17 @@ wire			ex1FpuSrT;
 
 `ifndef jx2_enable_fpu
 assign	ex1FpuValGRn	= UV64_XX;
+assign	exB1FpuValGRn	= UV64_XX;
 assign	ex1FpuValLdGRn	= UV64_XX;
 assign	ex1FpuOK		= UMEM_OK_READY;
 assign	ex1FpuSrT		= 0;
 `endif
+
+`ifndef jx2_use_fpu_w
+assign	exB1FpuValGRn	= UV64_XX;
+`endif
+
+assign	exC1FpuValGRn	= UV64_XX;
 
 reg[63:0]		ex2MemDataIn;
 reg[63:0]		ex2MemDataInB;
@@ -823,12 +843,39 @@ ExMulB	ex1Mul(
 
 ExMulW	ex1MulW(
 	clock,				reset,
-	ex1RegValRs[31:0],	ex1RegValRt[31:0],
+	ex1RegValRs,		ex1RegValRt,
 	ex1OpUCmd,			ex1OpUIxt,
 	exHold2,			ex1MulWVal
 	);
 
 `ifdef jx2_enable_fpu
+
+`ifdef jx2_use_fpu_w
+
+assign	ex1FpuValLdGRn = UV64_00;
+
+FpuExOpW	ex1Fpu(
+	clock,			reset,
+
+	ex1OpUCmd,		ex1OpUIxt,
+	exB1OpUCmd,		exB1OpUIxt,
+
+	ex1RegIdRs,		ex1RegValRs,
+	ex1RegIdRt,		ex1RegValRt,
+	ex1RegIdRm,		ex1RegValRm,
+
+	exB1RegIdRs,	exB1RegValRs,
+	exB1RegIdRt,	exB1RegValRt,
+	exB1RegIdRm,	exB1RegValRm,
+
+	ex1FpuOK,		ex1FpuSrT,
+	
+	ex2RegInSr,		ex1BraFlush,
+	exHold2,
+	
+	ex1FpuValGRn,	exB1FpuValGRn
+	);
+`else
 
 FpuExOp	ex1Fpu(
 	clock,			reset,
@@ -848,6 +895,7 @@ FpuExOp	ex1Fpu(
 	ex1FpuValLdGRn,
 	ex2MemDataIn,	ex2MemDataOK
 	);
+`endif
 
 `endif
 
@@ -998,7 +1046,7 @@ ExALUB	exAluB(
 
 ExMulW	exB1MulW(
 	clock,				reset,
-	exB1RegValRs[31:0],	exB1RegValRt[31:0],
+	exB1RegValRs,		exB1RegValRt,
 	exB1OpUCmd,			exB1OpUIxt,
 	exHold2,			exB1MulWVal
 	);
@@ -1044,6 +1092,7 @@ ExEXB2		exb2(
 	ex2RegValPc,
 	exB2RegValImm,	exB2RegAluRes,
 	exB2RegMulWRes,
+	exB1FpuValGRn,
 	ex2BraFlush,
 
 	ex2RegInLastSr,	ex2RegInSr,
@@ -1103,7 +1152,7 @@ ExALUB	exAluC(
 
 ExMulW	exC1MulW(
 	clock,				reset,
-	exC1RegValRs[31:0],	exC1RegValRt[31:0],
+	exC1RegValRs,		exC1RegValRt,
 	exC1OpUCmd,			exC1OpUIxt,
 	exHold2,			exC1MulWVal
 	);
@@ -1149,6 +1198,7 @@ ExEXB2		exc2(
 	ex2RegValPc,
 	exC2RegValImm,	exC2RegAluRes,
 	exC2RegMulWRes,
+	exC1FpuValGRn,
 	ex2BraFlush,
 
 	ex2RegInLastSr,	ex2RegInSr,
