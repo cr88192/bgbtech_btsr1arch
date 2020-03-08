@@ -650,6 +650,10 @@ X(I_FinishUpdate_ScanCopyVbl):
 	ADD?T	R21, R25
 	ADD?T	R22, R26
 	ADD?T	R23, R27
+
+//	ADD?F	R19, R24	|	ADD?F	R19, R25	|	ADD?F	R19, R26
+//	ADD?F	R19, R27	|	ADD?T	R20, R24	|	ADD?T	R21, R25
+//	ADD?T	R22, R26	|	ADD?T	R23, R27
 #endif
 
 	MOV.Q	R24, (R5,  0)

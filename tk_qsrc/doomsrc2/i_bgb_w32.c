@@ -256,7 +256,6 @@ void I_FinishUpdate (void)
 	}
 
 	btesh2_gfxcon_fb_dirty=1;
-	
 	GfxDrv_EndDrawing();
 }
 

@@ -25,7 +25,8 @@ int tk_dbg_getch(void)
 }
 
 
-void tk_putc(int val)
+#ifndef __TK_CLIB_ONLY__
+void tk_putc_i(int val)
 {
 	if(val=='\n')
 	{
@@ -37,9 +38,44 @@ void tk_putc(int val)
 		tk_dbg_putc(val);
 	tk_con_putc(val);
 }
+#endif
 
+void tk_putc_v(int val)
+{
+	TK_SysArg ar[4];
+	void *p;
+	
+	p=NULL;
+	ar[0].i=val;
+	tk_syscall(NULL, TK_UMSG_CONPUTC, &p, ar);
+}
 
-int tk_kbhit(void)
+void (*tk_putc_fn)(int val);
+
+void tk_putc(int val)
+{
+#ifndef __TK_CLIB_ONLY__
+	if(tk_putc_fn)
+	{
+		tk_putc_fn(val);
+		return;
+	}
+	
+	tk_putc_fn=tk_putc_i;
+	if(!tk_iskernel())
+	{
+		tk_putc_fn=tk_putc_v;
+	}
+
+	tk_putc_fn(val);
+	return;
+#else
+	tk_putc_v(val);
+#endif
+}
+
+#ifndef __TK_CLIB_ONLY__
+int tk_kbhit_i(void)
 {
 #if 1
 	if(!tk_dbg_iscopy)
@@ -51,7 +87,7 @@ int tk_kbhit(void)
 	return(tk_ps2kb_kbhit());
 }
 
-int tk_getch(void)
+int tk_getch_i(void)
 {
 #if 1
 	if(!tk_dbg_iscopy)
@@ -67,6 +103,68 @@ int tk_getch(void)
 	}
 #endif
 	return(tk_ps2getch());
+}
+#endif
+
+int tk_kbhit_v(void)
+{
+	TK_SysArg ar[4];
+	int i;
+	i=0;
+	tk_syscall(NULL, TK_UMSG_CONKBHIT, &i, ar);
+	return(i);
+}
+
+int tk_getch_v(void)
+{
+	TK_SysArg ar[4];
+	int i;
+	i=0;
+	tk_syscall(NULL, TK_UMSG_CONGETCH, &i, ar);
+	return(i);
+}
+
+int (*tk_kbhit_fn)(void);
+int (*tk_getch_fn)(void);
+
+int tk_kbhit(void)
+{
+#ifndef __TK_CLIB_ONLY__
+	if(tk_kbhit_fn)
+	{
+		return(tk_kbhit_fn());
+	}
+	
+	tk_kbhit_fn=tk_kbhit_i;
+	if(!tk_iskernel())
+	{
+		tk_kbhit_fn=tk_kbhit_v;
+	}
+
+	return(tk_kbhit_fn());
+#else
+	return(tk_kbhit_v());
+#endif
+}
+
+int tk_getch(void)
+{
+#ifndef __TK_CLIB_ONLY__
+	if(tk_getch_fn)
+	{
+		return(tk_getch_fn());
+	}
+	
+	tk_getch_fn=tk_getch_i;
+	if(!tk_iskernel())
+	{
+		tk_getch_fn=tk_getch_v;
+	}
+
+	return(tk_getch_fn());
+#else
+	return(tk_getch_v());
+#endif
 }
 
 void tk_puts(char *msg)

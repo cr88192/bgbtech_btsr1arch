@@ -30,6 +30,8 @@ char *TK_Env_GetCwd(char *buf, int sz)
 {
 	TK_EnvContext *env;
 	env=TK_GetCurrentEnvContext();
+	if(!env)
+		return("/");
 	return(TK_EnvCtx_GetCwd(env, buf, sz));
 }
 

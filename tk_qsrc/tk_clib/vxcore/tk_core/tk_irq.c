@@ -192,14 +192,10 @@ int TK_TaskSetCwd(TKPE_TaskInfo *task, char *buf)
 	return(-1);
 }
 
-int tk_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
+#ifdef __TK_CLIB_ONLY__
+TK_APIEXPORT
+int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 {
-	TKPE_TaskInfo *task;
-
-	task=__arch_tbr;
-	if(!task)
-		__debugbreak();
-	if(!task->SysCall)
-		__debugbreak();
-	return(task->SysCall(sObj, uMsg, vParm1, vParm2));
+	return(-1);
 }
+#endif

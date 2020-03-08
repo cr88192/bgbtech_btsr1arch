@@ -213,7 +213,7 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, char *imgname)
 	int sig_mz, sig_pe, mach, mmagic;
 	int rva_rlc, sz_rlc, rlc_disp;
 	int ofs_pe, pboix, szcpy;
-	int cb, nb;
+	int cb, nb, kb;
 	int i, l;
 #endif
 	

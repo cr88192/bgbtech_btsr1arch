@@ -1,3 +1,5 @@
+#ifndef __TK_CLIB_ONLY__
+
 byte *tk_ird_imgbuf=NULL;
 
 u32 tkmm_pagebase, tkmm_pageend;
@@ -109,16 +111,6 @@ int TKMM_PointerToPage(void *ptr)
 	return(d>>12);
 }
 
-void *(*TKMM_PageAlloc_f)(int sz);
-int (*TKMM_PageFree_f)(void *ptr, int sz);
-
-#if 1
-void *TKMM_PageAlloc(int sz)
-	{ return(TKMM_PageAlloc_f(sz)); }
-int TKMM_PageFree(void *ptr, int sz)
-	{ return(TKMM_PageFree_f(ptr, sz)); }
-#endif
-
 void *TKMM_PageAllocL(int sz)
 {
 	void *p;
@@ -156,14 +148,44 @@ int TKMM_PageFree(void *ptr, int sz)
 	{ return(TKMM_PageFreeL(ptr, sz)); }
 #endif
 
+#endif
+
+void *(*TKMM_PageAlloc_f)(int sz);
+int (*TKMM_PageFree_f)(void *ptr, int sz);
+
+#if 1
+void *TKMM_PageAlloc(int sz)
+	{ return(TKMM_PageAlloc_f(sz)); }
+int TKMM_PageFree(void *ptr, int sz)
+	{ return(TKMM_PageFree_f(ptr, sz)); }
+#endif
+
+extern volatile u64 __arch_tbr;
+
 void *tk_getsavedvbr(void);
-int tk_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2);
+// int tk_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2);
+
+int tk_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
+{
+	TKPE_TaskInfo *task;
+
+	task=__arch_tbr;
+	if(!task)
+		__debugbreak();
+	if(!task->SysCall)
+		__debugbreak();
+	return(task->SysCall(sObj, uMsg, vParm1, vParm2));
+}
 
 bool tk_iskernel(void)
 {
+#ifndef __TK_CLIB_ONLY__
 	if(tk_getsavedvbr())
 		return(0);
 	return(1);
+#else
+	return(0);
+#endif
 }
 
 
@@ -214,6 +236,7 @@ void TKMM_Init()
 	if(tkmm_is_init)return;
 	tkmm_is_init=1;
 
+#ifndef __TK_CLIB_ONLY__
 //	if(tk_getsavedvbr())
 	if(!tk_iskernel())
 //	if(0)
@@ -245,6 +268,10 @@ void TKMM_Init()
 		tkmm_maxpage=(tkmm_pageend-tkmm_pagebase)>>12;
 		tk_printf("TKMM_Heap %dkB\n", tkmm_maxpage<<2);
 	}
+#else
+	TKMM_PageAlloc_f=TKMM_PageAllocV;
+	TKMM_PageFree_f=TKMM_PageFreeV;
+#endif
 	
 //	printf("TKMM_Init: heap=%dMB\n",
 //		(tkmm_pageend-tkmm_pagebase)>>20);

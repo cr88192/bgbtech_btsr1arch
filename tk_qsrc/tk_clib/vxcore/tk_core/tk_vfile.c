@@ -113,6 +113,7 @@ int tk_vfile_init()
 	
 	tk_puts("tk_vfile_init\n");
 	
+#ifndef __TK_CLIB_ONLY__
 	if(tk_iskernel())
 	{
 //		tk_ird_init();
@@ -124,6 +125,10 @@ int tk_vfile_init()
 		tk_sysc_init();	
 		tk_mount_sysc();
 	}
+#else
+	tk_sysc_init();	
+	tk_mount_sysc();
+#endif
 
 	tk_puts("tk_vfile_init: OK\n");
 
@@ -339,8 +344,11 @@ int tk_fstat(char *name, TK_FSTAT *st)
 	return(-1);
 }
 
+#ifndef __TK_CLIB_ONLY__
 // #include "tk_vf_ird.c"
 #include "tk_vf_fat.c"
+#endif
+
 #include "tk_vf_sysc.c"
 
 TK_FILE *tk_fopen(char *name, char *mode)

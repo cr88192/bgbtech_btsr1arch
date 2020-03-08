@@ -93,6 +93,9 @@ void *bsearch(const void *key, const void *base,
               size_t nmemb, size_t size,
               int (*compar)(const void *, const void *));
 
+#define		min(a, b)	(((a)<(b))?(a):(b))
+#define		max(a, b)	(((a)>(b))?(a):(b))
+
 #ifdef __WATCOMC__
 #pragma intrinsic (abs,labs,div,ldiv)
 #endif

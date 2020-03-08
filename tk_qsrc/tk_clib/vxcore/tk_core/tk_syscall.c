@@ -89,6 +89,7 @@ int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 			
 			case 0x03:
 				tk_sysc_exitpgm(args[0].i);
+				ret=TK_URES_TRUE;
 				break;
 
 			case 0x04:
@@ -97,6 +98,7 @@ int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 				*((void **)vParm1)=p;
 				TK_TaskAddPageAlloc(task, p, sz);
 				tk_printf("SYSC: Page Alloc, vParm=%p, p=%p\n", vParm1, p);
+				ret=TK_URES_TRUE;
 				break;
 			case 0x05:
 				ret=TKMM_PageFree(args[0].p, args[1].i);
@@ -104,6 +106,22 @@ int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 			
 			case 0x06:
 				tk_irq_setUserIrq(args[0].i, args[1].p);
+				ret=TK_URES_TRUE;
+				break;
+
+			case 0x08:
+				tk_putc(args[0].i);
+				ret=TK_URES_TRUE;
+				break;
+			case 0x09:
+				sz=tk_getch();
+				*((int **)vParm1)=sz;
+				ret=TK_URES_TRUE;
+				break;
+			case 0x0A:
+				sz=tk_kbhit();
+				*((int **)vParm1)=sz;
+				ret=TK_URES_TRUE;
 				break;
 			
 			case 0x20:

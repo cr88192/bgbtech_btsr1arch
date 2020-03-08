@@ -684,7 +684,9 @@ int __start_init();
 
 int __start_first()
 {
+#ifndef __TK_CLIB_ONLY__
 	tk_con_init();
+#endif
 }
 
 int __start_early()

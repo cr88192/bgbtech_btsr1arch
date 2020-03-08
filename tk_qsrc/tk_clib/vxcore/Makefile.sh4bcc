@@ -31,6 +31,7 @@ SRCS_CLIB = \
 	pdpc201/math.c \
 	pdpc201/math2.c \
 	pdpc201/__memmgr.c \
+	pdpc201/stdlibext.c \
 	pdpc201/btshx_supa.c \
 	pdpc201/btshx_softfpu.c \
 	pdpc201/btshx_fpusup.c \
@@ -99,7 +100,8 @@ libs2: FORCE
 #	cp pdpc201/*.ril		$(BUILD)
 #	cp pdpc201/crt0.o	$(BUILD)
 
-libs: libs2 libvxcore.ril libvxcore64.ril libvxcore_bjx2.ril
+libs: libs2 libvxcore.ril libvxcore64.ril libvxcore_bjx2.ril \
+	libc.bjx2.ril libm.bjx2.ril libdl.bjx2.ril
 
 bins: tkshell.sys
 
@@ -115,6 +117,15 @@ libvxcore64.ril: $(SRCS_CLIB) $(SRCS_ASM) $(SRCS_BS2) $(SRCS_ASM_2)
 
 libvxcore_bjx2.ril: $(SRCS_CLIB) $(SRCS_ASM) $(SRCS_BS2) $(SRCS_ASM_2)
 	$(CC) -o libvxcore_bjx2.ril vxcore_multi.c $(SRCS_ASM) $(SRCS_BS2) $(COPTS64)
+
+libc.bjx2.ril: $(SRCS_CLIB) $(SRCS_ASM) $(SRCS_BS2) $(SRCS_ASM_2)
+	$(CC) -o libc.bjx2.ril libc_multi.c $(SRCS_ASM) $(COPTS)
+
+libm.bjx2.ril: $(SRCS_CLIB) $(SRCS_ASM) $(SRCS_BS2) $(SRCS_ASM_2)
+	$(CC) -o libm.bjx2.ril libm_multi.c $(COPTS)
+
+libdl.bjx2.ril: $(SRCS_CLIB) $(SRCS_ASM) $(SRCS_BS2) $(SRCS_ASM_2)
+	$(CC) -o libdl.bjx2.ril libdl_multi.c $(COPTS)
 
 tkshell.sys: $(SRCS_TKSH)
 	$(CC) -o tkshell.sys tkshell_multi.c $(COPTS64) $(TK_LDFL64)

@@ -1,6 +1,17 @@
+/*
+The LIBC version will only include application-related logic.
+Everything else will assume the use of system calls.
+
+ */
+
 #ifndef __PDPCLIB_API__
 #define __PDPCLIB_API__
 #endif
+
+#ifndef __TK_CLIB_ONLY__
+#define __TK_CLIB_ONLY__
+#endif
+
 
 #include "pdpc201/stdio.c"
 #include "pdpc201/string.c"
@@ -23,22 +34,22 @@
 #include "tk_core/tk_mmpage.c"
 #include "tk_core/tk_mmllist.c"
 
-#include "tk_core/tk_spi.c"
+// #include "tk_core/tk_spi.c"
 #include "tk_core/tk_epoch.c"
-#include "tk_core/tk_fat.c"
+// #include "tk_core/tk_fat.c"
 #include "tk_core/tk_vfile.c"
 #include "tk_core/tk_divi.c"
 #include "tk_core/tk_puts.c"
-#include "tk_core/tk_msgbuf.c"
-#include "tk_core/tk_conprn.c"
-#include "tk_core/tk_ps2keyb.c"
-#include "tk_core/tk_peload.c"
-#include "tk_core/tk_peload_pbo.c"
-#include "tk_core/tk_syscall.c"
+// #include "tk_core/tk_msgbuf.c"
+// #include "tk_core/tk_conprn.c"
+// #include "tk_core/tk_ps2keyb.c"
+// #include "tk_core/tk_peload.c"
+// #include "tk_core/tk_peload_pbo.c"
+// #include "tk_core/tk_syscall.c"
 
 #include "tk_core/tk_env.c"
 #include "tk_core/tk_envctx.c"
-#include "tk_core/tk_shcmd.c"
+// #include "tk_core/tk_shcmd.c"
 #include "tk_core/tk_irq.c"
 
 #include "tk_core/lva_array.c"
