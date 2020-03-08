@@ -172,7 +172,7 @@ begin
 		JX2_UCMD_POPX: begin
 		end
 
-		JX2_UCMD_ALU3, JX2_UCMD_UNARY: begin
+		JX2_UCMD_ALU3, JX2_UCMD_UNARY, JX2_UCMD_ALUW3: begin
 			tHeldIdRn1	= regIdRm;
 		end
 

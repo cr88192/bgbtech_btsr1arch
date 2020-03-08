@@ -255,21 +255,30 @@ reg[63:0]	tNxtVecRnB;
 reg[63:0]	tRegAddRs;		//Rn input value
 reg[63:0]	tRegAddRt;		//Rn input value
 
+wire		tExCmdIsSimd;
+// reg			tAddExHold;
+wire			tAddExHold;
+assign		tAddExHold = exHold && !tExCmdIsSimd;
+
 wire[63:0]	tRegAddVal;		//Rn output value
 wire[1:0]	tRegAddExOp;	
+wire[1:0]	tRegAddSimdExOp;	
 wire[1:0]	tRegAddExOK;	
 
 FpuAdd	fpu_add(
 	clock,		reset,
-	exHold,
+//	exHold,
+	tAddExHold,
 //	tRegValRt,	tRegAddRn,
 	tRegAddRt,	tRegAddRs,
 	tRegAddVal,	tRegAddExOp,
 	tRegAddExOK);
 
+reg[63:0]	tRegMulValL;	//Rn output value (last cycle)
 wire[63:0]	tRegMulVal;		//Rn output value
 FpuMul	fpu_mul(
-	clock,		reset,		exHold,
+//	clock,		reset,		exHold,
+	clock,		reset,		tAddExHold,
 //	tRegValRt,	tRegValRs,	tRegMulVal);
 	tRegAddRt,	tRegAddRs,	tRegMulVal);
 
@@ -278,11 +287,17 @@ wire	tFpuIsFldcx;
 assign	tFpuIsFpu3 = (tOpCmd[5:0]==JX2_UCMD_FPU3);
 assign	tFpuIsFldcx = (tOpCmd[5:0]==JX2_UCMD_FLDCX);
 
+assign	tRegAddSimdExOp	=
+	(tRegIdIxtL[3:0]==JX2_UCIX_FPU_PADD[3:0]) ? 2'h1 :
+	(tRegIdIxtL[3:0]==JX2_UCIX_FPU_PSUB[3:0]) ? 2'h2 :
+	2'h0;
+
 assign	tRegAddExOp	=
+	(tExCmdIsSimd) ? tRegAddSimdExOp :
 	(tFpuIsFpu3 && (tRegIdIxt[3:0]==JX2_UCIX_FPU_FADD[3:0])) ? 2'h1 :
 	(tFpuIsFpu3 && (tRegIdIxt[3:0]==JX2_UCIX_FPU_FSUB[3:0])) ? 2'h2 :
-	(tFpuIsFpu3 && (tRegIdIxt[3:0]==JX2_UCIX_FPU_PADD[3:0])) ? 2'h1 :
-	(tFpuIsFpu3 && (tRegIdIxt[3:0]==JX2_UCIX_FPU_PSUB[3:0])) ? 2'h2 :
+//	(tFpuIsFpu3 && (tRegIdIxt[3:0]==JX2_UCIX_FPU_PADD[3:0])) ? 2'h1 :
+//	(tFpuIsFpu3 && (tRegIdIxt[3:0]==JX2_UCIX_FPU_PSUB[3:0])) ? 2'h2 :
 	(tFpuIsFldcx && (tRegIdIxt[3:0]==4'h2)) ? 2'h3 :
 	2'h0;
 
@@ -329,14 +344,25 @@ assign	tBraFlush		= braFlush;
 `endif
 
 
+wire	tExCmdLaneA;
+wire	tExCmdLaneB1;
 wire	tExCmdLaneB;
 reg		tExCmdVecW;
 
-assign	tExCmdLaneB =
-	((tOpCmdB[5:0]==JX2_UCMD_FPU3) && !regIdIxtB[5])	||
+assign	tExCmdLaneA =
+	(tOpCmdA[5:0]==JX2_UCMD_FPU3) 	||
+	(tOpCmdA[5:0]==JX2_UCMD_FCMP)	||
+	(tOpCmdA[5:0]==JX2_UCMD_FLDCX)	||
+	(tOpCmdA[5:0]==JX2_UCMD_FSTCX)	;
+
+assign	tExCmdLaneB1 =
+//	((tOpCmdB[5:0]==JX2_UCMD_FPU3) && !regIdIxtB[5])	||
+	(tOpCmdB[5:0]==JX2_UCMD_FPU3)	||
 	(tOpCmdB[5:0]==JX2_UCMD_FCMP)	||
 	(tOpCmdB[5:0]==JX2_UCMD_FLDCX)	||
 	(tOpCmdB[5:0]==JX2_UCMD_FSTCX)	;
+
+assign	tExCmdLaneB = tExCmdLaneB1 && !tExCmdLaneA;
 	
 assign	tOpCmd			= tExCmdLaneB ? opCmdB : opCmdA;
 assign	tRegIdIxt		= tExCmdLaneB ? regIdIxtB : regIdIxtA;
@@ -348,6 +374,11 @@ assign	tRegValRs		= tExCmdLaneB ? regValRsB : regValRsA;
 assign	tRegValRt		= tExCmdLaneB ? regValRtB : regValRtA;
 assign	tRegValRn		= tExCmdLaneB ? regValRnB : regValRnA;
 
+assign	tExCmdIsSimd =
+	(tOpCmdL[5:0]==JX2_UCMD_FPU3) 	&&
+	(	(tRegIdIxtL[3:0]==4'h5) ||
+		(tRegIdIxtL[3:0]==4'h6) ||
+		(tRegIdIxtL[3:0]==4'h7)	);
 
 always @*
 begin
@@ -377,6 +408,7 @@ begin
 
 	tRegAddRs	= tRegValRs;
 	tRegAddRt	= tRegValRt;
+//	tAddExHold	= exHold;
 
 	tVecCnvRsI	= tRegValRsA[31:0];
 	tVecCnvRtI	= tRegValRtA[31:0];
@@ -384,39 +416,50 @@ begin
 
 	case(tHoldCyc)
 		0: begin
+		end
+	
+		1: begin
 //				tVecCnvRsI = tRegValRsA[31:0];
 //				tVecCnvRtI = tRegValRtA[31:0];
-				tVecCnvRsI = tRegValRs[31:0];
-				tVecCnvRtI = tRegValRt[31:0];
-		end
-		1: begin
-//				tVecCnvRsI = tRegValRsA[63:32];
-//				tVecCnvRtI = tRegValRtA[63:32];
-				tVecCnvRsI = tRegValRs[63:32];
-				tVecCnvRtI = tRegValRt[63:32];
+//				tVecCnvRsI = tRegValRs[31:0];
+//				tVecCnvRtI = tRegValRt[31:0];
+				tVecCnvRsI = tRegValRsL[31:0];
+				tVecCnvRtI = tRegValRtL[31:0];
 		end
 		2: begin
-				tVecCnvRsI = tRegValRsB[31:0];
-				tVecCnvRtI = tRegValRtB[31:0];
+//				tVecCnvRsI = tRegValRsA[63:32];
+//				tVecCnvRtI = tRegValRtA[63:32];
+//				tVecCnvRsI = tRegValRs[63:32];
+//				tVecCnvRtI = tRegValRt[63:32];
+				tVecCnvRsI = tRegValRsL[63:32];
+				tVecCnvRtI = tRegValRtL[63:32];
 		end
 		3: begin
-				tVecCnvRsI = tRegValRsB[63:32];
-				tVecCnvRtI = tRegValRtB[63:32];
+//				tVecCnvRsI = tRegValRsB[31:0];
+//				tVecCnvRtI = tRegValRtB[31:0];
+				tVecCnvRsI = tRegValRsBL[31:0];
+				tVecCnvRtI = tRegValRtBL[31:0];
+		end
+		4: begin
+//				tVecCnvRsI = tRegValRsB[63:32];
+//				tVecCnvRtI = tRegValRtB[63:32];
+				tVecCnvRsI = tRegValRsBL[63:32];
+				tVecCnvRtI = tRegValRtBL[63:32];
 		end
 		
-		4: begin
+		5: begin
 		end
 
-		5: begin
+		6: begin
 			tNxtVecRnA[31:0] = tVecCnvRnO;
 		end
-		6: begin
+		7: begin
 			tNxtVecRnA[63:32] = tVecCnvRnO;
 		end
-		7: begin
+		8: begin
 			tNxtVecRnB[31:0] = tVecCnvRnO;
 		end
-		8: begin
+		9: begin
 			tNxtVecRnB[63:32] = tVecCnvRnO;
 		end
 		
@@ -463,8 +506,17 @@ begin
 					tRegAddRs	= tVecCnvRsO;
 					tRegAddRt	= tVecCnvRtO;
 					tVecCnvRnI	= tRegAddVal;
+//					tAddExHold	= 0;
 
-					if(tHoldCyc != 9)
+//					$display("PADD Cyc=%X, Rs.i=%X Rt.i=%X Rn.i=%X",
+//						tHoldCyc, tRegAddRs, tRegAddRt,
+//						tRegAddVal);
+
+//					$display("PADD Cyc=%X, Rs.i=%X Rt.i=%X Rn.i=%X",
+//						tHoldCyc, tVecCnvRsI, tVecCnvRtI,
+//						tVecCnvRnO);
+				
+					if(tHoldCyc != 10)
 						tExHold = 1;
 
 //					tExCmdVecW	= 1;
@@ -477,8 +529,9 @@ begin
 					tRegAddRs	= tVecCnvRsO;
 					tRegAddRt	= tVecCnvRtO;
 					tVecCnvRnI	= tRegAddVal;
+//					tAddExHold	= 0;
 
-					if(tHoldCyc != 9)
+					if(tHoldCyc != 10)
 						tExHold = 1;
 
 //					tExCmdVecW = 1;
@@ -490,9 +543,11 @@ begin
 				4'h7: begin
 					tRegAddRs	= tVecCnvRsO;
 					tRegAddRt	= tVecCnvRtO;
-					tVecCnvRnI	= tRegMulVal;
+//					tVecCnvRnI	= tRegMulVal;
+					tVecCnvRnI	= tRegMulValL;
+//					tAddExHold	= 0;
 
-					if(tHoldCyc != 9)
+					if(tHoldCyc != 10)
 						tExHold = 1;
 
 //					tExCmdVecW	= 1;
@@ -692,6 +747,7 @@ begin
 
 	tVecRnA		<= tNxtVecRnA;
 	tVecRnB		<= tNxtVecRnB;
+	tRegMulValL	<= tRegMulVal;
 
 	if(tExHold)
 		tHoldCyc <= tHoldCyc + 1;

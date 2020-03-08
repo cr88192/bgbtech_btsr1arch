@@ -313,8 +313,8 @@ int BJX2_MemDefineMmgp(BJX2_Context *ctx,
 
 int BJX2_ContextLoadMap(BJX2_Context *ctx, char *name)
 {
-	bjx2_addr tmap_addr[4096];
-	char *tmap_name[4096];
+	bjx2_addr tmap_addr[16384];
+	char *tmap_name[16384];
 	char tb[256];
 	BJX2_FILE *fd;
 	char **a;

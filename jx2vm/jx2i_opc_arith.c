@@ -298,6 +298,169 @@ void BJX2_Op_PMULUW_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[BJX2_REG_DHR]=hv;
 }
 
+void BJX2_Op_PMULULW_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u32 x0, x1, x2, x3;
+	u32 y0, y1, y2, y3;
+	u32 z0, z1, z2, z3;
+	u64 lv, hv;
+	
+	x0=(ctx->regs[op->ro]>> 0)&65535;
+	x1=(ctx->regs[op->ro]>>16)&65535;
+	x2=(ctx->regs[op->ro]>>32)&65535;
+	x3=(ctx->regs[op->ro]>>48)&65535;
+
+	y0=(ctx->regs[op->rm]>> 0)&65535;
+	y1=(ctx->regs[op->rm]>>16)&65535;
+	y2=(ctx->regs[op->rm]>>32)&65535;
+	y3=(ctx->regs[op->rm]>>48)&65535;
+	
+	z0=x0*y0;
+	z1=x1*y1;
+	z2=x2*y2;
+	z3=x3*y3;
+	
+	lv=	(((u64)((u16)z0))<< 0)|
+		(((u64)((u16)z1))<<16)|
+		(((u64)((u16)z2))<<32)|
+		(((u64)((u16)z3))<<48);
+	
+	ctx->regs[op->rn]=lv;
+}
+
+void BJX2_Op_PMULUHW_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u32 x0, x1, x2, x3;
+	u32 y0, y1, y2, y3;
+	u32 z0, z1, z2, z3;
+	u64 lv, hv;
+	
+	x0=(ctx->regs[op->ro]>> 0)&65535;
+	x1=(ctx->regs[op->ro]>>16)&65535;
+	x2=(ctx->regs[op->ro]>>32)&65535;
+	x3=(ctx->regs[op->ro]>>48)&65535;
+
+	y0=(ctx->regs[op->rm]>> 0)&65535;
+	y1=(ctx->regs[op->rm]>>16)&65535;
+	y2=(ctx->regs[op->rm]>>32)&65535;
+	y3=(ctx->regs[op->rm]>>48)&65535;
+	
+	z0=x0*y0;
+	z1=x1*y1;
+	z2=x2*y2;
+	z3=x3*y3;
+	
+	hv=	(((u64)((u16)(z0>>16)))<< 0)|
+		(((u64)((u16)(z1>>16)))<<16)|
+		(((u64)((u16)(z2>>16)))<<32)|
+		(((u64)((u16)(z3>>16)))<<48);
+	
+	ctx->regs[op->rn]=hv;
+}
+
+void BJX2_Op_PMULSLW_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	s32 x0, x1, x2, x3;
+	s32 y0, y1, y2, y3;
+	s32 z0, z1, z2, z3;
+	u64 lv, hv;
+	
+	x0=(s16)(ctx->regs[op->ro]>> 0);
+	x1=(s16)(ctx->regs[op->ro]>>16);
+	x2=(s16)(ctx->regs[op->ro]>>32);
+	x3=(s16)(ctx->regs[op->ro]>>48);
+
+	y0=(s16)(ctx->regs[op->rm]>> 0);
+	y1=(s16)(ctx->regs[op->rm]>>16);
+	y2=(s16)(ctx->regs[op->rm]>>32);
+	y3=(s16)(ctx->regs[op->rm]>>48);
+	
+	z0=x0*y0;
+	z1=x1*y1;
+	z2=x2*y2;
+	z3=x3*y3;
+	
+	lv=	(((u64)((u16)z0))<< 0)|
+		(((u64)((u16)z1))<<16)|
+		(((u64)((u16)z2))<<32)|
+		(((u64)((u16)z3))<<48);
+	
+	ctx->regs[op->rn]=lv;
+}
+
+void BJX2_Op_PMULSHW_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	s32 x0, x1, x2, x3;
+	s32 y0, y1, y2, y3;
+	s32 z0, z1, z2, z3;
+	u64 lv, hv;
+	
+	x0=(s16)(ctx->regs[op->ro]>> 0);
+	x1=(s16)(ctx->regs[op->ro]>>16);
+	x2=(s16)(ctx->regs[op->ro]>>32);
+	x3=(s16)(ctx->regs[op->ro]>>48);
+
+	y0=(s16)(ctx->regs[op->rm]>> 0);
+	y1=(s16)(ctx->regs[op->rm]>>16);
+	y2=(s16)(ctx->regs[op->rm]>>32);
+	y3=(s16)(ctx->regs[op->rm]>>48);
+	
+	z0=x0*y0;
+	z1=x1*y1;
+	z2=x2*y2;
+	z3=x3*y3;
+	
+	hv=	(((u64)((u16)(z0>>16)))<< 0)|
+		(((u64)((u16)(z1>>16)))<<16)|
+		(((u64)((u16)(z2>>16)))<<32)|
+		(((u64)((u16)(z3>>16)))<<48);
+	
+	ctx->regs[op->rn]=hv;
+}
+
+void BJX2_Op_PADDW_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	const u64 m1=0xFFFF0000FFFF0000ULL;
+	const u64 m2=0x0000FFFF0000FFFFULL;
+	ctx->regs[op->rn]=
+		(((ctx->regs[op->rm]&m1)+(ctx->regs[op->ro]&m1))&m1)|
+		(((ctx->regs[op->rm]&m2)+(ctx->regs[op->ro]&m2))&m2);
+}
+
+void BJX2_Op_PSUBW_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	const u64 m1=0xFFFF0000FFFF0000ULL;
+	const u64 m2=0x0000FFFF0000FFFFULL;
+	const u64 b1=0x0001000000010000ULL;
+	const u64 b2=0x0000000100000001ULL;
+	u64 pm1, pm2;
+
+	pm1=(~(ctx->regs[op->ro]&m1)+b1)&m1;
+	pm2=(~(ctx->regs[op->ro]&m2)+b2)&m2;
+	ctx->regs[op->rn]=
+		(((ctx->regs[op->rm]&m1)+pm1)&m1)|
+		(((ctx->regs[op->rm]&m2)+pm2)&m2);
+}
+
+void BJX2_Op_PADDL_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	const u64 m1=0xFFFFFFFF00000000ULL;
+	const u64 m2=0x00000000FFFFFFFFULL;
+	ctx->regs[op->rn]=
+		(((ctx->regs[op->rm]&m1)+(ctx->regs[op->ro]&m1))&m1)|
+		(((ctx->regs[op->rm]&m2)+(ctx->regs[op->ro]&m2))&m2);
+}
+
+void BJX2_Op_PSUBL_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	const u64 m1=0xFFFFFFFF00000000ULL;
+	const u64 m2=0x00000000FFFFFFFFULL;
+	ctx->regs[op->rn]=
+		(((ctx->regs[op->rm]&m1)-(ctx->regs[op->ro]&m1))&m1)|
+		(((ctx->regs[op->rm]&m2)-(ctx->regs[op->ro]&m2))&m2);
+}
+
+
 void BJX2_Op_TST_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	if((u32)(ctx->regs[op->rn]&ctx->regs[op->rm]))

@@ -210,6 +210,7 @@ reg opIsWfA;	//WEX
 
 reg opIsScalar;		//Scalar Operation
 reg opIsDualLane;	//Op uses both lanes
+reg opIsDualLane3R;	//Op uses both lanes (with all 3 regs as 128b)
 
 reg opIsFxB;
 reg opIsFzB;
@@ -275,6 +276,7 @@ begin
 	opIsWexJumboLdi	= 0;
 	opIsScalar		= 0;
 	opIsDualLane	= 0;
+	opIsDualLane3R	= 0;
 
 	casez(istrWord[15:10])
 		6'b11100z: begin	//E0..E7
@@ -635,18 +637,21 @@ begin
 //		if(opUCmdA[5:0]==JX2_UCMD_POPX)
 		if(opUCmdA[5:1]==5'h03)
 		begin
-			opIsDualLane = decOpBz_idUIxt[2];
+//			opIsDualLane = decOpBz_idUIxt[2];
+			opIsDualLane = opUIxtA[2];
 		end
 
 //		if(opUCmdA[5:0]==JX2_UCMD_MOV_MR)
 		if(opUCmdA[5:1]==5'h02)
 		begin
-			opIsDualLane = (decOpBz_idUIxt[2:0]==3'b111);
+//			opIsDualLane = (decOpBz_idUIxt[2:0]==3'b111);
+			opIsDualLane = (opUIxtA[2:0]==3'b111);
 		end
 
 		if(opUCmdA[5:0]==JX2_UCMD_FPU3)
 		begin
-			opIsDualLane = decOpBz_idUIxt[5];
+			opIsDualLane = opUIxtA[5];
+			opIsDualLane3R = 1;
 		end
 	end
 	
@@ -661,6 +666,12 @@ begin
 		opImmB	= opImmA;
 		opUCmdB	= opUCmdA;
 		opUIxtB	= opUIxtA;
+
+		if(opIsDualLane3R)
+		begin
+			opRegBM[0] = !opRegAM[0];
+			opRegBO[0] = !opRegAO[0];
+		end
 
 		opRegCM	= opRegBN;
 		opRegCO	= opRegAN;

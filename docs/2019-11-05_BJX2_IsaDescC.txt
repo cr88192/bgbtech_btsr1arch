@@ -1377,7 +1377,7 @@ The GSVF variant will also support packed half and single precision floating-poi
 Packed byte operations will not be directly supported by GSV.
 
 
-=== MOV.xD (GSV) ===
+=== MOVxD (GSV) ===
 
 * F0nm_1g8A  MOVHD		Rm, Rn			//(GSV) Move High DWord
 * F0nm_1G8A  MOVLD		Rm, Rn			//(GSV) Move Low DWord
@@ -1385,6 +1385,22 @@ Packed byte operations will not be directly supported by GSV.
 * F0nm_1GAA  MOVLHD		Rm, Rn			//(GSV) Rn=Rm (MOV Low to High)
 
 Partial Register Move. These MOV part of the bits from Rm into Rn, while leaving the other bits in Rn as their original value.
+
+=== MOVxD 3R (GSV) ===
+
+* F0nm_2go8  MOVHD		Rm, Ro, Rn		//(GSV) MOV, High DWords
+* F0nm_2Go8  MOVLD		Rm, Ro, Rn		//(GSV) MOV, Low DWords
+* F0nm_2go9  MOVHLD		Rm, Ro, Rn		//(GSV) MOV, High and Low DWords
+* F0nm_2Go9  MOVLHD		Rm, Ro, Rn		//(GSV) MOV, Low and High DWords
+
+The 3R forms will merge the values from two source registers into a destination register.
+
+The high 32 bits will come from Rm, and the low 32 bits will come from Ro.
+
+MOVHD will select the high-order bits from both registers, and MOVLD the low order bits from both registers.
+
+MOVHLD will select the high bits from Rm, and the low bits from Ro.
+MOVLHD will select the low bits from Rm, and the high bits from Ro.
 
 
 === PADD.x (GSV) ===
@@ -1397,6 +1413,18 @@ Partial Register Move. These MOV part of the bits from Rm into Rn, while leaving
 Add Packed Elements.
 
 Each element from Rm is added to the corresponding element of Rn.
+
+
+=== PADD.x 3R (GSV) ===
+
+* F0nm_2go0  PADD.W		Rm, Ro, Rn			//(GSV) Packed ADD Word
+* F0nm_2Go0  PADD.L		Rm, Ro, Rn			//(GSV) Packed ADD DWord
+* F0nm_2go5  PADD.F		Rm, Ro, Rn			//(GSVF) Packed FADD (2x Float)
+* F0nm_2Go5  PADDX.F	Rm, Ro, Rn			//(GSVFX) Packed FADD (4x Float)
+
+Packed ADD, but in 3-register form.
+PADDX.F will operate on a 128-bit vector.
+
 
 
 === PCMPx.x (GSV) ===
@@ -1460,13 +1488,27 @@ Dup operations will duplicate the source element in both the low and high bits.
 Multiply the packed Half-Float values in Rm and Rn, storing the result in Rn.
 
 
-=== PMULU.W (GSV) ===
+=== / PMULU.W (GSV) ===
 
-* F0nm_1gFA  PMULU.W	Rm, Rn		//(GSV) (DHR,DLR)=Rm*Rn (Vector)
+* / F0nm_1gFA  PMULU.W	Rm, Rn		//(GSV) (DHR,DLR)=Rm*Rn (Vector)
 
 Packed Multiply of Unsigned Words.
 The DLR register is updated with the low words of each packed multiply.
 The DHR register is updated with the high words of each packed multiply.
+
+
+=== PMULx.W 3R (GSV) ===
+
+* F0nm_5go1  PMULS.W	Rm, Ro, Rn			//(GSV) Packed Multiply (2x16->2x32)
+* F0nm_5Go1  PMULU.W	Rm, Ro, Rn			//(GSV) Packed Multiply (2x16->2x32)
+* F0nm_5go6  PMULS.LW	Rm, Ro, Rn			//(GSV) Packed Mul (Low Word)
+* F0nm_5Go6  PMULU.LW	Rm, Ro, Rn			//(GSV) Packed Mul (Low Word)
+* F0nm_5go7  PMULS.HW	Rm, Ro, Rn			//(GSV) Packed Mul (High Word)
+* F0nm_5Go7  PMULU.HW	Rm, Ro, Rn			//(GSV) Packed Mul (High Word)
+
+The basic 3R PMULx.W will accept vectors with two 16 bit inputs, and produce a vactor with two 32-bit products.
+
+The LW and HW variants will consume 4-wide input vectors and produce a 4-wide output. The LW variant will keep the low order bits from the result, whereas the HW variant will keep the high-order bits.
 
 
 === PSTxxx.x (GSV) ===
@@ -1500,6 +1542,20 @@ High operations will use the high order bits of the source element as the destin
 Subtract Packed Elements.
 
 Each element from Rm is subtracted from the corresponding element of Rn.
+
+
+=== PSUB.x 3R (GSV) ===
+
+* F0nm_2go1  PSUB.W		Rm, Ro, Rn			//(GSV) Packed SUB Word
+* F0nm_2Go1  PSUB.L		Rm, Ro, Rn			//(GSV) Packed SUB DWord
+* F0nm_2go6  PSUB.F		Rm, Ro, Rn			//(GSVF) Packed FSUB (2x Float)
+* F0nm_2Go6  PSUBX.F	Rm, Ro, Rn			//(GSVFX) Packed FSUB (4x Float)
+
+Subtract Packed Elements.
+
+Each element from Ro is subtracted from the corresponding element of Rm.
+
+The PSUBX variant will operate on 128-bit vectors (GPR pair).
 
 
 === PSELx.x (GSV) ===

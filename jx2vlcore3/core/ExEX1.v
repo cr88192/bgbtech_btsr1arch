@@ -485,7 +485,7 @@ begin
 `endif
 
 //		JX2_UCMD_ALU3: begin
-		JX2_UCMD_ALU3, JX2_UCMD_UNARY: begin
+		JX2_UCMD_ALU3, JX2_UCMD_UNARY, JX2_UCMD_ALUW3: begin
 			tHeldIdRn1	= regIdRm;
 //			tRegIdRn1	= regIdRm;
 //			tRegValRn1	= tValAlu;

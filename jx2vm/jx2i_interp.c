@@ -1447,8 +1447,13 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 
 #if 1
 	printf("Cyc/Nmid:\n");
-	for(i=0; i<64; i++)
+//	for(i=0; i<64; i++)
+	for(i=0; i<128; i++)
 	{
+		k=idx_nmid[i*2];
+		if(!cyc_nmid[k])
+			break;
+
 //		printf("%2X ", i*2);
 		for(j=0; j<2; j++)
 		{

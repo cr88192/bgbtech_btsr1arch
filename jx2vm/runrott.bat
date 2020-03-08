@@ -1,0 +1,1 @@
+jx2vm ../tst_jx2boot.bin --rd_add bootload.sys=../tk_ports/RottSrc/rott/rott_bjx2.exe darkwar.wad=../tk_ports/RottSrc/darkwar.wad darkwar.rtl=../tk_ports/RottSrc/darkwar.rtl darkwar.rtc=../tk_ports/RottSrc/darkwar.rtc demo1_3.dmo=../tk_ports/RottSrc/demo1_3.dmo demo2_3.dmo=../tk_ports/RottSrc/demo2_3.dmo --rd_map ../tk_ports/RottSrc/rott/rott_bjx2.exe.map %1 %2 %3 %4 %5 

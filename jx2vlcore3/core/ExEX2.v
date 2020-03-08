@@ -271,7 +271,7 @@ begin
 		end
 
 //		JX2_UCMD_ALU3: begin
-		JX2_UCMD_ALU3, JX2_UCMD_UNARY: begin
+		JX2_UCMD_ALU3, JX2_UCMD_UNARY, JX2_UCMD_ALUW3: begin
 			tRegIdRn2		= regIdRm;			//
 			tRegValRn2		= regValAluRes[63:0];		//
 			tRegOutSr[1:0]	= regValAluRes[65:64];
