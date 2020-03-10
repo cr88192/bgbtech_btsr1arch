@@ -146,13 +146,13 @@ int tk_shell_chksane_simd()
 	fv1=fv0+fv0;
 	fv2=fv1*fv0;
 	
-	__debugbreak();
+//	__debugbreak();
 	
 //	tk_printf("SIMD A0: %f %f %f %f\n", fv1.x, fv1.y, fv1.z, fv1.w);
 	tk_printf("SIMD A0: %f %f\n", fv1.x, fv1.y);
 	tk_printf("SIMD A0: %f %f\n", fv1.z, fv1.w);
 
-	__debugbreak();
+//	__debugbreak();
 }
 
 int tk_shell_chksane()
