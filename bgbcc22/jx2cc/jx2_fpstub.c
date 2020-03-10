@@ -66,6 +66,18 @@ int BGBCC_JX2C_EmitRegIsLpReg(
 	return(0);
 }
 
+int BGBCC_JX2C_EmitRegIsExtLpReg(
+	BGBCC_TransState *ctx,
+	BGBCC_SHX_Context *sctx,
+	int dreg)
+{
+	if((dreg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_LR0)
+		return(1);
+	if((dreg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_LR16)
+		return(1);
+	return(0);
+}
+
 int BGBCC_JX2C_RegNormalizeReg(
 	BGBCC_TransState *ctx,
 	BGBCC_SHX_Context *sctx,

@@ -2539,6 +2539,22 @@ int BGBCC_JX2_TryEmitOpRegRegReg(
 
 	opw1=-1; opw2=-1; opw3=-1; opw4=-1;
 
+	switch(nmid)
+	{
+	case BGBCC_SH_NMID_PADDFX:
+	case BGBCC_SH_NMID_PSUBFX:
+	case BGBCC_SH_NMID_PMULFX:
+		if((rs&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_LR0)rs&=31;
+		if((rt&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_LR0)rt&=31;
+		if((rn&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_LR0)rn&=31;
+		
+		if(rs&1)	return(0);
+		if(rt&1)	return(0);
+		if(rn&1)	return(0);
+		
+		break;
+	}
+
 	ex=0;
 	if(BGBCC_JX2_EmitCheckRegExt4(ctx, rn)) ex|=0x0040;
 	if(BGBCC_JX2_EmitCheckRegExt4(ctx, rs)) ex|=0x0020;

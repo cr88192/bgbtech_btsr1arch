@@ -293,6 +293,18 @@ int BGBCC_JX2C_EmitLoadSlotVRegVRegImm(
 			csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, sreg);
 			cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dreg);
 			
+			if(BGBCC_JX2C_EmitRegIsExtLpReg(ctx, sctx, csreg))
+			{
+				BGBCC_JX2C_LoadVectorField128(ctx, sctx,
+					type, fi->fxoffs,
+					csreg, cdreg);
+
+				BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
+				if(!BGBCC_CCXL_RegisterIdentEqualP(ctx, dreg, sreg))
+					BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, sreg);
+				return(1);
+			}
+			
 			if(!BGBCC_JX2_EmitCheckRegExtAddrGPR(sctx, csreg))
 			{
 				BGBCC_DBGBREAK

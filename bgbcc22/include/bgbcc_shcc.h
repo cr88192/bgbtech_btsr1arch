@@ -884,6 +884,8 @@
 
 #define BGBCC_SH_REGCLS_DR		13	//uses a FR
 
+#define BGBCC_SH_REGCLS_QGR2	14	//uses a pair of GPRs
+
 
 #define BGBCC_SH_FPSCR_DN		0x00040000	//
 #define BGBCC_SH_FPSCR_PR		0x00080000	//

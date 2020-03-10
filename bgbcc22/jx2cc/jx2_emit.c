@@ -40,6 +40,11 @@ int BGBCC_JX2_EmitCheckRegExt4(BGBCC_JX2_Context *ctx, int reg)
 		return(1);
 	}
 
+	if((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_LR16)
+	{
+		return(1);
+	}
+
 	return(0);
 }
 

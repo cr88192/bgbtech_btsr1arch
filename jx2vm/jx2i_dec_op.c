@@ -3304,6 +3304,15 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 			op->cyc=80;
 			break;
 
+		case BJX2_NMID_PADDF:
+		case BJX2_NMID_PSUBF:
+		case BJX2_NMID_PMULF:
+		case BJX2_NMID_PADDXF:
+		case BJX2_NMID_PSUBXF:
+		case BJX2_NMID_PMULXF:
+			op->cyc=10;
+			break;
+
 		case BJX2_NMID_MULU:
 		case BJX2_NMID_MULS:
 			op->cyc=4;

@@ -6,8 +6,9 @@ void tk_shell_chksane_simd_asm();
 
 __asm {
 tk_shell_chksane_simd_asm:
+	PUSH	SR
 
-	wexmd	2
+	WEXMD	2
 
 	MOV		0x123456789ABCDEF0, R4
 	MOV		0x3456789ABCDEF012, R5
@@ -124,12 +125,34 @@ tk_shell_chksane_simd_asm:
 	CMPQEQ		R19, R7
 	BREAK?F
 
+	POP SR
 	RTSU
 };
 
+__m128 __m128_float4(float f0, float f1, float f2, float f3);
+
 int tk_shell_chksane_simd()
 {
+	__m128 mv0;
+	__vec4f fv0, fv1, fv2;
+	
 	tk_shell_chksane_simd_asm();
+	
+	mv0=__m128_float4(1.0, 2.0, 3.0, 5.0);
+	
+//	__hint_cc_dbgbreak();
+	
+	fv0=mv0;
+	fv1=fv0+fv0;
+	fv2=fv1*fv0;
+	
+	__debugbreak();
+	
+//	tk_printf("SIMD A0: %f %f %f %f\n", fv1.x, fv1.y, fv1.z, fv1.w);
+	tk_printf("SIMD A0: %f %f\n", fv1.x, fv1.y);
+	tk_printf("SIMD A0: %f %f\n", fv1.z, fv1.w);
+
+	__debugbreak();
 }
 
 int tk_shell_chksane()

@@ -118,6 +118,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		if(shctx->use_wexmd==2)
 		{
 			shctx->has_pushx2=1;
+			shctx->has_simdx2=1;
 		}
 #endif
 	}
@@ -441,9 +442,23 @@ int BGBCC_JX2C_TypeGetRegClassPI(BGBCC_TransState *ctx, ccxl_type ty)
 	if(BGBCC_JX2C_TypeDoubleRegP(ctx, ty))
 		return(BGBCC_SH_REGCLS_DR);
 
+	if(BGBCC_CCXL_TypeVec64P(ctx, ty))
+	{
+//		return(BGBCC_SH_REGCLS_VO_QGR);
+		return(BGBCC_SH_REGCLS_QGR);
+	}
+
+	if(BGBCC_CCXL_TypeVec128P(ctx, ty))
+	{
+//		return(BGBCC_SH_REGCLS_VO_QGR2);
+		return(BGBCC_SH_REGCLS_QGR2);
+	}
+
 	if(BGBCC_CCXL_TypeValueObjectP(ctx, ty))
 	{
 		sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, ty);
+
+#if 1
 		if(sz<=4)
 			return(BGBCC_SH_REGCLS_VO_GR);
 		if(sz<=8)
@@ -457,6 +472,7 @@ int BGBCC_JX2C_TypeGetRegClassPI(BGBCC_TransState *ctx, ccxl_type ty)
 		{
 			return(BGBCC_SH_REGCLS_VO_QGR2);
 		}
+#endif
 
 		return(BGBCC_SH_REGCLS_VO_REF);
 	}

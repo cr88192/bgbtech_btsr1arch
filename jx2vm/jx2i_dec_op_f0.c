@@ -2184,6 +2184,21 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 		op->imm=disp5;
 		switch((opw2>>8)&15)
 		{
+		
+		case 0x0:
+			op->rn=rm_dfl;
+			op->rm=rn_dfl;
+			op->nmid=BJX2_NMID_MOVX2;
+			op->fmid=BJX2_FMID_REGSTREGDISP;
+			op->Run=BJX2_Op_MOVX2_RegStRegDisp;
+			break;
+	
+		case 0x8:
+			op->nmid=BJX2_NMID_MOVX2;
+			op->fmid=BJX2_FMID_LDREGDISPREG;
+			op->Run=BJX2_Op_MOVX2_LdRegDispReg;
+			break;
+	
 #if 0
 		case 0xC:	/* F0eo_4Cnm */
 			if(op->rm==0)

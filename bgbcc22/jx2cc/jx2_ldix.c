@@ -4,7 +4,7 @@ int BGBCC_JX2C_EmitLdix_FillSzNmTy(
 	ccxl_type type,
 	int *rsz, int *rnm1, int *rnm2, int *rnm3, int *rnm4)
 {
-	int nm1, nm2, nm3, nm4, ty, sz;
+	int nm1, nm2, nm3, nm4, ty, sz, rcls;
 	ty=type.val;
 
 	sz=-1; nm1=-1; nm2=-1; nm3=-1; nm4=-1;
@@ -117,9 +117,18 @@ int BGBCC_JX2C_EmitLdix_FillSzNmTy(
 
 	if(BGBCC_CCXL_TypeValueObjectP(ctx, type))
 	{
-//		sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, type);
-		sz=BGBCC_CCXL_TypeGetLogicalPadSize(ctx, type);
-		nm1=BGBCC_SH_NMID_MOVL; nm2=-1;
+		rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, type);
+		
+		if(rcls==BGBCC_SH_REGCLS_VO_QGR2)
+		{
+			sz=16;
+			nm1=BGBCC_SH_NMID_MOVQ;
+		}else
+		{
+//			sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, type);
+			sz=BGBCC_CCXL_TypeGetLogicalPadSize(ctx, type);
+			nm1=BGBCC_SH_NMID_MOVL; nm2=-1;
+		}
 	}
 	
 	*rsz=sz;
@@ -136,7 +145,7 @@ int BGBCC_JX2C_EmitLdixVRegVRegImm(
 	ccxl_type type, ccxl_register dreg,
 	ccxl_register sreg, s32 imm)
 {
-	ccxl_type tty;
+	ccxl_type tty, sty;
 	int csreg, ctreg, cdreg, ctreg2;
 	int nm1, nm2, nm3, nm4, ty, sz;
 	int i, j, k;
@@ -184,6 +193,31 @@ int BGBCC_JX2C_EmitLdixVRegVRegImm(
 
 	BGBCC_JX2C_EmitLdix_FillSzNmTy(ctx, sctx, type,
 		&sz, &nm1, &nm2, &nm3, &nm4);
+
+	sty=BGBCC_CCXL_GetRegType(ctx, sreg);
+	if(BGBCC_CCXL_TypeVec128P(ctx, sty))
+	{
+		csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, sreg);
+		cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dreg);
+		
+		BGBCC_JX2C_LoadVectorField128(ctx, sctx, type, imm*sz, csreg, cdreg);
+
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, sreg);
+		return(1);
+	}
+
+	if(BGBCC_CCXL_TypeVec64P(ctx, sty))
+	{
+		csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, sreg);
+		cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dreg);
+		
+		BGBCC_JX2C_LoadVectorField64(ctx, sctx, type, imm*sz, csreg, cdreg);
+
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, sreg);
+		return(1);
+	}
 
 //	nm4=-1;
 
@@ -261,6 +295,7 @@ int BGBCC_JX2C_EmitLdixVRegVRegVReg(
 	ccxl_type tty;
 	int csreg, ctreg, cdreg, ctreg2;
 	int nm1, nm2, nm3, nm4, ty, sz, asz, bsz;
+	int rcls;
 	int i, j, k;
 
 	if(BGBCC_CCXL_IsRegImmIntP(ctx, treg))
@@ -272,9 +307,16 @@ int BGBCC_JX2C_EmitLdixVRegVRegVReg(
 
 	ty=type.val;
 
+	rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, type);
+		
+//		if(rcls==BGBCC_SH_REGCLS_VO_QGR2)
+
 //	if(BGBCC_CCXL_TypeArrayP(ctx, type))
-	if(BGBCC_CCXL_TypeArrayP(ctx, type) ||
-		BGBCC_CCXL_TypeValueObjectP(ctx, type))
+	if(	BGBCC_CCXL_TypeArrayP(ctx, type) ||
+		BGBCC_CCXL_TypeValueObjectP(ctx, type)	)
+//		(BGBCC_CCXL_TypeValueObjectP(ctx, type) &&
+//		(rcls!=BGBCC_SH_REGCLS_VO_QGR) &&
+//		(rcls!=BGBCC_SH_REGCLS_VO_QGR2)))
 	{
 //		BGBCC_CCXL_TypeDerefType(ctx, type, &tty);
 
