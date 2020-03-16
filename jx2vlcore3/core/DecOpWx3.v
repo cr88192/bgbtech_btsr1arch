@@ -571,7 +571,6 @@ begin
 				begin
 					opUCmdA[7:6]=opIsDfB?JX2_IXC_CF:JX2_IXC_CT;
 				end
-
 			end
 			else
 			begin
@@ -632,7 +631,8 @@ begin
 		opIsScalar	= 1;
 	end
 
-	if(opIsScalar)
+//	if(opIsScalar)
+	if(1'b1)
 	begin
 //		if(opUCmdA[5:0]==JX2_UCMD_POPX)
 		if(opUCmdA[5:1]==5'h03)
@@ -645,7 +645,8 @@ begin
 		if(opUCmdA[5:1]==5'h02)
 		begin
 //			opIsDualLane = (decOpBz_idUIxt[2:0]==3'b111);
-			opIsDualLane = (opUIxtA[2:0]==3'b111);
+//			opIsDualLane = (opUIxtA[2:0]==3'b111);
+			opIsDualLane = ( {opUIxtA[2], opUIxtA[5:4]} == 3'b111);
 		end
 
 		if(opUCmdA[5:0]==JX2_UCMD_FPU3)
@@ -657,9 +658,22 @@ begin
 	
 	if(opIsDualLane)
 	begin
+		if(!opIsScalar)
+		begin
+			/* WEX+DualLane: Shove Lane2 into Lane3
+			 * Assume no 3-wide; this is invalid with dual-lane ops.
+			 */
+			opRegCN	= opRegBN;
+			opRegCM	= opRegBM;
+			opRegCO	= opRegBO;
+			opImmC	= opImmB;
+			opUCmdC	= opUCmdB;
+			opUIxtC	= opUIxtB;
+		end
+		
 		opRegBN	= opRegAN;
 		opRegBN[0] = !opRegAN[0];
-		
+
 //		opRegBN	= opRegAN;
 		opRegBM	= opRegAM;
 		opRegBO	= opRegAO;
@@ -673,8 +687,11 @@ begin
 			opRegBO[0] = !opRegAO[0];
 		end
 
-		opRegCM	= opRegBN;
-		opRegCO	= opRegAN;
+		if(opIsScalar)
+		begin
+			opRegCM	= opRegBN;
+			opRegCO	= opRegAN;
+		end
 	end
 end
 

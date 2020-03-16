@@ -3809,9 +3809,9 @@ int BGBCC_JX2_EmitShufDWordRegReg(BGBCC_JX2_Context *ctx,
 	int sr0, sr1, dr0, dr1;
 //	if(!((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_LR0))
 //	{
-	if(((sreg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_R0) ||
-		((sreg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_RD0) ||
-		((sreg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_RQ0))
+	if(((sreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_R0) ||
+		((sreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_RD0) ||
+		((sreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_RQ0))
 	{
 		dr0=BGBCC_SH_REG_RQ0+(dreg&31)+0;
 		dr1=BGBCC_SH_REG_RQ0+(dreg&31)+1;
@@ -3842,7 +3842,7 @@ int BGBCC_JX2_EmitShufDWordRegReg(BGBCC_JX2_Context *ctx,
 			break;
 		}
 
-		if((dreg&BGBCC_SH_REG_RTMASK)!=BGBCC_SH_REG_LR0)
+		if((dreg&BGBCC_SH_REG_RTMASK5)!=BGBCC_SH_REG_LR0)
 			return(1);
 
 		switch((shuf>>4)&0xF)
@@ -3874,7 +3874,7 @@ int BGBCC_JX2_EmitShufDWordRegReg(BGBCC_JX2_Context *ctx,
 		return(1);
 	}
 
-	if((sreg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_LR0)
+	if((sreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_LR0)
 	{
 		sr0=BGBCC_SH_REG_RQ0+(sreg&31)+0;
 		sr1=BGBCC_SH_REG_RQ0+(sreg&31)+1;
@@ -3952,7 +3952,7 @@ int BGBCC_JX2_EmitShufDWordRegReg(BGBCC_JX2_Context *ctx,
 			break;
 		}
 
-		if((dreg&BGBCC_SH_REG_RTMASK)!=BGBCC_SH_REG_LR0)
+		if((dreg&BGBCC_SH_REG_RTMASK5)!=BGBCC_SH_REG_LR0)
 			return(1);
 
 		switch((shuf>>4)&0x0F)

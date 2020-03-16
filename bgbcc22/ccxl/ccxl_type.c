@@ -1600,6 +1600,9 @@ bool BGBCC_CCXL_TypeVecP(
 	case CCXL_TY_VEC4UI:
 		return(true);
 
+	case CCXL_TY_VEC2D:
+		return(true);
+
 	case CCXL_TY_FCOMPLEX:
 	case CCXL_TY_DCOMPLEX:
 		return(true);
@@ -1620,6 +1623,99 @@ bool BGBCC_CCXL_TypeComplexP(
 		return(true);
 	}
 	return(false);
+}
+
+bool BGBCC_CCXL_TypeSmallFComplexP(
+	BGBCC_TransState *ctx, ccxl_type ty)
+{
+	int i;
+
+	if(ty.val==CCXL_TY_FCOMPLEX)
+		return(true);
+	if(BGBCC_CCXL_TypeSmallFloatP(ctx, ty))
+		return(true);
+	return(false);
+
+#if 0	
+	i=ty.val;
+	switch(i)
+	{
+	case CCXL_TY_FCOMPLEX:
+	case CCXL_TY_DCOMPLEX:
+		return(true);
+	}
+	return(false);
+#endif
+}
+
+bool BGBCC_CCXL_TypeSmallDComplexP(
+	BGBCC_TransState *ctx, ccxl_type ty)
+{
+	int i;
+
+	if(		(ty.val==CCXL_TY_DCOMPLEX)	||
+			(ty.val==CCXL_TY_FCOMPLEX)	)
+		return(true);
+	if(BGBCC_CCXL_TypeSmallDoubleP(ctx, ty))
+		return(true);
+	return(false);
+
+#if 0	
+	i=ty.val;
+	switch(i)
+	{
+	case CCXL_TY_FCOMPLEX:
+	case CCXL_TY_DCOMPLEX:
+		return(true);
+	}
+	return(false);
+#endif
+}
+
+bool BGBCC_CCXL_TypeQuatP(
+	BGBCC_TransState *ctx, ccxl_type ty)
+{
+	if(ty.val==CCXL_TY_QUATF)
+		return(true);
+	return(false);
+
+#if 0
+	int i;
+
+	i=ty.val;
+	switch(i)
+	{
+	case CCXL_TY_QUATF:
+//	case CCXL_TY_QUATD:
+		return(true);
+	}
+	return(false);
+#endif
+}
+
+bool BGBCC_CCXL_TypeSmallQuatP(
+	BGBCC_TransState *ctx, ccxl_type ty)
+{
+	int i;
+
+	if(ty.val==CCXL_TY_QUATF)
+		return(true);
+	if(BGBCC_CCXL_TypeSmallDComplexP(ctx, ty))
+		return(true);
+	return(false);
+
+#if 0
+	int i;
+	
+	i=ty.val;
+	switch(i)
+	{
+	case CCXL_TY_QUATF:
+//	case CCXL_TY_QUATD:
+		return(true);
+	}
+	return(false);
+#endif
 }
 
 bool BGBCC_CCXL_TypeIsTypedefP(
@@ -2930,6 +3026,7 @@ ccxl_status BGBCC_CCXL_TypeFromSig(
 
 		case 'f':	bty=CCXL_TY_FCOMPLEX; break;
 
+		case 'h':	bty=CCXL_TY_VEC2D; break;
 		case 'i':	bty=CCXL_TY_VEC4SI; break;
 		case 'j':	bty=CCXL_TY_VEC4UI; break;
 
@@ -2947,6 +3044,7 @@ ccxl_status BGBCC_CCXL_TypeFromSig(
 	case 'D':
 		switch(s[1])
 		{
+//		case 'a': bty=CCXL_TY_VEC2D; break;
 		case 'z': bty=CCXL_TY_VALIST; break;
 		default:  bty=-1; break;
 		}
@@ -3287,6 +3385,8 @@ char *BGBCC_CCXL_TypeGetSig(
 		case CCXL_TY_VEC3F:			*t++='C'; *t++='b'; break;
 		case CCXL_TY_VEC4F:			*t++='C'; *t++='c'; break;
 		case CCXL_TY_QUATF:			*t++='C'; *t++='q'; break;
+
+		case CCXL_TY_VEC2D:			*t++='C'; *t++='h'; break;
 
 		case CCXL_TY_M64:			*t++='C'; *t++='m'; break;
 		case CCXL_TY_M128:			*t++='C'; *t++='n'; break;
@@ -4035,10 +4135,26 @@ bool BGBCC_CCXL_TypeSupportsOperatorP(
 		return(false);
 	}
 
+	if(	(ty.val==CCXL_TY_FCOMPLEX) ||
+		(ty.val==CCXL_TY_DCOMPLEX))
+	{
+		if(opr==CCXL_BINOP_ADD)
+			return(true);
+		if(opr==CCXL_BINOP_SUB)
+			return(true);
+		if(opr==CCXL_BINOP_MUL)
+			return(true);
+		if(opr==CCXL_BINOP_DIV)
+			return(true);
+
+		return(false);
+	}
+
 	if(	(ty.val==CCXL_TY_VEC2F) ||
 		(ty.val==CCXL_TY_VEC3F) ||
 		(ty.val==CCXL_TY_VEC4F) ||
-		(ty.val==CCXL_TY_QUATF) )
+		(ty.val==CCXL_TY_QUATF) ||
+		(ty.val==CCXL_TY_VEC2D) )
 	{
 		if(opr==CCXL_BINOP_ADD)
 			return(true);
@@ -4063,10 +4179,37 @@ bool BGBCC_CCXL_TypeSupportsOperatorP(
 			if(	(ty.val==CCXL_TY_VEC2F) ||
 				(ty.val==CCXL_TY_VEC3F) ||
 				(ty.val==CCXL_TY_VEC4F) ||
-				(ty.val==CCXL_TY_QUATF) )
+				(ty.val==CCXL_TY_QUATF) ||
+				(ty.val==CCXL_TY_VEC2D) )
 					return(true);
 			return(false);
 		}
+	}
+
+	if(	(ty.val==CCXL_TY_VEC2SI) ||
+		(ty.val==CCXL_TY_VEC2UI) ||
+		(ty.val==CCXL_TY_VEC4SI) ||
+		(ty.val==CCXL_TY_VEC4UI) ||
+		(ty.val==CCXL_TY_VEC4SW) ||
+		(ty.val==CCXL_TY_VEC4UW) )
+	{
+		if(opr==CCXL_BINOP_ADD)
+			return(true);
+		if(opr==CCXL_BINOP_SUB)
+			return(true);
+		if(opr==CCXL_BINOP_MUL)
+			return(true);
+		if(opr==CCXL_BINOP_DIV)
+			return(true);
+
+		if(opr==CCXL_BINOP_AND)
+			return(true);
+		if(opr==CCXL_BINOP_OR)
+			return(true);
+		if(opr==CCXL_BINOP_XOR)
+			return(true);
+
+		return(false);
 	}
 	
 	return(false);
@@ -4535,7 +4678,31 @@ ccxl_status BGBCC_CCXL_GetTypeBinaryDest(
 		return(BGBCC_CCXL_TypeSupportsOperatorP(ctx, *rdty, opr)?
 			CCXL_STATUS_YES:CCXL_STATUS_NO);
 	}
-	
+
+	if(	BGBCC_CCXL_TypeSmallFComplexP(ctx, lty) &&
+		BGBCC_CCXL_TypeSmallFComplexP(ctx, rty))
+	{
+		*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_FCOMPLEX);
+		return(BGBCC_CCXL_TypeSupportsOperatorP(ctx, *rdty, opr)?
+			CCXL_STATUS_YES:CCXL_STATUS_NO);
+	}
+
+	if(	BGBCC_CCXL_TypeSmallDComplexP(ctx, lty) &&
+		BGBCC_CCXL_TypeSmallDComplexP(ctx, rty))
+	{
+		*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_DCOMPLEX);
+		return(BGBCC_CCXL_TypeSupportsOperatorP(ctx, *rdty, opr)?
+			CCXL_STATUS_YES:CCXL_STATUS_NO);
+	}
+
+	if(	BGBCC_CCXL_TypeSmallQuatP(ctx, lty) &&
+		BGBCC_CCXL_TypeSmallQuatP(ctx, rty))
+	{
+		*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_QUATF);
+		return(BGBCC_CCXL_TypeSupportsOperatorP(ctx, *rdty, opr)?
+			CCXL_STATUS_YES:CCXL_STATUS_NO);
+	}
+
 	if(lty.val==rty.val)
 	{
 		if(	(lty.val==CCXL_TY_M64) ||
@@ -4544,6 +4711,9 @@ ccxl_status BGBCC_CCXL_GetTypeBinaryDest(
 			(lty.val==CCXL_TY_VEC3F) ||
 			(lty.val==CCXL_TY_VEC4F) ||
 			(lty.val==CCXL_TY_QUATF) ||
+			(lty.val==CCXL_TY_VEC2D) ||
+			(lty.val==CCXL_TY_VEC2SI) ||
+			(lty.val==CCXL_TY_VEC2UI) ||
 			(lty.val==CCXL_TY_VEC4SW) ||
 			(lty.val==CCXL_TY_VEC4UW) ||
 			(lty.val==CCXL_TY_VEC4SI) ||
@@ -4554,14 +4724,18 @@ ccxl_status BGBCC_CCXL_GetTypeBinaryDest(
 			if(lty.val==CCXL_TY_VEC2F)
 			{
 				if((opr==CCXL_BINOP_MOD) || (opr==CCXL_BINOP_XOR))
+				{
 					*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_F);
+				}
 			}
 			else if(	(lty.val==CCXL_TY_VEC3F)	||
 						(lty.val==CCXL_TY_VEC4F)	||
 						(lty.val==CCXL_TY_QUATF)	)
 			{
 				if(opr==CCXL_BINOP_XOR)
+				{
 					*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_F);
+				}
 			}
 			
 			

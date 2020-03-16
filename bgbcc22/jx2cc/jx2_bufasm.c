@@ -920,6 +920,8 @@ int nmid;
 
 {"pshuf.b",		BGBCC_SH_NMID_PSHUFB},
 {"pshuf.w",		BGBCC_SH_NMID_PSHUFW},
+{"pshuf.l",		BGBCC_SH_NMID_PSHUFL},
+{"pshufx.l",	BGBCC_SH_NMID_PSHUFXL},
 
 {"pmulu.w",		BGBCC_SH_NMID_PMULUW},
 {"pmuls.w",		BGBCC_SH_NMID_PMULSW},

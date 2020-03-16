@@ -103,6 +103,7 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_FLT_BREAK		0x8004		//BREAK
 #define BJX2_FLT_SLEEP		0x8005		//SLEEP
 #define BJX2_FLT_INVOP		0x8006		//Invalid Opcode
+#define BJX2_FLT_MISAL		0x8007		//Invalid Misaligned Access
 
 #define BJX2_FLT_PCMISH		0x8801		//PC doesn't match trace addr
 #define BJX2_FLT_CCFLUSH	0x8802		//Cache Flush

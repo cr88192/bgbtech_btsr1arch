@@ -1083,9 +1083,53 @@ int BGBCC_JX2C_EmitConvVRegVReg(
 
 	if(dt==CCXL_TY_VEC2F)
 	{
-		if((st==CCXL_TY_M64) || (st==CCXL_TY_VEC2F) ||
-			(st==CCXL_TY_L) ||
-			(st==CCXL_TY_UL))
+		if(	(st==CCXL_TY_M64)		||
+			(st==CCXL_TY_VEC2F)		||
+			(st==CCXL_TY_FCOMPLEX)	||
+			(st==CCXL_TY_L)			||
+			(st==CCXL_TY_UL)		)
+		{
+			return(BGBCC_JX2C_EmitMovVRegVReg(ctx, sctx,
+				dtype, dreg, sreg));
+		}
+
+		BGBCC_CCXL_StubError(ctx);
+		return(0);
+	}
+
+	if(dt==CCXL_TY_VEC2D)
+	{
+		if(	(st==CCXL_TY_M128)		||
+			(st==CCXL_TY_VEC2D)		||
+			(st==CCXL_TY_DCOMPLEX)	)
+		{
+			return(BGBCC_JX2C_EmitMovVRegVReg(ctx, sctx,
+				dtype, dreg, sreg));
+		}
+
+		BGBCC_CCXL_StubError(ctx);
+		return(0);
+	}
+
+	if(dt==CCXL_TY_FCOMPLEX)
+	{
+		if(	(st==CCXL_TY_M64)		||
+			(st==CCXL_TY_VEC2F)		||
+			(st==CCXL_TY_FCOMPLEX)	)
+		{
+			return(BGBCC_JX2C_EmitMovVRegVReg(ctx, sctx,
+				dtype, dreg, sreg));
+		}
+
+		BGBCC_CCXL_StubError(ctx);
+		return(0);
+	}
+
+	if(dt==CCXL_TY_DCOMPLEX)
+	{
+		if(	(st==CCXL_TY_M128)		||
+			(st==CCXL_TY_VEC2D)		||
+			(st==CCXL_TY_DCOMPLEX)	)
 		{
 			return(BGBCC_JX2C_EmitMovVRegVReg(ctx, sctx,
 				dtype, dreg, sreg));
@@ -1097,11 +1141,11 @@ int BGBCC_JX2C_EmitConvVRegVReg(
 
 	if((dt==CCXL_TY_VEC4SW) || (dt==CCXL_TY_VEC4UW))
 	{
-		if((st==CCXL_TY_M64) ||
-			(st==CCXL_TY_VEC4SW) ||
-			(st==CCXL_TY_VEC4UW) ||
-			(st==CCXL_TY_L) ||
-			(st==CCXL_TY_UL))
+		if(	(st==CCXL_TY_M64)		||
+			(st==CCXL_TY_VEC4SW)	||
+			(st==CCXL_TY_VEC4UW)	||
+			(st==CCXL_TY_L)			||
+			(st==CCXL_TY_UL)		)
 		{
 			return(BGBCC_JX2C_EmitMovVRegVReg(ctx, sctx,
 				dtype, dreg, sreg));
@@ -1113,7 +1157,9 @@ int BGBCC_JX2C_EmitConvVRegVReg(
 
 	if((dt==CCXL_TY_VEC4SI) || (dt==CCXL_TY_VEC4UI))
 	{
-		if(st==CCXL_TY_M128)
+		if(	(st==CCXL_TY_M128)		||
+			(dt==CCXL_TY_VEC4SI)	||
+			(dt==CCXL_TY_VEC4UI)	)
 		{
 			return(BGBCC_JX2C_EmitMovVRegVReg(ctx, sctx,
 				dtype, dreg, sreg));
@@ -1137,7 +1183,9 @@ int BGBCC_JX2C_EmitConvVRegVReg(
 	
 	if(dt==CCXL_TY_VEC4F)
 	{
-		if(st==CCXL_TY_M128)
+		if(	(st==CCXL_TY_M128)	||
+			(st==CCXL_TY_VEC4F)	||
+			(st==CCXL_TY_QUATF)	)
 		{
 			return(BGBCC_JX2C_EmitMovVRegVReg(ctx, sctx,
 				dtype, dreg, sreg));
@@ -1149,7 +1197,9 @@ int BGBCC_JX2C_EmitConvVRegVReg(
 	
 	if(dt==CCXL_TY_QUATF)
 	{
-		if(st==CCXL_TY_M128)
+		if(	(st==CCXL_TY_M128)	||
+			(st==CCXL_TY_QUATF)	||
+			(st==CCXL_TY_VEC4F)	)
 		{
 			return(BGBCC_JX2C_EmitMovVRegVReg(ctx, sctx,
 				dtype, dreg, sreg));

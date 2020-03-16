@@ -154,7 +154,8 @@ begin
 
 		JX2_UCMD_MOV_RM: begin
 			tRegIdRn1		= JX2_GR_ZZR;
-			tRegValRn1		= regValRs;
+//			tRegValRn1		= regValRs;
+			tRegValRn1		= regValRm;
 		end
 		JX2_UCMD_MOV_MR: begin
 		end

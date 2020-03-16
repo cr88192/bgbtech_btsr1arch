@@ -42,6 +42,11 @@ quakei386.exe
 *.rtl
 *.ini
 *.dmo
+*.lbm
+*.pcx
+*.DOC
+
+*.pk3
 
 *_ast.txt
 *_inf.txt

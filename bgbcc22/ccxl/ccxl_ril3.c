@@ -1192,7 +1192,7 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 	char *s0, *s1, *s2;
 	ccxl_label lbl, lbl2;
 	s64 li0, li1;
-	f64 f0, f1;
+	f64 f0, f1, f2, f3;
 	int i0, i1, i2, i3;
 	int op, tsz;
 	int i, j, k;
@@ -1796,6 +1796,27 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		default: s0=NULL; BGBCC_DBGBREAK; break;
 		}
 		BGBCC_CCXL_CompilePredCmp(ctx, s0);
+		break;
+
+	case BGBCC_RIL3OP_LDCONSTCPX:
+		f0=BGBCC_CCXLR3_ReadFVLI(ctx, &cs);
+		f1=BGBCC_CCXLR3_ReadFVLI(ctx, &cs);
+		BGBCC_CCXL_StackPushConstComplex(ctx, f0, f1);
+		break;
+
+	case BGBCC_RIL3OP_LDCONSTV2F:
+		f0=BGBCC_CCXLR3_ReadFVLI(ctx, &cs);
+		f1=BGBCC_CCXLR3_ReadFVLI(ctx, &cs);
+		i0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
+		BGBCC_CCXL_StackPushConstVec2F(ctx, f0, f1, i0);
+		break;
+	case BGBCC_RIL3OP_LDCONSTV4F:
+		f0=BGBCC_CCXLR3_ReadFVLI(ctx, &cs);
+		f1=BGBCC_CCXLR3_ReadFVLI(ctx, &cs);
+		f2=BGBCC_CCXLR3_ReadFVLI(ctx, &cs);
+		f3=BGBCC_CCXLR3_ReadFVLI(ctx, &cs);
+		i0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
+		BGBCC_CCXL_StackPushConstVec4F(ctx, f0, f1, f2, f3, i0);
 		break;
 
 	default:

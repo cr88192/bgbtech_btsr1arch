@@ -1146,9 +1146,16 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 			if(BCCX_TagIsCstP(ln, &bgbcc_rcst_ref, "ref") &&
 				BCCX_TagIsCstP(rn, &bgbcc_rcst_cast, "cast"))
 			{
+				t=BCCX_FetchCst(rn, &bgbcc_rcst_value, "value");
+				if(BCCX_TagIsCstP(t, &bgbcc_rcst_list, "list"))
+				{
+					BGBCC_CCXL_CompileExpr(ctx, rn);
+					BGBCC_CCXL_CompileAssign(ctx, ln);
+					return;
+				}
+				
 				s0=BCCX_GetCst(ln, &bgbcc_rcst_name, "name");
-				BGBCC_CCXL_CompileExpr(ctx,
-					BCCX_FetchCst(rn, &bgbcc_rcst_value, "value"));
+				BGBCC_CCXL_CompileExpr(ctx, t);
 				s1=BGBCC_CCXL_VarTypeString(ctx,
 					BCCX_FindTagCst(rn, &bgbcc_rcst_type, "type"));
 				BGBCC_CCXL_StackCastSigStore(ctx, s1, s0);
@@ -2007,6 +2014,11 @@ char *BGBCC_CCXL_VarTypeString_FlattenName(BGBCC_TransState *ctx,
 				!strcmp(s, "gnuc_va_list"))
 			{ *t++='D'; *t++='z'; }
 
+		if(!strcmp(s, "fcomplex"))
+			{ *t++='C'; *t++='f'; }
+		if(!strcmp(s, "dcomplex"))
+			{ *t++='C'; *t++='d'; }
+
 		if(!strcmp(s, "vec2"))
 			{ *t++='C'; *t++='a'; }
 		if(!strcmp(s, "vec3"))
@@ -2043,14 +2055,22 @@ char *BGBCC_CCXL_VarTypeString_FlattenName(BGBCC_TransState *ctx,
 		if(!strcmp(s, "vec4ui"))
 			{ *t++='C'; *t++='j'; }
 
+		if(!strcmp(s, "vec2si"))
+			{ *t++='D'; *t++='i'; }
+		if(!strcmp(s, "vec2ui"))
+			{ *t++='D'; *t++='j'; }
+
 		if(!strcmp(s, "vec2d"))
-			{ *t++='D'; *t++='a'; }
+//			{ *t++='D'; *t++='a'; }
+			{ *t++='C'; *t++='h'; }
+
 		if(!strcmp(s, "vec3d"))
 			{ *t++='D'; *t++='b'; }
 		if(!strcmp(s, "vec4d"))
 			{ *t++='D'; *t++='c'; }
 		if(!strcmp(s, "quatd"))
 			{ *t++='D'; *t++='q'; }
+
 		*t=0;
 	}
 

@@ -47,7 +47,8 @@
 
 #define CCXL_TY_FCOMPLEX		0x28		//64-bit float2 complex
 #define CCXL_TY_DCOMPLEX		0x29		//128-bit double2 complex
-
+#define CCXL_TY_VEC2SI			0x2A		//64-bit 2x int vector
+#define CCXL_TY_VEC2UI			0x2B		//64-bit 2x uint vector
 #define CCXL_TY_VEC4SW			0x2C		//64-bit 4x short vector
 #define CCXL_TY_VEC4UW			0x2D		//64-bit 4x ushort vector
 #define CCXL_TY_VEC4SI			0x2E		//128-bit 4x int vector
@@ -146,6 +147,7 @@
 #define CCXL_REGTY_IMM_F128_LVT		0x0F00000000000000ULL	//pair of indices
 
 #define CCXL_REGTY_THISIDX			0x1000000000000000ULL	//path within 'this'
+// #define CCXL_REGTY_IMM_VEC_LVT		0x1100000000000000ULL	//pair of indices
 
 #define CCXL_REGTY2_TYMASK			0xE000000000000000ULL
 #define CCXL_REGTY2_IMM_LONG		0x2000000000000000ULL	//long(61b)
@@ -180,11 +182,45 @@
 #define CCXL_REGGBLA_ST_Z		0x0000000000000000ULL	//basic address
 #define CCXL_REGGBLA_ST_D		0x0010000000000000ULL	//displacement
 
+#define CCXL_REGVEC_STMASK		0x003F000000000000ULL	//vector subtype
+#define CCXL_REGVEC_ST_I128		0x000000000000000ULL	//__int128
+#define CCXL_REGVEC_ST_UI128	0x000100000000000ULL	//unsigned __int128
+#define CCXL_REGVEC_ST_F128		0x000200000000000ULL	//__float128
+#define CCXL_REGVEC_ST_V2F		0x000300000000000ULL	//__vec2f
+#define CCXL_REGVEC_ST_V3F		0x0004000000000000ULL	//__vec3f
+#define CCXL_REGVEC_ST_V4F		0x0005000000000000ULL	//__vec4f
+#define CCXL_REGVEC_ST_QUATF	0x0006000000000000ULL	//__quatf
+#define CCXL_REGVEC_ST_V2D		0x0007000000000000ULL	//__vec2f
+#define CCXL_REGVEC_ST_FCPX		0x0008000000000000ULL	//_Complex float
+#define CCXL_REGVEC_ST_DCPX		0x0009000000000000ULL	//_Complex double
+
+#define CCXL_REGVEC_TY_I128		0x00
+#define CCXL_REGVEC_TY_UI128	0x01
+#define CCXL_REGVEC_TY_F128		0x02
+#define CCXL_REGVEC_TY_V2F		0x03
+#define CCXL_REGVEC_TY_V3F		0x04
+#define CCXL_REGVEC_TY_V4F		0x05
+#define CCXL_REGVEC_TY_QUATF	0x06
+#define CCXL_REGVEC_TY_V2D		0x07
+#define CCXL_REGVEC_TY_FCPX		0x08
+#define CCXL_REGVEC_TY_DCPX		0x09
+#define CCXL_REGVEC_TY_V2SI		0x0A
+#define CCXL_REGVEC_TY_V2UI		0x0B
+#define CCXL_REGVEC_TY_V4SW		0x0C
+#define CCXL_REGVEC_TY_V4UW		0x0D
+#define CCXL_REGVEC_TY_V4SI		0x0E
+#define CCXL_REGVEC_TY_V4UI		0x0F
+
 #define CCXL_REGGBLA_DZMASK		0x000FFFFF00000000ULL	//displacement mask
 
-#define CCXL_REGINTPL_MASK		0x000000000FFFFFFFULL	//LVT (low half index)
-#define CCXL_REGINTPH_MASK		0x00FFFFFFF0000000ULL	//LVT (high half index)
-#define CCXL_REGINTPH_SHL		28
+// #define CCXL_REGINTPL_MASK		0x000000000FFFFFFFULL	//LVT (low half index)
+// #define CCXL_REGINTPH_MASK		0x00FFFFFFF0000000ULL	//LVT (high half index)
+// #define CCXL_REGINTPH_SHL		28
+
+#define CCXL_REGINTPL_MASK		0x0000000000FFFFFFULL	//LVT (low half index)
+#define CCXL_REGINTPH_MASK		0x0000FFFFFF000000ULL	//LVT (high half index)
+#define CCXL_REGINTPH_SHL		24
+#define CCXL_REGINTTY_SHL		48
 
 #define CCXL_REGTHIS_FIDBMASK	0x0000000000000FFFULL	//FID base
 #define CCXL_REGTHIS_LVLMASK	0x00000000000FF000ULL	//Supertype Level
@@ -710,10 +746,19 @@ bccx_cxstate bgbcc_rcst_using;
 bccx_cxstate bgbcc_rcst_value;
 bccx_cxstate bgbcc_rcst_value_hi;
 bccx_cxstate bgbcc_rcst_value_lo;
+
+bccx_cxstate bgbcc_rcst_value_x0;
+bccx_cxstate bgbcc_rcst_value_x1;
+bccx_cxstate bgbcc_rcst_value_x2;
+bccx_cxstate bgbcc_rcst_value_x3;
+
 bccx_cxstate bgbcc_rcst_var;
 bccx_cxstate bgbcc_rcst_var_init;
 bccx_cxstate bgbcc_rcst_vars;
 bccx_cxstate bgbcc_rcst_vector;
 bccx_cxstate bgbcc_rcst_vector_ref;
+
+bccx_cxstate bgbcc_rcst_vec2;
+bccx_cxstate bgbcc_rcst_vec4;
 
 bccx_cxstate bgbcc_rcst_while;

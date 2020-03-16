@@ -38,6 +38,7 @@ SRCS_CLIB = \
 	pdpc201/btshx_lva.c \
 	pdpc201/btshx_xli.c \
 	pdpc201/btshx_xlf.c \
+	pdpc201/btshx_vnf.c \
 	\
 	tk_core/tk_clib.c \
 	tk_core/tk_divi.c \

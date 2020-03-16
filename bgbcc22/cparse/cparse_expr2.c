@@ -658,18 +658,75 @@ BCCX_Node *BGBCP_ExpressionLit(BGBCP_ParseState *ctx, char **str)
 	if(ty==BTK_NUMBER)
 	{
 		BGBCP_Token(s, b2, &ty2);
-		if((!bgbcp_strcmp1(b2, "i") || !bgbcp_strcmp2(b2, "iF") ||
-			!bgbcp_strcmp2(b2, "if")) && (ty2==BTK_NAME))
+		if((	!bgbcp_strcmp1(b2, "i") ||
+				!bgbcp_strcmp1(b2, "I") ||
+				!bgbcp_strcmp2(b2, "if") ||
+				!bgbcp_strcmp2(b2, "iF") ||
+				!bgbcp_strcmp2(b2, "If") ||
+				!bgbcp_strcmp2(b2, "IF") ||
+				!bgbcp_strcmp2(b2, "id") ||
+				!bgbcp_strcmp2(b2, "iD") ||
+				!bgbcp_strcmp2(b2, "Id") ||
+				!bgbcp_strcmp2(b2, "ID")
+				) && (ty2==BTK_NAME))
 		{
 			s=BGBCP_Token(s, b2, &ty2);
-			if(!bgbcp_strcmp1(b2, "i"))
+//			if(!bgbcp_strcmp1(b2, "i"))
+			if(1)
 			{
 				n=BCCX_NewCst(&bgbcc_rcst_complex, "complex");
+				BCCX_SetCst(n, &bgbcc_rcst_real, "real", "0");
 				BCCX_SetCst(n, &bgbcc_rcst_imag, "imag", b);
 			}
 			*str=s;
 			return(n);
 
+		}
+
+		if((	!bgbcp_strcmp1(b2, "j") ||
+				!bgbcp_strcmp1(b2, "J") ||
+				!bgbcp_strcmp2(b2, "jf") ||
+				!bgbcp_strcmp2(b2, "jF") ||
+				!bgbcp_strcmp2(b2, "Jf") ||
+				!bgbcp_strcmp2(b2, "JF") ||
+				!bgbcp_strcmp2(b2, "jd") ||
+				!bgbcp_strcmp2(b2, "jD") ||
+				!bgbcp_strcmp2(b2, "Jd") ||
+				!bgbcp_strcmp2(b2, "JD")
+				) && (ty2==BTK_NAME))
+		{
+			s=BGBCP_Token(s, b2, &ty2);
+			n=BCCX_NewCst(&bgbcc_rcst_vec4, "vec4");
+			BCCX_SetCst(n, &bgbcc_rcst_value_x0, "value_x0", "0");
+			BCCX_SetCst(n, &bgbcc_rcst_value_x1, "value_x1", b);
+			BCCX_SetCst(n, &bgbcc_rcst_value_x2, "value_x2", "0");
+			BCCX_SetCst(n, &bgbcc_rcst_value_x3, "value_x3", "0");
+			BCCX_SetCst(n, &bgbcc_rcst_tysuf, "tysuf", "QF");
+			*str=s;
+			return(n);
+		}
+
+		if((	!bgbcp_strcmp1(b2, "k") ||
+				!bgbcp_strcmp1(b2, "K") ||
+				!bgbcp_strcmp2(b2, "kf") ||
+				!bgbcp_strcmp2(b2, "kF") ||
+				!bgbcp_strcmp2(b2, "Kf") ||
+				!bgbcp_strcmp2(b2, "KF") ||
+				!bgbcp_strcmp2(b2, "kd") ||
+				!bgbcp_strcmp2(b2, "kD") ||
+				!bgbcp_strcmp2(b2, "Kd") ||
+				!bgbcp_strcmp2(b2, "KD")
+				) && (ty2==BTK_NAME))
+		{
+			s=BGBCP_Token(s, b2, &ty2);
+			n=BCCX_NewCst(&bgbcc_rcst_vec4, "vec4");
+			BCCX_SetCst(n, &bgbcc_rcst_value_x0, "value_x0", "0");
+			BCCX_SetCst(n, &bgbcc_rcst_value_x1, "value_x1", "0");
+			BCCX_SetCst(n, &bgbcc_rcst_value_x2, "value_x2", b);
+			BCCX_SetCst(n, &bgbcc_rcst_value_x3, "value_x3", "0");
+			BCCX_SetCst(n, &bgbcc_rcst_tysuf, "tysuf", "QF");
+			*str=s;
+			return(n);
 		}
 
 		suf=NULL;

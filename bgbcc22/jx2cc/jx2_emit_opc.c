@@ -4183,6 +4183,7 @@ int BGBCC_JX2_TryEmitOpRegImmReg(
 	BGBCC_JX2_Context *ctx, int nmid, int rm, s64 imm, int rn)
 {
 	int opw1, opw2, opw3, ex, ex2;
+	int rm1, rn1;
 	s64 imm1;
 	int odr, imm_is12s;
 	int i;
@@ -4198,6 +4199,21 @@ int BGBCC_JX2_TryEmitOpRegImmReg(
 		if(imm1>0)
 			return(BGBCC_JX2_TryEmitOpRegReg(ctx, imm1, rm, rn));
 	}
+
+	if(nmid==BGBCC_SH_NMID_PSHUFL)
+	{
+		rm1=BGBCC_SH_REG_RQ0+(rm&31);
+		rn1=BGBCC_SH_REG_RQ0+(rn&31);
+		return(BGBCC_JX2_EmitShufDWordRegReg(ctx, rm1, imm, rn1));
+	}
+
+	if(nmid==BGBCC_SH_NMID_PSHUFXL)
+	{
+		rm1=BGBCC_SH_REG_LR0+(rm&31);
+		rn1=BGBCC_SH_REG_LR0+(rn&31);
+		return(BGBCC_JX2_EmitShufDWordRegReg(ctx, rm1, imm, rn1));
+	}
+	
 
 #if 1
 	if(rm==rn)

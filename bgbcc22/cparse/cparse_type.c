@@ -433,6 +433,9 @@ static char *bgbcp_basetypes_c[]={
  
 "__bfloat16",
 
+"__fcomplex",
+"__dcomplex",
+
 // "_Float128",	"_Float64",
 // "_Float32",	"_Float16",
 

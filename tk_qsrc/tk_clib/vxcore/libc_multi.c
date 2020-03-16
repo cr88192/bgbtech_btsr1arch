@@ -62,3 +62,5 @@ Everything else will assume the use of system calls.
 #include "pdpc201/btshx_xlf.c"
 #include "pdpc201/btshx_softfpu.c"
 #include "pdpc201/btshx_fpusup.c"
+
+#include "pdpc201/btshx_vnf.c"

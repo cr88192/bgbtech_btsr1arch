@@ -173,14 +173,14 @@ Typed signatures are encoded as strings, with characters indicating value types.
 * 'x': long long
 * 'y': unsigned long long
 * 'z': vararg
-* 'Ca': vec2f
-* 'Cb': vec3f
-* 'Cc': vec4f
-* 'Cd': _Complex double
+* 'Ca': __vec2f
+* 'Cb': __vec3f
+* 'Cc': __vec4f
+* 'Cd': _Complex double / __dcomplex
 * 'Ce': _Complex long double
-* 'Cf': _Complex float
+* 'Cf': _Complex float / __fcomplex
 * 'Cg': _Complex float128
-* 'Ch': -
+* 'Ch': __vec2d
 * 'Ci': __vec4si
 * 'Cj': __vec4ui
 * 'Ck': _Complex float16
@@ -189,7 +189,7 @@ Typed signatures are encoded as strings, with characters indicating value types.
 * 'Cn': __m128
 * 'Co': object
 * 'Cp': -
-* 'Cq': quatf
+* 'Cq': __quatf
 * 'Cr': short variant
 * 'Cs': string
 * 'Ct': -
@@ -200,6 +200,8 @@ Typed signatures are encoded as strings, with characters indicating value types.
 * 'Cy': variant class
 * 'Cz': variant vararg
 * 'Da': auto
+* 'Di': __vec2si
+* 'Dj': __vec2ui
 * 'Dn': nullptr
 * 'Dz': va_list
 * 'A{sz};{sig}: Array

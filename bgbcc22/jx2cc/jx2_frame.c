@@ -2221,7 +2221,28 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 
 		return(1);
 	}
-	
+
+	if(BGBCC_CCXL_IsRegImmX128P(ctx, sreg))
+	{
+
+		if(BGBCC_JX2C_EmitRegIsExtLpReg(ctx, sctx, dreg))
+		{
+			dreg2=BGBCC_SH_REG_RQ0+(dreg&31);
+			BGBCC_CCXL_GetRegImmX128Value(ctx, sreg, &li, &lj);
+			BGBCC_JX2_EmitLoadRegImm64P(sctx, dreg2+0, li);
+			BGBCC_JX2_EmitLoadRegImm64P(sctx, dreg2+1, lj);
+			return(1);
+		}
+
+		if(1)
+		{
+			dreg2=BGBCC_SH_REG_RQ0+(dreg&31);
+			BGBCC_CCXL_GetRegImmX128Value(ctx, sreg, &li, &lj);
+			BGBCC_JX2_EmitLoadRegImm64P(sctx, dreg2+0, li);
+			return(1);
+		}
+	}
+
 	if(BGBCC_CCXL_IsRegThisIdxP(ctx, sreg))
 	{
 		if(BGBCC_CCXL_IsRegThisP(ctx, sreg))

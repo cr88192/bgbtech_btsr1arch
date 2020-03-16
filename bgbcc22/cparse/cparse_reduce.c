@@ -991,6 +991,20 @@ BCCX_Node *BGBCP_ReduceForm(BGBCP_ParseState *ctx,
 		}
 	}
 
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_cast, "cast"))
+	{
+		t=BCCX_FetchCst(l, &bgbcc_rcst_value, "value");
+
+		if(BCCX_TagIsCstP(t, &bgbcc_rcst_list, "list"))
+		{
+		}
+
+
+//		t=BGBCP_ReduceExpr(ctx, t);
+//		i=BGBCP_BoolExpr(ctx, t);
+//		return(i);
+	}
+
 	return(BCCX_Clone(l));
 }
 

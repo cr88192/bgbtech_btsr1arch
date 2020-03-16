@@ -2364,6 +2364,8 @@ ccxl_status BGBCC_JX2C_BuildGlobal_EmitLitAsType(
 		if(BGBCC_CCXL_IsRegImmInt128P(ctx, value) ||
 			BGBCC_CCXL_IsRegImmILFDP(ctx, value))
 		{
+			BGBCC_JX2_EmitBAlign(sctx, 8);
+
 			BGBCC_CCXL_GetRegImmInt128Value(ctx, value, &li, &lj);
 			BGBCC_JX2_EmitQWord(sctx, li);
 			BGBCC_JX2_EmitQWord(sctx, lj);
@@ -2379,7 +2381,48 @@ ccxl_status BGBCC_JX2C_BuildGlobal_EmitLitAsType(
 		if(BGBCC_CCXL_IsRegImmFloat128P(ctx, value) ||
 			BGBCC_CCXL_IsRegImmILFDP(ctx, value))
 		{
+			BGBCC_JX2_EmitBAlign(sctx, 8);
+
 			BGBCC_CCXL_GetRegImmFloat128Value(ctx, value, &li, &lj);
+			BGBCC_JX2_EmitQWord(sctx, li);
+			BGBCC_JX2_EmitQWord(sctx, lj);
+			return(1);
+		}
+
+		BGBCC_CCXL_StubError(ctx);
+		return(0);
+	}
+
+	if(BGBCC_CCXL_TypeVec64P(ctx, type))
+	{
+		if(BGBCC_CCXL_IsRegImmIntP(ctx, value) ||
+			BGBCC_CCXL_IsRegImmLongP(ctx, value))
+		{
+			BGBCC_JX2_EmitBAlign(sctx, 8);
+			li=BGBCC_CCXL_GetRegImmLongValue(ctx, value);
+			BGBCC_JX2_EmitQWord(sctx, li);
+			return(1);
+		}
+
+		if(BGBCC_CCXL_IsRegImmX128P(ctx, value))
+		{
+			BGBCC_JX2_EmitBAlign(sctx, 8);
+			BGBCC_CCXL_GetRegImmX128Value(ctx, value, &li, &lj);
+			BGBCC_JX2_EmitQWord(sctx, li);
+			return(1);
+		}
+
+		BGBCC_CCXL_StubError(ctx);
+		return(0);
+	}
+
+	if(BGBCC_CCXL_TypeVec128P(ctx, type))
+	{
+		if(BGBCC_CCXL_IsRegImmX128P(ctx, value))
+		{
+			BGBCC_JX2_EmitBAlign(sctx, 8);
+
+			BGBCC_CCXL_GetRegImmX128Value(ctx, value, &li, &lj);
 			BGBCC_JX2_EmitQWord(sctx, li);
 			BGBCC_JX2_EmitQWord(sctx, lj);
 			return(1);

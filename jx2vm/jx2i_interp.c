@@ -637,6 +637,11 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 //	case BJX2_NMID_FLDCFH:		s0="FLDCFH";	break;
 //	case BJX2_NMID_FSTCFH:		s0="FSTCFH";	break;
 
+	case BJX2_NMID_MOVHD:		s0="MOVHD";		break;
+	case BJX2_NMID_MOVLD:		s0="MOVLD";		break;
+	case BJX2_NMID_MOVHLD:		s0="MOVHLD";	break;
+	case BJX2_NMID_MOVLHD:		s0="MOVLHD";	break;
+
 	case BJX2_NMID_PSHUFB:		s0="PSHUF.B";	break;
 	case BJX2_NMID_RGBSHR1:		s0="RGB5SHR1";	break;
 	case BJX2_NMID_RGBAVG:		s0="RGB5AVG";	break;

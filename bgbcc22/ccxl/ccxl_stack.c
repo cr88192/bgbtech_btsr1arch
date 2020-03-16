@@ -3582,6 +3582,127 @@ ccxl_status BGBCC_CCXL_StackPushConstDouble(
 //	BGBCC_CCXL_StubError(ctx);
 }
 
+ccxl_status BGBCC_CCXL_StackPushConstComplex(
+	BGBCC_TransState *ctx, double rval, double ival)
+{
+	ccxl_register sreg;
+	u64 vi, vj;
+	BGBCC_CCXL_DebugPrintStackLLn(ctx, "PushConstCpx", __FILE__, __LINE__);
+
+	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_LDCONSTCPX);
+	BGBCC_CCXLR3_EmitArgFloat(ctx, rval);
+	BGBCC_CCXLR3_EmitArgFloat(ctx, ival);
+
+	*(double *)(&vi)=rval;
+	*(double *)(&vj)=ival;
+
+//	BGBCC_CCXL_GetRegForDoubleValue(ctx, &sreg, val);
+	BGBCC_CCXL_GetRegForX128Value(ctx, &sreg, vi, vj, CCXL_REGVEC_TY_DCPX);
+	BGBCC_CCXL_PushRegister(ctx, sreg);
+	return(CCXL_STATUS_YES);
+//	BGBCC_CCXL_StubError(ctx);
+}
+
+ccxl_status BGBCC_CCXL_StackPushConstVec2F(
+	BGBCC_TransState *ctx, double x0, double x1, int vty)
+{
+	ccxl_register sreg;
+	u32 i0, i1, i2, i3;
+	u64 vi, vj;
+	BGBCC_CCXL_DebugPrintStackLLn(ctx, "PushConstV2F", __FILE__, __LINE__);
+
+	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_LDCONSTV2F);
+	BGBCC_CCXLR3_EmitArgFloat(ctx, x0);
+	BGBCC_CCXLR3_EmitArgFloat(ctx, x1);
+	BGBCC_CCXLR3_EmitArgInt(ctx, vty);
+
+	vi=0;
+	vj=0;
+
+	switch(vty)
+	{
+	case CCXL_REGVEC_TY_V2F:
+	case CCXL_REGVEC_TY_FCPX:
+		*(float *)(&i0)=x0;
+		*(float *)(&i1)=x1;
+		vi=((u64)i0) | (((u64)i1)<<32);
+		break;
+
+	case CCXL_REGVEC_TY_V2D:
+	case CCXL_REGVEC_TY_DCPX:
+		*(double *)(&vi)=x0;
+		*(double *)(&vj)=x1;
+		break;
+
+	case CCXL_REGVEC_TY_V2SI:
+	case CCXL_REGVEC_TY_V2UI:
+		i0=x0;	i1=x1;
+		vi=((u64)i0) | (((u64)i1)<<32);
+		break;
+	}
+
+//	BGBCC_CCXL_GetRegForDoubleValue(ctx, &sreg, val);
+	BGBCC_CCXL_GetRegForX128Value(ctx, &sreg, vi, vj, vty);
+	BGBCC_CCXL_PushRegister(ctx, sreg);
+	return(CCXL_STATUS_YES);
+//	BGBCC_CCXL_StubError(ctx);
+}
+
+ccxl_status BGBCC_CCXL_StackPushConstVec4F(
+	BGBCC_TransState *ctx,
+	double x0, double x1, double x2, double x3,
+	int vty)
+{
+	ccxl_register sreg;
+	u32 i0, i1, i2, i3;
+	u64 vi, vj;
+	BGBCC_CCXL_DebugPrintStackLLn(ctx, "PushConstV4F", __FILE__, __LINE__);
+
+	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_LDCONSTV4F);
+	BGBCC_CCXLR3_EmitArgFloat(ctx, x0);
+	BGBCC_CCXLR3_EmitArgFloat(ctx, x1);
+	BGBCC_CCXLR3_EmitArgFloat(ctx, x2);
+	BGBCC_CCXLR3_EmitArgFloat(ctx, x3);
+	BGBCC_CCXLR3_EmitArgInt(ctx, vty);
+
+	vi=0;
+	vj=0;
+
+	switch(vty)
+	{
+	case CCXL_REGVEC_TY_V3F:
+	case CCXL_REGVEC_TY_V4F:
+	case CCXL_REGVEC_TY_QUATF:
+		*(float *)(&i0)=x0;
+		*(float *)(&i1)=x1;
+		*(float *)(&i2)=x2;
+		*(float *)(&i3)=x3;	
+		vi=((u64)i0) | (((u64)i1)<<32);
+		vj=((u64)i2) | (((u64)i3)<<32);
+		break;
+	case CCXL_REGVEC_TY_V4SW:
+	case CCXL_REGVEC_TY_V4UW:
+		i0=x0;	i1=x1;	i2=x2;	i3=x3;
+		i0=(u16)i0;		i1=(u16)i1;
+		i2=(u16)i2;		i3=(u16)i3;
+		vi=	(((u64)i0)    ) | (((u64)i1)<<16) |
+			(((u64)i2)<<32) | (((u64)i3)<<48) ;
+		break;
+	case CCXL_REGVEC_TY_V4SI:
+	case CCXL_REGVEC_TY_V4UI:
+		i0=x0;	i1=x1;	i2=x2;	i3=x3;
+		vi=((u64)i0) | (((u64)i1)<<32);
+		vj=((u64)i2) | (((u64)i3)<<32);
+		break;
+	};
+
+//	BGBCC_CCXL_GetRegForDoubleValue(ctx, &sreg, val);
+	BGBCC_CCXL_GetRegForX128Value(ctx, &sreg, vi, vj, vty);
+	BGBCC_CCXL_PushRegister(ctx, sreg);
+	return(CCXL_STATUS_YES);
+//	BGBCC_CCXL_StubError(ctx);
+}
+
 ccxl_status BGBCC_CCXL_StackPushConstString(
 	BGBCC_TransState *ctx, char *val)
 {
@@ -3918,6 +4039,14 @@ ccxl_status BGBCC_CCXL_StackLoadSlotSig(BGBCC_TransState *ctx,
 
 			if(!strcmp(name, "real"))	i=0;
 			if(!strcmp(name, "imag"))	i=1;
+		}
+
+		if((i<0) && BGBCC_CCXL_TypeQuatP(ctx, sty))
+		{
+			if(!strcmp(name, "i"))	i=0;
+			if(!strcmp(name, "j"))	i=1;
+			if(!strcmp(name, "k"))	i=2;
+			if(!strcmp(name, "r"))	i=3;
 		}
 		
 		if(i<0)

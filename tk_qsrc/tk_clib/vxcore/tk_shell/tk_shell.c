@@ -135,10 +135,13 @@ int tk_shell_chksane_simd()
 {
 	__m128 mv0;
 	__vec4f fv0, fv1, fv2;
+	__quatf qv0, qv1, qv2, qv3;
+	double	f0, f1, f2, f3;
 	
 	tk_shell_chksane_simd_asm();
 	
-	mv0=__m128_float4(1.0, 2.0, 3.0, 5.0);
+//	mv0=__m128_float4(1.0, 2.0, 3.0, 5.0);
+	mv0=(__vec4f){1.0, 2.0, 3.0, 5.0};
 	
 //	__hint_cc_dbgbreak();
 	
@@ -147,12 +150,30 @@ int tk_shell_chksane_simd()
 	fv2=fv1*fv0;
 	
 //	__debugbreak();
+
+	f0=fv1.x;
+	f1=fv1.y;
+	f2=fv1.z;
+	f3=fv1.w;
+
+//	__debugbreak();
 	
 //	tk_printf("SIMD A0: %f %f %f %f\n", fv1.x, fv1.y, fv1.z, fv1.w);
 	tk_printf("SIMD A0: %f %f\n", fv1.x, fv1.y);
 	tk_printf("SIMD A0: %f %f\n", fv1.z, fv1.w);
 
 //	__debugbreak();
+
+	qv0 = (__quatf) { 1, 2, 3, 4 };
+	qv1 = 1i + 2j + 3k + 4;
+	qv2 = qv0*qv1;
+	qv3 = (1i + 2j + 3k + 4) * (1i + 2j + 3k + 4);
+
+	tk_printf("SIMD A1-0: %f %f %f %f\n", qv2.i, qv2.j, qv2.k, qv2.r);
+	tk_printf("SIMD A1-1: %f %f %f %f\n", qv3.i, qv3.j, qv3.k, qv3.r);
+
+//	__debugbreak();
+
 }
 
 int tk_shell_chksane()

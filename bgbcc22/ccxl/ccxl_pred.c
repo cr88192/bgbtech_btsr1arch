@@ -309,7 +309,29 @@ ccxl_type BGBCC_CCXL_GetRegType(
 			{ tty.val=CCXL_TY_D; return(tty); }
 
 		if(regty==CCXL_REGTY_IMM_I128_LVT)
-			{ tty.val=CCXL_TY_I128; return(tty); }
+		{
+			switch((reg.val>>48)&63)
+			{
+			case CCXL_REGVEC_TY_I128:	tty.val=CCXL_TY_I128;		break;
+			case CCXL_REGVEC_TY_UI128:	tty.val=CCXL_TY_UI128;		break;
+			case CCXL_REGVEC_TY_F128:	tty.val=CCXL_TY_F128;		break;
+			case CCXL_REGVEC_TY_V2F:	tty.val=CCXL_TY_VEC2F;		break;
+			case CCXL_REGVEC_TY_V3F:	tty.val=CCXL_TY_VEC3F;		break;
+			case CCXL_REGVEC_TY_V4F:	tty.val=CCXL_TY_VEC4F;		break;
+			case CCXL_REGVEC_TY_QUATF:	tty.val=CCXL_TY_QUATF;		break;
+			case CCXL_REGVEC_TY_V2D:	tty.val=CCXL_TY_VEC2D;		break;
+			case CCXL_REGVEC_TY_FCPX:	tty.val=CCXL_TY_FCOMPLEX;	break;
+			case CCXL_REGVEC_TY_DCPX:	tty.val=CCXL_TY_DCOMPLEX;	break;
+			case CCXL_REGVEC_TY_V2SI:	tty.val=CCXL_TY_VEC2SI;		break;
+			case CCXL_REGVEC_TY_V2UI:	tty.val=CCXL_TY_VEC2UI;		break;
+			case CCXL_REGVEC_TY_V4SW:	tty.val=CCXL_TY_VEC4SW;		break;
+			case CCXL_REGVEC_TY_V4UW:	tty.val=CCXL_TY_VEC4UW;		break;
+			case CCXL_REGVEC_TY_V4SI:	tty.val=CCXL_TY_VEC4SI;		break;
+			case CCXL_REGVEC_TY_V4UI:	tty.val=CCXL_TY_VEC4UI;		break;
+			default:					tty.val=CCXL_TY_I128;		break;
+			}
+			return(tty);
+		}
 		if(regty==CCXL_REGTY_IMM_F128_LVT)
 			{ tty.val=CCXL_TY_F128; return(tty); }
 	}else
@@ -724,11 +746,27 @@ bool BGBCC_CCXL_IsRegImmDoubleP(
 	return(false);
 }
 
-bool BGBCC_CCXL_IsRegImmInt128P(
+bool BGBCC_CCXL_IsRegImmX128P(
 	BGBCC_TransState *ctx, ccxl_register reg)
 {
 	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_I128_LVT)
 		return(true);
+	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_F128_LVT)
+		return(true);
+	return(false);
+}
+
+bool BGBCC_CCXL_IsRegImmInt128P(
+	BGBCC_TransState *ctx, ccxl_register reg)
+{
+	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_I128_LVT)
+	{
+		if((reg.val&CCXL_REGVEC_STMASK)==CCXL_REGVEC_ST_I128)
+			return(true);
+		if((reg.val&CCXL_REGVEC_STMASK)==CCXL_REGVEC_ST_UI128)
+			return(true);
+		return(false);
+	}
 	return(false);
 }
 
@@ -1717,6 +1755,24 @@ ccxl_status BGBCC_CCXL_GetRegForFloat128Value(
 		(i&CCXL_REGINTPL_MASK)|
 		((j&CCXL_REGINTPL_MASK)<<CCXL_REGINTPH_SHL)|
 		CCXL_REGTY_IMM_F128_LVT;
+	*rreg=treg;
+	return(CCXL_STATUS_YES);
+}
+
+ccxl_status BGBCC_CCXL_GetRegForX128Value(
+	BGBCC_TransState *ctx, ccxl_register *rreg,
+	s64 val_lo, s64 val_hi, int vty)
+{
+	ccxl_register treg;
+	int i, j, k;
+	
+	i=BGBCC_CCXL_IndexLitS64(ctx, val_lo);
+	j=BGBCC_CCXL_IndexLitS64(ctx, val_hi);
+	treg.val=
+		(i&CCXL_REGINTPL_MASK)|
+		((j&CCXL_REGINTPL_MASK)<<CCXL_REGINTPH_SHL)|
+		((vty&63LL)<<CCXL_REGINTTY_SHL)|
+		CCXL_REGTY_IMM_I128_LVT;
 	*rreg=treg;
 	return(CCXL_STATUS_YES);
 }
