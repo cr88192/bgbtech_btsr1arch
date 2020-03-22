@@ -85,8 +85,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 boolean WriteSoundFile	= true;
 
-int	FXMode			= 0;
-int	MusicMode		= 0;
+int	FXMode			= 1;
+int	MusicMode		= 1;
 int	MUvolume			= 196;
 int	FXvolume			= 196;
 

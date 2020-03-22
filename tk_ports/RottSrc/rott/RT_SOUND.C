@@ -30,9 +30,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "rt_playr.h"
 #include "rt_util.h"
 #include "rt_rand.h"
+#include "rt_draw.h"
 #include "watcom.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 // #include <mem.h>
 // #include <io.h>
 #include "rt_cfg.h"
@@ -70,14 +72,16 @@ int fxnums[ 11 ] = {
 	Awe32, SoundScape, Adlib, SoundSource, TandySoundSource, PC
 	};
 
-int MUSIC_GetPosition( void ) {
+int MUSIC_GetPosition( void )
+{
 	songposition pos;
 
 	MUSIC_GetSongPosition( &pos );
 	return pos.milliseconds;
 }
 
-void MUSIC_SetPosition( int time ) {
+void MUSIC_SetPosition( int time )
+{
 	MUSIC_SetSongTime( ( unsigned long )time );
 }
 
@@ -90,10 +94,10 @@ void MUSIC_SetPosition( int time ) {
 
 int SoundNumber ( int x )
 {
-	if ((x>=SD_REMOTEM1SND) && (x<=SD_REMOTEM10SND))
-		return remotestart + x - SD_REMOTEM1SND;
+//	if ((x>=SD_REMOTEM1SND) && (x<=SD_REMOTEM10SND))
+//		return remotestart + x - SD_REMOTEM1SND;
 //		sounds[x].snds[soundtype]+remotestart;
-	else
+//	else
 		return sounds[x].snds[soundtype]+soundstart;
 }
 
@@ -119,7 +123,10 @@ void SD_MakeCacheable( unsigned long sndnum )
 	if (sounds[sndnum].count>0)
 		return;
 	else
+	{
 		W_CacheLumpNum(SoundNumber(sndnum),PU_CACHE);
+		sounds[sndnum].count=0;
+	}
 }
 
 #if 0
@@ -155,6 +162,8 @@ int SD_SetupFXCard ( int * numvoices, int * numbits, int * numchannels)
 	int status;
 	int card;
 
+	FXMode = 2;
+
 	if (SD_Started==true)
 		SD_Shutdown();
 
@@ -166,23 +175,23 @@ int SD_SetupFXCard ( int * numvoices, int * numbits, int * numchannels)
 	card = fxnums[ FXMode ];
 	if (card==-1) // Check if it is off
 		return (0);
-	if ( ( card == SoundBlaster ) || ( card == Awe32 ) )
-		{
-		extern fx_blaster_config SBSettings;
-
-		status = FX_SetupSoundBlaster( SBSettings, numvoices,
-			numbits, numchannels );
-		}
+//	if ( ( card == SoundBlaster ) || ( card == Awe32 ) )
+	if(0)
+	{
+//		extern fx_blaster_config SBSettings;
+//		status = FX_SetupSoundBlaster( SBSettings, numvoices,
+//			numbits, numchannels );
+	}
 	else
-		{
+	{
 		status=FX_SetupCard( card, &device );
 		if ( status == FX_Ok )
-			{
+		{
 			*numvoices=device.MaxVoices;
 			*numbits=device.MaxSampleBits;
 			*numchannels=device.MaxChannels;
-			}
 		}
+	}
 
 	return (status);
 	}
@@ -291,7 +300,7 @@ int SD_Startup ( boolean bombonerror )
 
 	FX_SetCallBack( SD_MakeCacheable );
 
-	remotestart=W_GetNumForName("remostrt")+1;
+//	remotestart=W_GetNumForName("remostrt")+1;
 
 	SD_Started=true;
 
@@ -344,20 +353,24 @@ int SD_PlayIt ( int sndnum, int angle, int distance, int pitch )
 #endif
 
 	if (!(sounds[sndnum].flags & SD_WRITE))
-		{
+	{
 		if (sounds[sndnum].count)
-			{
+		{
 			if (distance<=sounds[sndnum].prevdistance)
 				FX_StopSound(sounds[sndnum].prevhandle);
 			else
+			{
+//				printf("SD_PlayIt: Count Cull, %X\n", sndnum);
 				return 0;
 			}
 		}
+	}
 
 	if ( !FX_VoiceAvailable( sounds[sndnum].priority ) )
-		{
+	{
+		printf("SD_PlayIt: No Voice Available, %d\n", sounds[sndnum].priority);
 		return( 0 );
-		}
+	}
 
 	sounds[sndnum].count++;
 
@@ -415,7 +428,10 @@ int SD_Play ( int sndnum )
 	int pitch;
 
 	if ( SD_SoundOkay ( sndnum ) == false )
+	{
+		printf("SD_Play3D: Not OK, %X\n", sndnum);
 		return 0;
+	}
 
 	pitch = 0;
 
@@ -442,7 +458,10 @@ int SD_Play3D ( int sndnum, int angle, int distance )
 	int pitch;
 
 	if ( SD_SoundOkay ( sndnum ) == false )
+	{
+		printf("SD_Play3D: Not OK, %X\n", sndnum);
 		return 0;
+	}
 
 	pitch = 0;
 	if ( !( sounds[ sndnum ].flags & SD_PITCHSHIFTOFF ) )
@@ -472,7 +491,10 @@ int SD_PlayPositionedSound ( int sndnum, int px, int py, int x, int y )
 	int pitch;
 
 	if ( SD_SoundOkay ( sndnum ) == false )
+	{
+		printf("SD_PlayPositionedSound: Not OK, %X\n", sndnum);
 		return 0;
+	}
 
 	dx=(x-px);
 	dy=(py-y);
@@ -514,22 +536,40 @@ int SD_PlaySoundRTP ( int sndnum, int x, int y )
 {
 	int voice;
 	int angle;
-	int distance;
+	int distance, dist2;
 	int dx;
 	int dy;
 	int pitch;
 
 
 	if ( SD_SoundOkay ( sndnum ) == false )
+	{
+//		printf("SD_PlaySoundRTP: Not OK, %X\n", sndnum);
 		return 0;
+	}
 
-	dx=(x-player->x);
-	dy=(player->y-y);
+//	dx=(x-player->x);
+//	dy=(player->y-y);
+
+	dx=(x-viewx);
+	dy=(viewy-y);
 
 	distance=FindDistance(dx,dy) >> SD_DISTANCESHIFT;
+	
+//	dist2=((int)sqrt(((1.0*dx)*dx)+((1.0*dy)*dy))) >> SD_DISTANCESHIFT;
+	dist2=distance;
 
+#if 1
 	if (distance>255)
+	{
+//		printf("SD_PlaySoundRTP: Distance Cull, %X, %d %d %d/%d\n",
+//			sndnum,
+//				dx>>SD_DISTANCESHIFT,
+//				dy>>SD_DISTANCESHIFT,
+//				distance, dist2);
 		return 0;
+	}
+#endif
 
 	if (distance!=0)
 		{
@@ -564,7 +604,10 @@ int SD_PlayPitchedSound ( int sndnum, int volume, int pitch )
 	int distance;
 
 	if ( SD_SoundOkay ( sndnum ) == false )
+	{
+		printf("SD_PlayPitchedSound: Not OK, %X\n", sndnum);
 		return 0;
+	}
 
 	distance = 255 - volume;
 

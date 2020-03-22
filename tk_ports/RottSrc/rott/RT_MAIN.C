@@ -1532,10 +1532,23 @@ void UpdateGameObjects ( void )
 	wami(2);
 
 	if (controlupdatestarted==0)
-		{
+	{
 		return;
 		waminot();
+	}
+
+
+	if((oldpolltime+60)<oldtime)
+	{
+		while (oldpolltime<oldtime)
+		{
+//			CheckUnPause();
+#if (SYNCCHECK == 1)
+			CheckForSyncCheck();
+#endif
+			oldpolltime++;
 		}
+	}
 
 	atime=fasttics;
 

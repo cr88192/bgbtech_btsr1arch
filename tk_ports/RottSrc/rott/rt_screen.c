@@ -257,8 +257,12 @@ void VGAWRITEBUF(unsigned addr, byte *src, int sz)
 //		while((ct+16)<=cte)
 		while(ct<=ct1e)
 		{
-			ct[ 0]=cs[0];	ct[ 4]=cs[1];
-			ct[ 8]=cs[2];	ct[12]=cs[3];
+			v=*(int *)cs;
+			ct[ 0]=v    ;	ct[ 4]=v>> 8;
+			ct[ 8]=v>>16;	ct[12]=v>>24;
+
+//			ct[ 0]=cs[0];	ct[ 4]=cs[1];
+//			ct[ 8]=cs[2];	ct[12]=cs[3];
 			cs+=4;			ct+=16;
 		}
 		while(ct<cte)
@@ -644,12 +648,14 @@ void WaitVBL( void )
 
 void XFlipPage ( void )
 {
+	FX_Update();
 	I_FinishUpdate();
 	I_StartFrame();
 }
 
 void FlipPage ( void )
 {
+	FX_Update();
 	I_FinishUpdate();
 	I_StartFrame();
 }
@@ -697,6 +703,20 @@ void PollJoystickMove(void)
 {
 }
 
+int I_TimeMS(void)
+{
+	int ms, tic, dt;
+
+#ifdef _WIN32
+	ms=FRGL_TimeMS();
+#endif
+
+#ifdef _BGBCC
+	ms=TK_GetTimeMs();
+#endif
+
+	return(ms);
+}
 
 void I_PollTimer(void)
 {

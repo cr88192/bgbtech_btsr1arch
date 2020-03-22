@@ -118,6 +118,8 @@ HEADERS =  \
 #	isr.c		\
 #	sbconfig.c	\
 
+#	fx_dummy.c	\
+
 SRCS =			\
 	cin_actr.c	\
 	cin_efct.c	\
@@ -128,7 +130,8 @@ SRCS =			\
 	engine.c	\
 	fli_main.c	\
 	fli_util.c	\
-	fx_dummy.c	\
+	fx_mix.c	\
+	fx_music.c	\
 	m_fixed.c	\
 	rt_actor.c	\
 	rt_battl.c	\
@@ -172,7 +175,7 @@ SRCS =			\
 
 
 rott_bjx2.exe   : $(SRCS) $(HEADERS)
-	bgbcc /Ferott_bjx2.exe $(SRCS) $(LIBS) -I. -lvxcore -O2 -fwex3w -fwexj
+	bgbcc /Ferott_bjx2.exe $(SRCS) $(LIBS) -I. -lvxcore_bjx2 -O2 -fwex3w -fwexj
 
 all : rott_bjx2.exe
 

@@ -128,7 +128,8 @@ SRCS =			\
 	engine.c	\
 	fli_main.c	\
 	fli_util.c	\
-	fx_dummy.c	\
+	fx_mix.c	\
+	fx_music.c	\
 	m_fixed.c	\
 	rt_actor.c	\
 	rt_battl.c	\
