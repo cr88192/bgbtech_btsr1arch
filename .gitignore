@@ -35,6 +35,7 @@ quakei386.exe
 
 *.wad
 *.pak
+*.ms2
 
 *.rts
 *.rtc

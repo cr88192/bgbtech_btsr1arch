@@ -348,7 +348,8 @@ void SND_InitScaletable (void)
 }
 
 
-#if	!id386
+// #if	!id386
+#if 1
 
 void SND_PaintChannelFrom8_Inner(
 	void *sfx, void *pbuf,
@@ -376,7 +377,7 @@ void SND_PaintChannelFrom8 (channel_t *ch, sfxcache_t *sc, int count)
 	sfx = (signed char *)sc->data + ch->pos;
 	pbuf = paintbuffer;
 
-#if 1
+#ifdef _BGBCC
 	SND_PaintChannelFrom8_Inner(sfx, pbuf, lvol, rvol, count);
 	ch->pos += count;
 	return;

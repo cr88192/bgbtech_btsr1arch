@@ -1855,6 +1855,14 @@ char *BGBCC_CCXL_VarTypeString_FlattenName(BGBCC_TransState *ctx,
 			if(!strcmp(s, "long_double"))
 				{ *t++='C'; *t++='n'; }
 		}
+
+		if(fl&BGBCC_TYFL_PACKED)
+		{
+			if(!strcmp(s, "m128"))
+				{ *t++='C'; *t++='p'; }
+			if(!strcmp(s, "m128p"))
+				{ *t++='C'; *t++='p'; }
+		}
 	}
 
 	if(t==t1)
@@ -2041,6 +2049,8 @@ char *BGBCC_CCXL_VarTypeString_FlattenName(BGBCC_TransState *ctx,
 			{ *t++='C'; *t++='m'; }
 		if(!strcmp(s, "m128"))
 			{ *t++='C'; *t++='n'; }
+		if(!strcmp(s, "m128p"))
+			{ *t++='C'; *t++='p'; }
 
 		if(!strcmp(s, "vec4w"))
 			{ *t++='C'; *t++='w'; }

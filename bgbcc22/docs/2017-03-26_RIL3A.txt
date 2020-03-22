@@ -188,7 +188,7 @@ Typed signatures are encoded as strings, with characters indicating value types.
 * 'Cm': __m64
 * 'Cn': __m128
 * 'Co': object
-* 'Cp': -
+* 'Cp': __m128p / __packed __m128
 * 'Cq': __quatf
 * 'Cr': short variant
 * 'Cs': string

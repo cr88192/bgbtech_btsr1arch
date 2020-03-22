@@ -139,6 +139,8 @@ cvar_t	r_numedges = {"r_numedges", "0"};
 cvar_t	r_aliastransbase = {"r_aliastransbase", "200"};
 cvar_t	r_aliastransadj = {"r_aliastransadj", "100"};
 
+cvar_t	r_vertex = {"r_vertex","0"};
+
 cvar_t	r_wateralpha = {"r_wateralpha","1"};
 cvar_t	r_novis = {"r_novis","0"};
 
@@ -208,6 +210,7 @@ void R_Init (void)
 	Cvar_RegisterVariable (&r_clearcolor);
 	Cvar_RegisterVariable (&r_waterwarp);
 	Cvar_RegisterVariable (&r_fullbright);
+	Cvar_RegisterVariable (&r_vertex);
 	Cvar_RegisterVariable (&r_drawentities);
 	Cvar_RegisterVariable (&r_drawviewmodel);
 	Cvar_RegisterVariable (&r_aliasstats);

@@ -72,9 +72,9 @@ static void	(*surfmiptable16[4])(void) = {
 unsigned		blocklights[18*18];
 
 #ifndef __BGBCC__
-void	__hint_use_egpr()
-{
-}
+// void	__hint_use_egpr()
+// { 
+// }
 #endif
 
 /*
@@ -744,7 +744,8 @@ void R_DrawSurfaceBlock16_mipN (int mip)
 
 #if 1
 
-#if 0
+// #if 0
+#ifndef _BGBCC
 void R_DrawSurfaceBlock16_mip0 (void)
 {
 	int				v, i, l, d;
@@ -867,7 +868,8 @@ void R_DrawSurfaceBlock16_mip0 (void)
 }
 #endif
 
-#if 0
+// #if 0
+#ifndef _BGBCC
 void R_DrawSurfaceBlock16_mip1 (void)
 {
 	int				v, i, b, l, d;
@@ -942,10 +944,12 @@ void R_DrawSurfaceBlock16_mip1 (void)
 //void R_DrawSurfaceBlock16_mip1 (void)
 //	{ R_DrawSurfaceBlock16_mipN(1); }
 
-//void R_DrawSurfaceBlock16_mip2 (void)
-//	{ R_DrawSurfaceBlock16_mipN(2); }
-//void R_DrawSurfaceBlock16_mip3 (void)
-//	{ R_DrawSurfaceBlock16_mipN(3); }
+#ifndef _BGBCC
+void R_DrawSurfaceBlock16_mip2 (void)
+	{ R_DrawSurfaceBlock16_mipN(2); }
+void R_DrawSurfaceBlock16_mip3 (void)
+	{ R_DrawSurfaceBlock16_mipN(3); }
+#endif
 
 //void R_DrawSurfaceBlock16_mip1 (void)
 //	{ R_DrawSurfaceBlock16(); }

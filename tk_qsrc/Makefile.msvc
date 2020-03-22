@@ -30,11 +30,15 @@ TK_LDFL= $(TK_CFL)
 
 # BASE_CFLAGS=-Dstricmp=strcasecmp
 # BASE_CFLAGS=/Zi
-BASE_CFLAGS=/Os /MD /Zi
+BASE_CFLAGS=/Os /MD /Zi /Iq1base
+GL_CFLAGS	= $(BASE_CFLAGS) /DGLQUAKE
 
 CFLAGS=$(TK_CFL) $(BASE_CFLAGS)
-LDFLAGS=$(TK_LDFL) opengl32.lib gdi32.lib user32.lib \
+LDFLAGS=$(TK_LDFL) gdi32.lib user32.lib \
 	winmm.lib kernel32.lib ole32.lib ws2_32.lib
+
+# GL_LDFLAGS	= $(LDFLAGS) opengl32.lib
+GL_LDFLAGS	= $(LDFLAGS)
 
 all: targets
 
@@ -146,8 +150,80 @@ SKIP_SRCS=\
 	q1base/snd_mixa.c \
 	q1base/sys_dosa.o
 
+GLQUAKE_SRCS = \
+	q1base/cl_demo.c	\
+	q1base/cl_input.c	\
+	q1base/cl_main.c	\
+	q1base/cl_parse.c	\
+	q1base/cl_tent.c	\
+	q1base/chase.c		\
+	q1base/cmd.c		\
+	q1base/common.c		\
+	q1base/console.c	\
+	q1base/crc.c		\
+	q1base/cvar.c		\
+	\
+	q1base/glquake/gl_draw.c	\
+	q1base/glquake/gl_mesh.c	\
+	q1base/glquake/gl_model.c	\
+	q1base/glquake/gl_refrag.c	\
+	q1base/glquake/gl_rlight.c	\
+	q1base/glquake/gl_rmain.c	\
+	q1base/glquake/gl_rmisc.c	\
+	q1base/glquake/gl_rsurf.c	\
+	q1base/glquake/gl_screen.c	\
+	q1base/glquake/gl_test.c	\
+	q1base/glquake/gl_warp.c	\
+	q1base/glquake/gl_qgl.c		\
+	\
+	q1base/host.c		\
+	q1base/host_cmd.c	\
+	q1base/keys.c		\
+	q1base/menu.c		\
+	q1base/mathlib.c	\
+	q1base/net_loop.c	\
+	q1base/net_main.c	\
+	q1base/net_vcr.c	\
+	q1base/net_none.c	\
+	q1base/pr_cmds.c	\
+	q1base/pr_edict.c	\
+	q1base/pr_exec.c	\
+	q1base/r_part.c		\
+	q1base/sbar.c		\
+	q1base/sv_main.c	\
+	q1base/sv_phys.c	\
+	q1base/sv_move.c	\
+	q1base/sv_user.c	\
+	q1base/zone.c		\
+	q1base/view.c		\
+	q1base/wad.c		\
+	q1base/world.c		\
+	\
+	q1base/cd_null.c \
+	\
+	q1base/in_win.c \
+	q1base/sys_win.c \
+	q1base/glquake/gl_vidnt.c \
+	q1base/snd_dma.c \
+	q1base/snd_mem.c \
+	q1base/snd_mix.c \
+	q1base/snd_win.c \
+
+#	q1base/cd_linux.c	\
+#	q1base/sys_linux.c	\
+#	q1base/snd_linux.c
+#	q1base/net_udp.c	\
+#	q1base/net_bsd.c	\
+
+
+all: quake$(ARCH).exe glquake$(ARCH).exe
+
+
 quake$(ARCH).exe: $(SQUAKE_SRCS)
 	cl /Fe$@ $(SQUAKE_SRCS) $(CFLAGS) $(LDFLAGS)
+
+glquake$(ARCH).exe: $(GLQUAKE_SRCS)
+	cl /Fe$@ $(GLQUAKE_SRCS) $(GL_CFLAGS) $(GL_LDFLAGS)
 
 ####
 

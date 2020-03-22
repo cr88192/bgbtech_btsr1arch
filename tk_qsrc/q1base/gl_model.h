@@ -110,7 +110,8 @@ typedef struct
 	int			flags;
 } mtexinfo_t;
 
-#define	VERTEXSIZE	7
+// #define	VERTEXSIZE	7
+#define	VERTEXSIZE	8
 
 typedef struct glpoly_s
 {
@@ -118,6 +119,7 @@ typedef struct glpoly_s
 	struct	glpoly_s	*chain;
 	int		numverts;
 	int		flags;			// for SURF_UNDERWATER
+	int		prim;			// primitive type
 	float	verts[4][VERTEXSIZE];	// variable sized (xyz s1t1 s2t2)
 } glpoly_t;
 

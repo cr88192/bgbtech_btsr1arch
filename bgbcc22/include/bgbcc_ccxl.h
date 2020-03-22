@@ -34,6 +34,7 @@
 #define CCXL_TY_VARSTRING		0x1B		//Variant String
 #define CCXL_TY_VAROBJECT		0x1C		//Variant Object
 
+#define CCXL_TY_M128P			0x1D		//128-bit vector (unaligned)
 #define CCXL_TY_M64				0x1E		//64-bit vector
 #define CCXL_TY_M128			0x1F		//128-bit vector
 #define CCXL_TY_VEC2F			0x20		//64-bit float2 vector

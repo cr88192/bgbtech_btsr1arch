@@ -916,7 +916,8 @@ void D_DrawSpans16_InnerPx()
 }
 #endif
 
-#if 0
+// #if 0
+#ifndef __BGBCC
 void D_DrawSpans16_InnerPx2(
 	unsigned short		*pbase,
 	unsigned short		*pdest,
@@ -1339,7 +1340,8 @@ void D_DrawSpans16 (espan_t *pspan)
 // #if	!id386
 #if 1
 
-#if 0
+// #if 0
+#ifndef __BGBCC
 void D_DrawZSpans_Inner (
 	short *pdest, int izi,
 	int izistep, int count)

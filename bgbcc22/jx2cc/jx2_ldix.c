@@ -96,6 +96,29 @@ int BGBCC_JX2C_EmitLdix_FillSzNmTy(
 		if(sctx->is_addr64)
 			{ sz=8; nm1=BGBCC_SH_NMID_MOVQ; nm2=-1; break; }
 		sz=8; nm1=BGBCC_SH_NMID_MOVL; nm2=-1; break;
+
+	case CCXL_TY_M64:
+	case CCXL_TY_VEC2F:
+	case CCXL_TY_VEC4SW:
+	case CCXL_TY_VEC4UW:
+	case CCXL_TY_FCOMPLEX:
+		sz=8; nm1=BGBCC_SH_NMID_MOVQ; nm2=-1;
+		break;
+
+	case CCXL_TY_M128:
+	case CCXL_TY_VEC3F:
+	case CCXL_TY_VEC4F:
+	case CCXL_TY_QUATF:
+	case CCXL_TY_VEC2D:
+	case CCXL_TY_VEC4SI:
+	case CCXL_TY_VEC4UI:
+	case CCXL_TY_DCOMPLEX:
+		sz=16; nm1=BGBCC_SH_NMID_MOVX2; nm2=-1;
+		break;
+
+	case CCXL_TY_M128P:
+		sz=16; nm1=BGBCC_SH_NMID_MOVQ; nm2=-1;
+		break;
 	}
 
 	if(BGBCC_CCXL_TypePointerP(ctx, type))

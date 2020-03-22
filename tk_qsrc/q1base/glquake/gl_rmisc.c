@@ -88,12 +88,12 @@ void R_InitParticleTexture (void)
 			data[y][x][3] = dottexture[x][y]*255;
 		}
 	}
-	glTexImage2D (GL_TEXTURE_2D, 0, gl_alpha_format, 8, 8, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	qglTexImage2D (GL_TEXTURE_2D, 0, gl_alpha_format, 8, 8, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	qglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
 
 /*
@@ -108,8 +108,8 @@ void R_Envmap_f (void)
 	byte	buffer[256*256*4];
 	char	name[1024];
 
-	glDrawBuffer  (GL_FRONT);
-	glReadBuffer  (GL_FRONT);
+	qglDrawBuffer  (GL_FRONT);
+	qglReadBuffer  (GL_FRONT);
 	envmap = true;
 
 	r_refdef.vrect.x = 0;
@@ -122,44 +122,44 @@ void R_Envmap_f (void)
 	r_refdef.viewangles[2] = 0;
 	GL_BeginRendering (&glx, &gly, &glwidth, &glheight);
 	R_RenderView ();
-	glReadPixels (0, 0, 256, 256, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+	qglReadPixels (0, 0, 256, 256, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
 	COM_WriteFile ("env0.rgb", buffer, sizeof(buffer));		
 
 	r_refdef.viewangles[1] = 90;
 	GL_BeginRendering (&glx, &gly, &glwidth, &glheight);
 	R_RenderView ();
-	glReadPixels (0, 0, 256, 256, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+	qglReadPixels (0, 0, 256, 256, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
 	COM_WriteFile ("env1.rgb", buffer, sizeof(buffer));		
 
 	r_refdef.viewangles[1] = 180;
 	GL_BeginRendering (&glx, &gly, &glwidth, &glheight);
 	R_RenderView ();
-	glReadPixels (0, 0, 256, 256, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+	qglReadPixels (0, 0, 256, 256, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
 	COM_WriteFile ("env2.rgb", buffer, sizeof(buffer));		
 
 	r_refdef.viewangles[1] = 270;
 	GL_BeginRendering (&glx, &gly, &glwidth, &glheight);
 	R_RenderView ();
-	glReadPixels (0, 0, 256, 256, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+	qglReadPixels (0, 0, 256, 256, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
 	COM_WriteFile ("env3.rgb", buffer, sizeof(buffer));		
 
 	r_refdef.viewangles[0] = -90;
 	r_refdef.viewangles[1] = 0;
 	GL_BeginRendering (&glx, &gly, &glwidth, &glheight);
 	R_RenderView ();
-	glReadPixels (0, 0, 256, 256, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+	qglReadPixels (0, 0, 256, 256, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
 	COM_WriteFile ("env4.rgb", buffer, sizeof(buffer));		
 
 	r_refdef.viewangles[0] = 90;
 	r_refdef.viewangles[1] = 0;
 	GL_BeginRendering (&glx, &gly, &glwidth, &glheight);
 	R_RenderView ();
-	glReadPixels (0, 0, 256, 256, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+	qglReadPixels (0, 0, 256, 256, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
 	COM_WriteFile ("env5.rgb", buffer, sizeof(buffer));		
 
 	envmap = false;
-	glDrawBuffer  (GL_BACK);
-	glReadBuffer  (GL_BACK);
+	qglDrawBuffer  (GL_BACK);
+	qglReadBuffer  (GL_BACK);
 	GL_EndRendering ();
 }
 
@@ -180,6 +180,7 @@ void R_Init (void)
 	Cvar_RegisterVariable (&r_norefresh);
 	Cvar_RegisterVariable (&r_lightmap);
 	Cvar_RegisterVariable (&r_fullbright);
+	Cvar_RegisterVariable (&r_vertex);
 	Cvar_RegisterVariable (&r_drawentities);
 	Cvar_RegisterVariable (&r_drawviewmodel);
 	Cvar_RegisterVariable (&r_shadows);
@@ -313,6 +314,7 @@ void R_TranslatePlayerSkin (int playernum)
 	scaled_width >>= (int)gl_playermip.value;
 	scaled_height >>= (int)gl_playermip.value;
 
+#if 0
 	if (VID_Is8bit()) { // 8bit texture upload
 		byte *out2;
 
@@ -339,6 +341,7 @@ void R_TranslatePlayerSkin (int playernum)
 		GL_Upload8_EXT ((byte *)pixels, scaled_width, scaled_height, false, false);
 		return;
 	}
+#endif
 
 	for (i=0 ; i<256 ; i++)
 		translate32[i] = d_8to24table[translate[i]];
@@ -361,11 +364,11 @@ void R_TranslatePlayerSkin (int playernum)
 			frac += fracstep;
 		}
 	}
-	glTexImage2D (GL_TEXTURE_2D, 0, gl_solid_format, scaled_width, scaled_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+	qglTexImage2D (GL_TEXTURE_2D, 0, gl_solid_format, scaled_width, scaled_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	qglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 #endif
 
 }
@@ -429,8 +432,8 @@ void R_TimeRefresh_f (void)
 	int			startangle;
 	vrect_t		vr;
 
-	glDrawBuffer  (GL_FRONT);
-	glFinish ();
+	qglDrawBuffer  (GL_FRONT);
+	qglFinish ();
 
 	start = Sys_FloatTime ();
 	for (i=0 ; i<128 ; i++)
@@ -439,12 +442,12 @@ void R_TimeRefresh_f (void)
 		R_RenderView ();
 	}
 
-	glFinish ();
+	qglFinish ();
 	stop = Sys_FloatTime ();
 	time = stop-start;
 	Con_Printf ("%f seconds (%f fps)\n", time, 128/time);
 
-	glDrawBuffer  (GL_BACK);
+	qglDrawBuffer  (GL_BACK);
 	GL_EndRendering ();
 }
 
@@ -452,4 +455,155 @@ void D_FlushCaches (void)
 {
 }
 
+#if 1
+extern int		ramp1[8];
+extern int		ramp2[8];
+extern int		ramp3[8];
+
+particle_t	*active_particles, *free_particles;
+
+particle_t	*particles;
+int			r_numparticles;
+
+extern	cvar_t	sv_gravity;
+
+
+void R_DrawParticles (void)
+{
+	particle_t		*p, *kill;
+	float			grav;
+	int				i;
+	float			time2, time3;
+	float			time1;
+	float			dvel;
+	float			frametime;
+	
+	vec3_t			up, right;
+	float			scale;
+
+    GL_Bind(particletexture);
+	qglEnable (GL_BLEND);
+	qglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	qglBegin (GL_TRIANGLES);
+
+	VectorScale (vup, 1.5, up);
+	VectorScale (vright, 1.5, right);
+
+	frametime = cl.time - cl.oldtime;
+	time3 = frametime * 15;
+	time2 = frametime * 10; // 15;
+	time1 = frametime * 5;
+	grav = frametime * sv_gravity.value * 0.05;
+	dvel = 4*frametime;
+	
+	for ( ;; ) 
+	{
+		kill = active_particles;
+		if (kill && kill->die < cl.time)
+		{
+			active_particles = kill->next;
+			kill->next = free_particles;
+			free_particles = kill;
+			continue;
+		}
+		break;
+	}
+
+	for (p=active_particles ; p ; p=p->next)
+	{
+		for ( ;; )
+		{
+			kill = p->next;
+			if (kill && kill->die < cl.time)
+			{
+				p->next = kill->next;
+				kill->next = free_particles;
+				free_particles = kill;
+				continue;
+			}
+			break;
+		}
+
+		// hack a scale up to keep particles from disapearing
+		scale = (p->org[0] - r_origin[0])*vpn[0] + (p->org[1] - r_origin[1])*vpn[1]
+			+ (p->org[2] - r_origin[2])*vpn[2];
+		if (scale < 20)
+			scale = 1;
+		else
+			scale = 1 + scale * 0.004;
+		qglColor3ubv ((byte *)&d_8to24table[(int)p->color]);
+		qglTexCoord2f (0,0);
+		qglVertex3fv (p->org);
+		qglTexCoord2f (1,0);
+		qglVertex3f (p->org[0] + up[0]*scale, p->org[1] + up[1]*scale, p->org[2] + up[2]*scale);
+		qglTexCoord2f (0,1);
+		qglVertex3f (p->org[0] + right[0]*scale, p->org[1] + right[1]*scale, p->org[2] + right[2]*scale);
+
+		p->org[0] += p->vel[0]*frametime;
+		p->org[1] += p->vel[1]*frametime;
+		p->org[2] += p->vel[2]*frametime;
+		
+		switch (p->type)
+		{
+		case pt_static:
+			break;
+		case pt_fire:
+			p->ramp += time1;
+			if (p->ramp >= 6)
+				p->die = -1;
+			else
+				p->color = ramp3[(int)p->ramp];
+			p->vel[2] += grav;
+			break;
+
+		case pt_explode:
+			p->ramp += time2;
+			if (p->ramp >=8)
+				p->die = -1;
+			else
+				p->color = ramp1[(int)p->ramp];
+			for (i=0 ; i<3 ; i++)
+				p->vel[i] += p->vel[i]*dvel;
+			p->vel[2] -= grav;
+			break;
+
+		case pt_explode2:
+			p->ramp += time3;
+			if (p->ramp >=8)
+				p->die = -1;
+			else
+				p->color = ramp2[(int)p->ramp];
+			for (i=0 ; i<3 ; i++)
+				p->vel[i] -= p->vel[i]*frametime;
+			p->vel[2] -= grav;
+			break;
+
+		case pt_blob:
+			for (i=0 ; i<3 ; i++)
+				p->vel[i] += p->vel[i]*dvel;
+			p->vel[2] -= grav;
+			break;
+
+		case pt_blob2:
+			for (i=0 ; i<2 ; i++)
+				p->vel[i] -= p->vel[i]*dvel;
+			p->vel[2] -= grav;
+			break;
+
+		case pt_grav:
+#ifdef QUAKE2
+			p->vel[2] -= grav * 20;
+			break;
+#endif
+		case pt_slowgrav:
+			p->vel[2] -= grav;
+			break;
+		}
+	}
+
+	qglEnd ();
+	qglDisable (GL_BLEND);
+	qglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+}
+#endif
 

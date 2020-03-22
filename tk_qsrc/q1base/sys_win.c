@@ -67,6 +67,10 @@ void Sys_LowFPPrecision (void)
 {
 }
 
+void __hint_use_egpr()
+{
+}
+
 
 /*
 ================

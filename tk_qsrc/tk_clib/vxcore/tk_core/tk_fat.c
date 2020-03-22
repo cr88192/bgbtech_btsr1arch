@@ -50,6 +50,9 @@ byte *TKFAT_GetSectorTempBuffer(TKFAT_ImageInfo *img,
 	tbc_lbn=img->tbc_lbn;
 	tbc_buf=img->tbc_buf;
 
+	if(lba<0)
+		__debugbreak();
+
 	n=num&255;
 	
 #if 0
@@ -223,6 +226,9 @@ byte *TKFAT_GetSectorTempBuffer(TKFAT_ImageInfo *img,
 		img->tbc_pred0=i;
 	}
 
+	if(lba<0)
+		__debugbreak();
+
 	TKSPI_ReadSectors(tbd, lba, n);
 	return(tbd);
 
@@ -265,6 +271,9 @@ byte *TKFAT_GetSectorStaticBuffer(TKFAT_ImageInfo *img,
 
 	lba2=lba;
 //	__debugbreak();
+
+	if(lba2<0)
+		__debugbreak();
 
 	TKSPI_ReadSectors(img->sbc_buf[i], lba2, num&255);
 	return(img->sbc_buf[i]);
@@ -1439,7 +1448,13 @@ int TKFAT_ReadWriteCluster(TKFAT_ImageInfo *img,
 	byte *clbuf;
 	int lba;
 	
+	if((clid<2) || (clid>=img->tot_clust))
+		__debugbreak();
+	
 	lba=TKFAT_GetClusterLBA(img, clid);
+	
+	if(lba<0)
+		__debugbreak();
 
 	if(iswrite)
 	{
@@ -1466,6 +1481,9 @@ int TKFAT_ReadWriteClusterOffset(TKFAT_ImageInfo *img,
 	int i, j, k;
 
 	if(!img)
+		__debugbreak();
+
+	if((clid<2) || (clid>=img->tot_clust))
 		__debugbreak();
 
 	/* First, check if access is within a single cluster. */
@@ -1593,6 +1611,9 @@ int TKFAT_ReadWriteMetaEntOffset(TKFAT_ImageInfo *img,
 		__debugbreak();
 		return(-1);
 	}
+
+	if((clid<2) || (clid>img->tot_clust))
+		__debugbreak();
 
 	if(!img)
 		__debugbreak();
@@ -2215,7 +2236,7 @@ int TKFAT_LookupDirEntNameFlag(TKFAT_ImageInfo *img,
 	u16 tln[288];	//temp longname
 	char tsn[12];	//temp shortname
 	char *s;
-	int h0, h1, lh, max, mclid;
+	int h0, h1, lh, max;
 	int i, j, k;
 	
 	deb=&tdeb;

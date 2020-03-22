@@ -31,6 +31,9 @@ globalvars_t	*pr_global_struct;
 float			*pr_globals;			// same as pr_global_struct
 int				pr_edict_size;	// in bytes
 
+char			*pr_strtab_buf;
+char			*pr_strtab_end;
+
 unsigned short		pr_crc;
 
 int		type_size[8] = {
@@ -753,7 +756,21 @@ string_t ED_StringToStringT (char *str)
 
 	if(v!=w)
 	{
-		d=(((int)str)&0x1FFFFFFF)-(((int)pr_strings)&0x1FFFFFFF);
+		v=pr_strtab_end;
+		strcpy(v, str);
+		pr_strtab_end=v+strlen(v)+1;
+
+//		v = ED_NewString(str);
+
+		d = (int)(v - pr_strings);
+		w = pr_strings + d;
+
+		if(v!=w)
+		{
+			__debugbreak();
+		}
+
+//		d=(((int)str)&0x1FFFFFFF)-(((int)pr_strings)&0x1FFFFFFF);
 		return(d);
 	}
 
@@ -1049,6 +1066,9 @@ void PR_LoadProgs (void)
 	if (!progs)
 		Sys_Error ("PR_LoadProgs: couldn't load progs.dat");
 	Con_DPrintf ("Programs occupy %iK.\n", com_filesize/1024);
+
+	pr_strtab_buf = Hunk_AllocName(65536, "strtab");
+	pr_strtab_end = pr_strtab_buf;
 
 	for (i=0 ; i<com_filesize ; i++)
 		CRC_ProcessByte (&pr_crc, ((byte *)progs)[i]);

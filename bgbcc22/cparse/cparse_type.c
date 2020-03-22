@@ -421,7 +421,7 @@ static char *bgbcp_basetypes_c[]={
 "__uint8",	"__uint16",	"__uint32",	"__uint64",
 "__int128",	"__uint128",
 
-"__float128", "__float16", "__m64", "__m128",
+"__float128", "__float16", "__m64", "__m128", "__m128p",
 // "__vec2", "__vec3", "__vec4", "__quat", 
 "__vec2f", "__vec3f", "__vec4f", "__quatf", 
 "__vec2d", "__vec3d", "__vec4d", "__quatd", 

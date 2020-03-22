@@ -43,9 +43,6 @@ Basic C ABI:
 * R4..R7, R20..R23: Register Arguments
 ** Structures are passed in 1 or 2 registers if they fit.
 ** Otherwise, structures are passed by reference.
-* (Old HardFPU) FR0..FR7: Scratch
-* (Old HardFPU) FR8..FR15: Callee Preserve
-* (Old HardFPU) FR4..FR7: Float Arguments
 ** For Soft-FPU, Float and Double arguments will be passed in GPRs.
 ** The newer GFP FPU will also pass FP values in GPRs.
 * R0/DLR: Volatile/Scratch
@@ -93,12 +90,15 @@ BS2 Style Vararg:
 
 === SoftFP and HardFP ===
 
-The Old HardFP ABI will pass floating arguments as double-precision values in FPRs.
-
 The SoftFP ABI (also used for GFP) will pass floating point arguments via GPRs. Nominally floating point values will be passed and returned as double-precision values.
-The newer GFP FPU will also pass FP types as Double values in GPRs, and so in this sense will be equivalent to the SoftFP ABI.
+The FPU will also pass FP types as Double values in GPRs, and so in this sense will be equivalent to the SoftFP ABI.
 
 Packed floating point types will be passed in GPRs, with each element represented as an element within the GPR. Elements will be packed with lower numbered elements located in the low-order bits.
+
+
+=== Passing 128-bit Types ===
+
+Passing 128-bit types will be via a pair of GPRs, if both values will fit into GPRs (otherwise both will be passed on the stack). The passing of 128-bit types will not respect register alignment for SIMD types, and the passed pair may also straddle R7 and R20.
 
 
 === 32-bit Sub ABI ===

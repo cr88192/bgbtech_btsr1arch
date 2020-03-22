@@ -35,6 +35,35 @@ extern void			R_TransformFrustum (void);
 
 vec3_t		transformed_modelorg;
 
+#ifndef _BGBCC
+float __fpu_frcp_sf(float f)
+{
+	return(1.0/f);
+}
+
+float __fpu_fdiv_sf(float f, float g)
+{
+	return(f/g);
+}
+
+int __int_clamp(int v, int min, int max)
+{
+	if(v<min)return(min);
+	if(v>max)return(max);
+	return(v);
+}
+
+int D_SoftDivB(int a, int b)
+{
+	return(D_SoftDivB(a, b));
+}
+
+// void __hint_use_egpr()
+// {
+// }
+
+#endif
+
 /*
 ==============
 D_DrawPoly

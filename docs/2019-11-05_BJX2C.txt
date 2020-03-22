@@ -1110,21 +1110,21 @@ F0zz Instruction Block:
 *** F0nm_1GF9 ? MULU.Q	Rm, Rn				//(MULQ) (Unsigned 64*64=>128)
 
 ** F0nm_1ezA  (GSV Block)
-*** F0nm_1g0A  PADD.W		Rm, Rn				//(GSV) Packed Add Word
-*** F0nm_1G0A  PADD.L		Rm, Rn				//(GSV) Packed Add DWord
-*** F0nm_1g1A  PSUB.W		Rm, Rn				//(GSV) Packed Sub Word
-*** F0nm_1G1A  PSUB.L		Rm, Rn				//(GSV) Packed Sub DWord
-*** F0nm_1g2A  PADC.W		Rm, Rn				//(GSV) Packed Add-Carry Word
-*** F0nm_1G2A  PADC.L		Rm, Rn				//(GSV) Packed Add-Carry DWord
-*** F0nm_1g3A  PSBB.W		Rm, Rn				//(GSV) Packed Sub-Borrow Word
-*** F0nm_1G3A  PSBB.L		Rm, Rn				//(GSV) Packed Sub-Borrow DWord
+*** F0nm_1g0A / PADD.W		Rm, Rn				//(GSV) Packed Add Word
+*** F0nm_1G0A / PADD.L		Rm, Rn				//(GSV) Packed Add DWord
+*** F0nm_1g1A / PSUB.W		Rm, Rn				//(GSV) Packed Sub Word
+*** F0nm_1G1A / PSUB.L		Rm, Rn				//(GSV) Packed Sub DWord
+*** F0nm_1g2A / PADC.W		Rm, Rn				//(GSV) Packed Add-Carry Word
+*** F0nm_1G2A / PADC.L		Rm, Rn				//(GSV) Packed Add-Carry DWord
+*** F0nm_1g3A / PSBB.W		Rm, Rn				//(GSV) Packed Sub-Borrow Word
+*** F0nm_1G3A / PSBB.L		Rm, Rn				//(GSV) Packed Sub-Borrow DWord
 *** F0nm_1g4A -
-*** F0nm_1g5A  PADD.H		Rm, Rn				//(GSVF) Packed ADD Half
-*** F0nm_1G5A  PADD.F		Rm, Rn				//(GSVF) Packed ADD Float
-*** F0nm_1g6A  PSUB.H		Rm, Rn				//(GSVF) Packed SUB Half
-*** F0nm_1G6A  PSUB.F		Rm, Rn				//(GSVF) Packed SUB Float
-*** F0nm_1g7A  PMUL.H		Rm, Rn				//(GSVF) Packed MUL Half
-*** F0nm_1G7A  PMUL.F		Rm, Rn				//(GSVF) Packed MUL Float
+*** F0nm_1g5A ? PADD.H		Rm, Rn				//(GSVF) Packed ADD Half
+*** F0nm_1G5A ? PADD.F		Rm, Rn				//(GSVF) Packed ADD Float
+*** F0nm_1g6A ? PSUB.H		Rm, Rn				//(GSVF) Packed SUB Half
+*** F0nm_1G6A ? PSUB.F		Rm, Rn				//(GSVF) Packed SUB Float
+*** F0nm_1g7A ? PMUL.H		Rm, Rn				//(GSVF) Packed MUL Half
+*** F0nm_1G7A ? PMUL.F		Rm, Rn				//(GSVF) Packed MUL Float
 *** F0nm_1g8A  MOVHD		Rm, Rn				//(GSV) Move High DWord
 *** F0nm_1G8A  MOVLD		Rm, Rn				//(GSV) Move Low DWord
 *** F0nm_1G9A -
@@ -1140,26 +1140,26 @@ F0zz Instruction Block:
 *** F0nm_1GDA  PCMPHI.L		Rm, Rn				//Pack Compare DWord, Above
 *** F0nm_1gEA  PCMPGT.W		Rm, Rn				//Pack Compare Word, Greater
 *** F0nm_1GEA  PCMPGT.L		Rm, Rn				//Pack Compare DWord, Greater
-*** F0nm_1gFA  PMULS.W		Rm, Rn				//(GSV) (DHR,DLR)=Rm*Rn (Vector)
-*** F0nm_1GFA  PMULU.W		Rm, Rn				//(GSV) (DHR,DLR)=Rm*Rn (Vector)
+*** F0nm_1gFA / PMULS.W		Rm, Rn				//(GSV) (DHR,DLR)=Rm*Rn (Vector)
+*** F0nm_1GFA / PMULU.W		Rm, Rn				//(GSV) (DHR,DLR)=Rm*Rn (Vector)
 
 ** F0nm_1ezB (GSV Block)
-*** F0nm_1g0B  PLDSBL.W		Rm, Rn				//Packed Load SB->W (Low)
-*** F0nm_1G0B  PLDUBL.W		Rm, Rn				//Packed Load UB->W (Low)
-*** F0nm_1g1B  PLDSWL.L		Rm, Rn				//Packed Load SW->L (Low)
-*** F0nm_1G1B  PLDUWL.L		Rm, Rn				//Packed Load UW->L (Low)
-*** F0nm_1g2B  PLDBX.W		Rm, Rn				//Packed Load B->W (Dup)
-*** F0nm_1G2B  PLDBH.W		Rm, Rn				//Packed Load B->W (High)
-*** F0nm_1g3B  PLDWX.L		Rm, Rn				//Packed Load W->L (Dup)
-*** F0nm_1G3B  PLDWH.L		Rm, Rn				//Packed Load W->L (High)
-*** F0nm_1g4B  PSTSBL.W		Rm, Rn				//Packed Store W->SB (Low)
-*** F0nm_1G4B  PSTUBL.W		Rm, Rn				//Packed Store W->UB (Low)
-*** F0nm_1g5B  PSTSWL.L		Rm, Rn				//Packed Store L->SW (Low)
-*** F0nm_1G5B  PSTUWL.L		Rm, Rn				//Packed Store L->UW (Low)
-*** F0nm_1g6B  PSTBL.W		Rm, Rn				//Packed Store W->B (Low)
-*** F0nm_1G6B  PSTBH.W		Rm, Rn				//Packed Store W->B (High)
-*** F0nm_1g7B  PSTWL.L		Rm, Rn				//Packed Store L->W (Low)
-*** F0nm_1G7B  PSTWH.L		Rm, Rn				//Packed Store L->W (High)
+*** F0nm_1g0B /? PLDSBL.W	Rm, Rn				//Packed Load SB->W (Low)
+*** F0nm_1G0B /? PLDUBL.W	Rm, Rn				//Packed Load UB->W (Low)
+*** F0nm_1g1B /? PLDSWL.L	Rm, Rn				//Packed Load SW->L (Low)
+*** F0nm_1G1B /? PLDUWL.L	Rm, Rn				//Packed Load UW->L (Low)
+*** F0nm_1g2B /? PLDBX.W	Rm, Rn				//Packed Load B->W (Dup)
+*** F0nm_1G2B /? PLDBH.W	Rm, Rn				//Packed Load B->W (High)
+*** F0nm_1g3B /? PLDWX.L	Rm, Rn				//Packed Load W->L (Dup)
+*** F0nm_1G3B /? PLDWH.L	Rm, Rn				//Packed Load W->L (High)
+*** F0nm_1g4B /? PSTSBL.W	Rm, Rn				//Packed Store W->SB (Low)
+*** F0nm_1G4B /? PSTUBL.W	Rm, Rn				//Packed Store W->UB (Low)
+*** F0nm_1g5B /? PSTSWL.L	Rm, Rn				//Packed Store L->SW (Low)
+*** F0nm_1G5B /? PSTUWL.L	Rm, Rn				//Packed Store L->UW (Low)
+*** F0nm_1g6B /? PSTBL.W	Rm, Rn				//Packed Store W->B (Low)
+*** F0nm_1G6B /? PSTBH.W	Rm, Rn				//Packed Store W->B (High)
+*** F0nm_1g7B /? PSTWL.L	Rm, Rn				//Packed Store L->W (Low)
+*** F0nm_1G7B /? PSTWH.L	Rm, Rn				//Packed Store L->W (High)
 
 ** F0nm_1ezC
 *** F0nm_1e0C  NOT		Rm, Rn				//Rn=~Rn
@@ -1189,17 +1189,17 @@ F0zz Instruction Block:
 
 ** F0nm_1ezD ? (GFP, GPR FPU, Opt)
 *** F0nm_1e0D  FLDCF		Rm, Rn		//Load Convert Float32 (Low Bits, ZX)
-*** F0nm_1e1D ? FLDCHF		Rm, Rn		//Load Convert Float32 (High Bits)
+*** F0nm_1e1D  FLDCHF		Rm, Rn		//Load Convert Float32 (High Bits)
 *** F0nm_1e2D  FLDCI		Rm, Rn		//Load Convert Int
 *** F0nm_1e3D  FLDCH		Rm, Rn		//Load Convert Half (Low16)
 *** F0nm_1e4D  FSTCF		Rm, Rn		//Store Convert Float32 (Low Bits, ZX)
-*** F0nm_1e5D ? FSTCHF		Rm, Rn		//Store Convert Float32 (High Bits)
+*** F0nm_1e5D  FSTCHF		Rm, Rn		//Store Convert Float32 (High Bits)
 *** F0nm_1e6D  FSTCI		Rm, Rn		//Store Convert Int
 *** F0nm_1e7D  FSTCH		Rm, Rn		//Store Convert Half (Low16)
 *** F0nm_1e8D  FNEG			Rm, Rn		//Negate
 *** F0nm_1e9D  FABS			Rm, Rn		//Absolute
-*** F0nm_1eAD  FCMPEQ		Rm, Rn			//SR.T=(FRn EQ FRm)
-*** F0nm_1eBD  FCMPGT		Rm, Rn			//SR.T=(FRn GT FRm)
+*** F0nm_1eAD  FCMPEQ		Rm, Rn		//SR.T=(FRn EQ FRm)
+*** F0nm_1eBD  FCMPGT		Rm, Rn		//SR.T=(FRn GT FRm)
 *** F0nm_1eCD  -
 *** F0nm_1eDD  -
 *** F0nm_1eED  -
@@ -1215,6 +1215,11 @@ F0zz Instruction Block:
 *** F0nm_1G4E  RGB32PCK64	Rm, Rn		//(RGB) RGB32 Pack from RGB64
 *** F0nm_1G5E  RGB32UPCK64	Rm, Rn		//(RGB) RGB32 Unpack to RGB64
 
+*** F0nm_1gCE ? PLDCHLF		Rm, Rn		//Packed Half to Single (Low)
+*** F0nm_1gDE ? PLDCHHF		Rm, Rn		//Packed Half to Single (High)
+*** F0nm_1gEE ? PSTCHLF		Rm, Rn		//Packed Single to Half (Low)
+*** F0nm_1gFE ? PSTCHHF		Rm, Rn		//Packed Single to Half (High)
+
 ** F0nm_1ezF  -
 
 * F0zz_2zzz (More 3R Ops)
@@ -1228,11 +1233,11 @@ F0zz Instruction Block:
 ** F0nm_2go3  -
 ** F0nm_2Go3  -
 ** F0nm_2eo4  -
-** F0nm_2go5  PADD.F	Rm, Ro, Rn			//(GSVFX) Packed FADD (2x Float)
+** F0nm_2go5  PADD.F	Rm, Ro, Rn			//(GSVF) Packed FADD (2x Float)
 ** F0nm_2Go5  PADDX.F	Rm, Ro, Rn			//(GSVFX) Packed FADD (4x Float)
-** F0nm_2go6  PSUB.F	Rm, Ro, Rn			//(GSVFX) Packed FSUB (2x Float)
+** F0nm_2go6  PSUB.F	Rm, Ro, Rn			//(GSVF) Packed FSUB (2x Float)
 ** F0nm_2Go6  PSUBX.F	Rm, Ro, Rn			//(GSVFX) Packed FSUB (4x Float)
-** F0nm_2go7  PMUL.F	Rm, Ro, Rn			//(GSVFX) Packed FMUL (2x Float)
+** F0nm_2go7  PMUL.F	Rm, Ro, Rn			//(GSVF) Packed FMUL (2x Float)
 ** F0nm_2Go7  PMULX.F	Rm, Ro, Rn			//(GSVFX) Packed FMUL (4x Float)
 ** F0nm_2go8  MOVHD		Rm, Ro, Rn			//(GSV) MOV, High DWords
 ** F0nm_2Go8  MOVLD		Rm, Ro, Rn			//(GSV) MOV, Low DWords

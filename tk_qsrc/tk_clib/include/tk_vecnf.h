@@ -1,11 +1,5 @@
 #ifdef _BGBCC
+#include "tk_vecnf_bgbcc.h"
 #else
-
-typedef struct {
-	float x;
-	float y;
-	float z;
-	float w;
-}vec4f;
-
+#include "tk_vecnf_gen.h"
 #endif

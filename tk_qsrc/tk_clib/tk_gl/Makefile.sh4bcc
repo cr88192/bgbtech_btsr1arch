@@ -1,0 +1,27 @@
+BUILD=.
+MKSUF=.sh4bcc
+LIBSUF=.ril
+DLLSUF=.ril
+EXESUF=.exe
+# BINSUF=.exe
+BINSUF=.exe
+OBJSUF=.ril
+DLLPF=
+
+CC_OUTEXE=bgbcc /Fe
+CC_OUTDLL=bgbcc /Fe
+CC_OUTOBJ=bgbcc /Fo
+CC_OUTTOOL=cl /Fe 
+# CC_OUTTOOL=gcc -o 
+
+CFLAGS=-Iinclude -O3
+
+DLL_CFLAGS=$(CFLAGS) /mBJX2
+DLL_LDFLAGS=
+LDFLAGS=btewsim.ril -lvxcore_bjx2 $(DLL_LDFLAGS)
+
+all: libs apps
+
+include Makefile.inc
+
+# all: libs apps2

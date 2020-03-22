@@ -1249,6 +1249,7 @@ int BGBCC_LoadCSourcesCCXL(
 	
 	if(i<nnames)
 	{
+		printf("Errors seen, aborting compilation\n");
 		return(-1);
 	}
 

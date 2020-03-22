@@ -646,6 +646,7 @@ R_DrawParticles
 */
 extern	cvar_t	sv_gravity;
 
+#if 0
 void R_DrawParticles (void)
 {
 	particle_t		*p, *kill;
@@ -661,9 +662,9 @@ void R_DrawParticles (void)
 	float			scale;
 
     GL_Bind(particletexture);
-	glEnable (GL_BLEND);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glBegin (GL_TRIANGLES);
+	qglEnable (GL_BLEND);
+	qglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	qglBegin (GL_TRIANGLES);
 
 	VectorScale (vup, 1.5, up);
 	VectorScale (vright, 1.5, right);
@@ -717,13 +718,13 @@ void R_DrawParticles (void)
 			scale = 1;
 		else
 			scale = 1 + scale * 0.004;
-		glColor3ubv ((byte *)&d_8to24table[(int)p->color]);
-		glTexCoord2f (0,0);
-		glVertex3fv (p->org);
-		glTexCoord2f (1,0);
-		glVertex3f (p->org[0] + up[0]*scale, p->org[1] + up[1]*scale, p->org[2] + up[2]*scale);
-		glTexCoord2f (0,1);
-		glVertex3f (p->org[0] + right[0]*scale, p->org[1] + right[1]*scale, p->org[2] + right[2]*scale);
+		qglColor3ubv ((byte *)&d_8to24table[(int)p->color]);
+		qglTexCoord2f (0,0);
+		qglVertex3fv (p->org);
+		qglTexCoord2f (1,0);
+		qglVertex3f (p->org[0] + up[0]*scale, p->org[1] + up[1]*scale, p->org[2] + up[2]*scale);
+		qglTexCoord2f (0,1);
+		qglVertex3f (p->org[0] + right[0]*scale, p->org[1] + right[1]*scale, p->org[2] + right[2]*scale);
 #else
 		D_DrawParticle (p);
 #endif
@@ -790,11 +791,132 @@ void R_DrawParticles (void)
 	}
 
 #ifdef GLQUAKE
-	glEnd ();
-	glDisable (GL_BLEND);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	qglEnd ();
+	qglDisable (GL_BLEND);
+	qglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 #else
 	D_EndParticles ();
 #endif
 }
+#endif
 
+
+#ifndef GLQUAKE
+void R_DrawParticles (void)
+{
+	particle_t		*p, *kill;
+	float			grav;
+	int				i;
+	float			time2, time3;
+	float			time1;
+	float			dvel;
+	float			frametime;
+	
+	D_StartParticles ();
+
+	VectorScale (vright, xscaleshrink, r_pright);
+	VectorScale (vup, yscaleshrink, r_pup);
+	VectorCopy (vpn, r_ppn);
+
+	frametime = cl.time - cl.oldtime;
+	time3 = frametime * 15;
+	time2 = frametime * 10; // 15;
+	time1 = frametime * 5;
+	grav = frametime * sv_gravity.value * 0.05;
+	dvel = 4*frametime;
+	
+	for ( ;; ) 
+	{
+		kill = active_particles;
+		if (kill && kill->die < cl.time)
+		{
+			active_particles = kill->next;
+			kill->next = free_particles;
+			free_particles = kill;
+			continue;
+		}
+		break;
+	}
+
+	for (p=active_particles ; p ; p=p->next)
+	{
+		for ( ;; )
+		{
+			kill = p->next;
+			if (kill && kill->die < cl.time)
+			{
+				p->next = kill->next;
+				kill->next = free_particles;
+				free_particles = kill;
+				continue;
+			}
+			break;
+		}
+
+		D_DrawParticle (p);
+
+		p->org[0] += p->vel[0]*frametime;
+		p->org[1] += p->vel[1]*frametime;
+		p->org[2] += p->vel[2]*frametime;
+		
+		switch (p->type)
+		{
+		case pt_static:
+			break;
+		case pt_fire:
+			p->ramp += time1;
+			if (p->ramp >= 6)
+				p->die = -1;
+			else
+				p->color = ramp3[(int)p->ramp];
+			p->vel[2] += grav;
+			break;
+
+		case pt_explode:
+			p->ramp += time2;
+			if (p->ramp >=8)
+				p->die = -1;
+			else
+				p->color = ramp1[(int)p->ramp];
+			for (i=0 ; i<3 ; i++)
+				p->vel[i] += p->vel[i]*dvel;
+			p->vel[2] -= grav;
+			break;
+
+		case pt_explode2:
+			p->ramp += time3;
+			if (p->ramp >=8)
+				p->die = -1;
+			else
+				p->color = ramp2[(int)p->ramp];
+			for (i=0 ; i<3 ; i++)
+				p->vel[i] -= p->vel[i]*frametime;
+			p->vel[2] -= grav;
+			break;
+
+		case pt_blob:
+			for (i=0 ; i<3 ; i++)
+				p->vel[i] += p->vel[i]*dvel;
+			p->vel[2] -= grav;
+			break;
+
+		case pt_blob2:
+			for (i=0 ; i<2 ; i++)
+				p->vel[i] -= p->vel[i]*dvel;
+			p->vel[2] -= grav;
+			break;
+
+		case pt_grav:
+#ifdef QUAKE2
+			p->vel[2] -= grav * 20;
+			break;
+#endif
+		case pt_slowgrav:
+			p->vel[2] -= grav;
+			break;
+		}
+	}
+
+	D_EndParticles ();
+}
+#endif

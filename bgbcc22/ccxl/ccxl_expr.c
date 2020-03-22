@@ -2186,7 +2186,7 @@ void BGBCC_CCXL_CompileExprAsTypeSig(BGBCC_TransState *ctx,
 	
 	BGBCC_CCXL_TypeFromSig(ctx, &bty, sig);
 
-	printf("BGBCC_CCXL_CompileExprAsTypeSig: %s\n", sig);
+//	printf("BGBCC_CCXL_CompileExprAsTypeSig: %s\n", sig);
 
 	if(BGBCC_CCXL_TypeValueObjectP(ctx, bty))
 	{
