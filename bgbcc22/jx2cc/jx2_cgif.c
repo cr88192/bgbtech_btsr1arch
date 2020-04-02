@@ -3660,6 +3660,96 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			bgbcc_jx2cc_setu16en(ctr+2, en, w1);
 			break;
 
+
+		case BGBCC_SH_RLC_PBOJ27_BJX:
+			w0=bgbcc_getu16en(ctr+0, en);
+			w1=bgbcc_getu16en(ctr+2, en);
+			w2=bgbcc_getu16en(ctr+4, en);
+			w3=bgbcc_getu16en(ctr+6, en);
+			b=((w0&255)<<14)|(w1&16383);
+			b=(b<<5)|((w3&0x01F0)>>4);
+			b1=((s32)(b<<5))>>5;
+			d1=b1+(ctl-gbr_base);
+
+			if(d1<0)
+				{ BGBCC_DBGBREAK }
+
+			w0=(w0&0xFF00)|((d1>>19)&0x00FF);
+			w1=(w1&0xC000)|((d1>> 5)&0x3FFF);
+			w3=(w3&0xFE0F)|((d1<< 4)&0x01F0);
+
+//			w1=d1&0xFFFF;
+			bgbcc_jx2cc_setu16en(ctr+0, en, w0);
+			bgbcc_jx2cc_setu16en(ctr+2, en, w1);
+			bgbcc_jx2cc_setu16en(ctr+4, en, w2);
+			bgbcc_jx2cc_setu16en(ctr+6, en, w3);
+			break;
+
+		case BGBCC_SH_RLC_PBOJ31_BJX:
+			w0=bgbcc_getu16en(ctr+0, en);
+			w1=bgbcc_getu16en(ctr+2, en);
+			w2=bgbcc_getu16en(ctr+4, en);
+			w3=bgbcc_getu16en(ctr+6, en);
+			b=((w0&255)<<14)|(w1&16383);
+			b=(b<<9)|(w3&0x01FF);
+			b1=((s32)(b<<1))>>1;
+			d1=b1+(ctl-gbr_base);
+
+			if(d1<0)
+				{ BGBCC_DBGBREAK }
+
+			w0=(w0&0xFF00)|((d1>>23)&0x00FF);
+			w1=(w1&0xC000)|((d1>> 9)&0x3FFF);
+			w3=(w3&0xFE00)|((d1    )&0x01FF);
+
+//			w1=d1&0xFFFF;
+			bgbcc_jx2cc_setu16en(ctr+0, en, w0);
+			bgbcc_jx2cc_setu16en(ctr+2, en, w1);
+			bgbcc_jx2cc_setu16en(ctr+4, en, w2);
+			bgbcc_jx2cc_setu16en(ctr+6, en, w3);
+			break;
+
+		case BGBCC_SH_RLC_RELJ27_BJX:
+			w0=bgbcc_getu16en(ctr+0, en);
+			w1=bgbcc_getu16en(ctr+2, en);
+			w2=bgbcc_getu16en(ctr+4, en);
+			w3=bgbcc_getu16en(ctr+6, en);
+			b=((w0&255)<<14)|(w1&16383);
+			b=(b<<5)|((w3&0x01F0)>>4);
+			b1=((s32)(b<<5))>>5;
+			d1=b1+(d-8);
+
+			w0=(w0&0xFF00)|((d1>>19)&0x00FF);
+			w1=(w1&0xC000)|((d1>> 5)&0x3FFF);
+			w3=(w3&0xFE0F)|((d1<< 4)&0x01F0);
+
+			bgbcc_jx2cc_setu16en(ctr+0, en, w0);
+			bgbcc_jx2cc_setu16en(ctr+2, en, w1);
+			bgbcc_jx2cc_setu16en(ctr+4, en, w2);
+			bgbcc_jx2cc_setu16en(ctr+6, en, w3);
+			break;
+
+		case BGBCC_SH_RLC_RELJ31_BJX:
+			w0=bgbcc_getu16en(ctr+0, en);
+			w1=bgbcc_getu16en(ctr+2, en);
+			w2=bgbcc_getu16en(ctr+4, en);
+			w3=bgbcc_getu16en(ctr+6, en);
+			b=((w0&255)<<14)|(w1&16383);
+			b=(b<<9)|(w3&0x01FF);
+			b1=((s32)(b<<1))>>1;
+			d1=b1+(d-8);
+
+			w0=(w0&0xFF00)|((d1>>23)&0x00FF);
+			w1=(w1&0xC000)|((d1>> 9)&0x3FFF);
+			w3=(w3&0xFE00)|((d1    )&0x01FF);
+
+			bgbcc_jx2cc_setu16en(ctr+0, en, w0);
+			bgbcc_jx2cc_setu16en(ctr+2, en, w1);
+			bgbcc_jx2cc_setu16en(ctr+4, en, w2);
+			bgbcc_jx2cc_setu16en(ctr+6, en, w3);
+			break;
+
+
 		case BGBCC_SH_RLC_TBR24_BJX:
 			break;
 		case BGBCC_SH_RLC_TBR12_BJX:

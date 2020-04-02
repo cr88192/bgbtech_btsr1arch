@@ -67,6 +67,11 @@ int TKMM_AllocPages(int n)
 		tk_printf("TKMM_AllocPages: Out Of Memory, n=%d\n", n);
 		return(-1);
 	}
+
+	if((i+n)>tkmm_maxpage)
+	{
+		__debugbreak();
+	}
 	
 	j=i; k=j+n;
 	while(j<k)
@@ -83,6 +88,11 @@ int TKMM_FreePages(int b, int n)
 	
 	if((b<0) || (n<=0))
 		return(-1);
+		
+	if((b+n)>tkmm_maxpage)
+	{
+		__debugbreak();
+	}
 	
 	for(i=b; i<(b+n); i++)
 	{
@@ -253,6 +263,11 @@ void TKMM_Init()
 		tkmm_pagebase=TKMM_PAGEBASE;
 		tkmm_pageend=TKMM_PAGEEND;
 		memset(tkmm_pagebmp, 0, 16384);
+		
+		if(!TKMM_PageAlloc_f)
+		{
+			__debugbreak();
+		}
 
 #if 0
 		if(tk_ird_imgbuf)
@@ -282,9 +297,12 @@ void TKMM_Init()
 void *TKMM_Malloc(int sz)
 {
 	TKMM_MemLnkObj *obj;
-	void *ptr;
-	int pg, np;
+	void *ptr, *ptr1;
+	int pg, np, np1;
 	
+	if(!TKMM_PageAlloc_f)
+		__debugbreak();
+
 	if(sz<65536)
 	{
 		ptr=TKMM_MMList_Malloc(sz);
@@ -312,6 +330,15 @@ void *TKMM_Malloc(int sz)
 	ptr=TKMM_PageAlloc(np<<12);
 	
 	memset(ptr, 0, np<<12);
+
+	if(!TKMM_PageAlloc_f)
+	{
+		ptr1=ptr;
+		np1=np;
+//		tk_printf("%p %X\n", ptr, np);
+		__debugbreak();
+	}
+
 #endif
 
 //	__debugbreak();
@@ -336,6 +363,9 @@ void *TKMM_Malloc(int sz)
 
 	tk_printf("TKMM_Malloc: pass D %X %X %d\n",
 		obj, obj->data, sz);
+
+//	if(!TKMM_PageAlloc_f)
+//		__debugbreak();
 
 	return((byte *)obj->data);
 }

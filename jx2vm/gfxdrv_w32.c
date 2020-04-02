@@ -35,14 +35,14 @@ int window_fullscreen;
 
 // int window_def_width=640;
 // int window_def_height=480;
-//int window_def_width=1024;
-//int window_def_height=768;
+int window_def_width=1024;
+int window_def_height=768;
 
 //int window_def_width=1280;
 //int window_def_height=960;
 
-int window_def_width=960;
-int window_def_height=720;
+// int window_def_width=960;
+// int window_def_height=720;
 
 char *window_def_label="BTEIFGL";
 int window_def_fullscreen=0;

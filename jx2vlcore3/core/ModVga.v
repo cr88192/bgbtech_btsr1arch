@@ -72,6 +72,9 @@ reg[12:0]	tScanNextPixClk;	//Next Scan Pixel Clock
 reg[10:0]	tScanRowClk;		//Scan Row Clock
 reg[10:0]	tScanNextRowClk;	//Next Scan Row Clock
 
+reg[10:0]	tScanRowLim;		//Scan Row Clock
+reg[10:0]	tScanNextRowLim;	//Next Scan Row Clock
+
 reg[2:0]	tVSyncClk;
 reg[2:0]	tVSyncNextClk;
 
@@ -148,6 +151,9 @@ assign	pixLineOdd	= tPixLineOdd;
 
 reg			tHsync800;
 reg			tVsync600;
+
+reg			tHsync1024;
+reg			tVsync768;
 
 reg			tHsync;
 reg			tVsync;
@@ -341,6 +347,8 @@ begin
 		tPwmOutBB : tPwmOutAB;
 `endif
 
+	tScanNextRowLim		= tScanRowLim;
+
 	tPwmOut[12] = !tHsync;
 	tPwmOut[13] = !tVsync;
 	tPwmOut[14] = 0;
@@ -351,11 +359,28 @@ begin
 
 	tHsync800	= 0;
 	tVsync600	= 0;
+
+	tHsync1024	= 0;
+	tVsync768	= 0;
 	
-	if(ctrlRegVal[3])
+	if(ctrlRegVal[8])
+	begin
+		tHsync1024	= 1;
+//		tVsync768	= 1;
+		if(ctrlRegVal[3])
+			tScanNextRowLim = 817;
+		else
+			tScanNextRowLim = 547;
+	end
+	else if(ctrlRegVal[3])
 	begin
 		tHsync800	= 1;
 		tVsync600	= 1;
+		tScanNextRowLim = 625;
+	end
+	else
+	begin
+		tScanNextRowLim = 525;
 	end
 
 //	tHsync800	= 1;
@@ -392,6 +417,17 @@ begin
 	begin
 //		tPixNextPosX = tScanPixClk[12:3] - 59;
 //		tPixNextPosX = tScanPixClk[11:2] - 59;
+		if(tHsync1024)
+		begin
+//			tPixNextPosX =
+//				{1'b0,  tScanPixClk[11:1]} - 79;
+			tPixNextPosX =
+				{1'b0,  tScanPixClk[12:2]} +
+				{2'b00, tScanPixClk[12:3]} - 79;
+//			tPixNextPosY = {1'b0, tScanRowClk[10:0]} - 30;
+			tPixNextPosY = {1'b0, tScanRowClk[10:0]} - 62;
+		end
+		else
 		if(tHsync800)
 		begin
 			tPixNextPosX =
@@ -404,7 +440,8 @@ begin
 //			tPixNextPosY = tScanNextRowClk[11:0] - 20;
 //			tPixNextPosY = tScanNextRowClk[11:0] - 30;
 //			tPixNextPosY = {1'b0, tScanNextRowClk[10:0]} - 30;
-			tPixNextPosY = {1'b0, tScanRowClk[10:0]} - 30;
+//			tPixNextPosY = {1'b0, tScanRowClk[10:0]} - 30;
+			tPixNextPosY = {1'b0, tScanRowClk[10:0]} - 62;
 //			tPixNextPosY = tScanNextRowClk[11:0] - 2;
 //			tPixNextPosY = tScanNextRowClk[12:1] - 20;
 		end
@@ -420,7 +457,8 @@ begin
 //			tPixNextPosY = tScanNextRowClk[11:0] - 20;
 //			tPixNextPosY = tScanNextRowClk[11:0] - 30;
 //			tPixNextPosY = {1'b0, tScanNextRowClk[10:0]} - 30;
-			tPixNextPosY = {1'b0, tScanRowClk[10:0]} - 30;
+//			tPixNextPosY = {1'b0, tScanRowClk[10:0]} - 30;
+			tPixNextPosY = {1'b0, tScanRowClk[10:0]} - 62;
 //			tPixNextPosY = tScanNextRowClk[11:0] - 2;
 //			tPixNextPosY = tScanNextRowClk[11:0] - 3;
 //			tPixNextPosY = tScanNextRowClk[12:1] - 20;
@@ -524,8 +562,11 @@ begin
 //			if(tScanNextRowClk>=524)
 //			if(	((tScanNextRowClk>=524) && !tVsync600) ||
 //				((tScanNextRowClk>=624) && tVsync600))
-			if(	((tScanNextRowClk>=525) && !tVsync600) ||
-				((tScanNextRowClk>=625) && tVsync600))
+//			if(	((tScanNextRowClk>=525) && !tVsync600) ||
+//				((tScanNextRowClk>=625) && tVsync600))
+
+			if(tScanNextRowClk>=tScanRowLim)
+
 //			if(	((tScanNextRowClk>=526) && !tVsync600) ||
 //				((tScanNextRowClk>=626) && tVsync600))
 			begin
@@ -587,6 +628,7 @@ begin
 
 	tScanPixClk		<= tScanNextPixClk;
 	tScanRowClk		<= tScanNextRowClk;
+	tScanRowLim		<= tScanNextRowLim;
 
 	tVSyncClk		<= tVSyncNextClk;
 	tVEqPulseClk	<= tVEqPulseNextClk;

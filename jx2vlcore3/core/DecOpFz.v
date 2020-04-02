@@ -981,7 +981,38 @@ begin
 								opUCmdIx	= JX2_UCIX_IXT_NOTS;
 							end
 
+							4'hC: begin
+								opNmid		= JX2_UCMD_OP_IXT;
+								opFmid		= JX2_FMID_Z;
+								opUCmdIx	= JX2_UCIX_IXT_RTE;
+							end
+
+							4'hF: begin
+								opNmid		= JX2_UCMD_OP_IXT;
+								opFmid		= JX2_FMID_Z;
+								opUCmdIx	= JX2_UCIX_IXT_LDTLB;
+							end
+
 							default: begin
+							end
+						endcase
+					end
+
+					8'h02: begin
+						case(istrWord[23:20])
+							4'h0: begin
+								opNmid		= JX2_UCMD_NOP;
+								opFmid		= JX2_FMID_Z;
+							end
+							4'h1: begin
+								opNmid		= JX2_UCMD_JMP;
+								opFmid		= JX2_FMID_Z;
+								opRegM_Fix	= JX2_GR_LR;
+							end
+							4'hF: begin
+								opNmid		= JX2_UCMD_OP_IXT;
+								opFmid		= JX2_FMID_Z;
+								opUCmdIx	= JX2_UCIX_IXT_INVTLB;
 							end
 						endcase
 					end

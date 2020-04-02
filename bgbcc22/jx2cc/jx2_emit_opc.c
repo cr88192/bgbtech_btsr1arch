@@ -3103,11 +3103,22 @@ int BGBCC_JX2_TryEmitOpImmReg(BGBCC_JX2_Context *ctx,
 {
 	s32 imm1, imm1n;
 	int opw1, opw2, opw3, opw4, opw5, opw6, odr, ex, ex2;
+	int i, j, k;
 
 	if(	(nmid==BGBCC_SH_NMID_ADDSL) ||
 		(nmid==BGBCC_SH_NMID_ADDUL) )
 	{
 		return(BGBCC_JX2_TryEmitOpRegImmReg(ctx, nmid, reg, imm, reg));
+	}
+
+	if(	(nmid==BGBCC_SH_NMID_CMPEQ) ||
+		(nmid==BGBCC_SH_NMID_CMPGT) ||
+		(nmid==BGBCC_SH_NMID_CMPHI) ||
+		(nmid==BGBCC_SH_NMID_CMPGE) ||
+		(nmid==BGBCC_SH_NMID_CMPHS) ||
+		(nmid==BGBCC_SH_NMID_TST) )
+	{
+		imm=(s32)imm;
 	}
 
 	imm1n=-imm;
@@ -3604,6 +3615,16 @@ int BGBCC_JX2_TryEmitOpImmReg(BGBCC_JX2_Context *ctx,
 			}
 #endif
 
+#if 1
+			if(ctx->has_jumbo && !ctx->op_is_wex2)
+			{
+				i=BGBCC_JX2_ComposeJumboImmRegF2B(ctx,
+					&opw1, &opw2, &opw3, &opw4,
+					0xF200, 0xD000, imm, reg);
+				if(i>0)break;
+			}
+#endif
+
 			odr=1;
 			opw1=0xF000|(ex&(~0x0020));
 			opw2=0x1900|((reg&15)<<4);
@@ -3629,6 +3650,16 @@ int BGBCC_JX2_TryEmitOpImmReg(BGBCC_JX2_Context *ctx,
 					opw3=(u16)(imm1n>>16);
 					break;
 				}
+			}
+#endif
+
+#if 1
+			if(ctx->has_jumbo && !ctx->op_is_wex2)
+			{
+				i=BGBCC_JX2_ComposeJumboImmRegF2B(ctx,
+					&opw1, &opw2, &opw3, &opw4,
+					0xF200, 0xD000, imm1n, reg);
+				if(i>0)break;
 			}
 #endif
 
@@ -3783,6 +3814,16 @@ int BGBCC_JX2_TryEmitOpImmReg(BGBCC_JX2_Context *ctx,
 			}
 #endif
 
+#if 1
+			if(ctx->has_jumbo && !ctx->op_is_wex2)
+			{
+				i=BGBCC_JX2_ComposeJumboImmRegF2B(ctx,
+					&opw1, &opw2, &opw3, &opw4,
+					0xF20C, 0xC000, imm, reg);
+				if(i>0)break;
+			}
+#endif
+
 			opw1=0xF00C|(ex&0x0040); odr=1;
 			opw2=0x1900|((reg&15)<<4);
 			break;
@@ -3810,6 +3851,15 @@ int BGBCC_JX2_TryEmitOpImmReg(BGBCC_JX2_Context *ctx,
 			}
 #endif
 
+#if 1
+			if(ctx->has_jumbo && !ctx->op_is_wex2)
+			{
+				i=BGBCC_JX2_ComposeJumboImmRegF2B(ctx,
+					&opw1, &opw2, &opw3, &opw4,
+					0xF208, 0xC000, imm, reg);
+				if(i>0)break;
+			}
+#endif
 
 			opw1=0xF00D|(ex&0x0040); odr=1;
 			opw2=0x1900|((reg&15)<<4);
@@ -3842,6 +3892,16 @@ int BGBCC_JX2_TryEmitOpImmReg(BGBCC_JX2_Context *ctx,
 					opw3=(u16)(imm);
 					break;
 				}
+			}
+#endif
+
+#if 1
+			if(ctx->has_jumbo && !ctx->op_is_wex2)
+			{
+				i=BGBCC_JX2_ComposeJumboImmRegF2B(ctx,
+					&opw1, &opw2, &opw3, &opw4,
+					0xF20E, 0xC000, imm, reg);
+				if(i>0)break;
 			}
 #endif
 
@@ -3881,6 +3941,16 @@ int BGBCC_JX2_TryEmitOpImmReg(BGBCC_JX2_Context *ctx,
 			}
 #endif
 
+#if 1
+			if(ctx->has_jumbo && !ctx->op_is_wex2)
+			{
+				i=BGBCC_JX2_ComposeJumboImmRegF2B(ctx,
+					&opw1, &opw2, &opw3, &opw4,
+					0xF20C, 0xC800, imm, reg);
+				if(i>0)break;
+			}
+#endif
+
 			opw1=0xF08C|(ex&0x0040); odr=1;
 			opw2=0x1900|((reg&15)<<4);
 			break;
@@ -3905,6 +3975,16 @@ int BGBCC_JX2_TryEmitOpImmReg(BGBCC_JX2_Context *ctx,
 					opw3=(u16)(imm);
 					break;
 				}
+			}
+#endif
+
+#if 1
+			if(ctx->has_jumbo && !ctx->op_is_wex2)
+			{
+				i=BGBCC_JX2_ComposeJumboImmRegF2B(ctx,
+					&opw1, &opw2, &opw3, &opw4,
+					0xF208, 0xC800, imm, reg);
+				if(i>0)break;
 			}
 #endif
 
@@ -3939,6 +4019,16 @@ int BGBCC_JX2_TryEmitOpImmReg(BGBCC_JX2_Context *ctx,
 					opw3=(u16)(imm);
 					break;
 				}
+			}
+#endif
+
+#if 1
+			if(ctx->has_jumbo && !ctx->op_is_wex2)
+			{
+				i=BGBCC_JX2_ComposeJumboImmRegF2B(ctx,
+					&opw1, &opw2, &opw3, &opw4,
+					0xF20E, 0xC800, imm, reg);
+				if(i>0)break;
 			}
 #endif
 
@@ -4022,6 +4112,16 @@ int BGBCC_JX2_TryEmitOpImmReg(BGBCC_JX2_Context *ctx,
 				break;
 			}
 
+#if 1
+			if(ctx->has_jumbo && !ctx->op_is_wex2)
+			{
+				i=BGBCC_JX2_ComposeJumboImmRegF2B(ctx,
+					&opw1, &opw2, &opw3, &opw4,
+					0xF204, 0xC000, imm, reg);
+				if(i>0)break;
+			}
+#endif
+
 			opw1=0xF004|(ex&0x0040); odr=1;
 			opw2=0x1900|((reg&15)<<4);
 			break;
@@ -4044,6 +4144,16 @@ int BGBCC_JX2_TryEmitOpImmReg(BGBCC_JX2_Context *ctx,
 				opw2=0xC800|(imm&0x03FF)|(ex2&0x0C00);
 				break;
 			}
+
+#if 1
+			if(ctx->has_jumbo && !ctx->op_is_wex2)
+			{
+				i=BGBCC_JX2_ComposeJumboImmRegF2B(ctx,
+					&opw1, &opw2, &opw3, &opw4,
+					0xF204, 0xC800, imm, reg);
+				if(i>0)break;
+			}
+#endif
 
 			opw1=0xF084|(ex&0x0040); odr=1;
 			opw2=0x1900|((reg&15)<<4);

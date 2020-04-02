@@ -19,12 +19,13 @@ If the hardware cell is narrower than an 8 DWORD stride, then some of the DWORD 
 
 Control Register 0 Bits:
 * 0: Horizontal Resolution Adjust
-** 0=40/50 Column, 1=80/100 Column
-* 1: Half-Width Cell (0=256b, 1=128b)
+** 0=40/50/64 Column (XRes/16), 1=80/100/128 Column (XRes/8)
+* 1: / Half-Width Cell (0=256b, 1=128b)
+* 1: Cell Width 1
 * 2: Vertical Resolution Adjust
-** 0=25 Rows, 1=50 Rows
-* 3: Basic Display Resolution
-** 0=640x480, 1=800x600
+** 0=25 Rows (YRes/16), 1=50 Rows (YRes/8)
+* 3: Display Resolution 1
+** / 0=640x480, 1=800x600
 ** Implicitly selects between 80 and 100 columns.
 * (7:4): Screen Buffer Mode
 ** 0=Color Cell, CLR15=YVU654.
@@ -32,6 +33,22 @@ Control Register 0 Bits:
 ** 2=8x8x4bpp (256b)
 ** 8=ColorCell, CLR15=RGB555.
 ** 9=4x4x16bpp RGB565
+* 8: Display Resolution 2
+* 9: Display Resolution 3
+* 10: Cell Width 2
+* 11: Cell Width 3
+
+Basic Display Resolution
+* (DR3, DR2, DR1)
+** 000: 640x480
+** 001: 800x600
+** 010: 1024x768
+
+Cell Width
+* (CW3, CW2, CW1)
+** 000: 256-bit
+** 001: 128-bit
+** 010: 64-bit
 
 
 == Bitmapped Modes ==

@@ -2426,6 +2426,8 @@ int BGBCC_JX2_EmitBSwapDWordRegRegZx(BGBCC_JX2_Context *ctx,int sreg, int dreg);
 int BGBCC_JX2_EmitBSwapWordRegRegSx(BGBCC_JX2_Context *ctx,int sreg, int dreg);
 int BGBCC_JX2_EmitBSwapDWordRegRegSx(BGBCC_JX2_Context *ctx,int sreg, int dreg);
 int BGBCC_JX2_EmitBSwapQWordRegReg(BGBCC_JX2_Context *ctx,int sreg, int dreg);
+int BGBCC_JX2_ComposeJumboImmRegF2(BGBCC_JX2_Context *ctx,int *ropw1, int *ropw2, int *ropw3, int *ropw4, int topw1, int topw2, s64 imm, int reg);
+int BGBCC_JX2_ComposeJumboImmRegF2B(BGBCC_JX2_Context *ctx,int *ropw1, int *ropw2, int *ropw3, int *ropw4, int topw1, int topw2, s64 imm, int reg);
 //AHSRC:jx2cc/jx2_emit_bra.c
 int BGBCC_JX2_ModelIsLabel16P(BGBCC_JX2_Context *ctx);
 int BGBCC_JX2_ModelIsLabel24P(BGBCC_JX2_Context *ctx);

@@ -1450,10 +1450,14 @@ F2zz Instruction Block  (Imm9 Block, New):
 * F2nm_5gjj  AND		Rm, #imm9u, Rn		//
 * F2nm_6gjj  OR			Rm, #imm9u, Rn		//
 * F2nm_7gjj  XOR		Rm, #imm9u, Rn		//
-* F2nm_8ejj  SHAD{Q}	Rm, #imm8, Rn		//E.i=0
-** F2nm_8ejj ? PSHUF{B/W}	Rm, #imm8, Rn		//E.i=1
 
-* F2nm_9ejj  SHLD{Q}	Rm, #imm8, Rn		//E.i=0
+* F2nm_8pjj  SHADQ		Rm, #imm8, Rn		//E.i=0
+* F2nm_8Pjj  SHAD.Q		Rm, #imm8, Rn		//E.i=0
+* F2nm_8qjj  PSHUF.B	Rm, #imm8, Rn		//E.i=1
+* F2nm_8Qjj  PSHUF.W	Rm, #imm8, Rn		//E.i=1
+
+* F2nm_9pjj  SHLD		Rm, #imm8, Rn		//E.i=0
+* F2nm_9Pjj  SHLD.Q		Rm, #imm8, Rn		//E.i=0
 
 * F2nz_Aejj
 * F2nz_Bejj

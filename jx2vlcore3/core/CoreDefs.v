@@ -223,6 +223,9 @@ parameter[95:0] UV96_FF			= { UV32_FF, UV64_FF };	//
 parameter[127:0] UV128_00		= { UV64_00, UV64_00 };	//
 parameter[127:0] UV128_FF		= { UV64_FF, UV64_FF };	//
 
+parameter[191:0] UV192_00		= { UV64_00, UV128_00 };	//
+parameter[191:0] UV192_FF		= { UV64_FF, UV128_FF };	//
+
 parameter[255:0] UV256_00		= { UV128_00, UV128_00 };	//
 parameter[255:0] UV256_FF		= { UV128_FF, UV128_FF };	//
 

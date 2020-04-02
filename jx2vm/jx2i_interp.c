@@ -794,7 +794,7 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 	char tb1[64];
 	BJX2_Opcode *op1;
 	s64 li;
-	int msc, psc, brpc, nonl;
+	int msc, psc, brpc, nonl, nosc;
 
 //	printf("%05X  %04X %-8s ", op->pc, op->opn,
 //		BJX2_DbgPrintNameForNmid(ctx, op->nmid));
@@ -918,7 +918,8 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		msc=1;	break;
 	case BJX2_NMID_MOVW:
 	case BJX2_NMID_MOVUW:
-		msc=2;	break;
+		msc=2;
+		break;
 	case BJX2_NMID_MOVL:
 	case BJX2_NMID_MOVUL:
 	case BJX2_NMID_MOVDL:
@@ -1012,16 +1013,36 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 			BJX2_DbgPrintNameForReg(ctx, op->rn));
 		break;
 	case BJX2_FMID_LDREGDISPREG:
-		printf("(%s, %d), %s",
-			BJX2_DbgPrintNameForReg(ctx, op->rm),
-			(op->imm*msc),
-			BJX2_DbgPrintNameForReg(ctx, op->rn));
+		if(	(((sbyte)op->imm)!=op->imm) &&
+			(((byte)op->imm)!=op->imm)	)
+		{
+			printf("(%s, 0x%X), %s",
+				BJX2_DbgPrintNameForReg(ctx, op->rm),
+				(op->imm*msc),
+				BJX2_DbgPrintNameForReg(ctx, op->rn));
+		}else
+		{
+			printf("(%s, %d), %s",
+				BJX2_DbgPrintNameForReg(ctx, op->rm),
+				(op->imm*msc),
+				BJX2_DbgPrintNameForReg(ctx, op->rn));
+		}
 		break;
 	case BJX2_FMID_REGSTREGDISP:
-		printf("%s, (%s, %d)",
-			BJX2_DbgPrintNameForReg(ctx, op->rm),
-			BJX2_DbgPrintNameForReg(ctx, op->rn),
-			(op->imm*msc));
+		if(	(((sbyte)op->imm)!=op->imm) &&
+			(((byte)op->imm)!=op->imm)	)
+		{
+			printf("%s, (%s, 0x%X)",
+				BJX2_DbgPrintNameForReg(ctx, op->rm),
+				BJX2_DbgPrintNameForReg(ctx, op->rn),
+				(op->imm*msc));
+		}else
+		{
+			printf("%s, (%s, %d)",
+				BJX2_DbgPrintNameForReg(ctx, op->rm),
+				BJX2_DbgPrintNameForReg(ctx, op->rn),
+				(op->imm*msc));
+		}
 		break;
 
 	case BJX2_FMID_REGDRREG:

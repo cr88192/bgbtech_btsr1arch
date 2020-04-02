@@ -1714,6 +1714,10 @@ int tkfat_matchlfn(u16 *lfn1, u16 *lfn2)
 	{
 		i1=*s1++;
 		i2=*s2++;
+		if(i1==0xFFFF)
+			break;
+		if(i2==0xFFFF)
+			break;
 		if((i1>='a') && (i1<='z'))
 			i1='A'+(i1-'a');
 		if((i2>='a') && (i2<='z'))

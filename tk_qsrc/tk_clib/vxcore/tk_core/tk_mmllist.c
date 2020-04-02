@@ -1,3 +1,6 @@
+void *(*TKMM_PageAlloc_f)(int sz);
+int (*TKMM_PageFree_f)(void *ptr, int sz);
+
 TKMM_MemLnkObj *tkmm_mmlist_freelist[256];
 
 byte *tkmm_mmlist_vrm_brkbuf[1024];
@@ -27,6 +30,11 @@ void *TKMM_MMList_AllocBrk(int sz)
 		memset(ptr, 0, sz);
 
 		i=tkmm_mmlist_n_vrm++;
+		if(i>=1024)
+		{
+			__debugbreak();
+		}
+
 		tkmm_mmlist_vrm_brkbuf[i]=ptr;
 		tkmm_mmlist_vrm_brkend[i]=ptr+sz;
 
@@ -60,6 +68,11 @@ void *TKMM_MMList_AllocBrk(int sz)
 		tkmm_mmlist_brkpos=tkmm_mmlist_brkbuf;
 
 		i=tkmm_mmlist_n_vrm++;
+		if(i>=1024)
+		{
+			__debugbreak();
+		}
+
 		tkmm_mmlist_vrm_brkbuf[i]=tkmm_mmlist_brkbuf;
 		tkmm_mmlist_vrm_brkend[i]=tkmm_mmlist_brkend;
 	}
@@ -127,6 +140,9 @@ void *TKMM_MMList_Malloc(int sz)
 	byte *p1, *p2;
 	int ix, ix1;
 	int sz1, sz2;
+
+	if(!TKMM_PageAlloc_f)
+		__debugbreak();
 
 	if(sz<=0)return(NULL);
 //	if(sz<256)sz=256;
@@ -256,7 +272,7 @@ int TKMM_MMList_FreeLnkObj(TKMM_MemLnkObj *obj)
 
 	if((obj->ix)&(~255))
 	{
-//		__debugbreak();
+		__debugbreak();
 		tk_puts("TKMM_MMList_FreeLnkObj: List Index Fail\n");
 		return(-1);
 	}
@@ -347,6 +363,9 @@ int TKMM_MMList_GetSize(void *ptr)
 
 void *tk_malloc(int sz)
 {
+//	if(!TKMM_PageAlloc_f)
+//		__debugbreak();
+
 //	return(TKMM_MMList_Malloc(sz));
 	return(TKMM_Malloc(sz));
 }

@@ -1325,7 +1325,8 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 	img_base=0x01100000;
 	
 	if(imgfmt==BGBCC_IMGFMT_EXE)
-		img_base=0x02000000;
+//		img_base=0x02000000;
+		img_base=0x01100000;
 	if(imgfmt==BGBCC_IMGFMT_SYS)
 		img_base=0x01100000;
 	if(imgfmt==BGBCC_IMGFMT_DLL)

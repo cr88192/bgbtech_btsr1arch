@@ -851,6 +851,15 @@
 #define BGBCC_SH_RLC_RELW32A_BSR	0x2A	//Relative 24 bit (BYTE, BSR1)
 											//Oxxx_OOxx_OOxx_OOOx
 
+#define BGBCC_SH_RLC_PBOJ27_BJX		0x2C	//PBO Jumbo 27 bit (BYTE, BJX2)
+											//F4xx_Cxxx_F0nm_OexO
+#define BGBCC_SH_RLC_PBOJ31_BJX		0x2D	//PBO Jumbo 31 bit (BYTE, BJX2)
+											//F4xx_Cxxx_F1nm_Oexx
+#define BGBCC_SH_RLC_RELJ27_BJX		0x2E	//Relative Jumbo 27 bit (BYTE, BJX2)
+											//F4xx_Cxxx_F0nm_OexO
+#define BGBCC_SH_RLC_RELJ31_BJX		0x2F	//Relative Jumbo 31 bit (BYTE, BJX2)
+											//F4xx_Cxxx_F1nm_Oexx
+
 
 // #define BGBCC_SH_RLC_ABSW48A_BSR	0x20	//Absolute BYTE
 // #define BGBCC_SH_RLC_ABSW64A_BSR	0x21	//Absolute BYTE

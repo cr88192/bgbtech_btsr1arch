@@ -9,6 +9,7 @@
 
 .section .data
 
+.balign 8
 __tk_saved_vbr: .quad 0 
 
 .section .text

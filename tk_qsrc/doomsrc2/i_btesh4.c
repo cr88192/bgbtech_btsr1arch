@@ -152,8 +152,11 @@ int  I_GetHeapSize (void)
 
 byte* I_ZoneBase (int*	size)
 {
+	byte *ptr;
     *size = mb_used*1024*1024;
-    return (byte *) malloc (*size);
+    ptr = (byte *) malloc (*size);
+    TKMM_Malloc(1);
+    return ptr;
 }
 
 unsigned int TK_GetTimeMs(void);

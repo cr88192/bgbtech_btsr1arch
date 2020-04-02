@@ -202,7 +202,6 @@ The contents of SR.S, and SR.PQRO are undefined following this operation.
 
 * 1Fnm       CMPGE	Rm, Rn
 * 2Fnj       CMPGE	#imm4u, Rn
-* 36nE     / CMPGE	DLR, Rn
 * 6Fnj       CMPGE	#imm4u, Rk
 * F0nm_1gEC  CMPGE	Rm, Rn				//Signed Rn GE Rm
 * F2nA_Cgjj  CMPGE	#imm9u, Rn
@@ -261,42 +260,6 @@ Compare if destination is greater than or equal to the source using an unsigned 
 
 This updates SR.T based on the result of the comparison.
 The contents of SR.S, and SR.PQRO are undefined following this operation.
-
-
-=== CMPPL (Drop) ===
-
-* 31nC      / CMPPL	Rn
-* F01C_3en0 / CMPPL	Rn		//Fix32
-
-SR.T=(Rn GT 0)
-
-Compare if the value is greater than zero (Signed).
-
-This operation is specific to the use of signed values.
-For the unsigned case, this decates to comparing that the value is not equal to zero.
-
-This updates SR.T based on the result of the comparison.
-The contents of SR.S, and SR.PQRO are undefined following this operation.
-
-Drop: Same effect can be achieved with "CMPGT #0, Rm".
-
-
-=== CMPPZ (Drop) ===
-
-* 31nD      / CMPPZ	Rn
-* F01D_3en0 / CMPPZ	Rn		//Fix32
-
-SR.T=(Rn GE 0)
-
-Compare if the value is greater than equal to zero.
-
-This operation is specific to the use of signed values.
-For the unsigned case, the result would always be true.
-
-This updates SR.T based on the result of the comparison.
-The contents of SR.S, and SR.PQRO are undefined following this operation.
-
-Drop: Same effect can be achieved with "CMPGE #0, Rm".
 
 
 === CMPQEQ ===
@@ -420,7 +383,7 @@ Sign extend the value in the low 8 bits of the register to the width of the regi
 === EXTS.L ===
 
 * 36n5       EXTS.L	Rn
-* F0nm_1e5C  EXTS.L	Rm, Rn				//Q=0, I=0
+* F0nm_1g5C  EXTS.L	Rm, Rn				//Q=0, I=0
 
 Sign extend the value in the low 32 bits of the register to the width of the register.
 
@@ -444,7 +407,7 @@ Zero extend the value in the low 8 bits of the register to the width of the regi
 === EXTU.L ===
 
 * 36n4       EXTU.L	Rn
-* F0nm_1e5C  EXTU.L	Rm, Rn				//Q=1, I=0
+* F0nm_1G5C  EXTU.L	Rm, Rn				//Q=1, I=0
 
 Zero extend the value in the low 32 bits of the register to the width of the register.
 
@@ -462,6 +425,7 @@ Zero extend the value in the low 16 bits of the register to the width of the reg
 * 30F2       INVTLB				//Flush the TLB
 * 31nC       INVIC	Rn			//Flush L1 I-Cache for Address
 * 31nD       INVDC	Rn			//Flush L1 D-Cache for Address
+* F002_30F0  INVTLB
 * F01C_3en0  INVIC	Rn
 * F01D_3en0  INVDC	Rn
 
@@ -796,11 +760,19 @@ The word is zero extended to the size of the register.
 
 * 29nd            MOV.X		(SP, disp4u), Rx
 * 2Bnd            MOV.X		Rx, (SP, disp4u)
-* F0nm_4eo0       MOV.X		Rn, (Rm, Ro)
-* F0nm_4eo4       MOV.X		(Rm, Ro), Rn
+* F0nm_4eo0       MOV.X		Rn, (Rm, Disp5)
+* F0nm_4eo4       MOV.X		Rn, (Rm, Ro)
+* F0nm_4eo8       MOV.X		(Rm, Disp5), Rn
+* F0nm_4eoC       MOV.X		(Rm, Ro), Rn
 
 Load or Store a 128-bit Register Pair.
 Register pair is Even/Odd, and the target memory address is required to have an 8 byte alignment.
+
+Note that MOV.X will scale the index by 8, rather than by 16. In this sense, it can be thought of more as a pair of QWORD values than as a combined 128-bit value.
+
+As with other MOV.x ops, encodings using PC or GBR as a base will use a byte scale, however, the destination is still required to be aligned.
+
+The results of trying to load or store using a misaligned address are undefined.
 
 
 === MULS (3R) ===
@@ -1386,6 +1358,7 @@ Packed byte operations will not be directly supported by GSV.
 
 Partial Register Move. These MOV part of the bits from Rm into Rn, while leaving the other bits in Rn as their original value.
 
+
 === MOVxD 3R (GSV) ===
 
 * F0nm_2go8  MOVHD		Rm, Ro, Rn		//(GSV) MOV, High DWords
@@ -1405,8 +1378,8 @@ MOVLHD will select the low bits from Rm, and the high bits from Ro.
 
 === PADD.x (GSV) ===
 
-* F0nm_1g0A  PADD.W		Rm, Rn		//(GSV) Packed ADD Word
-* F0nm_1G0A  PADD.L		Rm, Rn		//(GSV) Packed ADD DWord
+* F0nm_1g0A / PADD.W	Rm, Rn		//(GSV) Packed ADD Word
+* F0nm_1G0A / PADD.L	Rm, Rn		//(GSV) Packed ADD DWord
 * F0nm_1g5A  PADD.H		Rm, Rn		//(GSVF) Packed ADD Half
 * F0nm_1G5A  PADD.F		Rm, Rn		//(GSVF) Packed ADD Float
 
@@ -1461,16 +1434,16 @@ Select elements between Rm or Ro based on the value of SR.S and SR.T, storing th
 If SR.T is set, the low 32 bits from Rm is used, otherwise the low 32 bits from Ro are used. If SR.S is set, the high 32 bits from Rm is used, otherwise the high 32 bits from Ro are used.
 
 
-=== PLDxxx.x (GSV) ===
+=== PLDxxx.x (GSV) (Drop?) ===
 
-* F0nm_1g0B  PLDSBL.W		Rm, Rn				//Packed Load SB->W (Low)
-* F0nm_1G0B  PLDUBL.W		Rm, Rn				//Packed Load UB->W (Low)
-* F0nm_1g1B  PLDSWL.L		Rm, Rn				//Packed Load SW->L (Low)
-* F0nm_1G1B  PLDUWL.L		Rm, Rn				//Packed Load UW->L (Low)
-* F0nm_1g2B  PLDBX.W		Rm, Rn				//Packed Load B->W (Dup)
-* F0nm_1G2B  PLDBH.W		Rm, Rn				//Packed Load B->W (High)
-* F0nm_1g3B  PLDWX.L		Rm, Rn				//Packed Load W->L (Dup)
-* F0nm_1G3B  PLDWH.L		Rm, Rn				//Packed Load W->L (High)
+* F0nm_1g0B /? PLDSBL.W		Rm, Rn				//Packed Load SB->W (Low)
+* F0nm_1G0B /? PLDUBL.W		Rm, Rn				//Packed Load UB->W (Low)
+* F0nm_1g1B /? PLDSWL.L		Rm, Rn				//Packed Load SW->L (Low)
+* F0nm_1G1B /? PLDUWL.L		Rm, Rn				//Packed Load UW->L (Low)
+* F0nm_1g2B /? PLDBX.W		Rm, Rn				//Packed Load B->W (Dup)
+* F0nm_1G2B /? PLDBH.W		Rm, Rn				//Packed Load B->W (High)
+* F0nm_1g3B /? PLDWX.L		Rm, Rn				//Packed Load W->L (Dup)
+* F0nm_1G3B /? PLDWH.L		Rm, Rn				//Packed Load W->L (High)
 
 Packed Widening Conversion.
 Low operations will copy the source element into the low bits of the destination element, with Sign or Zero extension to fill the high bits.
@@ -1488,15 +1461,6 @@ Dup operations will duplicate the source element in both the low and high bits.
 Multiply the packed Half-Float values in Rm and Rn, storing the result in Rn.
 
 
-=== / PMULU.W (GSV) ===
-
-* / F0nm_1gFA  PMULU.W	Rm, Rn		//(GSV) (DHR,DLR)=Rm*Rn (Vector)
-
-Packed Multiply of Unsigned Words.
-The DLR register is updated with the low words of each packed multiply.
-The DHR register is updated with the high words of each packed multiply.
-
-
 === PMULx.W 3R (GSV) ===
 
 * F0nm_5go1  PMULS.W	Rm, Ro, Rn			//(GSV) Packed Multiply (2x16->2x32)
@@ -1511,16 +1475,16 @@ The basic 3R PMULx.W will accept vectors with two 16 bit inputs, and produce a v
 The LW and HW variants will consume 4-wide input vectors and produce a 4-wide output. The LW variant will keep the low order bits from the result, whereas the HW variant will keep the high-order bits.
 
 
-=== PSTxxx.x (GSV) ===
+=== PSTxxx.x (GSV) (Drop) ===
 
-* F0nm_1g4B  PSTSBL.W		Rm, Rn				//Packed Store W->SB (Low-Sat)
-* F0nm_1G4B  PSTUBL.W		Rm, Rn				//Packed Store W->UB (Low-Sat)
-* F0nm_1g5B  PSTSWL.L		Rm, Rn				//Packed Store L->SW (Low-Sat)
-* F0nm_1G5B  PSTUWL.L		Rm, Rn				//Packed Store L->UW (Low-Sat)
-* F0nm_1g6B  PSTBL.W		Rm, Rn				//Packed Store W->B (Low)
-* F0nm_1G6B  PSTBH.W		Rm, Rn				//Packed Store W->B (High)
-* F0nm_1g7B  PSTWL.L		Rm, Rn				//Packed Store L->W (Low)
-* F0nm_1G7B  PSTWH.L		Rm, Rn				//Packed Store L->W (High)
+* F0nm_1g4B /? PSTSBL.W		Rm, Rn				//Packed Store W->SB (Low-Sat)
+* F0nm_1G4B /? PSTUBL.W		Rm, Rn				//Packed Store W->UB (Low-Sat)
+* F0nm_1g5B /? PSTSWL.L		Rm, Rn				//Packed Store L->SW (Low-Sat)
+* F0nm_1G5B /? PSTUWL.L		Rm, Rn				//Packed Store L->UW (Low-Sat)
+* F0nm_1g6B /? PSTBL.W		Rm, Rn				//Packed Store W->B (Low)
+* F0nm_1G6B /? PSTBH.W		Rm, Rn				//Packed Store W->B (High)
+* F0nm_1g7B /? PSTWL.L		Rm, Rn				//Packed Store L->W (Low)
+* F0nm_1G7B /? PSTWH.L		Rm, Rn				//Packed Store L->W (High)
 
 Packed narrowing conversion.
 
@@ -1534,8 +1498,8 @@ High operations will use the high order bits of the source element as the destin
 
 === PSUB.x (GSV) ===
 
-* F0nm_1g1A  PSUB.W		Rm, Rn		//(GSV) Packed SUB Word
-* F0nm_1G1A  PSUB.L		Rm, Rn		//(GSV) Packed SUB DWord
+* F0nm_1g1A / PSUB.W		Rm, Rn		//(GSV) Packed SUB Word
+* F0nm_1G1A / PSUB.L		Rm, Rn		//(GSV) Packed SUB DWord
 * F0nm_1g6A  PSUB.H		Rm, Rn		//(GSVF) Packed SUB Half
 * F0nm_1G6A  PSUB.F		Rm, Rn		//(GSVF) Packed SUB Float
 
@@ -1568,6 +1532,27 @@ The PSUBX variant will operate on 128-bit vectors (GPR pair).
 Select each Word element from Rm or Rn depending on the corresponding P/Q/R/O bits in SR, or each DWord element depending on the corresponding T or S bit.
 
 PSELT will select the Word from Rm if the corresponding bit is Set, selecting the Rn otherwise. PSELF will instead select from Rn if the bit is set, selecting from Rm otherwise.
+
+
+=== PSHUF.x ===
+
+* F2nm_8qjj  PSHUF.B	Rm, #imm8, Rn
+* F2nm_8Qjj  PSHUF.W	Rm, #imm8, Rn
+
+Packed Shuffle of Byte or Word elements.
+
+The elements from Rm will be reordered using the mask given in the immediate, and the results will be stored in Rn.
+In the case of a Byte shuffle, the high 32 bits will be copied unchanged.
+
+Each element will be given as a 2-bit value, with 00 mapping to the low-order bits, and 11 to the high order bits. The elements within the mask will have the same relative order (in terms of bit-positions) as the elements in the register, and will serve to select an element at each position from the source register.
+
+
+=== PSHUFX.L ===
+
+*  PSHUFX.L	Rm, #imm8, Rn
+
+This instruction is synthetic.
+Packed Shuffle of DWord element, operating on a logical 128-bit register.
 
 
 === SWxP.x (GSV) ===
@@ -1762,6 +1747,7 @@ Use with the F0 block will depend on the instruction:
 * Branch ops will extend the size of the displacement to 42 bits.
 ** However, branches beyond 32-bits are currently undefined.
 * Imm5u/Disp5u ops will be expanded to 27-bits sign-extended.
+
 
 === JLDI (Jumbo Load) ===
 
