@@ -14,6 +14,8 @@
 // `define jx2_enable_swapn		//Enable SWxP.x ops
 // `define jx2_enable_shlln		//Enable SHLLn / SHLRn Ops
 
+`define jx2_enable_pmort		//Enable Morton Shuffle
+
 `define jx2_shlln_shadq			//Route SHLLn through SHAD.Q
 
 // `define jx2_addxl_agu			//Do ADDx.L via AGU
@@ -45,14 +47,16 @@
 
 
 
-`define jx2_mem_fulldpx			//Full Duplex Mode
+// `define jx2_mem_fulldpx		//Full Duplex Mode
 
-// `define jx2_ddr_bl64b			//DDR interface is 64-bit (DDR2)
+// `define jx2_ddr_bl64b		//DDR interface is 64-bit (DDR2)
 
-// `define jx2_expand_l1sz			//Make L1 bigger
+`define jx2_expand_l1dsz		//Make L1 D$ bigger
+`define jx2_expand_l1isz		//Make L1 I$ bigger
+`define jx2_expand_l2sz			//Make L2 Bigger
 
 // `define jx2_reduce_l1sz		//Make L1 smaller
-// `define jx2_reduce_l2sz
+// `define jx2_reduce_l2sz		//Make L2 smaller
 
 // `define jx2_merge_shadq		//Merge SHAD and SHAD.Q
 
@@ -65,4 +69,4 @@
 
 // `define jx2_debug_alu		//Debug ALU
 
-// `define jx2_debug_hitmiss		//Debug Branch Predictor
+// `define jx2_debug_hitmiss	//Debug Branch Predictor

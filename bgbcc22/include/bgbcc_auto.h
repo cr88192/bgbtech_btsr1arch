@@ -812,6 +812,7 @@ int BGBCC_CCXL_CheckNameNamesList(char *name, char *nameslst);
 int BGBCC_CCXL_CheckFlagstrFlag(char *sig, char *flag);
 BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_TryManifestLoadGlobal(BGBCC_TransState *ctx, char *name);
 void BGBCC_CCXL_HandleUsortGlobals(BGBCC_TransState *ctx);
+void BGBCC_CCXL_CheckSanityGlobals(BGBCC_TransState *ctx);
 BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_LookupGlobalRns(BGBCC_TransState *ctx, char *name);
 BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_LookupGlobal(BGBCC_TransState *ctx, char *name);
 BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_LookupGlobalFull(BGBCC_TransState *ctx, char *name);
@@ -2709,6 +2710,7 @@ int BGBCC_JX2C_EndSetupFrameVRegSpan(BGBCC_TransState *ctx, BGBCC_JX2_Context *s
 int BGBCC_JX2C_SetupFrameVRegSpan(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg, int dstfl);
 int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj);
 int BGBCC_JX2C_CalcFrameEpiKey(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, int rqt, int *repik, int *repix);
+int BGBCC_JX2C_EmitFrameProlog_PushRegs(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx);
 int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, int fcnlbl);
 int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj);
 //AHSRC:jx2cc/jx2_ldix.c

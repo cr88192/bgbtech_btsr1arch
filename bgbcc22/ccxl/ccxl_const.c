@@ -8,7 +8,7 @@ int BGBCC_CCXL_CheckExpandLvt4(BGBCC_TransState *ctx)
 	if(!ctx->ctab_lvt4)
 	{
 		i=1024;
-		ctx->ctab_lvt4=bgbcc_malloc(i*sizeof(u32));
+		ctx->ctab_lvt4=bgbcc_malloc((i+5)*sizeof(u32));
 		ctx->ctab_lvt4[0]=0;
 		ctx->n_ctab_lvt4=1;
 		ctx->m_ctab_lvt4=i;
@@ -18,7 +18,7 @@ int BGBCC_CCXL_CheckExpandLvt4(BGBCC_TransState *ctx)
 	{
 		i=ctx->m_ctab_lvt4;
 		i=i+(i>>1);
-		ctx->ctab_lvt4=bgbcc_realloc(ctx->ctab_lvt4, i*sizeof(u32));
+		ctx->ctab_lvt4=bgbcc_realloc(ctx->ctab_lvt4, (i+5)*sizeof(u32));
 		ctx->m_ctab_lvt4=i;
 	}
 	
@@ -32,7 +32,8 @@ int BGBCC_CCXL_CheckExpandLvt8(BGBCC_TransState *ctx)
 	if(!ctx->ctab_lvt8)
 	{
 		i=1024;
-		ctx->ctab_lvt8=bgbcc_malloc(i*sizeof(u64));
+		ctx->ctab_lvt8=bgbcc_malloc((i+5)*sizeof(u64));
+//		ctx->ctab_lvt8=malloc((i+5)*sizeof(u64));
 		ctx->ctab_lvt8[0]=0;
 		ctx->n_ctab_lvt8=1;
 		ctx->m_ctab_lvt8=i;
@@ -42,7 +43,8 @@ int BGBCC_CCXL_CheckExpandLvt8(BGBCC_TransState *ctx)
 	{
 		i=ctx->m_ctab_lvt8;
 		i=i+(i>>1);
-		ctx->ctab_lvt8=bgbcc_realloc(ctx->ctab_lvt8, i*sizeof(u64));
+		ctx->ctab_lvt8=bgbcc_realloc(ctx->ctab_lvt8, (i+5)*sizeof(u64));
+//		ctx->ctab_lvt8=realloc(ctx->ctab_lvt8, (i+5)*sizeof(u64));
 		ctx->m_ctab_lvt8=i;
 	}
 
@@ -62,6 +64,8 @@ int BGBCC_CCXL_IndexLitU32(BGBCC_TransState *ctx, u32 val)
 	BGBCC_CCXL_CheckExpandLvt4(ctx);
 	
 	i=ctx->n_ctab_lvt4++;
+	if(i>=ctx->m_ctab_lvt8)
+		{ BGBCC_DBGBREAK }
 	ctx->ctab_lvt4[i]=val;
 	return(i);
 }

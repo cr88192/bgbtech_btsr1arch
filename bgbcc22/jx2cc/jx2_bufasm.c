@@ -756,6 +756,10 @@ int nmid;
 {"cselt",	BGBCC_SH_NMID_CSELT},
 {"clz",		BGBCC_SH_NMID_CLZ},
 {"clzq",	BGBCC_SH_NMID_CLZQ},
+{"ctz",		BGBCC_SH_NMID_CTZ},
+{"ctzq",	BGBCC_SH_NMID_CTZQ},
+{"btrns",	BGBCC_SH_NMID_BTRNS},
+{"btrnsq",	BGBCC_SH_NMID_BTRNSQ},
 
 {"mac.w",	BGBCC_SH_NMID_MACW},
 {"not",		BGBCC_SH_NMID_NOT},
@@ -1316,6 +1320,13 @@ int BGBCC_JX2A_ParseCheckFeature(BGBCC_JX2_Context *ctx, char *sym)
 		return(ctx->use_wexmd==1);
 	if(!bgbcc_stricmp(sym, "bjx2_wex3"))
 		return(ctx->use_wexmd==2);
+	if(!bgbcc_stricmp(sym, "bjx2_jumbo"))
+		return(ctx->has_jumbo);
+
+	if(!bgbcc_stricmp(sym, "bjx2_movx"))
+		return(ctx->has_pushx2);
+	if(!bgbcc_stricmp(sym, "has_simdx2"))
+		return(ctx->has_simdx2);
 
 	tctx=ctx->tctx;
 

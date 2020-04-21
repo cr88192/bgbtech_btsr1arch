@@ -88,26 +88,20 @@ assign	memAddrB	= tMemAddrB;
 assign	memOpm		= tMemOpm;
 assign	memDataOut	= tMemDataOut;
 
-`ifdef jx2_expand_l1sz
-(* ram_style = "distributed" *)
-	reg[127:0]		dcCaMemA[255:0];	//Local L1 tile memory (Even)
-(* ram_style = "distributed" *)
-	reg[127:0]		dcCaMemB[255:0];	//Local L1 tile memory (Odd)
+`ifdef jx2_expand_l1dsz
+	reg[127:0]		dcCaMemA[511:0];	//Local L1 tile memory (Even)
+	reg[127:0]		dcCaMemB[511:0];	//Local L1 tile memory (Odd)
 `ifdef jx2_enable_vaddr48
-(* ram_style = "distributed" *)
-	reg[ 47:0]		dcCaAddrA[255:0];	//Local L1 tile address
-(* ram_style = "distributed" *)
-	reg[ 47:0]		dcCaAddrB[255:0];	//Local L1 tile address
+	reg[ 47:0]		dcCaAddrA[511:0];	//Local L1 tile address
+	reg[ 47:0]		dcCaAddrB[511:0];	//Local L1 tile address
 `else
-(* ram_style = "distributed" *)
-	reg[ 31:0]		dcCaAddrA[255:0];	//Local L1 tile address
-(* ram_style = "distributed" *)
-	reg[ 31:0]		dcCaAddrB[255:0];	//Local L1 tile address
+	reg[ 31:0]		dcCaAddrA[511:0];	//Local L1 tile address
+	reg[ 31:0]		dcCaAddrB[511:0];	//Local L1 tile address
 `endif
-reg[255:0]			dcFlushMskA;
-reg[255:0]			dcFlushMskB;
-reg[255:0]			dcNxtFlushMskA;
-reg[255:0]			dcNxtFlushMskB;
+reg[511:0]			dcFlushMskA;
+reg[511:0]			dcFlushMskB;
+reg[511:0]			dcNxtFlushMskA;
+reg[511:0]			dcNxtFlushMskB;
 `else
 `ifdef jx2_reduce_l1sz
 (* ram_style = "distributed" *)
@@ -158,21 +152,21 @@ reg[43:0]		tNxtAddrA;
 reg[43:0]		tNxtAddrB;
 reg				tNxtIsMmio;
 
-`ifdef jx2_expand_l1sz
-reg[ 7:0]		tNxtIxA;
-reg[ 7:0]		tNxtIxB;
-reg[ 7:0]		tReqIxA;
-reg[ 7:0]		tReqIxB;
-reg[ 7:0]		tLstIxA;
-reg[ 7:0]		tLstIxB;
-reg[ 7:0]		tNx2IxA;
-reg[ 7:0]		tNx2IxB;
-reg[ 7:0]		tStBlkIxA;
-reg[ 7:0]		tStBlkIxB;
-reg[ 7:0]		tMiBlkIxA;
-reg[ 7:0]		tMiBlkIxB;
-reg[ 7:0]		tLstStBlkIxA;
-reg[ 7:0]		tLstStBlkIxB;
+`ifdef jx2_expand_l1dsz
+reg[ 8:0]		tNxtIxA;
+reg[ 8:0]		tNxtIxB;
+reg[ 8:0]		tReqIxA;
+reg[ 8:0]		tReqIxB;
+reg[ 8:0]		tLstIxA;
+reg[ 8:0]		tLstIxB;
+reg[ 8:0]		tNx2IxA;
+reg[ 8:0]		tNx2IxB;
+reg[ 8:0]		tStBlkIxA;
+reg[ 8:0]		tStBlkIxB;
+reg[ 8:0]		tMiBlkIxA;
+reg[ 8:0]		tMiBlkIxB;
+reg[ 8:0]		tLstStBlkIxA;
+reg[ 8:0]		tLstStBlkIxB;
 `else
 `ifdef jx2_reduce_l1sz
 reg[ 3:0]		tNxtIxA;
@@ -417,9 +411,9 @@ begin
 		tNxtAddrB=tNxtAddrA+1;
 	end
 
-`ifdef jx2_expand_l1sz
-	tNxtIxA=tNxtAddrA[8:1];
-	tNxtIxB=tNxtAddrB[8:1];
+`ifdef jx2_expand_l1dsz
+	tNxtIxA=tNxtAddrA[9:1];
+	tNxtIxB=tNxtAddrB[9:1];
 `else
 `ifdef jx2_reduce_l1sz
 	tNxtIxA=tNxtAddrA[4:1];
@@ -437,8 +431,8 @@ begin
 	begin
 		if((tRegInAddr[31:28]==4'hF) || reset)
 		begin
-			dcNxtFlushMskA = JX2_L1_FLUSHMSK;
-			dcNxtFlushMskB = JX2_L1_FLUSHMSK;
+			dcNxtFlushMskA = JX2_L1D_FLUSHMSK;
+			dcNxtFlushMskB = JX2_L1D_FLUSHMSK;
 		end
 		else
 		begin
@@ -485,11 +479,11 @@ begin
 //	tRegOutValB		= UV64_00;
 	tRegOutValB		= UV64_XX;
 
-`ifdef jx2_expand_l1sz
-//	tStBlkIxA	= UV8_XX;
-//	tStBlkIxB	= UV8_XX;
-	tStBlkIxA	= UV8_00;
-	tStBlkIxB	= UV8_00;
+`ifdef jx2_expand_l1dsz
+//	tStBlkIxA	= UV9_XX;
+//	tStBlkIxB	= UV9_XX;
+	tStBlkIxA	= UV9_00;
+	tStBlkIxB	= UV9_00;
 `else
 `ifdef jx2_reduce_l1sz
 //	tStBlkIxA	= UV4_XX;

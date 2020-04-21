@@ -99,10 +99,11 @@ reg			tRegOutSrS;
 // `ifndef def_true
 `ifdef jx2_enable_clz
 wire[7:0]		tClzVal;
+wire[63:0]		tClzRsVal2;
 ExOpClz	clz(
 	clock,		reset,
 	idUCmd,		idUIxt,
-	regValRs,	tClzVal);
+	regValRs,	tClzVal,	tClzRsVal2);
 `endif
 
 
@@ -617,11 +618,44 @@ begin
 	tResultu1B=0;
 	tResultu2A=0;
 
-	case(idUIxt[3:0])
+	casez(idUIxt[3:0])
 `ifdef jx2_enable_clz
-		4'h0: begin
+//		4'b00zz: begin
+		4'b000z: begin
 			tResultu1A = { UV25_00, tClzVal };
 			tResultu2A = { UV57_00, tClzVal };
+		end
+//		4'b01zz: begin
+//		4'b001z: begin
+		4'b0010: begin
+			tResultu1A = { 1'b0, tClzRsVal2[63:32] };
+			tResultu2A = { 1'b0, tClzRsVal2[63: 0] };
+		end
+`endif
+
+`ifdef jx2_enable_pmort
+		4'b0011: begin
+			tResultu1B = { 1'b0,
+				regValRs[47], regValRs[15], regValRs[46], regValRs[14],
+				regValRs[45], regValRs[13], regValRs[44], regValRs[12],
+				regValRs[43], regValRs[11], regValRs[42], regValRs[10],
+				regValRs[41], regValRs[ 9], regValRs[40], regValRs[ 8],
+				regValRs[39], regValRs[ 7], regValRs[38], regValRs[ 6],
+				regValRs[47], regValRs[ 5], regValRs[36], regValRs[ 4],
+				regValRs[35], regValRs[ 3], regValRs[34], regValRs[ 2],
+				regValRs[33], regValRs[ 1], regValRs[32], regValRs[ 0]
+			};
+			tResultu1A = { 1'b0,
+				regValRs[63], regValRs[31], regValRs[62], regValRs[30],
+				regValRs[61], regValRs[29], regValRs[60], regValRs[28],
+				regValRs[59], regValRs[27], regValRs[58], regValRs[26],
+				regValRs[57], regValRs[25], regValRs[56], regValRs[24],
+				regValRs[55], regValRs[23], regValRs[54], regValRs[22],
+				regValRs[53], regValRs[21], regValRs[52], regValRs[20],
+				regValRs[51], regValRs[19], regValRs[50], regValRs[18],
+				regValRs[49], regValRs[17], regValRs[48], regValRs[16]
+			};
+			tResultu2A = { tResultu1A, tResultu1B[31:0] };
 		end
 `endif
 		

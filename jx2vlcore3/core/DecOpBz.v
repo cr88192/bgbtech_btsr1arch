@@ -64,6 +64,7 @@ reg[5:0]	opRegN_ESr;		//S16..S31
 
 reg[5:0]	opRegN_Xr;		//3znz 1R, R0..R31
 reg[5:0]	opRegN_Yr;		//2znz/6znz 1R, R0..R31
+reg[5:0]	opRegN_ZXr;		//zznz 1R, R0..R31 (xxxy -> yxxx0)
 
 /*
 Fixed registers for certain ops.
@@ -154,6 +155,7 @@ begin
 `ifdef jx2_sprs_elrehr
 	opRegN_Xr	= {tRegRnIsRs, istrWord[11], istrWord[ 7:4]};
 	opRegN_Yr	= {tRegRnIsRs, istrWord[14], istrWord[ 7:4]};
+	opRegN_ZXr	= {tRegRnIsRs, istrWord[ 4], istrWord[ 7:5], 1'b0};
 `else
 	opRegN_Xr	= {tRegRnIsRs && (!istrWord[11]),
 		istrWord[11], istrWord[ 7:4]};
@@ -163,6 +165,9 @@ begin
 //		istrWord[11], istrWord[ 7:4]};
 //	opRegN_Yr	= {tRegRnIsRs & (!istrWord[14]),
 //		istrWord[14], istrWord[ 7:4]};
+
+	opRegN_ZXr	= {tRegRnIsRs & (!istrWord[ 4]),
+		istrWord[ 4], istrWord[ 7:5], 1'b0};
 `endif
 
 	opRegN_Fix	= JX2_GR_ZZR;
@@ -448,29 +453,6 @@ begin
 		end
 `endif
 
-`ifndef def_true
-		16'h28zz: begin
-			opNmid	= JX2_UCMD_MOV_RM;
-			opFmid	= JX2_FMID_REGSTDI4SP;
-			opBty	= JX2_BTY_SL;
-		end
-		16'h29zz: begin
-			opNmid	= JX2_UCMD_MOV_RM;
-			opFmid	= JX2_FMID_REGSTDI4SP;
-			opBty	= JX2_BTY_SQ;
-		end
-		16'h2Azz: begin
-			opNmid	= JX2_UCMD_MOV_MR;
-			opFmid	= JX2_FMID_LDDI4SPREG;
-			opBty	= JX2_BTY_SL;
-		end
-		16'h2Bzz: begin
-			opNmid	= JX2_UCMD_MOV_MR;
-			opFmid	= JX2_FMID_LDDI4SPREG;
-			opBty	= JX2_BTY_SQ;
-		end
-`endif
-
 `ifdef def_true
 		16'h28zz: begin
 			opNmid	= JX2_UCMD_MOV_MR;
@@ -487,13 +469,14 @@ begin
 		end
 `endif
 
-`ifndef def_true
-		16'h28zz: begin
+`ifdef def_true
+		16'h29zz: begin
 			opNmid	= JX2_UCMD_MOV_RM;
 			opFmid	= JX2_FMID_REGSTDI4SP;
 			opIty	= JX2_ITY_NB;
 			opBty	= JX2_BTY_UQ;
 		end
+
 		16'h2Bzz: begin
 			opNmid	= JX2_UCMD_MOV_MR;
 			opFmid	= JX2_FMID_LDDI4SPREG;
@@ -1902,7 +1885,8 @@ begin
 			opRegN	= opRegN_Dfl;
 			opRegM	= JX2_GR_PC;
 			opRegO	= JX2_GR_DLR;
-			opUIxt	= {opCcty, opBty[1:0], 1'b1, opBty};
+//			opUIxt	= {opCcty, opBty[1:0], 1'b1, opBty};
+			opUIxt	= {opCcty, opBty[1:0], 1'b0, opBty};
 		end
 
 		JX2_FMID_IMM4ZREG: begin
@@ -2047,28 +2031,31 @@ begin
 		JX2_FMID_LDDI4SPREG: begin
 			case(opIty)
 				JX2_ITY_SB: begin
-					opRegM	= JX2_GR_SP;
+//					opRegM	= JX2_GR_SP;
 					opRegN	= opRegN_Dfl;
 				end
 				JX2_ITY_UB: begin
-					opRegM	= JX2_GR_SP;
+//					opRegM	= JX2_GR_SP;
 					opRegN	= opRegN_Er;
 				end
 
 				JX2_ITY_NB: begin
-					opRegM	= JX2_GR_SP;
-					opRegN	= opRegN_Dfl;
-					opRegN[4]	= opRegN_Dfl[0];
-					opRegN[0]	= 0;
+//					opRegM	= JX2_GR_SP;
+					opRegN	= opRegN_ZXr;
+//					opRegN	= opRegN_Dfl;
+//					opRegN[4]	= opRegN_Dfl[0];
+//					opRegN[0]	= 0;
 				end
 
 				default: begin
-					opRegM	= JX2_GR_SP;
+//					opRegM	= JX2_GR_SP;
 					opRegN	= opRegN_Dfl;
 				end
 			endcase
+			opRegM	= JX2_GR_SP;
 			opRegO	= JX2_GR_IMM;
-			opUIxt	= {opCcty, opBty[1:0], 1'b1, opBty};
+//			opUIxt	= {opCcty, opBty[1:0], 1'b1, opBty};
+			opUIxt	= {opCcty, opBty[1:0], 1'b0, opBty};
 //			opImm	= {UV25_00, 3'b0, opBty[2], istrWord[3:0]};
 			opImm	= {UV25_00, 4'b0, istrWord[3:0]};
 		end

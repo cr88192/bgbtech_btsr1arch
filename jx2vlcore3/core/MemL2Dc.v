@@ -49,6 +49,16 @@ assign	ddrMemDataOut	= tDdrMemDataOut;
 assign	ddrMemAddr		= tDdrMemAddr;
 assign	ddrMemOpm		= tDdrMemOpm;
 
+`ifdef jx2_expand_l2sz
+reg[127:0]	memTileData[8191:0];
+reg[ 27:0]	memTileAddr[8191:0];
+reg[  3:0]	memTileFlag[8191:0];
+`ifdef jx2_mem_fulldpx
+reg[ 27:0]	memTileAddrB[8191:0];
+reg[  3:0]	memTileFlagB[8191:0];
+`endif
+`else
+
 `ifdef jx2_reduce_l2sz
 reg[127:0]	memTileData[1023:0];
 reg[ 27:0]	memTileAddr[1023:0];
@@ -66,6 +76,23 @@ reg[ 27:0]	memTileAddrB[4095:0];
 reg[  3:0]	memTileFlagB[4095:0];
 `endif
 `endif
+
+`endif
+
+`ifdef jx2_expand_l2sz
+reg[12:0]	nxtReqIx;
+reg[12:0]	nxtReqIxB;
+reg[12:0]	tReqIx;
+reg[12:0]	tReqIxL;
+reg[12:0]	tReqIxB;
+reg[12:0]	tReqIxBL;
+reg[12:0]	tBlkLdIx;
+reg[12:0]	tBlkStIx;
+reg[12:0]	tBlkSwIx;
+reg[12:0]	tBlkSwIxL;
+reg[12:0]	tAccIx;
+
+`else
 
 `ifdef jx2_reduce_l2sz
 reg[9:0]	nxtReqIx;
@@ -95,6 +122,7 @@ reg[11:0]	tBlkSwIxL;
 
 reg[11:0]	tAccIx;
 
+`endif
 `endif
 
 reg[27:0]	nxtReqAddr;
@@ -166,6 +194,11 @@ begin
 	nxtReqAddr	= memAddr [31:4];
 	nxtReqAddrB	= memAddrB[31:4];
 
+`ifdef jx2_expand_l2sz
+	nxtReqIx	= memAddr [16:4];
+	nxtReqIxB	= memAddrB[16:4];
+`else
+
 `ifdef jx2_reduce_l2sz
 	nxtReqIx	= memAddr [13:4];
 	nxtReqIxB	= memAddrB[13:4];
@@ -187,6 +220,7 @@ begin
 //		memAddrB[15:10] ^ memAddrB[21:16] ^ memAddrB[27:22],
 //		memAddrB[9:4] };
 
+`endif
 `endif
 
 	/* Swap State */
@@ -244,10 +278,14 @@ begin
 
 	tBlkStData	= UV128_XX;
 	tBlkStAddr	= UV28_XX;
+`ifdef jx2_expand_l2sz
+	tBlkStIx	= UV13_XX;
+`else
 `ifdef jx2_reduce_l2sz
 	tBlkStIx	= UV10_XX;
 `else
 	tBlkStIx	= UV12_XX;
+`endif
 `endif
 	tBlkStDirty	= 0;
 	tBlkDoSt	= 0;

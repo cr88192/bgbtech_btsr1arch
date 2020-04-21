@@ -13,13 +13,13 @@ int BGBCC_JX2C_EmitLdix_FillSzNmTy(
 //	case CCXL_TY_I:		case CCXL_TY_UI:
 //	case CCXL_TY_NL:	case CCXL_TY_UNL:
 	case CCXL_TY_I:
-		if(sctx->is_addr64 && sctx->is_addr_x32)
-			{ sz=4; nm1=BGBCC_SH_NMID_MOVDL; nm2=-1; break; }
+//		if(sctx->is_addr64 && sctx->is_addr_x32)
+//			{ sz=4; nm1=BGBCC_SH_NMID_MOVDL; nm2=-1; break; }
 		sz=4; nm1=BGBCC_SH_NMID_MOVL; nm2=-1; break;
 
 	case CCXL_TY_UI:
-		if(sctx->is_addr64 && sctx->is_addr_x32)
-			{ sz=4; nm1=BGBCC_SH_NMID_MOVDL; nm2=-1; break; }
+//		if(sctx->is_addr64 && sctx->is_addr_x32)
+//			{ sz=4; nm1=BGBCC_SH_NMID_MOVDL; nm2=-1; break; }
 		if(sctx->is_addr64)
 		{	sz=4; nm1=BGBCC_SH_NMID_MOVL;
 			nm2=BGBCC_SH_NMID_EXTUL;
@@ -47,8 +47,8 @@ int BGBCC_JX2C_EmitLdix_FillSzNmTy(
 		if(ctx->arch_sizeof_long==8)
 			{ sz=8; nm1=BGBCC_SH_NMID_MOVQ; nm2=-1; break; }
 
-		if(sctx->is_addr64 && sctx->is_addr_x32)
-			{ sz=4; nm1=BGBCC_SH_NMID_MOVDL; nm2=-1; break; }
+//		if(sctx->is_addr64 && sctx->is_addr_x32)
+//			{ sz=4; nm1=BGBCC_SH_NMID_MOVDL; nm2=-1; break; }
 
 		if(sctx->is_addr64)
 		{

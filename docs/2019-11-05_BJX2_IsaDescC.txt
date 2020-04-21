@@ -109,6 +109,8 @@ Perform a bitwise AND of the source and destination values and store the result 
 Branch if False (SR.T is 0).
 The target address is computed and PC is updated to the new address if the condition is met.
 
+This instruction is only allowed in Lane 1.
+
 
 === BRA ===
 
@@ -122,6 +124,8 @@ The target address is computed and PC is updated to the new address if the condi
 
 Branch to Address.
 The target address is computed and PC is updated to the new address.
+
+This instruction is only allowed in Lane 1.
 
 
 === BREAK ===
@@ -147,6 +151,8 @@ The BREAK1/2/3 forms overlap with MOV.B, but will be regarded as invalid special
 Branch to subroutine.
 The target address is computed and PC is updated to the new address, with the prior value for PC being stored in LR.
 
+This instruction is only allowed in Lane 1.
+
 
 === BT ===
 
@@ -161,6 +167,19 @@ The target address is computed and PC is updated to the new address, with the pr
 Branch if True (SR.T is 1).
 The target address is computed and PC is updated to the new address if the condition is met.
 
+This instruction is only allowed in Lane 1.
+
+
+=== BTRNS ===
+
+* F0nm_1e4C  BTRNS{Q}	Rm, Rn				//(CLZ) Bit Transpose
+
+Bit Transpose. This will transpose the bit pattern in a register such that the LSB of Rm becomes the MSB of Rn, and the MSB of Rm becomes the LSB of Rn.
+
+This will come in both 32 and 64 bit variants.
+
+This instruction is only allowed in Lane 1.
+
 
 === CLRS ===
 
@@ -169,6 +188,8 @@ The target address is computed and PC is updated to the new address if the condi
 
 Clear the SR.S flag.
 
+This instruction is only allowed in Lane 1.
+
 
 === CLRT ===
 
@@ -176,6 +197,22 @@ Clear the SR.S flag.
 * F000_3040  CLRT	//Fix32
 
 Clear the SR.T flag.
+
+This instruction is only allowed in Lane 1.
+
+
+=== CLZ / CTZ ===
+
+* F0nm_1e2C  CLZ{Q}		Rm, Rn		//(CLZ) Count Leading Zeroes
+* F0nm_1e3C  CTZ{Q}		Rm, Rn		//(CLZ) Count Trailing Zeroes
+
+Count Leading or Trailing Zeroes.
+
+CLZ will start counting from the MSB.
+CTZ will start counting from the LSB.
+These will count the number of zeroes until the first non-zero bit is encountered. If the register is zero, then the result will be 32 or 64.
+
+These instructions are only allowed in Lane 1.
 
 
 === CMPEQ ===
@@ -197,6 +234,8 @@ This provides both zero and one extended immediates, allowing a direct immediate
 This updates SR.T based on the result of the comparison.
 The contents of SR.S, and SR.PQRO are undefined following this operation.
 
+This instruction is only allowed in Lane 1.
+
 
 === CMPGE ===
 
@@ -213,6 +252,8 @@ Only exists for immediates because this can be easily emulated for the two-regis
 
 This updates SR.T based on the result of the comparison.
 The contents of SR.S, and SR.PQRO are undefined following this operation.
+
+This instruction is only allowed in Lane 1.
 
 
 === CMPGT ===
@@ -231,6 +272,8 @@ Compare if destination is greater than the source using a signed comparison.
 This updates SR.T based on the result of the comparison.
 The contents of SR.S, and SR.PQRO are undefined following this operation.
 
+This instruction is only allowed in Lane 1.
+
 
 === CMPHI ===
 
@@ -246,6 +289,8 @@ Compare if destination is greater than the source using an unsigned comparison.
 This updates SR.T based on the result of the comparison.
 The contents of SR.S, and SR.PQRO are undefined following this operation.
 
+This instruction is only allowed in Lane 1.
+
 
 === CMPHS ===
 
@@ -260,6 +305,8 @@ Compare if destination is greater than or equal to the source using an unsigned 
 
 This updates SR.T based on the result of the comparison.
 The contents of SR.S, and SR.PQRO are undefined following this operation.
+
+This instruction is only allowed in Lane 1.
 
 
 === CMPQEQ ===
@@ -277,6 +324,8 @@ This provides both zero and one extended immediates, allowing a direct immediate
 This updates SR.T based on the result of the comparison.
 The contents of SR.S, and SR.PQRO are undefined following this operation.
 
+This instruction is only allowed in Lane 1.
+
 
 === CMPQGE ===
 
@@ -290,6 +339,8 @@ Only exists for immediates because this can be easily emulated for the two-regis
 
 This updates SR.T based on the result of the comparison.
 The contents of SR.S, and SR.PQRO are undefined following this operation.
+
+This instruction is only allowed in Lane 1.
 
 
 === CMPQGT ===
@@ -306,6 +357,8 @@ Compare if destination is greater than the source using a signed comparison.
 This updates SR.T based on the result of the comparison.
 The contents of SR.S, and SR.PQRO are undefined following this operation.
 
+This instruction is only allowed in Lane 1.
+
 
 === CMPQHI ===
 
@@ -321,6 +374,8 @@ Compare if destination is greater than the source using an unsigned comparison.
 This updates SR.T based on the result of the comparison.
 The contents of SR.S, and SR.PQRO are undefined following this operation.
 
+This instruction is only allowed in Lane 1.
+
 
 === CMPQHS ===
 
@@ -334,6 +389,8 @@ Compare if destination is greater than or equal to the source using an unsigned 
 
 This updates SR.T based on the result of the comparison.
 The contents of SR.S, and SR.PQRO are undefined following this operation.
+
+This instruction is only allowed in Lane 1.
 
 
 === CPUID ===
@@ -362,6 +419,8 @@ ISA Profiles:
 * 'F': Lite Profile, Has GFP, No MMU, 32-bit Address Space
 
 Lite Profiles will leave out support for 48 bit instruction formats, and will similarly exclude the MMU.
+
+This instruction is only allowed in Lane 1.
 
 
 === CSELT ===
@@ -912,6 +971,23 @@ Invert the SR.T flag.
 * FC0G_16nm_dddd  OR	Rm, #imm17s, Rn
 
 Perform a bitwise OR of the source and destination, storing the result in the destination.
+
+
+=== PMORT.x ===
+
+* F0nm_1g1E ? PMORT.L	Rm, Rn		//(GSV)
+* F0nm_1G1E ? PMORT.Q	Rm, Rn		//(GSV)
+
+Packed Morton Shuffle.
+
+Interprets a pair of packed DWORD values as indices and performs a bit shuffle, leading to an index in Morton Order.
+
+The PMORT.Q operation will produce a 64-bit value containing all 32 bits from each index. PMORT.L will produce a 32-bit output which only retains the high 16 bits of each input (essentially the high 32 bits of the 64-bit output).
+
+As a simplified example, if we have two 8 bit values:
+* u7,u6,u5,u4,u3,u2,u1,u0 and v7,v6,v5,v4,v3,v2,v1,v0
+Then this will produce as output:
+* u7,v7,u6,v6,u5,v5,u4,v4,u3,v3,u2,v2,u1,v1,u0,v0
 
 
 === POP ===

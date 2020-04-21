@@ -161,8 +161,8 @@ begin
 
 	if((tInOpm==UMEM_OPM_FLUSHIS) || reset)
 	begin
-		icNxtFlushMskA = JX2_L1_FLUSHMSK;
-		icNxtFlushMskB = JX2_L1_FLUSHMSK;
+		icNxtFlushMskA = JX2_L1I_FLUSHMSK;
+		icNxtFlushMskB = JX2_L1I_FLUSHMSK;
 	end
 
 	/* Stage B */

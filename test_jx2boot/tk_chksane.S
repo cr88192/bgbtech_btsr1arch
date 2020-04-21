@@ -663,7 +663,7 @@ X(tk_checksane_asm):
 
 //	break
 
-#if 0
+#if 1
 	mov	0x8889, r8
 	mov	0xFFFF8889, r9
 	mov	0x00FF8889, r10
@@ -672,18 +672,80 @@ X(tk_checksane_asm):
 	clz r8, r6
 	clz r9, r7
 
+	.CLZ_0A:
 	cmp/eq #16, r6
-	bf _checksane_fail
+//	bf _checksane_fail
+	break?f
+
+	.CLZ_0B:
 	cmp/eq #0, r7
-	bf _checksane_fail
+//	bf _checksane_fail
+	break?f
 
 	clz r10, r6
 	clz r11, r7
 
+	.CLZ_1A:
 	cmp/eq #8, r6
-	bf _checksane_fail
+//	bf _checksane_fail
+	break?f
+
+	.CLZ_1B:
 	cmp/eq #32, r7
-	bf _checksane_fail
+//	bf _checksane_fail
+	break?f
+
+	mov	0x00000089, r12
+	mov	0x00000389, r13
+	clz r12, r6
+	clz r13, r7
+
+	.CLZ_2A:
+	cmp/eq #24, r6
+//	bf _checksane_fail
+	break?f
+
+	.CLZ_2B:
+	cmp/eq #22, r7
+//	bf _checksane_fail
+	break?f
+
+
+	clzq r8, r6
+	clzq r9, r7
+
+	.CLZ_3A:
+	cmp/eq #48, r6
+//	bf _checksane_fail
+	break?f
+
+	.CLZ_3B:
+	cmp/eq #32, r7
+//	bf _checksane_fail
+	break?f
+
+	clzq r10, r6
+	clzq r11, r7
+
+	cmp/eq #40, r6
+//	bf _checksane_fail
+	break?f
+	cmp/eq #64, r7
+//	bf _checksane_fail
+	break?f
+
+	clzq r12, r6
+	clzq r13, r7
+
+	.CLZ_4A:
+	cmp/eq #56, r6
+//	bf _checksane_fail
+	break?f
+
+	.CLZ_4B:
+	cmp/eq #54, r7
+//	bf _checksane_fail
+	break?f
 #endif
 
 	mov		#0x12345678, r4

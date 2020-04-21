@@ -523,7 +523,7 @@ BCCX_Node *BGBCP_VarDefinition(BGBCP_ParseState *ctx,
 		s=BGBCP_Token2(s, b, &ty, ctx->lang);	//(
 		n2=BGBCP_FunVarsList(ctx, &s);
 
-		if(BCCX_TagIsP(n1, "fproto"))
+		if(BCCX_TagIsCstP(n1, &bgbcc_rcst_fproto, "fproto"))
 		{
 //			s2=BGBCC_GenSym2();
 
@@ -606,10 +606,10 @@ BCCX_Node *BGBCP_VarDefinition(BGBCP_ParseState *ctx,
 		n1=BCCX_Child(tn);
 		while(n1)
 		{
-			if(BCCX_TagIsP(n1, "declspec") ||
-				BCCX_TagIsP(n1, "attribute"))
+			if(BCCX_TagIsCstP(n1, &bgbcc_rcst_declspec, "declspec") ||
+				BCCX_TagIsCstP(n1, &bgbcc_rcst_attribute, "attribute"))
 					BCCX_Add(n2, BCCX_Clone(n1));
-			if(BCCX_TagIsP(n1, "arrayq"))
+			if(BCCX_TagIsCstP(n1, &bgbcc_rcst_arrayq, "arrayq"))
 					BCCX_Add(n2, BCCX_Clone(n1));
 			n1=BCCX_Next(n1);
 		}
@@ -669,10 +669,10 @@ BCCX_Node *BGBCP_VarDefinition(BGBCP_ParseState *ctx,
 	n1=BCCX_Child(tn);
 	while(n1)
 	{
-		if(BCCX_TagIsP(n1, "declspec") ||
-			BCCX_TagIsP(n1, "attribute"))
+		if(BCCX_TagIsCstP(n1, &bgbcc_rcst_declspec, "declspec") ||
+			BCCX_TagIsCstP(n1, &bgbcc_rcst_attribute, "attribute"))
 				BCCX_Add(n4, BCCX_Clone(n1));
-		if(BCCX_TagIsP(n1, "arrayq"))
+		if(BCCX_TagIsCstP(n1, &bgbcc_rcst_arrayq, "arrayq"))
 				BCCX_Add(n4, BCCX_Clone(n1));
 		n1=BCCX_Next(n1);
 	}
@@ -834,9 +834,9 @@ BCCX_Node *BGBCP_Definition(BGBCP_ParseState *ctx, char **str)
 		if((ctx->lang==BGBCC_LANG_CS) ||
 			(ctx->lang==BGBCC_LANG_BS2))
 		{
-			if(BCCX_TagIsP(n, "classdef") ||
-				BCCX_TagIsP(n, "enumdef") ||
-				BCCX_TagIsP(n, "null_statement"))
+			if(BCCX_TagIsCstP(n, &bgbcc_rcst_classdef, "classdef") ||
+				BCCX_TagIsCstP(n, &bgbcc_rcst_enumdef, "enumdef") ||
+				BCCX_TagIsCstP(n, &bgbcc_rcst_null_statement, "null_statement"))
 			{
 				*str=s;
 				return(n);
@@ -848,7 +848,7 @@ BCCX_Node *BGBCP_Definition(BGBCP_ParseState *ctx, char **str)
 		s2=s;
 
 		n1=BGBCP_VarDefinition(ctx, &s2, n);
-		if(BCCX_TagIsP(n1, "proto"))
+		if(BCCX_TagIsCstP(n1, &bgbcc_rcst_proto, "proto"))
 		{
 			ntl=NULL;
 			ntci=NULL;
@@ -959,7 +959,8 @@ BCCX_Node *BGBCP_Definition(BGBCP_ParseState *ctx, char **str)
 
 		if(ctx->lang==BGBCC_LANG_CS)
 		{
-			if(BCCX_TagIsP(n1, "var") && !bgbcp_strcmp1(b, "{"))
+			if(BCCX_TagIsCstP(n1, &bgbcc_rcst_var, "var") &&
+				!bgbcp_strcmp1(b, "{"))
 			{
 				BCCX_CheckDeleteUnlinked(n);
 
@@ -1018,7 +1019,7 @@ BCCX_Node *BGBCP_DefinitionOldStyle(BGBCP_ParseState *ctx, char **str)
 
 	s2=s;
 	n1=BGBCP_VarDefinition(ctx, &s2, n);
-	if(BCCX_TagIsP(n1, "proto"))
+	if(BCCX_TagIsCstP(n1, &bgbcc_rcst_proto, "proto"))
 	{
 		ntl=NULL;
 		BGBCP_Token(s2, b, &ty);
@@ -1140,7 +1141,7 @@ BCCX_Node *BGBCP_ForceDefinition(BGBCP_ParseState *ctx, char **str)
 		s2=s;
 
 		n1=BGBCP_VarDefinition(ctx, &s2, n);
-		if(BCCX_TagIsP(n1, "proto"))
+		if(BCCX_TagIsCstP(n1, &bgbcc_rcst_proto, "proto"))
 		{
 			BGBCP_Token(s2, b, &ty);
 			if(!bgbcp_strcmp1(b, "{"))

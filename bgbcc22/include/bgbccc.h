@@ -732,6 +732,7 @@ int n_reg_globals;
 int m_reg_globals;
 
 BGBCC_CCXL_RegisterInfo *hash_globals[4096];	//global lookup hash
+// BGBCC_CCXL_RegisterInfo *hash_globals[1024];	//global lookup hash
 BGBCC_CCXL_RegisterInfo *usort_globals;			//unsorted globals
 
 // BGBCC_CCXL_LiteralInfo *literals[4096];

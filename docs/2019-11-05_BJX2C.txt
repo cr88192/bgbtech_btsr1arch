@@ -1164,10 +1164,9 @@ F0zz Instruction Block:
 ** F0nm_1ezC
 *** F0nm_1e0C  NOT		Rm, Rn				//Rn=~Rn
 *** F0nm_1e1C  NEG		Rm, Rn				//Rn=(~Rn)+1
-*** F0nm_1e2C ? CLZ{Q}	Rm, Rn				//(CLZ) Count Leading Zeroes
-*** F0nm_1e3C -
-*** F0nm_1g4C / MULS.W	Rm, Rn				//(DHR,DLR)=Rm*Rn (Sx 16*16=>32)
-*** F0nm_1G4C / MULU.W	Rm, Rn				//(DHR,DLR)=Rm*Rn (Zx 16*16=>32)
+*** F0nm_1e2C  CLZ{Q}	Rm, Rn				//(CLZ) Count Leading Zeroes
+*** F0nm_1e3C  CTZ{Q}	Rm, Rn				//(CLZ) Count Trailing Zeroes
+*** F0nm_1e4C  BTRNS{Q}	Rm, Rn				//(CLZ) Bit Transpose
 *** F0nm_1g5C  EXTS.L	Rm, Rn				//Q=0
 *** F0nm_1G5C  EXTU.L	Rm, Rn				//Q=1
 *** F0nm_1e6C  SHAD{Q}	Rm, Rn				//Barrel Shift, Arithmetic
@@ -1182,8 +1181,8 @@ F0zz Instruction Block:
 *** F0nm_1gBC  MOV		Sm, Rn				//Rn=Cm
 *** F0nm_1GBC  SWAP.Q	(Rm), Rn			//Exchange Rn with memory at (Rm)
 
-*** F0nm_1eCC  -
-*** F0nm_1eDC  -
+*** F0nm_1eCC / CLNZ{Q}	Rm, Rn				//(CLZ) Count Leading Ones
+*** F0nm_1eDC / CTNZ{Q}	Rm, Rn				//(CLZ) Count Trailing Ones
 *** F0nm_1eEC  CMP{Q}GE	Rm, Rn				//Signed Rn GE Rm
 *** F0nm_1eFC  CMP{Q}HS	Rm, Rn				//Unsigned Rn GE Rm
 
@@ -1207,7 +1206,7 @@ F0zz Instruction Block:
 
 ** F0nm_1ezE ? (RGB 2R Block)
 *** F0nm_1e0E  RGB5SHR1		Rm, Rn		//(RGB) RGB555 Shift Right
-*** F0nm_1e1E  -
+*** F0nm_1e1E ? PMORT{L/Q}	Rm, Rn		//(GSV) Morton Shuffle
 *** F0nm_1g2E  RGB5PCK32	Rm, Rn		//(RGB) RGB555 Pack from RGB32
 *** F0nm_1G2E  RGB5PCK64	Rm, Rn		//(RGB) RGB555 Pack from RGB64
 *** F0nm_1g3E  RGB5UPCK32	Rm, Rn		//(RGB) RGB555 Unpack to RGB32
@@ -1350,8 +1349,6 @@ F0zz Instruction Block:
 ** F0nm_5go7 ? PMULS.HW	Rm, Ro, Rn			//(GSV) Packed Mul (High Word)
 ** F0nm_5Go7 ? PMULU.HW	Rm, Ro, Rn			//(GSV) Packed Mul (High Word)
 
-** F0nm_5eo6  -
-** F0nm_5eo7  -
 ** F0nm_5go8 ? FADD		Rm, Ro, Rn			//(GFP) FADD
 ** F0nm_5go9 ? FSUB		Rm, Ro, Rn			//(GFP) FSUB
 ** F0nm_5goA ? FMUL		Rm, Ro, Rn			//(GFP) FMUL
@@ -1484,8 +1481,8 @@ F2zz Instruction Block  (Imm9 Block, New):
 * F2nz_Dfjj
 ** F2n0_Dfjj  ADD{D}	#imm10u, Rn				//Rn=Rn+Imm10u
 ** F2n1_Dfjj  ADD{D}	#imm10n, Rn				//Rn=Rn+Imm10n
-** F2n2_Dfjj  MULS.W	#imm10u, Rn				//Rn=Rn*Imm10u
-** F2n3_Dfjj  MULS.W	#imm10n, Rn				//Rn=Rn*Imm10n
+** F2n2_Dfjj  MUL{S/U}.W	#imm10u, Rn				//Rn=Rn*Imm10u
+** F2n3_Dfjj  MUL{S/U}.W	#imm10n, Rn				//Rn=Rn*Imm10n
 ** F2n4_Dfjj / LDI{Q}SIZ	#imm10u, Rn			//
 ** F2n5_Dfjj / LDI{Q}SIN	#imm10u, Rn			//
 * F2nz_Efjj

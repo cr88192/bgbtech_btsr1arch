@@ -1,0 +1,325 @@
+Idea Spec:
+* BJX3, possible clean up of BJX2 design.
+** Aim is to allow mostly reusing the existing Verilog.
+* Will rework the instruction encoding somewhat.
+
+Encoding:
+* 0zzz..Bzzz: 16-bit space (slightly smaller than BJX2)
+* Czzz..Fzzz: 32-bit space
+* Will omit 48-bit encodings, 64-bit jumbo forms will be used instead.
+
+* Czzz: Execute if True
+* Dzzz: Execute if False
+* Ezzz: Wide-Execute
+* Fzzz: Scalar or End-of-Bundle
+
+General I-Forms
+* XnmX        //16b ops (2R)
+* XniX        //16b ops (Imm4)
+* Xnii        //16b ops (Imm8)
+* XnXX        //16b ops (1R)
+* Xnm0-XeoX    //2R and 3R ops
+* Xnm1-Xeii    //Disp9 (Load/Store)
+* Xnm2-Xeii    //Rm, Imm9, Rn (ALU)
+* XnX3-Xeii    //Imm10, Rn
+* Xni4-Xiii    //Imm16, Rn (R0..R15)
+* Xni5-Xiii    //Imm16, Rk (R16..R31)
+* Xii6-iiii    //J1 (Imm24)
+* Xii7-iiii    //J2 (Imm24)
+ ...
+
+The J1 and J2 block would be one of several ops depending on mode:
+* Czz6: BT disp24
+* Czz7: PRWEX?T (Predicated Wide-Execute Ops ?)
+* Dzz6: BF disp24
+* Dzz7: PRWEX?F (Predicated Wide-Execute Ops ?)
+* Ezz6: -
+* Ezz7: JX  imm24 (Jumbo Prefix)
+* Fzz6: BRA disp24
+* Fzz7: BSR disp24
+
+JX Forms:
+* Eii7-iiii-Xnm1-Xeii: "MOV.x (Rm, Disp33s), Rn" (Load/Store)
+* Eii7-iiii-Xnm2-Xeii: "OP Rm, Imm33s, Rn" (ALU)
+* Eii7-iiii-Xnm3-Xeii: "OP Imm33s, Rn" (ALU)
+* Eii7-iiii-Eii7-iiii-Xni4-Xiii: "OP Imm64, Rn"
+* Eii7-iiii-Eii7-iiii-Xni5-Xiii: "OP Imm64, Rk"
+
+The JX forms will likely eat multiple lanes and thus may not be in a bundle with other ops.
+
+The code stream may be kept nominally 32b aligned, and thus lone 16-bit ops will not be allowed. If a lone 16-bit op would result in a misaligned instruction stream for a subsequent 32-bit op (maybe only required for Jumbo and Wide-Execute ops), it is to be replaced with a 32-bit equivalent.
+
+This will cost slightly in terms of code density, but should reduce the cost of the instruction cache mechanism.
+
+As with BJX2, most likely 8/16/32/64 bit Load/Store may be misaligned, but 128-bit could require a 64-bit alignment; and likewise SP would still have a mandatory 64-bit alignment; ...
+
+
+=== 16-Bit Encodings ===
+
+* 0zzz (Basic MOV.x Block)
+** 0nm0  MOV.B	Rn, (Rm)
+** 0nm1  MOV.W	Rn, (Rm)
+** 0nm2  MOV.L	Rn, (Rm)
+** 0nm3  MOV.Q	Rn, (Rm)
+** 0nm4  MOV.B	Rn, (Rm, DLR)
+** 0nm5  MOV.W	Rn, (Rm, DLR)
+** 0nm6  MOV.L	Rn, (Rm, DLR)
+** 0nm7  MOV.Q	Rn, (Rm, DLR)
+** 0nm8  MOV.B	(Rm), Rn
+** 0nm9  MOV.W	(Rm), Rn
+** 0nmA  MOV.L	(Rm), Rn
+** 0nmB  MOV.Q	(Rm), Rn
+** 0nmC  MOV.B	(Rm, DLR), Rn
+** 0nmD  MOV.W	(Rm, DLR), Rn
+** 0nmE  MOV.L	(Rm, DLR), Rn
+** 0nmF  MOV.Q	(Rm, DLR), Rn
+
+* 1zzz (Basic Arith Block)
+** 1nm0  ADD	Rm, Rn				//Rn=Rn+Rm
+** 1nm1  SUB	Rm, Rn				//Rn=Rn-Rm
+** 1nm2  ADC	Rm, Rn				//Add with Carry, Rn=Rn+Rm+SR.T
+** 1nm3  SBB	Rm, Rn				//Subtract with Borrow, Rn=Rn+(~Rm)+(!SR.T)
+** 1nm4  TST	Rm, Rn				//SR.T=!(Rm&Rn)
+** 1nm5  AND	Rm, Rn
+** 1nm6  OR		Rm, Rn
+** 1nm7  XOR	Rm, Rn
+** 1nm8  MOV	Rm, Rn				//Rn=Rm
+** 1nm9  MOV	Rj, Rn
+** 1nmA  MOV	Rm, Rk
+** 1nmB  MOV	Rj, Rk
+** 1nmC  CMPEQ	Rm, Rn				//Rn==Rm (Low 32 Bits)
+** 1nmD  CMPHI	Rm, Rn				//Unsigned Rn GT Rm (Low 32 Bits)
+** 1nmE  CMPGT	Rm, Rn				//Signed Rn GT Rm (Low 32 Bits)
+** 1nmF  CMPGE	Rm, Rn				//Signed Rn GE Rm (Low 32 Bits)
+
+* 2zzz
+** 20dd  BRA	(PC, disp8s)		//Branch, PC=PC+(disp8s*2)
+** 21dd  BSR	(PC, disp8s)		//Branch Subroutine
+** 22dd  BT		(PC, disp8s)		//Branch True
+** 23dd  BF		(PC, disp8s)		//Branch False
+** 24jj  -
+** 25jj  -
+** 26jj ? LDISH	#imm8u, DLR			//DLR=(DLR SHL 8)|Imm8u
+** 27nj  -
+
+
+* 3zzz
+** 3000  NOP						//Do Nothing
+** 3010  RTS						//PC=LR
+** 3020  SLEEP						//Sleep
+** 3030  BREAK						//Breakpoint
+** 3040  CLRT						//Clear SR.T
+** 3050  SETT						//Set SR.T
+** 3060  CLRS						//Clear SR.S
+** 3070  SETS						//Set SR.S
+** 3080  NOTT						//SR.T=!SR.T
+** 3090  NOTS						//SR.S=!SR.S
+** 30A0  /
+** 30B0  /
+** 30C0  RTE						//Return from exception
+** 30D0 ? DIV0						//Setup SR for divide
+** 30E0 ? DIV1						//Divide Step (Uses DHR, DLR)
+** 30F0  LDTLB						//Load entry into TLB
+
+** 3020  -
+** 3120  RTSU						//PC=LR, Hint
+** 3220  SYSCALL						//Throw(DLR)
+** 3320  -
+** 3420  -
+** 3520  -
+** 3620  -
+** 3720  -
+** 3820  -
+** 3920  -
+** 3A20  -
+** 3B20  -
+** 3C20  -
+** 3D20  -
+** 3E20  -
+** 3F20  INVTLB		//Flush the TLB
+
+** 3z30  -
+** 3z40  -
+** 3z50  -
+** 3z60  -
+** 3z70  -
+** 3z80  -
+** 3z90  -
+** 3zA0  -
+** 3zB0  -
+** 3zC0  -
+** 3zD0  -
+** 3zE0  -
+** 3zF0  -
+
+** 3n01  BRA	(PC, Rn)			//Branch to address given in (PC, Rn)
+** 3n11  BSR	(PC, Rn)			//Branch Subroutine given by (PC, Rn)
+** 3n21  BT		(PC, Rn)			//Branch if True to (PC, Rn)
+** 3n31  BF		(PC, Rn)			//Branch if False to (PC, Rn)
+** 3n41  -
+** 3n51  -
+** 3n61  SHADQ	DLR, Rn				//Barrel Shift, Arithmetic
+** 3n71  SHLDQ	DLR, Rn				//Barrel Shift, Logical
+** 3n81  -
+** 3n91  -
+** 3nA1  -
+** 3nB1  -
+** 3nC1  INVIC	Rn					//Flush I-Cache for Address
+** 3nD1  INVDC	Rn					//Flush D-Cache for Address
+** 3nE1  -
+** 3nF1  -
+
+** 3n02  BRA	Rn					//Branch to address given in Rn
+** 3n12  BSR	Rn					//Branch Subroutine given by Rn
+** 3n22  BT		Rn
+** 3n32  BF		Rn
+** 3n42  EXTU.B	Rn
+** 3n52  EXTU.W	Rn
+** 3n62  EXTS.B	Rn
+** 3n72  EXTS.W	Rn
+** 3n82  -
+** 3n92  -
+** 3nA2  -
+** 3nB2  -
+** 3nC2  -
+** 3nD2  -
+** 3nE2  -
+** 3nF2  -
+
+** 3n03  NOT	Rn					//Rn=~Rn
+** 3n13  NEG	Rn					//Rn=(~Rn)+1
+** 3n23  NEGC	Rn					//Rn=(~Rn)+(~SR.T)
+** 3n33  MOVNT	Rn					//Rn=!SR.T
+** 3n43  -
+** 3n53  -
+** 3n63  -
+** 3n73  -
+** 3n83  -
+** 3n93  -
+** 3nA3  -
+** 3nB3  -
+** 3nC3  NEG	Rn, DLR				//DLR=(~Rn)+1
+** 3nD3  -
+** 3nE3  -
+** 3nF3  -
+
+** 3zz4  -
+** 3zz5  -
+
+** 3n06  SHLL32	Rn					//Rn=Rn SHL 32
+** 3n16  SHLR32	Rn					//Rn=Rn SHR 32, Logical
+** 3n26  SHAR32	Rn					//Rn=Rn SAR 32, Arithmetic
+** 3j36  TRAP	#imm4u				//Generate an Interrupt
+** 3n46  EXTU.L	Rn					//Zero Extend DWord to QWord
+** 3n56  EXTS.L	Rn					//Sign Extend DWord to QWord
+** 3n66  SHAD	DLR, Rn				//Barrel Shift, Arithmetic
+** 3n76  SHLD	DLR, Rn				//Barrel Shift, Logical
+** 3n86  TRAP	Rn
+** 3n96  WEXMD	#imm4				//Set WEX Profile
+** 3jA6  CPUID	#imm4				//Load CPUID bits into DHR:DLR
+** 3nB6  -
+** 3nC6  -
+** 3nD6  CMPHS	DLR, Rn				//Unsigned (Rn GE DLR)
+** 3nE6 /? CMPGE	DLR, Rn				//Signed (Rn GE DLR)
+** 3nF6  MOVT	Rn					//Rn=SR.T
+
+** 3zz7  -
+
+** 3zz8 (More 0R ops)
+** 3zz9 (Mirror 31zz, Rn=R16..R31)
+** 3zzA (Mirror 32zz, Rn=R16..R31)
+** 3zzB (Mirror 33zz, Rn=R16..R31)
+** 3zzC (Mirror 34zz, Rn=R16..R31)
+** 3zzD (Mirror 35zz, Rn=R16..R31)
+** 3zzE (Mirror 36zz, Rn=R16..R31)
+** 3zzF (Mirror 37zz, Rn=R16..R31)
+
+* 4zzz
+** 4nd0  MOV.L		Rn, (SP, disp4u)	//Stack-Relative Store
+** 4nd1  MOV.Q		Rn, (SP, disp4u)	//Stack-Relative Store
+** 4nd2  MOV		Rm, Cn				//Cn=Rm
+** 4nd3  MOV.X		Rx, (SP, disp4u)	//(MOVX2) Stack-Relative Store Pair
+** 4nd4  MOV.L		(SP, disp4u), Rn	//Stack-Relative Load
+** 4nd5  MOV.Q		(SP, disp4u), Rn	//Stack-Relative Load
+** 4nd6  MOVU.L		(SP, disp4u), Rn	//Stack-Relative ZX Load
+** 4nd7  MOV.X		(SP, disp4u), Rx	//(MOVX2) Stack-Relative Load Pair
+** 4nd8  MOV.L		Rk, (SP, disp4u)	//Stack-Relative Store
+** 4nd9  MOV.Q		Rk, (SP, disp4u)	//Stack-Relative Store
+** 4ndA  MOV		Cm, Rn				//Rn=Cm
+** 4ndB  MOV.X		Ry, (SP, disp4u)	//(MOVX2) Stack-Relative Store Pair
+** 4ndC  MOV.L		(SP, disp4u), Rk	//Stack-Relative Load
+** 4ndD  MOV.Q		(SP, disp4u), Rk	//Stack-Relative Load
+** 4ndE  MOVU.L		(SP, disp4u), Rk	//Stack-Relative ZX Load
+** 4ndF  MOV.X		(SP, disp4u), Ry	//(MOVX2) Stack-Relative Load Pair
+
+* 5zzz (Binary Ops)
+** 5nm0  MOVU.B		(Rm), Rn
+** 5nm1  MOVU.W		(Rm), Rn
+** 5nm2  MOVU.B		(Rm, DLR), Rn
+** 5nm3  MOVU.W		(Rm, DLR), Rn
+** 5nm4	 TSTQ		Rm, Rn			//SR.T=!(Rm&Rn)
+** 5nm5  CMPQEQ		Rm, Rn			//Rn==Rm, Quad
+** 5nm6  -
+** 5nm7  -
+** 5nm8  ADD		Rm, DLR, Rn		//Rn=Rm+DLR
+** 5nm9  SUB		Rm, DLR, Rn
+** 5nmA  MULS		Rm, DLR, Rn		//Rn=Rm*DLR (32-bit, Signed Result)
+** 5nmB  CMPQHI		Rm, Rn			//Unsigned Rn GT Rm, Quad
+** 5nmC  CMPQGT		Rm, Rn			//Signed Rn GT Rm, Quad
+** 5nmD  AND		Rm, DLR, Rn
+** 5nmE  OR			Rm, DLR, Rn
+** 5nmF  XOR		Rm, DLR, Rn
+
+* 6zzz  (Imm4 Ops)
+** 6nj0 ? ADD	#imm4u, Rn
+** 6nj1 ? ADD	#imm4n, Rn
+** 6nj2 ? LDIZ	#imm4u, Rn
+** 6nj3 ? LDIN	#imm4n, Rn
+** 6nj4  CMPEQ	#imm4u, Rn			//Rn==Imm4, Zero Extend
+** 6nj5  CMPEQ	#imm4n, Rn			//Rn==Imm4, One Extend
+** 6nj6  CMPGT	#imm4u, Rn			//Rn==Imm4, Zero Extend
+** 6nj7  CMPGE	#imm4u, Rn			//Rn==Imm4, Zero Extend
+** 6nj8  ADD	#imm4u, Rk
+** 6nj9  ADD	#imm4n, Rk
+** 6njA  LDIZ	#imm4u, Rk
+** 6njB  LDIN	#imm4n, Rk
+** 6njC  CMPEQ	#imm4u, Rk			//Rn==Imm4, Zero Extend
+** 6njD  CMPEQ	#imm4n, Rk			//Rn==Imm4, One Extend
+** 6njE  CMPGT	#imm4u, Rk			//Rn==Imm4, Zero Extend
+** 6njF  CMPGE	#imm4u, Rk			//Rn==Imm4, Zero Extend
+
+* 7zzz  (Additional Ops)
+** 7nm0  FADD		Rm, Rn			//(GFP) FADD
+** 7nm1  FSUB		Rm, Rn			//(GFP) FSUB
+** 7nm2  FMUL		Rm, Rn			//(GFP) FMUL
+** 7nm3  FLDCF		Rm, Rn			//(GFP) Single->Double
+** 7nm4  FCMPEQ		Rm, Rn			//(GFP) FCMPEQ
+** 7nm5  FCMPGT		Rm, Rn			//(GFP) FCMPGT
+** 7nm6  FSTCF		Rm, Rn			//(GFP) Double->Single
+** 7nz7  -
+
+* ? 8zzz ( MOV.L 1000-nnnn-mmmm-rddd, r=Store/Load )
+** 8nm0  MOVU.L		(Rm), Rn
+** 8nm1  MOV.L		Rn, (Rm,  4)
+** 8nm2  MOV.L		Rn, (Rm,  8)
+** 8nm3  MOV.L		Rn, (Rm, 12)
+** 8nm4  MOV.L		Rn, (Rm, 16)
+** 8nm5  MOV.L		Rn, (Rm, 20)
+** 8nm6  MOV.L		Rn, (Rm, 24)
+** 8nm7  MOV.L		Rn, (Rm, 28)
+** 8nm8  MOVU.L		(Rm, DLR), Rn
+** 8nm9  MOV.L		(Rm,  4), Rn
+** 8nmA  MOV.L		(Rm,  8), Rn
+** 8nmB  MOV.L		(Rm, 12), Rn
+** 8nmC  MOV.L		(Rm, 16), Rn
+** 8nmD  MOV.L		(Rm, 20), Rn
+** 8nmE  MOV.L		(Rm, 24), Rn
+** 8nmF  MOV.L		(Rm, 28), Rn
+
+* Anii  ADD			#imm8s, Rn		//Rn=Rn+Imm8
+* Bnii  LDI			#imm8s, Rn		//Rn=Imm8
+
+* Czzz  (Escape32, PredT Block)
+* Dzzz  (Escape32, PredF Block)
+* Ezzz  (Escape32, WEX Block)
+* Fzzz  (Escape32, Scalar Block)

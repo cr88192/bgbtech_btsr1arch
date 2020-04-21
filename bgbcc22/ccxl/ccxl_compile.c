@@ -867,6 +867,7 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 	l=BGBCC_CCXL_ReduceExpr(ctx, l);
 	if(!l)
 	{
+#if 0
 //		BGBCC_CCXL_Warn(ctx,
 //			"BGBCC_CCXL_CompileStatement: Statement Reduced Away\n");
 
@@ -875,6 +876,7 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 			BGBCC_CCXL_Warn(ctx, "There was a statement here, it's gone now\n");
 		else
 			BGBCC_CCXL_Warn(ctx, "Statement Reduced Away\n");
+#endif
 		return;
 	}
 
@@ -4513,7 +4515,42 @@ void BGBCC_CCXL_CompileTypedef(BGBCC_TransState *ctx, BCCX_Node *l)
 //			BGBCC_CCXL_BindDyTypeSig(ctx, s2, s1);
 		}
 #endif
+
+		return;
 	}
+
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_proto, "proto"))
+	{
+		s=BCCX_GetCst(l, &bgbcc_rcst_name, "name");
+		t=BCCX_FindTagCst(l, &bgbcc_rcst_type, "type");
+		v=BCCX_FindTagCst(l, &bgbcc_rcst_args, "args");
+
+		s1=BGBCC_CCXL_VarSigProto(ctx, t, s, v);
+		s2=BGBCC_CCXL_VarTypeFlagsString(ctx, t);
+
+		BGBCC_CCXL_BeginName(ctx, CCXL_CMD_TYPEDEF, s);
+		BGBCC_CCXL_AttribStr(ctx, CCXL_ATTR_NAME, s);
+		BGBCC_CCXL_AttribStr(ctx, CCXL_ATTR_SIG, s1);
+		BGBCC_CCXL_AttribStr(ctx, CCXL_ATTR_FLAGS, s2);
+		BGBCC_CCXL_End(ctx);
+
+#if 0
+		n1=BCCX_FindTagCst(t, &bgbcc_rcst_size, "size");
+		if(n1)
+		{
+			s1=BGBCC_CCXL_VarTypeString(ctx, t);
+			s2=BGBCC_CCXL_VarTypeFlagsString(ctx, t);
+
+			BGBCC_CCXL_BeginName(ctx, CCXL_CMD_TYPEDEF, s);
+			BGBCC_CCXL_AttribStr(ctx, CCXL_ATTR_NAME, s);
+			BGBCC_CCXL_AttribStr(ctx, CCXL_ATTR_SIG, s1);
+			BGBCC_CCXL_AttribStr(ctx, CCXL_ATTR_FLAGS, s2);
+			BGBCC_CCXL_End(ctx);
+		}
+#endif
+	}
+
+	BGBCC_CCXL_StubError(ctx);
 
 	return;
 }
@@ -4592,6 +4629,8 @@ void BGBCC_CCXL_CompileStructs(BGBCC_TransState *ctx)
 		BGBCC_CCXL_FixupObjSize(ctx, litobj, 0);
 	}
 #endif
+
+//	BGBCC_CCXL_CheckSanityGlobals(ctx);		//BGB: debug
 }
 
 void BGBCC_CCXL_EmitVarValue(BGBCC_TransState *ctx, BCCX_Node *v)

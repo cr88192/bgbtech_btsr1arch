@@ -1,19 +1,20 @@
 #include "VMemL1A.h"
 #include "verilated.h"
 
-// #define HAS_OPS48
+#define HAS_OPS48
+#define HAS_WEX
 
 VMemL1A *top = new VMemL1A;
 
 vluint64_t main_time = 0;
 
-static int write_words=256;
-// static int write_words=2048;
+// static int write_words=256;
+static int write_words=2048;
 
-static int write_words2=4096;
+// static int write_words2=4096;
 
 //static int write_words2=8192;
-// static int write_words2=16384;
+static int write_words2=16384;
 // static int write_words2=32768;
 // static int write_words2=65536;
 
@@ -177,7 +178,7 @@ int main(int argc, char **argv, char **env)
 {
 //	uint32_t *drambuf;
 	uint32_t *membuf;
-	uint32_t v, v1;
+	uint32_t v, v0, v1, v2, v3, v4, v5;
 	int fail;
 	int addr, n, n1, inh, stp, stp1, rdy;
 	int i, j, k;
@@ -198,6 +199,10 @@ int main(int argc, char **argv, char **env)
 	Verilated::commandArgs(argc, argv);
 
 //	LoadRomBuf();
+
+	top->regInSr=0;
+	top->regInMmcr=0;
+	top->regInKrr=0;
 
 	fail=0;
 
@@ -232,34 +237,70 @@ int main(int argc, char **argv, char **env)
 		
 			stp=top->icOutPcStep;
 		
-			v=(top->icOutPcVal)&65535;;
-			printf("%04X ", v);
+			v0=(top->icOutPcVal[0])&65535;
+			v2=(top->icOutPcVal[1])&65535;
+			v4=(top->icOutPcVal[2])&65535;
+			printf("%04X ", v0);
 			
 			v1=GetRomWord(n);
 			
-			if(v!=v1)
+			if(v0!=v1)
 			{
 				printf("Mismatch (IC1) Got=%04X Expect=%04X A=%04X\n",
-					v, v1, n*2);
+					v0, v1, n*2);
 				fail|=1;
 				break;
 			}
+
+			v1=((top->icOutPcVal[0])>>16)&65535;
+			v3=((top->icOutPcVal[1])>>16)&65535;
+			v5=((top->icOutPcVal[2])>>16)&65535;
 			
 			stp1=1;
-			if((v&0xE000)==0xE000)
+			if((v0&0xE000)==0xE000)
 			{
 				stp1=2;
 #ifdef HAS_OPS48
-				if((v&0xEE00)==0xEC00)
+				if((v0&0xEE00)==0xEC00)
 					{ stp1=3; }
-				if((v&0xEE00)==0xEE00)
+				if((v0&0xEE00)==0xEE00)
 					{ stp1=3; }
 #endif
+
+// #ifdef HAS_WEX
+#if 0
+//				if(((v&0xFC00)==0xF400) || ((v&0xFF00)==0xF900))
+				if((v0&0xFC00)==0xF400)
+				{
+//					if(((v2&0xFC00)==0xF400) || ((v2&0xFF00)==0xF900))
+					if((v2&0xFC00)==0xF400)
+					{
+						stp1=6;
+					}else
+					{
+						stp1=4;
+					}
+				}
+#endif
+
+				if(((v0&0xFF00)==0xF400) && ((v1&0xC000)==0xC000))
+				{
+					if(((v2&0xFF00)==0xF400) && ((v3&0xC000)==0xC000))
+					{
+						stp1=6;
+					}else
+					{
+						stp1=4;
+					}
+				}
+
 			}
 			
 			if(stp!=stp1)
 			{
-				printf("Step Mismatch %04X != %04X\n", stp, stp1);
+				printf("Step Mismatch %04X != %04X"
+						" (%04X-%04X-%04X-%04X-%04X-%04X)\n",
+					stp, stp1, v0, v1, v2, v3, v4, v5);
 				fail|=1;
 				break;
 			}
@@ -318,7 +359,7 @@ int main(int argc, char **argv, char **env)
 		{
 			stp=top->icOutPcStep;
 		
-			v=(top->icOutPcVal)&65535;
+			v=(top->icOutPcVal[0])&65535;
 			
 			v1=GetRomWord(n1);
 			

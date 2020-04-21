@@ -123,6 +123,9 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_OPFL_JUMBO64	0x10		//Uses four instruction words
 #define BJX2_OPFL_JUMBO96	0x20		//Uses six instruction words
 #define BJX2_OPFL_NOWEX		0x40		//Invalid as a WEX form
+#define BJX2_OPFL_NOWEXSFX	0x80		//Invalid as a WEX suffix
+
+#define BJX2_OPFL_PREDMSK	0xC1		//Mask copied for predicated ops.
 
 
 #define BJX2_NMID_NONE		0x00		//
@@ -645,10 +648,10 @@ byte fmid;		//Form ID
 byte rn;		//Dest Register
 byte rm;		//Source Register
 byte ro;		//Source Register
-byte fl;		//Opcodde Flags
+sbyte cyc;		//Clock Cycles
+u16 fl;		//Opcodde Flags
 s32 imm;		//Immediate
 
-sbyte cyc;		//Clock Cycles
 bjx2_addr pc;
 bjx2_addr pc2;
 

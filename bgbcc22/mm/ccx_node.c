@@ -108,13 +108,16 @@ BCCX_Node *BCCX_AllocNode(void)
 	{
 		cur=bccx_free_node;
 		bccx_free_node=cur->next;
+//		cur->hnext=NULL;
 		cur->next=NULL;
+		cur->magic=BCCX_NODE_MAGIC;
 //		bccx_memset(cur, 0, sizeof(BCCX_Node));
 		return(cur);
 	}
 
 	BCCX_Init();
 	tblk=bgbcc_tmalloc("_bccx_node_t", 256*sizeof(BCCX_Node));
+	memset(tblk, 0, 256*sizeof(BCCX_Node));
 	for(i=0; i<256; i++)
 	{
 		cur=tblk+i;
@@ -124,7 +127,9 @@ BCCX_Node *BCCX_AllocNode(void)
 
 	cur=bccx_free_node;
 	bccx_free_node=cur->next;
+//	cur->hnext=NULL;
 	cur->next=NULL;
+	cur->magic=BCCX_NODE_MAGIC;
 
 //	bccx_memset(cur, 0, sizeof(BCCX_Node));
 //	cur=bgbcc_tmalloc("_bccx_node_t", sizeof(BCCX_Node));
@@ -166,6 +171,9 @@ void BCCX_FreeNode(BCCX_Node *n)
 {
 	if(!n)return;
 
+	if(n->magic!=BCCX_NODE_MAGIC)
+		{ BGBCC_DBGBREAK }
+	
 	bccx_memset(n, 0, sizeof(BCCX_Node));
 
 //	if(n->tag==BGBCC_UNDEFINED)
@@ -260,17 +268,31 @@ int BCCX_LookupAttrValIx(BCCX_Node *node, int iv,
 	u16 *attr_n;
 	BCCX_AttrVal *attr_v;
 	int m, n, c;
+	int na, ma;
 	int i, j, k;
+	
+	*rrn=NULL;
+	*rrv=NULL;
+	
+	if(node->magic!=BCCX_NODE_MAGIC)
+		{ BGBCC_DBGBREAK }
 	
 	if(!node->mattr)
 	{
 		attr_n=node->attr_n;
 		attr_v=node->attr_v;
+		na=node->nattr;
+		ma=BCCX_NODE_FIXATTR;
 	}else
 	{
 		attr_n=node->attr_v[0].p;
 		attr_v=node->attr_v[1].p;
+		na=node->nattr;
+		ma=node->mattr;
 	}
+
+	if(na>ma)
+		{ BGBCC_DBGBREAK }
 
 	if(node->nattr<5)
 	{
@@ -286,7 +308,8 @@ int BCCX_LookupAttrValIx(BCCX_Node *node, int iv,
 		}
 	}else
 	{
-		m=0; n=node->nattr;
+//		m=0; n=node->nattr;
+		m=0; n=na;
 //		while(m!=n)
 //		while((m+1)<n)
 		while(m!=(i=(m+n)>>1))
@@ -299,6 +322,9 @@ int BCCX_LookupAttrValIx(BCCX_Node *node, int iv,
 			else
 				{ n=i; }
 		}
+
+		if((i<0) || (i>=na))
+			{ BGBCC_DBGBREAK }
 
 		j=attr_n[i]&4095;
 		if(iv==j)
@@ -349,24 +375,35 @@ int BCCX_FetchAttrValIx(BCCX_Node *node, int iv,
 {
 	u16 *attr_n;
 	BCCX_AttrVal *attr_v;
-	int ma;
+	int na, ma;
 	int i, j, k;
+
+	*rrn=NULL;
+	*rrv=NULL;
+	
+	if(node->magic!=BCCX_NODE_MAGIC)
+		{ BGBCC_DBGBREAK }
 	
 	if(!node->mattr)
 	{
 		attr_n=node->attr_n;
 		attr_v=node->attr_v;
+		na=node->nattr;
 		ma=BCCX_NODE_FIXATTR;
 	}else
 	{
 		attr_n=node->attr_v[0].p;
 		attr_v=node->attr_v[1].p;
+		na=node->nattr;
 		ma=node->mattr;
 	}
 
+	if(na>ma)
+		{ BGBCC_DBGBREAK }
+
 //	iv=BCCX_StringToStridx(var);
 	
-	for(i=0; i<node->nattr; i++)
+	for(i=0; i<na; i++)
 	{
 		j=attr_n[i];
 		if((j&4095)==iv)
@@ -377,7 +414,8 @@ int BCCX_FetchAttrValIx(BCCX_Node *node, int iv,
 		}
 	}
 	
-	if(node->nattr<ma)
+//	if(node->nattr<ma)
+	if(na<ma)
 	{
 		i=node->nattr++;
 		
@@ -399,8 +437,8 @@ int BCCX_FetchAttrValIx(BCCX_Node *node, int iv,
 	if(!k)
 	{
 		k=BCCX_NODE_FESCATTR;
-		attr_n=bgbcc_malloc(k*sizeof(u16));
-		attr_v=bgbcc_malloc(k*sizeof(u64));
+		attr_n=bgbcc_malloc((k+1)*sizeof(u16));
+		attr_v=bgbcc_malloc((k+1)*sizeof(u64));
 		memcpy(attr_n, node->attr_n,
 			BCCX_NODE_FIXATTR*sizeof(u16));
 		memcpy(attr_v, node->attr_v,
@@ -412,8 +450,8 @@ int BCCX_FetchAttrValIx(BCCX_Node *node, int iv,
 	}
 	
 	k=k+(k>>1);
-	attr_n=bgbcc_realloc(attr_n, k*sizeof(u16));
-	attr_v=bgbcc_realloc(attr_v, k*sizeof(u64));
+	attr_n=bgbcc_realloc(attr_n, (k+1)*sizeof(u16));
+	attr_v=bgbcc_realloc(attr_v, (k+1)*sizeof(u64));
 	node->attr_v[0].p=attr_n;
 	node->attr_v[1].p=attr_v;
 	node->mattr=k;	
@@ -581,6 +619,10 @@ void BCCX_Set(BCCX_Node *n, char *var, char *val)
 	u16 *an;
 	BCCX_AttrVal *av;
 	int i;
+
+	if(n->magic!=BCCX_NODE_MAGIC)
+		{ BGBCC_DBGBREAK }
+
 	i=BCCX_FetchAttrVal(n, var, &an, &av);
 	*an=(*an&4095)|(BCCX_IVTY_STRING<<12);
 	av->s=bgbcc_strdup(val);
@@ -591,6 +633,8 @@ void BCCX_SetInt(BCCX_Node *n, char *var, s64 val)
 	u16 *an;
 	BCCX_AttrVal *av;
 	int i;
+	if(n->magic!=BCCX_NODE_MAGIC)
+		{ BGBCC_DBGBREAK }
 	i=BCCX_FetchAttrVal(n, var, &an, &av);
 	*an=(*an&4095)|(BCCX_IVTY_INT<<12);
 	av->i=val;
@@ -601,6 +645,8 @@ void BCCX_SetFloat(BCCX_Node *n, char *var, double val)
 	u16 *an;
 	BCCX_AttrVal *av;
 	int i;
+	if(n->magic!=BCCX_NODE_MAGIC)
+		{ BGBCC_DBGBREAK }
 	i=BCCX_FetchAttrVal(n, var, &an, &av);
 	*an=(*an&4095)|(BCCX_IVTY_REAL<<12);
 	av->f=val;
@@ -612,6 +658,8 @@ void BCCX_SetCst(BCCX_Node *n, bccx_cxstate *rcst, char *var, char *val)
 	u16 *an;
 	BCCX_AttrVal *av;
 	int i;
+	if(n->magic!=BCCX_NODE_MAGIC)
+		{ BGBCC_DBGBREAK }
 	i=BCCX_FetchAttrValCst(n, rcst, var, &an, &av);
 	*an=(*an&4095)|(BCCX_IVTY_STRING<<12);
 	av->s=bgbcc_strdup(val);
@@ -622,6 +670,8 @@ void BCCX_SetIntCst(BCCX_Node *n, bccx_cxstate *rcst, char *var, s64 val)
 	u16 *an;
 	BCCX_AttrVal *av;
 	int i;
+	if(n->magic!=BCCX_NODE_MAGIC)
+		{ BGBCC_DBGBREAK }
 	i=BCCX_FetchAttrValCst(n, rcst, var, &an, &av);
 	*an=(*an&4095)|(BCCX_IVTY_INT<<12);
 	av->i=val;
@@ -632,6 +682,8 @@ void BCCX_SetFloatCst(BCCX_Node *n, bccx_cxstate *rcst, char *var, double val)
 	u16 *an;
 	BCCX_AttrVal *av;
 	int i;
+	if(n->magic!=BCCX_NODE_MAGIC)
+		{ BGBCC_DBGBREAK }
 	i=BCCX_FetchAttrValCst(n, rcst, var, &an, &av);
 	*an=(*an&4095)|(BCCX_IVTY_REAL<<12);
 	av->f=val;
@@ -701,6 +753,11 @@ void BCCX_AddV(BCCX_Node *parent, BCCX_Node *child)
 
 	if(!child)return;
 
+	if(parent->magic!=BCCX_NODE_MAGIC)
+		{ BGBCC_DBGBREAK }
+	if(child->magic!=BCCX_NODE_MAGIC)
+		{ BGBCC_DBGBREAK }
+
 #if 1
 //	if(!child->nattr && child->down && !child->down->next)
 	if((child->itag>>12)==BCCX_NTY_TRANS)
@@ -731,6 +788,11 @@ void BCCX_Add(BCCX_Node *parent, BCCX_Node *child)
 
 	if(!child)return;
 
+	if(parent->magic!=BCCX_NODE_MAGIC)
+		{ BGBCC_DBGBREAK }
+	if(child->magic!=BCCX_NODE_MAGIC)
+		{ BGBCC_DBGBREAK }
+
 	if(child->prev || child->up)
 	{
 		child=BCCX_CloneList(child);
@@ -760,12 +822,19 @@ BCCX_Node *BCCX_AddEnd(BCCX_Node *lst, BCCX_Node *n)
 {
 	BCCX_Node *cur;
 
+	if(n->magic!=BCCX_NODE_MAGIC)
+		{ BGBCC_DBGBREAK }
+
 	if(n->prev || n->up)
 	{
 		n=BCCX_CloneList(n);
 	}
 
 	if(!lst)return(n);
+
+	if(lst->magic!=BCCX_NODE_MAGIC)
+		{ BGBCC_DBGBREAK }
+
 	if(lst->up)
 	{
 		BCCX_Add(lst->up, n);
@@ -934,6 +1003,8 @@ char *BCCX_Text(BCCX_Node *n)
 
 void BCCX_SetTag(BCCX_Node *n, char *s)
 {
+	if(n->magic!=BCCX_NODE_MAGIC)
+		{ BGBCC_DBGBREAK }
 //	n->tag=bgbcc_strdup(s);
 	n->itag=BCCX_StringToStridx(s);
 }
@@ -941,6 +1012,8 @@ void BCCX_SetTag(BCCX_Node *n, char *s)
 void BCCX_SetTagCst(BCCX_Node *n, bccx_cxstate *rcst, char *str)
 {
 	int iv;
+	if(n->magic!=BCCX_NODE_MAGIC)
+		{ BGBCC_DBGBREAK }
 	iv=*rcst;
 	if(!iv)
 		{ iv=BCCX_StringToStridx(str); *rcst=iv; }
@@ -956,6 +1029,8 @@ int BCCX_TagIsP(BCCX_Node *n, char *str)
 //	if(!n->tag)return(0);
 	if(!n->itag)return(0);
 //	if(!strcmp(n->tag, str))
+	if(n->magic!=BCCX_NODE_MAGIC)
+		{ BGBCC_DBGBREAK }
 	if(!bccx_strcmp(BCCX_StridxToString(n->itag), str))
 		return(1);
 	return(0);
@@ -973,7 +1048,10 @@ int BCCX_TagIsCstP(BCCX_Node *n, bccx_cxstate *rcst, char *str)
 //	else
 //		{ if(bccx_strcmp(BCCX_StridxToString(ix), str))
 //			 { BGBCC_DBGBREAK } }
-		
+
+	if(n->magic!=BCCX_NODE_MAGIC)
+		{ BGBCC_DBGBREAK }
+
 	return(n->itag==ix);
 	
 //	if(!strcmp(BCCX_StridxToString(n->itag), str))
@@ -988,6 +1066,9 @@ int BCCX_AttrIsP(BCCX_Node *n, char *var, char *val)
 	if(!n)return(0);
 //	if(!n->tag)return(0);
 	if(!n->itag)return(0);
+
+	if(n->magic!=BCCX_NODE_MAGIC)
+		{ BGBCC_DBGBREAK }
 
 	s=BCCX_Get(n, var);
 	if(!s || !*s)
@@ -1011,6 +1092,9 @@ int BCCX_AttrIsCstP(BCCX_Node *n,
 //	if(!n->tag)return(0);
 	if(!n->itag)return(0);
 
+	if(n->magic!=BCCX_NODE_MAGIC)
+		{ BGBCC_DBGBREAK }
+
 	s=BCCX_GetCst(n, rcst, var);
 	if(!s || !*s)
 	{
@@ -1033,6 +1117,10 @@ int BCCX_TagAttrIsP(BCCX_Node *n, char *tag, char *var, char *val)
 //	if(strcmp(n->tag, tag))
 //		return(0);
 	if(!n->itag)return(0);
+
+	if(n->magic!=BCCX_NODE_MAGIC)
+		{ BGBCC_DBGBREAK }
+
 	if(bccx_strcmp(BCCX_StridxToString(n->itag), tag))
 		return(0);
 
@@ -1149,6 +1237,9 @@ BCCX_Node *BCCX_Fetch(BCCX_Node *parent, char *tag)
 	char *tb;
 	int i;
 
+	if(parent->magic!=BCCX_NODE_MAGIC)
+		{ BGBCC_DBGBREAK }
+
 	i=BCCX_LookupAttrVal(parent, tag, &an, &av);
 	if(i>=0)
 	{
@@ -1175,6 +1266,9 @@ BCCX_Node *BCCX_FetchCst(BCCX_Node *parent, bccx_cxstate *rcst, char *tag)
 	if(!iv)
 		{ iv=BCCX_StringToStridx(tag); *rcst=iv; }
 
+//	if(parent->magic!=BCCX_NODE_MAGIC)
+//		{ BGBCC_DBGBREAK }
+
 //	i=BCCX_LookupAttrVal(parent, tag, &an, &av);
 	i=BCCX_LookupAttrValIx(parent, iv, &an, &av);
 	if(i>=0)
@@ -1194,6 +1288,9 @@ BCCX_Node *BCCX_Clone(BCCX_Node *n)
 //	BCCX_Attr *ac, *at, *al;
 
 	if(!n)return(NULL);
+
+	if(n->magic!=BCCX_NODE_MAGIC)
+		{ BGBCC_DBGBREAK }
 
 	t=BCCX_AllocNode();
 
@@ -1268,6 +1365,9 @@ BCCX_Node *BCCX_CloneList(BCCX_Node *n)
 
 	if(!n)return(NULL);
 
+	if(n->magic!=BCCX_NODE_MAGIC)
+		{ BGBCC_DBGBREAK }
+
 	c=n; ls=NULL; le=NULL;
 	while(c)
 	{
@@ -1294,6 +1394,9 @@ void BCCX_Unlink(BCCX_Node *n)
 {
 	BCCX_Node *nu, *np, *nn;
 
+	if(n->magic!=BCCX_NODE_MAGIC)
+		{ BGBCC_DBGBREAK }
+
 	nu=n->up;
 	np=n->prev;
 	nn=n->next;
@@ -1318,6 +1421,9 @@ void BCCX_DeleteTree(BCCX_Node *n)
 {
 	BCCX_Node *cur, *nxt;
 //	BCCX_Attr *acur, *anxt;
+
+	if(n->magic!=BCCX_NODE_MAGIC)
+		{ BGBCC_DBGBREAK }
 
 	cur=n->down;
 	while(cur)
@@ -1354,6 +1460,10 @@ void BCCX_CheckDeleteUnlinked(BCCX_Node *n)
 //	return;
 
 	if(!n)return;
+
+	if(n->magic!=BCCX_NODE_MAGIC)
+		{ BGBCC_DBGBREAK }
+
 	if(!n->up)
 	{
 		BCCX_DeleteTree(n);

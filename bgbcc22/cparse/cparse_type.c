@@ -109,7 +109,7 @@ BCCX_Node *BGBCP_LookupTypeI(BGBCP_ParseState *ctx, char *name)
 #endif
 
 #if 0
-	c=ctx->types;
+//	c=ctx->types;
 	while(c)
 	{
 //		s=BCCX_GetCst(c, &bgbcc_rcst_name, "name");
@@ -219,7 +219,7 @@ BCCX_Node *BGBCP_LookupTypeI(BGBCP_ParseState *ctx, char *name)
 	BCCX_Node *c;
 	char *s;
 
-	c=ctx->types;
+//	c=ctx->types;
 	while(c)
 	{
 		s=BCCX_GetCst(c, &bgbcc_rcst_name, "name");
@@ -265,17 +265,42 @@ BCCX_Node *BGBCP_LookupType(BGBCP_ParseState *ctx, char *name)
 
 int BGBCP_HandleTypedef(BGBCP_ParseState *ctx, BCCX_Node *n)
 {
-	BCCX_Node *c, *t;
-	char *s;
+	BCCX_Node *c, *t, *n0, *n1, *n2, *n3;
+	char *s, *s1, *s2;
 	int i;
 
-	if(BCCX_TagIsP(n, "vars"))
+	if(BCCX_TagIsCstP(n, &bgbcc_rcst_vars, "vars"))
 	{
 		c=BCCX_Child(n);
 		while(c)
 		{
-			t=BCCX_Clone(c);
-			
+			if(BCCX_TagIsCstP(c, &bgbcc_rcst_proto, "proto"))
+			{
+				n2=BCCX_FetchCst(c, &bgbcc_rcst_args, "args");
+				n3=BCCX_FindTagCst(c, &bgbcc_rcst_type, "type");
+				s2=BGBCC_GenSym();
+
+				n0=BCCX_NewCst(&bgbcc_rcst_func, "func");
+				BCCX_SetCst(n0, &bgbcc_rcst_name, "name", s2);
+
+				BCCX_Add(n0, BCCX_Clone(n3));
+				BCCX_AddV(n0, BCCX_NewCst1V(&bgbcc_rcst_args, "args", n2));
+				ctx->structs=BCCX_AddEnd2(ctx->structs, &ctx->e_structs, n0);
+
+				n1=BCCX_NewCst(&bgbcc_rcst_type, "type");
+				BCCX_SetCst(n1, &bgbcc_rcst_name, "name", s2);
+				BCCX_SetIntCst(n1, &bgbcc_rcst_flags, "flags", 0);
+				BCCX_SetIntCst(n1, &bgbcc_rcst_ind, "ind", 0);
+
+				s=BCCX_GetCst(c, &bgbcc_rcst_name, "name");
+				t=BCCX_NewCst(&bgbcc_rcst_var, "var");
+				BCCX_SetCst(t, &bgbcc_rcst_name, "name", s);
+				BCCX_Add(t, n1);
+			}else
+			{
+				t=BCCX_Clone(c);
+			}
+
 #if 1
 			s=BCCX_GetCst(c, &bgbcc_rcst_name, "name");
 			if(!s) { c=BCCX_Next(c); continue; }
@@ -1698,6 +1723,10 @@ BCCX_Node *BGBCP_DefTypeC(BGBCP_ParseState *ctx, char **str)
 //	n=BGBCP_LookupType(ctx, b);
 	if(n)
 	{
+//		if(BCCX_TagIsCstP(n, &bgbcc_rcst_proto, "proto"))
+//		{
+//		}
+
 		s=BGBCP_Token2(s, b, &ty, ctx->lang);
 
 		while(1)

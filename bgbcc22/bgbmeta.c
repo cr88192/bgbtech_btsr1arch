@@ -1151,6 +1151,8 @@ int BGBCC_LoadCSourcesCCXL(
 
 	for(i=0; i<nnames; i++)
 	{
+//		BGBCC_CCXL_CheckSanityGlobals(ctx);
+	
 //		printf("BGBCC_LoadCSourcesCCXL: %s\n", names[i]);
 
 		if((names[i][0]=='-') && (names[i][1]=='l'))
@@ -1212,6 +1214,8 @@ int BGBCC_LoadCSourcesCCXL(
 		if(!t)
 			break;
 
+//		BGBCC_CCXL_CheckSanityGlobals(ctx);
+
 //		if(0)
 		if((lang==BGBCC_LANG_CS) ||
 			(lang==BGBCC_LANG_BS2))
@@ -1225,6 +1229,8 @@ int BGBCC_LoadCSourcesCCXL(
 			t0=clock();
 			BGBCC_CCXL_CompileModuleCTX(ctx, names[i], t);
 			BCCX_DeleteTree(t);
+
+			BGBCC_CCXL_CheckSanityGlobals(ctx);
 			
 			t1=clock();
 			t2=t1-t0;
@@ -1257,6 +1263,7 @@ int BGBCC_LoadCSourcesCCXL(
 	{
 		BGBCC_CCXL_CompileModuleTopOnlyCTX(ctx,
 			asts_bsn[i], asts_bsa[i]);
+		BGBCC_CCXL_CheckSanityGlobals(ctx);
 	}
 	
 	for(i=0; i<n_asts_bs; i++)
@@ -1265,6 +1272,9 @@ int BGBCC_LoadCSourcesCCXL(
 		t0=clock();
 		BGBCC_CCXL_CompileModuleCTX(ctx, asts_bsn[i], t);
 		BCCX_DeleteTree(t);
+
+		BGBCC_CCXL_CheckSanityGlobals(ctx);
+
 		t1=clock();
 		t2=t1-t0;
 //		printf("Compile Module %dms\n", t2);

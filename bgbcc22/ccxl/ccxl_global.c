@@ -15,6 +15,7 @@ int BGBCC_CCXL_HashName(char *name)
 	s=name; hi=0;
 	while(*s)hi=(hi*251)+(*s++);
 	hi=((hi*251)>>8)&4095;
+//	hi=((hi*251)>>8)&1023;
 	return(hi);
 }
 
@@ -27,11 +28,12 @@ int BGBCC_CCXL_HashNameCase(char *name)
 	while(*s)
 	{
 		c=(*s++);
-		if(((u32)(c-'A'))<('Z'-'A'))
+		if(((u32)(c-'A'))<=('Z'-'A'))
 			c+='a'-'A';
 		hi=(hi*251)+c;
 	}
 	hi=((hi*251)>>8)&4095;
+//	hi=((hi*251)>>8)&1023;
 	return(hi);
 }
 
@@ -44,6 +46,7 @@ int BGBCC_CCXL_HashNameNoSig(char *name)
 	while(*s && (*s!='('))
 		hi=(hi*251)+(*s++);
 	hi=((hi*251)>>8)&4095;
+//	hi=((hi*251)>>8)&1023;
 	return(hi);
 }
 
@@ -204,7 +207,8 @@ void BGBCC_CCXL_HandleUsortGlobals(
 		while(cur)
 		{
 			nxt=cur->hashnext;
-			if(!cur->name)
+//			if(!cur->name)
+			if(!cur->qname)
 			{
 				cur->hashnext=llst;
 				llst=cur;
@@ -230,6 +234,33 @@ void BGBCC_CCXL_HandleUsortGlobals(
 //			return(sel);
 	}
 #endif
+}
+
+void BGBCC_CCXL_CheckSanityGlobals(
+	BGBCC_TransState *ctx)
+{
+	BGBCC_CCXL_RegisterInfo *cur, *nxt;
+	BGBCC_CCXL_RegisterInfo *llst;
+	BGBCC_CCXL_RegisterInfo *sel;
+	int i, j;
+	
+	for(i=0; i<4096; i++)
+	{
+		cur=ctx->hash_globals[i];
+		while(cur)
+		{
+			if(!cur->qname)
+				{ BGBCC_DBGBREAK }
+			j=BGBCC_CCXL_HashNameNoSig(cur->qname);
+			if(i!=j)
+				{ BGBCC_DBGBREAK }
+
+//			if(!strcmp(cur->name, name))
+//			if(!strcmp(cur->qname, name))
+//				return(cur);
+			cur=cur->hashnext;
+		}
+	}
 }
 
 BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_LookupGlobalRns(
@@ -298,28 +329,32 @@ BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_LookupGlobal(
 		while(cur)
 		{
 			nxt=cur->hashnext;
-			if(!cur->name && !cur->qname)
+//			if(!cur->name && !cur->qname)
+			if(!cur->qname)
 			{
+				if(!sel && cur->name && !strcmp(cur->name, name))
+					sel=cur;
+
 				cur->hashnext=llst;
 				llst=cur;
 				cur=nxt;
 				continue;
 			}
 		
-			if(!sel && sel->name && !strcmp(cur->name, name))
+			if(!sel && cur->name && !strcmp(cur->name, name))
 				sel=cur;
-			if(!sel && sel->qname && !strcmp(cur->qname, name))
+			if(!sel && cur->qname && !strcmp(cur->qname, name))
 				sel=cur;
 
 #if 0
 //			i=BGBCC_CCXL_HashName(cur->name);
-			i=BGBCC_CCXL_HashNameNoSig(cur->name);
-			cur->hashnext=ctx->hash_globals[i];
-			ctx->hash_globals[i]=cur;
+//			i=BGBCC_CCXL_HashNameNoSig(cur->name);
+//			cur->hashnext=ctx->hash_globals[i];
+//			ctx->hash_globals[i]=cur;
 #endif
 
 #if 1
-			BGBCC_CCXL_NormalizeGlobalDeclQn(ctx, cur);
+//			BGBCC_CCXL_NormalizeGlobalDeclQn(ctx, cur);
 			i=BGBCC_CCXL_HashNameNoSig(cur->qname);
 			cur->hashnext=ctx->hash_globals[i];
 			ctx->hash_globals[i]=cur;
@@ -529,9 +564,9 @@ BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_GetGlobal2I(
 	cur->regid=i;
 
 //	h=BGBCC_CCXL_HashName(name);
-	h=BGBCC_CCXL_HashNameNoSig(name);
-	cur->hashnext=ctx->hash_globals[h];
-	ctx->hash_globals[h]=cur;
+//	h=BGBCC_CCXL_HashNameNoSig(name);
+//	cur->hashnext=ctx->hash_globals[h];
+//	ctx->hash_globals[h]=cur;
 #endif
 
 	return(cur);
@@ -557,8 +592,13 @@ void BGBCC_CCXL_NormalizeGlobalDeclQn(BGBCC_TransState *ctx,
 {
 	char *s, *sn, *sq;
 
+	if(decl->regtype==CCXL_LITID_VAR)
+		return;
+
 	if((decl->name && !decl->qname) ||
 		(!decl->name && decl->qname))
+//	if(decl->name && !decl->qname)
+//	if(!decl->name && decl->qname)
 	{
 		sq=decl->name; sn=sq; s=sq;
 		if(!sq)
@@ -606,7 +646,7 @@ void BGBCC_CCXL_AddGlobalDecl(BGBCC_TransState *ctx,
 	decl->gblid=ctx->n_reg_globals;
 	ctx->reg_globals[ctx->n_reg_globals++]=decl;
 
-	BGBCC_CCXL_NormalizeGlobalDeclQn(ctx, decl);
+//	BGBCC_CCXL_NormalizeGlobalDeclQn(ctx, decl);
 
 //	if(decl->name)
 	if(decl->qname)
@@ -666,6 +706,9 @@ void BGBCC_CCXL_AddFrameArg(BGBCC_TransState *ctx,
 		}
 		return;
 	}
+
+	if(decl->type.val==CCXL_TY_V)
+		{ BGBCC_DBGBREAK }
 
 	decl->gblid=frame->n_args;
 	frame->args[frame->n_args++]=decl;
@@ -2795,14 +2838,18 @@ void BGBCC_CCXL_End(BGBCC_TransState *ctx)
 	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_END);
 
 	obj=ctx->cur_obj;
+
 	switch(obj->littype)
 	{
 	case CCXL_LITID_FUNCTION:
 		BGBCC_CCXL_EmitCallRetDefault(ctx);
+
+		BGBCC_CCXL_NormalizeGlobalDeclQn(ctx, obj->decl);
 		BGBCC_CCXL_EndFunction(ctx, obj);
 		break;
 	case CCXL_LITID_PROTOTYPE:
 //		BGBCC_CCXL_EmitCallRetDefault(ctx);
+		BGBCC_CCXL_NormalizeGlobalDeclQn(ctx, obj->decl);
 		BGBCC_CCXL_EndFunction(ctx, obj);
 		break;
 	case CCXL_LITID_VALUE:
@@ -2814,6 +2861,7 @@ void BGBCC_CCXL_End(BGBCC_TransState *ctx)
 
 		obj->decl->pbname=BGBCC_CCXL_GetObjQName(ctx, obj->parent);
 		obj->decl->qname=BGBCC_CCXL_GetObjQName(ctx, obj);
+		BGBCC_CCXL_NormalizeGlobalDeclQn(ctx, obj->decl);
 
 		if(obj->decl->sig)
 		{
@@ -2956,6 +3004,9 @@ void BGBCC_CCXL_End(BGBCC_TransState *ctx)
 			BGBCC_CCXL_AddGlobalDecl(ctx, obj->decl);
 		}
 #endif
+
+		if(obj->decl)
+			BGBCC_CCXL_NormalizeGlobalDeclQn(ctx, obj->decl);
 		break;
 
 	case CCXL_LITID_TYPEDEF:
@@ -2973,6 +3024,8 @@ void BGBCC_CCXL_End(BGBCC_TransState *ctx)
 	case CCXL_LITID_STRUCT:
 	case CCXL_LITID_CLASS:
 	case CCXL_LITID_UNION:
+		if(obj->decl)
+			BGBCC_CCXL_NormalizeGlobalDeclQn(ctx, obj->decl);
 		BGBCC_CCXL_FixupObjSize(ctx, obj, 0);
 		break;
 

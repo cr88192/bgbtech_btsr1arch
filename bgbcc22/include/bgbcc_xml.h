@@ -39,6 +39,8 @@ double f;
 #define BCCX_NODE_FIXATTR		6
 #define BCCX_NODE_FESCATTR		12
 
+#define BCCX_NODE_MAGIC			0x40DE
+
 struct BCCX_Node_s {
 BCCX_Node *next;
 BCCX_Node *prev;
@@ -46,7 +48,7 @@ BCCX_Node *up;
 BCCX_Node *down;
 BCCX_Node *down_end;
 BCCX_Node *hnext;		//hash next
-
+u16	magic;
 u16 itag;
 byte nattr, mattr;
 u16 attr_n[BCCX_NODE_FIXATTR];

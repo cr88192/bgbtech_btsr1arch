@@ -1021,14 +1021,19 @@ int bgbcc_stricmp(char *s1, char *s2)
 	int i0, i1;
 
 	i0=*s1++; i1=*s2++;
+	if((i0>='a') && (i0<='z'))i0=i0-'a'+'A';
+	if((i1>='a') && (i1<='z'))i1=i1-'a'+'A';
+
 	while(i0 && i1)
 	{
-		if((i0>='a') && (i0<='z'))i0=i0-'a'+'A';
-		if((i1>='a') && (i1<='z'))i1=i1-'a'+'A';
 		if(i0!=i1)
 			break;
+
 		i0=*s1++; i1=*s2++;
+		if((i0>='a') && (i0<='z'))i0=i0-'a'+'A';
+		if((i1>='a') && (i1<='z'))i1=i1-'a'+'A';
 	}
+
 	if(i0>i1)return( 1);
 	if(i0<i1)return(-1);
 	return(0);

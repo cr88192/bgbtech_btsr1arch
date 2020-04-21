@@ -75,8 +75,12 @@ ccxl_label BGBCC_CCXL_LabelFromName(BGBCC_TransState *ctx, char *name)
 BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_GetLiteralRawSig(
 	BGBCC_TransState *ctx, char *sig)
 {
+	char tb0[256], tb1[256];
 	BGBCC_CCXL_LiteralInfo *obj;
-	int i;
+	BGBCC_CCXL_LiteralInfo *obj1;
+	ccxl_type bty;
+	char *s0, *s1;
+	int i, j, k;
 	
 	for(i=1; i<ctx->n_literals; i++)
 	{
@@ -86,6 +90,61 @@ BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_GetLiteralRawSig(
 		if(!strcmp(obj->sig, sig))
 			return(obj);
 	}
+
+#if 0
+	if(*sig=='(')
+	{
+		obj=BGBCC_CCXL_AllocLiteral(ctx);
+		obj->decl=bgbcc_malloc(sizeof(BGBCC_CCXL_RegisterInfo));
+		obj->decl->regtype=CCXL_LITID_FUNCTION;
+		obj->littype=CCXL_LITID_FUNCTION;
+//		obj->littype=CCXL_LITID_RAWSIG;
+		obj->sig=bgbcc_strdup(sig);
+
+		s0=sig+1; i=1;
+		while(*s0 && (*s0!=')'))
+		{
+			sprintf(tb1, "_a%d", i++);
+
+			s1=BGBCC_CCXL_SigNext(s0);
+			j=s1-s0;
+			memset(tb0, 0, 256);
+			memcpy(tb0, s0, j);
+
+			obj1=BGBCC_CCXL_AllocLiteral(ctx);
+			obj1->decl=bgbcc_malloc(sizeof(BGBCC_CCXL_RegisterInfo));
+			obj1->decl->regtype=CCXL_LITID_VAR;
+			obj1->littype=CCXL_LITID_VAR;
+
+			obj1->decl->name=bgbcc_strdup(tb1);
+
+			obj1->decl->sig=bgbcc_strdup(tb0);
+			BGBCC_CCXL_TypeFromSig(ctx, &bty, tb0);
+			obj1->decl->type=bty;
+
+			BGBCC_CCXL_AddFrameArg(ctx,
+				obj->decl,
+				obj1->decl);
+
+			BGBCC_CCXL_CheckFreeLiteral(ctx, obj1);
+
+			s0=s1;
+		}
+		
+		if(*s0==')')
+		{
+			s0++;
+//			BGBCC_CCXL_TypeFromSig(ctx, &bty, s0);
+//			obj1->decl->type=bty;
+		}
+
+		BGBCC_CCXL_AddLiteral(ctx, obj);
+		return(obj);
+
+//		BGBCC_CCXL_Begin(ctx, CCXL_CMD_S_PROTOTYPE);
+//		BGBCC_CCXL_End(ctx);
+	}
+#endif
 	
 	obj=BGBCC_CCXL_AllocLiteral(ctx);
 	obj->littype=CCXL_LITID_RAWSIG;

@@ -643,6 +643,17 @@ void BJX2_Op_MULUW_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 //	ctx->regs[op->rn]=((u64)((u32)ctx->regs[op->rm]))*op->imm;
 	ctx->regs[op->rn]=(u32)(((u16)ctx->regs[op->rm])*op->imm);
 }
+
+
+void BJX2_Op_MULSW_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[op->rn]=(s32)(((s16)ctx->regs[op->rn])*op->imm);
+}
+
+void BJX2_Op_MULUW_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[op->rn]=(u32)(((u16)ctx->regs[op->rn])*op->imm);
+}
 #endif
 
 #if 1

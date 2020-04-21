@@ -2244,6 +2244,11 @@ void BGBCC_CCXL_CompileExprAsTypeSig(BGBCC_TransState *ctx,
 				c=BCCX_Next(c);
 			}
 			
+			if(na>=64)
+			{
+				BGBCC_DBGBREAK
+			}
+			
 			for(i=0; i<na; i++)
 			{
 				if(!BGBCC_CCXL_IsRealP(ctx, an[i]))

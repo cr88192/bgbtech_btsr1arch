@@ -96,6 +96,36 @@ int tk_cmd2idx(char *s)
 	return(-1);
 }
 
+void TK_FlushCacheL1D_INVDC(void *ptr);
+void TK_FlushCacheL1D_INVIC(void *ptr);
+void TK_FlushCacheL1D_ReadBuf(void *ptr, int sz);
+__asm {
+TK_FlushCacheL1D_INVDC:
+	INVDC	R4
+	RTSU
+TK_FlushCacheL1D_INVIC:
+	INVIC	R4
+	RTSU
+
+TK_FlushCacheL1D_ReadBuf:
+	.L0:
+	MOV.Q	(R4), R7
+	ADD		-16, R5
+	CMP/GT	0, R5
+	BT		.L0
+	RTSU
+};
+
+void TK_FlushCacheL1D(void *pptr)
+{
+	TK_FlushCacheL1D_INVDC(NULL);
+	TK_FlushCacheL1D_ReadBuf(pptr, 65536);
+	TK_FlushCacheL1D_INVDC(NULL);
+	TK_FlushCacheL1D_ReadBuf(pptr, 65536);
+
+	TK_FlushCacheL1D_INVIC(NULL);
+}
+
 void tk_tryload(char *img, char **args)
 {
 	TK_FILE *fd;
@@ -117,6 +147,7 @@ void tk_tryload(char *img, char **args)
 		
 		if(bootptr)
 		{
+			TK_FlushCacheL1D(bootptr);
 			__arch_gbr=bootgbr;
 			bootptr();
 		}

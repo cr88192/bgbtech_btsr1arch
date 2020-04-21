@@ -98,8 +98,8 @@ reg			tRegOutSrT;
 reg			tRegOutSrS;
 
 // `ifdef def_true
-// `ifndef def_true
-`ifdef jx2_enable_clz
+`ifndef def_true
+// `ifdef jx2_enable_clz
 wire[7:0]		tClzVal;
 ExOpClz	clz(
 	clock,		reset,
@@ -367,7 +367,8 @@ begin
 	tResultu2A=0;
 
 	case(idUIxt[3:0])
-`ifdef jx2_enable_clz
+// `ifdef jx2_enable_clz
+`ifndef def_true
 		4'h0: begin
 			tResultu1A = { UV25_00, tClzVal };
 			tResultu2A = { UV57_00, tClzVal };

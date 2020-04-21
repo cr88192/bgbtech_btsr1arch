@@ -296,6 +296,27 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 
 		switch(opw1&0xF)
 		{
+		case 0x0:	case 0x1:
+//			op->imm=imm16s;
+//			op->rn=rn_i16;
+			op->nmid=BJX2_NMID_ADD;
+			op->fmid=BJX2_FMID_IMMREG;
+			op->Run=BJX2_Op_ADD_ImmReg;
+			break;
+
+		case 0x2:	case 0x3:
+//			op->imm=imm16s;
+//			op->rn=rn_i16;
+			op->nmid=BJX2_NMID_MULSW;
+			op->fmid=BJX2_FMID_IMMREG;
+			op->Run=BJX2_Op_MULSW_ImmReg;
+			if(eq)
+			{
+				op->nmid=BJX2_NMID_MULUW;
+				op->Run=BJX2_Op_MULUW_ImmReg;
+			}
+			break;
+
 		case 0x4:
 			op->nmid=BJX2_NMID_LDIZ;
 			op->fmid=BJX2_FMID_IMMREG;

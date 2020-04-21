@@ -584,9 +584,12 @@ void BGBCC_CCXLR3_EmitArgBlob(
 	ctx->ril_psidx[i]=ctx->ril_txrov;
 	ctx->ril_pslen[i]=len;
 
-	j=ctx->ril_pslix[len];
-	ctx->ril_pschn[i]=j;
-	ctx->ril_pslix[len]=i;
+	if(len<256)
+	{
+		j=ctx->ril_pslix[len];
+		ctx->ril_pschn[i]=j;
+		ctx->ril_pslix[len]=i;
+	}
 
 	ctx->ril_psrov=(i+1)&63;
 #endif
@@ -600,9 +603,12 @@ void BGBCC_CCXLR3_EmitArgBlob(
 		ctx->ril_psidx[i]=ctx->ril_txrov;
 		ctx->ril_pslen[i]=len;
 
-		j=ctx->ril_pslix[len];
-		ctx->ril_pschn[i]=j;
-		ctx->ril_pslix[len]=i;
+		if(len<256)
+		{
+			j=ctx->ril_pslix[len];
+			ctx->ril_pschn[i]=j;
+			ctx->ril_pslix[len]=i;
+		}
 
 		ctx->ril_psrov=(i+1)&63;
 #endif
@@ -691,9 +697,12 @@ void BGBCC_CCXLR3_EmitArgBlob(
 		ctx->ril_psidx[i]=ctx->ril_txrov;
 		ctx->ril_pslen[i]=len;
 
-		j=ctx->ril_pslix[len];
-		ctx->ril_pschn[i]=j;
-		ctx->ril_pslix[len]=i;
+		if(len<256)
+		{
+			j=ctx->ril_pslix[len];
+			ctx->ril_pschn[i]=j;
+			ctx->ril_pslix[len]=i;
+		}
 
 		ctx->ril_psrov=(i+1)&63;
 #endif

@@ -454,12 +454,30 @@ int BGBCC_JX2_CheckOps32ValidWexSuffixFl(
 				return(0);
 		}
 
+		if((opw2&0xF000)==0x2000)
+		{
+			if((opw2&0x000C)==0x0004)
+			{
+				if(opw2&0x0800)
+				{
+					/* 128-bit SIMD ops. */
+					return(0);
+				}
+			}
+		}
+
 		if((opw2&0xF00F)==0x3000)
 		{
 			if((opw1&0x00F0)==0x0000)
 			{
 				return(0);
 			}
+			return(0);
+		}
+
+		if((opw2&0xF003)==0x4000)
+		{
+			/* MOV.X */
 			return(0);
 		}
 
@@ -550,16 +568,36 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix(
 			}
 			break;
 		case 0x2:
+			switch(opw2&15)
+			{
+			case 0x0:	case 0x1:
+			case 0x8:	case 0x9:
+				ret=1;
+				break;
+			default:
+				break;
+			}
 			break;
 		case 0x3:
 			break;
 		case 0x4:
+			switch(opw2&15)
+			{
+			case 0x0:	case 0x4:
+			case 0x8:	case 0xC:
+				ret=0;
+				break;
+			default:
+				break;
+			}
 			break;
 		case 0x5:
 			switch(opw2&15)
 			{
 			case 0x0:
+			case 0x1:
 			case 0x4:	case 0x5:
+			case 0x6:	case 0x7:
 			case 0xC:	case 0xD:
 			case 0xE:	case 0xF:
 				ret=1;

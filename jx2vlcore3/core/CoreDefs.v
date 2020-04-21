@@ -95,8 +95,11 @@ parameter[  8:0] UV9_XX			= 9'hXXX;	//
 parameter[  9:0] UV10_XX		= 10'hXXX;	//
 parameter[ 10:0] UV11_XX		= 11'hXXX;	//
 parameter[ 11:0] UV12_XX		= 12'hXXX;	//
-
+parameter[ 12:0] UV13_XX		= 13'hXXXX;	//
+parameter[ 13:0] UV14_XX		= 14'hXXXX;	//
+parameter[ 14:0] UV15_XX		= 15'hXXXX;	//
 parameter[ 15:0] UV16_XX		= 16'hXXXX;	//
+
 parameter[ 27:0] UV28_XX		= 28'hXXXXXXX;	//
 parameter[ 31:0] UV32_XX		= 32'hXXXXXXXX;	//
 parameter[ 32:0] UV33_XX		= 33'hXXXXXXXXX;	//
@@ -113,6 +116,7 @@ parameter[255:0] UV256_XX		= { UV128_XX, UV128_XX };	//
 
 parameter[319:0] UV320_XX		= { UV256_XX, UV64_XX };	//
 parameter[383:0] UV384_XX		= { UV256_XX, UV128_XX };	//
+parameter[511:0] UV512_XX		= { UV256_XX, UV256_XX };	//
 
 parameter      UV1_00			= 1'h0;	//
 parameter      UV1_FF			= 1'h1;	//
@@ -141,6 +145,9 @@ parameter[11:0] UV12_FF			= 12'hFFF;	//
 
 parameter[12:0] UV13_00			= 13'h0000;	//
 parameter[12:0] UV13_FF			= 13'h1FFF;	//
+
+parameter[13:0] UV14_00			= 14'h0000;	//
+parameter[13:0] UV14_FF			= 14'h3FFF;	//
 
 parameter[14:0] UV15_00			= 15'h0000;	//
 parameter[14:0] UV15_FF			= 15'h7FFF;	//
@@ -228,6 +235,9 @@ parameter[191:0] UV192_FF		= { UV64_FF, UV128_FF };	//
 
 parameter[255:0] UV256_00		= { UV128_00, UV128_00 };	//
 parameter[255:0] UV256_FF		= { UV128_FF, UV128_FF };	//
+
+parameter[511:0] UV512_00		= { UV256_00, UV256_00 };	//
+parameter[511:0] UV512_FF		= { UV256_FF, UV256_FF };	//
 
 
 parameter[1:0] UMEM_OK_READY	= 2'h0;		//Ready (Awaiting Request)
@@ -364,11 +374,11 @@ parameter[4:0] JX2_FMID_REGREG			= 5'h04;	//OOnm	Rm, Rn
 parameter[4:0] JX2_FMID_IMM8REG			= 5'h05;	//Onii	#imm8s, Rn
 parameter[4:0] JX2_FMID_IMM8Z			= 5'h06;	//OOjj	#imm8u, DLR
 parameter[4:0] JX2_FMID_IMM8N			= 5'h07;	//OOjj	#imm8n, DLR
-// parameter[4:0] JX2_FMID_REGSTREG		= 5'h08;	//OOnm  Rm, (Rn)
+
 parameter[4:0] JX2_FMID_LDREGREG		= 5'h09;	//OOnm  (Rm), Rn
-// parameter[4:0] JX2_FMID_REGSTDRREG		= 5'h0A;	//OOnm  Rm, (Rn, DLR)
+
 parameter[4:0] JX2_FMID_LDDRREGREG		= 5'h0B;	//OOnm  (Rm, DLR), Rn
-// parameter[4:0] JX2_FMID_REGSTDRPC		= 5'h0C;	//OOnO  Rn, (PC, DLR)
+
 parameter[4:0] JX2_FMID_LDDRPCREG		= 5'h0D;	//OOnO  (PC, DLR), Rn
 parameter[4:0] JX2_FMID_IMM4ZREG		= 5'h0E;	//OOnj  #imm4u, Rn
 parameter[4:0] JX2_FMID_IMM4NREG		= 5'h0F;	//OOnj  #imm4n, Rn
@@ -379,11 +389,10 @@ parameter[4:0] JX2_FMID_PCDISP8			= 5'h13;	//OOdd	(PC, disp8s)
 
 parameter[4:0] JX2_FMID_IMM12Z			= 5'h16;	//Ojjj	#imm12u, DLR
 parameter[4:0] JX2_FMID_IMM12N			= 5'h17;	//Ojjj	#imm12n, DLR
-// parameter[4:0] JX2_FMID_REGSTDLR		= 5'h18;	//OOnO  Rn, (DLR)
-// parameter[4:0] JX2_FMID_REGSTREGDISP	= 5'h18;	//OOnm  Rm, (Rn)
+
 parameter[4:0] JX2_FMID_LDDLRREG		= 5'h19;	//OOnO  (DLR), Rn
-parameter[4:0] JX2_FMID_LDREGDISPREG	= 5'h19;	//OOnm  (Rm), Rn
-// parameter[4:0] JX2_FMID_REGSTDI4SP		= 5'h1E;	//OOnj  Rn, (SP, disp4)
+parameter[4:0] JX2_FMID_LDREGDISPREG	= 5'h19;	//OOnm  (Rm, Disp), Rn
+
 parameter[4:0] JX2_FMID_LDDI4SPREG		= 5'h1F;	//OOnj  (SP, disp4), Rn
 
 parameter[4:0] JX2_FMID_REGSTREG		= JX2_FMID_LDREGREG;
@@ -476,7 +485,14 @@ parameter[5:0] JX2_UCIX_ALU_PSBBL	= 6'h33;		//Packed ALU SBB
 parameter[5:0] JX2_UCIX_ALU_PCSELT	= 6'h3F;		//Packed CSELT
 
 parameter[5:0] JX2_UCIX_ALUN_CLZ	= 6'h00;		//Count Leading Zeroes
+parameter[5:0] JX2_UCIX_ALUN_CTZ	= 6'h01;		//Count Trailing Zeroes
+parameter[5:0] JX2_UCIX_ALUN_BTRNS	= 6'h02;		//Transpose Bits
+parameter[5:0] JX2_UCIX_ALUN_PMORTL	= 6'h03;		//Transpose Bits
+
 parameter[5:0] JX2_UCIX_ALUN_CLZQ	= 6'h20;		//Count Leading Zeroes (QW)
+parameter[5:0] JX2_UCIX_ALUN_CTZQ	= 6'h21;		//Count Trailing Zeroes (QW)
+parameter[5:0] JX2_UCIX_ALUN_BTRNSQ	= 6'h22;		//Transpose Bits (QW)
+parameter[5:0] JX2_UCIX_ALUN_PMORTQ	= 6'h23;		//Transpose Bits
 
 parameter[5:0] JX2_UCIX_ALUW_PADDW	= 6'h20;		//ALU ADD
 parameter[5:0] JX2_UCIX_ALUW_PSUBW	= 6'h21;		//ALU SUB
@@ -504,8 +520,8 @@ parameter[5:0] JX2_UCIX_CONV_EXTUW	= 6'h05;		//
 parameter[5:0] JX2_UCIX_CONV_EXTUL	= 6'h06;		//
 parameter[5:0] JX2_UCIX_CONV_NOT	= 6'h07;		//NOT
 
-parameter[5:0] JX2_UCIX_CONV_CLZ	= 6'h08;		//Count Leading Zeroes (L)
-parameter[5:0] JX2_UCIX_CONV_CLZQ	= 6'h09;		//Count Leading Zeroes (Q)
+// parameter[5:0] JX2_UCIX_CONV_CLZ	= 6'h08;		//Count Leading Zeroes (L)
+// parameter[5:0] JX2_UCIX_CONV_CLZQ	= 6'h09;		//Count Leading Zeroes (Q)
 
 parameter[5:0] JX2_UCIX_CONV_LDIHI		= 6'h0A;		//Load High Bits
 parameter[5:0] JX2_UCIX_CONV_LDIQHI		= 6'h0B;		//Load High Bits
@@ -646,13 +662,23 @@ parameter[5:0] JX2_UCIX_IXS_INVDC	= 6'h11;		//Flush D$
 `endif
 
 
-`ifdef jx2_expand_l1sz
-parameter[255:0] JX2_L1_FLUSHMSK	= UV256_FF;		//
+`ifdef jx2_expand_l1isz
+parameter[255:0] JX2_L1I_FLUSHMSK	= UV256_FF;		//
 `else
 `ifdef jx2_reduce_l1sz
-parameter[15:0] JX2_L1_FLUSHMSK	= UV16_FF;		//
+parameter[15:0] JX2_L1I_FLUSHMSK	= UV16_FF;		//
 `else
-parameter[63:0] JX2_L1_FLUSHMSK	= UV64_FF;		//
+parameter[63:0] JX2_L1I_FLUSHMSK	= UV64_FF;		//
+`endif
+`endif
+
+`ifdef jx2_expand_l1dsz
+parameter[511:0] JX2_L1D_FLUSHMSK	= UV512_FF;		//
+`else
+`ifdef jx2_reduce_l1sz
+parameter[15:0] JX2_L1D_FLUSHMSK	= UV16_FF;		//
+`else
+parameter[63:0] JX2_L1D_FLUSHMSK	= UV64_FF;		//
 `endif
 `endif
 

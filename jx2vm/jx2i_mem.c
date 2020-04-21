@@ -280,8 +280,8 @@ int BJX2_MemSimAddrL1I(BJX2_Context *ctx, bjx2_addr addr)
 		return(0);
 	
 //	h=(addr>>4)&63;
-	h=(addr>>5)&63;
-//	h=(addr>>5)&255;
+//	h=(addr>>5)&63;
+	h=(addr>>5)&255;
 //	h=(addr>>5)&511;
 
 //	ctx->mem_cyc+=3;
@@ -365,9 +365,9 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr)
 		return(0);
 	
 //	h=(addr>>4)&63;
-	h=(addr>>5)&63;
+//	h=(addr>>5)&63;
 //	h=(addr>>5)&255;
-//	h=(addr>>5)&511;
+	h=(addr>>5)&511;
 
 //	ctx->mem_cyc+=3;
 	ctx->mem_cyc+=2;
@@ -420,8 +420,11 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr)
 	}
 #endif
 
-	p1=5;
-	p2=24;
+//	p1=5;
+//	p2=24;
+
+	p1=7;
+	p2=36;
 
 	ctx->miss_cyc+=p1;
 	ctx->miss_cyc_l1+=p1;
@@ -449,7 +452,7 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr)
 	if((addr>>4)==ctx->mem_l2h32k[(h<<1)|0])
 		return(0);
 
-#if 1
+#if 0
 	if((addr>>4)==ctx->mem_l2h32k[(h<<1)|1])
 	{
 		t0=ctx->mem_l2h32k[(h<<1)|0];
