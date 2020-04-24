@@ -944,35 +944,42 @@ void FindEmptyTile(int *stilex, int *stiley)
 	y = *stiley;
 
 	if (CheckTile(x,y) && (oldarea == AREANUMBER(x,y)))
-	return;
+		return;
 
-	for (i=1;;i++)
-		{roverx = x-i;
+//	for (i=1;;i++)
+//	for (i=1; i<512; i++)
+	for (i=1; i<64; i++)
+	{
+		roverx = x-i;
 		rovery = y-i;
 
 		CheckSet(roverx,rovery);
 		limit = i<<1;
 
 		for(j=0;j<limit;j++)
-			{roverx++;
+		{
+			roverx++;
 			CheckSet(roverx,rovery);
-			}
+		}
 
 		for(j=0;j<limit;j++)
-			{rovery++;
+		{
+			rovery++;
 			CheckSet(roverx,rovery);
-			}
+		}
 
 		for(j=0;j<limit;j++)
-			{roverx--;
+		{
+			roverx--;
 			CheckSet(roverx,rovery);
-			}
+		}
 
 		for(j=0;j<limit-1;j++)
-			{rovery--;
+		{
+			rovery--;
 			CheckSet(roverx,rovery);
-			}
 		}
+	}
 }
 
 //================================================================
@@ -1200,9 +1207,9 @@ void SpawnDoor (int tilex, int tiley, int lock, int texture)
 		( MAPSPOT(tilex,tiley,1) >= 29 ) &&
 		( MAPSPOT(tilex,tiley,1) <= 32 )
 		)
-		{
+	{
 		lock = MAPSPOT(tilex,tiley,1) - 28;
-		}
+	}
 
 	lastdoorobj->position = 0;
 	lastdoorobj->tilex = tilex;
@@ -1255,6 +1262,21 @@ void SpawnDoor (int tilex, int tiley, int lock, int texture)
 
 	switch (texture)
 		{
+		case 4:		//BGB: Wolf3D door.
+		case 5:		//BGB: Wolf3D door.
+			basetexture = W_CheckNumForName("WLFDOOR1\0");
+			if(basetexture<0)
+			{
+				basetexture = W_GetNumForName("RAMDOOR1\0");
+			}
+			break;
+		case 6:		//BGB: Wolf3D door.
+			basetexture = W_CheckNumForName("WLFDOOR3\0");
+			if(basetexture<0)
+			{
+				basetexture = W_GetNumForName("RAMDOOR1\0");
+			}
+			break;
 
 		case 0:
 		case 8:
@@ -1320,6 +1342,14 @@ void SpawnDoor (int tilex, int tiley, int lock, int texture)
 
 	switch (texture)
 		{
+		case 4:		//BGB
+		case 5:		//BGB
+		case 6:		//BGB
+//			lastdoorobj->sidepic	= W_GetNumForName("SIDE8");
+			lastdoorobj->sidepic	= W_GetNumForName("WALL65");
+			lastdoorobj->alttexture = W_GetNumForName("ABOVEW3");
+			break;
+
 		case 0:
 		case 1:
 		case 2:
@@ -3320,9 +3350,19 @@ int GetAreaNumber ( int tilex, int tiley, int dir )
 void SpawnPushWall (int tilex, int tiley, int lock, int texture, int dir, int type)
 {
 	pwallobj_t * lastpwallobj;
+	int area;
 
 	if (pwallnum==MAXPWALLS)
-		Error ("MAXPWALLS on level!");
+	{
+//		Error ("MAXPWALLS on level!");
+
+		printf ("MAXPWALLS on level!\n");
+
+		//BGB: just sorta remove the pushwall...
+		area = GetAreaNumber(tilex,tiley,dir);
+		MAPSPOT (tilex, tiley, 0)=(word)(area+AREATILE);
+		return;
+	}
 
 	pwallobjlist[pwallnum]=(pwallobj_t*)Z_LevelMalloc(sizeof(pwallobj_t),PU_LEVELSTRUCT,NULL);
 	memset(pwallobjlist[pwallnum],0,sizeof(pwallobj_t));

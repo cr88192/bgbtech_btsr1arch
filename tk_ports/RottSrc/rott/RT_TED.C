@@ -100,6 +100,17 @@ unsigned MapSpecials = 0;
 
 char LevelName[80];
 
+
+int rott_wallcache[256];
+int rott_wallstrt;
+int rott_wallstop;
+
+int rott_shapecache[4096];
+int rott_shapestrt;
+int rott_shapestop;
+
+boolean rott_iswolf = false;
+
 //========================================
 // LOCAL VARIABLES
 //========================================
@@ -157,6 +168,9 @@ static char CacheStrings[MAXSILLYSTRINGS][80]=
 
 void SetupGameLevel (void);
 void ScanInfoPlane(void);
+
+
+#include "rt_wolf.c"
 
 
 //========================================
@@ -1156,7 +1170,8 @@ void PreCache( void )
 		ticdelay=CACHETICDELAY;
 		for (i=1;i<cacheindex;i++)
 			{
-			dummy=W_CacheLumpNum(cachelist[i].lump,cachelist[i].cachelevel);
+//			dummy=W_CacheLumpNum(cachelist[i].lump,cachelist[i].cachelevel);
+			dummy=W_CacheWallLumpNum(cachelist[i].lump,cachelist[i].cachelevel);
 			total+=W_LumpLength(cachelist[i].lump);
 			newheap=Z_UsedHeap();
 			currentmem=(newheap*MAXLEDS)/maxheapsize;
@@ -1239,7 +1254,8 @@ void PreCache( void )
 		{
 		for (i=1;i<cacheindex;i++)
 			{
-			dummy=W_CacheLumpNum(cachelist[i].lump,cachelist[i].cachelevel);
+//			dummy=W_CacheLumpNum(cachelist[i].lump,cachelist[i].cachelevel);
+			dummy=W_CacheWallLumpNum(cachelist[i].lump,cachelist[i].cachelevel);
 			DoLoadGameAction ();
 			}
 		ShutdownPreCache ();
@@ -1269,32 +1285,105 @@ void PreCache( void )
 
 void CA_RLEWexpand (word *source, word *dest,long length, unsigned rlewtag)
 {
-		word  value,count,i;
-		word			*end;
+	word  value,count,i;
+	word			*end;
 
-		end = dest + length;
-		//
-		// expand it
-		//
-		do
+	end = dest + length;
+	//
+	// expand it
+	//
+	do
+	{
+		value = IntelShort(*source++);
+		if (value != rlewtag)
 		{
-					value = IntelShort(*source++);
-					if (value != rlewtag)
-					//
-					// uncompressed
-					//
-								*dest++=value;
-					else
-					{
-					//
-					// compressed string
-					//
-								count = IntelShort(*source++);
-								value = IntelShort(*source++);
-								for (i=1;i<=count;i++)
-										*dest++ = value;
-					}
-		} while (dest<end);
+			//
+			// uncompressed
+			//
+			*dest++=value;
+		}
+		else
+		{
+			//
+			// compressed string
+			//
+			count = IntelShort(*source++);
+			value = IntelShort(*source++);
+			for (i=1;i<=count;i++)
+					*dest++ = value;
+		}
+	} while (dest<end);
+}
+
+/*
+Tweaked RLE Scheme. Does not use a tag.
+00..7F: 0000..007F
+80..BF: 0080..3FFF
+C0 WORD: Escaped Word
+C1..DF: Repeat last value 1..31 times.
+E2..FF BYTE: LZ copy (2..31 elements), with BYTE offset.
+ */
+
+void CA_BTRLE1Wexpand (byte *source, word *dest,
+	long length)
+{
+	word	value,count;
+	byte	*cs;
+	word	*ct, *end;
+	int		i, j, k, d;
+
+	cs=source;
+	ct = dest;
+	end = dest + length;
+	
+	while(ct<end)
+	{
+		i=*cs++;
+		if(i<0x80)
+		{
+			value=i;
+			*ct++=value;
+			continue;
+		}
+		if(i<0xC0)
+		{
+			value=((i&0x3F)<<8)|(*cs++);
+			*ct++=value;
+			continue;
+		}
+		if(i==0xC0)
+		{
+			j = cs[0] | (cs[1]<<8);
+			cs+=2;
+			if(j>=0x4000)
+			{
+				value=j;
+				*ct++=value;
+				continue;
+			}
+			if(j<4096)
+			{
+				while(j--)
+					*ct++=value;
+				continue;
+			}
+		}
+		if(i<0xE0)
+		{
+			j=i-0xC0;
+			while(j--)
+				*ct++=value;
+			continue;
+		}
+		if((i>=0xE2) && (i<=0xFF))
+		{
+			d=*cs++;
+			j=i-0xE0;
+			while(j--)
+				*ct++=*(ct-d);
+			continue;
+		}
+	}
 }
 
 /*
@@ -1380,21 +1469,22 @@ void ReadROTTMap
 	SafeRead( filehandle, &RTLMap, sizeof( RTLMap ) );
 
 	if ( !RTLMap.used )
-		{
+	{
 		Error( "ReadROTTMap: Tried to load a non existent map!" );
-		}
+	}
 
-	#if ( SHAREWARE == 1 )
-		if ( RTLMap.RLEWtag == REGISTERED_TAG )
-			{
-			Error( "Can't use maps from the registered game in shareware version." );
-			}
+#if ( SHAREWARE == 1 )
+	if ( RTLMap.RLEWtag == REGISTERED_TAG )
+	{
+		Error( "Can't use maps from the registered game "
+			"in shareware version." );
+	}
 
-		if ( RTLMap.RLEWtag != SHAREWARE_TAG )
-			{
-			Error( "Can't use modified maps in shareware version." );
-			}
-	#endif
+	if ( RTLMap.RLEWtag != SHAREWARE_TAG )
+	{
+		Error( "Can't use modified maps in shareware version." );
+	}
+#endif
 
 	mapwidth  = 128;
 	mapheight = 128;
@@ -1408,7 +1498,7 @@ void ReadROTTMap
 	expanded = mapwidth * mapheight * 2;
 
 	for( plane = 0; plane <= 2; plane++ )
-		{
+	{
 		pos		= RTLMap.planestart[ plane ];
 		compressed = RTLMap.planelength[ plane ];
 		buffer	= SafeMalloc( compressed );
@@ -1420,24 +1510,113 @@ void ReadROTTMap
 		//
 		// unRLEW, skipping expanded length
 		//
-		#if ( SHAREWARE == 1 )
+		if(RTLMap.RLEWtag==BT1RLEW_TAG)
+		{
+			CA_BTRLE1Wexpand( buffer,
+				(word *)mapplanes[plane],
+				expanded >> 1);
+		}else
+		{
+#if ( SHAREWARE == 1 )
 			CA_RLEWexpand( ( word * )buffer, ( word * )mapplanes[ plane ],
 				expanded >> 1, SHAREWARE_TAG );
-		#else
+#else
 			CA_RLEWexpand( ( word * )buffer, ( word * )mapplanes[ plane ],
 				expanded >> 1, RTLMap.RLEWtag );
-		#endif
+#endif
+		}
 
 		SafeFree( buffer );
-		}
+	}
 	w_close(filehandle);
 
 	//
 	// get map name
 	//
 	strcpy( LevelName, RTLMap.Name );
+}
+
+/*
+BGB: Try reading the map from the WAD.
+This will use the same basic format as the map in the RTL file.
+*/
+int ReadWadLumpMap( int mapnum )
+{
+	char tb[64];
+	RTLMAP	RTLMap;
+	long	pos;
+	long	compressed;
+	long	expanded;
+	int		lump, sz;
+	int		plane;
+	byte	*map;
+	byte	*buffer;
+
+	sprintf(tb, "MAP%02d", mapnum+1);
+	lump=W_CheckNumForName(tb);
+	
+	if(lump<0)
+		return(-1);
+	
+	sz=W_LumpLength(lump);
+	if(sz<=sizeof(RTLMap))
+		return(-1);
+
+	map=W_CacheLumpNum(lump, PU_CACHE);
+	if(!map)
+		return(-1);
+
+	memcpy(&RTLMap, map, sizeof( RTLMap ) );
+
+	mapwidth  = 128;
+	mapheight = 128;
+
+	// Get special map flags
+	MapSpecials = RTLMap.MapSpecials;
+
+	//
+	// load the planes in
+	//
+	expanded = mapwidth * mapheight * 2;
+
+	for( plane = 0; plane <= 2; plane++ )
+	{
+		pos		= RTLMap.planestart[ plane ];
+		compressed = RTLMap.planelength[ plane ];
+		buffer	= SafeMalloc( compressed );
+//		w_lseek( filehandle, pos, SEEK_SET );
+//		SafeRead( filehandle, buffer, compressed );
+		memcpy(buffer, map+pos, compressed);
+
+		mapplanes[ plane ] = Z_Malloc(
+			expanded, PU_LEVEL, &mapplanes[ plane ] );
+
+		//
+		// unRLEW, skipping expanded length
+		//
+
+		if(RTLMap.RLEWtag==BT1RLEW_TAG)
+		{
+			CA_BTRLE1Wexpand( buffer,
+				(word *)mapplanes[plane],
+				expanded >> 1);
+		}else
+		{
+			CA_RLEWexpand( ( word * )buffer,
+				( word * )mapplanes[ plane ],
+				expanded >> 1, RTLMap.RLEWtag );
+		}
+
+		SafeFree( buffer );
 	}
 
+	//
+	// get map name
+	//
+	strcpy( LevelName, RTLMap.Name );
+	
+	return(1);
+}
 
 
 /*
@@ -1820,29 +1999,48 @@ void LoadROTTMap
 	(
 	int mapnum
 	)
-
+{
+	char *altrtl;
+	int i, j, k;
+	
+	altrtl=NULL;
+	i=CheckParm("rtl");		//BGB
+	if(i>0)
 	{
-	if ( tedlevel == true )
-		{
-		LoadTedMap( "rot", mapnum );
-		}
-	else if ( ( BATTLEMODE ) && ( BattleLevels.avail == true ) )
-		{
-		LoadAlternateMap( &BattleLevels, mapnum );
-		}
-	else if ( GameLevels.avail == true )
-		{
-		LoadAlternateMap( &GameLevels, mapnum );
-		}
-	else if ( BATTLEMODE )
-		{
-		ReadROTTMap( BATTMAPS, mapnum );
-		}
-	else
-		{
-		ReadROTTMap( ROTTMAPS, mapnum );
-		}
+		altrtl=_argv[i+1];
 	}
+	
+	if(!altrtl)
+	{
+		i=ReadWadLumpMap(mapnum);
+		if(i>0)
+			return;
+	}
+
+	if ( tedlevel == true )
+	{
+		LoadTedMap( "rot", mapnum );
+	}
+	else if ( ( BATTLEMODE ) && ( BattleLevels.avail == true ) )
+	{
+		LoadAlternateMap( &BattleLevels, mapnum );
+	}
+	else if ( GameLevels.avail == true )
+	{
+		LoadAlternateMap( &GameLevels, mapnum );
+	}
+	else if ( BATTLEMODE )
+	{
+		ReadROTTMap( BATTMAPS, mapnum );
+	}
+	else
+	{
+		if(altrtl)
+			ReadROTTMap( altrtl, mapnum );
+		else
+			ReadROTTMap( ROTTMAPS, mapnum );
+	}
+}
 
 
 void CountAreaTiles(void)
@@ -1886,7 +2084,7 @@ void CountAreaTiles(void)
 ==================
 */
 void SetupWalls( void )
-	{
+{
 	int	i,j,lump,index;
 	word	*map,tile;
 	wall_t * tempwall;
@@ -1897,23 +2095,24 @@ void SetupWalls( void )
 
 	map = mapplanes[0];
 	for (j=0;j<mapheight;j++)
-		{
+	{
 		for(i=0;i<mapwidth;i++)
-			{
+		{
 			if ((i>=0) && (i<=3) && (j==0))
-				{
+			{
 				map++;
 				continue;
-				}
+			}
 			if ((loadedgame == false) && (MAPSPOT(i,j,2) == 0xeeee))
-				{_2Dpoint *tdptr;
+			{
+				_2Dpoint *tdptr;
 
 				tdptr = &(MISCVARS->EPOP[MISCVARS->nextpop]);
 				tdptr->x = i;
 				tdptr->y = j;
 				MISCVARS->nextpop ++;
 				MISCVARS->popsleft ++;
-				}
+			}
 			tile= *map++;
 
 			if ((tile > 89) ||
@@ -1922,27 +2121,27 @@ void SetupWalls( void )
 				(tile == 45) ||
 				(tile == 0)
 				)
-				{
+			{
 				tilemap[i][j] = 0;
 				continue;
-				}
+			}
 
 			if (tile <= 32)
-				{
+			{
 				index = tile;
 #if 0
 				if (tile==12)
-					{
+				{
 					if (MAPSPOT(i,j,2)==0)
 						MAPSPOT(i,j,2)=21;
-					}
-#endif
 				}
+#endif
+			}
 			else
 				index = tile-3;
 
 			if ((tile > 75) && (tile <= 79))
-				{
+			{
 				lump = tilemap[i][j] = GetLumpForTile(tile);
 				PreCacheLump(lump,PU_CACHEWALLS);
 				PreCacheLump(elevatorstart+5,PU_CACHEWALLS);
@@ -1951,25 +2150,25 @@ void SetupWalls( void )
 				tilemap[i][j]|=0x2000;
 				if (MAPSPOT(i,j,2)==0)
 					MAPSPOT(i,j,2)=21;
-				}
+			}
 			else if ((tile >= 47) && (tile <= 48))
-				{
+			{
 				lump = tilemap[i][j] = GetLumpForTile(tile);
 				InitWall(lump,index,i,j);
 				tilemap[i][j]|=0x2000;
 				if (MAPSPOT(i,j,2)==0)
 					MAPSPOT(i,j,2)=21;
-				}
+			}
 			else
-				{
+			{
 				lump = tilemap[i][j] = GetLumpForTile(tile);
 				InitWall(lump,index,i,j);
 				if (MAPSPOT(i,j,2))
 					tilemap[i][j]|=0x2000;
-				}
 			}
 		}
 	}
+}
 
 
 /*
@@ -1984,9 +2183,9 @@ word GetNearestAreaNumber ( int tilex, int tiley )
 	int up,dn,lt,rt;
 	int tile;
 
-		tile=MAPSPOT(tilex,tiley,0)-AREATILE;
+	tile=MAPSPOT(tilex,tiley,0)-AREATILE;
 
-		if ((tile<=NUMAREAS) && (tile>0))
+	if ((tile<=NUMAREAS) && (tile>0))
 		return (tile+AREATILE);
 
 	up=MAPSPOT(tilex,tiley-1,0)-AREATILE;
@@ -2113,14 +2312,17 @@ int GetWallIndex( int texture )
 	else if (texture > exitstart)
 		return (texture - exitstart + 43);
 	else
-		{
+	{
+		if(rott_iswolf)
+			return (texture - wallstart);
+
 		if (texture>wallstart+63)
 			return (texture - (wallstart + 63) + 76 );
 		else if (texture>wallstart+40)
 			return (texture - (wallstart + 40) + 45 );
 		else
 			return (texture - wallstart);
-		}
+	}
 	return 0x8000;
 }
 
@@ -2252,7 +2454,8 @@ void SetupSwitches( void )
 
 
 void RespawnPlayerobj(objtype *ob)
-{int rand,numchecked=0;
+{
+	int rand,numchecked=0;
 	int oldsetupgame,nx,ny,ndir;
 	playertype *pstate;
 
@@ -2279,7 +2482,8 @@ void RespawnPlayerobj(objtype *ob)
 		ndir = SPAWNLOC[rand].dir;
 	}
 	else
-	{nx = TEAM[pstate->team].tilex;
+	{
+		nx = TEAM[pstate->team].tilex;
 		ny = TEAM[pstate->team].tiley;
 		ndir = TEAM[pstate->team].dir;
 	}
@@ -2379,10 +2583,12 @@ void SetupTeams(void)
 	int locspawned[MAXSPAWNLOCATIONS] = {0};
 
 	if (gamestate.battlemode == battle_CaptureTheTriad)
-		{rand = (GameRandomNumber("net player spawn",0) % NUMSPAWNLOCATIONS);
+	{
+		rand = (GameRandomNumber("net player spawn",0) % NUMSPAWNLOCATIONS);
 
 			for(i=0;i<NUMSPAWNLOCATIONS;i++)
-			{sx = SPAWNLOC[rand].x;
+			{
+				sx = SPAWNLOC[rand].x;
 				sy = SPAWNLOC[rand].y;
 				dir = SPAWNLOC[rand].dir;
 
@@ -2401,7 +2607,8 @@ void SetupTeams(void)
 
 			maxdist = 0x80000000;
 			for(i=0;i<NUMSPAWNLOCATIONS;i++)
-				{if (locspawned[i])
+			{
+				if (locspawned[i])
 					continue;
 
 				sx = SPAWNLOC[i].x;
@@ -2415,10 +2622,11 @@ void SetupTeams(void)
 
 				currdist = FindDistance(sx-TEAM[0].tilex,sy-TEAM[0].tiley);
 				if (currdist > maxdist)
-					{maxdist = currdist;
+				{
+					maxdist = currdist;
 					spawnindex = i;
-					}
 				}
+			}
 
 			SetupSpecificFlagTeamAt(1,spawnindex);
 		}
@@ -2524,6 +2732,14 @@ void SetupPlayers( void )
 		for(i=0;i<mapwidth;i++)
 			{
 			tile = *map++;
+
+			if(rott_iswolf)
+			{
+				tile=RemapObjTile_Wolf(i, j, tile);
+				if(tile<=0)
+					continue;
+			}
+
 			switch (tile)
 				{
 				case 19:
@@ -2844,6 +3060,14 @@ void SetupPushWalls( void )
 		for(i=0;i<mapwidth;i++)
 			{
 			tile = *map++;
+
+			if(rott_iswolf)
+			{
+				tile=RemapObjTile_Wolf(i, j, tile);
+				if(tile<=0)
+					continue;
+			}
+
 			switch(tile)
 				{
 				case 72:
@@ -2877,11 +3101,13 @@ void SetupPushWalls( void )
 						}
 					break;
 
-
 				case 256:
 				case 257:
 				case 258:
 				case 259:
+					if(rott_iswolf)
+						break;
+				
 					if (tilemap[i][j])
 						{
 						temp=tilemap[i][j]&0x1fff;
@@ -2899,6 +3125,9 @@ void SetupPushWalls( void )
 				case 318:
 				case 336:
 				case 354:
+					if(rott_iswolf)
+						break;
+
 					if (tilemap[i][j])
 						{
 						temp=tilemap[i][j]&0x1fff;
@@ -2956,6 +3185,14 @@ void SetupPushWallLinks( void )
 		for(i=0;i<mapwidth;i++)
 			{
 			tile = *map++;
+
+			if(rott_iswolf)
+			{
+				tile=RemapObjTile_Wolf(i, j, tile);
+				if(tile<=0)
+					continue;
+			}
+
 			switch(tile)
 				{
 				case 72:
@@ -3075,6 +3312,9 @@ void SetupElevators (void)
 	elevator_t *elev;
 	doorobj_t* dptr;
 
+	if(rott_iswolf)
+		return;
+
 	map = mapplanes[1];
 	map += 4 ;
 
@@ -3086,55 +3326,66 @@ void SetupElevators (void)
 			starti = 0;
 
 		for (i = starti; i < mapwidth; i++)
-		{tile = *map++;
+		{
+			tile = *map++;
 
 			if ((tile > 89) && (tile < 98))
-				{elev = &ELEVATOR[tile-90];
+			{
+				elev = &ELEVATOR[tile-90];
 				if (!elev->sx)
-					{elev->sx = i;
+				{
+					elev->sx = i;
 					elev->sy = j;
 					elev->doortoopen = -1;
 					elev->doorclosing = -1;
 					elev->nextaction = -1;
 					_numelevators ++;
-					}
-				else
-					{elev->dx = i;
-					elev->dy = j;
-					}
 				}
+				else
+				{
+					elev->dx = i;
+					elev->dy = j;
+				}
+			}
 		}
 	}
 
 	if (_numelevators && (!ELEVATOR[0].sx))
-	Error("Elevators must start at 1, dumb ass.");
+		Error("Elevators must start at 1, dumb ass.");
 
 	for(i=0;i<_numelevators;i++)
-	{elev = &ELEVATOR[i];
+	{
+		elev = &ELEVATOR[i];
 		x = elev->sx;
 		y = elev->sy;
 		for(j=0;j<doornum;j++)
-		{dptr = doorobjlist[j];
+		{
+			dptr = doorobjlist[j];
 			if (((dptr->tilex == (x+1)) && (dptr->tiley == y)) ||
 				((dptr->tilex == (x-1)) && (dptr->tiley == y)) ||
 				((dptr->tilex == x) && (dptr->tiley == (y+1))) ||
 				((dptr->tilex == x) && (dptr->tiley == (y-1))))
-			{elev->door1 = j;
+			{
+				elev->door1 = j;
 				dptr->eindex = i;
 				if ((dptr->tilex == (x+1)) && (dptr->tiley == y))
-				{elev->esx = x-1;
+				{
+					elev->esx = x-1;
 					elev->esy = y;
 				}
 				else if ((dptr->tilex == (x-1)) && (dptr->tiley == y))
-				{elev->esx = x+1;
+				{
+					elev->esx = x+1;
 					elev->esy = y;
 				}
 				else if ((dptr->tilex == x) && (dptr->tiley == (y+1)))
-				{elev->esx = x;
+				{
+					elev->esx = x;
 					elev->esy = y-1;
 				}
 				else if ((dptr->tilex == x) && (dptr->tiley == (y-1)))
-				{elev->esx = x;
+				{
+					elev->esx = x;
 					elev->esy = y+1;
 				}
 				break;
@@ -3144,28 +3395,34 @@ void SetupElevators (void)
 		x = elev->dx;
 		y = elev->dy;
 		for(j=0;j<doornum;j++)
-		{dptr = doorobjlist[j];
+		{
+			dptr = doorobjlist[j];
 			if (((dptr->tilex == (x+1)) && (dptr->tiley == y)) ||
 				((dptr->tilex == (x-1)) && (dptr->tiley == y)) ||
 				((dptr->tilex == x) && (dptr->tiley == (y+1))) ||
 				((dptr->tilex == x) && (dptr->tiley == (y-1))))
-			{elev->door2 = j;
+			{
+				elev->door2 = j;
 				dptr->eindex = i;
 				dptr->flags |= DF_ELEVLOCKED;
 				if ((dptr->tilex == (x+1)) && (dptr->tiley == y))
-				{elev->edx = x-1;
+				{
+					elev->edx = x-1;
 					elev->edy = y;
 				}
 				else if ((dptr->tilex == (x-1)) && (dptr->tiley == y))
-				{elev->edx = x+1;
+				{
+					elev->edx = x+1;
 					elev->edy = y;
 				}
 				else if ((dptr->tilex == x) && (dptr->tiley == (y+1)))
-				{elev->edx = x;
+				{
+					elev->edx = x;
 					elev->edy = y-1;
 				}
 				else if ((dptr->tilex == x) && (dptr->tiley == (y-1)))
-				{elev->edx = x;
+				{
+					elev->edx = x;
 					elev->edy = y+1;
 				}
 				break;
@@ -3203,6 +3460,44 @@ void SetupDoors (void)
 		for (i = 0; i < mapwidth; i++)
 		{
 			tile = *map++;
+			
+			if(rott_iswolf)
+			{
+
+				if( (tile >= 0x5A) && (tile <= 0x5F) )
+				{
+					tilemap[i][j] = doornum;
+
+					locked=0;
+//					if (MAPSPOT (i, j, 2))
+//						locked = 5;
+
+					if((tile == 0x5C) || (tile == 0x5D))
+						locked = 1;
+					if((tile == 0x5E) || (tile == 0x5F))
+						locked = 2;
+
+//					SpawnDoor (i, j, locked, tile-90);
+					SpawnDoor (i, j, locked, 4);
+
+					continue;
+				}
+				
+				if((tile == 0x64) || (tile == 0x65))
+				{
+					tilemap[i][j] = doornum;
+
+					locked=0;
+//					if (MAPSPOT (i, j, 2))
+//						locked = 5;
+
+//					SpawnDoor (i, j, locked, tile-90);
+					SpawnDoor (i, j, locked, 6);
+
+					continue;
+				}
+			}
+			
 
 			if ((tile >= 33) && (tile <= 35))
 			{
@@ -3410,6 +3705,8 @@ void SetupClocks (void)
 	int  endtimex,
 		endtimey;
 
+//	if(rott_iswolf)
+//		return;
 
 	map  = mapplanes[1];
 	map += 4 ;
@@ -3424,6 +3721,14 @@ void SetupClocks (void)
 		for (i = starti; i < mapwidth; i++)
 		{
 			tile = *map++;
+
+			if(rott_iswolf)
+			{
+				tile=RemapObjTile_Wolf(i, j, tile);
+				if(tile<=0)
+					continue;
+			}
+
 
 			if (tile == 121)
 			{
@@ -3651,6 +3956,13 @@ void SetupInanimateActors (void)
 			{
 			tile = *map++;
 
+			if(rott_iswolf)
+			{
+				tile=RemapObjTile_Wolf(i, j, tile);
+				if(tile<=0)
+					continue;
+			}
+
 			switch(tile)
 				{
 
@@ -3697,6 +4009,12 @@ void SetupInanimateActors (void)
 			swapaction = DisableObject;
 			linked = (MAPSPOT(i,j,2) && (!IsPlatform(i,j)));
 
+			if(rott_iswolf)
+			{
+				tile=RemapObjTile_Wolf(i, j, tile);
+				if(tile<=0)
+					continue;
+			}
 
 			switch(tile)
 				{
@@ -3723,10 +4041,6 @@ void SetupInanimateActors (void)
 						MAPSPOT(i,j,2) = 21;
 
 					break;
-
-
-
-
 
 				case 303:
 				case 304:
@@ -3768,7 +4082,6 @@ void SetupInanimateActors (void)
 
 					break;
 
-
 				}
 
 			}
@@ -3787,6 +4100,13 @@ void SetupInanimateActors (void)
 				action = EnableObject;
 				swapaction = DisableObject;
 				linked = (MAPSPOT(i,j,2) && (!IsPlatform(i,j)));
+
+				if(rott_iswolf)
+				{
+					tile=RemapObjTile_Wolf(i, j, tile);
+					if(tile<=0)
+						continue;
+				}
 
 				switch(tile)
 					{
@@ -3940,18 +4260,26 @@ void SetupInanimateActors (void)
 */
 
 void FixTiles(void)
-	{
+{
 	word *map,tile;
 	int i,j;
 
 	map = mapplanes[1];
 	for(j=0;j<mapheight;j++)
-		{
+	{
 		for(i=0;i<mapwidth;i++)
-			{
+		{
 			tile = *map++;
+
+			if(rott_iswolf)
+			{
+				tile=RemapObjTile_Wolf(i, j, tile);
+				if(tile<=0)
+					continue;
+			}
+
 			switch(tile)
-				{
+			{
 				case 140:
 				case 141:
 				case 142:
@@ -3964,15 +4292,15 @@ void FixTiles(void)
 					if (tilemap[i][j])
 						(MAPSPOT(i,j,2))=21;
 					break;
-				}
 			}
 		}
-
 	}
+}
 
 
 void Illuminate(void)
-{statobj_t*temp;
+{
+	statobj_t*temp;
 
 	if (lightsource==0)
 	return;
@@ -3989,6 +4317,7 @@ void Illuminate(void)
 =
 =================
 */
+
 void SetupLights(void)
 {
 	int i,j,touchx,touchy;
@@ -4013,6 +4342,14 @@ void SetupLights(void)
 			{
 			tile= *map++;
 
+			if(rott_iswolf)
+			{
+//				SetupLights_Wolf(i, j, tile);
+//				continue;
+				tile=RemapObjTile_Wolf(i, j, tile);
+				if(tile<=0)
+					continue;
+			}
 
 
 			switch (tile)
@@ -4197,9 +4534,9 @@ char *WeaponName(int tile)
 }
 
 
-
+#if 0
 int GetLumpForTile(int tile)
-	{
+{
 	int wallstart;
 	int exitstart;
 
@@ -4236,7 +4573,92 @@ int GetLumpForTile(int tile)
 		return (tile + wallstart - 16);
 		}
 	return -1;
+}
+#endif
+
+#if 1
+int GetLumpForTile(int tile)
+{
+	char tb[9];
+	int wallstart;
+	int exitstart;
+	int wallidx, walllump;
+
+	wallstart=W_GetNumForName("WALLSTRT");
+	exitstart=W_GetNumForName("EXITSTRT");
+	elevatorstart = W_GetNumForName("ELEVSTRT");
+	
+	rott_wallstrt=wallstart;
+	rott_wallstop=W_GetNumForName("WALLSTOP");
+
+	wallidx = -1;
+	
+	if(rott_iswolf)
+	{
+//		if((tile >= 0x01) && (tile <= 0x46))
+		if((tile >= 0x01) && (tile < 0x6A))
+		{
+			wallidx = tile;
+		}
 	}
+	else
+	{
+		if ((tile >= 1) && (tile <= 32))
+		{
+	//		return (tile + wallstart);
+			wallidx = tile;
+		}
+		else if ((tile >= 36) && (tile <= 45))
+		{
+	//		return (tile + wallstart - 3);
+			wallidx = tile-3;
+		}
+		else if (tile == 46)
+		{
+	//		return (wallstart + 74);
+			wallidx = 74;
+		}
+		else if ((tile >= 47) && (tile <= 48))
+		{
+	//		return (tile + exitstart - 46);
+			wallidx = (tile-46) + (exitstart-wallstart);
+		}
+		else if ((tile >= 49) && (tile <= 71))
+		{
+	//		return (tile + wallstart - 8);
+			wallidx = tile-8;
+		}
+		else if ((tile >= 72) && (tile <= 79))
+		{
+	//		return (tile - 72 + elevatorstart + 1);
+			wallidx = (tile-71) + (elevatorstart-wallstart);
+		}
+		else if ((tile >= 80) && (tile <= 89))
+		{
+	//		return (tile + wallstart - 16);
+			wallidx = tile-16;
+		}
+	}
+
+	if(wallidx<=0)
+		return(-1);
+
+	rott_wallcache[wallidx]=wallidx+wallstart;
+
+	sprintf(tb, "WALL%d", wallidx);
+	walllump = W_CheckNumForName(tb);
+	if(walllump>0)
+	{
+		rott_wallcache[wallidx]=walllump;
+		return(wallidx+wallstart);
+//		return(walllump);
+	}
+
+	return(wallidx+wallstart);
+	
+//	return -1;
+}
+#endif
 
 
 
@@ -4863,6 +5285,8 @@ void DoSharewareConversionBackgroundPlane (void)
 	int i,j;
 	word * map;
 
+	if(rott_iswolf)
+		return;
 
 	for (j=0;j<mapheight;j++)
 		{
@@ -5416,6 +5840,8 @@ void DoSharewareConversionForegroundPlane (void)
 	int i,j;
 	word * map;
 
+	if(rott_iswolf)
+		return;
 
 	for (j=0;j<mapheight;j++)
 		{
@@ -5622,8 +6048,9 @@ void DoLowMemoryConversion (void)
 */
 void SetupGameLevel (void)
 {
+	char *s;
 	int crud;
-	int i;
+	int i, j, k;
 
 #if 0
 	mapwidth = mapheight = 128;
@@ -5660,14 +6087,20 @@ void SetupGameLevel (void)
 		gamestate.mapon=tedlevelnum;
 		}
 	else
-		{
+	{
 		GetEpisode (gamestate.mapon);
 		LoadROTTMap(gamestate.mapon);
-		}
+	}
+
+	rott_iswolf=false;
+	if ((word)MAPSPOT(3,0,1)==99)
+		rott_iswolf=true;
+
 	if (DoPanicMapping())
 		{
 		DoLowMemoryConversion();
 		}
+
 	if ( gamestate.Product == ROTT_SHAREWARE )
 		{
 		DoSharewareConversion ();
@@ -5676,6 +6109,7 @@ void SetupGameLevel (void)
 		{
 		DoRegisterConversion ();
 		}
+
 	if ( (NewGame) || (lastlevelloaded!=gamestate.mapon) )
 		{
 		SetupPreCache();
@@ -5685,6 +6119,28 @@ void SetupGameLevel (void)
 	shapestart = W_GetNumForName("SHAPSTRT");
 	shapestop = W_GetNumForName("SHAPSTOP");
 	gunsstart=W_GetNumForName("GUNSTART");
+
+	rott_shapestrt = shapestart;
+	rott_shapestop = shapestop;
+
+	printf("Sprite Count %d\n", (shapestop-shapestart));
+
+	for(i=0; i<(shapestop-shapestart); i++)
+	{
+		j = shapestart+i;
+		s = W_GetNameForNum(j);
+//		if(!strncmp(s, "MON", 3))
+//			__debugbreak();
+		k = W_GetNumForName(s);
+		if(j!=k)
+		{
+			if((k>shapestart) && (k<rott_shapestop))
+				k=j;
+		}
+		if(j!=k)
+			printf("Remap Sprite %d->%d\n", j, k);
+		rott_shapecache[i] = k;
+	}
 
 	playstate = ex_stillplaying;
 	SNAKELEVEL = 0;
@@ -5877,6 +6333,9 @@ void SetupSnakePath(void)
 	int i,j;
 	word *map,tile;
 
+	if(rott_iswolf)
+		return;
+
 	map = mapplanes[1];
 
 	for(j=0;j<mapheight;j++)
@@ -5895,7 +6354,7 @@ void SetupSnakePath(void)
 
 void SetupRandomActors(void)
 {
-	int i, j, k;
+	int i, j, k, lim;
 	word *map,tile;
 	int starti,totalrandom=0,count=0,ambush,locindex,orig;
 	byte actorpresent[10]={0},index=0,randomtype,used[100]={0};
@@ -5908,6 +6367,9 @@ void SetupRandomActors(void)
 		if (RANDOMACTORTYPE[i])
 			actorpresent[index++]=i;
 	}
+
+	for(i=0;i<100;i++)
+		used[i]=0;
 
 	if (!index)
 		return;
@@ -5953,8 +6415,10 @@ void SetupRandomActors(void)
 		break;
 	}
 
-#if 0
-	while(count<totalrandom)
+#if 1
+	lim=totalrandom*10;
+//	while(count<totalrandom)
+	while((count<totalrandom) && ((lim--)>0))
 	{
 		locindex = (GameRandomNumber("rand loc index",0) % orig);
 
@@ -5971,9 +6435,14 @@ void SetupRandomActors(void)
 			count++;
 		}
 	}
+	
+	if(count<totalrandom)
+	{
+		printf("SetupRandomActors %d/%d\n", count, totalrandom);
+	}
 #endif
 
-#if 1
+#if 0
 	for(i=0; i<orig; i++)
 		used[i]=i;
 	for(i=0; i<orig; i++)
@@ -5999,6 +6468,10 @@ void SetupRandomActors(void)
 #endif
 }
 
+// void SetupActors_Wolf(int x, int w, int tile)
+// {
+// }
+
 void SetupActors(void)
 {
 	int i,j;
@@ -6017,9 +6490,19 @@ void SetupActors(void)
 			starti=5;
 		else
 			starti=0;
+
 		for(i=starti;i<mapwidth;i++)
-			{
+		{
 			tile= *map++;
+
+			if(rott_iswolf)
+			{
+//				SetupActors_Wolf(i, j, tile);
+//				continue;
+				tile=RemapObjTile_Wolf(i, j, tile);
+				if(tile<=0)
+					continue;
+			}
 
 			switch(tile)
 			{
@@ -6069,6 +6552,12 @@ void SetupActors(void)
 				case 117:
 				case 118:
 				case 119:
+					if(rott_iswolf)
+					{
+						SpawnStand(blitzguardobj,i,j,tile-116,1);
+						break;
+					}
+
 					SpawnStand(lowguardobj,i,j,tile-116,1);
 					break;
 
@@ -6078,6 +6567,15 @@ void SetupActors(void)
 					tile -= 18;
 
 				case 120:
+//				case 121:
+//				case 122:
+//				case 123:
+					if(rott_iswolf)
+					{
+						SpawnPatrol(blitzguardobj,i,j,tile-120);
+						break;
+					}
+
 					SpawnSneaky(i,j);
 					break;
 
@@ -6465,8 +6963,8 @@ void SetupActors(void)
 
 
 			}
-			}
 		}
+	}
 }
 
 void SetupStatics(void)
@@ -6489,6 +6987,13 @@ void SetupStatics(void)
 			{
 			tile= *map++;
 			spawnz = (MAPSPOT(i,j,2))?(MAPSPOT(i,j,2)):(-1);
+
+			if(rott_iswolf)
+			{
+				tile=RemapObjTile_Wolf(i, j, tile);
+				if(tile<=0)
+					continue;
+			}
 
 			if ( gamestate.BattleOptions.RandomWeapons )
 				{

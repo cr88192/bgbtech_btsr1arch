@@ -62,6 +62,10 @@ static int NumBadSounds=0;
 static int remotestart;
 static boolean SoundsRemapped = false;
 
+// int rott_sndcache[512];
+// int rott_sndstrt;
+// int rott_sndstop;
+
 int musicnums[ 11 ] = {
 	-1, UltraSound, SoundBlaster, SoundMan16, ProAudioSpectrum,
 	Awe32, SoundScape, WaveBlaster, GenMidi, SoundCanvas, Adlib
@@ -124,7 +128,8 @@ void SD_MakeCacheable( unsigned long sndnum )
 		return;
 	else
 	{
-		W_CacheLumpNum(SoundNumber(sndnum),PU_CACHE);
+//		W_CacheLumpNum(SoundNumber(sndnum),PU_CACHE);
+		W_CacheSoundLumpNum(SoundNumber(sndnum),PU_CACHE);
 		sounds[sndnum].count=0;
 	}
 }
@@ -248,26 +253,29 @@ int SD_Startup ( boolean bombonerror )
 			Error("FX: Unsupported Card number %d",FXMode);
 			break;
 		}
+	
+//	rott_sndstrt = soundstart;
+//	rott_sndstop = soundstart + SD_LASTSOUND;
 
 	if ( soundtype == fx_digital )
-		{
+	{
 		if ( SoundsRemapped == false )
-			{
+		{
 			for( i = 0; i < SD_LASTSOUND; i++ )
-				{
+			{
 				int snd;
 
 				snd = sounds[ i ].snds[ fx_digital ];
 				if ( snd >= 0)
-					{
+				{
 					sounds[ i ].snds[ fx_digital ] = W_GetNumForName(
 						W_GetNameForNum( snd + soundstart ) );
-					}
 				}
-			SoundsRemapped = true;
 			}
-		soundstart = 0;
+			SoundsRemapped = true;
 		}
+		soundstart = 0;
+	}
 
 	voices	= NumVoices;
 	channels = NumChannels;
@@ -374,7 +382,11 @@ int SD_PlayIt ( int sndnum, int angle, int distance, int pitch )
 
 	sounds[sndnum].count++;
 
-	snd=W_CacheLumpNum(SoundNumber(sndnum),PU_STATIC);
+	printf("SD_PlayIt: %X %s\n", sndnum,
+		W_GetNameForNum(SoundNumber(sndnum)));
+
+//	snd=W_CacheLumpNum(SoundNumber(sndnum),PU_STATIC);
+	snd=W_CacheSoundLumpNum(SoundNumber(sndnum),PU_STATIC);
 
 	if ( *snd == 'C' )
 		{
@@ -1133,13 +1145,11 @@ void MU_SetupGUSInitFile( void )
 	GetPathFromEnvironment( filename, ApogeePath, GUSMIDIINIFILE );
 //	if (access (filename, F_OK) != 0)
 	if (w_chkaccess (filename) != 0)
-		{
+	{
 		int lump;
-
 		lump=W_GetNumForName("gusmidi");
-
 		SaveFile (filename, W_CacheLumpNum(lump,PU_CACHE), W_LumpLength(lump));
-		}
+	}
 }
 
 //***************************************************************************
@@ -1203,10 +1213,10 @@ void MU_StopSong ( void )
 
 	MUSIC_StopSong ();
 	if (currentsong)
-		{
+	{
 		W_CacheLumpName(rottsongs[lastsongnumber].lumpname,PU_CACHE);
 		currentsong=0;
-		}
+	}
 }
 
 //***************************************************************************

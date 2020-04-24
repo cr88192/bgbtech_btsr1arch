@@ -758,6 +758,16 @@ void PlayTurboGame
 //
 //***************************************************************************
 
+void StoreFile(char *name, void *buf, int sz)
+{
+	FILE *fd;
+	
+	fd=fopen(name, "wb");
+	if(!fd)return;
+	fwrite(buf, 1, sz, fd);
+	fclose(fd);
+}
+
 void Init_Tables (void)
 {
 	int i;
@@ -771,6 +781,10 @@ void Init_Tables (void)
 
 	origpal=SafeMalloc(768);
 	memcpy (origpal, W_CacheLumpName("pal",PU_CACHE), 768);
+
+#ifdef _WIN32
+	StoreFile("palette.lmp", origpal, 768);
+#endif
 
 	FindEGAColors();
 
@@ -1407,6 +1421,8 @@ void QuitGame ( void )
 	PrintTileStats();
 	TextMode();
 
+#if 0
+
 #if (DEVELOPMENT == 1)
 	printf("Clean Exit\n");
 	if (gamestate.TimeCount)
@@ -1442,7 +1458,7 @@ void QuitGame ( void )
 	printf("\nCENTERY=%ld\n",centery);
 #else
 	if ( !SOUNDSETUP )
-		{
+	{
 #if (SHAREWARE==0)
 		txtscn = (byte *) W_CacheLumpNum (W_GetNumForName ("regend"), PU_CACHE);
 #else
@@ -1450,7 +1466,7 @@ void QuitGame ( void )
 #endif
 		for (k = 0; k < 23; k++)
 			printf ("\n");
-		memcpy ((byte *)0xB8000, txtscn, 4000);
+//		memcpy ((byte *)0xB8000, txtscn, 4000);
 #if (DEBUG == 1)
 		px = ERRORVERSIONCOL;
 		py = ERRORVERSIONROW;
@@ -1464,34 +1480,32 @@ void QuitGame ( void )
 
 		UL_printf (itoa(ROTTMINORVERSION,&buf[0],10));
 #endif
-		}
+	}
+#endif
+
 #endif
 
 	if ( SOUNDSETUP )
-		{
+	{
 		printf( "\nSound setup complete.\n"
 				"Type ROTT to run the game.\n" );
-		}
+	}
 	ShutDown();
 
 	exit(0);
 }
 
-void InitCharacter
-	(
-	void
-	)
-
-	{
+void InitCharacter( void )
+{
 	locplayerstate->health = MaxHitpointsForCharacter( locplayerstate );
 	if (timelimitenabled == true)
-		{
+	{
 		locplayerstate->lives  = 1;
-		}
+	}
 	else
-		{
+	{
 		locplayerstate->lives  = 3;
-		}
+	}
 
 	ClearTriads (locplayerstate);
 	locplayerstate->playerheight = characters[ locplayerstate->player ].height;
@@ -1501,14 +1515,14 @@ void InitCharacter
 	gamestate.score = 0;
 
 	if ( gamestate.battlemode == battle_StandAloneGame )
-		{
+	{
 		gamestate.mapon = startlevel;
 		gamestate.difficulty = DefaultDifficulty;
-		}
+	}
 	else
-		{
+	{
 		gamestate.difficulty = gd_hard;
-		}
+	}
 
 	gamestate.dipballs = 0;
 	gamestate.TimeCount = 0;
@@ -1517,7 +1531,7 @@ void InitCharacter
 	damagecount = 0;
 
 	UpdateScore( gamestate.score );
-	}
+}
 
 
 

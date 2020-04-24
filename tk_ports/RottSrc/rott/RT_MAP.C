@@ -157,7 +157,8 @@ void DrawMap_Wall (int x, int y, int tile)
 	y*=tilesize;
 //	buf=(byte *)bufferofs+ylookup[y]+(x>>2);
 	buf=bufferofs+ylookup[y]+(x>>2);
-	source=W_CacheLumpNum(tile,PU_CACHE);
+//	source=W_CacheLumpNum(tile,PU_CACHE);
+	source=W_CacheWallLumpNum(tile,PU_CACHE);
 	for (p=0;p<4;p++)
 		{
 		VGAWRITEMAP(p);

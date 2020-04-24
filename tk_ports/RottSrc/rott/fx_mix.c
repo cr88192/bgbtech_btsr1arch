@@ -26,6 +26,11 @@ int fx_chanmask = 0;
 
 fx_channel_t	*fx_chan[32];
 
+int SoundDev_Init(void);
+void	SoundDev_WriteStereoSamples(short *mixbuf, int nsamp);
+void	SoundDev_Submit();
+
+
 char *FX_ErrorString( int ErrorNumber )
 {
 	return(NULL);
@@ -45,9 +50,9 @@ int   FX_SetupCard( int SoundCard, fx_device *device )
 		memset(fx_chan[i], 0, sizeof(fx_channel_t));
 	}
 
-#ifdef _WIN32
+// #ifdef _WIN32
 	SoundDev_Init();
-#endif
+// #endif
 	
 	return(0);
 }
@@ -65,18 +70,49 @@ int fx_mixbuf_r[8192];
 short fx_mixbuf[16384];
 int fx_mixtime;
 
+#ifdef __BJX2__
+int FX_UpdateMix_A(
+	int *mixl, int *mixr,
+	byte *src, int cnt,
+	int pos, int step,
+	int lvol, int rvol);
+
+__asm {
+FX_UpdateMix_A:
+	CMPGT	0, R7
+	BF		.L1
+.L0:
+	SHAD	R20, -12, R18
+	ADD		R20, R21, R20	|	MOVU.B	(R6, R18), R16
+	ADD		R16, -128, R16
+	MULS.W	R16, R22, R16	|	MOV.L	(R4), R2
+	MULS.W	R16, R23, R17	|	ADD		R7, -1, R7
+	ADD		R2, R16, R16	|	MOV.L	(R5), R3
+	ADD		R3, R17, R17	|	MOV.L	R16, (R4)
+	ADD		R4, 4, R4		|	MOV.L	R17, (R5)
+	ADD		R5, 4, R5		|	CMPGT	0, R7
+	BT		.L0
+.L1:
+	RTSU
+}
+
+#endif
+
 int FX_UpdateMix(int mixstep)
 {
 	byte *dat, *cs;
+	int *mixl, *mixr;
 	int pos, pos1, len, l1, lvol, rvol, ovmix, step;
 	int i, j, k;
 
 	ovmix=mixstep*2;
+	mixl=fx_mixbuf_l;
+	mixr=fx_mixbuf_r;
 
 	for(j=0; j<ovmix; j++)
 	{
-		fx_mixbuf_l[j]=0;
-		fx_mixbuf_r[j]=0;
+		mixl[j]=0;
+		mixr[j]=0;
 	}
 
 	for(i=1; i<16; i++)
@@ -99,6 +135,7 @@ int FX_UpdateMix(int mixstep)
 		if((pos+l1*step)>(len<<FX_POS_SHL))
 			l1=((len<<FX_POS_SHL)-pos)/step;
 		
+#if 0
 		pos1=pos;
 		for(j=0; j<l1; j++)
 		{
@@ -106,10 +143,32 @@ int FX_UpdateMix(int mixstep)
 			pos1+=step;
 //			k=(cs[k]-128);
 			k=(dat[k]-128);
-			fx_mixbuf_l[j]+=k*lvol;
-			fx_mixbuf_r[j]+=k*rvol;
+			mixl[j]+=k*lvol;
+			mixr[j]+=k*rvol;
 		}
-		
+#endif
+
+#ifdef __BJX2__
+		FX_UpdateMix_A(
+			fx_mixbuf_l,	fx_mixbuf_r,	dat,	l1,
+			pos,			step,			lvol,	rvol);
+#else
+		pos1=pos;
+		j=l1;
+		mixl=fx_mixbuf_l;
+		mixr=fx_mixbuf_r;
+		while((j--)>0)
+		{
+			k=pos1>>FX_POS_SHL;
+			k=(dat[k]-128);
+			*mixl=(*mixl)+(k*lvol);
+			*mixr=(*mixr)+(k*rvol);
+			pos1+=step;
+			mixl++;
+			mixr++;
+		}
+#endif
+
 		pos=pos+mixstep*step;
 		fx_chan[i]->pos=pos;
 		k=pos>>FX_POS_SHL;
@@ -125,9 +184,11 @@ int FX_UpdateMix(int mixstep)
 
 int FX_Update()
 {
+	register int *mixl, *mixr;
+	register short *mixb;
 	int ms, dt, dt1, ns1, ns2;
-	int lv, rv;
-	int i, j, k;
+	register int lv, rv;
+	int i, j, k, l;
 
 	ms=I_TimeMS();
 	dt=ms-fx_mixtime;
@@ -145,26 +206,37 @@ int FX_Update()
 //		FX_UpdateMix(ns1);
 		FX_UpdateMix(ns2);
 		
-		for(i=0; i<(ns2*2); i++)
+		mixl=fx_mixbuf_l;
+		mixr=fx_mixbuf_r;
+		mixb=fx_mixbuf;
+		
+		l=(ns2*2);
+		for(i=0; i<l; i++)
 		{
 //			j=(i*11)/16;
-			j=i;
-			lv=fx_mixbuf_l[j];
-			rv=fx_mixbuf_r[j];
+//			j=i;
+			lv=mixl[i];
+			rv=mixr[i];
 			
-			if((lv<-32000))lv=-32000;
-			if((lv> 32000))lv= 32000;
-			if((rv<-32000))rv=-32000;
-			if((rv> 32000))rv= 32000;
+			if((lv<=-32000))lv=-32000;
+			if((lv>  32000))lv= 32000;
+			if((rv<=-32000))rv=-32000;
+			if((rv>  32000))rv= 32000;
 			
-			fx_mixbuf[i*2+0]=lv;
-			fx_mixbuf[i*2+1]=rv;
+			mixb[0]=lv;
+			mixb[1]=rv;
+			mixb+=2;
+			
+//			mixb[i*2+0]=lv;
+//			mixb[i*2+1]=rv;
 		}
 
-#ifdef _WIN32
+// #ifdef _WIN32
 		SoundDev_WriteStereoSamples(fx_mixbuf, ns2);
-#endif
+// #endif
 	}
+
+	SoundDev_Submit();
 
 	return(0);
 }
@@ -287,7 +359,7 @@ int FX_PlayVOC3D( char *ptr, int pitchoffset, int angle, int distance,
 	int seg_len[256];
 	int nseg;
 	byte *cs, *cs0, *ct;
-	int chn, tag, sz, len, vol, lvol, rvol;
+	int chn, tag, sz, len, vol, lvol, rvol, rate;
 	int i, j, k;
 	
 //	printf("FX_PlayVOC3D %X prio=%d\n", callbackval, priority);
@@ -300,7 +372,140 @@ int FX_PlayVOC3D( char *ptr, int pitchoffset, int angle, int distance,
 	}
 
 //	vol=255/(distance+1);
-	vol=1024/(distance+1);
+//	vol=1024/(distance+1);
+	vol=4096/(distance+1);
+	if(vol>255)vol=255;
+//	vol=255;
+
+	lvol=vol;
+	rvol=vol;
+	
+	i=8-abs(angle-8);
+	j=8-abs(angle-24);
+	if(i<0)i=0;
+	if(j<0)j=0;
+//	lvol=(vol*(j+12))/16;
+//	rvol=(vol*(i+12))/16;
+	lvol=(vol*(j+4))/8;
+	rvol=(vol*(i+4))/8;
+
+//	if(vol<8)
+//		return(0);
+
+
+	FX_FlushChan(chn);
+	rate=11025;
+	
+	len=0; nseg=0;
+	cs=(byte *)(ptr+0x1A);
+	while(*cs)
+	{
+		tag=*(int *)cs;
+		cs0=cs+4;
+		sz=(tag>>8);
+		cs=cs0+sz;
+		
+//		printf("%d\n", tag&255);
+		if((tag&255)==1)
+		{
+			rate=1000000/(256-cs0[0]);
+			len+=sz-2;
+			seg_ptr[nseg]=cs0+2;
+			seg_len[nseg]=sz-2;
+			nseg++;
+		}
+
+		if((tag&255)==2)
+		{
+			seg_ptr[nseg]=cs0;
+			seg_len[nseg]=sz;
+			nseg++;
+		}
+
+		if((tag&255)==9)
+		{
+			rate=*(int *)cs0;
+			len+=sz-12;
+			seg_ptr[nseg]=cs0+12;
+			seg_len[nseg]=sz-12;
+			nseg++;		
+		}
+	}
+	
+//	printf("Len=%d\n", len);
+	
+	FX_CheckExpandChan(chn, len);
+	fx_chan[chn]->len=len;
+	fx_chan[chn]->pos=0;
+//	fx_chan[chn]->step=(11*4096)/16;
+//	fx_chan[chn]->step=((11025+pitchoffset)*4096)/16000;
+	fx_chan[chn]->step=((rate+pitchoffset)*4096)/16000;
+
+	fx_chan[chn]->lvol=lvol;
+	fx_chan[chn]->rvol=rvol;
+	fx_chan[chn]->prio=priority;
+	fx_chan[chn]->userval=callbackval;
+
+	fx_chanmask|=1<<chn;
+	
+	ct=fx_chan[chn]->data;
+	for(i=0; i<nseg; i++)
+	{
+		sz=seg_len[i];
+		memcpy(ct, seg_ptr[i], sz);
+		ct+=sz;
+	}
+	
+	return(chn);
+}
+
+#define FOURCC(a, b, c, d)		((a)|((b)<<8)|((c)<<16)|((d)<<24))
+
+int FX_PlayWAV3D( char *ptr, int pitchoffset, int angle, int distance,
+       int priority, unsigned long callbackval )
+{
+	byte *seg_ptr[256];
+	int seg_len[256];
+	int nseg;
+	byte *cs, *cse, *cs0, *ct;
+	int chn, tag, sz, len, vol, lvol, rvol;
+	int rate, chan, bits;
+	int i, j, k;
+	
+//	printf("FX_PlayWAV3D\n");
+
+	printf("FX_PlayWAV3D %X prio=%d\n", callbackval, priority);
+
+	cs=(byte *)ptr;
+	sz=*(int *)(cs+4);
+	if(memcmp(cs+0, "RIFF", 4))
+	{
+		printf("FX_PlayWAV3D: RIFF magic fail\n");
+		return(0);
+	}
+	if(memcmp(cs+8, "WAVE", 4))
+	{
+		printf("FX_PlayWAV3D: WAVE magic fail\n");
+		return(0);
+	}
+	cs=cs+12;
+	cse=cs+sz;
+	if(cs>=cse)
+	{
+		printf("FX_PlayWAV3D: RIFF size fail\n");
+		return(0);
+	}
+
+	chn=FX_VoiceAvailable(priority);
+	if(chn<=0)
+	{
+		printf("FX_PlayWAV3D: No Chan, %X prio=%d\n", callbackval, priority);
+		return(0);
+	}
+
+//	vol=255/(distance+1);
+//	vol=1024/(distance+1);
+	vol=4096/(distance+1);
 	if(vol>255)vol=255;
 //	vol=255;
 
@@ -323,6 +528,9 @@ int FX_PlayVOC3D( char *ptr, int pitchoffset, int angle, int distance,
 	FX_FlushChan(chn);
 	
 	len=0; nseg=0;
+	rate=7000;
+
+#if 0
 	cs=(byte *)(ptr+0x1A);
 	while(*cs)
 	{
@@ -340,6 +548,34 @@ int FX_PlayVOC3D( char *ptr, int pitchoffset, int angle, int distance,
 			nseg++;
 		}
 	}
+#endif
+
+	while(cs<cse)
+	{
+		tag=*(int *)cs;
+		sz=*(int *)(cs+4);
+		if(sz<0)
+			break;
+		cs0=cs+8;
+		cs=cs+8+((sz+1)&(~1));
+		
+		if(tag==FOURCC('f', 'm', 't', ' '))
+		{
+			rate=*(u32 *)(cs0+4);
+			chan=*(u16 *)(cs0+2);
+			bits=*(u16 *)(cs0+14);
+			continue;
+		}
+
+		if(tag==FOURCC('d', 'a', 't', 'a'))
+		{
+			len+=sz;
+			seg_ptr[nseg]=cs0;
+			seg_len[nseg]=sz;
+			nseg++;
+			continue;
+		}
+	}
 	
 //	printf("Len=%d\n", len);
 	
@@ -347,7 +583,7 @@ int FX_PlayVOC3D( char *ptr, int pitchoffset, int angle, int distance,
 	fx_chan[chn]->len=len;
 	fx_chan[chn]->pos=0;
 //	fx_chan[chn]->step=(11*4096)/16;
-	fx_chan[chn]->step=((11025+pitchoffset)*4096)/16000;
+	fx_chan[chn]->step=((rate+pitchoffset)*4096)/16000;
 
 	fx_chan[chn]->lvol=lvol;
 	fx_chan[chn]->rvol=rvol;
@@ -363,15 +599,27 @@ int FX_PlayVOC3D( char *ptr, int pitchoffset, int angle, int distance,
 		memcpy(ct, seg_ptr[i], sz);
 		ct+=sz;
 	}
+
+	ct=fx_chan[chn]->data; vol=0;
+	for(i=0; i<len; i++)
+	{
+		k=ct[i]-128;
+		if(k<0)k=-k;
+		if(k>vol)
+			vol=k;
+	}
+	
+	if(vol<64)
+	{
+		for(i=0; i<len; i++)
+		{
+			k=ct[i]-128;
+			k=128+(2*k);
+			ct[i]=k;
+		}
+	}
 	
 	return(chn);
-}
-
-int FX_PlayWAV3D( char *ptr, int pitchoffset, int angle, int distance,
-       int priority, unsigned long callbackval )
-{
-	printf("FX_PlayWAV3D\n");
-	return(0);
 }
 
 #if 1

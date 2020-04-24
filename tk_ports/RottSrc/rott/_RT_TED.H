@@ -25,12 +25,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "rt_actor.h"
 #include "develop.h"
 
-#define SHAREWARE_TAG     0x4d4b
-#define REGISTERED_TAG    0x4344
-#define RTL_VERSION       ( 0x0101 )
-#define COMMBAT_SIGNATURE ( "RTC" )
-#define NORMAL_SIGNATURE  ( "RTL" )
-#define RTL_HEADER_OFFSET 8
+#define SHAREWARE_TAG		0x4d4b
+#define REGISTERED_TAG		0x4344
+#define RTL_VERSION			( 0x0101 )
+#define COMMBAT_SIGNATURE	( "RTC" )
+#define NORMAL_SIGNATURE 	( "RTL" )
+#define RTL_HEADER_OFFSET	8
+
+#define BT1RLEW_TAG			0x4231
 
 typedef struct
 {

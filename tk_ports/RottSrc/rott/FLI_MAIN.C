@@ -56,111 +56,111 @@ static void decode_color(Uchar  *data
 	* code for both COLOR_64 and COLOR_256 compression.
 	*/
 {
-int start = 0;
-Uchar  *cbuf = (Uchar  *)data;
-Short  *wp = (Short  *)cbuf;
-Short ops;
-int count;
+	int start = 0;
+	Uchar  *cbuf = (Uchar  *)data;
+	Short  *wp = (Short  *)cbuf;
+	Short ops;
+	int count;
 
-ops = *wp;
-cbuf += sizeof(*wp);
-while (--ops >= 0)
+	ops = *wp;
+	cbuf += sizeof(*wp);
+	while (--ops >= 0)
 	{
-	start += *cbuf++;
-	if ((count = *cbuf++) == 0)
-		count = 256;
-	(*output)(s, start, (Color  *)cbuf, count);
-	cbuf += 3*count;
-	start += count;
+		start += *cbuf++;
+		if ((count = *cbuf++) == 0)
+			count = 256;
+		(*output)(s, start, (Color  *)cbuf, count);
+		cbuf += 3*count;
+		start += count;
 	}
 }
 
 static void decode_color_256(Uchar  *data, Flic *flic, Screen *s)
 	/* Decode COLOR_256 chunk. */
 {
-decode_color(data, flic, s, screen_put_colors);
+	decode_color(data, flic, s, screen_put_colors);
 }
 
 static void decode_color_64(Uchar  *data, Flic *flic, Screen *s)
 	/* Decode COLOR_64 chunk. */
 {
-decode_color(data, flic, s, screen_put_colors_64);
+	decode_color(data, flic, s, screen_put_colors_64);
 }
 
 
 static void decode_byte_run(Uchar  *data, Flic *flic, Screen *s)
 	/* Byte-run-length decompression. */
 {
-int x,y;
-int width = flic->head.width;
-int height = flic->head.height;
-Char psize;
-Char  *cpt = data;
-int end;
+	int x,y;
+	int width = flic->head.width;
+	int height = flic->head.height;
+	Char psize;
+	Char  *cpt = data;
+	int end;
 
-y = flic->yoff;
-end = flic->xoff + width;
-while (--height >= 0)
+	y = flic->yoff;
+	end = flic->xoff + width;
+	while (--height >= 0)
 	{
-	x = flic->xoff;
-	cpt += 1;	/* skip over obsolete opcount byte */
-	psize = 0;
-	while ((x+=psize) < end)
+		x = flic->xoff;
+		cpt += 1;	/* skip over obsolete opcount byte */
+		psize = 0;
+		while ((x+=psize) < end)
 		{
-		psize = *cpt++;
-		if (psize >= 0)
+			psize = *cpt++;
+			if (psize >= 0)
 			{
-			screen_repeat_one(s, x, y, *cpt++, psize);
+				screen_repeat_one(s, x, y, *cpt++, psize);
 			}
-		else
+			else
 			{
-			psize = -psize;
-			screen_copy_seg(s, x, y, (Pixel  *)cpt, psize);
-			cpt += psize;
+				psize = -psize;
+				screen_copy_seg(s, x, y, (Pixel  *)cpt, psize);
+				cpt += psize;
 			}
 		}
-	y++;
+		y++;
 	}
 }
 
 static void decode_delta_fli(Uchar  *data, Flic *flic, Screen *s)
 	/* Fli style delta decompression. */
 {
-int xorg = flic->xoff;
-int yorg = flic->yoff;
-Short  *wpt = (Short  *)data;
-Uchar  *cpt = (Uchar  *)(wpt + 2);
-int x,y;
-Short lines;
-Uchar opcount;
-Char psize;
+	int xorg = flic->xoff;
+	int yorg = flic->yoff;
+	Short  *wpt = (Short  *)data;
+	Uchar  *cpt = (Uchar  *)(wpt + 2);
+	int x,y;
+	Short lines;
+	Uchar opcount;
+	Char psize;
 
-y = yorg + *wpt++;
-lines = *wpt;
-while (--lines >= 0)
+	y = yorg + *wpt++;
+	lines = *wpt;
+	while (--lines >= 0)
 	{
-	x = xorg;
-	opcount = *cpt++;
-	while (opcount > 0)
+		x = xorg;
+		opcount = *cpt++;
+		while (opcount > 0)
 		{
-		x += *cpt++;
-		psize = *cpt++;
-		if (psize < 0)
+			x += *cpt++;
+			psize = *cpt++;
+			if (psize < 0)
 			{
-			psize = -psize;
-			screen_repeat_one(s, x, y, *cpt++, psize);
-			x += psize;
-			opcount-=1;
+				psize = -psize;
+				screen_repeat_one(s, x, y, *cpt++, psize);
+				x += psize;
+				opcount-=1;
 			}
-		else
+			else
 			{
-			screen_copy_seg(s, x, y, (Pixel  *)cpt, psize);
-			cpt += psize;
-			x += psize;
-			opcount -= 1;
+				screen_copy_seg(s, x, y, (Pixel  *)cpt, psize);
+				cpt += psize;
+				x += psize;
+				opcount -= 1;
 			}
 		}
-	y++;
+		y++;
 	}
 }
 
@@ -170,16 +170,15 @@ static void decode_delta_flc(Uchar  *data, Flic *flic, Screen *s)
 	* a lot of the control info (how  to skip, how many words to
 	* copy) are byte oriented still to save space. */
 {
-int xorg = flic->xoff;
-int yorg = flic->yoff;
-int width = flic->head.width;
-int x,y;
-Short lp_count;
-Short opcount;
-int psize;
-union {Short  *w; Uchar  *ub; Char  *b; Pixels2  *p2;} wpt;
-int lastx;
-
+	int xorg = flic->xoff;
+	int yorg = flic->yoff;
+	int width = flic->head.width;
+	int x,y;
+	Short lp_count;
+	Short opcount;
+	int psize;
+	union {Short  *w; Uchar  *ub; Char  *b; Pixels2  *p2;} wpt;
+	int lastx;
 
 	lastx = xorg + width - 1;
 	wpt.ub = data;
@@ -239,19 +238,19 @@ static void decode_black(Uchar  *data, Flic *flic, Screen *s)
 	/* Decode a BLACK chunk.  Set frame to solid color 0 one
 	* line at a time. */
 {
-Pixels2 black;
-int i;
-int height = flic->head.height;
-int width = flic->head.width;
-int x = flic->xoff;
-int y = flic->yoff;
+	Pixels2 black;
+	int i;
+	int height = flic->head.height;
+	int width = flic->head.width;
+	int x = flic->xoff;
+	int y = flic->yoff;
 
-black.pixels[0] = black.pixels[1] = 0;
-for (i=0; i<height; ++i)
+	black.pixels[0] = black.pixels[1] = 0;
+	for (i=0; i<height; ++i)
 	{
-	screen_repeat_two(s, x, y+i, black, width/2);
-	if (width & 1)	/* if odd set last pixel */
-		screen_put_dot(s, x+width-1, y+i, 0);
+		screen_repeat_two(s, x, y+i, black, width/2);
+		if (width & 1)	/* if odd set last pixel */
+			screen_put_dot(s, x+width-1, y+i, 0);
 	}
 }
 
@@ -259,58 +258,58 @@ static void decode_literal(Uchar  *data, Flic *flic, Screen *s)
 	/* Decode a LITERAL chunk.  Just copy data to screen one line at
 	* a time. */
 {
-int i;
-int height = flic->head.height;
-int width = flic->head.width;
-int x = flic->xoff;
-int y = flic->yoff;
+	int i;
+	int height = flic->head.height;
+	int width = flic->head.width;
+	int x = flic->xoff;
+	int y = flic->yoff;
 
-for (i=0; i<height; ++i)
+	for (i=0; i<height; ++i)
 	{
-	screen_copy_seg(s, x, y+i, (Pixel  *)data, width);
-	data += width;
+		screen_copy_seg(s, x, y+i, (Pixel  *)data, width);
+		data += width;
 	}
 }
 
 ErrCode SetupFlicAccess (Flic * flic)
 {
-if (flic->usefile==TRUE)
+	if (flic->usefile==TRUE)
 	{
-	return file_open_to_read(&flic->handle, flic->name);
+		return file_open_to_read(&flic->handle, flic->name);
 	}
-else
+	else
 	{
-	flic->flicoffset=0;
-	return Success;
+		flic->flicoffset=0;
+		return Success;
 	}
 }
 
 ErrCode CopyNextFlicBlock (Flic * flic, MemPtr buf, Ulong size)
 {
-ErrCode err;
+	ErrCode err;
 
-if (flic->usefile==TRUE)
+	if (flic->usefile==TRUE)
 	{
-	err = file_read_big_block(flic->handle, buf, size);
-	return err;
+		err = file_read_big_block(flic->handle, buf, size);
+		return err;
 	}
-else
+	else
 	{
-	memcpy(buf, flic->flicbuffer+flic->flicoffset, size);
-	flic->flicoffset+=size;
-	return Success;
+		memcpy(buf, flic->flicbuffer+flic->flicoffset, size);
+		flic->flicoffset+=size;
+		return Success;
 	}
 }
 
 void	SetFlicOffset (Flic * flic, Ulong offset )
 {
-if (flic->usefile==TRUE)
+	if (flic->usefile==TRUE)
 	{
-	w_lseek(flic->handle,offset,SEEK_SET);
+		w_lseek(flic->handle,offset,SEEK_SET);
 	}
-else
+	else
 	{
-	flic->flicoffset = offset;
+		flic->flicoffset = offset;
 	}
 }
 
@@ -319,34 +318,36 @@ ErrCode flic_open(Flic *flic, char *name, MemPtr buf, Boolean usefile)
 	/* Open flic file.  Read header and verify it's a flic.
 	* Seek to first frame. */
 {
-ErrCode err;
+	ErrCode err;
 
-ClearStruct(flic);		/* Start at a known state. */
-flic->usefile=usefile;  /* use file or buffer */
-flic->name = name;		/* Save name for future use. */
-flic->flicbuffer=buf;	/* save address of flicbuffer */
+	ClearStruct(flic);		/* Start at a known state. */
+	flic->usefile=usefile;  /* use file or buffer */
+	flic->name = name;		/* Save name for future use. */
+	flic->flicbuffer=buf;	/* save address of flicbuffer */
 
-if ((err = SetupFlicAccess (flic)) >= Success)
+	if ((err = SetupFlicAccess (flic)) >= Success)
 	{
-	if ((err = CopyNextFlicBlock (flic, (Uchar *)&flic->head, sizeof(flic->head)))
-		>= Success)
+		err = CopyNextFlicBlock (flic,
+			(Uchar *)&flic->head,
+			sizeof(flic->head));
+		if (err >= Success)
 		{
-		if (flic->head.type == FLC_TYPE)
+			if (flic->head.type == FLC_TYPE)
 			{
-			/* Seek frame 1. */
-			SetFlicOffset (flic, flic->head.oframe1 );
-			return Success;
+				/* Seek frame 1. */
+				SetFlicOffset (flic, flic->head.oframe1 );
+				return Success;
 			}
-		if (flic->head.type == FLI_TYPE)
+			if (flic->head.type == FLI_TYPE)
 			{
-			/* Do some conversion work here. */
-			flic->head.oframe1 = sizeof(flic->head);
-			flic->head.speed = flic->head.speed * 1000L / 70L;
-			return Success;
+				/* Do some conversion work here. */
+				flic->head.oframe1 = sizeof(flic->head);
+				flic->head.speed = flic->head.speed * 1000L / 70L;
+				return Success;
 			}
-		else
+			else
 			{
-			err = ErrBadFlic;
+				err = ErrBadFlic;
 			}
 		}
 	}
@@ -365,8 +366,8 @@ void flic_close(Flic *flic)
 	ClearStruct(flic);		/* Discourage use after close. */
 }
 
-static ErrCode decode_frame(Flic *flic
-, FrameHead *frame, Uchar  *data, Screen *s)
+static ErrCode decode_frame(Flic *flic,
+	FrameHead *frame, Uchar  *data, Screen *s)
 	/* Decode a frame that is in memory already into screen.
 	* Here we just loop through each chunk calling appropriate
 	* chunk decoder.
@@ -412,34 +413,35 @@ static ErrCode decode_frame(Flic *flic
 ErrCode flic_next_frame(Flic *flic, Screen *screen)
 	/* Advance to next frame of flic. */
 {
-FrameHead head;
-ErrCode err;
-MemPtr bb;
-long size;
+	FrameHead head;
+	ErrCode err;
+	MemPtr bb;
+	long size;
 
-if ((err = CopyNextFlicBlock (flic, (Uchar *)&head, sizeof(head))) >= Success)
+	err = CopyNextFlicBlock (flic, (Uchar *)&head, sizeof(head));
+	if (err >= Success)
 	{
-	if (head.type == FRAME_TYPE)
+		if (head.type == FRAME_TYPE)
 		{
-		size = head.size - sizeof(head);	/* Don't include head. */
-		if (size > 0)
+			size = head.size - sizeof(head);	/* Don't include head. */
+			if (size > 0)
 			{
-			if ((err = big_alloc(&bb, size)) >= Success)
+				if ((err = big_alloc(&bb, size)) >= Success)
 				{
-				if ((err = CopyNextFlicBlock (flic, bb, size)) >= Success)
+					if ((err = CopyNextFlicBlock (flic, bb, size)) >= Success)
 					{
-					err = decode_frame(flic, &head, bb, screen);
+						err = decode_frame(flic, &head, bb, screen);
 					}
-				big_free(&bb);
+					big_free(&bb);
 				}
 			}
 		}
-	else
+		else
 		{
-		err = ErrBadFrame;
+			err = ErrBadFrame;
 		}
 	}
-return err;
+	return err;
 }
 
 
@@ -447,7 +449,7 @@ static Ulong calc_end_time(Ulong millis)
 	/* Little helper subroutine to find out when to start on next
 	* frame. */
 {
-return (GetCinematicTime() + ( (millis * CLOCKSPEED) / 4000l) );
+	return (GetCinematicTime() + ( (millis * CLOCKSPEED) / 4000l) );
 }
 
 static ErrCode wait_til(Ulong end_time, Machine *machine)
@@ -458,8 +460,8 @@ static ErrCode wait_til(Ulong end_time, Machine *machine)
 {
 	do
 	{
-	if (CinematicAbort()!=0)
-		return ErrCancel;
+		if (CinematicAbort()!=0)
+			return ErrCancel;
 	}
 	while (GetCinematicTime() < end_time);
 	return Success;
@@ -468,72 +470,73 @@ static ErrCode wait_til(Ulong end_time, Machine *machine)
 ErrCode flic_play_once(Flic *flic, Machine *machine)
 	/* Play a flic through once. */
 {
-ErrCode err;
-int i;
-Ulong end_time;
+	ErrCode err;
+	int i;
+	Ulong end_time;
 
-for (i=0; i<flic->head.frames; ++i)
+	for (i=0; i<flic->head.frames; ++i)
 	{
-	end_time = calc_end_time(flic->head.speed);
-	if ((err = flic_next_frame(flic, &machine->screen)) < Success)
-		break;
-	if ((err = wait_til(end_time, machine)) < Success)
-		break;
+		end_time = calc_end_time(flic->head.speed);
+		if ((err = flic_next_frame(flic, &machine->screen)) < Success)
+			break;
+		if ((err = wait_til(end_time, machine)) < Success)
+			break;
 	}
-return err;
+	return err;
 }
 
 static ErrCode fill_in_frame2(Flic *flic)
 	/* This figures out where the second frame of the flic is
 	* (useful for playing in a loop).  */
 {
-FrameHead head;
-ErrCode err;
+	FrameHead head;
+	ErrCode err;
 
-SetFlicOffset (flic, flic->head.oframe1 );
-if ((err = CopyNextFlicBlock (flic, (MemPtr)&head, sizeof(head))) < Success)
-	return err;
-flic->head.oframe2 = flic->head.oframe1 + head.size;
-return Success;
+	SetFlicOffset (flic, flic->head.oframe1 );
+	err = CopyNextFlicBlock (flic, (MemPtr)&head, sizeof(head));
+	if (err < Success)
+		return err;
+	flic->head.oframe2 = flic->head.oframe1 + head.size;
+	return Success;
 }
 
 ErrCode flic_play_loop(Flic *flic, Machine *machine)
 	/* Play a flic until key is pressed. */
 {
-int i;
-Ulong end_time;
-ErrCode err;
+	int i;
+	Ulong end_time;
+	ErrCode err;
 
-if (flic->head.oframe2 == 0)
+	if (flic->head.oframe2 == 0)
 	{
-	fill_in_frame2(flic);
+		fill_in_frame2(flic);
 	}
 	/* Seek to first frame. */
-SetFlicOffset (flic, flic->head.oframe1 );
+	SetFlicOffset (flic, flic->head.oframe1 );
 	/* Save time to move on. */
-end_time = calc_end_time(flic->head.speed);
+	end_time = calc_end_time(flic->head.speed);
 	/* Display first frame. */
-if ((err = flic_next_frame(flic, &machine->screen)) < Success)
-	return err;
-for (;;)
+	if ((err = flic_next_frame(flic, &machine->screen)) < Success)
+		return err;
+	for (;;)
 	{
 		/* Seek to second frame */
-	SetFlicOffset (flic, flic->head.oframe2 );
+		SetFlicOffset (flic, flic->head.oframe2 );
 		/* Loop from 2nd frame thru ring frame*/
-	for (i=0; i<flic->head.frames; ++i)
+		for (i=0; i<flic->head.frames; ++i)
 		{
-		if (wait_til(end_time, machine) < Success)
-			return Success;		/* Time out is a success here. */
-		if ((err = flic_next_frame(flic, &machine->screen)) < Success)
-			return err;
-		end_time = calc_end_time(flic->head.speed);
+			if (wait_til(end_time, machine) < Success)
+				return Success;		/* Time out is a success here. */
+			if ((err = flic_next_frame(flic, &machine->screen)) < Success)
+				return err;
+			end_time = calc_end_time(flic->head.speed);
 		}
 	}
 }
 
 
 static char *err_strings[] =
-	{
+{
 	"Unspecified error",
 	"Not enough memory",
 	"Not a flic file",
@@ -543,7 +546,7 @@ static char *err_strings[] =
 	"Couldn't open display",
 	"Couldn't open keyboard",
 	"User canceled action",
-	};
+};
 
 char *flic_err_string(ErrCode err)
 	/* Return a string that describes an error. */
@@ -570,30 +573,30 @@ static void center_flic(Flic *flic, Screen *s)
 
 void PlayFlic ( char * name, unsigned char * buffer, int usefile, int loop)
 {
-ErrCode err;
-Flic flic;
-Machine machine;
+	ErrCode err;
+	Flic flic;
+	Machine machine;
 
-if ((err = machine_open(&machine)) >= Success)
+	if ((err = machine_open(&machine)) >= Success)
 	{
-	if ((err = flic_open(&flic, name, buffer, usefile)) >= Success)
+		if ((err = flic_open(&flic, name, buffer, usefile)) >= Success)
 		{
-		center_flic(&flic, &machine.screen);
-		if (loop==0)
+			center_flic(&flic, &machine.screen);
+			if (loop==0)
 			{
-			err = flic_play_once(&flic, &machine);
+				err = flic_play_once(&flic, &machine);
 			}
-		else
+			else
 			{
-			err = flic_play_loop(&flic, &machine);
+				err = flic_play_loop(&flic, &machine);
 			}
-		flic_close(&flic);
+			flic_close(&flic);
 		}
-	machine_close(&machine);
+		machine_close(&machine);
 	}
-if (err < Success && err != ErrCancel)
+	if (err < Success && err != ErrCancel)
 	{
-	Error("Play Flic had troubles with %s.\n%s.\n",name, flic_err_string(err));
+		Error("Play Flic had troubles with %s.\n%s.\n",
+			name, flic_err_string(err));
 	}
 }
-

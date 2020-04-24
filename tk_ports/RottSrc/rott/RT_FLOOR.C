@@ -345,6 +345,8 @@ boolean SkyExists (void)
 ===================
 */
 
+boolean rott_iswolf;
+
 void SetPlaneViewSize (void)
 {
 	int		x;
@@ -364,6 +366,7 @@ void SetPlaneViewSize (void)
 		}
 
 	lightning=false;
+//	rott_iswolf=false;
 
 	if (MAPSPOT(1,0,0) >= 234)
 	{
@@ -507,21 +510,25 @@ void DrawHLine (int xleft, int xright, int yp)
 	if (yp==centery)
 		return;
 	if (yp>centery)
-		{
+	{
 		int hd;
 
 		buf=rt_floor;
 		hd=yp-centery;
 		height=(hd<<13)/(maxheight-pheight+32);
-		}
+	}
 	else
-		{
+	{
 		int hd;
 
 		buf=ceiling;
 		hd=centery-yp;
 		height=(hd<<13)/pheight;
-		}
+	}
+	
+	if(!buf)
+		return;
+	
 	SetFCLightLevel(height>>(8-HEIGHTFRACTION-1));
 	mr_xstep = ((viewsin<<8)/(height));
 	mr_ystep = ((viewcos<<8)/(height));

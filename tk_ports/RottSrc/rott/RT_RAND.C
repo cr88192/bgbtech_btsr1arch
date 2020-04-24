@@ -36,7 +36,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //
 //****************************************************************************
 
-static int rndindex;
+// static int rndindex;
+static int rndindex = 0;
 static int sndindex = 0;
 
 
@@ -48,7 +49,7 @@ static int sndindex = 0;
 
 int GetRandomSeed ( void )
 {
-   return ( time (NULL) % (SIZE_OF_RANDOM_TABLE) );
+	return ( time (NULL) % (SIZE_OF_RANDOM_TABLE) );
 }
 
 //****************************************************************************
@@ -59,8 +60,8 @@ int GetRandomSeed ( void )
 
 void  InitializeRNG ( void )
 {
-   SetRNGindex(GetRandomSeed());
-   sndindex=GetRandomSeed();
+	SetRNGindex(GetRandomSeed());
+	sndindex=GetRandomSeed();
 }
 
 //****************************************************************************
@@ -71,9 +72,9 @@ void  InitializeRNG ( void )
 
 void  SetRNGindex ( int i )
 {
-   rndindex=i;
+	rndindex=i;
 //#if (DEVELOPMENT == 1)
-   SoftError("RNG index set at %ld\n",i);
+	SoftError("RNG index set at %ld\n",i);
 //#endif
 }
 
@@ -85,7 +86,7 @@ void  SetRNGindex ( int i )
 
 int GetRNGindex ( void )
 {
-   return rndindex;
+	return rndindex;
 }
 
 
@@ -95,11 +96,11 @@ int GetRNGindex ( void )
 // int GameRNG ( char * string, int val )
 //
 //****************************************************************************
-int   GameRNG ( char * string, int val )
+int	GameRNG ( char * string, int val )
 {
-   rndindex = (rndindex+1)&(SIZE_OF_RANDOM_TABLE-1);
-   SoftError("RNG - num=%3ld called from=%s val=%ld\n",RandomTable[rndindex],string,val);
-   return RandomTable[rndindex];
+	rndindex = (rndindex+1)&(SIZE_OF_RANDOM_TABLE-1);
+	SoftError("RNG - num=%3ld called from=%s val=%ld\n",RandomTable[rndindex],string,val);
+	return RandomTable[rndindex];
 }
 #else
 //****************************************************************************
@@ -107,12 +108,12 @@ int   GameRNG ( char * string, int val )
 // int GameRNG (void)
 //
 //****************************************************************************
-int   GameRNG ( void )
+int	GameRNG ( void )
 {
 	int i;
 
-   rndindex = (rndindex+1)&(SIZE_OF_RANDOM_TABLE-1);
-   return RandomTable[rndindex];
+	rndindex = (rndindex+1)&(SIZE_OF_RANDOM_TABLE-1);
+	return RandomTable[rndindex];
 
 //	i=(rndindex>>24)&255;
 //	rndindex=(rndindex*251+7)*65521+13;
@@ -129,11 +130,11 @@ int   GameRNG ( void )
 //
 //****************************************************************************
 
-int   RNG ( char * string, int val )
+int	RNG ( char * string, int val )
 {
-   sndindex = (sndindex+1)&(SIZE_OF_RANDOM_TABLE-1);
-//   SoftError("SRNG - num=%3ld called from=%s val=%ld\n",RandomTable[sndindex],string,val);
-   return RandomTable[sndindex];
+	sndindex = (sndindex+1)&(SIZE_OF_RANDOM_TABLE-1);
+//	SoftError("SRNG - num=%3ld called from=%s val=%ld\n",RandomTable[sndindex],string,val);
+	return RandomTable[sndindex];
 }
 #else
 //****************************************************************************
@@ -142,11 +143,11 @@ int   RNG ( char * string, int val )
 //
 //****************************************************************************
 
-int   RNG( void )
+int	RNG( void )
 {
-   sndindex = (sndindex+1)&(SIZE_OF_RANDOM_TABLE-1);
+	sndindex = (sndindex+1)&(SIZE_OF_RANDOM_TABLE-1);
 
-   return RandomTable[sndindex];
+	return RandomTable[sndindex];
 }
 #endif
 

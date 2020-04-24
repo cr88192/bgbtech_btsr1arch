@@ -1808,7 +1808,8 @@ void DrawWallPost ( wallcast_t * post, unsigned buf)
 
 	whereami=42;
 	if (post->lump)
-		src=W_CacheLumpNum(post->lump,PU_CACHE);
+//		src=W_CacheLumpNum(post->lump,PU_CACHE);
+		src=W_CacheWallLumpNum(post->lump,PU_CACHE);
 	if (post->alttile!=0)
 		{
 		if (post->alttile==-1)
@@ -1839,7 +1840,8 @@ void DrawWallPost ( wallcast_t * post, unsigned buf)
 		else
 			{
 			ht=nominalheight;
-			src2=W_CacheLumpNum(post->alttile,PU_CACHE);
+//			src2=W_CacheLumpNum(post->alttile,PU_CACHE);
+			src2=W_CacheWallLumpNum(post->alttile,PU_CACHE);
 			}
 		}
 	else
@@ -2439,8 +2441,10 @@ void InterpolateDoor (visobj_t * plane)
 	dx=(plane->x2-plane->x1+1);
 	if (plane->h1<=0 || plane->h2<=0 || dx==0)
 		return;
-	shape=W_CacheLumpNum(plane->shapenum,PU_CACHE);
-	shape2=W_CacheLumpNum(plane->altshapenum,PU_CACHE);
+//	shape=W_CacheLumpNum(plane->shapenum,PU_CACHE);
+	shape=W_CacheWallLumpNum(plane->shapenum,PU_CACHE);
+//	shape2=W_CacheLumpNum(plane->altshapenum,PU_CACHE);
+	shape2=W_CacheWallLumpNum(plane->altshapenum,PU_CACHE);
 	p=(patch_t *)shape;
 	d1=(1<<(16+HEIGHTFRACTION)) / plane->h1;
 	d2=(1<<(16+HEIGHTFRACTION)) / plane->h2;
@@ -2458,9 +2462,9 @@ void InterpolateDoor (visobj_t * plane)
 		buf=bufferofs+((pl+plane->x1)>>2);
 		VGAWRITEMAP((plane->x1+pl)&3);
 		for (i=plane->x1+pl;i<=plane->x2;i+=4,buf++)
-			{
+		{
 			if ((i>=0 && i<viewwidth) && (bot!=0) && (posts[i].wallheight<=(height>>DHEIGHTFRACTION)) )
-				{
+			{
 //				dc_invscale=height<<(10-HEIGHTFRACTION-DHEIGHTFRACTION);
 //				dc_invscale=height<<((10-HEIGHTFRACTION-DHEIGHTFRACTION)&31);
 				dc_invscale=height>>4;		//BGB: ?...
@@ -2473,7 +2477,7 @@ void InterpolateDoor (visobj_t * plane)
 				ScaleMaskedPost (p->collumnofs[texture]+shape,buf);
 
 				if (levelheight>1)
-					{
+				{
 					sprtopoffset-=(dc_invscale<<6)*(levelheight-1);
 					bottomscreen =sprtopoffset + (dc_invscale*nominalheight);
 					dc_yl = (sprtopoffset+SFRACUNIT-1)>>SFRACBITS;
@@ -2487,13 +2491,13 @@ void InterpolateDoor (visobj_t * plane)
 
 					dc_source=shape2+((texture<<6)&0xfc0);
 					R_DrawWallColumn (buf);
-					}
 				}
+			}
 			top+=topinc<<2;
 			bot+=botinc<<2;
 			height+=dh<<2;
-			}
 		}
+	}
 }
 
 
@@ -2537,7 +2541,8 @@ void InterpolateMaskedWall (visobj_t * plane)
 	if (plane->altshapenum>=0)
 		{
 		drawmiddle=true;
-		shape2=W_CacheLumpNum(plane->altshapenum,PU_CACHE);
+//		shape2=W_CacheLumpNum(plane->altshapenum,PU_CACHE);
+		shape2=W_CacheWallLumpNum(plane->altshapenum,PU_CACHE);
 		p2=(patch_t *)shape2;
 		topoffset=p2->topoffset;
 		}
@@ -2548,7 +2553,8 @@ void InterpolateMaskedWall (visobj_t * plane)
 	if (plane->viewx>=0)
 		{
 		drawtop=true;
-		shape3=W_CacheLumpNum(plane->viewx,PU_CACHE);
+//		shape3=W_CacheLumpNum(plane->viewx,PU_CACHE);
+		shape3=W_CacheWallLumpNum(plane->viewx,PU_CACHE);
 		p3=(patch_t *)shape3;
 		topoffset=p3->topoffset;
 		}
@@ -2559,7 +2565,8 @@ void InterpolateMaskedWall (visobj_t * plane)
 	if (plane->shapenum>=0)
 		{
 		drawbottom=true;
-		shape=W_CacheLumpNum(plane->shapenum,PU_CACHE);
+//		shape=W_CacheLumpNum(plane->shapenum,PU_CACHE);
+		shape=W_CacheWallLumpNum(plane->shapenum,PU_CACHE);
 		p = (transpatch_t *)shape;
 		topoffset=p->topoffset;
 		}
@@ -3758,7 +3765,7 @@ void DoZIntro (void)
 	if (post->alttile!=0)
 		{
 		ht=nominalheight;
-		src2=W_CacheLumpNum(1+post->alttile,PU_CACHE);
+//		src2=W_CacheLumpNum(1+post->alttile,PU_CACHE);
 //		src2+=8;
 		}
 	else
@@ -4457,7 +4464,7 @@ void CacheTransmitterExplosions ( void )
 		num=W_GetNumForName(ExplosionInfo[i].name);
 		for (j=0;j<ExplosionInfo[i].numframes;j++)
 			{
-			W_CacheLumpNum(num+j,PU_CACHE);
+			W_CacheLumpNum(num+j,PU_CACHE);		//explosions
 			}
 		}
 }

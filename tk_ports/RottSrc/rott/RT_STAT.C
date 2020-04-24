@@ -14,7 +14,7 @@ See the GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA	02111-1307, USA.
 
 */
 
@@ -46,29 +46,24 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // #include "memcheck.h"
 
 
-
 /*
 =============================================================================
 
-Global Variables                                                                                                                                 GLOBAL VARIABLES
+Global Variables																																																																	GLOBAL VARIABLES
 
 =============================================================================
 */
 
-statobj_t   *firstactivestat,*lastactivestat;
-statobj_t   *firstemptystat,*lastemptystat;
+statobj_t		*firstactivestat,*lastactivestat;
+statobj_t		*firstemptystat,*lastemptystat;
 
-wall_t      switches[MAXSWITCHES],*lastswitch;
-respawn_t   *firstrespawn,*lastrespawn;
+wall_t			switches[MAXSWITCHES],*lastswitch;
+respawn_t		*firstrespawn,*lastrespawn;
 statobj_t	*FIRSTSTAT,*LASTSTAT,*sprites[MAPSIZE][MAPSIZE];
-animwall_t  animwalls[MAXANIMWALLS];
+animwall_t	animwalls[MAXANIMWALLS];
 
 dirtype opposite[9] =
 	{west,southwest,south,southeast,east,northeast,north,northwest,nodir};
-
-
-
-
 
 
 statinfo stats[NUMSTATS] =
@@ -83,9 +78,9 @@ statinfo stats[NUMSTATS] =
 {0,SPR73_GKEY1,stat_pedsilverkey,FL_COLORED|FL_BONUS|FL_CHANGES|FL_BLOCK|FL_ACTIVE,2,16,pc_gray},
 {0,SPR73_GKEY1, stat_pedironkey,FL_COLORED|FL_BONUS|FL_CHANGES|FL_BLOCK|FL_ACTIVE,2,16,pc_olive},
 {0,SPR73_GKEY1,stat_pedcrystalkey,FL_COLORED|FL_BONUS|FL_CHANGES|FL_BLOCK|FL_ACTIVE,2,16,pc_red},
-{0,SPR6_GIBS1,  stat_gibs1},
-{0,SPR7_GIBS2,  stat_gibs2},
-{0,SPR8_GIBS3,  stat_gibs3},
+{0,SPR6_GIBS1,	stat_gibs1},
+{0,SPR7_GIBS2,	stat_gibs2},
+{0,SPR8_GIBS3,	stat_gibs3},
 {0,SPR9_MONKMEAL, stat_monkmeal,FL_BONUS|FL_RESPAWN},
 {0,PORRIDGE1, stat_priestporridge,FL_BONUS|FL_RESPAWN,2,6},
 {0,MONKCRYSTAL11,stat_monkcrystal1,FL_BONUS|FL_ACTIVE|FL_RESPAWN,2,6},
@@ -173,11 +168,11 @@ statinfo stats[NUMSTATS] =
 
 dirtype diagonal[9][9] =
 {
-/* east */  {nodir,nodir,northeast,nodir,nodir,nodir,southeast,nodir,nodir},
+/* east */	{nodir,nodir,northeast,nodir,nodir,nodir,southeast,nodir,nodir},
 			{nodir,nodir,nodir,nodir,nodir,nodir,nodir,nodir,nodir},
 /* north */ {northeast,nodir,nodir,nodir,northwest,nodir,nodir,nodir,nodir},
 			{nodir,nodir,nodir,nodir,nodir,nodir,nodir,nodir,nodir},
-/* west */  {nodir,nodir,northwest,nodir,nodir,nodir,southwest,nodir,nodir},
+/* west */	{nodir,nodir,northwest,nodir,nodir,nodir,southwest,nodir,nodir},
 			{nodir,nodir,nodir,nodir,nodir,nodir,nodir,nodir,nodir},
 /* south */ {southeast,nodir,nodir,nodir,southwest,nodir,nodir,nodir,nodir},
 			{nodir,nodir,nodir,nodir,nodir,nodir,nodir,nodir,nodir},
@@ -187,62 +182,76 @@ dirtype diagonal[9][9] =
 /*
 =============================================================================
 
-Local Variables                                                                                                                                 GLOBAL VARIABLES
+Local Variables																																																																	GLOBAL VARIABLES
 
 =============================================================================
 */
-static awallinfo_t animwallsinfo[MAXANIMWALLS] =
-  {{3,4,"FPLACE1\0"}, //lava wall
-   {3,6,"ANIMY1\0"}, //anim red
-   {3,6,"ANIMR1\0"}, //anim yellow
-   {40,4,"ANIMFAC1\0"}, //anim face
-   {3,4,"ANIMONE1\0"}, //anim one
-   {3,4,"ANIMTWO1\0"}, //anim two
-   {3,4,"ANIMTHR1\0"}, //anim three
-   {3,4,"ANIMFOR1\0"}, //anim four
-   {3,6,"ANIMGW1\0"}, //anim grey water
-   {3,6,"ANIMYOU1\0"}, //anim you do not belong
-   {3,6,"ANIMBW1\0"}, //anim brown water
-   {3,6,"ANIMBP1\0"}, //anim brown piston
-   {3,6,"ANIMCHN1\0"}, //anim chain
-   {3,6,"ANIMFW1\0"}, //anim firewall
-   {3,6,"ANIMLAT1\0"}, //anim little blips
-   {3,6,"ANIMST1\0"}, //anim light streams left
-   {3,6,"ANIMRP1\0"}};//anim light streams right
+static awallinfo_t animwallsinfo[MAXANIMWALLS] = {
+	{3,4,"FPLACE1\0"}, //lava wall
+	{3,6,"ANIMY1\0"}, //anim red
+	{3,6,"ANIMR1\0"}, //anim yellow
+	{40,4,"ANIMFAC1\0"}, //anim face
+	{3,4,"ANIMONE1\0"}, //anim one
+	{3,4,"ANIMTWO1\0"}, //anim two
+	{3,4,"ANIMTHR1\0"}, //anim three
+	{3,4,"ANIMFOR1\0"}, //anim four
+	{3,6,"ANIMGW1\0"}, //anim grey water
+	{3,6,"ANIMYOU1\0"}, //anim you do not belong
+	{3,6,"ANIMBW1\0"}, //anim brown water
+	{3,6,"ANIMBP1\0"}, //anim brown piston
+	{3,6,"ANIMCHN1\0"}, //anim chain
+	{3,6,"ANIMFW1\0"}, //anim firewall
+	{3,6,"ANIMLAT1\0"}, //anim little blips
+	{3,6,"ANIMST1\0"}, //anim light streams left
+	{3,6,"ANIMRP1\0"}};//anim light streams right
 
 int statcount;
 
 
 void AddToFreeStaticList(statobj_t*stat)
-{ if (!firstemptystat)
-	 firstemptystat = stat;
-  else
-	 {stat->statprev = lastemptystat;
-	  lastemptystat->statnext = stat;
-	 }
-  lastemptystat = stat;
+{
+	if (!firstemptystat)
+	{
+		firstemptystat = stat;
+	}
+	else
+	{
+		stat->statprev = lastemptystat;
+		lastemptystat->statnext = stat;
+	}
+	lastemptystat = stat;
 
 }
 
 
 void RemoveFromFreeStaticList(statobj_t*stat)
 {
-  if (stat == lastemptystat)
+	if (stat == lastemptystat)
+	{
 		lastemptystat = stat->statprev;
-  else
+		if(lastemptystat)
+			lastemptystat->statnext=NULL;
+	}
+	else if(stat->statnext)
+	{
 		stat->statnext->statprev = stat->statprev;
+	}
 
-  if (stat == firstemptystat)
+	if (stat == firstemptystat)
+	{
 		firstemptystat = stat->statnext;
-  else
+		if(firstemptystat)
+			firstemptystat->statprev=NULL;
+	}
+	else if(stat->statprev)
+	{
 		stat->statprev->statnext = stat->statnext;
+	}
 
-  stat->statprev = NULL;
-  stat->statnext = NULL;
+	stat->statprev = NULL;
+	stat->statnext = NULL;
 
 }
-
-
 
 
 /*
@@ -253,15 +262,20 @@ void RemoveFromFreeStaticList(statobj_t*stat)
 ===============
 */
 
-void MakeStatActive(statobj_t*x)
- {if (!firstactivestat)
-	 firstactivestat	= x;
-  else
-	  {x->prevactive = lastactivestat;
+void MakeStatActive(statobj_t *x)
+{
+	if (!firstactivestat)
+	{
+		firstactivestat	= x;
+		lastactivestat = x;
+	}
+	else
+	{
+		x->prevactive = lastactivestat;
 		lastactivestat->nextactive = x;
-	  }
-  lastactivestat = x;
- }
+		lastactivestat = x;
+	}
+}
 
 
 /*
@@ -274,20 +288,32 @@ void MakeStatActive(statobj_t*x)
 
 void MakeStatInactive(statobj_t*stat)
 {
- if (stat == lastactivestat)
-	lastactivestat = stat->prevactive;
- else
-	stat->nextactive->prevactive = stat->prevactive;
+	if (stat == lastactivestat)
+	{
+		lastactivestat = stat->prevactive;
+		if(lastactivestat)
+			lastactivestat->nextactive=NULL;
+	}
+	else if(stat->nextactive)
+	{
+		stat->nextactive->prevactive = stat->prevactive;
+	}
 
- if (stat == firstactivestat)
-	firstactivestat = stat->nextactive;
- else
-	stat->prevactive->nextactive = stat->nextactive;
+	if (stat == firstactivestat)
+	{
+		firstactivestat = stat->nextactive;
+		if(firstactivestat)
+			firstactivestat->prevactive=NULL;
+	}
+	else if(stat->prevactive)
+	{
+		stat->prevactive->nextactive = stat->nextactive;
+	}
 
- stat->prevactive = NULL;
- stat->nextactive = NULL;
-
+	stat->prevactive = NULL;
+	stat->nextactive = NULL;
 }
+
 /*
 ===============
 =
@@ -297,84 +323,115 @@ void MakeStatInactive(statobj_t*stat)
 */
 
 void AddStatic(statobj_t *stat)
- {if (FIRSTSTAT)
-	 {stat->statprev = LASTSTAT;
-	  LASTSTAT->statnext = stat;
-	 }
-  else
-	 FIRSTSTAT = stat;
-  LASTSTAT = stat;
- }
-
+{
+	if (FIRSTSTAT)
+//	if (LASTSTAT)
+	{
+		stat->statprev = LASTSTAT;
+		LASTSTAT->statnext = stat;
+		LASTSTAT = stat;
+	}
+	else
+	{
+		FIRSTSTAT = stat;
+		LASTSTAT = stat;
+	}
+}
 
 
 void RemoveStatic(statobj_t*stat)
 {
-   if (stat->flags & FL_ABP) //remove from active list
-      MakeStatInactive(stat);
+	if (stat->flags & FL_ABP) //remove from active list
+		MakeStatInactive(stat);
 
-   if (stat == LASTSTAT)     // remove from master list
-      LASTSTAT = stat->statprev;
-   else
-      stat->statnext->statprev = stat->statprev;
+	if (stat == LASTSTAT)			// remove from master list
+	{
+		LASTSTAT = stat->statprev;
+		if (LASTSTAT)
+			LASTSTAT->statnext=NULL;
+	}
+	else if(stat->statnext)
+	{
+		stat->statnext->statprev = stat->statprev;
+	}
 
-   if (stat == FIRSTSTAT)
-      FIRSTSTAT = stat->statnext;
-   else
-      stat->statprev->statnext = stat->statnext;
+	if (stat == FIRSTSTAT)
+	{
+		FIRSTSTAT = stat->statnext;
+		if (FIRSTSTAT)
+			FIRSTSTAT->statprev=NULL;
+	}
+	else if(stat->statprev)
+	{
+		stat->statprev->statnext = stat->statnext;
+	}
 
-   stat->statprev = NULL;
-   stat->statnext = NULL;
+	stat->statprev = NULL;
+	stat->statnext = NULL;
 
-   if (stat->flags & FL_WEAPON)
-      MISCVARS->NUMWEAPONS --;
+	if (stat->flags & FL_WEAPON)
+		MISCVARS->NUMWEAPONS --;
 
-   if ((stat->flags & FL_RESPAWN) &&
-       gamestate.BattleOptions.RespawnItems &&
-       (!((stat->flags & FL_WEAPON ) &&
-          (gamestate.BattleOptions.WeaponPersistence)
-         )
-       )
-      )
-      {
-      respawn_t*temp;
-   //    if ( !( (stat->flags & FL_WEAPON) &&
-   //          (MISCVARS->NUMWEAPONS >= (numplayers+10))
-      //      )
-      // )
-         {
-         temp = (respawn_t*)Z_LevelMalloc(sizeof(respawn_t),PU_LEVELSTRUCT,NULL);
+	if ((stat->flags & FL_RESPAWN) &&
+			gamestate.BattleOptions.RespawnItems &&
+			(!((stat->flags & FL_WEAPON ) &&
+				(gamestate.BattleOptions.WeaponPersistence)
+				)
+			)
+		)
+	{
+		respawn_t*temp;
+	//		if ( !( (stat->flags & FL_WEAPON) &&
+	//					(MISCVARS->NUMWEAPONS >= (numplayers+10))
+		//			)
+		// )
+		{
+			temp = (respawn_t *)Z_LevelMalloc(
+				sizeof(respawn_t), PU_LEVELSTRUCT, NULL);
 
-         memset (temp,0,sizeof(*temp));
-         temp->ticcount = GetRespawnTimeForItem(stat->itemnumber);
-         temp->tilex = stat->tilex;
-         temp->tiley = stat->tiley;
-         temp->itemnumber = stat->itemnumber;
-         temp->spawnz = stat->z;
-         temp->linked_to = stat->linked_to;
-         //SoftError("\nrespawn obj created for stattype %d with z = %d",stat->itemnumber,temp->spawnz);
-         AddRespawnStatic(temp);
-         }
-      }
-   //Z_Free(stat);
-   AddToFreeStaticList(stat);
+			memset (temp, 0, sizeof(*temp));
+			temp->ticcount = GetRespawnTimeForItem(stat->itemnumber);
+			temp->tilex = stat->tilex;
+			temp->tiley = stat->tiley;
+			temp->itemnumber = stat->itemnumber;
+			temp->spawnz = stat->z;
+			temp->linked_to = stat->linked_to;
+			//SoftError("\nrespawn obj created for stattype %d with z = %d",stat->itemnumber,temp->spawnz);
+			AddRespawnStatic(temp);
+		}
+	}
 
-   //Add_To_Delete_Array(stat);
-   statcount --;
-   }
+	//Z_Free(stat);
+	AddToFreeStaticList(stat);
+
+	//Add_To_Delete_Array(stat);
+	statcount --;
+}
 
 
 void RemoveRespawnStatic(respawn_t*stat)
 {
 	if (stat == lastrespawn)
+	{
 		lastrespawn = stat->prev;
-	else
+		if(lastrespawn)
+			lastrespawn->next = NULL;
+	}
+	else if(stat->next)
+	{
 		stat->next->prev = stat->prev;
+	}
 
 	if (stat == firstrespawn)
+	{
 		firstrespawn = stat->next;
-	else
+		if(firstrespawn)
+			firstrespawn->prev = NULL;
+	}
+	else if(stat->prev)
+	{
 		stat->prev->next = stat->next;
+	}
 
 	stat->prev = NULL;
 	stat->next = NULL;
@@ -384,146 +441,150 @@ void RemoveRespawnStatic(respawn_t*stat)
 
 void TurnOffLight(int tilex,int tiley)
 {
-  DoLights(tilex,tiley);
-  LightsInArea[MAPSPOT(tilex,tiley,0)-AREATILE]--;
-
+	int area;
+	DoLights(tilex, tiley);
+	area = MAPSPOT(tilex, tiley, 0)-AREATILE;
+	if((area<0) || (area>=NUMAREAS))
+		return;
+	LightsInArea[area]--;
 }
 
 
 void ActivateLight(int light)
-{statobj_t*tstat;
+{
+	statobj_t	*tstat;
 
-// tstat = (statobj_t*)light;
- tstat = T_SwizzleStatObjFromInt(light);
+	// tstat = (statobj_t*)light;
+	tstat = T_SwizzleStatObjFromInt(light);
 
- tstat->shapenum ++;
- tstat->flags |= FL_LIGHTON;
- TurnOnLight(tstat->tilex,tstat->tiley);
-
+	tstat->shapenum ++;
+	tstat->flags |= FL_LIGHTON;
+	TurnOnLight(tstat->tilex,tstat->tiley);
 }
 
 
 void DeactivateLight(int light)
-{statobj_t*tstat;
+{
+	statobj_t	*tstat;
 
-// tstat = (statobj_t*)light;
- tstat = T_SwizzleStatObjFromInt(light);
+	// tstat = (statobj_t*)light;
+	tstat = T_SwizzleStatObjFromInt(light);
 
- tstat->shapenum --;
- tstat->flags &= ~(FL_LIGHTON);
- TurnOffLight(tstat->tilex,tstat->tiley);
-
+	tstat->shapenum --;
+	tstat->flags &= ~(FL_LIGHTON);
+	TurnOffLight(tstat->tilex,tstat->tiley);
 }
 
 void TurnOnLight(int i,int j)
 {
+	int area;
 
- LightsInArea[MAPSPOT(i,j,0)-AREATILE]++;
+	area = MAPSPOT(i,j,0)-AREATILE;
+	if((area<0) || (area>=NUMAREAS))
+		return;
 
- if (lightsource==0)
-    return;
+	LightsInArea[area]++;
 
- if ((!(tilemap[i+1][j])) && (!(tilemap[i-1][j])))
-	{
-	SetLight(i,j,0xcdeffedc);
-	SetLight(i+1,j,0x135789ab);
-	SetLight(i-1,j,0xba987351);
-	SetLight(i,j+1,0xcdeffedc);
-	SetLight(i,j-1,0xcdeffedc);
-	SetLight(i-1,j-1,0xba987351);
-	SetLight(i+1,j+1,0xba987351);
-	SetLight(i+1,j-1,0x135789ab);
-	SetLight(i-1,j+1,0x135789ab);
-	}
- else if ((!(tilemap[i][j+1])) && (!(tilemap[i][j-1])))
-	{
-	SetLight(i,j,0xcdeffedc);
-	SetLight(i+1,j,0xcdeffedc);
-	SetLight(i-1,j,0xcdeffedc);
-	SetLight(i,j+1,0x135789ab);
-	SetLight(i,j-1,0xba987531);
-	SetLight(i-1,j-1,0x135789ab);
-	SetLight(i+1,j-1,0xba987531);
-	SetLight(i+1,j+1,0x135789ab);
-	SetLight(i-1,j+1,0xba987531);
-	}
-					//  |
-					//__|
- else if ((tilemap[i][j+1]) && (tilemap[i+1][j]))
-	{
-	SetLight(i,j,0xcdeffedc);
-	SetLight(i+1,j,0xcdeffedc);
-	SetLight(i-1,j,0xcdeffedc);
-	SetLight(i,j+1,0xcdeffedc);
-	SetLight(i,j-1,0xcdeffedc);
-	SetLight(i-1,j-1,0xba987351);
-	SetLight(i+1,j-1,0xba987351);
-	SetLight(i+1,j+1,0xba987351);
-	SetLight(i-1,j+1,0x135789ab);
-	}
-					//|
-					//|_
- else if ((tilemap[i][j+1]) && (tilemap[i-1][j]))
-	{
-	SetLight(i,j,0xcdeffedc);
-	SetLight(i+1,j,0xcdeffedc);
-	SetLight(i-1,j,0xcdeffedc);
-	SetLight(i,j+1,0xcdeffedc);
-	SetLight(i,j-1,0xcdeffedc);
-	SetLight(i-1,j-1,0x135789ab);
-	SetLight(i+1,j-1,0xba987531);
-	SetLight(i+1,j+1,0xba987531);
-	SetLight(i-1,j+1,0xba987531);
-	}
-					//_
-					// |
- else if ((tilemap[i][j-1]) && (tilemap[i+1][j]))
-	{
-	SetLight(i,j,0xcdeffedc);
-	SetLight(i+1,j,0xcdeffedc);
-	SetLight(i-1,j,0xcdeffedc);
-	SetLight(i,j+1,0xcdeffedc);
-	SetLight(i,j-1,0xcdeffedc);
-	SetLight(i-1,j-1,0xba987531);
-	SetLight(i+1,j-1,0x135789ab);
-	SetLight(i+1,j+1,0x135789ab);
-	SetLight(i-1,j+1,0xba987531);
-	}
-					//__
-					//|
- else if ((tilemap[i][j-1]) && (tilemap[i-1][j]))
-	{
-	SetLight(i,j,0xcdeffedc);
-	SetLight(i+1,j,0xcdeffedc);
-	SetLight(i-1,j,0xcdeffedc);
-	SetLight(i,j+1,0xcdeffedc);
-	SetLight(i,j-1,0xcdeffedc);
-	SetLight(i-1,j-1,0x135789ab);
-	SetLight(i+1,j-1,0x135789ab);
-	SetLight(i+1,j+1,0xba987531);
-	SetLight(i-1,j+1,0xba987531);
-	}
- else if (tilemap[i][j])
-	{
-	SetLight(i,j,0x58bffb85);
-	}
- else
-	{
-	SetLight(i,j,0xcdeffedc);
-	SetLight(i+1,j,0xba987654);
-	SetLight(i-1,j,0x456789ab);
-	SetLight(i,j+1,0xba987654);
-	SetLight(i,j-1,0x456789ab);
-	SetLight(i-1,j+1,0x33322211);
-	SetLight(i+1,j+1,0x33322211);
-	SetLight(i+1,j-1,0x11222333);
-	SetLight(i-1,j-1,0x11222333);
-	}
+	if (lightsource==0)
+		return;
 
-
+	if ((!(tilemap[i+1][j])) && (!(tilemap[i-1][j])))
+	{
+		SetLight(i,j,0xcdeffedc);
+		SetLight(i+1,j,0x135789ab);
+		SetLight(i-1,j,0xba987351);
+		SetLight(i,j+1,0xcdeffedc);
+		SetLight(i,j-1,0xcdeffedc);
+		SetLight(i-1,j-1,0xba987351);
+		SetLight(i+1,j+1,0xba987351);
+		SetLight(i+1,j-1,0x135789ab);
+		SetLight(i-1,j+1,0x135789ab);
+	}
+	else if ((!(tilemap[i][j+1])) && (!(tilemap[i][j-1])))
+	{
+		SetLight(i,j,0xcdeffedc);
+		SetLight(i+1,j,0xcdeffedc);
+		SetLight(i-1,j,0xcdeffedc);
+		SetLight(i,j+1,0x135789ab);
+		SetLight(i,j-1,0xba987531);
+		SetLight(i-1,j-1,0x135789ab);
+		SetLight(i+1,j-1,0xba987531);
+		SetLight(i+1,j+1,0x135789ab);
+		SetLight(i-1,j+1,0xba987531);
+	}
+						//	|
+						//__|
+	else if ((tilemap[i][j+1]) && (tilemap[i+1][j]))
+	{
+		SetLight(i,j,0xcdeffedc);
+		SetLight(i+1,j,0xcdeffedc);
+		SetLight(i-1,j,0xcdeffedc);
+		SetLight(i,j+1,0xcdeffedc);
+		SetLight(i,j-1,0xcdeffedc);
+		SetLight(i-1,j-1,0xba987351);
+		SetLight(i+1,j-1,0xba987351);
+		SetLight(i+1,j+1,0xba987351);
+		SetLight(i-1,j+1,0x135789ab);
+	}
+						//|
+						//|_
+	else if ((tilemap[i][j+1]) && (tilemap[i-1][j]))
+	{
+		SetLight(i,j,0xcdeffedc);
+		SetLight(i+1,j,0xcdeffedc);
+		SetLight(i-1,j,0xcdeffedc);
+		SetLight(i,j+1,0xcdeffedc);
+		SetLight(i,j-1,0xcdeffedc);
+		SetLight(i-1,j-1,0x135789ab);
+		SetLight(i+1,j-1,0xba987531);
+		SetLight(i+1,j+1,0xba987531);
+		SetLight(i-1,j+1,0xba987531);
+	}
+						//_
+						// |
+	else if ((tilemap[i][j-1]) && (tilemap[i+1][j]))
+	{
+		SetLight(i,j,0xcdeffedc);
+		SetLight(i+1,j,0xcdeffedc);
+		SetLight(i-1,j,0xcdeffedc);
+		SetLight(i,j+1,0xcdeffedc);
+		SetLight(i,j-1,0xcdeffedc);
+		SetLight(i-1,j-1,0xba987531);
+		SetLight(i+1,j-1,0x135789ab);
+		SetLight(i+1,j+1,0x135789ab);
+		SetLight(i-1,j+1,0xba987531);
+	}
+						//__
+						//|
+	else if ((tilemap[i][j-1]) && (tilemap[i-1][j]))
+	{
+		SetLight(i,j,0xcdeffedc);
+		SetLight(i+1,j,0xcdeffedc);
+		SetLight(i-1,j,0xcdeffedc);
+		SetLight(i,j+1,0xcdeffedc);
+		SetLight(i,j-1,0xcdeffedc);
+		SetLight(i-1,j-1,0x135789ab);
+		SetLight(i+1,j-1,0x135789ab);
+		SetLight(i+1,j+1,0xba987531);
+		SetLight(i-1,j+1,0xba987531);
+	}
+	else if (tilemap[i][j])
+	{
+		SetLight(i,j,0x58bffb85);
+	}
+	else
+	{
+		SetLight(i,j,0xcdeffedc);
+		SetLight(i+1,j,0xba987654);
+		SetLight(i-1,j,0x456789ab);
+		SetLight(i,j+1,0xba987654);
+		SetLight(i,j-1,0x456789ab);
+		SetLight(i-1,j+1,0x33322211);
+		SetLight(i+1,j+1,0x33322211);
+		SetLight(i+1,j-1,0x11222333);
+		SetLight(i-1,j-1,0x11222333);
+	}
 }
-
-
 
 
 /*===============
@@ -533,16 +594,20 @@ void TurnOnLight(int i,int j)
 ===============
 */
 
-void AddRespawnStatic(respawn_t*stat)
- {
-  if (firstrespawn)
-	{stat->prev = lastrespawn;
-	 lastrespawn->next = stat;
+void AddRespawnStatic(respawn_t *stat)
+{
+	if (firstrespawn)
+	{
+		stat->prev = lastrespawn;
+		lastrespawn->next = stat;
+		lastrespawn = stat;
 	}
-  else
-	firstrespawn = stat;
-  lastrespawn = stat;
- }
+	else
+	{
+		firstrespawn = stat;
+		lastrespawn = stat;
+	}
+}
 
 
 /*
@@ -564,18 +629,17 @@ void InitStaticList (void)
 	lastemptystat = NULL;
 	firstemptystat = NULL;
 
-	memset(&BulletHoles[0],0,sizeof(BulletHoles));
-   MISCVARS->BulletHoleNum = 0;
-
+	memset(&BulletHoles[0], 0, sizeof(BulletHoles));
+		MISCVARS->BulletHoleNum = 0;
 
 	memset(sprites,0,sizeof(sprites));
 	if (loadedgame==false)
-		{
+	{
 		memset(switches,0,sizeof(switches));
 		lastswitch = &switches[0];
-		}
-	statcount = 0;
+	}
 
+	statcount = 0;
 }
 
 
@@ -589,10 +653,10 @@ void InitStaticList (void)
 
 void InitAnimatedWallList(void)
 {
- int i;
+	int i;
 
- for (i=0;i<MAXANIMWALLS;i++)
-	 animwalls[i].active=0;
+	for (i=0;i<MAXANIMWALLS;i++)
+		animwalls[i].active=0;
 }
 
 /*
@@ -605,30 +669,31 @@ void InitAnimatedWallList(void)
 
 void SetupAnimatedWall(int which)
 {
-   animwall_t * aw;
-   int i;
-   int texture;
+	animwall_t * aw;
+	int i, l;
+	int texture;
 
-   aw = &animwalls[which];
+	aw = &animwalls[which];
 
-   aw->active=1;
-   aw->ticcount=animwallsinfo[which].tictime;
-   aw->count = 1;
+	aw->active=1;
+	aw->ticcount=animwallsinfo[which].tictime;
+	aw->count = 1;
 
-   texture=W_GetNumForName(animwallsinfo[which].firstlump);
+	texture=W_GetNumForName(animwallsinfo[which].firstlump);
 
-   aw->basetexture=texture;
-   aw->texture=texture;
+	aw->basetexture=texture;
+	aw->texture=texture;
 
-   if (DoPanicMapping()==true)
-      {
-      PreCacheLump(aw->basetexture,PU_CACHEWALLS);
-      }
-   else
-      {
-      for (i=aw->basetexture;i<aw->basetexture+animwallsinfo[which].numanims;i++)
-         PreCacheLump(i,PU_CACHEWALLS);
-      }
+	if (DoPanicMapping()==true)
+	{
+		PreCacheLump(aw->basetexture, PU_CACHEWALLS);
+	}
+	else
+	{
+		l = aw->basetexture + animwallsinfo[which].numanims;
+		for (i=aw->basetexture; i<l; i++)
+			PreCacheLump(i,PU_CACHEWALLS);
+	}
 }
 
 
@@ -641,43 +706,44 @@ void SetupAnimatedWall(int which)
 */
 
 void SaveStatics (byte **buffer, int * size)
-{statobj_t * temp;
- saved_stat_type dummy;
- byte * tptr;
- int count;
+{
+	statobj_t * temp;
+	saved_stat_type dummy;
+	byte * tptr;
+	int count;
 
- if (statcount==0)
-	 {
-	 *size=0;
-	 *buffer=SafeMalloc(16);
-	 return;
-	 }
- *size = statcount*sizeof(saved_stat_type);
- *buffer = (byte *)SafeMalloc(*size);
- tptr = *buffer;
+	if (statcount==0)
+	{
+		*size=0;
+		*buffer=SafeMalloc(16);
+		return;
+	}
 
- for(count=0,temp=FIRSTSTAT;temp;temp=temp->statnext)
-  {dummy.x = temp->x;
-	dummy.y = temp->y;
-	dummy.z = temp->z;
-	dummy.flags = temp->flags;
-	dummy.ticcount = temp->ticcount;
-	dummy.hitpoints = temp->hitpoints;
-	dummy.shapenum = temp->shapenum;
-	dummy.ammo = temp->ammo;
-	dummy.count = temp->count;
-	dummy.numanims = temp->numanims;
-	dummy.itemnumber = temp->itemnumber;
-	dummy.areanumber = temp->areanumber;
-	temp->whichstat = count;
-	dummy.whichstat = count++;
-	dummy.linked_to = temp->linked_to;
+	*size = statcount*sizeof(saved_stat_type);
+	*buffer = (byte *)SafeMalloc(*size);
+	tptr = *buffer;
 
-	memcpy(tptr,&(dummy.x),sizeof(saved_stat_type));
-	tptr += sizeof(saved_stat_type);
+	for(count=0, temp=FIRSTSTAT; temp; temp=temp->statnext)
+	{
+		dummy.x = temp->x;
+		dummy.y = temp->y;
+		dummy.z = temp->z;
+		dummy.flags = temp->flags;
+		dummy.ticcount = temp->ticcount;
+		dummy.hitpoints = temp->hitpoints;
+		dummy.shapenum = temp->shapenum;
+		dummy.ammo = temp->ammo;
+		dummy.count = temp->count;
+		dummy.numanims = temp->numanims;
+		dummy.itemnumber = temp->itemnumber;
+		dummy.areanumber = temp->areanumber;
+		temp->whichstat = count;
+		dummy.whichstat = count++;
+		dummy.linked_to = temp->linked_to;
 
-  }
-
+		memcpy(tptr,&(dummy.x),sizeof(saved_stat_type));
+		tptr += sizeof(saved_stat_type);
+	}
 }
 
 /*
@@ -690,34 +756,35 @@ void SaveStatics (byte **buffer, int * size)
 
 void DoLights (int tilex, int tiley)
 {
-    if (lightsource==0)
-       return;
-	 if (TurnOffLight0 (tilex, tiley))
-       LightSourceAt(tilex,tiley) = 0;
+	if (lightsource==0)
+		return;
 
-	 if (TurnOffLight1 (tilex, tiley, -1, -1))
-       LightSourceAt(tilex-1,tiley-1) = 0;
+	if (TurnOffLight0 (tilex, tiley))
+		LightSourceAt(tilex,tiley) = 0;
 
-	 if (TurnOffLight2 (tilex, tiley, -1))
-       LightSourceAt(tilex,tiley-1) = 0;
+	if (TurnOffLight1 (tilex, tiley, -1, -1))
+		LightSourceAt(tilex-1,tiley-1) = 0;
 
-	 if (TurnOffLight1 (tilex, tiley, 1, -1))
-       LightSourceAt(tilex+1,tiley-1) = 0;
+	if (TurnOffLight2 (tilex, tiley, -1))
+		LightSourceAt(tilex,tiley-1) = 0;
 
-	 if (TurnOffLight3 (tilex, tiley, 1))
-       LightSourceAt(tilex+1,tiley) = 0;
+	if (TurnOffLight1 (tilex, tiley, 1, -1))
+		LightSourceAt(tilex+1,tiley-1) = 0;
 
-	 if (TurnOffLight1 (tilex, tiley, 1, 1))
-       LightSourceAt(tilex+1,tiley+1) = 0;
+	if (TurnOffLight3 (tilex, tiley, 1))
+		LightSourceAt(tilex+1,tiley) = 0;
 
-	 if (TurnOffLight2 (tilex, tiley, 1))
-       LightSourceAt(tilex,tiley+1) = 0;
+	if (TurnOffLight1 (tilex, tiley, 1, 1))
+		LightSourceAt(tilex+1,tiley+1) = 0;
 
-	 if (TurnOffLight1 (tilex, tiley, -1, 1))
-       LightSourceAt(tilex-1,tiley+1) = 0;
+	if (TurnOffLight2 (tilex, tiley, 1))
+		LightSourceAt(tilex,tiley+1) = 0;
 
-	 if (TurnOffLight3 (tilex, tiley, -1))
-       LightSourceAt(tilex-1,tiley) = 0;
+	if (TurnOffLight1 (tilex, tiley, -1, 1))
+		LightSourceAt(tilex-1,tiley+1) = 0;
+
+	if (TurnOffLight3 (tilex, tiley, -1))
+		LightSourceAt(tilex-1,tiley) = 0;
 }
 
 
@@ -731,17 +798,21 @@ void DoLights (int tilex, int tiley)
 
 boolean TurnOffLight0 (int tilex, int tiley)
 {
-   if ( IsLight(tilex-1,tiley  ) ||
-        IsLight(tilex-1,tiley-1) ||
-        IsLight(tilex  ,tiley-1) ||
-        IsLight(tilex+1,tiley-1) ||
-        IsLight(tilex+1,tiley  ) ||
-        IsLight(tilex+1,tiley+1) ||
-        IsLight(tilex  ,tiley+1) ||
-		  IsLight(tilex-1,tiley+1) )
+	if (	IsLight(tilex-1,tiley	) ||
+			IsLight(tilex-1,tiley-1) ||
+			IsLight(tilex	,tiley-1) ||
+			IsLight(tilex+1,tiley-1) ||
+			IsLight(tilex+1,tiley	) ||
+			IsLight(tilex+1,tiley+1) ||
+			IsLight(tilex	,tiley+1) ||
+			IsLight(tilex-1,tiley+1) )
+	{
 		return (false);
+	}
 	else
+	{
 		return (true);
+	}
 }
 
 /*
@@ -757,14 +828,14 @@ boolean TurnOffLight1 (int tilex, int tiley, int i, int j)
 	int tempi = 2*i;
 	int tempy = 2*j;
 
-   if ( IsLight(tilex+i    ,tiley  ) ||
-        IsLight(tilex+i    ,tiley+j) ||
-        IsLight(tilex      ,tiley+j) ||
-        IsLight(tilex      ,tiley+tempy) ||
-        IsLight(tilex+i    ,tiley+tempy) ||
-        IsLight(tilex+tempi,tiley+tempy) ||
-        IsLight(tilex+tempi,tiley+j) ||
-	     IsLight(tilex+tempi,tiley))
+	if (	IsLight(tilex+i		,tiley	) ||
+			IsLight(tilex+i		,tiley+j) ||
+			IsLight(tilex			,tiley+j) ||
+			IsLight(tilex			,tiley+tempy) ||
+			IsLight(tilex+i		,tiley+tempy) ||
+			IsLight(tilex+tempi,tiley+tempy) ||
+			IsLight(tilex+tempi,tiley+j) ||
+			IsLight(tilex+tempi,tiley))
 		return (false);
 	else
 		return (true);
@@ -783,14 +854,14 @@ boolean TurnOffLight2 (int tilex, int tiley, int j)
 {
 	int tempy = 2*j;
 
-   if ( IsLight(tilex-1    ,tiley  ) ||
-        IsLight(tilex-1    ,tiley+j) ||
-        IsLight(tilex-1    ,tiley+tempy) ||
-        IsLight(tilex      ,tiley+j) ||
-        IsLight(tilex      ,tiley+tempy) ||
-        IsLight(tilex+1    ,tiley) ||
-        IsLight(tilex+1    ,tiley+j) ||
-	     IsLight(tilex+1    ,tiley+tempy))
+	if (	IsLight(tilex-1		,tiley	) ||
+			IsLight(tilex-1		,tiley+j) ||
+			IsLight(tilex-1		,tiley+tempy) ||
+			IsLight(tilex			,tiley+j) ||
+			IsLight(tilex			,tiley+tempy) ||
+			IsLight(tilex+1		,tiley) ||
+			IsLight(tilex+1		,tiley+j) ||
+			IsLight(tilex+1		,tiley+tempy))
 		return (false);
 	else
 		return (true);
@@ -809,20 +880,18 @@ boolean TurnOffLight3 (int tilex, int tiley, int i)
 {
 	int tempx = 2*i;
 
-   if ( IsLight(tilex      ,tiley-1) ||
-        IsLight(tilex+1    ,tiley-1) ||
-        IsLight(tilex+tempx,tiley-1) ||
-        IsLight(tilex+i    ,tiley) ||
-        IsLight(tilex+tempx,tiley) ||
-        IsLight(tilex      ,tiley+1) ||
-        IsLight(tilex+i    ,tiley+1) ||
-	     IsLight(tilex+tempx,tiley+1))
+	if (	IsLight(tilex			,tiley-1) ||
+			IsLight(tilex+1		,tiley-1) ||
+			IsLight(tilex+tempx,tiley-1) ||
+			IsLight(tilex+i		,tiley) ||
+			IsLight(tilex+tempx,tiley) ||
+			IsLight(tilex			,tiley+1) ||
+			IsLight(tilex+i		,tiley+1) ||
+			IsLight(tilex+tempx,tiley+1))
 		return (false);
 	else
 		return (true);
 }
-
-
 
 
 /*
@@ -833,161 +902,151 @@ boolean TurnOffLight3 (int tilex, int tiley, int i)
 ======================
 */
 
-
-
-
 void PreCacheStaticFrames(statobj_t*temp)
-   {
-   int z,start,stop;
-   int female=0,black=0;
+{
+	int z,start,stop;
+	int female=0,black=0;
 
-   PreCacheLump(temp->shapenum+shapestart,PU_CACHESPRITES);
-   for (z=0;z<temp->numanims;z++)
-      PreCacheLump(temp->shapenum+shapestart+z,PU_CACHESPRITES);
+	PreCacheLump(temp->shapenum+shapestart,PU_CACHESPRITES);
+	for (z=0;z<temp->numanims;z++)
+		PreCacheLump(temp->shapenum+shapestart+z,PU_CACHESPRITES);
 
-   if (temp->flags & FL_ROTATING)
-      {
-      for (z=1;z<8;z++)
-         PreCacheLump(temp->shapenum+shapestart+z,PU_CACHESPRITES);
-      }
+	if (temp->flags & FL_ROTATING)
+	{
+		for (z=1;z<8;z++)
+			PreCacheLump(temp->shapenum+shapestart+z,PU_CACHESPRITES);
+	}
 
-   if (temp->flags & FL_WOODEN)
-      {
-      start = W_GetNumForName("WFRAG1");
-      stop = W_GetNumForName("WFRAG14");
-      PreCacheGroup(start,stop);
-      }
+	if (temp->flags & FL_WOODEN)
+	{
+		start = W_GetNumForName("WFRAG1");
+		stop = W_GetNumForName("WFRAG14");
+		PreCacheGroup(start,stop);
+	}
 
-   if (temp->flags & FL_METALLIC)
-      {
-      PreCacheLump(W_GetNumForName("MSHARDS"),PU_CACHESPRITES);
-      start = W_GetNumForName("ROBODIE1");
-      stop = W_GetNumForName("ROBODEAD");
-      PreCacheGroup(start,stop);
-      }
+	if (temp->flags & FL_METALLIC)
+	{
+		PreCacheLump(W_GetNumForName("MSHARDS"),PU_CACHESPRITES);
+		start = W_GetNumForName("ROBODIE1");
+		stop = W_GetNumForName("ROBODEAD");
+		PreCacheGroup(start,stop);
+	}
 
-   female = ((locplayerstate->player == 1) || (locplayerstate->player == 3));
-   black = (locplayerstate->player == 2);
+	female = ((locplayerstate->player == 1) || (locplayerstate->player == 3));
+	black = (locplayerstate->player == 2);
 
-   if (female)
-      {
-      start = W_GetNumForName("FPIST11");
-      stop = W_GetNumForName("FPIST13");
-      }
-   else if (black)
-      {
-      start = W_GetNumForName("BMPIST1");
-      stop = W_GetNumForName("BMPIST3");
-      }
-   else
-      {
-      start = W_GetNumForName("MPIST11");
-      stop = W_GetNumForName("MPIST13");
+	if (female)
+	{
+		start = W_GetNumForName("FPIST11");
+		stop = W_GetNumForName("FPIST13");
+	}
+	else if (black)
+	{
+		start = W_GetNumForName("BMPIST1");
+		stop = W_GetNumForName("BMPIST3");
+	}
+	else
+	{
+		start = W_GetNumForName("MPIST11");
+		stop = W_GetNumForName("MPIST13");
+	}
+
+	PreCacheGroup(start,stop);
+
+	switch (temp->itemnumber)
+	{
+
+	case stat_pedgoldkey:
+	case stat_pedsilverkey:
+	case stat_pedironkey:
+	case stat_pedcrystalkey:
+		PreCacheLump(W_GetNumForName("PEDESTA"),PU_CACHESPRITES);
+		break;
+
+	case stat_bat:
+		start = W_GetNumForName("EXBAT1");
+		stop = W_GetNumForName("EXBAT7");
+		PreCacheGroup(start,stop);
+		break;
+	case stat_knifestatue:
+		start = W_GetNumForName("KNIFE1");
+		stop = W_GetNumForName("KNIFE10");
+		PreCacheGroup(start,stop);
+		break;
+	case stat_twopistol:
+		if (female)
+		{
+			start = W_GetNumForName("RFPIST1");
+			stop = W_GetNumForName("LFPIST3");
 		}
-
-   PreCacheGroup(start,stop);
-
-   switch (temp->itemnumber)
-      {
-
-      case stat_pedgoldkey:
-      case stat_pedsilverkey:
-      case stat_pedironkey:
-      case stat_pedcrystalkey:
-         PreCacheLump(W_GetNumForName("PEDESTA"),PU_CACHESPRITES);
-         break;
-
-      case stat_bat:
-         start = W_GetNumForName("EXBAT1");
-         stop = W_GetNumForName("EXBAT7");
-         PreCacheGroup(start,stop);
-         break;
-      case stat_knifestatue:
-         start = W_GetNumForName("KNIFE1");
-         stop = W_GetNumForName("KNIFE10");
-         PreCacheGroup(start,stop);
-         break;
-      case stat_twopistol:
-         if (female)
-            {
-            start = W_GetNumForName("RFPIST1");
-            stop = W_GetNumForName("LFPIST3");
-            }
-         else if (black)
-            {
-            start = W_GetNumForName("RBMPIST1");
-            stop = W_GetNumForName("LBMPIST3");
-            }
-         else
-            {
-            start = W_GetNumForName("RMPIST1");
-            stop = W_GetNumForName("LMPIST3");
-            }
-         PreCacheGroup(start,stop);
-         break;
-      case stat_mp40:
-         start = W_GetNumForName("MP401");
-         stop = W_GetNumForName("MP403");
-         PreCacheGroup(start,stop);
-         break;
-      case stat_bazooka:
-         start = W_GetNumForName("BAZOOKA1");
-         stop = W_GetNumForName("BAZOOKA4");
-         PreCacheGroup(start,stop);
-         break;
-      case stat_firebomb:
-         start = W_GetNumForName("FBOMB1");
-         stop = W_GetNumForName("FBOMB4");
-         PreCacheGroup(start,stop);
-         break;
-      case stat_heatseeker:
-         start = W_GetNumForName("HSEEK1");
-         stop = W_GetNumForName("HSEEK4");
-         PreCacheGroup(start,stop);
-         break;
-      case stat_drunkmissile:
-         start = W_GetNumForName("DRUNK1");
-         stop = W_GetNumForName("DRUNK4");
-         PreCacheGroup(start,stop);
-         break;
-      case stat_firewall:
-         start = W_GetNumForName("FIREW1");
-         stop = W_GetNumForName("FIREW3");
-         PreCacheGroup(start,stop);
-         break;
-      case stat_splitmissile:
-         start = W_GetNumForName("SPLIT1");
-         stop = W_GetNumForName("SPLIT4");
-         PreCacheGroup(start,stop);
-         break;
-      case stat_kes:
-         start = W_GetNumForName("KES1");
-         stop = W_GetNumForName("KES6");
-         PreCacheGroup(start,stop);
-         break;
-      case stat_godmode:
-         start = W_GetNumForName("GODHAND1");
-         stop = W_GetNumForName("GODHAND8");
-         PreCacheGroup(start,stop);
-
-         PreCacheGroup(W_GetNumForName("VAPO1"),
-                       W_GetNumForName("LITSOUL"));
-
-         PreCacheGroup(W_GetNumForName("GODFIRE1"),
-                       W_GetNumForName("GODFIRE4"));
-
-         break;
-      case stat_dogmode:
-         start = W_GetNumForName("DOGNOSE1");
-         stop = W_GetNumForName("DOGPAW4");
-         PreCacheGroup(start,stop);
-         break;
-      }
-
-
-
-   }
-
+		else if (black)
+		{
+			start = W_GetNumForName("RBMPIST1");
+			stop = W_GetNumForName("LBMPIST3");
+		}
+		else
+		{
+			start = W_GetNumForName("RMPIST1");
+			stop = W_GetNumForName("LMPIST3");
+		}
+		PreCacheGroup(start,stop);
+		break;
+	case stat_mp40:
+		start = W_GetNumForName("MP401");
+		stop = W_GetNumForName("MP403");
+		PreCacheGroup(start,stop);
+		break;
+	case stat_bazooka:
+		start = W_GetNumForName("BAZOOKA1");
+		stop = W_GetNumForName("BAZOOKA4");
+		PreCacheGroup(start,stop);
+		break;
+	case stat_firebomb:
+		start = W_GetNumForName("FBOMB1");
+		stop = W_GetNumForName("FBOMB4");
+		PreCacheGroup(start,stop);
+		break;
+	case stat_heatseeker:
+		start = W_GetNumForName("HSEEK1");
+		stop = W_GetNumForName("HSEEK4");
+		PreCacheGroup(start,stop);
+		break;
+	case stat_drunkmissile:
+		start = W_GetNumForName("DRUNK1");
+		stop = W_GetNumForName("DRUNK4");
+		PreCacheGroup(start,stop);
+		break;
+	case stat_firewall:
+		start = W_GetNumForName("FIREW1");
+		stop = W_GetNumForName("FIREW3");
+		PreCacheGroup(start,stop);
+		break;
+	case stat_splitmissile:
+		start = W_GetNumForName("SPLIT1");
+		stop = W_GetNumForName("SPLIT4");
+		PreCacheGroup(start,stop);
+		break;
+	case stat_kes:
+		start = W_GetNumForName("KES1");
+		stop = W_GetNumForName("KES6");
+		PreCacheGroup(start,stop);
+		break;
+	case stat_godmode:
+		start = W_GetNumForName("GODHAND1");
+		stop = W_GetNumForName("GODHAND8");
+		PreCacheGroup(start,stop);
+		PreCacheGroup(W_GetNumForName("VAPO1"),
+			W_GetNumForName("LITSOUL"));
+		PreCacheGroup(W_GetNumForName("GODFIRE1"),
+			W_GetNumForName("GODFIRE4"));
+		break;
+	case stat_dogmode:
+		start = W_GetNumForName("DOGNOSE1");
+		stop = W_GetNumForName("DOGPAW4");
+		PreCacheGroup(start,stop);
+		break;
+	}
+}
 
 
 /*
@@ -998,103 +1057,106 @@ void PreCacheStaticFrames(statobj_t*temp)
 ===============
 */
 
-
-
-
 void LoadStatics( byte * buffer, int size)
-{saved_stat_type dummy;
- int stcount,i;
- statobj_t*temp;
+{
+	saved_stat_type dummy;
+	int stcount,i;
+	statobj_t*temp;
 
- stcount = size/sizeof(saved_stat_type);
- InitStaticList();
+	stcount = size/sizeof(saved_stat_type);
+	InitStaticList();
 
- for(i=0;i<stcount;i++)
+	for(i=0;i<stcount;i++)
 	{
-	temp = (statobj_t*)Z_LevelMalloc(sizeof(statobj_t),PU_LEVELSTRUCT,NULL);
-	if (!temp)
-		Error("LoadStatics: Failed on allocation of static %ld of %ld",i,stcount);
-	memset(temp,0,sizeof(*temp));
-	memcpy(&(dummy.x),buffer,sizeof(saved_stat_type));
-	temp->whichstat = statcount++;
-	temp->x = dummy.x;
-	temp->y = dummy.y;
-	temp->z = dummy.z;
-	temp->flags = dummy.flags;
-	temp->ticcount = dummy.ticcount;
-	temp->hitpoints = dummy.hitpoints;
-	temp->shapenum = dummy.shapenum;
-	temp->ammo = dummy.ammo;
-	temp->count = dummy.count;
-	temp->numanims = dummy.numanims;
-	temp->itemnumber = dummy.itemnumber;
-	temp->areanumber = dummy.areanumber;
-	temp->linked_to = dummy.linked_to;
+		temp = (statobj_t*)Z_LevelMalloc(
+			sizeof(statobj_t), PU_LEVELSTRUCT, NULL);
+		if (!temp)
+			Error("LoadStatics: Failed on allocation of static %ld of %ld",i,stcount);
+		memset(temp,0,sizeof(*temp));
+		memcpy(&(dummy.x),buffer,sizeof(saved_stat_type));
+		temp->whichstat = statcount++;
+		temp->x = dummy.x;
+		temp->y = dummy.y;
+		temp->z = dummy.z;
+		temp->flags = dummy.flags;
+		temp->ticcount = dummy.ticcount;
+		temp->hitpoints = dummy.hitpoints;
+		temp->shapenum = dummy.shapenum;
+		temp->ammo = dummy.ammo;
+		temp->count = dummy.count;
+		temp->numanims = dummy.numanims;
+		temp->itemnumber = dummy.itemnumber;
+		temp->areanumber = dummy.areanumber;
+		temp->linked_to = dummy.linked_to;
 
-	temp->which = SPRITE;
-	temp->tilex = temp->x >> TILESHIFT;
-	temp->tiley = temp->y >> TILESHIFT;
-	temp->flags &= ~FL_ABP;
-	temp->visspot = &spotvis[temp->tilex][temp->tiley];
+		temp->which = SPRITE;
+		temp->tilex = temp->x >> TILESHIFT;
+		temp->tiley = temp->y >> TILESHIFT;
+		temp->flags &= ~FL_ABP;
+		temp->visspot = &spotvis[temp->tilex][temp->tiley];
 
-	if ((temp->itemnumber >= stat_touch1) &&
-		 (temp->itemnumber <= stat_touch4))
-	  {touchindices[temp->tilex][temp->tiley] = lasttouch + 1;
-		lasttouch ++;
-		SD_PreCacheSoundGroup(SD_TOUCHPLATESND,SD_BADTOUCHSND);
-	  }
+		if ((temp->itemnumber >= stat_touch1) &&
+				(temp->itemnumber <= stat_touch4))
+		{
+			touchindices[temp->tilex][temp->tiley] = lasttouch + 1;
+			lasttouch ++;
+			SD_PreCacheSoundGroup(SD_TOUCHPLATESND,SD_BADTOUCHSND);
+		}
 
-	AddStatic(temp);
-	if (temp->shapenum != -1)
-	  {
-     if (temp->itemnumber == stat_bullethole)
-		  {
-		  SetupBulletHoleLink(temp->linked_to,temp);
-		  }
+		AddStatic(temp);
+		if (temp->shapenum != -1)
+		{
+				if (temp->itemnumber == stat_bullethole)
+				{
+				SetupBulletHoleLink(temp->linked_to,temp);
+				}
 
-	  else if (temp->flags & FL_DEADBODY)
-		  {
-        if ( actorat[temp->tilex][temp->tiley] == NULL )
-           actorat[temp->tilex][temp->tiley] = temp;
-		  }
+			else if (temp->flags & FL_DEADBODY)
+				{
+					if ( actorat[temp->tilex][temp->tiley] == NULL )
+							actorat[temp->tilex][temp->tiley] = temp;
+				}
 
-	  else if (!(temp->flags & FL_NONMARK))
-		  {
-		  sprites[temp->tilex][temp->tiley] = temp;
-		  }
+			else if (!(temp->flags & FL_NONMARK))
+				{
+				sprites[temp->tilex][temp->tiley] = temp;
+				}
 
-     PreCacheStaticFrames(temp);
+				PreCacheStaticFrames(temp);
 
 
-	  }
-	PreCacheStaticSounds(temp->itemnumber);
+			}
+		PreCacheStaticSounds(temp->itemnumber);
 
-	buffer += sizeof(saved_stat_type);
-  }
+		buffer += sizeof(saved_stat_type);
+	}
 }
 
 
-void Set_NewZ_to_MapValue(fixed *newz,int zoffset,const char*errorstr,int tilex,int tiley)
-   {
-   int zf,z;
+void Set_NewZ_to_MapValue(
+	fixed *newz, int zoffset,
+	const char *errorstr, int tilex, int tiley)
+{
+	int zf,z;
 
-   zoffset&=0xff;
-   z=zoffset>>4;
-   zf=zoffset&0xf;
-   if (z==0xf)
-      *newz = nominalheight+64-(zf<<2);
-   else
-      {
-      if (z>levelheight)
-         Error ("You specified a height of %lx for the %s at tilex=%ld tiley=%ld when\n the level is only %ld high\n",
-                 zoffset,errorstr,tilex,tiley,levelheight);
-      else
-         *newz = nominalheight-(z<<6)-(zf<<2);
-      }
+	zoffset&=0xff;
+	z=zoffset>>4;
+	zf=zoffset&0xf;
+	if (z==0xf)
+	{
+		*newz = nominalheight+64-(zf<<2);
+	}
+	else
+	{
+		if (z>levelheight)
+			Error ("You specified a height of %lx for the %s at "
+				"tilex=%ld tiley=%ld when\n the level is only %ld high\n",
+					zoffset,errorstr,tilex,tiley,levelheight);
+		else
+			*newz = nominalheight-(z<<6)-(zf<<2);
+	}
 
-   }
-
-
+}
 
 /*
 ===============
@@ -1104,247 +1166,264 @@ void Set_NewZ_to_MapValue(fixed *newz,int zoffset,const char*errorstr,int tilex,
 ===============
 */
 
-
-
-
 void SpawnStatic (int tilex, int tiley, int mtype, int zoffset)
-{statobj_t * temp;
- boolean onetimer;
-
-
+{
+	statobj_t * temp;
+	boolean onetimer;
+	int area;
 
 #if (SHAREWARE == 1)
-   switch(mtype)
-      {
-      case stat_rlight:
-      case stat_glight:
-      case stat_ylight:
-      case stat_chandelier:
-         mtype = stat_blight;
-         break;
+	switch(mtype)
+	{
+	case stat_rlight:
+	case stat_glight:
+	case stat_ylight:
+	case stat_chandelier:
+		mtype = stat_blight;
+		break;
 
-      case stat_garb1:
-      case stat_garb2:
-      case stat_garb3:
-      case stat_shit:
-         mtype = stat_metalshards;
-         break;
+	case stat_garb1:
+	case stat_garb2:
+	case stat_garb3:
+	case stat_shit:
+		mtype = stat_metalshards;
+		break;
 
-      case stat_lamp:
-         mtype = stat_altbrazier2;
-         break;
-
-      }
+	case stat_lamp:
+		mtype = stat_altbrazier2;
+		break;
+	}
 #endif
 
+	if ( BATTLEMODE )
+	{
+		if ( !gamestate.BattleOptions.SpawnWeapons )
+		{
+			if ( stats[ mtype ].flags & FL_WEAPON )
+			{
+				return;
+			}
+		}
 
+		if (mtype == stat_pit)
+			return;
 
-   if ( BATTLEMODE )
-      {
-      if ( !gamestate.BattleOptions.SpawnWeapons )
-         {
-         if ( stats[ mtype ].flags & FL_WEAPON )
-            {
-            return;
-            }
-         }
+		// Change lifeitems and extra lives to health
+		switch( mtype )
+		{
+		case stat_lifeitem1 :
+		case stat_lifeitem2 :
+			mtype = stat_monkcrystal1;
+			break;
 
-      if (mtype == stat_pit)
-         return;
+		case stat_lifeitem3 :
+		case stat_lifeitem4 :
+		case stat_oneup :
+		case stat_threeup :
+			mtype = stat_monkcrystal2;
+			break;
+		}
 
-      // Change lifeitems and extra lives to health
-      switch( mtype )
-         {
-         case stat_lifeitem1 :
-         case stat_lifeitem2 :
-            mtype = stat_monkcrystal1;
-            break;
-
-         case stat_lifeitem3 :
-         case stat_lifeitem4 :
-         case stat_oneup :
-         case stat_threeup :
-            mtype = stat_monkcrystal2;
-            break;
-         }
-
-      switch( mtype )
-         {
-         case stat_monkmeal :
-         case stat_priestporridge :
-         case stat_monkcrystal1 :
-         case stat_monkcrystal2 :
-         case stat_healingbasin :
-            if ( ( gamestate.Product != ROTT_SHAREWARE ) &&
-               ( gamestate.BattleOptions.SpawnMines ) &&
-               ( !IsPlatform( tilex, tiley ) &&
-               ( ( zoffset & 0xff00 ) != 0xb000 ) ) &&
-               ( zoffset == -1 ) )
-               {
-               mtype = stat_mine;
-               }
-            else if ( !gamestate.BattleOptions.SpawnHealth )
-               {
-               return;
-               }
-            break;
-         }
-      }
-
- if (!firstemptystat)
-	{temp = (statobj_t*)Z_LevelMalloc(sizeof(statobj_t),PU_LEVELSTRUCT,NULL);
-	 //SoftError("\nMalloc-ing actor");
-	 //if (insetupgame)
-	  //	SoftError("in setup");
+		switch( mtype )
+		{
+		case stat_monkmeal :
+		case stat_priestporridge :
+		case stat_monkcrystal1 :
+		case stat_monkcrystal2 :
+		case stat_healingbasin :
+			if (	( gamestate.Product != ROTT_SHAREWARE ) &&
+					( gamestate.BattleOptions.SpawnMines ) &&
+					( !IsPlatform( tilex, tiley ) &&
+					( ( zoffset & 0xff00 ) != 0xb000 ) ) &&
+					( zoffset == -1 ) )
+			{
+				mtype = stat_mine;
+			}
+			else if ( !gamestate.BattleOptions.SpawnHealth )
+			{
+				return;
+			}
+			break;
+		}
 	}
 
- else
-	{temp = lastemptystat;
-	 //SoftError("\nfree actor available");
-	 RemoveFromFreeStaticList(lastemptystat);
+	if (!firstemptystat)
+	{
+		temp = (statobj_t*)Z_LevelMalloc(sizeof(statobj_t),PU_LEVELSTRUCT,NULL);
+		//SoftError("\nMalloc-ing actor");
+		//if (insetupgame)
+		//	SoftError("in setup");
 	}
 
- // Standard pole hack
+	else
+	{
+		temp = lastemptystat;
+		//SoftError("\nfree actor available");
+		RemoveFromFreeStaticList(lastemptystat);
+	}
 
- if ((zoffset>=14) && (zoffset<=17))
-	 zoffset=-1;
+	// Standard pole hack
 
- if (temp)
-  {  memset(temp,0,sizeof(*temp));
-	  temp->shapenum = stats[mtype].picnum;
-	  temp->whichstat = statcount ++;
-	  temp->tilex = tilex;
-	  temp->tiley = tiley;
-	  temp->x = ((long)tilex << TILESHIFT) + 0x8000;
-	  temp->y = ((long)tiley << TILESHIFT) + 0x8000;
-	  temp->areanumber = MAPSPOT(tilex,tiley,0)-AREATILE;
-	  temp->linked_to = -1;
-	  if ((temp->areanumber<=0) || (temp->areanumber>NUMAREAS))
-		  Error ("Sprite at x=%ld y=%ld type=%ld has an illegal areanumber\n",tilex,tiley,mtype);
-     if ( mtype == stat_mine )
-        {
-        temp->z = nominalheight;
-        }
-     else if (zoffset!=-1)
-		  {
-		  if ((zoffset&0xff00)==0xb000)
-           Set_NewZ_to_MapValue(&(temp->z),zoffset,"static",tilex,tiley);
-		  else if (IsPlatform(tilex,tiley))
-			  temp->z = PlatformHeight(tilex,tiley);
-		  else if (zoffset==11)
-			  temp->z=-65;
-		  else if (zoffset==12)
-			  temp->z=-66;
-		  else
-			  temp->z = nominalheight;
-			 // Error ("You didn't specify a valid height over the sprite at tilex=%ld tiley=%ld\n",tilex,tiley);
-		  }
-	  else if (mtype>stat_chandelier)
-		  temp->z = nominalheight;
+	if ((zoffset>=14) && (zoffset<=17))
+		zoffset=-1;
 
-	  temp->visspot = &spotvis[tilex][tiley];
-	  temp->which = SPRITE;
-	  temp->ticcount = stats[mtype].tictime;
-	  temp->hitpoints = stats[mtype].hitpoints;
-	  temp->itemnumber = stats[mtype].type;
-     temp->flags = stats[mtype].flags;
-	  temp->ammo = stats[mtype].ammo;
-	  temp->numanims = stats[mtype].numanims;
+	if (temp)
+	{
+		memset(temp,0,sizeof(*temp));
+		temp->shapenum = stats[mtype].picnum;
+		temp->whichstat = statcount ++;
+		temp->tilex = tilex;
+		temp->tiley = tiley;
+		temp->x = ((long)tilex << TILESHIFT) + 0x8000;
+		temp->y = ((long)tiley << TILESHIFT) + 0x8000;
+		area = MAPSPOT(tilex,tiley,0)-AREATILE;
 
+		if((area<0) || (area>NUMAREAS))		//BGB: debug
+			area=1;
 
+		temp->areanumber = area;
+		temp->linked_to = -1;
+		if ((temp->areanumber<=0) || (temp->areanumber>NUMAREAS))
+			Error ("Sprite at x=%ld y=%ld type=%ld has an illegal areanumber\n",tilex,tiley,mtype);
 
+		if ( mtype == stat_mine )
+		{
+			temp->z = nominalheight;
+		}
+		else if (zoffset!=-1)
+		{
+			if ((zoffset&0xff00)==0xb000)
+				Set_NewZ_to_MapValue(&(temp->z),zoffset,"static",tilex,tiley);
+			else if (IsPlatform(tilex,tiley))
+				temp->z = PlatformHeight(tilex,tiley);
+			else if (zoffset==11)
+				temp->z=-65;
+			else if (zoffset==12)
+				temp->z=-66;
+			else
+				temp->z = nominalheight;
+				// Error ("You didn't specify a valid height over the sprite at tilex=%ld tiley=%ld\n",tilex,tiley);
+		}
+		else if (mtype>stat_chandelier)
+			temp->z = nominalheight;
 
-     if (temp->flags & FL_BONUS)
-		switch  (stats[mtype].type)
-		  {case stat_lifeitem1:
+		temp->visspot = &spotvis[tilex][tiley];
+		temp->which = SPRITE;
+		temp->ticcount = stats[mtype].tictime;
+		temp->hitpoints = stats[mtype].hitpoints;
+		temp->itemnumber = stats[mtype].type;
+		temp->flags = stats[mtype].flags;
+		temp->ammo = stats[mtype].ammo;
+		temp->numanims = stats[mtype].numanims;
+
+		if(rott_iswolf)
+		{
+			switch	(stats[mtype].type)
+			{
+			case stat_bonusbarrel:
+				break;
+
+			case stat_healingbasin:
+				temp->flags &= ~FL_BLOCK;
+				break;
+			
+			default:
+				temp->flags &= ~FL_SHOOTABLE;
+				break;
+			}
+		}
+
+		if (temp->flags & FL_BONUS)
+		{
+			switch	(stats[mtype].type)
+			{
+			case stat_lifeitem1:
 			case stat_lifeitem2:
 			case stat_lifeitem3:
 			case stat_lifeitem4:
-			 gamestate.treasuretotal++;
-			 break;
-		  }
+				gamestate.treasuretotal++;
+				break;
+			}
+		}
 
 
+		AddStatic(temp);
+
+		onetimer = ((mtype == stat_rubble) || (mtype == stat_woodfrag) ||
+								(mtype == stat_metalfrag) || (mtype == stat_missmoke)
+							);
+
+		if (DoPanicMapping())
+		{
+			if (temp->numanims && (!onetimer))
+			{
+				temp->flags &= ~FL_ACTIVE;
+				temp->numanims = 0;
+				GameRandomNumber("SpawnStatic",mtype);
+			}
+		}
+		else
+		{
+			if (temp->numanims)
+			{
+				if (!onetimer)
+					temp->count = (int)(((int)GameRandomNumber(
+						"SpawnStatic",mtype) % stats[mtype].numanims) + 1);
+				else
+					temp->count = 0;
+			}
+			else if (temp->itemnumber == stat_standardpole)
+			{
+				if (MAPSPOT(temp->tilex,temp->tiley,2))
+					temp->count = 2*(MAPSPOT(temp->tilex,temp->tiley,2)-14);
+				else
+					temp->count = 0;
+			}
+
+			if ((temp->itemnumber == stat_knifestatue) ||
+					(temp->itemnumber == stat_emptystatue) ||
+					(temp->itemnumber == stat_standardpole))
+					temp->flags|=FL_ROTATING;
+		}
 
 
-      AddStatic(temp);
-
-     onetimer = ((mtype == stat_rubble) || (mtype == stat_woodfrag) ||
-                 (mtype == stat_metalfrag) || (mtype == stat_missmoke)
-                );
-
-     if (DoPanicMapping())
-        {
-        if (temp->numanims && (!onetimer))
-           {
-           temp->flags &= ~FL_ACTIVE;
-           temp->numanims = 0;
-           GameRandomNumber("SpawnStatic",mtype);
-           }
-        }
-
-     else
-        {
-        if (temp->numanims)
-           {
-           if (!onetimer)
-              temp->count = (int)(((int)GameRandomNumber("SpawnStatic",mtype) % stats[mtype].numanims) + 1);
-           else
-              temp->count = 0;
-           }
-        else if (temp->itemnumber == stat_standardpole)
-           {
-           if (MAPSPOT(temp->tilex,temp->tiley,2))
-              temp->count = 2*(MAPSPOT(temp->tilex,temp->tiley,2)-14);
-           else
-              temp->count = 0;
-           }
-
-        if ((temp->itemnumber == stat_knifestatue) ||
-            (temp->itemnumber == stat_emptystatue) ||
-            (temp->itemnumber == stat_standardpole))
-           temp->flags|=FL_ROTATING;
-        }
-
-
-
-
-     if (mtype != stat_missmoke)
-		  sprites[tilex][tiley] = temp;
-	  else
-		  temp->flags |= FL_NONMARK;
+		if (mtype != stat_missmoke)
+			sprites[tilex][tiley] = temp;
+		else
+			temp->flags |= FL_NONMARK;
 
 
 //================ check special junk ==================================//
 
-	  if (temp->itemnumber == stat_dariantouch)
-		 {_2Dpoint *tdptr;
+		if (temp->itemnumber == stat_dariantouch)
+		{
+			_2Dpoint *tdptr;
 
-		  tdptr = &(MISCVARS->ETOUCH[MISCVARS->nexttouch]);
+			tdptr = &(MISCVARS->ETOUCH[MISCVARS->nexttouch]);
 
-		  tdptr->x = tilex;
-		  tdptr->y = tiley;
-		  sprites[tilex][tiley]->linked_to = MISCVARS->nexttouch;
-		  MISCVARS->nexttouch ++;
-		 }
-	  else if ((temp->itemnumber >= stat_touch1) &&
-				  (temp->itemnumber <= stat_touch4))
-		 {touchindices[tilex][tiley] = lasttouch + 1;
-		  SD_PreCacheSoundGroup(SD_TOUCHPLATESND,SD_BADTOUCHSND);
-		  lasttouch ++;
-		 }
+			tdptr->x = tilex;
+			tdptr->y = tiley;
+			sprites[tilex][tiley]->linked_to = MISCVARS->nexttouch;
+			MISCVARS->nexttouch ++;
+		}
+		else if ((temp->itemnumber >= stat_touch1) &&
+					(temp->itemnumber <= stat_touch4))
+		{
+			touchindices[tilex][tiley] = lasttouch + 1;
+			SD_PreCacheSoundGroup(SD_TOUCHPLATESND,SD_BADTOUCHSND);
+			lasttouch ++;
+		}
 
 //=====================================================================//
 
-     PreCacheStaticFrames(temp);
+		PreCacheStaticFrames(temp);
+		PreCacheStaticSounds(temp->itemnumber);
 
-     PreCacheStaticSounds(temp->itemnumber);
-
-	  if (temp->flags & FL_WEAPON)
-		 MISCVARS->NUMWEAPONS ++;
-  }
- else
-	Error("Z_LevelMalloc failed in SpawnStatic!");
+		if (temp->flags & FL_WEAPON)
+			MISCVARS->NUMWEAPONS ++;
+	}
+	else
+		Error("Z_LevelMalloc failed in SpawnStatic!");
 
 }
 
@@ -1357,62 +1436,63 @@ void SpawnStatic (int tilex, int tiley, int mtype, int zoffset)
 */
 
 void SpawnInertStatic (int x, int y, int z, int mtype)
-{statobj_t * temp;
+{
+	statobj_t * temp;
 
-
-
-
- if (!firstemptystat)
-	{temp = (statobj_t*)Z_LevelMalloc(sizeof(statobj_t),PU_LEVELSTRUCT,NULL);
-	 //SoftError("\nMalloc-ing actor");
-	 //if (insetupgame)
-	  //	SoftError("in setup");
+	if (!firstemptystat)
+	{
+		temp = (statobj_t*)Z_LevelMalloc(sizeof(statobj_t),PU_LEVELSTRUCT,NULL);
+		//SoftError("\nMalloc-ing actor");
+		//if (insetupgame)
+		//	SoftError("in setup");
+	}
+	else
+	{
+		temp = lastemptystat;
+		//SoftError("\nfree actor available");
+		RemoveFromFreeStaticList(lastemptystat);
 	}
 
- else
-	{temp = lastemptystat;
-	 //SoftError("\nfree actor available");
-	 RemoveFromFreeStaticList(lastemptystat);
+	if (temp)
+	{
+		memset(temp,0,sizeof(*temp));
+		temp->shapenum = stats[mtype].picnum;
+
+		temp->whichstat = statcount ++;
+		temp->tilex = x>>16;
+		temp->tiley = y>>16;
+		temp->x = x;
+		temp->y = y;
+		temp->areanumber = MAPSPOT(temp->tilex,temp->tiley,0)-AREATILE;
+		temp->linked_to = -1;
+		if ((temp->areanumber<=0) || (temp->areanumber>NUMAREAS))
+		{
+			int tilex=temp->tilex;
+			int tiley=temp->tiley;
+
+			FindEmptyTile(&tilex,&tiley);
+			temp->areanumber = MAPSPOT(tilex,tiley,0)-AREATILE;
+		}
+		temp->z=z;
+		temp->visspot = &spotvis[temp->tilex][temp->tiley];
+		temp->which = SPRITE;
+		temp->ticcount = stats[mtype].tictime;
+		temp->hitpoints = stats[mtype].hitpoints;
+		temp->itemnumber = stats[mtype].type;
+		temp->flags = (stats[mtype].flags|FL_ABP|FL_NONMARK);
+		if (fog)
+		{
+			temp->shapenum++;
+			temp->flags &= ~FL_TRANSLUCENT;
+		}
+
+		temp->ammo = stats[mtype].ammo;
+		temp->numanims = stats[mtype].numanims;
+		AddStatic(temp);
+		MakeStatActive(temp);
 	}
-
- if (temp)
-  {  memset(temp,0,sizeof(*temp));
-	  temp->shapenum = stats[mtype].picnum;
-
-	  temp->whichstat = statcount ++;
-	  temp->tilex = x>>16;
-	  temp->tiley = y>>16;
-	  temp->x = x;
-	  temp->y = y;
-	  temp->areanumber = MAPSPOT(temp->tilex,temp->tiley,0)-AREATILE;
-	  temp->linked_to = -1;
-	  if ((temp->areanumber<=0) || (temp->areanumber>NUMAREAS))
-		  {
-		  int tilex=temp->tilex;
-		  int tiley=temp->tiley;
-
-		  FindEmptyTile(&tilex,&tiley);
-		  temp->areanumber = MAPSPOT(tilex,tiley,0)-AREATILE;
-		  }
-	  temp->z=z;
-	  temp->visspot = &spotvis[temp->tilex][temp->tiley];
-	  temp->which = SPRITE;
-	  temp->ticcount = stats[mtype].tictime;
-	  temp->hitpoints = stats[mtype].hitpoints;
-	  temp->itemnumber = stats[mtype].type;
-	  temp->flags = (stats[mtype].flags|FL_ABP|FL_NONMARK);
-     if (fog)
-       {temp->shapenum++;
-        temp->flags &= ~FL_TRANSLUCENT;
-       }
-
-     temp->ammo = stats[mtype].ammo;
-	  temp->numanims = stats[mtype].numanims;
-	  AddStatic(temp);
-	  MakeStatActive(temp);
-  }
- else
-	Error("Z_LevelMalloc failed in SpawnStatic!");
+	else
+		Error("Z_LevelMalloc failed in SpawnStatic!");
 
 }
 
@@ -1427,15 +1507,16 @@ void SpawnInertStatic (int x, int y, int z, int mtype)
 void SpawnSolidStatic (statobj_t * temp)
 {
 	if (temp->flags & FL_ACTIVE)
-	  temp->flags &= ~FL_ACTIVE;
+		temp->flags &= ~FL_ACTIVE;
 	temp->hitpoints = INITIALFIRECOLOR;
-   temp->flags = FL_SOLIDCOLOR|FL_SEEN|FL_ABP;
-   if ((gamestate.BattleOptions.RespawnItems) &&
-       (temp->itemnumber == stat_tntcrate)
-      )
-      temp->flags |= FL_RESPAWN;
+	temp->flags = FL_SOLIDCOLOR|FL_SEEN|FL_ABP;
+	if (	(gamestate.BattleOptions.RespawnItems) &&
+			(temp->itemnumber == stat_tntcrate)	)
+	{
+		temp->flags |= FL_RESPAWN;
+	}
 
-   temp->ticcount = SOLIDCOLORTICTIME;
+	temp->ticcount = SOLIDCOLORTICTIME;
 }
 
 
@@ -1448,158 +1529,145 @@ void SpawnSolidStatic (statobj_t * temp)
 */
 
 
-
 void PreCacheStaticSounds (int itemnumber)
 {
-
 	if (stats[itemnumber].flags & FL_SHOOTABLE)
-	  SD_PreCacheSound(SD_ITEMBLOWSND);
+		SD_PreCacheSound(SD_ITEMBLOWSND);
 
+	switch(itemnumber)
+	{
+	case		stat_pit:
+		SD_PreCacheSound(SD_PITTRAPSND);
+		break;
 
-   switch(itemnumber)
+	case		stat_bonusbarrel:
+		SD_PreCacheSound(SD_BONUSBARRELSND);
+		break;
 
-      {
-      case    stat_pit:
-        SD_PreCacheSound(SD_PITTRAPSND);
-        break;
+	case		stat_knifestatue:
+		SD_PreCacheSound(SD_GETKNIFESND);
+		break;
+	case		stat_gibs1:
+	case		stat_gibs2:
+	case		stat_gibs3:
+		SD_PreCacheSound (SD_ACTORSQUISHSND);
+		break;
+	case		stat_pedgoldkey:
+	case		stat_pedsilverkey:
+	case		stat_pedironkey:
+	case		stat_pedcrystalkey:
+		SD_PreCacheSound (SD_GETKEYSND);
+		break;
+	case		stat_monkmeal:
+		SD_PreCacheSound (SD_GETHEALTH1SND);
+		break;
+	case		stat_monkcrystal1:
+		SD_PreCacheSound (SD_GETHEALTH2SND);
+		break;
+	case		stat_monkcrystal2:
+		SD_PreCacheSound (SD_GETHEALTH2SND);
+		break;
+	case		stat_priestporridge:
+		SD_PreCacheSound (SD_GETHEALTH1SND);
+		SD_PreCacheSound(SD_COOKHEALTHSND);
+		break;
 
-      case    stat_bonusbarrel:
-        SD_PreCacheSound(SD_BONUSBARRELSND);
-        break;
+	case		stat_healingbasin:
+		SD_PreCacheSound (SD_GETHEALTH2SND);
+		break;
 
-      case    stat_knifestatue:
-        SD_PreCacheSound(SD_GETKNIFESND);
-        break;
-      case    stat_gibs1:
-      case    stat_gibs2:
-      case    stat_gibs3:
-         SD_PreCacheSound (SD_ACTORSQUISHSND);
-         break;
-      case    stat_pedgoldkey:
-      case    stat_pedsilverkey:
-      case    stat_pedironkey:
-      case    stat_pedcrystalkey:
-         SD_PreCacheSound (SD_GETKEYSND);
+	case stat_oneup:
+		SD_PreCacheSound(SD_GET1UPSND);
+		break;
+	case stat_threeup:
+		SD_PreCacheSound(SD_GET3UPSND);
+		break;
 
-         break;
-      case    stat_monkmeal:
-         SD_PreCacheSound (SD_GETHEALTH1SND);
-         break;
-      case    stat_monkcrystal1:
-         SD_PreCacheSound (SD_GETHEALTH2SND);
-         break;
-      case   stat_monkcrystal2:
-         SD_PreCacheSound (SD_GETHEALTH2SND);
-         break;
-      case    stat_priestporridge:
-         SD_PreCacheSound (SD_GETHEALTH1SND);
-         SD_PreCacheSound(SD_COOKHEALTHSND);
+	case stat_scotthead:
+		SD_PreCacheSound(SD_GETHEADSND);
+		break;
 
-         break;
+	case stat_twopistol:
+	case stat_mp40:
+	case stat_bazooka:
+	case stat_firebomb:
+	case stat_heatseeker:
+	case stat_drunkmissile:
+	case stat_firewall:
+	case stat_splitmissile:
+	case stat_kes:
+		SD_PreCacheSound(SD_GETWEAPONSND);
+		break;
 
-      case   stat_healingbasin:
-         SD_PreCacheSound (SD_GETHEALTH2SND);
-         break;
+	case stat_bat:
+		SD_PreCacheSound(SD_GETBATSND);
+		break;
 
-      case stat_oneup:
-         SD_PreCacheSound(SD_GET1UPSND);
-         break;
-      case stat_threeup:
-         SD_PreCacheSound(SD_GET3UPSND);
-         break;
+	case stat_lifeitem1:
+	case stat_lifeitem2:
+	case stat_lifeitem3:
+	case stat_lifeitem4:
+		SD_PreCacheSound(SD_GETBONUSSND);
+		break;
 
-      case stat_scotthead:
-         SD_PreCacheSound(SD_GETHEADSND);
-         break;
+	case stat_random:
+		SD_PreCacheSound(SD_GETGODSND);
+		SD_PreCacheSound(SD_GETDOGSND);
+		SD_PreCacheSound(SD_GETELASTSND);
+		SD_PreCacheSound(SD_GETSHROOMSSND);
+		SD_PreCacheSound(SD_LOSEMODESND);
+		break;
 
-      case stat_twopistol:
-      case stat_mp40:
-      case stat_bazooka:
-      case stat_firebomb:
-      case stat_heatseeker:
-      case stat_drunkmissile:
-      case stat_firewall:
-      case stat_splitmissile:
-      case stat_kes:
-         SD_PreCacheSound(SD_GETWEAPONSND);
-         break;
+	case stat_bulletproof:
+		SD_PreCacheSound(SD_GETBVESTSND);
+		SD_PreCacheSound(SD_LOSEMODESND);
+		break;
 
-      case stat_bat:
-         SD_PreCacheSound(SD_GETBATSND);
-         break;
+	case stat_gasmask:
+		SD_PreCacheSound(SD_GETMASKSND);
+		SD_PreCacheSound(SD_LOSEMODESND);
+		break;
 
-      case stat_lifeitem1:
-      case stat_lifeitem2:
-      case stat_lifeitem3:
-      case stat_lifeitem4:
-         SD_PreCacheSound(SD_GETBONUSSND);
-         break;
+	case stat_asbesto:
+		SD_PreCacheSound(SD_GETAVESTSND);
+		SD_PreCacheSound(SD_LOSEMODESND);
+		break;
 
+	case stat_elastic:
+		SD_PreCacheSound(SD_GETELASTSND);
+		SD_PreCacheSound(SD_LOSEMODESND);
+		break;
 
-      case stat_random:
-         SD_PreCacheSound(SD_GETGODSND);
-         SD_PreCacheSound(SD_GETDOGSND);
-         SD_PreCacheSound(SD_GETELASTSND);
-         SD_PreCacheSound(SD_GETSHROOMSSND);
-         SD_PreCacheSound(SD_LOSEMODESND);
+	case stat_fleetfeet:
+		SD_PreCacheSound(SD_GETFLEETSND);
+		SD_PreCacheSound(SD_LOSEMODESND);
+		break;
 
-         break;
-      case stat_bulletproof:
-         SD_PreCacheSound(SD_GETBVESTSND);
-         SD_PreCacheSound(SD_LOSEMODESND);
-         break;
+	case stat_godmode:
+		SD_PreCacheSound(SD_GETGODSND);
+		SD_PreCacheSound(SD_GODMODE1SND);
+		break;
 
-      case stat_gasmask:
-         SD_PreCacheSound(SD_GETMASKSND);
-         SD_PreCacheSound(SD_LOSEMODESND);
-         break;
+	case stat_dogmode:
+		SD_PreCacheSound(SD_GETDOGSND);
+		break;
 
-      case stat_asbesto:
-         SD_PreCacheSound(SD_GETAVESTSND);
-         SD_PreCacheSound(SD_LOSEMODESND);
-         break;
+	case stat_mushroom:
+		SD_PreCacheSound(SD_GETSHROOMSSND);
+		SD_PreCacheSound(SD_LOSEMODESND);
+		break;
 
-      case stat_elastic:
-         SD_PreCacheSound(SD_GETELASTSND);
-         SD_PreCacheSound(SD_LOSEMODESND);
-         break;
+	case stat_dipball1:
+	case stat_dipball2:
+	case stat_dipball3:
+		SD_PreCacheSound(SD_GETBONUSSND);
+		break;
 
-      case stat_fleetfeet:
-         SD_PreCacheSound(SD_GETFLEETSND);
-         SD_PreCacheSound(SD_LOSEMODESND);
-         break;
-
-      case stat_godmode:
-         SD_PreCacheSound(SD_GETGODSND);
-         SD_PreCacheSound(SD_GODMODE1SND);
-
-         break;
-
-      case stat_dogmode:
-         SD_PreCacheSound(SD_GETDOGSND);
-         break;
-
-      case stat_mushroom:
-         SD_PreCacheSound(SD_GETSHROOMSSND);
-         SD_PreCacheSound(SD_LOSEMODESND);
-
-         break;
-
-      case stat_dipball1:
-      case stat_dipball2:
-      case stat_dipball3:
-         SD_PreCacheSound(SD_GETBONUSSND);
-         break;
-
-      default:
-         SD_PreCacheSound(SD_GETBONUSSND);
-         break;
-      }
-
+	default:
+		SD_PreCacheSound(SD_GETBONUSSND);
+		break;
+	}
 }
-
-
-
 
 
 /*
@@ -1611,26 +1679,27 @@ void PreCacheStaticSounds (int itemnumber)
 */
 
 void SaveSwitches(byte ** buffer, int * size)
-{int numswitches,i;
- byte * tptr;
+{
+	int numswitches,i;
+	byte * tptr;
 
- numswitches = lastswitch-&switches[0];
- if (numswitches==0)
-	 {
-	 *size=0;
-	 *buffer=SafeMalloc(16);
-	 return;
-	 }
- *size = numswitches*sizeof(wall_t);
+	numswitches = lastswitch-&switches[0];
+	if (numswitches==0)
+	{
+		*size=0;
+		*buffer=SafeMalloc(16);
+		return;
+	}
+	*size = numswitches*sizeof(wall_t);
 
- *buffer = (byte *)SafeMalloc(*size);
- tptr = *buffer;
+	*buffer = (byte *)SafeMalloc(*size);
+	tptr = *buffer;
 
- for(i=0;i<numswitches;i++)
-  {memcpy(tptr,&switches[i],sizeof(wall_t));
-	tptr += sizeof(wall_t);
-  }
-
+	for(i=0;i<numswitches;i++)
+	{
+		memcpy(tptr,&switches[i],sizeof(wall_t));
+		tptr += sizeof(wall_t);
+	}
 }
 
 
@@ -1643,38 +1712,38 @@ void SaveSwitches(byte ** buffer, int * size)
 */
 
 void LoadSwitches (byte * buffer, int size)
-{int numswitches,i,tilex,tiley;
+{
+	int numswitches,i,tilex,tiley;
 
- numswitches = size/sizeof(wall_t);
+	numswitches = size/sizeof(wall_t);
 
- for(i=0;i<numswitches;i++)
-  {memcpy(&switches[i],buffer,sizeof(wall_t));
-	tilex = switches[i].tilex;
-	tiley = switches[i].tiley;
-	actorat[tilex][tiley]=&switches[i];
-	if (MAPSPOT(tilex,tiley,0) == 79) // On by default
-      {
-	   if (!(switches[i].flags & FL_ON))
-         tilemap[tilex][tiley]--;
-      }
-   else if (switches[i].flags & FL_W_INVERTED) // Hi masked wall
-      {
-      maskedwallobj_t * lastmaskobj;
+	for(i=0;i<numswitches;i++)
+	{
+		memcpy(&switches[i],buffer,sizeof(wall_t));
+		tilex = switches[i].tilex;
+		tiley = switches[i].tiley;
+		actorat[tilex][tiley]=&switches[i];
+		if (MAPSPOT(tilex,tiley,0) == 79) // On by default
+		{
+			if (!(switches[i].flags & FL_ON))
+				tilemap[tilex][tiley]--;
+		}
+		else if (switches[i].flags & FL_W_INVERTED) // Hi masked wall
+		{
+			maskedwallobj_t * lastmaskobj;
 
-      lastmaskobj=maskobjlist[tilemap[tilex][tiley]&0x3ff];
-    	if (switches[i].flags & FL_ON)
-         lastmaskobj->toptexture++;
-      }
-	else if (switches[i].flags & FL_ON)
-	   tilemap[tilex][tiley]++;
-	buffer += sizeof(wall_t);
-   touchindices[tilex][tiley] = lasttouch + 1;
-	lasttouch ++;
-  }
- lastswitch=&switches[numswitches];
-
+			lastmaskobj=maskobjlist[tilemap[tilex][tiley]&0x3ff];
+			if (switches[i].flags & FL_ON)
+				lastmaskobj->toptexture++;
+		}
+		else if (switches[i].flags & FL_ON)
+				tilemap[tilex][tiley]++;
+		buffer += sizeof(wall_t);
+			touchindices[tilex][tiley] = lasttouch + 1;
+		lasttouch ++;
+	}
+	lastswitch=&switches[numswitches];
 }
-
 
 
 /*
@@ -1687,15 +1756,14 @@ void LoadSwitches (byte * buffer, int size)
 
 void SpawnSwitchThingy(int tilex, int tiley)
 {
- lastswitch->flags |= FL_SWITCH;
- lastswitch->which = WALL;
- lastswitch->tilex = tilex;
- lastswitch->tiley = tiley;
- touchindices[tilex][tiley] = lasttouch + 1;
- lasttouch ++;
- actorat[tilex][tiley] = lastswitch;
- lastswitch ++;
-
+	lastswitch->flags |= FL_SWITCH;
+	lastswitch->which = WALL;
+	lastswitch->tilex = tilex;
+	lastswitch->tiley = tiley;
+	touchindices[tilex][tiley] = lasttouch + 1;
+	lasttouch ++;
+	actorat[tilex][tiley] = lastswitch;
+	lastswitch ++;
 }
 
 /*
@@ -1711,123 +1779,124 @@ void AnimateWalls(void)
 	int i;
 	animwall_t * aw;
 
-   if (DoPanicMapping()==true)
-      return;
+	if (DoPanicMapping()==true)
+		return;
 
-   for(i=0;i<MAXANIMWALLS;i++)
-		{
+	for(i=0;i<MAXANIMWALLS;i++)
+	{
 		aw=&animwalls[i];
 		if (aw->active==0)
 			continue;
 		if (aw->ticcount <= 0)
-			{
+		{
 			if (aw->count < animwallsinfo[i].numanims)
-				{
+			{
 				aw->texture = aw->basetexture + aw->count;
 				aw->count++;
-				}
+			}
 			else
-				{
+			{
 				aw->texture = aw->basetexture;
 				aw->count = 1;
-				}
+			}
 
 			while (aw->ticcount<=0)
 				aw->ticcount+=animwallsinfo[i].tictime;
-			}
+		}
 		else
 			aw->ticcount -= tics;
-		}
+	}
 }
 
 
-#define M_ResetSprites(x)  \
-  { if ((index == stat_dariantouch) && (!x->count))\
-		 {x->shapenum = stats[index].picnum;               \
-		  x->count = 1;                                     \
-		  x->ticcount = stats[index].tictime;         \
-		  x->flags &= ~FL_BACKWARDS;                   \
-		  x->flags &= ~FL_ACTIVE;                       \
-		 }                                               \
+#define M_ResetSprites(x)	\
+	{ if ((index == stat_dariantouch) && (!x->count))\
+			{x->shapenum = stats[index].picnum;								\
+			x->count = 1;																			\
+			x->ticcount = stats[index].tictime;					\
+			x->flags &= ~FL_BACKWARDS;										\
+			x->flags &= ~FL_ACTIVE;												\
+			}																								\
 	}
-
-
 
 
 void CheckCriticalStatics(void)
-{respawn_t *rtemp,*ddt;
- int i,stilex,stiley;
- statobj_t*temp,*stat;
+{
+	respawn_t *rtemp,*ddt;
+	int i,stilex,stiley;
+	statobj_t*temp,*stat;
 
- for(rtemp = firstrespawn;rtemp;)
-	{rtemp->ticcount --;
-	 ddt = rtemp->next;
+	for(rtemp = firstrespawn;rtemp;)
+	{
+		rtemp->ticcount --;
+		ddt = rtemp->next;
 
-	 if (rtemp->ticcount <=0)
-		 {int stype;
+		if (rtemp->ticcount <=0)
+		{
+			int stype;
 
-		  stilex = rtemp->tilex;
-		  stiley = rtemp->tiley;
+			stilex = rtemp->tilex;
+			stiley = rtemp->tiley;
 
-		  // if another weapon is there, nuke it
-		  if (sprites[stilex][stiley])
-			 {RemoveStatic(sprites[stilex][stiley]);
-			  sprites[stilex][stiley] = NULL;
-			 }
+			// if another weapon is there, nuke it
+			if (sprites[stilex][stiley])
+			{
+				RemoveStatic(sprites[stilex][stiley]);
+				sprites[stilex][stiley] = NULL;
+			}
 
-        if (rtemp->itemnumber == stat_tntcrate)
-           {
-//           RemoveStatic((statobj_t*)(rtemp->linked_to));
-           RemoveStatic(T_SwizzleStatObjFromInt(rtemp->linked_to));
-           stype = stat_tntcrate;
-           }
-        else
-           {
-           for(i=0;i<NUMSTATS;i++)
-              {
-              if (rtemp->itemnumber == stats[i].type)
-                 {
-                 stype = i;
-                 break;
-                 }
-              }
+			if (rtemp->itemnumber == stat_tntcrate)
+			{
+//				RemoveStatic((statobj_t*)(rtemp->linked_to));
+				RemoveStatic(T_SwizzleStatObjFromInt(rtemp->linked_to));
+				stype = stat_tntcrate;
+			}
+			else
+			{
+				for(i=0;i<NUMSTATS;i++)
+				{
+					if (rtemp->itemnumber == stats[i].type)
+					{
+						stype = i;
+						break;
+					}
+				}
+			}
 
-           }
+			SpawnStatic(stilex,stiley,stype,-1);
+			LASTSTAT->z = rtemp->spawnz;
+			LASTSTAT->flags |= FL_ABP;
+			MakeStatActive(LASTSTAT);
+			SpawnNewObj(stilex,stiley,&s_itemspawn1,inertobj);
+			SD_PlaySoundRTP(SD_RESPAWNSND,new->x,new->y);
+			new->flags |= FL_ABP;
+			MakeActive(new);
+			new->z = LASTSTAT->z;
+			RemoveRespawnStatic(rtemp);
+		}
 
-		  SpawnStatic(stilex,stiley,stype,-1);
-		  LASTSTAT->z = rtemp->spawnz;
-		  LASTSTAT->flags |= FL_ABP;
-		  MakeStatActive(LASTSTAT);
-        SpawnNewObj(stilex,stiley,&s_itemspawn1,inertobj);
-        SD_PlaySoundRTP(SD_RESPAWNSND,new->x,new->y);
-		  new->flags |= FL_ABP;
-		  MakeActive(new);
-		  new->z = LASTSTAT->z;
-		  RemoveRespawnStatic(rtemp);
-		 }
-
-	 rtemp = ddt;
+		rtemp = ddt;
 	}
 
- for (temp = firstactivestat ; temp; )
-	 {stat = temp->nextactive;
+	for (temp = firstactivestat ; temp; )
+	{
+		stat = temp->nextactive;
 
-	  if (temp->flags & FL_SOLIDCOLOR)
-		  {temp->ticcount--;
+		if (temp->flags & FL_SOLIDCOLOR)
+		{
+			temp->ticcount--;
 			if (temp->ticcount<=0)
-				{temp->hitpoints+=SOLIDCOLORINCREMENT;
-				 if (temp->hitpoints>MAXFIRECOLOR)
-					 RemoveStatic(temp);
-				 else
-					 temp->ticcount = SOLIDCOLORTICTIME;
-				}
-		  }
-	  temp = stat;
-	 }
-
-
+			{
+				temp->hitpoints+=SOLIDCOLORINCREMENT;
+				if (temp->hitpoints>MAXFIRECOLOR)
+					RemoveStatic(temp);
+				else
+					temp->ticcount = SOLIDCOLORTICTIME;
+			}
+		}
+		temp = stat;
+	}
 }
-
 
 
 /*
@@ -1839,64 +1908,74 @@ void CheckCriticalStatics(void)
 */
 
 void DoSprites(void)
-{int index,i;
- statobj_t *temp,*tempnext;
+{
+	int index,i;
+	statobj_t *temp, *tempnext;
 
 
 #if (0)
-	 Debug("\n");
+		Debug("\n");
 #endif
-i=0;
-for(temp = firstactivestat;temp;)
-  {tempnext = temp->nextactive;
 
-	#if (0)
-	 Debug("\nid: %d, shapenum: %d, numanims: %d",i++,temp->shapenum,temp->numanims);
-	#endif
+	i=0;
+	for(temp = firstactivestat; temp; )
+	{
+		tempnext = temp->nextactive;
 
-	if ((temp->shapenum != NOTHING) && (temp->flags & FL_ACTIVE))
-		{index = temp->itemnumber;
-		 temp->ticcount -= tics;
-		 while (temp->ticcount <= 0)
-			  {if (temp->count < temp->numanims)
-					 {temp->shapenum = stats[index].picnum + temp->count;
-					  if (index == stat_missmoke)
-						  {RemoveStatic(temp);
-							break;
-						  }
+#if (0)
+		Debug("\nid: %d, shapenum: %d, numanims: %d",i++,temp->shapenum,temp->numanims);
+#endif
 
-					  if (((index == stat_rubble) && (temp->count == 9)) ||
-							((index == stat_woodfrag) && (temp->count == 13)) ||
-							((index == stat_metalfrag) && (temp->count == 9)))
-						 {temp->flags &= ~FL_ACTIVE;
-						  break;
-						 }
+		if ((temp->shapenum != NOTHING) && (temp->flags & FL_ACTIVE))
+		{
+			index = temp->itemnumber;
+			temp->ticcount -= tics;
+			while (temp->ticcount <= 0)
+			{
+				if (temp->count < temp->numanims)
+				{
+					temp->shapenum = stats[index].picnum + temp->count;
+					if (index == stat_missmoke)
+					{
+						RemoveStatic(temp);
+						break;
+					}
 
-					  if (temp->flags & FL_BACKWARDS)
-						 {temp->count--;
-						  M_ResetSprites(temp);
-						 }
-					  else
-						 temp->count ++;
-					 }
+					if (((index == stat_rubble) && (temp->count == 9)) ||
+						((index == stat_woodfrag) && (temp->count == 13)) ||
+						((index == stat_metalfrag) && (temp->count == 9)))
+					{
+						temp->flags &= ~FL_ACTIVE;
+						break;
+					}
+
+					if (temp->flags & FL_BACKWARDS)
+					{
+						temp->count--;
+						M_ResetSprites(temp);
+					}
+					else
+						temp->count ++;
+				}
 				else if (!(temp->flags & FL_BANDF))
-					{temp->shapenum = stats[index].picnum;
-					 temp->count=1;
-					}
+				{
+					temp->shapenum = stats[index].picnum;
+					temp->count=1;
+				}
 				else
-					{temp->flags |= FL_BACKWARDS;
-					 temp->count --;
-					}
+				{
+					temp->flags |= FL_BACKWARDS;
+					temp->count --;
+				}
 				temp->ticcount += stats[index].tictime;
-			  }
+			}
 		}
-  temp = tempnext;
 
-  }
-
+		temp = tempnext;
+	}
 }
 
-void  SpawnStaticDamage(statobj_t * stat, int angle)
+void	SpawnStaticDamage(statobj_t * stat, int angle)
 {
 	GetNewActor ();
 	MakeActive(new);
@@ -1915,5 +1994,6 @@ void  SpawnStaticDamage(statobj_t * stat, int angle)
 	new->speed = 0;
 	new->flags = (FL_NEVERMARK|FL_ABP);
 	if ((new->x<=0) || (new->y<=0))
-	   Error("SpawnStaticDamage: bad x,y itemnumber=%ld\n",stat->itemnumber);
+		Error("SpawnStaticDamage: bad x,y itemnumber=%ld\n",
+			stat->itemnumber);
 }

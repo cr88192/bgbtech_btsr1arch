@@ -30,6 +30,8 @@ void    W_InitMultipleFiles (char **filenames); // Initialize multiple wads
 void    W_InitFile (char *filename);            // Init a single wad file
 
 int     W_CheckNumForName (char *name);         // Check to see if the named lump exists
+int W_CheckNumForNameBase (int base, char* name);
+
 int     W_GetNumForName (char *name);           // Get the number for the named lump
 char *  W_GetNameForNum (int i);                // Get the name for a number
 
@@ -40,6 +42,21 @@ void W_WriteLump (int lump, void *src);
 
 void    *W_CacheLumpNum (int lump, int tag);    // Cache in the numbered lump with the appropriate memory tag
 void    *W_CacheLumpName (char *name, int tag); // Cache in the named lump with the appropriate memory tag
+
+void	*W_CacheWallLumpNum (int lump, int tag);
+void	*W_CacheSoundLumpNum (int lump, int tag);
+
+
+void w_strupr (char *s);
+void w_strupr_n (char *t, char *s, int n);
+
+int w_chkaccess(char *name);
+int w_open(char *name, char *mode);
+int w_read(int hdl, void *buf, int sz);
+int w_write(int hdl, void *buf, int sz);
+int w_lseek(int hdl, int ofs, int set);
+int w_close(int hdl);
+int w_filelength (int hdl);
 
 extern int             numlumps;
 extern void            **lumpcache;

@@ -293,11 +293,11 @@ void US_ClippedPrint (int x, int y, char *s)
 
 		s = se;
 		if (c)
-			{
+		{
 			*se = c;
 			s++;
 			y += CurrentFont->height;
-			}
+		}
 	}
 }
 
@@ -318,14 +318,11 @@ void VW_DrawPropString (char *string)
 	unsigned dest, origdest;
 	int	ch,mask;
 
-
 	ht = CurrentFont->height;
 //	dest = origdest = (byte *)(bufferofs+ylookup[py]+(px>>2));
 	dest = origdest = (bufferofs+ylookup[py]+(px>>2));
 
-
 	mask = 1<<(px&3);
-
 
 	while ((ch = *string++)!=0)
 	{
@@ -360,7 +357,6 @@ void VW_DrawPropString (char *string)
 	}
 	bufferheight = ht;
 	bufferwidth = ((dest+1)-origdest)*4;
-
 }
 
 
@@ -399,14 +395,11 @@ void VW_DrawIPropString (char *string)
 	unsigned dest, origdest;
 	int	ch,mask;
 
-
 	ht = CurrentFont->height;
 //	dest = origdest = (byte *)(bufferofs+ylookup[py]+(px>>2));
 	dest = origdest = (bufferofs+ylookup[py]+(px>>2));
 
-
 	mask = 1<<(px&3);
-
 
 	while ((ch = *string++)!=0)
 	{
@@ -441,7 +434,6 @@ void VW_DrawIPropString (char *string)
 	}
 	bufferheight = ht;
 	bufferwidth = ((dest+1)-origdest)*4;
-
 }
 
 
@@ -648,12 +640,12 @@ void US_BufPrint (char *s)
 
 		s = se;
 		if (c)
-			{
+		{
 			*se = c;
 			s++;
 			PrintY += CurrentFont->height;
 			PrintX = startx;
-			}
+		}
 	}
 }
 
@@ -692,8 +684,7 @@ void US_PrintSigned (long int n)
 
 void USL_PrintInCenter (char *s, Rect r)
 {
-	int	w,h,
-			rw,rh;
+	int	w,h, rw,rh;
 
 	USL_MeasureString (s,&w,&h, CurrentFont);
 	rw = r.lr.x - r.ul.x;
@@ -775,14 +766,12 @@ void US_CPrint (char *s)
 }
 
 
-
 //
 //
 // Text Input routines
 //
 //
 //
-
 
 
 //******************************************************************************
@@ -1577,12 +1566,8 @@ byte GetIntensityColor (byte pix)
 //
 //******************************************************************************
 
-void DrawIntensityChar
-	(
-	char ch
-	)
-
-	{
+void DrawIntensityChar( char ch )
+{
 	byte  pix;
 	int	width;
 	int	height;
@@ -1608,33 +1593,33 @@ void DrawIntensityChar
 	mask = 1 << ( px & 3 );
 
 	while( width-- )
-		{
+	{
 		VGAMAPMASK( mask );
 
 		height = ht;
 		while( height-- )
-			{
+		{
 			pix = *source;
 			if ( pix != 0xFE )
-				{
+			{
 //				*dest = GetIntensityColor( pix );
 				VGAWRITE(dest, GetIntensityColor( pix ));
-				}
+			}
 
 			source++;
 			dest += linewidth;
-			}
+		}
 
 		px++;
 		mask <<= 1;
 		if ( mask == 16 )
-			{
+		{
 			mask = 1;
 			origdest++;
-			}
-		dest = origdest;
 		}
+		dest = origdest;
 	}
+}
 
 
 //******************************************************************************
@@ -1665,7 +1650,9 @@ int GetColor (int num)
 static int oldfontcolor = 0;
 static boolean highlight = false;
 
-void DrawIString (unsigned short int x, unsigned short int y, char *string, int flags)
+void DrawIString (
+	unsigned short int x, unsigned short int y,
+	char *string, int flags)
 {
 	char ch;
 	char temp;
@@ -1745,7 +1732,9 @@ void DrawIString (unsigned short int x, unsigned short int y, char *string, int 
 //
 //******************************************************************************
 
-void DrawIntensityString (unsigned short int x, unsigned short int y, char *string, int color)
+void DrawIntensityString (
+	unsigned short int x, unsigned short int y,
+	char *string, int color)
 {
 	char ch;
 
@@ -1755,51 +1744,13 @@ void DrawIntensityString (unsigned short int x, unsigned short int y, char *stri
 	fontcolor=color;
 
 	while ((ch = *string++) != 0)
-		{
+	{
 		DrawIntensityChar (ch);
-		}
+	}
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#if 0
 static unsigned short disp_offset = 160 * 24;
 
 void DrawText
@@ -1811,7 +1762,7 @@ void DrawText
 	int background
 	)
 
-	{
+{
 	char *vid;
 
 	vid  = ( char * )( 0xb0000 );
@@ -1824,7 +1775,7 @@ void DrawText
 		}
 	vid++;
 	*vid = ( ( background & 0x0f ) << 4 ) | ( foreground & 0x0f );
-	}
+}
 
 void TextBox
 	(
@@ -1837,18 +1788,18 @@ void TextBox
 	int  background
 	)
 
-	{
+{
 	int x;
 	int y;
 
 	for( x = x1; x <= x2; x++ )
-		{
+	{
 		for( y = y1; y <= y2; y++ )
-			{
+		{
 			DrawText( x, y, ch, foreground, background );
-			}
 		}
 	}
+}
 
 void TextFrame
 	(
@@ -1860,126 +1811,122 @@ void TextFrame
 	int foreground,
 	int background
 	)
-
-	{
+{
 	int x;
 	int y;
 
 	if ( type == 0 )
-		{
+	{
 		for( x = x1 + 1; x < x2; x++ )
-			{
+		{
 			DrawText( x, y1, type, foreground, background );
 			DrawText( x, y2, type, foreground, background );
-			}
+		}
 		for( y = y1 + 1; y < y2; y++ )
-			{
+		{
 			DrawText( x1, y, type, foreground, background );
 			DrawText( x2, y, type, foreground, background );
-			}
 		}
+	}
 	if ( type == SINGLE_FRAME )
-		{
+	{
 		DrawText( x1, y1, 'Ú', foreground, background );
 		DrawText( x2, y1, '¿', foreground, background );
 		DrawText( x1, y2, 'À', foreground, background );
 		DrawText( x2, y2, 'Ù', foreground, background );
 		for( x = x1 + 1; x < x2; x++ )
-			{
+		{
 			DrawText( x, y1, 'Ä', foreground, background );
 			DrawText( x, y2, 'Ä', foreground, background );
-			}
+		}
 		for( y = y1 + 1; y < y2; y++ )
-			{
+		{
 			DrawText( x1, y, '³', foreground, background );
 			DrawText( x2, y, '³', foreground, background );
-			}
 		}
+	}
 	if ( type == DOUBLE_FRAME )
-		{
+	{
 		DrawText( x1, y1, 'É', foreground, background );
 		DrawText( x2, y1, '»', foreground, background );
 		DrawText( x1, y2, 'È', foreground, background );
 		DrawText( x2, y2, '¼', foreground, background );
 		for( x = x1 + 1; x < x2; x++ )
-			{
+		{
 			DrawText( x, y1, 'Í', foreground, background );
 			DrawText( x, y2, 'Í', foreground, background );
-			}
+		}
 		for( y = y1 + 1; y < y2; y++ )
-			{
+		{
 			DrawText( x1, y, 'º', foreground, background );
 			DrawText( x2, y, 'º', foreground, background );
-			}
 		}
 	}
+}
 
 void mysetxy
 	(
 	int x,
 	int y
 	)
-
-	{
+{
 	disp_offset = ( x * 2 ) + ( y * 160 );
-	}
+}
 
 void myputch
 	(
 	char ch
 	)
-
-	{
+{
 	int j;
 	char *disp_start = (char *)( 0xb0000 );
 
 	if ( disp_offset >= 160 * 24 )
-		{
+	{
 		for ( j = 160; j < 160 * 24; j += 2 )
-			{
+		{
 			*( disp_start + j - 160 ) = *( disp_start + j );
-			}
+		}
 
 		disp_offset = 160 * 23;
 
 		for ( j = disp_offset; j < ( 160 * 24 ); j += 2 )
-			{
+		{
 			*( disp_start + j ) = ' ';
-			}
 		}
+	}
 
 	if ( ch >= 32 )
-		{
+	{
 		*( disp_start + disp_offset ) = ch;
 		disp_offset = disp_offset + 2;
-		}
+	}
 
 	if ( ch == '\r' )
-		{
+	{
 		disp_offset = disp_offset / 160;
 		disp_offset = disp_offset * 160;
-		}
+	}
 
 	if ( ch == '\n' )
-		{
+	{
 		disp_offset = disp_offset + 160;
 		if ( disp_offset < 160 * 24 )
-			{
+		{
 			for ( j = disp_offset; j < ( ( ( disp_offset / 160 ) + 1 ) *
 				160 ); j += 2 )
-				{
+			{
 				*( disp_start + j ) = ' ';
-				}
 			}
 		}
 	}
+}
 
 int printstring
 	(
 	char *string
 	)
-
-	{
+{
 	int count;
 	char *ptr;
 
@@ -1987,22 +1934,21 @@ int printstring
 	count = 0;
 
 	while ( *ptr )
-		{
+	{
 		myputch( *ptr );
 		count++;
 		ptr++;
-		}
+	}
 
 	return( count );
-	}
+}
 
 
 int printnum
 	(
 	int number
 	)
-
-	{
+{
 	char string[ 100 ];
 	int  count;
 
@@ -2010,15 +1956,14 @@ int printnum
 	count = printstring( string );
 
 	return( count );
-	}
+}
 
 int printunsigned
 	(
 	unsigned long number,
 	int radix
 	)
-
-	{
+{
 	char string[ 100 ];
 	int  count;
 
@@ -2026,7 +1971,7 @@ int printunsigned
 	count = printstring( string );
 
 	return( count );
-	}
+}
 
 int myprintf
 	(
@@ -2034,26 +1979,26 @@ int myprintf
 	...
 	)
 
-	{
+{
 	va_list argptr;
 	int	  count;
 	char	 *ptr;
 	if (MONOPRESENT==false)
-		{
+	{
 		Debug(fmt);
 		return 0;
-		}
+	}
 	va_start( argptr, fmt );
 	ptr = fmt;
 	count = 0;
 
 	while( *ptr != 0 )
-		{
+	{
 		if ( *ptr == '%' )
-			{
+		{
 			ptr++;
 			switch( *ptr )
-				{
+			{
 				case 0 :
 					return( EOF );
 					break;
@@ -2074,18 +2019,19 @@ int myprintf
 				case 'X' :
 					count += printunsigned( va_arg( argptr, int ), 16 );
 					break;
-				}
-			ptr++;
 			}
+			ptr++;
+		}
 		else
-			{
+		{
 			myputch( *ptr );
 			count++;
 			ptr++;
-			}
 		}
+	}
 
 	va_end( argptr );
 
 	return( count );
-	}
+}
+#endif

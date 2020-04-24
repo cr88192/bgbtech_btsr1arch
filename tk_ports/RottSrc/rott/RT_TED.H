@@ -142,6 +142,8 @@ extern boolean insetupgame;
 extern char LevelName[80];
 extern boolean ISRTL;
 
+boolean rott_iswolf;
+
 void PreCacheGroup(int,int);
 void AssignTeams(void);
 void LoadTedMap( const char *extension, int mapnum );

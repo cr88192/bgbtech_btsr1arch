@@ -1168,8 +1168,8 @@ byte IN_JoyButtons (void)
 
 //	joybits = inp (0x201);  // Get all the joystick buttons
 	joybits = 0;
-	joybits >>= 4;			// only the high bits are useful
-	joybits ^= 15;			// return with 1=pressed
+//	joybits >>= 4;			// only the high bits are useful
+//	joybits ^= 15;			// return with 1=pressed
 
 	return joybits;
 }

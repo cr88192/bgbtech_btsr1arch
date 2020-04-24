@@ -248,7 +248,19 @@ if (is_odd)				/* Deal with pixel at end of screen if needed. */
 	}
 }
 
+void screen_put_colors(Screen *s, int start, Color  *colors, int count)
+	/* Set count colors in color map starting at start.  RGB values
+	 * go from 0 to 255. */
+{
+}
 
+void screen_put_colors_64(Screen *s, int start, Color  *colors, int count)
+	/* Set count colors in color map starting at start.  RGB values
+	 * go from 0 to 64. */
+{
+}
+
+#if 0
 void screen_put_colors(Screen *s, int start, Color  *colors, int count)
 	/* Set count colors in color map starting at start.  RGB values
 	 * go from 0 to 255. */
@@ -282,6 +294,7 @@ for (ix = start; ix < end; ++ix)
 	++colors;
 	}
 }
+#endif
 
 #if 0
 /** Clock oriented stuff. **/

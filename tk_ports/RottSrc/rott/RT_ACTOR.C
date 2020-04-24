@@ -69,10 +69,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SHP(difficulty,ob)  (starthitpoints[difficulty][ob->obclass])
 
 #define CAP_OSCUROS_HITPOINTS(ob)								\
-	{																		\
-	if (ob->hitpoints > (SHP(gamestate.difficulty,ob)<<1)) \
-		ob->hitpoints = (SHP(gamestate.difficulty,ob)<<1);  \
-	}
+{																\
+	if (ob->hitpoints > (SHP(gamestate.difficulty,ob)<<1))		\
+		ob->hitpoints = (SHP(gamestate.difficulty,ob)<<1);		\
+}
 
 boolean			ludicrousgibs=false;
 
@@ -175,111 +175,116 @@ static objtype	*SNAKEHEAD,*SNAKEEND,*PARTICLE_GENERATOR,*EXPLOSIONS;
 	static int		OLDTILEX,OLDTILEY;
 #endif
 
-static char *debugstr[] = {
+static char *debugstr[] =
+{
+	"inerttype",
+	"player",
+	"lowguard",
+	"highguard",
+	"overpatrol",
+	"strikeguard",
+	"blitzguard",
+	"triadenforcer",
+	"deathmonk",
+	"dfiremonk",
+	"roboguard",
+	"b_darian",
+	"b_heinrich",
+	"b_darkmonk",
+	"b_roboboss",
+	"b_darksnake",
+	"patrolgun",
+	"wallop",
+	"pillar",
+	"firejet",
+	"blade",
+	"crushcol",
+	"boulder",
+	"spear",
+	"gasgrate",
+	"spring",
+	"shuriken",
+	"wallfire",
+	"net",
+	"h_mine",
+	"grenade",
+	"fireball",
+	"dmfball",
+	"bigshuriken",
+	"missile",
+	"NMEsaucer",
+	"dm_weapon",
+	"dm_heatseek",
+	"dm_spit",
+	"p_bazooka",
+	"p_firebomb",
+	"p_heatseek",
+	"p_drunkmissile",
+	"p_firewall",
+	"p_splitmissile",
+	"p_kes",
+	"p_godball",
+	"collectorobj"
+};
 
-		"inerttype",
-		"player",
-		"lowguard",
-		"highguard",
-		"overpatrol",
-		"strikeguard",
-		"blitzguard",
-		"triadenforcer",
-		"deathmonk",
-		"dfiremonk",
-		"roboguard",
-		"b_darian",
-		"b_heinrich",
-		"b_darkmonk",
-		"b_roboboss",
-		"b_darksnake",
-		"patrolgun",
-		"wallop",
-		"pillar",
-		"firejet",
-		"blade",
-		"crushcol",
-		"boulder",
-		"spear",
-		"gasgrate",
-		"spring",
-		"shuriken",
-		"wallfire",
-		"net",
-		"h_mine",
-		"grenade",
-		"fireball",
-		"dmfball",
-		"bigshuriken",
-		"missile",
-		"NMEsaucer",
-		"dm_weapon",
-		"dm_heatseek",
-		"dm_spit",
-		"p_bazooka",
-		"p_firebomb",
-		"p_heatseek",
-		"p_drunkmissile",
-		"p_firewall",
-		"p_splitmissile",
-		"p_kes",
-		"p_godball",
-		"collectorobj"
-		};
-
-static int		starthitpoints[4][NUMENEMIES+2] =
-
-						{{0,0,30,35,50,40,45,425,200,200,100,1500,2500,3000,3000,-1,200,2},
-						{0,0,40,50,55,50,50,475,250,250,125,2300,3400,4500,3600,-1,250,2},
-						{0,0,50,65,60,60,60,525,275,300,150,2400,3600,5000,4500,-1,300,2},
-						{0,0,60,80,70,70,75,525,300,350,175,2800,3800,5900,4800,-1,350,2}};
+static int		starthitpoints[4][NUMENEMIES+2] = {
+	{0,0,30,35,50,40,45,425,200,200,100,1500,2500,3000,3000,-1,200,2},
+	{0,0,40,50,55,50,50,475,250,250,125,2300,3400,4500,3600,-1,250,2},
+	{0,0,50,65,60,60,60,525,275,300,150,2400,3600,5000,4500,-1,300,2},
+	{0,0,60,80,70,70,75,525,300,350,175,2800,3800,5900,4800,-1,350,2}
+};
 
 static statobj_t  *touchsprite;
 
-static byte dirdiff[8][8] = {{0,1,2,3,4,3,2,1},{1,0,1,2,3,4,3,2},
-				{2,1,0,1,2,3,4,3},{3,2,1,0,1,2,3,4},
-				{4,3,2,1,0,1,2,3},{3,4,3,2,1,0,1,2},
-				{2,3,4,3,2,1,0,1},{1,2,3,4,3,2,1,0}};
+static byte dirdiff[8][8] = {
+	{0,1,2,3,4,3,2,1},{1,0,1,2,3,4,3,2},
+	{2,1,0,1,2,3,4,3},{3,2,1,0,1,2,3,4},
+	{4,3,2,1,0,1,2,3},{3,4,3,2,1,0,1,2},
+	{2,3,4,3,2,1,0,1},{1,2,3,4,3,2,1,0}
+};
 
-static byte dirorder[8][2] = {{southeast,northeast},{east,north},
-				{northeast,northwest},{north,west},
-				{northwest,southwest},{west,south},
-				{southwest,southeast},{south,east}};
+static byte dirorder[8][2] = {
+	{southeast,northeast},{east,north},
+	{northeast,northwest},{north,west},
+	{northwest,southwest},{west,south},
+	{southwest,southeast},{south,east}
+};
 
 #if (SHAREWARE == 0)
 
 static byte dirdiff16[16][16] = {
-				{0,1,2,3,4,5,6,7,8,7,6,5,4,3,2,1},
-				{1,0,1,2,3,4,5,6,7,8,7,6,5,4,3,2},
-				{2,1,0,1,2,3,4,5,6,7,8,7,6,5,4,3},
-				{3,2,1,0,1,2,3,4,5,6,7,8,7,6,5,4},
-				{4,3,2,1,0,1,2,3,4,5,6,7,8,7,6,5},
-				{5,4,3,2,1,0,1,2,3,4,5,6,7,8,7,6},
-				{6,5,4,3,2,1,0,1,2,3,4,5,6,7,8,7},
-				{7,6,5,4,3,2,1,0,1,2,3,4,5,6,7,8},
-				{8,7,6,5,4,3,2,1,0,1,2,3,4,5,6,7},
-				{7,8,7,6,5,4,3,2,1,0,1,2,3,4,5,6},
-				{6,7,8,7,6,5,4,3,2,1,0,1,2,3,4,5},
-				{5,6,7,8,7,6,5,4,3,2,1,0,1,2,3,4},
-				{4,5,6,7,8,7,6,5,4,3,2,1,0,1,2,3},
-				{3,4,5,6,7,8,7,6,5,4,3,2,1,0,1,2},
-				{2,3,4,5,6,7,8,7,6,5,4,3,2,1,0,1},
-				{1,2,3,4,5,6,7,8,7,6,5,4,3,2,1,0}};
+	{0,1,2,3,4,5,6,7,8,7,6,5,4,3,2,1},
+	{1,0,1,2,3,4,5,6,7,8,7,6,5,4,3,2},
+	{2,1,0,1,2,3,4,5,6,7,8,7,6,5,4,3},
+	{3,2,1,0,1,2,3,4,5,6,7,8,7,6,5,4},
+	{4,3,2,1,0,1,2,3,4,5,6,7,8,7,6,5},
+	{5,4,3,2,1,0,1,2,3,4,5,6,7,8,7,6},
+	{6,5,4,3,2,1,0,1,2,3,4,5,6,7,8,7},
+	{7,6,5,4,3,2,1,0,1,2,3,4,5,6,7,8},
+	{8,7,6,5,4,3,2,1,0,1,2,3,4,5,6,7},
+	{7,8,7,6,5,4,3,2,1,0,1,2,3,4,5,6},
+	{6,7,8,7,6,5,4,3,2,1,0,1,2,3,4,5},
+	{5,6,7,8,7,6,5,4,3,2,1,0,1,2,3,4},
+	{4,5,6,7,8,7,6,5,4,3,2,1,0,1,2,3},
+	{3,4,5,6,7,8,7,6,5,4,3,2,1,0,1,2},
+	{2,3,4,5,6,7,8,7,6,5,4,3,2,1,0,1},
+	{1,2,3,4,5,6,7,8,7,6,5,4,3,2,1,0}
+};
 #endif
 
 static byte dirorder16[16][2] = {
-						{15,1}  ,	{0,2},	{1,3},	{2,4},
-						{3,5}  ,	{4,6},	{5,7},	{6,8},
-						{7,9}  ,  {8,10},  {9,11}, {10,12},
-						{11,13}, {12,14}, {13,15},  {14,0}};
+	{15,1}  ,	{0,2},	{1,3},	{2,4},
+	{3,5}  ,	{4,6},	{5,7},	{6,8},
+	{7,9}  ,  {8,10},  {9,11}, {10,12},
+	{11,13}, {12,14}, {13,15},  {14,0}
+};
 
 //static byte opposite16[16] = {8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7};
 
 #if (SHAREWARE == 0)
 
-static statetype * UPDATE_STATES[NUMSTATES][NUMENEMIES] =
-
-	{ {&s_lowgrdstand,&s_highgrdstand,&s_opstand,&s_strikestand,
+static statetype * UPDATE_STATES[NUMSTATES][NUMENEMIES] = {
+	{&s_lowgrdstand,&s_highgrdstand,&s_opstand,&s_strikestand,
 	&s_blitzstand,&s_enforcerstand,&s_dmonkstand,&s_firemonkstand,
 	&s_robogrdstand,&s_darianstand,&s_heinrichstand,NULL,
 	&s_darkmonkstand,NULL,&s_gunstand,&s_wallstand},
@@ -333,13 +338,12 @@ static statetype * UPDATE_STATES[NUMSTATES][NUMENEMIES] =
 	&s_robogrddie1,NULL,NULL,NULL,
 	NULL,NULL,NULL,NULL}
 
-	};
+};
 
 #else
 
-static statetype * UPDATE_STATES[NUMSTATES][NUMENEMIES] =
-
-	{ {&s_lowgrdstand,&s_highgrdstand,NULL,&s_strikestand,
+static statetype * UPDATE_STATES[NUMSTATES][NUMENEMIES] = { 
+	{&s_lowgrdstand,&s_highgrdstand,NULL,&s_strikestand,
 	&s_blitzstand,&s_enforcerstand,NULL,NULL,
 	&s_robogrdstand,NULL,NULL,NULL,
 	NULL,NULL,NULL,NULL},
@@ -393,7 +397,7 @@ static statetype * UPDATE_STATES[NUMSTATES][NUMENEMIES] =
 	&s_robogrddie1,NULL,NULL,NULL,
 	NULL,NULL,NULL,NULL}
 
-	};
+};
 
 #endif
 
@@ -408,16 +412,16 @@ static int	DIAGADJUST		=	0xb504;
 static boolean MissileSound		=	true;
 
 boolean FirstExplosionState(statetype *state)
-	{
+{
 	if (DoPanicMapping())
-		{
+	{
 		if (state == &s_altexplosion1)
 			return true;
 		else
 			return false;
-		}
+	}
 	else
-		{
+	{
 		if ((state == &s_explosion1) ||
 			(state == &s_grexplosion1) ||
 			(state == &s_staticexplosion1)
@@ -425,23 +429,24 @@ boolean FirstExplosionState(statetype *state)
 			return true;
 		else
 			return false;
-		}
-
 	}
+
+}
 
 void SetGibSpeed(int speed)
-	{
+{
 	MISCVARS->gibspeed = speed;
-	}
+}
 
 void ResetGibSpeed(void)
-	{
+{
 	MISCVARS->gibspeed = NORMALGIBSPEED;
-	}
+}
 
 int ValidAreanumber (int areanumber)
-{ if ((areanumber >=0) && (areanumber <= NUMAREAS))
-	return 1;
+{
+	if ((areanumber >=0) && (areanumber <= NUMAREAS))
+		return 1;
 	return 0;
 }
 
@@ -453,11 +458,13 @@ int GetIndexForState (statetype * state)
 		return -1;
 
 	for (i=0;i<MAXSTATES;i++)
-		{
+	{
 		if (statetable[i]==state)
 			return i;
-		}
-	Error("Cannot find the state in 'GetIndexForState', state->shapenum = %d\n",state->shapenum);
+	}
+	Error("Cannot find the state in 'GetIndexForState', "
+		"state->shapenum = %d\n",
+		state->shapenum);
 	return -1;
 }
 
@@ -469,28 +476,32 @@ statetype * GetStateForIndex (int index)
 	return statetable[index];
 }
 
-statobj_t* GetStaticForIndex(int index)
-{statobj_t* temp;
+statobj_t *GetStaticForIndex(int index)
+{
+	statobj_t* temp;
 
 	for(temp=FIRSTSTAT;temp;temp=temp->statnext)
-	if (index == temp->whichstat)
-	return temp;
+		if (index == temp->whichstat)
+			return temp;
 
-	Error("Cannot find the static in 'GetStaticForIndex', statindex %d\n",index);
+	Error("Cannot find the static in 'GetStaticForIndex', "
+		"statindex %d\n",
+		index);
 	return NULL;
-
 }
 
 void SaveActors(byte **buffer,int*size)
-{objtype*temp,*tact;
+{
+	objtype *temp, *tact;
 	saved_actor_type dummy;
-	byte*tptr;
+	byte *tptr;
 	int actorcount;
 
 	for(actorcount=0,temp=FIRSTACTOR;temp;temp=temp->next)
-	temp->whichactor = actorcount++;
+		temp->whichactor = actorcount++;
 
-	*size = sizeof(int) + sizeof(numplayers) + sizeof(misc_stuff) + objcount*sizeof(saved_actor_type);
+	*size = sizeof(int) + sizeof(numplayers) + sizeof(misc_stuff) + 
+		objcount*sizeof(saved_actor_type);
 	*buffer = (byte*)SafeMalloc(*size);
 	tptr = *buffer;
 
@@ -504,81 +515,85 @@ void SaveActors(byte **buffer,int*size)
 	tptr += sizeof(consoleplayer);
 
 	for(temp=FIRSTACTOR;temp;temp=temp->next)
-	{dummy.x = temp->x;
-	dummy.y = temp->y;
-	dummy.z = temp->z;
-	dummy.flags = temp->flags;
-	dummy.areanumber = temp->areanumber;
-	//dummy.whichactor = temp->whichactor;
-	dummy.hitpoints = temp->hitpoints;
-	dummy.ticcount = temp->ticcount;
-	dummy.obclass = (byte)(temp->obclass);
-	dummy.stateindex = GetIndexForState(temp->state);
-	dummy.shapeoffset = temp->shapeoffset;
-	dummy.dirchoosetime = temp->dirchoosetime;
-	dummy.door_to_open = temp->door_to_open;
-	dummy.targetx = temp->targettilex;
-	dummy.targety = temp->targettiley;
-	dummy.dir = (signed char)temp->dir;
-	dummy.angle = temp->angle;
-	dummy.yzangle = temp->yzangle;
-	dummy.speed = temp->speed;
-	dummy.momentumx = temp->momentumx;
-	dummy.momentumy = temp->momentumy;
-	dummy.momentumz = temp->momentumz;
+	{
+		dummy.x = temp->x;
+		dummy.y = temp->y;
+		dummy.z = temp->z;
+		dummy.flags = temp->flags;
+		dummy.areanumber = temp->areanumber;
+		//dummy.whichactor = temp->whichactor;
+		dummy.hitpoints = temp->hitpoints;
+		dummy.ticcount = temp->ticcount;
+		dummy.obclass = (byte)(temp->obclass);
+		dummy.stateindex = GetIndexForState(temp->state);
+		dummy.shapeoffset = temp->shapeoffset;
+		dummy.dirchoosetime = temp->dirchoosetime;
+		dummy.door_to_open = temp->door_to_open;
+		dummy.targetx = temp->targettilex;
+		dummy.targety = temp->targettiley;
+		dummy.dir = (signed char)temp->dir;
+		dummy.angle = temp->angle;
+		dummy.yzangle = temp->yzangle;
+		dummy.speed = temp->speed;
+		dummy.momentumx = temp->momentumx;
+		dummy.momentumy = temp->momentumy;
+		dummy.momentumz = temp->momentumz;
 
-	dummy.temp1 = temp->temp1;
-	dummy.temp2 = temp->temp2;
-	dummy.temp3 = temp->temp3;
-	if (temp->whatever)
-	{/*if ((temp->flags & FL_USE) && (temp!=player))
-		{dummy.whateverindex = (GetIndexForState((statetype*)(temp->whatever))|SG_PSTATE);
-			if ((dummy.whateverindex < 0) && (dummy.whateverindex != -1))
-			Error("Bad actor whatever save value of %d\n",dummy.whateverindex);
-		}
-		else*/
-		{tact = (objtype*)(temp->whatever);
-			if (tact->which == ACTOR)
-			dummy.whateverindex = tact->whichactor;
-			else
-			{statobj_t *tstat;
+		dummy.temp1 = temp->temp1;
+		dummy.temp2 = temp->temp2;
+		dummy.temp3 = temp->temp3;
+		if (temp->whatever)
+		{
+			/*if ((temp->flags & FL_USE) && (temp!=player))
+			{dummy.whateverindex = (GetIndexForState((statetype*)(temp->whatever))|SG_PSTATE);
+				if ((dummy.whateverindex < 0) && (dummy.whateverindex != -1))
+				Error("Bad actor whatever save value of %d\n",dummy.whateverindex);
+			}
+			else*/
+			{
+				tact = (objtype*)(temp->whatever);
+				if (tact->which == ACTOR)
+					dummy.whateverindex = tact->whichactor;
+				else
+				{
+					statobj_t *tstat;
 
-				tstat = (statobj_t*)(temp->whatever);
-				dummy.whateverindex = (tstat->whichstat|SG_PSTAT);
-
+					tstat = (statobj_t*)(temp->whatever);
+					dummy.whateverindex = (tstat->whichstat|SG_PSTAT);
+				}
 			}
 		}
-	}
-	else
-	dummy.whateverindex = -1;
+		else
+			dummy.whateverindex = -1;
 
-	if (temp->target)
-	{tact = (objtype*)(temp->target);
-		if (tact->which == ACTOR)
-		{dummy.targetindex = tact->whichactor;
-			Debug("\nsave actor %d, type %d has target %d",temp->whichactor,temp->obclass,tact->whichactor);
+		if (temp->target)
+		{
+			tact = (objtype*)(temp->target);
+			if (tact->which == ACTOR)
+			{
+				dummy.targetindex = tact->whichactor;
+				Debug("\nsave actor %d, type %d has target %d",
+					temp->whichactor,temp->obclass,tact->whichactor);
+			}
+			else if (tact->which == SPRITE)
+			{
+				statobj_t *tstat;
+				tstat = (statobj_t*)(temp->target);
+				dummy.targetindex = (tstat->whichstat|SG_PSTAT);
+			}
+			else // It must be a push wall, and we don't save that
+			dummy.targetindex=-1;
 		}
-		else if (tact->which == SPRITE)
-		{statobj_t *tstat;
+		else
+			dummy.targetindex = -1;
 
-			tstat = (statobj_t*)(temp->target);
-			dummy.targetindex = (tstat->whichstat|SG_PSTAT);
-		}
-		else // It must be a push wall, and we don't save that
-		dummy.targetindex=-1;
+		memcpy(tptr,&(dummy.x),sizeof(saved_actor_type));
+		tptr += sizeof(saved_actor_type);
 	}
-	else
-	dummy.targetindex = -1;
-
-	memcpy(tptr,&(dummy.x),sizeof(saved_actor_type));
-	tptr += sizeof(saved_actor_type);
-
-	}
-
 }
 
 void LoadActors(byte *buffer,int size)
-	{
+{
 	int numactors,i,playerindex;
 	saved_actor_type dummy;
 	objtype *temp;
@@ -603,22 +618,22 @@ void LoadActors(byte *buffer,int size)
 	whateverindices = (short*)SafeMalloc(numactors*sizeof(short));
 
 	for(i=0;i<numactors;i++)
-		{
+	{
 		targetindices[i] = 0;
 		whateverindices[i] = 0;
 		objlist[i] = NULL;
-		}
+	}
 
 	for(i=0;i<numactors;i++)
-		{
+	{
 		GetNewActor();
 		objlist[i] = new;
 		if (i < numplayers)
-			{
+		{
 			PLAYER[i]=new;
 			if (i==playerindex)
 				player=new;
-			}
+		}
 
 		memcpy(&(dummy.x),buffer,sizeof(saved_actor_type));
 
@@ -666,10 +681,11 @@ void LoadActors(byte *buffer,int size)
 		else if (dummy.targetindex & SG_PSTAT)
 			new->target = GetStaticForIndex(dummy.targetindex & ~SG_PSTAT);
 		else
-			{
+		{
 			targetindices[i] = dummy.targetindex+1;
-			Debug("\nload actor %d, type %d has target %d",i,new->obclass,dummy.targetindex);
-			}
+			Debug("\nload actor %d, type %d has target %d",
+				i,new->obclass,dummy.targetindex);
+		}
 
 		new->areanumber = dummy.areanumber;
 		new->shapenum = new->state->shapenum + new->shapeoffset;
@@ -684,71 +700,89 @@ void LoadActors(byte *buffer,int size)
 
 		PreCacheActor(new->obclass,-1);
 		buffer += sizeof(saved_actor_type);
-		}
+	}
 
 	// find unique links between actors,
 	// searching list AFTER all have been spawned
 
 	for(i=0;i<numactors;i++)
-		{temp=objlist[i];
+	{
+		temp=objlist[i];
 		if (whateverindices[i])
 			temp->whatever = objlist[whateverindices[i]-1];
 		if (targetindices[i])
 			temp->target = objlist[targetindices[i]-1];
-		}
+	}
 
 	for(temp=FIRSTACTOR;temp;temp=temp->next)
-		{if (temp->obclass == b_darksnakeobj)
+	{
+		if (temp->obclass == b_darksnakeobj)
 			{if (!SNAKEHEAD)
 				SNAKEHEAD = temp;
 			else if (!temp->whatever)
 				SNAKEEND = temp;
 			}
 
-		}
+	}
 
 	if (SNAKEHEAD)
 		for(temp=FIRSTACTOR;temp;temp=temp->next)
-			{if (temp->state == &s_megaexplosions)
-				EXPLOSIONS = temp;
-			}
+	{
+		if (temp->state == &s_megaexplosions)
+			EXPLOSIONS = temp;
+	}
 
 	//SafeFree(objlist);
 	SafeFree(targetindices);
 	SafeFree(whateverindices);
 
-	}
+}
 
 int RandomSign(void)
-	{
+{
 	if (GameRandomNumber("random sign",0) < 128)
 		return -1;
 	return 1;
-
-	}
+}
 
 void AddToFreeList(objtype*ob)
-{ if (!FIRSTFREE)
-	FIRSTFREE = ob;
-	else
-	{ob->prev = LASTFREE;
-	LASTFREE->next = ob;
+{
+	if (!FIRSTFREE)
+	{
+		FIRSTFREE = ob;
+		LASTFREE = ob;
 	}
-	LASTFREE = ob;
-
+	else
+	{
+		ob->prev = LASTFREE;
+		LASTFREE->next = ob;
+		LASTFREE = ob;
+	}
 }
 
 void RemoveFromFreeList(objtype*ob)
 {
 	if (ob == LASTFREE)
+	{
 		LASTFREE = ob->prev;
-	else
+		if(LASTFREE)
+			LASTFREE->next=NULL;
+	}
+	else if(ob->next)
+	{
 		ob->next->prev = ob->prev;
+	}
 
 	if (ob == FIRSTFREE)
+	{
 		FIRSTFREE = ob->next;
-	else
+		if(FIRSTFREE)
+			FIRSTFREE->prev=NULL;
+	}
+	else if(ob->prev)
+	{
 		ob->prev->next = ob->next;
+	}
 
 	ob->prev = NULL;
 	ob->next = NULL;
@@ -756,42 +790,48 @@ void RemoveFromFreeList(objtype*ob)
 }
 
 void MakeActive(objtype *ob)
-	{if ((ob == firstactive) || (ob->prevactive) || (ob->nextactive))
+{
+	if ((ob == firstactive) || (ob->prevactive) || (ob->nextactive))
 	{
-	SoftError("\ndouble make active try");
-	//AddEndGameCommand ();
-	return;
+		SoftError("\ndouble make active try");
+		//AddEndGameCommand ();
+		return;
 	}
 
 	if (!firstactive)
-	firstactive = ob;
-	else
-	{ob->prevactive = lastactive;
-	lastactive->nextactive = ob;
+	{
+		firstactive = ob;
+		lastactive = ob;
 	}
-	lastactive = ob;
+	else
+	{
+		ob->prevactive = lastactive;
+		lastactive->nextactive = ob;
+		lastactive = ob;
+	}
 
-	#if ((DEVELOPMENT == 1))
-	#if ((LOADSAVETEST == 1))
+#if ((DEVELOPMENT == 1))
+#if ((LOADSAVETEST == 1))
 	if (!lastactive)
-	Debug("\nlastactive = NULL !");
+		Debug("\nlastactive = NULL !");
 	else
-	Debug("\nlastactive = %8x",lastactive);
-
-	#endif
-	#endif
-	}
+		Debug("\nlastactive = %8x",lastactive);
+#endif
+#endif
+}
 
 extern boolean player_noclip;
 
 void MakeLastInArea(objtype *ob)
-	{
+{
+#if 0
 	if((ob->obclass == playerobj) && player_noclip)
 	{
 		if (!ValidAreanumber(ob->areanumber))
 		{
 		}
 	}
+#endif
 
 	if (!ValidAreanumber(ob->areanumber))
 	{	
@@ -800,75 +840,108 @@ void MakeLastInArea(objtype *ob)
 			ob->areanumber);
 	}
 
-	if ((ob == firstareaactor[ob->areanumber]) || (ob->previnarea) || (ob->nextinarea))
+	if (	(ob == firstareaactor[ob->areanumber]) ||
+			(ob->previnarea) || (ob->nextinarea)	)
 	{
-	SoftError("\ndouble make last in area try");
-	//AddEndGameCommand ();
-	return;
-	}
-	if (!firstareaactor[ob->areanumber])
-	firstareaactor[ob->areanumber]	= ob;
-	else
-	{ob->previnarea = lastareaactor[ob->areanumber];
-		lastareaactor[ob->areanumber]->nextinarea = ob;
-	}
-	lastareaactor[ob->areanumber] = ob;
+		SoftError("\ndouble make last in area try");
+		//AddEndGameCommand ();
+		return;
 	}
 
-void RemoveFromArea(objtype*ob)
+	if (!firstareaactor[ob->areanumber])
 	{
-	if (!((ob == firstareaactor[ob->areanumber]) || (ob->previnarea) || (ob->nextinarea)))
+		firstareaactor[ob->areanumber]	= ob;
+		lastareaactor[ob->areanumber] = ob;
+	}
+	else
 	{
-	SoftError("\ndouble remove from area try");
-	//AddEndGameCommand ();
-	return;
+		ob->previnarea = lastareaactor[ob->areanumber];
+		lastareaactor[ob->areanumber]->nextinarea = ob;
+		lastareaactor[ob->areanumber] = ob;
+	}
+}
+
+void RemoveFromArea(objtype *ob)
+{
+	objtype *ob_tmp;
+
+	if (!((ob == firstareaactor[ob->areanumber]) ||
+		(ob->previnarea) || (ob->nextinarea)))
+	{
+		SoftError("\ndouble remove from area try");
+		//AddEndGameCommand ();
+		return;
 	}
 
 	if (ob == lastareaactor[ob->areanumber])	// remove from master list
-		lastareaactor[ob->areanumber] = ob->previnarea;
-	else
+	{
+		ob_tmp = ob->previnarea;
+		lastareaactor[ob->areanumber] = ob_tmp;
+		if(ob_tmp)
+			ob_tmp->nextinarea = NULL;
+	}
+	else if(ob->nextinarea)
+	{
 		ob->nextinarea->previnarea = ob->previnarea;
+	}
 
 	if (ob == firstareaactor[ob->areanumber])
-		firstareaactor[ob->areanumber] = ob->nextinarea;
-	else
+	{
+		ob_tmp = ob->nextinarea;
+		firstareaactor[ob->areanumber] = ob_tmp;
+		if(ob_tmp)
+			ob_tmp->previnarea = NULL;
+	}
+	else if(ob->previnarea)
+	{
 		ob->previnarea->nextinarea = ob->nextinarea;
+	}
 
 	ob->previnarea = NULL;
 	ob->nextinarea = NULL;
-	}
+}
 
-void MakeInactive(objtype*ob)
+void MakeInactive(objtype *ob)
 {
 	if (!ACTIVE(ob))
 //  if (!((ob == firstactive) || (ob->prevactive) || (ob->nextactive)))
 	{
-	SoftError("\n trying to remove inactive object");
-	//AddEndGameCommand ();
-	return;
+		SoftError("\n trying to remove inactive object");
+		//AddEndGameCommand ();
+		return;
 	}
 
 	//if (ob->flags & FL_ABP)
 	{
-
 		if (ob == lastactive)	// remove from master list
+		{
 			lastactive = ob->prevactive;
-		else
+			if(lastactive)
+				lastactive->nextactive=NULL;
+		}
+		else if(ob->nextactive)
+		{
 			ob->nextactive->prevactive = ob->prevactive;
+		}
 
 		if (ob == firstactive)
+		{
 			firstactive = ob->nextactive;
-		else
+			if(firstactive)
+				firstactive->prevactive=NULL;
+		}
+		else if(ob->prevactive)
+		{
 			ob->prevactive->nextactive = ob->nextactive;
+		}
 
 		ob->prevactive = NULL;
 		ob->nextactive = NULL;
 	}
-
 }
 
 void A_Steal(objtype*ob)
-	{
+{
 	int dx,dy,dz;
 
 	ActorMovement(ob);
@@ -878,41 +951,39 @@ void A_Steal(objtype*ob)
 	dz = abs(ob->z - PLAYER[0]->z);
 
 	if ((dx > TOUCHDIST) || (dy > TOUCHDIST) || (dz > (TOUCHDIST >> 10)))
-		{
+	{
 		NewState(ob,&s_blitzchase1);
 		return;
-		}
+	}
 
 	if (ob->ticcount)
 		return;
 
 	SD_PlaySoundRTP(SD_BLITZSTEALSND,ob->x,ob->y);
 	if (PLAYER[0]->flags & FL_GASMASK)
-		{
+	{
 		PLAYER[0]->flags &= ~FL_GASMASK;
 		PLAYERSTATE[0].protectiontime = 1;
 		ob->temp3 = stat_gasmask;
 		GM_UpdateBonus (PLAYERSTATE[0].poweruptime, true);
 
-		}
+	}
 	else if(PLAYER[0]->flags & FL_BPV)
-		{
+	{
 		PLAYER[0]->flags &= ~FL_BPV;
 		PLAYERSTATE[0].protectiontime = 1;
 		ob->temp3 = stat_bulletproof;
 		GM_UpdateBonus (PLAYERSTATE[0].poweruptime, true);
-
-		}
+	}
 	else if(PLAYER[0]->flags & FL_AV)
-		{
+	{
 		PLAYER[0]->flags &= ~FL_AV;
 		PLAYERSTATE[0].protectiontime = 1;
 		ob->temp3 = stat_asbesto;
 		GM_UpdateBonus (PLAYERSTATE[0].poweruptime, true);
-
-		}
+	}
 	else if (PLAYERSTATE[0].missileweapon != -1)
-		{
+	{
 		NewState(PLAYER[0],&s_player);
 		PLAYERSTATE[0].attackframe = PLAYERSTATE[0].weaponframe = 0;
 		PLAYERSTATE[0].new_weapon = PLAYERSTATE[0].bulletweapon;
@@ -927,9 +998,8 @@ void A_Steal(objtype*ob)
 
 		if ( SHOW_BOTTOM_STATUS_BAR() )
 			DrawBarAmmo (false);
-
-		}
 	}
+}
 
 void FindAddresses(void)
 {
@@ -965,7 +1035,7 @@ void FindAddresses(void)
 	}
 }
 
-void CheckBounds(objtype*ob)
+void CheckBounds(objtype *ob)
 {
 	nlint tstate,tfunct;
 
@@ -973,22 +1043,21 @@ void CheckBounds(objtype*ob)
 	tfunct = (nlint)(ob->state->think);
 
 	if ((tfunct < MINFUNCTION) || (tfunct > MAXFUNCTION) ||
-	(tstate < MINSTATE) || (tstate > MAXSTATE))
+		(tstate < MINSTATE) || (tstate > MAXSTATE))
 	{
-	if (tfunct < MINFUNCTION)
-		Error("%s has thinking function less than MINFUNCTION",debugstr[ob->obclass]);
-
-	else if (tfunct > MAXFUNCTION)
-		Error("%s has thinking function greater than MAXFUNCTION",debugstr[ob->obclass]);
-
-	if (tstate < MINSTATE)
-		Error("%s has state less than MINSTATE",debugstr[ob->obclass]);
-
-	else if (tstate > MAXSTATE)
-		Error("%s has state greater than MAXSTATE",debugstr[ob->obclass]);
-
+		if (tfunct < MINFUNCTION)
+			Error("%s has thinking function less than MINFUNCTION",
+				debugstr[ob->obclass]);
+		else if (tfunct > MAXFUNCTION)
+			Error("%s has thinking function greater than MAXFUNCTION",
+				debugstr[ob->obclass]);
+		if (tstate < MINSTATE)
+			Error("%s has state less than MINSTATE",
+				debugstr[ob->obclass]);
+		else if (tstate > MAXSTATE)
+			Error("%s has state greater than MAXSTATE",
+				debugstr[ob->obclass]);
 	}
-
 }
 
 /*************************************************************/
@@ -1003,7 +1072,7 @@ void CheckBounds(objtype*ob)
 void main ( void );
 
 void DoActor (objtype *ob)
-	{
+{
 	void (*think)(objtype *);
 	int door;
 
@@ -1017,40 +1086,46 @@ void DoActor (objtype *ob)
 		(ob->obclass < b_darksnakeobj) &&
 		MISCVARS->REDTIME
 		)
-		{
+	{
 		MISCVARS->REDTIME --;
 		MISCVARS->redindex = (MISCVARS->REDTIME  & 15);
-		}
+	}
 
 	if (ob->obclass == playerobj)
 		ControlPlayerObj(ob);
 
+	if(!ob->state)
+	{
+		RemoveObj (ob);
+		return;
+	}
+
 	think = ob->state->think;
 	if (think)
-		{
+	{
 		//CheckBounds(ob);
 		think (ob);
 
 		if (!ob->state)
-			{
+		{
 			RemoveObj (ob);
 			return;
-			}
 		}
+	}
 
 	if (ob->ticcount)
 		ob->ticcount --;
 
 	else
-		{
+	{
 		if (!(ob->state->next))
-			{
+		{
 			RemoveObj (ob);
 			return;
-			}
+		}
 		else
 			NewState(ob,ob->state->next);
-		}
+	}
 
 	if (ob->flags&FL_NEVERMARK)
 		return;
@@ -1059,10 +1134,10 @@ void DoActor (objtype *ob)
 		return;
 
 	actorat[ob->tilex][ob->tiley] = ob;
-	}
+}
 
 void ApplyGravity(objtype *ob)
-	{
+{
 	int oldmomentumz;
 
 	if (((ob->momentumz) || (ob->z != nominalheight)) &&
@@ -1071,36 +1146,36 @@ void ApplyGravity(objtype *ob)
 		(ob->obclass == b_heinrichobj)) &&
 		(ob->state->think != T_Stand)
 		)
-		{
+	{
 		ob->z += (ob->momentumz>>16);
 		ob->momentumz += GRAVITY;
 		if (ob->z >= nominalheight)
-			{
+		{
 			ob->z = nominalheight;
 			oldmomentumz = ob->momentumz;
 			ob->momentumz = 0;
 			if (oldmomentumz > 2*GRAVITY)
-				{
+			{
 				if (ob->flags & FL_DYING)
 					SD_PlaySoundRTP(ACTORTHUDSND,ob->x,ob->y);
 				else
-					{
+				{
 					int oldviolence = gamestate.violence;
 
 					SD_PlaySoundRTP(ACTORLANDSND,ob->x,ob->y);
 					gamestate.violence = vl_low;
 					BeginEnemyHurt(ob);
 					gamestate.violence = oldviolence;
-					}
 				}
+			}
 			if (ob->flags&FL_FALLINGOBJECT)
-				{
+			{
 				RemoveObj(ob);
 				return;
-				}
 			}
 		}
 	}
+}
 
 /*
 ===================
@@ -1127,7 +1202,6 @@ void NewState (objtype *ob, statetype *newstate)
 	SetVisiblePosition(ob,ob->x,ob->y);
 	ob->ticcount = (ob->state->tictime>>1);
 	ob->shapenum = ob->state->shapenum + ob->shapeoffset;
-
 }
 
 /*
@@ -1196,45 +1270,47 @@ void InitActorList (void)
 */
 
 void GetNewActor (void)
-	{
+{
 	objtype *temp;
 
 	if (!FIRSTFREE)
-		{
+	{
 		temp = (objtype*)Z_LevelMalloc(sizeof(objtype),PU_LEVELSTRUCT,NULL);
 		//SoftError("\nMalloc-ing actor");
 		//if (insetupgame)
 		//  SoftError("in setup");
-		}
-
+	}
 	else
-		{
+	{
 		temp = LASTFREE;
 		//SoftError("\nfree actor available");
 		RemoveFromFreeList(LASTFREE);
-		}
+	}
 
 	if (temp)
-		{
+	{
 		new = temp;
 		memset(new,0,sizeof(*new));
 
 		if (FIRSTACTOR)
-			{
+		{
 			new->prev = LASTACTOR;
 			LASTACTOR->next = new;
-			}
+			LASTACTOR = new;
+		}
 		else
+		{
 			FIRSTACTOR = new;
-		LASTACTOR = new;
+			LASTACTOR = new;
+		}
 
 		new->door_to_open = -1;
 		new->soundhandle = -1;
 		objcount ++;
-		}
+	}
 	else
 		Error("Z_LevelMalloc failed in GetNewActor");
-	}
+}
 
 //===========================================================================
 
@@ -1259,28 +1335,45 @@ void RemoveObj (objtype *gone)
 	MakeInactive(gone);
 
 	if (gone->obclass!=inertobj)
-	if (ValidAreanumber(gone->areanumber))
-		RemoveFromArea(gone);
-	else
-		Error("tried to remove an instance of %s with invalid areanumber %d",debugstr[gone->obclass],gone->areanumber);
+	{
+		if (ValidAreanumber(gone->areanumber))
+			RemoveFromArea(gone);
+		else
+			Error("tried to remove an instance of %s with "
+					"invalid areanumber %d",
+				debugstr[gone->obclass],gone->areanumber);
+	}
 
 	if (gone == LASTACTOR)
-	LASTACTOR = gone->prev;
-	else
-	gone->next->prev = gone->prev;
+	{
+		LASTACTOR = gone->prev;
+		if(LASTACTOR)
+			LASTACTOR->next = NULL;
+	}else if(gone->next)
+	{
+		gone->next->prev = gone->prev;
+	}
 
 	if (gone == FIRSTACTOR)
-	FIRSTACTOR = gone->next;
-	else
-	gone->prev->next = gone->next;
+	{
+		FIRSTACTOR = gone->next;
+		if(FIRSTACTOR)
+			FIRSTACTOR->prev = NULL;
+	}
+	else if(gone->prev)
+	{
+		gone->prev->next = gone->next;
+	}
 
 	if (gone == EXPLOSIONS)
-	EXPLOSIONS = NULL;
+		EXPLOSIONS = NULL;
+
 	gone->next = NULL;
 	gone->prev = NULL;
+
 //	SoftError("\nremoving instance of %s",debugstr[gone->obclass]);
 	if (actorat[gone->tilex][gone->tiley] == (void*)gone)
-	actorat[gone->tilex][gone->tiley] = NULL;
+		actorat[gone->tilex][gone->tiley] = NULL;
 
 	gone->flags |= FL_NEVERMARK;
 
@@ -1297,35 +1390,35 @@ void RemoveObj (objtype *gone)
 //============== World Physics Model Functions =========================
 
 void ParseMomentum(objtype *ob,int angle)
-	{
+{
 	ob->momentumx += FixedMul(ob->speed,costable[angle]);
 	ob->momentumy -= FixedMul(ob->speed,sintable[angle]);
-	}
+}
 
 void Set_3D_Momenta(objtype *ob, int speed, int theta, int phi)
-	{
+{
 	int _2Ddiag;
 
 	ob->momentumz = -FixedMul(speed,sintable[phi]);
 	_2Ddiag = FixedMul(speed,costable[phi]);
 	ob->momentumx = FixedMul(_2Ddiag,costable[theta]);
 	ob->momentumy = -FixedMul(_2Ddiag,sintable[theta]);
-
-	}
+}
 
 int AngleBetween(objtype *source,objtype*target)
-	{
+{
 	int dx,dy;
 
 	dx = target->x - source->x;
 	dy = source->y - target->y;
 	return (atan2_appx(dx,dy));
-	}
+}
 
-void GetMomenta(objtype *target, objtype *source, int *newmomx,
-					int *newmomy, int *newmomz, int magnitude
-					)
-	{
+void GetMomenta(
+	objtype *target, objtype *source, int *newmomx,
+	int *newmomy, int *newmomz, int magnitude
+	)
+{
 	int angle,dx,dy,dz,yzangle,xydist,_2Ddiag;
 
 	dx = target->x - source->x;
@@ -1339,7 +1432,7 @@ void GetMomenta(objtype *target, objtype *source, int *newmomx,
 	*newmomz = -FixedMul(magnitude,sintable[yzangle]);
 	*newmomx = FixedMul(_2Ddiag,costable[angle]);
 	*newmomy = -FixedMul(_2Ddiag,sintable[angle]);
-	}
+}
 
 //=======================================================================
 
@@ -1363,14 +1456,19 @@ void SpawnNewObj (int tilex, int tiley, statetype *state, classtype which)
 		actorat[tilex][tiley] = new;
 
 	newarea = AREANUMBER(tilex,tiley);
+	
+	if(newarea==-1)
+		newarea=0;
+	
 	if ((which <= springobj) && (which != inertobj))
-		{
+	{
 		if (ValidAreanumber(newarea))
 			new->areanumber = newarea;
 		else
 			Error("illegal initial areanumber of %d for actor type %s"
-					"trying to spawn at %d, %d",newarea,debugstr[which],tilex,tiley);
-		}
+				"trying to spawn at %d, %d",
+				newarea,debugstr[which],tilex,tiley);
+	}
 	else
 		new->areanumber = newarea;
 
@@ -1385,46 +1483,48 @@ void SpawnNewObj (int tilex, int tiley, statetype *state, classtype which)
 //====================================================================
 
 void ConsiderAlternateActor(objtype *ob,classtype which)
-	{
+{
 	if (((which >= lowguardobj) && (which <= blitzguardobj)) ||
 		(which == dfiremonkobj))
-		{if (GameRandomNumber("SpawnStand",which) < 128)
-			{switch(which)
-				{case lowguardobj:
-					ob->shapeoffset =  W_GetNumForName("MARSHOO1") -
-											W_GetNumForName("LWGSHOO1");
-					break;
-				case highguardobj:
-					ob->shapeoffset =  W_GetNumForName("HIGSHOO1") -
-											W_GetNumForName("HG2SHOO1");
-					break;
-				case overpatrolobj:
-					ob->shapeoffset =  W_GetNumForName("PATSHOO1") -
-											W_GetNumForName("OBPSHOO1");
-					break;
-				case strikeguardobj:
-					ob->shapeoffset =  W_GetNumForName("XYGSHOO1") -
-											W_GetNumForName("ANGSHOO1");
-					break;
-				/*case blitzguardobj:
-					altstartlabel = "WIGSHOO1";
-					new->shapeoffset = 80;
-					break;*/
-				case dfiremonkobj:
-					ob->shapeoffset =  W_GetNumForName("MRKKSH1") -
-											W_GetNumForName("ALLKSH1");
-					break;
-				}
+	{
+		if (GameRandomNumber("SpawnStand",which) < 128)
+		{
+			switch(which)
+			{
+			case lowguardobj:
+				ob->shapeoffset =  W_GetNumForName("MARSHOO1") -
+										W_GetNumForName("LWGSHOO1");
+				break;
+			case highguardobj:
+				ob->shapeoffset =  W_GetNumForName("HIGSHOO1") -
+										W_GetNumForName("HG2SHOO1");
+				break;
+			case overpatrolobj:
+				ob->shapeoffset =  W_GetNumForName("PATSHOO1") -
+										W_GetNumForName("OBPSHOO1");
+				break;
+			case strikeguardobj:
+				ob->shapeoffset =  W_GetNumForName("XYGSHOO1") -
+										W_GetNumForName("ANGSHOO1");
+				break;
+			/*case blitzguardobj:
+				altstartlabel = "WIGSHOO1";
+				new->shapeoffset = 80;
+				break;*/
+			case dfiremonkobj:
+				ob->shapeoffset =  W_GetNumForName("MRKKSH1") -
+										W_GetNumForName("ALLKSH1");
+				break;
 			}
-
 		}
+	}
 
 	//if (new->shapeoffset)
 	//  {if (W_CheckNumForName(altstartlabel) == -1)
 	//	new->shapeoffset = 0;
 	//  }
 
-	}
+}
 
 /*
 ===================
@@ -1441,7 +1541,8 @@ void StandardEnemyInit(objtype *ob,int dir)
 	if ((ob->obclass == deathmonkobj) || (ob->obclass == dfiremonkobj))
 		ob->temp2 = DRAINTIME;
 
-	else if ((ob->obclass == highguardobj) || (ob->obclass == triadenforcerobj))
+	else if ((ob->obclass == highguardobj) ||
+			(ob->obclass == triadenforcerobj))
 		ob->flags |= FL_HASAUTO;
 
 	ob->hitpoints = starthitpoints[gamestate.difficulty][ob->obclass];
@@ -1451,19 +1552,32 @@ void StandardEnemyInit(objtype *ob,int dir)
 	ob->dirchoosetime = 0;
 	ob->door_to_open = -1;
 
-	zoffset = MAPSPOT(ob->tilex,ob->tiley,2);
+	if(rott_iswolf)
+	{
+		if((ob->obclass == deathmonkobj) ||
+			(ob->obclass == dfiremonkobj))
+		{
+			ob->hitpoints = 15;
+			ob->speed = ENEMYRUNSPEED*3;
+		}
+	}
+
+	zoffset = MAPSPOT(ob->tilex, ob->tiley, 2);
 	if ((zoffset&0xff00)==0xb000)
-		Set_NewZ_to_MapValue(&(ob->z),zoffset,"standard enemy",ob->tilex,ob->tiley);
+		Set_NewZ_to_MapValue( &(ob->z), zoffset,
+			"standard enemy", ob->tilex, ob->tiley);
 	else
-		ob->z = PlatformHeight(ob->tilex,ob->tiley);
+		ob->z = PlatformHeight(ob->tilex, ob->tiley);
 
 }
 
 void ConsiderOutfittingBlitzguard(objtype *ob)
 {
+	if(rott_iswolf)
+		return;
+
 	if ((GameRandomNumber("wiley blitzguard",0) < WILEYBLITZCHANCE) &&
-		(gamestate.difficulty >= gd_medium)
-		)
+		(gamestate.difficulty >= gd_medium)		)
 	{
 		ob->temp3 = stat_bazooka;
 		ob->temp2 = 3;
@@ -1502,7 +1616,7 @@ void SpawnStand (classtype which, int tilex, int tiley, int dir, int ambush)
 #endif
 
 	if ((which == lowguardobj) &&
-		(GameRandomNumber("SpawnStand",which) < 128))
+		(GameRandomNumber("SpawnStand",which) < 128) && (!rott_iswolf))
 			which = blitzguardobj;
 
 	if ((temp = UPDATE_STATES[STAND][which-lowguardobj]) != NULL)
@@ -1516,9 +1630,7 @@ void SpawnStand (classtype which, int tilex, int tiley, int dir, int ambush)
 
 		#if 0
 		#if (SUPERROTT == 1)
-
 		ConsiderAlternateActor(new,which);
-
 		#endif
 		#endif
 
@@ -1572,21 +1684,21 @@ void SpawnPatrol (classtype which, int tilex, int tiley, int dir)
 	#if (SHAREWARE==1)
 	switch(which)
 	{
-		case overpatrolobj:
-		case wallopobj:
-		case deathmonkobj:
-		case dfiremonkobj:
-		case b_darianobj:
-		case b_heinrichobj:
-		case b_darkmonkobj:
-			Error("\n%s actor at %d,%d not allowed in shareware !",debugstr[which],tilex,tiley);
-			break;
-
+	case overpatrolobj:
+	case wallopobj:
+	case deathmonkobj:
+	case dfiremonkobj:
+	case b_darianobj:
+	case b_heinrichobj:
+	case b_darkmonkobj:
+		Error("\n%s actor at %d,%d not allowed in shareware !",
+			debugstr[which],tilex,tiley);
+		break;
 	}
 	#endif
 
 	if ((which == lowguardobj) &&
-		(GameRandomNumber("SpawnStand",which) < 128))
+		(GameRandomNumber("SpawnStand",which) < 128) && !rott_iswolf)
 			which = blitzguardobj;
 
 	if ((temp= UPDATE_STATES[path][(int)(which-lowguardobj)]) != NULL)
@@ -1605,11 +1717,12 @@ void SpawnPatrol (classtype which, int tilex, int tiley, int dir)
 		StandardEnemyInit(new,dir);
 
 		if ((which == wallopobj) || (which == roboguardobj))
-			{new->flags |= FL_NOFRICTION;
+		{
+			new->flags |= FL_NOFRICTION;
 			//new->flags &= ~FL_SHOOTABLE;
 			new->dir <<= 1;
 			ParseMomentum(new,dirangle16[new->dir]);
-			}
+		}
 		else
 			ParseMomentum(new,dirangle8[new->dir]);
 
@@ -1617,9 +1730,10 @@ void SpawnPatrol (classtype which, int tilex, int tiley, int dir)
 			ConsiderOutfittingBlitzguard(new);
 
 		if (MAPSPOT(tilex,tiley,2) == 0xdead)
-			{new->flags |= FL_KEYACTOR;
+		{
+			new->flags |= FL_KEYACTOR;
 			MISCVARS->KEYACTORSLEFT++;
-			}
+		}
 
 		PreCacheActor(which,0);
 	}
@@ -1692,6 +1806,10 @@ objtype	*DiskAt(int tilex,int tiley)
 	statobj_t *tstat;
 
 	area = AREANUMBER(tilex, tiley);
+	
+	if((area<0) || (area>=NUMAREAS))		//BGB: debug
+		return NULL;
+	
 	for(temp = firstareaactor[area]; temp; temp = temp->nextinarea)
 	{
 		if ((temp->tilex != tilex) || (temp->tiley != tiley) ||
@@ -1829,7 +1947,8 @@ void SpawnGroundExplosion(int x, int y, int z)
 #endif
 
 void SpawnSlowParticles(int which, int numgibs, int x,int y,int z)
-{objtype *prevlast,*temp;
+{
+	objtype *prevlast,*temp;
 	int tilex,tiley;
 
 	tilex = x>>16;
@@ -1854,7 +1973,6 @@ void SpawnSlowParticles(int which, int numgibs, int x,int y,int z)
 		temp->momentumz >>= 1;
 	}
 	RemoveObj(prevlast);
-
 }
 
 void ResolveDoorSpace(int tilex,int tiley)
@@ -1925,7 +2043,8 @@ void SpawnSpring(int tilex,int tiley)
 	if (iconvalue == 3)
 	{
 		SpawnNewObj(tilex,tiley,&s_autospring1,springobj);
-		new->ticcount = (GameRandomNumber("Spawn Spring",0) % new->ticcount)+1;
+		new->ticcount = (GameRandomNumber("Spawn Spring",0) %
+			new->ticcount)+1;
 		new->temp1 = iconvalue;
 	}
 	else
@@ -9417,93 +9536,93 @@ void T_SnakeFindPath(objtype*ob)
 	}
 
 	if (ob->dirchoosetime)
-	ob->dirchoosetime--;
+		ob->dirchoosetime--;
 	else
-	{for(temp=ob;temp->whatever;temp=(objtype*)(temp->whatever))
-			{follower = (objtype*)(temp->whatever);
+	{
+		for(temp=ob;temp->whatever;temp=(objtype*)(temp->whatever))
+		{
+			follower = (objtype*)(temp->whatever);
 			follower->temp1 = temp->x;
 			follower->temp2 = temp->y;
-			}
+		}
 		ob->dirchoosetime = 2 ;//15
 	}
 }
 
 void T_SnakeFinale(objtype*ob)
 {
-
 	if ((ob->state == &s_snakefireworks1)||(ob->state == &s_snakefireworks2))
-		{
+	{
 		if (ob->z != (maxheight-200))
-			{
+		{
 			ob->z --;
 			return;
-			}
+		}
 		SetGibSpeed(0x4500);
 		SpawnParticles(ob,RANDOM,100);
 
 		SpawnParticles(ob,gt_spit,100);
 		ResetGibSpeed();
 		NewState(ob,&s_dexplosion1);
-		}
-
+	}
 	else
-		{
+	{
 		if (!ob->ticcount)
-			{
+		{
 			NewState(EXPLOSIONS,&s_megaremove);
 		//  SpawnParticles(ob,RANDOM,100);
 			// SpawnParticles(ob,SPIT,100);
 			return;
-			}
+		}
 
 		if (ob->dirchoosetime)
 			ob->dirchoosetime --;
 		else
-			{
+		{
 			ob->dirchoosetime = (GameRandomNumber("snake finale choose",0) % 7) + 15;
 			SetGibSpeed(0x3000);
 			SpawnParticles(ob,RANDOM,30);
 			SpawnParticles(ob,gt_spit,20);
 			ResetGibSpeed();
-			}
 		}
 	}
+}
 
 void T_DarkSnakeChase(objtype*ob)
-	{
+{
 	objtype* temp,*follower;
 	int tdir,angle;
 
 	if (!(ob->flags & FL_ATTACKMODE))
-		{
+	{
 		if (!(CheckSight(ob,player) || Near(ob,player,4)))
 			return;
 		else
-			{
+		{
 			ob->flags |= FL_ATTACKMODE;
 			MU_StartSong(song_bosssee);
-			}
-
 		}
+	}
 
 	if (ob->hitpoints <= 0)
-		{
+	{
 		MU_StartSong(song_bossdie);
 		KillActor(ob);
 		AddMessage("Oscuro defeated!",MSG_CHEAT);
 		return;
-		}
+	}
 
 	angle = AngleBetween(ob,PLAYER[0]);
 	tdir = angletodir[angle];
-	if (Near(ob,PLAYER[0],6) && (ob->dir == tdir) && (!(ob->state->condition & SF_DOWN)))
-		{
+	if (Near(ob,PLAYER[0],6) && (ob->dir == tdir) &&
+		(!(ob->state->condition & SF_DOWN)))
+	{
 		NewState(ob,&s_snakefire1);
 		SD_PlaySoundRTP(SD_SNAKEREADYSND,ob->x,ob->y);
-		}
+	}
 
 	if (!ob->ticcount)
-		{
+	{
 		if (ob->state == &s_darkmonkredhead)
 			ob->temp3 = 0; // no longer hitable
 		else if ((ob->state == &s_redheadhit) && (ob != SNAKEEND))
@@ -9515,13 +9634,13 @@ void T_DarkSnakeChase(objtype*ob)
 			//new->z -= 5;
 			}
 			//spawn spit;
-		}
+	}
 
 	if (CheckLine(ob,PLAYER[0],SIGHT))
-		{
+	{
 		ob->targettilex = PLAYER[0]->x;
 		ob->targettiley = PLAYER[0]->y;
-		}
+	}
 
 	if (ob->dirchoosetime)
 		{
@@ -9532,145 +9651,156 @@ void T_DarkSnakeChase(objtype*ob)
 		}
 
 	else
-		{//if (ob)
+	{
+		//if (ob)
 		for(temp=ob;temp->whatever;temp=(objtype*)(temp->whatever))
-			{
+		{
 			follower = (objtype*)(temp->whatever);
 			follower->temp1 = temp->x;
 			follower->temp2 = temp->y;
-			}
+		}
 		SelectChaseDir(ob);
 		ob->dirchoosetime = 7 ;//15
-		}
 	}
+}
 
 void T_DarkmonkReact(objtype*ob)
 {
 	if (ob->z < nominalheight)
-	{MISCVARS->monkz += MZADJUST;
+	{
+		MISCVARS->monkz += MZADJUST;
 		ob->z = nominalheight + (MISCVARS->monkz >> 16);
 		//ob->z++;
 		return;
 	}
-
 	else
-	{int ocl;
+	{
+		int ocl;
 
-	ocl = ob->temp3;
+		ocl = ob->temp3;
 
-	if (ocl == p_kesobj)
-	NewState(ob,&s_darkmonkabsorb1);
-	else if (ocl == p_heatseekobj)
-	NewState(ob,&s_darkmonkhball1);
-	else if (ocl == p_firebombobj)
-	NewState(ob,&s_darkmonkbreathe1);
-	else
-	NewState(ob,&s_darkmonkchase1);
-	ob->dirchoosetime = 0;
+		if (ocl == p_kesobj)
+			NewState(ob,&s_darkmonkabsorb1);
+		else if (ocl == p_heatseekobj)
+			NewState(ob,&s_darkmonkhball1);
+		else if (ocl == p_firebombobj)
+			NewState(ob,&s_darkmonkbreathe1);
+		else
+			NewState(ob,&s_darkmonkchase1);
+			ob->dirchoosetime = 0;
 	}
-
 }
 
 void T_DarkmonkCharge(objtype*ob)
-{int dx,dy;
+{
+	int dx,dy;
 
 	dx = abs(PLAYER[0]->x - ob->x);
 	dy = abs(PLAYER[0]->y - ob->y);
 	if ((dx < 0xa000) && (dy < 0xa000))
-	{DamageThing(PLAYER[0],10);
-	Collision(PLAYER[0],ob,0,0);
-	M_CheckPlayerKilled(PLAYER[0]);
+	{
+		DamageThing(PLAYER[0],10);
+		Collision(PLAYER[0],ob,0,0);
+		M_CheckPlayerKilled(PLAYER[0]);
 	}
 
 	if (!ob->ticcount)
-	ob->speed >>= 1;
+		ob->speed >>= 1;
 
 	if (ob->dirchoosetime)
-	ob->dirchoosetime --;
+		ob->dirchoosetime --;
 
 	if (NOMOM || (!ob->dirchoosetime))
-	{ob->angle = AngleBetween(ob,PLAYER[0]);
-	ob->dir = angletodir[ob->angle];
-	ParseMomentum(ob,ob->angle);
-	ob->dirchoosetime = 5;
+	{
+		ob->angle = AngleBetween(ob,PLAYER[0]);
+		ob->dir = angletodir[ob->angle];
+		ParseMomentum(ob,ob->angle);
+		ob->dirchoosetime = 5;
 	}
 
 	ActorMovement(ob);
-
 }
 
 void T_DarkmonkLandAndFire(objtype*ob)
 {
-
 	if (ob->z < nominalheight)
-	{MISCVARS->monkz += MZADJUST;
+	{
+		MISCVARS->monkz += MZADJUST;
 		ob->z = nominalheight + (MISCVARS->monkz >> 16);
 		//ob->z++;
 		return;
 	}
 	if (Near(ob,PLAYER[0],3))
-	{if (GameRandomNumber("darkmonkland",0)<128)
-		NewState(ob,&s_darkmonkbball1);
-	else
-		{ob->angle = AngleBetween(ob,PLAYER[0]);
-		ob->dir = angletodir[ob->angle];
-		ob->speed <<= 1;		// goes twice as fast
-		ZEROMOM;
-		ParseMomentum(ob,ob->angle);
-		ob->dirchoosetime = 5; // change dir every 5 tics
-		ob->hitpoints -= 200; // big penalty for charging
-		if (ob->hitpoints <= 0)
-			{objtype*column = (objtype*)(ob->whatever);
+	{
+		if (GameRandomNumber("darkmonkland",0)<128)
+			NewState(ob,&s_darkmonkbball1);
+		else
+		{
+			ob->angle = AngleBetween(ob,PLAYER[0]);
+			ob->dir = angletodir[ob->angle];
+			ob->speed <<= 1;		// goes twice as fast
+			ZEROMOM;
+			ParseMomentum(ob,ob->angle);
+			ob->dirchoosetime = 5; // change dir every 5 tics
+			ob->hitpoints -= 200; // big penalty for charging
+			if (ob->hitpoints <= 0)
+			{
+				objtype*column = (objtype*)(ob->whatever);
 
-//			EnableObject((int)column);
-			EnableObject(T_SwizzleObjtypeToInt(column));
-			ob->whatever = NULL;
+	//			EnableObject((int)column);
+				EnableObject(T_SwizzleObjtypeToInt(column));
+				ob->whatever = NULL;
 
-			KillActor(ob);
-			NewState(ob,&s_darkmonkfastspawn);
-			AddMessage("Oscuro flees!",MSG_CHEAT);
-			return;
+				KillActor(ob);
+				NewState(ob,&s_darkmonkfastspawn);
+				AddMessage("Oscuro flees!",MSG_CHEAT);
+				return;
 			}
-		NewState(ob,&s_darkmonkcharge1);
+			NewState(ob,&s_darkmonkcharge1);
 		}
-
 	}
 	else if (ob->temp1)
-	NewState(ob,&s_darkmonklightning1);
+		NewState(ob,&s_darkmonklightning1);
 	else
-	NewState(ob,&s_dmgreenthing1);
+		NewState(ob,&s_dmgreenthing1);
 	ob->temp1 ^= 1;
 	ob->dirchoosetime = 0;
 
 }
 
 void T_DarkmonkChase(objtype*ob)
-{int chance,dx,dy,dist;
+{
+	int chance,dx,dy,dist;
 
 	if (!Near(ob,PLAYER[0],2))
-	{if (ob->z > (maxheight - 100))
-	{MISCVARS->monkz -= MZADJUST;
-		ob->z = nominalheight + (MISCVARS->monkz >> 16);
-		//ob->z--;
-		return;
-	}
+	{
+		if (ob->z > (maxheight - 100))
+		{
+			MISCVARS->monkz -= MZADJUST;
+			ob->z = nominalheight + (MISCVARS->monkz >> 16);
+			//ob->z--;
+			return;
+		}
 	}
 	else if (ob->z < nominalheight)
-	{MISCVARS->monkz += MZADJUST;
+	{
+		MISCVARS->monkz += MZADJUST;
 		ob->z = nominalheight + (MISCVARS->monkz >> 16);
 		//ob->z++;
 		return;
 	}
 
 	if (CheckLine(ob,PLAYER[0],SIGHT))
-	{ob->targettilex = PLAYER[0]->x;
-	ob->targettiley = PLAYER[0]->y;
+	{
+		ob->targettilex = PLAYER[0]->x;
+		ob->targettiley = PLAYER[0]->y;
 	}
 
 	if (!ob->ticcount)
 	{
 	if (CheckLine(ob,PLAYER[0],SHOOT))	// got a shot at player?
-		{dx = abs(ob->tilex - PLAYER[0]->tilex);
+	{
+		dx = abs(ob->tilex - PLAYER[0]->tilex);
 		dy = abs(ob->tiley - PLAYER[0]->tiley);
 		dist = dx>dy ? dx : dy;
 		if (!dist || dist==1)
@@ -9686,86 +9816,88 @@ void T_DarkmonkChase(objtype*ob)
 	}
 
 	if (ob->dirchoosetime)
-	ob->dirchoosetime--;
+		ob->dirchoosetime--;
 
 	if ((ob->flags & FL_STUCK) || (!ob->dirchoosetime))
-	{SelectChaseDir(ob);
+	{
+		SelectChaseDir(ob);
 		ob->dirchoosetime = M_CHOOSETIME(ob);
 	}
-
 	else
-	{if (NOMOM)
-		ParseMomentum(ob,dirangle8[ob->dir]);
-	ActorMovement(ob);
-
+	{
+		if (NOMOM)
+			ParseMomentum(ob,dirangle8[ob->dir]);
+		ActorMovement(ob);
 	}
-
 }
 
 //====================== End of Boss Functions ===========================//
 
 void T_GunStand(objtype*ob)
-{int dy,dx,infrontof,dz;
+{
+	int dy,dx,infrontof,dz;
 	objtype* temp;
 
 // if (ob->target)
 //  Error("gun reset with non-null target");
 	for(temp = firstareaactor[ob->areanumber];temp;temp= temp->nextinarea)
-	{if (temp == ob)
-		continue;
-	if (temp->obclass == ob->obclass)
-	continue;
-	if ((!(temp->flags & FL_SHOOTABLE)) || (temp->flags & FL_DYING))
-	continue;
+	{
+		if (temp == ob)
+			continue;
+		if (temp->obclass == ob->obclass)
+			continue;
+		if ((!(temp->flags & FL_SHOOTABLE)) || (temp->flags & FL_DYING))
+			continue;
 
-	dy = ob->y - temp->y;
-	dx = ob->x - temp->x;
-	dz = ob->z - temp->z;
-	if ((abs(dy)>0x40000) || (abs(dx)>0x40000) || (abs(dz) > 20))
-	continue;
+		dy = ob->y - temp->y;
+		dx = ob->x - temp->x;
+		dz = ob->z - temp->z;
+		if ((abs(dy)>0x40000) || (abs(dx)>0x40000) || (abs(dz) > 20))
+			continue;
 
-	infrontof = 0;
+		infrontof = 0;
 
-	switch (ob->dir)
-	{case north:
-		if ((dy > 0) && (abs(dx)<0x8000))
-		infrontof = 1;
-		break;
+		switch (ob->dir)
+		{
+		case north:
+			if ((dy > 0) && (abs(dx)<0x8000))
+				infrontof = 1;
+			break;
 
 		case east:
-		if ((dx < 0) && (abs(dy)<0x8000))
-		infrontof = 1;
-		break;
+			if ((dx < 0) && (abs(dy)<0x8000))
+				infrontof = 1;
+			break;
 
 		case south:
-		if ((dy < 0) && (abs(dx)<0x8000))
-		infrontof = 1;
-		break;
+			if ((dy < 0) && (abs(dx)<0x8000))
+				infrontof = 1;
+			break;
 
 		case west:
-		if ((dx > 0) && (abs(dy)<0x8000))
-		infrontof = 1;
-		break;
-	}
+			if ((dx > 0) && (abs(dy)<0x8000))
+				infrontof = 1;
+			break;
+		}
 
-	if (infrontof && CheckLine(ob,temp,SHOOT))
-		{ob->target = temp;
-		NewState(ob,&s_gunraise1);
-		return;
+		if (infrontof && CheckLine(ob,temp,SHOOT))
+		{
+			ob->target = temp;
+			NewState(ob,&s_gunraise1);
+			return;
 		}
 	}
-
 }
 
 void T_4WayGunStand(objtype*ob)
-	{
+{
 	int dy,dx,dz;
 	objtype* temp;
 
 	if (ob->target)
 	Error("gun reset with non-null target");
 	for(temp = firstareaactor[ob->areanumber];temp;temp= temp->nextinarea)
-		{
+	{
 		if (temp == ob)
 			continue;
 
@@ -9783,90 +9915,96 @@ void T_4WayGunStand(objtype*ob)
 			ob->target = temp;
 			NewState(ob,&s_4waygunfire1);
 			return;
-			}
 		}
 	}
+}
 
 void A_GunShoot(objtype*ob)
 { int	dx,dy,dz,damage,infrontof,tnear,savedangle;
 	objtype * target;
 
 	if (!ob->ticcount)
-	{target = (objtype*)(ob->target);
-	if (!target)
-		Error("an instance of %s called gunshoot without a target\n",debugstr[ob->obclass]);
-	if ((!(target->flags & FL_SHOOTABLE)) || (target->flags & FL_DYING))
-	{NewState(ob,&s_gunlower1);
-	ob->target = NULL;
-	return;
-	}
+	{
+		target = (objtype*)(ob->target);
+		if (!target)
+			Error("an instance of %s called gunshoot without a target\n",
+				debugstr[ob->obclass]);
+		if ((!(target->flags & FL_SHOOTABLE)) || (target->flags & FL_DYING))
+		{
+			NewState(ob,&s_gunlower1);
+			ob->target = NULL;
+			return;
+		}
 
-	dx = target->x-ob->x;
-	dy = ob->y-target->y;
-	dz = ob->z-target->z;
+		dx = target->x-ob->x;
+		dy = ob->y-target->y;
+		dz = ob->z-target->z;
 
-	tnear = ((abs(dy)<0x40000) && (abs(dx)<0x40000) && (abs(dz) < 20));
-	infrontof = 0;
+		tnear = ((abs(dy)<0x40000) && (abs(dx)<0x40000) && (abs(dz) < 20));
+		infrontof = 0;
 
-	switch (ob->dir)
-	{case north:
-		if ((dy > 0) && (abs(dx)<0x8000))
-		infrontof = 1;
-		break;
+		switch (ob->dir)
+		{
+		case north:
+			if ((dy > 0) && (abs(dx)<0x8000))
+				infrontof = 1;
+			break;
 
 		case east:
-		if ((dx < 0) && (abs(dy)<0x8000))
-		infrontof = 1;
-		break;
+			if ((dx < 0) && (abs(dy)<0x8000))
+				infrontof = 1;
+			break;
 
 		case south:
-		if ((dy < 0) && (abs(dx)<0x8000))
-		infrontof = 1;
-		break;
+			if ((dy < 0) && (abs(dx)<0x8000))
+				infrontof = 1;
+			break;
 
 		case west:
-		if ((dx > 0) && (abs(dy)<0x8000))
-		infrontof = 1;
-		break;
-	}
+			if ((dx > 0) && (abs(dy)<0x8000))
+				infrontof = 1;
+			break;
+		}
 
-	if ((!infrontof) || (!CheckLine(ob,target,SHOOT)) ||
-		(!tnear))
-	{NewState(ob,&s_gunlower1);
-	ob->target = NULL;
-	return;
-	}
+		if ((!infrontof) || (!CheckLine(ob,target,SHOOT)) ||
+			(!tnear))
+		{
+			NewState(ob,&s_gunlower1);
+			ob->target = NULL;
+			return;
+		}
 
-	//SD_PlaySoundRTP(SD_FIRE,PLAYER[0]->x,PLAYER[0]->y,ob->x,ob->y);
-	//hitchance = 128;
+		//SD_PlaySoundRTP(SD_FIRE,PLAYER[0]->x,PLAYER[0]->y,ob->x,ob->y);
+		//hitchance = 128;
 
-//	if (!target)
-	//		Error("object called shoot without a target\n");
+	//	if (!target)
+		//		Error("object called shoot without a target\n");
 
-	damage = DMG_AHGUN;
+		damage = DMG_AHGUN;
 
-	if (target->obclass == playerobj)
-	{target->target = ob;
-		if (target->flags & FL_BPV)
-		damage >>= 1;
+		if (target->obclass == playerobj)
+		{
+			target->target = ob;
+			if (target->flags & FL_BPV)
+				damage >>= 1;
 
-	}
-	savedangle = ob->angle;
-	ob->angle = atan2_appx(dx,dy);
-	RayShoot(ob,damage,GameRandomNumber("A_GunShoot Accuracy",0) % 20);
-	ob->angle = savedangle;
-	SD_PlaySoundRTP(SD_BIGEMPLACEFIRESND,ob->x,ob->y);
+		}
+		savedangle = ob->angle;
+		ob->angle = atan2_appx(dx,dy);
+		RayShoot(ob,damage,GameRandomNumber("A_GunShoot Accuracy",0) % 20);
+		ob->angle = savedangle;
+		SD_PlaySoundRTP(SD_BIGEMPLACEFIRESND,ob->x,ob->y);
 	}
 
 }
 
 void A_4WayGunShoot(objtype*ob)
-	{
+{
 	int	dx,dy,dz,damage,savedangle;
 	objtype * target;
 
 	if (ob->ticcount == (ob->state->tictime >> 1))
-		{
+	{
 		target = (objtype*)(ob->target);
 		if (!target)
 			Error("an instance of %s called 4waygunshoot without a target\n",debugstr[ob->obclass]);
@@ -9878,11 +10016,11 @@ void A_4WayGunShoot(objtype*ob)
 			(!(target->flags & FL_SHOOTABLE)) ||
 			(target->flags & FL_DYING)
 			)
-			{
+		{
 			ob->target = NULL;
 			NewState(ob,&s_4waygun);
 			return;
-			}
+		}
 
 		//SD_PlaySoundRTP(SD_FIRE,PLAYER[0]->x,PLAYER[0]->y,ob->x,ob->y);
 		//hitchance = 128;
@@ -9894,11 +10032,11 @@ void A_4WayGunShoot(objtype*ob)
 		SD_PlaySoundRTP(BAS[ob->obclass].fire,ob->x,ob->y);
 
 		if (target->obclass == playerobj)
-			{
+		{
 			target->target = ob;
 			if (target->flags & FL_BPV)
 				damage >>= 1;
-			}
+		}
 
 		savedangle = ob->angle;
 		ob->angle = 0;
@@ -9910,133 +10048,157 @@ void A_4WayGunShoot(objtype*ob)
 		ob->angle = ANG270;
 		RayShoot(ob,damage,GameRandomNumber("A_4WayGunShoot Accuracy",0) % 20);
 		ob->angle = savedangle;
-		}
 	}
+}
 
 void A_Drain (objtype *ob)
-	{
-	int dx,dy,dz,damage;
+{
+	int dx,dy,dz,damage, maxhp;
 
 	dx = abs(PLAYER[0]->x - ob->x);
 	dy = abs(PLAYER[0]->y - ob->y);
 	dz = abs(PLAYER[0]->z - ob->z);
 
 	if ((dx > TOUCHDIST) || (dy > TOUCHDIST) || (dz > (TOUCHDIST>>10)))
+	{
+		if(rott_iswolf)		//BGB
 		{
+//			A_Chase(ob);
+			NewState(ob,M_S(CHASE));
+			return;
+		}
+	
 		NewState(ob,&s_dmonkshoot5);
 		return;
-		}
+	}
 
 	if (ob->ticcount)
 		return;
 
 	else
+	{
+		if(rott_iswolf)
 		{
-		damage = (GameRandomNumber("A_Drain",ob->obclass) >> 3);
-		DamageThing (PLAYER[0],damage);
-		ob->hitpoints += damage;
-		if (ob->hitpoints > starthitpoints[gamestate.difficulty][ob->obclass])
-			ob->hitpoints = starthitpoints[gamestate.difficulty][ob->obclass];
+			damage = (GameRandomNumber("A_Drain",ob->obclass)&3)+2;
+			DamageThing (PLAYER[0],damage);
+		}else
+		{
+			damage = (GameRandomNumber("A_Drain",ob->obclass) >> 3);
+			DamageThing (PLAYER[0],damage);
+			ob->hitpoints += damage;
+			maxhp = starthitpoints[gamestate.difficulty][ob->obclass];
+			if (ob->hitpoints > maxhp)
+				ob->hitpoints = maxhp;
+		}
 
 		Collision(PLAYER[0],ob,0,0);
 		if (PLAYER[0]->flags & FL_DYING)
 			PLAYER[0]->target = ob;
 		M_CheckPlayerKilled(PLAYER[0]);
 		SD_PlaySoundRTP(SD_MONKGRABSND,ob->x,ob->y);
-		}
 	}
+}
 
 void  A_DmonkAttack(objtype*ob)
-{int angle,nobclass,nspeed,altangle1=0,altangle2=0,zoff=0,sound;
+{
+	int angle,nobclass,nspeed,altangle1=0,altangle2=0,zoff=0,sound;
 	statetype *nstate;
 
 	if (!ob->ticcount)
 	{
-	ob->hitpoints -= 120;//120;
-	if (ob->hitpoints <= 0)
+		ob->hitpoints -= 120;//120;
+		if (ob->hitpoints <= 0)
 		{
-		objtype*column = (objtype*)(ob->whatever);
+			objtype*column = (objtype*)(ob->whatever);
 
-//		EnableObject((int)column);
-		EnableObject(T_SwizzleObjtypeToInt(column));
-		ob->whatever = NULL;
+	//		EnableObject((int)column);
+			EnableObject(T_SwizzleObjtypeToInt(column));
+			ob->whatever = NULL;
 
-		KillActor(ob);
-		NewState(ob,&s_darkmonkfastspawn);
-		return;
+			KillActor(ob);
+			NewState(ob,&s_darkmonkfastspawn);
+			return;
 		}
 	}
 
 	if (ob->dirchoosetime)
-	ob->dirchoosetime --;
+		ob->dirchoosetime --;
 
 	else
-	{sound = BAS[ob->obclass].fire;
-	angle = AngleBetween(ob,PLAYER[0]);
-	nspeed = 0x6000;
+	{
+		sound = BAS[ob->obclass].fire;
+		angle = AngleBetween(ob,PLAYER[0]);
+		nspeed = 0x6000;
 
-	if (ob->state == &s_darkmonksphere8)
-		{nstate = &s_kessphere1;
-		nobclass = p_kesobj;
-		ob->dirchoosetime = 70;
-		}
-
-	else if (ob->state == &s_darkmonkhball7)
-		{nstate = &s_handball1;
-		nobclass = dm_heatseekobj;
-		nspeed = 0x3000;
-		ob->dirchoosetime = 5;
-		}
-
-	else if (ob->state == &s_darkmonkbball7)
-		{nstate = &s_faceball1;
-		nobclass = dm_weaponobj;
-		nspeed = 0x3000;
-		ob->dirchoosetime = 5;
-		}
-
-	else if (ob->state == &s_darkmonklightning9)
-		{nstate = &s_lightning;
-		nobclass = dm_weaponobj;
-		ob->dirchoosetime = 3;
-		sound++;
-		}
-
-	else if (ob->state == &s_dmgreenthing8)
-		{nstate = &s_energysphere1;
-		nobclass = dm_weaponobj;
-		sound +=2;
-		ob->dirchoosetime = 70;
-		}
-
-	else if (ob->state == &s_darkmonkfspark5)
-		{nstate = &s_floorspark1;
-
-		altangle1 = angle + ANGLES/24;
-		altangle2 = angle - ANGLES/24;
-		Fix(altangle1);
-		Fix(altangle2);
-		nobclass = dm_weaponobj;
-		ob->dirchoosetime = 3;
-		sound += 3;
-		}
-
-	else if (ob->state == &s_darkmonkbreathe6)
-		{nstate = &s_crossfire1;
-		ob->dirchoosetime = 3;
-		nobclass = dm_weaponobj;
-		zoff = -15;
-		sound += 3;
-		}
-
-	SpawnMissile(ob,nobclass,nspeed,angle,nstate,0xb000);
-	SD_PlaySoundRTP(sound,ob->x,ob->y);
-
-	new->z = ob->z+zoff;
-	if (altangle1)
+		if (ob->state == &s_darkmonksphere8)
 		{
-		SpawnMissile(ob,nobclass,nspeed,altangle1,nstate,0xb000);
-		SpawnMissile(ob,nobclass,nspeed,altangle2,nstate,0xb000);
+			nstate = &s_kessphere1;
+			nobclass = p_kesobj;
+			ob->dirchoosetime = 70;
+		}
+
+		else if (ob->state == &s_darkmonkhball7)
+		{
+			nstate = &s_handball1;
+			nobclass = dm_heatseekobj;
+			nspeed = 0x3000;
+			ob->dirchoosetime = 5;
+		}
+
+		else if (ob->state == &s_darkmonkbball7)
+		{
+			nstate = &s_faceball1;
+			nobclass = dm_weaponobj;
+			nspeed = 0x3000;
+			ob->dirchoosetime = 5;
+		}
+
+		else if (ob->state == &s_darkmonklightning9)
+		{
+			nstate = &s_lightning;
+			nobclass = dm_weaponobj;
+			ob->dirchoosetime = 3;
+			sound++;
+		}
+
+		else if (ob->state == &s_dmgreenthing8)
+		{
+			nstate = &s_energysphere1;
+			nobclass = dm_weaponobj;
+			sound +=2;
+			ob->dirchoosetime = 70;
+		}
+
+		else if (ob->state == &s_darkmonkfspark5)
+		{
+			nstate = &s_floorspark1;
+
+			altangle1 = angle + ANGLES/24;
+			altangle2 = angle - ANGLES/24;
+			Fix(altangle1);
+			Fix(altangle2);
+			nobclass = dm_weaponobj;
+			ob->dirchoosetime = 3;
+			sound += 3;
+		}
+
+		else if (ob->state == &s_darkmonkbreathe6)
+		{
+			nstate = &s_crossfire1;
+			ob->dirchoosetime = 3;
+			nobclass = dm_weaponobj;
+			zoff = -15;
+			sound += 3;
+		}
+
+		SpawnMissile(ob,nobclass,nspeed,angle,nstate,0xb000);
+		SD_PlaySoundRTP(sound,ob->x,ob->y);
+
+		new->z = ob->z+zoff;
+		if (altangle1)
+		{
+			SpawnMissile(ob,nobclass,nspeed,altangle1,nstate,0xb000);
+			SpawnMissile(ob,nobclass,nspeed,altangle2,nstate,0xb000);
 		}
 	}
 
@@ -10055,21 +10217,20 @@ void  A_DmonkAttack(objtype*ob)
 */
 
 void T_Stand (objtype *ob)
-	{
+{
 	if (!ob->ticcount)
 		SightPlayer (ob);
 	else
 		SoftError("\n ob type %s ticcount of %d in T_Stand",debugstr[ob->obclass],
 					ob->ticcount);
-	}
+}
 
 void DamagePlayerActor(objtype *ob, int damage)
-
-	{
+{
 	playertype *pstate;
 
 	switch (gamestate.difficulty)
-		{
+	{
 		case 0:  damage >>= 1;
 					break;
 		case 1:  damage -= (damage >> 2);
@@ -10078,7 +10239,7 @@ void DamagePlayerActor(objtype *ob, int damage)
 		case 3:  //damage += (damage>>2);
 					break;
 		//default: Error("Um, Gamestate.Difficulty, uh, has problems.\n");
-		}
+	}
 
 	if (!damage) damage++;
 
@@ -10089,23 +10250,23 @@ void DamagePlayerActor(objtype *ob, int damage)
 
 	SD_PlaySoundRTP(SD_PLAYERTCHURTSND+(pstate->player),ob->x,ob->y);
 	if (ob==player)
-		{
+	{
 		damagecount += damage;
 //		if (cybermanenabled)
 //			SWIFT_TactileFeedback (10*damage, 15, 15);
 		if ( SHOW_BOTTOM_STATUS_BAR() )
 			DrawBarHealth (false);
-		}
-
-	if (pstate->health<=0)
-		{
-		pstate->health = 0;
-		ob->hitpoints = 0;
-		}
 	}
 
-void DamageNonPlayerActor(objtype *ob,int damage)
+	if (pstate->health<=0)
 	{
+		pstate->health = 0;
+		ob->hitpoints = 0;
+	}
+}
+
+void DamageNonPlayerActor(objtype *ob,int damage)
+{
 	//if ((ob->obclass == b_darksnakeobj) && (!ob->temp3))
 	// return;
 
@@ -10114,27 +10275,27 @@ void DamageNonPlayerActor(objtype *ob,int damage)
 
 	ob->hitpoints -= damage;
 	if (ob->hitpoints <= 0)
-		{
+	{
 		int sound;
 
 		sound = BAS[ob->obclass].die;
 		if (ob->obclass == lowguardobj)
-			{
+		{
 			if (ob->shapeoffset)
 				sound ++;
-			}
-		SD_PlaySoundRTP(sound,ob->x,ob->y);
 		}
+		SD_PlaySoundRTP(sound,ob->x,ob->y);
+	}
 	else
 		SD_PlaySoundRTP(BAS[ob->obclass].hit,ob->x,ob->y);
 
 #if (SHAREWARE == 0)
 	if ((ob->obclass == b_robobossobj) && (ob->temp2 <= 2))
-		{
+	{
 		if (ob->hitpoints <
 			((3-ob->temp2)*starthitpoints[gamestate.difficulty][ob->obclass]>>2)
 			)
-			{
+		{
 			SD_PlaySoundRTP(SD_NMEAPARTSND,ob->x,ob->y);
 			ob->temp2++;
 			ob->shapeoffset += 16;
@@ -10143,183 +10304,186 @@ void DamageNonPlayerActor(objtype *ob,int damage)
 			new->temp1 = 3;
 			new->flags |= FL_ABP;
 			MakeActive(new);
-			}
+		}
 		if (ob->temp2 == 1)
 			NewState((objtype*)(ob->whatever),&s_NMEhead2);
-		}
+	}
 #endif
 	MISCVARS->madenoise = true;
-	}
+}
 
 void DamageStaticObject(statobj_t*tempstat,int damage)
-	{
+{
 
 	tempstat->hitpoints -= damage;
 	if (tempstat->hitpoints <= 0)
-		{
+	{
 		sprites[tempstat->tilex][tempstat->tiley]=NULL;
 		tempstat->flags |= FL_NONMARK;
 		if (tempstat->flags&FL_LIGHT)
-			{
+		{
 
 			if (MAPSPOT(tempstat->tilex,tempstat->tiley,2))
-				{touchplatetype *tplate;
+			{
+				touchplatetype *tplate;
 
 				for(tplate=touchplate[tempstat->linked_to];tplate;tplate = tplate->nextaction)
 //					if (tplate->whichobj == (int)(tempstat))
 					if (tplate->whichobj == T_SwizzleStatObjToInt(tempstat))
 						RemoveTouchplateAction(tplate,tempstat->linked_to);
-				}
+			}
 
 			if (tempstat->flags & FL_LIGHTON)
 				TurnOffLight(tempstat->tilex,tempstat->tiley);
 
 			if (tempstat->itemnumber<=stat_chandelier)
 				//SpawnFallingDebris(tempstat->x,tempstat->y,tempstat->z-32);
-				{
+			{
 				objtype *prevlast = LASTACTOR;
 
-				SpawnSlowParticles(gt_sparks,4,tempstat->x,tempstat->y,tempstat->z-32);
-				for(prevlast = prevlast->next;prevlast;prevlast= prevlast->next)
-					{
+				SpawnSlowParticles(gt_sparks,4,
+					tempstat->x,tempstat->y,tempstat->z-32);
+				for(prevlast = prevlast->next;prevlast;
+					prevlast= prevlast->next)
+				{
 					prevlast->momentumz = 1; // any positive value will do
 					prevlast->momentumx >>= 1;
 					prevlast->momentumy >>= 1;
-					}
 				}
+			}
 			else
-				{
+			{
 
 				SpawnStatic(tempstat->tilex,tempstat->tiley,stat_metalshards,-1);
 				LASTSTAT->flags |= (FL_ABP|FL_NONMARK);
 				sprites[tempstat->tilex][tempstat->tiley] = NULL;
 				MakeStatActive(LASTSTAT);
 				switch (tempstat->itemnumber)
-					{
-					case stat_lamp:
-					case stat_altbrazier1:
-					case stat_altbrazier2:
-					case stat_torch:
-						SpawnSlowParticles(gt_sparks,5,tempstat->x,tempstat->y,tempstat->z-32);
-						break;
-					case stat_floorfire:
-						SpawnSlowParticles(gt_sparks,5,tempstat->x,tempstat->y,tempstat->z);
-						break;
-					}
+				{
+				case stat_lamp:
+				case stat_altbrazier1:
+				case stat_altbrazier2:
+				case stat_torch:
+					SpawnSlowParticles(gt_sparks,5,tempstat->x,tempstat->y,tempstat->z-32);
+					break;
+				case stat_floorfire:
+					SpawnSlowParticles(gt_sparks,5,tempstat->x,tempstat->y,tempstat->z);
+					break;
 				}
+			}
 			SpawnSolidStatic(tempstat);
 			SD_PlaySoundRTP(SD_ITEMBLOWSND,tempstat->x,tempstat->y);
-			}
+		}
 		else
-			{
+		{
 			switch (tempstat->itemnumber)
-				{
-				case stat_dariantouch:
-					MISCVARS->ETOUCH[tempstat->linked_to].x = MISCVARS->ETOUCH[tempstat->linked_to].y = 0;
-				case stat_tntcrate:
-				case stat_bonusbarrel:
-					SpawnNewObj(tempstat->tilex,tempstat->tiley,&s_staticexplosion1,inertobj);
-					MakeActive(new);
-					new->flags |= FL_ABP;
-					new->whatever = tempstat;
-					new->temp2 = damage;
+			{
+			case stat_dariantouch:
+				MISCVARS->ETOUCH[tempstat->linked_to].x = MISCVARS->ETOUCH[tempstat->linked_to].y = 0;
+			case stat_tntcrate:
+			case stat_bonusbarrel:
+				SpawnNewObj(tempstat->tilex,tempstat->tiley,&s_staticexplosion1,inertobj);
+				MakeActive(new);
+				new->flags |= FL_ABP;
+				new->whatever = tempstat;
+				new->temp2 = damage;
 
-					if (tempstat->itemnumber == stat_bonusbarrel)
+				if (tempstat->itemnumber == stat_bonusbarrel)
+					{
+					int rand = GameRandomNumber("DamageThing",0);
+
+					if (rand < 80)
 						{
-						int rand = GameRandomNumber("DamageThing",0);
-
-						if (rand < 80)
-							{
-							if (rand & 1)
-								SpawnStatic(tempstat->tilex,tempstat->tiley,stat_monkmeal,-1);
-							else
-								SpawnStatic(tempstat->tilex,tempstat->tiley,stat_priestporridge,-1);
-							gamestate.healthtotal ++;
-							}
-						else if (rand < 160)
-							{
-							if (rand & 1)
-								SpawnStatic(tempstat->tilex,tempstat->tiley,stat_lifeitem1,-1);
-							else
-								SpawnStatic(tempstat->tilex,tempstat->tiley,stat_lifeitem3,-1);
-							}
+						if (rand & 1)
+							SpawnStatic(tempstat->tilex,tempstat->tiley,stat_monkmeal,-1);
 						else
-							{
-							if (rand & 1)
-								SpawnStatic(tempstat->tilex,tempstat->tiley,stat_mp40,-1);
-							else
-								{
-								SpawnStatic(tempstat->tilex,tempstat->tiley,stat_heatseeker,-1);
-								gamestate.missiletotal ++;
-								}
-							LASTSTAT->flags &= ~FL_RESPAWN;
-							}
-						//LASTSTAT->flags &= ~FL_SHOOTABLE;
-						LASTSTAT->flags |= FL_ABP;
-						MakeStatActive(LASTSTAT);
-						SD_PlaySoundRTP(SD_BONUSBARRELSND,tempstat->x,tempstat->y);
+							SpawnStatic(tempstat->tilex,tempstat->tiley,stat_priestporridge,-1);
+						gamestate.healthtotal ++;
+						}
+					else if (rand < 160)
+						{
+						if (rand & 1)
+							SpawnStatic(tempstat->tilex,tempstat->tiley,stat_lifeitem1,-1);
+						else
+							SpawnStatic(tempstat->tilex,tempstat->tiley,stat_lifeitem3,-1);
 						}
 					else
 						{
-						ExplodeStatic(tempstat);
-						if (tempstat == touchsprite)
-							touchsprite = NULL;
+						if (rand & 1)
+							SpawnStatic(tempstat->tilex,tempstat->tiley,stat_mp40,-1);
+						else
+							{
+							SpawnStatic(tempstat->tilex,tempstat->tiley,stat_heatseeker,-1);
+							gamestate.missiletotal ++;
+							}
+						LASTSTAT->flags &= ~FL_RESPAWN;
 						}
-					SpawnSolidStatic(tempstat);
-			//SD_Play(SD_EXPL);
-					break;
-	#if (SHAREWARE == 0)
-				case stat_mine:
-					SpawnNewObj(tempstat->tilex,tempstat->tiley,&s_grexplosion1,inertobj);
-					MakeActive(new);
-					new->flags |= FL_ABP;
-					new->whatever = tempstat;
-					new->temp2 = damage;
-					RemoveStatic(tempstat);
-					break;
-
-				case stat_tomlarva:
-					SD_PlaySoundRTP(SD_ACTORSQUISHSND,tempstat->x,tempstat->y);
-					SpawnGroundExplosion(tempstat->x,tempstat->y,tempstat->z);
-					//MISCVARS->gibgravity = GRAVITY/2;
-					MISCVARS->fulllightgibs = true;
-					SetGibSpeed(0x4000);
-					SpawnSlowParticles(GUTS,30,tempstat->x, tempstat->y,tempstat->z);
-					ResetGibSpeed();
-					MISCVARS->fulllightgibs = false;
-					//MISCVARS->gibgravity = -1;
-					RemoveStatic(tempstat);
-					break;
-	#endif
-
-				case stat_lifeitem1:
-				case stat_lifeitem2:
-				case stat_lifeitem3:
-				case stat_lifeitem4:
-					SD_PlaySoundRTP(SD_ITEMBLOWSND,tempstat->x,tempstat->y);
-					gamestate.treasurecount ++;
-					SpawnSlowParticles(gt_sparks,10,tempstat->x,tempstat->y,tempstat->z);
-					SpawnSolidStatic(tempstat);
-					break;
-
-				default:
-
-					if ((tempstat->itemnumber == stat_plant) ||
-							(tempstat->itemnumber == stat_tree))
-						gamestate.plantcount++;
-
-					//tempstat->shapenum = -1;
-					//tempstat->flags &= ~FL_SHOOTABLE;
+					//LASTSTAT->flags &= ~FL_SHOOTABLE;
+					LASTSTAT->flags |= FL_ABP;
+					MakeStatActive(LASTSTAT);
+					SD_PlaySoundRTP(SD_BONUSBARRELSND,tempstat->x,tempstat->y);
+					}
+				else
+					{
 					ExplodeStatic(tempstat);
-					SpawnSolidStatic(tempstat);
-					break;
-				}
+					if (tempstat == touchsprite)
+						touchsprite = NULL;
+					}
+				SpawnSolidStatic(tempstat);
+		//SD_Play(SD_EXPL);
+				break;
+#if (SHAREWARE == 0)
+			case stat_mine:
+				SpawnNewObj(tempstat->tilex,tempstat->tiley,&s_grexplosion1,inertobj);
+				MakeActive(new);
+				new->flags |= FL_ABP;
+				new->whatever = tempstat;
+				new->temp2 = damage;
+				RemoveStatic(tempstat);
+				break;
+
+			case stat_tomlarva:
+				SD_PlaySoundRTP(SD_ACTORSQUISHSND,tempstat->x,tempstat->y);
+				SpawnGroundExplosion(tempstat->x,tempstat->y,tempstat->z);
+				//MISCVARS->gibgravity = GRAVITY/2;
+				MISCVARS->fulllightgibs = true;
+				SetGibSpeed(0x4000);
+				SpawnSlowParticles(GUTS,30,tempstat->x, tempstat->y,tempstat->z);
+				ResetGibSpeed();
+				MISCVARS->fulllightgibs = false;
+				//MISCVARS->gibgravity = -1;
+				RemoveStatic(tempstat);
+				break;
+#endif
+
+			case stat_lifeitem1:
+			case stat_lifeitem2:
+			case stat_lifeitem3:
+			case stat_lifeitem4:
+				SD_PlaySoundRTP(SD_ITEMBLOWSND,tempstat->x,tempstat->y);
+				gamestate.treasurecount ++;
+				SpawnSlowParticles(gt_sparks,10,tempstat->x,tempstat->y,tempstat->z);
+				SpawnSolidStatic(tempstat);
+				break;
+
+			default:
+
+				if ((tempstat->itemnumber == stat_plant) ||
+						(tempstat->itemnumber == stat_tree))
+					gamestate.plantcount++;
+
+				//tempstat->shapenum = -1;
+				//tempstat->flags &= ~FL_SHOOTABLE;
+				ExplodeStatic(tempstat);
+				SpawnSolidStatic(tempstat);
+				break;
 			}
 		}
 	}
+}
 
 void DamageThing (void *thing, int damage)
-	{
+{
 	objtype* tempactor;
 	statobj_t* tempstat;
 
@@ -10331,11 +10495,11 @@ void DamageThing (void *thing, int damage)
 		return;
 
 	if ((tempactor->which == ACTOR) || (tempactor->which == SPRITE))
-		{
+	{
 		if (tempactor->which == ACTOR)
-			{
+		{
 			if (tempactor->obclass == playerobj)
-				{
+			{
 				if ((tempactor->flags & FL_GODMODE) ||
 					(tempactor->flags & FL_DOGMODE) ||
 					godmode ||
@@ -10343,28 +10507,27 @@ void DamageThing (void *thing, int damage)
 					)
 					return;
 				DamagePlayerActor(tempactor,damage);
-				}
-
+			}
 			else
-				{
+			{
 				if ((tempactor->obclass == collectorobj) && (gamestate.SpawnEluder))
 					return;
 				if (tempactor->hitpoints <= 0)
 					return;
 				DamageNonPlayerActor(tempactor,damage);
-				}
 			}
+		}
 		else
-			{
+		{
 			tempstat = (statobj_t*)thing;
 
 			MISCVARS->madenoise = true;
 			if (!(tempstat->flags & FL_SHOOTABLE))
 				return;
 			DamageStaticObject(tempstat,damage);
-			}
 		}
 	}
+}
 
 void ExplodeStatic(statobj_t*tempstat)
 {
@@ -10372,30 +10535,29 @@ void ExplodeStatic(statobj_t*tempstat)
 
 	if (tempstat->flags & FL_WOODEN)
 	{
-	SpawnStatic(tempstat->tilex,tempstat->tiley,stat_woodfrag,-1);
-	if ((gamestate.BattleOptions.RespawnItems) &&
-		(tempstat->itemnumber == stat_tntcrate)
-		)
+		SpawnStatic(tempstat->tilex,tempstat->tiley,stat_woodfrag,-1);
+		if ((gamestate.BattleOptions.RespawnItems) &&
+			(tempstat->itemnumber == stat_tntcrate)
+			)
 		{
-//		tempstat->linked_to = (int)(LASTSTAT);
-		tempstat->linked_to = T_SwizzleStatObjToInt(LASTSTAT);
-		tempstat->flags |= FL_RESPAWN;
+	//		tempstat->linked_to = (int)(LASTSTAT);
+			tempstat->linked_to = T_SwizzleStatObjToInt(LASTSTAT);
+			tempstat->flags |= FL_RESPAWN;
 		}
 
 	}
 	else if (tempstat->flags & FL_METALLIC)
-	SpawnStatic(tempstat->tilex,tempstat->tiley,stat_metalfrag,-1);
+		SpawnStatic(tempstat->tilex,tempstat->tiley,stat_metalfrag,-1);
 	else
-	SpawnStatic(tempstat->tilex,tempstat->tiley,stat_rubble,-1);
+		SpawnStatic(tempstat->tilex,tempstat->tiley,stat_rubble,-1);
 	LASTSTAT->flags |= (FL_ABP|FL_NONMARK);
 	sprites[tempstat->tilex][tempstat->tiley] = NULL;
 	MakeStatActive(LASTSTAT);
 	SD_PlaySoundRTP(SD_ITEMBLOWSND,tempstat->x,tempstat->y);
-
 }
 
 void EnableObject(int object)
-	{
+{
 	objtype* ob;
 	int i,gasicon;
 	doorobj_t*tdoor;
@@ -10404,16 +10566,16 @@ void EnableObject(int object)
 	ob = T_SwizzleObjtypeFromInt(object);
 	ob->flags |= FL_ACTIVE;
 	if (ob->obclass == bladeobj)
-		{
+	{
 		ParseMomentum(ob,dirangle8[ob->dir]);
 		if (ob->whatever)
-			{
+		{
 			objtype *passenger=(objtype*)(ob->whatever);
 
 			passenger->momentumx += ob->momentumx;
 			passenger->momentumy += ob->momentumy;
-			}
 		}
+	}
 
 	if (ob->obclass == gasgrateobj)
 		{
@@ -10435,19 +10597,20 @@ void EnableObject(int object)
 		ob->temp3 = 105;
 		}
 	else if (ob->obclass == pillarobj)
-		{
+	{
 		ob->flags |= FL_FLIPPED;
 		gamestate.secretcount++;
-		}
+	}
 	if (!(ob->flags & FL_ABP))
-		{
+	{
 		ob->flags |= FL_ABP;
 		MakeActive(ob);
-		}
 	}
+}
 
 void DisableObject(int object)
-{objtype*ob;
+{
+	objtype*ob;
 
 // ob = (objtype*)object;
 	ob = T_SwizzleObjtypeFromInt(object);
@@ -10455,10 +10618,11 @@ void DisableObject(int object)
 }
 
 void T_MoveColumn(objtype* ob)
-{int spot,index;
+{
+	int spot,index;
 
 	if (!(ob->flags & FL_ACTIVE))
-	return;
+		return;
 /*
 	switch (ob->dir)
 	{case north:
@@ -10483,25 +10647,26 @@ void T_MoveColumn(objtype* ob)
 	ob->temp1 -= PILLARMOM;
 
 	if ((ob->temp1 <= 0) || NOMOM)
-	{ZEROMOM;
-	ob->temp1 = 0x20000;
-	ob->flags &= ~FL_ACTIVE;
-	spot = MAPSPOT(ob->tilex,ob->tiley,1)-ICONARROWS;
-	if ((spot >= 0) && (spot <= 7))
-	{ob->dir = spot;
-	if (!ob->temp2)
+	{
+		ZEROMOM;
+		ob->temp1 = 0x20000;
+		ob->flags &= ~FL_ACTIVE;
+		spot = MAPSPOT(ob->tilex,ob->tiley,1)-ICONARROWS;
+		if ((spot >= 0) && (spot <= 7))
 		{
-		gamestate.secrettotal++;
+			ob->dir = spot;
+			if (!ob->temp2)
+			{
+				gamestate.secrettotal++;
+			}
+			else
+			{
+				ob->flags |= FL_ACTIVE;
+			}
+			ParseMomentum(ob,dirangle8[ob->dir]);
 		}
-	else
-		{
-		ob->flags |= FL_ACTIVE;
-		}
-	ParseMomentum(ob,dirangle8[ob->dir]);
-	}
-	else
-	ob->flags |= FL_DONE;
-
+		else
+			ob->flags |= FL_DONE;
 	}
 }
 
@@ -10513,17 +10678,19 @@ boolean NextToDoor(objtype*ob)
 	tiley = ob->tiley;
 
 	if (M_ISDOOR(tilex+1,tiley) || M_ISDOOR(tilex-1,tiley))
-	{centery = (tiley << TILESHIFT) + HALFGLOBAL1;
-	dy = abs(ob->y - centery);
-	if (dy < 0x2000)
-		return true;
+	{
+		centery = (tiley << TILESHIFT) + HALFGLOBAL1;
+		dy = abs(ob->y - centery);
+		if (dy < 0x2000)
+			return true;
 	}
 
 	if (M_ISDOOR(tilex,tiley+1) || M_ISDOOR(tilex,tiley-1))
-	{centerx = (tilex << TILESHIFT) + HALFGLOBAL1;
-	dx = abs(ob->x - centerx);
-	if (dx < 0x2000)
-		return true;
+	{
+		centerx = (tilex << TILESHIFT) + HALFGLOBAL1;
+		dx = abs(ob->x - centerx);
+		if (dx < 0x2000)
+			return true;
 	}
 
 	return false;
@@ -10538,43 +10705,52 @@ boolean NextToDoor(objtype*ob)
 */
 
 void T_Use(objtype*ob)
-{if (ob->ticcount)
-	return;
+{
+	if (ob->ticcount)
+		return;
 
 	switch (ob->obclass)
 	{
 #if (SHAREWARE == 0)
 	case b_darianobj:
-	if (!DoPanicMapping())
-		touchsprite->flags |= FL_ACTIVE;
-	if ((!sprites[PLAYER[0]->tilex][PLAYER[0]->tiley]) && (ob->areanumber == PLAYER[0]->areanumber))
-	{SpawnNewObj(PLAYER[0]->tilex,PLAYER[0]->tiley,&s_dspear1,spearobj);
-		new->flags |= (FL_ABP);//|FL_INVULNERABLE);
-		new->z = 0;
-		MakeActive(new);
-	}
-	ZEROMOM;
-	ob->flags |= FL_STUCK;
-	SD_PlaySoundRTP(SD_DARIANUSESND,ob->x,ob->y);
-	//NewState(ob,&s_darianspears);
-	break;
+		if (!DoPanicMapping())
+		{
+			if(touchsprite)
+				touchsprite->flags |= FL_ACTIVE;
+		}
+
+		if ((!sprites[PLAYER[0]->tilex][PLAYER[0]->tiley]) &&
+			(ob->areanumber == PLAYER[0]->areanumber))
+		{
+			SpawnNewObj(
+				PLAYER[0]->tilex, PLAYER[0]->tiley,
+				&s_dspear1, spearobj);
+			new->flags |= (FL_ABP);//|FL_INVULNERABLE);
+			new->z = 0;
+			MakeActive(new);
+		}
+		ZEROMOM;
+		ob->flags |= FL_STUCK;
+		SD_PlaySoundRTP(SD_DARIANUSESND, ob->x, ob->y);
+		//NewState(ob,&s_darianspears);
+		break;
 #endif
 	}
 
 }
 
 #define RollStart(ob,state,angle)	\
-	{											\
+{											\
 	int oldspeed = ob->speed;			\
 												\
 	ob->speed = ROLLMOMENTUM+0x200;	\
 	NewState(ob,state);					\
 	ParseMomentum(ob,angle);			\
 	ob->speed = oldspeed;				\
-	}											\
+}											\
 
 void AvoidPlayerMissile(objtype*ob)
-	{
+{
 	objtype *temp;
 	int dx,dy,dz;
 	int magangle,angle1,rollangle1,rollangle2,dangle1,dangle2;
@@ -10621,19 +10797,19 @@ void AvoidPlayerMissile(objtype*ob)
 	ob->momentumx = ob->momentumy = 0;
 
 	if (dangle1 > dangle2)
-		{
+	{
 		RollStart(ob,&s_strikerollleft1,rollangle1);
-		}
+	}
 	else
-		{
+	{
 		RollStart(ob,&s_strikerollright1,rollangle2);
-		}
+	}
 	ob->flags |= FL_NOFRICTION;
 
 	ob->target = PLAYER[0];
 	//SelectRollDir(ob);
 
-	}
+}
 
 /*
 =================
@@ -10653,24 +10829,27 @@ void T_Chase (objtype *ob)
 	ocl = ob->obclass;
 
 	if ((ocl == deathmonkobj) || (ocl == blitzguardobj))
-	{dx = abs(PLAYER[0]->x - ob->x);
-	dy = abs(ob->y - PLAYER[0]->y);
-	dz = abs(ob->z - PLAYER[0]->z);
+	{
+		dx = abs(PLAYER[0]->x - ob->x);
+		dy = abs(ob->y - PLAYER[0]->y);
+		dz = abs(ob->z - PLAYER[0]->z);
 
-	if ((dx < TOUCHDIST) && (dy < TOUCHDIST) && (dz < (TOUCHDIST >> 10)))
+		if ((dx < TOUCHDIST) && (dy < TOUCHDIST) && (dz < (TOUCHDIST >> 10)))
 		{
 #if (SHAREWARE == 0)
-		if (ocl == deathmonkobj)
-			{NewState(ob,&s_dmonkshoot1);
+			if (ocl == deathmonkobj)
+			{
+				NewState(ob,&s_dmonkshoot1);
 				STOPACTOR(ob);
 				return;
-
 			}
-		else
+			else
 #endif
 			if ((!ob->temp3) && (PLAYERSTATE[0].missileweapon != -1) &&
-					(PLAYERSTATE[0].missileweapon < wp_godhand))
-			{NewState(ob,&s_blitzsteal1);
+					(PLAYERSTATE[0].missileweapon < wp_godhand) &&
+					!rott_iswolf)
+			{
+				NewState(ob,&s_blitzsteal1);
 				STOPACTOR(ob);
 				return;
 			}
@@ -10682,82 +10861,98 @@ void T_Chase (objtype *ob)
 	//if (CheckLine(ob,PLAYER[0],DIRCHECK) && (ocl != roboguardobj))
 
 	if (!ob->ticcount)
-	{if (CheckLine(ob,PLAYER[0],SIGHT))	// got a shot at player?
-		{if (ocl != roboguardobj)
-			{ob->targettilex = PLAYER[0]->x;
-			ob->targettiley = PLAYER[0]->y;
+	{
+		if (CheckLine(ob,PLAYER[0],SIGHT))	// got a shot at player?
+		{
+			if (ocl != roboguardobj)
+			{
+				ob->targettilex = PLAYER[0]->x;
+				ob->targettiley = PLAYER[0]->y;
 			}
 		}
 
-	if (CheckLine(ob,PLAYER[0],SHOOT) && (!(player->flags&FL_DYING)))	// got a shot at player?
+		if (CheckLine(ob,PLAYER[0],SHOOT) && (!(player->flags&FL_DYING)))	// got a shot at player?
 		{
-		dx = abs(ob->tilex - PLAYER[0]->tilex);
-		dy = abs(ob->tiley - PLAYER[0]->tiley);
-		dist = (dx>dy)?(dx):(dy);
-		if ((!dist) || (dist==1))
-				chance = 300;
-		else if (ocl >= b_darianobj)
-				chance = 400/dist;
-		else
-				chance = 300/dist;
+			dx = abs(ob->tilex - PLAYER[0]->tilex);
+			dy = abs(ob->tiley - PLAYER[0]->tiley);
+			dist = (dx>dy)?(dx):(dy);
+			if ((!dist) || (dist==1))
+					chance = 300;
+			else if (ocl >= b_darianobj)
+					chance = 400/dist;
+			else
+					chance = 300/dist;
 
-		if (GameRandomNumber("T_Chase",ocl) <chance)
-			{if ((ocl == b_heinrichobj) && (Near(ob,PLAYER[0],4)))
-				goto cdoor;
+			if (GameRandomNumber("T_Chase",ocl) <chance)
+			{
+				if ((ocl == b_heinrichobj) && (Near(ob,PLAYER[0],4)))
+					goto cdoor;
 
-			ob->dir = angletodir[AngleBetween(ob,PLAYER[0])];
-			STOPACTOR(ob);
-#if (SHAREWARE == 0)
-			if ((ocl == overpatrolobj) && (!Near(ob,PLAYER[0],3)) &&
-					(!PLAYERSTATE[0].NETCAPTURED) && (!MISCVARS->NET_IN_FLIGHT))
-				{NewState(ob,&s_opbolo1);
+				ob->dir = angletodir[AngleBetween(ob,PLAYER[0])];
+				STOPACTOR(ob);
+	#if (SHAREWARE == 0)
+				if ((ocl == overpatrolobj) && (!Near(ob,PLAYER[0],3)) &&
+					(!PLAYERSTATE[0].NETCAPTURED) &&
+					(!MISCVARS->NET_IN_FLIGHT))
+				{
+					NewState(ob,&s_opbolo1);
 					MISCVARS->NET_IN_FLIGHT = true;
 					return;
 				}
-#endif
-			if ((ocl == triadenforcerobj) && (!Near(ob,PLAYER[0],3)))
-				{NewState(ob,&s_enforcerthrow1);
-				return;
+	#endif
+				if ((ocl == triadenforcerobj) && (!Near(ob,PLAYER[0],3)))
+				{
+					NewState(ob,&s_enforcerthrow1);
+					return;
 				}
 
-			if ((temp=M_S(AIM)) != NULL)
-				{if ((ob->flags & FL_HASAUTO) && (!ob->temp3))
-					ob->temp3 = (GameRandomNumber("T_Chase FL_HASAUTO",ocl) % 5) + 3;
-				ob->target = PLAYER[0];
-				NewState(ob,temp);
-				return;
+				temp = M_S(AIM);
+				
+				if(	((ocl == deathmonkobj) ||
+					(ocl == dfiremonkobj)) && rott_iswolf)
+						temp=NULL;
+				
+				if (temp != NULL)
+				{
+					if ((ob->flags & FL_HASAUTO) && (!ob->temp3))
+						ob->temp3 = (GameRandomNumber("T_Chase FL_HASAUTO",ocl) % 5) + 3;
+					ob->target = PLAYER[0];
+					NewState(ob,temp);
+					return;
 				}
 
 			}
-		//if ((CheckSight(ob,PLAYER[0])) && (!ob->angle))// &&
-				//(ocl != b_heinrichobj))
-			//ob->flags |= FL_DODGE;
+			//if ((CheckSight(ob,PLAYER[0])) && (!ob->angle))// &&
+					//(ocl != b_heinrichobj))
+				//ob->flags |= FL_DODGE;
 		}
-
 	}
 cdoor:
 	doorok = NextToDoor(ob);
 
 	if (ob->dirchoosetime)
-	ob->dirchoosetime--;
+		ob->dirchoosetime--;
 
 	if ((ob->flags & FL_STUCK) || (!ob->dirchoosetime) || doorok)
-	{//if (ob->flags & FL_DODGE)
-		// SelectDodgeDir(ob);
+	{
+		//if (ob->flags & FL_DODGE)
+		//	SelectDodgeDir(ob);
 		//else
 		SelectChaseDir(ob);
 		ob->dirchoosetime = M_CHOOSETIME(ob);
 	}
-
 	else
-	{if (NOMOM)
-		ParseMomentum(ob,dirangle8[ob->dir]);
+	{
+		if (NOMOM)
+			ParseMomentum(ob,dirangle8[ob->dir]);
 		ActorMovement(ob);
 	}
 }
 
-void SpawnMissile(objtype* shooter,classtype nobclass,int nspeed,int nangle,statetype*nstate,int offset)
-	{
+void SpawnMissile(objtype *shooter,
+	classtype nobclass, int nspeed, int nangle,
+	statetype *nstate, int offset)
+{
 	GetNewActor();
 	MakeActive(new);
 	new->which = ACTOR;
@@ -10777,15 +10972,15 @@ void SpawnMissile(objtype* shooter,classtype nobclass,int nspeed,int nangle,stat
 	new->areanumber = shooter->areanumber;
 	new->soundhandle = -1;
 	if (nobclass != inertobj)
-		{
+	{
 		MakeLastInArea(new);
 		if (MissileSound == true)
 			new->soundhandle = SD_PlaySoundRTP(BAS[new->obclass].operate,new->x,new->y);
-		}
+	}
 
 	if ((shooter->obclass == playerobj) || (shooter->obclass == wallopobj) ||
 		(shooter->obclass == b_robobossobj))
-		{
+	{
 		Set_3D_Momenta(new,new->speed,new->angle,shooter->yzangle);
 
 		if (nobclass == p_drunkmissileobj)
@@ -10794,7 +10989,7 @@ void SpawnMissile(objtype* shooter,classtype nobclass,int nspeed,int nangle,stat
 		new->z -= FixedMulShift(offset,sintable[shooter->yzangle],26);
 		if ((shooter->obclass == playerobj) && (shooter->flags & FL_GODMODE))
 			new->z -= 10;
-		}
+	}
 	else
 		ParseMomentum(new,new->angle);
 
@@ -10804,7 +10999,7 @@ void SpawnMissile(objtype* shooter,classtype nobclass,int nspeed,int nangle,stat
 	new->flags |= (FL_NEVERMARK|FL_ABP|FL_NOFRICTION|FL_FULLLIGHT);
 	new->whatever = shooter; // keep track of missile possession
 	NewState(new,nstate);
-	}
+}
 
 /*
 =================
@@ -10817,7 +11012,6 @@ void SpawnMissile(objtype* shooter,classtype nobclass,int nspeed,int nangle,stat
 void T_Roll (objtype *ob)
 {
 	ActorMovement(ob);
-
 }
 
 /*
@@ -10829,31 +11023,32 @@ void T_Roll (objtype *ob)
 */
 
 void T_Path (objtype *ob)
-	{int dx,dy,dz,ocl,damage=1;
+{
+	int dx,dy,dz,ocl,damage=1;
 	objtype*temp,*ttarg,*twhat;
 
 	ocl = ob->obclass;
 
 	if (((ocl == firejetobj) || (ocl == bladeobj)) && (!ob->ticcount))
-		{
+	{
 		if (ocl == bladeobj)
-			{
+		{
 			if (ob->state->condition & SF_DOWN )
 				ob->flags &= ~FL_BLOCK;
 			else if (ob->state->condition & SF_UP)
-				{
+			{
 				ob->flags |= FL_BLOCK;
 				damage = 0;
-				}
 			}
+		}
 
 		if ((ob->state->condition & SF_SOUND) && areabyplayer[ob->areanumber])
 			SD_PlaySoundRTP(BAS[ob->obclass].operate,ob->x,ob->y);
 
 		if (damage)
-			{
+		{
 			for(temp=firstareaactor[ob->areanumber];temp;temp=temp->nextinarea)
-				{
+			{
 				if (temp == ob)
 					continue;
 
@@ -10873,12 +11068,14 @@ void T_Path (objtype *ob)
 					continue;
 
 				if (temp->obclass == playerobj)
-					{
-					if ((temp->flags & FL_GODMODE) || (temp->flags & FL_DOGMODE))
+				{
+					if ((temp->flags & FL_GODMODE) ||
+							(temp->flags & FL_DOGMODE))
 						continue;
-					if ((temp->flags & FL_AV) && (ocl == firejetobj))
+					if ((temp->flags & FL_AV) &&
+							(ocl == firejetobj))
 						continue;
-					}
+				}
 				dx = temp->x - ob->x;
 				if (abs(dx) > 0xa000)
 					continue;
@@ -10896,139 +11093,140 @@ void T_Path (objtype *ob)
 				if ((ocl == firejetobj) && (temp->obclass < roboguardobj))
 					SD_PlaySoundRTP(SD_PLAYERBURNEDSND,temp->x,temp->y);
 
-				if ((gamestate.violence == vl_excessive) && (temp->obclass < roboguardobj))
-					{
+				if ((gamestate.violence == vl_excessive) &&
+					(temp->obclass < roboguardobj))
+				{
 					if (ocl == bladeobj)
-						{
+					{
 						SpawnParticles(temp,GUTS,1);
 						if (temp->hitpoints <= 0)
 							temp->flags |= FL_HBM;
-						}
+					}
 					else if (ocl == firejetobj)
+					{
+						if ((temp->hitpoints <= 0) &&
+							(temp->z == nominalheight))
 						{
-						if ((temp->hitpoints <= 0) && (temp->z == nominalheight))
-							{
-
 							temp->hitpoints = 0;
 							temp->flags |= FL_SKELETON;
 							if (temp->obclass == playerobj)
-								{
+							{
 								playertype *pstate;
 
 								temp->flags &= ~FL_COLORED;
 								M_LINKSTATE(temp,pstate);
 								pstate->health = 0;
 								pstate->weapon = -1;
-								}
+							}
 
 							Collision(temp,ob,-temp->momentumx,-temp->momentumy);
 							M_CheckPlayerKilled(temp);
 
 							continue;
-							}
 						}
 					}
-					//SD_PlaySoundRTP(SD_ACTORBURNEDSND,temp->x,temp->y);
+				}
+				//SD_PlaySoundRTP(SD_ACTORBURNEDSND,temp->x,temp->y);
 
 	//		if ((ocl == bladeobj) || (ob->state->condition == SF_CRUSH))
 				Collision(temp,ob,-temp->momentumx,-temp->momentumy);
 				M_CheckPlayerKilled(temp);
 
-				}
 			}
 		}
+	}
 
 	if (ob->dir == nodir)
 		return;
 
 	if ((ocl != firejetobj) && (ocl != bladeobj) && (ocl != diskobj))
-		{
+	{
 		if (!ob->ticcount)
-			{
+		{
 			if (SightPlayer (ob))
 				return;
-			}
+		}
 		else
 			SoftError("\n ob type %s with ticcount %d in T_Path",
-							debugstr[ob->obclass],ob->ticcount);
-		}
+				debugstr[ob->obclass], ob->ticcount);
+	}
 
 	SelectPathDir (ob);
 	if (NOMOM)
 		ParseMomentum(ob,dirangle8[ob->dir]);
-	}
+}
 
 int EnvironmentDamage(objtype *ob)
-	{
+{
 	if (BATTLEMODE && (gamestate.BattleOptions.DangerDamage != bo_danger_normal))
-		{
+	{
 		return(gamestate.BattleOptions.DangerDamage);
-		}
+	}
 	else
-		{
+	{
 		int damage = 1;
 
 		switch(ob->obclass)
-			{
-			case firejetobj:
-			case bladeobj:
-				damage = 6;
-				break;
+		{
+		case firejetobj:
+		case bladeobj:
+			damage = 6;
+			break;
 
-			case boulderobj:
-				damage = 50;
-				break;
+		case boulderobj:
+			damage = 50;
+			break;
 
-			case spearobj:
-				damage = 7;
-				break;
+		case spearobj:
+			damage = 7;
+			break;
 
-			case gasgrateobj:
-				damage = 20;
-				break;
+		case gasgrateobj:
+			damage = 20;
+			break;
 
-			case wallfireobj:
-				damage = ((GameRandomNumber("wallfire damage",0) >>3) + 10);
-				break;
+		case wallfireobj:
+			damage = ((GameRandomNumber("wallfire damage",0) >>3) + 10);
+			break;
 
-			case crushcolobj:
-				damage = 10;
-				break;
-			}
+		case crushcolobj:
+			damage = 10;
+			break;
+		}
 
 		if (gamestate.difficulty < gd_hard)
 			damage >>= 1;
 
 		return damage;
-		}
-	//SoftError("unknown environment danger");
-
 	}
+	//SoftError("unknown environment danger");
+}
 
 void T_AutoShootAlign(objtype*ob)
 {
 	if (ob->dir != ob->temp1)
-	ob->dir = dirorder16[ob->dir][NEXT];
+		ob->dir = dirorder16[ob->dir][NEXT];
 	else
-	NewState(ob,M_S(AIM));
-
+		NewState(ob,M_S(AIM));
 }
 
 void T_AutoRealign(objtype*ob)
 {
 	if (ob->dir != ob->targettilex)
-	ob->dir = dirorder16[ob->dir][NEXT];
+		ob->dir = dirorder16[ob->dir][NEXT];
 	else
-	{objtype *temp;
+	{
+		objtype *temp;
 
-	NewState(ob,M_S(PATH));
-	for(temp=firstareaactor[ob->areanumber];temp;temp=temp->nextinarea)
-		{if (temp == ob)
-			continue;
+		NewState(ob,M_S(PATH));
+		for(temp=firstareaactor[ob->areanumber];temp;temp=temp->nextinarea)
+		{
+			if (temp == ob)
+				continue;
 			if (temp->obclass != ob->obclass)
-			continue;
+				continue;
 			if (!temp->state->think)
-			NewState(temp,UPDATE_STATES[PATH][temp->obclass-lowguardobj]);
+				NewState(temp,UPDATE_STATES[PATH][temp->obclass-lowguardobj]);
 		}
 	}
 }
@@ -11042,66 +11240,72 @@ void T_AutoRealign(objtype*ob)
 */
 
 void T_AutoPath (objtype *ob)
-{objtype *temp;
+{
+	objtype *temp;
 
 	// ob->temp3 holds random number of shots before resuming path
 
-	if (CheckLine(ob,PLAYER[0],SIGHT) && (Near(ob,PLAYER[0],4) || MISCVARS->madenoise))
+	if (CheckLine(ob,PLAYER[0],SIGHT) &&
+		(Near(ob,PLAYER[0],4) || MISCVARS->madenoise))
+	{
+		int dx,dy,destdir,ocl;
+		statetype *align,*wait;
 
-	{int dx,dy,destdir,ocl;
-	statetype *align,*wait;
-
-	ocl = ob->obclass;
-	dx = player->x - ob->x;
-	dy = ob->y - player->y;
-	destdir = (angletodir[atan2_appx(dx,dy)] << 1);
-	ob->temp1 = destdir;
-	ob->targettilex = ob->dir; //save old dir
+		ocl = ob->obclass;
+		dx = player->x - ob->x;
+		dy = ob->y - player->y;
+		destdir = (angletodir[atan2_appx(dx,dy)] << 1);
+		ob->temp1 = destdir;
+		ob->targettilex = ob->dir; //save old dir
 #if (SHAREWARE == 0)
-	if (ocl == wallopobj)
-		{//if (ob->temp3)
+		if (ocl == wallopobj)
+		{
+			//if (ob->temp3)
 			// Error("may be writing over temp3");
 			ob->temp3 = (GameRandomNumber("T_WallPath",0)%4) + 1;
 			align = &s_wallalign;
 			wait = &s_wallwait;
 		}
-	else
+		else
 #endif
-		{align = &s_roboalign;
+		{
+			align = &s_roboalign;
 			wait = &s_robowait;
 		}
 
-	NewState(ob,align);
-	for(temp=firstareaactor[ob->areanumber];temp;temp=temp->nextinarea)
-		{if (temp == ob)
-			continue;
+		NewState(ob,align);
+		for(temp=firstareaactor[ob->areanumber];temp;temp=temp->nextinarea)
+		{
+			if (temp == ob)
+				continue;
 
-		if (temp->obclass != ob->obclass)
-			continue;
+			if (temp->obclass != ob->obclass)
+				continue;
 
-		if (temp->flags & FL_DYING)
-			continue;
+			if (temp->flags & FL_DYING)
+				continue;
 
-		if (CheckLine(temp,PLAYER[0],SIGHT) && (Near(temp,PLAYER[0],4) || MISCVARS->madenoise))
-			{dx = PLAYER[0]->x - temp->x;
-			dy = temp->y - PLAYER[0]->y;
-			destdir = (angletodir[atan2_appx(dx,dy)] << 1);
+			if (CheckLine(temp,PLAYER[0],SIGHT) &&
+				(Near(temp,PLAYER[0],4) || MISCVARS->madenoise))
+			{
+				dx = PLAYER[0]->x - temp->x;
+				dy = temp->y - PLAYER[0]->y;
+				destdir = (angletodir[atan2_appx(dx,dy)] << 1);
 
-			temp->temp1 = destdir;
-			temp->targettilex = temp->dir;
-			NewState(temp,align);
-			temp->temp3 = ob->temp3;
+				temp->temp1 = destdir;
+				temp->targettilex = temp->dir;
+				NewState(temp,align);
+				temp->temp3 = ob->temp3;
 			}
-		else
-			NewState(temp,wait);
+			else
+				NewState(temp,wait);
 		}
-	return;
+		return;
 	}
 
 	SD_PlaySoundRTP(SD_ROBOTMOVESND,ob->x,ob->y);
 
 	SelectPathDir(ob);
-
 }
 
 /*
@@ -11129,96 +11333,98 @@ void A_Shoot (objtype *ob)
 	//Error("\na dead instance of %s is shooting at you",debugstr[ob->obclass]);
 
 	if (!ob->ticcount)
-	{if (ob->obclass == strikeguardobj)
-	ob->flags &= ~FL_NOFRICTION;
+	{
+		if (ob->obclass == strikeguardobj)
+		ob->flags &= ~FL_NOFRICTION;
 
-	target = (objtype*)(ob->target);
-	if (!target)
-		Error("an instance of %s called shoot without a target\n",debugstr[ob->obclass]);
+		target = (objtype*)(ob->target);
+		if (!target)
+			Error("an instance of %s called shoot without a target\n",debugstr[ob->obclass]);
 
-	ob->flags &= ~FL_FULLLIGHT;
+		ob->flags &= ~FL_FULLLIGHT;
 
-	dx = (target->x - ob->x);
-	dy = (ob->y - target->y);
-	dz = target->z-ob->z;
+		dx = (target->x - ob->x);
+		dy = (ob->y - target->y);
+		dz = target->z-ob->z;
 
-	if ((ob->obclass == blitzguardobj) && (ob->temp3) &&
-		(ob->temp3 != stat_gasmask) && (ob->temp3 != stat_asbesto) &&
-		(ob->temp3 != stat_bulletproof) &&
-		(gamestate.difficulty >= gd_medium) &&
-		((abs(dx) > 0xc000) || (abs(dy) > 0xc000))
-		)
+		if ((ob->obclass == blitzguardobj) && (ob->temp3) &&
+			(ob->temp3 != stat_gasmask) && (ob->temp3 != stat_asbesto) &&
+			(ob->temp3 != stat_bulletproof) &&
+			(gamestate.difficulty >= gd_medium) &&
+			((abs(dx) > 0xc000) || (abs(dy) > 0xc000))
+			)
 		{
-		int i;
-		missile_stats* newmissiledata;
+			int i;
+			missile_stats* newmissiledata;
 
-		newmissiledata = &PlayerMissileData[GetWeaponForItem(ob->temp3)];
+			newmissiledata = &PlayerMissileData[GetWeaponForItem(ob->temp3)];
 
-		// ready to annihilate this poor bastard
+			// ready to annihilate this poor bastard
 
-		SpawnMissile(ob,newmissiledata->obclass,newmissiledata->speed,
-						AngleBetween(ob,player), newmissiledata->state,
-						newmissiledata->offset);
+			SpawnMissile(ob,
+				newmissiledata->obclass, newmissiledata->speed,
+				AngleBetween(ob,player), newmissiledata->state,
+				newmissiledata->offset);
 
-		if (newmissiledata->obclass == p_drunkmissileobj)
+			if (newmissiledata->obclass == p_drunkmissileobj)
 			{
-			for(i=0;i<4;i++)
+				for(i=0;i<4;i++)
 				{
 				SpawnMissile(ob,newmissiledata->obclass,newmissiledata->speed,
 								AngleBetween(ob,player), newmissiledata->state,
 								newmissiledata->offset);
 				}
 			}
-		ob->target = NULL;
-		ob->temp2 --;
-		if (ob->temp2 == 0)
-			ob->temp3 = 0;
-		return;
+			ob->target = NULL;
+			ob->temp2 --;
+			if (ob->temp2 == 0)
+				ob->temp3 = 0;
+			return;
 		}
 
-	if ((!areabyplayer[ob->areanumber]) && (target->obclass ==  playerobj))
-		return;
+		if ((!areabyplayer[ob->areanumber]) && (target->obclass ==  playerobj))
+			return;
 
-	//if (!CheckLine(ob,target,SHOOT))		// player is behind a wall
-	//return;
+		//if (!CheckLine(ob,target,SHOOT))		// player is behind a wall
+		//return;
 
-	savedangle=ob->angle;
-	ob->angle = atan2_appx (dx,dy);
-	dist = FindDistance(dx,dy);
-	ob->yzangle = FINEANGLES-atan2_appx(dist, dz<<10);
+		savedangle=ob->angle;
+		ob->angle = atan2_appx (dx,dy);
+		dist = FindDistance(dx,dy);
+		ob->yzangle = FINEANGLES-atan2_appx(dist, dz<<10);
 
-	if ((ob->yzangle>MAXYZANGLE) && (ob->yzangle<FINEANGLES-MAXYZANGLE))
-		ob->yzangle=MAXYZANGLE;
+		if ((ob->yzangle>MAXYZANGLE) && (ob->yzangle<FINEANGLES-MAXYZANGLE))
+			ob->yzangle=MAXYZANGLE;
 
-	dist>>=16;
+		dist>>=16;
 
-	accuracy=(WHICHACTOR<<4)+((gamestate.difficulty) << 6);
+		accuracy=(WHICHACTOR<<4)+((gamestate.difficulty) << 6);
 
-	num = GameRandomNumber("A_Shoot3",ob->obclass);
+		num = GameRandomNumber("A_Shoot3",ob->obclass);
 
-	if (num<128) num=128; // Don't let accuracy fall below 50% original
+		if (num<128) num=128; // Don't let accuracy fall below 50% original
 
-	accuracy=FixedMulShift(num,accuracy,8); // scale accuracy based off randomness
+		accuracy=FixedMulShift(num,accuracy,8); // scale accuracy based off randomness
 
-	// check for maximum accuracy;
+		// check for maximum accuracy;
 
-	if (accuracy>255) accuracy=255;
+		if (accuracy>255) accuracy=255;
 
-	if (ob->obclass==highguardobj)
-		damage=DMG_MP40;
-	else if (ob->obclass == triadenforcerobj)
-		damage=DMG_MP40;
-	else
-		damage=DMG_ENEMYBULLETWEAPON;
+		if (ob->obclass==highguardobj)
+			damage=DMG_MP40;
+		else if (ob->obclass == triadenforcerobj)
+			damage=DMG_MP40;
+		else
+			damage=DMG_ENEMYBULLETWEAPON;
 
-	RayShoot (ob, damage, 255-accuracy);
+		RayShoot (ob, damage, 255-accuracy);
 
-	ob->angle=savedangle;
-	sound = BAS[ob->obclass].fire;
-	SD_PlaySoundRTP(sound,ob->x,ob->y);
-	MISCVARS->madenoise = true;
-	if ((!(ob->flags& FL_HASAUTO)) || (!ob->temp3))
-	ob->target = NULL;
+		ob->angle=savedangle;
+		sound = BAS[ob->obclass].fire;
+		SD_PlaySoundRTP(sound,ob->x,ob->y);
+		MISCVARS->madenoise = true;
+		if ((!(ob->flags& FL_HASAUTO)) || (!ob->temp3))
+			ob->target = NULL;
 	}
 }
 
@@ -11227,11 +11433,11 @@ void A_Repeat(objtype*ob)
 	ActorMovement(ob);
 
 	if (!ob->ticcount)
-	{ob->temp3 --;
-	if (ob->temp3 <= 0)
-	NewState(ob,M_S(CHASE));
+	{
+		ob->temp3 --;
+		if (ob->temp3 <= 0)
+		NewState(ob,M_S(CHASE));
 	}
-
 }
 
 void  A_MissileWeapon(objtype *ob)
@@ -11252,110 +11458,114 @@ void  A_MissileWeapon(objtype *ob)
 	if (!ob->ticcount)
 	{
 #if (SHAREWARE == 0)
-	if ((ob->obclass == wallopobj) && (!ob->temp3))
+		if ((ob->obclass == wallopobj) && (!ob->temp3))
 		{
-		NewState(ob,&s_wallrestore);
-		return;
+			NewState(ob,&s_wallrestore);
+			return;
 		}
 #endif
-	if ((ob->obclass == b_darianobj) && (!CheckLine(ob,PLAYER[0],SHOOT)))
-	{NewState(ob,M_S(CHASE));
-	return;
-	}
-	// Move sounds, flags into switch cases
+		if ((ob->obclass == b_darianobj) &&
+			(!CheckLine(ob,PLAYER[0],SHOOT)))
+		{
+			NewState(ob,M_S(CHASE));
+			return;
+		}
+		// Move sounds, flags into switch cases
 
-	sound = BAS[ob->obclass].fire;
-	nspeed = 0x4000;
-	noffset = 0x8000;
-	zoffset = 0;
-	switch (ob->obclass)
-	{
+		sound = BAS[ob->obclass].fire;
+		nspeed = 0x4000;
+		noffset = 0x8000;
+		zoffset = 0;
+		switch (ob->obclass)
+		{
+		case triadenforcerobj:
+			nobclass = grenadeobj;
+			nstate= &s_grenade1;
+			sound++;
+			break;
 
-	case triadenforcerobj:
-		nobclass = grenadeobj;
-		nstate= &s_grenade1;
-		sound++;
-		break;
+		case roboguardobj:
+			nobclass = shurikenobj;
+			nspeed = 0x2000;
+			noffset = 0x10000;
+			nstate = &s_robogrdshuriken1;
+			break;
 
-	case roboguardobj:
-		nobclass = shurikenobj;
-		nspeed = 0x2000;
-		noffset = 0x10000;
-		nstate = &s_robogrdshuriken1;
-		break;
-
-	/*
-	case b_darkmonkobj:
-		nobclass = dmfballobj;
-		nstate = &s_dmfball1;
-		break;
-	*/
-	/*
-	case b_robobossobj:
-		nobclass = bigshurikenobj;
-		nstate = &s_oshuriken1;
-		break;
+		/*
+		case b_darkmonkobj:
+			nobclass = dmfballobj;
+			nstate = &s_dmfball1;
+			break;
 		*/
+		/*
+		case b_robobossobj:
+			nobclass = bigshurikenobj;
+			nstate = &s_oshuriken1;
+			break;
+			*/
 #if (SHAREWARE == 0)
-	case b_darianobj:
-		nobclass = missileobj;
-		//nspeed = 0x100;
-		//noffset = 0x18000;
-		nstate = &s_missile1;
-		zoffset = -20;
-		break;
-
-	case dfiremonkobj:
-		nobclass = fireballobj;
-		nstate = &s_monkfire1;
-		break;
-
-	case overpatrolobj:
-		nobclass = netobj;
-		nstate = &s_bolocast1;
-		sound ++;
-		break;
-
-	case wallopobj:
-		{int dx,dy,dz,xydist;
-
-		ob->temp2 ^= 1; // increment numfired
-		ob->temp3 --; // decrement random fire no.
-
-		dx = PLAYER[0]->x-ob->x;
-		dy = ob->y-PLAYER[0]->y;
-		if (GameRandomNumber("bcraft shoot up/down",0) < 128)
-			dz = 10;
-		else
-			dz = -10;
-		xydist = FindDistance(dx,dy);
-		oldyzangle = ob->yzangle;
-		ob->yzangle = atan2_appx(xydist,dz<<10);
-		if (ob->temp2)
-			{nobclass = missileobj;
+		case b_darianobj:
+			nobclass = missileobj;
+			//nspeed = 0x100;
+			//noffset = 0x18000;
 			nstate = &s_missile1;
+			zoffset = -20;
+			break;
+
+		case dfiremonkobj:
+			nobclass = fireballobj;
+			nstate = &s_monkfire1;
+			break;
+
+		case overpatrolobj:
+			nobclass = netobj;
+			nstate = &s_bolocast1;
+			sound ++;
+			break;
+
+		case wallopobj:
+			{
+				int dx,dy,dz,xydist;
+
+				ob->temp2 ^= 1; // increment numfired
+				ob->temp3 --; // decrement random fire no.
+
+				dx = PLAYER[0]->x-ob->x;
+				dy = ob->y-PLAYER[0]->y;
+				if (GameRandomNumber("bcraft shoot up/down",0) < 128)
+					dz = 10;
+				else
+					dz = -10;
+				xydist = FindDistance(dx,dy);
+				oldyzangle = ob->yzangle;
+				ob->yzangle = atan2_appx(xydist,dz<<10);
+				if (ob->temp2)
+				{
+					nobclass = missileobj;
+					nstate = &s_missile1;
+				}
+				else
+				{
+					nobclass = bigshurikenobj;
+					nstate = &s_bstar1;
+				}
 			}
-		else
-			{nobclass = bigshurikenobj;
-			nstate = &s_bstar1;
-			}
-		}
-		break;
+			break;
 #endif
+		}
 
-	}
-
-	SpawnMissile(ob,nobclass,nspeed,AngleBetween(ob,PLAYER[0]),nstate,noffset);
-	new->z += zoffset;
-	SD_PlaySoundRTP(sound,ob->x,ob->y);
-	MISCVARS->madenoise = true;
-	if (ob->obclass == triadenforcerobj)
-	{//new->flags |= (FL_SHOOTABLE);
-		new->temp1 = 0x50000;
-	}
+		SpawnMissile(ob,nobclass,nspeed,AngleBetween(ob,PLAYER[0]),nstate,noffset);
+		new->z += zoffset;
+		SD_PlaySoundRTP(sound,ob->x,ob->y);
+		MISCVARS->madenoise = true;
+		if (ob->obclass == triadenforcerobj)
+		{
+			//new->flags |= (FL_SHOOTABLE);
+			new->temp1 = 0x50000;
+		}
 #if (SHAREWARE == 0)
-	else if (ob->obclass == wallopobj)
-	ob->yzangle = oldyzangle;
+		else if (ob->obclass == wallopobj)
+		ob->yzangle = oldyzangle;
 #endif
 
 	}
@@ -11364,14 +11574,15 @@ void  A_MissileWeapon(objtype *ob)
 void	A_Wallfire(objtype *ob)
 {
 	if (!(ob->flags & FL_ACTIVE))
-	return;
+		return;
 
 	if (!ob->ticcount)
-	{SpawnMissile(ob,wallfireobj,0x4000,ob->angle,&s_crossfire1,0xa000);
-	if (areabyplayer[ob->areanumber])
-	SD_PlaySoundRTP(SD_FIRECHUTESND,ob->x,ob->y);
-	new->dir = angletodir[new->angle];
-	new->z = nominalheight;
+	{
+		SpawnMissile(ob,wallfireobj,0x4000,ob->angle,&s_crossfire1,0xa000);
+		if (areabyplayer[ob->areanumber])
+		SD_PlaySoundRTP(SD_FIRECHUTESND,ob->x,ob->y);
+		new->dir = angletodir[new->angle];
+		new->z = nominalheight;
 	}
 
 }
@@ -11381,38 +11592,37 @@ void T_Reset(objtype *ob)
 	ActorMovement(ob);
 
 	if (ob->ticcount)
-	return;
+		return;
 
 	ob->momentumx = ob->momentumy = ob->dirchoosetime = 0;
 	ob->flags &= ~FL_NOFRICTION;
-
 }
 
 void SelectRollDir(objtype *ob)
-{int angle,tryx,tryy;
+{
+	int angle,tryx,tryy;
 
 	if (ob->state == &s_strikerollright1)
-	angle = AngleBetween(ob,PLAYER[0]) + ANGLES/4;
+		angle = AngleBetween(ob,PLAYER[0]) + ANGLES/4;
 	else
-	angle = AngleBetween(ob,PLAYER[0]) - ANGLES/4;
+		angle = AngleBetween(ob,PLAYER[0]) - ANGLES/4;
 
 	Fix(angle);
 	tryx = ob->x + FixedMul(0x20000l,costable[angle]);
 	tryy = ob->y - FixedMul(0x20000l,sintable[angle]);
 	ZEROMOM;
 	if (QuickSpaceCheck(ob,tryx,tryy))
-	{int oldspeed;
-
-	oldspeed = ob->speed;
-	ob->speed = ROLLMOMENTUM;
-	ParseMomentum(ob,angle);
-	ob->speed = oldspeed;
-	ob->dirchoosetime = 5;
-	ob->flags |= FL_NOFRICTION;
+	{
+		int oldspeed;
+		oldspeed = ob->speed;
+		ob->speed = ROLLMOMENTUM;
+		ParseMomentum(ob,angle);
+		ob->speed = oldspeed;
+		ob->dirchoosetime = 5;
+		ob->flags |= FL_NOFRICTION;
 	}
 	else
-	ob->dirchoosetime = 0;
-
+		ob->dirchoosetime = 0;
 }
 
 void SelectDodgeDir (objtype *ob)
@@ -11436,20 +11646,23 @@ void SelectDodgeDir (objtype *ob)
 		turnaround=opposite[ob->dir];
 
 	if (ob->targettilex || ob->targettiley)
-		{tx = ob->targettilex;
+	{
+		tx = ob->targettilex;
 		ty = ob->targettiley;
 		dx= tx - ob->x;
 		dy= ty - ob->y;
 		if ( ((dx < MINACTORDIST) && (dx > -MINACTORDIST)) &&
 				((dy < MINACTORDIST) && (dy > -MINACTORDIST)))
-		{dx= PLAYER[0]->x-ob->x;
+		{
+			dx= PLAYER[0]->x-ob->x;
 			dy= PLAYER[0]->y-ob->y;
 		}
-		}
+	}
 	else
-		{dx= PLAYER[0]->x-ob->x;
-			dy= PLAYER[0]->y-ob->y;
-		}
+	{
+		dx= PLAYER[0]->x-ob->x;
+		dy= PLAYER[0]->y-ob->y;
+	}
 
 //
 // arange 5 direction choices in order of preference
@@ -11509,9 +11722,9 @@ void SelectDodgeDir (objtype *ob)
 	ZEROMOM;
 
 	for (i=0;i<5;i++)
-	{if ((dirtry[i] == nodir) || (dirdiff[dirtry[i]][olddir] > 1))
-		continue;
-
+	{
+		if ((dirtry[i] == nodir) || (dirdiff[dirtry[i]][olddir] > 1))
+			continue;
 		M_CHECKDIR(ob,dirtry[i]);
 	}
 
@@ -11523,8 +11736,7 @@ void SelectDodgeDir (objtype *ob)
 //	M_CHECKDIR(ob,tdir);
 
 	if (turnaround != nodir)
-	M_CHECKDIR(ob,turnaround);
-
+		M_CHECKDIR(ob,turnaround);
 }
 
 #define TryAbruptProximalDirections(trydir)				\
@@ -11553,9 +11765,9 @@ void SelectDodgeDir (objtype *ob)
 																		\
 	}
 
-#define TrySmoothProximalDirections(trydir)								\
-	{																					\
-																						\
+#define TrySmoothProximalDirections(trydir)						\
+	{															\
+																\
 	if (((trydir == olddir) || (dirdiff[trydir][olddir] < 2)) &&	\
 		(!dirtried[trydir]))													\
 		{																				\
@@ -11589,17 +11801,17 @@ void SelectDodgeDir (objtype *ob)
 	}
 
 #define ChasePlayer(ob)								\
-	{															\
+{															\
 	dx= player->x-ob->x;								\
 	dy= ob->y-player->y;								\
 	if ((abs(dx) < 0xb000) && (abs(dy) < 0xb000)) \
 		return;												\
 	dummy.x = player->x;								\
 	dummy.y = player->y;								\
-	}
+}
 
 void SelectChaseDir (objtype *ob)
-	{
+{
 	int dx,dy,whichway,tx,ty,actrad,visible,
 		realdiff;
 	dirtype dtry1,dtry2,tdir,olddir,next,prev,start,straight;
@@ -11734,7 +11946,7 @@ void SelectChaseDir (objtype *ob)
 		}
 
 	ob->dir = olddir;
-	}
+}
 
 int Near(objtype *ob,void* what,int distance)
 
@@ -11744,9 +11956,8 @@ int Near(objtype *ob,void* what,int distance)
 	aw = (objtype*) what;
 
 	if (FindDistance((aw->x - ob->x),(aw->y - ob->y)) <= (distance<<16))
-	return 1;
+		return 1;
 	return 0;
-
 }
 
 /*
@@ -11898,29 +12109,30 @@ boolean CheckSight (objtype *ob,void *atwhat)
 }
 
 void ActivateEnemy(objtype*ob)
-{statetype *temp;
+{
+	statetype *temp;
 
 	ob->flags |= (FL_ATTACKMODE|FL_FIRSTATTACK);
 	if (ob->obclass == roboguardobj)
-	return;
+		return;
 
 	if (ob->temp3 == SNEAKY)
-	{ NewState(ob,&s_sneakyrise1);
-	ob->temp3=0;
+	{
+		NewState(ob,&s_sneakyrise1);
+		ob->temp3=0;
 	}
 	else if ((temp = M_S(CHASE)) != NULL)
-	NewState(ob,temp);
+		NewState(ob,temp);
 	/*
 	ob->speed = ENEMYRUNSPEED;
 	*/
 	if (ob->obclass == b_heinrichobj)
-	ob->speed = 7*ob->speed/2;
+		ob->speed = 7*ob->speed/2;
 	else if (ob->obclass == b_darianobj)
-	ob->speed = 3*SPDPATROL;
+		ob->speed = 3*SPDPATROL;
 	if (ob->door_to_open != -1)
-	ob->door_to_open = -1; // ignore the door opening command
+		ob->door_to_open = -1; // ignore the door opening command
 	ob->dirchoosetime = 0;
-
 }
 
 /*
@@ -11935,21 +12147,21 @@ void ActivateEnemy(objtype*ob)
 */
 
 void FirstSighting (objtype *ob)
-	{
+{
 	statetype *temp;
 	int sound;
 
 	if (ob->temp3 == SNEAKY)
-		{
+	{
 		NewState(ob,&s_sneakyrise1);
 		ob->temp3=0;
 		if (ob->shapeoffset==0)
-		SD_PlaySoundRTP(SD_SNEAKYSPRINGMSND,ob->x,ob->y);
+			SD_PlaySoundRTP(SD_SNEAKYSPRINGMSND,ob->x,ob->y);
 		else
-		SD_PlaySoundRTP(SD_SNEAKYSPRINGFSND,ob->x,ob->y);
-		}
+			SD_PlaySoundRTP(SD_SNEAKYSPRINGFSND,ob->x,ob->y);
+	}
 	else if ((temp = M_S(CHASE)) != NULL)
-		{
+	{
 		int rand;
 
 		NewState(ob,temp);
@@ -11960,23 +12172,25 @@ void FirstSighting (objtype *ob)
 			//if ((ob->obclass == lowguardobj) && (rand < 80))
 			//sound ++;
 		else if (ob->obclass == lowguardobj)
-			{if (rand < 128)
-			{if ((PLAYERSTATE[0].player == 1) || (PLAYERSTATE[0].player == 3))
-				sound++;
+		{
+			if (rand < 128)
+			{
+				if ((PLAYERSTATE[0].player == 1) ||
+					(PLAYERSTATE[0].player == 3))
+					sound++;
 			}
 			else
-			sound += 2;
+				sound += 2;
 
 			if (ob->shapeoffset)
-			sound += 4;
-
-			}
+				sound += 4;
+		}
 		SD_PlaySoundRTP(sound,ob->x,ob->y);
 		if ((ob->obclass>=b_darianobj) && (ob->obclass<=b_darksnakeobj))
-			{
+		{
 			MU_StartSong(song_bosssee);
-			}
 		}
+	}
 
 	/*
 	ob->speed = ENEMYRUNSPEED;*/
@@ -11988,8 +12202,7 @@ void FirstSighting (objtype *ob)
 	ob->door_to_open = -1; // ignore the door opening command
 	ob->dirchoosetime = 0;
 	ob->flags |= (FL_ATTACKMODE|FL_FIRSTATTACK);
-
-	}
+}
 
 /*
 ===============
@@ -12006,7 +12219,7 @@ void FirstSighting (objtype *ob)
 */
 
 boolean SightPlayer (objtype *ob)
-	{
+{
 	//if (ob->flags & FL_ATTACKMODE)
 	//Error ("An instance of %s in ATTACKMODE called SightPlayer!",debugstr[ob->obclass]);
 
@@ -12030,27 +12243,27 @@ boolean SightPlayer (objtype *ob)
 		ob->flags &= ~FL_AMBUSH;
 		}
 	else
-		{
+	{
 		if (ob->temp3 == SNEAKY)
-			{
+		{
 			if (!Near(ob,PLAYER[0],2))
 				return false;
-			}
+		}
 		else if (!((MISCVARS->madenoise) ||
 					(CheckSight (ob,player)) ||
 					(Near(ob,player,4))
 					)
 				)
-			{
+		{
 			//SoftError("\n failed from SightPlayer");
 			return false;
-			}
 		}
+	}
 
 	FirstSighting (ob);
 
 	return true;
-	}
+}
 
 /*
 =====================
@@ -12084,23 +12297,23 @@ boolean CheckLine (void *from, void *to, int condition)
 	ob = (objtype*)to;
 	orig = (objtype*)from;
 	if (ob->which == SPRITE)
-		{
+	{
 		destx = ((statobj_t*)to)->x;
 		desty = ((statobj_t*)to)->y;
 		destz = ((statobj_t*)to)->z;
-		}
+	}
 	else
-		{
+	{
 		destx = ob->x;
 		desty = ob->y;
 		destz = ob->z;
-		}
+	}
 
 	desttilex=destx>>16;
 	desttiley=desty>>16;
 
 	if ((desttilex == orig->tilex) && (desttiley == orig->tiley))
-	return true;
+		return true;
 
 	dx=destx-orig->x;
 	dy=orig->y-desty;
@@ -12121,7 +12334,7 @@ boolean CheckLine (void *from, void *to, int condition)
 	oty = orig->y >> TILESHIFT;
 
 	if (xydist==0)
-		{
+	{
 		/*
 		SoftError("\nCheckLine:xydist=0");
 		if (orig->which == ACTOR)
@@ -12130,12 +12343,12 @@ boolean CheckLine (void *from, void *to, int condition)
 		SoftError("target: %s",debugstr[ob->obclass]);*/
 		vy=-dy;
 		vx=dx;
-		}
+	}
 	else
-		{
+	{
 		vy = -FixedDiv2(dy,xydist);
 		vx = FixedDiv2(dx,xydist);
-		}
+	}
 	snx=orig->x&0xffff;
 	sny=orig->y&0xffff;
 
@@ -12143,31 +12356,32 @@ boolean CheckLine (void *from, void *to, int condition)
 	grid[1]=oty;
 
 	if (vx>0)
-		{
+	{
 		thedir[0]=1;
 		snx^=0xffff;
 		incr[1]=-vx;
-		}
+	}
 	else
-		{
+	{
 		thedir[0]=-1;
 		incr[1]=vx;
-		}
+	}
 	if (vy>0)
-		{
+	{
 		thedir[1]=1;
 		sny^=0xffff;
 		incr[0]=vy;
-		}
+	}
 	else
-		{
+	{
 		thedir[1]=-1;
 		incr[0]=-vy;
-		}
+	}
 	cnt=FixedMul(snx,incr[0])+FixedMul(sny,incr[1]);
 
 	do
-		{count ++;
+	{
+		count ++;
 		/*
 		if (count > 1000)
 			Error("possible infinite loop in CheckLine");
@@ -12244,7 +12458,7 @@ boolean CheckLine (void *from, void *to, int condition)
 				}
 			}
 		if (condition == SHOOT)
-			{
+		{
 			if (tempactor && (tempactor->which == ACTOR) &&
 				(tempactor->flags & FL_BLOCK) && (tempactor != orig) &&
 				(tempactor != ob)) //&&
@@ -12257,33 +12471,34 @@ boolean CheckLine (void *from, void *to, int condition)
 				#endif
 				return false;
 			}
-			}
+		}
 
-		if (checksprite && (checksprite->flags & FL_BLOCK) && (condition == SHOOT) &&
+		if (checksprite && (checksprite->flags & FL_BLOCK) &&
+			(condition == SHOOT) &&
 			((void *)checksprite != to) &&
 			(checksprite->itemnumber!=stat_disk) &&
 			(InRange(orig,(objtype *)checksprite,
 			FindDistance(orig->x-checksprite->x,orig->y-checksprite->y) )
 			==true) )
 
-			{
+		{
 			#if (0)
 			SoftError("\nfailed from sprite");
 			#endif
 			return false;
-			}
+		}
 
 		if (tempactor && (tempactor->which == PWALL))
-			{
+		{
 		#if (0)
 			SoftError("\nfailed from pushwall");
 			#endif
 			return false;
-			}
+		}
 		index=(cnt>=0);
 		cnt+=incr[index];
 		grid[index]+=thedir[index];
-		}
+	}
 	while (1);
 }
 
@@ -12332,12 +12547,12 @@ void ShootActor(objtype * shooter, objtype * target, int damage, int accuracy, i
 		}
 
 	else if (tcl == NMEsaucerobj)
-		{
+	{
 		target->momentumx = target->momentumy = 0;
 		NewState(target,&s_explosion1);
 		target->flags &= ~FL_SHOOTABLE;
 		return;
-		}
+	}
 	else if (tcl == b_darianobj)
 		MISCVARS->ESAU_SHOOTING = false;
 	else if ((tcl == strikeguardobj) || (tcl == b_heinrichobj))
@@ -12350,18 +12565,18 @@ void ShootActor(objtype * shooter, objtype * target, int damage, int accuracy, i
 		SpawnMetalSparks(target,angle);
 
 	else if ((tcl < b_darianobj) || (tcl > b_darksnakeobj))
-		{
+	{
 
 		//target->flags &= ~FL_USE;
 
 		damage=FixedMulShift(511-accuracy,damage,9); // Min half damage
 		if (dist<64)
-			{
+		{
 			if (dist>2)
 				damage=FixedMulShift(63-dist,damage,6);
 			if (damage<1)
 				damage=1;
-			}
+		}
 		else
 			damage=1;
 
@@ -12369,46 +12584,56 @@ void ShootActor(objtype * shooter, objtype * target, int damage, int accuracy, i
 
 		DamageThing(target,damage);
 		if ((tcl == collectorobj) && gamestate.SpawnDeluder)
-			{
+		{
 			Collision(target,shooter,0,0);
 			if (target->hitpoints <= 0)
 				BATTLE_CheckGameStatus(battle_shot_deluder,shooter->dirchoosetime);
-			}
-
+		}
 		else
-		{newmomx = FixedMul(damage<<7,costable[angle]);
+		{
+			newmomx = FixedMul(damage<<7,costable[angle]);
 			newmomy = -FixedMul(damage<<7,sintable[angle]);
-			Collision(target,shooter,-(target->momentumx)+newmomx,-(target->momentumy)+newmomy);
+			Collision(target,shooter,
+				-(target->momentumx)+newmomx,
+				-(target->momentumy)+newmomy);
 			if (tcl == playerobj)
-				{
-				playertype * pstate;
+			{
+				playertype *pstate;
 
 				M_LINKSTATE(target,pstate);
 				if (pstate->health <= 0)
-					{
-
+				{
 					if (shooter->obclass == playerobj)
+					{
 						if (!target->momentumz)
-						BATTLE_PlayerKilledPlayer(battle_kill_with_bullet,shooter->dirchoosetime,target->dirchoosetime);
+							BATTLE_PlayerKilledPlayer(
+								battle_kill_with_bullet,
+								shooter->dirchoosetime,
+								target->dirchoosetime);
 						else
-						BATTLE_PlayerKilledPlayer(battle_kill_with_bullet_in_air,shooter->dirchoosetime,target->dirchoosetime);
+							BATTLE_PlayerKilledPlayer(
+								battle_kill_with_bullet_in_air,
+								shooter->dirchoosetime,
+								target->dirchoosetime);
 					}
 				}
+			}
 //		SoftError("ShootActor: damage=%ld dist=%ld\n",damage,dist);
 
-			if ((GameRandomNumber("disembowel",0)<64) && (gamestate.violence == vl_excessive))
+			if ((GameRandomNumber("disembowel",0)<64) &&
+				(gamestate.violence == vl_excessive))
 			{
-			int temp;
-			temp=target->temp1;
-			target->temp1=angle;
+				int temp;
+				temp=target->temp1;
+				target->temp1=angle;
 
-			SpawnParticles(target,DISEMBOWEL,damage>>3);
-			target->temp1=temp;
+				SpawnParticles(target,DISEMBOWEL,damage>>3);
+				target->temp1=temp;
 			}
 			else if (gamestate.violence > 0)
-			SpawnBlood(target,angle);
+				SpawnBlood(target,angle);
 		}
-		}
+	}
 }
 
 /*
@@ -12420,28 +12645,31 @@ void ShootActor(objtype * shooter, objtype * target, int damage, int accuracy, i
 =
 =====================
 */
-void ShootSprite(objtype * shooter, statobj_t * target, int damage, int accuracy, int angle)
+void ShootSprite(objtype * shooter,
+	statobj_t * target, int damage,
+	int accuracy, int angle)
 {
 	int dx,dy,dist;
 
 	if (!(target->flags & FL_SHOOTABLE))
+	{
 // Watchout for sprite being passed in as actor WARNING
 		SpawnMetalSparks((objtype *)target,angle);
-
+	}
 	else
-		{
+	{
 		dx = abs(shooter->x - target->x);
 		dy = abs(shooter->y - target->y);
 		dist = FindDistance(dx,dy)>>16;
 
 		damage=FixedMulShift(511-accuracy,damage,9); // Min half damage
 		if (dist<64)
-			{
+		{
 			if (dist>2)
 				damage=FixedMulShift(63-dist,damage,6);
 			if (damage<1)
 				damage=1;
-			}
+		}
 		else
 			damage=1;
 
@@ -12454,7 +12682,7 @@ void ShootSprite(objtype * shooter, statobj_t * target, int damage, int accuracy
 			new->whatever = shooter;
 
 		SpawnStaticDamage(target, angle);
-		}
+	}
 }
 
 /*
@@ -12483,23 +12711,29 @@ void RayShoot (objtype * shooter, int damage, int accuracy)
 	int yzangle;
 	int value;
 	int offset;
-	int z;
+	int z, tcnt;
 	int lastcnt;
 	int bullethole=0;
 	enum {gs_door, gs_wall, gs_floor, gs_ceiling, gs_pushwall};
 	int smokecondition=0;
 
-	if ((shooter->areanumber==player->areanumber) && (Near(shooter,player,3)))
+	if ((shooter->areanumber==player->areanumber) &&
+		(Near(shooter,player,3)))
+	{
 		SetIllumination(2);
+	}
 
 	offset = ((GameRandomNumber("RayShoot",0)-128)>>MAXSHOOTSHIFT);
 	offset = FixedMulShift(accuracy,offset,8);
 
 	if (offset>MAXSHOOTOFFSET)
+	{
 		offset=MAXSHOOTOFFSET;
-
+	}
 	else if (offset<-MAXSHOOTOFFSET)
+	{
 		offset=-MAXSHOOTOFFSET;
+	}
 
 	angle=(shooter->angle+offset)&(FINEANGLES-1);
 
@@ -12507,10 +12741,13 @@ void RayShoot (objtype * shooter, int damage, int accuracy)
 	offset = FixedMulShift(accuracy,offset,8);
 
 	if (offset>MAXSHOOTOFFSET)
+	{
 		offset=MAXSHOOTOFFSET;
-
+	}
 	else if (offset<-MAXSHOOTOFFSET)
+	{
 		offset=-MAXSHOOTOFFSET;
+	}
 
 	yzangle=(shooter->yzangle+offset)&(FINEANGLES-1);
 
@@ -12521,86 +12758,89 @@ void RayShoot (objtype * shooter, int damage, int accuracy)
 	grid[0]=shooter->tilex;
 	grid[1]=shooter->tiley;
 	if (shooter->obclass==playerobj)
-		{
+	{
 		playertype * pstate;
 
 		M_LINKSTATE(shooter,pstate);
 		z=shooter->z+pstate->playerheight-32;
-		}
+	}
 	else
 		z=shooter->z-7;
+
 	if (vx>0)
-		{
+	{
 		thedir[0]=1;
 		snx^=0xffff;
 		incr[1]=-vx;
-		}
+	}
 	else
-		{
+	{
 		thedir[0]=-1;
 		incr[1]=vx;
-		}
+	}
 	if (vy>0)
-		{
+	{
 		thedir[1]=1;
 		sny^=0xffff;
 		incr[0]=vy;
-		}
+	}
 	else
-		{
+	{
 		thedir[1]=-1;
 		incr[0]=-vy;
-		}
+	}
 	zincr[0]=-FixedMulShift(sintable[yzangle],abs(vx),26);
 	zincr[1]=-FixedMulShift(sintable[yzangle],abs(vy),26);
 
 	cnt=FixedMul(snx,incr[0])+FixedMul(sny,incr[1]);
 	index= (cnt >= 0);
+	
+	tcnt=1024;
 	do
-		{
+	{
 		tempactor = (objtype*)actorat[grid[0]][grid[1]];
 		value = tilemap[grid[0]][grid[1]];
 		checksprite = sprites[grid[0]][grid[1]];
 		if (value)
-			{
+		{
 			if (value&0x8000)
-				{
+			{
 				if (!(value&0x4000))
-					{
+				{
 					if ((doorobjlist[value&0x3ff]->action==dr_closed) || (z<maxheight-64))
-						{
-						smokecondition=gs_door;
-						break;
-						}
-					else if (doorobjlist[value&0x3ff]->position<=0x8000)
-						{
-						smokecondition=gs_door;
-						break;
-						}
-					}
-				else
 					{
+						smokecondition=gs_door;
+						break;
+					}
+					else if (doorobjlist[value&0x3ff]->position<=0x8000)
+					{
+						smokecondition=gs_door;
+						break;
+					}
+				}
+				else
+				{
 					if ( maskobjlist[value&0x3ff]->flags & MW_SHOOTABLE )
-						{
+					{
 						if (z>maxheight-64) // Are we shooting above the glass
-							{
+						{
 							UpdateMaskedWall(value&0x3ff);
 							return;
-							}
-						}
-					else if ( maskobjlist[value&0x3ff]->flags & MW_WEAPONBLOCKING )
-						{
-						smokecondition=gs_door;
-						break;
 						}
 					}
-				}
-			else
-				{
-				smokecondition=gs_wall;
-				break;
+					else if ( maskobjlist[value&0x3ff]->flags & MW_WEAPONBLOCKING )
+					{
+						smokecondition=gs_door;
+						break;
+					}
 				}
 			}
+			else
+			{
+				smokecondition=gs_wall;
+				break;
+			}
+		}
 
 		if (checksprite &&
 			((checksprite->flags & FL_BLOCK)||(checksprite->flags & FL_SHOOTABLE)) &&
@@ -12610,45 +12850,51 @@ void RayShoot (objtype * shooter, int damage, int accuracy)
 			==true
 			)
 			)
-			{
+		{
 			ShootSprite(shooter, checksprite, damage, accuracy, angle);
 			return;
-			}
+		}
 
 		if (tempactor)
-		{if (tempactor->which == ACTOR)
-				{if ((abs(tempactor->z-z)<32 ) && (!(tempactor->flags & FL_DYING)) &&
-					(tempactor->flags & FL_BLOCK) && (tempactor != shooter) &&
+		{
+			if (tempactor->which == ACTOR)
+			{
+				if ((abs(tempactor->z-z)<32 ) &&
+					(!(tempactor->flags & FL_DYING)) &&
+					(tempactor->flags & FL_BLOCK) &&
+					(tempactor != shooter) &&
 					(tempactor->obclass!=diskobj) &&
-					(InRange(shooter,tempactor,
-					FindDistance(shooter->x-tempactor->x,shooter->y-tempactor->y) )
-					==true
+					( InRange(shooter,tempactor,
+					FindDistance(shooter->x-tempactor->x,
+						shooter->y-tempactor->y) ) == true )
 					)
-					)
-				{ShootActor(shooter, tempactor, damage, accuracy, angle);
+				{
+					ShootActor(shooter, tempactor, damage, accuracy, angle);
 					return;
 				}
-				}
+			}
 			else if (tempactor->which == PWALL)
 				return;
 		}
 
 		if (z<-32)
-			{
+		{
 			smokecondition=gs_ceiling;
 			break;
-			}
+		}
 		else if (z>maxheight)
-			{
+		{
 			smokecondition=gs_floor;
 			break;
-			}
+		}
 		index= (cnt >= 0);
 		cnt+=incr[index];
 		z  +=zincr[index];
 		grid[index]+=thedir[index];
-		}
-	while (1);
+		grid[index] &= (MAPSIZE-1);
+	}
+//	while (1);
+	while (tcnt--);
 
 	if (IsWindow(grid[0],grid[1]))
 		return;
@@ -12656,22 +12902,22 @@ void RayShoot (objtype * shooter, int damage, int accuracy)
 	lastcnt=cnt-incr[index];
 
 	if (smokecondition==gs_floor)
-		{
+	{
 		int dist;
 		int tangentangle;
 
 		tangentangle=tantable[yzangle];
 		if (tangentangle!=0)
-			{
+		{
 			dist=FixedDiv2(((shooter->z-maxheight)<<10),(tangentangle<<1));
 			xintercept=shooter->x+FixedMul(dist,costable[angle]);
 			yintercept=shooter->y-FixedMul(dist,sintable[angle]);
-			}
+		}
 		z=maxheight;
 //		bullethole=5;
-		}
+	}
 	else if (smokecondition==gs_ceiling)
-		{
+	{
 		int dist;
 		int tangentangle;
 
@@ -12679,16 +12925,16 @@ void RayShoot (objtype * shooter, int damage, int accuracy)
 			return;
 		tangentangle=tantable[yzangle];
 		if (tangentangle!=0)
-			{
+		{
 			dist=FixedDiv2(((shooter->z+32)<<10),(tangentangle<<1));
 			xintercept=shooter->x+FixedMul(dist,costable[angle]);
 			yintercept=shooter->y-FixedMul(dist,sintable[angle]);
-			}
+		}
 		z=-32;
 //		bullethole=5;
-		}
+	}
 	else
-		{
+	{
 		int dx,dy,xydist;
 
 #define CORNERVALUE  0x500
@@ -12696,27 +12942,27 @@ void RayShoot (objtype * shooter, int damage, int accuracy)
 		if (IsWindow(grid[0],grid[1]))
 			return;
 		if (lastcnt<0)
-			{
+		{
 			xintercept=grid[0]<<16;
 			if (smokecondition==gs_door)
-				{
+			{
 				if (thedir[0]<0)
 					xintercept+=0x9fff;
 				else
 					xintercept+=0x5fff;
 				yintercept=FixedScale(xintercept-shooter->x,vy,vx)+shooter->y;
 				if ((yintercept>>16)!=grid[1])
-					{
+				{
 					if ((yintercept>>16)>grid[1])
 						yintercept=(grid[1]<<16)+0xffff;
 					else
 						yintercept=(grid[1]<<16);
-					}
 				}
+			}
 			else if (smokecondition==gs_wall)
-				{
+			{
 				if (thedir[0]<0)
-					{
+				{
 					objtype * ta;
 
 					xintercept += 0x10000;
@@ -12732,9 +12978,9 @@ void RayShoot (objtype * shooter, int damage, int accuracy)
 					ta = (objtype*)actorat[grid[0]][grid[1]];
 					if ((ta) && (ta->which==PWALL))
 						bullethole=0;
-					}
+				}
 				else
-					{
+				{
 					objtype * ta;
 
 					yintercept=FixedScale(xintercept-shooter->x,vy,vx)+shooter->y;
@@ -12748,31 +12994,31 @@ void RayShoot (objtype * shooter, int damage, int accuracy)
 					ta = (objtype*)actorat[grid[0]][grid[1]];
 					if ((ta) && (ta->which==PWALL))
 						bullethole=0;
-					}
 				}
 			}
+		}
 		else
-			{
+		{
 			yintercept=grid[1]<<16;
 			if (smokecondition==gs_door)
-				{
+			{
 				if (thedir[1]<0)
 					yintercept+=0x9fff;
 				else
 					yintercept+=0x5fff;
 				xintercept=FixedScale(yintercept-shooter->y,vx,vy)+shooter->x;
 				if ((xintercept>>16)!=grid[0])
-					{
+				{
 					if ((xintercept>>16)>grid[0])
 						xintercept=(grid[0]<<16)+0xffff;
 					else
 						xintercept=(grid[0]<<16);
-					}
 				}
+			}
 			else if (smokecondition==gs_wall)
-				{
+			{
 				if (thedir[1]<0)
-					{
+				{
 					objtype * ta;
 
 					yintercept += 0x10000;
@@ -12788,9 +13034,9 @@ void RayShoot (objtype * shooter, int damage, int accuracy)
 					ta = (objtype*)actorat[grid[0]][grid[1]];
 					if ((ta) && (ta->which==PWALL))
 						bullethole=0;
-					}
+				}
 				else
-					{
+				{
 					objtype * ta;
 
 					xintercept=FixedScale(yintercept-shooter->y,vx,vy)+shooter->x;
@@ -12804,27 +13050,27 @@ void RayShoot (objtype * shooter, int damage, int accuracy)
 					ta = (objtype*)actorat[grid[0]][grid[1]];
 					if ((ta) && (ta->which==PWALL))
 						bullethole=0;
-					}
 				}
 			}
+		}
 		dx = xintercept - shooter->x;
 		dy = shooter->y - yintercept;
 		xydist = FindDistance(dx,dy);
 		if (shooter->obclass==playerobj)
-			{
+		{
 			playertype * pstate;
 
 			M_LINKSTATE(shooter,pstate);
 			z=shooter->z-FixedMulShift(xydist,tantable[yzangle],25)+pstate->playerheight-32;
-			}
+		}
 		else
 			z=shooter->z-FixedMulShift(xydist,tantable[yzangle],25);
 		if (smokecondition==gs_wall)
-			{
+		{
 			if (z<-32)
 				z=-32;
-			}
 		}
+	}
 	SpawnGunSmoke(xintercept,yintercept,z,angle,bullethole);
 }
 
@@ -12838,9 +13084,8 @@ void RayShoot (objtype * shooter, int damage, int accuracy)
 
 void T_BossDied (objtype *ob)
 {
-
 	if (ob->ticcount)
-	return;
+		return;
 
 	switch (ob->obclass)
 	{
@@ -12871,31 +13116,27 @@ static int WindPitch = 0;
 static int WindDestPitch = 0;
 static int WindPitchRate = 0;
 
-void T_Wind
-	(
-	objtype *ob
-	)
-
-	{
+void T_Wind ( objtype *ob )
+{
 	int distance;
 	int dx;
 	int dy;
 
 	if ( ( ticcount - WindLastTic ) > 0 )
-		{
+	{
 		WindDistance = 1000;
 
 		WindPitch += WindPitchRate;
 		if ( WindPitch == WindDestPitch )
-			{
+		{
 			WindDestPitch = ( RandomNumber( "Wind Pitch", 0 ) - 128 ) << 3;
 			WindPitchRate = 1;
 			if ( WindDestPitch < WindPitch )
-				{
+			{
 				WindPitchRate = -WindPitchRate;
-				}
 			}
 		}
+	}
 	WindLastTic = ticcount;
 
 	dx = ( ob->x - PLAYER[0]->x );
@@ -12903,51 +13144,51 @@ void T_Wind
 
 	distance = 1000;
 	if ( areabyplayer[ ob->areanumber ] )
-		{
+	{
 		distance = ( FindDistance( dx, dy ) ) >> 13;
-		}
+	}
 
 	if ( distance < WindDistance )
-		{
+	{
 		WindDistance = distance;
-		}
+	}
 
 	if ( WindDistance < 255 )
-		{
+	{
 		WindPlaying = true;
 		WindCurrentDistance = WindDistance;
-		}
+	}
 	else
-		{
+	{
 		if ( WindPlaying )
-			{
+		{
 			WindCurrentDistance += 3;
-			}
 		}
+	}
 
 	if ( WindPlaying )
-		{
+	{
 		if ( WindCurrentDistance < 255 )
-			{
+		{
 			if ( !SD_SoundActive( WindHandle ) )
-				{
+			{
 				WindHandle = SD_PlayPitchedSound( SD_WINDSND,
 					255 - WindCurrentDistance, WindPitch );
-				}
+			}
 			else
-				{
+			{
 				SD_SetSoundPitch( WindHandle, WindPitch );
 				SD_SetPan( WindHandle, 255 - WindCurrentDistance, 255 - WindCurrentDistance,
 					255 - WindCurrentDistance );
-				}
-			}
-		else
-			{
-			SD_StopSound( WindHandle );
-			WindPlaying = false;
 			}
 		}
+		else
+		{
+			SD_StopSound( WindHandle );
+			WindPlaying = false;
+		}
 	}
+}
 
 /*
 =====================
@@ -12957,12 +13198,8 @@ void T_Wind
 =====================
 */
 
-void StopWind
-	(
-	void
-	)
-
-	{
+void StopWind(void)
+{
 	objtype *temp;
 
 	FX_SetReverb( 0 );
@@ -12978,9 +13215,8 @@ void StopWind
 	WindPitchRate		= 0;
 
 	for(temp=FIRSTACTOR;temp;temp=temp->next)
-		{
+	{
 		if (temp->soundhandle != -1)
 			SD_StopSound(temp->soundhandle);
-		}
 	}
-
+}

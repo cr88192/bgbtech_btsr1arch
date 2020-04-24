@@ -470,6 +470,9 @@ void LoadColorMap( void )
 
 }
 
+boolean rott_iswolf;
+
+
 /*
 ==========================
 =
@@ -489,6 +492,10 @@ void SetupLightLevels ( void )
 	fog=0;
 	lightsource=0;
 
+	rott_iswolf=false;
+//	if ((word)MAPSPOT(3,0,1)==99)
+//		rott_iswolf=true;
+
 // Set up light level for level
 
 	if (((word)MAPSPOT(2,0,1)>=104) && ((word)MAPSPOT(2,0,1)<=105))
@@ -506,6 +513,10 @@ void SetupLightLevels ( void )
       else
 		   Error("You cannot use light sourcing on a level with fog on map %ld\n",gamestate.mapon);
       }
+	else if ((word)MAPSPOT(3,0,1)==99)
+	{
+		rott_iswolf=true;
+	}
 	else if ((word)MAPSPOT(3,0,1))
 		Error("You must use the lightsource icon or nothing at all at (3,0) in plane 1 on map %ld\n",gamestate.mapon);
    if (((word)MAPSPOT(2,0,0)>=LIGHTLEVELBASE) && ((word)MAPSPOT(2,0,0)<=LIGHTLEVELEND))

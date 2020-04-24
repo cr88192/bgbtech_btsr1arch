@@ -229,6 +229,43 @@ void VGAWRITE(unsigned addr, byte clr)
 	if(msk&8)	buf[3]=clr;
 }
 
+#ifdef __BJX2__
+void VGAWRITEBUF_CopyPow2(byte *cs, byte *ct, byte *cte);
+__asm {
+	VGAWRITEBUF_CopyPow2:
+
+	SUB		R6, 32, R7
+
+	CMPQGT	R5, R7
+	BF		.L3
+.L2:
+	MOV.Q	(R4), R16
+	SHLD.Q	R16,  -8, R17	|	MOV.B	R16, (R5,  0)
+	SHLD.Q	R16, -16, R18	|	MOV.B	R17, (R5,  4)
+	SHLD.Q	R16, -24, R19	|	MOV.B	R18, (R5,  8)
+	SHLD.Q	R16, -32, R20	|	MOV.B	R19, (R5, 12)
+	SHLD.Q	R16, -40, R21	|	MOV.B	R20, (R5, 16)
+	SHLD.Q	R16, -48, R22	|	MOV.B	R21, (R5, 20)
+	SHLD.Q	R16, -56, R23	|	MOV.B	R22, (R5, 24)
+	ADD		 8, R4			|	MOV.B	R23, (R5, 28)
+	ADD		32, R5
+	CMPQGT	R5, R7
+	BT		.L2
+.L3:
+
+	CMPQGT	R5, R6
+	BF		.L5
+.L4:
+	MOVU.B	(R4), R3
+	ADD		1, R4		|	MOV.B	R3, (R5)
+	ADD		4, R5
+	CMPQGT	R5, R6
+	BT		.L4
+.L5:
+	RTSU
+}
+#endif
+
 void VGAWRITEBUF(unsigned addr, byte *src, int sz)
 {
 	byte *cs, *ct, *cte, *ct1e;
@@ -253,6 +290,9 @@ void VGAWRITEBUF(unsigned addr, byte *src, int sz)
 //	if(!(screen_planemask&(screen_planemask-1)))
 	if(screen_planemask_ispow2)
 	{
+#ifdef __BJX2__
+		VGAWRITEBUF_CopyPow2(cs, ct, cte);
+#else
 		ct1e=cte-16;
 //		while((ct+16)<=cte)
 		while(ct<=ct1e)
@@ -271,6 +311,7 @@ void VGAWRITEBUF(unsigned addr, byte *src, int sz)
 			*ct=v;
 			ct+=4;
 		}
+#endif
 		return;
 	}
 	
@@ -516,6 +557,16 @@ void I_FinishUpdate (void)
 {
 	int x, y, c;
 
+#if 0
+	for(y=196; y<200; y++)
+		for(x=0; x<256; x++)
+	{
+		screenbuf[(y-4)*SCREENAWIDTH+x]=(x/2);
+		screenbuf[(y-0)*SCREENAWIDTH+x]=128+(x/2);
+	}
+#endif
+	
+
 	for(y=0; y<200; y++)
 		for(x=0; x<320; x++)
 	{
@@ -530,7 +581,7 @@ void I_FinishUpdate (void)
 }
 #endif
 
-#ifdef _BGBCC
+#ifdef __BJX2__
 
 u64 I_FinishUpdate_Repack8to16 (u32 pxa);
 
@@ -561,13 +612,13 @@ __asm {
 I_FinishUpdate_Repack8to16:
 	MOV		screen_pal, R5
 	SHLD	R4, -24, R6
-	SHLD	R4, -16, R7		|	MOV.W	(R5, R6), R2
+	SHLD	R4, -16, R7		|	MOVU.W	(R5, R6), R2
 	EXTU.B	R7, R7			|	SHLD	R4, -8, R6
-	SHLD.Q	R2, 16, R2		|	MOV.W	(R5, R7), R3
+	SHLD.Q	R2, 16, R2		|	MOVU.W	(R5, R7), R3
 	EXTU.B	R6, R6			|	OR		R3, R2
-	SHLD.Q	R2, 16, R2		|	MOV.W	(R5, R6), R3
+	SHLD.Q	R2, 16, R2		|	MOVU.W	(R5, R6), R3
 	EXTU.B	R4, R7			|	OR		R3, R2
-	SHLD.Q	R2, 16, R2		|	MOV.W	(R5, R7), R3
+	SHLD.Q	R2, 16, R2		|	MOVU.W	(R5, R7), R3
 	OR		R3, R2			|	RTSU
 };
 
@@ -666,6 +717,9 @@ void TurnOffTextCursor ( void )
 
 void VH_UpdateScreen (void)
 {
+	FX_Update();
+	I_FinishUpdate();
+	I_StartFrame();
 }
 
 void RefreshClear (void)
@@ -784,6 +838,38 @@ void R_DrawFilmColumn (unsigned buf)
 	}
 }
 
+#ifdef __BJX2__
+void R_DrawFilmPost_A1 (byte *ct, int count, byte *src);
+void R_DrawFilmPost_A2 (byte *ct, int count, byte *src);
+
+__asm {
+R_DrawFilmPost_A1:
+	CMPGT	0, R5
+//	CMPGT	-1, R5
+	BF .L3
+	.L2:
+	ADD		-1, R5		|	MOV.B	(R6), R16
+	ADD		1, R6		|	MOV.B	R16, (R4)
+	ADD		384, R4		|	CMPGT	0, R5
+	BT .L2
+	.L3:
+	RTSU
+
+R_DrawFilmPost_A2:
+	CMPGT	0, R5
+//	CMPGT	-1, R5
+	BF .L3
+	.L2:
+	ADD		-1, R5		|	MOV.B		(R6), R16
+	ADD		1, R6		|	PSHUF.B		R16, 0, R17
+							MOV.W		R17, (R4)
+	ADD		384, R4		|	CMPGT		0, R5
+	BT 		.L2
+	.L3:
+	RTSU
+}
+#endif
+
 void DrawFilmPost (unsigned buf, byte * src, int height)
 {
 #if 1
@@ -793,6 +879,11 @@ void DrawFilmPost (unsigned buf, byte * src, int height)
 //	if(!(screen_planemask&(screen_planemask-1)))
 	if(screen_planemask_ispow2)
 	{
+#ifdef __BJX2__
+		ct = VGA_GETASPTR(buf);
+		R_DrawFilmPost_A1 (ct, height, src);
+		return;
+#else
 		ct = VGA_GETASPTR(buf);
 		cs=src;
 		cse=src+height;
@@ -802,10 +893,16 @@ void DrawFilmPost (unsigned buf, byte * src, int height)
 			ct+=384;
 		}
 		return;
+#endif
 	}
 
 	if(screen_planemask_ispair)
 	{
+#ifdef __BJX2__
+		ct = VGA_GETASPTR(buf);
+		R_DrawFilmPost_A2 (ct, height, src);
+		return;
+#else
 		ct = VGA_GETASPTR(buf);
 		cs=src;
 		cse=src+height;
@@ -817,6 +914,7 @@ void DrawFilmPost (unsigned buf, byte * src, int height)
 			ct+=384;
 		}
 		return;
+#endif
 	}
 #endif
 
@@ -839,6 +937,86 @@ void  DrawHeightPost (int height, byte * src, unsigned buf)
 {
 	DrawFilmPost(buf, src, height);
 }
+
+#ifdef __BJX2__
+void R_DrawWallColumn_A1 (byte *ct, int count,
+	byte *src, byte *cmap, fixed_t frac, fixed_t fracstep);
+void R_DrawWallColumn_A2 (byte *ct, int count,
+	byte *src, byte *cmap, fixed_t frac, fixed_t fracstep);
+
+__asm {
+R_DrawWallColumn_A1:
+	CMPGT	1, R5
+	BF .L1
+	.L0:
+	ADD		R20, R21, R23	|	SHAD	R20, -16, R18
+	AND		R18, 63, R18	|	SHAD	R23, -16, R22
+	ADD		R23, R21, R20	|	MOV.B	(R6, R18), R19
+	AND		R22, 63, R22	|	MOV.B	(R7, R19), R16
+								MOV.B	(R6, R22), R23
+								MOV.B	(R7, R23), R17
+	ADD		R4, 384, R3		|	MOV.B	R16, (R4)
+	ADD		R3, 384, R4		|	MOV.B	R17, (R3)
+//								CMPGT	1, R5
+								CMPGT	2, R5
+	ADD		-2, R5			|	BT .L0
+	.L1:
+
+//	CMPGT	0, R5
+	CMPGT	-1, R5
+	BF .L3
+	.L2:
+	SHAD	R20, -16, R22
+	AND		R22, 63, R22
+	MOV.B	(R6, R22), R23
+	MOV.B	(R7, R23), R16
+	MOV.B	R16, (R4)
+	ADD		384, R4
+	ADD		R21, R20	|	CMPGT	0, R5
+	ADD		-1, R5		|	BT .L2
+	.L3:
+
+	RTSU
+
+R_DrawWallColumn_A2:
+
+#if 1
+	CMPGT	1, R5
+	BF .L1
+	.L0:
+	ADD		R20, R21, R23	|	SHAD	R20, -16, R18
+	AND		R18, 63, R18	|	SHAD	R23, -16, R22
+	ADD		R23, R21, R20	|	MOV.B	(R6, R18), R19
+	AND		R22, 63, R22	|	MOV.B	(R7, R19), R16
+								MOV.B	(R6, R22), R23
+	PSHUF.B	R16, 0, R16		|	MOV.B	(R7, R23), R17
+	PSHUF.B	R17, 0, R17		|	CMPGT	1, R5
+	ADD		R4, 384, R3		|	MOV.W	R16, (R4)
+	ADD		R3, 384, R4		|	MOV.W	R17, (R3)
+	ADD		-2, R5
+	BT .L0
+	.L1:
+#endif
+
+//	CMPGT	0, R5
+	CMPGT	-1, R5
+	BF .L3
+	.L2:
+	SHAD	R20, -16, R22
+	AND		R22, 63, R22
+	MOV.B	(R6, R22), R23
+	MOVU.B	(R7, R23), R16
+	PSHUF.B	R16, 0, R17
+	MOV.W	R17, (R4)
+	ADD		384, R4
+	ADD		R21, R20
+	CMPGT	0, R5
+	ADD		-1, R5
+	BT .L2
+	.L3:
+	RTSU
+}
+#endif
 
 void R_DrawWallColumn (unsigned buf)
 {
@@ -891,17 +1069,25 @@ void R_DrawWallColumn (unsigned buf)
 //	if((screen_planemask==0xC) || (screen_planemask==0x3))
 	if(screen_planemask_ispair)
 	{
+#ifdef __BJX2__
+		R_DrawWallColumn_A2 (ct, count, src, cmap, frac, fracstep);
+		return;
+#else
 		do 
 		{
 			pix = cmap[src[(frac>>FRACBITS)&63]];
 			ct[0] = pix;	ct[1] = pix;
 			ct += 96*4;
 			frac += fracstep;
-		} while (count--); 
+		} while (count--);
 		return;
+#endif
 	}
 #endif
 
+#ifdef __BJX2__
+	R_DrawWallColumn_A1 (ct, count, src, cmap, frac, fracstep);
+#else
 	do 
 	{
 //		pix = shadingtable[dc_source[(frac>>FRACBITS)&127]];
@@ -913,7 +1099,8 @@ void R_DrawWallColumn (unsigned buf)
 
 		frac += fracstep;
 	
-	} while (count--); 
+	} while (count--);
+#endif
 }
 
 void  DrawMenuPost (int height, byte * src, unsigned buf)
@@ -931,12 +1118,82 @@ void DrawSkyPost (unsigned buf, byte * src, int height)
 	DrawFilmPost(buf, src, height);
 }
 
+#ifdef __BJX2__
+void R_DrawRow_A1 (byte *ct, int count,
+	byte *src, byte *cmap, fixed_t frac, fixed_t fracstep);
+void R_DrawRow_A2 (byte *ct, int count,
+	byte *src, byte *cmap, fixed_t frac, fixed_t fracstep);
+
+__asm {
+R_DrawRow_A1:
+	MOV		0x3F80, R1
+//	CMPGT	0, R5
+	CMPGT	-1, R5
+	BF .L3
+	.L2:
+	SHAD	R20, -8, R22	|	SHAD	R20, -17, R23
+	AND		R22, 127, R22	|	AND		R23, R1, R23
+	OR		R22, R23, R22
+	MOV.B	(R6, R22), R23
+	MOVU.B	(R7, R23), R17
+	MOV.B	R17, (R4)
+	ADD		4, R4
+	ADD		R21, R20	|	CMPGT	0, R5
+	ADD		-1, R5		|	BT .L2
+	.L3:
+	RTSU
+
+R_DrawRow_A2:
+#if 1
+	MOV		0x3F80, R1
+	CMPGT	1, R5
+	BF .L1
+	.L0:
+	ADD		R20, R21, R17	|	SHAD	R20, -8, R18
+	SHAD	R20, -17, R19	|	SHAD	R17, -8, R22
+	SHAD	R17, -17, R23	|	AND		R18, 127, R18
+	AND		R19, R1, R19	|	AND		R22, 127, R22
+	AND		R23, R1, R23	|	OR		R18, R19, R18
+	OR		R22, R23, R22	|	MOV.B	(R6, R18), R19
+	ADD		R17, R21, R20	|	MOV.B	(R6, R22), R23
+								MOVU.B	(R7, R19), R16
+	PSHUF.B	R16, 0, R16		|	MOVU.B	(R7, R23), R17
+	PSHUF.B	R17, 0, R17		|	ADD		R5, -2, R5
+	ADD		R4, 4, R3		|	MOV.W	R16, (R4)
+	ADD		R3, 4, R4		|	MOV.W	R17, (R3)
+
+	CMPGT	1, R5
+	BT .L0
+	.L1:
+#endif
+
+	MOV		0x3F80, R1
+//	CMPGT	0, R5
+	CMPGT	-1, R5
+	BF .L3
+	.L2:
+	SHAD	R20, -8, R22	|	SHAD	R20, -17, R23
+	AND		R22, 127, R22	|	AND		R23, R1, R23
+	OR		R22, R23, R22
+	MOV.B	(R6, R22), R23
+	MOVU.B	(R7, R23), R17
+	PSHUF.B	R17, 0, R17
+	MOV.W	R17, (R4)
+	ADD		4, R4
+	ADD		R21, R20	|	CMPGT	0, R5
+	ADD		-1, R5		|	BT .L2
+	.L3:
+	RTSU
+}
+#endif
+
 void DrawRow(int count, unsigned dest, byte * src)
 {
 	byte *ct;
 	byte *cmap;
 	fixed_t		xfrac, xstep, ystep;
-	fixed_t		yfrac; 
+	fixed_t		yfrac;
+	u32			frac, fracstep;
 	int			spot, pix; 
 
 	if((count--)<=0)
@@ -946,6 +1203,9 @@ void DrawRow(int count, unsigned dest, byte * src)
 	yfrac = mr_yfrac; 
 	xstep = mr_xstep;
 	ystep = mr_ystep;
+	
+	frac		= (yfrac<<16)+(xfrac&0x7FFF);
+	fracstep	= (ystep<<16)+(xstep&0x7FFF);
 
 	ct = VGA_GETASPTR(dest);
 	cmap = shadingtable;
@@ -970,28 +1230,42 @@ void DrawRow(int count, unsigned dest, byte * src)
 //	if((screen_planemask==0xC) || (screen_planemask==0x3))
 	if(screen_planemask_ispair)
 	{
+#ifdef __BJX2__
+		R_DrawRow_A2(ct, count, src, cmap, frac, fracstep);
+		return;
+#else
 		do 
 		{
-			spot = ((yfrac>>(8-7))&(127*128)) + ((xfrac>>8)&127);
+//			spot = ((yfrac>>(8-7))&(127*128)) + ((xfrac>>8)&127);
+			spot = ((frac>>(24-7))&(127*128)) + ((frac>>8)&127);
 			pix = cmap[src[spot]];
 			ct[0] = pix;
 			ct[1] = pix;
 			ct += 4;
-			xfrac += xstep; 
-			yfrac += ystep;
+//			xfrac += xstep; 
+//			yfrac += ystep;
+			frac += fracstep; 
 		} while (count--); 
 		return;
+#endif
 	}
 
+#ifdef __BJX2__
+		R_DrawRow_A2(ct, count, src, cmap, frac, fracstep);
+		return;
+#else
 	do 
 	{
-		spot = ((yfrac>>(8-7))&(127*128)) + ((xfrac>>8)&127);
+//		spot = ((yfrac>>(8-7))&(127*128)) + ((xfrac>>8)&127);
+		spot = ((frac>>(24-7))&(127*128)) + ((frac>>8)&127);
 		pix = cmap[src[spot]];
 		*ct = pix;
 		ct += 4;
-		xfrac += xstep; 
-		yfrac += ystep;
-	} while (count--); 
+//		xfrac += xstep; 
+//		yfrac += ystep;
+		frac += fracstep; 
+	} while (count--);
+#endif 
 }
 
 void DrawRotRow(int count, unsigned dest, byte * src)
@@ -1032,6 +1306,86 @@ void DrawMaskedRotRow(int count, unsigned dest, byte * src)
 //	DrawRow(count, dest, src);
 	DrawRotRow(count, dest, src);
 }
+
+#ifdef __BJX2__
+void R_DrawColumn_A1 (byte *ct, int count,
+	byte *src, byte *cmap, fixed_t frac, fixed_t fracstep);
+void R_DrawColumn_A2 (byte *ct, int count,
+	byte *src, byte *cmap, fixed_t frac, fixed_t fracstep);
+
+__asm {
+R_DrawColumn_A1:
+	CMPGT	1, R5
+	BF .L1
+	.L0:
+	ADD		R20, R21, R23	|	SHAD	R20, -16, R18
+	AND		R18, 127, R18	|	SHAD	R23, -16, R22
+	ADD		R23, R21, R20	|	MOV.B	(R6, R18), R19
+	AND		R22, 127, R22	|	MOV.B	(R7, R19), R16
+								MOV.B	(R6, R22), R23
+								MOV.B	(R7, R23), R17
+	ADD		R4, 384, R3		|	MOV.B	R16, (R4)
+	ADD		R3, 384, R4		|	MOV.B	R17, (R3)
+//								CMPGT	1, R5
+								CMPGT	2, R5
+	ADD		-2, R5			|	BT .L0
+	.L1:
+
+//	CMPGT	0, R5
+	CMPGT	-1, R5
+	BF .L3
+	.L2:
+	SHAD	R20, -16, R22
+	AND		R22, 127, R22
+	MOV.B	(R6, R22), R23
+	MOV.B	(R7, R23), R16
+	MOV.B	R16, (R4)
+	ADD		384, R4
+	ADD		R21, R20	|	CMPGT	0, R5
+	ADD		-1, R5		|	BT .L2
+	.L3:
+
+	RTSU
+
+R_DrawColumn_A2:
+
+#if 1
+	CMPGT	1, R5
+	BF .L1
+	.L0:
+	ADD		R20, R21, R23	|	SHAD	R20, -16, R18
+	AND		R18, 127, R18	|	SHAD	R23, -16, R22
+	ADD		R23, R21, R20	|	MOV.B	(R6, R18), R19
+	AND		R22, 127, R22	|	MOV.B	(R7, R19), R16
+								MOV.B	(R6, R22), R23
+	PSHUF.B	R16, 0, R16		|	MOV.B	(R7, R23), R17
+	PSHUF.B	R17, 0, R17		|	CMPGT	1, R5
+	ADD		R4, 384, R3		|	MOV.W	R16, (R4)
+	ADD		R3, 384, R4		|	MOV.W	R17, (R3)
+	ADD		-2, R5
+	BT .L0
+	.L1:
+#endif
+
+//	CMPGT	0, R5
+	CMPGT	-1, R5
+	BF .L3
+	.L2:
+	SHAD	R20, -16, R22
+	AND		R22, 127, R22
+	MOV.B	(R6, R22), R23
+	MOVU.B	(R7, R23), R16
+	PSHUF.B	R16, 0, R17
+	MOV.W	R17, (R4)
+	ADD		384, R4
+	ADD		R21, R20
+	CMPGT	0, R5
+	ADD		-1, R5
+	BT .L2
+	.L3:
+	RTSU
+}
+#endif
 
 void R_DrawColumn (unsigned buf)
 {
@@ -1076,6 +1430,11 @@ void R_DrawColumn (unsigned buf)
 //	if((screen_planemask==0xC) || (screen_planemask==0x3))
 	if(screen_planemask_ispair)
 	{
+#ifdef __BJX2__
+// #if 0
+		R_DrawColumn_A2 (ct, count-1, dc_source, shadingtable, frac, fracstep);
+		return;
+#else
 		do 
 		{
 			pix = shadingtable[dc_source[(frac>>FRACBITS)&127]];
@@ -1086,6 +1445,7 @@ void R_DrawColumn (unsigned buf)
 		
 		} while (count--); 
 		return;
+#endif
 	}
 #endif
 
@@ -1103,6 +1463,11 @@ void R_DrawColumn (unsigned buf)
 		return;
 	}
 
+#ifdef __BJX2__
+// #if 0
+	R_DrawColumn_A1 (ct, count-1, dc_source, shadingtable, frac, fracstep);
+	return;
+#else
 	do 
 	{
 		pix = shadingtable[dc_source[(frac>>FRACBITS)&127]];
@@ -1111,8 +1476,9 @@ void R_DrawColumn (unsigned buf)
 		*ct = pix;
 		ct += 96*4;
 		frac += fracstep;
-	
 	} while (count--); 
+	return;
+#endif
 }
 
 void R_DrawSolidColumn (int color, unsigned buf)
@@ -1221,6 +1587,10 @@ void R_DrawClippedColumn (unsigned buf)
 	fracstep = dc_iscale; 
 	frac = dc_texturemid + (dc_yl-centeryclipped)*fracstep; 
 
+#ifdef __BJX2__
+	R_DrawColumn_A1 (ct, count, src, cmap, frac, fracstep);
+	return;
+#else
 	do 
 	{
 		pix = cmap[src[(frac>>FRACBITS)&127]];
@@ -1231,4 +1601,5 @@ void R_DrawClippedColumn (unsigned buf)
 		frac += fracstep;
 	
 	} while (count--); 
+#endif
 }

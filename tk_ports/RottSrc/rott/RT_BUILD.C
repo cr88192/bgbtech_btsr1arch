@@ -261,7 +261,8 @@ void	DrawPlanePosts (void)
 				if (lastwall==-1)
 					shape=menubuf;
 				else
-					shape=W_CacheLumpNum(lastwall,PU_CACHE);
+//					shape=W_CacheLumpNum(lastwall,PU_CACHE);
+					shape=W_CacheWallLumpNum(lastwall,PU_CACHE);
 				}
 			DrawRotPost (height,shape+posts[i].texture,buf,posts[i].offset);
 			}

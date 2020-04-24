@@ -452,6 +452,7 @@ void SpawnFirewall(objtype*ob,int which,int newz);
 void SelectKristChaseDir(objtype*ob);
 void AvoidPlayerMissile(objtype*ob);
 
+int T_InitSwizzle();
 int T_SwizzleObjtypeToInt(objtype *ob);
 // int T_SwizzleStatObjToInt(statobj_t *ob);
 objtype *T_SwizzleObjtypeFromInt(int obj);

@@ -132,6 +132,7 @@ SRCS =			\
 	fli_util.c	\
 	fx_mix.c	\
 	fx_music.c	\
+	i_snd_btsh4.c	\
 	m_fixed.c	\
 	rt_actor.c	\
 	rt_battl.c	\
@@ -175,7 +176,8 @@ SRCS =			\
 
 
 rott_bjx2.exe   : $(SRCS) $(HEADERS)
-	bgbcc /Ferott_bjx2.exe $(SRCS) $(LIBS) -I. -lvxcore_bjx2 -O2 -fwex3w -fwexj
+	bgbcc /Ferott_bjx2.exe $(SRCS) $(LIBS) -I. -lvxcore_bjx2 -O2 \
+		-fwex3w -fwexj -Zz
 
 all : rott_bjx2.exe
 

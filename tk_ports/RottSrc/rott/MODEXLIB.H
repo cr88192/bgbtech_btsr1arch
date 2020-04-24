@@ -130,10 +130,16 @@ void  XFlipPage ( void );
 void  WaitVBL( void );
 void  TurnOffTextCursor ( void );
 
+void VGAMAPMASK(int mask);
+void VGAREADMAP(int plane);
+void VGAWRITEMAP(int plane);
+
 byte VGAREAD(unsigned addr);
 void VGAWRITE(unsigned addr, byte clr);
+void VGAREADBUF(byte *dst, unsigned addr, int sz);
 void VGAWRITEBUF(unsigned addr, byte *src, int sz);
 void VGAMEMSET(unsigned addr, byte val, int sz);
+void VGAMEMCPY(unsigned dst, unsigned src, int sz);
 
 void *VGA_GetAsPtr(unsigned addr);
 
