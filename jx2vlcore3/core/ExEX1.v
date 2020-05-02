@@ -526,6 +526,7 @@ begin
 					tRegValRn1	= {
 						regValImm[32] ? UV32_FF : UV32_00,
 						regValImm[31:0] };
+//					tRegValRn1	= regValRs;
 				end
 				4'b0001: begin /* LDISH8 */
 					tRegIdRn1	= regIdRm;

@@ -25,6 +25,15 @@ bool BGBCC_CCXL_FreeRegisterInfo(BGBCC_TransState *ctx,
 	return(true);
 }
 
+BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_CloneRegisterInfo(
+	BGBCC_TransState *ctx, BGBCC_CCXL_RegisterInfo *rinf)
+{
+	BGBCC_CCXL_RegisterInfo *tmp;
+	tmp=BGBCC_CCXL_AllocRegisterInfo(ctx);
+	memcpy(tmp, rinf, sizeof(BGBCC_CCXL_RegisterInfo));
+	return(tmp);
+}
+
 ccxl_status BGBCC_CCXL_RegisterAllocTemporary(
 	BGBCC_TransState *ctx, ccxl_type bty,
 	ccxl_register *rtreg)

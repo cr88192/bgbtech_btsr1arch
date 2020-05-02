@@ -114,9 +114,12 @@ assign	idImmC = opImmC;
 assign	idUCmdC = opUCmdC;
 assign	idUIxtC = opUIxtC;
 
-wire[21:0]		tOpJBitsA;
-wire[21:0]		tOpJBitsB;
-wire[21:0]		tOpJBitsC;
+// wire[21:0]		tOpJBitsA;
+// wire[21:0]		tOpJBitsB;
+// wire[21:0]		tOpJBitsC;
+wire[23:0]		tOpJBitsA;
+wire[23:0]		tOpJBitsB;
+wire[23:0]		tOpJBitsC;
 
 wire		opIsWexJumboA;
 wire		opIsWexJumboB;
@@ -179,12 +182,13 @@ wire[7:0]		decOpFzA_idUIxt;
 
 DecOpFz	decOpFzA(
 	clock,		reset,
-	{ UV32_XX, istrWord[31: 0] },	1'b0,	UV23_00,
+	{ UV32_XX, istrWord[31: 0] },	1'b0,	UV25_00,
 	decOpFzA_idRegN,		decOpFzA_idRegM,
 	decOpFzA_idRegO,		decOpFzA_idImm,
 	decOpFzA_idUCmd,		decOpFzA_idUIxt
 	);
 
+`ifndef jx2_enable_ops48
 wire[5:0]		decOpFC_idRegN;
 wire[5:0]		decOpFC_idRegM;
 wire[5:0]		decOpFC_idRegO;
@@ -199,6 +203,7 @@ DecOpFC	decOpFC(
 	decOpFC_idRegO,		decOpFC_idImm,
 	decOpFC_idUCmd,		decOpFC_idUIxt
 	);
+`endif
 
 reg opIsFxA;
 reg opIsFzA;
@@ -229,20 +234,27 @@ reg opIsDfC;		//Pred-False or WEX
 reg opIsWfC;		//WEX
 
 `ifdef jx2_enable_wexjumbo
+//assign	opIsWexJumboA =
+//		(istrWord[15: 8] == 8'b1111_0100) &&
+//		(istrWord[31:30] == 2'b11       ) ;
+//assign	opIsWexJumboB =
+//		(istrWord[47:40] == 8'b1111_0100) &&
+//		(istrWord[63:62] == 2'b11       ) ;
+
 assign	opIsWexJumboA =
-		(istrWord[15: 8] == 8'b1111_0100) &&
-		(istrWord[31:30] == 2'b11       ) ;
+		(istrWord[15: 8] == 8'b1111_1110) ;
 assign	opIsWexJumboB =
-		(istrWord[47:40] == 8'b1111_0100) &&
-		(istrWord[63:62] == 2'b11       ) ;
+		(istrWord[47:40] == 8'b1111_1110) ;
 
 assign	opIsWexJumbo96 =
 //	opIsWexJumboA && istrWord[42];
 	opIsWexJumboA && opIsWexJumboB;
 
 assign	tOpJBitsA		= 0;
-assign	tOpJBitsB		= { istrWord [7: 0], istrWord[29:16] };
-assign	tOpJBitsC		= { istrWord[39:32], istrWord[61:48] };
+// assign	tOpJBitsB		= { istrWord [7: 0], istrWord[29:16] };
+// assign	tOpJBitsC		= { istrWord[39:32], istrWord[61:48] };
+assign	tOpJBitsB		= { istrWord [7: 0], istrWord[31:16] };
+assign	tOpJBitsC		= { istrWord[39:32], istrWord[63:48] };
 
 `else
 
@@ -279,38 +291,16 @@ begin
 	opIsDualLane3R	= 0;
 
 	casez(istrWord[15:10])
-		6'b11100z: begin	//E0..E7
+		6'b1110zz: begin	//E0..EF
 			opIsFxA = 1;		opIsFzA = 1;
 			opIsFCA = 0;		opIsDzA = 1;
 			opIsDfA = istrWord[10];
-		end
-		6'b111010: begin	//E8..EB
-			opIsFxA = 1;		opIsFzA = 1;
-			opIsFCA = 0;		opIsDzA = 1;
-			opIsDfA = istrWord[8];
-			opIsDwA = istrWord[9];
-		end
-		6'b111011: begin	//EC..EF
-			opIsFxA = 1;		opIsFzA = 0;
-			opIsFCA = 1;		opIsDzA = 1;
-			opIsDfA = istrWord[9];
 		end
 
-		6'b11110z: begin	//F0..F7
+		6'b1111zz: begin	//F0..FF
 			opIsFxA = 1;		opIsFzA = 1;
 			opIsFCA = 0;		opIsDzA = 0;
 			opIsDfA = istrWord[10];
-		end
-		6'b111110: begin	//F8..FB
-			opIsFxA = 1;		opIsFzA = 1;
-			opIsFCA = 0;		opIsDzA = 0;
-//			opIsDfA = istrWord[8];
-			opIsDfA = istrWord[8] && !istrWord[9];
-		end
-		6'b111111: begin	//FC..FF
-			opIsFxA = 1;		opIsFzA = 0;
-			opIsFCA = 1;		opIsDzA = 0;
-			opIsDfA = istrWord[9];
 		end
 
 		default: begin
@@ -321,38 +311,16 @@ begin
 	endcase
 
 	casez(istrWord[47:42])
-		6'b11100z: begin	//E0..E7
+		6'b1110zz: begin	//E0..EF
 			opIsFxB = 1;		opIsFzB = 1;
 			opIsFCB = 0;		opIsDzB = 1;
 			opIsDfB = istrWord[42];
-		end
-		6'b111010: begin	//E8..EB
-			opIsFxB = 1;		opIsFzB = 1;
-			opIsFCB = 0;		opIsDzB = 1;
-			opIsDfB = istrWord[40];
-			opIsDwB = istrWord[41];
-		end
-		6'b111011: begin	//EC..EF
-			opIsFxB = 1;		opIsFzB = 0;
-			opIsFCB = 1;		opIsDzB = 1;
-			opIsDfB = istrWord[41];
 		end
 
-		6'b11110z: begin	//F0..F7
+		6'b1111zz: begin	//F0..FF
 			opIsFxB = 1;		opIsFzB = 1;
 			opIsFCB = 0;		opIsDzB = 0;
 			opIsDfB = istrWord[42];
-		end
-		6'b111110: begin	//F8..FB
-			opIsFxB = 1;		opIsFzB = 1;
-			opIsFCB = 0;		opIsDzB = 0;
-//			opIsDfB = istrWord[40];
-			opIsDfB = istrWord[40] && !istrWord[41];
-		end
-		6'b111111: begin	//FC..FF
-			opIsFxB = 1;		opIsFzB = 0;
-			opIsFCB = 1;		opIsDzB = 0;
-			opIsDfB = istrWord[41];
 		end
 
 		default: begin
@@ -363,38 +331,16 @@ begin
 	endcase
 
 	casez(istrWord[79:74])
-		6'b11100z: begin	//E0..E7
+		6'b1110zz: begin	//E0..EF
 			opIsFxC = 1;		opIsFzC = 1;
 			opIsFCC = 0;		opIsDzC = 1;
 			opIsDfC = istrWord[74];
-		end
-		6'b111010: begin	//E8..EB
-			opIsFxC = 1;		opIsFzC = 1;
-			opIsFCC = 0;		opIsDzC = 1;
-			opIsDfC = istrWord[72];
-			opIsDwC = istrWord[73];
-		end
-		6'b111011: begin	//EC..EF
-			opIsFxC = 1;		opIsFzC = 0;
-			opIsFCC = 1;		opIsDzC = 1;
-			opIsDfC = istrWord[73];
 		end
 
-		6'b11110z: begin	//F0..F7
+		6'b1111zz: begin	//F0..FF
 			opIsFxC = 1;		opIsFzC = 1;
 			opIsFCC = 0;		opIsDzC = 0;
 			opIsDfC = istrWord[74];
-		end
-		6'b111110: begin	//F8..FB
-			opIsFxC = 1;		opIsFzC = 1;
-			opIsFCC = 0;		opIsDzC = 0;
-//			opIsDfC = istrWord[72];
-			opIsDfC = istrWord[72] && !istrWord[73];
-		end
-		6'b111111: begin	//FC..FF
-			opIsFxC = 1;		opIsFzC = 0;
-			opIsFCC = 1;		opIsDzC = 0;
-			opIsDfC = istrWord[73];
 		end
 
 		default: begin
@@ -425,37 +371,25 @@ begin
 	if(opIsWexJumbo96)
 	begin
 		opImmA	= decOpFzC_idImm;
-		
-		if(opIsWexJumboLdi)
-		begin
-			opRegAM	= opWexJumboRn;
-			opRegAO	= JX2_GR_JIMM;
-			opRegAN	= opWexJumboRn;
 
-			opUCmdA	= { JX2_IXC_AL, JX2_UCMD_MOV_IR };
-			opUIxtA	= { JX2_IXC_AL, JX2_UCIX_LDI_JLDIX };
-		end
-		else
-		begin
-			opRegAN	= decOpFC_idRegN;
-			opRegAM	= decOpFC_idRegM;
-			opRegAO	= decOpFC_idRegO;
-			opImmA	= decOpFC_idImm;
-			opUCmdA	= decOpFC_idUCmd;
-			opUIxtA	= decOpFC_idUIxt;
-		end
+		opRegAM	= decOpFzC_idRegM;
+		opRegAO	= decOpFzC_idRegO;
+		opRegAN	= decOpFzC_idRegN;
+		opImmA	= decOpFzC_idImm;
+		opUCmdA	= decOpFzC_idUCmd;
+		opUIxtA	= decOpFzC_idUIxt;
 
 		opRegBM	= JX2_GR_ZZR;
 		opRegBO	= JX2_GR_ZZR;
 		opRegBN	= JX2_GR_ZZR;
-		opImmB	= decOpFzB_idImm;
+		opImmB	= { 1'b0, tOpJBitsB[23:0], tOpJBitsC[23:16] };
 		opUCmdB	= UV8_00;
 		opUIxtB	= UV8_00;
 
 		opRegCM	= JX2_GR_ZZR;
 		opRegCO	= JX2_GR_ZZR;
 		opRegCN	= JX2_GR_ZZR;
-		opImmC	= decOpFzA_idImm;
+		opImmC	= UV33_XX;
 		opUCmdC	= UV8_00;
 		opUIxtC	= UV8_00;
 	end
@@ -465,6 +399,7 @@ begin
 	begin
 		if(opIsFCA)
 		begin
+`ifndef jx2_enable_ops48
 			opRegAN	= decOpFC_idRegN;
 			opRegAM	= decOpFC_idRegM;
 			opRegAO	= decOpFC_idRegO;
@@ -490,6 +425,7 @@ begin
 			begin
 				opUCmdA[7:6]=opIsDfA?JX2_IXC_CF:JX2_IXC_CT;
 			end
+`endif
 		end
 		else
 		begin

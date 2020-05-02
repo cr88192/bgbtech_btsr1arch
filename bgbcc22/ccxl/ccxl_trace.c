@@ -48,6 +48,15 @@ BGBCC_CCXL_VirtTr *BGBCC_CCXL_AllocVirtTr(BGBCC_TransState *ctx)
 	return(tmp);
 }
 
+BGBCC_CCXL_VirtOp *BGBCC_CCXL_CloneVirtOp(BGBCC_TransState *ctx,
+	BGBCC_CCXL_VirtOp *vop)
+{
+	BGBCC_CCXL_VirtOp *tmp;
+	tmp=BGBCC_CCXL_AllocVirtOp(ctx);
+	memcpy(tmp, vop, sizeof(BGBCC_CCXL_VirtOp));
+	return(tmp);
+}
+
 int BGBCC_CCXL_AddVirtOp(BGBCC_TransState *ctx, BGBCC_CCXL_VirtOp *op)
 {
 	int i;
@@ -197,7 +206,8 @@ ccxl_status BGBCC_CCXL_GlobalMarkReachable_Func(BGBCC_TransState *ctx,
 		if(op->opn==CCXL_VOP_CALL)
 		{
 			BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, op->dst, 1);
-			BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, op->srca, 0);
+//			BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, op->srca, 0);
+			BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, op->srca, 1);
 			BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, op->srcb, 0);
 		
 			n=op->imm.call.na;
@@ -213,6 +223,8 @@ ccxl_status BGBCC_CCXL_GlobalMarkReachable_Func(BGBCC_TransState *ctx,
 			BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, op->dst, 1);
 			BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, op->srca, 1);
 			BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, op->srcb, 1);
+			BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, op->srcc, 1);
+			BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, op->srcd, 1);
 		}
 	}
 	return(1);
@@ -265,7 +277,82 @@ ccxl_status BGBCC_CCXL_GlobalMarkReachableB(BGBCC_TransState *ctx,
 //		obj->regflags&=~BGBCC_REGFL_RECTRACE;
 		return(1);
 	}
+
+	if(obj->regtype==CCXL_LITID_ASMFUNC)
+	{
+		return(1);
+	}
 	
 //	obj->regflags&=~BGBCC_REGFL_RECTRACE;
 	return(0);
+}
+
+s64 BGBCC_CCXL_DecodeFlagStr(BGBCC_TransState *ctx, char *str)
+{
+	s64 fl;
+	char *s;
+	int i;
+	
+	fl=0;
+	s=str;
+	while(*s)
+	{
+		i=*s++;
+		switch(i)
+		{
+		case 'a':	fl|=BGBCC_TYFL_ABSTRACT;	break;
+		case 'b':	fl|=BGBCC_TYFL_BIGENDIAN;	break;
+		case 'c':	fl|=BGBCC_TYFL_CDECL;		break;
+		case 'd':	fl|=BGBCC_TYFL_DELEGATE;	break;
+		case 'e':	fl|=BGBCC_TYFL_EXTERN;		break;
+
+		case 'i':	fl|=BGBCC_TYFL_INLINE;		break;
+		case 'j':	fl|=BGBCC_TYFL_FINAL;		break;
+		case 'k':	fl|=BGBCC_TYFL_CONST;		break;
+		case 'l':	fl|=BGBCC_TYFL_LTLENDIAN;	break;
+		case 'm':	fl|=BGBCC_TYFL_PACKED;		break;
+		case 'n':	fl|=BGBCC_TYFL_NATIVE;		break;
+		case 'o':	fl|=BGBCC_TYFL_OVERRIDE;	break;
+		case 'p':	fl|=BGBCC_TYFL_PUBLIC;		break;
+		case 'q':	fl|=BGBCC_TYFL_PRIVATE;		break;
+		case 'r':	fl|=BGBCC_TYFL_PROTECTED;	break;
+		case 's':	fl|=BGBCC_TYFL_STATIC;		break;
+
+		case 'v':	fl|=BGBCC_TYFL_VIRTUAL;		break;
+		case 'w':	fl|=BGBCC_TYFL_STDCALL;		break;
+		case 'x':	fl|=BGBCC_TYFL_XCALL;		break;
+		case 'y':	fl|=BGBCC_TYFL_TRANSIENT;	break;
+
+		case 'C':
+			i=*s++;
+			switch(i)
+			{
+			case 'b':	fl|=BGBCC_TYFL_BYREF;			break;
+			case 'e':	fl|=BGBCC_TYFL_EVENT;			break;
+			case 'f':	fl|=BGBCC_TYFL_INTERRUPT;		break;
+			case 'g':	fl|=BGBCC_TYFL_SYSCALL;			break;
+			case 'i':	fl|=BGBCC_TYFL_INTERFACE;		break;
+			case 's':	fl|=BGBCC_TYFL_SYNCHRONIZED;	break;
+			case 'x':	fl|=BGBCC_TYFL_NEAR;			break;
+			case 'y':	fl|=BGBCC_TYFL_FAR;				break;
+			default:
+				break;
+			}
+			break;
+		case 'D':
+			i=*s++;
+			switch(i)
+			{
+			case 'e':	fl|=BGBCC_TYFL_DLLEXPORT;		break;
+			case 'i':	fl|=BGBCC_TYFL_DLLIMPORT;		break;
+			default:
+				break;
+			}
+			break;
+
+		default:
+			break;
+		}
+	}
+	return(fl);
 }

@@ -761,6 +761,11 @@ int nmid;
 {"btrns",	BGBCC_SH_NMID_BTRNS},
 {"btrnsq",	BGBCC_SH_NMID_BTRNSQ},
 
+{"pmortl",	BGBCC_SH_NMID_PMORTL},
+{"pmortq",	BGBCC_SH_NMID_PMORTQ},
+{"pmort.l",	BGBCC_SH_NMID_PMORTL},
+{"pmort.q",	BGBCC_SH_NMID_PMORTQ},
+
 {"mac.w",	BGBCC_SH_NMID_MACW},
 {"not",		BGBCC_SH_NMID_NOT},
 {"swap.b",	BGBCC_SH_NMID_SWAPB},

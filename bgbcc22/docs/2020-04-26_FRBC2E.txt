@@ -1,0 +1,591 @@
+Simplified FRBC intended mostly as a 3AC IR for object files.
+* This may be intended as a possible alternative to RIL3.
+* May incorporate parts of RIL3.
+
+
+Will differ from RIL3 in that it will not represent a serialization of the conversion process from ASTs, but will instead be a dump of the compiler state following the conversion process.
+
+
+
+== Packaging ==
+
+Will use a TLV package.
+Words will be encoded in little-endian order, with structures being byte-aligned.
+
+TLV Chunks will begin with a 16-bit WORD, with LSB bits identifying the type:
+* zz00: WORD,TWOCC (16K)
+* zz01: DWORD,TWOCC (1GB)
+* zz10: DWORD,FOURCC (1GB)
+* z011: Small Tag (32B with a BYTE tag)
+** Tag is in bits (15:8)
+** Length is in bits (7:3)
+
+TWOCC tags will use case to identify Tag Type:
+* 'aa': Structure or Data
+** Contains a raw structure or other Non-TLV data.
+* 'AA': Compound Tag
+** Contains TLV tags.
+* A letter followed by a non-leter will behave as one of the above.
+
+Non-ASCII characters are not allowed in a TWOCC or FOURCC. A valid TWOCC or FOURCC will be padded as needed with spaces.
+
+A narrower tag may be promoted to a wider one by padding with zeroes.
+As such, the value range of the tag will be able to identify the type of the tag if it had been promoted from a narrower type.
+
+Tags will include the tag header in their length, thus the small BYTE tag is limited to 30 bytes of data. If this limit is exceeded, it will be promoted to a TWOCC.
+
+BYTE tags:
+* 00: Reserved
+* 01..7F: Context Dependent
+* 80: Long String Attribute
+* 81: Short String Attribute
+* 82: Integer Attribute
+
+
+=== Top-Level ===
+
+FOURCC: 'FR2E'
+* Represents a FRBC2E image.
+* Size will cover the entire image.
+* This will contain most of the other top-level tags.
+
+FOURCC: 'LITD'
+* Literal Table Data
+* Consists of Literal Table entries packed end to end.
+
+FOURCC: 'GBLD'
+* Global Table Data
+* Consists of Global Table entries packed end to end.
+
+FOURCC: 'strs'
+* Image Strings Table
+* Consists of String Data.
+* Strings will be nominally encoded using NUL-terminated M-UTF-8.
+
+FOURCC: 'strz'
+* Image Strings Table (LZ4)
+* Same as 'strs', just stored in a compressed form.
+
+FOURCC: 'stri'
+* Image Strings Table Index
+* Stores a delta-encoded array of string offsets.
+* Each will be stored as the difference from the prior offset, using a UVLI.
+* String Indices 0 and 1 will be special.
+** 0 will encode NULL.
+** 1 will encode an empty string.
+** As such, this table will begin with string index 2.
+
+FOURCC: 'vops'
+* Virtual Opcodes
+* Will consist of an array of serialized opcodes.
+
+FOURCC: 'vtrs'
+* Virtual Traces
+* Will consist of an array of serialized traces.
+* Each trace will exist as a span of opcodes.
+
+
+Within LITD:
+* TWOCC: 'LI'  (Generic)
+** Literal Info Entry
+** Contains a literal-info object.
+* TWOCC: 'ST' (Structure)
+** Defines a 'struct' type.
+* TWOCC: 'UN' (Union)
+** Defines a 'union' type.
+* TWOCC: 'CL' (Class)
+** Defines a reference class or interface type.
+* TWOCC: 'FN' (Function)
+** Defines a function signature (function pointers).
+* TWOCC: 'TY' (Typedef)
+** Allows defining one type in terms of another.
+
+Within 'GBLD':
+* TWOCC: 'RI' (Generic)
+** Contains a global-info object.
+* TWOCC: 'FN' (Function)
+** Defines the contents of a function or a function prototype.
+* TWOCC: 'GV' (Global Variable)
+** Defines the contents of a global or static variable.
+
+Within Literal and Global Entries
+* BYTE: 's' (Signature String)
+* BYTE: 'f' (Flags String)
+* BYTE: 'n' (Name String)
+* BYTE: 'q' (QName String)
+* BYTE: 'v' (GV: Value, Register ID)
+* BYTE: 't' (FN: Text / Code Traces, Trace-Table Index)
+
+Variable List Tags
+* BYTE: 'F' (Fields)
+* BYTE: 'A' (Args)
+* BYTE: 'L' (Locals)
+* BYTE: 'R' (Temporaries)
+* BYTE: 'S' (Static Vars)
+
+Within Variable-Lists:
+* BYTE: 'V' (Variable)
+** Typically contain 's', 'f', and 'n' fields.
+** Static variables may also have a QName.
+*** They will alias with a corresponding global with a matching QName.
+
+
+String tags will be encoded as an SVLI possibly followed by character data.
+If the VLI is positive, it represents an index into the string table.
+If the VLI is negative, it encodes the string inline.
+
+A value of -1 will indicate a simple NUL-terminated string.
+
+
+Variable Lists will depend on what they are contained with, and some lists may be reused for other purposes in other entry types.
+
+
+=== VLI ===
+
+UVLI:
+*     0..  127	0xxx-xxxx
+*   128..16383	10xx-xxxx xxxx-xxxx
+* 16384..   2M	110x-xxxx xxxx-xxxx xxxx-xxxx
+*    2M.. 256M	1110-xxxx xxxx-xxxx xxxx-xxxx xxxx-xxxx
+* ...
+
+OpVLI:
+* 0x00000000..0x000000DF	xxxx-xxxx
+* 0x000000E0..0x00000FFF	1110-xxxx xxxx-xxxx
+* 0x00001000..0x0007FFFF	1111-0xxx xxxx-xxxx(x2)
+* 0x00080000..0x03FFFFFF	1111-10xx xxxx-xxxx(x3)
+* 0x04000000..0xFFFFFFFF	1111-1100 xxxx-xxxx(x4)
+
+UVLI (32-bit):
+* 0x00000000..0x0000007F	0xxx-xxxx
+* 0x00000080..0x00003FFF	10xx-xxxx xxxx-xxxx
+* 0x00004000..0x001FFFFF	110x-xxxx xxxx-xxxx xxxx-xxxx
+* 0x00200000..0x0FFFFFFF	1110-xxxx xxxx-xxxx xxxx-xxxx xxxx-xxxx
+* 0x10000000..0xFFFFFFFF	1111-0zzz xxxx-xxxx xxxx-xxxx xxxx-xxxx xxxx-xxxx
+
+UVLI (64-bit):
+* 0x0000000000000000..0x000000000000007F	0xxx-xxxx
+* 0x0000000000000080..0x0000000000003FFF	10xx-xxxx xxxx-xxxx
+* 0x0000000000004000..0x00000000001FFFFF	110x-xxxx xxxx-xxxx(x2)
+* 0x0000000000200000..0x000000000FFFFFFF	1110-xxxx xxxx-xxxx(x3)
+* 0x0000000010000000..0x00000007FFFFFFFF	1111-0xxx xxxx-xxxx(x4)
+* 0x0000008000000000..0x000003FFFFFFFFFF	1111-10xx xxxx-xxxx(x5)
+* 0x0000400000000000..0x0001FFFFFFFFFFFF	1111-110x xxxx-xxxx(x6)
+* 0x0020000000000000..0x00FFFFFFFFFFFFFF	1111-1110 xxxx-xxxx(x7)
+* 0x1000000000000000..0xFFFFFFFFFFFFFFFF	1111-1111 xxxx-xxxx(x8)
+
+UVLI (128-bit):
+* 0x0000000000000000..0x000000000000007F	0xxx-xxxx
+* 0x0000000000000080..0x0000000000003FFF	10xx-xxxx xxxx-xxxx
+* ...
+* 0x0020000000000000..0x00FFFFFFFFFFFFFF	1111-1110 xxxx-xxxx(x7)
+* 0x1000000000000000..0x7FFFFFFFFFFFFFFF	1111-1111 0xxx-xxxx xxxx-xxxx(x7)
+* 0x8000000000000000..0x3FFFFFFFFFFFFFFFFF	1111-1111 10xx-xxxx xxxx-xxxx(x8)
+* ...
+
+Normal UVLI and SVLI values will use the 64-bit variety.
+* The 32-bit case is a subset, and will be used for Tags and IDs.
+* Most 128-bit values will also use the 64-bit variety.
+** However, they will encode the value as a pair.
+
+SVLI:
+* Folds sign into LSB
+* 0, -1, 1, -2, 2, ...
+
+
+=== Type Signatures ===
+
+Typed signatures are encoded as strings, with characters indicating value types.
+
+* 'a': signed char
+* 'b': bool
+* 'c': char
+* 'd': double
+* 'e': long double
+* 'f': float
+* 'g': float128
+* 'h': unsigned char
+* 'i': int
+* 'j': unsigned int
+* 'k': float16/half
+* 'l': long
+* 'm': unsigned long
+* 'n': int128
+* 'o': unsigned int128
+* 'p': intptr
+* 'q': reserved
+* 'r': variant (64-bit tagged value)
+* 's': short
+* 't': unsigned short
+* 'u': bfloat16
+* 'v': void
+* 'w': wchar
+* 'x': long long
+* 'y': unsigned long long
+* 'z': vararg
+* 'Ca': __vec2f
+* 'Cb': __vec3f
+* 'Cc': __vec4f
+* 'Cd': _Complex double / __dcomplex
+* 'Ce': _Complex long double
+* 'Cf': _Complex float / __fcomplex
+* 'Cg': _Complex float128
+* 'Ch': __vec2d
+* 'Ci': __vec4si
+* 'Cj': __vec4ui
+* 'Ck': _Complex float16
+* 'Cl': 
+* 'Cm': __m64
+* 'Cn': __m128
+* 'Co': object
+* 'Cp': __m128p / __packed __m128
+* 'Cq': __quatf
+* 'Cr': short variant
+* 'Cs': string
+* 'Ct': 
+* 'Cu': _Complex bfloat16
+* 'Cv': __vec4sw
+* 'Cw': __vec4uw
+* 'Cx': variant this
+* 'Cy': variant class
+* 'Cz': variant vararg
+* 'Da': auto
+* 'Di': __vec2si
+* 'Dj': __vec2ui
+* 'Dn': nullptr
+* 'Dz': va_list
+* 'A{sz};{sig}: Array
+* 'A{a..z}{sig}': Pointer/Array Class Modifier
+* 'L{qname};': Tag Class
+* 'P{sig}': Pointer
+* 'Q{sig}': Tag Array
+* 'R{sig}': Reference to Type.
+* 'U{name};': Extended Type
+* 'W{sig}': Wide Pointer
+* 'X{name};': Struct/Union
+* '({args}){ret}': Function Signature
+
+Pointer/Array Class Modifer:
+* 'Ab': Packed / Big Endian
+* 'Af': Far
+* 'Al': Packed / Little Endian
+
+* 'An': Near
+* 'Ap': Packed
+* 'Aw': ? Wide
+
+
+=== Flag String ===
+
+* a: abstract ("__abstract")
+* b: bigendian ("__bigendian")
+* c: cdecl ("__cdecl")
+* d: delegate ("__delegate")
+* e: extern ("extern")
+* f: fastcall ("__fastcall")
+* g: getter ("__get")
+* h: setter ("__set")
+* i: inline ("inline" / "__inline")
+* j: final/const2 ("type * const")
+* k: const ("const type")
+* l: ltlendian ("__ltlendian")
+* m: packed ("__packed" / "__unaligned", struct=packed, pointer=unaligned)
+* n: native ("__native")
+* o: override|restrict ("__override", "__restrict", "restrict")
+* p: public ("public")
+* q: private ("private")
+* r: protected ("protected")
+* s: static ("static")
+* t: thiscall (virtual method function)
+* u: (special case)
+* v: virtual|volatile ("virtual"/"volatile")
+* w: stdcall ("__stdcall")
+* x: xcall ("__xcall")
+* y: transient ("__transient")
+* z: reserved
+
+* Cb: reference ("&type")
+* Ce: event ("__event")
+* Cf: interrupt ("__interrupt")
+* Ci: interface ("__interface")
+* Cs: synchronized ("__synchronized")
+* Ct: thread ("__thread")
+
+* Cw: wide ("__wide")
+* Cx: near pointer ("__near")
+* Cy: far pointer ("__far")
+
+* De: dllexport
+* Di: dllimport
+
+* U{name};	//named flag
+
+
+== Virtual Opcodes ==
+
+Virtual Opcodes (or VOPs) will be encoded via a bitmask followed by various parameters.
+The bitmask will encode which parameters are present.
+Unused parameters will generally either set to zero or some other unused-value state.
+
+Typical Layout:
+* UVLI mask;
+* (mask&   1) ? UVLI opn;		//Opcode Number
+* (mask&   2) ? UVLI opr;		//Operator Number
+* (mask& 128) ? UVLI prd;		//Predication Mode
+* (mask&   4) ? TYPE type;		//Base/Destination Type
+* (mask& 256) ? TYPE stype;		//Source Type
+* (mask&   8) ? REG dst;		//Destination Register
+* (mask&  16) ? REG srca;		//Source Register A
+* (mask&  32) ? REG srcb;		//Source Register B
+* (mask& 512) ? REG srcc;		//Source Register C
+* (mask&1024) ? REG srcd;		//Source Register D
+* (mask&  64) ? IMMED imm;		//Operation Immediate
+
+
+Typically, 'opn' will always be present, so the interpretation of the low two mask bits will be special:
+* 00: Repeat Previous Mask
+* 01: Encodes opn by itself.
+* 10: The opn and opr fields will be merged into a bit-interleved value.
+* 11: Both opn and opr will be encoded separately.
+
+In the Repeat-Mask case, recent opcode masks may be reused.
+This will implement a Move-To-Front scheme with the most recent 32 masks.
+
+In the bit-interleved opn+opr case:
+* yxyxyxyx, where yyy is the opcode number, and xxx the operator.
+
+
+Opcode Numbers:
+* VOP_UNARY				0x01
+* VOP_BINARY			0x02
+* VOP_LABEL				0x03
+* VOP_JMP				0x04
+* VOP_MOV				0x05
+* VOP_JCMP_ZERO			0x06
+* VOP_JCMP				0x07
+* VOP_CALL				0x08
+* VOP_CSRV				0x09
+* VOP_RETDFL			0x0A
+* VOP_RETV				0x0B
+* VOP_RET				0x0C
+* VOP_CONV				0x0D
+* VOP_DBGFN				0x0E
+* VOP_DBGLN				0x0F
+* VOP_COMPARE			0x10
+* VOP_LDIXIMM			0x11
+* VOP_STIXIMM			0x12
+* VOP_LDIX				0x13
+* VOP_STIX				0x14
+* VOP_LEAIMM			0x15
+* VOP_LEA				0x16
+* VOP_LDAVAR			0x17
+* VOP_SIZEOFVAR			0x18
+* VOP_DIFFPTR			0x19
+* VOP_OFFSETOF			0x1A
+* VOP_LOADSLOT			0x1B
+* VOP_STORESLOT			0x1C
+* VOP_LOADSLOTADDR		0x1D
+* VOP_LOADSLOTADDRID	0x1E
+* VOP_INITOBJ			0x1F
+* VOP_DROPOBJ			0x20
+* VOP_INITARR			0x21
+* VOP_INITOBJARR		0x22
+* VOP_LOADINITARR		0x23
+* VOP_LOADINITOBJARR	0x24
+* VOP_VA_START			0x25
+* VOP_VA_END			0x26
+* VOP_VA_ARG			0x27
+* VOP_CSELCMP			0x28
+* VOP_CSELCMP_Z			0x29
+* VOP_JMPTAB			0x2A
+* VOP_OBJCALL			0x2B
+* VOP_PREDCMP			0x2C
+* VOP_PREDCMP_Z			0x2D
+* VOP_PREDSYNC			0x2E		//sync registers
+* VOP_CALL_INTRIN		0x2F
+
+Operator Numbers:
+* BINOP_ADD			0x00
+* BINOP_SUB			0x01
+* BINOP_MUL			0x02
+* BINOP_DIV			0x03
+* BINOP_MOD			0x04
+* BINOP_AND			0x05
+* BINOP_OR			0x06
+* BINOP_XOR			0x07
+* BINOP_SHL			0x08
+* BINOP_SHR			0x09
+* BINOP_SHRR		0x0A
+* BINOP_MULH		0x0B
+* BINOP_UMULH		0x0C
+* BINOP_UDIV		0x0D
+
+* UNOP_MOV			0x00
+* UNOP_NEG			0x01
+* UNOP_NOT			0x02
+* UNOP_LNOT			0x03
+* UNOP_INC			0x04
+* UNOP_DEC			0x05
+
+* CMP_EQ			0x00
+* CMP_NE			0x01
+* CMP_LT			0x02
+* CMP_GT			0x03
+* CMP_LE			0x04
+* CMP_GE			0x05
+* CMP_AL			0x06
+* CMP_NV			0x07
+* CMP_TST			0x08		//if(x&y)
+* CMP_NTST			0x09		//if(!(x&y))
+
+
+
+=== Type IDs ===
+
+Will be encoded as a VLI with low-bit tags.
+* zzzz0: String Index (Type Signature)
+* zzz01: Simple Type
+* zzz11: Repeat Type (Move to Front)
+
+The most recently coded 32 types will retained.
+Whenever a new type is encoded, it is added to the front of the list.
+Repeating a prior type will move it to the front of the list.
+
+The simple type will be laid out as:
+* (11:8): Indirection Level
+* ( 7:0): Base Type (primitive types only).
+
+
+=== Register IDs ===
+
+Registers will be encoded as a VLI with a tag in the low order bits.
+
+Register:
+* zzzz000: Repeat
+* zzzz010: Temporary
+* zzzz100: Arg
+* zzzz110: Local
+* zzz0001: Global Index
+* zzz0101: Literal Table Index
+* zzz1001: Integer Constant
+* zzz1101: String Table Index
+* zz00011: Global Address
+* zz01011: Integer Constant with 4b subtype.
+* zz10011: Long Constant (Inline)
+* zz11011: Wide-String Table Index
+* z000111: 'this' Index
+
+* 0001111: Raw Long Constant (SVLI follows)
+* 0101111: Raw Double Constant (SVLI follows)
+* 1001111: Raw Int128 Constant (SVLI pair follows)
+* 1101111: Raw Float128 Constant (SVLI pair follows)
+
+
+Repeat will repeat a recently seen Register ID.
+The most recently coded 32 Register IDs will retained.
+It will encode an index into a table of recently seen Register IDs.
+Repeating a value will cause it to be moved to the front of the list.
+If any other value is encoded, it will be added to the front of the list.
+
+Temporary, Arg, and Local will use a bit-interleved index.
+* yxyxyxyx, where yyy is the sequence, and xxx the base index.
+
+The sequence number will indicate which version of a given register is used.
+* Assigning to a register gives it a new sequence value.
+* A block where multiple paths converge may also increment a registers' sequence.
+** This will be known as a 'phi' operation.
+
+The 'this' Index will be encoded similarly to a Local, however it will encode a path within the 'this' object. The base index will encode the field ID, whereas the sequence will encode how many levels to go up from the current class.
+
+
+Global and Literal table indices will be an index number into the global or literal table.
+
+String Table Index will be an index into the string table.
+
+
+Integer Constant with 4b Subtype:
+* 0..7: Will encode various integer types.
+** 0: int32_t / 'int'
+** 1: uint32_t / 'unsigned int'
+** 2: int64_t / 'long long'
+** 3: uint64_t / 'unsigned long long'
+** 4: int8_t / 'char'
+** 5: uint8_t / 'unsigned char'
+** 6: int16_t / 'short'
+** 7: uint16_t / 'unsigned short'
+* 8: Escape Case, Reserved
+* 9..11: Reserved
+* 12 Will encode a 32-bit float of type 'float'.
+* 13 Will encode a 32-bit float of type 'double'.
+* 14 Will encode a 16-bit half-float of type 'float'.
+* 15 Will encode a 16-bit half-float of type 'double'.
+
+Values for these subtypes, including for floating-point values, will be stored in a sign-folded format.
+
+
+=== Immed ===
+
+This will be a fixed immediate field used by certain operations.
+
+Will be encoded as a UVLI followed by other data.
+The low 4 bits of this UVLI will serve as a tag.
+The remaining high bits may be used as a value.
+
+Tag (High-bit Value):
+* 0: Repeat (Index; Certain Types)
+* 1: Negative Int (Negative Value)
+* 2: Positive Int (Positive Value)
+* 3: Label (Label ID)
+* 4: String (String Index)
+* 5: Call Argument List (Argument Count)
+* 6: Jump Table (Label Count)
+* 7: Structure/Field ID (Interleved)
+
+
+Repeat will exclude 5 and 6 but may repeat other immediate types.
+As before, this will use a Move-To-Front scheme.
+Tags 5 and 6 will be entirely ignored by the MTF mechanism.
+
+
+The Structure/Field ID will consist of the literal-table index being bit-interleved with the field ID.
+* yxyxyxyx, where yyy is the Field ID, and xxx the Literal Index.
+
+If high bits of Tag 7 hold 0, then the index will be encoded as a pair of numbers following the tag.
+
+
+The Label ID will essentially be a magic number which associates branches with code labels. Control flow is not allowed between functions, but the label numbers are required to be unique across all functions in the image. It is encoded as an unsigned value.
+
+The String is an index into the string table.
+
+The Call Argument List will encode the number of arguments in the high bits, followed by the same number of Register ID values.
+
+The Jump Table will encode the number of jump labels in the high bits, followed by (n+1) Label IDs. The final LabelID will encode the 'default' label, which will be the target for values of the range covered by the table.
+
+
+== Virtual Traces ==
+
+Virtual Traces will encode a span of Virtual Opcodes.
+
+Layout:
+* SVLI b_ops;		//base opcode
+* SVLI n_ops;		//number of opcodes
+* SVLI tr_fl;		//trace flags
+
+The base for a trace will be relative to the start of the parent function.
+For normal traces, all three fields will be positive.
+
+If b_ops is negative, it encodes an absolute opcode number.
+This number will be the relative zero-index for the following traces.
+This encoding will be used for the first trace in a function, with the other traces using a positive index.
+
+The n_ops field will always be positive for a normal trace.
+If the n_ops field is negative, it will instead encode a function-body header.
+
+
+A function body header will be defined as:
+* SVLI b_vtr;		//Base index of first Trace in 'vtrs' (neg abs index)
+* SVLI n_vtr;		//Total number of traces in function (neg count)
+* SVLI gblid;		//Global-Index for function (neg index)
+
+The function header will use up 1 index in the trace table, and typically follow after the traces for the function.
+

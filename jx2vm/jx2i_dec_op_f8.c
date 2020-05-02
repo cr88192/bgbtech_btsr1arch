@@ -77,7 +77,8 @@ int BJX2_DecodeOpcode_DecD8(BJX2_Context *ctx,
 	ret=BJX2_DecodeOpcode_DecF8(ctx, op1, addr, opw1, opw2, 0);
 
 //	if(opw1&0x0200)
-	if(opw1&0x0100)
+//	if(opw1&0x0100)
+	if(opw1&0x0400)
 	{
 		op->nmid=BJX2_NMID_PRED_F;
 		op->fmid=BJX2_FMID_CHAIN;

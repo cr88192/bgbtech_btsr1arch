@@ -1237,14 +1237,55 @@ int BGBCC_CCXL_CheckFuncNameInstrinsicP(BGBCC_TransState *ctx, char *name)
 	return(0);
 }
 
+ccxl_status BGBCC_CCXL_StackTransforCallArgsInline(
+	BGBCC_TransState *ctx, BGBCC_CCXL_RegisterInfo *rfn)
+{
+	ccxl_register tarr[64];
+	ccxl_register treg, dreg;
+	int ms;
+	int i, j, k, n, na;
+	
+	ms=ctx->markstack[ctx->markstackpos-1];
+	n=ctx->regstackpos-ms;
+
+	na=0;
+	while(ctx->regstackpos>ms)
+	{
+		i=BGBCC_CCXL_PopRegister(ctx, &treg);
+//		BGBCC_CCXL_EmitCallArg(ctx, treg);
+//		BGBCC_CCXL_RegisterCheckRelease(ctx, treg);
+		tarr[na++]=treg;
+	}
+
+	ctx->markstackpos--;
+
+	for(i=0; i<na; i++)
+	{
+		BGBCC_CCXL_PushRegister(ctx, tarr[i]);
+		BGBCC_CCXL_PopStore(ctx, rfn->args[i]->name);
+//		BGBCC_CCXL_RegisterCheckRelease(ctx, tarr[i]);
+	}
+
+	return(CCXL_STATUS_YES);
+}
+
+// ccxl_status BGBCC_CCXL_StackCheckCallInline(BGBCC_TransState *ctx,
+//	char *name, char *dname, int flag)
+// {
+// }
+
 ccxl_status BGBCC_CCXL_StackCallName2(BGBCC_TransState *ctx,
 	char *name, char *dname, int flag)
 {
+	int lbl_remap[512];
 	ccxl_register treg, dreg, dreg2, oreg;
 	ccxl_type bty, dty;
-	BGBCC_CCXL_RegisterInfo *ri;
+	BGBCC_CCXL_RegisterInfo *ri, *rfn, *curfn;
+	BGBCC_CCXL_VirtTr *vtr;
+	BGBCC_CCXL_VirtOp *vop, *vop1;
+	ccxl_label lbl0;
 	char *tsig;
-	int is_intrin;
+	int is_intrin, can_inline, nlbl;
 	int i, j, k, n;
 
 	BGBCC_CCXL_DebugPrintStackLLn(ctx, "CallName", __FILE__, __LINE__);
@@ -1327,6 +1368,33 @@ ccxl_status BGBCC_CCXL_StackCallName2(BGBCC_TransState *ctx,
 		j=BGBCC_CCXL_LookupAsRegister(ctx, name, &treg);
 	bty=BGBCC_CCXL_GetRegReturnType(ctx, treg);
 	
+	can_inline=0;
+	rfn=NULL;
+	
+//	i=BGBCC_CCXL_StackCheckCallInline(ctx, name, dname, flag);
+//	if(i>0)
+//	{
+//		return(i);
+//	}
+	
+	curfn=ctx->cur_func;
+	
+	if(BGBCC_CCXL_IsRegGlobalP(ctx, treg) && !(flag&4) && 
+		!BGBCC_CCXL_CheckIsStaticLib(ctx))
+	{
+		i=BGBCC_CCXL_GetRegID(ctx, treg);
+		rfn=ctx->reg_globals[i];
+		if(rfn && (rfn->regtype==CCXL_LITID_FUNCTION))
+		{
+//			if((rfn->flagsint&BGBCC_TYFL_INLINE) && (rfn->n_vtr==1))
+			if((rfn->flagsint&BGBCC_TYFL_INLINE) &&
+				(rfn->n_vop>0) && (rfn->n_vop<16))
+			{
+				can_inline=1;
+			}
+		}
+	}
+
 	if(dname)
 	{
 		i=BGBCC_CCXL_LookupAsRegister(ctx, dname, &dreg);
@@ -1384,41 +1452,146 @@ ccxl_status BGBCC_CCXL_StackCallName2(BGBCC_TransState *ctx,
 		}
 		BGBCC_CCXL_RegisterCheckRelease(ctx, treg);
 		return(CCXL_STATUS_YES);
-	}else
+	}
+
+#if 1
+	if(can_inline)
 	{
-		if(flag&4)
+		for(i=0; i<rfn->n_args; i++)
 		{
-			BGBCC_CCXL_EmitObjCallOp(ctx, bty, dreg, treg, oreg, n);
-			BGBCC_CCXL_RegisterCheckRelease(ctx, oreg);
-		}
-		else
-		{
-			BGBCC_CCXL_EmitCallOp(ctx, bty, dreg, treg, n);
-		}
-		BGBCC_CCXL_StackTransforCallArgs(ctx);
-		if(dname)
-		{
-			BGBCC_CCXL_EmitCallCsrvOp(ctx, bty, dreg, treg);
-			if(flag&2)
+			ri=rfn->args[i];
+			for(j=0; j<curfn->n_locals; j++)
+				if(!strcmp(curfn->locals[j]->name, ri->name))
+					break;
+			if(j>=curfn->n_locals)
 			{
-				BGBCC_CCXL_EmitConv(ctx, dty, bty, dreg2, dreg);
-				BGBCC_CCXL_RegisterCheckRelease(ctx, dreg2);
+				ri=BGBCC_CCXL_CloneRegisterInfo(ctx, ri);
+				BGBCC_CCXL_AddFrameLocal(ctx, curfn, ri);
 			}
-			BGBCC_CCXL_RegisterCheckRelease(ctx, dreg);
 		}
-		else if(!(flag&1))
+
+		for(i=0; i<rfn->n_locals; i++)
 		{
-			BGBCC_CCXL_EmitCallCsrvOp(ctx, bty, dreg, treg);
+			ri=rfn->locals[i];
+			for(j=0; j<curfn->n_locals; j++)
+				if(!strcmp(curfn->locals[j]->name, ri->name))
+					break;
+			if(j>=curfn->n_locals)
+			{
+				ri=BGBCC_CCXL_CloneRegisterInfo(ctx, ri);
+				BGBCC_CCXL_AddFrameLocal(ctx, curfn, ri);
+			}
+		}
+		
+		BGBCC_CCXL_StackTransforCallArgsInline(ctx, rfn);
+
+		nlbl=0;
+		for(i=0; i<rfn->n_vtr; i++)
+		{
+			vtr=rfn->vtr[i];
+			for(j=0; j<vtr->n_ops; j++)
+			{
+				vop=rfn->vop[vtr->b_ops+j];
+//				vop1=BGBCC_CCXL_CloneVirtOp(ctx, vop);
+				if(vop->opn==CCXL_VOP_LABEL)
+				{
+					lbl0=BGBCC_CCXL_GenSym(ctx);
+					lbl_remap[nlbl*2+0]=vop->imm.ui;
+					lbl_remap[nlbl*2+1]=lbl0.id;
+					nlbl++;
+					continue;
+				}
+			}
+		}
+
+		lbl0=BGBCC_CCXL_GenSym(ctx);
+		BGBCC_CCXL_EmitMarkEndTrace(ctx);
+
+		for(i=0; i<rfn->n_vtr; i++)
+		{
+			vtr=rfn->vtr[i];
+			for(j=0; j<vtr->n_ops; j++)
+			{
+				vop=rfn->vop[vtr->b_ops+j];
+				vop1=BGBCC_CCXL_CloneVirtOp(ctx, vop);
+				if(	(vop1->opn==CCXL_VOP_RETDFL) ||
+					(vop1->opn==CCXL_VOP_RETV)	)
+				{
+					vop1->opn=CCXL_VOP_JMP;
+					vop1->imm.ui=lbl0.id;
+				}
+				if(vop1->opn==CCXL_VOP_RET)
+				{
+					BGBCC_CCXL_EmitConv(ctx,
+						bty, vop1->type, dreg, vop1->srca);
+					vop1->opn=CCXL_VOP_JMP;
+					vop1->imm.ui=lbl0.id;
+				}
+
+				if(	(vop1->opn==CCXL_VOP_LABEL)		||
+					(vop1->opn==CCXL_VOP_JMP)		||
+					(vop1->opn==CCXL_VOP_JCMP_ZERO)	||
+					(vop1->opn==CCXL_VOP_JCMP)		)
+				{
+					for(k=0; k<nlbl; k++)
+						if(lbl_remap[k*2+0]==vop1->imm.ui)
+							break;
+					vop1->imm.ui=lbl_remap[k*2+1];
+				}
+
+				BGBCC_CCXL_AddVirtOp(ctx, vop1);
+			}
+
+			BGBCC_CCXL_EmitMarkEndTrace(ctx);
+		}
+
+		BGBCC_CCXL_EmitMarkEndTrace(ctx);
+		BGBCC_CCXL_EmitLabel(ctx, lbl0);
+
+		if(!(flag&1))
+		{
+//			BGBCC_CCXL_EmitCallCsrvOp(ctx, bty, dreg, treg);
 			BGBCC_CCXL_PushRegister(ctx, dreg);
-		}else if(BGBCC_CCXL_TypeValueObjectP(ctx, bty))
+		}else if(dname)
 		{
-			BGBCC_CCXL_EmitCallCsrvOp(ctx, bty, dreg, treg);
 			BGBCC_CCXL_RegisterCheckRelease(ctx, dreg);
 		}
 		BGBCC_CCXL_RegisterCheckRelease(ctx, treg);
+
 		return(CCXL_STATUS_YES);
 	}
+#endif
 
+	if(flag&4)
+	{
+		BGBCC_CCXL_EmitObjCallOp(ctx, bty, dreg, treg, oreg, n);
+		BGBCC_CCXL_RegisterCheckRelease(ctx, oreg);
+	}
+	else
+	{
+		BGBCC_CCXL_EmitCallOp(ctx, bty, dreg, treg, n);
+	}
+	BGBCC_CCXL_StackTransforCallArgs(ctx);
+	if(dname)
+	{
+		BGBCC_CCXL_EmitCallCsrvOp(ctx, bty, dreg, treg);
+		if(flag&2)
+		{
+			BGBCC_CCXL_EmitConv(ctx, dty, bty, dreg2, dreg);
+			BGBCC_CCXL_RegisterCheckRelease(ctx, dreg2);
+		}
+		BGBCC_CCXL_RegisterCheckRelease(ctx, dreg);
+	}
+	else if(!(flag&1))
+	{
+		BGBCC_CCXL_EmitCallCsrvOp(ctx, bty, dreg, treg);
+		BGBCC_CCXL_PushRegister(ctx, dreg);
+	}else if(BGBCC_CCXL_TypeValueObjectP(ctx, bty))
+	{
+		BGBCC_CCXL_EmitCallCsrvOp(ctx, bty, dreg, treg);
+		BGBCC_CCXL_RegisterCheckRelease(ctx, dreg);
+	}
+	BGBCC_CCXL_RegisterCheckRelease(ctx, treg);
 	return(CCXL_STATUS_YES);
 }
 

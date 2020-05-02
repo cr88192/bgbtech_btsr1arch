@@ -1,0 +1,370 @@
+uPE:
+* PE/COFF PE32 collapsed down into a single conjoined header.
+** Implicitly, the start of the PE header is at a constant offset.
+* Assumes FileOffset=RVA
+** Simple Case: Loader simply reads image into memory.
+* Data and BSS will have a 4kB alignment.
+* Consider supporting a ProcessBaseOffset
+** Access to Data/BSS will add the relevant PBO Register
+** The PBO Register will be accessed as an offset relative to GBR (SH)
+
+0000: WORD magic;		//MZ
+003C: DWORD lfaNew;		//offset of PE header
+
+struct uPeMainHeader
+{
+//0000: MZ Header
+	WORD  mMagicMz;						//0000: MZ
+	WORD  mResv0;						//0002: Reserved (0)
+	DWORD mResv1;						//0004: Reserved (0)
+	DWORD mResv2;						//0008: Reserved (0)
+	DWORD mResv3;						//000C: Reserved (0)
+	DWORD mResv4;						//0010: Reserved (0)
+	DWORD mResv5;						//0014: Reserved (0)
+	DWORD mResv6;						//0018: Reserved (0)
+	DWORD mResv7;						//001C: Reserved (0)
+	DWORD mResv8;						//0020: Reserved (0)
+	DWORD mResv9;						//0024: Reserved (0)
+	DWORD mResv10;						//0028: Reserved (0)
+	DWORD mResv11;						//002C: Reserved (0)
+	DWORD mResv12;						//0030: Reserved (0)
+	DWORD mResv13;						//0034: Reserved (0)
+	DWORD mResv14;						//0038: Reserved (0)
+	DWORD lfaNew;						//003C: Address of PE header (0x0040)
+//0040: PE/COFF Header
+	DWORD mMagicPe;						//0040: PE\0\0 or 0x00004550
+	WORD  mMachine;						//0044:
+	WORD  mNumberOfSections;			//0046:
+	DWORD mTimeDateStamp;				//0048: (Creation Time, Unix Time)
+	DWORD mPointerToSymbolTable;		//004C: (Unused, 0)
+	DWORD mNumberOfSymbols;				//0050: (Unused, 0)
+	WORD  mSizeOfOptionalHeader;		//0054: Size of rest of header.
+	WORD  mCharacteristics;				//0056:
+//0058: Optional Header
+	WORD  mMagic;						//0058: 0x010b=PE32
+	BYTE  mMajorLinkerVersion;			//005A: (Ignore)
+	BYTE  mMinorLinkerVersion;			//005B: (Ignore)
+	DWORD mSizeOfCode;					//005C:
+	DWORD mSizeOfInitializedData;		//0060:
+	DWORD mSizeOfUninitializedData;		//0064:
+	DWORD rvaAddressOfEntryPoint;		//0068:
+	DWORD mBaseOfCode;					//006C:
+	DWORD mBaseOfData;					//0070:
+	DWORD mImageBase;					//0074:
+	DWORD mSectionAlignment;			//0078:
+	DWORD mFileAlignment;				//007C:
+	WORD  mMajorOperatingSystemVersion;	//0080: (Ignore?)
+	WORD  mMinorOperatingSystemVersion;	//0082: (Ignore?)
+	WORD  mMajorImageVersion;			//0084: (Ignore?)
+	WORD  mMinorImageVersion;			//0086: (Ignore?)
+	WORD  mMajorSubsystemVersion;		//0088: (Ignore?)
+	WORD  mMinorSubsystemVersion;		//008A: (Ignore?)
+	DWORD mWin32VersionValue;			//008C: (Ignore?)
+	DWORD mSizeOfImage;					//0090:
+	DWORD mSizeOfHeaders;				//0094:
+	DWORD mCheckSum;					//0098: (Ignore?)
+	WORD  mSubsystem;					//009C: (Ignore?)
+	WORD  mDllCharacteristics;			//009E: (Ignore?)
+	DWORD mSizeOfStackReserve;			//00A0:
+	DWORD mSizeOfStackCommit;			//00A4:
+	DWORD mSizeOfHeapReserve;			//00A8: (NOMMU?)
+	DWORD mSizeOfHeapCommit;			//00AC: (NOMMU?)
+	DWORD mLoaderFlags;					//00B0: (Reserved, 0)
+	DWORD mNumberOfRvaAndSizes;			//00B4:
+//00B8: Data Directories
+	DWORD rvaExportTable;				//00B8:
+	DWORD szExportTable;				//00BC:
+	DWORD rvaImportTable;				//00C0:
+	DWORD szImportTable;				//00C4:
+	DWORD rvaResourceTable;				//00C8:
+	DWORD szResourceTable;				//00CC:
+	DWORD rvaExceptionTable;			//00D0:
+	DWORD szExceptionTable;				//00D4:
+	DWORD rvaCertTable;					//00D8:
+	DWORD szCertTable;					//00DC:
+	DWORD rvaBaseRelocTable;			//00E0:
+	DWORD szBaseRelocTable;				//00E4:
+
+	DWORD rvaDebugData;					//00E8:
+	DWORD szDebugData;					//00EC:
+	DWORD rvaArchData;					//00F0:
+	DWORD szArchData;					//00F4:
+	DWORD rvaGlobalPtr;					//00F8:
+	DWORD szGlobalPtr;					//00FC:
+	DWORD rvaTlsTable;					//0100:
+	DWORD szTlsTable;					//0104:
+	DWORD rvaLoadConfigTable;			//0108:
+	DWORD szLoadConfigTable;			//010C:
+	DWORD rvaBoundImportTable;			//0110:
+	DWORD szBoundImportTable;			//0114:
+	DWORD rvaImportAddressTable;		//0118:
+	DWORD szImportAddressTable;			//011C:
+	DWORD rvaDelayImportTable;			//0120:
+	DWORD szDelayImportTable;			//0124:
+	DWORD rvaClrHeader;					//0128:
+	DWORD szClrHeader;					//012C:
+	DWORD rvaResvTable;					//0130:
+	DWORD szResvTable;					//0134:
+//0138:End of Header
+};
+
+
+struct uPeMainHeader64
+{
+//0000: MZ Header
+	WORD  mMagicMz;						//0000: MZ
+	WORD  mResv0;						//0002: Reserved (0)
+	DWORD mResv1;						//0004: Reserved (0)
+	DWORD mResv2;						//0008: Reserved (0)
+	DWORD mResv3;						//000C: Reserved (0)
+	DWORD mResv4;						//0010: Reserved (0)
+	DWORD mResv5;						//0014: Reserved (0)
+	DWORD mResv6;						//0018: Reserved (0)
+	DWORD mResv7;						//001C: Reserved (0)
+	DWORD mResv8;						//0020: Reserved (0)
+	DWORD mResv9;						//0024: Reserved (0)
+	DWORD mResv10;						//0028: Reserved (0)
+	DWORD mResv11;						//002C: Reserved (0)
+	DWORD mResv12;						//0030: Reserved (0)
+	DWORD mResv13;						//0034: Reserved (0)
+	DWORD mResv14;						//0038: Reserved (0)
+	DWORD lfaNew;						//003C: Address of PE header (0x0040)
+//0040: PE/COFF Header
+	DWORD mMagicPe;						//0040: PE\0\0 or 0x00004550
+	WORD  mMachine;						//0044:
+	WORD  mNumberOfSections;			//0046:
+	DWORD mTimeDateStamp;				//0048: (Creation Time, Unix Time)
+	DWORD mPointerToSymbolTable;		//004C: (Unused, 0)
+	DWORD mNumberOfSymbols;				//0050: (Unused, 0)
+	WORD  mSizeOfOptionalHeader;		//0054: Size of rest of header.
+	WORD  mCharacteristics;				//0056:
+//0058: Optional Header
+	WORD  mMagic;						//0058: 0x020b=PE32+
+	BYTE  mMajorLinkerVersion;			//005A: (Ignore)
+	BYTE  mMinorLinkerVersion;			//005B: (Ignore)
+	DWORD mSizeOfCode;					//005C:
+	DWORD mSizeOfInitializedData;		//0060:
+	DWORD mSizeOfUninitializedData;		//0064:
+	DWORD rvaAddressOfEntryPoint;		//0068:
+	DWORD mBaseOfCode;					//006C:
+	QWORD mImageBase;					//0070:
+	DWORD mSectionAlignment;			//0078:
+	DWORD mFileAlignment;				//007C:
+	WORD  mMajorOperatingSystemVersion;	//0080: (Ignore?)
+	WORD  mMinorOperatingSystemVersion;	//0082: (Ignore?)
+	WORD  mMajorImageVersion;			//0084: (Ignore?)
+	WORD  mMinorImageVersion;			//0086: (Ignore?)
+	WORD  mMajorSubsystemVersion;		//0088: (Ignore?)
+	WORD  mMinorSubsystemVersion;		//008A: (Ignore?)
+	DWORD mWin32VersionValue;			//008C: (Ignore?)
+	DWORD mSizeOfImage;					//0090:
+	DWORD mSizeOfHeaders;				//0094:
+	DWORD mCheckSum;					//0098: (Ignore?)
+	WORD  mSubsystem;					//009C: (Ignore?)
+	WORD  mDllCharacteristics;			//009E: (Ignore?)
+
+	QWORD mSizeOfStackReserve;			//00A0:
+	QWORD mSizeOfStackCommit;			//00A8:
+	QWORD mSizeOfHeapReserve;			//00B0: (NOMMU?)
+	QWORD mSizeOfHeapCommit;			//00B8: (NOMMU?)
+	DWORD mLoaderFlags;					//00C0: (Reserved, 0)
+	DWORD mNumberOfRvaAndSizes;			//00C4:
+//00B8: Data Directories
+	DWORD rvaExportTable;				//00C8:
+	DWORD szExportTable;				//00CC:
+	DWORD rvaImportTable;				//00D0:
+	DWORD szImportTable;				//00D4:
+	DWORD rvaResourceTable;				//00D8:
+	DWORD szResourceTable;				//00DC:
+	DWORD rvaExceptionTable;			//00E0:
+	DWORD szExceptionTable;				//00E4:
+	DWORD rvaCertTable;					//00E8:
+	DWORD szCertTable;					//00EC:
+	DWORD rvaBaseRelocTable;			//00F0:
+	DWORD szBaseRelocTable;				//00F4:
+
+	DWORD rvaDebugData;					//00F8:
+	DWORD szDebugData;					//00FC:
+	DWORD rvaArchData;					//0100:
+	DWORD szArchData;					//0104:
+	DWORD rvaGlobalPtr;					//0108:
+	DWORD szGlobalPtr;					//010C:
+	DWORD rvaTlsTable;					//0110:
+	DWORD szTlsTable;					//0114:
+	DWORD rvaLoadConfigTable;			//0118:
+	DWORD szLoadConfigTable;			//011C:
+	DWORD rvaBoundImportTable;			//0120:
+	DWORD szBoundImportTable;			//0124:
+	DWORD rvaImportAddressTable;		//0128:
+	DWORD szImportAddressTable;			//012C:
+	DWORD rvaDelayImportTable;			//0130:
+	DWORD szDelayImportTable;			//0134:
+	DWORD rvaClrHeader;					//0138:
+	DWORD szClrHeader;					//013C:
+	DWORD rvaResvTable;					//0140:
+	DWORD szResvTable;					//0144:
+//0148:End of Header
+};
+
+
+Machine:
+* x86-32:   0x014C
+* x86-64:   0x8664
+* ARM:      0x01C0
+* SH-3:     0x01A2
+* SH-DSP:   0x01A3
+* SH-4:     0x01A6
+* SH-5:     0x01A8
+* BJX1-32:  0xB132
+* BJX1-64:  0xB164
+* BJX1-64C: 0xB64C
+* BJX2-32:  0xB232 (Resv)
+* BJX2-64:  0xB264
+
+The main header is followed by sections.
+
+struct uPeSectionHeader
+{
+	BYTE  mName[8];						//0000
+	DWORD mVirtualSize;					//0008
+	DWORD mVirtualAddress;				//000C
+	DWORD mSizeOfRawData;				//0010
+	DWORD mPointerToRawData;			//0014
+	DWORD mPointerToRealocations;		//0018
+	DWORD mPointerToLinenumbers;		//001C
+	WORD  mNumberOfRealocations;		//0020
+	WORD  mNumberOfLinenumbers;			//0022
+	DWORD mCharacteristics;				//0024
+	//28
+};
+
+
+=== Base Relocations ===
+
+Relocations:
+struct uPeRelocBlock
+{
+	DWORD rvaPage;		//RVA of Page to be relocated
+	DWORD szBlock;		//Size of relocs in this block
+};
+
+The szBlock field is expressed in bytes. It includes the size of the RelocBlock header in addition to the associated reloc entries.
+
+The relocations are given as 16 bit numbers:
+* Low 12 bits: Offset within page.
+* High 4 bits: Relocation Type
+** 0: None
+** 1(HI16): Fixup the high 16 bits of an address
+** 2(LO16): Fixup the low 16 bits of an address
+** 3(DIR32): Fixup a 32-bit address
+** 4(HIADJ): Fixup a 32 bit address split into a high and low part.
+*** The following entry gives the address of the low part.
+** 5: MIPS-specific fixup.
+*** 5: BJX1(DIR24): Fixup 24-bit address via instruction.
+** 6: Reserved
+** 7: BJX1 MOV32
+*** BJX1: Fixup 32-bit address encoded via an instruction pair.
+** 8: BJX1 PBO
+*** BJX1: Fixup PBO/TLS Index Offset (32-bit Disp12 Op)
+** 9: MIPS-specific fixup / BJX1 PBO.
+*** BJX1: Fixup PBO/TLS Index Offset (16-bit Disp8 Op)
+** 10: Fixup a 64-bit address.
+
+PBO/TLS Index
+* Meaning depends on starting value.
+* 0, Do a PBO Fixup
+* 1-63, Fixup for TLS.
+** Replaced with the offset for the TLS Slot
+
+
+=== Exports ===
+
+This is located within the '.edata' section, and referenced via the optional header.
+
+struct uPeExportDirectory
+{
+	DWORD mExportFlags;				//0x00, export flags
+	DWORD mTimeDate;				//0x04, time/date
+	WORD mMajorVersion;				//0x08, major version
+	WORD mMinorVersion;				//0x0A, minor version
+	DWORD rvaDllName;				//0x0C, name RVA
+	DWORD mOrdinalBase;				//0x10, ordinal base
+	DWORD mNumberAddressEntries;	//0x14, address table entries
+	DWORD nNumberNameEntries;		//0x18, number of name pointers
+	DWORD rvaExportAddressTable;	//0x1C, export address table RVA
+	DWORD rvaNamePointerTable;		//0x20, name pointer table RVA
+	DWORD rvaOrdinalTable;			//0x24, ordinal table RVA
+};
+
+rvaDllName:
+* RVA of a string holding the name of the current DLL.
+
+mOrdinalBase:
+* Starting index for the ordinal table, normally 1.
+
+Export Address Table:
+* Array of exported addresses.
+* If the address is within '.edata', it is a forwarder string.
+* This table is indexed by ordinal (relative to OrdinalBase).
+
+ExportNamePointerTable and ExportOrdinalTable
+* These are used together to find exported symbols.
+* ExportNamePointerTable holds addresses to the exported names as strings.
+* ExportOrdinalTable maps these names to ordinal indices.
+
+
+=== Imports ===
+
+This is located within the '.idata' section, and referenced via the optional header.
+
+
+struct uPeImportDirectory
+{
+	DWORD rvaImportLookupTable;		//0x00
+	DWORD mTimeDate;				//0x04
+	DWORD mForwarderIndex;			//0x08
+	DWORD rvaDllName;				//0x0C
+	DWORD rvaImportAddressTable;	//0x10
+};
+
+rvaDllName:
+* ASCII string identifying the base-name of the DLL.
+* This omits both path and file extension.
+
+rvaImportLookupTable:
+* Table of pointer-sized values.
+* Each Encodes an Name/Hint RVA or Ordinal.
+
+rvaImportAddressTable:
+* Initially same contents as Import Lookup Table.
+* Each entry is replaced by the address of the imported symbol.
+
+Imports are given by a Name/Hint string:
+* Consists of a properly aligned WORD giving a lookup-index hint.
+* The hint is followed by an ASCII string giving the name of the imported symbol.
+* Located within the '.idata' section.
+
+
+=== TLS Directory ===
+
+Located in ".tls" section if TLS is used.
+
+struct uPeTlsDirectory
+{
+	DWORD vaRawDataStart;			//0x00
+	DWORD vaRawDataEnd;				//0x04
+	DWORD vaAddressOfIndex;			//0x08
+	DWORD vaAddressCallbacks;		//0x0C
+	DWORD szSizeOfZeroFill;			//0x10
+	DWORD mCharacteristics;			//0x14
+};
+
+vaAddressOfIndex:
+* Address of a slot used to hold the TLS Index (as a pointer-sized value).
+* The pointed-to address may be initialized with the VA of a string identifying the TLS section.
+
+vaAddressCallbacks:
+* Optional array of callback functions for thread creation and destruction.
+* BJX1/Testkern: Likely to be ignored.
+
+Upon thread creation, a TLS section is allocated and its address is assigned to its associated TLS variable slot.

@@ -1,0 +1,44 @@
+Attempt more fundamental redesigns to reduce costs and hopefully improve timing.
+
+Pipeline:
+  IF ID1 ID2 EX  MA  WB  (MemOp)
+  IF ID1 ID2 EX1 EX2 WB  (General)
+
+Will use a 32-bit address space, with the high 32 bits of addresses being ignored.
+Memory access will use fixed register ports for AGU.
+
+Pretty much everything can use two GPR ports apart from "MOV.x Rm, (Rn, Ri)".
+Maybe try to find a workaround to use a 2-port approach, eg:
+  MOV Rm, R0
+  MOV.x R0, (Rn, Ri)
+
+Register Numbering:
+  5 or 6 bit, 00..1F=GPRs
+  Need special cases: PC, GBR, IMM, ZZR
+    Mem Base: PC, GBR
+    Index: IMM, ZZR
+    ALU: IMM, ZZR (Both Ports)
+
+R0, R1, and R15 are special.
+R16, R17, and R31 are also special, but don't yet have special behavior.
+
+Possible (6b scheme):
+  00..1F: Direct GPRs (GPR Array)
+  20..3F: Special GPRs (Case Block)
+
+Special handling for R0, R1, and R15 is handled in decoder.
+  R0 ->R32=DLR
+  R1 ->R33=DHR
+  R15->R47=SP
+  
+  R48=PC
+  R49=GBR
+  R63=ZZR
+
+
+
+ExUnit:
+  Contains L1 Cache;
+  L2 and MMIO bus are external.
+  Split off MMIO at L1.
+

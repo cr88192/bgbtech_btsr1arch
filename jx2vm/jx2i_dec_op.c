@@ -3123,26 +3123,37 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 			break;
 
 		case 0x8:	/* E8zz */
-		case 0x9:	/* E9zz */
+//		case 0x9:	/* E9zz */
 //		case 0xA:	/* EAzz */
+		case 0xC:	/* ECzz */
 			ret=BJX2_DecodeOpcode_DecD8(ctx, op, addr, opw, opw2);
 			break;
 
 		case 0xA:	/* EAzz */
-		case 0xB:	/* EBzz */
-			if(opw2&0x8000)
-				ret=BJX2_DecodeOpcode_DecD6(ctx, op, addr, opw, opw2);
-			else
-				ret=BJX2_DecodeOpcode_DecD4(ctx, op, addr, opw, opw2);
+//		case 0xB:	/* EBzz */
+		case 0xE:	/* EEzz */
+//			if(opw2&0x8000)
+//				ret=BJX2_DecodeOpcode_DecD6(ctx, op, addr, opw, opw2);
+//			else
+//				ret=BJX2_DecodeOpcode_DecD4(ctx, op, addr, opw, opw2);
+			ret=BJX2_DecodeOpcode_DecD4(ctx, op, addr, opw, opw2);
 			op->fl|=BJX2_OPFL_WEX;
 			break;
 
+		case 0xB:	/* EAzz */
+		case 0xF:	/* EEzz */
+			ret=BJX2_DecodeOpcode_DecD6(ctx, op, addr, opw, opw2);
+			op->fl|=BJX2_OPFL_WEX;
+			break;
+
+#if 0
 		case 0xC:	/* ECzz */
 		case 0xD:	/* EDzz */
 		case 0xE:	/* EEzz */
 		case 0xF:	/* EFzz */
 			ret=BJX2_DecodeOpcode_DecFC(ctx, op, addr, opw, opw2, opw3);
 			break;
+#endif
 		}
 		break;
 
@@ -3175,7 +3186,7 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 		case 0x4:	/* F4zz */
 			if((opw2&0xC000)==0xC000)
 			{
-				ret=BJX2_DecodeOpcode_DecFJ(ctx, op, addr, opw, opw2);
+//				ret=BJX2_DecodeOpcode_DecFJ(ctx, op, addr, opw, opw2);
 				break;
 			}
 			ret=BJX2_DecodeOpcode_DecF0(ctx, op, addr, opw, opw2, 0);
@@ -3196,8 +3207,8 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 			break;
 
 		case 0x9:	/* F9zz */
-			ret=BJX2_DecodeOpcode_DecF8(ctx, op, addr, opw, opw2, 0);
-			op->fl|=BJX2_OPFL_WEX;
+//			ret=BJX2_DecodeOpcode_DecF8(ctx, op, addr, opw, opw2, 0);
+//			op->fl|=BJX2_OPFL_WEX;
 			break;
 
 		case 0xA:	/* FAzz */
@@ -3221,11 +3232,26 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 			break;
 
 		case 0xC:	/* FCzz */
-		case 0xD:	/* FDzz */
-		case 0xE:	/* FEzz */
-		case 0xF:	/* FFzz */
-			ret=BJX2_DecodeOpcode_DecFC(ctx, op, addr, opw, opw2, opw3);
+			ret=BJX2_DecodeOpcode_DecF8(ctx, op, addr, opw, opw2, 0);
+			op->fl|=BJX2_OPFL_WEX;
 			break;
+
+		case 0xD:	/* FDzz */
+			break;
+
+		case 0xE:	/* FEzz */
+			ret=BJX2_DecodeOpcode_DecFJ(ctx, op, addr, opw, opw2);
+			break;
+
+		case 0xF:	/* FFzz */
+			break;
+
+//		case 0xC:	/* FCzz */
+//		case 0xD:	/* FDzz */
+//		case 0xE:	/* FEzz */
+//		case 0xF:	/* FFzz */
+//			ret=BJX2_DecodeOpcode_DecFC(ctx, op, addr, opw, opw2, opw3);
+//			break;
 		}
 		break;
 

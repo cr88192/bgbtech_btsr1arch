@@ -385,6 +385,7 @@ extern "C" {
 #endif
 
 #if 1
+#define BGBCC_TWOCC(a, b)			((a)|((b)<<8))
 #define BGBCC_FOURCC(a, b, c, d)	((a)|((b)<<8)|((c)<<16)|((d)<<24))
 
 #define BGBCC_LANG_C		BGBCC_FOURCC('C', ' ', ' ', ' ')
@@ -453,6 +454,7 @@ extern "C" {
 #define BGBCC_IMGFMT_ASM	BGBCC_FOURCC('A', 'S', 'M', ' ')
 
 #define BGBCC_IMGFMT_RIL3	BGBCC_FOURCC('R', 'I', 'L', '3')
+#define BGBCC_IMGFMT_FR2E	BGBCC_FOURCC('F', 'R', '2', 'E')
 
 #endif
 
@@ -513,6 +515,7 @@ typedef union {
 
 #include <bgbcc_ccxl.h>
 #include <bgbcc_ril3.h>
+#include <bgbcc_fr2e.h>
 #include <bgbcc_comcc.h>
 #include <bgbcc_shcc.h>
 #include <bgbcc_bsrcc.h>

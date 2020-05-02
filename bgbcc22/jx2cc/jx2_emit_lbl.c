@@ -295,6 +295,7 @@ int BGBCC_JX2_GetNamedLabel(BGBCC_JX2_Context *ctx, char *name)
 	
 //		i=1024;
 		i=4096;
+//		i=16384;
 		ctx->lbln_name=bgbcc_malloc(i*sizeof(char *));
 		ctx->lbln_id =bgbcc_malloc(i*sizeof(u32));
 		ctx->lbln_chn=bgbcc_malloc(i*sizeof(s16));

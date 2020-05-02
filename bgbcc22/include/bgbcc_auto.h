@@ -812,6 +812,7 @@ int BGBCC_CCXL_CheckNameNamesList(char *name, char *nameslst);
 int BGBCC_CCXL_CheckFlagstrFlag(char *sig, char *flag);
 BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_TryManifestLoadGlobal(BGBCC_TransState *ctx, char *name);
 void BGBCC_CCXL_HandleUsortGlobals(BGBCC_TransState *ctx);
+void BGBCC_CCXL_CheckSanityLiterals(BGBCC_TransState *ctx);
 void BGBCC_CCXL_CheckSanityGlobals(BGBCC_TransState *ctx);
 BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_LookupGlobalRns(BGBCC_TransState *ctx, char *name);
 BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_LookupGlobal(BGBCC_TransState *ctx, char *name);
@@ -1035,6 +1036,7 @@ BCCX_Node *BGBCC_CCXL_TryReduceExprAsTypeSig(BGBCC_TransState *ctx,char *sig, BC
 //AHSRC:ccxl/ccxl_register.c
 BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_AllocRegisterInfo(BGBCC_TransState *ctx);
 bool BGBCC_CCXL_FreeRegisterInfo(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *rinf);
+BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_CloneRegisterInfo(BGBCC_TransState *ctx, BGBCC_CCXL_RegisterInfo *rinf);
 ccxl_status BGBCC_CCXL_RegisterAllocTemporary(BGBCC_TransState *ctx, ccxl_type bty, ccxl_register *rtreg);
 ccxl_status BGBCC_CCXL_RegisterAllocTemporaryLLn(BGBCC_TransState *ctx, ccxl_type bty, ccxl_register *rtreg, char *fn, int ln);
 ccxl_status BGBCC_CCXL_RegisterAllocTemporaryInit(BGBCC_TransState *ctx, ccxl_type bty, ccxl_register *rtreg);
@@ -1131,6 +1133,7 @@ char *BGBCC_CCXL_StackGetNameBinaryOverload(BGBCC_TransState *ctx, char *op);
 char *BGBCC_CCXL_StackGetMangleNameBinaryOverload(BGBCC_TransState *ctx, char *op, ccxl_type lty, ccxl_type rty);
 ccxl_status BGBCC_CCXL_StackCallName(BGBCC_TransState *ctx,char *name, int flag);
 int BGBCC_CCXL_CheckFuncNameInstrinsicP(BGBCC_TransState *ctx, char *name);
+ccxl_status BGBCC_CCXL_StackTransforCallArgsInline(BGBCC_TransState *ctx, BGBCC_CCXL_RegisterInfo *rfn);
 ccxl_status BGBCC_CCXL_StackCallName2(BGBCC_TransState *ctx,char *name, char *dname, int flag);
 ccxl_status BGBCC_CCXL_StackPopCall(BGBCC_TransState *ctx, int flag);
 ccxl_status BGBCC_CCXL_StackPopCall2(BGBCC_TransState *ctx,char *dname, int flag);
@@ -1244,6 +1247,7 @@ BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_LookupStructureVirtualMethod(BGBCC_TransStat
 //AHSRC:ccxl/ccxl_trace.c
 BGBCC_CCXL_VirtOp *BGBCC_CCXL_AllocVirtOp(BGBCC_TransState *ctx);
 BGBCC_CCXL_VirtTr *BGBCC_CCXL_AllocVirtTr(BGBCC_TransState *ctx);
+BGBCC_CCXL_VirtOp *BGBCC_CCXL_CloneVirtOp(BGBCC_TransState *ctx,BGBCC_CCXL_VirtOp *vop);
 int BGBCC_CCXL_AddVirtOp(BGBCC_TransState *ctx, BGBCC_CCXL_VirtOp *op);
 int BGBCC_CCXL_AddVirtTr(BGBCC_TransState *ctx, BGBCC_CCXL_VirtTr *tr);
 int BGBCC_CCXL_EmitMarkEndTrace(BGBCC_TransState *ctx);
@@ -1251,6 +1255,7 @@ ccxl_status BGBCC_CCXL_GlobalMarkReachable_VReg(BGBCC_TransState *ctx,ccxl_regis
 ccxl_status BGBCC_CCXL_GlobalMarkReachable_Func(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *obj);
 ccxl_status BGBCC_CCXL_GlobalMarkReachable(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *obj);
 ccxl_status BGBCC_CCXL_GlobalMarkReachableB(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *obj, int afl);
+s64 BGBCC_CCXL_DecodeFlagStr(BGBCC_TransState *ctx, char *str);
 //AHSRC:ccxl/ccxl_type.c
 bool BGBCC_CCXL_TypeSmallTypeP(BGBCC_TransState *ctx, ccxl_type dty, ccxl_type sty);
 bool BGBCC_CCXL_TypeSmallIntP(BGBCC_TransState *ctx, ccxl_type ty);
@@ -1354,6 +1359,38 @@ int BGBCC_CCXL_TypeCompatibleArchP(BGBCC_TransState *ctx, ccxl_type dty, ccxl_ty
 bool BGBCC_CCXL_TypeSupportsOperatorP(BGBCC_TransState *ctx, ccxl_type ty, int opr);
 ccxl_status BGBCC_CCXL_GetTypeBinaryDest(BGBCC_TransState *ctx, int opr, ccxl_type lty, ccxl_type rty, ccxl_type *rdty);
 ccxl_status BGBCC_CCXL_GetTypeCompareBinaryDest(BGBCC_TransState *ctx, int opr, ccxl_type lty, ccxl_type rty, ccxl_type *rdty);
+//AHSRC:ccxl/ccxl_fr2e.c
+byte *BGBCC_FR2E_BufEmitUVli(byte *dct, u64 val);
+byte *BGBCC_FR2E_BufEmitSVli(byte *dct, s64 val);
+void BGBCC_FR2E_BufEmitTwocc(byte **rct, u16 tag, byte *dat, int sz);
+void BGBCC_FR2E_BufEmitOnecc(byte **rct, byte tag, byte *dat, int sz);
+void BGBCC_FR2E_BufEmitFourcc(byte **rct, u32 tag, byte *dat, int sz);
+int BGBCC_FR2E_StrHash(char *str);
+int BGBCC_FR2E_LookupString(BGBCC_TransState *ctx, BGBCC_FR2E_ImgState *img, char *str);
+int BGBCC_FR2E_GetString(BGBCC_TransState *ctx, BGBCC_FR2E_ImgState *img, char *str);
+int BGBCC_FR2E_BufEmitOneccString(BGBCC_TransState *ctx, BGBCC_FR2E_ImgState *img, byte **rct, byte tag, char *str);
+void BGBCC_FR2E_EmitLiteralTableTwoccBuf(BGBCC_TransState *ctx, BGBCC_FR2E_ImgState *img, u16 tag, byte *dat, int sz);
+void BGBCC_FR2E_EmitGlobalTableTwoccBuf(BGBCC_TransState *ctx, BGBCC_FR2E_ImgState *img, u16 tag, byte *dat, int sz);
+void BGBCC_FR2E_CheckExpandTableData(byte **rdat, int *rdsz, int *rdmsz, int sz);
+void BGBCC_FR2E_CheckExpandStridxData(BGBCC_TransState *ctx, BGBCC_FR2E_ImgState *img, int sz);
+void BGBCC_FR2E_CheckExpandVopData(BGBCC_TransState *ctx, BGBCC_FR2E_ImgState *img, int sz);
+void BGBCC_FR2E_CheckExpandVtrData(BGBCC_TransState *ctx, BGBCC_FR2E_ImgState *img, int sz);
+byte *BGBCC_FR2E_BufEmitType(BGBCC_TransState *ctx, BGBCC_FR2E_ImgState *img, byte *dct, ccxl_type type, int fl);
+int BGBCC_FR2E_BitSpread(int a);
+int BGBCC_FR2E_BitMerge(int a, int b);
+byte *BGBCC_FR2E_BufEmitRegister(BGBCC_TransState *ctx, BGBCC_FR2E_ImgState *img, byte *dct, ccxl_register reg, int fl);
+int BGBCC_FR2E_EmitVirtOp(BGBCC_TransState *ctx, BGBCC_FR2E_ImgState *img, BGBCC_CCXL_VirtOp *op);
+int BGBCC_FR2E_EmitVirtTrace(BGBCC_TransState *ctx, BGBCC_FR2E_ImgState *img, BGBCC_CCXL_RegisterInfo *inf, BGBCC_CCXL_VirtTr *tr);
+int BGBCC_FR2E_FlattenFunctionTraces(BGBCC_TransState *ctx, BGBCC_FR2E_ImgState *img, BGBCC_CCXL_RegisterInfo *inf, int fl);
+void BGBCC_FR2E_FlattenFunctionTracesBuf(BGBCC_TransState *ctx, BGBCC_FR2E_ImgState *img, BGBCC_CCXL_RegisterInfo *inf, byte **rct, int fl);
+void BGBCC_FR2E_FlattenVarListBuf(BGBCC_TransState *ctx, BGBCC_FR2E_ImgState *img, BGBCC_CCXL_RegisterInfo **inf, int ninf, byte **rct, int fl);
+void BGBCC_FR2E_FlattenRegisterInfoBuf(BGBCC_TransState *ctx, BGBCC_FR2E_ImgState *img, BGBCC_CCXL_RegisterInfo *inf, byte **rct, int fl);
+void BGBCC_FR2E_FlattenLiteral(BGBCC_TransState *ctx, BGBCC_FR2E_ImgState *img, BGBCC_CCXL_LiteralInfo *inf);
+void BGBCC_FR2E_FlattenGlobal(BGBCC_TransState *ctx, BGBCC_FR2E_ImgState *img, BGBCC_CCXL_RegisterInfo *inf);
+void BGBCC_FR2E_FlattenLiterals(BGBCC_TransState *ctx, BGBCC_FR2E_ImgState *img);
+void BGBCC_FR2E_FlattenGlobals(BGBCC_TransState *ctx, BGBCC_FR2E_ImgState *img);
+void BGBCC_FR2E_FlattenStridxData(BGBCC_TransState *ctx, BGBCC_FR2E_ImgState *img);
+byte *BGBCC_FR2E_FlattenImage(BGBCC_TransState *ctx, int *rsz);
 //AHSRC:shcc/shx_binop.c
 int BGBCC_SHXC_NormalizeImmVRegInt(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register *rtreg);
 int BGBCC_SHXC_EmitBinaryVRegVRegInt(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);

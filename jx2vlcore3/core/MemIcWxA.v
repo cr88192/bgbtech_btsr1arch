@@ -170,7 +170,6 @@ reg				tPcStepJA;
 // reg[127:0]		tBlkData;
 reg[159:0]		tBlkData;
 
-// `ifndef def_true
 `ifdef def_true
 reg[3:0]		opLenA0;
 reg[3:0]		opLenA1;
@@ -180,32 +179,6 @@ reg[3:0]		opLenA4;
 reg[3:0]		opLenA5;
 `endif
 
-`ifndef def_true
-// `ifdef def_true
-wire[2:0]		opLenA0;
-wire[2:0]		opLenA1;
-wire[2:0]		opLenA2;
-wire[2:0]		opLenA3;
-wire[2:0]		opLenA4;
-wire[2:0]		opLenA5;
-
-reg[15:0]		opIstrA0;
-reg[15:0]		opIstrA1;
-reg[15:0]		opIstrA2;
-reg[15:0]		opIstrA3;
-reg[15:0]		opIstrA4;
-reg[15:0]		opIstrA5;
-
-MemIcOplen	oplA0(opIstrA0, opLenA0);
-MemIcOplen	oplA1(opIstrA1, opLenA1);
-MemIcOplen	oplA2(opIstrA2, opLenA2);
-MemIcOplen	oplA3(opIstrA3, opLenA3);
-`ifdef jx2_enable_wex3w
-MemIcOplen	oplA4(opIstrA4, opLenA4);
-MemIcOplen	oplA5(opIstrA5, opLenA5);
-`endif
-
-`endif
 
 always @*
 begin
@@ -292,128 +265,59 @@ begin
 //	$display("BA=%X BB=%X", tBlkDataA, tBlkDataB);
 //	$display("A=%X BD=%X Ix=%X",tInAddr, tBlkData, tInWordIx);
 
-`ifndef def_true
-	opIstrA0	= tBlkData[15: 0];
-	opIstrA1	= tBlkData[31:16];
-	opIstrA2	= tBlkData[47:32];
-	opIstrA3	= tBlkData[63:48];
-`ifdef jx2_enable_wex3w
-	opIstrA4	= tBlkData[79:64];
-	opIstrA5	= tBlkData[95:80];
-`endif
-`endif
 
 `ifdef def_true
 	casez(tBlkData[15:8])
-		8'b1111_11zz:	opLenA0=4'b0011;		//FC..FF
-		8'b1111_1011:	opLenA0=4'b0010;		//FB
-		8'b1111_1001:	opLenA0=4'b0110;		//F9
-		8'b1111_10z0:	opLenA0=4'b0010;		//F8/FA
-`ifdef jx2_enable_wexjumbo
-		8'b1111_011z:	opLenA0=4'b0110;		//F6/F7
-		8'b1111_0101:	opLenA0=4'b0110;		//F5
-		8'b1111_0100:	opLenA0=4'b1110;		//F4
-`else
+		8'b1111_111z:	opLenA0=4'b1110;		//FE/FF
+		8'b1111_110z:	opLenA0=4'b0110;		//FC/FD
+		8'b1111_10zz:	opLenA0=4'b0010;		//F8..FB
 		8'b1111_01zz:	opLenA0=4'b0110;		//F4..F7
-`endif
 		8'b1111_00zz:	opLenA0=4'b0010;		//F0..F3
-		8'b1110_11zz:	opLenA0=4'b0011;		//EC..EF
+		8'b1110_111z:	opLenA0=4'b0110;		//FE/FF
+		8'b1110_110z:	opLenA0=4'b0010;		//FC/FD
 		8'b1110_101z:	opLenA0=4'b0110;		//EA/EB
 		8'b1110_100z:	opLenA0=4'b0010;		//E8/E9
 		8'b1110_0zzz:	opLenA0=4'b0010;		//E0..E7
 		default:		opLenA0=4'b0001; 
 	endcase
 	casez(tBlkData[31:24])
-		8'b1111_11zz:	opLenA1=4'b0011;		//FC..FF
-		8'b1111_1011:	opLenA1=4'b0010;		//FB
-		8'b1111_1001:	opLenA1=4'b0110;		//F9
-		8'b1111_10z0:	opLenA1=4'b0010;		//F8/FA
-`ifdef jx2_enable_wexjumbo
-		8'b1111_011z:	opLenA1=4'b0110;		//F6/F7
-		8'b1111_0101:	opLenA1=4'b0110;		//F5
-		8'b1111_0100:	opLenA1=4'b1110;		//F4
-`else
+		8'b1111_111z:	opLenA1=4'b1110;		//FE/FF
+		8'b1111_110z:	opLenA1=4'b0110;		//FC/FD
+		8'b1111_10zz:	opLenA1=4'b0010;		//F8..FB
 		8'b1111_01zz:	opLenA1=4'b0110;		//F4..F7
-`endif
 		8'b1111_00zz:	opLenA1=4'b0010;		//F0..F3
-		8'b1110_11zz:	opLenA1=4'b0011;		//EC..EF
+		8'b1110_111z:	opLenA1=4'b0110;		//FE/FF
+		8'b1110_110z:	opLenA1=4'b0010;		//FC/FD
 		8'b1110_101z:	opLenA1=4'b0110;		//EA/EB
 		8'b1110_100z:	opLenA1=4'b0010;		//E8/E9
 		8'b1110_0zzz:	opLenA1=4'b0010;		//E0..E7
 		default:		opLenA1=4'b0001; 
 	endcase
 	casez(tBlkData[47:40])
-		8'b1111_11zz:	opLenA2=4'b0011;		//FC..FF
-		8'b1111_1011:	opLenA2=4'b0010;		//FB
-		8'b1111_1001:	opLenA2=4'b0110;		//F9
-		8'b1111_10z0:	opLenA2=4'b0010;		//F8/FA
-`ifdef jx2_enable_wexjumbo
-		8'b1111_011z:	opLenA2=4'b0110;		//F6/F7
-		8'b1111_0101:	opLenA2=4'b0110;		//F5
-		8'b1111_0100:	opLenA2=4'b1110;		//F4
-`else
+		8'b1111_111z:	opLenA2=4'b1110;		//FE/FF
+		8'b1111_110z:	opLenA2=4'b0110;		//FC/FD
+		8'b1111_10zz:	opLenA2=4'b0010;		//F8..FB
 		8'b1111_01zz:	opLenA2=4'b0110;		//F4..F7
-`endif
 		8'b1111_00zz:	opLenA2=4'b0010;		//F0..F3
-		8'b1110_11zz:	opLenA2=4'b0011;		//EC..EF
+		8'b1110_111z:	opLenA2=4'b0110;		//FE/FF
+		8'b1110_110z:	opLenA2=4'b0010;		//FC/FD
 		8'b1110_101z:	opLenA2=4'b0110;		//EA/EB
 		8'b1110_100z:	opLenA2=4'b0010;		//E8/E9
 		8'b1110_0zzz:	opLenA2=4'b0010;		//E0..E7
 		default:		opLenA2=4'b0001; 
 	endcase
 	casez(tBlkData[63:56])
-		8'b1111_11zz:	opLenA3=4'b0011;		//FC..FF
-		8'b1111_1011:	opLenA3=4'b0010;		//FB
-		8'b1111_1001:	opLenA3=4'b0110;		//F9
-		8'b1111_10z0:	opLenA3=4'b0010;		//F8/FA
-`ifdef jx2_enable_wexjumbo
-		8'b1111_011z:	opLenA3=4'b0110;		//F6/F7
-		8'b1111_0101:	opLenA3=4'b0110;		//F5
-		8'b1111_0100:	opLenA3=4'b1110;		//F4
-`else
+		8'b1111_111z:	opLenA3=4'b1110;		//FE/FF
+		8'b1111_110z:	opLenA3=4'b0110;		//FC/FD
+		8'b1111_10zz:	opLenA3=4'b0010;		//F8..FB
 		8'b1111_01zz:	opLenA3=4'b0110;		//F4..F7
-`endif
 		8'b1111_00zz:	opLenA3=4'b0010;		//F0..F3
-		8'b1110_11zz:	opLenA3=4'b0011;		//EC..EF
+		8'b1110_111z:	opLenA3=4'b0110;		//FE/FF
+		8'b1110_110z:	opLenA3=4'b0010;		//FC/FD
 		8'b1110_101z:	opLenA3=4'b0110;		//EA/EB
 		8'b1110_100z:	opLenA3=4'b0010;		//E8/E9
 		8'b1110_0zzz:	opLenA3=4'b0010;		//E0..E7
 		default:		opLenA3=4'b0001; 
-	endcase
-`endif
-
-`ifndef def_true
-	casez({tBlkData[15:13], tBlkData[11:10], tBlkData[ 8] })
-		6'b111_11z:	opLenA0=3'b011;
-		6'b111_101:	opLenA0=3'b110;		//
-		6'b111_100:	opLenA0=3'b010;		//8/A
-		6'b111_01z:	opLenA0=3'b110;		//4..7
-		6'b111_00z:	opLenA0=3'b010;		//0..3
-		default:	opLenA0=3'b001; 
-	endcase
-	casez({tBlkData[31:29], tBlkData[27:26], tBlkData[24] })
-		6'b111_11z:	opLenA1=3'b011;
-		6'b111_101:	opLenA1=3'b110;
-		6'b111_100:	opLenA1=3'b010;
-		6'b111_01z:	opLenA1=3'b110;
-		6'b111_00z:	opLenA1=3'b010;
-		default:	opLenA1=3'b001; 
-	endcase
-	casez({tBlkData[47:45], tBlkData[43:42], tBlkData[40] })
-		6'b111_11z:	opLenA2=3'b011;
-		6'b111_101:	opLenA2=3'b110;
-		6'b111_100:	opLenA2=3'b010;
-		6'b111_01z:	opLenA2=3'b110;
-		6'b111_00z:	opLenA2=3'b010;
-		default:	opLenA2=3'b001; 
-	endcase
-	casez({tBlkData[63:61], tBlkData[59:58], tBlkData[56] })
-		6'b111_11z:	opLenA3=3'b011;
-		6'b111_101:	opLenA3=3'b110;
-		6'b111_100:	opLenA3=3'b010;
-		6'b111_01z:	opLenA3=3'b110;
-		6'b111_00z:	opLenA3=3'b010;
-		default:	opLenA3=3'b001; 
 	endcase
 `endif
 
@@ -422,61 +326,30 @@ begin
 `ifdef def_true
 // `ifndef def_true
 	casez(tBlkData[79:72])
-		8'b1111_11zz:	opLenA4=4'b0011;		//FC..FF
-		8'b1111_1011:	opLenA4=4'b0010;		//FB
-		8'b1111_1001:	opLenA4=4'b0110;		//F9
-		8'b1111_10z0:	opLenA4=4'b0010;		//F8/FA
-`ifdef jx2_enable_wexjumbo
-		8'b1111_011z:	opLenA4=4'b0110;		//F6/F7
-		8'b1111_0101:	opLenA4=4'b0110;		//F5
-		8'b1111_0100:	opLenA4=4'b1110;		//F4
-`else
+		8'b1111_111z:	opLenA4=4'b1110;		//FE/FF
+		8'b1111_110z:	opLenA4=4'b0110;		//FC/FD
+		8'b1111_10zz:	opLenA4=4'b0010;		//F8..FB
 		8'b1111_01zz:	opLenA4=4'b0110;		//F4..F7
-`endif
 		8'b1111_00zz:	opLenA4=4'b0010;		//F0..F3
-		8'b1110_11zz:	opLenA4=4'b0011;		//EC..EF
+		8'b1110_111z:	opLenA4=4'b0110;		//FE/FF
+		8'b1110_110z:	opLenA4=4'b0010;		//FC/FD
 		8'b1110_101z:	opLenA4=4'b0110;		//EA/EB
 		8'b1110_100z:	opLenA4=4'b0010;		//E8/E9
 		8'b1110_0zzz:	opLenA4=4'b0010;		//E0..E7
 		default:		opLenA4=4'b0001; 
 	endcase
 	casez(tBlkData[95:88])
-		8'b1111_11zz:	opLenA5=4'b0011;		//FC..FF
-		8'b1111_1011:	opLenA5=4'b0010;		//FB
-		8'b1111_1001:	opLenA5=4'b0110;		//F9
-		8'b1111_10z0:	opLenA5=4'b0010;		//F8/FA
-`ifdef jx2_enable_wexjumbo
-		8'b1111_011z:	opLenA5=4'b0110;		//F6/F7
-		8'b1111_0101:	opLenA5=4'b0110;		//F5
-		8'b1111_0100:	opLenA5=4'b1110;		//F4
-`else
+		8'b1111_111z:	opLenA5=4'b1110;		//FE/FF
+		8'b1111_110z:	opLenA5=4'b0110;		//FC/FD
+		8'b1111_10zz:	opLenA5=4'b0010;		//F8..FB
 		8'b1111_01zz:	opLenA5=4'b0110;		//F4..F7
-`endif
 		8'b1111_00zz:	opLenA5=4'b0010;		//F0..F3
-		8'b1110_11zz:	opLenA5=4'b0011;		//EC..EF
+		8'b1110_111z:	opLenA5=4'b0110;		//FE/FF
+		8'b1110_110z:	opLenA5=4'b0010;		//FC/FD
 		8'b1110_101z:	opLenA5=4'b0110;		//EA/EB
 		8'b1110_100z:	opLenA5=4'b0010;		//E8/E9
 		8'b1110_0zzz:	opLenA5=4'b0010;		//E0..E7
 		default:		opLenA5=4'b0001; 
-	endcase
-`endif
-
-`ifndef def_true
-	casez({tBlkData[79:77], tBlkData[75:74], tBlkData[72] })
-		6'b111_11z:	opLenA4=3'b011;
-		6'b111_101:	opLenA4=3'b110;
-		6'b111_100:	opLenA4=3'b010;
-		6'b111_01z:	opLenA4=3'b110;
-		6'b111_00z:	opLenA4=3'b010;
-		default:	opLenA4=3'b001; 
-	endcase
-	casez({tBlkData[95:93], tBlkData[91:90], tBlkData[88] })
-		6'b111_11z:	opLenA5=3'b011;
-		6'b111_101:	opLenA5=3'b110;
-		6'b111_100:	opLenA5=3'b010;
-		6'b111_01z:	opLenA5=3'b110;
-		6'b111_00z:	opLenA5=3'b010;
-		default:	opLenA5=3'b001; 
 	endcase
 `endif
 
@@ -501,7 +374,8 @@ begin
 //			tPcStepWB		= opLenA2[2] && tBlkData[44];
 			tPcStepWA		= opLenA0[2];
 			tPcStepWB		= opLenA2[2];
-			tPcStepJA		= opLenA0[3] && (tRegOutPcVal[31:30]==2'b11);
+//			tPcStepJA		= opLenA0[3] && (tRegOutPcVal[31:30]==2'b11);
+			tPcStepJA		= opLenA0[3];
 		end
 		2'b01: begin
 			tRegOutPcVal	= tBlkData[111: 16];
@@ -510,7 +384,8 @@ begin
 //			tPcStepWB		= opLenA3[2] && tBlkData[60];
 			tPcStepWA		= opLenA1[2];
 			tPcStepWB		= opLenA3[2];
-			tPcStepJA		= opLenA1[3] && (tRegOutPcVal[31:30]==2'b11);
+//			tPcStepJA		= opLenA1[3] && (tRegOutPcVal[31:30]==2'b11);
+			tPcStepJA		= opLenA1[3];
 		end
 		2'b10: begin
 			tRegOutPcVal	= tBlkData[127: 32];
@@ -519,7 +394,8 @@ begin
 //			tPcStepWB		= opLenA4[2] && tBlkData[76];
 			tPcStepWA		= opLenA2[2];
 			tPcStepWB		= opLenA4[2];
-			tPcStepJA		= opLenA2[3] && (tRegOutPcVal[31:30]==2'b11);
+//			tPcStepJA		= opLenA2[3] && (tRegOutPcVal[31:30]==2'b11);
+			tPcStepJA		= opLenA2[3];
 		end
 		2'b11: begin
 			tRegOutPcVal	= tBlkData[143: 48];
@@ -528,7 +404,8 @@ begin
 //			tPcStepWB		= opLenA5[2] && tBlkData[92];
 			tPcStepWA		= opLenA3[2];
 			tPcStepWB		= opLenA5[2];
-			tPcStepJA		= opLenA3[3] && (tRegOutPcVal[31:30]==2'b11);
+//			tPcStepJA		= opLenA3[3] && (tRegOutPcVal[31:30]==2'b11);
+			tPcStepJA		= opLenA3[3];
 		end
 	endcase
 	
@@ -537,11 +414,8 @@ begin
 		tRegOutPcStep = tPcStepWB ? 3'b110 : 3'b100;
 
 `ifdef jx2_enable_wexjumbo
-//	if((tRegOutPcVal[15:8]==8'hF4) && (tRegOutPcVal[31:30]==2'b11))
 	if(tPcStepJA)
 	begin
-//		tRegOutPcStep = 3'b110;
-//		tRegOutPcStep = tRegOutPcVal[42] ? 3'b110 : 3'b100;
 		tRegOutPcStep = tPcStepWB ? 3'b110 : 3'b100;
 	end
 `endif

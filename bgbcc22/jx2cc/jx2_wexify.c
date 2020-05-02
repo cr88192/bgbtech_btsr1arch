@@ -368,7 +368,10 @@ int BGBCC_JX2_CheckOps32Immovable(
 		return(1);
 	if((opw1&0xFC00)==0xF400)
 		return(1);
-	if((opw1&0xFF00)==0xF900)
+//	if((opw1&0xFF00)==0xF900)
+//		return(1);
+
+	if((opw1&0xFF00)==0xFC00)
 		return(1);
 
 	if((opw1&0xEB00)==0xE000)
@@ -693,7 +696,8 @@ ccxl_status BGBCC_JX2_AdjustWexifyOp(
 	if((opw1&0xFF00)==0xF800)
 	{
 		sctx->opcnt_hi8[(opw1>>8)&0xFF]--;
-		opw1|=0x0100;
+//		opw1|=0x0100;
+		opw1|=0x0400;
 		sctx->opcnt_hi8[(opw1>>8)&0xFF]++;
 		*ropw1=opw1;
 		return(1);
@@ -762,6 +766,19 @@ ccxl_status BGBCC_JX2_CheckWexify(
 		{
 			if(((opw3&0xFF00)==0xF400) &&
 				((opw4&0xC000)==0xC000))
+			{
+				cp+=12;
+				continue;
+			}
+
+			cp+=8;
+			continue;
+		}
+
+		/* Skip Jumbo Forms (New) */
+		if((opw1&0xFE00)==0xFE00)
+		{
+			if((opw3&0xFF00)==0xFE00)
 			{
 				cp+=12;
 				continue;
@@ -841,8 +858,10 @@ ccxl_status BGBCC_JX2_CheckWexify(
 		}
 
 		/* If next op begins WEX sequence, skip. */
-		if(((opw3&0xFC00)==0xF400) ||
-			((opw3&0xFF00)==0xF900))
+//		if(((opw3&0xFC00)==0xF400) ||
+//			((opw3&0xFF00)==0xF900))
+		if(	((opw3&0xFC00)==0xF400) ||
+			((opw3&0xFC00)==0xFC00))
 				{ cp+=4; continue; }
 
 		/* If next op is a DLR load, skip. */

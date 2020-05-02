@@ -656,9 +656,9 @@ parameter[5:0] JX2_UCIX_IXS_INVDC	= 6'h11;		//Flush D$
 `ifndef jx2_enable_ops16
 `define jx2_enable_ops16
 `endif
-`ifndef jx2_enable_ops48
-`define jx2_enable_ops48
-`endif
+//`ifndef jx2_enable_ops48
+//`define jx2_enable_ops48
+//`endif
 `endif
 
 

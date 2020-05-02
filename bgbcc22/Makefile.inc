@@ -34,6 +34,7 @@ SRCS=\
 	ccxl/ccxl_struct.c \
 	ccxl/ccxl_trace.c \
 	ccxl/ccxl_type.c \
+	ccxl/ccxl_fr2e.c \
 	\
 	shcc/shx_binop.c \
 	shcc/shx_bufasm.c \

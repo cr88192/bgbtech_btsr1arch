@@ -1085,7 +1085,7 @@ int BGBCC_LoadCSourcesCCXL(
 	char *asts_bsn[256];
 	BCCX_Node *asts_bsa[256];
 	BCCX_Node *t, *c, *n;
-	byte *buf;
+	byte *buf, *tb1;
 	char *dllname;
 	char *archsfx;
 	char *s0, *s1;
@@ -1314,6 +1314,16 @@ int BGBCC_LoadCSourcesCCXL(
 		memcpy(obuf, ctx->ril_ips, sz);
 		if(*rsz)*rsz=sz;
 		return(0);
+	}
+
+
+//	if(ctx->ril_ip)
+	if(0)
+//	if(1)
+	{
+		tb1=BGBCC_FR2E_FlattenImage(ctx, &sz);
+		sprintf(tb, "dump/%s_fr2e.dat", "tst");
+		BGBCC_StoreFile(tb, tb1, sz);
 	}
 
 //	sz=BGBCC_FrBC_FlattenImage(ctx, obuf, omsz);

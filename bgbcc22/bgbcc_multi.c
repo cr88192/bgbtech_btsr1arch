@@ -99,6 +99,8 @@
 #include "ccxl/ccxl_trace.c"
 #include "ccxl/ccxl_type.c"
 
+#include "ccxl/ccxl_fr2e.c"
+
 #include "shcc/shx_binop.c"
 #include "shcc/shx_bufasm.c"
 #include "shcc/shx_cgif.c"

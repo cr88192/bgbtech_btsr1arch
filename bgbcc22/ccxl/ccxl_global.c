@@ -236,6 +236,31 @@ void BGBCC_CCXL_HandleUsortGlobals(
 #endif
 }
 
+void BGBCC_CCXL_CheckSanityLiterals(
+	BGBCC_TransState *ctx)
+{
+	BGBCC_CCXL_LiteralInfo *cur, *nxt;
+	BGBCC_CCXL_LiteralInfo *llst;
+	BGBCC_CCXL_LiteralInfo *sel;
+	int i, j, c;
+	
+	for(i=0; i<4096; i++)
+	{
+		c=ctx->hash_literals[i];
+		while(c>0)
+		{
+			cur=ctx->literals[c];
+			c=cur->hnext_name;
+
+			if(!cur->name)
+				{ BGBCC_DBGBREAK }
+			j=BGBCC_CCXL_HashNameNoSig(cur->name);
+			if(i!=j)
+				{ BGBCC_DBGBREAK }
+		}
+	}
+}
+
 void BGBCC_CCXL_CheckSanityGlobals(
 	BGBCC_TransState *ctx)
 {
@@ -261,6 +286,8 @@ void BGBCC_CCXL_CheckSanityGlobals(
 			cur=cur->hashnext;
 		}
 	}
+	
+	BGBCC_CCXL_CheckSanityLiterals(ctx);
 }
 
 BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_LookupGlobalRns(
@@ -1080,6 +1107,10 @@ void BGBCC_CCXL_BeginName(BGBCC_TransState *ctx, int tag, char *name)
 
 	if(name)
 	{
+//		if(!strcmp(name, "qglBegin"))
+//			op=-1;
+	
+	
 		BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_BEGINNAME);
 		BGBCC_CCXLR3_EmitArgTag(ctx, tag);
 		BGBCC_CCXLR3_EmitArgString(ctx, name);
@@ -1730,6 +1761,12 @@ void BGBCC_CCXL_EndFunction(BGBCC_TransState *ctx,
 		obj->decl->name=obj->decl->defv->name;
 		obj->decl->sig=obj->decl->defv->sig;
 		obj->decl->flagstr=obj->decl->defv->flagstr;
+	}
+
+	if(obj->decl->flagstr)
+	{
+		obj->decl->flagsint=BGBCC_CCXL_DecodeFlagStr(
+			ctx, obj->decl->flagstr);
 	}
 
 //	if(ctx->back_vt && ctx->back_vt->EndFunction)
@@ -2862,6 +2899,12 @@ void BGBCC_CCXL_End(BGBCC_TransState *ctx)
 		obj->decl->pbname=BGBCC_CCXL_GetObjQName(ctx, obj->parent);
 		obj->decl->qname=BGBCC_CCXL_GetObjQName(ctx, obj);
 		BGBCC_CCXL_NormalizeGlobalDeclQn(ctx, obj->decl);
+
+		if(obj->decl->flagstr)
+		{
+			obj->decl->flagsint=BGBCC_CCXL_DecodeFlagStr(
+				ctx, obj->decl->flagstr);
+		}
 
 		if(obj->decl->sig)
 		{

@@ -605,7 +605,8 @@ reg			timerNoise_S3;
 
 assign		timerNoise_NS0 = (scrnPwmOut[8] ^ scrnPwmOut[4] ^ scrnPwmOut[0]);
 assign		timerNoise_NS1 = (sdc_di ^ sdc_do);
-assign		timerNoise_NS2 = dbg_exHold1 ^ audPwmOut2;
+// assign		timerNoise_NS2 = dbg_exHold1 ^ audPwmOut2;
+assign		timerNoise_NS2 = dbg_exHold1 ^ audPwmOut2 ^ clock_halfMhz;
 assign		timerNoise_NS3 =
 	memAddr[1] ^ memAddr[2] ^ memAddr[3] ^
 	memAddr[5] ^ memAddr[7] ^ memAddr[11];

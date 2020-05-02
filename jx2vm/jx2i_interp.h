@@ -340,6 +340,12 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_PSUBXF	0xB3		//
 #define BJX2_NMID_PMULF		0xB4		//
 #define BJX2_NMID_PMULXF	0xB5		//
+#define BJX2_NMID_CTZ		0xB6		//
+#define BJX2_NMID_CTZQ		0xB7		//
+#define BJX2_NMID_BTRNS		0xB8		//
+#define BJX2_NMID_BTRNSQ	0xB9		//
+#define BJX2_NMID_PMORTL	0xBA		//
+#define BJX2_NMID_PMORTQ	0xBB		//
 
 
 #define BJX2_FMID_NONE			0x00		//?

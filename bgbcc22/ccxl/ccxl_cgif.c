@@ -39,6 +39,7 @@ ccxl_status BGBCC_CCXL_StackFn(BGBCC_TransState *ctx, char *name)
 	op->prd=ctx->curprd;
 //	op->imm.str=bgbcc_strdup(name);
 	op->imm.str=stn;
+	op->immty=CCXL_VOPITY_STR;
 	BGBCC_CCXL_AddVirtOp(ctx, op);
 	return(0);
 }
@@ -59,6 +60,7 @@ ccxl_status BGBCC_CCXL_StackLn(BGBCC_TransState *ctx, int line)
 	op->opn=CCXL_VOP_DBGLN;
 	op->prd=ctx->curprd;
 	op->imm.si=line;
+	op->immty=CCXL_VOPITY_SI;
 	BGBCC_CCXL_AddVirtOp(ctx, op);
 	return(0);
 }
@@ -112,6 +114,7 @@ ccxl_status BGBCC_CCXL_EmitLabel(BGBCC_TransState *ctx, ccxl_label lbl)
 	op->opn=CCXL_VOP_LABEL;
 	op->prd=ctx->curprd;
 	op->imm.ui=lbl.id;
+	op->immty=CCXL_VOPITY_LBL;
 	BGBCC_CCXL_AddVirtOp(ctx, op);
 	return(0);
 }
@@ -127,6 +130,7 @@ ccxl_status BGBCC_CCXL_EmitJump(BGBCC_TransState *ctx, ccxl_label lbl)
 	op->opn=CCXL_VOP_JMP;
 	op->prd=ctx->curprd;
 	op->imm.ui=lbl.id;
+	op->immty=CCXL_VOPITY_LBL;
 	BGBCC_CCXL_AddVirtOp(ctx, op);
 	BGBCC_CCXL_EmitMarkEndTrace(ctx);
 	return(0);
@@ -153,6 +157,7 @@ ccxl_status BGBCC_CCXL_EmitJumpRegZero(BGBCC_TransState *ctx,
 	op->type=type;
 	op->srca=reg;
 	op->imm.ui=lbl.id;
+	op->immty=CCXL_VOPITY_LBL;
 	BGBCC_CCXL_AddVirtOp(ctx, op);
 	BGBCC_CCXL_EmitMarkEndTrace(ctx);
 	return(0);
@@ -180,6 +185,7 @@ ccxl_status BGBCC_CCXL_EmitJumpRegCmpI(BGBCC_TransState *ctx,
 	op->srca=sreg;
 	op->srcb=treg;
 	op->imm.ui=lbl.id;
+	op->immty=CCXL_VOPITY_LBL;
 	BGBCC_CCXL_AddVirtOp(ctx, op);
 	BGBCC_CCXL_EmitMarkEndTrace(ctx);
 	return(0);
@@ -298,6 +304,7 @@ ccxl_status BGBCC_CCXL_EmitCallOp(BGBCC_TransState *ctx,
 	op->imm.call.na=na;
 	op->imm.call.ca=0;
 	op->imm.call.args=bgbcc_malloc(na*sizeof(ccxl_register));
+	op->immty=CCXL_VOPITY_CALL;
 	BGBCC_CCXL_AddVirtOp(ctx, op);
 	BGBCC_CCXL_EmitMarkEndTrace(ctx);
 	return(0);
@@ -324,6 +331,7 @@ ccxl_status BGBCC_CCXL_EmitCallIntrinOp(BGBCC_TransState *ctx,
 	op->imm.call.na=na;
 	op->imm.call.ca=0;
 	op->imm.call.args=bgbcc_malloc(na*sizeof(ccxl_register));
+	op->immty=CCXL_VOPITY_CALL;
 	BGBCC_CCXL_AddVirtOp(ctx, op);
 //	BGBCC_CCXL_EmitMarkEndTrace(ctx);
 	return(0);
@@ -351,6 +359,7 @@ ccxl_status BGBCC_CCXL_EmitObjCallOp(BGBCC_TransState *ctx,
 	op->imm.call.na=na;
 	op->imm.call.ca=0;
 	op->imm.call.args=bgbcc_malloc(na*sizeof(ccxl_register));
+	op->immty=CCXL_VOPITY_CALL;
 	BGBCC_CCXL_AddVirtOp(ctx, op);
 	BGBCC_CCXL_EmitMarkEndTrace(ctx);
 	return(0);
@@ -440,6 +449,7 @@ ccxl_status BGBCC_CCXL_EmitJmpTab(BGBCC_TransState *ctx,
 	op->imm.jmptab.nlbl=ncv;
 //	op->imm.jmptab.ca=0;
 	op->imm.jmptab.lbls=bgbcc_malloc((ncv+2)*sizeof(ccxl_label));
+	op->immty=CCXL_VOPITY_JMPTAB;
 
 //	for(i=0; i<ncv; i++)
 	for(i=0; i<(ncv+2); i++)
@@ -726,6 +736,7 @@ ccxl_status BGBCC_CCXL_EmitLoadIndexImm(BGBCC_TransState *ctx,
 	op->dst=dst;
 	op->srca=src;
 	op->imm.si=idx;
+	op->immty=CCXL_VOPITY_SI;
 	BGBCC_CCXL_AddVirtOp(ctx, op);
 	return(0);
 }
@@ -750,6 +761,7 @@ ccxl_status BGBCC_CCXL_EmitStoreIndexImm(BGBCC_TransState *ctx,
 	op->dst=dst;
 	op->srca=src;
 	op->imm.si=idx;
+	op->immty=CCXL_VOPITY_SI;
 	BGBCC_CCXL_AddVirtOp(ctx, op);
 	return(0);
 }
@@ -831,6 +843,7 @@ ccxl_status BGBCC_CCXL_EmitLeaImm(BGBCC_TransState *ctx,
 	op->dst=dst;
 	op->srca=src;
 	op->imm.si=idx;
+	op->immty=CCXL_VOPITY_SI;
 	BGBCC_CCXL_AddVirtOp(ctx, op);
 	return(0);
 }
@@ -956,6 +969,7 @@ ccxl_status BGBCC_CCXL_EmitOffsetOf(BGBCC_TransState *ctx,
 	fn=BGBCC_CCXL_LookupStructFieldID(ctx, st, name);
 	op->imm.obj.gid=st->litid;
 	op->imm.obj.fid=fn;
+	op->immty=CCXL_VOPITY_GFID;
 	BGBCC_CCXL_AddVirtOp(ctx, op);
 	return(0);
 }
@@ -1000,6 +1014,7 @@ ccxl_status BGBCC_CCXL_EmitLoadSlot(BGBCC_TransState *ctx,
 	}
 	op->imm.obj.gid=st->litid;
 	op->imm.obj.fid=fn;
+	op->immty=CCXL_VOPITY_GFID;
 	BGBCC_CCXL_AddVirtOp(ctx, op);
 	return(0);
 }
@@ -1043,6 +1058,7 @@ ccxl_status BGBCC_CCXL_EmitStoreSlot(BGBCC_TransState *ctx,
 	}
 	op->imm.obj.gid=st->litid;
 	op->imm.obj.fid=fn;
+	op->immty=CCXL_VOPITY_GFID;
 	BGBCC_CCXL_AddVirtOp(ctx, op);
 	return(0);
 }
@@ -1081,6 +1097,7 @@ ccxl_status BGBCC_CCXL_EmitLoadSlotAddr(BGBCC_TransState *ctx,
 	}
 	op->imm.obj.gid=st->litid;
 	op->imm.obj.fid=fn;
+	op->immty=CCXL_VOPITY_GFID;
 	BGBCC_CCXL_AddVirtOp(ctx, op);
 	return(0);
 }
@@ -1106,6 +1123,7 @@ ccxl_status BGBCC_CCXL_EmitLoadSlotAddrID(BGBCC_TransState *ctx,
 	op->srca=src;
 	op->imm.obj.gid=st->litid;
 	op->imm.obj.fid=fn;
+	op->immty=CCXL_VOPITY_GFID;
 	BGBCC_CCXL_AddVirtOp(ctx, op);
 	return(0);
 }
@@ -1125,6 +1143,7 @@ ccxl_status BGBCC_CCXL_EmitInitObj(BGBCC_TransState *ctx,
 	op->type=type;
 	op->dst=dst;
 	op->imm.obj.gid=st->litid;
+	op->immty=CCXL_VOPITY_GFID;
 	BGBCC_CCXL_AddVirtOp(ctx, op);
 	return(0);
 }
@@ -1144,6 +1163,7 @@ ccxl_status BGBCC_CCXL_EmitDropObj(BGBCC_TransState *ctx,
 	op->type=type;
 	op->dst=dst;
 	op->imm.si=st->litid;
+	op->immty=CCXL_VOPITY_GFID;
 	BGBCC_CCXL_AddVirtOp(ctx, op);
 	return(0);
 }
@@ -1162,6 +1182,7 @@ ccxl_status BGBCC_CCXL_EmitInitArr(BGBCC_TransState *ctx,
 	op->type=type;
 	op->dst=dst;
 	op->imm.si=sz;
+	op->immty=CCXL_VOPITY_SI;
 	BGBCC_CCXL_AddVirtOp(ctx, op);
 	return(0);
 }
@@ -1182,6 +1203,7 @@ ccxl_status BGBCC_CCXL_EmitInitObjArr(BGBCC_TransState *ctx,
 	op->dst=dst;
 	op->imm.obj.gid=st->litid;
 	op->imm.obj.fid=sz;
+	op->immty=CCXL_VOPITY_GFID;
 	BGBCC_CCXL_AddVirtOp(ctx, op);
 	return(0);
 }
@@ -1201,6 +1223,7 @@ ccxl_status BGBCC_CCXL_EmitLoadInitArr(BGBCC_TransState *ctx,
 	op->dst=dst;
 	op->srca=val;
 	op->imm.si=sz;
+	op->immty=CCXL_VOPITY_SI;
 	BGBCC_CCXL_AddVirtOp(ctx, op);
 	return(0);
 }
@@ -1222,6 +1245,7 @@ ccxl_status BGBCC_CCXL_EmitLoadInitObjArr(BGBCC_TransState *ctx,
 	op->srca=val;
 	op->imm.obj.gid=st->litid;
 	op->imm.obj.fid=sz;
+	op->immty=CCXL_VOPITY_GFID;
 	BGBCC_CCXL_AddVirtOp(ctx, op);
 	return(0);
 }

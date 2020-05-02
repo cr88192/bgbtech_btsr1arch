@@ -938,10 +938,10 @@ int BGBCC_JX2_EmitStatWord(BGBCC_JX2_Context *ctx, int val)
 //			if((val>>12)==0xF)
 			if(((val>>12)&0xE)==0xE)
 			{
-				if(((val>>8)&14)==0xC)
-					{ BGBCC_DBGBREAK }
-				if(((val>>8)&14)==0xE)
-					{ BGBCC_DBGBREAK }
+//				if(((val>>8)&14)==0xC)
+//					{ BGBCC_DBGBREAK }
+//				if(((val>>8)&14)==0xE)
+//					{ BGBCC_DBGBREAK }
 
 				ctx->stat_opc_issfx=1;
 				return(0);
@@ -1032,7 +1032,8 @@ int BGBCC_JX2_EmitStatWord(BGBCC_JX2_Context *ctx, int val)
 	if(((val>>12)&0xE)==0xE)
 	{
 		ctx->opcnt_opw1=val;
-	
+
+#if 0
 		if(((val>>8)&15)==0xC)
 		{
 			if(ctx->is_fixed32)
@@ -1052,6 +1053,7 @@ int BGBCC_JX2_EmitStatWord(BGBCC_JX2_Context *ctx, int val)
 			ctx->stat_opc_issfx=2;
 			return(0);
 		}
+#endif
 
 		ctx->stat_opc_ext8a++;
 		ctx->stat_opc_issfx=1;
@@ -1425,8 +1427,10 @@ int BGBCC_JX2_EmitWordI(BGBCC_JX2_Context *ctx, int val)
 					val&=0xEFFF;
 					if((ctx->op_is_wex2)&1)
 //						val|=0x0200;
-						val|=0x0100;
+//						val|=0x0100;
+						val|=0x0400;
 				}else
+#if 0
 					if((val&0xFE00)==0xFC00)
 				{
 //					val&=0xDFFF;
@@ -1435,6 +1439,7 @@ int BGBCC_JX2_EmitWordI(BGBCC_JX2_Context *ctx, int val)
 						val|=0x0200;
 				}
 				else
+#endif
 					if((val&0xFE00)==0xFA00)
 				{
 					/* Can't do anything here. */
@@ -1453,7 +1458,8 @@ int BGBCC_JX2_EmitWordI(BGBCC_JX2_Context *ctx, int val)
 	//				val|=0x0400;
 
 				if((val&0xFF00)==0xF800)
-					val|=0x0100;
+//					val|=0x0100;
+					val|=0x0400;
 			}
 		}
 	}
@@ -1649,6 +1655,14 @@ int BGBCC_JX2_EmitGetStrtabLabel(BGBCC_JX2_Context *ctx, char *str)
 			{ return(ctx->lblstr_id[i]); }
 	}
 #endif
+
+	if((ctx->nlblstr+1)>=ctx->mlblstr)
+	{
+		j=i+(i>>1);
+		ctx->lblstr_ofs=bgbcc_realloc(ctx->lblstr_ofs, j*sizeof(u32));
+		ctx->lblstr_id=bgbcc_realloc(ctx->lblstr_id, j*sizeof(u32));
+		ctx->mlblstr=j;
+	}
 
 #if 0
 	for(i=0; i<ctx->nlbl; i++)

@@ -123,8 +123,12 @@ int bgbcc_malloc_memset(void *buf, int val, int sz)
 
 void *bgbcc_tmalloc(char *ty, int sz)
 {
+	void *bps, *bpe;
 	void *p;
 	int i, n, tyi, tty, tsz;
+
+	if(sz<0)
+		{ BGBCC_DBGBREAK }
 
 //	if(sz>=65536)
 	if(sz>=(32768-256))
@@ -160,7 +164,10 @@ void *bgbcc_tmalloc(char *ty, int sz)
 	if(!bgbcc_alloc_rov)
 	{
 		for(i=0; i<1024; i++)
+		{
 			bgbcc_alloc_block[i]=NULL;
+			bgbcc_alloc_blklst[i]=NULL;
+		}
 		bgbcc_alloc_nblock=0;
 
 		bgbcc_alloc_srov=malloc(1<<22);
@@ -199,12 +206,20 @@ void *bgbcc_tmalloc(char *ty, int sz)
 	}
 
 	sz+=2*sizeof(void *);
+	sz=(sz+15)&(~15);
+	tsz=sz+(2*sizeof(void *));
 
 	p=bgbcc_alloc_rov;
-	bgbcc_alloc_rov+=(sz+15)&(~15);
+	bgbcc_alloc_rov+=(tsz+15)&(~15);
 
 //	bgbcc_malloc_memset(p, 0, sz);
 	memset(p, 0, sz);
+
+	bps=bgbcc_alloc_block[bgbcc_alloc_curblock];
+	bpe=((char *)bps)+(1<<22);
+	
+	if((p<bps) || (p>=bpe))
+		{ BGBCC_DBGBREAK }
 
 	*(void **)p=bgbcc_alloc_blklst[bgbcc_alloc_curblock];
 	bgbcc_alloc_blklst[bgbcc_alloc_curblock]=p;
@@ -212,6 +227,7 @@ void *bgbcc_tmalloc(char *ty, int sz)
 	tyi=bgbcc_strdup_i(ty, 0);
 	tty=((sz>>4)&4095)|(tyi<<12);
 	((void **)p)[1]=(void *)(nlint)tty;
+	*(void **)(((char *)p)+sz)=(void *)(nlint)tty;
 
 	p=(void *)(((void **)p)+2);
 
@@ -359,8 +375,9 @@ int bgbcc_stralloc_lookupblock(void *obj)
 
 void *bgbcc_malloc_getbase(void *obj)
 {
-	int bi, tty, sz;
-	void *p, *pe;
+	int bi, tty, tty1, sz;
+	void *bps, *bpe;
+	void *p, *p1, *pe;
 	
 	if(!obj)
 		return(NULL);
@@ -368,6 +385,9 @@ void *bgbcc_malloc_getbase(void *obj)
 	bi=bgbcc_malloc_lookupblock(obj);
 	if(bi>=0)
 	{
+		bps=bgbcc_alloc_block[bi];
+		bpe=((char *)bps)+(1<<22);
+
 		p=bgbcc_alloc_blklst[bi];
 		while(p)
 		{
@@ -379,8 +399,16 @@ void *bgbcc_malloc_getbase(void *obj)
 				pe=((char *)p)+sz;
 				if(obj<pe)
 					return(p);
+				if(pe>=bpe)
+					{ BGBCC_DBGBREAK }
+				tty1=(nlint)(*(void **)pe);
+				if(tty1!=tty)
+					{ BGBCC_DBGBREAK }
 			}
-			p=*(void **)p;
+			p1=*(void **)p;
+			if((p1<bps) || (p1>=bpe))
+				{ BGBCC_DBGBREAK }
+			p=p1;
 		}
 	}
 

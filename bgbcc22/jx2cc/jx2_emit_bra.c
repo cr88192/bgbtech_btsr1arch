@@ -272,7 +272,7 @@ int BGBCC_JX2_TryEmitOpLblReg(BGBCC_JX2_Context *ctx,
 			opw3=0x4C00|((reg&15)<<4);
 		}else if(BGBCC_JX2_ModelIsData24P(ctx))
 		{
-#if 1
+#if 0
 			if(!BGBCC_JX2_CheckPadCross48(ctx) && !ctx->is_fixed32)
 			{
 				if(((reg&15)!=0xA) && ((reg&15)!=0xB))
@@ -357,7 +357,8 @@ int BGBCC_JX2_TryEmitOpLblReg(BGBCC_JX2_Context *ctx,
 		if(opw2>=0)
 			BGBCC_JX2_EmitWord(ctx, opw2);
 
-		if(((opw1&0xFE00)>=0xF000) && ((opw1&0xFE00)<0xFC00))
+//		if(((opw1&0xFE00)>=0xF000) && ((opw1&0xFE00)<0xFC00))
+		if(((opw1&0xFE00)>=0xF000) && ((opw1&0xFE00)<=0xFE00))
 		{
 //			BGBCC_JX2_EmitOpCheckRepack(ctx, &opw3, &opw4);
 			BGBCC_JX2_EmitPadForOpWord(ctx, opw3);
@@ -524,7 +525,8 @@ int BGBCC_JX2_TryEmitOpLabel(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 		if(opw2>=0)
 			BGBCC_JX2_EmitWord(ctx, opw2);
 
-		if(((opw1&0xFE00)>=0xF000) && ((opw1&0xFE00)<0xFC00))
+//		if(((opw1&0xFE00)>=0xF000) && ((opw1&0xFE00)<0xFC00))
+		if(((opw1&0xFE00)>=0xF000) && ((opw1&0xFE00)<=0xFE00))
 		{
 //			BGBCC_JX2_EmitOpCheckRepack(ctx, &opw3, &opw4);
 			BGBCC_JX2_EmitPadForOpWord(ctx, opw3);
@@ -980,7 +982,8 @@ int BGBCC_JX2_TryEmitOpFar24Label(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 		if(opw2>=0)
 			BGBCC_JX2_EmitWord(ctx, opw2);
 
-		if(((opw1&0xFE00)>=0xF000) && ((opw1&0xFE00)<0xFC00))
+//		if(((opw1&0xFE00)>=0xF000) && ((opw1&0xFE00)<0xFC00))
+		if(((opw1&0xFE00)>=0xF000) && ((opw1&0xFE00)<=0xFE00))
 		{
 //			BGBCC_JX2_EmitOpCheckRepack(ctx, &opw3, &opw4);
 			BGBCC_JX2_EmitPadForOpWord(ctx, opw3);

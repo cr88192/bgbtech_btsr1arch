@@ -1,0 +1,1690 @@
+
+== Overview ==
+
+BJX2
+* Variable-Length Instructions (16/32/64/96)
+* Derived from BSR1 and BJX1-64C
+** Little-Endian, Byte Addressed
+** Instructions as a sequence of 16-bit words.
+
+BJX2D
+* More Cleanup / Prune
+* Drop 48-bit ops
+* GFP is now the main FPU
+* Promote WEX2 to Core
+** An implementation which ignores WEX2 is still valid.
+* Change encoding for Jumbo
+** Jumbo will be promoted to part of the base ISA.
+** Jumbo forms will be reclassified as 64/96 bit instructions.
+
+=== Profiles ===
+
+Multiple subset profiles will exist, and some features will be optional.
+
+Several ISA Profiles may exist:
+* A: Full, Full Features, 48-bit address space.
+* B: Lite + GFP + Fix32
+* C: Basic, Partial Features, 32-bit address space.
+* D: Lite + Fix32
+* E: Lite + SoftFPU
+* F: Lite + GFP
+
+The compiler is not to use features which are absent in a given profile, and will not assume the presence of features marked as optional unless specified as part of the current pofile.
+
+
+==== BJX2 Full Profile ====
+
+BJX2 Full Profile
+* Will have MMU and FPU.
+* Will use a 48 bit virtual address space.
+* Will use a 32 or 48 bit physical address space.
+* Will support 16, 32, and 64/96 bit instruction encodings.
+* Will support GSV, GFP, and JCMP.
+* Will support WEX2 3W.
+* Support MULQ is optional.
+
+ABI: HardFP (GFP), Base-Relocatable or PBO.
+
+
+==== BJX2 Basic Profile ====
+
+BJX2 Basic Profile
+* Will have MMU and FPU.
+* Will use a 32-bit address space (both virtual and physical).
+* Will support 16 and 32 bit instruction encodings.
+* Support for GSV and JCMP is optional.
+* Will not support MULQ.
+* Will support WEX2 3W.
+
+ABI: HardFP (GFP)
+* Base-Relocatable for kernel
+* PBO for applications and libraries.
+
+
+==== BJX2 Lite Profile ====
+
+BJX2 Lite Profile
+* Will leave MMU and FPU as optional.
+* Will use a 32-bit (physical) address space.
+* Will not support GSV or JCMP.
+* Will support 16 and 32 bit instruction encodings.
+* Support for WEX is optional.
+
+ABI: SoftFP
+* Absolute Addressing for ROM
+* PBO or Base-Relocatable for kernel.
+* PBO for application binaries and libraries.
+
+Optional: GFP
+* GFP will implement a basic FPU via GPRs.
+
+
+==== BJX2 Fix32 Profile ====
+
+BJX2 Fix32
+* Will be similar to Lite.
+* Will only support 32-bit instruction encodings.
+* Will use a 32-bit address space.
+* Will have MMU and FPU as optional.
+
+
+ABI: SoftFP
+* Base-Relocatable for boot image
+* PBO, Application binaries and libraries.
+
+
+=== Registers ===
+
+Registers:
+* R0..R31, 64-bit
+** There are 32, 64-bit GPRs.
+** R0..R15 will be Primary GPRs (Partially excluding R0, R1, and R15).
+** R16..R31 are Extended GPRs.
+* C0..C31, 64-bit.
+** Control Registers.
+** Not all of these necessarily exist.
+* S0..S31, 64-bit
+** Shadow Registers (Reserved).
+
+Special Purpose Registers:
+* R0 / DLR: Displacement/Low Register.
+* R1 / DHR: Displacement/High Register.
+* R15 / SP: Will be the Stack Pointer.
+
+Control Registers:
+* C0 / PC: Program Counter
+* C1 / LR: Link Register
+* C2 / SR: Status Register.
+* C3 / VBR: Vector Base Register.
+* C4 / SPC: Saved PC
+* C5 / SSP: Saved SP
+* C6 / GBR: Global Base Register.
+* C7 / TBR: Thread Base Register.
+* C8 / TTB: Translation Table Base.
+* C9 / TEA: Translation Effective Address.
+* C10 / MMCR: MMU Control Register
+* C11 / EXSR: Exception Status Register.
+* C12 / STTB: System TTB.
+* C13 / KRR: MMU Keyring Register.
+* C14 / IMM (U,R/O): ? Undefined Value (Internal)
+* C15 / ZZR (U,R/O): ? Always returns Zero (Internal)
+* C16 .. C31: Reserved
+
+Access to SPRs will depend on Mode:
+* C0: All Modes
+* C1: All Modes
+* C2: Read-Only in Usermode
+** Partial write via special ops.
+* C3: Supervisor Only
+* C4: Supervisor Only
+* C5: Supervisor Only
+* C6: All Modes
+* C7: Read-Only in Usermode
+* C8: Supervisor Only
+* C9: Supervisor Only
+* C10: Supervisor Only
+* C11: Supervisor Only
+* C12: Supervisor Only
+* C13: Supervisor Only
+* C14: All Modes (Read Only, Undefined)
+* C15: All Modes (Read Only, Zero)
+
+SR Bits:
+* 0: T, Used as a True/False status, or Carry for ADC/SBB.
+* 1: S, Special Status Flag.
+** Used as secondary True/False by GSV.
+* 3/2: Interrupt Priority Level
+** 00: Interrupts Disabled (Reset on Fault).
+** 01: High Priority Only (System/Fault).
+** 10: Medium Priority Only (Timers, ...).
+** 11: All Interrupts Enabled.
+* 4..7: P/Q/R/O Bits, Context Dependent
+** Used by GSV for Vector Compare (Word/Half).
+* 8..23: Reserved
+* 27: WXE, WEX Enable
+* 28: BL, Block Interrupts
+* 29: RB, Encodes the ISR register bank.
+** Set when interrupt occurs.
+** Cleared when interrupt returns.
+* 30: MD, User/Supervisor.
+* 31: JQ, Address-Space Size (32/48).
+* 32..63: Reserved
+
+Most operations will not change the contents of SR unless noted otherwise.
+
+
+For application-level code, misaligned access to memory is required to be supported (excluding system structures, for which proper alignment is required). However, whether this is provided by the hardware or via an interrupt handler is left as implementation defined.
+
+
+The JQ bit will effect the size of the address space:
+* JQ=0, Use a 32-bit address space.
+** AGU will produce 32-bit zero-extended output.
+* JQ=1, Use a 48-bit address space.
+** AGU will produce 48-bit zero extended output.
+** An implementation may produce 64-bit output.
+* This will be AND'ed with the bit from MMCR.
+* Memory access will ignore high-order address bits.
+
+Clearing the WEX Enable flag will cause WEX instructions to be executed as scalar instructions on cores with WEX support. On other cores this flag will be ignored. This flag may be set of cleared depending on the results of the WEXMD operation.
+
+
+=== Special Restrictions ===
+
+A few special-case restrictions will be defined as part of this ISA:
+* Implicit PC-Relative addressing may not cross a 4GB boundary.
+** Loading a program image across 4GB a boundary is undefined.
+** This will apply both to branch instructions and PC-relative load/store.
+* PC is required to be aligned to a 16-bit boundary.
+** Setting the low bit of PC is Undefined.
+* SP will also have some restrictions:
+** The stack may not cross a 4GB boundary.
+** SP will have a minimum alignment of 8 bytes.
+
+The results of violating these restrictions are undefined.
+
+Explicit addressing via MOV.x instructions or LEA.x will respect the full address space, regardless of the base register used.
+
+
+=== Interrupts ===
+
+A simple interrupt mechanism will be used, whereby some registers are copied around, and the processor will branch to a displacement relative to the VBR control register. This destination will (typically) contain a branch to the entry point to the interrupt.
+
+
+VBR Displacements:
+* VBR+0x00: Reset Vector
+* VBR+0x08: General Fault
+* VBR+0x10: IRQ, Hardware Interrupt, or TRAP instruction
+* VBR+0x18: MMU/TLB Miss/Fault.
+* VBR+0x20: Syscall
+
+EXSR Codes:
+* Holds a numeric status code for the exception.
+* Bits 15..12:
+** 0x8: General Fault
+** 0xA: MMU/TLB
+** 0xC: IRQ or Software Interrupt
+** 0xE: Syscall
+* General Faults:
+** 0x8000: Invalid Address
+** 0x8001: Invalid Read (Address lacks read access)
+** 0x8002: Invalid Write (Address lacks write access)
+** 0x8003: Invalid Execute (Address lacks execute access)
+** 0x8004: BREAK instruction used.
+** 0x8005: Invalid use of a SLEEP instruction.
+** 0x8006: TRAxx, Compare Fault.
+** 0x8007: General Page Fault (Rethrow)
+** 0x8008: Misaligned Special
+** 0x8009: Misaligned Read
+** 0x800A: Misaligned Write
+** 0x800B: Misaligned Execute ((PC&1)!=0)
+* Interrupts:
+** 0xC000: General Interrupt
+** 0xC001: Interval Timer
+** 0xC002: Debug UART
+** 0xC003: SPI Interrupt
+** 0xC08x: TRAP #x
+* MMU:
+** 0xA000: General Fault
+** 0xA001: TLB Miss
+** 0xA002: TLB ACL Check
+* Syscall
+** 0xExxx: System Call, xxx gives the SysCall ID (12 bits).
+
+The relevant Control Registers will be swapped depending on the state of the SR.RB status.
+
+On interrupt Entry:
+* (If SR.RB=0) Exchange SP with SSP
+* Copy PC to SPC.
+* Copy low 32 bits of SR into high 32 bits of EXSR.
+* The status code for the interrupt will be loaded into EXSR.
+** Set SR.BL, SR.MD, and SR.RB
+* TEA will be set to the Fault Address (if relevant for the interrupt).
+* EXSR will be set to the exception code in the low 16 bits.
+** The high 32 bits will hold the saved bits from SR.
+** The remaining 16 bits may be used by the handler mechanism.
+* An displacement will be added to VBR and the result will be loaded into PC.
+
+Interrupt Return:
+* (If EXSR.SR.RB=0) Exchange SP with SSP
+* Copy SPC back to PC (Branch to SPC)
+* Restore bits in SR.
+** Copy bits from EXSR(63:32) to SR(31:0)
+** SR(63:32) will be left unchanged (Global State)
+
+
+The interrupt hanlder will be responsible for saving/restoring any registers effected by the ISR. For passing control back into C, this will mean saving any ABI scratch registers.
+
+Instructions which modify DLR may not be used until after DLR has been preserved.
+
+
+SystemCalls:
+* On entry, arguments will be passed they would in the C ABI.
+* Unlike other interrupts, SysCall handlers need not preserve scratch registers.
+* Roughly 12 bits are available for a function number.
+** The specifics of this number are outside the scope of the ISA spec.
+
+
+=== Memory Map ===
+
+Base Physical Memory Map (32-bit):
+* 00000000 .. 00007FFF: Boot ROM
+* 00008000 .. 0000BFFF: (Reserved)
+* 0000C000 .. 0000DFFF: Boot SRAM
+* 0000E000 .. 0000FFFF: Reserved
+* 00010000 .. 000FFFFF: Reserved
+* 00100000 .. 00FFFFFF: Reserved
+* 01000000 .. 7FFFFFFF: DRAM
+* 80000000 .. EFFFFFFF: Reserved
+* F0000000 .. FFFFFFFF: MMIO (No MMU, Bypass)
+** F0000000 .. FEFFFFFF: MMIO / Chipset
+** FF000000 .. FFFFFFFF: Memory Mapped Registers
+
+
+Logical Memory Map (32-bit):
+* 00000000 .. 7FFFFFFF: Userland (MMU)
+* 80000000 .. EFFFFFFF: System (MMU)
+* F0000000 .. FFFFFFFF: MMIO (No MMU, Bypass)
+
+
+Addresses in the MMIO ranges will "bypass" the normal memory access mechanisms and go directly to the MMIO Bus.
+
+Addresses in the MMIO range will be masked to 28 bits, which will be used as the corresponding address on the MMIO Bus.
+
+Access to MMIO will require being in Supervisor mode, and will not be subject to address translation via the MMU.
+
+In 48-bit Mode, the address space will be extended (bits 32..47):
+* 0000: Behaves the same as in 32-bit mode.
+* 0001..7FFF: Userland (MMU).
+* 8000..BFFF: System (MMU).
+* C000..FBFF: System (No MMU; Absolute ~ 46-bit address).
+* FC00..FFFF: Expanded Processor/Chipset/MMIO.
+** This supports a 42-bit MMIO Space.
+** FC00_0zzz_zzzz will identity map to Fzzz_zzzz.
+
+
+If more DRAM exists than fits into the low 2GB, then addresses above the 4GB mark will be used for DRAM. It will be implementation defined how the DRAM region below the 2GB mark maps into this larger space.
+
+
+
+=== MMU ===
+
+The MMU will consist of a semi-exposed TLB Mechanism.
+
+During a TLB Miss Exception, the ISR is to fetch the relevant data from the Page Table and load it into the TLB.
+
+The TLB will be loaded via the LDTLB instruction, which will load the 128 bit entry from the DHR:DLR pair.
+
+TLB Entry:
+* (127:112) = VUGID
+* (111: 76) = Virtual Address Page
+* ( 75: 64) = KR Access
+* ( 63: 48) = Available
+* ( 47: 12) = Physical Address Page
+* ( 11:  0) = Page Control bits
+
+VUGID:
+* (15:10) = VGID
+* ( 9: 0) = VUID
+
+KR Access:
+* (11): Other X
+* (10): Other W
+* ( 9): Other R
+* ( 8): Group X
+* ( 7): Group W
+* ( 6): Group R
+* ( 5): User X
+* ( 4): User W
+* ( 3): User R
+* ( 2): VUGID Enable 2
+* ( 1): VUGID Enable 1
+* ( 0): VUGID Enable 0
+
+If Keyring Check is Enabled, VUGID Enable will have several modes:
+* 000: Access Check Always Fails (Access Fault)
+* 001: Perform VUGID Check, Access Check is Pass or Fail (Access Fault).
+* 010: Always Generate ACL Check Exception
+* 011: Perform VUGID Check, Generate ACL Check on Fail.
+* 100: Reserved
+* 101: Reserved
+* 110: Reserved
+* 111: Reserved
+
+If Keyring Check is Disabled, VUGID access checks are ignored (Always Pass).
+* Only the normal page access checks are used.
+
+Note that Keyring checks are placed after normal page access checks, so with Keyring access enabled, both the Normal and Keyring checks are required to allow access to the page.
+
+
+
+Page Control:
+* ( 9): PR.U1 (User 1)
+* ( 8): PR.U0 (User 0)
+* ( 9): PR.S1 (Size 1)
+* ( 8): PR.S0 (Size 0)
+* ( 7): PR.NU (Not User Accessible)
+** Disallow access from User Mode.
+* ( 6): PR.NX (Execute Disable)
+** Page may not be executed.
+* ( 5): PR.NW (Write Disable)
+** Page may not be written to.
+* ( 4): PR.NR (Read Disable)
+** Page may not be read from.
+* ( 3): Page Is Non-Cachable
+** Set to indicate accesses to page will bypass cache.
+* ( 2): PR.D, (Dirty)
+** Set if page has been modified.
+* ( 1): PR.SH, Page Is Shared
+* ( 0): PR.V, Page Is Valid
+
+Size 0/1:
+* 00: 4kB Page (Single Page)
+* 01: 2MB Page (512 Pages)
+* 10: 64kB Page (16 Pages)
+* 11: 1GB Page (256K Pages)
+
+
+Keyring checks are enabled via the Keyring Register (KRR):
+* This register is interpreted as four 16-bit word values.
+** Each holds a VUGID pair.
+* If the low 16 bits are zero, Keyring Check is disabled.
+* If the other words are zero, they are ignored.
+
+The keyring values are compared against the VUGID value in the TLB:
+* Both Match: Check using User RWX bits.
+* VGID Matches: Check using Group RWX bits.
+* Otherwise: Check using Other RWX bits.
+
+If any of the four keys will allow the requested access, access will pass.
+* Otherwise, if ACL Check is set, generate an ACL Check Exception.
+* Otherwise, generate an Access Fault Exception.
+
+
+Page Table Entries:
+* ( 63: 48) = VUGID Table Index
+* ( 47: 12) = Physical Address Page
+* ( 11:  0) = Page Control bits
+
+The MMU will use a 4-level Page Table.
+
+There will be a User Page Table (TTB) and a System Page Table (STTB).
+Whether STTD is used, and what page-table type is assumed, will depend on the low bits in TTB.
+
+The low 2 bits of TTB will give the main page-table type:
+* 00: None / Invalid
+* 01: Two-level, 32-bit PTE; Single Page Table.
+* 10: Three-Level, 64-bit PTE, 39-bit address.
+* 11: Four-Level, 64-bit PTE, 48-bit address.
+
+The next two bits will give the type of STTB table:
+* 00: None, Reuse TTB.
+* 01: Use Two-Level STTB.
+* 10: Use Three-Level STTB.
+* 11: Use Four-Level STTB.
+
+
+MMCR Bits:
+* 0001: Enable TLB
+** Enables the use of page-level translation via the TLB.
+** If clear, direct physical addressing is used.
+* 0004: User-mode uses 48-bit addressing.
+* 0008: System-mode uses 48-bit addressing.
+
+
+=== Addressing Modes ===
+
+Addressing Modes (16-bit Instruction Forms):
+* (Rn), Register used as an address.
+* (Rn, DLR), Register used with scaled Displacement Register.
+** MOV.x, Scale is size of base type.
+* (PC, DLR), PC used with scaled Displacement Register.
+* (DLR), Direct/Absolute Address
+* (PC, Disp8s), PC with scaled 8-bit displacement.
+* (SP, Disp4u), SP with scaled 4-bit displacement.
+
+Addressing Modes (32-bit Instruction Forms):
+* (Rm, Ri), Register with a scaled index.
+* (Rm, Disp9u), Register with a 9 bit displacement.
+
+For memory operations, Rm will serve as the Base Register, and Rn will serve as a Source or Destination register.
+
+Additional addressing modes may be faked by the assembler.
+* Larger displacements will involve loading a value into DLR.
+
+Displacement Scale:
+* MOV.x will depend on the base register:
+** If using a GPR, will be scaled based on the size of the type.
+** If using PC, a scale of 1 is used for MOV.x forms.
+** GBR and TBR, as with PC, will use a scale of 1.
+* Branches will use a scale of 2.
+* LEA.x will be scaled by the size of the base type.
+
+
+For PC relative addresses, the address will be calculated relative to the start of the following instruction.
+
+Architectural memory access will be unaligned for types less than or equal to 64 bits. Types larger than 64-bits may have an implied 64-bit alignment. 
+
+Integer values will be little endian two's complement.
+
+
+If R0 is used as the base of a Scaled Index, it will be interpreted as if it were PC. This will also be the case for Disp5, Disp9 and Disp17s forms. As with other uses of PC, the scale will be 1.
+
+If R0 is used as the base of a LEA, it will be interpreted as PC. However, only LEA.B will be valid.
+
+The use of R0 or R1 will be special as a base register for memory-access ops.
+* R0 will encode a PC relative form.
+** (R0, R0) will encode (PC, DLR)
+** (R0, R1) will encode (DLR)
+* R1 will encode GBR or TBR.
+** Encoding of GBR or TBR will depend on Index register.
+** (R1, R0) will encode (GBR, DLR)
+** (R1, R1) will encode (TBR, DLR)
+
+
+Note that the effective precision of LEA will be relative to the size of the address space. The effective precision of a LEA may be smaller than 64 bits. The value contained in bits above the effective size of the virtual address space will be implementation defined. The default case will be to zero extend the results to the full 64 bits.
+
+R1 and R15 will be special and reserved as Index Registers.
+* (Rn, R1) will encode (Rn, DLR), except scale will be 1.
+* (Rn, R15) will be Reserved.
+
+R16 and R17 will be reserved as base or index registers, similar to R0 and R1.
+
+Byte and Word loads may not target R15.
+
+Possible: MOV.B load with R15 as the destination will be interpreted as a PREFETCH instruction. This will not perform a load, but will instead request that the processor retrieve the associated cache lines.
+
+
+Depending on the implementation and mode, LEA may be computed either as 32-bit address, or with a full 48 or 64 bits.
+
+If full 48-bit addressing is used:
+* Bits 0..47 will be subject to address calculation;
+* Bits 48..63 will be zero.
+
+If 32-bit wraparound is used with 48 bit addressing:
+* Bits 0..31 will be subject to address calculation;
+* Bits 32..47 will be copied unchanged;
+* Bits 48..63 will be zero.
+
+In an implementation with 32-bit addressing, or in 32-bit address mode:
+* Bits 0..31 will contain the computed address;
+* Bits 32..63 will be cleared to zero.
+
+Note that the address mode used is not required to match the pointer width used by the C ABI. However, it may be presumed that the address width matches between the address mode, C ABI, and the width specified in executable images.
+
+
+For branches and other instructions which directly use PC-relative addressing, only the low 32 bits are required to be computed. These instructions will be undefined if the target address crosses a 4GB boundary.
+
+
+=== Predicated Instructions ===
+
+The instructions encoded in the predicated ranges will be otherwise equivalent to their non-predicated counterparts.
+
+Predicated instructions will be executed if the state of SR.T matches their expected value. If the state of this flag does not match (at the time the instruction is executed), the instruction will function as a NOP.
+
+Instructions whose behavior already depends on SR.T or whose function is to update SR.T may not be encoded as predicated instructions. Branches and other control-flow instructions similarly may not be predicated.
+
+Examples of instructions which will not allow predication:
+* BRA, BSR, BT, and BF
+** RTS, RTSU, RTE, etc.
+* CSELT and similar
+* CMPxx, ...
+* ADC, SBB
+* Etc.
+
+Similarly, instruction forms which are not otherwise encodable with predication may not be predicated.
+
+In the ASM syntax, they will be expressed via an "?T" or "?F" suffix:
+* MOV.B?T R3, (R5)	//Store if SR.T is True
+
+
+Predicated Ranges will exist:
+* E0zz_zzzz (Execute if True, Repeats F0)
+* E1zz_zzzz (Execute if True, Repeats F1)
+* E2zz_zzzz (Execute if True, Repeats F2)
+* E3zz_zzzz (Execute if True, Repeats F3)
+* E4zz_zzzz (Execute if False, Repeats F0)
+* E5zz_zzzz (Execute if False, Repeats F1)
+* E6zz_zzzz (Execute if False, Repeats F2)
+* E7zz_zzzz (Execute if False, Repeats F3)
+* E8zz_zzzz (Execute if True, Repeats F8)
+* E9zz_zzzz (Execute if True, Repeats F9)
+* EAzz_zzzz (PrWEX Block, Repeats F0, Execute if True)
+* EBzz_zzzz (PrWEX Block, Repeats F2, Execute if True)
+* ECzz_zzzz (Execute if False, Repeats F8)
+* EDzz_zzzz (Execute if False, Repeats F9)
+* EEzz_zzzz (PrWEX Block, Repeats F0, Execute if False)
+* EFzz_zzzz (PrWEX Block, Repeats F2, Execute if False)
+
+The ranges FAzz, FBzz, FEzz, and FFzz, may not be encoded in predicated forms.
+The encoding of predicated forms will be otherwise equivalent to their Fz counterparts.
+
+
+== Instruction Set ==
+
+Notation:
+* 0..9, A..F: Literal hex bits
+* n: Destination Register, Typically bits 7..4
+* m: Source Register, Typically bits 3..0
+* i: Signed immediate bits
+* j: Unsigned immediate bits
+* d: Displacement bits
+* x: First Value Placeholder bits.
+* y: Second Value Placeholder bits.
+* z: Undefined/Pattern/Third Value, Placeholder bits.
+** Will typically be defined later or in a sub-pattern.
+
+Prefixes:
+* / Indicates forms which have been dropped.
+* ? Indicates forms which may or may not be supported (Optional).
+** If unsupported, the encoding space is a placeholder.
+** Compiler will be expected to only emit I-Forms appropriate for the target.
+** An instruction need not be marked optional if the parent block is optional.
+*** Instead, this will denote that the instruction is optional within the block.
+* ??, Don't know if it will be implemented.
+** Instruction space may likely be reserved but unimplemented.
+* ?/ or /?, May drop from ISA.
+
+Register Notation:
+* Rm, Source Register
+* Rn, Destination Register
+* Rj, Source Register (R16..R31)
+* Rk, Destination Register (R16..R31)
+* Rx, Source/Destination Register (Even, LSB: 0=R0..R6, 1=R16..R30)
+* Cm, Source Register (Control Register)
+* Cn, Destination Register (Control Register)
+* Sm, Source Register (Shadow Register)
+* Sn, Destination Register (Shadow Register)
+
+Immediate Notation
+* Imm9, Immediate with 9 bits, unspecified extension.
+* Imm9u, Immediate with 9 bits, zero extended.
+* Imm9s, Immediate with 9 bits, sign extended.
+* Imm9n, Immediate with 9 bits, one extended.
+* Disp17u, Displacement with 17 bits, zero extended.
+* Disp17s, Displacement with 17 bits, sign extended.
+* Etc.
+
+
+Notation for the 'e' field:
+* e: qnmi
+** q(E.q)=Quadword/Alternate Operation
+*** Selects between MOV.L and MOVU.L
+*** Selects between CMPxx and CMPQxx
+** n(E.n)=Bit4 of Rn
+** m(E.m)=Bit4 of Rm
+** i(E.i)=Bit4 of Ro/Ri
+* f: qnii (If n is in n position)
+* f: qiin (If n is in o position)
+
+* G/g: 1nmi / 0nmi
+* H/h: 1nii / 0nii (If n is in n position)
+* H/h: 1iin / 0iin (If n is in o position)
+
+* P/p: 1nm0 / 0nm0
+* Q/q: 1nm1 / 0nm1
+
+
+Canonical F0 Block Instruction:
+* F0nm_eo-ZZnm
+** n: Nominal position for Rn.
+** m: Nominal position for Rm.
+** o: Nominal position for Ro.
+*** May also be Rn for some forms.
+*** May be used as an imm5/disp5.
+*** May be used for additional opcode bits.
+
+
+The base unit of instruction encoding is a 16-bit word, with the high bits of the first word encoding the length of the instruction.
+
+When an immediate is split between multiple words, the preceding word will contain the high-order bits relative to the following word, with the primary exception of Imm32.
+
+
+Instruction Space:
+* 0xxx .. Dxxx: 16-bit Instruction Forms
+* F0xx .. FBxx: 32-bit Instruction Forms
+** E0xx .. EBxx: 32-bit Instruction Forms (Predicated)
+* FCxx .. FFxx: 48-bit Instruction Forms
+** ECxx .. EFxx: 48-bit Instruction Forms (Predicated)
+
+Except where noted otherwise, the 16-bit instruction forms are limited to the first 16 registers.
+
+
+=== 16-bit Instruction Forms ===
+
+
+Instruction Space
+* 0zzz (Basic MOV.x Block)
+** 00nm  MOV.B	Rn, (Rm)
+** 01nm  MOV.W	Rn, (Rm)
+** 02nm  MOV.L	Rn, (Rm)
+** 03nm  MOV.Q	Rn, (Rm)
+** 04nm  MOV.B	Rn, (Rm, DLR)
+** 05nm  MOV.W	Rn, (Rm, DLR)
+** 06nm  MOV.L	Rn, (Rm, DLR)
+** 07nm  MOV.Q	Rn, (Rm, DLR)
+** 08nm  MOV.B	(Rm), Rn
+** 09nm  MOV.W	(Rm), Rn
+** 0Anm  MOV.L	(Rm), Rn
+** 0Bnm  MOV.Q	(Rm), Rn
+** 0Cnm  MOV.B	(Rm, DLR), Rn
+** 0Dnm  MOV.W	(Rm, DLR), Rn
+** 0Enm  MOV.L	(Rm, DLR), Rn
+** 0Fnm  MOV.Q	(Rm, DLR), Rn
+
+* 1zzz (Basic Arith Block)
+** 10nm  ADD	Rm, Rn				//Rn=Rn+Rm
+** 11nm  SUB	Rm, Rn				//Rn=Rn-Rm
+** 12nm  ADC	Rm, Rn				//Add with Carry, Rn=Rn+Rm+SR.T
+** 13nm  SBB	Rm, Rn				//Subtract with Borrow, Rn=Rn+(~Rm)+(!SR.T)
+** 14nm  TST	Rm, Rn				//SR.T=!(Rm&Rn)
+** 15nm  AND	Rm, Rn
+** 16nm  OR		Rm, Rn
+** 17nm  XOR	Rm, Rn
+** 18nm  MOV	Rm, Rn				//Rn=Rm
+** 19nm  MOV	Rj, Rn
+** 1Anm  MOV	Rm, Rk
+** 1Bnm  MOV	Rj, Rk
+** 1Cnm  CMPEQ	Rm, Rn				//Rn==Rm (Low 32 Bits)
+** 1Dnm  CMPHI	Rm, Rn				//Unsigned Rn GT Rm (Low 32 Bits)
+** 1Enm  CMPGT	Rm, Rn				//Signed Rn GT Rm (Low 32 Bits)
+** 1Fnm  CMPGE	Rm, Rn				//Signed Rn GE Rm (Low 32 Bits)
+
+* 2zzz
+** 20dd  BRA	(PC, disp8s)		//Branch, PC=PC+(disp8s*2)
+** 21dd  BSR	(PC, disp8s)		//Branch Subroutine
+** 22dd  BT		(PC, disp8s)		//Branch True
+** 23dd  BF		(PC, disp8s)		//Branch False
+** 24jj  /
+** 25jj  /
+** 26jj  LDISH	#imm8u, DLR			//DLR=(DLR SHL 8)|Imm8u
+** 27nj  -
+** 28nd  MOVU.L	(SP, disp4u), Rn	//Stack-Relative ZX Load
+** 29nj  MOV.X	Rx, (SP, disp4u)	//(MOVX2) Stack-Relative Store Pair
+** 2And  MOVU.L	(SP, disp4u), Rk	//Stack-Relative ZX Load
+** 2Bnj  MOV.X	(SP, disp4u), Rx	//(MOVX2) Stack-Relative Load Pair
+** 2Cnj  CMPEQ	#imm4u, Rn			//Rn==Imm4, Zero Extend
+** 2Dnj  CMPEQ	#imm4n, Rn			//Rn==Imm4, One Extend
+** 2Enj  CMPGT	#imm4u, Rn			//Rn==Imm4, Zero Extend
+** 2Fnj  CMPGE	#imm4u, Rn			//Rn==Imm4, Zero Extend
+
+* 3zzz
+** 3000  NOP						//Do Nothing
+** 3010  RTS						//PC=LR
+** 3020  SLEEP						//Sleep
+** 3030  BREAK						//Breakpoint
+** 3040  CLRT						//Clear SR.T
+** 3050  SETT						//Set SR.T
+** 3060  CLRS						//Clear SR.S
+** 3070  SETS						//Set SR.S
+** 3080  NOTT						//SR.T=!SR.T
+** 3090  NOTS						//SR.S=!SR.S
+** 30A0  /
+** 30B0  /
+** 30C0  RTE						//Return from exception
+** 30D0 ? DIV0						//Setup SR for divide
+** 30E0 ? DIV1						//Divide Step (Uses DHR, DLR)
+** 30F0  LDTLB						//Load entry into TLB
+
+** 30z1  -
+
+** 3002  -
+** 3012  RTSU						//PC=LR, Hint
+** 3022  SYSCALL						//Throw(DLR)
+** 3032  -
+** 3042  -
+** 3052  -
+** 3062  -
+** 3072  -
+** 3082  -
+** 3092  -
+** 30A2  -
+** 30B2  -
+** 30C2  -
+** 30D2  -
+** 30E2  -
+** 30F2  INVTLB		//Flush the TLB
+
+** 30z3  -
+
+** 30z4  -
+** 30z5  -
+** 30z6  -
+** 30z7  -
+** 30z8  -
+** 30z9  -
+** 30zA  -
+** 30zB  -
+** 30zC  -
+** 30zD  -
+** 30zE  -
+** 30zF  -
+
+** 31n0  BRA	(PC, Rn)			//Branch to address given in (PC, Rn)
+** 31n1  BSR	(PC, Rn)			//Branch Subroutine given by (PC, Rn)
+** 31n2  BT		(PC, Rn)			//Branch if True to (PC, Rn)
+** 31n3  BF		(PC, Rn)			//Branch if False to (PC, Rn)
+** 31n4  -
+** 31n5  -
+** 31n6  SHADQ	DLR, Rn				//Barrel Shift, Arithmetic
+** 31n7  SHLDQ	DLR, Rn				//Barrel Shift, Logical
+** 31n8  PUSH	Rn
+** 31n9  PUSH	Cn
+** 31nA  POP	Rn
+** 31nB  POP	Cn
+** 31nC  INVIC	Rn					//Flush I-Cache for Address
+** 31nD  INVDC	Rn					//Flush D-Cache for Address
+** 31nE  PUSH	FRn					//(FPU) Push FRn
+** 31nF  POP	FRn					//(FPU) Pop FRn
+
+** 32n0  BRA	Rn					//Branch to address given in Rn
+** 32n1  BSR	Rn					//Branch Subroutine given by Rn
+** 32n2  BT		Rn
+** 32n3  BF		Rn
+** 32n4  EXTU.B	Rn
+** 32n5  EXTU.W	Rn
+** 32n6  EXTS.B	Rn
+** 32n7  EXTS.W	Rn
+** 32n8  -
+** 32n9  -
+** 32nA  -
+** 32nB  -
+** 32nC  PUSH.X	Rn					//(MOVX2) Push register pair
+** 32nD  -
+** 32nE  POP.X	Rn					//(MOVX2) Pop register pair
+** 32nF  -
+
+** 33n0  NOT	Rn					//Rn=~Rn
+** 33n1  NEG	Rn					//Rn=(~Rn)+1
+** 33n2  NEGC	Rn					//Rn=(~Rn)+(~SR.T)
+** 33n3  MOVNT	Rn					//Rn=!SR.T
+** 33n4 ? ROTL	Rn					//Rn=(Rn SHL 1)|(Rn SHR 63)
+** 33n5 ? ROTR	Rn					//Rn=(Rn SHR 1)|(Rn SHL 63)
+** 33n6 ? ROTCL	Rn					//Rn'=(Rn SHL 1)|SR.T; SR.T=Rn.63
+** 33n7 ? ROTCR	Rn
+** 33n8 ? SHLL	Rn					//Rn'=(Rn SHL 1); SR.T=Rn.63
+** 33n9 ? SHLR	Rn					//Rn'=(Rn SHR 1); SR.T=Rn.0
+** 33nA ? SHAR	Rn					//Rn'=(Rn SAR 1); SR.T=Rn.0
+** 33nB  -
+** 33nC  NEG	Rn, DLR				//DLR=(~Rn)+1
+** 33nD  -
+** 33nE  -
+** 33nF  -
+
+** 34n0  SHLL1	Rn					//Rn=Rn SHL 1
+** 34n1  SHLL2	Rn					//Rn=Rn SHL 2
+** 34n2  SHLL4	Rn
+** 34n3  SHLL8	Rn
+** 34n4  SHLR1	Rn					//Rn=Rn SHR 1, Logical
+** 34n5  SHLR2	Rn					//Rn=Rn SHR 2, Logical
+** 34n6  SHLR4	Rn
+** 34n7  SHLR8	Rn
+** 34n8  SHAR1	Rn					//Rn=Rn SAR 1, Arithmetic
+** 34n9  SHAR2	Rn					//Rn=Rn SAR 2, Arithmetic
+** 34nA  SHAR4	Rn
+** 34nB  SHAR8	Rn
+** 34nC  SHLL16	Rn					//Rn=Rn SHL 16
+** 34nD  SHLR16	Rn					//Rn=Rn SHR 16, Logical
+** 34nE  SHAR16	Rn					//Rn=Rn SAR 16, Arithmetic
+** 34nF  SHARSX	Rn					//Copy sign bit to all other bits.
+
+** 35zz  -
+
+** 36n0  SHLL32	Rn					//Rn=Rn SHL 32
+** 36n1  SHLR32	Rn					//Rn=Rn SHR 32, Logical
+** 36n2  SHAR32	Rn					//Rn=Rn SAR 32, Arithmetic
+** 36j3  TRAP	#imm4u				//Generate an Interrupt
+** 36n4  EXTU.L	Rn					//Zero Extend DWord to QWord
+** 36n5  EXTS.L	Rn					//Sign Extend DWord to QWord
+** 36n6  SHAD	DLR, Rn				//Barrel Shift, Arithmetic
+** 36n7  SHLD	DLR, Rn				//Barrel Shift, Logical
+** 36n8  TRAP	Rn
+** 36n9  WEXMD	#imm4				//Set WEX Profile
+** 36jA  CPUID	#imm4				//Load CPUID bits into DHR:DLR
+** 36nB  -
+** 36nC  -
+** 36nD  CMPHS	DLR, Rn				//Unsigned (Rn GE DLR)
+** 36nE /? CMPGE	DLR, Rn				//Signed (Rn GE DLR)
+** 36nF  MOVT	Rn					//Rn=SR.T
+
+** 37n0  SWAP.B		Rn				//(1032) Swap E/O Bytes (Low Four Bytes)
+** 37n1  SWAP.W		Rn				//(1032) Swap E/O Words (All words)
+** 37n2  SWAP.8B	Rn				//       Swap E/O Bytes (All Eight Bytes)
+** 37n3  SWAP.L		Rn				//(2301) Swap DWord
+** 37n4 ? SWAP.LB	Rn				//(1023) Swap Low Two Bytes (GSV)
+** 37n5 ? SWAP.LW	Rn				//(1023) Swap Low Two Words (GSV)
+** 37n6 ? SWCP.LB	Rn				//(0023) Copy Low Bytes (GSV)
+** 37n7 ? SWCP.LW	Rn				//(0023) Copy Low Words (GSV)
+** 37n8 ? SWAP.MB	Rn				//(2103) Swap Low and Middle Byte (GSV)
+** 37n9 ? SWAP.MW	Rn				//(2103) Swap Low and Middle Word (GSV)
+** 37nA ? SWCP.MB	Rn				//(0103) Copy Low To Middle Byte (GSV)
+** 37nB ? SWCP.MW	Rn				//(0103) Copy Low To Middle Word (GSV)
+** 37nC ? SWAP.HB	Rn				//(3120) Swap Low and High Byte (GSV)
+** 37nD ? SWAP.HW	Rn				//(3120) Swap Low and High Word (GSV)
+** 37nE ? SWCP.HB	Rn				//(0120) Copy Low To High Bytes (GSV)
+** 37nF ? SWCP.HW	Rn				//(0120) Copy Low To High Word (GSV)
+
+** 38zz (Mirror 30zz, Rn=R16..R31)
+** 39zz (Mirror 31zz, Rn=R16..R31)
+** 3Azz (Mirror 32zz, Rn=R16..R31)
+** 3Bzz (Mirror 33zz, Rn=R16..R31)
+** 3Czz (Mirror 34zz, Rn=R16..R31)
+** 3Dzz (Mirror 35zz, Rn=R16..R31)
+** 3Ezz (Mirror 36zz, Rn=R16..R31)
+** 3Fzz (Mirror 37zz, Rn=R16..R31)
+
+* 4zzz
+** 40nd  MOV.L		Rn, (SP, disp4u)	//Stack-Relative Store
+** 41nd  MOV.Q		Rn, (SP, disp4u)	//Stack-Relative Store
+** 42nd  MOV.L		Rk, (SP, disp4u)	//Stack-Relative Store
+** 43nd  MOV.Q		Rk, (SP, disp4u)	//Stack-Relative Store
+** 44nd  MOV.L		(SP, disp4u), Rn	//Stack-Relative Load
+** 45nd  MOV.Q		(SP, disp4u), Rn	//Stack-Relative Load
+** 46nd  MOV.L		(SP, disp4u), Rk	//Stack-Relative Load
+** 47nd  MOV.Q		(SP, disp4u), Rk	//Stack-Relative Load
+** 48nm  MOV		Rm, Cn				//Cn=Rm
+** 49nm  MOV		Cm, Rn				//Rn=Cm
+** 4Anm ? MOV		Rm, Sn				//Store to Shadow Register
+** 4Bnm ? MOV		Sm, Rn				//Load from Shadow Register
+** 4Cnm  LEA.B		(Rm, DLR), Rn
+** 4Dnm  LEA.W		(Rm, DLR), Rn
+** 4Enm  LEA.L		(Rm, DLR), Rn
+** 4Fnm  LEA.Q		(Rm, DLR), Rn
+
+* 5zzz (Binary Ops)
+** 50zz  MOVU.B		(Rm), Rn
+** 51zz  MOVU.W		(Rm), Rn
+** 52zz  MOVU.B		(Rm, DLR), Rn
+** 53zz  MOVU.W		(Rm, DLR), Rn
+** 54zz	 TSTQ		Rm, Rn			//SR.T=!(Rm&Rn)
+** 55nm  CMPQEQ		Rm, Rn			//Rn==Rm, Quad
+** 56nm  MULS		Rm, Rn			//(DHR,DLR)=Rm*Rn (32-bit, Signed Result)
+** 57nm  MULU		Rm, Rn			//(DHR,DLR)=Rm*Rn (32-bit, Unsigned Result)
+** 58nm  ADD		Rm, DLR, Rn		//Rn=Rm+DLR
+** 59nm  SUB		Rm, DLR, Rn
+** 5Anm  MULS		Rm, DLR, Rn		//Rn=Rm*DLR (32-bit, Signed Result)
+** 5Bnm  CMPQHI		Rm, Rn			//Unsigned Rn GT Rm, Quad
+** 5Cnm  CMPQGT		Rm, Rn			//Signed Rn GT Rm, Quad
+** 5Dnm  AND		Rm, DLR, Rn
+** 5Enm  OR			Rm, DLR, Rn
+** 5Fnm  XOR		Rm, DLR, Rn
+
+* 6zzz  (Additional Ops)
+** 60nm  FADD		Rm, Rn			//(GFP) FADD
+** 61nm  FSUB		Rm, Rn			//(GFP) FSUB
+** 62nm  FMUL		Rm, Rn			//(GFP) FMUL
+** 63nm  FLDCF		Rm, Rn			//(GFP) Single->Double
+** 64nm  FCMPEQ		Rm, Rn			//(GFP) FCMPEQ
+** 65nm  FCMPGT		Rm, Rn			//(GFP) FCMPGT
+** 66nm  FSTCF		Rm, Rn			//(GFP) Double->Single
+** 67nz  -
+** 68nj  ADD	#imm4u, Rk
+** 69nj  ADD	#imm4n, Rk
+** 6Anj  LDIZ	#imm4u, Rk
+** 6Bnj  LDIN	#imm4n, Rk
+** 6Cnj  CMPEQ	#imm4u, Rk			//Rn==Imm4, Zero Extend
+** 6Dnj  CMPEQ	#imm4n, Rk			//Rn==Imm4, One Extend
+** 6Enj  CMPGT	#imm4u, Rk			//Rn==Imm4, Zero Extend
+** 6Fnj  CMPGE	#imm4u, Rk			//Rn==Imm4, Zero Extend
+
+* 7zzz ( Reserved )
+
+* 8zzz ( MOV.L 1000-rddd-nnnn-mmmm, r=Store/Load )
+** 80nm  MOVU.L		(Rm), Rn
+** 81nm  MOV.L		Rn, (Rm,  4)
+** 82nm  MOV.L		Rn, (Rm,  8)
+** 83nm  MOV.L		Rn, (Rm, 12)
+** 84nm  MOV.L		Rn, (Rm, 16)
+** 85nm  MOV.L		Rn, (Rm, 20)
+** 86nm  MOV.L		Rn, (Rm, 24)
+** 87nm  MOV.L		Rn, (Rm, 28)
+** 88nm  MOVU.L		(Rm, DLR), Rn
+** 89nm  MOV.L		(Rm,  4), Rn
+** 8Anm  MOV.L		(Rm,  8), Rn
+** 8Bnm  MOV.L		(Rm, 12), Rn
+** 8Cnm  MOV.L		(Rm, 16), Rn
+** 8Dnm  MOV.L		(Rm, 20), Rn
+** 8Enm  MOV.L		(Rm, 24), Rn
+** 8Fnm  MOV.L		(Rm, 28), Rn
+
+* 9zzz ( Drop / Reserved )
+
+* Ajjj  LDIZ		#imm12u, DLR	//Load 12 bit value into DLR (Zero Extend)
+* Bjjj  LDIN		#imm12u, DLR	//Load 12 bit value into DLR (One Extend)
+* Cnii  ADD			#imm8s, Rn		//Rn=Rn+Imm8
+* Dnii  LDI			#imm8s, Rn		//Rn=Imm8
+* Ezzz  (Escape32, Predicate Block)
+* Fzzz  (Escape32, Normal Block)
+
+
+
+=== 32-bit Instruction Forms ===
+
+
+Major Ranges
+* F0nm_XeoX (Basic Instructions, Partially mirrors 16-bit space)
+* F1nm_Xedd (Load/Store, Disp9)
+* F2nm_Xejj (Imm9 / Imm10 ops)
+* F3zz_zzzz (Reserved / User Block)
+* F4zz_zzzz (Repeat F0zz, WEX2 Hint)
+* F5zz_zzzz (Repeat F1zz, WEX2 Hint)
+* F6zz_zzzz (Repeat F2zz, WEX2 Hint)
+* F7zz_zzzz (Repeat F3zz, WEX2 Hint)
+* F8Xn_jjjj (Imm16 Instructions)
+* F9Xn_jjjj (Reserved)
+* FAjj_jjjj (LDIZ Imm24, DLR)
+* FBjj_jjjj (LDIN Imm24, DLR)
+* FCzz_zzzz (Repeat F8zz, WEX2 Hint)
+* FDzz_zzzz (Repeat F9zz, WEX2 Hint)
+* FEzz_zzzz (Jumbo Imm24)
+* FFzz_zzzz (Jumbo Reserved)
+
+Additionally, Predicated Ranges will exist:
+* E0zz_zzzz (Execute if True, Repeats F0)
+* E1zz_zzzz (Execute if True, Repeats F1)
+* E2zz_zzzz (Execute if True, Repeats F2)
+* E3zz_zzzz (Execute if True, Repeats F3)
+* E4zz_zzzz (Execute if False, Repeats F0)
+* E5zz_zzzz (Execute if False, Repeats F1)
+* E6zz_zzzz (Execute if False, Repeats F2)
+* E7zz_zzzz (Execute if False, Repeats F3)
+* E8zz_zzzz (Execute if True, Repeats F8)
+* E9zz_zzzz (Execute if True, Repeats F9)
+* EAzz_zzzz (PrWEX, Repeats F0, Execute if True)
+* EBzz_zzzz (PrWEX, Repeats F2, Execute if True)
+* ECzz_zzzz (Execute if False, Repeats F8)
+* EDzz_zzzz (Execute if False, Repeats F9)
+* EEzz_zzzz (PrWEX, Repeats F0, Execute if False)
+* EFzz_zzzz (PrWEX, Repeats F2, Execute if False)
+
+The ranges FAzz and FBzz, may not be encoded in predicated forms.
+The encoding of predicated forms will be otherwise equivalent to their Fz counterparts.
+
+
+==== F0zz Instruction Block ====
+
+F0zz Instruction Block:
+* F0zz_0zzz
+** F0nm_0gd0 ? MOV.B	Rn, (Rm, Disp5)
+** F0nm_0Gd0  /
+** F0nm_0gd1 ? MOV.W	Rn, (Rm, Disp5)
+** F0nm_0Gd1  /
+** F0nm_0gd2 ? MOV.L	Rn, (Rm, Disp5)
+** F0nm_0Gd2  /
+** F0nm_0gd3 ? MOV.Q	Rn, (Rm, Disp5)
+** F0nm_0Gd3  /
+** F0nm_0go4  MOV.B		Rn, (Rm, Ro)		//Q=0
+** F0nm_0Go4  LEA.B		(Rm, Ro), Rn		//Q=1
+** F0nm_0go5  MOV.W		Rn, (Rm, Ro)		//Q=0
+** F0nm_0Go5  LEA.W		(Rm, Ro), Rn		//Q=1
+** F0nm_0go6  MOV.L		Rn, (Rm, Ro)		//Q=0
+** F0nm_0Go6  LEA.L		(Rm, Ro), Rn		//Q=1
+** F0nm_0go7  MOV.Q		Rn, (Rm, Ro)		//Q=0
+** F0nm_0Go7  LEA.Q		(Rm, Ro), Rn		//Q=1
+** F0nm_0gd8 ? MOV.B	(Rm, Disp5), Rn
+** F0nm_0Gd8  /
+** F0nm_0gd9 ? MOV.W	(Rm, Disp5), Rn
+** F0nm_0Gd9  /
+** F0nm_0gdA ? MOV.L	(Rm, Disp5), Rn
+** F0nm_0GdA  /
+** F0nm_0gdB ? MOV.Q	(Rm, Disp5), Rn
+** F0nm_0GdB  /
+** F0nm_0goC  MOV.B		(Rm, Ro), Rn		//Q=0
+** F0nm_0GoC  MOVU.B	(Rm, Ro), Rn		//Q=1
+** F0nm_0goD  MOV.W		(Rm, Ro), Rn		//Q=0
+** F0nm_0GoD  MOVU.W	(Rm, Ro), Rn		//Q=1
+** F0nm_0goE  MOV.L		(Rm, Ro), Rn		//Q=0
+** F0nm_0GoE  MOVU.L	(Rm, Ro), Rn		//Q=1
+** F0nm_0goF  MOV.Q		(Rm, Ro), Rn		//Q=0
+** F0nm_0GoF  MOVD.L	(Rm, Ro), Rn		//Q=1 (63..32=Undefined)
+
+* F0zz_1zzz
+** F0nm_1go0  ADD		Rm, Ro, Rn				//Rn=Rm+Ro
+** F0nm_1Go0  ADD		Rm, #imm5, Rn			//(PrWEX) Rn=Rm+Imm
+** F0nm_1go1  SUB		Rm, Ro, Rn				//Rn=Rm-Ro
+** F0nm_1Go1  SUB		Rm, #imm5, Rn			//(PrWEX) Rn=Rm-Imm
+** F0nm_1go2  MULS		Rm, Ro, Rn				//Rn=Rm*Ro (Signed Result)
+** F0nm_1Go2  MULU		Rm, Ro, Rn				//Rn=Rm*Ro (Unsigned Result)
+** F0nm_1go3 ? MULS.Q	Rm, Ro, Rn				//(MULQ) Signed 64b Result
+** F0nm_1Go3 ? MULU.Q	Rm, Ro, Rn				//(MULQ) Unsigned 64b Result
+** F0nm_1eo4  -
+** F0nm_1go5  AND		Rm, Ro, Rn				//Rn=Rm AND Ro
+** F0nm_1Go5  AND		Rm, #imm5, Rn			//(PrWEX) Rn=Rm AND Imm
+** F0nm_1go6  OR		Rm, Ro, Rn				//Rn=Rm OR  Ro
+** F0nm_1Go6  OR		Rm, #imm5, Rn			//(PrWEX) Rn=Rm OR Imm
+** F0nm_1go7  XOR		Rm, Ro, Rn				//Rn=Rm XOR Ro
+** F0nm_1Go7  XOR		Rm, #imm5, Rn			//(PrWEX) Rn=Rm XOR Imm
+
+** F0nm_1ez8
+
+** F0nm_1ez9
+*** F0nm_1g09 ADD		Rm, Rn				//Rn=Rn+Rm
+*** F0nm_1G09 ADD.L		Rm, Rn				//Rn=Rn+Rm (Low 32)
+*** F0nm_1g19 SUB		Rm, Rn				//Rn=Rn-Rm
+*** F0nm_1G19 SUB.L		Rm, Rn				//Rn=Rn-Rm (Low 32)
+*** F0nm_1g29 ADC		Rm, Rn				//Add with Carry (64b)
+*** F0nm_1G29 ADC.L		Rm, Rn				//Add with Carry (32b)
+*** F0nm_1g39 SBB		Rm, Rn				//Subtract with Borrow (64b)
+*** F0nm_1G39 SBB.L		Rm, Rn				//Subtract with Borrow (32b)
+*** F0nm_1e49 TST{Q}	Rm, Rn				//SR.T=!(Rm&Rn)
+*** F0nm_1g59 AND		Rm, Rn
+*** F0nm_1g69 OR		Rm, Rn				//
+*** F0nm_1g79 XOR		Rm, Rn				//
+*** F0nm_1g89 MOV		Rm, Rn				//Rn=Rm
+*** F0nm_1G89 MOVD		Rm, Rn				//Rn=Rm (High Undefined)
+*** F0nm_1g99 MULS		Rm, Rn				//(DHR,DLR)=Rm*Rn (Signed Result)
+*** F0nm_1G99 ? MULS.Q	Rm, Rn				//(MULQ) (Signed 64*64=>128)
+*** F0nm_1gA9 MOV		Rm, Cn				//Cn=Rm
+*** F0nm_1gB9 MOV		Cm, Rn				//Rn=Cm
+*** F0nm_1eC9 CMP{Q}EQ	Rm, Rn				//Rn==Rm
+*** F0nm_1eD9 CMP{Q}HI	Rm, Rn				//Unsigned Rn GT Rm
+*** F0nm_1eE9 CMP{Q}GT	Rm, Rn				//Signed Rn GT Rm
+*** F0nm_1gF9 MULU		Rm, Rn				//(DHR,DLR)=Rm*Rn (Unsigned Result)
+*** F0nm_1GF9 ? MULU.Q	Rm, Rn				//(MULQ) (Unsigned 64*64=>128)
+
+** F0nm_1ezA  (GSV Block)
+*** F0nm_1g0A / PADD.W		Rm, Rn				//(GSV) Packed Add Word
+*** F0nm_1G0A / PADD.L		Rm, Rn				//(GSV) Packed Add DWord
+*** F0nm_1g1A / PSUB.W		Rm, Rn				//(GSV) Packed Sub Word
+*** F0nm_1G1A / PSUB.L		Rm, Rn				//(GSV) Packed Sub DWord
+*** F0nm_1g2A / PADC.W		Rm, Rn				//(GSV) Packed Add-Carry Word
+*** F0nm_1G2A / PADC.L		Rm, Rn				//(GSV) Packed Add-Carry DWord
+*** F0nm_1g3A / PSBB.W		Rm, Rn				//(GSV) Packed Sub-Borrow Word
+*** F0nm_1G3A / PSBB.L		Rm, Rn				//(GSV) Packed Sub-Borrow DWord
+*** F0nm_1g4A -
+*** F0nm_1g5A ? PADD.H		Rm, Rn				//(GSVF) Packed ADD Half
+*** F0nm_1G5A ? PADD.F		Rm, Rn				//(GSVF) Packed ADD Float
+*** F0nm_1g6A ? PSUB.H		Rm, Rn				//(GSVF) Packed SUB Half
+*** F0nm_1G6A ? PSUB.F		Rm, Rn				//(GSVF) Packed SUB Float
+*** F0nm_1g7A ? PMUL.H		Rm, Rn				//(GSVF) Packed MUL Half
+*** F0nm_1G7A ? PMUL.F		Rm, Rn				//(GSVF) Packed MUL Float
+*** F0nm_1g8A  MOVHD		Rm, Rn				//(GSV) Move High DWord
+*** F0nm_1G8A  MOVLD		Rm, Rn				//(GSV) Move Low DWord
+*** F0nm_1G9A -
+*** F0nm_1gAA  MOVHLD		Rm, Rn				//(GSV) Rn=Rm (MOV High to Low)
+*** F0nm_1GAA  MOVLHD		Rm, Rn				//(GSV) Rn=Rm (MOV Low to High)
+*** F0nm_1pBA  PSELT.W		Rm, Rn				//Packed Select Word
+*** F0nm_1PBA  PSELT.L		Rm, Rn				//Packed Select DWord
+*** F0nm_1qBA  PSELF.W		Rm, Rn				//Packed Select Word
+*** F0nm_1QBA  PSELF.L		Rm, Rn				//Packed Select DWord
+*** F0nm_1gCA  PCMPEQ.W		Rm, Rn				//Pack Compare Word, Equal
+*** F0nm_1GCA  PCMPEQ.L		Rm, Rn				//Pack Compare DWord, Equal
+*** F0nm_1gDA  PCMPHI.W		Rm, Rn				//Pack Compare Word, Above
+*** F0nm_1GDA  PCMPHI.L		Rm, Rn				//Pack Compare DWord, Above
+*** F0nm_1gEA  PCMPGT.W		Rm, Rn				//Pack Compare Word, Greater
+*** F0nm_1GEA  PCMPGT.L		Rm, Rn				//Pack Compare DWord, Greater
+*** F0nm_1gFA / PMULS.W		Rm, Rn				//(GSV) (DHR,DLR)=Rm*Rn (Vector)
+*** F0nm_1GFA / PMULU.W		Rm, Rn				//(GSV) (DHR,DLR)=Rm*Rn (Vector)
+
+** F0nm_1ezB (GSV Block)
+*** F0nm_1g0B /? PLDSBL.W	Rm, Rn				//Packed Load SB->W (Low)
+*** F0nm_1G0B /? PLDUBL.W	Rm, Rn				//Packed Load UB->W (Low)
+*** F0nm_1g1B /? PLDSWL.L	Rm, Rn				//Packed Load SW->L (Low)
+*** F0nm_1G1B /? PLDUWL.L	Rm, Rn				//Packed Load UW->L (Low)
+*** F0nm_1g2B /? PLDBX.W	Rm, Rn				//Packed Load B->W (Dup)
+*** F0nm_1G2B /? PLDBH.W	Rm, Rn				//Packed Load B->W (High)
+*** F0nm_1g3B /? PLDWX.L	Rm, Rn				//Packed Load W->L (Dup)
+*** F0nm_1G3B /? PLDWH.L	Rm, Rn				//Packed Load W->L (High)
+*** F0nm_1g4B /? PSTSBL.W	Rm, Rn				//Packed Store W->SB (Low)
+*** F0nm_1G4B /? PSTUBL.W	Rm, Rn				//Packed Store W->UB (Low)
+*** F0nm_1g5B /? PSTSWL.L	Rm, Rn				//Packed Store L->SW (Low)
+*** F0nm_1G5B /? PSTUWL.L	Rm, Rn				//Packed Store L->UW (Low)
+*** F0nm_1g6B /? PSTBL.W	Rm, Rn				//Packed Store W->B (Low)
+*** F0nm_1G6B /? PSTBH.W	Rm, Rn				//Packed Store W->B (High)
+*** F0nm_1g7B /? PSTWL.L	Rm, Rn				//Packed Store L->W (Low)
+*** F0nm_1G7B /? PSTWH.L	Rm, Rn				//Packed Store L->W (High)
+
+** F0nm_1ezC
+*** F0nm_1e0C  NOT		Rm, Rn				//Rn=~Rn
+*** F0nm_1e1C  NEG		Rm, Rn				//Rn=(~Rn)+1
+*** F0nm_1e2C  CLZ{Q}	Rm, Rn				//(CLZ) Count Leading Zeroes
+*** F0nm_1e3C  CTZ{Q}	Rm, Rn				//(CLZ) Count Trailing Zeroes
+*** F0nm_1e4C  BTRNS{Q}	Rm, Rn				//(CLZ) Bit Transpose
+*** F0nm_1g5C  EXTS.L	Rm, Rn				//Q=0
+*** F0nm_1G5C  EXTU.L	Rm, Rn				//Q=1
+*** F0nm_1e6C  SHAD{Q}	Rm, Rn				//Barrel Shift, Arithmetic
+*** F0nm_1e7C  SHLD{Q}	Rm, Rn				//Barrel Shift, Logical
+*** F0nm_1g8C  EXTS.B	Rm, Rn				//Q=0, I=0
+*** F0nm_1G8C  EXTU.B	Rm, Rn				//Q=1, I=0
+*** F0nm_1g9C  EXTS.W	Rm, Rn				//Q=0, I=0
+*** F0nm_1G9C  EXTU.W	Rm, Rn				//Q=1, I=0
+
+*** F0nm_1gAC  MOV		Rm, Sn				//Cn=Rm
+*** F0nm_1GAC  SWAP.L	(Rm), Rn			//Exchange Rn with memory at (Rm)
+*** F0nm_1gBC  MOV		Sm, Rn				//Rn=Cm
+*** F0nm_1GBC  SWAP.Q	(Rm), Rn			//Exchange Rn with memory at (Rm)
+
+*** F0nm_1eCC / CLNZ{Q}	Rm, Rn				//(CLZ) Count Leading Ones
+*** F0nm_1eDC / CTNZ{Q}	Rm, Rn				//(CLZ) Count Trailing Ones
+*** F0nm_1eEC  CMP{Q}GE	Rm, Rn				//Signed Rn GE Rm
+*** F0nm_1eFC  CMP{Q}HS	Rm, Rn				//Unsigned Rn GE Rm
+
+** F0nm_1ezD ? (GFP, GPR FPU, Opt)
+*** F0nm_1e0D  FLDCF		Rm, Rn		//Load Convert Float32 (Low Bits, ZX)
+*** F0nm_1e1D  FLDCHF		Rm, Rn		//Load Convert Float32 (High Bits)
+*** F0nm_1e2D  FLDCI		Rm, Rn		//Load Convert Int
+*** F0nm_1e3D  FLDCH		Rm, Rn		//Load Convert Half (Low16)
+*** F0nm_1e4D  FSTCF		Rm, Rn		//Store Convert Float32 (Low Bits, ZX)
+*** F0nm_1e5D  FSTCHF		Rm, Rn		//Store Convert Float32 (High Bits)
+*** F0nm_1e6D  FSTCI		Rm, Rn		//Store Convert Int
+*** F0nm_1e7D  FSTCH		Rm, Rn		//Store Convert Half (Low16)
+*** F0nm_1e8D  FNEG			Rm, Rn		//Negate
+*** F0nm_1e9D  FABS			Rm, Rn		//Absolute
+*** F0nm_1eAD  FCMPEQ		Rm, Rn		//SR.T=(FRn EQ FRm)
+*** F0nm_1eBD  FCMPGT		Rm, Rn		//SR.T=(FRn GT FRm)
+*** F0nm_1eCD  -
+*** F0nm_1eDD  -
+*** F0nm_1eED  -
+*** F0nm_1eFD  -
+
+** F0nm_1ezE ? (RGB 2R Block)
+*** F0nm_1e0E  RGB5SHR1		Rm, Rn		//(RGB) RGB555 Shift Right
+*** F0nm_1e1E ? PMORT{L/Q}	Rm, Rn		//(GSV) Morton Shuffle
+*** F0nm_1g2E  RGB5PCK32	Rm, Rn		//(RGB) RGB555 Pack from RGB32
+*** F0nm_1G2E  RGB5PCK64	Rm, Rn		//(RGB) RGB555 Pack from RGB64
+*** F0nm_1g3E  RGB5UPCK32	Rm, Rn		//(RGB) RGB555 Unpack to RGB32
+*** F0nm_1G3E  RGB5UPCK64	Rm, Rn		//(RGB) RGB555 Unpack to RGB64
+*** F0nm_1G4E  RGB32PCK64	Rm, Rn		//(RGB) RGB32 Pack from RGB64
+*** F0nm_1G5E  RGB32UPCK64	Rm, Rn		//(RGB) RGB32 Unpack to RGB64
+
+*** F0nm_1gCE ? PLDCHLF		Rm, Rn		//Packed Half to Single (Low)
+*** F0nm_1gDE ? PLDCHHF		Rm, Rn		//Packed Half to Single (High)
+*** F0nm_1gEE ? PSTCHLF		Rm, Rn		//Packed Single to Half (Low)
+*** F0nm_1gFE ? PSTCHHF		Rm, Rn		//Packed Single to Half (High)
+
+** F0nm_1ezF  -
+
+* F0zz_2zzz (More 3R Ops)
+** 
+** F0nm_2go0  PADD.W	Rm, Ro, Rn			//(GSV) Packed ADD Word
+** F0nm_2Go0  PADD.L	Rm, Ro, Rn			//(GSV) Packed ADD DWord
+** F0nm_2go1  PSUB.W	Rm, Ro, Rn			//(GSV) Packed SUB Word
+** F0nm_2Go1  PSUB.L	Rm, Ro, Rn			//(GSV) Packed SUB DWord
+** F0nm_2go2  -
+** F0nm_2Go2  -
+** F0nm_2go3  -
+** F0nm_2Go3  -
+** F0nm_2eo4  -
+** F0nm_2go5  PADD.F	Rm, Ro, Rn			//(GSVF) Packed FADD (2x Float)
+** F0nm_2Go5  PADDX.F	Rm, Ro, Rn			//(GSVFX) Packed FADD (4x Float)
+** F0nm_2go6  PSUB.F	Rm, Ro, Rn			//(GSVF) Packed FSUB (2x Float)
+** F0nm_2Go6  PSUBX.F	Rm, Ro, Rn			//(GSVFX) Packed FSUB (4x Float)
+** F0nm_2go7  PMUL.F	Rm, Ro, Rn			//(GSVF) Packed FMUL (2x Float)
+** F0nm_2Go7  PMULX.F	Rm, Ro, Rn			//(GSVFX) Packed FMUL (4x Float)
+** F0nm_2go8  MOVHD		Rm, Ro, Rn			//(GSV) MOV, High DWords
+** F0nm_2Go8  MOVLD		Rm, Ro, Rn			//(GSV) MOV, Low DWords
+** F0nm_2go9  MOVHLD	Rm, Ro, Rn			//(GSV) MOV, High and Low DWords
+** F0nm_2Go9  MOVLHD	Rm, Ro, Rn			//(GSV) MOV, Low and High DWords
+** F0nm_2goA  -
+** F0nm_2goB  -
+** F0nm_2goC  -
+** F0nm_2goD  -
+** F0nm_2goE  -
+** F0nm_2goF  -
+
+** F0zz_3en0  (Single Register Ops, Mirror 3znz)
+*** 1111_0000_zzzz_zzzz_0011_qzzn_nnnn_0000 (1R)
+*** 1111_0000_0000_zzzz_0011_qzzz_zzzz_0000 (0R)
+
+*** F000_3000  NOP
+*** F000_3010  RTS
+*** F000_3020  SLEEP
+*** F000_3030  BREAK
+*** F000_3040  CLRT
+*** F000_3050  SETT
+*** F000_3060  CLRS
+*** F000_3070  SETS
+*** F000_3080  NOTT
+*** F000_3090  NOTS
+*** F000_30A0  -
+*** F000_30B0  -
+*** F000_30C0  RTE
+*** F000_30D0  -
+*** F000_30E0  -
+*** F000_30F0  LDTLB
+
+*** F002_3010  RTSU
+*** F002_30F0  INVTLB
+
+*** F010_3en0  BRA		(PC, Rn)
+*** F011_3en0  BSR		(PC, Rn)
+*** F012_3en0  BT		(PC, Rn)
+*** F013_3en0  BF		(PC, Rn)
+*** F014_3en0  NOP3		Rn			//(WEX2) NOP with Register
+
+*** F018_3en0  PUSH		Rn
+*** F019_3en0  PUSH		Cn
+*** F01A_3en0  POP		Rn
+*** F01B_3en0  POP		Cn
+*** F01C_3en0 / CMPPL	Rn
+*** F01D_3en0 / CMPPZ	Rn
+
+*** F01C_3en0  INVIC	Rn
+*** F01D_3en0  INVDC	Rn
+
+*** F020_3en0  BRA		Rn
+*** F021_3en0  BSR		Rn
+*** F022_3en0  BT		Rn
+*** F023_3en0  BF		Rn
+
+*** F033_3en0  MOVNT	Rn
+*** F034_3en0  ROTL		Rn
+*** F035_3en0  ROTR		Rn
+*** F036_3en0  ROTCL	Rn
+*** F037_3en0  ROTCR	Rn
+*** F038_3en0  SHLL		Rn
+*** F039_3en0  SHLR		Rn
+*** F03A_3en0  SHAR		Rn
+
+*** F068_3en0  TRAP		Rn
+*** F06F_3en0  MOVT		Rn
+
+*** F082_3en0  FPUSH	FRn
+*** F083_3en0  FPOP		FRn
+
+*** F0nm_3ez7  SWxP.x	Rm, Rn		//(GSV) SWAP and SWCP
+
+*** F0nm_3ez8  (2R Block)
+*** ...
+*** F0nm_3ezF  (2R Block)
+
+* F0nm_4eoz (Follows same pattern as F0nm_0zz0)
+** F0nm_4eo0 ? MOV.X	Rn, (Rm, Disp5)		//(MOVX2) Store Pair
+** F0nm_4eo1  -
+** F0nm_4eo2  -
+** F0nm_4eo3  -
+** F0nm_4eo4  MOV.X		Rn, (Rm, Ro)		//(MOVX2) Store Pair
+** F0nm_4eo5  -
+** F0nm_4eo6  -
+** F0nm_4eo7  -
+** F0nm_4eo8 ? MOV.X	(Rm, Disp5), Rn		//(MOVX2) Load Pair
+** F0nm_4eo9  -
+** F0nm_4eoA  -
+** F0nm_4eoB  -
+** F0nm_4eoC  MOV.X		(Rm, Ro), Rn		//(MOVX2) Load Pair
+** F0nm_4eoD  -
+** F0nm_4eoE  -
+** F0nm_4eoF  -
+
+* F0zz_5zzz
+** F0nm_5go0  CSELT		Rm, Ro, Rn			//Rn=SR.T?Rm:Ro
+** F0nm_5Go0  PCSELT.L	Rm, Ro, Rn			//(GSV) Packed CSELT (DWord)
+** F0nm_5go1 ? PMULS.W	Rm, Ro, Rn			//(GSV) Packed Multiply (2x16->2x32)
+** F0nm_5Go1 ? PMULU.W	Rm, Ro, Rn			//(GSV) Packed Multiply (2x16->2x32)
+** F0nm_5go2  DMULS.L	Rm, Ro, Rn			//(MULL) Sx 32b Mul (32*32->64)
+** F0nm_5go3  DMULU.L	Rm, Ro, Rn			//(MULL) Zx 32b Mul (32*32->64)
+
+** F0nm_5eo4  SHAD{Q}	Rm, Ro, Rn
+** F0nm_5eo5  SHLD{Q}	Rm, Ro, Rn
+
+** F0nm_5go6 ? PMULS.LW	Rm, Ro, Rn			//(GSV) Packed Mul (Low Word)
+** F0nm_5Go6 ? PMULU.LW	Rm, Ro, Rn			//(GSV) Packed Mul (Low Word)
+** F0nm_5go7 ? PMULS.HW	Rm, Ro, Rn			//(GSV) Packed Mul (High Word)
+** F0nm_5Go7 ? PMULU.HW	Rm, Ro, Rn			//(GSV) Packed Mul (High Word)
+
+** F0nm_5go8 ? FADD		Rm, Ro, Rn			//(GFP) FADD
+** F0nm_5go9 ? FSUB		Rm, Ro, Rn			//(GFP) FSUB
+** F0nm_5goA ? FMUL		Rm, Ro, Rn			//(GFP) FMUL
+** F0nm_5goB ? RGB5AVG	Rm, Ro, Rn			//(RGB555) Average
+** F0nm_5GoB ? RGB5MOD	Rm, Ro, Rn			//(RGB555) Modulate
+** F0nm_5goC  ADDS.L	Rm, Ro, Rn			//Rn=Rm+Ro, ADD 32-bit, Sign Extend
+** F0nm_5GoC  ADDU.L	Rm, Ro, Rn			//Rn=Rm+Ro, ADD 32-bit, Zero Extend
+** F0nm_5goD  SUBS.L	Rm, Ro, Rn			//Rn=Rm-Ro, ADD 32-bit, Sign Extend
+** F0nm_5GoD  SUBU.L	Rm, Ro, Rn			//Rn=Rm-Ro, ADD 32-bit, Zero Extend
+** F0nm_5goE  MULS.W	Rm, Ro, Rn			//(MULW) Sx 16b Mul (16*16->32)
+** F0nm_5GoE  MULS.W	Rm, Imm5u, Rn		//(MULW) Sx 16b Mul (16*16->32)
+** F0nm_5goF  MULU.W	Rm, Ro, Rn			//(MULW) Zx 16b Mul (16*16->32)
+** F0nm_5GoF  MULU.W	Rm, Imm5u, Rn		//(MULW) Zx 16b Mul (16*16->32)
+
+* F0zz_6zzz
+* F0zz_7zzz
+* F0zz_8zzz
+
+* F0ez_9zzz (Old FPU Block, Drop / Reserved )
+
+* F0dd_Addd
+* F0dd_Bddd
+
+* F0dd_Cddd  BRA	(PC, disp20s)		//Branch, +/- 1MB
+* F0dd_Dddd  BSR	(PC, disp20s)		//Call, +/- 1MB
+* F0dd_Eddd  BT		(PC, disp20s)		//Branch True, +/- 1MB
+* F0dd_Fddd  BF		(PC, disp20s)		//Branch False, +/- 1MB
+
+Branch ops may only exist in lane 1.
+
+
+==== F1zz Instruction Block ====
+
+F1zz Instruction Block:
+
+* F1nm_Xeii  (MOV Disp9 Block)
+** F1nm_0gdd  MOV.B		Rn, (Rm, disp9u)
+** F1nm_0Gdd  LEA.B		(Rm, disp9u), Rn
+** F1nm_1gdd  MOV.W		Rn, (Rm, disp9u)
+** F1nm_1Gdd  LEA.W		(Rm, disp9u), Rn
+** F1nm_2gdd  MOV.L		Rn, (Rm, disp9u)
+** F1nm_2Gdd  LEA.L		(Rm, disp9u), Rn
+** F1nm_3gdd  MOV.Q		Rn, (Rm, disp9u)
+** F1nm_3Gdd  LEA.Q		(Rm, disp9u), Rn
+** F1nm_4gdd  / 
+** F1nm_4Gdd  / 
+** F1nm_5gdd  /
+** F1nm_5Gdd  /
+** F1nm_6gdd  / 
+** F1nm_6Gdd  / 
+** F1nm_7gdd  / 
+** F1nm_7Gdd  / 
+** F1nm_8gdd  MOV.B		(Rm, disp9u), Rn
+** F1nm_8Gdd  MOVU.B	(Rm, disp9u), Rn
+** F1nm_9gdd  MOV.W		(Rm, disp9u), Rn
+** F1nm_9Gdd  MOVU.W	(Rm, disp9u), Rn
+** F1nm_Agdd  MOV.L		(Rm, disp9u), Rn
+** F1nm_AGdd  MOVU.L	(Rm, disp9u), Rn
+** F1nm_Bgdd  MOV.Q		(Rm, disp9u), Rn
+** F1nm_BGdd  MOVD.L	(Rm, disp9u), Rn
+** F1zz_Czzz
+*** F1nm_Cpdd ? JTSTT	Rm, Rn, disp8s	//(JCMP)
+*** F1nm_CPdd ? JTSTQT	Rm, Rn, disp8s	//(JCMP)
+*** F1nm_Cqdd ? JTSTF	Rm, Rn, disp8s	//(JCMP)
+*** F1nm_CQdd ? JTSTQF	Rm, Rn, disp8s	//(JCMP)
+** F1zz_Dzzz
+*** F1nm_Dpdd ? JCMPGT	Rm, Rn, disp8s	//(JCMP)
+*** F1nm_DPdd ? JCMPQGT	Rm, Rn, disp8s	//(JCMP)
+*** F1nm_Dqdd ? JCMPLE	Rm, Rn, disp8s	//(JCMP)
+*** F1nm_DQdd ? JCMPQLE	Rm, Rn, disp8s	//(JCMP)
+** F1zz_Ezzz
+*** F1nm_Epdd ? JCMPHI	Rm, Rn, disp8s	//(JCMP)
+*** F1nm_EPdd ? JCMPQHI	Rm, Rn, disp8s	//(JCMP)
+*** F1nm_Eqdd ? JCMPLS	Rm, Rn, disp8s	//(JCMP)
+*** F1nm_EQdd ? JCMPQLS	Rm, Rn, disp8s	//(JCMP)
+** F1zz_Fzzz
+*** F1nm_Fpdd ? JCMPEQ	Rm, Rn, disp8s	//(JCMP)
+*** F1nm_FPdd ? JCMPQEQ	Rm, Rn, disp8s	//(JCMP)
+*** F1nm_Fqdd ? JCMPNE	Rm, Rn, disp8s	//(JCMP)
+*** F1nm_FQdd ? JCMPQNE	Rm, Rn, disp8s	//(JCMP)
+
+
+==== F2zz Instruction Block ====
+
+F2zz Instruction Block  (Imm9 Block, New):
+
+* F2nm_0gjj  ADD		Rm, #imm9u, Rn		//
+* F2nm_1gjj  ADD		Rm, #imm9n, Rn		//
+* F2nm_2gjj  MULS		Rm, #imm9u, Rn		//32*32=>32, Signed result
+* F2nm_2Gjj  MULU		Rm, #imm9u, Rn		//32*32=>32, Unsigned result
+* F2nm_3gjj  ADDS.L		Rm, #imm9u, Rn		//ADD 32 SX, Zero-Ext Imm
+* F2nm_3Gjj  ADDU.L		Rm, #imm9u, Rn		//ADD 32 ZX, Zero-Ext Imm
+* F2nm_4gjj  ADDS.L		Rm, #imm9n, Rn		//ADD 32 SX, One-Ext Imm
+* F2nm_4Gjj  ADDU.L		Rm, #imm9n, Rn		//ADD 32 ZX, One-Ext Imm
+* F2nm_5gjj  AND		Rm, #imm9u, Rn		//
+* F2nm_6gjj  OR			Rm, #imm9u, Rn		//
+* F2nm_7gjj  XOR		Rm, #imm9u, Rn		//
+
+* F2nm_8pjj  SHADQ		Rm, #imm8, Rn		//E.i=0
+* F2nm_8Pjj  SHAD.Q		Rm, #imm8, Rn		//E.i=0
+* F2nm_8qjj  PSHUF.B	Rm, #imm8, Rn		//E.i=1
+* F2nm_8Qjj  PSHUF.W	Rm, #imm8, Rn		//E.i=1
+
+* F2nm_9pjj  SHLD		Rm, #imm8, Rn		//E.i=0
+* F2nm_9Pjj  SHLD.Q		Rm, #imm8, Rn		//E.i=0
+
+* F2nz_Aejj
+* F2nz_Bejj
+
+* F2nz_Cfjj
+** F2n0_Cfjj  LDIZ{D}	#imm10u, Rn				//(PrWEX) Alt
+** F2n1_Cfjj  LDIN{D}	#imm10n, Rn				//(PrWEX) Alt
+** F2n2_Cfjj  LDISH		#imm8u, Rn				//(PrWEX) Rn=(Rn<<8)|Imm8
+*** Jumbo: LDISH32	#imm32, Rn
+** F2n3_Cfjj  LDIHI{Q}	#imm10u, Rn				//Load immed into High bits (31:22) or (63:54)
+** F2n4_Cfjj  TST{Q}	#imm10u, Rn				//SR.T=!(Imm AND Rn)
+** F2n5_Cfjj  TST{Q}	#imm10n, Rn				//SR.T=!(Imm AND Rn)
+** F2n6_Cfjj  CMP{Q}HS	#imm10u, Rn				//Unsigned Rn GE Imm
+** F2n7_Cfjj  CMP{Q}HS	#imm10n, Rn				//Unsigned Rn GE Imm
+** F2n8_Cfjj  CMP{Q}HI	#imm10u, Rn				//Unsigned Rn GT Imm
+** F2n9_Cfjj  CMP{Q}HI	#imm10n, Rn				//Unsigned Rn GT Imm
+** F2nA_Cfjj  CMP{Q}GE	#imm10u, Rn				//Signed Rn GE Imm
+** F2nB_Cfjj  CMP{Q}GE	#imm10n, Rn				//Signed Rn GE Imm
+** F2nC_Cfjj  CMP{Q}EQ	#imm10u, Rn				//Rn==Imm
+** F2nD_Cfjj  CMP{Q}EQ	#imm10n, Rn				//Rn==Imm
+** F2nE_Cfjj  CMP{Q}GT	#imm10u, Rn				//Signed Rn GT Imm
+** F2nF_Cfjj  CMP{Q}GT	#imm10n, Rn				//Signed Rn GT Imm
+
+* F2nz_Dfjj
+** F2n0_Dfjj  ADD{D}	#imm10u, Rn				//Rn=Rn+Imm10u
+** F2n1_Dfjj  ADD{D}	#imm10n, Rn				//Rn=Rn+Imm10n
+** F2n2_Dfjj  MUL{S/U}.W	#imm10u, Rn				//Rn=Rn*Imm10u
+** F2n3_Dfjj  MUL{S/U}.W	#imm10n, Rn				//Rn=Rn*Imm10n
+** F2n4_Dfjj  -
+** F2n5_Dfjj  -
+* F2nz_Efjj
+* F2nz_Ffjj
+
+
+==== F8zz Instruction Block ====
+
+F8zz Instruction Block:
+
+* F80n_iiii  LDIZ		#imm16u, Rn		//R0..R15, Zero Extend
+* F81n_iiii  LDIZ		#imm16u, Rk		//R16..R31, Zero Extend
+* F82n_iiii  LDIN		#imm16n, Rn		//R0..R15, One Extend
+* F83n_iiii  LDIN		#imm16n, Rk		//R16..R31, One Extend
+* F84n_iiii  ADD		#imm16s, Rn		//R0..R15
+* F85n_iiii  ADD		#imm16s, Rk		//R16..R31
+* F86n_iiii  LDISH16	#imm16u, Rn		//R0..R15
+* F87n_iiii  LDISH16	#imm16u, Rk		//R16..R31
+* F88n_iiii  -
+* F89n_iiii  -
+* F8An_iiii  -
+* F8Bn_iiii  -
+* F8Cn_iiii  -
+* F8Dn_iiii  -
+* F8En_iiii  -
+* F8Fn_iiii  -
+
+/ The F9zz block will repeat the F8zz block, but with the primary difference that F9zz will indicate a WEX2 form.
+
+/ The FCzz block will repeat the F8zz block, but with the primary difference that FCzz will indicate a WEX2 form.
+
+
+==== FAzz/FBzz Instruction Block ====
+
+FAzz/FBzz Instructions:
+
+* FAjj_jjjj	 LDIZ	#imm24u, DLR		//Zero Extend
+* FBjj_jjjj	 LDIN	#imm24n, DLR		//One Extend
+
+
+==== EAzz/EBzz/EEzz/EFzz PrWEX Instruction Blocks ====
+
+* EAnm_0eoz..EAnm_Beoz
+** Maps to the same instruction space as F0nm_0eoz..F0nm_Beoz.
+* EBnm_80jj..EBnm_Ffjj
+** Maps to the same instruction space as F2nm_0fjj..F2nm_Ffjj.
+
+
+The PrWEX Block will be special:
+* Support for PrWEX is optional.
+* The PrWEX Block does not exist in Lane 1 or in scalar code.
+
+
+The purpose of the PrWEX block will be to make WEX usable with predicated instructions. PrWEX instructions will exist in the same lanes as normal WEX instructions, and will follow similar restrictions.
+
+PrWEX may be mixed with unconditional instructions, and may be used with a predicated op in Lane 1. The predication state of each execute lane will be independent.
+
+The EDzz and EFzz block will repeat the EAzz and EBzz block, but differ in their predicate.
+* EAzz will be Execute if True.
+* EEzz will be Execute if False.
+
+
+=== Jumbo Instructions ===
+
+Several Jumbo blocks will be defined:
+* FEjj_jjjj Jumbo Imm24
+* FFzz_jjjj Jumbo Reserved
+
+Jumbo Instructions will be larger instructions (64 or 96 bits), composed of multiple conjoined instruction words.
+Jumbo instructions will begin with FEzz_zzzz, which will serve as a "jumbo prefix".
+The following 32-bit instructions will be considered part of the same logical instruction.
+The final instruction in the sequence (which is not a Jumbo Prefix) will encode the operation.
+
+Some instructions may only be allowed with a single or with a pair of prefixes, and other cases may potentially encode alternate instructions.
+
+
+If the instruction following the prefix is a another jumbo prefix, the instruction will be 96 bits, otherwise it will be 64.
+
+All instruction words in the sequence will be required to be 32-bit encodings.
+* A jumbo prefix followed by a 16-bit op is currently undefined.
+** It is possible this could serve as an alternative 48-bit space.
+
+Jumbo64 forms of F1, F2, or F8 block instructions will match their 32-bit counterparts, but with the immediate field expanded.
+F1 and F2 block Imm9/Disp9 and Imm10 will have a 32 bit immediate.
+
+Exapansion within the F1 and F2 blocks will use the jumbo prefix as bits 
+(31:8) of the immediate, with bits (7:0) coming from the base instruction.
+
+F1 block immediates will be expanded to being 33-bit sign-extended.
+* The disp8s instructions will become disp32s.
+* The disp9 instructions will become disp33s.
+** EI will serve as a sign-extension bit.
+
+F2 block immediates will be expanded, but retain the zero or one extension from the base instruction.
+
+
+Use with the F0 block will depend on the instruction:
+* Branch ops will extend the size of the displacement to 44 bits.
+** However, branches beyond 32-bits are currently undefined.
+* Imm5u/Disp5u ops will be expanded to 29-bits sign-extended.
+** Bits (27:4) will come from the Jumbo Prefix, (3:0) from the op.
+** EI will serve as a sign-extension bit.
+
+
+Use of two jumbo prefixes followed by an F8-block instruction will encode an instruction with a 64-bit immediate.
+
+
+=== Wide Execution 2 (Optional) ===
+
+WEX2 Would be based around 32-bit instructions, where:
+* F0zz..F3zz represent the last instruction in a block.
+* F4zz..F7zz represent an instruction which may execute in parallel.
+
+* A scalar implementation will treat F4zz..F7zz as equivalent to F0zz..F3zz.
+* There isn't a predefined maximum to the length of a block.
+** The core will limit it to the maximum it supports.
+** Dependencies between instructions in a block are not allowed.
+** A block also does not require parallel execution.
+
+Operations will be required to be valid both when executed in scalar and parallel orderings. In scalar ordering, the results of operations may be written in the sequential order of the instructions. In parallel ordering, writeback may not necessarily take place until after the end of the block.
+
+
+Instructions operating in parallel will be organized into lanes.
+The lanes will be encoded in reverse order, with the last instruction being 'Lane 1'. All scalar operations will take place in Lane 1.
+
+For example:
+* F4zz_zzzz F4yy_yyyy F0xx_xxxx
+* Will have X in Lane 1, Y in Lane 2, and Z in Lane 3.
+
+
+Operations which need to read the value from Rn will overlap with Lane 2, and will consume the Ro port for this lane (in scalar ops). In WEX, an operation may Lane 2 with such an operation if its Ro matches the Rn in Lane 1 (otherwise, the results are undefined).
+
+For implementations with 3 or more lanes, putting a NOP3 instruction in Lane 2 with the Rn from Lane 1 will allow running other instructions in parallel with such an operation (such as a memory store). For a 2 lane implementation, operations which need 3 ports will typically be scalar-only ops.
+
+This restriction is to allow WEX to be implemented with 2 register read ports per lane.
+
+
+WEX2 Would be based around 32-bit instructions, where:
+* F0zz..F3zz, represent the last instruction in a series.
+* F4zz..F7zz, represent an instruction which may execute in parallel.
+* F8zz/F9zz, may be used for Imm16 ops.
+* FAzz..FFzz, are not allowed in a WEX2 construct (Scalar Only).
+* E0zz..EFzz, Conditional ops are Scalar Only.
+** With the exception of the PrWEX block (WEX only).
+
+Within a scalar implementation, F4zz..F7zz will be functionally equivalent to instructions in the F0zz..F3zz range. 
+
+
+==== WEX2 Profiles ====
+
+Thoughts:
+* WEX2 may have "profiles".
+* If the profiles are not compatible between the program and core:
+** The core may be told to disable WEX2 via an SR flag.
+** The code in question is to be executed as scalar code.
+* Narrower layouts are still allowed in wider profiles.
+** However, going wider than the specified profile is not allowed.
+* Currently, only 32-bit instruction forms are allowed in WEX constructs.
+
+
+The "WEXMD #imm4" instruction will indicate the WEX2 Profile. It will update the SR bits as appropriate for the given profile.
+* This instruction will either enable or disable WEX based on the result.
+* If WEX is not supported on the core, it will be treated as a NOP.
+* No WEX forms will be allowed within the following 3 instructions.
+
+
+Profile 0: No WEX / WEX Disabled.
+* This profile will disable the use of WEX.
+* Only scalar instructions are to be used in this mode.
+* The use of WEX sequences will be technically undefined in this profile.
+** Though, the core will most likely disable WEX, as in an unsupported profile.
+
+Profile 1 (WEX 2-Wide): Dual Lane ALU, Single IO Lane.
+* YYYY_YYYY XXXX_XXXX
+* Second lane precedes first lane.
+* Second lane only has ALU ops.
+* Restrictions on the use of memory store.
+
+Profile 2 (WEX 3-Wide): Triple Lane ALU, Single IO Lane.
+* ZZZZ_ZZZZ YYYY_YYYY XXXX_XXXX
+* Lanes are in a 3/2/1 ordering.
+* The second and third lanes only have ALU ops.
+
+Profile 3 (WEX 3-Wide): Triple Lane ALU, Triple Lane IO
+* Lanes 2 and 3 are able to perform memory Loads.
+* Store is only available in Lane 1.
+* Accessing MMIO is only allowed from Lane 1.
+* Simultaneous load and store to the same cache line will be undefined as to whether the old or new value is read.
+
+Many instructions will only exist in the first lane:
+* Memory operations
+* Branch operations
+* Compare operations
+* Integer multiply
+* ...
+
+The first lane will also be the primary lane for scalar operations, and as such will have full access to the instruction set, albeit with some restrictions as to which operations are allowed to exist in the other lanes.
+
+The result is that the second and third lanes will only have a subset of ALU operations available:
+* ADD, SUB, AND, OR, XOR, MOV, ...
+* SHAD, SHLD
+* LDIZ, LDIN (in forms which are encodable).
+
+The processor may behave in an implementation specific manner when faced with combinations of instructions which are not defined for the given active profile.
+
+Note that the core is only required to provide two GPR Read ports per lane, and as such operations which use all 3 read ports (such as memory store) will face restrictions.
+
+In Profile 1, operations which use the second read port may not be executed in parallel with an operation which uses 3 reads.
+
+In Profile 2, only single-port ops may be used in Lane 3 if the op in Lane 1 uses 3 read ports. Nothing is allowed in Lane 3 if the operation in Lane 2 uses 3 read ports.
+
+Note that in these scenarios, register values may "alias" in an implementation specific manner.
+
+

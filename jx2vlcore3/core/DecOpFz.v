@@ -16,7 +16,7 @@ input			reset;		//clock
 
 input[63:0]		istrWord;	//source instruction word
 input			isAltOp;
-input[22:0]		istrJBits;
+input[24:0]		istrJBits;
 
 output[5:0]		idRegN;
 output[5:0]		idRegM;
@@ -28,6 +28,7 @@ output[7:0]		idUIxt;
 reg[5:0]		opRegN;
 reg[5:0]		opRegM;
 reg[5:0]		opRegO;
+reg[5:0]		opRegImm;
 reg[32:0]		opImm;
 reg[7:0]		opUCmd;
 reg[7:0]		opUIxt;
@@ -60,6 +61,10 @@ reg[32:0]		opImm_imm9n;
 reg[32:0]		opImm_imm10s;
 reg[32:0]		opImm_imm10u;
 reg[32:0]		opImm_imm10n;
+
+reg[32:0]		opImm_imm16s;
+reg[32:0]		opImm_imm16u;
+reg[32:0]		opImm_imm16n;
 
 reg[32:0]		opImm_disp20s;
 reg[32:0]		opImm_disp8s;
@@ -109,11 +114,18 @@ reg tBlockIsF5;
 reg tBlockIsF6;
 reg tBlockIsF7;
 reg tBlockIsWex;
+reg	tBlockIsPrWxA;
+reg	tBlockIsPrWxB;
 
 reg tBlockIsF8;
 reg tBlockIsF9;
 reg tBlockIsFA;
 reg tBlockIsFB;
+
+reg tBlockIsFC;
+reg tBlockIsFD;
+reg tBlockIsFE;
+reg tBlockIsFF;
 
 reg tBlockIsEz;
 reg tBlockIsEA_F0;
@@ -137,7 +149,8 @@ begin
 	opExM		= istrWord[25];
 	opExI		= istrWord[24];
 
-	opIsJumbo	= istrJBits[22];
+//	opIsJumbo	= istrJBits[22];
+	opIsJumbo	= istrJBits[24];
 
 `ifdef jx2_sprs_elrehr
 	opRegN_Dfl	= {tRegRnIsRs, opExN, istrWord[ 7: 4]};
@@ -165,32 +178,57 @@ begin
 	
 	tNextMsgLatch	= 0;
 
-//	if(istrJBits[22])
 	if(opIsJumbo)
 	begin
+		opRegImm = JX2_GR_JIMM;
+	
 		opImm_disp20s	= { istrJBits[11], istrJBits[11:0],
 			istrWord[7:0], istrWord[27:16] };
 
-		opImm_imm9u	= { 2'b00, istrJBits[21:0], istrWord[24:16] };
-		opImm_imm9n	= { 2'b11, istrJBits[21:0], istrWord[24:16] };
-		opImm_imm9s	= {
-			istrJBits[  21], istrJBits[   21],
-			istrJBits[21:0], istrWord [24:16] };
+//		opImm_imm9u	= { 2'b00, istrJBits[21:0], istrWord[24:16] };
+//		opImm_imm9n	= { 2'b11, istrJBits[21:0], istrWord[24:16] };
+//		opImm_imm9s	= {
+//			istrJBits[  21], istrJBits[   21],
+//			istrJBits[21:0], istrWord [24:16] };
+
+		opImm_imm9u	= { 1'b0, istrJBits[23:0], istrWord[23:16] };
+		opImm_imm9n	= { 1'b1, istrJBits[23:0], istrWord[23:16] };
+		opImm_imm9s	= { istrJBits[  23],
+			istrJBits[23:0], istrWord [23:16] };
+
+//		opImm_imm9s	= { istrJBits[23:0], istrWord[23:16] };
+//		opImm_imm9u = opImm_imm9u;
+//		opImm_imm9n = opImm_imm9n;
+
 		opImm_disp9s	= opImm_imm9s;
 
-		opImm_imm10u	= { 1'b0, istrJBits[21:0], istrWord[25:16] };
-		opImm_imm10n	= { 1'b1, istrJBits[21:0], istrWord[25:16] };
-		opImm_imm10s	= { istrJBits[21],
-			istrJBits[21:0], istrWord[25:16] };
+//		opImm_imm10u	= { 1'b0, istrJBits[21:0], istrWord[25:16] };
+//		opImm_imm10n	= { 1'b1, istrJBits[21:0], istrWord[25:16] };
+//		opImm_imm10s	= { istrJBits[21],
+//			istrJBits[21:0], istrWord[25:16] };
 
-		opImm_disp8s	= { istrJBits[21]? 3'b111 : 3'b000,
-			istrJBits[21:0], istrWord[7:0] };
+		opImm_imm10u	= { 1'b0, istrJBits[23:0], istrWord[23:16] };
+		opImm_imm10n	= { 1'b1, istrJBits[23:0], istrWord[23:16] };
+		opImm_imm10s	= { istrJBits[23],
+			istrJBits[23:0], istrWord[23:16] };
 
-		opImm_disp5u	= {istrJBits[21]? 6'b111111 : 6'b000000,
-			istrJBits[21:0], opExI, istrWord[23:20]};
+//		opImm_disp8s	= { istrJBits[21]? 3'b111 : 3'b000,
+//			istrJBits[21:0], istrWord[7:0] };
+//		opImm_disp5u	= {istrJBits[21]? 6'b111111 : 6'b000000,
+//			istrJBits[21:0], opExI, istrWord[23:20]};
+
+		opImm_disp8s	= { istrJBits[23], istrJBits[23:0], istrWord[7:0] };
+		opImm_disp5u	= {opExI ? 5'b11111 : 5'b00000,
+			istrJBits[23:0], istrWord[23:20]};
+
+		opImm_imm16u	= { 1'b0, istrJBits[15:0], istrWord[31:16] };
+		opImm_imm16n	= { 1'b1, istrJBits[15:0], istrWord[31:16] };
+		opImm_imm16s	= { istrJBits[15], istrJBits[15:0], istrWord[31:16] };
 	end
 	else
 	begin
+		opRegImm = JX2_GR_IMM;
+
 		opImm_disp20s = { istrWord[7] ? UV13_FF : UV13_00,
 			istrWord[7:0], istrWord[27:16] };
 
@@ -206,6 +244,12 @@ begin
 		opImm_disp8s	= {istrWord[7]?UV25_FF:UV25_00, istrWord[7:0]};
 		
 		opImm_disp5u	= {UV28_00, opExI, istrWord[23:20]};
+
+		opImm_imm16u	= { UV17_00, istrWord[31:16] };
+		opImm_imm16n	= { UV17_FF, istrWord[31:16] };
+		opImm_imm16s	= {
+			istrWord[31] ? UV17_FF : UV17_00,
+			istrWord[31:16] };
 	end
 
 	tRegRnIsRz	= (opRegN_Dfl[4:1]==4'b0000);
@@ -252,30 +296,53 @@ begin
 	tBlockIsF3 =
 		(istrWord[11:8] == 4'b0011) ||
 		(istrWord[11:8] == 4'b0111);
+//	tBlockIsF8 =
+//		(istrWord[11:8] == 4'b1000) ||
+//		(istrWord[11:8] == 4'b1001);
 	tBlockIsF8 =
 		(istrWord[11:8] == 4'b1000) ||
-		(istrWord[11:8] == 4'b1001);
+		(istrWord[11:8] == 4'b1100);
 
 	tBlockIsF4 =	(istrWord[11:8] == 4'b0100);
 	tBlockIsF5 =	(istrWord[11:8] == 4'b0101);
 	tBlockIsF6 =	(istrWord[11:8] == 4'b0110);
 	tBlockIsF7 =	(istrWord[11:8] == 4'b0111);
-	tBlockIsF9 =	(istrWord[11:8] == 4'b1001);
-	tBlockIsWex		=
-		tBlockIsF4 || tBlockIsF5 ||
-		tBlockIsF6 || tBlockIsF7 ||
-		tBlockIsF9;
+//	tBlockIsF9 =	(istrWord[11:8] == 4'b1001);
+	tBlockIsF9 =	(istrWord[11:8] == 4'b1100);
+//	tBlockIsWex		=
+//		tBlockIsF4 || tBlockIsF5 ||
+//		tBlockIsF6 || tBlockIsF7 ||
+//		tBlockIsF9;
+	tBlockIsWex		= istrWord[10];
 
 	tBlockIsFA =
 		(istrWord[11:8] == 4'b1010);
 	tBlockIsFB =
 		(istrWord[11:8] == 4'b1011);
 
+	tBlockIsFE =
+		(istrWord[11:8] == 4'b1110);
+	tBlockIsFF =
+		(istrWord[11:8] == 4'b1111);
+
+	tBlockIsPrWxA =
+		(istrWord[11:8] == 4'b1010) ||
+		(istrWord[11:8] == 4'b1110);
+	tBlockIsPrWxB =
+		(istrWord[11:8] == 4'b1011) ||
+		(istrWord[11:8] == 4'b1111);
+
 	tBlockIsEz		= (istrWord[15:12] == 4'b1110);
 //	tBlockIsEA_09	= !istrWord[31] || (istrWord[30:29]==0);
 	tBlockIsEA_09	= !istrWord[31];
-	tBlockIsEA_F0	= tBlockIsEz && tBlockIsFA && tBlockIsEA_09;
-	tBlockIsEA_F2	= tBlockIsEz && tBlockIsFA && !tBlockIsEA_09;
+//	tBlockIsEA_F0	= tBlockIsEz && tBlockIsFA && tBlockIsEA_09;
+//	tBlockIsEA_F2	= tBlockIsEz && tBlockIsFA && !tBlockIsEA_09;
+//	tBlockIsEA_F0	= tBlockIsEz && tBlockIsPrWx && tBlockIsEA_09;
+//	tBlockIsEA_F2	= tBlockIsEz && tBlockIsPrWx && !tBlockIsEA_09;
+
+	tBlockIsEA_F0	= tBlockIsEz && tBlockIsPrWxA;
+	tBlockIsEA_F2	= tBlockIsEz && tBlockIsPrWxB;
+
 
 	if(tBlockIsF0 || tBlockIsEA_F0)
 	begin
@@ -1868,10 +1935,20 @@ begin
 	begin
 		casez(istrWord[7:5])
 			3'b000: begin
-				opNmid		= JX2_UCMD_MOV_IR;
-				opFmid		= JX2_FMID_IMM8REG;
-				opIty		= JX2_ITY_UW;
-				opUCmdIx	= JX2_UCIX_LDI_LDIX;
+				if(opIsJumbo)
+				begin
+					opNmid		= JX2_UCMD_MOV_IR;
+					opFmid		= JX2_FMID_IMM8REG;
+					opIty		= JX2_ITY_SB;
+					opUCmdIx	= JX2_UCIX_LDI_JLDIX;
+				end
+				else
+				begin
+					opNmid		= JX2_UCMD_MOV_IR;
+					opFmid		= JX2_FMID_IMM8REG;
+					opIty		= JX2_ITY_UW;
+					opUCmdIx	= JX2_UCIX_LDI_LDIX;
+				end
 			end
 			3'b001: begin
 				opNmid		= JX2_UCMD_MOV_IR;
@@ -1932,6 +2009,12 @@ begin
 		opNmid		= JX2_UCMD_MOV_IR;
 		opFmid		= JX2_FMID_IMM12N;
 		opUCmdIx	= JX2_UCIX_LDI_LDIX;
+	end
+	else
+		if(tBlockIsFE)
+	begin
+		opNmid		= JX2_UCMD_NOP;
+		opFmid		= JX2_FMID_IMM12Z;
 	end
 	
 	if(opIsNotFx)
@@ -2218,35 +2301,47 @@ begin
 		 */
 	
 		JX2_FMID_IMM8REG: begin
+//			$display("IMM8REG: IsJumbo=%d", opIsJumbo);
+		
 			opUIxt	= { opCcty, opUCmdIx };
 
-			opRegM	= JX2_GR_IMM;
+//			opRegM	= JX2_GR_IMM;
+			opRegM	= opRegImm;
 			opRegO	= opRegO_Df2;
 			opRegN	= opRegO_Df2;
 			
 			case(opIty)
 				JX2_ITY_SB: begin
-					opImm = {
-						istrWord[31] ? UV17_FF : UV17_00,
-						istrWord[31:16] };
+//					opImm = {
+//						istrWord[31] ? UV17_FF : UV17_00,
+//						istrWord[31:16] };
+					opImm	= opImm_imm16s;
 					opRegM	= opRegO_Df2;
-					opRegO	= JX2_GR_IMM;
+//					opRegO	= JX2_GR_IMM;
+					opRegO	= opRegImm;
 					opRegN	= opRegO_Df2;
 				end
 
-				JX2_ITY_SW:
-					opImm = {
-						istrWord[31] ? UV17_FF : UV17_00,
-						istrWord[31:16] };
+				JX2_ITY_SW: begin
+					opImm	= opImm_imm16s;
+//					opImm = {
+//						istrWord[31] ? UV17_FF : UV17_00,
+//						istrWord[31:16] };
+				end
 
+//`ifndef def_true
+`ifdef def_true
 				JX2_ITY_SL: begin
-					opImm = {
-						istrWord[31] ? UV17_FF : UV17_00,
-						istrWord[31:16] };
+//					opImm = {
+//						istrWord[31] ? UV17_FF : UV17_00,
+//						istrWord[31:16] };
+					opImm	= opImm_imm16s;
 					opRegM	= JX2_GR_DLR;
-					opRegO	= JX2_GR_IMM;
+//					opRegO	= JX2_GR_IMM;
+					opRegO	= opRegImm;
 					opRegN	= JX2_GR_DLR;
 				end
+`endif
 
 				JX2_ITY_SQ: begin
 					opImm	= opImm_imm10s;
@@ -2256,21 +2351,28 @@ begin
 				end
 
 				JX2_ITY_UB: begin
-					opImm	= { UV17_00, istrWord[31:16] };
+//					opImm	= { UV17_00, istrWord[31:16] };
+					opImm	= opImm_imm16u;
 					opRegM	= opRegO_Df2;
-					opRegO	= JX2_GR_IMM;
+//					opRegO	= JX2_GR_IMM;
+					opRegO	= opRegImm;
 					opRegN	= opRegO_Df2;
 				end
 
-				JX2_ITY_UW:
-					opImm = { UV17_00, istrWord[31:16] };
+				JX2_ITY_UW: begin
+//					opImm = { UV17_00, istrWord[31:16] };
+					opImm	= opImm_imm16u;
+				end
 
+// `ifndef def_true
+`ifdef def_true
 				JX2_ITY_UL: begin
 					opImm	= opImm_imm10u;
 					opRegM	= JX2_GR_IMM;
 					opRegO	= opRegN_Dfl;
 					opRegN	= opRegN_Dfl;
 				end
+`endif
 
 				JX2_ITY_UQ: begin
 					opImm	= opImm_imm10u;
@@ -2280,14 +2382,18 @@ begin
 				end
 
 				JX2_ITY_NB: begin
-					opImm = { UV17_FF, istrWord[31:16] };
+//					opImm = { UV17_FF, istrWord[31:16] };
+					opImm	= opImm_imm16n;
 					opRegM	= opRegO_Df2;
-					opRegO	= JX2_GR_IMM;
+//					opRegO	= JX2_GR_IMM;
+					opRegO	= opRegImm;
 					opRegN	= opRegO_Df2;
 				end
 
-				JX2_ITY_NW:
-					opImm = { UV17_FF, istrWord[31:16] };
+				JX2_ITY_NW: begin
+//					opImm = { UV17_FF, istrWord[31:16] };
+					opImm	= opImm_imm16n;
+				end
 
 				JX2_ITY_NQ: begin
 					opImm = opImm_imm10n;
@@ -2357,12 +2463,15 @@ begin
 			opUIxt	= {opCcty, opBty[1:0], 1'b1, opBty};
 
 			case(opIty)
-			JX2_ITY_SB:
-				opImm	= {istrWord[7]?UV17_FF:UV17_00,
-					istrWord[ 7: 0],
-					istrWord[23:16]};
-			JX2_ITY_SW:
-				opImm = opImm_disp20s;
+			JX2_ITY_SB: begin
+//				opImm	= {istrWord[7]?UV17_FF:UV17_00,
+//					istrWord[ 7: 0],
+//					istrWord[23:16]};
+				opImm	= opImm_imm16s;
+			end
+			JX2_ITY_SW: begin
+				opImm	= opImm_disp20s;
+			end
 
 			default: begin
 				$display("Jx2DecOpFx: PcDisp, Bad Ity=%X", opIty);

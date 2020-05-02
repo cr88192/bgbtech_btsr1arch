@@ -134,6 +134,7 @@ DecOpFz	decOpFzA(
 	decOpFzA_idUCmd,		decOpFzA_idUIxt
 	);
 
+`ifndef def_true
 wire[5:0]		decOpFC_idRegN;
 wire[5:0]		decOpFC_idRegM;
 wire[5:0]		decOpFC_idRegO;
@@ -148,6 +149,7 @@ DecOpFC	decOpFC(
 	decOpFC_idRegO,		decOpFC_idImm,
 	decOpFC_idUCmd,		decOpFC_idUIxt
 	);
+`endif
 
 reg opIsFx;
 reg opIsFz;
@@ -169,6 +171,14 @@ begin
 			opIsFC = 0;		opIsDz = 1;
 			opIsDf = istrWord[10];
 		end
+
+		6'b11101z: begin	//E8..EF
+			opIsFx = 1;		opIsFz = 1;
+			opIsFC = 0;		opIsDz = 1;
+			opIsDf = istrWord[10];
+		end
+
+`ifndef def_true
 		6'b111010: begin	//E8..EB
 			opIsFx = 1;		opIsFz = 1;
 			opIsFC = 0;		opIsDz = 1;
@@ -180,12 +190,21 @@ begin
 			opIsFC = 1;		opIsDz = 1;
 			opIsDf = istrWord[9];
 		end
+`endif
 
 		6'b11110z: begin	//F0..F7
 			opIsFx = 1;		opIsFz = 1;
 			opIsFC = 0;		opIsDz = 0;
 			opIsDf = istrWord[10];
 		end
+
+		6'b11111z: begin	//F0..F7
+			opIsFx = 1;		opIsFz = 1;
+			opIsFC = 0;		opIsDz = 0;
+			opIsDf = istrWord[10];
+		end
+
+`ifndef def_true
 		6'b111110: begin	//F8..FB
 			opIsFx = 1;		opIsFz = 1;
 			opIsFC = 0;		opIsDz = 0;
@@ -197,6 +216,7 @@ begin
 			opIsFC = 1;		opIsDz = 0;
 			opIsDf = istrWord[9];
 		end
+`endif
 
 		default: begin
 			opIsFx = 0;		opIsFz = 0;
@@ -211,6 +231,7 @@ begin
 	begin
 		if(opIsFC)
 		begin
+`ifndef def_true
 			opRegAN	= decOpFC_idRegN;
 			opRegAM	= decOpFC_idRegM;
 			opRegAO	= decOpFC_idRegO;
@@ -229,6 +250,7 @@ begin
 			begin
 				opUCmdA[7:6]=opIsDf?JX2_IXC_CF:JX2_IXC_CT;
 			end
+`endif
 		end
 		else
 		begin

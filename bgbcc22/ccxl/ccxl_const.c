@@ -386,15 +386,16 @@ BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_LookupExportList(
 BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_LookupStructure(
 	BGBCC_TransState *ctx, char *str)
 {
-	BGBCC_CCXL_LiteralInfo *cur;
-	int h, c;
+	BGBCC_CCXL_LiteralInfo *cur, *lcur;
+	int h, c, lc;
 	int i, j, k;
 
 	if(!str)
 		return(NULL);
 
 #if 1
-	h=BGBCC_CCXL_HashName(str);
+//	h=BGBCC_CCXL_HashName(str);
+	h=BGBCC_CCXL_HashNameNoSig(str);
 	c=ctx->hash_literals[h];
 	while(c>0)
 	{
@@ -409,18 +410,20 @@ BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_LookupStructure(
 			(cur->littype!=CCXL_LITID_ENUMDEF) &&
 			(cur->littype!=CCXL_LITID_FUNCTION))
 				continue;
-		if(!cur->name)
-			continue;
+//		if(!cur->name)
+//			continue;
 		if(!strcmp(cur->name, str))
 			return(cur);
 	}
 #endif
 
-#if 0
-	c=ctx->usort_literal;
+#if 1
+	c=ctx->usort_literal; lcur=NULL;
 	while(c>0)
 	{
+		lcur=cur;
 		cur=ctx->literals[c];
+		lc=c;
 		c=cur->hnext_name;
 
 		if((cur->littype!=CCXL_LITID_STRUCT) &&
@@ -430,12 +433,21 @@ BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_LookupStructure(
 				continue;
 		if(!cur->name)
 			continue;
+
+		h=BGBCC_CCXL_HashNameNoSig(cur->name);
+		if(lcur)
+			{ lcur->hnext_name=c; }
+		else
+			{ ctx->usort_literal=c;	}
+		cur->hnext_name=ctx->hash_literals[h];
+		ctx->hash_literals[h]=lc;
+
 		if(!strcmp(cur->name, str))
 			return(cur);
 	}
 #endif
 
-#if 1
+#if 0
 	for(i=0; i<ctx->n_literals; i++)
 	{
 		cur=ctx->literals[i];

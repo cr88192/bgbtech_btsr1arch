@@ -60,9 +60,13 @@ int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
 
 	if(jbits)
 	{
-		imm9u=(opw2&511)|(jbits<<9);
-		imm9n=(opw2&511)|(jbits<<9)|((~0U)<<31);
-		imm9us=((s32)(imm9u<<1))>>1;
+//		imm9u=(opw2&511)|(jbits<<9);
+//		imm9n=(opw2&511)|(jbits<<9)|((~0U)<<31);
+//		imm9us=((s32)(imm9u<<1))>>1;
+
+		imm9u=(opw2&255)|(jbits<<8);
+		imm9n=(opw2&255)|(jbits<<8)|((~0U)<<31);
+		imm9us=(s32)imm9u;
 	}
 
 	op->rn=rn_dfl;

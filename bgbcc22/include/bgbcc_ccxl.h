@@ -173,10 +173,10 @@
 #define CCXL_REGINT_ST_UI		0x0010000000000000ULL	//unsigned int
 #define CCXL_REGINT_ST_L		0x0020000000000000ULL	//signed long
 #define CCXL_REGINT_ST_UL		0x0030000000000000ULL	//unsigned long
-#define CCXL_REGINT_ST_SB		0x0040000000000000ULL	//signed long
-#define CCXL_REGINT_ST_UB		0x0050000000000000ULL	//unsigned long
-#define CCXL_REGINT_ST_SS		0x0060000000000000ULL	//signed long
-#define CCXL_REGINT_ST_US		0x0070000000000000ULL	//unsigned long
+#define CCXL_REGINT_ST_SB		0x0040000000000000ULL	//signed byte
+#define CCXL_REGINT_ST_UB		0x0050000000000000ULL	//unsigned byte
+#define CCXL_REGINT_ST_SS		0x0060000000000000ULL	//signed short
+#define CCXL_REGINT_ST_US		0x0070000000000000ULL	//unsigned short
 #define CCXL_REGINT_ST_OF1		0x0080000000000000ULL	//overflow 1
 
 #define CCXL_REGGBLA_STMASK		0x00F0000000000000ULL	//int subtype
@@ -370,8 +370,10 @@
 #define CCXL_CMP_NTST			0x09		//if(!(x&y))
 
 #define CCXL_VOP_NONE				0x00
-#define CCXL_VOP_DBGFN				0x01
-#define CCXL_VOP_DBGLN				0x02
+// #define CCXL_VOP_DBGFN				0x01
+// #define CCXL_VOP_DBGLN				0x02
+#define CCXL_VOP_UNARY				0x01
+#define CCXL_VOP_BINARY				0x02
 #define CCXL_VOP_LABEL				0x03
 #define CCXL_VOP_JMP				0x04
 #define CCXL_VOP_MOV				0x05
@@ -383,8 +385,10 @@
 #define CCXL_VOP_RETV				0x0B
 #define CCXL_VOP_RET				0x0C
 #define CCXL_VOP_CONV				0x0D
-#define CCXL_VOP_UNARY				0x0E
-#define CCXL_VOP_BINARY				0x0F
+// #define CCXL_VOP_UNARY				0x0E
+// #define CCXL_VOP_BINARY				0x0F
+#define CCXL_VOP_DBGFN				0x0E
+#define CCXL_VOP_DBGLN				0x0F
 #define CCXL_VOP_COMPARE			0x10
 #define CCXL_VOP_LDIXIMM			0x11
 #define CCXL_VOP_STIXIMM			0x12
@@ -419,6 +423,16 @@
 #define CCXL_VOP_PREDCMP_Z			0x2D
 #define CCXL_VOP_PREDSYNC			0x2E		//sync registers
 #define CCXL_VOP_CALL_INTRIN		0x2F
+
+
+#define CCXL_VOPITY_NONE			0x00		//imm is not used
+#define CCXL_VOPITY_SI				0x01		//signed int
+#define CCXL_VOPITY_UI				0x02		//unsigned int
+#define CCXL_VOPITY_LBL				0x03		//label
+#define CCXL_VOPITY_STR				0x04		//string
+#define CCXL_VOPITY_CALL			0x05		//call arguments list
+#define CCXL_VOPITY_JMPTAB			0x06		//jump table list
+#define CCXL_VOPITY_GFID			0x07		//struct/field ID
 
 
 #define CCXL_LBL_GLOBALBASE			0x000000	//globals (main context)
@@ -582,6 +596,7 @@ struct BGBCC_CCXL_VirtOp_s {
 byte opn;
 byte opr;
 byte prd;			//predication mode
+byte immty;			//immediate type
 ccxl_type type;
 ccxl_type stype;
 ccxl_register dst;
