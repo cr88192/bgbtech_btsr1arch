@@ -1363,6 +1363,29 @@ int BGBCC_JX2A_ParseCheckFeature(BGBCC_JX2_Context *ctx, char *sym)
 	return(0);
 }
 
+int BGBCC_JX2A_ParseOpcode_ScanForBar(BGBCC_JX2_Context *ctx, char *cs0)
+{
+	char *cs;
+	int rt;
+	
+	cs=cs0; rt=0;
+	while(*cs)
+	{
+		if(*cs=='\r')
+			break;
+		if(*cs=='\n')
+			break;
+			
+		if(*cs=='|')
+			{ rt=1; break; }
+		if(*cs=='?')
+			{ rt=1; break; }
+		cs++;
+	}
+	
+	return(rt);
+}
+
 int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 {
 	BGBCC_JX2_OpcodeArg arg[4];
@@ -1390,6 +1413,24 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 				*rcs=cs1+1;
 				return(1);
 			}
+
+#if 1
+			if(ctx->is_align_wexj)
+			{
+				if(ctx->is_align_wexj&2)
+				{
+					BGBCC_JX2_EmitPad32AlignLastOp(ctx);
+				}else
+				{
+					/* Detect WEX or Pred ops, if so, align label. */
+					cs2=BGBCC_JX2A_EatWhite(cs1+1);
+					if(BGBCC_JX2A_ParseOpcode_ScanForBar(ctx, cs2))
+					{
+						BGBCC_JX2_EmitPad32AlignLastOp(ctx);
+					}
+				}
+			}
+#endif
 			
 			if((tk0[1]=='.') && bgbcc_jx2a_lastlbl)
 			{
@@ -1454,6 +1495,13 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 			if(cs3 && (*cs3=='|'))
 				{ wx=1; cs2=cs3; }
 		}
+		
+//		if((ctx->is_align_wexj && (wx || pfc)) ||
+//			(ctx->is_align_wexj&2))
+		if(ctx->is_align_wexj && (wx || pfc))
+		{
+			BGBCC_JX2_EmitPad32AlignLastOp(ctx);
+		}
 			
 		if(wx)
 		{
@@ -1462,7 +1510,12 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 		
 		if(pfc)
 		{
-			ctx->op_is_wex2=pfc;
+//			if(ctx->op_is_wex2)
+//			if(ctx->op_is_wex2&1)
+			if(wx)
+				ctx->op_is_wex2=pfc|2;
+			else
+				ctx->op_is_wex2=pfc;
 		}
 
 		k=BGBCC_JX2A_TryAssembleOpcode(ctx, tk0+1, &arg[0], &arg[1], &arg[2]);
@@ -1476,10 +1529,11 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 				if(*cs2=='|')
 					cs2++;
 			}
-			
-			ctx->op_is_wex2=wx?2:0;
+
 			if(pfc)
 				{ ctx->op_is_wex2=0; }
+			
+			ctx->op_is_wex2=wx?2:0;
 		
 			*rcs=cs2;
 			return(1);

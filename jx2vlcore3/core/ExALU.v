@@ -177,6 +177,10 @@ reg			tSub1SxVF;
 reg			tSub2SxVF;
 reg			tSub1BSxVF;
 
+reg			tFCmpRsIsNaN;
+reg			tFCmpRtIsNaN;
+reg			tFCmpEqP;
+reg			tFCmpGtP;
 
 reg[32:0]	tResultu1A;
 reg[32:0]	tResultu1B;
@@ -247,6 +251,31 @@ begin
 		((regValRs[63:48]&regValRt[63:48])==0) ;
 	tTst2ZF =
 		tTst1ZF && tTst1BZF;
+
+`ifdef jx2_fcmp_alu
+	tFCmpRsIsNaN	= (regValRs[62:52]==11'h7FF) && (regValRs[51:48]!=0);
+	tFCmpRtIsNaN	= (regValRt[62:52]==11'h7FF) && (regValRt[51:48]!=0);
+
+	tFCmpEqP		= tSub2ZF && !tFCmpRsIsNaN;
+//	tFCmpGtP;
+
+	casez({regValRs[63], regValRt[63], tSub2SF, tSub2ZF})
+		4'b0000: tFCmpGtP=1;	/* (s-t)>0 */
+		4'b0001: tFCmpGtP=0;	/* s==t */
+		4'b001z: tFCmpGtP=0;	/* (s-t)<0 */
+		4'b01zz: tFCmpGtP=1;	/* (s>0) && (t<0) */
+		4'b10zz: tFCmpGtP=0;	/* (s<0) && (t>0) */
+
+//		4'b110z: tFCmpGtP=1;	/* (s-t)>0 */
+//		4'b1110: tFCmpGtP=0;	/* (s-t)<0 */
+		4'b110z: tFCmpGtP=0;	/* (s-t)>0 */
+//		4'b1100: tFCmpGtP=0;	/* (s-t)>0 */
+//		4'b1101: tFCmpGtP=1;	/* (s-t)>0 */
+		4'b1110: tFCmpGtP=1;	/* (s-t)<0 */
+
+		4'b1111: tFCmpGtP=0;	/* s==t */
+	endcase
+`endif
 
 `ifdef def_true
 	case({regValRs[31], regValRt[31], tSub1SF})
@@ -678,6 +707,28 @@ begin
 //		tResult1B = tResultu1B;
 		tResult1A = tResult1W;
 		tResult2A = tResult2W;
+	end
+`endif
+
+`ifdef jx2_fcmp_alu
+	if(idUCmd[5:0]==JX2_UCMD_FCMP)
+	begin
+	
+//		$display("Rs=%X Rt=%X SgA=%d SgB=%d SZ=%d ZF=%d   Gt=%d",
+//			regValRs, regValRt,
+//			regValRs[63], regValRt[63], tSub2SF, tSub2ZF,
+//			tFCmpGtP);
+	
+		if(idUIxt[3:0]==JX2_UCIX_FPU_CMPEQ[3:0])
+		begin
+			tResult1T = tFCmpEqP;
+			tResult2T = tFCmpEqP;
+		end
+		else
+		begin
+			tResult1T = tFCmpGtP;
+			tResult2T = tFCmpGtP;
+		end
 	end
 `endif
 

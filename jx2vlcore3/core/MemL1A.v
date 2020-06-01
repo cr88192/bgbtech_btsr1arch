@@ -31,6 +31,7 @@ module MemL1A(
 	dcOutValB,		dcInValB,
 	dcOutOK,
 	dcInHold,
+	dcOutHold,
 
 	regInDlr,		regInDhr,
 	regInMmcr,		regInKrr,
@@ -60,6 +61,7 @@ output[63: 0]	dcOutVal;		//output data value
 input [63: 0]	dcInVal;		//input data value
 output[ 1: 0]	dcOutOK;		//set if we have a valid value.
 input			dcInHold;
+output			dcOutHold;		//we need to stall the pipeline
 
 output[63: 0]	dcOutValB;		//output data value (alternate)
 input [63: 0]	dcInValB;		//input data value (alternate)
@@ -116,7 +118,9 @@ assign	tMemAccNoRwx	= 0;
 assign	regOutExc	= tRegOutExc2;
 
 reg[1:0]		tDcOutOK;
+reg				tDcOutHold;
 assign	dcOutOK		= tDcOutOK;
+assign	dcOutHold	= tDcOutHold;
 
 `ifdef jx2_enable_mmu
 
@@ -164,6 +168,7 @@ MemIcA		memIc(
 
 
 wire[  1:0]		dfOutOK;
+wire[  1:0]		dfOutOKB;
 
 wire[ 47:0]		dfMemAddr;
 wire[ 47:0]		dfMemAddrB;
@@ -179,6 +184,7 @@ MemDcA		memDc(
 	dcOutVal,		dcInVal,
 	dcOutValB,		dcInValB,
 	dfOutOK,		dcInHold,
+	dfOutOKB,
 
 	dfMemAddr,		dfMemAddrB,
 	dfMemDataIn,	dfMemDataOut,
@@ -213,8 +219,13 @@ begin
 //	tMemDataOut	= UV128_XX;
 	tMemDataOut	= UV128_00;
 	
-	tDcOutOK	= dfOutOK;
-
+//	tDcOutOK	= dfOutOK;
+	tDcOutOK	= dfOutOK[1:0];
+	
+	tDcOutHold	= 0;
+`ifdef	jx2_mem_l1dstall
+	tDcOutHold	= dfOutOKB[1];
+`endif
 
 	ifMemData	= memDataIn;
 	dfMemDataIn	= memDataIn;

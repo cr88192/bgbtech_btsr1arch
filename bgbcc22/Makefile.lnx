@@ -7,8 +7,8 @@ BINSUF=.bin
 OBJSUF=.o
 DLLPF=lib
 
-# CC=gcc
-CC=clang
+CC=gcc
+# CC=clang
 
 CC_OUTEXE=$(CC) -o 
 CC_OUTDLL=$(CC) -shared -o 

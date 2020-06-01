@@ -21,7 +21,7 @@ For scalar Ops, Lane 2/3 will hold:
 
 `include "DecOpBz.v"
 `include "DecOpFz.v"
-`include "DecOpFC.v"
+// `include "DecOpFC.v"
 
 module DecOpWx3(
 	/* verilator lint_off UNUSED */
@@ -149,13 +149,16 @@ wire[5:0]		decOpFzC_idRegO;
 wire[32:0]		decOpFzC_idImm;
 wire[7:0]		decOpFzC_idUCmd;
 wire[7:0]		decOpFzC_idUIxt;
+wire[3:0]		decOpFzC_idUFl;
 
 DecOpFz	decOpFzC(
 	clock,		reset,
-	{ UV32_XX, istrWord[95:64] },	1'b1,	{ opIsWexJumboB, tOpJBitsC },
+	{ UV32_XX, istrWord[95:64] },	1'b1,
+		{ opIsWexJumbo96, opIsWexJumboB, tOpJBitsC },
 	decOpFzC_idRegN,		decOpFzC_idRegM,
 	decOpFzC_idRegO,		decOpFzC_idImm,
-	decOpFzC_idUCmd,		decOpFzC_idUIxt
+	decOpFzC_idUCmd,		decOpFzC_idUIxt,
+	decOpFzC_idUFl
 	);
 
 wire[5:0]		decOpFzB_idRegN;
@@ -164,13 +167,16 @@ wire[5:0]		decOpFzB_idRegO;
 wire[32:0]		decOpFzB_idImm;
 wire[7:0]		decOpFzB_idUCmd;
 wire[7:0]		decOpFzB_idUIxt;
+wire[3:0]		decOpFzB_idUFl;
 
 DecOpFz	decOpFzB(
 	clock,		reset,
-	{ UV32_XX, istrWord[63:32] },	1'b1,	{ opIsWexJumboA, tOpJBitsB },
+	{ UV32_XX, istrWord[63:32] },	1'b1,
+		{ 1'b0, opIsWexJumboA, tOpJBitsB },
 	decOpFzB_idRegN,		decOpFzB_idRegM,
 	decOpFzB_idRegO,		decOpFzB_idImm,
-	decOpFzB_idUCmd,		decOpFzB_idUIxt
+	decOpFzB_idUCmd,		decOpFzB_idUIxt,
+	decOpFzB_idUFl
 	);
 
 wire[5:0]		decOpFzA_idRegN;
@@ -179,16 +185,18 @@ wire[5:0]		decOpFzA_idRegO;
 wire[32:0]		decOpFzA_idImm;
 wire[7:0]		decOpFzA_idUCmd;
 wire[7:0]		decOpFzA_idUIxt;
+wire[3:0]		decOpFzA_idUFl;
 
 DecOpFz	decOpFzA(
 	clock,		reset,
-	{ UV32_XX, istrWord[31: 0] },	1'b0,	UV25_00,
+	{ UV32_XX, istrWord[31: 0] },	1'b0,	UV26_00,
 	decOpFzA_idRegN,		decOpFzA_idRegM,
 	decOpFzA_idRegO,		decOpFzA_idImm,
-	decOpFzA_idUCmd,		decOpFzA_idUIxt
+	decOpFzA_idUCmd,		decOpFzA_idUIxt,
+	decOpFzA_idUFl
 	);
 
-`ifndef jx2_enable_ops48
+`ifdef jx2_enable_ops48
 wire[5:0]		decOpFC_idRegN;
 wire[5:0]		decOpFC_idRegM;
 wire[5:0]		decOpFC_idRegO;
@@ -295,6 +303,7 @@ begin
 			opIsFxA = 1;		opIsFzA = 1;
 			opIsFCA = 0;		opIsDzA = 1;
 			opIsDfA = istrWord[10];
+			opIsDwA = istrWord[11] && istrWord[9];
 		end
 
 		6'b1111zz: begin	//F0..FF
@@ -315,6 +324,7 @@ begin
 			opIsFxB = 1;		opIsFzB = 1;
 			opIsFCB = 0;		opIsDzB = 1;
 			opIsDfB = istrWord[42];
+			opIsDwB = istrWord[43] && istrWord[41];
 		end
 
 		6'b1111zz: begin	//F0..FF
@@ -335,6 +345,7 @@ begin
 			opIsFxC = 1;		opIsFzC = 1;
 			opIsFCC = 0;		opIsDzC = 1;
 			opIsDfC = istrWord[74];
+			opIsDwC = istrWord[75] && istrWord[73];
 		end
 
 		6'b1111zz: begin	//F0..FF
@@ -353,8 +364,10 @@ begin
 //	opIsWfA = opIsDfA && !opIsDzA && srWxe;
 //	opIsWfB = opIsDfB && !opIsDzB && srWxe;
 
-	opIsWfA = opIsDfA && (!opIsDzA || opIsDwA) && srWxe;
-	opIsWfB = opIsDfB && (!opIsDzB || opIsDwB) && srWxe;
+//	opIsWfA = opIsDfA && (!opIsDzA || opIsDwA) && srWxe;
+//	opIsWfB = opIsDfB && (!opIsDzB || opIsDwB) && srWxe;
+	opIsWfA = ((opIsDfA && !opIsDzA) || opIsDwA) && srWxe;
+	opIsWfB = ((opIsDfB && !opIsDzB) || opIsDwB) && srWxe;
 
 `ifdef jx2_enable_wexjumbo
 	opIsWexJumboLdi = opIsWexJumbo96 &&
@@ -382,7 +395,13 @@ begin
 		opRegBM	= JX2_GR_ZZR;
 		opRegBO	= JX2_GR_ZZR;
 		opRegBN	= JX2_GR_ZZR;
-		opImmB	= { 1'b0, tOpJBitsB[23:0], tOpJBitsC[23:16] };
+//		opImmB	= { 1'b0, tOpJBitsB[23:0], tOpJBitsC[23:16] };
+		
+		opImmB	= decOpFzC_idUFl[0] ?
+//			{ 9'b0, tOpJBitsB[23:0] } :
+			{ opImmA[32] ? 9'h1FF : 9'h000, tOpJBitsB[23:0] } :
+			{ 1'b0, tOpJBitsB[23:0], tOpJBitsC[23:16] };
+
 		opUCmdB	= UV8_00;
 		opUIxtB	= UV8_00;
 
@@ -392,14 +411,23 @@ begin
 		opImmC	= UV33_XX;
 		opUCmdC	= UV8_00;
 		opUIxtC	= UV8_00;
+
+		if(opIsDzC)
+		begin
+			opUCmdA[7:6]=opIsDfC?JX2_IXC_CF:JX2_IXC_CT;
+		end
 	end
 	else
 `endif
 	if(opIsFxA)
 	begin
+`ifdef jx2_enable_ops48
 		if(opIsFCA)
+`else
+		if(1'b0)
+`endif
 		begin
-`ifndef jx2_enable_ops48
+`ifdef jx2_enable_ops48
 			opRegAN	= decOpFC_idRegN;
 			opRegAM	= decOpFC_idRegM;
 			opRegAO	= decOpFC_idRegO;
@@ -570,12 +598,18 @@ begin
 //	if(opIsScalar)
 	if(1'b1)
 	begin
+
+`ifndef def_true
+// `ifdef def_true
+
+`ifndef def_true
 //		if(opUCmdA[5:0]==JX2_UCMD_POPX)
 		if(opUCmdA[5:1]==5'h03)
 		begin
 //			opIsDualLane = decOpBz_idUIxt[2];
 			opIsDualLane = opUIxtA[2];
 		end
+`endif
 
 //		if(opUCmdA[5:0]==JX2_UCMD_MOV_MR)
 		if(opUCmdA[5:1]==5'h02)
@@ -585,11 +619,25 @@ begin
 			opIsDualLane = ( {opUIxtA[2], opUIxtA[5:4]} == 3'b111);
 		end
 
+`ifndef def_true
 		if(opUCmdA[5:0]==JX2_UCMD_FPU3)
 		begin
 			opIsDualLane = opUIxtA[5];
 			opIsDualLane3R = 1;
 		end
+`endif
+
+`endif
+
+`ifdef def_true
+// `ifndef def_true
+		if(opUIxtA[7:6]==JX2_IUC_WX)
+		begin
+			opIsDualLane = 1;
+			if(opUCmdA[5:1] != 5'h02)
+				opIsDualLane3R = 1;
+		end
+`endif
 	end
 	
 	if(opIsDualLane)

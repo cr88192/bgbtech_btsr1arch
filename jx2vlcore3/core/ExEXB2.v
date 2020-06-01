@@ -42,7 +42,7 @@ input			clock;
 input			reset;
 input[7:0]		opUCmd;
 input[7:0]		opUIxt;
-output			exHold;
+output[1:0]		exHold;
 
 input[5:0]		regIdRs;		//Source A, ALU / Base
 input[5:0]		regIdRt;		//Source B, ALU / Index
@@ -72,7 +72,8 @@ input[63:0]		memDataIn;
 input[63:0]		memDataInB;
 
 reg				tExHold;
-assign	exHold		= tExHold;
+reg				tRegHeld;
+assign	exHold		= { tRegHeld, tExHold };
 
 reg[ 5:0]		tRegIdRn2;
 reg[63:0]		tRegValRn2;
@@ -81,9 +82,10 @@ assign	regIdRn2	= tRegIdRn2;
 assign	regValRn2	= tRegValRn2;
 
 
-reg[5:0]	tOpUCmd1;
+(* max_fanout = 50 *)
+	reg[5:0]	tOpUCmd1;
 
-reg[3:0]	tHoldCyc;
+// reg[3:0]	tHoldCyc;
 reg			tOpEnable;
 
 reg		tMsgLatch;
@@ -95,9 +97,11 @@ begin
 	tRegIdRn2	= regIdRn1;		//Forward by default
 	tRegValRn2	= regValRn1;	//Forward by default
 
-	tExHold		= 0;
+	tExHold			= 0;
+	tRegHeld		= 0;
 	tNextMsgLatch	= 0;
 
+`ifndef def_true
 //	case(opUIxt[7:6])
 	casez( { opBraFlush, opUCmd[7:6] } )
 		3'b000: 	tOpEnable = 1;
@@ -108,7 +112,20 @@ begin
 		3'b011: 	tOpEnable = !regInLastSr[0];
 		3'b1zz: 	tOpEnable = 0;
 	endcase
-	
+`endif
+
+`ifdef def_true
+	casez( { opBraFlush, opUCmd[7:6], regInLastSr[0] } )
+		4'b000z: 	tOpEnable = 1;
+		4'b001z: 	tOpEnable = 0;
+		4'b0100: 	tOpEnable = 0;
+		4'b0101: 	tOpEnable = 1;
+		4'b0110: 	tOpEnable = 1;
+		4'b0111: 	tOpEnable = 0;
+		4'b1zzz: 	tOpEnable = 0;
+	endcase
+`endif
+
 	tOpUCmd1	= tOpEnable ? opUCmd[5:0] : JX2_UCMD_NOP;
 
 	case(tOpUCmd1)
@@ -130,8 +147,12 @@ begin
 		JX2_UCMD_MOV_RM: begin
 		end
 		JX2_UCMD_MOV_MR: begin
+`ifdef jx2_stage_memex3
+			tRegHeld	= 1;
+`else
 			tRegIdRn2	= regIdRm;
 			tRegValRn2	= memDataInB;
+`endif
 		end
 
 		JX2_UCMD_ADDSP: begin
@@ -171,6 +192,7 @@ begin
 		JX2_UCMD_MOV_CR: begin
 		end
 
+`ifndef def_true
 		JX2_UCMD_PUSHX: begin
 		end
 
@@ -178,6 +200,7 @@ begin
 			tRegIdRn2	= regIdRm;
 			tRegValRn2	= memDataInB;
 		end
+`endif
 
 		JX2_UCMD_FPU3: begin
 //			if(regFpuOK[1])
@@ -200,10 +223,10 @@ always @(posedge clock)
 begin
 	tMsgLatch	<= tNextMsgLatch;
 
-	if(tExHold)
-		tHoldCyc <= tHoldCyc + 1;
-	else
-		tHoldCyc <= 0;
+//	if(tExHold)
+//		tHoldCyc <= tHoldCyc + 1;
+//	else
+//		tHoldCyc <= 0;
 end
 
 endmodule

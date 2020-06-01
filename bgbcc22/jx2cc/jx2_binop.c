@@ -396,6 +396,7 @@ int BGBCC_JX2C_EmitBinaryVRegVRegInt(
 			BGBCC_JX2_EmitLoadRegImm(sctx, BGBCC_SH_NMID_MOV,
 				ctreg, k);
 
+#if 0
 			if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
 			{
 				BGBCC_JX2C_EmitOpRegReg(ctx, sctx,
@@ -417,6 +418,23 @@ int BGBCC_JX2C_EmitBinaryVRegVRegInt(
 				BGBCC_JX2C_EmitOpRegReg(ctx, sctx, BGBCC_SH_NMID_STS,
 					BGBCC_SH_REG_MACH, cdreg);
 			}
+#endif
+
+#if 1
+			if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
+			{
+				BGBCC_JX2C_EmitOpRegRegReg(ctx, sctx,
+					BGBCC_SH_NMID_MULUL, cdreg, ctreg, ctreg);
+				BGBCC_JX2C_EmitOpRegImmReg(ctx, sctx,
+					BGBCC_SH_NMID_SHLDQ, ctreg, -32, cdreg);
+			}else
+			{
+				BGBCC_JX2C_EmitOpRegRegReg(ctx, sctx,
+					BGBCC_SH_NMID_MULSL, cdreg, ctreg, ctreg);
+				BGBCC_JX2C_EmitOpRegImmReg(ctx, sctx,
+					BGBCC_SH_NMID_SHADQ, ctreg, -32, cdreg);
+			}
+#endif
 
 			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
 			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, ctreg);
@@ -450,6 +468,7 @@ int BGBCC_JX2C_EmitBinaryVRegVRegInt(
 			cdreg=BGBCC_JX2C_EmitGetRegisterDirty(ctx, sctx, dreg);
 			BGBCC_JX2_EmitLoadRegImm(sctx, BGBCC_SH_NMID_MOV, ctreg, k);
 
+#if 0
 			if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
 			{
 				BGBCC_JX2C_EmitOpRegReg(ctx, sctx,
@@ -462,14 +481,37 @@ int BGBCC_JX2C_EmitBinaryVRegVRegInt(
 
 			BGBCC_JX2C_EmitOpRegReg(ctx, sctx, BGBCC_SH_NMID_STS,
 				BGBCC_SH_REG_MACH, csreg);
+#endif
+
+#if 1
+			if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
+			{
+				BGBCC_JX2C_EmitOpRegRegReg(ctx, sctx,
+					BGBCC_SH_NMID_MULUL, cdreg, ctreg, ctreg);
+				BGBCC_JX2C_EmitOpRegImmReg(ctx, sctx,
+					BGBCC_SH_NMID_SHLDQ, ctreg, -32, csreg);
+			}else
+			{
+				BGBCC_JX2C_EmitOpRegRegReg(ctx, sctx,
+					BGBCC_SH_NMID_MULSL, cdreg, ctreg, ctreg);
+				BGBCC_JX2C_EmitOpRegImmReg(ctx, sctx,
+					BGBCC_SH_NMID_SHADQ, ctreg, -32, csreg);
+			}
+#endif
 
 			BGBCC_JX2_EmitLoadRegImm(sctx, BGBCC_SH_NMID_MOV,
 				ctreg, j);
+
+#if 0
 			BGBCC_JX2C_EmitOpRegReg(ctx, sctx,
 				BGBCC_SH_NMID_DMULU, ctreg, csreg);
-
 			BGBCC_JX2C_EmitOpRegReg(ctx, sctx, BGBCC_SH_NMID_STS,
 				BGBCC_SH_REG_MACL, csreg);
+#endif
+
+			BGBCC_JX2C_EmitOpRegRegReg(ctx, sctx,
+				BGBCC_SH_NMID_MULUL, csreg, ctreg, csreg);
+
 			BGBCC_JX2C_EmitOpRegReg(ctx, sctx,
 				BGBCC_SH_NMID_SUB, csreg, cdreg);
 
@@ -3381,6 +3423,8 @@ int BGBCC_JX2C_EmitCallFcnVReg(
 		tr0=BGBCC_SH_REG_R1;
 	}
 #endif
+
+//	BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_NOP);	//Debug
 	
 	i=BGBCC_JX2C_EmitOpReg(ctx, sctx,
 		BGBCC_SH_NMID_JSR, tr0);

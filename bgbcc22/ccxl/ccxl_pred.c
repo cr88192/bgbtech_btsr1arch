@@ -296,9 +296,35 @@ ccxl_type BGBCC_CCXL_GetRegType(
 		}else
 		{
 			if(regty==CCXL_REGTY_IMM_STRING)
-				{ tty.val=CCXL_TY_SB|CCXL_TY_PTRIDX1; return(tty); }
+			{
+				switch((reg.val>>52)&15)
+				{
+				case 0:		tty.val=CCXL_TY_SB|CCXL_TY_PTRIDX1; break;
+				case 1:		tty.val=CCXL_TY_UB|CCXL_TY_PTRIDX1; break;
+				case 2:		tty.val=CCXL_TY_US|CCXL_TY_PTRIDX1; break;
+				case 3:		tty.val=CCXL_TY_I |CCXL_TY_PTRIDX1; break;
+				default:	tty.val=CCXL_TY_SB|CCXL_TY_PTRIDX1; break;
+				}
+				return(tty);
+			}
+
 			if(regty==CCXL_REGTY_IMM_WSTRING)
-				{ tty.val=CCXL_TY_US|CCXL_TY_PTRIDX1; return(tty); }
+			{
+				switch((reg.val>>52)&15)
+				{
+				case 0:
+				case 1:
+				case 2:		tty.val=CCXL_TY_US|CCXL_TY_PTRIDX1; break;
+				case 3:		tty.val=CCXL_TY_I |CCXL_TY_PTRIDX1; break;
+				default:	tty.val=CCXL_TY_US|CCXL_TY_PTRIDX1; break;
+				}
+				return(tty);
+			}
+
+//			if(regty==CCXL_REGTY_IMM_STRING)
+//				{ tty.val=CCXL_TY_SB|CCXL_TY_PTRIDX1; return(tty); }
+//			if(regty==CCXL_REGTY_IMM_WSTRING)
+//				{ tty.val=CCXL_TY_US|CCXL_TY_PTRIDX1; return(tty); }
 		}
 	}else if(regty<CCXL_REGTY_THISIDX)
 	{
@@ -783,7 +809,24 @@ bool BGBCC_CCXL_IsRegImmStringP(
 	BGBCC_TransState *ctx, ccxl_register reg)
 {
 	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_STRING)
-		return(true);
+	{
+		if((((reg.val>>52)&15)==0) || (((reg.val>>52)&15)==1))
+			return(true);
+		return(false);
+//		return(true);
+	}
+	return(false);
+}
+
+bool BGBCC_CCXL_IsRegImmU8StringP(
+	BGBCC_TransState *ctx, ccxl_register reg)
+{
+	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_STRING)
+	{
+		if(((reg.val>>52)&15)==1)
+			return(true);
+		return(false);
+	}
 	return(false);
 }
 
@@ -791,7 +834,37 @@ bool BGBCC_CCXL_IsRegImmWStringP(
 	BGBCC_TransState *ctx, ccxl_register reg)
 {
 	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_WSTRING)
-		return(true);
+	{
+		if((((reg.val>>52)&15)==0) || (((reg.val>>52)&15)==2))
+			return(true);
+		return(false);
+//		return(true);
+	}
+
+	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_STRING)
+	{
+		if(((reg.val>>52)&15)==2)
+			return(true);
+	}
+
+	return(false);
+}
+
+bool BGBCC_CCXL_IsRegImmW4StringP(
+	BGBCC_TransState *ctx, ccxl_register reg)
+{
+	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_WSTRING)
+	{
+		if(((reg.val>>52)&15)==3)
+			return(true);
+	}
+
+	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_STRING)
+	{
+		if(((reg.val>>52)&15)==3)
+			return(true);
+	}
+
 	return(false);
 }
 
@@ -1802,6 +1875,36 @@ ccxl_status BGBCC_CCXL_GetRegForWStringValue(
 	
 	i=BGBCC_CCXL_IndexString(ctx, str);
 	treg.val=(i&CCXL_REGINT_MASK)|CCXL_REGTY_IMM_WSTRING;
+	*rreg=treg;
+	return(CCXL_STATUS_YES);
+}
+
+ccxl_status BGBCC_CCXL_GetRegForU8StringValue(
+	BGBCC_TransState *ctx, ccxl_register *rreg, char *str)
+{
+	ccxl_register treg;
+	int i;
+	
+	i=BGBCC_CCXL_IndexString(ctx, str);
+	if(i<0)
+		{ BGBCC_DBGBREAK }
+	
+	treg.val=(i&CCXL_REGINT_MASK)|CCXL_REGTY_IMM_STRING|(1LL<<52);
+	*rreg=treg;
+	return(CCXL_STATUS_YES);
+}
+
+ccxl_status BGBCC_CCXL_GetRegForW4StringValue(
+	BGBCC_TransState *ctx, ccxl_register *rreg, char *str)
+{
+	ccxl_register treg;
+	int i;
+	
+	i=BGBCC_CCXL_IndexString(ctx, str);
+	if(i<0)
+		{ BGBCC_DBGBREAK }
+	
+	treg.val=(i&CCXL_REGINT_MASK)|CCXL_REGTY_IMM_WSTRING|(3LL<<52);
 	*rreg=treg;
 	return(CCXL_STATUS_YES);
 }

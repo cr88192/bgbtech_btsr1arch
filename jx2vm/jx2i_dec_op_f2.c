@@ -4,8 +4,11 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 	int rn_dfl, rm_dfl, ro_dfl;
 	int disp5, eq, eo;
 //	int imm8u, imm8n;
-	int imm10u, imm10n;
-	int imm9u, imm9n;
+//	int imm10u, imm10n;
+//	int imm9u, imm9n;
+	s64 imm10u, imm10n;
+	s64 imm9u, imm9n;
+
 	int ret;
 
 	op->fl|=BJX2_OPFL_TWOWORD;
@@ -48,10 +51,17 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 //		imm10u=(opw2&1023)|(jbits<<10);
 //		imm10n=imm10u;
 
-		imm9u=(opw2&255)|(jbits<<8);
-		imm9n=(opw2&255)|(jbits<<8);
-		imm10u=(opw2&255)|(jbits<<8);
-		imm10n=imm10u;
+//		imm9u=(opw2&255)|(jbits<<8);
+//		imm9n=(opw2&255)|(jbits<<8);
+//		imm10u=(opw2&255)|(jbits<<8);
+//		imm10n=imm10u;
+
+		imm9u=(u32)((opw2&255)|(jbits<<8));
+		if(eo)imm9u|=0xFFFFFFFF00000000LL;
+		imm9n=imm9u;
+
+		imm10u=imm9u;
+		imm10n=imm9u;
 	}
 
 	op->rn=rn_dfl;
@@ -182,13 +192,15 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 		case 0x0:
 			op->nmid=BJX2_NMID_LDIZ;
 			op->fmid=BJX2_FMID_IMMREG;
-			op->Run=BJX2_Op_MOV_ImmuReg;
+//			op->Run=BJX2_Op_MOV_ImmuReg;
+			op->Run=BJX2_Op_MOV_ImmReg;
 			break;
 
 		case 0x1:
 			op->nmid=BJX2_NMID_LDIN;
 			op->fmid=BJX2_FMID_IMMREG;
-			op->Run=BJX2_Op_MOV_ImmnReg;
+//			op->Run=BJX2_Op_MOV_ImmnReg;
+			op->Run=BJX2_Op_MOV_ImmReg;
 			break;
 
 		case 0x3:

@@ -3891,6 +3891,22 @@ ccxl_status BGBCC_CCXL_StackPushConstString(
 //	BGBCC_CCXL_StubError(ctx);
 }
 
+
+ccxl_status BGBCC_CCXL_StackPushConstU8String(
+	BGBCC_TransState *ctx, char *val)
+{
+	ccxl_register sreg;
+	BGBCC_CCXL_DebugPrintStackLLn(ctx, "PushConstU8S", __FILE__, __LINE__);
+
+	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_LDCONSTU8S);
+	BGBCC_CCXLR3_EmitArgString(ctx, val);
+
+	BGBCC_CCXL_GetRegForU8StringValue(ctx, &sreg, val);
+	BGBCC_CCXL_PushRegister(ctx, sreg);
+	return(CCXL_STATUS_YES);
+//	BGBCC_CCXL_StubError(ctx);
+}
+
 ccxl_status BGBCC_CCXL_StackPushConstWString(
 	BGBCC_TransState *ctx, char *val)
 {
@@ -3901,6 +3917,21 @@ ccxl_status BGBCC_CCXL_StackPushConstWString(
 	BGBCC_CCXLR3_EmitArgString(ctx, val);
 
 	BGBCC_CCXL_GetRegForWStringValue(ctx, &sreg, val);
+	BGBCC_CCXL_PushRegister(ctx, sreg);
+	return(CCXL_STATUS_YES);
+//	BGBCC_CCXL_StubError(ctx);
+}
+
+ccxl_status BGBCC_CCXL_StackPushConstW4String(
+	BGBCC_TransState *ctx, char *val)
+{
+	ccxl_register sreg;
+	BGBCC_CCXL_DebugPrintStackLLn(ctx, "PushConstW4S", __FILE__, __LINE__);
+
+	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_LDCONSTW4S);
+	BGBCC_CCXLR3_EmitArgString(ctx, val);
+
+	BGBCC_CCXL_GetRegForW4StringValue(ctx, &sreg, val);
 	BGBCC_CCXL_PushRegister(ctx, sreg);
 	return(CCXL_STATUS_YES);
 //	BGBCC_CCXL_StubError(ctx);

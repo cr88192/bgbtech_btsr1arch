@@ -927,6 +927,17 @@ int BGBCP_StrcmpUCS2(u16 *stra, u16 *strb)
 	return(*sa-*sb);
 }
 
+int BGBCP_StrcmpUCS4(u32 *stra, u32 *strb)
+{
+	u32 *sa, *sb;
+	int n;
+
+	sa=stra; sb=strb;
+	while(*sa && (*sa==*sb))
+		{ sa++; sb++; }
+	return(*sa-*sb);
+}
+
 int BGBCP_ParseChar(char **str)
 {
 	unsigned char *s;

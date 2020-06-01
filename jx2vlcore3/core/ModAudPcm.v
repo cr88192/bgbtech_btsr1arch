@@ -51,6 +51,11 @@ input			timer64kHz;
 input			timer1kHz;
 input			timerNoise;
 
+reg				tTimer1MHz;
+reg				tTimer64kHz;
+reg				tTimer1kHz;
+reg				tTimerNoise;
+
 reg[31:0]		tBusAddr;
 reg[31:0]		tBusInData;
 reg[4:0]		tBusOpm;
@@ -224,7 +229,7 @@ begin
 
 	tPwmEna			= tOutEnable;
 
-//	tNxtClk1kHz		= timer1kHz ? !tClk1kHz : tClk1kHz;
+//	tNxtClk1kHz		= tTimer1kHz ? !tClk1kHz : tClk1kHz;
 
 	{tPwmStCfL, tPwmNextStL} = {1'b0, tPwmStL} + {1'b0, tPwmValL};
 	{tPwmStCfR, tPwmNextStR} = {1'b0, tPwmStR} + {1'b0, tPwmValR};
@@ -339,28 +344,28 @@ begin
 		tPcmNextValR	= { tSamp12c, tSamp12c[11:8] };
 	end
 	
-//	tPwmNextValL	= tPcmNextValL + { auxPcmL, 3'h0, timerNoise };
-//	tPwmNextValR	= tPcmNextValR + { auxPcmR, 3'h0, timerNoise };
+//	tPwmNextValL	= tPcmNextValL + { auxPcmL, 3'h0, tTimerNoise };
+//	tPwmNextValR	= tPcmNextValR + { auxPcmR, 3'h0, tTimerNoise };
 
-//	tPwmNextValL	= tPcmNextValL + { auxPcmL, 7'h0, timerNoise };
-//	tPwmNextValR	= tPcmNextValR + { auxPcmR, 7'h0, timerNoise };
+//	tPwmNextValL	= tPcmNextValL + { auxPcmL, 7'h0, tTimerNoise };
+//	tPwmNextValR	= tPcmNextValR + { auxPcmR, 7'h0, tTimerNoise };
 
 `ifdef def_true
 	tPcmAddValL = 
 		{ tPcmValL[15] ? 4'b1111 : 4'b0000, tPcmValL[15:4] } +
-		{ tAuxPcmL[ 7] ? 4'b1111 : 4'b0000, tAuxPcmL, 3'h0, timerNoise };
+		{ tAuxPcmL[ 7] ? 4'b1111 : 4'b0000, tAuxPcmL, 3'h0, tTimerNoise };
 	tPcmAddValR =
 		{ tPcmValR[15] ? 4'b1111 : 4'b0000, tPcmValR[15:4] } +
-		{ tAuxPcmR[ 7] ? 4'b1111 : 4'b0000, tAuxPcmR, 3'h0, timerNoise };
+		{ tAuxPcmR[ 7] ? 4'b1111 : 4'b0000, tAuxPcmR, 3'h0, tTimerNoise };
 `endif
 
 `ifndef def_true
 	tPcmAddValL = 
 		{ tPcmValL[15] ? 2'b11 : 2'b00, tPcmValL[15:2] } +
-		{ tAuxPcmL[ 7] ? 2'b11 : 2'b00, tAuxPcmL, 5'h0, timerNoise };
+		{ tAuxPcmL[ 7] ? 2'b11 : 2'b00, tAuxPcmL, 5'h0, tTimerNoise };
 	tPcmAddValR =
 		{ tPcmValR[15] ? 2'b11 : 2'b00, tPcmValR[15:2] } +
-		{ tAuxPcmR[ 7] ? 2'b11 : 2'b00, tAuxPcmR, 5'h0, timerNoise };
+		{ tAuxPcmR[ 7] ? 2'b11 : 2'b00, tAuxPcmR, 5'h0, tTimerNoise };
 //	tPwmNextValL = tPwmAddValL;
 //	tPwmNextValR = tPwmAddValR;
 `endif
@@ -368,10 +373,10 @@ begin
 `ifndef def_true
 	tPcmAddValL = 
 		{ tPcmValL[15], tPcmValL[15:1] } +
-		{ tAuxPcmL[ 7], tAuxPcmL[7:0], 6'h0, timerNoise };
+		{ tAuxPcmL[ 7], tAuxPcmL[7:0], 6'h0, tTimerNoise };
 	tPcmAddValR =
 		{ tPcmValR[15], tPcmValR[15:1] } +
-		{ tAuxPcmR[ 7], tAuxPcmR[7:0], 6'h0, timerNoise };
+		{ tAuxPcmR[ 7], tAuxPcmR[7:0], 6'h0, tTimerNoise };
 `endif
 
 //	tPwmNextValL = tPcmAddValL;
@@ -382,9 +387,9 @@ begin
 
 `ifndef def_true
 //	{ tPcmCarryL, tPwmAddValL }	= 
-//		{ 1'b0, tPcmValL } + { 1'b0, tAuxPcmL, 7'h0, timerNoise };
+//		{ 1'b0, tPcmValL } + { 1'b0, tAuxPcmL, 7'h0, tTimerNoise };
 //	{ tPcmCarryR, tPwmAddValR }	=
-//		{ 1'b0, tPcmValR } + { 1'b0, tAuxPcmR, 7'h0, timerNoise };
+//		{ 1'b0, tPcmValR } + { 1'b0, tAuxPcmR, 7'h0, tTimerNoise };
 
 	case({tPwmAddValL[15], tPcmValL[15], tAuxPcmL[7]})
 		3'b000: tPwmNextValL = tPwmAddValL;
@@ -521,6 +526,12 @@ begin
 `endif
 
 	end
+
+	tTimer1MHz		<= timer1MHz;
+	tTimer64kHz		<= timer64kHz;
+	tTimer1kHz		<= timer1kHz;
+	tTimerNoise		<= timerNoise;
+
 end
 
 endmodule

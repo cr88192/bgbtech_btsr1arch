@@ -7,7 +7,7 @@
 //Cast:		(<Type>)<Unary>
 //E:		<expr>**<expr>
 //MD:		* / % \ &	*. /. %. \. &.
-//AS:		+ - | ^		+. -. |. ^.
+//AS:		+ - f| ^		+. -. |. ^.
 //SHLR:		<< >>
 //RCmp:		< > <= >= == === != <=> <<== >>==
 //Lop:		&&
@@ -604,10 +604,16 @@ BCCX_Node *BGBCP_ExpressionLit(BGBCP_ParseState *ctx, char **str)
 			return(n);
 		}
 
-		if(!bgbcp_strcmp1(b, "L") && (ty2==BTK_STRING))
+//		if(!bgbcp_strcmp1(b, "L") && (ty2==BTK_STRING))
+		if(	(	!bgbcp_strcmp1(b, "L") ||
+				!bgbcp_strcmp1(b, "u") ||
+				!bgbcp_strcmp1(b, "U") ||
+				!bgbcp_strcmp2(b, "u8")) &&
+			(ty2==BTK_STRING)	)
 		{
 			n=BGBCP_ExpressionLit(ctx, &s);
-			BCCX_SetCst(n, &bgbcc_rcst_tysuf, "tysuf", "L");
+//			BCCX_SetCst(n, &bgbcc_rcst_tysuf, "tysuf", "L");
+			BCCX_SetCst(n, &bgbcc_rcst_tysuf, "tysuf", b);
 			*str=s;
 			return(n);
 		}

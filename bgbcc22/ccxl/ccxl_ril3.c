@@ -1828,6 +1828,15 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		BGBCC_CCXL_StackPushConstVec4F(ctx, f0, f1, f2, f3, i0);
 		break;
 
+	case BGBCC_RIL3OP_LDCONSTU8S:
+		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		BGBCC_CCXL_StackPushConstU8String(ctx, s0);
+		break;
+	case BGBCC_RIL3OP_LDCONSTW4S:
+		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		BGBCC_CCXL_StackPushConstW4String(ctx, s0);
+		break;
+
 	default:
 		__debugbreak();
 		break;

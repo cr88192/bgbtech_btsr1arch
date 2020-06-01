@@ -6,14 +6,22 @@ _checksane_wex_fail:
 
 .global X(tk_checksane_wex_asm)
 X(tk_checksane_wex_asm):
-	push lr
+//	push lr
+	add		-8, sp
+	mov		lr, r1
+	mov.q	r1, (sp)
+	
 	add #-24, sp
 
-	mov #-1, r0
-	invic r0
+	.INVIC:
+
+//	mov #-1, r0
+//	invic r0
 	nop
 	nop
 	nop
+
+	.WEXMD:
 
 	wexmd #1
 	nop
@@ -135,5 +143,9 @@ X(tk_checksane_wex_asm):
 	wexmd #0
 
 	add #24, sp
-	pop lr
-	rts
+//	pop lr
+//	rts
+
+	mov.q	(sp), r1
+	add		8, sp
+	jmp		r1

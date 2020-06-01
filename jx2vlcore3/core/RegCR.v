@@ -54,8 +54,8 @@ output[47:0]	regOutSpc;
 input [47:0]	regInSpc;
 output[47:0]	regOutSsp;
 input [47:0]	regInSsp;
-output[47:0]	regOutTea;
-input [47:0]	regInTea;
+output[63:0]	regOutTea;
+input [63:0]	regInTea;
 
 output[47:0]	regOutVbr;
 output[47:0]	regOutGbr;
@@ -73,7 +73,7 @@ reg[47:0]	crRegSpc;
 reg[47:0]	crRegSsp;
 reg[47:0]	crRegGbr;
 reg[47:0]	crRegTbr;
-reg[47:0]	crRegTea;
+reg[63:0]	crRegTea;
 
 `ifdef jx2_enable_mmu
 reg[47:0]	crRegTtb;
@@ -135,7 +135,8 @@ begin
 		JX2_CR_SSP:		tValCmA={UV16_00, crRegSsp};
 		JX2_CR_GBR:		tValCmA={UV16_00, crRegGbr};
 		JX2_CR_TBR:		tValCmA={UV16_00, crRegTbr};
-		JX2_CR_TEA:		tValCmA={UV16_00, crRegTea};
+//		JX2_CR_TEA:		tValCmA={UV16_00, crRegTea};
+		JX2_CR_TEA:		tValCmA=crRegTea;
 `else
 		JX2_CR_PC:		tValCmA={UV32_00, crRegPc[31:0]};
 		JX2_CR_LR:		tValCmA={UV32_00, crRegLr[31:0]};
@@ -144,7 +145,8 @@ begin
 		JX2_CR_SSP:		tValCmA={UV32_00, crRegSsp[31:0]};
 		JX2_CR_GBR:		tValCmA={UV32_00, crRegGbr[31:0]};
 		JX2_CR_TBR:		tValCmA={UV32_00, crRegTbr[31:0]};
-		JX2_CR_TEA:		tValCmA={UV32_00, crRegTea[31:0]};
+//		JX2_CR_TEA:		tValCmA={UV32_00, crRegTea[31:0]};
+		JX2_CR_TEA:		tValCmA=crRegTea;
 `endif
 
 `ifdef jx2_enable_mmu
@@ -228,7 +230,8 @@ begin
 		crRegLr		<= (regIdCn2B==JX2_CR_LR  ) ? regValCn2[47:0] : regInLr;
 		crRegSpc	<= (regIdCn2B==JX2_CR_SPC ) ? regValCn2[47:0] : regInSpc;
 		crRegSsp	<= (regIdCn2B==JX2_CR_SSP ) ? regValCn2[47:0] : regInSsp;
-		crRegTea	<= (regIdCn2B==JX2_CR_TEA ) ? regValCn2[47:0] : regInTea;
+//		crRegTea	<= (regIdCn2B==JX2_CR_TEA ) ? regValCn2[47:0] : regInTea;
+		crRegTea	<= (regIdCn2B==JX2_CR_TEA ) ? regValCn2[63:0] : regInTea;
 		crRegVbr	<= (regIdCn2B==JX2_CR_VBR ) ? regValCn2[47:0] : crRegVbr;
 		crRegGbr	<= (regIdCn2B==JX2_CR_GBR ) ? regValCn2[47:0] : crRegGbr;
 		crRegTbr	<= (regIdCn2B==JX2_CR_TBR ) ? regValCn2[47:0] : crRegTbr;
@@ -238,7 +241,8 @@ begin
 		crRegLr		<= (regIdCn2B==JX2_CR_LR  ) ? regValCn2B_48b : regInLr;
 		crRegSpc	<= (regIdCn2B==JX2_CR_SPC ) ? regValCn2B_48b : regInSpc;
 		crRegSsp	<= (regIdCn2B==JX2_CR_SSP ) ? regValCn2B_48b : regInSsp;
-		crRegTea	<= (regIdCn2B==JX2_CR_TEA ) ? regValCn2B_48b : regInTea;
+//		crRegTea	<= (regIdCn2B==JX2_CR_TEA ) ? regValCn2B_48b : regInTea;
+		crRegTea	<= (regIdCn2B==JX2_CR_TEA ) ? regValCn2 : regInTea;
 		crRegVbr	<= (regIdCn2B==JX2_CR_VBR ) ? regValCn2B_48b : crRegVbr;
 		crRegGbr	<= (regIdCn2B==JX2_CR_GBR ) ? regValCn2B_48b : crRegGbr;
 		crRegTbr	<= (regIdCn2B==JX2_CR_TBR ) ? regValCn2B_48b : crRegTbr;

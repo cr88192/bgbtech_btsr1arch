@@ -21,17 +21,17 @@ input			spi_miso;
 output			spi_mosi;
 output			spi_cs;
 
-input[31:0]		mmioInData;
-output[31:0]	mmioOutData;
+input[63:0]		mmioInData;
+output[63:0]	mmioOutData;
 input[31:0]		mmioAddr;
 input[4:0]		mmioOpm;
 output[1:0]		mmioOK;
 input[11:0]		mmioSelfAddr;
 
-reg[31:0]		tMmioOutData;
+reg[63:0]		tMmioOutData;
 reg[1:0]		tMmioOK;
 
-reg[31:0]		tMmioOutData2;
+reg[63:0]		tMmioOutData2;
 reg[1:0]		tMmioOK2;
 
 reg			tOutMosi2;
@@ -84,16 +84,31 @@ reg				tNxtOutSclk;
 
 reg[3:0]		tBitCnt;
 reg[3:0]		tNxtBitCnt;
+reg[3:0]		tLastBitCnt;
+
+
+reg[3:0]		tByteCnt;		//Multi-Byte Transfer
+reg[3:0]		tNxtByteCnt;	//Multi-Byte Transfer
+
+reg[63:0]		tRegSendQ;
+reg[63:0]		tNxtRegSendQ;
+
+reg[63:0]		tRegRecvQ;
+reg[63:0]		tNxtRegRecvQ;
 
 always @*
 begin
-	tMmioOutData	= UV32_XX;
+	tMmioOutData	= UV64_XX;
 	tMmioOK			= UMEM_OK_READY;
 
 	mmioInOE		= (mmioOpm[3]) && tMmioSelfCSel;
 	mmioInWR		= (mmioOpm[4]) && tMmioSelfCSel;
 	mmioNxtLatchWR	= mmioInWR && mmioLatchWR;
 
+
+	tNxtByteCnt		= tByteCnt;
+	tNxtRegSendQ	= tRegSendQ;
+	tNxtRegRecvQ	= tRegRecvQ;
 	
 	tNxtRegCtrl		= tRegCtrl;
 //	tNxtDivCnt		= tDivCnt - 1;
@@ -154,26 +169,68 @@ begin
 		end
 	end
 
+//	tRegValIn = tRegExchI[7:0];
+	tRegValIn = tRegExchI[14:7];
+
+//	if((tBitCnt==0) && (tLastBitCnt!=0))
+	if(tBitCnt==0)
+	begin
+		if(tByteCnt!=0)
+		begin
+			tNxtByteCnt			= tByteCnt-1;
+//			tNxtBitCnt			= 8;
+			tNxtBitCnt			= (tByteCnt!=1) ? 8 : 0;
+
+			tNxtRegExchO[7:0]	= tRegSendQ[7:0];
+			tNxtRegSendQ		= { 8'hFF, tRegSendQ[63:8] };
+			tNxtRegRecvQ		= { tRegValIn, tNxtRegRecvQ[63:8] };
+			
+			//9: zzxxxxxxxxxxxxxx  00
+			//8: 00zzxxxxxxxxxxxx  11
+			//7: 1100zzxxxxxxxxxx  22
+			//6: 221100zzxxxxxxxx  33
+			//5: 33221100zzxxxxxx  44
+			//4: 4433221100zzxxxx  55
+			//3: 554433221100zzxx  66
+			//2: 66554433221100zz  77
+			//1: 7766554433221100  zz
+		end
+	end
+
 	if((mmioAddr[3:2]==2'b00) && mmioInOE)
 	begin
-		tMmioOutData	= tRegCtrl;
-		tMmioOutData[1]	= (tBitCnt!=0);
+//		tMmioOutData	= tRegCtrl;
+		tMmioOutData	= { UV32_00, tRegCtrl };
+//		tMmioOutData[1]	= (tBitCnt!=0);
+		tMmioOutData[1]	= (tBitCnt!=0) || (tByteCnt!=0);
 		
 		tMmioOK			= UMEM_OK_OK;
 	end
 
 	if((mmioAddr[3:2]==2'b00) && mmioInWR)
 	begin
-		if(tBitCnt==0)
+//		if(tBitCnt==0)
+		if((tBitCnt==0) && (tByteCnt==0))
 		begin
-			tNxtRegCtrl		= mmioInData;
+			tNxtRegCtrl		= mmioInData[31:0];
 			tMmioOK			= UMEM_OK_OK;
 			mmioNxtLatchWR	= 1;
 
-			if(mmioInData[1] && (tBitCnt==0))
+//			if(mmioInData[1] && (tBitCnt==0))
+			if(mmioInData[1])
 			begin
 				tNxtBitCnt			= 8;
 				tNxtDivCnt			= 0;
+			end
+
+			/* XMIT 8X */
+			if(mmioInData[5])
+			begin
+//				tNxtBitCnt			= 8;
+				tNxtDivCnt			= 0;
+//				tNxtRegExchO[7:0]	= tRegSendQ[7:0];
+
+				tNxtByteCnt			= 9;
 			end
 		end
 		else
@@ -183,20 +240,15 @@ begin
 		end
 	end
 
-//	tRegValIn = tRegExchI[7:0];
-	tRegValIn = tRegExchI[14:7];
-
 	if((mmioAddr[3:2]==2'b01) && mmioInOE)
 	begin
 		if(tBitCnt==0)
 		begin
 //			$display("SdSpi Rd=%X", tRegExch[15:8]);
-//			tMmioOutData	= { UV24_00, tRegExch[15:8] };
 //			$display("SdSpi Rd=%X", tRegExchI[7:0]);
 //			$display("SdSpi Rd=%X", tRegValIn);
-//			tMmioOutData	= { UV24_00, tRegExch[7:0] };
-//			tMmioOutData	= { UV24_00, tRegExchI[7:0] };
-			tMmioOutData	= { UV24_00, tRegValIn };
+//			tMmioOutData	= { UV24_00, tRegValIn };
+			tMmioOutData	= { UV32_00, UV24_00, tRegValIn };
 			tMmioOK			= UMEM_OK_OK;
 		end
 		else
@@ -211,16 +263,12 @@ begin
 		begin
 //			$display("SdSpi Wr=%X", mmioInData[7:0]);
 
-//			tNxtRegExch[7:0]	= mmioInData[7:0];
 			tNxtRegExchO[7:0]	= mmioInData[7:0];
-//			tNxtRegExch[15:8]	= mmioInData[7:0];
-//			tNxtBitCnt			= 8;
 			tMmioOK				= UMEM_OK_OK;
 			mmioNxtLatchWR		= 1;
 		end
 		else
 		begin
-//			mmioNxtLatchWR	= mmioLatchWR;
 			tMmioOK			= mmioLatchWR ? UMEM_OK_OK : UMEM_OK_HOLD;
 		end
 	end
@@ -228,6 +276,20 @@ begin
 //	begin
 //		mmioNxtLatchWR		= 0;
 //	end
+
+	if((mmioAddr[3:2]==2'b10) && mmioInOE)
+	begin
+		tMmioOutData	= tRegRecvQ;
+		tMmioOK			= UMEM_OK_OK;
+	end
+
+	if((mmioAddr[3:2]==2'b10) && mmioInWR)
+	begin
+		tNxtRegSendQ	= mmioInData;
+		mmioNxtLatchWR	= 1;
+
+		tMmioOK			= mmioLatchWR ? UMEM_OK_OK : UMEM_OK_HOLD;
+	end
 
 end
 
@@ -247,7 +309,12 @@ begin
 	tDivRst			<= tNxtDivRst;
 	tOutSclk		<= tNxtOutSclk;
 	tBitCnt			<= tNxtBitCnt;
+	tLastBitCnt		<= tBitCnt;
 	mmioLatchWR		<= mmioNxtLatchWR;
+
+	tRegSendQ		<= tNxtRegSendQ;
+	tRegRecvQ		<= tNxtRegRecvQ;
+	tByteCnt		<= tNxtByteCnt;
 end
 
 endmodule

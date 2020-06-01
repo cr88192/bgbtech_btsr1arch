@@ -101,13 +101,41 @@ reg[127:0]	tlbHdatG;
 reg[127:0]	tlbHdatH;
 
 reg			tlbMmuEnable;
+reg			tlbMmuAddr48;
+reg			tlbMmuPg64K;
 reg			tlbMmuSkipA;
 reg			tlbMmuSkipB;
+
+reg			tlbHitA_Hi;
+reg			tlbHitB_Hi;
+reg			tlbHitC_Hi;
+reg			tlbHitD_Hi;
+reg			tlbHitA_Mi;
+reg			tlbHitB_Mi;
+reg			tlbHitC_Mi;
+reg			tlbHitD_Mi;
+reg			tlbHitA_Lo;
+reg			tlbHitB_Lo;
+reg			tlbHitC_Lo;
+reg			tlbHitD_Lo;
 
 reg			tlbHitA;
 reg			tlbHitB;
 reg			tlbHitC;
 reg			tlbHitD;
+
+reg			tlbHitE_Hi;
+reg			tlbHitF_Hi;
+reg			tlbHitG_Hi;
+reg			tlbHitH_Hi;
+reg			tlbHitE_Mi;
+reg			tlbHitF_Mi;
+reg			tlbHitG_Mi;
+reg			tlbHitH_Mi;
+reg			tlbHitE_Lo;
+reg			tlbHitF_Lo;
+reg			tlbHitG_Lo;
+reg			tlbHitH_Lo;
 
 reg			tlbHitE;
 reg			tlbHitF;
@@ -169,10 +197,14 @@ begin
 	tlbAcc			= UV32_XX;
 	tlbNxtFlushMask	= tlbFlushMask;
 
+	tlbMmuEnable	= regInMMCR[0];
+	tlbMmuPg64K		= regInMMCR[4];
+
 //	icPageEq		= (tRegInAddr[31:12] == regInAddr[31:12]);
 	icPageEq		= (tRegInAddr[47:12] == regInAddr[47:12]);
+//	icPageEq		= 	(tRegInAddr[47:16] == regInAddr[47:16]) &&
+//						((tRegInAddr[15:12] == regInAddr[15:12]) || tlbMmuPg64K);
 
-	tlbMmuEnable	= regInMMCR[0];
 	tlbIs32b		= regInSR[31];
 	if(regInMMCR[2] && !regInSR[30])
 		tlbIs32b		= 1;
@@ -183,9 +215,12 @@ begin
 	begin
 //		$display("TLB Enabled");
 	end
-		
-	tlbHixA = regInAddr[17:12]^regInAddr[21:16];
-	tlbHixB = regInAddrB[17:12]^regInAddrB[21:16];
+	
+//	tlbHixA = regInAddr[17:12]^regInAddr[21:16];
+//	tlbHixB = regInAddrB[17:12]^regInAddrB[21:16];
+
+	tlbHixA = (tlbMmuPg64K?0:regInAddr[17:12])^regInAddr[21:16];
+	tlbHixB = (tlbMmuPg64K?0:regInAddrB[17:12])^regInAddrB[21:16];
 
 	tlbHdatA = { tlbBlkHiA[tlbHixA], tlbBlkLoA[tlbHixA]};
 	tlbHdatB = { tlbBlkHiB[tlbHixA], tlbBlkLoB[tlbHixA]};
@@ -221,24 +256,80 @@ begin
 		tlbHdatH[0] = 0;
 	end
 `endif
-	
-	tlbHitA = (regInAddr [31:12] == tlbHdatA[95:76]) && tlbHdatA[0];
-	tlbHitB = (regInAddr [31:12] == tlbHdatB[95:76]) && tlbHdatB[0];
-	tlbHitC = (regInAddr [31:12] == tlbHdatC[95:76]) && tlbHdatC[0];
-	tlbHitD = (regInAddr [31:12] == tlbHdatD[95:76]) && tlbHdatD[0];
+
+	tlbHitA_Hi = (regInAddr [47:32] == tlbHdatA[111:96]);
+	tlbHitB_Hi = (regInAddr [47:32] == tlbHdatB[111:96]);
+	tlbHitC_Hi = (regInAddr [47:32] == tlbHdatC[111:96]);
+	tlbHitD_Hi = (regInAddr [47:32] == tlbHdatD[111:96]);
+	tlbHitA_Mi = (regInAddr [31:16] == tlbHdatA[95:80]);
+	tlbHitB_Mi = (regInAddr [31:16] == tlbHdatB[95:80]);
+	tlbHitC_Mi = (regInAddr [31:16] == tlbHdatC[95:80]);
+	tlbHitD_Mi = (regInAddr [31:16] == tlbHdatD[95:80]);
+	tlbHitA_Lo = (regInAddr [15:12] == tlbHdatA[79:76]);
+	tlbHitB_Lo = (regInAddr [15:12] == tlbHdatB[79:76]);
+	tlbHitC_Lo = (regInAddr [15:12] == tlbHdatC[79:76]);
+	tlbHitD_Lo = (regInAddr [15:12] == tlbHdatD[79:76]);
 
 `ifdef jx2_mem_fulldpx
-	tlbHitE = (regInAddrB[31:12] == tlbHdatE[95:76]) && tlbHdatE[0];
-	tlbHitF = (regInAddrB[31:12] == tlbHdatF[95:76]) && tlbHdatF[0];
-	tlbHitG = (regInAddrB[31:12] == tlbHdatG[95:76]) && tlbHdatG[0];
-	tlbHitH = (regInAddrB[31:12] == tlbHdatH[95:76]) && tlbHdatH[0];
+	tlbHitE_Hi = (regInAddrB[47:32] == tlbHdatE[111:96]);
+	tlbHitF_Hi = (regInAddrB[47:32] == tlbHdatF[111:96]);
+	tlbHitG_Hi = (regInAddrB[47:32] == tlbHdatG[111:96]);
+	tlbHitH_Hi = (regInAddrB[47:32] == tlbHdatH[111:96]);
+	tlbHitE_Mi = (regInAddrB[31:16] == tlbHdatE[95:80]);
+	tlbHitF_Mi = (regInAddrB[31:16] == tlbHdatF[95:80]);
+	tlbHitG_Mi = (regInAddrB[31:16] == tlbHdatG[95:80]);
+	tlbHitH_Mi = (regInAddrB[31:16] == tlbHdatH[95:80]);
+	tlbHitE_Lo = (regInAddrB[15:12] == tlbHdatE[79:76]);
+	tlbHitF_Lo = (regInAddrB[15:12] == tlbHdatF[79:76]);
+	tlbHitG_Lo = (regInAddrB[15:12] == tlbHdatG[79:76]);
+	tlbHitH_Lo = (regInAddrB[15:12] == tlbHdatH[79:76]);
+`endif
+
+	if(tlbIs32b)
+	begin
+		tlbHitA_Hi = 1;
+		tlbHitB_Hi = 1;
+		tlbHitC_Hi = 1;
+		tlbHitD_Hi = 1;
+`ifdef jx2_mem_fulldpx
+		tlbHitE_Hi = 1;
+		tlbHitF_Hi = 1;
+		tlbHitG_Hi = 1;
+		tlbHitH_Hi = 1;
+`endif
+	end
+
+	if(tlbMmuPg64K)
+	begin
+		tlbHitA_Lo = 1;
+		tlbHitB_Lo = 1;
+		tlbHitC_Lo = 1;
+		tlbHitD_Lo = 1;
+`ifdef jx2_mem_fulldpx
+		tlbHitE_Lo = 1;
+		tlbHitF_Lo = 1;
+		tlbHitG_Lo = 1;
+		tlbHitH_Lo = 1;
+`endif
+	end
+	
+	tlbHitA = tlbHitA_Hi && tlbHitA_Mi && tlbHitA_Lo && tlbHdatA[0];
+	tlbHitB = tlbHitB_Hi && tlbHitB_Mi && tlbHitB_Lo && tlbHdatB[0];
+	tlbHitC = tlbHitC_Hi && tlbHitC_Mi && tlbHitC_Lo && tlbHdatC[0];
+	tlbHitD = tlbHitD_Hi && tlbHitD_Mi && tlbHitD_Lo && tlbHdatD[0];
+
+`ifdef jx2_mem_fulldpx
+	tlbHitE = tlbHitE_Hi && tlbHitE_Mi && tlbHitE_Lo && tlbHdatE[0];
+	tlbHitF = tlbHitF_Hi && tlbHitF_Mi && tlbHitF_Lo && tlbHdatF[0];
+	tlbHitG = tlbHitG_Hi && tlbHitG_Mi && tlbHitG_Lo && tlbHdatG[0];
+	tlbHitH = tlbHitH_Hi && tlbHitH_Mi && tlbHitH_Lo && tlbHdatH[0];
 `else
 	tlbHitE = 1;
 	tlbHitF = 1;
 	tlbHitG = 1;
 	tlbHitH = 1;
 `endif
-	
+
 	tlbHitAB = tlbHitA || tlbHitB;
 	tlbHitCD = tlbHitC || tlbHitD;
 	tlbHitEF = tlbHitE || tlbHitF;
@@ -246,42 +337,44 @@ begin
 //	tlbHit = tlbHitAB || tlbHitCD;
 	tlbHit = (tlbHitAB || tlbHitCD) && (tlbHitEF || tlbHitGH);
 
-	tlbAddrAB =
-		tlbHitA ? { tlbHdatA[47:12], regInAddr[11:0] } :
-			{ tlbHdatB[47:12], regInAddr[11:0] };
+	tlbAddrAB[47:12] = tlbHitA ? tlbHdatA[47:12] : tlbHdatB[47:12];
+	tlbAddrCD[47:12] = tlbHitC ? tlbHdatC[47:12] : tlbHdatD[47:12];
+//	tlbAddrAB[11:0] = regInAddr[11:0];
+//	tlbAddrCD[11:0] = regInAddr[11:0];
+
+	tlbAddr[47:12] = tlbHitAB ? tlbAddrAB[47:12] : tlbAddrCD[47:12];
+	tlbAddr[11: 0] = regInAddr[11: 0];
+	if(tlbMmuPg64K)
+		tlbAddr[15:12] = regInAddr[15:12];
+
+`ifdef jx2_mem_fulldpx
+	tlbAddrEF[47:12] = tlbHitE ? tlbHdatE[47:12] : tlbHdatF[47:12];
+	tlbAddrGH[47:12] = tlbHitG ? tlbHdatG[47:12] : tlbHdatH[47:12];
+	tlbAddrB[47:12] = tlbHitEF ? tlbAddrEF[47:12] : tlbAddrGH[47:12];
+	tlbAddrB[11: 0] = regInAddrB[11: 0];
+	if(tlbMmuPg64K)
+		tlbAddr[15:12] = regInAddrB[15:12];
+`else
+	tlbAddrB = regInAddrB;
+`endif
+
 	tlbAccAB = 
 		tlbHitA ? { tlbHdatA[127:112], tlbHdatA[75:64], tlbHdatA[7:4] } :
 			{ tlbHdatB[127:112], tlbHdatB[75:64], tlbHdatB[7:4] };
-
-	tlbAddrCD =
-		tlbHitC ? { tlbHdatC[47:12], regInAddr[11:0] } :
-			{ tlbHdatD[47:12], regInAddr[11:0] };
 	tlbAccCD = 
 		tlbHitC ? { tlbHdatC[127:112], tlbHdatC[75:64], tlbHdatC[7:4] } :
 			{ tlbHdatD[127:112], tlbHdatD[75:64], tlbHdatD[7:4] };
-
-	tlbAddr = tlbHitAB ? tlbAddrAB : tlbAddrCD;
 	tlbAcc = tlbHitAB ? tlbAccAB : tlbAccCD;
 
 `ifdef jx2_mem_fulldpx
-	tlbAddrEF =
-		tlbHitE ? { tlbHdatE[47:12], regInAddrB[11:0] } :
-			{ tlbHdatF[47:12], regInAddrB[11:0] };
 	tlbAccEF = 
 		tlbHitE ? { tlbHdatE[127:112], tlbHdatE[75:64], tlbHdatE[7:4] } :
 			{ tlbHdatF[127:112], tlbHdatF[75:64], tlbHdatF[7:4] };
-
-	tlbAddrGH =
-		tlbHitG ? { tlbHdatG[47:12], regInAddrB[11:0] } :
-			{ tlbHdatH[47:12], regInAddrB[11:0] };
 	tlbAccGH = 
 		tlbHitG ? { tlbHdatG[127:112], tlbHdatG[75:64], tlbHdatG[7:4] } :
 			{ tlbHdatH[127:112], tlbHdatH[75:64], tlbHdatH[7:4] };
-
-	tlbAddrB = tlbHitEF ? tlbAddrEF : tlbAddrGH;
 	tlbAccB = tlbHitEF ? tlbAccEF : tlbAccGH;
 `else
-	tlbAddrB = regInAddrB;
 	tlbAccB = 0;
 `endif
 

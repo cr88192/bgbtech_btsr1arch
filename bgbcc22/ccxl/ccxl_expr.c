@@ -2038,6 +2038,28 @@ void BGBCC_CCXL_CompileExprT(BGBCC_TransState *ctx, BCCX_Node *l)
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_string, "string"))
 	{
 		s0=BCCX_GetCst(l, &bgbcc_rcst_value, "value");
+		s1=BCCX_GetCst(l, &bgbcc_rcst_tysuf, "tysuf");
+		if(s1)
+		{
+			if(!strcmp(s1, "L") || !strcmp(s1, "u"))
+			{
+				BGBCC_CCXL_StackPushConstWString(ctx, s0);
+				return;
+			}
+
+			if(!strcmp(s1, "u8"))
+			{
+				BGBCC_CCXL_StackPushConstU8String(ctx, s0);
+				return;
+			}
+
+			if(!strcmp(s1, "U"))
+			{
+				BGBCC_CCXL_StackPushConstW4String(ctx, s0);
+				return;
+			}
+		}
+
 		BGBCC_CCXL_StackPushConstString(ctx, s0);
 		return;
 	}

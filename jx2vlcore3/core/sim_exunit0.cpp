@@ -625,6 +625,12 @@ uint32_t mmio_ReadDWord(BJX2_Context *ctx, uint32_t addr)
 	case 0xE034:
 		val=mmio[0x11];
 		break;
+	case 0xE038:
+		val=mmio[0x12];
+		break;
+	case 0xE03C:
+		val=mmio[0x13];
+		break;
 
 
 	case 0xE040:
@@ -656,7 +662,9 @@ uint32_t mmio_ReadDWord(BJX2_Context *ctx, uint32_t addr)
 uint32_t mmio_WriteDWord(BJX2_Context *ctx, uint32_t addr, uint32_t val)
 {
 	u32 *mmio;
+	u64 lv0, lv1;
 	int v;
+	int i, j, k;
 
 	if((addr&0x0FFE0000)==0xA0000)
 	{
@@ -700,6 +708,23 @@ uint32_t mmio_WriteDWord(BJX2_Context *ctx, uint32_t addr, uint32_t val)
 		break;
 
 	case 0xE030:
+		if(val&0x20)
+		{
+			lv0=mmio[0x12]|(((u64)mmio[0x13])<<32);
+
+			lv1=0;
+			for(i=0; i<8; i++)
+			{
+//				mmgp_spi_delcyc+=(ctx->tgt_mhz*8)/5;
+				v=btesh2_spimmc_XrByte(ctx, (lv0>>(i*8))&255);
+				lv1|=((u64)(v&255))<<(i*8);
+			}
+			mmio[0x12]=lv1;
+			mmio[0x13]=lv1>>32;
+
+//			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_IOPOKE);
+		}
+	
 		v=btesh2_spimmc_XrCtl(ctx, val);
 
 //		printf("SPI XrCtl %02X %02X\n", val, v);
@@ -725,6 +750,13 @@ uint32_t mmio_WriteDWord(BJX2_Context *ctx, uint32_t addr, uint32_t val)
 
 //		mmgp_spi_delcyc+=200;
 //		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_IOPOKE);
+		break;
+
+	case 0xE038:
+		mmio[0x12]=val;
+		break;
+	case 0xE03C:
+		mmio[0x13]=val;
 		break;
 
 	default:
@@ -937,6 +969,10 @@ void MemUpdateForBus()
 				top->memDataOut[0], top->memDataOut[1],
 				top->memDataOut[2], top->memDataOut[3]);
 #endif
+		}else
+			if(top->memOpm!=0)
+		{
+			top->memOK=1;
 		}
 	}else
 	{
@@ -1290,6 +1326,7 @@ int main(int argc, char **argv, char **env)
 {
 	BJX2_Context *ctx;
 	FILE *fd;
+	uint64_t tot_bdl, lpc;
 	int lclk, mhz;
 	int tt_start;
 	int ctick, ctick_rst;
@@ -1364,6 +1401,9 @@ int main(int argc, char **argv, char **env)
 	ctx->rcp_mhz=((1048576/ctx->tgt_mhz)+7)>>4;
 	ctx->ttick_rst=(ctx->tgt_mhz*1000000)/1024;
 	ctx->ttick_hk=ctx->ttick_rst;
+	
+	lpc=0;
+	tot_bdl=0;
 
 	GfxDrv_Start();
 	SoundDev_Init();
@@ -1454,53 +1494,6 @@ int main(int argc, char **argv, char **env)
 				top->dbgOutStatus8?0xFFFFFF00:0xFF00007F);
 
 
-#if 0
-			x0=((btesh2_gfxcon_fbys-2)*btesh2_gfxcon_fbxs-1*2)*4;
-			x1=((btesh2_gfxcon_fbys-2)*btesh2_gfxcon_fbxs-2*2)*4;
-			btesh2_gfxcon_framebuf[x0+0]=top->dbgExHold1?0xFF:0x00;
-			btesh2_gfxcon_framebuf[x0+1]=top->dbgExHold1?0xFF:0x00;
-			btesh2_gfxcon_framebuf[x0+2]=0x00;
-			btesh2_gfxcon_framebuf[x1+0]=top->dbgExHold2?0xFF:0x00;
-			btesh2_gfxcon_framebuf[x1+1]=top->dbgExHold2?0xFF:0x00;
-			btesh2_gfxcon_framebuf[x1+2]=0x00;
-
-			x0=((btesh2_gfxcon_fbys-2)*btesh2_gfxcon_fbxs-4*2)*4;
-			x1=((btesh2_gfxcon_fbys-2)*btesh2_gfxcon_fbxs-5*2)*4;
-			x2=((btesh2_gfxcon_fbys-2)*btesh2_gfxcon_fbxs-6*2)*4;
-			x3=((btesh2_gfxcon_fbys-2)*btesh2_gfxcon_fbxs-7*2)*4;
-
-			btesh2_gfxcon_framebuf[x0+0]=top->dbgOutStatus1?0xFF:0x00;
-			btesh2_gfxcon_framebuf[x0+1]=top->dbgOutStatus1?0xFF:0x00;
-			btesh2_gfxcon_framebuf[x0+2]=0x00;
-			btesh2_gfxcon_framebuf[x1+0]=top->dbgOutStatus2?0xFF:0x00;
-			btesh2_gfxcon_framebuf[x1+1]=top->dbgOutStatus2?0xFF:0x00;
-			btesh2_gfxcon_framebuf[x1+2]=0x00;
-			btesh2_gfxcon_framebuf[x2+0]=top->dbgOutStatus3?0xFF:0x00;
-			btesh2_gfxcon_framebuf[x2+1]=top->dbgOutStatus3?0xFF:0x00;
-			btesh2_gfxcon_framebuf[x2+2]=0x00;
-			btesh2_gfxcon_framebuf[x3+0]=top->dbgOutStatus4?0xFF:0x00;
-			btesh2_gfxcon_framebuf[x3+1]=top->dbgOutStatus4?0xFF:0x00;
-			btesh2_gfxcon_framebuf[x3+2]=0x00;
-
-			x0=((btesh2_gfxcon_fbys-2)*btesh2_gfxcon_fbxs- 9*2)*4;
-			x1=((btesh2_gfxcon_fbys-2)*btesh2_gfxcon_fbxs-10*2)*4;
-			x2=((btesh2_gfxcon_fbys-2)*btesh2_gfxcon_fbxs-11*2)*4;
-			x3=((btesh2_gfxcon_fbys-2)*btesh2_gfxcon_fbxs-12*2)*4;
-
-			btesh2_gfxcon_framebuf[x0+0]=top->dbgOutStatus5?0xFF:0x00;
-			btesh2_gfxcon_framebuf[x0+1]=top->dbgOutStatus5?0xFF:0x00;
-			btesh2_gfxcon_framebuf[x0+2]=0x00;
-			btesh2_gfxcon_framebuf[x1+0]=top->dbgOutStatus6?0xFF:0x00;
-			btesh2_gfxcon_framebuf[x1+1]=top->dbgOutStatus6?0xFF:0x00;
-			btesh2_gfxcon_framebuf[x1+2]=0x00;
-			btesh2_gfxcon_framebuf[x2+0]=top->dbgOutStatus7?0xFF:0x00;
-			btesh2_gfxcon_framebuf[x2+1]=top->dbgOutStatus7?0xFF:0x00;
-			btesh2_gfxcon_framebuf[x2+2]=0x00;
-			btesh2_gfxcon_framebuf[x3+0]=top->dbgOutStatus8?0xFF:0x00;
-			btesh2_gfxcon_framebuf[x3+1]=top->dbgOutStatus8?0xFF:0x00;
-			btesh2_gfxcon_framebuf[x3+2]=0x00;
-#endif
-
 			GfxDrv_BeginDrawing();
 
 			GfxDrv_EndDrawing();
@@ -1529,7 +1522,14 @@ int main(int argc, char **argv, char **env)
 		}
 		
 		jx2_ctx->tot_cyc=main_time>>1;
-		
+
+		if(lpc!=top->dbgOutPc)
+		{
+			lpc=top->dbgOutPc;
+			tot_bdl++;
+		}
+
+
 		lclk = top->clock;
 //		top->mode = 3;
 		
@@ -1567,8 +1567,9 @@ int main(int argc, char **argv, char **env)
 
 	t1=FRGL_TimeMS();
 	t2=t1-tt_start;
-	
+
 	printf("%.3fMHz\n", jx2_ctx->tot_cyc/(t2*1000.0));
+	printf("%.3f bdl/clk\n", (1.0*tot_bdl)/(jx2_ctx->tot_cyc+1));
 
 	SoundDev_DeInit();
 	

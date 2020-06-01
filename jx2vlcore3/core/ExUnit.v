@@ -35,6 +35,13 @@ IF ID1 ID2 EX1 EX2 WB
 `include "ExALUB.v"
 `endif
 
+`ifdef jx2_stage_ex3
+`include "ExEX3.v"
+`ifdef jx2_enable_wex
+`include "ExEXB3.v"
+`endif
+`endif
+
 `ifdef jx2_enable_prebra
 `include "DecPreBra.v"
 `endif
@@ -75,7 +82,9 @@ module ExUnit(
 	);
 
 input			clock;
-input			reset;
+
+(* max_fanout = 50 *)
+	input			reset;
 
 output[47:0]	memAddr;
 output[47:0]	memAddrB;
@@ -112,14 +121,23 @@ parameter		isAltCore = 0;
 // defparam		ex1.cpuid.isAltCore = isAltCore;
 defparam		ex1.isAltCore = isAltCore;
 
-
-reg				exHold1;
-reg				exHold2;
+(* max_fanout = 100 *)
+	reg				exHold1;
+(* max_fanout = 100 *)
+	reg				exHold2;
 
 reg				exHold1A;
 reg				exHold1B;
 reg				exHold1C;
 reg				exHold1D;
+
+reg				exHold1B1;
+reg				exHold1B2;
+reg				exHold1B3;
+
+reg				exHold1C1;
+reg				exHold1C2;
+reg				exHold1C3;
 
 assign		dbgExHold1 = exHold1;
 assign		dbgExHold2 = exHold2;
@@ -132,14 +150,24 @@ reg			tDbgOutStatus5;
 reg			tDbgOutStatus6;
 reg			tDbgOutStatus7;
 reg			tDbgOutStatus8;
-assign		dbgOutStatus1 = tDbgOutStatus1;
-assign		dbgOutStatus2 = tDbgOutStatus2;
-assign		dbgOutStatus3 = tDbgOutStatus3;
-assign		dbgOutStatus4 = tDbgOutStatus4;
-assign		dbgOutStatus5 = tDbgOutStatus5;
-assign		dbgOutStatus6 = tDbgOutStatus6;
-assign		dbgOutStatus7 = tDbgOutStatus7;
-assign		dbgOutStatus8 = tDbgOutStatus8;
+
+reg			tDbgOutStatus1B;
+reg			tDbgOutStatus2B;
+reg			tDbgOutStatus3B;
+reg			tDbgOutStatus4B;
+reg			tDbgOutStatus5B;
+reg			tDbgOutStatus6B;
+reg			tDbgOutStatus7B;
+reg			tDbgOutStatus8B;
+
+assign		dbgOutStatus1 = tDbgOutStatus1B;
+assign		dbgOutStatus2 = tDbgOutStatus2B;
+assign		dbgOutStatus3 = tDbgOutStatus3B;
+assign		dbgOutStatus4 = tDbgOutStatus4B;
+assign		dbgOutStatus5 = tDbgOutStatus5B;
+assign		dbgOutStatus6 = tDbgOutStatus6B;
+assign		dbgOutStatus7 = tDbgOutStatus7B;
+assign		dbgOutStatus8 = tDbgOutStatus8B;
 
 
 
@@ -178,6 +206,7 @@ wire[63:0]		dcOutVal;
 reg [63:0]		dcInVal;
 wire[ 1:0]		dcOutOK;
 reg				dcInHold;
+wire			dcOutHold;
 
 wire[63:0]		dcOutValB;
 reg [63:0]		dcInValB;
@@ -201,7 +230,7 @@ MemL1A		memL1(
 	dcInAddr,		dcInOpm,
 	dcOutVal,		dcInVal,
 	dcOutValB,		dcInValB,
-	dcOutOK,		dcInHold,
+	dcOutOK,		dcInHold,		dcOutHold,
 
 	gprOutDlr,		gprOutDhr,
 	crOutMmcr,		crOutKrr,		crOutSr,
@@ -381,17 +410,29 @@ reg[5:0]		gprIdRn1;
 reg[63:0]		gprValRn1;
 reg[5:0]		gprIdRn2;
 reg[63:0]		gprValRn2;
+`ifdef jx2_stage_ex3
+reg[5:0]		gprIdRn3;
+reg[63:0]		gprValRn3;
+`endif
 
 reg[5:0]		gprIdRnB1;
 reg[63:0]		gprValRnB1;
 reg[5:0]		gprIdRnB2;
 reg[63:0]		gprValRnB2;
+`ifdef jx2_stage_ex3
+reg[5:0]		gprIdRnB3;
+reg[63:0]		gprValRnB3;
+`endif
 
 `ifdef jx2_enable_wex3w
 reg[5:0]		gprIdRnC1;
 reg[63:0]		gprValRnC1;
 reg[5:0]		gprIdRnC2;
 reg[63:0]		gprValRnC2;
+`ifdef jx2_stage_ex3
+reg[5:0]		gprIdRnC3;
+reg[63:0]		gprValRnC3;
+`endif
 `endif
 
 reg [47:0]		gprValPc;
@@ -438,19 +479,27 @@ RegGPR_6R3W regGpr(
 
 	gprIdRn1,		//Destination ID (EX1, L1)
 	gprValRn1,		//Destination Value (EX1, L1)
-	gprIdRn2,		//Destination ID (EX2, L1)
-	gprValRn2,		//Destination Value (EX2, L1)
-	
 	gprIdRnB1,		//Destination ID (EX1, L2)
 	gprValRnB1,		//Destination Value (EX1, L2)
-	gprIdRnB2,		//Destination ID (EX2, L2)
-	gprValRnB2,		//Destination Value (EX2, L2)
-	
 	gprIdRnC1,		//Destination ID (EX1, L3)
 	gprValRnC1,		//Destination Value (EX1, L3)
+
+	gprIdRn2,		//Destination ID (EX2, L1)
+	gprValRn2,		//Destination Value (EX2, L1)
+	gprIdRnB2,		//Destination ID (EX2, L2)
+	gprValRnB2,		//Destination Value (EX2, L2)
 	gprIdRnC2,		//Destination ID (EX2, L3)
 	gprValRnC2,		//Destination Value (EX2, L3)
-	
+
+`ifdef jx2_stage_ex3
+	gprIdRn3,		//Destination ID (EX2, L1)
+	gprValRn3,		//Destination Value (EX2, L1)
+	gprIdRnB3,		//Destination ID (EX2, L2)
+	gprValRnB3,		//Destination Value (EX2, L2)
+	gprIdRnC3,		//Destination ID (EX2, L3)
+	gprValRnC3,		//Destination Value (EX2, L3)
+`endif
+
 	gprValPc,		//PC Value (Synthesized)
 	gprValGbr,		//GBR Value (CR)
 	gprValImm,		//Immediate (Decode, A)
@@ -664,8 +713,8 @@ wire[47:0]	crOutSpc;
 reg [47:0]	crInSpc;
 wire[47:0]	crOutSsp;
 reg [47:0]	crInSsp;
-wire[47:0]	crOutTea;
-reg [47:0]	crInTea;
+wire[63:0]	crOutTea;
+reg [63:0]	crInTea;
 
 wire[47:0]	crOutVbr;
 wire[47:0]	crOutGbr;
@@ -743,7 +792,7 @@ reg[1:0]		ex2MemDataOK;
 
 reg[7:0]		ex1OpUCmd;
 reg[7:0]		ex1OpUIxt;
-wire			ex1Hold;
+wire[1:0]		ex1Hold;
 reg				ex1PreBra;
 reg[31:0]		ex1IstrWord;	//source instruction word
 reg				ex1BraFlush;
@@ -809,7 +858,9 @@ ExEX1	ex1(
 	
 	ex1RegValPc,	ex1RegValImm,
 	ex1FpuValGRn,	ex1FpuSrT,
-	ex1BraFlush,	ex1PreBra,
+//	ex1BraFlush,
+	ex1BraFlush || reset,
+	ex1PreBra,
 	
 	ex1RegOutDlr,	ex1RegInDlr,
 	ex1RegOutDhr,	ex1RegInDhr,
@@ -820,7 +871,8 @@ ExEX1	ex1(
 	ex1RegOutSchm,	ex1RegInSchm,
 
 	ex1MemAddr,		ex1MemOpm,
-	ex1MemDataOut,	ex1MemDataOutB
+	ex1MemDataOut,	ex1MemDataOutB,
+	ex2MemDataOK
 	);
 
 wire[65:0]	ex1ValAlu;
@@ -870,7 +922,9 @@ FpuExOpW	ex1Fpu(
 
 	ex1FpuOK,		ex1FpuSrT,
 	
-	ex2RegInSr,		ex1BraFlush,
+	ex2RegInSr,
+//	ex1BraFlush,
+	ex1BraFlush || reset,
 	exHold2,
 	
 	ex1FpuValGRn,	exB1FpuValGRn
@@ -888,7 +942,9 @@ FpuExOp	ex1Fpu(
 	ex1FpuOK,		ex1FpuSrT,
 	
 //	ex1RegInSr,		ex1BraFlush,
-	ex2RegInSr,		ex1BraFlush,
+	ex2RegInSr,
+//	ex1BraFlush,
+	ex1BraFlush || reset,
 	exHold2,
 	
 	ex1RegValRs,	ex1FpuValGRn,
@@ -905,7 +961,7 @@ reg[47:0]		ex2ValBPc;
 
 reg[7:0]		ex2OpUCmd;
 reg[7:0]		ex2OpUIxt;
-wire			ex2Hold;
+wire[1:0]		ex2Hold;
 reg				ex2PreBra;
 reg[31:0]		ex2IstrWord;	//source instruction word
 
@@ -979,7 +1035,8 @@ ExEX2	ex2(
 	ex1FpuValGRn,	ex1FpuValLdGRn,
 	ex1FpuSrT,		ex1FpuOK,
 	
-	ex2BraFlush,
+//	ex2BraFlush,
+	ex2BraFlush || reset,
 	ex2RegInLastSr,
 	
 	ex2RegOutDlr,	ex2RegInDlr,
@@ -996,6 +1053,71 @@ ExEX2	ex2(
 	);
 
 
+`ifdef jx2_stage_ex3
+/* EX3 */
+
+reg[47:0]		ex3ValBPc;
+
+reg[7:0]		ex3OpUCmd;
+reg[7:0]		ex3OpUIxt;
+wire[1:0]		ex3Hold;
+reg				ex3PreBra;
+reg[31:0]		ex3IstrWord;	//source instruction word
+
+reg[5:0]		ex3RegIdRs;		//Source A, ALU / Base
+reg[5:0]		ex3RegIdRt;		//Source B, ALU / Index
+reg[5:0]		ex3RegIdRm;		//Source C, MemStore
+reg[63:0]		ex3RegValRs;		//Source A Value
+reg[63:0]		ex3RegValRt;		//Source B Value
+reg[63:0]		ex3RegValRm;		//Source C Value
+
+reg[5:0]		ex3RegIdRn2;		//Destination ID (EX2)
+reg[63:0]		ex3RegValRn2;		//Destination Value (EX2)
+reg[4:0]		ex3RegIdCn2;		//Destination ID (CR, EX2)
+reg[63:0]		ex3RegValCn2;		//Destination Value (CR, EX2)
+	
+wire[5:0]		ex3RegIdRn3;		//Destination ID (EX3)
+wire[63:0]		ex3RegValRn3;		//Destination Value (EX3)
+wire[4:0]		ex3RegIdCn3;		//Destination ID (CR, EX3)
+wire[63:0]		ex3RegValCn3;		//Destination Value (CR, EX3)
+	
+reg[47:0]		ex3RegValPc;		//PC Value (Synthesized)
+reg[32:0]		ex3RegValImm;		//Immediate (Decode)
+reg[65:0]		ex3RegAluRes;		//Arithmetic Result
+reg[63:0]		ex3RegMulRes;		//Multiplier Result
+reg[63:0]		ex3RegMulWRes;		//Multiplier Result (Word)
+reg				ex3BraFlush;		//Flush EX2
+
+reg[7:0]		ex3RegInLastSr;
+
+ExEX3	ex3(
+	clock,			reset,
+	ex3OpUCmd,		ex3OpUIxt,
+	ex3Hold,		exHold2,
+
+	ex3RegIdRs,		ex3RegIdRt,		ex3RegIdRm,
+	ex3RegValRs,	ex3RegValRt,	ex3RegValRm,
+
+	ex3RegIdRn2,	ex3RegValRn2,
+	ex3RegIdCn2,	ex3RegValCn2,
+
+	ex3RegIdRn3,	ex3RegValRn3,
+	ex3RegIdCn3,	ex3RegValCn3,
+	
+	ex3RegValPc,	ex3RegValImm,
+	ex3RegAluRes,	ex3RegMulRes,
+	ex3RegMulWRes,
+	ex1FpuValGRn,
+
+	ex3BraFlush || reset,
+	ex3RegInLastSr,
+
+	ex2MemDataIn,
+	ex2MemDataInB,
+	ex2MemDataOK
+	);
+`endif
+
 `ifdef jx2_enable_wex
 /* EX1, Lane 2 */
 
@@ -1003,7 +1125,7 @@ wire[63:0]		exB1MulWVal;
 
 reg[7:0]		exB1OpUCmd;
 reg[7:0]		exB1OpUIxt;
-wire			exB1Hold;
+wire[1:0]		exB1Hold;
 
 reg[5:0]		exB1RegIdRs;		//Source A, ALU / Base
 reg[5:0]		exB1RegIdRt;		//Source B, ALU / Index
@@ -1031,7 +1153,9 @@ ExEXB1	exb1(
 	exB1HldIdRn1,
 	
 	ex1RegValPc,	exB1RegValImm,
-	ex1BraFlush,	ex1RegInSr
+//	ex1BraFlush,
+	ex1BraFlush || reset,
+	ex1RegInSr
 	);
 	
 
@@ -1060,7 +1184,7 @@ ExMulW	exB1MulW(
 
 reg[7:0]		exB2OpUCmd;
 reg[7:0]		exB2OpUIxt;
-wire			exB2Hold;
+wire[1:0]		exB2Hold;
 
 reg[5:0]		exB2RegIdRs;		//Source A, ALU / Base
 reg[5:0]		exB2RegIdRt;		//Source B, ALU / Index
@@ -1093,11 +1217,55 @@ ExEXB2		exb2(
 	exB2RegValImm,	exB2RegAluRes,
 	exB2RegMulWRes,
 	exB1FpuValGRn,
-	ex2BraFlush,
+//	ex2BraFlush,
+	ex2BraFlush || reset,
 
 	ex2RegInLastSr,	ex2RegInSr,
 	ex2MemDataIn,	ex2MemDataInB
 	);
+
+`ifdef jx2_stage_ex3
+reg[7:0]		exB3OpUCmd;
+reg[7:0]		exB3OpUIxt;
+wire[1:0]		exB3Hold;
+
+reg[5:0]		exB3RegIdRs;		//Source A, ALU / Base
+reg[5:0]		exB3RegIdRt;		//Source B, ALU / Index
+reg[5:0]		exB3RegIdRm;		//Source C, MemStore
+reg[63:0]		exB3RegValRs;		//Source A Value
+reg[63:0]		exB3RegValRt;		//Source B Value
+reg[63:0]		exB3RegValRm;		//Source C Value
+
+reg[5:0]		exB3RegIdRn2;		//Destination ID (EX1)
+reg[63:0]		exB3RegValRn2;		//Destination Value (EX1)
+wire[5:0]		exB3RegIdRn3;		//Destination ID (EX1)
+wire[63:0]		exB3RegValRn3;		//Destination Value (EX1)
+	
+reg[32:0]		exB3RegValImm;		//Immediate (Decode)
+reg[65:0]		exB3RegAluRes;		//Arithmetic Result
+reg[63:0]		exB3RegMulWRes;		//Word Multiply Result
+
+ExEXB3		exb3(
+	clock,		reset,
+	exB3OpUCmd,	exB3OpUIxt,
+	exB3Hold,
+	
+	exB3RegIdRs,	exB3RegIdRt,
+	exB3RegIdRm,	exB3RegValRs,
+	exB3RegValRt,	exB3RegValRm,
+	exB3RegIdRn2,	exB3RegValRn2,
+	exB3RegIdRn3,	exB3RegValRn3,
+	
+	ex3RegValPc,
+	exB3RegValImm,	exB3RegAluRes,
+	exB3RegMulWRes,
+	exB1FpuValGRn,
+	ex3BraFlush || reset,
+
+	ex3RegInLastSr,
+	ex2MemDataIn,	ex2MemDataInB
+	);
+`endif
 
 `endif
 
@@ -1109,7 +1277,7 @@ wire[63:0]		exC1MulWVal;
 
 reg[7:0]		exC1OpUCmd;
 reg[7:0]		exC1OpUIxt;
-wire			exC1Hold;
+wire[1:0]		exC1Hold;
 
 reg[5:0]		exC1RegIdRs;		//Source A, ALU / Base
 reg[5:0]		exC1RegIdRt;		//Source B, ALU / Index
@@ -1137,7 +1305,9 @@ ExEXB1	exc1(
 	exC1HldIdRn1,
 	
 	ex1RegValPc,	exC1RegValImm,
-	ex1BraFlush,	ex1RegInSr
+//	ex1BraFlush,	ex1RegInSr
+	ex1BraFlush || reset,
+	ex1RegInSr
 	);
 	
 
@@ -1166,7 +1336,7 @@ ExMulW	exC1MulW(
 
 reg[7:0]		exC2OpUCmd;
 reg[7:0]		exC2OpUIxt;
-wire			exC2Hold;
+wire[1:0]		exC2Hold;
 
 reg[5:0]		exC2RegIdRs;		//Source A, ALU / Base
 reg[5:0]		exC2RegIdRt;		//Source B, ALU / Index
@@ -1199,11 +1369,55 @@ ExEXB2		exc2(
 	exC2RegValImm,	exC2RegAluRes,
 	exC2RegMulWRes,
 	exC1FpuValGRn,
-	ex2BraFlush,
+//	ex2BraFlush,
+	ex2BraFlush || reset,
 
 	ex2RegInLastSr,	ex2RegInSr,
 	ex2MemDataIn,	ex2MemDataInB
 	);
+
+`ifdef jx2_stage_ex3
+reg[7:0]		exC3OpUCmd;
+reg[7:0]		exC3OpUIxt;
+wire[1:0]		exC3Hold;
+
+reg[5:0]		exC3RegIdRs;		//Source A, ALU / Base
+reg[5:0]		exC3RegIdRt;		//Source B, ALU / Index
+reg[5:0]		exC3RegIdRm;		//Source C, MemStore
+reg[63:0]		exC3RegValRs;		//Source A Value
+reg[63:0]		exC3RegValRt;		//Source B Value
+reg[63:0]		exC3RegValRm;		//Source C Value
+
+reg[5:0]		exC3RegIdRn2;		//Destination ID (EX1)
+reg[63:0]		exC3RegValRn2;		//Destination Value (EX1)
+wire[5:0]		exC3RegIdRn3;		//Destination ID (EX1)
+wire[63:0]		exC3RegValRn3;		//Destination Value (EX1)
+	
+reg[32:0]		exC3RegValImm;		//Immediate (Decode)
+reg[65:0]		exC3RegAluRes;		//Arithmetic Result
+reg[63:0]		exC3RegMulWRes;		//Word Multiply Result
+
+ExEXB3		exc3(
+	clock,		reset,
+	exC3OpUCmd,	exB3OpUIxt,
+	exC3Hold,
+	
+	exC3RegIdRs,	exC3RegIdRt,
+	exC3RegIdRm,	exC3RegValRs,
+	exC3RegValRt,	exC3RegValRm,
+	exC3RegIdRn2,	exC3RegValRn2,
+	exC3RegIdRn3,	exC3RegValRn3,
+	
+	ex3RegValPc,
+	exC3RegValImm,	exB3RegAluRes,
+	exC3RegMulWRes,
+	exC1FpuValGRn,
+	ex3BraFlush || reset,
+
+	ex3RegInLastSr,
+	ex2MemDataIn,	ex2MemDataInB
+	);
+`endif
 
 `endif
 
@@ -1294,10 +1508,19 @@ begin
 //	tDbgOutStatus1	= 0;
 //	tDbgOutStatus2	= 0;
 
+`ifdef jx2_stage_ex3
 	exHold2	=
-		(ex1Hold)		|	(ex2Hold)		|
-//		(ifOutPcOK[1])	|	(ex1FpuOK[1])	;
-		(ifOutPcOK[1])	;
+		(ex1Hold[0])	||	(ex2Hold[0])	||
+		(ex3Hold[0])	||	dcOutHold		||
+		(ifOutPcOK[1])	||	(ex1FpuOK[1])	;
+`else
+	exHold2	=
+		(ex1Hold[0])	||	(ex2Hold[0])	||
+		dcOutHold		||
+		(ifOutPcOK[1])	||	(ex1FpuOK[1])	;
+//		(ifOutPcOK[1])	;
+`endif
+
 	exHold1A	= exHold2;
 
 //	if(exHold2)
@@ -1320,6 +1543,74 @@ begin
 `endif
 
 `ifdef jx2_enable_wex3w
+
+`ifdef def_true
+	exHold1B1	=
+		((	(ex1RegIdRm == gprIdRs) ||
+			(ex1RegIdRm == gprIdRt) ||
+			(ex1RegIdRm == gprIdRu) ||
+			(ex1RegIdRm == gprIdRv) ||
+			(ex1RegIdRm == gprIdRx) ||
+			(ex1RegIdRm == gprIdRy)	) &&
+//			(ex1HldIdRn1 != JX2_GR_ZZR));
+			(ex1Hold[1]));
+	exHold1B2	=
+		((	(exB1RegIdRm == gprIdRs) ||
+			(exB1RegIdRm == gprIdRt) ||
+			(exB1RegIdRm == gprIdRu) ||
+			(exB1RegIdRm == gprIdRv) ||
+			(exB1RegIdRm == gprIdRx) ||
+			(exB1RegIdRm == gprIdRy)	) &&
+//			(exB1HldIdRn1 != JX2_GR_ZZR));
+			(exB1Hold[1]));
+	exHold1B3	=
+		((	(exC1RegIdRm == gprIdRs) ||
+			(exC1RegIdRm == gprIdRt) ||
+			(exC1RegIdRm == gprIdRu) ||
+			(exC1RegIdRm == gprIdRv) ||
+			(exC1RegIdRm == gprIdRx) ||
+			(exC1RegIdRm == gprIdRy)	) &&
+//			(exC1HldIdRn1 != JX2_GR_ZZR));
+			(exC1Hold[1]));
+
+`ifndef jx2_stage_ex3
+	exHold1B	= (exHold1B1 || exHold1B2 || exHold1B3) && !ex1BraFlush;
+`endif
+
+`ifdef jx2_stage_ex3
+	exHold1C1	=
+		((	(ex2RegIdRm == gprIdRs) ||
+			(ex2RegIdRm == gprIdRt) ||
+			(ex2RegIdRm == gprIdRu) ||
+			(ex2RegIdRm == gprIdRv) ||
+			(ex2RegIdRm == gprIdRx) ||
+			(ex2RegIdRm == gprIdRy)	) &&
+			(ex2Hold[1]));
+	exHold1C2	=
+		((	(exB2RegIdRm == gprIdRs) ||
+			(exB2RegIdRm == gprIdRt) ||
+			(exB2RegIdRm == gprIdRu) ||
+			(exB2RegIdRm == gprIdRv) ||
+			(exB2RegIdRm == gprIdRx) ||
+			(exB2RegIdRm == gprIdRy)	) &&
+			(exB2Hold[1]));
+	exHold1C3	=
+		((	(exC2RegIdRm == gprIdRs) ||
+			(exC2RegIdRm == gprIdRt) ||
+			(exC2RegIdRm == gprIdRu) ||
+			(exC2RegIdRm == gprIdRv) ||
+			(exC2RegIdRm == gprIdRx) ||
+			(exC2RegIdRm == gprIdRy)	) &&
+			(exC2Hold[1]));
+
+	exHold1B	=
+		(( exHold1B1 || exHold1B2 || exHold1B3) && !ex1BraFlush) ||
+		(( exHold1C1 || exHold1C2 || exHold1C3) && !ex2BraFlush) ;
+`endif
+
+`endif
+
+`ifndef def_true
 	exHold1B	=
 		((	(ex1RegIdRm == gprIdRs) ||
 			(ex1RegIdRm == gprIdRt) ||
@@ -1342,6 +1633,8 @@ begin
 			(exC1RegIdRm == gprIdRx) ||
 			(exC1RegIdRm == gprIdRy)	) &&
 			(exC1HldIdRn1 != JX2_GR_ZZR));
+`endif
+
 `else
 `ifdef jx2_enable_wex2w
 	exHold1B	=
@@ -1372,9 +1665,20 @@ begin
 //	if(ex1RegIdRm == JX2_GR_SP)
 //		exHold1C = 1;
 
-	exHold1C = ((ex1RegOutSchm[JX2_SCHM_SP]) ||
-		(ex1RegIdRm == JX2_GR_SP)) && !ex1BraFlush;
+//	exHold1C = ((ex1RegOutSchm[JX2_SCHM_SP]) ||
+//		(ex1RegIdRm == JX2_GR_SP)) && !ex1BraFlush;
 //		(ex1HldIdRn1 == JX2_GR_SP);
+	exHold1C = 0;
+
+	if(	((ex1OpUCmd[5:0]==JX2_UCMD_MOV_MR) ||
+		 (ex1OpUCmd[5:0]==JX2_UCMD_MOV_RM))	&&
+//		((idA2IdUCmd[5:0]==JX2_UCMD_JMP) ||
+//		 (idA2IdUCmd[5:0]==JX2_UCMD_JSR)))
+		((idA2IdUCmd[5:0]==JX2_UCMD_JMP) ||
+		 (idA2IdUCmd[5:0]==JX2_UCMD_JSR) ||
+		 (idA2IdUCmd[5:0]==JX2_UCMD_BRA) ||
+		 (idA2IdUCmd[5:0]==JX2_UCMD_BSR)))
+			exHold1C = 1;
 
 `ifndef def_true
 // `ifdef def_true
@@ -1462,8 +1766,10 @@ begin
 	
 		if(exHold2)
 		begin
-			$display("ExHold2: Ex1=%d Ex2=%d I$=%d FPU=%d",
-				ex1Hold, ex2Hold, ifOutPcOK[1], ex1FpuOK[1]);
+			$display("ExHold2: Ex1=%d Ex2=%d I$=%d FPU=%d D$=%d",
+				ex1Hold, ex2Hold, ifOutPcOK[1], ex1FpuOK[1], dcOutHold);
+			$display("\tEX1=%d EX2=%d EX3=%d",
+				(ex1Hold[0]), (ex2Hold[0]), (ex3Hold[0]));
 		end
 	end
 `endif
@@ -1584,6 +1890,47 @@ begin
 					exC2RegIdRm, exC2RegValRm);
 				$display("     Rn1=%X(%X)",
 					exC2RegIdRn2, exC2RegValRn2);
+			end
+`endif
+`endif
+
+
+			$display("EX3: PC0=%X PC2=%X D=%X-%X Op=%X-%X F=%d",
+				ex3ValBPc,	ex3RegValPc,
+				ex3IstrWord[15: 0], ex3IstrWord[31:16],
+				ex3OpUCmd, ex3OpUIxt, ex3BraFlush);
+			$display("     Rs=%X(%X) Rt=%X(%X) Rn=%X(%X)",
+				ex3RegIdRs, ex3RegValRs,
+				ex3RegIdRt, ex3RegValRt,
+				ex3RegIdRm, ex3RegValRm);
+			$display("     Rn1=%X(%X) Cn1=%X(%X)",
+				ex3RegIdRn3, ex3RegValRn3,
+				ex3RegIdCn3, ex3RegValCn3);
+
+`ifdef jx2_enable_wex
+			if(exB3OpUCmd[5:0]!=6'h00)
+			begin
+				$display("  EX3-B: Op=%X-%X",
+					exB3OpUCmd, exB3OpUIxt);
+				$display("     Rs=%X(%X) Rt=%X(%X) Rn=%X(%X)",
+					exB3RegIdRs, exB3RegValRs,
+					exB3RegIdRt, exB3RegValRt,
+					exB3RegIdRm, exB3RegValRm);
+				$display("     Rn1=%X(%X)",
+					exB3RegIdRn2, exB3RegValRn2);
+			end
+
+`ifdef jx2_enable_wex3w
+			if(exC3OpUCmd[5:0]!=6'h00)
+			begin
+				$display("  EX3-C: Op=%X-%X",
+					exC3OpUCmd, exC3OpUIxt);
+				$display("     Rs=%X(%X) Rt=%X(%X) Rn=%X(%X)",
+					exC3RegIdRs, exC3RegValRs,
+					exC3RegIdRt, exC3RegValRt,
+					exC3RegIdRm, exC3RegValRm);
+				$display("     Rn1=%X(%X)",
+					exC3RegIdRn2, exC3RegValRn2);
 			end
 `endif
 `endif
@@ -1853,7 +2200,8 @@ begin
 //			crInExsr		= { crOutSr[31:0], UV16_00, tRegExc[15:0] };
 			crInExsr		= { ex1RegOutSr[31:0], UV16_00, tRegExc[15:0] };
 //			crInTea			= tRegExc[47:16];
-			crInTea			= tRegExc[63:16];
+//			crInTea			= tRegExc[63:16];
+			crInTea			= { UV16_00, tRegExc[63:16] };
 	//		crInSpc			= ifLastPc;
 //			crInSpc			= ex2ValBPc;
 //			crInSpc			= ex1ValBPc;
@@ -1919,12 +2267,20 @@ begin
 	gprValRn1		= ex1RegValRn1;
 	gprIdRn2		= ex2RegIdRn2;
 	gprValRn2		= ex2RegValRn2;
+`ifdef jx2_stage_ex3
+	gprIdRn3		= ex3RegIdRn3;
+	gprValRn3		= ex3RegValRn3;
+`endif
 
 `ifdef jx2_enable_wex
 	gprIdRnB1		= exB1RegIdRn1;
 	gprValRnB1		= exB1RegValRn1;
 	gprIdRnB2		= exB2RegIdRn2;
 	gprValRnB2		= exB2RegValRn2;
+`ifdef jx2_stage_ex3
+	gprIdRnB3		= exB3RegIdRn3;
+	gprValRnB3		= exB3RegValRn3;
+`endif
 	
 	exB2RegAluRes	= exB1ValAlu;
 `endif
@@ -1934,6 +2290,10 @@ begin
 	gprValRnC1		= exC1RegValRn1;
 	gprIdRnC2		= exC2RegIdRn2;
 	gprValRnC2		= exC2RegValRn2;
+`ifdef jx2_stage_ex3
+	gprIdRnC3		= exC3RegIdRn3;
+	gprValRnC3		= exC3RegValRn3;
+`endif
 	
 	exC2RegAluRes	= exC1ValAlu;
 `endif
@@ -2048,6 +2408,7 @@ begin
 		ifLastPcStep	<= 0;
 		ex1BraFlush		<= 1;
 		ex2BraFlush		<= 1;
+		ex3BraFlush		<= 1;
 
 		id1IstrWord		<= 96'h300030003000300030003000;
 
@@ -2242,9 +2603,16 @@ begin
 		crIdCm			<= idA1IdRegM[4:0];
 
 		gprValPc		<= id1ValPc;
-		id2ValBPc		<= id1ValBPc;
 		id2PreBra		<= id1PreBra;
+
+`ifdef jx2_debug_keepinstr
 		id2IstrWord		<= id1IstrWord[31:0];
+		id2ValBPc		<= id1ValBPc;
+`else
+		id2IstrWord		<= UV32_XX;
+		id2ValBPc		<= UV48_XX;
+`endif
+
 `else
 		gprIdRs			<= id1IdRegM;
 		gprIdRt			<= id1IdRegO;
@@ -2253,23 +2621,38 @@ begin
 		gprValImm		<= id1IdImm;
 		crIdCm			<= id1IdRegM[4:0];
 
-		id2ValBPc		<= id1ValBPc;
+//		id2ValBPc		<= id1ValBPc;
 		id2IdUCmd		<= id1IdUCmd;
 		id2IdUIxt		<= id1IdUIxt;
 		id2PreBra		<= id1PreBra;
+//		id2IstrWord		<= id1IstrWord[31:0];
+
+`ifdef jx2_debug_keepinstr
 		id2IstrWord		<= id1IstrWord[31:0];
+		id2ValBPc		<= id1ValBPc;
+`else
+		id2IstrWord		<= UV32_XX;
+		id2ValBPc		<= UV48_XX;
+`endif
+
 `endif
 
 		/* EX1 */
 
+`ifdef jx2_debug_keepinstr
 		ex1ValBPc		<= id2ValBPc;
+		ex1IstrWord		<= id2IstrWord;
+`else
+		ex1ValBPc		<= UV48_XX;
+		ex1IstrWord		<= UV32_XX;
+`endif
+
 //		ex1OpUCmd		<= id2IdUCmd;
 //		ex1OpUCmd		<= {
 //			opBraFlushMask[0] ? JX2_IXC_NV : id2IdUCmd[7:6],
 //			id2IdUCmd[5:0] };
 //		ex1OpUIxt		<= id2IdUIxt;
 		ex1PreBra		<= id2PreBra;
-		ex1IstrWord		<= id2IstrWord;
 
 		ex1RegValPc		<= gprValPc;
 		ex1RegValImm	<= gprValImm;
@@ -2454,6 +2837,53 @@ begin
 				exC2RegIdRn2, exC2RegValRn2);
 		end
 `endif
+
+`endif
+
+
+`ifdef jx2_stage_ex3
+
+		$display("EX3: PC0=%X PC2=%X D=%X-%X Op=%X-%X F=%d",
+			ex3ValBPc,	ex3RegValPc,
+			ex3IstrWord[15: 0], ex3IstrWord[31:16],
+			ex3OpUCmd, ex3OpUIxt, ex3BraFlush);
+		$display("     Rs=%X(%X) Rt=%X(%X) Rn=%X(%X)",
+			ex3RegIdRs, ex3RegValRs,
+			ex3RegIdRt, ex3RegValRt,
+			ex3RegIdRm, ex3RegValRm);
+		$display("     Rn1=%X(%X) Cn1=%X(%X)",
+			ex3RegIdRn3, ex3RegValRn3,
+			ex3RegIdCn3, ex3RegValCn3);
+
+`ifdef jx2_enable_wex
+		if(exB3OpUCmd[5:0]!=6'h00)
+		begin
+			$display("  EX3-B: Op=%X-%X",
+				exB3OpUCmd, exB3OpUIxt);
+			$display("     Rs=%X(%X) Rt=%X(%X) Rn=%X(%X)",
+				exB3RegIdRs, exB3RegValRs,
+				exB3RegIdRt, exB3RegValRt,
+				exB3RegIdRm, exB3RegValRm);
+			$display("     Rn1=%X(%X)",
+				exB3RegIdRn3, exB3RegValRn3);
+		end
+
+`ifdef jx2_enable_wex3w
+		if(exC3OpUCmd[5:0]!=6'h00)
+		begin
+			$display("  EX3-C: Op=%X-%X",
+				exC3OpUCmd, exC3OpUIxt);
+			$display("     Rs=%X(%X) Rt=%X(%X) Rn=%X(%X)",
+				exC3RegIdRs, exC3RegValRs,
+				exC3RegIdRt, exC3RegValRt,
+				exC3RegIdRm, exC3RegValRm);
+			$display("     Rn1=%X(%X)",
+				exC3RegIdRn3, exC3RegValRn3);
+		end
+`endif
+
+`endif
+
 `endif
 
 		$display("");
@@ -2503,15 +2933,63 @@ begin
 `endif
 `endif
 
+`ifdef jx2_stage_ex3
+		$display("EX3: PC0=%X PC2=%X D=%X-%X Op=%X-%X F=%d",
+			ex3ValBPc,	ex3RegValPc,
+			ex3IstrWord[15: 0], ex3IstrWord[31:16],
+			ex3OpUCmd, ex3OpUIxt, ex3BraFlush);
+		$display("     Rs=%X(%X) Rt=%X(%X) Rn=%X(%X)",
+			ex3RegIdRs, ex3RegValRs,
+			ex3RegIdRt, ex3RegValRt,
+			ex3RegIdRm, ex3RegValRm);
+		$display("     Rn1=%X(%X) Cn1=%X(%X)",
+			ex3RegIdRn3, ex3RegValRn3,
+			ex3RegIdCn3, ex3RegValCn3);
+
+`ifdef jx2_enable_wex
+		if(exB3OpUCmd[5:0]!=6'h00)
+		begin
+			$display("  EX3-B: Op=%X-%X",
+				exB3OpUCmd, exB3OpUIxt);
+			$display("     Rs=%X(%X) Rt=%X(%X) Rn=%X(%X)",
+				exB3RegIdRs, exB3RegValRs,
+				exB3RegIdRt, exB3RegValRt,
+				exB3RegIdRm, exB3RegValRm);
+			$display("     Rn1=%X(%X)",
+				exB3RegIdRn3, exB3RegValRn3);
+		end
+
+`ifdef jx2_enable_wex3w
+		if(exC3OpUCmd[5:0]!=6'h00)
+		begin
+			$display("  EX3-C: Op=%X-%X",
+				exC3OpUCmd, exC3OpUIxt);
+			$display("     Rs=%X(%X) Rt=%X(%X) Rn=%X(%X)",
+				exC3RegIdRs, exC3RegValRs,
+				exC3RegIdRt, exC3RegValRt,
+				exC3RegIdRm, exC3RegValRm);
+			$display("     Rn1=%X(%X)",
+				exC3RegIdRn3, exC3RegValRn3);
+		end
+`endif
+`endif
+`endif
+
 //		$display("");
 `endif
 
 		/* EX2 */
+`ifdef jx2_debug_keepinstr
+		ex2IstrWord		<= ex1IstrWord;
+		ex2ValBPc		<= ex1ValBPc;
+`else
+		ex2IstrWord		<= UV32_XX;
+		ex2ValBPc		<= UV48_XX;
+`endif
+
 		ex2OpUCmd		<= ex1OpUCmd;
 		ex2OpUIxt		<= ex1OpUIxt;
 		ex2PreBra		<= ex1PreBra;
-		ex2IstrWord		<= ex1IstrWord;
-		ex2ValBPc		<= ex1ValBPc;
 		ex2BraFlush		<= ex1BraFlush;
 		ex2RegInLastSr	<= ex1RegInSr[7:0];
 
@@ -2562,9 +3040,83 @@ begin
 
 `endif
 
+
+`ifdef jx2_stage_ex3
+
+		/* EX3 */
+`ifdef jx2_debug_keepinstr
+		ex3IstrWord		<= ex2IstrWord;
+		ex3ValBPc		<= ex2ValBPc;
+`else
+		ex3IstrWord		<= UV32_XX;
+		ex3ValBPc		<= UV48_XX;
+`endif
+
+		ex3OpUCmd		<= ex2OpUCmd;
+		ex3OpUIxt		<= ex2OpUIxt;
+		ex3PreBra		<= ex2PreBra;
+		ex3BraFlush		<= ex2BraFlush;
+		ex3RegInLastSr	<= ex2RegInLastSr;
+
+		ex3RegIdRs		<= ex2RegIdRs;
+		ex3RegIdRt		<= ex2RegIdRt;
+		ex3RegIdRm		<= ex2RegIdRm;
+		ex3RegValRs		<= ex2RegValRs;
+		ex3RegValRt		<= ex2RegValRt;
+		ex3RegValRm		<= ex2RegValRm;
+		ex3RegIdRn2		<= ex2RegIdRn2;
+		ex3RegValRn2	<= ex2RegValRn2;
+		ex3RegIdCn2		<= ex2RegIdCn2;
+		ex3RegValCn2	<= ex2RegValCn2;
+		ex3RegValPc		<= ex2RegValPc;
+		ex3RegValImm	<= ex2RegValImm;
+
+`ifdef jx2_enable_wex
+		exB3OpUCmd		<= exB2OpUCmd;
+		exB3OpUIxt		<= exB2OpUIxt;
+
+		exB3RegIdRs		<= exB2RegIdRs;
+		exB3RegIdRt		<= exB2RegIdRt;
+		exB3RegIdRm		<= exB2RegIdRm;
+		exB3RegValRs	<= exB2RegValRs;
+		exB3RegValRt	<= exB2RegValRt;
+		exB3RegValRm	<= exB2RegValRm;
+		exB3RegIdRn2	<= exB2RegIdRn2;
+		exB3RegValRn2	<= exB2RegValRn2;
+		exB3RegValImm	<= exB2RegValImm;
+
+`ifdef jx2_enable_wex3w
+		exC3OpUCmd		<= exC2OpUCmd;
+		exC3OpUIxt		<= exC2OpUIxt;
+
+		exC3RegIdRs		<= exC2RegIdRs;
+		exC3RegIdRt		<= exC2RegIdRt;
+		exC3RegIdRm		<= exC2RegIdRm;
+		exC3RegValRs	<= exC2RegValRs;
+		exC3RegValRt	<= exC2RegValRt;
+		exC3RegValRm	<= exC2RegValRm;
+		exC3RegIdRn2	<= exC2RegIdRn2;
+		exC3RegValRn2	<= exC2RegValRn2;
+		exC3RegValImm	<= exC2RegValImm;
+`endif
+
+`endif
+
+
+`endif
+
 		/* WB */
 	
 	end
+
+	tDbgOutStatus1B		<= tDbgOutStatus1;
+	tDbgOutStatus2B		<= tDbgOutStatus2;
+	tDbgOutStatus3B		<= tDbgOutStatus3;
+	tDbgOutStatus4B		<= tDbgOutStatus4;
+	tDbgOutStatus5B		<= tDbgOutStatus5;
+	tDbgOutStatus6B		<= tDbgOutStatus6;
+	tDbgOutStatus7B		<= tDbgOutStatus7;
+	tDbgOutStatus8B		<= tDbgOutStatus8;
 
 end
 

@@ -108,7 +108,11 @@ X(tk_checksane_asm):
 
 //	rts
 
-	push lr
+//	push lr
+	add		-8, sp
+	mov		lr, r1
+	mov.q	r1, (sp)
+
 
 /* Stage 1, Basic ALU */
 	mov	0x12345678, r4
@@ -136,31 +140,52 @@ X(tk_checksane_asm):
 	cmp/gt r11, r9
 	bt _checksane_fail_alu
 
+	.L0A0:
 	cmp/hi r4, r9
-	bf _checksane_fail
+//	bf _checksane_fail
+	break?f
+	nop
 
+	.L0A1:
 	cmp/ge r4, r5
-	bf _checksane_fail
+//	bf _checksane_fail
+	break?f
+	nop
 
+	.L0A2:
 	cmp/ge r4, r9
-	bt _checksane_fail
+//	bt _checksane_fail
+	break?t
+	nop
 
+	.L0A3:
 	cmp/ge r4, r4
-	bf _checksane_fail
+//	bf _checksane_fail
+	break?f
+	nop
 
+	.L0A4:
 	movt	r12
 	cmp/eq #1, r12
-	bf _checksane_fail
+//	bf _checksane_fail
+	break?f
+	nop
 
+	.L0A5:
 	movnt	r12
 	cmp/eq #0, r12
-	bf _checksane_fail
+//	bf _checksane_fail
+	break?f
+	nop
 
+	.L0A6:
 	tst		r12, r12
 //	nop
 	movnt	r12
 	cmp/eq #0, r12
-	bf _checksane_fail
+//	bf _checksane_fail
+	break?f
+	nop
 
 	mov	r9, r21
 	mov r21, r12
@@ -173,11 +198,17 @@ X(tk_checksane_asm):
 
 	mov 0xEDCBA987, r12
 
+	.L0B0:
 	tst r4, r8
-	bt _checksane_fail
+//	bt _checksane_fail
+	break?t
+	nop
 
+	.L0B1:
 	tst r4, r12
-	bf _checksane_fail
+//	bf _checksane_fail
+	break?f
+	nop
 
 
 	add	r4, r5, r6
@@ -287,35 +318,51 @@ X(tk_checksane_asm):
 	mov	0xE87AD208, r8
 	mov	0x014B6F5A, r9
 
+#if 0
 	mulu	r4, r5
 	mov r0, r6
 	mov r1, r7
-	
+
+	.L0C0:
 	cmp/eq r6, r8
-	bf _checksane_fail_mul
+//	bf _checksane_fail_mul
+	break?f
 	
+	.L0C1:
 	cmp/eq r7, r9
-	bf _checksane_fail_mul
+//	bf _checksane_fail_mul
+	break?f
+#endif
 
 	mov	0x75C123C0, r10
 	mov	0x10882A3D, r11
 	mov	0xFE53D3C5, r12
 
+#if 0
+	.L0C2:
 	mulu	r4, r8
 	mov r0, r6
 	mov r1, r7
 	cmp/eq r6, r10
-	bf _checksane_fail_mul
+//	bf _checksane_fail_mul
+	break?f
 	cmp/eq r7, r11
-	bf _checksane_fail_mul
+//	bf _checksane_fail_mul
+	break?f
+#endif
 
+#if 0
+	.L0C3:
 	muls	r4, r8
 	mov r0, r6
 	mov r1, r7
 	cmp/eq r6, r10
-	bf _checksane_fail_mul
+//	bf _checksane_fail_mul
+	break?f
 	cmp/eq r7, r12
-	bf _checksane_fail_mul
+//	bf _checksane_fail_mul
+	break?f
+#endif
 
 
 	mov	0x1234CE58, r8
@@ -506,21 +553,23 @@ X(tk_checksane_asm):
 	bf		_checksane_fail_shad
 #endif
 
-	push r4
-	push r5
-	pop r7
-	pop r6
+#if 0
+//	push r4
+//	push r5
+//	pop r7
+//	pop r6
 
 	cmp/eq r4, r6
 	bf _checksane_fail_bra
 	cmp/eq r5, r7
 	bf _checksane_fail_bra
 
-	push r4
-	pop lr
+//	push r4
+//	pop lr
 	mov lr, r6
 	cmp/eq r4, r6
 	bf _checksane_fail_bra
+#endif
 
 	mov r5, lr
 	mov lr, r6
@@ -752,6 +801,7 @@ X(tk_checksane_asm):
 	mov		#0x5678ABCD, r5
 	mov		#0x123456789ABCDEF0, r6
 	jldi	#0x123456789ABCDEF0, r7
+//	break
 	mov.l tk_checksane_const, r8
 	mov.l tk_checksane_const2, r9
 
@@ -778,8 +828,12 @@ X(tk_checksane_asm):
 	mov #-1, r2
 	invic r2
 
-	pop lr
-	rts
+	mov.q	(sp), r1
+	add		8, sp
+	jmp		r1
+
+//	pop lr
+//	rts
 
 .section .rodata
 

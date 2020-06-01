@@ -24,7 +24,8 @@ input [47: 0]	regInPc;		//input PC address
 output[95: 0]	regOutPcVal;	//output PC value
 output[ 1: 0]	regOutPcOK;		//set if we have a valid value.
 output[ 2: 0]	regOutPcStep;	//PC step (Normal Op)
-input			icInPcHold;
+(* max_fanout = 100 *)
+	input			icInPcHold;
 input			icInPcWxe;
 input[4:0]		icInPcOpm;		//OPM (Used for cache-control)
 
@@ -37,6 +38,7 @@ output[  4:0]	memPcOpm;		//memory PC output-enable
 reg[95:0]		tRegOutPcVal;	//output PC value
 reg[ 1:0]		tRegOutPcOK;	//set if we have a valid value.
 reg[ 2: 0]		tRegOutPcStep;	//PC step (Normal Op)
+reg[ 2: 0]		tRegOutPcStepA;	//PC step (Normal Op)
 
 assign	regOutPcVal		= tRegOutPcVal;
 assign	regOutPcOK		= tRegOutPcOK;
@@ -107,11 +109,15 @@ reg[63:0]			icNxtFlushMskB;
 `endif
 
 `ifdef jx2_enable_vaddr48
-reg[43:0]		tNxtAddrA;
-reg[43:0]		tNxtAddrB;
+(* max_fanout = 50 *)
+	reg[43:0]		tNxtAddrA;
+(* max_fanout = 50 *)
+	reg[43:0]		tNxtAddrB;
 `else
-reg[27:0]		tNxtAddrA;
-reg[27:0]		tNxtAddrB;
+(* max_fanout = 50 *)
+	reg[27:0]		tNxtAddrA;
+(* max_fanout = 50 *)
+	reg[27:0]		tNxtAddrB;
 `endif
 
 `ifdef jx2_expand_l1isz
@@ -166,6 +172,8 @@ reg				tMiss;
 reg				tPcStepWA;
 reg				tPcStepWB;
 reg				tPcStepJA;
+reg				tPcStepBA;
+reg				tPcStepBB;
 
 // reg[127:0]		tBlkData;
 reg[159:0]		tBlkData;
@@ -179,27 +187,62 @@ reg[3:0]		opLenA4;
 reg[3:0]		opLenA5;
 `endif
 
+reg				icDoFlush;
+reg				icNxtDoFlush;
+
+reg[43:0]		tRegInPcP0;
+reg[43:0]		tRegInPcP1;
+reg[14:0]		tRegInPcP1L;
+reg[14:0]		tRegInPcP1H;
 
 always @*
 begin
 	/* Stage A */
 
 	tRegInPc	= icInPcHold ? tInAddr : regInPc;
-//	tRegInPc	= icInPcHold ? tInAddr : regInPc[31:0];
-	tInPcOpm	= icInPcHold ? tInOpm : icInPcOpm;
+//	tInPcOpm	= icInPcHold ? tInOpm : icInPcOpm;
 
+//	tRegInPc	= regInPc;
+	tInPcOpm	= icInPcOpm;
+
+	tRegInPcP0	= tRegInPc[47:4];
+
+//	tRegInPcP1L[14: 0]	= { 1'b0, tRegInPcP0[13: 0] } + 1;
+//	tRegInPcP1H[14: 0]	= { 1'b0, tRegInPcP0[27:14] } + 1;
+//	tRegInPcP1 [27: 0]	= {
+//		tRegInPcP1L[14] ? tRegInPcP1H[13:0] : tRegInPcP0[27:14],
+//		tRegInPcP1L[13: 0] };
+
+	tRegInPcP1[27: 0]	= tRegInPcP0[27: 0]+1;
+	tRegInPcP1[43:28]	= tRegInPcP0[43:28];
+
+	if(tRegInPc[4])
+	begin
+		tNxtAddrB			= tRegInPcP0;
+		tNxtAddrA			= tRegInPcP1;
+	end else begin
+		tNxtAddrA			= tRegInPcP0;
+		tNxtAddrB			= tRegInPcP1;
+	end
+
+`ifndef def_true
 //	if(tRegInPc[3])
 	if(tRegInPc[4])
 	begin
-//		tNxtAddrB	= tRegInPc[31:4];
-		tNxtAddrB	= tRegInPc[47:4];
-		tNxtAddrA	= tNxtAddrB+1;
-	end else begin
-//		tNxtAddrA	= tRegInPc[31:4];
-		tNxtAddrA	= tRegInPc[47:4];
-		tNxtAddrB	= tNxtAddrA+1;
-	end
+//		tNxtAddrB			= tRegInPc[31:4];
+		tNxtAddrB			= tRegInPc[47:4];
+//		tNxtAddrA			= tNxtAddrB+1;
+		tNxtAddrA[27: 0]	= tNxtAddrB[27: 0]+1;
+		tNxtAddrA[43:28]	= tNxtAddrB[43:28];
 
+	end else begin
+//		tNxtAddrA			= tRegInPc[31:4];
+		tNxtAddrA			= tRegInPc[47:4];
+//		tNxtAddrB			= tNxtAddrA+1;
+		tNxtAddrB[27: 0]	= tNxtAddrA[27: 0]+1;
+		tNxtAddrB[43:28]	= tNxtAddrA[43:28];
+	end
+`endif
 
 `ifdef jx2_expand_l1isz
 	tNxtIxA=tNxtAddrA[8:1];
@@ -220,6 +263,7 @@ begin
 
 	icNxtFlushMskA	= icFlushMskA;
 	icNxtFlushMskB	= icFlushMskB;
+	icNxtDoFlush = 0;
 
 	if(tDoStBlkA)
 		icNxtFlushMskA[tStBlkIxA]=0;
@@ -227,6 +271,14 @@ begin
 		icNxtFlushMskB[tStBlkIxB]=0;
 
 	if(((tInOpm==UMEM_OPM_FLUSHIS) && (tInOpmB!=UMEM_OPM_FLUSHIS)) || reset)
+	begin
+//		icNxtFlushMskA = JX2_L1I_FLUSHMSK;
+//		icNxtFlushMskB = JX2_L1I_FLUSHMSK;
+		icNxtDoFlush = 1;
+	end
+	
+//	if(icDoFlush)
+	if(icNxtDoFlush)
 	begin
 		icNxtFlushMskA = JX2_L1I_FLUSHMSK;
 		icNxtFlushMskB = JX2_L1I_FLUSHMSK;
@@ -362,6 +414,7 @@ begin
 //	tRegOutPcVal	= UV96_XX;
 	tRegOutPcVal	= UV96_00;
 	tRegOutPcStep	= 0;
+	tRegOutPcStepA	= 0;
 	tPcStepWA		= 0;
 	tPcStepWB		= 0;
 	tPcStepJA		= 0;
@@ -369,60 +422,122 @@ begin
 	case(tInWordIx)
 		2'b00: begin
 			tRegOutPcVal	= tBlkData[ 95:  0];
-			tRegOutPcStep	= { 1'b0, opLenA0[1:0] };
+			tRegOutPcStepA	= { 1'b0, opLenA0[1:0] };
 //			tPcStepWA		= opLenA0[2] && tBlkData[12];
 //			tPcStepWB		= opLenA2[2] && tBlkData[44];
 			tPcStepWA		= opLenA0[2];
 			tPcStepWB		= opLenA2[2];
 //			tPcStepJA		= opLenA0[3] && (tRegOutPcVal[31:30]==2'b11);
 			tPcStepJA		= opLenA0[3];
+			tPcStepBA		= opLenA0[0];
+			tPcStepBB		= opLenA2[0];
 		end
 		2'b01: begin
 			tRegOutPcVal	= tBlkData[111: 16];
-			tRegOutPcStep	= {1'b0, opLenA1[1:0] };
+			tRegOutPcStepA	= {1'b0, opLenA1[1:0] };
 //			tPcStepWA		= opLenA1[2] && tBlkData[28];
 //			tPcStepWB		= opLenA3[2] && tBlkData[60];
 			tPcStepWA		= opLenA1[2];
 			tPcStepWB		= opLenA3[2];
 //			tPcStepJA		= opLenA1[3] && (tRegOutPcVal[31:30]==2'b11);
 			tPcStepJA		= opLenA1[3];
+			tPcStepBA		= opLenA1[0];
+			tPcStepBB		= opLenA3[0];
 		end
 		2'b10: begin
 			tRegOutPcVal	= tBlkData[127: 32];
-			tRegOutPcStep	= {1'b0, opLenA2[1:0] };
+			tRegOutPcStepA	= {1'b0, opLenA2[1:0] };
 //			tPcStepWA		= opLenA2[2] && tBlkData[44];
 //			tPcStepWB		= opLenA4[2] && tBlkData[76];
 			tPcStepWA		= opLenA2[2];
 			tPcStepWB		= opLenA4[2];
 //			tPcStepJA		= opLenA2[3] && (tRegOutPcVal[31:30]==2'b11);
 			tPcStepJA		= opLenA2[3];
+			tPcStepBA		= opLenA2[0];
+			tPcStepBB		= opLenA4[0];
 		end
 		2'b11: begin
 			tRegOutPcVal	= tBlkData[143: 48];
-			tRegOutPcStep	= {1'b0, opLenA3[1:0] };
+			tRegOutPcStepA	= {1'b0, opLenA3[1:0] };
 //			tPcStepWA		= opLenA3[2] && tBlkData[60];
 //			tPcStepWB		= opLenA5[2] && tBlkData[92];
 			tPcStepWA		= opLenA3[2];
 			tPcStepWB		= opLenA5[2];
 //			tPcStepJA		= opLenA3[3] && (tRegOutPcVal[31:30]==2'b11);
 			tPcStepJA		= opLenA3[3];
+			tPcStepBA		= opLenA3[0];
+			tPcStepBB		= opLenA5[0];
 		end
 	endcase
 	
 `ifdef jx2_enable_wex3w
-	if(icInPcWxe && tPcStepWA)
-		tRegOutPcStep = tPcStepWB ? 3'b110 : 3'b100;
 
 `ifdef jx2_enable_wexjumbo
+
+`ifdef def_true
+	casez( {icInPcWxe, tPcStepJA,
+			tPcStepWA, tPcStepWB,
+			tPcStepBB, tPcStepBA})
+		6'b00zzz0: tRegOutPcStep = 3'b010;
+		6'b00zzz1: tRegOutPcStep = 3'b001;
+
+		6'b01z00z: tRegOutPcStep = 3'b100;
+		6'b01z01z: tRegOutPcStep = 3'b011;
+		6'b01z1zz: tRegOutPcStep = 3'b110;
+
+		6'b100zz0: tRegOutPcStep = 3'b010;
+		6'b100zz1: tRegOutPcStep = 3'b001;
+		6'b1010zz: tRegOutPcStep = 3'b100;
+		6'b1011zz: tRegOutPcStep = 3'b110;
+
+		6'b11z00z: tRegOutPcStep = 3'b100;
+		6'b11z01z: tRegOutPcStep = 3'b011;
+		6'b11z1zz: tRegOutPcStep = 3'b110;
+	endcase
+`endif
+
+`ifndef def_true
 	if(tPcStepJA)
 	begin
+`ifdef jx2_enable_ops48
+		tRegOutPcStep = tPcStepWB ? 3'b110 : (tPcStepBB ? 3'b011 : 3'b100);
+`else
 		tRegOutPcStep = tPcStepWB ? 3'b110 : 3'b100;
+`endif
+	end
+	else
+		if(icInPcWxe && tPcStepWA)
+	begin
+		tRegOutPcStep = tPcStepWB ? 3'b110 : 3'b100;
+	end
+	else
+	begin
+		tRegOutPcStep = tRegOutPcStepA;
 	end
 `endif
 
 `else
+
 	if(icInPcWxe && tPcStepWA)
+	begin
+		tRegOutPcStep = tPcStepWB ? 3'b110 : 3'b100;
+	end
+	else
+	begin
+		tRegOutPcStep = tRegOutPcStepA;
+	end
+
+`endif
+
+`else
+	if(icInPcWxe && tPcStepWA)
+	begin
 		tRegOutPcStep = 3'b100;
+	end
+	else
+	begin
+		tRegOutPcStep = tRegOutPcStepA;
+	end
 `endif
 	
 	tRegOutPcOK = tMiss ? UMEM_OK_HOLD : UMEM_OK_OK;
@@ -486,6 +601,7 @@ begin
 	tInOpmB		<= tInOpm;
 	icFlushMskA	<= icNxtFlushMskA;
 	icFlushMskB	<= icNxtFlushMskB;
+	icDoFlush	<= icNxtDoFlush;
 
 	tBlkDataA	<= icCaMemA[tNxtIxA];
 	tBlkDataB	<= icCaMemB[tNxtIxB];

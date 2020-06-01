@@ -50,7 +50,7 @@ input			clock;
 input			reset;
 input[7:0]		opUCmd;
 input[7:0]		opUIxt;
-output			exHold;
+output[1:0]		exHold;
 
 input[5:0]		regIdRs;		//Source A, ALU / Base
 input[5:0]		regIdRt;		//Source B, ALU / Index
@@ -79,7 +79,8 @@ assign	regValRn1	= tRegValRn1;		//Destination Value (EX1)
 assign	heldIdRn1	= tHeldIdRn1;		//Held Destination ID (EX1)
 
 reg				tExHold;
-assign	exHold		= tExHold;
+reg				tRegHeld;
+assign	exHold		= { tRegHeld, tExHold };
 
 
 wire[63:0]	tValCnv;
@@ -112,21 +113,26 @@ ExShad64C	exShad64(clock, reset,
 
 reg			tOpEnable;
 
-reg[5:0]	tOpUCmd1;
+(* max_fanout = 50 *)
+	reg[5:0]	tOpUCmd1;
 
 reg tMsgLatch;
 reg tNextMsgLatch;
+reg tSlotUSup;
 
 always @*
 begin
 
-	tRegIdRn1	= JX2_GR_ZZR;		//Destination ID (EX1)
-	tRegValRn1	= UV64_XX;			//Destination Value (EX1)
-	tHeldIdRn1	= JX2_GR_ZZR;
+	tRegIdRn1		= JX2_GR_ZZR;		//Destination ID (EX1)
+	tRegValRn1		= UV64_XX;			//Destination Value (EX1)
+	tHeldIdRn1		= JX2_GR_ZZR;
 
-	tExHold		= 0;
+	tExHold			= 0;
+	tRegHeld		= 0;
 	tNextMsgLatch	= 0;
+	tSlotUSup		= 0;
 
+`ifndef def_true
 	casez( { opBraFlush, opUCmd[7:6] } )
 		3'b000: 	tOpEnable = 1;
 		3'b001: 	tOpEnable = 0;
@@ -134,7 +140,20 @@ begin
 		3'b011: 	tOpEnable = !regInSr[0];
 		3'b1zz: 	tOpEnable = 0;
 	endcase
-	
+`endif
+
+`ifdef def_true
+	casez( { opBraFlush, opUCmd[7:6], regInSr[0] } )
+		4'b000z: 	tOpEnable = 1;
+		4'b001z: 	tOpEnable = 0;
+		4'b0100: 	tOpEnable = 0;
+		4'b0101: 	tOpEnable = 1;
+		4'b0110: 	tOpEnable = 1;
+		4'b0111: 	tOpEnable = 0;
+		4'b1zzz: 	tOpEnable = 0;
+	endcase
+`endif
+
 	tOpUCmd1	= tOpEnable ? opUCmd[5:0] : JX2_UCMD_NOP;
 
 	case(tOpUCmd1)
@@ -145,39 +164,46 @@ begin
 			if(!tMsgLatch)
 				$display("EX: Invalid Opcode");
 			tNextMsgLatch	= 1;
-//			tExHold		= 1;
-			tExHold		= !reset;
+			tExHold		= 1;
+//			tExHold		= !reset;
 		end
 	
 		JX2_UCMD_LEA_MR: begin
+			tSlotUSup		= 0;
 		end
 
 		JX2_UCMD_MOV_RM: begin
-			tRegIdRn1		= JX2_GR_ZZR;
+//			tRegIdRn1		= JX2_GR_ZZR;
 //			tRegValRn1		= regValRs;
-			tRegValRn1		= regValRm;
+			tRegValRn1		= regValRm;		/* MOV.X bits */
 		end
 		JX2_UCMD_MOV_MR: begin
+			tSlotUSup		= 1;
 		end
 
+`ifndef def_true
 		JX2_UCMD_FMOV_RM: begin
 		end
 		JX2_UCMD_FMOV_MR: begin
 		end
+`endif
 
+`ifndef def_true
 		JX2_UCMD_PUSHX: begin
 //			$display("EXB1: PushX Id=%d Rm=%X", regIdRm, regValRm);
-			tRegIdRn1		= JX2_GR_ZZR;
-			tRegValRn1		= regValRm;
+//			tRegIdRn1		= JX2_GR_ZZR;
+			tRegValRn1		= regValRm;		/* MOV.X bits */
 		end
 		JX2_UCMD_POPX: begin
 		end
+`endif
 
 		JX2_UCMD_ALU3, JX2_UCMD_UNARY, JX2_UCMD_ALUW3: begin
 			tHeldIdRn1	= regIdRm;
 		end
 
 		JX2_UCMD_ALUCMP: begin
+			tSlotUSup		= 1;
 		end
 	
 		JX2_UCMD_CONV_RR: begin
@@ -239,6 +265,7 @@ begin
 		end
 
 		JX2_UCMD_MUL3: begin
+			tSlotUSup		= 1;
 		end
 
 		JX2_UCMD_FPU3: begin
@@ -261,8 +288,8 @@ begin
 					if(!tMsgLatch)
 						$display("EX1B: Unhandled Op-IXS %X", opUIxt);
 					tNextMsgLatch	= 1;
-//					tExHold		= 1;
-					tExHold		= !reset;
+					tExHold		= 1;
+//					tExHold		= !reset;
 				end
 			endcase
 		end
@@ -277,16 +304,16 @@ begin
 					if(!tMsgLatch)
 						$display("EX1B: BREAK");
 					tNextMsgLatch	= 1;
-//					tExHold		= 1;
-					tExHold		= !reset;
+					tExHold		= 1;
+//					tExHold		= !reset;
 				end
 
 				default: begin
 					if(!tMsgLatch)
 						$display("EX1B: Unhandled Op-IXT %X", opUIxt);
 					tNextMsgLatch	= 1;
-//					tExHold		= 1;
-					tExHold		= !reset;
+					tExHold		= 1;
+//					tExHold		= !reset;
 				end
 			endcase
 		end
@@ -295,11 +322,14 @@ begin
 			if(!tMsgLatch)
 				$display("EX1B: Unhandled UCmd %X", opUCmd);
 			tNextMsgLatch	= 1;
-//			tExHold		= 1;
-			tExHold		= !reset;
+			tExHold		= 1;
+//			tExHold		= !reset;
 		end
 	
 	endcase
+
+	if(tHeldIdRn1 != JX2_GR_ZZR)
+		tRegHeld		= 1;
 
 end
 

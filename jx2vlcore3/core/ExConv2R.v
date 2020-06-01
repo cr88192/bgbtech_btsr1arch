@@ -58,6 +58,9 @@ begin
 		JX2_UCIX_CONV_NOT:
 			tRegOutVal	= ~regValRs;
 
+//		JX2_UCIX_CONV_MOVX:
+//			tRegOutVal	= regValRs;
+
 `ifndef def_true
 		JX2_UCIX_CONV_CLZ:
 			tRegOutVal	= { UV56_00, tClzVal };

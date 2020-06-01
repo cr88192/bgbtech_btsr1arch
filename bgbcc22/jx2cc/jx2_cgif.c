@@ -97,6 +97,10 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 //	shctx->fpu_gfp=1;
 //	shctx->is_pbo=1;
 
+//	shctx->is_align_wexj=3;
+//	shctx->is_align_wexj=1;
+	shctx->is_align_wexj=0;
+
 	if(ctx->optmode==BGBCC_OPT_SIZE)
 		shctx->use_wexmd=0;
 
@@ -1033,6 +1037,8 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 		BGBCC_JX2C_EmitLabelFlushRegisters(ctx, sctx);
 //		BGBCC_JX2C_ResetFpscrLocal(ctx, sctx);
 //		BGBCC_JX2_EmitForceFlushIndexImm(sctx);
+		if(sctx->is_align_wexj)
+			BGBCC_JX2_EmitPad32AlignLastOp(sctx);
 		BGBCC_JX2_EmitLabel(sctx,
 			op->imm.si);
 		break;
@@ -1387,8 +1393,16 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 #endif
 	}
 
+	sctx->is_fixed32&=(~16);
+
 	if(usewex)
-		{ BGBCC_JX2_BeginWex(sctx); }
+	{
+		if(sctx->is_align_wexj)
+		{
+			sctx->op_wex_align|=1;		//BJX2D
+		}
+		BGBCC_JX2_BeginWex(sctx);
+	}
 
 #if 0
 	ps0=BGBCC_JX2_EmitGetOffs(sctx);
@@ -1413,6 +1427,12 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 //		if(vop->prd==3)j=(sctx->pred_tfmd)?4:5;
 		if(vop->prd==3)j=(sctx->pred_tfmd)?5:4;
 		if(vop->prd==2)j=(sctx->pred_tfmd)?4:5;
+
+		if(sctx->is_align_wexj && j)
+		{
+			BGBCC_JX2_EmitPad32AlignLastOp(sctx);
+		}
+		
 		sctx->op_is_wex2=j;
 
 #if 0
@@ -1479,9 +1499,14 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 	sctx->is_fixed32&=(~16);
 #endif
 
+	if((sctx->is_fixed32&16) && !usewex)
+		{ BGBCC_DBGBREAK }
+
 	BGBCC_JX2_EndWex(sctx);
 
-	if(sctx->use_egpr)
+//	if(sctx->use_egpr)
+//	if(ctx->is_align_wexj&2)
+	if(sctx->is_align_wexj)
 	{
 		if(!BGBCC_JX2_CheckPadAlign32(sctx))
 		{
@@ -1503,7 +1528,8 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 		sctx->is_leaf&=(~4);
 	}
 	
-	if(sctx->op_wex_align&1)
+//	if(sctx->op_wex_align&1)
+	if((sctx->op_wex_align&1) && !(sctx->is_simpass&64))
 		tr->trfl|=CCXL_TRFL_WEXALIGN;
 
 	return(0);
@@ -1548,6 +1574,8 @@ ccxl_status BGBCC_JX2C_BuildFunctionBody(
 
 	ctx->cur_func=obj;
 	sctx->is_tr_leaf=0;
+
+	BGBCC_JX2_SetSectionName(sctx, ".text");
 
 	bs=BGBCC_JX2_EmitGetOffs(sctx);
 
@@ -2130,11 +2158,48 @@ ccxl_status BGBCC_JX2C_BuildGlobal_EmitLitAsType(
 			s0=BGBCC_CCXL_GetRegImmStringValue(ctx, value);
 
 			if(type.val==CCXL_VTY_PCHAR)
-				k=BGBCC_JX2_EmitGetStrtabLabelUTF2ASCII(sctx, s0);
-			if(type.val==CCXL_VTY_PWCHAR)
-				k=BGBCC_JX2_EmitGetStrtabLabelUTF2UCS2(sctx, s0);				
+			{
+				if(BGBCC_CCXL_IsRegImmU8StringP(ctx, value))
+					k=BGBCC_JX2_EmitGetStrtabLabelUTF8(sctx, s0);
+				else
+					k=BGBCC_JX2_EmitGetStrtabLabelUTF2ASCII(sctx, s0);
+			}else
+				if(type.val==CCXL_VTY_PWCHAR)
+			{
+				k=BGBCC_JX2_EmitGetStrtabLabelUTF2UCS2(sctx, s0);
+			}
 			else
-				k=BGBCC_JX2_EmitGetStrtabLabel(sctx, s0);
+			{
+//				k=BGBCC_JX2_EmitGetStrtabLabel(sctx, s0);
+				if(BGBCC_CCXL_IsRegImmU8StringP(ctx, value))
+					k=BGBCC_JX2_EmitGetStrtabLabelUTF8(sctx, s0);
+				else
+					k=BGBCC_JX2_EmitGetStrtabLabelUTF2ASCII(sctx, s0);
+			}
+
+//			if(sctx->is_addr64)
+			if(ctx->arch_sizeof_ptr==8)
+			{
+//				BGBCC_JX2_EmitRelocTy(sctx, k, BGBCC_SH_RLC_ABS64);
+//				BGBCC_JX2_EmitQWord(sctx, 0);
+				BGBCC_JX2_EmitQWordAbs64(sctx, k);
+			}else
+			{
+//				BGBCC_JX2_EmitRelocTy(sctx, k, BGBCC_SH_RLC_ABS32);
+//				BGBCC_JX2_EmitDWord(sctx, 0);
+				BGBCC_JX2_EmitDWordAbs32(sctx, k);
+			}
+			return(1);
+		}
+
+		if(	BGBCC_CCXL_IsRegImmWStringP(ctx, value) ||
+			BGBCC_CCXL_IsRegImmW4StringP(ctx, value))
+		{
+			s0=BGBCC_CCXL_GetRegImmStringValue(ctx, value);
+			if(BGBCC_CCXL_IsRegImmW4StringP(ctx, value))
+				k=BGBCC_JX2_EmitGetStrtabLabelUTF2UCS4(sctx, s0);
+			else
+				k=BGBCC_JX2_EmitGetStrtabLabelUTF2UCS2(sctx, s0);
 
 //			if(sctx->is_addr64)
 			if(ctx->arch_sizeof_ptr==8)
@@ -2226,11 +2291,25 @@ ccxl_status BGBCC_JX2C_BuildGlobal_EmitLitAsType(
 			s0=BGBCC_CCXL_GetRegImmStringValue(ctx, value);
 
 			if(type.val==CCXL_VTY_PCHAR)
-				k=BGBCC_JX2_EmitGetStrtabLabelUTF2ASCII(sctx, s0);
-			if(type.val==CCXL_VTY_PWCHAR)
-				k=BGBCC_JX2_EmitGetStrtabLabelUTF2UCS2(sctx, s0);				
+			{
+				if(BGBCC_CCXL_IsRegImmU8StringP(ctx, value))
+					k=BGBCC_JX2_EmitGetStrtabLabelUTF8(sctx, s0);
+				else
+					k=BGBCC_JX2_EmitGetStrtabLabelUTF2ASCII(sctx, s0);
+//				k=BGBCC_JX2_EmitGetStrtabLabelUTF2ASCII(sctx, s0);
+			}
+			else if(type.val==CCXL_VTY_PWCHAR)
+			{
+				k=BGBCC_JX2_EmitGetStrtabLabelUTF2UCS2(sctx, s0);
+			}
 			else
-				k=BGBCC_JX2_EmitGetStrtabLabel(sctx, s0);
+			{
+				if(BGBCC_CCXL_IsRegImmU8StringP(ctx, value))
+					k=BGBCC_JX2_EmitGetStrtabLabelUTF8(sctx, s0);
+				else
+					k=BGBCC_JX2_EmitGetStrtabLabelUTF2ASCII(sctx, s0);
+//				k=BGBCC_JX2_EmitGetStrtabLabel(sctx, s0);
+			}
 
 			BGBCC_JX2_EmitDWordAbs32(sctx, k);
 			return(1);
@@ -2263,11 +2342,25 @@ ccxl_status BGBCC_JX2C_BuildGlobal_EmitLitAsType(
 			s0=BGBCC_CCXL_GetRegImmStringValue(ctx, value);
 
 			if(type.val==CCXL_VTY_PCHAR)
-				k=BGBCC_JX2_EmitGetStrtabLabelUTF2ASCII(sctx, s0);
-			if(type.val==CCXL_VTY_PWCHAR)
-				k=BGBCC_JX2_EmitGetStrtabLabelUTF2UCS2(sctx, s0);				
+			{
+				if(BGBCC_CCXL_IsRegImmU8StringP(ctx, value))
+					k=BGBCC_JX2_EmitGetStrtabLabelUTF8(sctx, s0);
+				else
+					k=BGBCC_JX2_EmitGetStrtabLabelUTF2ASCII(sctx, s0);
+//				k=BGBCC_JX2_EmitGetStrtabLabelUTF2ASCII(sctx, s0);
+			}
+			else if(type.val==CCXL_VTY_PWCHAR)
+			{
+				k=BGBCC_JX2_EmitGetStrtabLabelUTF2UCS2(sctx, s0);
+			}
 			else
-				k=BGBCC_JX2_EmitGetStrtabLabel(sctx, s0);
+			{
+				if(BGBCC_CCXL_IsRegImmU8StringP(ctx, value))
+					k=BGBCC_JX2_EmitGetStrtabLabelUTF8(sctx, s0);
+				else
+					k=BGBCC_JX2_EmitGetStrtabLabelUTF2ASCII(sctx, s0);
+//				k=BGBCC_JX2_EmitGetStrtabLabel(sctx, s0);
+			}
 
 			BGBCC_JX2_EmitQWordAbs64(sctx, k);
 			return(1);
@@ -2733,11 +2826,25 @@ ccxl_status BGBCC_JX2C_BuildGlobal(BGBCC_TransState *ctx,
 		{
 			s0=BGBCC_CCXL_GetRegImmStringValue(ctx, obj->value);
 			if(obj->type.val==CCXL_VTY_PCHAR)
-				k=BGBCC_JX2_EmitGetStrtabLabelUTF2ASCII(sctx, s0);
-			if(obj->type.val==CCXL_VTY_PWCHAR)
-				k=BGBCC_JX2_EmitGetStrtabLabelUTF2UCS2(sctx, s0);				
+			{
+				if(BGBCC_CCXL_IsRegImmU8StringP(ctx, obj->value))
+					k=BGBCC_JX2_EmitGetStrtabLabelUTF8(sctx, s0);
+				else
+					k=BGBCC_JX2_EmitGetStrtabLabelUTF2ASCII(sctx, s0);
+//				k=BGBCC_JX2_EmitGetStrtabLabelUTF2ASCII(sctx, s0);
+			}
+			else if(obj->type.val==CCXL_VTY_PWCHAR)
+			{
+				k=BGBCC_JX2_EmitGetStrtabLabelUTF2UCS2(sctx, s0);
+			}
 			else
-				k=BGBCC_JX2_EmitGetStrtabLabel(sctx, s0);
+			{
+				if(BGBCC_CCXL_IsRegImmU8StringP(ctx, obj->value))
+					k=BGBCC_JX2_EmitGetStrtabLabelUTF8(sctx, s0);
+				else
+					k=BGBCC_JX2_EmitGetStrtabLabelUTF2ASCII(sctx, s0);
+//				k=BGBCC_JX2_EmitGetStrtabLabel(sctx, s0);
+			}
 //			if(sctx->is_addr64)
 			if(ctx->arch_sizeof_ptr==8)
 			{
@@ -2901,7 +3008,13 @@ ccxl_status BGBCC_JX2C_BuildPrestartInit(BGBCC_TransState *ctx)
 	BGBCC_JX2_EmitBAlign(sctx, 8);
 	BGBCC_JX2_EmitLabel(sctx, l0);
 
-	BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_PUSH, BGBCC_SH_REG_PR);
+//	BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_PUSH, BGBCC_SH_REG_PR);
+
+	BGBCC_JX2_EmitOpImmReg(sctx, BGBCC_SH_NMID_ADD, -8, BGBCC_SH_REG_SP);
+	BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_MOV,
+		BGBCC_SH_REG_PR, BGBCC_SH_REG_R1);
+	BGBCC_JX2_EmitOpRegStReg(sctx, BGBCC_SH_NMID_MOVQ,
+		BGBCC_SH_REG_R1, BGBCC_SH_REG_SP);
 	
 	for(i=0; i<1024; i++)
 	{
@@ -2928,9 +3041,14 @@ ccxl_status BGBCC_JX2C_BuildPrestartInit(BGBCC_TransState *ctx)
 		}
 #endif
 	}
-	
+
+	BGBCC_JX2_EmitOpLdRegReg(sctx, BGBCC_SH_NMID_MOVQ,
+		BGBCC_SH_REG_SP, BGBCC_SH_REG_R1);
+	BGBCC_JX2_EmitOpImmReg(sctx, BGBCC_SH_NMID_ADD, 8, BGBCC_SH_REG_SP);
+	BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_JMP, BGBCC_SH_REG_R1);
+
 //	BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_RTS);
-	BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_RET);
+//	BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_RET);
 	
 	return(0);
 }
@@ -4764,6 +4882,10 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 #endif
 	
 	BGBCC_JX2C_BuildPrestartInit(ctx);
+
+	BGBCC_JX2_SetSectionName(sctx, ".text");
+	for(j=0; j<8; j++)
+		BGBCC_JX2_TryEmitOpNone(sctx, BGBCC_SH_NMID_NOP);
 
 
 	k=sctx->stat_tot_dq0+sctx->stat_tot_dq1+sctx->stat_tot_dqi;

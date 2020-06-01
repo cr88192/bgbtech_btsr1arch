@@ -656,7 +656,8 @@ byte rm;		//Source Register
 byte ro;		//Source Register
 sbyte cyc;		//Clock Cycles
 u16 fl;		//Opcodde Flags
-s32 imm;		//Immediate
+// s32 imm;		//Immediate
+s64 imm;		//Immediate
 
 bjx2_addr pc;
 bjx2_addr pc2;

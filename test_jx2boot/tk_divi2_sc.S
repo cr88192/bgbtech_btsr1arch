@@ -45,7 +45,8 @@ _fcn_clz32:
 // u32 __udivsi3(u32 n, u32 d)
 .global	__udivsi3
 __udivsi3:
-	push	lr
+//	push	lr
+	mov		lr, r23
 
 	tst		r4, r4
 	bt		.Ret_Zero
@@ -176,18 +177,21 @@ __udivsi3:
 
 	extu.l	r4, r2
 
-	pop lr
-	rts
+	jmp		r23
+//	pop lr
+//	rts
 
 .Ret_Zero:
 	mov #0, r2
-	pop lr
-	rts
+	jmp		r23
+//	pop lr
+//	rts
 
 .Ret_R16:
 	mov r16, r2
-	pop lr
-	rts
+	jmp		r23
+//	pop lr
+//	rts
 #endif
 
 #if 1
@@ -195,19 +199,21 @@ __udivsi3:
 .global	__sdivsi3
 
 __sdivsi3:
-	push lr
-	push r14
+//	push lr
+//	push r14
+	mov 	lr, r22
 	shad r4, #-31, r6
 	shad r5, #-31, r7
 	xor r4, r6, r2
 	xor r5, r7, r3
 	sub r2, r6, r4
 	sub r3, r7, r5
-	xor r7, r6, r14
+	xor r7, r6, r21
 	bsr __udivsi3
-	xor r2, r14, r3
-	sub r3, r14, r2
-	pop r14
-	ret
+	xor r2, r21, r3
+	sub r3, r21, r2
+	jmp r22
+//	pop r14
+//	ret
 
 #endif

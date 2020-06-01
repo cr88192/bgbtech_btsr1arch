@@ -1,7 +1,7 @@
 #include "VMemL1A.h"
 #include "verilated.h"
 
-#define HAS_OPS48
+// #define HAS_OPS48
 #define HAS_WEX
 
 VMemL1A *top = new VMemL1A;
@@ -179,14 +179,15 @@ int main(int argc, char **argv, char **env)
 //	uint32_t *drambuf;
 	uint32_t *membuf;
 	uint32_t v, v0, v1, v2, v3, v4, v5;
+	uint64_t lv0, lv1, lv2, lv3;
 	int fail;
 	int addr, n, n1, inh, stp, stp1, rdy;
 	int i, j, k;
 
 //	LoadRomBuf();
 
-	membuf=(uint32_t *)malloc(16384);
-	for(i=0; i<(16384/4); i++)
+	membuf=(uint32_t *)malloc(65536);
+	for(i=0; i<(65536/4); i++)
 	{
 		membuf[i]=rand()*rand();
 	}
@@ -214,6 +215,7 @@ int main(int argc, char **argv, char **env)
 
 		top->dcInAddr=0;
 		top->dcInOpm=0;
+		top->icInPcWxe=1;
 
 //		addr=0xC000|(n*2);
 		addr=0x0000|(n*2);
@@ -260,7 +262,9 @@ int main(int argc, char **argv, char **env)
 			if((v0&0xE000)==0xE000)
 			{
 				stp1=2;
-#ifdef HAS_OPS48
+
+// #ifdef HAS_OPS48
+#if 0
 				if((v0&0xEE00)==0xEC00)
 					{ stp1=3; }
 				if((v0&0xEE00)==0xEE00)
@@ -268,21 +272,30 @@ int main(int argc, char **argv, char **env)
 #endif
 
 // #ifdef HAS_WEX
-#if 0
+#if 1
 //				if(((v&0xFC00)==0xF400) || ((v&0xFF00)==0xF900))
-				if((v0&0xFC00)==0xF400)
+//				if((v0&0xFC00)==0xF400)
+				if(((v0&0xFC00)==0xF400) || ((v0&0xFC00)==0xFC00) ||
+					((v0&0xFE00)==0xEA00) || ((v0&0xFE00)==0xEE00)	)
 				{
 //					if(((v2&0xFC00)==0xF400) || ((v2&0xFF00)==0xF900))
-					if((v2&0xFC00)==0xF400)
+//					if((v2&0xFC00)==0xF400)
+					if(	((v2&0xFC00)==0xF400) || ((v2&0xFC00)==0xFC00) ||
+						((v2&0xFE00)==0xEA00) || ((v2&0xFE00)==0xEE00)	)
 					{
 						stp1=6;
-					}else
+//					}else if((v2&0xE000)==0xE000)
+					}else if(((v2&0xE000)==0xE000) || ((v0&0xFE00)!=0xFE00))
 					{
 						stp1=4;
+					}else
+					{
+						stp1=3;
 					}
 				}
 #endif
 
+#if 0
 				if(((v0&0xFF00)==0xF400) && ((v1&0xC000)==0xC000))
 				{
 					if(((v2&0xFF00)==0xF400) && ((v3&0xC000)==0xC000))
@@ -293,12 +306,13 @@ int main(int argc, char **argv, char **env)
 						stp1=4;
 					}
 				}
+#endif
 
 			}
 			
 			if(stp!=stp1)
 			{
-				printf("Step Mismatch %04X != %04X"
+				printf("Step Mismatch %04X != %04X (Exp)"
 						" (%04X-%04X-%04X-%04X-%04X-%04X)\n",
 					stp, stp1, v0, v1, v2, v3, v4, v5);
 				fail|=1;
@@ -360,6 +374,9 @@ int main(int argc, char **argv, char **env)
 			stp=top->icOutPcStep;
 		
 			v=(top->icOutPcVal[0])&65535;
+			v0=(top->icOutPcVal[0])&65535;
+			v2=(top->icOutPcVal[1])&65535;
+			v4=(top->icOutPcVal[2])&65535;
 			
 			v1=GetRomWord(n1);
 			
@@ -372,6 +389,7 @@ int main(int argc, char **argv, char **env)
 			}
 			
 			stp1=1;
+#if 0
 			if((v&0xE000)==0xE000)
 			{
 				stp1=2;
@@ -382,6 +400,28 @@ int main(int argc, char **argv, char **env)
 					{ stp1=3; }
 #endif
 			}
+#endif
+			if((v0&0xE000)==0xE000)
+			{
+				stp1=2;
+
+				if(((v0&0xFC00)==0xF400) || ((v0&0xFC00)==0xFC00) ||
+					((v0&0xFE00)==0xEA00) || ((v0&0xFE00)==0xEE00)	)
+				{
+					if(	((v2&0xFC00)==0xF400) || ((v2&0xFC00)==0xFC00) ||
+						((v2&0xFE00)==0xEA00) || ((v2&0xFE00)==0xEE00)	)
+					{
+						stp1=6;
+					}else if(((v2&0xE000)==0xE000) || ((v0&0xFE00)!=0xFE00))
+					{
+						stp1=4;
+					}else
+					{
+						stp1=3;
+					}
+				}
+			}
+
 			
 			if(stp!=stp1)
 			{
@@ -436,14 +476,15 @@ int main(int argc, char **argv, char **env)
 			fflush(stdout);
 		}
 
-		addr=0xC000|(n*4);
+//		addr=0xC000|(n*4);
+		addr=0x01000000|(n*4);
 		top->dcInAddr=addr;
 		top->dcInOpm=0x12;
 		top->dcInVal=membuf[n];
 		top->dcInHold=0;
 
-		if(inh==1)
-			top->dcInHold=1;
+//		if(inh==1)
+//			top->dcInHold=1;
 		if(!inh && (top->dcOutOK==2))
 			{ top->dcInHold=1; }
 
@@ -463,13 +504,23 @@ int main(int argc, char **argv, char **env)
 			continue;
 		}
 
-		if(top->dcOutOK==1)
+		if(top->dcOutOK==2)
+		{
+			printf("Busy\n");
+		}else
+			if(top->dcOutOK==1)
 		{
 			printf("W %d\n", n);
 			n++;
-			if(n>=2048)
+//			if(n>=2048)
+			if(n>=16384)
 				break;
 			inh=2;
+		}else if(top->dcOutOK==0)
+		{
+			fail|=1;
+			printf("Fail, Expect OK\n");
+			break;
 		}
 	}
 
@@ -502,7 +553,8 @@ int main(int argc, char **argv, char **env)
 			fflush(stdout);
 		}
 
-		addr=0xC000|(n*4);
+//		addr=0xC000|(n*4);
+		addr=0x01000000|(n*4);
 		top->dcInAddr=addr;
 		top->dcInOpm=0x0A;
 		top->dcInHold=0;
@@ -510,8 +562,8 @@ int main(int argc, char **argv, char **env)
 		v=top->dcOutVal;
 		v1=membuf[n];
 
-		if(inh==1)
-			top->dcInHold=1;
+//		if(inh==1)
+//			top->dcInHold=1;
 //		if(top->dcOutOK==2)
 		if(!inh && (top->dcOutOK==2))
 			{ top->dcInHold=1; }
@@ -532,7 +584,11 @@ int main(int argc, char **argv, char **env)
 			continue;
 		}
 
-		if(top->dcOutOK==1)
+		if(top->dcOutOK==2)
+		{
+			printf("Busy\n");
+		}else
+			if(top->dcOutOK==1)
 		{
 			printf("SR1 %04X Got=%08X Expect=%08X %s\n",
 				addr, v, v1,
@@ -550,7 +606,102 @@ int main(int argc, char **argv, char **env)
 			inh=2;
 //			inh=3;
 			n++;
+//			if(n>=2048)
+			if(n>=16384)
+				break;
+		}else if(top->dcOutOK==0)
+		{
+			fail|=1;
+			printf("Fail, Expect OK\n");
+			break;
+		}
+	}
+
+	if(fail)
+	{
+		delete top;
+		exit(0);
+	}
+#endif
+
+
+
+#if 1
+	n=0; inh=2; rdy=0;
+	while (!Verilated::gotFinish())
+	{
+		top->clock = (main_time>>0)&1;
+		main_time++;
+
+		if(top->clock)
+		{
+			printf("Clock %d SR %d  \n", (int)(main_time/2), n);
+			fflush(stdout);
+		}
+
+//		addr=0xC000|(n*4);
+		addr=0x01000000|(n*8);
+		top->dcInAddr=addr;
+		top->dcInOpm=0x0F;
+		top->dcInHold=0;
+//		top->dcInVal=membuf[n];
+		lv0=top->dcOutVal;
+		lv1=top->dcOutValB;
+
+		v0=membuf[n*2+0];
+		v1=membuf[n*2+1];
+		v2=membuf[n*2+2];
+		v3=membuf[n*2+3];
+		lv2=v0|(((uint64_t)v1)<<32);
+		lv3=v2|(((uint64_t)v3)<<32);
+
+//		if(inh==1)
+//			top->dcInHold=1;
+//		if(top->dcOutOK==2)
+		if(!inh && (top->dcOutOK==2))
+			{ top->dcInHold=1; }
+
+		if(top->clock)
+		{
+			MemUpdateForBus();
+		}
+		top->eval();
+
+		if(!top->clock)
+			continue;
+		
+		if(inh)
+		{
+			printf("Inhibit Cycle\n");
+			inh--;
+			continue;
+		}
+
+		if(top->dcOutOK==2)
+		{
+			printf("Busy\n");
+		}else
+			if(top->dcOutOK==1)
+		{
+			printf("SR1 %04X Got=%016llX-%016llX Expect=%016llX-%016llX %s\n",
+				addr, lv0, lv1, lv2, lv3,
+					((lv0==lv2) && (lv1==lv3))?"Pass":"Fail");
+					
+//			if(v1!=v)
+			if(((lv0!=lv2) || (lv1!=lv3)))
+			{
+				printf("Mismatch, Ending Test (SRAM)\n");
+				fail|=2;
+				break;
+			}
+		
+//			printf("W %d\n", n);
+//			inh=1;
+			inh=2;
+//			inh=3;
+			n++;
 			if(n>=2048)
+//			if(n>=16384)
 				break;
 		}
 	}
@@ -562,130 +713,6 @@ int main(int argc, char **argv, char **env)
 	}
 #endif
 
-
-#if 0
-	n=0; inh=2; rdy=0;
-	while (!Verilated::gotFinish())
-	{
-		top->clock = (main_time>>0)&1;
-		main_time++;
-
-		if(top->clock && (top->clock!=(main_time&1)))
-		{
-//			printf("Clock %d\n", (int)(main_time/2));
-			printf("Clock %d SR %d\n", (int)(main_time/2), n);
-		}
-
-//		top->mode = 3;
-		
-//		top->baseAddr=0xDECAB00;
-//		top->idxAddr=0x100;
-//		top->idxDisp=3;
-
-		if(inh)
-		{
-			top->dcRegInOpm=0;
-			inh--;
-
-			top->eval();
-			continue;
-		}
-
-		if(top->dcRegOutOK==0)
-			rdy=1;
-
-		if(n<write_words)
-//		if(n<1024)
-		{
-			addr=0xC000|(n*4);
-			top->dcRegInAddr=addr;
-			top->dcRegInOpm=0x12;
-			top->dcRegInData=membuf[n];
-
-#if 0
-			if(inh)
-			{
-				top->dcRegInOpm=0;
-				inh--;
-
-				top->eval();
-				continue;
-			}
-#endif
-
-			top->eval();
-
-			if(top->dcRegOutOK==1)
-//			if((top->regOutOK==1) && top->clock)
-//			if((top->regOutOK==1) && !top->clock)
-			{
-				printf("W %d\n", n);
-				n++;
-//				inh=4;
-				inh=2;
-			}
-			
-			if(n>=write_words)
-//			if(n>=1024)
-			{
-				main_time=0;
-				addr=0xC000;
-			}
-			
-			continue;
-		}
-
-		top->dcRegInAddr=addr;
-		top->dcRegInOpm=0xA;
-		top->dcRegInData=rand();
-
-		top->eval();
-
-		if(top->dcRegOutOK==1)
-		{
-			v=membuf[(addr>>2)&2047];
-			
-			inh--;
-			if(inh<=0)
-			{
-				v1=(uint32_t)(top->dcRegOutData);
-				printf("%04X Got=%08X Expect=%08X %s\n",
-					addr, v1, v,
-						(v1==v)?"Pass":"Fail");
-						
-				if(v1!=v)
-				{
-					printf("Mismatch, Ending Test (SRAM)\n");
-					fail|=2;
-					break;
-				}
-//				addr=0xC000|(rand()&0x1FFC);
-				addr=addr+4;
-				inh=2;
-//				inh=4;
-			}
-		}else
-		{
-			inh=0;
-		}
-
-//		main_time++;
-		
-		if(main_time>1024)
-//		if(main_time>64)
-//		if(main_time>16)
-		{
-//			printf("%llX\n", (long long)(top->outAddr));
-			break;
-		}
-	}
-
-	if(fail)
-	{
-		delete top;
-		exit(0);
-	}
-#endif
 
 	delete top;
 	exit(0);

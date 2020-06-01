@@ -63,6 +63,13 @@ reg[31:0]	tBraDisp20;
 reg[31:0]	tDisp8;
 reg[31:0]	tDisp20;
 
+reg[10:0]	tBraDisp8HiP0;
+reg[10:0]	tBraDisp8HiP1;
+reg[10:0]	tBraDisp8HiN1;
+
+reg[20:0]	tBraDisp8Lo;
+reg[20:0]	tBraDisp20Lo;
+
 reg			tIsBra8;		//Unconditional Branch (8-bit Disp)
 reg			tIsBra20;		//Unconditional Branch (16-bit Disp)
 reg			tIsRtsu;
@@ -154,7 +161,34 @@ begin
 	
 	tBraDisp8	= istrBraPc[31:0] + { tDisp8[30:0], 1'b0 };
 	tBraDisp20	= istrBraPc[31:0] + { tDisp20[30:0], 1'b0 };
-	
+
+// `ifdef def_true
+`ifndef def_true
+	tBraDisp8HiP0	= istrBraPc[31:21];
+	tBraDisp8HiP1	= istrBraPc[31:21]+1;
+	tBraDisp8HiN1	= istrBraPc[31:21]-1;
+	tBraDisp8Lo		= { 1'b0, istrBraPc[20:1]} + tDisp8[19:0];
+	tBraDisp20Lo	= { 1'b0, istrBraPc[20:1]} + tDisp20[19:0];
+
+	if(tDisp8[30])
+		tBraDisp8 = {
+			tBraDisp8Lo[20] ? tBraDisp8HiP0 : tBraDisp8HiN1,
+			tBraDisp8Lo[19:0], istrBraPc[0]	};
+	else
+		tBraDisp8 = {
+			tBraDisp8Lo[20] ? tBraDisp8HiP1 : tBraDisp8HiP0,
+			tBraDisp8Lo[19:0], istrBraPc[0]	};
+
+	if(tDisp20[30])
+		tBraDisp20 = {
+			tBraDisp20Lo[20] ? tBraDisp8HiP0 : tBraDisp8HiN1,
+			tBraDisp20Lo[19:0], istrBraPc[0]	};
+	else
+		tBraDisp20 = {
+			tBraDisp20Lo[20] ? tBraDisp8HiP1 : tBraDisp8HiP0,
+			tBraDisp20Lo[19:0], istrBraPc[0]	};
+`endif
+
 	tIsBra8		=
 		(istrWord[15:12]==4'h2) &&
 		(istrWord[11: 9]==3'b000);

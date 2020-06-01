@@ -290,8 +290,10 @@ int GfxDrv_PrepareFramebuf()
 		gfxdrv_locksurf=1;
 	}
 
-	btesh2_gfxcon_framebuf=(byte *)btesh_main_screen->pixels;
+//	btesh2_gfxcon_framebuf=(byte *)btesh_main_screen->pixels;
 //	btesh2_gfxcon_framebuf=(byte *)malloc(960*720*4);
+	btesh2_gfxcon_framebuf=(byte *)malloc(
+		btesh2_gfxcon_fbxs*btesh2_gfxcon_fbys*4);
 	gfxdrv_locksurf=1;
 	return(1);
 }
@@ -302,7 +304,7 @@ void GfxDrv_BeginDrawing()
 	{
 		SDL_UnlockSurface(btesh_main_screen);
 		gfxdrv_locksurf=0;
-		btesh2_gfxcon_framebuf=NULL;
+//		btesh2_gfxcon_framebuf=NULL;
 	}
 	SDL_Flip(btesh_main_screen);
 
@@ -329,6 +331,9 @@ void GfxDrv_EndDrawing()
 {
 //	memcpy(btesh_main_screen->pixels, btesh2_gfxcon_framebuf,
 //		640*400*sizeof(u32));
+
+	memcpy(btesh_main_screen->pixels, btesh2_gfxcon_framebuf,
+		btesh2_gfxcon_fbxs*btesh2_gfxcon_fbys*sizeof(u32));
 }
 
 void GfxDrv_Start()

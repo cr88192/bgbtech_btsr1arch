@@ -1,6 +1,7 @@
 void BJX2_Op_MOV_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=(s64)((s32)(op->imm));
+//	ctx->regs[op->rn]=(s64)((s32)(op->imm));
+	ctx->regs[op->rn]=(s64)(op->imm);
 }
 
 void BJX2_Op_MOV_ImmxReg(BJX2_Context *ctx, BJX2_Opcode *op)

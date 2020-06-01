@@ -206,6 +206,9 @@ begin
 	tResult1B=UV33_XX;
 	tResult1S=regInSrS;
 
+	tResult1W = UV33_00;
+	tResult2W = UV65_00;
+
 	tResultShufB = UV33_00;
 	tResultShufW = UV65_00;
 

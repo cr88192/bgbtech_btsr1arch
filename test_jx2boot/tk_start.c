@@ -102,10 +102,14 @@ void TK_FlushCacheL1D_ReadBuf(void *ptr, int sz);
 __asm {
 TK_FlushCacheL1D_INVDC:
 	INVDC	R4
-	RTSU
+	NOP
+	NOP
+	RTS
 TK_FlushCacheL1D_INVIC:
 	INVIC	R4
-	RTSU
+	NOP
+	NOP
+	RTS
 
 TK_FlushCacheL1D_ReadBuf:
 	.L0:
@@ -113,7 +117,7 @@ TK_FlushCacheL1D_ReadBuf:
 	ADD		-16, R5
 	CMP/GT	0, R5
 	BT		.L0
-	RTSU
+	RTS
 };
 
 void TK_FlushCacheL1D(void *pptr)

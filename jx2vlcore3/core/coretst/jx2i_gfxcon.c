@@ -1794,6 +1794,9 @@ int JX2I_GfxCon_Update()
 
 	if(!jx2i_gfxcon_dirty)
 		return(0);
+
+	GfxDrv_PrepareFramebuf();
+
 	jx2i_gfxcon_dirty=0;
 
 //	ncx=40;

@@ -23,7 +23,10 @@ The Wide variant will span two lanes and implement FP-SIMD.
 
 `include "FpuAdd.v"
 `include "FpuMul.v"
+
+`ifndef jx2_fcmp_alu
 `include "FpuCmp.v"
+`endif
 
 `include "FpuConvS2D.v"
 `include "FpuConvH2D.v"
@@ -301,6 +304,8 @@ assign	tRegAddExOp	=
 	(tFpuIsFldcx && (tRegIdIxt[3:0]==4'h2)) ? 2'h3 :
 	2'h0;
 
+`ifndef jx2_fcmp_alu
+
 wire[1:0]	tCmpExOK;
 wire		tCmpSrT;
 reg			tCmpSrTL;
@@ -311,6 +316,7 @@ FpuCmp	fpu_cmp(
 	tRegValRs,	tRegValRt,
 	tCmpExOK,	tCmpSrT);
 
+`endif
 
 reg			tOpEnable;
 reg[5:0]	tOpUCmd1;
@@ -318,6 +324,7 @@ reg[5:0]	tOpUCmd1;
 reg			tExHold;
 reg			tExValidCmd;
 reg[3:0]	tHoldCyc;
+reg[3:0]	tDoHoldCyc;
 
 `ifdef def_true
 assign	tOpCmdA			= opCmdA;
@@ -395,7 +402,9 @@ begin
 
 	tNxtVecRnA		= tVecRnA;
 	tNxtVecRnB		= tVecRnB;
+	tDoHoldCyc		= 0;
 
+`ifndef def_true
 	casez( { tBraFlushL || reset, tOpCmdL[7:6] } )
 		3'b000: 	tOpEnable = 1;
 		3'b001: 	tOpEnable = 0;
@@ -403,6 +412,20 @@ begin
 		3'b011: 	tOpEnable = !tRegInSr[0];
 		3'b1zz:		tOpEnable = 0;
 	endcase
+`endif
+
+`ifdef def_true
+//	casez( { opBraFlush, opUCmd[7:6], regInSr[0] } )
+	casez( { tBraFlushL || reset, tOpCmdL[7:6], regInSr[0] } )
+		4'b000z: 	tOpEnable = 1;
+		4'b001z: 	tOpEnable = 0;
+		4'b0100: 	tOpEnable = 0;
+		4'b0101: 	tOpEnable = 1;
+		4'b0110: 	tOpEnable = 1;
+		4'b0111: 	tOpEnable = 0;
+		4'b1zzz: 	tOpEnable = 0;
+	endcase
+`endif
 
 	tOpUCmd1	= tOpEnable ? tOpCmdL[5:0] : JX2_UCMD_NOP;
 
@@ -474,25 +497,25 @@ begin
 
 			case(tRegIdIxtL[3:0])
 				4'h0: begin
-					if(tHoldCyc != 5)
-//					if(tHoldCyc != 7)
-						tExHold = 1;
+					tDoHoldCyc = 5;
+//					if(tHoldCyc != 5)
+//						tExHold = 1;
 //					tRegOutVal	= tRegAddVal;
 					tRegValGRn	= tRegAddVal;
 				end
 
 				4'h1: begin
-					if(tHoldCyc != 5)
-//					if(tHoldCyc != 7)
-						tExHold = 1;
+					tDoHoldCyc = 5;
+//					if(tHoldCyc != 5)
+//						tExHold = 1;
 //					tRegOutVal	= tRegAddVal;
 					tRegValGRn	= tRegAddVal;
 				end
 
 				4'h2: begin
-					if(tHoldCyc != 5)
-//					if(tHoldCyc != 6)
-						tExHold = 1;
+					tDoHoldCyc = 5;
+//					if(tHoldCyc != 5)
+//						tExHold = 1;
 //					tRegOutVal	= tRegMulVal;
 					tRegValGRn	= tRegMulVal;
 				end
@@ -516,8 +539,9 @@ begin
 //						tHoldCyc, tVecCnvRsI, tVecCnvRtI,
 //						tVecCnvRnO);
 				
-					if(tHoldCyc != 10)
-						tExHold = 1;
+					tDoHoldCyc = 10;
+//					if(tHoldCyc != 10)
+//						tExHold = 1;
 
 //					tExCmdVecW	= 1;
 					tExCmdVecW	= tRegIdIxtL[5];
@@ -531,8 +555,9 @@ begin
 					tVecCnvRnI	= tRegAddVal;
 //					tAddExHold	= 0;
 
-					if(tHoldCyc != 10)
-						tExHold = 1;
+					tDoHoldCyc = 10;
+//					if(tHoldCyc != 10)
+//						tExHold = 1;
 
 //					tExCmdVecW = 1;
 					tExCmdVecW = tRegIdIxtL[5];
@@ -547,8 +572,9 @@ begin
 					tVecCnvRnI	= tRegMulValL;
 //					tAddExHold	= 0;
 
-					if(tHoldCyc != 10)
-						tExHold = 1;
+					tDoHoldCyc = 10;
+//					if(tHoldCyc != 10)
+//						tExHold = 1;
 
 //					tExCmdVecW	= 1;
 					tExCmdVecW	= tRegIdIxtL[5];
@@ -565,14 +591,17 @@ begin
 //				regIdIxt, regValRs, regValRt, tRegValGRn);
 		end
 
+`ifndef jx2_fcmp_alu
 		JX2_UCMD_FCMP: begin
 			tExHold		= tCmpExOK[1];
+			tDoHoldCyc = 1;
 //			if(tHoldCyc != 1)
 //				tExHold = 1;
 			tRegOutSrT	= tCmpSrT;
 //			tRegOutSrT	= tCmpSrTL;
 			tExValidCmd	= 1;
 		end
+`endif
 
 		JX2_UCMD_FLDCX: begin
 //			tRegOutId	= tRegIdRn;
@@ -592,8 +621,9 @@ begin
 					tRegValGRn	= tRegValRs;
 				end
 				3'h2: begin
-					if(tHoldCyc != 5)
-						tExHold = 1;
+					tDoHoldCyc = 5;
+//					if(tHoldCyc != 5)
+//						tExHold = 1;
 //					tRegOutVal	= tRegAddVal;
 //					tRegValGRn	= tRegOutVal;
 					tRegValGRn	= tRegAddVal;
@@ -624,8 +654,9 @@ begin
 				end
 
 				4'h2: begin
-					if(tHoldCyc != 3)
-						tExHold = 1;
+					tDoHoldCyc = 3;
+//					if(tHoldCyc != 3)
+//						tExHold = 1;
 					tRegValGRn	= fstcx_D2I;
 				end
 
@@ -682,6 +713,9 @@ begin
 		tRegValGRnA = tRegValGRn;
 	end
 
+	if(tHoldCyc < tDoHoldCyc)
+		tExHold = 1;
+
 	if(reset)
 		tExHold = 0;
 
@@ -736,7 +770,9 @@ begin
 		tBraFlushL		<= tBraFlush;
 `endif
 
+`ifndef jx2_fcmp_alu
 		tCmpSrTL		<= tCmpSrT;
+`endif
 
 		ctlInDlr_S2D_L	<= ctlInDlr_S2D;
 		ctlInDlr_H2D_L	<= ctlInDlr_H2D;

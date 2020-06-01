@@ -6,12 +6,20 @@ _checksane_gfp_fail:
 
 .global X(tk_checksane_gfp_asm)
 X(tk_checksane_gfp_asm):
-	push lr
+//	push lr
+
+	add		-8, sp
+	mov		lr, r1
+	mov.q	r1, (sp)
+
 
 	mov	#0x400921f9f01b866e, r4		//3.14159
 	mov	#0x401921f9f01b866e, r5		//6.28318
 	mov #0x4000000000000000, r6		//2.0
 	mov #0x3ff243f3e0370cdc, r7		//1.14159
+
+	mov	#0xC00921f9f01b866e, r12	//-3.14159
+	mov	#0xC01921f9f01b866e, r13	//-6.28318
 
 
 	mov		r4, r8
@@ -59,6 +67,9 @@ X(tk_checksane_gfp_asm):
 	fcmpgt r4, r5
 	bf _checksane_gfp_fail
 
+	fcmpgt r5, r4
+	bt _checksane_gfp_fail
+
 
 	fneg r4, r11
 	
@@ -66,6 +77,13 @@ X(tk_checksane_gfp_asm):
 	bt _checksane_gfp_fail
 
 	fcmpgt r11, r4
+	bf _checksane_gfp_fail
+
+
+	fcmpgt r12, r13
+	bt _checksane_gfp_fail
+
+	fcmpgt r13, r12
 	bf _checksane_gfp_fail
 
 
@@ -134,5 +152,9 @@ X(tk_checksane_gfp_asm):
 	bf _checksane_gfp_fail
 #endif
 
-	pop lr
-	rts
+//	pop lr
+//	rts
+
+	mov.q	(sp), r1
+	add		8, sp
+	jmp		r1

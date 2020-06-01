@@ -393,6 +393,8 @@ BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_LookupStructure(
 	if(!str)
 		return(NULL);
 
+	cur=NULL;
+
 #if 1
 //	h=BGBCC_CCXL_HashName(str);
 	h=BGBCC_CCXL_HashNameNoSig(str);
@@ -418,7 +420,7 @@ BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_LookupStructure(
 #endif
 
 #if 1
-	c=ctx->usort_literal; lcur=NULL;
+	c=ctx->usort_literal; cur=NULL; lcur=NULL;
 	while(c>0)
 	{
 		lcur=cur;

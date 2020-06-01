@@ -1800,7 +1800,7 @@ int BGBCC_JX2C_EmitJmpTab(
 
 	for(i=0; i<=nlbl; i++)
 	{
-		if(!BGBCC_JX2_CheckPadAlign32(sctx))
+		if(!BGBCC_JX2_CheckPadAlign32(sctx) && !(sctx->is_simpass))
 			{ BGBCC_DBGBREAK }
 		j=BGBCC_JX2_TryEmitOpFar20Label(sctx, BGBCC_SH_NMID_BRAN, lbls[i].id);
 		if(j<=0)

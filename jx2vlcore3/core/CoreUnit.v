@@ -212,6 +212,7 @@ assign	clock_cpu	= clock_halfMhz;
 assign	clock_cpu	= clock;
 `endif
 
+wire	timer4MHz;
 wire	timer1MHz;
 wire	timer64kHz;
 wire	timer1kHz;
@@ -228,6 +229,7 @@ reg		timerNoiseL7;
 
 MmiModClkp		clkp(
 	clock,	reset,
+	timer4MHz,
 	timer1MHz,
 	timer64kHz,
 	timer1kHz,
@@ -592,7 +594,9 @@ ModAudFm	fmsyn(
 	clock,			reset,
 	audAuxPcmL,		audAuxPcmR,
 	mmioOutData,	fmMmioOutData,		mmioAddr,
-	mmioOpm,		fmMmioOK);
+	mmioOpm,		fmMmioOK,
+	timer4MHz,		timer1MHz,		timer64kHz,
+	timer1kHz,		timerNoise);
 
 wire		timerNoise_NS0;
 reg			timerNoise_S0;
@@ -638,14 +642,14 @@ ModPs2Kb	ps2kb(
 	mmioOutData,	kbMmioOutData,	mmioAddr,
 	mmioOpm,		kbMmioOK);
 
-wire[31:0]	sdMmioOutData;
+wire[63:0]	sdMmioOutData;
 wire[1:0]	sdMmioOK;
 
 ModSdSpi	sdspi(
 	clock,			reset,
 	sdc_sclk,		sdc_di,
 	sdc_do,			sdc_cs,
-	mmioOutData,	sdMmioOutData,	mmioAddr,
+	mmioOutDataQ,	sdMmioOutData,	mmioAddr,
 	mmioOpm,		sdMmioOK,		12'hE03);
 
 
@@ -723,7 +727,8 @@ begin
 	end
 	else if(sdMmioOK != UMEM_OK_READY)
 	begin
-		mmioInData	= { UV32_00, sdMmioOutData };
+//		mmioInData	= { UV32_00, sdMmioOutData };
+		mmioInData	= sdMmioOutData;
 		mmioOK		= sdMmioOK;
 	end
 	else if(audMmioOK != UMEM_OK_READY)

@@ -46,6 +46,10 @@ output[1:0]		mem2OK;
 output[63:0]	mem2BusExc;
 
 
+reg[127:0]		tMemInData;
+reg[1:0]		tMemOK;
+reg[63:0]		tMemBusExc;
+
 reg[127:0]		tMemOutData;
 reg[47:0]		tMemAddrA;
 reg[47:0]		tMemAddrB;
@@ -96,8 +100,8 @@ begin
 		UMEM_OK_HOLD : UMEM_OK_READY;
 	tMem2OK			= (mem2Opm != UMEM_OPM_READY) ?
 		UMEM_OK_HOLD : UMEM_OK_READY;
-	tMem1InData		= memInData;
-	tMem2InData		= memInData;
+	tMem1InData		= tMemInData;
+	tMem2InData		= tMemInData;
 	tMem1BusExc		= UV64_00;
 	tMem2BusExc		= UV64_00;
 	
@@ -105,9 +109,9 @@ begin
 	begin
 		tNextMem1Latch	=
 			(mem1Opm != UMEM_OPM_READY) ||
-			(memOK != UMEM_OK_READY);
-		tMem1OK			= memOK;
-		tMem1BusExc		= memBusExc;
+			(tMemOK != UMEM_OK_READY);
+		tMem1OK			= tMemOK;
+		tMem1BusExc		= tMemBusExc;
 
 		tMemOutData		= mem1OutData;
 		tMemAddrA		= mem1AddrA;
@@ -119,9 +123,9 @@ begin
 	begin
 		tNextMem2Latch	=
 			(mem2Opm != UMEM_OPM_READY) ||
-			(memOK != UMEM_OK_READY);
-		tMem2OK			= memOK;
-		tMem2BusExc		= memBusExc;
+			(tMemOK != UMEM_OK_READY);
+		tMem2OK			= tMemOK;
+		tMem2BusExc		= tMemBusExc;
 
 		tMemOutData		= mem2OutData;
 		tMemAddrA		= mem2AddrA;
@@ -132,6 +136,11 @@ end
 
 always @(posedge clock)
 begin
+
+	tMemInData		<= memInData;
+	tMemOK			<= memOK;
+	tMemBusExc		<= memBusExc;
+
 	tMemOutData2	<= tMemOutData;
 	tMemAddrA2		<= tMemAddrA;
 	tMemAddrB2		<= tMemAddrB;

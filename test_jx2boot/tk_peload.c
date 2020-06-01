@@ -115,6 +115,7 @@ byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz)
 	return(ct);
 }
 
+#if 0
 u32 TKPE_CalculateImagePel4Checksum(byte *buf, int size)
 {
 	byte *cs, *cse;
@@ -139,7 +140,61 @@ u32 TKPE_CalculateImagePel4Checksum(byte *buf, int size)
 //	csum+=size;
 	return(csum);
 }
+#endif
 
+#ifdef __BJX2__
+// #if 0
+u32 TKPE_CalculateImagePel4BChecksum(byte *buf, int size);
+
+__asm {
+TKPE_CalculateImagePel4BChecksum:
+	WEXMD	2
+	ADD		R4, R5, R6
+	MOV		1, R16
+	MOV		0, R17
+
+#if 1
+	.L0:
+								MOVU.L	(R4,  0), R20
+								MOVU.L	(R4,  4), R21
+								MOVU.L	(R4,  8), R22
+								MOVU.L	(R4, 12), R23
+	ADD		R20, R16, R18	|	ADD		R4, 16, R4
+	ADD		R18, R17, R19	|	ADD		R21, R18, R16
+	ADD		R16, R19, R17	|	ADD		R22, R16, R18
+	ADD		R18, R17, R19	|	ADD		R23, R18, R16
+	ADD		R16, R19, R17	|	CMPGT	R4, R6
+								BT		.L0
+#endif
+
+#if 0
+	.L0:
+	MOVU.L	(R4), R7
+	ADD		R7, R16
+	ADD		R16, R17
+	ADD		4, R4
+	CMPGT	R4, R6
+	BT		.L0
+#endif
+
+	SHLD.Q	R16, -32, R18
+	EXTU.L	R16, R19
+	ADD		R18, R19, R16
+	SHLD.Q	R16, -32, R18
+	EXTU.L	R16, R19
+	ADD		R18, R19, R16
+
+	SHLD.Q	R17, -32, R18
+	EXTU.L	R17, R19
+	ADD		R18, R19, R17
+	SHLD.Q	R17, -32, R18
+	EXTU.L	R17, R19
+	ADD		R18, R19, R17
+	
+	XOR		R16, R17, R2
+	RTS
+};
+#else
 u32 TKPE_CalculateImagePel4BChecksum(byte *buf, int size)
 {
 	byte *cs, *cse;
@@ -169,7 +224,7 @@ u32 TKPE_CalculateImagePel4BChecksum(byte *buf, int size)
 //	csum+=size;
 	return(csum);
 }
-
+#endif
 
 int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 {

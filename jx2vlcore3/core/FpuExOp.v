@@ -21,7 +21,10 @@ opUIxt:
 
 `include "FpuAdd.v"
 `include "FpuMul.v"
+
+`ifndef jx2_fcmp_alu
 `include "FpuCmp.v"
+`endif
 
 `include "FpuConvS2D.v"
 `include "FpuConvH2D.v"
@@ -206,6 +209,7 @@ assign	tRegAddExOp	=
 	(tFpuIsFldcx && (tRegIdIxt[3:0]==4'h2)) ? 2'h3 :
 	2'h0;
 
+`ifndef jx2_fcmp_alu
 wire[1:0]	tCmpExOK;
 wire		tCmpSrT;
 reg			tCmpSrTL;
@@ -215,7 +219,7 @@ FpuCmp	fpu_cmp(
 	tOpCmd,		tRegIdIxt,	
 	tRegValRs,	tRegValRt,
 	tCmpExOK,	tCmpSrT);
-
+`endif
 
 reg			tOpEnable;
 reg[5:0]	tOpUCmd1;
@@ -258,7 +262,14 @@ begin
 	tRegValGRn		= UV64_XX;
 	tExHold			= 0;
 	tExValidCmd		= 0;
+`ifndef jx2_fcmp_alu
+//	tRegOutSrT		= tRegInSr[0];
+	tRegOutSrT	= tCmpSrT;
+//	tRegOutSrT	= tCmpSrTL;
+`else
 	tRegOutSrT		= tRegInSr[0];
+`endif
+
 `ifdef jx2_enable_fmov
 	tRegValLdGRn	= memDataLd_S2D;
 `else
@@ -344,6 +355,7 @@ begin
 //				regIdIxt, regValRs, regValRt, tRegValGRn);
 		end
 
+`ifndef jx2_fcmp_alu
 		JX2_UCMD_FCMP: begin
 			tExHold		= tCmpExOK[1];
 //			if(tHoldCyc != 1)
@@ -352,6 +364,7 @@ begin
 //			tRegOutSrT	= tCmpSrTL;
 			tExValidCmd	= 1;
 		end
+`endif
 
 		JX2_UCMD_FLDCX: begin
 			tRegOutId	= tRegIdRn;
@@ -417,7 +430,8 @@ begin
 				end
 			endcase
 		end
-		
+
+`ifndef def_true
 		JX2_UCMD_FIXS: begin
 			tExValidCmd	= 1;
 
@@ -441,6 +455,7 @@ begin
 				end
 			endcase
 		end
+`endif
 
 		default: begin
 		end

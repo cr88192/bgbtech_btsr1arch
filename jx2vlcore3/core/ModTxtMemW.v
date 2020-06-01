@@ -174,7 +174,8 @@ reg[255:0]		tCellDataL;
 assign		tCellData = (pixCellIx==tPixCellIx) ? tCell1 : tCellDataL;
 
 // assign cellData = tCell1;
-assign cellData = tCellData;
+// assign cellData = tCellData;
+assign cellData = tCellDataL;
 assign fontData = tFontData1;
 // assign fontData = tFontData2;
 

@@ -102,6 +102,12 @@ s32 BJX2_MemMmgpCb_GetDWord(BJX2_Context *ctx,
 //		printf("SPI_D(R): D=%08X\n", rv);
 		break;
 
+	case 0x0038:
+		rv=mmio[0x12];
+		break;
+	case 0x003C:
+		rv=mmio[0x13];
+		break;
 
 	case 0x0040:
 		rv=0;
@@ -202,9 +208,11 @@ int BJX2_MemMmgpCb_SetDWord(BJX2_Context *ctx,
 	BJX2_MemSpan *sp, bjx2_addr addr, s32 val)
 {
 	u32 *mmio;
+	u64 lv0, lv1;
 	s64 dcyc;
 	int v;
 	int ra;
+	int i, j, k;
 
 	dcyc=ctx->tot_cyc-mmgp_spi_lastcyc;
 	mmgp_spi_lastcyc=ctx->tot_cyc;
@@ -244,6 +252,23 @@ int BJX2_MemMmgpCb_SetDWord(BJX2_Context *ctx,
 		break;
 
 	case 0x0030:
+		if(val&0x20)
+		{
+			lv0=mmio[0x12]|(((u64)mmio[0x13])<<32);
+
+			lv1=0;
+			for(i=0; i<8; i++)
+			{
+				mmgp_spi_delcyc+=(ctx->tgt_mhz*8)/5;
+				v=btesh2_spimmc_XrByte(ctx, (lv0>>(i*8))&255);
+				lv1|=((u64)(v&255))<<(i*8);
+			}
+			mmio[0x12]=lv1;
+			mmio[0x13]=lv1>>32;
+
+			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_IOPOKE);
+		}
+	
 		v=btesh2_spimmc_XrCtl(ctx, val);
 		mmio[0x10]=v&255;
 		if(v&0x10000)
@@ -260,10 +285,19 @@ int BJX2_MemMmgpCb_SetDWord(BJX2_Context *ctx,
 //		mmgp_spi_delcyc+=200;
 //		ctx->iodel_cyc=20;
 //		mmgp_spi_delcyc+=20;
+		mmgp_spi_delcyc+=(ctx->tgt_mhz*8)/5;
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_IOPOKE);
 
 //		printf("SPI_D(W): %08X -> %08X, D=%08X\n", val, v, mmio[0x11]);
 		break;
+
+	case 0x0038:
+		mmio[0x12]=val;
+		break;
+	case 0x003C:
+		mmio[0x13]=val;
+		break;
+
 
 	case 0x0300:
 		ctx->msgbuf_rxspos=val;
@@ -286,6 +320,24 @@ int BJX2_MemMmgpCb_SetDWord(BJX2_Context *ctx,
 	return(0);
 }
 
+s64 BJX2_MemMmgpCb_GetQWord(BJX2_Context *ctx,
+	BJX2_MemSpan *sp, bjx2_addr addr)
+{
+	u32 lo, hi;
+
+	lo=BJX2_MemMmgpCb_GetDWord(ctx, sp, addr+0);
+	hi=BJX2_MemMmgpCb_GetDWord(ctx, sp, addr+4);
+	return((((u64)hi)<<32)|lo);
+}
+
+int BJX2_MemMmgpCb_SetQWord(BJX2_Context *ctx,
+	BJX2_MemSpan *sp, bjx2_addr addr, s64 val)
+{
+	BJX2_MemMmgpCb_SetDWord(ctx, sp, addr+0, val);
+	BJX2_MemMmgpCb_SetDWord(ctx, sp, addr+4, val>>32);
+	return(0);
+}
+
 int BJX2_MemDefineMmgp(BJX2_Context *ctx,
 	char *name, bjx2_addr base, bjx2_addr lim)
 {
@@ -302,10 +354,12 @@ int BJX2_MemDefineMmgp(BJX2_Context *ctx,
 	sp->GetByte=BJX2_MemMmgpCb_GetByte;
 	sp->GetWord=BJX2_MemMmgpCb_GetWord;
 	sp->GetDWord=BJX2_MemMmgpCb_GetDWord;
+	sp->GetQWord=BJX2_MemMmgpCb_GetQWord;
 	
 	sp->SetByte=BJX2_MemMmgpCb_SetByte;
 	sp->SetWord=BJX2_MemMmgpCb_SetWord;
 	sp->SetDWord=BJX2_MemMmgpCb_SetDWord;
+	sp->SetQWord=BJX2_MemMmgpCb_SetQWord;
 	
 	BJX2_MemAddSpan(ctx, sp);
 	return(0);

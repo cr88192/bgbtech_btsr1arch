@@ -9,7 +9,9 @@ module ModAudFm(
 	clock,		reset,
 	outPcmL,	outPcmR,
 	busInData,	busOutData,
-	busAddr,	busOpm,		busOK
+	busAddr,	busOpm,		busOK,
+	timer4MHz,	timer1MHz,	timer64kHz,
+	timer1kHz,	timerNoise
 	);
 
 input			clock;
@@ -22,6 +24,19 @@ output[7:0]		outPcmL;
 output[7:0]		outPcmR;
 output[31:0]	busOutData;
 output[1:0]		busOK;
+
+input			timer4MHz;
+input			timer1MHz;
+input			timer64kHz;
+input			timer1kHz;
+input			timerNoise;
+
+reg				tTimer4MHz;
+reg				tTimer1MHz;
+reg				tTimer64kHz;
+reg				tTimer1kHz;
+reg				tTimerNoise;
+
 
 reg[31:0]		tOutData;
 reg[31:0]		tOutData2;
@@ -176,23 +191,24 @@ begin
 	tOutData	= UV32_00;
 	tOutOK		= UMEM_OK_READY;
 
-	{ stepTimer1MHz, nextFracTimer1MHz }	=
-		{ 1'b0, fracTimer1MHz } + 17'h0290;
+//	{ stepTimer1MHz, nextFracTimer1MHz }	=
+//		{ 1'b0, fracTimer1MHz } + 17'h0290;
 
-	{ stepTimer4MHz, nextFracTimer4MHz }	=
-		{ 1'b0, fracTimer4MHz } + 17'h0A40;
+//	{ stepTimer4MHz, nextFracTimer4MHz }	=
+//		{ 1'b0, fracTimer4MHz } + 17'h0A40;
 
 //	{ stepTimer32MHz, nextFracTimer32MHz }	=
 //		{ 1'b0, fracTimer32MHz } + 17'h5200;
 
-	{ stepTimer64kHz, nextFracTimer64kHz }	=
-		{ 1'b0, fracTimer64kHz } + 21'h02AC;
+//	{ stepTimer64kHz, nextFracTimer64kHz }	=
+//		{ 1'b0, fracTimer64kHz } + 21'h02AC;
 	
 //	chNxtRov		= chRov + 1;
 	chNxtRov		= chRov;
 //	if(stepTimer32MHz)
 //	if(stepTimer1MHz)
-	if(stepTimer4MHz)
+//	if(stepTimer4MHz)
+	if(tTimer4MHz)
 		chNxtRov		= chRov + 1;
 
 	chNxtClkStrobe	= chClkStrobe;
@@ -211,7 +227,8 @@ begin
 	end
 	
 //	if(stepTimer1MHz)
-	if(stepTimer64kHz)
+//	if(stepTimer64kHz)
+	if(tTimer64kHz)
 	begin
 		chNxtClkLatch	= 1;
 	end
@@ -344,7 +361,8 @@ begin
 
 //	if(chRov==15)
 //	if((chRov==15) && stepTimer1MHz)
-	if((chRov==15) && stepTimer4MHz)
+//	if((chRov==15) && stepTimer4MHz)
+	if((chRov==15) && tTimer4MHz)
 	begin
 		tOutPcmL		= tChAccumL[7:0];
 		tOutPcmR		= tChAccumR[7:0];
@@ -393,10 +411,10 @@ begin
 	tBusInData		<= busInData;
 	tBusOpm			<= busOpm;
 
-	fracTimer1MHz	<= nextFracTimer1MHz;
-	fracTimer4MHz	<= nextFracTimer4MHz;
+//	fracTimer1MHz	<= nextFracTimer1MHz;
+//	fracTimer4MHz	<= nextFracTimer4MHz;
 //	fracTimer32MHz	<= nextFracTimer32MHz;
-	fracTimer64kHz	<= nextFracTimer64kHz;
+//	fracTimer64kHz	<= nextFracTimer64kHz;
 
 	chCtr0A			<= regCtr0A[chRov];
 	chCtr0B			<= regCtr0B[chRov];
@@ -450,6 +468,12 @@ begin
 			endcase
 		end
 	end
+
+	tTimer4MHz		<= timer4MHz;
+	tTimer1MHz		<= timer1MHz;
+	tTimer64kHz		<= timer64kHz;
+	tTimer1kHz		<= timer1kHz;
+	tTimerNoise		<= timerNoise;
 end
 
 endmodule

@@ -2863,6 +2863,7 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 		}
 		break;
 
+#if 0
 	case 0x9:	/* 9zzz */
 		op->rn=(opw>>4)&15;
 		op->rm=opw&15;
@@ -3057,6 +3058,7 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 			break;
 		}
 		break;
+#endif
 
 	case 0xA:	/* Azzz */
 	case 0xB:	/* Bzzz */
@@ -3083,7 +3085,8 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 		op->fmid=BJX2_FMID_IMMREG;
 		op->Run=BJX2_Op_ADD_ImmReg;
 		
-#ifdef BJX2_ADDR32
+// #ifdef BJX2_ADDR32
+#if 0
 		if(op->rn==15)
 		{
 			op->rm=op->rn;

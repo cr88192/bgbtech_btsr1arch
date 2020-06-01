@@ -51,6 +51,7 @@ parameter[5:0] JX2_GR_PC		= 6'h34;
 parameter[5:0] JX2_GR_GBR		= 6'h35;
 parameter[5:0] JX2_GR_TBR		= 6'h36;
 
+parameter[5:0] JX2_GR_JIMM56	= 6'h3D;
 parameter[5:0] JX2_GR_JIMM		= 6'h3E;
 parameter[5:0] JX2_GR_BP		= 6'h3F;
 
@@ -85,6 +86,11 @@ parameter[1:0] JX2_IXC_AL	= 2'b00;	//Execute Always
 parameter[1:0] JX2_IXC_NV	= 2'b01;	//Execute Never
 parameter[1:0] JX2_IXC_CT	= 2'b10;	//Execute If True
 parameter[1:0] JX2_IXC_CF	= 2'b11;	//Execute If False
+
+parameter[1:0] JX2_IUC_SC	= 2'b00;	//Scalar
+parameter[1:0] JX2_IUC_WX	= 2'b01;	//Wide
+parameter[1:0] JX2_IUC_WT	= 2'b10;	//Wide+True
+parameter[1:0] JX2_IUC_WF	= 2'b11;	//Wide+False
 
 parameter[  3:0] UV4_XX			= 4'hX;	//
 parameter[  4:0] UV5_XX			= 5'hXX;	//
@@ -466,8 +472,8 @@ parameter[5:0] JX2_UCIX_ALU_CSELT	= 6'h2F;		//ALU CSELT
 parameter[5:0] JX2_UCIX_ALU_ADDSL	= 6'h00;		//ALU ADDSL
 parameter[5:0] JX2_UCIX_ALU_SUBSL	= 6'h01;		//ALU SUBSL
 
-parameter[5:0] JX2_UCIX_ALU_ADDUL	= 6'h40;		//ALU ADDUL
-parameter[5:0] JX2_UCIX_ALU_SUBUL	= 6'h41;		//ALU SUBUL
+parameter[5:0] JX2_UCIX_ALU_ADDUL	= 6'h10;		//ALU ADDUL
+parameter[5:0] JX2_UCIX_ALU_SUBUL	= 6'h11;		//ALU SUBUL
 
 parameter[5:0] JX2_UCIX_ALU_TST		= 6'h04;		//ALU Command
 parameter[5:0] JX2_UCIX_ALU_CMPNE	= 6'h08;		//ALU Command
@@ -542,10 +548,15 @@ parameter[5:0] JX2_UCIX_CONV_RGB5UPCK64		= 6'h1D;	//RGB555->RGB64
 parameter[5:0] JX2_UCIX_CONV_RGB32PCK64		= 6'h1E;	//RGB64->RGB32
 parameter[5:0] JX2_UCIX_CONV_RGB32UPCK64	= 6'h1F;	//RGB32->RGB64
 
+// parameter[5:0] JX2_UCIX_CONV_MOVX		= 6'h23;		//MOVX
+
 parameter[5:0] JX2_UCIX_MUL3_MUL3S	= 6'h00;		//
 parameter[5:0] JX2_UCIX_MUL3_MUL3U	= 6'h01;		//
 parameter[5:0] JX2_UCIX_MUL3_MULS	= 6'h02;		//
 parameter[5:0] JX2_UCIX_MUL3_MULU	= 6'h03;		//
+
+parameter[5:0] JX2_UCIX_MUL3_DMUL3S	= 6'h04;		//
+parameter[5:0] JX2_UCIX_MUL3_DMUL3U	= 6'h05;		//
 
 parameter[5:0] JX2_UCIX_MUL3_PWMULS	= 6'h06;		//Packed-Widen
 parameter[5:0] JX2_UCIX_MUL3_PWMULU	= 6'h07;		//Packed-Widen
@@ -661,6 +672,17 @@ parameter[5:0] JX2_UCIX_IXS_INVDC	= 6'h11;		//Flush D$
 //`endif
 `endif
 
+`ifdef jx2_debug_expipe
+`ifndef jx2_debug_keepinstr
+`define	jx2_debug_keepinstr
+`endif
+`endif
+
+`ifdef jx2_debug_exopipe
+`ifndef jx2_debug_keepinstr
+`define	jx2_debug_keepinstr
+`endif
+`endif
 
 `ifdef jx2_expand_l1isz
 parameter[255:0] JX2_L1I_FLUSHMSK	= UV256_FF;		//

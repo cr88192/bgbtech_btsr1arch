@@ -74,7 +74,7 @@ input			clock;
 input			reset;
 input[7:0]		opUCmd;
 input[7:0]		opUIxt;
-output			exHold;
+output[1:0]		exHold;
 
 input[5:0]		regIdRs;		//Source A, ALU / Base
 input[5:0]		regIdRt;		//Source B, ALU / Index
@@ -133,7 +133,8 @@ input[ 1:0]		memDataOK;
 
 
 reg				tExHold;
-assign	exHold		= tExHold;
+reg				tRegHeld;
+assign	exHold		= { tRegHeld, tExHold };
 
 reg[ 5:0]		tRegIdRn2;
 reg[63:0]		tRegValRn2;
@@ -159,11 +160,14 @@ assign	regOutSchm	= tRegOutSchm;
 
 
 
-reg[5:0]	tOpUCmd1;
+(* max_fanout = 50 *)
+	reg[5:0]	tOpUCmd1;
 
 reg[3:0]	tHoldCyc;
+reg[3:0]	tDoHoldCyc;
 reg			tDoMemOp;
 reg			tOpEnable;
+reg			tDoAluSrT;
 
 reg		tMsgLatch;
 reg		tNextMsgLatch;
@@ -183,10 +187,16 @@ begin
 	tRegOutSr	= regInSr;
 	tRegOutSchm	= regInSchm;
 
-	tDoMemOp	= 0;
-	tExHold		= 0;
+	tDoMemOp		= 0;
+	tExHold			= 0;
+	tRegHeld		= 0;
 	tNextMsgLatch	= 0;
+	tDoHoldCyc		= 0;
+	tDoAluSrT		= 0;
 
+//	tRegOutSr[1:0]	= regValAluRes[65:64];
+
+`ifndef def_true
 //	case(opUIxt[7:6])
 	casez( { opBraFlush, opUCmd[7:6] } )
 		3'b000: 	tOpEnable = 1;
@@ -197,6 +207,19 @@ begin
 		3'b011: 	tOpEnable = !regInLastSr[0];
 		3'b1zz: 	tOpEnable = 0;
 	endcase
+`endif
+
+`ifdef def_true
+	casez( { opBraFlush, opUCmd[7:6], regInLastSr[0] } )
+		4'b000z: 	tOpEnable = 1;
+		4'b001z: 	tOpEnable = 0;
+		4'b0100: 	tOpEnable = 0;
+		4'b0101: 	tOpEnable = 1;
+		4'b0110: 	tOpEnable = 1;
+		4'b0111: 	tOpEnable = 0;
+		4'b1zzz: 	tOpEnable = 0;
+	endcase
+`endif
 	
 	tOpUCmd1	= tOpEnable ? opUCmd[5:0] : JX2_UCMD_NOP;
 
@@ -208,6 +231,15 @@ begin
 		end
 		
 		JX2_UCMD_OP_IXT: begin
+			case(opUIxt[5:0])
+				JX2_UCIX_IXT_NOP: begin
+				end
+				JX2_UCIX_IXT_SLEEP: begin
+					tDoHoldCyc = 15;
+				end
+				default: begin
+				end
+			endcase
 		end
 		
 		JX2_UCMD_MOV_IR: begin
@@ -216,14 +248,22 @@ begin
 		JX2_UCMD_LEA_MR: begin
 		end
 		JX2_UCMD_MOV_RM: begin
+`ifdef jx2_stage_memex3
+			tRegHeld	= 1;
+`else
 			tDoMemOp	= 1;
+`endif
 		end
 		JX2_UCMD_MOV_MR: begin
+`ifdef jx2_stage_memex3
+			tRegHeld	= 1;
+`else
 			tDoMemOp	= 1;
 			tRegIdRn2	= regIdRm;
 			tRegValRn2	= memDataIn;
 `ifdef jx2_debug_ldst
 			$display("LOAD(2): R=%X V=%X", regIdRm, memDataIn);
+`endif
 `endif
 		end
 
@@ -249,6 +289,7 @@ begin
 		end
 `endif
 
+`ifndef def_true
 		JX2_UCMD_PUSHX: begin
 			tDoMemOp	= 1;
 		end
@@ -269,24 +310,28 @@ begin
 
 		JX2_UCMD_ADDSP: begin
 		end
+`endif
 
 //		JX2_UCMD_ALU3: begin
 		JX2_UCMD_ALU3, JX2_UCMD_UNARY, JX2_UCMD_ALUW3: begin
 			tRegIdRn2		= regIdRm;			//
 			tRegValRn2		= regValAluRes[63:0];		//
-			tRegOutSr[1:0]	= regValAluRes[65:64];
+//			tRegOutSr[1:0]	= regValAluRes[65:64];
+			tDoAluSrT		= 1;
 		end
 
 		JX2_UCMD_ALUCMP: begin
 //			tRegOutSr[0]	= regValAluRes[64];
 			tRegOutSr[1:0]	= regValAluRes[65:64];
+			tDoAluSrT		= 1;
 		end
 
 `ifndef def_true
 		JX2_UCMD_UNARY: begin
 			tRegIdRn2		= regIdRm;			//
 			tRegValRn2		= regValAluRes[63:0];		//
-			tRegOutSr[1:0]	= regValAluRes[65:64];
+//			tRegOutSr[1:0]	= regValAluRes[65:64];
+			tDoAluSrT		= 1;
 		end
 `endif
 
@@ -300,37 +345,54 @@ begin
 		end
 		
 		JX2_UCMD_MUL3: begin
+			tDoHoldCyc	= 3;
 //			if(tHoldCyc!=1)
 //			if(tHoldCyc!=4)
-			if(tHoldCyc!=3)
-				tExHold=1;
+//			if(tHoldCyc!=3)
+//				tExHold=1;
 
-			casez(opUIxt[1:0])
-				2'b00: begin
+			tRegIdRn2	= regIdRm;					//
+			tRegValRn2	= regValMulRes[63:0];		//
+
+`ifndef def_true
+			casez(opUIxt[2:0])
+				3'b000: begin
 					tRegIdRn2	= regIdRm;			//
 //					tRegValRn2	= regValMulRes;		//
 					tRegValRn2	= {
 						regValMulRes[31] ? UV32_FF : UV32_00,
 						regValMulRes[31:0] };		//
 				end
-				2'b01: begin
+				3'b001: begin
 					tRegIdRn2	= regIdRm;			//
 //					tRegValRn2	= regValMulRes;		//
 					tRegValRn2	= {
 						UV32_00,
 						regValMulRes[31:0] };		//
 				end
-				2'b10: begin
+`ifndef def_true
+				3'b010: begin
 					tRegOutDlr  = { UV32_00, regValMulRes[31:0] };
 					tRegOutDhr  = {
 						regValMulRes[63] ? UV32_FF : UV32_00,
 						regValMulRes[63:32] };
 				end
-				2'b11: begin
+				3'b011: begin
 					tRegOutDlr  = { UV32_00, regValMulRes[31: 0] };
 					tRegOutDhr  = { UV32_00, regValMulRes[63:32] };
 				end
+`endif
+
+				3'b100: begin
+					tRegIdRn2	= regIdRm;					//
+					tRegValRn2	= regValMulRes[63:0];		//
+				end
+				3'b101: begin
+					tRegIdRn2	= regIdRm;					//
+					tRegValRn2	= regValMulRes[63:0];		//
+				end
 			endcase
+`endif
 		end
 		
 		JX2_UCMD_MULW3: begin
@@ -357,38 +419,43 @@ begin
 		
 		JX2_UCMD_FPU3: begin
 //			if(regFpuOK[1])
-			if(regFpuOK != UMEM_OK_OK)
-				tExHold			= 1;
+//			if(regFpuOK != UMEM_OK_OK)
+//				tExHold			= 1;
 			tRegIdRn2		= regIdRm;
 			tRegValRn2		= regFpuGRn;
 		end
 		JX2_UCMD_FLDCX: begin
 //			if(regFpuOK[1])
-			if(regFpuOK != UMEM_OK_OK)
-				tExHold			= 1;
+//			if(regFpuOK != UMEM_OK_OK)
+//				tExHold			= 1;
 			tRegIdRn2		= regIdRm;
 			tRegValRn2		= regFpuGRn;
 		end
 		JX2_UCMD_FSTCX: begin
 //			if(regFpuOK[1])
-			if(regFpuOK != UMEM_OK_OK)
-				tExHold			= 1;
+//			if(regFpuOK != UMEM_OK_OK)
+//				tExHold			= 1;
 			tRegIdRn2		= regIdRm;
 			tRegValRn2		= regFpuGRn;
 		end
 		JX2_UCMD_FIXS: begin
 //			if(regFpuOK[1])
-			if(regFpuOK != UMEM_OK_OK)
-				tExHold			= 1;
+//			if(regFpuOK != UMEM_OK_OK)
+//				tExHold			= 1;
 			tRegIdRn2		= regIdRm;
 			tRegValRn2		= regFpuGRn;
 		end
 
 		JX2_UCMD_FCMP: begin
+`ifdef jx2_fcmp_alu
+			tDoAluSrT		= 1;
+//			tRegOutSr[1:0]	= regValAluRes[65:64];
+`else
 //			if(regFpuOK[1])
-			if(regFpuOK != UMEM_OK_OK)
-				tExHold			= 1;
+//			if(regFpuOK != UMEM_OK_OK)
+//				tExHold			= 1;
 			tRegOutSr[0]	= regFpuSrT;
+`endif
 		end
 	
 		default: begin
@@ -399,6 +466,12 @@ begin
 	
 	endcase
 	
+`ifdef jx2_stage_memex3
+	if(tDoMemOp)
+	begin
+		$display("EX2: DoMemOp but MemEx3 %X", opUCmd);
+	end
+`else
 	if(tDoMemOp)
 	begin
 `ifdef jx2_debug_ldst
@@ -406,8 +479,9 @@ begin
 `endif
 
 `ifndef jx2_do_ld1cyc
-		if(tHoldCyc==0)
-			tExHold=1;
+//		if(tHoldCyc==0)
+//			tExHold=1;
+		tDoHoldCyc	= 1;
 `endif
 
 		if(memDataOK[1])
@@ -438,9 +512,24 @@ begin
 
 //		tMemOpm = tDoMemOpm;
 	end
-	
-	if(reset)
-		tExHold=0;
+`endif
+
+	if(tDoAluSrT)
+	begin
+		tRegOutSr[1:0]	= regValAluRes[65:64];
+	end
+
+//	if((tDoHoldCyc != 0) && (tHoldCyc != tDoHoldCyc))
+//	if(tHoldCyc != tDoHoldCyc)
+	if(tHoldCyc < tDoHoldCyc)
+	begin
+//		if(!tExHold)
+//			$display("Hold Cyc %d %d", tHoldCyc, tDoHoldCyc);
+		tExHold=1;
+	end
+
+//	if(reset)
+//		tExHold=0;
 end
 
 always @(posedge clock)
@@ -448,7 +537,8 @@ begin
 	tMsgLatch	<= tNextMsgLatch;
 
 	if(tExHold)
-		tHoldCyc <= tHoldCyc + 1;
+//		tHoldCyc <= tHoldCyc + 1;
+		tHoldCyc <= tHoldCyc + ((tHoldCyc!=15)?1:0);
 	else
 		tHoldCyc <= 0;
 end

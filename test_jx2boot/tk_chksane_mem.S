@@ -4,9 +4,31 @@ _checksane_fail_mem:
 	bra _checksane_fail_mem
 	break
 
+_checksane_ldrts_asm:
+	mov		lr, r1
+	mov		.val0, r3
+	movu.l	(r3), r2
+//	nop
+//	nop
+//	rts
+	jmp		r1
+	
+//	break
+//	break
+//	break
+//	nop
+//	nop
+//	rts
+
+.val0: 	.long	0xE87AD268
+
 .global X(tk_checksane_mem_asm)
 X(tk_checksane_mem_asm):
-	push lr
+//	push lr
+
+	add		-8, sp
+	mov		lr, r1
+	mov.q	r1, (sp)
 
 #if 1
 	mov	0xE87AD208, r8
@@ -15,9 +37,48 @@ X(tk_checksane_mem_asm):
 	mov	0xFFFFFFFFFFD0F5A4, r11
 	mov	0xE87AD208E87AD208, r14
 
-	push r8
-	push r8
-	push r10	
+	add		-128, sp
+
+	mov.q	r14,  (sp, 48)
+	mov.q	r11,  (sp, 40)
+	mov.q	r10,  (sp, 32)
+
+	mov.q	r8,  (sp, 16)
+	mov.q	r8,  (sp,  8)
+	mov.q	r10, (sp,  0)
+
+	mov.x	(sp, 32), r16
+	cmpqeq	r16, r10
+	break?f
+	cmpqeq	r17, r11
+	break?f
+
+	mov.x	(sp, 40), r18
+	cmpqeq	r18, r11
+	break?f
+	cmpqeq	r19, r14
+	break?f
+
+	mov.x	r16,  (sp, 56)
+	mov.x	r18,  (sp, 72)
+	mov.x	(sp, 64), r20
+
+	cmpqeq	r20, r11
+	break?f
+	cmpqeq	r21, r11
+	break?f
+
+	mov.x	(sp, 64), r6
+
+	cmpqeq	r6, r11
+	break?f
+	cmpqeq	r7, r11
+	break?f
+
+
+//	push r8
+//	push r8
+//	push r10	
 	mov.l (sp, 0), r6
 	movu.l (sp, 0), r7
 
@@ -76,19 +137,26 @@ X(tk_checksane_mem_asm):
 
 	cmpq/eq r6, r11
 	bf _checksane_fail_mem
-	
 
-	pop r2
-	pop r2
-	pop r2
+	bsr _checksane_ldrts_asm
+//	break
+	cmpq/eq r2, r11
+	break?f
+//	bf _checksane_fail_mem
+
+	add	128, sp
+
+//	pop r2
+//	pop r2
+//	pop r2
 #endif
 
-#if 1
-	push.x	r10
+#if 0
+//	push.x	r10
 //	push	r11
 //	push	r10
 
-	pop.x	r6
+//	pop.x	r6
 //	pop		r6
 //	pop		r7
 
@@ -99,10 +167,14 @@ X(tk_checksane_mem_asm):
 	bf _checksane_fail_mem
 #endif
 
-	cmpeq r4, r5
-		break?t
-	cmpeq r4, r4
-		break?f
+//	cmpeq r4, r5
+//		break?t
+//	cmpeq r4, r4
+//		break?f
 
-	pop lr
-	rts
+//	pop lr
+//	rts
+
+	mov.q	(sp), r1
+	add		8, sp
+	jmp		r1

@@ -34,6 +34,7 @@ typedef signed long long s64;
 typedef long nlint;
 
 typedef volatile u32 vol_u32;
+typedef volatile u64 vol_u64;
 
 // #define GPIO_BASE 0xABCD0000
 // #define SPI_BASE 0xABCD0040
@@ -62,6 +63,7 @@ typedef volatile u32 vol_u32;
 
 #define SPI_CTRL	(SPI_BASE+0x00)
 #define SPI_DATA	(SPI_BASE+0x04)
+#define SPI_QDATA	(SPI_BASE+0x08)
 
 #define PS2KB_RX	(PS2_BASE+0x00)
 #define PS2KB_TX	(PS2_BASE+0x04)
@@ -95,6 +97,7 @@ typedef volatile u32 vol_u32;
 
 #define P_SPI_CTRL	(*(vol_u32 *)SPI_CTRL)
 #define P_SPI_DATA	(*(vol_u32 *)SPI_DATA)
+#define P_SPI_QDATA	(*(vol_u64 *)SPI_QDATA)
 
 #define P_AIC_RTC_SEC_HI	(*(vol_u32 *)AIC_RTC_SEC_HI)
 #define P_AIC_RTC_SEC_LO	(*(vol_u32 *)AIC_RTC_SEC_LO)

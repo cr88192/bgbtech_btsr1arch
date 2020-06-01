@@ -133,6 +133,21 @@ isr_table:
 .global X(__smulsq)
 X(__umulsq):
 X(__smulsq):
+#if 1
+	shld.q	r4, -32, r6
+	shld.q	r5, -32, r7
+	dmulu	r4, r5, r2
+
+	dmulu	r4, r7, r16
+	dmulu	r6, r5, r17
+	add		r16, r17, r18
+	shld.q	r18, 32, r3
+	add		r3, r2
+
+	rtsu
+#endif
+
+#if 0
 	mov r4, r6
 	mov r5, r7
 	shlr32 r6
@@ -155,7 +170,7 @@ X(__smulsq):
 //	break
 
 	rts
-
+#endif
 
 #if 0
 .ifarch seen_idiv_var
@@ -554,6 +569,7 @@ __va64_arg_x.L0:
 	rts
 	nop
 
+#if 0
 .global X(__va64_arg_f)
 X(__va64_arg_f):
 	mov.l @(r4, 104), r2
@@ -616,6 +632,7 @@ X(__sthf16):
 	fstch fr4
 	mov dlr, r2
 	rts
+#endif
 
 .global X(__memcpy32)
 X(__memcpy32):
@@ -705,24 +722,45 @@ X(__do_ldtlb):
 .global X(__do_rethrow_fault)
 X(__do_rethrow_fault):
 	mov STACK_BASE_ISR, sp
-	sub #128, sp
-	pop r0
-	pop r1
-	pop r2
-	pop r3
-	pop r4
-	pop r5
-	pop r6
-	pop r7
-	pop r16
-	pop r17
-	pop r18
-	pop r19
-	pop r20
-	pop r21
-	pop r22
-	pop r23
-	
+#if 0
+//	sub #128, sp
+//	pop r0
+//	pop r1
+//	pop r2
+//	pop r3
+//	pop r4
+//	pop r5
+//	pop r6
+//	pop r7
+//	pop r16
+//	pop r17
+//	pop r18
+//	pop r19
+//	pop r20
+//	pop r21
+//	pop r22
+//	pop r23
+#endif
+
+	sub 	128, sp
+	mov.q	(sp,   0), r0
+	mov.q	(sp,   8), r1
+	mov.q	(sp,  16), r2
+	mov.q	(sp,  24), r3
+	mov.q	(sp,  32), r4
+	mov.q	(sp,  40), r5
+	mov.q	(sp,  48), r6
+	mov.q	(sp,  56), r7
+	mov.q	(sp,  64), r16
+	mov.q	(sp,  72), r17
+	mov.q	(sp,  80), r18
+	mov.q	(sp,  88), r19
+	mov.q	(sp,  96), r20
+	mov.q	(sp, 104), r21
+	mov.q	(sp, 112), r22
+	mov.q	(sp, 120), r23
+	add		128, sp
+
 	mov vbr, r2
 	add #8, r2
 	jmp r2

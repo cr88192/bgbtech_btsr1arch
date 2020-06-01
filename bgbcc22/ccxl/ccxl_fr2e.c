@@ -879,9 +879,9 @@ int BGBCC_FR2E_EmitVirtOp(
 	
 	msk|=1;
 	
+	opn2=BGBCC_FR2E_BitMerge(op->opn, op->opr);
 	if((msk&3)==3)
 	{
-		opn2=BGBCC_FR2E_BitMerge(op->opn, op->opr);
 		if(opn2<128)msk&=~1;
 	}
 

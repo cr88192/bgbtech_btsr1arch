@@ -1946,6 +1946,15 @@ int BGBCC_JX2C_EmitLeaBRegIRegScReg(
 	int p0, p1, shl, bs, cbo, cmo;
 	int i, j, k;
 
+#if 1
+	if(sc==1)
+	{
+		BGBCC_JX2_EmitOpRegRegReg(sctx, BGBCC_SH_NMID_ADD,
+			breg, ireg, dreg);
+		return(1);
+	}
+#endif
+
 	switch(sc)
 	{
 	case 1: shl=0; bs=2; break;

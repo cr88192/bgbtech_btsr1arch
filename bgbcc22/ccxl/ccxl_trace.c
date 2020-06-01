@@ -206,8 +206,8 @@ ccxl_status BGBCC_CCXL_GlobalMarkReachable_Func(BGBCC_TransState *ctx,
 		if(op->opn==CCXL_VOP_CALL)
 		{
 			BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, op->dst, 1);
-//			BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, op->srca, 0);
-			BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, op->srca, 1);
+			BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, op->srca, 0);
+//			BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, op->srca, 1);
 			BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, op->srcb, 0);
 		
 			n=op->imm.call.na;

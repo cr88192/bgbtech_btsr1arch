@@ -21,6 +21,10 @@ input			inStrobeNoise;
 output[7:0]		outCharBit;
 output[7:0]		outSegBit;
 
+reg				tInStrobe1kHz;
+reg				tInStrobeNoise;
+reg[31:0]		tDispVal;
+
 reg[7:0]		tOutCharBit;
 reg[7:0]		tOutSegBit;
 reg[7:0]		tOutCharBit2;
@@ -45,13 +49,13 @@ reg			tNxtStrobe;
 always @*
 begin
 //	tNxtDutyStrobe	= 8'h3F;
-	tNxtDutyStrobe	= inStrobeNoise ? 8'h44 : 8'h3F;
-//	tNxtDutyStrobe	= inStrobeNoise ? 8'h22 : 8'h1F;
-//	tNxtDutyStrobe	= inStrobeNoise ? 8'h11 : 8'h0F;
+	tNxtDutyStrobe	= tInStrobeNoise ? 8'h44 : 8'h3F;
+//	tNxtDutyStrobe	= tInStrobeNoise ? 8'h22 : 8'h1F;
+//	tNxtDutyStrobe	= tInStrobeNoise ? 8'h11 : 8'h0F;
 
 	tOutCharBit		= 8'hFF;
 	tOutSegBit		= 8'hFF;
-	tNxtCharPos		= tCharPos + (inStrobe1kHz?1:0);
+	tNxtCharPos		= tCharPos + (tInStrobe1kHz?1:0);
 	
 	{tNxtStrobe, tNxtAccStrobe}	=
 		{1'b0, tAccStrobe} +
@@ -65,14 +69,14 @@ begin
 		tOutCharBit[tCharPos] = 0;
 
 	case(tCharPos)
-		3'b000: tHexNibA = dispVal[31:28];
-		3'b001: tHexNibA = dispVal[27:24];
-		3'b010: tHexNibA = dispVal[23:20];
-		3'b011: tHexNibA = dispVal[19:16];
-		3'b100: tHexNibA = dispVal[15:12];
-		3'b101: tHexNibA = dispVal[11: 8];
-		3'b110: tHexNibA = dispVal[ 7: 4];
-		3'b111: tHexNibA = dispVal[ 3: 0];
+		3'b000: tHexNibA = tDispVal[31:28];
+		3'b001: tHexNibA = tDispVal[27:24];
+		3'b010: tHexNibA = tDispVal[23:20];
+		3'b011: tHexNibA = tDispVal[19:16];
+		3'b100: tHexNibA = tDispVal[15:12];
+		3'b101: tHexNibA = tDispVal[11: 8];
+		3'b110: tHexNibA = tDispVal[ 7: 4];
+		3'b111: tHexNibA = tDispVal[ 3: 0];
 	endcase
 	
 	case(tHexNibB)
@@ -108,6 +112,10 @@ begin
 	tAccStrobe		<= tNxtAccStrobe;
 	tDutyStrobe		<= tNxtDutyStrobe;
 	tStrobe			<= tNxtStrobe;
+
+	tInStrobe1kHz	<= inStrobe1kHz;
+	tInStrobeNoise	<= inStrobeNoise;
+	tDispVal		<= dispVal;
 end
 
 endmodule

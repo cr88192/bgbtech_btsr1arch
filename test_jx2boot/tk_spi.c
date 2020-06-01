@@ -5,6 +5,7 @@
 #define SPICTRL_XMIT	0x02
 #define SPICTRL_BUSY	0x02
 #define SPICTRL_LOOP	0x08
+#define SPICTRL_XMIT8X	0x20
 
 #define SPI_RES			0xAB
 #define SPI_RDID		0x9F
@@ -120,6 +121,7 @@ int TKSPI_ReadBasic(int chip, u32 addr,
 	byte *bufptr, u32 len)
 {
 	byte *ptr;
+	int v;
 
 	ptr=bufptr;
 	TKSPI_ChipSel(chip);
@@ -129,8 +131,19 @@ int TKSPI_ReadBasic(int chip, u32 addr,
 	TKSPI_XchByte(addr);
 	while(len)
 	{
-		*ptr++=TKSPI_XchByte(0);
+//		*ptr++=TKSPI_XchByte(0);
+//		len--;
+
+#if 1
+		P_SPI_DATA=0;
+		P_SPI_CTRL=tkspi_ctl_status|SPICTRL_XMIT;
+		v=P_SPI_CTRL;
+		while(v&SPICTRL_BUSY) 
+			v=P_SPI_CTRL;
+		v=P_SPI_DATA;
+		*ptr++=v;
 		len--;
+#endif
 	}
 	TKSPI_ChipSel(0);
 	return(1);
@@ -142,7 +155,7 @@ int TKSPI_DelayUSec(int us)
 
 int TKSPI_ReadData(byte *buf, u32 len)
 {
-	byte *ct;
+	byte *ct, *cte;
 	u32 count;
 	u32 v;
 	byte rv;
@@ -170,6 +183,7 @@ int TKSPI_ReadData(byte *buf, u32 len)
 //	printf("<");
 
 	ct=buf; n=len;
+	cte=ct+n;
 
 //	__debugbreak();
 
@@ -179,7 +193,29 @@ int TKSPI_ReadData(byte *buf, u32 len)
 	{
 		__debugbreak();
 	}
-	
+
+#if 1
+	if(!(len&7))
+	{
+//		while(n>0)
+		while(ct<cte)
+		{
+			P_SPI_QDATA=0xFFFFFFFFFFFFFFFFULL;
+			P_SPI_CTRL=tkspi_ctl_status|SPICTRL_XMIT8X;
+			v=P_SPI_CTRL;
+			while(v&SPICTRL_BUSY) 
+				v=P_SPI_CTRL;
+			*(u64 *)ct=P_SPI_QDATA;
+			ct+=8;
+		}
+
+		TKSPI_XchByte(0xFF);
+		TKSPI_XchByte(0xFF);
+
+		return(0);
+	}
+#endif	
+
 	while((n--)>0)
 	{
 #if 0
