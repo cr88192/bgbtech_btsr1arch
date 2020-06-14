@@ -269,9 +269,14 @@ void R_GenerateComposite (int texnum)
 
 	collump = texturecolumnlump[texnum];
 	colofs = texturecolumnofs[texnum];
-	
+
+#if 0
+	//BGB: was this something I added?...
 	for (x=0 ; x<texture->width ; x++)
 	{
+		if (collump[x] >= 0)
+			continue;
+
 #if 1
 		tdest=block + colofs[x];
 		tdest[0]=0x00;
@@ -281,6 +286,7 @@ void R_GenerateComposite (int texnum)
 		tdest[(texture->height)+5]=0x00;
 #endif
 	}
+#endif
 
 	// Composite the columns together.
 	patch = texture->patches;
@@ -347,6 +353,11 @@ void R_GenerateLookup (int texnum)
 	collump = texturecolumnlump[texnum];
 	colofs = texturecolumnofs[texnum];
 	
+	if(texture->width<0)
+		__debugbreak();
+	if(texture->height<0)
+		__debugbreak();
+	
 	// Now count the number of columns
 	//	that are covered by more than one patch.
 	// Fill in the lump / offset, so columns
@@ -401,10 +412,12 @@ void R_GenerateLookup (int texnum)
 				 texnum);
 			}
 			
-//			texturecompositesize[texnum] += texture->height;
-			texturecompositesize[texnum] += texture->height+6;
+			texturecompositesize[texnum] += texture->height;
+//			texturecompositesize[texnum] += texture->height+6;
 		}
-	}	
+	}
+
+//	texturecompositesize[texnum] += texture->height+6;
 }
 
 
@@ -584,9 +597,9 @@ void R_InitTextures (void)
 
 		w_strupr_n(texture->name, mtexture->name, sizeof(texture->name));
 		
-		j = W_HashIndexForName(texture->name);
-		texture->next = texturehash[j];
-		texturehash[j] = i;
+//		j = W_HashIndexForName(texture->name);
+//		texture->next = texturehash[j];
+//		texturehash[j] = i;
 		
 		mpatch = &mtexture->patches[0];
 		patch = &texture->patches[0];
@@ -613,6 +626,10 @@ void R_InitTextures (void)
 		textureheight[i] = texture->height<<FRACBITS;
 			
 		totalwidth += texture->width;
+
+		j = W_HashIndexForName(texture->name);
+		texture->next = texturehash[j];
+		texturehash[j] = i;
 	}
 
 	Z_Free (maptex1);
@@ -871,7 +888,7 @@ int R_FlatNumForName (char* name)
 int	R_CheckTextureNumForName (char *name)
 {
 	char tname[9];
-	int		i, h;
+	int		i, h, n;
 
 	// "NoTexture" marker.
 	if (name[0] == '-')		
@@ -879,23 +896,32 @@ int	R_CheckTextureNumForName (char *name)
 	
 	w_strupr_n(tname, name, 8);
 	h = W_HashIndexForName(tname);
+	n = numtextures;
 
 #if 1
 	i = texturehash[h];
 	while(i>=0)
+//	while((i>=0) && (n>=0))
 	{
 		if (!memcmp (textures[i]->name, tname, 8) )
 			return(i);
 		i = textures[i]->next;
+
+		if(n<0)
+			break;
+		n--;
 	}
 #endif
 
-#if 0
-	for (i=0 ; i<numtextures ; i++)
+#if 1
+	if(n<0)
 	{
-//		if (!strnicmp (textures[i]->name, name, 8) )
-		if (!memcmp (textures[i]->name, tname, 8) )
-			return i;
+		for (i=0 ; i<numtextures ; i++)
+		{
+	//		if (!strnicmp (textures[i]->name, name, 8) )
+			if (!memcmp (textures[i]->name, tname, 8) )
+				return i;
+		}
 	}
 #endif
 		

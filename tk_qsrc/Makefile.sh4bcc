@@ -34,17 +34,20 @@ CFLAGS=$(TK_CFL) $(BASE_CFLAGS) -mBSR1
 LDFLAGS=$(TK_LDFL) -lvxcore
 
 # CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2E
-CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2F -O2 -fwex3w -fwexj
+CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2F -O2 -fwex3w -fwexj -Zz
 # CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2F -O2
 # CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2F -Os
 # CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2
 LDFLAGS64=$(TK_LDFL) -lvxcore64
+
+GL_CFLAGS64	= $(CFLAGS64) /DGLQUAKE
 
 all: targets
 
 # targets: quake_sh4b.elf quake_cgfx_sh4b.elf primecnt_sh4b.elf \
 #	quake_b64b.exe primecnt_b64b.exe
 targets: quake_b64b.exe dhry_b64b.exe
+# glquake_b64b.exe
 
 SQUAKE_SRCS = \
 	q1base/cl_demo.c \
@@ -154,6 +157,65 @@ SKIP_SRCS=\
 	q1base/snd_mixa.c \
 	q1base/sys_dosa.o
 
+GLQUAKE_SRCS = \
+	q1base/cl_demo.c	\
+	q1base/cl_input.c	\
+	q1base/cl_main.c	\
+	q1base/cl_parse.c	\
+	q1base/cl_tent.c	\
+	q1base/chase.c		\
+	q1base/cmd.c		\
+	q1base/common.c		\
+	q1base/console.c	\
+	q1base/crc.c		\
+	q1base/cvar.c		\
+	\
+	q1base/glquake/gl_draw.c	\
+	q1base/glquake/gl_mesh.c	\
+	q1base/glquake/gl_model.c	\
+	q1base/glquake/gl_refrag.c	\
+	q1base/glquake/gl_rlight.c	\
+	q1base/glquake/gl_rmain.c	\
+	q1base/glquake/gl_rmisc.c	\
+	q1base/glquake/gl_rsurf.c	\
+	q1base/glquake/gl_screen.c	\
+	q1base/glquake/gl_test.c	\
+	q1base/glquake/gl_warp.c	\
+	q1base/glquake/gl_qgl.c		\
+	\
+	q1base/host.c		\
+	q1base/host_cmd.c	\
+	q1base/keys.c		\
+	q1base/menu.c		\
+	q1base/mathlib.c	\
+	q1base/net_loop.c	\
+	q1base/net_main.c	\
+	q1base/net_vcr.c	\
+	q1base/net_none.c	\
+	q1base/pr_cmds.c	\
+	q1base/pr_edict.c	\
+	q1base/pr_exec.c	\
+	q1base/r_part.c		\
+	q1base/sbar.c		\
+	q1base/sv_main.c	\
+	q1base/sv_phys.c	\
+	q1base/sv_move.c	\
+	q1base/sv_user.c	\
+	q1base/zone.c		\
+	q1base/view.c		\
+	q1base/wad.c		\
+	q1base/world.c		\
+	\
+	q1base/cd_null.c \
+	\
+	q1base/in_btsh4.c \
+	q1base/sys_btsh4.c \
+	q1base/vid_btsh4_gl.c \
+	q1base/snd_dma.c \
+	q1base/snd_mem.c \
+	q1base/snd_mix.c \
+	q1base/snd_btsh4.c
+
 DHRY_SRCS =			\
 	dhry/dhry_1.c	\
 	dhry/dhry_2.c
@@ -172,11 +234,14 @@ primecnt_sh4b.elf: primecnt.c
 
 
 dhry_b64b.exe: $(DHRY_SRCS)
-	$(CC) $(CFLAGS64) -o $@ $(DHRY_SRCS) $(LDFLAGS64) -DTIME
+	$(CC) $(CFLAGS64) -o $@ $(DHRY_SRCS) $(LDFLAGS64) -DTIME -DREG=register
 
 
 quake_b64b.exe: $(SQUAKE_SRCS)
 	$(CC) $(CFLAGS64) -o $@ $(SQUAKE_SRCS) $(LDFLAGS64)
+
+glquake_b64b.exe: $(GLQUAKE_SRCS)
+	$(CC) $(GL_CFLAGS64) -o $@ $(GLQUAKE_SRCS) $(LDFLAGS64)
 
 primecnt_b64b.exe: primecnt.c
 	$(CC) $(CFLAGS64) -o $@ primecnt.c $(LDFLAGS64)

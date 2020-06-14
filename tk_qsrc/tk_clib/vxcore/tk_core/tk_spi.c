@@ -5,6 +5,7 @@
 #define SPICTRL_XMIT	0x02
 #define SPICTRL_BUSY	0x02
 #define SPICTRL_LOOP	0x08
+#define SPICTRL_XMIT8X	0x20
 
 #define SPI_RES			0xAB
 #define SPI_RDID		0x9F
@@ -106,7 +107,7 @@ int TKSPI_DelayUSec(int us)
 
 int TKSPI_ReadData(byte *buf, u32 len)
 {
-	byte *ct;
+	byte *ct, *cte;
 	u32 count, v;
 	byte rv;
 	int n;
@@ -140,6 +141,32 @@ int TKSPI_ReadData(byte *buf, u32 len)
 //	printf("<");
 
 	ct=buf; n=len;
+	cte=ct+n;
+
+#if 1
+	if(!(len&7))
+	{
+//		while(n>0)
+		while(ct<cte)
+		{
+			P_SPI_QDATA=0xFFFFFFFFFFFFFFFFULL;
+			P_SPI_CTRL=tkspi_ctl_status|SPICTRL_XMIT8X;
+			v=P_SPI_CTRL;
+//			__debugbreak();
+			while(v&SPICTRL_BUSY) 
+				v=P_SPI_CTRL;
+			*(u64 *)ct=P_SPI_QDATA;
+//			__debugbreak();
+			ct+=8;
+		}
+
+		TKSPI_XchByte(0xFF);
+		TKSPI_XchByte(0xFF);
+
+		return(0);
+	}
+#endif	
+
 	while((n--)>0)
 	{
 //		rv=TKSPI_XchByte(0xFF);

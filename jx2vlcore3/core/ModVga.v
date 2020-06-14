@@ -493,9 +493,17 @@ begin
 //		tScPwmCtG[15:0] = 144 * tBaseCgB + 19456;
 //		tScPwmCtB[15:0] = 144 * tBaseCbB + 19456;
 
-		tScPwmCtR[15:0] = (tBaseCrB << 7) + 19456;
-		tScPwmCtG[15:0] = (tBaseCgB << 7) + 19456;
-		tScPwmCtB[15:0] = (tBaseCbB << 7) + 19456;
+//		tScPwmCtR[15:0] = (tBaseCrB << 7) + 19456;
+//		tScPwmCtG[15:0] = (tBaseCgB << 7) + 19456;
+//		tScPwmCtB[15:0] = (tBaseCbB << 7) + 19456;
+
+//		tScPwmCtR[15:0] = (tBaseCrB * 160) + 20480;
+//		tScPwmCtG[15:0] = (tBaseCgB * 160) + 20480;
+//		tScPwmCtB[15:0] = (tBaseCbB * 160) + 20480;
+
+		tScPwmCtR[15:0] = (tBaseCrB << 7) + (tBaseCrB << 5) + 20480;
+		tScPwmCtG[15:0] = (tBaseCgB << 7) + (tBaseCgB << 5) + 20480;
+		tScPwmCtB[15:0] = (tBaseCbB << 7) + (tBaseCbB << 5) + 20480;
 	end
 
 	if(tVSyncClk>0)		/* VSync */

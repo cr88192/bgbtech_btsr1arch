@@ -812,6 +812,9 @@ void R_DrawParticles (void)
 	float			dvel;
 	float			frametime;
 	
+	if(r_lowfps>1)
+		return;
+	
 	D_StartParticles ();
 
 	VectorScale (vright, xscaleshrink, r_pright);

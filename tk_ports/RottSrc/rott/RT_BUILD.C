@@ -1230,9 +1230,9 @@ void DrawMenuBufIString (int px, int py, char *string, int color)
 		Error("Called DrawMenuBufPropString without menubuf started\n");
 
 	if ( ( color < 0 ) || ( color > 255 ) )
-		{
+	{
 		Error( "Intensity Color out of range\n" );
-		}
+	}
 
 	ht = IFont->height;
 	dest = origdest = (byte*)menubuf+(px*TEXTUREHEIGHT)+py;
@@ -1244,7 +1244,7 @@ void DrawMenuBufIString (int px, int py, char *string, int color)
 	{
 		// Tab
 		if ( ch == '\x9' )
-			{
+		{
 			int offset;
 
 			PrintX	-= px;
@@ -1253,9 +1253,15 @@ void DrawMenuBufIString (int px, int py, char *string, int color)
 			origdest += offset * TEXTUREHEIGHT;
 			dest		= origdest;
 			continue;
-			}
+		}
 
 		ch -= 31;
+		if(ch<0)
+		{
+			ch=1;
+//			break;
+		}
+		
 		width = IFont->width[ ch ];
 
 		source = ( ( byte * )IFont ) + IFont->charofs[ ch ];
@@ -1267,10 +1273,10 @@ void DrawMenuBufIString (int px, int py, char *string, int color)
 			{
 				pix = *source;
 				if ( pix != 0xFE )
-					{
+				{
 					*dest = ( ( byte )intensitytable[ ( pix << 8 ) + color ] );
 					GetIntensityColor( pix );
-					}
+				}
 
 				source++;
 				dest ++;

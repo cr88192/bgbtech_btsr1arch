@@ -5,6 +5,8 @@ TK_CFL=-DARCH_SH4 -DARCH_SH4LE -O3
 # TK_LDFL= $TK_CFL
 
 TK_LDFL64= -L. -lvxcore64 -fwex3w -fwexj
+# TK_LDFL64= -L. -lvxcore64 -fwex3w
+# TK_LDFL64= -L. -lvxcore64
 #  /fwex3w
 
 TOOLPATH=
@@ -120,13 +122,13 @@ libvxcore_bjx2.ril: $(SRCS_CLIB) $(SRCS_ASM) $(SRCS_BS2) $(SRCS_ASM_2)
 	$(CC) -o libvxcore_bjx2.ril vxcore_multi.c $(SRCS_ASM) $(SRCS_BS2) $(COPTS64)
 
 libc.bjx2.ril: $(SRCS_CLIB) $(SRCS_ASM) $(SRCS_BS2) $(SRCS_ASM_2)
-	$(CC) -o libc.bjx2.ril libc_multi.c $(SRCS_ASM) $(COPTS)
+	$(CC) -o libc.bjx2.ril libc_multi.c $(SRCS_ASM) $(COPTS64)
 
 libm.bjx2.ril: $(SRCS_CLIB) $(SRCS_ASM) $(SRCS_BS2) $(SRCS_ASM_2)
-	$(CC) -o libm.bjx2.ril libm_multi.c $(COPTS)
+	$(CC) -o libm.bjx2.ril libm_multi.c $(COPTS64)
 
 libdl.bjx2.ril: $(SRCS_CLIB) $(SRCS_ASM) $(SRCS_BS2) $(SRCS_ASM_2)
-	$(CC) -o libdl.bjx2.ril libdl_multi.c $(COPTS)
+	$(CC) -o libdl.bjx2.ril libdl_multi.c $(COPTS64)
 
 tkshell.sys: $(SRCS_TKSH)
 	$(CC) -o tkshell.sys tkshell_multi.c $(COPTS64) $(TK_LDFL64)

@@ -22,7 +22,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "develop.h"
 
-#if (SHAREWARE == 0)
+// #if (SHAREWARE == 0)
+#if 1
 #define MAXSTATES 1300
 #else
 #define MAXSTATES 660
@@ -374,7 +375,8 @@ extern   statetype s_diskmaster;
 extern   statetype s_bstar1;
 
 
-#if (SHAREWARE == 0)
+// #if (SHAREWARE == 0)
+#if 1
 
 extern   statetype s_scottwander1;
 extern   statetype s_scottwanderdoor1;

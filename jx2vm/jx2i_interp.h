@@ -643,6 +643,7 @@ int (*MemSetByte)(BJX2_Context *ctx, bjx2_addr addr0, int val);
 int (*MemSetWord)(BJX2_Context *ctx, bjx2_addr addr0, int val);
 int (*MemSetDWord)(BJX2_Context *ctx, bjx2_addr addr0, s32 val);
 int (*MemSetQWord)(BJX2_Context *ctx, bjx2_addr addr0, s64 val);
+int (*MemSetTripwire)(BJX2_Context *ctx, bjx2_addr addr0, int val);
 };
 
 struct BJX2_Opcode_s {
@@ -691,6 +692,7 @@ bjx2_addru addr_sz;		//address-space size
 
 char *name;				//helpful name
 void *data;				//raw data pointer
+byte *tripwire;			//tripwire mask
 byte simple_mem;		//simple memory read
 
 int (*GetByte)(BJX2_Context *ctx,
@@ -710,6 +712,8 @@ int (*SetDWord)(BJX2_Context *ctx,
 	BJX2_MemSpan *sp, bjx2_addr addr, s32 val);
 int (*SetQWord)(BJX2_Context *ctx,
 	BJX2_MemSpan *sp, bjx2_addr addr, s64 val);
+int (*SetTripwire)(BJX2_Context *ctx,
+	BJX2_MemSpan *sp, bjx2_addr addr, int mode);
 };
 
 BJX2_Opcode *BJX2_ContextAllocOpcode(BJX2_Context *ctx);

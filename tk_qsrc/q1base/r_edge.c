@@ -227,8 +227,8 @@ void R_RemoveEdges (edge_t *pedge)
 	{
 		ppedge = pedge->prev;
 		pnedge = pedge->next;
-		if(!ppedge)	break;	//BGB
-		if(!pnedge)	break;	//BGB
+//		if(!ppedge)	break;	//BGB
+//		if(!pnedge)	break;	//BGB
 		pnedge->prev = ppedge;
 		ppedge->next = pnedge;
 	
@@ -272,40 +272,40 @@ nextedge:
 		if((n--)<=0)	//BGB
 			return;
 
-		if(!pedge || !pedge->prev) //BGB
-			return;
+//		if(!pedge || !pedge->prev) //BGB
+//			return;
 
 		pedge->u += pedge->u_step;
 		if (pedge->u < pedge->prev->u)
 			goto pushback;
 		pedge = pedge->next;
 			
-		if(!pedge || !pedge->prev) //BGB
-			return;
+//		if(!pedge || !pedge->prev) //BGB
+//			return;
 
 		pedge->u += pedge->u_step;
 		if (pedge->u < pedge->prev->u)
 			goto pushback;
 		pedge = pedge->next;
 
-		if(!pedge || !pedge->prev) //BGB
-			return;
+//		if(!pedge || !pedge->prev) //BGB
+//			return;
 			
 		pedge->u += pedge->u_step;
 		if (pedge->u < pedge->prev->u)
 			goto pushback;
 		pedge = pedge->next;
 
-		if(!pedge || !pedge->prev) //BGB
-			return;
+//		if(!pedge || !pedge->prev) //BGB
+//			return;
 			
 		pedge->u += pedge->u_step;
 		if (pedge->u < pedge->prev->u)
 			goto pushback;
 		pedge = pedge->next;
 
-		if(!pedge || !pedge->prev) //BGB
-			return;
+//		if(!pedge || !pedge->prev) //BGB
+//			return;
 
 //		if(!pedge)	//BGB
 //			return;
@@ -316,10 +316,10 @@ pushback:
 		if (pedge == &edge_aftertail)
 			return;
 
-		if(!pedge->next)	//BGB
-			return;
-		if(!pedge->prev)	//BGB
-			return;
+//		if(!pedge->next)	//BGB
+//			return;
+//		if(!pedge->prev)	//BGB
+//			return;
 			
 	// push it back to keep it sorted		
 		pnext_edge = pedge->next;
@@ -334,14 +334,15 @@ pushback:
 		pwedge = pedge->prev->prev;
 		
 		n1=256;
-//		while (pwedge->u > pedge->u)
-		while ( pwedge && (pwedge->u > pedge->u) && ((n1--)>0))		//BGB
+		while (pwedge->u > pedge->u)
+//		while ((pwedge->u > pedge->u) && ((n1--)>0))		//BGB
+//		while ( pwedge && (pwedge->u > pedge->u) && ((n1--)>0))		//BGB
 		{
 			pwedge = pwedge->prev;
 		}
 		
-		if(!pwedge) //BGB
-			return;
+//		if(!pwedge) //BGB
+//			return;
 
 	// put the edge back into the edge list
 		pedge->next = pwedge->next;
@@ -744,10 +745,10 @@ void R_GenerateSpans (void)
 // generate spans
 	for (edge=edge_head.next ; edge != &edge_tail; edge=edge->next)
 	{
-		if((n--)<=0)
-			break;
-		if(!edge)
-			break;
+//		if((n--)<=0)
+//			break;
+//		if(!edge)
+//			break;
 	
 		if (edge->surfs[0])
 		{

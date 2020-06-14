@@ -130,17 +130,33 @@ isr_tlbfault:
 isr_syscall:
 	mov sp, r16
 	mov STACK_BASE_SYS, sp
-	push r16
-	push gbr
-	push lr
+//	push r16
+//	push gbr
+//	push lr
+
+	mov gbr, r17
+	mov lr, r18
+
+	add -24, sp
+	mov.q r16, (sp, 16)
+	mov.q r17, (sp, 8)
+	mov.q r18, (sp, 0)
 
 //	break
 
 	bsr X(tk_isr_syscall)
+
+	mov.q (sp, 16), r16
+	mov.q (sp, 8), r17
+	mov.q (sp, 0), r18
+	add 24, sp
+
+	mov r17, gbr
+	mov r18, lr
 	
-	pop lr
-	pop gbr
-	pop r16
+//	pop lr
+//	pop gbr
+//	pop r16
 	mov r16, sp
 
 //	break
@@ -158,9 +174,17 @@ isr_table:
 
 .global X(tk_getsavedvbr)
 X(tk_getsavedvbr):
-//	mov		__tk_saved_vbr, r3
-//	mov.q	@r3, r2
-	mov.q	__tk_saved_vbr, r2
+	mov		__tk_saved_vbr, r3
+	mov.q	@r3, r2
+//	mov.q	__tk_saved_vbr, r2
+
+//	tstq	r2, r2
+//	break?f
+
+	nop
+	nop
+
+//	xor r2, r2
 	rts
 
 #if 0
@@ -185,21 +209,31 @@ X(tk_syscall):
 
 .global X(__umullq)
 X(__umullq):
+	dmulu	r4, r5, r2
+	rts
+
+#if 0
 	dmulu r4, r5
 	mov dhr, r3
 	mov dlr, r2
 	shll32 r3
 	add r3, r2
 	rts
+#endif
 
 .global X(__smullq)
 X(__smullq):
+	dmuls	r4, r5, r2
+	rts
+
+#if 0
 	dmuls r4, r5
 	mov dhr, r3
 	mov dlr, r2
 	shll32 r3
 	add r3, r2
 	rts
+#endif
 
 /*
 	umulsq: Unsigned Multiply, Single Quad
@@ -210,6 +244,21 @@ X(__smullq):
 .global X(__smulsq)
 X(__umulsq):
 X(__smulsq):
+#if 1
+	shld.q	r4, -32, r6
+	shld.q	r5, -32, r7
+	dmulu	r4, r5, r2
+
+	dmulu	r4, r7, r16
+	dmulu	r6, r5, r17
+	add		r16, r17, r18
+	shld.q	r18, 32, r3
+	add		r3, r2
+
+	rtsu
+#endif
+
+#if 0
 	mov r4, r6
 	mov r5, r7
 	shlr32 r6
@@ -232,11 +281,39 @@ X(__smulsq):
 //	break
 
 	rts
+#endif
 
 /*
 	umuldq: Unsigned Multiply, Double Quad
 */
 .global X(__umuldq)
+#if 1
+	shld.q	r4, -32, r6
+	shld.q	r5, -32, r7
+
+	dmulu	r4, r5, r16
+	dmulu	r4, r7, r17
+	dmulu	r6, r5, r18
+	dmulu	r6, r7, r19
+
+	shld.q	r17, 32, r20
+	shld.q	r17, -32, r21
+	shld.q	r18, 32, r22
+	shld.q	r18, -32, r23
+
+	mov		r16, r2
+	mov		r19, r3
+	clrt
+	addc	r20, r2
+	addc	r21, r3
+	clrt
+	addc	r22, r2
+	addc	r23, r3
+
+	rtsu
+#endif
+
+#if 0
 	mov r4, r6
 	mov r5, r7
 	shlr32 r6
@@ -263,11 +340,39 @@ X(__smulsq):
 //	break
 
 	rts
+#endif
 
 /*
 	smuldq: Signed Multiply, Double Quad
 */
 .global X(__smuldq)
+#if 1
+	shad.q	r4, -32, r6
+	shad.q	r5, -32, r7
+
+	dmulu	r4, r5, r16
+	dmulu	r4, r7, r17
+	dmulu	r6, r5, r18
+	dmuls	r6, r7, r19
+
+	shld.q	r17, 32, r20
+	shld.q	r17, -32, r21
+	shld.q	r18, 32, r22
+	shld.q	r18, -32, r23
+
+	mov		r16, r2
+	mov		r19, r3
+	clrt
+	addc	r20, r2
+	addc	r21, r3
+	clrt
+	addc	r22, r2
+	addc	r23, r3
+
+	rtsu
+#endif
+
+#if 0
 	mov r4, r6
 	mov r5, r7
 	shlr32 r6
@@ -294,6 +399,7 @@ X(__smulsq):
 //	break
 
 	rts
+#endif
 
 
 #if 0
@@ -762,6 +868,7 @@ __va64_arg_x.L0:
 	rts
 	nop
 
+#if 0
 .ifnarch bjx1_nofpu
 
 .global X(__va64_arg_f)
@@ -815,6 +922,7 @@ __va64_arg_d.L0:
 	rts
 	nop
 
+#if 0
 .global X(__ldhf16)
 X(__ldhf16):
 	mov r4, dlr
@@ -827,8 +935,10 @@ X(__sthf16):
 	fstch fr4
 	mov dlr, r2
 	rts
+#endif
 
 .endif
+#endif
 
 .global X(__memcpy32)
 X(__memcpy32):
@@ -903,8 +1013,69 @@ X(__memcpy8_16):
 	mov.q r1, @(r4, 8)
 	rts
 
+.ifarch bjx2_movx
+memcpy_movx:
+	CMP/GE	32, R6
+	BF		.L1
+	.L0:
+	MOV.X	(R5,  0), R20
+	MOV.X	(R5, 16), R22
+	ADD		32, R5		|	ADD		-32, R6
+	MOV.X	R20, (R4,  0)
+	MOV.X	R22, (R4, 16)
+	ADD		32, R4		|	CMP/GE	32, R6
+	BT		.L0
+	.L1:
+
+	CMP/GE	8, R6
+	BF		.L3
+	.L2:
+	ADD		-8, R6		|	MOV.Q	(R5,  0), R20
+	ADD		8, R5		|	MOV.Q	R20, (R4,  0)
+	ADD		8, R4		|	CMP/GE	8, R6
+	BT		.L2
+	.L3:
+
+#if 1
+	TEST	R6, R6
+	RTSU?T
+//	BT		.L5
+
+	CMP/GE		4, R6
+	MOV.L?T		(R5), R2
+	MOV.L?T		R2, (R4)
+	ADD?T		4, R4
+	ADD?T		4, R5
+	ADD?T		-4, R6
+
+	CMP/GE		2, R6
+	MOV.W?T		(R5), R2
+	MOV.W?T		R2, (R4)
+	ADD?T		2, R4
+	ADD?T		2, R5
+	ADD?T		-2, R6
+
+	CMP/GE		1, R6
+	MOV.B?T		(R5), R2
+	MOV.B?T		R2, (R4)
+
+//	.L5:
+#endif
+
+	RTSU
+.endif
+
 .global X(memcpy)
 X(memcpy):
+#if 1
+.ifarch bjx2_movx
+	OR		r4, r5,	r7
+//	OR		r7, r6,	r7
+	TEST	#7, r7
+	BT		memcpy_movx
+.endif
+#endif
+
 .ifarch bjx2_wex
 	cmp/ge	#32, r6
 	bf		.L1
@@ -1175,11 +1346,13 @@ X(__fpu_frcp):
 	fldch r0, r3
 	fcmp/gt r4, r3
 	bf .L0
-	push lr
+//	push lr
+	mov lr, r20
 	fneg r4
 	bsr __fpu_frcp
 	fneg r2
-	ret
+	jmp r20
+//	ret
 
 	.L0:
 //	mov r4, r3
@@ -1223,11 +1396,13 @@ X(__fpu_frcp_s):
 	fldch r0, r3
 	fcmp/gt r4, r3
 	bf .L0
-	push lr
+//	push lr
+	mov lr, r20
 	fneg r4
 	bsr __fpu_frcp_s
 	fneg r2
-	ret
+	jmp r20
+//	ret
 
 	.L0:
 	mov #0x7FF0000000000000, r5
@@ -1289,11 +1464,13 @@ X(__fpu_frcp_sf):
 	fldch r0, r3
 	fcmp/gt r4, r3
 	bf .L0
-	push lr
+//	push lr
+	mov lr, r20
 	fneg r4
 	bsr __fpu_frcp_s
 	fneg r2
-	ret
+	jmp r20
+//	ret
 
 	.L0:
 	mov #0x7FF0000000000000, r5
@@ -1415,11 +1592,13 @@ X(__fpu_frcp):
 	fldch dr3
 	fcmp/gt dr4, dr3
 	bf .L0
-	push lr
+//	push lr
+	mov lr, r20
 	fneg dr4
 	bsr __fpu_frcp
 	fneg dr2
-	ret
+	jmp r20
+//	ret
 
 	.L0:
 	fmov dr4, dr5
@@ -1481,12 +1660,19 @@ X(strcmp):
 
 	xor r2, r2
 
+#if 1
 .L0:
 	mov.l @r4, r6
 	mov.l @r5, r7
 	cmpeq r6, r7
 	bf .L1
-	
+.ifarch bjx2_wex3
+	mov		0xFF00, r16		| tst #0xFF, r6
+	shad	r16, 8, r17		| movt r3			| tst r16, r6
+	shad	r17, 8, r16		| addc	r3, r3		| tst r17, r6
+	addc	r3, r3								| tst r16, r6
+	addc r3, r3
+.else
 	tst #0x000000FF, r6
 	movt r3
 	tst #0x0000FF00, r6
@@ -1495,6 +1681,7 @@ X(strcmp):
 	addc r3, r3
 	tst #0xFF000000, r6
 	addc r3, r3
+.endif
 	
 	tst r3, r3
 	bf .L2
@@ -1502,6 +1689,58 @@ X(strcmp):
 	add #4, r4
 	add #4, r5
 	bra .L0
+#endif
+
+#if 0
+.L0:
+	mov.q @r4, r6
+	mov.q @r5, r7
+	cmpqeq r6, r7
+	bf .L1
+.ifarch bjx2_wex3
+	mov		0xFF00, r16				| tstq #0xFF, r6	//0000 0000 0000 00FF
+	shad.q	r16, 8, r17	| movt r3		| tstq r16, r6	//0000 0000 0000 FF00
+	shad.q	r17, 8, r16	| addc	r3, r3	| tstq r17, r6	//0000 0000 00FF 0000
+	shad.q	r16, 8, r17	| addc	r3, r3	| tstq r16, r6	//0000 0000 FF00 0000
+	shad.q	r17, 8, r16	| addc	r3, r3	| tstq r17, r6	//0000 00FF 0000 0000
+	shad.q	r16, 8, r17	| addc	r3, r3	| tstq r16, r6	//0000 FF00 0000 0000
+	shad.q	r17, 8, r16	| addc	r3, r3	| tstq r17, r6	//00FF 0000 0000 0000
+	shad.q	r16, 8, r17	| addc	r3, r3	| tstq r16, r6	//FF00 0000 0000 0000
+	addc r3, r3
+.else
+	mov		0xFF, r16
+	shad.q	r16, 8, r17
+	tstq	r16, r6
+	movt r3
+	shad.q	r17, 8, r16
+	tstq r17, r6
+	addc r3, r3
+	shad.q	r16, 8, r17
+	tstq r16, r6
+	addc r3, r3
+	shad.q	r17, 8, r16
+	tstq r17, r6
+	addc r3, r3
+	shad.q	r16, 8, r17
+	tstq r16, r6
+	addc r3, r3
+	shad.q	r17, 8, r16
+	tstq r17, r6
+	addc r3, r3
+	shad.q	r16, 8, r17
+	tstq r16, r6
+	addc r3, r3
+	tstq r17, r6
+	addc r3, r3
+.endif
+	
+	tst r3, r3
+	bf .L2
+	
+	add #8, r4
+	add #8, r5
+	bra .L0
+#endif
 
 .L1:
 	mov.b @r4, r6

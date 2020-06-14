@@ -37,7 +37,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define W_CHANGE  (WEAPONUPTICS || WEAPONDOWNTICS)
 
-#if (SHAREWARE == 0)
+// #if (SHAREWARE == 0)
+#if 1
  #define NUMWEAPGRAPHICS 16
 #else
  #define NUMWEAPGRAPHICS 9

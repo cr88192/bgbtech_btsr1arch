@@ -772,6 +772,7 @@ char *tk_rovstrdup(char *str, void **rov)
 
 void __tk_farcall(void *fptr, void *gbr, void *newstack, void *tbr);
 int TK_DestroyTaskInfo(void *tkptr);
+void TK_FlushCacheL1D();
 
 int TKSH_TryLoad(char *img, char **args)
 {
@@ -886,6 +887,8 @@ int TKSH_TryLoad(char *img, char **args)
 				return(rv);
 			}
 		
+			TK_FlushCacheL1D();
+
 //			__arch_gbr=bootgbr;
 //			bootptr();
 			__tk_farcall(bootptr, bootgbr, boot_newsp, boottbr);

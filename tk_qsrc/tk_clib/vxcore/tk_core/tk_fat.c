@@ -1057,6 +1057,9 @@ void TKFAT_ReadImageFAT(TKFAT_ImageInfo *img)
 	rootnde=tkfat_getWord(img->boot32->root_dirents);
 	clsz=img->boot32->sectors_cluster;
 
+	if(!clsz || (clsz&(clsz-1)))
+		{ __debugbreak(); }
+
 	rootcl=tkfat_getDWord(img->boot32->root_cluster);
 
 	if((i0!=0) && (i1!=0) && (img->boot32->ebsig==0x29))
@@ -1081,6 +1084,8 @@ void TKFAT_ReadImageFAT(TKFAT_ImageInfo *img)
 
 	if(!clsz || (clsz&(clsz-1)))
 	{
+//		__debugbreak();
+
 		printf("TKFAT_ReadImageFAT: Bad Sectors/Cluster %d\n", clsz);
 		return;
 	}else

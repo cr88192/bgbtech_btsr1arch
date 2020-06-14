@@ -275,11 +275,11 @@ begin
 
 	chTabPcmB2A = chTabPcmB1B;
 	if(chCtr0B[22])
-		chTabPcmB2A = chTabPcmB2A - (chTabPcmB1>>3);
+		chTabPcmB2A = chTabPcmB2A - (chTabPcmB1B>>3);
 	if(chCtr0B[23])
-		chTabPcmB2A = chTabPcmB2A - (chTabPcmB1>>2);
+		chTabPcmB2A = chTabPcmB2A - (chTabPcmB1B>>2);
 	if(chCtr0B[24])
-		chTabPcmB2A = chTabPcmB2A - (chTabPcmB1>>1);
+		chTabPcmB2A = chTabPcmB2A - (chTabPcmB1B>>1);
 		
 	/* Clock Edge */
 
@@ -326,11 +326,11 @@ begin
 
 	chTabPcmA2A = chTabPcmA1B;
 	if(chCtr0A[22])
-		chTabPcmA2A = chTabPcmA2A - (chTabPcmA1>>3);
+		chTabPcmA2A = chTabPcmA2A - (chTabPcmA1B>>3);
 	if(chCtr0A[23])
-		chTabPcmA2A = chTabPcmA2A - (chTabPcmA1>>2);
+		chTabPcmA2A = chTabPcmA2A - (chTabPcmA1B>>2);
 	if(chCtr0A[24])
-		chTabPcmA2A = chTabPcmA2A - (chTabPcmA1>>1);
+		chTabPcmA2A = chTabPcmA2A - (chTabPcmA1B>>1);
 		
 	/* Clock Edge */
 

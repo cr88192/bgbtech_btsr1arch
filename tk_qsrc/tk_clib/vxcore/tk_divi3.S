@@ -72,12 +72,14 @@ __udivdi3:
 //	sr=_fcn_clz(d)-_fcn_clz(n);
 //	sr=(byte)(_fcn_clz64(d)-_fcn_clz64(n));
 
-	mov		r17, r4
-	bsr		_fcn_clz64
-	mov		r2, r18
+	clzq	r17, r18
+//	mov		r17, r4
+//	bsr		_fcn_clz64
+//	mov		r2, r18
 
-	mov		r16, r4
-	bsr		_fcn_clz64
+	clzq	r16, r2
+//	mov		r16, r4
+//	bsr		_fcn_clz64
 
 	sub		r2, r18
 	extu.b	r18

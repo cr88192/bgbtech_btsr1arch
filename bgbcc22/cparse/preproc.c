@@ -1206,7 +1206,9 @@ void BGBPP_Directive(BGBCP_ParseState *ctx, char *str)
 	//	if(!bgbpp_strcmp(b, "include"))
 		if(!bgbcp_strcmp7(b, "include"))
 		{
-			i=1; strcpy(b, s);
+			i=1;
+//			strcpy(b, s);
+			strncpy(b, s, 4000);
 	//		while(i)i=BGBPP_Line(ctx, b);
 
 			s1=BGBCP_TokenCtx(ctx, b, b2, &ty2);
@@ -1224,6 +1226,7 @@ void BGBPP_Directive(BGBCP_ParseState *ctx, char *str)
 				return;
 			}
 
+#if 0
 			t=b2; t+=strlen(t);
 			while(*s1)
 			{
@@ -1231,6 +1234,7 @@ void BGBPP_Directive(BGBCP_ParseState *ctx, char *str)
 				t+=strlen(t);
 			}
 			*t=0;
+#endif
 
 			BGBPP_Include(ctx, b2);
 			return;
@@ -2087,6 +2091,9 @@ char *BGBPP_ParseLine(BGBCP_ParseState *ctx, char *s, char *b)
 		return(s);
 	}
 
+	is=0;
+	is2=0;
+
 	t=b; nplvl=0;
 	while(*s)
 	{
@@ -2140,12 +2147,20 @@ char *BGBPP_ParseLine(BGBCP_ParseState *ctx, char *s, char *b)
 				continue;
 			}
 
+#if 0
 			if((s[0]=='\\') && (s[1]=='\''))
 				{ *t++=*s++; *t++=*s++; continue; }
 			if((s[0]=='\\') && (s[1]=='\"'))
 				{ *t++=*s++; *t++=*s++; continue; }
 			if((s[0]=='\\') && (s[1]=='\\'))
 				{ *t++=*s++; *t++=*s++; continue; }
+#endif
+			
+			if(s[0]=='\\')
+			{
+				if((s[1]=='\'') || (s[1]=='\"') || (s[1]=='\\'))
+					{ *t++=*s++; *t++=*s++; continue; }
+			}
 
 			*t++=*s++;
 			continue;
@@ -2160,12 +2175,20 @@ char *BGBPP_ParseLine(BGBCP_ParseState *ctx, char *s, char *b)
 				continue;
 			}
 
+#if 0
 			if((s[0]=='\\') && (s[1]=='\''))
 				{ *t++=*s++; *t++=*s++; continue; }
 			if((s[0]=='\\') && (s[1]=='\"'))
 				{ *t++=*s++; *t++=*s++; continue; }
 			if((s[0]=='\\') && (s[1]=='\\'))
 				{ *t++=*s++; *t++=*s++; continue; }
+#endif
+
+			if(s[0]=='\\')
+			{
+				if((s[1]=='\'') || (s[1]=='\"') || (s[1]=='\\'))
+					{ *t++=*s++; *t++=*s++; continue; }
+			}
 
 			*t++=*s++;
 			continue;
@@ -2316,6 +2339,9 @@ char *BGBPP_ParseLine(BGBCP_ParseState *ctx, char *s, char *b)
 	*t++=0;
 	if(*s=='\r')s++;
 	if(*s=='\n')s++;
+
+	if(is || is2)
+		{ BGBCC_DBGBREAK }
 
 	return(s);
 }

@@ -1030,11 +1030,15 @@ Z_ChangeTag2(p,t); \
 //-------
 typedef struct
 {
-	char	name[8];
+//	char	name[8];
+	char	name[16];
 	int		handle;
 	int		position;
 	int		size;
 	int		chain;
+    int		csize;
+    char	ety;
+    char	cmp;
 } lumpinfo_t;
 
 extern lumpinfo_t *lumpinfo;

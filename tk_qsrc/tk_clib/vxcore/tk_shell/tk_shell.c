@@ -6,7 +6,11 @@ void tk_shell_chksane_simd_asm();
 
 __asm {
 tk_shell_chksane_simd_asm:
-	PUSH	SR
+//	PUSH	SR
+
+	ADD		-8, SP
+	MOV		SR, R1
+	MOV.Q		R1, (SP)
 
 	WEXMD	2
 
@@ -125,9 +129,57 @@ tk_shell_chksane_simd_asm:
 	CMPQEQ		R19, R7
 	BREAK?F
 
-	POP SR
+	MOV.Q	(SP), R1
+	MOV		R1, SR
+	ADD		8, SP
+
+//	POP SR
 	RTSU
+	
+
+tk_fcn_clz:
+	clz		R4, R2
+	RTSU
+tk_fcn_clzq:
+	CLZQ	R4, R2
+	RTSU
+
 };
+
+int tk_fcn_clz(long long j);
+int tk_fcn_clzq(long long j);
+
+int tk_shell_chksane_clz()
+{
+	unsigned long long li, lj, lk;
+	void *p;
+	int i, j, k;
+	
+	p=tk_shell_chksane_clz;
+	li=(long long)p;
+	for(i=0; i<32; i++)
+		li=li*251+1;
+	
+	for(i=0; i<32; i++)
+	{
+		lj=(1ULL<<(31-i));
+		lk=lj|(li&(lj-1));
+		k=tk_fcn_clz(lk);
+		if(k!=i)
+			__debugbreak();
+		li=li*251+1;
+	}
+
+	for(i=0; i<64; i++)
+	{
+		lj=(1ULL<<(63-i));
+		lk=lj|(li&(lj-1));
+		k=tk_fcn_clzq(lk);
+		if(k!=i)
+			__debugbreak();
+		li=li*251+1;
+	}
+}
 
 __m128 __m128_float4(float f0, float f1, float f2, float f3);
 
@@ -178,7 +230,9 @@ int tk_shell_chksane_simd()
 
 int tk_shell_chksane()
 {
-	char tb[64];
+	long long tba[32];
+	long long tbb[32];
+	char *tb, *ts, *tb1;
 
 	int *pi, *pj;
 	int i, j, k, l;
@@ -195,23 +249,64 @@ int tk_shell_chksane()
 		__debugbreak();
 	if(l!=6)
 		__debugbreak();
+
+	*pj=1000;
+	k=i/j;
+	l=i%j;
+	if(k!=123)
+		__debugbreak();
+	if(l!=456)
+		__debugbreak();
+
 		
-	strcpy(tb, "0123456789ABCDEF");
+	tb=(char *)tba;
+	ts=(char *)tbb;
+	
+	if(((int)tb)&7)
+		__debugbreak();
+	if(((int)ts)&7)
+		__debugbreak();
+		
+	strcpy(tb, "0123456789ABCDEFGHIJKLMNOPQRSTUV");
+	memcpy(ts, tb+16, 16);
+
+	if(memcmp(tb, tb, 16))
+		__debugbreak();
+	if(!memcmp(tb, ts, 16))
+		__debugbreak();
+
 	*pi=1;
-	memcpy(tb, "GHIJKLMN", *pi);
+	memcpy(tb, ts, *pi);
 	if(memcmp(tb, "G1234567", 8))
 		__debugbreak();
+	*pi=2;
+	memcpy(tb, ts, *pi);
+	if(memcmp(tb, "GH234567", 8))
+		__debugbreak();
 	*pi=3;
-	memcpy(tb, "GHIJKLMN", *pi);
+	memcpy(tb, ts, *pi);
 	if(memcmp(tb, "GHI34567", 8))
 		__debugbreak();
+	*pi=4;
+	memcpy(tb, ts, *pi);
+	if(memcmp(tb, "GHIJ4567", 8))
+		__debugbreak();
 	*pi=5;
-	memcpy(tb, "GHIJKLMN", *pi);
+	memcpy(tb, ts, *pi);
 	if(memcmp(tb, "GHIJK567", 8))
 		__debugbreak();
+	*pi=6;
+	memcpy(tb, ts, *pi);
+	if(memcmp(tb, "GHIJKL67", 8))
+		__debugbreak();
 	*pi=7;
-	memcpy(tb, "GHIJKLMN", *pi);
+	memcpy(tb, ts, *pi);
 	if(memcmp(tb, "GHIJKLM7", 8))
+		__debugbreak();
+
+	*pi=8;
+	memcpy(tb, ts, *pi);
+	if(memcmp(tb, "GHIJKLMN89ABCDEF", 16))
 		__debugbreak();
 
 	strcpy(tb, "0123456789ABCDEF");
@@ -232,6 +327,41 @@ int tk_shell_chksane()
 	if(memcmp(tb, "       7", 8))
 		__debugbreak();
 
+	for(i=0; i<192; i++)
+		ts[i]=i;
+
+	for(j=0; j<16; j++)
+	{
+		tb1=tb+j;
+		for(i=0; i<128; i++)
+		{
+			memcpy(tb1, ts, 192);
+			memcpy(tb1, ts+16, i);
+			if(memcmp(tb1, ts+16, i))
+				__debugbreak();
+			if(memcmp(tb1+i, ts+i, 16))
+				__debugbreak();
+		}
+	}
+
+	for(j=0; j<16; j++)
+	{
+		tb1=tb+j;
+		for(i=0; i<128; i++)
+		{
+			memcpy(tb1, ts, 192);
+			memset(tb1, i, i);
+//			if(memcmp(tb1, ts+16, i))
+//				__debugbreak();
+			for(k=0; k<i; k++)
+				if(tb1[i]!=i)
+					__debugbreak();
+			if(memcmp(tb1+i, ts+i, 16))
+				__debugbreak();
+		}
+	}
+
+	tk_shell_chksane_clz();
 	tk_shell_chksane_simd();
 }
 
@@ -241,7 +371,7 @@ int main(int argc, char *argv[])
 	char tb_cwd[256];
 	char tbuf[256];
 
-	tk_shell_chksane();
+//	tk_shell_chksane();
 
 	tk_con_reset();
 

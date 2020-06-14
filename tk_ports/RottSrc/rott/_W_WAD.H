@@ -48,8 +48,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 typedef struct
 {
-        char            name[8];
-        int                     handle,position,size,chain;
+//        char            name[8];
+//        int                     handle,position,size,chain;
+    char	name[16];
+    int		handle;
+    int		position;
+    int		size;
+    int		chain;
+    int		csize;
+    char	ety;
+    char	cmp;
 } lumpinfo_t;
 
 
@@ -67,5 +75,16 @@ typedef struct
         int                     size;
         char            name[8];
 } filelump_t;
+
+typedef struct
+{
+	int		filepos;
+	int		csize;
+	int		dsize;
+	char	ety;		//Entry Type
+	char	cmp;		//Compression
+	short	chn;		//Chain (ExWAD)
+	char	name[16];
+} wad2lump_t;
 
 #endif

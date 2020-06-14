@@ -162,6 +162,11 @@ void H2_Main(void)
 	startmap = 1;
 	shareware = false; // Always false for Hexen
 
+	if(w_chkaccess("hexenlz.wad")>=0)
+	{
+		wadfiles[0] = "hexenlz.wad";
+	}
+
 	HandleArgs();
 
 	// Initialize subsystems

@@ -166,7 +166,7 @@ int TKPE_ApplyStaticRelocs(byte *imgptr, byte *rlc, int szrlc,
 		cs1=cs+8; cs1e=cs+sz_blk;
 		cs+=sz_blk;
 
-		tk_printf("  RVA=%08X sz=%d\n", rva_page, sz_blk);
+//		tk_printf("  RVA=%08X sz=%d\n", rva_page, sz_blk);
 		
 		while(cs1<cs1e)
 		{
@@ -179,7 +179,7 @@ int TKPE_ApplyStaticRelocs(byte *imgptr, byte *rlc, int szrlc,
 			
 			if(rva_page==0x62000)
 			{
-				tk_printf("    %08X: %d\n", tgt_rva, (tg>>12)&15);
+//				tk_printf("    %08X: %d\n", tgt_rva, (tg>>12)&15);
 			}
 
 #if 0
@@ -267,6 +267,9 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 	tk_fread(tbuf, 1, 1024, fd);
 
 	is_pel4=0;
+	
+	*rbootptr = NULL;
+	*rbootgbr = NULL;
 
 #if 1
 	sig_mz=tkfat_getWord(tbuf);
@@ -274,7 +277,7 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 	{
 		if(sig_mz!=0x5A4D)
 		{
-			tk_printf("TKPE: MZ Sig Fail\n");
+			tk_printf("TKPE: MZ Sig Fail, %04X\n", sig_mz);
 			return(-1);
 		}
 
@@ -282,7 +285,7 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 		sig_pe=tkfat_getWord(tbuf+ofs_pe);
 		if(sig_pe!=0x4550)
 		{
-			tk_printf("TKPE: PE Sig Fail\n");
+			tk_printf("TKPE: PE Sig Fail, %04X\n", sig_pe);
 			return(-1);
 		}
 	}else

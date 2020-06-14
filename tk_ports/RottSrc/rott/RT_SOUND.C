@@ -44,7 +44,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "rt_str.h"
 
-#if (SHAREWARE==0)
+// #if (SHAREWARE==0)
+#if 1
 #include "snd_reg.h"
 #else
 #include "snd_shar.h"
@@ -76,6 +77,72 @@ int fxnums[ 11 ] = {
 	Awe32, SoundScape, Adlib, SoundSource, TandySoundSource, PC
 	};
 
+#if 1
+char *sound_names[]={
+"DIGISTRT",		"M_FLIP",		"M_ESC",		"M_MOVE",		
+"M_SELECT",		"M_WARNIN",		"M_QUEST",		"M_INFO",		
+"M_NOPE",		"Q_FIRING",		"Q_GUILL",		"Q_CYANI",		
+"Q_TRAPDO",		"Q_CAROFF",		"Q_PLUG",		"Q_ECHAIR",		
+"G_START",		"G_END",		"G_OVER",		"G_ENDB1",		
+"G_NOBONU",		"G_100PCT",		"C_HITWAL",		"P_SELWPN",		
+"C_NOWAY",		"C_BADSW",		"P_DYING",		"P_TBDIE",		
+"P_TCDIE",		"P_LNDIE",		"P_DWDIE",		"P_IPDIE",		
+"P_TB_OW",		"P_TC_OW",		"P_LN_OW",		"P_DW_OW",
+"P_IP_OW",		"P_TB",			"P_TC",			"P_LN",		
+"P_DW",			"P_IPF",		"P_BURNED",		"P_LAND",		
+"P_COUGHM",		"P_COUGHF",		"P_NETWIG",		"P_NETFAL",		
+"P_APISTL",		"P_A2PIST",		"P_AMP40",		"P_RICOCH",		
+"P_RICOC2",		"P_RICOC1",		"P_BAZOOK",		"P_FIREBM",		
+"P_HEATSK",		"P_DRUNK",		"P_FWFIRE",		"P_FWALL",		
+"P_SPMSLF",		"P_SPLITS",		"P_GRAVUP",		"P_GRAVFI",		
+"P_GRAVGO",		"P_GRAVHT",		"P_FIREHT",		"P_MISFLY",		
+"P_MISHIT",		"P_BATBOU",		"P_BATSWI",		"P_BATHIT",		
+"P_BATUP",		"P_BATBLA",		"P_AGOD",		"P_GOD1",		
+"P_GOD2",		"P_GOD3",		"P_LOSE",		"P_DOGPAN",		
+"P_DOGBIT",		"P_DOGBRK",		"P_DOGLIK",		"P_DOGBLA",		
+"P_DOGPRP",		"P_DOGMAN",		"P_DOGWOM",		"P_GODMAN",
+"P_GODWOM",		"P_MERFLY",		"C_GLASS",		"C_ITMBRK",
+"C_BONBAR",		"C_TOUCHP",		"C_NOTOUC",		"C_EXPFLO",		
+"C_EXPLOD",		"C_GASHIS",		"C_GASEND",		"C_GASMSK",		
+"G_KEY",		"G_LIFE2",		"G_HEAL3",		"G_HEAL1",		
+"G_COOK",		"G_WEAPON",		"G_KNIFE",		"G_PGOD",		
+"G_PDOG",		"G_PFLEET",		"G_PELAST",		"G_PSHROO",		
+"G_ABVEST",		"G_AAVEST",		"G_AMASK",		"G_BAT",		
+"G_HEAD",		"G_1UP",		"G_3UP",		"N_SPAWN2",		
+"P_PLAYSP",		"LG_1SEE",		"LG_1SEEA",		"LG_1SEE3",		
+"LG_OUCH",		"LG_1DIE",		"LG_1BOO",		"HG_1SEE",		
+"HG_2SEE",		"HG_OUCH",		"HG_DIE",		"OP_1SEE",		
+"OP_FNET",		"OP_OUCH",		"OP_DIE",		"ST_1SEE",		
+"ST_ROLL",		"ST_OUCH",		"ST_DIE",		"BL_1SEE",		
+"BL_2SEE",		"BL_STEAL",		"BL_OUCH",		"BL_DIE",
+"BL_PLEAD",		"BL_PLEA2",		"BL_PLEA3",		"EN_SEE",	
+"EN_FIRE",		"EN_THROW",		"EN_OUCH",		"EN_DIE",
+"MO_SEE",		"MO_DRAIN",		"MO_OUCH",		"MO_DIE",		
+"FM_SEE",		"FM_FIRE",		"FM_OUCH",		"FM_DIE",		
+"RO_SEE",		"RO_FIRE",		"RO_DIE",		"DA_SEE",		
+"DA_WARN",		"DA_HIDE",		"DA_DIE",		"DA_SAY1",		
+"DA_SAY2",		"DA_SAY3",		"KR_SEE",		"KR_MOTOR",		
+"KR_TURN",		"KR_DROP",		"KR_MINE",		"KR_MIHIT",		
+"KR_DIE",		"KR_SAY1",		"KR_SAY2",		"KR_SAY3",		
+"NM_SEE",		"NM_READY",		"NM_APART",		"NM_UFO",		
+"DM_SEE",		"DM_FIRE1",		"DM_FIRE2",		"DM_FIRE3",		
+"DM_FIRE4",		"DM_CHARG",		"DM_FLOAT",		"DM_DIE",
+"DM_SAY1",		"DM_SAY2",		"DM_SAY3",		"SN_SEE",		
+"SN_READY",		"SN_CHARG",		"SN_OUCH",		"SN_DIE",		
+"SN_FIRE",		"SN_SAY1",		"SN_SAY2",		"SN_SAY3",		
+"E_EMPUP",		"E_EMPFIR",		"E_BIGEMP",		"D_OPEN",		
+"D_CLOSE",		"D_DRHIT",		"E_FCHUTE",		"E_FBALL",		
+"E_FBALHT",		"E_SPINBL",		"E_PWALL",		"E_WALHIT",		
+"E_WALL",		"E_TWALL",		"E_BOULST",		"E_BOULRL",		
+"E_PITFAL",		"E_FJET",		"A_SQUISH",		"A_BURNED",		
+"A_SKELTN",		"E_SPEAR",		"E_CYLIN",		"E_ELEVST",		
+"E_ELEVEN",		"E_SPRING",		"E_THUND2",		"E_WIND7",		
+"SE_DFISH",		"SE_USUCK",		"SE_SILMV",		"SE_SILSL",		
+"SE_SILES",		"A_THUMP",		"A_GIBSPL",		"A_OOF",		
+NULL
+};
+#endif
+
 int MUSIC_GetPosition( void )
 {
 	songposition pos;
@@ -102,7 +169,8 @@ int SoundNumber ( int x )
 //		return remotestart + x - SD_REMOTEM1SND;
 //		sounds[x].snds[soundtype]+remotestart;
 //	else
-		return sounds[x].snds[soundtype]+soundstart;
+//		return sounds[x].snds[soundtype]+soundstart;
+	return sounds[x].snds[soundtype];
 }
 
 
@@ -268,8 +336,11 @@ int SD_Startup ( boolean bombonerror )
 				snd = sounds[ i ].snds[ fx_digital ];
 				if ( snd >= 0)
 				{
-					sounds[ i ].snds[ fx_digital ] = W_GetNumForName(
-						W_GetNameForNum( snd + soundstart ) );
+//					sounds[ i ].snds[ fx_digital ] = W_GetNumForName(
+//						W_GetNameForNum( snd + soundstart ) );
+					
+					sounds[ i ].snds[ fx_digital ] =
+						W_CheckNumForName( sound_names[snd+1] );
 				}
 			}
 			SoundsRemapped = true;
@@ -382,8 +453,8 @@ int SD_PlayIt ( int sndnum, int angle, int distance, int pitch )
 
 	sounds[sndnum].count++;
 
-	printf("SD_PlayIt: %X %s\n", sndnum,
-		W_GetNameForNum(SoundNumber(sndnum)));
+//	printf("SD_PlayIt: %X %s\n", sndnum,
+//		W_GetNameForNum(SoundNumber(sndnum)));
 
 //	snd=W_CacheLumpNum(SoundNumber(sndnum),PU_STATIC);
 	snd=W_CacheSoundLumpNum(SoundNumber(sndnum),PU_STATIC);

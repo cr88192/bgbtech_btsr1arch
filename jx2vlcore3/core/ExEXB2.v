@@ -29,6 +29,8 @@ module ExEXB2(
 	regValImm,		//Immediate (Decode)
 	regValAluRes,	//ALU Result
 	regValMulwRes,	//ALU Result
+	regValKrreRes,	//Keyring Result
+
 	regFpuGRn,		//FPU GPR Result
 	opBraFlush,
 
@@ -61,6 +63,8 @@ input[32:0]		regValImm;		//Immediate (Decode)
 
 input[65:0]		regValAluRes;	//ALU Result
 input[63:0]		regValMulwRes;	//MUL.W Result
+input[65:0]		regValKrreRes;	//Keyring Result
+
 input[63:0]		regFpuGRn;		//FPU GPR Result
 
 input			opBraFlush;
@@ -136,6 +140,18 @@ begin
 		end
 		
 		JX2_UCMD_OP_IXT: begin
+			case(opUIxt[5:0])
+				JX2_UCIX_IXT_NOP: begin
+				end
+
+				JX2_UCIX_IXT_LDEENC: begin
+					tRegIdRn2	= JX2_GR_DHR;
+					tRegValRn2	= regValKrreRes[63:0];
+				end
+				
+				default: begin
+				end
+			endcase
 		end
 		
 		JX2_UCMD_MOV_IR: begin

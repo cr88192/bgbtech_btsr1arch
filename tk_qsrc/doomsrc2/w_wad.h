@@ -50,16 +50,31 @@ typedef struct
     
 } filelump_t;
 
+typedef struct
+{
+	int		filepos;
+	int		csize;
+	int		dsize;
+	char	ety;		//Entry Type
+	char	cmp;		//Compression
+	short	chn;		//Chain (ExWAD)
+	char	name[16];
+} wad2lump_t;
+
 //
 // WADFILE I/O related stuff.
 //
 typedef struct
 {
-    char	name[8];
+//    char	name[8];
+    char	name[16];
     int		handle;
     int		position;
     int		size;
     int		chain;
+    int		csize;
+    char	ety;
+    char	cmp;
 } lumpinfo_t;
 
 

@@ -40,7 +40,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define LOWCOST  0
 // Make sure only one of the following are on at one time
 
+#ifndef SHAREWARE
 #define SHAREWARE   0
+#endif
+
 #define SUPERROTT   1
 #define SITELICENSE 0
 

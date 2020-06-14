@@ -738,7 +738,13 @@ void R_AliasDrawModel (alight_t *plighting)
 			r_recursiveaffinetriangles;
 
 //	if (r_affinetridesc.drawtype)
-	if(1)	//BGB Debug
+//	{
+//		if(r_lowfps>1)
+//			return;
+//	}
+
+	if (r_affinetridesc.drawtype)
+//	if(1)	//BGB Debug
 	{
 		D_PolysetUpdateTables ();		// FIXME: precalc...
 	}

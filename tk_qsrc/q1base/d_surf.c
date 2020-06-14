@@ -113,6 +113,8 @@ void D_FlushCaches (void)
 	
 	if (!sc_base)
 		return;
+		
+	printf("D_FlushCaches\n");
 
 	for (c = sc_base ; c ; c = c->next)
 	{
@@ -299,6 +301,21 @@ surfcache_t *D_CacheSurface (msurface_t *surface, int miplevel)
 //
 	cache = surface->cachespots[miplevel];
 
+	if(cache && (r_lowfps>1))
+		return cache;	//BGB debug
+
+#if 1	//BGB Debug
+	if (cache
+			&& cache->texture == r_drawsurf.texture
+			&& cache->lightadj[0] == r_drawsurf.lightadj[0]
+			&& cache->lightadj[1] == r_drawsurf.lightadj[1]
+			&& cache->lightadj[2] == r_drawsurf.lightadj[2]
+			&& cache->lightadj[3] == r_drawsurf.lightadj[3]
+			&& r_lowfps
+			)
+		return cache;
+#endif
+
 #if 0	//BGB perf hack
 //	t = ((int) cache)>>4;
 	if ( cache && (r_framecount & 3))
@@ -315,7 +332,8 @@ surfcache_t *D_CacheSurface (msurface_t *surface, int miplevel)
 			&& cache->lightadj[0] == r_drawsurf.lightadj[0]
 			&& cache->lightadj[1] == r_drawsurf.lightadj[1]
 			&& cache->lightadj[2] == r_drawsurf.lightadj[2]
-			&& cache->lightadj[3] == r_drawsurf.lightadj[3] )
+			&& cache->lightadj[3] == r_drawsurf.lightadj[3]
+			)
 		return cache;
 #endif
 

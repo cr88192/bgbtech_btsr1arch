@@ -1758,11 +1758,14 @@ Builds the lightmap texture
 with all the surfaces from all brush models
 ==================
 */
+
+extern qboolean isPermedia;
+
 void GL_BuildLightmaps (void)
 {
 	int		i, j;
 	model_t	*m;
-	extern qboolean isPermedia;
+//	extern qboolean isPermedia;
 
 	memset (allocated, 0, sizeof(allocated));
 

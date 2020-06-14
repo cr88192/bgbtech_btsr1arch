@@ -1,2 +1,2 @@
+// #include "qgl_fptr.h"
 #include "../quakedef.h"
-#include "qgl_fptr.h"

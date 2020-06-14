@@ -2671,6 +2671,18 @@ int BGBCC_JX2C_EmitCallBuiltinArgs(
 		return(1);
 	}
 
+	if(!strcmp(name, "__setmemtrap") && (narg==2))
+	{
+		csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[0]);
+		ctreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[1]);
+		BGBCC_JX2C_EmitOpRegReg(ctx, sctx,
+			BGBCC_SH_NMID_TRAPA, csreg, ctreg);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[0]);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[1]);
+		sctx->csrv_skip=1;
+		return(1);
+	}
+
 	if((!strcmp(name, "__float32_getbits") ||
 		!strcmp(name, "__float32_frombits") ||
 		!strcmp(name, "__float64_getbits") ||

@@ -84,6 +84,9 @@ float	xOrigin, yOrigin;
 
 mplane_t	screenedge[4];
 
+int		r_lowfps;
+float	r_lowfps_worldclip;
+
 //
 // refresh flags
 //
@@ -921,8 +924,8 @@ void R_EdgeDrawing (void)
 	surf_t	lsurfs[NUMSTACKSURFACES +
 				((CACHE_SIZE - 1) / sizeof(surf_t)) + 1];
 
-	r_drawpolys	= 0;			//BGB Debug
-	r_drawculledpolys = 0;		//BGB Debug
+//	r_drawpolys	= 0;			//BGB Debug
+//	r_drawculledpolys = 0;		//BGB Debug
 
 	if (auxedges)
 	{
@@ -1004,9 +1007,12 @@ byte	warpbuffer[WARP_WIDTH * WARP_HEIGHT * 2];
 
 void R_RenderView_ (void)
 {
+	static float afrt;
+	float dfrt, cfrt;
+
 	r_warpbuffer = warpbuffer;
 
-	if (r_timegraph.value || r_speeds.value || r_dspeeds.value)
+//	if (r_timegraph.value || r_speeds.value || r_dspeeds.value)
 		r_time1 = Sys_FloatTime ();
 
 	R_SetupFrame ();
@@ -1066,8 +1072,30 @@ SetVisibilityByPassages ();
 
 	R_DrawParticles ();
 
-	if (r_dspeeds.value)
+//	if (r_dspeeds.value)
 		dp_time2 = Sys_FloatTime ();
+
+	r_lowfps=0;
+	cfrt=(dp_time2-r_time1);
+	afrt=(afrt*0.9)+(cfrt*0.1);
+	dfrt=afrt;
+	
+	if(dfrt>0.03)
+	{
+		r_lowfps=1;
+		r_lowfps_worldclip=4096;
+	}
+	if(dfrt>0.1)
+	{
+		r_lowfps=2;
+//		r_lowfps_worldclip=4096-(dfrt*10)*1024;
+		r_lowfps_worldclip=4096-(dfrt*10)*2048;
+	}
+
+	if(dfrt>0.15)
+	{
+		r_lowfps=3;
+	}
 
 	if (r_dowarp)
 		D_WarpScreen ();

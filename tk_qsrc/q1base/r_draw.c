@@ -113,7 +113,8 @@ void R_EmitEdge (mvertex_t *pv0, mvertex_t *pv1)
 //		tk_printf("R_EmitEdge: trans0=( %f %f %f )\n",
 //			transformed[0], transformed[1], transformed[2]);
 	
-		lzi0 = 1.0 / transformed[2];
+//		lzi0 = 1.0 / transformed[2];
+		lzi0 = __fpu_frcp_sf(transformed[2]);
 	
 	// FIXME: build x/yscale into transform?
 		scale = xscale * lzi0;
@@ -150,7 +151,8 @@ void R_EmitEdge (mvertex_t *pv0, mvertex_t *pv1)
 //	tk_printf("R_EmitEdge: trans1=( %f %f %f )\n",
 //		transformed[0], transformed[1], transformed[2]);
 
-	r_lzi1 = 1.0 / transformed[2];
+//	r_lzi1 = 1.0 / transformed[2];
+	r_lzi1 = __fpu_frcp_sf(transformed[2]);
 
 	scale = xscale * r_lzi1;
 	
@@ -216,7 +218,8 @@ void R_EmitEdge (mvertex_t *pv0, mvertex_t *pv1)
 		edge->surfs[0] = surface_p - surfaces;
 		edge->surfs[1] = 0;
 
-		u_step = ((r_u1 - u0) / (r_v1 - v0));
+//		u_step = ((r_u1 - u0) / (r_v1 - v0));
+		u_step = __fpu_fdiv_sf((r_u1 - u0), (r_v1 - v0));
 		u = u0 + ((float)v - v0) * u_step;
 	}
 	else
@@ -228,7 +231,8 @@ void R_EmitEdge (mvertex_t *pv0, mvertex_t *pv1)
 		edge->surfs[0] = 0;
 		edge->surfs[1] = surface_p - surfaces;
 
-		u_step = ((u0 - r_u1) / (v0 - r_v1));
+//		u_step = ((u0 - r_u1) / (v0 - r_v1));
+		u_step = __fpu_fdiv_sf((u0 - r_u1), (v0 - r_v1));
 		u = r_u1 + ((float)v - r_v1) * u_step;
 	}
 
@@ -270,6 +274,8 @@ void R_EmitEdge (mvertex_t *pv0, mvertex_t *pv1)
 	removeedges[v2] = edge;
 }
 
+float __fpu_fdiv_sf(float x, float y);
+float __fpu_frcp_sf(float x);
 
 /*
 ================
@@ -278,6 +284,7 @@ R_ClipEdge
 */
 void R_ClipEdge (mvertex_t *pv0, mvertex_t *pv1, clipplane_t *clip)
 {
+	float		*pf0, *pf1, *pf2;
 	float		d0, d1, f;
 	mvertex_t	clipvert;
 
@@ -310,6 +317,7 @@ void R_ClipEdge (mvertex_t *pv0, mvertex_t *pv1, clipplane_t *clip)
 			// we don't cache clipped edges
 				cacheoffset = 0x7FFFFFFF;
 
+#if 0
 				f = d0 / (d0 - d1);
 				clipvert.position[0] = pv0->position[0] +
 						f * (pv1->position[0] - pv0->position[0]);
@@ -317,6 +325,18 @@ void R_ClipEdge (mvertex_t *pv0, mvertex_t *pv1, clipplane_t *clip)
 						f * (pv1->position[1] - pv0->position[1]);
 				clipvert.position[2] = pv0->position[2] +
 						f * (pv1->position[2] - pv0->position[2]);
+#endif
+
+#if 1
+//				f = d0 / (d0 - d1);
+				f = __fpu_fdiv_sf(d0, (d0 - d1));
+				pf0=pv0->position;
+				pf1=pv1->position;
+				pf2=clipvert.position;
+				pf2[0] = pf0[0] + (f * (pf1[0] - pf0[0]));
+				pf2[1] = pf0[1] + (f * (pf1[1] - pf0[1]));
+				pf2[2] = pf0[2] + (f * (pf1[2] - pf0[2]));
+#endif
 
 				if (clip->leftedge)
 				{
@@ -351,6 +371,7 @@ void R_ClipEdge (mvertex_t *pv0, mvertex_t *pv1, clipplane_t *clip)
 			// we don't cache partially clipped edges
 				cacheoffset = 0x7FFFFFFF;
 
+#if 0
 				f = d0 / (d0 - d1);
 				clipvert.position[0] = pv0->position[0] +
 						f * (pv1->position[0] - pv0->position[0]);
@@ -358,6 +379,18 @@ void R_ClipEdge (mvertex_t *pv0, mvertex_t *pv1, clipplane_t *clip)
 						f * (pv1->position[1] - pv0->position[1]);
 				clipvert.position[2] = pv0->position[2] +
 						f * (pv1->position[2] - pv0->position[2]);
+#endif
+
+#if 1
+//				f = d0 / (d0 - d1);
+				f = __fpu_fdiv_sf(d0, (d0 - d1));
+				pf0=pv0->position;
+				pf1=pv1->position;
+				pf2=clipvert.position;
+				pf2[0] = pf0[0] + (f * (pf1[0] - pf0[0]));
+				pf2[1] = pf0[1] + (f * (pf1[1] - pf0[1]));
+				pf2[2] = pf0[2] + (f * (pf1[2] - pf0[2]));
+#endif
 
 				if (clip->leftedge)
 				{
@@ -626,7 +659,8 @@ void R_RenderFace (msurface_t *fa, int clipflags)
 
 	f = DotProduct (modelorg, pplane->normal);
 	g = (pplane->dist - f);
-	distinv = 1.0 / g;
+//	distinv = 1.0 / g;
+	distinv = __fpu_frcp_sf(g);
 
 	surface_p->d_zistepu = p_normal[0] * xscaleinv * distinv;
 	surface_p->d_zistepv = -p_normal[1] * yscaleinv * distinv;
@@ -741,7 +775,9 @@ void R_RenderBmodelFace (bedge_t *pedges, msurface_t *psurf)
 // FIXME: cache this?
 	TransformVector (pplane->normal, p_normal);
 // FIXME: cache this?
-	distinv = 1.0 / (pplane->dist - DotProduct (modelorg, pplane->normal));
+//	distinv = 1.0 / (pplane->dist - DotProduct (modelorg, pplane->normal));
+	distinv = __fpu_frcp_sf(
+		pplane->dist - DotProduct (modelorg, pplane->normal));
 
 	surface_p->d_zistepu = p_normal[0] * xscaleinv * distinv;
 	surface_p->d_zistepv = -p_normal[1] * yscaleinv * distinv;
@@ -841,9 +877,10 @@ void R_RenderPoly (msurface_t *fa, int clipflags)
 
 			if ((lastdist > 0) != (dist > 0))
 			{
-				frac = dist / (dist - lastdist);
+//				frac = dist / (dist - lastdist);
+				frac = __fpu_fdiv_sf(dist, (dist - lastdist));
 
-#if 1
+#if 0
 				verts[newpage][newverts].position[0] =
 						verts[vertpage][i].position[0] +
 						((verts[vertpage][lastvert].position[0] -
@@ -858,7 +895,7 @@ void R_RenderPoly (msurface_t *fa, int clipflags)
 						  verts[vertpage][i].position[2]) * frac);
 #endif
 
-#if 0
+#if 1
 				pv0 = verts[newpage][newverts].position;
 				pv1 = verts[vertpage][i].position;
 				pv2 = verts[vertpage][lastvert].position;
@@ -926,7 +963,8 @@ void R_RenderPoly (msurface_t *fa, int clipflags)
 		if (transformed[2] < NEAR_CLIP)
 			transformed[2] = NEAR_CLIP;
 
-		lzi = 1.0 / transformed[2];
+//		lzi = 1.0 / transformed[2];
+		lzi = __fpu_frcp_sf(transformed[2]);
 
 		if (lzi > r_nearzi)	// for mipmap finding
 			r_nearzi = lzi;

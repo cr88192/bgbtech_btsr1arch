@@ -55,6 +55,10 @@ reg				tTimer1MHz;
 reg				tTimer64kHz;
 reg				tTimer1kHz;
 reg				tTimerNoise;
+reg				tTimerNoiseA;
+reg				tTimerNoiseA1;
+reg				tTimerNoiseB;
+reg				tTimerNoiseC;
 
 reg[31:0]		tBusAddr;
 reg[31:0]		tBusInData;
@@ -166,6 +170,7 @@ reg[7:0]	tSamp8b;
 reg[7:0]	tNxtSamp8b;
 reg[10:0]	tSamp11a;
 reg[11:0]	tSamp12b;
+reg[11:0]	tSamp12b1;
 reg[11:0]	tSamp12c;
 
 reg[15:0]	tSamp16b;
@@ -182,6 +187,10 @@ reg			tIsStereoR;
 
 reg[31:0]	tRegCtrl0;
 
+reg[31:0]	tRegLfsr;
+reg[31:0]	tRegNxtLfsr;
+reg			tRegLfsrBit;
+
 wire		tDevCSel;
 wire		tDevCSelAuL;
 wire		tDevCSelAuR;
@@ -196,12 +205,14 @@ assign		tDevCSelAuL = (tBusAddr[15:14] == 2'h0);
 assign		tDevCSelAuR = (tBusAddr[15:14] == 2'h1);
 assign		tDevCSelCtr = (tBusAddr[15:12] == 4'hF);
 
+`ifndef def_true
 initial begin
 	pcmMemA[0] = UV32_FF;
 	pcmMemB[0] = UV32_00;
 	pcmMemA[1] = UV32_FF;
 	pcmMemB[1] = UV32_00;
 end
+`endif
 
 always @*
 begin
@@ -225,6 +236,14 @@ begin
 
 	tIsStereoR		= tClkDivCnt[6];
 
+	tRegLfsrBit		=
+		tRegLfsr[1] ^ tRegLfsr[3] ^
+		tRegLfsr[5] ^ tRegLfsr[7] ^
+		tTimerNoiseB ^ 1;
+	tRegNxtLfsr		= { tRegLfsrBit, tRegLfsr[31:1] };
+// reg[31:0]	tRegLfsr;
+// reg[31:0]	;
+
 //	tOutEnable = 1;
 
 	tPwmEna			= tOutEnable;
@@ -235,9 +254,6 @@ begin
 	{tPwmStCfR, tPwmNextStR} = {1'b0, tPwmStR} + {1'b0, tPwmValR};
 	tPwmOut = tOutEnable ? { tPwmStCfR, tPwmStCfL } : 2'b11;
 //	tPwmOut = tOutEnable ? { tPwmStCfR, tPwmStCfL } : { tClk1kHz, tClk1kHz };
-
-//	if(tOutEnable)
-//		$display("Ctrl=%X, Vl=%X, pwm=%d", tRegCtrl0, tPwmValL, tPwmStCfL);
 
 	case(tRegCtrl0[7:4])
 		4'h0: tNxtClkDivRst=12500;
@@ -277,6 +293,8 @@ begin
 	tPcmBlk = tIsStereoR ? tPcmBlkR : tPcmBlkL;
 `endif
 
+//	$display("blk=%X", tPcmBlk);
+
 	case(tSampPos[2:0])
 		3'b000: tNxtSamp8b	= tPcmBlk[ 7: 0];
 		3'b001: tNxtSamp8b	= tPcmBlk[15: 8];
@@ -296,6 +314,7 @@ begin
 	endcase
 	
 	case(tSamp8b[6:4])
+`ifndef def_true
 		3'b000: tSamp11a={7'h0, tSamp8b[3:0]                    };
 		3'b001: tSamp11a={7'h1, tSamp8b[3:0]                    };
 		3'b010: tSamp11a={6'h1, tSamp8b[3:0], tSamp8b[  3]      };
@@ -304,28 +323,53 @@ begin
 		3'b101: tSamp11a={3'h1, tSamp8b[3:0], tSamp8b[3:0]      };
 		3'b110: tSamp11a={2'h1, tSamp8b[3:0], tSamp8b[3:0], 1'h0};
 		3'b111: tSamp11a={1'h1, tSamp8b[3:0], tSamp8b[3:0], 2'h0};
-	endcase
-	
-//	tSamp12b = (tSamp8b[7]) ?
-//		{ 1'b1,  tSamp11a } :
-//		{ 1'b0, ~tSamp11a };
+`endif
 
-//	tSamp12b = (tSamp8b[7]) ?
-//		{ 1'b0,  tSamp11a } :
-//		{ 1'b1, ~tSamp11a };
+`ifdef def_true
+		3'b000: tSamp11a={7'h00, tSamp8b[3:0]       };
+		3'b001: tSamp11a={7'h01, tSamp8b[3:0]       };
+		3'b010: tSamp11a={6'h01, tSamp8b[3:0], 1'b0 };
+		3'b011: tSamp11a={5'h01, tSamp8b[3:0], 2'b0 };
+		3'b100: tSamp11a={4'h01, tSamp8b[3:0], 3'b0 };
+		3'b101: tSamp11a={3'h01, tSamp8b[3:0], 4'b0 };
+		3'b110: tSamp11a={2'h01, tSamp8b[3:0], 5'b0 };
+		3'b111: tSamp11a={1'h01, tSamp8b[3:0], 6'b0 };
+`endif
+	endcase
 
 	tSamp12b = (tSamp8b[7]) ?
-		{ ~tSamp11a, ~tSamp11a[10] } :
-		{  tSamp11a,  tSamp11a[10] };
+		{ 1'b1, ~tSamp11a } :
+		{ 1'b0,  tSamp11a };
+
+//	tSamp12b = (tSamp8b[7]) ?
+//		{ ~tSamp11a, ~tSamp11a[10] } :
+//		{  tSamp11a,  tSamp11a[10] };
+
+//	tSamp12b = (tSamp8b[7]) ?
+//		{ ~tSamp11a, 1'b0 } :
+//		{  tSamp11a, 1'b0 };
 	
 //	tSamp12c = tUse16b ?
 //		{ tSamp16b[15]^tUseCompand, tSamp16b[14:4] } :
-//		(tUseCompand ? tSamp12b : { tSamp8b, 4'h0 });
+//		(tUseCompand ? tSamp12b1 : { tSamp8b, 4'h0 });
 
 	tSamp12c = tUse16b ?
 		{ tSamp16b[15]^(~tUseCompand), tSamp16b[14:4] } :
-		(tUseCompand ? tSamp12b : { ~tSamp8b[7], tSamp8b[6:0], 4'h0 });
+		(tUseCompand ? tSamp12b1 : { ~tSamp8b[7], tSamp8b[6:0], 4'h0 });
 	
+	if(tOutEnable)
+	begin
+//		$display("Ctrl=%X, PcmVl=%X, PwmVl=%X, pwm=%d rov=%X samp8b=%X",
+//			tRegCtrl0, tPcmValL, tPwmValL, tPwmStCfL, tSampPos, tSamp8b);
+	end
+	
+	if(tNxtSampPos!=tSampPos)
+	begin
+//		$display("Ctrl=%X, PcmVl=%X, PwmVl=%X, pwm=%d rov=%X samp8b=%X",
+//			tRegCtrl0, tPcmValL, tPwmValL, tPwmStCfL, tSampPos, tSamp8b);
+	end
+
+
 	if(tIsStereo)
 	begin
 		if(tIsStereoR)
@@ -350,7 +394,8 @@ begin
 //	tPwmNextValL	= tPcmNextValL + { auxPcmL, 7'h0, tTimerNoise };
 //	tPwmNextValR	= tPcmNextValR + { auxPcmR, 7'h0, tTimerNoise };
 
-`ifdef def_true
+// `ifdef def_true
+`ifndef def_true
 	tPcmAddValL = 
 		{ tPcmValL[15] ? 4'b1111 : 4'b0000, tPcmValL[15:4] } +
 		{ tAuxPcmL[ 7] ? 4'b1111 : 4'b0000, tAuxPcmL, 3'h0, tTimerNoise };
@@ -359,13 +404,22 @@ begin
 		{ tAuxPcmR[ 7] ? 4'b1111 : 4'b0000, tAuxPcmR, 3'h0, tTimerNoise };
 `endif
 
-`ifndef def_true
+//`ifndef def_true
+`ifdef def_true
 	tPcmAddValL = 
 		{ tPcmValL[15] ? 2'b11 : 2'b00, tPcmValL[15:2] } +
-		{ tAuxPcmL[ 7] ? 2'b11 : 2'b00, tAuxPcmL, 5'h0, tTimerNoise };
+//		{ tAuxPcmL[ 7] ? 2'b11 : 2'b00, tAuxPcmL, 3'h0, tTimerNoise, 2'h0 };
+//		{ tAuxPcmL[ 7] ? 2'b11 : 2'b00, tAuxPcmL[7:2], tTimerNoise, 7'h0 };
+//		{ tAuxPcmL[ 7] ? 2'b11 : 2'b00, tAuxPcmL[7:0], tTimerNoiseC, 5'h0 };
+		{ tAuxPcmL[ 7] ? 2'b11 : 2'b00, tAuxPcmL[7:3], tTimerNoiseC, 8'h0 };
+//		{ tAuxPcmL[ 7] ? 2'b11 : 2'b00, tAuxPcmL[7:2], tTimerNoiseC, 7'h0 };
 	tPcmAddValR =
 		{ tPcmValR[15] ? 2'b11 : 2'b00, tPcmValR[15:2] } +
-		{ tAuxPcmR[ 7] ? 2'b11 : 2'b00, tAuxPcmR, 5'h0, tTimerNoise };
+//		{ tAuxPcmR[ 7] ? 2'b11 : 2'b00, tAuxPcmR, 3'h0, tTimerNoise, 2'h0 };
+//		{ tAuxPcmR[ 7] ? 2'b11 : 2'b00, tAuxPcmR, 3'h0, tTimerNoiseC, 2'h0 };
+//		{ tAuxPcmR[ 7] ? 2'b11 : 2'b00, tAuxPcmR[7:0], tTimerNoiseC, 5'h0 };
+		{ tAuxPcmR[ 7] ? 2'b11 : 2'b00, tAuxPcmR[7:3], tTimerNoiseC, 8'h0 };
+//		{ tAuxPcmR[ 7] ? 2'b11 : 2'b00, tAuxPcmR[7:2], tTimerNoiseC, 7'h0 };
 //	tPwmNextValL = tPwmAddValL;
 //	tPwmNextValR = tPwmAddValR;
 `endif
@@ -379,46 +433,20 @@ begin
 		{ tAuxPcmR[ 7], tAuxPcmR[7:0], 6'h0, tTimerNoise };
 `endif
 
+//	$display("noise=%d", tTimerNoise);
+
 //	tPwmNextValL = tPcmAddValL;
 //	tPwmNextValR = tPcmAddValR;
+
+//	tPwmNextValL = tPcmAddVal2L;
+//	tPwmNextValR = tPcmAddVal2R;
 
 	tPwmNextValL = {~tPcmAddVal2L[15], tPcmAddVal2L[14:0]};
 	tPwmNextValR = {~tPcmAddVal2R[15], tPcmAddVal2R[14:0]};
 
-`ifndef def_true
-//	{ tPcmCarryL, tPwmAddValL }	= 
-//		{ 1'b0, tPcmValL } + { 1'b0, tAuxPcmL, 7'h0, tTimerNoise };
-//	{ tPcmCarryR, tPwmAddValR }	=
-//		{ 1'b0, tPcmValR } + { 1'b0, tAuxPcmR, 7'h0, tTimerNoise };
+//	tPwmNextValL = {tPcmAddVal2L[15]?2'b00:2'b11, tPcmAddVal2L[14:1]};
+//	tPwmNextValR = {tPcmAddVal2R[15]?2'b00:2'b11, tPcmAddVal2R[14:1]};
 
-	case({tPwmAddValL[15], tPcmValL[15], tAuxPcmL[7]})
-		3'b000: tPwmNextValL = tPwmAddValL;
-		3'b001: tPwmNextValL = tPwmAddValL;
-		3'b010: tPwmNextValL = tPwmAddValL;
-		3'b011: tPwmNextValL = 16'h8000;
-		3'b100: tPwmNextValL = 16'h7FFF;
-		3'b101: tPwmNextValL = tPwmAddValL;
-		3'b110: tPwmNextValL = tPwmAddValL;
-		3'b111: tPwmNextValL = tPwmAddValL;
-	endcase
-
-	case({tPwmAddValR[15], tPcmValR[15], tAuxPcmR[7]})
-		3'b000: tPwmNextValR = tPwmAddValR;
-		3'b001: tPwmNextValR = tPwmAddValR;
-		3'b010: tPwmNextValR = tPwmAddValR;
-		3'b011: tPwmNextValR = 16'h8000;
-		3'b100: tPwmNextValR = 16'h7FFF;
-		3'b101: tPwmNextValR = tPwmAddValR;
-		3'b110: tPwmNextValR = tPwmAddValR;
-		3'b111: tPwmNextValR = tPwmAddValR;
-	endcase
-`endif
-	
-//	if(tPcmCarryL != tPwmNextValL[15])
-//		tPwmNextValL = tPcmValL[15] ? 16'h8000 : 16'h7FFF;
-
-//	if(tPcmCarryR != tPwmNextValR[15])
-//		tPwmNextValR = tPcmValR[15] ? 16'h8000 : 16'h7FFF;
 
 	if(tDevCSel && (tBusOpm[4:3]!=0))
 		tOutOK	= UMEM_OK_OK;
@@ -431,33 +459,32 @@ begin
 	tPwmEna2	<= tPwmEna;
 //	tClk1kHz	<= tNxtClk1kHz;
 
-//	if(timer1MHz)
-//	begin
+	tRegLfsr	<= tRegNxtLfsr;
+
+//	if(tTimer1MHz)
+	if(1'b1)
+	begin
 		tPwmStL		<= tPwmNextStL;
 		tPwmStR		<= tPwmNextStR;
-//	end
+	end
 
-	tPcmValL	<= tPcmNextValL;
-	tPcmValR	<= tPcmNextValR;
-	
 	tPcmAddVal2L	<= tPcmAddValL;
 	tPcmAddVal2R	<= tPcmAddValR;
-
-	tAuxPcmL	<= auxPcmL;
-	tAuxPcmR	<= auxPcmR;
-//	tAuxPcmL	<= { ~auxPcmL[7], auxPcmL[6:0] };
-//	tAuxPcmR	<= { ~auxPcmR[7], auxPcmR[6:0] };
-
-	tPwmValL	<= tPwmNextValL;
-	tPwmValR	<= tPwmNextValR;
-//	tPwmValL	<= { ~tPwmNextValL[15], tPwmNextValL[14:0] };
-//	tPwmValR	<= { ~tPwmNextValR[15], tPwmNextValR[14:0] };
+	tPcmValL		<= tPcmNextValL;
+	tPcmValR		<= tPcmNextValR;
+	tPwmValL		<= tPwmNextValL;
+	tPwmValR		<= tPwmNextValR;
+//	tAuxPcmL		<= auxPcmL;
+//	tAuxPcmR		<= auxPcmR;
+	tAuxPcmL		<= 0;
+	tAuxPcmR		<= 0;
 
 	tClkDivCnt	<= tNxtClkDivCnt;
 	tClkDivRst	<= tNxtClkDivRst;
 	tSampPos	<= tNxtSampPos;
 	tSamp8b		<= tNxtSamp8b;
 	tSamp16b	<= tNxtSamp16b;
+	tSamp12b1	<= tSamp12b;
 
 	tOutData2	<= tOutData;
 	tOutOK2		<= tOutOK;
@@ -484,7 +511,7 @@ begin
 			case(tBusAddr[7:2])
 				6'h00:
 				begin
-//					$display("ModAudPcm: Ctrl0=%X", tRegCtrl0);
+					$display("ModAudPcm: Ctrl0=%X", tRegCtrl0);
 					tRegCtrl0	<= tBusInData;
 				end
 
@@ -501,7 +528,7 @@ begin
 			else
 				pcmMemA[tBusAddr[13:3]]	<= tBusInData;
 `else
-			if(busAddr[2])
+			if(tBusAddr[2])
 				pcmMemB[tBusAddr[12:3]]	<= tBusInData;
 			else
 				pcmMemA[tBusAddr[12:3]]	<= tBusInData;
@@ -530,7 +557,14 @@ begin
 	tTimer1MHz		<= timer1MHz;
 	tTimer64kHz		<= timer64kHz;
 	tTimer1kHz		<= timer1kHz;
-	tTimerNoise		<= timerNoise;
+//	tTimerNoiseA	<= timerNoise;
+	tTimerNoiseA	<= 0;
+	tTimerNoiseA1	<= tTimerNoiseA;
+	tTimerNoiseB	<= tTimerNoiseA^tTimerNoiseA1;
+	tTimerNoise		<= tRegLfsrBit;
+
+	if(tTimer1MHz)
+		tTimerNoiseC	<= tTimerNoise;
 
 end
 

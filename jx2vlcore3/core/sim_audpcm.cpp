@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "VModAudPcm.h"
 #include "verilated.h"
@@ -11,6 +12,41 @@
 VModAudPcm *top = new VModAudPcm;
 
 vluint64_t main_time = 0;
+
+int sblk0_enc(int v)
+{
+	int e, v0, v1;
+
+	if(v<0)
+	{
+		v1=sblk0_enc(-v);
+		return(0x80|v1);
+	}
+	
+	if(v>=256)
+	{
+		e=0;
+		v0=v>>3;
+//		v0=v>>4;
+		if(v0&(~31))	{ v0=v0>>1; e++; }
+		if(v0&(~31))	{ v0=v0>>1; e++; }
+		if(v0&(~31))	{ v0=v0>>1; e++; }
+		if(v0&(~31))	{ v0=v0>>1; e++; }
+		if(v0&(~31))	{ v0=v0>>1; e++; }
+		if(v0&(~31))	{ v0=v0>>1; e++; }
+		if(v0&(~31))	{ v0=v0>>1; e++; }
+
+		v1=(e<<4)|(v0&15);
+		if(v0&(~31))	{ v1=0x7F; }
+//		if(e>7)
+//			v1=0x7F;
+	}else
+	{
+		v1=v>>4;
+	}
+	
+	return(v1);
+}
 
 int main(int argc, char **argv, char **env)
 {
@@ -63,7 +99,17 @@ int main(int argc, char **argv, char **env)
 
 	for(i=0; i<8192; i++)
 	{
-		imgbuf[i]=(i&8)?255:0;
+//		imgbuf[i]=(i&8)?255:0;
+//		imgbuf[i]=128+sin((2*M_PI/8)*i)*125;
+//		imgbuf[i]=sblk0_enc((i&8)?32000:-32000);
+//		imgbuf[i]=sblk0_enc(sin((2*M_PI/8)*i)*32000);
+//		imgbuf[i]=0x80;
+		imgbuf[i]=0x00;
+	}
+	
+	for(i=0; i<16; i++)
+	{
+		printf("%X\n", imgbuf[i]);
 	}
 
 	dbuf=(byte *)malloc(xs*ys*4);
@@ -88,11 +134,16 @@ int main(int argc, char **argv, char **env)
 	{
 		top->clock = main_time&1;
 
+		top->timer1MHz	= !((main_time>>1)%100);
+		top->timer64kHz	= !((main_time>>1)%1563);
+		top->timer1kHz	= !((main_time>>1)%100000);
+//		top->timerNoise	= rand()&1;
+
 		if(imgba<8192)
 		{
 			if(top->busOK==0)
 			{
-//				printf("MMIO Ready\n");
+//				printf("MMIO Ready, A=%X\n", imgba);
 			
 				top->busOpm=0x12;
 				top->busAddr=0xF0090000+imgba;
@@ -102,13 +153,15 @@ int main(int argc, char **argv, char **env)
 				{
 					top->busOpm=0x12;
 					top->busAddr=0xF009F000;
-					top->busInData=0x0029;
+//					top->busInData=0x0029;
+					top->busInData=0x002D;
+//					top->busInData=0x0028;
 				}
 			}
 			
 			if(top->busOK==1)
 			{
-//				printf("MMIO OK\n");
+//				printf("MMIO OK A=%X\n", imgba);
 
 				top->busOpm=0;
 				top->busAddr=0;
@@ -118,13 +171,14 @@ int main(int argc, char **argv, char **env)
 				if(top->busOK!=lstok)
 				{
 //					printf("%d/%d\n", imgba, 4096);
-					imgba++;
+//					imgba++;
+					imgba+=4;
 				}
 			}
 
 			if(top->busOK==2)
 			{
-//				printf("MMIO Hold\n");
+				printf("MMIO Hold A=%X\n", imgba);
 			}
 		}
 

@@ -261,6 +261,10 @@ typedef struct
 #include "server.h"
 
 #ifdef GLQUAKE
+#include "qgl_fptr.h"
+#endif
+
+#ifdef GLQUAKE
 #include "gl_model.h"
 #else
 #include "model.h"

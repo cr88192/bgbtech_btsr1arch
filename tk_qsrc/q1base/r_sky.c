@@ -101,12 +101,23 @@ void R_MakeSky (void)
 	int			xshift, yshift;
 	unsigned	*pnewsky;
 	static int	xlast = -1, ylast = -1;
+	static int skyfr;
 
 	xshift = skytime*skyspeed;
 	yshift = skytime*skyspeed;
 
 	if ((xshift == xlast) && (yshift == ylast))
 		return;
+
+	if(r_lowfps>1)
+	{
+		if(skyfr>0)
+		{
+			skyfr--;
+			return;
+		}
+		skyfr=6;
+	}
 
 	xlast = xshift;
 	ylast = yshift;

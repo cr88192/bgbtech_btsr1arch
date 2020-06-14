@@ -474,7 +474,7 @@ int FX_PlayWAV3D( char *ptr, int pitchoffset, int angle, int distance,
 	
 //	printf("FX_PlayWAV3D\n");
 
-	printf("FX_PlayWAV3D %X prio=%d\n", callbackval, priority);
+//	printf("FX_PlayWAV3D %X prio=%d\n", callbackval, priority);
 
 	cs=(byte *)ptr;
 	sz=*(int *)(cs+4);

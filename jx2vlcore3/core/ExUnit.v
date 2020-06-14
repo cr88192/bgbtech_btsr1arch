@@ -57,11 +57,14 @@ IF ID1 ID2 EX1 EX2 WB
 `endif
 `endif
 
+`include "ExModKrrEnc.v"
+
 /* verilator lint_off DEFPARAM */
 
 module ExUnit(
 	clock,
 	reset,
+	timers,
 	
 	memAddr,		memAddrB,
 	memDataIn,		memDataOut,
@@ -85,6 +88,8 @@ input			clock;
 
 (* max_fanout = 50 *)
 	input			reset;
+
+input[7:0]		timers;
 
 output[47:0]	memAddr;
 output[47:0]	memAddrB;
@@ -796,6 +801,7 @@ wire[1:0]		ex1Hold;
 reg				ex1PreBra;
 reg[31:0]		ex1IstrWord;	//source instruction word
 reg				ex1BraFlush;
+reg[7:0]		ex1Timers;
 
 reg[5:0]		ex1RegIdRs;		//Source A, ALU / Base
 reg[5:0]		ex1RegIdRt;		//Source B, ALU / Index
@@ -847,6 +853,7 @@ ExEX1	ex1(
 	clock,			reset,
 	ex1OpUCmd,		ex1OpUIxt,
 	ex1Hold,		ex1TrapExc,
+	ex1Timers,
 
 	ex1RegIdRs,		ex1RegIdRt,		ex1RegIdRm,
 	ex1RegValRs,	ex1RegValRt,	ex1RegValRm,
@@ -899,6 +906,16 @@ ExMulW	ex1MulW(
 	ex1OpUCmd,			ex1OpUIxt,
 	exHold2,			ex1MulWVal
 	);
+
+wire[65:0]				ex1KrreLo;
+wire[65:0]				ex1KrreHi;
+
+ExModKrrEnc	ex1KrrEnc(
+	clock,				reset,
+	ex1OpUCmd,			ex1OpUIxt,
+	exHold2,
+	ex1RegInDlr,		ex1RegInDhr,
+	ex1KrreLo,			ex1KrreHi);
 
 `ifdef jx2_enable_fpu
 
@@ -1030,7 +1047,7 @@ ExEX2	ex2(
 	
 	ex2RegValPc,	ex2RegValImm,
 	ex2RegAluRes,	ex2RegMulRes,
-	ex2RegMulWRes,
+	ex2RegMulWRes,	ex1KrreLo,
 
 	ex1FpuValGRn,	ex1FpuValLdGRn,
 	ex1FpuSrT,		ex1FpuOK,
@@ -1215,7 +1232,7 @@ ExEXB2		exb2(
 	
 	ex2RegValPc,
 	exB2RegValImm,	exB2RegAluRes,
-	exB2RegMulWRes,
+	exB2RegMulWRes,	ex1KrreHi,
 	exB1FpuValGRn,
 //	ex2BraFlush,
 	ex2BraFlush || reset,
@@ -1367,7 +1384,7 @@ ExEXB2		exc2(
 	
 	ex2RegValPc,
 	exC2RegValImm,	exC2RegAluRes,
-	exC2RegMulWRes,
+	exC2RegMulWRes,	ex1KrreHi,
 	exC1FpuValGRn,
 //	ex2BraFlush,
 	ex2BraFlush || reset,
@@ -1670,10 +1687,11 @@ begin
 //		(ex1HldIdRn1 == JX2_GR_SP);
 	exHold1C = 0;
 
+	/* Hack for fix MemOp+Branch bug;
+	   TODO: Find/Fix actual cause of bug.
+	 */
 	if(	((ex1OpUCmd[5:0]==JX2_UCMD_MOV_MR) ||
 		 (ex1OpUCmd[5:0]==JX2_UCMD_MOV_RM))	&&
-//		((idA2IdUCmd[5:0]==JX2_UCMD_JMP) ||
-//		 (idA2IdUCmd[5:0]==JX2_UCMD_JSR)))
 		((idA2IdUCmd[5:0]==JX2_UCMD_JMP) ||
 		 (idA2IdUCmd[5:0]==JX2_UCMD_JSR) ||
 		 (idA2IdUCmd[5:0]==JX2_UCMD_BRA) ||
@@ -2657,6 +2675,8 @@ begin
 		ex1RegValPc		<= gprValPc;
 		ex1RegValImm	<= gprValImm;
 		ex1BraFlush		<= nxtBraFlushMask[0];
+		
+		ex1Timers		<= timers;
 
 `ifdef jx2_enable_wex
 		ex1OpUCmd		<= idA2IdUCmd;

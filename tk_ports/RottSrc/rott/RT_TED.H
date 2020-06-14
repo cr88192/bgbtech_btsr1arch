@@ -60,13 +60,13 @@ typedef struct
 extern teamtype TEAM[MAXPLAYERS];
 
 typedef struct
-{ thingtype	which;
+{
+  thingtype	which;
   byte		flags;
   byte		hitpoints;
   word		tile;
   byte		tilex,tiley;
-
-
+  word		lump;
 } wall_t;
 
 typedef struct
@@ -120,7 +120,7 @@ typedef struct
 
 
 extern int  numareatiles[NUMAREAS+1];
-extern int  shapestart,shapestop;
+// extern int  shapestart,shapestop;
 extern int  NUMSPAWNLOCATIONS;
 extern int  mapwidth;
 extern int  mapheight;
@@ -132,9 +132,9 @@ extern int numclocks;
 extern word ELEVATORLOCATION;
 
 extern unsigned short int *mapplanes[3];
-extern int gunsstart;
-extern int elevatorstart;
-extern int spritestop;
+// extern int gunsstart;
+// extern int elevatorstart;
+// extern int spritestop;
 extern int fog;
 extern int lightsource;
 extern int SNAKELEVEL;

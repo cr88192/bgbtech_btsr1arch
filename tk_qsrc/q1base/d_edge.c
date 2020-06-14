@@ -34,6 +34,7 @@ extern void			R_RotateBmodel (void);
 extern void			R_TransformFrustum (void);
 
 vec3_t		transformed_modelorg;
+extern	int		r_lowfps;
 
 #ifndef _BGBCC
 float __fpu_frcp_sf(float f)
@@ -55,7 +56,8 @@ int __int_clamp(int v, int min, int max)
 
 int D_SoftDivB(int a, int b)
 {
-	return(D_SoftDivB(a, b));
+//	return(D_SoftDivB(a, b));
+	return(D_SoftDiv(a, b));
 }
 
 // void __hint_use_egpr()
@@ -84,6 +86,10 @@ D_MipLevelForScale
 int D_MipLevelForScale (float scale)
 {
 	int		lmiplevel;
+
+	if(r_lowfps>1)
+//		scale *= 0.66;
+		scale *= 0.414;
 
 	if (scale >= d_scalemip[0] )
 		lmiplevel = 0;
@@ -366,6 +372,8 @@ void D_DrawSurfaces (void)
 	TransformVector (modelorg, transformed_modelorg);
 	VectorCopy (transformed_modelorg, world_transformed_modelorg);
 
+//	return;
+
 //	__debugbreak();
 
 // TODO: could preset a lot of this at mode set time
@@ -473,7 +481,10 @@ void D_DrawSurfaces (void)
 			}
 			else
 			{
+//				continue;		//BGB: debug
+			
 				if (s->insubmodel)
+//				if(0)
 				{
 				// FIXME: we don't want to do all this for every polygon!
 				// TODO: store once at start of frame
@@ -490,6 +501,9 @@ void D_DrawSurfaces (void)
 				miplevel = D_MipLevelForScale (s->nearzi * scale_for_mip
 				* pface->texinfo->mipadjust);
 
+				if (s->insubmodel && r_lowfps)
+					miplevel = 0;
+
 			// FIXME: make this passed in to D_CacheSurface
 				pcurrentcache = D_CacheSurface (pface, miplevel);
 
@@ -503,6 +517,7 @@ void D_DrawSurfaces (void)
 				D_DrawZSpans (s->spans);
 
 				if (s->insubmodel)
+//				if(0)
 				{
 				//
 				// restore the old drawing state

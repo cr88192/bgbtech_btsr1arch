@@ -824,6 +824,7 @@ int nmid;
 {"push.x",	BGBCC_SH_NMID_PUSHX2},
 {"pop.x",	BGBCC_SH_NMID_POPX2},
 {"mov.x",	BGBCC_SH_NMID_MOVX2},
+{"movx",	BGBCC_SH_NMID_MOVX2},
 
 {"ldtlb",	BGBCC_SH_NMID_LDTLB},
 {"invic",	BGBCC_SH_NMID_INVIC},

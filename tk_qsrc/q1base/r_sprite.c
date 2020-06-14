@@ -406,6 +406,9 @@ void R_DrawSprite (void)
 	vec3_t			tvec;
 	float			dot, angle, sr, cr;
 
+	if(r_lowfps>1)
+		return;
+
 	psprite = currententity->model->cache.data;
 
 	r_spritedesc.pspriteframe = R_GetSpriteframe (psprite);

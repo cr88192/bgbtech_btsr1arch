@@ -431,7 +431,8 @@ void LoadColorMap( void )
 //
 
 	lump = W_GetNumForName("colormap");
-	length = W_LumpLength (lump) + 255;
+//	length = W_LumpLength (lump) + 255;
+	length = W_LumpLength (lump) + 511;
 	colormap = SafeMalloc (length);
 	colormap = (byte *)( ((nlint)colormap + 255)&~0xff);
 	W_ReadLump (lump,colormap);
@@ -445,7 +446,8 @@ void LoadColorMap( void )
 // Get special maps
 
 	lump = W_GetNumForName("specmaps");
-	length = W_LumpLength (lump+1) + 255;
+//	length = W_LumpLength (lump+1) + 255;
+	length = W_LumpLength (lump+1) + 511;
 	redmap = SafeMalloc (length);
 	redmap = (byte *)( ((nlint)redmap + 255)&~0xff);
 	W_ReadLump (lump+1,redmap);
@@ -458,7 +460,8 @@ void LoadColorMap( void )
       lump = W_GetNumForName("playmaps")+1;
       for (i=0;i<MAXPLAYERCOLORS;i++)
          {
-	      length = W_LumpLength (lump+i) + 255;
+//	      length = W_LumpLength (lump+i) + 255;
+	      length = W_LumpLength (lump+i) + 511;
 	      playermaps[i] = SafeMalloc (length);
 	      playermaps[i] = (byte *)( ((nlint)playermaps[i] + 255)&~0xff);
 	      W_ReadLump (lump+i,playermaps[i]);

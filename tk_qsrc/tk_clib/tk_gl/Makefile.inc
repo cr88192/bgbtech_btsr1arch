@@ -39,6 +39,9 @@ TKGL_HDRS = \
 
 libs: $(DLLPF)tkgl$(DLLSUF)
 
+includes:
+
+
 include/tkgl/tkgl_auto.h: autohead$(BINSUF) $(TKGL_SRCS)
 	./autohead$(BINSUF) -api TKGL_API $(TKGL_SRCS) > include/tkgl/tkgl_auto.h
 

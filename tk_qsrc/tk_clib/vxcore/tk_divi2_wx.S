@@ -54,14 +54,14 @@ __udivsi3_i:
 	 */
 
 
-//	clz		r17, r18
-	mov		r17, r4
-	bsr		_fcn_clz32
-	mov		r2, r18
+	clz		r17, r18
+//	mov		r17, r4
+//	bsr		_fcn_clz32
+//	mov		r2, r18
 
-//	clz		r16, r2
-	mov		r16, r4
-	bsr		_fcn_clz32
+	clz		r16, r2
+//	mov		r16, r4
+//	bsr		_fcn_clz32
 
 	sub		r2, r18
 	extu.b	r18
@@ -132,12 +132,16 @@ __udivsi3_i:
 	extu.l	r4, r2		| rts
 
 .Ret_Zero:
-	mov		#0, r2		| mov		r23, lr
-	rts
+	mov		#0, r2
+	jmp		r23
+//	mov		r23, lr
+//	rts
 
 .Ret_R16:
-	mov		r16, r2		| mov		r23, lr
-	rts
+	mov		r16, r2	
+	jmp		r23
+//	mov		r23, lr
+//	rts
 
 .global	__udivsi3
 __udivsi3:
@@ -174,8 +178,9 @@ __sdivsi3:
 	sub r3, r21, r2
 
 //	pop r14
-	mov		r22, lr
-	rts
+	jmp		r22
+//	mov		r22, lr
+//	rts
 
 //	ret
 

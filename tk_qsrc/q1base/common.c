@@ -1841,7 +1841,7 @@ void COM_AddGameDirectory (char *dir)
 	strcpy (com_gamedir, dir);
 
 //	tk_puts("COM_AddGameDirectory: A0\n");
-	tk_printf("COM_AddGameDirectory: %s\n", dir);
+	tk_printf("COM_AddGameDirectory: dir=%s\n", dir);
 
 //
 // add the directory to the search path

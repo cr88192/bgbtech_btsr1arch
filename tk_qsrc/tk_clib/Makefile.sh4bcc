@@ -17,12 +17,16 @@ FORCE:
 
 includes: FORCE
 	make -C vxcore -f Makefile.sh4bcc includes
+#	make -C tk_gl -f Makefile.sh4bcc includes
 	cp -rf vxcore/include/*	$(BUILD)/include
+	cp -rf tk_gl/include/*	$(BUILD)/include
 	cp -rf $(BUILD)/include/* $(INST_INC)
 
 libs: FORCE
 	make -C vxcore -f Makefile.sh4bcc libs
+#	make -C tk_gl -f Makefile.sh4bcc libs
 	cp vxcore/*.ril		$(BUILD)
+#	cp tk_gl/*.ril		$(BUILD)
 	cp -rf $(BUILD)/*.ril $(INST_LIB)
 
 apps: libs FORCE

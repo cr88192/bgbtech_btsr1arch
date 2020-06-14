@@ -171,10 +171,13 @@ SRCS =			\
 	sound_w32.c
 
 
+all : rott.exe rottsw.exe
+
 rott.exe   : $(SRCS) $(HEADERS)
 	cl /Ferott.exe $(SRCS) $(LIBS) /Zi
 
-all : rott.exe
+rottsw.exe   : $(SRCS) $(HEADERS)
+	cl /Ferottsw.exe $(SRCS) $(LIBS) /DSHAREWARE=1 /Zi
 
 
 

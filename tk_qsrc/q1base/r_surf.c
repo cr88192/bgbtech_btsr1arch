@@ -37,6 +37,7 @@ int				r_lightwidth;
 int				r_numhblocks, r_numvblocks;
 unsigned char	*r_source, *r_sourcemax;
 
+extern int r_lowfps;
 
 unsigned short *r_vid_colormap16;
 //	r_vid_colormap16=vid.colormap16;
@@ -60,22 +61,37 @@ void R_DrawSurfaceBlock16_mip1 (void);
 void R_DrawSurfaceBlock16_mip2 (void);
 void R_DrawSurfaceBlock16_mip3 (void);
 
+void R_DrawSurfaceBlock16_mip0A (void);
+void R_DrawSurfaceBlock16_mip1A (void);
+void R_DrawSurfaceBlock16_mip2A (void);
+void R_DrawSurfaceBlock16_mip3A (void);
+
+#ifdef __BJX2__
+// #if 0
+static void	(*surfmiptable16[4])(void) = {
+	R_DrawSurfaceBlock16_mip0A,
+	R_DrawSurfaceBlock16_mip1A,
+	R_DrawSurfaceBlock16_mip2A,
+	R_DrawSurfaceBlock16_mip3A
+};
+#else
 static void	(*surfmiptable16[4])(void) = {
 	R_DrawSurfaceBlock16_mip0,
 	R_DrawSurfaceBlock16_mip1,
 	R_DrawSurfaceBlock16_mip2,
 	R_DrawSurfaceBlock16_mip3
 };
+#endif
 
 
 
 unsigned		blocklights[18*18];
 
-#ifndef __BGBCC__
+// #ifndef __BGBCC__
 // void	__hint_use_egpr()
 // { 
 // }
-#endif
+// #endif
 
 /*
 ===============
@@ -93,6 +109,9 @@ void R_AddDynamicLights (void)
 	int			i;
 	int			smax, tmax;
 	mtexinfo_t	*tex;
+
+	if(r_lowfps)
+		return;	//BGB: debug
 
 	surf = r_drawsurf.surf;
 	smax = (surf->extents[0]>>4)+1;
@@ -188,6 +207,7 @@ void R_BuildLightMap (void)
 	lightmap = surf->samples;
 
 	if (r_fullbright.value || !cl.worldmodel->lightdata)
+//	if (r_fullbright.value || !cl.worldmodel->lightdata || r_lowfps)
 	{
 		for (i=0 ; i<size ; i++)
 			blocklights[i] = 0;
@@ -237,7 +257,7 @@ Returns the proper texture for a given time and base texture
 texture_t *R_TextureAnimation (texture_t *base)
 {
 	int		reletive;
-	int		count;
+	int		count, tot, mtot;
 
 #if 1
 	if (currententity->frame)
@@ -247,10 +267,21 @@ texture_t *R_TextureAnimation (texture_t *base)
 	}
 #endif
 	
-	if (!base->anim_total)
+//	if (!base->anim_total)
+	if (base->anim_total <= 1)
 		return base;
 
 	reletive = (int)(cl.time*10) % base->anim_total;
+
+#if 0
+	tot = base->anim_total;
+	mtot=1;
+	while(mtot<=tot)
+		mtot=mtot<<1;
+	reletive = (int)(cl.time*10) & (mtot-1);
+	while(reletive>tot)
+		reletive-=tot;
+#endif
 
 	count = 0;	
 	while (base->anim_min > reletive || base->anim_max <= reletive)
@@ -745,7 +776,9 @@ void R_DrawSurfaceBlock16_mipN (int mip)
 #if 1
 
 // #if 0
-#ifndef _BGBCC
+// #ifndef _BGBCC
+// #ifndef __BJX2__
+#if 1
 void R_DrawSurfaceBlock16_mip0 (void)
 {
 	int				v, i, l, d;
@@ -869,7 +902,9 @@ void R_DrawSurfaceBlock16_mip0 (void)
 #endif
 
 // #if 0
-#ifndef _BGBCC
+// #ifndef _BGBCC
+// #ifndef __BJX2__
+#if 1
 void R_DrawSurfaceBlock16_mip1 (void)
 {
 	int				v, i, b, l, d;
@@ -944,7 +979,9 @@ void R_DrawSurfaceBlock16_mip1 (void)
 //void R_DrawSurfaceBlock16_mip1 (void)
 //	{ R_DrawSurfaceBlock16_mipN(1); }
 
-#ifndef _BGBCC
+// #ifndef _BGBCC
+// #ifndef __BJX2__
+#if 1
 void R_DrawSurfaceBlock16_mip2 (void)
 	{ R_DrawSurfaceBlock16_mipN(2); }
 void R_DrawSurfaceBlock16_mip3 (void)

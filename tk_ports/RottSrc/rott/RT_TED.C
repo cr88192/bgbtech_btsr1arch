@@ -71,7 +71,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 teamtype TEAM[MAXPLAYERS];
 int numareatiles[NUMAREAS+1];
-int shapestart,shapestop;
+// int shapestart,shapestop;
 _2dvec SPAWNLOC[MAXSPAWNLOCATIONS],FIRST,SECOND;
 int NUMSPAWNLOCATIONS,numteams=0;
 wall_t	walls[MAXWALLTILES];
@@ -81,8 +81,8 @@ int LightsInArea[NUMAREAS+1];
 
 int maxheight;
 int nominalheight;
-int elevatorstart;
-int gunsstart;
+// int elevatorstart;
+// int gunsstart;
 int fog;
 int lightsource;
 int SNAKELEVEL;
@@ -344,11 +344,13 @@ void PreCachePlayers(void )
 	playertype*pstate;
 
 	for(i=0;i<numplayers;i++)
-	{if (i!=consoleplayer) // don't cache consoleplayer
-		{pstate = &PLAYERSTATE[i];
-		start=W_GetNumForName("CASSHO11")+(pstate->player*REMOTEOFFSET);
-		end  =W_GetNumForName("CASWDEAD")+(pstate->player*REMOTEOFFSET);
-		PreCacheGroup(start,end);
+	{
+		if (i!=consoleplayer) // don't cache consoleplayer
+		{
+			pstate = &PLAYERSTATE[i];
+			start=W_GetNumForName("CASSHO11")+(pstate->player*REMOTEOFFSET);
+			end  =W_GetNumForName("CASWDEAD")+(pstate->player*REMOTEOFFSET);
+			PreCacheGroup(start,end);
 		}
 	}
 }
@@ -361,6 +363,7 @@ void PreCachePlayerSound(void)
 	switch (locplayerstate->player)
 		{
 		case 0:
+		case 5:
 			SD_PreCacheSound(SD_PLAYERTCSND);
 
 			break;
@@ -803,10 +806,11 @@ void PreCacheActor( int actor, int which )
 			start = SD_GASSTARTSND;
 			end = SD_GASMASKSND;
 			SD_PreCacheSoundGroup(start,end);
-			if ((locplayerstate->player == 1) || (locplayerstate->player == 3))
-			SD_PreCacheSound(SD_PLAYERCOUGHFSND);
+			if (	(locplayerstate->player == 1) ||
+					(locplayerstate->player == 3))
+				SD_PreCacheSound(SD_PLAYERCOUGHFSND);
 			else
-			SD_PreCacheSound(SD_PLAYERCOUGHMSND);
+				SD_PreCacheSound(SD_PLAYERCOUGHMSND);
 			start=-1;
 			end=-1;
 			break;
@@ -826,7 +830,10 @@ void PreCacheActor( int actor, int which )
 		PreCacheGroup(start,end);
 }
 
-
+int GetLumpForShape(int idx)
+{
+	return(rott_shapecache[idx]);
+}
 
 /*
 ======================
@@ -1682,6 +1689,49 @@ int GetNextMap ( int tilex, int tiley )
 	return ( next & 0xff );
 	}
 
+
+int GetWadMapFileInfo( mapfileinfo_t *mapinfo )
+{
+	char tb[17];
+//	RTLMAP RTLMap[ 100 ];
+	RTLMAP RTLMap;
+	void *map;
+	int	mapnum;
+	int	nummaps;
+	int lump, sz;
+	int	i;
+
+	nummaps = 0;
+	for(mapnum=0; mapnum<100; mapnum++)
+	{
+		sprintf(tb, "MAP%02d", mapnum+1);
+		lump=W_CheckNumForName(tb);
+		
+		if(lump<0)
+			continue;
+		
+		sz=W_LumpLength(lump);
+		if(sz<=sizeof(RTLMap))
+			continue;
+
+		map=W_CacheLumpNum(lump, PU_CACHE);
+		if(!map)
+			continue;
+
+		memcpy(&RTLMap, map, sizeof( RTLMap ) );
+
+		mapinfo->maps[ nummaps ].number = mapnum;
+		strcpy( mapinfo->maps[ nummaps ].mapname, RTLMap.Name );
+		nummaps++;
+	}
+
+	mapinfo->nummaps = nummaps;
+	
+	if(nummaps<10)
+		return(-1);
+	return(1);
+}
+
 /*
 ======================
 =
@@ -1695,11 +1745,15 @@ void GetMapFileInfo
 	char *filename
 	)
 
-	{
+{
 	RTLMAP RTLMap[ 100 ];
 	int	filehandle;
 	int	i;
 	int	nummaps;
+
+//	i=GetWadMapFileInfo(mapinfo);
+//	if(i>0)
+//		return;
 
 	CheckRTLVersion( filename );
 
@@ -1714,21 +1768,21 @@ void GetMapFileInfo
 
 	nummaps = 0;
 	for( i = 0; i < 100; i++ )
-		{
+	{
 		if ( !RTLMap[ i ].used )
-			{
+		{
 			continue;
-			}
+		}
 
 		mapinfo->maps[ nummaps ].number = i;
 
 		strcpy( mapinfo->maps[ nummaps ].mapname, RTLMap[ i ].Name );
 
 		nummaps++;
-		}
+	}
 
 	mapinfo->nummaps = nummaps;
-	}
+}
 
 /*
 ======================
@@ -1831,12 +1885,14 @@ void GetAlternateMapInfo (mapfileinfo_t * mapinfo, AlternateInformation *info)
 =
 ======================
 */
-void GetMapInfo
-	(
-	mapfileinfo_t *mapinfo
-	)
+void GetMapInfo( mapfileinfo_t *mapinfo )
+{
+	int i;
 
-	{
+	i=GetWadMapFileInfo(mapinfo);
+	if(i>0)
+		return;
+
 	if ( ( BATTLEMODE ) && ( BattleLevels.avail == true ) )
 		{
 		GetAlternateMapInfo( mapinfo, &BattleLevels );
@@ -2063,17 +2119,18 @@ void CountAreaTiles(void)
 
 
 
-#define InitWall(lump,index,newx,newy)		\
-	{													\
-	PreCacheLump(lump,PU_CACHEWALLS);		\
+#define InitWall(lump,index,newx,newy)			\
+	{											\
+	PreCacheLump(lump,PU_CACHEWALLS);			\
 	if (W_LumpLength(lump) == 0)				\
 		Error("%s being used in shareware at %ld %ld",	\
-		W_GetNameForNum(lump),newx,newy);					\
-	actorat[newx][newy]= &walls[index];		\
-	tempwall = (wall_t*)actorat[newx][newy]; \
+		W_GetNameForNum(lump),newx,newy);		\
+	actorat[newx][newy]= &walls[index];			\
+	tempwall = (wall_t*)actorat[newx][newy];	\
 	tempwall->which = WALL;						\
 	tempwall->tile = index;						\
-	}													\
+	tempwall->lump = lump;						\
+	}											\
 
 
 /*
@@ -2144,9 +2201,14 @@ void SetupWalls( void )
 			{
 				lump = tilemap[i][j] = GetLumpForTile(tile);
 				PreCacheLump(lump,PU_CACHEWALLS);
-				PreCacheLump(elevatorstart+5,PU_CACHEWALLS);
-				PreCacheLump(elevatorstart+6,PU_CACHEWALLS);
-				PreCacheLump(elevatorstart+7,PU_CACHEWALLS);
+//				PreCacheLump(elevatorstart+5,PU_CACHEWALLS);
+//				PreCacheLump(elevatorstart+6,PU_CACHEWALLS);
+//				PreCacheLump(elevatorstart+7,PU_CACHEWALLS);
+
+				PreCacheLump(W_GetNumForName("ELEV5"),PU_CACHEWALLS);
+				PreCacheLump(W_GetNumForName("ELEV6"),PU_CACHEWALLS);
+				PreCacheLump(W_GetNumForName("ELEV7"),PU_CACHEWALLS);
+
 				tilemap[i][j]|=0x2000;
 				if (MAPSPOT(i,j,2)==0)
 					MAPSPOT(i,j,2)=21;
@@ -2260,12 +2322,65 @@ void SetupWindows ( void )
 
 int GetWallIndex( int texture )
 {
-	int wallstart;
-	int exitstart;
+//	int wallstart;
+//	int exitstart;
+	int i, j, k;
 
-	wallstart=W_GetNumForName("WALLSTRT");
-	exitstart=W_GetNumForName("EXITSTRT");
-	elevatorstart = W_GetNumForName("ELEVSTRT");
+#if 1
+	if (texture&0x1000)
+	{
+		texture&=~0x1000;
+		if (texture==0)
+			return 41;
+		else if (texture==1)
+			return 90;
+		else if (texture==2)
+			return 91;
+		else if (texture==3)
+			return 42;
+		else if (texture==4)
+			return 92;
+		else if (texture==5)
+			return 93;
+		else if (texture==6)
+			return 94;
+		else if (texture==7)
+			return 95;
+		else if (texture==8)
+			return 96;
+		else if (texture==9)
+			return 97;
+		else if (texture==10)
+			return 98;
+		else if (texture==11)
+			return 99;
+		else if (texture==12)
+			return 100;
+		else if (texture==13)
+			return 101;
+		else if (texture==14)
+			return 102;
+		else if (texture==15)
+			return 103;
+		else if (texture==16)
+			return 104;
+	}
+	else
+	{
+		for(i=0; i<MAXWALLTILES; i++)
+		{
+			if(walls[i].lump==texture)
+				return(i);
+		}
+		return 0x8000;
+	}
+#endif
+
+
+#if 0
+//	wallstart=W_GetNumForName("WALLSTRT");
+//	exitstart=W_GetNumForName("EXITSTRT");
+//	elevatorstart = W_GetNumForName("ELEVSTRT");
 
 	if (texture&0x1000)
 		{
@@ -2324,6 +2439,7 @@ int GetWallIndex( int texture )
 			return (texture - wallstart);
 	}
 	return 0x8000;
+#endif
 }
 
 /*
@@ -4577,19 +4693,69 @@ int GetLumpForTile(int tile)
 #endif
 
 #if 1
+
+char *rt_wallnames[128]={
+"WALLSTRT",	
+"WALL1",	"WALL2",	"WALL3",	"WALL4",	
+"WALL5",	"WALL6",	"WALL7",	"WALL8",	
+"WALL9",	"WALL10",	"WALL11",	"WALL12",	
+"WALL13",	"WALL14",	"WALL15",	"WALL16",	
+"WALL17",	"WALL18",	"WALL19",	"WALL20",	
+"WALL21",	"WALL22",	"WALL23",	"WALL24",	
+"WALL25",	"WALL26",	"WALL27",	"WALL28",	
+"WALL29",	"WALL30",	"WALL31",	"WALL32",	
+"WALL33",	"WALL34",	"WALL35",	"WALL36",	
+"WALL37",	"WALL38",	"WALL39",	"WALL40",	
+"WALL41",	"WALL42",	"WALL43",	"WALL44",	
+"WALL45",	"WALL46",	"WALL47",	"WALL48",	
+"WALL49",	"WALL50",	"WALL51",	"WALL52",	
+"WALL53",	"WALL54",	"WALL55",	"WALL56",	
+"WALL57",	"WALL58",	"WALL59",	"WALL60",	
+"WALL61",	"WALL62",	"WALL63",	"WALL64",	
+"WALL65",	"WALL66",	"WALL67",	"WALL68",	
+"WALL69",	"WALL70",	"WALL71",	"WALL72",	
+"WALL73",	"WALL74",	
+"WALLSTOP",	"EXITSTRT",	
+"EXIT",		"ENTRANCE",	"EXITARCH",	"EXITARCA",	
+"ENTRARCH",	"EXITSTOP",	"ELEVSTRT",	
+"ELEV1",	"ELEV2",	"ELEV3",	"ELEV4",	
+"ELEV5",	"ELEV6",	"ELEV7",	"ELEV8",	
+"ELEVSTOP",	
+NULL
+};
+
+int LookupWallNameIndex(char *name)
+{
+	int i;
+	
+	for(i=0; rt_wallnames[i]; i++)
+		if(!strcmp(name, rt_wallnames[i]))
+			return(i);
+	return(-1);
+}
+
 int GetLumpForTile(int tile)
 {
 	char tb[9];
+	char *s0;
 	int wallstart;
 	int exitstart;
-	int wallidx, walllump;
+	int wallidx, walllump, elevstrt;
 
-	wallstart=W_GetNumForName("WALLSTRT");
-	exitstart=W_GetNumForName("EXITSTRT");
-	elevatorstart = W_GetNumForName("ELEVSTRT");
-	
+//	elevatorstart = W_GetNumForName("ELEVSTRT");
+
+//	wallstart=W_GetNumForName("WALLSTRT");
+//	exitstart=W_GetNumForName("EXITSTRT");
+//	elevatorstart = W_GetNumForName("ELEVSTRT");
+//	rott_wallstrt=wallstart;
+//	rott_wallstop=W_GetNumForName("WALLSTOP");
+
+	wallstart=LookupWallNameIndex("WALLSTRT");
+	exitstart=LookupWallNameIndex("EXITSTRT");
+//	elevatorstart = LookupWallNameIndex("ELEVSTRT");
+	elevstrt = LookupWallNameIndex("ELEVSTRT");
 	rott_wallstrt=wallstart;
-	rott_wallstop=W_GetNumForName("WALLSTOP");
+	rott_wallstop=LookupWallNameIndex("WALLSTOP");
 
 	wallidx = -1;
 	
@@ -4631,7 +4797,8 @@ int GetLumpForTile(int tile)
 		else if ((tile >= 72) && (tile <= 79))
 		{
 	//		return (tile - 72 + elevatorstart + 1);
-			wallidx = (tile-71) + (elevatorstart-wallstart);
+//			wallidx = (tile-71) + (elevatorstart-wallstart);
+			wallidx = (tile-71) + (elevstrt-wallstart);
 		}
 		else if ((tile >= 80) && (tile <= 89))
 		{
@@ -4645,18 +4812,22 @@ int GetLumpForTile(int tile)
 
 	rott_wallcache[wallidx]=wallidx+wallstart;
 
-	sprintf(tb, "WALL%d", wallidx);
-	walllump = W_CheckNumForName(tb);
+//	sprintf(tb, "WALL%d", wallidx);
+//	walllump = W_CheckNumForName(tb);
+	s0=rt_wallnames[wallidx];
+	walllump = W_CheckNumForName(s0);
+
 	if(walllump>0)
 	{
 		rott_wallcache[wallidx]=walllump;
-		return(wallidx+wallstart);
-//		return(walllump);
+//		return(wallidx+wallstart);
+		return(walllump);
 	}
 
-	return(wallidx+wallstart);
+//	return(wallidx+wallstart);
+	__debugbreak();
 	
-//	return -1;
+	return -1;
 }
 #endif
 
@@ -6038,6 +6209,648 @@ void DoLowMemoryConversion (void)
 	}
 
 
+const char *rt_shapenames[3072]=
+{
+"SHAPSTRT",	"LWGSHOO1",	"LWGSHOO2",	"LWGSHOO3",	
+"LWGSHOO4",	"LWGS1",	"LWGS2",	"LWGS3",	
+"LWGS4",	"LWGS5",	"LWGS6",	"LWGS7",	
+"LWGS8",	"LWGW11",	"LWGW12",	"LWGW13",	
+"LWGW14",	"LWGW15",	"LWGW16",	"LWGW17",	
+"LWGW18",	"LWGW21",	"LWGW22",	"LWGW23",	
+"LWGW24",	"LWGW25",	"LWGW26",	"LWGW27",	
+"LWGW28",	"LWGW31",	"LWGW32",	"LWGW33",	
+"LWGW34",	"LWGW35",	"LWGW36",	"LWGW37",	
+"LWGW38",	"LWGW41",	"LWGW42",	"LWGW43",	
+"LWGW44",	"LWGW45",	"LWGW46",	"LWGW47",	
+"LWGW48",	"LWGPAIN1",	"LWGPAIN2",	"LWGDIE1",	
+"LWGDIE2",	"LWGDIE3",	"LWGDIE4",	"LWGDEAD",	
+"LWGWPN1",	"LWGWPN2",	"LWGWDIE1",	"LWGWDIE2",	
+"LWGWDIE3",	"LWGWDIE4",	"LWGWDEAD",	"SNGDEAD",	
+"SNGRISE1",	"SNGRISE2",	"SNGRISE3",	"SNGRISE4",	
+"HG2SHOO1",	"HG2SHOO2",	"HG2SHOO3",	"HG2SHOO4",	
+"HG2S1",	"HG2S2",	"HG2S3",	"HG2S4",	
+"HG2S5",	"HG2S6",	"HG2S7",	"HG2S8",	
+"HG2W11",	"HG2W12",	"HG2W13",	"HG2W14",	
+"HG2W15",	"HG2W16",	"HG2W17",	"HG2W18",	
+"HG2W21",	"HG2W22",	"HG2W23",	"HG2W24",	
+"HG2W25",	"HG2W26",	"HG2W27",	"HG2W28",	
+"HG2W31",	"HG2W32",	"HG2W33",	"HG2W34",	
+"HG2W35",	"HG2W36",	"HG2W37",	"HG2W38",	
+"HG2W41",	"HG2W42",	"HG2W43",	"HG2W44",	
+"HG2W45",	"HG2W46",	"HG2W47",	"HG2W48",	
+"HG2PAIN1",	"HG2PAIN2",	"HG2DIE1",	"HG2DIE2",	
+"HG2DIE3",	"HG2DIE4",	"HG2DIE5",	"HG2DEAD",	
+"HG2WPN1",	"HG2WPN2",	"HG2WDIE1",	"HG2WDIE2",	
+"HG2WDIE3",	"HG2WDIE4",	"HG2WDIE5",	"HG2WDEAD",	
+"ANGSHOO1",	"ANGSHOO2",	"ANGSHOO3",	"ANGSHOO4",	
+"ANKSHOO1",	"ANKSHOO2",	"ANKSHOO3",	"ANGS1",	
+"ANGS2",	"ANGS3",	"ANGS4",	"ANGS5",	
+"ANGS6",	"ANGS7",	"ANGS8",	"ANGW11",	
+"ANGW12",	"ANGW13",	"ANGW14",	"ANGW15",	
+"ANGW16",	"ANGW17",	"ANGW18",	"ANGW21",	
+"ANGW22",	"ANGW23",	"ANGW24",	"ANGW25",	
+"ANGW26",	"ANGW27",	"ANGW28",	"ANGW31",	
+"ANGW32",	"ANGW33",	"ANGW34",	"ANGW35",	
+"ANGW36",	"ANGW37",	"ANGW38",	"ANGW41",	
+"ANGW42",	"ANGW43",	"ANGW44",	"ANGW45",	
+"ANGW46",	"ANGW47",	"ANGW48",	"ANGPAIN1",	
+"ANGPAIN2",	"ANGDIE1",	"ANGDIE2",	"ANGDIE3",	
+"ANGDIE4",	"ANGDEAD",	"ANGDEAD2",	"ANGDEAD3",	
+"ANGWPN1",	"ANGWPN2",	"ANGWDIE1",	"ANGWDIE2",	
+"ANGWDIE3",	"ANGWDIE4",	"ANGWDEAD",	"ANGWDED2",	
+"ANGWDED3",	"ANRROLL1",	"ANRROLL2",	"ANRROLL3",	
+"ANRROLL4",	"ANRROLL5",	"ANRROLL6",	"ANLROLL1",	
+"ANLROLL2",	"ANLROLL3",	"ANLROLL4",	"ANLROLL5",	
+"ANLROLL6",	"LIGSHOO1",	"LIGSHOO2",	"LIGSHOO3",	
+"LIGSHOO4",	"LIGS1",	"LIGS2",	"LIGS3",	
+"LIGS4",	"LIGS5",	"LIGS6",	"LIGS7",	
+"LIGS8",	"LIGW11",	"LIGW12",	"LIGW13",	
+"LIGW14",	"LIGW15",	"LIGW16",	"LIGW17",	
+"LIGW18",	"LIGW21",	"LIGW22",	"LIGW23",	
+"LIGW24",	"LIGW25",	"LIGW26",	"LIGW27",	
+"LIGW28",	"LIGW31",	"LIGW32",	"LIGW33",	
+"LIGW34",	"LIGW35",	"LIGW36",	"LIGW37",	
+"LIGW38",	"LIGW41",	"LIGW42",	"LIGW43",	
+"LIGW44",	"LIGW45",	"LIGW46",	"LIGW47",	
+"LIGW48",	"LIGPAIN1",	"LIGPAIN2",	"LIGDIE1",	
+"LIGDIE2",	"LIGDIE3",	"LIGDIE4",	"LIGDEAD1",	
+"LIGDEAD2",	"LIGWPN1",	"LIGWPN2",	"LIGWDIE1",	
+"LIGWDIE2",	"LIGWDIE3",	"LIGWDIE4",	"LIGWDED1",	
+"LIGWDED2",	"LIGRISE1",	"LIGRISE2",	"LIGRISE3",	
+"LIGRISE4",	"LIHUSE11",	"LIHUSE12",	"LIHUSE13",	
+"LIHUSE14",	"LIHUSE15",	"LIHUSE16",	"LIHUSE17",	
+"LIHUSE18",	"LIHUSE21",	"LIHUSE22",	"LIHUSE23",	
+"LIHUSE24",	"LIHUSE25",	"LIHUSE26",	"LIHUSE27",	
+"LIHUSE28",	"LIPLEAD1",	"LIPLEAD2",	"LIPLEAD3",	
+"LIPLEAD4",	"LIPLEAD5",	"LIPLEAD6",	"LIPLEAD7",	
+"LIPLEAD8",	"LIPLEAD9",	"LIPEAD10",	"LIPEAD11",	
+"TRISHOO1",	"TRISHOO2",	"TRISHOO3",	"TRISHOO4",	
+"TRIS1",	"TRIS2",	"TRIS3",	"TRIS4",	
+"TRIS5",	"TRIS6",	"TRIS7",	"TRIS8",	
+"TRIW11",	"TRIW12",	"TRIW13",	"TRIW14",	
+"TRIW15",	"TRIW16",	"TRIW17",	"TRIW18",	
+"TRIW21",	"TRIW22",	"TRIW23",	"TRIW24",	
+"TRIW25",	"TRIW26",	"TRIW27",	"TRIW28",	
+"TRIW31",	"TRIW32",	"TRIW33",	"TRIW34",	
+"TRIW35",	"TRIW36",	"TRIW37",	"TRIW38",	
+"TRIW41",	"TRIW42",	"TRIW43",	"TRIW44",	
+"TRIW45",	"TRIW46",	"TRIW47",	"TRIW48",	
+"TRITOSS1",	"TRITOSS2",	"TRITOSS3",	"TRITOSS4",	
+"TRITOSS5",	"TRITOSS6",	"TRITOSS7",	"TRITOSS8",	
+"TRIPAIN1",	"TRIPAIN2",	"TRIDIE1",	"TRIDIE2",	
+"TRIDIE3",	"TRIDIE4",	"TRIDEAD",	"TRIWPN1",	
+"TRIWPN2",	"TRIWDIE1",	"TRIWDIE2",	"TRIWDIE3",	
+"TRIWDIE4",	"TRIWDEAD",	"ROBOGRD1",	"ROBOGRD2",	
+"ROBOGRD3",	"ROBOGRD4",	"ROBOGRD5",	"ROBOGRD6",	
+"ROBOGRD7",	"ROBOGRD8",	"ROBOGRD9",	"ROBGRD10",	
+"ROBGRD11",	"ROBGRD12",	"ROBGRD13",	"ROBGRD14",	
+"ROBGRD15",	"ROBGRD16",	"ROBODIE1",	"ROBODIE2",	
+"ROBODIE3",	"ROBODIE4",	"ROBODIE5",	"ROBODIE6",	
+"ROBODIE7",	"ROBODIE8",	"ROBODIE9",	"ROBODEAD",	
+"EXPLOS1",	"EXPLOS2",	"EXPLOS3",	"EXPLOS4",	
+"EXPLOS5",	"EXPLOS6",	"EXPLOS7",	"EXPLOS8",	
+"EXPLOS9",	"EXPLOS10",	"EXPLOS11",	"EXPLOS12",	
+"EXPLOS13",	"EXPLOS14",	"EXPLOS15",	"EXPLOS16",	
+"EXPLOS17",	"EXPLOS18",	"EXPLOS19",	"EXPLOS20",	
+"GREXP1",	"GREXP2",	"GREXP3",	"GREXP4",	
+"GREXP5",	"GREXP6",	"GREXP7",	"GREXP8",	
+"GREXP9",	"GREXP10",	"GREXP11",	"GREXP12",	
+"GREXP13",	"GREXP14",	"GREXP15",	"GREXP16",	
+"GREXP17",	"GREXP18",	"GREXP19",	"GREXP20",	
+"GREXP21",	"GREXP22",	"GREXP23",	"GREXP24",	
+"GREXP25",	"EXP1",		"EXP2",		"EXP3",	
+"EXP4",		"EXP5",		"EXP6",		"EXP7",	
+"EXP8",		"EXP9",		"EXP10",	"EXP11",	
+"EXP12",	"EXP13",	"EXP14",	"EXP15",	
+"EXP16",	"EXP17",	"EXP18",	"EXP19",	
+"EXP20",	"UBLADE1",	"UBLADE2",	"UBLADE3",	
+"UBLADE4",	"UBLADE5",	"UBLADE6",	"UBLADE7",	
+"UBLADE8",	"UBLADE9",	"FJUP0",	"FJUP1",	
+"FJUP2",	"FJUP3",	"FJUP4",	"FJUP5",	
+"FJUP6",	"FJUP7",	"FJUP8",	"FJUP9",	
+"FJUP10",	"FJUP11",	"FJUP12",	"FJUP13",	
+"FJUP14",	"FJUP15",	"FJUP16",	"FJUP17",	
+"FJUP18",	"FJUP19",	"FJUP20",	"FJUP21",	
+"FJUP22",	"CRDOWN1",	"CRDOWN2",	"CRDOWN3",	
+"CRDOWN4",	"CRDOWN5",	"CRDOWN6",	"CRDOWN7",	
+"CRDOWN8",	"SPEARUP1",	"SPEARUP2",	"SPEARUP3",	
+"SPEARUP4",	"SPEARUP5",	"SPEARUP6",	"SPEARUP7",	
+"SPEARUP8",	"SPEARUP9",	"SPERUP10",	"SPERUP11",	
+"SPERUP12",	"SPERUP13",	"SPERUP14",	"SPERUP15",	
+"SPERUP16",	"SPRING1",	"SPRING2",	"SPRING3",	
+"SPRING4",	"SPRING5",	"SPRING6",	"SPRING7",	
+"SPRING8",	"SPRING9",	"SPRING10",	"FWALL1",	
+"FWALL2",	"FWALL3",	"FWALL4",	"FWALL5",	
+"FWALL6",	"FWALL7",	"FWALL8",	"FWALL9",	
+"FWALL10",	"FWALL11",	"FWALL12",	"FWALL13",	
+"FWALL14",	"FWALL15",	"GUTS1",	"GUTS2",	
+"GUTS3",	"GUTS4",	"GUTS5",	"GUTS6",	
+"GUTS7",	"GUTS8",	"GUTS9",	"GUTS10",	
+"GUTS11",	"GUTS12",	"PART1",	"PART2",	
+"PART5",	"PART6",	"PART7",	"PART8",	
+"PART9",	"PART10",	"PART11",	"PART12",	
+"PART13",	"PART14",	"ORGAN1",	"ORGAN2",	
+"ORGAN3",	"ORGAN4",	"ORGAN5",	"ORGAN6",	
+"ORGAN7",	"ORGAN8",	"ORGAN9",	"ORGAN10",	
+"ORGAN11",	"ORGAN12",	"RIB1",		"RIB2",	
+"RIB3",		"RIB4",		"RIB5",		"RIB6",	
+"RIB7",		"RIB8",		"RIB9",		"RIB10",	
+"RIB11",	"RIB12",	"GPINK1",	"GPINK2",	
+"GPINK3",	"GPINK4",	"GPINK5",	"GPINK6",	
+"GPINK7",	"GPINK8",	"GPINK9",	"GPINK10",	
+"GPINK11",	"GPINK12",	"GHEAD1",	"GHEAD2",	
+"GHEAD3",	"GHEAD4",	"GHEAD5",	"GHEAD6",	
+"GHEAD7",	"GHEAD8",	"GHEAD9",	"GHEAD10",	
+"GHEAD11",	"GHEAD12",	"GARM1",	"GARM2",	
+"GARM3",	"GARM4",	"GARM5",	"GARM6",	
+"GARM7",	"GARM8",	"GARM9",	"GARM10",	
+"GARM11",	"GARM12",	"GLEG1",	"GLEG2",	
+"GLEG3",	"GLEG4",	"GLEG5",	"GLEG6",	
+"GLEG7",	"GLEG8",	"GLEG9",	"GLEG10",	
+"GLEG11",	"GLEG12",	"GHUM1",	"GHUM2",	
+"GHUM3",	"GHUM4",	"GHUM5",	"GHUM6",	
+"GHUM7",	"GHUM8",	"GHUM9",	"GHUM10",	
+"GHUM11",	"GHUM12",	"GHIP1",	"GHIP2",	
+"GHIP3",	"GHIP4",	"GHIP5",	"GHIP6",	
+"GHIP7",	"GHIP8",	"GHIP9",	"GHIP10",	
+"GHIP11",	"GHIP12",	"GLIMB1",	"GLIMB2",	
+"GLIMB3",	"GLIMB4",	"GLIMB5",	"GLIMB6",	
+"GLIMB7",	"GLIMB8",	"GLIMB9",	"GLIMB10",	
+"GLIMB11",	"GLIMB12",	"DHEAD",	"WGIB1",	
+"WGIB2",	"WGIB3",	"WGIB4",	"GEYE1",	
+"GEYE2",	"GEYE3",	"VAPO1",	"VAPO2",	
+"VAPO3",	"VAPO4",	"VAPO5",	"VAPO6",	
+"VAPO7",	"VAPO8",	"BIGSOUL",	"LITSOUL",	
+"COLEC1",	"COLEC3",	"COLEC5",	"COLEC7",	
+"COLEC9",	"COLEC11",	"COLEC13",	"COLEC15",	
+"ITM1",		"ITM2",		"ITM3",		"ITM4",	
+"ITM5",		"ITM6",		"ITM7",		"ITM8",	
+"BSPURT1",	"BSPURT2",	"BSPURT3",	"BSPURT4",	
+"BSPURT5",	"BSPURT6",	"BSPURT7",	"COOLGLO1",	
+"COOLGLO2",	"COOLGLO3",	"COOLGLO4",	"COOLGLO5",	
+"COOLGLO6",	"COOLGLO7",	"COOLGLO8",	"SKEL1",	
+"SKEL2",	"SKEL3",	"SKEL4",	"SKEL5",	
+"SKEL6",	"SKEL7",	"SKEL8",	"SKEL9",	
+"SKEL10",	"SKEL11",	"SKEL12",	"SKEL13",	
+"SKEL14",	"SKEL15",	"SKEL16",	"SKEL17",	
+"SKEL18",	"SKEL19",	"SKEL20",	"SKEL21",	
+"SKEL22",	"SKEL23",	"SKEL24",	"SKEL25",	
+"SKEL26",	"SKEL27",	"SKEL28",	"SKEL29",	
+"SKEL30",	"SKEL31",	"SKEL32",	"SKEL33",	
+"SKEL34",	"SKEL35",	"SKEL36",	"SKEL37",	
+"SKEL38",	"SKEL39",	"SKEL40",	"SKEL41",	
+"SKEL42",	"SKEL43",	"SKEL44",	"SKEL45",	
+"SKEL46",	"SKEL47",	"SKEL48",	"PUSHCOL1",	
+"PSHCOL1A",	"BLOODS1",	"BLOODS2",	"BLOODS3",	
+"BLOODS4",	"BLOODS5",	"BLOODS6",	"BLOODS7",	
+"BLOODS8",	"GUNSMKE1",	"GUNSMKE2",	"GUNSMKE3",	
+"GUNSMKE4",	"GUNSMKE5",	"GUNSMKE6",	"GUNSMKE7",	
+"GUNSMKE8",	"HITMET1",	"HITMET2",	"HITMET3",	
+"HITMET4",	"HITMACT1",	"HITMACT2",	"HITMACT3",	
+"HITMACT4",	"PLATFRM1",	"PLATFRM2",	"PLATFRM3",	
+"PLATFRM4",	"PLATFRM5",	"CRFIRE11",	"CRFIRE12",	
+"CRFIRE13",	"CRFIRE14",	"CRFIRE15",	"CRFIRE16",	
+"CRFIRE17",	"CRFIRE18",	"CRFIRE31",	"CRFIRE32",	
+"CRFIRE33",	"CRFIRE34",	"CRFIRE35",	"CRFIRE36",	
+"CRFIRE37",	"CRFIRE38",	"CREXP1",	"CREXP2",	
+"CREXP3",	"CREXP4",	"CREXP5",	"GODFIRE1",	
+"GODFIRE2",	"GODFIRE3",	"GODFIRE4",	"TEGREN1",	
+"TEGREN2",	"TEGREN3",	"TEGREN4",	"TEGREN5",	
+"TEGREN6",	"TEGREN7",	"TEGREN8",	"TEGREN9",	
+"TEGREN10",	"TGRENF1",	"TGRENF2",	"TGRENF3",	
+"TGRENF4",	"TGRENF5",	"TGRENF6",	"MINE1",	
+"MINE2",	"MINE3",	"MINE4",	"BJMISS1",	
+"BJMISS2",	"BJMISS3",	"BJMISS4",	"BJMISS5",	
+"BJMISS6",	"BJMISS7",	"BJMISS8",	"BJMISS9",	
+"BJMISS10",	"BJMISS11",	"BJMISS12",	"BJMISS13",	
+"BJMISS14",	"BJMISS15",	"BJMISS16",	"BSTAR1",	
+"BSTAR2",	"BSTAR3",	"BSTAR4",	"GODUP1",	
+"GODUP2",	"GODUP3",	"GODUP4",	"GODUP5",	
+"GODUP6",	"GODUP7",	"GODUP8",	"ELASTUP1",	
+"ELASTUP2",	"ELASTUP3",	"ELASTUP4",	"ELASTUP5",	
+"ELASTUP6",	"ELASTUP7",	"ELASTUP8",	"RNDOMUP1",	
+"RNDOMUP2",	"RNDOMUP3",	"RNDOMUP4",	"RNDOMUP5",	
+"RNDOMUP6",	"RNDOMUP7",	"RNDOMUP8",	"FEETUP1",	
+"FEETUP2",	"FEETUP3",	"FEETUP4",	"FEETUP5",	
+"FEETUP6",	"FEETUP7",	"FEETUP8",	"MUSHUP1",	
+"MUSHUP2",	"MUSHUP3",	"MUSHUP4",	"MUSHUP5",	
+"MUSHUP6",	"MUSHUP7",	"MUSHUP8",	"ONEUP1",	
+"ONEUP2",	"ONEUP3",	"ONEUP4",	"ONEUP5",	
+"ONEUP6",	"ONEUP7",	"ONEUP8",	"LIFE_A1",	
+"LIFE_A2",	"LIFE_A3",	"LIFE_A4",	"LIFE_A5",	
+"LIFE_A6",	"LIFE_A7",	"LIFE_A8",	"LIFE_B1",	
+"LIFE_B2",	"LIFE_B3",	"LIFE_B4",	"LIFE_B5",	
+"LIFE_B6",	"LIFE_B7",	"LIFE_B8",	"LIFE_C1",	
+"LIFE_C2",	"LIFE_C3",	"LIFE_C4",	"LIFE_C5",	
+"LIFE_C6",	"LIFE_C7",	"LIFE_C8",	"LIFE_C9",	
+"LIFE_C10",	"LIFE_C11",	"LIFE_C12",	"LIFE_C13",	
+"LIFE_C14",	"LIFE_C15",	"LIFE_D1",	"LIFE_D2",	
+"LIFE_D3",	"LIFE_D4",	"LIFE_D5",	"LIFE_D6",	
+"LIFE_D7",	"LIFE_D8",	"RUBBLE1",	"RUBBLE2",	
+"RUBBLE3",	"RUBBLE4",	"RUBBLE5",	"RUBBLE6",	
+"RUBBLE7",	"RUBBLE8",	"RUBBLE9",	"RUBBLE10",	
+"WFRAG1",	"WFRAG2",	"WFRAG3",	"WFRAG4",	
+"WFRAG5",	"WFRAG6",	"WFRAG7",	"WFRAG8",	
+"WFRAG9",	"WFRAG10",	"WFRAG11",	"WFRAG12",	
+"WFRAG13",	"WFRAG14",	"MISSMO11",	"MISSMO12",	
+"MISSMO13",	"MISSMO14",	"ETOUCH1",	"ETOUCH2",	
+"ETOUCH3",	"GKEY1",	"GKEY2",	"GKEY3",	
+"GKEY4",	"GKEY5",	"GKEY6",	"GKEY7",	
+"GKEY8",	"GKEY9",	"GKEY10",	"GKEY11",	
+"GKEY12",	"GKEY13",	"GKEY14",	"GKEY15",	
+"GKEY16",	"GIBS1",	"GIBS2",	"GIBS3",	
+"BBARREL",	"TP1",		"TP2",		"TP3",	
+"TP4",		"GARBAG3",	"SHITBUK",	"URN",	
+"HAY",		"BULLETHO",	"ALTBHO",	"STNPOLE1",	
+"STNPOLE2",	"STNPOLE3",	"STNPOLE4",	"STNPOLE5",	
+"STNPOLE6",	"STNPOLE7",	"STNPOLE8",	"HGRATE1",	
+"HGRATE2",	"HGRATE3",	"HGRATE4",	"YLIGHT",	
+"RLIGHT",	"GLIGHT",	"BLIGHT",	"CHAND",	
+"LAMPOFF",	"LAMP",		"MONKMEAL",	"ABRAZOFF",	
+"ABRZO20",	"EXPLOSI",	"GARBAG1",	"GARBAG2",	
+"GRATE",	"MSHARDS",	"PEDESTA",	"ETABLE",	
+"STOOL",	"TREE",		"PLANT",	"IBARREL",	
+"FBASIN1",	"FBASIN2",	"FBASIN3",	"EBASIN",	
+"PPOR1",	"PPOR21",	"PPOR3",	"PPOR4",	
+"PPOR5",	"PPOR6",	"MONKC11",	"MONKC12",	
+"MONKC13",	"MONKC14",	"MONKC15",	"MONKC16",	
+"MONKC21",	"MONKC22",	"MONKC23",	"MONKC24",	
+"MONKC25",	"MONKC26",	"MONKC27",	"ABRAZ1",	
+"ABRAZ2",	"ABRAZ3",	"ABRAZ4",	"ABRAZ5",	
+"ABRAZ6",	"ABRAZ7",	"ABRAZ8",	"ABRAZ9",	
+"ABRAZ10",	"ABRAZ11",	"ABRAZ12",	"ABRAZ13",	
+"ABRAZ14",	"ABRAZ15",	"FFLAME1",	"FFLAME2",	
+"FFLAME3",	"FFLAME4",	"FFLAME5",	"FFLAME6",	
+"FFLAME7",	"TWOPIST",	"MP40",		"BAZOOKA",	
+"FIREBOMB",	"HEATSEEK",	"DRUNK",	"FIREWALL",	
+"KES",		"SPLITM",	"GASUP",	"PROOFUP",	
+"ASBESTOS",	"PREPIT",	"POSTPIT",	"CASSHO11",	
+"CASSHO12",	"CASSHO13",	"CASSHO14",	"CASSHO15",	
+"CASSHO16",	"CASSHO17",	"CASSHO18",	"CASSHO21",	
+"CASSHO22",	"CASSHO23",	"CASSHO24",	"CASSHO25",	
+"CASSHO26",	"CASSHO27",	"CASSHO28",	"CAMSHO11",	
+"CAMSHO12",	"CAMSHO13",	"CAMSHO14",	"CAMSHO15",	
+"CAMSHO16",	"CAMSHO17",	"CAMSHO18",	"CAMSHO21",	
+"CAMSHO22",	"CAMSHO23",	"CAMSHO24",	"CAMSHO25",	
+"CAMSHO26",	"CAMSHO27",	"CAMSHO28",	"CASS1",	
+"CASS2",	"CASS3",	"CASS4",	"CASS5",	
+"CASS6",	"CASS7",	"CASS8",	"CASW11",	
+"CASW12",	"CASW13",	"CASW14",	"CASW15",	
+"CASW16",	"CASW17",	"CASW18",	"CASW21",	
+"CASW22",	"CASW23",	"CASW24",	"CASW25",	
+"CASW26",	"CASW27",	"CASW28",	"CASW31",	
+"CASW32",	"CASW33",	"CASW34",	"CASW35",	
+"CASW36",	"CASW37",	"CASW38",	"CASW41",	
+"CASW42",	"CASW43",	"CASW44",	"CASW45",	
+"CASW46",	"CASW47",	"CASW48",	"CASDIE1",	
+"CASDIE2",	"CASDIE3",	"CASDIE4",	"CASDIE5",	
+"CASDIE6",	"CASDEAD",	"CASWDIE1",	"CASWDIE2",	
+"CASWDIE3",	"CASWDIE4",	"CASWDIE5",	"CASWDIE6",	
+"CASWDEAD",	"BARSHO11",	"BARSHO12",	"BARSHO13",	
+"BARSHO14",	"BARSHO15",	"BARSHO16",	"BARSHO17",	
+"BARSHO18",	"BARSHO21",	"BARSHO22",	"BARSHO23",	
+"BARSHO24",	"BARSHO25",	"BARSHO26",	"BARSHO27",	
+"BARSHO28",	"BAMSHO11",	"BAMSHO12",	"BAMSHO13",	
+"BAMSHO14",	"BAMSHO15",	"BAMSHO16",	"BAMSHO17",	
+"BAMSHO18",	"BAMSHO21",	"BAMSHO22",	"BAMSHO23",	
+"BAMSHO24",	"BAMSHO25",	"BAMSHO26",	"BAMSHO27",	
+"BAMSHO28",	"BARS1",	"BARS2",	"BARS3",	
+"BARS4",	"BARS5",	"BARS6",	"BARS7",	
+"BARS8",	"BAMW11",	"BAMW12",	"BAMW13",	
+"BAMW14",	"BAMW15",	"BAMW16",	"BAMW17",	
+"BAMW18",	"BAMW21",	"BAMW22",	"BAMW23",	
+"BAMW24",	"BAMW25",	"BAMW26",	"BAMW27",	
+"BAMW28",	"BAMW31",	"BAMW32",	"BAMW33",	
+"BAMW34",	"BAMW35",	"BAMW36",	"BAMW37",	
+"BAMW38",	"BAMW41",	"BAMW42",	"BAMW43",	
+"BAMW44",	"BAMW45",	"BAMW46",	"BAMW47",	
+"BAMW48",	"BARDIE1",	"BARDIE2",	"BARDIE3",	
+"BARDIE4",	"BARDIE5",	"BARDIE6",	"BARDEAD",	
+"BARWDIE1",	"BARWDIE2",	"BARWDIE3",	"BARWDIE4",	
+"BARWDIE5",	"BARWDIE6",	"BARWDEAD",	"WENSHO11",	
+"WENSHO12",	"WENSHO13",	"WENSHO14",	"WENSHO15",	
+"WENSHO16",	"WENSHO17",	"WENSHO18",	"WENSHO21",	
+"WENSHO22",	"WENSHO23",	"WENSHO24",	"WENSHO25",	
+"WENSHO26",	"WENSHO27",	"WENSHO28",	"WNMSHO11",	
+"WNMSHO12",	"WNMSHO13",	"WNMSHO14",	"WNMSHO15",	
+"WNMSHO16",	"WNMSHO17",	"WNMSHO18",	"WNMSHO21",	
+"WNMSHO22",	"WNMSHO23",	"WNMSHO24",	"WNMSHO25",	
+"WNMSHO26",	"WNMSHO27",	"WNMSHO28",	"WENS1",	
+"WENS2",	"WENS3",	"WENS4",	"WENS5",	
+"WENS6",	"WENS7",	"WENS8",	"WENW11",	
+"WENW12",	"WENW13",	"WENW14",	"WENW15",	
+"WENW16",	"WENW17",	"WENW18",	"WENW21",	
+"WENW22",	"WENW23",	"WENW24",	"WENW25",	
+"WENW26",	"WENW27",	"WENW28",	"WENW31",	
+"WENW32",	"WENW33",	"WENW34",	"WENW35",	
+"WENW36",	"WENW37",	"WENW38",	"WENW41",	
+"WENW42",	"WENW43",	"WENW44",	"WENW45",	
+"WENW46",	"WENW47",	"WENW48",	"WENDIE1",	
+"WENDIE2",	"WENDIE3",	"WENDIE4",	"WENDIE5",	
+"WENDIE6",	"WENDEAD",	"WENWDIE1",	"WENWDIE2",	
+"WENWDIE3",	"WENWDIE4",	"WENWDIE5",	"WENWDIE6",	
+"WENWDEAD",	"LNISHO11",	"LNISHO12",	"LNISHO13",	
+"LNISHO14",	"LNISHO15",	"LNISHO16",	"LNISHO17",	
+"LNISHO18",	"LNISHO21",	"LNISHO22",	"LNISHO23",	
+"LNISHO24",	"LNISHO25",	"LNISHO26",	"LNISHO27",	
+"LNISHO28",	"LNMSHO11",	"LNMSHO12",	"LNMSHO13",	
+"LNMSHO14",	"LNMSHO15",	"LNMSHO16",	"LNMSHO17",	
+"LNMSHO18",	"LNMSHO21",	"LNMSHO22",	"LNMSHO23",	
+"LNMSHO24",	"LNMSHO25",	"LNMSHO26",	"LNMSHO27",	
+"LNMSHO28",	"LNIS1",	"LNIS2",	"LNIS3",	
+"LNIS4",	"LNIS5",	"LNIS6",	"LNIS7",	
+"LNIS8",	"LNIW11",	"LNIW12",	"LNIW13",	
+"LNIW14",	"LNIW15",	"LNIW16",	"LNIW17",	
+"LNIW18",	"LNIW21",	"LNIW22",	"LNIW23",	
+"LNIW24",	"LNIW25",	"LNIW26",	"LNIW27",	
+"LNIW28",	"LNIW31",	"LNIW32",	"LNIW33",	
+"LNIW34",	"LNIW35",	"LNIW36",	"LNIW37",	
+"LNIW38",	"LNIW41",	"LNIW42",	"LNIW43",	
+"LNIW44",	"LNIW45",	"LNIW46",	"LNIW47",	
+"LNIW48",	"LNIDIE1",	"LNIDIE2",	"LNIDIE3",	
+"LNIDIE4",	"LNIDIE5",	"LNIDIE6",	"LNIDEAD",	
+"LNIWDIE1",	"LNIWDIE2",	"LNIWDIE3",	"LNIWDIE4",	
+"LNIWDIE5",	"LNIWDIE6",	"LNIWDEAD",	"IPFSHO11",	
+"IPFSHO12",	"IPFSHO13",	"IPFSHO14",	"IPFSHO15",	
+"IPFSHO16",	"IPFSHO17",	"IPFSHO18",	"IPFSHO21",	
+"IPFSHO22",	"IPFSHO23",	"IPFSHO24",	"IPFSHO25",	
+"IPFSHO26",	"IPFSHO27",	"IPFSHO28",	"IPMSHO11",	
+"IPMSHO12",	"IPMSHO13",	"IPMSHO14",	"IPMSHO15",	
+"IPMSHO16",	"IPMSHO17",	"IPMSHO18",	"IPMSHO21",	
+"IPMSHO22",	"IPMSHO23",	"IPMSHO24",	"IPMSHO25",	
+"IPMSHO26",	"IPMSHO27",	"IPMSHO28",	"IPFS1",	
+"IPFS2",	"IPFS3",	"IPFS4",	"IPFS5",	
+"IPFS6",	"IPFS7",	"IPFS8",	"IPFW11",	
+"IPFW12",	"IPFW13",	"IPFW14",	"IPFW15",	
+"IPFW16",	"IPFW17",	"IPFW18",	"IPFW21",	
+"IPFW22",	"IPFW23",	"IPFW24",	"IPFW25",	
+"IPFW26",	"IPFW27",	"IPFW28",	"IPFW31",	
+"IPFW32",	"IPFW33",	"IPFW34",	"IPFW35",	
+"IPFW36",	"IPFW37",	"IPFW38",	"IPFW41",	
+"IPFW42",	"IPFW43",	"IPFW44",	"IPFW45",	
+"IPFW46",	"IPFW47",	"IPFW48",	"IPFDIE1",	
+"IPFDIE2",	"IPFDIE3",	"IPFDIE4",	"IPFDIE5",	
+"IPFDIE6",	"IPFDEAD",	"IPFWDIE1",	"IPFWDIE2",	
+"IPFWDIE3",	"IPFWDIE4",	"IPFWDIE5",	"IPFWDIE6",	
+"IPFWDEAD",	"DOGW11",	"DOGW12",	"DOGW13",	
+"DOGW14",	"DOGW15",	"DOGW16",	"DOGW17",	
+"DOGW18",	"DOGW21",	"DOGW22",	"DOGW23",	
+"DOGW24",	"DOGW25",	"DOGW26",	"DOGW27",	
+"DOGW28",	"DOGW31",	"DOGW32",	"DOGW33",	
+"DOGW34",	"DOGW35",	"DOGW36",	"DOGW37",	
+"DOGW38",	"DOGW41",	"DOGW42",	"DOGW43",	
+"DOGW44",	"DOGW45",	"DOGW46",	"DOGW47",	
+"DOGW48",	"DOGAT1",	"DOGAT2",	"DOGAT3",	
+"DOGAT4",	"DOGAT5",	"DOGAT6",	"DOGAT7",	
+"DOGAT8",	"OBPSHOO1",	"OBPSHOO2",	"OBPSHOO3",	
+"OBPSHOO4",	"OBPBSHO1",	"OBPBSHO2",	"OBPBSHO3",	
+"OBPBSHO4",	"OBPBSHO5",	"OBPS1",	"OBPS2",	
+"OBPS3",	"OBPS4",	"OBPS5",	"OBPS6",	
+"OBPS7",	"OBPS8",	"OBPW11",	"OBPW12",	
+"OBPW13",	"OBPW14",	"OBPW15",	"OBPW16",	
+"OBPW17",	"OBPW18",	"OBPW21",	"OBPW22",	
+"OBPW23",	"OBPW24",	"OBPW25",	"OBPW26",	
+"OBPW27",	"OBPW28",	"OBPW31",	"OBPW32",	
+"OBPW33",	"OBPW34",	"OBPW35",	"OBPW36",	
+"OBPW37",	"OBPW38",	"OBPW41",	"OBPW42",	
+"OBPW43",	"OBPW44",	"OBPW45",	"OBPW46",	
+"OBPW47",	"OBPW48",	"OBPPAIN1",	"OBPPAIN2",	
+"OBPADIE1",	"OBPADIE2",	"OBPADIE3",	"OBPADIE4",	
+"OBPADIE5",	"OBPADEAD",	"OBPWPN1",	"OBPWPN2",	
+"OBPWDIE1",	"OBPWDIE2",	"OBPWDIE3",	"OBPWDIE4",	
+"OBPWDIE5",	"OBPWDEAD",	"OBPDIE1",	"OBPDIE2",	
+"OBPDIE3",	"OBPDIE4",	"OBPDIE5",	"OBPDIE6",	
+"OBPDEAD",	"MONKDR1",	"MONKDR2",	"MONKDR3",	
+"MONKDR4",	"MONKDR5",	"MONKDR6",	"MONS1",	
+"MONS2",	"MONS3",	"MONS4",	"MONS5",	
+"MONS6",	"MONS7",	"MONS8",	"MONW11",	
+"MONW12",	"MONW13",	"MONW14",	"MONW15",	
+"MONW16",	"MONW17",	"MONW18",	"MONW21",	
+"MONW22",	"MONW23",	"MONW24",	"MONW25",	
+"MONW26",	"MONW27",	"MONW28",	"MONW31",	
+"MONW32",	"MONW33",	"MONW34",	"MONW35",	
+"MONW36",	"MONW37",	"MONW38",	"MONW41",	
+"MONW42",	"MONW43",	"MONW44",	"MONW45",	
+"MONW46",	"MONW47",	"MONW48",	"MONPAIN1",	
+"MONPAIN2",	"MONDIE1",	"MONDIE2",	"MONDIE3",	
+"MONDIE4",	"MONDEAD",	"ALLKSH1",	"ALLKSH2",	
+"ALLKSH3",	"ALLKSH4",	"ALLKSH5",	"ALLKSH6",	
+"ALLKSH7",	"ALLS1",	"ALLS2",	"ALLS3",	
+"ALLS4",	"ALLS5",	"ALLS6",	"ALLS7",	
+"ALLS8",	"ALLW11",	"ALLW12",	"ALLW13",	
+"ALLW14",	"ALLW15",	"ALLW16",	"ALLW17",	
+"ALLW18",	"ALLW21",	"ALLW22",	"ALLW23",	
+"ALLW24",	"ALLW25",	"ALLW26",	"ALLW27",	
+"ALLW28",	"ALLW31",	"ALLW32",	"ALLW33",	
+"ALLW34",	"ALLW35",	"ALLW36",	"ALLW37",	
+"ALLW38",	"ALLW41",	"ALLW42",	"ALLW43",	
+"ALLW44",	"ALLW45",	"ALLW46",	"ALLW47",	
+"ALLW48",	"ALLPAIN1",	"ALLPAIN2",	"ALLDIE1",	
+"ALLDIE2",	"ALLDIE3",	"ALLDIE4",	"ALLDEAD1",	
+"ALLDEAD2",	"ALLDEAD3",	"ALLDEAD4",	"ALLDEAD5",	
+"ALLDEAD6",	"ALLDEAD7",	"BCRAFT1",	"BCRAFT2",	
+"BCRAFT3",	"BCRAFT4",	"BCRAFT5",	"BCRAFT6",	
+"BCRAFT7",	"BCRAFT8",	"BCRAFT9",	"BCRAFT10",	
+"BCRAFT11",	"BCRAFT12",	"BCRAFT13",	"BCRAFT14",	
+"BCRAFT15",	"BCRAFT16",	"DARSHOO1",	"DARSHOO2",	
+"DARSHOO3",	"DARSHOO4",	"DARDIS1",	"DARDIS2",	
+"DARDIS3",	"DARDIS4",	"DARDIS5",	"DARDIS6",	
+"DARDIS7",	"DARDIS8",	"DARS1",	"DARS2",	
+"DARS3",	"DARS4",	"DARS5",	"DARS6",	
+"DARS7",	"DARS8",	"DARW11",	"DARW12",	
+"DARW13",	"DARW14",	"DARW15",	"DARW16",	
+"DARW17",	"DARW18",	"DARW21",	"DARW22",	
+"DARW23",	"DARW24",	"DARW25",	"DARW26",	
+"DARW27",	"DARW28",	"DARW31",	"DARW32",	
+"DARW33",	"DARW34",	"DARW35",	"DARW36",	
+"DARW37",	"DARW38",	"DARW41",	"DARW42",	
+"DARW43",	"DARW44",	"DARW45",	"DARW46",	
+"DARW47",	"DARW48",	"DARPAIN1",	"DARPAIN2",	
+"DARDIE1",	"DARDIE2",	"DARDIE3",	"DARDIE4",	
+"DARDIE5",	"DARDIE6",	"DARDIE7",	"DARDIE8",	
+"DARDIE9",	"DARDIE10",	"DARDEAD",	"DARWPN1",	
+"DARWPN2",	"DARWDIE1",	"DARWDIE2",	"DARWDIE3",	
+"DARWDIE4",	"DARWDIE5",	"DARWDIE6",	"DARWDIE7",	
+"DARWDIE8",	"DARWDIE9",	"DARWDE10",	"DARWDEAD",	
+"DARUSE11",	"DARUSE12",	"DARUSE13",	"DARUSE14",	
+"DARUSE15",	"DARUSE16",	"DARUSE17",	"DARUSE18",	
+"DARUSE21",	"DARUSE22",	"DARUSE23",	"DARUSE24",	
+"DARUSE25",	"DARUSE26",	"DARUSE27",	"DARUSE28",	
+"HSIT1",	"HSIT2",	"HSIT3",	"HSIT4",	
+"HSIT5",	"HSIT6",	"HSIT7",	"HSIT8",	
+"HLEFT1",	"HLEFT2",	"HLEFT3",	"HLEFT4",	
+"HLEFT5",	"HLEFT6",	"HLEFT7",	"HLEFT8",	
+"HSHOOT1",	"HSHOOT2",	"HSHOOT3",	"HSHOOT4",	
+"HSHOOT5",	"HSHOOT6",	"HSHOOT7",	"HSHOOT8",	
+"HSHOOT9",	"HSHOOT10",	"HSHOOT11",	"HDIE1",	
+"HDIE2",	"HDEAD1",	"HDEAD2",	"HDEAD3",	
+"HDEAD4",	"HDEAD5",	"HDEAD6",	"HDEAD7",	
+"HDEAD8",	"HRIGHT1",	"HRIGHT2",	"HRIGHT3",	
+"HRIGHT4",	"HRIGHT5",	"HRIGHT6",	"HRIGHT7",	
+"HRIGHT8",	"HFOR1",	"HFOR2",	"HFOR3",	
+"HFOR4",	"HFOR5",	"HFOR6",	"HFOR7",	
+"HFOR8",	"HMRIGHT1",	"HMRIGHT2",	"HMRIGHT3",	
+"HMRIGHT4",	"HMRIGHT5",	"HMRIGHT6",	"HMRIGHT7",	
+"HMRIGHT8",	"HDOPE6",	"HDOPE7",	"HDOPE8",	
+"RHEAD101",	"RHEAD102",	"RHEAD103",	"RHEAD104",	
+"RHEAD105",	"RHEAD106",	"RHEAD107",	"RHEAD108",	
+"RHEAD109",	"RHEAD110",	"RHEAD111",	"RHEAD112",	
+"RHEAD113",	"RHEAD114",	"RHEAD115",	"RHEAD116",	
+"RHEAD201",	"RHEAD202",	"RHEAD203",	"RHEAD204",	
+"RHEAD205",	"RHEAD206",	"RHEAD207",	"RHEAD208",	
+"RHEAD209",	"RHEAD210",	"RHEAD211",	"RHEAD212",	
+"RHEAD213",	"RHEAD214",	"RHEAD215",	"RHEAD216",	
+"RBODY101",	"RBODY102",	"RBODY103",	"RBODY104",	
+"RBODY105",	"RBODY106",	"RBODY107",	"RBODY108",	
+"RBODY109",	"RBODY110",	"RBODY111",	"RBODY112",	
+"RBODY113",	"RBODY114",	"RBODY115",	"RBODY116",	
+"RBODY201",	"RBODY202",	"RBODY203",	"RBODY204",	
+"RBODY205",	"RBODY206",	"RBODY207",	"RBODY208",	
+"RBODY209",	"RBODY210",	"RBODY211",	"RBODY212",	
+"RBODY213",	"RBODY214",	"RBODY215",	"RBODY216",	
+"RBODY301",	"RBODY302",	"RBODY303",	"RBODY304",	
+"RBODY305",	"RBODY306",	"RBODY307",	"RBODY308",	
+"RBODY309",	"RBODY310",	"RBODY311",	"RBODY312",	
+"RBODY313",	"RBODY314",	"RBODY315",	"RBODY316",	
+"RBODY401",	"RBODY402",	"RBODY403",	"RBODY404",	
+"RBODY405",	"RBODY406",	"RBODY407",	"RBODY408",	
+"RBODY409",	"RBODY410",	"RBODY411",	"RBODY412",	
+"RBODY413",	"RBODY414",	"RBODY415",	"RBODY416",	
+"RSW01",	"RSW02",	"RSW03",	"RSW04",	
+"RSW05",	"RSW06",	"RSW07",	"RSW08",	
+"RSW09",	"RSW10",	"RSW11",	"RSW12",	
+"RSW13",	"RSW14",	"RSW15",	"RSW16",	
+"RFW01",	"RFW02",	"RFW03",	"RFW04",	
+"RFW05",	"RFW06",	"RFW07",	"RFW08",	
+"RFW09",	"RFW10",	"RFW11",	"RFW12",	
+"RFW13",	"RFW14",	"RFW15",	"RFW16",	
+"RRW01",	"RRW02",	"RRW03",	"RRW04",	
+"RRW05",	"RRW06",	"RRW07",	"RRW08",	
+"RRW09",	"RRW10",	"RRW11",	"RRW12",	
+"RRW13",	"RRW14",	"RRW15",	"RRW16",	
+"RSDW01",	"RSDW02",	"RSDW03",	"RSDW04",	
+"RSDW05",	"RSDW06",	"RSDW07",	"RSDW08",	
+"RSDW09",	"RSDW10",	"RSDW11",	"RSDW12",	
+"RSDW13",	"RSDW14",	"RSDW15",	"RSDW16",	
+"RLW01",	"RLW02",	"RLW03",	"RLW04",	
+"RLW05",	"RLW06",	"RLW07",	"RLW08",	
+"RLW09",	"RLW10",	"RLW11",	"RLW12",	
+"RLW13",	"RLW14",	"RLW15",	"RLW16",	
+"ROCK01",	"ROCK02",	"ROCK03",	"ROCK04",	
+"ROCK05",	"ROCK06",	"ROCK07",	"ROCK08",	
+"ROCK09",	"ROCK10",	"ROCK11",	"ROCK12",	
+"ROCK13",	"ROCK14",	"ROCK15",	"ROCK16",	
+"ROCK201",	"ROCK202",	"ROCK203",	"ROCK204",	
+"ROCK205",	"ROCK206",	"ROCK207",	"ROCK208",	
+"ROCK209",	"ROCK210",	"ROCK211",	"ROCK212",	
+"ROCK213",	"ROCK214",	"ROCK215",	"ROCK216",	
+"NMEBALL1",	"NMEBALL2",	"NMEBALL3",	"NMEBALL4",	
+"NMESAUC1",	"NMESAUC2",	"NMESAUC3",	"NMESAUC4",	
+"TOMS1",	"TOMS2",	"TOMS3",	"TOMS4",	
+"TOMS5",	"TOMS6",	"TOMS7",	"TOMS8",	
+"TOMFLY11",	"TOMFLY12",	"TOMFLY13",	"TOMFLY14",	
+"TOMFLY15",	"TOMFLY16",	"TOMFLY17",	"TOMFLY18",	
+"TOMFLY21",	"TOMFLY22",	"TOMFLY23",	"TOMFLY24",	
+"TOMFLY25",	"TOMFLY26",	"TOMFLY27",	"TOMFLY28",	
+"TOMLG1",	"TOMLG2",	"TOMLG3",	"TOMLG4",	
+"TOMLG5",	"TOMLG6",	"TOMLG7",	"TOMLG8",	
+"TOMLG9",	"TOMLG10",	"TOMLG11",	"TOMFS1",	
+"TOMFS2",	"TOMFS3",	"TOMFS4",	"TOMFS5",	
+"TOMFS6",	"TOMBR1",	"TOMBR2",	"TOMBR3",	
+"TOMBR4",	"TOMBR5",	"TOMBR6",	"TOMBR7",	
+"TOMBR8",	"TOMHEAD1",	"TOMHEAD2",	"TOMHEAD3",	
+"TOMHEAD4",	"TOMHEAD5",	"TOMHEAD6",	"TOMHEAD7",	
+"TOMHEAD8",	"TPREP1",	"THDIE1",	"THDIE2",	
+"TAWAKEN1",	"TAWAKEN2",	"TAWAKEN3",	"TAWAKEN4",	
+"TAWAKEN5",	"THBALL1",	"THBALL2",	"THBALL3",	
+"THBALL4",	"THBALL5",	"THBALL6",	"THBALL7",	
+"THBALL8",	"THBALL9",	"TSPHERE1",	"TSPHERE2",	
+"TSPHERE3",	"TSPHERE4",	"TSPHERE5",	"TSPHERE6",	
+"TSPHERE7",	"TSPHERE8",	"TSPHERE9",	"TSPHER10",	
+"TBBALL1",	"TBBALL2",	"TBBALL3",	"TBBALL4",	
+"TBBALL5",	"TBBALL6",	"TBBALL7",	"TBBALL8",	
+"TBBALL9",	"TSCAREB1",	"TSCAREB2",	"TSCAREB3",	
+"TSCAREB4",	"TSCAREB5",	"TOMDIE1",	"TOMDIE2",	
+"TOMDIE3",	"TOMDIE4",	"TOMDIE5",	"TOMDIE6",	
+"TOMDIE7",	"TOMDIE8",	"TOMRH1",	"TOMRH2",	
+"TOMRH3",	"TOMRH4",	"TOMRH5",	"TOMRH6",	
+"TOMRH7",	"TOMRH8",	"TOHRH1",	"TOHRH2",	
+"TOHRH3",	"TOHRH4",	"TOHRH5",	"TOHRH6",	
+"TOHRH7",	"TOHRH8",	"SPEARDN1",	"SPEARDN2",	
+"SPEARDN3",	"SPEARDN4",	"SPEARDN5",	"SPEARDN6",	
+"SPEARDN7",	"SPEARDN8",	"SPEARDN9",	"SPERDN10",	
+"SPERDN11",	"SPERDN12",	"SPERDN13",	"SPERDN14",	
+"SPERDN15",	"SPERDN16",	"DBLADE1",	"DBLADE2",	
+"DBLADE3",	"DBLADE4",	"DBLADE5",	"DBLADE6",	
+"DBLADE7",	"DBLADE8",	"DBLADE9",	"FJDOWN0",	
+"FJDOWN1",	"FJDOWN2",	"FJDOWN3",	"FJDOWN4",	
+"FJDOWN5",	"FJDOWN6",	"FJDOWN7",	"FJDOWN8",	
+"FJDOWN9",	"FJDOWN10",	"FJDOWN11",	"FJDOWN12",	
+"FJDOWN13",	"FJDOWN14",	"FJDOWN15",	"FJDOWN16",	
+"FJDOWN17",	"FJDOWN18",	"FJDOWN19",	"FJDOWN20",	
+"FJDOWN21",	"FJDOWN22",	"CRUP1",	"CRUP2",	
+"CRUP3",	"CRUP4",	"CRUP5",	"CRUP6",	
+"CRUP7",	"CRUP8",	"SPSTUP1",	"SPSTUP2",	
+"SPSTUP3",	"SPSTUP4",	"SPSTUP5",	"SPSTUP6",	
+"SPSTUP7",	"SPSTUP8",	"SPSTUP9",	"SPSTUP10",	
+"SPSTUP11",	"SPSTUP12",	"SPSTUP13",	"SPSTUP14",	
+"SPSTUP15",	"SPSTUP16",	"SPSTDN1",	"SPSTDN2",	
+"SPSTDN3",	"SPSTDN4",	"SPSTDN5",	"SPSTDN6",	
+"SPSTDN7",	"SPSTDN8",	"SPSTDN9",	"SPSTDN10",	
+"SPSTDN11",	"SPSTDN12",	"SPSTDN13",	"SPSTDN14",	
+"SPSTDN15",	"SPSTDN16",	"DIPBAL11",	"DIPBAL21",	
+"DIPBAL31",	"TOMLARV1",	"TOMLARV2",	"TOMLARV3",	
+"TOMLARV4",	"SCTHEAD1",	"SCTHEAD2",	"SCTHEAD3",	
+"SCTHEAD4",	"SCTHEAD5",	"SCTHEAD6",	"SCTHEAD7",	
+"KSTATUE1",	"KSTATUE2",	"KSTATUE3",	"KSTATUE4",	
+"KSTATUE5",	"KSTATUE6",	"KSTATUE7",	"KSTATUE8",	
+"ESTATUE1",	"ESTATUE2",	"ESTATUE3",	"ESTATUE4",	
+"ESTATUE5",	"ESTATUE6",	"ESTATUE7",	"ESTATUE8",	
+"BATSPR1",	"BATSPR2",	"BATSPR3",	"BATSPR4",	
+"BATSPR5",	"BATSPR6",	"BATSPR7",	"BATSPR8",	
+"BATSPR9",	"BATSPR10",	"BATSPR11",	"BATSPR12",	
+"BATSPR13",	"BATSPR14",	"BATSPR15",	"BATSPR16",	
+"DOGUP1",	"DOGUP2",	"DOGUP3",	"DOGUP4",	
+"DOGUP5",	"DOGUP6",	"DOGUP7",	"DOGUP8",	
+"THREEUP1",	"THREEUP2",	"THREEUP3",	"THREEUP4",	
+"THREEUP5",	"THREEUP6",	"THREEUP7",	"THREEUP8",	
+"BOL11",	"BOL21",	"BOL31",	"BOL41",	
+"BDROP1",	"BDROP2",	"BDROP3",	"BDROP4",	
+"BDROP5",	"BDROP6",	"BDROP7",	"BDROP8",	
+"BDROP9",	"BDROP10",	"BDROP11",	"BSINK1",	
+"BSINK2",	"BSINK3",	"BSINK4",	"BSINK5",	
+"BSINK6",	"BSINK7",	"BSINK8",	"BSINK9",	
+"GRISE11",	"GRISE12",	"GRISE13",	"GRISE14",	
+"GRISE15",	"GRISE16",	"GRISE17",	"GRISE18",	
+"GRISE21",	"GRISE22",	"GRISE23",	"GRISE24",	
+"GRISE25",	"GRISE26",	"GRISE27",	"GRISE28",	
+"GRISE31",	"GRISE32",	"GRISE33",	"GRISE34",	
+"GRISE35",	"GRISE36",	"GRISE37",	"GRISE38",	
+"GRISE41",	"GRISE42",	"GRISE43",	"GRISE44",	
+"GRISE45",	"GRISE46",	"GRISE47",	"GRISE48",	
+"GRISE51",	"GRISE52",	"GRISE53",	"GRISE54",	
+"GRISE55",	"GRISE56",	"GRISE57",	"GRISE58",	
+"GFIRE1",	"GFIRE2",	"GFIRE3",	"GFIRE4",	
+"GFIRE5",	"GFIRE6",	"GFIRE7",	"GFIRE8",	
+"GDEAD1",	"GDEAD2",	"GUNEMP1",	"GUNEMP2",	
+"GUNEMP3",	"GUNEMP4",	"GUNEMP5",	"GUNEMP6",	
+"GUNEMP7",	"GUNEMP8",	"GUNEMPF1",	"GUNEMPF2",	
+"GUNEMPF3",	"GUNEMPF4",	"GUNEMPF5",	"GUNEMPF6",	
+"GUNEMPF7",	"GUNEMPF8",	"LIGNING1",	"LIGNING2",	
+"LIGNING3",	"LIGNING4",	"LIGNING5",	"LIGNING6",	
+"LIGNING7",	"LIGNING8",	"TSPHERE1",	"TSPHERE2",	
+"TSPHERE3",	"TSPHERE4",	"HNDBALL1",	"HNDBALL2",	
+"FACBALL1",	"FACBALL2",	"FSPARK1",	"FSPARK2",	
+"FSPARK3",	"FSPARK4",	"SPIT1",	"SPIT2",	
+"SPIT3",	"SPIT4",	"SPITHIT1",	"SPITHIT2",	
+"SPITHIT3",	"SPITHIT4",	"MONFIRE1",	"MONFIRE2",	
+"MONFIRE3",	"MONFIRE4",	"BATFIRE1",	"BATFIRE2",	
+"BATFIRE3",	"BATFIRE4",	"KSPHERE1",	"KSPHERE2",	
+"KSPHERE3",	"KSPHERE4",	"KSPHERE5",	"KSPHERE6",	
+"KSPHERE7",	"KSPHERE8",	"OBBOLO1",	"OBBOLO2",	
+"OBBOLO3",	"OBBOLO4",	"SHAPSTOP",	
+NULL
+};
 
 /*
 ==================
@@ -6049,7 +6862,7 @@ void DoLowMemoryConversion (void)
 void SetupGameLevel (void)
 {
 	char *s;
-	int crud;
+	int crud, nshap;
 	int i, j, k;
 
 #if 0
@@ -6116,29 +6929,36 @@ void SetupGameLevel (void)
 		lastlevelloaded=gamestate.mapon;
 		MU_StartSong(song_level);
 		}
-	shapestart = W_GetNumForName("SHAPSTRT");
-	shapestop = W_GetNumForName("SHAPSTOP");
-	gunsstart=W_GetNumForName("GUNSTART");
+//	shapestart = W_GetNumForName("SHAPSTRT");
+//	shapestop = W_GetNumForName("SHAPSTOP");
+//	gunsstart=W_GetNumForName("GUNSTART");
 
-	rott_shapestrt = shapestart;
-	rott_shapestop = shapestop;
+//	rott_shapestrt = shapestart;
+//	rott_shapestop = shapestop;
+//	printf("Sprite Count %d\n", (shapestop-shapestart));
 
-	printf("Sprite Count %d\n", (shapestop-shapestart));
+	for(i=0; rt_shapenames[i]; i++);
+	nshap=i;
 
-	for(i=0; i<(shapestop-shapestart); i++)
+//	for(i=0; i<(shapestop-shapestart); i++)
+	for(i=0; i<nshap; i++)
 	{
-		j = shapestart+i;
-		s = W_GetNameForNum(j);
+//		j = shapestart+i;
+//		s = W_GetNameForNum(j);
+		s = rt_shapenames[i];
+		if(!s)
+			break;
 //		if(!strncmp(s, "MON", 3))
 //			__debugbreak();
-		k = W_GetNumForName(s);
+//		k = W_GetNumForName(s);
+		k = W_CheckNumForName(s);
 		if(j!=k)
 		{
-			if((k>shapestart) && (k<rott_shapestop))
-				k=j;
+//			if((k>shapestart) && (k<rott_shapestop))
+//				k=j;
 		}
-		if(j!=k)
-			printf("Remap Sprite %d->%d\n", j, k);
+//		if(j!=k)
+//			printf("Remap Sprite %d->%d\n", j, k);
 		rott_shapecache[i] = k;
 	}
 
@@ -7120,17 +7940,25 @@ void SetupStatics(void)
 				case 48:
 					SD_PreCacheSound(SD_ATKTWOPISTOLSND);
 
-					if ((locplayerstate->player == 1) || (locplayerstate->player == 3))
-					PreCacheGroup(W_GetNumForName("RFPIST1"),
-										W_GetNumForName("LFPIST3"));
-
+					if ((locplayerstate->player == 1) ||
+						(locplayerstate->player == 3))
+					{
+							PreCacheGroup(
+								W_GetNumForName("RFPIST1"),
+								W_GetNumForName("LFPIST3"));
+					}
 					else if (locplayerstate->player == 2)
-					PreCacheGroup(W_GetNumForName("RBMPIST1"),
-										W_GetNumForName("LBMPIST3"));
-
+					{
+						PreCacheGroup(
+							W_GetNumForName("RBMPIST1"),
+							W_GetNumForName("LBMPIST3"));
+					}
 					else
-					PreCacheGroup(W_GetNumForName("RMPIST1"),
-										W_GetNumForName("LMPIST3"));
+					{
+						PreCacheGroup(
+							W_GetNumForName("RMPIST1"),
+							W_GetNumForName("LMPIST3"));
+					}
 
 					SpawnStatic(i,j,tile-23,spawnz);
 
@@ -7322,10 +8150,11 @@ void SetupStatics(void)
 					SD_PreCacheSound(SD_GRAVSND);
 					SD_PreCacheSound(SD_GRAVHITSND);
 					SD_PreCacheSoundGroup(SD_GODMODEFIRESND,SD_LOSEMODESND);
-					if ((locplayerstate->player == 1) || (locplayerstate->player ==3))
-					SD_PreCacheSound(SD_GODWOMANSND);
+					if (	(locplayerstate->player == 1) ||
+							(locplayerstate->player ==3))
+						SD_PreCacheSound(SD_GODWOMANSND);
 					else
-					SD_PreCacheSound(SD_GODMANSND);
+						SD_PreCacheSound(SD_GODMANSND);
 
 
 					PreCacheGroup(W_GetNumForName("GODHAND1"),
@@ -7349,12 +8178,11 @@ void SetupStatics(void)
 					#endif
 
 					SD_PreCacheSoundGroup(SD_DOGMODEPANTSND,SD_DOGMODELICKSND);
-					if ((locplayerstate->player == 1) || (locplayerstate->player ==3))
-					SD_PreCacheSound(SD_DOGWOMANSND);
+					if (	(locplayerstate->player == 1) ||
+							(locplayerstate->player ==3))
+						SD_PreCacheSound(SD_DOGWOMANSND);
 					else
-					SD_PreCacheSound(SD_DOGMANSND);
-
-
+						SD_PreCacheSound(SD_DOGMANSND);
 
 					PreCacheGroup(W_GetNumForName("DOGNOSE1"),
 									W_GetNumForName("DOGPAW4"));

@@ -177,8 +177,9 @@ R_InstallSpriteLump
 //
 void R_InitSpriteDefs (char** namelist) 
 { 
-	char**	check;
-	int		i;
+	char	**check;
+	char	*s;
+	int		i, n;
 	int		l;
 	int		intname;
 	int		frame;
@@ -189,10 +190,20 @@ void R_InitSpriteDefs (char** namelist)
 		
 	// count the number of sprite names
 	check = namelist;
-	while (*check != NULL)
-		check++;
+//	while (*check != NULL)
+//	{
+//		check++;
+//	}
+//	numsprites = check-namelist;
 
-	numsprites = check-namelist;
+	for(i=0; i<8192; i++)
+	{
+		s=namelist[i];
+		if(!s)
+			break;
+	}
+	numsprites=i;
+
 
 //	__debugbreak();
 	

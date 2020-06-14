@@ -226,6 +226,8 @@ void D_DrawParticle16 (particle_t *pparticle)
 	short	*pz;
 	int		i, izi, pix, count, u, v, color;
 
+//	return;		//BGB: debug
+
 // transform point
 	VectorSubtract (pparticle->org, r_origin, local);
 

@@ -168,6 +168,9 @@ void D_PolysetDraw (void)
 //		if(1)	//BGB Debug
 //		if(0)
 		{
+//			if(r_lowfps>1)
+//				return;
+		
 			D_DrawSubdiv ();
 			return;
 		}
@@ -1026,55 +1029,94 @@ void D_PolysetDrawSpans16 (spanpackage_t *pspanpackage)
 			}
 #endif
 
-			do
+			if(r_lowfps>1)
 			{
-				if ((lzi >> 16) >= *lpz)
-//				if (((lzi >> 16) >= *lpz) && !((lzi>>16)&0x8000))
+				while(lcount>=2)
 				{
-//					if(!tk_ptrIsRam(lptex))
-//						return;
-					px = *lptex;
-
-//					d = 0xFC00 - (llight & 0xFC00);
-//					d = ((llight<<1) & 0xFC00);
-//					d = (llight & 0xFC00);
-//					d = ((llight+(llight>>1)) & 0xFC00);
-//					d = ((llight+(llight>>2)) & 0xFC00);
-//					px = px - d;
-//					if(px<0)px=0x01EF;
-
-// #ifdef _BGBCC
-#if 0
-					d = (llight & 0xFC00)-(6<<10);
-//					d = (d-(d>>1))&((s16)0xFC00);
-					px = __int_clamp(px - d, 0x0210, 0xFE10);
-#else
-					px = VID_ColorMap16(px, llight);
-#endif
-
-//					px = ((byte *)acolormap)[*lptex + (llight & 0xFF00)];
-//					px = d_8to16table[px];
-//					px=0x7FFF;
-					*lpdest = px;
-// gel mapping					*lpdest = gelmap[*lpdest];
-					*lpz = lzi >> 16;
+					lcount-=2;
+					
+					if ((lzi >> 16) >= *lpz)
+					{
+						px = *lptex;
+						px = VID_ColorMap16(px, llight);
+						d = lzi >> 16;
+						lpdest[0] = px;
+						lpdest[1] = px;
+//						lpdest[2] = px;
+//						lpdest[3] = px;
+						lpz[0] = d;
+						lpz[1] = d;
+//						lpz[2] = d;
+//						lpz[3] = d;
+					}
+					lpdest += 2;
+					lzi += r_zistepx<<1;
+					lpz += 2;
+					llight += r_lstepx<<1;
+					lptex += a_ststepxwhole<<1;
+					lsfrac += a_sstepxfrac<<1;
+					lptex += lsfrac >> 16;
+					lsfrac &= 0xFFFF;
+					ltfrac += a_tstepxfrac<<1;
+					if (ltfrac & 0x10000)
+					{
+						lptex += r_affinetridesc.skinwidth;
+						ltfrac &= 0xFFFF;
+					}
 				}
-				lpdest++;
-				lzi += r_zistepx;
-				lpz++;
-				llight += r_lstepx;
-				lptex += a_ststepxwhole;
-				lsfrac += a_sstepxfrac;
-				lptex += lsfrac >> 16;
-				lsfrac &= 0xFFFF;
-				ltfrac += a_tstepxfrac;
-				if (ltfrac & 0x10000)
+			}else
+			{
+
+				do
 				{
-					lptex += r_affinetridesc.skinwidth;
-					ltfrac &= 0xFFFF;
-				}
-			} while (--lcount);
-//			} while ((--lcount)>0);
+					if ((lzi >> 16) >= *lpz)
+	//				if (((lzi >> 16) >= *lpz) && !((lzi>>16)&0x8000))
+					{
+	//					if(!tk_ptrIsRam(lptex))
+	//						return;
+						px = *lptex;
+
+	//					d = 0xFC00 - (llight & 0xFC00);
+	//					d = ((llight<<1) & 0xFC00);
+	//					d = (llight & 0xFC00);
+	//					d = ((llight+(llight>>1)) & 0xFC00);
+	//					d = ((llight+(llight>>2)) & 0xFC00);
+	//					px = px - d;
+	//					if(px<0)px=0x01EF;
+
+	// #ifdef _BGBCC
+	#if 0
+						d = (llight & 0xFC00)-(6<<10);
+	//					d = (d-(d>>1))&((s16)0xFC00);
+						px = __int_clamp(px - d, 0x0210, 0xFE10);
+	#else
+						px = VID_ColorMap16(px, llight);
+	#endif
+
+	//					px = ((byte *)acolormap)[*lptex + (llight & 0xFF00)];
+	//					px = d_8to16table[px];
+	//					px=0x7FFF;
+						*lpdest = px;
+	// gel mapping					*lpdest = gelmap[*lpdest];
+						*lpz = lzi >> 16;
+					}
+					lpdest++;
+					lzi += r_zistepx;
+					lpz++;
+					llight += r_lstepx;
+					lptex += a_ststepxwhole;
+					lsfrac += a_sstepxfrac;
+					lptex += lsfrac >> 16;
+					lsfrac &= 0xFFFF;
+					ltfrac += a_tstepxfrac;
+					if (ltfrac & 0x10000)
+					{
+						lptex += r_affinetridesc.skinwidth;
+						ltfrac &= 0xFFFF;
+					}
+				} while (--lcount);
+	//			} while ((--lcount)>0);
+			}
 		}
 
 		pspanpackage++;

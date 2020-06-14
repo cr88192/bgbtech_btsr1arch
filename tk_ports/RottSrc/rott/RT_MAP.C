@@ -300,7 +300,8 @@ void DrawMap_Actor (int x, int y, objtype * a)
 	translucent=0;
 	if (a->flags&FL_TRANSLUCENT)
 		translucent=1;
-	DrawMap_MaskedShape(x,y,a->shapenum+shapestart,translucent);
+//	DrawMap_MaskedShape(x,y,a->shapenum+shapestart,translucent);
+	DrawMap_MaskedShape(x, y, GetLumpForShape(a->shapenum), translucent);
 }
 
 /*
@@ -321,7 +322,8 @@ void DrawMap_Sprite (int x, int y, statobj_t * s)
 	translucent=0;
 	if (s->flags&FL_TRANSLUCENT)
 		translucent=1;
-	DrawMap_MaskedShape(x,y,s->shapenum+shapestart,translucent);
+//	DrawMap_MaskedShape(x,y,s->shapenum+shapestart,translucent);
+	DrawMap_MaskedShape(x, y, GetLumpForShape(s->shapenum), translucent);
 }
 
 /*
@@ -390,7 +392,8 @@ void DrawMap_Player (int x, int y)
 		DrawMap_PlayerArrow(x,y,( RandomNumber("DrawMap_PLAYER",0)>>5) );
 	else
 		DrawMap_PlayerArrow(x,y,( ( (player->angle+(FINEANGLES/16)) & (FINEANGLES-1) ) >>8) );
-	DrawMap_MaskedShape(x,y,player->shapenum+shapestart,0);
+//	DrawMap_MaskedShape(x,y,player->shapenum+shapestart,0);
+	DrawMap_MaskedShape(x, y, GetLumpForShape(player->shapenum), 0);
 }
 
 /*

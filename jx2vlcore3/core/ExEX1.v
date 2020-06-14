@@ -52,6 +52,7 @@ module ExEX1(
 	clock, reset,
 	opUCmd, opUIxt,
 	exHold,	exTrapExc,
+	timers,
 
 	regIdRs,		//Source A, ALU / Base
 	regIdRt,		//Source B, ALU / Index
@@ -97,6 +98,8 @@ input[7:0]		opUCmd;
 input[7:0]		opUIxt;
 output[1:0]		exHold;
 output[15:0]	exTrapExc;
+
+input[7:0]		timers;
 
 input[5:0]		regIdRs;		//Source A, ALU / Base
 input[5:0]		regIdRt;		//Source B, ALU / Index
@@ -256,7 +259,8 @@ ExShllN		exShllN(
 
 wire[63:0]	tValCpuIdLo;
 wire[63:0]	tValCpuIdHi;
-ExCpuId		cpuid(clock, reset, regIdRm[4:0], tValCpuIdLo, tValCpuIdHi);
+ExCpuId		cpuid(clock, reset, timers,
+	regIdRm[4:0], tValCpuIdLo, tValCpuIdHi);
 
 reg[63:0]	tRegSpAdd8;
 reg[63:0]	tRegSpSub8;
@@ -897,6 +901,13 @@ begin
 				end
 				JX2_UCIX_IXT_INVTLB: begin
 					tMemOpm = UMEM_OPM_INVTLB;
+				end
+
+				JX2_UCIX_IXT_LDEKRR: begin
+				end
+				JX2_UCIX_IXT_LDEKEY: begin
+				end
+				JX2_UCIX_IXT_LDEENC: begin
 				end
 
 				default: begin

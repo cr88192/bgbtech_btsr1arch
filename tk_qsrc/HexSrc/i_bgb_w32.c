@@ -580,6 +580,7 @@ void I_CheckExternDriver(void)
 
 void I_Init (void)
 {
+	M_InitSoftDiv();
 	I_InitGraphics();
 	I_InitSound();
 

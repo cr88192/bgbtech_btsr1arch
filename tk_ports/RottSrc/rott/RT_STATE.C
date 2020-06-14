@@ -1073,7 +1073,8 @@ statetype s_respawn1 = {false,VAPORIZED8,3,NULL,ST_NULL,&s_respawn2};
 
 
 
-#if (SHAREWARE == 0)
+// #if (SHAREWARE == 0)
+#if 1
 
 
 //========================= NON-SHAREWARE STATES ============================

@@ -1419,7 +1419,7 @@ char *BGBCP_TokenI(char *s, char *b, int *ty, int lang, int sz)
 //	if((*s>='0') && (*s<='9'))
 	if(((u32)(ch-'0'))<=('9'-'0'))
 	{
-		if((s[0]=='0') && (s[1]=='x'))
+		if((s[0]=='0') && ((s[1]=='x') || (s[1]=='X')))
 		{
 			*t++=*s++;
 			*t++=*s++;
@@ -1980,7 +1980,7 @@ int bgbcp_token_cnt;
 //char *BGBCP_TokenLang2(char *s, char *b, int *ty, int lang)
 char *BGBCP_Token2(char *s, char *b, int *ty, int lang)
 {
-	static char ltb[BGBCP_TKHASHSZ][256];
+	static char ltb[BGBCP_TKHASHSZ][262];
 	static char *ls[BGBCP_TKHASHSZ];
 	static char *ls1[BGBCP_TKHASHSZ];
 	static int lty[BGBCP_TKHASHSZ];

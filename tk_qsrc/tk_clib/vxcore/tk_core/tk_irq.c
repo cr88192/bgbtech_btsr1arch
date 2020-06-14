@@ -199,3 +199,35 @@ int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 	return(-1);
 }
 #endif
+
+
+void TK_FlushCacheL1D_INVDC(void *ptr);
+void TK_FlushCacheL1D_ReadBuf(void *ptr, int sz);
+__asm {
+TK_FlushCacheL1D_INVDC:
+	INVDC	R4
+	NOP
+	NOP
+	RTS
+
+TK_FlushCacheL1D_ReadBuf:
+	.L0:
+	MOV.Q	(R4), R7
+	ADD		-16, R5
+	CMP/GT	0, R5
+	BT		.L0
+	RTS
+};
+
+void TK_FlushCacheL1D()
+{
+	u64 *pptr;
+	int i, j, k;
+
+	pptr=(u64 *)tk_task_list;	/* need memory to read from. */
+
+	TK_FlushCacheL1D_INVDC(NULL);
+	TK_FlushCacheL1D_ReadBuf(pptr, 65536);
+	TK_FlushCacheL1D_INVDC(NULL);
+	TK_FlushCacheL1D_ReadBuf(pptr, 65536);
+}

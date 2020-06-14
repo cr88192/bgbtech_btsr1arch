@@ -73,7 +73,8 @@ typedef struct
 //
 typedef struct
 {
-	boolean	istexture;	// if false, it is a flat
+//	boolean	istexture;	// if false, it is a flat
+	signed char	istexture;
 	char	endname[9];
 	char	startname[9];
 	int		speed;
@@ -148,13 +149,18 @@ extern	line_t*	linespeciallist[MAXLINEANIMS];
 
 void P_InitPicAnims (void)
 {
-	int		i, n;
+	int		i, j, n;
 
+	j = 256;
 	
 	//	Init animation
 	lastanim = anims;
 	for (i=0 ; animdefs[i].istexture != -1 ; i++)
 	{
+		j--;
+		if(j<0)
+			__debugbreak();
+
 		if (animdefs[i].istexture)
 		{
 			// different episode ?
@@ -187,8 +193,7 @@ void P_InitPicAnims (void)
 		
 		lastanim->speed = animdefs[i].speed;
 		lastanim++;
-	}
-	
+	}	
 }
 
 

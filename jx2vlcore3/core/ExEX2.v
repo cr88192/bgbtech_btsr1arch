@@ -49,6 +49,7 @@ module ExEX2(
 	regValAluRes,	//ALU Result
 	regValMulRes,	//Multiplier Result
 	regValMulwRes,	//Multiplier Word Result
+	regValKrreRes,	//Keyring Result
 
 	regFpuGRn,		//FPU GPR Result
 	regFpuLdGRn,		//FPU GPR Result
@@ -103,6 +104,7 @@ input[32:0]		regValImm;		//Immediate (Decode)
 input[65:0]		regValAluRes;	//ALU Result
 input[63:0]		regValMulRes;	//Multiplier Result
 input[63:0]		regValMulwRes;	//Multiplier Result
+input[65:0]		regValKrreRes;	//Keyring Result
 
 input[63:0]		regFpuGRn;		//FPU GPR Result
 input[63:0]		regFpuLdGRn;	//FPU GPR Result (Mem Load)
@@ -237,6 +239,20 @@ begin
 				JX2_UCIX_IXT_SLEEP: begin
 					tDoHoldCyc = 15;
 				end
+				
+				JX2_UCIX_IXT_LDEKRR: begin
+					if(regValKrreRes[65:64]==2'b10)
+					begin
+						tRegIdCn2	= JX2_CR_KRR[4:0];
+						tRegValCn2	= regValKrreRes[63:0];
+					end
+				end
+				
+				JX2_UCIX_IXT_LDEENC: begin
+					tRegIdRn2	= JX2_GR_DLR;
+					tRegValRn2	= regValKrreRes[63:0];
+				end
+				
 				default: begin
 				end
 			endcase

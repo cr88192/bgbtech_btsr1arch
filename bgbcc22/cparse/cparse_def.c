@@ -40,7 +40,7 @@ BCCX_Node *BGBCP_VarsList(BGBCP_ParseState *ctx, char **str, BCCX_Node *tn)
 	while(1)
 	{
 		BGBCP_Token2(s, b, &ty, ctx->lang);
-		if(!bgbcp_strcmp1(b, ";"))
+		if(!bgbcp_strcmp1(b, ";") && (ty==BTK_SEPERATOR))
 		{
 			s=BGBCP_Token2(s, b, &ty, ctx->lang);
 			break;
@@ -49,7 +49,7 @@ BCCX_Node *BGBCP_VarsList(BGBCP_ParseState *ctx, char **str, BCCX_Node *tn)
 		n=BGBCP_VarDefinition(ctx, &s, tn);
 
 		BGBCP_Token2(s, b, &ty, ctx->lang);
-		if(!bgbcp_strcmp1(b, "="))
+		if(!bgbcp_strcmp1(b, "=") && (ty==BTK_OPERATOR))
 		{
 			s=BGBCP_Token2(s, b, &ty, ctx->lang);
 			n1=BGBCP_Expression(ctx, &s);
@@ -62,9 +62,10 @@ BCCX_Node *BGBCP_VarsList(BGBCP_ParseState *ctx, char **str, BCCX_Node *tn)
 		lst=BCCX_AddEnd2(lst, &lste, n);
 
 		s=BGBCP_Token2(s, b, &ty, ctx->lang);
-		if(!bgbcp_strcmp1(b, ";"))break;
+		if(!bgbcp_strcmp1(b, ";") && (ty==BTK_SEPERATOR))
+			break;
 
-		if(bgbcp_strcmp1(b, ","))
+		if(bgbcp_strcmp1(b, ",") || (ty!=BTK_SEPERATOR))
 		{
 			BGBCP_ErrorCtx(ctx, s, "PDSCR_CParse_VarsList: "
 				"Invalid token '%s' in vars list\n", b);
@@ -105,13 +106,13 @@ BCCX_Node *BGBCP_FunVarsList(BGBCP_ParseState *ctx, char **str)
 	{
 		s1=BGBCP_Token2(s, b, &ty, ctx->lang);
 		BGBCP_Token(s1, b2, &ty2);
-		if(!bgbcp_strcmp1(b, ")"))
+		if(!bgbcp_strcmp1(b, ")") && (ty==BTK_BRACE))
 		{
 			s=BGBCP_Token2(s, b, &ty, ctx->lang);
 			break;
 		}
 
-		if(!bgbcp_strcmp3(b, "..."))
+		if(!bgbcp_strcmp3(b, "...") && (ty==BTK_MISC))
 		{
 			s=BGBCP_Token2(s, b, &ty, ctx->lang);
 
@@ -121,7 +122,8 @@ BCCX_Node *BGBCP_FunVarsList(BGBCP_ParseState *ctx, char **str)
 			continue;
 		}
 
-		if(!bgbcp_strcmp4(b, "void") && !bgbcp_strcmp1(b2, ")"))
+		if(!bgbcp_strcmp4(b, "void") &&
+			!bgbcp_strcmp1(b2, ")") && (ty2==BTK_BRACE))
 		{
 			s=BGBCP_Token2(s, b, &ty, ctx->lang);
 			s=BGBCP_Token2(s, b, &ty, ctx->lang);
@@ -135,13 +137,13 @@ BCCX_Node *BGBCP_FunVarsList(BGBCP_ParseState *ctx, char **str)
 
 		BGBCP_Token2(s, b, &ty, ctx->lang);
 
-		if(!bgbcp_strcmp1(b, ")"))
+		if(!bgbcp_strcmp1(b, ")") && (ty==BTK_BRACE))
 		{
 			s=BGBCP_Token2(s, b, &ty, ctx->lang);
 			break;
 		}
 
-		if(bgbcp_strcmp1(b, ","))
+		if(bgbcp_strcmp1(b, ",") || (ty!=BTK_SEPERATOR))
 		{
 			BGBCP_ErrorCtx(ctx, s, "PDSCR_CParse_FunVarsList: "
 				"Invalid token '%s' in vars list\n", b);

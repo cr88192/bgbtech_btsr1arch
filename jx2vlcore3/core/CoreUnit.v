@@ -270,6 +270,9 @@ wire[4:0]		memOpm;
 wire[1:0]		memOK;
 reg[63:0]		memBusExc;
 
+reg[7:0]		timers;
+
+
 wire[47:0]		dbgOutPc;
 wire[95:0]		dbgOutIstr;
 wire			dbgExHold1;
@@ -321,6 +324,7 @@ wire			dbg1OutStatus8;
 
 ExUnit	cpu1(
 	clock_cpu, 		reset,
+	timers,
 
 	mem1AddrA,		mem1AddrB,
 	mem1InData,		mem1OutData,
@@ -371,6 +375,7 @@ wire			dbg2OutStatus8;
 
 ExUnit	cpu2(
 	clock_cpu, 		reset,
+	timers,
 
 	mem2AddrA,		mem2AddrB,
 	mem2InData,		mem2OutData,
@@ -440,6 +445,9 @@ wire[4:0]		memOpm;
 wire[1:0]		memOK;
 reg[63:0]		memBusExc;
 
+reg[7:0]		timers;
+
+
 wire[47:0]		dbgOutPc;
 wire[95:0]		dbgOutIstr;
 wire			dbgExHold1;
@@ -462,6 +470,7 @@ wire			dbgOutStatus8;
 
 ExUnit	cpu(
 	clock_cpu, 		reset,
+	timers,
 
 	memAddr,		memAddrB,
 	memInData,		memOutData,
@@ -786,6 +795,17 @@ begin
 	tDbgOutStatus8		<= dbgOutStatus8;
 	
 	sevSegVal			<= dbgOutPc[31:0];
+	
+	timers				<= {
+		1'b0,
+		1'b0,
+		timer4MHz,
+		timer1MHz,
+		timer64kHz,
+		timer1kHz,
+		timer256Hz,
+		timerNoise
+	};
 end
 
 always @(posedge clock)

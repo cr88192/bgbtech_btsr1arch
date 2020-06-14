@@ -237,12 +237,20 @@ void R_TranslatePlayerSkin (int playernum)
 	model_t	*model;
 	aliashdr_t *paliashdr;
 	byte	*original;
-	unsigned	pixels[512*256], *out;
+//	unsigned	pixels[512*256], *out;
+//	static unsigned	pixels[512*256];
+	static unsigned	*pixels=NULL;
+	unsigned	*out;
 	unsigned	scaled_width, scaled_height;
 	int			inwidth, inheight;
 	byte		*inrow;
 	unsigned	frac, fracstep;
 	extern	byte		**player_8bit_texels_tbl;
+
+	if(!pixels)
+	{
+		pixels=malloc(512*256*sizeof(unsigned));
+	}
 
 	GL_DisableMultitexture();
 

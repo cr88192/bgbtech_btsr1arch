@@ -84,6 +84,7 @@ reg[1:0]	opCcty;
 
 reg[5:0]	opUCmdIx;
 reg[1:0]	opUCty;
+reg			opSvOnly;
 
 reg		opExQ;
 reg		opExN;
@@ -308,6 +309,7 @@ begin
 	opRegM_Fix	= JX2_GR_ZZR;
 	opRegO_Fix	= JX2_GR_ZZR;
 	opRegN_Fix	= JX2_GR_ZZR;
+	opSvOnly	= 0;
 
 	tBlockIsF0 =
 		(istrWord[11:8] == 4'b0000) ||
@@ -638,11 +640,19 @@ begin
 						opNmid	= JX2_UCMD_MOV_RC;
 						opFmid	= JX2_FMID_REGREG;
 						opIty	= JX2_ITY_UL;
+						if(opExQ)
+						begin
+							opNmid	= JX2_UCMD_NOP;
+						end
 					end
 					4'hB: begin
 						opNmid	= JX2_UCMD_MOV_CR;
 						opFmid	= JX2_FMID_REGREG;
 						opIty	= JX2_ITY_UQ;
+						if(opExQ)
+						begin
+							opNmid	= JX2_UCMD_NOP;
+						end
 					end
 
 					4'hC: begin
@@ -1139,12 +1149,14 @@ begin
 								opNmid		= JX2_UCMD_OP_IXT;
 								opFmid		= JX2_FMID_Z;
 								opUCmdIx	= JX2_UCIX_IXT_RTE;
+								opSvOnly	= 1;
 							end
 
 							4'hF: begin
 								opNmid		= JX2_UCMD_OP_IXT;
 								opFmid		= JX2_FMID_Z;
 								opUCmdIx	= JX2_UCIX_IXT_LDTLB;
+								opSvOnly	= 1;
 							end
 
 							default: begin
@@ -1163,10 +1175,36 @@ begin
 								opFmid		= JX2_FMID_Z;
 								opRegM_Fix	= JX2_GR_LR;
 							end
+
+							4'hC: begin
+								opNmid		= JX2_UCMD_OP_IXT;
+								opFmid		= JX2_FMID_Z;
+								opUCmdIx	= JX2_UCIX_IXT_LDEKRR;
+//								opIty		= JX2_ITY_UB;
+//								opUCty		= JX2_IUC_WX;
+							end
+							4'hD: begin
+								opNmid		= JX2_UCMD_OP_IXT;
+								opFmid		= JX2_FMID_Z;
+								opUCmdIx	= JX2_UCIX_IXT_LDEKEY;
+//								opIty		= JX2_ITY_UB;
+//								opUCty		= JX2_IUC_WX;
+								opSvOnly	= 1;
+							end
+							4'hE: begin
+								opNmid		= JX2_UCMD_OP_IXT;
+								opFmid		= JX2_FMID_Z;
+								opUCmdIx	= JX2_UCIX_IXT_LDEENC;
+								opIty		= JX2_ITY_UB;
+								opUCty		= JX2_IUC_WX;
+								opSvOnly	= 1;
+							end
+
 							4'hF: begin
 								opNmid		= JX2_UCMD_OP_IXT;
 								opFmid		= JX2_FMID_Z;
 								opUCmdIx	= JX2_UCIX_IXT_INVTLB;
+								opSvOnly	= 1;
 							end
 
 							default: begin
@@ -2095,7 +2133,8 @@ begin
 	
 	if(opIsNotFx)
 	begin
-		opFmid = JX2_FMID_Z;
+		opFmid	= JX2_FMID_Z;
+		opIty	= JX2_ITY_SB;
 	end
 
 	opUCmd = { opCcty, opNmid };
@@ -2116,6 +2155,22 @@ begin
 			opRegM	= opRegM_Fix;
 			opRegO	= opRegO_Fix;
 			opRegN	= opRegN_Fix;
+			case(opIty)
+				JX2_ITY_SB: begin
+				end
+
+				JX2_ITY_UB: begin
+					opRegM	= JX2_GR_DLR;
+					opRegO	= JX2_GR_DLR;
+					opRegN	= JX2_GR_DLR;
+				end
+
+				default: begin
+					$display("Jx2DecOpFx: Bad Reg, Ity=%X", opIty);
+					$display("Jx2DecOpFx: Istr %X-%X-%X",
+						istrWord[15:0], istrWord[31:16], istrWord[47:32]);
+				end
+			endcase
 		end
 
 		JX2_FMID_REG: begin

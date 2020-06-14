@@ -2090,6 +2090,7 @@ ccxl_status BGBCC_JX2C_BuildGlobal_EmitLitAsType(
 			return(1);
 		}
 
+#if 0
 		if(BGBCC_CCXL_IsRegImmIntP(ctx, value) &&
 			BGBCC_CCXL_IsRegImmZeroP(ctx, value))
 		{
@@ -2106,6 +2107,26 @@ ccxl_status BGBCC_JX2C_BuildGlobal_EmitLitAsType(
 			}
 			return(1);
 		}
+#endif
+
+#if 1
+		if(BGBCC_CCXL_IsRegImmIntP(ctx, value))
+		{
+//			tty=litobj->decl->type;
+			asz=BGBCC_CCXL_TypeGetArraySize(ctx, type);
+			al=BGBCC_CCXL_TypeGetLogicalAlign(ctx, tty);
+
+			i=BGBCC_CCXL_GetRegImmIntValue(ctx, value);
+			BGBCC_CCXL_GetRegForIntValue(ctx, &treg, i);
+			for(i=0; i<asz; i++)
+			{
+				BGBCC_JX2_EmitBAlign(sctx, al);
+				BGBCC_JX2C_BuildGlobal_EmitLitAsType(ctx, sctx,
+					tty, treg);
+			}
+			return(1);
+		}
+#endif
 
 		if(BGBCC_CCXL_IsRegImmStringP(ctx, value))
 		{

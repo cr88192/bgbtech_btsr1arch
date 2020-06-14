@@ -79,7 +79,7 @@ byte	spotvis[MAPSIZE][MAPSIZE];
 byte	mapseen[MAPSIZE][MAPSIZE];
 unsigned long * lights;
 
-int			wstart;
+// int			wstart;
 
 
 int  dirangle8[9] = {0,FINEANGLES/8,2*FINEANGLES/8,3*FINEANGLES/8,4*FINEANGLES/8,
@@ -152,8 +152,8 @@ static int		gmasklump;
 
 static int weaponshape[NUMWEAPGRAPHICS] =
 	{
-#if (SHAREWARE == 0)
-
+// #if (SHAREWARE == 0)
+#if 1
 		W_KNIFE,
 #endif
 
@@ -168,7 +168,8 @@ static int weaponshape[NUMWEAPGRAPHICS] =
 		W_GODHAND,
 
 
-#if (SHAREWARE == 0)
+// #if (SHAREWARE == 0)
+#if 1
 		W_SPLIT,
 		W_KES,
 		W_BAT,
@@ -190,10 +191,10 @@ void SetColorLightLevel (int x, int y, visobj_t * sprite, int dir, int color, in
 
 void BuildTables (void)
 {
-  byte * table;
-  byte * ptr;
-  int	length;
-  int	i;
+	 byte * table;
+	 byte * ptr;
+	 int	length;
+	 int	i;
 
 //
 // load in tables file
@@ -256,7 +257,7 @@ void BuildTables (void)
 
 	costable = (fixed *)&(sintable[FINEANGLES/4]);
 
-	wstart=W_GetNumForName("WALLSTRT");
+//	wstart=W_GetNumForName("WALLSTRT");
 #if (SHAREWARE==0)
 	netlump=W_GetNumForName("net1");
 #endif
@@ -292,44 +293,44 @@ void BuildTables (void)
 boolean TransformObject (int x, int y, int *dispx, int *dispheight)
 {
 
-  fixed gx,gy,gxt,gyt,nx,ny;
+	 fixed gx,gy,gxt,gyt,nx,ny;
 
 
 //
 // translate point to view centered coordinates
 //
-  gx = x-viewx;
-  gy = y-viewy;
+	 gx = x-viewx;
+	 gy = y-viewy;
 
 //
 // calculate newx
 //
-  gxt = FixedMul(gx,viewcos);
-  gyt = FixedMul(gy,viewsin);
-  nx = gxt-gyt;
+	 gxt = FixedMul(gx,viewcos);
+	 gyt = FixedMul(gy,viewsin);
+	 nx = gxt-gyt;
 
-  if (nx<MINZ)
+	 if (nx<MINZ)
 	return false;
 
-  // the midpoint could put parts of the shape
-  // into an adjacent wall
-  //
-  // calculate newy
-  //
-  gxt = FixedMul(gx,viewsin);
-  gyt = FixedMul(gy,viewcos);
-  ny = gyt+gxt;
+	 // the midpoint could put parts of the shape
+	 // into an adjacent wall
+	 //
+	 // calculate newy
+	 //
+	 gxt = FixedMul(gx,viewsin);
+	 gyt = FixedMul(gy,viewcos);
+	 ny = gyt+gxt;
 
 
 //
 // calculate perspective ratio
 //
 
-  *dispx = centerx + ny*scale/nx;				// DEBUG: use assembly divide
+	 *dispx = centerx + ny*scale/nx;				// DEBUG: use assembly divide
 
-  *dispheight = heightnumerator/nx;
+	 *dispheight = heightnumerator/nx;
 
-  return true;
+	 return true;
 }
 
 
@@ -344,46 +345,46 @@ boolean TransformObject (int x, int y, int *dispx, int *dispheight)
 void TransformPoint (int x, int y, int * screenx, int * height, int * texture, int vertical)
 {
 
-  fixed gxt,gyt,nx,ny;
-  fixed gxtt,gytt;
-  int gx,gy;
-  int vx,vy;
-  int svs,svc;
+	 fixed gxt,gyt,nx,ny;
+	 fixed gxtt,gytt;
+	 int gx,gy;
+	 int vx,vy;
+	 int svs,svc;
 
 
 //
 // translate point to view centered coordinates
 //
-  gx = x-viewx;
-  gy = y-viewy;
+	 gx = x-viewx;
+	 gy = y-viewy;
 
 //
 // calculate newx
 //
-  gxt = FixedMul(gx,viewcos);
-  gyt = FixedMul(gy,viewsin);
-  nx =gxt-gyt;
+	 gxt = FixedMul(gx,viewcos);
+	 gyt = FixedMul(gy,viewsin);
+	 nx =gxt-gyt;
 
-  if (nx<10)
+	 if (nx<10)
 	nx=10;
 
 
 //
 // calculate newy
 //
-  gxtt = FixedMul(gx,viewsin);
-  gytt = FixedMul(gy,viewcos);
-  ny = gytt+gxtt;
+	 gxtt = FixedMul(gx,viewsin);
+	 gytt = FixedMul(gy,viewcos);
+	 ny = gytt+gxtt;
 
 // too close, don't overflow the divid'
 
 
-  *screenx = centerx + ((ny*scale)/nx);				// DEBUG: use assembly divide
+	 *screenx = centerx + ((ny*scale)/nx);				// DEBUG: use assembly divide
 
-  *height = heightnumerator/nx;
+	 *height = heightnumerator/nx;
 
 
-  if (*screenx<0)
+	 if (*screenx<0)
 	{
 	svc=(-centerx)*viewcos;
 	svs=(-centerx)*viewsin;
@@ -422,7 +423,7 @@ void TransformPoint (int x, int y, int * screenx, int * height, int * texture, i
 		*height = heightnumerator/nx;
 		}
 	}
-  else if (*screenx>=viewwidth)
+	 else if (*screenx>=viewwidth)
 	{
 	svc=(centerx)*viewcos;
 	svs=(centerx)*viewsin;
@@ -461,9 +462,9 @@ void TransformPoint (int x, int y, int * screenx, int * height, int * texture, i
 		*height = heightnumerator/nx;
 		}
 	}
-  if (vertical)
+	 if (vertical)
 	*texture=(y-*texture)&0xffff;
-  else
+	 else
 	*texture=(x-*texture)&0xffff;
 }
 
@@ -478,48 +479,48 @@ void TransformPoint (int x, int y, int * screenx, int * height, int * texture, i
 boolean TransformSimplePoint (int x, int y, int * screenx, int * height, int * texture, int vertical)
 {
 
-  fixed gxt,gyt,nx,ny;
-  fixed gxtt,gytt;
-  int gx,gy;
+	 fixed gxt,gyt,nx,ny;
+	 fixed gxtt,gytt;
+	 int gx,gy;
 
 
 //
 // translate point to view centered coordinates
 //
-  gx = x-viewx;
-  gy = y-viewy;
+	 gx = x-viewx;
+	 gy = y-viewy;
 
 //
 // calculate newx
 //
-  gxt = FixedMul(gx,viewcos);
-  gyt = FixedMul(gy,viewsin);
-  nx =gxt-gyt;
+	 gxt = FixedMul(gx,viewcos);
+	 gyt = FixedMul(gy,viewsin);
+	 nx =gxt-gyt;
 
-  if (nx<MINZ)
+	 if (nx<MINZ)
 	return false;
 
 
 //
 // calculate newy
 //
-  gxtt = FixedMul(gx,viewsin);
-  gytt = FixedMul(gy,viewcos);
-  ny = gytt+gxtt;
+	 gxtt = FixedMul(gx,viewsin);
+	 gytt = FixedMul(gy,viewcos);
+	 ny = gytt+gxtt;
 
 // too close, don't overflow the divid'
 
 
-  *screenx = centerx + ((ny*scale)/nx);				// DEBUG: use assembly divide
+	 *screenx = centerx + ((ny*scale)/nx);				// DEBUG: use assembly divide
 
-  *height = heightnumerator/nx;
+	 *height = heightnumerator/nx;
 
-  if (vertical)
+	 if (vertical)
 	*texture=(y-*texture)&0xffff;
-  else
+	 else
 	*texture=(x-*texture)&0xffff;
 
-  return true;
+	 return true;
 }
 
 
@@ -533,18 +534,18 @@ boolean TransformSimplePoint (int x, int y, int * screenx, int * height, int * t
 
 boolean TransformPlane (int x1, int y1, int x2, int y2, visobj_t * plane)
 {
-  boolean result2;
-  boolean result1;
-  boolean vertical;
-  int txstart,txend;
+	 boolean result2;
+	 boolean result1;
+	 boolean vertical;
+	 int txstart,txend;
 
-  vertical=((x2-x1)==0);
-  plane->viewx=vertical;
-  txstart=plane->texturestart;
-  txend=plane->textureend;
-  result1=TransformSimplePoint(x1,y1,&(plane->x1),&(plane->h1),&(plane->texturestart),vertical);
-  result2=TransformSimplePoint(x2,y2,&(plane->x2),&(plane->h2),&(plane->textureend),vertical);
-  if (result1==true)
+	 vertical=((x2-x1)==0);
+	 plane->viewx=vertical;
+	 txstart=plane->texturestart;
+	 txend=plane->textureend;
+	 result1=TransformSimplePoint(x1,y1,&(plane->x1),&(plane->h1),&(plane->texturestart),vertical);
+	 result2=TransformSimplePoint(x2,y2,&(plane->x2),&(plane->h2),&(plane->textureend),vertical);
+	 if (result1==true)
 	{
 	if (plane->x1>=viewwidth)
 		return false;
@@ -554,7 +555,7 @@ boolean TransformPlane (int x1, int y1, int x2, int y2, visobj_t * plane)
 		TransformPoint(x2,y2,&(plane->x2),&(plane->h2),&(plane->textureend),vertical);
 		}
 	}
-  else
+	 else
 	{
 	if (result2==false)
 		return false;
@@ -566,23 +567,23 @@ boolean TransformPlane (int x1, int y1, int x2, int y2, visobj_t * plane)
 		TransformPoint(x1,y1,&(plane->x1),&(plane->h1),&(plane->texturestart),vertical);
 		}
 	}
-  if (plane->x1<0)
+	 if (plane->x1<0)
 	{
 	plane->texturestart=txstart;
 	TransformPoint(x1,y1,&(plane->x1),&(plane->h1),&(plane->texturestart),vertical);
 	}
-  if (plane->x2>=viewwidth)
+	 if (plane->x2>=viewwidth)
 	{
 	plane->textureend=txend;
 	TransformPoint(x2,y2,&(plane->x2),&(plane->h2),&(plane->textureend),vertical);
 	}
 
-  plane->viewheight=(plane->h1+plane->h2)>>1;
+	 plane->viewheight=(plane->h1+plane->h2)>>1;
 
-  if ((plane->viewheight>=(2000<<HEIGHTFRACTION)) || (plane->x1>=viewwidth-1) || (plane->x2<=0))
+	 if ((plane->viewheight>=(2000<<HEIGHTFRACTION)) || (plane->x1>=viewwidth-1) || (plane->x2<=0))
 	return false;
 
-  return true;
+	 return true;
 }
 
 //==========================================================================
@@ -635,7 +636,7 @@ int		CalcHeight (void)
 void NextPlaneptr ( void )
 {
 	if (planeptr < &planelist[MAXPLANES-1]) // don't let it overflo'
-  		planeptr++;
+	 		planeptr++;
 }
 
 //******************************************************************************
@@ -658,7 +659,7 @@ void ResetPlaneptr ( void )
 void NextVisptr ( void )
 {
 	if (visptr < &vislist[MAXVISIBLE-1]) // don't let it overflo'
-  		visptr++;
+	 		visptr++;
 }
 
 //******************************************************************************
@@ -793,21 +794,21 @@ void DrawMaskedWalls (void)
 {
 
 
-  int	i,numvisible;
-  int	gx,gy;
-  unsigned short int  *tilespot;
-  byte	*visspot;
-  boolean result;
-  statobj_t *statptr;
-  objtype	*obj;
-  maskedwallobj_t* tmwall;
+	 int	i,numvisible;
+	 int	gx,gy;
+	 unsigned short int  *tilespot;
+	 byte	*visspot;
+	 boolean result;
+	 statobj_t *statptr;
+	 objtype	*obj;
+	 maskedwallobj_t* tmwall;
 
 	whereami=6;
 
 //
 // place maskwall objects
 //
-  for(tmwall=FIRSTMASKEDWALL;tmwall;tmwall=tmwall->next)
+	 for(tmwall=FIRSTMASKEDWALL;tmwall;tmwall=tmwall->next)
 	{
 	if (spotvis[tmwall->tilex][tmwall->tiley])
 		{
@@ -917,21 +918,21 @@ void DrawScaleds (void)
 {
 
 
-  int	i,numvisible;
-  int	gx,gy;
-  unsigned short int  *tilespot;
-  byte	*visspot;
-  boolean result;
-  statobj_t *statptr;
-  objtype	*obj;
-  maskedwallobj_t* tmwall;
+	 int	i,numvisible;
+	 int	gx,gy;
+	 unsigned short int  *tilespot;
+	 byte	*visspot;
+	 boolean result;
+	 statobj_t *statptr;
+	 objtype	*obj;
+	 maskedwallobj_t* tmwall;
 
 	whereami=6;
 
 //
 // place maskwall objects
 //
-  for(tmwall=FIRSTMASKEDWALL;tmwall;tmwall=tmwall->next)
+	 for(tmwall=FIRSTMASKEDWALL;tmwall;tmwall=tmwall->next)
 	{
 	if (spotvis[tmwall->tilex][tmwall->tiley])
 		{
@@ -985,16 +986,18 @@ void DrawScaleds (void)
 //
 // place static objects
 //
-  UpdateClientControls();
-  for (statptr = firstactivestat ; statptr; statptr=statptr->nextactive)
-  {  //redraw:
+	 UpdateClientControls();
+	 for (statptr = firstactivestat ; statptr; statptr=statptr->nextactive)
+	 {  //redraw:
 			if((visptr->shapenum = statptr->shapenum) == NOTHING)
 				continue;
 
-			visptr->shapenum += shapestart;
-			if ((visptr->shapenum <= shapestart) ||
-				(visptr->shapenum >= shapestop))
-			Error("actor shapenum %d out of range (%d-%d)",visptr->shapenum,shapestart,shapestop);
+//			visptr->shapenum += shapestart;
+			visptr->shapenum = GetLumpForShape(visptr->shapenum);
+//			if ((visptr->shapenum <= shapestart) ||
+//				(visptr->shapenum >= shapestop))
+//			Error("actor shapenum %d out of range (%d-%d)",
+//				visptr->shapenum,shapestart,shapestop);
 
 			visspot = statptr->visspot;
 			if (!((*(visspot-0)) ||
@@ -1097,12 +1100,12 @@ void DrawScaleds (void)
 				visptr++;
 
 
-  }
+	 }
 //
 // place active objects
 //
-  UpdateClientControls();
-  for (obj = firstactive;obj;obj=obj->nextactive)
+	 UpdateClientControls();
+	 for (obj = firstactive;obj;obj=obj->nextactive)
 	{
 	if (obj==player)
 		continue;
@@ -1110,10 +1113,12 @@ void DrawScaleds (void)
 	if ((visptr->shapenum = obj->shapenum) == NOTHING)
 		continue;								// no shape
 
-	visptr->shapenum += shapestart;
-	if ((visptr->shapenum <= shapestart) ||
-				(visptr->shapenum >= shapestop))
-		Error("actor shapenum %d out of range (%d-%d)",visptr->shapenum,shapestart,shapestop);
+//	visptr->shapenum += shapestart;
+	visptr->shapenum = GetLumpForShape(visptr->shapenum);
+//	if ((visptr->shapenum <= shapestart) ||
+//				(visptr->shapenum >= shapestop))
+//		Error("actor shapenum %d out of range (%d-%d)",
+//			visptr->shapenum,shapestart,shapestop);
 	visspot = &spotvis[obj->tilex][obj->tiley];
 	tilespot = &tilemap[obj->tilex][obj->tiley];
 
@@ -1237,7 +1242,7 @@ void DrawScaleds (void)
 	SortVisibleList( numvisible, &vislist[0] );
 	UpdateClientControls();
 	for (i = 0; i<numvisible; i++)
-		{
+	{
 		//
 		// draw farthest
 		//
@@ -1262,7 +1267,7 @@ void DrawScaleds (void)
 
 			ScaleShape(sortedvislist[i]);
 
-		}
+	}
 }
 
 //==========================================================================
@@ -1281,190 +1286,245 @@ void DrawScaleds (void)
 ==============
 */
 
+char *rt_weaponsprites[]={
+"GUNSTART",	"KNIFE1",	"KNIFE2",	"KNIFE3",	
+"KNIFE4",	"KNIFE5",	"KNIFE6",	"KNIFE7",	
+"KNIFE8",	"KNIFE9",	"KNIFE10",	"BMPIST1",	
+"BMPIST2",	"BMPIST3",	"RBMPIST1",	"RBMPIST2",	
+"RBMPIST3",	"LBMPIST1",	"LBMPIST2",	"LBMPIST3",	
+"MPIST11",	"MPIST12",	"MPIST13",	"RMPIST1",	
+"RMPIST2",	"RMPIST3",	"LMPIST1",	"LMPIST2",	
+"LMPIST3",	"FPIST11",	"FPIST12",	"FPIST13",	
+"RFPIST1",	"RFPIST2",	"RFPIST3",	"LFPIST1",	
+"LFPIST2",	"LFPIST3",	"MP401",	"MP402",	
+"MP403",	"BAZOOKA1",	"BAZOOKA2",	"BAZOOKA3",	
+"BAZOOKA4",	"HSEEK1",	"HSEEK2",	"HSEEK3",	
+"HSEEK4",	"DRUNK1",	"DRUNK2",	"DRUNK3",	
+"DRUNK4",	"FBOMB1",	"FBOMB2",	"FBOMB3",	
+"FBOMB4",	"FIREW1",	"FIREW2",	"FIREW3",	
+"GODHAND1",	"GODHAND2",	"GODHAND3",	"GODHAND4",	
+"GODHAND5",	"GODHAND6",	"GODHAND7",	"GODHAND8",	
+"SPLIT1",	"SPLIT2",	"SPLIT3",	"SPLIT4",	
+"KES1",		"KES2",		"KES3",		"KES4",	
+"KES5",		"KES6",		"EXBAT1",	"EXBAT2",	
+"EXBAT3",	"EXBAT4",	"EXBAT5",	"EXBAT6",	
+"EXBAT7",	"DOGNOSE1",	"DOGBITE1",	"DOGBITE2",	
+"DOGBITE3",	"DOGLICK1",	"DOGLICK2",	"DOGLICK3",	
+"DOGLICK4",	"DOGPAW1",	"DOGPAW2",	"DOGPAW3",	
+"DOGPAW4",	NULL
+};
+
 void DrawPlayerWeapon (void)
 {
- int shapenum,index;
- int xdisp=0;
- int ydisp=0;
- int female,black;
- int altshape=0;
+	int shapenum,index;
+	int xdisp=0;
+	int ydisp=0;
+	int female,black;
+	int altshape=0;
 
 	whereami=7;
 
- SoftError("\n attackframe: %d, weaponframe: %d, weapondowntics: %d"
-			" weaponuptics: %d",locplayerstate->attackframe,
-			locplayerstate->weaponframe,locplayerstate->weapondowntics,
-			locplayerstate->weaponuptics);
+//	SoftError("\n attackframe: %d, weaponframe: %d, weapondowntics: %d"
+//			" weaponuptics: %d",locplayerstate->attackframe,
+//			locplayerstate->weaponframe,locplayerstate->weapondowntics,
+//			locplayerstate->weaponuptics);
 
- if ((locplayerstate->NETCAPTURED == 1) && (!locplayerstate->HASKNIFE))
-  return;
+	if ((locplayerstate->NETCAPTURED == 1) && (!locplayerstate->HASKNIFE))
+		return;
 
- if (locplayerstate->weapon != -1)
-  {female = ((locplayerstate->player == 1) || (locplayerstate->player == 3));
-	black = (locplayerstate->player == 2);
+	if (locplayerstate->weapon != -1)
+	{
+		female =	((locplayerstate->player == 1) ||
+					 (locplayerstate->player == 3)	);
+		black = (locplayerstate->player == 2);
 
-	if (((locplayerstate->NETCAPTURED >= 1) || (locplayerstate->NETCAPTURED == -2)) && (locplayerstate->HASKNIFE == 1)) // if raising or lowering
-		{index = 0;
-		shapenum = gunsstart + weaponshape[index] + locplayerstate->weaponframe;
-		}
-	else if  (locplayerstate->weapon != wp_twopistol)
-		{if (locplayerstate->weapon==wp_pistol)
-			{if (female)
-			index = NUMWEAPGRAPHICS-2;
-			else if (black)
-			index = NUMWEAPGRAPHICS-1;
-			else
-#if (SHAREWARE == 0)
-			index = 1;
-#else
+		if (((locplayerstate->NETCAPTURED >= 1) ||
+			(locplayerstate->NETCAPTURED == -2)) &&
+			(locplayerstate->HASKNIFE == 1)) // if raising or lowering
+		{
 			index = 0;
+//			shapenum = gunsstart + weaponshape[index] + 
+//				locplayerstate->weaponframe;
+			shapenum = W_GetNumForName(
+				rt_weaponsprites[weaponshape[index] +
+					locplayerstate->weaponframe]);
+		}
+		else if  (locplayerstate->weapon != wp_twopistol)
+		{
+			if (locplayerstate->weapon==wp_pistol)
+			{
+				if (female)
+					index = NUMWEAPGRAPHICS-2;
+				else if (black)
+					index = NUMWEAPGRAPHICS-1;
+				else
+//#if (SHAREWARE == 0)
+#if 1
+				index = 1;
+#else
+				index = 0;
 #endif
 			}
-		else
-#if (SHAREWARE == 0)
-
-			index = locplayerstate->weapon + 1;
+			else
+			{
+// #if (SHAREWARE == 0)
+#if 1
+				index = locplayerstate->weapon + 1;
 #else
-			index = locplayerstate->weapon;
+				index = locplayerstate->weapon;
 #endif
+			}
 
-		if ((index<0) || (index>=NUMWEAPGRAPHICS))
-			Error ("Weapon shapenum out of range\n");
-		shapenum = gunsstart + weaponshape[index] + locplayerstate->weaponframe;
+			if ((index<0) || (index>=NUMWEAPGRAPHICS))
+				Error ("Weapon shapenum out of range\n");
+
+	//		shapenum = gunsstart + weaponshape[index] +
+	//			locplayerstate->weaponframe;
+			shapenum = W_GetNumForName(
+				rt_weaponsprites[weaponshape[index] +
+					locplayerstate->weaponframe]);
 
 #if (SHAREWARE == 0)
-		if ((shapenum < W_GetNumForName("KNIFE1")) ||
-				(shapenum > W_GetNumForName("DOGPAW4"))
-			)
+			if ((shapenum < W_GetNumForName("KNIFE1")) ||
+					(shapenum > W_GetNumForName("DOGPAW4"))
+				)
 #else
-		if ((shapenum < W_GetNumForName("MPIST11")) ||
-				(shapenum > W_GetNumForName("GODHAND8"))
-			)
+			if ((shapenum < W_GetNumForName("MPIST11")) ||
+					(shapenum > W_GetNumForName("GODHAND8"))
+				)
 #endif
 			Error("\n illegal weapon shapenum %d, index %d, weaponframe %d",
 						shapenum,index,locplayerstate->weaponframe);
 		}
-
-	else
-	{
-#if (SHAREWARE == 0)
-	if (female)
-		{altshape = W_FLEFTPISTOL1;
-		shapenum = W_FRIGHTPISTOL1;
-		}
-	else if (black)
-		{altshape = W_BMLEFTPISTOL1;
-		shapenum = W_BMRIGHTPISTOL1;
-		}
-	else
-#endif
-		{altshape = W_MLEFTPISTOL1;
-		shapenum = W_MRIGHTPISTOL1;
-		}
-
-	altshape += gunsstart;
-	shapenum += gunsstart;
-	if (locplayerstate->weaponframe > 2)
-			altshape += (locplayerstate->weaponframe - 3);
-	else
-			shapenum += locplayerstate->weaponframe;
-	}
-
-	if (!(locplayerstate->NETCAPTURED) ||
-		(locplayerstate->NETCAPTURED == -1) ||
-		(locplayerstate->HASKNIFE == 0))
-	{switch (locplayerstate->weapon)
+		else
 		{
-
-		case wp_godhand:
-			break;
-
-		case wp_mp40:
-			break;
-
-		case wp_firewall:
-			ydisp = 10;
-			break;
-
-		case wp_bazooka:
-			break;
-
-		case wp_heatseeker:
-			ydisp = 20;
-			break;
-
-		case wp_pistol:
-			break;
-
-		case wp_twopistol:
-			xdisp = 80;
-			break;
-
-		case wp_drunk:
-			ydisp = 10;
-			break;
-
-		case wp_firebomb:
-			break;
-
-
-
 #if (SHAREWARE == 0)
-
-		case wp_kes:
-			break;
-
-		case wp_bat:
-			xdisp = 20;
-			break;
-
-		case wp_split:
-			ydisp = 20;
-			break;
-
-
-		case wp_dog:
-			break;
-
-
+			if (female)
+			{
+				altshape = W_FLEFTPISTOL1;
+				shapenum = W_FRIGHTPISTOL1;
+			}
+			else if (black)
+			{
+				altshape = W_BMLEFTPISTOL1;
+				shapenum = W_BMRIGHTPISTOL1;
+			}
+			else
 #endif
+			{
+				altshape = W_MLEFTPISTOL1;
+				shapenum = W_MRIGHTPISTOL1;
+			}
 
-		default:
-			Error("Illegal weapon value = %ld\n",locplayerstate->weapon);
-			break;
+			if (locplayerstate->weaponframe > 2)
+				altshape += (locplayerstate->weaponframe - 3);
+			else
+				shapenum += locplayerstate->weaponframe;
+
+//			altshape += gunsstart;
+			altshape = W_GetNumForName(rt_weaponsprites[altshape]);
+//			shapenum += gunsstart;
+			shapenum = W_GetNumForName(rt_weaponsprites[shapenum]);
+		}
+
+		if (!(locplayerstate->NETCAPTURED) ||
+			(locplayerstate->NETCAPTURED == -1) ||
+			(locplayerstate->HASKNIFE == 0))
+		{
+			switch (locplayerstate->weapon)
+			{
+			case wp_godhand:
+				break;
+
+			case wp_mp40:
+				break;
+
+			case wp_firewall:
+				ydisp = 10;
+				break;
+
+			case wp_bazooka:
+				break;
+
+			case wp_heatseeker:
+				ydisp = 20;
+				break;
+
+			case wp_pistol:
+				break;
+
+			case wp_twopistol:
+				xdisp = 80;
+				break;
+
+			case wp_drunk:
+				ydisp = 10;
+				break;
+
+			case wp_firebomb:
+				break;
+
+
+
+	#if (SHAREWARE == 0)
+
+			case wp_kes:
+				break;
+
+			case wp_bat:
+				xdisp = 20;
+				break;
+
+			case wp_split:
+				ydisp = 20;
+				break;
+
+
+			case wp_dog:
+				break;
+
+
+	#endif
+
+			default:
+				Error("Illegal weapon value = %ld\n",locplayerstate->weapon);
+				break;
+			}
+		}
+		else
+			xdisp = 60;
+
+		if (altshape)
+		{
+			int temp;
+			int delta;
+
+			temp = weaponscale;
+			delta = FixedMul((weaponbobx<<9),weaponscale);
+			weaponscale += delta;
+			ScaleWeapon(xdisp - weaponbobx,
+				ydisp + weaponboby + locplayerstate->weaponheight,
+				shapenum);
+			weaponscale -= delta;
+			ScaleWeapon(weaponbobx - 80,
+				ydisp + weaponboby + locplayerstate->weaponheight,
+				altshape);
+			weaponscale = temp;
+		}
+		 else
+		{
+			int temp;
+			int delta;
+
+			temp = weaponscale;
+			delta = FixedMul((weaponbobx<<9),weaponscale);
+			weaponscale -= delta;
+			ScaleWeapon(xdisp + weaponbobx,
+				ydisp + weaponboby + locplayerstate->weaponheight,
+				shapenum);
+			weaponscale = temp;
 		}
 	}
-  else
-	xdisp = 60;
-
-
-
-
-  if (altshape)
-	{
-	int temp;
-	int delta;
-
-	temp = weaponscale;
-	delta = FixedMul((weaponbobx<<9),weaponscale);
-	weaponscale += delta;
-	ScaleWeapon(xdisp - weaponbobx,ydisp + weaponboby + locplayerstate->weaponheight,shapenum);
-	weaponscale -= delta;
-	ScaleWeapon(weaponbobx - 80,ydisp + weaponboby + locplayerstate->weaponheight,altshape);
-	weaponscale = temp;
-	}
-  else
-	{
-	int temp;
-	int delta;
-
-	temp = weaponscale;
-	delta = FixedMul((weaponbobx<<9),weaponscale);
-	weaponscale -= delta;
-	ScaleWeapon(xdisp + weaponbobx,ydisp + weaponboby + locplayerstate->weaponheight,shapenum);
-	weaponscale = temp;
-	}
-  }
 }
 
 void AdaptDetail ( void )
@@ -1978,7 +2038,7 @@ void TransformDoors( void )
 // place door objects
 //
 
-  for (i = 0;i<doornum;i++)
+	 for (i = 0;i<doornum;i++)
 	{
 	if (spotvis[doorobjlist[i]->tilex][doorobjlist[i]->tiley])
 		{
@@ -2051,19 +2111,19 @@ void TransformDoors( void )
 
 void TransformPushWalls( void )
 {
-  int	i;
-  int	gx,gy;
-  byte	*visspot;
-  visobj_t *savedptr;
-  int numvisible;
-  boolean result;
+	 int	i;
+	 int	gx,gy;
+	 byte	*visspot;
+	 visobj_t *savedptr;
+	 int numvisible;
+	 boolean result;
 
 	whereami=15;
-  savedptr=visptr;
-  //
-  // place pwall objects
-  //
-  for (i = 0;i<pwallnum;i++)
+	 savedptr=visptr;
+	 //
+	 // place pwall objects
+	 //
+	 for (i = 0;i<pwallnum;i++)
 	{
 	if ((pwallobjlist[i]->action==pw_pushed) || (pwallobjlist[i]->action==pw_npushed))
 		continue;
@@ -2702,13 +2762,13 @@ void		ThreeDRefresh (void)
 // Erase old messages
 //
 
-  RestoreMessageBackground();
+	 RestoreMessageBackground();
 
-  bufferofs += screenofs;
+	 bufferofs += screenofs;
 
-  RefreshClear();
+	 RefreshClear();
 
-  UpdateClientControls ();
+	 UpdateClientControls ();
 
 //
 // follow the walls from there to the right, drawwing as we go
@@ -2746,7 +2806,12 @@ void		ThreeDRefresh (void)
 		DrawPlayerWeapon ();	// draw player's hand'
 
 		if (SCREENEYE)
-		DrawScreenSprite(SCREENEYE->targettilex,SCREENEYE->targettiley,SCREENEYE->state->condition + GIBEYE1 + shapestart);
+		{
+			DrawScreenSprite(SCREENEYE->targettilex,
+				SCREENEYE->targettiley,
+	//			SCREENEYE->state->condition + GIBEYE1 + shapestart);
+				GetLumpForShape(SCREENEYE->state->condition + GIBEYE1));
+		}
 		UpdateClientControls ();
 
 		if (player->flags&FL_GASMASK)
@@ -3938,9 +4003,9 @@ void WarpString (
 			break;
 		}
 
-  // DrawBackground ( back );
-  // US_ClippedPrint (endx, endy, str);
-  // FlipPage();
+	 // DrawBackground ( back );
+	 // US_ClippedPrint (endx, endy, str);
+	 // FlipPage();
 
 }
 
@@ -4008,88 +4073,88 @@ char *EndCinematicPicNames[5] =
 
 
 char *EndCinematicText[NUMENDMESSAGES] =
-  {
-  "You've won the battle, Cassatt.\n"
-  "But when the Oscuridos return,\n"
-  "will you be ready as they wage\n"
-  "their Dark War?",
+	 {
+	 "You've won the battle, Cassatt.\n"
+	 "But when the Oscuridos return,\n"
+	 "will you be ready as they wage\n"
+	 "their Dark War?",
 
-  "Armed with only a pistol and 30\n"
-  "bucks, you must stop the minions of\n"
-  "El Oscuro before they kill millions\n"
-  "of innocent people.",
+	 "Armed with only a pistol and 30\n"
+	 "bucks, you must stop the minions of\n"
+	 "El Oscuro before they kill millions\n"
+	 "of innocent people.",
 
-  "But for now, hey, enjoy the medal\n"
-  "you received and take a vacation.\n"
-  "You've earned it. Maybe on \n"
-  "San Nicolas Island . . ." ,
+	 "But for now, hey, enjoy the medal\n"
+	 "you received and take a vacation.\n"
+	 "You've earned it. Maybe on \n"
+	 "San Nicolas Island . . ." ,
 
-  "Thanks for playing. If you liked\n"
-  "\"The HUNT Begins\", check Ordering\n"
-  "Info for information about \n"
-  "continuing your adventure.",
+	 "Thanks for playing. If you liked\n"
+	 "\"The HUNT Begins\", check Ordering\n"
+	 "Info for information about \n"
+	 "continuing your adventure.",
 
-  "Okay, you can stop reading now.",
+	 "Okay, you can stop reading now.",
 
-  "Press a key. That's all there is.\n"
-  "Thanks.",
+	 "Press a key. That's all there is.\n"
+	 "Thanks.",
 
-  "Are you lazy, or illiterate?\n"
-  "PRESS A KEY.",
+	 "Are you lazy, or illiterate?\n"
+	 "PRESS A KEY.",
 
-  "Look, this is pointless. You\n"
-  "are done. Push off.",
+	 "Look, this is pointless. You\n"
+	 "are done. Push off.",
 
-  "Okay, show's over.  Nothing\n"
-  "more to see here.",
+	 "Okay, show's over.  Nothing\n"
+	 "more to see here.",
 
-  "Wow, you must like this fine\n"
-  "background screen.",
+	 "Wow, you must like this fine\n"
+	 "background screen.",
 
-  "For waiting this long, you get . . .\n"
-  "nothing!  Go away!",
+	 "For waiting this long, you get . . .\n"
+	 "nothing!  Go away!",
 
-  "I mean, I like you as a friend,\n"
-  "but . . .",
+	 "I mean, I like you as a friend,\n"
+	 "but . . .",
 
-  "\"Bob\"",
+	 "\"Bob\"",
 
-  "All right, um . . . you found the\n"
-  "secret message! Congratulations!",
+	 "All right, um . . . you found the\n"
+	 "secret message! Congratulations!",
 
-  "Didn't work, huh?  Okay, how about\n"
-  "this . . .",
+	 "Didn't work, huh?  Okay, how about\n"
+	 "this . . .",
 
-  "THE END",
+	 "THE END",
 
-  "Dang. Thought I had you there.",
+	 "Dang. Thought I had you there.",
 
-  "Stop watching.",
+	 "Stop watching.",
 
-  "You know that if you registered,\n"
-  "there would be a lot more cool\n"
-  "stuff happening right now.",
+	 "You know that if you registered,\n"
+	 "there would be a lot more cool\n"
+	 "stuff happening right now.",
 
-  "Episode IV: A New Hope\n",
+	 "Episode IV: A New Hope\n",
 
-  "Just think of all the new secret\n"
-  "messages you could find hidden\n"
-  "in the registered version!",
+	 "Just think of all the new secret\n"
+	 "messages you could find hidden\n"
+	 "in the registered version!",
 
-  "Someone right now is probably\n"
-  "enjoying the really exciting\n"
-  "ending of the registered version.",
+	 "Someone right now is probably\n"
+	 "enjoying the really exciting\n"
+	 "ending of the registered version.",
 
-  "ROTT was filmed before\n"
-  "a live audience.",
+	 "ROTT was filmed before\n"
+	 "a live audience.",
 
-  "No animals were harmed during the\n"
-  "creation of this video game, although\n"
-  "one dog did get its butt spanked\n"
-  "when it peed on the carpet.\n",
+	 "No animals were harmed during the\n"
+	 "creation of this video game, although\n"
+	 "one dog did get its butt spanked\n"
+	 "when it peed on the carpet.\n",
 
 
-  };
+	 };
 char NextGameString1[] = "The Developers of Incredible Power";
 char NextGameString2[] = "shall return";
 
@@ -4411,36 +4476,36 @@ static char	youWin8Msg[] =
 #define NUMEXPLOSIONTYPES 4
 
 typedef struct {
-  char  name[11];
-  byte  numframes;
+	 char  name[11];
+	 byte  numframes;
 } ExplosionInfoType;
 
 ExplosionInfoType ExplosionInfo[NUMEXPLOSIONTYPES]=
 {
-  {"EXPLOS1\0",20},
-  {"EXP1\0",20},
-  {"GREXP1\0",25},
-  {"PART1\0",12},
+	 {"EXPLOS1\0",20},
+	 {"EXP1\0",20},
+	 {"GREXP1\0",25},
+	 {"PART1\0",12},
 #if 0
-  {"GUTS1\0",12},
-  {"ORGAN1\0",12},
-  {"RIB1\0",12},
-  {"GPINK1\0",12},
-  {"GHEAD1\0",12},
-  {"GARM1\0",12},
-  {"GLEG1\0",12},
-  {"GHUM1\0",12},
-  {"GHIP1\0",12},
-  {"GLIMB1\0",12},
+	 {"GUTS1\0",12},
+	 {"ORGAN1\0",12},
+	 {"RIB1\0",12},
+	 {"GPINK1\0",12},
+	 {"GHEAD1\0",12},
+	 {"GARM1\0",12},
+	 {"GLEG1\0",12},
+	 {"GHUM1\0",12},
+	 {"GHIP1\0",12},
+	 {"GLIMB1\0",12},
 #endif
 };
 
 
 typedef struct {
-  byte  which;
-  byte  frame;
-  byte  x;
-  byte  y;
+	 byte  which;
+	 byte  frame;
+	 byte  x;
+	 byte  y;
 } ExplosionType;
 
 #define MAXTRANSMITTEREXPLOSIONS 30
@@ -5327,13 +5392,13 @@ void DoInBetweenCinematic (int yoffset, int lump, int delay, char * string )
 #define NUMSECONDCREDITMESSAGES 28
 
 typedef struct CreditType {
-  char  text[80];
-  byte  font;
-  byte  endy;
+	 char  text[80];
+	 byte  font;
+	 byte  endy;
 } CreditType;
 
 CreditType FirstCredits[NUMFIRSTCREDITMESSAGES] =
-  {
+	 {
 	{"Rise of the Triad Credits",0,0},
 	{"COPYRIGHT (c) 1995 Apogee Software Ltd.",1,10},
 	{"Apogee's Developers of Incredible Power",1,20},
@@ -5355,10 +5420,10 @@ CreditType FirstCredits[NUMFIRSTCREDITMESSAGES] =
 	{"D.J. Goodwin  Matt McKinney",1,164},
 	{"Special Thanks",0,174},
 	{"John Carmack  Ken Silverman  Gregor Punchatz",1,184},
-  };
+	 };
 
 CreditType SecondCredits[NUMSECONDCREDITMESSAGES] =
-  {
+	 {
 	{"Rise of the Triad Credits",0,0},
 	{"COPYRIGHT (c) 1995 Apogee Software Ltd.",1,10},
 	{"Executive Producers",0,20},
@@ -5386,7 +5451,7 @@ CreditType SecondCredits[NUMSECONDCREDITMESSAGES] =
 	{"Anthony, Zach, Rajan, Miki, Loki",1,178},
 	{"Nathan, Petro, Tim, Jake, MacKay",1,184},
 	{"Loyal, Ric, Teller, Amano",1,190},
-  };
+	 };
 
 void DrawPreviousCredits ( int num, CreditType * Credits )
 {
@@ -5646,15 +5711,15 @@ void DoMicroStoryScreen ( void )
 
 
 typedef struct {
-  int	x;
-  int	y;
-  int	angle;
-  int	speed;
-  int	color;
-  int	endx;
-  int	endy;
-  int	plane;
-  int	time;
+	 int	x;
+	 int	y;
+	 int	angle;
+	 int	speed;
+	 int	color;
+	 int	endx;
+	 int	endy;
+	 int	plane;
+	 int	time;
 } ParticleType;
 
 #define NUMPARTICLES 300

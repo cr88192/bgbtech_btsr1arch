@@ -656,6 +656,13 @@ void R_RecursiveWorldNode (mnode_t *node, int clipflags)
 		// all surfaces on the same node share the same sequence number
 			r_currentkey++;
 		}
+		
+		if(r_lowfps>1)
+		{
+//			if(fabs(dot)>768)
+			if(fabs(dot)>r_lowfps_worldclip)
+				return;
+		}
 
 	// recurse down the back side
 		R_RecursiveWorldNode (node->children[!side], clipflags);

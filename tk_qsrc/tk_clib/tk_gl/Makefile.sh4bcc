@@ -18,7 +18,7 @@ CFLAGS=-Iinclude -O3
 
 DLL_CFLAGS=$(CFLAGS) /mBJX2
 DLL_LDFLAGS=
-LDFLAGS=btewsim.ril -lvxcore_bjx2 $(DLL_LDFLAGS)
+LDFLAGS=-lvxcore_bjx2 $(DLL_LDFLAGS)
 
 all: libs apps
 

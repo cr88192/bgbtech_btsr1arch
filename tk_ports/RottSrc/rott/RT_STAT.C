@@ -902,19 +902,32 @@ boolean TurnOffLight3 (int tilex, int tiley, int i)
 ======================
 */
 
-void PreCacheStaticFrames(statobj_t*temp)
+void PreCacheStaticFrames(statobj_t *temp)
 {
 	int z,start,stop;
 	int female=0,black=0;
 
-	PreCacheLump(temp->shapenum+shapestart,PU_CACHESPRITES);
+//	PreCacheLump(temp->shapenum+shapestart,PU_CACHESPRITES);
+	PreCacheLump(
+		GetLumpForShape(temp->shapenum),
+		PU_CACHESPRITES);
 	for (z=0;z<temp->numanims;z++)
-		PreCacheLump(temp->shapenum+shapestart+z,PU_CACHESPRITES);
+	{
+//		PreCacheLump(temp->shapenum+shapestart+z,PU_CACHESPRITES);
+		PreCacheLump(
+			GetLumpForShape(temp->shapenum+z),
+			PU_CACHESPRITES);
+	}
 
 	if (temp->flags & FL_ROTATING)
 	{
 		for (z=1;z<8;z++)
-			PreCacheLump(temp->shapenum+shapestart+z,PU_CACHESPRITES);
+		{
+//			PreCacheLump(temp->shapenum+shapestart+z,PU_CACHESPRITES);
+			PreCacheLump(
+				GetLumpForShape(temp->shapenum+z),
+				PU_CACHESPRITES);
+		}
 	}
 
 	if (temp->flags & FL_WOODEN)

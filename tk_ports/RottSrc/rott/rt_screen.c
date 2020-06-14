@@ -619,7 +619,8 @@ I_FinishUpdate_Repack8to16:
 	SHLD.Q	R2, 16, R2		|	MOVU.W	(R5, R6), R3
 	EXTU.B	R4, R7			|	OR		R3, R2
 	SHLD.Q	R2, 16, R2		|	MOVU.W	(R5, R7), R3
-	OR		R3, R2			|	RTSU
+	OR		R3, R2
+	RTSU
 };
 
 
@@ -959,7 +960,8 @@ R_DrawWallColumn_A1:
 	ADD		R3, 384, R4		|	MOV.B	R17, (R3)
 //								CMPGT	1, R5
 								CMPGT	2, R5
-	ADD		-2, R5			|	BT .L0
+	ADD		-2, R5
+	BT .L0
 	.L1:
 
 //	CMPGT	0, R5
@@ -973,7 +975,8 @@ R_DrawWallColumn_A1:
 	MOV.B	R16, (R4)
 	ADD		384, R4
 	ADD		R21, R20	|	CMPGT	0, R5
-	ADD		-1, R5		|	BT .L2
+	ADD		-1, R5
+	BT .L2
 	.L3:
 
 	RTSU
@@ -1139,7 +1142,8 @@ R_DrawRow_A1:
 	MOV.B	R17, (R4)
 	ADD		4, R4
 	ADD		R21, R20	|	CMPGT	0, R5
-	ADD		-1, R5		|	BT .L2
+	ADD		-1, R5
+	BT .L2
 	.L3:
 	RTSU
 
@@ -1181,7 +1185,8 @@ R_DrawRow_A2:
 	MOV.W	R17, (R4)
 	ADD		4, R4
 	ADD		R21, R20	|	CMPGT	0, R5
-	ADD		-1, R5		|	BT .L2
+	ADD		-1, R5
+	BT .L2
 	.L3:
 	RTSU
 }
@@ -1328,7 +1333,8 @@ R_DrawColumn_A1:
 	ADD		R3, 384, R4		|	MOV.B	R17, (R3)
 //								CMPGT	1, R5
 								CMPGT	2, R5
-	ADD		-2, R5			|	BT .L0
+	ADD		-2, R5
+	BT .L0
 	.L1:
 
 //	CMPGT	0, R5
@@ -1342,7 +1348,8 @@ R_DrawColumn_A1:
 	MOV.B	R16, (R4)
 	ADD		384, R4
 	ADD		R21, R20	|	CMPGT	0, R5
-	ADD		-1, R5		|	BT .L2
+	ADD		-1, R5
+	BT .L2
 	.L3:
 
 	RTSU

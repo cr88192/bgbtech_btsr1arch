@@ -515,11 +515,75 @@ __PDPCLIB_API__ void *memset(void *s, int c, size_t n)
 }
 #endif
 
+#ifdef __BJX2__
+// #if 0
+void memset_movx(void *s, int c, size_t n);
+
+__asm {
+memset_movx:
+
+.ifarch bjx2_movx
+	PSHUF.B		R5, 0, R7
+	PSHUF.W		R7, 0, R20
+	MOV		R20, R22	|	MOV		R20, R23
+	MOV		R20, R21	|	CMP/GE	32, R6
+	BF		.L1
+	.L0:
+	MOV.X	R20, (R4,  0)
+	ADD		-32, R6	
+	MOV.X	R22, (R4, 16)
+	ADD		32, R4		|	CMP/GE	32, R6
+	BT		.L0
+	.L1:
+.else
+	EXTU.B		R5, R20
+	SHLD.Q		R5, 8, R7
+	OR			R7, R20
+	SHLD.Q		R5, 16, R7
+	OR			R7, R20
+	SHLD.Q		R5, 32, R7
+	OR			R7, R20
+.endif
+
+.ifarch bjx2_wex
+	CMP/GE	8, R6
+	BF		.L3
+	.L2:
+	ADD		-8, R6		|	MOV.Q	R20, (R4)
+	ADD		8, R4		|	CMP/GE	8, R6
+	BT		.L2
+	.L3:
+.else
+	CMP/GE	8, R6
+	BF		.L3
+	.L2:
+	ADD		-8, R6
+	MOV.Q	R20, (R4)
+	ADD		8, R4
+	CMP/GE	8, R6
+	BT		.L2
+	.L3:
+.endif
+
+	RTSU
+}
+#endif
+
 #if 1
 __PDPCLIB_API__ void *memset(void *s, int c, size_t n)
 {
 	unsigned char *ct, *cte, *cte0;
 	int v;
+
+#ifdef __BJX2__
+// #if 0
+	v=((int)s)|n;
+	if(!(v&7))
+	{
+		memset_movx(s, c, n);
+		return(s);
+	}
+#endif
 
 	v=c; v|=(v<<8); v|=(v<<16);
 	ct=s; cte=s+n;

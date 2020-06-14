@@ -282,6 +282,7 @@ void W_AddFile (char *filename)
 	int			startlump;
 	filelump_t*		fileinfo;
 	filelump_t		singleinfo;
+	wad2lump_t		*wad2info;
 	int			storehandle;
 	
 	// open the file and add to directory
@@ -304,6 +305,9 @@ void W_AddFile (char *filename)
 	printf (" adding %s\n",filename);
 	startlump = numlumps;
 	
+	fileinfo = NULL;
+	wad2info = NULL;
+	
 	if (strcmpi (filename+strlen(filename)-3 , "wad" ) )
 	{
 		// single lump file
@@ -315,6 +319,7 @@ void W_AddFile (char *filename)
 	}
 	else 
 	{
+#if 0
 		// WAD file
 		w_read (handle, &header, sizeof(header));
 		if (strncmp(header.identification,"IWAD",4))
@@ -344,11 +349,43 @@ void W_AddFile (char *filename)
 			free(lumpinfo);
 		}
 		lumpinfo = lump_p;
+#endif
+
+#if 1
+		// WAD file
+		w_read (handle, &header, sizeof(header));
+
+		if (!strncmp(header.identification, "IWAD", 4) ||
+			!strncmp(header.identification, "PWAD", 4))
+		{
+			header.numlumps = LONG(header.numlumps);
+			header.infotableofs = LONG(header.infotableofs);
+			length = header.numlumps*sizeof(filelump_t);
+			fileinfo = malloc (length);
+			w_lseek (handle, header.infotableofs, SEEK_SET);
+			w_read (handle, fileinfo, length);
+			numlumps += header.numlumps;
+		}else
+			if(!strncmp(header.identification, "WAD2", 4))
+		{
+			header.numlumps = LONG(header.numlumps);
+			header.infotableofs = LONG(header.infotableofs);
+			length = header.numlumps*sizeof(wad2lump_t);
+			wad2info = malloc (length);
+			w_lseek (handle, header.infotableofs, SEEK_SET);
+			w_read (handle, wad2info, length);
+			numlumps += header.numlumps;
+		}else
+		{
+			I_Error ("Wad file %s doesn't have "
+				"IWAD, PWAD, or WAD2 id\n", filename);
+		}
+#endif
 	}
 
 	
 	// Fill in lumpinfo
-//	lumpinfo = realloc (lumpinfo, numlumps*sizeof(lumpinfo_t));
+	lumpinfo = realloc (lumpinfo, numlumps*sizeof(lumpinfo_t));
 
 	if (!lumpinfo)
 		I_Error ("Couldn't realloc lumpinfo");
@@ -358,15 +395,33 @@ void W_AddFile (char *filename)
 	
 	storehandle = reloadname ? -1 : handle;
 	
-//	for (i=startlump ; i<numlumps ; i++,lump_p++, fileinfo++)
-	for (i=startlump ; i<numlumps ; i++)
+	if(wad2info)
 	{
-		lump_p->handle = storehandle;
-		lump_p->position = LONG(fileinfo->filepos);
-		lump_p->size = LONG(fileinfo->size);
-		strncpy (lump_p->name, fileinfo->name, 8);
-		lump_p++;
-		fileinfo++;
+		for (i=startlump ; i<numlumps ; i++, lump_p++, wad2info++)
+		{
+			lump_p->handle = handle;
+			lump_p->position = LONG(wad2info->filepos);
+			lump_p->size = LONG(wad2info->dsize);
+			lump_p->csize = LONG(wad2info->csize);
+			lump_p->ety = wad2info->ety;
+			lump_p->cmp = wad2info->cmp;
+//			strncpy (lump_p->name, wad2info->name, 8);
+			w_strupr_n (lump_p->name, wad2info->name, 16);
+		}
+	}else
+	{
+	//	for (i=startlump ; i<numlumps ; i++,lump_p++, fileinfo++)
+		for (i=startlump ; i<numlumps ; i++)
+		{
+			memset(lump_p, 0, sizeof(*lump_p));
+			lump_p->handle = storehandle;
+			lump_p->position = LONG(fileinfo->filepos);
+			lump_p->size = LONG(fileinfo->size);
+			lump_p->csize = LONG(fileinfo->size);
+			strncpy (lump_p->name, fileinfo->name, 8);
+			lump_p++;
+			fileinfo++;
+		}
 	}
 	
 	if (reloadname)
@@ -423,6 +478,275 @@ void W_Reload (void)
 	
 	w_close (handle);
 }
+
+
+
+void W_MatchCopy2(byte *dst, int sz, int d)
+{
+	byte *cs, *ct, *cte;
+	u64 v;
+	
+	if(d<8)
+	{
+		if(d==1)
+		{
+			v=*(dst-d);
+			v=v|(v<<8);
+			v=v|(v<<16);
+			v=v|(v<<32);
+
+			ct=dst; cte=dst+sz;
+			while(ct<cte)
+			{
+				*(u64 *)ct=v;
+				ct+=8;
+			}
+		}else
+			if(d==2)
+		{
+			v=*(u16 *)(dst-d);
+			v=v|(v<<16);
+			v=v|(v<<32);
+
+			ct=dst; cte=dst+sz;
+			while(ct<cte)
+			{
+				*(u64 *)ct=v;
+				ct+=8;
+			}
+		}else
+			if(d==4)
+		{
+			v=*(u32 *)(dst-d);
+			v=v|(v<<32);
+
+			ct=dst; cte=dst+sz;
+			while(ct<cte)
+			{
+				*(u64 *)ct=v;
+				ct+=8;
+			}
+		}else
+		{
+			v=*(u64 *)(dst-d);
+			ct=dst; cte=dst+sz;
+			while(ct<cte)
+			{
+				*(u64 *)ct=v;
+				ct+=d;
+			}
+		}
+	}else
+		if(sz<=16)
+	{
+		cs=dst-d;
+		((u64 *)dst)[0]=((u64 *)cs)[0];
+		((u64 *)dst)[1]=((u64 *)cs)[1];
+	}else
+	{
+		cs=dst-d;
+		ct=dst; cte=dst+sz;
+		while(ct<cte)
+		{
+			((u64 *)ct)[0]=((u64 *)cs)[0];
+			((u64 *)ct)[1]=((u64 *)cs)[1];
+			ct+=16; cs+=16;
+		}
+	}
+}
+
+void W_RawCopy(byte *dst, byte *src, int sz)
+{
+	byte *cs, *ct, *cte;
+
+	if(sz>8)
+	{
+		cs=src;
+		ct=dst; cte=dst+sz;
+		while(ct<cte)
+		{
+			((u64 *)ct)[0]=((u64 *)cs)[0];
+			((u64 *)ct)[1]=((u64 *)cs)[1];
+			ct+=16; cs+=16;
+		}
+	}else
+	{
+		*(u64 *)dst=*(u64 *)src;
+	}
+}
+
+void W_RawCopyB(byte *dst, byte *src, int sz)
+{
+	byte *cs, *ct, *cte;
+
+	cs=src;
+	ct=dst; cte=dst+sz;
+	while(ct<cte)
+	{
+		((u64 *)ct)[0]=((u64 *)cs)[0];
+		((u64 *)ct)[1]=((u64 *)cs)[1];
+		ct+=16; cs+=16;
+	}
+}
+
+int W_DecodeBufferLZ4(byte *ibuf, byte *obuf, int isz, int osz)
+{
+	byte *ct, *cs, *cse;
+	byte *cs1, *cs1e, *ct1;
+	u64 tv;
+	int tg, lr, ll, ld;
+	int i;
+	
+	tg=0;	lr=0;
+	ll=0;	ld=0;
+	
+	ct=obuf;
+	cs=ibuf; cse=ibuf+isz;
+	while(cs<cse)
+	{
+		tg=*cs++;
+		lr=(tg>>4)&15;
+		if(lr==15)
+		{
+			i=*cs++;
+			while(i==255)
+				{ lr+=255; i=*cs++; }
+			lr+=i;
+		}
+
+		if(lr)
+		{
+			W_RawCopy(ct, cs, lr);
+			cs+=lr;	ct+=lr;
+		}
+
+		if((cs+1)>=cse)
+			{ break; }
+		
+		ld=*(u16 *)cs;
+		cs+=2;
+		if(!ld)
+		{
+			printf("TKPE_UnpackL4: End Of Image\n");
+			break;
+		}
+		ll=(tg&15)+4;
+		if(ll==19)
+		{
+			i=*cs++;
+			while(i==255)
+				{ ll+=255; i=*cs++; }
+			ll+=i;
+		}
+
+		W_MatchCopy2(ct, ll, ld);
+		ct+=ll;
+	}
+	
+	tg=0;	lr=0;
+	ll=0;	ld=0;
+	
+	return(ct-obuf);
+}
+
+int W_DecodeBufferRP2(
+	byte *ibuf, byte *obuf, int ibsz, int obsz)
+{
+	u32 tag;
+	byte *cs, *ct, *cse;
+	int pl, pd;
+	int rl, l, d;
+	u64 t0;
+	int t1, t2;
+	
+	cs=ibuf; cse=ibuf+ibsz;
+	ct=obuf;
+	pl=0; pd=0;
+	
+	while(1)
+	{
+		t0=*(u64 *)cs;
+		if(!(t0&0x01))
+		{
+			cs+=2;
+			rl=(t0>>1)&7;
+			l=((t0>>4)&7)+3;
+			d=(t0>>7)&511;
+		}else
+			if(!(t0&0x02))
+		{
+			cs+=3;
+			rl=(t0>>2)&7;
+			l=((t0>>5)&63)+4;
+			d=(t0>>11)&8191;
+		}else
+			if(!(t0&0x04))
+		{
+			cs+=4;
+			rl=(t0>>3)&7;
+			l=((t0>>6)&511)+4;
+			d=(t0>>15)&131071;
+		}else
+			if(!(t0&0x08))
+		{
+			cs++;
+			t1=(t0>>4)&15;
+			rl=(t1+1)*8;
+			W_RawCopyB(ct, cs, rl);
+			cs+=rl;
+			ct+=rl;
+			continue;
+		}else
+			if(!(t0&0x10))
+		{
+			/* Long Match */
+			cs++;
+			rl=(t0>>5)&7;
+			t1=t0>>8;
+			if(!(t1&1))
+				{ l=((t1>>1)&0x007F)+4; cs+=1; t2=t0>>16; }
+			else
+				{ l=((t1>>2)&0x3FFF)+4; cs+=2; t2=t0>>24; }
+			if(!(t2&1))
+				{ d=((t2>>1)&0x007FFF); cs+=2; }
+			else
+				{ d=((t2>>2)&0x3FFFFF); cs+=3; }
+		}else
+			if(!(t0&0x20))
+		{
+			cs++;
+			rl=(t0>>6)&3;
+			if(!rl)break;
+			*(u32 *)ct=*(u32 *)cs;
+			cs+=rl;
+			ct+=rl;
+			continue;
+		}else
+			if(!(t0&0x40))
+		{
+			/* Long Raw */
+			cs+=2;
+			t1=(t0>>7)&511;
+			rl=(t1+1)*8;
+			W_RawCopyB(ct, cs, rl);
+			cs+=rl;
+			ct+=rl;
+			continue;
+		}else
+		{
+			__debugbreak();
+		}
+
+		*(u64 *)ct=*(u64 *)cs;
+		cs+=rl;
+		ct+=rl;
+		W_MatchCopy2(ct, l, d);
+		ct+=l;
+	}
+	
+	return(ct-obuf);
+}
+
 
 int W_HashIndexForName(char *s)
 {
@@ -539,8 +863,12 @@ int W_CheckNumForNameBase (int base, char* name)
 	
 	int		v1;
 	int		v2;
-	int 	i, h;
-	lumpinfo_t*	lump_p;
+	int 	i, j, h, n;
+	lumpinfo_t	*lump_p;
+	char		*s;
+
+	if(base<=0)
+		return(-1);
 
 	// make the name into two integers for easy compares
 //	strncpy (name8.s,name,8);
@@ -583,30 +911,43 @@ int W_CheckNumForNameBase (int base, char* name)
 		}
 #endif
 		
-		if ( *(int *)lump_p->name == v1
-			 && *(int *)&lump_p->name[4] == v2)
+		s=lump_p->name;
+//		if ( *(int *)lump_p->name == v1
+//			 && *(int *)&lump_p->name[4] == v2)
+//		if (	(*(int *)(&lump_p->name[0]) == v1) &&
+//				(*(int *)(&lump_p->name[4]) == v2))
+		if (	(*(int *)(s  ) == v1) &&
+				(*(int *)(s+4) == v2))
 		{
 //			return(i);
 			break;
 		}
-		i = lump_p->chain;
+//		i = lump_p->chain;
+		j = lump_p->chain;
+		if(j>=i)
+			{ i=-999; break; }
+		i = j;
 	}
 	if(i>=0)
 		return(i);
 		
 #endif
 
-#if 0
-	// scan backwards so patch lump files take precedence
-//	lump_p = lumpinfo + numlumps;
-	lump_p = lumpinfo + base;
-
-	while (lump_p-- != lumpinfo)
+#if 1
+	if(i == -999)
 	{
-		if ( *(int *)lump_p->name == v1
-			 && *(int *)&lump_p->name[4] == v2)
+		// scan backwards so patch lump files take precedence
+	//	lump_p = lumpinfo + numlumps;
+		lump_p = lumpinfo + base;
+
+//		while (lump_p-- != lumpinfo)
+		while (lump_p-- > lumpinfo)
 		{
-			return lump_p - lumpinfo;
+			if ( *(int *)lump_p->name == v1
+				 && *(int *)&lump_p->name[4] == v2)
+			{
+				return lump_p - lumpinfo;
+			}
 		}
 	}
 #endif
@@ -705,10 +1046,12 @@ W_ReadLump
 	void*		dest )
 {
 	static void *tbuf=NULL;
+	static byte	*tcbuf=NULL;
+	static int		tcsize;
 	byte *ct;
 	int n;
 	
-	int		c;
+	int		c, csz;
 	lumpinfo_t*	l;
 	int		handle;
 	
@@ -728,7 +1071,31 @@ W_ReadLump
 	}
 	else
 		handle = l->handle;
+
+	if(l->cmp)
+	{
+		if(!tcbuf || (l->csize>tcsize))
+		{
+			csz=tcbuf?tcsize:16384;
+			while(l->csize>csz)
+				csz=csz+(csz>>1);
+			tcbuf=realloc(tcbuf, csz);
+			tcsize=csz;
+		}
+
+		w_lseek (l->handle, l->position, SEEK_SET);
+		c = w_read (l->handle, tcbuf, l->csize);
+		if (c < l->csize)
+			I_Error ("W_ReadLump: only read %i of %i on lump %i",
+				c,l->csize,lump);
+		if(l->cmp==3)
+			{ W_DecodeBufferRP2(tcbuf, dest, l->csize, l->size); }
+		else if(l->cmp==4)
+			{ W_DecodeBufferLZ4(tcbuf, dest, l->csize, l->size); }
 		
+		return;
+	}
+
 	w_lseek (handle, l->position, SEEK_SET);
 
 // #if 0

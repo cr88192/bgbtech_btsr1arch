@@ -638,20 +638,40 @@ void IdentifyVersion (void)
 	doomwaddir = ".";
 
 	// Commercial.
-	doom2wad = malloc(strlen(doomwaddir)+1+9+1);
-	sprintf(doom2wad, "%s/doom2.wad", doomwaddir);
+	doom2wad = malloc(strlen(doomwaddir)+1+12+1);
+	sprintf(doom2wad, "%s/doom2lz.wad", doomwaddir);
+	if ( w_chkaccess (doom2wad)<0)
+	{
+		doom2wad = malloc(strlen(doomwaddir)+1+12+1);
+		sprintf(doom2wad, "%s/doom2.wad", doomwaddir);
+	}
 
 	// Retail.
-	doomuwad = malloc(strlen(doomwaddir)+1+8+1);
-	sprintf(doomuwad, "%s/doomu.wad", doomwaddir);
+	doomuwad = malloc(strlen(doomwaddir)+1+12+1);
+	sprintf(doomuwad, "%s/doomulz.wad", doomwaddir);
+	if ( w_chkaccess (doomuwad)<0)
+	{
+		doomuwad = malloc(strlen(doomwaddir)+1+12+1);
+		sprintf(doomuwad, "%s/doomu.wad", doomwaddir);
+	}
 	
 	// Registered.
-	doomwad = malloc(strlen(doomwaddir)+1+8+1);
-	sprintf(doomwad, "%s/doom.wad", doomwaddir);
+	doomwad = malloc(strlen(doomwaddir)+1+12+1);
+	sprintf(doomwad, "%s/doomlz.wad", doomwaddir);
+	if ( w_chkaccess (doomwad)<0)
+	{
+		doomwad = malloc(strlen(doomwaddir)+1+12+1);
+		sprintf(doomwad, "%s/doom.wad", doomwaddir);
+	}
 	
 	// Shareware.
-	doom1wad = malloc(strlen(doomwaddir)+1+9+1);
-	sprintf(doom1wad, "%s/doom1.wad", doomwaddir);
+	doom1wad = malloc(strlen(doomwaddir)+1+12+1);
+	sprintf(doom1wad, "%s/doom1lz.wad", doomwaddir);
+	if ( w_chkaccess (doom1wad)<0)
+	{
+		doom1wad = malloc(strlen(doomwaddir)+1+12+1);
+		sprintf(doom1wad, "%s/doom1.wad", doomwaddir);
+	}
 
 	 // Bug, dear Shawn.
 	// Insufficient malloc, caused spurious realloc errors.

@@ -94,7 +94,8 @@ int					objcount;
 
 byte				RANDOMACTORTYPE[10];
 
-#if (SHAREWARE == 0)
+// #if (SHAREWARE == 0)
+#if 1
 _2Dpoint			SNAKEPATH[512];
 #endif
 misc_stuff		mstruct,*MISCVARS = &mstruct;
@@ -171,7 +172,8 @@ extern boolean dopefish;
 boolean Masterdisk;
 
 static objtype	*SNAKEHEAD,*SNAKEEND,*PARTICLE_GENERATOR,*EXPLOSIONS;
-#if (SHAREWARE == 0)
+//#if (SHAREWARE == 0)
+#if 1
 	static int		OLDTILEX,OLDTILEY;
 #endif
 
@@ -250,7 +252,8 @@ static byte dirorder[8][2] = {
 	{southwest,southeast},{south,east}
 };
 
-#if (SHAREWARE == 0)
+//#if (SHAREWARE == 0)
+#if 1
 
 static byte dirdiff16[16][16] = {
 	{0,1,2,3,4,5,6,7,8,7,6,5,4,3,2,1},
@@ -281,7 +284,8 @@ static byte dirorder16[16][2] = {
 
 //static byte opposite16[16] = {8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7};
 
-#if (SHAREWARE == 0)
+// #if (SHAREWARE == 0)
+#if 1
 
 static statetype * UPDATE_STATES[NUMSTATES][NUMENEMIES] = {
 	{&s_lowgrdstand,&s_highgrdstand,&s_opstand,&s_strikestand,
@@ -1691,6 +1695,9 @@ void SpawnPatrol (classtype which, int tilex, int tiley, int dir)
 	case b_darianobj:
 	case b_heinrichobj:
 	case b_darkmonkobj:
+		if(rott_iswolf)
+			break;
+
 		Error("\n%s actor at %d,%d not allowed in shareware !",
 			debugstr[which],tilex,tiley);
 		break;
@@ -1936,7 +1943,8 @@ void SpawnInertActor(int newx,int newy, int newz)
 	new->flags = (FL_NEVERMARK|FL_ABP);
 }
 
-#if (SHAREWARE == 0)
+// #if (SHAREWARE == 0)
+#if 1
 void SpawnGroundExplosion(int x, int y, int z)
 {
 	SpawnInertActor(x,y,z);
@@ -3297,8 +3305,15 @@ void T_Explosion(objtype* ob)
 		checkstat=checkstat->nextactive)
 	{
 
-		if ((!(checkstat->flags & FL_SHOOTABLE)) && (checkstat->itemnumber != stat_priestporridge))
-			continue;
+//		if ((!(checkstat->flags & FL_SHOOTABLE)) && (checkstat->itemnumber != stat_priestporridge))
+
+		if(!(checkstat->flags & FL_SHOOTABLE))
+		{
+			if (rott_iswolf)
+				continue;
+			if (checkstat->itemnumber != stat_priestporridge)
+				continue;
+		}
 
 		if ((checkstat->itemnumber >= stat_lifeitem1) &&
 			(checkstat->itemnumber <= stat_lifeitem4))
@@ -5425,13 +5440,13 @@ void MoveActor(objtype*ob)
 		}
 	}
 
-#define CheckAdjacentArea(x,y)		\
+#define CheckAdjacentArea(x,y)					\
 	{											\
-	if (InMapBounds(x,y))				\
+		if (InMapBounds(x,y))					\
 		{										\
-		temparea = AREANUMBER(x,y);	\
-		if (ValidAreanumber(temparea))  \
-			newarea = temparea;			\
+			temparea = AREANUMBER(x,y);			\
+			if (ValidAreanumber(temparea))		\
+				newarea = temparea;				\
 		}										\
 	}
 
@@ -5683,6 +5698,7 @@ boolean EluderCaught(objtype *ob)
 			temp = temp->next	)
 	{
 #if (SHAREWARE == 0)
+// #if 1
 		if (temp->state != &s_doguse)
 			continue;
 #endif
@@ -5799,46 +5815,44 @@ void T_CollectorFindDoor(objtype*ob)
 		doorobj_t* dptr;
 
 //==========================================================================
-#define SetCollectorTarget(xoffset,yoffset,newdir)								\
-	{																							\
-	ob->targettilex = ((dptr->tilex + (xoffset)) << TILESHIFT) + HALFGLOBAL1; \
-	ob->targettiley = ((dptr->tiley + (yoffset)) << TILESHIFT) + HALFGLOBAL1; \
-	ob->temp2 = newdir;																	\
-	if (GameRandomNumber("collector door search",0) < 100)						\
-		return;																				\
-	}
+#define SetCollectorTarget(xoffset,yoffset,newdir)					\
+		{															\
+		ob->targettilex = ((dptr->tilex +							\
+				(xoffset)) << TILESHIFT) + HALFGLOBAL1;				\
+		ob->targettiley = ((dptr->tiley +							\
+				(yoffset)) << TILESHIFT) + HALFGLOBAL1;				\
+		ob->temp2 = newdir;											\
+		if (GameRandomNumber("collector door search",0) < 100)		\
+			return;												\
+		}
 //==========================================================================
 
-	for(i=0;i<doornum;i++)
-	{
-		dptr = doorobjlist[i];
-
-		if (dptr->vertical)
+		for(i=0;i<doornum;i++)
 		{
-			int area1 = AREANUMBER(dptr->tilex-1,dptr->tiley),
-					area2 = AREANUMBER(dptr->tilex+1,dptr->tiley);
+			dptr = doorobjlist[i];
 
-			if (area1 == ob->areanumber)
-				SetCollectorTarget(-1,0,east)
+			if (dptr->vertical)
+			{
+				int		area1 = AREANUMBER(dptr->tilex-1,dptr->tiley),
+						area2 = AREANUMBER(dptr->tilex+1,dptr->tiley);
 
-			else if (area2 == ob->areanumber)
-				SetCollectorTarget(1,0,west);
-		}
-		else
-		{
-			int area1 = AREANUMBER(dptr->tilex,dptr->tiley-1),
-					area2 = AREANUMBER(dptr->tilex,dptr->tiley+1);
+				if (area1 == ob->areanumber)
+					SetCollectorTarget(-1,0,east)
+				else if (area2 == ob->areanumber)
+					SetCollectorTarget(1,0,west);
+			}
+			else
+			{
+				int		area1 = AREANUMBER(dptr->tilex,dptr->tiley-1),
+						area2 = AREANUMBER(dptr->tilex,dptr->tiley+1);
 
-			if (area1 == ob->areanumber)
-				SetCollectorTarget(0,-1,south)
-
-			else if (area2 == ob->areanumber)
-				SetCollectorTarget(0,1,north);
-
+				if (area1 == ob->areanumber)
+					SetCollectorTarget(0,-1,south)
+				else if (area2 == ob->areanumber)
+					SetCollectorTarget(0,1,north);
+			}
 		}
 	}
-	}
-
 }
 
 void T_CollectorWander(objtype*ob)
@@ -5855,39 +5869,42 @@ void T_CollectorWander(objtype*ob)
 		SD_PlaySoundRTP(SD_MONKGRABSND,ob->x,ob->y);
 
 	if (ob->dirchoosetime)
-		{
+	{
 		if (doornum > 0)
 			ob->dirchoosetime --;
-		}
-
+	}
 	else
-		{
+	{
 		#if (SHAREWARE == 0)
 		if ( dopefish==true )
-			{
+		{
 			NewState(ob,&s_scottwanderdoor1);
-			}
+		}
 		else
 		#endif
-			{
+		{
 			NewState(ob,&s_collectorfdoor1);
-			}
+		}
 		ob->temp1 = 0;
 		ob->dirchoosetime = 165;
 		ob->targettilex = ob->targettiley = 0;
 		return;
-		}
+	}
 
 	if (ob->temp1) // temp1 holds direction time
+	{
 		ob->temp1 --;
+	}
 	else
-		{
+	{
 		dirtype bestdir,tempdir;
 
 		bestdir = angletodir[GameRandomNumber("collector theta",0) << 3];
 
-		for(tempdir = bestdir;tempdir != dirorder[bestdir][PREV];tempdir = dirorder[tempdir][NEXT])
-			{
+		for(tempdir = bestdir;
+			tempdir != dirorder[bestdir][PREV];
+			tempdir = dirorder[tempdir][NEXT])
+		{
 			ParseMomentum(ob,dirangle8[tempdir]);
 			newtilex = ((ob->x + ob->momentumx)>>16);
 			newtiley = ((ob->y + ob->momentumy)>>16);
@@ -5895,58 +5912,63 @@ void T_CollectorWander(objtype*ob)
 				continue;
 			ActorMovement(ob);
 			if (ob->momentumx || ob->momentumy)
-				{
+			{
 				ob->temp1 = (GameRandomNumber("collector choose time",0) >> 2);
 				return;
-				}
 			}
-
 		}
+	}
 
 	newtilex = ((ob->x + ob->momentumx)>>16);
 	newtiley = ((ob->y + ob->momentumy)>>16);
 
 	if (IsWindow(newtilex,newtiley))
-		{
+	{
 		ob->temp1 = 0;
 		return;
-		}
+	}
 
 	ActorMovement(ob);
 
 	if (NOMOM)
 		ob->temp1 = 0;
-	}
+}
 
-boolean CheckDoor(objtype *ob,doorobj_t * door,int trytilex,int trytiley)
-{boolean doorok=false;
+boolean CheckDoor(
+	objtype *ob, doorobj_t * door,
+	int trytilex, int trytiley)
+{
+	boolean doorok=false;
 
 	switch(ob->dir)
-	{case north:
-	if ((ob->tiley == (door->tiley + 1)) && (trytilex == ob->tilex))
-		doorok = true;
-	break;
-
+	{
+	case north:
+		if(	(ob->tiley == (door->tiley + 1)) &&
+			(trytilex == ob->tilex))
+				doorok = true;
+		break;
 	case east:
-	if ((ob->tilex == (door->tilex - 1)) &&	(trytiley == ob->tiley))
-		doorok = true;
-	break;
-
+		if(	(ob->tilex == (door->tilex - 1)) &&
+			(trytiley == ob->tiley))
+				doorok = true;
+		break;
 	case south:
-	if ((ob->tiley == (door->tiley - 1)) &&	(trytilex == ob->tilex))
-		doorok = true;
-	break;
-
+		if(	(ob->tiley == (door->tiley - 1)) &&
+			(trytilex == ob->tilex))
+				doorok = true;
+		break;
 	case west:
-	if ((ob->tilex == (door->tilex + 1)) &&	(trytiley == ob->tiley))
-		doorok = true;
-	break;
+		if(	(ob->tilex == (door->tilex + 1)) &&
+			(trytiley == ob->tiley))
+				doorok = true;
+		break;
 	}
 
 	if (doorok)
-	{SetTilePosition(ob,ob->tilex,ob->tiley);
-	SetVisiblePosition(ob,ob->x,ob->y);
-	return true;
+	{
+		SetTilePosition(ob,ob->tilex,ob->tiley);
+		SetVisiblePosition(ob,ob->x,ob->y);
+		return true;
 	}
 	return false;
 }
@@ -6044,90 +6066,120 @@ typedef enum
 
 //==================== Some ActorTryMove macros ==============================
 
-#define CheckProximitySpecials(ob,temp)									\
-{																						\
-	if (ocl == b_heinrichobj)													\
-		{																				\
-		if (tcl == playerobj)													\
-			{																			\
-			playertype *pstate;												\
-																							\
-			M_LINKSTATE(temp,pstate);										\
-			DamageThing(temp,5);												\
-			temp->whatever = ob;												\
-			temp->temp2 = COLUMNCRUSH;										\
-			pstate->heightoffset += 4;										\
-			if (pstate->heightoffset >= 30)								\
-				pstate->heightoffset = 30;									\
-			pstate->oldheightoffset = pstate->heightoffset;			\
-			}																			\
-		else																			\
-			{																			\
+#define CheckProximitySpecials(ob,temp)							\
+{																\
+	if (ocl == b_heinrichobj)									\
+	{															\
+		if (tcl == playerobj)									\
+		{														\
+			playertype *pstate;									\
+			M_LINKSTATE(temp,pstate);							\
+			DamageThing(temp,5);								\
+			temp->whatever = ob;								\
+			temp->temp2 = COLUMNCRUSH;							\
+			pstate->heightoffset += 4;							\
+			if (pstate->heightoffset >= 30)						\
+				pstate->heightoffset = 30;						\
+			pstate->oldheightoffset = pstate->heightoffset;		\
+		}														\
+		else													\
+		{														\
 			temp->momentumx = temp->momentumy = temp->momentumz = 0; \
-			temp->hitpoints = 0;												\
-			}																			\
-		if (temp->hitpoints <= 0)												\
-			temp->flags |= FL_HBM;												\
-		Collision(temp,ob,0,0);												\
-		continue;																	\
-		}																				\
-																						\
-	else if ((ocl == b_darksnakeobj) && (tcl == playerobj)) \
-		{																	\
-		DamageThing(temp,1);												\
-		Collision(temp,ob,0,0);	\
-		M_CheckPlayerKilled(temp);											\
-		} \
-		\
-	if ((ocl == boulderobj) && (tcl >= lowguardobj) && (tcl < roboguardobj))\
-		{temp->momentumx = temp->momentumy = temp->momentumz = 0;	\
-		temp->hitpoints = 0;													\
-		temp->flags |= FL_HBM;													\
-		Collision(temp,ob,0,0);												\
-		SD_PlaySoundRTP(SD_ACTORSQUISHSND,temp->x,temp->y);			\
-		continue;																	\
-		}																				\
-																						\
-	if (pusher && (ocl != tcl) && (!(temp->flags & FL_DYING))  &&	\
-		(tcl < roboguardobj)													\
-		)																				\
-		{if ((!ob->ticcount) && (ocl != collectorobj) && (ocl != diskobj))\
-			DamageThing(temp,5);												\
-																						\
-		if (tcl == playerobj)													\
-			temp->flags |= FL_PUSHED;											\
-		Collision(temp,ob,ob->momentumx-temp->momentumx,ob->momentumy-temp->momentumy);\
-		M_CheckPlayerKilled(temp);											\
-		continue;																	\
-		}																				\
-																						\
-	if (bouncer)																	\
-		{ob->momentumx = -ob->momentumx;										\
-		continue;																	\
-		}																				\
-	}
+			temp->hitpoints = 0;								\
+		}														\
+		if (temp->hitpoints <= 0)								\
+			temp->flags |= FL_HBM;								\
+		Collision(temp,ob,0,0);									\
+		continue;												\
+	}															\
+	else if ((ocl == b_darksnakeobj) && (tcl == playerobj))	\
+	{															\
+		DamageThing(temp,1);									\
+		Collision(temp,ob,0,0);									\
+		M_CheckPlayerKilled(temp);								\
+	}															\
+	if ((ocl == boulderobj) &&									\
+		(tcl >= lowguardobj) && (tcl < roboguardobj))			\
+	{															\
+		temp->momentumx = temp->momentumy = temp->momentumz = 0;	\
+		temp->hitpoints = 0;									\
+		temp->flags |= FL_HBM;									\
+		Collision(temp,ob,0,0);									\
+		SD_PlaySoundRTP(SD_ACTORSQUISHSND,temp->x,temp->y);		\
+		continue;												\
+	}															\
+	if (pusher && (ocl != tcl) &&								\
+		(!(temp->flags & FL_DYING))  &&							\
+		(tcl < roboguardobj)									\
+		)														\
+	{															\
+		if ((!ob->ticcount) &&									\
+			(ocl != collectorobj) &&							\
+			(ocl != diskobj))									\
+				DamageThing(temp,5);							\
+		if (tcl == playerobj)									\
+			temp->flags |= FL_PUSHED;							\
+		Collision(temp,ob,										\
+			ob->momentumx-temp->momentumx,						\
+			ob->momentumy-temp->momentumy);						\
+		M_CheckPlayerKilled(temp);								\
+		continue;												\
+	}															\
+	if (bouncer)												\
+	{															\
+		ob->momentumx = -ob->momentumx;							\
+		continue;												\
+	}															\
+}
+
+#if 0
 
 #define CheckStepping(ob,step,minzdiff)								\
-{																					\
-	int cz = (ob->z - step->z + minzdiff);								\
-																					\
+{																	\
+	int cz = (ob->z - step->z + minzdiff);							\
 	if ((cz >= -MAXSTEPHEIGHT) && (cz <= MAXSTEPHEIGHT))			\
-		{if ((ob->obclass == playerobj) && (ob->temp2 == 0) &&	\
+	{																\
+		if ((ob->obclass == playerobj) && (ob->temp2 == 0) &&		\
 			(ob->z != (step->z - minzdiff))							\
-			)																	\
-			{																		\
-			playertype *pstate;												\
-																					\
-			M_LINKSTATE(ob,pstate);										\
-																					\
+			)														\
+		{															\
+			playertype *pstate;										\
+			M_LINKSTATE(ob,pstate);									\
 			pstate->heightoffset = pstate->oldheightoffset + cz;	\
 			ob->temp2 = (cz >= 0)?(STEPUP):(STEPDOWN);				\
-			}																		\
-		ob->z = step->z - minzdiff;										\
-		tryz = ob->z + (ob->momentumz >> 16);							\
-		dzt = minzdiff;														\
-		}																			\
-}																					\
+		}															\
+		ob->z = step->z - minzdiff;									\
+		tryz = ob->z + (ob->momentumz >> 16);						\
+		dzt = minzdiff;												\
+	}																\
+}																	\
+
+#endif
+
+#if 1
+void CheckSteppingB(
+	objtype *ob, objtype *step, int minzdiff,
+	int *rtryz, int *rdzt)
+{
+	int cz = (ob->z - step->z + minzdiff);
+	if ((cz >= -MAXSTEPHEIGHT) && (cz <= MAXSTEPHEIGHT))
+	{
+		if(		(ob->obclass == playerobj)		&&
+				(ob->temp2 == 0)				&&
+				(ob->z != (step->z - minzdiff))	)
+		{
+			playertype *pstate;
+			M_LINKSTATE(ob,pstate);
+			pstate->heightoffset = pstate->oldheightoffset + cz;
+			ob->temp2 = (cz >= 0)?(STEPUP):(STEPDOWN);
+		}
+		ob->z = step->z - minzdiff;
+		*rtryz = ob->z + (ob->momentumz >> 16);
+		*rdzt = minzdiff;
+	}
+}
+#endif
+
 
 //============ Players crushing other players =====================
 
@@ -6287,7 +6339,10 @@ actors:
 		if ((tcl == diskobj) && (dztp1 <= MINACTORZDIFF) && zstoppable &&
 			(ocl != b_heinrichobj)
 			)
-			CheckStepping(ob,listrover,MINACTORZDIFF);
+		{
+//			CheckStepping(ob,listrover,MINACTORZDIFF);
+			CheckSteppingB(ob, listrover, MINACTORZDIFF, &tryz, &dzt);
+		}
 
 		dztp1 = abs(checkz - tryz);
 
@@ -6589,7 +6644,10 @@ movement_status CheckStaticObjects(objtype *ob,int tryx,int tryy,int tryz)
 				if (widestat && (dztp1 <= MINSTATZDIFF) && zstoppable &&
 					(ocl != b_heinrichobj)
 					)
-					CheckStepping(ob,tempstat,MINSTATZDIFF);
+				{
+//					CheckStepping(ob,tempstat,MINSTATZDIFF);
+					CheckSteppingB(ob,tempstat,MINSTATZDIFF, &tryz, &dzt);
+				}
 
 				dztp1 = abs(tryz - tempstat->z);
 
@@ -6608,33 +6666,37 @@ movement_status CheckStaticObjects(objtype *ob,int tryx,int tryy,int tryz)
 					continue;
 
 				if ((dztp1 >= MINSTATZDIFF) || (dzt >= MINSTATZDIFF))
-					{if ((dzt >= MINSTATZDIFF) && (dztp1 <= MINSTATZDIFF) && zstoppable)
-						{//ob->momentumz = 0;
+				{
+					if (	(dzt >= MINSTATZDIFF) && 
+							(dztp1 <= MINSTATZDIFF) && zstoppable)
+					{
+						//ob->momentumz = 0;
 						if (ob->z <= tempstat->z)
-							{
+						{
 							ob->z = tempstat->z - MINSTATZDIFF;
 							ob->momentumz = 0;
-							}
+						}
 						else
 							ob->momentumz = 2*GRAVITY; // ((2*GRAVITY + GRAVITY) >> 16) = 1
-						}
+					}
 					continue;
 					}
 
 				if (ocl == boulderobj)
-					{if ((tempstat->itemnumber < stat_bcolumn) ||
+				{
+					if ((tempstat->itemnumber < stat_bcolumn) ||
 						(tempstat->itemnumber > stat_icolumn)
 						)
-						{
+					{
 						tempstat->flags |= FL_SHOOTABLE;
 						DamageThing(tempstat,tempstat->hitpoints);
 						continue;
-						}
+					}
 #if (SHAREWARE == 0)
 					else
 						NewState(ob,&s_bouldersink1);
 #endif
-					}
+				}
 				//ob->momentumz=0;
 				//return false;
 				SPRSTOP=true;
@@ -7362,7 +7424,8 @@ void SpawnBoulder(int tilex,int tiley,int dir)
 void SpawnMultiSpriteActor(classtype actorclass, int tilex,int tiley,int dir)
 {
 
-#if (SHAREWARE==1)
+//#if (SHAREWARE==1)
+#if 0
 
 		actorclass = actorclass;
 		tilex = tilex;
@@ -7478,7 +7541,8 @@ void SpawnFourWayGun(int tilex, int tiley)
 =======================================================================
 */
 
-#if (SHAREWARE == 0)
+// #if (SHAREWARE == 0)
+#if 1
 
 void T_BoulderSpawn(objtype*ob)
 {
@@ -10836,7 +10900,8 @@ void T_Chase (objtype *ob)
 
 		if ((dx < TOUCHDIST) && (dy < TOUCHDIST) && (dz < (TOUCHDIST >> 10)))
 		{
-#if (SHAREWARE == 0)
+// #if (SHAREWARE == 0)
+#if 1
 			if (ocl == deathmonkobj)
 			{
 				NewState(ob,&s_dmonkshoot1);

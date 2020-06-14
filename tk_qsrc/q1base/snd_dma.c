@@ -948,6 +948,8 @@ void GetSoundtime(void)
 void S_ExtraUpdate (void)
 {
 
+//	return;	//BGB: debug
+
 #ifdef _WIN32
 	IN_Accumulate ();
 #endif

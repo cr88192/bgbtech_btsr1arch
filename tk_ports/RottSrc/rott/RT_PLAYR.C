@@ -1625,13 +1625,17 @@ void Cmd_Use (objtype*ob)
 	doorn = tilemap[checkx][checky] & ~0x2000;
 //		if (sprites[checkx][checky])
 //		tempsprite = sprites[checkx][checky];
-	if (doorn == (elevatorstart + 6))
+//	if (doorn == (elevatorstart + 6))
+//	if (!strcmp(W_GetNameForNum(doorn&0x0FFF), "ELEV6"))
+	if (W_CheckLumpIsNameP(doorn, "ELEV6"))
 		return;
 
 	if (pstate->buttonheld[bt_use])
 		return;
 
-	if (doorn == (elevatorstart + 1))
+//	if (doorn == (elevatorstart + 1))
+//	if (!strcmp(W_GetNameForNum(doorn&0x0FFF), "ELEV1"))
+	if (W_CheckLumpIsNameP(doorn, "ELEV1"))
 		{
 		tilemap[checkx][checky]++;				// flip switch
 		if (MAPSPOT(ob->tilex,ob->tiley,1) == ALTELEVATORTILE);
@@ -1641,7 +1645,9 @@ void Cmd_Use (objtype*ob)
 		}
 
 
-	else if (doorn == (elevatorstart + 5))
+//	else if (doorn == (elevatorstart + 5))
+//	else if (!strcmp(W_GetNameForNum(doorn&0x0FFF), "ELEV5"))
+	else if (W_CheckLumpIsNameP(doorn, "ELEV5"))
 
 		{
 		elevnum = MAPSPOT(ob->tilex,ob->tiley,1) - 90;

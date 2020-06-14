@@ -147,6 +147,12 @@ void BJX2_Op_MOVD_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=ctx->regs[op->rm];
 }
 
+void BJX2_Op_MOVX_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[op->rn+0]=ctx->regs[op->rm+0];
+	ctx->regs[op->rn+1]=ctx->regs[op->rm+1];
+}
+
 void BJX2_Op_MOVHD_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	ctx->regs[op->rn]=

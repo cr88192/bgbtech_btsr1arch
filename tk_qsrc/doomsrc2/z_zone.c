@@ -59,7 +59,12 @@ typedef struct
 
 memzone_t*	mainzone;
 
-
+#ifndef __BJX2__
+void __setmemtrap(void *ptr, int mode)
+{
+	/* NO-OP */
+}
+#endif
 
 //
 // Z_ClearZone
@@ -134,6 +139,8 @@ void Z_Free (void* ptr)
 		return;
 	
 	block = (memblock_t *) ( (byte *)ptr - sizeof(memblock_t));
+	
+	__setmemtrap(block, 2);
 
 	if (block->id != ZONEID)
 	{
@@ -327,6 +334,8 @@ Z_Malloc
 	mainzone->rover = base->next;	
 	
 	base->id = ZONEID;
+
+	__setmemtrap(base, 3);
 	
 	return (void *) ((byte *)base + sizeof(memblock_t));
 }
@@ -510,7 +519,11 @@ Z_ChangeTag2
 	if (tag >= PU_PURGELEVEL && ((nlint)block->user) < 0x100)
 		I_Error ("Z_ChangeTag: an owner is required for purgable blocks");
 
+	__setmemtrap(block, 2);
+
 	block->tag = tag;
+
+	__setmemtrap(block, 3);
 }
 
 

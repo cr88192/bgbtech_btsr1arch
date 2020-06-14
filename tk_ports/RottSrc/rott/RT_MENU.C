@@ -5564,15 +5564,15 @@ void BattleGamePlayerSetup( void )
 				// Select level to play on
 				status = CP_LevelSelectionMenu ();
 				if ( status >= 0  )
-					{
+				{
 					gamestate.mapon=status;
 					pos = 1;
-					}
+				}
 				else
-					{
+				{
 					DrawBattleMenu();
 					return;
-					}
+				}
 				break;
 
 			case 1 :
@@ -8462,17 +8462,14 @@ int HandleMultiPageCustomMenu
 //
 //****************************************************************************
 
-void CP_LevelSelectionRedraw
-	(
-	void
-	)
-
-	{
+void CP_LevelSelectionRedraw( void )
+{
 	if ( gamestate.battlemode >= battle_Normal )
-		{
-		SetMenuHeader( BattleModeNames[ gamestate.battlemode - battle_Normal ] );
-		}
+	{
+		SetMenuHeader( BattleModeNames[
+			gamestate.battlemode - battle_Normal ] );
 	}
+}
 
 
 //****************************************************************************
@@ -8480,12 +8477,8 @@ void CP_LevelSelectionRedraw
 // CP_LevelSelectionMenu ()
 //
 //****************************************************************************
-int CP_LevelSelectionMenu
-	(
-	void
-	)
-
-	{
+int CP_LevelSelectionMenu( void )
+{
 	static char levelcursorpos[ 2 ] = { 0 };
 
 	char *LevelNames[ 100 ];
@@ -8496,23 +8489,23 @@ int CP_LevelSelectionMenu
 
 	whichlevels = 0;
 	if ( BATTLEMODE )
-		{
+	{
 		whichlevels = 1;
-		}
+	}
 
 	mapinfo = ( mapfileinfo_t * )SafeMalloc( sizeof( mapfileinfo_t ) );
 	GetMapInfo( mapinfo );
 
 	numlevels = mapinfo->nummaps;
 	if ( numlevels <= 0 )
-		{
+	{
 		Error( "CP_LevelSelectionMenu : No maps found in RTL/RTC file." );
-		}
+	}
 
 	for( i = 0; i < numlevels; i++ )
-		{
+	{
 		LevelNames[ i ] = mapinfo->maps[ i ].mapname;
-		}
+	}
 
 	level = HandleMultiPageCustomMenu( LevelNames, numlevels,
 		levelcursorpos[ whichlevels ], "Level Selection", NULL,
@@ -8521,12 +8514,12 @@ int CP_LevelSelectionMenu
 	SafeFree( mapinfo );
 
 	if ( level >= 0 )
-		{
+	{
 		levelcursorpos[ whichlevels ] = level;
-		}
+	}
 
 	return( level );
-	}
+}
 
 
 //****************************************************************************

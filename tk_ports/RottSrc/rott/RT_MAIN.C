@@ -706,12 +706,23 @@ void SetupWads( void )
 
 #endif
 
+	if(w_chkaccess("w3dmap.wad")>=0)
+	{
+		newargs [argnum++] = "w3dmap.wad";
+	}
+
 	// Normal ROTT wads
 
 #if (SHAREWARE)
-	newargs [argnum++] = "huntbgin.wad";
+	if(w_chkaccess("huntbglz.wad")>=0)
+		newargs [argnum++] = "huntbglz.wad";
+	else
+		newargs [argnum++] = "huntbgin.wad";
 #else
-	newargs [argnum++] = "darkwar.wad";
+	if(w_chkaccess("darkwlz.wad")>=0)
+		newargs [argnum++] = "darkwlz.wad";
+	else
+		newargs [argnum++] = "darkwar.wad";
 #endif
 
 //	newargs [argnum++] = "credits.wad";
@@ -2488,11 +2499,13 @@ void CheckDevelopmentKeys
 			for(i=0;i<128;i++)
 				for(j=0;j<128;j++)
 				{if (IsWall(i,j))
-					{if (tilemap[i][j] ==
-							(W_GetNumForName("WALLSTOP")-W_GetNumForName("WALLSTRT")-1))
-						tilemap[i][j] = 1;
-						else
-						tilemap[i][j] ++;
+					{
+//						if (tilemap[i][j] ==
+//							(W_GetNumForName("WALLSTOP")-
+//							W_GetNumForName("WALLSTRT")-1))
+//						tilemap[i][j] = 1;
+//						else
+//						tilemap[i][j] ++;
 					}
 				}
 			while(Keyboard[sc_W])

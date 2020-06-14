@@ -181,7 +181,27 @@ int VID_ScanBlendRatio16(u16 *dpix, u16 *spix, int cnt, int pixb, int rat)
 //	return(VID_BlendEven16(pixa, VID_BlendEven16(pixa, pixb)));
 }
 
-#if 1
+#ifdef __BJX2__
+int VID_ColorMap16(int pix, int light);
+
+__asm {
+VID_ColorMap16:
+//	SHLD	R5, -7, R6
+//	MOV		255, R7
+//	SUB		R7, R6, R6
+
+	RGB5UPCK64	R4, R7
+	MOV			65535, R6
+	SUB			R6, R5, R6
+	PSHUF.W		R6, 0, R6
+	PMULU.HW	R6, R7, R3
+	RGB5PCK64	R3, R2
+	RTSU
+}
+#endif
+
+// #if 1
+#ifndef __BJX2__
 int VID_ColorMap16(int pix, int light)
 {
 	int llv, pix1;
@@ -435,7 +455,9 @@ void	VID_Init (unsigned char *palette)
 	vid_backbuffer=malloc(BASEWIDTH*BASEHEIGHT*2);
 	zbuffer=malloc(BASEWIDTH*BASEHEIGHT*2);
 //	surfcache=malloc(BASEWIDTH*BASEHEIGHT*3*2);
-	surfcache=malloc(BASEWIDTH*BASEHEIGHT*3*4);
+//	surfcache=malloc(BASEWIDTH*BASEHEIGHT*3*4);
+//	surfcache=malloc(BASEWIDTH*BASEHEIGHT*3*6);
+	surfcache=malloc(BASEWIDTH*BASEHEIGHT*3*8);
 //	surfcache=malloc(512*1024);
 
 	printf("VID_Init:\n");
@@ -460,7 +482,10 @@ void	VID_Init (unsigned char *palette)
 //	D_InitCaches (surfcache, sizeof(surfcache));
 //	D_InitCaches (surfcache, 512*1024);
 //	D_InitCaches (surfcache, BASEWIDTH*BASEHEIGHT*3*2);
-	D_InitCaches (surfcache, BASEWIDTH*BASEHEIGHT*3*4);
+//	D_InitCaches (surfcache, BASEWIDTH*BASEHEIGHT*3*4);
+//	D_InitCaches (surfcache, BASEWIDTH*BASEHEIGHT*3*5);
+//	D_InitCaches (surfcache, BASEWIDTH*BASEHEIGHT*3*6);
+	D_InitCaches (surfcache, BASEWIDTH*BASEHEIGHT*3*8);
 
 #ifdef I_SCR_BMP128K
 //	((u32 *)0xF00BFF00)[0]=0x0015;		//320x200x16bpp

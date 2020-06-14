@@ -26,6 +26,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SKY_SPAN_SHIFT	5
 #define SKY_SPAN_MAX	(1 << SKY_SPAN_SHIFT)
 
+#define SKY_SPAN_SHIFT_LO	6
+#define SKY_SPAN_MAX_LO		(1 << SKY_SPAN_SHIFT_LO)
+
 
 /*
 =================
@@ -144,6 +147,9 @@ void D_DrawSkyScans8 (espan_t *pspan)
 D_DrawSkyScans16
 =================
 */
+
+void D_DrawSkyScans16_Low (espan_t *pspan);
+
 void D_DrawSkyScans16 (espan_t *pspan)
 {
 	int				count, spancount, u, v;
@@ -151,6 +157,12 @@ void D_DrawSkyScans16 (espan_t *pspan)
 	fixed16_t		s, t, snext, tnext, sstep, tstep;
 	int				spancountminus1;
 	int px;
+
+	if(r_lowfps>1)
+	{
+		D_DrawSkyScans16_Low(pspan);
+		return;
+	}
 
 	sstep = 0;	// keep compiler happy
 	tstep = 0;	// ditto
@@ -215,6 +227,101 @@ void D_DrawSkyScans16 (espan_t *pspan)
 				s += sstep;
 				t += tstep;
 			} while (--spancount > 0);
+
+			s = snext;
+			t = tnext;
+
+		} while (count > 0);
+
+	} while ((pspan = pspan->pnext) != NULL);
+}
+
+
+void D_DrawSkyScans16_Low (espan_t *pspan)
+{
+	int				count, spancount, u, v;
+	unsigned short		*pdest;
+	fixed16_t		s, t, snext, tnext, sstep, tstep;
+	int				spancountminus1;
+	int px;
+
+	sstep = 0;	// keep compiler happy
+	tstep = 0;	// ditto
+
+	do
+	{
+		pdest = (unsigned short *)((short *)d_viewbuffer +
+				(screenwidth * pspan->v) + pspan->u);
+
+		count = pspan->count;
+
+	// calculate the initial s & t
+		u = pspan->u;
+		v = pspan->v;
+		D_Sky_uv_To_st (u, v, &s, &t);
+
+		do
+		{
+			if (count >= SKY_SPAN_MAX_LO)
+				spancount = SKY_SPAN_MAX_LO;
+			else
+				spancount = count;
+
+			count -= spancount;
+
+			if (count)
+			{
+				u += spancount;
+
+			// calculate s and t at far end of span,
+			// calculate s and t steps across span by shifting
+				D_Sky_uv_To_st (u, v, &snext, &tnext);
+
+				sstep = (snext - s) >> SKY_SPAN_SHIFT_LO;
+				tstep = (tnext - t) >> SKY_SPAN_SHIFT_LO;
+			}
+			else
+			{
+			// calculate s and t at last pixel in span,
+			// calculate s and t steps across span by division
+				spancountminus1 = (float)(spancount - 1);
+
+				if (spancountminus1 > 0)
+				{
+					u += spancountminus1;
+					D_Sky_uv_To_st (u, v, &snext, &tnext);
+
+//					sstep = (snext - s) / spancountminus1;
+//					tstep = (tnext - t) / spancountminus1;
+
+					sstep = D_SoftDiv((snext - s), (spancount - 1));
+					tstep = D_SoftDiv((tnext - t), (spancount - 1));
+				}
+			}
+
+			while (spancount >= 4)
+			{
+				spancount-=4;
+				px = r_skysource[((t & R_SKY_TMASK) >> 8) +
+						((s & R_SKY_SMASK) >> 16)];
+				px = d_8to16table[px];
+//				*pdest++ = px;
+//				s += sstep;
+//				t += tstep;
+				pdest[0] = px;
+				pdest[1] = px;
+				pdest[2] = px;
+				pdest[3] = px;
+				pdest += 4;
+				s += sstep<<2;
+				t += tstep<<2;
+			}
+
+			while (spancount > 0)
+			{
+				spancount--;
+				*pdest++ = px;
+			}
 
 			s = snext;
 			t = tnext;

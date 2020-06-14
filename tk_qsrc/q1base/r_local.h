@@ -115,6 +115,9 @@ extern	float	xOrigin, yOrigin;
 
 extern	int		r_visframecount;
 
+extern int		r_lowfps;
+extern float	r_lowfps_worldclip;
+
 //=============================================================================
 
 extern int	vstartscan;

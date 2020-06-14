@@ -1478,13 +1478,15 @@ int BGBCC_JX2C_EmitJCmpVRegVReg(
 	int cmp, int lbl)
 {
 	if(BGBCC_CCXL_TypeSmallIntP(ctx, type) ||
-		(BGBCC_CCXL_TypePointerP(ctx, type) && !sctx->is_addr64))
+//		(BGBCC_CCXL_TypePointerP(ctx, type) && !sctx->is_addr64))
+		(BGBCC_CCXL_TypeArrayOrPointerP(ctx, type) && !sctx->is_addr64))
 	{
 		return(BGBCC_JX2C_EmitJCmpVRegVRegInt(ctx, sctx,
 			type, sreg, treg, cmp, lbl));
 	}
 
-	if(BGBCC_CCXL_TypePointerP(ctx, type) && sctx->is_addr_x32)
+//	if(BGBCC_CCXL_TypePointerP(ctx, type) && sctx->is_addr_x32)
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, type) && sctx->is_addr_x32)
 	{
 		return(BGBCC_JX2C_EmitJCmpVRegVRegInt(ctx, sctx,
 			type, sreg, treg, cmp, lbl));
@@ -1508,7 +1510,8 @@ int BGBCC_JX2C_EmitJCmpVRegVReg(
 #if 1
 	if((BGBCC_CCXL_TypeSgLongP(ctx, type) ||
 		BGBCC_CCXL_TypeSgNLongP(ctx, type) ||
-		BGBCC_CCXL_TypePointerP(ctx, type)) &&
+//		BGBCC_CCXL_TypePointerP(ctx, type)) &&
+		BGBCC_CCXL_TypeArrayOrPointerP(ctx, type)) &&
 			sctx->is_addr64)
 	{
 		return(BGBCC_JX2C_EmitJCmpVRegVRegQLong(ctx, sctx,

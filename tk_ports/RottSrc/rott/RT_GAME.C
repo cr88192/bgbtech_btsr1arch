@@ -112,7 +112,8 @@ static char *Names[ 10 ] =
 static char *LastNames[ 10 ] =
 {
 	"Cassatt",  "Barrett", "Wendt", "Ni",		"Freeley",
-	"Blazkowicz", NULL
+//	"Blazkowicz", NULL
+	"Blaz'", NULL
 };
 
 static STR ScoreStr;
@@ -125,16 +126,19 @@ static pic_t *lifenums[10];
 static pic_t *timenums[10];
 static pic_t *scorenums[10];
 static pic_t *keys[4];
-static pic_t *men[5];
+//static pic_t *men[5];
+static pic_t *men[10];
 
 static pic_t *health[6];
 static pic_t *ammo[26];
 static pic_t *erase;
 static pic_t *eraseb;
-static pic_t *fragpic[ 5 ];
-static pic_t *frag100pic[ 5 ];
-static pic_t *negfragpic[ 5 ];
-static pic_t *menneg[ 5 ];
+
+static pic_t *fragpic[ 10 ];
+static pic_t *frag100pic[ 10 ];
+static pic_t *negfragpic[ 10 ];
+// static pic_t *menneg[ 5 ];
+static pic_t *menneg[ 10 ];
 static pic_t *blankfragpic;
 
 static int powerpics;
@@ -224,7 +228,6 @@ void V_ReDrawBkgnd (int x, int y, int width, int height, boolean shade)
 	}
 }
 
-
 //******************************************************************************
 //
 // CacheLumpGroup ()
@@ -236,30 +239,25 @@ void CacheLumpGroup
 	pic_t **lumparray,
 	int	  numberoflumps
 	)
-
-	{
+{
 	int lumpnum;
 	int i;
 
 	lumpnum = W_GetNumForName( startlump );
 
 	for( i = 0; i < numberoflumps; i++ )
-		{
+	{
 		lumparray[ i ] = ( pic_t * )W_CacheLumpNum( lumpnum + i, PU_LEVEL );
-		}
 	}
+}
 
 //******************************************************************************
 //
 // SetupPlayScreen ()
 //
 //******************************************************************************
-void SetupPlayScreen
-	(
-	void
-	)
-
-	{
+void SetupPlayScreen( void )
+{
 	int i;
 	int j;
 	int num;
@@ -272,6 +270,10 @@ void SetupPlayScreen
 	CacheLumpGroup( "lvnum0", lifenums, 10 );
 	CacheLumpGroup( "health1b", health, 6 );
 	CacheLumpGroup( "key1", keys, 4 );
+
+	for(i=0; i<10; i++)
+		men[ i ] = ( pic_t * )W_CacheLumpNum(
+			W_GetNumForName( "MAN1" ), PU_LEVEL  );
 
 	if ( !BATTLEMODE )
 	{
@@ -504,7 +506,6 @@ void DrawPlayScreen
 			shape->height - powerupheight, powerupheight,
 			( byte * )&shape->data, bufferofsonly );
 	}
-
 
 	if ( locplayerstate->protectiontime )
 	{
@@ -1468,11 +1469,7 @@ void DrawTimeXY
 //
 //******************************************************************************
 
-void DrawTime
-	(
-	boolean bufferofsonly
-	)
-
+void DrawTime ( boolean bufferofsonly )
 {
 	int sec;
 
@@ -1517,7 +1514,9 @@ void DrawTime
 //
 //******************************************************************************
 
-void DrawMPPic (int xpos, int ypos, int width, int height, int heightmod, byte *src, boolean bufferofsonly)
+void DrawMPPic (
+	int xpos, int ypos, int width, int height,
+	int heightmod, byte *src, boolean bufferofsonly)
 {
 //	byte *olddest;
 	unsigned olddest;
@@ -1602,7 +1601,9 @@ void DrawMPPic (int xpos, int ypos, int width, int height, int heightmod, byte *
 //
 //******************************************************************************
 
-void DrawColoredMPPic (int xpos, int ypos, int width, int height, int heightmod, byte *src, boolean bufferofsonly, int color)
+void DrawColoredMPPic (
+	int xpos, int ypos, int width, int height,
+	int heightmod, byte *src, boolean bufferofsonly, int color)
 {
 //	byte *olddest;
 	unsigned olddest;
@@ -1753,11 +1754,7 @@ void UpdateTriads (objtype * ob, int num)
 //
 //****************************************************************************
 
-void DrawTriads
-	(
-	boolean bufferofsonly
-	)
-
+void DrawTriads( boolean bufferofsonly )
 {
 	if ( !SHOW_TOP_STATUS_BAR() )
 	{
@@ -1777,7 +1774,9 @@ void DrawTriads
 //
 //******************************************************************************
 
-void DrawPPic (int xpos, int ypos, int width, int height, byte *src, int num, boolean up, boolean bufferofsonly)
+void DrawPPic (
+	int xpos, int ypos, int width, int height,
+	byte *src, int num, boolean up, boolean bufferofsonly)
 {
 //	byte *olddest;
 	unsigned olddest;
@@ -1850,11 +1849,7 @@ void DrawPPic (int xpos, int ypos, int width, int height, byte *src, int num, bo
 //
 //****************************************************************************
 
-void DrawBarHealth
-	(
-	boolean bufferofsonly
-	)
-
+void DrawBarHealth( boolean bufferofsonly )
 {
 	int percenthealth;
 	int health_y;
@@ -1927,10 +1922,7 @@ void DrawBarHealth
 //
 //****************************************************************************
 
-void DrawBarAmmo
-	(
-	boolean bufferofsonly
-	)
+void DrawBarAmmo( boolean bufferofsonly )
 {
 	int ammo_y;
 
@@ -2226,11 +2218,7 @@ void GM_DrawBonus( int which )
 //
 //******************************************************************************
 
-void GM_UpdateBonus
-	(
-	int time,
-	int powerup
-	)
+void GM_UpdateBonus( int time, int powerup )
 {
 	pic_t *shape;
 	int	 shapenum;
@@ -3075,11 +3063,7 @@ void DrawEndBonus
 extern int OLDLMWEAPON;
 extern int OLDLWEAPON;
 
-void LevelCompleted
-	(
-	exit_t playstate
-	)
-
+void LevelCompleted( exit_t playstate )
 {
 	objtype *obj;
 	boolean dobonus;
@@ -3414,12 +3398,8 @@ void LevelCompleted
 }
 
 
-void DrawTallyHeader
-	(
-	int which
-	)
-
-	{
+void DrawTallyHeader( int which )
+{
 	pic_t *Name;
 	pic_t *KillCount;
 	pic_t *TimesYouKilledPerson;
@@ -3429,14 +3409,14 @@ void DrawTallyHeader
 	pic_t *Blank;
 	pic_t *TopBar;
 
-	Name					  = ( pic_t * )W_CacheLumpName( "t_name",	 PU_CACHE );
-	Blank					 = ( pic_t * )W_CacheLumpName( "t_blnk",	 PU_CACHE );
-	KillCount				= ( pic_t * )W_CacheLumpName( "t_kcount",  PU_CACHE );
+	Name		  = ( pic_t * )W_CacheLumpName( "t_name",	 PU_CACHE );
+	Blank		 = ( pic_t * )W_CacheLumpName( "t_blnk",	 PU_CACHE );
+	KillCount	= ( pic_t * )W_CacheLumpName( "t_kcount",  PU_CACHE );
 	TimesYouKilledPerson = ( pic_t * )W_CacheLumpName( "t_kilper",  PU_CACHE );
 	TimesPersonKilledYou = ( pic_t * )W_CacheLumpName( "t_perkil" , PU_CACHE );
-	Suicides				 = ( pic_t * )W_CacheLumpName( "t_suicid",  PU_CACHE );
-	Score					 = ( pic_t * )W_CacheLumpName( "t_score",	PU_CACHE );
-	TopBar					= ( pic_t * )W_CacheLumpName( "t_bar",	  PU_CACHE );
+	Suicides	 = ( pic_t * )W_CacheLumpName( "t_suicid",  PU_CACHE );
+	Score		 = ( pic_t * )W_CacheLumpName( "t_score",	PU_CACHE );
+	TopBar		= ( pic_t * )W_CacheLumpName( "t_bar",	  PU_CACHE );
 
 	IFont = ( cfont_t * )W_CacheLumpName( "sifont", PU_CACHE );
 
@@ -3701,7 +3681,7 @@ void ShowDeaths( int localplayer )
 
 
 void ShowEndScore( int localplayer )
-	{
+{
 	int  w;
 	int  h;
 	int  rank;
@@ -3721,7 +3701,7 @@ void ShowEndScore( int localplayer )
 
 	dofullstats = false;
 	switch( gamestate.battlemode )
-		{
+	{
 		case battle_Normal :
 		case battle_ScoreMore :
 		case battle_Hunter :
@@ -3738,33 +3718,33 @@ void ShowEndScore( int localplayer )
 			dofullstats = false;
 			DrawTallyHeader( 1 );
 			break;
-		}
+	}
 
 	IFont = (cfont_t * )W_CacheLumpNum (W_GetNumForName ("sifont"), PU_CACHE);
 	CurrentFont = smallfont;
 	py = 43;
 
 	for( rank = 0; rank < BATTLE_NumberOfTeams; rank++ )
-		{
+	{
 		team = BATTLE_PlayerOrder[ rank ];
 
 		color = 21;
 		if ( team == BATTLE_Team[ localplayer ] )
-			{
+		{
 			// Change to Intensity
 			color = 241;
-			}
+		}
 
 		// Draw rank if not tied with previous rank
 		if ( ( rank == 0 ) || ( BATTLE_Points[ team ] !=
 			BATTLE_Points[ BATTLE_PlayerOrder[ rank - 1 ] ] ) )
-			{
+		{
 			itoa( rank + 1, tempstr, 10 );
-			}
+		}
 		else
-			{
+		{
 			strcpy( tempstr, "Tie" );
-			}
+		}
 
 		VW_MeasureIntensityPropString ( tempstr, &w, &h);
 		DrawIntensityString( BT_RANK_X - w, py, tempstr, color );
@@ -3772,38 +3752,38 @@ void ShowEndScore( int localplayer )
 		// Draw name of team leader
 		leader = BATTLE_TeamLeader[ team ];
 		if ( gamestate.teamplay )
-			{
+		{
 			DrawIntensityString( BT_PLAYER_X, py,
 				colorname[ PLAYERSTATE[ leader ].uniformcolor ], color );
-			}
+		}
 		else
-			{
+		{
 			DrawIntensityString( BT_PLAYER_X, py,
 				PLAYERSTATE[ leader ].codename, color );
-			}
+		}
 
 		if ( dofullstats )
-			{
+		{
 			// Count how many kills each person on the team got
 			killcount = 0;
 			suicidecount = 0;
 			for( killer = 0; killer < NumPlayers; killer++ )
-				{
+			{
 				if ( BATTLE_Team[ killer ] == team )
-					{
+				{
 					for( victim = 0; victim < NumPlayers; victim++ )
-						{
+					{
 						if ( BATTLE_Team[ victim ] != team )
-							{
+						{
 							killcount += WhoKilledWho[ killer ][ victim ];
-							}
+						}
 						else
-							{
+						{
 							suicidecount += WhoKilledWho[ killer ][ victim ];
-							}
 						}
 					}
 				}
+			}
 
 			// Draw kills
 			itoa( killcount, tempstr, 10 );
@@ -3814,7 +3794,7 @@ void ShowEndScore( int localplayer )
 			itoa( suicidecount, tempstr, 10 );
 			VW_MeasureIntensityPropString ( tempstr, &w, &h);
 			DrawIntensityString( BT_DEATHS_X - w, py, tempstr, color );
-			}
+		}
 
 		// Draw Score
 		itoa( BATTLE_Points[ team ], tempstr, 10 );
@@ -3822,12 +3802,12 @@ void ShowEndScore( int localplayer )
 		DrawIntensityString( BT_SCORE_X - w, py, tempstr, color );
 
 		py += h;
-		}
 	}
+}
 
 
 void BattleLevelCompleted ( int localplayer )
-	{
+{
 	ControlInfo ci;
 	int w;
 	int h;
@@ -3844,13 +3824,13 @@ void BattleLevelCompleted ( int localplayer )
 	LastScreen = 0;
 	key = -1;
 	while( 1 )
-		{
+	{
 		if ( Screen != LastScreen )
-			{
+		{
 			VL_DrawPostPic (W_GetNumForName("trilogo"));
 
 			switch( Screen )
-				{
+			{
 				case 1 :
 					ShowEndScore( Player );
 					break;
@@ -3862,7 +3842,7 @@ void BattleLevelCompleted ( int localplayer )
 				case 3 :
 					ShowDeaths( Player );
 					break;
-				}
+			}
 
 			CurrentFont = tinyfont;
 
@@ -3875,63 +3855,63 @@ void BattleLevelCompleted ( int localplayer )
 			VW_UpdateScreen ();
 
 			do
-				{
+			{
 				ReadAnyControl (&ci);
-				}
-			while( ci.dir == key );
 			}
+			while( ci.dir == key );
+		}
 
 		LastScreen = Screen;
 		ReadAnyControl ( &ci );
 		key = ci.dir;
 		if ( ( Screen > 1 ) && ( key == dir_West ) )
-			{
+		{
 			Screen--;
 			MN_PlayMenuSnd (SD_MOVECURSORSND);
-			}
+		}
 		else if ( ( Screen < 3 ) && ( key == dir_East ) )
-			{
+		{
 			Screen++;
 			MN_PlayMenuSnd (SD_MOVECURSORSND);
-			}
+		}
 		// Allow us to select which player to view
 		if ( Keyboard[ sc_RShift ] && ( key == dir_South ) )
-			{
+		{
 			Player++;
 			if ( Player >= numplayers )
-				{
+			{
 				Player = 0;
-				}
+			}
 			LastScreen = 0;
 			MN_PlayMenuSnd (SD_SELECTSND);
-			}
+		}
 
 		if ( Keyboard[ sc_RShift ] && ( key == dir_North ) )
-			{
+		{
 			Player--;
 			if ( Player < 0 )
-				{
+			{
 				Player = numplayers - 1;
-				}
+			}
 			LastScreen = 0;
 			MN_PlayMenuSnd (SD_SELECTSND);
-			}
+		}
 
 		if ( Keyboard[sc_Escape] )
-			{
+		{
 			break;
-			}
 		}
+	}
 
 	while ( Keyboard[sc_Escape] )
-		{
+	{
 		IN_UpdateKeyboard ();
-		}
+	}
 
 	MN_PlayMenuSnd (SD_ESCPRESSEDSND);
 
 	CurrentFont = smallfont;
-	}
+}
 
 //==========================================================================
 
@@ -5214,8 +5194,6 @@ void GetSavedHeader (int num, gamestorage_t * game)
 int GetLevel (int episode, int mapon)
 {
 	int level;
-
 	level = (mapon+1) - ((episode-1) << 3);
-
 	return (level);
 }
