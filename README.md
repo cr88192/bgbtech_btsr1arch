@@ -49,7 +49,7 @@ BJX2 currently has an FPU and MMU, with a 48 bit Virtual Address space and a 32-
 Some aspects of BJX2 are still in flux and the design is not yet frozen.
 
 
-bgbcc22: C compiler, partly reused from my BJX1 project, but modified to add support for BSR1 and BJX2.
+bgbcc22 (BGBCC): C compiler, partly reused from my BJX1 project, but modified to add support for BSR1 and BJX2.
 * TODO: Make it more obvious how to use said compiler.
 
 vmbase: Holds an emulator for the BSR1 ISA.
@@ -66,3 +66,9 @@ jx2vlcore: Verilog attempts at a BJX2 processor.
 tk_qsrc: Source for Quake, Doom, and C library.
 * A lot of the code here was not written by me; check licensing more carefully in here.
 * A lot of this is code for testing stuff, ...
+
+tk_ports: Various software I have ported to BJX2.
+* License depends on the program.
+* I am trying to avoid distributing any files which I don't have the rights to, but it is possible some might leak through.
+* Generally, people will be expected to provide their own game WADs or similar, ...
+
