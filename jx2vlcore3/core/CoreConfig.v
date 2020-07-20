@@ -11,6 +11,7 @@
 
 // `define jx2_sprs_elrehr			//ELR/EHR/BP as special registers?
 // `define jx2_bra2stage			//Use 2-stage branch initiation
+`define jx2_gprs_usefsm			//Use finite-state-machine GPRs
 
 // `define jx2_enable_swapn		//Enable SWxP.x ops
 // `define jx2_enable_shlln		//Enable SHLLn / SHLRn Ops
@@ -63,7 +64,7 @@
 // `define jx2_reduce_l1sz		//Make L1 smaller
 // `define jx2_reduce_l2sz		//Make L2 smaller
 
-// `define jx2_merge_shadq		//Merge SHAD and SHAD.Q
+`define jx2_merge_shadq		//Merge SHAD and SHAD.Q
 
 // `define jx2_debug_l1ds		//Debug prints for L1 data cache
 // `define jx2_debug_ldst		//Debug prints for load/store

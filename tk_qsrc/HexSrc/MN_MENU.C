@@ -1735,7 +1735,9 @@ void MN_DeactivateMenu(void)
 void MN_DrawInfo(void)
 {
 	I_SetPalette(W_CacheLumpName("PLAYPAL", PU_CACHE));
-	memcpy(screen, (byte *)W_CacheLumpNum(W_GetNumForName("TITLE")+InfoType,
+//	memcpy(screen, (byte *)W_CacheLumpNum(W_GetNumForName("TITLE")+InfoType,
+	V_MemCpy_ScrPix(screen,
+		(byte *)W_CacheLumpNum(W_GetNumForName("TITLE")+InfoType,
 		PU_CACHE), SCREENWIDTH*SCREENHEIGHT);
 //	V_DrawPatch(0, 0, W_CacheLumpNum(W_GetNumForName("TITLE")+InfoType,
 //		PU_CACHE));

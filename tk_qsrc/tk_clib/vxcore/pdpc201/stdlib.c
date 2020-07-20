@@ -785,3 +785,27 @@ __PDPCLIB_API__ void *bsearch(const void *key, const void *base,
     }
     return (NULL);
 }
+
+__PDPCLIB_API__ char *strdup(char *str)
+{
+	char *s1;
+	int l;
+	
+	l=strlen(str);
+	s1=malloc(l+1);
+	memcpy(s1, str, l+1);
+	return(s1);
+}
+
+__PDPCLIB_API__ char *strndup(char *str, size_t n)
+{
+	char *s1;
+	int l;
+
+	l=strlen(str);
+	if(l<n)n=l;
+	s1=malloc(n+1);
+	memcpy(s1, str, n);
+	s1[n]=0;
+	return(s1);
+}

@@ -59,8 +59,8 @@ int			validcount = 1;
 lighttable_t*		fixedcolormap;
 extern lighttable_t**	walllights;
 
-int			centerx;
-int			centery;
+				int			centerx;
+global_register	int			centery;
 
 fixed_t			centerxfrac;
 fixed_t			centeryfrac;

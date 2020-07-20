@@ -597,6 +597,8 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 
 	case BJX2_NMID_SHADQ:		s0="SHAD.Q";	break;
 	case BJX2_NMID_SHLDQ:		s0="SHLD.Q";	break;
+	case BJX2_NMID_SHARQ:		s0="SHAR.Q";	break;
+	case BJX2_NMID_SHLRQ:		s0="SHLR.Q";	break;
 
 	case BJX2_NMID_TSTQ:		s0="TSTQ";	break;
 

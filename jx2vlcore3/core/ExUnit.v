@@ -11,7 +11,11 @@ IF ID1 ID2 EX1 EX2 WB
 
 `ifdef jx2_enable_wex3w
 `include "DecOpWx3.v"
+`ifdef jx2_gprs_usefsm
+`include "RegGPR_6R3W_SM.v"
+`else
 `include "RegGPR_6R3W.v"
+`endif
 `else
 `ifdef jx2_enable_wex2w
 `include "DecOpWx2.v"
@@ -464,7 +468,11 @@ reg [63:0]		gprInBp;
 
 `ifdef jx2_enable_wex3w
 
+`ifdef jx2_gprs_usefsm
+RegGPR_6R3W_SM regGpr(
+`else
 RegGPR_6R3W regGpr(
+`endif
 	clock,
 	reset,
 	exHold2,

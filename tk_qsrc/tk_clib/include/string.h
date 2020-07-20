@@ -57,6 +57,10 @@ void *memset(void *s, int c, size_t n);
 char *strerror(int errnum);
 size_t strlen(const char *s);
 
+char *strdup(char *str);
+char *strndup(char *str, size_t n);
+
+
 #ifdef __WATCOMC__
 #ifdef __INLINE_FUNCTIONS__
 #pragma intrinsic(memchr, memcmp, memcpy, strcat, strcpy, strlen, strchr)

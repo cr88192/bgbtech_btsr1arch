@@ -127,6 +127,10 @@
 #define TXT_CHEATIDDQD			"TRYING TO CHEAT, EH?  NOW YOU DIE!"
 #define TXT_CHEATIDKFA			"CHEATER - YOU DON'T DESERVE WEAPONS"
 
+
+#define TXT_CHEATTOMEON			"TOME MODE ON"
+#define TXT_CHEATTOMEOFF		"TOME MODE OFF"
+
 //---------------------------------------------------------------------------
 //
 // P_doors.c

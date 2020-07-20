@@ -24,6 +24,7 @@ int	mb_used = 12;
 
 void S_StartSong(int song, boolean loop)
 {
+	S_ChangeMusic(song, loop);
 }
 
 void I_BeginRead (void)
@@ -175,6 +176,7 @@ void I_Init (void)
 	M_InitSoftDiv();
     I_InitSound();
 	S_Init();
+	I_InitMusic();
 }
 
 int  I_GetHeapSize (void)

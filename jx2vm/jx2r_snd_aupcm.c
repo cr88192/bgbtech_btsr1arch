@@ -137,6 +137,8 @@ int SndAuPcm_GetStepSamples(short *pcm, int nsamp, int step_us)
 	jx2i_sndaupcm_t_acc_us=accus;
 	jx2i_sndaupcm_t_pcm_rov=rov;
 
+//	SndAuPcm_SyncTimeUsec(ctx);
+
 	return(0);
 }
 
@@ -144,7 +146,11 @@ s64 jx2i_sndaupcm_usec;
 
 int SndAuPcm_SyncTimeUsec(BJX2_Context *ctx)
 {
-	s64 usc, dt;
+//	static int dbias=1024;
+//	static int dbias=256;
+	static int dbias=128;
+	int trov;
+	s64 usc, dt, ds;
 	int sampus;
 
 	SndAuPcm_UpdateForRegisters();
@@ -153,7 +159,9 @@ int SndAuPcm_SyncTimeUsec(BJX2_Context *ctx)
 	dt=usc-jx2i_sndaupcm_usec;
 	if(dt<0)dt=0;
 //	if(dt>100000)
-	jx2i_smus_usec=usc;
+	jx2i_sndaupcm_usec=usc;
+	if(dt>1000000)
+		dt=0;
 
 	sampus=jx2i_sndaupcm_sampus;
 	jx2i_sndaupcm_acc_us+=dt;
@@ -161,6 +169,20 @@ int SndAuPcm_SyncTimeUsec(BJX2_Context *ctx)
 	{
 		jx2i_sndaupcm_acc_us-=sampus;
 		jx2i_sndaupcm_pcm_rov++;
+	}
+	
+	trov=(jx2i_sndaupcm_t_pcm_rov+dbias);
+//	ds=jx2i_sndaupcm_pcm_rov-jx2i_sndaupcm_t_pcm_rov;
+	ds=jx2i_sndaupcm_pcm_rov-trov;
+	ds=ds^(ds>>31);
+//	if(ds>2000)
+	if(ds>3000)
+//	if(ds>1000)
+	{
+//		printf("SndAuPcm_SyncTimeUsec: Sync %d\n", jx2i_sndaupcm_pcm_rov-trov);
+//		jx2i_sndaupcm_t_acc_us=jx2i_sndaupcm_acc_us;
+//		jx2i_sndaupcm_t_pcm_rov=jx2i_sndaupcm_pcm_rov;
+		jx2i_sndaupcm_t_pcm_rov=jx2i_sndaupcm_pcm_rov-dbias;
 	}
 
 //	jx2i_sndaupcm_t_acc_us=jx2i_sndaupcm_acc_us;
@@ -191,6 +213,7 @@ s32 BJX2_MemSndAuPcmCb_GetDWord(BJX2_Context *ctx,
 {
 	s64 rvq;
 	int ra, rv, vn;
+	int i, j, k;
 
 	ra=addr-sp->addr_base;
 	
@@ -212,6 +235,29 @@ s32 BJX2_MemSndAuPcmCb_GetDWord(BJX2_Context *ctx,
 //	{
 //		rv=jx2i_sndblk_blkbuf[(ra>>2)&1023];
 //	}
+
+	if((ra>=0xF000) && (ra<0xFFFF))
+	{
+		SndAuPcm_SyncTimeUsec(ctx);
+
+		i=(ra>>2)&255;
+		switch(i)
+		{
+		case 0x0:	case 0x1:
+		case 0x2:	case 0x3:
+		case 0x4:	case 0x5:
+		case 0x6:	case 0x7:
+			rv=jx2i_sndaupcm_ctlr[i];
+			break;
+		case 0x8:
+			rv=jx2i_sndaupcm_pcm_rov&8191;
+//			rv=jx2i_sndaupcm_t_pcm_rov&8191;
+//			rv=0;
+			break;
+		default:
+			break;
+		}
+	}
 
 	if((ra>>14)==0)
 	{

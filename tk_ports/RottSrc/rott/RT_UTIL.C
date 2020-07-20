@@ -311,6 +311,22 @@ void ClearBuffer( char * buf, int size )
 
 void Error (char *error, ...)
 {
+
+#if 1
+	char msgbuf[300];
+	va_list	argptr;
+
+	va_start (argptr, error);
+	vsprintf (&msgbuf[0], error, argptr);
+	va_end (argptr);
+	
+	printf("%s\n", msgbuf);
+	
+	__debugbreak();
+
+#endif
+
+#if 0
 	char msgbuf[300];
 	va_list	argptr;
 	char i;
@@ -429,6 +445,8 @@ void Error (char *error, ...)
 	__debugbreak();
 
 	exit (1);
+#endif
+
 }
 
 //#if (SOFTERROR==1)

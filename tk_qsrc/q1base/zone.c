@@ -431,8 +431,8 @@ void *Hunk_AllocName (int size, char *name)
 	Hunk_Check ();
 #endif
 
-	if(((int)name)==((s16)name))
-		__debugbreak();
+//	if(((int)name)==((s16)name))
+//		__debugbreak();
 
 	if (size < 0)
 		Sys_Error ("Hunk_Alloc: bad size: %i", size);

@@ -108,7 +108,9 @@ assign	tValShad32 = tValShad64[31:0];
 
 ExShad64C	exShad64(clock, reset,
 	regValRs[63:0], regValRt[7:0],
-	tValShad64, opUCmd[1:0]);
+//	tValShad64, opUCmd[1:0]);
+//	tValShad64, {opUIxt[3:2], opUCmd[1:0]});
+	tValShad64, opUIxt[3:0]);
 `endif
 
 reg			tOpEnable;
@@ -246,6 +248,16 @@ begin
 //			tRegValRn1	= regValMulwRes;		//
 		end
 
+`ifdef jx2_merge_shadq
+
+		JX2_UCMD_SHAD3, JX2_UCMD_SHLD3,
+		JX2_UCMD_SHADQ3, JX2_UCMD_SHLDQ3:
+		begin
+			tRegIdRn1	= regIdRm;
+			tRegValRn1	= tValShad64;
+		end
+
+`else
 		JX2_UCMD_SHAD3: begin
 			tRegIdRn1	= regIdRm;
 			tRegValRn1	= { tValShad32[31]?UV32_FF:UV32_00, tValShad32 };
@@ -263,6 +275,7 @@ begin
 			tRegIdRn1	= regIdRm;
 			tRegValRn1	= tValShad64;
 		end
+`endif
 
 		JX2_UCMD_MUL3: begin
 			tSlotUSup		= 1;

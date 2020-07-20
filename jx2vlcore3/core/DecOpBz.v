@@ -637,14 +637,16 @@ begin
 			end
 
 			11'h1z6: begin
-				opNmid	= JX2_UCMD_SHADQ3;
-				opFmid	= JX2_FMID_DRREG;
-				opIty	= JX2_ITY_NB;
+				opNmid		= JX2_UCMD_SHADQ3;
+				opUCmdIx	= JX2_UCIX_SHAD_SHADQ3;
+				opFmid		= JX2_FMID_DRREG;
+				opIty		= JX2_ITY_NB;
 			end
 			11'h1z7: begin
-				opNmid	= JX2_UCMD_SHLDQ3;
-				opFmid	= JX2_FMID_DRREG;
-				opIty	= JX2_ITY_NB;
+				opNmid		= JX2_UCMD_SHLDQ3;
+				opUCmdIx	= JX2_UCIX_SHAD_SHLDQ3;
+				opFmid		= JX2_FMID_DRREG;
+				opIty		= JX2_ITY_NB;
 			end
 
 `ifndef def_true
@@ -866,6 +868,7 @@ begin
 `ifdef jx2_shlln_shadq
 			11'h4zz: begin
 				opNmid		= JX2_UCMD_SHLDQ3;
+				opUCmdIx	= JX2_UCIX_SHAD_SHLDQ3;
 				opFmid		= JX2_FMID_REG;
 				opIty		= JX2_ITY_XL;
 //				opUCmdIx	= { 2'h0, istrWord[3:0] };
@@ -891,6 +894,8 @@ begin
 				endcase
 
 				opNmid	= opRegO_Fix[4]?JX2_UCMD_SHADQ3 : JX2_UCMD_SHLDQ3;
+				opUCmdIx	= opRegO_Fix[4] ?
+					JX2_UCIX_SHAD_SHADQ3 : JX2_UCIX_SHAD_SHLDQ3;
 			end
 `else
 			11'h4zz: begin
@@ -903,6 +908,7 @@ begin
 `ifdef jx2_shlln_shadq
 			11'h6z0: begin
 				opNmid		= JX2_UCMD_SHLDQ3;
+				opUCmdIx	= JX2_UCIX_SHAD_SHLDQ3;
 				opFmid		= JX2_FMID_REG;
 				opIty		= JX2_ITY_XL;
 				opRegM_Fix	= 6'h20;
@@ -910,6 +916,7 @@ begin
 			end
 			11'h6z1: begin
 				opNmid		= JX2_UCMD_SHLDQ3;
+				opUCmdIx	= JX2_UCIX_SHAD_SHLDQ3;
 				opFmid		= JX2_FMID_REG;
 				opIty		= JX2_ITY_XL;
 				opRegM_Fix	= 6'h20;
@@ -917,6 +924,7 @@ begin
 			end
 			11'h6z2: begin
 				opNmid		= JX2_UCMD_SHADQ3;
+				opUCmdIx	= JX2_UCIX_SHAD_SHADQ3;
 				opFmid		= JX2_FMID_REG;
 				opIty		= JX2_ITY_XL;
 				opRegM_Fix	= 6'h20;
@@ -957,14 +965,16 @@ begin
 				opUCmdIx	= JX2_UCIX_CONV_EXTSL;
 			end
 			11'h6z6: begin
-				opNmid	= JX2_UCMD_SHAD3;
-				opFmid	= JX2_FMID_DRREG;
-				opIty	= JX2_ITY_NB;
+				opNmid		= JX2_UCMD_SHAD3;
+				opUCmdIx	= JX2_UCIX_SHAD_SHAD3;
+				opFmid		= JX2_FMID_DRREG;
+				opIty		= JX2_ITY_NB;
 			end
 			11'h6z7: begin
-				opNmid	= JX2_UCMD_SHLD3;
-				opFmid	= JX2_FMID_DRREG;
-				opIty	= JX2_ITY_NB;
+				opNmid		= JX2_UCMD_SHLD3;
+				opUCmdIx	= JX2_UCIX_SHAD_SHLD3;
+				opFmid		= JX2_FMID_DRREG;
+				opIty		= JX2_ITY_NB;
 			end
 
 

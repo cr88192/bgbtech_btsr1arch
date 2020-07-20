@@ -133,6 +133,7 @@ SRCS =			\
 	fx_mix.c	\
 	fx_music.c	\
 	i_snd_btsh4.c	\
+	i_bgb_mus_btsh.c	\
 	m_fixed.c	\
 	rt_actor.c	\
 	rt_battl.c	\

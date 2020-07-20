@@ -72,6 +72,22 @@ FixedDiv
 	return FixedDiv2 (a,b);
 }
 
+fixed_t
+FixedDivSoft
+( fixed_t	a,
+  fixed_t	b )
+{
+	long long c;
+	int r;
+
+	if ( (abs(a)>>14) >= abs(b))
+		return ((a^b)<0) ? MININT : MAXINT;
+//	return FixedDiv2 (a,b);
+
+	r=M_SoftDivRcpS(b);
+	c=__smullq(a, r);
+	return (fixed_t)(c>>16);
+}
 
 s32 M_SoftDivRcpS(s32 b);
 
@@ -144,6 +160,15 @@ u32 M_SoftDivU(u32 a, u32 b)
 		return(c);
 	}
 
+	if(b<0x10000)
+	{
+		tb=m_softdiv_rcptab[b>>4]>>4;
+		ta=(u64)a;
+		tc=ta*tb;
+		c=(u32)(tc>>32);
+		return(c);
+	}
+
 	if(b<0x100000)
 	{
 		tb=m_softdiv_rcptab[b>>8]>>8;
@@ -153,8 +178,32 @@ u32 M_SoftDivU(u32 a, u32 b)
 		return(c);
 	}
 
-	c=a/b;
+	if(b<0x1000000)
+	{
+		tb=m_softdiv_rcptab[b>>12]>>12;
+		ta=(u64)a;
+		tc=ta*tb;
+		c=(u32)(tc>>32);
+		return(c);
+	}
+
+	if(b<0x10000000)
+	{
+		tb=m_softdiv_rcptab[b>>16]>>16;
+		ta=(u64)a;
+		tc=ta*tb;
+		c=(u32)(tc>>32);
+		return(c);
+	}
+
+	tb=m_softdiv_rcptab[b>>20]>>20;
+	ta=(u64)a;
+	tc=ta*tb;
+	c=(u32)(tc>>32);
 	return(c);
+
+//	c=a/b;
+//	return(c);
 }
 
 s32 M_SoftDivS(s32 a, s32 b)
@@ -189,14 +238,35 @@ u32 M_SoftDivRcp(u32 b)
 		return(c);
 	}
 
+	if(b<0x10000)
+	{
+		c=m_softdiv_rcptab[b>>4]>>4;
+		return(c);
+	}
+
 	if(b<0x100000)
 	{
 		c=m_softdiv_rcptab[b>>8]>>8;
 		return(c);
 	}
 
-    c = (0x7fffffffu / b)<<1;
+	if(b<0x1000000)
+	{
+		c=m_softdiv_rcptab[b>>12]>>12;
+		return(c);
+	}
+
+	if(b<0x10000000)
+	{
+		c=m_softdiv_rcptab[b>>16]>>16;
+		return(c);
+	}
+
+	c=m_softdiv_rcptab[b>>20]>>20;
 	return(c);
+
+//    c = (0x7fffffffu / b)<<1;
+//	return(c);
 }
 
 s32 M_SoftDivRcpS(s32 b)

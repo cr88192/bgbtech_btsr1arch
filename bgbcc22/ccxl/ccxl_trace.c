@@ -241,12 +241,14 @@ ccxl_status BGBCC_CCXL_GlobalMarkReachableB(BGBCC_TransState *ctx,
 {
 	if(obj->regflags&BGBCC_REGFL_RECTRACE)
 	{
+		obj->gblrefcnt++;
 		return(0);
 	}
 
 	obj->regflags|=BGBCC_REGFL_RECTRACE;
 	obj->regflags|=BGBCC_REGFL_ACCESSED;
 	obj->regflags&=~BGBCC_REGFL_CULL;
+	obj->gblrefcnt++;
 
 	if(obj->regtype==CCXL_LITID_FUNCTION)
 	{

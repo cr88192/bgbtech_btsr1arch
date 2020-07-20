@@ -525,12 +525,12 @@ void R_DrawViewBorder (void)
 #if 0
 		for (x=0 ; x<SCREENWIDTH/64 ; x++)
 		{
-			memcpy (dest, src+((y&63)<<6), 64);
+//			memcpy (dest, src+((y&63)<<6), 64);
 			dest += 64;
 		}
 		if (SCREENWIDTH&63)
 		{
-			memcpy (dest, src+((y&63)<<6), SCREENWIDTH&63);
+//			memcpy (dest, src+((y&63)<<6), SCREENWIDTH&63);
 			dest += (SCREENWIDTH&63);
 		}
 #endif
@@ -593,13 +593,15 @@ void R_DrawTopBorder (void)
 	{
 		for (x=0 ; x<SCREENWIDTH/64 ; x++)
 		{
-			memcpy (dest, src+((y&63)<<6), 64 * sizeof(dt_scrpix));
+//			memcpy (dest, src+((y&63)<<6), 64 * sizeof(dt_scrpix));
+			V_MemCpy_ScrPix (dest, src+((y&63)<<6), 64);
 			dest += 64;
 		}
 		if (SCREENWIDTH&63)
 		{
-			memcpy (dest, src+((y&63)<<6),
-				(SCREENWIDTH&63) * sizeof(dt_scrpix));
+//			memcpy (dest, src+((y&63)<<6),
+			V_MemCpy_ScrPix (dest, src+((y&63)<<6),
+				(SCREENWIDTH&63));
 			dest += (SCREENWIDTH&63);
 		}
 	}

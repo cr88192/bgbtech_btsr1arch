@@ -31,6 +31,7 @@ reg				tIsIdC;
 
 always @*
 begin
+`ifndef def_true
 	tIsIdA	= (wrIdA == regId);
 	tIsIdB	= (wrIdB == regId);
 	tIsIdC	= (wrIdC == regId);
@@ -44,6 +45,17 @@ begin
 		3'bz10:		tNxtRegVal	= wrValB;
 		3'b100:		tNxtRegVal	= wrValC;
 	endcase
+`endif
+
+`ifdef def_true
+	tNxtRegVal	= regInVal;
+	if(wrIdC == regId)
+		tNxtRegVal	= wrValC;
+	if(wrIdB == regId)
+		tNxtRegVal	= wrValB;
+	if(wrIdA == regId)
+		tNxtRegVal	= wrValA;
+`endif
 end
 
 always @(posedge clock)

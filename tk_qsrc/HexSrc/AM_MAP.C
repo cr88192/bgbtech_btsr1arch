@@ -639,9 +639,11 @@ void AM_clearFB(int color)
 	j=mapystart*finit_width;
 	for(i = 0; i < SCREENHEIGHT-SBARHEIGHT; i++)
 	{
-		memcpy(screen+i*finit_width, maplump+j+mapxstart, 	
+//		memcpy(screen+i*finit_width, maplump+j+mapxstart, 	
+		V_MemCpy_ScrPix(screen+i*finit_width, maplump+j+mapxstart, 	
 			finit_width-mapxstart);
-		memcpy(screen+i*finit_width+finit_width-mapxstart, maplump+j, 
+//		memcpy(screen+i*finit_width+finit_width-mapxstart, maplump+j, 
+		V_MemCpy_ScrPix(screen+i*finit_width+finit_width-mapxstart, maplump+j, 
 			mapxstart);
 		j += finit_width;
 		if(j >= finit_height*finit_width)
@@ -775,7 +777,8 @@ void AM_drawFline(fline_t *fl, int color)
     				return;
   				}
 
-  				#define DOT(xx,yy,cc) fb[(yy)*f_w+(xx)]=(cc) //the MACRO!
+//  				#define DOT(xx,yy,cc) fb[(yy)*f_w+(xx)]=(cc) //the MACRO!
+  				#define DOT(xx,yy,cc) fb[(yy)*f_w+(xx)]=colormaps[cc] //the MACRO!
 
   				dx = fl->b.x - fl->a.x;
   				ax = 2 * (dx<0 ? -dx : dx);
@@ -871,7 +874,8 @@ void PUTDOT(short xx,short yy,byte *cc, byte *cm)
 		oldyy = yy;
 		oldyyshifted = yy*320;
 	}
-	fb[oldyyshifted+xx] = *(cc);
+//	fb[oldyyshifted+xx] = *(cc);
+	fb[oldyyshifted+xx] = colormaps[*(cc)];
 // 	fb[(yy)*f_w+(xx)]=*(cc);
 }
 

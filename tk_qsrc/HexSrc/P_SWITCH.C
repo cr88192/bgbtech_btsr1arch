@@ -61,8 +61,10 @@ void P_InitSwitchList(void)
 			switchlist[index] = -1;
 			break;
 		}
-		switchlist[index++] = R_TextureNumForName(alphSwitchList[i].name1);
-		switchlist[index++] = R_TextureNumForName(alphSwitchList[i].name2);
+//		switchlist[index++] = R_TextureNumForName(alphSwitchList[i].name1);
+//		switchlist[index++] = R_TextureNumForName(alphSwitchList[i].name2);
+		switchlist[index++] = R_CheckTextureNumForName(alphSwitchList[i].name1);
+		switchlist[index++] = R_CheckTextureNumForName(alphSwitchList[i].name2);
 	}
 }
 

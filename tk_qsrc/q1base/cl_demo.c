@@ -47,9 +47,13 @@ void CL_StopPlayback (void)
 	if (!cls.demoplayback)
 		return;
 
-	fclose (cls.demofile);
+//	fclose (cls.demofile);
 	cls.demoplayback = false;
-	cls.demofile = NULL;
+//	cls.demofile = NULL;
+
+	free(cls.demobuffer);
+	cls.demobuffer = NULL;
+
 	cls.state = ca_disconnected;
 
 	if (cls.timedemo)
@@ -70,14 +74,19 @@ void CL_WriteDemoMessage (void)
 	float	f;
 
 	len = LittleLong (net_message.cursize);
-	fwrite (&len, 4, 1, cls.demofile);
+//	fwrite (&len, 4, 1, cls.demofile);
+	memcpy(cls.democs, &len, 4);	cls.democs+=4;
 	for (i=0 ; i<3 ; i++)
 	{
 		f = LittleFloat (cl.viewangles[i]);
-		fwrite (&f, 4, 1, cls.demofile);
+//		fwrite (&f, 4, 1, cls.demofile);
+		memcpy(cls.democs, &f, 4);
+		cls.democs+=4;
 	}
-	fwrite (net_message.data, net_message.cursize, 1, cls.demofile);
-	fflush (cls.demofile);
+//	fwrite (net_message.data, net_message.cursize, 1, cls.demofile);
+	memcpy(cls.democs, net_message.data, net_message.cursize);
+	cls.democs+=net_message.cursize;
+//	fflush (cls.demofile);
 }
 
 /*
@@ -114,19 +123,26 @@ int CL_GetMessage (void)
 		}
 		
 	// get the next message
-		fread (&net_message.cursize, 4, 1, cls.demofile);
+//		fread (&net_message.cursize, 4, 1, cls.demofile);
+		memcpy(&net_message.cursize, cls.democs, 4);	cls.democs+=4;
 		VectorCopy (cl.mviewangles[0], cl.mviewangles[1]);
 		for (i=0 ; i<3 ; i++)
 		{
-			r = fread (&f, 4, 1, cls.demofile);
+//			r = fread (&f, 4, 1, cls.demofile);
+			memcpy(&f, cls.democs, 4);	cls.democs+=4;
 			cl.mviewangles[0][i] = LittleFloat (f);
 		}
 		
 		net_message.cursize = LittleLong (net_message.cursize);
 		if (net_message.cursize > MAX_MSGLEN)
 			Sys_Error ("Demo message > MAX_MSGLEN");
-		r = fread (net_message.data, net_message.cursize, 1, cls.demofile);
-		if (r != 1)
+//		r = fread (net_message.data, net_message.cursize, 1, cls.demofile);
+
+		memcpy(net_message.data, cls.democs, net_message.cursize);
+		cls.democs+=net_message.cursize;
+
+//		if (r != 1)
+		if(cls.democs>cls.demoend)
 		{
 			CL_StopPlayback ();
 			return 0;
@@ -165,6 +181,9 @@ stop recording a demo
 */
 void CL_Stop_f (void)
 {
+	FILE *fd;
+	int sz;
+
 	if (cmd_source != src_command)
 		return;
 
@@ -180,10 +199,22 @@ void CL_Stop_f (void)
 	CL_WriteDemoMessage ();
 
 // finish up
-	fclose (cls.demofile);
-	cls.demofile = NULL;
+//	fclose (cls.demofile);
+//	cls.demofile = NULL;
 	cls.demorecording = false;
 	Con_Printf ("Completed demo\n");
+
+	if(!cls.demorecname)
+		return;
+
+	fd=fopen(cls.demorecname, "wb");
+	if(!fd)
+		return;
+	sz=cls.democs-cls.demobuffer;
+	fwrite(cls.demobuffer, 1, sz, fd);
+	fclose(fd);
+	free(cls.demobuffer);
+	cls.demobuffer=NULL;
 }
 
 /*
@@ -244,15 +275,24 @@ void CL_Record_f (void)
 	COM_DefaultExtension (name, ".dem");
 
 	Con_Printf ("recording to %s.\n", name);
-	cls.demofile = fopen (name, "wb");
-	if (!cls.demofile)
-	{
-		Con_Printf ("ERROR: couldn't open.\n");
-		return;
-	}
+//	cls.demofile = fopen (name, "wb");
+//	if (!cls.demofile)
+//	{
+//		Con_Printf ("ERROR: couldn't open.\n");
+//		return;
+//	}
+	
+	strcpy(cls.demostring, name);
+	cls.demorecname=cls.demostring;
+//	cls.demorecname=strdup(name);
+	cls.demobuffer=malloc(1<<18);
+	cls.democs=cls.demobuffer;
+	cls.demoend=cls.demobuffer+(1<<18);
 
 	cls.forcetrack = track;
-	fprintf (cls.demofile, "%i\n", cls.forcetrack);
+//	fprintf (cls.demofile, "%i\n", cls.forcetrack);
+	sprintf (cls.democs, "%i\n", cls.forcetrack);
+	cls.democs+=strlen(cls.democs);
 	
 	cls.demorecording = true;
 }
@@ -268,7 +308,7 @@ play [demoname]
 void CL_PlayDemo_f (void)
 {
 	char	name[256];
-	int c;
+	int c, sz;
 	qboolean neg = false;
 
 	if (cmd_source != src_command)
@@ -292,20 +332,34 @@ void CL_PlayDemo_f (void)
 	COM_DefaultExtension (name, ".dem");
 
 	Con_Printf ("Playing demo from %s.\n", name);
-	COM_FOpenFile (name, &cls.demofile);
-	if (!cls.demofile)
+
+//	COM_FOpenFile (name, &cls.demofile);
+//	if (!cls.demofile)
+//	{
+//		Con_Printf ("ERROR: couldn't open.\n");
+//		cls.demonum = -1;		// stop demo loop
+//		return;
+//	}
+
+//	cls.demobuffer=COM_LoadFileSz(name, 1, &sz);
+	cls.demobuffer=COM_LoadFileSz(name, 5, &sz);
+	if(!cls.demobuffer)
 	{
 		Con_Printf ("ERROR: couldn't open.\n");
 		cls.demonum = -1;		// stop demo loop
 		return;
 	}
+	
+	cls.democs=cls.demobuffer;
+	cls.demoend=cls.demobuffer+sz;
 
 	cls.demoplayback = true;
 	cls.state = ca_connected;
 	cls.forcetrack = 0;
 
 #if 1
-	while ((c = fgetc(cls.demofile)) != '\n')
+//	while ((c = fgetc(cls.demofile)) != '\n')
+	while ((c = (*cls.democs++)) != '\n')
 	{
 //		tk_putc(c);
 		if(c<0)

@@ -53,6 +53,15 @@ int BJX2_DecodeOpcode_DecF8(BJX2_Context *ctx,
 		op->Run=BJX2_Op_LDISH16_ImmReg;
 		break;
 
+	case 0x8:	case 0x9:
+		op->imm=imm16u;
+		op->rn=rn_i16;
+		op->nmid=BJX2_NMID_FLDCH;
+		op->fmid=BJX2_FMID_IMMREG;
+		op->Run=BJX2_Op_FLDCH_ImmGReg;
+		op->fl|=BJX2_OPFL_NOWEX;
+		break;
+
 	default:
 		ret=-1;
 		break;
@@ -75,6 +84,15 @@ int BJX2_DecodeOpcode_DecD8(BJX2_Context *ctx,
 	op1->pc=addr;
 
 	ret=BJX2_DecodeOpcode_DecF8(ctx, op1, addr, opw1, opw2, 0);
+
+	if(!op1->Run || !op1->opn)
+	{
+		op->nmid=BJX2_NMID_INV;
+		op->fmid=BJX2_FMID_Z;
+		op->Run=BJX2_Op_INVOP_None;
+		op->fl|=BJX2_OPFL_CTRLF;
+		return(ret);
+	}
 
 //	if(opw1&0x0200)
 //	if(opw1&0x0100)

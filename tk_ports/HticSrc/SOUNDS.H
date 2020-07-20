@@ -75,6 +75,10 @@ typedef struct
 {
 	char name[8];
 	int p1;
+	
+	int lumpnum;
+	int handle;
+	byte *data;
 } musicinfo_t;
 
 typedef struct sfxinfo_s

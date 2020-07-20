@@ -1815,9 +1815,10 @@ int BGBCC_CCXL_TypeAsOprExtBasic(
 int BGBCC_CCXL_TypeGetLogicalBaseSize(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
-	int sz;
+	int bty, sz;
 
-	switch(BGBCC_CCXL_GetTypeBaseType(ctx, ty))
+	bty=BGBCC_CCXL_GetTypeBaseType(ctx, ty);
+	switch(bty)
 	{
 	case CCXL_TY_I: sz=4; break;
 	case CCXL_TY_L: sz=8; break;
@@ -1830,6 +1831,8 @@ int BGBCC_CCXL_TypeGetLogicalBaseSize(
 	case CCXL_TY_US: sz=2; break;
 	case CCXL_TY_UI: sz=4; break;
 	case CCXL_TY_UL: sz=8; break;
+
+	case CCXL_TY_V: sz=1; break;
 
 	case CCXL_TY_NL:	case CCXL_TY_UNL:
 		sz=ctx->arch_sizeof_long;
@@ -1876,6 +1879,8 @@ int BGBCC_CCXL_TypeGetLogicalBaseSize(
 		break;
 
 	default:
+		if(bty<256)
+			{ BGBCC_DBGBREAK }
 		sz=-1; break;
 	}
 	
@@ -1891,9 +1896,10 @@ int BGBCC_CCXL_TypeGetLogicalBaseSize(
 int BGBCC_CCXL_TypeGetLogicalBaseAlign(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
-	int sz, nsz;
+	int sz, bty, nsz;
 
-	switch(BGBCC_CCXL_GetTypeBaseType(ctx, ty))
+	bty=BGBCC_CCXL_GetTypeBaseType(ctx, ty);
+	switch(bty)
 	{
 	case CCXL_TY_I: sz=4; break;
 //	case CCXL_TY_L: sz=8; break;
@@ -1920,6 +1926,9 @@ int BGBCC_CCXL_TypeGetLogicalBaseAlign(
 		if(!sz)
 			{ sz=-1; }
 		break;
+
+	case CCXL_TY_V:
+		sz=1; break;
 	
 	case CCXL_TY_F16:
 	case CCXL_TY_BF16:
@@ -1974,6 +1983,8 @@ int BGBCC_CCXL_TypeGetLogicalBaseAlign(
 		break;
 
 	default:
+		if(bty<256)
+			{ BGBCC_DBGBREAK }
 		sz=-1; break;
 	}
 	
@@ -2823,6 +2834,9 @@ ccxl_status BGBCC_CCXL_TypeFromOverflow(
 {
 	ccxl_type tty;
 	int i, j, k;
+	
+	if(!ovf.an && !ovf.pn)
+		ovf.pcls=0;
 
 	if((ovf.base>=0) && (ovf.base<CCXL_TY_BASETYMAX) &&
 		(ovf.an==0) &&
@@ -2837,7 +2851,7 @@ ccxl_status BGBCC_CCXL_TypeFromOverflow(
 		return(CCXL_STATUS_YES);
 	}
 
-#if 1
+#if 0
 	if((ovf.base>=0) && (ovf.base<CCXL_TY_BASETYMAX) &&
 		(ovf.an==0) &&
 		(ovf.pn==1) &&
@@ -3125,16 +3139,15 @@ ccxl_status BGBCC_CCXL_TypeFromSig(
 		return(CCXL_STATUS_YES);
 	}
 
-#if 1
+#if 0
 	if((bty>=0) && (bty<CCXL_TY_BASETYMAX) && (an==0) && (pn4==1) &&
 		(pcls>0) && (pcls<32))
 	{
-//		tty.val=bty|(pn<<CCXL_TY_PTRSHL)|
-		tty.val=bty|(1<<CCXL_TY_PTRSHL)|
-			(pcls<<CCXL_TY_PCLSSHL)|
-			CCXL_TY_TYTY_BASIC;
-		*rty=tty;
-		return(CCXL_STATUS_YES);
+//		tty.val=bty|(1<<CCXL_TY_PTRSHL)|
+//			(pcls<<CCXL_TY_PCLSSHL)|
+//			CCXL_TY_TYTY_BASIC;
+//		*rty=tty;
+//		return(CCXL_STATUS_YES);
 	}
 #endif
 

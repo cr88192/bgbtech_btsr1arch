@@ -50,19 +50,19 @@ static int r_int_max(int m, int n)
 	return((m>n)?m:n);
 }
 
-extern lighttable_t*	dc_colormap;
-extern int		dc_x;
-extern int		dc_yl;
-extern int		dc_yh;
-extern fixed_t		dc_scale;
-extern fixed_t		dc_iscale;
-extern fixed_t		dc_texturemid;
+global_register extern lighttable_t	*dc_colormap;
+global_register extern int				dc_x;
+global_register extern int				dc_yl;
+global_register extern int				dc_yh;
+global_register extern fixed_t			dc_scale;
+global_register extern fixed_t			dc_iscale;
+global_register extern fixed_t			dc_texturemid;
 
 extern byte		dc_isspr;
 extern fixed_t		dc_zdist;
 
 // first pixel in a column
-extern byte*		dc_source;		
+global_register extern byte			*dc_source;		
 
 
 // The span blitting interface.
@@ -88,23 +88,23 @@ R_VideoErase
 ( unsigned	ofs,
   int		count );
 
-extern int		ds_y;
-extern int		ds_x1;
-extern int		ds_x2;
+global_register extern int				ds_y;
+global_register extern int				ds_x1;
+global_register extern int				ds_x2;
 
-extern lighttable_t*	ds_colormap;
+global_register extern lighttable_t	*ds_colormap;
 
-extern fixed_t		ds_xfrac;
-extern fixed_t		ds_yfrac;
-extern fixed_t		ds_xstep;
-extern fixed_t		ds_ystep;
-extern fixed_t		ds_z;
+global_register extern fixed_t			ds_xfrac;
+global_register extern fixed_t			ds_yfrac;
+global_register extern fixed_t			ds_xstep;
+global_register extern fixed_t			ds_ystep;
+global_register extern fixed_t			ds_z;
 
 // start of a 64*64 tile image
-extern byte*		ds_source;		
+global_register extern byte			*ds_source;		
 
-extern byte*		translationtables;
-extern byte*		dc_translation;
+global_register extern byte			*translationtables;
+global_register extern byte			*dc_translation;
 
 
 // Span blitting for rows, floor/ceiling.

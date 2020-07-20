@@ -159,6 +159,7 @@ static void InitStats(void)
 	int i;
 	int j;
 	int oldCluster;
+	int newCluster;
 	signed int slaughterfrags;
 	int posnum;
 	int slaughtercount;
@@ -174,22 +175,27 @@ static void InitStats(void)
 		gametype = SINGLE;
 		HubCount = 0;
 		oldCluster = P_GetMapCluster(gamemap);
-		if(oldCluster != P_GetMapCluster(LeaveMap))
+		newCluster = P_GetMapCluster(LeaveMap);
+		if(oldCluster != newCluster)
 		{
 			if(oldCluster >= 1 && oldCluster <= 5)
 			{
 				msgLumpName = ClusMsgLumpNames[oldCluster-1];
-				msgLump = W_GetNumForName(msgLumpName);
-				msgSize = W_LumpLength(msgLump);
-				if(msgSize >= MAX_INTRMSN_MESSAGE_SIZE)
+//				msgLump = W_GetNumForName(msgLumpName);
+				msgLump = W_CheckNumForName(msgLumpName);
+				if(msgLump >= 0)
 				{
-					I_Error("Cluster message too long (%s)", msgLumpName);
+					msgSize = W_LumpLength(msgLump);
+					if(msgSize >= MAX_INTRMSN_MESSAGE_SIZE)
+					{
+						I_Error("Cluster message too long (%s)", msgLumpName);
+					}
+					W_ReadLump(msgLump, ClusterMessage);
+					ClusterMessage[msgSize] = 0; // Append terminator
+					HubText = ClusterMessage;
+					HubCount = strlen(HubText)*TEXTSPEED+TEXTWAIT;
+					S_StartSongName("hub", true);
 				}
-				W_ReadLump(msgLump, ClusterMessage);
-				ClusterMessage[msgSize] = 0; // Append terminator
-				HubText = ClusterMessage;
-				HubCount = strlen(HubText)*TEXTSPEED+TEXTWAIT;
-				S_StartSongName("hub", true);
 			}
 		}
 	}
@@ -393,7 +399,8 @@ void IN_Drawer(void)
 		return;
 	}
 	UpdateState |= I_FULLSCRN;
-	memcpy(screen, (byte *)patchINTERPIC, SCREENWIDTH*SCREENHEIGHT);
+//	memcpy(screen, (byte *)patchINTERPIC, SCREENWIDTH*SCREENHEIGHT);
+	V_MemCpy_ScrPix(screen, (byte *)patchINTERPIC, SCREENWIDTH*SCREENHEIGHT);
 
 	if(gametype == SINGLE)
 	{

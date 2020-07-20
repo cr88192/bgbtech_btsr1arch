@@ -83,7 +83,12 @@ void D_DoAdvanceDemo (void);
 boolean				reboundpacket;
 doomdata_t		reboundstore;
 
-
+int NetDivTicdup(int x)
+{
+	if(ticdup==1)
+		return(x);
+	return(x/ticdup);
+}
 
 //
 //
@@ -377,7 +382,8 @@ void NetUpdate (void)
 	int								gameticdiv;
 	
 	// check time
-	nowtime = I_GetTime ()/ticdup;
+//	nowtime = I_GetTime ()/ticdup;
+	nowtime = NetDivTicdup(I_GetTime ());
 	newtics = nowtime - gametime;
 	gametime = nowtime;
 		
@@ -399,7 +405,8 @@ void NetUpdate (void)
 	netbuffer->player = consoleplayer;
 	
 	// build new ticcmds for console player
-	gameticdiv = gametic/ticdup;
+//	gameticdiv = gametic/ticdup;
+	gameticdiv = NetDivTicdup(gametic);
 	for (i=0 ; i<newtics ; i++)
 	{
 		I_StartTic ();
@@ -651,7 +658,8 @@ void TryRunTics (void)
 	
 	// get real tics				
 	i = I_GetTime ();
-	entertic = i / ticdup;
+//	entertic = i / ticdup;
+	entertic = NetDivTicdup(i);
 	realtics = entertic - oldentertics;
 	oldentertics = entertic;
 	
@@ -671,7 +679,8 @@ void TryRunTics (void)
 				lowtic = nettics[i];
 		}
 	}
-	availabletics = lowtic - gametic/ticdup;
+//	availabletics = lowtic - gametic/ticdup;
+	availabletics = lowtic - NetDivTicdup(gametic);
 	
 	// decide how many tics to run
 	if (realtics < availabletics-1)
@@ -722,7 +731,8 @@ void TryRunTics (void)
 	}// demoplayback
 		
 	// wait for new tics if needed
-	while (lowtic < gametic/ticdup + counts)		
+//	while (lowtic < gametic/ticdup + counts)		
+	while (lowtic < NetDivTicdup(gametic) + counts)		
 	{
 		NetUpdate ();   
 		lowtic = MAXINT;
@@ -731,11 +741,13 @@ void TryRunTics (void)
 			if (nodeingame[i] && nettics[i] < lowtic)
 				lowtic = nettics[i];
 		
-		if (lowtic < gametic/ticdup)
+//		if (lowtic < gametic/ticdup)
+		if (lowtic < NetDivTicdup(gametic))
 			I_Error ("TryRunTics: lowtic < gametic");
 								
 		// don't stay in here forever -- give the menu a chance to work
-		if (I_GetTime ()/ticdup - entertic >= 20)
+//		if (I_GetTime ()/ticdup - entertic >= 20)
+		if (NetDivTicdup(I_GetTime ()) - entertic >= 20)
 		{
 			M_Ticker ();
 			return;
@@ -747,7 +759,8 @@ void TryRunTics (void)
 	{
 		for (i=0 ; i<ticdup ; i++)
 		{
-			if (gametic/ticdup > lowtic)
+//			if (gametic/ticdup > lowtic)
+			if (NetDivTicdup(gametic) > lowtic)
 				I_Error ("gametic>lowtic");
 			if (advancedemo)
 				D_DoAdvanceDemo ();
@@ -762,7 +775,8 @@ void TryRunTics (void)
 				int						buf;
 				int						j;
 								
-				buf = (gametic/ticdup)%BACKUPTICS; 
+//				buf = (gametic/ticdup)%BACKUPTICS; 
+				buf = NetDivTicdup(gametic)%BACKUPTICS; 
 				for (j=0 ; j<MAXPLAYERS ; j++)
 				{
 					cmd = &netcmds[j][buf];

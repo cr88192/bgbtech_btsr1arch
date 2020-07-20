@@ -274,6 +274,8 @@ extern "C" {
 // #define BGBCC_TYFL_VIRTUAL			BGBCC_TYFL_VOLATILE
 #define BGBCC_TYFL_DYNAMIC			BGBCC_TYFL_XCALL
 
+#define BGBCC_TYFL_REGISTER			BGBCC_TYFL_INLINE
+
 //#define BGBCC_TYFL_GETSET			(BGBCC_TYFL_EVENT|BGBCC_TYFL_BYREF)
 //#define BGBCC_TYFL_GETTER			(BGBCC_TYFL_GETSET|BGBCC_TYFL_STRICT)
 //#define BGBCC_TYFL_SETTER			BGBCC_TYFL_GETSET
@@ -292,6 +294,7 @@ extern "C" {
 #define BGBCC_TYFL_FAR				(1LL<<38)
 
 #define BGBCC_TYFL_SYSCALL			(1LL<<39)
+#define BGBCC_TYFL_AUTO				(1LL<<40)
 
 #define BGBCC_TYFL_DFL_MASK			\
 	(BGBCC_TYFL_PUBLIC|BGBCC_TYFL_PRIVATE|BGBCC_TYFL_PROTECTED)
@@ -455,6 +458,20 @@ extern "C" {
 
 #define BGBCC_IMGFMT_RIL3	BGBCC_FOURCC('R', 'I', 'L', '3')
 #define BGBCC_IMGFMT_FR2E	BGBCC_FOURCC('F', 'R', '2', 'E')
+
+#define BGBCC_IMGFMT_WAD	BGBCC_FOURCC('W', 'A', 'D', ' ')
+#define BGBCC_IMGFMT_WAD2	BGBCC_FOURCC('W', 'A', 'D', '2')
+#define BGBCC_IMGFMT_RWAD	BGBCC_FOURCC('R', 'W', 'A', 'D')
+#define BGBCC_IMGFMT_LUMP	BGBCC_FOURCC('L', 'U', 'M', 'P')
+
+#define BGBCC_FMT_WAD		BGBCC_FOURCC('W', 'A', 'D', ' ')
+#define BGBCC_FMT_WAD2		BGBCC_FOURCC('W', 'A', 'D', '2')
+#define BGBCC_FMT_RWAD		BGBCC_FOURCC('R', 'W', 'A', 'D')
+#define BGBCC_FMT_LUMP		BGBCC_FOURCC('L', 'U', 'M', 'P')
+
+#define BGBCC_FMT_WAV		BGBCC_FOURCC('W', 'A', 'V', ' ')
+#define BGBCC_FMT_BMP		BGBCC_FOURCC('B', 'M', 'P', ' ')
+#define BGBCC_FMT_AVI		BGBCC_FOURCC('A', 'V', 'I', ' ')
 
 #endif
 
@@ -696,6 +713,8 @@ byte ccxl_in_func;
 byte ccxl_var_needsinit;
 byte ccxl_isdef_methodproto;
 
+byte pel_cmpr;			//PEL compression method
+
 byte optmode;			//optimization mode
 byte curprd;			//current predication mode
 int loop_localstate;	
@@ -802,6 +821,8 @@ ccxl_status (*EndFunction)(BGBCC_TransState *ctx,
 	BGBCC_CCXL_LiteralInfo *obj);
 ccxl_status (*LoadBufferDLL)(BGBCC_TransState *ctx,
 	byte *buf, int sz);
+ccxl_status (*AddResourceData)(BGBCC_TransState *ctx,
+	char *name, byte *buf, int sz, fourcc imgfmt);
 };
 
 #include <bgbcc_auto.h>

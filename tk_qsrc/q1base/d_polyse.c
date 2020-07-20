@@ -273,17 +273,24 @@ void D_DrawSubdiv (void)
 		index1 = pfv + ptri[i].vertindex[1];
 		index2 = pfv + ptri[i].vertindex[2];
 
-//		if (((index0->v[1]-index1->v[1]) *
-//			 (index0->v[0]-index2->v[0]) -
-//			 (index0->v[0]-index1->v[0]) * 
-//			 (index0->v[1]-index2->v[1])) >= 0)
+#if 1
+		if (((index0->v[1]-index1->v[1]) *
+			 (index0->v[0]-index2->v[0]) -
+			 (index0->v[0]-index1->v[0]) * 
+			 (index0->v[1]-index2->v[1])) >= 0)
+		{
+			continue;
+		}
+#endif
 
+#if 0
 		f=(index0->v[1]-index1->v[1]) * (index0->v[0]-index2->v[0]);
 		g=(index0->v[0]-index1->v[0]) * (index0->v[1]-index2->v[1]);
 		if((f - g) >= 0)
 		{
 			continue;
 		}
+#endif
 
 		d_pcolormap = &((byte *)acolormap)[index0->v[4] & 0xFF00];
 		d_light = index0->v[4];
@@ -462,6 +469,7 @@ split:
 	z = new[5]>>16;
 	zbuf = zspantable[new[1]] + new[0];
 	if (z >= *zbuf)
+//	if(1)
 	{
 		int		pix;
 		

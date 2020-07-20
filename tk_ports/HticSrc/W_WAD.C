@@ -598,6 +598,151 @@ int W_DecodeBufferLZ4(byte *ibuf, byte *obuf, int isz, int osz)
 	return(ct-obuf);
 }
 
+#ifdef __BJX2__
+// #if 0
+int W_DecodeBufferRP2(
+	byte *ibuf, byte *obuf, int ibsz, int obsz);
+
+__asm {
+W_DecodeBufferRP2:
+// R4=ibuf
+// R5=obuf
+// R6=ibsz / scratch
+// R7=obsz / scratch
+// R16=scratch
+// R17=scratch
+// R18=cs
+// R19=ct
+// R20=rl
+// R21=l
+// R22=d
+
+	MOV R4, R18
+	MOV R5, R19
+	
+.L0:
+	MOV.Q	(R18), R16
+	TEST	0x01, R16
+	BT		.L2
+	TEST	0x02, R16
+	BT		.L3
+	TEST	0x04, R16
+	BT		.L4
+	TEST	0x08, R16
+	BT		.L5
+	TEST	0x10, R16
+	BT		.L6
+	TEST	0x20, R16
+	BT		.L7
+	TEST	0x40, R16
+	BT		.L8
+	BREAK
+.L2:
+	ADD		2, R18		|	SHLD	R16, -1, R20
+	AND		7, R20		|	SHLD	R16, -4, R21
+	AND		7, R21		|	SHLD	R16, -7, R22
+	AND		511, R22	|	ADD		3, R21	
+	BRA		.L9
+.L3:
+	MOV		8191, R3
+	ADD		3, R18	|	SHLD	R16, -2, R20
+	AND		7, R20	|	SHLD	R16, -5, R21
+	AND		63, R21	|	SHLD	R16, -11, R22
+	AND		R3, R22	|	ADD		4, R21	
+	BRA		.L9
+.L4:
+	ADD		4, R18		|	SHLD	R16, -3, R20
+	AND		7, R20		|	SHLD	R16, -6, R21
+	AND		511, R21	|	SHLD	R16, -15, R22
+	ADD		4, R21
+	BRA		.L9
+.L5:
+	ADD		1, R18		|	SHAD	R16, -1, R20
+	AND		0x78, R20
+	ADD		8, R20
+.L5_1:
+	ADD		R18, R20, R6	|	ADD		R19, R20, R7
+.L5_0:
+	MOV.Q	(R18, 0), R16
+	MOV.Q	(R18, 8), R17
+	ADD		16, R18
+	MOV.Q	R16, (R19, 0)
+	MOV.Q	R17, (R19, 8)
+	ADD		16, R19
+	CMPGT	R19, R7
+	BT		.L5_0
+	MOV		R6, R18		|	MOV		R7, R19
+	BRA		.L0
+.L6:
+	MOV		0x3FFF, R1
+	MOV		0x7FFF, R2
+	MOV		0x3FFFFF, R3
+	ADD			1, R18			|	SHLD		R16, -5, R20
+	AND			7, R20			|	TEST		256, R16
+	ADD?T		1, R18			|	ADD?F		2, R18
+	SHLD?T		R16, -9, R21	|	SHLD?F		R16, -10, R21
+	SHLD.Q?T	R16, -16, R7	|	SHLD.Q?F	R16, -24, R7
+	AND?T		127, R21		|	AND?F		R1, R21
+	ADD			4, R21			|	TEST		1, R7
+	ADD?T		2, R18			|	ADD?F		3, R18
+	SHLD?T		R7, -1, R22		|	SHLD?F		R7, -2, R22
+	AND?T		R2, R22			|	AND?F		R3, R22
+	BRA		.L9
+.L7:
+	ADD		1, R18		|	SHLD	R16, -6, R20
+	AND		3, R20
+	TEST	R20, R20
+	BT		.L1
+	MOV.L	(R18), R16
+	ADD		R20, R18
+	MOV.L	R16, (R19)
+	ADD		R20, R19
+	BRA		.L0
+.L8:
+	ADD		2, R18		|	SHLD	R16, -7, R20
+	AND		511, R20
+	ADD		1, R20
+	SHLD	R20, 3, R20
+	BRA		.L5_1
+.L9:
+	MOV.Q	(R18), R16
+	ADD		R20, R18
+	MOV.Q	R16, (R19)
+	ADD		R20, R19
+	SUB		R19, R22, R6
+	ADD		R19, R21, R7
+	CMPGT	15, R22
+	BT		.L11
+	MOV.Q	(R6, 0), R16
+	MOV.Q	(R6, 8), R17
+.L12:
+	MOV.Q	R16, (R19, 0)
+	MOV.Q	R17, (R19, 8)
+	ADD		R22, R19
+	CMPGT	R19, R7
+	BT		.L12
+	BRA		.L10
+.L11:
+	MOV.Q	(R6, 0), R16
+	MOV.Q	(R6, 8), R17
+	ADD		16, R6
+	MOV.Q	R16, (R19, 0)
+	MOV.Q	R17, (R19, 8)
+	ADD		16, R19
+	CMPGT	R19, R7
+	BT		.L11
+.L10:
+	MOV		R7, R19
+	BRA		.L0
+.L1:
+	SUB		R19, R5, R2
+	RTS
+};
+#endif
+
+// #ifndef __BJX2__
+// #if 1
+#if 0
 int W_DecodeBufferRP2(
 	byte *ibuf, byte *obuf, int ibsz, int obsz)
 {
@@ -695,16 +840,283 @@ int W_DecodeBufferRP2(
 	
 	return(ct-obuf);
 }
+#endif
+
+#ifndef __BJX2__
+//#if 1
+int W_DecodeBufferRP2(
+	byte *ibuf, byte *obuf, int ibsz, int obsz)
+{
+	u32 tag;
+	byte *cs, *ct, *cse, *cs1, *cs1e, *ct1e;
+	int pl, pd;
+	int rl, l, d;
+	u64 t0, v0, v1;
+	int t1, t2;
+	
+	cs=ibuf; cse=ibuf+ibsz;
+	ct=obuf;
+	pl=0; pd=0;
+	
+	while(1)
+	{
+		t0=*(u64 *)cs;
+		if(!(t0&0x01))
+		{
+			cs+=2;
+			rl=(t0>>1)&7;
+			l=((t0>>4)&7)+3;
+			d=(t0>>7)&511;
+		}else
+			if(!(t0&0x02))
+		{
+			cs+=3;
+			rl=(t0>>2)&7;
+			l=((t0>>5)&63)+4;
+			d=(t0>>11)&8191;
+		}else
+			if(!(t0&0x04))
+		{
+			cs+=4;
+			rl=(t0>>3)&7;
+			l=((t0>>6)&511)+4;
+			d=(t0>>15)&131071;
+		}else
+			if(!(t0&0x08))
+		{
+			cs++;
+			t1=(t0>>4)&15;
+			rl=(t1+1)*8;
+//			W_RawCopyB(ct, cs, rl);
+//			cs+=rl;
+//			ct+=rl;
+
+			cs1e=cs+rl;
+			ct1e=ct+rl;
+			while(ct<ct1e)
+			{
+				v0=((u64 *)cs)[0];
+				v1=((u64 *)cs)[1];
+				cs+=16;
+				((u64 *)ct)[0]=v0;
+				((u64 *)ct)[1]=v1;
+				ct+=16;
+			}			
+			cs=cs1e;
+			ct=ct1e;
+
+			continue;
+		}else
+			if(!(t0&0x10))
+		{
+			/* Long Match */
+			cs++;
+			rl=(t0>>5)&7;
+			t1=t0>>8;
+			if(!(t1&1))
+				{ l=((t1>>1)&0x007F)+4; cs+=1; t2=t0>>16; }
+			else
+				{ l=((t1>>2)&0x3FFF)+4; cs+=2; t2=t0>>24; }
+			if(!(t2&1))
+				{ d=((t2>>1)&0x007FFF); cs+=2; }
+			else
+				{ d=((t2>>2)&0x3FFFFF); cs+=3; }
+		}else
+			if(!(t0&0x20))
+		{
+			cs++;
+			rl=(t0>>6)&3;
+			if(!rl)break;
+			*(u32 *)ct=*(u32 *)cs;
+			cs+=rl;
+			ct+=rl;
+			continue;
+		}else
+			if(!(t0&0x40))
+		{
+			/* Long Raw */
+			cs+=2;
+			t1=(t0>>7)&511;
+			rl=(t1+1)*8;
+//			W_RawCopyB(ct, cs, rl);
+//			cs+=rl;
+//			ct+=rl;
+
+			cs1e=cs+rl;
+			ct1e=ct+rl;
+			while(ct<ct1e)
+			{
+				v0=((u64 *)cs)[0];
+				v1=((u64 *)cs)[1];
+				cs+=16;
+				((u64 *)ct)[0]=v0;
+				((u64 *)ct)[1]=v1;
+				ct+=16;
+			}			
+			cs=cs1e;
+			ct=ct1e;
+			continue;
+		}else
+		{
+			__debugbreak();
+		}
+
+		*(u64 *)ct=*(u64 *)cs;
+		cs+=rl;
+		ct+=rl;
+		
+		cs1=ct-d;
+		ct1e=ct+l;
+		
+		if(d<16)
+		{
+			v0=((u64 *)cs1)[0];
+			v1=((u64 *)cs1)[1];
+			while(ct<ct1e)
+			{
+				((u64 *)ct)[0]=v0;
+				((u64 *)ct)[1]=v1;
+				ct+=d;
+			}
+		}else
+		{
+			while(ct<ct1e)
+			{
+				v0=((u64 *)cs1)[0];
+				v1=((u64 *)cs1)[1];
+				cs1+=16;
+				((u64 *)ct)[0]=v0;
+				((u64 *)ct)[1]=v1;
+				ct+=16;
+			}
+		}
+		
+		ct=ct1e;
+		
+//		W_MatchCopy2(ct, l, d);
+//		ct+=l;
+	}
+	
+	return(ct-obuf);
+}
+#endif
 
 
 int W_HashIndexForName(char *s)
 {
 	int j, h;
-	j = *(int *)(s);
+//	j = *(int *)(s);
+	j = (((int *)(s))[0])+(((int *)(s))[1]);
 //	h = ((j*65521)>>16)&63;
-	h = ((j*16777213)>>24)&63;
+//	h = ((j*16777213)>>24)&63;
+	h = ((j*0xF14A83)>>24)&63;
 	return(h);
 }
+
+int W_DigitBase32(int v)
+{
+	if((v>=0) && (v<=9))
+		return('0'+v);
+//	return('a'+(v-10));
+	return('A'+(v-10));
+}
+
+int W_Base32Idx(int ch)
+{
+	if((ch>='0') && (ch<='9'))
+		return(ch-'0');
+	if((ch>='a') && (ch<='z'))
+		return(10+(ch-'a'));
+	if((ch>='A') && (ch<='Z'))
+		return(10+(ch-'A'));
+	return(0);
+}
+
+int W_WadBuildPfxName(char *tn, char *name, int pfx)
+{
+	char *s, *t;
+
+	memset(tn, 0, 16);
+
+	if(!pfx)
+	{
+//		w_strlwr_n(tn, name, 16);
+		s=name; t=tn;
+		while(*s && (*s!='.'))
+			*t++=toupper(*s++);
+		*t++=0;
+
+		return(0);
+	}
+
+	if(pfx<32)
+	{
+		tn[0]=W_DigitBase32(pfx&31);
+		tn[1]='|';
+//		w_strlwr_n(tn+2, name, 12);
+		s=name; t=tn+2;
+		while(*s && (*s!='.'))
+			*t++=toupper(*s++);
+		*t++=0;
+		return(0);
+	}
+
+	if(pfx<1024)
+	{
+		tn[0]=W_DigitBase32((pfx>> 5)&31);
+		tn[1]=W_DigitBase32((pfx>> 0)&31);
+		tn[2]='|';
+//		w_strlwr_n(tn+2, name, 12);
+		s=name; t=tn+3;
+		while(*s && (*s!='.'))
+			*t++=toupper(*s++);
+		*t++=0;
+		return(0);
+	}
+
+	tn[0]=W_DigitBase32((pfx>>10)&31);
+	tn[1]=W_DigitBase32((pfx>> 5)&31);
+	tn[2]=W_DigitBase32((pfx>> 0)&31);
+	tn[3]='|';
+//	w_strlwr_n(tn+4, name, 12);
+	s=name; t=tn+4;
+	while(*s && (*s!='.'))
+		*t++=toupper(*s++);
+	*t++=0;
+	return(0);
+}
+
+int W_WadSplitPfxName(char **rtn, char *name)
+{
+	char *s;
+	int pfx;
+
+	if(name[1]=='|')
+	{
+		s=name+2;
+		pfx=W_Base32Idx(name[0]);
+	}else if(name[2]=='|')
+	{
+		s=name+3;
+		pfx=(W_Base32Idx(name[0])<<5) |
+			(W_Base32Idx(name[1])   ) ;
+	}else if(name[3]=='|')
+	{
+		s=name+4;
+		pfx=(W_Base32Idx(name[0])<<10) |
+			(W_Base32Idx(name[1])<< 5) |
+			(W_Base32Idx(name[2])    ) ;
+	}else
+	{
+		s=name;
+		pfx=0;
+	}
+
+	*rtn=s;
+	return(pfx);
+}
+
+int w_lumpdirnum;
 
 /*
 ====================
@@ -728,8 +1140,11 @@ int W_HashIndexForName(char *s)
 void W_InitMultipleFiles (char **filenames)
 {	
 	lumpinfo_t*		lump_p;
+	char	tn[23];
+	short	dirremap[256];
+	char	*s0;
 	int		size;
-	int		i, j, h;
+	int		i, j, k, h, pf, pf1;
 
 //
 // open all the files, load headers, and count lumps
@@ -742,6 +1157,37 @@ void W_InitMultipleFiles (char **filenames)
 
 	if (!numlumps)
 		I_Error ("W_InitFiles: no files found");
+
+	/* Dir Extension: Normalize Directories */
+	dirremap[0]=0;
+	w_lumpdirnum=1;
+	for(i=0; i<numlumps; i++)
+	{
+		lump_p = lumpinfo + i;
+		
+		pf=W_WadSplitPfxName(&s0, lump_p->name);
+		pf1=dirremap[pf];
+		W_WadBuildPfxName(tn, s0, pf1);
+		memcpy(lump_p->name, tn, 16);
+		
+		if(lump_p->cmp==1)
+		{
+			j=W_CheckDirNumForNameBase(tn, i);
+			if(j>=0)
+			{
+				k=(lump_p->position)&32767;
+				pf1=lumpinfo[j].position;
+				dirremap[k]=pf1;
+				lump_p->position=pf1;
+			}else
+			{
+				pf1=w_lumpdirnum++;
+				k=(lump_p->position)&32767;
+				dirremap[k]=pf1;
+				lump_p->position=pf1;
+			}
+		}
+	}
 
 	for(i=0; i<64; i++)
 	{
@@ -816,33 +1262,95 @@ int	W_NumLumps (void)
 ====================
 */
 
-int	W_CheckNumForName (char *name)
+int	W_CheckNumForNameBase (char *name, int base)
 {
-	char	name8[9];
-	int		v1,v2;
+	char	name8[17];
+//	int		v1,v2;
+	u64		v1,v2;
 	lumpinfo_t	*lump_p;
 
 // make the name into two integers for easy compares
 
-	strncpy (name8,name,8);
-	name8[8] = 0;			// in case the name was a fill 8 chars
-	strupr (name8);			// case insensitive
+//	strncpy (name8,name,8);
+//	name8[8] = 0;			// in case the name was a fill 8 chars
+//	strupr (name8);			// case insensitive
 
-	v1 = *(int *)name8;
-	v2 = *(int *)&name8[4];
+	w_strupr_n (name8, name, 16);
+	name8[16] = 0;
 
+//	v1 = *(int *)name8;
+//	v2 = *(int *)&name8[4];
+	v1 = ((u64 *)name8)[0];
+	v2 = ((u64 *)name8)[1];
 
 // scan backwards so patch lump files take precedence
 
 	lump_p = lumpinfo + numlumps;
 
 	while (lump_p-- != lumpinfo)
-		if ( *(int *)lump_p->name == v1 && *(int *)&lump_p->name[4] == v2)
+	{
+//		if ( *(int *)lump_p->name == v1 && *(int *)&lump_p->name[4] == v2)
+//			return lump_p - lumpinfo;
+		if (	(((u64 *)(lump_p->name))[0] == v1) &&
+				(((u64 *)(lump_p->name))[1] == v2)	)
 			return lump_p - lumpinfo;
+	}
 
 
 	return -1;
 }
+
+int	W_CheckNumForName (char *name)
+{
+	return(W_CheckNumForNameBase(name, numlumps));
+}
+
+int	W_CheckDirNumForNameBase (char *name, int base)
+{
+//	char	name8[9];
+	char	name8[17];
+//	int		v1,v2;
+	u64		v1,v2;
+	lumpinfo_t	*lump_p;
+
+// make the name into two integers for easy compares
+
+//	strncpy (name8,name,8);
+//	name8[8] = 0;			// in case the name was a fill 8 chars
+//	strupr (name8);			// case insensitive
+
+	w_strupr_n (name8, name, 16);
+	name8[16] = 0;
+
+//	v1 = *(int *)name8;
+//	v2 = *(int *)&name8[4];
+
+	v1 = ((u64 *)name8)[0];
+	v2 = ((u64 *)name8)[1];
+
+// scan backwards so patch lump files take precedence
+
+	lump_p = lumpinfo + base;
+
+	while (lump_p-- != lumpinfo)
+	{
+		if(lump_p->cmp!=1)
+			continue;
+//		if ( *(int *)lump_p->name == v1 && *(int *)&lump_p->name[4] == v2)
+		if (	(((u64 *)(lump_p->name))[0] == v1) &&
+				(((u64 *)(lump_p->name))[1] == v2)	)
+			return lump_p - lumpinfo;
+	}
+
+
+	return -1;
+}
+
+int	W_CheckDirNumForName (char *name)
+{
+	return(W_CheckDirNumForNameBase(name, numlumps));
+}
+
 
 
 /*
@@ -1049,3 +1557,50 @@ void W_Profile (void)
 	fclose (f);
 }
 */
+
+
+int W_CheckWadPathId(char *name, int pfx)
+{
+	char tn[23];
+	int i, n, id, ety;
+
+	W_WadBuildPfxName(tn, name, pfx);
+	
+	i=W_CheckDirNumForName(tn);
+	if(i>=0)
+	{
+		id=(lumpinfo[i].position)&32767;
+		return(id);
+	}
+	
+	return(-1);
+}
+
+int W_CheckNumForPathI(char *name, int pfx)
+{
+	char tb[256];
+	int pfx1;
+	char *s, *t;
+	int i;
+
+	s=name; t=tb;
+	while(*s && (*s!='/'))
+		*t++=*s++;
+	*t++=0;
+
+	if(!(*s))
+	{
+		W_WadBuildPfxName(tb, name, pfx);
+		i=W_CheckDirNumForName(tb);
+		return(i);
+	}
+
+	pfx1=W_CheckWadPathId(tb, pfx);
+	i=W_CheckNumForPathI(s+1, pfx1);
+	return(i);
+}
+
+int W_CheckNumForPath(char *name)
+{
+	return(W_CheckNumForPathI(name, 0));
+}

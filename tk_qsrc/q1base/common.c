@@ -1127,7 +1127,8 @@ being registered.
 void COM_CheckRegistered (void)
 {
 	int             h;
-	unsigned short  check[128];
+//	unsigned short  check[128];
+	unsigned short  check[128+32];
 	int                     i;
 
 	COM_OpenFile("gfx/pop.lmp", &h);
@@ -1144,7 +1145,8 @@ void COM_CheckRegistered (void)
 		return;
 	}
 
-	Sys_FileRead (h, check, sizeof(check));
+//	Sys_FileRead (h, check, sizeof(check));
+	COM_FileRead (h, check, 256);
 	COM_CloseFile (h);
 	
 	for (i=0 ; i<128 ; i++)
@@ -1327,6 +1329,8 @@ typedef struct
 {
 	char    name[MAX_QPATH];
 	int             filepos, filelen;
+	int		csize;
+	byte	cmp;
 } packfile_t;
 
 typedef struct pack_s
@@ -1480,6 +1484,13 @@ Finds the file in the search path.
 Sets com_filesize and one of handle or file
 ===========
 */
+
+int com_findfile_csize;
+int com_findfile_cmp;
+
+void *com_findfile_cmpbuf;
+int com_findfile_szcmpbuf;
+
 int COM_FindFile (char *filename, int *handle, FILE **file)
 {
 	searchpath_t    *search;
@@ -1504,6 +1515,9 @@ int COM_FindFile (char *filename, int *handle, FILE **file)
 			search = search->next;
 	}
 
+	com_findfile_csize = 0;
+	com_findfile_cmp = 0;
+
 	for ( ; search ; search = search->next)
 	{
 	// is the element a pak file?
@@ -1522,12 +1536,22 @@ int COM_FindFile (char *filename, int *handle, FILE **file)
 						Sys_FileSeek (pak->handle, pak->files[i].filepos);
 					}
 					else
-					{       // open a new file on the pakfile
+					{
+						if(pak->files[i].cmp)
+						{
+							__debugbreak();
+						}
+						
+					       // open a new file on the pakfile
 						*file = fopen (pak->filename, "rb");
 						if (*file)
 							fseek (*file, pak->files[i].filepos, SEEK_SET);
 					}
 					com_filesize = pak->files[i].filelen;
+
+					com_findfile_csize = pak->files[i].csize;
+					com_findfile_cmp = pak->files[i].cmp;
+
 					return com_filesize;
 				}
 		}
@@ -1576,6 +1600,10 @@ int COM_FindFile (char *filename, int *handle, FILE **file)
 				Sys_FileClose (i);
 				*file = fopen (netpath, "rb");
 			}
+
+			com_findfile_csize = 0;
+			com_findfile_cmp = 0;
+
 			return com_filesize;
 		}
 		
@@ -1638,6 +1666,329 @@ void COM_CloseFile (int h)
 }
 
 
+int COM_DecodeBufferRP2(
+	byte *ibuf, byte *obuf, int ibsz, int obsz)
+{
+	u32 tag;
+	byte *cs, *ct, *cse, *cs1, *cs1e, *ct1e;
+	int pl, pd;
+	int rl, l, d;
+	u64 t0, v0, v1;
+	int t1, t2;
+	
+	cs=ibuf; cse=ibuf+ibsz;
+	ct=obuf;
+	pl=0; pd=0;
+	
+	while(1)
+	{
+		t0=*(u64 *)cs;
+		if(!(t0&0x01))
+		{
+			cs+=2;
+			rl=(t0>>1)&7;
+			l=((t0>>4)&7)+3;
+			d=(t0>>7)&511;
+		}else
+			if(!(t0&0x02))
+		{
+			cs+=3;
+			rl=(t0>>2)&7;
+			l=((t0>>5)&63)+4;
+			d=(t0>>11)&8191;
+		}else
+			if(!(t0&0x04))
+		{
+			cs+=4;
+			rl=(t0>>3)&7;
+			l=((t0>>6)&511)+4;
+			d=(t0>>15)&131071;
+		}else
+			if(!(t0&0x08))
+		{
+			cs++;
+			t1=(t0>>4)&15;
+			rl=(t1+1)*8;
+//			W_RawCopyB(ct, cs, rl);
+//			cs+=rl;
+//			ct+=rl;
+
+			cs1e=cs+rl;
+			ct1e=ct+rl;
+			while(ct<ct1e)
+			{
+				v0=((u64 *)cs)[0];
+				v1=((u64 *)cs)[1];
+				cs+=16;
+				((u64 *)ct)[0]=v0;
+				((u64 *)ct)[1]=v1;
+				ct+=16;
+			}			
+			cs=cs1e;
+			ct=ct1e;
+
+			continue;
+		}else
+			if(!(t0&0x10))
+		{
+			/* Long Match */
+			cs++;
+			rl=(t0>>5)&7;
+			t1=t0>>8;
+			if(!(t1&1))
+				{ l=((t1>>1)&0x007F)+4; cs+=1; t2=t0>>16; }
+			else
+				{ l=((t1>>2)&0x3FFF)+4; cs+=2; t2=t0>>24; }
+			if(!(t2&1))
+				{ d=((t2>>1)&0x007FFF); cs+=2; }
+			else
+				{ d=((t2>>2)&0x3FFFFF); cs+=3; }
+		}else
+			if(!(t0&0x20))
+		{
+			cs++;
+			rl=(t0>>6)&3;
+			if(!rl)break;
+			*(u32 *)ct=*(u32 *)cs;
+			cs+=rl;
+			ct+=rl;
+			continue;
+		}else
+			if(!(t0&0x40))
+		{
+			/* Long Raw */
+			cs+=2;
+			t1=(t0>>7)&511;
+			rl=(t1+1)*8;
+//			W_RawCopyB(ct, cs, rl);
+//			cs+=rl;
+//			ct+=rl;
+
+			cs1e=cs+rl;
+			ct1e=ct+rl;
+			while(ct<ct1e)
+			{
+				v0=((u64 *)cs)[0];
+				v1=((u64 *)cs)[1];
+				cs+=16;
+				((u64 *)ct)[0]=v0;
+				((u64 *)ct)[1]=v1;
+				ct+=16;
+			}			
+			cs=cs1e;
+			ct=ct1e;
+			continue;
+		}else
+		{
+			__debugbreak();
+		}
+
+		*(u64 *)ct=*(u64 *)cs;
+		cs+=rl;
+		ct+=rl;
+		
+		cs1=ct-d;
+		ct1e=ct+l;
+		
+		if(d<16)
+		{
+			v0=((u64 *)cs1)[0];
+			v1=((u64 *)cs1)[1];
+			while(ct<ct1e)
+			{
+				((u64 *)ct)[0]=v0;
+				((u64 *)ct)[1]=v1;
+				ct+=d;
+			}
+		}else
+		{
+			while(ct<ct1e)
+			{
+				v0=((u64 *)cs1)[0];
+				v1=((u64 *)cs1)[1];
+				cs1+=16;
+				((u64 *)ct)[0]=v0;
+				((u64 *)ct)[1]=v1;
+				ct+=16;
+			}
+		}
+		
+		ct=ct1e;
+		
+//		W_MatchCopy2(ct, l, d);
+//		ct+=l;
+	}
+	
+	return(ct-obuf);
+}
+
+byte *COM_UnpackL4(byte *ct, byte *ibuf, int isz)
+{
+	byte *cs, *cse;
+//	register byte *cs1, *cs1e, *ct1;
+	byte *cs1, *cs1e, *ct1;
+//	register int tg, lr, ll, ld;
+	u64 tv;
+	int tg, lr, ll, ld;
+	int i;
+	
+	__hint_use_egpr();
+	
+	tg=0;	lr=0;
+	ll=0;	ld=0;
+	
+	cs=ibuf; cse=ibuf+isz;
+	while(cs<cse)
+	{
+		tg=*cs++;
+		lr=(tg>>4)&15;
+		if(lr==15)
+		{
+			i=*cs++;
+			while(i==255)
+				{ lr+=255; i=*cs++; }
+			lr+=i;
+		}
+		
+		ct1=ct; cs1=cs; cs1e=cs+lr;
+		while(cs1<cs1e)
+		{
+			*(u64 *)ct1=*(u64 *)cs1;
+			ct1+=8; cs1+=8;
+		}
+		ct+=lr; cs+=lr;
+		
+		if((cs+1)>=cse)
+		{
+//			printf("TKPE_UnpackL4: Hit CSE\n");
+			break;
+		}
+		
+//		ld=tkfat_getWord(cs);
+		ld=*(u16 *)cs;
+		cs+=2;
+		if(!ld)
+		{
+			printf("TKPE_UnpackL4: End Of Image\n");
+			break;
+		}
+		ll=(tg&15)+4;
+		if(ll==19)
+		{
+			i=*cs++;
+			while(i==255)
+				{ ll+=255; i=*cs++; }
+			ll+=i;
+		}
+		
+		cs1=ct-ld; cs1e=cs1+ll;
+		if(ld>=8)
+//		if(ld>8)
+//		if(ld>4)
+//		if(0)
+		{
+			ct1=ct;
+			while(cs1<cs1e)
+			{
+				((u64 *)ct1)[0]=((u64 *)cs1)[0];
+				((u64 *)ct1)[1]=((u64 *)cs1)[1];
+				ct1+=16; cs1+=16;
+			}
+//				{ *(u64 *)ct1=*(u64 *)cs1; ct1+=8; cs1+=8; }
+//				{ *(u32 *)ct1=*(u32 *)cs1; ct1+=4; cs1+=4; }
+			ct+=ll;
+//			__debugbreak();
+		}else
+//			if(ld>4)
+			if(ld>=4)
+//		if(0)
+		{
+			ct1=ct;
+			while(cs1<cs1e)
+			{
+				((u32 *)ct1)[0]=((u32 *)cs1)[0];
+				((u32 *)ct1)[1]=((u32 *)cs1)[1];
+				ct1+=8; cs1+=8;
+			}
+			ct+=ll;
+//			__debugbreak();
+		}else if(ld==1)
+		{
+			tv=*cs1;		tv|=tv<<8;
+			tv|=tv<<16;		tv|=tv<<32;
+			ct1=ct;
+			while(cs1<cs1e)
+			{
+				((u64 *)ct1)[0]=tv;
+				((u64 *)ct1)[1]=tv;
+				ct1+=16; cs1+=16;
+			}
+			ct+=ll;
+		}else
+		{
+			while(cs1<cs1e)
+				{ *ct++=*cs1++; }
+		}
+	}
+	
+	tg=0;	lr=0;
+	ll=0;	ld=0;
+	
+	return(ct);
+}
+
+// int com_findfile_csize;
+// int com_findfile_cmp;
+// void *com_findfile_cmpbuf;
+// int com_findfile_szcmpbuf;
+
+int COM_FileRead (int handle, void *dest, int count)
+{
+	int i, j, k;
+
+	if(!com_findfile_cmp)
+	{
+		return(Sys_FileRead(handle, dest, count));
+	}
+	
+	if(com_findfile_csize>com_findfile_szcmpbuf)
+	{
+		if(com_findfile_cmpbuf)
+		{
+			free(com_findfile_cmpbuf);
+			com_findfile_cmpbuf=NULL;
+		}
+	}
+
+	if(!com_findfile_cmpbuf)
+	{
+		i=1<<20;
+		while(com_findfile_csize>=i)
+			i=i+(i>>1);
+		com_findfile_cmpbuf=malloc(i);
+		com_findfile_szcmpbuf=i;
+	}
+	
+	Sys_FileRead(handle, com_findfile_cmpbuf, com_findfile_csize);
+
+	if(com_findfile_cmp==3)
+	{
+		COM_DecodeBufferRP2(
+			com_findfile_cmpbuf, dest, com_findfile_csize, count);
+		return(com_findfile_csize);
+	}
+	
+	if(com_findfile_cmp==4)
+	{
+		COM_UnpackL4(
+			dest, com_findfile_cmpbuf, com_findfile_csize);
+		return(com_findfile_csize);
+	}
+	
+	__debugbreak();
+	return(-1);
+}
+
 /*
 ============
 COM_LoadFile
@@ -1649,7 +2000,8 @@ Allways appends a 0 byte.
 cache_user_t *loadcache;
 byte    *loadbuf;
 int             loadsize;
-byte *COM_LoadFile (char *path, int usehunk)
+
+byte *COM_LoadFileSz (char *path, int usehunk, int *rlen)
 {
 	int             h;
 	byte    *buf;
@@ -1671,24 +2023,26 @@ byte *COM_LoadFile (char *path, int usehunk)
 	tk_printf("COM_LoadFile: %s hdl=%d uh=%d\n", path, h, usehunk);
 	
 	if (usehunk == 1)
-		buf = Hunk_AllocName (len+1, base);
+		buf = Hunk_AllocName (len+32+1, base);
 //		buf = Hunk_AllocName (len+256, base);
 	else if (usehunk == 2)
-		buf = Hunk_TempAlloc (len+1);
+		buf = Hunk_TempAlloc (len+32+1);
 	else if (usehunk == 0)
-		buf = Z_Malloc (len+1);
+		buf = Z_Malloc (len+32+1);
 	else if (usehunk == 3)
-		buf = Cache_Alloc (loadcache, len+1, base);
+		buf = Cache_Alloc (loadcache, len+32+1, base);
 	else if (usehunk == 4)
 	{
 		tk_printf("COM_LoadFile: loadbuf=%p loadsz=%d len=%d\n",
 			loadbuf, loadsize, len);
 
 		if (len+1 > loadsize)
-			buf = Hunk_TempAlloc (len+1);
+			buf = Hunk_TempAlloc (len+32+1);
 		else
 			buf = loadbuf;
 	}
+	else if (usehunk == 5)
+		buf = malloc (len+32+1);
 	else
 		Sys_Error ("COM_LoadFile: bad usehunk");
 
@@ -1700,11 +2054,23 @@ byte *COM_LoadFile (char *path, int usehunk)
 	((byte *)buf)[len] = 0;
 
 	Draw_BeginDisc ();
-	Sys_FileRead (h, buf, len);                     
+//	Sys_FileRead (h, buf, len);                     
+	COM_FileRead (h, buf, len);                     
 	COM_CloseFile (h);
 	Draw_EndDisc ();
 
+	((byte *)buf)[len] = 0;
+	if(rlen)
+		*rlen=len;
+
 	return buf;
+}
+
+byte *COM_LoadFile (char *path, int usehunk)
+{
+	int l;
+	l=0;
+	return(COM_LoadFileSz(path, usehunk, &l));
 }
 
 byte *COM_LoadHunkFile (char *path)
@@ -1804,6 +2170,8 @@ pack_t *COM_LoadPackFile (char *packfile)
 		strcpy (newfiles[i].name, info[i].name);
 		newfiles[i].filepos = LittleLong(info[i].filepos);
 		newfiles[i].filelen = LittleLong(info[i].filelen);
+		newfiles[i].csize = newfiles[i].filelen;
+		newfiles[i].cmp = 0;
 	}
 
 	printf("COM_LoadPackFile: E\n");
@@ -1822,6 +2190,169 @@ pack_t *COM_LoadPackFile (char *packfile)
 	return pack;
 }
 
+
+typedef struct
+{
+	byte	id[4];		// WAD2
+	u32		numlumps;
+	u32		infotableofs;
+	u32		typeofs;
+} wad2info_t;
+
+typedef struct
+{
+	u32		filepos;
+	u32		csize;
+	u32		dsize;
+	byte	ety;		//Entry Type
+	byte	cmp;		//Compression
+	u16		chn;		//Chain (ExWAD)
+	byte	name[16];
+} wad2lump_t;
+
+int com_base32idx(int ch)
+{
+	if((ch>='0') && (ch<='9'))
+		return(ch-'0');
+	if((ch>='a') && (ch<='z'))
+		return(10+(ch-'a'));
+	if((ch>='A') && (ch<='Z'))
+		return(10+(ch-'A'));
+	return(0);
+}
+
+pack_t *COM_LoadWad2AFile (char *packfile)
+{
+	wad2info_t   header;
+	int                             i, j, k, n;
+	packfile_t              *newfiles;
+	int                             numpackfiles;
+	pack_t                  *pack;
+	int                             packhandle;
+	wad2lump_t             info[MAX_FILES_IN_PACK];
+	char					w2paths[64][64];
+	char					tn[256];
+	char					tytab[64][5];
+	char					*sn;
+//	static dpackfile_t             info[MAX_FILES_IN_PACK];
+	unsigned short          crc;
+
+	if (Sys_FileOpenRead (packfile, &packhandle) == -1)
+	{
+		Con_Printf ("Couldn't open %s\n", packfile);
+		return NULL;
+	}
+	
+	printf("COM_LoadPackFile: A\n");
+	
+	Sys_FileRead (packhandle, (void *)&header, sizeof(header));
+	if (header.id[0] != 'W' || header.id[1] != 'A'
+	|| header.id[2] != 'D' || header.id[3] != '2')
+	{
+//		Sys_Error ("%s is not a packfile", packfile);
+		Sys_FileClose(packhandle);
+		return(NULL);
+	}
+	header.infotableofs = LittleLong (header.infotableofs);
+	header.numlumps = LittleLong (header.numlumps);
+	header.typeofs = LittleLong (header.typeofs);
+
+	printf("COM_LoadPackFile: B\n");
+
+//	numpackfiles = header.dirlen / sizeof(dpackfile_t);
+	numpackfiles = header.numlumps;
+
+	if (numpackfiles > MAX_FILES_IN_PACK)
+		Sys_Error ("%s has %i files", packfile, numpackfiles);
+
+//	if (numpackfiles != PAK0_COUNT)
+//		com_modified = true;    // not the original file
+
+	newfiles = Hunk_AllocName (numpackfiles * sizeof(packfile_t), "packfile");
+
+	Sys_FileSeek (packhandle, header.typeofs);
+	for(i=0; i<64; i++)
+	{
+		sn=tytab[i];
+		Sys_FileRead (packhandle, (void *)sn, 4);
+		sn[4]=0;
+		for(j=0; j<4; j++)
+		{
+			if(sn[j]==' ')sn[j]=0;
+			sn[j]=tolower(sn[j]);
+		}
+	}
+
+	Sys_FileSeek (packhandle, header.infotableofs);
+	Sys_FileRead (packhandle, (void *)info, numpackfiles*32);
+
+	printf("COM_LoadPackFile: C\n");
+
+// crc the directory to check for modifications
+//	CRC_Init (&crc);
+//	for (i=0 ; i<header.dirlen ; i++)
+//		CRC_ProcessByte (&crc, ((byte *)info)[i]);
+//	if (crc != PAK0_CRC)
+//		com_modified = true;
+
+	printf("COM_LoadPackFile: D\n");
+
+	n=0;
+// parse the directory
+	for (i=0 ; i<numpackfiles ; i++)
+	{
+		sn=info[i].name;
+		if(sn[1]=='|')
+		{
+			j=com_base32idx(sn[0]);
+			sprintf(tn, "%s/%s", w2paths[j], sn+2);
+		}else if(sn[2]=='|')
+		{
+			j=(com_base32idx(sn[0])<<5)+com_base32idx(sn[1]);
+			sprintf(tn, "%s/%s", w2paths[j], sn+3);
+		}else
+		{
+			strcpy(tn, sn);
+		}
+		if((info[i].ety>=' '))
+		{
+			strcat(tn, ".");
+			strcat(tn, tytab[(info[i].ety)-' ']);
+		}
+		
+		if((info[i].cmp==1) || (info[i].cmp==2))
+		{
+			j=(info[i].filepos)&32767;
+			strcpy(w2paths[j], tn);
+			continue;
+		}
+	
+		strcpy (newfiles[n].name, tn);
+		newfiles[n].filepos = LittleLong(info[i].filepos);
+		newfiles[n].filelen = LittleLong(info[i].dsize);
+		newfiles[n].csize = LittleLong(info[i].csize);
+		newfiles[n].cmp = info[i].cmp;
+		n++;
+	}
+
+	numpackfiles = n;
+
+	printf("COM_LoadPackFile: E\n");
+
+	pack = Hunk_Alloc (sizeof (pack_t));
+	strcpy (pack->filename, packfile);
+	pack->handle = packhandle;
+//	pack->numfiles = numpackfiles;
+	pack->numfiles = numpackfiles;
+	pack->files = newfiles;
+
+	printf("COM_LoadPackFile: F\n");
+
+	printf ("Added packfile %s (%i files)\n", packfile, numpackfiles);
+	
+	Con_Printf ("Added packfile %s (%i files)\n", packfile, numpackfiles);
+	return pack;
+}
 
 /*
 ================
@@ -1858,6 +2389,20 @@ void COM_AddGameDirectory (char *dir)
 //
 	for(i=0; i<10; i++)
 	{
+		sprintf (pakfile, "%s/pak%dlz.wad", dir, i);
+		pak = COM_LoadWad2AFile (pakfile);
+
+		if(pak)
+		{
+			printf("COM_AddGameDirectory: Got WAD2A %s %p\n", pakfile, pak);
+
+			search = Hunk_Alloc (sizeof(searchpath_t));
+			search->pack = pak;
+			search->next = com_searchpaths;
+			com_searchpaths = search;
+			continue;
+		}
+
 		sprintf (pakfile, "%s/pak%i.pak", dir, i);
 //		tk_sprintf (pakfile, "%s/pak%i.pak", dir, i);
 //		tk_sprintf (pakfile, "%s/pak%d.pak", dir, i);

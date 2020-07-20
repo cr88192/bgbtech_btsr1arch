@@ -165,6 +165,18 @@ void H2_Main(void)
 	if(w_chkaccess("hexenlz.wad")>=0)
 	{
 		wadfiles[0] = "hexenlz.wad";
+	}else
+		if(w_chkaccess("hexen.wad")>=0)
+	{
+		wadfiles[0] = "hexen.wad";
+	}else
+		if(w_chkaccess("hexen1lz.wad")>=0)
+	{
+		wadfiles[0] = "hexen1lz.wad";
+	}else
+		if(w_chkaccess("hexen1.wad")>=0)
+	{
+		wadfiles[0] = "hexen1.wad";
 	}
 
 	HandleArgs();

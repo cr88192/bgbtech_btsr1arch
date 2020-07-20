@@ -74,7 +74,8 @@ char			*spritename;
 =================
 */
 
-void R_InstallSpriteLump (int lump, unsigned frame, unsigned rotation, dt_bool flipped)
+void R_InstallSpriteLump (int lump, unsigned frame,
+	unsigned rotation, dt_bool flipped)
 {
 	int		r;
 
@@ -192,7 +193,7 @@ void R_InitSpriteDefs (char **namelist)
 		{
 			//continue;
 			sprites[i].numframes = 0;
-			if (shareware)
+//			if (shareware)
 				continue;
 			I_Error ("R_InitSprites: No lumps found for sprite %s"
 			,namelist[i]);

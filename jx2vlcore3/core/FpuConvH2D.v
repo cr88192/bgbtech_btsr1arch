@@ -9,6 +9,8 @@ reg[63:0]		tRegValFRn;
 reg				tExpIsZero;
 reg				tExpIsNaN;
 
+reg[63:0]		tRegValSpConst;
+
 assign	regValFRn = tRegValFRn;
 
 always @*
@@ -26,6 +28,17 @@ begin
 		regValFRm[13:10],
 		regValFRm[9:0],
 		42'h0 };
+
+// `ifdef def_true
+`ifndef def_true
+	case(regValFRm[5:0])
+		6'h00:		tRegValSpConst = 64'h7FF0_0000_0000_0000;
+		default:	tRegValSpConst = 64'h7FF0_0000_0000_0000;
+	endcase
+
+	if(tExpIsNaN && (regValFRm[9:6]==0))
+		tRegValFRn = { regValFRm[15], tRegValSpConst[62:0] };
+`endif
 end
 
 endmodule

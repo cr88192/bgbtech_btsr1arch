@@ -558,10 +558,12 @@ void BJX2_Op_FLDCFH_GRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 void BJX2_Op_FSTCFH_GRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	float sf;
-	u32 v;
+	u32 v, v0;
 	sf=BJX2_PtrGetDoubleIx(ctx->regs, op->rm);
 	BJX2_PtrSetFloat(&v, sf);
-	ctx->regs[op->rn]=((u64)v)<<32;
+//	ctx->regs[op->rn]=((u64)v)<<32;
+	v0=ctx->regs[op->rn];
+	ctx->regs[op->rn]=(((u64)v)<<32)|v0;
 }
 
 void BJX2_Op_FNEG_GRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
@@ -598,6 +600,15 @@ void BJX2_Op_FCMPGT_GRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 		ctx->regs[BJX2_REG_SR]|=1;
 	else
 		ctx->regs[BJX2_REG_SR]&=~1;
+}
+
+void BJX2_Op_FLDCH_ImmGReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u32 v;
+//	v=ctx->regs[op->rm];
+	v=op->imm;
+	v=BJX2_CvtHalfToFloat(v);
+	BJX2_PtrSetDoubleIx(ctx->regs, op->rn, BJX2_PtrGetFloat(&v));
 }
 #endif
 

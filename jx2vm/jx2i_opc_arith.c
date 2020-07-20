@@ -1877,6 +1877,43 @@ void BJX2_Op_SHLDQ_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	}
 }
 
+#if 1
+void BJX2_Op_SHAR_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	int shl;
+	
+	shl=(sbyte)ctx->regs[op->ro];
+	ctx->regs[op->rn]=
+		((s32)ctx->regs[op->rm])>>(shl&31);
+}
+
+void BJX2_Op_SHLR_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	int shl;
+	
+	shl=(sbyte)ctx->regs[op->ro];
+	ctx->regs[op->rn]=
+		((u32)ctx->regs[op->rm])>>(shl&31);
+}
+
+void BJX2_Op_SHARQ_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	int shl;
+	
+	shl=(sbyte)ctx->regs[op->ro];
+	ctx->regs[op->rn]=
+		ctx->regs[op->rm]>>(shl&63);
+}
+
+void BJX2_Op_SHLRQ_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	int shl;
+	
+	shl=(sbyte)ctx->regs[op->ro];
+	ctx->regs[op->rn]=
+		ctx->regs[op->rm]>>(shl&63);
+}
+#endif
 
 void BJX2_Op_CSELT_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {

@@ -1759,14 +1759,19 @@ int BGBCC_JX2_EmitWordI(BGBCC_JX2_Context *ctx, int val)
 				{
 //					val&=0xDFFF;
 					val&=0xEFFF;
-					if((ctx->op_is_wex2)&1)
-						val|=0x0400;
 
 					if((ctx->op_is_wex2)&2)
 					{
-						val|=0x0A00;
 						if((val&0x0F00)==0x0200)
-							val|=0x0100;
+							val|=0x0B00;
+						else
+							val|=0x0A00;
+						if((ctx->op_is_wex2)&1)
+							val|=0x0400;
+					}else
+					{
+						if((ctx->op_is_wex2)&1)
+							val|=0x0400;
 					}
 				}else
 					if((val&0xFE00)==0xF800)
@@ -2457,6 +2462,16 @@ int BGBCC_JX2_EmitGetOffs(BGBCC_JX2_Context *ctx)
 	}
 
 	return(ctx->sec_pos[ctx->sec]-ctx->sec_buf[ctx->sec]);
+}
+
+int BGBCC_JX2_EmitGetSecOffs(BGBCC_JX2_Context *ctx, int sec)
+{
+	if(ctx->is_simpass)
+	{
+		return(ctx->sec_vpos[sec]-ctx->sec_buf[sec]);
+	}
+
+	return(ctx->sec_pos[sec]-ctx->sec_buf[sec]);
 }
 
 int BGBCC_JX2_EmitBAlign(BGBCC_JX2_Context *ctx, int al)

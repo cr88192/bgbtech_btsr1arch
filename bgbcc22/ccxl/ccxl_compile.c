@@ -3129,7 +3129,14 @@ void BGBCC_CCXL_EmitVar2(BGBCC_TransState *ctx,
 	if(!s1)s1="_";
 
 	if(li&BGBCC_TYFL_EXTERN)
-		return;
+	{
+		if(!v && BGBCC_CCXL_CheckDefinedContextName(ctx,
+			CCXL_CMD_GLOBALVARDECL, name))
+		{
+			return;
+		}
+//		return;
+	}
 
 //	if(ctx->vlcl_curseq && !(li&BGBCC_TYFL_STATIC))
 	if(ctx->vlcl_curseq)
@@ -3141,6 +3148,8 @@ void BGBCC_CCXL_EmitVar2(BGBCC_TransState *ctx,
 	op=CCXL_CMD_VARDECL;
 	if(li&BGBCC_TYFL_STATIC)
 		op=CCXL_CMD_STATICVARDECL;
+	if(li&BGBCC_TYFL_EXTERN)
+		op=CCXL_CMD_GLOBALVARDECL;
 
 #if 0
 	if(ctx->cur_struct && (*s=='('))
@@ -3715,6 +3724,13 @@ BCCX_Node *BGBCC_CCXL_CompileBlock2(BGBCC_TransState *ctx,
 	ctx->cf_ty=type;
 
 	ctx->ccxl_in_func=1;
+
+#if 0
+	if(!strcmp(name, "TKRA_UnpackMatrix16fv"))
+	{
+		__debugbreak();
+	}
+#endif
 
 	tk=0;
 	if(BCCX_TagIsCstP(body, &bgbcc_rcst_begin, "begin"))

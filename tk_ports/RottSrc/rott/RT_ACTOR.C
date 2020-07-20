@@ -1395,18 +1395,24 @@ void RemoveObj (objtype *gone)
 
 void ParseMomentum(objtype *ob,int angle)
 {
-	ob->momentumx += FixedMul(ob->speed,costable[angle]);
-	ob->momentumy -= FixedMul(ob->speed,sintable[angle]);
+//	ob->momentumx += FixedMul(ob->speed,costable[angle]);
+	ob->momentumx += FixedMul(ob->speed,costable[angle&FINEANGLEMSK]);
+//	ob->momentumy -= FixedMul(ob->speed,sintable[angle]);
+	ob->momentumy -= FixedMul(ob->speed,sintable[angle&FINEANGLEMSK]);
 }
 
 void Set_3D_Momenta(objtype *ob, int speed, int theta, int phi)
 {
 	int _2Ddiag;
 
-	ob->momentumz = -FixedMul(speed,sintable[phi]);
-	_2Ddiag = FixedMul(speed,costable[phi]);
-	ob->momentumx = FixedMul(_2Ddiag,costable[theta]);
-	ob->momentumy = -FixedMul(_2Ddiag,sintable[theta]);
+//	ob->momentumz = -FixedMul(speed,sintable[phi]);
+	ob->momentumz = -FixedMul(speed,sintable[phi&FINEANGLEMSK]);
+//	_2Ddiag = FixedMul(speed,costable[phi]);
+	_2Ddiag = FixedMul(speed,costable[phi&FINEANGLEMSK]);
+//	ob->momentumx = FixedMul(_2Ddiag,costable[theta]);
+	ob->momentumx = FixedMul(_2Ddiag,costable[theta&FINEANGLEMSK]);
+//	ob->momentumy = -FixedMul(_2Ddiag,sintable[theta]);
+	ob->momentumy = -FixedMul(_2Ddiag,sintable[theta&FINEANGLEMSK]);
 }
 
 int AngleBetween(objtype *source,objtype*target)
@@ -1431,11 +1437,15 @@ void GetMomenta(
 	xydist = FindDistance(dx,dy);
 	angle = atan2_appx(dx,dy);
 	yzangle = atan2_appx(xydist,(dz<<10));
-	_2Ddiag = FixedMul(magnitude,costable[yzangle]);
+//	_2Ddiag = FixedMul(magnitude,costable[yzangle]);
+	_2Ddiag = FixedMul(magnitude,costable[yzangle&FINEANGLEMSK]);
 
-	*newmomz = -FixedMul(magnitude,sintable[yzangle]);
-	*newmomx = FixedMul(_2Ddiag,costable[angle]);
-	*newmomy = -FixedMul(_2Ddiag,sintable[angle]);
+//	*newmomz = -FixedMul(magnitude,sintable[yzangle]);
+	*newmomz = -FixedMul(magnitude,sintable[yzangle&FINEANGLEMSK]);
+//	*newmomx = FixedMul(_2Ddiag,costable[angle]);
+	*newmomx = FixedMul(_2Ddiag,costable[angle&FINEANGLEMSK]);
+//	*newmomy = -FixedMul(_2Ddiag,sintable[angle]);
+	*newmomy = -FixedMul(_2Ddiag,sintable[angle&FINEANGLEMSK]);
 }
 
 //=======================================================================
@@ -4667,13 +4677,19 @@ void HeatSeek(objtype*ob)
 			adjust = (ob->obclass == p_godballobj)?(GODHAPT):(HAAPT);
 			AdjustAngle(adjust,&(ob->angle),angle);
 			ob->dir = angletodir[ob->angle];
-			ob->momentumx = FixedMul(ob->speed,costable[ob->angle]);
-			ob->momentumy = -FixedMul(ob->speed,sintable[ob->angle]);
+//			ob->momentumx = FixedMul(ob->speed,costable[ob->angle]);
+			ob->momentumx = FixedMul(ob->speed,
+				costable[ob->angle&FINEANGLEMSK]);
+//			ob->momentumy = -FixedMul(ob->speed,sintable[ob->angle]);
+			ob->momentumy = -FixedMul(ob->speed,
+				sintable[ob->angle&FINEANGLEMSK]);
 
 			yzangle = atan2_appx(xydist,(dz<<10));
 			adjust = (ob->obclass == p_godballobj)?(GODVAPT):(VAAPT);
 			AdjustAngle(adjust,&(ob->yzangle),yzangle);
-			ob->momentumz = -(FixedMul(ob->speed,sintable[ob->yzangle]));
+//			ob->momentumz = -(FixedMul(ob->speed,sintable[ob->yzangle]));
+			ob->momentumz = -(FixedMul(ob->speed,
+				sintable[ob->yzangle&FINEANGLEMSK]));
 		}
 	}
 }
@@ -4699,9 +4715,12 @@ void Stagger(objtype*ob)
 
 	ob->angle += (RandomSign()*randadj);
 	Fix(ob->angle);
-	ob->momentumx = FixedMul(ob->speed,costable[ob->angle]);
-	ob->momentumy = -FixedMul(ob->speed,sintable[ob->angle]);
-	ob->dir = angletodir[ob->angle];
+//	ob->momentumx = FixedMul(ob->speed,costable[ob->angle]);
+	ob->momentumx = FixedMul(ob->speed,costable[ob->angle&FINEANGLEMSK]);
+//	ob->momentumy = -FixedMul(ob->speed,sintable[ob->angle]);
+	ob->momentumy = -FixedMul(ob->speed,sintable[ob->angle&FINEANGLEMSK]);
+//	ob->dir = angletodir[ob->angle];
+	ob->dir = angletodir[ob->angle&FINEANGLEMSK];
 }
 
 void SpawnSplit(objtype *ob,int angle)
@@ -5319,8 +5338,10 @@ void SpawnFirewall(objtype*ob,int which,int newz)
 			new->speed = 0x8000;
 			new->angle = ob->angle;
 			ParseMomentum(new,new->angle);
-			newx = ob->x + FixedMul(offset,costable[new->temp1]);
-			newy = ob->y - FixedMul(offset,sintable[new->temp1]);
+//			newx = ob->x + FixedMul(offset,costable[new->temp1]);
+			newx = ob->x + FixedMul(offset,costable[new->temp1&FINEANGLEMSK]);
+//			newy = ob->y - FixedMul(offset,sintable[new->temp1]);
+			newy = ob->y - FixedMul(offset,sintable[new->temp1&FINEANGLEMSK]);
 			SetFinePosition(new,newx,newy);
 			SetVisiblePosition(new,newx,newy);
 			new->whatever = ob->whatever;
@@ -5524,8 +5545,10 @@ void SpawnWallfire(int tilex, int tiley, int dir)
 	new->flags &= ~FL_SHOOTABLE;
 	new->which = ACTOR;
 	new->angle = dirangle8[new->dir];
-	offx = FixedMul(0x10000,costable[new->angle])>>TILESHIFT;
-	offy = -(FixedMul(0x10000,sintable[new->angle])>>TILESHIFT);
+//	offx = FixedMul(0x10000,costable[new->angle])>>TILESHIFT;
+	offx = FixedMul(0x10000,costable[new->angle&FINEANGLEMSK])>>TILESHIFT;
+//	offy = -(FixedMul(0x10000,sintable[new->angle])>>TILESHIFT);
+	offy = -(FixedMul(0x10000,sintable[new->angle&FINEANGLEMSK])>>TILESHIFT);
 
 	new->areanumber = MAPSPOT(new->tilex+offx,new->tiley+offy,0)-AREATILE;
 	MakeLastInArea(new);
@@ -8323,8 +8346,12 @@ void T_HeinrichChase(objtype*ob)
 				perpangle = AngleBetween(ob,PLAYER[0]) + ANGLES/4;
 				Fix(perpangle);
 				dptr->which = ACTOR;
-				dptr->x = ob->x + FixedMul(0x10000l,costable[perpangle]);
-				dptr->y = ob->y - FixedMul(0x10000l,sintable[perpangle]);
+//				dptr->x = ob->x + FixedMul(0x10000l,costable[perpangle]);
+				dptr->x = ob->x + FixedMul(0x10000l,
+					costable[perpangle&FINEANGLEMSK]);
+//				dptr->y = ob->y - FixedMul(0x10000l,sintable[perpangle]);
+				dptr->y = ob->y - FixedMul(0x10000l,
+					sintable[perpangle&FINEANGLEMSK]);
 
 				dptr->z = ob->z;
 				if (!CheckLine(dptr,PLAYER[0],SHOOT))
@@ -8615,74 +8642,91 @@ void T_KristRight(objtype*ob)
 }
 
 void T_KristCheckFire(objtype*ob)
-{int perpangle,angle;
+{
+	int perpangle,angle;
 	tpoint dummy;
 
 	if (!ob->ticcount)
-	{angle = AngleBetween(ob,PLAYER[0]);
+	{
+		angle = AngleBetween(ob,PLAYER[0]);
 
-	if (ob->state == &s_heinrichshoot1)
-	perpangle = angle + ANGLES/4;
-	else
-	perpangle = angle - ANGLES/4;
+		if (ob->state == &s_heinrichshoot1)
+			perpangle = angle + ANGLES/4;
+		else
+			perpangle = angle - ANGLES/4;
 
-	Fix(perpangle);
+		Fix(perpangle);
 
-	dummy.which = ACTOR;
-	dummy.x = ob->x + FixedMul(0x4000,costable[angle]) + FixedMul(0x4000l,costable[perpangle]) +
-				FixedMul(PROJSIZE,costable[perpangle]); // offset ahead plus
-				// offset for left/right missile plus offset for missile
-				// radius (will missile reach player without hitting wall,etc.)
+		dummy.which = ACTOR;
+		dummy.x = ob->x +
+	//		FixedMul(0x4000,costable[angle]) +
+			FixedMul(0x4000,costable[angle&FINEANGLEMSK]) +
+	//		FixedMul(0x4000l,costable[perpangle]) +
+			FixedMul(0x4000l,costable[perpangle&FINEANGLEMSK]) +
+	//		FixedMul(PROJSIZE,costable[perpangle]);
+			FixedMul(PROJSIZE,costable[perpangle&FINEANGLEMSK]);
+					// offset ahead plus
+					// offset for left/right missile plus offset for missile
+					// radius (will missile reach player without hitting wall,etc.)
 
-	dummy.y = ob->y - FixedMul(0x4000,sintable[angle]) - FixedMul(0x4000l,sintable[perpangle]) -
-				FixedMul(PROJSIZE,sintable[perpangle]);
+	//	dummy.y = ob->y - FixedMul(0x4000,sintable[angle]) -
+		dummy.y = ob->y - FixedMul(0x4000,sintable[angle&FINEANGLEMSK]) -
+	//		FixedMul(0x4000l,sintable[perpangle]) -
+			FixedMul(0x4000l,sintable[perpangle&FINEANGLEMSK]) -
+	//		FixedMul(PROJSIZE,sintable[perpangle]);
+			FixedMul(PROJSIZE,sintable[perpangle&FINEANGLEMSK]);
 
-	dummy.x -= (FixedMul(PROJSIZE,costable[perpangle])<<1);
+	//	dummy.x -= (FixedMul(PROJSIZE,costable[perpangle])<<1);
+		dummy.x -= (FixedMul(PROJSIZE,costable[perpangle&FINEANGLEMSK])<<1);
 
-	dummy.y += (FixedMul(PROJSIZE,sintable[perpangle])<<1);
-	dummy.z = ob->z;
+	//	dummy.y += (FixedMul(PROJSIZE,sintable[perpangle])<<1);
+		dummy.y += (FixedMul(PROJSIZE,sintable[perpangle&FINEANGLEMSK])<<1);
+		dummy.z = ob->z;
 
-	if (!CheckLine(&dummy,PLAYER[0],SHOOT))
-	{NewState(ob,&s_heinrichchase);
-	return;
-	}
-
+		if (!CheckLine(&dummy,PLAYER[0],SHOOT))
+		{
+			NewState(ob,&s_heinrichchase);
+			return;
+		}
 	}
 }
 
 void SelectMineDir(objtype*ob)
-{int angle,missangle;
+{
+	int angle,missangle;
 	dirtype olddir,tdir,next,prev,destdir;
 	static nummines=0;
 
 	if (!CheckLine(ob,PLAYER[0],SIGHT))
-	{NewState(ob,M_S(CHASE));
-	MISCVARS->HMINING = 0;
-	return;
+	{
+		NewState(ob,M_S(CHASE));
+		MISCVARS->HMINING = 0;
+		return;
 	}
 
 	olddir = ob->dir;
 
 	angle = AngleBetween(ob,PLAYER[0]);
-	tdir = angletodir[angle];
+//	tdir = angletodir[angle];
+	tdir = angletodir[angle&FINEANGLEMSK];
 	destdir = opposite[tdir];
 
 	if (destdir != olddir)
 	{next = dirorder[olddir][NEXT];
 	prev = dirorder[olddir][PREV];
 	if (dirdiff[destdir][next] < dirdiff[destdir][prev])
-	ob->dir = next;
+		ob->dir = next;
 	else
-	ob->dir = prev;
+		ob->dir = prev;
 	return;
 	}
 
 	nummines ++;
 	missangle  = angle;
 	if (nummines == 2)
-	missangle -= (ANGLES/36);
+		missangle -= (ANGLES/36);
 	else if (nummines == 3)
-	missangle += (ANGLES/36);
+		missangle += (ANGLES/36);
 
 	Fix(missangle);
 // if (missangle > (ANGLES - 1))
@@ -8695,31 +8739,36 @@ void SelectMineDir(objtype*ob)
 	SD_PlaySoundRTP(SD_KRISTDROPSND,ob->x,ob->y);
 
 	if (nummines == 3)
-	{MISCVARS->HMINING = 0;
-	nummines = 0;
+	{
+		MISCVARS->HMINING = 0;
+		nummines = 0;
 	}
 }
 
 void  A_HeinrichShoot(objtype* ob)
-{int angle,perpangle;
+{
+	int angle,perpangle;
 
 	if (!ob->ticcount)
-	{angle = AngleBetween(ob,PLAYER[0]);
-	if (ob->state == &s_heinrichshoot4)
-	perpangle = angle + ANGLES/4;
-	else
-	perpangle = angle - ANGLES/4;
+	{
+		angle = AngleBetween(ob,PLAYER[0]);
+		if (ob->state == &s_heinrichshoot4)
+			perpangle = angle + ANGLES/4;
+		else
+			perpangle = angle - ANGLES/4;
 
-	Fix(perpangle);
+		Fix(perpangle);
 
-	SpawnMissile(ob,missileobj,0x4000,angle,&s_missile1,0x8000);
-	SD_PlaySoundRTP(BAS[ob->obclass].fire,ob->x,ob->y);
+		SpawnMissile(ob,missileobj,0x4000,angle,&s_missile1,0x8000);
+		SD_PlaySoundRTP(BAS[ob->obclass].fire,ob->x,ob->y);
 
-	SetFinePosition(new,new->x + FixedMul(0x4000l,costable[perpangle]),
-							new->y - FixedMul(0x4000l,sintable[perpangle]));
-	SetVisiblePosition(new,new->x,new->y);
+		SetFinePosition(new,
+//			new->x + FixedMul(0x4000l,costable[perpangle]),
+			new->x + FixedMul(0x4000l,costable[perpangle&FINEANGLEMSK]),
+//			new->y - FixedMul(0x4000l,sintable[perpangle]));
+			new->y - FixedMul(0x4000l,sintable[perpangle&FINEANGLEMSK]));
+		SetVisiblePosition(new,new->x,new->y);
 	}
-
 }
 
 //***************************///////**************************************
@@ -8727,7 +8776,7 @@ void  A_HeinrichShoot(objtype* ob)
 //***************************///////**************************************
 
 void UpdateNMELinkedActors(objtype*ob)
-	{
+{
 	objtype *head,*wheels;
 	int oldarea;
 
@@ -8742,30 +8791,28 @@ void UpdateNMELinkedActors(objtype*ob)
 	SetVisiblePosition(wheels,ob->x,ob->y);
 
 	if (oldarea != ob->areanumber)
-		{
+	{
 		RemoveFromArea(head);
 		head->areanumber = ob->areanumber;
 		MakeLastInArea(head);
 		RemoveFromArea(wheels);
 		wheels->areanumber = ob->areanumber;
 		MakeLastInArea(wheels);
-		}
-
 	}
+}
 
 void T_OrobotChase(objtype*ob)
-	{
+{
 	int dx,dy;
 
 	if (CheckLine(ob,PLAYER[0],SIGHT))
-		{
-
+	{
 		ob->targettilex = PLAYER[0]->tilex;
 		ob->targettiley = PLAYER[0]->tiley;
-		}
+	}
 
 	if (!ob->ticcount)
-		{
+	{
 		if (NMEspincheck(ob))
 			return;
 
@@ -8779,22 +8826,23 @@ void T_OrobotChase(objtype*ob)
 		*/
 
 		if (CheckLine(ob,PLAYER[0],SIGHT))
-			{
+		{
 			int inrange;
 
 			switch(gamestate.difficulty)
-				{
+			{
 				case gd_baby: inrange = Near(ob,PLAYER[0],6);break;
 				case gd_easy: inrange = Near(ob,PLAYER[0],9);break;
 				case gd_medium: inrange = Near(ob,PLAYER[0],12);break;
 				case gd_hard: inrange = 1;break;
-				}
+			}
 
 			if ((!Near(ob,PLAYER[0],3)) && inrange)
-				{
+			{
 				SD_PlaySoundRTP(SD_NMEREADYSND,ob->x,ob->y);
-				if ((ob->hitpoints < 2000) && (GameRandomNumber("NME special attack",0) < 120))
-					{
+				if ((ob->hitpoints < 2000) &&
+					(GameRandomNumber("NME special attack",0) < 120))
+				{
 					int next,prev;
 
 					next = dirorder16[ob->dir][NEXT];
@@ -8806,105 +8854,117 @@ void T_OrobotChase(objtype*ob)
 					else
 						ob->temp3 = NEXT;
 					NewState(ob,&s_NMEspinfire);
-					}
+				}
 				else
-					{
+				{
 					NewState(ob,&s_NMEwindup);
 					ob->temp3 = 0;
-					}
+				}
 			//NewState((objtype*)(ob->target),&s_NMEwheelspin);
 
 				NewState((objtype*)(ob->target),&s_NMEwheels120);
 				return;
-				}
 			}
 		}
+	}
 
 	if (ob->dirchoosetime)
 		ob->dirchoosetime --;
 
 	if ((ob->flags & FL_STUCK) || (!ob->dirchoosetime))
-		{
+	{
 		SelectOrobotChaseDir(ob);
 		ob->dirchoosetime = 4;//8;
-		}
-
-	else
-		{
-		ActorMovement(ob);
-		UpdateNMELinkedActors(ob);
-		}
 	}
 
+	else
+	{
+		ActorMovement(ob);
+		UpdateNMELinkedActors(ob);
+	}
+}
+
 void T_Saucer(objtype*ob)
-{int angle,dangle;
+{
+	int angle,dangle;
 
 	if (!ob->ticcount)  // if on track at end of each state, accelerate
 							// towards PLAYER[0]
-	{if (ob->state->condition & SF_SOUND)
-	SD_PlaySoundRTP(SD_NMEREADYSND,ob->x,ob->y);
-	angle = AngleBetween(ob,PLAYER[0]);
-	dangle = ob->angle - angle;
-	if ((dangle > -(ANGLES/72)) && (dangle < (ANGLES/72)))
-	{if (ob->speed < 0x10000)
-		{ob->speed += 0x200;
-		ZEROMOM;
-		ParseMomentum(ob,ob->angle);
+	{
+		if (ob->state->condition & SF_SOUND)
+		SD_PlaySoundRTP(SD_NMEREADYSND,ob->x,ob->y);
+		angle = AngleBetween(ob,PLAYER[0]);
+		dangle = ob->angle - angle;
+		if ((dangle > -(ANGLES/72)) && (dangle < (ANGLES/72)))
+		{
+			if (ob->speed < 0x10000)
+			{
+				ob->speed += 0x200;
+				ZEROMOM;
+				ParseMomentum(ob,ob->angle);
+			}
 		}
-	}
-	else // off track; zero mom. and select new dir.
-	{ob->speed = 0x1000;
-	ZEROMOM;
-	ob->angle = angle;
-	ParseMomentum(ob,ob->angle);
-	}
+		else // off track; zero mom. and select new dir.
+		{
+			ob->speed = 0x1000;
+			ZEROMOM;
+			ob->angle = angle;
+			ParseMomentum(ob,ob->angle);
+		}
 	}
 	MissileMovement(ob);
 
 }
 
 void T_NME_WindUp(objtype*ob)
-{objtype *head,*wheels;
+{
+	objtype *head,*wheels;
 
 	head = (objtype*)(ob->whatever);
 	wheels = (objtype*)(ob->target);
 
 	if (ob->dirchoosetime)
-	{ob->dirchoosetime--;
-	return;
+	{
+		ob->dirchoosetime--;
+		return;
 	}
 
 	ob->dirchoosetime = 0;//3;
 
 	if (MISCVARS->NMErotate < 3)
-	{head->dir = dirorder16[head->dir][NEXT];
-	MISCVARS->NMErotate ++;
+	{
+		head->dir = dirorder16[head->dir][NEXT];
+		MISCVARS->NMErotate ++;
 	}
 	else if (MISCVARS->NMErotate < 6)
-	{head->dir = dirorder16[head->dir][PREV];
-	MISCVARS->NMErotate ++;
+	{
+		head->dir = dirorder16[head->dir][PREV];
+		MISCVARS->NMErotate ++;
 	}
 	else if (MISCVARS->NMErotate < 9)
-	{ob->dir = dirorder16[ob->dir][NEXT];
-	wheels->dir = ob->dir;
-	MISCVARS->NMErotate++;
+	{
+		ob->dir = dirorder16[ob->dir][NEXT];
+		wheels->dir = ob->dir;
+		MISCVARS->NMErotate++;
 	}
 	else if (MISCVARS->NMErotate < 12)
-	{ob->dir = dirorder16[ob->dir][PREV];
-	wheels->dir = ob->dir;
-	MISCVARS->NMErotate ++;
+	{
+		ob->dir = dirorder16[ob->dir][PREV];
+		wheels->dir = ob->dir;
+		MISCVARS->NMErotate ++;
 	}
 	else
-	{MISCVARS->NMErotate = 0;
+	{
+		MISCVARS->NMErotate = 0;
 
-	NewState(ob,&s_NMEattack);
-	ob->dirchoosetime = 0;
-	//ob->dirchoosetime = 50 - (ob->shapeoffset >> 2) - (gamestate.difficulty << 2);//70;
-	if (!ob->temp2)
-	NewState((objtype*)(ob->whatever),&s_NMEhead1rl);
-	else
-	NewState((objtype*)(ob->whatever),&s_NMEhead2rl);
-	NewState(wheels,&s_NMEwheels2);
+		NewState(ob,&s_NMEattack);
+		ob->dirchoosetime = 0;
+		//ob->dirchoosetime = 50 - (ob->shapeoffset >> 2) - (gamestate.difficulty << 2);//70;
+		if (!ob->temp2)
+			NewState((objtype*)(ob->whatever),&s_NMEhead1rl);
+		else
+			NewState((objtype*)(ob->whatever),&s_NMEhead2rl);
+		NewState(wheels,&s_NMEwheels2);
 	}
 
 }
@@ -8912,7 +8972,7 @@ void T_NME_WindUp(objtype*ob)
 #define SPRAYDIST 0x12000
 
 void SelectOrobotChaseDir(objtype*ob)	// this code is for head
-	{
+{
 	int dx,dy,angle,tx,ty;
 	int tdir,olddir,nextdir,prevdir;
 	objtype* head,*wheels;
@@ -9040,17 +9100,17 @@ findplayer:
 	#endif
 		}
 	else				// else goto next queue dir;
-		{
+	{
 		ob->temp1 >>= 4;
-		}
-
 	}
+
+}
 
 void T_NME_Explode(objtype*ob)
 {
-
 	if (ob->ticcount == 35)
-	{objtype*head;
+	{
+	objtype*head;
 	int op;
 
 	head = (objtype*)(ob->whatever);
@@ -9216,36 +9276,40 @@ void T_NME_SpinFire(objtype*ob)
 }
 
 void T_NME_Attack(objtype*ob)
-{int angle,perpangle,i;
+{
+	int angle,perpangle,i;
 
 	if (NMEspincheck(ob))
-	{//ob->temp3 = 0;
-	return;
+	{
+		//ob->temp3 = 0;
+		return;
 	}
 	if (ob->dirchoosetime)
-	{ob->dirchoosetime --;
+	{
+		ob->dirchoosetime --;
 		return;
 	}
 
 	if (!CheckLine(ob,PLAYER[0],SIGHT))
-	{//ob->temp3 = 0;
-	//#if ((DEVELOPMENT == 1))
-	//Debug("\nCheckLine failed in NME Attack");
-	//#endif
-	NewState(ob,&s_NMEchase);
-	NewState((objtype*)(ob->target),&s_NMEwheels2);
-	if (!ob->temp2)
-		NewState((objtype*)(ob->whatever),&s_NMEhead1);
-	else
-		NewState((objtype*)(ob->whatever),&s_NMEhead2);
-	return;
+	{
+		//ob->temp3 = 0;
+		//#if ((DEVELOPMENT == 1))
+		//Debug("\nCheckLine failed in NME Attack");
+		//#endif
+		NewState(ob,&s_NMEchase);
+		NewState((objtype*)(ob->target),&s_NMEwheels2);
+		if (!ob->temp2)
+			NewState((objtype*)(ob->whatever),&s_NMEhead1);
+		else
+			NewState((objtype*)(ob->whatever),&s_NMEhead2);
+		return;
 	}
 	//sound = BAS[ob->obclass].fire;
 	angle = AngleBetween(ob,PLAYER[0]);
 
 	if ((ob->temp3 == 0) || (ob->temp3 == 1)) //heatseek
-
-		{SD_PlaySoundRTP(BAS[ob->obclass].fire+2,ob->x,ob->y);
+	{
+		SD_PlaySoundRTP(BAS[ob->obclass].fire+2,ob->x,ob->y);
 		angle = AngleBetween(ob,PLAYER[0]);
 		SpawnMissile(ob,missileobj,0x6000,angle,&s_missile1,0x8000);
 		if (ob->temp3 == 3)
@@ -9255,8 +9319,11 @@ void T_NME_Attack(objtype*ob)
 		Fix(perpangle);
 
 		new->temp1 = NME_HEATSEEKINGTYPE;
-		SetFinePosition(new,new->x + FixedMul(0x8000l,costable[perpangle]),
-									new->y - FixedMul(0x8000l,sintable[perpangle]));
+		SetFinePosition(new,
+//			new->x + FixedMul(0x8000l,costable[perpangle]),
+			new->x + FixedMul(0x8000l,costable[perpangle&FINEANGLEMSK]),
+//			new->y - FixedMul(0x8000l,sintable[perpangle]));
+			new->y - FixedMul(0x8000l,sintable[perpangle&FINEANGLEMSK]));
 		SetVisiblePosition(new,new->x,new->y);
 		if (!ob->temp3)
 			ob->dirchoosetime = 20;
@@ -9268,8 +9335,7 @@ void T_NME_Attack(objtype*ob)
 				NewState((objtype*)(ob->whatever),&s_NMEhead2);
 			}
 		ob->temp3 ++;
-
-		}
+	}
 
 	else if (ob->temp3 == 2)			// saucer
 	{ SpawnMissile(ob,NMEsaucerobj,0x1000,angle,&s_NMEsaucer1,0xc000);
@@ -9293,8 +9359,11 @@ void T_NME_Attack(objtype*ob)
 			{
 			SpawnMissile(ob,missileobj,0x6000,angle,&s_missile1,0x8000);
 			new->temp1 = NME_DRUNKTYPE;
-			SetFinePosition(new,new->x + FixedMul(0x8000l,costable[perpangle]),
-										new->y - FixedMul(0x8000l,sintable[perpangle]));
+			SetFinePosition(new,
+//				new->x + FixedMul(0x8000l,costable[perpangle]),
+				new->x + FixedMul(0x8000l,costable[perpangle&FINEANGLEMSK]),
+//				new->y - FixedMul(0x8000l,sintable[perpangle]));
+				new->y - FixedMul(0x8000l,sintable[perpangle&FINEANGLEMSK]));
 			SetVisiblePosition(new,new->x,new->y);
 			}
 
@@ -11027,8 +11096,11 @@ void SpawnMissile(objtype *shooter,
 	if (shooter->obclass == playerobj)
 		offset += FindDistance(shooter->momentumx,shooter->momentumy);
 
-	SetFinePosition(new,shooter->x + FixedMul(offset,costable[nangle]),
-							shooter->y - FixedMul(offset,sintable[nangle]));
+	SetFinePosition(new,
+//		shooter->x + FixedMul(offset,costable[nangle]),
+		shooter->x + FixedMul(offset,costable[nangle&FINEANGLEMSK]),
+//		shooter->y - FixedMul(offset,sintable[nangle]));
+		shooter->y - FixedMul(offset,sintable[nangle&FINEANGLEMSK]));
 	SetVisiblePosition(new,new->x,new->y);
 	//SoftError("\n missx:%d, missy:%d, speed:%d, offset:%d, angle%d, drawx:%d, drawy:%d",
 	//			new->x,new->y,nspeed,offset,nangle,new->drawx,new->drawy);
@@ -11673,8 +11745,10 @@ void SelectRollDir(objtype *ob)
 		angle = AngleBetween(ob,PLAYER[0]) - ANGLES/4;
 
 	Fix(angle);
-	tryx = ob->x + FixedMul(0x20000l,costable[angle]);
-	tryy = ob->y - FixedMul(0x20000l,sintable[angle]);
+//	tryx = ob->x + FixedMul(0x20000l,costable[angle]);
+	tryx = ob->x + FixedMul(0x20000l,costable[angle&FINEANGLEMSK]);
+//	tryy = ob->y - FixedMul(0x20000l,sintable[angle]);
+	tryy = ob->y - FixedMul(0x20000l,sintable[angle&FINEANGLEMSK]);
 	ZEROMOM;
 	if (QuickSpaceCheck(ob,tryx,tryy))
 	{
@@ -12656,8 +12730,10 @@ void ShootActor(objtype * shooter, objtype * target, int damage, int accuracy, i
 		}
 		else
 		{
-			newmomx = FixedMul(damage<<7,costable[angle]);
-			newmomy = -FixedMul(damage<<7,sintable[angle]);
+//			newmomx = FixedMul(damage<<7,costable[angle]);
+			newmomx = FixedMul(damage<<7,costable[angle&FINEANGLEMSK]);
+//			newmomy = -FixedMul(damage<<7,sintable[angle]);
+			newmomy = -FixedMul(damage<<7,sintable[angle&FINEANGLEMSK]);
 			Collision(target,shooter,
 				-(target->momentumx)+newmomx,
 				-(target->momentumy)+newmomy);
@@ -12816,8 +12892,10 @@ void RayShoot (objtype * shooter, int damage, int accuracy)
 
 	yzangle=(shooter->yzangle+offset)&(FINEANGLES-1);
 
-	vy = -sintable[angle];
-	vx = costable[angle];
+//	vy = -sintable[angle];
+	vy = -sintable[angle&FINEANGLEMSK];
+//	vx = costable[angle];
+	vx = costable[angle&FINEANGLEMSK];
 	snx=shooter->x&0xffff;
 	sny=shooter->y&0xffff;
 	grid[0]=shooter->tilex;
@@ -12975,8 +13053,10 @@ void RayShoot (objtype * shooter, int damage, int accuracy)
 		if (tangentangle!=0)
 		{
 			dist=FixedDiv2(((shooter->z-maxheight)<<10),(tangentangle<<1));
-			xintercept=shooter->x+FixedMul(dist,costable[angle]);
-			yintercept=shooter->y-FixedMul(dist,sintable[angle]);
+//			xintercept=shooter->x+FixedMul(dist,costable[angle]);
+			xintercept=shooter->x+FixedMul(dist,costable[angle&FINEANGLEMSK]);
+//			yintercept=shooter->y-FixedMul(dist,sintable[angle]);
+			yintercept=shooter->y-FixedMul(dist,sintable[angle&FINEANGLEMSK]);
 		}
 		z=maxheight;
 //		bullethole=5;
@@ -12992,8 +13072,10 @@ void RayShoot (objtype * shooter, int damage, int accuracy)
 		if (tangentangle!=0)
 		{
 			dist=FixedDiv2(((shooter->z+32)<<10),(tangentangle<<1));
-			xintercept=shooter->x+FixedMul(dist,costable[angle]);
-			yintercept=shooter->y-FixedMul(dist,sintable[angle]);
+//			xintercept=shooter->x+FixedMul(dist,costable[angle]);
+			xintercept=shooter->x+FixedMul(dist,costable[angle&FINEANGLEMSK]);
+//			yintercept=shooter->y-FixedMul(dist,sintable[angle]);
+			yintercept=shooter->y-FixedMul(dist,sintable[angle&FINEANGLEMSK]);
 		}
 		z=-32;
 //		bullethole=5;

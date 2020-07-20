@@ -537,78 +537,102 @@ int bgbcc_jx2c_qrsort(u32 *arr, int cnt, int rd)
 }
 
 
-// #define BGBCC_PEL4_HASHSZ		256
-// #define BGBCC_PEL4_HASHSZ		4096
-#define BGBCC_PEL4_HASHSZ		16384
-#define BGBCC_PEL4_HASHMASK		(BGBCC_PEL4_HASHSZ-1)
+// #define BGBCC_PEL_HASHSZ		256
+// #define BGBCC_PEL_HASHSZ		4096
+#define BGBCC_PEL_HASHSZ		16384
+#define BGBCC_PEL_HASHMASK		(BGBCC_PEL_HASHSZ-1)
 
-//#define BGBCC_PEL4_HASHDSZ		16
-#define BGBCC_PEL4_HASHDSZ		32
-#define BGBCC_PEL4_HASHDMA		(BGBCC_PEL4_HASHDSZ-1)
+//#define BGBCC_PEL_HASHDSZ		16
+// #define BGBCC_PEL_HASHDSZ		32
+#define BGBCC_PEL_HASHDSZ		64
+#define BGBCC_PEL_HASHDMA		(BGBCC_PEL_HASHDSZ-1)
 
-#define BGBCC_PEL4_HASH_PR		65521
-// #define BGBCC_PEL4_HASH_SHR		16
-#define BGBCC_PEL4_HASH_SHR		18
+#define BGBCC_PEL_HASH_PR		65521
+// #define BGBCC_PEL_HASH_SHR		16
+#define BGBCC_PEL_HASH_SHR		18
 
-// byte *bgbcc_packlz4_hash[256*16];
-// byte bgbcc_packlz4_hrov[256];
+// byte *bgbcc_packlz_hash[256*16];
+// byte bgbcc_packlz_hrov[256];
 
-byte *bgbcc_packlz4_hash[BGBCC_PEL4_HASHSZ*BGBCC_PEL4_HASHDSZ];
-byte bgbcc_packlz4_hrov[BGBCC_PEL4_HASHSZ];
+// byte *bgbcc_packlz_hash[BGBCC_PEL_HASHSZ*BGBCC_PEL_HASHDSZ];
+// byte bgbcc_packlz_hrov[BGBCC_PEL_HASHSZ];
+byte **bgbcc_packlz_hash;
+byte *bgbcc_packlz_hrov;
+int bgbcc_packlz_cmp;
 
-int BGBCC_JX2C_PackBlockLZ4_Reset(BGBCC_TransState *ctx)
+int BGBCC_JX2C_PackBlockLZ_Reset(BGBCC_TransState *ctx)
 {
 	int i, j, k;
 	
-	for(i=0; i<BGBCC_PEL4_HASHSZ; i++)
+	if(!bgbcc_packlz_hash)
 	{
-		bgbcc_packlz4_hrov[i]=0;
-		for(j=0; j<BGBCC_PEL4_HASHDSZ; j++)
+		bgbcc_packlz_hash=malloc(
+			BGBCC_PEL_HASHSZ*BGBCC_PEL_HASHDSZ*sizeof(byte *));
+		bgbcc_packlz_hrov=malloc(BGBCC_PEL_HASHSZ);
+	}
+	
+	for(i=0; i<BGBCC_PEL_HASHSZ; i++)
+	{
+		bgbcc_packlz_hrov[i]=0;
+		for(j=0; j<BGBCC_PEL_HASHDSZ; j++)
 		{
-			bgbcc_packlz4_hash[i*BGBCC_PEL4_HASHDSZ+j]=NULL;
+			bgbcc_packlz_hash[i*BGBCC_PEL_HASHDSZ+j]=NULL;
 		}
 	}
+	bgbcc_packlz_cmp=4;
 	return(0);
 }
 
-int BGBCC_JX2C_PackBlockLZ4_LookupMatch(
+int BGBCC_JX2C_PackBlockLZ_LookupMatch(
 	BGBCC_TransState *ctx,
 	byte *cs, byte *cse, int *rbl, int *rbd)
 {
 	byte *ct, *ct1, *ct1e, *cs1, *cs1e;
 	u32 h;
-	int hr, bd, bl;
+	int hr, bd, bl, md, ml;
 	int i, j, k, l, d;
 	
 	h=*(u32 *)cs;
 //	h=(h*65521)+1;
 //	h=(h*251)+1;
-//	h=(h>>16)&BGBCC_PEL4_HASHMASK;
-	h=((h*BGBCC_PEL4_HASH_PR)>>BGBCC_PEL4_HASH_SHR)&BGBCC_PEL4_HASHMASK;
+//	h=(h>>16)&BGBCC_PEL_HASHMASK;
+	h=((h*BGBCC_PEL_HASH_PR)>>BGBCC_PEL_HASH_SHR)&BGBCC_PEL_HASHMASK;
 	
-	hr=bgbcc_packlz4_hrov[h];
+	hr=bgbcc_packlz_hrov[h];
+
+	md=65535;
+	ml=16383;
+
+	if(bgbcc_packlz_cmp==3)
+	{
+//		md=131071;
+		md=(1<<21)-1;
+	}
 
 //	return(0);
 
 //	cs1e=cs+268;
 //	cs1e=cs+266;
 //	cs1e=cs+4096;
-	cs1e=cs+16384;
+//	cs1e=cs+16384;
+//	cs1e=cs+16383;
+	cs1e=cs+ml;
 	if(cse<cs1e)
 		cs1e=cse;
 	
 	bd=0; bl=0;
 	ct1e=cs;
-	for(i=0; i<BGBCC_PEL4_HASHDSZ; i++)
+	for(i=0; i<BGBCC_PEL_HASHDSZ; i++)
 	{
-		ct=bgbcc_packlz4_hash[
-			(h*BGBCC_PEL4_HASHDSZ)+
-			((hr+i)&BGBCC_PEL4_HASHDMA)];
+		ct=bgbcc_packlz_hash[
+			(h*BGBCC_PEL_HASHDSZ)+
+			((hr+i)&BGBCC_PEL_HASHDMA)];
 		if(!ct)
 			continue;
 
 		d=cs-ct;
-		if(d>=65536)
+//		if(d>=65536)
+		if(d>md)
 			continue;
 		if(d<=0)
 			continue;
@@ -629,10 +653,20 @@ int BGBCC_JX2C_PackBlockLZ4_LookupMatch(
 	
 	*rbl=bl;
 	*rbd=bd;
+
+	if(bd<=0)
+		return(0);
+	
+	if(bgbcc_packlz_cmp==3)
+	{
+		if((bl>=3) && (bd<512))
+			return(1);
+	}
+
 	return(bl>=4);
 }
 
-int BGBCC_JX2C_PackBlockLZ4_HashByte(
+int BGBCC_JX2C_PackBlockLZ_HashByte(
 	BGBCC_TransState *ctx, byte *cs)
 {
 	u32 h;
@@ -642,25 +676,158 @@ int BGBCC_JX2C_PackBlockLZ4_HashByte(
 	h=*(u32 *)cs;
 //	h=(h*65521)+1;
 //	h=(h*251)+1;
-//	h=(h>>16)&BGBCC_PEL4_HASHMASK;
-	h=((h*BGBCC_PEL4_HASH_PR)>>BGBCC_PEL4_HASH_SHR)&BGBCC_PEL4_HASHMASK;
+//	h=(h>>16)&BGBCC_PEL_HASHMASK;
+	h=((h*BGBCC_PEL_HASH_PR)>>BGBCC_PEL_HASH_SHR)&BGBCC_PEL_HASHMASK;
 	
-	hr=bgbcc_packlz4_hrov[h];
-	hr=(hr-1)&BGBCC_PEL4_HASHDMA;
-	bgbcc_packlz4_hrov[h]=hr;
-	bgbcc_packlz4_hash[(h*BGBCC_PEL4_HASHDSZ)+hr]=cs;
+	hr=bgbcc_packlz_hrov[h];
+	hr=(hr-1)&BGBCC_PEL_HASHDMA;
+	bgbcc_packlz_hrov[h]=hr;
+	bgbcc_packlz_hash[(h*BGBCC_PEL_HASHDSZ)+hr]=cs;
 	return(0);
 }
 
-int BGBCC_JX2C_PackBlockLZ4_HashString(
+int BGBCC_JX2C_PackBlockLZ_HashString(
 	BGBCC_TransState *ctx, byte *cs, int sz)
 {
 	int i;
 	
 	for(i=0; i<sz; i++)
-		BGBCC_JX2C_PackBlockLZ4_HashByte(ctx, cs+i);
+		BGBCC_JX2C_PackBlockLZ_HashByte(ctx, cs+i);
 	return(0);
 }
+
+int BGBCC_JX2C_PackBlockLZ_EstRawCost(BGBCC_TransState *ctx, int rl)
+{
+	int i, j, c;
+
+	if(bgbcc_packlz_cmp==4)
+	{
+		c=rl+1;
+		if(rl>=15)
+		{
+			i=rl-15;
+			while(i>=255)
+				{ c++; i-=255; }
+			c++;
+		}
+		c+=3;
+		return(c);
+	}
+
+	c=rl;
+	i=rl;
+	while(i>=4096)
+		{ c+=2; i-=4096; }
+	if(i>(128+7))
+		{ c+=2; i=i&7; }
+	if(i>=8)
+		{ c+=1; i=i&7; }
+
+//	c=(rl>>3)+rl;
+//	c=(rl>>7)+rl+(rl>=8);
+	return(c);
+}
+
+int BGBCC_JX2C_PackBlockLZ_EstMatchCost(BGBCC_TransState *ctx,
+	int rl, int bl, int bd)
+{
+	int c, i;
+
+	if(bgbcc_packlz_cmp==4)
+	{
+		c=rl+1;
+		if(rl>=15)
+		{
+			i=rl-15;
+			while(i>=255)
+				{ c++; i-=255; }
+			c++;
+		}
+		if(bl>=19)
+		{
+			i=bl-19;
+			while(i>=255)
+				{ c++; i-=255; }
+			c++;
+		}
+		
+		return(c);
+	}
+
+//	c=(rl>>3)+rl;
+//	c=(rl>>7)+rl+(rl>=8);
+	c=BGBCC_JX2C_PackBlockLZ_EstRawCost(ctx, rl);
+	if((bl<=10) && (bd<512))
+		{ c+=2; }
+	else if((bl<=67) && (bd<8192))
+		{ c+=3; }
+	else if((bl<=515) && (bd<131072))
+		{ c+=4; }
+	else if((bl<=16383) && (bd<(1<<22)))
+	{
+		c+=1+((bl<128)?1:2)+((bd<32768)?2:3);
+	}
+	return(c);
+}
+
+int BGBCC_JX2C_PackBlockLZ_LookupMatchB(BGBCC_TransState *ctx,
+	byte *cs, byte *cse, byte *lcs,
+	int *rl, int *rd)
+{
+	int l, d, l1, d1;
+	int rl0, rl1, rl2;
+	int mc0, mc1;
+	int i, j, k;
+
+	i=BGBCC_JX2C_PackBlockLZ_LookupMatch(ctx, cs, cse, &l, &d);
+	rl0=cs-lcs;
+	rl1=rl0+1;	rl2=rl0+2;
+	
+	mc0=BGBCC_JX2C_PackBlockLZ_EstMatchCost(ctx, rl0, l, d);
+	mc1=BGBCC_JX2C_PackBlockLZ_EstRawCost(ctx, rl0+l);
+	
+	if(mc0>=mc1)
+	{
+		/* Skip match if it costs more than it saves. */
+		i=0;
+	}
+	
+	if(i)
+	{
+		/* Check if a better match is just around the corner. */
+
+		j=BGBCC_JX2C_PackBlockLZ_LookupMatch(ctx, cs+1, cse, &l1, &d1);
+		if(j && (l1>(l+1)) && ((rl0>>3)==(rl1>>3)))
+			i=0;
+
+		mc1=BGBCC_JX2C_PackBlockLZ_EstMatchCost(ctx, rl1, l1, d1);
+//		if(j && (l1>(l+1)) && (mc1<=mc0))
+//		if(j && (l1>(l+0)) && (mc1<=mc0))
+		if(j && ((mc1-l1)<=(mc0-l)))
+			i=0;
+
+//		if(j && (l1>(l+1)))
+//		if(j && (l1>(l+2)))
+//			i=0;
+
+		if(i)
+		{
+			j=BGBCC_JX2C_PackBlockLZ_LookupMatch(ctx, cs+2, cse, &l1, &d1);
+
+			mc1=BGBCC_JX2C_PackBlockLZ_EstMatchCost(ctx, rl2, l1, d1);
+//			if(j && (l1>(l+0)) && (mc1<=mc0))
+			if(j && ((mc1-l1)<(mc0-l)))
+//			if(j && ((mc1-l1)<=(mc0-l)))
+				i=0;
+		}
+	}
+	
+	*rl=l;
+	*rd=d;
+	return(i);
+}
+
+
 
 int BGBCC_JX2C_PackBlockLZ4(BGBCC_TransState *ctx,
 	byte *obuf, byte *ibuf, int obsz, int ibsz)
@@ -676,13 +843,18 @@ int BGBCC_JX2C_PackBlockLZ4(BGBCC_TransState *ctx,
 	cs0=cs;
 	while((ct<cte) && (cs<cse))
 	{
-		i0=BGBCC_JX2C_PackBlockLZ4_LookupMatch(ctx, cs, cse, &bl, &bd);
+#if 0
+		i0=BGBCC_JX2C_PackBlockLZ_LookupMatch(ctx, cs, cse, &bl, &bd);
 		if(i0>0)
 		{
-			i1=BGBCC_JX2C_PackBlockLZ4_LookupMatch(ctx, cs+1, cse, &bl1, &bd1);
-			if(bl1>(bl+1))
+			i1=BGBCC_JX2C_PackBlockLZ_LookupMatch(ctx, cs+1, cse, &bl1, &bd1);
+//			if(bl1>(bl+1))
+			if(i1 && (bl1>(bl+1)))
 				i0=0;
 		}
+#endif
+
+		i0=BGBCC_JX2C_PackBlockLZ_LookupMatchB(ctx, cs, cse, cs0, &bl, &bd);
 		
 //		if((ct+9)>=cte)
 //			break;
@@ -779,14 +951,14 @@ int BGBCC_JX2C_PackBlockLZ4(BGBCC_TransState *ctx,
 			if(ct>=cte)
 				{ BGBCC_DBGBREAK }
 			
-			BGBCC_JX2C_PackBlockLZ4_HashString(ctx, cs, bl);
+			BGBCC_JX2C_PackBlockLZ_HashString(ctx, cs, bl);
 			cs+=bl;
 
 			cs0=cs;
 			continue;
 		}else
 		{
-			BGBCC_JX2C_PackBlockLZ4_HashByte(ctx, cs);
+			BGBCC_JX2C_PackBlockLZ_HashByte(ctx, cs);
 			cs++;
 		}
 	}
@@ -1015,13 +1187,296 @@ int BGBCC_JX2C_PackBlockLZ4(BGBCC_TransState *ctx,
 	return(0);
 }
 
-int BGBCC_JX2C_PackImagePEL4(BGBCC_TransState *ctx,
+
+int BGBCC_JX2C_PackBlockRP2(BGBCC_TransState *ctx,
+	byte *ibuf, byte *obuf, int ibsz, int obsz)
+{
+	byte *cs, *cse, *lcs;
+	byte *ct, *cte;
+	u32 v;
+	int pl, pd;
+	int l, d, rl, l1, d1;
+	int i, j, k;
+	
+//	ctx->chn_base=ibuf;
+	cs=ibuf; cse=ibuf+ibsz;
+	ct=obuf; cte=obuf+obsz;
+	
+	pd=0; pl=0;
+	
+	lcs=cs;
+	while((cs<cse) && (ct<cte))
+	{
+//		i=TgvLz_LookupMatch(ctx, cs, cse, &l, &d);
+//		i=TgvLz_LookupMatchB(ctx, cs, cse, lcs, &l, &d);
+
+		i=BGBCC_JX2C_PackBlockLZ_LookupMatchB(ctx, cs, cse, lcs, &l, &d);
+
+#if 0
+		i=BGBCC_JX2C_PackBlockLZ_LookupMatch(ctx, cs, cse, &l, &d);
+		if(i>0)
+		{
+			j=BGBCC_JX2C_PackBlockLZ_LookupMatch(ctx, cs+1, cse, &l1, &d1);
+			if(j && (l1>(l+1)))
+//			if(j && (l1>(l+2)))
+				i=0;
+		}
+#endif
+		
+//		if(d<=0)i=0;
+		
+
+		if(!i)
+		{
+			BGBCC_JX2C_PackBlockLZ_HashByte(ctx, cs);
+			cs++;
+			continue;
+		}
+			
+		rl=cs-lcs;
+		
+//		j=rl+1+(rl/128)+5;
+//		if((ct+j+1)>=cte)
+//			break;
+
+		j=BGBCC_JX2C_PackBlockLZ_EstMatchCost(ctx, rl, l, d);
+		if((ct+j+1)>=cte)
+			break;
+
+//		ctx->stat_rlen[tgvlz_log2u(rl)]++;
+//		ctx->stat_len[tgvlz_log2u(l)]++;
+//		ctx->stat_dist[tgvlz_log2u(d)]++;
+
+#if 1
+		while(rl>(128+7))
+		{
+			j=(rl>>3)-1;
+			if(j>511)j=511;
+			
+			k=(j+1)*8;
+
+			v=0x3F+(j<<7);
+			*ct++=v;
+			*ct++=v>>8;
+
+			memcpy(ct, lcs, k);
+			ct+=k;	lcs+=k;	rl-=k;
+		}
+#endif
+
+		while(rl>=8)
+		{
+			j=(rl>>3)-1;
+			if(j>15)j=15;
+			
+			k=(j+1)*8;
+			*ct++=0x07+(j<<4);
+			memcpy(ct, lcs, k);
+			ct+=k;	lcs+=k;	rl-=k;
+		}
+
+		if((rl<8) && (l<=10) && (d<=511))
+		{
+			d1=d;
+			l1=l-3;
+			v=(d1<<7)|(l1<<4)|(rl<<1)|0;
+			*ct++=v;
+			*ct++=v>>8;
+			memcpy(ct, lcs, rl);
+			ct+=rl;
+		}
+		else
+			if((rl<8) && (l<=67) && (d<=8191))
+		{
+			d1=d;
+			l1=l-4;
+
+			v=(d1<<11)|(l1<<5)|(rl<<2)|1;
+			*ct++=v;
+			*ct++=v>>8;
+			*ct++=v>>16;
+			memcpy(ct, lcs, rl);
+			ct+=rl;
+		}
+		else
+			if((rl<8) && (l<=515) && (d<=131071))
+		{
+			d1=d;
+			l1=l-4;
+
+			v=(d1<<15)|(l1<<6)|(rl<<3)|3;
+			*ct++=v;
+			*ct++=v>>8;
+			*ct++=v>>16;
+			*ct++=v>>24;
+
+			memcpy(ct, lcs, rl);
+			ct+=rl;
+		}
+		else
+			if((rl<8) && (l<=0x3FFF) && (d<=0x3FFFFF))
+		{
+			*ct++=0x0F|(rl<<5);
+			d1=d;
+			l1=l-4;
+
+			if(l1<128)
+			{
+				*ct++=(l1<<1);
+			}else
+			{
+				v=(l1<<2)|1;
+				*ct++=v;
+				*ct++=v>>8;
+			}
+
+			if(d1<32768)
+			{
+				v=d1<<1;
+				*ct++=v;
+				*ct++=v>>8;
+			}else
+			{
+				v=(d1<<2)|1;
+				*ct++=v;
+				*ct++=v>>8;
+				*ct++=v>>16;
+			}
+
+			memcpy(ct, lcs, rl);
+			ct+=rl;
+		}
+		else
+		{
+			BGBCC_DBGBREAK
+		}
+		
+		pl=l; pd=d;
+		
+//		TgvLz_HashStr(ctx, cs, l);
+		BGBCC_JX2C_PackBlockLZ_HashString(ctx, cs, l);
+		cs+=l;
+		lcs=cs;
+	}
+
+//	rl=cs-lcs;
+	rl=cse-lcs;
+
+#if 1
+	while(rl>(128+3))
+	{
+		j=(rl>>3)-1;
+		if(j>511)j=511;
+		
+		k=(j+1)*8;
+
+		while((ct+k+2)>=cte)
+//		while((ct+k+2)>cte)
+		{
+			j--;
+			if(j<0)break;
+			k=(j+1)*8;
+		}
+		if(j<15)
+			break;
+
+		v=0x3F+(j<<7);
+		*ct++=v;
+		*ct++=v>>8;
+
+		memcpy(ct, lcs, k);
+		ct+=k;	lcs+=k;	rl-=k;
+	}
+#endif
+
+	while(rl>8)
+	{
+		j=(rl>>3)-1;
+		if(j>15)j=15;
+		
+		k=(j+1)*8;
+
+//		if((ct+k+1)>=cte)
+//			break;
+		while((ct+k+1)>=cte)
+//		while((ct+k+1)>cte)
+		{
+			j--;
+			if(j<0)break;
+			k=(j+1)*8;
+		}
+		if(j<0)break;
+
+		*ct++=0x07+(j<<4);
+		memcpy(ct, lcs, k);
+		ct+=k;	rl-=k;	lcs+=k;
+	}
+
+	while(rl)
+	{
+		j=rl;
+		if(j>3)j=3;
+		
+		k=(cte-ct)-2;
+//		k=(cte-ct)-1;
+		if(k<1)break;
+		if(k<j)j=k;
+		
+		if((ct+j+1)>=cte)
+//		if((ct+j+1)>cte)
+			break;
+
+		*ct++=0x1F+(j<<6);
+		memcpy(ct, lcs, j);
+		ct+=j;	rl-=j;	lcs+=j;
+	}
+
+	if(cs<cte)
+		*ct++=0x1F;
+	
+//	return(ct-obuf);
+	return(lcs-ibuf);
+}
+
+int BGBCC_JX2C_PackBlockLZ(BGBCC_TransState *ctx,
+	byte *obuf, byte *ibuf, int obsz, int ibsz)
+{
+	int i, j, k;
+
+	if(bgbcc_packlz_cmp==4)
+	{
+		i=BGBCC_JX2C_PackBlockLZ4(ctx, obuf, ibuf, obsz, ibsz);
+		return(i);
+	}
+
+	if(bgbcc_packlz_cmp==3)
+	{
+		i=BGBCC_JX2C_PackBlockRP2(ctx, ibuf, obuf, ibsz, obsz);
+		return(i);
+	}
+
+	if(bgbcc_packlz_cmp==0)
+	{
+		memcpy(obuf, ibuf, obsz);
+		return(obsz);
+	}
+	
+	return(-1);
+}
+
+//int BGBCC_JX2C_PackBlockRP2(BGBCC_TransState *ctx,
+//	byte *ibuf, byte *obuf, int ibsz, int obsz)
+
+int BGBCC_JX2C_PackImagePEL(BGBCC_TransState *ctx,
 	byte *obuf, byte *ibuf, int obsz, int ibsz)
 {
 	byte *cs, *ct, *cse, *cte;
 	int i;
 	
-	BGBCC_JX2C_PackBlockLZ4_Reset(ctx);
+	BGBCC_JX2C_PackBlockLZ_Reset(ctx);
+//	bgbcc_packlz_cmp=4;
+//	bgbcc_packlz_cmp=3;
+	bgbcc_packlz_cmp=ctx->pel_cmpr;
 	
 	ct=obuf; cs=ibuf;
 	cte=obuf+obsz;
@@ -1032,7 +1487,8 @@ int BGBCC_JX2C_PackImagePEL4(BGBCC_TransState *ctx,
 	
 	while(cs<cse)
 	{
-		i=BGBCC_JX2C_PackBlockLZ4(ctx, ct, cs, 1024, cse-cs);
+//		i=BGBCC_JX2C_PackBlockLZ4(ctx, ct, cs, 1024, cse-cs);
+		i=BGBCC_JX2C_PackBlockLZ(ctx, ct, cs, 1024, cse-cs);
 		ct+=1024;
 		cs+=i;
 	}
@@ -1145,12 +1601,235 @@ byte *BGBCC_TKPE_UnpackL4(byte *obuf, byte *ibuf, int isz, byte *imgbase)
 	return(ct);
 }
 
-int BGBCC_JX2C_VerifyImagePEL4(BGBCC_TransState *ctx,
+void W_MatchCopy2(byte *dst, int sz, int d)
+{
+	byte *cs, *ct, *cte;
+	u64 v;
+	
+	if(d<8)
+	{
+		if(d==1)
+		{
+			v=*(dst-d);
+			v=v|(v<<8);
+			v=v|(v<<16);
+			v=v|(v<<32);
+
+			ct=dst; cte=dst+sz;
+			while(ct<cte)
+			{
+				*(u64 *)ct=v;
+				ct+=8;
+			}
+		}else
+			if(d==2)
+		{
+			v=*(u16 *)(dst-d);
+			v=v|(v<<16);
+			v=v|(v<<32);
+
+			ct=dst; cte=dst+sz;
+			while(ct<cte)
+			{
+				*(u64 *)ct=v;
+				ct+=8;
+			}
+		}else
+			if(d==4)
+		{
+			v=*(u32 *)(dst-d);
+			v=v|(v<<32);
+
+			ct=dst; cte=dst+sz;
+			while(ct<cte)
+			{
+				*(u64 *)ct=v;
+				ct+=8;
+			}
+		}else
+		{
+			v=*(u64 *)(dst-d);
+			ct=dst; cte=dst+sz;
+			while(ct<cte)
+			{
+				*(u64 *)ct=v;
+				ct+=d;
+			}
+		}
+	}else
+		if(sz<=16)
+	{
+		cs=dst-d;
+//		((u64 *)dst)[0]=((u64 *)cs)[0];
+//		((u64 *)dst)[1]=((u64 *)cs)[1];
+		memcpy(dst+0, cs+0, 8);
+		memcpy(dst+8, cs+8, 8);
+	}else
+	{
+		cs=dst-d;
+		ct=dst; cte=dst+sz;
+		while(ct<cte)
+		{
+//			((u64 *)ct)[0]=((u64 *)cs)[0];
+//			((u64 *)ct)[1]=((u64 *)cs)[1];
+			memcpy(ct+0, cs+0, 8);
+			memcpy(ct+8, cs+8, 8);
+			ct+=16; cs+=16;
+		}
+	}
+}
+
+void W_RawCopyB(byte *dst, byte *src, int sz)
+{
+	byte *cs, *ct, *cte;
+
+	cs=src;
+	ct=dst; cte=dst+sz;
+	while(ct<cte)
+	{
+//		((u64 *)ct)[0]=((u64 *)cs)[0];
+//		((u64 *)ct)[1]=((u64 *)cs)[1];
+//		memcpy(ct, cs, 16);
+		memcpy(ct+0, cs+0, 8);
+		memcpy(ct+8, cs+8, 8);
+		ct+=16; cs+=16;
+	}
+}
+
+int W_DecodeBufferRP2(
+	byte *ibuf, byte *obuf, int ibsz, int obsz)
+{
+	u32 tag;
+	byte *cs, *ct, *cse;
+	int pl, pd;
+	int rl, l, d;
+	u64 t0;
+	int t1, t2;
+	
+	cs=ibuf; cse=ibuf+ibsz;
+	ct=obuf;
+	pl=0; pd=0;
+	
+//	while(1)
+	while(cs<cse)
+	{
+		t0=*(u64 *)cs;
+		if(!(t0&0x01))
+		{
+			cs+=2;
+			rl=(t0>>1)&7;
+			l=((t0>>4)&7)+3;
+			d=(t0>>7)&511;
+		}else
+			if(!(t0&0x02))
+		{
+			cs+=3;
+			rl=(t0>>2)&7;
+			l=((t0>>5)&63)+4;
+			d=(t0>>11)&8191;
+		}else
+			if(!(t0&0x04))
+		{
+			cs+=4;
+			rl=(t0>>3)&7;
+			l=((t0>>6)&511)+4;
+			d=(t0>>15)&131071;
+		}else
+			if(!(t0&0x08))
+		{
+			cs++;
+			t1=(t0>>4)&15;
+			rl=(t1+1)*8;
+			W_RawCopyB(ct, cs, rl);
+			cs+=rl;
+			ct+=rl;
+			continue;
+		}else
+			if(!(t0&0x10))
+		{
+			/* Long Match */
+			cs++;
+			rl=(t0>>5)&7;
+			t1=t0>>8;
+			if(!(t1&1))
+				{ l=((t1>>1)&0x007F)+4; cs+=1; t2=t0>>16; }
+			else
+				{ l=((t1>>2)&0x3FFF)+4; cs+=2; t2=t0>>24; }
+			if(!(t2&1))
+				{ d=((t2>>1)&0x007FFF); cs+=2; }
+			else
+				{ d=((t2>>2)&0x3FFFFF); cs+=3; }
+		}else
+			if(!(t0&0x20))
+		{
+			cs++;
+			rl=(t0>>6)&3;
+			if(!rl)break;
+//			*(u32 *)ct=*(u32 *)cs;
+			memcpy(ct, cs, 4);
+			cs+=rl;
+			ct+=rl;
+			continue;
+		}else
+			if(!(t0&0x40))
+		{
+			/* Long Raw */
+			cs+=2;
+			t1=(t0>>7)&511;
+			rl=(t1+1)*8;
+			W_RawCopyB(ct, cs, rl);
+			cs+=rl;
+			ct+=rl;
+			continue;
+		}else
+		{
+//			__debugbreak();
+			BGBCC_DBGBREAK
+		}
+
+//		*(u64 *)ct=*(u64 *)cs;
+		memcpy(ct, cs, 8);
+		cs+=rl;
+		ct+=rl;
+		W_MatchCopy2(ct, l, d);
+		ct+=l;
+	}
+	
+	return(ct-obuf);
+}
+
+
+byte *BGBCC_TKPE_UnpackBuffer(
+	byte *obuf, byte *ibuf, int isz, byte *imgbase,
+	int cmp)
+{
+	int sz;
+	if(cmp==4)
+	{
+		return(BGBCC_TKPE_UnpackL4(obuf, ibuf, isz, imgbase));
+	}
+	
+	if(cmp==3)
+	{
+		sz=W_DecodeBufferRP2(ibuf, obuf, isz, 999999);
+		return(obuf+sz);
+	}
+	
+	if(cmp==0)
+	{
+		memcpy(obuf, ibuf, isz);
+		return(obuf+isz);
+	}
+	
+	return(NULL);
+}
+
+int BGBCC_JX2C_VerifyImagePEL(BGBCC_TransState *ctx,
 	byte *obuf, byte *ibuf, int obsz, int ibsz)
 {
 	byte *tbuf;
 	byte *cs, *ct, *cse;
-	int cb, nb;
+	int cb, nb, cmp;
 	int i, j, k;
 	
 	tbuf=malloc(ibsz+65536);
@@ -1158,6 +1837,12 @@ int BGBCC_JX2C_VerifyImagePEL4(BGBCC_TransState *ctx,
 	bgbcc_tkpe_endseen=0;
 	cs=obuf; cse=obuf+obsz;
 	ct=tbuf;
+	
+	cmp=0;
+	if((cs[2]=='L') && (cs[3]>='0') && (cs[3]<='9'))
+	{
+		cmp=cs[3]-'0';
+	}
 	
 	memcpy(ct, cs, 1024);
 	ct[2]=0;	ct[3]=0;
@@ -1170,7 +1855,8 @@ int BGBCC_JX2C_VerifyImagePEL4(BGBCC_TransState *ctx,
 		if(k>1024)k=1024;
 //		k=1024;
 //		ct=BGBCC_TKPE_UnpackL4(ct, cs, k);
-		ct=BGBCC_TKPE_UnpackL4(ct, cs, 1024, obuf);
+//		ct=BGBCC_TKPE_UnpackL4(ct, cs, 1024, obuf);
+		ct=BGBCC_TKPE_UnpackBuffer(ct, cs, 1024, obuf, cmp);
 		cs+=k;
 		cb++;
 		if(bgbcc_tkpe_endseen)
@@ -1288,12 +1974,11 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 	s32 map_lvatab[16384];
 	char *map_lvntab[16384];
 
-
 	BGBCC_JX2_Context *sctx;
 	FILE *mapfd;
 	char *s0;
 	byte *ct, *ct0, *ct1, *ctb;
-	byte no_mz, is_pel4;
+	byte no_mz, is_pel;
 	u32 csum;
 
 	int en, ofs, ofs_sdat, ofs_iend, ofs_mend, ofs_iend2;
@@ -1309,11 +1994,12 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 
 	sctx=ctx->uctx;
 
-//	is_pel4=0;
-	is_pel4=1;
+//	is_pel=0;
+//	is_pel=1;
+	is_pel=((ctx->pel_cmpr&255)!=255);
 
 	no_mz=0;
-	if(is_pel4)
+	if(is_pel)
 		no_mz=1;
 	
 
@@ -1639,7 +2325,7 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 	ofs_mend=k;
 	
 	ofs_iend2=ofs_mend;
-	if(is_pel4)
+	if(is_pel)
 		ofs_iend2=ofs_iend;
 	
 	lb_strt=0;
@@ -2097,7 +2783,7 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 	fclose(mapfd);
 #endif
 
-	if(is_pel4)
+	if(is_pel)
 //		csum=BGBCC_JX2C_CalculateImagePel4Checksum(obuf, ofs_iend2, en);
 		csum=BGBCC_JX2C_CalculateImagePel4BChecksum(obuf, ofs_iend2, en);
 	else
@@ -2108,23 +2794,25 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 	
 	printf("PE Checksum: %08X / %dkB\n", csum, ofs_iend2>>10);
 
-	if(is_pel4)
+	if(is_pel)
 	{
 //		ctb=malloc(ofs_iend*2);
 		ctb=malloc(ofs_iend2*2);
 	
-//		j=BGBCC_JX2C_PackImagePEL4(ctx, ctb, obuf, ofs_iend*2, ofs_iend);
-		j=BGBCC_JX2C_PackImagePEL4(ctx, ctb, obuf, ofs_iend2*2, ofs_iend2);
+//		j=BGBCC_JX2C_PackImagePEL(ctx, ctb, obuf, ofs_iend*2, ofs_iend);
+		j=BGBCC_JX2C_PackImagePEL(ctx, ctb, obuf, ofs_iend2*2, ofs_iend2);
 		ctb[2]='L';
-		ctb[3]='4';
+//		ctb[3]='4';
+		ctb[3]='0'+bgbcc_packlz_cmp;
 		
-//		BGBCC_JX2C_VerifyImagePEL4(ctx, ctb, obuf, j, ofs_iend);
-		BGBCC_JX2C_VerifyImagePEL4(ctx, ctb, obuf, j, ofs_iend2);
+//		BGBCC_JX2C_VerifyImagePEL(ctx, ctb, obuf, j, ofs_iend);
+		BGBCC_JX2C_VerifyImagePEL(ctx, ctb, obuf, j, ofs_iend2);
 		
 //		if(j<ofs_iend)
 		if(j<ofs_iend2)
 		{
-			printf("PEL4: %d->%d %d%%\n",
+//			printf("PEL: %d->%d %d%%\n",
+			printf("PEL%d: %d->%d %d%%\n", ctx->pel_cmpr,
 //				ofs_iend, j, (j*100)/ofs_iend);
 				ofs_iend2, j, (j*100)/ofs_iend2);
 		

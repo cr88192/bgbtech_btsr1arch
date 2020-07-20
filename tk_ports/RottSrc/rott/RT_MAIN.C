@@ -1334,6 +1334,12 @@ void GameLoop (void)
 
 				SetupDemo();
 				SetupGameLevel ();
+				
+				if(rt_mapload_failed)
+				{
+					playstate=ex_demodone;
+					break;
+				}
 
 				fizzlein = true;
 				playstate = ex_stillplaying;

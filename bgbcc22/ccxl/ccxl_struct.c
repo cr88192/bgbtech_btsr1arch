@@ -710,7 +710,9 @@ ccxl_status BGBCC_CCXL_GetSigFixedSize(
 		BGBCC_CCXL_GetStructSigFixedSize(ctx, sig, &sz);
 		break;
 	default:
-		sz=4;	break;
+//		sz=4;
+		__debugbreak();
+		break;
 	}
 	
 	*rsz=sz;
@@ -780,7 +782,7 @@ ccxl_status BGBCC_CCXL_GetSigMinMaxSize(
 	int asz[16];
 	char *s;
 	int sza[2], ala[2];
-	int sz, na, ret;
+	int sz, al, na, ret;
 	int i, j, k;
 
 	ret=0;
@@ -823,6 +825,13 @@ ccxl_status BGBCC_CCXL_GetSigMinMaxSize(
 		sza[0]=8; sza[1]=8;
 		ala[0]=8; ala[1]=8;
 		break;
+
+	case 'n':	case 'o':
+	case 'g':
+		sza[0]=16; sza[1]=16;
+		ala[0]=16; ala[1]=16;
+		break;
+
 	case 'P':
 		if(ctx->arch_sizeof_ptr)
 		{
@@ -863,6 +872,11 @@ ccxl_status BGBCC_CCXL_GetSigMinMaxSize(
 		ret=BGBCC_CCXL_GetStructSigMinMaxSize(ctx, sig, sza, ala);
 		break;
 
+	case 'v':
+		sza[0]=1; sza[1]=1;
+		ala[0]=1; ala[1]=1;
+		break;
+
 	case 'r':
 		sza[0]=8; sza[1]=8;
 		ala[0]=8; ala[1]=8;
@@ -876,7 +890,64 @@ ccxl_status BGBCC_CCXL_GetSigMinMaxSize(
 			sza[0]=8; sza[1]=8;
 			ala[0]=8; ala[1]=8;
 			break;
+
+		case 'a':	case 'f':
+		case 'm':
+		case 'v':	case 'w':
+			sza[0]=8; sza[1]=8;
+			ala[0]=8; ala[1]=8;
+			break;
+
+		case 'b':	case 'c':
+		case 'd':
+		case 'h':
+		case 'i':	case 'j':
+		case 'n':
+		case 'q':
+			sza[0]=16; sza[1]=16;
+			ala[0]=8; ala[1]=8;
+			break;
+
+		case 'p':
+			sza[0]=16; sza[1]=16;
+			ala[0]=1; ala[1]=1;
+			break;
+
+		default:
+			BGBCC_DBGBREAK
+			break;
 		}
+		break;
+
+	case 'D':
+		switch(sig[1])
+		{
+		case 'i':
+		case 'j':
+			sza[0]=8; sza[1]=8;
+			ala[0]=8; ala[1]=8;
+			break;
+
+		case 'z':
+			sz=ctx->arch_sizeof_valist;
+			al=ctx->arch_align_max;
+			if(sz>0)
+			{
+				sza[0]=sz; sza[1]=sz;
+				ala[0]=al; ala[1]=al;
+			}
+			break;
+
+		default:
+			BGBCC_DBGBREAK
+			break;
+		}
+		break;
+
+	case 'U':
+		sza[0]=0; sza[1]=0;
+		ala[0]=1; ala[1]=1;
+		ret=-1;
 		break;
 
 	default:

@@ -369,6 +369,17 @@ fourcc BGBCP_LangForName(char *name)
 		if(!bgbcp_strcmp(s, ".AS"))lang=BGBCC_IMGFMT_ASM;
 		if(!bgbcp_strcmp(s, ".s"))lang=BGBCC_IMGFMT_ASM;
 		if(!bgbcp_strcmp(s, ".S"))lang=BGBCC_IMGFMT_ASM;
+
+		if(!bgbcp_strcmp(s, ".wad"))	lang=BGBCC_FMT_WAD;
+		if(!bgbcp_strcmp(s, ".WAD"))	lang=BGBCC_FMT_WAD;
+		if(!bgbcp_strcmp(s, ".lmp"))	lang=BGBCC_FMT_LUMP;
+		if(!bgbcp_strcmp(s, ".LMP"))	lang=BGBCC_FMT_LUMP;
+		if(!bgbcp_strcmp(s, ".wav"))	lang=BGBCC_FMT_WAV;
+		if(!bgbcp_strcmp(s, ".WAV"))	lang=BGBCC_FMT_WAV;
+		if(!bgbcp_strcmp(s, ".bmp"))	lang=BGBCC_FMT_BMP;
+		if(!bgbcp_strcmp(s, ".BMP"))	lang=BGBCC_FMT_BMP;
+		if(!bgbcp_strcmp(s, ".avi"))	lang=BGBCC_FMT_AVI;
+		if(!bgbcp_strcmp(s, ".AVI"))	lang=BGBCC_FMT_AVI;
 	}
 	
 	if(lang==BGBCC_LANG_BS)
@@ -739,6 +750,57 @@ fourcc BGBCP_ImageFormatForName(char *name)
 	
 	return(fmt);
 }
+
+char *BGBCP_BaseNameForName(char *name)
+{
+	char tb[256];
+	char *s, *t;
+	
+	s=name+strlen(name);
+	while(s>name)
+	{
+		if((*s=='/') || (*s=='\\'))
+			break;
+		s--;
+	}
+	if((*s=='/') || (*s=='\\'))
+		s++;
+	
+	t=tb;
+	while(*s && (*s!='.'))
+		*t++=*s++;
+	*t++=0;
+	return(bgbcc_strdup(tb));
+}
+
+char *BGBCP_BaseNameForNameLC(char *name)
+{
+	char tb[256];
+	char *s, *t;
+	int i;
+	
+	s=name+strlen(name);
+	while(s>name)
+	{
+		if((*s=='/') || (*s=='\\'))
+			break;
+		s--;
+	}
+	if((*s=='/') || (*s=='\\'))
+		s++;
+	
+	t=tb;
+	while(*s && (*s!='.'))
+	{
+		i=*s++;
+		if((i>='A') && (i<='Z'))
+			i='a'+(i-'A');
+		*t++=i;
+	}
+	*t++=0;
+	return(bgbcc_strdup(tb));
+}
+
 
 BCCX_Node *BGBCP_ModuleBuffer(char *name, char *modname, char *buf)
 {

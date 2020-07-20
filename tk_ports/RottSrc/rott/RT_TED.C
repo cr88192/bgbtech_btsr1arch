@@ -110,6 +110,8 @@ int rott_shapestrt;
 int rott_shapestop;
 
 boolean rott_iswolf = false;
+int rt_mapload_failed;
+
 
 //========================================
 // LOCAL VARIABLES
@@ -1468,6 +1470,8 @@ void ReadROTTMap
 	CheckRTLVersion( filename );
 	filehandle = SafeOpenRead( filename );
 
+//	rt_mapload_failed = 0;
+
 	//
 	// Load map header
 	//
@@ -1477,10 +1481,14 @@ void ReadROTTMap
 
 	if ( !RTLMap.used )
 	{
-		Error( "ReadROTTMap: Tried to load a non existent map!" );
+//		Error( "ReadROTTMap: Tried to load a non existent map!" );
+
+		rt_mapload_failed = 1;
+		return;
 	}
 
-#if ( SHAREWARE == 1 )
+// #if ( SHAREWARE == 1 )
+#if 0
 	if ( RTLMap.RLEWtag == REGISTERED_TAG )
 	{
 		Error( "Can't use maps from the registered game "
@@ -6883,6 +6891,7 @@ void SetupGameLevel (void)
 	Error("okay");
 #endif
 
+	rt_mapload_failed = 0;
 	insetupgame=true;
 
 	InitializeRNG ();
@@ -6904,6 +6913,9 @@ void SetupGameLevel (void)
 		GetEpisode (gamestate.mapon);
 		LoadROTTMap(gamestate.mapon);
 	}
+
+	if(rt_mapload_failed)
+		return;
 
 	rott_iswolf=false;
 	if ((word)MAPSPOT(3,0,1)==99)

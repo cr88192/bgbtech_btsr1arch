@@ -31,7 +31,7 @@ void G_InitNew (skill_t skill, int episode, int map);
 
 void G_DoReborn (int playernum);
 
-void G_DoLoadLevel(void);
+int G_DoLoadLevel(void);
 void G_DoInitNew(void);
 void G_DoNewGame(void);
 void G_DoLoadGame(void);
@@ -780,7 +780,7 @@ void G_BuildTiccmd (ticcmd_t *cmd)
 ==============
 */
 
-void G_DoLoadLevel (void)
+int G_DoLoadLevel (void)
 {
 	int             i;
 	
@@ -794,7 +794,9 @@ void G_DoLoadLevel (void)
 	}
 
 	SN_StopAllSequences();	
-	P_SetupLevel (gameepisode, gamemap, 0, gameskill);   
+	i = P_SetupLevel (gameepisode, gamemap, 0, gameskill);   
+	if(i<0)
+		return(i);
 	displayplayer = consoleplayer;      // view the guy you are playing   
 	starttime = I_GetTime ();
 	gameaction = ga_nothing;
@@ -810,6 +812,8 @@ void G_DoLoadLevel (void)
 	sendpause = sendsave = paused = false;
 	memset (mousebuttons, 0, sizeof(mousebuttons));
 	memset (joybuttons, 0, sizeof(joybuttons));
+	
+	return(0);
 }
 
 

@@ -1375,6 +1375,14 @@ ccxl_status BGBCC_CCXL_FlattenImage(BGBCC_TransState *ctx,
 	return(CCXL_STATUS_ERR_UNIMPLEMENTED);
 }
 
+ccxl_status BGBCC_CCXL_AddResourceData(BGBCC_TransState *ctx,
+	char *name, byte *buf, int sz, fourcc imgfmt)
+{
+	if(ctx->back_vt && ctx->back_vt->AddResourceData)
+		return(ctx->back_vt->AddResourceData(ctx, name, buf, sz, imgfmt));
+	return(CCXL_STATUS_ERR_UNIMPLEMENTED);
+}
+
 
 /** Setup context for the current target architecture.
   * Returns UNSUPPORTED error status if unsupported.

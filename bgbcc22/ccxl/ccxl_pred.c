@@ -687,6 +687,16 @@ bool BGBCC_CCXL_IsRegVariantP(
 	return(false);
 }
 
+bool BGBCC_CCXL_IsRegVec128P(
+	BGBCC_TransState *ctx, ccxl_register reg)
+{
+	ccxl_type tty;
+	tty=BGBCC_CCXL_GetRegType(ctx, reg);
+	if(BGBCC_CCXL_TypeVec128P(ctx, tty))
+		return(true);
+	return(false);
+}
+
 bool BGBCC_CCXL_IsRegImmIntP(
 	BGBCC_TransState *ctx, ccxl_register reg)
 {
@@ -2137,6 +2147,11 @@ int BGBCC_CCXL_GetTypeOperationZ(
 	if(i==CCXL_TY_VAROBJECT)
 		return(CCXL_TY_V);
 	
+	if(BGBCC_CCXL_TypeVec64P(ctx, ty))
+		return(CCXL_TY_M64);
+	if(BGBCC_CCXL_TypeVec128P(ctx, ty))
+		return(CCXL_TY_M128);
+	
 	return(-1);
 //	return(CCXL_TY_UNDEF_I);
 }
@@ -2202,6 +2217,14 @@ int BGBCC_CCXL_GetTypeOperationBaseZ(
 	case CCXL_TY_FATP_AREF:
 	case CCXL_TY_FATP_VMTH:
 		z1=CCXL_TY_FATP;
+		break;
+		
+	case CCXL_TY_M64:
+		z1=CCXL_TY_M64;
+		break;
+	case CCXL_TY_M128:
+		z1=CCXL_TY_M128;
+		break;
 	
 	default:
 		z1=CCXL_TY_P; break;

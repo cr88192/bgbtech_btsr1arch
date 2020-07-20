@@ -863,6 +863,7 @@
 //#define BGBCC_SH_RLC_RELJ31_BJX		0x2F	//Relative Jumbo 31 bit (BYTE, BJX2)
 											//F4xx_Cxxx_F1nm_Oexx
 
+#define BGBCC_SH_RLC_PBO9_BJX		0x2B	//PBO Disp9 (BYTE, BJX2)
 
 #define BGBCC_SH_RLC_PBOJ29_BJX		0x2C	//PBO Jumbo 29 bit (BYTE, BJX2)
 #define BGBCC_SH_RLC_PBOJ32_BJX		0x2D	//PBO Jumbo 32 bit (BYTE, BJX2)

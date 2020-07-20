@@ -488,6 +488,15 @@ int BJX2_DecodeOpcode_DecD5(BJX2_Context *ctx,
 
 	ret=BJX2_DecodeOpcode_DecF1(ctx, op1, addr, opw1, opw2, 0);
 
+	if(!op1->Run || !op1->opn)
+	{
+		op->nmid=BJX2_NMID_INV;
+		op->fmid=BJX2_FMID_Z;
+		op->Run=BJX2_Op_INVOP_None;
+		op->fl|=BJX2_OPFL_CTRLF;
+		return(ret);
+	}
+
 	if(opw1&0x0400)
 	{
 		op->nmid=BJX2_NMID_PRED_F;

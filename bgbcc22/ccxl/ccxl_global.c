@@ -1095,6 +1095,14 @@ int BGBCC_CCXL_CheckDefinedContextName(
 		if(decl)
 			return(1);
 	}
+	
+	if(tag==CCXL_CMD_GLOBALVARDECL)
+	{
+		decl=BGBCC_CCXL_LookupGlobal(ctx, name);
+		if(decl)
+			return(1);
+	}
+
 	return(0);
 }
 
@@ -1323,6 +1331,25 @@ void BGBCC_CCXL_BeginName(BGBCC_TransState *ctx, int tag, char *name)
 				return;
 			}
 		}
+
+		if(tag==CCXL_CMD_GLOBALVARDECL)
+		{
+			decl=BGBCC_CCXL_LookupGlobal(ctx, name);
+			if(decl)
+			{
+				obj=BGBCC_CCXL_AllocLiteral(ctx);
+//				obj=bgbcc_malloc(sizeof(BGBCC_CCXL_LiteralInfo));
+				obj->parent=ctx->cur_obj;
+	
+				ctx->cur_objstack[ctx->cur_objstackpos++]=obj;
+				ctx->cur_obj=obj;
+
+				obj->decl=decl;
+				obj->littype=CCXL_LITID_GLOBALVAR;
+				obj->decl->regtype=CCXL_LITID_GLOBALVAR;
+				return;
+			}
+		}
 	}else
 	{
 		BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_BEGIN);
@@ -1396,6 +1423,63 @@ void BGBCC_CCXL_BeginName(BGBCC_TransState *ctx, int tag, char *name)
 			obj->decl->regtype=CCXL_LITID_GLOBALVAR;
 			if(name && obj->decl && !obj->decl->name)
 				{ obj->decl->name=bgbcc_strdup(name); }
+			BGBCC_CCXL_AddGlobalDecl(ctx, obj->decl);
+		}
+#endif
+		break;
+
+	case CCXL_CMD_GLOBALVARDECL:
+		obj->decl=bgbcc_malloc(sizeof(BGBCC_CCXL_RegisterInfo));
+		obj->decl->regtype=CCXL_LITID_VAR;
+		obj->decl->fxmsize=-1;
+		obj->decl->fxnsize=-1;
+		obj->littype=CCXL_LITID_GLOBALVAR;
+		obj->decl->regtype=CCXL_LITID_GLOBALVAR;
+
+#if 1
+		obj->littype=CCXL_LITID_GLOBALVAR;
+		obj->decl->regtype=CCXL_LITID_GLOBALVAR;
+		if(name && obj->decl && !obj->decl->name)
+			{ obj->decl->name=bgbcc_strdup(name); }
+//		BGBCC_CCXL_AddGlobalDecl(ctx, obj->decl);
+
+		if(obj->parent)
+		{
+			switch(obj->parent->littype)
+			{
+			case CCXL_LITID_ARGS:
+				BGBCC_CCXL_AddGlobalDecl(ctx, obj->decl);
+				break;
+			case CCXL_LITID_LOCALS:
+				BGBCC_CCXL_AddFrameStatic(ctx,
+					obj->parent->parent->decl,
+					obj->decl);
+				obj->decl->defp=obj->parent->parent->decl;
+				BGBCC_CCXL_AddGlobalDecl(ctx, obj->decl);
+				break;
+			case CCXL_LITID_FUNCTION:
+				BGBCC_CCXL_AddGlobalDecl(ctx, obj->decl);
+				break;
+			case CCXL_LITID_STRUCT:
+			case CCXL_LITID_UNION:
+			case CCXL_LITID_CLASS:
+			case CCXL_LITID_ENUMDEF:
+				BGBCC_CCXL_AddFrameStatic(ctx,
+					obj->parent->decl,
+					obj->decl);
+				obj->decl->defp=obj->parent->decl;
+				
+				sprintf(tb1, "%s/%s", obj->parent->decl->name, name);
+				obj->decl->qname=bgbcc_strdup(tb1);
+
+				BGBCC_CCXL_AddGlobalDecl(ctx, obj->decl);
+				break;
+			default:
+				BGBCC_CCXL_AddGlobalDecl(ctx, obj->decl);
+				break;
+			}
+		}else
+		{
 			BGBCC_CCXL_AddGlobalDecl(ctx, obj->decl);
 		}
 #endif

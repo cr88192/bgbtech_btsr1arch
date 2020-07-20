@@ -244,19 +244,21 @@ void S_Start(void)
 	}
 #endif
 
-#if 0
+#if 1
 	// start new music for the level
 	mus_paused = 0;
 	
-	if (gamemode == commercial)
-	mnum = mus_runnin + gamemap - 1;
-	else
-	{	
-	if (gameepisode < 4)
-		mnum = mus_e1m1 + (gameepisode-1)*9 + gamemap-1;
-	else
-		mnum = spmus[gamemap-1];
-	}	
+//	if (gamemode == commercial)
+//	mnum = mus_runnin + gamemap - 1;
+//	else
+//	{	
+//	if (gameepisode < 4)
+//		mnum = mus_e1m1 + (gameepisode-1)*9 + gamemap-1;
+//	else
+//		mnum = spmus[gamemap-1];
+//	}	
+
+	mnum = 0 + (gameepisode-1)*9 + gamemap-1;
 	
 	// HACK FOR COMMERCIAL
 	//	if (commercial && mnum > mus_e3m9)	
@@ -611,22 +613,25 @@ void S_StartMusic(int m_id)
 	S_ChangeMusic(m_id, false);
 }
 
+musicinfo_t S_music[];
+
 #if 1
 int
 S_ChangeMusic
 ( int			musicnum,
 	int			looping )
 {
-#if 0
+#if 1
 	musicinfo_t*	music;
 	char		namebuf[9];
 
-	if ( (musicnum <= mus_None)
-	 || (musicnum >= NUMMUSIC) )
-	{
-	I_Error("Bad music number %d", musicnum);
-	}
-	else
+//	if ( (musicnum <= mus_None)
+//	 || (musicnum >= NUMMUSIC) )
+//	{
+//	I_Error("Bad music number %d", musicnum);
+//	}
+//	else
+
 	music = &S_music[musicnum];
 
 	if (mus_playing == music)
@@ -635,21 +640,27 @@ S_ChangeMusic
 	// shutdown old music
 	S_StopMusic();
 
-	if(gamemode==heretic)
-	{
-		if (music->lumpnum<=0)
-		{
-			sprintf(namebuf, "mus_%s", music->name);
-			music->lumpnum = W_GetNumForName(namebuf);
-		}
-	}
+//	if(gamemode==heretic)
+//	{
+//		if (music->lumpnum<=0)
+//		{
+//			sprintf(namebuf, "mus_%s", music->name);
+//			music->lumpnum = W_GetNumForName(namebuf);
+//		}
+//	}
 
 	// get lumpnum if neccessary
 //	if (!music->lumpnum)
 	if (music->lumpnum<=0)
 	{
-		sprintf(namebuf, "d_%s", music->name);
+//		sprintf(namebuf, "d_%s", music->name);
+		sprintf(namebuf, "%s", music->name);
 		music->lumpnum = W_GetNumForName(namebuf);
+		
+		if(music->lumpnum<=0)
+		{
+			printf("No Music %s\n", namebuf);
+		}
 	}
 
 	// load & register it
@@ -667,7 +678,7 @@ S_ChangeMusic
 
 void S_StopMusic(void)
 {
-#if 0
+#if 1
 	if (mus_playing)
 	{
 		if (mus_paused)

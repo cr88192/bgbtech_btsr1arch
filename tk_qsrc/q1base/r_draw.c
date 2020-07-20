@@ -69,6 +69,8 @@ int				r_ceilv1;
 
 qboolean	r_lastvertvalid;
 
+float __fpu_frcp_sf(float f);
+float __fpu_fdiv_sf(float f, float g);
 
 #if	!id386
 
@@ -274,8 +276,8 @@ void R_EmitEdge (mvertex_t *pv0, mvertex_t *pv1)
 	removeedges[v2] = edge;
 }
 
-float __fpu_fdiv_sf(float x, float y);
-float __fpu_frcp_sf(float x);
+// float __fpu_fdiv_sf(float x, float y);
+// float __fpu_frcp_sf(float x);
 
 /*
 ================
@@ -328,8 +330,8 @@ void R_ClipEdge (mvertex_t *pv0, mvertex_t *pv1, clipplane_t *clip)
 #endif
 
 #if 1
-//				f = d0 / (d0 - d1);
-				f = __fpu_fdiv_sf(d0, (d0 - d1));
+				f = d0 / (d0 - d1);
+//				f = __fpu_fdiv_sf(d0, (d0 - d1));
 				pf0=pv0->position;
 				pf1=pv1->position;
 				pf2=clipvert.position;
@@ -382,8 +384,8 @@ void R_ClipEdge (mvertex_t *pv0, mvertex_t *pv1, clipplane_t *clip)
 #endif
 
 #if 1
-//				f = d0 / (d0 - d1);
-				f = __fpu_fdiv_sf(d0, (d0 - d1));
+				f = d0 / (d0 - d1);
+//				f = __fpu_fdiv_sf(d0, (d0 - d1));
 				pf0=pv0->position;
 				pf1=pv1->position;
 				pf2=clipvert.position;

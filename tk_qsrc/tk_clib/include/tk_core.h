@@ -296,7 +296,7 @@ u16 usc4;		//microseconds, range=4096
 #endif
 
 #include <tk_fatfs.h>
-#include <tk_dummyavi.h>
+// #include <tk_dummyavi.h>
 #include <tk_varobj.h>
 #include <tk_keys.h>
 #include <tk_romfcn.h>

@@ -125,6 +125,8 @@ extern  boolean  noecho;
 extern  boolean  demoexit;
 extern  boolean  quiet;
 
+extern	int			rt_mapload_failed;
+
 extern gametype  gamestate;
 extern boolean DebugOk;
 extern  boolean newlevel;

@@ -1263,7 +1263,8 @@ void MU_PlaySong ( int num )
 
 	lastsongnumber=num;
 
-	currentsong=W_CacheLumpName(rottsongs[num].lumpname,PU_STATIC);
+//	currentsong=W_CacheLumpName(rottsongs[num].lumpname,PU_STATIC);
+	currentsong = rottsongs[num].lumpname;
 	if (rottsongs[num].loopflag == loop_yes)
 		MUSIC_PlaySong(currentsong,MUSIC_LoopSong);
 	else

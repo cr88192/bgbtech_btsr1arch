@@ -825,6 +825,9 @@ s64 BGBCP_DefTypeFlag(BGBCP_ParseState *ctx, char *tag)
 		{
 			if(!bgbcp_strcmp(tag, "register"))i=BGBCC_TYFL_INLINE;
 			if(!bgbcp_strcmp(tag, "restrict"))i=BGBCC_TYFL_RESTRICT;
+		}else if(c0=='a')
+		{
+			if(!bgbcp_strcmp(tag, "auto"))i=BGBCC_TYFL_AUTO;
 		}else if(c0=='_')
 		{
 			if(tag[1]=='_')

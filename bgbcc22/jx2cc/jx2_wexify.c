@@ -589,6 +589,7 @@ int BGBCC_JX2_CheckOps32Immovable(
 		if((opw2&0xF000)>=0xC000)
 			return(1);
 		if((opw1&0x000F)==0x0000)
+//		if((opw1&0x000E)==0x0000)
 			return(1);
 
 //		if((opw2&0x8800)==0x0000)
@@ -1009,6 +1010,7 @@ ccxl_status BGBCC_JX2_CheckWexify_DoSwaps(
 	int opwn1, opwn2;
 	int wx1, wx3, wx5;
 	int dp, cp, nswap;
+	int i, j, k;
 	
 	dp=epos-spos;
 	if(dp&3)
@@ -1134,6 +1136,20 @@ ccxl_status BGBCC_JX2_CheckWexify_DoSwaps(
 			{ cp+=4; continue; }
 		if(BGBCC_JX2_CheckOps32Immovable(sctx, opw3, opw4)>0)
 			{ cp+=4; continue; }
+		
+		if((opw1&0xEB00)==0xE100)
+		{
+			i=BGBCC_JX2_LookupRelocAtOffs(sctx, sctx->sec, cp+0);
+			if(i>=0)
+				{ cp+=4; continue; }
+		}
+
+		if((opw3&0xEB00)==0xE100)
+		{
+			i=BGBCC_JX2_LookupRelocAtOffs(sctx, sctx->sec, cp+4);
+			if(i>=0)
+				{ cp+=4; continue; }
+		}
 
 #if 1
 		if(	BGBCC_JX2_CheckOps32ValidWexPrefix(sctx, opw1, opw2) &&

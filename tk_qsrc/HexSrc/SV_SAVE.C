@@ -20,9 +20,14 @@
 #define MAX_TARGET_PLAYERS 512
 #define MOBJ_NULL -1
 #define MOBJ_XX_PLAYER -2
-#define GET_BYTE (*SavePtr.b++)
-#define GET_WORD (*SavePtr.w++)
-#define GET_LONG (*SavePtr.l++)
+// #define GET_BYTE (*SavePtr.b++)
+// #define GET_WORD (*SavePtr.w++)
+// #define GET_LONG (*SavePtr.l++)
+
+#define GET_BYTE	UnarchiveByte()
+#define GET_WORD	UnarchiveWord()
+#define GET_LONG 	UnarchiveLong()
+
 #define MAX_MAPS 99
 #define BASE_SLOT 6
 #define REBORN_SLOT 7
@@ -127,6 +132,10 @@ static void StreamOutByte(byte val);
 static void StreamOutWord(unsigned short val);
 static void StreamOutLong(unsigned int val);
 
+static int UnarchiveByte();
+static int UnarchiveWord();
+static int UnarchiveLong();
+
 // EXTERNAL DATA DECLARATIONS ----------------------------------------------
 
 extern int ACScriptCount;
@@ -148,8 +157,8 @@ static dt_bool SavingPlayers;
 static union
 {
 	byte *b;
-	short *w;
-	int *l;
+//	short *w;
+//	int *l;
 } SavePtr;
 static FILE *SavingFP;
 
@@ -1765,3 +1774,27 @@ static void StreamOutLong(unsigned int val)
 {
 	fwrite(&val, sizeof(int), 1, SavingFP);
 }
+
+static int UnarchiveByte()
+{
+	int i;
+	i=*SavePtr.b++;
+	return(i);
+}
+
+static int UnarchiveWord()
+{
+	short v;
+	memcpy(&v, SavePtr.b, 2);
+	SavePtr.b+=2;
+	return(v);
+}
+
+static int UnarchiveLong()
+{
+	int v;
+	memcpy(&v, SavePtr.b, 4);
+	SavePtr.b+=4;
+	return(v);
+}
+

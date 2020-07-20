@@ -842,9 +842,60 @@ void S_StopAllSound(void)
 {
 }
 
+int song_lumpnum;
+int song_handle;
+byte *song_data;
+
+void S_StopMusic(void)
+{
+	if (song_handle>0)
+	{
+		if (mus_paused)
+			I_ResumeSong(song_handle);
+
+		I_StopSong(song_handle);
+		I_UnRegisterSong(song_handle);
+
+		if(song_data)
+			Z_ChangeTag(song_data, PU_CACHE);
+		
+		song_data = 0;
+		song_handle = 0;
+	}
+}
+
+void S_StartSongName(char *songLump, dt_bool loop)
+{
+	int lumpnum;
+
+	S_StopMusic();
+
+	printf("S_StartSongName: %s\n", songLump);
+
+	lumpnum = W_GetNumForName(songLump);
+	song_lumpnum=lumpnum;
+
+	// load & register it
+	song_data = (void *) W_CacheLumpNum(lumpnum, PU_MUSIC);
+	song_handle = I_RegisterSong(song_data);
+
+	// play it
+	I_PlaySong(song_handle, loop);
+
+//	mus_playing = music;
+}
+
 void S_StartSong(int song, dt_bool loop)
 {
+	char *str;
+	
+	str=P_GetMapSongLump(song);
+	if(!str)
+		str="chess";
+
+	S_StartSongName(str, loop);
 }
+
 
 int S_GetSoundID(char *name)
 {

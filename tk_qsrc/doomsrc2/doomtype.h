@@ -47,6 +47,14 @@ typedef long long nlint;
 // typedef unsigned char dt_scrpix;
 typedef unsigned short dt_scrpix;
 
+#ifdef __BJX2__
+#define global_register		register
+#endif
+
+#ifndef global_register
+#define global_register
+#endif
+
 
 // Predefined with some OS.
 #ifdef LINUX

@@ -660,7 +660,7 @@ void R_RecursiveWorldNode (mnode_t *node, int clipflags)
 		if(r_lowfps>1)
 		{
 //			if(fabs(dot)>768)
-			if(fabs(dot)>r_lowfps_worldclip)
+			if(fabs(dot)>r_lowfps_worldclip)	//BGB
 				return;
 		}
 

@@ -447,6 +447,31 @@ void BJX2_Op_RGB5UPCK64_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=vn;
 }
 
+void BJX2_Op_RGB32PCK64_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64	vs, vt, vn, msk;
+
+	vs=ctx->regs[op->rm];
+	vn=	((vs>> 8)&0x000000FF)|
+		((vs>>16)&0x0000FF00)|
+		((vs>>24)&0x00FF0000)|
+		((vs>>32)&0xFF000000);
+	vn|=vn<<32;
+	ctx->regs[op->rn]=vn;
+}
+
+
+void BJX2_Op_RGB32UPCK64_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64	vs, vt, vn, msk;
+	vs=ctx->regs[op->rm];
+	vn=	((vs&0x000000FF)<< 8)|
+		((vs&0x0000FF00)<<16)|
+		((vs&0x00FF0000)<<24)|
+		((vs&0xFF000000)<<24);
+	ctx->regs[op->rn]=vn;
+}
+
 void BJX2_Op_PMULSLW_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	int ia, ib, ic, id, ja, jb, jc, jd, ka, kb, kc, kd;

@@ -1821,11 +1821,13 @@ void D_DrawZSpans (espan_t *pspan)
 
 //	return;
 
+#if 1
 	if(r_lowfps>1)
 	{
 		D_DrawZSpans_Low(pspan);
 		return;
 	}
+#endif
 
 // FIXME: check for clamping/range problems
 // we count on FP exceptions being turned off to avoid range problems

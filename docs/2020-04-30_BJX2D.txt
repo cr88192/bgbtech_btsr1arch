@@ -1135,11 +1135,11 @@ F0zz Instruction Block:
 *** F0nm_1g69 OR		Rm, Rn				//
 *** F0nm_1g79 XOR		Rm, Rn				//
 *** F0nm_1g89 MOV		Rm, Rn				//Rn=Rm
-*** F0nm_1G89 / MOVD	Rm, Rn				//Rn=Rm (High Undefined)
 *** F0nm_1G89 MOVX		Rm, Rn				//MOV, 128-bit
 *** F0nm_1g99 /
 *** F0nm_1G99 /
 *** F0nm_1gA9 MOV		Rm, Cn				//Cn=Rm
+*** F0nm_1GA9 SETTRAP	Rn, (Rm)			//(Opt/Dbg) Set Trap Mode
 *** F0nm_1gB9 MOV		Cm, Rn				//Rn=Cm
 *** F0nm_1eC9 CMP{Q}EQ	Rm, Rn				//Rn==Rm
 *** F0nm_1eD9 CMP{Q}HI	Rm, Rn				//Unsigned Rn GT Rm
@@ -1165,6 +1165,7 @@ F0zz Instruction Block:
 *** F0nm_1G7A ? PMUL.F		Rm, Rn				//(GSVF) Packed MUL Float
 *** F0nm_1g8A  MOVHD		Rm, Rn				//(GSV) Move High DWord
 *** F0nm_1G8A  MOVLD		Rm, Rn				//(GSV) Move Low DWord
+*** F0nm_1g9A -
 *** F0nm_1G9A -
 *** F0nm_1gAA  MOVHLD		Rm, Rn				//(GSV) Rn=Rm (MOV High to Low)
 *** F0nm_1GAA  MOVLHD		Rm, Rn				//(GSV) Rn=Rm (MOV Low to High)
@@ -1249,11 +1250,10 @@ F0zz Instruction Block:
 ** F0nm_2Go0  PADD.L	Rm, Ro, Rn			//(GSV) Packed ADD DWord
 ** F0nm_2go1  PSUB.W	Rm, Ro, Rn			//(GSV) Packed SUB Word
 ** F0nm_2Go1  PSUB.L	Rm, Ro, Rn			//(GSV) Packed SUB DWord
-** F0nm_2go2  -
-** F0nm_2Go2  -
-** F0nm_2go3  -
-** F0nm_2Go3  -
-** F0nm_2eo4  -
+** F0nm_2eo2 ? SHAR{Q}	Rm, Ro, Rn			//Shift Arithmetic Right
+** F0nm_2eo3 ? SHLR{Q}	Rm, Ro, Rn			//Shift Logical Right
+** F0nm_2go4  -
+** F0nm_2Go4  -
 ** F0nm_2go5  PADD.F	Rm, Ro, Rn			//(GSVF) Packed FADD (2x Float)
 ** F0nm_2Go5  PADDX.F	Xm, Xo, Xn			//(GSVFX) Packed FADD (4x Float)
 ** F0nm_2go6  PSUB.F	Rm, Ro, Rn			//(GSVF) Packed FSUB (2x Float)
@@ -1288,11 +1288,15 @@ F0zz Instruction Block:
 *** F000_30A0  -
 *** F000_30B0  -
 *** F000_30C0  RTE
-*** F000_30D0  -
-*** F000_30E0  -
+*** F000_30D0 ? DIV0
+*** F000_30E0 ? DIV1
 *** F000_30F0  LDTLB
 
 *** F002_3010  RTSU
+
+*** F002_30C0  LDEKRR	//Load Encoded Keyring
+*** F002_30D0  LDEKEY	//Load Encoded Key
+*** F002_30E0  LDEENC	//Encode Key
 *** F002_30F0  INVTLB
 
 *** F010_3en0  BRA		(PC, Rn)
@@ -1361,7 +1365,9 @@ F0zz Instruction Block:
 ** F0nm_5go1 ? PMULS.W	Rm, Ro, Rn			//(GSV) Packed Multiply (2x16->2x32)
 ** F0nm_5Go1 ? PMULU.W	Rm, Ro, Rn			//(GSV) Packed Multiply (2x16->2x32)
 ** F0nm_5go2  DMULS.L	Rm, Ro, Rn			//(MULL) Sx 32b Mul (32*32->64)
+** F0nm_5Go2 ? DMULS.Q	Rm, Ro, Xn			//(MULQ) Sx 64b Mul (64*64->128)
 ** F0nm_5go3  DMULU.L	Rm, Ro, Rn			//(MULL) Zx 32b Mul (32*32->64)
+** F0nm_5Go3 ? DMULU.Q	Rm, Ro, Xn			//(MULQ) Zx 64b Mul (64*64->128)
 
 ** F0nm_5eo4  SHAD{Q}	Rm, Ro, Rn
 ** F0nm_5eo5  SHLD{Q}	Rm, Ro, Rn
@@ -1371,11 +1377,11 @@ F0zz Instruction Block:
 ** F0nm_5go7 ? PMULS.HW	Rm, Ro, Rn			//(GSV) Packed Mul (High Word)
 ** F0nm_5Go7 ? PMULU.HW	Rm, Ro, Rn			//(GSV) Packed Mul (High Word)
 
-** F0nm_5go8 ? FADD		Rm, Ro, Rn			//(GFP) FADD
-** F0nm_5go9 ? FSUB		Rm, Ro, Rn			//(GFP) FSUB
-** F0nm_5goA ? FMUL		Rm, Ro, Rn			//(GFP) FMUL
-** F0nm_5goB /? RGB5AVG	Rm, Ro, Rn			//(RGB555) Average
-** F0nm_5GoB /? RGB5MOD	Rm, Ro, Rn			//(RGB555) Modulate
+** F0nm_5go8  FADD		Rm, Ro, Rn			//(GFP) FADD
+** F0nm_5go9  FSUB		Rm, Ro, Rn			//(GFP) FSUB
+** F0nm_5goA  FMUL		Rm, Ro, Rn			//(GFP) FMUL
+** F0nm_5goB / RGB5AVG	Rm, Ro, Rn			//(RGB555) Average
+** F0nm_5GoB / RGB5MOD	Rm, Ro, Rn			//(RGB555) Modulate
 ** F0nm_5goC  ADDS.L	Rm, Ro, Rn			//Rn=Rm+Ro, ADD 32-bit, Sign Extend
 ** F0nm_5GoC  ADDU.L	Rm, Ro, Rn			//Rn=Rm+Ro, ADD 32-bit, Zero Extend
 ** F0nm_5goD  SUBS.L	Rm, Ro, Rn			//Rn=Rm-Ro, ADD 32-bit, Sign Extend
@@ -1522,8 +1528,8 @@ F8zz Instruction Block:
 * F85n_iiii  ADD		#imm16s, Rk		//R16..R31
 * F86n_iiii  LDISH16	#imm16u, Rn		//R0..R15
 * F87n_iiii  LDISH16	#imm16u, Rk		//R16..R31
-* F88n_iiii  -
-* F89n_iiii  -
+* F88n_iiii  FLDCH		#imm16u, Rn		//R0..R15, Load Half-Float
+* F89n_iiii  FLDCH		#imm16u, Rk		//R16..R31, Load Half-Float
 * F8An_iiii  -
 * F8Bn_iiii  -
 * F8Cn_iiii  -

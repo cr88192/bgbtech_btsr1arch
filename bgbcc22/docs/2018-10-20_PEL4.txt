@@ -2,29 +2,73 @@ General:
 * This is a spec for the Testkern PE/COFF and PEL4 variants.
 
 
-== PEL4 ==
+== PELZ ==
 
-PEL4: LZ compressed PE/COFF
+PELZ: LZ compressed PE/COFF
 
 Overview:
 * Omits the MZ header or stub.
-** An MZ header may be present, but is not allowed if PEL4 is used.
+** An MZ header may be present, but is not allowed if PEL is used.
 ** An MZ stub will be present for conventional PE/COFF.
-* PEL4 uses the magic "PEL4" rather than "PE\0\0"
+* PELZ uses the magic "PELn" rather than "PE\0\0"
 ** If the normal "PE" magic is used, it is interpreted as uncompressed PE/COFF.
 ** The first 1kB is stored in an uncompressed form.
-** The remainder of the image is compressed using an LZ4 variant.
+** The remainder of the image is compressed using an LZ variant.
 *** This is done in terms of 1kB blocks.
+** PEL0 will use the PEL0 magic, and will be uncompressed.
+** PEL3 will use the PEL3 magic, and use RP2 encoding.
+** PEL4 will use the PEL4 magic, and use LZ4 encoding.
+** The last character of the FOURCC will effectively be a method number.
+*** '0'..'9': 0..9
+*** 'A'..'Z': 10..35
+*** 'a'..'z': 36..61
 * Assumes that RVA and uncompressed offsets are equivalent for resident sections.
 ** The ".bss" is an partial exception to this rule.
 *** The ".bss" section may overlap other non-resident sections.
 
 The LZ encoding is applied at the image level, and as such the image is unpacked prior to subsequent initialization. The PE headers are kept in an uncompressed form so that a loader can know where things need to go in memory without needing to unpack into a secondary intermediate buffer.
 
-Once unpacked, a PEL4 image is otherwise an ordinaty PE image.
+Once unpacked, a PEL image is otherwise an ordinaty PE image.
+
+=== Uncompressed (PEL0) ===
+
+This will not use any LZ encoding.
+It will be otherwise functionally equivalent to using the "PE\0\0" magic.
 
 
-=== LZ Encoding ===
+=== RP2 LZ Encoding (PEL3) ===
+
+PEL3 will use a very similar structure to PEL4, but will use a different LZ scheme (RP2).
+
+BtRP2 (Transposed, LE):
+*                   dddddddd-dlllrrr0	(l=3..10, d=0..511, r=0..7)
+*          dddddddd-dddddlll-lllrrr01	(l=4..67, d=0..8191)
+* dddddddd-dddddddd-dlllllll-llrrr011	(l=4..515, d=0..131071)
+*                            rrrr0111	(Raw Bytes, r=(r+1)*8, 8..128)
+*                          * rrr01111	(Long Match)
+*                            rr011111	(r=1..3 bytes, 0=EOB)
+*                   rrrrrrrr-r0111111 	(Long Raw, r=(r+1)*8, 8..4096)
+** d: Distance
+** l: Match Length
+** r: Literal Length
+
+Values are encoded in little-endian order, with tag bits located in the LSB. Bits will be contiguous within the value, with shift-and-mask being used to extract individual elements.
+
+Long Match will encode length and distance using variable-length encodings directly following the initial tag byte.
+
+Length VLN:
+*          lllllll0,   4..  131
+* llllllll-llllll01, 132..16383
+
+Distance VLN:
+*          dddddddd-ddddddd0, 32K (0..32767)
+* dddddddd-dddddddd-dddddd01,  4M
+
+
+=== LZ4 Encoding (PEL4) ===
+
+PEL4 will used a variant of LZ4, organized in terms of 1K blocks.
+Each block will be decoded separately, with the decoded contents being concatenated into the final image. The sliding window will be shared between blocks.
 
 Consists of a series of LZ runs, each potentially encoding a series of literal bytes.
 
@@ -62,6 +106,43 @@ Blocks prior to the final block will terminate on the block edge. If a match dis
 Note that each block is to be handled separately, and as such a run of literal bytes may not cross a block boundary. As such, a run of literal bytes ending at 0x3FF or 0x400 will encode the end of a block.
 
 A 1 byte tolerance is allowed because it may not be possible in all cases to end the run exactly on a block edge.
+
+
+=== Image Checksum ===
+
+Traditional PE/COFF images will use the traditional PE/COFF checksum algorithm.
+
+PELZ images will use a modified checksum.
+
+ u32 TKPE_CalculateImagePel4BChecksum(byte *buf, int size)
+ {
+ 	byte *cs, *cse;
+ 	u32 csum, v;
+ 	u64 acc_lo, acc_hi;
+ 	cs=buf;		cse=cs+size;
+ 	acc_lo=1;	acc_hi=0;
+ 	while(cs<cse)
+ 	{
+ 		v0=get_u32le(cs+0);	v1=get_u32le(cs+ 4);
+ 		v2=get_u32le(cs+8);	v3=get_u32le(cs+12);
+ 		acc_lo=acc_lo+v0;	acc_hi=acc_hi+acc_lo;
+ 		acc_lo=acc_lo+v1;	acc_hi=acc_hi+acc_lo;
+ 		acc_lo=acc_lo+v2;	acc_hi=acc_hi+acc_lo;
+ 		acc_lo=acc_lo+v3;	acc_hi=acc_hi+acc_lo;
+ 		cs+=16;
+ 	}
+ 	acc_lo=((u32)acc_lo)+(acc_lo>>32);
+ 	acc_lo=((u32)acc_lo)+(acc_lo>>32);
+ 	acc_hi=((u32)acc_hi)+(acc_hi>>32);
+ 	acc_hi=((u32)acc_hi)+(acc_hi>>32);
+ 	csum=(u32)(acc_lo^acc_hi);
+ 	return(csum);
+ }
+
+The output will be padded to a multiple of 16 bytes.
+If used with data that is not a multiple of 16 bytes, then the data is to be padded with zeroes.
+
+The checksum will be computed with the magic set to 'PE\0\0'.
 
 
 == PE Main Headers ==
@@ -123,7 +204,7 @@ struct PeMainHeader
     DWORD mWin32VersionValue;           //004C: (Ignore?)
     DWORD mSizeOfImage;                 //0050:
     DWORD mSizeOfHeaders;               //0054:
-    DWORD mCheckSum;                    //0058: (Ignore?)
+    DWORD mCheckSum;                    //0058: Image Checksum
     WORD  mSubsystem;                   //005C: (Ignore?)
     WORD  mDllCharacteristics;          //005E: (Ignore?)
     DWORD mSizeOfStackReserve;          //0060:
@@ -203,7 +284,7 @@ struct PeMainHeader64
     DWORD mWin32VersionValue;           //004C: (Ignore?)
     DWORD mSizeOfImage;                 //0050:
     DWORD mSizeOfHeaders;               //0054:
-    DWORD mCheckSum;                    //0058: (Ignore?)
+    DWORD mCheckSum;                    //0058: Image Checksum
     WORD  mSubsystem;                   //005C: (Ignore?)
     WORD  mDllCharacteristics;          //005E: (Ignore?)
     QWORD mSizeOfStackReserve;          //0060:
@@ -572,19 +653,21 @@ struct PeRsrcRWadInlineHeader
     DWORD fccMagic;                     //08, 'RWAD'
     DWORD mMagicZero;                   //0C, Magic (Set to 0)
     DWORD rvaDir;                       //10, RVA of Directory
-    DWORD szDir;                        //14, Size of Directory
+    DWORD szDir;                        //14, Size of Directory (Bytes)
     DWORD rvaTypes;                     //18, RVA of Types
     DWORD szTypes;                      //1C, Size of Types
+    DWORD rvaHead;                      //20, RVA of Header (Self-Reference)
+    DWORD szHead;                       //24, Size of Header (Self-Refernece)
 };
 
 struct PeRsrcRWadEntry
 {
     DWORD rvaData;                      //RVA of Lump Data
-    DWORD dszData;                      //Uncompressed Size of Lump Data
     DWORD cszData;                      //Compressed Size of Lump Data
+    DWORD dszData;                      //Uncompressed Size of Lump Data
     BYTE  mType;                        //Lump Type
     BYTE  mMethod;                      //Lump Compression Method
-    WORD  mFlags;                       //Lump Flags
+    WORD  mChain;                       //Lump Lookup Chain.
     BYTE  mName[16];                    //Name of Lump
 };
 </pre>
@@ -608,9 +691,6 @@ The 'RWAZ' Entry will be shared, consisting of a table of up to 256 entry types.
 
 The 'RWAD' Entry will give the directoy was a series of RWAD directoy entries.
 
-mFlags:
-* Reserved for Now.
-
 mType:
 * 0: Generic File (Inline Name)
 ** Will use an explicit file extension if needed.
@@ -624,10 +704,27 @@ mType:
 
 mMethod:
 * 0: Store
+* 3: RP2
 * 4: LZ4
 * 8: Deflate
 * 9: Deflate64
 * 10: BTLZH
+
+For many lumps, it may make sense to store them in an uncompressed form, which may allow getting a pointer to them without needing to allocate a buffer.
+
+mChain:
+* May be used as a lookup chain.
+* This will point to the next lump in the sequence.
+* The hash will be 64 word values stored following the directory.
+** They will point to the first entry in each chain.
+** 0xFFFF will denote the end of a chain, or an empty chain.
+* Hash function:
+** Add up each DWORD (4 characters, little endian) of the name.
+** Multiply the value by 15813251 (F14A83).
+** / Multiply the value by 16113158 (F5DE06).
+** Shift the value right by 24 bits.
+** Mask the value by 63.
+
 
 mName:
 * Conventionally stored as ASCII or UTF-8 and padded with zeroes.
@@ -635,7 +732,19 @@ mName:
 * Names longer than the 16 char limit may be escaped.
 ** The name will hold an RVA in the first 4 bytes.
 * File-like lumps will typically omit the use of file extensions.
-** If the type is 0, the extension will be encoded explicitly.
+** If the type is 0, the extension may be encoded explicitly.
+** A lump of type 0 with no extension will be "Unknown".
 * This field may also be used to hold a GUID.
 ** The use of a name or GUID is context dependent.
 ** An inline (UTF-8) name may not be used if it matches a valid GUID.
+
+
+The types table will be an array of FOURCC values with the first entry corresponding to mType 32.
+
+Known resource types represented as FOURCC values will be use capitalized names, whereas FOURCC's corresponding to generic file extensions will use lower case.
+
+A few type FOURCC's will be defined:
+* 'BMP ': Bitmap Image, Using the DIB BMP format.
+* 'WAV ': WAV audio format.
+* 'AVI ': AVI video format.
+

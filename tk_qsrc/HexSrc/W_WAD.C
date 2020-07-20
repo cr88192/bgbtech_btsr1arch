@@ -238,6 +238,9 @@ int w_lseek(int hdl, int ofs, int set)
 //		return(-1);
 	
 	i=fseek(fd, ofs, set);
+	if(i<0)
+		return(i);
+	i=ftell(fd);
 	return(i);
 }
 
@@ -865,6 +868,7 @@ int W_DecodeBufferLZ4(byte *ibuf, byte *obuf, int isz, int osz)
 	return(ct-obuf);
 }
 
+#if 0
 int W_DecodeBufferRP2(
 	byte *ibuf, byte *obuf, int ibsz, int obsz)
 {
@@ -962,14 +966,318 @@ int W_DecodeBufferRP2(
 	
 	return(ct-obuf);
 }
+#endif
+
+#ifdef __BJX2__
+// #if 0
+int W_DecodeBufferRP2(
+	byte *ibuf, byte *obuf, int ibsz, int obsz);
+
+__asm {
+W_DecodeBufferRP2:
+// R4=ibuf
+// R5=obuf
+// R6=ibsz / scratch
+// R7=obsz / scratch
+// R16=scratch
+// R17=scratch
+// R18=cs
+// R19=ct
+// R20=rl
+// R21=l
+// R22=d
+
+	MOV R4, R18
+	MOV R5, R19
+	
+.L0:
+	MOV.Q	(R18), R16
+	TEST	0x01, R16
+	BT		.L2
+	TEST	0x02, R16
+	BT		.L3
+	TEST	0x04, R16
+	BT		.L4
+	TEST	0x08, R16
+	BT		.L5
+	TEST	0x10, R16
+	BT		.L6
+	TEST	0x20, R16
+	BT		.L7
+	TEST	0x40, R16
+	BT		.L8
+	BREAK
+.L2:
+	ADD		2, R18		|	SHLD	R16, -1, R20
+	AND		7, R20		|	SHLD	R16, -4, R21
+	AND		7, R21		|	SHLD	R16, -7, R22
+	AND		511, R22	|	ADD		3, R21	
+	BRA		.L9
+.L3:
+	MOV		8191, R3
+	ADD		3, R18	|	SHLD	R16, -2, R20
+	AND		7, R20	|	SHLD	R16, -5, R21
+	AND		63, R21	|	SHLD	R16, -11, R22
+	AND		R3, R22	|	ADD		4, R21	
+	BRA		.L9
+.L4:
+	ADD		4, R18		|	SHLD	R16, -3, R20
+	AND		7, R20		|	SHLD	R16, -6, R21
+	AND		511, R21	|	SHLD	R16, -15, R22
+	ADD		4, R21
+	BRA		.L9
+.L5:
+	ADD		1, R18		|	SHAD	R16, -1, R20
+	AND		0x78, R20
+	ADD		8, R20
+.L5_1:
+	ADD		R18, R20, R6	|	ADD		R19, R20, R7
+.L5_0:
+	MOV.Q	(R18, 0), R16
+	MOV.Q	(R18, 8), R17
+	ADD		16, R18
+	MOV.Q	R16, (R19, 0)
+	MOV.Q	R17, (R19, 8)
+	ADD		16, R19
+	CMPGT	R19, R7
+	BT		.L5_0
+	MOV		R6, R18		|	MOV		R7, R19
+	BRA		.L0
+.L6:
+	MOV		0x3FFF, R1
+	MOV		0x7FFF, R2
+	MOV		0x3FFFFF, R3
+	ADD			1, R18			|	SHLD		R16, -5, R20
+	AND			7, R20			|	TEST		256, R16
+	ADD?T		1, R18			|	ADD?F		2, R18
+	SHLD?T		R16, -9, R21	|	SHLD?F		R16, -10, R21
+	SHLD.Q?T	R16, -16, R7	|	SHLD.Q?F	R16, -24, R7
+	AND?T		127, R21		|	AND?F		R1, R21
+	ADD			4, R21			|	TEST		1, R7
+	ADD?T		2, R18			|	ADD?F		3, R18
+	SHLD?T		R7, -1, R22		|	SHLD?F		R7, -2, R22
+	AND?T		R2, R22			|	AND?F		R3, R22
+	BRA		.L9
+.L7:
+	ADD		1, R18		|	SHLD	R16, -6, R20
+	AND		3, R20
+	TEST	R20, R20
+	BT		.L1
+	MOV.L	(R18), R16
+	ADD		R20, R18
+	MOV.L	R16, (R19)
+	ADD		R20, R19
+	BRA		.L0
+.L8:
+	ADD		2, R18		|	SHLD	R16, -7, R20
+	AND		511, R20
+	ADD		1, R20
+	SHLD	R20, 3, R20
+	BRA		.L5_1
+.L9:
+	MOV.Q	(R18), R16
+	ADD		R20, R18
+	MOV.Q	R16, (R19)
+	ADD		R20, R19
+	SUB		R19, R22, R6
+	ADD		R19, R21, R7
+	CMPGT	15, R22
+	BT		.L11
+	MOV.Q	(R6, 0), R16
+	MOV.Q	(R6, 8), R17
+.L12:
+	MOV.Q	R16, (R19, 0)
+	MOV.Q	R17, (R19, 8)
+	ADD		R22, R19
+	CMPGT	R19, R7
+	BT		.L12
+	BRA		.L10
+.L11:
+	MOV.Q	(R6, 0), R16
+	MOV.Q	(R6, 8), R17
+	ADD		16, R6
+	MOV.Q	R16, (R19, 0)
+	MOV.Q	R17, (R19, 8)
+	ADD		16, R19
+	CMPGT	R19, R7
+	BT		.L11
+.L10:
+	MOV		R7, R19
+	BRA		.L0
+.L1:
+	SUB		R19, R5, R2
+	RTS
+};
+#endif
+
+#ifndef __BJX2__
+//#if 1
+int W_DecodeBufferRP2(
+	byte *ibuf, byte *obuf, int ibsz, int obsz)
+{
+	u32 tag;
+	byte *cs, *ct, *cse, *cs1, *cs1e, *ct1e;
+	int pl, pd;
+	int rl, l, d;
+	u64 t0, v0, v1;
+	int t1, t2;
+	
+	cs=ibuf; cse=ibuf+ibsz;
+	ct=obuf;
+	pl=0; pd=0;
+	
+	while(1)
+	{
+		t0=*(u64 *)cs;
+		if(!(t0&0x01))
+		{
+			cs+=2;
+			rl=(t0>>1)&7;
+			l=((t0>>4)&7)+3;
+			d=(t0>>7)&511;
+		}else
+			if(!(t0&0x02))
+		{
+			cs+=3;
+			rl=(t0>>2)&7;
+			l=((t0>>5)&63)+4;
+			d=(t0>>11)&8191;
+		}else
+			if(!(t0&0x04))
+		{
+			cs+=4;
+			rl=(t0>>3)&7;
+			l=((t0>>6)&511)+4;
+			d=(t0>>15)&131071;
+		}else
+			if(!(t0&0x08))
+		{
+			cs++;
+			t1=(t0>>4)&15;
+			rl=(t1+1)*8;
+//			W_RawCopyB(ct, cs, rl);
+//			cs+=rl;
+//			ct+=rl;
+
+			cs1e=cs+rl;
+			ct1e=ct+rl;
+			while(ct<ct1e)
+			{
+				v0=((u64 *)cs)[0];
+				v1=((u64 *)cs)[1];
+				cs+=16;
+				((u64 *)ct)[0]=v0;
+				((u64 *)ct)[1]=v1;
+				ct+=16;
+			}			
+			cs=cs1e;
+			ct=ct1e;
+
+			continue;
+		}else
+			if(!(t0&0x10))
+		{
+			/* Long Match */
+			cs++;
+			rl=(t0>>5)&7;
+			t1=t0>>8;
+			if(!(t1&1))
+				{ l=((t1>>1)&0x007F)+4; cs+=1; t2=t0>>16; }
+			else
+				{ l=((t1>>2)&0x3FFF)+4; cs+=2; t2=t0>>24; }
+			if(!(t2&1))
+				{ d=((t2>>1)&0x007FFF); cs+=2; }
+			else
+				{ d=((t2>>2)&0x3FFFFF); cs+=3; }
+		}else
+			if(!(t0&0x20))
+		{
+			cs++;
+			rl=(t0>>6)&3;
+			if(!rl)break;
+			*(u32 *)ct=*(u32 *)cs;
+			cs+=rl;
+			ct+=rl;
+			continue;
+		}else
+			if(!(t0&0x40))
+		{
+			/* Long Raw */
+			cs+=2;
+			t1=(t0>>7)&511;
+			rl=(t1+1)*8;
+//			W_RawCopyB(ct, cs, rl);
+//			cs+=rl;
+//			ct+=rl;
+
+			cs1e=cs+rl;
+			ct1e=ct+rl;
+			while(ct<ct1e)
+			{
+				v0=((u64 *)cs)[0];
+				v1=((u64 *)cs)[1];
+				cs+=16;
+				((u64 *)ct)[0]=v0;
+				((u64 *)ct)[1]=v1;
+				ct+=16;
+			}			
+			cs=cs1e;
+			ct=ct1e;
+			continue;
+		}else
+		{
+			__debugbreak();
+		}
+
+		*(u64 *)ct=*(u64 *)cs;
+		cs+=rl;
+		ct+=rl;
+		
+		cs1=ct-d;
+		ct1e=ct+l;
+		
+		if(d<16)
+		{
+			v0=((u64 *)cs1)[0];
+			v1=((u64 *)cs1)[1];
+			while(ct<ct1e)
+			{
+				((u64 *)ct)[0]=v0;
+				((u64 *)ct)[1]=v1;
+				ct+=d;
+			}
+		}else
+		{
+			while(ct<ct1e)
+			{
+				v0=((u64 *)cs1)[0];
+				v1=((u64 *)cs1)[1];
+				cs1+=16;
+				((u64 *)ct)[0]=v0;
+				((u64 *)ct)[1]=v1;
+				ct+=16;
+			}
+		}
+		
+		ct=ct1e;
+		
+//		W_MatchCopy2(ct, l, d);
+//		ct+=l;
+	}
+	
+	return(ct-obuf);
+}
+#endif
 
 
 int W_HashIndexForName(char *s)
 {
 	int j, h;
-	j = *(int *)(s);
+//	j = *(int *)(s);
+	j = (((int *)(s))[0])+(((int *)(s))[1]);
 //	h = ((j*65521)>>16)&63;
-	h = ((j*16777213)>>24)&63;
+//	h = ((j*16777213)>>24)&63;
+	h = ((j*0xF14A83)>>24)&63;
 	return(h);
 }
 

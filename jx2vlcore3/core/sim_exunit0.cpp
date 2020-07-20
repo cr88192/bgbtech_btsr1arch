@@ -1355,7 +1355,8 @@ int main(int argc, char **argv, char **env)
 //		(char *)"../../tk_qsrc/doomsrc2/doom1.wad");
 	JX2R_UseImageAddFile(
 		(char *)"DOOMU.WAD",
-		(char *)"../../tk_qsrc/doomsrc2/doom.wad");
+//		(char *)"../../tk_qsrc/doomsrc2/doom.wad");
+		(char *)"../../tk_qsrc/doomsrc2/doomulz.wad");
 #endif
 
 #if 1

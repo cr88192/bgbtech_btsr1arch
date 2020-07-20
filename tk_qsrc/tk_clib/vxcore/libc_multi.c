@@ -56,6 +56,8 @@ Everything else will assume the use of system calls.
 #include "tk_core/lva_strdup.c"
 #include "tk_core/lva_tagobj.c"
 
+#include "tk_core/tk_rwad.c"
+
 #include "pdpc201/btshx_supa.c"
 #include "pdpc201/btshx_lva.c"
 #include "pdpc201/btshx_xli.c"

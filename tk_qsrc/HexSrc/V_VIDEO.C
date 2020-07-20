@@ -66,7 +66,8 @@ void V_DrawPatch(int x, int y, patch_t *patch)
 	if(x < 0 || x+SHORT(patch->width) > SCREENWIDTH || y < 0
 		|| y+SHORT(patch->height) > SCREENHEIGHT)
 	{
-		I_Error("Bad V_DrawPatch");
+//		I_Error("Bad V_DrawPatch");
+		return;
 	}
 	col = 0;
 	desttop = screen+y*SCREENWIDTH+x;
@@ -264,6 +265,19 @@ void V_DrawShadowedPatch(int x, int y, patch_t *patch)
 	}			
 }
 
+void V_MemCpy_ScrPix(dt_scrpix	*dst, byte *src, int cnt)
+{
+	byte		*cs, *cse;
+	dt_scrpix	*ct;
+	
+	ct=dst;
+	cs=src; cse=src+cnt;
+	while(cs<cse)
+	{
+		*ct++=colormaps[*cs++];
+	}
+}
+
 //---------------------------------------------------------------------------
 //
 // PROC V_DrawRawScreen
@@ -272,13 +286,17 @@ void V_DrawShadowedPatch(int x, int y, patch_t *patch)
 
 void V_DrawRawScreen(byte *raw)
 {
+
+	V_MemCpy_ScrPix(screen, raw, SCREENWIDTH*SCREENHEIGHT);
+
+#if 0
 	byte		*cs;
 	dt_scrpix	*ct;
 	int i, n;
 
 	if(sizeof(dt_scrpix)==1)
 	{
-		memcpy(screen, raw, SCREENWIDTH*SCREENHEIGHT);
+//		memcpy(screen, raw, SCREENWIDTH*SCREENHEIGHT);
 	}else
 	{
 		n=SCREENWIDTH*SCREENHEIGHT;
@@ -299,6 +317,7 @@ void V_DrawRawScreen(byte *raw)
 		while((i--)>0)
 			{ *ct++=colormaps[*cs++]; }
 	}
+#endif
 }
 
 //---------------------------------------------------------------------------

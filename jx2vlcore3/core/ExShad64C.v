@@ -20,13 +20,15 @@ input	reset;
 
 input[63:0]		valRs;
 input[ 7:0]		valRt;
-input[ 1:0]		shOpA;
+input[ 3:0]		shOpA;
 output[63:0]	valRn;
 
 wire			shOp;
 wire			shOpQ;
+wire			shOpR;
 assign		shOp = shOpA[0];
 assign		shOpQ = shOpA[1];
+assign		shOpR = shOpA[2];
 
 reg[63:0]		tValRn;
 assign			valRn = tValRn;
@@ -53,8 +55,10 @@ begin
 	tValRor=0;
 	tValRn = 0;
 //	tValSh = 0;
-	tValSh = valRt;
-	tValShN	= ~valRt;
+	tValSh = valRt[7:0];
+//	tValShN	= ~valRt;
+//	tValShN	= shOpR ? tValSh : (~tValSh);
+	tValShN	= shOpR ? tValSh : (-tValSh);
 
 	if(shOpQ)
 	begin
@@ -75,7 +79,8 @@ begin
 		tValShN[5]=0;
 	end
 
-	if(tValSh[7])
+//	if(tValSh[7])
+	if(tValSh[7] || shOpR)
 	begin
 		tValSht32	= tValShN[5] ?
 			{ tValRor[31:0], tValRs   [63:32] } : tValRs   ;
@@ -89,7 +94,9 @@ begin
 			{ tValRor[ 1:0], tValSht4 [63: 2] } : tValSht4 ;
 		tValSht1	= tValShN[0] ?
 			{ tValRor[   0], tValSht2 [63: 1] } : tValSht2 ;
-		tValRn		= { tValRor[0], tValSht2 [63: 1] };
+//		tValRn		= { tValRor[0], tValSht1 [63: 1] };
+//		tValRn		= shOpR ? tValSht1 : { tValRor[0], tValSht1 [63: 1] };
+		tValRn		= tValSht1;
 	end
 	else
 	begin
@@ -100,6 +107,11 @@ begin
 		tValSht2	= tValSh[1] ? { tValSht4 [61:0], UV2_00  } : tValSht4 ;
 		tValSht1	= tValSh[0] ? { tValSht2 [62:0], UV1_00  } : tValSht2 ;
 		tValRn		= tValSht1;
+	end
+
+	if(!shOpQ)
+	begin
+		tValRn[63:32]=(tValRn[31] && !shOp) ? UV32_FF : UV32_00 ;
 	end
 
 end

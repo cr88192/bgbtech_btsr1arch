@@ -1804,6 +1804,10 @@ void P_DamageMobj
 	}
 	if(target->player)
 	{
+		//BGB: No more insta-kills with cheat enabled.
+		if(target->player->cheats&CF_GODMODE)
+			return;
+	
 		if(damage < 1000 && ((target->player->cheats&CF_GODMODE)
 			|| target->player->powers[pw_invulnerability]))
 		{

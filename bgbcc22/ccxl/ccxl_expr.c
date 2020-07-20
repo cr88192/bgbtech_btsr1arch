@@ -2239,13 +2239,13 @@ void BGBCC_CCXL_CompileExprAsTypeSig(BGBCC_TransState *ctx,
 		vfn=NULL;
 		switch(bty.val)
 		{
-			case CCXL_TY_VEC2F:		vfn="__m64_float2";			break;
-			case CCXL_TY_VEC3F:		vfn="__m128_float3";		break;
-			case CCXL_TY_VEC4F:		vfn="__m128_float4";		break;
-			case CCXL_TY_QUATF:		vfn="__m128_float4";		break;
-			case CCXL_TY_VEC2D:		vfn="__m128_double2";		break;
-			case CCXL_TY_FCOMPLEX:	vfn="__m64_float2";			break;
-			case CCXL_TY_DCOMPLEX:	vfn="__m128_double2";		break;
+			case CCXL_TY_VEC2F:		vfn="__v2f_float2";			break;
+			case CCXL_TY_VEC3F:		vfn="__v3f_float3";			break;
+			case CCXL_TY_VEC4F:		vfn="__v4f_float4";			break;
+			case CCXL_TY_QUATF:		vfn="__vqf_float4";			break;
+			case CCXL_TY_VEC2D:		vfn="__v2d_double2";		break;
+			case CCXL_TY_FCOMPLEX:	vfn="__c2f_float2";			break;
+			case CCXL_TY_DCOMPLEX:	vfn="__c2d_double2";		break;
 			case CCXL_TY_VEC2SI:	vfn="__m64_int2";			break;
 			case CCXL_TY_VEC2UI:	vfn="__m64_int2";			break;
 			case CCXL_TY_VEC4SW:	vfn="__m64_word4";			break;

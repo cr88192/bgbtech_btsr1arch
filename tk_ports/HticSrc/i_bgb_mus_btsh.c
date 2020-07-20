@@ -771,6 +771,9 @@ void I_InitMusic(void)
 	byte *rec;
 	int i, j, k;
 
+	if(genmidi)
+		return;
+
 	SMus_Init();
 
 	genmidi = W_CacheLumpName("GENMIDI", PU_STATIC);

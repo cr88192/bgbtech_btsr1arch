@@ -571,6 +571,15 @@ parameter[5:0] JX2_UCIX_LDI_LDISH16	= 6'h02;		//
 parameter[5:0] JX2_UCIX_LDI_LDISH32	= 6'h03;		//
 parameter[5:0] JX2_UCIX_LDI_JLDIX	= 6'h04;		//
 
+parameter[5:0] JX2_UCIX_SHAD_SHAD3	= 6'h00;		//
+parameter[5:0] JX2_UCIX_SHAD_SHLD3	= 6'h01;		//
+parameter[5:0] JX2_UCIX_SHAD_SHADQ3	= 6'h02;		//
+parameter[5:0] JX2_UCIX_SHAD_SHLDQ3	= 6'h03;		//
+parameter[5:0] JX2_UCIX_SHAD_SHAR3	= 6'h04;		//
+parameter[5:0] JX2_UCIX_SHAD_SHLR3	= 6'h05;		//
+parameter[5:0] JX2_UCIX_SHAD_SHARQ3	= 6'h06;		//
+parameter[5:0] JX2_UCIX_SHAD_SHLRQ3	= 6'h07;		//
+
 
 parameter[5:0] JX2_UCIX_FPU_FADD	= 6'h00;		//FPU ADD
 parameter[5:0] JX2_UCIX_FPU_FSUB	= 6'h01;		//FPU SUB

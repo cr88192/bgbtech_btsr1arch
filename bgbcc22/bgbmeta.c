@@ -1209,7 +1209,22 @@ int BGBCC_LoadCSourcesCCXL(
 			continue;
 		}
 #endif
-		
+
+		if( (lang==BGBCC_FMT_WAD) ||
+			(lang==BGBCC_FMT_LUMP) ||
+			(lang==BGBCC_FMT_WAV) ||
+			(lang==BGBCC_FMT_BMP) ||
+			(lang==BGBCC_FMT_AVI) )
+		{
+			buf=bgbcc_loadfile2(names[i], &sz);
+			if(buf)
+			{
+				BGBCC_CCXL_AddResourceData(ctx,
+					names[i], buf, sz, lang);
+			}
+			continue;
+		}
+
 		t=BGBCC_LoadCSourceAST(names[i]);
 		if(!t)
 			break;

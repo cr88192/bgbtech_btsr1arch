@@ -568,12 +568,16 @@ int	R_FlatNumForName (char *name)
 	int		i;
 	char	namet[9];
 
-	i = W_CheckNumForName (name);
+	namet[8] = 0;
+	memcpy (namet, name,8);
+
+//	i = W_CheckNumForName (name);
+	i = W_CheckNumForName (namet);
 	if (i == -1)
 	{
 		namet[8] = 0;
 		memcpy (namet, name,8);
-		I_Error ("R_FlatNumForName: %s not found",namet);
+		I_Error ("R_FlatNumForName: %s not found", namet);
 	}
 	return i - firstflat;
 }

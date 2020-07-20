@@ -1,0 +1,15 @@
+CC=cl
+
+CFLAGS=/I. /Zi
+LDFLAGS=
+LIBS=opengl32.lib gdi32.lib user32.lib winmm.lib kernel32.lib ole32.lib ws2_32.lib
+
+SRCS=				\
+	bt4b_multi.c
+
+all:	 playvid_t.exe
+
+clean:
+
+playvid_t.exe:	$(SRCS)
+	cl /Feplayvid_t.exe $(CFLAGS) $(LDFLAGS) $(SRCS) $(LIBS)

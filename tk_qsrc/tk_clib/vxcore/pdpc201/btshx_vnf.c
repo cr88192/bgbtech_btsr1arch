@@ -46,17 +46,33 @@ __m64		__m64_float2(float x, float y);
 __m128		__m128_float3(float x, float y, float z);
 __m128		__m128_float4(float x, float y, float z, float w);
 
+__vec2f		__v2f_float2(float x, float y);
+__vec3f		__v3f_float3(float x, float y, float z);
+__vec4f		__v4f_float4(float x, float y, float z, float w);
+__quatf		__vqf_float4(float x, float y, float z, float w);
+
+__fcomplex	__c2f_float2(float x, float y);
+
+__m128		__m128_double2(double x, double y);
+__vec2d		__v2d_double2(double x, double y);
+__dcomplex	__c2d_double2(double x, double y);
+
 __asm {
 
+__v2f_float2:
+__c2f_float2:
 __m64_float2:
 	FSTCF	R4, R2
 	FSTCFH	R5, R2
 	RTSU
+__v3f_float3:
 __m128_float3:
 	FSTCF	R4, R2
 	FSTCFH	R5, R2
 	FSTCF	R6, R3
 	RTSU
+__v4f_float4:
+__vqf_float4:
 __m128_float4:
 	FSTCF	R4, R2
 	FSTCFH	R5, R2
@@ -64,24 +80,31 @@ __m128_float4:
 	FSTCFH	R7, R3
 	RTSU
 
+__v2d_double2:
+__c2d_double2:
+__m128_double2:
+	MOV		R4, R2
+	MOV		R5, R3
+	RTS
+
 __vnf_v2f_add:
 __vnf_c2f_add:
 	PADD.F	R4, R5, R2
-	RTSU
+	RTS
 __vnf_v2f_sub:
 __vnf_c2f_sub:
 	PSUB.F	R4, R5, R2
-	RTSU
+	RTS
 __vnf_v2f_mul:
 	PMUL.F	R4, R5, R2
-	RTSU
+	RTS
 
 __vnf_v2f_dot:
 	PMUL.F	R4, R5, R6
 	FLDCF	R6, R7
 	FLDCFH	R6, R3
 	FADD	R3, R7, R2
-	RTSU
+	RTS
 
 __vnf_v2f_cross:
 	MOVLHD	R5, R5, R7
@@ -105,42 +128,42 @@ __vnf_v2d_add:
 __vnf_c2d_add:
 	FADD	R4, R6, R2
 	FADD	R5, R7, R3
-	RTSU
+	RTS
 __vnf_v2d_sub:
 __vnf_c2d_sub:
 	FADD	R4, R6, R2
 	FADD	R5, R7, R3
-	RTSU
+	RTS
 __vnf_v2d_mul:
 	FMUL	R4, R6, R2
 	FMUL	R5, R7, R3
-	RTSU
+	RTS
 
 __vnf_v2d_dot:
 	FMUL	R4, R6, R18
 	FMUL	R5, R7, R19
 	FADD	R18, R19, R2
-	RTSU
+	RTS
 __vnf_v2d_cross:
 	FMUL	R4, R7, R18
 	FMUL	R5, R6, R19
 	FSUB	R18, R19, R2
-	RTSU
+	RTS
 
 __vnf_v3f_add:
 __vnf_v4f_add:
 __vnf_vqf_add:
 	PADDX.F	R4, R6, R2
-	RTSU
+	RTS
 __vnf_v3f_sub:
 __vnf_v4f_sub:
 __vnf_vqf_sub:
 	PSUBX.F	R4, R6, R2
-	RTSU
+	RTS
 __vnf_v3f_mul:
 __vnf_v4f_mul:
 	PMULX.F	R4, R6, R2
-	RTSU
+	RTS
 
 #if 0
 __vnf_v3f_div:

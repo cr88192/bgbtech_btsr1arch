@@ -316,15 +316,15 @@ pushback:
 		if (pedge == &edge_aftertail)
 			return;
 
-//		if(!pedge->next)	//BGB
-//			return;
-//		if(!pedge->prev)	//BGB
-//			return;
+		if(!pedge->next)	//BGB
+			return;
+		if(!pedge->prev)	//BGB
+			return;
 			
 	// push it back to keep it sorted		
 		pnext_edge = pedge->next;
-//		if(!pnext_edge)
-//			return;
+		if(!pnext_edge)
+			return;
 
 	// pull the edge out of the edge list
 		pedge->next->prev = pedge->prev;
@@ -332,6 +332,9 @@ pushback:
 
 	// find out where the edge goes in the edge list
 		pwedge = pedge->prev->prev;
+
+		if(!pwedge) //BGB
+			return;
 		
 		n1=256;
 		while (pwedge->u > pedge->u)
@@ -339,10 +342,15 @@ pushback:
 //		while ( pwedge && (pwedge->u > pedge->u) && ((n1--)>0))		//BGB
 		{
 			pwedge = pwedge->prev;
+			if(!pwedge) //BGB
+				break;
+
+//			if(!pwedge) //BGB
+//				return;
 		}
 		
-//		if(!pwedge) //BGB
-//			return;
+		if(!pwedge) //BGB
+			return;
 
 	// put the edge back into the edge list
 		pedge->next = pwedge->next;
@@ -359,7 +367,7 @@ pushback:
 #endif	// !id386
 
 
-//#if	!id386
+// #if	!id386
 #if 0
 
 /*
@@ -747,8 +755,8 @@ void R_GenerateSpans (void)
 	{
 //		if((n--)<=0)
 //			break;
-//		if(!edge)
-//			break;
+		if(!edge)
+			break;
 	
 		if (edge->surfs[0])
 		{

@@ -3289,7 +3289,7 @@ void ApogeeTitle (void)
 	CalcTics();
 
 	while (time>=0)
-		{
+	{
 		VL_DrawPostPic (W_GetNumForName("ap_wrld"));
 
 		x=100+FixedMul(APOGEEXMAG,sintable[anglex>>16]);
@@ -3304,18 +3304,18 @@ void ApogeeTitle (void)
 		time-=tics;
 		if ((LastScan) || IN_GetMouseButtons())
 			goto apogeeexit;
-		}
+	}
 	CalcTics();
 	CalcTics();
 	VL_DrawPostPic (W_GetNumForName("ap_wrld"));
 	DrawRotatedScreen(x,y>>16,bufferofs,0,APOGEESCALEEND,1);
 	FlipPage();
 
-	while (MU_SongPlaying())
-		{
-		if ((LastScan) || IN_GetMouseButtons())
-			goto apogeeexit;
-		}
+//	while (MU_SongPlaying())
+//	{
+//		if ((LastScan) || IN_GetMouseButtons())
+//			goto apogeeexit;
+//	}
 
 apogeeexit:
 	ShutdownRotateBuffer ();

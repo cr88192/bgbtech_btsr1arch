@@ -171,8 +171,8 @@ int BGBCC_JX2_EmitLabel(BGBCC_JX2_Context *ctx, int lblid)
 	ctx->lbl_chn[i]=ctx->lbl_hash[h];
 	ctx->lbl_hash[h]=i;
 	
-	if((ctx->lbl_ofs[i]>>20) && (ctx->sec!=BGBCC_SH_CSEG_BSS))
-		{ BGBCC_DBGBREAK }
+//	if((ctx->lbl_ofs[i]>>20) && (ctx->sec!=BGBCC_SH_CSEG_BSS))
+//		{ BGBCC_DBGBREAK }
 	
 	BGBCC_JX2DA_EmitLabel(ctx, lblid);
 	
@@ -421,6 +421,19 @@ int BGBCC_JX2_EmitNamedCommSym(BGBCC_JX2_Context *ctx, char *name,
 //	BGBCC_JX2_EmitNamedLabel(sctx, name);
 //	BGBCC_JX2_EmitRawBytes(sctx, NULL, sz);
 //	return(1);
+}
+
+int BGBCC_JX2_LookupRelocAtOffs(BGBCC_JX2_Context *ctx, int sec, int ofs)
+{
+	int i, j, k;
+	
+	for(i=0; i<ctx->nrlc; i++)
+	{
+		if(	(ctx->rlc_sec[i]==sec) &&
+			(ctx->rlc_ofs[i]==ofs)	)
+				return(i);
+	}
+	return(-1);
 }
 
 int BGBCC_JX2_EmitRelocTy(BGBCC_JX2_Context *ctx, int lblid, int ty)

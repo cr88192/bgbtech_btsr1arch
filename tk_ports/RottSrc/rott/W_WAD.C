@@ -476,9 +476,11 @@ void W_CheckWADIntegrity ( void )
 int W_HashIndexForName(char *s)
 {
 	int j, h;
-	j = *(int *)(s);
+//	j = *(int *)(s);
+	j = (((int *)(s))[0])+(((int *)(s))[1]);
 //	h = ((j*65521)>>16)&63;
-	h = ((j*16777213)>>24)&63;
+//	h = ((j*16777213)>>24)&63;
+	h = ((j*0xF14A83)>>24)&63;
 	return(h);
 }
 

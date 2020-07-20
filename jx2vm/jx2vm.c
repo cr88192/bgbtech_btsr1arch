@@ -730,18 +730,19 @@ int BJX2_VmMsgTxUpdate(BJX2_Context *ctx)
 
 
 BJX2_Context *ctx;
-int ms0, lms1;
+int ms0, lms1, lms2;
 
 void btesh_main_iterate()
 {
 	s64 cyc;
-	int ms1, ms, dtms;
+	int ms1, ms, dtms, dtms2;
 	int i, rcy, rsc;
 
 	ms1=FRGL_TimeMS();
 	ms=ms1-ms0;
 //	cyc=100000LL*ms;
-	cyc=ctx->tgt_mhz*1000LL*ms;
+//	cyc=ctx->tgt_mhz*1000LL*ms;
+	cyc=ctx->tgt_mhz*1000LL*(ms+120);
 	dtms=ms1-lms1;
 	lms1=ms1;
 
@@ -762,6 +763,8 @@ void btesh_main_iterate()
 	JX2I_GfxCon_Update();
 
 //	rcy=ctx->tgt_mhz*1000000/45;
+//	rcy=(ctx->tgt_mhz*1000000LL)/288;
+//	rcy=(ctx->tgt_mhz*1000000LL)/144;
 	rcy=(ctx->tgt_mhz*1000000LL)/72;
 //	rcy=(ctx->tgt_mhz*1000000LL)/45;
 //	rcy=(ctx->tgt_mhz*1000000LL)/30;
@@ -782,7 +785,7 @@ void btesh_main_iterate()
 //	i=BJX2_RunLimit(ctx, 5000000);
 //	i=BJX2_RunLimit(ctx, 2500000);
 //	i=BJX2_RunLimit(ctx, rcy);
-
+//	lms2=ms1;
 	do {
 		i=BJX2_RunLimit(ctx, rcy);
 
@@ -791,6 +794,10 @@ void btesh_main_iterate()
 
 		ms1=FRGL_TimeMS();
 		ms=ms1-lms1;
+
+//		dtms2=ms1-lms2;
+//		lms2=ms1;
+//		BJX2_SndSblk_Update(ctx, dtms2);
 	} while((ctx->tot_cyc<cyc) && (ms<28));
 	
 // #ifndef linux

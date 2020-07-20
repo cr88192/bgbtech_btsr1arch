@@ -25,8 +25,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "resource.h"
 #include "conproc.h"
 
-#define MINIMUM_WIN_MEMORY		0x0880000
-#define MAXIMUM_WIN_MEMORY		0x1000000
+#define MINIMUM_WIN_MEMORY		0x00880000
+#define MAXIMUM_WIN_MEMORY		0x10000000
 
 #define CONSOLE_ERROR_TIMEOUT	60.0	// # of seconds to wait on Sys_Error running
 										//  dedicated before exiting

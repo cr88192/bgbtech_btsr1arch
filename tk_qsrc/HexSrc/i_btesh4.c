@@ -2192,8 +2192,3 @@ void I_BeginRead (void)
 void I_EndRead (void)
 {
 }
-
-void S_StartSongName(char *songLump, dt_bool loop)
-{
-}
-

@@ -39,3 +39,9 @@ Control Register 0:
 ** 1101: ?
 ** 1110: ?
 ** 1111: ?
+
+Control Register 1..7:
+* Control Registers
+
+Control Register 8:
+* Sample Rover Position

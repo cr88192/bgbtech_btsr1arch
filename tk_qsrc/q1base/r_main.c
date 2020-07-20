@@ -594,6 +594,7 @@ void R_DrawEntitiesOnList (void)
 		// see if the bounding box lets us trivially reject, also sets
 		// trivial accept status
 			if (R_AliasCheckBBox ())
+//			if(1)
 			{
 				j = R_LightPoint (currententity->origin);
 	

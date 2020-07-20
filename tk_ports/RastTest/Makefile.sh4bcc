@@ -1,0 +1,38 @@
+TOOLPATH=/opt/cross/bin/
+
+CC=bgbcc
+
+# TK_CFL=-DARCH_SH4 -DARCH_SH4LE -mBJX2E /Os
+# TK_CFL=-DARCH_SH4 -DARCH_SH4LE -mBJX2E /O2 /fwex3w
+TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2F /O2 /fwex3w /fwexj /Zz
+# TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2F /O2 /fwex3w
+# TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2F /O2
+TK_LDFL= $(TK_CFL)
+
+BASE_CFLAGS=-I. -Itkrast -I../tk_clib/include -L../tk_clib 
+
+CFLAGS=$(TK_CFL) $(BASE_CFLAGS)
+LDFLAGS=$(TK_LDFL) -lvxcore64
+
+SRCS=						\
+	rat_multi.c
+
+SRCS_DEP=						\
+	rat_multi.c					\
+	rat_main.c					\
+	tkrast/tkr_context.c		\
+	tkrast/tkr_edge.c			\
+	tkrast/tkr_matrix.c			\
+	tkrast/tkr_multi.c			\
+	tkrast/tkr_span.c			\
+	tkrast/tkr_teximg.c			\
+	tkrast/tkr_trans.c			\
+
+
+all:	 tstrat_bjx2.exe
+
+clean:
+
+tstrat_bjx2.exe:	$(SRCS_DEP)
+	$(CC) $(CFLAGS) $(LDFLAGS) $(SRCS) \
+	/Fetstrat_bjx2.exe $(LIBS)

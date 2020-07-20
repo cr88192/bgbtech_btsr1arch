@@ -85,6 +85,8 @@ typedef struct BGBCC_CMG_VarSpan2_s BGBCC_CMG_VarSpan2;
 
 typedef struct BGBCC_CMG_EmitQueueOp_s BGBCC_CMG_EmitQueueOp;
 
+typedef struct BGBCC_CMG_RWadEntry_s BGBCC_CMG_RWadEntry;
+
 
 struct BGBCC_CMG_Context_s {
 char *sec_name[16];
@@ -161,6 +163,7 @@ byte has_addsl;		//has ADDS.L and similar
 byte has_jumbo;		//has ADDS.L and similar
 byte has_pushx2;	//has PUSH.X/POP.X and similar
 byte has_simdx2;	//has 128-bit SIMD ops
+// byte pel_cmpr;
 
 byte use_egpr;		//enable use of extended GPRs
 byte maxreg_gpr;	//current number of GPR register-slots
@@ -388,6 +391,17 @@ int cnrept;
 BGBCC_CMG_EmitQueueOp *eqfree;
 BGBCC_CMG_EmitQueueOp *eqstrt, *eqend;
 
+BGBCC_CMG_RWadEntry *rwad_dir;
+int rwad_ndirent;
+int rwad_mdirent;
+
+int rwad_lblhead;
+int rwad_lbldir;
+int rwad_lbltype;
+
+u32 rwad_types[256];
+u16 rwad_hash[128];
+
 int *got_gblidx;
 int got_n_gblidx;
 int got_m_gblidx;
@@ -476,3 +490,33 @@ byte ro;		//Ro or Rt
 int imm;
 int lbl;
 };
+
+struct BGBCC_CMG_RWadEntry_s {
+char name[17];
+int lbl;
+int csize;
+int dsize;
+byte ety;
+byte cmp;
+u16 flags;
+u16 chain;
+};
+
+typedef struct
+{
+u32 magic;
+int numlumps;
+int diroffs;
+int typeoffs;
+} wad2head_t;
+
+typedef struct
+{
+u32 fileoffs;
+u32 csize;
+u32 dsize;
+byte ety;
+byte cmp;
+u16 chn;
+char name[16];
+} wad2lump_t;

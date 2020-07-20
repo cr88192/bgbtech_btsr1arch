@@ -113,7 +113,7 @@ int BGBCC_JX2C_LoadVectorField128(
 			i=1;
 			break;
 		case 4:
-			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_FLDCFH, csreg+0, cdreg);
+			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_FLDCFH, sreg2+0, cdreg);
 			i=1;
 			break;
 		case 8:
@@ -121,7 +121,7 @@ int BGBCC_JX2C_LoadVectorField128(
 			i=1;
 			break;
 		case 12:
-			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_FLDCFH, csreg+1, cdreg);
+			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_FLDCFH, sreg2+1, cdreg);
 			i=1;
 			break;
 		}

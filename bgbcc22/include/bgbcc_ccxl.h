@@ -316,6 +316,7 @@
 #define CCXL_CMD_JMPTAB					0x8014
 #define CCXL_CMD_METHODPROTO			0x8015
 #define CCXL_CMD_ENUMDEF				0x8016
+#define CCXL_CMD_GLOBALVARDECL			0x8017
 
 #define CCXL_ATTR_SIG					0x9001
 #define CCXL_ATTR_FLAGS					0x9002
@@ -521,6 +522,7 @@ int regtype;			//register type
 int regid;				//register ID
 int validx;				//value index
 int srctok;				//source tokens
+int gblrefcnt;			//global reference count (num refs to global)
 s64 flagsint;			//flags (integer)
 ccxl_register value;	//literal value
 

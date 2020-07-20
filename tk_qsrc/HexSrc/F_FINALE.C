@@ -161,7 +161,9 @@ static void TextWrite (void)
 	int		cx, cy;
 	patch_t *w;
 
-	memcpy(screen, W_CacheLumpNum(FinaleLumpNum, PU_CACHE), 
+//	memcpy(screen, W_CacheLumpNum(FinaleLumpNum, PU_CACHE), 
+	V_MemCpy_ScrPix(screen,
+		W_CacheLumpNum(FinaleLumpNum, PU_CACHE), 
 		SCREENWIDTH*SCREENHEIGHT);
 	if(FinaleStage == 5)
 	{ // Chess pic, draw the correct character graphic
@@ -299,7 +301,9 @@ static void FadePic(void)
 
 static void DrawPic(void)
 {
-	memcpy(screen, W_CacheLumpNum(FinaleLumpNum, PU_CACHE), 
+//	memcpy(screen, W_CacheLumpNum(FinaleLumpNum, PU_CACHE), 
+	V_MemCpy_ScrPix(screen,
+		W_CacheLumpNum(FinaleLumpNum, PU_CACHE), 
 		SCREENWIDTH*SCREENHEIGHT);
 	if(FinaleStage == 4 || FinaleStage == 5)
 	{ // Chess pic, draw the correct character graphic

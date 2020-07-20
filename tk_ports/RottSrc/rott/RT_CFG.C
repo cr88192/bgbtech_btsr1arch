@@ -308,19 +308,16 @@ boolean ParseSoundFile (void)
 // SetSoundDefaultValues ()
 //
 //******************************************************************************
-void SetSoundDefaultValues
-	(
-	void
-	)
-
-	{
+void SetSoundDefaultValues ( void )
+{
 	fx_blaster_config blaster;
 	int status;
 
 	//
 	//  no config file, so select default values
 	//
-	MusicMode	= 0;
+//	MusicMode	= 0;
+	MusicMode	= 2;
 	FXMode		= 0;
 	NumVoices	= 4;
 	NumChannels = 1;
@@ -330,7 +327,7 @@ void SetSoundDefaultValues
 
 	status = FX_GetBlasterSettings( &blaster );
 	if ( status == FX_Ok )
-		{
+	{
 		SBSettings.Type		= blaster.Type;
 		SBSettings.Address	= blaster.Address;
 		SBSettings.Interrupt = blaster.Interrupt;
@@ -338,8 +335,8 @@ void SetSoundDefaultValues
 		SBSettings.Dma16	= blaster.Dma16;
 		SBSettings.Midi		= blaster.Midi;
 		SBSettings.Emu		= blaster.Emu;
-		}
 	}
+}
 
 
 #ifdef _ROTT_

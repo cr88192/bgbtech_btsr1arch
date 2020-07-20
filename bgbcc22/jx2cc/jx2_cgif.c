@@ -14,6 +14,7 @@ int BGBCC_JX2C_InitIface()
 	bgbgc_jx2_vt.FlattenImage=			BGBCC_JX2C_FlattenImage;
 	bgbgc_jx2_vt.EndFunction=			BGBCC_JX2C_EndFunction;
 	bgbgc_jx2_vt.LoadBufferDLL=			BGBCC_JX2C_LoadBufferDLL;
+	bgbgc_jx2_vt.AddResourceData=		BGBCC_JX2C_AddResourceData;
 
 	BGBCC_CCXL_RegisterBackend(&bgbgc_jx2_vt);
 
@@ -57,6 +58,8 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 //	ctx->arch_align_objmin=4;
 	ctx->arch_align_objmin=1;
 	ctx->uctx=shctx;
+
+	ctx->pel_cmpr=4;
 
 	shctx->tctx=ctx;
 	shctx->is_le=1;
@@ -127,6 +130,15 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		}
 #endif
 	}
+
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "pexe"))
+		ctx->pel_cmpr=255;
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "pel0"))
+		ctx->pel_cmpr=0;
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "pel3"))
+		ctx->pel_cmpr=3;
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "pel4"))
+		ctx->pel_cmpr=4;
 
 //	ctx->arch_has_predops=0;
 	ctx->arch_has_predops=1;
@@ -2664,7 +2676,7 @@ ccxl_status BGBCC_JX2C_BuildGlobal(BGBCC_TransState *ctx,
 	char *s0;
 	int l0, sz, al, al1, asz, iskv;
 	s64 li;
-	int n, hasval;
+	int n, hasval, donullpad;
 	int i, j, k;
 
 	sctx=ctx->uctx;
@@ -2678,6 +2690,18 @@ ccxl_status BGBCC_JX2C_BuildGlobal(BGBCC_TransState *ctx,
 	l0=obj->fxoffs;
 	if(l0<=0)
 	{
+		s0=obj->qname;
+		if((s0[0]=='_') && (s0[1]=='_'))
+		{
+			if(	!strcmp(s0, "__rsrc_start") ||
+				!strcmp(s0, "__rsrc_dir") ||
+				!strcmp(s0, "__rsrc_types"))
+			{
+				/* referencing the resource section causes it to exist. */
+				BGBCC_JX2C_CheckRWadInit(ctx);
+			}
+		}
+
 //		lbl=BGBCC_JX2_LookupNamedLabel(ctx, name);
 //		l0=BGBCC_JX2_GenLabel(sctx);
 		l0=BGBCC_JX2_GetNamedLabel(sctx, obj->qname);
@@ -2702,6 +2726,9 @@ ccxl_status BGBCC_JX2C_BuildGlobal(BGBCC_TransState *ctx,
 		hasval=0;
 	if(obj->value.val==CCXL_REGTY_IMM_DOUBLE)
 		hasval=0;
+	
+//	if(obj->flagsint&BGBCC_TYFL_REGISTER)
+//		hasval=1;
 	
 //	if(!obj->value.val)
 	if(!hasval)
@@ -2729,7 +2756,17 @@ ccxl_status BGBCC_JX2C_BuildGlobal(BGBCC_TransState *ctx,
 //		sz=(sz+3)&(~3);
 		sz=(sz+(al-1))&(~(al-1));
 
-		BGBCC_JX2_EmitCommSym(sctx, l0, sz, al);
+//		if(obj->flagsint&BGBCC_TYFL_REGISTER)
+		if((BGBCC_JX2_EmitGetSecOffs(sctx, BGBCC_SH_CSEG_DATA)<512) && (sz<=16))
+		{
+			BGBCC_JX2_SetSectionName(sctx, ".data");
+			BGBCC_JX2_EmitBAlign(sctx, al);
+			BGBCC_JX2_EmitLabel(sctx, l0);
+			BGBCC_JX2_EmitRawBytes(sctx, NULL, sz);
+		}else
+		{
+			BGBCC_JX2_EmitCommSym(sctx, l0, sz, al);
+		}
 
 //		BGBCC_JX2_SetSectionName(sctx, ".bss");
 //		BGBCC_JX2_EmitBAlign(sctx, 4);
@@ -2738,6 +2775,8 @@ ccxl_status BGBCC_JX2C_BuildGlobal(BGBCC_TransState *ctx,
 		return(1);
 	}
 	
+	donullpad=0;
+	
 	sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, obj->type);
 	al=BGBCC_CCXL_TypeGetLogicalAlign(ctx, obj->type);
 
@@ -2745,6 +2784,9 @@ ccxl_status BGBCC_JX2C_BuildGlobal(BGBCC_TransState *ctx,
 	{
 		BGBCC_CCXL_TypeDerefType(ctx, obj->type, &tty);
 		al=BGBCC_CCXL_TypeGetLogicalAlign(ctx, tty);
+
+		if(BGBCC_CCXL_TypePointerP(ctx, tty))
+			donullpad=1;
 	}
 
 	if(al<1)al=1;
@@ -2940,6 +2982,15 @@ ccxl_status BGBCC_JX2C_BuildGlobal(BGBCC_TransState *ctx,
 	{
 		BGBCC_JX2C_BuildGlobal_EmitLitAsType(ctx, sctx,
 			obj->type, obj->value);
+		
+		if(donullpad)
+		{
+			if(ctx->arch_sizeof_ptr==8)
+				{ BGBCC_JX2_EmitQWord(sctx, 0); }
+			else
+				{ BGBCC_JX2_EmitDWord(sctx, 0); }
+		}
+		
 		return(1);
 
 #if 0
@@ -3946,6 +3997,24 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			bgbcc_jx2cc_setu16en(ctr+4, en, w2);
 			bgbcc_jx2cc_setu16en(ctr+6, en, w3);
 			break;
+
+
+		case BGBCC_SH_RLC_PBO9_BJX:
+			w0=bgbcc_getu16en(ctr+0, en);
+			w1=bgbcc_getu16en(ctr+2, en);
+
+			b=(w1&0x01FF);
+			b1=(s32)b;
+
+			d1=b1+(ctl-gbr_base);
+
+			if((d1<0) || (d1>=512))
+				{ BGBCC_DBGBREAK }
+
+			w1=(w1&0xFE00)|(d1&0x01FF);
+			bgbcc_jx2cc_setu16en(ctr+0, en, w0);
+			bgbcc_jx2cc_setu16en(ctr+2, en, w1);
+			break;
 #endif
 
 		case BGBCC_SH_RLC_TBR24_BJX:
@@ -4357,11 +4426,193 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 
 extern byte bgbcc_dumpast;
 
+ccxl_status BGBCC_JX2C_CheckRWadInit(BGBCC_TransState *ctx)
+{
+	BGBCC_JX2_Context *sctx;
+	int i, j, k, n, lbl, lbld, lblt;
+
+	sctx=ctx->uctx;
+
+	if(!sctx->rwad_dir)
+	{
+		sctx->rwad_dir=bgbcc_malloc(1024*sizeof(BGBCC_CMG_RWadEntry));
+		sctx->rwad_ndirent=0;
+		sctx->rwad_mdirent=1024;
+
+		lbl=BGBCC_JX2_GetNamedLabel(sctx, "__rsrc_start");
+		lbld=BGBCC_JX2_GetNamedLabel(sctx, "__rsrc_dir");
+		lblt=BGBCC_JX2_GetNamedLabel(sctx, "__rsrc_types");
+		
+		sctx->rwad_lblhead=lbl;
+		sctx->rwad_lbldir=lbld;
+		sctx->rwad_lbltype=lblt;
+
+		BGBCC_JX2_SetSectionName(sctx, ".rsrc");
+//		BGBCC_JX2_EmitBAlign(ctx, 8);
+
+		BGBCC_JX2_EmitLabel(sctx, lbl);
+
+		BGBCC_JX2_EmitDWordI(sctx, 0);		//00, flags
+		BGBCC_JX2_EmitDWordI(sctx, 0);		//04, date/time
+		BGBCC_JX2_EmitDWordI(sctx, BGBCC_IMGFMT_RWAD);		//08, magic
+		BGBCC_JX2_EmitDWordI(sctx, 0);		//0C, magic2
+		
+		BGBCC_JX2_EmitRelocTy(sctx, lbld, BGBCC_SH_RLC_RVA32);
+		BGBCC_JX2_EmitDWordI(sctx, 0);		//10, RVA of Directory
+		BGBCC_JX2_EmitDWordI(sctx, 0);		//14, Size of Directory
+
+		BGBCC_JX2_EmitRelocTy(sctx, lblt, BGBCC_SH_RLC_RVA32);
+		BGBCC_JX2_EmitDWordI(sctx, 0);		//18, RVA of Types
+		BGBCC_JX2_EmitDWordI(sctx, 0);		//1C, Size of Types
+
+		BGBCC_JX2_EmitRelocTy(sctx, lbl, BGBCC_SH_RLC_RVA32);
+		BGBCC_JX2_EmitDWordI(sctx, 0);		//20, RVA of Header
+		BGBCC_JX2_EmitDWordI(sctx, 0x40);	//24, Size of Directory
+
+		BGBCC_JX2_EmitDWordI(sctx, 0);		//28, -
+		BGBCC_JX2_EmitDWordI(sctx, 0);		//2C, -
+		BGBCC_JX2_EmitDWordI(sctx, 0);		//30, -
+		BGBCC_JX2_EmitDWordI(sctx, 0);		//34, -
+		BGBCC_JX2_EmitDWordI(sctx, 0);		//38, -
+		BGBCC_JX2_EmitDWordI(sctx, 0);		//3C, -
+	}
+	
+	return(0);
+}
+
+
+ccxl_status BGBCC_JX2C_AddRWadLump(BGBCC_TransState *ctx,
+	char *name, byte *buf, int csz, int dsz, int cmp, int ety)
+{
+	char tname[32];
+	BGBCC_JX2_Context *sctx;
+	BGBCC_CMG_RWadEntry *ent;
+	int i, j, k, n, lbl, lbld, lblt;
+	
+	sctx=ctx->uctx;
+
+	BGBCC_JX2C_CheckRWadInit(ctx);
+		
+	if((sctx->rwad_ndirent+1)>=sctx->rwad_mdirent)
+	{
+		i=sctx->rwad_mdirent; i=i+(i>>1);
+		sctx->rwad_dir=bgbcc_realloc(sctx->rwad_dir,
+			i*sizeof(BGBCC_CMG_RWadEntry));
+		sctx->rwad_mdirent=i;
+	}
+	
+	n=sctx->rwad_ndirent++;
+
+	ent=sctx->rwad_dir+n;
+	memset(ent, 0, sizeof(BGBCC_CMG_RWadEntry));
+	
+	strncpy(ent->name, name, 16);
+	
+	sprintf(tname, "__rsrc__%s", ent->name);
+	lbl=BGBCC_JX2_GetNamedLabel(sctx, tname);
+
+	BGBCC_JX2_SetSectionName(sctx, ".rsrc");
+	BGBCC_JX2_EmitBAlign(sctx, 8);
+	BGBCC_JX2_EmitLabel(sctx, lbl);
+	BGBCC_JX2_EmitRawBytes(sctx, buf, csz);
+	
+	ent->lbl=lbl;
+	ent->csize=csz;
+	ent->dsize=dsz;
+	ent->cmp=cmp;
+	ent->ety=ety;
+
+	return(0);
+}
+
+int BGBCC_JX2C_ResourceTypeForFourcc(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	fourcc fmt)
+{
+	int i;
+
+	if(!fmt)
+		return(0);
+	if(fmt==BGBCC_FMT_LUMP)
+		return(0);
+
+	for(i=0x20; i<0x80; i++)
+	{
+		if(sctx->rwad_types[i]==fmt)
+			return(i);
+		if(!sctx->rwad_types[i])
+		{
+			sctx->rwad_types[i]=fmt;
+			return(i);
+		}
+	}
+	
+	return(0);
+}
+
+ccxl_status BGBCC_JX2C_AddResourceData(BGBCC_TransState *ctx,
+	char *name, byte *buf, int sz, fourcc imgfmt)
+{
+	BGBCC_JX2_Context *sctx;
+	wad2head_t head;
+	wad2lump_t *dir, *ent;
+	u32 tyfcc[256];
+	char *tn;
+	int i, j, k, n, ty;
+	
+	sctx=ctx->uctx;
+
+	if(	(imgfmt==BGBCC_FMT_LUMP) ||
+		(imgfmt==BGBCC_FMT_WAV) ||
+		(imgfmt==BGBCC_FMT_BMP) ||
+		(imgfmt==BGBCC_FMT_AVI)	)
+	{
+		ty=BGBCC_JX2C_ResourceTypeForFourcc(ctx, sctx, imgfmt);
+		tn=BGBCP_BaseNameForNameLC(name);
+		BGBCC_JX2C_AddRWadLump(ctx, tn,
+			buf, sz, sz, 0, ty);
+		return(0);
+	}
+	
+	if(imgfmt==BGBCC_FMT_WAD)
+	{
+		memcpy(&head, buf+0, sizeof(wad2head_t));
+		
+		if(head.magic!=BGBCC_FMT_WAD2)
+		{
+			return(-1);
+		}
+		
+		memset(tyfcc, 0, 256*4);
+		k=head.typeoffs;
+		if((k>16) && (k<sz))
+			{ memcpy(tyfcc+0x20, buf+head.typeoffs, (256-32)*4); }
+		
+		n=head.numlumps;
+		dir=bgbcc_malloc(n*sizeof(wad2lump_t));
+		memcpy(dir, buf+head.diroffs, n*sizeof(wad2lump_t));
+		
+		for(i=0; i<n; i++)
+		{
+			ent=dir+i;
+			ty=BGBCC_JX2C_ResourceTypeForFourcc(ctx, sctx, tyfcc[ent->ety]);
+			BGBCC_JX2C_AddRWadLump(ctx, ent->name,
+				buf+ent->fileoffs, ent->csize, ent->dsize, ent->cmp, ent->ety);
+		}
+		
+		bgbcc_free(dir);
+		return(0);
+	}
+
+	return(-1);
+}
+
 ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	byte *obuf, int *rosz, fourcc imgfmt)
 {
 	BGBCC_JX2_Context *sctx;
-	BGBCC_CCXL_RegisterInfo *obj;
+	BGBCC_CCXL_RegisterInfo *obj, *obj1, *obj2;
 	BGBCC_CCXL_LiteralInfo *litobj;
 	int *shufarr;
 	int t0, t1, t2, t3;
@@ -4420,6 +4671,9 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 
 	BGBCC_JX2_SetSectionName(sctx, ".data");
 	BGBCC_JX2_EmitNamedLabel(sctx, "__data_start");
+
+//	BGBCC_JX2_SetSectionName(sctx, ".rsrc");
+//	BGBCC_JX2_EmitNamedLabel(sctx, "__rsrc_start");
 
 	if(sctx->is_pbo)
 	{
@@ -4488,6 +4742,28 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 		obj=ctx->reg_globals[i];
 		if(!obj)
 			continue;
+
+#if 0
+		if(obj->regtype==CCXL_LITID_GLOBALVAR)
+		{
+			if(obj->flagsint&BGBCC_TYFL_REGISTER)
+			{
+				obj->gblrefcnt+=10000;
+			}
+			
+//			j=(obj->fxnsize)>>4;
+			j=BGBCC_CCXL_TypeGetLogicalSize(ctx, obj->type);
+			if(j<=0)
+				j=9999999;
+			j=j>>4;
+
+			while(j)
+			{
+				obj->gblrefcnt>>=1;
+				j>>=1;
+			}
+		}
+#endif
 		
 		if(obj->flagsint&BGBCC_TYFL_DLLEXPORT)
 		{
@@ -4612,6 +4888,37 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	}
 #endif
 
+	for(i=0; i<ctx->n_reg_globals; i++)
+	{
+//		j=shufarr[i];
+//		obj=ctx->reg_globals[j];
+
+		obj=ctx->reg_globals[i];
+		if(!obj)
+			continue;
+
+		if(obj->regtype==CCXL_LITID_GLOBALVAR)
+		{
+			if(obj->flagsint&BGBCC_TYFL_REGISTER)
+			{
+				obj->gblrefcnt+=10000;
+			}
+			
+//			j=(obj->fxnsize)>>4;
+			j=BGBCC_CCXL_TypeGetLogicalSize(ctx, obj->type);
+			if(j<=0)
+				j=9999999;
+			j=j>>4;
+
+			while(j)
+			{
+				obj->gblrefcnt>>=1;
+				j>>=1;
+			}
+		}
+	}
+
+
 	shufgbl=ctx->n_reg_globals;
 	shufarr=malloc(shufgbl*sizeof(int));
 	for(i=0; i<shufgbl; i++)
@@ -4627,6 +4934,22 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 		shufarr[j]=k;
 	}
 #endif
+
+	/* Sort globals by use-count. */
+	for(i=1; i<shufgbl; i++)
+	{
+		for(j=i+1; j<shufgbl; j++)
+		{
+			obj1=ctx->reg_globals[shufarr[i]];
+			obj2=ctx->reg_globals[shufarr[j]];
+			if(obj2->gblrefcnt>obj1->gblrefcnt)
+			{
+				k=shufarr[i];
+				shufarr[i]=shufarr[j];
+				shufarr[j]=k;
+			}
+		}
+	}
 
 	for(i=0; i<ctx->n_reg_globals; i++)
 	{
@@ -5221,6 +5544,61 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	BGBCC_JX2_SetSectionName(sctx, ".bss");
 	BGBCC_JX2_EmitNamedLabel(sctx, "_end");
 	BGBCC_JX2_EmitNamedLabel(sctx, "__bss_end");
+
+	if(sctx->rwad_dir)
+	{
+		BGBCC_JX2_SetSectionName(sctx, ".rsrc");
+
+		BGBCC_JX2_EmitBAlign(sctx, 4);
+		BGBCC_JX2_EmitLabel(sctx, sctx->rwad_lbltype);
+		for(i=0; i<(256-32); i++)
+		{
+			j=sctx->rwad_types[i+0x20];
+			if(!j)break;
+			BGBCC_JX2_EmitDWordI(sctx, j);
+		}
+		BGBCC_JX2_EmitSetOffsDWord(sctx, 0x1C, i*4);
+
+		for(i=0; i<128; i++)
+			sctx->rwad_hash[i]=0xFFFF;
+		for(i=(sctx->rwad_ndirent-1); i>=0; i--)
+		{
+			j=bgbcc_getu32le((sctx->rwad_dir[i].name)+0);
+			j+=bgbcc_getu32le((sctx->rwad_dir[i].name)+4);
+			j+=bgbcc_getu32le((sctx->rwad_dir[i].name)+8);
+			j+=bgbcc_getu32le((sctx->rwad_dir[i].name)+12);
+//			j=j*16777213;
+//			j=j*15813251;
+			j=j*0xF14A83;
+//			j=(j>>24)&127;
+			j=(j>>24)&63;
+			sctx->rwad_dir[i].chain=sctx->rwad_hash[j];
+			sctx->rwad_hash[j]=i;
+		}
+
+		BGBCC_JX2_EmitSetOffsDWord(sctx, 0x14, sctx->rwad_ndirent*32);
+
+		BGBCC_JX2_EmitBAlign(sctx, 16);
+		BGBCC_JX2_EmitLabel(sctx, sctx->rwad_lbldir);
+		for(i=0; i<sctx->rwad_ndirent; i++)
+		{
+			j=sctx->rwad_dir[i].lbl;
+			BGBCC_JX2_EmitRelocTy(sctx, j, BGBCC_SH_RLC_ABS32);
+			BGBCC_JX2_EmitDWordI(sctx, 0);
+			BGBCC_JX2_EmitDWordI(sctx, sctx->rwad_dir[i].csize);
+			BGBCC_JX2_EmitDWordI(sctx, sctx->rwad_dir[i].dsize);
+			BGBCC_JX2_EmitByteI(sctx, sctx->rwad_dir[i].ety);
+			BGBCC_JX2_EmitByteI(sctx, sctx->rwad_dir[i].cmp);
+			BGBCC_JX2_EmitWordI(sctx, sctx->rwad_dir[i].chain);
+			BGBCC_JX2_EmitRawBytes(sctx, sctx->rwad_dir[i].name, 16);
+		}
+
+//		for(i=0; i<128; i++)
+		for(i=0; i<64; i++)
+		{
+			BGBCC_JX2_EmitWordI(sctx, sctx->rwad_hash[i]);
+		}
+	}
 
 	if(ctx->n_error)
 	{

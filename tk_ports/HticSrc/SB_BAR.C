@@ -58,6 +58,8 @@ static void CheatMassacreFunc(player_t *player, Cheat_t *cheat);
 static void CheatIDKFAFunc(player_t *player, Cheat_t *cheat);
 static void CheatIDDQDFunc(player_t *player, Cheat_t *cheat);
 
+static void CheatTomeFunc(player_t *player, Cheat_t *cheat);
+
 // Public Data
 
 boolean DebugSound; // debug flag for displaying sound info
@@ -299,6 +301,16 @@ static byte CheatIDDQDSeq[] =
 	0xff, 0
 };
 
+// Endless tome mode
+static byte CheatTomeSeq[] =
+{
+	CHEAT_ENCRYPT('t'),
+	CHEAT_ENCRYPT('o'),
+	CHEAT_ENCRYPT('m'),
+	CHEAT_ENCRYPT('e'),
+	0xff, 0
+};
+
 static Cheat_t Cheats[] =
 {
 	{ CheatGodFunc, CheatGodSeq, NULL, 0, 0, 0 },
@@ -317,6 +329,7 @@ static Cheat_t Cheats[] =
 	{ CheatMassacreFunc, CheatMassacreSeq, NULL, 0, 0, 0 },
 	{ CheatIDKFAFunc, CheatIDKFASeq, NULL, 0, 0, 0 },
 	{ CheatIDDQDFunc, CheatIDDQDSeq, NULL, 0, 0, 0 },
+	{ CheatTomeFunc, CheatTomeSeq, NULL, 0, 0, 0 },
 	{ NULL, NULL, NULL, 0, 0, 0 } // Terminator
 };
 
@@ -355,14 +368,16 @@ void SB_Init(void)
 	}
 	PatchLTFCTOP = W_CacheLumpName("LTFCTOP", PU_STATIC);
 	PatchRTFCTOP = W_CacheLumpName("RTFCTOP", PU_STATIC);
-	PatchSELECTBOX = W_CacheLumpName("SELECTBOX", PU_STATIC);
+//	PatchSELECTBOX = W_CacheLumpName("SELECTBOX", PU_STATIC);
+	PatchSELECTBOX = W_CacheLumpName("SELECTBO", PU_STATIC);
 	PatchINVLFGEM1 = W_CacheLumpName("INVGEML1", PU_STATIC);
 	PatchINVLFGEM2 = W_CacheLumpName("INVGEML2", PU_STATIC);
 	PatchINVRTGEM1 = W_CacheLumpName("INVGEMR1", PU_STATIC);
 	PatchINVRTGEM2 = W_CacheLumpName("INVGEMR2", PU_STATIC);
 	PatchBLACKSQ    =   W_CacheLumpName("BLACKSQ", PU_STATIC);
 	PatchARMCLEAR = W_CacheLumpName("ARMCLEAR", PU_STATIC);
-	PatchCHAINBACK = W_CacheLumpName("CHAINBACK", PU_STATIC);
+//	PatchCHAINBACK = W_CacheLumpName("CHAINBACK", PU_STATIC);
+	PatchCHAINBACK = W_CacheLumpName("CHAINBAC", PU_STATIC);
 	startLump = W_GetNumForName("IN0");
 	for(i = 0; i < 10; i++)
 	{
@@ -709,7 +724,7 @@ void SB_Drawer(void)
 	static boolean hitCenterFrame;
 	static int drawdelay;
 
-#if 1
+#if 0
 	//BGB: Try to avoid redrawing bar unless necessary.
 	doDraw = false;
 	if(oldhealth != HealthMarker)
@@ -1513,4 +1528,23 @@ static void CheatIDDQDFunc(player_t *player, Cheat_t *cheat)
 {
 	P_DamageMobj(player->mo, NULL, player->mo, 10000);
 	P_SetMessage(player, TXT_CHEATIDDQD, true);
+}
+
+
+static void CheatTomeFunc(player_t *player, Cheat_t *cheat)
+{
+//	P_SetMessage(player, TXT_CHEATTOMEON, false);
+
+	if(player->powers[pw_weaponlevel2])
+	{
+		player->powers[pw_weaponlevel2] = 0;
+		P_SetMessage(player, TXT_CHEATTOMEOFF, false);
+	}
+	else
+	{
+//		P_UseArtifact(player, arti_tomeofpower);
+//		player->powers[pw_weaponlevel2]=-1;
+		player->powers[pw_weaponlevel2]=99999999;
+		P_SetMessage(player, TXT_CHEATTOMEON, false);
+	}
 }

@@ -658,7 +658,7 @@ void P_GroupLines (void)
 
 extern unsigned short	d_8to16table[256];
 
-void P_SetupLevel(int episode, int map, int playermask, skill_t skill)
+int P_SetupLevel(int episode, int map, int playermask, skill_t skill)
 {
 	int i, j;
 	int parm;
@@ -668,6 +668,18 @@ void P_SetupLevel(int episode, int map, int playermask, skill_t skill)
 	int	length;
 	mobj_t *mobj;
 	byte *data;
+
+	if(DevMaps)
+	{
+		sprintf(auxName, "%sMAP%02d.WAD", DevMapsDir, map);
+		W_OpenAuxiliary(auxName);
+	}
+	sprintf(lumpname, "MAP%02d", map);
+//	lumpnum = W_GetNumForName(lumpname);
+	lumpnum = W_CheckNumForName(lumpname);
+	
+	if(lumpnum < 0)
+		return(-1);
 
 	for(i = 0; i < MAXPLAYERS; i++)
 	{
@@ -679,22 +691,17 @@ void P_SetupLevel(int episode, int map, int playermask, skill_t skill)
 #ifdef __WATCOMC__
 	if(i_CDMusic == false)
 	{
-		S_StartSongName("chess", true); // Waiting-for-level-load song
+//		S_StartSongName("chess", true); // Waiting-for-level-load song
 	}
 #endif
+
+//	S_StartSongName("chess", true); // Waiting-for-level-load song
 
 	Z_FreeTags(PU_LEVEL, PU_PURGELEVEL-1);
 
 	P_InitThinkers();
 	leveltime = 0;
 
-	if(DevMaps)
-	{
-		sprintf(auxName, "%sMAP%02d.WAD", DevMapsDir, map);
-		W_OpenAuxiliary(auxName);
-	}
-	sprintf(lumpname, "MAP%02d", map);
-	lumpnum = W_GetNumForName(lumpname);
 	//
 	// Begin processing map lumps
 	// Note: most of this ordering is important
@@ -793,7 +800,41 @@ void P_SetupLevel(int episode, int map, int playermask, skill_t skill)
 
 //printf ("free memory: 0x%x\n", Z_FreeMemory());
 
+	return(0);
+
 }
+
+/* BGB: Map CD track back to song names. */
+static char *cdtrack2mus[]={
+DEFAULT_SONG_LUMP,	//0
+DEFAULT_SONG_LUMP,	//1
+"jachr",			//2
+"blechr",			//3
+"hexen",			//4
+"orb",				//5
+// "fubasr",			//6
+"hall",			//6
+// "hub",				//7
+"chess",			//7
+"cryptr",			//8
+"falconr",			//9
+"octor",			//10
+"rithmr",			//11
+"sixater",			//12
+"winnowr",			//13
+"swampr",			//14
+"wutzitr",			//15
+"bonesr",			//16
+"chap_1r",			//17
+"chap_4r",			//18
+"fantar",			//19
+"foojar",			//20
+"levelr",			//21
+"simonr",			//22
+DEFAULT_SONG_LUMP,
+DEFAULT_SONG_LUMP,
+DEFAULT_SONG_LUMP
+};
 
 //==========================================================================
 //
@@ -808,16 +849,25 @@ static void InitMapInfo(void)
 	int mcmdValue;
 	mapInfo_t *info;
 	char songMulch[10];
+	int skylump;
 
 	mapMax = 1;
 
-	// Put defaults into MapInfo[0]
 	info = MapInfo;
+	
+	skylump = R_CheckTextureNumForName(DEFAULT_SKY_NAME);
+	if(skylump < 0)
+		skylump = info->sky1Texture;
+
+	// Put defaults into MapInfo[0]
+//	info = MapInfo;
 	info->cluster = 0;
 	info->warpTrans = 0;
 	info->nextMap = 1; // Always go to map 1 if not specified
 	info->cdTrack = 1;
-	info->sky1Texture = R_TextureNumForName(DEFAULT_SKY_NAME);
+//	info->sky1Texture = R_TextureNumForName(DEFAULT_SKY_NAME);
+//	info->sky1Texture = R_CheckTextureNumForName(DEFAULT_SKY_NAME);
+	info->sky1Texture = skylump;
 	info->sky2Texture = info->sky1Texture;
 	info->sky1ScrollDelta = 0;
 	info->sky2ScrollDelta = 0;
@@ -885,16 +935,19 @@ static void InitMapInfo(void)
 				case MCMD_CDTRACK:
 					SC_MustGetNumber();
 					info->cdTrack = sc_Number;
+					strcpy(info->songLump, cdtrack2mus[sc_Number]);  //BGB
 					break;
 				case MCMD_SKY1:
 					SC_MustGetString();
-					info->sky1Texture = R_TextureNumForName(sc_String);
+//					info->sky1Texture = R_TextureNumForName(sc_String);
+					info->sky1Texture = R_CheckTextureNumForName(sc_String);
 					SC_MustGetNumber();
 					info->sky1ScrollDelta = sc_Number<<8;
 					break;
 				case MCMD_SKY2:
 					SC_MustGetString();
-					info->sky2Texture = R_TextureNumForName(sc_String);
+//					info->sky2Texture = R_TextureNumForName(sc_String);
+					info->sky2Texture = R_CheckTextureNumForName(sc_String);
 					SC_MustGetNumber();
 					info->sky2ScrollDelta = sc_Number<<8;
 					break;

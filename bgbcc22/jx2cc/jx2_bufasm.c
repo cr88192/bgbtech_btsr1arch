@@ -459,7 +459,7 @@ int BGBCC_JX2A_ParseOperand(
 			{
 				cs++;
 				cs=BGBCC_JX2A_ParseTokenAlt(cs, &cs2);
-				scale=atoi(cs2);
+				scale=atoi(cs2+1);
 			}
 
 			cs=BGBCC_JX2A_EatWhiteNoLinebreak(cs);
@@ -480,7 +480,7 @@ int BGBCC_JX2A_ParseOperand(
 			{
 				cs++;
 				cs=BGBCC_JX2A_ParseTokenAlt(cs, &cs2);
-				scale=atoi(cs2);
+				scale=atoi(cs2+1);
 			}
 
 			cs=BGBCC_JX2A_EatWhiteNoLinebreak(cs);

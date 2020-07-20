@@ -102,20 +102,19 @@ int __hint_use_egpr()
 // R_DrawColumn
 // Source is the top of the column to scale.
 //
-lighttable_t*		dc_colormap; 
-int			dc_x; 
-int			dc_yl; 
-int			dc_yh;
-
-fixed_t			dc_scale; 
-fixed_t			dc_iscale; 
-fixed_t			dc_texturemid;
-fixed_t			dc_zdist;
+global_register		lighttable_t	*dc_colormap; 
+global_register		int				dc_x; 
+global_register		int				dc_yl; 
+global_register		int				dc_yh;
+global_register		fixed_t			dc_scale; 
+global_register		fixed_t			dc_iscale; 
+global_register		fixed_t			dc_texturemid;
+global_register		fixed_t			dc_zdist;
 
 byte			dc_isspr;
 
 // first pixel in a column (possibly virtual) 
-byte*			dc_source;		
+global_register		byte			*dc_source;		
 
 // just for profiling 
 int			dccount;
@@ -851,20 +850,20 @@ void R_InitTranslationTables (void)
 // In consequence, flats are not stored by column (like walls),
 //  and the inner loop has to step in texture space u and v.
 //
-int			ds_y; 
-int			ds_x1; 
-int			ds_x2;
-fixed_t		ds_z; 
+global_register		int				ds_y; 
+global_register		int				ds_x1; 
+global_register		int				ds_x2;
+global_register		fixed_t			ds_z; 
 
-lighttable_t*		ds_colormap; 
+global_register		lighttable_t	*ds_colormap; 
 
-fixed_t			ds_xfrac; 
-fixed_t			ds_yfrac; 
-fixed_t			ds_xstep; 
-fixed_t			ds_ystep;
+global_register		fixed_t			ds_xfrac; 
+global_register		fixed_t			ds_yfrac; 
+global_register		fixed_t			ds_xstep; 
+global_register		fixed_t			ds_ystep;
 
 // start of a 64*64 tile image 
-byte*			ds_source;	
+global_register		byte			*ds_source;	
 
 // just for profiling
 int			dscount;

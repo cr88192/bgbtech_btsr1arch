@@ -447,6 +447,24 @@ begin
 //	tPwmNextValL = {tPcmAddVal2L[15]?2'b00:2'b11, tPcmAddVal2L[14:1]};
 //	tPwmNextValR = {tPcmAddVal2R[15]?2'b00:2'b11, tPcmAddVal2R[14:1]};
 
+	if(tDevCSel && tBusOpm[3])
+	begin
+		if(tDevCSelCtr)
+		begin
+			case(tBusAddr[7:2])
+				6'h00:	tOutData	= tRegCtrl0;
+
+`ifdef JX2_AUD_16K
+				6'h08:	tOutData	= { 50'h0, tSampPos };
+`else
+				6'h08:	tOutData	= { 51'h0, tSampPos };
+`endif
+
+				default: begin
+				end
+			endcase
+		end
+	end
 
 	if(tDevCSel && (tBusOpm[4:3]!=0))
 		tOutOK	= UMEM_OK_OK;
