@@ -629,6 +629,14 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_SUBSL:		s0="SUBS.L";	break;
 	case BJX2_NMID_SUBUL:		s0="SUBU.L";	break;
 
+	case BJX2_NMID_PADDW:		s0="PADD.W";	break;
+	case BJX2_NMID_PADDL:		s0="PADD.L";	break;
+	case BJX2_NMID_PSUBW:		s0="PSUB.W";	break;
+	case BJX2_NMID_PSUBL:		s0="PSUB.L";	break;
+
+	case BJX2_NMID_PMULUW:		s0="PMULU.W";	break;
+//	case BJX2_NMID_PMULSW:		s0="PMULS.W";	break;
+
 	case BJX2_NMID_PRED_T:		s0="PRED.T";	break;
 	case BJX2_NMID_PRED_F:		s0="PRED.F";	break;
 
@@ -655,12 +663,22 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_PMULSHW:		s0="PMULS.HW";	break;
 	case BJX2_NMID_PMULUHW:		s0="PMULU.HW";	break;
 
+	case BJX2_NMID_PMORTL:		s0="PMORT.L";	break;
+	case BJX2_NMID_PMORTQ:		s0="PMORT.Q";	break;
+
 	case BJX2_NMID_PADDF:		s0="PADD.F";	break;
 	case BJX2_NMID_PADDXF:		s0="PADDX.F";	break;
 	case BJX2_NMID_PSUBF:		s0="PSUB.F";	break;
 	case BJX2_NMID_PSUBXF:		s0="PSUBX.F";	break;
 	case BJX2_NMID_PMULF:		s0="PMUL.F";	break;
 	case BJX2_NMID_PMULXF:		s0="PMULX.F";	break;
+
+	case BJX2_NMID_RGB32PCK64:		s0="RGB32PCK64";	break;
+	case BJX2_NMID_RGB32UPCK64:		s0="RGB32UPCK64";	break;
+	case BJX2_NMID_RGB5PCK32:		s0="RGB5PCK32";		break;
+	case BJX2_NMID_RGB5UPCK32:		s0="RGB5UPCK32";	break;
+	case BJX2_NMID_RGB5PCK64:		s0="RGB5PCK64";		break;
+	case BJX2_NMID_RGB5UPCK64:		s0="RGB5UPCK64";	break;
 
 	default:
 		sprintf(tb, "?NM%02X", nmid);
@@ -1527,9 +1545,9 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 			k=idx_nmid[i*2+j];
 			pcnt=(100.0*cyc_nmid[k])/(ctx->tot_cyc);
 
-			printf("%8s(%10lld) %2.2f%%  ",
+			printf("%12s(%11lld) %2d.%02d%%  ",
 				BJX2_DbgPrintNameForNmid(ctx, k),
-				cyc_nmid[k], pcnt);
+				cyc_nmid[k], (int)pcnt, ((int)(pcnt*100))%100);
 		}
 		printf("\n");
 	}

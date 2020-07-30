@@ -14,3 +14,8 @@
 #include "tkr_matrix.c"
 
 
+#include "tkr_glbegin.c"
+#include "tkr_glmatrix.c"
+#include "tkr_gltex.c"
+#include "tkr_glenable.c"
+#include "tkr_glgpa.c"

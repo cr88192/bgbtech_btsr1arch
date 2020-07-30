@@ -152,6 +152,7 @@ tkra_mat4 TKRA_MatrixTranslatef(tkra_mat4 mata, float x, float y, float z)
 //	matb=TKRA_Matrix16Tfv(tmat);
 //	__debugbreak();
 
+#if 0
 	TKRA_UnpackMatrix16fv(matb, xyz0);
 	printf("Translatef\n");
 	printf("%f %f %f %f\n", xyz0[ 0], xyz0[ 1], xyz0[ 2], xyz0[ 3]);
@@ -168,17 +169,20 @@ tkra_mat4 TKRA_MatrixTranslatef(tkra_mat4 mata, float x, float y, float z)
 	printf("%f %f %f %f\n", xyz0[12], xyz0[13], xyz0[14], xyz0[15]);
 
 //	__debugbreak();
+#endif
 
 	matc=TKRA_MatrixMultiply(matb, mata);
 
 //	__debugbreak();
 
+#if 0
 	TKRA_UnpackMatrix16fv(matc, xyz0);
 	printf("Translatef: matc\n");
 	printf("%f %f %f %f\n", xyz0[ 0], xyz0[ 1], xyz0[ 2], xyz0[ 3]);
 	printf("%f %f %f %f\n", xyz0[ 4], xyz0[ 5], xyz0[ 6], xyz0[ 7]);
 	printf("%f %f %f %f\n", xyz0[ 8], xyz0[ 9], xyz0[10], xyz0[11]);
 	printf("%f %f %f %f\n", xyz0[12], xyz0[13], xyz0[14], xyz0[15]);
+#endif
 
 //	__debugbreak();
 

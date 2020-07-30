@@ -19,7 +19,8 @@
 
 module CoreUnit(
 	/* verilator lint_off UNUSED */
-	clock,		reset,
+	clock_100,		clock_200,
+	clock_50,	reset,
 
 	ddrDataI,	ddrDataO,	ddrDataEn,
 	ddrAddr,	ddrBa,
@@ -58,7 +59,9 @@ module CoreUnit(
 	dbg_outStatus8
 	);
 
-input			clock;
+input			clock_100;
+input			clock_200;
+input			clock_50;
 input			reset;
 // inout[31:0]		gpioPins;
 // inout[15:0]		fixedPins;
@@ -207,9 +210,10 @@ reg			clock_halfMhz;
 
 wire		clock_cpu;
 `ifdef jx2_cpu_halfclock
-assign	clock_cpu	= clock_halfMhz;
+// assign	clock_cpu	= clock_halfMhz;
+assign	clock_cpu	= clock_50;
 `else
-assign	clock_cpu	= clock;
+assign	clock_cpu	= clock_100;
 `endif
 
 wire	timer4MHz;
@@ -228,7 +232,7 @@ reg		timerNoiseL6;
 reg		timerNoiseL7;
 
 MmiModClkp		clkp(
-	clock,	reset,
+	clock_100,	reset,
 	timer4MHz,
 	timer1MHz,
 	timer64kHz,
@@ -246,7 +250,8 @@ wire[13:0]		ddrAddr1;		//Address pins
 assign		ddrAddr = ddrAddr1[13:0];
 
 MmiModDdr3		ddr(
-	clock, reset,
+	clock_100,		clock_200,
+	reset,
 
 	ddrMemDataIn,	ddrMemDataOut,
 	ddrMemAddr,		ddrMemOpm,
@@ -529,7 +534,7 @@ assign			fixedPinsIn[15:2] = 0;
 assign			gpioPinsIn = 0;
 
 MmiModGpio	gpio(
-	clock,			reset,
+	clock_100,			reset,
 	gpioPinsOut,	gpioPinsIn,		gpioPinsDir,
 	fixedPinsOut,	fixedPinsIn,
 	outTimer1MHz,	outTimer100MHz,
@@ -541,7 +546,7 @@ MmiModGpio	gpio(
 `endif
 
 MemL2A	l2a(
-	clock,		reset,
+	clock_100,		reset,
 
 	memAddr,		memAddrB,
 	memOutData,		memInData,
@@ -568,7 +573,7 @@ assign	vgaHsync	= scrnPwmOut[12];
 assign	vgaVsync	= scrnPwmOut[13];
 
 ModTxtNtW	scrn(
-	clock,			reset,				scrnPwmOut,
+	clock_100,			reset,				scrnPwmOut,
 	mmioOutDataQ,	scrnMmioOutData,	mmioAddr,
 	mmioOpm,		scrnMmioOK,
 	timerNoise,		timer256Hz);
@@ -588,7 +593,7 @@ wire[7:0]	audAuxPcmL;
 wire[7:0]	audAuxPcmR;
 
 ModAudPcm	pcm(
-	clock,			reset,
+	clock_100,			reset,
 	audPwmOut,		audPwmEna,
 	audAuxPcmL,		audAuxPcmR,
 	mmioOutData,	audMmioOutData,		mmioAddr,
@@ -600,7 +605,7 @@ wire[31:0]	fmMmioOutData;
 wire[1:0]	fmMmioOK;
 
 ModAudFm	fmsyn(
-	clock,			reset,
+	clock_100,			reset,
 	audAuxPcmL,		audAuxPcmR,
 	mmioOutData,	fmMmioOutData,		mmioAddr,
 	mmioOpm,		fmMmioOK,
@@ -643,7 +648,7 @@ reg			ps2kb_dati;
 
 
 ModPs2Kb	ps2kb(
-	clock,			reset,
+	clock_100,			reset,
 //	ps2kb_clk_i,		ps2kb_clk_o,		ps2kb_clk_d,	
 	ps2kb_clki,		ps2kb_clk_o,		ps2kb_clk_d,	
 //	ps2kb_data_i,		ps2kb_data_o,		ps2kb_data_d,
@@ -655,7 +660,7 @@ wire[63:0]	sdMmioOutData;
 wire[1:0]	sdMmioOK;
 
 ModSdSpi	sdspi(
-	clock,			reset,
+	clock_100,			reset,
 	sdc_sclk,		sdc_di,
 	sdc_do,			sdc_cs,
 	mmioOutDataQ,	sdMmioOutData,	mmioAddr,
@@ -680,7 +685,7 @@ wire[7:0]		ssOutCharBit;
 wire[7:0]		ssOutSegBit;
 
 Mod7Seg		sevSeg(
-	clock,			reset,
+	clock_100,		reset,
 	sevSegVal,		timer1kHz,	timerNoise,
 	ssOutCharBit,	ssOutSegBit);
 
@@ -808,7 +813,7 @@ begin
 	};
 end
 
-always @(posedge clock)
+always @(posedge clock_100)
 begin
 //	$display("Clock Edge");
 

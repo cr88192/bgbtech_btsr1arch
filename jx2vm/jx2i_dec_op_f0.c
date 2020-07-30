@@ -1517,18 +1517,26 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				break;
 
 			case 0x2:	/* F0e2_1Enm */
-				op->nmid=BJX2_NMID_RGBPCK;
+//				op->nmid=BJX2_NMID_RGBPCK;
+				op->nmid=BJX2_NMID_RGB5PCK32;
 				op->fmid=BJX2_FMID_REGREG;
 				op->Run=BJX2_Op_RGB5PCK32_RegReg;
 				if(eq)
+				{
+					op->nmid=BJX2_NMID_RGB5PCK64;
 					op->Run=BJX2_Op_RGB5PCK64_RegReg;
+				}
 				break;
 			case 0x3:	/* F0e3_1Enm */
-				op->nmid=BJX2_NMID_RGBPCK;
+//				op->nmid=BJX2_NMID_RGBPCK;
+				op->nmid=BJX2_NMID_RGB5UPCK32;
 				op->fmid=BJX2_FMID_REGREG;
 				op->Run=BJX2_Op_RGB5UPCK32_RegReg;
 				if(eq)
+				{
+					op->nmid=BJX2_NMID_RGB5UPCK64;
 					op->Run=BJX2_Op_RGB5UPCK64_RegReg;
+				}
 				break;
 
 			case 0x4:	/* F0e4_1Enm */
@@ -1537,6 +1545,7 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				op->Run=BJX2_Op_RGB5PCK32_RegReg;
 				if(eq)
 				{
+					op->nmid=BJX2_NMID_RGB32PCK64;
 					op->Run=BJX2_Op_RGB32PCK64_RegReg;
 				}
 				break;
@@ -1546,6 +1555,7 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				op->Run=BJX2_Op_RGB5UPCK32_RegReg;
 				if(eq)
 				{
+					op->nmid=BJX2_NMID_RGB32UPCK64;
 					op->Run=BJX2_Op_RGB32UPCK64_RegReg;
 				}
 				break;

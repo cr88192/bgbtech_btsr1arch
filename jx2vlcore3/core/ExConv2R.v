@@ -157,6 +157,13 @@ begin
 					regValRs[15:11],
 					regValRs[ 7: 3] }
 				};
+				if(regValRs[31:28]!=4'hF)
+				begin
+					tRegOutVal[15]=1;
+					tRegOutVal[10]=regValRs[31];
+					tRegOutVal[ 5]=regValRs[30];
+					tRegOutVal[ 0]=regValRs[29];
+				end
 				tRegOutVal[63:32] = tRegOutVal[31:0];
 		end
 		JX2_UCIX_CONV_RGB5UPCK32:
@@ -184,8 +191,15 @@ begin
 					regValRs[31:27],
 					regValRs[15:11] }
 				};
-				tRegOutVal[31:16] = tRegOutVal[15:0];
-				tRegOutVal[63:32] = tRegOutVal[31:0];
+			if(regValRs[63:60]!=4'hF)
+			begin
+				tRegOutVal[15]=1;
+				tRegOutVal[10]=regValRs[63];
+				tRegOutVal[ 5]=regValRs[62];
+				tRegOutVal[ 0]=regValRs[61];
+			end
+			tRegOutVal[31:16] = tRegOutVal[15:0];
+			tRegOutVal[63:32] = tRegOutVal[31:0];
 		end
 		JX2_UCIX_CONV_RGB5UPCK64:
 			tRegOutVal	= {

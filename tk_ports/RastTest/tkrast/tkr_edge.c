@@ -10,6 +10,7 @@ int TKRA_InitSpanRcp(void)
 	}
 	tkra_spanrcptab[0]=65535;
 	tkra_spanrcptab[1]=65535;
+	return(0);
 }
 
 int TKRA_SpanRcp(int cnt)
@@ -45,6 +46,21 @@ u64 TKRA_ScaleTexStepRcp(u64 tdist, u16 rcp)
 	return((((u64)tdy)<<32)|tdx);
 }
 
+#ifdef __BJX2__
+u64 TKRA_CalcTexStepRcp(u64 tdst, u64 tsrc, u16 rcp);
+
+__asm {
+TKRA_CalcTexStepRcp:
+	SUB		R4, R5, R7
+	SHAD.Q	R7, -32, R17	|	EXTS.L	R7, R16
+								DMULS.L	R16, R6, R16
+								DMULS.L	R17, R6, R17
+	SHAD.Q	R16, -16, R16	|	SHAD.Q	R17, -16, R17
+	MOVLD	R17, R16, R2
+	RTSU
+};
+
+#else
 u64 TKRA_CalcTexStepRcp(u64 tdst, u64 tsrc, u16 rcp)
 {
 	s32 tdy, tdx;
@@ -61,6 +77,7 @@ u64 TKRA_CalcTexStepRcp(u64 tdst, u64 tsrc, u16 rcp)
 
 	return((((u64)tdy)<<32)|((u32)tdx));
 }
+#endif
 
 #ifdef __BJX2__
 // #if 0
@@ -450,12 +467,14 @@ void TKRA_WalkEdges_HZbuf(TKRA_Context *ctx,
 			{
 //				DrawSpanZ(dsparm, zb, xcnt>>1);
 				DrawSpanZ(zb, xcnt>>1,
-					dsparm[TKRA_DS_ZPOS],
+//					dsparm[TKRA_DS_ZPOS],
+//					dsparm[TKRA_DS_ZPOS]+(512<<16),
+					dsparm[TKRA_DS_ZPOS]+(128<<16),
 					zstep_c<<1);
 //					dsparm[TKRA_DS_ZSTEP]);
 			}
 			
-			dsparm[TKRA_DS_ZPOS]-=512<<16;
+//			dsparm[TKRA_DS_ZPOS]-=256<<16;
 
 			cb=cb0+x0;
 			if(xcnt>0)
@@ -694,11 +713,22 @@ void TKRA_WalkTriangle(TKRA_Context *ctx,
 int TKRA_SetupDrawEdgeForState(TKRA_Context *ctx)
 {
 	ctx->DrawSpan=TKRA_DrawSpan_ModTexMort;
+	ctx->DrawSpan_Min=TKRA_DrawSpan_ModTexMort;
+	ctx->DrawSpan_Mag=TKRA_DrawSpan_ModTexMort;
 //	ctx->DrawSpan=TKRA_DrawSpan_ModTexMortZbuf;
 //	ctx->DrawSpan=TKRA_DrawSpan_DirTexMort;
 //	ctx->DrawSpan=TKRA_DrawSpan_DirClr;
 
-	ctx->DrawSpanHZt=TKRA_DrawSpan_ModTexMortHZt;
+//	ctx->DrawSpanHZt=TKRA_DrawSpan_ModTexMortHZt;
+//	ctx->DrawSpanHZt=TKRA_DrawSpan_AlphaModTexMortHZt;
+//	ctx->DrawSpanHZt=TKRA_DrawSpan_ModBlTexMortHZt;
+
+//	ctx->DrawSpanHZt=TKRA_DrawSpan_AlphaModBlTexMortHZt;
+	ctx->DrawSpanHZt=TKRA_DrawSpan_AlphaModTexMortHZt;
+
+	ctx->DrawSpanHZt_Min=TKRA_DrawSpan_AlphaModTexMortHZt;
+//	ctx->DrawSpanHZt_Mag=TKRA_DrawSpan_AlphaModBlTexMortHZt;
+	ctx->DrawSpanHZt_Mag=TKRA_DrawSpan_AlphaModTexMortHZt;
 	ctx->DrawSpanZb=TKRA_DrawSpan_Zbuf;
 
 //	ctx->RasterWalkEdges=TKRA_WalkEdges_Dfl;
@@ -706,3 +736,22 @@ int TKRA_SetupDrawEdgeForState(TKRA_Context *ctx)
 	return(0);
 }
 
+int TKRA_SetupDrawEdgeForTriFlag(TKRA_Context *ctx, int trifl)
+{
+	if(trifl&TKRA_TRFL_ALPHA)
+	{
+//		ctx->DrawSpanHZt=TKRA_DrawSpan_AlphaModBlTexMortHZt;
+		ctx->DrawSpanHZt=TKRA_DrawSpan_AlphaModTexMortHZt;
+		ctx->DrawSpanHZt_Min=TKRA_DrawSpan_AlphaModTexMortHZt;
+//		ctx->DrawSpanHZt_Mag=TKRA_DrawSpan_AlphaModBlTexMortHZt;
+		ctx->DrawSpanHZt_Mag=TKRA_DrawSpan_AlphaModTexMortHZt;
+	}else
+	{
+		ctx->DrawSpanHZt=TKRA_DrawSpan_ModBlTexMortHZt;
+//		ctx->DrawSpanHZt=TKRA_DrawSpan_ModTexMortHZt;
+		ctx->DrawSpanHZt_Min=TKRA_DrawSpan_ModTexMortHZt;
+//		ctx->DrawSpanHZt_Mag=TKRA_DrawSpan_ModBlTexMortHZt;
+		ctx->DrawSpanHZt_Mag=TKRA_DrawSpan_ModTexMortHZt;
+	}
+	return(0);
+}

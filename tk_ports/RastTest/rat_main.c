@@ -257,8 +257,9 @@ int main(int argc, char *argv[])
 //	u16 *fbuf, *cs, *act;
 	u16 *tex0;
 	u16 *fbuf;
+	float *mdl_tris;
 	int x, y, xs, ys, txs, tys;
-	int afrac, astep;
+	int afrac, astep, mdl_ntris;
 	int i, j, k, l;
 	float ang;
 
@@ -268,15 +269,23 @@ int main(int argc, char *argv[])
 //	SoundDev_WriteStereoSamples(tsampbuf, 2048);
 //	SoundDev_WriteStereoSamples2(tsampbuf, 1024, 1024);
 
+//	TKRA_LoadPly("bun_zipper_res4.ply", &mdl_tris, &mdl_ntris);
+	LoadTrisStl("Utah_teapot.stl", &mdl_tris, &mdl_ntris);
+
+	printf("Model %d triangles\n", mdl_ntris);
+
 	tex0=BTIC1H_Img_LoadTGA555("Street256.tga", &txs, &tys);
 
 	ractx=TKRA_AllocContext();
 	TKRA_SetupScreen(ractx, 320, 200);
 	raimg=TKRA_GetTexImg(ractx, 1);
 	TKRA_UpdateTexImg(raimg, tex0, txs, tys, -1);
+//	TKRA_UpdateTexImg(raimg, tex0, txs, tys, 0);
 
 	TKRA_BindTexImg(ractx, raimg);
 	TKRA_SetupForState(ractx);
+
+	TKRA_SetCurrentContext(ractx);
 
 	ractx->mat_tproj=TKRA_MatrixIdentify();
 //	__debugbreak();
@@ -296,11 +305,12 @@ int main(int argc, char *argv[])
 
 	ractx->mat_xform=TKRA_MatrixIdentify();
 //	ractx->mat_xform=TKRA_MatrixTranslatef(ractx->mat_xform, 0, 0, 15);
-	ractx->mat_xform=TKRA_MatrixTranslatef(ractx->mat_xform, 0, 0, -25);
+//	ractx->mat_xform=TKRA_MatrixTranslatef(ractx->mat_xform, 0, 0, -25);
 
 	ractx->mat_xproj=TKRA_MatrixIdentify();
 	ractx->mat_xproj=TKRA_MatrixSetupFrustum(ractx->mat_xproj,
 		-1, 1,  -1, 1,  1.0, 8192);
+	ractx->mat_xproj=TKRA_MatrixTranslatef(ractx->mat_xproj, 0, 0, -25);
 
 	ractx->mat_tproj=TKRA_MatrixMultiply(
 		ractx->mat_xform, ractx->mat_xproj);
@@ -449,6 +459,7 @@ int main(int argc, char *argv[])
 			st0[(i*6+5)*2+0]=0.0;		st0[(i*6+5)*2+1]=1.0;
 		}
 		
+#if 0
 		ang=tt/2500.0;
 		for(i=0; i<(6*6); i++)
 		{
@@ -466,6 +477,30 @@ int main(int argc, char *argv[])
 			st0,	8,
 			rgb0,	4,
 			12);
+#endif
+
+		ang=tt/2500.0;
+
+		ractx->mat_xform=TKRA_MatrixIdentify();
+//		ractx->mat_xform=TKRA_MatrixTranslatef(ractx->mat_xform, 0, 0, 15);
+		ractx->mat_xform=TKRA_MatrixRotatef(ractx->mat_xform,
+			ang*100, 0, 1, 0);
+		ractx->mat_xform=TKRA_MatrixRotatef(ractx->mat_xform,
+			ang*10, 0, 0, 1);
+
+		ractx->mat_tproj=TKRA_MatrixMultiply(
+			ractx->mat_xform, ractx->mat_xproj);
+
+//		TKRA_DrawTriangleArrayBasic(ractx, 
+//			mdl_tris+0,	6*4,
+//			mdl_tris+3,	6*4,
+//			mdl_tris+5,	6*4,
+//			mdl_ntris);
+
+		tkra_glVertexPointer(3, TKRA_GL_FLOAT, 6*4, mdl_tris+0);
+		tkra_glTexCoordPointer(2, TKRA_GL_FLOAT, 6*4, mdl_tris+3);
+		tkra_glColorPointer(4, TKRA_GL_UNSIGNED_BYTE, 6*4, mdl_tris+5);
+		tkra_glDrawArrays(TKRA_GL_TRIANGLES, 0, mdl_ntris*3);
 
 //		dt*=2;
 		

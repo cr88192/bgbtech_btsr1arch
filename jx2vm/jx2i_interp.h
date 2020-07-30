@@ -347,8 +347,15 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_PMORTL	0xBA		//
 #define BJX2_NMID_PMORTQ	0xBB		//
 
-#define BJX2_NMID_SHLRQ		0xBC		//
-#define BJX2_NMID_SHARQ		0xBD		//
+#define BJX2_NMID_SHLRQ			0xBC		//
+#define BJX2_NMID_SHARQ			0xBD		//
+
+#define BJX2_NMID_RGB32PCK64	0xBE		//
+#define BJX2_NMID_RGB32UPCK64	0xBF		//
+#define BJX2_NMID_RGB5PCK32		0xC0		//
+#define BJX2_NMID_RGB5UPCK32	0xC1		//
+#define BJX2_NMID_RGB5PCK64		0xC2		//
+#define BJX2_NMID_RGB5UPCK64	0xC3		//
 
 
 #define BJX2_FMID_NONE			0x00		//?

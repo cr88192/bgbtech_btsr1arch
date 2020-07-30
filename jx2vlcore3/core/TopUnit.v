@@ -151,8 +151,14 @@ assign	aud_mono_out	= aud_mono_out1 ? 1'bz : 1'b0;
 // assign	aud_mono_en		= 1'b1;
 assign	aud_mono_en		= aud_mono_ena1;
 
+wire	clock_100mhz;
+wire	clock_200mhz;
+wire	clock_50mhz;
+
 CoreUnit core(
-	clock, 		reset2,
+//	clock, 		reset2,
+	clock_100mhz, 	clock_200mhz,
+	clock_50mhz,	reset2,
 	ddrData_I,	ddrData_O,	ddrData_En,
 	ddrAddr,	ddrBa,
 	ddrCs,		ddrRas,		ddrCas,
@@ -186,5 +192,80 @@ CoreUnit core(
 	dbg_outStatus7,
 	dbg_outStatus8
 	);
+
+`ifdef def_true
+wire	sys_clk;
+
+wire	gen_clk_100mhz;
+wire	gen_clk_200mhz;
+
+wire	gen_clk_50mhz;
+wire	gen_clk_25mhz;
+wire	gen_clk_75mhz;
+wire	gen_clk_66mhz;
+
+wire	clk_feedback, clk_locked;
+wire	gen_clk_100mhz_nobuf;
+wire	gen_clk_200mhz_nobuf;
+wire	gen_clk_50mhz_nobuf;
+
+PLLE2_BASE	#(
+	.BANDWIDTH("OPTIMIZED"),	// OPTIMIZED, HIGH, LOW
+	.CLKFBOUT_PHASE(0.0),		// Phase offset in degrees of CLKFB, (-360-360)
+	.CLKIN1_PERIOD(10.0),		// Input clock period in ns resolution
+	// CLKOUT0_DIVIDE - CLKOUT5_DIVIDE: divide amount for each CLKOUT(1-128)
+	.CLKFBOUT_MULT(8),			// Multiply value for all CLKOUT (2-64)
+	.CLKOUT0_DIVIDE(8),			// 100 MHz
+	.CLKOUT1_DIVIDE(4),			// 200 MHz
+	.CLKOUT2_DIVIDE(16),		//  50 MHz
+	.CLKOUT3_DIVIDE(32),		//  25 MHz
+	.CLKOUT4_DIVIDE(10),		//  80 MHz
+	.CLKOUT5_DIVIDE(12),		//  66 MHz
+	// CLKOUT0_DUTY_CYCLE -- Duty cycle for each CLKOUT
+	.CLKOUT0_DUTY_CYCLE(0.5),
+	.CLKOUT1_DUTY_CYCLE(0.5),
+	.CLKOUT2_DUTY_CYCLE(0.5),
+	.CLKOUT3_DUTY_CYCLE(0.5),
+	.CLKOUT4_DUTY_CYCLE(0.5),
+	.CLKOUT5_DUTY_CYCLE(0.5),
+	// CLKOUT0_PHASE -- phase offset for each CLKOUT
+	.CLKOUT0_PHASE(0.0),
+	.CLKOUT1_PHASE(0.0),
+	.CLKOUT2_PHASE(0.0),
+	.CLKOUT3_PHASE(0.0),
+	.CLKOUT4_PHASE(0.0),
+	.CLKOUT5_PHASE(0.0),
+	.DIVCLK_DIVIDE(1),		// Master division value , (1-56)
+	.REF_JITTER1(0.0),		// Ref. input jitter in UI (0.000-0.999)
+	.STARTUP_WAIT("TRUE")	// Delay DONE until PLL Locks, ("TRUE"/"FALSE")
+) genclock(
+	// Clock outputs: 1-bit (each) output
+	.CLKOUT0(gen_clk_100mhz_nobuf),
+	.CLKOUT1(gen_clk_200mhz_nobuf),
+	.CLKOUT2(gen_clk_50mhz_nobuf),
+	.CLKOUT3(gen_clk_25mhz),
+	.CLKOUT4(gen_clk_75mhz),
+	.CLKOUT5(gen_clk_66mhz),
+	.CLKFBOUT(clk_feedback), // 1-bit output, feedback clock
+	.LOCKED(clk_locked),
+	.CLKIN1(sys_clk),
+	.PWRDWN(1'b0),
+	.RST(1'b0),
+	.CLKFBIN(clk_feedback_bufd)	// 1-bit input, feedback clock
+);
+
+BUFH	feedback_buffer(.I(clk_feedback),.O(clk_feedback_bufd));
+IBUF	sysclk_buf(.I(clock), .O(sys_clk));
+
+BUFG	clk100_buf(.I(gen_clk_100mhz_nobuf), .O(gen_clk_100mhz));
+BUFG	clk200_buf(.I(gen_clk_200mhz_nobuf), .O(gen_clk_200mhz));
+BUFG	clk50_buf(.I(gen_clk_50mhz_nobuf), .O(gen_clk_50mhz));
+
+assign	clock_100mhz = gen_clk_100mhz;
+assign	clock_200mhz = gen_clk_200mhz;
+assign	clock_50mhz = gen_clk_50mhz;
+
+`endif
+
 
 endmodule

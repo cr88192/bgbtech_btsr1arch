@@ -468,7 +468,7 @@ void BJX2_Op_RGB32UPCK64_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	vn=	((vs&0x000000FF)<< 8)|
 		((vs&0x0000FF00)<<16)|
 		((vs&0x00FF0000)<<24)|
-		((vs&0xFF000000)<<24);
+		((vs&0xFF000000)<<32);
 	ctx->regs[op->rn]=vn;
 }
 

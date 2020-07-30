@@ -65,6 +65,18 @@ typedef unsigned int uint;
 #endif
 #endif
 
+#if defined(X86_64) || defined(BJX2)
+#define ARCH_IS64BIT
+#endif
+
+
+#ifdef ARCH_IS64BIT
+typedef s64 nlint;
+#else
+typedef u32 nlint;
+#endif
+
+
 #if defined(_MSC_VER) && defined(BTEIFGL_DLL)
 #ifndef BTRA_API
 #define BTRA_API __declspec(dllexport)
@@ -146,8 +158,137 @@ Vertex Parameter Arrays
 #define		TKRA_VX_CPOS	4			//color position
 #define		TKRA_VX_NPARM	5			//number of edge params
 
+#define		TKRA_TRFL_ALPHA		0x0001		//Activity seen in alpha channel.
+
+
+#define TKRA_BYTE								0x1400
+#define TKRA_UNSIGNED_BYTE						0x1401
+#define TKRA_UBYTE								0x1401
+#define TKRA_SHORT								0x1402
+#define TKRA_UNSIGNED_SHORT						0x1403
+#define TKRA_USHORT								0x1403
+#define TKRA_INT								0x1404
+#define TKRA_UNSIGNED_INT						0x1405
+#define TKRA_UINT								0x1405
+#define TKRA_FLOAT								0x1406
+#define TKRA_2_BYTES							0x1407
+#define TKRA_3_BYTES							0x1408
+#define TKRA_4_BYTES							0x1409
+#define TKRA_DOUBLE								0x140A
+#define	TKRA_HALF_FLOAT							0x140B
+#define	TKRA_HFLOAT								0x140B
+
+#define TKRA_GL_BYTE							0x1400
+#define TKRA_GL_UNSIGNED_BYTE					0x1401
+#define TKRA_GL_SHORT							0x1402
+#define TKRA_GL_UNSIGNED_SHORT					0x1403
+#define TKRA_GL_INT								0x1404
+#define TKRA_GL_UNSIGNED_INT					0x1405
+#define TKRA_GL_FLOAT							0x1406
+#define TKRA_GL_2_BYTES							0x1407
+#define TKRA_GL_3_BYTES							0x1408
+#define TKRA_GL_4_BYTES							0x1409
+#define TKRA_GL_DOUBLE							0x140A
+#define	TKRA_GL_HALF_FLOAT						0x140B
+
+/* Primitives */
+#define TKRA_POINTS								0x0000
+#define TKRA_LINES								0x0001
+#define TKRA_LINE_LOOP							0x0002
+#define TKRA_LINE_STRIP							0x0003
+#define TKRA_TRIANGLES							0x0004
+#define TKRA_TRIANGLE_STRIP						0x0005
+#define TKRA_TRIANGLE_FAN						0x0006
+#define TKRA_QUADS								0x0007
+#define TKRA_QUAD_STRIP							0x0008
+#define TKRA_POLYGON							0x0009
+
+#define TKRA_GL_POINTS							0x0000
+#define TKRA_GL_LINES							0x0001
+#define TKRA_GL_LINE_LOOP						0x0002
+#define TKRA_GL_LINE_STRIP						0x0003
+#define TKRA_GL_TRIANGLES						0x0004
+#define TKRA_GL_TRIANGLE_STRIP					0x0005
+#define TKRA_GL_TRIANGLE_FAN					0x0006
+#define TKRA_GL_QUADS							0x0007
+#define TKRA_GL_QUAD_STRIP						0x0008
+#define TKRA_GL_POLYGON							0x0009
+
+#define TKRA_RGB								0x1907
+#define TKRA_RGBA								0x1908
+#define TKRA_BGR								0x80E0
+#define TKRA_BGRA								0x80E1
+
+#define TKRA_TEXTURE_2D							0x0DE1
+
+#define TKRA_MODELVIEW							0x1700
+#define TKRA_PROJECTION							0x1701
+#define TKRA_TEXTURE							0x1702
+
+#define TKRA_GL_VENDOR							0x1F00
+#define TKRA_GL_RENDERER						0x1F01
+#define TKRA_GL_VERSION							0x1F02
+#define TKRA_GL_EXTENSIONS						0x1F03
+
+#define TKRA_GL_ZERO							0x0
+#define TKRA_GL_ONE								0x1
+#define TKRA_GL_SRC_COLOR						0x0300
+#define TKRA_GL_ONE_MINUS_SRC_COLOR				0x0301
+#define TKRA_GL_SRC_ALPHA						0x0302
+#define TKRA_GL_ONE_MINUS_SRC_ALPHA				0x0303
+#define TKRA_GL_DST_ALPHA						0x0304
+#define TKRA_GL_ONE_MINUS_DST_ALPHA				0x0305
+#define TKRA_GL_DST_COLOR						0x0306
+#define TKRA_GL_ONE_MINUS_DST_COLOR				0x0307
+#define TKRA_GL_SRC_ALPHA_SATURATE				0x0308
+#define TKRA_GL_CONSTANT_COLOR					0x8001
+#define TKRA_GL_ONE_MINUS_CONSTANT_COLOR		0x8002
+#define TKRA_GL_CONSTANT_ALPHA					0x8003
+#define TKRA_GL_ONE_MINUS_CONSTANT_ALPHA		0x8004
+
+#define TKRA_GL_CURRENT_BIT						0x00000001
+#define TKRA_GL_POINT_BIT						0x00000002
+#define TKRA_GL_LINE_BIT						0x00000004
+#define TKRA_GL_POLYGON_BIT						0x00000008
+#define TKRA_GL_POLYGON_STIPPLE_BIT				0x00000010
+#define TKRA_GL_PIXEL_MODE_BIT					0x00000020
+#define TKRA_GL_LIGHTING_BIT					0x00000040
+#define TKRA_GL_FOG_BIT							0x00000080
+#define TKRA_GL_DEPTH_BUFFER_BIT				0x00000100
+#define TKRA_GL_ACCUM_BUFFER_BIT				0x00000200
+#define TKRA_GL_STENCIL_BUFFER_BIT				0x00000400
+#define TKRA_GL_VIEWPORT_BIT					0x00000800
+#define TKRA_GL_TRANSFORM_BIT					0x00001000
+#define TKRA_GL_ENABLE_BIT						0x00002000
+#define TKRA_GL_COLOR_BUFFER_BIT				0x00004000
+#define TKRA_GL_HINT_BIT						0x00008000
+#define TKRA_GL_EVAL_BIT						0x00010000
+#define TKRA_GL_LIST_BIT						0x00020000
+#define TKRA_GL_TEXTURE_BIT						0x00040000
+#define TKRA_GL_SCISSOR_BIT						0x00080000
+
+#define TKRA_BLEND_ZERO							0x0
+#define TKRA_BLEND_ONE							0x1
+#define TKRA_BLEND_SRC_COLOR					0x2
+#define TKRA_BLEND_ONE_MINUS_SRC_COLOR			0x3
+#define TKRA_BLEND_SRC_ALPHA					0x4
+#define TKRA_BLEND_ONE_MINUS_SRC_ALPHA			0x5
+#define TKRA_BLEND_DST_ALPHA					0x6
+#define TKRA_BLEND_ONE_MINUS_DST_ALPHA			0x7
+#define TKRA_BLEND_DST_COLOR					0x8
+#define TKRA_BLEND_ONE_MINUS_DST_COLOR			0x9
+
 typedef unsigned short	tkra_rastpixel;
 typedef unsigned short	tkra_zbufpixel;
+
+typedef sbyte		tkra_s8;
+typedef byte		tkra_u8;
+typedef s16		tkra_s16;
+typedef u16		tkra_u16;
+typedef s32		tkra_s32;
+typedef u32		tkra_u32;
+typedef float		tkra_f32;
+typedef double		tkra_f64;
 
 typedef struct TKRA_Context_s		TKRA_Context;
 typedef struct TKRA_TexImage_s		TKRA_TexImage;
@@ -188,16 +329,17 @@ typedef struct {
 	u16 y;
 	u16 z;
 	u16 w;
-	u16	s;
-	u16 t;
+	s16	s;
+	s16 t;
 	u32 rgb;
 }tkra_projvertex;
 
 
 struct TKRA_Context_s
 {
-tkra_rastpixel *screen_rgb;		//display buffer (RGB)
-tkra_zbufpixel *screen_zbuf;	//display buffer (Z buffer)
+tkra_rastpixel	*screen_rgb;	//display buffer (RGB)
+tkra_zbufpixel	*screen_zbuf;	//display buffer (Z buffer)
+byte			*screen_sten;	//stencil buffer
 int		screen_xsize;
 int		screen_ysize;
 
@@ -207,7 +349,11 @@ int		scr_yscale;
 int		scr_xcenter;
 int		scr_ycenter;
 
-int 	clip_x0;
+tkra_rastpixel	clear_rgb5;
+tkra_zbufpixel	clear_zbuf;
+u32				clear_rgba;
+
+int	clip_x0;
 int		clip_x1;
 int		clip_y0;
 int		clip_y1;
@@ -215,8 +361,10 @@ int		clip_y1;
 
 TKRA_TexImage *tex_cur;
 tkra_rastpixel *tex_img;			//bound texture image
-int		tex_xshl;
-int		tex_yshl;
+byte	tex_xshl;
+byte	tex_yshl;
+byte	tex_mmip;
+u16		triflag;
 
 tkra_rastpixel *dst_rgb;		//destination (RGB)
 tkra_zbufpixel *dst_zbuf;		//destination (Zbuf)
@@ -225,6 +373,16 @@ void (*DrawSpan)(u64 *parm,
 	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt);
 void (*DrawSpanHZt)(u64 *parm,
 	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt);
+
+void (*DrawSpan_Min)(u64 *parm,
+	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt);
+void (*DrawSpanHZt_Min)(u64 *parm,
+	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt);
+void (*DrawSpan_Mag)(u64 *parm,
+	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt);
+void (*DrawSpanHZt_Mag)(u64 *parm,
+	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt);
+
 void (*DrawSpanZb)(tkra_zbufpixel *dstz, int cnt, u64 zpos, u64 zstep);
 void (*RasterWalkEdges)(TKRA_Context *ctx,
 	int ytop, u64 *edge_l, u64 *edge_r, int cnt);
@@ -233,10 +391,53 @@ int tex_rov;
 TKRA_TexImage *tex_list;
 TKRA_TexImage *tex_hash[256];
 
-tkra_mat4	mat_tproj;
 
-tkra_mat4	mat_xform;
-tkra_mat4	mat_xproj;
+float		trans_znear;
+float		trans_zfar;
+float		trans_zrange;
+
+tkra_mat4	mat_tproj;		//modelview*projection
+
+tkra_mat4	mat_xform;		//modelview
+tkra_mat4	mat_xproj;		//projection
+
+tkra_mat4	stk_xform[64];		//modelview
+tkra_mat4	stk_xproj[8];		//projection
+int			stkpos_xform;
+int			stkpos_xproj;
+byte		matmode;
+byte		blend_sfunc;
+byte		blend_dfunc;
+
+int		tkgl_vptr_xyz_nsz;
+int		tkgl_vptr_xyz_ty;
+int		tkgl_vptr_xyz_str;
+void 	*tkgl_vptr_xyz_ptr;
+
+int		tkgl_vptr_st_nsz;
+int		tkgl_vptr_st_ty;
+int		tkgl_vptr_st_str;
+void 	*tkgl_vptr_st_ptr;
+
+int		tkgl_vptr_rgb_nsz;
+int		tkgl_vptr_rgb_ty;
+int		tkgl_vptr_rgb_str;
+void 	*tkgl_vptr_rgb_ptr;
+
+int		tkgl_vptr_nv_nsz;
+int		tkgl_vptr_nv_ty;
+int		tkgl_vptr_nv_str;
+void 	*tkgl_vptr_nv_ptr;
+
+int		tkgl_begin_mode;
+u32		tkgl_begin_rgba;
+u32		tkgl_begin_norm;
+float	tkgl_begin_st[2];
+//float	tkgl_begin_nv[3];
+
+float	*tkgl_begin_vtxa;
+int		tkgl_begin_nvtx;
+int		tkgl_begin_mvtx;
 };
 
 struct TKRA_TexImage_s
@@ -249,4 +450,5 @@ int		tex_id;
 int		tex_mipofs[16];
 byte	tex_xshl;					//texture X size (log-2)
 byte	tex_yshl;					//texture Y size (log-2)
+byte	tex_mmip;
 };

@@ -8,4 +8,6 @@
 
 #include "bt1h_targa.c"
 
+#include "rat_loadply.c"
+
 #include "rat_main.c"

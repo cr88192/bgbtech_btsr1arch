@@ -79,7 +79,7 @@ DRI Init:
 // `define mod_ddr_dbgprn		//Debug DDR module
 
 module MmiModDdr3(
-	clock,	reset,
+	clock,		clock200,	reset,
 	memDataIn,	memDataOut,
 	memAddr,	memOpm,
 	memOK,
@@ -92,6 +92,7 @@ module MmiModDdr3(
 	ddrDqsP_O,	ddrDqsN_O,	ddrDqs_En);
 
 input			clock;
+input			clock200;
 input			reset;
 input[127:0]	memDataIn;
 output[127:0]	memDataOut;
