@@ -99,7 +99,7 @@ input[7:0]		opUIxt;
 output[1:0]		exHold;
 output[15:0]	exTrapExc;
 
-input[7:0]		timers;
+input[11:0]		timers;
 
 input[5:0]		regIdRs;		//Source A, ALU / Base
 input[5:0]		regIdRt;		//Source B, ALU / Index

@@ -455,9 +455,11 @@ begin
 				6'h00:	tOutData	= tRegCtrl0;
 
 `ifdef JX2_AUD_16K
-				6'h08:	tOutData	= { 50'h0, tSampPos };
+//				6'h08:	tOutData	= { 50'h0, tSampPos };
+				6'h08:	tOutData	= { 18'h0, tSampPos };
 `else
-				6'h08:	tOutData	= { 51'h0, tSampPos };
+//				6'h08:	tOutData	= { 51'h0, tSampPos };
+				6'h08:	tOutData	= { 19'h0, tSampPos };
 `endif
 
 				default: begin

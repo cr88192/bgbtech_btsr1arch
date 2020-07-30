@@ -842,7 +842,7 @@ int update_ps2kb()
 	static byte tclk, tdat, lclk, tlclk;
 	static byte b, pb;
 	
-	if(top->clock && !tlclk)
+	if(top->clock_100 && !tlclk)
 	{
 		if(xmitpos<=0)
 		{
@@ -910,7 +910,7 @@ int update_ps2kb()
 		}
 	}
 
-	tlclk=top->clock;
+	tlclk=top->clock_100;
 
 	top->ps2kb_clk_i=tclk;
 	top->ps2kb_data_i=tdat;
@@ -1268,9 +1268,11 @@ int main(int argc, char **argv, char **env)
 
 //		BTSR1_MainPollKeyboard();
 	
-		top->clock = (main_time>>0)&1;
+		top->clock_200 = (main_time>>0)&1;
+		top->clock_100 = (main_time>>1)&1;
+		top->clock_50  = (main_time>>2)&1;
 		
-		if(top->clock && (lclk!=top->clock))
+		if(top->clock_100 && (lclk!=top->clock_100))
 		{
 			i=(top->vgaRed<<8)|(top->vgaGrn<<4)|(top->vgaBlu<<0)|
 				(top->vgaHsync<<12)|(top->vgaVsync<<13);
@@ -1315,16 +1317,17 @@ int main(int argc, char **argv, char **env)
 
 		update_ps2kb();
 		
-		ctx->tot_cyc=main_time>>1;
+//		ctx->tot_cyc=main_time>>1;
+		ctx->tot_cyc=main_time>>2;
 		
-		lclk = top->clock;
+		lclk = top->clock_100;
 //		top->mode = 3;
 		
 //		top->baseAddr=0xDECAB00;
 //		top->idxAddr=0x100;
 //		top->idxDisp=3;
 
-		if(top->clock)
+		if(top->clock_100)
 		{
 //			printf("Cycle %lld\n", jx2_ctx->tot_cyc);
 		

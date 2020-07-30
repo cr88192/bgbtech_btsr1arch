@@ -91,10 +91,14 @@ reg		tMem2Latch;
 reg		tNextMem1Latch;
 reg		tNextMem2Latch;
 
+reg		tMemStrobe;
+reg		tNextMemStrobe;
+
 always @*
 begin
 	tNextMem1Latch = tMem1Latch;
 	tNextMem2Latch = tMem2Latch;
+	tNextMemStrobe = !tMemStrobe;
 	
 	tMem1OK			= (mem1Opm != UMEM_OPM_READY) ?
 		UMEM_OK_HOLD : UMEM_OK_READY;
@@ -105,7 +109,9 @@ begin
 	tMem1BusExc		= UV64_00;
 	tMem2BusExc		= UV64_00;
 	
-	if(tMem1Latch || ((mem1Opm != UMEM_OPM_READY) && !tMem2Latch))
+//	if(tMem1Latch || ((mem1Opm != UMEM_OPM_READY) && !tMem2Latch))
+
+	if(tMem1Latch)
 	begin
 		tNextMem1Latch	=
 			(mem1Opm != UMEM_OPM_READY) ||
@@ -118,8 +124,8 @@ begin
 		tMemAddrB		= mem1AddrB;
 		tMemOpm			= mem1Opm;
 	end
-
-	if(tMem2Latch || ((mem2Opm != UMEM_OPM_READY) && !tMem1Latch))
+	else
+		if(tMem2Latch)
 	begin
 		tNextMem2Latch	=
 			(mem2Opm != UMEM_OPM_READY) ||
@@ -132,6 +138,18 @@ begin
 		tMemAddrB		= mem2AddrB;
 		tMemOpm			= mem2Opm;
 	end
+	else
+		if((mem1Opm != UMEM_OPM_READY) &&
+			!((mem2Opm != UMEM_OPM_READY) && tMemStrobe))
+	begin
+		tNextMem1Latch	= 1;
+	end
+	else
+		if(mem2Opm != UMEM_OPM_READY)
+	begin
+		tNextMem2Latch	= 1;
+	end
+
 end
 
 always @(posedge clock)
@@ -153,6 +171,7 @@ begin
 	tMem2OK2		<= tMem2OK;
 	tMem2BusExc2	<= tMem2BusExc;
 
+	tMemStrobe		<= tNextMemStrobe;
 
 	if(reset)
 	begin
@@ -163,6 +182,10 @@ begin
 	begin
 		tMem1Latch	<= tNextMem1Latch;
 		tMem2Latch	<= tNextMem2Latch;
+
+//		tMem1Latch	<= tNextMem1Latch && !(tNextMem2Latch &&  tMemStrobe);
+//		tMem2Latch	<= tNextMem2Latch && !(tNextMem1Latch && !tMemStrobe);
+
 	end
 end
 

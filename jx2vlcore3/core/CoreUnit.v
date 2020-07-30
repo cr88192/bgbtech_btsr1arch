@@ -329,7 +329,7 @@ wire			dbg1OutStatus8;
 
 ExUnit	cpu1(
 	clock_cpu, 		reset,
-	timers,
+	{ 4'h0, timers },
 
 	mem1AddrA,		mem1AddrB,
 	mem1InData,		mem1OutData,
@@ -380,7 +380,7 @@ wire			dbg2OutStatus8;
 
 ExUnit	cpu2(
 	clock_cpu, 		reset,
-	timers,
+	{ 4'h1, timers },
 
 	mem2AddrA,		mem2AddrB,
 	mem2InData,		mem2OutData,
@@ -475,7 +475,7 @@ wire			dbgOutStatus8;
 
 ExUnit	cpu(
 	clock_cpu, 		reset,
-	timers,
+	{ 4'h0, timers },
 
 	memAddr,		memAddrB,
 	memInData,		memOutData,

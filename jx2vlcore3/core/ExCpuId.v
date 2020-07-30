@@ -8,7 +8,7 @@ module ExCpuId(
 
 input			clock;
 input			reset;
-input[7:0]		timers;
+input[11:0]		timers;
 
 input[4:0]		index;
 output[63:0]	resLo;
@@ -17,6 +17,8 @@ output[63:0]	resHi;
 parameter		isAltCore = 0;
 
 
+reg[63:0]		tResLoA;
+reg[63:0]		tResHiA;
 reg[63:0]		tResLo;
 reg[63:0]		tResHi;
 
@@ -51,7 +53,8 @@ begin
 	arrCpuIdLo[6]=UV64_XX;
 	arrCpuIdLo[7]=UV64_XX;
 
-	arrCpuIdLo[1][0] = isAltCore;
+//	arrCpuIdLo[1][0] = isAltCore;
+//	arrCpuIdLo[1][3:0] = isAltCore;
 
 `ifndef def_true
 	arrCpuIdHi[0]=UV64_00;
@@ -68,9 +71,9 @@ end
 
 always @*
 begin
-	tResLo = arrCpuIdLo[index[2:0]];
-//	tResHi = arrCpuIdHi[index[2:0]];
-	tResHi = UV64_00;
+	tResLoA = arrCpuIdLo[index[2:0]];
+	tResHiA = UV64_00;
+//	tResHiA = arrCpuIdHi[index[2:0]];
 	
 	tRngBitA	=
 		tRngA[1] ^ tRngA[3] ^
@@ -83,28 +86,68 @@ begin
 
 	tNxtRngA	= { tRngBitA, tRngA[31:1] };
 	tNxtRngB	= { tRngBitB, tRngB[31:1] };
-	
+
+	tResHi = tResHiA;
+
+
 `ifdef def_true
-	if(index[4])
-	begin
-		case(index[3:0])
-			4'hF: begin
-				tResLo = {
-					tRngA[31:28], tRngB[ 3: 0],
-					tRngA[27:24], tRngB[ 7: 4],
-					tRngA[23:20], tRngB[11: 8],
-					tRngA[19:16], tRngB[15:12],
-					tRngA[15:12], tRngB[19:16],
-					tRngA[11: 8], tRngB[23:20],
-					tRngA[ 7: 4], tRngB[27:24],
-					tRngA[ 3: 0], tRngB[31:28]
-				};
-			end
-			default: begin
-				tResLo = UV64_00;
-			end
-		endcase
-	end
+	casez(index[4:0])
+		5'b0_0000: begin
+			tResLo = tResLoA;
+			tResHi = tResHiA;
+		end
+		5'b0_0001: begin
+			tResLo = tResLoA;
+			tResHi = tResHiA;
+			tResLo[3:0] = timers[11:8];
+		end
+		5'b0_001z: begin
+			tResLo = tResLoA;
+			tResHi = tResHiA;
+		end
+		5'b0_01zz: begin
+			tResLo = tResLoA;
+			tResHi = tResHiA;
+		end
+		5'b0_1zzz: begin
+			tResLo = tResLoA;
+			tResHi = tResHiA;
+		end
+
+		5'b1_0zzz: begin
+			tResLo = UV64_00;
+			tResHi = UV64_00;
+		end
+
+		5'b1_10zz: begin
+			tResLo = UV64_00;
+			tResHi = UV64_00;
+		end
+		5'b1_110z: begin
+			tResLo = UV64_00;
+			tResHi = UV64_00;
+		end
+
+		5'b1_1110: begin
+			tResLo = UV64_00;
+			tResHi = UV64_00;
+		end
+		5'b1_1111: begin
+			tResLo = {
+				tRngA[31:28], tRngB[ 3: 0],
+				tRngA[27:24], tRngB[ 7: 4],
+				tRngA[23:20], tRngB[11: 8],
+				tRngA[19:16], tRngB[15:12],
+				tRngA[15:12], tRngB[19:16],
+				tRngA[11: 8], tRngB[23:20],
+				tRngA[ 7: 4], tRngB[27:24],
+				tRngA[ 3: 0], tRngB[31:28]
+			};
+		end
+//		default: begin
+//			tResLo = UV64_00;
+//		end
+	endcase
 `endif
 end
 

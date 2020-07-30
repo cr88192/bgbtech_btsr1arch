@@ -93,7 +93,7 @@ input			clock;
 (* max_fanout = 50 *)
 	input			reset;
 
-input[7:0]		timers;
+input[11:0]		timers;
 
 output[47:0]	memAddr;
 output[47:0]	memAddrB;
@@ -809,7 +809,7 @@ wire[1:0]		ex1Hold;
 reg				ex1PreBra;
 reg[31:0]		ex1IstrWord;	//source instruction word
 reg				ex1BraFlush;
-reg[7:0]		ex1Timers;
+reg[11:0]		ex1Timers;
 
 reg[5:0]		ex1RegIdRs;		//Source A, ALU / Base
 reg[5:0]		ex1RegIdRt;		//Source B, ALU / Index
@@ -2684,7 +2684,7 @@ begin
 		ex1RegValImm	<= gprValImm;
 		ex1BraFlush		<= nxtBraFlushMask[0];
 		
-		ex1Timers		<= timers;
+		ex1Timers		<= timers[11:0];
 
 `ifdef jx2_enable_wex
 		ex1OpUCmd		<= idA2IdUCmd;
