@@ -819,11 +819,19 @@ begin
 //					tRegValCn1	= {UV16_00, regValPc};
 					tValBra		= regValPc[47:0];
 					tDoBra		= 1;
-
 				end
 				JX2_UCIX_IXS_INVDC: begin
-					tMemOpm		= UMEM_OPM_FLUSHDS;
+//					tMemOpm		= UMEM_OPM_FLUSHDS;
 					tMemAddr	= regValRm[47:0];
+					tDoMemOpm	= UMEM_OPM_FLUSHDS;
+					tDoMemOp	= 1;
+				end
+
+				JX2_UCIX_IXS_TRAPB: begin
+//					tMemOpm		= UMEM_OPM_TRAP;
+//					tMemAddr	= regValRm[47:0];
+					tDoMemOpm	= UMEM_OPM_TRAP;
+					tDoMemOp	= 1;
 				end
 
 				default: begin
@@ -911,10 +919,14 @@ begin
 				end
 				
 				JX2_UCIX_IXT_LDTLB: begin
-					tMemOpm = UMEM_OPM_LDTLB;
+//					tMemOpm = UMEM_OPM_LDTLB;
+					tDoMemOpm	= UMEM_OPM_LDTLB;
+					tDoMemOp	= 1;
 				end
 				JX2_UCIX_IXT_INVTLB: begin
-					tMemOpm = UMEM_OPM_INVTLB;
+//					tMemOpm = UMEM_OPM_INVTLB;
+					tDoMemOpm	= UMEM_OPM_INVTLB;
+					tDoMemOp	= 1;
 				end
 
 				JX2_UCIX_IXT_LDEKRR: begin

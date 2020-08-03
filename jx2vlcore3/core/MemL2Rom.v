@@ -80,13 +80,21 @@ begin
 	tRamStBlkIx		= UV9_XX;
 	tRamDoSt		= 0;
 	
-	if(tAddrIsRom && tMemOpm[3])
+//	if(tAddrIsRom && tMemOpm[3])
+	if(tAddrIsRom && (tMemOpm[4:3]!=2'b00))
 	begin
 //		$display("L2 ROM");
 
 		tMemDataOut		= tRomBlkData;
 //		tMemOK			= UMEM_OK_OK;
 		tMemOK			= (tRomBlkIxL==tRomBlkIx) ? UMEM_OK_OK : UMEM_OK_HOLD;
+
+		if(tMemOpm[4])
+		begin
+			$display("L2 ROM Store A=%X D=%X O=%X",
+				tMemAddr, tMemDataIn, tMemOpm);
+		end
+
 	end
 	else
 		if(tAddrIsRam && (tMemOpm[4:3]!=2'b00))

@@ -43,11 +43,15 @@ assign			ps2_data_d	= 1'b0;
 assign		mmioOutData = tMmioOutData2;
 assign		mmioOK		= tMmioOK2;
 
+reg[31:0]		tMmioInData;
+reg[31:0]		tMmioAddr;
+reg[4:0]		tMmioOpm;
+
 wire		tMmioLowCSel;
-assign		tMmioLowCSel = (mmioAddr[27:16]==12'h000);
+assign		tMmioLowCSel = (tMmioAddr[27:16]==12'h000);
 
 wire		tMmioPs2CSel;
-assign		tMmioPs2CSel = tMmioLowCSel && (mmioAddr[15:4]==12'hE04);
+assign		tMmioPs2CSel = tMmioLowCSel && (tMmioAddr[15:4]==12'hE04);
 
 reg				mmioInOE;
 reg				mmioInWR;
@@ -82,8 +86,8 @@ begin
 	tMmioOutData	= UV32_XX;
 	tMmioOK			= UMEM_OK_READY;
 
-	mmioInOE			= (mmioOpm[3]) && tMmioPs2CSel;
-	mmioInWR			= (mmioOpm[4]) && tMmioPs2CSel;
+	mmioInOE			= (tMmioOpm[3]) && tMmioPs2CSel;
+	mmioInWR			= (tMmioOpm[4]) && tMmioPs2CSel;
 	
 	scanNxtSpos		= scanSpos;
 	scanNxtEpos		= scanEpos;
@@ -155,7 +159,7 @@ begin
 		scanNxtSpos		= scanSpos + 1;
 	end
 	
-	if((mmioAddr[3:2]==2'b00) && mmioInOE)
+	if((tMmioAddr[3:2]==2'b00) && mmioInOE)
 	begin
 //		tMmioOutData	= { UV24_00, scanBuf[scanSpos] };
 		tMmioOutData	= { UV24_00, ps2ScanCur };
@@ -164,7 +168,7 @@ begin
 		tMmioOK			= UMEM_OK_OK;
 	end
 
-	if((mmioAddr[3:2]==2'b10) && mmioInOE)
+	if((tMmioAddr[3:2]==2'b10) && mmioInOE)
 	begin
 		tMmioOutData	= 0;
 		tMmioOutData[0] = (scanSpos != scanEpos);
@@ -176,6 +180,11 @@ always @(posedge clock)
 begin
 	tMmioOutData2	<= tMmioOutData;
 	tMmioOK2		<= tMmioOK;
+
+	tMmioInData		<= mmioInData;
+	tMmioAddr		<= mmioAddr;
+	tMmioOpm		<= mmioOpm;
+
 	scanSpos		<= scanNxtSpos;
 	scanEpos		<= scanNxtEpos;
 	scanSpAdv		<= scanNxtSpAdv;

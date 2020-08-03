@@ -182,6 +182,7 @@ reg[1:0]	tClrNxtIx32;
 
 
 reg[3:0]	tScrMode;
+reg[3:0]	tScrClrsMod;
 
 reg[31:0]	tCellData33;
 reg[31:0]	tNextCellData33;
@@ -189,7 +190,15 @@ reg[1:0]	tClrIx33;
 reg[1:0]	tClrNxtIx33;
 
 reg[3:0]	tPixClrBmRgbi;
+reg[3:0]	tPixClrBmRgbiB;
 reg[11:0]	tPixClrBmRgbiYV12;
+
+reg[1:0]	tPixClrBm2i;
+reg[11:0]	tPixClrBm2iYV12;
+reg[15:0]	tPixClrBm2iYV16_D;
+reg[15:0]	tPixClrBm2iYV16_C;
+
+reg			tPixClrBm1i;
 
 reg[15:0]	tPixClrBmYv16_D;
 reg[15:0]	tPixClrBmYv16_C;
@@ -200,6 +209,11 @@ reg[7:0]	tPixClrBmYv8_D;
 reg[7:0]	tPixClrBmYv8_C;
 reg[15:0]	tPixClrBmPalYV16_C;
 reg[15:0]	tPixClrBmPalYV16_D;
+
+reg[3:0]	tPixClrBmYv4_D;
+reg[3:0]	tPixClrBmYv4_C;
+reg[3:0]	tPixClrBmYv4Rgbi;
+reg[11:0]	tPixClrBmYv4RgbiYV12;
 
 reg			tPixRgb565;
 reg			tBlinkStrobeA;
@@ -308,6 +322,8 @@ begin
 	tScrMode	= ctrlRegVal[7:4];
 	useColPow2	= ctrlRegVal[8];
 	useQtrCell	= ctrlRegVal[10];
+
+	tScrClrsMod		= ctrlRegVal[15:12];
 
 	tCellCursorX	= ctrlRegVal[39:32];
 //	tCellCursorY	= ctrlRegVal[47:40] + 2;
@@ -935,6 +951,25 @@ begin
 		4'h0: tPixClrBmYv8_C = tCellData_C[127:120];
 	endcase
 
+	case(tPixCellFx_C)
+		4'hF: tPixClrBmYv4_C = tCellData_C[ 3: 0];
+		4'hE: tPixClrBmYv4_C = tCellData_C[ 7: 4];
+		4'hD: tPixClrBmYv4_C = tCellData_C[11: 8];
+		4'hC: tPixClrBmYv4_C = tCellData_C[15:12];
+		4'hB: tPixClrBmYv4_C = tCellData_C[19:16];
+		4'hA: tPixClrBmYv4_C = tCellData_C[23:20];
+		4'h9: tPixClrBmYv4_C = tCellData_C[27:24];
+		4'h8: tPixClrBmYv4_C = tCellData_C[31:28];
+		4'h7: tPixClrBmYv4_C = tCellData_C[35:32];
+		4'h6: tPixClrBmYv4_C = tCellData_C[39:36];
+		4'h5: tPixClrBmYv4_C = tCellData_C[43:40];
+		4'h4: tPixClrBmYv4_C = tCellData_C[47:44];
+		4'h3: tPixClrBmYv4_C = tCellData_C[51:48];
+		4'h2: tPixClrBmYv4_C = tCellData_C[55:52];
+		4'h1: tPixClrBmYv4_C = tCellData_C[59:56];
+		4'h0: tPixClrBmYv4_C = tCellData_C[63:60];
+	endcase
+
 	case( { tPixCellGx_C[3], tPixCellGx_C[0] } )
 //		2'b00: tPixClrBmRgbi = tPixClrBmYv16_C[ 3: 0];
 //		2'b01: tPixClrBmRgbi = tPixClrBmYv16_C[ 7: 4];
@@ -947,7 +982,41 @@ begin
 		2'b00: tPixClrBmRgbi = tPixClrBmYv16_C[15:12];
 	endcase
 
-	case(tPixClrBmRgbi)
+	case( { tPixCellGx_C[3], tPixCellGx_C[0] } )
+//		2'b00: tPixClrBm2i = tPixClrBmYv8_C[1:0];
+//		2'b01: tPixClrBm2i = tPixClrBmYv8_C[3:2];
+//		2'b10: tPixClrBm2i = tPixClrBmYv8_C[5:4];
+//		2'b11: tPixClrBm2i = tPixClrBmYv8_C[7:6];
+
+		2'b11: tPixClrBm2i = tPixClrBmYv8_C[1:0];
+		2'b10: tPixClrBm2i = tPixClrBmYv8_C[3:2];
+		2'b01: tPixClrBm2i = tPixClrBmYv8_C[5:4];
+		2'b00: tPixClrBm2i = tPixClrBmYv8_C[7:6];
+	endcase
+
+	case( { tPixCellGx_C[3], tPixCellGx_C[0] } )
+		2'b11: tPixClrBm1i = tPixClrBmYv4_C[0];
+		2'b10: tPixClrBm1i = tPixClrBmYv4_C[1];
+		2'b01: tPixClrBm1i = tPixClrBmYv4_C[2];
+		2'b00: tPixClrBm1i = tPixClrBmYv4_C[3];
+	endcase
+
+	if(useQtrCell)
+	begin
+		case(tScrMode)
+			4'h1: begin
+				tPixClrBmRgbi = tPixClrBmYv4_C;
+			end
+			4'h2: begin
+				tPixClrBmRgbi = tPixClrBm1i ? tScrClrsMod : 4'h0;
+			end
+			default: begin
+			end
+		endcase
+	end
+
+//	case(tPixClrBmRgbi)
+	case(tPixClrBmRgbiB)
 		4'h0:	tPixClrBmRgbiYV12 = 12'h000;
 		4'h1:	tPixClrBmRgbiYV12 = 12'h00A;
 		4'h2:	tPixClrBmRgbiYV12 = 12'h0A0;
@@ -965,11 +1034,62 @@ begin
 		4'hE:	tPixClrBmRgbiYV12 = 12'hFF5;
 		4'hF:	tPixClrBmRgbiYV12 = 12'hFFF;
 	endcase
+
+	casez( { tScrClrsMod, tPixClrBm2i } )
+		//Palette 0/1
+		6'b000z00:	tPixClrBm2iYV12 = 12'h000;	//Black
+		6'b000z01:	tPixClrBm2iYV12 = 12'h555;	//Dark Gray
+		6'b000z10:	tPixClrBm2iYV12 = 12'hAAA;	//Light Gray
+		6'b000z11:	tPixClrBm2iYV12 = 12'hFFF;	//White
+
+		//Palette 2
+		6'b001000:	tPixClrBm2iYV12 = 12'h000;	//Black
+		6'b001001:	tPixClrBm2iYV12 = 12'h0F0;	//Green
+		6'b001010:	tPixClrBm2iYV12 = 12'hF00;	//Red
+		6'b001011:	tPixClrBm2iYV12 = 12'h00F;	//Blue
+		//Palette 3
+		6'b001100:	tPixClrBm2iYV12 = 12'h000;	//Black
+		6'b001101:	tPixClrBm2iYV12 = 12'h0FF;	//Cyan
+		6'b001110:	tPixClrBm2iYV12 = 12'hF0F;	//Magenta
+		6'b001111:	tPixClrBm2iYV12 = 12'hFF0;	//Yellow
+		//Palette 4
+		6'b010000:	tPixClrBm2iYV12 = 12'h000;	//Black
+		6'b010001:	tPixClrBm2iYV12 = 12'h0FF;	//Cyan
+		6'b010010:	tPixClrBm2iYV12 = 12'hFF0;	//Yellow
+		6'b010011:	tPixClrBm2iYV12 = 12'hFFF;	//White
+		//Palette 5
+		6'b010100:	tPixClrBm2iYV12 = 12'h000;	//Black
+		6'b010101:	tPixClrBm2iYV12 = 12'hF0F;	//Magenta
+		6'b010110:	tPixClrBm2iYV12 = 12'hFF0;	//Yellow
+		6'b010111:	tPixClrBm2iYV12 = 12'hFFF;	//White
+		//Palette 6
+		6'b011000:	tPixClrBm2iYV12 = 12'h000;	//Black
+		6'b011001:	tPixClrBm2iYV12 = 12'h0F0;	//Green
+		6'b011010:	tPixClrBm2iYV12 = 12'hF00;	//Red
+		6'b011011:	tPixClrBm2iYV12 = 12'hFF0;	//Yellow
+		//Palette 7
+		6'b011100:	tPixClrBm2iYV12 = 12'h000;	//Black
+		6'b011101:	tPixClrBm2iYV12 = 12'h0FF;	//Cyan
+		6'b011110:	tPixClrBm2iYV12 = 12'hF0F;	//Magenta
+		6'b011111:	tPixClrBm2iYV12 = 12'hFFF;	//White
+
+		//Palette 8-15
+		6'b1zzz00:	tPixClrBm2iYV12 = 12'h000;	//Black
+		6'b1zzz01:	tPixClrBm2iYV12 = 12'h555;	//Dark Gray
+		6'b1zzz10:	tPixClrBm2iYV12 = 12'hAAA;	//Light Gray
+		6'b1zzz11:	tPixClrBm2iYV12 = 12'hFFF;	//White
+	endcase
 	
 	tPixClrBmRgbiYV16_C = {
 		tPixClrBmRgbiYV12[11:8], tPixClrBmRgbiYV12[ 11],
 		tPixClrBmRgbiYV12[ 7:4], tPixClrBmRgbiYV12[7:6],
 		tPixClrBmRgbiYV12[ 3:0], tPixClrBmRgbiYV12[  3]
+	};
+
+	tPixClrBm2iYV16_C = {
+		tPixClrBm2iYV12[11:8], tPixClrBm2iYV12[ 11],
+		tPixClrBm2iYV12[ 7:4], tPixClrBm2iYV12[7:6],
+		tPixClrBm2iYV12[ 3:0], tPixClrBm2iYV12[  3]
 	};
 
 	case(tPixClrBmYv8_C[1:0])
@@ -994,11 +1114,17 @@ begin
 
 		4'h1: begin
 //			tClrYuvC	= tPixClrBmYv16_D;
-			tClrYuvC	= useHalfCell ? tPixClrBmPalYV16_D : tPixClrBmYv16_D;
+			tClrYuvC	= useHalfCell ?
+				tPixClrBmPalYV16_D : tPixClrBmYv16_D;
+			if(useQtrCell)
+				tClrYuvC	= tPixClrBmRgbiYV16_D;
 			tPixRgb565	= 0;
 		end
 		4'h2: begin
-			tClrYuvC	= tPixClrBmRgbiYV16_D;
+			tClrYuvC	= useHalfCell ?
+				tPixClrBm2iYV16_D : tPixClrBmRgbiYV16_D;
+			if(useQtrCell)
+				tClrYuvC	= tPixClrBmRgbiYV16_D;
 			tPixRgb565	= 1;
 		end
 		4'h8: begin
@@ -1008,6 +1134,11 @@ begin
 		4'h9: begin
 //			tClrYuvC	= tPixClrBmYv16_D;
 			tClrYuvC	= useHalfCell ? tPixClrBmPalYV16_D : tPixClrBmYv16_D;
+			tPixRgb565	= 1;
+		end
+		4'hA: begin
+			tClrYuvC	= useHalfCell ?
+				tPixClrBm2iYV16_D : tPixClrBmRgbiYV16_D;
 			tPixRgb565	= 1;
 		end
 		
@@ -1164,7 +1295,10 @@ begin
 	tPixClrBmYv16_D		<= tPixClrBmYv16_C;
 	tPixClrBmYv8_D		<= tPixClrBmYv8_C;
 	tPixClrBmRgbiYV16_D	<= tPixClrBmRgbiYV16_C;
+	tPixClrBm2iYV16_D	<= tPixClrBm2iYV16_C;
 	tPixClrBmPalYV16_D	<= tPixClrBmPalYV16_C;
+
+	tPixClrBmRgbiB		<= tPixClrBmRgbi;
 
 	tClrYuvA_B			<= tClrYuvA;
 	tClrYuvB_B			<= tClrYuvB;

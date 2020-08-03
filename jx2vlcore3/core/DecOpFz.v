@@ -1362,6 +1362,31 @@ begin
 						opIty		= JX2_ITY_SB;
 					end
 
+					8'h68: begin
+						opNmid		= JX2_UCMD_OP_IXS;
+						opUCmdIx	= JX2_UCIX_IXS_TRAPB;
+						opFmid		= JX2_FMID_REG;
+						opIty		= JX2_ITY_SB;
+					end
+
+					8'h69: begin
+`ifdef jx2_enable_wex
+						opNmid		= JX2_UCMD_OP_IXT;
+						opUCmdIx	= JX2_UCIX_IXT_WEXMD;
+						opFmid		= JX2_FMID_REG;
+						opIty		= JX2_ITY_SB;
+`else
+						opNmid		= JX2_UCMD_NOP;
+						opFmid		= JX2_FMID_Z;
+`endif
+					end
+					8'h6A: begin
+						opNmid		= JX2_UCMD_OP_IXT;
+						opUCmdIx	= JX2_UCIX_IXT_CPUID;
+						opFmid		= JX2_FMID_REG;
+						opIty		= JX2_ITY_SB;
+					end
+
 					8'h6F: begin
 						opNmid		= JX2_UCMD_OP_IXS;
 						opUCmdIx	= JX2_UCIX_IXS_MOVT;

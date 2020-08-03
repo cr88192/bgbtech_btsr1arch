@@ -15,6 +15,7 @@ module MmiModGpio(
 	gpioPinsOut,	gpioPinsIn,		gpioPinsDir,
 	fixedPinsOut,	fixedPinsIn,
 	outTimer1MHz,	outTimer100MHz,
+	outBounceIrq,
 
 	mmioInData,		mmioOutData,	mmioAddr,		
 	mmioOpm,		mmioOK
@@ -32,22 +33,26 @@ input[15:0]		fixedPinsIn;
 
 output[63:0]	outTimer1MHz;
 output[63:0]	outTimer100MHz;
+output[63:0]	outBounceIrq;
 
-input[31:0]		mmioInData;
-output[31:0]	mmioOutData;
+input[63:0]		mmioInData;
+output[63:0]	mmioOutData;
 input[31:0]		mmioAddr;
 input[4:0]		mmioOpm;
 output[1:0]		mmioOK;
 
-reg[31:0]		tMmioOutData;
+reg[63:0]		tMmioOutData;
 reg[1:0]		tMmioOK;
 
-reg[31:0]		tMmioOutData2;
+reg[63:0]		tMmioOutData2;
 reg[1:0]		tMmioOK2;
 
 assign		mmioOutData = tMmioOutData2;
 assign		mmioOK		= tMmioOK2;
 
+reg[63:0]		tMmioInData;
+reg[31:0]		tMmioAddr;
+reg[4:0]		tMmioOpm;
 
 reg[31:0]		gpioOut;
 reg[31:0]		gpioDir;
@@ -114,6 +119,10 @@ reg[63:0]		nextTimer100MHz;
 assign		outTimer1MHz	= timer1MHz;
 assign		outTimer100MHz	= timer100MHz;
 
+reg[63:0]		tOutBounceIrq;
+reg[63:0]		tOutBounceIrqB;
+assign		outBounceIrq	= tOutBounceIrqB;
+
 reg[15:0]		fracTimer1MHz;
 reg[15:0]		nextFracTimer1MHz;
 reg				stepTimer1MHz;
@@ -163,8 +172,9 @@ reg				mmioInWR;
 reg				mmioInLastOE;
 reg				mmioInLastWR;
 
-wire		tMmioLowCSel;
-assign		tMmioLowCSel = (mmioAddr[27:16]==12'h000);
+reg		tMmioLowCSel;
+// wire		tMmioLowCSel;
+// assign		tMmioLowCSel = (tMmioAddr[27:16]==12'h000);
 
 always @*
 begin
@@ -172,10 +182,14 @@ begin
 	gpioNextDir		= gpioDir;
 
 	tMmioOK			= UMEM_OK_READY;
-	tMmioOutData	= UV32_XX;
+//	tMmioOutData	= UV32_XX;
+	tMmioOutData	= UV64_XX;
+	
+	tOutBounceIrq		= 0;
 
-	mmioInOE			= (mmioOpm[3]) && tMmioLowCSel;
-	mmioInWR			= (mmioOpm[4]) && tMmioLowCSel;
+	tMmioLowCSel		= (tMmioAddr[27:16]==12'h000);
+	mmioInOE			= (tMmioOpm[3]) && tMmioLowCSel;
+	mmioInWR			= (tMmioOpm[4]) && tMmioLowCSel;
 
 	uartNextFracTimer	= uartFracTimer;
 	uartStepTimer		= 0;
@@ -431,16 +445,18 @@ begin
 		end
 	end
 
-	casez(mmioAddr[15:0])
+	casez(tMmioAddr[15:0])
 		16'hE000: begin
 			if(mmioInOE)
 				tMmioOK			= UMEM_OK_OK;
-			tMmioOutData	= timer1MHz[31:0];
+//			tMmioOutData	= timer1MHz[31:0];
+			tMmioOutData	= timer1MHz[63:0];
 		end
 		16'hE004: begin
 			if(mmioInOE)
 				tMmioOK			= UMEM_OK_OK;
-			tMmioOutData	= timer1MHz[63:32];
+//			tMmioOutData	= timer1MHz[63:32];
+			tMmioOutData	= { UV32_00, timer1MHz[63:32] };
 		end
 
 		16'hE010: begin
@@ -452,11 +468,13 @@ begin
 				uartNextRxHoldByte = uartRxFifo[9:0];
 				uartRxNextFifo[79: 0]=
 					{ 10'b0, uartRxFifo[79:10] };
-				tMmioOutData	= { UV24_00, uartNextRxHoldByte[7:0] };
+//				tMmioOutData	= { UV24_00, uartNextRxHoldByte[7:0] };
+				tMmioOutData	= { UV32_XX, UV24_00, uartNextRxHoldByte[7:0] };
 			end
 			else
 			begin
-				tMmioOutData	= { UV24_00, uartRxHoldByte[7:0] };
+//				tMmioOutData	= { UV24_00, uartRxHoldByte[7:0] };
+				tMmioOutData	= { UV32_XX, UV24_00, uartRxHoldByte[7:0] };
 			end
 		end
 
@@ -464,13 +482,14 @@ begin
 			if(mmioInOE || mmioInWR)
 				tMmioOK			= UMEM_OK_OK;
 			if(mmioInWR && !mmioInLastWR)
-				uartAddByte		= { 2'b10, mmioInData[7:0]};
+				uartAddByte		= { 2'b10, tMmioInData[7:0]};
 		end
 
 		16'hE018: begin
 			if(mmioInOE)
 				tMmioOK			= UMEM_OK_OK;
 			tMmioOutData	= {
+				UV32_XX,
 				UV24_00,
 				4'b0000,
 				uartTxFifoFull,
@@ -480,39 +499,49 @@ begin
 			};
 		end
 
+		16'hE080: begin
+			if(mmioInWR)
+			begin
+				tOutBounceIrq	= tMmioInData;
+				tMmioOK			= UMEM_OK_OK;
+			end
+		end
+
 		16'hE100: begin
 			if(mmioInOE)
 				tMmioOK			= UMEM_OK_OK;
-			tMmioOutData	= gpioPinsIn;
+//			tMmioOutData	= gpioPinsIn;
+			tMmioOutData	= { UV32_XX, gpioPinsIn };
 		end
 		16'hE104: begin
 			if(mmioInOE)
 				tMmioOK			= UMEM_OK_OK;
-			tMmioOutData	= gpioOut;
+//			tMmioOutData	= gpioOut;
+			tMmioOutData	= { UV32_XX, gpioOut };
 			if(mmioInWR)
-				gpioNextOut = mmioInData;
+				gpioNextOut = tMmioInData[31:0];
 		end
 		16'hE108: begin
 			if(mmioInOE)
 				tMmioOK			= UMEM_OK_OK;
-			tMmioOutData	= gpioDir;
+			tMmioOutData	= { UV32_XX, gpioDir };
 			if(mmioInWR)
-				gpioNextDir = mmioInData;
+				gpioNextDir = tMmioInData[31:0];
 		end
 
 		16'hE110: begin
 			if(mmioInOE)
 				tMmioOK			= UMEM_OK_OK;
-			tMmioOutData	= gpioOut;
+			tMmioOutData	= { UV32_XX, gpioOut };
 			if(mmioInWR)
-				gpioNextOut = gpioOut|mmioInData;
+				gpioNextOut = gpioOut | tMmioInData[31:0];
 		end
 		16'hE114: begin
 			if(mmioInOE)
 				tMmioOK			= UMEM_OK_OK;
-			tMmioOutData	= gpioOut;
+			tMmioOutData	= { UV32_XX, gpioOut };
 			if(mmioInWR)
-				gpioNextOut = gpioOut&(~mmioInData);
+				gpioNextOut = gpioOut&(~tMmioInData[31:0]);
 		end
 
 		default:
@@ -527,6 +556,10 @@ begin
 
 	tMmioOK2		<= tMmioOK;
 	tMmioOutData2	<= tMmioOutData;
+
+	tMmioInData		<= mmioInData;
+	tMmioAddr		<= mmioAddr;
+	tMmioOpm		<= mmioOpm;
 
 	mmioInLastOE	<= mmioInOE;
 	mmioInLastWR	<= mmioInWR;
@@ -555,6 +588,8 @@ begin
 		uartAddByte : uartNextHoldByte;
 
 	uartRxHoldByte	<= uartNextRxHoldByte;
+
+	tOutBounceIrqB	<= tOutBounceIrq;
 end
 
 

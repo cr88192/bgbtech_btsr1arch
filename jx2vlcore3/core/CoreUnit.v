@@ -1,3 +1,66 @@
+/*
+MMIO Space:
+
+* 0000E000 (R): 1MHz Timer Low
+* 0000E004 (R): 1MHz Timer High
+
+* 0000E008(R): PIT Current Value (Clock Cycles)
+** Counts down and then triggers an interrupt once it reaches zero.
+* 0000E00C(R/W): PIT Reset Value (Clock Cycles)
+** Value which is loaded into the counter when the interrupt fires.
+
+* 0000E010(R): Debug Uart RX
+* 0000E014(W): Debug Uart TX
+* 0000E018(R): Debug Uart Status
+** Bit 0: Input Ready
+** Bit 1: Input Buffer Full
+** Bit 2: Output Buffer Empty
+** Bit 3: Output Buffer Full
+** Bit 4: Interrupt Status
+** Bit 5: Buffer Overrun
+** Bit 6: Frame Error
+** Bit 7: Parity Error
+* E01C(W): Debug Uart Control
+** Bit 0: Clear Transmit
+** Bit 1: Clear Recieve
+** Bit 4: Enable Interrupt
+
+* 0000E020(W): SPI Control
+* 0000E024(R/W): SPI Data
+
+* 0000E030(W): SPI Control
+* 0000E034(R/W): SPI Data
+* 0000E038(R/W): SPI Data 8x
+
+* 0000E040(R): PS2 KB RX
+* 0000E044(R): PS2 KB TX
+* 0000E048(R): PS2 KB Status
+
+* 0000E050(R): PS2 Mouse RX
+* 0000E054(R): PS2 Mouse TX
+* 0000E058(R): PS2 Mouse Status
+
+* 0000E060(R/W): LCD Status / Control
+* 0000E064(R/W): LCD Read/Write Data/Command
+* 0000E068(R): LCD Status
+
+* 0000E080(W): IRQ Bounce
+
+* 0000E100(R): GPIO In
+* 0000E104(R/W): GPIO Out
+* 0000E108(R/W): GPIO Direction
+* 0000E110(W): GPIO Set (Out=Out|Val)
+* 0000E114(W): GPIO Clear (Out=Out&(~Val))
+
+* 00080000 .. 00080FFF: Audio Loop Buffer / Registers
+
+* 000A0000 .. 000BFFFF: Reserved for Display Memory (Bypass)
+** 000A0000 .. 000BEFFF: Framebuffer Memory
+** 000BF000 .. 000BFEFF: Control SRAM
+** 000BFF00 .. 000BFFFF: Display Control Registers
+*/
+
+
 `include "ExUnit.v"
 `include "MemL2A.v"
 
@@ -509,8 +572,8 @@ assign		mmioOutData = mmioOutDataQ[31:0];
 
 `ifdef def_true
 
-reg[31:0]		gpioInData;
-wire[31:0]		gpioOutData;
+reg[63:0]		gpioInData;
+wire[63:0]		gpioOutData;
 reg[31:0]		gpioAddr;
 reg[4:0]		gpioOpm;
 wire[1:0]		gpioOK;
@@ -522,6 +585,8 @@ wire[15:0]		fixedPinsOut;
 wire[15:0]		fixedPinsIn;
 wire[63:0]		outTimer1MHz;
 wire[63:0]		outTimer100MHz;
+
+wire[63:0]		gpioBounceIrq;
 
 // assign			uartRxD = fixedPinsOut[0];
 // assign			fixedPinsIn[1] = uartTxD;
@@ -538,6 +603,7 @@ MmiModGpio	gpio(
 	gpioPinsOut,	gpioPinsIn,		gpioPinsDir,
 	fixedPinsOut,	fixedPinsIn,
 	outTimer1MHz,	outTimer100MHz,
+	gpioBounceIrq,
 
 	gpioInData,		gpioOutData,	gpioAddr,
 	gpioOpm,		gpioOK
@@ -545,12 +611,15 @@ MmiModGpio	gpio(
 
 `endif
 
+wire[63:0]		memBounceIrq;
+
 MemL2A	l2a(
 	clock_100,		reset,
 
 	memAddr,		memAddrB,
 	memOutData,		memInData,
 	memOpm,			memOK,
+	memBounceIrq,
 
 	ddrMemAddr,		ddrMemOpm,
 	ddrMemDataOut,	ddrMemDataIn,
@@ -692,7 +761,8 @@ Mod7Seg		sevSeg(
 always @*
 begin
 
-	gpioInData	= mmioOutData[31:0];
+//	gpioInData	= mmioOutData[31:0];
+	gpioInData	= mmioOutDataQ;
 	gpioAddr	= mmioAddr;
 	gpioOpm		= mmioOpm;
 
@@ -701,7 +771,7 @@ begin
 	mmioInData	= UV64_00;
 	mmioOK		= UMEM_OK_READY;
 
-	memBusExc	= UV64_00;
+	memBusExc			= UV64_00;
 	tNxtBusMissLatch	= 0;
 	tNxtBusMissCnt		= 0;
 
@@ -728,10 +798,15 @@ begin
 //	if(timer256Hz)
 		memBusExc	= { UV48_00, 16'hC001 };
 
+//	if(gpioBounceIrq[15])
+//		memBusExc	= gpioBounceIrq;
+	if(memBounceIrq[15])
+		memBusExc	= memBounceIrq;
+
 	if(gpioOK != UMEM_OK_READY)
 	begin
-//		mmioInData	= gpioOutData;
-		mmioInData	= { UV32_XX, gpioOutData };
+		mmioInData	= gpioOutData;
+//		mmioInData	= { UV32_XX, gpioOutData };
 		mmioOK		= gpioOK;
 	end
 	else if(scrnMmioOK != UMEM_OK_READY)

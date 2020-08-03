@@ -115,6 +115,358 @@ byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz)
 	return(ct);
 }
 
+
+void W_MatchCopy2(byte *dst, int sz, int d)
+{
+	byte *cs, *ct, *cte;
+	u64 v;
+	
+	if(d<8)
+	{
+		if(d==1)
+		{
+			v=*(dst-d);
+			v=v|(v<<8);
+			v=v|(v<<16);
+			v=v|(v<<32);
+
+			ct=dst; cte=dst+sz;
+			while(ct<cte)
+			{
+				*(u64 *)ct=v;
+				ct+=8;
+			}
+		}else
+			if(d==2)
+		{
+			v=*(u16 *)(dst-d);
+			v=v|(v<<16);
+			v=v|(v<<32);
+
+			ct=dst; cte=dst+sz;
+			while(ct<cte)
+			{
+				*(u64 *)ct=v;
+				ct+=8;
+			}
+		}else
+			if(d==4)
+		{
+			v=*(u32 *)(dst-d);
+			v=v|(v<<32);
+
+			ct=dst; cte=dst+sz;
+			while(ct<cte)
+			{
+				*(u64 *)ct=v;
+				ct+=8;
+			}
+		}else
+		{
+			v=*(u64 *)(dst-d);
+			ct=dst; cte=dst+sz;
+			while(ct<cte)
+			{
+				*(u64 *)ct=v;
+				ct+=d;
+			}
+		}
+	}else
+		if(sz<=16)
+	{
+		cs=dst-d;
+		((u64 *)dst)[0]=((u64 *)cs)[0];
+		((u64 *)dst)[1]=((u64 *)cs)[1];
+	}else
+	{
+		cs=dst-d;
+		ct=dst; cte=dst+sz;
+		while(ct<cte)
+		{
+			((u64 *)ct)[0]=((u64 *)cs)[0];
+			((u64 *)ct)[1]=((u64 *)cs)[1];
+			ct+=16; cs+=16;
+		}
+	}
+}
+
+void W_RawCopyB(byte *dst, byte *src, int sz)
+{
+	byte *cs, *ct, *cte;
+
+	cs=src;
+	ct=dst; cte=dst+sz;
+	while(ct<cte)
+	{
+		((u64 *)ct)[0]=((u64 *)cs)[0];
+		((u64 *)ct)[1]=((u64 *)cs)[1];
+		ct+=16; cs+=16;
+	}
+}
+
+#ifndef __BJX2__
+int TKPE_DecodeBufferRP2(
+	byte *ibuf, byte *obuf, int ibsz, int obsz)
+{
+	u32 tag;
+	byte *cs, *ct, *cse;
+	int pl, pd;
+	int rl, l, d;
+	u64 t0;
+	int t1, t2;
+	
+	cs=ibuf; cse=ibuf+ibsz;
+	ct=obuf;
+	pl=0; pd=0;
+	
+//	while(1)
+	while(cs<cse)
+	{
+		t0=*(u64 *)cs;
+		if(!(t0&0x01))
+		{
+			cs+=2;
+			rl=(t0>>1)&7;
+			l=((t0>>4)&7)+3;
+			d=(t0>>7)&511;
+		}else
+			if(!(t0&0x02))
+		{
+			cs+=3;
+			rl=(t0>>2)&7;
+			l=((t0>>5)&63)+4;
+			d=(t0>>11)&8191;
+		}else
+			if(!(t0&0x04))
+		{
+			cs+=4;
+			rl=(t0>>3)&7;
+			l=((t0>>6)&511)+4;
+			d=(t0>>15)&131071;
+		}else
+			if(!(t0&0x08))
+		{
+			cs++;
+			t1=(t0>>4)&15;
+			rl=(t1+1)*8;
+			W_RawCopyB(ct, cs, rl);
+			cs+=rl;
+			ct+=rl;
+			continue;
+		}else
+			if(!(t0&0x10))
+		{
+			/* Long Match */
+			cs++;
+			rl=(t0>>5)&7;
+			t1=t0>>8;
+			if(!(t1&1))
+				{ l=((t1>>1)&0x007F)+4; cs+=1; t2=t0>>16; }
+			else
+				{ l=((t1>>2)&0x3FFF)+4; cs+=2; t2=t0>>24; }
+			if(!(t2&1))
+				{ d=((t2>>1)&0x007FFF); cs+=2; }
+			else
+				{ d=((t2>>2)&0x3FFFFF); cs+=3; }
+		}else
+			if(!(t0&0x20))
+		{
+			cs++;
+			rl=(t0>>6)&3;
+			if(!rl)break;
+			*(u32 *)ct=*(u32 *)cs;
+			cs+=rl;
+			ct+=rl;
+			continue;
+		}else
+			if(!(t0&0x40))
+		{
+			/* Long Raw */
+			cs+=2;
+			t1=(t0>>7)&511;
+			rl=(t1+1)*8;
+			W_RawCopyB(ct, cs, rl);
+			cs+=rl;
+			ct+=rl;
+			continue;
+		}else
+		{
+			__debugbreak();
+		}
+
+		*(u64 *)ct=*(u64 *)cs;
+		cs+=rl;
+		ct+=rl;
+		W_MatchCopy2(ct, l, d);
+		ct+=l;
+	}
+	
+	return(ct-obuf);
+}
+#endif
+
+#ifdef __BJX2__
+// #if 0
+int TKPE_DecodeBufferRP2(
+	byte *ibuf, byte *obuf, int ibsz, int obsz);
+
+__asm {
+TKPE_DecodeBufferRP2:
+// R4=ibuf
+// R5=obuf
+// R6=ibsz / scratch
+// R7=obsz / scratch
+// R16=scratch
+// R17=scratch
+// R18=cs
+// R19=ct
+// R20=rl
+// R21=l
+// R22=d
+
+	WEXMD	2
+
+	MOV R4, R18
+	MOV R5, R19
+	
+.L0:
+	MOV.Q	(R18), R16
+	TEST	0x01, R16
+	BT		.L2
+	TEST	0x02, R16
+	BT		.L3
+	TEST	0x04, R16
+	BT		.L4
+	TEST	0x08, R16
+	BT		.L5
+	TEST	0x10, R16
+	BT		.L6
+	TEST	0x20, R16
+	BT		.L7
+	TEST	0x40, R16
+	BT		.L8
+	BREAK
+.L2:
+	ADD		2, R18		|	SHLD	R16, -1, R20
+	AND		7, R20		|	SHLD	R16, -4, R21
+	AND		7, R21		|	SHLD	R16, -7, R22
+	AND		511, R22	|	ADD		3, R21	
+	BRA		.L9
+.L3:
+	MOV		8191, R3
+	ADD		3, R18	|	SHLD	R16, -2, R20
+	AND		7, R20	|	SHLD	R16, -5, R21
+	AND		63, R21	|	SHLD	R16, -11, R22
+	AND		R3, R22	|	ADD		4, R21	
+	BRA		.L9
+.L4:
+	ADD		4, R18		|	SHLD	R16, -3, R20
+	AND		7, R20		|	SHLD	R16, -6, R21
+	AND		511, R21	|	SHLD	R16, -15, R22
+	ADD		4, R21
+	BRA		.L9
+.L5:
+	ADD		1, R18		|	SHAD	R16, -1, R20
+	AND		0x78, R20
+	ADD		8, R20
+.L5_1:
+	ADD		R18, R20, R6	|	ADD		R19, R20, R7
+.L5_0:
+	MOV.Q	(R18, 0), R16
+	MOV.Q	(R18, 8), R17
+	ADD		16, R18
+	MOV.Q	R16, (R19, 0)
+	MOV.Q	R17, (R19, 8)
+	ADD		16, R19
+	CMPGT	R19, R7
+	BT		.L5_0
+	MOV		R6, R18		|	MOV		R7, R19
+	BRA		.L0
+.L6:
+	MOV		0x3FFF, R1
+	MOV		0x7FFF, R2
+	MOV		0x3FFFFF, R3
+	ADD			1, R18			|	SHLD		R16, -5, R20
+	AND			7, R20			|	TEST		256, R16
+	ADD?T		1, R18			|	ADD?F		2, R18
+	SHLD?T		R16, -9, R21	|	SHLD?F		R16, -10, R21
+	SHLD.Q?T	R16, -16, R7	|	SHLD.Q?F	R16, -24, R7
+	AND?T		127, R21		|	AND?F		R1, R21
+	ADD			4, R21			|	TEST		1, R7
+	ADD?T		2, R18			|	ADD?F		3, R18
+	SHLD?T		R7, -1, R22		|	SHLD?F		R7, -2, R22
+	AND?T		R2, R22			|	AND?F		R3, R22
+	BRA		.L9
+.L7:
+	ADD		1, R18		|	SHLD	R16, -6, R20
+	AND		3, R20
+	TEST	R20, R20
+	BT		.L1
+	MOV.L	(R18), R16
+	ADD		R20, R18
+	MOV.L	R16, (R19)
+	ADD		R20, R19
+	BRA		.L0
+.L8:
+	ADD		2, R18		|	SHLD	R16, -7, R20
+	AND		511, R20
+	ADD		1, R20
+	SHLD	R20, 3, R20
+	BRA		.L5_1
+.L9:
+	MOV.Q	(R18), R16
+	ADD		R20, R18
+	MOV.Q	R16, (R19)
+	ADD		R20, R19
+	SUB		R19, R22, R6
+	ADD		R19, R21, R7
+	CMPGT	15, R22
+	BT		.L11
+	MOV.Q	(R6, 0), R16
+	MOV.Q	(R6, 8), R17
+.L12:
+	MOV.Q	R16, (R19, 0)
+	MOV.Q	R17, (R19, 8)
+	ADD		R22, R19
+	CMPGT	R19, R7
+	BT		.L12
+	BRA		.L10
+.L11:
+	MOV.Q	(R6, 0), R16
+	MOV.Q	(R6, 8), R17
+	ADD		16, R6
+	MOV.Q	R16, (R19, 0)
+	MOV.Q	R17, (R19, 8)
+	ADD		16, R19
+	CMPGT	R19, R7
+	BT		.L11
+.L10:
+	MOV		R7, R19
+	BRA		.L0
+.L1:
+	SUB		R19, R5, R2
+	RTS
+};
+#endif
+
+
+byte *TKPE_UnpackBuffer(byte *ct, byte *ibuf, int isz, int cmp)
+{
+	byte *ct1;
+	int rsz;
+
+	if(cmp==4)
+	{
+		return(TKPE_UnpackL4(ct, ibuf, isz));
+	}
+
+	if(cmp==3)
+	{
+		rsz=TKPE_DecodeBufferRP2(ibuf, ct, isz, 999999);
+		return(ct+rsz);
+	}
+}
+
 #if 0
 u32 TKPE_CalculateImagePel4Checksum(byte *buf, int size)
 {
@@ -206,6 +558,7 @@ u32 TKPE_CalculateImagePel4BChecksum(byte *buf, int size)
 	cse=cs+size;
 	acc_lo=1;
 	acc_hi=0;
+#if 0
 	while(cs<cse)
 	{
 		v=*(u32 *)cs;
@@ -216,6 +569,21 @@ u32 TKPE_CalculateImagePel4BChecksum(byte *buf, int size)
 //		acc_hi=((u32)acc_hi)+(acc_hi>>32);
 		cs+=4;
 	}
+#endif
+#if 1
+	while(cs<cse)
+	{
+		v0=((u32 *)cs)[0];	v1=((u32 *)cs)[1];
+		v2=((u32 *)cs)[2];	v3=((u32 *)cs)[3];
+//		v0=get_u32le(cs+0);	v1=get_u32le(cs+ 4);
+//		v2=get_u32le(cs+8);	v3=get_u32le(cs+12);
+		acc_lo=acc_lo+v0;	acc_hi=acc_hi+acc_lo;
+		acc_lo=acc_lo+v1;	acc_hi=acc_hi+acc_lo;
+		acc_lo=acc_lo+v2;	acc_hi=acc_hi+acc_lo;
+		acc_lo=acc_lo+v3;	acc_hi=acc_hi+acc_lo;
+		cs+=16;
+	}
+#endif
 	acc_lo=((u32)acc_lo)+(acc_lo>>32);
 	acc_lo=((u32)acc_lo)+(acc_lo>>32);
 	acc_hi=((u32)acc_hi)+(acc_hi>>32);
@@ -234,7 +602,7 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 	u64 imgbase;
 	u32 imgsz, startrva, gbr_rva;
 	u32 csum1, csum2;
-	byte is64, is_pel4;
+	byte is64, is_pel4, cmp;
 	int sig_mz, sig_pe, mach, mmagic;
 	int ofs_pe;
 	int cb, nb, kb;
@@ -243,6 +611,7 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 	tk_fread(tbuf, 1, 1024, fd);
 
 	is_pel4=0;
+	cmp=4;
 
 #if 1
 	sig_mz=tkfat_getWord(tbuf);
@@ -265,7 +634,9 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 	{
 		mach=tkfat_getWord(tbuf+2);
 		if(mach==0x344C)
-			is_pel4=1;
+			{ is_pel4=1; cmp=4; }
+		if(mach==0x334C)
+			{ is_pel4=1; cmp=3; }
 	
 		ofs_pe=0;
 		sig_pe=sig_mz;
@@ -353,7 +724,8 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 			memset(tbuf, 0, 1024);
 			l=tk_fread(tbuf, 1, 1024, fd);
 //			ct=TKPE_UnpackL4(ct, tbuf, 1024);
-			ct=TKPE_UnpackL4(ct, tbuf, l);
+//			ct=TKPE_UnpackL4(ct, tbuf, l);
+			ct=TKPE_UnpackBuffer(ct, tbuf, l, cmp);
 			if(l<1024)
 				break;
 //			ct+=1024;
@@ -368,7 +740,8 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 		{
 //			tk_fread(ct, 1, cte-ct, fd);
 			l=tk_fread(tbuf, 1, 1024, fd);
-			ct=TKPE_UnpackL4(ct, tbuf, l);
+//			ct=TKPE_UnpackL4(ct, tbuf, l);
+			ct=TKPE_UnpackBuffer(ct, tbuf, l);
 		}
 #endif
 

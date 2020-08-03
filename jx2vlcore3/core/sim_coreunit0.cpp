@@ -6,6 +6,8 @@ VCoreUnit *top = new VCoreUnit;
 vluint64_t main_time = 0;
 
 
+// #define CLOCK_200MHZ			//Enable 200MHz Clock
+
 
 
 #ifdef __linux
@@ -1064,9 +1066,13 @@ int main(int argc, char **argv, char **env)
 //		(char *)"BOOTLOAD.SYS",
 		(char *)"DOOM.EXE",
 		(char *)"../../tk_qsrc/doomsrc2/doom_bjx2.exe");
+//	JX2R_UseImageAddFile(
+//		(char *)"DOOM1.WAD",
+//		(char *)"../../tk_qsrc/doomsrc2/doom1.wad");
 	JX2R_UseImageAddFile(
-		(char *)"DOOM1.WAD",
-		(char *)"../../tk_qsrc/doomsrc2/doom1.wad");
+		(char *)"DOOMU.WAD",
+//		(char *)"../../tk_qsrc/doomsrc2/doom.wad");
+		(char *)"../../tk_qsrc/doomsrc2/doomulz.wad");
 #endif
 
 #if 1
@@ -1267,10 +1273,18 @@ int main(int argc, char **argv, char **env)
 		}
 
 //		BTSR1_MainPollKeyboard();
-	
+
+#ifdef CLOCK_200MHZ
 		top->clock_200 = (main_time>>0)&1;
 		top->clock_100 = (main_time>>1)&1;
 		top->clock_50  = (main_time>>2)&1;
+		ctx->tot_cyc=main_time>>2;
+#else
+		top->clock_200 = (main_time>>0)&1;
+		top->clock_100 = (main_time>>0)&1;
+		top->clock_50  = (main_time>>1)&1;
+		ctx->tot_cyc=main_time>>1;
+#endif
 		
 		if(top->clock_100 && (lclk!=top->clock_100))
 		{
@@ -1318,7 +1332,7 @@ int main(int argc, char **argv, char **env)
 		update_ps2kb();
 		
 //		ctx->tot_cyc=main_time>>1;
-		ctx->tot_cyc=main_time>>2;
+//		ctx->tot_cyc=main_time>>2;
 		
 		lclk = top->clock_100;
 //		top->mode = 3;

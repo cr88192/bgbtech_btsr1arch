@@ -438,9 +438,11 @@ X(tk_checksane_asm):
 	shad  r4, #-4, r7
 
 	cmpq/eq r6, r8
-	bf _checksane_fail_shad
+//	bf _checksane_fail_shad
+	break?f
 	cmpq/eq r7, r9
-	bf _checksane_fail_shad
+//	bf _checksane_fail_shad
+	break?f
 
 
 	mov	0x68ACF000, r8
@@ -450,15 +452,18 @@ X(tk_checksane_asm):
 	shad  r4, #-9, r7
 
 	cmpq/eq r6, r8
-	bf _checksane_fail_shad
+//	bf _checksane_fail_shad
+	break?f
 	
 	cmpq/eq r7, r9
-	bf _checksane_fail_shad
+//	bf _checksane_fail_shad
+	break?f
 
 	mov #9, r22
 	shad  r4, r22, r6
 	cmpq/eq r6, r8
-	bf _checksane_fail_shad
+//	bf _checksane_fail_shad
+	break?f
 
 	mov	0x2468ACF000, r10
 	mov	0xE87AD208, r11
@@ -467,16 +472,20 @@ X(tk_checksane_asm):
 	mov 0xC00000000, r14
 
 	cmp/eq r8, r10
-	bf _checksane_fail_shad
+//	bf _checksane_fail_shad
+	break?f
 
 	cmpq/eq r8, r10
-	bt _checksane_fail_shad
+//	bt _checksane_fail_shad
+	break?t
 
 	cmp/gt r8, r11
-	bt _checksane_fail_shad
+//	bt _checksane_fail_shad
+	break?t
 
 	cmp/hi r8, r11
-	bf _checksane_fail_shad
+//	bf _checksane_fail_shad
+	break?f
 
 //	cmpq/eq #0xE87AD208, r11
 //	bf _checksane_fail

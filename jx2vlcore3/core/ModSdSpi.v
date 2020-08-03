@@ -34,6 +34,10 @@ reg[1:0]		tMmioOK;
 reg[63:0]		tMmioOutData2;
 reg[1:0]		tMmioOK2;
 
+reg[63:0]		tMmioInData;
+reg[31:0]		tMmioAddr;
+reg[4:0]		tMmioOpm;
+
 reg			tOutMosi2;
 reg			tOutMosi;
 reg			tOutSclk2;
@@ -50,10 +54,10 @@ assign		mmioOutData = tMmioOutData2;
 assign		mmioOK		= tMmioOK2;
 
 wire		tMmioLowCSel;
-assign		tMmioLowCSel = (mmioAddr[27:16]==12'h000);
+assign		tMmioLowCSel = (tMmioAddr[27:16]==12'h000);
 
 wire		tMmioSelfCSel;
-assign		tMmioSelfCSel = tMmioLowCSel && (mmioAddr[15:4]==mmioSelfAddr);
+assign		tMmioSelfCSel = tMmioLowCSel && (tMmioAddr[15:4]==mmioSelfAddr);
 
 reg				mmioInOE;
 reg				mmioInWR;
@@ -101,8 +105,8 @@ begin
 	tMmioOutData	= UV64_XX;
 	tMmioOK			= UMEM_OK_READY;
 
-	mmioInOE		= (mmioOpm[3]) && tMmioSelfCSel;
-	mmioInWR		= (mmioOpm[4]) && tMmioSelfCSel;
+	mmioInOE		= (tMmioOpm[3]) && tMmioSelfCSel;
+	mmioInWR		= (tMmioOpm[4]) && tMmioSelfCSel;
 	mmioNxtLatchWR	= mmioInWR && mmioLatchWR;
 
 
@@ -121,7 +125,12 @@ begin
 
 //	tOutCs = tRegCtrl[0];
 //	tNxtDivRst = { 2'b00, tRegCtrl[31:27], 7'h00 };
-	tNxtDivRst = { 2'b00, tRegCtrl[31:27], 7'h40 };
+//	tNxtDivRst = { 2'b00, tRegCtrl[31:27], 7'h40 };
+//	tNxtDivRst = { 5'b00, tRegCtrl[31:27], 4'h8 };
+//	tNxtDivRst = { 2'b00, tRegCtrl[31:24], 4'h8 };
+	tNxtDivRst = { 2'b00, tRegCtrl[31:24], 4'hA };
+//	tNxtDivRst = { 3'b00, tRegCtrl[31:24], 3'h4 };
+//	tNxtDivRst = { 3'b00, tRegCtrl[31:24], 3'h6 };
 //	tNxtDivRst = 1000;
 
 	tNxtRegExchI	= tRegExchI;
@@ -197,7 +206,7 @@ begin
 		end
 	end
 
-	if((mmioAddr[3:2]==2'b00) && mmioInOE)
+	if((tMmioAddr[3:2]==2'b00) && mmioInOE)
 	begin
 //		tMmioOutData	= tRegCtrl;
 		tMmioOutData	= { UV32_00, tRegCtrl };
@@ -207,24 +216,24 @@ begin
 		tMmioOK			= UMEM_OK_OK;
 	end
 
-	if((mmioAddr[3:2]==2'b00) && mmioInWR)
+	if((tMmioAddr[3:2]==2'b00) && mmioInWR)
 	begin
 //		if(tBitCnt==0)
 		if((tBitCnt==0) && (tByteCnt==0))
 		begin
-			tNxtRegCtrl		= mmioInData[31:0];
+			tNxtRegCtrl		= tMmioInData[31:0];
 			tMmioOK			= UMEM_OK_OK;
 			mmioNxtLatchWR	= 1;
 
-//			if(mmioInData[1] && (tBitCnt==0))
-			if(mmioInData[1])
+//			if(tMmioInData[1] && (tBitCnt==0))
+			if(tMmioInData[1])
 			begin
 				tNxtBitCnt			= 8;
 				tNxtDivCnt			= 0;
 			end
 
 			/* XMIT 8X */
-			if(mmioInData[5])
+			if(tMmioInData[5])
 			begin
 //				tNxtBitCnt			= 8;
 				tNxtDivCnt			= 0;
@@ -240,7 +249,7 @@ begin
 		end
 	end
 
-	if((mmioAddr[3:2]==2'b01) && mmioInOE)
+	if((tMmioAddr[3:2]==2'b01) && mmioInOE)
 	begin
 		if(tBitCnt==0)
 		begin
@@ -257,13 +266,13 @@ begin
 		end
 	end
 	
-	if((mmioAddr[3:2]==2'b01) && mmioInWR)
+	if((tMmioAddr[3:2]==2'b01) && mmioInWR)
 	begin
 		if(tBitCnt==0)
 		begin
-//			$display("SdSpi Wr=%X", mmioInData[7:0]);
+//			$display("SdSpi Wr=%X", tMmioInData[7:0]);
 
-			tNxtRegExchO[7:0]	= mmioInData[7:0];
+			tNxtRegExchO[7:0]	= tMmioInData[7:0];
 			tMmioOK				= UMEM_OK_OK;
 			mmioNxtLatchWR		= 1;
 		end
@@ -277,15 +286,15 @@ begin
 //		mmioNxtLatchWR		= 0;
 //	end
 
-	if((mmioAddr[3:2]==2'b10) && mmioInOE)
+	if((tMmioAddr[3:2]==2'b10) && mmioInOE)
 	begin
 		tMmioOutData	= tRegRecvQ;
 		tMmioOK			= UMEM_OK_OK;
 	end
 
-	if((mmioAddr[3:2]==2'b10) && mmioInWR)
+	if((tMmioAddr[3:2]==2'b10) && mmioInWR)
 	begin
-		tNxtRegSendQ	= mmioInData;
+		tNxtRegSendQ	= tMmioInData;
 		mmioNxtLatchWR	= 1;
 
 		tMmioOK			= mmioLatchWR ? UMEM_OK_OK : UMEM_OK_HOLD;
@@ -297,6 +306,12 @@ always @(posedge clock)
 begin
 	tMmioOutData2	<= tMmioOutData;
 	tMmioOK2		<= tMmioOK;
+
+	tMmioInData		<= mmioInData;
+	tMmioAddr		<= mmioAddr;
+	tMmioOpm		<= mmioOpm;
+
+
 	tOutMosi2		<= tOutMosi;
 	tOutSclk2		<= tOutSclk;
 	tOutCs2			<= tOutCs;

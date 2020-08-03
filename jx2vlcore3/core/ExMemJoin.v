@@ -100,14 +100,41 @@ begin
 	tNextMem2Latch = tMem2Latch;
 	tNextMemStrobe = !tMemStrobe;
 	
-	tMem1OK			= (mem1Opm != UMEM_OPM_READY) ?
-		UMEM_OK_HOLD : UMEM_OK_READY;
-	tMem2OK			= (mem2Opm != UMEM_OPM_READY) ?
-		UMEM_OK_HOLD : UMEM_OK_READY;
-	tMem1InData		= tMemInData;
-	tMem2InData		= tMemInData;
+//	tMem1OK			= (mem1Opm != UMEM_OPM_READY) ?
+//		UMEM_OK_HOLD : UMEM_OK_READY;
+//	tMem2OK			= (mem2Opm != UMEM_OPM_READY) ?
+//		UMEM_OK_HOLD : UMEM_OK_READY;
+
+	tMem1OK			= UMEM_OK_READY;
+	tMem2OK			= UMEM_OK_READY;
+
 	tMem1BusExc		= UV64_00;
 	tMem2BusExc		= UV64_00;
+
+	tMemOutData		= 0;
+	tMemAddrA		= 0;
+	tMemAddrB		= 0;
+	tMemOpm			= 0;
+
+	tMem1InData		= tMemInData;
+	tMem2InData		= tMemInData;
+//	tMem1BusExc		= UV64_00;
+	tMem1BusExc		= tMemBusExc;
+//	tMem2BusExc		= UV64_00;
+	
+	if(tMemBusExc[15])
+	begin
+		case(tMemBusExc[11:8])
+			4'h0: 		tMem1BusExc		= tMemBusExc;
+			4'h1: 		tMem2BusExc		= tMemBusExc;
+			4'hF: begin
+				tMem1BusExc		= tMemBusExc;
+		 		tMem2BusExc		= tMemBusExc;
+			 end
+			default: begin
+			end
+		endcase
+	end
 	
 //	if(tMem1Latch || ((mem1Opm != UMEM_OPM_READY) && !tMem2Latch))
 
@@ -117,7 +144,7 @@ begin
 			(mem1Opm != UMEM_OPM_READY) ||
 			(tMemOK != UMEM_OK_READY);
 		tMem1OK			= tMemOK;
-		tMem1BusExc		= tMemBusExc;
+//		tMem1BusExc		= tMemBusExc;
 
 		tMemOutData		= mem1OutData;
 		tMemAddrA		= mem1AddrA;
@@ -131,7 +158,7 @@ begin
 			(mem2Opm != UMEM_OPM_READY) ||
 			(tMemOK != UMEM_OK_READY);
 		tMem2OK			= tMemOK;
-		tMem2BusExc		= tMemBusExc;
+//		tMem2BusExc		= tMemBusExc;
 
 		tMemOutData		= mem2OutData;
 		tMemAddrA		= mem2AddrA;
@@ -143,11 +170,21 @@ begin
 			!((mem2Opm != UMEM_OPM_READY) && tMemStrobe))
 	begin
 		tNextMem1Latch	= 1;
+
+//		tMemOutData		= mem1OutData;
+//		tMemAddrA		= mem1AddrA;
+//		tMemAddrB		= mem1AddrB;
+//		tMemOpm			= mem1Opm;
 	end
 	else
 		if(mem2Opm != UMEM_OPM_READY)
 	begin
 		tNextMem2Latch	= 1;
+
+//		tMemOutData		= mem2OutData;
+//		tMemAddrA		= mem2AddrA;
+//		tMemAddrB		= mem2AddrB;
+//		tMemOpm			= mem2Opm;
 	end
 
 end

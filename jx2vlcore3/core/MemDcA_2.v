@@ -354,16 +354,36 @@ reg			tHoldWrCyc;
 reg[2:0]	tHoldCyc;
 reg[2:0]	tNextHoldCyc;
 
+`ifdef jx2_stage_memex3
+`define jx2_stage_memfpipe
+`endif
+
+// `define jx2_stage_memfpipe
+
 reg[47: 0]	tRegInAddrL;		//input address
 reg[ 4: 0]	tRegInOpmL;
 reg[63: 0]	tRegInValL;
 reg[63: 0]	tRegInValBL;
 
 
+`ifdef jx2_stage_memfpipe
 reg[47: 0]	tRegInAddr;		//input address
 reg[ 4: 0]	tRegInOpm;
 reg[63: 0]	tRegInVal;
 reg[63: 0]	tRegInValB;
+`else
+
+wire[47: 0]		tRegInAddr;		//input address
+wire[ 4: 0]		tRegInOpm;
+wire[63: 0]		tRegInVal;
+wire[63: 0]		tRegInValB;
+
+assign	tRegInAddr	= dcInHold ? tInAddr : regInAddr;
+// assign	tRegInAddr	= dcInHold ? tInAddr : regInAddr[31:0];
+assign	tRegInOpm	= dcInHold ? tInOpm : regInOpm;
+assign	tRegInVal	= dcInHold ? tDataIn : regInVal;
+assign	tRegInValB	= dcInHold ? tDataInB : regInValB;
+`endif
 
 // reg[31: 0]	tMmioInData;
 reg[63: 0]	tMmioInData;
@@ -372,28 +392,19 @@ reg			tAccFltR;
 reg			tAccFltW;
 reg			tAccFlt;
 
-reg[15:0]	tDbgHoldCyc;
-reg[15:0]	tNxtDbgHoldCyc;
-reg			tDbgHoldLatch;
-reg			tNxtDbgHoldLatch;
-
-reg			tStoreHitA;
-reg			tStoreHitB;
-
 
 always @*
 begin
 	tNxtMsgLatch = 0;
 
-	tNxtDbgHoldCyc		= 0;
-	tNxtDbgHoldLatch	= 0;
-
 	/* Stage A */
 
+`ifdef jx2_stage_memfpipe
 	tRegInAddr	= regInAddr;
 	tRegInOpm	= regInOpm;
 	tRegInVal	= regInVal;
 	tRegInValB	= regInValB;
+`endif
 
 	if(tRegInAddr[4])
 	begin
@@ -454,6 +465,8 @@ begin
 		dcNxtFlushMskB = JX2_L1D_FLUSHMSK;
 	end
 
+//	tNxtIsMmio=(regInAddr[31:28]==4'hA);
+//	tNxtIsMmio=(regInAddr[31:28]==4'hF) && (regInOpm[4:3]!=0);
 	tNxtIsMmio=(tRegInAddr[31:28]==4'hF) && (tRegInOpm[4:3]!=0);
 
 	tReqOpmCcmd	= (tRegInOpm!=UMEM_OPM_READY) && (tRegInOpm[4:3]==0);	
@@ -514,11 +527,22 @@ begin
 	tBlkIx2A	= tBlkIxA;
 	tBlkIx2B	= tBlkIxB;
 
-	tStoreHitA = 0;
-	tStoreHitB = 0;
+//	if(tLstHold)
+	if(1'b0)
+//	if(dcInHoldL && !tLstHold)
+	begin
+		tBlkData2A	= tLstBlkDataA;
+		tBlkData2B	= tLstBlkDataB;
+		tBlkAddr2A	= tLstBlkAddrA;
+		tBlkAddr2B	= tLstBlkAddrB;
+		tBlkFlag2A	= tLstBlkFlagA;
+		tBlkFlag2B	= tLstBlkFlagB;
+		tBlkIx2A	= tLstBlkIxA;
+		tBlkIx2B	= tLstBlkIxB;
+	end
 
-`ifdef jx2_mem_fwstore
 	if((tLstStBlkIxA==tReqIxA) && tLstDoStBlkA)
+//	if((tLstStBlkIxA==tBlkIx2A) && tLstDoStBlkA)
 	begin
 		tBlkData2A	= tLstStBlkDataA;
 		tBlkAddr2A	= tLstStBlkAddrA;
@@ -526,25 +550,13 @@ begin
 		tBlkIx2A	= tLstStBlkIxA;
 	end
 	if((tLstStBlkIxB==tReqIxB) && tLstDoStBlkB)
+//	if((tLstStBlkIxB==tBlkIx2B) && tLstDoStBlkB)
 	begin
 		tBlkData2B	= tLstStBlkDataB;
 		tBlkAddr2B	= tLstStBlkAddrB;
 		tBlkFlag2B	= tLstStBlkFlagB;
 		tBlkIx2B	= tLstStBlkIxB;
 	end
-`endif
-
-`ifndef jx2_mem_fwstore
-	if((tLstStBlkIxA==tReqIxA) && tLstDoStBlkA)
-	begin
-		tStoreHitA = 1;
-	end
-	if((tLstStBlkIxB==tReqIxB) && tLstDoStBlkB)
-	begin
-		tStoreHitB = 1;
-	end
-`endif
-
 
 	tBlkDirtyA	= tBlkFlag2A[2];
 	tBlkDirtyB	= tBlkFlag2B[2];
@@ -562,24 +574,19 @@ begin
 	tBlkReady = 1;
 
 	if((tBlkIx2A!=tReqIxA) || (tBlkIx2B!=tReqIxB))
+//	if((tBlkIx2A!=tReqIxA) || (tBlkIx2B!=tReqIxB) ||
+//		tLstDoStBlkA || tLstDoStBlkB)
 	begin
 `ifdef jx2_debug_l1ds
 		$display("MemDcA: Not Ready");
 `endif
 		tHold		= 1;
 		tBlkReady	= 0;
+//		tMiss		= 0;
+//		tMissA		= 0;
+//		tMissB		= 0;
 	end
-
-	if(tStoreHitA || tStoreHitB)
-	begin
-`ifdef jx2_debug_l1ds
-		$display("MemDcA: Store Hit Stall");
-`endif
-		tHold		= 1;
-		tBlkReady	= 0;
-	end
-
-
+		
 	tDoMiBlk	= tDoMiBlkA || tDoMiBlkB;
 
 	if(tInOpm[4] && tBlkFlag2A[3] && !tMissA)
@@ -603,6 +610,19 @@ begin
 	end
 `endif
 
+// `ifdef def_true
+`ifndef def_true
+	case(tInByteIx)
+		3'b000: tBlkExData=tBlkData[ 63:  0];
+		3'b001: tBlkExData=tBlkData[ 71:  8];
+		3'b010: tBlkExData=tBlkData[ 79: 16];
+		3'b011: tBlkExData=tBlkData[ 87: 24];
+		3'b100: tBlkExData=tBlkData[ 95: 32];
+		3'b101: tBlkExData=tBlkData[103: 40];
+		3'b110: tBlkExData=tBlkData[111: 48];
+		3'b111: tBlkExData=tBlkData[119: 56];
+	endcase
+`else
 	if(tInByteIx[2])
 		tBlkExData1=tBlkData[127: 32];
 	else
@@ -613,6 +633,7 @@ begin
 		2'b10: tBlkExData=tBlkExData1[ 79: 16];
 		2'b11: tBlkExData=tBlkExData1[ 87: 24];
 	endcase
+`endif
 
 `ifdef jx2_debug_l1ds
 	if(tReqOpmNz && !tReqIsMmio)
@@ -693,9 +714,13 @@ begin
 
 	if(tReqOpmNz && !tReqIsMmio)
 	begin
+//		tHold = (tMiss || tDoMiBlk) || (tMemLatchA || tMemLatchB);
 		tHold = (tMiss || tDoMiBlk || !tBlkReady) ||
 			(tMemLatchA || tMemLatchB);
 	end
+	
+//	if(tLstDoStBlkA || tLstDoStBlkB)
+//		tHold = 1;
 	
 `ifdef jx2_debug_l1ds
 	if(tHold)
@@ -841,65 +866,41 @@ begin
 
 	tRegOutOKB = tRegOutOK;
 
+//	tRegOutOKB = (tHold || tLstHoldA) ? UMEM_OK_HOLD :
+//		(tReqOpmNz ? UMEM_OK_OK : UMEM_OK_READY);
+
 //	if(memOK==UMEM_OK_FAULT)
 //	begin
 //		$display("L1D$ Fault");
 //		tRegOutOK = UMEM_OK_FAULT;
 //	end
 
+`ifdef jx2_stage_memfpipe
+//	tNx2IxA		= tHoldB ? tReqIxA : (dcInHold ? tNxtIxAL : tNxtIxA);
+//	tNx2IxB		= tHoldB ? tReqIxB : (dcInHold ? tNxtIxBL : tNxtIxB);
+//	tNx2IxA		= (tHoldB || dcInHold) ? tReqIxA : tNxtIxA;
+//	tNx2IxB		= (tHoldB || dcInHold) ? tReqIxB : tNxtIxB;
+
 	tNx2IxA		= (tHoldB || dcInHoldL) ? tReqIxA : tNxtIxA;
 	tNx2IxB		= (tHoldB || dcInHoldL) ? tReqIxB : tNxtIxB;
 
+//	tNx2IxA		= tReqIxA;
+//	tNx2IxB		= tReqIxB;
+
+//	tNx2IxA		= tHoldB ? tReqIxA : tNxtIxA;
+//	tNx2IxB		= tHoldB ? tReqIxB : tNxtIxB;
+//	tNx2IxA		= dcInHold ? tReqIxA : tNxtIxA;
+//	tNx2IxB		= dcInHold ? tReqIxB : tNxtIxB;
+//	tNx2IxA		= tLstHold ? tReqIxA : tNxtIxA;
+//	tNx2IxB		= tLstHold ? tReqIxB : tNxtIxB;
+//	tNx2IxA		= tNxtIxA;
+//	tNx2IxB		= tNxtIxB;
+`else
+	tNx2IxA		= tNxtIxA;
+	tNx2IxB		= tNxtIxB;
+`endif
+
 	tMemAddrB	= 0;
-
-	if(tHold)
-	begin
-		tNxtDbgHoldCyc		= tDbgHoldCyc + 1;
-		tNxtDbgHoldLatch	= tDbgHoldLatch;
-		if(tDbgHoldCyc>65280)
-		begin
-			tNxtDbgHoldCyc		= 65535;
-			tNxtDbgHoldLatch	= 1;
-			
-			if(!tDbgHoldLatch)
-			begin
-				$display("MemDcA: Deadlock Detect");
-
-				$display("isMmio=%d mmioLatch=%d mmioDone=%d",
-					tReqIsMmio, tMmioLatch, tMmioDone);
-
-				$display(
-					"memAddr=%X memAddrB=%X memDataIn=%X memDataOut=%X",
-					memAddr,		memAddrB,
-					memDataIn,		memDataOut);
-				$display(
-					"memOpm=%X memOK=%X memNoRwx=%X",
-					memOpm,			memOK,
-					memNoRwx		);
-
-				$display("memLatchA=%d memLatchB=%d",
-					tMemLatchA, tMemLatchB);
-				$display("memLatchDnA=%d memLatchDnB=%d",
-					tMemLatchDnA, tMemLatchDnB);
-				$display("memLatchWbA=%d memLatchWbB=%d",
-					tMemLatchWbA, tMemLatchWbB);
-				$display("memLatchWdA=%d memLatchWdB=%d",
-					tMemLatchWdA, tMemLatchWdB);
-
-				$display("A=%X Opm=%X V=%X", tInAddr, tInOpm, tRegOutVal);
-
-				$display("L1D$ Hold, Miss=%d(%d,%d) MiBlk=%d Rdy=%d",
-					tMiss, tMissA, tMissB, tDoMiBlk, tBlkReady);
-				if(tMissA)
-					$display("L1D$ MissA, Blk=%X, Req=%X",
-						tBlkAddrA, tReqAddrA);
-				if(tMissB)
-					$display("L1D$ MissB, Blk=%X, Req=%X",
-						tBlkAddrB, tReqAddrB);
-
-			end
-		end
-	end
 
 end
 
@@ -909,9 +910,6 @@ begin
 //	tMsgLatch		<= tNxtMsgLatch;
 	tMsgLatch		<= 0;
 
-	tDbgHoldCyc		<= tNxtDbgHoldCyc;
-	tDbgHoldLatch	<= tNxtDbgHoldLatch;
-
 	/* Stage A */
 
 	tLstHoldA	<= tHold;
@@ -920,6 +918,15 @@ begin
 	dcInHoldL	<= dcInHold;
 	tHoldCyc	<= tNextHoldCyc;
 
+`ifdef def_true
+// `ifndef def_true
+
+`ifdef jx2_stage_memfpipe
+
+// `ifdef jx2_mem_l1dstall
+// `ifndef def_true
+`ifdef def_true
+//	if(!tHoldB)
 	if(!dcInHold)
 	begin
 		tInAddr		<= tRegInAddr;
@@ -933,6 +940,82 @@ begin
 		tReqIxB		<= tNxtIxB;
 		tReqIsMmio	<= tNxtIsMmio;
 	end
+
+`ifndef def_true
+	if(!dcInHold)
+	begin
+		tRegInAddrL	<= tRegInAddr;
+		tRegInOpmL	<= tRegInOpm;
+		tRegInValL	<= tRegInVal;
+		tRegInValBL	<= tRegInValB;
+
+		tNxtAddrAL	<= tNxtAddrA;
+		tNxtAddrBL	<= tNxtAddrB;
+		tNxtIxAL	<= tNxtIxA;
+		tNxtIxBL	<= tNxtIxB;
+		tNxtIsMmioL	<= tNxtIsMmio;
+	end
+`endif
+
+`else
+	if(!tHoldB)
+	begin
+		if(!dcInHold)
+		begin
+			tInAddr		<= tRegInAddr;
+			tInOpm		<= tRegInOpm;
+			tDataIn		<= tRegInVal;
+			tDataInB	<= tRegInValB;
+
+			tReqAddrA	<= tNxtAddrA;
+			tReqAddrB	<= tNxtAddrB;
+			tReqIxA		<= tNxtIxA;
+			tReqIxB		<= tNxtIxB;
+			tReqIsMmio	<= tNxtIsMmio;
+		end
+		else
+		begin
+			tInAddr		<= tRegInAddrL;
+			tInOpm		<= tRegInOpmL;
+			tDataIn		<= tRegInValL;
+			tDataInB	<= tRegInValBL;
+
+			tReqAddrA	<= tNxtAddrAL;
+			tReqAddrB	<= tNxtAddrBL;
+			tReqIxA		<= tNxtIxAL;
+			tReqIxB		<= tNxtIxBL;
+			tReqIsMmio	<= tNxtIsMmioL;
+		end
+	end
+
+	if(!dcInHold)
+	begin
+		tRegInAddrL	<= tRegInAddr;
+		tRegInOpmL	<= tRegInOpm;
+		tRegInValL	<= tRegInVal;
+		tRegInValBL	<= tRegInValB;
+		tNxtAddrAL	<= tNxtAddrA;
+		tNxtAddrBL	<= tNxtAddrB;
+		tNxtIxAL	<= tNxtIxA;
+		tNxtIxBL	<= tNxtIxB;
+		tNxtIsMmioL	<= tNxtIsMmio;
+	end
+`endif
+
+`else
+	tInAddr		<= tRegInAddr;
+	tInOpm		<= tRegInOpm;
+	tDataIn		<= tRegInVal;
+	tDataInB	<= tRegInValB;
+
+	tReqAddrA	<= tNxtAddrA;
+	tReqAddrB	<= tNxtAddrB;
+	tReqIxA		<= tNxtIxA;
+	tReqIxB		<= tNxtIxB;
+	tReqIsMmio	<= tNxtIsMmio;
+`endif
+
+`endif
 
 	dcFlushMskA		<= dcNxtFlushMskA;
 	dcFlushMskB		<= dcNxtFlushMskB;
@@ -1298,12 +1381,22 @@ begin
 	end
 
 `ifndef jx2_do_ld1cyc
+`ifdef jx2_stage_memfpipe
 	if(!dcInHold)
+//	if(!dcInHold || tHoldB)
+//	if(!dcInHold || tLstHold)
+//	if(!dcInHold || tLstHold || tHoldB)
+//	if(1'b1)
 	begin
 		tRegOutVal2		<= tRegOutVal;	//output value A
 		tRegOutValB2	<= tRegOutValB;	//output value B
 	end
 	tRegOutOK2		<= tRegOutOK;	//OK status
+`else
+	tRegOutVal2		<= tRegOutVal;	//output value A
+	tRegOutValB2	<= tRegOutValB;	//output value B
+	tRegOutOK2		<= tRegOutOK;	//OK status
+`endif
 `endif
 
 end

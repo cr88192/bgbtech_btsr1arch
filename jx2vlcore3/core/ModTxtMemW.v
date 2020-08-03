@@ -184,10 +184,10 @@ initial begin
 	$readmemh("gfxfont0.txt", fontGfx1Mem);
 	$readmemh("gfxfont1.txt", fontGfx2Mem);
 
-	$readmemh("scrmem_1a.txt", scrCell1A);
-	$readmemh("scrmem_1b.txt", scrCell1B);
-	$readmemh("scrmem_1c.txt", scrCell1C);
-	$readmemh("scrmem_1d.txt", scrCell1D);
+//	$readmemh("scrmem_1a.txt", scrCell1A);
+//	$readmemh("scrmem_1b.txt", scrCell1B);
+//	$readmemh("scrmem_1c.txt", scrCell1C);
+//	$readmemh("scrmem_1d.txt", scrCell1D);
 end
 
 always @*

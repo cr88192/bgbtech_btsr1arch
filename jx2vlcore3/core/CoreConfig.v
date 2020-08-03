@@ -52,6 +52,7 @@
 `define jx2_mem_l1dstall			//L1 D$ initiates stall directly
 
 
+// `define jx2_mem_fwstore			//Store Forwarding
 
 // `define jx2_mem_fulldpx		//Full Duplex Mode
 

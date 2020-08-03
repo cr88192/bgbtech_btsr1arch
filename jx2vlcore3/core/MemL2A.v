@@ -10,9 +10,10 @@ module MemL2A(
 	clock,
 	reset,
 	
-	memAddr,	memAddrB,
-	memDataIn,	memDataOut,
-	memOpm,		memOK,
+	memAddr,		memAddrB,
+	memDataIn,		memDataOut,
+	memOpm,			memOK,
+	memBounceIrq,
 
 	ddrMemAddr,		ddrMemOpm,
 	ddrMemDataIn,	ddrMemDataOut,
@@ -32,6 +33,7 @@ input[127:0]	memDataIn;
 output[127:0]	memDataOut;
 input[4:0]		memOpm;
 output[1:0]		memOK;
+output[63:0]	memBounceIrq;
 
 input[127:0]	ddrMemDataIn;
 output[127:0]	ddrMemDataOut;
@@ -47,6 +49,11 @@ output[31:0]	mmioAddr;
 output[4:0]		mmioOpm;
 input[1:0]		mmioOK;
 
+
+reg[47:0]		tMemAddr;
+reg[47:0]		tMemAddrB;
+reg[127:0]		tMemDataIn;
+reg[4:0]		tMemOpm;
 
 
 reg[127:0]		tMemDataOut;
@@ -68,9 +75,15 @@ assign	mmioOutData		= tMmioOutData;
 assign	mmioAddr		= tMmioAddr;
 assign	mmioOpm			= tMmioOpm;
 
+reg[63:0]	tMemBounceIrq;
+reg[63:0]	tMemBounceIrqB;
+assign	memBounceIrq = tMemBounceIrqB;
+
+
 wire	reqIsMmio;
 // assign	reqIsMmio	= (memOpm[2:0] != 3'b111);
-assign	reqIsMmio	= (memOpm[4:3] != 2'b00) && (memOpm[2:0] != 3'b111);
+// assign	reqIsMmio	= (memOpm[4:3] != 2'b00) && (memOpm[2:0] != 3'b111);
+assign	reqIsMmio	= (tMemOpm[4:3] != 2'b00) && (tMemOpm[2:0] != 3'b111);
 
 reg		reqMmioLatch;
 reg		reqLo64Latch;
@@ -78,10 +91,12 @@ reg		reqRamLatch;
 reg		reqIsLatch;
 
 wire	reqIsCcmd;
-assign	reqIsCcmd	= (memOpm[4:3] == 2'b00) && (memOpm[2:0] != 3'b000);
+// assign	reqIsCcmd	= (memOpm[4:3] == 2'b00) && (memOpm[2:0] != 3'b000);
+assign	reqIsCcmd	= (tMemOpm[4:3] == 2'b00) && (tMemOpm[2:0] != 3'b000);
 
 wire[4:0]		l2MemOpm;
-assign			l2MemOpm = reqIsMmio ? UMEM_OPM_READY : memOpm;
+// assign			l2MemOpm = reqIsMmio ? UMEM_OPM_READY : memOpm;
+assign			l2MemOpm = reqIsMmio ? UMEM_OPM_READY : tMemOpm;
 
 wire[127:0]		l2MemDataOut;
 wire[1:0]		l2MemOK;
@@ -90,8 +105,13 @@ MemL2Dc		l2dc(
 	clock,		reset,
 
 //	memAddr,	memAddrB,
-	memAddr[31:0],	memAddrB[31:0],
-	memDataIn,	l2MemDataOut,
+//	memAddr[31:0],	memAddrB[31:0],
+//	memDataIn,
+
+	tMemAddr[31:0],	tMemAddrB[31:0],
+	tMemDataIn,
+	
+	l2MemDataOut,
 	l2MemOpm,	l2MemOK,
 
 	ddrMemAddr,		ddrMemOpm,
@@ -100,13 +120,16 @@ MemL2Dc		l2dc(
 	);
 
 wire	tAddrIsLo64k;
-assign	tAddrIsLo64k	= (memAddr[31:16] == UV16_00);
+// assign	tAddrIsLo64k	= (memAddr[31:16] == UV16_00);
+assign	tAddrIsLo64k	= (tMemAddr[31:16] == UV16_00);
 
 wire	tAddrIsRam;
-assign	tAddrIsRam	= (memAddr[31:24] != UV8_00) && (!memAddr[31]);
+// assign	tAddrIsRam	= (memAddr[31:24] != UV8_00) && (!memAddr[31]);
+assign	tAddrIsRam	= (tMemAddr[31:24] != UV8_00) && (!tMemAddr[31]);
 
 wire[4:0]		l2rMemOpm;
-assign			l2rMemOpm = tAddrIsLo64k ? memOpm : UMEM_OPM_READY ;
+// assign			l2rMemOpm = tAddrIsLo64k ? memOpm : UMEM_OPM_READY ;
+assign			l2rMemOpm = tAddrIsLo64k ? tMemOpm : UMEM_OPM_READY ;
 
 wire[127:0]		l2rMemDataOut;
 wire[1:0]		l2rMemOK;
@@ -115,8 +138,12 @@ MemL2Rom	l2rom(
 	clock,		reset,
 
 //	memAddr,	l2rMemOpm,
-	memAddr[31:0],	l2rMemOpm,
-	memDataIn,	l2rMemDataOut,
+//	memAddr[31:0],
+	tMemAddr[31:0],
+	l2rMemOpm,
+//	memDataIn,
+	tMemDataIn,
+	l2rMemDataOut,
 	l2rMemOK
 	);
 
@@ -128,6 +155,11 @@ reg[4:0]	tCcmdOpmA;
 reg[4:0]	tCcmdOpmB;
 reg[4:0]	tCcmdOpmC;
 
+reg[15:0]	tHoldCyc;
+reg[15:0]	tNxtHoldCyc;
+reg			tHoldLatch;
+reg			tNxtHoldLatch;
+
 always @*
 begin
 	reqIsLatch = reqMmioLatch || reqLo64Latch || reqRamLatch || reqCcmdLatch;
@@ -135,30 +167,85 @@ begin
 	tCcmdOK		= UMEM_OK_READY;
 //	tCcmdData	= UV32_XX;
 	tCcmdData	= UV32_00;
-	
-	case(memOpm)
+	tNxtHoldCyc		= 0;
+	tNxtHoldLatch	= 0;
+	tMemBounceIrq	= 0;
+
+//	case(memOpm)
+	case(tMemOpm)
 		UMEM_OPM_LDTLB, UMEM_OPM_INVTLB: begin
 			/* These simply get OK here; MMU has already seen it. */
 //			tCcmdOK		= UMEM_OK_OK;
-			tCcmdOK		= (memOpm==tCcmdOpmC)?UMEM_OK_OK:UMEM_OK_HOLD;
+//			tCcmdOK		= (memOpm==tCcmdOpmC)?UMEM_OK_OK:UMEM_OK_HOLD;
+			tCcmdOK		= (tMemOpm==tCcmdOpmC)?UMEM_OK_OK:UMEM_OK_HOLD;
 			tCcmdData	= UV32_00;
 		end
 		UMEM_OPM_FLUSHIS, UMEM_OPM_FLUSHDS: begin
 			/* These simply get OK here. */
 //			tCcmdOK		= UMEM_OK_OK;
-			tCcmdOK		= (memOpm==tCcmdOpmC)?UMEM_OK_OK:UMEM_OK_HOLD;
+//			tCcmdOK		= (memOpm==tCcmdOpmC)?UMEM_OK_OK:UMEM_OK_HOLD;
+			tCcmdOK		= (tMemOpm==tCcmdOpmC)?UMEM_OK_OK:UMEM_OK_HOLD;
 			tCcmdData	= UV32_00;
+		end
+		UMEM_OPM_TRAP: begin
+//			tCcmdOK		= (memOpm==tCcmdOpmC)?UMEM_OK_OK:UMEM_OK_HOLD;
+			tCcmdOK		= UMEM_OK_OK;
+			if(!tMemBounceIrqB[15])
+//				tMemBounceIrq = memDataIn[63:0];
+				tMemBounceIrq = tMemDataIn[63:0];
 		end
 		default: begin
 		end
 	endcase
+	
+	if(tMemOK[1])
+	begin
+		tNxtHoldCyc		= tHoldCyc + 1;
+		tNxtHoldLatch	= tHoldLatch;
+		if(tHoldCyc>65280)
+		begin
+			tNxtHoldCyc		= 65535;
+			tNxtHoldLatch	= 1;
+			
+			if(!tHoldLatch)
+			begin
+				$display("MemL2A: Deadlock Detect");
+
+				$display("Latch=%d MMIO=%d Low64k=%d L2/RAM=%d CCmd=%d",
+					reqIsLatch, reqMmioLatch, reqLo64Latch,
+					reqRamLatch, reqCcmdLatch);
+
+				$display(
+					"CPU Addr=%X AddrB=%X DataIn=%X DataOut=%X OPM=%X OK=%X",
+					memAddr,	memAddrB,	memDataIn,	memDataOut,
+					memOpm,		memOK		);
+
+				$display("DDR Addr=%X DataIn=%X DataOut=%X OPM=%X OK=%X",
+					ddrMemAddr,	ddrMemDataIn,	ddrMemDataOut,
+					ddrMemOpm,	ddrMemOK		);
+
+				$display("MMIO Addr=%X DataIn=%X DataOut=%X OPM=%X OK=%X",
+					mmioAddr,	mmioInData,	mmioOutData,
+					mmioOpm,	mmioOK		);
+			end
+		end
+	end
 end
 
 always @(posedge clock)
 begin
-	tCcmdOpmA	<= memOpm;
-	tCcmdOpmB	<= tCcmdOpmA;
-	tCcmdOpmC	<= tCcmdOpmB;
+//	tCcmdOpmA		<= memOpm;
+	tCcmdOpmA		<= tMemOpm;
+	tCcmdOpmB		<= tCcmdOpmA;
+	tCcmdOpmC		<= tCcmdOpmB;
+	tHoldCyc		<= tNxtHoldCyc;
+	tHoldLatch		<= tNxtHoldLatch;
+	tMemBounceIrqB	<= tMemBounceIrq;
+
+	tMemAddr		<= memAddr;
+	tMemAddrB		<= memAddrB;
+	tMemDataIn		<= memDataIn;
+	tMemOpm			<= memOpm;
 
 	if(reset)
 	begin
@@ -182,13 +269,15 @@ begin
 //		tMemDataOut		<= { UV96_XX, mmioInData };
 		tMemDataOut		<= { UV64_00, mmioInData };
 		tMemOK			<= mmioOK;
-		reqMmioLatch	<= (reqIsMmio && (memOpm[4:3]!=0)) ||
+//		reqMmioLatch	<= (reqIsMmio && (memOpm[4:3]!=0)) ||
+		reqMmioLatch	<= (reqIsMmio && (tMemOpm[4:3]!=0)) ||
 			(mmioOK != UMEM_OK_READY);
 	end
 	else
 		if((tAddrIsLo64k && !reqIsLatch) || reqLo64Latch)
 	begin
-		if((tAddrIsLo64k && (memOpm[4:3]!=0)) || reqLo64Latch)
+//		if((tAddrIsLo64k && (memOpm[4:3]!=0)) || reqLo64Latch)
+		if((tAddrIsLo64k && (tMemOpm[4:3]!=0)) || reqLo64Latch)
 		begin
 //			$display("Lo64K A=%X Opm=%X OK=%X D=%X",
 //				memAddr, memOpm, l2rMemOK, l2rMemDataOut);
@@ -197,7 +286,8 @@ begin
 		tMemDataOut		<= l2rMemDataOut;
 		tMemOK			<= l2rMemOK;
 //		reqLo64Latch	<= tAddrIsLo64k || (l2rMemOK != UMEM_OK_READY);
-		reqLo64Latch	<= (tAddrIsLo64k && (memOpm[4:3]!=0)) ||
+//		reqLo64Latch	<= (tAddrIsLo64k && (memOpm[4:3]!=0)) ||
+		reqLo64Latch	<= (tAddrIsLo64k && (tMemOpm[4:3]!=0)) ||
 			(l2rMemOK != UMEM_OK_READY);
 	end
 	else
@@ -205,7 +295,8 @@ begin
 	begin
 		tMemDataOut		<= l2MemDataOut;
 		tMemOK			<= l2MemOK;
-		reqRamLatch		<= (tAddrIsRam && (memOpm[4:3]!=0)) ||
+//		reqRamLatch		<= (tAddrIsRam && (memOpm[4:3]!=0)) ||
+		reqRamLatch		<= (tAddrIsRam && (tMemOpm[4:3]!=0)) ||
 			(l2MemOK != UMEM_OK_READY);
 	end
 	else
@@ -218,10 +309,13 @@ begin
 //	tDdrMemAddr;
 
 //	tMmioOutData		<= memDataIn[31:0];
-	tMmioOutData		<= memDataIn[63:0];
+//	tMmioOutData		<= memDataIn[63:0];
+	tMmioOutData		<= tMemDataIn[63:0];
 //	tMmioAddr			<= memAddr;
-	tMmioAddr			<= memAddr[31:0];
-	tMmioOpm			<= reqIsMmio ? memOpm : UMEM_OPM_READY;
+//	tMmioAddr			<= memAddr[31:0];
+	tMmioAddr			<= tMemAddr[31:0];
+//	tMmioOpm			<= reqIsMmio ? memOpm : UMEM_OPM_READY;
+	tMmioOpm			<= reqIsMmio ? tMemOpm : UMEM_OPM_READY;
 
 `ifndef def_true
 // `ifdef def_true

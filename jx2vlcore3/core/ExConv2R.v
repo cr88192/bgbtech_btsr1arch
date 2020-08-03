@@ -34,11 +34,21 @@ ExOpClz	clz(0, 0,
 	regValRs, tClzVal);
 `endif
 
+reg[31:0]	tRegRgb5Upck32;
+
 always @*
 begin
 	tRegOutVal	= regValRs;
 	tRegOutSrT	= regInSrT;
 	tRegOutVal	= UV64_XX;
+
+	tRegRgb5Upck32	=
+		{ (regValRs[15]) ?
+				{ regValRs[10], regValRs[5], regValRs[0], UV5_00 } :
+				UV8_FF,
+			regValRs[14:10], regValRs[14:12],
+			regValRs[ 9: 5], regValRs[ 9: 7],
+			regValRs[ 4: 0], regValRs[ 4: 2] };
 
 	case(idUIxt[5:0])
 		JX2_UCIX_CONV_EXTSB: tRegOutVal	=
@@ -125,6 +135,7 @@ begin
 
 `ifdef def_true
 		JX2_UCIX_CONV_RGBSHR1:
+`ifndef def_true
 			tRegOutVal	= {
 				{ 1'b0,
 					1'b0, regValRs[62:59],
@@ -143,15 +154,25 @@ begin
 					1'b0, regValRs[ 9: 6],
 					1'b0, regValRs[ 4: 1] }
 				};
+`endif
+
+			tRegOutVal	= {
+				UV48_00,
+				{ 1'b0,
+					1'b0, regValRs[14:11],
+					1'b0, regValRs[ 9: 6],
+					1'b0, regValRs[ 4: 1] }
+				};
 
 		JX2_UCIX_CONV_RGB5PCK32:
 		begin
 			tRegOutVal	= {
-				UV32_00,
-				{ 1'b0,
-					regValRs[55:51],
-					regValRs[47:43],
-					regValRs[39:35] },
+//				UV32_00,
+//				{ 1'b0,
+//					regValRs[55:51],
+//					regValRs[47:43],
+//					regValRs[39:35] },
+				UV48_00,
 				{ 1'b0,
 					regValRs[23:19],
 					regValRs[15:11],
@@ -164,9 +185,11 @@ begin
 					tRegOutVal[ 5]=regValRs[30];
 					tRegOutVal[ 0]=regValRs[29];
 				end
-				tRegOutVal[63:32] = tRegOutVal[31:0];
+//				tRegOutVal[63:32] = tRegOutVal[31:0];
 		end
 		JX2_UCIX_CONV_RGB5UPCK32:
+		begin
+`ifndef def_true
 			tRegOutVal	= {
 				{ (regValRs[31]) ?
 						{ regValRs[26], regValRs[21], regValRs[16], UV5_00 } :
@@ -181,6 +204,10 @@ begin
 					regValRs[ 9: 5], regValRs[ 9: 7],
 					regValRs[ 4: 0], regValRs[ 4: 2] }
 				};
+`endif
+
+			tRegOutVal	= { UV32_00, tRegRgb5Upck32 };
+		end
 
 		JX2_UCIX_CONV_RGB5PCK64:
 		begin
@@ -198,10 +225,11 @@ begin
 				tRegOutVal[ 5]=regValRs[62];
 				tRegOutVal[ 0]=regValRs[61];
 			end
-			tRegOutVal[31:16] = tRegOutVal[15:0];
-			tRegOutVal[63:32] = tRegOutVal[31:0];
+//			tRegOutVal[31:16] = tRegOutVal[15:0];
+//			tRegOutVal[63:32] = tRegOutVal[31:0];
 		end
-		JX2_UCIX_CONV_RGB5UPCK64:
+		JX2_UCIX_CONV_RGB5UPCK64: begin
+`ifndef def_true
 			tRegOutVal	= {
 				(regValRs[15]) ?
 						{ regValRs[10], regValRs[5], regValRs[0], UV13_00 } :
@@ -210,9 +238,25 @@ begin
 					regValRs[ 9: 5], regValRs[ 9: 5], UV6_00,
 					regValRs[ 4: 0], regValRs[ 4: 0], UV6_00
 				};
+`endif
+
+`ifdef def_true
+			tRegOutVal	= {
+				tRegRgb5Upck32[31:24],
+				tRegRgb5Upck32[31:24],
+				tRegRgb5Upck32[23:16],
+				tRegRgb5Upck32[23:16],
+				tRegRgb5Upck32[15: 8],
+				tRegRgb5Upck32[15: 8],
+				tRegRgb5Upck32[ 7: 0],
+				tRegRgb5Upck32[ 7: 0]
+			};
+`endif
+		end
 
 		JX2_UCIX_CONV_RGB32PCK64:
 		begin
+`ifndef def_true
 			tRegOutVal	= {
 				regValRs[63:56],
 				regValRs[47:40],
@@ -222,6 +266,15 @@ begin
 				regValRs[47:40],
 				regValRs[31:24],
 				regValRs[15: 8]	};
+`endif
+`ifdef def_true
+			tRegOutVal	= {
+				UV32_00,
+				regValRs[63:56],
+				regValRs[47:40],
+				regValRs[31:24],
+				regValRs[15: 8]	};
+`endif
 		end
 		JX2_UCIX_CONV_RGB32UPCK64:
 		begin

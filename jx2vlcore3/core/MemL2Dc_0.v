@@ -183,7 +183,6 @@ reg		tAddrIsRam;
 reg 	tOpmIsNz;
 reg		tDoAcc;
 reg		tDoSwAcc;
-reg		tNxtDoAcc;
 
 reg		tSwLatch;
 reg		tNxtSwLatch;
@@ -238,8 +237,7 @@ begin
 	
 	tAccIx		= tReqIx;
 	tAccAddr	= tReqAddr;
-//	tDoAcc		= 0;
-	tNxtDoAcc	= 0;
+	tDoAcc		= 0;
 	tDoSwAcc	= 0;
 	tNxtSwLatch	= tSwLatch;
 
@@ -262,8 +260,7 @@ begin
 	tAccReady	= (tReqIxL == tReqIx);
 
 //	tMiss		= (tReqAddr != tBlkAddr) && tOpmIsNz;
-	tMiss		= (tReqAddr != tBlkAddr) &&
-		((tOpmIsNz && tAddrIsRam) || tBlkDoSwL);
+	tMiss		= (tReqAddr != tBlkAddr) && ((tOpmIsNz && tAddrIsRam) || tBlkDoSwL);
 	tMissB		= (tReqAddrB != tBlkAddrB);
 	tMemDataOut	= tBlkData;
 	tBlkDirty	= tBlkFlag[0];
@@ -303,6 +300,25 @@ begin
 	tBlkStDirty	= 0;
 	tBlkDoSt	= 0;
 
+// `ifdef jx2_mem_fulldpx
+`ifndef def_true
+//	if(tBlkDoSwL && (tReqAddr==tBlkSwAddrL) && !tMiss)
+	if(tBlkDoSwL && (tReqIxB == tReqIx) && !tMiss)
+	begin
+		tBlkStData	= tBlkSwDataL;
+		tBlkStAddr	= tBlkSwAddrL;
+		tBlkStIx	= tBlkSwIxL;
+		tBlkStDirty	= tBlkSwDirtyL;
+		tBlkDoSt	= 1;
+		tBlkDoSw	= 0;
+		if(tReqOpm[4:3]!=2'b00)
+		begin
+			tAccess	= 1;
+			tHold	= 1;
+		end
+	end
+	else
+`endif
 	if(tAccSticky)
 	begin
 //		$display("L2 Sticky");
@@ -350,6 +366,9 @@ begin
 			if(((tMissB && tBlkDirtyB) && !tSwLatch) || tMiss)
 				tHold	= 1;
 			
+// `ifndef def_true
+`ifdef def_true
+//			if(!tMissB && !tSwLatch && (tReqIxB == tReqIxBL))
 			if((!tMissB || !tBlkDirtyB) &&
 				!tSwLatch && (tReqIxB == tReqIxBL))
 			begin
@@ -362,6 +381,32 @@ begin
 				tBlkDoSt	= 1;
 				tNxtSwLatch	= 1;
 			end
+//			else
+`endif
+
+`ifndef def_true
+			if(tBlkDoSwL || tMiss)
+			begin
+				tAccess	= 1;
+				tHold	= 1;
+			end
+			else
+			if(!tMiss && (tReqIxB == tReqIxBL))
+			begin
+				tBlkSwData	= tReqDataIn;
+				tBlkSwAddr	= tReqAddrB;
+				tBlkSwIx	= tReqIxB;
+				tBlkSwDirty	= 1;
+				tBlkDoSw	= 1;
+			end
+			else
+`endif
+//			begin
+//				$display("L2-B-2: Hold A=%X MissB=%d Rqe=%d",
+//					tReqAddrB, tMissB, (tReqIxB == tReqIxBL));
+//				tAccess	= 1;
+//				tHold	= 1;
+//			end
 		end
 `endif
 		else
@@ -376,8 +421,7 @@ begin
 	end
 
 //	tDoAcc		= ((tAccess && tMiss) || tDoSwAcc) && tAccReady;
-//	tDoAcc		= ((tAccess && tMiss) || tDoSwAcc) && tAccReady && !tAccDone;
-	tNxtDoAcc	= ((tAccess && tMiss) || tDoSwAcc) && tAccReady && !tAccDone;
+	tDoAcc		= ((tAccess && tMiss) || tDoSwAcc) && tAccReady && !tAccDone;
 
 	tMemOK		= tAccess ?
 		(tHold ? UMEM_OK_HOLD : UMEM_OK_OK) :
@@ -402,7 +446,6 @@ begin
 	tReqIxBL	<= tReqIxB;
 
 	tSwLatch	<= tNxtSwLatch;
-	tDoAcc		<= tNxtDoAcc;
 
 	tBlkSwDataL		<= tBlkSwData;
 	tBlkSwAddrL		<= tBlkSwAddr;
@@ -419,12 +462,25 @@ begin
 
 //	tAccBlkHalf	<= tNxtBlkHalf;
 
+// `ifdef def_true
+`ifndef def_true
+	tBlkData	<= memTileData[nxtReqIx];
+	tBlkAddr	<= memTileAddr[nxtReqIx];
+	tBlkFlag	<= memTileFlag[nxtReqIx];
+`ifdef jx2_mem_fulldpx
+	tBlkAddrB	<= memTileAddr[nxtReqIxB];
+`endif
+`endif
+
+// `ifndef def_true
+`ifdef def_true
 	tBlkData	<= memTileData[tReqIx];
 	tBlkAddr	<= memTileAddr[tReqIx];
 	tBlkFlag	<= memTileFlag[tReqIx];
 `ifdef jx2_mem_fulldpx
 	tBlkAddrB	<= memTileAddr[tReqIxB];
 	tBlkFlagB	<= memTileFlag[tReqIxB];
+`endif
 `endif
 	
 	if(tBlkDoSt)
@@ -445,8 +501,13 @@ begin
 		tAccDone		<= 0;
 		tAccStDone		<= 0;
 		tNxtStDone		<= 0;
+`ifdef jx2_ddr_bl64b
+		tAccBlkHalf		<= 0;
+		tNxtBlkHalf		<= 0;
+`endif
 	end
 	else
+//		if((tAccess && tMiss) || tAccLatch)
 		if(tDoAcc || tAccLatch)
 	begin
 		if((tDdrMemOK==UMEM_OK_OK) && tAccLatch)
@@ -455,16 +516,45 @@ begin
 
 			if(!tBlkDirty || tAccStDone)
 			begin
+`ifdef jx2_ddr_bl64b
+				if(tAccBlkHalf)
+				begin
+					tBlkLdData[127:64]	<= tDdrMemDataIn[63:0];
+					tBlkLdAddr	<= tAccAddr;
+					tBlkLdIx	<= tAccIx;
+					tAccDone	<= 1;
+					tAccSticky	<= 1;
+					tAccLatch	<= 0;
+				end
+				else
+				begin
+					tBlkLdData[63:0]	<= tDdrMemDataIn[63:0];
+					tNxtBlkHalf			<= 1;
+				end
+`else
 				tBlkLdData	<= tDdrMemDataIn;
 				tBlkLdAddr	<= tAccAddr;
 				tBlkLdIx	<= tAccIx;
 				tAccDone	<= 1;
 				tAccSticky	<= 1;
 				tAccLatch	<= 0;
+`endif
 			end
 			else if(tBlkDirty)
 			begin
+`ifdef jx2_ddr_bl64b
+				if(tAccBlkHalf)
+				begin
+					tNxtStDone	<= 1;
+					tNxtBlkHalf	<= 0;
+				end
+				else
+				begin
+					tNxtBlkHalf	<= 1;
+				end
+`else
 				tNxtStDone	<= 1;
+`endif
 			end
 		end
 		else if((tDdrMemOK==UMEM_OK_HOLD) && tAccLatch)
@@ -480,15 +570,31 @@ begin
 
 			if(tBlkDirty && !tNxtStDone)
 			begin
+`ifdef jx2_ddr_bl64b
+
+				tDdrMemDataOut	<= { UV64_00,
+					tNxtBlkHalf ? tBlkData[127:64] : tBlkData[63:0] };
+
+				tDdrMemAddr		<= {tBlkAddr, tNxtBlkHalf, 3'b000};
+				tAccBlkHalf		<= tNxtBlkHalf;
+`else
 				tDdrMemDataOut	<= tBlkData;
 				tDdrMemAddr		<= {tBlkAddr, 4'b0000};
+`endif
 				tDdrMemOpm		<= UMEM_OPM_WR_TILE;
 				tAccLatch		<= 1;
 			end
+//			else if(!tAccStDone)
 			else if(!tAccDone)
 			begin
+//				tDdrMemDataOut	<= UV128_XX;
 				tDdrMemDataOut	<= UV128_00;
+`ifdef jx2_ddr_bl64b
+				tDdrMemAddr		<= {tAccAddr, tNxtBlkHalf, 3'b000};
+				tAccBlkHalf		<= tNxtBlkHalf;
+`else
 				tDdrMemAddr		<= {tAccAddr, 4'b0000};
+`endif
 				tDdrMemOpm		<= UMEM_OPM_RD_TILE;
 				tAccLatch		<= 1;
 			end
@@ -503,6 +609,10 @@ begin
 		tAccDone		<= 0;
 		tAccStDone		<= 0;
 		tNxtStDone		<= 0;
+`ifdef jx2_ddr_bl64b
+		tAccBlkHalf		<= 0;
+		tNxtBlkHalf		<= 0;
+`endif
 	end
 end
 

@@ -253,14 +253,13 @@ parameter[1:0] UMEM_OK_FAULT	= 2'h3;		//FAULT (Request Failed)
 
 
 parameter[4:0] UMEM_OPM_READY	= 5'b00000;		//Ready/Idle
-
 parameter[4:0] UMEM_OPM_FAULT	= 5'b00001;		//Access Fault
-
 // parameter[4:0] UMEM_OPM_CTRLF	= 5'b00010;		//Control Flow
 parameter[4:0] UMEM_OPM_INVTLB	= 5'b00010;		//Flush TLB
 parameter[4:0] UMEM_OPM_LDTLB	= 5'b00011;		//Load TLB
 parameter[4:0] UMEM_OPM_FLUSHIS	= 5'b00100;		//Flush I$ Request
 parameter[4:0] UMEM_OPM_FLUSHDS	= 5'b00101;		//Flush D$ Request
+parameter[4:0] UMEM_OPM_TRAP	= 5'b00110;		//Raise Interrupt
 
 parameter[4:0] UMEM_OPM_RD_SB	= 5'b01000;		//Read Byte
 parameter[4:0] UMEM_OPM_RD_SW	= 5'b01001;		//Read Word
@@ -657,6 +656,8 @@ parameter[5:0] JX2_UCIX_IXS_NOP		= 6'h00;		//No-Op
 parameter[5:0] JX2_UCIX_IXS_MOVT	= 6'h01;		//Copy SR.T to Reg
 parameter[5:0] JX2_UCIX_IXS_MOVNT	= 6'h02;		//Copy !SR.T to Reg
 parameter[5:0] JX2_UCIX_IXS_LDSRMSK	= 6'h03;		//?
+parameter[5:0] JX2_UCIX_IXS_TRAPB	= 6'h04;		//Trap
+
 parameter[5:0] JX2_UCIX_IXS_INVIC	= 6'h10;		//Flush I$
 parameter[5:0] JX2_UCIX_IXS_INVDC	= 6'h11;		//Flush D$
 

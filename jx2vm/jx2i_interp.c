@@ -1561,12 +1561,16 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 	pcnt=(100.0*(ctx->tot_cyc_mem+ctx->tot_cyc_miss))/(ctx->tot_cyc);
 	printf("Cycles Spent, Mem Tot: %.2f%%\n", pcnt);
 
+
 	pcnt=(100.0*ctx->tot_cyc_miss)/(ctx->tot_cyc);
 	printf("Cycles Spent, Cache Miss: %.2f%%\n", pcnt);
 	pcnt=(100.0*ctx->tot_cyc_miss_l1)/(ctx->tot_cyc);
 	printf("Cycles Spent, Cache Miss L1: %.2f%%\n", pcnt);
 	pcnt=(100.0*ctx->tot_cyc_miss_l2)/(ctx->tot_cyc);
 	printf("Cycles Spent, Cache Miss L2: %.2f%%\n", pcnt);
+
+	pcnt=(100.0*ctx->tot_cyc_mmio)/(ctx->tot_cyc);
+	printf("Cycles Spent, MMIO: %.2f%%\n", pcnt);
 
 	pcnt=(100.0*(ctx->tot_cnt_mem_l1i-ctx->tot_cnt_miss_l1i))/
 		(ctx->tot_cnt_mem_l1i);
@@ -1592,6 +1596,7 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 	pcnt=(100.0*(ctx->tot_cnt_mem_l1-ctx->tot_cnt_mem_drd))/
 		(ctx->tot_cnt_mem_l1);
 	printf("Total Count, Cache Hit Combined D$: %.2f%%\n", pcnt);
+
 
 	return(0);
 }
@@ -1766,6 +1771,7 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 		ctx->tot_cyc_miss+=ctx->miss_cyc;
 		ctx->tot_cyc_miss_l1+=ctx->miss_cyc_l1;
 		ctx->tot_cyc_miss_l2+=ctx->miss_cyc_l2;
+		ctx->tot_cyc_mmio+=ctx->mem_cyc_mmio;
 
 		ctx->tot_cnt_mem_l1+=ctx->mem_cnt_l1;
 		ctx->tot_cnt_mem_l1i+=ctx->mem_cnt_l1i;
@@ -1781,6 +1787,7 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 		ctx->miss_cyc=0;
 		ctx->miss_cyc_l1=0;
 		ctx->miss_cyc_l2=0;
+		ctx->mem_cyc_mmio=0;
 
 		ctx->mem_cnt_l1=0;
 		ctx->mem_cnt_l2=0;

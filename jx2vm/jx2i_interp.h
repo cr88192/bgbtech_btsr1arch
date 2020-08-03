@@ -562,6 +562,7 @@ s64 tot_cyc_mem;
 s64 tot_cyc_miss;
 s64 tot_cyc_miss_l1;
 s64 tot_cyc_miss_l2;
+s64 tot_cyc_mmio;
 s64 tot_ops;
 s16 tgt_mhz;				//target MHz
 u16 rcp_mhz;				//reciprocal MHz
@@ -572,6 +573,7 @@ int mem_cyc;				//cache miss cycles
 int miss_cyc;				//cache miss cycles
 int miss_cyc_l1;			//cache miss cycles (L1 miss)
 int miss_cyc_l2;			//cache miss cycles (L2 miss)
+int mem_cyc_mmio;			//cycles spent in MMIO
 
 int mem_cnt_l1;				//cache miss cycles
 int mem_cnt_l2;				//cache miss cycles
@@ -579,8 +581,8 @@ int mem_cnt_l1i;			//cache miss cycles
 int miss_cnt_l1;			//cache miss cycles (L1 miss D$)
 int miss_cnt_l2;			//cache miss cycles (L2 miss)
 int miss_cnt_l1i;			//cache miss cycles (L1 miss I$)
-int mem_cnt_dri;				//cache miss cycles
-int mem_cnt_drd;				//cache miss cycles
+int mem_cnt_dri;			//cache miss cycles
+int mem_cnt_drd;			//cache miss cycles
 
 s64 tot_cnt_mem_l1;
 s64 tot_cnt_mem_l2;

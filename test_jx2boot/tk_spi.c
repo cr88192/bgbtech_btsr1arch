@@ -1,7 +1,8 @@
 #define SPICTRL_ACS		0x01
 #define SPICTRL_CCS		0x04
 #define SPICTRL_DCS		0x10
-#define SPICTRL_DIVN(x) ((x)<<27)
+#define SPICTRL_DIVN(x)		((x)<<27)
+#define SPICTRL_DIVN2(x)	((x)<<24)
 #define SPICTRL_XMIT	0x02
 #define SPICTRL_BUSY	0x02
 #define SPICTRL_LOOP	0x08
@@ -98,9 +99,11 @@ void TKSPI_ChipSel(int chip)
 void TKSPI_SetSpeed(int speed)
 {
 	if(!speed)
-		{ tkspi_ctl_speed=SPICTRL_DIVN(31); }
+//		{ tkspi_ctl_speed=SPICTRL_DIVN(31); }
+		{ tkspi_ctl_speed=SPICTRL_DIVN2(255); }
 	else
-		{ tkspi_ctl_speed=SPICTRL_DIVN(0); }
+//		{ tkspi_ctl_speed=SPICTRL_DIVN(0); }
+		{ tkspi_ctl_speed=SPICTRL_DIVN2(0); }
 }
 
 byte TKSPI_XchByte(byte c)
@@ -163,7 +166,8 @@ int TKSPI_ReadData(byte *buf, u32 len)
 
 //	printf("TKSPI: ReadData: buf=%p len=%d\n", buf, len);
 	
-	count=(1<<16);
+//	count=(1<<16);
+	count=(1<<20);
 	while(count>0)
 	{
 		rv=TKSPI_XchByte(0xFF);
@@ -248,7 +252,8 @@ int TKSPI_WaitReady(void)
 	u32 count;
 	byte rv;
 	
-	count=(1<<16);
+//	count=(1<<16);
+	count=(1<<20);
 	while(count>0)
 	{
 		rv=TKSPI_XchByte(0xFF);
@@ -397,8 +402,8 @@ byte TKSPI_SendCmd(byte cmd, u32 arg)
 	if (cmd==MMC_CMD12)
 		{ TKSPI_XchByte(0xFF); }
 //	n=10;
-	n=100;
-//	n=1000;
+//	n=100;
+	n=1000;
 	while(n>0)
 	{
 		res=TKSPI_XchByte(0xFF);
@@ -490,8 +495,11 @@ int TKSPI_InitDevice(void)
 
 	printf("TKSPI_InitDevice: Init 1\n");
 
+	TKSPI_SetSpeed(0);
+
+	for (n=0; n<16384; n++)
 //	for (n=0; n<1024; n++)
-	for (n=0; n<256; n++)
+//	for (n=0; n<256; n++)
 		TKSPI_XchByte(0xFF);
 
 	TKSPI_SetSpeed(0);
@@ -501,7 +509,8 @@ int TKSPI_InitDevice(void)
 
 	printf("TKSPI_InitDevice: Init 2\n");
 
-	count=256;
+//	count=256;
+	count=4096;
 	while(count>0)
 	{
 		ty=0;
@@ -556,7 +565,8 @@ int TKSPI_InitDevice(void)
 				ty=1;
 				cmd=MMC_CMD1;
 			}
-			n=1<<17;
+//			n=1<<17;
+			n=1<<20;
 			while(n)
 			{
 				s=TKSPI_SendCmd(cmd, 0);

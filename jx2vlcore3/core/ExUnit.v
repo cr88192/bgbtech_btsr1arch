@@ -148,8 +148,14 @@ reg				exHold1C1;
 reg				exHold1C2;
 reg				exHold1C3;
 
-assign		dbgExHold1 = exHold1;
-assign		dbgExHold2 = exHold2;
+reg				tDbgExHold1;
+reg				tDbgExHold2;
+
+// assign		dbgExHold1 = exHold1;
+// assign		dbgExHold2 = exHold2;
+
+assign		dbgExHold1 = tDbgExHold1;
+assign		dbgExHold2 = tDbgExHold2;
 
 reg			tDbgOutStatus1;
 reg			tDbgOutStatus2;
@@ -929,6 +935,16 @@ ExModKrrEnc	ex1KrrEnc(
 
 `ifdef jx2_use_fpu_w
 
+reg[7:0]		exB1OpUCmd;
+reg[7:0]		exB1OpUIxt;
+
+reg[5:0]		exB1RegIdRs;		//Source A, ALU / Base
+reg[5:0]		exB1RegIdRt;		//Source B, ALU / Index
+reg[5:0]		exB1RegIdRm;		//Source C, MemStore
+reg[63:0]		exB1RegValRs;		//Source A Value
+reg[63:0]		exB1RegValRt;		//Source B Value
+reg[63:0]		exB1RegValRm;		//Source C Value
+
 assign	ex1FpuValLdGRn = UV64_00;
 
 FpuExOpW	ex1Fpu(
@@ -1148,9 +1164,9 @@ ExEX3	ex3(
 
 wire[63:0]		exB1MulWVal;
 
+`ifndef jx2_use_fpu_w
 reg[7:0]		exB1OpUCmd;
 reg[7:0]		exB1OpUIxt;
-wire[1:0]		exB1Hold;
 
 reg[5:0]		exB1RegIdRs;		//Source A, ALU / Base
 reg[5:0]		exB1RegIdRt;		//Source B, ALU / Index
@@ -1158,6 +1174,9 @@ reg[5:0]		exB1RegIdRm;		//Source C, MemStore
 reg[63:0]		exB1RegValRs;		//Source A Value
 reg[63:0]		exB1RegValRt;		//Source B Value
 reg[63:0]		exB1RegValRm;		//Source C Value
+`endif
+
+wire[1:0]		exB1Hold;
 
 wire[5:0]		exB1RegIdRn1;		//Destination ID (EX1)
 wire[63:0]		exB1RegValRn1;		//Destination Value (EX1)
@@ -1815,6 +1834,20 @@ begin
 			tHoldNxtCycCnt	= 65535;
 			$display("ExUnit: Deadlock Detected");
 
+			$display("ExUnit: 1A=%d 1B=%d 1C=%d 1D=%d",
+				exHold1A, exHold1B, exHold1C, exHold1D);
+
+			$display("ExUnit: 1B1=%d 1B2=%d 1B3=%d",
+				exHold1B1, exHold1B2, exHold1B3);
+
+			$display("ExUnit: 1C1=%d 1C2=%d 1C3=%d",
+				exHold1C1, exHold1C2, exHold1C3);
+
+			$display("ExUnit: EX1=%d EX2=%d EX3=%d",
+				ex1Hold[0], ex2Hold[0], ex3Hold[0]);
+			$display("ExUnit: D$=%d I$=%d FPU=%d",
+				dcOutHold, ifOutPcOK[1], ex1FpuOK[1]);
+
 `ifdef jx2_enable_wex
 			$display("ID1: PC0=%X PC2=%X D=%X-%X OpA=%X-%X OpB=%X-%X F=%d",
 				id1ValBPc,	id1ValPc,
@@ -2306,6 +2339,8 @@ begin
 `ifdef jx2_stage_ex3
 	gprIdRnB3		= exB3RegIdRn3;
 	gprValRnB3		= exB3RegValRn3;
+//	exB3RegAluRes	= exB1ValAlu;
+	exB3RegAluRes	= 0;
 `endif
 	
 	exB2RegAluRes	= exB1ValAlu;
@@ -2319,6 +2354,8 @@ begin
 `ifdef jx2_stage_ex3
 	gprIdRnC3		= exC3RegIdRn3;
 	gprValRnC3		= exC3RegValRn3;
+//	exC3RegAluRes	= exC1ValAlu;
+	exC3RegAluRes	= 0;
 `endif
 	
 	exC2RegAluRes	= exC1ValAlu;
@@ -2370,6 +2407,14 @@ begin
 	ex2RegMulWRes	= ex1MulWVal;
 //	ex2RegFpuGRn	= ex1FpuValGRn;
 
+//	ex3RegAluRes	= ex1ValAlu;
+//	ex3RegMulRes	= ex1MulVal;
+//	ex3RegMulWRes	= ex1MulWVal;
+
+	ex3RegAluRes	= 0;
+	ex3RegMulRes	= 0;
+	ex3RegMulWRes	= 0;
+
 	dcInAddr		= ex1MemAddr;
 	dcInOpm			= ex1MemOpm;
 	dcInVal			= ex1MemDataOut;
@@ -2381,8 +2426,12 @@ begin
 
 `ifdef jx2_enable_wex
 	exB2RegMulWRes	= exB1MulWVal;
+//	exB3RegMulWRes	= exB1MulWVal;
+	exB3RegMulWRes	= 0;
 `ifdef jx2_enable_wex3w
 	exC2RegMulWRes	= exC1MulWVal;
+//	exC3RegMulWRes	= exC1MulWVal;
+	exC3RegMulWRes	= 0;
 `endif
 `endif
 
@@ -3136,6 +3185,9 @@ begin
 		/* WB */
 	
 	end
+
+	tDbgExHold1			<= exHold1;
+	tDbgExHold2			<= exHold2;
 
 	tDbgOutStatus1B		<= tDbgOutStatus1;
 	tDbgOutStatus2B		<= tDbgOutStatus2;

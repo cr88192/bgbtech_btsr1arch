@@ -256,10 +256,12 @@ assign	tBraFlush		= braFlush;
 
 always @*
 begin
-	tRegOutVal		= UV64_XX;
+//	tRegOutVal		= UV64_XX;
+	tRegOutVal		= UV64_00;
 	tRegOutId		= JX2_GR_ZZR;
 	tRegOutOK		= UMEM_OK_READY;
-	tRegValGRn		= UV64_XX;
+//	tRegValGRn		= UV64_XX;
+	tRegValGRn		= UV64_00;
 	tExHold			= 0;
 	tExValidCmd		= 0;
 `ifndef jx2_fcmp_alu

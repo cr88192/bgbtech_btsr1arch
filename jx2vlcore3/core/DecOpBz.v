@@ -976,7 +976,11 @@ begin
 				opFmid		= JX2_FMID_DRREG;
 				opIty		= JX2_ITY_NB;
 			end
-
+			11'h6z8: begin
+				opNmid		= JX2_UCMD_OP_IXS;
+				opFmid		= JX2_FMID_REG;
+				opUCmdIx	= JX2_UCIX_IXS_TRAPB;
+			end
 
 			11'h6z9: begin
 //				opNmid		= JX2_UCMD_NOP;

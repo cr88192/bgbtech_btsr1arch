@@ -392,9 +392,12 @@ begin
 //	tRegOutVal		= UV64_XX;
 //	tRegOutId		= JX2_GR_ZZR;
 	tRegOutOK		= UMEM_OK_READY;
-	tRegValGRn		= UV64_XX;
-	tRegValGRnA		= UV64_XX;
-	tRegValGRnB		= UV64_XX;
+//	tRegValGRn		= UV64_XX;
+//	tRegValGRnA		= UV64_XX;
+//	tRegValGRnB		= UV64_XX;
+	tRegValGRn		= UV64_00;
+	tRegValGRnA		= UV64_00;
+	tRegValGRnB		= UV64_00;
 	tExHold			= 0;
 	tExValidCmd		= 0;
 	tExCmdVecW		= 0;
@@ -669,7 +672,8 @@ begin
 				end
 				
 				default: begin
-					tRegValGRn	= UV64_XX;
+//					tRegValGRn	= UV64_XX;
+					tRegValGRn	= UV64_00;
 				end
 			endcase
 		end

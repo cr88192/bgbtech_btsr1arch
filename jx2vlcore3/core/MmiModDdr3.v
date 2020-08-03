@@ -161,7 +161,6 @@ parameter[15:0]	DDR_DRI_INIT_0	=	16'h8628;	/* Delay, CKE=0, 200+ us */
 
 // parameter[127:0]	DDR_DRI_INIT	= 
 
-/* verilator lint_off UNOPTFLAT */
 
 reg[15:0]		tDdrData;
 reg				tDdrOut;
@@ -247,12 +246,11 @@ assign		ddrWe	= tDdrLastWe;
 assign		ddrCke	= tDdrLastCke;
 `endif
 
+reg[127:0]		tMemDataOut;
 reg[1:0]		tMemOK;
+reg[127:0]		tMemDataOut2;
 reg[1:0]		tMemOK2;
 assign			memOK = tMemOK2;
-
-reg[127:0]		tMemDataOut;
-reg[127:0]		tMemDataOut2;
 assign			memDataOut = tMemDataOut2;
 
 reg[127:0]		tMemDataIn;
@@ -311,8 +309,6 @@ reg				tNxtPhaseHc;
 wire[15:0]		ddrData2p;
 assign		ddrData2p = tPhaseHc ? ddrData2H : ddrData2;
 
-/* verilator lint_on UNOPTFLAT */
-
 
 always @*
 begin
@@ -324,7 +320,9 @@ begin
 	tDdrData		= 0;
 //	tDdrData		= 16'hzzzz;
 	
-	tMemDataOut		= UV128_XX;
+//	tMemDataOut		= UV128_XX;
+	tMemDataOut		= UV128_00;
+	tMemOK			= UMEM_OK_READY;
 
 //	tDdrCmd			= 10'b0000000111;
 	tDdrClk			= accNextCkLo ? 2'b10 : 2'b01;
@@ -370,7 +368,7 @@ begin
 	
 //	driNextModeOut	= driModeOut;
 
-	tMemOK			= UMEM_OK_READY;
+//	tMemOK			= UMEM_OK_READY;
 
 //	driStillInit	= (driModeOut[15:0]!=0);
 	dreIsZero		= (dreCount == 0);
@@ -415,9 +413,11 @@ begin
 	/* If doing something Load/Store requests can wait. */
 	if(accState!=0)
 	begin
-		if(tMemOpm[3])
-			tMemOK		= UMEM_OK_HOLD;
-		if(tMemOpm[4])
+//		if(tMemOpm[3])
+//			tMemOK		= UMEM_OK_HOLD;
+//		if(tMemOpm[4])
+//			tMemOK		= UMEM_OK_HOLD;
+		if(tMemOpm[4:3]!=0)
 			tMemOK		= UMEM_OK_HOLD;
 	end
 
@@ -544,7 +544,8 @@ begin
 
 	6'b000001: begin	/* Access Complete, Hold */
 		tDdrCs	= 1;
-		if(tMemOpm[4] || tMemOpm[3])
+//		if(tMemOpm[4] || tMemOpm[3])
+		if(tMemOpm[4:3] != 0)
 		begin
 //			$display("DDR ReadBlk %X", accReadBlk);
 			/* Hang out here until released. */

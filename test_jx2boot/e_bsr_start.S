@@ -53,7 +53,21 @@ _exit:
 //	nop
 
 _iscore2:
+	mov		core2_isr_table, r2
+	mov		r2, vbr
+	.L0:
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	bra .L0
 
+#if 0
 	mov #999999, r2
 	.L0:
 	nop
@@ -70,6 +84,27 @@ _iscore2:
 	bra _iscore2
 	.L1:
 	jmp		r3
+#endif
+
+core2_isr_table:
+	bra8b _iscore2
+	bra8b _iscore2__isr
+	bra8b _iscore2__isr
+	bra8b _iscore2__isr
+
+_iscore2__isr:
+	mov		exsr, r7
+	mov		0xF0FF, r4
+	and		r7, r4, r6
+	cmpeq	0x80AA, r6
+	bt		_iscore2__isr_boot
+	rte
+	nop
+_iscore2__isr_boot:
+	shad.q	r7, -16, r2
+	test	r2, r2
+	bt		_iscore2
+	jmp		r2
 
 zero_bss:
 	mov __bss_start, r2
