@@ -37,7 +37,8 @@ module MemL1A(
 	regInMmcr,		regInKrr,
 	regInSr,
 	
-	regOutExc,
+	regOutExc,		regTraPc,
+	dcInTraPc,
 
 	memAddr,		memAddrB,
 	memDataIn,		memDataOut,
@@ -73,6 +74,8 @@ input[63:0]		regInKrr;
 input[63:0]		regInSr;
 
 output[63:0]	regOutExc;
+output[63:0]	regTraPc;
+input [63:0]	dcInTraPc;		//input PC
 
 output[ 47:0]	memAddr;		//Memory address (Primary)
 output[ 47:0]	memAddrB;		//Memory address (Secondary)
@@ -89,7 +92,10 @@ reg[127:0]		tMemDataOut;	//Memory Data Out
 reg[63:0]		tRegOutExc;
 reg[63:0]		tRegOutExc2;
 
-wire[3:0]		tMemAccNoRwx;
+reg[63:0]		tRegTraPc;
+reg[63:0]		tRegTraPc2;
+
+wire[5:0]		tMemAccNoRwx;
 
 `ifdef jx2_enable_mmu
 
@@ -116,6 +122,7 @@ assign	tMemAccNoRwx	= 0;
 `endif
 
 assign	regOutExc	= tRegOutExc2;
+assign	regTraPc	= tRegTraPc2;
 
 reg[1:0]		tDcOutOK;
 reg				tDcOutHold;
@@ -142,9 +149,11 @@ reg [127:0]		ifMemData;
 reg [  1:0]		ifMemOK;
 wire[ 47:0]		ifMemAddr;
 wire[  4:0]		ifMemOpm;
+reg [  5:0]		ifMemNoRwx;
 
 reg [127:0]		ifMemData2;
 reg [  1:0]		ifMemOK2;
+reg [  5:0]		ifMemNoRwx2;
 
 `ifdef jx2_enable_wex
 MemIcWxA		memIc(
@@ -153,7 +162,8 @@ MemIcWxA		memIc(
 	icOutPcOK,		icOutPcStep,
 	icInPcHold,		icInPcWxe,		dcInOpm,
 	ifMemData2,		ifMemAddr,
-	ifMemOpm,		ifMemOK2
+	ifMemOpm,		ifMemOK2,
+	ifMemNoRwx2
 	);
 `else
 MemIcA		memIc(
@@ -176,7 +186,7 @@ wire[  4:0]		dfMemOpm;
 reg [127:0]		dfMemDataIn;
 wire[127:0]		dfMemDataOut;
 reg [  1:0]		dfMemOK;
-reg [  3:0]		dfMemNoRwx;
+reg [  5:0]		dfMemNoRwx;
 
 MemDcA		memDc(
 	clock,			reset,
@@ -208,6 +218,7 @@ begin
 	tNxtLatchDc	= 0;
 	tNxtMsgLatch	= 0;
 	tRegOutExc	= UV64_00;
+	tRegTraPc	= UV64_00;
 
 //	tMemAddr	= UV32_XX;
 //	tMemAddr	= UV32_00;
@@ -232,10 +243,17 @@ begin
 
 	tIfNzOpm	= (ifMemOpm != UMEM_OPM_READY);
 	tDfNzOpm	= (dfMemOpm != UMEM_OPM_READY);
+
+//	ifMemOK	= UMEM_OK_READY;
+//	dfMemOK	= UMEM_OK_READY;
+
+	ifMemOK	= tLatchDc ? UMEM_OK_HOLD : UMEM_OK_READY;
+	dfMemOK	= tLatchIc ? UMEM_OK_HOLD : UMEM_OK_READY;
 	
-	ifMemOK	= tIfNzOpm ? UMEM_OK_HOLD : UMEM_OK_READY;
-	dfMemOK	= tDfNzOpm ? UMEM_OK_HOLD : UMEM_OK_READY;
+//	ifMemOK	= tIfNzOpm ? UMEM_OK_HOLD : UMEM_OK_READY;
+//	dfMemOK	= tDfNzOpm ? UMEM_OK_HOLD : UMEM_OK_READY;
 	dfMemNoRwx	= 0;
+	ifMemNoRwx	= 0;
 
 	if(dfMemOpm == UMEM_OPM_FAULT)
 	begin
@@ -255,13 +273,21 @@ begin
 //			ifMemAddr, ifMemOpm, memOK);
 	
 		ifMemOK		= memOK;
+		ifMemNoRwx	= tMemAccNoRwx;
 		tMemAddr	= ifMemAddr;
 		tMemAddrB	= 0;
 		tMemOpm		= ifMemOpm;
 //		tMemDataOut	= UV128_XX;
 		tMemDataOut	= UV128_00;
 		tNxtLatchIc	= tIfNzOpm || (memOK != UMEM_OK_READY);
-		
+
+		ifMemNoRwx[5]	= tTlbExc[15];
+
+//		if(tTlbExc[15])
+//		begin
+//			ifMemData = 128'h30003000_30003000_30003000_30003000;
+//		end
+
 		if(tMemAccNoRwx[2])
 //			tRegOutExc = {UV16_00, ifMemAddr, 16'h8003 };
 			tRegOutExc = { ifMemAddr, 16'h8003 };
@@ -279,9 +305,28 @@ begin
 		tMemDataOut	= dfMemDataOut;
 		tNxtLatchDc	= tDfNzOpm || (memOK != UMEM_OK_READY);
 
+		if(tMemAccNoRwx[4])
+		begin
+			/* Hold if mem-access completes before access checks. */
+			if(memOK == UMEM_OK_OK)
+				dfMemOK		= UMEM_OK_HOLD;
+		end
+
+`ifndef def_true
+		if(tTlbExc[15] && dfMemOpm[4])
+		begin
+			/* Stores are No-Op on TLB Miss */
+			tMemOpm		= UMEM_OPM_READY;
+			dfMemOK		= UMEM_OK_OK;
+			tNxtLatchDc	= tDfNzOpm;
+		end
+`endif
+
 		if(tMemAccNoRwx[0] && tMemAccNoRwx[1])
 //			tRegOutExc = {UV16_00, dfMemAddr, 16'h8001 };
 			tRegOutExc = { dfMemAddr, 16'h8001 };
+
+		dfMemNoRwx[5]=tTlbExc[15];
 	end
 
 	if(memOK==UMEM_OK_FAULT)
@@ -296,6 +341,18 @@ begin
 //		tRegOutExc = {UV16_00, tMemAddr, 16'h8000 };
 		tRegOutExc = { tMemAddr, 16'h8000 };
 	end
+	
+	if(tTlbExc[15])
+	begin
+//		$display("L1A TLB EXC %X", tTlbExc);
+		tRegOutExc = tTlbExc;
+	end
+
+//	if((tRegOutExc[15:12]==4'h8) || (tRegOutExc[15:12]==4'hA))
+//	begin
+//		ifMemOK	= tIfNzOpm ? UMEM_OK_OK : UMEM_OK_READY;
+//		dfMemOK	= tDfNzOpm ? UMEM_OK_OK : UMEM_OK_READY;
+//	end
 
 /*
 	else
@@ -313,6 +370,7 @@ always @(posedge clock)
 begin	
 	ifMemData2		<= ifMemData;
 	ifMemOK2		<= ifMemOK;
+	ifMemNoRwx2		<= ifMemNoRwx;
 
 	if(reset)
 	begin
@@ -324,6 +382,8 @@ begin
 	else
 	begin
 		tRegOutExc2	<= tRegOutExc;
+		tRegTraPc2	<= tRegTraPc;
+
 		tLatchIc	<= tNxtLatchIc;
 		tLatchDc	<= tNxtLatchDc;
 		tMsgLatch	<= tNxtMsgLatch;

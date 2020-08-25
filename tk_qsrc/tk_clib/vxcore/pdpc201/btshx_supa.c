@@ -692,16 +692,18 @@ int __start_first()
 int __start_early()
 {
 	TKMM_Init();
+	return(0);
 }
 
 int __start_late()
 {
 	__start_init();
+	return(0);
 }
 
 char *__get_cmdline()
 {
-	static char tbuf[1024];
+//	static char tbuf[1024];
 	TKPE_TaskInfo *task;
 	char **argv;
 	char *ct;
@@ -711,6 +713,10 @@ char *__get_cmdline()
 	if(!task)
 		return("");
 
+	ct=(char *)(task->argv);
+	return(ct);
+
+#if 0
 	argv=task->argv;
 	ct=tbuf;
 	for(i=0; argv[i]; i++)
@@ -719,6 +725,8 @@ char *__get_cmdline()
 		strcpy(ct, argv[i]);
 		ct+=strlen(ct);
 	}
+	return(tbuf);
+#endif
 }
 
 char **__get_cmdenv()

@@ -18,6 +18,8 @@ typedef signed int s32;
 
 int	mb_used = 12;
 
+dt_scrpix	*screen;
+
 
 void I_InitNetwork (void)
 {
@@ -211,7 +213,9 @@ void I_StartFrame (void)
 		px2|=(px2<<16);
 		px3=((u32)px1)|(((u64)((u32)px2))<<32);
 
-		cs=screens[0]+((y+viewwindowy)*BASEWIDTH)+viewwindowx;
+//		cs=screens[0]+((y+viewwindowy)*BASEWIDTH)+viewwindowx;
+		cs=screen+((y+viewwindowy)*BASEWIDTH)+viewwindowx;
+
 //		for(x=0; x<viewwidth; x++)
 //		for(x=0; x<(BASEWIDTH/4); x++)
 //		for(x=0; x<(BASEWIDTH/16); x++)
@@ -319,7 +323,9 @@ void I_InitGraphics (void)
 	
 	tk_con_disable();
 	
-	screens[0]=malloc(BASEWIDTH*BASEHEIGHT*2);
+//	screens[0]=malloc(BASEWIDTH*BASEHEIGHT*2);
+	screen=malloc(BASEWIDTH*BASEHEIGHT*2);
+	screens[0]=screen;
 	
 	vid_lastscreen=malloc(BASEWIDTH*BASEHEIGHT*2);
 	
@@ -1879,9 +1885,13 @@ void I_FinishUpdate (void)
 	((u32 *)0xF00BFF00)[0]=0x0000;		//320x200
 #endif
 
-	ics16=(u16 *)screens[0];
+//	ics16=(u16 *)screens[0];
+	ics16=(u16 *)screen;
 	icl16=vid_lastscreen;
 	ict=conbufa;
+	
+	if(!ics16)
+		return;
 
 // #if 1
 #ifdef I_SCR_BMP128K
@@ -1891,6 +1901,9 @@ void I_FinishUpdate (void)
 	{
 		ics16b=ics16;
 //		icl16b=icl16;
+
+		if(!ics16)
+			break;
 
 #if 0
 		I_FinishUpdate_ScanCopy(ics16, ict, 80);
@@ -2107,7 +2120,8 @@ void I_WaitVBL(int count)
 
 void I_ReadScreen (dt_scrpix *scr)
 {
-    memcpy (scr, screens[0], SCREENWIDTH*SCREENHEIGHT*sizeof(dt_scrpix));
+//	memcpy (scr, screens[0], SCREENWIDTH*SCREENHEIGHT*sizeof(dt_scrpix));
+	memcpy (scr, screen, SCREENWIDTH*SCREENHEIGHT*sizeof(dt_scrpix));
 }
 
 void I_BeginRead (void)

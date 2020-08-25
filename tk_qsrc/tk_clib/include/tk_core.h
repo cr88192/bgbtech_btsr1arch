@@ -23,6 +23,9 @@ typedef signed long long s64;
 typedef volatile u32 vol_u32;
 typedef volatile u64 vol_u64;
 
+typedef u64 tk_kernptr;
+typedef u64 tk_kptr;
+
 #define	bool				_Bool
 #define	true				1
 #define	false				0
@@ -37,12 +40,15 @@ typedef volatile u64 vol_u64;
 // #define UART_BASE	0xA000E010
 // #define AIC_BASE	0xA000E200
 
-#define GPIO_BASE	0xF000E100
-#define SPI_BASE	0xF000E030
-#define UART_BASE	0xF000E010
-#define AIC_BASE	0xF000E200
+#define MMIO_BASE	0xF0000000ULL
+#define MMIO_END	0xFFFFFFF0ULL
 
-#define PS2_BASE	0xF000E040
+#define GPIO_BASE	0xF000E100ULL
+#define SPI_BASE	0xF000E030ULL
+#define UART_BASE	0xF000E010ULL
+#define AIC_BASE	0xF000E200ULL
+
+#define PS2_BASE	0xF000E040ULL
 
 #define UART_RX		(UART_BASE+0x00)
 #define UART_TX		(UART_BASE+0x04)
@@ -128,9 +134,54 @@ typedef volatile u64 vol_u64;
 // #define TKMM_PAGEBASE	0x04000000
 // #define TKMM_PAGEBASE	0x03000000
 // #define TKMM_PAGEBASE	0x02000000
-#define TKMM_PAGEBASE	0x01400000
+#define TKMM_PAGEBASE	0x01400000U
 // #define TKMM_PAGEEND	0x18000000
-#define TKMM_PAGEEND	0x08000000
+#define TKMM_PAGEEND	0x08000000U
+#define TKMM_VALOSTART	0x20000000U
+
+#define TKMM_VAS_START_LO		TKMM_VALOSTART
+#define TKMM_VAS_START_HI		0x000100000000ULL
+
+#if 1
+
+#define TKMM_PAGEBITS		14
+#define TKMM_PAGEMASK		16383
+#define TKMM_MAXMMLISTSZ	65536
+#define TKMM_BRKBITS		20
+
+#else
+
+#if 0
+
+#define TKMM_PAGEBITS		12
+#define TKMM_PAGEMASK		4095
+#define TKMM_MAXMMLISTSZ	65536
+#define TKMM_BRKBITS		20
+
+#else
+
+#define TKMM_PAGEBITS		16
+#define TKMM_PAGEMASK		65535
+#define TKMM_MAXMMLISTSZ	(262144-256)
+#define TKMM_BRKBITS		20
+
+#endif
+
+#endif
+
+
+#define TKMM_PROT_NONE		0x0000
+#define TKMM_PROT_READ		0x0001
+#define TKMM_PROT_WRITE		0x0002
+#define TKMM_PROT_EXEC		0x0004
+
+#define TKMM_MAP_SHARED		0x0001
+#define TKMM_MAP_PRIVATE	0x0002
+#define TKMM_MAP_ANONYMOUS	0x0004
+#define TKMM_MAP_FIXED		0x0008
+#define TKMM_MAP_GROWSDOWN	0x0010
+#define TKMM_MAP_NORESERVE	0x0020
+#define TKMM_MAP_32BIT		0x0040
 
 // #define INITRD_ADDR	0x1003F010
 // #define INITRD_SIZE	0x1003F014
@@ -206,6 +257,9 @@ typedef struct TK_FILE_s TK_DIR;
 typedef struct TK_MOUNT_s TK_MOUNT;
 typedef struct TK_DIRENT_s TK_DIRENT;
 typedef struct TK_DATETIME_s TK_DATETIME;
+// typedef struct TK_DEVFSDEV_s TK_DEVFSDEV;
+typedef struct TK_MOUNT_s TK_DEVFSDEV;
+typedef struct TK_BLKDEVINFO_s TK_BLKDEVINFO;
 
 struct TK_FILE_VT_s {
 char *fsname;
@@ -220,6 +274,10 @@ int (*unlink)(TK_MOUNT *mnt, char *name);
 int (*rename)(TK_MOUNT *mnt, char *oldfn, char *newfn);
 int (*fstat)(TK_MOUNT *mnt, char *name, TK_FSTAT *st);
 
+int (*mkdir)(TK_MOUNT *mnt, char *name, char *mode);
+int (*rmdir)(TK_MOUNT *mnt, char *name);
+int (*fsctl)(TK_MOUNT *mnt, int cmd, void *ptr);
+
 /* FILE Ops */
 int (*fread)(void *buf, int sz1, int sz2, TK_FILE *fd);
 int (*fwrite)(void *buf, int sz1, int sz2, TK_FILE *fd);
@@ -233,6 +291,14 @@ int (*fioctl)(TK_FILE *fd, int cmd, void *ptr);
 /* DIR ops */
 TK_DIRENT *(*readdir)(TK_DIR *dir);
 int (*closedir)(TK_DIR *dir);
+
+/* Socket/Device Ops */
+int (*fsend)(TK_FILE *fd, int cmd,
+	void *msgbuf, int szmsg, int flag,
+	void *sockaddr, int szsockaddr);
+int (*frecv)(TK_FILE *fd, int cmd,
+	void *msgbuf, int szmsg, int flag,
+	void *sockaddr, int szsockaddr);
 };
 
 struct TK_FILE_s {
@@ -245,8 +311,8 @@ byte *ram_base;		//ram base (ramdisk)
 byte *ram_end;		//ram end (ramdisk)
 byte *ram_ofs;		//ram offset (ramdisk)
 int ifd;			//file handle
-u32 ofs;			//current file offset
-u32 size;			//file size
+s64 ofs;			//current file offset
+s64 size;			//file size
 };
 
 struct TK_MOUNT_s {
@@ -257,6 +323,8 @@ char *tgt;
 int szSrc;
 void *udata0;
 void *udata1;
+
+byte budata[128];
 };
 
 struct TK_DIRENT_s {
@@ -286,6 +354,32 @@ byte sec;
 byte msc4;		//multiple of ~4 milliseconds
 u16 usc4;		//microseconds, range=4096
 };
+
+#if 0
+struct TK_DEVFSDEV_s {
+TK_FILE_VT *vt;
+TK_DEVFSDEV *next;
+TK_DIRENT de;
+};
+#endif
+
+struct TK_BLKDEVINFO_s {
+u32 lba_ofs;
+u32 lba_sz;
+};
+
+typedef struct TK_VFB_RECT_s TK_VFB_RECT;
+struct TK_VFB_RECT_s {
+short sin_family;	//sockaddr
+short sin_port;		//sockaddr
+short xofs;			//X offset
+short yofs;			//Y offset
+short xsize;		//X size
+short ysize;		//Y size
+short xstr;			//X stride (pixels)
+short ystr;			//Y stride (pixels)
+};
+
 
 #ifndef TK_APIEXPORT
 #ifdef __BGBCC__

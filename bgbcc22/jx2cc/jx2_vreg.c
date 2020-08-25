@@ -552,8 +552,15 @@ int BGBCC_JX2C_EmitMovVRegVReg(
 	{
 		if(BGBCC_CCXL_IsRegImmIntP(ctx, sreg))
 		{
-			j=BGBCC_CCXL_GetRegImmIntValue(ctx, sreg);
-			BGBCC_JX2C_EmitMovVRegImm(ctx, sctx, type, dreg, j);
+			li=BGBCC_CCXL_GetRegImmIntValue(ctx, sreg);
+			BGBCC_JX2C_EmitMovVRegImm(ctx, sctx, type, dreg, li);
+			return(1);
+		}
+
+		if(BGBCC_CCXL_IsRegImmLongP(ctx, sreg))
+		{
+			li=BGBCC_CCXL_GetRegImmLongValue(ctx, sreg);
+			BGBCC_JX2C_EmitMovVRegImm(ctx, sctx, type, dreg, li);
 			return(1);
 		}
 
@@ -1505,7 +1512,8 @@ int BGBCC_JX2C_EmitJCmpVRegVReg(
 	}
 
 //	if(BGBCC_CCXL_TypePointerP(ctx, type) && sctx->is_addr_x32)
-	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, type) && sctx->is_addr_x32)
+//	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, type) && sctx->is_addr_x32)
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, type) && (ctx->arch_sizeof_ptr==4))
 	{
 		return(BGBCC_JX2C_EmitJCmpVRegVRegInt(ctx, sctx,
 			type, sreg, treg, cmp, lbl));
@@ -2121,7 +2129,8 @@ int BGBCC_JX2C_EmitPredCmpVRegVReg(
 			type, sreg, treg, cmp));
 	}
 
-	if(BGBCC_CCXL_TypePointerP(ctx, type) && sctx->is_addr_x32)
+//	if(BGBCC_CCXL_TypePointerP(ctx, type) && sctx->is_addr_x32)
+	if(BGBCC_CCXL_TypePointerP(ctx, type) && (ctx->arch_sizeof_ptr==4))
 	{
 		return(BGBCC_JX2C_EmitPredCmpVRegVRegInt(ctx, sctx,
 			type, sreg, treg, cmp));

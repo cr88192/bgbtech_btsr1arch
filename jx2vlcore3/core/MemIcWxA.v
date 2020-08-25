@@ -14,7 +14,8 @@ module MemIcWxA(
 	icInPcHold,		icInPcWxe,
 	icInPcOpm,
 	memPcData,		memPcAddr,
-	memPcOpm,		memPcOK
+	memPcOpm,		memPcOK,
+	memNoRwx
 	);
 
 input			clock;
@@ -33,6 +34,7 @@ input [127:0]	memPcData;		//memory PC data
 input [  1:0]	memPcOK;		//memory PC OK
 output[ 47:0]	memPcAddr;		//memory PC address
 output[  4:0]	memPcOpm;		//memory PC output-enable
+input [  5:0]	memNoRwx;		//No Read/Write/Execute
 
 
 reg[95:0]		tRegOutPcVal;	//output PC value
@@ -166,6 +168,12 @@ reg[4:0]		tInOpm;			//OPM (Used for cache-control)
 reg[4:0]		tInOpmB;		//OPM (Used for cache-control)
 reg[4:0]		tInPcOpm;		//OPM (Used for cache-control)
 
+reg				tTlbMissInh;
+reg				tNxtTlbMissInh;
+
+reg				tFlushA;
+reg				tFlushB;
+
 reg				tMissA;
 reg				tMissB;
 reg				tMiss;
@@ -197,6 +205,16 @@ reg[14:0]		tRegInPcP1H;
 
 always @*
 begin
+	tNxtTlbMissInh		= tTlbMissInh;
+
+	if(memNoRwx[5])
+		tNxtTlbMissInh = 1;
+	
+//	if(tRegInOpm==UMEM_OPM_READY)
+	if(tInOpm == UMEM_OPM_LDTLB)
+		tNxtTlbMissInh = 0;
+	
+
 	/* Stage A */
 
 	tRegInPc	= icInPcHold ? tInAddr : regInPc;
@@ -276,9 +294,14 @@ begin
 //		icNxtFlushMskB = JX2_L1I_FLUSHMSK;
 		icNxtDoFlush = 1;
 	end
+
+	if(((tInOpm==UMEM_OPM_LDTLB) && (tInOpmB!=UMEM_OPM_LDTLB)) || reset)
+	begin
+//		icNxtDoFlush = 1;
+	end
 	
-//	if(icDoFlush)
-	if(icNxtDoFlush)
+	if(icDoFlush)
+//	if(icNxtDoFlush)
 	begin
 		icNxtFlushMskA = JX2_L1I_FLUSHMSK;
 		icNxtFlushMskB = JX2_L1I_FLUSHMSK;
@@ -291,12 +314,25 @@ begin
 //	tMissA = (tBlkAddrA != tReqAddrA) || (tBlkAddrA[1:0]!=(~tBlkFlagA[1:0]));
 //	tMissB = (tBlkAddrB != tReqAddrB) || (tBlkAddrB[1:0]!=(~tBlkFlagB[1:0]));
 
+	tFlushA = icFlushMskA[tReqIxA];
+	tFlushB = icFlushMskB[tReqIxB];
+	
+	if(!tTlbMissInh)
+	begin
+		if(tBlkFlagA[3])
+			tFlushA = 1;
+		if(tBlkFlagB[3])
+			tFlushB = 1;
+	end
+
 	tMissA = (tBlkAddrA != tReqAddrA) ||
-		(tBlkAddrA[1:0]!=(~tBlkFlagA[1:0])) ||
-		icFlushMskA[tReqIxA];
+		(tBlkAddrA[1:0] != (~tBlkFlagA[1:0])) ||
+//		icFlushMskA[tReqIxA];
+		tFlushA;
 	tMissB = (tBlkAddrB != tReqAddrB) ||
-		(tBlkAddrB[1:0]!=(~tBlkFlagB[1:0])) ||
-		icFlushMskB[tReqIxB];
+		(tBlkAddrB[1:0] != (~tBlkFlagB[1:0])) ||
+//		icFlushMskB[tReqIxB];
+		tFlushB;
 
 	tMiss = tMissA || tMissB;
 	
@@ -587,6 +623,7 @@ reg[5:0]		tStBlkIxB;
 
 always @(posedge clock)
 begin
+	tTlbMissInh		<= tNxtTlbMissInh;
 
 	/* Stage A */
 //	tInAddr		<= icInPcHold ? tInAddr : regInPc;
@@ -651,7 +688,8 @@ begin
 			tMemLatchDnA	<= 1;
 			tStBlkDataA		<= memPcData;
 			tStBlkAddrA		<= tReqAddrA;
-			tStBlkFlagA		<= { 2'b00, ~tReqAddrA[1:0] };
+//			tStBlkFlagA		<= { 2'b00, ~tReqAddrA[1:0] };
+			tStBlkFlagA		<= { memNoRwx[5], memNoRwx[2], ~tReqAddrA[1:0] };
 			tStBlkIxA		<= tReqIxA;
 			tDoStBlkA		<= 1;
 		end
@@ -695,7 +733,8 @@ begin
 			tMemLatchDnB	<= 1;
 			tStBlkDataB		<= memPcData;
 			tStBlkAddrB		<= tReqAddrB;
-			tStBlkFlagB		<= { 2'b00, ~tReqAddrB[1:0] };
+//			tStBlkFlagB		<= { 2'b00, ~tReqAddrB[1:0] };
+			tStBlkFlagB		<= { memNoRwx[5], memNoRwx[2], ~tReqAddrB[1:0] };
 			tStBlkIxB		<= tReqIxB;
 			tDoStBlkB		<= 1;
 		end

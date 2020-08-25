@@ -5,11 +5,19 @@ AccMode:
   [31:16]=VUGID
   [15: 4]=KR Access
   [ 3: 0]=Base Access
-    3=NU
-    2=NX
-    1=NW
-    0=NR
-  
+    3=NU (Not User)
+    2=NX (No Execute)
+    1=NW (No Write)
+    0=NR (No Read)
+
+NoRwx:
+    5=Resv
+    4=Hold (Not-Ready)
+    3=NU (Not User)
+    2=NX (No Execute)
+    1=NW (No Write)
+    0=NR (No Read)
+
  */
 module MmuChkAcc(
 	clock, reset,
@@ -18,6 +26,7 @@ module MmuChkAcc(
 	regInSR,
 	regInOpm,
 	tlbInAcc,
+	tlbHix,		tlbReady,
 	accOutExc,
 	regOutNoRwx
 	);
@@ -34,17 +43,23 @@ input[63:0]		regInSR;		//Status Register
 
 input[4:0]		regInOpm;		//Operation Size/Type
 input[31:0]		tlbInAcc;		//TLB Access Mode
+`ifdef jx2_expand_tlb
+input[7:0]		tlbHix;			//TLB Index (Ready Check)
+`else
+input[5:0]		tlbHix;			//TLB Index (Ready Check)
+`endif
+input			tlbReady;		//TLB is Ready
 
 output[15:0]	accOutExc;		//Output Exception Code
-output[3:0]		regOutNoRwx;	//No R/W/X
+output[5:0]		regOutNoRwx;	//No R/W/X
 
 reg[15:0]		tAccOutExc2;	//Output Exception Code
 assign			accOutExc = tAccOutExc2;
 
 reg[15:0]		tAccOutExc;		//Output Exception Code
 
-reg[3:0]		tRegOutNoRwx;	//No R/W/X
-reg[3:0]		tRegOutNoRwx2;	//No R/W/X
+reg[5:0]		tRegOutNoRwx;	//No R/W/X
+reg[5:0]		tRegOutNoRwx2;	//No R/W/X
 assign			regOutNoRwx = tRegOutNoRwx2;
 
 reg			tVugidEnA;
@@ -72,7 +87,16 @@ reg			tKrrUsrEq;
 reg[2:0]	tKrrAccFl;
 reg[2:0]	tNextKrrAccFl;
 
+`ifdef jx2_expand_tlb
+reg[7:0]	tTlbHix1;
+reg[7:0]	tTlbHix2;
+`else
+reg[5:0]	tTlbHix1;
+reg[5:0]	tTlbHix2;
+`endif
+
 reg			tUsDeny;
+reg			tlbMmuEnable;
 
 reg[31:0]		tTlbInAcc;		//TLB Access Mode
 reg[63:0]		tRegInKRR;		//Keyring Register
@@ -87,6 +111,14 @@ always @*
 begin
 	tAccOutExc		= 0;
 	tRegOutNoRwx	= 0;
+
+	tlbMmuEnable	= regInMMCR[0];
+
+	if(regInSR[29] && regInSR[28])
+	begin
+//		$display("TLB Disable ISR");
+		tlbMmuEnable = 0;
+	end
 
 	tKrrA		= tRegInKRR[15: 0];
 	tKrrB		= tRegInKRR[31:16];
@@ -163,6 +195,9 @@ begin
 
 	tUsDeny = (tlbInAcc[3] && !regInSR[30]);
 
+	if((tTlbHix1 != tlbHix) || !tlbReady)
+		tRegOutNoRwx[4] = 1;
+
 	if(tUsDeny)
 		tRegOutNoRwx[3] = 1;
 	if(tlbInAcc[2] || tUsDeny)
@@ -177,6 +212,13 @@ begin
 //	if(tRegInOpm[3] && (tlbInAcc[0] || tUsDeny))
 //		tAccOutExc	= 16'h8001;
 
+//	if(regInSR[29] && regInSR[28])
+	if(!tlbMmuEnable)
+	begin
+		tAccOutExc	= 0;
+		tRegOutNoRwx = 0;
+	end
+
 end
 
 always @(posedge clock)
@@ -184,6 +226,9 @@ begin
 	tTlbInAcc	<= tlbInAcc;		//TLB Access Mode
 	tRegInKRR	<= regInKRR;		//Keyring Register
 	tRegInOpm	<= regInOpm;
+	tTlbHix1	<= tlbHix;
+	tTlbHix2	<= tTlbHix2;
+
 
 	tAccOutExc2		<= tAccOutExc;
 	tRegOutNoRwx2	<= tRegOutNoRwx;

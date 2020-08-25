@@ -204,6 +204,9 @@ wire[2:0]		ifOutPcStep;
 reg[2:0]		ifLastPcStep;
 reg				ifInPcHold;
 
+reg				ifValBraOk;
+reg				ifNxtValBraOk;
+
 wire			ifInPcWxe;
 
 `ifdef jx2_enable_wex
@@ -226,6 +229,8 @@ wire			dcOutHold;
 wire[63:0]		dcOutValB;
 reg [63:0]		dcInValB;
 
+reg [63:0]		dcInTraPc;
+
 assign	dbgDcInAddr	= dcInAddr;
 assign	dbgDcInOpm	= dcInOpm;
 assign	dbgDcOutVal	= dcOutVal;
@@ -234,6 +239,7 @@ assign	dbgDcOutOK	= dcOutOK;
 
 
 wire[63:0]		memRegExc;
+wire[63:0]		memRegTraPc;
 
 MemL1A		memL1(
 	clock,			reset,
@@ -249,7 +255,9 @@ MemL1A		memL1(
 
 	gprOutDlr,		gprOutDhr,
 	crOutMmcr,		crOutKrr,		crOutSr,
-	memRegExc,
+
+	memRegExc,		memRegTraPc,
+	dcInTraPc,
 
 	memAddr,		memAddrB,
 	memDataIn,		memDataOut,
@@ -398,6 +406,10 @@ wire[63:0]		gprValRt;
 wire[63:0]		gprValRu;
 wire[63:0]		gprValRv;
 
+reg				gprEx1Flush;
+reg				gprEx2Flush;
+reg				gprEx3Flush;
+
 `ifdef jx2_enable_wex3w
 
 reg[5:0]		gprIdRx;		//Source C
@@ -525,7 +537,13 @@ RegGPR_6R3W regGpr(
 	gprValImmB,		//Immediate (Decode, B)
 	gprValImmC,		//Immediate (Decode, C)
 	gprValLr,		//LR Value (CR)
-	
+
+	gprEx1Flush,	//Flush EX1
+	gprEx2Flush,	//Flush EX2
+`ifdef jx2_stage_ex3
+	gprEx3Flush,	//Flush EX3
+`endif
+
 	gprOutDlr,	gprInDlr,
 	gprOutDhr,	gprInDhr,
 `ifdef jx2_sprs_elrehr
@@ -719,6 +737,8 @@ reg [ 4:0]	crIdCn1;		//Destination ID (EX1)
 reg [63:0]	crValCn1;		//Destination Value (EX1)
 reg [ 4:0]	crIdCn2;		//Destination ID (EX2)
 reg [63:0]	crValCn2;		//Destination Value (EX2)
+reg [ 4:0]	crIdCn3;		//Destination ID (EX3)
+reg [63:0]	crValCn3;		//Destination Value (EX3)
 wire[47:0]	crOutPc;
 reg [47:0]	crInPc;
 wire[47:0]	crOutLr;
@@ -751,6 +771,16 @@ RegCR regCr(
 	crValCn1,		//Destination Value (EX1)
 	crIdCn2,		//Destination ID (EX2)
 	crValCn2,		//Destination Value (EX2)
+`ifdef jx2_stage_ex3
+	crIdCn3,		//Destination ID (EX3)
+	crValCn3,		//Destination Value (EX3)
+`endif
+
+	gprEx1Flush,	//Flush EX1
+	gprEx2Flush,	//Flush EX2
+`ifdef jx2_stage_ex3
+	gprEx3Flush,	//Flush EX3
+`endif
 
 	crOutPc,	crInPc,
 	crOutLr,	crInLr,
@@ -772,6 +802,9 @@ RegCR regCr(
 /* EX1 */	
 
 reg[63:0]		ex2RegInSr;
+
+reg[63:0]		tNxtRegExc;
+reg[63:0]		tRegExc;
 
 
 wire[63:0]		ex1MulVal;
@@ -815,6 +848,7 @@ wire[1:0]		ex1Hold;
 reg				ex1PreBra;
 reg[31:0]		ex1IstrWord;	//source instruction word
 reg				ex1BraFlush;
+reg				ex1TrapFlush;
 reg[11:0]		ex1Timers;
 
 reg[5:0]		ex1RegIdRs;		//Source A, ALU / Base
@@ -893,7 +927,7 @@ ExEX1	ex1(
 
 	ex1MemAddr,		ex1MemOpm,
 	ex1MemDataOut,	ex1MemDataOutB,
-	ex2MemDataOK
+	ex2MemDataOK,	tRegExc
 	);
 
 wire[65:0]	ex1ValAlu;
@@ -1034,6 +1068,7 @@ reg[63:0]		ex2RegMulRes;		//Multiplier Result
 reg[63:0]		ex2RegMulWRes;		//Multiplier Result (Word)
 // reg[63:0]		ex2RegFpuGRn;		//FPU GPR Result
 reg				ex2BraFlush;		//Flush EX2
+reg				ex2TrapFlush;		//Flush EX2
 
 wire[63:0]		ex2RegOutDlr;
 reg[63:0]		ex2RegInDlr;
@@ -1128,8 +1163,16 @@ reg[65:0]		ex3RegAluRes;		//Arithmetic Result
 reg[63:0]		ex3RegMulRes;		//Multiplier Result
 reg[63:0]		ex3RegMulWRes;		//Multiplier Result (Word)
 reg				ex3BraFlush;		//Flush EX2
+reg				ex3TrapFlush;		//Flush EX2
 
 reg[7:0]		ex3RegInLastSr;
+
+wire[63:0]		ex3RegOutDlr;
+reg[63:0]		ex3RegInDlr;
+wire[63:0]		ex3RegOutDhr;
+reg[63:0]		ex3RegInDhr;
+wire[47:0]		ex3RegOutLr;
+reg[47:0]		ex3RegInLr;
 
 ExEX3	ex3(
 	clock,			reset,
@@ -1477,8 +1520,8 @@ reg[47:0]	tValNextBraPc;
 reg[7:0]	opBraFlushMask;
 reg[7:0]	nxtBraFlushMask;
 
-reg[63:0]	tNxtRegExc;
-reg[63:0]	tRegExc;
+// reg[63:0]	tNxtRegExc;
+// reg[63:0]	tRegExc;
 reg[7:0]	tRegExcOfs;
 
 reg[63:0]	tDelayExc;
@@ -1499,6 +1542,9 @@ reg[15:0]	tBraNxtCycCnt;
 
 reg[15:0]	tHoldCycCnt;
 reg[15:0]	tHoldNxtCycCnt;
+
+reg			tExcLatch;
+reg			tNxtExcLatch;
 
 always @*
 begin
@@ -1523,6 +1569,9 @@ begin
 	tDbgOutStatus8	= 0;
 
 	tHoldNxtCycCnt	= 0;
+//	tNxtExcLatch	= tExcLatch;
+
+	ifNxtValBraOk	= 0;
 
 	crInExsr		= crOutExsr;
 	crInSpc			= crOutSpc;
@@ -1531,6 +1580,11 @@ begin
 //	tValNextBraPc	= UV32_XX;
 //	tValNextBraPc	= UV32_00;
 	tValNextBraPc	= UV48_00;
+
+	ex1TrapFlush	= 0;
+	ex2TrapFlush	= 0;
+	ex3TrapFlush	= 0;
+
 
 `ifdef jx2_debug_hitmiss
 	tBraNxtHitMiss	= tBraHitMiss;
@@ -2009,11 +2063,16 @@ begin
 //		end
 //	endcase
 
-	if(tDelayExc[15])
+//	if(tDelayExc[15])
+	if(tDelayExc[15] && !tRegExc[15])
 		tNxtRegExc = tDelayExc;
 
-	if(memRegExc[15])
+//	if(memRegExc[15])
+	if(memRegExc[15] && !tRegExc[15])
+	begin
+//		$display("memRegExc: %X", memRegExc);
 		tNxtRegExc = memRegExc;
+	end
 
 //	if(memBusExc[15] && (!opBraFlushMask[3]) &&
 //		!exHold1 && !exHold2 && (ex1MemOpm==0))
@@ -2021,7 +2080,8 @@ begin
 //		!exHold1 && !exHold2 && !crOutSr[28])
 //	if(memBusExc[15] && (!opBraFlushMask[3]) &&
 //		!exHold2 && !crOutSr[28])
-	if(memBusExc[15] && !crOutSr[28])
+//	if(memBusExc[15] && !crOutSr[28])
+	if(memBusExc[15] && !crOutSr[28] && !tRegExc[15])
 	begin
 //		if((memBusExc[15:12]!=4'hC) || crOutSr[3])
 		if((memBusExc[15:12]!=4'hC) || crOutSr[3])
@@ -2034,7 +2094,8 @@ begin
 			exHold1, exHold2, crOutSr[28], crOutSr);
 	end
 
-	if(ex1TrapExc[15])
+//	if(ex1TrapExc[15])
+	if(ex1TrapExc[15] && !tRegExc[15])
 		tNxtRegExc = { UV48_00, ex1TrapExc };
 
 	if(reset)
@@ -2043,6 +2104,34 @@ begin
 		exHold2		= 0;
 	end
 
+	if(tNxtRegExc[15])
+	begin
+//		$display("tNxtRegExc %X", tNxtRegExc);
+	end
+
+	if(tRegExc[15])
+	begin
+//		$display("tRegExc %X", tRegExc);
+
+//		if(!tNxtRegExc[15] && exHold2 && (tRegExc[15:12]!=4'hF))
+//		if(!tNxtRegExc[15] && exHold2)
+//		if(!tNxtRegExc[15] && (exHold2 || exHold1))
+		if(!tNxtRegExc[15] && !ifValBraOk)
+		begin
+//			$display("EXC Sustain %X", tRegExc);
+			tNxtRegExc = tRegExc;
+		end
+	end
+
+	if(tNxtRegExc[15])
+	begin
+		if(crOutSr[28] && crOutSr[29] &&
+			(tNxtRegExc[15:12]==4'hA) && ifValBraOk)
+		begin
+//			$display("EXC Filter %X", tNxtRegExc);
+			tNxtRegExc = 0;
+		end
+	end
 
 	ifInPcHold	= exHold1;
 	dcInHold	= exHold2;
@@ -2154,6 +2243,11 @@ begin
 		nxtBraFlushMask = JX2_BRA_FLUSHMSK;
 //		ex1ValBraDir[2]	= 1;
 
+		if(ex1BraFlush)
+		begin
+			$display("EX1 Invalid BRA %X", ex1RegValCn1);
+		end
+
 `ifndef def_true
 //		if(ex1PreBra)
 		if((ex1OpUCmd[5:0]==JX2_UCMD_BRA) && ex1OpUCmd[7])
@@ -2207,6 +2301,14 @@ begin
 
 //	tDelayExc		<= tNxtDelayExc;
 
+	tNxtExcLatch=0;
+	if(tRegExc[15])
+	begin
+//		$display("tRegExc: %X l=%d", tRegExc, tExcLatch);
+		if(!exHold2)
+			tNxtExcLatch=1;
+	end
+
 	tNxtDelayExc	= 0;
 	tRegSkipExc		= 0;
 	if(tRegExc[15:12]==4'hC)
@@ -2222,26 +2324,68 @@ begin
 			tNxtDelayExc	= tRegExc;
 		end
 	end
+	else
+	begin
+//		if(tRegExc[15] && tExcLatch && (tRegExc[15:12] != 4'hF))
+		if(tRegExc[15] && tExcLatch &&
+			(tRegExc[15:12] != 4'hF) &&
+			(tRegExc[15:12] != 4'hA))
+		begin
+//			tRegSkipExc		= 1;
+		end
+
+		if(crOutSr[28] && crOutSr[29] &&
+			(tRegExc[15:12]==4'hA) && ifValBraOk)
+		begin
+			tRegSkipExc		= 1;
+		end
+	end
 	
 //	if(tRegExc[15] && !crOutSr[28])
 	if(tRegExc[15] && !tRegSkipExc)
 	begin
 		if(tRegExc[15:10]==6'b111111)
 		begin
-			$display("ExUnit: RTE, SPC=%X", crOutSpc);
+//			$display("ExUnit: RTE, SPC=%X", crOutSpc);
 			tValNextBraPc	= crOutSpc;
 			nxtBraFlushMask = JX2_BRA_FLUSHMSK;
 			crInExsr		= crOutExsr;
 			crInSr			= { crOutSr[63:32], crOutExsr[63:32] };
 //			gprInSp			= { UV32_00, crOutSsp };
-			gprInSp			= { UV16_00, crOutSsp };
+			if(crOutSr[29])
+			begin
+				gprInSp			= { UV16_00, crOutSsp };
+				crInSsp			= ex1RegOutSp[47:0];
+			end
 //			crInSpc			= crOutSpc;
-			crInSr[28]		= 0;
+//			crInSr[28]		= 0;
+
+`ifndef def_true
+			if(crInSr[29] || crInSr[28])
+			begin
+				$display("RTE, Exit RB Set, SPC=%X SR=",
+					crOutSpc, crInSr);
+			end
+
+			if(exHold2)
+			begin
+				$display("ExUnit: EX1=%d EX2=%d EX3=%d",
+					ex1Hold[0], ex2Hold[0], ex3Hold[0]);
+				$display("ExUnit: D$=%d I$=%d FPU=%d",
+					dcOutHold, ifOutPcOK[1], ex1FpuOK[1]);
+			end
+`endif
+
 		end
-		else if(!crOutSr[28])
+//		else if(!crOutSr[28])
+//		else if(!crOutSr[28] || exHold2)
+//		else if(!crOutSr[28] || exHold1 || exHold2)
+		else if(!crOutSr[28] || !ifValBraOk)
 		begin
+`ifndef def_true
 			$display("ExUnit: Fault %X, id2.PC=%X ex1.PC=%X ex2.PC=%X",
 				tRegExc, id2ValBPc, ex1ValBPc, ex2ValBPc);
+`endif
 		
 	//		tValNextPc = crOutVbr;
 	//		tValNextPc = {
@@ -2256,47 +2400,100 @@ begin
 	//		nxtBraFlushMask = 8'h0F;
 			nxtBraFlushMask = JX2_BRA_FLUSHMSK;
 
-//			crInExsr		= { crOutSr[31:0], UV16_00, tRegExc[15:0] };
-			crInExsr		= { ex1RegOutSr[31:0], UV16_00, tRegExc[15:0] };
-//			crInTea			= tRegExc[47:16];
-//			crInTea			= tRegExc[63:16];
-			crInTea			= { UV16_00, tRegExc[63:16] };
-	//		crInSpc			= ifLastPc;
-//			crInSpc			= ex2ValBPc;
-//			crInSpc			= ex1ValBPc;
-//			crInSpc			= id2ValBPc;
-
-			if(!ex2BraFlush)
-				crInSpc			= ex2ValBPc;
-			else if(!ex1BraFlush)
-				crInSpc			= ex1ValBPc;
-			else if(!opBraFlushMask[0])
-				crInSpc			= id2ValBPc;
-			else if(!opBraFlushMask[1])
-				crInSpc			= id1ValBPc;
-			else
-				crInSpc		= ifLastPc;
-
-			$display("ISR PC=%X, SPC=%X", tValNextBraPc, crInSpc);
-
-			if(tRegExc[15:12]==4'b1110)
+`ifndef def_true
+			if(crOutSr[29] || crOutSr[28])
 			begin
-//				crInSpc			= id1ValBPc;
-				crInSpc			= ex1ValBPc;
+				$display("Fault, RB Set, SPC=%X SR=",
+					crOutSpc, crOutSr);
 			end
+`endif
 
-//			crInSsp			= gprOutSp[31:0];
-//			crInSsp			= ex1RegOutSp[31:0];
-			crInSsp			= ex1RegOutSp[47:0];
-	//		crInSsr			= crOutSr;
-//			crInSr			= crOutSr;
-			crInSr			= ex1RegOutSr;
-			crInSr[30:28]	= 3'b111;
+			if(!crOutSr[28])
+			begin
+	//			crInExsr		= { crOutSr[31:0], UV16_00, tRegExc[15:0] };
+	//			crInExsr		= { ex1RegOutSr[31:0], UV16_00, tRegExc[15:0] };
+//				crInExsr		= { crOutSr[31:8], ex1RegOutSr[7:0],
+//				crInExsr		= { crOutSr[31:8], ex1RegInSr[7:0],
+				crInExsr		= { crOutSr[31:8], ex2RegOutSr[7:0],
+					UV16_00, tRegExc[15:0] };
+	//			crInTea			= tRegExc[47:16];
+	//			crInTea			= tRegExc[63:16];
+				crInTea			= { UV16_00, tRegExc[63:16] };
+		//		crInSpc			= ifLastPc;
+	//			crInSpc			= ex2ValBPc;
+	//			crInSpc			= ex1ValBPc;
+	//			crInSpc			= id2ValBPc;
+//				crInLr			= crOutLr;
+
+// `ifndef def_true
+`ifdef def_true
+				if(!ex3BraFlush)
+				begin
+					crInSpc			= ex3ValBPc;
+					crInExsr[39:32]	= ex3RegInLastSr;
+					crInLr			= ex3RegInLr;
+					ex3TrapFlush	= 1;
+					ex2TrapFlush	= 1;
+					ex1TrapFlush	= 1;
+				end
+				else
+`endif
+				if(!ex2BraFlush)
+				begin
+					crInSpc			= ex2ValBPc;
+					crInExsr[39:32]	= ex2RegInLastSr;
+					crInLr			= ex2RegInLr;
+					ex2TrapFlush	= 1;
+					ex1TrapFlush	= 1;
+				end
+				else
+				if(!ex1BraFlush)
+				begin
+					crInSpc			= ex1ValBPc;
+//					crInExsr[39:32]	= ex1RegInSr[7:0];
+					crInExsr[39:32]	= ex2RegOutSr[7:0];
+//					crInLr			= ex1RegInLr;
+					crInLr			= crOutLr;
+					ex1TrapFlush	= 1;
+				end
+				else if(!opBraFlushMask[0])
+					crInSpc			= id2ValBPc;
+				else if(!opBraFlushMask[1])
+					crInSpc			= id1ValBPc;
+				else
+					crInSpc		= ifLastPc;
+
+				$display("ISR VBR=%X PC=%X, SPC=%X",
+					crOutVbr, tValNextBraPc, crInSpc);
+
+				if(tRegExc[15:12]==4'b1110)
+				begin
+	//				crInSpc			= id1ValBPc;
+					crInSpc			= ex1ValBPc;
+				end
+
+				if(!crOutSr[29])
+				begin
+					crInSsp			= ex1RegOutSp[47:0];
+					gprInSp			= { UV16_00, crOutSsp };
+				end
+
+	//			crInSsp			= gprOutSp[31:0];
+	//			crInSsp			= ex1RegOutSp[31:0];
+//				crInSsp			= ex1RegOutSp[47:0];
+		//		crInSsr			= crOutSr;
+
+	//			crInSr			= crOutSr;
+				crInSr			= ex1RegOutSr;
+				crInSr[30:28]	= 3'b111;
+			end
 		end
 		else
 		begin
+`ifndef def_true
 			$display("ExUnit: Double-Fault EXC=%X, id2.PC=%X ex1.PC=%X ex2.PC=%X",
 				tRegExc, id2ValBPc, ex1ValBPc, ex2ValBPc);
+`endif
 		end
 	end
 
@@ -2306,6 +2503,7 @@ begin
 //		if(crOutSr[28])
 //			$display("Branch %X", tValNextBraPc);
 		tValNextPc = tValBraPc;
+		ifNxtValBraOk = 1;
 	end
 `else
 	if(nxtBraFlushMask[3])
@@ -2313,6 +2511,7 @@ begin
 //		if(crOutSr[28])
 //			$display("Branch %X", tValNextBraPc);
 		tValNextPc = tValNextBraPc;
+		ifNxtValBraOk = 1;
 	end
 `endif
 
@@ -2365,12 +2564,20 @@ begin
 	crValCn1		= ex1RegValCn1;
 	crIdCn2			= ex2RegIdCn2;
 	crValCn2		= ex2RegValCn2;
+`ifdef jx2_stage_ex3
+	crIdCn3			= ex3RegIdCn3;
+	crValCn3		= ex3RegValCn3;
+`endif
 	
 // `ifdef jx2_enable_fpu
 `ifdef jx2_enable_fprs
 	gprIdFRn		= ex1RegIdFRn;
 	gprValFRn		= ex1RegValFRn;
 `endif
+
+	gprEx1Flush = ex1BraFlush || ex1TrapFlush;
+	gprEx2Flush = ex2BraFlush || ex2TrapFlush;
+	gprEx3Flush = ex3BraFlush || ex3TrapFlush;
 
 
 	/* ID2 */
@@ -2388,14 +2595,15 @@ begin
 
 
 	/* EX1 */
-//	ex1RegInDlr		= gprOutDlr;
-//	ex1RegInDhr		= gprOutDhr;
-//	ex1RegInSp		= gprOutSp;
-//	ex1RegInLr		= crOutLr;
-	ex1RegInDlr		= ex2RegOutDlr;
-	ex1RegInDhr		= ex2RegOutDhr;
-	ex1RegInSp		= ex2RegOutSp;
-	ex1RegInLr		= ex2RegOutLr;
+	ex1RegInDlr		= gprOutDlr;
+	ex1RegInDhr		= gprOutDhr;
+	ex1RegInSp		= gprOutSp;
+	ex1RegInLr		= crOutLr;
+
+//	ex1RegInDlr		= ex2RegOutDlr;
+//	ex1RegInDhr		= ex2RegOutDhr;
+//	ex1RegInSp		= ex2RegOutSp;
+//	ex1RegInLr		= ex2RegOutLr;
 
 //	ex1RegInSr		= crOutSr;
 	ex1RegInSr		= ex2RegOutSr;
@@ -2420,6 +2628,7 @@ begin
 	dcInVal			= ex1MemDataOut;
 //	dcInValB		= ex1MemDataOutB;
 	dcInValB		= exB1RegValRn1;
+	dcInTraPc		= { UV16_00, ex1ValBPc };
 
 //	if(exB1RegIdRn1 == JX2_GR_DCINB)
 //		dcInValB	= exB1RegValRn1;
@@ -2441,10 +2650,10 @@ begin
 	ex2MemDataInB	= dcOutValB;
 	ex2MemDataOK	= dcOutOK;
 
-	ex2RegInDlr		= gprOutDlr;
-	ex2RegInDhr		= gprOutDhr;
+//	ex2RegInDlr		= gprOutDlr;
+//	ex2RegInDhr		= gprOutDhr;
 	ex2RegInSp		= gprOutSp;
-	ex2RegInLr		= crOutLr;
+//	ex2RegInLr		= crOutLr;
 	ex2RegInSr		= crOutSr;
 	ex2RegInSchm	= 0;
 
@@ -2466,7 +2675,13 @@ begin
 //	tRegExc			<= tNxtRegExc;
 	tDelayExc		<= tNxtDelayExc;
 
+	if(tNxtRegExc[15] && (tNxtRegExc[15:12] != 4'hC))
+	begin
+		tRegExc		<= tNxtRegExc;
+	end
+
 	tHoldCycCnt		<= tHoldNxtCycCnt;
+	tExcLatch		<= tNxtExcLatch;
 
 `ifdef jx2_debug_hitmiss
 	tBraHitMiss		<= tBraNxtHitMiss;
@@ -2636,6 +2851,7 @@ begin
 		ifLastPcStep	<= ifOutPcStep;
 		opBraFlushMask	<= nxtBraFlushMask;
 //		ifValPc			<= tValNextPc;
+		ifValBraOk		<= ifNxtValBraOk;
 
 
 		/* ID1 */
@@ -3067,7 +3283,8 @@ begin
 		ex2OpUCmd		<= ex1OpUCmd;
 		ex2OpUIxt		<= ex1OpUIxt;
 		ex2PreBra		<= ex1PreBra;
-		ex2BraFlush		<= ex1BraFlush;
+//		ex2BraFlush		<= ex1BraFlush;
+		ex2BraFlush		<= ex1BraFlush || ex1TrapFlush;
 		ex2RegInLastSr	<= ex1RegInSr[7:0];
 
 		ex2RegIdRs		<= ex1RegIdRs;
@@ -3085,6 +3302,10 @@ begin
 		ex2RegValCn1	<= ex1RegValCn1;
 		ex2RegValPc		<= ex1RegValPc;
 		ex2RegValImm	<= ex1RegValImm;
+
+		ex2RegInLr		<= ex1RegOutLr;
+		ex2RegInDlr		<= ex1RegOutDlr;
+		ex2RegInDhr		<= ex1RegOutDhr;
 
 `ifdef jx2_enable_wex
 		exB2OpUCmd		<= exB1OpUCmd;
@@ -3132,7 +3353,8 @@ begin
 		ex3OpUCmd		<= ex2OpUCmd;
 		ex3OpUIxt		<= ex2OpUIxt;
 		ex3PreBra		<= ex2PreBra;
-		ex3BraFlush		<= ex2BraFlush;
+//		ex3BraFlush		<= ex2BraFlush;
+		ex3BraFlush		<= ex2BraFlush || ex2TrapFlush;
 		ex3RegInLastSr	<= ex2RegInLastSr;
 
 		ex3RegIdRs		<= ex2RegIdRs;
@@ -3147,6 +3369,10 @@ begin
 		ex3RegValCn2	<= ex2RegValCn2;
 		ex3RegValPc		<= ex2RegValPc;
 		ex3RegValImm	<= ex2RegValImm;
+
+		ex3RegInLr		<= ex2RegOutLr;
+		ex3RegInDlr		<= ex2RegOutDlr;
+		ex3RegInDhr		<= ex2RegOutDhr;
 
 `ifdef jx2_enable_wex
 		exB3OpUCmd		<= exB2OpUCmd;

@@ -11,6 +11,9 @@
 #define TK_UMSG_CONPUTC			0x1008
 #define TK_UMSG_CONGETCH		0x1009
 #define TK_UMSG_CONKBHIT		0x100A
+#define TK_UMSG_GETENVVARIDX	0x100B
+#define TK_UMSG_GETENVVAR		0x100C
+#define TK_UMSG_SETENVVAR		0x100D
 
 #define TK_UMSG_VFOPEN			0x1020
 #define TK_UMSG_VFOPENDIR		0x1021
@@ -25,6 +28,11 @@
 #define TK_UMSG_VFSEEK			0x102A
 #define TK_UMSG_VFCLOSE			0x102B
 #define TK_UMSG_VFIOCTL			0x102C
+#define TK_UMSG_VFSCTL			0x102D
+#define TK_UMSG_VFMKDIR			0x102E
+#define TK_UMSG_VFRMDIR			0x102F
+#define TK_UMSG_VFSEND			0x1030
+#define TK_UMSG_VFRECV			0x1031
 
 // #define TK_UMSG_VFTELL			0x102B
 // #define TK_UMSG_VFGETC			0x102D
@@ -35,6 +43,16 @@
 
 #define TK_URES_ERR_UNKNOWN		0xFFFF
 #define TK_URES_ERR_BADMSG		0xFFF0
+
+#define TK_IOC_SEND				0x4000
+#define TK_IOC_RECV				0x4001
+#define TK_IOC_SENDTO			0x4002
+#define TK_IOC_RECVFROM			0x4003
+#define TK_IOC_SENDMSG			0x4004
+#define TK_IOC_RECVMSG			0x4005
+
+#define TK_IOC_VFB_BLIT			0x4101
+#define TK_IOC_VFB_COPYRECT		0x4102
 
 typedef union TK_SysArg_s TK_SysArg;
 union TK_SysArg_s {

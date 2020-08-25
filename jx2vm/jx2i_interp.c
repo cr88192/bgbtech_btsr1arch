@@ -1,9 +1,55 @@
+/*
+ Copyright (c) 2018-2020 Brendan G Bohannon
+
+ Permission is hereby granted, free of charge, to any person
+ obtaining a copy of this software and associated documentation
+ files (the "Software"), to deal in the Software without
+ restriction, including without limitation the rights to use,
+ copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the
+ Software is furnished to do so, subject to the following
+ conditions:
+
+ The above copyright notice and this permission notice shall be
+ included in all copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ OTHER DEALINGS IN THE SOFTWARE.
+*/
+
 BJX2_Context *BJX2_AllocContext(void)
 {
 	BJX2_Context *tmp;
 	
 	tmp=malloc(sizeof(BJX2_Context));
 	memset(tmp, 0, sizeof(BJX2_Context));
+	return(tmp);
+}
+
+BJX2_Context *BJX2_CreateSubContext(BJX2_Context *pctx)
+{
+	BJX2_Context *tmp;
+	int i, j, k;
+	
+	tmp=BJX2_AllocContext();
+	
+	tmp->ctx_parent=pctx;
+	tmp->ctx_next=pctx->ctx_child;
+	pctx->ctx_child=tmp;
+	
+	for(i=0; i<32; i++)
+	{
+		tmp->span[i]=pctx->span[i];
+	}
+	
+	tmp->n_span=pctx->n_span;
+	
 	return(tmp);
 }
 
@@ -72,7 +118,7 @@ void BJX2_ContextFreeTrace(BJX2_Context *ctx, BJX2_Trace *tmp)
 BJX2_Trace *BJX2_GetTraceForAddr(BJX2_Context *ctx, bjx2_addr addr)
 {
 	BJX2_Trace *cur, *prv;
-	int h;
+	int i, h;
 
 #if 0
 	h=((addr*65521)>>16)&1023;
@@ -133,10 +179,17 @@ BJX2_Trace *BJX2_GetTraceForAddr(BJX2_Context *ctx, bjx2_addr addr)
 	
 	cur=BJX2_ContextAllocTrace(ctx);
 	cur->addr=addr;
+
+	i=BJX2_DecodeTraceForAddr(ctx, cur, addr);
+	if(i<0)
+	{
+		BJX2_ContextFreeTrace(ctx, cur);
+		return(NULL);
+	}
+
 	cur->hnext=ctx->trhash[h];
 	ctx->trhash[h]=cur;
-
-	BJX2_DecodeTraceForAddr(ctx, cur, addr);
+	
 	BJX2_CheckJitTrace(ctx, cur);
 
 	return(cur);
@@ -166,10 +219,15 @@ int BJX2_DecodeTraceFlushCache(BJX2_Context *ctx)
 
 int BJX2_ThrowFaultStatus(BJX2_Context *ctx, int status)
 {
+	u64 exc, sr0;
 	int i;
 
 	if(status==BJX2_FLT_IOPOKE)
 	{
+//		sr0=ctx->regs[BJX2_REG_SR];
+//		if(sr0&(1<<28))
+//			return(0);
+
 		ctx->tr_rnxt=NULL;
 		ctx->tr_rjmp=NULL;
 		return(0);
@@ -180,15 +238,51 @@ int BJX2_ThrowFaultStatus(BJX2_Context *ctx, int status)
 
 	if(status==BJX2_FLT_SCRPOKE)
 	{
+//		sr0=ctx->regs[BJX2_REG_SR];
+//		if(sr0&(1<<28))
+//			return(0);
+
+//		return(0);
+
 		ctx->tr_rnxt=NULL;
 		ctx->tr_rjmp=NULL;
 		ctx->status=status;
 		return(0);
 	}
 
-#if 1
-	if((status&0xF000)==0x8000)
+	if(	(status==BJX2_FLT_BREAK)	||
+		(status==BJX2_FLT_CCFLUSH))
 	{
+		ctx->tr_rnxt=NULL;
+		ctx->tr_rjmp=NULL;
+		ctx->status=status;
+		return(0);
+	}
+
+	if((status&0xF000)==0xC000)
+	{
+		i=-1;
+		sr0=ctx->regs[BJX2_REG_SR];
+		if(sr0&(1<<28))
+			return(0);
+
+//		return(0);
+	}
+
+#if 1
+//	if((status&0xF000)==0x8000)
+	if(	((status&0xF000)==0x8000) ||
+		((status&0xF000)==0xA000)	)
+	{
+		sr0=ctx->regs[BJX2_REG_SR];
+		exc=(sr0<<32)|(status&65535);
+		ctx->regs[BJX2_REG_EXSR]=exc;
+
+		if(sr0&(1<<29))
+		{
+			__debugbreak();
+		}
+
 //		ctx->regs[BJX2_REG_EXSR]=status;
 		for(i=0; i<128; i++)
 			ctx->ex_regs[i]=ctx->regs[i];
@@ -202,10 +296,35 @@ int BJX2_ThrowFaultStatus(BJX2_Context *ctx, int status)
 //		printf("Syscall\n");
 	}
 
+	if((status&0xF000)==0xA000)
+	{
+		i=-1;
+//		printf("Syscall\n");
+
+		exc=ctx->regs[BJX2_REG_SR];
+		exc=(exc<<32)|(status&65535);
+		ctx->regs[BJX2_REG_EXSR]=exc;
+
+//		printf("Throw\n");
+//		BJX2_DbgPrintRegs(ctx);
+	}
+
 //	ctx->regs[BJX2_REG_EXSR]=status;
-	ctx->regs[BJX2_REG_EXSR]=
-		(ctx->regs[BJX2_REG_EXSR]&(~65535))|
-		(status&65535);
+//	ctx->regs[BJX2_REG_EXSR]=
+//		(ctx->regs[BJX2_REG_EXSR]&(~65535))|
+//		(status&65535);
+
+	sr0=ctx->regs[BJX2_REG_SR];
+	exc=(sr0<<32)|(status&65535);
+
+	if(sr0&(1<<29))
+	{
+		__debugbreak();
+	}
+
+//	exc=(ctx->regs[BJX2_REG_TEA]<<16)|(status&65535);
+
+	ctx->regs[BJX2_REG_EXSR]=exc;
 	ctx->tr_rnxt=NULL;
 	ctx->tr_rjmp=NULL;
 	ctx->status=status;
@@ -284,15 +403,20 @@ int BJX2_FaultSwapRegs2(BJX2_Context *ctx)
 
 int BJX2_FaultEnterRegs(BJX2_Context *ctx, int exsr)
 {
-	u64 va, vb;
+	u64 va, vb, vc;
 	int i;
 
 //	BJX2_FaultSwapRegs2(ctx);
 
 	va=ctx->regs[BJX2_REG_SR];
 	vb=ctx->regs[BJX2_REG_EXSR];
-	va=(va<<32)|((u32)vb);
-	ctx->regs[BJX2_REG_EXSR]=va;
+	vc=(va<<32)|((u32)vb);
+	ctx->regs[BJX2_REG_EXSR]=vc;
+
+	if(va&(1<<29))
+	{
+		__debugbreak();
+	}
 
 	va=ctx->regs[BJX2_REG_PC];
 //	vb=ctx->regs[BJX2_REG_SPC];
@@ -328,8 +452,10 @@ int BJX2_FaultEnterRegs(BJX2_Context *ctx, int exsr)
 
 int BJX2_FaultExitRegs(BJX2_Context *ctx, int exsr)
 {
-	u64 va, vb;
+	u64 va, vb, sr0;
 	int i;
+
+	sr0=ctx->regs[BJX2_REG_SR];
 
 //	BJX2_FaultSwapRegs2(ctx);
 
@@ -338,18 +464,27 @@ int BJX2_FaultExitRegs(BJX2_Context *ctx, int exsr)
 	va=(va&0xFFFFFFFF00000000ULL)|((u32)(vb>>32));
 	ctx->regs[BJX2_REG_SR]=va;
 
+	if(va&(1<<29))
+	{
+		__debugbreak();
+	}
+
 //	va=ctx->regs[BJX2_REG_PC];
 	vb=ctx->regs[BJX2_REG_SPC];
 	ctx->regs[BJX2_REG_PC]=vb;
 //	ctx->regs[BJX2_REG_SPC]=va;
 
 //	if((exsr&0xF000)!=0xE000)
-	if(1)
+//	if(1)
+	if(sr0&(1<<29))
 	{
 		va=ctx->regs[BJX2_REG_SP];
 		vb=ctx->regs[BJX2_REG_SSP];
 		ctx->regs[BJX2_REG_SP]=vb;
 		ctx->regs[BJX2_REG_SSP]=va;
+	}else
+	{
+//		__debugbreak();
 	}
 
 //	va=ctx->regs[BJX2_REG_LR];
@@ -373,11 +508,17 @@ int BJX2_FaultExitRegs(BJX2_Context *ctx, int exsr)
 
 int BJX2_FaultEnterInterrupt(BJX2_Context *ctx)
 {
-	u64 vbr, exsr, pc1;
+	u64 vbr, exsr, sr0, pc1;
 	int i, j, k;
 
-	if(ctx->regs[BJX2_REG_SR]&(1<<28))
+	sr0=ctx->regs[BJX2_REG_SR];
+	if(sr0&(1<<28))
 	{
+		exsr=ctx->regs[BJX2_REG_EXSR];
+		if((exsr&0xF000)==0xC000)
+			return(0);
+
+		__debugbreak();
 		return(0);
 	}
 
@@ -386,17 +527,37 @@ int BJX2_FaultEnterInterrupt(BJX2_Context *ctx)
 #if 1
 		exsr=ctx->regs[BJX2_REG_EXSR];
 //		exsr=ctx->status;
-		if(((exsr&0xF000)==0x8000) &&
+		if(	((exsr&0xF000)==0x8000) &&
 			(exsr!=BJX2_FLT_BREAK) &&
 //			(exsr==ctx->ex_regs[BJX2_REG_EXSR]))
 			(((u16)exsr)==((u16)ctx->ex_regs[BJX2_REG_EXSR])))
 		{
 			for(i=0; i<128; i++)
+			{
+				if(i==BJX2_REG_EXSR)
+					continue;
 				ctx->regs[i]=ctx->ex_regs[i];
+			}
 			for(i=0; i<32; i++)
 				ctx->fpreg[i]=ctx->ex_fpreg[i];
 		}
 //		ctx->ex_regs[BJX2_REG_EXSR]=0;
+
+#if 1
+		if(	((exsr&0xF000)==0xA000) &&
+			(((u16)exsr)==((u16)ctx->ex_regs[BJX2_REG_EXSR]))	)
+		{
+			for(i=0; i<128; i++)
+			{
+				if(i==BJX2_REG_EXSR)
+					continue;
+				ctx->regs[i]=ctx->ex_regs[i];
+			}
+			for(i=0; i<32; i++)
+				ctx->fpreg[i]=ctx->ex_fpreg[i];
+		}
+#endif
+
 #endif
 
 //		BJX2_FaultSwapRegs(ctx);
@@ -436,11 +597,20 @@ int BJX2_FaultEnterInterrupt(BJX2_Context *ctx)
 
 int BJX2_FaultLeaveInterrupt(BJX2_Context *ctx)
 {
-	if(ctx->regs[BJX2_REG_SR]&(1<<29))
+	u64 sr;
+
+	sr=ctx->regs[BJX2_REG_SR];
+//	if(sr&(1<<29))
+	if(1)
 	{
 //		BJX2_FaultSwapRegs(ctx);
 		BJX2_FaultExitRegs(ctx, ctx->regs[BJX2_REG_EXSR]);
-		ctx->regs[BJX2_REG_SR]&=~(1<<29);	//Clear RB
+//		ctx->regs[BJX2_REG_SR]&=~(1<<29);	//Clear RB
+
+		ctx->trcur=NULL;
+		ctx->tr_rnxt=NULL;
+		ctx->tr_rjmp=NULL;
+		return(0);
 	}
 	ctx->regs[BJX2_REG_SR]&=~(1<<29);	//Clear RB
 	ctx->trcur=NULL;
@@ -619,6 +789,8 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_LDI:			s0="LDI";		break;
 	case BJX2_NMID_JLDI:		s0="JLDI";		break;
 	case BJX2_NMID_LDIQ:		s0="LDIQ";		break;
+
+	case BJX2_NMID_LDTLB:		s0="LDTLB";		break;
 
 	case BJX2_NMID_MOVX2:		s0="MOV.X";		break;
 	case BJX2_NMID_PUSHX2:		s0="PUSH.X";	break;
@@ -1295,6 +1467,12 @@ int BJX2_DbgPrintTrace(BJX2_Context *ctx, BJX2_Trace *tr)
 	char *bn2;
 	int i;
 	
+	if(!tr)
+	{
+		printf("PC @ ...  NULL Trace\n");
+		return(0);
+	}
+	
 	bn2=BJX2_DbgNameForAddr(ctx, tr->addr, &ba2);
 
 	if(bn2)
@@ -1614,6 +1792,7 @@ int BJX2_DbgDump(BJX2_Context *ctx)
 		for(i=0; i<32; i++)
 		{
 			pc=ctx->pclog[(ctx->pclogrov-32+i)&63];
+			ctx->trapc=pc;
 			cur=BJX2_GetTraceForAddr(ctx, pc);
 			BJX2_DbgPrintTrace(ctx, cur);
 		}
@@ -1704,7 +1883,14 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 		if(!cur)
 		{
 			pc=ctx->regs[BJX2_REG_PC];
+			ctx->trapc=pc;
 			cur=BJX2_GetTraceForAddr(ctx, pc);
+
+			if(ctx->status)
+			{
+				if(BJX2_UpdateForStatus(ctx))
+					continue;
+			}
 		}
 
 //		if(cur && (cur->addr!=ctx->regs[BJX2_REG_PC]))
@@ -1808,6 +1994,9 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 
 		if(ctx->ttick_hk<=0)
 		{
+			pc=ctx->regs[BJX2_REG_PC];
+			ctx->trapc=pc;
+
 			ctx->nttick_irq++;
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_TIMER);
 			while(ctx->ttick_hk<=0)

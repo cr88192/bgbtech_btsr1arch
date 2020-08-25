@@ -696,6 +696,7 @@ bccx_cxstate bgbcc_rcst_iproto;
 bccx_cxstate bgbcc_rcst_keyword;
 
 bccx_cxstate bgbcc_rcst_label;
+bccx_cxstate bgbcc_rcst_lambda;
 bccx_cxstate bgbcc_rcst_lang;
 bccx_cxstate bgbcc_rcst_left;
 bccx_cxstate bgbcc_rcst_linecomment;

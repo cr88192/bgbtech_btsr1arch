@@ -2284,6 +2284,14 @@ int BGBCC_JX2C_EmitLabelFlushRegisters(
 		sctx->maxreg_gpr_lf=bgbcc_jx2_maxreg_egpr_lf;
 	}
 
+	if(sctx->is_addr64)
+	{
+		if(!sctx->is_addr_x32)
+		{
+			sctx->pcachereg=sctx->qcachereg;
+		}
+	}
+
 //	for(i=0; i<5; i++)
 //	for(i=0; i<bgbcc_jx2_maxreg; i++)
 //	for(i=0; i<sctx->maxreg_gpr; i++)

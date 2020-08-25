@@ -640,10 +640,17 @@ int nmid;
 {"mov.w",	BGBCC_SH_NMID_MOVW},
 {"mov.l",	BGBCC_SH_NMID_MOVL},
 {"mov.q",	BGBCC_SH_NMID_MOVQ},
+{"mov.p",	BGBCC_SH_NMID_MOVP},
 
 {"movu.b",	BGBCC_SH_NMID_MOVUB},
 {"movu.w",	BGBCC_SH_NMID_MOVUW},
 {"movu.l",	BGBCC_SH_NMID_MOVUL},
+
+{"lea.b",	BGBCC_SH_NMID_LEAB},
+{"lea.w",	BGBCC_SH_NMID_LEAW},
+{"lea.l",	BGBCC_SH_NMID_LEAL},
+{"lea.q",	BGBCC_SH_NMID_LEAQ},
+{"lea.p",	BGBCC_SH_NMID_LEAP},
 
 {"add",		BGBCC_SH_NMID_ADD},
 {"addc",	BGBCC_SH_NMID_ADDC},
@@ -805,10 +812,6 @@ int nmid;
 {"brk",		BGBCC_SH_NMID_BRK},
 {"movrt",	BGBCC_SH_NMID_MOVRT},
 {"movca.l",	BGBCC_SH_NMID_MOVCAL},
-{"lea.b",	BGBCC_SH_NMID_LEAB},
-{"lea.w",	BGBCC_SH_NMID_LEAW},
-{"lea.l",	BGBCC_SH_NMID_LEAL},
-{"lea.q",	BGBCC_SH_NMID_LEAQ},
 {"shad.q",	BGBCC_SH_NMID_SHADQ},
 {"shld.q",	BGBCC_SH_NMID_SHLDQ},
 
@@ -1319,6 +1322,12 @@ int BGBCC_JX2A_ParseCheckFeature(BGBCC_JX2_Context *ctx, char *sym)
 
 	if(!bgbcc_stricmp(sym, "bjx1_fpu_gfp"))
 		return(ctx->fpu_gfp);
+
+	if(!bgbcc_stricmp(sym, "bjx2_ptr32"))
+		return(ctx->is_addr_x32);
+	if(!bgbcc_stricmp(sym, "bjx2_ptr64"))
+		return(!(ctx->is_addr_x32));
+
 
 	if(!bgbcc_stricmp(sym, "bjx2_wex"))
 		return(ctx->use_wexmd!=0);

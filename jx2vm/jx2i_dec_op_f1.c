@@ -1,3 +1,28 @@
+/*
+ Copyright (c) 2018-2020 Brendan G Bohannon
+
+ Permission is hereby granted, free of charge, to any person
+ obtaining a copy of this software and associated documentation
+ files (the "Software"), to deal in the Software without
+ restriction, including without limitation the rights to use,
+ copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the
+ Software is furnished to do so, subject to the following
+ conditions:
+
+ The above copyright notice and this permission notice shall be
+ included in all copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ OTHER DEALINGS IN THE SOFTWARE.
+*/
+
 int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
 	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2, u32 jbits)
 {
@@ -157,9 +182,14 @@ int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
 		}
 		if(op->rn==1)
 		{
-			if(op->imm&3)break;
-			op->imm=(op->imm>>2);
+//			if(op->imm&3)break;
+//			op->imm=(op->imm>>2);
 			op->rn=BJX2_REG_GBR;
+
+			op->nmid=BJX2_NMID_MOVL;
+			op->fmid=BJX2_FMID_REGSTREGDISP;
+			op->Run=BJX2_Op_MOVL_RegStRegDisp1;
+			break;
 		}
 		op->nmid=BJX2_NMID_MOVL;
 		op->fmid=BJX2_FMID_REGSTREGDISP;
@@ -188,9 +218,14 @@ int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
 		}
 		if(op->rn==1)
 		{
-			if(op->imm&7)break;
-			op->imm=(op->imm>>3);
+//			if(op->imm&7)break;
+//			op->imm=(op->imm>>3);
 			op->rn=BJX2_REG_GBR;
+
+			op->nmid=BJX2_NMID_MOVQ;
+			op->fmid=BJX2_FMID_REGSTREGDISP;
+			op->Run=BJX2_Op_MOVQ_RegStRegDisp1;
+			break;
 		}
 		op->nmid=BJX2_NMID_MOVQ;
 		op->fmid=BJX2_FMID_REGSTREGDISP;
@@ -321,9 +356,21 @@ int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
 	case 0x9:	/* F1ed_9dzz */
 		if(op->rm==1)
 		{
-			if(op->imm&1)break;
-			op->imm=(op->imm>>1);
+//			if(op->imm&1)break;
+//			op->imm=(op->imm>>1);
+//			op->rm=BJX2_REG_GBR;
+
 			op->rm=BJX2_REG_GBR;
+
+			op->nmid=BJX2_NMID_MOVW;
+			op->fmid=BJX2_FMID_LDREGDISPREG;
+			op->Run=BJX2_Op_MOVW_LdRegDisp1Reg;
+			if(eq)
+			{
+				op->nmid=BJX2_NMID_MOVUW;
+				op->Run=BJX2_Op_MOVUW_LdRegDisp1Reg;
+			}
+			break;
 		}
 		op->nmid=BJX2_NMID_MOVW;
 		op->fmid=BJX2_FMID_LDREGDISPREG;
@@ -347,9 +394,19 @@ int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
 	case 0xA:	/* F1ed_Adzz */
 		if(op->rm==1)
 		{
-			if(op->imm&3)break;
-			op->imm=(op->imm>>2);
+//			if(op->imm&3)break;
+//			op->imm=(op->imm>>2);
 			op->rm=BJX2_REG_GBR;
+
+			op->nmid=BJX2_NMID_MOVL;
+			op->fmid=BJX2_FMID_LDREGDISPREG;
+			op->Run=BJX2_Op_MOVL_LdRegDisp1Reg;
+			if(eq)
+			{
+				op->nmid=BJX2_NMID_MOVUL;
+				op->Run=BJX2_Op_MOVUL_LdRegDisp1Reg;
+			}
+			break;
 		}
 		op->nmid=BJX2_NMID_MOVL;
 		op->fmid=BJX2_FMID_LDREGDISPREG;
@@ -371,8 +428,12 @@ int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
 		}
 		break;
 	case 0xB:	/* F1ed_Bdzz */
+		if(eq)
+			break;
+
 		if(op->rm==1)
 		{
+#if 0
 			if(eq)
 			{
 				if(op->imm&3)break;
@@ -382,15 +443,22 @@ int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
 				if(op->imm&7)break;
 				op->imm=(op->imm>>3);
 			}
+#endif
+
 			op->rm=BJX2_REG_GBR;
+
+			op->nmid=BJX2_NMID_MOVQ;
+			op->fmid=BJX2_FMID_LDREGDISPREG;
+			op->Run=BJX2_Op_MOVQ_LdRegDisp1Reg;
+			break;
 		}
 		op->nmid=BJX2_NMID_MOVQ;
 		op->fmid=BJX2_FMID_LDREGDISPREG;
 		op->Run=BJX2_Op_MOVQ_LdRegDispReg;
 		if(eq)
 		{
-			op->nmid=BJX2_NMID_MOVDL;
-			op->Run=BJX2_Op_MOVUL_LdRegDispReg;
+//			op->nmid=BJX2_NMID_MOVDL;
+//			op->Run=BJX2_Op_MOVUL_LdRegDispReg;
 		}
 		if(op->rm==0)
 		{
@@ -398,8 +466,8 @@ int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
 			op->Run=BJX2_Op_MOVQ_LdPcDispReg;
 			if(eq)
 			{
-				op->nmid=BJX2_NMID_MOVDL;
-				op->Run=BJX2_Op_MOVUL_LdPcDispReg;
+//				op->nmid=BJX2_NMID_MOVDL;
+//				op->Run=BJX2_Op_MOVUL_LdPcDispReg;
 			}
 		}
 		break;

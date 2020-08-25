@@ -238,8 +238,8 @@ addsfx
 	int		oldestnum = 0;
 	int		slot;
 
-	int		rightvol;
-	int		leftvol;
+	int		rightvol, lv;
+	int		leftvol, rv;
 
 	// Chainsaw troubles.
 	// Play these sound effects only one at a time.
@@ -250,30 +250,30 @@ addsfx
 	 || sfxid == sfx_stnmov
 	 || sfxid == sfx_pistol	 )
 	{
-	// Loop all channels, check.
-	for (i=0 ; i<NUM_CHANNELS ; i++)
-	{
-		// Active, and using the same SFX?
-		if ( (channels[i])
-		 && (channelids[i] == sfxid) )
+		// Loop all channels, check.
+		for (i=0 ; i<NUM_CHANNELS ; i++)
 		{
-		// Reset.
-		channels[i] = 0;
-		// We are sure that iff,
-		//	there will only be one.
-		break;
+			// Active, and using the same SFX?
+			if ( (channels[i])
+			 && (channelids[i] == sfxid) )
+			{
+				// Reset.
+				channels[i] = 0;
+				// We are sure that iff,
+				//	there will only be one.
+				break;
+			}
 		}
-	}
 	}
 
 	// Loop all channels to find oldest SFX.
 	for (i=0; (i<NUM_CHANNELS) && (channels[i]); i++)
 	{
-	if (channelstart[i] < oldest)
-	{
-		oldestnum = i;
-		oldest = channelstart[i];
-	}
+		if (channelstart[i] < oldest)
+		{
+			oldestnum = i;
+			oldest = channelstart[i];
+		}
 	}
 
 	// Tales from the cryptic.
@@ -284,6 +284,12 @@ addsfx
 		slot = oldestnum;
 	else
 		slot = i;
+		
+	if(slot >= NUM_CHANNELS)
+	{
+		printf("addsfx: Bad Slot %d\n", slot);
+		return(-1);
+	}
 
 	// Okay, in the less recent channel,
 	//	we will handle the new SFX.
@@ -323,18 +329,33 @@ addsfx
 
 	// Sanity check, clamp volume.
 	if (rightvol < 0 || rightvol > 127)
-	I_Error("rightvol out of bounds");
+		I_Error("rightvol out of bounds");
 	
 	if (leftvol < 0 || leftvol > 127)
-	I_Error("leftvol out of bounds");
+		I_Error("leftvol out of bounds");
 	
 	// Get the proper lookup table piece
 	//	for this volume level???
 	channelleftvol_lookup[slot] = &vol_lookup[leftvol*256];
 	channelrightvol_lookup[slot] = &vol_lookup[rightvol*256];
 
-	channelleftvol[slot] = (leftvol*240)>>7;
-	channelrightvol[slot] = (rightvol*240)>>7;
+	lv = (leftvol*240)>>7;
+	rv = (rightvol*240)>>7;
+
+	if(lv>128)
+	{
+		printf("lvol=%d,%d\n", leftvol, lv);
+		lv=0;
+	}
+
+	if(rv>128)
+	{
+		printf("rvol=%d,%d\n", rightvol, rv);
+		rv=0;
+	}
+
+	channelleftvol[slot] = lv;
+	channelrightvol[slot] = rv;
 
 	// Preserve sound SFX id,
 	//	e.g. for avoiding duplicates of chainsaw.
@@ -713,6 +734,12 @@ void I_UpdateSound( void )
 			lvol = clv[chan];
 			rvol = crv[chan];
 			chanstep = channelstep[ chan ];
+			
+			if((lvol>128) || (rvol>128))
+			{
+				printf("lvol=%d rvol=%d\n", lvol, rvol);
+				lvol=0;		rvol=0;
+			}
 
 			for(samp=0; samp < nsamp; samp += step)
 			{
@@ -783,14 +810,12 @@ static int iss_curms, iss_lastms;
 // Mixing now done synchronous, and
 //	only output be done asynchronous?
 //
-void
-I_SubmitSound(void)
+void I_SubmitSound(void)
 {
 	I_SubmitSound2(0);
 }
 
-void
-I_SubmitSound2(int extra)
+void I_SubmitSound2(int extra)
 {
 	static short mixbuf2[SAMPLECOUNT*2*2];
 //	static short mixbuf_mus[SAMPLECOUNT*2*2];

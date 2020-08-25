@@ -1732,9 +1732,17 @@ int BGBCC_JX2C_EmitLoadTypeBRegOfsReg(
 
 	switch(ty)
 	{
-	case CCXL_TY_I:		case CCXL_TY_UI:
-	case CCXL_TY_NL:	case CCXL_TY_UNL:
+	case CCXL_TY_I:
 		sz=4; nm1=BGBCC_SH_NMID_MOVL; nm2=-1; break;
+	case CCXL_TY_UI:
+		sz=4; nm1=BGBCC_SH_NMID_MOVUL; nm2=-1; break;
+
+	case CCXL_TY_NL:	case CCXL_TY_UNL:
+		if(ctx->arch_sizeof_long==8)
+			{ sz=8; nm1=BGBCC_SH_NMID_MOVQ; nm2=-1; break; }
+		else
+			{ sz=4; nm1=BGBCC_SH_NMID_MOVL; nm2=-1; break; }
+
 	case CCXL_TY_SB:
 		sz=1; nm1=BGBCC_SH_NMID_MOVB; nm2=-1; break;
 	case CCXL_TY_UB:
@@ -1762,8 +1770,12 @@ int BGBCC_JX2C_EmitLoadTypeBRegOfsReg(
 
 	case CCXL_TY_F16:
 		sz=2; nm1=BGBCC_SH_NMID_MOVW; nm2=BGBCC_SH_NMID_LDHF16; break;
+
 	case CCXL_TY_VARIANT:
-		sz=8; nm1=BGBCC_SH_NMID_MOVL; nm2=-1; break;
+		if(sctx->is_addr64)
+			{ sz=8; nm1=BGBCC_SH_NMID_MOVQ; nm2=-1; break; }
+		else
+			{ sz=8; nm1=BGBCC_SH_NMID_MOVL; nm2=-1; break; }
 
 	case CCXL_TY_M64:
 	case CCXL_TY_VEC2F:
@@ -1793,7 +1805,22 @@ int BGBCC_JX2C_EmitLoadTypeBRegOfsReg(
 	}
 
 	if(BGBCC_CCXL_TypePointerP(ctx, type))
-		{ sz=4; nm1=BGBCC_SH_NMID_MOVL; nm2=-1; }
+	{
+		if(sctx->is_addr64)
+		{
+//			if(sctx->is_addr_x32)
+			if(ctx->arch_sizeof_ptr==4)
+			{
+				sz=4; nm1=BGBCC_SH_NMID_MOVUL; nm2=-1;
+			}else
+			{
+				sz=8; nm1=BGBCC_SH_NMID_MOVQ; nm2=-1;
+			}
+		}else
+		{
+			sz=4; nm1=BGBCC_SH_NMID_MOVL; nm2=-1;
+		}
+	}
 
 	BGBCC_JX2C_EmitLoadOp2BRegOfsReg(ctx, sctx,
 		nm1, nm2, sreg, ofs, dreg);

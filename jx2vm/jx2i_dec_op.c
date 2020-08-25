@@ -1,3 +1,28 @@
+/*
+ Copyright (c) 2018-2020 Brendan G Bohannon
+
+ Permission is hereby granted, free of charge, to any person
+ obtaining a copy of this software and associated documentation
+ files (the "Software"), to deal in the Software without
+ restriction, including without limitation the rights to use,
+ copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the
+ Software is furnished to do so, subject to the following
+ conditions:
+
+ The above copyright notice and this permission notice shall be
+ included in all copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ OTHER DEALINGS IN THE SOFTWARE.
+*/
+
 int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2, u32 jbits);
 int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
@@ -281,6 +306,13 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 	opw =BJX2_MemGetWord(ctx, addr+0);
 	opw2=BJX2_MemGetWord(ctx, addr+2);
 	opw3=BJX2_MemGetWord(ctx, addr+4);
+	
+	if(((addr+12)&(~4095))!=((addr+0)&(~4095)))
+	{
+		BJX2_MemGetWord(ctx, addr+6);
+		BJX2_MemGetWord(ctx, addr+8);
+		BJX2_MemGetWord(ctx, addr+10);
+	}
 	
 	op->opn=opw;
 	op->pc=addr;
@@ -925,6 +957,11 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 					op->Run=BJX2_Op_RTE_None;
 					op->fl|=BJX2_OPFL_CTRLF;
 					break;
+
+				case 0xF:
+					op->nmid=BJX2_NMID_LDTLB;
+					op->Run=BJX2_Op_LDTLB_None;
+					break;
 				}
 				break;
 
@@ -1238,7 +1275,7 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 				break;
 #endif
 
-#if 1
+#if 0
 			case 0x8:	/* 31z8 */
 				op->nmid=BJX2_NMID_PUSH;
 				op->fmid=BJX2_FMID_REG;
@@ -1299,7 +1336,7 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 				break;
 #endif
 
-#if 1
+#if 0
 			case 0xE:	/* 31zE */
 				op->nmid=BJX2_NMID_FPUSH;
 				op->fmid=BJX2_FMID_FREG;
@@ -1403,7 +1440,7 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 				op->Run=BJX2_Op_EXTSW_Reg;
 				break;
 
-#if 1
+#if 0
 			case 0xC:	/* 32zC */
 				op->nmid=BJX2_NMID_PUSHX2;
 				op->fmid=BJX2_FMID_REG;
@@ -1835,6 +1872,7 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 //			op->rn=(opw>>4)&15;
 			switch(opw&15)
 			{
+#if 0
 			case 0x0:	/* 36z0 */
 				op->imm=32;
 				op->nmid=BJX2_NMID_SHLL;
@@ -1853,6 +1891,7 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 				op->fmid=BJX2_FMID_IMMREG;
 				op->Run=BJX2_Op_SHAR_ImmReg;
 				break;
+#endif
 
 			case 0x3:	/* 36z3 */
 				op->nmid=BJX2_NMID_TRAP;
@@ -1900,6 +1939,13 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 				ctx->v_wexmd=op->imm;
 				break;
 
+			case 0xA:	/* 36zA */
+				op->nmid=BJX2_NMID_CPUID;
+				op->fmid=BJX2_FMID_IMM;
+				op->Run=BJX2_Op_CPUID_Imm;
+				op->imm=op->rn;
+				break;
+
 #if 0
 			case 0x8:	/* 36z8 */
 				op->rm=BJX2_REG_DLR;
@@ -1919,6 +1965,7 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 				break;
 #endif
 
+#if 0
 			case 0xA:	/* 36zA */
 				op->rm=BJX2_REG_DLR;
 //				op->rn=(opw>>4)&15;
@@ -1933,6 +1980,7 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 				op->fmid=BJX2_FMID_REG;
 				op->Run=BJX2_Op_SWAPW_Reg;
 				break;
+#endif
 
 #if 0
 			case 0xC:	/* 36zC */

@@ -12,6 +12,13 @@ int tk_sysc_fgetc(TK_FILE *fd);
 int tk_sysc_fputc(int ch, TK_FILE *fd);
 int tk_sysc_fioctl(TK_FILE *fd, int cmd, void *ptr);
 
+int tk_sysc_fsend(TK_FILE *fd, int cmd,
+	void *msgbuf, int szmsg, int flag,
+	void *sockaddr, int szsockaddr);
+int tk_sysc_frecv(TK_FILE *fd, int cmd,
+	void *msgbuf, int szmsg, int flag,
+	void *sockaddr, int szsockaddr);
+
 TK_DIRENT *tk_sysc_readdir(TK_DIR *fd);
 int tk_sysc_closedir(TK_DIR *fd);
 
@@ -25,6 +32,10 @@ NULL,				//unlink
 NULL,				//rename
 NULL,				//fstat
 
+NULL,				//mkdir
+NULL,				//rmdir
+NULL,				//fsctl
+
 /* FILE Ops */
 tk_sysc_fread,		//fread
 tk_sysc_fwrite,		//fwrite
@@ -36,8 +47,12 @@ tk_sysc_fputc,		//fputc
 tk_sysc_fioctl,		//ioctl
 
 /* DIR ops */
-tk_sysc_readdir,		//readdir
-tk_sysc_closedir		//closedir
+tk_sysc_readdir,	//readdir
+tk_sysc_closedir,	//closedir
+
+/* Socket/Device Ops */
+tk_sysc_fsend,		//fsend
+tk_sysc_frecv		//frecv
 };
 
 int tk_sysc_init()
@@ -234,6 +249,44 @@ int tk_sysc_fioctl(TK_FILE *fd, int cmd, void *ptr)
 	ar[1].i=cmd;
 	ar[2].p=ptr;
 	i=tk_syscall(NULL, TK_UMSG_VFIOCTL, &p, ar);
+	return(i);
+}
+
+int tk_sysc_fsend(TK_FILE *fd, int cmd,
+	void *msgbuf, int szmsg, int flag,
+	void *sockaddr, int szsockaddr)
+{
+	TK_SysArg ar[8];
+	void *p;
+	int i;
+	
+	ar[0].i=fd->ifd;
+	ar[1].i=cmd;
+	ar[2].p=msgbuf;
+	ar[3].i=szmsg;
+	ar[4].i=flag;
+	ar[5].p=sockaddr;
+	ar[6].i=szsockaddr;
+	i=tk_syscall(NULL, TK_UMSG_VFSEND, &p, ar);
+	return(i);
+}
+
+int tk_sysc_frecv(TK_FILE *fd, int cmd,
+	void *msgbuf, int szmsg, int flag,
+	void *sockaddr, int szsockaddr)
+{
+	TK_SysArg ar[8];
+	void *p;
+	int i;
+	
+	ar[0].i=fd->ifd;
+	ar[1].i=cmd;
+	ar[2].p=msgbuf;
+	ar[3].i=szmsg;
+	ar[4].i=flag;
+	ar[5].p=sockaddr;
+	ar[6].i=szsockaddr;
+	i=tk_syscall(NULL, TK_UMSG_VFRECV, &p, ar);
 	return(i);
 }
 

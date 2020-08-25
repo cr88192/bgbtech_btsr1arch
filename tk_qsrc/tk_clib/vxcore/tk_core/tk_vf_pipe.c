@@ -21,6 +21,10 @@ NULL,				//unlink
 NULL,				//rename
 NULL,				//fstat
 
+NULL,				//mkdir
+NULL,				//rmdir
+NULL,				//fsctl
+
 /* FILE Ops */
 tk_pipe_fread,		//fread
 tk_pipe_fwrite,		//fwrite
@@ -33,7 +37,12 @@ tk_pipe_fioctl,		//ioctl
 
 /* DIR ops */
 NULL,				//readdir
-NULL				//closedir
+NULL,				//closedir
+
+/* Socket/Device Ops */
+NULL,				//fsend
+NULL				//frecv
+
 };
 
 int tk_pipe_fread(void *buf, int sz1, int sz2, TK_FILE *fd);

@@ -582,6 +582,10 @@ int sdc_spibit(int bit, int cs)
 #define	SIMDDR_BUSRT	4
 // #define	SIMDDR_BUSRT	8
 
+#define SIMDDR_SHL_A15	23
+#define SIMDDR_SHL_A14	22
+#define SIMDDR_SHL_A13	21
+
 #define SIMDDR_SHL_CS	20
 #define SIMDDR_SHL_RAS	19
 #define SIMDDR_SHL_CAS	18
@@ -687,6 +691,7 @@ int SimDdr(int clk, int cmd, int *rdqs, int *rdata)
 //	addr=(cmd&0x3FFF);
 	addr=(cmd&0x1FFF);
 	bank=(cmd>>13)&7;
+	addr|=((cmd>>SIMDDR_SHL_A13)&7)<<13;
 	
 	if(cmd&SIMDDR_MSK_CS)
 	{
@@ -804,6 +809,7 @@ int update_ddr()
 			dqs=0;
 
 		cmd=0;
+		cmd=(cmd<<3)|((top->ddrAddr>>13)&0x7);
 		cmd=(cmd<<1)|top->ddrCs;
 		cmd=(cmd<<1)|top->ddrRas;
 		cmd=(cmd<<1)|top->ddrCas;
@@ -813,7 +819,8 @@ int update_ddr()
 //		cmd=(cmd<<14)|top->ddrAddr;
 
 		cmd=(cmd<<3)|top->ddrBa;
-		cmd=(cmd<<13)|top->ddrAddr;
+//		cmd=(cmd<<13)|top->ddrAddr;
+		cmd=(cmd<<13)|(top->ddrAddr&0x1FFF);
 
 //			data=top->ddrData;
 		data=top->ddrDataO;
@@ -834,6 +841,8 @@ int update_ddr()
 	}
 }
 
+int update_uart();
+
 int update_ps2kb()
 {
 	static byte xmit;
@@ -843,6 +852,8 @@ int update_ps2kb()
 	static byte xmit_upd;
 	static byte tclk, tdat, lclk, tlclk;
 	static byte b, pb;
+	
+	update_uart();
 	
 	if(top->clock_100 && !tlclk)
 	{
@@ -923,6 +934,54 @@ int update_ps2kb()
 //			tclk, tdat);
 		lclk=tclk;
 	}
+}
+
+int update_uart()
+{
+	static byte tclk, tlclk, pos, bit, bval;
+	static int frac;
+
+	tclk=top->clock_100;
+	if(!tclk || tlclk)
+	{
+		tlclk=tclk;
+		return(0);
+	}
+
+	bit=top->uartTxD;
+	
+	if(!pos)
+	{
+		if(!bit)
+		{
+			pos=9;
+			frac=100000000/115200;
+			frac+=(frac>>2);
+		}
+	}
+	
+	if(frac>0)
+	{
+		frac--;
+		return(0);
+	}else if(pos>0)
+	{
+		frac=100000000/115200;
+		pos--;
+		bval=(bval>>1)|(bit<<7);
+		
+		if(pos==1)
+		{
+//			printf("%02X ", bval);
+			if((bval>0) && (bval<127))
+			{
+				fputc(bval, stdout);
+				fflush(stdout);
+			}
+		}
+	}
+
+	return(0);
 }
 
 int sim_fb_drawled(uint32_t *fbuf, int xs, int ys,
@@ -1052,7 +1111,8 @@ int main(int argc, char **argv, char **env)
 
 	Verilated::commandArgs(argc, argv);
 
-	JX2R_UseImageCreateRamdisk(128*1024);
+//	JX2R_UseImageCreateRamdisk(128*1024);
+	JX2R_UseImageCreateRamdisk(512*1024);
 //	JX2R_UseImageCreateRamdisk(32*1024);
 
 #if 1
@@ -1087,6 +1147,8 @@ int main(int argc, char **argv, char **env)
 		(char *)"ID1/AUTOEXEC.CFG",
 		(char *)"../../tk_qsrc/id1/autoexec1.cfg");
 #endif
+
+//	JX2R_UseImageAddFileBuffer("swapfile.sys", (byte *)NULL, 384*(1<<20));
 
 	rombuf=(uint32_t *)malloc(32768);
 //	srambuf=(uint32_t *)malloc(8192);
@@ -1254,7 +1316,8 @@ int main(int argc, char **argv, char **env)
 
 			sim_fb_draw7seg_8x(
 				(uint32_t *)btesh2_gfxcon_framebuf, 800, 600,
-				14*16, 600-16, 12, 0xFF000000, 0xFFFFFF00,
+//				14*16, 600-16, 12, 0xFF000000, 0xFFFFFF00,
+				18*16, 600-16, 12, 0xFF000000, 0xFFFFFF00,
 				top->seg_outSegBit,
 				top->seg_outCharBit
 				);

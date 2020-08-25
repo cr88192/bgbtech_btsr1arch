@@ -1894,6 +1894,9 @@ void I_FinishUpdate (void)
 	ics16=(u16 *)screen;
 	icl16=vid_lastscreen;
 	ict=conbufa;
+	
+	if(!ics)
+		return;
 
 #ifdef I_SCR_BMP128K
 //#if 0
@@ -1903,6 +1906,9 @@ void I_FinishUpdate (void)
 		for(by=0; by<50; by++)
 		{
 			icsb=ics;
+
+			if(!ics)
+				return;
 
 	#if 1
 			for(bx=0; bx<80; bx++)

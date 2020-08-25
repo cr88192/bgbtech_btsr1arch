@@ -65,7 +65,8 @@ line_t*		ceilingline;
 
 // keep track of special lines as they are hit,
 // but don't process them until the move is proven valid
-#define MAXSPECIALCROSS		8
+// #define MAXSPECIALCROSS		8
+#define MAXSPECIALCROSS		16
 
 line_t*		spechit[MAXSPECIALCROSS];
 int		numspechit;
@@ -159,9 +160,11 @@ P_TeleportMove
 	yh = (tmbbox[BOXTOP] - bmaporgy + MAXRADIUS)>>MAPBLOCKSHIFT;
 
 	for (bx=xl ; bx<=xh ; bx++)
-	for (by=yl ; by<=yh ; by++)
-		if (!P_BlockThingsIterator(bx,by,PIT_StompThing))
-		return false;
+		for (by=yl ; by<=yh ; by++)
+	{
+		if (!P_BlockThingsIterator(bx, by, PIT_StompThing))
+			return false;
+	}
 	
 	// the move is ok,
 	// so link the thing into its new position
@@ -193,10 +196,10 @@ boolean PIT_CheckLine (line_t* ld)
 	|| tmbbox[BOXLEFT] >= ld->bbox[BOXRIGHT]
 	|| tmbbox[BOXTOP] <= ld->bbox[BOXBOTTOM]
 	|| tmbbox[BOXBOTTOM] >= ld->bbox[BOXTOP] )
-	return true;
+		return true;
 
 	if (P_BoxOnLineSide (tmbbox, ld) != -1)
-	return true;
+		return true;
 		
 	// A line has been hit
 	
@@ -210,15 +213,15 @@ boolean PIT_CheckLine (line_t* ld)
 	// could be crossed in either order.
 	
 	if (!ld->backsector)
-	return false;		// one sided line
+		return false;		// one sided line
 		
 	if (!(tmthing->flags & MF_MISSILE) )
 	{
-	if ( ld->flags & ML_BLOCKING )
-		return false;	// explicitly blocking everything
+		if ( ld->flags & ML_BLOCKING )
+			return false;	// explicitly blocking everything
 
-	if ( !tmthing->player && ld->flags & ML_BLOCKMONSTERS )
-		return false;	// block monsters only
+		if ( !tmthing->player && ld->flags & ML_BLOCKMONSTERS )
+			return false;	// block monsters only
 	}
 
 	// set openrange, opentop, openbottom
@@ -227,8 +230,8 @@ boolean PIT_CheckLine (line_t* ld)
 	// adjust floor / ceiling heights
 	if (opentop < tmceilingz)
 	{
-	tmceilingz = opentop;
-	ceilingline = ld;
+		tmceilingz = opentop;
+		ceilingline = ld;
 	}
 
 	if (openbottom > tmfloorz)
@@ -240,8 +243,8 @@ boolean PIT_CheckLine (line_t* ld)
 	// if contacted a special line, add it to the list
 	if (ld->special)
 	{
-	spechit[numspechit] = ld;
-	numspechit++;
+		spechit[numspechit] = ld;
+		numspechit++;
 	}
 
 	return true;

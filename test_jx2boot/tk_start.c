@@ -1,4 +1,38 @@
+#define FOURCC(a, b, c, d)		((a)|((b)<<8)|((c)<<16)|((d)<<24))
+#define BOOTPARM_MAGIC1		FOURCC('B', 'O', 'O', 'T')
+#define BOOTPARM_MAGIC2		FOURCC('P', 'A', 'R', 'M')
+// #define BOOTPARM_MAGIC3		FOURCC('P', 'a', 'r', 'm')
+
+#define BOOTPARM_MAGIC3		FOURCC('M', 'R', 'A', 'P')
+#define BOOTPARM_MAGIC4		FOURCC('T', 'O', 'O', 'B')
+
+
 extern u64 __arch_gbr;
+extern int tk_ram_kib;
+
+struct BootParm_s {
+u32 magic1;		//00
+u32 magic2;		//04
+u32 ramkib;		//08
+u32 conctx;		//0C
+
+u32 resv1;		//10
+u32 resv2;		//14
+u32 resv3;		//18
+u32 resv4;		//1C
+
+u32 resv5;		//20
+u32 resv6;		//24
+u32 resv7;		//28
+u32 resv8;		//2C
+
+u32 resv9;		//30
+u32 resv10;		//34
+u32 magic3;		//38
+u32 magic4;		//3C
+};
+
+struct BootParm_s bootparm;
 
 void sanity_a()
 {
@@ -96,10 +130,26 @@ int tk_cmd2idx(char *s)
 	return(-1);
 }
 
+void TK_FlushCacheL1D_INVDCA(void);
+void TK_FlushCacheL1D_INVL2(void);
 void TK_FlushCacheL1D_INVDC(void *ptr);
 void TK_FlushCacheL1D_INVIC(void *ptr);
 void TK_FlushCacheL1D_ReadBuf(void *ptr, int sz);
 __asm {
+TK_FlushCacheL1D_INVDCA:
+	MOV		-1, R4
+	INVDC	R4
+	NOP
+	NOP
+	RTS
+
+TK_FlushCacheL1D_INVL2:
+	MOV		-2, R4
+	INVDC	R4
+	NOP
+	NOP
+	RTS
+
 TK_FlushCacheL1D_INVDC:
 	INVDC	R4
 	NOP
@@ -115,6 +165,7 @@ TK_FlushCacheL1D_ReadBuf:
 	.L0:
 	MOV.Q	(R4), R7
 	ADD		-16, R5
+	ADD		16, R4
 	CMP/GT	0, R5
 	BT		.L0
 	RTS
@@ -201,6 +252,13 @@ void __start()
 	
 //	TKSPI_InitDevice();
 	tk_vfile_init();
+
+	bootparm.magic1=BOOTPARM_MAGIC1;
+	bootparm.magic2=BOOTPARM_MAGIC2;
+	bootparm.ramkib=tk_ram_kib;
+	bootparm.conctx=(u32)(tk_con_getctx());
+	bootparm.magic3=BOOTPARM_MAGIC3;
+	bootparm.magic4=BOOTPARM_MAGIC4;
 
 	puts("Boot 1\n");
 

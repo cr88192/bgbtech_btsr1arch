@@ -146,13 +146,14 @@ TK_EnvContext *TK_GetCurrentEnvContext()
 	task=__arch_tbr;
 	if(!task)
 		return(NULL);
-	if(task->envctx)
-		return(task->envctx);
+	env=(void *)(task->envctx);
+	if(env)
+		return(env);
 
 	tk_printf("TK_GetCurrentEnvContext: New %p:%p", task, env);
 
 	env=TK_EnvCtx_AllocContext();
-	task->envctx=env;
+	task->envctx=(tk_kptr)env;
 	return(env);
 }
 
@@ -214,6 +215,7 @@ TK_FlushCacheL1D_ReadBuf:
 	.L0:
 	MOV.Q	(R4), R7
 	ADD		-16, R5
+	ADD		16, R4
 	CMP/GT	0, R5
 	BT		.L0
 	RTS

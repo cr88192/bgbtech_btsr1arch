@@ -1092,7 +1092,8 @@ int JX2R_TKFAT_ReadWriteSector(JX2R_TKFAT_ImageInfo *img,
 	{
 		clbuf=JX2R_TKFAT_GetSectorTempBuffer(img,
 			lba, 1|TKFAT_SFL_DIRTY);
-		memcpy(clbuf+offs, data, size);
+		if(data)
+			memcpy(clbuf+offs, data, size);
 	}
 	else
 	{
@@ -1115,7 +1116,8 @@ int JX2R_TKFAT_ReadWriteCluster(JX2R_TKFAT_ImageInfo *img,
 	{
 		clbuf=JX2R_TKFAT_GetSectorTempBuffer(img,
 			lba, img->szclust|TKFAT_SFL_DIRTY);
-		memcpy(clbuf+offs, data, size);
+		if(data)
+			memcpy(clbuf+offs, data, size);
 	}
 	else
 	{
@@ -1158,13 +1160,13 @@ int JX2R_TKFAT_ReadWriteClusterOffset(JX2R_TKFAT_ImageInfo *img,
 	ct=data; cte=data+size;
 	clidt=clid1;
 	JX2R_TKFAT_ReadWriteCluster(img,
-		clidt, offs1, iswrite, ct, szcl-offs1);
+		clidt, offs1, iswrite, data?ct:NULL, szcl-offs1);
 	clidt=JX2R_TKFAT_GetWalkCluster(img, clidt, 1, iswrite);
 	ct+=szcl-offs1;
 	while((ct+szcl)<=cte)
 	{
 		JX2R_TKFAT_ReadWriteCluster(img,
-			clidt, 0, iswrite, ct, szcl);
+			clidt, 0, iswrite, data?ct:NULL, szcl);
 		clidt=JX2R_TKFAT_GetWalkCluster(img, clidt, 1, iswrite);
 		if(clidt<0)
 			return(-1);
@@ -1173,7 +1175,7 @@ int JX2R_TKFAT_ReadWriteClusterOffset(JX2R_TKFAT_ImageInfo *img,
 	if(ct<cte)
 	{
 		JX2R_TKFAT_ReadWriteCluster(img,
-			clidt, 0, iswrite, ct, cte-ct);
+			clidt, 0, iswrite, data?ct:NULL, cte-ct);
 	}
 	return(0);
 }
@@ -2673,6 +2675,26 @@ int JX2R_ImageAddFile(JX2R_TKFAT_ImageInfo *img, char *fn1, char *fn2)
 	return(1);
 }
 
+int JX2R_ImageAddFileBuffer(JX2R_TKFAT_ImageInfo *img, char *fn1,
+	byte *tbuf, int fsz)
+{
+	JX2R_TKFAT_FAT_DirEntExt tdee;
+	int fty;
+	int n;
+	int i;
+	
+	i=JX2R_TKFAT_CreateDirEntPath(img, &tdee, fn1);
+	if(i<0)
+	{
+		printf("Create %s fail\n", fn1);
+		return(-1);
+	}
+	
+	JX2R_TKFAT_ReadWriteDirEntFile(&tdee, 0, true, tbuf, fsz);
+	printf("Add %s OK %d bytes\n", fn1, fsz);
+	return(1);
+}
+
 int JX2R_ImageAddExport(JX2R_TKFAT_ImageInfo *img, char *fn1, char *fn2)
 {
 	int i;
@@ -2726,6 +2748,11 @@ int JX2R_UseImageAddFile(char *fn1, char *fn2)
 	}
 
 	return(JX2R_ImageAddFile(spimmc_img, fn1, fn2));
+}
+
+int JX2R_UseImageAddFileBuffer(char *fn1, byte *tbuf, int fsz)
+{
+	return(JX2R_ImageAddFileBuffer(spimmc_img, fn1, tbuf, fsz));
 }
 
 int JX2R_UseImageAddExport(char *fn1, char *fn2)

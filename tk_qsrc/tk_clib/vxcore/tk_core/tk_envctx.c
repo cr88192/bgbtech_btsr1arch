@@ -314,6 +314,24 @@ int TK_EnvCtx_SplitVar(char *str, char *bvar, char **rval)
 	return(0);
 }
 
+int TK_EnvCtx_GetEnvVar(TK_EnvContext *ctx, char *varn, char *bufv, int sz)
+{
+	if(!strcmp(varn, "CWD"))
+	{
+		TK_EnvCtx_GetCwd(ctx, bufv, sz);
+		return(1);
+	}
+
+	if(!strcmp(varn, "PATH"))
+	{
+		TK_EnvCtx_GetEnvVarI(ctx, varn, bufv, sz);
+		return(1);
+	}
+
+	TK_EnvCtx_GetEnvVarI(ctx, varn, bufv, sz);
+	return(1);
+}
+
 int TK_EnvCtx_SetEnvVar(TK_EnvContext *ctx, char *varn, char *varv)
 {
 	if(!strcmp(varn, "CWD"))

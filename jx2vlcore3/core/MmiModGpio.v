@@ -499,6 +499,7 @@ begin
 			};
 		end
 
+`ifndef def_true
 		16'hE080: begin
 			if(mmioInWR)
 			begin
@@ -506,6 +507,7 @@ begin
 				tMmioOK			= UMEM_OK_OK;
 			end
 		end
+`endif
 
 		16'hE100: begin
 			if(mmioInOE)

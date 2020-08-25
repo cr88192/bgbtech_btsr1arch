@@ -53,14 +53,14 @@ typedef struct TKFAT_FAT_DirInfo_s TKFAT_FAT_DirInfo;
 typedef struct TKFAT_FAT_MetaEnt_s TKFAT_FAT_MetaEnt;
 
 struct TKFAT_MBR_Entry_s {
-	byte flag;				//0x80|=active
-	byte shead;				//starting head
-	byte ssect[2];			//starting track/sector
-	byte fstype;			//filesystem
-	byte ehead;				//ending head
-	byte esect[2];			//ending track/sector
-	byte lba_start[4];		//LBA start
-	byte lba_count[4];		//LBA count
+	byte flag;				//00, 0x80|=active
+	byte shead;				//01, starting head
+	byte ssect[2];			//02, starting track/sector
+	byte fstype;			//04, filesystem
+	byte ehead;				//05, ending head
+	byte esect[2];			//06, ending track/sector
+	byte lba_start[4];		//08, LBA start
+	byte lba_count[4];		//0C, LBA count
 };
 
 struct TKFAT_MBR_s {

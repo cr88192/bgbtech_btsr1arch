@@ -62,6 +62,8 @@
 `define jx2_expand_l1isz		//Make L1 I$ bigger
 `define jx2_expand_l2sz			//Make L2 Bigger
 
+`define jx2_expand_tlb			//Make TLB Bigger
+
 // `define jx2_reduce_l1sz		//Make L1 smaller
 // `define jx2_reduce_l2sz		//Make L2 smaller
 

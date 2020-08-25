@@ -1,4 +1,29 @@
 /*
+ Copyright (c) 2018-2020 Brendan G Bohannon
+
+ Permission is hereby granted, free of charge, to any person
+ obtaining a copy of this software and associated documentation
+ files (the "Software"), to deal in the Software without
+ restriction, including without limitation the rights to use,
+ copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the
+ Software is furnished to do so, subject to the following
+ conditions:
+
+ The above copyright notice and this permission notice shall be
+ included in all copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+/*
 BJX2 VM:
 Will use direct linking and assume a non-modifiable program space.
 
@@ -320,7 +345,7 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_MULSL		0xA0		//
 #define BJX2_NMID_MULUL		0xA1		//
 #define BJX2_NMID_LDIL		0xA2		//
-
+#define BJX2_NMID_CPUID		0xA3		//
 #define BJX2_NMID_FLDCFH	0xA4		//
 #define BJX2_NMID_FSTCFH	0xA5		//
 #define BJX2_NMID_PSHUFB	0xA6		//
@@ -334,28 +359,28 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_PMULSHW	0xAE		//
 #define BJX2_NMID_PMULUHW	0xAF		//
 
-#define BJX2_NMID_PADDF		0xB0		//
-#define BJX2_NMID_PADDXF	0xB1		//
-#define BJX2_NMID_PSUBF		0xB2		//
-#define BJX2_NMID_PSUBXF	0xB3		//
-#define BJX2_NMID_PMULF		0xB4		//
-#define BJX2_NMID_PMULXF	0xB5		//
-#define BJX2_NMID_CTZ		0xB6		//
-#define BJX2_NMID_CTZQ		0xB7		//
-#define BJX2_NMID_BTRNS		0xB8		//
-#define BJX2_NMID_BTRNSQ	0xB9		//
-#define BJX2_NMID_PMORTL	0xBA		//
-#define BJX2_NMID_PMORTQ	0xBB		//
-
+#define BJX2_NMID_PADDF			0xB0		//
+#define BJX2_NMID_PADDXF		0xB1		//
+#define BJX2_NMID_PSUBF			0xB2		//
+#define BJX2_NMID_PSUBXF		0xB3		//
+#define BJX2_NMID_PMULF			0xB4		//
+#define BJX2_NMID_PMULXF		0xB5		//
+#define BJX2_NMID_CTZ			0xB6		//
+#define BJX2_NMID_CTZQ			0xB7		//
+#define BJX2_NMID_BTRNS			0xB8		//
+#define BJX2_NMID_BTRNSQ		0xB9		//
+#define BJX2_NMID_PMORTL		0xBA		//
+#define BJX2_NMID_PMORTQ		0xBB		//
 #define BJX2_NMID_SHLRQ			0xBC		//
 #define BJX2_NMID_SHARQ			0xBD		//
-
 #define BJX2_NMID_RGB32PCK64	0xBE		//
 #define BJX2_NMID_RGB32UPCK64	0xBF		//
+
 #define BJX2_NMID_RGB5PCK32		0xC0		//
 #define BJX2_NMID_RGB5UPCK32	0xC1		//
 #define BJX2_NMID_RGB5PCK64		0xC2		//
 #define BJX2_NMID_RGB5UPCK64	0xC3		//
+#define BJX2_NMID_LDTLB			0xC4		//
 
 
 #define BJX2_FMID_NONE			0x00		//?
@@ -520,6 +545,10 @@ bjx2_addr	 psp_pbase;		//Predict Span/Page Base
 bjx2_addr	 psp_prng3;		//Predict Span/Page Range-3
 byte		*psp_pdata;		//Predict Span/Page Data
 
+BJX2_Context	*ctx_parent;
+BJX2_Context	*ctx_child;
+BJX2_Context	*ctx_next;
+
 BJX2_MemSpan *span_pr0;
 BJX2_MemSpan *span_pr1;
 
@@ -537,6 +566,7 @@ byte use_jit;
 byte wexmd;
 byte v_wexmd;
 byte cc_flush;
+byte core_id;
 
 int status;
 bjx2_addr trapc;
@@ -593,6 +623,8 @@ s64 tot_cnt_miss_l1i;
 int tot_cnt_mem_dri;		//total I$ to DRAM misses
 int tot_cnt_mem_drd;		//total D$ to DRAM misses
 
+s64 tot_cnt_tlbmiss;
+
 byte bpr_tab[256];			//state tables
 byte bpr_sctab[256];		//state tables
 s64 bpr_hit;
@@ -621,8 +653,10 @@ bjx2_addr mem_l2h32k[16384];	//L2 addr (32/64kB)
 
 bjx2_addr mem_l1ih4k[4096];		//L1 addr (4kB)
 
-u64 mem_tlb_hi[64];
-u64 mem_tlb_lo[64];
+// u64 mem_tlb_hi[64*4];
+// u64 mem_tlb_lo[64*4];
+u64 mem_tlb_hi[256*4];
+u64 mem_tlb_lo[256*4];
 
 u64 mem_tlb_pr0_hi;
 u64 mem_tlb_pr0_lo;
@@ -706,6 +740,8 @@ char *name;				//helpful name
 void *data;				//raw data pointer
 byte *tripwire;			//tripwire mask
 byte simple_mem;		//simple memory read
+bjx2_addr modbase;		//modulo base
+bjx2_addr modmask;		//modulo mask
 
 int (*GetByte)(BJX2_Context *ctx,
 	BJX2_MemSpan *sp, bjx2_addr addr);

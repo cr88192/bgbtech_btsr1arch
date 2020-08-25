@@ -41,6 +41,11 @@ reg			tRngNoiseA;
 reg[63:0]		arrCpuIdLo[7:0];
 // reg[63:0]		arrCpuIdHi[7:0];
 
+reg[63:0]		valCpuIdLo0;
+reg[63:0]		valCpuIdLo1;
+reg[63:0]		valCpuIdLo2;
+reg[63:0]		valCpuIdLo3;
+
 initial
 begin
 	arrCpuIdLo[0]=64'h2020324632584A42;  //"BJX2F0  ", Arch, Profile, SubVer
@@ -57,6 +62,35 @@ begin
 //	arrCpuIdLo[1][3:0] = isAltCore;
 
 `ifndef def_true
+
+`ifdef jx2_enable_wex
+	arrCpuIdLo[1][8] = 1;
+`endif
+`ifdef jx2_enable_wex3w
+	arrCpuIdLo[1][9] = 1;
+`endif
+`ifdef jx2_enable_wexjumbo
+	arrCpuIdLo[1][10] = 1;
+`endif
+`ifdef jx2_enable_mmu
+	arrCpuIdLo[1][11] = 1;
+`endif
+`ifdef jx2_enable_vaddr48
+	arrCpuIdLo[1][12] = 1;
+`endif
+`ifdef jx2_enable_gsv
+	arrCpuIdLo[1][13] = 1;
+`endif
+`ifdef jx2_enable_pmort
+	arrCpuIdLo[1][14] = 1;
+`endif
+`ifdef jx2_enable_fpu
+	arrCpuIdLo[1][15] = 1;
+`endif
+
+`endif
+
+`ifndef def_true
 	arrCpuIdHi[0]=UV64_00;
 	arrCpuIdHi[1]=UV64_00;
 	arrCpuIdHi[2]=UV64_00;
@@ -71,6 +105,38 @@ end
 
 always @*
 begin
+	valCpuIdLo0=64'h2020324632584A42;  //"BJX2F0  ", Arch, Profile, SubVer
+	valCpuIdLo1=0;
+	valCpuIdLo2=0;
+	valCpuIdLo3=0;
+
+	valCpuIdLo1[3:0] = timers[11:8];
+
+`ifdef jx2_enable_wex
+	valCpuIdLo1[8] = 1;
+`endif
+`ifdef jx2_enable_wex3w
+	valCpuIdLo1[9] = 1;
+`endif
+`ifdef jx2_enable_wexjumbo
+	valCpuIdLo1[10] = 1;
+`endif
+`ifdef jx2_enable_mmu
+	valCpuIdLo1[11] = 1;
+`endif
+`ifdef jx2_enable_vaddr48
+	valCpuIdLo1[12] = 1;
+`endif
+`ifdef jx2_enable_gsv
+	valCpuIdLo1[13] = 1;
+`endif
+`ifdef jx2_enable_pmort
+	valCpuIdLo1[14] = 1;
+`endif
+`ifdef jx2_enable_fpu
+	valCpuIdLo1[15] = 1;
+`endif
+
 	tResLoA = arrCpuIdLo[index[2:0]];
 	tResHiA = UV64_00;
 //	tResHiA = arrCpuIdHi[index[2:0]];
@@ -93,17 +159,25 @@ begin
 `ifdef def_true
 	casez(index[4:0])
 		5'b0_0000: begin
-			tResLo = tResLoA;
+//			tResLo = tResLoA;
+			tResLo = valCpuIdLo0;
 			tResHi = tResHiA;
 		end
 		5'b0_0001: begin
-			tResLo = tResLoA;
+//			tResLo = tResLoA;
 			tResHi = tResHiA;
-			tResLo[3:0] = timers[11:8];
+			tResLo = valCpuIdLo1;
+//			tResLo[3:0] = timers[11:8];
 		end
-		5'b0_001z: begin
-			tResLo = tResLoA;
+		5'b0_0010: begin
+//			tResLo = tResLoA;
 			tResHi = tResHiA;
+			tResLo = valCpuIdLo2;
+		end
+		5'b0_0011: begin
+//			tResLo = tResLoA;
+			tResHi = tResHiA;
+			tResLo = valCpuIdLo3;
 		end
 		5'b0_01zz: begin
 			tResLo = tResLoA;

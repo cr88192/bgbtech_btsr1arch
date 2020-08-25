@@ -39,7 +39,7 @@ X(R_DrawColumn):
 	MOV.L		X(centery), R21
 	MOV.L		X(dc_texturemid), R22
 
-	SHLD.Q		R16, #-1, R17		| MOV.L		(R18, R20), R23
+	SHLD.Q		R16, #-1, R17		| MOV.P		(R18, R20), R23
 	SUB			R20, R21			| MOV.L		(R6, R7), R19
 
 	MOV.L		X(dc_iscale), R7
@@ -59,8 +59,8 @@ X(R_DrawColumn):
 	ADD		R18, R7, R19	| SHLD	R18, #-25, R5
 	ADD		R19, R7, R20	| SHLD	R19, #-25, R6
 
-	MOV.L	X(dc_colormap), R4
-	MOV.L	X(dc_source), R22
+	MOV.P	X(dc_colormap), R4
+	MOV.P	X(dc_source), R22
 
 	MOVU.B	(R22, R5), R18		// get first pixel
 	MOVU.B	(R22, R6), R19		// get second pixel
@@ -129,58 +129,41 @@ X(R_DrawColumn):
 .global X(R_DrawSpan)
 X(R_DrawSpan):
 
-//
-// find loop count
-//	
+//	RTS
+
 	MOV.L		X(ds_x2), R4
 	ADD			#1, R4
 	MOV.L		X(ds_x1), R3
 	SUB			R3, R4					// pixel count
-//	MOV.L		[pixelcount],R4			// save for final pixel
 	MOV			R4, R16
-//	js		hdone						// nothing to scale
 	CMP/GE		#0, R4
 	BF			.hdone
 
 	SHLD		R4, #-1, R4						// double pixel count
-//	MOV.L		[loopcount],R4
 	MOV			R4, R17
 
-//
-// build composite position
-//
 	MOV.L	X(ds_xfrac), R20
 	SHLD	R20, #10, R20
 	AND		#0xffff0000, R20
 	MOV.L	X(ds_yfrac), R4
 	SHLD	R4, #-6, R4
-//	andl	R4,0ffffh
 	EXTU.W	R4
 	OR		R4, R20
 
-	MOV.L	X(ds_source), R22
-
-//
-// calculate screen dest
-//
+	MOV.P	X(ds_source), R22
 	MOV.L	X(ds_y), R23
 	MOV		X(ylookup), R3
-	MOV.L	(R3, R23), R23
+	MOV.P	(R3, R23), R23
 	MOV.L	X(ds_x1), R4
 	MOV		X(columnofs), R3
 	MOV.L	(R3, R4), R2
-//	ADD		R2, R23
 	LEA.W	(R23, R2), R23
 
-//
-// build composite step
-//
 	MOV.L	X(ds_xstep), R7
 	SHLD	R7, #10, R7
 	AND		#0xFFFF0000, R7
 	MOV.L	X(ds_ystep), R4
 	SHLD	R4, #-6, R4
-//	andl	R4,0ffffh
 	EXTU.W	R4
 	OR		R4, R7
 
@@ -214,17 +197,16 @@ X(R_DrawSpan):
 
 	ADD		R7, R20					// advance frac pointer
 	AND		#4095, R6				// finish calculation for fourth pixel
-	MOV.L	X(ds_colormap), R4
+
+//	MOV.L	X(ds_colormap), R4
+	MOV.P	X(ds_colormap), R4
+
 	MOV		R4, R7
 
 	MOVU.B	(R22, R5), R18			// get first pixel
 	MOVU.B	(R22, R6), R19			// get second pixel
 	MOVU.W	(R4, R18), R18			// color translate first pixel
 	MOVU.W	(R7, R19), R19			// color translate second pixel
-	
-//	testl	[pixelcount],0fffffffeh
-//	jnz	hdoubleloop				// at least two pixels to map
-//	jmp	hchecklast
 
 	TEST	0xFFFFFFFE, R16
 	BT		.hchecklast
@@ -287,13 +269,8 @@ X(R_DrawSpan):
 	BF		.hdoubleloop
 #endif
 
-// check for final pixel
 .hchecklast:
-//	testl	[pixelcount],1
-//	jz	.hdone
 	TEST	#1, R16
-//	BT		.hdone
-//	MOV.W		R18, (R23)				// write final pixel
 	MOV.W?F		R18, (R23)				// write final pixel
 	
 .hdone:
@@ -326,7 +303,7 @@ X(R_DrawColumnLow):
 	
 	ADD			R7, R7
 
-	SHLD.Q		R16, #-1, R17		| MOV.L		(R18, R20), R23
+	SHLD.Q		R16, #-1, R17		| MOV.P		(R18, R20), R23
 	SUB			R20, R21			| MOV.L		(R6, R7), R19
 
 	MOV.L		X(dc_iscale), R7
@@ -346,8 +323,8 @@ X(R_DrawColumnLow):
 	ADD		R18, R7, R19	| SHLD	R18, #-25, R5
 	ADD		R19, R7, R20	| SHLD	R19, #-25, R6
 
-	MOV.L	X(dc_colormap), R4
-	MOV.L	X(dc_source), R22
+	MOV.P	X(dc_colormap), R4
+	MOV.P	X(dc_source), R22
 
 	MOVU.B	(R22, R5), R18		// get first pixel
 	MOVU.B	(R22, R6), R19		// get second pixel
@@ -426,13 +403,10 @@ X(R_DrawSpanLow):
 	SHLD	R4, #-6, R4
 	EXTU.W	R4
 	OR		R4, R20
-
-	MOV.L	X(ds_source), R22
-
-
+	MOV.P	X(ds_source), R22
 	MOV.L	X(ds_y), R23
 	MOV		X(ylookup), R3
-	MOV.L	(R3, R23), R23
+	MOV.P	(R3, R23), R23
 	MOV.L	X(ds_x1), R4
 	ADD		R4, R4
 	MOV		X(columnofs), R3
@@ -477,7 +451,7 @@ X(R_DrawSpanLow):
 
 	ADD		R7, R20					// advance frac pointer
 	AND		#4095, R6				// finish calculation for fourth pixel
-	MOV.L	X(ds_colormap), R4
+	MOV.P	X(ds_colormap), R4
 	MOV		R4, R7
 
 	MOVU.B	(R22, R5), R18			// get first pixel

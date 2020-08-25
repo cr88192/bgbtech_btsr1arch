@@ -1,3 +1,28 @@
+/*
+ Copyright (c) 2018-2020 Brendan G Bohannon
+
+ Permission is hereby granted, free of charge, to any person
+ obtaining a copy of this software and associated documentation
+ files (the "Software"), to deal in the Software without
+ restriction, including without limitation the rights to use,
+ copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the
+ Software is furnished to do so, subject to the following
+ conditions:
+
+ The above copyright notice and this permission notice shall be
+ included in all copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ OTHER DEALINGS IN THE SOFTWARE.
+*/
+
 void BJX2_MemSimTraceIS(BJX2_Context *ctx, BJX2_Trace *tr)
 {
 	int i;
@@ -553,6 +578,7 @@ BJX2_Trace *BJX2_DecTraceCb_Run32(BJX2_Context *ctx, BJX2_Trace *tr)
 
 BJX2_Trace *BJX2_DecTraceCb_Bad(BJX2_Context *ctx, BJX2_Trace *tr)
 {
+//	ctx->trapc=op->pc;
 	BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INV_MEX);
 	return(NULL);
 }
@@ -625,6 +651,25 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 		return(-1);
 	}
 	
+	if(!(ctx->status))
+	{
+//		ctx->trapc=addr;
+		BJX2_MemTranslateTlb(ctx, addr+ 0);
+//		BJX2_MemTranslateTlb(ctx, addr+12);
+//		BJX2_MemTranslateTlb(ctx, addr+4096);
+		BJX2_MemTranslateTlb(ctx, addr+(32*8));
+	}
+
+	if(ctx->status)
+	{
+//		__debugbreak();
+
+		tr->n_ops=0;
+		tr->n_cyc=0;
+		tr->Run=BJX2_DecTraceCb_Bad;
+		return(-1);
+	}
+
 	rec++;
 	
 //	ctx->v_wexmd=0xFF;
@@ -634,8 +679,16 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 	pc=addr; npc=0; jpc=0; brk=0;
 	while(nc<BJX2_TR_MAXOP)
 	{
+//		ctx->trapc=pc;
+	
 		op=BJX2_ContextAllocOpcode(ctx);
 		BJX2_DecodeOpcodeForAddr(ctx, op, pc);
+		if(ctx->status)
+		{
+//			__debugbreak();
+			break;
+		}
+
 		tr->ops[nc++]=op;
 //		ncyc++;
 		ncyc+=op->cyc;
@@ -732,6 +785,14 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 				vdrl=0;
 			}
 		}
+	}
+	
+	if(nc<1)
+	{
+		tr->n_ops=0;
+		tr->n_cyc=0;
+		tr->Run=BJX2_DecTraceCb_Bad;
+		return(-1);
 	}
 	
 	if(nc>BJX2_TR_MAXOP)

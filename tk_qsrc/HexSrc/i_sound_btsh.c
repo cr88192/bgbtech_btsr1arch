@@ -261,6 +261,9 @@ addsfx
 		slot = oldestnum;
 	else
 		slot = i;
+	
+	if(slot>=NUM_CHANNELS)
+		return(-1);
 
 	// Okay, in the less recent channel,
 	//	we will handle the new SFX.
@@ -691,6 +694,9 @@ void I_UpdateSound( void )
 			lvol = clv[chan];
 			rvol = crv[chan];
 			chanstep = channelstep[ chan ];
+			
+			if(lvol>127)	lvol=0;
+			if(rvol>127)	rvol=0;
 
 			for(samp=0; samp < nsamp; samp += step)
 			{

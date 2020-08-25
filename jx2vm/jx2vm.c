@@ -1,3 +1,28 @@
+/*
+ Copyright (c) 2018-2020 Brendan G Bohannon
+
+ Permission is hereby granted, free of charge, to any person
+ obtaining a copy of this software and associated documentation
+ files (the "Software"), to deal in the Software without
+ restriction, including without limitation the rights to use,
+ copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the
+ Software is furnished to do so, subject to the following
+ conditions:
+
+ The above copyright notice and this permission notice shall be
+ included in all copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ OTHER DEALINGS IN THE SOFTWARE.
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -730,6 +755,7 @@ int BJX2_VmMsgTxUpdate(BJX2_Context *ctx)
 
 
 BJX2_Context *ctx;
+BJX2_Context *ctx_c2;
 int ms0, lms1, lms2;
 
 void btesh_main_iterate()
@@ -799,10 +825,25 @@ void btesh_main_iterate()
 //		lms2=ms1;
 //		BJX2_SndSblk_Update(ctx, dtms2);
 	} while((ctx->tot_cyc<cyc) && (ms<28));
-	
-// #ifndef linux
+
 	if(i || ctx->req_kill)
 		gfxdrv_kill=1;
+
+#if 1
+	do {
+		i=BJX2_RunLimit(ctx_c2, rcy);
+
+		if(i || ctx_c2->req_kill)
+			break;
+
+		ms1=FRGL_TimeMS();
+		ms=ms1-lms1;
+	} while((ctx_c2->tot_cyc<cyc) && (ms<28));
+#endif
+
+// #ifndef linux
+//	if(i || ctx->req_kill)
+//		gfxdrv_kill=1;
 // #endif
 	
 //	t1=clock();
@@ -825,7 +866,7 @@ int main(int argc, char *argv[])
 	char *ifn;
 	double tsec;
 	int t0, t1, tt, fbtt, tvus;
-	int ifmd, rdsz, mhz, usejit;
+	int ifmd, rdsz, mhz, usejit, swapsz;
 	int i;
 	
 	rd_n_add=0;
@@ -833,7 +874,9 @@ int main(int argc, char *argv[])
 	rd_n_map=0;
 	ifn=NULL;
 //	ifmd=0; rdsz=128;
-	ifmd=0; rdsz=256;
+//	ifmd=0; rdsz=256;
+	ifmd=0; rdsz=512;
+	swapsz=384;
 	mhz=100; usejit=0;
 	for(i=1; i<argc; i++)
 	{
@@ -877,7 +920,12 @@ int main(int argc, char *argv[])
 	for(i=0; i<rd_n_add; i++)
 		JX2R_UseImageAddFile(rd_add[i], NULL);
 	for(i=0; i<rd_n_exp; i++)
-		JX2R_UseImageAddFile(rd_exp[i], NULL);
+		JX2R_UseImageAddExport(rd_exp[i], NULL);
+	
+	if(swapsz>0)
+	{
+		JX2R_UseImageAddFileBuffer("swapfile.sys", NULL, swapsz*(1<<20));
+	}
 	
 	ctx=BJX2_AllocContext();
 	BJX2_MemDefineROM(ctx,		"ROM",	0x00000000U, 0x00007FFFU);
@@ -885,7 +933,8 @@ int main(int argc, char *argv[])
 //	BJX2_MemDefineMmgp(ctx,		"MMGP",	0x0000E000U, 0x0000E3FFU);
 //	BJX2_MemDefineGfxCon(ctx,	"CGFX",	0x000A0000U, 0x000AFFFFU);
 //	BJX2_MemDefineRAM(ctx,		"DRAM",	0x01000000U, 0x18000000U);
-	BJX2_MemDefineRAM(ctx,		"DRAM",	0x01000000U, 0x08000000U);
+//	BJX2_MemDefineRAM(ctx,		"DRAM",	0x01000000U, 0x08000000U);
+	BJX2_MemDefineModRAM(ctx,	"DRAM",	0x01000000U, 0x18000000U, 0x08000000U);
 
 //	BJX2_MemDefineMmgp(ctx,		"MMGP",	0xA000E000U, 0xA000E3FFU);
 //	BJX2_MemDefineSndSblk(ctx,	"SBAU",	0xA0080000U, 0xA0081FFFU);
@@ -903,12 +952,12 @@ int main(int argc, char *argv[])
 //	BJX2_MemDefineSndSblk(ctx,	"SBAU",	0xFFFFFFFFA0080000, 0xFFFFFFFFA0081FFF);
 //	BJX2_MemDefineGfxCon(ctx,	"CGFX",	0xFFFFFFFFA00A0000, 0xFFFFFFFFA00AFFFF);
 
-	BJX2_MemDefineMmgp(ctx,		"MMGP",	0xFFFFFFFFF000E000, 0xFFFFFFFFF000E3FF);
-	BJX2_MemDefineSndSblk(ctx,	"SBAU",	0xFFFFFFFFF0080000, 0xFFFFFFFFF0081FFF);
-//	BJX2_MemDefineGfxCon(ctx,	"CGFX",	0xFFFFFFFFF00A0000, 0xFFFFFFFFF00AFFFF);
-	BJX2_MemDefineSmus(ctx,		"SMUS",	0xFFFFFFFFF008C000, 0xFFFFFFFFF008FFFF);
-	BJX2_MemDefineSndAuPcm(ctx,	"SPCM",	0xFFFFFFFFF0090000, 0xFFFFFFFFF009FFFF);
-	BJX2_MemDefineGfxCon(ctx,	"CGFX",	0xFFFFFFFFF00A0000, 0xFFFFFFFFF00BFFFF);
+	BJX2_MemDefineMmgp(ctx,		"MMGP",	0xFFFFF000E000, 0xFFFFF000E3FF);
+	BJX2_MemDefineSndSblk(ctx,	"SBAU",	0xFFFFF0080000, 0xFFFFF0081FFF);
+//	BJX2_MemDefineGfxCon(ctx,	"CGFX",	0xFFFFF00A0000, 0xFFFFF00AFFFF);
+	BJX2_MemDefineSmus(ctx,		"SMUS",	0xFFFFF008C000, 0xFFFFF008FFFF);
+	BJX2_MemDefineSndAuPcm(ctx,	"SPCM",	0xFFFFF0090000, 0xFFFFF009FFFF);
+	BJX2_MemDefineGfxCon(ctx,	"CGFX",	0xFFFFF00A0000, 0xFFFFF00BFFFF);
 #endif
 	
 	if(ifn)
@@ -921,16 +970,25 @@ int main(int argc, char *argv[])
 		BJX2_ContextLoadMap(ctx, rd_map[i]);
 	}
 
+	ctx_c2=BJX2_CreateSubContext(ctx);
+	
+	ctx->core_id=0;
+	ctx_c2->core_id=1;
+
 	ctx->use_jit=0;
 	if(mhz>200)
 		ctx->use_jit=1;
 
 #if defined(ARM) || defined(ARM64)
 	ctx->use_jit=1;
+	ctx_c2->use_jit=1;
 #endif
 
 	if(usejit)
+	{
 		ctx->use_jit=(usejit&1);
+		ctx_c2->use_jit=(usejit&1);
+	}
 
 //	ctx->ttick_hk=3052;
 //	ctx->ttick_rst=3052;
@@ -943,6 +1001,11 @@ int main(int argc, char *argv[])
 	ctx->ttick_rst=(ctx->tgt_mhz*1000000)/1024;
 //	ctx->ttick_rst=100000000/1024;
 	ctx->ttick_hk=ctx->ttick_rst;
+
+	ctx_c2->tgt_mhz=ctx->tgt_mhz;
+	ctx_c2->rcp_mhz=ctx->rcp_mhz;
+	ctx_c2->ttick_rst=ctx->ttick_rst;
+	ctx_c2->ttick_hk=ctx->ttick_hk;
 
 #ifdef __linux
 	i = fcntl(0, F_GETFL, 0);
@@ -1001,6 +1064,13 @@ int main(int argc, char *argv[])
 		{
 			tsec=fbtt/1000.0;
 			printf("%.2f fps\n", jx2i_gfxcon_cbfrnum/tsec);
+
+		}
+
+		if(tt>0)
+		{
+			tsec=tt/1000.0;
+			printf("%.2f TLB miss/sec\n", (ctx->tot_cnt_tlbmiss)/tsec);
 		}
 
 

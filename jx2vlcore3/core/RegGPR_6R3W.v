@@ -52,6 +52,12 @@ module RegGPR_6R3W(
 	regValImmC,		//Immediate (Decode, Lane 3)
 	regValLr,		//LR Value (CR)
 	
+	gprEx1Flush,
+	gprEx2Flush,
+`ifdef jx2_stage_ex3
+	gprEx3Flush,
+`endif
+
 	regOutDlr,	regInDlr,
 	regOutDhr,	regInDhr,
 `ifdef jx2_sprs_elrehr
@@ -114,7 +120,14 @@ input [32:0]	regValImmA;		//Immediate (Decode)
 input [32:0]	regValImmB;		//Immediate (Decode)
 input [32:0]	regValImmC;		//Immediate (Decode)
 input [47:0]	regValLr;		//GBR Value (CR)
-	
+
+input			gprEx1Flush;
+input			gprEx2Flush;
+`ifdef jx2_stage_ex3
+input			gprEx3Flush;
+`endif
+
+
 output[63:0]	regOutDlr;
 input [63:0]	regInDlr;
 output[63:0]	regOutDhr;
@@ -152,6 +165,7 @@ wire[5:0]		regIdRnBW;		//Destination ID
 wire[63:0]		regValRnBW;		//Destination Value
 wire[5:0]		regIdRnCW;		//Destination ID
 wire[63:0]		regValRnCW;		//Destination Value
+wire			regFlushRnW;	//Flush Stage
 
 `ifdef jx2_stage_ex3
 assign	regIdRnAW	= regIdRnA3;
@@ -160,6 +174,7 @@ assign	regIdRnBW	= regIdRnB3;
 assign	regValRnBW	= regValRnB3;
 assign	regIdRnCW	= regIdRnC3;
 assign	regValRnCW	= regValRnC3;
+assign	regFlushRnW	= gprEx3Flush;
 `else
 assign	regIdRnAW	= regIdRnA2;
 assign	regValRnAW	= regValRnA2;
@@ -167,6 +182,7 @@ assign	regIdRnBW	= regIdRnB2;
 assign	regValRnBW	= regValRnB2;
 assign	regIdRnCW	= regIdRnC2;
 assign	regValRnCW	= regValRnC2;
+assign	regFlushRnW	= gprEx2Flush;
 `endif
 
 reg[63:0]	gprArrA[31:0];
@@ -193,7 +209,8 @@ RegSpr_3W	gprModDlr(
 	regIdRnAW,	regValRnAW,
 	regIdRnBW,	regValRnBW,
 	regIdRnCW,	regValRnCW,
-	regInDlr,	hold);
+	regInDlr,	hold,
+	regFlushRnW);
 
 RegSpr_3W	gprModDhr(
 	clock,		reset,
@@ -201,7 +218,8 @@ RegSpr_3W	gprModDhr(
 	regIdRnAW,	regValRnAW,
 	regIdRnBW,	regValRnBW,
 	regIdRnCW,	regValRnCW,
-	regInDhr,	hold);
+	regInDhr,	hold,
+	regFlushRnW);
 
 RegSpr_3W	gprModSp(
 	clock,		reset,
@@ -209,7 +227,8 @@ RegSpr_3W	gprModSp(
 	regIdRnAW,	regValRnAW,
 	regIdRnBW,	regValRnBW,
 	regIdRnCW,	regValRnCW,
-	regInSp,	hold);
+	regInSp,	hold,
+	regFlushRnW);
 
 `ifdef jx2_sprs_elrehr
 wire[63:0]	gprRegElr;
@@ -222,7 +241,8 @@ RegSpr_3W	gprModElr(
 	regIdRnAW,	regValRnAW,
 	regIdRnBW,	regValRnBW,
 	regIdRnCW,	regValRnCW,
-	regInElr,	hold);
+	regInElr,	hold,
+	regFlushRnW);
 
 RegSpr_3W	gprModEhr(
 	clock,		reset,
@@ -230,7 +250,8 @@ RegSpr_3W	gprModEhr(
 	regIdRnAW,	regValRnAW,
 	regIdRnBW,	regValRnBW,
 	regIdRnCW,	regValRnCW,
-	regInEhr,	hold);
+	regInEhr,	hold,
+	regFlushRnW);
 
 RegSpr_3W	gprModBp(
 	clock,		reset,
@@ -238,7 +259,8 @@ RegSpr_3W	gprModBp(
 	regIdRnAW,	regValRnAW,
 	regIdRnBW,	regValRnBW,
 	regIdRnCW,	regValRnCW,
-	regInBp,	hold);
+	regInBp,	hold,
+	regFlushRnW);
 `endif
 
 `endif	
@@ -709,7 +731,8 @@ end
 
 always @(posedge clock)
 begin
-	if(!hold)
+//	if(!hold)
+	if(!hold && !regFlushRnW)
 	begin
 `ifndef def_true
 

@@ -3019,9 +3019,11 @@ ccxl_status BGBCC_CCXL_TypeFromSig(
 		if(ctx->arch_sizeof_ptr==8)
 			bty=CCXL_TY_L;
 		if(ctx->arch_sizeof_ptr==4)
-			bty=CCXL_TY_I;
+//			bty=CCXL_TY_I;
+			bty=CCXL_TY_UI;
 		if(ctx->arch_sizeof_ptr==2)
-			bty=CCXL_TY_SS;
+//			bty=CCXL_TY_SS;
+			bty=CCXL_TY_US;
 		break;
 	case 'q': bty=-1; break;
 	case 'r': bty=CCXL_TY_VARIANT; break;
@@ -3806,7 +3808,8 @@ int BGBCC_CCXL_TypeCompatibleFlP(
 		if(BGBCC_CCXL_TypeSgLongP(ctx, dty) ||
 			BGBCC_CCXL_TypeSgNLongP(ctx, dty))
 		{
-			if(BGBCC_CCXL_TypePointerP(ctx, sty))
+			if(BGBCC_CCXL_TypePointerP(ctx, sty) ||
+				BGBCC_CCXL_TypeSmallLongP(ctx, sty))
 			{
 				return(1);
 			}

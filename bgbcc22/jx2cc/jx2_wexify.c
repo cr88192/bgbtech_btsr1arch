@@ -1456,6 +1456,9 @@ ccxl_status BGBCC_JX2_CheckWexify(
 		return(0);
 	}
 	
+	if(sctx->no_wexify)
+		return(0);
+
 #if 0	
 	if(dp<12)
 	{
@@ -1506,6 +1509,9 @@ ccxl_status BGBCC_JX2_CheckWexify(
 		BGBCC_DBGBREAK
 		return(0);
 	}
+
+	if(sctx->no_wexify)
+		return(0);
 
 //	if(sctx->is_simpass)
 //		return(0);

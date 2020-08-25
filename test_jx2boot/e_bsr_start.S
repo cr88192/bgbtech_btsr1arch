@@ -26,6 +26,8 @@ _start:
 	mov r1, vbr
 	mov r1, gbr
 	mov r1, tbr
+	mov r1, mmcr
+	mov r1, sr
 
 	bsr tk_checksane_asm
 
@@ -101,7 +103,8 @@ _iscore2__isr:
 	rte
 	nop
 _iscore2__isr_boot:
-	shad.q	r7, -16, r2
+//	shad.q	r7, -16, r2
+	mov		tea, r2
 	test	r2, r2
 	bt		_iscore2
 	jmp		r2

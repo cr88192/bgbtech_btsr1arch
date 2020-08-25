@@ -20,13 +20,14 @@ int BGBCC_JX2C_EmitLdix_FillSzNmTy(
 	case CCXL_TY_UI:
 //		if(sctx->is_addr64 && sctx->is_addr_x32)
 //			{ sz=4; nm1=BGBCC_SH_NMID_MOVDL; nm2=-1; break; }
-		if(sctx->is_addr64)
-		{	sz=4; nm1=BGBCC_SH_NMID_MOVL;
-			nm2=BGBCC_SH_NMID_EXTUL;
-			nm4=BGBCC_SH_NMID_MOVUL;
-			break;
-		}
-		sz=4; nm1=BGBCC_SH_NMID_MOVL; nm2=-1; break;
+//		if(sctx->is_addr64)
+//		{	sz=4; nm1=BGBCC_SH_NMID_MOVL;
+//			nm2=BGBCC_SH_NMID_EXTUL;
+//			nm4=BGBCC_SH_NMID_MOVUL;
+//			break;
+//		}
+//		sz=4; nm1=BGBCC_SH_NMID_MOVL; nm2=-1; break;
+		sz=4; nm1=BGBCC_SH_NMID_MOVUL; nm2=-1; break;
 
 	case CCXL_TY_SB:
 		sz=1; nm1=BGBCC_SH_NMID_MOVB; nm2=-1; break;

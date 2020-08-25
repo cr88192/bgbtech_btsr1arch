@@ -106,6 +106,11 @@ __PDPCLIB_API__ int CTYP __start()
 	p=__get_cmdline();
 	penv=__get_cmdenv();
 
+	if(p && !(((long)p)>>14))
+	{
+		__debugbreak();
+	}
+
 	tk_puts("A1\n");
 
 	__init_stdin();
@@ -188,70 +193,96 @@ __PDPCLIB_API__ int CTYP __start()
 
 	tk_puts("A2\n");
 
-	if(*p=='"')
+	if(p)
 	{
-		p++;
-		argv[0] = p;
-		while(p && ((*p)!='"'))p++;
-		*p++ = '\0';
+		if(*p=='"')
+		{
+			p++;
+			argv[0] = p;
+			while(p && ((*p)!='"'))p++;
+//			*p++ = '\0';
+			*p++ = 0;
+		}else
+		{
+			argv[0] = p;
+//			p = strchr(p, ' ');
+			while(*p)
+			{
+				if(*p==' ')
+					break;
+				p++;
+			}
+//			if (p == NULL)
+//			if(!p)
+			if(!(*p))
+			{
+				p = "";
+			}
+			else
+			{
+//				*p = '\0';
+				*p = 0;
+				p++;
+			}
+		}
 	}else
 	{
-		argv[0] = p;
-		p = strchr(p, ' ');
-		if (p == NULL)
-		{
-			p = "";
-		}
-		else
-		{
-			*p = '\0';
-			p++;
-		}
+		argv[0] = "";
 	}
 
 	tk_puts("A3\n");
 
-	while (*p == ' ')
+	if(p)
 	{
-		p++;
-	}
-	if (*p == '\0')
+		while (*p == ' ')
+		{
+			p++;
+		}
+//		if (*p == '\0')
+		if (!(*p))
+		{
+			argv[1] = NULL;
+			argc = 1;
+		}
+		else
+		{
+			for (x = 1; x < MAXPARMS; )
+			{
+				char srch = ' ';
+
+				if (*p == '"')
+				{
+					p++;
+					srch = '"';
+				}
+				argv[x] = p;
+				x++;
+
+				if(x>=MAXPARMS)
+					break;
+
+				p = strchr(p, srch);
+//				if (p == NULL)
+				if(!p)
+				{
+					break;
+				}
+				else
+				{
+//					*p = '\0';
+					*p = 0;
+					p++;
+					while (*p == ' ') p++;
+					if (*p == '\0') break; /* strip trailing blanks */
+				}
+			}
+			argv[x] = NULL;
+			argc = x;
+		}
+	}else
 	{
 		argv[1] = NULL;
 		argc = 1;
-	}
-	else
-	{
-		for (x = 1; x < MAXPARMS; )
-		{
-			char srch = ' ';
-
-			if (*p == '"')
-			{
-				p++;
-				srch = '"';
-			}
-			argv[x] = p;
-			x++;
-
-			if(x>=MAXPARMS)
-				break;
-
-			p = strchr(p, srch);
-			if (p == NULL)
-			{
-				break;
-			}
-			else
-			{
-				*p = '\0';
-				p++;
-				while (*p == ' ') p++;
-				if (*p == '\0') break; /* strip trailing blanks */
-			}
-		}
-		argv[x] = NULL;
-		argc = x;
 	}
 
 	tk_puts("A4\n");

@@ -5,6 +5,9 @@ TK_DIR *tk_fat_opendir(TK_MOUNT *mnt, char *name);
 int tk_fat_unlink(TK_MOUNT *mnt, char *name);
 int tk_fat_rename(TK_MOUNT *mnt, char *oldfn, char *newfn);
 
+int tk_fat_mkdir(TK_MOUNT *mnt, char *name, char *mode);
+int tk_fat_rmdir(TK_MOUNT *mnt, char *name);
+
 int tk_fat_fread(void *buf, int sz1, int sz2, TK_FILE *fd);
 int tk_fat_fwrite(void *buf, int sz1, int sz2, TK_FILE *fd);
 s64 tk_fat_fseek(TK_FILE *fd, s64 ofs, int rel);
@@ -27,6 +30,10 @@ tk_fat_unlink,		//unlink
 tk_fat_rename,		//rename
 NULL,				//fstat
 
+tk_fat_mkdir,		//mkdir
+tk_fat_rmdir,		//rmdir
+NULL,				//fsctl
+
 /* FILE Ops */
 tk_fat_fread,		//fread
 tk_fat_fwrite,		//fwrite
@@ -39,7 +46,11 @@ tk_fat_fioctl,		//ioctl
 
 /* DIR ops */
 tk_fat_readdir,		//readdir
-tk_fat_closedir		//closedir
+tk_fat_closedir,	//closedir
+
+/* Socket/Device Ops */
+NULL,				//fsend
+NULL				//frecv
 };
 
 int tk_fat_init()
@@ -50,8 +61,13 @@ int tk_fat_init()
 
 int tk_mount_sdfat()
 {
+	TKFAT_FAT_DirEntExt tdee;
+	TKFAT_FAT_DirEntExt *dee, *dee2;
+
 	TKFAT_ImageInfo *img;
 	TK_MOUNT *mnt;
+	int		lba, clid, sz;
+	int i, j, k;
 
 	tk_puts("tk_mount_sdfat\n");
 
@@ -64,6 +80,24 @@ int tk_mount_sdfat()
 //	mnt->next=tk_vf_mount;
 //	tk_vf_mount=mnt;
 	tk_vf_addmount(mnt);
+
+
+	dee=&tdee;
+	memset(dee, 0, sizeof(TKFAT_FAT_DirEntExt));
+
+	i=TKFAT_LookupDirEntPath(img, dee, "swapfile.sys");
+	if(i>=0)
+	{
+		tk_puts("tk_mount_sdfat: found swapfile\n");
+
+		clid=TKFAT_GetDirEntCluster(dee);
+		sz=TKFAT_GetDirEntSize(dee);
+		lba=TKFAT_GetClusterLBA(img, clid);
+		TK_VMem_AddSdSwap(lba, sz);
+	}else
+	{
+		tk_puts("tk_mount_sdfat: no swapfile\n");
+	}
 }
 
 TK_MOUNT *tk_fat_mount(char *devfn, char *mntfn,
@@ -79,7 +113,7 @@ TK_FILE *tk_fat_fopen(TK_MOUNT *mnt, char *name, char *mode)
 	TK_FILE *fd;
 	int i;
 
-	tk_printf("tk_fat_fopen: %s\n", name);
+//	tk_printf("tk_fat_fopen: %s\n", name);
 
 	img=mnt->udata0;
 	dee=&tdee;
@@ -95,7 +129,7 @@ TK_FILE *tk_fat_fopen(TK_MOUNT *mnt, char *name, char *mode)
 	}
 	if(i<0)
 	{
-		tk_printf("tk_fat_fopen: fail %s\n", name);
+//		tk_printf("tk_fat_fopen: fail %s\n", name);
 		return(NULL);
 	}
 
@@ -124,7 +158,7 @@ int tk_fat_unlink(TK_MOUNT *mnt, char *name)
 	TK_FILE *fd;
 	int i;
 
-	tk_printf("tk_fat_unlink: %s\n", name);
+//	tk_printf("tk_fat_unlink: %s\n", name);
 
 	img=mnt->udata0;
 	dee=&tdee;
@@ -132,7 +166,7 @@ int tk_fat_unlink(TK_MOUNT *mnt, char *name)
 	i=TKFAT_LookupDirEntPath(img, dee, name);
 	if(i<0)
 	{
-		tk_printf("tk_fat_unlink: fail %s\n", name);
+//		tk_printf("tk_fat_unlink: fail %s\n", name);
 		return(-1);
 	}
 
@@ -147,6 +181,62 @@ int tk_fat_unlink(TK_MOUNT *mnt, char *name)
 	TKFAT_DeleteDirEnt(dee);
 	return(1);
 }
+
+int tk_fat_rmdir(TK_MOUNT *mnt, char *name)
+{
+	TKFAT_FAT_DirEntExt tdee;
+	TKFAT_FAT_DirEntExt *dee, *dee2;
+	TKFAT_ImageInfo *img;
+	TK_FILE *fd;
+	int i;
+
+//	tk_printf("tk_fat_unlink: %s\n", name);
+
+	img=mnt->udata0;
+	dee=&tdee;
+	memset(dee, 0, sizeof(TKFAT_FAT_DirEntExt));
+	i=TKFAT_LookupDirEntPath(img, dee, name);
+	if(i<0)
+	{
+//		tk_printf("tk_fat_unlink: fail %s\n", name);
+		return(-1);
+	}
+
+	if(!(dee->deb.attrib&0x10))
+	{
+		return(-1);
+//		return(NULL);
+	}
+
+	i=TKFAT_GetDirEntCluster(dee);
+	TKFAT_UnlinkClusterChain(img, i);
+	TKFAT_DeleteDirEnt(dee);
+	return(1);
+}
+
+int tk_fat_mkdir(TK_MOUNT *mnt, char *name, char *mode)
+{
+	char tb[260];
+	TKFAT_FAT_DirEntExt tdee;
+	TKFAT_FAT_DirEntExt *dee, *dee2;
+	TKFAT_ImageInfo *img;
+	TK_FILE *fd;
+	int i;
+
+//	tk_printf("tk_fat_fopen: %s\n", name);
+
+	img=mnt->udata0;
+	dee=&tdee;
+	memset(dee, 0, sizeof(TKFAT_FAT_DirEntExt));
+
+	strcpy(tb, name);
+	strcat(tb, "/");
+
+	i=TKFAT_CreateDirEntPath(img, dee, tb);
+//	dee->is_write=1;
+	return(1);
+}
+
 
 int tk_fat_rename(TK_MOUNT *mnt, char *oldfn, char *newfn)
 {
@@ -163,14 +253,14 @@ int tk_fat_rename(TK_MOUNT *mnt, char *oldfn, char *newfn)
 	i=TKFAT_LookupDirEntPath(img, dee1, oldfn);
 	if(i<0)
 	{
-		tk_printf("tk_fat_unlink: fail %s\n", oldfn);
+//		tk_printf("tk_fat_rename: fail %s\n", oldfn);
 		return(-1);
 	}
 	
 	i=TKFAT_CreateDirEntPath(img, dee2, newfn);
 	if(i<0)
 	{
-		tk_printf("tk_fat_unlink: fail %s\n", oldfn);
+//		tk_printf("tk_fat_rename: fail %s\n", oldfn);
 		return(-1);
 	}
 	
@@ -226,12 +316,12 @@ int tk_fat_fclose(TK_FILE *fd)
 {
 	TKFAT_FAT_DirEntExt *dee;
 
-	printf("tk_fat_fclose: %p\n", fd);
+//	printf("tk_fat_fclose: %p\n", fd);
 
 	dee=fd->udata1;
 	if(dee->is_dirty)
 	{
-		printf("tk_fat_sync: %p\n", fd);
+//		printf("tk_fat_sync: %p\n", fd);
 		TKFAT_SyncDirEntFile(dee);
 	}
 	free(fd->udata1);
@@ -323,7 +413,7 @@ TK_DIR *tk_fat_opendir(TK_MOUNT *mnt, char *name)
 	i=TKFAT_LookupDirEntPath(img, dee, name);
 	if(i<0)
 	{
-		tk_printf("tk_fat_opendir: fail %s\n", name);
+//		tk_printf("tk_fat_opendir: fail %s\n", name);
 		return(NULL);
 	}
 

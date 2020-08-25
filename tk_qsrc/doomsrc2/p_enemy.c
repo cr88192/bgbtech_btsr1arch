@@ -268,7 +268,8 @@ boolean P_CheckMissileRange (mobj_t* actor)
 fixed_t	xspeed[8] = {FRACUNIT,47000,0,-47000,-FRACUNIT,-47000,0,47000};
 fixed_t yspeed[8] = {0,47000,FRACUNIT,47000,0,-47000,-FRACUNIT,-47000};
 
-#define MAXSPECIALCROSS	8
+// #define MAXSPECIALCROSS	8
+#define MAXSPECIALCROSS	16
 
 extern	line_t*	spechit[MAXSPECIALCROSS];
 extern	int	numspechit;
@@ -286,10 +287,10 @@ boolean P_Move (mobj_t*	actor)
     boolean	good;
 		
     if (actor->movedir == DI_NODIR)
-	return false;
+		return false;
 		
     if ((unsigned)actor->movedir >= 8)
-	I_Error ("Weird actor->movedir!");
+		I_Error ("Weird actor->movedir!");
 		
     tryx = actor->x + actor->info->speed*xspeed[actor->movedir];
     tryy = actor->y + actor->info->speed*yspeed[actor->movedir];
@@ -298,38 +299,38 @@ boolean P_Move (mobj_t*	actor)
 
     if (!try_ok)
     {
-	// open any specials
-	if (actor->flags & MF_FLOAT && floatok)
-	{
-	    // must adjust height
-	    if (actor->z < tmfloorz)
-		actor->z += FLOATSPEED;
-	    else
-		actor->z -= FLOATSPEED;
+		// open any specials
+		if (actor->flags & MF_FLOAT && floatok)
+		{
+			// must adjust height
+			if (actor->z < tmfloorz)
+			actor->z += FLOATSPEED;
+			else
+			actor->z -= FLOATSPEED;
 
-	    actor->flags |= MF_INFLOAT;
-	    return true;
-	}
-		
-	if (!numspechit)
-	    return false;
+			actor->flags |= MF_INFLOAT;
+			return true;
+		}
 			
-	actor->movedir = DI_NODIR;
-	good = false;
-	while (numspechit--)
-	{
-	    ld = spechit[numspechit];
-	    // if the special is not a door
-	    // that can be opened,
-	    // return false
-	    if (P_UseSpecialLine (actor, ld,0))
-		good = true;
-	}
-	return good;
+		if (!numspechit)
+			return false;
+				
+		actor->movedir = DI_NODIR;
+		good = false;
+		while (numspechit--)
+		{
+			ld = spechit[numspechit];
+			// if the special is not a door
+			// that can be opened,
+			// return false
+			if (P_UseSpecialLine (actor, ld,0))
+			good = true;
+		}
+		return good;
     }
     else
     {
-	actor->flags &= ~MF_INFLOAT;
+		actor->flags &= ~MF_INFLOAT;
     }
 	
 	
@@ -354,7 +355,7 @@ boolean P_TryWalk (mobj_t* actor)
 {	
     if (!P_Move (actor))
     {
-	return false;
+		return false;
     }
 
     actor->movecount = P_Random()&15;
@@ -377,7 +378,7 @@ void P_NewChaseDir (mobj_t*	actor)
     dirtype_t	turnaround;
 
     if (!actor->target)
-	I_Error ("P_NewChaseDir: called with no target");
+		I_Error ("P_NewChaseDir: called with no target");
 		
     olddir = actor->movedir;
     turnaround=opposite[olddir];
@@ -393,28 +394,28 @@ void P_NewChaseDir (mobj_t*	actor)
 	d[1]=DI_NODIR;
 
     if (deltay<-10*FRACUNIT)
-	d[2]= DI_SOUTH;
+		d[2]= DI_SOUTH;
     else if (deltay>10*FRACUNIT)
-	d[2]= DI_NORTH;
+		d[2]= DI_NORTH;
     else
-	d[2]=DI_NODIR;
+		d[2]=DI_NODIR;
 
     // try direct route
     if (d[1] != DI_NODIR
 	&& d[2] != DI_NODIR)
     {
-	actor->movedir = diags[((deltay<0)<<1)+(deltax>0)];
-	if (actor->movedir != turnaround && P_TryWalk(actor))
-	    return;
+		actor->movedir = diags[((deltay<0)<<1)+(deltax>0)];
+		if (actor->movedir != turnaround && P_TryWalk(actor))
+			return;
     }
 
     // try other directions
     if (P_Random() > 200
 	||  abs(deltay)>abs(deltax))
     {
-	tdir=d[1];
-	d[1]=d[2];
-	d[2]=tdir;
+		tdir=d[1];
+		d[1]=d[2];
+		d[2]=tdir;
     }
 
     if (d[1]==turnaround)

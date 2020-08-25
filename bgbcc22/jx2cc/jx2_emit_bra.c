@@ -103,6 +103,8 @@ int BGBCC_JX2_EmitOpRegLbl(BGBCC_JX2_Context *ctx,
 int BGBCC_JX2_TryEmitOpRegLbl(BGBCC_JX2_Context *ctx,
 	int nmid, int lbl, int reg)
 {
+	nmid=BGBCC_JX2_EmitRemapPseudoOp(ctx, nmid);
+
 	if(
 		(nmid==BGBCC_SH_NMID_MOVB) ||
 		(nmid==BGBCC_SH_NMID_MOVW) ||
@@ -133,6 +135,8 @@ int BGBCC_JX2_TryEmitOpLblReg(BGBCC_JX2_Context *ctx,
 	int opwf, opwf1, usewxj;
 	int tr0;
 	int i, j, k;
+
+	nmid=BGBCC_JX2_EmitRemapPseudoOp(ctx, nmid);
 
 	if(
 		(nmid==BGBCC_SH_NMID_MOVB) ||

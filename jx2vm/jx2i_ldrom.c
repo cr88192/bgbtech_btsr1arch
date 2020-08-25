@@ -1,3 +1,28 @@
+/*
+ Copyright (c) 2018-2020 Brendan G Bohannon
+
+ Permission is hereby granted, free of charge, to any person
+ obtaining a copy of this software and associated documentation
+ files (the "Software"), to deal in the Software without
+ restriction, including without limitation the rights to use,
+ copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the
+ Software is furnished to do so, subject to the following
+ conditions:
+
+ The above copyright notice and this permission notice shall be
+ included in all copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ OTHER DEALINGS IN THE SOFTWARE.
+*/
+
 u32 mmgp_data[256];
 
 s64 mmgp_spi_lastcyc;
@@ -49,6 +74,7 @@ s32 BJX2_MemMmgpCb_GetDWord(BJX2_Context *ctx,
 
 
 	ra=addr-sp->addr_base;
+	ra=(ra&65535);
 
 	mmio=mmgp_data;
 
@@ -183,6 +209,10 @@ s32 BJX2_MemMmgpCb_GetDWord(BJX2_Context *ctx,
 		rvq=ctx->tgt_mhz;
 		rv=rvq>>32;
 		break;
+
+	default:
+		__debugbreak();
+		break;
 	}
 	return(rv);
 }
@@ -225,6 +255,7 @@ int BJX2_MemMmgpCb_SetDWord(BJX2_Context *ctx,
 
 
 	ra=addr-sp->addr_base;
+	ra=(ra&65535);
 
 	mmio=mmgp_data;
 
@@ -259,13 +290,16 @@ int BJX2_MemMmgpCb_SetDWord(BJX2_Context *ctx,
 			lv1=0;
 			for(i=0; i<8; i++)
 			{
-				mmgp_spi_delcyc+=(ctx->tgt_mhz*8)/5;
+//				mmgp_spi_delcyc+=(ctx->tgt_mhz*8)/5;
+				mmgp_spi_delcyc+=(ctx->tgt_mhz*8)/10;
 				v=btesh2_spimmc_XrByte(ctx, (lv0>>(i*8))&255);
 				lv1|=((u64)(v&255))<<(i*8);
 			}
 			mmio[0x12]=lv1;
 			mmio[0x13]=lv1>>32;
 
+//			ctx->regs[BJX2_REG_PC]=ctx->trapc;
+//			ctx->regs[BJX2_REG_TEA]=addr;
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_IOPOKE);
 		}
 	
@@ -285,7 +319,11 @@ int BJX2_MemMmgpCb_SetDWord(BJX2_Context *ctx,
 //		mmgp_spi_delcyc+=200;
 //		ctx->iodel_cyc=20;
 //		mmgp_spi_delcyc+=20;
-		mmgp_spi_delcyc+=(ctx->tgt_mhz*8)/5;
+//		mmgp_spi_delcyc+=(ctx->tgt_mhz*8)/5;
+		mmgp_spi_delcyc+=(ctx->tgt_mhz*8)/10;
+
+//		ctx->regs[BJX2_REG_PC]=ctx->trapc;
+//		ctx->regs[BJX2_REG_TEA]=addr;
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_IOPOKE);
 
 //		printf("SPI_D(W): %08X -> %08X, D=%08X\n", val, v, mmio[0x11]);
@@ -315,6 +353,9 @@ int BJX2_MemMmgpCb_SetDWord(BJX2_Context *ctx,
 		ctx->msgbuf_txepos=val;
 		BJX2_VmMsgTxUpdate(ctx);
 		break;
+	default:
+		__debugbreak();
+		break;
 	}
 
 	return(0);
@@ -325,8 +366,13 @@ s64 BJX2_MemMmgpCb_GetQWord(BJX2_Context *ctx,
 {
 	u32 lo, hi;
 
-	lo=BJX2_MemMmgpCb_GetDWord(ctx, sp, addr+0);
-	hi=BJX2_MemMmgpCb_GetDWord(ctx, sp, addr+4);
+	if(((s64)addr)>0)
+	{
+		lo=-1;
+	}
+
+	lo=(u32)(BJX2_MemMmgpCb_GetDWord(ctx, sp, addr+0));
+	hi=(u32)(BJX2_MemMmgpCb_GetDWord(ctx, sp, addr+4));
 	return((((u64)hi)<<32)|lo);
 }
 

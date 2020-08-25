@@ -18,6 +18,10 @@ NULL,				//unlink
 NULL,				//rename
 NULL,				//fstat
 
+NULL,				//mkdir
+NULL,				//rmdir
+NULL,				//fsctl
+
 /* FILE Ops */
 tk_ird_fread,		//fread
 NULL,				//fwrite
@@ -25,7 +29,16 @@ tk_ird_fseek,		//fseek
 tk_ird_ftell,		//ftell
 tk_ird_fclose,		//fclose
 tk_ird_fgetc,		//fgetc
-NULL				//fputc
+NULL,				//fputc
+NULL,				//ioctl
+
+/* DIR ops */
+NULL,				//readdir
+NULL,				//closedir
+
+/* Socket/Device Ops */
+NULL,				//fsend
+NULL				//frecv
 };
 
 int tk_ird_init()

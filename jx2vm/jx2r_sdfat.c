@@ -1,3 +1,28 @@
+/*
+ Copyright (c) 2018-2020 Brendan G Bohannon
+
+ Permission is hereby granted, free of charge, to any person
+ obtaining a copy of this software and associated documentation
+ files (the "Software"), to deal in the Software without
+ restriction, including without limitation the rights to use,
+ copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the
+ Software is furnished to do so, subject to the following
+ conditions:
+
+ The above copyright notice and this permission notice shall be
+ included in all copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ OTHER DEALINGS IN THE SOFTWARE.
+*/
+
 JX2R_TKFAT_ImageInfo *spimmc_img=NULL;
 
 u32 JX2R_TKFAT_GetDirEntCluster(
@@ -1098,13 +1123,17 @@ int JX2R_TKFAT_ReadWriteSector(JX2R_TKFAT_ImageInfo *img,
 	{
 		clbuf=JX2R_TKFAT_GetSectorTempBuffer(img,
 			lba, 1|TKFAT_SFL_DIRTY);
-		memcpy(clbuf+offs, data, size);
+		if(data)
+			memcpy(clbuf+offs, data, size);
+		else
+			memset(clbuf+offs, 0, size);
 	}
 	else
 	{
 		clbuf=JX2R_TKFAT_GetSectorTempBuffer(img,
 			lba, 1);
-		memcpy(data, clbuf+offs, size);
+		if(data)
+			memcpy(data, clbuf+offs, size);
 	}
 	return(0);
 }
@@ -1121,13 +1150,17 @@ int JX2R_TKFAT_ReadWriteCluster(JX2R_TKFAT_ImageInfo *img,
 	{
 		clbuf=JX2R_TKFAT_GetSectorTempBuffer(img,
 			lba, img->szclust|TKFAT_SFL_DIRTY);
-		memcpy(clbuf+offs, data, size);
+		if(data)
+			memcpy(clbuf+offs, data, size);
+		else
+			memset(clbuf+offs, 0, size);
 	}
 	else
 	{
 		clbuf=JX2R_TKFAT_GetSectorTempBuffer(img,
 			lba, img->szclust);
-		memcpy(data, clbuf+offs, size);
+		if(data)
+			memcpy(data, clbuf+offs, size);
 	}
 	return(0);
 }
@@ -1164,13 +1197,13 @@ int JX2R_TKFAT_ReadWriteClusterOffset(JX2R_TKFAT_ImageInfo *img,
 	ct=data; cte=data+size;
 	clidt=clid1;
 	JX2R_TKFAT_ReadWriteCluster(img,
-		clidt, offs1, iswrite, ct, szcl-offs1);
+		clidt, offs1, iswrite, data?ct:NULL, szcl-offs1);
 	clidt=JX2R_TKFAT_GetWalkCluster(img, clidt, 1, iswrite);
 	ct+=szcl-offs1;
 	while((ct+szcl)<=cte)
 	{
 		JX2R_TKFAT_ReadWriteCluster(img,
-			clidt, 0, iswrite, ct, szcl);
+			clidt, 0, iswrite, data?ct:NULL, szcl);
 		clidt=JX2R_TKFAT_GetWalkCluster(img, clidt, 1, iswrite);
 		if(clidt<0)
 			return(-1);
@@ -1179,7 +1212,7 @@ int JX2R_TKFAT_ReadWriteClusterOffset(JX2R_TKFAT_ImageInfo *img,
 	if(ct<cte)
 	{
 		JX2R_TKFAT_ReadWriteCluster(img,
-			clidt, 0, iswrite, ct, cte-ct);
+			clidt, 0, iswrite, data?ct:NULL, cte-ct);
 	}
 	return(0);
 }
@@ -2679,6 +2712,26 @@ int JX2R_ImageAddFile(JX2R_TKFAT_ImageInfo *img, char *fn1, char *fn2)
 	return(1);
 }
 
+int JX2R_ImageAddFileBuffer(JX2R_TKFAT_ImageInfo *img, char *fn,
+	byte *tbuf, int fsz)
+{
+	JX2R_TKFAT_FAT_DirEntExt tdee;
+	int fty;
+	int n;
+	int i;
+
+	i=JX2R_TKFAT_CreateDirEntPath(img, &tdee, fn);
+	if(i<0)
+	{
+		printf("Create %s fail\n", fn);
+		return(-1);
+	}
+	
+	JX2R_TKFAT_ReadWriteDirEntFile(&tdee, 0, true, tbuf, fsz);
+	printf("Add %s OK %d bytes\n", fn, fsz);
+	return(1);
+}
+
 int JX2R_ImageAddExport(JX2R_TKFAT_ImageInfo *img, char *fn1, char *fn2)
 {
 	int i;
@@ -2733,6 +2786,11 @@ int JX2R_UseImageAddFile(char *fn1, char *fn2)
 	}
 
 	return(JX2R_ImageAddFile(spimmc_img, fn1, fn2));
+}
+
+int JX2R_UseImageAddFileBuffer(char *fn1, byte *tbuf, int fsz)
+{
+	return(JX2R_ImageAddFileBuffer(spimmc_img, fn1, tbuf, fsz));
 }
 
 int JX2R_UseImageAddExport(char *fn1, char *fn2)

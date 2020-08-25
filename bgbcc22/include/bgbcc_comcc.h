@@ -164,6 +164,7 @@ byte has_jumbo;		//has ADDS.L and similar
 byte has_pushx2;	//has PUSH.X/POP.X and similar
 byte has_simdx2;	//has 128-bit SIMD ops
 // byte pel_cmpr;
+byte no_wexify;		//has 128-bit SIMD ops
 
 byte use_egpr;		//enable use of extended GPRs
 byte maxreg_gpr;	//current number of GPR register-slots

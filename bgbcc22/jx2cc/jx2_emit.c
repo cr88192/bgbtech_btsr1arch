@@ -1715,12 +1715,12 @@ int BGBCC_JX2_EmitLoadRegImm64P(
 //				opw1=0xF400|((imm1>>24)&0x00FF);
 //				opw2=0xC000|((imm1>>10)&0x3FFF);
 //				opw3=0xF203|((reg&15)<<4);
-//				opw4=0xC800|((reg&16)<<6)|(imm1&0x3FF);
+//				opw4=0xC000|((reg&16)<<6)|(imm1&0x3FF);
 
 				opw1=0xFE00|((imm1>>24)&0x00FF);
 				opw2=0x0000|((imm1>> 8)&0xFFFF);
 				opw3=0xF203|((reg&15)<<4);
-				opw4=0xC800|((reg&16)<<6)|(imm1&0x0FF);
+				opw4=0xC000|((reg&16)<<6)|(imm1&0x0FF);
 			}
 #endif
 

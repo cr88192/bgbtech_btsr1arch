@@ -322,7 +322,7 @@ BCCX_Node *BGBCP_ExpressionLit(BGBCP_ParseState *ctx, char **str)
 	char *s, *t, *s1, *t1;
 	char *suf;
 	int ty, ty2, ty3;
-	BCCX_Node *n, *n1, *n2;
+	BCCX_Node *n, *n1, *n2, *n3, *n4;
 	int i;
 
 	s=*str;
@@ -614,6 +614,63 @@ BCCX_Node *BGBCP_ExpressionLit(BGBCP_ParseState *ctx, char **str)
 			n=BGBCP_ExpressionLit(ctx, &s);
 //			BCCX_SetCst(n, &bgbcc_rcst_tysuf, "tysuf", "L");
 			BCCX_SetCst(n, &bgbcc_rcst_tysuf, "tysuf", b);
+			*str=s;
+			return(n);
+		}
+
+		if((b[0]=='_') && !bgbcp_strcmp8(b, "__func__"))
+		{
+			n1=NULL;
+			n2=NULL;
+			n3=NULL;
+			if(!bgbcp_strcmp1(b2, "("))
+			{
+				s=BGBCP_Token(s, b2, &ty2); //'('
+				n1=BGBCP_FunVarsList(ctx, &s);
+				BGBCP_Token(s, b2, &ty2);
+			}
+
+			if(	!bgbcp_strcmp1(b2, ":") ||
+				!bgbcp_strcmp2(b2, "->"))
+			{
+				s=BGBCP_Token(s, b2, &ty2); //'('
+				n2=BGBCP_DefExpectType(ctx, &s);
+				BGBCP_Token(s, b2, &ty2);
+			}
+
+			if(	!bgbcp_strcmp1(b2, "{"))
+			{
+//				s=BGBCP_Token(s, b2, &ty2); //'('
+
+				i=ctx->in_func_body;
+				ctx->in_func_body=1;
+//				tk0=BGBCP_GetTokenCount();
+				n3=BGBCP_BlockStatement2(ctx, &s);
+//				tk1=BGBCP_GetTokenCount();
+				ctx->in_func_body=i;
+
+				BGBCP_Token(s, b2, &ty2);
+			}
+			
+			n=BCCX_NewCst(&bgbcc_rcst_lambda, "lambda");
+			if(n1)
+			{
+//				BCCX_Add(n, n1);
+				n1=BCCX_NewCst1V(&bgbcc_rcst_args, "args", n1);
+				BCCX_AddV(n, n1);
+
+			}
+			if(n2)
+			{
+				BCCX_Add(n, n2);
+			}
+			if(n3)
+			{
+//				BCCX_Add(n, n3);
+				n3=BCCX_NewCst1V(&bgbcc_rcst_body, "body", n3);
+				BCCX_AddV(n, n3);
+			}
+
 			*str=s;
 			return(n);
 		}

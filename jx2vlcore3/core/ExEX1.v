@@ -88,7 +88,7 @@ module ExEX1(
 	
 	memAddr,	memOpm,
 	memDataOut,	memDataOutB,
-	memDataOK
+	memDataOK,	regInExc
 	);
 
 
@@ -152,6 +152,8 @@ output[63:0]	memDataOut;
 output[63:0]	memDataOutB;
 
 input[ 1:0]		memDataOK;
+
+input[63:0]		regInExc;
 
 
 reg[ 5:0]		tRegIdRn1;		//Destination ID (EX1)
@@ -811,6 +813,8 @@ begin
 				end
 
 				JX2_UCIX_IXS_INVIC: begin
+					$display("EX1 JX2_UCIX_IXS_INVIC");
+
 					tMemOpm		= UMEM_OPM_FLUSHIS;
 					tMemAddr	= regValRm[47:0];
 
@@ -821,10 +825,13 @@ begin
 					tDoBra		= 1;
 				end
 				JX2_UCIX_IXS_INVDC: begin
-//					tMemOpm		= UMEM_OPM_FLUSHDS;
+					$display("EX1 JX2_UCIX_IXS_INVDC");
+
+					tMemOpm		= UMEM_OPM_FLUSHDS;
 					tMemAddr	= regValRm[47:0];
-					tDoMemOpm	= UMEM_OPM_FLUSHDS;
-					tDoMemOp	= 1;
+
+//					tDoMemOpm	= UMEM_OPM_FLUSHDS;
+//					tDoMemOp	= 1;
 				end
 
 				JX2_UCIX_IXS_TRAPB: begin
@@ -856,6 +863,9 @@ begin
 					tNextMsgLatch	= 1;
 					tExHold		= 1;
 //					tExHold		= !reset;
+					if(regInExc[15])
+						tExHold		= 0;
+					
 				end
 				JX2_UCIX_IXT_CLRT: begin
 					tRegOutSr[0]	= 0;
@@ -878,7 +888,7 @@ begin
 				end
 
 				JX2_UCIX_IXT_RTE: begin
-					$display("EX1: RTE, PC=%X", regValPc);
+//					$display("EX1: RTE, PC=%X", regValPc);
 					tExTrapExc = 16'hFF00;
 //					tRegIdCn1	= JX2_GR_IMM[4:0];
 				end
@@ -919,6 +929,7 @@ begin
 				end
 				
 				JX2_UCIX_IXT_LDTLB: begin
+//					$display("EX1: LDTLB");
 //					tMemOpm = UMEM_OPM_LDTLB;
 					tDoMemOpm	= UMEM_OPM_LDTLB;
 					tDoMemOp	= 1;

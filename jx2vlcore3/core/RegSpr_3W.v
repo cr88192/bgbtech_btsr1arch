@@ -4,7 +4,8 @@ module RegSpr_3W(
 	wrIdA,	wrValA,
 	wrIdB,	wrValB,
 	wrIdC,	wrValC,
-	regInVal, regHold
+	regInVal, regHold,
+	regFlush
 	);
 
 input			clock;
@@ -19,6 +20,7 @@ input[5:0]		wrIdC;
 input[63:0]		wrValC;
 input[63:0]		regInVal;
 input			regHold;
+input			regFlush;
 
 reg[63:0]		tRegVal;
 reg[63:0]		tNxtRegVal;
@@ -49,12 +51,15 @@ begin
 
 `ifdef def_true
 	tNxtRegVal	= regInVal;
-	if(wrIdC == regId)
-		tNxtRegVal	= wrValC;
-	if(wrIdB == regId)
-		tNxtRegVal	= wrValB;
-	if(wrIdA == regId)
-		tNxtRegVal	= wrValA;
+	if(!regFlush)
+	begin
+		if(wrIdC == regId)
+			tNxtRegVal	= wrValC;
+		if(wrIdB == regId)
+			tNxtRegVal	= wrValB;
+		if(wrIdA == regId)
+			tNxtRegVal	= wrValA;
+	end
 `endif
 end
 

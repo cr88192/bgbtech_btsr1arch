@@ -105,8 +105,11 @@ begin
 //	tMem2OK			= (mem2Opm != UMEM_OPM_READY) ?
 //		UMEM_OK_HOLD : UMEM_OK_READY;
 
-	tMem1OK			= UMEM_OK_READY;
-	tMem2OK			= UMEM_OK_READY;
+//	tMem1OK			= UMEM_OK_READY;
+//	tMem2OK			= UMEM_OK_READY;
+
+	tMem1OK			= tMem2Latch ? UMEM_OK_HOLD : UMEM_OK_READY;
+	tMem2OK			= tMem1Latch ? UMEM_OK_HOLD : UMEM_OK_READY;
 
 	tMem1BusExc		= UV64_00;
 	tMem2BusExc		= UV64_00;
@@ -126,7 +129,8 @@ begin
 	begin
 		case(tMemBusExc[11:8])
 			4'h0: 		tMem1BusExc		= tMemBusExc;
-			4'h1: 		tMem2BusExc		= tMemBusExc;
+			4'h1: 		tMem1BusExc		= tMemBusExc;
+			4'h2: 		tMem2BusExc		= tMemBusExc;
 			4'hF: begin
 				tMem1BusExc		= tMemBusExc;
 		 		tMem2BusExc		= tMemBusExc;

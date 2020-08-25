@@ -589,6 +589,8 @@ begin
 					opNmid		= JX2_UCMD_OP_IXT;
 					opFmid		= JX2_FMID_Z;
 					opUCmdIx	= JX2_UCIX_IXT_LDTLB;
+					opRegM_Fix	= JX2_GR_DHR;
+					opRegN_Fix	= JX2_GR_DLR;
 				end
 
 				8'h12: begin

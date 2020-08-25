@@ -1,7 +1,8 @@
 #define SPICTRL_ACS		0x01
 #define SPICTRL_CCS		0x04
 #define SPICTRL_DCS		0x10
-#define SPICTRL_DIVN(x) ((x)<<27)
+#define SPICTRL_DIVN(x)		((x)<<27)
+#define SPICTRL_DIVN2(x)	((x)<<24)
 #define SPICTRL_XMIT	0x02
 #define SPICTRL_BUSY	0x02
 #define SPICTRL_LOOP	0x08
@@ -62,12 +63,14 @@ void TKSPI_ChipSel(int chip)
 void TKSPI_SetSpeed(int speed)
 {
 	if(!speed)
-		{ tkspi_ctl_speed=SPICTRL_DIVN(31); }
+//		{ tkspi_ctl_speed=SPICTRL_DIVN(31); }
+		{ tkspi_ctl_speed=SPICTRL_DIVN2(255); }
 	else
-		{ tkspi_ctl_speed=SPICTRL_DIVN(0); }
+//		{ tkspi_ctl_speed=SPICTRL_DIVN(0); }
+		{ tkspi_ctl_speed=SPICTRL_DIVN2(0); }
 }
 
-byte TKSPI_XchByte(byte c)
+int TKSPI_XchByte(int c)
 {
 	u32 v;
 	P_SPI_DATA=c;
@@ -77,8 +80,9 @@ byte TKSPI_XchByte(byte c)
 		v=P_SPI_CTRL;
 	v=P_SPI_DATA;
 //	__debugbreak();
-//	printf("%02XX%02X ", c, v&255);
-	return(v&0xFF);
+//	tk_printf("%02XX%02X ", c, v&255);
+	v=v&255;
+	return(v);
 }
 
 int TKSPI_ReadBasic(int chip, u32 addr,
@@ -94,7 +98,8 @@ int TKSPI_ReadBasic(int chip, u32 addr,
 	TKSPI_XchByte(addr);
 	while(len)
 	{
-		*ptr++=TKSPI_XchByte(0);
+//		*ptr++=TKSPI_XchByte(0);
+		*ptr++=TKSPI_XchByte(0xFF);
 		len--;
 	}
 	TKSPI_ChipSel(0);
@@ -108,11 +113,21 @@ int TKSPI_DelayUSec(int us)
 int TKSPI_ReadData(byte *buf, u32 len)
 {
 	byte *ct, *cte;
+	u64 lv;
 	u32 count, v;
-	byte rv;
+	int rv;
 	int n;
 	
-	count=(1<<16);
+	if(tkspi_ctl_status&(SPICTRL_XMIT|SPICTRL_XMIT8X))
+	{
+		tk_printf("TKSPI_ReadData: %X %X\n",
+			tkspi_ctl_status, tkspi_ctl_speed);
+
+		tkspi_ctl_status&=~(SPICTRL_XMIT|SPICTRL_XMIT8X);	//debug
+	}
+
+//	count=(1<<16);
+	count=(1<<20);
 	while(count>0)
 	{
 		rv=TKSPI_XchByte(0xFF);
@@ -128,12 +143,16 @@ int TKSPI_ReadData(byte *buf, u32 len)
 #endif
 
 		if(rv!=0xFF)
+		{
 			break;
+		}
 		TKSPI_DelayUSec(10);
 		count--;
 	}
+//	__debugbreak();
 	if(rv!=0xFE)
 	{
+//		__debugbreak();
 		printf("TKSPI: Err %02X\n", rv);
 		return(-1);
 	}
@@ -143,22 +162,31 @@ int TKSPI_ReadData(byte *buf, u32 len)
 	ct=buf; n=len;
 	cte=ct+n;
 
+//	__debugbreak();
+
 #if 1
 	if(!(len&7))
 	{
 //		while(n>0)
 		while(ct<cte)
 		{
-			P_SPI_QDATA=0xFFFFFFFFFFFFFFFFULL;
+			lv=0xFFFFFFFFFFFFFFFFULL;
+			P_SPI_QDATA=lv;
 			P_SPI_CTRL=tkspi_ctl_status|SPICTRL_XMIT8X;
 			v=P_SPI_CTRL;
 //			__debugbreak();
 			while(v&SPICTRL_BUSY) 
 				v=P_SPI_CTRL;
-			*(u64 *)ct=P_SPI_QDATA;
-//			__debugbreak();
+//			*(u64 *)ct=P_SPI_QDATA;
+			lv=P_SPI_QDATA;
+			*(u64 *)ct=lv;
+//			if(((s64)lv)<0)
+//				__debugbreak();
 			ct+=8;
+//			__debugbreak();
 		}
+
+//		__debugbreak();
 
 		TKSPI_XchByte(0xFF);
 		TKSPI_XchByte(0xFF);
@@ -194,15 +222,17 @@ int TKSPI_ReadData(byte *buf, u32 len)
 int TKSPI_WaitReady(void)
 {	
 	u32 count;
-	byte rv;
+	int rv;
 	
-	count=(1<<16);
+//	count=(1<<16);
+	count=(1<<20);
 	while(count>0)
 	{
 		rv=TKSPI_XchByte(0xFF);
 //		__debugbreak();
-		if(rv==0xFF) {
-		       	return(1);
+		if(rv==0xFF)
+		{
+			return(1);
 		}
 		TKSPI_DelayUSec(10);
 		count--;
@@ -214,14 +244,15 @@ int TKSPI_WriteData(byte *buf, u32 len)
 {
 	byte *ct;
 	u32 count;
-	byte rv;
+	int rv;
 	int n;
 	
 	if(!TKSPI_WaitReady())
 		return(-1);
 	
 #if 0
-	count=(1<<16);
+//	count=(1<<16);
+	count=(1<<20);
 	while(count>0)
 	{
 		rv=TKSPI_XchByte(0xFF);
@@ -281,9 +312,9 @@ void TKSPI_PowerOff(void)
 	TKSPI_Deselect();
 }
 
-byte TKSPI_SendCmd(byte cmd, u32 arg)
+int TKSPI_SendCmd(int cmd, u32 arg)
 {
-	byte n, h, res;
+	int n, h, res;
 
 //	if(arg>>32)
 //		__debugbreak();
@@ -306,7 +337,8 @@ byte TKSPI_SendCmd(byte cmd, u32 arg)
 		return(0xFF);
 	}
 
-	TKSPI_XchByte(0x40|cmd);
+//	TKSPI_XchByte(0x40|cmd);
+	TKSPI_XchByte(0x40|(cmd&0x3F));
 	TKSPI_XchByte((byte)(arg>>24));
 	TKSPI_XchByte((byte)(arg>>16));
 	TKSPI_XchByte((byte)(arg>>8));
@@ -318,7 +350,9 @@ byte TKSPI_SendCmd(byte cmd, u32 arg)
 
 	if (cmd==MMC_CMD12)
 		{ TKSPI_XchByte(0xFF); }
-	n=10;
+//	n=10;
+//	n=100;
+	n=1000;
 	while(n>0)
 	{
 		res=TKSPI_XchByte(0xFF);
@@ -410,17 +444,25 @@ int TKSPI_WriteSectors(byte *buf, s64 lba, int cnt)
 }
 
 
+static int tkspi_is_init=0;
 
 int TKSPI_InitDevice(void)
 {
-	static const char *hexchars="0123456789ABCDEF";
-	static int init=0;
+//	static const char *hexchars="0123456789ABCDEF";
 	byte ocr[4];
 	byte s, cmd, ty;
 	u32 n, count;
 	
-	if(init!=1)return(0);
-	init=1;
+	if(tkspi_is_init)
+		return(0);
+	tkspi_is_init=1;
+
+	TKSPI_SetSpeed(0);
+
+	for (n=0; n<16384; n++)
+//	for (n=0; n<1024; n++)
+//	for (n=0; n<256; n++)
+		TKSPI_XchByte(0xFF);
 
 	TKSPI_SetSpeed(0);
 	TKSPI_SendCmd(MMC_CMD52, 1);

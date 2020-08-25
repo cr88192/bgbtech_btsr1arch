@@ -1,3 +1,28 @@
+/*
+ Copyright (c) 2018-2020 Brendan G Bohannon
+
+ Permission is hereby granted, free of charge, to any person
+ obtaining a copy of this software and associated documentation
+ files (the "Software"), to deal in the Software without
+ restriction, including without limitation the rights to use,
+ copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the
+ Software is furnished to do so, subject to the following
+ conditions:
+
+ The above copyright notice and this permission notice shall be
+ included in all copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ OTHER DEALINGS IN THE SOFTWARE.
+*/
+
 void BJX2_Op_BRA_PcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	ctx->regs[BJX2_REG_PC]=(op->pc2)+(op->imm*2);
@@ -652,6 +677,7 @@ void BJX2_Op_RET_None(BJX2_Context *ctx, BJX2_Opcode *op)
 //			ctx->regs[BJX2_REG_SP]);
 //	ctx->regs[BJX2_REG_SP]+=4;
 
+	ctx->trapc=op->pc;
 	ctx->regs[BJX2_REG_PC]=
 		BJX2_MemGetQWord(ctx,
 			ctx->regs[BJX2_REG_SP]);
@@ -667,18 +693,23 @@ void BJX2_Op_RET_None(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_BREAK_None(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+	ctx->regs[BJX2_REG_PC]=op->pc;
 	BJX2_ThrowFaultStatus(ctx, BJX2_FLT_BREAK);
 	ctx->tr_rnxt=NULL;
 }
 
 void BJX2_Op_SLEEP_None(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+//	ctx->trapc=op->pc;
+//	ctx->regs[BJX2_REG_PC]=op->pc;
 	BJX2_ThrowFaultStatus(ctx, BJX2_FLT_SLEEP);
 	ctx->tr_rnxt=NULL;
 }
 
 void BJX2_Op_INVOP_None(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+	ctx->trapc=op->pc;
+	ctx->regs[BJX2_REG_PC]=op->pc;
 	BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVOP);
 	ctx->tr_rnxt=NULL;
 }
@@ -686,10 +717,48 @@ void BJX2_Op_INVOP_None(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_RTE_None(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+	int exc;
+	int i, j, k;
+
+	exc=ctx->regs[BJX2_REG_EXSR];
+
+	if((exc&0xF000)==0xA000)
+	{
+//		printf("RTE\n");
+	}
+
+	if(!(ctx->regs[BJX2_REG_SPC]))
+		{ __debugbreak(); }
+
 	BJX2_FaultLeaveInterrupt(ctx);
 //	ctx->regs[BJX2_REG_PC]=
 //		ctx->regs[BJX2_REG_LR];
 	ctx->tr_rnxt=NULL;
+
+	if(!(ctx->regs[BJX2_REG_PC]))
+		{ __debugbreak(); }
+	
+	if((exc&0xF000)==0xA000)
+	{
+		for(i=0; i<128; i++)
+		{
+//			if(i==BJX2_REG_EXSR)
+//				continue;
+			if(i==BJX2_REG_SPC)
+				continue;
+			if(ctx->regs[i]!=ctx->ex_regs[i])
+				break;
+		}
+
+		if(i<128)
+		{
+			printf("RTE\n");
+			BJX2_DbgPrintRegs(ctx);
+		}
+	}
+
+	if(!ctx->regs[BJX2_REG_PC])
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVOP);
 }
 
 void BJX2_Op_BRA_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
@@ -759,8 +828,64 @@ void BJX2_Op_TRAP_Imm(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_TRAP_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+	BJX2_Context *pctx, *cctx;
+	u64 exc;
+	int cvn;
 	ctx->trapc=op->pc2;
-	BJX2_ThrowFaultStatus(ctx, ctx->regs[op->rn]);
+	
+	exc=ctx->regs[op->rn];
+	cvn=(exc>>8)&15;
+	if(cvn || (ctx->core_id))
+	{
+		if(cvn==15)
+		{
+			pctx=ctx;
+			if(pctx->ctx_parent)
+				pctx=pctx->ctx_parent;
+			cctx=pctx=pctx->ctx_child;
+			while(cctx)
+			{
+//				cctx->regs[BJX2_REG_EXSR]=exc;
+				cctx->regs[BJX2_REG_TEA]=exc>>16;
+				BJX2_ThrowFaultStatus(cctx, exc&0xFFFF);
+				cctx=cctx->ctx_next;
+			}
+//			pctx->regs[BJX2_REG_EXSR]=exc;
+			pctx->regs[BJX2_REG_TEA]=exc>>16;
+			BJX2_ThrowFaultStatus(pctx, exc&0xFFFF);
+			return;
+		}
+
+		pctx=ctx;
+		if(pctx->ctx_parent)
+			pctx=pctx->ctx_parent;
+		cctx=pctx=pctx->ctx_child;
+		while(cctx)
+		{
+			if(cctx->core_id==cvn)
+			{
+//				cctx->regs[BJX2_REG_EXSR]=exc;
+				cctx->regs[BJX2_REG_TEA]=exc>>16;
+				BJX2_ThrowFaultStatus(cctx, exc&0xFFFF);
+				return;
+			}
+			cctx=cctx->ctx_next;
+		}
+//		pctx->regs[BJX2_REG_EXSR]=exc;
+		pctx->regs[BJX2_REG_TEA]=exc>>16;
+		BJX2_ThrowFaultStatus(pctx, exc&0xFFFF);
+		return;
+	}
+	
+	if(exc>>16)
+	{
+//		ctx->regs[BJX2_REG_EXSR]=exc;
+		ctx->regs[BJX2_REG_TEA]=exc>>16;
+		BJX2_ThrowFaultStatus(ctx, exc&0xFFFF);
+	}else
+	{
+		BJX2_ThrowFaultStatus(ctx, exc);
+	}
 }
 
 void BJX2_Op_SYSCALL_None(BJX2_Context *ctx, BJX2_Opcode *op)
@@ -788,4 +913,80 @@ void BJX2_Op_WEXMD_Imm(BJX2_Context *ctx, BJX2_Opcode *op)
 		ctx->wexmd=0;
 		break;
 	}
+}
+
+void BJX2_Op_CPUID_Imm(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	char tb[16];
+	u64 v;
+	switch(op->imm)
+	{
+	case 0:
+		tb[0]='B';	tb[1]='J';
+		tb[2]='X';	tb[3]='2';
+		tb[4]='F';	tb[5]='0';
+		tb[6]='0';	tb[7]='0';
+		v=BJX2_PtrGetSQWordOfsLe(tb, 0);
+		break;
+	case 1:
+		v=ctx->core_id;
+		break;
+	default:
+		v=0;
+		break;
+	}
+	
+	ctx->regs[BJX2_REG_DLR]=v;
+}
+
+
+void BJX2_Op_LDTLB_None(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	s64 addr;
+	u64	r0, r1, r2, r3;
+	int i, j, h;
+	
+	r0=ctx->regs[BJX2_REG_DLR];
+	r1=ctx->regs[BJX2_REG_DHR];
+	addr=r1&0x0000FFFFFFFFF000ULL;
+
+	if(ctx->regs[BJX2_REG_MMCR]&16)
+	{
+		h=((addr>>24)&0x3F)^((addr>>16)&0xFF)^((addr>>8)&0xC0);
+	}else
+		if(ctx->regs[BJX2_REG_MMCR]&16)
+	{
+//		h=((addr>>22)&1)^((addr>>16)&1);
+//		h=((addr>>22)&3)^((addr>>16)&3);
+//		h=((addr>>22)&7)^((addr>>16)&7);
+//		h=((addr>>22)&15)^((addr>>16)&15);
+//		h=((addr>>22)&31)^((addr>>16)&31);
+//		h=((addr>>22)&63)^((addr>>16)&63);
+//		h=((addr>>24)&127)^((addr>>16)&127);
+		h=((addr>>24)&255)^((addr>>16)&255);
+	}else
+	{
+//		h=((addr>>12)&63)^((addr>>16)&63);
+//		h=((addr>>12)&255)^((addr>>16)&255);
+//		h=((addr>>12)&127)^((addr>>16)&127);
+//		h=((addr>>12)&63)^((addr>>16)&63);
+//		h=((addr>>12)&31)^((addr>>16)&31);
+//		h=((addr>>12)&15)^((addr>>16)&15);
+//		h=((addr>>12)& 7)^((addr>>16)& 7);
+
+		h=((addr>>24)&0x0F)^((addr>>16)&0xFF)^((addr>>8)&0xF0);
+	}
+
+	for(i=3; i>0; i--)
+	{
+		j=i-1;
+		r2=ctx->mem_tlb_lo[h*4+j];
+		r3=ctx->mem_tlb_hi[h*4+j];
+		ctx->mem_tlb_lo[h*4+i]=r2;
+		ctx->mem_tlb_hi[h*4+i]=r3;
+	}
+	ctx->mem_tlb_lo[h*4+0]=r0;
+	ctx->mem_tlb_hi[h*4+0]=r1;
+	
+//	printf("LDTLB H=%016llX L=%016llX\n", r1, r0);
 }

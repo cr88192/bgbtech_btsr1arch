@@ -1445,8 +1445,15 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVReg(
 
 	if(BGBCC_CCXL_TypePointerP(ctx, type))
 	{
-		return(BGBCC_JX2C_EmitBinaryVRegVRegVRegInt(ctx, sctx,
-			type, dreg, opr, sreg, treg));
+		if(sctx->is_addr_x32)
+		{
+			return(BGBCC_JX2C_EmitBinaryVRegVRegVRegInt(ctx, sctx,
+				type, dreg, opr, sreg, treg));
+		}else
+		{
+			return(BGBCC_JX2C_EmitBinaryVRegVRegVRegQLong(ctx, sctx,
+				type, dreg, opr, sreg, treg));
+		}
 	}
 
 	if(	BGBCC_CCXL_TypeFloatP(ctx, type) ||

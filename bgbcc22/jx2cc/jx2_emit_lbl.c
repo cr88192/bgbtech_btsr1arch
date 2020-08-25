@@ -385,7 +385,8 @@ int BGBCC_JX2_EmitCommSym(BGBCC_JX2_Context *ctx, int lblid, int sz, int al)
 
 #if 1
 
-	if(al<=0)
+//	if(al<=0)
+	if((al<=0) || (((4*al)<sz) && (al<8)))
 	{
 		if(sz>=8)
 			{ al=8; }

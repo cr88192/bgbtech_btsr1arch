@@ -550,58 +550,58 @@ void S_UpdateSounds(void* listener_p)
 	
 	for (cnum=0 ; cnum<numChannels ; cnum++)
 	{
-	c = &s_channels[cnum];
-	sfx = c->sfxinfo;
+		c = &s_channels[cnum];
+		sfx = c->sfxinfo;
 
-	if (c->sfxinfo)
-	{
-		if (I_SoundIsPlaying(c->handle))
+		if (c->sfxinfo)
 		{
-		// initialize parameters
-		volume = snd_SfxVolume;
-		pitch = NORM_PITCH;
-		sep = NORM_SEP;
+			if (I_SoundIsPlaying(c->handle))
+			{
+				// initialize parameters
+				volume = snd_SfxVolume;
+				pitch = NORM_PITCH;
+				sep = NORM_SEP;
 
-		if (sfx->link)
-		{
-			pitch = sfx->pitch;
-			volume += sfx->volume;
-			if (volume < 1)
-			{
-			S_StopChannel(cnum);
-			continue;
-			}
-			else if (volume > snd_SfxVolume)
-			{
-			volume = snd_SfxVolume;
-			}
-		}
+				if (sfx->link)
+				{
+					pitch = sfx->pitch;
+					volume += sfx->volume;
+					if (volume < 1)
+					{
+						S_StopChannel(cnum);
+						continue;
+					}
+					else if (volume > snd_SfxVolume)
+					{
+						volume = snd_SfxVolume;
+					}
+				}
 
-		// check non-local sounds for distance clipping
-		//	or modify their params
-		if (c->origin && listener_p != c->origin)
-		{
-			audible = S_AdjustSoundParams(listener,
-							c->origin,
-							&volume,
-							&sep,
-							&pitch);
-			
-			if (!audible)
-			{
-			S_StopChannel(cnum);
+				// check non-local sounds for distance clipping
+				//	or modify their params
+				if (c->origin && listener_p != c->origin)
+				{
+					audible = S_AdjustSoundParams(listener,
+									c->origin,
+									&volume,
+									&sep,
+									&pitch);
+					
+					if (!audible)
+					{
+						S_StopChannel(cnum);
+					}
+					else
+						I_UpdateSoundParams(c->handle, volume, sep, pitch);
+				}
 			}
 			else
-			I_UpdateSoundParams(c->handle, volume, sep, pitch);
+			{
+				// if channel is allocated but sound has stopped,
+				//	free it
+				S_StopChannel(cnum);
+			}
 		}
-		}
-		else
-		{
-		// if channel is allocated but sound has stopped,
-		//	free it
-		S_StopChannel(cnum);
-		}
-	}
 	}
 	// kill music if it is a single-play && finished
 	// if (	mus_playing
@@ -615,8 +615,8 @@ void S_SetMusicVolume(int volume)
 {
 	if (volume < 0 || volume > 127)
 	{
-	I_Error("Attempt to set music volume at %d",
-		volume);
+		I_Error("Attempt to set music volume at %d",
+			volume);
 	}	
 
 	I_SetMusicVolume(127);
@@ -628,12 +628,9 @@ void S_SetMusicVolume(int volume)
 
 void S_SetSfxVolume(int volume)
 {
-
 	if (volume < 0 || volume > 127)
-	I_Error("Attempt to set sfx volume at %d", volume);
-
+		I_Error("Attempt to set sfx volume at %d", volume);
 	snd_SfxVolume = volume;
-
 }
 
 //
@@ -644,9 +641,8 @@ void S_StartMusic(int m_id)
 	S_ChangeMusic(m_id, false);
 }
 
-void
-S_ChangeMusic
-( int			musicnum,
+void S_ChangeMusic(
+	int			musicnum,
 	int			looping )
 {
 	musicinfo_t*	music;
@@ -655,13 +651,15 @@ S_ChangeMusic
 	if ( (musicnum <= mus_None)
 	 || (musicnum >= NUMMUSIC) )
 	{
-	I_Error("Bad music number %d", musicnum);
+		I_Error("Bad music number %d", musicnum);
 	}
 	else
-	music = &S_music[musicnum];
+	{
+		music = &S_music[musicnum];
+	}
 
 	if (mus_playing == music)
-	return;
+		return;
 
 	// shutdown old music
 	S_StopMusic();
@@ -737,7 +735,7 @@ void S_StopChannel(int cnum)
 			if (cnum != i
 			&& c->sfxinfo == s_channels[i].sfxinfo)
 			{
-			break;
+				break;
 			}
 		}
 		
@@ -757,8 +755,8 @@ void S_StopChannel(int cnum)
 // Otherwise, modifies parameters and returns 1.
 //
 int
-S_AdjustSoundParams
-( mobj_t*	listener,
+S_AdjustSoundParams (
+	mobj_t*	listener,
 	mobj_t*	source,
 	int*		vol,
 	int*		sep,
@@ -790,9 +788,9 @@ S_AdjustSoundParams
 				source->y);
 
 	if (angle > listener->angle)
-	angle = angle - listener->angle;
+		angle = angle - listener->angle;
 	else
-	angle = angle + (0xffffffff - listener->angle);
+		angle = angle + (0xffffffff - listener->angle);
 
 	angle >>= ANGLETOFINESHIFT;
 
@@ -829,9 +827,8 @@ S_AdjustSoundParams
 // S_getChannel :
 //	 If none available, return -1.	Otherwise channel #.
 //
-int
-S_getChannel
-( void*		origin,
+int S_getChannel (
+	void*		origin,
 	sfxinfo_t*	sfxinfo )
 {
 	// channel number to use

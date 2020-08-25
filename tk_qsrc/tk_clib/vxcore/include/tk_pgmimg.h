@@ -41,38 +41,43 @@ int  gbr_sz;
 };
 
 struct TKPE_TaskInfo_s {
-void *resv0_0;		//reserved pointer
-void *resv0_1;		//reserved pointer
-int (*SysCall)(void *sObj, int uMsg, void *vParm1, void *vParm2);
-void *resv1;		//reserved function pointer
-void *resv2;		//reserved function pointer
-void *resv3;		//reserved function pointer
-void *resv4;		//reserved function pointer
-void *resv5;		//reserved function pointer
-void *resv6;		//reserved function pointer
-void *resv7;		//reserved function pointer
-char **tlsptr;		//pointer to TLS data area
+tk_kptr		resv0_0;		//reserved pointer
+tk_kptr		resv0_1;		//reserved pointer
+// int (*SysCall)(void *sObj, int uMsg, void *vParm1, void *vParm2);
+tk_kptr		SysCall;
+tk_kptr		resv1;		//reserved function pointer
+tk_kptr		resv2;		//reserved function pointer
+tk_kptr		resv3;		//reserved function pointer
+tk_kptr		resv4;		//reserved function pointer
+tk_kptr		resv5;		//reserved function pointer
+tk_kptr		resv6;		//reserved function pointer
+tk_kptr		resv7;		//reserved function pointer
+// char **tlsptr;		//pointer to TLS data area
+tk_kptr		tlsptr;		//pointer to TLS data area
 
-int pid;
-void *baseptr;		//base pointer for main binary
-void *bootptr;		//entry point for main binary
-void *basegbr;		//GBR for main binary, set on program startup.
-void *boottbr;		//main process TBR (threads), self-pointer for main thread.
+int			pid;
+int			pad1;
+tk_kptr		baseptr;		//base pointer for main binary
+tk_kptr		bootptr;		//entry point for main binary
+tk_kptr		basegbr;		//GBR for main binary, set on program startup.
+tk_kptr		boottbr;		//main process TBR (threads), self-pointer for main thread.
 
-void *boot_sps;		//Stack Start
-void *boot_spe;		//Stack End
-char **argv;
+tk_kptr		boot_sps;		//Stack Start
+tk_kptr		boot_spe;		//Stack End
+// char **argv;
+tk_kptr		argv;
 // char **env;
 
-TK_EnvContext *envctx;
+// TK_EnvContext *envctx;
+tk_kptr		envctx;
 
-u64	ctx_regsave[64];	//saved registers (context switch)
+u64			ctx_regsave[64];	//saved registers (context switch)
 
-char *tlsdat[2048];	//data for TLS
+u64			tlsdat[2048];	//data for TLS
 
-void *span_ptr[512];
-int span_sz[512];
-int n_span;
+tk_kptr		span_ptr[512];	//span	(mmap / VirtualAlloc)
+int			span_sz[512];	//span	(mmap / VirtualAlloc)
+int			n_span;			//span	(mmap / VirtualAlloc)
 };
 
 struct TKSH_CommandInfo_s {

@@ -268,7 +268,11 @@ void TKSH_ListDir(char *path, char **args)
 				*ct++=0;
 				
 				if(tde->st_mode&TKFAT_EMODE_DIR)
-					tk_puts("\x1B[34m");
+//					tk_puts("\x1B[34m");
+					tk_puts("\x1B[36m");
+
+//				if(tde->st_mode&TKFAT_EMODE_ACC_XO)
+//					tk_puts("\x1B[32m");
 				
 				tk_printf("%s", tb);
 				tk_puts("\x1B[39m");
@@ -523,6 +527,58 @@ int TKSH_Cmds_Rm(char **args)
 	return(0);
 }
 
+int TKSH_Cmds_Rmdir(char **args)
+{
+	char tb[256];
+	char *darg;
+	int i;
+
+	darg=NULL;
+	for(i=1; args[i]; i++)
+	{
+		if(args[i][0]=='-')
+		{
+			continue;
+		}
+		darg=args[i];
+	}
+
+	if(darg)
+	{
+		THSH_QualifyPathArg(tb, darg);
+		tk_rmdir(tb);
+	}else
+	{
+	}
+	return(0);
+}
+
+int TKSH_Cmds_Mkdir(char **args)
+{
+	char tb[256];
+	char *darg;
+	int i;
+
+	darg=NULL;
+	for(i=1; args[i]; i++)
+	{
+		if(args[i][0]=='-')
+		{
+			continue;
+		}
+		darg=args[i];
+	}
+
+	if(darg)
+	{
+		THSH_QualifyPathArg(tb, darg);
+		tk_mkdir(tb, "");
+	}else
+	{
+	}
+	return(0);
+}
+
 int TKSH_Cmds_Set(char **args)
 {
 	char tb1[256];
@@ -567,6 +623,9 @@ int TKSH_InitCmds(void)
 	TKSH_RegisterCommand("mv",		TKSH_Cmds_Mv);
 	TKSH_RegisterCommand("recvxm",	TKSH_Cmds_RecvXm);
 	TKSH_RegisterCommand("rm",		TKSH_Cmds_Rm);
+	TKSH_RegisterCommand("rmdir",	TKSH_Cmds_Rmdir);
+	TKSH_RegisterCommand("mkdir",	TKSH_Cmds_Mkdir);
+	TKSH_RegisterCommand("md",		TKSH_Cmds_Mkdir);
 	TKSH_RegisterCommand("set",		TKSH_Cmds_Set);
 
 	return(1);
@@ -770,6 +829,30 @@ char *tk_rovstrdup(char *str, void **rov)
 	return(s1);
 }
 
+char *tksh_cifyemit(char *dst, char *str)
+{
+	char *cs, *ct;
+	
+	ct=dst;		cs=str;
+	*ct++='\"';
+	while(*cs)
+	{
+		if(*cs=='\\')
+			{ cs++; *ct++='\\';	*ct++='\\'; continue; }
+		if(*cs=='\"')
+			{ cs++; *ct++='\\';	*ct++='\"'; continue; }
+		if(*cs=='\r')
+			{ cs++; *ct++='\\';	*ct++='r'; continue; }
+		if(*cs=='\n')
+			{ cs++; *ct++='\\';	*ct++='n'; continue; }
+		if(*cs=='\t')
+			{ cs++; *ct++='\\';	*ct++='t'; continue; }
+		*ct++=*cs++;
+	}
+	*ct++='\"';
+	return(ct);
+}
+
 void __tk_farcall(void *fptr, void *gbr, void *newstack, void *tbr);
 int TK_DestroyTaskInfo(void *tkptr);
 void TK_FlushCacheL1D();
@@ -779,7 +862,7 @@ int TKSH_TryLoad(char *img, char **args)
 	byte tb[256];
 	TK_FILE *fd;
 	char **a1;
-	char *cs, *ct;
+	char *cs, *ct, *cs1, *ct1;
 	char *buf;
 //	u64 bootgbr;
 	u64	pb_gbr;
@@ -788,9 +871,10 @@ int TKSH_TryLoad(char *img, char **args)
 	void *bootgbr;
 	byte *boot_newspb, *boot_newsp;
 	void *boottbr;
+	void *sysc;
 	int (*bootptr)();
 	int sig_is_pe, sig_is_asc;
-	int rv, nl, sz;
+	int rv, nl, sz, sza;
 	int i, j, k;
 
 	fd=tk_fopen(img, "rb");
@@ -829,6 +913,9 @@ int TKSH_TryLoad(char *img, char **args)
 		TKPE_LoadStaticPE(fd, &bootptr, &bootgbr);
 		tk_printf("Boot Pointer %p, GBR=%p\n", bootptr, (void *)bootgbr);
 		
+		tk_fclose(fd);
+		fd=NULL;
+		
 		if(bootgbr)
 		{
 			pb_gbr=*(u64 *)bootgbr;
@@ -850,18 +937,57 @@ int TKSH_TryLoad(char *img, char **args)
 
 			boottbr=TK_AllocNewTask();
 			task=boottbr;
-			task->bootptr=bootptr;
-			task->basegbr=bootgbr;
-			task->boottbr=boottbr;
+			task->bootptr=(tk_kptr)bootptr;
+			task->basegbr=(tk_kptr)bootgbr;
+			task->boottbr=(tk_kptr)boottbr;
 
-			task->boot_sps=boot_newspb;
-			task->boot_spe=boot_newsp;
+			task->boot_sps=(tk_kptr)boot_newspb;
+			task->boot_spe=(tk_kptr)boot_newsp;
 			
-			task->envctx=env1;
-			task->SysCall=tk_isr_syscall;
+			task->envctx=(tk_kptr)env1;
+//			task->SysCall=tk_isr_syscall;
+
+			sysc=tk_isr_syscall;
+			task->SysCall=(tk_kptr)sysc;
 			
 			tk_printf("TKSH_TryLoad: task=%p, env=%p\n", task, env1);
 			
+			sza=0;
+			if(args)
+			{
+				for(i=0; args[i]; i++)
+				{
+					j=strlen(args[i]);
+					sza+=j+(j>>2)+4;
+				}
+
+				ct=boot_newspb;
+				cs1=tk_rovalloc(sza, &ct);
+				
+				ct1=cs1;
+				for(i=0; args[i]; i++)
+				{
+					ct1=tksh_cifyemit(ct1, args[i]);
+					*ct1++=' ';
+				}
+				if(ct1>cs1)
+				{
+					*(ct1-1)=0;
+				}
+				task->argv=(tk_kptr)cs1;
+			}else
+			{
+				j=strlen(img);
+				sza=j+(j>>2)+4;
+
+				ct=boot_newspb;
+				cs1=tk_rovalloc(sza, &ct);
+				ct1=tksh_cifyemit(ct1, img);
+				*ct1++=0;
+				task->argv=(tk_kptr)cs1;
+			}
+
+#if 0
 			ct=boot_newspb;
 			a1=tk_rovalloc(256, &ct);
 			if(args)
@@ -877,6 +1003,7 @@ int TKSH_TryLoad(char *img, char **args)
 				a1[1]=NULL;
 			}
 			task->argv=a1;
+#endif
 
 			rv=tk_sysc_exitpt();
 			if(rv)
@@ -944,11 +1071,18 @@ int TKSH_TryLoad(char *img, char **args)
 			memset(buf, 0, sz+8);
 			tk_fread(buf, 1, sz, fd);
 			tk_fclose(fd);
+			fd=NULL;
 
 			TKSH_ExecCmdBuf(buf);
 			tk_free(buf);
 			return(1);
 		}
+	}
+	
+	if(fd)
+	{
+		tk_fclose(fd);
+		fd=NULL;
 	}
 	
 //	TK_DestroyTaskInfo(NULL);
@@ -971,13 +1105,25 @@ int TKSH_TryLoad_ext(char *img, char **args)
 	ri=TKSH_TryLoad(tb, args);
 	if(ri>0)
 		return(ri);
+	
+	strcpy(tb, img);
+	strcat(tb, ".sh");
+	ri=TKSH_TryLoad(tb, args);
+	if(ri>0)
+		return(ri);
+
+	strcpy(tb, img);
+	strcat(tb, ".com");
+	ri=TKSH_TryLoad(tb, args);
+	if(ri>0)
+		return(ri);
 
 	strcpy(tb, img);
 	strcat(tb, ".pf");
 	ri=TKSH_TryLoad(tb, args);
 	if(ri>0)
 		return(ri);
-	
+
 	return(-1);
 }
 

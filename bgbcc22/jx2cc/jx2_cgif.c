@@ -96,6 +96,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	shctx->is_pbo=0;
 //	shctx->use_wexmd=1;
 	shctx->use_wexmd=0;
+	shctx->no_wexify=0;
 
 //	shctx->fpu_gfp=1;
 //	shctx->is_pbo=1;
@@ -139,6 +140,14 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		ctx->pel_cmpr=3;
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "pel4"))
 		ctx->pel_cmpr=4;
+
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "nomovx"))
+		shctx->has_pushx2=0;
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "nosimdx"))
+		shctx->has_simdx2=0;
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "nowexify"))
+		shctx->no_wexify=1;
+
 
 //	ctx->arch_has_predops=0;
 	ctx->arch_has_predops=1;
@@ -510,6 +519,16 @@ int BGBCC_JX2C_TypeGetRegClassPI(BGBCC_TransState *ctx, ccxl_type ty)
 		if(BGBCC_CCXL_TypeFunctionP(ctx, ty))
 			return(BGBCC_SH_REGCLS_QGR);
 
+		if(sctx->fpu_gfp)
+		{
+			if(BGBCC_CCXL_TypeDoubleP(ctx, ty))
+				return(BGBCC_SH_REGCLS_QGR);
+			if(BGBCC_CCXL_TypeFloatP(ctx, ty))
+				return(BGBCC_SH_REGCLS_QGR);
+			if(BGBCC_CCXL_TypeFloat16P(ctx, ty))
+				return(BGBCC_SH_REGCLS_QGR);
+		}
+
 		if(sctx->fpu_soft)
 		{
 			if(BGBCC_CCXL_TypeDoubleP(ctx, ty))
@@ -519,16 +538,6 @@ int BGBCC_JX2C_TypeGetRegClassPI(BGBCC_TransState *ctx, ccxl_type ty)
 				return(BGBCC_SH_REGCLS_GR);
 			if(BGBCC_CCXL_TypeFloat16P(ctx, ty))
 				return(BGBCC_SH_REGCLS_GR);
-		}
-
-		if(sctx->fpu_gfp)
-		{
-			if(BGBCC_CCXL_TypeDoubleP(ctx, ty))
-				return(BGBCC_SH_REGCLS_QGR);
-			if(BGBCC_CCXL_TypeFloatP(ctx, ty))
-				return(BGBCC_SH_REGCLS_QGR);
-			if(BGBCC_CCXL_TypeFloat16P(ctx, ty))
-				return(BGBCC_SH_REGCLS_QGR);
 		}
 	}
 

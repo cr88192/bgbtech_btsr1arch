@@ -122,6 +122,7 @@ int main(int argc, char **argv, char **env)
 	
 //	lim=4194304;
 	lim=1<<18;
+//	lim=1<<20;
 
 	printf("Begin\n");
 	while (!Verilated::gotFinish())

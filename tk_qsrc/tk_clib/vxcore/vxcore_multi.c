@@ -26,6 +26,11 @@
 #include "tk_core/tk_spi.c"
 #include "tk_core/tk_epoch.c"
 #include "tk_core/tk_fat.c"
+#include "tk_core/tk_devfs.c"
+#include "tk_core/tk_bdev_spi.c"
+#include "tk_core/tk_bdev_vfb.c"
+#include "tk_core/tk_vmem.c"
+
 #include "tk_core/tk_vfile.c"
 #include "tk_core/tk_divi.c"
 #include "tk_core/tk_puts.c"

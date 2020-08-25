@@ -47,6 +47,7 @@ TK_APIEXPORT
 int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 {
 	TKPE_TaskInfo *task;
+	TK_EnvContext *env;
 	TK_SysArg *args;
 	void *p;
 	int ret, sz;
@@ -64,6 +65,7 @@ int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 //	tk_printf("SYSC: uMsg=%X vParm1=%p, vParm2=%p\n", uMsg, vParm1, vParm2);
 
 	task=TK_GetCurrentTask();
+	env=(void *)task->envctx;
 
 	ret=TK_URES_ERR_BADMSG;
 	args=(TK_SysArg *)vParm2;
@@ -124,6 +126,23 @@ int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 				ret=TK_URES_TRUE;
 				break;
 			
+			case 0x0B:
+				sz=TK_EnvCtx_GetEnvVarIdx(env, args[0].i,
+					args[1].p, args[2].p, args[3].i, args[4].i);
+				*((int **)vParm1)=sz;
+				ret=TK_URES_TRUE;
+				break;
+			case 0x0C:
+				sz=TK_EnvCtx_GetEnvVar(env, args[0].p, args[1].p, args[2].i);
+				*((int **)vParm1)=sz;
+				ret=TK_URES_TRUE;
+				break;
+			case 0x0D:
+				sz=TK_EnvCtx_SetEnvVar(env, args[0].p, args[1].p, args[2].i);
+				*((int **)vParm1)=sz;
+				ret=TK_URES_TRUE;
+				break;
+			
 			case 0x20:
 				ret=tk_hfopen(args[0].p, args[1].p);
 				break;
@@ -164,6 +183,24 @@ int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 			case 0x2C:
 				ret=tk_hioctl(args[0].i, args[1].i, args[2].p);
 				break;
+
+			case 0x2E:
+				ret=tk_mkdir(args[0].p, args[1].p);
+				break;
+			case 0x2F:
+				ret=tk_rmdir(args[0].p);
+				break;
+			case 0x30:
+				ret=tk_hsend(args[0].i, args[1].i,
+					args[2].p, args[3].i, args[4].i,
+					args[5].p, args[6].i);
+				break;
+			case 0x31:
+				ret=tk_hrecv(args[0].i, args[1].i,
+					args[2].p, args[3].i, args[4].i,
+					args[5].p, args[6].i);
+				break;
+
 			default:
 				tk_printf("SYSC: BAD sObj=%p, uMsg=%X, vParm1=%p, vParm1=%p\n",
 					sObj, uMsg, vParm1, vParm2);

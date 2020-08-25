@@ -255,6 +255,9 @@ void tk_con_newline()
 //	if(!tk_con)
 //		tk_con_init();
 	
+	if(!tk_con)
+		return;
+	
 //	tk_con->x=0;
 	tk_con->y++;
 	if(tk_con->y>=25)
@@ -554,7 +557,7 @@ void tk_con_putc(int ch)
 		{
 			tk_con->x=(tk_con->x+8)&(~7);
 			if(tk_con->x>=TK_CONWIDTH)
-				{ tk_con_newline(); }
+				{ tk_con_newline(); tk_con->x=0; }
 
 //			py=((tk_con->y)<<8)|(tk_con->x);
 //			((u32 *)0xF00BFF00)[1]=py;		//move hardware cursor
@@ -605,6 +608,7 @@ void tk_con_putc(int ch)
 	if(tx>=TK_CONWIDTH)
 	{
 		tk_con_newline();
+		tk_con->x=0;
 	}
 
 //	py=((tk_con->y)<<8)|(tk_con->x);

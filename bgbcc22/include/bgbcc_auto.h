@@ -2549,6 +2549,7 @@ int BGBCC_JX2_CheckLabelIsGpRel(BGBCC_JX2_Context *sctx, int lblid);
 //AHSRC:jx2cc/jx2_emit_mov.c
 int BGBCC_JX2_EmitOpRegStReg(BGBCC_JX2_Context *ctx,int nmid, int rm, int rn);
 int BGBCC_JX2_ProbeEmitOpRegStReg(BGBCC_JX2_Context *ctx,int nmid, int rm, int rn);
+int BGBCC_JX2_EmitRemapPseudoOp(BGBCC_JX2_Context *ctx, int nmid);
 int BGBCC_JX2_TryEmitOpRegStReg(BGBCC_JX2_Context *ctx,int nmid, int rm, int rn);
 int BGBCC_JX2_EmitOpLdRegReg(BGBCC_JX2_Context *ctx,int nmid, int rm, int rn);
 int BGBCC_JX2_ProbeEmitOpLdRegReg(BGBCC_JX2_Context *ctx,int nmid, int rm, int rn);

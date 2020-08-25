@@ -16,7 +16,8 @@ void *TKMM_MMList_AllocBrk(int sz)
 	byte *ptr;
 	int i;
 
-	if(sz>=65536)
+//	if(sz>=65536)
+	if(sz>=TKMM_MAXMMLISTSZ)
 	{
 		tk_puts("TKMM_MMList_AllocBrk A\n");
 		ptr=TKMM_PageAlloc(sz);
@@ -52,7 +53,8 @@ void *TKMM_MMList_AllocBrk(int sz)
 	if(!tkmm_mmlist_brkbuf)
 	{
 		tk_puts("TKMM_MMList_AllocBrk C\n");
-		tkmm_mmlist_brkbuf=TKMM_PageAlloc(1<<20);
+//		tkmm_mmlist_brkbuf=TKMM_PageAlloc(1<<20);
+		tkmm_mmlist_brkbuf=TKMM_PageAlloc(1<<TKMM_BRKBITS);
 //		tkmm_mmlist_brkbuf=TKMM_PageAlloc(1<<18);
 		
 		if(!tkmm_mmlist_brkbuf)
@@ -63,7 +65,8 @@ void *TKMM_MMList_AllocBrk(int sz)
 		
 //		memset(tkmm_mmlist_brkbuf, 0, 1<<20);
 
-		tkmm_mmlist_brkend=tkmm_mmlist_brkbuf+(1<<20);
+//		tkmm_mmlist_brkend=tkmm_mmlist_brkbuf+(1<<20);
+		tkmm_mmlist_brkend=tkmm_mmlist_brkbuf+(1<<TKMM_BRKBITS);
 //		tkmm_mmlist_brkend=tkmm_mmlist_brkbuf+(1<<18);
 		tkmm_mmlist_brkpos=tkmm_mmlist_brkbuf;
 
@@ -353,7 +356,7 @@ int TKMM_MMList_GetSize(void *ptr)
 
 	if(obj->fl&4)
 	{
-		sz1=obj->ix<<12;
+		sz1=obj->ix<<TKMM_PAGEBITS;
 	}else
 	{
 		sz1=TKMM_FxiToSize(obj->ix);

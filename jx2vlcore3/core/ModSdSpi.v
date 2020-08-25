@@ -222,18 +222,18 @@ begin
 		if((tBitCnt==0) && (tByteCnt==0))
 		begin
 			tNxtRegCtrl		= tMmioInData[31:0];
-			tMmioOK			= UMEM_OK_OK;
+//			tMmioOK			= UMEM_OK_OK;
+			tMmioOK			= mmioLatchWR ? UMEM_OK_OK : UMEM_OK_HOLD;
 			mmioNxtLatchWR	= 1;
 
 //			if(tMmioInData[1] && (tBitCnt==0))
-			if(tMmioInData[1])
+			if(tMmioInData[1])		 /* XMIT 1X */
 			begin
 				tNxtBitCnt			= 8;
 				tNxtDivCnt			= 0;
 			end
-
-			/* XMIT 8X */
-			if(tMmioInData[5])
+			else
+				if(tMmioInData[5])	 /* XMIT 8X */
 			begin
 //				tNxtBitCnt			= 8;
 				tNxtDivCnt			= 0;
@@ -273,7 +273,8 @@ begin
 //			$display("SdSpi Wr=%X", tMmioInData[7:0]);
 
 			tNxtRegExchO[7:0]	= tMmioInData[7:0];
-			tMmioOK				= UMEM_OK_OK;
+//			tMmioOK				= UMEM_OK_OK;
+			tMmioOK				= mmioLatchWR ? UMEM_OK_OK : UMEM_OK_HOLD;
 			mmioNxtLatchWR		= 1;
 		end
 		else
@@ -323,13 +324,15 @@ begin
 	tDivCnt			<= tNxtDivCnt;
 	tDivRst			<= tNxtDivRst;
 	tOutSclk		<= tNxtOutSclk;
+
 	tBitCnt			<= tNxtBitCnt;
 	tLastBitCnt		<= tBitCnt;
+	tByteCnt		<= tNxtByteCnt;
+
 	mmioLatchWR		<= mmioNxtLatchWR;
 
 	tRegSendQ		<= tNxtRegSendQ;
 	tRegRecvQ		<= tNxtRegRecvQ;
-	tByteCnt		<= tNxtByteCnt;
 end
 
 endmodule

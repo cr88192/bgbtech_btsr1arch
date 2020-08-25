@@ -775,7 +775,7 @@ uint32_t *drambuf2;
 void MemUpdateForBus()
 {
 	static byte mmio_latched=0;
-	byte is_rom, is_sram, is_dram, is_mmio;
+	byte is_rom, is_sram, is_dram, is_mmio, is_zero;
 	byte is_sram_b, is_dram_b;
 	int opm_latch;
 	uint32_t addr;
@@ -792,6 +792,8 @@ void MemUpdateForBus()
 		is_dram	= (addr>=0x01000000) && (addr<=0x18000000);
 //		is_mmio = (addr>=0xA0000000) && (addr<=0xC0000000);
 		is_mmio = (addr>=0xF0000000) && (addr<=0xFFFFFFFF);
+		
+		is_zero = (addr>=0x00010000) && (addr<=0x0001FFFF);
 
 		is_sram_b	= (addrb>=0x0000C000) && (addrb<=0x0000DFFF);
 		is_dram_b	= (addrb>=0x01000000) && (addrb<=0x18000000);
@@ -819,6 +821,13 @@ void MemUpdateForBus()
 				top->memDataIn[1]=drambuf[((addr>>2)+1)&0x1FFFFFF];
 				top->memDataIn[2]=drambuf[((addr>>2)+2)&0x1FFFFFF];
 				top->memDataIn[3]=drambuf[((addr>>2)+3)&0x1FFFFFF];
+				top->memOK=1;
+			}else if(is_zero)
+			{
+				top->memDataIn[0]=0;
+				top->memDataIn[1]=0;
+				top->memDataIn[2]=0;
+				top->memDataIn[3]=0;
 				top->memOK=1;
 			}else
 			{
@@ -894,6 +903,13 @@ void MemUpdateForBus()
 				top->memDataIn[2]=drambuf[((addr>>2)+2)&0x1FFFFFF];
 				top->memDataIn[3]=drambuf[((addr>>2)+3)&0x1FFFFFF];
 				top->memOK=1;
+			}else if(is_zero)
+			{
+				top->memDataIn[0]=0;
+				top->memDataIn[1]=0;
+				top->memDataIn[2]=0;
+				top->memDataIn[3]=0;
+				top->memOK=1;
 			}else
 			{
 				top->memDataIn[0]=0xFFFFFFFFU;
@@ -957,6 +973,9 @@ void MemUpdateForBus()
 				drambuf[((addr>>2)+1)&0x1FFFFFF]=top->memDataOut[1];
 				drambuf[((addr>>2)+2)&0x1FFFFFF]=top->memDataOut[2];
 				drambuf[((addr>>2)+3)&0x1FFFFFF]=top->memDataOut[3];
+				top->memOK=1;
+			}else if(is_zero)
+			{
 				top->memOK=1;
 			}else
 			{
@@ -1336,7 +1355,8 @@ int main(int argc, char **argv, char **env)
 
 	mhz=100;
 
-	JX2R_UseImageCreateRamdisk(128*1024);
+//	JX2R_UseImageCreateRamdisk(128*1024);
+	JX2R_UseImageCreateRamdisk(512*1024);
 //	JX2R_UseImageCreateRamdisk(32*1024);
 
 #if 1
@@ -1371,6 +1391,8 @@ int main(int argc, char **argv, char **env)
 		(char *)"ID1/AUTOEXEC.CFG",
 		(char *)"../../tk_qsrc/id1/autoexec1.cfg");
 #endif
+
+//	JX2R_UseImageAddFileBuffer("swapfile.sys", (byte *)NULL, 384*(1<<20));
 
 	Verilated::commandArgs(argc, argv);
 

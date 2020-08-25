@@ -121,11 +121,16 @@ isr_inter:
 	bra __isr_interrupt
 
 isr_tlbfault:
+//	break
+	bra __isr_tlbfault
+
+#if 0
 	mov		__tk_saved_vbr, r3
 	mov.q	@r3, r2
 //	lea.b	@(r2, 24), r3
 	add		r2, #24, r3
 	jmp		r3
+#endif
 
 isr_syscall:
 	mov sp, r16
@@ -162,6 +167,8 @@ isr_syscall:
 //	break
 	
 	rte
+
+.balign 128
 
 isr_table:
 	bra8b _start

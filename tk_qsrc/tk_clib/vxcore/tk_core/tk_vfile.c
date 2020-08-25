@@ -116,10 +116,15 @@ int tk_vfile_init()
 #ifndef __TK_CLIB_ONLY__
 	if(tk_iskernel())
 	{
+		tk_devfs_init();
+		tk_bdspi_init();
+		tk_bdvfb_init();
+	
 //		tk_ird_init();
 		tk_fat_init();
 	
 		tk_mount_sdfat();
+		tk_mount_devfs();
 	}else
 	{
 		tk_sysc_init();	
@@ -154,7 +159,7 @@ TK_FILE *tk_alloc_file()
 
 TK_DIR *tk_alloc_dir()
 {
-	return((TK_FILE *)tk_alloc_file());
+	return((TK_DIR *)tk_alloc_file());
 }
 
 void tk_free_file(TK_FILE *tmp)
@@ -220,7 +225,7 @@ int tk_unlink(char *name)
 	while(mnt)
 	{
 		s1=name;
-		if(mnt->src)
+		if(mnt->src && (mnt->szSrc>0))
 		{
 			if(strncmp(mnt->src, name, mnt->szSrc))
 			{
@@ -228,6 +233,13 @@ int tk_unlink(char *name)
 				continue;
 			}
 			s1+=mnt->szSrc;
+			if(*s1 && (*s1!='/') && (*(s1-1)!=':'))
+			{
+				mnt=mnt->next;
+				continue;
+			}
+			if(*s1=='/')
+				s1++;
 		}
 	
 //		fd=mnt->vt->fopen(mnt, name, mode);
@@ -241,6 +253,110 @@ int tk_unlink(char *name)
 	}
 
 	tk_printf("tk_unlink: Fail %s\n", name);
+	return(-1);
+}
+
+int tk_rmdir(char *name)
+{
+	TK_MOUNT *mnt;
+	TK_FILE *fd;
+	char *s1;
+	int i;
+
+	tk_vfile_init();
+
+	if((name[0]=='.') && (name[1]=='/'))
+		name+=2;
+	if(*name=='/')
+		name++;
+
+//	fd=tk_ird_fopen(NULL, name, mode);
+//	if(fd)return(fd);
+
+	mnt=tk_vf_mount;
+	while(mnt)
+	{
+		s1=name;
+		if(mnt->src && (mnt->szSrc>0))
+		{
+			if(strncmp(mnt->src, name, mnt->szSrc))
+			{
+				mnt=mnt->next;
+				continue;
+			}
+			s1+=mnt->szSrc;
+			if(*s1 && (*s1!='/') && (*(s1-1)!=':'))
+			{
+				mnt=mnt->next;
+				continue;
+			}
+			if(*s1=='/')
+				s1++;
+		}
+	
+//		fd=mnt->vt->fopen(mnt, name, mode);
+		if(mnt->vt->rmdir)
+		{
+			i=mnt->vt->rmdir(mnt, s1);
+			if(i>=0)
+				return(i);
+		}
+		mnt=mnt->next;
+	}
+
+	tk_printf("tk_rmdir: Fail %s\n", name);
+	return(-1);
+}
+
+
+int tk_mkdir(char *name, char *mode)
+{
+	TK_MOUNT *mnt;
+	TK_FILE *fd;
+	char *s1;
+	int i;
+
+	tk_vfile_init();
+
+	if((name[0]=='.') && (name[1]=='/'))
+		name+=2;
+	if(*name=='/')
+		name++;
+
+//	fd=tk_ird_fopen(NULL, name, mode);
+//	if(fd)return(fd);
+
+	mnt=tk_vf_mount;
+	while(mnt)
+	{
+		s1=name;
+		if(mnt->src && (mnt->szSrc>0))
+		{
+			if(strncmp(mnt->src, name, mnt->szSrc))
+			{
+				mnt=mnt->next;
+				continue;
+			}
+			s1+=mnt->szSrc;
+			if(*s1 && (*s1!='/') && (*(s1-1)!=':'))
+			{
+				mnt=mnt->next;
+				continue;
+			}
+			if(*s1=='/')
+				s1++;
+		}
+	
+		if(mnt->vt->mkdir)
+		{
+			i=mnt->vt->mkdir(mnt, s1, mode);
+			if(i>=0)
+				return(i);
+		}
+		mnt=mnt->next;
+	}
+
+	tk_printf("tk_mkdir: Fail %s\n", name);
 	return(-1);
 }
 
@@ -271,7 +387,7 @@ int tk_rename(char *oldname, char *newname)
 	{
 		s1=oldname;
 		t1=newname;
-		if(mnt->src)
+		if(mnt->src && (mnt->szSrc>0))
 		{
 			if(strncmp(mnt->src, oldname, mnt->szSrc) ||
 				strncmp(mnt->src, newname, mnt->szSrc))
@@ -281,6 +397,22 @@ int tk_rename(char *oldname, char *newname)
 			}
 			s1+=mnt->szSrc;
 			t1+=mnt->szSrc;
+
+			if(*s1 && (*s1!='/') && (*(s1-1)!=':'))
+			{
+				mnt=mnt->next;
+				continue;
+			}
+			if(*s1=='/')
+				s1++;
+
+			if(*t1 && (*t1!='/') && (*(t1-1)!=':'))
+			{
+				mnt=mnt->next;
+				continue;
+			}
+			if(*t1=='/')
+				t1++;
 		}
 	
 		if(mnt->vt->rename)
@@ -307,7 +439,7 @@ int tk_fcopy(char *oldname, char *newname)
 
 	if(!oldfd)
 	{
-		tk_printf("fail open %s\n", oldname);
+//		tk_printf("fail open %s\n", oldname);
 		return(-1);
 	}
 
@@ -315,7 +447,7 @@ int tk_fcopy(char *oldname, char *newname)
 	
 	if(!newfd)
 	{
-		tk_printf("fail open %s\n", newname);
+//		tk_printf("fail open %s\n", newname);
 		tk_fclose(oldfd);
 		return(-1);
 	}
@@ -371,7 +503,7 @@ TK_FILE *tk_fopen(char *name, char *mode)
 	while(mnt)
 	{
 		s1=name;
-		if(mnt->src)
+		if(mnt->src && (mnt->szSrc>0))
 		{
 			if(strncmp(mnt->src, name, mnt->szSrc))
 			{
@@ -379,6 +511,13 @@ TK_FILE *tk_fopen(char *name, char *mode)
 				continue;
 			}
 			s1+=mnt->szSrc;
+			if(*s1 && (*s1!='/') && (*(s1-1)!=':'))
+			{
+				mnt=mnt->next;
+				continue;
+			}
+			if(*s1=='/')
+				s1++;
 		}
 	
 		if(mnt->vt->fopen)
@@ -391,7 +530,7 @@ TK_FILE *tk_fopen(char *name, char *mode)
 		mnt=mnt->next;
 	}
 
-	tk_printf("tk_fopen: Fail %s\n", name);
+//	tk_printf("tk_fopen: Fail %s\n", name);
 
 	return(NULL);
 }
@@ -407,6 +546,9 @@ int tk_hfopen(char *name, char *mode)
 
 int tk_fread(void *buf, int sz1, int sz2, TK_FILE *fd)
 {
+	if(!fd || !(fd->vt))
+		{ __debugbreak(); }
+
 	if(fd->vt->fread)
 		return(fd->vt->fread(buf, sz1, sz2, fd));
 	return(-1);
@@ -414,6 +556,9 @@ int tk_fread(void *buf, int sz1, int sz2, TK_FILE *fd)
 
 int tk_fwrite(void *buf, int sz1, int sz2, TK_FILE *fd)
 {
+	if(!fd || !(fd->vt))
+		{ __debugbreak(); }
+
 	if(fd->vt->fwrite)
 		return(fd->vt->fwrite(buf, sz1, sz2, fd));
 	return(-1);
@@ -421,6 +566,9 @@ int tk_fwrite(void *buf, int sz1, int sz2, TK_FILE *fd)
 
 s64 tk_fseek(TK_FILE *fd, s64 ofs, int rel)
 {
+	if(!fd || !(fd->vt))
+		{ __debugbreak(); }
+
 	if(fd->vt->fseek)
 		return(fd->vt->fseek(fd, ofs, rel));
 	return(-1);
@@ -428,6 +576,9 @@ s64 tk_fseek(TK_FILE *fd, s64 ofs, int rel)
 
 s64 tk_ftell(TK_FILE *fd)
 {
+	if(!fd || !(fd->vt))
+		{ __debugbreak(); }
+
 	if(fd->vt->ftell)
 		return(fd->vt->ftell(fd));
 	return(-1);
@@ -435,6 +586,9 @@ s64 tk_ftell(TK_FILE *fd)
 
 int tk_fclose(TK_FILE *fd)
 {
+	if(!fd || !(fd->vt))
+		{ __debugbreak(); }
+
 	if(fd->vt->fclose)
 		return(fd->vt->fclose(fd));
 	return(-1);
@@ -442,6 +596,9 @@ int tk_fclose(TK_FILE *fd)
 
 int tk_fgetc(TK_FILE *fd)
 {
+	if(!fd || !(fd->vt))
+		{ __debugbreak(); }
+
 	if(fd->vt->fgetc)
 		return(fd->vt->fgetc(fd));
 	return(-1);
@@ -449,6 +606,9 @@ int tk_fgetc(TK_FILE *fd)
 
 int tk_fputc(int ch, TK_FILE *fd)
 {
+	if(!fd || !(fd->vt))
+		{ __debugbreak(); }
+
 	if(fd->vt->fputc)
 		return(fd->vt->fputc(ch, fd));
 	return(-1);
@@ -456,8 +616,39 @@ int tk_fputc(int ch, TK_FILE *fd)
 
 int tk_fioctl(TK_FILE *fd, int cmd, void *ptr)
 {
+	if(!fd || !(fd->vt))
+		{ __debugbreak(); }
+
 	if(fd->vt->fioctl)
 		return(fd->vt->fioctl(fd, cmd, ptr));
+	return(-1);
+}
+
+int tk_fsend(TK_FILE *fd, int cmd,
+	void *msgbuf, int szmsg, int flag,
+	void *sockaddr, int szsockaddr)
+{
+	if(!fd || !(fd->vt))
+		{ __debugbreak(); }
+
+	if(fd->vt->fsend)
+		return(fd->vt->fsend(fd, cmd,
+			msgbuf, szmsg, flag,
+			sockaddr, szsockaddr));
+	return(-1);
+}
+
+int tk_frecv(TK_FILE *fd, int cmd,
+	void *msgbuf, int szmsg, int flag,
+	void *sockaddr, int szsockaddr)
+{
+	if(!fd || !(fd->vt))
+		{ __debugbreak(); }
+
+	if(fd->vt->frecv)
+		return(fd->vt->frecv(fd, cmd,
+			msgbuf, szmsg, flag,
+			sockaddr, szsockaddr));
 	return(-1);
 }
 
@@ -549,6 +740,36 @@ s64 tk_hioctl(int iHdl, int iCmd, void *ptr)
 	return(tk_fioctl(fd, iCmd, ptr));
 }
 
+s64 tk_hsend(int iHdl, int iCmd,
+	void *msgbuf, int szmsg, int flag,
+	void *sockaddr, int szsockaddr)
+{
+	FILE *fd;
+	int i, sde;
+
+	fd=TK_GetPtrForHandle(iHdl);
+	if(!fd)
+		return(-1);
+	return(tk_fsend(fd, iCmd,
+		msgbuf, szmsg, flag,
+		sockaddr, szsockaddr));
+}
+
+s64 tk_hrecv(int iHdl, int iCmd,
+	void *msgbuf, int szmsg, int flag,
+	void *sockaddr, int szsockaddr)
+{
+	FILE *fd;
+	int i, sde;
+
+	fd=TK_GetPtrForHandle(iHdl);
+	if(!fd)
+		return(-1);
+	return(tk_frecv(fd, iCmd,
+		msgbuf, szmsg, flag,
+		sockaddr, szsockaddr));
+}
+
 TK_DIR *tk_opendir(char *name)
 {
 	TK_MOUNT *mnt;
@@ -566,15 +787,26 @@ TK_DIR *tk_opendir(char *name)
 	while(mnt)
 	{
 		s1=name;
-		if(mnt->src)
+		if(mnt->src && (mnt->szSrc>0))
 		{
+//			tk_printf("tk_opendir: Src=%s\n", mnt->src);
+
 			if(strncmp(mnt->src, name, mnt->szSrc))
 			{
 				mnt=mnt->next;
 				continue;
 			}
 			s1+=mnt->szSrc;
+			if(*s1 && (*s1!='/') && (*(s1-1)!=':'))
+			{
+				mnt=mnt->next;
+				continue;
+			}
+			if(*s1=='/')
+				s1++;
 		}
+
+//		tk_printf("tk_opendir: Check %s\n", mnt->src);
 	
 		if(mnt->vt->opendir)
 		{
@@ -593,6 +825,9 @@ TK_DIR *tk_opendir(char *name)
 
 TK_DIRENT *tk_readdir(TK_DIR *fd)
 {
+	if(!fd || !(fd->vt))
+		{ __debugbreak(); }
+
 	if(fd->vt->readdir)
 		return(fd->vt->readdir(fd));
 	return(NULL);
@@ -600,6 +835,9 @@ TK_DIRENT *tk_readdir(TK_DIR *fd)
 
 int tk_closedir(TK_DIR *fd)
 {
+	if(!fd || !(fd->vt))
+		{ __debugbreak(); }
+
 	if(fd->vt->closedir)
 		return(fd->vt->closedir(fd));
 	return(NULL);
