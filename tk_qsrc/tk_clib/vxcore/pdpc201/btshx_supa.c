@@ -479,21 +479,31 @@ long __tell(int handle)
 	return(tk_ftell(btshx_tk_handles[handle]));
 }
 
-int __open(const char *a, int b, int c)
+int __open(const char *a, int b, int *rc)
 {
 	TK_FILE *fd;
-	char *s;
+	char *s, *md;
 	int i;
 
+	md="rb";
+	if(b==1)
+		md="wb";
+	if(b==2)
+		md="r+b";
+
 	s=(char *)a;
-	fd=tk_fopen(s, "rb");
+//	fd=tk_fopen(s, "rb");
+	fd=tk_fopen(s, md);
 	if(!fd)
 	{
-		*(int *)((u32)c)=-1;
+//		*(int *)((long)((unsigned int)c))=-1;
+		*rc=-1;
 		return(-1);
 	}
 
-	*(int *)((u32)c)=0;
+//	*(int *)((u32)c)=0;
+//	*(int *)((long)((unsigned int)c))=0;
+	*rc=0;
 	
 	for(i=3; i<btshx_tk_nhandles; i++)
 	{
@@ -506,7 +516,9 @@ int __open(const char *a, int b, int c)
 	
 	if(btshx_tk_nhandles>=256)
 	{
-		*(int *)((u32)c)=-1;
+//		*(int *)((u32)c)=-1;
+//		*(int *)((long)((unsigned int)c))=-1;
+		*rc=-1;
 		return(-1);
 	}
 	
@@ -529,6 +541,56 @@ void __close(int handle)
 	tk_fclose(fd);
 //	close(handle);
 }
+
+#if 1
+
+int open(const char *name, int flags, int mode)
+{
+	int h, c, md;
+
+	md=0;
+
+	switch((flags>>12)&0xA)
+	{
+	case 0x0:		md=0; break;
+	case 0x2:		md=0; break;
+	case 0x8:		md=1; break;
+	case 0xA:		md=2; break;
+	}
+	
+	h=__open(name, md, &c);
+	return(h);
+}
+
+int creat(const char *path, int mode)
+{
+	return(open(path, 0x8042, mode));
+}
+
+int read(int handle, void *buf, size_t len)
+{
+	int c;
+	return(__read(handle, buf, len, &c));
+}
+
+int write(int handle, const void *buf, size_t len)
+{
+	int c;
+	return(__write(handle, buf, len, &c));
+}
+
+long lseek(int handle, long offset, int whence)
+{
+	__seek(handle, offset, whence);
+	return(__tell(handle));
+}
+
+int close(int handle)
+{
+	__close(handle);
+}
+#endif
+
 
 void __remove(const char *filename)
 {
@@ -689,9 +751,24 @@ int __start_first()
 #endif
 }
 
+void *(*_malloc_fptr)(size_t size);
+void (*_free_fptr)(void *ptr);
+void *(*_realloc_fptr)(void *ptr, size_t size);
+size_t (*_msize_fptr)(void *ptr);
+
+void *tk_malloc(int sz);
+int tk_free(void *ptr);
+void *tk_realloc(void *ptr, int sz);
+int tk_msize(void *ptr);
+
+
 int __start_early()
 {
 	TKMM_Init();
+	_malloc_fptr=tk_malloc;
+	_free_fptr=tk_free;
+	_realloc_fptr=tk_realloc;
+	_msize_fptr=tk_msize;
 	return(0);
 }
 

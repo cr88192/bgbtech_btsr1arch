@@ -13,68 +13,99 @@ int tkmm_lvatyi_float;
 int tkmm_lvatyi_double;
 
 int tkmm_lvatyi_string;
+int tkmm_lvatyi_wstring;
+int tkmm_lvatyi_ustring;
 int tkmm_lvatyi_classobj;
 
 int tkmm_lvatyi_arrmt[16];
 int tkmm_lvatyi_arrmsc[16];
 
+LVA_ClassInfo	*tkmm_lva_clsinfo;
+LVA_VTableBasic *tkmm_lva_clsvt;
+
+extern int tkmm_lva_ntag;
+
+
 void TKMM_LVA_ArrayInit(void)
 {
-	if(!tkmm_lvatyi_tagarray)
-	{
-		TKMM_LVA_TagInit();
-	
-		tkmm_lvatyi_tagarray=TKMM_LVA_GetTagIndexForName("_TagArray");
-		tkmm_lvatyi_variant	=TKMM_LVA_GetTagIndexForName("_Variant");
-		tkmm_lvatyi_pointer	=TKMM_LVA_GetTagIndexForName("_Pointer");
-		tkmm_lvatyi_byte	=TKMM_LVA_GetTagIndexForName("_Byte");
-		tkmm_lvatyi_sbyte	=TKMM_LVA_GetTagIndexForName("_SByte");
-		tkmm_lvatyi_short	=TKMM_LVA_GetTagIndexForName("_Short");
-		tkmm_lvatyi_ushort	=TKMM_LVA_GetTagIndexForName("_UShort");
-		tkmm_lvatyi_int		=TKMM_LVA_GetTagIndexForName("_Int");
-		tkmm_lvatyi_uint	=TKMM_LVA_GetTagIndexForName("_UInt");
-		tkmm_lvatyi_long	=TKMM_LVA_GetTagIndexForName("_Long");
-		tkmm_lvatyi_ulong	=TKMM_LVA_GetTagIndexForName("_ULong");
-		tkmm_lvatyi_float	=TKMM_LVA_GetTagIndexForName("_Float");
-		tkmm_lvatyi_double	=TKMM_LVA_GetTagIndexForName("_Double");
+	byte *ptr, *ct;
+	char *sig;
 
-		tkmm_lvatyi_string	=TKMM_LVA_GetTagIndexForName("_String");
-		tkmm_lvatyi_classobj=TKMM_LVA_GetTagIndexForName("_ClassObj");
-		
-		tkmm_lvatyi_arrmt[0]=tkmm_lvatyi_int;
-		tkmm_lvatyi_arrmt[1]=tkmm_lvatyi_long;
-		tkmm_lvatyi_arrmt[2]=tkmm_lvatyi_float;
-		tkmm_lvatyi_arrmt[3]=tkmm_lvatyi_double;
-		tkmm_lvatyi_arrmt[4]=tkmm_lvatyi_pointer;
-		tkmm_lvatyi_arrmt[5]=tkmm_lvatyi_variant;
-		tkmm_lvatyi_arrmt[6]=0;
-		tkmm_lvatyi_arrmt[7]=tkmm_lvatyi_long;
-		tkmm_lvatyi_arrmt[8]=tkmm_lvatyi_sbyte;
-		tkmm_lvatyi_arrmt[9]=tkmm_lvatyi_byte;
-		tkmm_lvatyi_arrmt[10]=tkmm_lvatyi_short;
-		tkmm_lvatyi_arrmt[11]=tkmm_lvatyi_ushort;
-		tkmm_lvatyi_arrmt[12]=tkmm_lvatyi_uint;
-		tkmm_lvatyi_arrmt[13]=tkmm_lvatyi_ulong;
-		tkmm_lvatyi_arrmt[14]=tkmm_lvatyi_ulong;
-		tkmm_lvatyi_arrmt[15]=0;
-		
-		tkmm_lvatyi_arrmsc[ 0]=2;
-		tkmm_lvatyi_arrmsc[ 1]=3;
-		tkmm_lvatyi_arrmsc[ 2]=2;
-		tkmm_lvatyi_arrmsc[ 3]=3;
-		tkmm_lvatyi_arrmsc[ 4]=3;
-		tkmm_lvatyi_arrmsc[ 5]=3;
-		tkmm_lvatyi_arrmsc[ 6]=2;
-		tkmm_lvatyi_arrmsc[ 7]=3;
-		tkmm_lvatyi_arrmsc[ 8]=0;
-		tkmm_lvatyi_arrmsc[ 9]=0;
-		tkmm_lvatyi_arrmsc[10]=1;
-		tkmm_lvatyi_arrmsc[11]=1;
-		tkmm_lvatyi_arrmsc[12]=2;
-		tkmm_lvatyi_arrmsc[13]=3;
-		tkmm_lvatyi_arrmsc[14]=3;
-		tkmm_lvatyi_arrmsc[15]=3;
-	}
+	if(tkmm_lva_ntag)
+		return;
+	
+	TKMM_LVA_TagInit();
+
+	tkmm_lvatyi_tagarray=TKMM_LVA_GetTagIndexForName("_TagArray");
+	tkmm_lvatyi_variant	=TKMM_LVA_GetTagIndexForName("_Variant");
+	tkmm_lvatyi_string	=TKMM_LVA_GetTagIndexForName("_String");
+	tkmm_lvatyi_wstring	=TKMM_LVA_GetTagIndexForName("_WString");
+	tkmm_lvatyi_ustring	=TKMM_LVA_GetTagIndexForName("_UString");
+	tkmm_lvatyi_classobj=TKMM_LVA_GetTagIndexForName("_ClassObj");
+
+	tkmm_lvatyi_pointer	=TKMM_LVA_GetTagIndexForName("_Pointer");
+	tkmm_lvatyi_byte	=TKMM_LVA_GetTagIndexForName("_Byte");
+	tkmm_lvatyi_sbyte	=TKMM_LVA_GetTagIndexForName("_SByte");
+	tkmm_lvatyi_short	=TKMM_LVA_GetTagIndexForName("_Short");
+	tkmm_lvatyi_ushort	=TKMM_LVA_GetTagIndexForName("_UShort");
+	tkmm_lvatyi_int		=TKMM_LVA_GetTagIndexForName("_Int");
+	tkmm_lvatyi_uint	=TKMM_LVA_GetTagIndexForName("_UInt");
+	tkmm_lvatyi_long	=TKMM_LVA_GetTagIndexForName("_Long");
+	tkmm_lvatyi_ulong	=TKMM_LVA_GetTagIndexForName("_ULong");
+	tkmm_lvatyi_float	=TKMM_LVA_GetTagIndexForName("_Float");
+	tkmm_lvatyi_double	=TKMM_LVA_GetTagIndexForName("_Double");
+
+	tkmm_lvatyi_arrmt[0]=tkmm_lvatyi_int;
+	tkmm_lvatyi_arrmt[1]=tkmm_lvatyi_long;
+	tkmm_lvatyi_arrmt[2]=tkmm_lvatyi_float;
+	tkmm_lvatyi_arrmt[3]=tkmm_lvatyi_double;
+	tkmm_lvatyi_arrmt[4]=tkmm_lvatyi_pointer;
+	tkmm_lvatyi_arrmt[5]=tkmm_lvatyi_variant;
+	tkmm_lvatyi_arrmt[6]=0;
+	tkmm_lvatyi_arrmt[7]=tkmm_lvatyi_long;
+	tkmm_lvatyi_arrmt[8]=tkmm_lvatyi_sbyte;
+	tkmm_lvatyi_arrmt[9]=tkmm_lvatyi_byte;
+	tkmm_lvatyi_arrmt[10]=tkmm_lvatyi_short;
+	tkmm_lvatyi_arrmt[11]=tkmm_lvatyi_ushort;
+	tkmm_lvatyi_arrmt[12]=tkmm_lvatyi_uint;
+	tkmm_lvatyi_arrmt[13]=tkmm_lvatyi_ulong;
+	tkmm_lvatyi_arrmt[14]=tkmm_lvatyi_ulong;
+	tkmm_lvatyi_arrmt[15]=0;
+	
+	tkmm_lvatyi_arrmsc[ 0]=2;
+	tkmm_lvatyi_arrmsc[ 1]=3;
+	tkmm_lvatyi_arrmsc[ 2]=2;
+	tkmm_lvatyi_arrmsc[ 3]=3;
+	tkmm_lvatyi_arrmsc[ 4]=3;
+	tkmm_lvatyi_arrmsc[ 5]=3;
+	tkmm_lvatyi_arrmsc[ 6]=2;
+	tkmm_lvatyi_arrmsc[ 7]=3;
+	tkmm_lvatyi_arrmsc[ 8]=0;
+	tkmm_lvatyi_arrmsc[ 9]=0;
+	tkmm_lvatyi_arrmsc[10]=1;
+	tkmm_lvatyi_arrmsc[11]=1;
+	tkmm_lvatyi_arrmsc[12]=2;
+	tkmm_lvatyi_arrmsc[13]=3;
+	tkmm_lvatyi_arrmsc[14]=3;
+	tkmm_lvatyi_arrmsc[15]=3;
+	
+	ptr=tk_malloc(
+		sizeof(LVA_VTableBasic)+
+		sizeof(LVA_ClassInfo)+
+		32);
+	ct=ptr;
+
+	tkmm_lva_clsvt=(LVA_VTableBasic *)(ct);
+	ct+=sizeof(LVA_VTableBasic);
+	tkmm_lva_clsinfo=(LVA_ClassInfo *)(ct);
+	ct+=sizeof(LVA_ClassInfo);
+	sig=(char *)ct;
+
+	tkmm_lva_clsinfo->self=((byte *)tkmm_lva_clsinfo)-ptr;
+	tkmm_lva_clsinfo->qname=((byte *)sig)-ptr;
+	strcpy(sig, "UTagArray;");
+
+	tkmm_lva_clsvt->clazz=tkmm_lva_clsinfo;
 }
 
 LVA_TagArray *TKMM_LVA_NewVarArray(int n)
@@ -92,6 +123,8 @@ LVA_TagArray *TKMM_LVA_NewTagArray(int n, int mt)
 	sz=n<<tkmm_lvatyi_arrmsc[mt];
 	
 	arr=TKMM_LVA_TyMalloc(tkmm_lvatyi_tagarray, sizeof(LVA_TagArray)+sz);
+	arr->p.vt=tkmm_lva_clsvt;
+	arr->p.dptr=arr->p.data;
 	arr->p.size=n;
 	arr->p.tty=tkmm_lvatyi_arrmt[mt];
 	arr->p.pad=0;
@@ -149,11 +182,11 @@ void *TKMM_LVA_GetArrayIndexPtr(tk_lva_object obj, int idx, int sc)
 	{
 		bti=(obits>>48)&4095;
 		
-		if(bti!=tkmm_lvatyi_tagarray)
-		{
-			__debugbreak();
-			return(NULL);
-		}
+//		if(bti!=tkmm_lvatyi_tagarray)
+//		{
+//			__debugbreak();
+//			return(NULL);
+//		}
 
 		arr=(LVA_TagArray *)obits;
 		
@@ -408,50 +441,162 @@ tk_lva_variant __lvo_loadindex_va(tk_lva_object obj, int idx)
 	return(*(tk_lva_variant *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 3));
 }
 
+__m128 __lvo_loadindex_x(tk_lva_object obj, int idx)
+{
+	return(*(__m128 *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 4));
+}
+
 void __lvo_storeindex_i(tk_lva_object obj, int idx, int val)
 {
-	*(u32 *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 2)=val;
+	void *ptr;
+	ptr=TKMM_LVA_GetArrayIndexPtr(obj, idx, 2);
+	*(u32 *)ptr=val;
+//	*(u32 *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 2)=val;
 }
 
 void __lvo_storeindex_l(tk_lva_object obj, int idx, long long val)
 {
-	*(u64 *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 3)=val;
+	void *ptr;
+	ptr=TKMM_LVA_GetArrayIndexPtr(obj, idx, 3);
+	*(u64 *)ptr=val;
+//	*(u64 *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 3)=val;
 }
 
 void __lvo_storeindex_f(tk_lva_object obj, int idx, float val)
 {
-	*(float *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 2)=val;
+	void *ptr;
+	ptr=TKMM_LVA_GetArrayIndexPtr(obj, idx, 2);
+	*(float *)ptr=val;
+//	*(float *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 2)=val;
 }
 
 void __lvo_storeindex_d(tk_lva_object obj, int idx, double val)
 {
-	*(double *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 3)=val;
+	void *ptr;
+	ptr=TKMM_LVA_GetArrayIndexPtr(obj, idx, 3);
+	*(double *)ptr=val;
+//	*(double *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 3)=val;
 }
 
 void __lvo_storeindex_p(tk_lva_object obj, int idx, void *val)
 {
-	*(void **)TKMM_LVA_GetArrayIndexPtr(obj, idx, 3)=val;
+	void *ptr;
+	ptr=TKMM_LVA_GetArrayIndexPtr(obj, idx, 3);
+	*(void **)ptr=val;
+//	*(void **)TKMM_LVA_GetArrayIndexPtr(obj, idx, 3)=val;
 }
 
 void __lvo_storeindex_v(tk_lva_object obj, int idx, tk_lva_object val)
 {
-	*(tk_lva_object *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 3)=val;
+	void *ptr;
+	ptr=TKMM_LVA_GetArrayIndexPtr(obj, idx, 3);
+	*(tk_lva_object *)ptr=val;
 }
 
 void __lvo_storeindex_b(tk_lva_object obj, int idx, int val)
 {
-	*(byte *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 0)=val;
+	void *ptr;
+	ptr=TKMM_LVA_GetArrayIndexPtr(obj, idx, 0);
+	*(byte *)ptr=val;
+//	*(byte *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 0)=val;
 }
 
 void __lvo_storeindex_s(tk_lva_object obj, int idx, int val)
 {
-	*(short *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 1)=val;
+	void *ptr;
+	ptr=TKMM_LVA_GetArrayIndexPtr(obj, idx, 1);
+	*(short *)ptr=val;
+//	*(short *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 1)=val;
 }
 
 void __lvo_storeindex_va(tk_lva_object obj, int idx, tk_lva_variant val)
 {
-	*(tk_lva_variant *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 3)=val;
+	void *ptr;
+	ptr=TKMM_LVA_GetArrayIndexPtr(obj, idx, 3);
+	*(tk_lva_variant *)ptr=val;
+//	*(tk_lva_variant *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 3)=val;
 }
+
+void __lvo_storeindex_x(tk_lva_object obj, int idx, __m128 val)
+{
+	void *ptr;
+	ptr=TKMM_LVA_GetArrayIndexPtr(obj, idx, 4);
+	*(__m128 *)ptr=val;
+//	*(short *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 1)=val;
+}
+
+tk_lva_variant __lvo_loadindex_var(tk_lva_variant obj, int idx)
+{
+	u16 *pw;
+	byte *pb;
+	u64 objv;
+	int tg4, tg12, tgc;
+	
+	objv=__object_getbits(obj);
+
+	tg4=(objv>>60)&15;
+	tg12=(objv>>48)&4095;
+	if(tg4==0)
+	{
+		if(tg12==tkmm_lvatyi_string)
+		{
+			pb=(byte *)objv;
+			return(pb[idx]);
+		}
+
+		if(tg12==tkmm_lvatyi_wstring)
+		{
+			pw=(u16 *)objv;
+			return(pw[idx]);
+		}
+	}
+
+//	return(*(tk_lva_variant *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 3));
+}
+
+void __lvo_storeindex_var(tk_lva_variant obj, int idx, tk_lva_variant val)
+{
+	void *ptr;
+//	ptr=TKMM_LVA_GetArrayIndexPtr(obj, idx, 3);
+//	*(tk_lva_variant *)ptr=val;
+//	*(tk_lva_variant *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 3)=val;
+}
+
+int __lvo_loadindex_str(tk_lva_variant obj, int idx)
+{
+	u16 *pw;
+	byte *pb;
+	u64 objv;
+	int tg;
+	
+	objv=__object_getbits(obj);
+
+	tg=(objv>>48)&65535;
+
+	if(tg==tkmm_lvatyi_string)
+	{
+		pb=(byte *)objv;
+		return(pb[idx]);
+	}
+
+	if(tg==tkmm_lvatyi_wstring)
+	{
+		pw=(u16 *)objv;
+		return(pw[idx]);
+	}
+
+	__debugbreak();
+}
+
+void __lvo_storeindex_str(tk_lva_variant obj, int idx, int val)
+{
+	__debugbreak();
+//	void *ptr;
+//	ptr=TKMM_LVA_GetArrayIndexPtr(obj, idx, 3);
+//	*(tk_lva_variant *)ptr=val;
+//	*(tk_lva_variant *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 3)=val;
+}
+
 
 
 tk_lva_object __lvo_newarray_sb_0(void)

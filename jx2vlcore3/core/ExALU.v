@@ -72,15 +72,24 @@ input[63:0]		regValRt;
 input[7:0]		idUCmd;
 input[7:0]		idUIxt;
 input			exHold;
-input[1:0]		regInSrST;
+input[5:0]		regInSrST;
 
 output[63:0]	regOutVal;
-output[1:0]		regOutSrST;
+output[5:0]		regOutSrST;
 
 wire			regInSrT;
 wire			regInSrS;
 assign		regInSrT = regInSrST[0];
 assign		regInSrS = regInSrST[1];
+
+wire			regInSrP;
+wire			regInSrQ;
+wire			regInSrR;
+wire			regInSrO;
+assign		regInSrP = regInSrST[2];
+assign		regInSrQ = regInSrST[3];
+assign		regInSrR = regInSrST[4];
+assign		regInSrO = regInSrST[5];
 
 reg[7:0]		idUIxt2;
 
@@ -88,12 +97,27 @@ reg[7:0]		idUIxt2;
 reg[63:0]	tRegOutVal2;
 reg			tRegOutSrT2;
 reg			tRegOutSrS2;
+
+reg			tRegOutSrP2;
+reg			tRegOutSrQ2;
+reg			tRegOutSrR2;
+reg			tRegOutSrO2;
+
 assign	regOutVal = tRegOutVal2;
-assign	regOutSrST = { tRegOutSrS2, tRegOutSrT2 };
+assign	regOutSrST = {
+	tRegOutSrO2, tRegOutSrR2,
+	tRegOutSrQ2, tRegOutSrP2,
+	tRegOutSrS2, tRegOutSrT2
+	};
 
 reg[63:0]	tRegOutVal;
 reg			tRegOutSrT;
 reg			tRegOutSrS;
+
+reg			tRegOutSrP;
+reg			tRegOutSrQ;
+reg			tRegOutSrR;
+reg			tRegOutSrO;
 
 // `ifdef def_true
 // `ifndef def_true
@@ -151,6 +175,11 @@ reg			tResult1S;
 reg[64:0]	tResult2A;
 reg			tResult2T;
 
+reg			tResult1P;
+reg			tResult1Q;
+reg			tResult1R;
+reg			tResult1O;
+
 reg			tAdd1SF;
 reg			tAdd2SF;
 reg			tAdd1BSF;
@@ -160,6 +189,11 @@ reg			tSub1CF;
 reg			tSub1SF;
 reg			tSub1VF;
 reg			tTst1ZF;
+
+reg			tTst1WZF_A;
+reg			tTst1WZF_B;
+reg			tTst1WZF_C;
+reg			tTst1WZF_D;
 
 reg			tSub2ZF;
 reg			tSub2CF;
@@ -173,6 +207,19 @@ reg			tSub1BSF;
 reg			tSub1BVF;
 reg			tTst1BZF;
 
+reg			tSub1WZF_A;
+reg			tSub1WCF_A;
+reg			tSub1WSF_A;
+reg			tSub1WZF_B;
+reg			tSub1WCF_B;
+reg			tSub1WSF_B;
+reg			tSub1WZF_C;
+reg			tSub1WCF_C;
+reg			tSub1WSF_C;
+reg			tSub1WZF_D;
+reg			tSub1WCF_D;
+reg			tSub1WSF_D;
+
 reg			tSub1SxVF;
 reg			tSub2SxVF;
 reg			tSub1BSxVF;
@@ -181,6 +228,14 @@ reg			tFCmpRsIsNaN;
 reg			tFCmpRtIsNaN;
 reg			tFCmpEqP;
 reg			tFCmpGtP;
+
+reg			tFCmpGtP_FA;
+reg			tFCmpGtP_FB;
+
+reg			tFCmpGtP_HA;
+reg			tFCmpGtP_HB;
+reg			tFCmpGtP_HC;
+reg			tFCmpGtP_HD;
 
 reg[32:0]	tResultu1A;
 reg[32:0]	tResultu1B;
@@ -228,8 +283,26 @@ begin
 	tSub3A1 = { tSub2A1[32]?tSub2B1:tSub2B0, tSub2A1[31:0] };
 
 
-	tSub1ZF		= (tSub2A1[15:0]==0) && (tSub2A1[31:16]==0);
-	tSub1BZF	= (tSub3A1[47:32]==0) && (tSub3A1[63:48]==0);
+	tSub1WZF_A	= (tSub2A1[15: 0]==0);
+	tSub1WZF_B	= (tSub2A1[31:16]==0);
+	tSub1WZF_C	= (tSub3A1[47:32]==0);
+	tSub1WZF_D	= (tSub3A1[63:48]==0);
+
+	tSub1WCF_A	= tSub1A0[16];
+	tSub1WCF_B	= tSub1B0[16];
+	tSub1WCF_C	= tSub1C0[16];
+	tSub1WCF_D	= tSub1D0[16];
+
+	tSub1WSF_A	= tSub1A0[15];
+	tSub1WSF_B	= tSub1B0[15];
+	tSub1WSF_C	= tSub1C0[15];
+	tSub1WSF_D	= tSub1D0[15];
+
+//	tSub1ZF		= (tSub2A1[15:0]==0) && (tSub2A1[31:16]==0);
+//	tSub1BZF	= (tSub3A1[47:32]==0) && (tSub3A1[63:48]==0);
+	tSub1ZF		= tSub1WZF_A && tSub1WZF_B;
+	tSub1BZF	= tSub1WZF_C && tSub1WZF_D;
+
 	tSub2ZF		= tSub1ZF && tSub1BZF;
 	tSub1CF = tSub2A1[32];
 	tSub2CF = tSub3A1[64];
@@ -243,12 +316,21 @@ begin
 	tAdd2SF = tAdd3A1[63];
 	tAdd1BSF = tAdd2B1[31];
 
-	tTst1ZF =
-		((regValRs[15: 0]&regValRt[15: 0])==0) &&
-		((regValRs[31:16]&regValRt[31:16])==0) ;
-	tTst1BZF =
-		((regValRs[47:32]&regValRt[47:32])==0) &&
-		((regValRs[63:48]&regValRt[63:48])==0) ;
+	tTst1WZF_A	= ((regValRs[15: 0]&regValRt[15: 0])==0);
+	tTst1WZF_B	= ((regValRs[31:16]&regValRt[31:16])==0);
+	tTst1WZF_C	= ((regValRs[47:32]&regValRt[47:32])==0);
+	tTst1WZF_D	= ((regValRs[63:48]&regValRt[63:48])==0);
+
+	tTst1ZF		= tTst1WZF_A && tTst1WZF_B;
+	tTst1BZF	= tTst1WZF_C && tTst1WZF_D;
+
+//	tTst1ZF =
+//		((regValRs[15: 0]&regValRt[15: 0])==0) &&
+//		((regValRs[31:16]&regValRt[31:16])==0) ;
+//	tTst1BZF =
+//		((regValRs[47:32]&regValRt[47:32])==0) &&
+//		((regValRs[63:48]&regValRt[63:48])==0) ;
+
 	tTst2ZF =
 		tTst1ZF && tTst1BZF;
 
@@ -275,6 +357,65 @@ begin
 
 		4'b1111: tFCmpGtP=0;	/* s==t */
 	endcase
+
+`ifdef def_true
+
+	casez({regValRs[31], regValRt[31], tSub1SF, tSub1ZF})
+		4'b0000: tFCmpGtP_FA=1;	/* (s-t)>0 */
+		4'b0001: tFCmpGtP_FA=0;	/* s==t */
+		4'b001z: tFCmpGtP_FA=0;	/* (s-t)<0 */
+		4'b01zz: tFCmpGtP_FA=1;	/* (s>0) && (t<0) */
+		4'b10zz: tFCmpGtP_FA=0;	/* (s<0) && (t>0) */
+		4'b110z: tFCmpGtP_FA=0;	/* (s-t)>0 */
+		4'b1110: tFCmpGtP_FA=1;	/* (s-t)<0 */
+		4'b1111: tFCmpGtP_FA=0;	/* s==t */
+	endcase
+
+	tFCmpGtP_FB		= tFCmpGtP;
+
+	casez({regValRs[15], regValRt[15], tSub1WSF_A, tSub1WZF_A})
+		4'b0000: tFCmpGtP_HA=1;	/* (s-t)>0 */
+		4'b0001: tFCmpGtP_HA=0;	/* s==t */
+		4'b001z: tFCmpGtP_HA=0;	/* (s-t)<0 */
+		4'b01zz: tFCmpGtP_HA=1;	/* (s>0) && (t<0) */
+		4'b10zz: tFCmpGtP_HA=0;	/* (s<0) && (t>0) */
+		4'b110z: tFCmpGtP_HA=0;	/* (s-t)>0 */
+		4'b1110: tFCmpGtP_HA=1;	/* (s-t)<0 */
+		4'b1111: tFCmpGtP_HA=0;	/* s==t */
+	endcase
+	casez({regValRs[31], regValRt[31], tSub1WSF_B, tSub1WZF_B})
+		4'b0000: tFCmpGtP_HB=1;	/* (s-t)>0 */
+		4'b0001: tFCmpGtP_HB=0;	/* s==t */
+		4'b001z: tFCmpGtP_HB=0;	/* (s-t)<0 */
+		4'b01zz: tFCmpGtP_HB=1;	/* (s>0) && (t<0) */
+		4'b10zz: tFCmpGtP_HB=0;	/* (s<0) && (t>0) */
+		4'b110z: tFCmpGtP_HB=0;	/* (s-t)>0 */
+		4'b1110: tFCmpGtP_HB=1;	/* (s-t)<0 */
+		4'b1111: tFCmpGtP_HB=0;	/* s==t */
+	endcase
+	casez({regValRs[47], regValRt[47], tSub1WSF_C, tSub1WZF_C})
+		4'b0000: tFCmpGtP_HC=1;	/* (s-t)>0 */
+		4'b0001: tFCmpGtP_HC=0;	/* s==t */
+		4'b001z: tFCmpGtP_HC=0;	/* (s-t)<0 */
+		4'b01zz: tFCmpGtP_HC=1;	/* (s>0) && (t<0) */
+		4'b10zz: tFCmpGtP_HC=0;	/* (s<0) && (t>0) */
+		4'b110z: tFCmpGtP_HC=0;	/* (s-t)>0 */
+		4'b1110: tFCmpGtP_HC=1;	/* (s-t)<0 */
+		4'b1111: tFCmpGtP_HC=0;	/* s==t */
+	endcase
+	casez({regValRs[63], regValRt[63], tSub1WSF_D, tSub1WZF_D})
+		4'b0000: tFCmpGtP_HD=1;	/* (s-t)>0 */
+		4'b0001: tFCmpGtP_HD=0;	/* s==t */
+		4'b001z: tFCmpGtP_HD=0;	/* (s-t)<0 */
+		4'b01zz: tFCmpGtP_HD=1;	/* (s>0) && (t<0) */
+		4'b10zz: tFCmpGtP_HD=0;	/* (s<0) && (t>0) */
+		4'b110z: tFCmpGtP_HD=0;	/* (s-t)>0 */
+		4'b1110: tFCmpGtP_HD=1;	/* (s-t)<0 */
+		4'b1111: tFCmpGtP_HD=0;	/* s==t */
+	endcase
+
+`endif
+
 `endif
 
 `ifdef def_true
@@ -474,6 +615,10 @@ begin
 	tResult1W=UV33_XX;
 	tResult2W=UV65_XX;
 
+	tResult1P=regInSrP;
+	tResult1Q=regInSrQ;
+	tResult1R=regInSrR;
+	tResult1O=regInSrO;
 
 	case(idUIxt[3:0])
 		4'h0: begin		/* ADD */
@@ -531,6 +676,11 @@ begin
 			tResult1T=tTst1ZF;
 			tResult2T=tTst2ZF;
 			tResult1S=tTst1BZF;
+
+			tResult1P=tTst1WZF_A;
+			tResult1Q=tTst1WZF_A;
+			tResult1R=tTst1WZF_A;
+			tResult1O=tTst1WZF_A;
 		end
 		4'h5: begin		/* AND */
 			tResult1A={1'b0, regValRs[31:0] & regValRt[31:0]};
@@ -561,6 +711,11 @@ begin
 			tResult1T=!tSub1ZF;
 			tResult2T=!tSub2ZF;
 			tResult1S=!tSub1BZF;
+
+			tResult1P=!tSub1WZF_A;
+			tResult1Q=!tSub1WZF_B;
+			tResult1R=!tSub1WZF_C;
+			tResult1O=!tSub1WZF_D;
 		end
 		4'h9: begin		/* CMPHS */
 //			tResult1A=UV33_XX;
@@ -571,6 +726,11 @@ begin
 			tResult1T=tSub1CF;
 			tResult2T=tSub2CF;
 			tResult1S=tSub1BCF;
+
+			tResult1P=tSub1WCF_A;
+			tResult1Q=tSub1WCF_B;
+			tResult1R=tSub1WCF_C;
+			tResult1O=tSub1WCF_D;
 		end
 		4'hA: begin		/* CMPGE */
 //			tResult1A=UV33_XX;
@@ -585,6 +745,11 @@ begin
 			tResult1T=!(tSub1SF^tSub1VF);
 			tResult2T=!(tSub2SF^tSub2VF);
 			tResult1S=!(tSub1BSF^tSub1BVF);
+
+			tResult1P=!tSub1WSF_A || tSub1WZF_A;
+			tResult1Q=!tSub1WSF_B || tSub1WZF_B;
+			tResult1R=!tSub1WSF_C || tSub1WZF_C;
+			tResult1O=!tSub1WSF_D || tSub1WZF_D;
 
 		end
 		4'hB: begin		/* NOR */
@@ -606,6 +771,11 @@ begin
 			tResult1T=tSub1ZF;
 			tResult2T=tSub2ZF;
 			tResult1S=tSub1BZF;
+
+			tResult1P=tSub1WZF_A;
+			tResult1Q=tSub1WZF_B;
+			tResult1R=tSub1WZF_C;
+			tResult1O=tSub1WZF_D;
 		end
 		4'hD: begin		/* CMPHI */
 //			tResult1A=UV33_XX;
@@ -617,6 +787,11 @@ begin
 			tResult1T=tSub1CF && !tSub1ZF;
 			tResult2T=tSub2CF && !tSub2ZF;
 			tResult1S=tSub1BCF && !tSub1BZF;
+
+			tResult1P=tSub1WCF_A && !tSub1WZF_A;
+			tResult1Q=tSub1WCF_B && !tSub1WZF_B;
+			tResult1R=tSub1WCF_C && !tSub1WZF_C;
+			tResult1O=tSub1WCF_D && !tSub1WZF_D;
 
 		end
 		4'hE: begin		/* CMPGT */
@@ -631,6 +806,11 @@ begin
 			tResult2T=!tSub2ZF && !(tSub2SF^tSub2VF);
 			tResult1S=!tSub1BZF && !(tSub1BSF^tSub1BVF);
 
+			tResult1P=!tSub1WSF_A && !tSub1WZF_A;
+			tResult1Q=!tSub1WSF_B && !tSub1WZF_B;
+			tResult1R=!tSub1WSF_C && !tSub1WZF_C;
+			tResult1O=!tSub1WSF_D && !tSub1WZF_D;
+
 //			tResult1T=tSub1SxVF;
 //			tResult2T=tSub2SxVF;
 //			tResult1S=tSub1BSxVF;
@@ -639,6 +819,12 @@ begin
 			tResult1A={1'b0, regInSrT ? regValRs[31: 0] : regValRt[31: 0] };
 			tResult2A={1'b0, regInSrT ? regValRs[63: 0] : regValRt[63: 0] };
 			tResult1B={1'b0, regInSrS ? regValRs[31: 0] : regValRt[31: 0] };
+
+			tResult2W = { 1'b0,
+				regInSrO ? regValRs[63:48] : regValRt[63:48],
+				regInSrR ? regValRs[47:32] : regValRt[47:32],
+				regInSrQ ? regValRs[31:16] : regValRt[31:16],
+				regInSrP ? regValRs[15: 0] : regValRt[15: 0] };
 		end
 	endcase
 
@@ -706,6 +892,7 @@ begin
 //		tResult1A = tResultu1A;
 //		tResult1B = tResultu1B;
 		tResult1A = tResult1W;
+//		tResult1B = tResult2W[63:32];
 		tResult2A = tResult2W;
 	end
 `endif
@@ -721,16 +908,41 @@ begin
 	
 		if(idUIxt[3:0]==JX2_UCIX_FPU_CMPEQ[3:0])
 		begin
-			tResult1T = tFCmpEqP;
-			tResult2T = tFCmpEqP;
+			tResult1T	= tFCmpEqP;
+			tResult2T	= tFCmpEqP;
+			
+			if(idUIxt[5:4]==2'b11)
+			begin
+				tResult1T	= tSub1ZF;
+				tResult1S	= tSub1BZF;
+				tResult1P	= tSub1WZF_A;
+				tResult1Q	= tSub1WZF_B;
+				tResult1R	= tSub1WZF_C;
+				tResult1O	= tSub1WZF_D;
+			end
 		end
 		else
 		begin
 			tResult1T = tFCmpGtP;
 			tResult2T = tFCmpGtP;
+
+			if(idUIxt[5:4]==2'b11)
+			begin
+				tResult1T	= tFCmpGtP_FA;
+				tResult1S	= tFCmpGtP_FB;
+				tResult1P	= tFCmpGtP_HA;
+				tResult1Q	= tFCmpGtP_HB;
+				tResult1R	= tFCmpGtP_HC;
+				tResult1O	= tFCmpGtP_HD;
+			end
 		end
 	end
 `endif
+
+	tRegOutSrP = regInSrP;
+	tRegOutSrQ = regInSrQ;
+	tRegOutSrR = regInSrR;
+	tRegOutSrO = regInSrO;
 
 	if(idUIxt[5])
 	begin
@@ -740,6 +952,11 @@ begin
 			tRegOutVal = { tResult1B[31:0], tResult1A[31:0] };
 			tRegOutSrT = tResult1T;
 			tRegOutSrS = tResult1S;
+
+			tRegOutSrP = tResult1P;
+			tRegOutSrQ = tResult1Q;
+			tRegOutSrR = tResult1R;
+			tRegOutSrO = tResult1O;
 		end
 		else
 		begin
@@ -789,6 +1006,11 @@ begin
 		tRegOutVal2		<= tRegOutVal;
 		tRegOutSrT2		<= tRegOutSrT;
 		tRegOutSrS2		<= tRegOutSrS;
+
+		tRegOutSrP2		<= tRegOutSrP;
+		tRegOutSrQ2		<= tRegOutSrQ;
+		tRegOutSrR2		<= tRegOutSrR;
+		tRegOutSrO2		<= tRegOutSrO;
 	end
 end
 

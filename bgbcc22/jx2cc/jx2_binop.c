@@ -2232,7 +2232,10 @@ int BGBCC_JX2C_EmitCsrvVReg(
 //				BGBCC_SH_REG_R2, BGBCC_SH_REG_R3);
 
 //			BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, BGBCC_SH_REG_R3);
-			BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, BGBCC_SH_REG_R2);
+			if(ctx->arch_sizeof_ptr==8)
+				BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, BGBCC_SH_REG_RQ2);
+			else
+				BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, BGBCC_SH_REG_R2);
 //			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, BGBCC_SH_REG_RQ3);
 			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, BGBCC_SH_REG_RQ2);
 			return(1);
@@ -2249,7 +2252,10 @@ int BGBCC_JX2C_EmitCsrvVReg(
 //			BGBCC_JX2C_EmitMovRegReg(ctx, sctx,
 //				BGBCC_SH_REG_R2, BGBCC_SH_REG_R3);
 //			BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, BGBCC_SH_REG_R3);
-			BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, BGBCC_SH_REG_R2);
+			if(ctx->arch_sizeof_ptr==8)
+				BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, BGBCC_SH_REG_RQ2);
+			else
+				BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, BGBCC_SH_REG_R2);
 //			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, BGBCC_SH_REG_RQ3);
 			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, BGBCC_SH_REG_RQ2);
 			return(1);
@@ -2260,7 +2266,12 @@ int BGBCC_JX2C_EmitCsrvVReg(
 //			ctreg=BGBCC_SH_REG_RD0;
 		ctreg=BGBCC_SH_REG_R2;
 		if(sctx->is_addr64)
-			ctreg=BGBCC_SH_REG_RD2;
+		{
+			if(ctx->arch_sizeof_ptr==8)
+				ctreg=BGBCC_SH_REG_RQ2;
+			else
+				ctreg=BGBCC_SH_REG_RD2;
+		}
 	
 		BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, ctreg);
 		BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, ctreg);

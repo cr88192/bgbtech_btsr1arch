@@ -2238,6 +2238,8 @@ int BGBCC_JX2_TryEmitLoadRegLabelVarPbo24(
 
 //	ctx->test_lclalign=3;
 
+	nmid=BGBCC_JX2_EmitRemapPseudoOp(ctx, nmid);
+
 	if(lbl==ctx->lbl_gbl_ptr)
 	{
 		opw1=-1;	opw2=-1;
@@ -2687,6 +2689,8 @@ int BGBCC_JX2_TryEmitStoreRegLabelVarPbo24(
 
 	prlty=BGBCC_SH_RLC_PBO24_BJX;
 
+	nmid=BGBCC_JX2_EmitRemapPseudoOp(ctx, nmid);
+
 	usewxj=0;
 	if(ctx->has_jumbo && !ctx->op_is_wex2)
 	{
@@ -2922,6 +2926,8 @@ int BGBCC_JX2_TryEmitLoadRegLabelVarRel24(
 	int opw1, opw2, opw3, opw4, opw5, opwf;
 	int rlty, prlty, rlty2;
 	int tr0;
+
+	nmid=BGBCC_JX2_EmitRemapPseudoOp(ctx, nmid);
 
 //	ctx->test_lclalign=3;
 
@@ -3504,6 +3510,8 @@ int BGBCC_JX2_EmitStoreRegLabelVarRel24(
 		if(BGBCC_JX2_EmitCheckRegExtGPR(ctx, reg))
 			nmid=BGBCC_SH_NMID_MOVD;
 	}
+
+	nmid=BGBCC_JX2_EmitRemapPseudoOp(ctx, nmid);
 
 //	ctx->test_lclalign=3;
 

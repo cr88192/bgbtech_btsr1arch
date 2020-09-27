@@ -840,7 +840,7 @@ int tk_closedir(TK_DIR *fd)
 
 	if(fd->vt->closedir)
 		return(fd->vt->closedir(fd));
-	return(NULL);
+	return(-1);
 }
 
 

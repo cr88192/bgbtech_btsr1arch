@@ -21,6 +21,7 @@
 #include <tk_core.h>
 
 #include "tk_core/tk_mmpage.c"
+#include "tk_core/tk_mmcell.c"
 #include "tk_core/tk_mmllist.c"
 
 #include "tk_core/tk_spi.c"
@@ -49,6 +50,7 @@
 #include "tk_core/lva_array.c"
 #include "tk_core/lva_strdup.c"
 #include "tk_core/lva_tagobj.c"
+#include "tk_core/lva_varobj.c"
 
 #include "tk_core/tk_rwad.c"
 
@@ -60,3 +62,4 @@
 #include "pdpc201/btshx_fpusup.c"
 
 #include "pdpc201/btshx_vnf.c"
+#include "pdpc201/btshx_alloca.c"

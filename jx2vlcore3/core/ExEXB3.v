@@ -159,12 +159,14 @@ begin
 
 		JX2_UCMD_SHAD3: begin
 		end
+`ifndef jx2_merge_shadq
 		JX2_UCMD_SHLD3: begin
 		end
 		JX2_UCMD_SHADQ3: begin
 		end
 		JX2_UCMD_SHLDQ3: begin
 		end
+`endif
 		
 		JX2_UCMD_CONV_RR: begin
 		end

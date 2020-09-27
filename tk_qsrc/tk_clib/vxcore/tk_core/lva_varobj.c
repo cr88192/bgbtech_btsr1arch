@@ -97,6 +97,148 @@ int TKMM_LVA_ObjLookupField(LVA_ObjectBasic *obj, char *name,
 	return(0);
 }
 
+int TKMM_LVA_TryGetSigSize(char *sig)
+{
+	static const byte szarr_base[96] =
+	{
+		0, 0,   0, 0,  0,  0,  0,  0,  /* 20-27 */
+		0, 0,   0, 0,  0,  0,  0,  0,  /* 28-2F */
+		0, 0,   0, 0,  0,  0,  0,  0,  /* 30-37, '0'..'7' */
+		0, 0,   0, 0,  0,  0,  0,  0,  /* 38-3F */
+		0, 0,   0, 0,  0,  0,  0,  0,  /* 40-47, 'A'..'G' */
+		0, 0,   0, 0,  8,  0,  0,  0,  /* 48-4F, 'H'..'O' */
+		0, 8,   0, 0,  0,  0,  0,  0,  /* 50-57, 'P'..'W' */
+		0, 0,   0, 0,  0,  0,  0,  0,  /* 58-5F, 'X'..'Z' */
+		0, 1,   1, 1,  8, 16,  4, 16,  /* 60-67, 'a'..'g' */
+		1, 4,   4, 2,  8,  8, 16, 16,  /* 68-6F, 'h'..'o' */
+		8, 8,   8, 2,  2,  2,  1,  2,  /* 70-77, 'p'..'w' */
+		8, 8, 128, 0,  0,  0,  0,  0   /* 78-7F, 'x'..'z' */
+	};
+
+	static const byte szarr_c[96] =
+	{
+		 0,  0,  0,  0,  0,  0,  0,  0,  /* 20-27 */
+		 0,  0,  0,  0,  0,  0,  0,  0,  /* 28-2F */
+		 0,  0,  0,  0,  0,  0,  0,  0,  /* 30-37, '0'..'7' */
+		 0,  0,  0,  0,  0,  0,  0,  0,  /* 38-3F */
+		 0,  0,  0,  0,  0,  0,  0,  0,  /* 40-47, 'A'..'G' */
+		 0,  0,  0,  0,  0,  0,  0,  0,  /* 48-4F, 'H'..'O' */
+		 0,  0,  0,  0,  0,  0,  0,  0,  /* 50-57, 'P'..'W' */
+		 0,  0,  0,  0,  0,  0,  0,  0,  /* 58-5F, 'X'..'Z' */
+		 0,  8, 16, 16, 16, 32,  8, 32,  /* 60-67, 'a'..'g' */
+		16, 16, 16,  4,  8,  8, 16,  8,  /* 68-6F, 'h'..'o' */
+		16, 16,  8,  8,  8,  4,  8,  8,  /* 70-77, 'p'..'w' */
+		 8,  8,  8,  0,  0,  0,  0,  0   /* 78-7F, 'x'..'z' */
+	};
+
+	static const byte szarr_d[96] =
+	{
+		 0,  0,  0,  0,  0,  0,  0,  0,  /* 20-27 */
+		 0,  0,  0,  0,  0,  0,  0,  0,  /* 28-2F */
+		 0,  0,  0,  0,  0,  0,  0,  0,  /* 30-37, '0'..'7' */
+		 0,  0,  0,  0,  0,  0,  0,  0,  /* 38-3F */
+		 0,  0,  0,  0,  0,  0,  0,  0,  /* 40-47, 'A'..'G' */
+		 0,  0,  0,  0,  0,  0,  0,  0,  /* 48-4F, 'H'..'O' */
+		 0,  0,  0,  0,  0,  0,  0,  0,  /* 50-57, 'P'..'W' */
+		 0,  0,  0,  0,  0,  0,  0,  0,  /* 58-5F, 'X'..'Z' */
+		 0,  8,  0,  0,  0,  0,  0,  0,  /* 60-67, 'a'..'g' */
+		 0,  8,  8,  0,  0,  0,  8,  0,  /* 68-6F, 'h'..'o' */
+		 0,  0,  0,  0,  0,  0,  0,  0,  /* 70-77, 'p'..'w' */
+		 0,  0,  0,  0,  0,  0,  0,  0   /* 78-7F, 'x'..'z' */
+	};
+
+	int sz, c0, c1;
+
+	c0=sig[0];
+	c1=sig[1];
+	sz=szarr_base[c0-' '];
+	if(sz>0)
+		return(sz);
+	if(c0=='P')
+		return(sizeof(void *));
+
+	if(c0=='C')
+	{
+		sz=szarr_c[c1-' '];
+		return(sz);
+	}
+
+	if(c0=='D')
+	{
+		sz=szarr_d[c1-' '];
+		return(sz);
+	}
+
+	if(c0=='G')
+	{
+		sz=szarr_base[c1-' '];
+		return(sz);
+	}
+
+	__debugbreak();
+	return(0);
+
+#if 0
+	sz=0;
+	switch(*sig)
+	{
+	case 'a':		sz=1;	break;
+	case 'b':		sz=1;	break;
+	case 'c':		sz=1;	break;
+	case 'd':		sz=8;	break;
+	case 'e':		sz=16;	break;
+	case 'f':		sz=4;	break;
+	case 'g':		sz=16;	break;
+	case 'h':		sz=1;	break;
+	case 'i':		sz=4;	break;
+	case 'j':		sz=4;	break;
+	case 'k':		sz=2;	break;
+	case 'l':		sz=8;	break;
+	case 'm':		sz=8;	break;
+	case 'n':		sz=16;	break;
+	case 'o':		sz=16;	break;
+	case 'p':		sz=8;	break;
+	case 'q':		sz=8;	break;
+	case 'r':		sz=8;	break;
+	case 's':		sz=2;	break;
+	case 't':		sz=2;	break;
+	case 'u':		sz=2;	break;
+	case 'v':		sz=1;	break;
+	case 'w':		sz=2;	break;
+	case 'x':		sz=8;	break;
+	case 'y':		sz=8;	break;
+	case 'z':		sz=128;	break;
+
+	case 'L':		sz=8;	break;
+	case 'Q':		sz=8;	break;
+		
+	case 'C':
+		switch(sig[1])
+		{
+		case 'a':	sz=8;	break;
+		case 'b':	sz=16;	break;
+		case 'c':	sz=16;	break;
+		case 'd':	sz=16;	break;
+		case 'e':	sz=32;	break;
+		case 'f':	sz=8;	break;
+		case 'g':	sz=32;	break;
+		case 'h':	sz=16;	break;
+		case 'i':	sz=16;	break;
+		case 'j':	sz=16;	break;
+		case 'k':	sz=4;	break;
+
+		case 'o':	sz=8;	break;
+		case 's':	sz=8;	break;
+		default:			break;
+		}
+		break;
+
+	case 'P':								sz=8;	break;
+	}
+	return(0);
+#endif
+}
+
 u64 TKMM_LVA_TryGetSigPtrVar(void *ptr, char *sig)
 {
 	u64 v;
@@ -156,6 +298,53 @@ u64 TKMM_LVA_TryGetSigPtrVar(void *ptr, char *sig)
 			break;
 		}
 		break;
+	}
+	return(0);
+}
+
+int TKMM_LVA_TryGetSigTty(char *sig)
+{
+	int sz;
+	
+	sz=0;
+	switch(*sig)
+	{
+	case 'a':			sz=8;	break;
+	case 'b':			sz=8;	break;
+	case 'c':			sz=8;	break;
+	case 'd':			sz=3;	break;
+	case 'e':			sz=6;	break;
+	case 'f':			sz=2;	break;
+	case 'g':			sz=6;	break;
+	case 'h':			sz=9;	break;
+	case 'i':			sz=0;	break;
+	case 'j':			sz=12;	break;
+	case 'l':			sz=7;	break;
+	case 'm':			sz=13;	break;
+	case 'n':			sz=6;	break;
+	case 'o':			sz=6;	break;
+	case 'p':			sz=4;	break;
+	case 'q':			sz=4;	break;
+	case 'r':			sz=7;	break;
+	case 's':			sz=10;	break;
+	case 't':			sz=11;	break;
+	case 'u':			sz=0;	break;
+	case 'v':			sz=0;	break;
+	case 'w':			sz=11;	break;
+	case 'x':			sz=7;	break;
+	case 'y':			sz=13;	break;
+	case 'z':			sz=0;	break;
+	case 'L':			sz=5;	break;
+	case 'Q':			sz=5;	break;
+		
+	case 'C':
+		switch(sig[1])
+		{
+		case 'o':	case 's':				sz=8;	break;
+		default:							break;
+		}
+		break;
+	case 'P':								sz=8;	break;
 	}
 	return(0);
 }
@@ -422,6 +611,10 @@ void __lvo_setslot(__object obj, char *name, __variant val)
 }
 
 __variant __lvo_methodcall(__object obj, char *name, __object args)
+{
+}
+
+void *__lva_unwrap(__variant obj)
 {
 }
 

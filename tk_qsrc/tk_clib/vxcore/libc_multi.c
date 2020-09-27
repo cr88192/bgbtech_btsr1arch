@@ -32,6 +32,7 @@ Everything else will assume the use of system calls.
 #include <tk_core.h>
 
 #include "tk_core/tk_mmpage.c"
+#include "tk_core/tk_mmcell.c"
 #include "tk_core/tk_mmllist.c"
 
 // #include "tk_core/tk_spi.c"
@@ -66,3 +67,4 @@ Everything else will assume the use of system calls.
 #include "pdpc201/btshx_fpusup.c"
 
 #include "pdpc201/btshx_vnf.c"
+#include "pdpc201/btshx_alloca.c"

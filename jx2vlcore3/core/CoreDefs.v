@@ -426,10 +426,17 @@ parameter[5:0] JX2_UCMD_ALU3		= 6'h10;		//ALU Command (3R)
 parameter[5:0] JX2_UCMD_ALUCMP		= 6'h11;		//ALU Compare
 parameter[5:0] JX2_UCMD_UNARY		= 6'h12;		//ALU Unary Operator
 parameter[5:0] JX2_UCMD_SWAPN		= 6'h13;		//SWAP
+`ifdef jx2_merge_shadq
+parameter[5:0] JX2_UCMD_SHAD3		= 6'h14;		//
+parameter[5:0] JX2_UCMD_SHLD3		= 6'h14;		//
+parameter[5:0] JX2_UCMD_SHADQ3		= 6'h14;		//
+parameter[5:0] JX2_UCMD_SHLDQ3		= 6'h14;		//
+`else
 parameter[5:0] JX2_UCMD_SHAD3		= 6'h14;		//
 parameter[5:0] JX2_UCMD_SHLD3		= 6'h15;		//
 parameter[5:0] JX2_UCMD_SHADQ3		= 6'h16;		//
 parameter[5:0] JX2_UCMD_SHLDQ3		= 6'h17;		//
+`endif
 parameter[5:0] JX2_UCMD_CONV_RR		= 6'h18;		//
 parameter[5:0] JX2_UCMD_MOV_RC		= 6'h19;		//
 parameter[5:0] JX2_UCMD_MOV_CR		= 6'h1A;		//
@@ -487,6 +494,14 @@ parameter[5:0] JX2_UCIX_ALU_PSUBL	= 6'h31;		//Packed ALU SUB
 parameter[5:0] JX2_UCIX_ALU_PADCL	= 6'h32;		//Packed ALU ADC
 parameter[5:0] JX2_UCIX_ALU_PSBBL	= 6'h33;		//Packed ALU SBB
 
+parameter[5:0] JX2_UCIX_ALU_PTST	= 6'h34;		//ALU Command
+parameter[5:0] JX2_UCIX_ALU_PCMPNE	= 6'h38;		//ALU Command
+parameter[5:0] JX2_UCIX_ALU_PCMPHS	= 6'h39;		//ALU Command
+parameter[5:0] JX2_UCIX_ALU_PCMPGE	= 6'h3A;		//ALU Command
+parameter[5:0] JX2_UCIX_ALU_PCMPEQ	= 6'h3C;		//ALU Command
+parameter[5:0] JX2_UCIX_ALU_PCMPHI	= 6'h3D;		//ALU Command
+parameter[5:0] JX2_UCIX_ALU_PCMPGT	= 6'h3E;		//ALU Command
+
 parameter[5:0] JX2_UCIX_ALU_PCSELT	= 6'h3F;		//Packed CSELT
 
 parameter[5:0] JX2_UCIX_ALUN_CLZ	= 6'h00;		//Count Leading Zeroes
@@ -509,6 +524,8 @@ parameter[5:0] JX2_UCIX_ALUW_PSHUFB	= 6'h45;		//ALU PSHUF.B
 parameter[5:0] JX2_UCIX_ALUW_PSHUFW	= 6'h25;		//ALU PSHUF.W
 parameter[5:0] JX2_UCIX_ALUW_MOVLD	= 6'h26;		//ALU (Low DWords)
 parameter[5:0] JX2_UCIX_ALUW_MOVHD	= 6'h27;		//ALU (High DWords)
+
+parameter[5:0] JX2_UCIX_ALUW_PCSELT	= 6'h2F;		//Packed CSELT
 
 parameter[5:0] JX2_UCIX_PUSH_GR		= 6'h00;		//GPR
 parameter[5:0] JX2_UCIX_PUSH_CR		= 6'h01;		//Control Reg
@@ -586,17 +603,25 @@ parameter[5:0] JX2_UCIX_FPU_FMUL	= 6'h02;		//FPU MUL
 parameter[5:0] JX2_UCIX_FPU_FDIV	= 6'h03;		//FPU DIV
 parameter[5:0] JX2_UCIX_FPU_FMOV	= 6'h04;		//FPU MOV
 
-parameter[5:0] JX2_UCIX_FPU_PADD	= 6'h05;		//FPU ADD
-parameter[5:0] JX2_UCIX_FPU_PSUB	= 6'h06;		//FPU SUB
-parameter[5:0] JX2_UCIX_FPU_PMUL	= 6'h07;		//FPU MUL
+parameter[5:0] JX2_UCIX_FPU_PADD	= 6'h05;		//FPU ADD (2x F32)
+parameter[5:0] JX2_UCIX_FPU_PSUB	= 6'h06;		//FPU SUB (2x F32)
+parameter[5:0] JX2_UCIX_FPU_PMUL	= 6'h07;		//FPU MUL (2x F32)
 
-parameter[5:0] JX2_UCIX_FPU_PADDX	= 6'h25;		//FPU ADD
-parameter[5:0] JX2_UCIX_FPU_PSUBX	= 6'h26;		//FPU SUB
-parameter[5:0] JX2_UCIX_FPU_PMULX	= 6'h27;		//FPU MUL
+parameter[5:0] JX2_UCIX_FPU_PADDX	= 6'h25;		//FPU ADD (4x F32)
+parameter[5:0] JX2_UCIX_FPU_PSUBX	= 6'h26;		//FPU SUB (4x F32)
+parameter[5:0] JX2_UCIX_FPU_PMULX	= 6'h27;		//FPU MUL (4x F32)
 
 parameter[5:0] JX2_UCIX_FPU_FADD_G	= 6'h10;		//FPU ADD (GFP)
 parameter[5:0] JX2_UCIX_FPU_FSUB_G	= 6'h11;		//FPU SUB (GFP)
 parameter[5:0] JX2_UCIX_FPU_FMUL_G	= 6'h12;		//FPU MUL (GFP)
+
+parameter[5:0] JX2_UCIX_FPU_PADDH	= 6'h15;		//FPU ADD (4x F16)
+parameter[5:0] JX2_UCIX_FPU_PSUBH	= 6'h16;		//FPU SUB (4x F16)
+parameter[5:0] JX2_UCIX_FPU_PMULH	= 6'h17;		//FPU MUL (4x F16)
+
+parameter[5:0] JX2_UCIX_FPU_PADDXD	= 6'h35;		//FPU ADD (2x F64)
+parameter[5:0] JX2_UCIX_FPU_PSUBXD	= 6'h36;		//FPU SUB (2x F64)
+parameter[5:0] JX2_UCIX_FPU_PMULXD	= 6'h37;		//FPU MUL (2x F64)
 
 parameter[5:0] JX2_UCIX_FPU_CMPNE	= 6'h08;		//ALU Command
 parameter[5:0] JX2_UCIX_FPU_CMPGE	= 6'h0A;		//ALU Command
@@ -607,6 +632,11 @@ parameter[5:0] JX2_UCIX_FPU_CMPNE_G	= 6'h18;		//ALU Command
 parameter[5:0] JX2_UCIX_FPU_CMPGE_G	= 6'h1A;		//ALU Command
 parameter[5:0] JX2_UCIX_FPU_CMPEQ_G	= 6'h1C;		//ALU Command
 parameter[5:0] JX2_UCIX_FPU_CMPGT_G	= 6'h1E;		//ALU Command
+
+parameter[5:0] JX2_UCIX_FPU_PCMPNE	= 6'h38;		//ALU Command
+parameter[5:0] JX2_UCIX_FPU_PCMPGE	= 6'h3A;		//ALU Command
+parameter[5:0] JX2_UCIX_FPU_PCMPEQ	= 6'h3C;		//ALU Command
+parameter[5:0] JX2_UCIX_FPU_PCMPGT	= 6'h3E;		//ALU Command
 
 parameter[5:0] JX2_UCIX_FPIX_FNEG	= 6'h00;		//FPU ADD
 parameter[5:0] JX2_UCIX_FPIX_FABS	= 6'h01;		//FPU SUB

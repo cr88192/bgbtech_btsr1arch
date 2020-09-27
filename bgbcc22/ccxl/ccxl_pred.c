@@ -2119,9 +2119,6 @@ int BGBCC_CCXL_GetTypeOperationZ(
 	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
 		return(CCXL_TY_P);
 
-	if(BGBCC_CCXL_TypeValueObjectP(ctx, ty))
-		return(CCXL_TY_S);
-
 	if(BGBCC_CCXL_TypeRefArrayP(ctx, ty))
 		return(CCXL_TY_V);
 
@@ -2152,6 +2149,9 @@ int BGBCC_CCXL_GetTypeOperationZ(
 	if(BGBCC_CCXL_TypeVec128P(ctx, ty))
 		return(CCXL_TY_M128);
 	
+	if(BGBCC_CCXL_TypeValueObjectP(ctx, ty))
+		return(CCXL_TY_S);
+
 	return(-1);
 //	return(CCXL_TY_UNDEF_I);
 }

@@ -501,8 +501,8 @@ void I_UpdateSound( void )
 	int		**clvl;
 	int		**crvl;
 
-	int		**clv;
-	int		**crv;
+	int		*clv;
+	int		*crv;
 	int		nchan;
 	int		nsamp;
 	

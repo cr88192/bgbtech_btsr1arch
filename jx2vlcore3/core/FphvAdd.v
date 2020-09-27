@@ -20,12 +20,12 @@ input	reset;
 
 /* verilator lint_on UNUSED */
 
-input[31:0]		regValRs;
-input[31:0]		regValRt;
-output[31:0]	regValRn;
+input[15:0]		regValRs;
+input[15:0]		regValRt;
+output[15:0]	regValRn;
 input[1:0]		regExOp;
 
-reg[31:0]		tRegValRn;
+reg[15:0]		tRegValRn;
 
 assign	regValRn	= tRegValRn;
 

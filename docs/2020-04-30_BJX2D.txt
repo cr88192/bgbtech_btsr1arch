@@ -230,7 +230,9 @@ EXSR Codes:
 ** 0x8: General Fault
 ** 0xA: MMU/TLB
 ** 0xC: IRQ or Software Interrupt
+** 0xD: Software Interrupt
 ** 0xE: Syscall
+** 0xF: Processor Internal
 * General Faults:
 ** 0x8000: Invalid Address
 ** 0x8001: Invalid Read (Address lacks read access)
@@ -255,7 +257,25 @@ EXSR Codes:
 ** 0xA001: TLB Miss
 ** 0xA002: TLB ACL Check
 * Syscall
-** 0xExxx: System Call, xxx gives the SysCall ID (12 bits).
+** 0xEnxx: System Call, xxx gives the SysCall ID (12 bits).
+* Bits (11:8) will be used for inter-core routing.
+
+EXSR bits (11:8) will be used for inter-core routing:
+* 0x0: Will be 'Local'
+* 0x1..0xB: will be logical cores IDs 1 to 11.
+* 0xC: Reserved.
+* 0xD: Reserved.
+* 0xE: Interrupt is broadcast to Parent.
+* 0xF: Interrupt is broadcast to Current or Child.
+
+Heirarchical Grid Addressing:
+* Cores will be organized into a tree structured Grid.
+* Core 1 will be located within the parent grid.
+** This will be the Parent of the current grid
+* Cores 2..B will be within the current or child grid.
+** Cnzz: Routed within the current grid.
+** Dnzz: Routed within child grid.
+* Either the high or low bits of the address may be used for routing.
 
 The relevant Control Registers will be swapped depending on the state of the SR.RB status.
 
@@ -363,11 +383,11 @@ KR Access:
 * ( 5): User X
 * ( 4): User W
 * ( 3): User R
-* ( 2): VUGID Enable 2
-* ( 1): VUGID Enable 1
-* ( 0): VUGID Enable 0
+* ( 2): VUGID Mode 2
+* ( 1): VUGID Mode 1
+* ( 0): VUGID Mode 0
 
-If Keyring Check is Enabled, VUGID Enable will have several modes:
+If Keyring Check is Enabled, VUGID Mode will have several modes:
 * 000: Access Check Always Fails (Access Fault)
 * 001: Perform VUGID Check, Access Check is Pass or Fail (Access Fault).
 * 010: Always Generate ACL Check Exception
@@ -406,11 +426,23 @@ Page Control:
 * ( 1): PR.SH, Page Is Shared
 * ( 0): PR.V, Page Is Valid
 
-Size 0/1:
-* 00: 4K Page (Single Page)
+Size 0/1 (Base=4K):
+* 00:  4K Page (Single Page)
 * 01: 2MB Page (512 Pages)
 * 10: 64K Page (16 Pages)
-* 11: 1GB Page (256K Pages)
+* 11: -
+
+Size 0/1 (Base=64K):
+* 00: 64K Page (1 Page)
+* 01: 512M Page (8192 Pages)
+* 10: 64K Page (1 Page)
+* 11: -
+
+Size 0/1 (Base=16K):
+* 00: 16K Page (1 Page)
+* 01: 32M Page (2048 Pages)
+* 10: 64K Page (4 Pages)
+* 11: -
 
 
 Keyring checks are enabled via the Keyring Register (KRR):
@@ -433,10 +465,14 @@ MMCR Bits:
 * 0001: Enable MMU/TLB
 ** Enables the use of page-level translation via the TLB.
 ** If clear, direct physical addressing is used.
+** Ignored if SR.RB is Set.
 * 0004: User-mode uses 48-bit addressing.
 * 0008: System-mode uses 48-bit addressing.
-* 0010: Use 64K as basic page size.
-** If set, assumes that 64K is the smallest page size.
+* 0030: Basic Page Size.
+** 0: Use 4K as the Basic Page Size.
+** 1: Use 64K as the Basic Page Size.
+** 2: Use 16K as the Basic Page Size.
+** 3: Reserved
 
 
 ==== Page Tables ====
@@ -475,6 +511,8 @@ Nominal page size:
 * 0001: Use 4K pages (128-bit PTE)
 * 0010: Use 64K pages (64-bit PTE)
 * 0011: Use 64K pages (128-bit PTE)
+* 0100: Use 16K pages (64-bit PTE)
+* 0101: Use 16K pages (128-bit PTE)
 * Others: Reserved
 
 Type of STTB table:
@@ -519,6 +557,26 @@ Page Table Types (128-bit PTE):
 * 01: Two-level, 128-bit PTE, 40-bit address.
 * 10: Three-Level, 128-bit PTE, 52-bit address.
 * 11: Four-Level, 128-bit PTE, 64-bit address.
+
+
+==== 16K Page Tables ====
+
+Alternate page table mode with 16K as the basic page size.
+Page table will be 2..4 levels each containing 2048 entries.
+
+With 64-bit PTE modes, the physical page address will be shifted right by 2 bits.
+
+Page Table Types (64-bit PTE):
+* 00: None / Invalid
+* 01: Two-level, 64-bit PTE, 36-bit address.
+* 10: Three-Level, 64-bit PTE, 47-bit address.
+* 11: Four-Level, 64-bit PTE, 58-bit address.
+
+Page Table Types (128-bit PTE):
+* 00: None / Invalid
+* 01: Two-level, 128-bit PTE, 34-bit address.
+* 10: Three-Level, 128-bit PTE, 44-bit address.
+* 11: Four-Level, 128-bit PTE, 54-bit address.
 
 
 === Addressing Modes ===
@@ -1157,28 +1215,27 @@ F0zz Instruction Block:
 *** F0nm_1g3A /
 *** F0nm_1G3A /
 *** F0nm_1g4A -
-*** F0nm_1g5A ? PADD.H		Rm, Rn				//(GSVF) Packed ADD Half
-*** F0nm_1G5A ? PADD.F		Rm, Rn				//(GSVF) Packed ADD Float
-*** F0nm_1g6A ? PSUB.H		Rm, Rn				//(GSVF) Packed SUB Half
-*** F0nm_1G6A ? PSUB.F		Rm, Rn				//(GSVF) Packed SUB Float
-*** F0nm_1g7A ? PMUL.H		Rm, Rn				//(GSVF) Packed MUL Half
-*** F0nm_1G7A ? PMUL.F		Rm, Rn				//(GSVF) Packed MUL Float
-*** F0nm_1g8A  MOVHD		Rm, Rn				//(GSV) Move High DWord
-*** F0nm_1G8A  MOVLD		Rm, Rn				//(GSV) Move Low DWord
+*** F0nm_1g5A / PADD.H		Rm, Rn				//(GSVF) Packed ADD Half
+*** F0nm_1G5A / PADD.F		Rm, Rn				//(GSVF) Packed ADD Float
+*** F0nm_1g6A / PSUB.H		Rm, Rn				//(GSVF) Packed SUB Half
+*** F0nm_1G6A / PSUB.F		Rm, Rn				//(GSVF) Packed SUB Float
+*** F0nm_1g7A / PMUL.H		Rm, Rn				//(GSVF) Packed MUL Half
+*** F0nm_1G7A / PMUL.F		Rm, Rn				//(GSVF) Packed MUL Float
+*** F0nm_1g8A / MOVHD		Rm, Rn				//(GSV) Move High DWord
+*** F0nm_1G8A / MOVLD		Rm, Rn				//(GSV) Move Low DWord
 *** F0nm_1g9A -
 *** F0nm_1G9A -
-*** F0nm_1gAA  MOVHLD		Rm, Rn				//(GSV) Rn=Rm (MOV High to Low)
-*** F0nm_1GAA  MOVLHD		Rm, Rn				//(GSV) Rn=Rm (MOV Low to High)
-*** F0nm_1pBA  PSELT.W		Rm, Rn				//Packed Select Word
-*** F0nm_1PBA  PSELT.L		Rm, Rn				//Packed Select DWord
-*** F0nm_1qBA  PSELF.W		Rm, Rn				//Packed Select Word
-*** F0nm_1QBA  PSELF.L		Rm, Rn				//Packed Select DWord
-*** F0nm_1gCA  PCMPEQ.W		Rm, Rn				//Pack Compare Word, Equal
-*** F0nm_1GCA  PCMPEQ.L		Rm, Rn				//Pack Compare DWord, Equal
-*** F0nm_1gDA  PCMPHI.W		Rm, Rn				//Pack Compare Word, Above
-*** F0nm_1GDA  PCMPHI.L		Rm, Rn				//Pack Compare DWord, Above
-*** F0nm_1gEA  PCMPGT.W		Rm, Rn				//Pack Compare Word, Greater
-*** F0nm_1GEA  PCMPGT.L		Rm, Rn				//Pack Compare DWord, Greater
+
+*** F0nm_1gAA  PCMPEQ.H		Rm, Rn			//Packed Compare Half, Equal
+*** F0nm_1GAA  PCMPEQ.F		Rm, Rn			//Packed Compare Single, Equal
+*** F0nm_1gBA  PCMPGT.H		Rm, Rn			//Packed Compare Half, Greater
+*** F0nm_1GBA  PCMPGT.F		Rm, Rn			//Packed Compare Single, Greater
+*** F0nm_1gCA  PCMPEQ.W		Rm, Rn			//Pack Compare Word, Equal
+*** F0nm_1GCA  PCMPEQ.L		Rm, Rn			//Pack Compare DWord, Equal
+*** F0nm_1gDA  PCMPHI.W		Rm, Rn			//Pack Compare Word, Above
+*** F0nm_1GDA  PCMPHI.L		Rm, Rn			//Pack Compare DWord, Above
+*** F0nm_1gEA  PCMPGT.W		Rm, Rn			//Pack Compare Word, Greater
+*** F0nm_1GEA  PCMPGT.L		Rm, Rn			//Pack Compare DWord, Greater
 *** F0nm_1gFA  /
 *** F0nm_1GFA  /
 
@@ -1229,7 +1286,7 @@ F0zz Instruction Block:
 
 ** F0nm_1ezE ? (RGB 2R Block)
 *** F0nm_1e0E  RGB5SHR1		Rm, Rn		//(RGB) RGB555 Shift Right
-*** F0nm_1e1E ? PMORT{L/Q}	Rm, Rn		//(GSV) Morton Shuffle
+*** F0nm_1e1E  PMORT{L/Q}	Rm, Rn		//(GSV) Morton Shuffle
 *** F0nm_1g2E  RGB5PCK32	Rm, Rn		//(RGB) RGB555 Pack from RGB32
 *** F0nm_1G2E  RGB5PCK64	Rm, Rn		//(RGB) RGB555 Pack from RGB64
 *** F0nm_1g3E  RGB5UPCK32	Rm, Rn		//(RGB) RGB555 Unpack to RGB32
@@ -1252,8 +1309,10 @@ F0zz Instruction Block:
 ** F0nm_2Go1  PSUB.L	Rm, Ro, Rn			//(GSV) Packed SUB DWord
 ** F0nm_2eo2 ? SHAR{Q}	Rm, Ro, Rn			//Shift Arithmetic Right
 ** F0nm_2eo3 ? SHLR{Q}	Rm, Ro, Rn			//Shift Logical Right
-** F0nm_2go4  -
-** F0nm_2Go4  -
+
+** F0nm_2go4  PCSELT.W	Rm, Ro, Rn			//(GSV) Packed CSELT (Word)
+** F0nm_2Go4  PCSELT.L	Rm, Ro, Rn			//(GSV) Packed CSELT (DWord)
+
 ** F0nm_2go5  PADD.F	Rm, Ro, Rn			//(GSVF) Packed FADD (2x Float)
 ** F0nm_2Go5  PADDX.F	Xm, Xo, Xn			//(GSVFX) Packed FADD (4x Float)
 ** F0nm_2go6  PSUB.F	Rm, Ro, Rn			//(GSVF) Packed FSUB (2x Float)
@@ -1267,9 +1326,12 @@ F0zz Instruction Block:
 ** F0nm_2goA  -
 ** F0nm_2goB  -
 ** F0nm_2goC  -
-** F0nm_2goD  -
-** F0nm_2goE  -
-** F0nm_2goF  -
+** F0nm_2goD  PADD.H	Rm, Ro, Rn			//(GSVF) Packed FADD (4x Half)
+** F0nm_2GoD  PADDX.D	Xm, Xo, Xn			//(GSVFX) Packed FADD (2x Double)
+** F0nm_2goE  PSUB.H	Rm, Ro, Rn			//(GSVF) Packed FSUB (4x Half)
+** F0nm_2GoE  PSUBX.D	Xm, Xo, Xn			//(GSVFX) Packed FSUB (2x Double)
+** F0nm_2goF  PMUL.H	Rm, Ro, Rn			//(GSVF) Packed FMUL (4x Half)
+** F0nm_2GoF  PMULX.D	Xm, Xo, Xn			//(GSVFX) Packed FMUL (2x Double)
 
 ** F0zz_3en0  (Single Register Ops, Mirror 3znz)
 *** 1111_0000_zzzz_zzzz_0011_qzzn_nnnn_0000 (1R)
@@ -1330,6 +1392,8 @@ F0zz Instruction Block:
 *** F03A_3en0  SHAR		Rn
 
 *** F068_3en0  TRAP		Rn
+*** F069_3en0  WEXMD	#Imm5
+*** F06A_3en0  CPUID	#Imm5
 *** F06F_3en0  MOVT		Rn
 
 *** F082_3en0  /
@@ -1361,7 +1425,7 @@ F0zz Instruction Block:
 
 * F0zz_5zzz
 ** F0nm_5go0  CSELT		Rm, Ro, Rn			//Rn=SR.T?Rm:Ro
-** F0nm_5Go0  PCSELT.L	Rm, Ro, Rn			//(GSV) Packed CSELT (DWord)
+** F0nm_5Go0 / PCSELT.L	Rm, Ro, Rn			//(GSV) Packed CSELT (DWord)
 ** F0nm_5go1 ? PMULS.W	Rm, Ro, Rn			//(GSV) Packed Multiply (2x16->2x32)
 ** F0nm_5Go1 ? PMULU.W	Rm, Ro, Rn			//(GSV) Packed Multiply (2x16->2x32)
 ** F0nm_5go2  DMULS.L	Rm, Ro, Rn			//(MULL) Sx 32b Mul (32*32->64)

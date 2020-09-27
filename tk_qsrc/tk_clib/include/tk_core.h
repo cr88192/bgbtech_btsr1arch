@@ -146,7 +146,8 @@ typedef u64 tk_kptr;
 
 #define TKMM_PAGEBITS		14
 #define TKMM_PAGEMASK		16383
-#define TKMM_MAXMMLISTSZ	65536
+// #define TKMM_MAXMMLISTSZ	65536
+#define TKMM_MAXMMLISTSZ	(65536-256)
 #define TKMM_BRKBITS		20
 
 #else
@@ -168,6 +169,12 @@ typedef u64 tk_kptr;
 #endif
 
 #endif
+
+#define TKMM_MAXMMCELLBITS	10
+
+#define TKMM_MAXMMSEGBLKBITS	(TKMM_BRKBITS-TKMM_MAXMMCELLBITS)
+#define TKMM_MAXMMCELLSZ		(1<<TKMM_MAXMMCELLBITS)
+#define TKMM_MAXMMSEGBLK		(1<<TKMM_MAXMMSEGBLKBITS)
 
 
 #define TKMM_PROT_NONE		0x0000
@@ -231,6 +238,8 @@ typedef unsigned int size_t;
 #endif
 
 typedef struct TKMM_MemLnkObj_s TKMM_MemLnkObj;
+typedef struct TKMM_MemLnkSeg_s TKMM_MemLnkSeg;
+typedef struct TKMM_MemCelChk_s TKMM_MemCelChk;
 
 struct TKMM_MemLnkObj_s {
 TKMM_MemLnkObj *cnext;	//next object in chunk
@@ -247,7 +256,34 @@ byte pad;
 u32 data[1];	//start of data
 };
 
-#define TKMM_OFFS_DATA	((int)(((TKMM_MemLnkObj *)0)->data))
+struct TKMM_MemLnkSeg_s {
+byte	*blk[TKMM_MAXMMSEGBLK];
+int		nblk;
+
+u64		data[1];
+};
+
+//65248, 2039, 62939
+//7864, 62912+1966
+//7872, 62976+1968
+//7904, 63232+1976
+
+// #define TKMM_MAXMMCELLS		4096
+#define TKMM_MAXMMCELLS		7904
+
+struct TKMM_MemCelChk_s {
+u64		data[TKMM_MAXMMCELLS];
+int		magic1;
+u32		bmp[(TKMM_MAXMMCELLS/16)+1];
+int		magic2;
+int		rov;
+short	freelst[TKMM_MAXMMCELLSZ/8];
+int		magic3;
+};
+
+
+// #define TKMM_OFFS_DATA	((int)(((TKMM_MemLnkObj *)0)->data))
+#define TKMM_OFFS_DATA	((long)(((TKMM_MemLnkObj *)0)->data))
 
 typedef struct TK_FILE_VT_s TK_FILE_VT;
 typedef struct TK_FILE_s TK_FILE;

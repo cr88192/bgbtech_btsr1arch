@@ -101,7 +101,8 @@ output[63:0]	regValCn2;		//Destination Value (CR, EX1)
 input[47:0]		regValPc;		//PC Value (Synthesized)
 input[32:0]		regValImm;		//Immediate (Decode)
 
-input[65:0]		regValAluRes;	//ALU Result
+// input[65:0]		regValAluRes;	//ALU Result
+input[69:0]		regValAluRes;	//ALU Result
 input[63:0]		regValMulRes;	//Multiplier Result
 input[63:0]		regValMulwRes;	//Multiplier Result
 input[65:0]		regValKrreRes;	//Keyring Result
@@ -338,7 +339,8 @@ begin
 
 		JX2_UCMD_ALUCMP: begin
 //			tRegOutSr[0]	= regValAluRes[64];
-			tRegOutSr[1:0]	= regValAluRes[65:64];
+//			tRegOutSr[1:0]	= regValAluRes[65:64];
+//			tRegOutSr[7:4]	= regValAluRes[69:66];
 			tDoAluSrT		= 1;
 		end
 
@@ -418,12 +420,14 @@ begin
 		
 		JX2_UCMD_SHAD3: begin
 		end
+`ifndef jx2_merge_shadq
 		JX2_UCMD_SHLD3: begin
 		end
 		JX2_UCMD_SHADQ3: begin
 		end
 		JX2_UCMD_SHLDQ3: begin
 		end
+`endif
 		
 		JX2_UCMD_CONV_RR: begin
 		end
@@ -533,6 +537,7 @@ begin
 	if(tDoAluSrT)
 	begin
 		tRegOutSr[1:0]	= regValAluRes[65:64];
+		tRegOutSr[7:4]	= regValAluRes[69:66];
 	end
 
 //	if((tDoHoldCyc != 0) && (tHoldCyc != tDoHoldCyc))

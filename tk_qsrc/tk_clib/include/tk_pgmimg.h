@@ -51,8 +51,7 @@ tk_kptr		resv3;		//reserved function pointer
 tk_kptr		resv4;		//reserved function pointer
 tk_kptr		resv5;		//reserved function pointer
 tk_kptr		resv6;		//reserved function pointer
-tk_kptr		resv7;		//reserved function pointer
-// char **tlsptr;		//pointer to TLS data area
+tk_kptr		allocaptr;	//pointer to alloca mark
 tk_kptr		tlsptr;		//pointer to TLS data area
 
 int			pid;

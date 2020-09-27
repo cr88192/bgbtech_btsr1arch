@@ -13,6 +13,7 @@ int BGBCC_JX2C_EmitConvOpRegReg(
 	BGBCC_JX2_Context *sctx,
 	int nmid, int sreg, int dreg)
 {
+	int sreg2, dreg2;
 	int i, j, k;
 
 #if 0
@@ -125,6 +126,42 @@ int BGBCC_JX2C_EmitConvOpRegReg(
 //			BGBCC_SH_NMID_MOV, BGBCC_SH_REG_R0, dreg);
 		BGBCC_JX2_EmitOpRegImmReg(sctx,
 			BGBCC_SH_NMID_SHLD, BGBCC_SH_REG_R0, -16, dreg);
+		return(1);
+	}
+
+	if(nmid==BGBCC_SH_NMID_SHLL32)
+	{
+		BGBCC_JX2_EmitOpRegImmReg(sctx,
+			BGBCC_SH_NMID_SHLDQ, sreg, 32, dreg);
+		return(1);
+	}
+
+	if(nmid==BGBCC_SH_NMID_SHLR32)
+	{
+		BGBCC_JX2_EmitOpRegImmReg(sctx,
+			BGBCC_SH_NMID_SHLDQ, sreg, -32, dreg);
+		return(1);
+	}
+
+	if(nmid==BGBCC_SH_NMID_SHLL64)
+	{
+		sreg2=BGBCC_SH_REG_RQ0+(sreg&31);
+		dreg2=BGBCC_SH_REG_RQ0+(dreg&31);
+
+		BGBCC_JX2_EmitOpRegReg(sctx,
+			BGBCC_SH_NMID_MOV, sreg2+0, dreg2+1);
+		BGBCC_JX2_EmitOpImmReg(sctx,
+			BGBCC_SH_NMID_MOV, 0, dreg2+0);
+		return(1);
+	}
+
+	if(nmid==BGBCC_SH_NMID_SHLR64)
+	{
+		sreg2=BGBCC_SH_REG_RQ0+(sreg&31);
+		dreg2=BGBCC_SH_REG_RQ0+(dreg&31);
+
+		BGBCC_JX2_EmitOpRegReg(sctx,
+			BGBCC_SH_NMID_MOV, sreg2+1, dreg2+0);
 		return(1);
 	}
 
@@ -455,6 +492,11 @@ int BGBCC_JX2C_EmitStoreSlotVRegVRegImm(
 		nm2=BGBCC_SH_NMID_FSTCF;
 	if(nm2==BGBCC_SH_NMID_FLDCH)
 		nm2=BGBCC_SH_NMID_FSTCH;
+
+	if(nm2==BGBCC_SH_NMID_SHLL32)
+		nm2=BGBCC_SH_NMID_SHLR32;
+	if(nm2==BGBCC_SH_NMID_SHLL64)
+		nm2=BGBCC_SH_NMID_SHLR64;
 
 	if(nm1>=0)
 	{
@@ -792,6 +834,11 @@ int BGBCC_JX2C_EmitStoreSlotVRegRegImm(
 		nm2=BGBCC_SH_NMID_FSTCF;
 	if(nm2==BGBCC_SH_NMID_FLDCH)
 		nm2=BGBCC_SH_NMID_FSTCH;
+
+	if(nm2==BGBCC_SH_NMID_SHLL32)
+		nm2=BGBCC_SH_NMID_SHLR32;
+	if(nm2==BGBCC_SH_NMID_SHLL64)
+		nm2=BGBCC_SH_NMID_SHLR64;
 
 	if(nm1>=0)
 	{
@@ -1772,6 +1819,8 @@ int BGBCC_JX2C_EmitLoadTypeBRegOfsReg(
 		sz=2; nm1=BGBCC_SH_NMID_MOVW; nm2=BGBCC_SH_NMID_LDHF16; break;
 
 	case CCXL_TY_VARIANT:
+	case CCXL_TY_VARSTRING:
+	case CCXL_TY_VAROBJECT:
 		if(sctx->is_addr64)
 			{ sz=8; nm1=BGBCC_SH_NMID_MOVQ; nm2=-1; break; }
 		else
@@ -1794,6 +1843,13 @@ int BGBCC_JX2C_EmitLoadTypeBRegOfsReg(
 	case CCXL_TY_VEC4UI:
 	case CCXL_TY_DCOMPLEX:
 		sz=16; nm1=BGBCC_SH_NMID_MOVX2; nm2=-1;
+		break;
+
+	case CCXL_TY_FIMAG:
+		sz=4; nm1=BGBCC_SH_NMID_MOVL; nm2=BGBCC_SH_NMID_SHLL32;
+		break;
+	case CCXL_TY_DIMAG:
+		sz=8; nm1=BGBCC_SH_NMID_MOVQ; nm2=BGBCC_SH_NMID_SHLL32;
 		break;
 
 	case CCXL_TY_M128P:

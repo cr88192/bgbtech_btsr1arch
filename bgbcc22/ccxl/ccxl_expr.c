@@ -832,13 +832,30 @@ int BGBCC_CCXL_CheckCompileLoadIndex(BGBCC_TransState *ctx,
 	if(BGBCC_CCXL_InferExpr(ctx, arr, &sty)<=0)
 		return(0);
 
-	if(BGBCC_CCXL_TypeRefArrayP(ctx, sty))
+	if(BGBCC_CCXL_TypeSquareArrayP(ctx, sty))
+	{
+		if(	(ctx->lang==BGBCC_LANG_C) ||
+			(ctx->lang==BGBCC_LANG_CPP)	)
+		{
+			/* C mode: Always use non-bounds-checked logic. */
+			return(0);
+		}
+	}
+
+	if(BGBCC_CCXL_TypeRefArrayP(ctx, sty) ||
+		BGBCC_CCXL_TypeVariantP(ctx, sty) ||
+		BGBCC_CCXL_TypeRefStringP(ctx, sty))
 	{
 		BGBCC_CCXL_TypeDerefType(ctx, sty, &tty);
 		
 		fn="__lvo_loadindex_va";
 
-		if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, tty))
+		if(BGBCC_CCXL_TypeVariantP(ctx, sty))
+//			{ fn="__lvo_loadindex_var"; }
+			{ fn="__lva_loadindex"; }
+		else if(BGBCC_CCXL_TypeRefStringP(ctx, sty))
+			{ fn="__lvo_loadindex_str"; }
+		else if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, tty))
 			{ fn="__lvo_loadindex_p"; }
 		else if(BGBCC_CCXL_TypeVarRefP(ctx, tty))
 			{ fn="__lvo_loadindex_v"; }
@@ -862,24 +879,30 @@ int BGBCC_CCXL_CheckCompileLoadIndex(BGBCC_TransState *ctx,
 			case CCXL_TY_UI:	fn="__lvo_loadindex_ui"; break;
 			case CCXL_TY_UL:	fn="__lvo_loadindex_ul"; break;
 			case CCXL_TY_UNL:	fn="__lvo_loadindex_ul"; break;
+
+			case CCXL_TY_M64:	fn="__lvo_loadindex_ul"; break;
+			case CCXL_TY_M128:	fn="__lvo_loadindex_x"; break;
 			default:
 				break;
 			}
 		}
 
-		BGBCC_CCXL_PushMark(ctx);
-		BGBCC_CCXL_CompileExpr(ctx, idx);
-		BGBCC_CCXL_CompileExpr(ctx, arr);
-		BGBCC_CCXL_StackCallName(ctx, fn, 0);
-//		BGBCC_CCXL_StackPop(ctx);
-
-		if(BGBCC_CCXL_TypeVarRefP(ctx, tty))
+		if(fn)
 		{
-			sig=BGBCC_CCXL_TypeGetSig(ctx, tty);
-			BGBCC_CCXL_StackCastSig(ctx, sig);
-		}
+			BGBCC_CCXL_PushMark(ctx);
+			BGBCC_CCXL_CompileExpr(ctx, idx);
+			BGBCC_CCXL_CompileExpr(ctx, arr);
+			BGBCC_CCXL_StackCallName(ctx, fn, 0);
+	//		BGBCC_CCXL_StackPop(ctx);
 
-		return(1);
+			if(BGBCC_CCXL_TypeVarRefP(ctx, tty))
+			{
+				sig=BGBCC_CCXL_TypeGetSig(ctx, tty);
+				BGBCC_CCXL_StackCastSig(ctx, sig);
+			}
+
+			return(1);
+		}
 	}
 
 	return(0);
@@ -900,13 +923,29 @@ int BGBCC_CCXL_CheckCompileStoreIndex(BGBCC_TransState *ctx,
 	if(BGBCC_CCXL_InferExpr(ctx, arr, &sty)<=0)
 		return(0);
 
-	if(BGBCC_CCXL_TypeRefArrayP(ctx, sty))
+	if(BGBCC_CCXL_TypeSquareArrayP(ctx, sty))
+	{
+		if(	(ctx->lang==BGBCC_LANG_C) ||
+			(ctx->lang==BGBCC_LANG_CPP)	)
+		{
+			/* C mode: Always use non-bounds-checked logic. */
+			return(0);
+		}
+	}
+
+	if(BGBCC_CCXL_TypeRefArrayP(ctx, sty) ||
+		BGBCC_CCXL_TypeVariantP(ctx, sty))
 	{
 		BGBCC_CCXL_TypeDerefType(ctx, sty, &tty);
 		
 		fn="__lvo_storeindex_va";
 
-		if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, tty))
+		if(BGBCC_CCXL_TypeVariantP(ctx, sty))
+//			{ fn="__lvo_storeindex_var"; }
+			{ fn="__lva_storeindex"; }
+		else if(BGBCC_CCXL_TypeRefStringP(ctx, sty))
+			{ fn="__lvo_storeindex_str"; }
+		else if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, tty))
 			{ fn="__lvo_storeindex_p"; }
 		else if(BGBCC_CCXL_TypeVarRefP(ctx, tty))
 			{ fn="__lvo_storeindex_v"; }
@@ -930,19 +969,26 @@ int BGBCC_CCXL_CheckCompileStoreIndex(BGBCC_TransState *ctx,
 			case CCXL_TY_UI:	fn="__lvo_storeindex_i"; break;
 			case CCXL_TY_UL:	fn="__lvo_storeindex_l"; break;
 			case CCXL_TY_UNL:	fn="__lvo_storeindex_l"; break;
+
+			case CCXL_TY_M64:	fn="__lvo_storeindex_l"; break;
+			case CCXL_TY_M128:	fn="__lvo_storeindex_x"; break;
+
 			default:
 				break;
 			}
 		}
 
-		BGBCC_CCXL_PushMark(ctx);
-		BGBCC_CCXL_StackDupMarkIdx(ctx, 0);
-//		BGBCC_CCXL_StackPushConstString(ctx, name);
-		BGBCC_CCXL_CompileExpr(ctx, idx);
-		BGBCC_CCXL_CompileExpr(ctx, arr);
-		BGBCC_CCXL_StackCallName(ctx, fn, 1);
-		BGBCC_CCXL_StackPop(ctx);
-		return(1);
+		if(fn)
+		{
+			BGBCC_CCXL_PushMark(ctx);
+			BGBCC_CCXL_StackDupMarkIdx(ctx, 0);
+	//		BGBCC_CCXL_StackPushConstString(ctx, name);
+			BGBCC_CCXL_CompileExpr(ctx, idx);
+			BGBCC_CCXL_CompileExpr(ctx, arr);
+			BGBCC_CCXL_StackCallName(ctx, fn, 1);
+			BGBCC_CCXL_StackPop(ctx);
+			return(1);
+		}
 	}
 
 	return(0);

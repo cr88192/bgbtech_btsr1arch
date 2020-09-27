@@ -720,6 +720,7 @@ ccxl_status BGBCC_CCXL_EmitLoadIndexImm(BGBCC_TransState *ctx,
 	ccxl_type type, ccxl_register dst, ccxl_register src, int idx)
 {
 	BGBCC_CCXL_VirtOp *op;
+	ccxl_type sty;
 
 	if(ctx->cgif_no3ac)
 		return(0);
@@ -729,10 +730,16 @@ ccxl_status BGBCC_CCXL_EmitLoadIndexImm(BGBCC_TransState *ctx,
 	if(BGBCC_CCXL_IsRegZzP(ctx, dst))
 		{ BGBCC_DBGBREAK }
 
+	sty=BGBCC_CCXL_GetRegType(ctx, src);
+
+	if(BGBCC_CCXL_TypeSquareArrayP(ctx, sty))
+		__debugbreak();
+
 	op=BGBCC_CCXL_AllocVirtOp(ctx);
 	op->opn=CCXL_VOP_LDIXIMM;
 	op->prd=ctx->curprd;
 	op->type=type;
+	op->stype=sty;
 	op->dst=dst;
 	op->srca=src;
 	op->imm.si=idx;
@@ -745,6 +752,7 @@ ccxl_status BGBCC_CCXL_EmitStoreIndexImm(BGBCC_TransState *ctx,
 	ccxl_type type, ccxl_register dst, ccxl_register src, int idx)
 {
 	BGBCC_CCXL_VirtOp *op;
+	ccxl_type sty;
 
 	if(ctx->cgif_no3ac)
 		return(0);
@@ -754,10 +762,13 @@ ccxl_status BGBCC_CCXL_EmitStoreIndexImm(BGBCC_TransState *ctx,
 	if(BGBCC_CCXL_IsRegZzP(ctx, dst))
 		{ BGBCC_DBGBREAK }
 
+	sty=BGBCC_CCXL_GetRegType(ctx, dst);
+
 	op=BGBCC_CCXL_AllocVirtOp(ctx);
 	op->opn=CCXL_VOP_STIXIMM;
 	op->prd=ctx->curprd;
 	op->type=type;
+	op->stype=sty;
 	op->dst=dst;
 	op->srca=src;
 	op->imm.si=idx;
@@ -771,6 +782,7 @@ ccxl_status BGBCC_CCXL_EmitLoadIndex(BGBCC_TransState *ctx,
 	ccxl_register srca, ccxl_register srcb)
 {
 	BGBCC_CCXL_VirtOp *op;
+	ccxl_type sty;
 
 	if(ctx->cgif_no3ac)
 		return(0);
@@ -782,10 +794,13 @@ ccxl_status BGBCC_CCXL_EmitLoadIndex(BGBCC_TransState *ctx,
 	if(BGBCC_CCXL_IsRegZzP(ctx, dst))
 		{ BGBCC_DBGBREAK }
 
+	sty=BGBCC_CCXL_GetRegType(ctx, srca);
+
 	op=BGBCC_CCXL_AllocVirtOp(ctx);
 	op->opn=CCXL_VOP_LDIX;
 	op->prd=ctx->curprd;
 	op->type=type;
+	op->stype=sty;
 	op->dst=dst;
 	op->srca=srca;
 	op->srcb=srcb;
@@ -798,6 +813,7 @@ ccxl_status BGBCC_CCXL_EmitStoreIndex(BGBCC_TransState *ctx,
 	ccxl_register srca, ccxl_register srcb)
 {
 	BGBCC_CCXL_VirtOp *op;
+	ccxl_type sty;
 
 	if(ctx->cgif_no3ac)
 		return(0);
@@ -809,10 +825,13 @@ ccxl_status BGBCC_CCXL_EmitStoreIndex(BGBCC_TransState *ctx,
 	if(BGBCC_CCXL_IsRegZzP(ctx, dst))
 		{ BGBCC_DBGBREAK }
 
+	sty=BGBCC_CCXL_GetRegType(ctx, dst);
+
 	op=BGBCC_CCXL_AllocVirtOp(ctx);
 	op->opn=CCXL_VOP_STIX;
 	op->prd=ctx->curprd;
 	op->type=type;
+	op->stype=sty;
 	op->dst=dst;
 	op->srca=srca;
 	op->srcb=srcb;
@@ -824,6 +843,7 @@ ccxl_status BGBCC_CCXL_EmitLeaImm(BGBCC_TransState *ctx,
 	ccxl_type type, ccxl_register dst, ccxl_register src, int idx)
 {
 	BGBCC_CCXL_VirtOp *op;
+	ccxl_type sty;
 
 //	if(BGBCC_CCXL_RegisterIdentEqualP(ctx, dst, src))
 //		__debugbreak();
@@ -836,10 +856,13 @@ ccxl_status BGBCC_CCXL_EmitLeaImm(BGBCC_TransState *ctx,
 	if(BGBCC_CCXL_IsRegZzP(ctx, dst))
 		{ BGBCC_DBGBREAK }
 
+	sty=BGBCC_CCXL_GetRegType(ctx, src);
+
 	op=BGBCC_CCXL_AllocVirtOp(ctx);
 	op->opn=CCXL_VOP_LEAIMM;
 	op->prd=ctx->curprd;
 	op->type=type;
+	op->stype=sty;
 	op->dst=dst;
 	op->srca=src;
 	op->imm.si=idx;
@@ -853,6 +876,7 @@ ccxl_status BGBCC_CCXL_EmitLea(BGBCC_TransState *ctx,
 	ccxl_register srca, ccxl_register srcb)
 {
 	BGBCC_CCXL_VirtOp *op;
+	ccxl_type sty;
 
 	if(ctx->cgif_no3ac)
 		return(0);
@@ -864,10 +888,13 @@ ccxl_status BGBCC_CCXL_EmitLea(BGBCC_TransState *ctx,
 	if(BGBCC_CCXL_IsRegZzP(ctx, dst))
 		{ BGBCC_DBGBREAK }
 
+	sty=BGBCC_CCXL_GetRegType(ctx, srca);
+
 	op=BGBCC_CCXL_AllocVirtOp(ctx);
 	op->opn=CCXL_VOP_LEA;
 	op->prd=ctx->curprd;
 	op->type=type;
+	op->stype=sty;
 	op->dst=dst;
 	op->srca=srca;
 	op->srcb=srcb;
@@ -1363,6 +1390,28 @@ ccxl_status BGBCC_CCXL_EmitCSelCmpZero(BGBCC_TransState *ctx,
 	return(0);
 }
 
+ccxl_status BGBCC_CCXL_InlineAsmBlob(BGBCC_TransState *ctx, char *text)
+{
+	BGBCC_CCXL_VirtOp *op;
+	char *stn;
+
+	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_INLINEASM);
+	BGBCC_CCXLR3_EmitArgString(ctx, text);
+
+	if(ctx->cgif_no3ac)
+		return(0);
+
+	stn=bgbcc_strdup(text);
+	ctx->lfn=stn;
+
+	op=BGBCC_CCXL_AllocVirtOp(ctx);
+	op->opn=CCXL_VOP_ASMINLINE;
+	op->prd=ctx->curprd;
+	op->imm.str=stn;
+	op->immty=CCXL_VOPITY_STR;
+	BGBCC_CCXL_AddVirtOp(ctx, op);
+	return(0);
+}
 
 #endif
 

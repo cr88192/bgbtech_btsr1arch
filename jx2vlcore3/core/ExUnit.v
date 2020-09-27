@@ -930,15 +930,18 @@ ExEX1	ex1(
 	ex2MemDataOK,	tRegExc
 	);
 
-wire[65:0]	ex1ValAlu;
+// wire[65:0]	ex1ValAlu;
+wire[69:0]	ex1ValAlu;
 // wire		ex1AluSrT;
 ExALU	exAlu(
 	clock,				reset,
 	ex1RegValRs,		ex1RegValRt,
 	ex1OpUCmd,			ex1OpUIxt,
-	exHold2,			ex1RegInSr[1:0],
+//	exHold2,			ex1RegInSr[1:0],
+	exHold2,			{ ex1RegInSr[7:4], ex1RegInSr[1:0] },
 //	ex1ValAlu,			ex1AluSrT);
-	ex1ValAlu[63:0],	ex1ValAlu[65:64]);
+//	ex1ValAlu[63:0],	ex1ValAlu[65:64]);
+	ex1ValAlu[63:0],	ex1ValAlu[69:64]);
 
 // ExMul	ex1Mul(
 ExMulB	ex1Mul(
@@ -1063,7 +1066,8 @@ wire[63:0]		ex2RegValCn2;		//Destination Value (CR, EX1)
 	
 reg[47:0]		ex2RegValPc;		//PC Value (Synthesized)
 reg[32:0]		ex2RegValImm;		//Immediate (Decode)
-reg[65:0]		ex2RegAluRes;		//Arithmetic Result
+// reg[65:0]		ex2RegAluRes;		//Arithmetic Result
+reg[69:0]		ex2RegAluRes;		//Arithmetic Result
 reg[63:0]		ex2RegMulRes;		//Multiplier Result
 reg[63:0]		ex2RegMulWRes;		//Multiplier Result (Word)
 // reg[63:0]		ex2RegFpuGRn;		//FPU GPR Result
@@ -1159,7 +1163,8 @@ wire[63:0]		ex3RegValCn3;		//Destination Value (CR, EX3)
 	
 reg[47:0]		ex3RegValPc;		//PC Value (Synthesized)
 reg[32:0]		ex3RegValImm;		//Immediate (Decode)
-reg[65:0]		ex3RegAluRes;		//Arithmetic Result
+//reg[65:0]		ex3RegAluRes;		//Arithmetic Result
+reg[69:0]		ex3RegAluRes;		//Arithmetic Result
 reg[63:0]		ex3RegMulRes;		//Multiplier Result
 reg[63:0]		ex3RegMulWRes;		//Multiplier Result (Word)
 reg				ex3BraFlush;		//Flush EX2

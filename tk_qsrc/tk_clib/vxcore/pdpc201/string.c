@@ -577,7 +577,8 @@ __PDPCLIB_API__ void *memset(void *s, int c, size_t n)
 
 #ifdef __BJX2__
 // #if 0
-	v=((int)s)|n;
+//	v=((int)s)|n;
+	v=(int)(((long)s)|n);
 	if(!(v&7))
 	{
 		memset_movx(s, c, n);

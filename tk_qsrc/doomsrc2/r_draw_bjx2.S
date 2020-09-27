@@ -145,14 +145,15 @@ X(R_DrawSpan):
 	MOV.L	X(ds_xfrac), R20
 	SHLD	R20, #10, R20
 	AND		#0xffff0000, R20
+//	BREAK
 	MOV.L	X(ds_yfrac), R4
 	SHLD	R4, #-6, R4
 	EXTU.W	R4
 	OR		R4, R20
 
-	MOV.P	X(ds_source), R22
-	MOV.L	X(ds_y), R23
 	MOV		X(ylookup), R3
+	MOV.L	X(ds_y), R23
+	MOV.P	X(ds_source), R22
 	MOV.P	(R3, R23), R23
 	MOV.L	X(ds_x1), R4
 	MOV		X(columnofs), R3

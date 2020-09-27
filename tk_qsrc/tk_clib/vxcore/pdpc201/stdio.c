@@ -67,7 +67,8 @@
 #include "limits.h"
 #include "stddef.h"
 
-int __open(const char *a, int b, int c);
+// int __open(const char *a, int b, int c);
+int __open(const char *a, int b, int *rc);
 
 int __read(int handle, void *buf, size_t len, int *errind);
 int __write(int handle, const void *buf, size_t len, int *errind);
@@ -473,6 +474,10 @@ static void osfopen(void)
 	{
 		mode = 1; /* write */
 	}
+	else if (modeType == 10)
+	{
+		mode = 2; /* read+write */
+	}
 	else
 	{
 		mode = 2; /* update or otherwise unsupported */
@@ -486,7 +491,9 @@ static void osfopen(void)
 		return;
 	}
 
-	myfile->hfile = __open(fnm, mode, (int)&errind);
+//	myfile->hfile = __open(fnm, mode, (int)&errind);
+//	myfile->hfile = __open(fnm, mode, (long)(&errind));
+	myfile->hfile = __open(fnm, mode, &errind);
 	if (errind)
 	{
 		err = 1;

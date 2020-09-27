@@ -222,7 +222,9 @@ char *TK_EnvCtx_GetCwd(TK_EnvContext *ctx, char *buf, int sz)
 	char *cwd;
 	int l;
 	
-	cwd=ctx->cwd;
+	cwd=NULL;
+	if(ctx)	
+		{ cwd=ctx->cwd; }
 	if(!cwd)cwd="/";
 	
 	l=strlen(cwd);

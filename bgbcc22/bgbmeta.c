@@ -1246,6 +1246,7 @@ int BGBCC_LoadCSourcesCCXL(
 			BCCX_DeleteTree(t);
 
 			BGBCC_CCXL_CheckSanityGlobals(ctx);
+			BGBCC_CCXL_PrintTagWarn(ctx);
 			
 			t1=clock();
 			t2=t1-t0;
@@ -1279,6 +1280,7 @@ int BGBCC_LoadCSourcesCCXL(
 		BGBCC_CCXL_CompileModuleTopOnlyCTX(ctx,
 			asts_bsn[i], asts_bsa[i]);
 		BGBCC_CCXL_CheckSanityGlobals(ctx);
+		BGBCC_CCXL_PrintTagWarn(ctx);
 	}
 	
 	for(i=0; i<n_asts_bs; i++)
@@ -1289,6 +1291,8 @@ int BGBCC_LoadCSourcesCCXL(
 		BCCX_DeleteTree(t);
 
 		BGBCC_CCXL_CheckSanityGlobals(ctx);
+
+		BGBCC_CCXL_PrintTagWarn(ctx);
 
 		t1=clock();
 		t2=t1-t0;
@@ -1306,6 +1310,8 @@ int BGBCC_LoadCSourcesCCXL(
 			c=n;
 		}
 	}
+
+	BGBCC_CCXL_PrintTagWarn(ctx);
 
 //	if(ctx->ril_ip)
 //	{
@@ -1341,6 +1347,8 @@ int BGBCC_LoadCSourcesCCXL(
 		BGBCC_StoreFile(tb, tb1, sz);
 	}
 
+	BGBCC_CCXL_PrintTagWarn(ctx);
+
 //	sz=BGBCC_FrBC_FlattenImage(ctx, obuf, omsz);
 
 	sz=omsz;
@@ -1350,6 +1358,8 @@ int BGBCC_LoadCSourcesCCXL(
 	t1=clock();
 	t2=t1-t0;
 	printf("Flatten Image %dms\n", t2);
+
+	BGBCC_CCXL_PrintTagWarn(ctx);
 
 //	BIPRO_ProfilerSetActive(0);
 //	BIPRO_ProfileDumpStats();
@@ -1876,11 +1886,13 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 
 	BGBPP_AddStaticDefine(NULL, "_BGBMETA", "");
 	BGBPP_AddStaticDefine(NULL, "_BGBCC", "");
+	BGBPP_AddStaticDefine(NULL, "__BGBCC__", "");
 
 	//FIXME: do this properly
 	BGBPP_AddStaticDefine(NULL, "__DATE__", "\"Apr 01 2000\"");
 	BGBPP_AddStaticDefine(NULL, "__TIME__", "\"23:59:59\"");
 
+#if 0
 //	if(!(m&64))
 	if(0)
 	{
@@ -1912,7 +1924,7 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 #endif
 
 #ifdef __GNUC__
-		BGBPP_AddStaticDefine(NULL, "__GNUC__", "1");
+//		BGBPP_AddStaticDefine(NULL, "__GNUC__", "1");
 #endif
 
 		BGBPP_AddStaticDefine(NULL, "__inline__", "");
@@ -1939,7 +1951,9 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 		BGBPP_AddStaticDefine(NULL, "_MSC_EXTENSIONS", buf);
 #endif
 	}
-	
+#endif
+
+#if 0
 	if(bgbcc_arch==BGBCC_ARCH_SH)
 	{
 		BGBPP_AddStaticDefine(NULL, "__superh__", "");
@@ -1974,6 +1988,7 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 		if(endian==2)
 			BGBPP_AddStaticDefine(NULL, "__BIG_ENDIAN__", "");
 	}
+#endif
 
 //	BGBPP_AddStaticDefine(NULL, "__STDC__", "1");
 	BGBPP_AddStaticDefine(NULL, "__STDC_HOSTED__", "1");

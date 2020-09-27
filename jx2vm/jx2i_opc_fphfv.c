@@ -206,7 +206,6 @@ void BJX2_Op_PMULH_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=vn;
 }
 
-
 void BJX2_Op_PADDF_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	float tv0[4], tv1[4], tv2[4];
@@ -292,6 +291,90 @@ void BJX2_Op_PMULXF_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	vn1=jx2_mkvec_f(tv2[2], tv2[3]);
 	ctx->regs[op->rn+0]=vn0;
 	ctx->regs[op->rn+1]=vn1;
+}
+
+void BJX2_Op_PADDH_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	float tv0[4], tv1[4], tv2[4];
+	u64	vs, vt, vn;
+
+	vs=ctx->regs[op->rm];	vt=ctx->regs[op->ro];
+	jx2_upvec_hf(tv0, vs);	jx2_upvec_hf(tv1, vt);
+	tv2[0]=tv0[0]+tv1[0];	tv2[1]=tv0[1]+tv1[1];
+	tv2[2]=tv0[2]+tv1[2];	tv2[3]=tv0[3]+tv1[3];
+	vn=jx2_mkvec_hf(tv2[0], tv2[1], tv2[2], tv2[3]);
+	
+	ctx->regs[op->rn]=vn;
+}
+
+void BJX2_Op_PSUBH_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	float tv0[4], tv1[4], tv2[4];
+	u64	vs, vt, vn;
+
+	vs=ctx->regs[op->rm];	vt=ctx->regs[op->ro];
+	jx2_upvec_hf(tv0, vs);	jx2_upvec_hf(tv1, vt);
+	tv2[0]=tv0[0]-tv1[0];	tv2[1]=tv0[1]-tv1[1];
+	tv2[2]=tv0[2]-tv1[2];	tv2[3]=tv0[3]-tv1[3];
+	vn=jx2_mkvec_hf(tv2[0], tv2[1], tv2[2], tv2[3]);
+	
+	ctx->regs[op->rn]=vn;
+}
+
+void BJX2_Op_PMULH_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	float tv0[4], tv1[4], tv2[4];
+	u64	vs, vt, vn;
+
+	vs=ctx->regs[op->rm];	vt=ctx->regs[op->ro];
+	jx2_upvec_hf(tv0, vs);	jx2_upvec_hf(tv1, vt);
+	tv2[0]=tv0[0]*tv1[0];	tv2[1]=tv0[1]*tv1[1];
+	tv2[2]=tv0[2]*tv1[2];	tv2[3]=tv0[3]*tv1[3];
+	vn=jx2_mkvec_hf(tv2[0], tv2[1], tv2[2], tv2[3]);
+	
+	ctx->regs[op->rn]=vn;
+}
+
+void BJX2_Op_PADDXD_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	double a0, b0, c0;
+	double a1, b1, c1;
+	
+	a0=BJX2_PtrGetDoubleIx(ctx->fpreg, op->rm+0);
+	a1=BJX2_PtrGetDoubleIx(ctx->fpreg, op->rm+1);
+	b0=BJX2_PtrGetDoubleIx(ctx->fpreg, op->ro+0);
+	b1=BJX2_PtrGetDoubleIx(ctx->fpreg, op->ro+1);
+	c0=a0+b0;	c1=a1+b1;
+	BJX2_PtrSetDoubleIx(ctx->fpreg, op->rn+0, c0);
+	BJX2_PtrSetDoubleIx(ctx->fpreg, op->rn+1, c1);
+}
+
+void BJX2_Op_PSUBXD_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	double a0, b0, c0;
+	double a1, b1, c1;
+	
+	a0=BJX2_PtrGetDoubleIx(ctx->fpreg, op->rm+0);
+	a1=BJX2_PtrGetDoubleIx(ctx->fpreg, op->rm+1);
+	b0=BJX2_PtrGetDoubleIx(ctx->fpreg, op->ro+0);
+	b1=BJX2_PtrGetDoubleIx(ctx->fpreg, op->ro+1);
+	c0=a0-b0;	c1=a1-b1;
+	BJX2_PtrSetDoubleIx(ctx->fpreg, op->rn+0, c0);
+	BJX2_PtrSetDoubleIx(ctx->fpreg, op->rn+1, c1);
+}
+
+void BJX2_Op_PMULXD_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	double a0, b0, c0;
+	double a1, b1, c1;
+	
+	a0=BJX2_PtrGetDoubleIx(ctx->fpreg, op->rm+0);
+	a1=BJX2_PtrGetDoubleIx(ctx->fpreg, op->rm+1);
+	b0=BJX2_PtrGetDoubleIx(ctx->fpreg, op->ro+0);
+	b1=BJX2_PtrGetDoubleIx(ctx->fpreg, op->ro+1);
+	c0=a0*b0;	c1=a1*b1;
+	BJX2_PtrSetDoubleIx(ctx->fpreg, op->rn+0, c0);
+	BJX2_PtrSetDoubleIx(ctx->fpreg, op->rn+1, c1);
 }
 
 void BJX2_Op_MOVHD_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
@@ -617,4 +700,152 @@ void BJX2_Op_PSHUFW_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 		(((vs>>(((imm>>6)&3)*16))&65535)<<48) ;
 
 	ctx->regs[op->rn]=vn;
+}
+
+
+void BJX2_Op_PCMPEQL_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+	u32 sa0, sb0, sc0;
+	u32 sa1, sb1, sc1;
+
+	va=ctx->regs[op->rn];
+	vb=ctx->regs[op->rm];
+
+	sa0=(u32)(va);	sa1=(u32)(va>>32);
+	sb0=(u32)(vb);	sb1=(u32)(vb>>32);
+
+	if(sa0==sb0)	ctx->regs[BJX2_REG_SR]|=1;
+	else			ctx->regs[BJX2_REG_SR]&=~1;
+	if(sa1==sb1)	ctx->regs[BJX2_REG_SR]|=2;
+	else			ctx->regs[BJX2_REG_SR]&=~2;
+}
+
+void BJX2_Op_PCMPEQW_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+	u16 sa0, sb0, sc0;
+	u16 sa1, sb1, sc1;
+	u16 sa2, sb2, sc2;
+	u16 sa3, sb3, sc3;
+	va=ctx->regs[op->rn];	vb=ctx->regs[op->rm];
+	sa0=(u16)(va);	sa1=(u16)(va>>16);	sa2=(u16)(va>>32);	sa3=(u16)(va>>48);
+	sb0=(u16)(vb);	sb1=(u16)(vb>>16);	sb2=(u16)(vb>>32);	sb3=(u16)(vb>>48);
+
+	if(sa0==sb0)	ctx->regs[BJX2_REG_SR]|= 16;
+	else			ctx->regs[BJX2_REG_SR]&=~16;
+	if(sa1==sb1)	ctx->regs[BJX2_REG_SR]|= 32;
+	else			ctx->regs[BJX2_REG_SR]&=~32;
+	if(sa2==sb2)	ctx->regs[BJX2_REG_SR]|= 64;
+	else			ctx->regs[BJX2_REG_SR]&=~64;
+	if(sa3==sb3)	ctx->regs[BJX2_REG_SR]|= 128;
+	else			ctx->regs[BJX2_REG_SR]&=~128;
+}
+
+void BJX2_Op_PCMPHIL_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+	u32 sa0, sb0, sc0;
+	u32 sa1, sb1, sc1;
+
+	va=ctx->regs[op->rn];
+	vb=ctx->regs[op->rm];
+
+	sa0=(u32)(va);	sa1=(u32)(va>>32);
+	sb0=(u32)(vb);	sb1=(u32)(vb>>32);
+
+	if(sa0>sb0)		ctx->regs[BJX2_REG_SR]|=1;
+	else			ctx->regs[BJX2_REG_SR]&=~1;
+	if(sa1>sb1)		ctx->regs[BJX2_REG_SR]|=2;
+	else			ctx->regs[BJX2_REG_SR]&=~2;
+}
+
+void BJX2_Op_PCMPGTL_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+	s32 sa0, sb0, sc0;
+	s32 sa1, sb1, sc1;
+
+	va=ctx->regs[op->rn];
+	vb=ctx->regs[op->rm];
+
+	sa0=(s32)(va);	sa1=(s32)(va>>32);
+	sb0=(s32)(vb);	sb1=(s32)(vb>>32);
+
+	if(sa0>sb0)		ctx->regs[BJX2_REG_SR]|=1;
+	else			ctx->regs[BJX2_REG_SR]&=~1;
+	if(sa1>sb1)		ctx->regs[BJX2_REG_SR]|=2;
+	else			ctx->regs[BJX2_REG_SR]&=~2;
+}
+
+void BJX2_Op_PCMPHIW_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+	u16 sa0, sb0, sc0;
+	u16 sa1, sb1, sc1;
+	u16 sa2, sb2, sc2;
+	u16 sa3, sb3, sc3;
+	va=ctx->regs[op->rn];	vb=ctx->regs[op->rm];
+	sa0=(u16)(va);	sa1=(u16)(va>>16);	sa2=(u16)(va>>32);	sa3=(u16)(va>>48);
+	sb0=(u16)(vb);	sb1=(u16)(vb>>16);	sb2=(u16)(vb>>32);	sb3=(u16)(vb>>48);
+
+	if(sa0>sb0)		ctx->regs[BJX2_REG_SR]|= 16;
+	else			ctx->regs[BJX2_REG_SR]&=~16;
+	if(sa1>sb1)		ctx->regs[BJX2_REG_SR]|= 32;
+	else			ctx->regs[BJX2_REG_SR]&=~32;
+	if(sa2>sb2)		ctx->regs[BJX2_REG_SR]|= 64;
+	else			ctx->regs[BJX2_REG_SR]&=~64;
+	if(sa3>sb3)		ctx->regs[BJX2_REG_SR]|= 128;
+	else			ctx->regs[BJX2_REG_SR]&=~128;
+}
+
+void BJX2_Op_PCMPGTW_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+	int sa0, sb0, sc0;
+	int sa1, sb1, sc1;
+	int sa2, sb2, sc2;
+	int sa3, sb3, sc3;
+	va=ctx->regs[op->rn];	vb=ctx->regs[op->rm];
+	sa0=(s16)(va);	sa1=(s16)(va>>16);	sa2=(s16)(va>>32);	sa3=(s16)(va>>48);
+	sb0=(s16)(vb);	sb1=(s16)(vb>>16);	sb2=(s16)(vb>>32);	sb3=(s16)(vb>>48);
+
+	if(sa0>sb0)		ctx->regs[BJX2_REG_SR]|= 16;
+	else			ctx->regs[BJX2_REG_SR]&=~16;
+	if(sa1>sb1)		ctx->regs[BJX2_REG_SR]|= 32;
+	else			ctx->regs[BJX2_REG_SR]&=~32;
+	if(sa2>sb2)		ctx->regs[BJX2_REG_SR]|= 64;
+	else			ctx->regs[BJX2_REG_SR]&=~64;
+	if(sa3>sb3)		ctx->regs[BJX2_REG_SR]|= 128;
+	else			ctx->regs[BJX2_REG_SR]&=~128;
+}
+
+
+
+void BJX2_Op_PCMPGTF_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	float tv0[4], tv1[4];
+	u64	vs, vt;
+	vs=ctx->regs[op->rn];	vt=ctx->regs[op->rm];
+	jx2_upvec_f(tv0, vs);	jx2_upvec_f(tv1, vt);
+	if(tv0[0]>tv1[0])	ctx->regs[BJX2_REG_SR]|= 1;
+	else				ctx->regs[BJX2_REG_SR]&=~1;
+	if(tv0[1]>tv1[1])	ctx->regs[BJX2_REG_SR]|= 2;
+	else				ctx->regs[BJX2_REG_SR]&=~2;
+}
+
+void BJX2_Op_PCMPGTH_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	float tv0[4], tv1[4];
+	u64	vs, vt;
+	vs=ctx->regs[op->rn];	vt=ctx->regs[op->rm];
+	jx2_upvec_hf(tv0, vs);	jx2_upvec_hf(tv1, vt);
+	if(tv0[0]>tv1[0])	ctx->regs[BJX2_REG_SR]|=  16;
+	else				ctx->regs[BJX2_REG_SR]&=~ 16;
+	if(tv0[1]>tv1[1])	ctx->regs[BJX2_REG_SR]|=  32;
+	else				ctx->regs[BJX2_REG_SR]&=~ 32;
+	if(tv0[2]>tv1[2])	ctx->regs[BJX2_REG_SR]|=  64;
+	else				ctx->regs[BJX2_REG_SR]&=~ 64;
+	if(tv0[3]>tv1[3])	ctx->regs[BJX2_REG_SR]|= 128;
+	else				ctx->regs[BJX2_REG_SR]&=~128;
 }

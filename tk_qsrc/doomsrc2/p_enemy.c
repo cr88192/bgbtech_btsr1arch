@@ -268,8 +268,8 @@ boolean P_CheckMissileRange (mobj_t* actor)
 fixed_t	xspeed[8] = {FRACUNIT,47000,0,-47000,-FRACUNIT,-47000,0,47000};
 fixed_t yspeed[8] = {0,47000,FRACUNIT,47000,0,-47000,-FRACUNIT,-47000};
 
-// #define MAXSPECIALCROSS	8
-#define MAXSPECIALCROSS	16
+#define MAXSPECIALCROSS	8
+// #define MAXSPECIALCROSS	16
 
 extern	line_t*	spechit[MAXSPECIALCROSS];
 extern	int	numspechit;
@@ -312,7 +312,8 @@ boolean P_Move (mobj_t*	actor)
 			return true;
 		}
 			
-		if (!numspechit)
+//		if (!numspechit)
+		if (numspechit<=0)
 			return false;
 				
 		actor->movedir = DI_NODIR;

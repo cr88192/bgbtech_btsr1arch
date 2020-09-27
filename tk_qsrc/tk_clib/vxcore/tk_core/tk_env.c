@@ -8,6 +8,13 @@ int TK_Env_GetEnvVarIdx(int idx, char *bufn, char *bufv, int szn, int szv)
 	if(tk_iskernel())
 	{
 		env=TK_GetCurrentEnvContext();
+		if(!env)
+		{
+			*bufn=0;
+			*bufv=0;
+			return(-1);
+		}
+
 		return(TK_EnvCtx_GetEnvVarIdx(env, idx, bufn, bufv, szn, szv));
 	}else
 	{
@@ -32,6 +39,12 @@ int TK_Env_GetEnvVarI(char *varn, char *buf, int sz)
 	if(tk_iskernel())
 	{
 		env=TK_GetCurrentEnvContext();
+		if(!env)
+		{
+			*buf=0;
+			return(-1);
+		}
+
 		return(TK_EnvCtx_GetEnvVar(env, varn, buf, sz));
 	}else
 	{

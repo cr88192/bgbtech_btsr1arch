@@ -61,6 +61,8 @@ void __exec(char *cmd, void *env);
 
 void (*__userExit[__NATEXIT])(void);
 
+
+#if 0
 __PDPCLIB_API__ void *malloc(size_t size)
 {
     void *ptr;
@@ -68,29 +70,14 @@ __PDPCLIB_API__ void *malloc(size_t size)
     return (ptr);
 }
 
-__PDPCLIB_API__ void *calloc(size_t nmemb, size_t size)
-{
-    void *ptr;
-    size_t total;
 
-    if (nmemb == 1)
-    {
-        total = size;
-    }
-    else if (size == 1)
-    {
-        total = nmemb;
-    }
-    else
-    {
-        total = nmemb * size;
-    }
-    ptr = malloc(total);
+__PDPCLIB_API__ void free(void *ptr)
+{
     if (ptr != NULL)
     {
-        memset(ptr, '\0', total);
+        __freemem(ptr);
     }
-    return (ptr);
+    return;
 }
 
 __PDPCLIB_API__ void *realloc(void *ptr, size_t size)
@@ -121,8 +108,55 @@ __PDPCLIB_API__ void *realloc(void *ptr, size_t size)
     }
     return (newptr);
 }
+#endif
+
+
+
+#if 1
+
+void *(*_malloc_fptr)(size_t size);
+void (*_free_fptr)(void *ptr);
+void *(*_realloc_fptr)(void *ptr, size_t size);
+size_t (*_msize_fptr)(void *ptr);
+
+__PDPCLIB_API__ void **_getmallocptr(void)
+	{ return(&_malloc_fptr); }
+__PDPCLIB_API__ void **_getfreecptr(void)
+	{ return(&_free_fptr); }
+__PDPCLIB_API__ void **_getreallocptr(void)
+	{ return(&_realloc_fptr); }
+__PDPCLIB_API__ void **_getmsizeptr(void)
+	{ return(&_msize_fptr); }
+
+__PDPCLIB_API__ void *malloc(size_t size)
+{
+	return(_malloc_fptr(size));
+}
+
+__PDPCLIB_API__ void *_msize(size_t size)
+{
+	return(_msize_fptr(size));
+}
 
 __PDPCLIB_API__ void free(void *ptr)
+{
+	_free_fptr(ptr);
+}
+
+__PDPCLIB_API__ void *realloc(void *ptr, size_t size)
+{
+	return(_realloc_fptr(ptr, size));
+}
+
+void *malloc_dfl(size_t size)
+{
+    void *ptr;
+    __allocmem(size, &ptr);
+    return (ptr);
+}
+
+
+void free_dfl(void *ptr)
 {
     if (ptr != NULL)
     {
@@ -130,6 +164,62 @@ __PDPCLIB_API__ void free(void *ptr)
     }
     return;
 }
+
+void *realloc_dfl(void *ptr, size_t size)
+{
+    char *newptr;
+    size_t oldsize;
+
+    if (size == 0)
+    {
+        free(ptr);
+        return (NULL);
+    }
+
+    newptr = malloc(size);
+    if (newptr == NULL)
+    {
+        return (NULL);
+    }
+    if (ptr != NULL)
+    {
+        oldsize = *((size_t *)ptr - 1);
+        if (oldsize < size)
+        {
+            size = oldsize;
+        }
+        memcpy(newptr, ptr, size);
+        free(ptr);
+    }
+    return (newptr);
+}
+#endif
+
+__PDPCLIB_API__ void *calloc(size_t nmemb, size_t size)
+{
+    void *ptr;
+    size_t total;
+
+    if (nmemb == 1)
+    {
+        total = size;
+    }
+    else if (size == 1)
+    {
+        total = nmemb;
+    }
+    else
+    {
+        total = nmemb * size;
+    }
+    ptr = malloc(total);
+    if (ptr != NULL)
+    {
+        memset(ptr, '\0', total);
+    }
+    return (ptr);
+}
+
 
 __PDPCLIB_API__ void abort(void)
 {

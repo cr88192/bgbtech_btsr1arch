@@ -15,12 +15,21 @@ Type ID:
 
 
 
-LVA_TagInfo *tkmm_lva_taghash[1024];
+// LVA_TagInfo *tkmm_lva_taghash[1024];
+
+LVA_TagInfo *tkmm_lva_tagarr[1024];
+short tkmm_lva_taghash[64];
+int tkmm_lva_ntag=0;
 
 void TKMM_LVA_TagInit(void)
 {
 	LVA_TagInfo *inf;
+	int i;
 
+	if(tkmm_lva_ntag)
+		return;
+
+#if 0
 	if(!tkmm_lva_taghash[0])
 	{
 		inf=TKMM_MMList_Malloc(sizeof(LVA_TagInfo));
@@ -28,14 +37,47 @@ void TKMM_LVA_TagInit(void)
 		inf->idx=0;
 		tkmm_lva_taghash[0]=inf;
 	}
+#endif
+
+	for(i=0; i<64; i++)
+		tkmm_lva_taghash[i]=0;
+
+	i=tkmm_lva_ntag++;
+
+	inf=TKMM_MMList_Malloc(sizeof(LVA_TagInfo));
+	inf->name=NULL;
+	inf->idx=i;
+	tkmm_lva_tagarr[i]=inf;
 }
 
 LVA_TagInfo *TKMM_LVA_GetTagInfoForName(char *name)
 {
 	LVA_TagInfo *inf;
-	int h, n;
+	int h, c, n;
 	int i;
-	
+
+	h=TKMM_LVA_HashName(name)&63;
+	c=tkmm_lva_taghash[h];
+	while(c>0)
+	{
+		inf=tkmm_lva_tagarr[c];
+		if(!inf || !inf->name)
+			break;
+		if(!strcmp(inf->name, name))
+			return(inf);
+		c=inf->chain;
+	}
+
+	i=tkmm_lva_ntag++;
+	inf=TKMM_MMList_Malloc(sizeof(LVA_TagInfo));
+	inf->name=TKMM_LVA_Strdup(name);
+	inf->idx=i;
+	inf->chain=tkmm_lva_taghash[h];
+	tkmm_lva_taghash[h]=i;
+	tkmm_lva_tagarr[i]=inf;
+	return(inf);
+
+#if 0
 	h=TKMM_LVA_HashName(name);	n=1024;
 	while(n--)
 	{
@@ -54,6 +96,8 @@ LVA_TagInfo *TKMM_LVA_GetTagInfoForName(char *name)
 			return(inf);
 		h=h*65521+1;
 	}
+#endif
+
 	return(NULL);
 }
 
@@ -69,7 +113,7 @@ char *TKMM_LVA_GetTagNameForIndex(int idx)
 {
 	LVA_TagInfo *inf;
 	
-	inf=tkmm_lva_taghash[idx&1023];
+	inf=tkmm_lva_tagarr[idx&1023];
 	if(!inf)
 		return(NULL);
 	return(inf->name);

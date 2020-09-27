@@ -440,6 +440,9 @@ int BJX2_ContextLoadMap(BJX2_Context *ctx, char *name)
 			tmap_name[i]=ctx->map_name[i];
 		}
 		tmn=ctx->map_n_ents;
+		
+		free(ctx->map_addr);
+		free(ctx->map_name);
 	}
 	
 	while(!bjx2_feof(fd))
@@ -454,6 +457,22 @@ int BJX2_ContextLoadMap(BJX2_Context *ctx, char *name)
 		tmap_addr[tmn]=ta;
 		tmap_name[tmn]=strdup(a[2]);
 		tmn++;
+	}
+
+	for(i=0; i<tmn; i++)
+	{
+		for(j=i+1; j<tmn; j++)
+		{
+			if(tmap_addr[j]<tmap_addr[i])
+			{
+				ta=tmap_addr[j];
+				s=tmap_name[j];
+				tmap_addr[j]=tmap_addr[i];
+				tmap_name[j]=tmap_name[i];
+				tmap_addr[i]=ta;
+				tmap_name[i]=s;
+			}
+		}
 	}
 	
 	ctx->map_addr=malloc(tmn*sizeof(bjx2_addr));

@@ -52,7 +52,8 @@ typedef union
 
 } actionf_t;
 
-
+// #define P_ACTIONF_REMOVE	((actionf_v)(-1))
+#define P_ACTIONF_REMOVE	((actionf_v)(-1LL))
 
 
 

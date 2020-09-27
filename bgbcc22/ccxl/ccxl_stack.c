@@ -1358,7 +1358,10 @@ ccxl_status BGBCC_CCXL_StackCallName2(BGBCC_TransState *ctx,
 		return(CCXL_STATUS_NO);
 #endif
 
-		BGBCC_CCXL_Warn(ctx, "Undeclared Function %s\n", name);
+//		BGBCC_CCXL_Warn(ctx, "Undeclared Function %s\n", name);
+		BGBCC_CCXL_TagWarn(ctx, CCXL_TERR_MISSINGPROTO);
+		BGBCC_CCXL_TagWarnAddParmStr(ctx, name);
+
 		i=BGBCC_CCXL_HandleMissingProto(ctx, name);
 	}
 
@@ -1683,8 +1686,8 @@ ccxl_status BGBCC_CCXL_StackPopCall2(BGBCC_TransState *ctx,
 
 ccxl_status BGBCC_CCXL_StackLoadIndexConst(BGBCC_TransState *ctx, int idx)
 {
-	ccxl_register treg, dreg, sreg;
-	ccxl_type bty, bty2;
+	ccxl_register treg, dreg, sreg, sreg2;
+	ccxl_type bty, bty2, sty, sty2;
 	int i, j, k;
 
 	BGBCC_CCXL_DebugPrintStackLLn(ctx, "LoadIndexC", __FILE__, __LINE__);
@@ -1694,8 +1697,24 @@ ccxl_status BGBCC_CCXL_StackLoadIndexConst(BGBCC_TransState *ctx, int idx)
 	
 	/* src -- src[idx] */
 	i=BGBCC_CCXL_PopRegister(ctx, &sreg);
+	sty=BGBCC_CCXL_GetRegType(ctx, sreg);
 	bty=BGBCC_CCXL_GetRegDerefType(ctx, sreg);
 	BGBCC_CCXL_TypeAutoPromoteType(ctx, bty, &bty2);
+	
+	if(BGBCC_CCXL_TypeSquareArrayP(ctx, sty))
+	{
+		BGBCC_CCXL_TypePointerType(ctx, sty, &sty2);
+		BGBCC_CCXL_RegisterAllocTemporaryInit(ctx, sty2, &sreg2);
+		BGBCC_CCXL_EmitConv(ctx, sty2, sty, sreg2, sreg);
+
+		BGBCC_CCXL_RegisterAllocTemporaryInit(ctx, bty2, &dreg);
+		BGBCC_CCXL_EmitLoadIndexImm(ctx, bty, dreg, sreg2, idx);
+		BGBCC_CCXL_PushRegister(ctx, dreg);
+		BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
+		BGBCC_CCXL_RegisterCheckRelease(ctx, sreg2);
+		return(CCXL_STATUS_YES);
+	}
+	
 	BGBCC_CCXL_RegisterAllocTemporaryInit(ctx, bty2, &dreg);
 	BGBCC_CCXL_EmitLoadIndexImm(ctx, bty, dreg, sreg, idx);
 	BGBCC_CCXL_PushRegister(ctx, dreg);
@@ -1705,8 +1724,8 @@ ccxl_status BGBCC_CCXL_StackLoadIndexConst(BGBCC_TransState *ctx, int idx)
 
 ccxl_status BGBCC_CCXL_StackStoreIndexConst(BGBCC_TransState *ctx, int idx)
 {
-	ccxl_register treg, dreg, sreg;
-	ccxl_type bty, sty;
+	ccxl_register treg, dreg, sreg, dreg2;
+	ccxl_type bty, sty, dty, dty2;
 	int i, j, k;
 
 	BGBCC_CCXL_DebugPrintStackLLn(ctx, "StoreIndexC", __FILE__, __LINE__);
@@ -1722,6 +1741,17 @@ ccxl_status BGBCC_CCXL_StackStoreIndexConst(BGBCC_TransState *ctx, int idx)
 //	bty=BGBCC_CCXL_GetRegType(ctx, sreg);
 
 	sty=BGBCC_CCXL_GetRegType(ctx, sreg);
+	dty=BGBCC_CCXL_GetRegType(ctx, dreg);
+
+	if(BGBCC_CCXL_TypeSquareArrayP(ctx, dty))
+	{
+		BGBCC_CCXL_TypePointerType(ctx, dty, &dty2);
+		BGBCC_CCXL_RegisterAllocTemporaryInit(ctx, dty2, &dreg2);
+		BGBCC_CCXL_EmitConv(ctx, dty2, dty, dreg2, dreg);
+		BGBCC_CCXL_RegisterCheckRelease(ctx, dreg);
+		dreg=dreg2;
+	}
+
 //	if(!BGBCC_CCXL_TypeCompatibleP(ctx, bty, sty))
 //	if(!BGBCC_CCXL_TypeCompatibleArchP(ctx, bty, sty))
 	if(!BGBCC_CCXL_TypeCompatibleFlP(ctx, bty, sty, 3))
@@ -1745,8 +1775,8 @@ ccxl_status BGBCC_CCXL_StackStoreIndexConst(BGBCC_TransState *ctx, int idx)
 ccxl_status BGBCC_CCXL_StackLoadIndexAddrConst(
 	BGBCC_TransState *ctx, int idx)
 {
-	ccxl_register treg, dreg, sreg;
-	ccxl_type bty, vty;
+	ccxl_register treg, dreg, sreg, sreg2;
+	ccxl_type bty, vty, sty, sty2;
 	int i, j, k;
 	
 	BGBCC_CCXL_DebugPrintStackLLn(ctx, "LoadIndexAC", __FILE__, __LINE__);
@@ -1759,6 +1789,17 @@ ccxl_status BGBCC_CCXL_StackLoadIndexAddrConst(
 	vty=BGBCC_CCXL_GetRegDerefType(ctx, sreg);
 	bty=BGBCC_CCXL_GetRegType(ctx, sreg);
 	BGBCC_CCXL_RegisterAllocTemporary(ctx, bty, &dreg);
+
+	sty=BGBCC_CCXL_GetRegType(ctx, sreg);
+	if(BGBCC_CCXL_TypeSquareArrayP(ctx, sty))
+	{
+		BGBCC_CCXL_TypePointerType(ctx, sty, &sty2);
+		BGBCC_CCXL_RegisterAllocTemporaryInit(ctx, sty2, &sreg2);
+		BGBCC_CCXL_EmitConv(ctx, sty2, sty, sreg2, sreg);
+		BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
+		sreg=sreg2;
+	}
+
 	BGBCC_CCXL_EmitLeaImm(ctx, vty, dreg, sreg, idx);
 	BGBCC_CCXL_PushRegister(ctx, dreg);
 	BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
@@ -1767,8 +1808,8 @@ ccxl_status BGBCC_CCXL_StackLoadIndexAddrConst(
 
 ccxl_status BGBCC_CCXL_StackLoadIndex(BGBCC_TransState *ctx)
 {
-	ccxl_register dreg, sreg, treg;
-	ccxl_type bty, bty2;
+	ccxl_register dreg, sreg, treg, sreg2;
+	ccxl_type bty, bty2, sty, sty2;
 	int i, j, k;
 	
 	BGBCC_CCXL_DebugPrintStackLLn(ctx, "LoadIndex", __FILE__, __LINE__);
@@ -1782,6 +1823,16 @@ ccxl_status BGBCC_CCXL_StackLoadIndex(BGBCC_TransState *ctx)
 	BGBCC_CCXL_TypeAutoPromoteType(ctx, bty, &bty2);
 	BGBCC_CCXL_RegisterAllocTemporaryInit(ctx, bty2, &dreg);
 
+	sty=BGBCC_CCXL_GetRegType(ctx, sreg);
+	if(BGBCC_CCXL_TypeSquareArrayP(ctx, sty))
+	{
+		BGBCC_CCXL_TypePointerType(ctx, sty, &sty2);
+		BGBCC_CCXL_RegisterAllocTemporaryInit(ctx, sty2, &sreg2);
+		BGBCC_CCXL_EmitConv(ctx, sty2, sty, sreg2, sreg);
+		BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
+		sreg=sreg2;
+	}
+
 //	bty=BGBCC_CCXL_GetRegDerefType(ctx, sreg);
 //	bty=BGBCC_CCXL_GetRegType(ctx, sreg);
 	BGBCC_CCXL_EmitLoadIndex(ctx, bty, dreg, sreg, treg);
@@ -1794,8 +1845,8 @@ ccxl_status BGBCC_CCXL_StackLoadIndex(BGBCC_TransState *ctx)
 
 ccxl_status BGBCC_CCXL_StackStoreIndex(BGBCC_TransState *ctx)
 {
-	ccxl_register dreg, sreg, treg, treg2;
-	ccxl_type bty, sty;
+	ccxl_register dreg, sreg, treg, treg2, dreg2;
+	ccxl_type bty, sty, dty, dty2;
 	int i, j, k;
 	
 	BGBCC_CCXL_DebugPrintStackLLn(ctx, "StoreIndex", __FILE__, __LINE__);
@@ -1811,6 +1862,17 @@ ccxl_status BGBCC_CCXL_StackStoreIndex(BGBCC_TransState *ctx)
 //	bty=BGBCC_CCXL_GetRegType(ctx, sreg);
 
 	sty=BGBCC_CCXL_GetRegType(ctx, sreg);
+	dty=BGBCC_CCXL_GetRegType(ctx, dreg);
+
+	if(BGBCC_CCXL_TypeSquareArrayP(ctx, dty))
+	{
+		BGBCC_CCXL_TypePointerType(ctx, dty, &dty2);
+		BGBCC_CCXL_RegisterAllocTemporaryInit(ctx, dty2, &dreg2);
+		BGBCC_CCXL_EmitConv(ctx, dty2, dty, dreg2, dreg);
+		BGBCC_CCXL_RegisterCheckRelease(ctx, dreg);
+		dreg=dreg2;
+	}
+
 //	if(!BGBCC_CCXL_TypeCompatibleP(ctx, bty, sty))
 //	if(!BGBCC_CCXL_TypeCompatibleArchP(ctx, bty, sty))
 	if(!BGBCC_CCXL_TypeCompatibleFlP(ctx, bty, sty, 3))
@@ -3526,8 +3588,8 @@ ccxl_status BGBCC_CCXL_StackLoadSlotAddrStore(
 ccxl_status BGBCC_CCXL_StackLoadIndexConstStore(
 	BGBCC_TransState *ctx, int idx, char *dname)
 {
-	ccxl_register treg, dreg, sreg;
-	ccxl_type bty, bty2;
+	ccxl_register treg, dreg, sreg, sreg2;
+	ccxl_type bty, bty2, sty, sty2;
 	int i, j, k;
 
 	BGBCC_CCXL_DebugPrintStackLLn(ctx, "StLoadIndexC", __FILE__, __LINE__);
@@ -3550,6 +3612,17 @@ ccxl_status BGBCC_CCXL_StackLoadIndexConstStore(
 	bty=BGBCC_CCXL_GetRegDerefType(ctx, sreg);
 	BGBCC_CCXL_TypeAutoPromoteType(ctx, bty, &bty2);
 //	BGBCC_CCXL_RegisterAllocTemporaryInit(ctx, bty2, &dreg);
+
+	sty=BGBCC_CCXL_GetRegType(ctx, sreg);
+	if(BGBCC_CCXL_TypeSquareArrayP(ctx, sty))
+	{
+		BGBCC_CCXL_TypePointerType(ctx, sty, &sty2);
+		BGBCC_CCXL_RegisterAllocTemporaryInit(ctx, sty2, &sreg2);
+		BGBCC_CCXL_EmitConv(ctx, sty2, sty, sreg2, sreg);
+		BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
+		sreg=sreg2;
+	}
+
 	BGBCC_CCXL_EmitLoadIndexImm(ctx, bty, dreg, sreg, idx);
 //	BGBCC_CCXL_PushRegister(ctx, dreg);
 	BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
@@ -3559,8 +3632,8 @@ ccxl_status BGBCC_CCXL_StackLoadIndexConstStore(
 
 ccxl_status BGBCC_CCXL_StackLoadIndexStore(BGBCC_TransState *ctx, char *dname)
 {
-	ccxl_register dreg, sreg, treg;
-	ccxl_type bty, bty2;
+	ccxl_register dreg, sreg, treg, sreg2;
+	ccxl_type bty, bty2, sty, sty2;
 	int i, j, k;
 	
 	BGBCC_CCXL_DebugPrintStackLLn(ctx, "StLoadIndex", __FILE__, __LINE__);
@@ -3583,6 +3656,16 @@ ccxl_status BGBCC_CCXL_StackLoadIndexStore(BGBCC_TransState *ctx, char *dname)
 	bty=BGBCC_CCXL_GetRegDerefType(ctx, sreg);
 	BGBCC_CCXL_TypeAutoPromoteType(ctx, bty, &bty2);
 //	BGBCC_CCXL_RegisterAllocTemporaryInit(ctx, bty2, &dreg);
+
+	sty=BGBCC_CCXL_GetRegType(ctx, sreg);
+	if(BGBCC_CCXL_TypeSquareArrayP(ctx, sty))
+	{
+		BGBCC_CCXL_TypePointerType(ctx, sty, &sty2);
+		BGBCC_CCXL_RegisterAllocTemporaryInit(ctx, sty2, &sreg2);
+		BGBCC_CCXL_EmitConv(ctx, sty2, sty, sreg2, sreg);
+		BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
+		sreg=sreg2;
+	}
 
 //	bty=BGBCC_CCXL_GetRegDerefType(ctx, sreg);
 //	bty=BGBCC_CCXL_GetRegType(ctx, sreg);

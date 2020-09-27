@@ -160,3 +160,4 @@
 #define BGBCC_RIL3OP_LDCONSTU8S	0x84	//ASCII String
 #define BGBCC_RIL3OP_LDCONSTW4S	0x85	//Wide / UTF-16 String
 
+#define BGBCC_RIL3OP_INLINEASM	0x86	//inline ASM blob

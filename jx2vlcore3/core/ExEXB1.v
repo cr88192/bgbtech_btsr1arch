@@ -250,8 +250,9 @@ begin
 
 `ifdef jx2_merge_shadq
 
-		JX2_UCMD_SHAD3, JX2_UCMD_SHLD3,
-		JX2_UCMD_SHADQ3, JX2_UCMD_SHLDQ3:
+//		JX2_UCMD_SHAD3, JX2_UCMD_SHLD3,
+//		JX2_UCMD_SHADQ3, JX2_UCMD_SHLDQ3:
+		JX2_UCMD_SHAD3:
 		begin
 			tRegIdRn1	= regIdRm;
 			tRegValRn1	= tValShad64;

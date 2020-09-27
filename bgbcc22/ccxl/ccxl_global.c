@@ -1804,6 +1804,7 @@ void BGBCC_CCXL_BeginName(BGBCC_TransState *ctx, int tag, char *name)
 void BGBCC_CCXL_EndFunction(BGBCC_TransState *ctx,
 	BGBCC_CCXL_LiteralInfo *obj)
 {
+	BGBCC_CCXL_VirtOp *vop1, *vop2;
 	byte *rla, *rld;
 	int i, j, k;
 
@@ -1887,6 +1888,24 @@ void BGBCC_CCXL_EndFunction(BGBCC_TransState *ctx,
 		ctx->n_vtr=0;
 		ctx->s_vop=0;
 	}
+	
+	if(obj->decl->n_vtr>1)
+	{
+		i=obj->decl->n_vtr;
+		j=obj->decl->vtr[i-1]->b_ops;
+		vop1=obj->decl->vop[j];
+		vop2=obj->decl->vop[j-1];
+		
+		if(vop1->opn==CCXL_VOP_RETDFL)
+		{
+			if(	(vop2->opn==CCXL_VOP_RET)	||
+				(vop2->opn==CCXL_VOP_RETV)	)
+			{
+				obj->decl->n_vtr--;
+			}
+		}
+	}
+	
 
 #if 0
 	if(ctx->ip!=ctx->ips)

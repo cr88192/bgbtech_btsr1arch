@@ -743,13 +743,21 @@ int BGBCC_JX2C_EmitJCmpVRegVRegQLong(
 	int cmp, int lbl)
 {
 	int csreg, ctreg, flip, noflip;
-	s32 imm;
+//	s32 imm;
+	s64 imm;
 	int nm1, nm2, nm3;
 	
 	noflip=0;
 	if(BGBCC_CCXL_IsRegImmIntP(ctx, treg))
 	{
 		imm=BGBCC_CCXL_GetRegImmIntValue(ctx, treg);
+		if(((imm&1023)==imm) || ((imm|(~1023))==imm))
+			noflip=1;
+	}
+	
+	if(BGBCC_CCXL_IsRegImmLongP(ctx, treg))
+	{
+		imm=BGBCC_CCXL_GetRegImmLongValue(ctx, treg);
 		if(((imm&1023)==imm) || ((imm|(~1023))==imm))
 			noflip=1;
 	}
@@ -864,9 +872,12 @@ int BGBCC_JX2C_EmitJCmpVRegVRegQLong(
 	
 	if((nm1>=0) && (nm2>=0))
 	{
-		if(BGBCC_CCXL_IsRegImmIntP(ctx, treg) && !flip)
+//		if(BGBCC_CCXL_IsRegImmIntP(ctx, treg) && !flip)
+		if((BGBCC_CCXL_IsRegImmIntP(ctx, treg) ||
+			BGBCC_CCXL_IsRegImmLongP(ctx, treg)) && !flip)
 		{
-			imm=BGBCC_CCXL_GetRegImmIntValue(ctx, treg);
+//			imm=BGBCC_CCXL_GetRegImmIntValue(ctx, treg);
+			imm=BGBCC_CCXL_GetRegImmLongValue(ctx, treg);
 
 			csreg=BGBCC_JX2C_EmitTryGetRegisterRead(ctx, sctx, sreg);
 			if((csreg<0) || (csreg==BGBCC_SH_REG_ZZR))

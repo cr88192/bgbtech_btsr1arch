@@ -491,9 +491,10 @@ int BGBCC_JX2C_EmitMovVRegVReg(
 	ccxl_type type,
 	ccxl_register dreg, ccxl_register sreg)
 {
-	s64 li;
-	int cdreg, csreg;
-	int tr0, rcls, nm1;
+	s64 li, lj;
+	double f, g;
+	int cdreg, csreg, tr0, tr1, tg0, tg1;
+	int rcls, nm1;
 	int i, j, k;
 
 	BGBCC_JX2C_NormalizeImmVRegInt(ctx, sctx, type, &sreg);
@@ -541,6 +542,52 @@ int BGBCC_JX2C_EmitMovVRegVReg(
 		{
 			li=BGBCC_CCXL_GetRegImmLongValue(ctx, sreg);
 			BGBCC_JX2C_EmitMovVRegImm(ctx, sctx, type, dreg, li);
+			return(1);
+		}
+	}
+
+	if(sctx->is_addr64 &&
+		BGBCC_CCXL_TypeVarRefP(ctx, type))
+	{
+		if(BGBCC_CCXL_IsRegImmIntP(ctx, sreg) ||
+			BGBCC_CCXL_IsRegImmLongP(ctx, sreg))
+		{
+			li=BGBCC_CCXL_GetRegImmLongValue(ctx, sreg);
+			li&=0x3FFFFFFFFFFFFFFFULL;
+			li|=0x4000000000000000ULL;
+			BGBCC_JX2C_EmitMovVRegImm(ctx, sctx, type, dreg, li);
+			return(1);
+		}
+
+		if(BGBCC_CCXL_IsRegImmFloatP(ctx, sreg) ||
+			BGBCC_CCXL_IsRegImmDoubleP(ctx, sreg))
+		{
+			f=BGBCC_CCXL_GetRegImmDoubleValue(ctx, sreg);
+			(*(double *)(&lj))=f;
+
+			li=lj>>2;
+			li&=0x3FFFFFFFFFFFFFFFULL;
+			li|=0x8000000000000000ULL;
+			BGBCC_JX2C_EmitMovVRegImm(ctx, sctx, type, dreg, li);
+			return(1);
+		}
+
+		if(	BGBCC_CCXL_IsRegImmStringP(ctx, sreg)	||
+			BGBCC_CCXL_IsRegImmWStringP(ctx, sreg)	||
+			BGBCC_CCXL_IsRegImmW4StringP(ctx, sreg)	)
+		{
+			tg0=CCXL_LVA_LookupTagIndexForName(ctx, "_String");
+			tr1=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 
+				BGBCC_SH_REGCLS_QGR);
+			BGBCC_JX2_EmitLoadRegImm64P(sctx, tr1, ((u64)tg0)<<48);
+
+			cdreg=BGBCC_JX2C_EmitTryGetRegisterWrite(ctx, sctx, dreg);
+			BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx, sreg, cdreg);
+			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_OR,
+				tr1, cdreg);
+
+			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr1);
 			return(1);
 		}
 	}
@@ -1516,6 +1563,12 @@ int BGBCC_JX2C_EmitJCmpVRegVReg(
 	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, type) && (ctx->arch_sizeof_ptr==4))
 	{
 		return(BGBCC_JX2C_EmitJCmpVRegVRegInt(ctx, sctx,
+			type, sreg, treg, cmp, lbl));
+	}
+
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, type) && (ctx->arch_sizeof_ptr==8))
+	{
+		return(BGBCC_JX2C_EmitJCmpVRegVRegQLong(ctx, sctx,
 			type, sreg, treg, cmp, lbl));
 	}
 

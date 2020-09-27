@@ -74,6 +74,55 @@ double BGBCC_Float128_ToDoubleB(bgbcc_vfloat128 val)
 	return(0.0);
 }
 
+bgbcc_vfloat128 BGBCC_Float128_FromDoubleBits(u64 v)
+{
+	bgbcc_vfloat128 c;
+	u64 dxlo, dxhi;
+	int dpct, dpshr;
+
+	if(!(v&0x7FF0000000000000ULL))
+	{
+		c.hi=0;
+		c.lo=0;
+		return(c);
+	}
+
+	dxhi=((v>>4)&0x07FFFFFFFFFFFFFFULL)+
+		(  0x3C00000000000000ULL)+
+		(v&0x8000000000000000ULL);
+	dxlo=v<<60;
+	
+	c.hi=dxhi;
+	c.lo=dxlo;
+	return(c);
+}
+
+u64 BGBCC_Float128_ToDoubleBits(bgbcc_vfloat128 val)
+{
+	u64 v, hi, lo;
+	
+	hi=val.hi;
+	lo=val.lo;
+
+	if((((hi>>58)&15)==0)||(((hi>>58)&15)==15))
+	{
+		v=	(hi&0xC000000000000000ULL)|
+			((hi<<4)&0x3FFFFFFFFFFFFFFFULL)|
+			((lo+0x0800000000000000ULL)>>60);
+		return(v);
+	}
+	
+	if(hi&0x4000000000000000ULL)
+	{
+		v=(hi&0x8000000000000000ULL)|
+			0x7FF0000000000000ULL;
+		return(v);
+	}
+
+	return(0);
+}
+
+
 bgbcc_vfloat128 BGBCC_Float128_FromInt128(bgbcc_vint128 val)
 {
 	bgbcc_vint128 frc;

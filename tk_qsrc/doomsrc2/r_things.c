@@ -979,14 +979,27 @@ void R_DrawSprite (vissprite_t* spr)
 	short		clipbot[SCREENWIDTH];
 	short		cliptop[SCREENWIDTH];
 	int			x;
-	int			r1;
-	int			r2;
+	int			r1, x1;
+	int			r2, x2;
 	fixed_t		scale;
 	fixed_t		lowscale;
 	int			silhouette;
 		
-	for (x = spr->x1 ; x<=spr->x2 ; x++)
-	clipbot[x] = cliptop[x] = -2;
+	
+	x1=spr->x1;
+	x2=spr->x2;
+	
+	if(x1<0)x1=0;
+	if(x2<0)
+		return;
+	if(x1>=SCREENWIDTH)
+		return;
+	if(x2>=SCREENWIDTH)
+		x2=SCREENWIDTH-1;
+	
+//	for (x = spr->x1 ; x<=spr->x2 ; x++)
+	for (x = x1 ; x<=x2 ; x++)
+		clipbot[x] = cliptop[x] = -2;
 	
 	// Scan drawsegs from end to start for obscuring segs.
 	// The first drawseg that has a greater scale
@@ -1003,8 +1016,11 @@ void R_DrawSprite (vissprite_t* spr)
 			continue;
 		}
 				
-		r1 = ds->x1 < spr->x1 ? spr->x1 : ds->x1;
-		r2 = ds->x2 > spr->x2 ? spr->x2 : ds->x2;
+//		r1 = ds->x1 < spr->x1 ? spr->x1 : ds->x1;
+//		r2 = ds->x2 > spr->x2 ? spr->x2 : ds->x2;
+
+		r1 = ds->x1 < x1 ? x1 : ds->x1;
+		r2 = ds->x2 > x2 ? x2 : ds->x2;
 
 		if (ds->scale1 > ds->scale2)
 		{
@@ -1072,7 +1088,8 @@ void R_DrawSprite (vissprite_t* spr)
 	// all clipping has been performed, so draw the sprite
 
 	// check for unclipped columns
-	for (x = spr->x1 ; x<=spr->x2 ; x++)
+//	for (x = spr->x1 ; x<=spr->x2 ; x++)
+	for (x = x1 ; x<=x2 ; x++)
 	{
 	if (clipbot[x] == -2)		
 		clipbot[x] = viewheight;
@@ -1083,7 +1100,8 @@ void R_DrawSprite (vissprite_t* spr)
 		
 	mfloorclip = clipbot;
 	mceilingclip = cliptop;
-	R_DrawVisSprite (spr, spr->x1, spr->x2);
+//	R_DrawVisSprite (spr, spr->x1, spr->x2);
+	R_DrawVisSprite (spr, x1, x2);
 }
 
 

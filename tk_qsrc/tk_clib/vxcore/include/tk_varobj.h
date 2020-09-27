@@ -1,3 +1,23 @@
+/*
+ 0: TagRef / R
+ 1: -
+ 2: -
+ 3: -
+ 4: Fixnum
+ 5: Fixnum
+ 6: Fixnum
+ 7: Fixnum
+ 8: Flonum
+ 9: Flonum
+ A: Flonum
+ B: Flonum
+ C: -
+ D: -
+ E: -
+ F: TagRef2
+ 
+*/
+
 #define		LVA_MAGIC_NULL			0x0000000000000000ULL
 #define		LVA_MAGIC_UNDEFINED		0x0000000000000001ULL
 #define		LVA_POINTER_MASK		0x0000FFFFFFFFFFFFULL
@@ -28,7 +48,7 @@ u32 offset;		//offset (within object), VTable Index (method)
 
 struct LVA_ClassInfo_s {
 u32 self;		//self pointer
-u32 qname;		//object qname
+u32 qname;		//object qname (or type signature).
 u32 super;		//superclass
 u32 fields;		//fields list, NULL terminated
 u32 methods;	//methods list (vtable), NULL terminated
@@ -61,17 +81,22 @@ u64 fx_val[16];		//fixed values
 
 struct LVA_TagInfo_s {
 char *name;
-int idx;
+short idx;
+short chain;
 };
 
 union LVA_TagArray_s {
 	struct {
+		LVA_VTableBasic *vt;
+		void *dptr;
 		s32 size;
 		u16 tty;
 		u16 pad;
 		u64 data[1];
 	}p;
 	struct {
+		LVA_VTableBasic *vt;
+		void *dptr;
 		s32 size;
 		s32 base;
 		u64 data_ty;
@@ -82,10 +107,12 @@ union LVA_TagArray_s {
 typedef __object tk_lva_object;
 typedef __variant tk_lva_variant;
 #define tk_lva_object_null __object_null
+#define	tk_lva_object_getbits(obj)	__object_getbits(obj)
 #else
 typedef long long tk_lva_object;
 typedef long long tk_lva_variant;
 #define tk_lva_object_null 0
+#define	tk_lva_object_getbits(obj)	(obj)
 #endif
 
 void TKMM_LVA_ArrayInit(void);

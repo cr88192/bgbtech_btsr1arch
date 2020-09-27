@@ -71,7 +71,8 @@ output[63:0]	regValCn2;		//Destination Value (CR, EX1)
 input[47:0]		regValPc;		//PC Value (Synthesized)
 input[32:0]		regValImm;		//Immediate (Decode)
 
-input[65:0]		regValAluRes;	//ALU Result
+// input[65:0]		regValAluRes;	//ALU Result
+input[69:0]		regValAluRes;	//ALU Result
 input[63:0]		regValMulwRes;	//MUL.W Result
 input[63:0]		regValMulRes;	//MUL.W Result
 input[63:0]		regFpuGRn;		//FPU GPR Result
@@ -203,12 +204,14 @@ begin
 
 		JX2_UCMD_SHAD3: begin
 		end
+`ifndef jx2_merge_shadq
 		JX2_UCMD_SHLD3: begin
 		end
 		JX2_UCMD_SHADQ3: begin
 		end
 		JX2_UCMD_SHLDQ3: begin
 		end
+`endif
 		
 		JX2_UCMD_CONV_RR: begin
 		end

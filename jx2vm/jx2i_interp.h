@@ -129,6 +129,7 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_FLT_SLEEP		0x8005		//SLEEP
 #define BJX2_FLT_INVOP		0x8006		//Invalid Opcode
 #define BJX2_FLT_MISAL		0x8007		//Invalid Misaligned Access
+#define BJX2_FLT_BOUNDCHK	0x8008		//Bounds Check Fail
 
 #define BJX2_FLT_PCMISH		0x8801		//PC doesn't match trace addr
 #define BJX2_FLT_CCFLUSH	0x8802		//Cache Flush
@@ -381,7 +382,22 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_RGB5PCK64		0xC2		//
 #define BJX2_NMID_RGB5UPCK64	0xC3		//
 #define BJX2_NMID_LDTLB			0xC4		//
+#define BJX2_NMID_PADDXD		0xC5		//
+#define BJX2_NMID_PSUBXD		0xC6		//
+#define BJX2_NMID_PMULXD		0xC7		//
 
+#define BJX2_NMID_PCSELTW		0xC8		//
+#define BJX2_NMID_PCSELTL		0xC9		//
+#define BJX2_NMID_PCMPEQH		0xCA		//
+#define BJX2_NMID_PCMPGTH		0xCB		//
+#define BJX2_NMID_PCMPEQF		0xCC		//
+#define BJX2_NMID_PCMPGTF		0xCD		//
+#define BJX2_NMID_PCMPEQW		0xCE		//
+#define BJX2_NMID_PCMPEQL		0xCF		//
+#define BJX2_NMID_PCMPHIW		0xD0		//
+#define BJX2_NMID_PCMPGTW		0xD1		//
+#define BJX2_NMID_PCMPHIL		0xD2		//
+#define BJX2_NMID_PCMPGTL		0xD3		//
 
 #define BJX2_FMID_NONE			0x00		//?
 #define BJX2_FMID_REG			0x01		//Rn
@@ -666,6 +682,11 @@ u64 mem_tlb_pr1_lo;
 bjx2_addr *map_addr;
 char **map_name;
 int map_n_ents;
+
+bjx2_addr	dbg_data_start;
+bjx2_addr	dbg_data_end;
+bjx2_addr	dbg_bss_start;
+bjx2_addr	dbg_bss_end;
 
 int ms0, lms1;
 u32 rtc_ms;

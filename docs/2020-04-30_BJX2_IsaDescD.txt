@@ -387,7 +387,8 @@ This instruction is only allowed in Lane 1.
 
 === CPUID ===
 
-* 36jA  CPUID	#imm4
+* 36jA       CPUID	#imm4
+* F06A_3en0  CPUID	#Imm5
 
 Load CPUID bits into DLR.
 The immediate gives an index into a table of CPUID bits.
@@ -407,6 +408,22 @@ ISA Profiles:
 * 'F': Lite Profile, Has GFP, No MMU, 32-bit Address Space
 
 This instruction is only allowed in Lane 1.
+
+Index 1:
+* (7:0): Logical Core ID
+** Gives a logical ID number for the current CPU core.
+* (  8): WEX
+* (  9): WEX-3W
+* ( 10): Jumbo
+* ( 11): MMU
+* ( 12): Addr48
+* ( 13): GSV
+* ( 14): PMORT.x
+* ( 15): FPU (GFP)
+
+Index 31:
+* Hardware Random Number
+* Gives a random number generated internally by the CPU.
 
 
 === CSELT ===
@@ -1244,12 +1261,15 @@ Trap with an Imm4 uses the bits from the immediate as part of the bit-pattern fo
 
 
 The register trap gives the full EXSR bit pattern (in the low 16 bits).
+The high 48 bits of the register may give an address which will be visible to the exception handler by being copied into TEA.
 
 In user mode, only SysCall patterns will be allowed, other patterns will result either in a fault or some other implementation-defined behavior. In supervisor mode, patterns representing a valid EXSR pattern will behave as-if this exception had occured.
 
 Patterns which do not represent a valid EXSR pattern may result in a fault or some other implementation-defined behavior.
 
 In a VM, an EXSR with the pattern 0xFzzz will correspond to a VM trap call. This will call a handler outside of the emulated environment. Use of a VM trap within a bare-metal implementation is undefined and should not be used.
+
+Within a multi-core setup, bits (11:8) may be used to route the interrupt to a different core.
 
 
 === TST ===
@@ -1308,11 +1328,6 @@ If WEX is disabled, any WEX sequences encountered will be treated as if they wer
 Perform a bitwise XOR of the source and destination registers, storing the result in the destination.
 
 
-== FPU Instructions (FPU, Drop) ==
-
-The older FPU has been removed from BJX2, the GFP FPU will be used instead.
-
-
 == GPR SIMD Extension (GSV, Optional) ==
 
 These instructions will be considered part of the GPR SIMD Vector Extension (GSV). These instruction forms will be considered optional, and exist mostly to add rudimentary SIMD support to BJX2.
@@ -1349,62 +1364,53 @@ MOVHLD will select the high bits from Rm, and the low bits from Ro.
 MOVLHD will select the low bits from Rm, and the high bits from Ro.
 
 
-=== PADD.x (GSV) ===
-
-* F0nm_1g0A / PADD.W	Rm, Rn		//(GSV) Packed ADD Word
-* F0nm_1G0A / PADD.L	Rm, Rn		//(GSV) Packed ADD DWord
-* F0nm_1g5A  PADD.H		Rm, Rn		//(GSVF) Packed ADD Half
-* F0nm_1G5A  PADD.F		Rm, Rn		//(GSVF) Packed ADD Float
-
-Add Packed Elements.
-
-Each element from Rm is added to the corresponding element of Rn.
-
-
 === PADD.x 3R (GSV) ===
 
-* F0nm_2go0  PADD.W		Rm, Ro, Rn			//(GSV) Packed ADD Word
-* F0nm_2Go0  PADD.L		Rm, Ro, Rn			//(GSV) Packed ADD DWord
-* F0nm_2go5  PADD.F		Rm, Ro, Rn			//(GSVF) Packed FADD (2x Float)
-* F0nm_2Go5  PADDX.F	Rm, Ro, Rn			//(GSVFX) Packed FADD (4x Float)
+* F0nm_2go0  PADD.W		Rm, Ro, Rn		//(GSV) Packed ADD Word
+* F0nm_2Go0  PADD.L		Rm, Ro, Rn		//(GSV) Packed ADD DWord
+* F0nm_2go5  PADD.F		Rm, Ro, Rn		//(GSVF) Packed FADD (2x Float)
+* F0nm_2Go5  PADDX.F	Rm, Ro, Rn		//(GSVFX) Packed FADD (4x Float)
+* F0nm_2goD  PADD.H 	Rm, Ro, Rn		//(GSVF) Packed FADD (4x Half)
+* F0nm_2GoD  PADDX.D	Xm, Xo, Xn		//(GSVFX) Packed FADD (2x Double)
 
 Packed ADD, but in 3-register form.
-PADDX.F will operate on a 128-bit vector.
+PADDX.x will operate on a 128-bit vector.
 
 
 
 === PCMPx.x (GSV) ===
 
-* F0nm_1pCA  PCMPEQ.W	Rm, Rn		//Pack Compare Word, Equal
-* F0nm_1qCA  PCMPEQ.H	Rm, Rn		//Pack Compare Half, Equal
-* F0nm_1pDA  PCMPHI.W	Rm, Rn		//Pack Compare Word, Above
-* F0nm_1pEA  PCMPGT.W	Rm, Rn		//Pack Compare Word, Greater
-* F0nm_1qEA  PCMPGT.H	Rm, Rn		//Pack Compare Half, Greater
+* F0nm_1gAA  PCMPEQ.H	Rm, Rn		//Packed Compare Half, Equal
+* F0nm_1GAA  PCMPEQ.F	Rm, Rn		//Packed Compare Single, Equal
+* F0nm_1gBA  PCMPGT.H	Rm, Rn		//Packed Compare Half, Greater
+* F0nm_1GBA  PCMPGT.F	Rm, Rn		//Packed Compare Single, Greater
 
-* F0nm_1PCA  PCMPEQ.L	Rm, Rn		//Pack Compare DWord, Equal
-* F0nm_1QCA  PCMPEQ.F	Rm, Rn		//Pack Compare Float32, Equal
-* F0nm_1PDA  PCMPHI.L	Rm, Rn		//Pack Compare DWord, Above
-* F0nm_1PEA  PCMPGT.L	Rm, Rn		//Pack Compare DWord, Greater
-* F0nm_1QEA  PCMPGT.F	Rm, Rn		//Pack Compare Float32, Greater
+* F0nm_1gCA  PCMPEQ.W	Rm, Rn		//Pack Compare Word, Equal
+* F0nm_1GCA  PCMPEQ.L	Rm, Rn		//Pack Compare DWord, Equal
+* F0nm_1gDA  PCMPHI.W	Rm, Rn		//Pack Compare Word, Above
+* F0nm_1GDA  PCMPHI.L	Rm, Rn		//Pack Compare DWord, Above
+* F0nm_1gEA  PCMPGT.W	Rm, Rn		//Pack Compare Word, Greater
+* F0nm_1GEA  PCMPGT.L	Rm, Rn		//Pack Compare DWord, Greater
 
 Packed Compare.
 
 With Word and Half will update the P/Q/R/O bits in SR depending on the result of each comparison. These will compare each element Rn with the corresponding element in Rm. The SR.P bit will correspond with the low-order element, and SR.O will correspond with the high order element.
 
-Half comparisons will be similar to Word comparisons, but will differ in that values are sign magnitude.
+Half of Single comparisons will be similar to Word or DWord comparisons, but will differ in that values are sign magnitude.
 
 With Packed DWord and Float32, The T and S bits will be updated based on the comparison (T for the low element, and S for the high element).
 
+Note that bits other than those defined for the comparison will be undefined following the operation. So, If Q=0 then S and T are undefined, and if Q=1 then P/Q/R/O are undefined. An implementation may or may not ignore Q and update both sets of bits at the same time.
 
-Note that bits other than those defined for the comparison will be undefined following the operation. So, If Q=0 then S and T are undefined, and if Q=1 then P/Q/R/O are undefined.
 
+=== PCSELT.x (GSV) ===
 
-=== PCSELT.L (GSV) ===
+* F0nm_2go4  PCSELT.W	Rm, Ro, Rn
+* F0nm_2Go4  PCSELT.L	Rm, Ro, Rn
 
-* F0nm_5Go0  PCSELT.L	Rm, Ro, Rn
+PCSELT.L will select elements between Rm or Ro based on the value of SR.S and SR.T, storing the result in Rn. If SR.T is set, the low 32 bits from Rm is used, otherwise the low 32 bits from Ro are used. If SR.S is set, the high 32 bits from Rm is used, otherwise the high 32 bits from Ro are used.
 
-Select elements between Rm or Ro based on the value of SR.S and SR.T, storing the result in Rn.
-If SR.T is set, the low 32 bits from Rm is used, otherwise the low 32 bits from Ro are used. If SR.S is set, the high 32 bits from Rm is used, otherwise the high 32 bits from Ro are used.
+PCSELT.W will select each Word element from Rm or Rn depending on the corresponding P/Q/R/O bits in SR. If set, the word from Rm will be selected, otherwise the value from Ro will be used.
 
 
 === PLDxxx.x (GSV) (Drop?) ===
@@ -1425,13 +1431,17 @@ High operations will copy the source element to the high bits of the destination
 
 Dup operations will duplicate the source element in both the low and high bits.
 
-			
-=== PMUL.H (GSVF) ===
 
-* F0nm_1g7A  PMUL.H		Rm, Rn				//(GSVF) Packed MUL Half
-* F0nm_1G7A  PMUL.F		Rm, Rn				//(GSVF) Packed MUL Float
+=== PMUL.F 3R (GSVF) ===
 
-Multiply the packed Half-Float values in Rm and Rn, storing the result in Rn.
+* F0nm_2go7  PMUL.F		Rm, Ro, Rn			//(GSVF) Packed FMUL (2x Float)
+* F0nm_2Go7  PMULX.F	Xm, Xo, Xn			//(GSVFX) Packed FMUL (4x Float)
+* F0nm_2goF  PMUL.H		Rm, Ro, Rn			//(GSVF) Packed FMUL (4x Half)
+* F0nm_2GoF  PMULX.D	Xm, Xo, Xn			//(GSVFX) Packed FMUL (2x Double)
+
+Floating point packed multiply.
+These will multiply the vectors in Rm and Ro, storing the result in Rn.
+The vectors are available in 2x or 4x Single, 4x Half, or 2x Double.
 
 
 === PMULx.W 3R (GSV) ===
@@ -1468,25 +1478,14 @@ Low operations will use the low order bits of the source element as the destinat
 High operations will use the high order bits of the source element as the destination element. These bits will be copied unmodified.
 
 
-
-=== PSUB.x (GSV) ===
-
-* F0nm_1g1A / PSUB.W		Rm, Rn		//(GSV) Packed SUB Word
-* F0nm_1G1A / PSUB.L		Rm, Rn		//(GSV) Packed SUB DWord
-* F0nm_1g6A  PSUB.H		Rm, Rn		//(GSVF) Packed SUB Half
-* F0nm_1G6A  PSUB.F		Rm, Rn		//(GSVF) Packed SUB Float
-
-Subtract Packed Elements.
-
-Each element from Rm is subtracted from the corresponding element of Rn.
-
-
 === PSUB.x 3R (GSV) ===
 
 * F0nm_2go1  PSUB.W		Rm, Ro, Rn			//(GSV) Packed SUB Word
 * F0nm_2Go1  PSUB.L		Rm, Ro, Rn			//(GSV) Packed SUB DWord
 * F0nm_2go6  PSUB.F		Rm, Ro, Rn			//(GSVF) Packed FSUB (2x Float)
 * F0nm_2Go6  PSUBX.F	Rm, Ro, Rn			//(GSVFX) Packed FSUB (4x Float)
+* F0nm_2goE  PSUB.H		Rm, Ro, Rn			//(GSVF) Packed FSUB (4x Half)
+* F0nm_2GoE  PSUBX.D	Xm, Xo, Xn			//(GSVFX) Packed FSUB (2x Double)
 
 Subtract Packed Elements.
 
@@ -1495,12 +1494,12 @@ Each element from Ro is subtracted from the corresponding element of Rm.
 The PSUBX variant will operate on 128-bit vectors (GPR pair).
 
 
-=== PSELx.x (GSV) ===
+=== PSELx.x (GSV) (Drop) ===
 
-* F0nm_1pBA  PSELT.W	Rm, Rn		//Packed Select Word
-* F0nm_1qBA  PSELF.W	Rm, Rn		//Packed Select Word
-* F0nm_1PBA  PSELT.L	Rm, Rn		//Packed Select DWord
-* F0nm_1QBA  PSELF.L	Rm, Rn		//Packed Select DWord
+* F0nm_1pBA / PSELT.W	Rm, Rn		//Packed Select Word
+* F0nm_1qBA / PSELF.W	Rm, Rn		//Packed Select Word
+* F0nm_1PBA / PSELT.L	Rm, Rn		//Packed Select DWord
+* F0nm_1QBA / PSELF.L	Rm, Rn		//Packed Select DWord
 
 Select each Word element from Rm or Rn depending on the corresponding P/Q/R/O bits in SR, or each DWord element depending on the corresponding T or S bit.
 
@@ -1526,6 +1525,31 @@ Each element will be given as a 2-bit value, with 00 mapping to the low-order bi
 
 This instruction is synthetic.
 Packed Shuffle of DWord element, operating on a logical 128-bit register.
+
+
+=== RGB Pack/Unpack ===
+
+* F0nm_1g2E  RGB5PCK32		Rm, Rn		//(RGB) RGB555 Pack from RGB32
+* F0nm_1G2E  RGB5PCK64		Rm, Rn		//(RGB) RGB555 Pack from RGB64
+* F0nm_1g3E  RGB5UPCK32		Rm, Rn		//(RGB) RGB555 Unpack to RGB32
+* F0nm_1G3E  RGB5UPCK64		Rm, Rn		//(RGB) RGB555 Unpack to RGB64
+* F0nm_1G4E  RGB32PCK64		Rm, Rn		//(RGB) RGB32 Pack from RGB64
+* F0nm_1G5E  RGB32UPCK64	Rm, Rn		//(RGB) RGB32 Unpack to RGB64
+
+Pack or Unpack RGB values.
+Pack will convert from a wider format to a narrower one.
+Unpack will convert from a narrower format to a wider one.
+
+RGB555:
+* 0rrrrrgggggbbbbb, Opaque
+* 1rrrraggggabbbba, Translucent (3 bit Alpha)
+
+Unpacking to RGB555 to RGB32 will mirror the high bits of each component into the low bits, so 43210 is expanded to 8 bits as 43210432. Note that the alpha-blended case will unpack RGB the same as in the opaque case, so 4321a becomes 4321a432. The alpha value will be different, where translucent values will instead fill the low-order bits with 0.
+
+Unpacking to RGB64 will repeat each RGB32 component twice, for all components.
+Unpacking RGB555 to RGB64 will behave as if the value were first unpacked to RGB32 and then to RGB64.
+
+Packing will do the reverse process, keeping only the high order bits and discarding the rest. When packing to RGB555, if the high 4 bits of Alpha are Set, then the pixel will be treated as opaque (and MSB will be clear), otherwise the MSB will be set and the LSB of each component will contain the one of the high 3 bits of the Alpha channel.
 
 
 === SWxP.x (GSV) ===

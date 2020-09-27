@@ -239,6 +239,8 @@ void R_RenderSegLoop (void)
 	int			bottom;
 //	fixed_t		tz;
 
+//	return;
+
 	//texturecolumn = 0;				// shut up compiler warning
 
 //	tz = ds_p->tz1;
@@ -557,7 +559,7 @@ R_StoreWallRange
 		if (linedef->flags & ML_DONTPEGBOTTOM)
 		{
 			vtop = frontsector->floorheight +
-			textureheight[sidedef->midtexture];
+				textureheight[sidedef->midtexture];
 			// bottom of texture at bottom
 			rw_midtexturemid = vtop - viewz;	
 		}

@@ -54,6 +54,14 @@
 #define CCXL_TY_VEC4UW			0x2D		//64-bit 4x ushort vector
 #define CCXL_TY_VEC4SI			0x2E		//128-bit 4x int vector
 #define CCXL_TY_VEC4UI			0x2F		//128-bit 4x uint vector
+#define CCXL_TY_HCOMPLEX		0x30		//32-bit half2 complex
+#define CCXL_TY_VEC4H			0x31		//128-bit 4x uint vector
+
+#define CCXL_TY_FIMAG			0x32		//32-bit float imaginary
+#define CCXL_TY_DIMAG			0x33		//64-bit double imaginary
+#define CCXL_TY_HIMAG			0x34		//16-bit half imaginary
+#define CCXL_TY_GIMAG			0x35		//128-bit float128 imaginary
+#define CCXL_TY_GCOMPLEX		0x36		//256-bit float128 complex
 
 #define CCXL_VTY_PCHAR			0x00001008	//'char *'
 #define CCXL_VTY_PWCHAR			0x0000100B	//'wchar_t *'
@@ -104,6 +112,18 @@
 #define CCXL_TY_PN4_A0B		0xE		//pointer level (T[0])
 #define CCXL_TY_PN4_A0P1	0xF		//pointer level (*T[0])
 
+/*
+Base, P1..P7:
+  Array Size: Interpreted as dimensions for array.
+Base, Q1..Q3:
+  Array Size: Holds indirection level for Square Arrays:
+    0: 1D Tag Array
+    1..7: Square Array, T[x], T[y,x], T[z,y,x], ...
+      Reference is to Array Header.
+    8: Resv
+    9..F: Pointer Levels.
+      Reference is to an internal pointer.
+ */
 
 //Basic2 Type
 #define CCXL_TYB2_BASEMASK		0x0000003F	//base type or struct
@@ -334,6 +354,7 @@
 #define CCXL_TERR_CONV_PTRRANGELOSS		0xA004
 #define CCXL_TERR_CONV_PTRSIZEDIFF		0xA005
 #define CCXL_TERR_RETVOID				0xA006
+#define CCXL_TERR_MISSINGPROTO			0xA007
 
 #define CCXL_TERR_STATUS(st)			(0xA800+(st))
 
@@ -390,9 +411,9 @@
 // #define CCXL_VOP_BINARY				0x0F
 #define CCXL_VOP_DBGFN				0x0E
 #define CCXL_VOP_DBGLN				0x0F
-#define CCXL_VOP_COMPARE			0x10
-#define CCXL_VOP_LDIXIMM			0x11
-#define CCXL_VOP_STIXIMM			0x12
+#define CCXL_VOP_COMPARE			0x10		//compare two values
+#define CCXL_VOP_LDIXIMM			0x11		//load index (immed)
+#define CCXL_VOP_STIXIMM			0x12		//store index (immed)
 #define CCXL_VOP_LDIX				0x13
 #define CCXL_VOP_STIX				0x14
 #define CCXL_VOP_LEAIMM				0x15
@@ -419,11 +440,13 @@
 #define CCXL_VOP_CSELCMP			0x28
 #define CCXL_VOP_CSELCMP_Z			0x29
 #define CCXL_VOP_JMPTAB				0x2A
-#define CCXL_VOP_OBJCALL			0x2B
+#define CCXL_VOP_OBJCALL			0x2B		//method call
 #define CCXL_VOP_PREDCMP			0x2C
 #define CCXL_VOP_PREDCMP_Z			0x2D
 #define CCXL_VOP_PREDSYNC			0x2E		//sync registers
-#define CCXL_VOP_CALL_INTRIN		0x2F
+#define CCXL_VOP_CALL_INTRIN		0x2F		//call intrinsic function
+
+#define CCXL_VOP_ASMINLINE			0x30		//Inline ASM blob
 
 
 #define CCXL_VOPITY_NONE			0x00		//imm is not used
@@ -503,6 +526,8 @@ typedef struct BGBCC_CCXL_BackendFuncs_vt_s BGBCC_CCXL_BackendFuncs_vt;
 
 typedef struct BGBCC_CCXL_VirtOp_s BGBCC_CCXL_VirtOp;
 typedef struct BGBCC_CCXL_VirtTr_s BGBCC_CCXL_VirtTr;
+
+typedef struct BGBCC_CCXL_LvaTagInfo_s BGBCC_CCXL_LvaTagInfo;
 
 struct BGBCC_CCXL_RegisterInfo_s {
 BGBCC_CCXL_RegisterInfo *next;
@@ -615,7 +640,11 @@ int n_ops;			//num opcodes
 int trfl;			//trace flags
 };
 
-
+struct BGBCC_CCXL_LvaTagInfo_s {
+char *name;
+short idx;
+short chain;
+};
 
 bccx_cxstate bgbcc_rcst_anytype;
 bccx_cxstate bgbcc_rcst_arch;

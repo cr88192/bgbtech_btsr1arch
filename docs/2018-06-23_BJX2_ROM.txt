@@ -111,11 +111,12 @@ MMIO Space:
 ** Bit 1: Clear Recieve
 ** Bit 4: Enable Interrupt
 
-* 0000E020(W): SPI Slave Control
-* 0000E024(R/W): SPI Slave Data
+* 0000E020(W): SPI Control
+* 0000E024(R/W): SPI Data
 
-* 0000E030(W): SPI Slave Control
-* 0000E034(R/W): SPI Slave Data
+* 0000E030(W): SPI Control
+* 0000E034(R/W): SPI Data
+* 0000E038(R/W): SPI Data 8x
 
 * 0000E040(R): PS2 KB RX
 * 0000E044(R): PS2 KB TX
@@ -128,6 +129,8 @@ MMIO Space:
 * 0000E060(R/W): LCD Status / Control
 * 0000E064(R/W): LCD Read/Write Data/Command
 * 0000E068(R): LCD Status
+
+* 0000E080(W): IRQ Bounce
 
 * 0000E100(R): GPIO In
 * 0000E104(R/W): GPIO Out

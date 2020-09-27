@@ -40,22 +40,36 @@ rcsid[] = "$Id: m_bbox.c,v 1.1 1997/02/03 22:45:10 b1 Exp $";
 
 
 long long __smullq(int a, int b);
+long long __int32_dmuls(int a, int b);
 
 // Fixme. __USE_C_FIXED__ or something.
 
-fixed_t
-FixedMul
-( fixed_t	a,
-  fixed_t	b )
+#ifdef __BJX2__
+
+fixed_t FixedMul(fixed_t a, fixed_t b);
+
+__asm {
+FixedMul:
+	DMULS.L		R4, R5, R6
+	SHAD.Q		R6, -16, R7
+	EXTS.L		R7, R2
+	RTS
+};
+
+#else
+
+fixed_t FixedMul(fixed_t a, fixed_t b)
 {
 	int c;
 //	c = ((long long) a * (long long) b) >> FRACBITS;
-	c = __smullq(a, b) >> FRACBITS;
+//	c = __smullq(a, b) >> FRACBITS;
+	c = __int32_dmuls(a, b) >> FRACBITS;
 	c = (int)c;
 	return(c);
 //	return ((long long) a * (long long) b) >> FRACBITS;
 }
 
+#endif
 
 
 //
@@ -85,7 +99,8 @@ FixedDivSoft
 //	return FixedDiv2 (a,b);
 
 	r=M_SoftDivRcpS(b);
-	c=__smullq(a, r);
+//	c=__smullq(a, r);
+	c = __int32_dmuls(a, r);
 	return (fixed_t)(c>>16);
 }
 

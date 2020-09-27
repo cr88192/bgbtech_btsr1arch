@@ -930,6 +930,9 @@ int nmid;
 {"paddx.f",		BGBCC_SH_NMID_PADDFX},
 {"psubx.f",		BGBCC_SH_NMID_PSUBFX},
 {"pmulx.f",		BGBCC_SH_NMID_PMULFX},
+{"paddx.d",		BGBCC_SH_NMID_PADDXD},
+{"psubx.d",		BGBCC_SH_NMID_PSUBXD},
+{"pmulx.d",		BGBCC_SH_NMID_PMULXD},
 
 {"pshuf.b",		BGBCC_SH_NMID_PSHUFB},
 {"pshuf.w",		BGBCC_SH_NMID_PSHUFW},
@@ -942,6 +945,20 @@ int nmid;
 {"pmuls.lw",	BGBCC_SH_NMID_PMULSLW},
 {"pmulu.hw",	BGBCC_SH_NMID_PMULUHW},
 {"pmuls.hw",	BGBCC_SH_NMID_PMULSHW},
+
+{"pcselt.w",	BGBCC_SH_NMID_PCSELTW},
+{"pcselt.l",	BGBCC_SH_NMID_PCSELTL},
+{"pcmpeq.w",	BGBCC_SH_NMID_PCMPEQW},
+{"pcmpeq.l",	BGBCC_SH_NMID_PCMPEQL},
+{"pcmphi.w",	BGBCC_SH_NMID_PCMPHIW},
+{"pcmphi.l",	BGBCC_SH_NMID_PCMPHIL},
+{"pcmpgt.w",	BGBCC_SH_NMID_PCMPGTW},
+{"pcmpgt.l",	BGBCC_SH_NMID_PCMPGTL},
+
+{"pcmpeq.h",	BGBCC_SH_NMID_PCMPEQH},
+{"pcmpeq.f",	BGBCC_SH_NMID_PCMPEQF},
+{"pcmpgt.h",	BGBCC_SH_NMID_PCMPGTH},
+{"pcmpgt.f",	BGBCC_SH_NMID_PCMPGTF},
 
 {"rgb5shr1",	BGBCC_SH_NMID_RGB5SHR1},
 
@@ -1287,11 +1304,27 @@ int BGBCC_JX2A_TryAssembleOpcode(
 		rt=BGBCC_JX2_TryEmitOpAutoLabel(ctx, nmid, lbl);
 		break;
 	case BGBCC_SH_FMID_LBLREG:
+		if(nmid==BGBCC_SH_NMID_MOV)
+		{
+			rt=BGBCC_JX2C_CheckEmitLoadFrameNameReg(
+				ctx->tctx, ctx, arg0->name, arg1->breg);
+			if(rt>0)
+				break;
+		}
+
 		lbl=BGBCC_JX2_GetNamedLabel(ctx, arg0->name);
 		rt=BGBCC_JX2_TryEmitOpLblReg(ctx, nmid, lbl, arg1->breg);
 		break;
 
 	case BGBCC_SH_FMID_REGLBL:
+		if(nmid==BGBCC_SH_NMID_MOV)
+		{
+			rt=BGBCC_JX2C_CheckEmitStoreFrameNameReg(
+				ctx->tctx, ctx, arg1->name, arg0->breg);
+			if(rt>0)
+				break;
+		}
+
 		lbl=BGBCC_JX2_GetNamedLabel(ctx, arg1->name);
 		rt=BGBCC_JX2_TryEmitOpRegLbl(ctx, nmid, lbl, arg0->breg);
 		break;

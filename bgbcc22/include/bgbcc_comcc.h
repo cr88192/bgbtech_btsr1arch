@@ -374,6 +374,10 @@ int frm_offs_retstr;	//offset of return struct
 int frm_offs_save;		//offset of register-save area
 
 int frm_offs_thisptr;	//offset of 'this' pointer
+int frm_offs_sectoken;	//offset of security token
+int frm_offs_allocamrk;	//offset of alloca mark
+
+s64 frm_val_sectoken;	//value used for security token.
 
 int lbl_rom_data_strt;
 int lbl_rom_data_end;

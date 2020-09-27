@@ -157,6 +157,22 @@ TK_EnvContext *TK_GetCurrentEnvContext()
 	return(env);
 }
 
+static void *tk_dummyallocaptr;
+
+void **TK_GetAllocaMark()
+{
+	TKPE_TaskInfo *task;
+//	TK_EnvContext *env;
+
+	task=__arch_tbr;
+	if(!task)
+	{
+		return(&tk_dummyallocaptr);
+//		return(NULL);
+	}
+	return(&(task->allocaptr));
+}
+
 int TK_TaskAddPageAlloc(TKPE_TaskInfo *task, void *base, int size)
 {
 	int i;

@@ -285,7 +285,7 @@ addsfx
 	else
 		slot = i;
 		
-	if(slot >= NUM_CHANNELS)
+	if((slot<0) || (slot >= NUM_CHANNELS))
 	{
 		printf("addsfx: Bad Slot %d\n", slot);
 		return(-1);
@@ -336,8 +336,8 @@ addsfx
 	
 	// Get the proper lookup table piece
 	//	for this volume level???
-	channelleftvol_lookup[slot] = &vol_lookup[leftvol*256];
-	channelrightvol_lookup[slot] = &vol_lookup[rightvol*256];
+//	channelleftvol_lookup[slot] = &vol_lookup[leftvol*256];
+//	channelrightvol_lookup[slot] = &vol_lookup[rightvol*256];
 
 	lv = (leftvol*240)>>7;
 	rv = (rightvol*240)>>7;
@@ -360,6 +360,9 @@ addsfx
 	// Preserve sound SFX id,
 	//	e.g. for avoiding duplicates of chainsaw.
 	channelids[slot] = sfxid;
+
+	if((slot<0) || (slot >= NUM_CHANNELS))
+		{ __debugbreak(); }
 
 	// You tell me.
 	return rc;
@@ -541,8 +544,8 @@ void I_UpdateSound( void )
 	int		**clvl;
 	int		**crvl;
 
-	int		**clv;
-	int		**crv;
+	int		*clv;
+	int		*crv;
 	int		nchan;
 	int		nsamp;
 	

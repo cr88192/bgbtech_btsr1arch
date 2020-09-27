@@ -866,7 +866,7 @@ int main(int argc, char *argv[])
 	char *ifn;
 	double tsec;
 	int t0, t1, tt, fbtt, tvus;
-	int ifmd, rdsz, mhz, usejit, swapsz;
+	int ifmd, rdsz, mhz, usejit, swapsz, chkbss;
 	int i;
 	
 	rd_n_add=0;
@@ -878,6 +878,7 @@ int main(int argc, char *argv[])
 	ifmd=0; rdsz=512;
 	swapsz=384;
 	mhz=100; usejit=0;
+	chkbss=0;
 	for(i=1; i<argc; i++)
 	{
 		if(argv[i][0]=='-')
@@ -898,6 +899,9 @@ int main(int argc, char *argv[])
 				{ usejit=1; continue; }
 			if(!strcmp(argv[i], "--nojit"))
 				{ usejit=2; continue; }
+
+			if(!strcmp(argv[i], "--chkbss"))
+				{ chkbss=1; continue; }
 
 			continue;
 		}
@@ -968,6 +972,20 @@ int main(int argc, char *argv[])
 	for(i=0; i<rd_n_map; i++)
 	{
 		BJX2_ContextLoadMap(ctx, rd_map[i]);
+	}
+
+	if(chkbss)
+	{
+		ctx->dbg_data_start=BJX2_DbgAddrForName(ctx, "__data_start");
+		ctx->dbg_data_end=BJX2_DbgAddrForName(ctx, "__data_end");
+		ctx->dbg_bss_start=BJX2_DbgAddrForName(ctx, "__bss_start");
+		ctx->dbg_bss_end=BJX2_DbgAddrForName(ctx, "__bss_end");
+	}else
+	{
+		ctx->dbg_data_start=0;
+		ctx->dbg_data_end=0;
+		ctx->dbg_bss_start=0;
+		ctx->dbg_bss_end=0;
 	}
 
 	ctx_c2=BJX2_CreateSubContext(ctx);

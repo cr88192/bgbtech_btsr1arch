@@ -1836,6 +1836,11 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
 		BGBCC_CCXL_StackPushConstW4String(ctx, s0);
 		break;
+		
+	case BGBCC_RIL3OP_INLINEASM:
+		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		BGBCC_CCXL_InlineAsmBlob(ctx, s0);
+		break;
 
 	default:
 		__debugbreak();

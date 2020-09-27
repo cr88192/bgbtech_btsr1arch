@@ -1947,3 +1947,39 @@ void BJX2_Op_CSELT_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 			ctx->regs[op->rm]:
 			ctx->regs[op->ro];
 }
+
+void BJX2_Op_PCSELTL_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+	u32 sa0, sb0, sc0;
+	u32 sa1, sb1, sc1;
+
+	va=ctx->regs[op->rm];
+	vb=ctx->regs[op->ro];
+
+	sa0=(u32)(va);	sa1=(u32)(va>>32);
+	sb0=(u32)(vb);	sb1=(u32)(vb>>32);
+	sc0=(ctx->regs[BJX2_REG_SR]&1)?sa0:sb0;
+	sc1=(ctx->regs[BJX2_REG_SR]&2)?sa1:sb1;
+	vc=sc0 | (((u64)sc1)<<32);
+
+	ctx->regs[op->rn]=vc;
+}
+
+void BJX2_Op_PCSELTW_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+	u16 sa0, sb0, sc0;
+	u16 sa1, sb1, sc1;
+	u16 sa2, sb2, sc2;
+	u16 sa3, sb3, sc3;
+	va=ctx->regs[op->rm];	vb=ctx->regs[op->ro];
+	sa0=(u16)(va);	sa1=(u16)(va>>16);	sa2=(u16)(va>>32);	sa3=(u16)(va>>48);
+	sb0=(u16)(vb);	sb1=(u16)(vb>>16);	sb2=(u16)(vb>>32);	sb3=(u16)(vb>>48);
+	sc0=(ctx->regs[BJX2_REG_SR]& 16)?sa0:sb0;
+	sc1=(ctx->regs[BJX2_REG_SR]& 32)?sa1:sb1;
+	sc2=(ctx->regs[BJX2_REG_SR]& 64)?sa2:sb2;
+	sc3=(ctx->regs[BJX2_REG_SR]&128)?sa3:sb3;
+	vc=sc0 | (((u64)sc1)<<16) | (((u64)sc2)<<32) | (((u64)sc3)<<48);
+	ctx->regs[op->rn]=vc;
+}

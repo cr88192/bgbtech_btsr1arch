@@ -455,11 +455,13 @@ static char *bgbcp_basetypes_c[]={
 
  "__vec4w", "__vec4sw", "__vec4uw",
  "__vec4i", "__vec4si", "__vec4ui",
+ "__vec4h", "__vec4sf",
  
 "__bfloat16",
 
 "__fcomplex",
 "__dcomplex",
+"__hcomplex",
 
 // "_Float128",	"_Float64",
 // "_Float32",	"_Float16",
@@ -875,7 +877,8 @@ s64 BGBCP_DefTypeFlag(BGBCP_ParseState *ctx, char *tag)
 			}else
 			{
 				if(!bgbcp_strcmp(tag, "_Complex"))i=BGBCC_TYFL_UNSIGNED;
-				if(!bgbcp_strcmp(tag, "_Imaginary"))i=BGBCC_TYFL_UNSIGNED;
+//				if(!bgbcp_strcmp(tag, "_Imaginary"))i=BGBCC_TYFL_UNSIGNED;
+				if(!bgbcp_strcmp(tag, "_Imaginary"))i=BGBCC_TYFL_SIGNED;
 
 				if(!bgbcp_strcmp(tag, "_Near"))i=BGBCC_TYFL_NEAR;
 				if(!bgbcp_strcmp(tag, "_Far"))i=BGBCC_TYFL_FAR;

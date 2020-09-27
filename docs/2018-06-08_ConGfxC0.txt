@@ -30,13 +30,14 @@ Control Register 0 Bits:
 * (7:4): Screen Buffer Mode
 ** 0=Color Cell, CLR15=YVU654.
 ** 1=4x4x16bpp (256b) or 4x4x8bpp (128b)
-** 2=8x8x4bpp (256b)
+** 2=8x8x4bpp (256b) or 8x8x2bpp (128b)
 ** 8=ColorCell, CLR15=RGB555.
-** 9=4x4x16bpp RGB565
+** 9=4x4x16bpp RGB555
 * 8: Display Resolution 2
 * 9: Display Resolution 3
 * 10: Cell Width 2
 * 11: Cell Width 3
+* (15:12): Colorspace Modifier
 
 Basic Display Resolution
 * (DR3, DR2, DR1)
@@ -58,13 +59,17 @@ The mode bits will select which of the formats is used.
 
 256 bit:
 * 4x4x16b, 4x4 cell of YVU655 endpoints.
-** An alternate mode may use RGB565.
+** An alternate mode may use RGB555.
 * 8x8x4b, 8x8 cell of RGBI endpoints.
 ** Basic layout is the same as the 16bpp mode.
 ** Each 16-bit element is further split into 2x2 RGBI values.
 
 128-bit:
 * 4x4x8b, 4x4 cell of 256-color endpoints.
+
+* 8x8x2b, 8x8 cell of 2-bit endpoints.
+** Basic layout is the same as the 8bpp mode.
+** Each 8-bit element is further split into 2x2 2I values.
 
 Pixels will be organized in the cells in raster order starting from the top-left, with the first pixel in the LSB. This will match a typical in-memory order in the 16-bit case.
 
@@ -96,11 +101,12 @@ Colors may be one of several colorspaces:
 *** ( 3:0)=U
 
 
-=== Cell Modes 0 and 1 (Basic Cells) ===
+=== Cell Modes 0.0 and 1.0 (Basic Cells) ===
 
 Base glyphs are organized as 32-bit cells.
 * (255:64): Ignored
-* (63:32): Reserved, Zeroes
+* (63:62): Cell Mode B (CellModeB, 0)
+* (61:32): Reserved, Zeroes
 ** (63:62): May be used for further Cell Modes.
 * (31:30): Cell Mode (CellMode)
 ** 00: Text Cell, 8x8, uses Font Memory
@@ -109,7 +115,7 @@ Base glyphs are organized as 32-bit cells.
 * (27:16): Color or Effect Bits
 * (15: 0): Char or Pixel Bits
 
-Cell Mode 0:
+Cell Mode 0.0:
 * Cells are a text-cell, with a 10-bit font space.
 ** (15:10): Attribute Effect Flags (if ClrTag==0)
 *** (15:14)=Blink
@@ -128,7 +134,7 @@ Blink:
 ** (61:32)=Alternate Cell Contents
 ** Switches alternatively between two different cell glyphs.
 
-Cell Mode 1:
+Cell Mode 1.0:
 * Encodes a 4x4x1 Color Cell
 ** (15:0): 4x4x1 Bitmap bits.
 * ClrMode is 00.
@@ -211,7 +217,7 @@ Format (3.0): 6-bpp Bitmap Cells (128 bit):
 ** (127:120), (95:88) = Currently Ignored
 
 
-==== Format (3.1): 8x16 Cell, 4x8 Sub-Cell ====
+==== Format (3.1): 8x16 Cell, 4x8 Sub-Cell (256 bit) ====
 
 Format (3.1): YUV 4:2:0 (256 bit):
 * (255:128) = Pixel Bits (As 2x4 4x4x1 Sub-Blocks)

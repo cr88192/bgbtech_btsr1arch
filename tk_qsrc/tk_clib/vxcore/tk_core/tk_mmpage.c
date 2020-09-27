@@ -385,6 +385,12 @@ void *TKMM_Malloc(int sz)
 	if(!TKMM_PageAlloc_f)
 		__debugbreak();
 
+	if(sz<TKMM_MAXMMCELLSZ)
+	{
+		ptr=TKMM_MMCell_Malloc(sz);
+		return(ptr);
+	}
+
 //	if(sz<65536)
 	if(sz<TKMM_MAXMMLISTSZ)
 	{
@@ -407,7 +413,7 @@ void *TKMM_Malloc(int sz)
 	ptr=TKMM_PageToPointer(pg);
 #endif
 
-#if 1
+#if 0
 	np=(sz+sizeof(TKMM_MemLnkObj)+TKMM_PAGEMASK)>>TKMM_PAGEBITS;
 //	ptr=TKMM_PageAlloc(sz+sizeof(TKMM_MemLnkObj));
 	ptr=TKMM_PageAlloc(np<<TKMM_PAGEBITS);
@@ -423,6 +429,8 @@ void *TKMM_Malloc(int sz)
 	}
 
 #endif
+
+	ptr=TKMM_MMList_AllocBrk(sz+sizeof(TKMM_MemLnkObj));
 
 //	__debugbreak();
 	
@@ -463,9 +471,21 @@ int TKMM_Free(void *ptr)
 	int b, n;
 
 	if(!ptr)return(-1);
-	obj=(TKMM_MemLnkObj *)(((byte *)ptr)-TKMM_OFFS_DATA);
+//	obj=(TKMM_MemLnkObj *)(((byte *)ptr)-TKMM_OFFS_DATA);
 //	obj->fl|=1;
 
+	obj=TKMM_MMList_GetPtrLnkObj(ptr);
+	if(!obj)
+	{
+		return(-1);
+	}
+
+	if(obj->fl&8)
+	{
+		TKMM_MMCell_FreeLnkObjCellPtr(obj, ptr);
+		return(0);
+	}
+	
 	if(obj->fl&4)
 	{
 //		b=TKMM_PointerToPage(obj);
@@ -473,7 +493,37 @@ int TKMM_Free(void *ptr)
 		TKMM_PageFree(obj, obj->ix<<TKMM_PAGEBITS);
 		return(0);
 	}
-	
+
 	TKMM_MMList_FreeLnkObj(obj);
 	return(0);
+}
+
+int TKMM_GetSize(void *ptr)
+{
+	TKMM_MemLnkObj *obj;
+	int b, n, sz1;
+
+	if(!ptr)
+		return(-1);
+
+	obj=TKMM_MMList_GetPtrLnkObj(ptr);
+	if(!obj)
+	{
+		return(-1);
+	}
+
+	if(obj->fl&8)
+	{
+		sz1=TKMM_MMCell_GetLnkObjCellSize(obj, ptr);
+		return(sz1);
+	}
+	
+	if(obj->fl&4)
+	{
+		sz1=obj->ix<<TKMM_PAGEBITS;
+	}else
+	{
+		sz1=TKMM_FxiToSize(obj->ix);
+	}
+	return(sz1);
 }

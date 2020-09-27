@@ -240,10 +240,35 @@ reg[63:0]	tVecCnvRnI;
 wire[31:0]	tVecCnvRnO;
 FpuConvD2S vec_cnv_rn(tVecCnvRnI, tVecCnvRnO);
 
+`ifdef def_true
+reg[15:0]	tVechCnvRsI;
+reg[15:0]	tVechCnvRtI;
+wire[63:0]	tVechCnvRsO;
+wire[63:0]	tVechCnvRtO;
+FpuConvH2D vech_cnv_rs(tVechCnvRsI, tVechCnvRsO);
+FpuConvH2D vech_cnv_rt(tVechCnvRtI, tVechCnvRtO);
+
+// reg[63:0]	tVechCnvRnI;
+wire[15:0]	tVechCnvRnO;
+FpuConvD2H vech_cnv_rn(tVecCnvRnI, tVechCnvRnO);
+
+reg[63:0]	tVecdCnvRs;
+reg[63:0]	tVecdCnvRt;
+reg[63:0]	tVecdCnvRn;
+
+`endif
+
 reg[63:0]	tVecRnA;
 reg[63:0]	tVecRnB;
+reg[63:0]	tVechRn;
 reg[63:0]	tNxtVecRnA;
 reg[63:0]	tNxtVecRnB;
+reg[63:0]	tNxtVechRn;
+
+reg[63:0]	tVecdRnA;
+reg[63:0]	tVecdRnB;
+reg[63:0]	tNxtVecdRnA;
+reg[63:0]	tNxtVecdRnB;
 
 
 //wire[63:0]	tRegAddRn;		//Rn input value
@@ -405,6 +430,9 @@ begin
 
 	tNxtVecRnA		= tVecRnA;
 	tNxtVecRnB		= tVecRnB;
+	tNxtVechRn		= tVechRn;
+	tNxtVecdRnA		= tVecdRnA;
+	tNxtVecdRnB		= tVecdRnB;
 	tDoHoldCyc		= 0;
 
 `ifndef def_true
@@ -440,6 +468,14 @@ begin
 	tVecCnvRtI	= tRegValRtA[31:0];
 	tVecCnvRnI	= tRegAddVal;
 
+	tVechCnvRsI	= tRegValRsA[15:0];
+	tVechCnvRtI	= tRegValRtA[15:0];
+//	tVechCnvRnI	= tRegAddVal;
+
+	tVecdCnvRs	= tRegValRsA[63:0];
+	tVecdCnvRt	= tRegValRtA[63:0];
+//	tVecCnvRnI	= tRegAddVal;
+
 	case(tHoldCyc)
 		0: begin
 		end
@@ -451,6 +487,11 @@ begin
 //				tVecCnvRtI = tRegValRt[31:0];
 				tVecCnvRsI = tRegValRsL[31:0];
 				tVecCnvRtI = tRegValRtL[31:0];
+
+				tVechCnvRsI = tRegValRsL[15:0];
+				tVechCnvRtI = tRegValRtL[15:0];
+				tVecdCnvRs	= tRegValRsL[63:0];
+				tVecdCnvRt	= tRegValRtL[63:0];
 		end
 		2: begin
 //				tVecCnvRsI = tRegValRsA[63:32];
@@ -459,34 +500,48 @@ begin
 //				tVecCnvRtI = tRegValRt[63:32];
 				tVecCnvRsI = tRegValRsL[63:32];
 				tVecCnvRtI = tRegValRtL[63:32];
+				tVechCnvRsI = tRegValRsL[31:16];
+				tVechCnvRtI = tRegValRtL[31:16];
+				tVecdCnvRs	= tRegValRsBL[63:0];
+				tVecdCnvRt	= tRegValRtBL[63:0];
 		end
 		3: begin
 //				tVecCnvRsI = tRegValRsB[31:0];
 //				tVecCnvRtI = tRegValRtB[31:0];
 				tVecCnvRsI = tRegValRsBL[31:0];
 				tVecCnvRtI = tRegValRtBL[31:0];
+				tVechCnvRsI = tRegValRsL[47:32];
+				tVechCnvRtI = tRegValRtL[47:32];
 		end
 		4: begin
 //				tVecCnvRsI = tRegValRsB[63:32];
 //				tVecCnvRtI = tRegValRtB[63:32];
 				tVecCnvRsI = tRegValRsBL[63:32];
 				tVecCnvRtI = tRegValRtBL[63:32];
+				tVechCnvRsI = tRegValRsL[63:48];
+				tVechCnvRtI = tRegValRtL[63:48];
 		end
 		
 		5: begin
 		end
 
 		6: begin
-			tNxtVecRnA[31:0] = tVecCnvRnO;
+			tNxtVecRnA [31:0] = tVecCnvRnO;
+			tNxtVechRn [15:0] = tVechCnvRnO;
+			tNxtVecdRnA[63:0] = tVecCnvRnI;
 		end
 		7: begin
-			tNxtVecRnA[63:32] = tVecCnvRnO;
+			tNxtVecRnA [63:32] = tVecCnvRnO;
+			tNxtVechRn [31:16] = tVechCnvRnO;
+			tNxtVecdRnB[63: 0] = tVecCnvRnI;
 		end
 		8: begin
-			tNxtVecRnB[31:0] = tVecCnvRnO;
+			tNxtVecRnB[31: 0] = tVecCnvRnO;
+			tNxtVechRn[47:32] = tVechCnvRnO;
 		end
 		9: begin
 			tNxtVecRnB[63:32] = tVecCnvRnO;
+			tNxtVechRn[63:48] = tVechCnvRnO;
 		end
 		
 		default: begin
@@ -551,6 +606,31 @@ begin
 					tRegValGRnB	= tVecRnB;
 					tRegValGRnA	= tVecRnA;
 					tRegValGRn	= tVecRnA;
+					
+					if(tRegIdIxtL[4])
+					begin
+						if(tRegIdIxtL[5])
+						begin
+							tRegAddRs	= tVecdCnvRs;
+							tRegAddRt	= tVecdCnvRt;
+							tRegValGRnB	= tVecdRnB;
+							tRegValGRnA	= tVecdRnA;
+							tRegValGRn	= tVecdRnA;
+							tDoHoldCyc	= 8;
+						end
+						else
+						begin
+							tRegAddRs	= tVechCnvRsO;
+							tRegAddRt	= tVechCnvRtO;
+							tRegValGRnA	= tVechRn;
+							tRegValGRn	= tVechRn;
+						end
+					end
+					else
+					begin
+						if(!tExCmdVecW)
+							tDoHoldCyc	= 8;
+					end
 				end
 				4'h6: begin
 					tRegAddRs	= tVecCnvRsO;
@@ -567,6 +647,31 @@ begin
 					tRegValGRnB = tVecRnB;
 					tRegValGRnA = tVecRnA;
 					tRegValGRn	= tVecRnA;
+
+					if(tRegIdIxtL[4])
+					begin
+						if(tRegIdIxtL[5])
+						begin
+							tRegAddRs	= tVecdCnvRs;
+							tRegAddRt	= tVecdCnvRt;
+							tRegValGRnB	= tVecdRnB;
+							tRegValGRnA	= tVecdRnA;
+							tRegValGRn	= tVecdRnA;
+							tDoHoldCyc	= 8;
+						end
+						else
+						begin
+							tRegAddRs	= tVechCnvRsO;
+							tRegAddRt	= tVechCnvRtO;
+							tRegValGRnA	= tVechRn;
+							tRegValGRn	= tVechRn;
+						end
+					end
+					else
+					begin
+						if(!tExCmdVecW)
+							tDoHoldCyc	= 8;
+					end
 				end
 				4'h7: begin
 					tRegAddRs	= tVecCnvRsO;
@@ -584,6 +689,31 @@ begin
 					tRegValGRnB	= tVecRnB;
 					tRegValGRnA	= tVecRnA;
 					tRegValGRn	= tVecRnA;
+
+					if(tRegIdIxtL[4])
+					begin
+						if(tRegIdIxtL[5])
+						begin
+							tRegAddRs	= tVecdCnvRs;
+							tRegAddRt	= tVecdCnvRt;
+							tRegValGRnB	= tVecdRnB;
+							tRegValGRnA	= tVecdRnA;
+							tRegValGRn	= tVecdRnA;
+							tDoHoldCyc	= 8;
+						end
+						else
+						begin
+							tRegAddRs	= tVechCnvRsO;
+							tRegAddRt	= tVechCnvRtO;
+							tRegValGRnA	= tVechRn;
+							tRegValGRn	= tVechRn;
+						end
+					end
+					else
+					begin
+						if(!tExCmdVecW)
+							tDoHoldCyc	= 8;
+					end
 				end
 				
 				default: begin
@@ -787,6 +917,9 @@ begin
 
 	tVecRnA		<= tNxtVecRnA;
 	tVecRnB		<= tNxtVecRnB;
+	tVechRn		<= tNxtVechRn;
+	tVecdRnA	<= tNxtVecdRnA;
+	tVecdRnB	<= tNxtVecdRnB;
 	tRegMulValL	<= tRegMulVal;
 
 	if(tExHold)

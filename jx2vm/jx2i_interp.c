@@ -619,13 +619,42 @@ int BJX2_FaultLeaveInterrupt(BJX2_Context *ctx)
 	return(0);
 }
 
-char *BJX2_DbgNameForAddr(BJX2_Context *ctx,
-	bjx2_addr addr, bjx2_addr *raddr2)
+char *BJX2_DbgNameForAddrSz(BJX2_Context *ctx,
+	bjx2_addr addr, bjx2_addr *raddr2, int *rsz2)
 {
-	bjx2_addr ba;
+	bjx2_addr ba, ba2;
 	char *bn;
-	int i;
+	int i, j, k, m, n, sz;
+
+	m=0;
+	n=ctx->map_n_ents;
 	
+	while(n>(m+3))
+	{
+		i=(m+n)/2;
+		if(ctx->map_addr[i]>=addr)
+		{
+			n=i;
+		}else
+		{
+			m=i;
+		}
+	}
+
+	i=m;
+	while(i<ctx->map_n_ents)
+	{
+		if(addr<ctx->map_addr[i])
+			break;
+		ba=ctx->map_addr[i];
+		bn=ctx->map_name[i];
+		ba2=ctx->map_addr[i+1];
+		i++;
+	}
+	
+	sz=ba2-ba;
+
+#if 0
 	ba=-999999999;
 	bn=NULL;
 	
@@ -639,10 +668,73 @@ char *BJX2_DbgNameForAddr(BJX2_Context *ctx,
 			bn=ctx->map_name[i];
 		}
 	}
+#endif
 	
 	if(raddr2)
 		*raddr2=ba;
+	if(rsz2)
+		*rsz2=sz;
 	return(bn);
+}
+
+char *BJX2_DbgNameForAddr(BJX2_Context *ctx,
+	bjx2_addr addr, bjx2_addr *raddr2)
+{
+	return(BJX2_DbgNameForAddrSz(ctx, addr, raddr2, NULL));
+}
+
+bjx2_addr BJX2_DbgAddrForName(BJX2_Context *ctx, char *name)
+{
+	int i;
+
+	for(i=0; i<ctx->map_n_ents; i++)
+	{
+		if(ctx->map_addr[i] < 0x10000)
+			continue;
+	
+		if(!strcmp(ctx->map_name[i], name))
+			return(ctx->map_addr[i]);
+	}
+
+	return(0);
+}
+
+int BJX2_DbgAddrAccessTrap(BJX2_Context *ctx,
+	bjx2_addr base, bjx2_addr tgt, int asz)
+{
+	s64 tvus;
+	bjx2_addr ba1, ba2;
+	int bsz;
+	char *s0, *s1;
+
+//	if(ctx->use_jit)
+	if(ctx->use_jit || !(ctx->dbg_data_start))
+		return(0);
+
+	if((base>=ctx->dbg_data_start) && (base<ctx->dbg_bss_end))
+	{
+		tvus=BJX2_Interp_GetVirtualUsec(ctx);
+		if(tvus<5000000)
+			return(0);
+	
+		s0=BJX2_DbgNameForAddrSz(ctx, base, &ba1, &bsz);
+		ba2=ba1+bsz;
+		if(s0)
+		{
+			if(((tgt+asz)>ba2) || (tgt<ba1))
+			{
+				BJX2_ThrowFaultStatus(ctx, BJX2_FLT_BOUNDCHK);
+			}
+		}
+		
+//		s1=BJX2_DbgNameForAddr(ctx, tgt, NULL);
+//		if(s0!=s1)
+//		{
+//			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_BOUNDCHK);
+//		}
+	}
+	
+	return(0);
 }
 
 char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
@@ -733,6 +825,8 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 
 	case BJX2_NMID_WEXMD:		s0="WEXMD";		break;
 	case BJX2_NMID_SYSCALL:		s0="SYSCALL";	break;
+	case BJX2_NMID_INVIC:		s0="INVIC";		break;
+	case BJX2_NMID_INVDC:		s0="INVDC";		break;
 
 	case BJX2_NMID_SWAPB:		s0="SWAP.B";	break;
 	case BJX2_NMID_SWAPW:		s0="SWAP.W";	break;
@@ -844,6 +938,13 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_PSUBXF:		s0="PSUBX.F";	break;
 	case BJX2_NMID_PMULF:		s0="PMUL.F";	break;
 	case BJX2_NMID_PMULXF:		s0="PMULX.F";	break;
+
+	case BJX2_NMID_PADDH:		s0="PADD.H";	break;
+	case BJX2_NMID_PADDXD:		s0="PADDX.D";	break;
+	case BJX2_NMID_PSUBH:		s0="PSUB.H";	break;
+	case BJX2_NMID_PSUBXD:		s0="PSUBX.D";	break;
+	case BJX2_NMID_PMULH:		s0="PMUL.H";	break;
+	case BJX2_NMID_PMULXD:		s0="PMULX.D";	break;
 
 	case BJX2_NMID_RGB32PCK64:		s0="RGB32PCK64";	break;
 	case BJX2_NMID_RGB32UPCK64:		s0="RGB32UPCK64";	break;

@@ -184,7 +184,7 @@ Typed signatures are encoded as strings, with characters indicating value types.
 * 'Ci': __vec4si
 * 'Cj': __vec4ui
 * 'Ck': _Complex float16
-* 'Cl': 
+* 'Cl': __vec4h
 * 'Cm': __m64
 * 'Cn': __m128
 * 'Co': object
@@ -204,11 +204,17 @@ Typed signatures are encoded as strings, with characters indicating value types.
 * 'Dj': __vec2ui
 * 'Dn': nullptr
 * 'Dz': va_list
+* 'Gd': _Imaginary double
+* 'Ge': _Imaginary long double
+* 'Gf': _Imaginary float
+* 'Gg': _Imaginary float128
+
 * 'A{sz};{sig}: Array
 * 'A{a..z}{sig}': Pointer/Array Class Modifier
 * 'L{qname};': Tag Class
 * 'P{sig}': Pointer
 * 'Q{sig}': Tag Array
+** 'Q{n}{sig}': Square Array / VLA
 * 'R{sig}': Reference to Type.
 * 'U{name};': Extended Type
 * 'W{sig}': Wide Pointer

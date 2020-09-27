@@ -323,6 +323,13 @@ extern "C" {
 
 #define BGBCC_REGFL_VARCONV			0x0080		//converted to/from variant
 
+#define BGBCC_REGFL_TRYLEAF			0x0100		//Maybe Leaf?
+#define BGBCC_REGFL_NOTLEAF			0x0200		//Not Leaf
+#define BGBCC_REGFL_HASARRAY		0x0400		//May Contain Arrays
+#define BGBCC_REGFL_GOFAST			0x0800		//Speed hint seen.
+#define BGBCC_REGFL_ALLOCA			0x1000		//Function uses alloca.
+
+
 #define	BGBCC_MAXSTACKOBJ			0x080000	//maximum allowed stack frame
 #define	BGBCC_MAXSTACKFRAME			0x080000	//maximum allowed stack frame
 
@@ -629,6 +636,17 @@ BCCX_Node *cf_ty;
 // int n_goto, m_goto;
 
 int n_warn, n_error, n_note;
+
+int tagw_lfn[1024];
+int tagw_lln[1024];
+int tagw_tag[1024];
+short tagw_pix[1024];
+byte tagw_pcn[1024];
+int tagw_n_warn;
+byte tagw_skip;
+
+int tagw_parm[1024];
+int tagw_n_parm;
 
 ccxl_label *contstack;
 ccxl_label *breakstack;

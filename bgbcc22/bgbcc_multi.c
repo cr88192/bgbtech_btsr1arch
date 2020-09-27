@@ -100,6 +100,7 @@
 #include "ccxl/ccxl_type.c"
 
 #include "ccxl/ccxl_fr2e.c"
+#include "ccxl/ccxl_lvatag.c"
 
 #include "shcc/shx_binop.c"
 #include "shcc/shx_bufasm.c"
