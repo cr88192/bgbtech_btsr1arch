@@ -539,7 +539,21 @@ begin
 				opNmid		= JX2_UCMD_MUL3;
 				opFmid		= JX2_FMID_REGREG;
 //				opIty		= JX2_ITY_SW;
-				opUCmdIx	= JX2_UCIX_MUL3_MUL3S;
+				opIty		= JX2_ITY_SB;
+//				if(opExQ)
+//					opUCmdIx	= JX2_UCIX_MUL3_MUL3U;
+//				else
+					opUCmdIx	= JX2_UCIX_MUL3_MUL3S;
+			end
+			16'h1zz3: begin		/* F0nm_1eo3 */
+				opNmid		= JX2_UCMD_MUL3;
+				opFmid		= JX2_FMID_REGREG;
+//				opIty		= JX2_ITY_SW;
+				opIty		= JX2_ITY_SB;
+//				if(opExQ)
+//					opUCmdIx	= JX2_UCIX_MUL3_MUL3U;
+//				else
+					opUCmdIx	= JX2_UCIX_MUL3_MUL3U;
 			end
 
 			16'h1zz5: begin		/* F0nm_1eo5 */
@@ -1472,6 +1486,12 @@ begin
 					8'h6A: begin
 						opNmid		= JX2_UCMD_OP_IXT;
 						opUCmdIx	= JX2_UCIX_IXT_CPUID;
+						opFmid		= JX2_FMID_REG;
+						opIty		= JX2_ITY_SB;
+					end
+					8'h6B: begin
+						opNmid		= JX2_UCMD_OP_IXT;
+						opUCmdIx	= JX2_UCIX_IXT_SRTTWID;
 						opFmid		= JX2_FMID_REG;
 						opIty		= JX2_ITY_SB;
 					end

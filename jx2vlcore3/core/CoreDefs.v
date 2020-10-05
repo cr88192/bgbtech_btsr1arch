@@ -682,6 +682,8 @@ parameter[5:0] JX2_UCIX_IXT_LDEKRR	= 6'h11;		//Load Encoded KRR
 parameter[5:0] JX2_UCIX_IXT_LDEKEY	= 6'h12;		//Load Encode Key
 parameter[5:0] JX2_UCIX_IXT_LDEENC	= 6'h13;		//Encode KRR into Key
 
+parameter[5:0] JX2_UCIX_IXT_SRTTWID	= 6'h14;		//Twiddle SR.T Bits
+
 parameter[5:0] JX2_UCIX_IXS_NOP		= 6'h00;		//No-Op
 parameter[5:0] JX2_UCIX_IXS_MOVT	= 6'h01;		//Copy SR.T to Reg
 parameter[5:0] JX2_UCIX_IXS_MOVNT	= 6'h02;		//Copy !SR.T to Reg

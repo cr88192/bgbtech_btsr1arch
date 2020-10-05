@@ -1888,7 +1888,8 @@ void BGBCC_CCXL_EndFunction(BGBCC_TransState *ctx,
 		ctx->n_vtr=0;
 		ctx->s_vop=0;
 	}
-	
+
+#if 1
 	if(obj->decl->n_vtr>1)
 	{
 		i=obj->decl->n_vtr;
@@ -1905,6 +1906,7 @@ void BGBCC_CCXL_EndFunction(BGBCC_TransState *ctx,
 			}
 		}
 	}
+#endif
 	
 
 #if 0

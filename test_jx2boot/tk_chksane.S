@@ -529,6 +529,34 @@ X(tk_checksane_asm):
 	cmp/eq r7, r12
 	bf _checksane_fail_shad
 
+
+	mov	0xE87AD208, r11
+	mov	0x00000000000AD208, r16
+	mov	0xFFFFFFFFFFFAD208, r17
+	mov	0x00000000AD208000, r18
+	mov	0xFFFFFFFFAD208000, r19
+
+	shld.q r11, 12, r6
+	shld r6, -12, r7
+
+	cmpqeq r7, r16
+	bf _checksane_fail_shad
+
+//	shad r11, 12, r6
+	shad r6, -12, r7
+
+	cmpqeq r7, r17
+	bf _checksane_fail_shad
+
+	shld r11, 12, r6
+	shad r11, 12, r7
+
+	cmpqeq r6, r18
+	bf _checksane_fail_shad
+
+	cmpqeq r7, r19
+	bf _checksane_fail_shad
+
 	shad.q  r4, #31, r7
 
 	mov r4, r6

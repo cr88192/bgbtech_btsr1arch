@@ -2948,6 +2948,7 @@ int BGBCC_JX2C_EmitLoadThisIdxVRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *
 int BGBCC_JX2C_EmitStoreThisIdxVRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, int vreg);
 int BGBCC_JX2C_EmitValueCopyRegRegSz(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int dreg, int sreg, int sz, int al);
 int BGBCC_JX2C_EmitLoadTypeBRegOfsReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, int sreg, int ofs, int dreg);
+int BGBCC_JX2C_EmitValueZeroRegSz(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int dreg, int sz, int al);
 //AHSRC:jx2cc/jx2_vreg.c
 int BGBCC_JX2C_EmitOpNone(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid);
 int BGBCC_JX2C_EmitOpReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int reg);

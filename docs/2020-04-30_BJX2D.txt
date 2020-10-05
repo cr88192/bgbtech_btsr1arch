@@ -163,7 +163,9 @@ SR Bits:
 ** 11: All Interrupts Enabled.
 * 4..7: P/Q/R/O Bits, Context Dependent
 ** Used by GSV for Vector Compare (Word/Half).
-* 8..23: Reserved
+* 8..15: U0..U7, Context Dependent
+** May be used as a Predicate Stack.
+* 16..23: Reserved
 * 27: WXE, WEX Enable
 * 28: BL, Block Interrupts
 * 29: RB, Encodes the ISR register bank.
@@ -970,19 +972,19 @@ Instruction Space
 ** 36n0  -
 ** 36n1  -
 ** 36n2  -
-** 36j3  TRAP	#imm4u				//Generate an Interrupt
-** 36n4  EXTU.L	Rn					//Zero Extend DWord to QWord
-** 36n5  EXTS.L	Rn					//Sign Extend DWord to QWord
-** 36n6  SHAD	DLR, Rn				//Barrel Shift, Arithmetic
-** 36n7  SHLD	DLR, Rn				//Barrel Shift, Logical
-** 36n8  TRAP	Rn
-** 36n9  WEXMD	#imm4				//Set WEX Profile
-** 36jA  CPUID	#imm4				//Load CPUID bits into DHR:DLR
-** 36nB  -
+** 36j3  TRAP		#imm4u			//Generate an Interrupt
+** 36n4  EXTU.L		Rn				//Zero Extend DWord to QWord
+** 36n5  EXTS.L		Rn				//Sign Extend DWord to QWord
+** 36n6  SHAD		DLR, Rn			//Barrel Shift, Arithmetic
+** 36n7  SHLD		DLR, Rn			//Barrel Shift, Logical
+** 36n8  TRAP		Rn				//Raise an Exception.
+** 36n9  WEXMD		#imm4			//Set WEX Profile
+** 36jA  CPUID		#imm4			//Load CPUID bits into DHR:DLR
+** 36nB  SRTTWID	#imm4			//Twiddle SR.T
 ** 36nC  -
-** 36nD  CMPHS	DLR, Rn				//Unsigned (Rn GE DLR)
-** 36nE /? CMPGE	DLR, Rn				//Signed (Rn GE DLR)
-** 36nF  MOVT	Rn					//Rn=SR.T
+** 36nD  CMPHS		DLR, Rn			//Unsigned (Rn GE DLR)
+** 36nE /? CMPGE	DLR, Rn			//Signed (Rn GE DLR)
+** 36nF  MOVT		Rn				//Rn=SR.T
 
 ** 37zz  -
 
@@ -1162,20 +1164,20 @@ F0zz Instruction Block:
 
 * F0zz_1zzz
 ** F0nm_1go0  ADD		Rm, Ro, Rn			//Rn=Rm+Ro
-** F0nm_1Go0  ADD		Rm, #imm5, Rn		//(PrWEX) Rn=Rm+Imm
+** F0nm_1Go0 ? ADD		Rm, #imm5, Rn		//(PrWEX) Rn=Rm+Imm
 ** F0nm_1go1  SUB		Rm, Ro, Rn			//Rn=Rm-Ro
-** F0nm_1Go1  SUB		Rm, #imm5, Rn		//(PrWEX) Rn=Rm-Imm
+** F0nm_1Go1 ? SUB		Rm, #imm5, Rn		//(PrWEX) Rn=Rm-Imm
 ** F0nm_1go2  MULS		Rm, Ro, Rn			//Rn=Rm*Ro (Signed Result)
-** F0nm_1Go2  MULU		Rm, Ro, Rn			//Rn=Rm*Ro (Unsigned Result)
-** F0nm_1go3 ? MULS.Q	Rm, Ro, Rn			//(MULQ) Signed 64b Result
+** F0nm_1Go2 ? MULS.Q	Rm, Ro, Rn			//(MULQ) Signed 64b Result
+** F0nm_1go3  MULU		Rm, Ro, Rn			//Rn=Rm*Ro (Unsigned Result)
 ** F0nm_1Go3 ? MULU.Q	Rm, Ro, Rn			//(MULQ) Unsigned 64b Result
 ** F0nm_1eo4  -
 ** F0nm_1go5  AND		Rm, Ro, Rn			//Rn=Rm AND Ro
-** F0nm_1Go5  AND		Rm, #imm5, Rn		//(PrWEX) Rn=Rm AND Imm
+** F0nm_1Go5 ? AND		Rm, #imm5, Rn		//(PrWEX) Rn=Rm AND Imm
 ** F0nm_1go6  OR		Rm, Ro, Rn			//Rn=Rm OR  Ro
-** F0nm_1Go6  OR		Rm, #imm5, Rn		//(PrWEX) Rn=Rm OR Imm
+** F0nm_1Go6 ? OR		Rm, #imm5, Rn		//(PrWEX) Rn=Rm OR Imm
 ** F0nm_1go7  XOR		Rm, Ro, Rn			//Rn=Rm XOR Ro
-** F0nm_1Go7  XOR		Rm, #imm5, Rn		//(PrWEX) Rn=Rm XOR Imm
+** F0nm_1Go7 ? XOR		Rm, #imm5, Rn		//(PrWEX) Rn=Rm XOR Imm
 
 ** F0nm_1ez8
 
@@ -1394,6 +1396,7 @@ F0zz Instruction Block:
 *** F068_3en0  TRAP		Rn
 *** F069_3en0  WEXMD	#Imm5
 *** F06A_3en0  CPUID	#Imm5
+*** F06B_3en0 ? SRTTWID	#Imm5	//SR.T Twiddle
 *** F06F_3en0  MOVT		Rn
 
 *** F082_3en0  /
@@ -1689,40 +1692,55 @@ Use of two jumbo prefixes followed by an F8-block instruction will encode an ins
 Possible:
 Use of a jumbo prefix followed by a 16-bit instruction may be used to encode 48-bit instruction forms.
 
-* / FEnm_xejx_0jjj
+The FE and FF Op48 encodings will follow a similar pattern to the Ez and Fz Op32 encodings.
 
-* FEed_dddd_00nm  MOV.B	Rn, (Rm, Disp21s)
-* FEed_dddd_01nm  MOV.W	Rn, (Rm, Disp21s)
-* FEed_dddd_02nm  MOV.L	Rn, (Rm, Disp21s)
-* FEed_dddd_03nm  MOV.Q	Rn, (Rm, Disp21s)
-* FEed_dddd_04nm  -
-* FEed_dddd_05nm  -
-* FEed_dddd_06nm  -
-* FEed_dddd_07nm  -
-* FEed_dddd_08nm  MOV.B	(Rm, Disp21s), Rn
-* FEed_dddd_09nm  MOV.W	(Rm, Disp21s), Rn
-* FEed_dddd_0Anm  MOV.L	(Rm, Disp21s), Rn
-* FEed_dddd_0Bnm  MOV.Q	(Rm, Disp21s), Rn
-* FEed_dddd_0Cnm  -
-* FEed_dddd_0Dnm  -
-* FEed_dddd_0Enm  -
-* FEed_dddd_0Fnm  -
+These blocks will be called FE0..FE7 and FF0..FF7.
+* FE0..FE3: Execute if True
+* FE4..FE7: Execute if False
+* FF0..FF3: Execute Always
+* FF4..FF7: Wide Execute
 
-* FEei_iiii_58nm  ADD		Rm, Imm21s, Rn
-* FEei_iiii_59nm  SUB		Rm, Imm21s, Rn
-* FEei_iiii_5Anm  MULS		Rm, Imm21s, Rn
-* FEei_iiii_5Bnm  -
-* FEei_iiii_5Cnm  -
-* FEei_iiii_5Dnm  AND		Rm, Imm21s, Rn
-* FEei_iiii_5Enm  OR		Rm, Imm21s, Rn
-* FEei_iiii_5Fnm  XOR		Rm, Imm21s, Rn
+While following a generic pattern:
+* FFeo-xxxx-Zxnm (Generic)
+* FFeZ-iiii-ZZnm "Rm, Imm17, Rn"
+* FFeZ-iiii-ZZnZ "Imm17, Rn"
 
-* FEii_iiii_8nii  ADD Imm32s, Rn
-* FEii_iiii_9nii  LDI Imm32s, Rn
-* FEii_iiii_Anii  ADD Imm32s, Rk
-* FEii_iiii_Bnii  LDI Imm32s, Rk
-* FEii_iiii_Cnii  -
-* FEii_iiii_Dnii  -
+* FFg0_dddd_00nm  MOV.B		Rn, (Rm, Disp17s)
+* FFG0_dddd_00nm  LEA.B		Rn, (Rm, Disp17s)
+* FFg1_dddd_00nm  MOV.W		Rn, (Rm, Disp17s)
+* FFG1_dddd_00nm  LEA.W		Rn, (Rm, Disp17s)
+* FFg2_dddd_00nm  MOV.L		Rn, (Rm, Disp17s)
+* FFG2_dddd_00nm  LEA.L		Rn, (Rm, Disp17s)
+* FFg3_dddd_00nm  MOV.Q		Rn, (Rm, Disp17s)
+* FFG3_dddd_00nm  LEA.Q		Rn, (Rm, Disp17s)
+* FFg4_dddd_00nm  -
+* FFg5_dddd_00nm  -
+* FFg6_dddd_00nm  -
+* FFg7_dddd_00nm  -
+* FFg8_dddd_00nm  MOV.B		(Rm, Disp17s), Rn
+* FFG8_dddd_00nm  MOVU.B	(Rm, Disp17s), Rn
+* FFg9_dddd_00nm  MOV.W		(Rm, Disp17s), Rn
+* FFG9_dddd_00nm  MOVU.W	(Rm, Disp17s), Rn
+* FFgA_dddd_00nm  MOV.L		(Rm, Disp17s), Rn
+* FFGA_dddd_00nm  MOVU.L	(Rm, Disp17s), Rn
+* FFgB_dddd_00nm  MOV.Q		(Rm, Disp17s), Rn
+* FFGB_dddd_00nm  MOV.X		(Rm, Disp17s), Rn
+* FFgC_dddd_00nm  -
+* FFgD_dddd_00nm  -
+* FFgE_dddd_00nm  -
+* FFgF_dddd_00nm  -
+
+* FFe0_iiii_01nm  ADD		Rm, Imm17s, Rn
+* FFe1_iiii_01nm  SUB		Rm, Imm17s, Rn
+* FFe2_iiii_01nm  MULS		Rm, Imm17s, Rn
+* FFe3_iiii_01nm  MULU		Rm, Imm17s, Rn
+* FFe4_iiii_01nm  -
+* FFe5_iiii_01nm  AND		Rm, Imm17s, Rn
+* FFe6_iiii_01nm  OR		Rm, Imm17s, Rn
+* FFe7_iiii_01nm  XOR		Rm, Imm17s, Rn
+
+* FFe8_iiii_01nm  -
+
 * FEzz_zzzz_Ezzz  (N/E)
 * FEzz_zzzz_Fzzz  (N/E)
 

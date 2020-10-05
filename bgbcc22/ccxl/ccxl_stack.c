@@ -816,9 +816,19 @@ ccxl_status BGBCC_CCXL_PopStore(BGBCC_TransState *ctx, char *name)
 //	if(!BGBCC_CCXL_TypeCompatibleP(ctx, dty, sty))
 	if(!BGBCC_CCXL_TypeCompatibleArchP(ctx, dty, sty))
 	{
+		if(BGBCC_CCXL_IsRegLocalP(ctx, dreg))
+		{
+			k=BGBCC_CCXL_EmitConv(ctx, dty, sty, dreg, sreg);
+			BGBCC_CCXL_RegisterCheckRelease(ctx, dreg);
+			BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
+			return(k);
+		}
+	
 		BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &treg);
 		BGBCC_CCXL_EmitConv(ctx, dty, sty, treg, sreg);
 		k=BGBCC_CCXL_EmitMov(ctx, dty, dreg, treg);
+//		k=BGBCC_CCXL_EmitConv(ctx, dty, sty, dreg, sreg);
+
 		BGBCC_CCXL_RegisterCheckRelease(ctx, dreg);
 		BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
 		BGBCC_CCXL_RegisterCheckRelease(ctx, treg);
@@ -889,6 +899,14 @@ ccxl_status BGBCC_CCXL_MovLoadStore(BGBCC_TransState *ctx,
 //	if(!BGBCC_CCXL_TypeCompatibleP(ctx, dty, sty))
 	if(!BGBCC_CCXL_TypeCompatibleArchP(ctx, dty, sty))
 	{
+		if(BGBCC_CCXL_IsRegLocalP(ctx, dreg))
+		{
+			k=BGBCC_CCXL_EmitConv(ctx, dty, sty, dreg, sreg);
+			BGBCC_CCXL_RegisterCheckRelease(ctx, dreg);
+			BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
+			return(k);
+		}
+
 		BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &treg);
 		BGBCC_CCXL_EmitConv(ctx, dty, sty, treg, sreg);
 		k=BGBCC_CCXL_EmitMov(ctx, dty, dreg, treg);
@@ -1051,9 +1069,8 @@ int BGBCC_CCXL_StackGetConvCallArgs(BGBCC_TransState *ctx,
 				ctx->regstack[ps]=treg;
 			}
 			else
-			
-//			if(!BGBCC_CCXL_TypeCompatibleP(ctx, dty, sty))
-			if(!BGBCC_CCXL_TypeCompatibleArchP(ctx, dty, sty))
+//				if(!BGBCC_CCXL_TypeCompatibleP(ctx, dty, sty))
+				if(!BGBCC_CCXL_TypeCompatibleArchP(ctx, dty, sty))
 			{
 //				if(dty.val>0x3FFF)
 //					{ BGBCC_DBGBREAK }
@@ -3084,6 +3101,7 @@ ccxl_status BGBCC_CCXL_StackBinaryOpStore(BGBCC_TransState *ctx,
 			return(CCXL_STATUS_YES);
 		}
 
+#if 0
 //		if(BGBCC_CCXL_TypeEqualP(ctx, dty, sty) &&
 //			BGBCC_CCXL_TypeEqualP(ctx, dty, tty))
 		if(BGBCC_CCXL_TypeCompatibleP(ctx, dty, sty) &&
@@ -3098,30 +3116,86 @@ ccxl_status BGBCC_CCXL_StackBinaryOpStore(BGBCC_TransState *ctx,
 			BGBCC_CCXL_RegisterCheckRelease(ctx, dreg);
 			return(CCXL_STATUS_YES);
 		}
+#endif
 
-//		BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &dreg);
-		BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &sreg2);
-//		BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &treg2);
-		BGBCC_CCXL_EmitConv(ctx, dty, sty, sreg2, sreg);
-//		BGBCC_CCXL_EmitConv(ctx, dty, tty, treg2, treg);
-		BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
-//		BGBCC_CCXL_RegisterCheckRelease(ctx, treg);
-
-		if(!is_shl)
+#if 1
+		if(BGBCC_CCXL_TypeCompatibleP(ctx, dty2, sty) &&
+			BGBCC_CCXL_TypeCompatibleP(ctx, dty2, tty))
 		{
-			BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &treg2);
-			BGBCC_CCXL_EmitConv(ctx, dty, tty, treg2, treg);
-			BGBCC_CCXL_RegisterCheckRelease(ctx, treg);
+			if(BGBCC_CCXL_TypeCompatibleP(ctx, dty, dty2) &&
+				!BGBCC_CCXL_RegisterIdentEqualP(ctx, dreg, treg))
+			{
+				BGBCC_CCXL_EmitBinaryOp(ctx, dty2, opr, dreg, sreg, treg);
+				BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
+				BGBCC_CCXL_RegisterCheckRelease(ctx, treg);
+				BGBCC_CCXL_RegisterCheckRelease(ctx, dreg);
+				return(CCXL_STATUS_YES);
+			}else
+			{
+				BGBCC_CCXL_RegisterAllocTemporary(ctx, dty2, &dreg2);
+				BGBCC_CCXL_EmitBinaryOp(ctx, dty2, opr, dreg2, sreg, treg);
+				BGBCC_CCXL_EmitConv(ctx, dty, dty2, dreg, dreg2);
+				BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
+				BGBCC_CCXL_RegisterCheckRelease(ctx, treg);
+				BGBCC_CCXL_RegisterCheckRelease(ctx, dreg);
+				BGBCC_CCXL_RegisterCheckRelease(ctx, dreg2);
+				return(CCXL_STATUS_YES);
+			}
+		}
+#endif
+		
+		if(BGBCC_CCXL_TypeCompatibleP(ctx, dty, dty2))
+		{
+	//		BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &dreg);
+			BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &sreg2);
+	//		BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &treg2);
+			BGBCC_CCXL_EmitConv(ctx, dty, sty, sreg2, sreg);
+	//		BGBCC_CCXL_EmitConv(ctx, dty, tty, treg2, treg);
+			BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
+	//		BGBCC_CCXL_RegisterCheckRelease(ctx, treg);
+
+			if(!is_shl)
+			{
+				BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &treg2);
+				BGBCC_CCXL_EmitConv(ctx, dty, tty, treg2, treg);
+				BGBCC_CCXL_RegisterCheckRelease(ctx, treg);
+			}else
+			{
+				treg2=treg;
+			}
+
+			BGBCC_CCXL_EmitBinaryOp(ctx, dty, opr, dreg, sreg2, treg2);
+			BGBCC_CCXL_RegisterCheckRelease(ctx, sreg2);
+			BGBCC_CCXL_RegisterCheckRelease(ctx, treg2);
+			BGBCC_CCXL_RegisterCheckRelease(ctx, dreg);
+			return(CCXL_STATUS_YES);
 		}else
 		{
-			treg2=treg;
-		}
+			BGBCC_CCXL_RegisterAllocTemporary(ctx, dty2, &dreg2);
 
-		BGBCC_CCXL_EmitBinaryOp(ctx, dty, opr, dreg, sreg2, treg2);
-		BGBCC_CCXL_RegisterCheckRelease(ctx, sreg2);
-		BGBCC_CCXL_RegisterCheckRelease(ctx, treg2);
-		BGBCC_CCXL_RegisterCheckRelease(ctx, dreg);
-		return(CCXL_STATUS_YES);
+			BGBCC_CCXL_RegisterAllocTemporary(ctx, dty2, &sreg2);
+			BGBCC_CCXL_EmitConv(ctx, dty2, sty, sreg2, sreg);
+			BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
+
+			if(!is_shl)
+			{
+				BGBCC_CCXL_RegisterAllocTemporary(ctx, dty2, &treg2);
+				BGBCC_CCXL_EmitConv(ctx, dty2, tty, treg2, treg);
+				BGBCC_CCXL_RegisterCheckRelease(ctx, treg);
+			}else
+			{
+				treg2=treg;
+			}
+
+			BGBCC_CCXL_EmitBinaryOp(ctx, dty2, opr, dreg2, sreg2, treg2);
+			BGBCC_CCXL_EmitConv(ctx, dty, dty2, dreg, dreg2);
+
+			BGBCC_CCXL_RegisterCheckRelease(ctx, sreg2);
+			BGBCC_CCXL_RegisterCheckRelease(ctx, treg2);
+			BGBCC_CCXL_RegisterCheckRelease(ctx, dreg2);
+			BGBCC_CCXL_RegisterCheckRelease(ctx, dreg);
+			return(CCXL_STATUS_YES);
+		}
 	}
 
 	if(!strcmp(op, "=="))opr=CCXL_CMP_EQ;

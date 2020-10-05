@@ -870,14 +870,16 @@ As with other MOV.x ops, encodings using PC or GBR as a base will use a byte sca
 The results of trying to load or store using a misaligned address are undefined.
 
 
-=== MULS (3R) ===
+=== MULx (3R) ===
 
 * 5Anm       MULS	Rm, DLR, Rn
 * F0nm_1go2  MULS	Rm, Ro, Rn
+* F0nm_1go3  MULU	Rm, Ro, Rn
 * F2nm_2gjj  MULS	Rm, #imm9u, Rn
+* F2nm_2Gjj  MULU	Rm, #imm9u, Rn
 
 Performs a narrow multiply (32 bit).
-Only the low 32 bits are used from the input registers, and the resulting value is 32-bit sign extended.
+Only the low 32 bits are used from the input registers, and the resulting value is 32-bit sign or zero extended.
 
 This operation only exists in Lane 1.
 
@@ -895,17 +897,6 @@ These produce widening multiplies of a given input size.
 The values in Rm and Ro are multiplied, and the result is stored in Rn.
 
 The WORD multiplies will exist in all lanes.
-
-
-=== MULU (3R) ===
-
-* F0nm_1Go2  MULU	Rm, Ro, Rn
-* F2nm_2Gjj  MULU	Rm, #imm9u, Rn
-
-Performs a narrow multiply (32 bit).
-Only the low 32 bits are used from the input registers, and the resulting value is 32-bit zero extended.
-
-This operation only exists in Lane 1.
 
 
 === NEG ===
@@ -1223,6 +1214,56 @@ For SHLR.Q, the shift will be 64-bit modular.
 Causes the processor to sleep until the next interrupt.
 
 May generate an fault if used in a context where this would halt the processor indefinitely.
+
+
+=== SRTTWID (?) ===
+
+* 36nB       SRTTWID	#Imm4
+* F06B_3en0  SRTTWID	#Imm5
+
+Twiddle SR.T status bits, using SR.U0 .. SR.U7 as a predicate stack.
+
+The Immed functions as a sub-command:
+* 00: PUSH SR.T: Shift SR.U Left 1 bit, SR.U0=SR.T;
+* 01: POP  SR.T: Shift SR.U Right 1 bit, SR.T=SR.U0;
+* 02: POP  SR.T: Shift SR.U Right 2 bits, SR.T=SR.U1;
+* 03: POP  SR.T: Shift SR.U Right 3 bits, SR.T=SR.U2;
+* 04: AND      : SR.T = SR.T AND SR.U0;
+* 05: OR       : SR.T = SR.T OR SR.U0;
+* 06: AND+PUSH : AND followed by a PUSH;
+* 07: OR +PUSH : OR followed by a PUSH;
+* 08: CLEAR    : SR.U=0
+
+An alternate set of ops may use U0..U3 as a THEN counter, and U4..U7 as an ELSE counter.
+
+Alternate IF/ELSE Block:
+* 0E: ELSE
+* 0F: ENDIF
+* 10: IF0T
+* 11: IF0F
+* 12: IF1T
+* 13: IF1F
+* 14: IFAAT
+* 15: IFAAF
+* 16: IFOOT
+* 17: IFOOF
+
+IF0T/IF0F will enter an IF block while also resetting the counters. This will function as a top-level IF block.
+
+IF1T/IF1F will reuse the existing counters, entering a nested block.
+
+IFAAT/IFAAF will combine T with the existing block via a Logical AND relation.
+IFOOT/IFOOF will combine T with the existing block via a Logical OR relation.
+
+ELSE will transition from a THEN to an ELSE block.
+
+ENDIF will exit the block.
+
+The True/False state of these ops will reflect whether SR.T or !SR.T will be the condition for entering the THEN block.
+
+Following these ops, SR.T will be set to indicate which block is to be executed:
+* SR.T=1: Execute the THEN block.
+* SR.T=0: Execute the ELSE block.
 
 
 === SUB ===

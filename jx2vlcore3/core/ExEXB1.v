@@ -181,6 +181,8 @@ begin
 		end
 		JX2_UCMD_MOV_MR: begin
 			tSlotUSup		= 1;
+			if(opUIxt[7:6]==JX2_IUC_WX)
+				tSlotUSup	= 0;
 		end
 
 `ifndef def_true
@@ -344,6 +346,16 @@ begin
 
 	if(tHeldIdRn1 != JX2_GR_ZZR)
 		tRegHeld		= 1;
+
+	if(tSlotUSup)
+	begin
+		if(!tMsgLatch)
+		begin
+			$display("EX1B: Unsupported Operation In Lane, %X-%X",
+				opUCmd, opUIxt);
+		end
+		tNextMsgLatch	= 1;
+	end
 
 end
 

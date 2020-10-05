@@ -83,6 +83,30 @@ X(tk_checksane_wex_asm):
 //	bf _checksane_wex_fail
 	break?f
 
+	.L2B:
+
+	mov #0x1234, r0			| mov #0x89AB, r1
+	ldish16 #0x5678, r0		| ldish16 #0xCDEF, r1
+	add r0, r1, r2			| sub r1, r0, r3
+
+	cmpeq r2, r6
+	break?f
+
+	cmpeq r3, r7
+	break?f
+
+	mov #0x5678, r4
+	mov #0xCDEF, r5
+
+	shld r0, 16, r0		| shld r1, 16, r1
+	shld r0, -16, r0	| shld r1, -16, r1
+
+	cmpeq r0, r4
+	break?f
+	cmpeq r1, r5
+	break?f
+
+
 	.L3:
 
 	mov #0x89AB, r1

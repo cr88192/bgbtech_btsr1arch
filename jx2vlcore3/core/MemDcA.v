@@ -1335,7 +1335,7 @@ begin
 //	if((tReqIsMmio && !tMemLatchA && !tMemLatchB) || tMmioLatch)
 	if(((tReqIsMmio && !tMemLatchA && !tMemLatchB) || tMmioLatch) && !reset)
 	begin
-		tMemOpm			<= tInOpm;
+//		tMemOpm			<= tInOpm;
 		tMemAddr		<= tInAddr;
 		tMemDataOut		<= { UV64_00, tDataIn };
 
@@ -1373,6 +1373,13 @@ begin
 //			$display("MMIO Ready, Latch");
 
 			tMmioLatch		<= 1;
+			tMemOpm			<= tInOpm;
+			tMemAddr		<= tInAddr;
+		end
+		else
+			if(memOK==UMEM_OK_HOLD)
+		begin
+//			$display("MMIO Hold, Wait Ready");
 			tMemOpm			<= tInOpm;
 			tMemAddr		<= tInAddr;
 		end

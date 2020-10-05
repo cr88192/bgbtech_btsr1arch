@@ -286,6 +286,16 @@ reg[63:0]	tValAguBra;
 reg[47:0]	tValBra;
 reg			tDoBra;
 
+reg			tTempBit0;
+reg			tTempBit1;
+reg			tTempBit2;
+reg			tTempBit3;
+
+reg[3:0]	tIfThenPP;
+reg[3:0]	tIfThenNN;
+reg[3:0]	tIfElsePP;
+reg[3:0]	tIfElseNN;
+
 reg tMsgLatch;
 reg tNextMsgLatch;
 
@@ -327,6 +337,15 @@ begin
 	tValBra			= tValAguBra[47:0];
 	tDoBra			= 0;
 
+	tTempBit0		= 1'bX;
+	tTempBit1		= 1'bX;
+	tTempBit2		= 1'bX;
+	tTempBit3		= 1'bX;
+
+	tIfThenPP		= regInSr[11: 8] + 1;
+	tIfThenNN		= regInSr[11: 8] - 1;
+	tIfElsePP		= regInSr[15:12] + 1;
+	tIfElseNN		= regInSr[15:12] - 1;
 
 	tRegSpAdd8		= { regInSp[63:28], regInSp[27:3]+25'h1, regInSp[2:0]};
 	tRegSpSub8		= { regInSp[63:28], regInSp[27:3]-25'h1, regInSp[2:0]};
@@ -670,7 +689,6 @@ begin
 		end
 
 `ifdef jx2_merge_shadq
-
 //		JX2_UCMD_SHAD3, JX2_UCMD_SHLD3,
 //		JX2_UCMD_SHADQ3, JX2_UCMD_SHLDQ3:
 		JX2_UCMD_SHAD3:
@@ -678,7 +696,6 @@ begin
 			tRegIdRn1	= regIdRm;
 			tRegValRn1	= tValShad64;
 		end
-
 `else
 		JX2_UCMD_SHAD3: begin
 			tRegIdRn1	= regIdRm;
@@ -946,6 +963,198 @@ begin
 				JX2_UCIX_IXT_LDEKEY: begin
 				end
 				JX2_UCIX_IXT_LDEENC: begin
+				end
+
+				JX2_UCIX_IXT_SRTTWID: begin
+					tTempBit0	= regInSr[0] & regInSr[8];
+					tTempBit1	= regInSr[0] | regInSr[8];
+					tIfThenPP	= regInSr[11: 8] + 1;
+					tIfThenNN	= regInSr[11: 8] - 1;
+					tIfElsePP	= regInSr[15:12] + 1;
+					tIfElseNN	= regInSr[15:12] - 1;
+					tTempBit2	= regInSr[15:12] == 0;
+					tTempBit3	= regInSr[15:13] == 0;
+								
+					case(regIdRm[4:0])
+						5'h00: begin	/* PUSH */
+							tRegOutSr[15:9]	= regInSr[14:8];
+							tRegOutSr[   8]	= regInSr[   0];
+						end
+						5'h01: begin	/* POP */
+							tRegOutSr[   15] = 0;
+							tRegOutSr[14: 8] = regInSr[15:9];
+							tRegOutSr[    0] = regInSr[   8];
+						end
+						5'h02: begin	/* POP2 */
+							tRegOutSr[15:14] = 0;
+							tRegOutSr[13: 8] = regInSr[15:10];
+							tRegOutSr[    0] = regInSr[    9];
+						end
+						5'h03: begin	/* POP3 */
+							tRegOutSr[14:13] = 0;
+							tRegOutSr[12: 8] = regInSr[15:11];
+							tRegOutSr[    0] = regInSr[   10];
+						end
+						5'h04: begin	/* AND */
+							tRegOutSr[   0]	= tTempBit0;
+						end
+						5'h05: begin	/* OR */
+							tRegOutSr[   0]	= tTempBit1;
+						end
+						5'h06: begin	/* AND+PUSH */
+							tRegOutSr[15:9]	= regInSr[14:8];
+							tRegOutSr[   8]	= tTempBit0;
+							tRegOutSr[   0]	= tTempBit0;
+						end
+						5'h07: begin	/* OR+PUSH */
+							tRegOutSr[15:9]	= regInSr[14:8];
+							tRegOutSr[   8]	= tTempBit1;
+							tRegOutSr[   0]	= tTempBit1;
+						end
+
+						5'h08: begin	/* CLEAR */
+							tRegOutSr[15:8]	= 0;
+						end
+
+
+`ifdef def_true
+// `ifndef def_true
+
+						5'h0E: begin	/* ELSE */
+							if(tTempBit3)
+							begin
+								if(regInSr[12])
+								begin
+									tRegOutSr[11: 8] = tIfThenPP;
+									tRegOutSr[15:12] = tIfElseNN;
+									tRegOutSr[    0] = 1;
+								end else begin
+									tRegOutSr[11: 8] = tIfThenNN;
+									tRegOutSr[15:12] = tIfElsePP;
+									tRegOutSr[    0] = 0;
+								end
+							end else begin
+								tRegOutSr[15:12] = tIfElsePP;
+								tRegOutSr[    0] = 0;
+							end
+						end
+						5'h0F: begin	/* ENDIF */
+							if(!tTempBit2)
+								tRegOutSr[15:12]=tIfElseNN;
+							else
+								tRegOutSr[11:8]=tIfThenNN;
+							tRegOutSr[    0] = tTempBit3;
+						end
+
+						5'h10: begin	/* IF0T */
+							tRegOutSr[15:8]	= 0;
+							if(regInSr[0])
+								tRegOutSr[8]=1;
+							else
+								tRegOutSr[12]=1;
+						end
+						5'h11: begin	/* IF0F */
+							tRegOutSr[15:8]	= 0;
+							if(!regInSr[0])
+								tRegOutSr[8]=1;
+							else
+								tRegOutSr[12]=1;
+							tRegOutSr[0] = !regInSr[0];
+						end
+						5'h12: begin		/* IF1T */
+							if(regInSr[0] && tTempBit2)
+							begin
+								tRegOutSr[11:8] = tIfThenPP;
+								tRegOutSr[   0] = 1;
+							end else begin
+								tRegOutSr[15:12] = tIfElsePP;
+								tRegOutSr[    0] = 0;
+							end
+						end
+						5'h13: begin		/* IF1F */
+							if(!regInSr[0] && tTempBit2)
+							begin
+								tRegOutSr[11:8] =tIfThenPP;
+								tRegOutSr[   0] = 1;
+							end else begin
+								tRegOutSr[15:12] = tIfElsePP;
+								tRegOutSr[    0] = 0;
+							end
+						end
+
+						5'h14: begin		/* IFAAT */
+							if(tTempBit2)
+							begin
+								if(regInSr[0])
+								begin
+									tRegOutSr[   0] = 1;
+								end else begin
+									tRegOutSr[15:12] = tIfElsePP;
+									tRegOutSr[11: 8] = tIfThenNN;
+									tRegOutSr[    0] = 0;
+								end
+							end
+							else
+							begin
+								tRegOutSr[0] = 0;
+							end
+						end
+						5'h15: begin		/* IFAAF */
+							if(tTempBit2)
+							begin
+								if(!regInSr[0] && tTempBit2)
+								begin
+									tRegOutSr[    0] = 1;
+								end else begin
+									tRegOutSr[15:12] = tIfElsePP;
+									tRegOutSr[11: 8] = tIfThenNN;
+									tRegOutSr[    0] = 0;
+								end
+							end
+							else
+							begin
+								tRegOutSr[0] = 0;
+							end
+						end
+						5'h16: begin		/* IFOOT */
+							if(tTempBit3)
+							begin
+								if(regInSr[0] && !tTempBit2)
+								begin
+									tRegOutSr[15:12] = tIfElseNN;
+									tRegOutSr[11: 8] = tIfThenPP;
+									tRegOutSr[    0] = 1;
+								end else begin
+									tRegOutSr[    0] = tTempBit2;
+								end
+							end
+							else
+							begin
+								tRegOutSr[0] = 0;
+							end
+						end
+						5'h17: begin		/* IFOOF */
+							if(tTempBit3)
+							begin
+								if(!regInSr[0] && !tTempBit2)
+								begin
+									tRegOutSr[15:12] = tIfElseNN;
+									tRegOutSr[11: 8] = tIfThenPP;
+									tRegOutSr[    0] = 1;
+								end else begin
+									tRegOutSr[    0] = tTempBit2;
+								end
+							end
+							else
+							begin
+								tRegOutSr[0] = 0;
+							end
+						end
+`endif
+
+						default:	begin
+						end
+					endcase
 				end
 
 				default: begin

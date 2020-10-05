@@ -1002,6 +1002,11 @@ begin
 				opFmid		= JX2_FMID_REG;
 				opUCmdIx	= JX2_UCIX_IXT_CPUID;
 			end
+			11'h6zB: begin
+				opNmid		= JX2_UCMD_OP_IXT;
+				opFmid		= JX2_FMID_REG;
+				opUCmdIx	= JX2_UCIX_IXT_SRTTWID;
+			end
 
 			11'h6zD: begin
 				opNmid		= JX2_UCMD_ALUCMP;

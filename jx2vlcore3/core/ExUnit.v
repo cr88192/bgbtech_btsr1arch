@@ -1817,6 +1817,12 @@ begin
 			({1'b1, ex2RegIdCn2} != JX2_CR_PC))
 		exHold1D = 1;
 
+`ifdef jx2_stage_ex3
+	if( ({1'b1, ex3RegIdCn3} != JX2_CR_ZZR) &&
+			({1'b1, ex3RegIdCn3} != JX2_CR_PC))
+		exHold1D = 1;
+`endif
+
 `ifndef def_true
 	if(ex1RegOutSchm[JX2_SCHM_DLR])
 	begin

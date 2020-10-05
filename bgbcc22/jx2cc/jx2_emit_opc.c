@@ -2822,8 +2822,10 @@ int BGBCC_JX2_TryEmitOpRegRegReg(
 			opw2=0x1200|((rn&15)<<4)|((rs&15)<<0);
 			break;
 		case BGBCC_SH_NMID_DMULU:
-			opw1=0xF080|ex|(rt&15);
-			opw2=0x1200|((rn&15)<<4)|((rs&15)<<0);
+//			opw1=0xF080|ex|(rt&15);
+//			opw2=0x1200|((rn&15)<<4)|((rs&15)<<0);
+			opw1=0xF000|ex|(rt&15);
+			opw2=0x1300|((rn&15)<<4)|((rs&15)<<0);
 			break;
 
 		case BGBCC_SH_NMID_MULSL:
