@@ -59,8 +59,8 @@ visplane_t*		floorplane;
 visplane_t*		ceilingplane;
 
 // ?
-//#define MAXOPENINGS	SCREENWIDTH*64
-#define MAXOPENINGS	SCREENWIDTH*256
+#define MAXOPENINGS	SCREENWIDTH*64
+// #define MAXOPENINGS	SCREENWIDTH*256
 short			openings[MAXOPENINGS];
 short*			lastopening;
 
@@ -158,6 +158,7 @@ R_MapPlane
 	
 	length = FixedMul (distance,distscale[x1]);
 	angle = (viewangle + xtoviewangle[x1])>>ANGLETOFINESHIFT;
+	angle &= (FINEANGLES-1);		//BGB: debug
 	ds_xfrac = viewx + FixedMul(finecosine[angle], length);
 	ds_yfrac = -viewy - FixedMul(finesine[angle], length);
 
@@ -195,8 +196,8 @@ void R_ClearPlanes (void)
 	// opening / clipping determination
 	for (i=0 ; i<viewwidth ; i++)
 	{
-	floorclip[i] = viewheight;
-	ceilingclip[i] = -1;
+		floorclip[i] = viewheight;
+		ceilingclip[i] = -1;
 	}
 
 	lastvisplane = visplanes;
@@ -207,10 +208,16 @@ void R_ClearPlanes (void)
 
 	// left to right mapping
 	angle = (viewangle-ANG90)>>ANGLETOFINESHIFT;
+
+//	__debugbreak();
+
+	angle &= (FINEANGLES-1);		//BGB: debug
 	
 	// scale will be unit scale at SCREENWIDTH/2 distance
-	basexscale = FixedDiv (finecosine[angle],centerxfrac);
-	baseyscale = -FixedDiv (finesine[angle],centerxfrac);
+//	basexscale = FixedDiv (finecosine[angle],centerxfrac);
+//	baseyscale = -FixedDiv (finesine[angle],centerxfrac);
+	basexscale = FixedDivSoft (finecosine[angle],centerxfrac);
+	baseyscale = -FixedDivSoft (finesine[angle],centerxfrac);
 }
 
 

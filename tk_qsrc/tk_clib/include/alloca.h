@@ -1,5 +1,5 @@
-#ifndef __ALLOCA_H
-#define __ALLOCA_H
+#ifndef _ALLOCA_H_
+#define _ALLOCA_H_
 
 #ifdef __BGBCC__
 void *__alloca(int size);

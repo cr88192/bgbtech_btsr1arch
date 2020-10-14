@@ -45,6 +45,7 @@ long long __int32_dmuls(int a, int b);
 // Fixme. __USE_C_FIXED__ or something.
 
 #ifdef __BJX2__
+// #if 0
 
 fixed_t FixedMul(fixed_t a, fixed_t b);
 

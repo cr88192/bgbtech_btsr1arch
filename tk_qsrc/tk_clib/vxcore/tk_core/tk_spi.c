@@ -126,6 +126,9 @@ int TKSPI_ReadData(byte *buf, u32 len)
 		tkspi_ctl_status&=~(SPICTRL_XMIT|SPICTRL_XMIT8X);	//debug
 	}
 
+	n=buf[0];
+	n+=buf[len];
+
 //	count=(1<<16);
 	count=(1<<20);
 	while(count>0)
@@ -158,6 +161,14 @@ int TKSPI_ReadData(byte *buf, u32 len)
 	}
 
 //	printf("<");
+
+	if(tkspi_ctl_status&(SPICTRL_XMIT|SPICTRL_XMIT8X))
+	{
+		tk_printf("TKSPI_ReadData: B %X %X\n",
+			tkspi_ctl_status, tkspi_ctl_speed);
+
+		tkspi_ctl_status&=~(SPICTRL_XMIT|SPICTRL_XMIT8X);	//debug
+	}
 
 	ct=buf; n=len;
 	cte=ct+n;

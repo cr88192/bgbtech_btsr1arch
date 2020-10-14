@@ -79,8 +79,8 @@ lighttable_t**	spritelights;
 
 // constant arrays
 //  used for psprite clipping and initializing clipping
-short		negonearray[SCREENWIDTH];
-short		screenheightarray[SCREENWIDTH];
+short		negonearray[SCREENWIDTH+64];
+short		screenheightarray[SCREENWIDTH+64];
 
 
 //

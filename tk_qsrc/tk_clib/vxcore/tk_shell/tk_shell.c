@@ -228,14 +228,198 @@ int tk_shell_chksane_simd()
 
 }
 
+
+void Sys_CheckSanityB(void)
+{
+	u32 t_arr[4]={0x12345678, 0xAB89EFCD, 0x00001234, 0x89ABCDEF};
+	u64 t_arrl[4]={
+		0x0000123412345678ULL, 0xAB89EFCD12345678ULL,
+		0x00001234, 0x89ABCDEF};
+	double fg;
+	float ff;
+	byte b_arr0[16];
+	u32 ui, uj, uk;
+	u64 uli, ulj, ulk;
+	int i, j, k;
+
+//	tk_printf("VA Tst: (%X %X %X %X) (%X %X %X %X)\n",
+//		0x12345678, 0x89ABCDEF,	0x56781234, 0xCDEF89AB,
+//		0x34127856, 0xAB89EFCD,	0x78563412, 0xEFCDAB89);
+
+#if 1
+	if((t_arr[0]>>4)!=0x01234567)
+		__debugbreak();
+	if((((s32)t_arr[1])>>4)!=((s32)0xFAB89EFC))
+		__debugbreak();
+	if((((u32)t_arr[1])>>4)!=((u32)0x0AB89EFC))
+		__debugbreak();
+
+	if((t_arr[0]>>11)!=0x0002468A)
+		__debugbreak();
+	if((((s32)t_arr[1])>>13)!=((s32)0xFFFD5C4F))
+		__debugbreak();
+	if((((u32)t_arr[1])>>13)!=((u32)0x00055C4F))
+		__debugbreak();
+	if((t_arr[2]<<17)!=0x24680000)
+		__debugbreak();
+
+	if(((t_arr[0]>>4)&15)!=7)
+		__debugbreak();
+
+//	if((((s64)(t_arr[0])>>4)&15)!=7)
+//		__debugbreak();
+//	if(((0x0123456789ABCDEFLL>>44)&15)!=5)
+//		__debugbreak();
+
+	tk_puts("Q Pt0 OK\n");
+	
+	((short *)(b_arr0))[0]=0x1234;
+	((short *)(b_arr0))[1]=0xABCD;
+	if(((short *)(b_arr0))[0]!=0x1234)
+		__debugbreak();
+	if(((short *)(b_arr0))[1]!=((int)0xFFFFABCD))
+		__debugbreak();
+	if(((unsigned short *)(b_arr0))[0]!=0x1234)
+		__debugbreak();
+	if(((unsigned short *)(b_arr0))[1]!=0xABCD)
+		__debugbreak();
+
+	tk_puts("Q Pt0 OK 1\n");
+
+	((char *)(b_arr0))[0]=0x1234;
+	((char *)(b_arr0))[1]=0xABCD;
+	if(((signed char *)(b_arr0))[0]!=0x34)
+		__debugbreak();
+	if(((signed char *)(b_arr0))[1]!=((int)0xFFFFFFCD))
+		__debugbreak();
+	if(((unsigned char *)(b_arr0))[0]!=0x34)
+		__debugbreak();
+	if(((unsigned char *)(b_arr0))[1]!=0xCD)
+		__debugbreak();
+
+	tk_puts("Q Pt0 OK 2\n");
+
+	i=t_arr[0]; j=i<<16; k=j>>16;
+	if(k!=0x5678)
+		__debugbreak();
+	i=t_arr[3]; j=i<<16; k=j>>16;
+	if(k!=0xFFFFCDEF)
+		__debugbreak();
+	i=t_arr[3]; j=i<<16; k=((unsigned int)j)>>16;
+	if(k!=0xCDEF)
+		__debugbreak();
+
+	tk_puts("Q Pt0 OK 3\n");
+	
+	ui=t_arr[3];	uli=ui;
+	if(uli!=0x0000000089ABCDEFULL)
+		__debugbreak();
+	i=t_arr[3];		uli=i;
+	if(uli!=0xFFFFFFFF89ABCDEFULL)
+		__debugbreak();
+
+	uli=t_arr[3];	ulj=t_arr[0];	ulk=uli*ulj;
+	if(ulk!=0x09CA39E0E242D208ULL)
+		__debugbreak();
+	uli=(s32)(t_arr[3]);	ulj=(s32)(t_arr[0]);	ulk=uli*ulj;
+	if(ulk!=0xF795E368E242D208ULL)
+		__debugbreak();
+
+	tk_puts("Q Pt0 OK 4\n");
+
+	uli=t_arrl[0];	ulj=t_arrl[1];
+	ulk=t_arrl[0];
+	if(uli==ulj)	__debugbreak();
+	if(uli>ulj)		__debugbreak();
+	if(uli>=ulj)	__debugbreak();
+	if(ulj<uli)		__debugbreak();
+	if(ulj<=uli)	__debugbreak();
+
+	if(uli!=ulk)	__debugbreak();
+	if(uli>ulk)		__debugbreak();
+	if(uli<ulk)		__debugbreak();
+
+	tk_puts("Q Pt0 OK 5\n");
+
+	if((t_arr[0]/10)!=0x1D208A5)
+		__debugbreak();
+	if((t_arr[0]%10)!=6)
+		__debugbreak();
+
+	tk_puts("Q Pt0 OK 5-1\n");
+
+#if 1
+	*((int *)b_arr0)=10;
+	i=*((int *)b_arr0);
+	if((t_arr[0]/i)!=0x1D208A5)
+		__debugbreak();
+
+	tk_puts("Q Pt0 OK 5-2\n");
+
+	if((t_arr[0]%i)!=6)
+		__debugbreak();
+#endif
+
+#endif
+
+	tk_puts("Q Pt0 OK 6\n");
+
+	i=123456;
+	ff=i;
+	j=ff;
+	if(i!=j)
+		__debugbreak();
+		
+	i=123456789;
+	fg=i;
+	j=fg;
+	if(i!=j)
+		__debugbreak();
+
+
+	i=-123456;
+	ff=i;
+	j=ff;
+	if(i!=j)
+		__debugbreak();
+		
+	i=-123456789;
+	fg=i;
+	j=fg;
+	if(i!=j)
+		__debugbreak();
+	
+	ff=(i==i);
+	ff=!ff;
+	j=ff;
+	if(j)
+		__debugbreak();
+	if(ff)
+		__debugbreak();
+	ff=!ff;
+	if(ff!=1.0)
+		__debugbreak();
+	if(!ff)
+		__debugbreak();
+		
+	ff=123456;
+	if(ff!=123456)
+		__debugbreak();
+}
+
 int tk_shell_chksane()
 {
 	long long tba[32];
 	long long tbb[32];
 	char *tb, *ts, *tb1;
 
-	int *pi, *pj;
-	int i, j, k, l;
+	int				*pi, *pj;
+	long long		*pli, *plj;
+	unsigned int	*pui, *puj;
+
+	long long		li, lj, lk, ll;
+	unsigned int	ui, uj, uk, ul;
+	int				i, j, k, l;
 	
 	pi=&i;
 	pj=&j;
@@ -258,7 +442,45 @@ int tk_shell_chksane()
 	if(l!=456)
 		__debugbreak();
 
-		
+	pli=&li;
+	plj=&lj;
+	
+	*pli=0x123456789ABCDEFLL;
+	*plj=0xDECAFLL;
+	lk=li/lj;
+	ll=li%lj;
+	
+	if(lk!=0x14EAF62751LL)
+		__debugbreak();
+	if(ll!=0xB4190LL)
+		__debugbreak();
+
+	ll=li*lj;
+	if(ll!=0xD159E26AF36D1A61LL)
+		__debugbreak();
+
+
+	pui=&ui;
+	puj=&uj;
+	
+	*pui=0xFE80DECAU;
+	*puj=0x0000ABCDU;
+	uk=ui/uj;
+	ul=ui%uj;
+	
+	if(uk!=0x17B3CU)
+		__debugbreak();
+	if(ul!=0x1BBEU)
+		__debugbreak();
+
+	lk=ui*uj;
+	ll=((long long)ui)*((long long)uj);
+	if(lk!=0x00000000E20355C2LL)
+		__debugbreak();
+	if(ll!=0x0000AACBE20355C2LL)
+		__debugbreak();
+
+#if 0
 	tb=(char *)tba;
 	ts=(char *)tbb;
 	
@@ -360,9 +582,12 @@ int tk_shell_chksane()
 				__debugbreak();
 		}
 	}
+#endif
 
-	tk_shell_chksane_clz();
-	tk_shell_chksane_simd();
+	Sys_CheckSanityB();
+
+//	tk_shell_chksane_clz();
+//	tk_shell_chksane_simd();
 }
 
 int main(int argc, char *argv[])
@@ -371,7 +596,7 @@ int main(int argc, char *argv[])
 	char tb_cwd[256];
 	char tbuf[256];
 
-//	tk_shell_chksane();
+	tk_shell_chksane();
 
 	tk_con_reset();
 

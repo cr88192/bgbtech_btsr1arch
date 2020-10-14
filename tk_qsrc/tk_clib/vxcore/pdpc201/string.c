@@ -146,17 +146,20 @@ __PDPCLIB_API__ int memcmp(const void *s1, const void *s2, size_t n)
 	const unsigned char *p1;
 	const unsigned char *p2;
 	unsigned long long v1, v2;
-	int u1, u2;
-	size_t x = 0;
+	int u1, u2, x;
+//	size_t x = 0;
 
 	p1 = (const unsigned char *)s1;
 	p2 = (const unsigned char *)s2;
+	x = 0;
 
 #if 1
 	while ((x+8) <= n)
 	{
-		v1=*(unsigned long long *)p1;
-		v2=*(unsigned long long *)p2;
+//		v1=*(unsigned long long *)p1;
+//		v2=*(unsigned long long *)p2;
+		v1=*(unsigned long long *)(p1+x);
+		v2=*(unsigned long long *)(p2+x);
 		if(v1!=v2)
 			break;
 		x+=8;

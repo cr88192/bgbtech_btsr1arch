@@ -594,13 +594,127 @@ u32 TKPE_CalculateImagePel4BChecksum(byte *buf, int size)
 }
 #endif
 
+void __setmemtrap(void *ptr, int mode);
+
+#if 1
+int TKPE_ApplyStaticRelocs(byte *imgptr, byte *rlc, int szrlc,
+	s64 disp, int pboix,
+	s64 imgbase, int gbr_rva, int gbr_sz)
+{
+	byte *cs, *cse, *cs1, *cs1e;
+	byte *pdst;
+	u32 pv;
+	int tgt_rva, gbr_end_rva;
+	int rva_page, sz_blk;
+	int tg;
+
+//	printf("TKPE_ApplyStaticRelocs: disp=%X rlc=%p sz=%d\n",
+//		(int)disp, rlc, szrlc);
+
+	gbr_end_rva=gbr_rva+gbr_sz;
+
+	cs=rlc;		cse=rlc+szrlc;
+	while(cs<cse)
+	{
+		rva_page=((u32 *)cs)[0];
+		sz_blk=((u32 *)cs)[1];
+		cs1=cs+8; cs1e=cs+sz_blk;
+		cs+=sz_blk;
+
+//		tk_printf("  RVA=%08X sz=%d\n", rva_page, sz_blk);
+		
+		while(cs1<cs1e)
+		{
+			tg=*(u16 *)cs1;
+			cs1+=2;
+
+			tgt_rva=rva_page+(tg&4095);
+			pdst=imgptr+tgt_rva;
+//			pdst=imgptr+rva_page+(tg&4095);
+			
+			if(rva_page==0x62000)
+			{
+//				tk_printf("    %08X: %d\n", tgt_rva, (tg>>12)&15);
+			}
+
+#if 0
+			tgt_rva=pdst-imgptr;
+			if((pboix>0) && (tgt_rva>=gbr_rva) && (tgt_rva<gbr_end_rva))
+			{
+				/* Pointer is within data area. */
+				continue;
+			}
+#endif
+			
+			switch((tg>>12)&15)
+			{
+			case 0:
+				break;
+			case 1:
+				*((u16 *)pdst)=(*((u16 *)pdst))+(disp>>16);
+				break;
+			case 2:
+				*((u16 *)pdst)=(*((u16 *)pdst))+(disp&65535);
+				break;
+			case 3:
+//				tgt_rva=(*((u32 *)pdst))-imgbase;				
+				*((u32 *)pdst)=(*((u32 *)pdst))+disp;
+				break;
+			case 4:
+				*((u32 *)pdst)=(*((u32 *)pdst))+(disp>>32);
+				break;
+			case 5:
+				pv=*((u32 *)pdst);
+				pv=(pv&0xFE000000)|((pv+disp)&0x01FFFFFF);
+				*((u32 *)pdst)=pv;
+				break;
+
+			case 6:
+				pv=*((u16 *)pdst);
+				if((pv==0xA000) && pboix)
+				{
+					pv=pv|(((-pboix)*8)&0x1FFF);
+					*((u16 *)pdst)=pv;
+					break;
+				}
+				break;
+				
+			case 7:
+				break;
+			case 8:
+				break;
+
+			case 9:
+				pv=*((u32 *)pdst);
+				if((pv==0xFA000000UL) && pboix)
+				{
+					pv=pv|(((-pboix)*8)&0x01FFFFFF);
+					*((u32 *)pdst)=pv;
+					break;
+				}
+				break;
+			case 10:
+				*((s64 *)pdst)=(*((s64 *)pdst))+disp;
+				break;
+			case 11:
+				__setmemtrap(pdst, 3);
+				break;
+			}
+		}
+	}
+	return(0);
+}
+#endif
+
 int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 {
 //	byte tbuf[1024];
 	byte tbuf[1024+32];
-	byte *imgptr, *ct, *cte;
+	byte *imgptr, *ct, *cte, *bss_ptr;
 	u64 imgbase;
-	u32 imgsz, startrva, gbr_rva;
+	s64 reloc_disp;
+	u32 imgsz, startrva, gbr_rva, gbr_sz, imgsz1, imgsz2;
+	u32 reloc_rva, reloc_sz, bss_sz;
 	u32 csum1, csum2;
 	byte is64, is_pel4, cmp;
 	int sig_mz, sig_pe, mach, mmagic;
@@ -674,6 +788,9 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 		imgbase=*(u64 *)(tbuf+ofs_pe+0x30);
 		imgsz=*(u32 *)(tbuf+ofs_pe+0x50);
 		gbr_rva=*(u32 *)(tbuf+ofs_pe+0xC8);
+		gbr_sz=*(u32 *)(tbuf+ofs_pe+0xCC);
+		reloc_rva=*(u32 *)(tbuf+ofs_pe+0xB0);
+		reloc_sz=*(u32 *)(tbuf+ofs_pe+0xB4);
 	}else
 	{
 //		puts("TKPE: PE32\n");
@@ -681,13 +798,33 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 		imgbase=*(u32 *)(tbuf+ofs_pe+0x34);
 		imgsz=*(u32 *)(tbuf+ofs_pe+0x50);
 		gbr_rva=*(u32 *)(tbuf+ofs_pe+0xB8);
+		gbr_sz=*(u32 *)(tbuf+ofs_pe+0xBC);
+		reloc_rva=*(u32 *)(tbuf+ofs_pe+0xA0);
+		reloc_sz=*(u32 *)(tbuf+ofs_pe+0xA4);
 	}
+
+	printf("TKPE: Base=%08X Sz=%d BootRVA=%08X GbrRVA=%08X GbrSz=%08X\n",
+		imgbase, imgsz, startrva, gbr_rva, gbr_sz);
 	
-	printf("TKPE: Base=%08X Sz=%d BootRVA=%08X GbrRVA=%08X\n",
-		imgbase, imgsz, startrva, gbr_rva);
-	
+	bss_ptr=NULL;
+	bss_sz=0;
+
+//	if(reloc_rva)
+//	{
+		imgsz1=gbr_rva+gbr_sz;
+		imgsz2=imgsz;
+		if(imgsz1>imgsz)
+			imgsz2=imgsz1;
+//	}
+
 	imgptr=(byte *)imgbase;
+	reloc_disp=0;
+
+	bss_ptr=imgptr+imgsz;
+	bss_sz=imgsz2-imgsz;
 	
+	printf("TKPE: Bss_Ptr=%08X Bss_Sz=%d\n", bss_ptr, bss_sz);
+
 	if(!is_pel4)
 	{
 		tk_fseek(fd, 0, 0);
@@ -778,6 +915,19 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 		}
 	}
 	
+	if(bss_ptr && (bss_sz>0))
+	{
+		memset(bss_ptr, 0, bss_sz);
+	}
+
+//	if(reloc_disp)
+	if(1)
+	{
+//		tk_printf("Reloc: RVA=%08X, sz=%d\n", reloc_rva, reloc_sz);
+		TKPE_ApplyStaticRelocs(imgptr, imgptr+reloc_rva, reloc_sz,
+			reloc_disp, 0, imgbase, gbr_rva, gbr_sz);
+	}
+
 	*rbootptr=imgptr+startrva;
 	*rbootgbr=imgptr+gbr_rva;
 #endif

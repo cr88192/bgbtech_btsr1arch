@@ -1133,7 +1133,7 @@ void D_DoomMain (void)
 	printf ("W_Init: Init WADfiles.\n");
 	W_InitMultipleFiles (wadfiles);
 	
-
+#if 0
 	// Check for -file in shareware
 	if (modifiedgame)
 	{
@@ -1172,33 +1172,32 @@ void D_DoomMain (void)
 		);
 	getchar ();
 	}
-	
+
+#endif	
 
 	// Check and print which version is executed.
 	switch ( gamemode )
 	{
 	  case shareware:
 	  case indetermined:
-	printf (
-		"===========================================================================\n"
-		"								Shareware!\n"
-		"===========================================================================\n"
+	printf (	"===========================================================================\n"
+"								Shareware!\n"	"===========================================================================\n"
 	);
 	break;
-	  case registered:
-	  case retail:
-	  case commercial:
-	printf (
-		"===========================================================================\n"
-		"				 Commercial product - do not distribute!\n"
-		"		 Please report software piracy to the SPA: 1-800-388-PIR8\n"
-		"===========================================================================\n"
+	case registered:
+	case retail:
+	case commercial:
+	printf (	
+"===========================================================================\n"
+"				 Commercial product - do not distribute!\n"
+"		 Please report software piracy to the SPA: 1-800-388-PIR8\n"
+"===========================================================================\n"
 	);
 	break;
 	
-	  default:
-	// Ouch.
-	break;
+	default:
+		// Ouch.
+		break;
 	}
 
 	printf ("M_Init: Init miscellaneous info.\n");

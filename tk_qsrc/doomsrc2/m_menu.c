@@ -1930,33 +1930,32 @@ void M_Init (void)
 	// Here we could catch other version dependencies,
 	//	like HELP1/2, and four episodes.
 
-	
 	switch ( gamemode )
 	{
-		case commercial:
-	// This is used because DOOM 2 had only one HELP
-		//	page. I use CREDIT as second page now, but
-	//	kept this hack for educational purposes.
-	MainMenu[readthis] = MainMenu[quitdoom];
-	MainDef.numitems--;
-	MainDef.y += 8;
-	NewDef.prevMenu = &MainDef;
-	ReadDef1.routine = M_DrawReadThis1;
-	ReadDef1.x = 330;
-	ReadDef1.y = 165;
-	ReadMenu1[0].routine = M_FinishReadThis;
-	break;
-		case shareware:
-	// Episode 2 and 3 are handled,
-	//	branching to an ad screen.
-		case registered:
-	// We need to remove the fourth episode.
-	EpiDef.numitems--;
-	break;
-		case retail:
-	// We are fine.
-		default:
-	break;
+	case commercial:
+		// This is used because DOOM 2 had only one HELP
+			//	page. I use CREDIT as second page now, but
+		//	kept this hack for educational purposes.
+		MainMenu[readthis] = MainMenu[quitdoom];
+		MainDef.numitems--;
+		MainDef.y += 8;
+		NewDef.prevMenu = &MainDef;
+		ReadDef1.routine = M_DrawReadThis1;
+		ReadDef1.x = 330;
+		ReadDef1.y = 165;
+		ReadMenu1[0].routine = M_FinishReadThis;
+		break;
+	case shareware:
+		// Episode 2 and 3 are handled,
+		//	branching to an ad screen.
+	case registered:
+		// We need to remove the fourth episode.
+		EpiDef.numitems--;
+		break;
+	case retail:
+		// We are fine.
+	default:
+		break;
 	}
 	
 }

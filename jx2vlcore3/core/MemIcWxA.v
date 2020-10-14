@@ -12,7 +12,7 @@ module MemIcWxA(
 	regOutPcVal,	regOutPcOK,
 	regOutPcStep,
 	icInPcHold,		icInPcWxe,
-	icInPcOpm,
+	icInPcOpm,		regInSr,
 	memPcData,		memPcAddr,
 	memPcOpm,		memPcOK,
 	memNoRwx
@@ -29,6 +29,8 @@ output[ 2: 0]	regOutPcStep;	//PC step (Normal Op)
 	input			icInPcHold;
 input			icInPcWxe;
 input[4:0]		icInPcOpm;		//OPM (Used for cache-control)
+
+input [63: 0]	regInSr;
 
 input [127:0]	memPcData;		//memory PC data
 input [  1:0]	memPcOK;		//memory PC OK
@@ -211,7 +213,8 @@ begin
 		tNxtTlbMissInh = 1;
 	
 //	if(tRegInOpm==UMEM_OPM_READY)
-	if(tInOpm == UMEM_OPM_LDTLB)
+//	if(tInOpm == UMEM_OPM_LDTLB)
+	if((tInOpm == UMEM_OPM_LDTLB) || regInSr[29])
 		tNxtTlbMissInh = 0;
 	
 

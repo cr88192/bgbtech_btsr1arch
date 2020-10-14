@@ -344,6 +344,11 @@ begin
 	
 	endcase
 
+	if(opBraFlush)
+	begin
+		tRegIdRn1	= JX2_GR_ZZR;
+	end
+
 	if(tHeldIdRn1 != JX2_GR_ZZR)
 		tRegHeld		= 1;
 

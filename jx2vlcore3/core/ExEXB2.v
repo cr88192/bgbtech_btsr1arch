@@ -235,6 +235,12 @@ begin
 		end
 	
 	endcase
+
+	if(opBraFlush)
+	begin
+		tRegIdRn2	= JX2_GR_ZZR;
+	end
+
 end
 
 always @(posedge clock)

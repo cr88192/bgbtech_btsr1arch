@@ -169,16 +169,24 @@ __udivdi3:
 
 	.L2:
 	shll1	r4
-	or		r6, r4		| mov		r23, lr
-	mov		r4, r2		| rts
+	or		r6, r4
+//	mov		r23, lr
+	mov		r4, r2
+//	rts
+//	or		r6, r4, r2
+	jmp		r23
 
 .Ret_Zero:
-	mov		#0, r2		| mov		r23, lr
-	rts
+	mov		#0, r2
+	jmp		r23
+//	mov		r23, lr
+//	rts
 
 .Ret_R16:
-	mov		r16, r2		| mov		r23, lr
-	rts
+	mov		r16, r2
+	jmp		r23
+//	mov		r23, lr
+//	rts
 
 #endif
 
@@ -196,6 +204,7 @@ __sdivdi3:
 	bsr		__udivdi3
 	xor		r2, r21, r3
 	sub		r3, r21, r2
-	mov		r22, lr
-	rts
+	jmp		r22
+//	mov		r22, lr
+//	rts
 #endif

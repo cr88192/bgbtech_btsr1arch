@@ -185,6 +185,42 @@ assign	regValRnCW	= regValRnC2;
 assign	regFlushRnW	= gprEx2Flush;
 `endif
 
+
+wire[5:0]		regIdRnA1B;
+wire[5:0]		regIdRnA2B;
+wire[5:0]		regIdRnB1B;
+wire[5:0]		regIdRnB2B;
+wire[5:0]		regIdRnC1B;
+wire[5:0]		regIdRnC2B;
+
+// assign		regIdRnA1B = gprEx1Flush ? JX2_GR_ZZR : regIdRnA1;
+// assign		regIdRnB1B = gprEx1Flush ? JX2_GR_ZZR : regIdRnB1;
+// assign		regIdRnC1B = gprEx1Flush ? JX2_GR_ZZR : regIdRnC1;
+// assign		regIdRnA2B = gprEx2Flush ? JX2_GR_ZZR : regIdRnA2;
+// assign		regIdRnB2B = gprEx2Flush ? JX2_GR_ZZR : regIdRnB2;
+// assign		regIdRnC2B = gprEx2Flush ? JX2_GR_ZZR : regIdRnC2;
+
+assign		regIdRnA1B = regIdRnA1;
+assign		regIdRnB1B = regIdRnB1;
+assign		regIdRnC1B = regIdRnC1;
+assign		regIdRnA2B = regIdRnA2;
+assign		regIdRnB2B = regIdRnB2;
+assign		regIdRnC2B = regIdRnC2;
+
+
+`ifdef jx2_stage_ex3
+wire[5:0]		regIdRnA3B;		//Destination ID
+wire[5:0]		regIdRnB3B;		//Destination ID
+wire[5:0]		regIdRnC3B;		//Destination ID
+// assign		regIdRnA3B = gprEx3Flush ? JX2_GR_ZZR : regIdRnA3;
+// assign		regIdRnB3B = gprEx3Flush ? JX2_GR_ZZR : regIdRnB3;
+// assign		regIdRnC3B = gprEx3Flush ? JX2_GR_ZZR : regIdRnC3;
+assign		regIdRnA3B = regIdRnA3;
+assign		regIdRnB3B = regIdRnB3;
+assign		regIdRnC3B = regIdRnC3;
+`endif
+
+
 reg[63:0]	gprArrA[31:0];
 reg[63:0]	gprArrB[31:0];
 reg[63:0]	gprArrC[31:0];
@@ -570,162 +606,289 @@ begin
 	tRegValRv = tValRvA;
 	tRegValRx = tValRxA;
 	tRegValRy = tValRyA;
-	
+
+
+// `ifdef def_true
+`ifndef def_true
+//	if(!gprEx3Flush)
+	if(1'b1)
+	begin
+		if(regValRnC3[31:0]==32'h55BAADAA)
+		begin
+			$display("RegCR: EX3 Bad, Not Flushed");
+		end
+		if(regValRnB3[31:0]==32'h55BAADAA)
+		begin
+			$display("RegCR: EX3 Bad, Not Flushed");
+		end
+		if(regValRnA3[31:0]==32'h55BAADAA)
+		begin
+			$display("RegCR: EX3 Bad, Not Flushed");
+		end
+	end
+
+//	if(!gprEx2Flush)
+	if(1'b1)
+	begin
+		if(regValRnC2[31:0]==32'h55BAADAA)
+		begin
+			$display("RegCR: EX2 Bad, Not Flushed");
+		end
+		if(regValRnB2[31:0]==32'h55BAADAA)
+		begin
+			$display("RegCR: EX2 Bad, Not Flushed");
+		end
+		if(regValRnA2[31:0]==32'h55BAADAA)
+		begin
+			$display("RegCR: EX2 Bad, Not Flushed");
+		end
+	end
+
+//	if(!gprEx1Flush)
+	if(1'b1)
+	begin
+		if(regValRnC1[31:0]==32'h55BAADAA)
+		begin
+			$display("RegCR: EX1 Bad, Not Flushed");
+		end
+		if(regValRnB1[31:0]==32'h55BAADAA)
+		begin
+			$display("RegCR: EX1 Bad, Not Flushed");
+		end
+		if(regValRnA1[31:0]==32'h55BAADAA)
+		begin
+			$display("RegCR: EX1 Bad, Not Flushed");
+		end
+	end
+`endif
+
 	if(!tValRsZz)
 	begin
 `ifdef jx2_stage_ex3
-		if(regIdRs==regIdRnC3)
-			tRegValRs=regValRnC3;
-		if(regIdRs==regIdRnB3)
-			tRegValRs=regValRnB3;
-		if(regIdRs==regIdRnA3)
-			tRegValRs=regValRnA3;
+//		if(!gprEx3Flush)
+		if(1'b1)
+		begin
+			if(regIdRs==regIdRnC3B)
+				tRegValRs=regValRnC3;
+			if(regIdRs==regIdRnB3B)
+				tRegValRs=regValRnB3;
+			if(regIdRs==regIdRnA3B)
+				tRegValRs=regValRnA3;
+		end
 `endif
 
-		if(regIdRs==regIdRnC2)
-			tRegValRs=regValRnC2;
-		if(regIdRs==regIdRnB2)
-			tRegValRs=regValRnB2;
-		if(regIdRs==regIdRnA2)
-			tRegValRs=regValRnA2;
+//		if(!gprEx2Flush)
+		if(1'b1)
+		begin
+			if(regIdRs==regIdRnC2B)
+				tRegValRs=regValRnC2;
+			if(regIdRs==regIdRnB2B)
+				tRegValRs=regValRnB2;
+			if(regIdRs==regIdRnA2B)
+				tRegValRs=regValRnA2;
+		end
 
-		if(regIdRs==regIdRnC1)
-			tRegValRs=regValRnC1;
-		if(regIdRs==regIdRnB1)
-			tRegValRs=regValRnB1;
-		if(regIdRs==regIdRnA1)
-			tRegValRs=regValRnA1;
+//		if(!gprEx1Flush)
+		if(1'b1)
+		begin
+			if(regIdRs==regIdRnC1B)
+				tRegValRs=regValRnC1;
+			if(regIdRs==regIdRnB1B)
+				tRegValRs=regValRnB1;
+			if(regIdRs==regIdRnA1B)
+				tRegValRs=regValRnA1;
+		end
 	end
 
 	if(!tValRtZz)
 	begin
 `ifdef jx2_stage_ex3
-		if(regIdRt==regIdRnC3)
-			tRegValRt=regValRnC3;
-		if(regIdRt==regIdRnB3)
-			tRegValRt=regValRnB3;
-		if(regIdRt==regIdRnA3)
-			tRegValRt=regValRnA3;
+//		if(!gprEx3Flush)
+		if(1'b1)
+		begin
+			if(regIdRt==regIdRnC3B)
+				tRegValRt=regValRnC3;
+			if(regIdRt==regIdRnB3B)
+				tRegValRt=regValRnB3;
+			if(regIdRt==regIdRnA3B)
+				tRegValRt=regValRnA3;
+		end
 `endif
 
-		if(regIdRt==regIdRnC2)
-			tRegValRt=regValRnC2;
-		if(regIdRt==regIdRnB2)
-			tRegValRt=regValRnB2;
-		if(regIdRt==regIdRnA2)
-			tRegValRt=regValRnA2;
+//		if(!gprEx2Flush)
+		if(1'b1)
+		begin
+			if(regIdRt==regIdRnC2B)
+				tRegValRt=regValRnC2;
+			if(regIdRt==regIdRnB2B)
+				tRegValRt=regValRnB2;
+			if(regIdRt==regIdRnA2B)
+				tRegValRt=regValRnA2;
+		end
 
-		if(regIdRt==regIdRnC1)
-			tRegValRt=regValRnC1;
-		if(regIdRt==regIdRnB1)
-			tRegValRt=regValRnB1;
-		if(regIdRt==regIdRnA1)
-			tRegValRt=regValRnA1;
+//		if(!gprEx1Flush)
+		if(1'b1)
+		begin
+			if(regIdRt==regIdRnC1B)
+				tRegValRt=regValRnC1;
+			if(regIdRt==regIdRnB1B)
+				tRegValRt=regValRnB1;
+			if(regIdRt==regIdRnA1B)
+				tRegValRt=regValRnA1;
+		end
 	end
 
 	if(!tValRuZz)
 	begin
 `ifdef jx2_stage_ex3
-		if(regIdRu==regIdRnC3)
-			tRegValRu=regValRnC3;
-		if(regIdRu==regIdRnB3)
-			tRegValRu=regValRnB3;
-		if(regIdRu==regIdRnA3)
-			tRegValRu=regValRnA3;
+//		if(!gprEx3Flush)
+		if(1'b1)
+		begin
+			if(regIdRu==regIdRnC3B)
+				tRegValRu=regValRnC3;
+			if(regIdRu==regIdRnB3B)
+				tRegValRu=regValRnB3;
+			if(regIdRu==regIdRnA3B)
+				tRegValRu=regValRnA3;
+		end
 `endif
 
-		if(regIdRu==regIdRnC2)
-			tRegValRu=regValRnC2;
-		if(regIdRu==regIdRnB2)
-			tRegValRu=regValRnB2;
-		if(regIdRu==regIdRnA2)
-			tRegValRu=regValRnA2;
+//		if(!gprEx2Flush)
+		if(1'b1)
+		begin
+			if(regIdRu==regIdRnC2B)
+				tRegValRu=regValRnC2;
+			if(regIdRu==regIdRnB2B)
+				tRegValRu=regValRnB2;
+			if(regIdRu==regIdRnA2B)
+				tRegValRu=regValRnA2;
+		end
 
-		if(regIdRu==regIdRnC1)
-			tRegValRu=regValRnC1;
-		if(regIdRu==regIdRnB1)
-			tRegValRu=regValRnB1;
-		if(regIdRu==regIdRnA1)
-			tRegValRu=regValRnA1;
+//		if(!gprEx1Flush)
+		if(1'b1)
+		begin
+			if(regIdRu==regIdRnC1B)
+				tRegValRu=regValRnC1;
+			if(regIdRu==regIdRnB1B)
+				tRegValRu=regValRnB1;
+			if(regIdRu==regIdRnA1B)
+				tRegValRu=regValRnA1;
+		end
 	end
 
 	if(!tValRvZz)
 	begin
 `ifdef jx2_stage_ex3
-		if(regIdRv==regIdRnC3)
-			tRegValRv=regValRnC3;
-		if(regIdRv==regIdRnB3)
-			tRegValRv=regValRnB3;
-		if(regIdRv==regIdRnA3)
-			tRegValRv=regValRnA3;
+//		if(!gprEx3Flush)
+		if(1'b1)
+		begin
+			if(regIdRv==regIdRnC3B)
+				tRegValRv=regValRnC3;
+			if(regIdRv==regIdRnB3B)
+				tRegValRv=regValRnB3;
+			if(regIdRv==regIdRnA3B)
+				tRegValRv=regValRnA3;
+		end
 `endif
 
-		if(regIdRv==regIdRnC2)
-			tRegValRv=regValRnC2;
-		if(regIdRv==regIdRnB2)
-			tRegValRv=regValRnB2;
-		if(regIdRv==regIdRnA2)
-			tRegValRv=regValRnA2;
+//		if(!gprEx2Flush)
+		if(1'b1)
+		begin
+			if(regIdRv==regIdRnC2B)
+				tRegValRv=regValRnC2;
+			if(regIdRv==regIdRnB2B)
+				tRegValRv=regValRnB2;
+			if(regIdRv==regIdRnA2B)
+				tRegValRv=regValRnA2;
+		end
 
-		if(regIdRv==regIdRnC1)
-			tRegValRv=regValRnC1;
-		if(regIdRv==regIdRnB1)
-			tRegValRv=regValRnB1;
-		if(regIdRv==regIdRnA1)
-			tRegValRv=regValRnA1;
+//		if(!gprEx1Flush)
+		if(1'b1)
+		begin
+			if(regIdRv==regIdRnC1B)
+				tRegValRv=regValRnC1;
+			if(regIdRv==regIdRnB1B)
+				tRegValRv=regValRnB1;
+			if(regIdRv==regIdRnA1B)
+				tRegValRv=regValRnA1;
+		end
 	end
 
 
 	if(!tValRxZz)
 	begin
 `ifdef jx2_stage_ex3
-		if(regIdRx==regIdRnC3)
-			tRegValRx=regValRnC3;
-		if(regIdRx==regIdRnB3)
-			tRegValRx=regValRnB3;
-		if(regIdRx==regIdRnA3)
-			tRegValRx=regValRnA3;
+//		if(!gprEx3Flush)
+		if(1'b1)
+		begin
+			if(regIdRx==regIdRnC3B)
+				tRegValRx=regValRnC3;
+			if(regIdRx==regIdRnB3B)
+				tRegValRx=regValRnB3;
+			if(regIdRx==regIdRnA3B)
+				tRegValRx=regValRnA3;
+		end
 `endif
 
-		if(regIdRx==regIdRnC2)
-			tRegValRx=regValRnC2;
-		if(regIdRx==regIdRnB2)
-			tRegValRx=regValRnB2;
-		if(regIdRx==regIdRnA2)
-			tRegValRx=regValRnA2;
+//		if(!gprEx2Flush)
+		if(1'b1)
+		begin
+			if(regIdRx==regIdRnC2B)
+				tRegValRx=regValRnC2;
+			if(regIdRx==regIdRnB2B)
+				tRegValRx=regValRnB2;
+			if(regIdRx==regIdRnA2B)
+				tRegValRx=regValRnA2;
+		end
 
-		if(regIdRx==regIdRnC1)
-			tRegValRx=regValRnC1;
-		if(regIdRx==regIdRnB1)
-			tRegValRx=regValRnB1;
-		if(regIdRx==regIdRnA1)
-			tRegValRx=regValRnA1;
+//		if(!gprEx1Flush)
+		if(1'b1)
+		begin
+			if(regIdRx==regIdRnC1B)
+				tRegValRx=regValRnC1;
+			if(regIdRx==regIdRnB1B)
+				tRegValRx=regValRnB1;
+			if(regIdRx==regIdRnA1B)
+				tRegValRx=regValRnA1;
+		end
 	end
 
 	if(!tValRyZz)
 	begin
 `ifdef jx2_stage_ex3
-		if(regIdRy==regIdRnC3)
-			tRegValRy=regValRnC3;
-		if(regIdRy==regIdRnB3)
-			tRegValRy=regValRnB3;
-		if(regIdRy==regIdRnA3)
-			tRegValRy=regValRnA3;
+//		if(!gprEx3Flush)
+		if(1'b1)
+		begin
+			if(regIdRy==regIdRnC3B)
+				tRegValRy=regValRnC3;
+			if(regIdRy==regIdRnB3B)
+				tRegValRy=regValRnB3;
+			if(regIdRy==regIdRnA3B)
+				tRegValRy=regValRnA3;
+		end
 `endif
 
-		if(regIdRy==regIdRnC2)
-			tRegValRy=regValRnC2;
-		if(regIdRy==regIdRnB2)
-			tRegValRy=regValRnB2;
-		if(regIdRy==regIdRnA2)
-			tRegValRy=regValRnA2;
+//		if(!gprEx2Flush)
+		if(1'b1)
+		begin
+			if(regIdRy==regIdRnC2B)
+				tRegValRy=regValRnC2;
+			if(regIdRy==regIdRnB2B)
+				tRegValRy=regValRnB2;
+			if(regIdRy==regIdRnA2B)
+				tRegValRy=regValRnA2;
+		end
 
-		if(regIdRy==regIdRnC1)
-			tRegValRy=regValRnC1;
-		if(regIdRy==regIdRnB1)
-			tRegValRy=regValRnB1;
-		if(regIdRy==regIdRnA1)
-			tRegValRy=regValRnA1;
+//		if(!gprEx1Flush)
+		if(1'b1)
+		begin
+			if(regIdRy==regIdRnC1B)
+				tRegValRy=regValRnC1;
+			if(regIdRy==regIdRnB1B)
+				tRegValRy=regValRnB1;
+			if(regIdRy==regIdRnA1B)
+				tRegValRy=regValRnA1;
+		end
 	end
 end
 

@@ -160,7 +160,8 @@ MemIcWxA		memIc(
 	clock,			reset,
 	icInPcAddr,		icOutPcVal,
 	icOutPcOK,		icOutPcStep,
-	icInPcHold,		icInPcWxe,		dcInOpm,
+	icInPcHold,		icInPcWxe,
+	dcInOpm,		regInSr,
 	ifMemData2,		ifMemAddr,
 	ifMemOpm,		ifMemOK2,
 	ifMemNoRwx2
@@ -170,7 +171,8 @@ MemIcA		memIc(
 	clock,			reset,
 	icInPcAddr,		icOutPcVal,
 	icOutPcOK,		icOutPcStep,
-	icInPcHold,		icInPcWxe,		dcInOpm,
+	icInPcHold,		icInPcWxe,
+	dcInOpm,		regInSr,
 	ifMemData,		ifMemAddr,
 	ifMemOpm,		ifMemOK
 	);
@@ -187,6 +189,7 @@ reg [127:0]		dfMemDataIn;
 wire[127:0]		dfMemDataOut;
 reg [  1:0]		dfMemOK;
 reg [  5:0]		dfMemNoRwx;
+reg [ 19:0]		dfMemPaBits;
 
 MemDcA		memDc(
 	clock,			reset,
@@ -194,12 +197,12 @@ MemDcA		memDc(
 	dcOutVal,		dcInVal,
 	dcOutValB,		dcInValB,
 	dfOutOK,		dcInHold,
-	dfOutOKB,
+	dfOutOKB,		regInSr,
 
 	dfMemAddr,		dfMemAddrB,
 	dfMemDataIn,	dfMemDataOut,
 	dfMemOpm,		dfMemOK,
-	dfMemNoRwx
+	dfMemNoRwx,		dfMemPaBits
 	);
 
 reg		tLatchIc;
@@ -244,11 +247,11 @@ begin
 	tIfNzOpm	= (ifMemOpm != UMEM_OPM_READY);
 	tDfNzOpm	= (dfMemOpm != UMEM_OPM_READY);
 
-//	ifMemOK	= UMEM_OK_READY;
-//	dfMemOK	= UMEM_OK_READY;
+	ifMemOK	= UMEM_OK_READY;
+	dfMemOK	= UMEM_OK_READY;
 
-	ifMemOK	= tLatchDc ? UMEM_OK_HOLD : UMEM_OK_READY;
-	dfMemOK	= tLatchIc ? UMEM_OK_HOLD : UMEM_OK_READY;
+//	ifMemOK	= tLatchDc ? UMEM_OK_HOLD : UMEM_OK_READY;
+//	dfMemOK	= tLatchIc ? UMEM_OK_HOLD : UMEM_OK_READY;
 	
 //	ifMemOK	= tIfNzOpm ? UMEM_OK_HOLD : UMEM_OK_READY;
 //	dfMemOK	= tDfNzOpm ? UMEM_OK_HOLD : UMEM_OK_READY;
@@ -283,10 +286,10 @@ begin
 
 		ifMemNoRwx[5]	= tTlbExc[15];
 
-//		if(tTlbExc[15])
-//		begin
-//			ifMemData = 128'h30003000_30003000_30003000_30003000;
-//		end
+		if(tTlbExc[15])
+		begin
+			ifMemData = 128'h30003000_30003000_30003000_30003000;
+		end
 
 		if(tMemAccNoRwx[2])
 //			tRegOutExc = {UV16_00, ifMemAddr, 16'h8003 };
@@ -321,6 +324,12 @@ begin
 			tNxtLatchDc	= tDfNzOpm;
 		end
 `endif
+
+		if(tTlbExc[15])
+		begin
+			$display("L1A: Inject Bad Marker %X", dfMemAddr);
+			dfMemDataIn = 128'h55BAADAA_55BAADAA_55BAADAA_55BAADAA;
+		end
 
 		if(tMemAccNoRwx[0] && tMemAccNoRwx[1])
 //			tRegOutExc = {UV16_00, dfMemAddr, 16'h8001 };
@@ -371,6 +380,8 @@ begin
 	ifMemData2		<= ifMemData;
 	ifMemOK2		<= ifMemOK;
 	ifMemNoRwx2		<= ifMemNoRwx;
+
+	dfMemPaBits		<= memAddr[31:12];
 
 	if(reset)
 	begin

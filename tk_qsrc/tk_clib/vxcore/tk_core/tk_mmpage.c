@@ -385,11 +385,13 @@ void *TKMM_Malloc(int sz)
 	if(!TKMM_PageAlloc_f)
 		__debugbreak();
 
+#if 1
 	if(sz<TKMM_MAXMMCELLSZ)
 	{
 		ptr=TKMM_MMCell_Malloc(sz);
 		return(ptr);
 	}
+#endif
 
 //	if(sz<65536)
 	if(sz<TKMM_MAXMMLISTSZ)
@@ -479,6 +481,8 @@ int TKMM_Free(void *ptr)
 	{
 		return(-1);
 	}
+
+//	return(-1);
 
 	if(obj->fl&8)
 	{

@@ -294,6 +294,7 @@ void R_RenderSegLoop (void)
 		{
 			// calculate texture offset
 			angle = (rw_centerangle + xtoviewangle[rw_x])>>ANGLETOFINESHIFT;
+			angle &= (FINEANGLES-1);
 			texturecolumn = rw_offset-FixedMul(finetangent[angle],rw_distance);
 			texturecolumn >>= FRACBITS;
 			// calculate lighting
@@ -824,10 +825,17 @@ R_StoreWallRange
 	
 	// save sprite clipping info
 	if(!r_ispolyobj)
+//	if(0)
 	{
+		lightnum = lastopening - openings;
+		if(lightnum < start)
+			lastopening += start - lightnum;
+	
 		if ( ((ds_p->silhouette & SIL_TOP) || maskedtexture)
 		 && !ds_p->sprtopclip)
 		{
+//			if((lastopening - start) < openings)
+		
 			memcpy (lastopening, ceilingclip+start, 2*(rw_stopx-start));
 			ds_p->sprtopclip = lastopening - start;
 			lastopening += rw_stopx - start;

@@ -1491,6 +1491,12 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVReg(
 			type, dreg, opr, sreg, treg));
 	}
 
+	if(BGBCC_CCXL_TypeFloat128P(ctx, type))
+	{
+		return(BGBCC_JX2C_EmitBinaryVRegVRegVRegFloat128(ctx, sctx,
+			type, dreg, opr, sreg, treg));
+	}
+
 	if(BGBCC_CCXL_TypeVariantP(ctx, type))
 	{
 		return(BGBCC_JX2C_EmitBinaryVRegVRegVRegVariant(ctx, sctx,
@@ -1748,6 +1754,12 @@ int BGBCC_JX2C_EmitUnaryVRegVReg(
 	if(BGBCC_CCXL_TypeSgInt128P(ctx, type))
 	{
 		return(BGBCC_JX2C_EmitUnaryVRegVRegInt128(ctx, sctx,
+			type, dreg, opr, sreg));
+	}
+
+	if(BGBCC_CCXL_TypeFloat128P(ctx, type))
+	{
+		return(BGBCC_JX2C_EmitUnaryVRegVRegFloat128(ctx, sctx,
 			type, dreg, opr, sreg));
 	}
 
@@ -2025,6 +2037,18 @@ int BGBCC_JX2C_EmitCompareVRegVRegVReg(
 		BGBCC_CCXL_TypeDoubleP(ctx, type))
 	{
 		return(BGBCC_JX2C_EmitCompareVRegVRegVRegFloat(ctx, sctx,
+			type, dreg, opr, sreg, treg));
+	}
+
+	if(BGBCC_CCXL_TypeSgInt128P(ctx, type))
+	{
+		return(BGBCC_JX2C_EmitCompareVRegVRegVRegInt128(ctx, sctx,
+			type, dreg, opr, sreg, treg));
+	}
+
+	if(BGBCC_CCXL_TypeFloat128P(ctx, type))
+	{
+		return(BGBCC_JX2C_EmitCompareVRegVRegVRegFloat128(ctx, sctx,
 			type, dreg, opr, sreg, treg));
 	}
 

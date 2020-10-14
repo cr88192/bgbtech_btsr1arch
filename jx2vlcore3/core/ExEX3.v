@@ -163,6 +163,11 @@ begin
 			tDoMemOp	= 1;
 			tRegIdRn2	= regIdRm;
 			tRegValRn2	= memDataIn;
+			
+			if(memDataIn[31:0]==32'h55BAADAA)
+			begin
+				$display("EX3: Bad Marker Seen R=%X V=%X", regIdRm, memDataIn);
+			end
 `ifdef jx2_debug_ldst
 			$display("LOAD(3): R=%X V=%X", regIdRm, memDataIn);
 `endif
@@ -274,6 +279,12 @@ begin
 		end
 
 //		tMemOpm = tDoMemOpm;
+	end
+	
+	if(opBraFlush)
+	begin
+		tRegIdRn2	= JX2_GR_ZZR;
+		tRegIdCn2	= JX2_CR_ZZR[4:0];
 	end
 
 	if(tHoldCyc < tDoHoldCyc)

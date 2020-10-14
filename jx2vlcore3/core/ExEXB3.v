@@ -137,6 +137,12 @@ begin
 `ifdef jx2_stage_memex3
 			tRegIdRn2	= regIdRm;
 			tRegValRn2	= memDataInB;
+
+			if(memDataInB[31:0]==32'h55BAADAA)
+			begin
+				$display("EX3B: Bad Marker Seen R=%X V=%X",
+					regIdRm, memDataInB);
+			end
 `endif
 		end
 
@@ -188,6 +194,12 @@ begin
 		end
 	
 	endcase
+
+	if(opBraFlush)
+	begin
+		tRegIdRn2	= JX2_GR_ZZR;
+	end
+
 end
 
 always @(posedge clock)

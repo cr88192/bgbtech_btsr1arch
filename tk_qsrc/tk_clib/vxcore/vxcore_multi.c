@@ -15,8 +15,10 @@
 #include "pdpc201/setjmp.c"
 #include "pdpc201/math.c"
 #include "pdpc201/math2.c"
-#include "pdpc201/__memmgr.c"
+// #include "pdpc201/__memmgr.c"
+
 #include "pdpc201/stdlibext.c"
+#include "pdpc201/complex.c"
 
 #include <tk_core.h>
 

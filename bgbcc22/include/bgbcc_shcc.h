@@ -892,6 +892,8 @@
 #define BGBCC_SH_RLC_RELJ29_BJX		0x2E	//Relative Jumbo 29 bit (BYTE, BJX2)
 #define BGBCC_SH_RLC_RELJ32_BJX		0x2F	//Relative Jumbo 32 bit (BYTE, BJX2)
 
+#define BGBCC_SH_RLC_TRIPWIRE_BJX	0x30	//Tripwire Location
+
 
 // #define BGBCC_SH_RLC_ABSW48A_BSR	0x20	//Absolute BYTE
 // #define BGBCC_SH_RLC_ABSW64A_BSR	0x21	//Absolute BYTE

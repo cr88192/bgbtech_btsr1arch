@@ -356,6 +356,7 @@ int BGBCC_JX2_EmitNamedGlobal(BGBCC_JX2_Context *ctx, char *name)
 
 int BGBCC_JX2_EmitCommSym(BGBCC_JX2_Context *ctx, int lblid, int sz, int al)
 {
+	static int lastemittrip=0;
 	int i;
 
 	for(i=0; i<ctx->nlbl; i++)
@@ -397,13 +398,36 @@ int BGBCC_JX2_EmitCommSym(BGBCC_JX2_Context *ctx, int lblid, int sz, int al)
 		else
 			{ al=1; }
 	}
+	
+	if(sz>=512)
+	{
+		al=16;
+	}
+	
 
 	if(al>1)
 		BGBCC_JX2_EmitBAlign(ctx, al);
 #endif
 
+	if((sz>=2048) && !lastemittrip)
+	{
+		BGBCC_JX2_EmitBAlign(ctx, 16);
+		BGBCC_JX2_EmitRelocTy(ctx, lblid, BGBCC_SH_RLC_TRIPWIRE_BJX);
+		BGBCC_JX2_EmitRawBytes(ctx, NULL, 16);
+	}
+
 	BGBCC_JX2_EmitLabel(ctx, lblid);
 	BGBCC_JX2_EmitRawBytes(ctx, NULL, sz);
+
+	lastemittrip=0;
+	if(sz>=2048)
+	{
+		BGBCC_JX2_EmitBAlign(ctx, 16);
+		BGBCC_JX2_EmitRelocTy(ctx, lblid, BGBCC_SH_RLC_TRIPWIRE_BJX);
+		BGBCC_JX2_EmitRawBytes(ctx, NULL, 16);
+		lastemittrip=1;
+	}
+
 	BGBCC_JX2DA_EmitComm(ctx, sz);
 	ctx->sec=i;
 	return(1);

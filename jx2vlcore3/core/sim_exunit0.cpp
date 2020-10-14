@@ -203,6 +203,9 @@ void BTSR1_ProcessEscKey(int v)
 
 int BJX2_MainAddScanKeyByte(BJX2_Context *ctx, int k)
 {
+	printf("KB(%X)", k);
+	fflush(stdout);
+
 	ctx->ps2kbbuf[ctx->ps2kbrov]=k;
 	ctx->ps2kbrov=(ctx->ps2kbrov+1)&255;
 	return(0);
@@ -249,7 +252,14 @@ int BJX2_MainAddTranslateKey(BJX2_Context *ctx, int key)
 	
 	sc=ps2_key2scan[key&0xFF];
 	if(!sc)
+	{
+		printf("SKIP(%X)", key);
+		fflush(stdout);
 		return(0);
+	}
+
+	printf("KEY(%X)", key);
+	fflush(stdout);
 
 	if(key&0x8000)
 	{
@@ -548,6 +558,8 @@ int FRGL_TimeMS()
 }
 #endif
 
+static int mmio_spideb=0;
+static int mmio_ps2deb=0;
 
 uint32_t mmio_ReadDWord(BJX2_Context *ctx, uint32_t addr)
 {
@@ -598,11 +610,11 @@ uint32_t mmio_ReadDWord(BJX2_Context *ctx, uint32_t addr)
 
 	case 0xE010:
 		val=0;
-		if(kbirov!=kbrov)
-		{
-			val=kbbuf[kbirov];
-			kbirov=(kbirov+1)&255;
-		}
+//		if(kbirov!=kbrov)
+//		{
+//			val=kbbuf[kbirov];
+//			kbirov=(kbirov+1)&255;
+//		}
 		break;
 
 	case 0xE014:
@@ -610,8 +622,8 @@ uint32_t mmio_ReadDWord(BJX2_Context *ctx, uint32_t addr)
 
 	case 0xE018:
 		val=0;
-		if(kbirov!=kbrov)
-			val|=1;
+//		if(kbirov!=kbrov)
+//			val|=1;
 		break;
 
 	case 0xE01C:
@@ -624,12 +636,15 @@ uint32_t mmio_ReadDWord(BJX2_Context *ctx, uint32_t addr)
 		break;
 	case 0xE034:
 		val=mmio[0x11];
+		mmio_spideb=0;
 		break;
 	case 0xE038:
 		val=mmio[0x12];
+		mmio_spideb=0;
 		break;
 	case 0xE03C:
 		val=mmio[0x13];
+		mmio_spideb=0;
 		break;
 
 
@@ -638,7 +653,8 @@ uint32_t mmio_ReadDWord(BJX2_Context *ctx, uint32_t addr)
 		if(ctx->ps2kbirov!=ctx->ps2kbrov)
 		{
 			val=ctx->ps2kbbuf[ctx->ps2kbirov];
-			ctx->ps2kbirov=(ctx->ps2kbirov+1)&255;
+//			ctx->ps2kbirov=(ctx->ps2kbirov+1)&255;
+			mmio_ps2deb=1;
 		}
 		break;
 
@@ -647,6 +663,11 @@ uint32_t mmio_ReadDWord(BJX2_Context *ctx, uint32_t addr)
 
 	case 0xE048:
 		val=0;
+		if(mmio_ps2deb)
+		{
+			ctx->ps2kbirov=(ctx->ps2kbirov+1)&255;
+			mmio_ps2deb=0;
+		}
 		if(ctx->ps2kbirov!=ctx->ps2kbrov)
 			val|=1;
 		break;
@@ -710,6 +731,9 @@ uint32_t mmio_WriteDWord(BJX2_Context *ctx, uint32_t addr, uint32_t val)
 	case 0xE030:
 		if(val&0x20)
 		{
+			if(mmio_spideb)
+				break;
+		
 			lv0=mmio[0x12]|(((u64)mmio[0x13])<<32);
 
 			lv1=0;
@@ -721,8 +745,19 @@ uint32_t mmio_WriteDWord(BJX2_Context *ctx, uint32_t addr, uint32_t val)
 			}
 			mmio[0x12]=lv1;
 			mmio[0x13]=lv1>>32;
+			mmio_spideb = 1;
 
 //			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_IOPOKE);
+		}
+
+		if(val&0x02)
+		{
+			if(mmio_spideb)
+				break;
+		
+			v=mmio[0x11];
+			v=btesh2_spimmc_XrByte(ctx, v);
+			mmio[0x11]=v;
 		}
 	
 		v=btesh2_spimmc_XrCtl(ctx, val);
@@ -734,8 +769,9 @@ uint32_t mmio_WriteDWord(BJX2_Context *ctx, uint32_t addr, uint32_t val)
 			mmio[0x11]=(v>>8)&255;
 		break;
 	case 0xE034:
-		v=btesh2_spimmc_XrByte(ctx, val);
-		mmio[0x11]=v;
+//		v=btesh2_spimmc_XrByte(ctx, val);
+//		mmio[0x11]=v;
+		mmio[0x11]=val;
 
 //		printf("SPI XrData %02X %02X\n", val, v);
 
@@ -797,6 +833,14 @@ void MemUpdateForBus()
 
 		is_sram_b	= (addrb>=0x0000C000) && (addrb<=0x0000DFFF);
 		is_dram_b	= (addrb>=0x01000000) && (addrb<=0x18000000);
+		
+		if(	(top->memDataOut[0]==0x55BAADAA) ||
+			(top->memDataOut[1]==0x55BAADAA) ||
+			(top->memDataOut[2]==0x55BAADAA) ||
+			(top->memDataOut[3]==0x55BAADAA))
+		{
+			printf("MemUpdateForBus: Bad Pattern Seen\n");
+		}
 
 		if((top->memOpm&0x18)==0x18)
 		{
@@ -1392,7 +1436,7 @@ int main(int argc, char **argv, char **env)
 		(char *)"../../tk_qsrc/id1/autoexec1.cfg");
 #endif
 
-//	JX2R_UseImageAddFileBuffer("swapfile.sys", (byte *)NULL, 384*(1<<20));
+	JX2R_UseImageAddFileBuffer("swapfile.sys", (byte *)NULL, 384*(1<<20));
 
 	Verilated::commandArgs(argc, argv);
 

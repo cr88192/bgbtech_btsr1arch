@@ -59,6 +59,8 @@ typedef struct
 
 memzone_t*	mainzone;
 
+void __setmemtrap(void *ptr, int mode);
+
 #ifndef __BJX2__
 void __setmemtrap(void *ptr, int mode)
 {
@@ -169,6 +171,8 @@ void Z_Free (void* ptr)
 //	if (!other->user)
 	if (other->id == 0)
 	{
+		__setmemtrap(other, 2);
+
 		// merge with previous free block
 		other->size += block->size;
 		other->next = block->next;
@@ -199,6 +203,8 @@ void Z_Free (void* ptr)
 //	if (!other->user)
 	if (other->id == 0)
 	{
+		__setmemtrap(other, 2);
+
 		// merge the next free block onto the end
 		block->size += other->size;
 		block->next = other->next;

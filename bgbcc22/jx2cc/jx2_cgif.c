@@ -2950,6 +2950,9 @@ ccxl_status BGBCC_JX2C_BuildGlobal(BGBCC_TransState *ctx,
 //	if(al&(al-1))al=4;
 	if(al&(al-1))al=8;
 
+	if(sz>=512)
+		{ al=16; }
+
 	iskv=0;
 
 	if((obj->flagsint&BGBCC_TYFL_CONST) &&
@@ -2967,6 +2970,16 @@ ccxl_status BGBCC_JX2C_BuildGlobal(BGBCC_TransState *ctx,
 	}else
 	{
 		BGBCC_JX2_SetSectionName(sctx, ".data");
+	}
+
+	if(BGBCC_CCXL_TypeArrayP(ctx, obj->type))
+	{
+		if(sz>=2048)
+		{
+			BGBCC_JX2_EmitBAlign(sctx, 16);
+			BGBCC_JX2_EmitRelocTy(sctx, l0, BGBCC_SH_RLC_TRIPWIRE_BJX);
+			BGBCC_JX2_EmitRawBytes(sctx, NULL, 16);
+		}
 	}
 
 //	BGBCC_JX2_EmitBAlign(sctx, 4);
@@ -3143,7 +3156,14 @@ ccxl_status BGBCC_JX2C_BuildGlobal(BGBCC_TransState *ctx,
 			else
 				{ BGBCC_JX2_EmitDWord(sctx, 0); }
 		}
-		
+
+		if(sz>=2048)
+		{
+			BGBCC_JX2_EmitBAlign(sctx, 16);
+			BGBCC_JX2_EmitRelocTy(sctx, l0, BGBCC_SH_RLC_TRIPWIRE_BJX);
+			BGBCC_JX2_EmitRawBytes(sctx, NULL, 16);
+		}
+
 		return(1);
 
 #if 0
@@ -3194,6 +3214,16 @@ ccxl_status BGBCC_JX2C_BuildGlobal(BGBCC_TransState *ctx,
 	{
 		BGBCC_JX2C_BuildGlobal_EmitLitAsType(ctx, sctx,
 			obj->type, obj->value);
+
+#if 0
+		if(sz>=1024)
+		{
+			BGBCC_JX2_EmitBAlign(ctx, 16);
+			BGBCC_JX2_EmitRelocTy(ctx, l0, BGBCC_SH_RLC_TRIPWIRE_BJX);
+			BGBCC_JX2_EmitRawBytes(ctx, NULL, 16);
+		}
+#endif
+
 		return(1);
 	}
 
@@ -4558,6 +4588,9 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			bgbcc_jx2cc_setu16en(ctr+2, en, w1);
 			bgbcc_jx2cc_setu16en(ctr+4, en, w2);
 			bgbcc_jx2cc_setu16en(ctr+6, en, w3);
+			break;
+
+		case BGBCC_SH_RLC_TRIPWIRE_BJX:
 			break;
 
 		default:

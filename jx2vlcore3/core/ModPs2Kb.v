@@ -74,6 +74,8 @@ reg				ps2WinP;
 reg				ps2NxtWinP;
 reg				ps2WinAdv;
 reg				ps2NxtWinAdv;
+reg				ps2DebP;
+reg				ps2NxtDebP;
 
 reg[3:0]		ps2WinCnt;
 reg[3:0]		ps2NxtWinCnt;
@@ -91,12 +93,15 @@ begin
 	
 	scanNxtSpos		= scanSpos;
 	scanNxtEpos		= scanEpos;
-	scanNxtSpAdv	= 0;
+//	scanNxtSpAdv	= 0;
+	scanNxtSpAdv	= scanSpAdv;
 	scanEpAdv		= 0;
 	ps2ScanAdv		= 0;
 	ps2NxtWinAdv	= 0;
 	ps2NxtWinCnt	= ps2WinCnt;
 	ps2NxtWinP		= 0;
+
+	ps2NxtDebP		= ps2DebP;
 
 	ps2NxtWin = ps2Win;
 //	if(ps2_lstClk_i && !ps2_clk_i)
@@ -154,9 +159,11 @@ begin
 //	if(ps2WinCnt>11)
 //		ps2NxtWinCnt = 0;
 
-	if(scanSpAdv && !mmioInOE)
+//	if(scanSpAdv && !mmioInOE)
+	if(scanSpAdv && !mmioInOE && !ps2DebP)
 	begin
 		scanNxtSpos		= scanSpos + 1;
+		scanNxtSpAdv	= 0;
 	end
 	
 	if((tMmioAddr[3:2]==2'b00) && mmioInOE)
@@ -166,13 +173,16 @@ begin
 //		scanNxtSpAdv	= 1;
 		scanNxtSpAdv	= (scanSpos != scanEpos);
 		tMmioOK			= UMEM_OK_OK;
+		ps2NxtDebP		= 1;
 	end
 
 	if((tMmioAddr[3:2]==2'b10) && mmioInOE)
 	begin
 		tMmioOutData	= 0;
-		tMmioOutData[0] = (scanSpos != scanEpos);
+//		tMmioOutData[0] = (scanSpos != scanEpos);
+		tMmioOutData[0] = (scanSpos != scanEpos) && !ps2DebP;
 		tMmioOK			= UMEM_OK_OK;
+		ps2NxtDebP		= 0;
 	end
 end
 
@@ -191,6 +201,7 @@ begin
 	ps2WinAdv		<= ps2NxtWinAdv;
 	ps2WinP			<= ps2NxtWinP;
 	ps2WinCnt		<= ps2NxtWinCnt;
+	ps2DebP			<= ps2NxtDebP;
 
 	ps2_lstClk_i	<= ps2_clk_i;
 	ps2_lstClk2_i	<= ps2_lstClk_i;

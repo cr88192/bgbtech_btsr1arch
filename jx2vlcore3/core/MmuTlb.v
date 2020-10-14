@@ -234,6 +234,7 @@ reg			tlbIs48b;
 reg			tAddrIsMMIO;
 reg			tAddrIsLo4G;
 reg			tAddrIsHi4G;
+reg			tAddrIsPhys;
 
 wire[15:0]	tTlbExc;
 
@@ -288,6 +289,7 @@ begin
 	tAddrIsHi4G		= (tRegInAddrA[47:32] == 16'hFFFF);
 	tAddrIsMMIO		= (tRegInAddrA[31:28] == 4'hF) &&
 		(tAddrIsLo4G || tAddrIsHi4G || tlbIs32b);
+	tAddrIsPhys		= tAddrIsHi4G && !tRegInAddrA[31];
 
 //	tAddrIsLo4G		= (regInAddr[47:32] == 16'h0000);
 //	tAddrIsHi4G		= (regInAddr[47:32] == 16'hFFFF);
@@ -649,6 +651,9 @@ begin
 //	if(regInAddr[31])
 	if(tAddrIsMMIO)
 		tlbMmuSkip = 1;
+	
+	if(tAddrIsPhys)
+		tlbMmuSkip = 1;
 
 	if(tlbMmuEnable && !tlbMmuSkip && (tRegInOpm[4:3]!=0))
 	begin
@@ -689,6 +694,10 @@ begin
 //		tlbAddrB	= regInAddrB[47:0];
 		tlbAddr		= tRegInAddrA[47:0];
 		tlbAddrB	= tRegInAddrB[47:0];
+		
+		if(tAddrIsPhys && tAddrIsHi4G)
+			tlbAddr[47:32]	= 0;
+
 		tlbMiss		= 0;
 	end
 
@@ -753,7 +762,8 @@ begin
 //		regInOpm : (tRegOutExc[15] ? UMEM_OPM_LDTLB : UMEM_OPM_READY);
 
 //	if(regInAddr[47:0]!=tlbAddr[47:0])
-	if(tRegInAddrA[47:0]!=tlbAddr[47:0])
+//	if(tRegInAddrA[47:0]!=tlbAddr[47:0])
+	if((tRegInAddrA[47:0]!=tlbAddr[47:0]) && !tAddrIsPhys)
 	begin
 		$display("TLB(A) %X -> %X", tRegInAddrA, tlbAddr);
 	end

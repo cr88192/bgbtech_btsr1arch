@@ -385,7 +385,6 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_PADDXD		0xC5		//
 #define BJX2_NMID_PSUBXD		0xC6		//
 #define BJX2_NMID_PMULXD		0xC7		//
-
 #define BJX2_NMID_PCSELTW		0xC8		//
 #define BJX2_NMID_PCSELTL		0xC9		//
 #define BJX2_NMID_PCMPEQH		0xCA		//
@@ -398,6 +397,13 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_PCMPGTW		0xD1		//
 #define BJX2_NMID_PCMPHIL		0xD2		//
 #define BJX2_NMID_PCMPGTL		0xD3		//
+
+#define BJX2_NMID_FADDX			0xD4		//
+#define BJX2_NMID_FSUBX			0xD5		//
+#define BJX2_NMID_FMULX			0xD6		//
+#define BJX2_NMID_PCONV			0xD7		//
+#define BJX2_NMID_FCMPXEQ		0xD8		//
+#define BJX2_NMID_FCMPXGT		0xD9		//
 
 #define BJX2_FMID_NONE			0x00		//?
 #define BJX2_FMID_REG			0x01		//Rn
@@ -711,6 +717,8 @@ int (*MemSetWord)(BJX2_Context *ctx, bjx2_addr addr0, int val);
 int (*MemSetDWord)(BJX2_Context *ctx, bjx2_addr addr0, s32 val);
 int (*MemSetQWord)(BJX2_Context *ctx, bjx2_addr addr0, s64 val);
 int (*MemSetTripwire)(BJX2_Context *ctx, bjx2_addr addr0, int val);
+int (*MemQueryTransit)(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addr1, int val);
 };
 
 struct BJX2_Opcode_s {
@@ -759,7 +767,8 @@ bjx2_addru addr_sz;		//address-space size
 
 char *name;				//helpful name
 void *data;				//raw data pointer
-byte *tripwire;			//tripwire mask
+// byte *tripwire;			//tripwire mask
+u32 *tripwire;			//tripwire mask
 byte simple_mem;		//simple memory read
 bjx2_addr modbase;		//modulo base
 bjx2_addr modmask;		//modulo mask
@@ -783,6 +792,8 @@ int (*SetQWord)(BJX2_Context *ctx,
 	BJX2_MemSpan *sp, bjx2_addr addr, s64 val);
 int (*SetTripwire)(BJX2_Context *ctx,
 	BJX2_MemSpan *sp, bjx2_addr addr, int mode);
+int (*MemQueryTransit)(BJX2_Context *ctx,
+	BJX2_MemSpan *sp, bjx2_addr addr0, bjx2_addr addr1, int val);
 };
 
 BJX2_Opcode *BJX2_ContextAllocOpcode(BJX2_Context *ctx);

@@ -1518,12 +1518,15 @@ reg[31:0]	tValStepPc;
 
 reg[47:0]	tValNextPc;
 reg[47:0]	tOpNextPc;
+reg[47:0]	tIsrNextPc;
 
 reg[47:0]	tValBraPc;
 reg[47:0]	tValNextBraPc;
+reg[47:0]	tIsrBraPc;
 
 reg[7:0]	opBraFlushMask;
 reg[7:0]	nxtBraFlushMask;
+reg[7:0]	tIsrBraFlushMask;
 
 // reg[63:0]	tNxtRegExc;
 // reg[63:0]	tRegExc;
@@ -2166,6 +2169,8 @@ begin
 //		tValNextPc		= ifValPc;
 		tValNextPc		= ifLastPc;
 
+	tIsrNextPc		= tValNextPc;
+
 	nxtBraFlushMask	= { 1'b0, opBraFlushMask[7:1] };
 
 `ifdef jx2_enable_prebra
@@ -2303,6 +2308,13 @@ begin
 
 	crInSr			= ex1RegOutSr;
 	gprInSp			= ex1RegOutSp;
+	crInLr			= ex1RegOutLr;
+
+	gprInDlr		= ex1RegOutDlr;
+	gprInDhr		= ex1RegOutDhr;
+
+	tIsrBraPc			= tValNextBraPc;
+	tIsrBraFlushMask	= nxtBraFlushMask;
 
 	if(reset)
 	begin
@@ -2393,9 +2405,13 @@ begin
 //		else if(!crOutSr[28] || exHold1 || exHold2)
 		else if(!crOutSr[28] || !ifValBraOk)
 		begin
-`ifndef def_true
-			$display("ExUnit: Fault %X, id2.PC=%X ex1.PC=%X ex2.PC=%X",
-				tRegExc, id2ValBPc, ex1ValBPc, ex2ValBPc);
+// `ifndef def_true
+`ifdef def_true
+			if(tRegExc[15:12]!=4'b1010)
+			begin
+				$display("ExUnit: Fault %X, id2.PC=%X ex1.PC=%X ex2.PC=%X",
+					tRegExc, id2ValBPc, ex1ValBPc, ex2ValBPc);
+			end
 `endif
 		
 	//		tValNextPc = crOutVbr;
@@ -2411,13 +2427,24 @@ begin
 	//		nxtBraFlushMask = 8'h0F;
 			nxtBraFlushMask = JX2_BRA_FLUSHMSK;
 
-`ifndef def_true
-			if(crOutSr[29] || crOutSr[28])
+			if(tRegExc[15:12]!=4'b1010)
 			begin
-				$display("Fault, RB Set, SPC=%X SR=",
-					crOutSpc, crOutSr);
-			end
+
+// `ifndef def_true
+`ifdef def_true
+				if(crOutSr[29] || crOutSr[28])
+				begin
+					$display("Fault, RB Set, SPC=%X SR=",
+						crOutSpc, crOutSr);
+				end
 `endif
+
+				if(!crOutSr[28])
+				begin
+					$display("ISR VBR=%X PC=%X, SPC=%X",
+						crOutVbr, tValNextBraPc, crInSpc);
+				end
+			end
 
 			if(!crOutSr[28])
 			begin
@@ -2440,42 +2467,116 @@ begin
 `ifdef def_true
 				if(!ex3BraFlush)
 				begin
+					$display("ISR from EX3");
 					crInSpc			= ex3ValBPc;
 					crInExsr[39:32]	= ex3RegInLastSr;
 					crInLr			= ex3RegInLr;
 					ex3TrapFlush	= 1;
 					ex2TrapFlush	= 1;
 					ex1TrapFlush	= 1;
+
+					gprInDlr		= gprOutDlr;
+					gprInDhr		= gprOutDhr;
 				end
 				else
 `endif
+//`ifndef def_true
+`ifdef def_true
 				if(!ex2BraFlush)
 				begin
+					$display("ISR from EX2");
 					crInSpc			= ex2ValBPc;
 					crInExsr[39:32]	= ex2RegInLastSr;
 					crInLr			= ex2RegInLr;
 					ex2TrapFlush	= 1;
 					ex1TrapFlush	= 1;
+
+					gprInDlr		= gprOutDlr;
+					gprInDhr		= gprOutDhr;
 				end
 				else
+`endif
 				if(!ex1BraFlush)
 				begin
+					$display("ISR from EX1");
 					crInSpc			= ex1ValBPc;
 //					crInExsr[39:32]	= ex1RegInSr[7:0];
 					crInExsr[39:32]	= ex2RegOutSr[7:0];
 //					crInLr			= ex1RegInLr;
 					crInLr			= crOutLr;
 					ex1TrapFlush	= 1;
-				end
-				else if(!opBraFlushMask[0])
-					crInSpc			= id2ValBPc;
-				else if(!opBraFlushMask[1])
-					crInSpc			= id1ValBPc;
-				else
-					crInSpc		= ifLastPc;
 
-				$display("ISR VBR=%X PC=%X, SPC=%X",
-					crOutVbr, tValNextBraPc, crInSpc);
+					gprInDlr		= gprOutDlr;
+					gprInDhr		= gprOutDhr;
+				end
+//				else if(!opBraFlushMask[0])
+//				else if(!nxtBraFlushMask[0])
+				else if(!tIsrBraFlushMask[0])
+				begin
+					$display("ISR from ID2");
+					crInSpc			= id2ValBPc;
+//					crInExsr[39:32]	= crOutSr[7:0];
+					crInExsr[39:32]	= ex2RegOutSr[7:0];
+					crInLr			= crOutLr;
+				end
+//				else if(!opBraFlushMask[1])
+//				else if(!nxtBraFlushMask[1])
+				else if(!tIsrBraFlushMask[1])
+				begin
+//					$display("ISR from ID1, Msk=%X", opBraFlushMask);
+					$display("ISR from ID1, Msk=%X/%X",
+						nxtBraFlushMask, opBraFlushMask);
+					$display("  EX1 PC=%X %X",
+						ex1ValBPc, ex1IstrWord);
+					$display("  ID2 PC=%X %X",
+						id2ValBPc, id2IstrWord);
+					$display("  ID1 PC=%X %X",
+						id1ValBPc, id1IstrWord);
+					$display("  IF PC=%X", ifLastPc);
+					crInSpc			= id1ValBPc;
+//					crInExsr[39:32]	= crOutSr[7:0];
+					crInExsr[39:32]	= ex2RegOutSr[7:0];
+					crInLr			= crOutLr;
+				end
+				else
+				begin
+//					$display("ISR from IF");
+//					$display("ISR from IF, Msk=%X", opBraFlushMask);
+					$display("ISR from IF, Msk=%X/%X",
+						nxtBraFlushMask, opBraFlushMask);
+					$display("  EX1 PC=%X %X",
+						ex1ValBPc, ex1IstrWord);
+					$display("  ID2 PC=%X %X",
+						id2ValBPc, id2IstrWord);
+					$display("  ID1 PC=%X %X",
+						id1ValBPc, id1IstrWord);
+					$display("  IF PC=%X / %X", ifLastPc, tIsrNextPc);
+
+					crInSpc			= ifLastPc;
+//					crInSpc			= tOpNextPc;
+//					crInSpc			= tIsrNextPc;
+					crInExsr[39:32]	= crOutSr[7:0];
+					crInLr			= crOutLr;
+
+//					tIsrBraPc			= tValNextBraPc;
+//					tIsrBraFlushMask	= nxtBraFlushMask;
+
+`ifdef jx2_bra2stage
+					if(opBraFlushMask[4])
+					begin
+						crInSpc = tIsrBraPc;
+					end
+`else
+					if(tIsrBraFlushMask[3])
+					begin
+						crInSpc = tIsrBraPc;
+					end
+`endif
+
+				end
+
+//				$display("ISR VBR=%X PC=%X, SPC=%X",
+//					crOutVbr, tValNextBraPc, crInSpc);
 
 				if(tRegExc[15:12]==4'b1110)
 				begin
@@ -2530,7 +2631,7 @@ begin
 
 	crInPc			= tValNextPc;
 //	crInSr			= ex1RegOutSr;
-	crInLr			= ex1RegOutLr;
+//	crInLr			= ex1RegOutLr;
 
 	gprIdRn1		= ex1RegIdRn1;
 	gprValRn1		= ex1RegValRn1;
@@ -2594,8 +2695,8 @@ begin
 	/* ID2 */
 
 //	gprValGbr		= crOutGbr;
-	gprInDlr		= ex1RegOutDlr;
-	gprInDhr		= ex1RegOutDhr;
+//	gprInDlr		= ex1RegOutDlr;
+//	gprInDhr		= ex1RegOutDhr;
 //	gprInSp			= ex1RegOutSp;
 
 `ifdef jx2_sprs_elrehr

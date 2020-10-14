@@ -57,7 +57,19 @@ _start:
 
 //	bsr		copy_data
 
+#if 0
+	mov		__tk_saved_vbr, r3
+	mov.q	@r3, r2
+	tst		r2, r2
+	bf		.NoZero
+	
+	/* Skip .bss zeroing if loaded via program loader.
+	 * It will have already zeroed it, and maybe added tripwires.
+	 */
 	bsr		zero_bss
+	
+	.NoZero:
+#endif
 
 //	mov		STACK_BASE_ISR, r0
 //	mov		r0, ssp
@@ -113,6 +125,12 @@ isr_except:
 	break
 //	rte
 
+	nop
+	nop
+	nop
+	break
+	nop
+
 isr_inter:
 //	mov	exsr, r4
 //	break
@@ -120,9 +138,22 @@ isr_inter:
 //	rte
 	bra __isr_interrupt
 
+	nop
+	nop
+	nop
+	break
+	nop
+
+
 isr_tlbfault:
 //	break
 	bra __isr_tlbfault
+
+	nop
+	nop
+	nop
+	break
+	nop
 
 #if 0
 	mov		__tk_saved_vbr, r3

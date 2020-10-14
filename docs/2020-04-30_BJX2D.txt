@@ -1279,8 +1279,10 @@ F0zz Instruction Block:
 *** F0nm_1e7D  FSTCH		Rm, Rn		//Store Convert Half (Low16)
 *** F0nm_1e8D  FNEG			Rm, Rn		//Negate
 *** F0nm_1e9D  FABS			Rm, Rn		//Absolute
-*** F0nm_1eAD  FCMPEQ		Rm, Rn		//SR.T=(FRn EQ FRm)
-*** F0nm_1eBD  FCMPGT		Rm, Rn		//SR.T=(FRn GT FRm)
+*** F0nm_1gAD  FCMPEQ		Rm, Rn		//SR.T=(FRn EQ FRm)
+*** F0nm_1GAD  FCMPXEQ		Xm, Xn		//SR.T=(FRn EQ FRm)  (GFPX)
+*** F0nm_1gBD  FCMPGT		Rm, Rn		//SR.T=(FRn GT FRm)
+*** F0nm_1GBD  FCMPXGT		Xm, Xn		//SR.T=(FRn GT FRm)  (GFPX)
 *** F0nm_1eCD  -
 *** F0nm_1eDD  -
 *** F0nm_1eED  -
@@ -1445,8 +1447,11 @@ F0zz Instruction Block:
 ** F0nm_5Go7 ? PMULU.HW	Rm, Ro, Rn			//(GSV) Packed Mul (High Word)
 
 ** F0nm_5go8  FADD		Rm, Ro, Rn			//(GFP) FADD
+** F0nm_5Go8  FADDX		Xm, Xo, Xn			//(GFPX) FADD, Binary128
 ** F0nm_5go9  FSUB		Rm, Ro, Rn			//(GFP) FSUB
+** F0nm_5Go9  FSUBX		Xm, Xo, Xn			//(GFPX) FSUB, Binary128
 ** F0nm_5goA  FMUL		Rm, Ro, Rn			//(GFP) FMUL
+** F0nm_5GoA  FMULX		Xm, Xo, Xn			//(GFPX) FMUL, Binary128
 ** F0nm_5goB / RGB5AVG	Rm, Ro, Rn			//(RGB555) Average
 ** F0nm_5GoB / RGB5MOD	Rm, Ro, Rn			//(RGB555) Modulate
 ** F0nm_5goC  ADDS.L	Rm, Ro, Rn			//Rn=Rm+Ro, ADD 32-bit, Sign Extend
@@ -1549,6 +1554,8 @@ F2zz Instruction Block  (Imm9 Block):
 
 * F2nm_9pjj  SHLD		Rm, #imm8, Rn		//E.i=0
 * F2nm_9Pjj  SHLD.Q		Rm, #imm8, Rn		//E.i=0
+* F2nm_8qjj  PCONV		Rm, #imm8, Rn		//E.i=1, Packed Convert
+* F2nm_8Qjj  PCONVX		Rm, #imm8, Rn		//E.i=1, Packed Convert
 
 * F2nz_Aejj  -
 * F2nz_Bejj  -
@@ -1686,6 +1693,7 @@ Use with the F0 block will depend on the instruction:
 
 
 Use of two jumbo prefixes followed by an F8-block instruction will encode an instruction with a 64-bit immediate.
+
 
 ==== Jumbo Op48 ====
 

@@ -1093,6 +1093,8 @@ void W_InitMultipleFiles (char** filenames)
 	if (!numlumps)
 		I_Error ("W_InitFiles: no files found");
 	
+	printf("W_InitFiles: numlumps=%d\n", numlumps);
+	
 	for(i=0; i<64; i++)
 	{
 		lumphash[i] = -1;
@@ -1151,11 +1153,6 @@ int W_NumLumps (void)
 // W_CheckNumForName
 // Returns -1 if name not found.
 //
-
-int W_CheckNumForName (char* name)
-{
-	return(W_CheckNumForNameBase(numlumps, name));
-}
 
 #if 0
 int W_CheckNumForNameBase (int base, char* name)
@@ -1279,7 +1276,7 @@ int W_CheckNumForNameBase (int base, char* name)
 	lumpinfo_t	*lump_p;
 	char		*s;
 
-	if(base<=0)
+	if(base <= 0)
 		return(-1);
 
 	// make the name into two integers for easy compares
@@ -1345,8 +1342,11 @@ int W_CheckNumForNameBase (int base, char* name)
 //		while (lump_p-- != lumpinfo)
 		while (lump_p-- > lumpinfo)
 		{
-			if (	*(u64 *)(&lump_p->name[0]) == v1 &&
-					*(u64 *)(&lump_p->name[8]) == v2)
+			s=lump_p->name;
+			if (	(*(u64 *)(s  ) == v1) &&
+					(*(u64 *)(s+8) == v2))
+//			if (	*(u64 *)(&lump_p->name[0]) == v1 &&
+//					*(u64 *)(&lump_p->name[8]) == v2)
 			{
 				return lump_p - lumpinfo;
 			}
@@ -1358,6 +1358,11 @@ int W_CheckNumForNameBase (int base, char* name)
 	return -1;
 }
 #endif
+
+int W_CheckNumForName (char* name)
+{
+	return(W_CheckNumForNameBase(numlumps, name));
+}
 
 
 void W_PrintLumps (void);
@@ -1377,7 +1382,8 @@ int W_GetNumForName (char* name)
 
 	i = W_CheckNumForName (name);
 	
-	if (i == -1)
+//	if (i == -1)
+	if(i < 0)
 	{
 //		I_Error ("W_GetNumForName: %s not found!", name);
 		printf("W_GetNumForName: %s not found!\n", name);
@@ -1454,12 +1460,15 @@ W_ReadLump
 	byte *ct;
 	int n;
 	
-	int		c, csz;
+	int		c, csz, ofs, ofs1, ofs2;
 	lumpinfo_t*	l;
 	int		handle;
+
+	if (lump < 0)
+		I_Error ("W_ReadLump: %i < 0",lump);
 	
 	if (lump >= numlumps)
-	I_Error ("W_ReadLump: %i >= numlumps",lump);
+		I_Error ("W_ReadLump: %i >= numlumps (%i)", lump, numlumps);
 
 	l = lumpinfo+lump;
 	
@@ -1477,13 +1486,35 @@ W_ReadLump
 
 	if(l->cmp)
 	{
+		if(l->cmp==2)
+		{
+			ofs = l->position;
+			ofs1 = (ofs>>16)&65535;
+			ofs2 = (ofs&65535)*64;
+			ct = W_CacheLumpNum(ofs1, PU_CACHE);
+			
+			memcpy(dest, ct+ofs2, l->size);
+			return;
+		}
+	
 		if(!tcbuf || (l->csize>tcsize))
 		{
-			csz=tcbuf?tcsize:16384;
-			while(l->csize>csz)
-				csz=csz+(csz>>1);
-			tcbuf=realloc(tcbuf, csz);
-			tcsize=csz;
+			if(tcbuf)
+			{
+//				csz=tcbuf?tcsize:131072;
+				csz=tcsize;
+				while(l->csize>csz)
+					csz=csz+(csz>>1);
+				tcbuf=realloc(tcbuf, csz);
+				tcsize=csz;
+			}else
+			{
+				csz=131072;
+				while(l->csize>csz)
+					csz=csz+(csz>>1);
+				tcbuf=malloc(csz);
+				tcsize=csz;
+			}
 		}
 
 		w_lseek (l->handle, l->position, SEEK_SET);
@@ -1551,14 +1582,14 @@ W_CacheLumpNum
 	byte*	ptr;
 	int		sz;
 
-	if(lump<0)
+	if(lump < 0)
 		return(NULL);
 
 	if(tag == PU_CACHE)		//BGB
 		tag = PU_CACHELUMP;
 
 	if ((unsigned)lump >= numlumps)
-	I_Error ("W_CacheLumpNum: %i >= numlumps",lump);
+		I_Error ("W_CacheLumpNum: %i >= numlumps",lump);
 		
 	if (!lumpcache[lump])
 	{

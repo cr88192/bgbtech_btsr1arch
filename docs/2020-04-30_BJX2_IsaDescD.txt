@@ -1086,6 +1086,9 @@ The Rm pattern will encode the desired mode:
 
 Accessing the cache line in a way inconsistent with the current mode may cause a fault.
 
+Setting a tripwire may also optionally trap if an attempt is made to address across the tripwire for sake of a given access type, treating it as a memory boundary.
+
+
 Note that this feature is optional and intended for debugging, as such:
 * It may be treated as NO-OP;
 * The effects may be transient and forgotten at any point.
@@ -1655,14 +1658,19 @@ Get the absolute value of the double precision value in Rm and store the result 
 
 * 60nm       FADD		Rm, Rn
 * F0nm_5go8  FADD		Rm, Ro, Rn
+* F0nm_5Go8  FADDX		Xm, Xo, Xn		//(GFPX)
 
 Add the double precision value in Ro to the value from Rm and store the resulting value in Rn.
+
+FADDX will operate instead on a Binary128 value.
+This may be partial precision, with the range of mantissa bits supported being implementation defined. If supported, the minimum will be 52 bits.
 
 
 === FCMPEQ (GFP) ===
 
 * 64nm       FCMPEQ		Rm, Rn			//(GFP) FCMPEQ
-* F0nm_1eAD  FCMPEQ		Rm, Rn			//SR.T=(Rn EQ Rm)
+* F0nm_1gAD  FCMPEQ		Rm, Rn			//SR.T=(Rn EQ Rm)
+* F0nm_1GAD  FCMPXEQ	Rm, Rn			//SR.T=(Rn EQ Rm)
 
 Compare the double precision values in Rm and Rn for equality, setting SR.T if both values are equal, otherwise clearing SR.T.
 
@@ -1672,11 +1680,50 @@ If either value encodes a NaN, SR.T will be cleared.
 === FCMPGT (GFP) ===
 
 * 65nm       FCMPGT		Rm, Rn			//(GFP) FCMPGT
-* F0nm_1eBD  FCMPGT		Rm, Rn			//SR.T=(Rn GT Rm)
+* F0nm_1gBD  FCMPGT		Rm, Rn			//SR.T=(Rn GT Rm)
+* F0nm_1GBD  FCMPXGT	Rm, Rn			//SR.T=(Rn GT Rm)
 
 Compare if the double precision value in Rn is greated than the value in Rm, setting SR.T if this is the case, and clearing otherwise.
 
 If either value is NaN, the resulting state of SR.T is undefined.
+
+
+=== FCONV (GFP) ===
+
+* F2nm_8qjj  PCONV		Rm, #imm8, Rn		//E.i=1, Packed Convert
+* F2nm_8Qjj  PCONVX		Rm, #imm8, Rn		//E.i=1, Packed Convert
+
+Packed convert vectors.
+The E.q parameter selects between the use of 64 and 128 bit vectors.
+The vector width will be the minumum of the two vector widths.
+Each vector width will be the vector size divided by the element size.
+Valid encodings will be limited to a maximum of 4 elements.
+
+Conversion between floating point and integer types will produce results scaled as integers. Conversion to integer types will be modular.
+
+The Unit cases will be scaled to unit range (0.0 to 1.0).
+
+Imm8:
+* (3:0)=Source Element Type
+* (7:4)=Destination Element Type
+
+Types:
+* 0000: Binary16
+* 0001: Binary32
+* 0010: Binary64
+* 0011: Binary128
+* 0100: Int16
+* 0101: Int32
+* 0110: Int64
+* 0111: -
+* 1000: Unit16
+* 1001: Unit32
+* 1010: Unit64
+* 1011: -
+* 1100: UInt16
+* 1101: UInt32
+* 1110: UInt64
+* 1111: -
 
 
 === FLDCx (GFP) ===
@@ -1717,16 +1764,21 @@ Conversion will be the same as that for the register instruction.
 === FMUL (GFP) ===
 
 * 62nm       FMUL		Rm, Rn			//(GFP) FMUL
-* F0nm_5goA  FMUL		Rm, Ro, Rn			//(GFP) FMUL
+* F0nm_5goA  FMUL		Rm, Ro, Rn		//(GFP) FMUL
+* F0nm_5GoA  FMULX		Xm, Xo, Xn		//(GFPX) FMUL
 
 Multiply the double precision value in Ro with the value from Rm and store the resulting value in Rn.
+
+FMULX will operate instead on a Binary128 value.
+This may be partial precision, with the range of mantissa bits supported being implementation defined. If supported, the minimum will be 52 bits.
 
 
 === FNEG (GFP) ===
 
-* F0nm_1e8D  FNEG		Rm, Rn		//Negate
+* F0nm_1g8D  FNEG		Rm, Rn		//Negate
 
 Negate the value of the double precision value in Rm and store the result in Rn. This effectively amounts to inverting bit 63 and leaving the other bits unchanged.
+
 
 
 === FSTCx (GFP) ===
@@ -1754,8 +1806,12 @@ Conversion to integer will truncate towards zero. Its output will be a 64-bit in
 
 * 61nm       FSUB		Rm, Rn			//(GFP) FSUB
 * F0nm_5go9  FSUB		Rm, Ro, Rn		//(GFP) FSUB
+* F0nm_5Go9  FSUBX		Rm, Ro, Rn		//(GFPX) FSUB
 
 Subtract the double precision value in Ro from the value from Rm and store the resulting value in Rn.
+
+FSUBX will operate instead on a Binary128 value.
+This may be partial precision, with the range of mantissa bits supported being implementation defined. If supported, the minimum will be 52 bits.
 
 
 == Jumbo Instructions (Optional / Experimental) ==

@@ -498,23 +498,28 @@ fixed_t R_ScaleFromGlobalAngle (angle_t visangle)
 	anglea = ANG90 + (visangle-viewangle);
 	angleb = ANG90 + (visangle-rw_normalangle);
 
+	anglea = anglea>>ANGLETOFINESHIFT;
+	angleb = angleb>>ANGLETOFINESHIFT;
+	anglea &= (FINEANGLES-1);
+	angleb &= (FINEANGLES-1);
+
 	// both sines are allways positive
-	sinea = finesine[anglea>>ANGLETOFINESHIFT];	
-	sineb = finesine[angleb>>ANGLETOFINESHIFT];
+	sinea = finesine[anglea];	
+	sineb = finesine[angleb];
 	num = FixedMul(projection,sineb)<<detailshift;
 	den = FixedMul(rw_distance,sinea);
 
 	if (den > num>>16)
 	{
-	scale = FixedDiv (num, den);
+		scale = FixedDiv (num, den);
 
-	if (scale > 64*FRACUNIT)
-		scale = 64*FRACUNIT;
-	else if (scale < 256)
-		scale = 256;
+		if (scale > 64*FRACUNIT)
+			scale = 64*FRACUNIT;
+		else if (scale < 256)
+			scale = 256;
 	}
 	else
-	scale = 64*FRACUNIT;
+		scale = 64*FRACUNIT;
 	
 	return scale;
 }
@@ -800,6 +805,12 @@ extern int	screenblocks;
 
 void R_Init (void)
 {
+	int v0, v1;
+	
+	v0=3;
+	v1=v0+1;
+
+	tk_puts("RI ");
 	R_InitData ();
 	printf ("\nR_InitData");
 	R_InitPointToAngle ();

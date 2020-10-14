@@ -191,7 +191,7 @@ int TKMM_MMCell_ChunkGetObjLen(TKMM_MemCelChk *chk, int pos)
 
 	p=pos;
 	v=TKMM_MMCell_GetChunkBmpIndex(chk, p);
-	if(v!=2)
+	if((v!=2) && (v!=1))
 		return(-1);
 	p++;	
 	while(p<TKMM_MAXMMCELLS)
@@ -265,6 +265,9 @@ void *TKMM_MMCell_Malloc(int sz)
 	int i, n;
 	
 	n=(sz+7)/8;
+	
+//	n*=2;
+//	n+=2;
 
 	for(i=0; i<tkmm_mmcell_nchunk; i++)
 	{

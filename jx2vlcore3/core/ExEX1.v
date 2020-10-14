@@ -1197,6 +1197,12 @@ begin
 		tRegValCn1	= {UV16_00, tValBra};
 	end
 
+	if(opBraFlush)
+	begin
+		tRegIdRn1	= JX2_GR_ZZR;
+		tRegIdCn1	= JX2_CR_ZZR[4:0];
+	end
+
 	if(tHeldIdRn1 != JX2_GR_ZZR)
 		tRegHeld		= 1;
 

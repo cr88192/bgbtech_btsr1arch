@@ -19,6 +19,24 @@ int strlen(char *str)
 	return(i);
 }
 
+void *memset_movx(void *dest, int val, size_t size)
+{
+	byte *ct, *cte;
+	int i;
+	
+	ct=dest; cte=ct+size;
+
+	i=val|(val<<8); i=i|(i<<16);
+	while((ct+8)<=cte)
+		{ ((u32 *)ct)[0]=i; ((u32 *)ct)[1]=i; ct+=8; }
+	if((ct+4)<=cte)
+		{ (*(u32 *)ct)=i; ct+=4; }
+	while(ct<cte)
+		{ *ct++=val; }
+	
+	return(dest);
+}
+
 void *memset(void *dest, int val, size_t size)
 {
 	byte *ct, *cte;

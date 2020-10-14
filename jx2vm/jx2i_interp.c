@@ -711,6 +711,7 @@ int BJX2_DbgAddrAccessTrap(BJX2_Context *ctx,
 	if(ctx->use_jit || !(ctx->dbg_data_start))
 		return(0);
 
+#if 0
 	if((base>=ctx->dbg_data_start) && (base<ctx->dbg_bss_end))
 	{
 		tvus=BJX2_Interp_GetVirtualUsec(ctx);
@@ -732,6 +733,12 @@ int BJX2_DbgAddrAccessTrap(BJX2_Context *ctx,
 //		{
 //			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_BOUNDCHK);
 //		}
+	}
+#endif
+	
+	if(BJX2_MemQueryTransit(ctx, base, tgt+asz, 1)&1)
+	{
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_BOUNDCHK);
 	}
 	
 	return(0);

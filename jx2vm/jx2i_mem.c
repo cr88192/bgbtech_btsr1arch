@@ -69,7 +69,8 @@ int BJX2_MemRamCb_SetByte(BJX2_Context *ctx,
 	BJX2_PtrSetByteOfsLe(sp->data, ra, val);
 
 	ra4=(ra>>4);
-	if(sp->tripwire[ra4>>3]&(1<<(ra4&7)))
+//	if(sp->tripwire[ra4>>3]&(1<<(ra4&7)))
+	if(sp->tripwire[ra4>>5]&(1<<(ra4&31)))
 		{ BJX2_MemRamCb_SetFault(ctx, sp, addr, val); }
 	return(0);
 }
@@ -83,7 +84,8 @@ int BJX2_MemRamCb_SetWord(BJX2_Context *ctx,
 	BJX2_PtrSetWordOfsLe(sp->data, ra, val);
 
 	ra4=(ra>>4);
-	if(sp->tripwire[ra4>>3]&(1<<(ra4&7)))
+//	if(sp->tripwire[ra4>>3]&(1<<(ra4&7)))
+	if(sp->tripwire[ra4>>5]&(1<<(ra4&31)))
 		{ BJX2_MemRamCb_SetFault(ctx, sp, addr, val); }
 	return(0);
 }
@@ -97,7 +99,8 @@ int BJX2_MemRamCb_SetDWord(BJX2_Context *ctx,
 	BJX2_PtrSetDWordOfsLe(sp->data, ra, val);
 
 	ra4=(ra>>4);
-	if(sp->tripwire[ra4>>3]&(1<<(ra4&7)))
+//	if(sp->tripwire[ra4>>3]&(1<<(ra4&7)))
+	if(sp->tripwire[ra4>>5]&(1<<(ra4&31)))
 		{ BJX2_MemRamCb_SetFault(ctx, sp, addr, val); }
 	return(0);
 }
@@ -111,7 +114,8 @@ int BJX2_MemRamCb_SetQWord(BJX2_Context *ctx,
 	BJX2_PtrSetQWordOfsLe(sp->data, ra, val);
 
 	ra4=(ra>>4);
-	if(sp->tripwire[ra4>>3]&(1<<(ra4&7)))
+//	if(sp->tripwire[ra4>>3]&(1<<(ra4&7)))
+	if(sp->tripwire[ra4>>5]&(1<<(ra4&31)))
 		{ BJX2_MemRamCb_SetFault(ctx, sp, addr, val); }
 	return(0);
 }
@@ -160,10 +164,63 @@ int BJX2_MemRamCb_SetTripwire(BJX2_Context *ctx,
 
 	if(mode==3)
 	{
-		sp->tripwire[ra4>>3]|=(1<<(ra4&7));
+//		sp->tripwire[ra4>>3]|=(1<<(ra4&7));
+		sp->tripwire[ra4>>5]|=(1<<(ra4&31));
 	}else if(mode==2)
 	{
-		sp->tripwire[ra4>>3]&=~(1<<(ra4&7));
+//		sp->tripwire[ra4>>3]&=~(1<<(ra4&7));
+		sp->tripwire[ra4>>5]&=~(1<<(ra4&31));
+	}
+
+	return(0);
+}
+
+int BJX2_MemRamCb_MemQueryTransit(BJX2_Context *ctx,
+	BJX2_MemSpan *sp, bjx2_addr addr0, bjx2_addr addr1, int mode)
+{
+	int ra0, ra1, ra4, ra5, rac;
+	u32 vlo, vhi, v;
+	u64 vli;
+
+	ra0=(addr0-sp->modbase)&(sp->modmask);
+	ra1=(addr1-sp->modbase)&(sp->modmask);
+
+	if(ra1<ra0)
+		return(0);
+
+	if(mode!=1)
+		return(0);
+
+	ra4=(ra0>>4);
+	ra5=(ra1>>4);
+
+	rac=ra4;
+	
+	while(sp->tripwire[rac>>5]&(1<<(rac&31)))
+	{
+		/* We care about transits here.
+		 * Starting inside a tripwire is OK.
+		 */
+		rac++;
+	}
+	
+	while(rac<ra5)
+	{
+		vlo=sp->tripwire[(rac>>5)+0];
+		vhi=sp->tripwire[(rac>>5)+1];
+		vli=vlo|(((u64)vhi)<<32);
+		v=vli>>(rac&31);
+		if(!v)
+			{ rac+=32; continue; }
+		if(!(v&65535))
+			{ rac+=16; continue; }
+		if(!(v&255))
+			{ rac+=8; continue; }
+		if(!(v&15))
+			{ rac+=4; continue; }
+		if(!(v&1))
+			{ rac++; continue; }
+		return(1);
 	}
 
 	return(0);
@@ -200,7 +257,7 @@ int BJX2_MemDefineModRAM(BJX2_Context *ctx,
 	sp->addr_sz=lim-base;
 //	sp->data=malloc((lim-base)+8);
 	sp->data=malloc(nblk*16+8);
-	sp->tripwire=malloc((nblk+31)/8);
+	sp->tripwire=malloc((nblk+63)/8);
 	sp->simple_mem=3;
 
 	if(mod>0)
@@ -226,6 +283,7 @@ int BJX2_MemDefineModRAM(BJX2_Context *ctx,
 	sp->SetQWord=BJX2_MemRamCb_SetQWord;
 
 	sp->SetTripwire=BJX2_MemRamCb_SetTripwire;
+	sp->MemQueryTransit=BJX2_MemRamCb_MemQueryTransit;
 	
 	BJX2_MemAddSpan(ctx, sp);
 	return(0);
@@ -1413,7 +1471,8 @@ int BJX2_MemSetByte_Dfl(BJX2_Context *ctx, bjx2_addr addr0, int val)
 			BJX2_PtrSetByteOfsLe(sp->data, ra, val);
 
 			ra4=(ra>>4);
-			if(sp->tripwire[ra4>>3]&(1<<(ra4&7)))
+//			if(sp->tripwire[ra4>>3]&(1<<(ra4&7)))
+			if(sp->tripwire[ra4>>5]&(1<<(ra4&31)))
 				{ BJX2_MemRamCb_SetFault(ctx, sp, addr, val); }
 			return(0);
 		}
@@ -1462,7 +1521,8 @@ int BJX2_MemSetWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0, int val)
 			BJX2_PtrSetWordOfsLe(sp->data, ra, val);
 
 			ra4=(ra>>4);
-			if(sp->tripwire[ra4>>3]&(1<<(ra4&7)))
+//			if(sp->tripwire[ra4>>3]&(1<<(ra4&7)))
+			if(sp->tripwire[ra4>>5]&(1<<(ra4&31)))
 				{ BJX2_MemRamCb_SetFault(ctx, sp, addr, val); }
 			return(0);
 		}
@@ -1521,7 +1581,8 @@ int BJX2_MemSetDWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0, s32 val)
 			BJX2_PtrSetDWordOfsLe(sp->data, ra, val);
 
 			ra4=(ra>>4);
-			if(sp->tripwire[ra4>>3]&(1<<(ra4&7)))
+//			if(sp->tripwire[ra4>>3]&(1<<(ra4&7)))
+			if(sp->tripwire[ra4>>5]&(1<<(ra4&31)))
 				{ BJX2_MemRamCb_SetFault(ctx, sp, addr, val); }
 			return(0);
 		}
@@ -1580,7 +1641,8 @@ int BJX2_MemSetQWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0, s64 val)
 			BJX2_PtrSetQWordOfsLe(sp->data, ra, val);
 
 			ra4=(ra>>4);
-			if(sp->tripwire[ra4>>3]&(1<<(ra4&7)))
+//			if(sp->tripwire[ra4>>3]&(1<<(ra4&7)))
+			if(sp->tripwire[ra4>>5]&(1<<(ra4&31)))
 				{ BJX2_MemRamCb_SetFault(ctx, sp, addr, val); }
 			return(0);
 		}
@@ -1768,6 +1830,62 @@ int BJX2_MemSetTripwire_Dfl(BJX2_Context *ctx, bjx2_addr addr0, int val)
 	return(sp->SetTripwire(ctx, sp, addr, val));
 }
 
+int BJX2_MemQueryTransit_Dfl(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addr1, int val)
+{
+	BJX2_MemSpan *sp;
+	bjx2_addr addr, addrb;
+	int ra;
+
+	addr=BJX2_MemTranslateTlb(ctx, addr0);
+	addrb=BJX2_MemTranslateTlb(ctx, addr1);
+	if(ctx->status)
+		return(0);
+
+	if((addrb-addr)!=(addr1-addr0))
+	{
+		return(0);
+	}
+
+	sp=ctx->span_pr0;
+	if(sp && (((bjx2_addru)(addr-sp->addr_base))<(sp->addr_sz)))
+	{
+		BJX2_MemSimAddrL1(ctx, addr);
+
+//		if(sp->simple_mem&2)
+//		{
+//			ra=addr-sp->addr_base;
+//			BJX2_PtrSetByteOfsLe(sp->data, ra, val);
+//			return(0);
+//		}
+		
+		if(!sp->MemQueryTransit)
+			return(0);
+		return(sp->MemQueryTransit(ctx, sp, addr, addrb, val));
+	}
+
+	sp=BJX2_MemSpanForAddr(ctx, addr);
+	if(!sp)
+	{
+		if(!(ctx->status))
+		{
+			ctx->regs[BJX2_REG_PC]=ctx->trapc;
+			ctx->regs[BJX2_REG_TEA]=addr;
+			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
+		}else
+		{
+			__debugbreak();
+		}
+		return(0);
+	}
+
+	BJX2_MemSimAddrL1(ctx, addr);
+
+	if(!sp->MemQueryTransit)
+		return(0);
+	return(sp->MemQueryTransit(ctx, sp, addr, addrb, val));
+}
+
 
 int BJX2_MemSetupState(BJX2_Context *ctx)
 {
@@ -1785,6 +1903,7 @@ int BJX2_MemSetupState(BJX2_Context *ctx)
 //	ctx->MemSpanForAddr=BJX2_MemSpanForAddr64;
 
 	ctx->MemSetTripwire=BJX2_MemSetTripwire_Dfl;
+	ctx->MemQueryTransit=BJX2_MemQueryTransit_Dfl;
 
 	if(ctx->regs[BJX2_REG_SR]&0x80000000)
 		ctx->MemSpanForAddr=BJX2_MemSpanForAddr64;
@@ -1877,4 +1996,10 @@ int BJX2_MemSetQWord(BJX2_Context *ctx, bjx2_addr addr0, s64 val)
 int BJX2_MemSetTrip(BJX2_Context *ctx, bjx2_addr addr0, int val)
 {
 	return(ctx->MemSetTripwire(ctx, addr0, val));
+}
+
+int BJX2_MemQueryTransit(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addr1, int val)
+{
+	return(ctx->MemQueryTransit(ctx, addr0, addr1, val));
 }

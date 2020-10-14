@@ -442,7 +442,7 @@ The relocations are given as 16 bit numbers:
 ** 9: BJX2: TLS/TBR DISP24 (FAzz_zzzz)
 *** Initial: TLS Index, Resolved to TBR-relative address of TLS Variable
 ** 10: Fixup a 64-bit address (Abs64).
-** 11: Reserved
+** 11: Set Tripwire
 ** 12: Reserved
 ** 13: Reserved
 ** 14: Reserved
@@ -454,6 +454,10 @@ TLS Index:
 ** This case will be interpreted as being relative to GBR, not TBR.
 * This will be replaced by the relative offset of the corresponding variable.
 
+Set Tripwire (PBO Only):
+* This address should be set as a tripwire following initialization.
+* Attempts to address across this location may trigger a fault.
+** A tripwire will normally have a 16-byte alignment and 16-byte size.
 
 === Exports Table ===
 

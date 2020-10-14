@@ -34,7 +34,7 @@ Entry types:
 Compression:
 * 00: Store
 * 01: IDIR (Inline Directory)
-* 02: Reserved
+* 02: Packed Lump
 * 03: RP2
 * 04: LZ4
 * 05: Reserved
@@ -72,3 +72,19 @@ Entry Types with the IDIR method will be interpreted as Inline Directories.
 
 The IDIR entries defining a directory will be required to exist preceding any lumps which may exist within that directory.
 
+
+==== Packed Lump ====
+
+This lump has its data packed inside of another lump.
+This may be done to get better data compression for small lumps.
+
+The 'offset' field will be split into two sub-fields:
+  (31:16): Packed Lump Index
+  (15: 0): Offset of the data within the lump.
+
+The lump index will give the index of the lump holding the combined data. Its compression will be applied over the data.
+
+The offset will give the location of the data within this combined lump. Normally, it will be scaled by 64, giving the "data" lump a maximum size of 4MB.
+
+
+The csize and dsize fields will give the size of the data. These will normally be the same value.

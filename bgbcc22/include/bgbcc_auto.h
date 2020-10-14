@@ -2861,6 +2861,15 @@ int BGBCC_JX2C_IndexLitInt128(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, s6
 int BGBCC_JX2C_EmitBinaryVRegVRegInt128(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
 int BGBCC_JX2C_EmitBinaryVRegVRegVRegInt128(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
 int BGBCC_JX2C_EmitUnaryVRegVRegInt128(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
+int BGBCC_JX2C_EmitCompareVRegVRegVRegInt128(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
+int BGBCC_JX2C_EmitJCmpVRegVRegInt128(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp, int lbl);
+int BGBCC_JX2C_EmitBinaryVRegVRegFloat128(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
+int BGBCC_JX2C_EmitBinaryVRegVRegVRegFloat128(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
+int BGBCC_JX2C_EmitUnaryVRegVRegFloat128(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
+int BGBCC_JX2C_EmitConvVRegVRegToFloat128(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type stype, ccxl_register dreg, ccxl_register sreg);
+int BGBCC_JX2C_EmitConvVRegVRegFromFloat128(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type dtype, ccxl_register dreg, ccxl_register sreg);
+int BGBCC_JX2C_EmitCompareVRegVRegVRegFloat128(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
+int BGBCC_JX2C_EmitJCmpVRegVRegFloat128(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp, int lbl);
 //AHSRC:jx2cc/jx2_v4arith.c
 int BGBCC_JX2C_LoadVectorField64(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, int ofs, int csreg, int cdreg);
 int BGBCC_JX2C_LoadVectorField128(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, int ofs, int csreg, int cdreg);

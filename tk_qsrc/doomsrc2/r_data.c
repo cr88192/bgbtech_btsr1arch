@@ -477,7 +477,7 @@ void R_InitTextures (void)
 	int*		maptex2;
 	int*		maptex1;
 	
-	char		name[9];
+	char		name[19];
 	char*		names;
 	char*		name_p;
 	
@@ -497,9 +497,17 @@ void R_InitTextures (void)
 	int			temp2;
 	int			temp3;
 
+	tk_puts("R_IT\n");
+
 	// Load the patch names from pnames.lmp.
 	name[8] = 0;	
 	names = W_CacheLumpName ("PNAMES", PU_STATIC);
+	
+	if(!names)
+	{
+		I_Error("R_InitTextures: Failed to load PNAMES");
+	}
+	
 	nummappatches = LONG ( *((int *)names) );
 	name_p = names+4;
 //	patchlookup = alloca (nummappatches*sizeof(*patchlookup));
@@ -549,10 +557,11 @@ void R_InitTextures (void)
 	//	Really complex printing shit...
 	temp1 = W_GetNumForName ("S_START");	// P_???????
 	temp2 = W_GetNumForName ("S_END") - 1;
-	temp3 = ((temp2-temp1+63)/64) + ((numtextures+63)/64);
+//	temp3 = ((temp2-temp1+63)/64) + ((numtextures+63)/64);
+	temp3 = ((temp2-temp1+63)>>6) + ((numtextures+63)>>6);
 	printf("[");
 	for (i = 0; i < temp3; i++)
-	printf(" ");
+		printf(" ");
 	printf("		 ]");
 //	for (i = 0; i < temp3; i++)
 //		printf("\x8");
@@ -841,6 +850,8 @@ lighttable_t *R_ColormapForLump(int lump, int lvl)
 //
 void R_InitData (void)
 {
+	tk_puts("TI ");
+//	printf ("\nIT");
 	R_InitTextures ();
 	printf ("\nInitTextures");
 	R_InitFlats ();

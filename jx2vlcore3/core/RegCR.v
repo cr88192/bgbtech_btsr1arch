@@ -103,8 +103,11 @@ reg[63:0]	crRegKrr;
 reg[63:0]	tRegValCm;
 assign	regValCm = tRegValCm;
 
+reg[47:0]	crRegLr2;
+
 assign	regOutPc	= crRegPc;
 assign	regOutLr	= crRegLr;
+// assign	regOutLr	= crRegLr2;
 assign	regOutSr	= crRegSr;
 assign	regOutExsr	= crRegExsr;
 assign	regOutSpc	= crRegSpc;
@@ -132,6 +135,20 @@ reg[47:0]		regValCn2B_48b;		//Destination Value
 
 reg[47:0]		tRegInLr;
 
+always @*
+begin
+
+	crRegLr2 = crRegLr;
+
+//	if(({1'b1, regIdCn3}==JX2_CR_LR) && !regEx3Flush)
+//		crRegLr2=regValCn3[47:0];
+//	if(({1'b1, regIdCn2}==JX2_CR_LR) && !regEx2Flush)
+//		crRegLr2=regValCn2[47:0];
+//	if(({1'b1, regIdCn1}==JX2_CR_LR) && !regEx1Flush)
+//		crRegLr2=regValCn1[47:0];
+
+end
+
 
 always @*
 begin
@@ -139,6 +156,26 @@ begin
 	tValCmZz=0;
 
 	tRegInLr	= regInLr;
+
+// `ifdef def_true
+`ifndef def_true
+//	if((regValCn3[31:0]==32'h55BAADAA) && !regEx3Flush)
+	if(regValCn3[31:0]==32'h55BAADAA)
+	begin
+		$display("RegCR: EX3 Bad, Not Flushed");
+	end
+//	if((regValCn2[31:0]==32'h55BAADAA) && !regEx2Flush)
+	if(regValCn2[31:0]==32'h55BAADAA)
+	begin
+		$display("RegCR: EX2 Bad, Not Flushed");
+	end
+//	if((regValCn1[31:0]==32'h55BAADAA) && !regEx1Flush)
+	if(regValCn1[31:0]==32'h55BAADAA)
+	begin
+		$display("RegCR: EX1 Bad, Not Flushed");
+	end
+`endif
+
 
 `ifdef jx2_stage_ex3
 // `ifndef jx2_stage_ex3
@@ -158,7 +195,6 @@ begin
 //		tRegInLr	= crRegLr;
 	end
 `endif
-
 
 `ifdef jx2_enable_vaddr48
 //	regValCn2B_48b	= regValCn2[47:0];

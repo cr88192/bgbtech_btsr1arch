@@ -257,7 +257,8 @@ u32 data[1];	//start of data
 };
 
 struct TKMM_MemLnkSeg_s {
-byte	*blk[TKMM_MAXMMSEGBLK];
+// byte	*blk[TKMM_MAXMMSEGBLK+4];
+int		blk[TKMM_MAXMMSEGBLK+4];
 int		nblk;
 
 u64		data[1];
@@ -277,7 +278,7 @@ int		magic1;
 u32		bmp[(TKMM_MAXMMCELLS/16)+1];
 int		magic2;
 int		rov;
-short	freelst[TKMM_MAXMMCELLSZ/8];
+short	freelst[(TKMM_MAXMMCELLSZ/8)+4];
 int		magic3;
 };
 

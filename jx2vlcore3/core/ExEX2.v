@@ -540,6 +540,12 @@ begin
 		tRegOutSr[7:4]	= regValAluRes[69:66];
 	end
 
+	if(opBraFlush)
+	begin
+		tRegIdRn2	= JX2_GR_ZZR;
+		tRegIdCn2	= JX2_CR_ZZR[4:0];
+	end
+
 //	if((tDoHoldCyc != 0) && (tHoldCyc != tDoHoldCyc))
 //	if(tHoldCyc != tDoHoldCyc)
 	if(tHoldCyc < tDoHoldCyc)

@@ -1605,6 +1605,18 @@ int BGBCC_JX2C_EmitJCmpVRegVReg(
 			type, sreg, treg, cmp, lbl));
 	}
 
+	if(BGBCC_CCXL_TypeSgInt128P(ctx, type))
+	{
+		return(BGBCC_JX2C_EmitJCmpVRegVRegInt128(ctx, sctx,
+			type, sreg, treg, cmp, lbl));
+	}
+
+	if(BGBCC_CCXL_TypeFloat128P(ctx, type))
+	{
+		return(BGBCC_JX2C_EmitJCmpVRegVRegFloat128(ctx, sctx,
+			type, sreg, treg, cmp, lbl));
+	}
+
 	BGBCC_CCXL_StubError(ctx);
 	return(0);
 }

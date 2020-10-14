@@ -100,6 +100,9 @@ reg[63:0]		tNxtRegSendQ;
 reg[63:0]		tRegRecvQ;
 reg[63:0]		tNxtRegRecvQ;
 
+reg				tRegXmitDeb;
+reg				tNxtRegXmitDeb;
+
 always @*
 begin
 	tMmioOutData	= UV64_XX;
@@ -113,7 +116,9 @@ begin
 	tNxtByteCnt		= tByteCnt;
 	tNxtRegSendQ	= tRegSendQ;
 	tNxtRegRecvQ	= tRegRecvQ;
-	
+
+	tNxtRegXmitDeb	= tRegXmitDeb;
+
 	tNxtRegCtrl		= tRegCtrl;
 //	tNxtDivCnt		= tDivCnt - 1;
 	tNxtDivCnt		= 0;
@@ -219,7 +224,7 @@ begin
 	if((tMmioAddr[3:2]==2'b00) && mmioInWR)
 	begin
 //		if(tBitCnt==0)
-		if((tBitCnt==0) && (tByteCnt==0))
+		if((tBitCnt==0) && (tByteCnt==0) && !tRegXmitDeb)
 		begin
 			tNxtRegCtrl		= tMmioInData[31:0];
 //			tMmioOK			= UMEM_OK_OK;
@@ -231,6 +236,7 @@ begin
 			begin
 				tNxtBitCnt			= 8;
 				tNxtDivCnt			= 0;
+				tNxtRegXmitDeb		= 1;
 			end
 			else
 				if(tMmioInData[5])	 /* XMIT 8X */
@@ -240,12 +246,15 @@ begin
 //				tNxtRegExchO[7:0]	= tRegSendQ[7:0];
 
 				tNxtByteCnt			= 9;
+				tNxtRegXmitDeb		= 1;
 			end
 		end
 		else
 		begin
 //			mmioNxtLatchWR	= mmioLatchWR;
-			tMmioOK			= mmioLatchWR ? UMEM_OK_OK : UMEM_OK_HOLD;
+//			tMmioOK			= mmioLatchWR ? UMEM_OK_OK : UMEM_OK_HOLD;
+			tMmioOK			= (mmioLatchWR || tRegXmitDeb) ?
+				UMEM_OK_OK : UMEM_OK_HOLD;
 		end
 	end
 
@@ -259,6 +268,7 @@ begin
 //			tMmioOutData	= { UV24_00, tRegValIn };
 			tMmioOutData	= { UV32_00, UV24_00, tRegValIn };
 			tMmioOK			= UMEM_OK_OK;
+			tNxtRegXmitDeb	= 0;
 		end
 		else
 		begin
@@ -291,6 +301,7 @@ begin
 	begin
 		tMmioOutData	= tRegRecvQ;
 		tMmioOK			= UMEM_OK_OK;
+		tNxtRegXmitDeb	= 0;
 	end
 
 	if((tMmioAddr[3:2]==2'b10) && mmioInWR)
@@ -333,6 +344,7 @@ begin
 
 	tRegSendQ		<= tNxtRegSendQ;
 	tRegRecvQ		<= tNxtRegRecvQ;
+	tRegXmitDeb		<= tNxtRegXmitDeb;
 end
 
 endmodule

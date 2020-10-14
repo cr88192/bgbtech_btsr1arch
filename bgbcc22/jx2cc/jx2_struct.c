@@ -2042,7 +2042,7 @@ int BGBCC_JX2C_EmitValueZeroRegSz(
 	}
 
 #if 1
-	if((al>=8) && !(sz&15) && !sctx->sreg_live)
+	if((al0>=8) && !(sz&15) && !sctx->sreg_live)
 	{
 		BGBCC_JX2C_EmitScratchSyncRegisters(ctx, sctx);
 

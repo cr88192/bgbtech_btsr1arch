@@ -32,6 +32,11 @@
 #define	BJX2_PtrGetDWord(ptr)				(*(u32 *)(ptr))
 #define	BJX2_PtrSetDWord(ptr, val)			((*(u32 *)(ptr))=(val))
 
+#define	BJX2_PtrGetQWord(ptr)				(*(s64 *)(ptr))
+#define	BJX2_PtrSetQWord(ptr, val)			((*(s64 *)(ptr))=(val))
+#define	BJX2_PtrGetQWordIx(ptr, ix)			(((s64 *)(ptr))[ix])
+#define	BJX2_PtrSetQWordIx(ptr, ix, val)	(((s64 *)(ptr))[ix]=(val))
+
 #define	BJX2_PtrGetFloat(ptr)				(*(float *)(ptr))
 #define	BJX2_PtrSetFloat(ptr, val)			((*(float *)(ptr))=(val))
 
@@ -63,6 +68,15 @@ s32 BJX2_PtrGetDWord(void *ptr)
 	{ s32 i; memcpy(&i, ptr, 4); return(i); }
 void BJX2_PtrSetDWord(void *ptr, s32 val)
 	{ memcpy(ptr, &val, 4); }
+
+s64 BJX2_PtrGetQWord(void *ptr)
+	{ s64 i; memcpy(&i, ptr, 8); return(i); }
+void BJX2_PtrSetQWord(void *ptr, s64 val)
+	{ memcpy(ptr, &val, 8); }
+s64 BJX2_PtrGetQWordIx(void *ptr, int ix)
+	{ s64 i; memcpy(&i, ((byte *)ptr)+(ix*8), 8); return(i); }
+void BJX2_PtrSetQWordIx(void *ptr, int ix, s64 val)
+	{ memcpy(((byte *)ptr)+(ix*8), &val, 8); }
 
 float BJX2_PtrGetFloat(void *ptr)
 	{ float f; memcpy(&f, ptr, 4); return(f); }
@@ -117,3 +131,41 @@ void BJX2_PtrSetQWordLe(byte *ptr, s64 val)
 	(BJX2_PtrSetQWordLe(BJX2_PtrGetOfs(ptr, ix), val))
 
 #endif
+
+
+double BJX2_PtrGetF128Ix(void *ptr, int ix)
+{
+	u64 lo, hi, v;
+	double f;
+
+	lo=BJX2_PtrGetQWordIx(ptr, ix+0);
+	hi=BJX2_PtrGetQWordIx(ptr, ix+1);
+//	memcpy(&f, ((byte *)ptr)+(ix*8), 8);
+
+	v=	((hi    )&0xC000000000000000ULL) |
+		((hi<< 4)&0x3FFFFFFFFFFFFFFFULL) |
+		 (lo>>60);
+	memcpy(&f, &v, 8);
+
+	return(f);
+}
+void BJX2_PtrSetF128Ix(void *ptr, int ix, double val)
+{
+	u64 lo, hi, v, v1;
+
+	memcpy(&v, &val, 8);
+	
+	if(!(v&0x4000000000000000ULL))
+		v1=0x3C00000000000000ULL;
+	else
+		v1=0x0000000000000000ULL;
+	hi=	((v&0xC000000000000000ULL)   ) |
+		((v&0x3FFFFFFFFFFFFFFFULL)>>4) |
+		v1;
+	lo=v<<60;
+	
+	BJX2_PtrSetQWordIx(ptr, ix+0, lo);
+	BJX2_PtrSetQWordIx(ptr, ix+1, hi);
+
+//	memcpy(((byte *)ptr)+(ix*8), &val, 8);
+}

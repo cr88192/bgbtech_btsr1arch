@@ -12,6 +12,16 @@ byte *tkmm_mmlist_brkbuf=NULL;
 byte *tkmm_mmlist_brkend;
 byte *tkmm_mmlist_brkpos;
 
+
+void __setmemtrap(void *ptr, int mode);
+
+#ifndef __BJX2__
+void __setmemtrap(void *ptr, int mode)
+{
+	/* NO-OP */
+}
+#endif
+
 void *TKMM_MMList_AllocBrk(int sz)
 {
 	TKMM_MemLnkSeg *seg;
@@ -83,7 +93,12 @@ void *TKMM_MMList_AllocBrk(int sz)
 //		tkmm_mmlist_brkpos=tkmm_mmlist_brkbuf;
 
 		seg=(TKMM_MemLnkSeg *)tkmm_mmlist_brkbuf;
-		tkmm_mmlist_brkpos=(byte *)(seg->data);
+//		tkmm_mmlist_brkpos=(byte *)(seg->data);
+//		i=tkmm_mmlist_brkpos-tkmm_mmlist_brkbuf;
+
+		i=(byte *)(seg->data)-tkmm_mmlist_brkbuf;
+		i=(i+15)&(~15);
+		tkmm_mmlist_brkpos=tkmm_mmlist_brkbuf+i;
 		
 		seg->nblk=0;
 
@@ -112,10 +127,15 @@ void *TKMM_MMList_AllocBrk(int sz)
 	
 	ptr=tkmm_mmlist_brkpos;
 	tkmm_mmlist_brkpos=ptr+sz;
-	
+
+#if 1
 	i=seg->nblk++;
-	seg->blk[i]=ptr;
-	
+	if(i>=TKMM_MAXMMSEGBLK)
+		{ __debugbreak(); }
+//	seg->blk[i]=ptr;
+	seg->blk[i]=((byte *)ptr)-((byte *)seg);
+#endif
+
 	return(ptr);
 }
 
@@ -221,7 +241,8 @@ TKMM_MemLnkObj *TKMM_MMList_AllocObj(int sz)
 
 	p2=p1+sz1;
 	obj=(TKMM_MemLnkObj *)p1;
-	sz2=p2-((byte *)obj1->data);
+//	sz2=p2-((byte *)obj1->data);
+	sz2=p2-((byte *)obj->data);
 	obj->ix=TKMM_SizeToFxiD(sz2);
 	obj->fl=3;
 	obj->check=0x5A;
@@ -229,6 +250,9 @@ TKMM_MemLnkObj *TKMM_MMList_AllocObj(int sz)
 	obj->cprev=NULL;
 
 	obj->fl&=~1;
+
+	__setmemtrap(obj, 3);
+
 //	return((byte *)obj->data);
 	return(obj);
 #endif
@@ -309,6 +333,8 @@ void *TKMM_MMList_Malloc(int sz)
 
 int TKMM_MMList_FreeLnkObj(TKMM_MemLnkObj *obj)
 {
+	__setmemtrap(obj, 2);
+
 	if(obj->check!=0x5A)
 	{
 		tk_puts("TKMM_MMList_FreeLnkObj: Check Value Fail\n");
@@ -333,7 +359,10 @@ int TKMM_MMList_Free(void *ptr)
 	TKMM_MemLnkObj *obj;
 
 	if(!ptr)return(-1);
+
 	obj=(TKMM_MemLnkObj *)(((byte *)ptr)-TKMM_OFFS_DATA);
+	__setmemtrap(obj, 2);
+
 	obj->fl|=1;
 	
 	TKMM_MMList_FreeLnkObj(obj);
@@ -392,7 +421,8 @@ TKMM_MemLnkObj *TKMM_MMList_GetPtrLnkObj(void *ptr)
 	nb=seg->nblk;
 	for(i=0; i<nb; i++)
 	{
-		obj=seg->blk[i];
+//		obj=seg->blk[i];
+		obj=(TKMM_MemLnkObj *)((byte *)seg+seg->blk[i]);
 		sz1=TKMM_FxiToSize(obj->ix);
 		vss=(byte *)obj;
 		vse=((byte *)(obj->data))+sz1;
@@ -425,7 +455,9 @@ int TKMM_MMList_SetTag(void *ptr, int tag)
 
 	if(!ptr)return(-1);
 	obj=(TKMM_MemLnkObj *)(((byte *)ptr)-TKMM_OFFS_DATA);
+	__setmemtrap(obj, 2);
 	obj->dty_tag=tag;
+	__setmemtrap(obj, 3);
 	return(0);
 }
 
