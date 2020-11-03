@@ -192,22 +192,41 @@ Typed signatures are encoded as strings, with characters indicating value types.
 * 'Cq': __quatf
 * 'Cr': short variant
 * 'Cs': string
-* 'Ct': -
+* 'Ct': symbol
 * 'Cu': _Complex bfloat16
 * 'Cv': __vec4sw
 * 'Cw': __vec4uw
 * 'Cx': variant this
-* 'Cy': variant class
-* 'Cz': variant vararg
+* 'Cy': Class Ref
+* 'Cz': Vararg Array (variant[])
+
 * 'Da': auto
+* 'Db': vec3d
+* 'Dc': vec4d
+* 'Dd': Decimal64
+* 'De': Decimal128
+* 'Df': Decimal32
+* 'Dg': Decimal128
+* 'Dh': __vec3fx
 * 'Di': __vec2si
 * 'Dj': __vec2ui
+* 'Dk':
+* 'Dl': __vec3fq
+* 'Dm':
 * 'Dn': nullptr
+* 'Do':
+* 'Dp':
+* 'Dq': __quatd
+
+
 * 'Dz': va_list
 * 'Gd': _Imaginary double
 * 'Ge': _Imaginary long double
 * 'Gf': _Imaginary float
 * 'Gg': _Imaginary float128
+
+* 'D{n}{sig}'
+** Vector Type (n elements of a given type signature)
 
 * 'A{sz};{sig}: Array
 * 'A{a..z}{sig}': Pointer/Array Class Modifier

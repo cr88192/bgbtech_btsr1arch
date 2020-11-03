@@ -2147,6 +2147,11 @@ begin
 		end
 	end
 
+	if(reset)
+	begin
+		tNxtRegExc = 0;
+	end
+
 	ifInPcHold	= exHold1;
 	dcInHold	= exHold2;
 

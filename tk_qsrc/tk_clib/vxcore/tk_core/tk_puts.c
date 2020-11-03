@@ -687,7 +687,7 @@ char *tk_rstrdup(char *s)
 	return(t);
 }
 
-char *tk_rsplit(char *str)
+char *tk_rsplit_sep(char *str, int sep)
 {
 	char tb[64];
 	char *ta[32];
@@ -731,14 +731,30 @@ char *tk_rsplit(char *str)
 			continue;
 		}
 			
-		if(*s>' ')
+		if(sep<=' ')
 		{
-			t=tb;
-			while(*s>' ')
-				*t++=*s++;
-			*t++=0;
-			ta[nta++]=tk_rstrdup(tb);
-			continue;
+			if(*s>' ')
+			{
+				t=tb;
+				while(*s>' ')
+					*t++=*s++;
+				*t++=0;
+				ta[nta++]=tk_rstrdup(tb);
+				continue;
+			}
+		}else
+		{
+			if(*s)
+			{
+				t=tb;
+				while(*s && (*s!=sep))
+					*t++=*s++;
+				*t++=0;
+				ta[nta++]=tk_rstrdup(tb);
+				if(*s && (*s==sep))
+					s++;
+				continue;
+			}
 		}
 	}
 	
@@ -749,6 +765,10 @@ char *tk_rsplit(char *str)
 	return(ta2);
 }
 
+char *tk_rsplit(char *str)
+{
+	return(tk_rsplit_sep(str, ' '));
+}
 
 TK_FILE *tk_dbg_recvfile;
 

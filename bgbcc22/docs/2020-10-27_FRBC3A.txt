@@ -1,0 +1,654 @@
+Register Bytecode, Intended for an interpreter.
+* Will primarily focus on 3-Register Ops.
+* Intended to keep VM complexity "within reason".
+* Will assume a C-like type model.
+** Basic Load/Store ops will operate on pointers.
+** Will assume a nominal pointer size of 64 bits.
+* Will use the 'FR3A' magic.
+
+Nominally, operations will be a multiple of 32 bits.
+
+These operations will operate on a "register stack", which may have up to 256 direct-addressible registers per stack frame. Additional registers may be present beyond this limit, as well as additional storage for structures or arrays.
+
+These will include function arguments, local variables, and temporaries. Variables beyond the first 256 may be accessed indirectly.
+* Values that are 64 bits or smaller will use a single register.
+* Values that are 128 bits will use a pair of registers.
+* Structures will be passed by reference.
+
+
+Register Numbering:
+* 0: 'this'
+* 1: Return Address (Structure)
+* 2..A+1: Function Arguments
+* A+2..M: Locals and Temporaries
+* M+1..u: Storage area for local structures and arrays
+
+Function Calls:
+* Will reserve a certain amount of space on the stack.
+* Will copy the argument list from the old frame to the new frame.
+** The argument list will be composed from a series of temporaries.
+
+Globals:
+* Will be a big array-like space containing global variables and functions.
+* Each entry in the global's table will be defined via the 'gbli' lump.
+* Entry 0 will be a reserved as a "NULL" entry.
+* Loading a global entry for a function will yield a function pointer.
+* Loading a global entry for an array will give a pointer to the data.
+* Loading a global entry for a structure definition will give object-info.
+** Object-Info will be opaque and implementation defined.
+
+
+== Packaging ==
+
+Will use a TLV package.
+Words will be encoded in little-endian order, with structures being byte-aligned.
+
+TLV Chunks will begin with a 16-bit WORD, with LSB bits identifying the type:
+* zz00: WORD,TWOCC (16K)
+* zz01: DWORD,TWOCC (1GB)
+* zz10: DWORD,FOURCC (1GB)
+* z011: Small Tag (32B with a BYTE tag)
+** Tag is in bits (15:8)
+** Length is in bits (7:3)
+
+TWOCC tags will use case to identify Tag Type:
+* 'aa': Structure or Data
+** Contains a raw structure or other Non-TLV data.
+* 'AA': Compound Tag
+** Contains TLV tags.
+* A letter followed by a non-leter will behave as one of the above.
+
+Non-ASCII characters are not allowed in a TWOCC or FOURCC. A valid TWOCC or FOURCC will be padded as needed with spaces.
+
+A narrower tag may be promoted to a wider one by padding with zeroes.
+As such, the value range of the tag will be able to identify the type of the tag if it had been promoted from a narrower type.
+
+Tags will include the tag header in their length, thus the small BYTE tag is limited to 30 bytes of data. If this limit is exceeded, it will be promoted to a TWOCC.
+
+BYTE tags:
+* 00: Ignored
+* 01..7F: Context Dependent
+* 80: Long String Attribute
+* 81: Short String Attribute
+* 82: Integer Attribute
+
+An all-zeroes tag will be ignored, and may be used to align file structures.
+
+
+=== Top-Level ===
+
+FOURCC: 'FR3A'
+* Represents a FRBC3A image.
+* Size will cover the entire image.
+* This will contain most of the other top-level tags.
+
+FOURCC: 'GBLD'
+* Global Table Data
+* Consists of Global Table Entries.
+
+FOURCC: 'TXTD'
+* Bytecode Data
+* Each function body will be wrapped in a TLV marker holding the bytecode.
+** The tag may identify a bytecode version or sub-format.
+
+
+FOURCC: 'strs'
+* Image Strings Table
+* Consists of String Data.
+* An optional prefix byte may identify the intended string encoding.
+** 0: Unknown or UTF-8, may reuse NUL terminator of prior string.
+** 'a': ASCII / CP1252
+** 'b': UTF-8
+** 'u': UCS-2 / UTF-16.
+** 'U': UCS-4 / UTF-32.
+* Each string will be terminated using a NUL terminator in its encoding.
+
+FOURCC: 'strz'
+* Image Strings Table
+* Same as 'strs', just stored in a compressed form.
+
+FOURCC: 'stri'
+* Image Strings Table Index
+* Stores a delta-encoded array of string offsets.
+* Each will be stored as the difference from the prior offset, using a UVLI.
+* String Indices 0 and 1 will be special.
+** 0 will encode NULL.
+** 1 will encode an empty string.
+** As such, this table will begin with string index 2.
+
+FOURCC: 'gbli'
+* Image Global Table Index
+* Stores a delta-encoded array of global offsets.
+** Note that deltas of 0 may be used to encode repeats.
+
+FOURCC: 'txti'
+* Bytecode Index
+* Stores a delta-encoded array of offsets into the bytecode data.
+
+
+Within 'GBLD':
+* TWOCC: 'RI' (Generic)
+** Contains a global-info object.
+* TWOCC: 'FN' (Function)
+** Defines the contents of a function or a function prototype.
+* TWOCC: 'GV' (Global Variable)
+** Defines the contents of a global or static variable.
+* TWOCC: 'ST' (Structure Definition)
+** Defines the contents of structure type (struct, class, or union).
+
+* TWOCC: 'zz' (Empty)
+** Defines an empty (placeholder) entry.
+** No data is present.
+** May be present following an entry for a 128-bit value type.
+* TWOCC: 'zl' (64-bit Entry)
+** Defines an anonymous 64-bit global variable.
+** Either empty, or holding an Initializer Value.
+* TWOCC: 'zx' (128-bit Entry)
+** Defines an anonymous 128-bit global variable.
+** Either empty, or holding a pair of Initializer Values.
+
+* TWOCC: 'a1' (Array of 8-bit Elements)
+* TWOCC: 'a2' (Array of 16-bit Elements)
+* TWOCC: 'a4' (Array of 32-bit Elements)
+* TWOCC: 'a8' (Array of 64-bit Elements)
+** Gives an SVLI encoding the length.
+*** The length will give the total size of the data area for the array.
+*** Negative values are Reserved.
+** Length may be followed by a list of zero or more Initializer Values.
+*** This may be less than the array length.
+*** The array will be padded with zeroes.
+** An Initializer may not encode a value larger than that representable.
+*** This will initialize the element with an undefined value.
+** Arrays of 128 bit items will be encoded via arrays of 64-bit items.
+
+* FOURCC: 'aost' (Array of Structure)
+** Gives an SVLI encoding the length.
+** Followed an Initializer Value identifying the structure.
+*** Global ID for "ST": Array of a given structure type.
+*** String: gives a type signature for the array elements.
+** Followed by Initializer Values for every field of every structure present.
+
+
+Within Global RI/FN/GV/ST Entries
+* BYTE: 's' (Signature String)
+* BYTE: 'f' (Flags String)
+* BYTE: 'n' (Name String)
+* BYTE: 'o' (ST/V: Field Offset)
+* BYTE: 'q' (QName String)
+* BYTE: 'v' (GV: Value, Initializer Values)
+* BYTE: 't' (FN: Gives ID of function body)
+* BYTE: 'a' (FN: Argument List Size)
+* BYTE: 'm' (FN: Number of stack registers)
+* BYTE: 'u' (FN: Total number of stack items to reserve)
+
+Variable List Tags
+* BYTE: 'F' (Fields, ST)
+* BYTE: 'A' (Args, FN / ST)
+* BYTE: 'L' (Locals, FN)
+* BYTE: 'R' (Temporaries, FN)
+* BYTE: 'S' (Static Vars, FN / ST)
+
+Within Variable-Lists:
+* BYTE: 'V' (Variable)
+** Typically contain 's', 'f', 'n', 'o', and 'v' fields.
+** Static variables may also have a QName.
+*** They will alias with a corresponding global with a matching QName.
+** Unused values may be omitted.
+*** An empty 'V' tag will simply denote that a variable is present.
+
+The Args list for Structures will be used to give a list of interfaces implemented by a class. The 'v' member will give the parent class.
+
+
+Note that Variable Lists within a function will be optional and likely ignored for an FR3A interpreter. The 'a' and 'u' fields will define the contents of the stack frame, with argument types optionally given via the signature.
+
+The name and signature fields will be optional for non-exported variables and globals unless required for some other reason.
+
+String tags will be encoded as an SVLI.
+If the VLI is positive, it represents an index into the string table.
+Negative VLI values are reserved.
+
+Variable Lists will depend on what they are contained with, and some lists may be reused for other purposes in other entry types.
+
+
+=== VLI ===
+
+UVLI:
+*     0..  127	0xxx-xxxx
+*   128..16383	10xx-xxxx xxxx-xxxx
+* 16384..   2M	110x-xxxx xxxx-xxxx xxxx-xxxx
+*    2M.. 256M	1110-xxxx xxxx-xxxx xxxx-xxxx xxxx-xxxx
+* ...
+
+UVLI (32-bit):
+* 0x00000000..0x0000007F	0xxx-xxxx
+* 0x00000080..0x00003FFF	10xx-xxxx xxxx-xxxx
+* 0x00004000..0x001FFFFF	110x-xxxx xxxx-xxxx xxxx-xxxx
+* 0x00200000..0x0FFFFFFF	1110-xxxx xxxx-xxxx xxxx-xxxx xxxx-xxxx
+* 0x10000000..0xFFFFFFFF	1111-0zzz xxxx-xxxx xxxx-xxxx xxxx-xxxx xxxx-xxxx
+
+UVLI (64-bit):
+* 0x0000000000000000..0x000000000000007F	0xxx-xxxx
+* 0x0000000000000080..0x0000000000003FFF	10xx-xxxx xxxx-xxxx
+* 0x0000000000004000..0x00000000001FFFFF	110x-xxxx xxxx-xxxx(x2)
+* 0x0000000000200000..0x000000000FFFFFFF	1110-xxxx xxxx-xxxx(x3)
+* 0x0000000010000000..0x00000007FFFFFFFF	1111-0xxx xxxx-xxxx(x4)
+* 0x0000008000000000..0x000003FFFFFFFFFF	1111-10xx xxxx-xxxx(x5)
+* 0x0000400000000000..0x0001FFFFFFFFFFFF	1111-110x xxxx-xxxx(x6)
+* 0x0020000000000000..0x00FFFFFFFFFFFFFF	1111-1110 xxxx-xxxx(x7)
+* 0x1000000000000000..0xFFFFFFFFFFFFFFFF	1111-1111 xxxx-xxxx(x8)
+
+Normal UVLI and SVLI values will use the 64-bit variety.
+* The 32-bit case is a subset, and will be used for Tags and IDs.
+* Most 128-bit values will also use the 64-bit variety.
+** However, they will encode the value as a pair.
+
+SVLI:
+* Folds sign into LSB
+* 0, -1, 1, -2, 2, ...
+
+
+=== Initializer Value ===
+
+Will be used to initialize a variable, and will nominally be encoded as a UVLI if present within a TLV tag. A fixed-length variant may be present in an instruction.
+
+Encoded as a 64-bit value using LSB tagging.
+* zzzz000: Integer Constant (Positive)
+* zzzz010: Global Index (By Value)
+* zzzz100: Integer Constant (Negative)
+* zzzz110: Global Index (By Address)
+* zzz0001: String Table Index
+* zz00011: -
+* z000111: -
+* 0001111: Raw Long Constant (SVLI follows)
+* 0101111: Raw Double Constant (SVLI follows)
+* 1001111: Raw Int128 Constant (SVLI pair follows)
+* 1101111: Raw Float128 Constant (SVLI pair follows)
+
+
+=== Object / Structure Types ===
+
+Object types will be a special case of structure types.
+An object type will generally consist of a VTable Pointer, followed by any class members.
+
+The layout of both the class data as well as of the VTable will be mostly left to the compiler frontend, within a few provisions:
+* The VTable Pointer is the first pointer within an object;
+* VTable entries 0..3 may never be called.
+** VTable Entry 0 points to the Object-Info for the Class.
+** VTable Entry 1 is a base-relative offset.
+*** The object will have this offset subtracted during a method call.
+
+The VTable is optional and may be absent if no virtual methods are present, such as in a POD (Plain Old Data) type.
+
+In this case, the object will be treated roughly as if it were a struct.
+
+
+== Opcodes ==
+
+Bytecode Tag: FOURCC('fr3a')
+
+FR3A Bytecode will be stored as an array of 32-bit values in little endian ordering.
+
+The bytecode instructions should be kept at a 32-bit alignment within the bytecode-data section.
+
+Branch displacements will be in terms of the number of 32-bit words relative to the start of the following instruction.
+
+
+Type Suffixes:
+* 'B' : Byte   / Int8   (Generic)
+* 'S' : Short  / Int16  (Generic)
+* 'I' : Int    / Int32  (Generic)
+* 'L' : Long   / Int64
+* 'X' : Int128
+* 'SB': Byte   / Int8   (Signed)
+* 'SS': Short  / Int16  (Signed)
+* 'SI': Int    / Int32  (Signed)
+* 'UB': UByte  / UInt8  (Unsigned)
+* 'US': UShort / UInt16 (Unsigned)
+* 'UI': UInt   / UInt32 (Unsigned)
+* 'F':  Float  / Binary32
+* 'D':  Double / Binary64
+* 'G':  Binary128
+
+
+32-bit Forms:
+* 3R Op, Basic (3R)
+** ( 7: 0): Opcode
+** (15: 8): Dst / SrcC
+** (23:16): SrcA
+** (31:24): SrcB
+* 2R Op, Basic (2R)
+** ( 7: 0): Opcode
+** (15: 8): Dst
+** (23:16): Src
+** (31:24): Sub-Op
+* 1R Op, Basic (1R)
+** ( 7: 0): Opcode
+** (15: 8): Dst / Src
+** (23:16): Sub-Op2
+** (31:24): Sub-Op
+* 3R Op, Immed (3RI)
+** ( 7: 0): Opcode
+** (15: 8): Dst
+** (23:16): Src
+** (31:24): Imm8
+* 2RI Op, Immed (2RI)
+** ( 7: 0): Opcode
+** (15: 8): Dst
+** (23:16): Imm8
+** (31:24): Sub-Op
+* 1R Op, Immed (1RI)
+** ( 7: 0): Opcode
+** (15: 8): Sub-Op
+** (31:16): Imm16
+
+* Global Load/Store (LDG/STG)
+** ( 7: 0): Opcode
+** (15: 8): Dst / Src
+** (31:16): Global ID
+* Imm16 Load (LDI)
+** ( 7: 0): Opcode
+** (15: 8): Dst
+** (31:16): Imm16
+* 2R Branch Op (2RB)
+** ( 7: 0): Opcode
+** (15: 8): SrcA
+** (23:16): SrcB
+** (31:24): Disp8
+
+64-Bit Forms:
+* Imm40 Load (LDI2)
+** (15: 0): Opcode
+** (23:16): Dst
+** (63:24): Imm40
+* Imm32 Op (3RI2)
+** (15: 0): Opcode
+** (23:16): Dst
+** (31:24): Src
+** (63:32): Imm32
+* 2R Branch Op (2RB2)
+** ( 7: 0): Opcode
+** (15: 8): SrcA
+** (23:16): SrcB
+** (31:24): Sub-Op
+** (63:32): Disp32
+
+96-Bit Forms:
+* Imm40 Load (LDI3)
+** (15: 0): Opcode
+** (23:16): Dst
+** (31:24): Sub-Op
+** (95:32): Imm64
+* Imm32 Op (3RI3)
+** (15: 0): Opcode
+** (23:16): Dst
+** (31:24): Src
+** (95:32): Imm64
+
+Opcode Ranges:
+* 00..DF: 8-Bit Opcode
+* C0..DF: 13-bit Opcode, 64-bit Instruction
+* E0..FF: 13-bit Opcode, 96-bit Instruction
+
+
+=== Opcodes, 32-bit ===
+
+Opcodes:
+* 00  LDIX.SB		(3R)	Load Signed Byte, Dst = SrcA[SrcB]
+* 01  LDIX.SS		(3R)	Load Signed Short, Dst = SrcA[SrcB]
+* 02  LDIX.SI		(3R)	Load Signed Int32, Dst = SrcA[SrcB]
+* 03  LDIX.L		(3R)	Load Int64, Dst = SrcA[SrcB]
+* 04  LDIX.UB		(3R)	Load Unsigned Byte, Dst = SrcA[SrcB]
+* 05  LDIX.US		(3R)	Load Unsigned Short, Dst = SrcA[SrcB]
+* 06  LDIX.UI		(3R)	Load Unsigned Int32, Dst = SrcA[SrcB]
+* 07  LDIX.X		(3R)	Load Int128, Dst = SrcA[SrcB]
+* 08  STIX.B		(3R)	Store Byte, SrcA[SrcB] = SrcC
+* 09  STIX.S		(3R)	Store Short, SrcA[SrcB] = SrcC
+* 0A  STIX.I		(3R)	Store Int32, SrcA[SrcB] = SrcC
+* 0B  STIX.L		(3R)	Store Int64, SrcA[SrcB] = SrcC
+* 0C  LEA.S			(3R)	LEA, Dst = SrcA + SrcB*2
+* 0D  LEA.I			(3R)	LEA, Dst = SrcA + SrcB*4
+* 0E  LEA.L			(3R)	LEA, Dst = SrcA + SrcB*8
+* 0F  STIX.X		(3R)	Store Int128, SrcA[SrcB]=SrcC
+
+* 10  ADD.L			(3R)	Dst = SrcA + SrcB, Int64
+* 11  SUB.L			(3R)	Dst = SrcA - SrcB, Int64
+* 12  MUL.L			(3R)	Dst = SrcA * SrcB, Int64
+* 13  DIV.L			(3R)	Dst = SrcA / SrcB, Int64
+* 14  MOD.L			(3R)	Dst = SrcA % SrcB, Int64
+* 15  AND.L			(3R)	Dst = SrcA & SrcB, Int64
+* 16  OR.L			(3R)	Dst = SrcA | SrcB, Int64
+* 17  XOR.L			(3R)	Dst = SrcA ^ SrcB, Int64
+* 18  ADD.SI		(3R)	Dst = SrcA + SrcB, Sign Extend Int32
+* 19  SUB.SI		(3R)	Dst = SrcA - SrcB, Sign Extend Int32
+* 1A  MUL.SI		(3R)	Dst = SrcA * SrcB, Sign Extend Int32
+* 1B  DIV.SI		(3R)	Dst = SrcA / SrcB, Sign Extend Int32
+* 1C  ADD.UI		(3R)	Dst = SrcA + SrcB, Zero Extend Int32
+* 1D  SUB.UI		(3R)	Dst = SrcA - SrcB, Zero Extend Int32
+* 1E  MUL.UI		(3R)	Dst = SrcA * SrcB, Zero Extend Int32
+* 1F  DIV.UI		(3R)	Dst = SrcA / SrcB, Zero Extend Int32
+
+* 20  ADD.D			(3R)	Dst = SrcA + SrcB, Double
+* 21  SUB.D			(3R)	Dst = SrcA - SrcB, Double
+* 22  MUL.D			(3R)	Dst = SrcA * SrcB, Double
+* 23  DIV.D			(3R)	Dst = SrcA / SrcB, Double
+* 24  SHAD.L		(3R)	Dst = SrcA SHLR SrcB, Int64
+* 25  SHLD.L		(3R)	Dst = SrcA SHLR SrcB, UInt64
+* 26  SHAD.SI		(3R)	Dst = SrcA SHLR SrcB, Int32
+* 27  SHLD.UI		(3R)	Dst = SrcA SHLR SrcB, UInt32
+
+* 28  (2R Block)
+** 28_00  NEG.L		(2R)	Negate, Int64
+** 28_01  NOT.L		(2R)	Bitwise Not, Int64
+** 28_02  LNOT.L	(2R)	Logical Not, Int64
+** 28_03  MOV		(2R)	MOV, Int64
+** 28_04  NEG.I		(2R)	Negate, Int32, Sign Extend
+** 28_05  NOT.I		(2R)	Bitwise Not, Int32, Zero Extend
+** 28_06  LNOT.I	(2R)	Logical Not, Int32
+** 28_07  MOVX		(2R)	MOV, Int128
+** 28_08  EXT.SB	(2R)	Sign Extend Byte
+** 28_09  EXT.UB	(2R)	Zero Extend Byte
+** 28_0A  EXT.SS	(2R)	Sign Extend Short
+** 28_0B  EXT.US	(2R)	Zero Extend Short
+** 28_0C  EXT.SI	(2R)	Sign Extend Int32
+** 28_0D  EXT.UI	(2R)	Zero Extend Int32
+** 28_0E  (1R Block)
+** 28_0E_00  CSRV	(1R)	Call Save Return (Int64)
+** 28_0E_01  CSRVX	(1R)	Call Save Return (Int128)
+** 28_0E_02  RET	(1R)	Return Int64
+** 28_0E_03  RETX	(1R)	Return Int128
+** 28_0F  (1R Block)
+** 28_10  CVT.F2D	(2R)	Convert Float to Double
+** 28_11  CVT.D2F	(2R)	Convert Double to Float
+** 28_12  CVT.H2D	(2R)	Convert Half to Double
+** 28_13  CVT.D2H	(2R)	Convert Double to Half
+** 28_14  CVT.L2D	(2R)	Convert Int64 to Double
+** 28_15  CVT.D2L	(2R)	Convert Double to Int64
+** 28_16  FNEG.D	(2R)	Negate, Double
+** 28_17  FABS.D	(2R)	Absolute, Double
+
+* 29  (1RI Block)
+** 29_00  BRA		(1RI)	Branch
+
+* 2A  LDAREG		(LDG)	Load Register Address, Dst = SP + Imm*8
+* 2B
+* 2C  LDIX.F		(3R)	Load Float, Dst = SrcA[SrcB]
+* 2D  LD.F			(3RI)	Load Float, Dst = Src[Imm]
+* 2E  STIX.F		(3R)	Store Float, SrcA[SrcB] = SrcC
+* 2F  ST.F			(3RI)	Store Float, Src[Imm] = Dst
+
+* 30  CMPEQ.L		(3R)	Dst = SrcA == SrcB, Int64
+* 31  CMPNE.L		(3R)	Dst = SrcA != SrcB, Int64
+* 32  CMPGT.L		(3R)	Dst = SrcA >  SrcB, Int64
+* 33  CMPGE.L		(3R)	Dst = SrcA >= SrcB, Int64
+* 34  CMPHI.L		(3R)	Dst = SrcA >  SrcB, UInt64
+* 35  CMPHS.L		(3R)	Dst = SrcA >= SrcB, UInt64
+* 36  CMPEQ.D		(3R)	Dst = SrcA == SrcB, Double
+* 37  CMPNE.D		(3R)	Dst = SrcA != SrcB, Double
+* 38  CMPEQ.I		(3R)	Dst = SrcA == SrcB, Int32
+* 39  CMPNE.I		(3R)	Dst = SrcA != SrcB, Int32
+* 3A  CMPGT.I		(3R)	Dst = SrcA >  SrcB, Int32
+* 3B  CMPGE.I		(3R)	Dst = SrcA >= SrcB, Int32
+* 3C  CMPHI.I		(3R)	Dst = SrcA >  SrcB, UInt32
+* 3D  CMPHS.I		(3R)	Dst = SrcA >= SrcB, UInt32
+* 3E  CMPGT.D		(3R)	Dst = SrcA >  SrcB, Double
+* 3F  CMPGE.D		(3R)	Dst = SrcA >= SrcB, Double
+
+* 40  LD.SB			(3RI)	Load Signed Byte, Dst=Src[Imm]
+* 41  LD.SS			(3RI)	Load Signed Short, Dst=Src[Imm]
+* 42  LD.SI			(3RI)	Load Signed Int32, Dst=Src[Imm]
+* 43  LD.L			(3RI)	Load Int64, Dst=Src[Imm]
+* 44  LD.UB			(3RI)	Load Unsigned Byte, Dst=Src[Imm]
+* 45  LD.US			(3RI)	Load Unsigned Short, Dst=Src[Imm]
+* 46  LD.UI			(3RI)	Load Unsigned Int32, Dst=Src[Imm]
+* 47  LD.X			(3RI)	Load Int128, Dst=Src[Imm]
+* 48  ST.B			(3RI)	Store Byte, Src[Imm]=Dst
+* 49  ST.S			(3RI)	Store Short, Src[Imm]=Dst
+* 4A  ST.I			(3RI)	Store Int32, Src[Imm]=Dst
+* 4B  ST.L			(3RI)	Store Int64, Src[Imm]=Dst
+* 4C  LEA.S			(3RI)	Dst = Src + Imm*2
+* 4D  LEA.I			(3RI)	Dst = Src + Imm*4
+* 4E  LEA.L			(3RI)	Dst = Src + Imm*8
+* 4F  ST.X			(3RI)	Store Int128, Src[Imm]=Dst
+
+* 50  ADD.L			(3RI)	Dst = Src + Imm
+* 51  SUB.L			(3RI)	Dst = Src - Imm
+* 52  MUL.L			(3RI)	Dst = Src * Imm
+* 53  DIV.L			(3RI)	Dst = Src / Imm
+* 54  MOD.L			(3RI)	Dst = Src % Imm
+* 55  AND.L			(3RI)	Dst = Src & Imm
+* 56  OR.L			(3RI)	Dst = Src | Imm
+* 57  XOR.L			(3RI)	Dst = Src ^ Imm
+* 58  ADD.SI		(3RI)	Dst = Src + Imm, Sign Extend Int32
+* 59  SUB.SI		(3RI)	Dst = Src - Imm, Sign Extend Int32
+* 5A  MUL.SI		(3RI)	Dst = Src * Imm, Sign Extend Int32
+* 5B  DIV.SI		(3RI)	Dst = Src / Imm, Sign Extend Int32
+* 5C  ADD.UI		(3RI)	Dst = Src + Imm, Zero Extend Int32
+* 5D  SUB.UI		(3RI)	Dst = Src - Imm, Zero Extend Int32
+* 5E  MUL.UI		(3RI)	Dst = Src * Imm, Zero Extend Int32
+* 5F  DIV.UI		(3RI)	Dst = Src / Imm, Zero Extend Int32
+
+* 60  CALL			(STG)	Function Call, Global Number, Src=Arg List
+* 61  OBJCALL		(3R)	"SrcA.SrcB(SrcC...)"
+** SrcA=0: Call via 'this' object.
+** SrcB=0: Call a function pointer.
+* 62  LDSTR			(LDG)	Load String (String Table Index)
+* 63  LDINIT		(LDG)	Load Initializer Value
+* 64  SHAD.L		(3RI)	Dst=Src SHLR Imm, Int64
+* 65  SHLD.L		(3RI)	Dst=Src SHLR Imm, UInt64
+* 66  SHAD.SI		(3RI)	Dst=Src SHLR Imm, Int32
+* 67  SHLD.UI		(3RI)	Dst=Src SHLR Imm, UInt32
+* 68  LDG			(LDG)	Load Global (64 bit)
+* 69  LDGX			(LDG)	Load Global (128 bit)
+* 6A  STG			(STG)	Store Global (64 bit)
+* 6B  STGX			(STG)	Store Global (128 bit)
+* 6C  LDIZ			(LDI)	Load Immed, Zero Extend
+* 6D  LDIN			(LDI)	Load Immed, One Extend
+* 6E  LDREG			(LDG)	Load Register, 256..32767
+* 6F  STREG			(STG)	Store Register, 256..32767
+
+* 70  BREQ.L		(2RB)	Branch if SrcA == SrcB (Int64)
+* 71  BRNE.L		(2RB)	Branch if SrcA != SrcB (Int64)
+* 72  BRGT.L		(2RB)	Branch if SrcA >  SrcB (Int64)
+* 73  BRGE.L		(2RB)	Branch if SrcA >= SrcB (Int64)
+* 74  BRHI.L		(2RB)	Branch if SrcA >  SrcB (UInt64)
+* 75  BRHS.L		(2RB)	Branch if SrcA >= SrcB (UInt64)
+* 76  BREQ.D		(2RB)	Branch if SrcA == SrcB (Double)
+* 77  BRNE.D		(2RB)	Branch if SrcA != SrcB (Double)
+* 78  BREQ.I		(2RB)	Branch if SrcA == SrcB (Int32)
+* 79  BRNE.I		(2RB)	Branch if SrcA != SrcB (Int32)
+* 7A  BRGT.I		(2RB)	Branch if SrcA >  SrcB (Int32)
+* 7B  BRGE.I		(2RB)	Branch if SrcA >= SrcB (Int32)
+* 7C  BRHI.I		(2RB)	Branch if SrcA >  SrcB (UInt32)
+* 7D  BRHS.I		(2RB)	Branch if SrcA >= SrcB (UInt32)
+* 7E  BRGT.D		(2RB)	Branch if SrcA >  SrcB (Double)
+* 7F  BRGE.D		(2RB)	Branch if SrcA >= SrcB (Double)
+
+
+=== Opcodes, 64-bit ===
+
+64-Bit Opcodes:
+* C0_40  LD.SB		(3RI2)
+* C0_41  LD.SS		(3RI2)
+* C0_42  LD.SI		(3RI2)
+* C0_43  LD.L		(3RI2)
+* C0_44  LD.UB		(3RI2)
+* C0_45  LD.US		(3RI2)
+* C0_46  LD.UI		(3RI2)
+* C0_47  LD.X		(3RI2)
+* C0_48  ST.B		(3RI2)
+* C0_49  ST.S		(3RI2)
+* C0_4A  ST.I		(3RI2)
+* C0_4B  ST.L		(3RI2)
+* C0_4C  LEA.S		(3RI2)
+* C0_4D  LEA.I		(3RI2)
+* C0_4E  LEA.L		(3RI2)
+* C0_4F  ST.X		(3RI2)
+
+* C0_50  ADD.L		(3RI2)
+* C0_51  SUB.L		(3RI2)
+* C0_52  MUL.L		(3RI2)
+* C0_53  DIV.L		(3RI2)
+* C0_54  MOD.L		(3RI2)
+* C0_55  AND.L		(3RI2)
+* C0_56  OR.L		(3RI2)
+* C0_57  XOR.L		(3RI2)
+* C0_58  ADD.SI		(3RI2)
+* C0_59  SUB.SI		(3RI2)
+* C0_5A  MUL.SI		(3RI2)
+* C0_5B  DIV.SI		(3RI2)
+* C0_5C  ADD.UI		(3RI2)
+* C0_5D  SUB.UI		(3RI2)
+* C0_5E  MUL.UI		(3RI2)
+* C0_5F  DIV.UI		(3RI2)
+
+* C0_62  LDSTR		(LDG2)	Load String (String Table Index)
+* C0_63  LDINIT		(LDG2)	Load Initializer Value
+
+* C0_68  LDG		(LDG2)
+* C0_69  LDGX		(LDG2)
+* C0_6A  STG		(STG2)
+* C0_6B  STGX		(STG2)
+* C0_6C  LDIZ		(LDI2)
+* C0_6D  LDIN		(LDI2)
+
+* C0_70  BREQ.L		(2RB2)	Branch if SrcA==SrcB (Int64)
+* C0_71  BRNE.L		(2RB2)	Branch if SrcA!=SrcB (Int64)
+* C0_72  BRGT.L		(2RB2)	Branch if SrcA> SrcB (Int64)
+* C0_73  BRGE.L		(2RB2)	Branch if SrcA>=SrcB (Int64)
+* C0_74  BRHI.L		(2RB2)	Branch if SrcA> SrcB (UInt64)
+* C0_75  BRHS.L		(2RB2)	Branch if SrcA>=SrcB (UInt64)
+* C0_76  BREQ.D		(2RB2)	Branch if SrcA==SrcB (Double)
+* C0_77  BRNE.D		(2RB2)	Branch if SrcA!=SrcB (Double)
+* C0_78  BREQ.I		(2RB2)	Branch if SrcA==SrcB (Int32)
+* C0_79  BRNE.I		(2RB2)	Branch if SrcA!=SrcB (Int32)
+* C0_7A  BRGT.I		(2RB2)	Branch if SrcA> SrcB (Int32)
+* C0_7B  BRGE.I		(2RB2)	Branch if SrcA>=SrcB (Int32)
+* C0_7C  BRHI.I		(2RB2)	Branch if SrcA> SrcB (UInt32)
+* C0_7D  BRHS.I		(2RB2)	Branch if SrcA>=SrcB (UInt32)
+* C0_7E  BRGT.D		(2RB2)	Branch if SrcA> SrcB (Double)
+* C0_7F  BRGE.D		(2RB2)	Branch if SrcA>=SrcB (Double)
+
+
+=== Opcodes, 96-bit ===
+
+96-Bit Opcodes:
+
+* E0_50  ADD.L		(3RI3)
+* E0_51  SUB.L		(3RI3)
+* E0_52  MUL.L		(3RI3)
+* E0_53  DIV.L		(3RI3)
+* E0_54  MOD.L		(3RI3)
+* E0_55  AND.L		(3RI3)
+* E0_56  OR.L		(3RI3)
+* E0_57  XOR.L		(3RI3)
+* E0_58  ADD.SI		(3RI3)
+* E0_59  SUB.SI		(3RI3)
+* E0_5A  MUL.SI		(3RI3)
+* E0_5B  DIV.SI		(3RI3)
+* E0_5C  ADD.UI		(3RI3)
+* E0_5D  SUB.UI		(3RI3)
+* E0_5E  MUL.UI		(3RI3)
+* E0_5F  DIV.UI		(3RI3)
+
+* E0_6C  LDIZ		(LDI3)
+* E0_6D  LDIN		(LDI3)

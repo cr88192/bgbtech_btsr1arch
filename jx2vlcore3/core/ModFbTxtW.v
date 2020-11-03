@@ -99,6 +99,7 @@ reg[5:0]	tPixCellGx_C;			//base cell index
 reg[5:0]	tPixCellGx_D;			//base cell index
 reg[5:0]	tPixCellGx_E;			//base cell index
 
+reg[255:0]	tCellData0;
 reg[255:0]	tCellData;
 reg[255:0]	tCellData_B;
 reg[255:0]	tCellData_C;
@@ -234,6 +235,8 @@ reg[11:0]	cbClrTab[63:0];
 
 reg[11:0]	cbClrTabRgbi[15:0];
 
+reg[63:0]	tCtrlRegVal;
+
 reg		useCol80;
 reg		useRow50;
 reg		useHalfCell;
@@ -314,20 +317,20 @@ begin
 //	useCol80 = 1;
 //	useCol80 = 0;
 
-	useCol80	= ctrlRegVal[0];
-	useHalfCell	= ctrlRegVal[1];
-	useRow50	= ctrlRegVal[2];
-	useHorz800	= ctrlRegVal[3];
+	useCol80	= tCtrlRegVal[0];
+	useHalfCell	= tCtrlRegVal[1];
+	useRow50	= tCtrlRegVal[2];
+	useHorz800	= tCtrlRegVal[3];
 	
-	tScrMode	= ctrlRegVal[7:4];
-	useColPow2	= ctrlRegVal[8];
-	useQtrCell	= ctrlRegVal[10];
+	tScrMode	= tCtrlRegVal[7:4];
+	useColPow2	= tCtrlRegVal[8];
+	useQtrCell	= tCtrlRegVal[10];
 
-	tScrClrsMod		= ctrlRegVal[15:12];
+	tScrClrsMod		= tCtrlRegVal[15:12];
 
-	tCellCursorX	= ctrlRegVal[39:32];
-//	tCellCursorY	= ctrlRegVal[47:40] + 2;
-	tCellCursorY	= ctrlRegVal[47:40];
+	tCellCursorX	= tCtrlRegVal[39:32];
+//	tCellCursorY	= tCtrlRegVal[47:40] + 2;
+	tCellCursorY	= tCtrlRegVal[47:40];
 
 	tClrYuvC		= 0;
 	tNextCellIsOdd	= 0;
@@ -542,22 +545,22 @@ begin
 	if(useQtrCell)
 	begin
 		case({tCellIsOddB, tCellIsOdd})
-			2'b00: tCellData = { UV192_00, cellData[ 63:  0] };
-			2'b01: tCellData = { UV192_00, cellData[127: 64] };
-			2'b10: tCellData = { UV192_00, cellData[191:128] };
-			2'b11: tCellData = { UV192_00, cellData[255:192] };
+			2'b00: tCellData0 = { UV192_00, cellData[ 63:  0] };
+			2'b01: tCellData0 = { UV192_00, cellData[127: 64] };
+			2'b10: tCellData0 = { UV192_00, cellData[191:128] };
+			2'b11: tCellData0 = { UV192_00, cellData[255:192] };
 		endcase
 	end
 	else
 		if(useHalfCell)
 	begin
-		tCellData = tCellIsOdd ?
+		tCellData0 = tCellIsOdd ?
 			{ UV128_00, cellData[255:128] } :
 			{ UV128_00, cellData[127:  0] };
 	end
 	else
 	begin
-		tCellData = cellData;
+		tCellData0 = cellData;
 	end
 
 //	if(tPixCellIx_B >= 2000)
@@ -566,7 +569,8 @@ begin
 //		tCellData = 0;
 
 	if(tCellLimitX || tCellLimitY)
-		tCellData = 0;
+		tCellData0 = 0;
+
 
 	tFontGlyph = tCellData[15:0];
 	tClrA = tCellData[21:16];
@@ -1224,6 +1228,8 @@ begin
 	tPixPosX_Z		<= pixPosX;
 	tPixPosY_Z		<= pixPosY;
 
+	tCtrlRegVal		<= ctrlRegVal;
+
 //	tPixPosX		<= tPixPosX_Z;
 //	tPixPosY		<= tPixPosY_Z;
 
@@ -1257,6 +1263,7 @@ begin
 	tCellIsOddB			<= tNextCellIsOddB;
 	tBlinkStrobeB		<= tBlinkStrobeA;
 	
+	tCellData		<= tCellData0;
 	tCellData_B		<= tCellData;
 	tCellData_C		<= tCellData_B;
 

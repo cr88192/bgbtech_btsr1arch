@@ -702,6 +702,7 @@ int UAX_Asm_OpArgImm8P(UAX_OpcodeArg *rm)
 //	if((rm->disp!=((byte)rm->disp)) &&
 //		(rm->disp!=((sbyte)rm->disp)))
 	if(rm->disp!=((sbyte)rm->disp))
+//	if(rm->disp!=((rm->disp)&127))
 			return(0);
 	return(1);
 }

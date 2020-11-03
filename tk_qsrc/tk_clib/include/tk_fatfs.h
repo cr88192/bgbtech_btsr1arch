@@ -40,6 +40,17 @@
 #define TKFAT_EMODE_ACC_WO		0x00000002
 #define TKFAT_EMODE_ACC_XO		0x00000001
 
+#define TKFAT_DT_UNKNOWN        0
+#define TKFAT_DT_FIFO			1
+#define TKFAT_DT_CHR			2
+#define TKFAT_DT_DIR			4
+#define TKFAT_DT_BLK			6
+#define TKFAT_DT_REG			8
+#define TKFAT_DT_LNK			10
+#define TKFAT_DT_SOCK			12
+#define TKFAT_DT_WHT			14
+
+
 typedef struct TKFAT_MBR_Entry_s TKFAT_MBR_Entry;
 typedef struct TKFAT_MBR_s TKFAT_MBR;
 typedef struct TKFAT_FAT16_Boot_s TKFAT_FAT16_Boot;

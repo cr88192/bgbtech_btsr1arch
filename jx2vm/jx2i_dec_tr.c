@@ -988,7 +988,8 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 	tr->n_cyc=ncyc;
 	tr->addr_nxt=npc;
 	tr->addr_jmp=jpc;
-	
+
+#if 1
 	if(rec<64)
 	{
 		if(npc && !brk)
@@ -996,7 +997,19 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 		if(jpc)
 			{ tr->jmpnext=BJX2_GetTraceForAddr(ctx, jpc); }
 	}
-	
+#endif
+
+	if(ctx->status)
+	{
+//		__debugbreak();
+
+		tr->n_ops=0;
+		tr->n_cyc=0;
+		tr->Run=BJX2_DecTraceCb_Bad;
+		return(-1);
+	}
+
+
 	switch(nc)
 	{
 	case  1: tr->Run=BJX2_DecTraceCb_Run1; break;

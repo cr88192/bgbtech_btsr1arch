@@ -600,6 +600,106 @@ int TKSH_Cmds_Set(char **args)
 	return(0);
 }
 
+int TKSH_Cmds_Mount(char **args)
+{
+	TK_MOUNT *mcur;
+	char *devfn, *mntfn, *fsty, *mode, *opts;
+	char *s0, *s1, *s2;
+	char **opta;
+	int i;
+	
+	devfn=NULL;
+	mntfn=NULL;
+	fsty=NULL;
+	mode=NULL;
+	opts=NULL;
+	
+	for(i=1; args[i]; i++)
+	{
+		if(args[i][0]=='-')
+		{
+			if(args[i][1]=='t')
+			{
+				if(args[i][2])
+				{
+					fsty=args[i]+2;
+				}else
+				{
+					fsty=args[i+1];
+					i++;
+				}
+				continue;
+			}
+
+			if(args[i][1]=='o')
+			{
+				if(args[i][2])
+				{
+					opts=args[i]+2;
+				}else
+				{
+					opts=args[i+1];
+					i++;
+				}
+				continue;
+			}
+			
+			if(args[i][1]=='m')
+			{
+				if(args[i][2])
+				{
+					mode=args[i]+2;
+				}else
+				{
+					mode=args[i+1];
+					i++;
+				}
+				continue;
+			}
+			
+			continue;
+		}
+		if(!devfn)
+		{
+			devfn=args[i];
+			continue;
+		}
+		if(!mntfn)
+		{
+			mntfn=args[i];
+			continue;
+		}
+	}
+	
+	if(!devfn)
+	{
+		mcur=tk_vf_firstmount();
+		while(mcur)
+		{
+			s0=mcur->tgt;
+			s1=mcur->src;
+			s2=mcur->vt->fsname;
+			if(!s0)s0="(none)";
+			if(!s1)s1="/";
+			if(!s2)s2="-";
+			tk_printf("%s on %s type %s\n", s0, s1, s2);
+			mcur=tk_vf_nextmount(mcur);
+		}
+		return(0);
+	}
+	
+	opta=NULL;
+	if(opts)
+		opta=tk_rsplit_sep(opts, ',');
+	
+	if(devfn && mntfn && fsty)
+	{
+		tk_fmount(devfn, mntfn, fsty, mode, opta);
+	}
+
+	return(0);
+}
+
 int TKSH_InitCmds(void)
 {
 	TKSH_CommandInfo *cmdi;
@@ -626,6 +726,7 @@ int TKSH_InitCmds(void)
 	TKSH_RegisterCommand("rmdir",	TKSH_Cmds_Rmdir);
 	TKSH_RegisterCommand("mkdir",	TKSH_Cmds_Mkdir);
 	TKSH_RegisterCommand("md",		TKSH_Cmds_Mkdir);
+	TKSH_RegisterCommand("mount",	TKSH_Cmds_Mount);
 	TKSH_RegisterCommand("set",		TKSH_Cmds_Set);
 
 	return(1);

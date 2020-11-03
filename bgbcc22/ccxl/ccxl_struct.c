@@ -924,7 +924,13 @@ ccxl_status BGBCC_CCXL_GetSigMinMaxSize(
 		{
 		case 'i':
 		case 'j':
+		case 'l':
 			sza[0]=8; sza[1]=8;
+			ala[0]=8; ala[1]=8;
+			break;
+
+		case 'h':
+			sza[0]=16; sza[1]=16;
 			ala[0]=8; ala[1]=8;
 			break;
 

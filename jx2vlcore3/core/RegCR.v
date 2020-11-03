@@ -295,6 +295,9 @@ begin
 `ifdef jx2_enable_mmu
 		crRegMmcr	<= UV64_00;
 		crRegKrr	<= UV64_00;
+
+		crRegTtb	<= UV48_00;
+		crRegSttb	<= UV48_00;
 `endif
 
 	end

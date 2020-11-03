@@ -34,6 +34,12 @@
 #include "tk_core/tk_bdev_vfb.c"
 #include "tk_core/tk_vmem.c"
 
+#include "tk_core/tk_wad4.c"
+#include "tk_core/tk_vf_wad4.c"
+
+#include "tk_vf_fat.c"
+#include "tk_vf_sysc.c"
+
 #include "tk_core/tk_vfile.c"
 #include "tk_core/tk_divi.c"
 #include "tk_core/tk_puts.c"

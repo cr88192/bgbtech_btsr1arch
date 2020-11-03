@@ -47,6 +47,7 @@
 #include "jx2i_mem.c"
 #include "jx2i_ldrom.c"
 
+void BJX2_Op_MOVW_RegStRegDisp(BJX2_Context *ctx, BJX2_Opcode *op);
 
 #if defined(BTESH2_HASJIT_X64)
 #include "bteuax64/uax_multi.c"

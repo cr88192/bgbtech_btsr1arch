@@ -50,6 +50,10 @@ reg[127:0]		tMemInData;
 reg[1:0]		tMemOK;
 reg[63:0]		tMemBusExc;
 
+reg[127:0]		tMemInData2;
+reg[1:0]		tMemOK2;
+reg[63:0]		tMemBusExc2;
+
 reg[127:0]		tMemOutData;
 reg[47:0]		tMemAddrA;
 reg[47:0]		tMemAddrB;
@@ -105,11 +109,11 @@ begin
 //	tMem2OK			= (mem2Opm != UMEM_OPM_READY) ?
 //		UMEM_OK_HOLD : UMEM_OK_READY;
 
-//	tMem1OK			= UMEM_OK_READY;
-//	tMem2OK			= UMEM_OK_READY;
+	tMem1OK			= UMEM_OK_READY;
+	tMem2OK			= UMEM_OK_READY;
 
-	tMem1OK			= tMem2Latch ? UMEM_OK_HOLD : UMEM_OK_READY;
-	tMem2OK			= tMem1Latch ? UMEM_OK_HOLD : UMEM_OK_READY;
+//	tMem1OK			= tMem2Latch ? UMEM_OK_HOLD : UMEM_OK_READY;
+//	tMem2OK			= tMem1Latch ? UMEM_OK_HOLD : UMEM_OK_READY;
 
 	tMem1BusExc		= UV64_00;
 	tMem2BusExc		= UV64_00;
@@ -191,14 +195,29 @@ begin
 //		tMemOpm			= mem2Opm;
 	end
 
+	if(reset)
+	begin
+		tNextMem1Latch	= 0;
+		tNextMem2Latch	= 0;
+		tMemOpm			= UMEM_OPM_READY;
+	end
+
 end
 
 always @(posedge clock)
 begin
-
+`ifdef jx2_mem_l2exbuf
+	tMemInData2		<= memInData;
+	tMemBusExc2		<= memBusExc;
+	tMemOK2			<= memOK;
+	tMemInData		<= tMemInData2;
+	tMemBusExc		<= tMemBusExc2;
+	tMemOK			<= tMemOK2;
+`else
 	tMemInData		<= memInData;
 	tMemOK			<= memOK;
 	tMemBusExc		<= memBusExc;
+`endif
 
 	tMemOutData2	<= tMemOutData;
 	tMemAddrA2		<= tMemAddrA;
@@ -214,20 +233,20 @@ begin
 
 	tMemStrobe		<= tNextMemStrobe;
 
-	if(reset)
-	begin
-		tMem1Latch	<= 0;
-		tMem2Latch	<= 0;
-	end
-	else
-	begin
+//	if(reset)
+//	begin
+//		tMem1Latch	<= 0;
+//		tMem2Latch	<= 0;
+//	end
+//	else
+//	begin
 		tMem1Latch	<= tNextMem1Latch;
 		tMem2Latch	<= tNextMem2Latch;
 
 //		tMem1Latch	<= tNextMem1Latch && !(tNextMem2Latch &&  tMemStrobe);
 //		tMem2Latch	<= tNextMem2Latch && !(tNextMem1Latch && !tMemStrobe);
 
-	end
+//	end
 end
 
 endmodule

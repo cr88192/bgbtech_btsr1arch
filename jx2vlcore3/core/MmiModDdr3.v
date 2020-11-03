@@ -78,8 +78,11 @@ DRI Init:
 
 // `define mod_ddr_dbgprn		//Debug DDR module
 
+// `define mod_ddr_fastcore		//Use faster clock internally
+// `define mod_ddr_extrabuf		//Do Extra IO Buffering (Clock Crossing)
+
 module MmiModDdr3(
-	clock,		clock200,	reset,
+	clock,		clock2,	reset,
 	memDataIn,	memDataOut,
 	memAddr,	memOpm,
 	memOK,
@@ -92,7 +95,7 @@ module MmiModDdr3(
 	ddrDqsP_O,	ddrDqsN_O,	ddrDqs_En);
 
 input			clock;
-input			clock200;
+input			clock2;
 input			reset;
 input[127:0]	memDataIn;
 output[127:0]	memDataOut;
@@ -151,7 +154,7 @@ parameter[15:0]	DDR_DRI_INIT_9	=	16'h8900;	/* REFRESH */
 parameter[15:0]	DDR_DRI_INIT_8	=	16'h8900;	/* REFRESH */
 parameter[15:0]	DDR_DRI_INIT_7	=	16'h8800;	/* PRELOAD ALL */
 parameter[15:0]	DDR_DRI_INIT_6	=	16'h0333;	/* Load MR, Reset DLL */
-// parameter[15:0]	DDR_DRI_INIT_5	=	16'h2004;	/* Load EMR */
+// parameter[15:0]	DDR_DRI_INIT_5	=	16'h2004;	/* Load EMR, DLL Enable */
 parameter[15:0]	DDR_DRI_INIT_5	=	16'h2005;	/* Load EMR, DLL Disable */
 parameter[15:0]	DDR_DRI_INIT_4	=	16'h6000;	/* Load EMR3 */
 parameter[15:0]	DDR_DRI_INIT_3	=	16'h4000;	/* Load EMR2 */
@@ -174,6 +177,14 @@ assign			ddrData_En = tDdrOut;
 
 wire[1:0]		ddrDqs;
 assign			ddrDqs = { ddrDqsN_I[0], ddrDqsP_I[0] };
+
+wire	ddr_coreclock;
+
+`ifdef mod_ddr_fastcore
+assign	ddr_coreclock = clock2;
+`else
+assign	ddr_coreclock = clock;
+`endif
 
 
 reg[15:0]		ddrData2;
@@ -250,12 +261,46 @@ reg[127:0]		tMemDataOut;
 reg[1:0]		tMemOK;
 reg[127:0]		tMemDataOut2;
 reg[1:0]		tMemOK2;
-assign			memOK = tMemOK2;
-assign			memDataOut = tMemDataOut2;
+
+`ifdef mod_ddr_extrabuf
+reg[127:0]		tMemDataOut3;
+reg[1:0]		tMemOK3;
+reg[127:0]		tMemDataOut4;
+reg[1:0]		tMemOK4;
+reg[127:0]		tMemDataOut5;
+reg[1:0]		tMemOK5;
+reg[127:0]		tMemDataOut6;
+reg[1:0]		tMemOK6;
+assign			memOK		= tMemOK6;
+assign			memDataOut	= tMemDataOut6;
+`else
+assign			memOK		= tMemOK2;
+assign			memDataOut	= tMemDataOut2;
+`endif
 
 reg[127:0]		tMemDataIn;
 reg[31:0]		tMemAddr;
 reg[4:0]		tMemOpm;
+
+reg[127:0]		tMemDataInB;
+reg[31:0]		tMemAddrB;
+reg[4:0]		tMemOpmB;
+
+reg[127:0]		tMemDataInC;
+reg[31:0]		tMemAddrC;
+reg[4:0]		tMemOpmC;
+
+reg[127:0]		tMemDataInD;
+reg[31:0]		tMemAddrD;
+reg[4:0]		tMemOpmD;
+
+reg[127:0]		tMemDataInE;
+reg[31:0]		tMemAddrE;
+reg[4:0]		tMemOpmE;
+
+reg[127:0]		tMemDataInF;
+reg[31:0]		tMemAddrF;
+reg[4:0]		tMemOpmF;
 
 
 reg[5:0]		accState;
@@ -291,6 +336,7 @@ reg[2:0]		dreNextBaAddr;		//DRAM Refresh, Next Bank
 reg[15:0]		dreCount;			//DRAM Refresh, Cycle Count
 reg[15:0]		dreNextCount;		//DRAM Refresh, Next Cycle Count
 reg				dreIsZero;
+reg				dreNextIsZero;
 
 // reg[63:0]		driModeOut;			//DRAM Init, Mode Out
 // reg[63:0]		driNextModeOut;		//DRAM Init, Next Out
@@ -302,9 +348,15 @@ reg[4:0]		driNextInitState;
 reg[15:0]		driInitCmd;
 
 reg				driStillInit;
+reg				driNextStillInit;
 
 reg				tPhaseHc;
 reg				tNxtPhaseHc;
+
+reg				tReset;
+reg				tResetB;
+reg				tResetC;
+reg				tResetD;
 
 wire[15:0]		ddrData2p;
 assign		ddrData2p = tPhaseHc ? ddrData2H : ddrData2;
@@ -371,7 +423,8 @@ begin
 //	tMemOK			= UMEM_OK_READY;
 
 //	driStillInit	= (driModeOut[15:0]!=0);
-	dreIsZero		= (dreCount == 0);
+//	dreIsZero		= (dreCount == 0);
+	dreNextIsZero	= (dreCount == 0);
 
 //	driStillInit	= (driInitState != 5'h1F);
 	driNextInitState	= driInitState;
@@ -394,13 +447,15 @@ begin
 		default:	driInitCmd=0;
 	endcase
 
-	driStillInit	= (driInitCmd != 0);
+//	driStillInit	= (driInitCmd != 0);
+	driNextStillInit	= (driInitCmd != 0);
 
 // reg[4:0]		driInitState;
 // reg[4:0]		driNextInitState;
 // reg[15:0]		driInitCmd;
 
-	if(!dreIsZero && accCkLo)
+//	if(!dreIsZero && accCkLo)
+	if(!dreNextIsZero && accCkLo)
 	begin
 		dreNextCount = dreCount - 1;
 	end
@@ -1071,11 +1126,12 @@ begin
 	end
 
 	default: begin
+		accNextState			= 6'b000000;
 	end
 
 	endcase
 	
-	if(reset)
+	if(tReset)
 	begin
 		accNextState		= 0;
 		driNextInitState	= 0;
@@ -1084,11 +1140,17 @@ end
 
 reg[7:0]	regInitSanity;
 
+reg			tCheckD;
+reg			tCheckOK4;
+
+
 initial begin
 	regInitSanity = 0;
 end
 
-always @(negedge clock)
+// always @(negedge clock)
+// always @(negedge clock2)
+always @(negedge ddr_coreclock)
 begin
 	tDdrClk3		<= tDdrClk2;
 	tDdrDqs3		<= tDdrDqs2;
@@ -1098,15 +1160,74 @@ begin
 	ddrDqs1H		<= ddrDqs;
 end
 
+`ifdef mod_ddr_extrabuf
 always @(posedge clock)
+begin
+	tMemOK3			<= tMemOK2;
+	tMemDataOut3	<= tMemDataOut2;
+
+	tMemOK4			<= tMemOK3;
+	tMemDataOut4	<= tMemDataOut3;
+
+	tMemOK5			<= tMemOK4;
+	tMemDataOut5	<= tMemDataOut4;
+
+	tCheckOK4		<= (tMemOK5 == tMemOK4);
+
+//	if(tCheckOK4)
+//	begin
+		tMemOK6			<= tMemOK5;
+		tMemDataOut6	<= tMemDataOut5;
+//	end
+
+	tMemDataInB		<= memDataIn;
+	tMemAddrB		<= memAddr;
+	tMemOpmB		<= memOpm;
+
+	tResetB			<= reset;
+end
+`endif
+
+// always @(posedge clock)
+// always @(posedge clock2)
+always @(posedge ddr_coreclock)
 begin
 
 	tMemOK2			<= tMemOK;
 	tMemDataOut2	<= tMemDataOut;
 
+`ifdef mod_ddr_extrabuf
+	tResetC			<= tResetB;
+	tResetD			<= tResetC;
+	tReset			<= tResetD;
+
+	tMemDataInC		<= tMemDataInB;
+	tMemAddrC		<= tMemAddrB;
+	tMemOpmC		<= tMemOpmB;
+
+	tMemDataInD		<= tMemDataInC;
+	tMemAddrD		<= tMemAddrC;
+	tMemOpmD		<= tMemOpmC;
+
+	tMemDataInE		<= tMemDataInD;
+	tMemAddrE		<= tMemAddrD;
+	tMemOpmE		<= tMemOpmD;
+
+	tCheckD			<= (tMemOpmE == tMemOpmD);
+
+//	if(tCheckD)
+//	begin
+		tMemDataIn		<= tMemDataInE;
+		tMemAddr		<= tMemAddrE;
+		tMemOpm			<= tMemOpmE;
+//	end
+
+`else
 	tMemDataIn		<= memDataIn;
 	tMemAddr		<= memAddr;
 	tMemOpm			<= memOpm;
+	tReset			<= reset;
+`endif
 
 	ddrData2		<= ddrData;
 	ddrDqs2			<= ddrDqs;
@@ -1117,19 +1238,22 @@ begin
 //	ddrData2A		<= ddrData;
 //	ddrData2		<= ddrData2A;
 
-	accState	<= accNextState;
-	accCkLo		<= accNextCkLo;
-	accReadBlk	<= accNextReadBlk;
-	accCkCas	<= accNextCkCas;
+	accState		<= accNextState;
+	accCkLo			<= accNextCkLo;
+	accReadBlk		<= accNextReadBlk;
+	accCkCas		<= accNextCkCas;
 
-	accAddr		<= accNextAddr;
-	accRowAddr	<= accNextRowAddr;
-	accColAddr	<= accNextColAddr;
-	accBaAddr	<= accNextBaAddr;
+	accAddr			<= accNextAddr;
+	accRowAddr		<= accNextRowAddr;
+	accColAddr		<= accNextColAddr;
+	accBaAddr		<= accNextBaAddr;
 
-	dreRowAddr	<= dreNextRowAddr;
-	dreBaAddr	<= dreNextBaAddr;
-	dreCount	<= dreNextCount;
+	dreRowAddr		<= dreNextRowAddr;
+	dreBaAddr		<= dreNextBaAddr;
+	dreCount		<= dreNextCount;
+
+	driStillInit	<= driNextStillInit;
+	dreIsZero		<= dreNextIsZero;
 
 	tDdrClk2		<= tDdrClk;
 	tDdrDqs2		<= tDdrDqs;
@@ -1144,7 +1268,7 @@ begin
 	tDdrLastWe		<= tDdrWe;
 	tDdrLastCke		<= tDdrCke;
 
-	if(reset || (regInitSanity!=8'h55))
+	if(tReset || (regInitSanity!=8'h55))
 	begin
 //		driModeOut	<= DDR_DRI_INIT;
 		driInitState	<= 0;
@@ -1156,7 +1280,7 @@ begin
 		driInitState	<= driNextInitState;
 	end
 
-	if(reset)
+	if(tReset)
 	begin
 		regInitSanity	<= 0;
 	end

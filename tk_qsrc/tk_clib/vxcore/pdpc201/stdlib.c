@@ -135,12 +135,12 @@ __PDPCLIB_API__ void *malloc(size_t size)
 
 __PDPCLIB_API__ size_t _msize(void *ptr)
 {
-	return(_msize_fptr(size));
+	return(_msize_fptr(ptr));
 }
 
 __PDPCLIB_API__ size_t malloc_usable_size(void *ptr)
 {
-	return(_msize_fptr(size));
+	return(_msize_fptr(ptr));
 }
 
 __PDPCLIB_API__ void free(void *ptr)
@@ -326,7 +326,8 @@ __PDPCLIB_API__ void qsort(void *base,
 }
 
 
-static unsigned long myseed = 1;
+// static unsigned long myseed = 1;
+static unsigned long long myseed = 1;
 
 __PDPCLIB_API__ void srand(unsigned int seed)
 {
@@ -339,9 +340,12 @@ __PDPCLIB_API__ int rand(void)
 	int ret;
 
 //	myseed = myseed * 1103515245UL + 12345;
-	myseed = myseed * 65521UL + 1;
+//	myseed = myseed * 65521UL + 1;
+//	myseed = myseed * 0x0000F7A83CF9E588ULL + 1;
+	myseed = myseed * 0x0000FC4BA2F7ACABULL + 1;
 //	ret = (int)((myseed >> 16) & 0x8fff);
-	ret = (int)((myseed >> 16) & 0x7fff);
+//	ret = (int)((myseed >> 16) & 0x7fff);
+	ret = (int)((myseed >> 48) & 0x7fff);
 	return (ret);
 }
 

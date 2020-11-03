@@ -14,7 +14,8 @@ module MmuTlb(
 	/* verilator lint_off UNUSED */
 	clock,			reset,
 	regInAddr,		regOutAddr,
-	regInAddrB,		regOutAddrB,	regInData,
+	regInAddrB,		regOutAddrB,	regTlbData,
+	regInData,		regOutData,
 	regInOpm,		regOutOpm,
 	regOutExc,		regOutOK,		regOutNoRwx,
 	regInMMCR,		regInKRR,		regInSR
@@ -29,7 +30,10 @@ input[47:0]		regInAddr;		//input Address (Primary)
 output[47:0]	regOutAddr;		//output Address (Primary)
 input[47:0]		regInAddrB;		//input Address (Secondary)
 output[47:0]	regOutAddrB;	//output Address (Secondary)
-input[127:0]	regInData;		//input data (LDTLB)
+input[127:0]	regTlbData;		//input data (LDTLB)
+
+input[127:0]	regInData;		//input cache line
+output[127:0]	regOutData;		//output cache line
 
 input[4:0]		regInOpm;		//Operation Size/Type
 // output[15:0]	regOutExc;		//Raise Exception
@@ -59,6 +63,10 @@ assign		regOutOpm = tRegOutOpm2;
 // assign		regOutTea = tRegOutTea2;
 assign		regOutExc = { tRegOutTea2[47:0], tRegOutExc2 };
 
+reg[127:0]		tRegOutData;		//output cache line
+reg[127:0]		tRegOutData2;		//output cache line
+assign		regOutData = tRegOutData2;
+
 // assign		regOutAddr = tRegOutAddr;
 // assign		regOutOK = tRegOutOK;
 // assign		regOutExc = tRegOutExc;
@@ -76,6 +84,7 @@ reg[47:0]		regInAddrA;		//input Address
 reg[47:0]		tRegInAddrA;	//input Address
 reg[47:0]		tRegInAddrB;	//input Address
 reg[4:0]		tRegInOpm;		//Operation Size/Type
+reg[127:0]		tRegInData;		//output cache line
 
 `ifdef jx2_expand_tlb
 
@@ -102,15 +111,23 @@ reg[7:0]	tlbHbIxB;
 
 `else
 
-reg[63:0]	tlbBlkHiA[63:0];
-reg[63:0]	tlbBlkHiB[63:0];
-reg[63:0]	tlbBlkHiC[63:0];
-reg[63:0]	tlbBlkHiD[63:0];
+(* ram_style = "distributed" *)
+	reg[63:0]	tlbBlkHiA[63:0];
+(* ram_style = "distributed" *)
+	reg[63:0]	tlbBlkHiB[63:0];
+(* ram_style = "distributed" *)
+	reg[63:0]	tlbBlkHiC[63:0];
+(* ram_style = "distributed" *)
+	reg[63:0]	tlbBlkHiD[63:0];
 
-reg[63:0]	tlbBlkLoA[63:0];
-reg[63:0]	tlbBlkLoB[63:0];
-reg[63:0]	tlbBlkLoC[63:0];
-reg[63:0]	tlbBlkLoD[63:0];
+(* ram_style = "distributed" *)
+	reg[63:0]	tlbBlkLoA[63:0];
+(* ram_style = "distributed" *)
+	reg[63:0]	tlbBlkLoB[63:0];
+(* ram_style = "distributed" *)
+	reg[63:0]	tlbBlkLoC[63:0];
+(* ram_style = "distributed" *)
+	reg[63:0]	tlbBlkLoD[63:0];
 
 reg[63:0]	tlbFlushMask;
 reg[63:0]	tlbNxtFlushMask;
@@ -244,6 +261,10 @@ assign		regInIsLDTLB = (regInOpm==UMEM_OPM_LDTLB);
 wire		regInIsINVTLB;
 assign		regInIsINVTLB = (regInOpm==UMEM_OPM_INVTLB);
 
+reg		regInIsBounce;
+// wire		regInIsBounce;
+// assign		regInIsBounce = (regInOpm==UMEM_OPM_RD_BOUNCE);
+
 MmuChkAcc tlbChkAcc(
 	clock,	reset,
 	regInMMCR,
@@ -258,8 +279,10 @@ MmuChkAcc tlbChkAcc(
 always @*
 begin
 	tlbDoLdtlb		= 0;
-	tRegOutTea		= UV64_XX;
-	tlbAcc			= UV32_XX;
+//	tRegOutTea		= UV64_XX;
+	tRegOutTea		= UV64_00;
+//	tlbAcc			= UV32_XX;
+	tlbAcc			= UV32_00;
 	tlbNxtFlushMask	= tlbFlushMask;
 
 	tlbMmuEnable	= regInMMCR[0];
@@ -274,10 +297,11 @@ begin
 		tlbIs48b	= 1;
 	tlbIs32b		= !tlbIs48b;
 
+	tRegOutData		= tRegInData;
 
 	regInAddrA		= regInAddr[47:0];
 //	if(regInIsLDTLB)
-//		regInAddrA = regInData[111:64];
+//		regInAddrA = regTlbData[111:64];
 
 //	icPageEq		= (tRegInAddrA[31:12] == regInAddrA[31:12]);
 //	icPageEq		= (tRegInAddrA[47:12] == regInAddrA[47:12]);
@@ -290,6 +314,8 @@ begin
 	tAddrIsMMIO		= (tRegInAddrA[31:28] == 4'hF) &&
 		(tAddrIsLo4G || tAddrIsHi4G || tlbIs32b);
 	tAddrIsPhys		= tAddrIsHi4G && !tRegInAddrA[31];
+
+	regInIsBounce	= (tRegInOpm == UMEM_OPM_RD_BOUNCE);
 
 //	tAddrIsLo4G		= (regInAddr[47:32] == 16'h0000);
 //	tAddrIsHi4G		= (regInAddr[47:32] == 16'hFFFF);
@@ -367,8 +393,15 @@ begin
 			tlbHixSelB=regInAddrB[27:22];
 		end
 	endcase
+
+`ifdef jx2_expand_tlb
 	tlbHixA = tlbHixSelA ^ regInAddrA[23:16];
 	tlbHixB = tlbHixSelB ^ regInAddrB[23:16];
+`else
+	tlbHixA = tlbHixSelA[5:0] ^ regInAddrA[21:16];
+	tlbHixB = tlbHixSelB[5:0] ^ regInAddrB[21:16];
+`endif
+
 `endif
 
 `ifndef def_true
@@ -775,6 +808,13 @@ begin
 		$display("TLB(B) %X -> %X", tRegInAddrB, tlbAddrB);
 	end
 `endif
+
+	if(regInIsBounce && !tAddrIsMMIO)
+	begin
+//		$display("TLB: Bounce %X", tRegInAddrA);
+		tRegOutOpm   = UMEM_OPM_LDTLB;
+//		tRegOutOpm   = UMEM_OPM_RD_TILE;
+	end
 	
 	if(regInIsINVTLB || reset)
 	begin
@@ -785,19 +825,25 @@ begin
 `endif
 	end
 
+	if(reset)
+	begin
+		tRegOutExc = 0;
+		tRegOutOpm   = UMEM_OPM_READY;
+	end
+
 	if(regInIsLDTLB)
 	begin
 		$display("MemTile-LDTLB %X %X-%X",
 			regInAddr,
-			regInData[127:64],
-			regInData[ 63: 0]);
+			regTlbData[127:64],
+			regTlbData[ 63: 0]);
 //		tlbDoLdtlb	= 1;
 		tlbDoLdtlb	= icPageReady;
 		tlbNxtFlushMask[tlbHixA] = 0;
 		tRegOutOK = tlbLdtlbOK ?
 			UMEM_OK_OK : UMEM_OK_HOLD;
 
-		tlbLdHdatA = regInData[127:0];
+		tlbLdHdatA = regTlbData[127:0];
 		tlbLdHdatB = tlbHdatA;
 		tlbLdHdatC = tlbHdatB;
 		tlbLdHdatD = tlbHdatC;
@@ -866,11 +912,13 @@ begin
 	tRegOutTea2		<= tRegOutTea;
 	tRegOutOK2		<= tRegOutOK;
 	tRegOutOpm2		<= tRegOutOpm;
+	tRegOutData2	<= tRegOutData;
 
 //	tRegInAddr		<= regInAddr;
 	tRegInAddrA		<= regInAddrA;
 	tRegInAddrB		<= regInAddrB;
 	tRegInOpm		<= regInOpm;
+	tRegInData		<= regInData;
 	tlbFlushMask	<= tlbNxtFlushMask;
 
 	tlbHbIxA		<= tlbHixA;
@@ -884,11 +932,11 @@ begin
 	if(tlbDoLdtlb && !tlbLdtlbOK)
 	begin
 //		$display("Do LdTlb %X-%X Ix=%X",
-//			regInData[127:64], regInData[63:0], tlbHixA);
+//			regTlbData[127:64], regTlbData[63:0], tlbHixA);
 
 `ifndef def_true
-		tlbBlkHiA[tlbHixA]	<= regInData[127:64];
-		tlbBlkLoA[tlbHixA]	<= regInData[ 63: 0];
+		tlbBlkHiA[tlbHixA]	<= regTlbData[127:64];
+		tlbBlkLoA[tlbHixA]	<= regTlbData[ 63: 0];
 		tlbBlkHiB[tlbHixA]	<= tlbHdatA[127:64];
 		tlbBlkLoB[tlbHixA]	<= tlbHdatA[ 63: 0];
 		tlbBlkHiC[tlbHixA]	<= tlbHdatB[127:64];

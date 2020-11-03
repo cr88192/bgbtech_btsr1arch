@@ -781,7 +781,7 @@ int BJX2_JitGetAddrDWord(UAX_Context *jctx, BJX2_Context *cpu)
 	int l0, l1, l2;
 	int i;
 
-#if 1
+#if 0
 //	if(cpu->GetAddrDWord==BJX2_GetAddrDWordFMMU_NoAT)
 	if(1)
 	{
@@ -838,7 +838,7 @@ int BJX2_JitGetAddrWord(UAX_Context *jctx, BJX2_Context *cpu)
 	int l0, l1, l2;
 	int i;
 
-#if 1
+#if 0
 //	if(cpu->GetAddrDWord==BJX2_GetAddrDWordFMMU_NoAT)
 	if(1)
 	{
@@ -895,7 +895,7 @@ int BJX2_JitGetAddrByte(UAX_Context *jctx, BJX2_Context *cpu)
 	int l0, l1, l2;
 	int i;
 
-#if 1
+#if 0
 //	if(cpu->GetAddrDWord==BJX2_GetAddrDWordFMMU_NoAT)
 	if(1)
 	{
@@ -952,7 +952,7 @@ int BJX2_JitGetAddrQWord(UAX_Context *jctx, BJX2_Context *cpu)
 	int l0, l1, l2;
 	int i;
 
-#if 1
+#if 0
 //	if(cpu->GetAddrDWord==BJX2_GetAddrDWordFMMU_NoAT)
 	if(1)
 	{
@@ -1010,7 +1010,7 @@ int BJX2_JitSetAddrQWord(UAX_Context *jctx, BJX2_Context *cpu)
 	int l0, l1, l2;
 	int i;
 
-#if 1
+#if 0
 //	if(cpu->GetAddrDWord==BJX2_GetAddrDWordFMMU_NoAT)
 	if(1)
 	{
@@ -1067,7 +1067,7 @@ int BJX2_JitSetAddrDWord(UAX_Context *jctx, BJX2_Context *cpu)
 	int l0, l1, l2;
 	int i;
 
-#if 1
+#if 0
 //	if(cpu->GetAddrDWord==BJX2_GetAddrDWordFMMU_NoAT)
 	if(1)
 	{
@@ -1123,7 +1123,7 @@ int BJX2_JitSetAddrWord(UAX_Context *jctx, BJX2_Context *cpu)
 	int l0, l1, l2;
 	int i;
 
-#if 1
+#if 0
 //	if(cpu->GetAddrDWord==BJX2_GetAddrDWordFMMU_NoAT)
 	if(1)
 	{
@@ -1179,7 +1179,7 @@ int BJX2_JitSetAddrByte(UAX_Context *jctx, BJX2_Context *cpu)
 	int l0, l1, l2;
 	int i;
 
-#if 1
+#if 0
 //	if(cpu->GetAddrDWord==BJX2_GetAddrDWordFMMU_NoAT)
 	if(1)
 	{
@@ -1264,7 +1264,7 @@ int BJX2_TryJitOpcode(UAX_Context *jctx,
 	if(BJX2_TryJitOpcode_MovMem(jctx, cpu, tr, op)>0)
 		return(1);
 
-//	return(0);
+	return(0);
 
 	if(BJX2_TryJitOpcode_CmpOp(jctx, cpu, tr, op)>0)
 		return(1);
@@ -1642,6 +1642,10 @@ int BJX2_TryJitTrace(BJX2_Context *cpu, BJX2_Trace *tr)
 	UAX_AsmInsnStRegDispReg(jctx, UAX_OP_MOV,
 		UAX_REG_RCCTX, offsetof(BJX2_Context, tr_rnxt), UAX_REG_RAX);
 #endif
+
+	UAX_AsmMovRegImm(jctx, UAX_REG_RAX, (nlint)(tr));
+	UAX_AsmInsnStRegDispReg(jctx, UAX_OP_MOV,
+		UAX_REG_RCCTX, offsetof(BJX2_Context, tr_cur), UAX_REG_RAX);
 
 //	BJX2_JitStoreVMRegImm(jctx, BJX2_REG_PC, (s32)(tr->addr_nxt));
 	BJX2_JitStoreVMRegImm(jctx, BJX2_REG_PC, tr->addr_nxt);

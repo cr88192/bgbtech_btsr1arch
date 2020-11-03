@@ -6,7 +6,9 @@ VCoreUnit *top = new VCoreUnit;
 vluint64_t main_time = 0;
 
 
-// #define CLOCK_200MHZ			//Enable 200MHz Clock
+#define CLOCK_200MHZ			//Enable 200MHz Clock
+// #define CLOCK_200_AS_133		//Scale 200MHz clock to 133MHz
+#define CLOCK_200_AS_150		//Scale 200MHz clock to 150MHz
 
 
 
@@ -948,6 +950,10 @@ int update_uart()
 		return(0);
 	}
 
+	if(tclk==tlclk)
+		return(0);
+	tlclk=tclk;
+
 	bit=top->uartTxD;
 	
 	if(!pos)
@@ -1342,6 +1348,16 @@ int main(int argc, char **argv, char **env)
 		top->clock_100 = (main_time>>1)&1;
 		top->clock_50  = (main_time>>2)&1;
 		ctx->tot_cyc=main_time>>2;
+
+#ifdef CLOCK_200_AS_133
+		top->clock_200 = ((main_time*170)>>8)&1;
+#endif
+
+#ifdef CLOCK_200_AS_150
+		top->clock_200 = ((main_time*192)>>8)&1;
+#endif
+
+//		top->clock_200 = !top->clock_200;  //Debug: Flip Clock Polarity
 #else
 		top->clock_200 = (main_time>>0)&1;
 		top->clock_100 = (main_time>>0)&1;

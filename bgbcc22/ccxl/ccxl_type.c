@@ -1645,6 +1645,7 @@ bool BGBCC_CCXL_TypeVec64P(
 	case CCXL_TY_M64:
 
 	case CCXL_TY_VEC2F:
+	case CCXL_TY_VEC3FQ:
 	case CCXL_TY_VEC4SW:
 	case CCXL_TY_VEC4UW:
 	case CCXL_TY_VEC4H:
@@ -1674,6 +1675,7 @@ bool BGBCC_CCXL_TypeVec128P(
 
 	case CCXL_TY_VEC2D:
 	case CCXL_TY_VEC3F:
+	case CCXL_TY_VEC3FX:
 	case CCXL_TY_VEC4F:
 	case CCXL_TY_QUATF:
 	case CCXL_TY_VEC4SI:
@@ -1712,6 +1714,8 @@ bool BGBCC_CCXL_TypeVecP(
 	{
 	case CCXL_TY_VEC2F:
 	case CCXL_TY_VEC3F:
+	case CCXL_TY_VEC3FQ:
+	case CCXL_TY_VEC3FX:
 	case CCXL_TY_VEC4F:
 	case CCXL_TY_QUATF:
 		return(true);
@@ -2009,6 +2013,7 @@ int BGBCC_CCXL_TypeGetLogicalBaseSize(
 	case CCXL_TY_M128:
 	case CCXL_TY_M128P:
 	case CCXL_TY_VEC3F:
+	case CCXL_TY_VEC3FX:
 	case CCXL_TY_VEC4F:
 	case CCXL_TY_QUATF:
 	case CCXL_TY_VEC2D:
@@ -2019,6 +2024,7 @@ int BGBCC_CCXL_TypeGetLogicalBaseSize(
 
 	case CCXL_TY_M64:
 	case CCXL_TY_VEC2F:
+	case CCXL_TY_VEC3FQ:
 	case CCXL_TY_FCOMPLEX:
 	case CCXL_TY_VEC4SW:
 	case CCXL_TY_VEC4UW:
@@ -2113,6 +2119,7 @@ int BGBCC_CCXL_TypeGetLogicalBaseAlign(
 	case CCXL_TY_M128:
 	case CCXL_TY_M128P:
 	case CCXL_TY_VEC3F:
+	case CCXL_TY_VEC3FX:
 	case CCXL_TY_VEC4F:
 	case CCXL_TY_QUATF:
 	case CCXL_TY_VEC2D:
@@ -2126,6 +2133,7 @@ int BGBCC_CCXL_TypeGetLogicalBaseAlign(
 
 	case CCXL_TY_M64:
 	case CCXL_TY_VEC2F:
+	case CCXL_TY_VEC3FQ:
 	case CCXL_TY_FCOMPLEX:
 	case CCXL_TY_VEC4SW:
 	case CCXL_TY_VEC4UW:
@@ -2423,14 +2431,14 @@ ccxl_status BGBCC_CCXL_TypeDerefType(
 		{
 		case CCXL_TY_VEC2F:		case CCXL_TY_VEC3F:
 		case CCXL_TY_VEC4F:		case CCXL_TY_QUATF:
-		case CCXL_TY_FCOMPLEX:
-		case CCXL_TY_FIMAG:
+		case CCXL_TY_FCOMPLEX:	case CCXL_TY_FIMAG:
+		case CCXL_TY_VEC3FQ:
 			*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_F);
 			return(CCXL_STATUS_YES);
 		case CCXL_TY_VEC2D:		case CCXL_TY_VEC3D:
 		case CCXL_TY_VEC4D:		case CCXL_TY_QUATD:
-		case CCXL_TY_DCOMPLEX:
-		case CCXL_TY_DIMAG:
+		case CCXL_TY_DCOMPLEX:	case CCXL_TY_DIMAG:
+		case CCXL_TY_VEC3FX:
 			*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_D);
 			return(CCXL_STATUS_YES);
 		case CCXL_TY_GCOMPLEX:
@@ -3360,16 +3368,26 @@ ccxl_status BGBCC_CCXL_TypeFromSig(
 		case 'o':	bty=CCXL_TY_VAROBJECT; break;
 		case 'p':	bty=CCXL_TY_M128P; break;
 		case 'q':	bty=CCXL_TY_QUATF; break;
+		case 'r':	bty=CCXL_TY_VARIANT; break;
 		case 's':	bty=CCXL_TY_VARSTRING; break;
-
+		case 't':	bty=CCXL_TY_VARSYMBOL; break;
+		case 'u':	bty=CCXL_TY_HCOMPLEX; break;
 		case 'v':	bty=CCXL_TY_VEC4SW; break;
 		case 'w':	bty=CCXL_TY_VEC4UW; break;
+		case 'x':	bty=CCXL_TY_VAROBJECT; break;
+		case 'y':	bty=CCXL_TY_VARCLASS; break;
+		case 'z':	bty=CCXL_TY_VARARR; break;
 		default:  bty=-1; break;
 		}
 		break;
 	case 'D':
 		switch(s[1])
 		{
+
+		case 'h':	bty=CCXL_TY_VEC3FX; break;
+
+		case 'l':	bty=CCXL_TY_VEC3FQ; break;
+
 //		case 'a': bty=CCXL_TY_VEC2D; break;
 		case 'z': bty=CCXL_TY_VALIST; break;
 		default:  bty=-1; break;

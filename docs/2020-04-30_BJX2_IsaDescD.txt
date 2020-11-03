@@ -1380,6 +1380,10 @@ The GSVF variant will also support packed half and single precision floating-poi
 
 Packed byte operations will not be directly supported by GSV.
 
+Special subsets will be defined:
+* GSVF: Present if both GSV and GFP exist, adds FP-SIMD
+* GSVFX: Present if both GSV and GFPX exist; Supports 128-bit Vectors.
+
 
 === MOVxD (GSV) ===
 
@@ -1457,25 +1461,6 @@ PCSELT.L will select elements between Rm or Ro based on the value of SR.S and SR
 PCSELT.W will select each Word element from Rm or Rn depending on the corresponding P/Q/R/O bits in SR. If set, the word from Rm will be selected, otherwise the value from Ro will be used.
 
 
-=== PLDxxx.x (GSV) (Drop?) ===
-
-* F0nm_1g0B /? PLDSBL.W		Rm, Rn				//Packed Load SB->W (Low)
-* F0nm_1G0B /? PLDUBL.W		Rm, Rn				//Packed Load UB->W (Low)
-* F0nm_1g1B /? PLDSWL.L		Rm, Rn				//Packed Load SW->L (Low)
-* F0nm_1G1B /? PLDUWL.L		Rm, Rn				//Packed Load UW->L (Low)
-* F0nm_1g2B /? PLDBX.W		Rm, Rn				//Packed Load B->W (Dup)
-* F0nm_1G2B /? PLDBH.W		Rm, Rn				//Packed Load B->W (High)
-* F0nm_1g3B /? PLDWX.L		Rm, Rn				//Packed Load W->L (Dup)
-* F0nm_1G3B /? PLDWH.L		Rm, Rn				//Packed Load W->L (High)
-
-Packed Widening Conversion.
-Low operations will copy the source element into the low bits of the destination element, with Sign or Zero extension to fill the high bits.
-
-High operations will copy the source element to the high bits of the destination, padding the low bits with zeroes.
-
-Dup operations will duplicate the source element in both the low and high bits.
-
-
 === PMUL.F 3R (GSVF) ===
 
 * F0nm_2go7  PMUL.F		Rm, Ro, Rn			//(GSVF) Packed FMUL (2x Float)
@@ -1500,26 +1485,6 @@ The vectors are available in 2x or 4x Single, 4x Half, or 2x Double.
 The basic 3R PMULx.W will accept vectors with two 16 bit inputs, and produce a vactor with two 32-bit products.
 
 The LW and HW variants will consume 4-wide input vectors and produce a 4-wide output. The LW variant will keep the low order bits from the result, whereas the HW variant will keep the high-order bits.
-
-
-=== PSTxxx.x (GSV) (Drop) ===
-
-* F0nm_1g4B /? PSTSBL.W		Rm, Rn				//Packed Store W->SB (Low-Sat)
-* F0nm_1G4B /? PSTUBL.W		Rm, Rn				//Packed Store W->UB (Low-Sat)
-* F0nm_1g5B /? PSTSWL.L		Rm, Rn				//Packed Store L->SW (Low-Sat)
-* F0nm_1G5B /? PSTUWL.L		Rm, Rn				//Packed Store L->UW (Low-Sat)
-* F0nm_1g6B /? PSTBL.W		Rm, Rn				//Packed Store W->B (Low)
-* F0nm_1G6B /? PSTBH.W		Rm, Rn				//Packed Store W->B (High)
-* F0nm_1g7B /? PSTWL.L		Rm, Rn				//Packed Store L->W (Low)
-* F0nm_1G7B /? PSTWH.L		Rm, Rn				//Packed Store L->W (High)
-
-Packed narrowing conversion.
-
-Low-sat variants will perform signed or unsigned saturation while narrowing, clamping the value in the low-order bits of the source element to the range for the given type.
-
-Low operations will use the low order bits of the source element as the destination element. These bits will be copied unmodified.
-
-High operations will use the high order bits of the source element as the destination element. These bits will be copied unmodified.
 
 
 === PSUB.x 3R (GSV) ===
@@ -1569,6 +1534,20 @@ Each element will be given as a 2-bit value, with 00 mapping to the low-order bi
 
 This instruction is synthetic.
 Packed Shuffle of DWord element, operating on a logical 128-bit register.
+
+
+=== PSCHxx.W ===
+
+* F0nm_2goA  PSCHEQ.W	Rm, Ro, Rn
+* F0nm_2goB  PSCHNE.W	Rm, Ro, Rn
+
+Checks if the elements in Rm match those in Ro, storing the index of the first match into Rn.
+
+SR.T is updated based on whether or not any match was found.
+
+PSCHEQ will update Rn and SR.T based on the first matching element.
+PSCHNE will update Rn and SR.T based on the first non-matching element.
+
 
 
 === RGB Pack/Unpack ===
@@ -1627,7 +1606,7 @@ Other than the first element, the others will be labeled as Low, Middle, and Hig
 
 GFP will perform FPU operations with GPRs.
 
-The BJX2 FPU aims more to be "sufficient" and "reasonably cheap" than strict adherence to IEEE 754. An FPU is allowed, but not required, to be IEEE 754 conformant.
+The BJX2 FPU aims more to be "sufficient" and "reasonably cheap" than strict adherence to IEEE 754. An FPU is allowed, but not required, to be IEEE 754 compliant.
 
 These will reuse the existing IEEE formats, with some noted divergences:
 * Rounding should be within +/- 2 ULP (rather than 0.5 ULP).
@@ -1645,6 +1624,19 @@ These will reuse the existing IEEE formats, with some noted divergences:
 ** If the value underflows, a zero will be produced.
 
 The nominal format of the BJX2 FPU is 64-bit Double.
+
+
+There will be a second level of FPU instructions under the name GFPX:
+* Adds FMAC
+* Adds Binary128
+** At an implementation defined precision.
+* Rounding is tightened to 0.51 ULP for base ops.
+
+Binary128 support will be defined as, at a minimum, operating internally with a 52 bit mantissa, similar to that of Double. However, the supported exponent range and mantissa may also be larger than those of Double.
+
+For now, the "baseline" Binary128 support will define:
+* 72-bit mantissa (for the portion treated as significant).
+* Full 15 bit exponent range.
 
 
 === FABS (GFP) ===
@@ -1688,7 +1680,7 @@ Compare if the double precision value in Rn is greated than the value in Rm, set
 If either value is NaN, the resulting state of SR.T is undefined.
 
 
-=== FCONV (GFP) ===
+=== FCONV (GFPX) ===
 
 * F2nm_8qjj  PCONV		Rm, #imm8, Rn		//E.i=1, Packed Convert
 * F2nm_8Qjj  PCONVX		Rm, #imm8, Rn		//E.i=1, Packed Convert
@@ -1761,6 +1753,16 @@ Load a half-float immediate and convert to Double.
 Conversion will be the same as that for the register instruction.
 
 
+=== FMAC (GFPX) ===
+
+* F0nm_5goB  FMAC		Rm, Ro, Rn			//(GFPX) FMAC, Rn+=Rm*Ro
+* F0nm_5GoB  FMACX		Xm, Xo, Xn			//(GFPX) FMAC, Binary128
+
+Multiply the double precision value in Ro with the value from Rm and add this to the value in Rn, storing the result in Rn.
+
+FMACX will operate instead on a Binary128 value (partial precision).
+
+
 === FMUL (GFP) ===
 
 * 62nm       FMUL		Rm, Rn			//(GFP) FMUL
@@ -1770,7 +1772,6 @@ Conversion will be the same as that for the register instruction.
 Multiply the double precision value in Ro with the value from Rm and store the resulting value in Rn.
 
 FMULX will operate instead on a Binary128 value.
-This may be partial precision, with the range of mantissa bits supported being implementation defined. If supported, the minimum will be 52 bits.
 
 
 === FNEG (GFP) ===
@@ -1811,7 +1812,6 @@ Conversion to integer will truncate towards zero. Its output will be a 64-bit in
 Subtract the double precision value in Ro from the value from Rm and store the resulting value in Rn.
 
 FSUBX will operate instead on a Binary128 value.
-This may be partial precision, with the range of mantissa bits supported being implementation defined. If supported, the minimum will be 52 bits.
 
 
 == Jumbo Instructions (Optional / Experimental) ==

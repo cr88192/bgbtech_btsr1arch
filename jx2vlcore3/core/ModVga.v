@@ -39,6 +39,9 @@ output		pixLineOdd;
 
 reg[7:0]	cbPwmTab[31:0];
 
+reg[15:0]	tPwmOutA;			//PWM output bits
+reg[15:0]	tPwmOutB;			//PWM output bits
+reg[15:0]	tPwmOutC;			//PWM output bits
 reg[15:0]	tPwmOut;			//PWM output bits
 
 reg[4:0]	tPwmStR;			//PWM State
@@ -144,7 +147,10 @@ reg[7:0]	tPixCy;
 reg[7:0]	tPixCu;
 reg[7:0]	tPixCv;
 
-assign	pwmOut		= tPwmOut;
+// assign	pwmOut		= tPwmOut;
+// assign	pwmOut		= tPwmOutC;
+assign	pwmOut		= tPwmOutA;
+
 assign	pixPosX		= tPixPosX;
 assign	pixPosY		= tPixPosY;
 assign	pixLineOdd	= tPixLineOdd;
@@ -620,6 +626,10 @@ end
 
 always @ (posedge clock)
 begin
+	tPwmOutA	<= tPwmOut;
+	tPwmOutB	<= tPwmOutA;
+	tPwmOutC	<= tPwmOutB;
+
 	tHsync			<= tNextHsync;
 	tVsync			<= tNextVsync;
 

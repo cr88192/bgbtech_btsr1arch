@@ -448,7 +448,8 @@ int BJX2_MemSimAddrL1I(BJX2_Context *ctx, bjx2_addr addr)
 	bjx2_addr t0, t1;
 	int h, p1, p2;
 	
-	if(ctx->use_jit)
+//	if(ctx->use_jit)
+	if(ctx->use_jit || ctx->no_memcost)
 		return(0);
 	
 	if(((addr>>28)&0xF)==0xF)
@@ -467,6 +468,8 @@ int BJX2_MemSimAddrL1I(BJX2_Context *ctx, bjx2_addr addr)
 //		return(0);
 	if((addr>>5)==ctx->mem_l1ih4k[(h<<2)|0])
 		return(0);
+	if((addr>>5)==ctx->mem_l1ih4k[(h<<2)|1])
+		return(0);
 
 	p1=5;
 	p2=24;
@@ -480,7 +483,7 @@ int BJX2_MemSimAddrL1I(BJX2_Context *ctx, bjx2_addr addr)
 
 //	ctx->mem_l1h4k[(h<<2)|3]=ctx->mem_l1h4k[(h<<2)|2];
 //	ctx->mem_l1h4k[(h<<2)|2]=ctx->mem_l1h4k[(h<<2)|1];
-//	ctx->mem_l1h4k[(h<<2)|1]=ctx->mem_l1h4k[(h<<2)|0];
+	ctx->mem_l1h4k[(h<<2)|1]=ctx->mem_l1h4k[(h<<2)|0];
 
 //	ctx->mem_l1ih4k[(h<<2)|0]=addr>>4;
 	ctx->mem_l1ih4k[(h<<2)|0]=addr>>5;
@@ -493,7 +496,9 @@ int BJX2_MemSimAddrL1I(BJX2_Context *ctx, bjx2_addr addr)
 //	h=(addr>>4)&1023;
 //	h=(addr>>4)&2047;
 //	h=(addr>>4)&4095;
-	h=(addr>>4)&8191;
+//	h=(addr>>4)&8191;
+//	h=((addr>>4)^(addr>>17))&4095;
+	h=((addr>>4)^(addr>>17))&8191;
 
 	if((addr>>4)==ctx->mem_l2h32k[(h<<1)|0])
 		return(0);
@@ -533,7 +538,8 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr)
 	bjx2_addr t0, t1;
 	int h, p1, p2;
 	
-	if(ctx->use_jit)
+//	if(ctx->use_jit)
+	if(ctx->use_jit || ctx->no_memcost)
 		return(0);
 	
 	if(((addr>>28)&0xF)==0xF)
@@ -566,7 +572,8 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr)
 //	h=(addr>>5)&63;
 //	h=(addr>>5)&255;
 //	h=(addr>>5)&511;
-	h=((addr>>5)^(addr>>14))&511;
+//	h=((addr>>5)^(addr>>14))&511;
+	h=((addr>>5)^(addr>>13))&255;
 
 //	ctx->mem_cyc+=3;
 	ctx->mem_cyc+=2;
@@ -589,19 +596,21 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr)
 	if((addr>>5)==ctx->mem_l1h4k[(h<<2)|0])
 		return(0);
 
-#if 0
-	if((addr>>4)==ctx->mem_l1h4k[(h<<2)|1])
+#if 1
+//	if((addr>>4)==ctx->mem_l1h4k[(h<<2)|1])
+	if((addr>>5)==ctx->mem_l1h4k[(h<<2)|1])
 	{
-		t0=ctx->mem_l1h4k[(h<<2)|0];
-		t1=ctx->mem_l1h4k[(h<<2)|1];
-		ctx->mem_l1h4k[(h<<2)|0]=t1;
-		ctx->mem_l1h4k[(h<<2)|1]=t0;
+//		t0=ctx->mem_l1h4k[(h<<2)|0];
+//		t1=ctx->mem_l1h4k[(h<<2)|1];
+//		ctx->mem_l1h4k[(h<<2)|0]=t1;
+//		ctx->mem_l1h4k[(h<<2)|1]=t0;
 		return(0);
 	}
 #endif
 	
 #if 0
-	if((addr>>4)==ctx->mem_l1h4k[(h<<2)|2])
+//	if((addr>>4)==ctx->mem_l1h4k[(h<<2)|2])
+	if((addr>>5)==ctx->mem_l1h4k[(h<<2)|2])
 	{
 		t0=ctx->mem_l1h4k[(h<<2)|1];
 		t1=ctx->mem_l1h4k[(h<<2)|2];
@@ -609,7 +618,8 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr)
 		ctx->mem_l1h4k[(h<<2)|2]=t0;
 		return(0);
 	}
-	if((addr>>4)==ctx->mem_l1h4k[(h<<2)|3])
+//	if((addr>>4)==ctx->mem_l1h4k[(h<<2)|3])
+	if((addr>>5)==ctx->mem_l1h4k[(h<<2)|3])
 	{
 		t0=ctx->mem_l1h4k[(h<<2)|2];
 		t1=ctx->mem_l1h4k[(h<<2)|3];
@@ -628,8 +638,15 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr)
 //	p1=9;
 //	p2=45;
 
+//	p1=9;
+//	p2=85;
+
+//	p1=11;
+//	p2=122;
+
 	p1=9;
-	p2=85;
+	p2=94;
+
 
 	ctx->miss_cyc+=p1;
 	ctx->miss_cyc_l1+=p1;
@@ -638,9 +655,9 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr)
 	if(ctx->tr_cur)
 		ctx->tr_cur->acc_pencyc+=p1;
 
-//	ctx->mem_l1h4k[(h<<2)|3]=ctx->mem_l1h4k[(h<<2)|2];
-//	ctx->mem_l1h4k[(h<<2)|2]=ctx->mem_l1h4k[(h<<2)|1];
-//	ctx->mem_l1h4k[(h<<2)|1]=ctx->mem_l1h4k[(h<<2)|0];
+	ctx->mem_l1h4k[(h<<2)|3]=ctx->mem_l1h4k[(h<<2)|2];
+	ctx->mem_l1h4k[(h<<2)|2]=ctx->mem_l1h4k[(h<<2)|1];
+	ctx->mem_l1h4k[(h<<2)|1]=ctx->mem_l1h4k[(h<<2)|0];
 //	ctx->mem_l1h4k[(h<<2)|0]=addr>>4;
 
 	ctx->mem_l1h4k[(h<<2)|0]=addr>>5;
@@ -654,7 +671,9 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr)
 //	h=(addr>>4)&4095;
 //	h=((addr>>4)^(addr>>14))&4095;
 //	h=((addr>>4)^(addr>>16))&4095;
-	h=(addr>>4)&8191;
+//	h=(addr>>4)&8191;
+	h=((addr>>4)^(addr>>17))&8191;
+//	h=((addr>>4)^(addr>>17))&4095;
 
 	if((addr>>4)==ctx->mem_l2h32k[(h<<1)|0])
 		return(0);
@@ -1910,7 +1929,7 @@ int BJX2_MemSetupState(BJX2_Context *ctx)
 	else
 		ctx->MemSpanForAddr=BJX2_MemSpanForAddr32;
 
-	if(!(ctx->regs[BJX2_REG_MMCR]&1) && ctx->use_jit)
+	if(!(ctx->regs[BJX2_REG_MMCR]&1) && (ctx->use_jit || ctx->no_memcost))
 	{
 		if(!(ctx->regs[BJX2_REG_SR]&0x80000000))
 		{

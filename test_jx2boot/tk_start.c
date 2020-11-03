@@ -216,7 +216,7 @@ void __start()
 	TK_FILE *fd;
 	u64 bootgbr;
 	int (*bootptr)();
-	int ci;
+	int ci, cj, ck;
 
 	ci = TK_GetTimeMs();
 //	__debugbreak();
@@ -237,8 +237,16 @@ void __start()
 	
 //	ci=I_GetTime();
 	ci = TK_GetTimeMs();
-
 	printf("%d\n", ci);
+
+//	ci = TK_GetTimeMs();
+	TK_RamBench();
+//	cj = TK_GetTimeMs();
+//	ck = cj-ci;
+//	if(ck>0)
+//	{
+//		printf("memcpy: %d MB/s\n", 1000/ck);
+//	}
 	
 	while(tk_dbg_kbhit())
 		{ tk_dbg_getch(); }

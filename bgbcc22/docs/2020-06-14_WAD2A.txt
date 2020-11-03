@@ -1,12 +1,13 @@
 WAD2(A) is a container format holding a series of 'lumps'.
-Each lump has a 16 character name. It is closely related to the Quake WAD2 format.
+* Each lump has a 16 character name.
+* It is closely related to the Quake WAD2 format.
 
-Header {
-	FOURCC	magic;		//'WAD2'
-	U32		numlumps;	//Number of lumps in the directory.
-	U32		diroffs;	//Offset of directory, in bytes
-	U32		typeoffs;	//Offset of types table
-}
+ Header {
+ 	FOURCC	magic;		//'WAD2'
+ 	U32		numlumps;	//Number of lumps in the directory.
+ 	U32		diroffs;	//Offset of directory, in bytes
+ 	U32		typeoffs;	//Offset of types table
+ }
 
 The header appears at the start of a file, and encodes the location of the directory.
 
@@ -15,15 +16,15 @@ The types table will be an array of FOURCC values encoding types 0x20..0x7F, or 
 If the typeoffs field is set to 0, then no types table is present.
 
 
-DirEnt {
-	U32		offs;		//offset of lump data (in bytes)
-	U32		csize;		//compressed size of lump
-	U32		dsize;		//uncompressed size of lump
-	BYTE	ety;		//entry type
-	BYTE	cmp;		//compression method
-	U16		chain;		//lump chain
-	BYTE	name[16];	//name
-}
+ DirEnt {
+ 	U32		offs;		//offset of lump data (in bytes)
+ 	U32		csize;		//compressed size of lump
+ 	U32		dsize;		//uncompressed size of lump
+ 	BYTE	ety;		//entry type
+ 	BYTE	cmp;		//compression method
+ 	U16		chain;		//lump chain
+ 	BYTE	name[16];	//name
+ }
 
 Entry types:
 * 00: Generic
@@ -79,8 +80,8 @@ This lump has its data packed inside of another lump.
 This may be done to get better data compression for small lumps.
 
 The 'offset' field will be split into two sub-fields:
-  (31:16): Packed Lump Index
-  (15: 0): Offset of the data within the lump.
+* (31:16): Packed Lump Index
+* (15: 0): Offset of the data within the lump.
 
 The lump index will give the index of the lump holding the combined data. Its compression will be applied over the data.
 

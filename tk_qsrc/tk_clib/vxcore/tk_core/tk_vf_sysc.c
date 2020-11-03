@@ -303,5 +303,5 @@ TK_DIRENT *tk_sysc_readdir(TK_DIR *fd)
 	i=tk_syscall(NULL, TK_UMSG_VFREADDIR, &p, ar);
 	if(i<=0)
 		return(NULL);
-	return(i);
+	return(fd->udata2);
 }

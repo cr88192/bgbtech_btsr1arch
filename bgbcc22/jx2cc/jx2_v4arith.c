@@ -4,7 +4,7 @@ int BGBCC_JX2C_LoadVectorField64(
 	ccxl_type type, int ofs,
 	int csreg, int cdreg)
 {
-	int sreg2, dreg2;
+	int sreg2, dreg2, tr0, tr1;
 	int ty, i;
 	
 	ty=type.val;
@@ -19,6 +19,28 @@ int BGBCC_JX2C_LoadVectorField64(
 			i=1;
 			break;
 		case 4:
+			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_FLDCFH, csreg, cdreg);
+			i=1;
+			break;
+
+		/* 1/3/5: XYZ in Vec3FQ */
+		case 1:
+			tr0=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, BGBCC_SH_REGCLS_QGR);
+			BGBCC_JX2_EmitOpRegImmReg(sctx,
+				BGBCC_SH_NMID_SHLDQ, csreg, 10, tr0);
+			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_FLDCF, tr0, cdreg);
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr0);
+			i=1;
+			break;
+		case 3:
+			tr0=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, BGBCC_SH_REGCLS_QGR);
+			BGBCC_JX2_EmitOpRegImmReg(sctx,
+				BGBCC_SH_NMID_SHLDQ, csreg, -10, tr0);
+			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_FLDCF, tr0, cdreg);
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr0);
+			i=1;
+			break;
+		case 5:
 			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_FLDCFH, csreg, cdreg);
 			i=1;
 			break;
@@ -83,7 +105,7 @@ int BGBCC_JX2C_LoadVectorField128(
 	ccxl_type type, int ofs,
 	int csreg, int cdreg)
 {
-	int sreg2, dreg2;
+	int sreg2, dreg2, tr0, tr1;
 	int ty;
 	int i, j;
 	
@@ -127,6 +149,29 @@ int BGBCC_JX2C_LoadVectorField128(
 			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_FLDCFH, sreg2+1, cdreg);
 			i=1;
 			break;
+
+#if 0
+		case 1:
+			tr0=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, BGBCC_SH_REGCLS_QGR);
+			BGBCC_JX2_EmitOpRegImmReg(sctx,
+				BGBCC_SH_NMID_SHLDQ, sreg2+0, 10, tr0);
+			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_FLDCF, tr0, cdreg);
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr0);
+			i=1;
+			break;
+		case 3:
+			tr0=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, BGBCC_SH_REGCLS_QGR);
+			BGBCC_JX2_EmitOpRegImmReg(sctx,
+				BGBCC_SH_NMID_SHLDQ, sreg2+0, -10, tr0);
+			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_FLDCF, tr0, cdreg);
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr0);
+			i=1;
+			break;
+		case 5:
+			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_FLDCFH, sreg2+0, cdreg);
+			i=1;
+			break;
+#endif
 		}
 		if(i>0)return(i);
 	}
@@ -144,6 +189,105 @@ int BGBCC_JX2C_LoadVectorField128(
 			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_MOV, sreg2+1, cdreg);
 			i=1;
 			break;
+
+		/* 1/5/9: Vec3FX */
+
+#if 0
+		case 1:
+			tr0=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, BGBCC_SH_REGCLS_QGR);
+			tr1=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, BGBCC_SH_REGCLS_QGR);
+			BGBCC_JX2_EmitOpRegImmReg(sctx,
+				BGBCC_SH_NMID_SHLDQ, sreg2+1, 22, tr0);
+			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_FLDCF, sreg2+0, tr1);
+			BGBCC_JX2_EmitOpRegImmReg(sctx,
+				BGBCC_SH_NMID_SHLDQ, tr0, -35, tr0);
+			BGBCC_JX2_EmitOpRegRegReg(sctx,
+				BGBCC_SH_NMID_OR, tr0, tr1, cdreg);
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr0);
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr1);
+			i=1;
+			break;
+		case 5:
+			tr0=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, BGBCC_SH_REGCLS_QGR);
+			tr1=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, BGBCC_SH_REGCLS_QGR);
+			BGBCC_JX2_EmitOpRegImmReg(sctx,
+				BGBCC_SH_NMID_SHLDQ, sreg2+1, 12, tr0);
+			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_FLDCFH, sreg2+0, tr1);
+			BGBCC_JX2_EmitOpRegImmReg(sctx,
+				BGBCC_SH_NMID_SHLDQ, tr0, -35, tr0);
+			BGBCC_JX2_EmitOpRegRegReg(sctx,
+				BGBCC_SH_NMID_OR, tr0, tr1, cdreg);
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr0);
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr1);
+			i=1;
+			break;
+		case 9:
+			tr0=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, BGBCC_SH_REGCLS_QGR);
+			tr1=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, BGBCC_SH_REGCLS_QGR);
+			BGBCC_JX2_EmitOpRegImmReg(sctx,
+				BGBCC_SH_NMID_SHLDQ, sreg2+1, 2, tr0);
+			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_FLDCF, sreg2+1, tr1);
+			BGBCC_JX2_EmitOpRegImmReg(sctx,
+				BGBCC_SH_NMID_SHLDQ, tr0, -35, tr0);
+			BGBCC_JX2_EmitOpRegRegReg(sctx,
+				BGBCC_SH_NMID_OR, tr0, tr1, cdreg);
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr0);
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr1);
+			i=1;
+			break;
+#endif
+
+#if 0
+		case 1:
+			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_MOV, sreg2+0, cdreg);
+			i=1;
+			break;
+		case 5:
+			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_MOV, sreg2+1, cdreg);
+			i=1;
+			break;
+		case 9:
+			tr0=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, BGBCC_SH_REGCLS_QGR);
+			tr1=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, BGBCC_SH_REGCLS_QGR);
+
+			BGBCC_JX2_EmitOpRegImmReg(sctx,
+				BGBCC_SH_NMID_SHLDQ, sreg2+0, 43, tr0);
+			BGBCC_JX2_EmitOpRegImmReg(sctx,
+				BGBCC_SH_NMID_SHLDQ, sreg2+1, 43, tr1);
+			BGBCC_JX2_EmitOpRegImmReg(sctx,
+				BGBCC_SH_NMID_SHLDQ, tr0, -21, tr0);
+			BGBCC_JX2_EmitOpRegRegReg(sctx,
+				BGBCC_SH_NMID_OR, tr0, tr1, cdreg);
+
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr0);
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr1);
+			i=1;
+			break;
+#endif
+
+#if 1
+		case 1:
+			BGBCC_JX2_EmitOpRegImmReg(sctx,
+				BGBCC_SH_NMID_SHLDQ, sreg2+0, 21, cdreg);
+//			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_MOV, sreg2+0, cdreg);
+			i=1;
+			break;
+		case 5:
+			tr0=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, BGBCC_SH_REGCLS_QGR);
+			BGBCC_JX2_EmitOpRegImmReg(sctx,
+				BGBCC_SH_NMID_SHLDQ, sreg2+0, -22, tr0);
+			BGBCC_JX2_EmitOpRegImmReg(sctx,
+				BGBCC_SH_NMID_SHLDQ, sreg2+1, 42, cdreg);
+			BGBCC_JX2_EmitOpRegReg(sctx,
+				BGBCC_SH_NMID_OR, tr0, cdreg);
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr0);
+			i=1;
+			break;
+		case 9:
+			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_MOV, sreg2+1, cdreg);
+			i=1;
+			break;
+#endif
 		}
 		if(i>0)return(i);
 	}
@@ -393,6 +537,19 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVReg_Vec64F(
 			case CCXL_BINOP_MOD:	s0="__vnf_v4w_mulul"; break;
 		}
 		break;
+
+	case CCXL_TY_VEC3FQ:
+		switch(opr)
+		{
+			case CCXL_BINOP_ADD:	s0="__vnf_v3fq_add"; break;
+			case CCXL_BINOP_SUB:	s0="__vnf_v3fq_sub"; break;
+			case CCXL_BINOP_MUL:	s0="__vnf_v3fq_mul"; break;
+			case CCXL_BINOP_DIV:	s0="__vnf_v3fq_div"; break;
+			case CCXL_BINOP_MOD:	s0="__vnf_v3fq_cross"; break;
+			case CCXL_BINOP_XOR:	s0="__vnf_v3fq_dot"; break;
+		}
+		break;
+
 	case CCXL_TY_FCOMPLEX:
 	case CCXL_TY_FIMAG:
 		switch(opr)
@@ -594,6 +751,18 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVReg_Vec128F(
 			case CCXL_BINOP_DIV:	s0="__vnf_v4f_div"; break;
 			case CCXL_BINOP_MOD:	s0="__vnf_v4f_cross"; break;
 			case CCXL_BINOP_XOR:	s0="__vnf_v4f_dot"; break;
+		}
+		break;
+
+	case CCXL_TY_VEC3FX:
+		switch(opr)
+		{
+			case CCXL_BINOP_ADD:	s0="__vnf_v3fx_add"; break;
+			case CCXL_BINOP_SUB:	s0="__vnf_v3fx_sub"; break;
+			case CCXL_BINOP_MUL:	s0="__vnf_v3fx_mul"; break;
+			case CCXL_BINOP_DIV:	s0="__vnf_v3fx_div"; break;
+			case CCXL_BINOP_MOD:	s0="__vnf_v3fx_cross"; break;
+			case CCXL_BINOP_XOR:	s0="__vnf_v3fx_dot"; break;
 		}
 		break;
 

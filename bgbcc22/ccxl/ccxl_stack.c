@@ -3985,6 +3985,7 @@ ccxl_status BGBCC_CCXL_StackPushConstVec4F(
 {
 	ccxl_register sreg;
 	u32 i0, i1, i2, i3;
+	u64 j0, j1, j2, j3;
 	u64 vi, vj;
 	BGBCC_CCXL_DebugPrintStackLLn(ctx, "PushConstV4F", __FILE__, __LINE__);
 
@@ -4024,6 +4025,47 @@ ccxl_status BGBCC_CCXL_StackPushConstVec4F(
 		vi=((u64)i0) | (((u64)i1)<<32);
 		vj=((u64)i2) | (((u64)i3)<<32);
 		break;
+
+	case CCXL_REGVEC_TY_V3FQ:
+		*(float *)(&i0)=x0;
+		*(float *)(&i1)=x1;
+		*(float *)(&i2)=x2;
+		vi=	((i0&0x00000000FFFFFC00ULL)>>10) |
+			((i1&0x00000000FFFFFC00ULL)<<10) |
+			((i2&0x00000000FFFFFC00ULL)<<32);
+		break;
+
+	case CCXL_REGVEC_TY_V3FX:
+#if 0
+		*(double *)(&j0)=x0;
+		*(double *)(&j1)=x1;
+		*(double *)(&j2)=x2;
+		i0=((j0>>32)&0xC0000000U) | ((j0>>29)&0x3FFFFFFFU);
+		i1=((j1>>32)&0xC0000000U) | ((j1>>29)&0x3FFFFFFFU);
+		i2=((j2>>32)&0xC0000000U) | ((j2>>29)&0x3FFFFFFFU);
+		i3=	(((j0>>25)&0x3FF)<< 0) |
+			(((j1>>25)&0x3FF)<<10) |
+			(((j2>>25)&0x3FF)<<20);
+		vi=((u64)i0) | (((u64)i1)<<32);
+		vj=((u64)i2) | (((u64)i3)<<32);
+		break;
+#endif
+
+#if 1
+		*(double *)(&j0)=x0;
+		*(double *)(&j1)=x1;
+		*(double *)(&j2)=x2;
+		j0 &= 0xFFFFFFFFFFC00000ULL;
+		j1 &= 0xFFFFFFFFFFC00000ULL;
+		j2 &= 0xFFFFFFFFFFC00000ULL;
+//		vi=(j0>>21)|(j1<<22);
+//		vj=(j2    )|(j1>>22);
+		i0=(j2>>22)&0x0001FFFFFU;
+		i1=(j2>>43)&0x0001FFFFFU;
+		vi=j0 | i0;
+		vj=j1 | i1;
+		break;
+#endif
 	};
 
 //	BGBCC_CCXL_GetRegForDoubleValue(ctx, &sreg, val);

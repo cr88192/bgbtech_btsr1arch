@@ -866,7 +866,7 @@ int main(int argc, char *argv[])
 	char *ifn;
 	double tsec;
 	int t0, t1, tt, fbtt, tvus;
-	int ifmd, rdsz, mhz, usejit, swapsz, chkbss;
+	int ifmd, rdsz, mhz, usejit, swapsz, chkbss, nomemcost;
 	int i;
 	
 	rd_n_add=0;
@@ -877,7 +877,7 @@ int main(int argc, char *argv[])
 //	ifmd=0; rdsz=256;
 	ifmd=0; rdsz=512;
 	swapsz=384;
-	mhz=100; usejit=0;
+	mhz=100; usejit=0; nomemcost=0;
 	chkbss=0;
 	for(i=1; i<argc; i++)
 	{
@@ -899,6 +899,11 @@ int main(int argc, char *argv[])
 				{ usejit=1; continue; }
 			if(!strcmp(argv[i], "--nojit"))
 				{ usejit=2; continue; }
+
+			if(!strcmp(argv[i], "--memcost"))
+				{ nomemcost=2; continue; }
+			if(!strcmp(argv[i], "--nomemcost"))
+				{ nomemcost=3; continue; }
 
 			if(!strcmp(argv[i], "--chkbss"))
 				{ chkbss=1; continue; }
@@ -994,18 +999,28 @@ int main(int argc, char *argv[])
 	ctx_c2->core_id=1;
 
 	ctx->use_jit=0;
+	ctx->no_memcost=0;
 	if(mhz>200)
-		ctx->use_jit=1;
+//		ctx->use_jit=1;
+		ctx->no_memcost=1;
 
 #if defined(ARM) || defined(ARM64)
-	ctx->use_jit=1;
-	ctx_c2->use_jit=1;
+//	ctx->use_jit=1;
+//	ctx_c2->use_jit=1;
+	ctx->no_memcost=1;
+	ctx_c2->no_memcost=1;
 #endif
 
 	if(usejit)
 	{
 		ctx->use_jit=(usejit&1);
 		ctx_c2->use_jit=(usejit&1);
+	}
+
+	if(nomemcost)
+	{
+		ctx->no_memcost=(nomemcost&1);
+		ctx_c2->no_memcost=(nomemcost&1);
 	}
 
 //	ctx->ttick_hk=3052;

@@ -849,3 +849,52 @@ void BJX2_Op_PCMPGTH_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	if(tv0[3]>tv1[3])	ctx->regs[BJX2_REG_SR]|= 128;
 	else				ctx->regs[BJX2_REG_SR]&=~128;
 }
+
+
+void BJX2_Op_PSCHEQW_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+	u16 sa0, sb0, sc0;
+	u16 sa1, sb1, sc1;
+	u16 sa2, sb2, sc2;
+	u16 sa3, sb3, sc3;
+	int nc;
+
+	va=ctx->regs[op->ro];
+	vb=ctx->regs[op->rm];
+	sa0=(u16)(va);	sa1=(u16)(va>>16);	sa2=(u16)(va>>32);	sa3=(u16)(va>>48);
+	sb0=(u16)(vb);	sb1=(u16)(vb>>16);	sb2=(u16)(vb>>32);	sb3=(u16)(vb>>48);
+
+	if(sa0==sb0)		{ nc=0; }
+	else if(sa1==sb1)	{ nc=1; }
+	else if(sa2==sb2)	{ nc=2; }
+	else if(sa3==sb3)	{ nc=3; }
+	else				{ nc=4; }
+	ctx->regs[op->rn]=nc;
+	if(nc<4)	ctx->regs[BJX2_REG_SR]|= 1;
+	else		ctx->regs[BJX2_REG_SR]&=~1;
+}
+
+void BJX2_Op_PSCHNEW_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+	u16 sa0, sb0, sc0;
+	u16 sa1, sb1, sc1;
+	u16 sa2, sb2, sc2;
+	u16 sa3, sb3, sc3;
+	int nc;
+
+	va=ctx->regs[op->ro];
+	vb=ctx->regs[op->rm];
+	sa0=(u16)(va);	sa1=(u16)(va>>16);	sa2=(u16)(va>>32);	sa3=(u16)(va>>48);
+	sb0=(u16)(vb);	sb1=(u16)(vb>>16);	sb2=(u16)(vb>>32);	sb3=(u16)(vb>>48);
+
+	if(sa0!=sb0)		{ nc=0; }
+	else if(sa1!=sb1)	{ nc=1; }
+	else if(sa2!=sb2)	{ nc=2; }
+	else if(sa3!=sb3)	{ nc=3; }
+	else				{ nc=4; }
+	ctx->regs[op->rn]=nc;
+	if(nc<4)	ctx->regs[BJX2_REG_SR]|= 1;
+	else		ctx->regs[BJX2_REG_SR]&=~1;
+}

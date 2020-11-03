@@ -183,7 +183,7 @@ int BGBCC_JX2C_EmitLdixVRegVRegImm(
 	ccxl_type tty, sty;
 	char *s0;
 	int csreg, ctreg, cdreg, ctreg2;
-	int nm1, nm2, nm3, nm4, ty, sz;
+	int nm1, nm2, nm3, nm4, ty, sz, ofs;
 	int i, j, k;
 
 	ty=type.val;
@@ -286,7 +286,13 @@ int BGBCC_JX2C_EmitLdixVRegVRegImm(
 		csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, sreg);
 		cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dreg);
 		
-		BGBCC_JX2C_LoadVectorField128(ctx, sctx, type, imm*sz, csreg, cdreg);
+		ofs=imm*sz;
+		if(sty.val==CCXL_TY_VEC3FX)
+		{
+			ofs=imm*4+1;
+		}
+		
+		BGBCC_JX2C_LoadVectorField128(ctx, sctx, type, ofs, csreg, cdreg);
 
 		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
 		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, sreg);
@@ -298,7 +304,13 @@ int BGBCC_JX2C_EmitLdixVRegVRegImm(
 		csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, sreg);
 		cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dreg);
 		
-		BGBCC_JX2C_LoadVectorField64(ctx, sctx, type, imm*sz, csreg, cdreg);
+		ofs=imm*sz;
+		if(sty.val==CCXL_TY_VEC3FQ)
+		{
+			ofs=imm*2+1;
+		}
+
+		BGBCC_JX2C_LoadVectorField64(ctx, sctx, type, ofs, csreg, cdreg);
 
 		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
 		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, sreg);

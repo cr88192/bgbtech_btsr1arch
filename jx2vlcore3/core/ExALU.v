@@ -168,6 +168,7 @@ reg[64:0]	tSub3A1;
 
 reg[32:0]	tResult1A;
 reg			tResult1T;
+reg			tResultw1T;
 
 reg[32:0]	tResult1B;
 reg			tResult1S;
@@ -608,6 +609,7 @@ begin
 	tResult2A=UV65_XX;
 	tResult1T=regInSrT;
 	tResult2T=regInSrT;
+	tResultw1T=regInSrT;
 
 	tResult1B=UV33_XX;
 	tResult1S=regInSrS;
@@ -716,6 +718,17 @@ begin
 			tResult1Q=!tSub1WZF_B;
 			tResult1R=!tSub1WZF_C;
 			tResult1O=!tSub1WZF_D;
+			
+			tResultw1T =
+				tResult1P || tResult1Q ||
+				tResult1R || tResult1O ;
+			casez( { tResult1O, tResult1R, tResult1Q, tResult1P } )
+				4'bzzz1: tResult1W = { 29'h0, 4'h0};
+				4'bzz10: tResult1W = { 29'h0, 4'h1};
+				4'bz100: tResult1W = { 29'h0, 4'h2};
+				4'b1000: tResult1W = { 29'h0, 4'h3};
+				4'b0000: tResult1W = { 29'h0, 4'h4};
+			endcase
 		end
 		4'h9: begin		/* CMPHS */
 //			tResult1A=UV33_XX;
@@ -776,6 +789,14 @@ begin
 			tResult1Q=tSub1WZF_B;
 			tResult1R=tSub1WZF_C;
 			tResult1O=tSub1WZF_D;
+			
+			casez( { tResult1O, tResult1R, tResult1Q, tResult1P } )
+				4'bzzz1: tResult1W = { 29'h0, 4'h0};
+				4'bzz10: tResult1W = { 29'h0, 4'h1};
+				4'bz100: tResult1W = { 29'h0, 4'h2};
+				4'b1000: tResult1W = { 29'h0, 4'h3};
+				4'b0000: tResult1W = { 29'h0, 4'h4};
+			endcase
 		end
 		4'hD: begin		/* CMPHI */
 //			tResult1A=UV33_XX;

@@ -1327,8 +1327,8 @@ F0zz Instruction Block:
 ** F0nm_2Go8  MOVLD		Rm, Ro, Rn			//(GSV) MOV, Low DWords
 ** F0nm_2go9  MOVHLD	Rm, Ro, Rn			//(GSV) MOV, High and Low DWords
 ** F0nm_2Go9  MOVLHD	Rm, Ro, Rn			//(GSV) MOV, Low and High DWords
-** F0nm_2goA  -
-** F0nm_2goB  -
+** F0nm_2goA  PSCHEQ.W	Rm, Ro, Rn			//(GSV) Check if Rm contains Ro
+** F0nm_2goB  PSCHNE.W	Rm, Ro, Rn			//(GSV) Check if Rm contains Ro
 ** F0nm_2goC  -
 ** F0nm_2goD  PADD.H	Rm, Ro, Rn			//(GSVF) Packed FADD (4x Half)
 ** F0nm_2GoD  PADDX.D	Xm, Xo, Xn			//(GSVFX) Packed FADD (2x Double)
@@ -1452,8 +1452,8 @@ F0zz Instruction Block:
 ** F0nm_5Go9  FSUBX		Xm, Xo, Xn			//(GFPX) FSUB, Binary128
 ** F0nm_5goA  FMUL		Rm, Ro, Rn			//(GFP) FMUL
 ** F0nm_5GoA  FMULX		Xm, Xo, Xn			//(GFPX) FMUL, Binary128
-** F0nm_5goB / RGB5AVG	Rm, Ro, Rn			//(RGB555) Average
-** F0nm_5GoB / RGB5MOD	Rm, Ro, Rn			//(RGB555) Modulate
+** F0nm_5goB  FMAC		Rm, Ro, Rn			//(GFPX) FMAC, Rn+=Rm*Ro
+** F0nm_5GoB  FMACX		Xm, Xo, Xn			//(GFPX) FMAC, Binary128
 ** F0nm_5goC  ADDS.L	Rm, Ro, Rn			//Rn=Rm+Ro, ADD 32-bit, Sign Extend
 ** F0nm_5GoC  ADDU.L	Rm, Ro, Rn			//Rn=Rm+Ro, ADD 32-bit, Zero Extend
 ** F0nm_5goD  SUBS.L	Rm, Ro, Rn			//Rn=Rm-Ro, ADD 32-bit, Sign Extend
@@ -1464,10 +1464,14 @@ F0zz Instruction Block:
 ** F0nm_5GoF  MULU.W	Rm, Imm5u, Rn		//(MULW) Zx 16b Mul (16*16->32)
 
 * F0zz_6zzz
-* F0zz_7zzz
-* F0zz_8zzz
 
-* F0ez_9zzz (Old FPU Block, Drop / Reserved )
+* F0zz_7zzz
+*** F0nm_7ez8  (2R Block)
+*** ...
+*** F0nm_7ezF  (2R Block)
+
+* F0zz_8zzz
+* F0ez_9zzz
 
 * F0dd_Addd
 * F0dd_Bddd
@@ -1549,13 +1553,13 @@ F2zz Instruction Block  (Imm9 Block):
 
 * F2nm_8pjj  SHADQ		Rm, #imm8, Rn		//E.i=0
 * F2nm_8Pjj  SHAD.Q		Rm, #imm8, Rn		//E.i=0
-* F2nm_8qjj  PSHUF.B	Rm, #imm8, Rn		//E.i=1
-* F2nm_8Qjj  PSHUF.W	Rm, #imm8, Rn		//E.i=1
+* F2nm_8qjj  PSHUF.B	Rm, #imm8, Rn		//(GSV) E.i=1
+* F2nm_8Qjj  PSHUF.W	Rm, #imm8, Rn		//(GSV) E.i=1
 
 * F2nm_9pjj  SHLD		Rm, #imm8, Rn		//E.i=0
 * F2nm_9Pjj  SHLD.Q		Rm, #imm8, Rn		//E.i=0
-* F2nm_8qjj  PCONV		Rm, #imm8, Rn		//E.i=1, Packed Convert
-* F2nm_8Qjj  PCONVX		Rm, #imm8, Rn		//E.i=1, Packed Convert
+* F2nm_8qjj  PCONV		Rm, #imm8, Rn		//(GSVX) E.i=1, Packed Convert
+* F2nm_8Qjj  PCONVX		Rm, #imm8, Rn		//(GSVX) E.i=1, Packed Convert
 
 * F2nz_Aejj  -
 * F2nz_Bejj  -
@@ -1693,6 +1697,19 @@ Use with the F0 block will depend on the instruction:
 
 
 Use of two jumbo prefixes followed by an F8-block instruction will encode an instruction with a 64-bit immediate.
+
+
+==== Jumbo Op64 ====
+
+Possible:
+Jumbo with certain blocks may escape into an alternate set of encoding spaces.
+
+* FEZZ_iiii_F0nm_AeiZ  "OP Rm, Imm21, Rn"
+* FEZZ_iiii_F0nm_BeoZ  "OP Rm, Ro, Imm16, Rn"
+
+* FEZZ_zzzz_F0nm_3eo8 ? "OP Rm, Ro, Rn" 
+* ..
+* FEZZ_zzzz_F0nm_3eoF ? "OP Rm, Ro, Rn" 
 
 
 ==== Jumbo Op48 ====

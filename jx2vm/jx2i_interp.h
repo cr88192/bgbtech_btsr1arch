@@ -393,17 +393,22 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_PCMPGTF		0xCD		//
 #define BJX2_NMID_PCMPEQW		0xCE		//
 #define BJX2_NMID_PCMPEQL		0xCF		//
+
 #define BJX2_NMID_PCMPHIW		0xD0		//
 #define BJX2_NMID_PCMPGTW		0xD1		//
 #define BJX2_NMID_PCMPHIL		0xD2		//
 #define BJX2_NMID_PCMPGTL		0xD3		//
-
 #define BJX2_NMID_FADDX			0xD4		//
 #define BJX2_NMID_FSUBX			0xD5		//
 #define BJX2_NMID_FMULX			0xD6		//
 #define BJX2_NMID_PCONV			0xD7		//
 #define BJX2_NMID_FCMPXEQ		0xD8		//
 #define BJX2_NMID_FCMPXGT		0xD9		//
+#define BJX2_NMID_PSCHEQW		0xDA		//
+#define BJX2_NMID_PSCHNEW		0xDB		//
+
+#define BJX2_NMID_JADD			0xDC		//
+
 
 #define BJX2_FMID_NONE			0x00		//?
 #define BJX2_FMID_REG			0x01		//Rn
@@ -584,6 +589,7 @@ BJX2_Trace *tr_rjmp;		//Trace jmpnext (Runtime)
 u32 pclog[64];
 byte pclogrov;
 
+byte no_memcost;
 byte use_jit;
 byte wexmd;
 byte v_wexmd;

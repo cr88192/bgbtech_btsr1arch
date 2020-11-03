@@ -2257,7 +2257,6 @@ char *BGBCC_CCXL_VarTypeString_FlattenName(BGBCC_TransState *ctx,
 			{ *t++='D'; *t++='j'; }
 
 		if(!strcmp(s, "vec2d"))
-//			{ *t++='D'; *t++='a'; }
 			{ *t++='C'; *t++='h'; }
 
 		if(!strcmp(s, "vec3d"))
@@ -2266,6 +2265,11 @@ char *BGBCC_CCXL_VarTypeString_FlattenName(BGBCC_TransState *ctx,
 			{ *t++='D'; *t++='c'; }
 		if(!strcmp(s, "quatd"))
 			{ *t++='D'; *t++='q'; }
+
+		if(!strcmp(s, "vec3fx") || !strcmp(s, "vec3xf"))
+			{ *t++='D'; *t++='h'; }
+		if(!strcmp(s, "vec3fq"))
+			{ *t++='D'; *t++='l'; }
 
 		*t=0;
 	}

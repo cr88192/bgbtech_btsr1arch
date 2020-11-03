@@ -348,6 +348,7 @@ byte *ram_base;		//ram base (ramdisk)
 byte *ram_end;		//ram end (ramdisk)
 byte *ram_ofs;		//ram offset (ramdisk)
 int ifd;			//file handle
+int ipos;			//directory position
 s64 ofs;			//current file offset
 s64 size;			//file size
 };
@@ -432,6 +433,7 @@ short ystr;			//Y stride (pixels)
 #include <tk_keys.h>
 #include <tk_romfcn.h>
 #include <tk_pgmimg.h>
+#include <tk_wadimg.h>
 
 u32 __float32_getbits(float f);
 float __float32_frombits(u32 f);

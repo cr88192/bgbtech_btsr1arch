@@ -104,11 +104,13 @@ wire[47:0]		tTlbAddrB;
 wire[63:0]		tTlbExc;
 wire[1:0]		tTlbOK;
 wire[4:0]		tTlbOpm;
+wire[127:0]		tTlbDataOut;	//Memory Data Out
 
 assign	memAddr		= tTlbAddr;
 assign	memAddrB	= tTlbAddrB;
 assign	memOpm		= tTlbOpm;
-assign	memDataOut	= tMemDataOut;
+// assign	memDataOut	= tMemDataOut;
+assign	memDataOut	= tTlbDataOut;
 
 `else
 
@@ -138,6 +140,7 @@ MmuTlb	tlb(
 	clock,			reset,
 	tMemAddr,		tTlbAddr,
 	tMemAddrB,		tTlbAddrB,	tTlbLdtlbData,
+	tMemDataOut,	tTlbDataOut,
 	tMemOpm,		tTlbOpm,
 	tTlbExc,		tTlbOK,		tMemAccNoRwx,
 	regInMmcr,		regInKrr,
@@ -270,7 +273,7 @@ begin
 			(dfMemAddr[1]) ? 4'h2 : 4'h1 };
 	end
 
-	if((tIfNzOpm && !tLatchDc) || tLatchIc)
+	if(((tIfNzOpm && !tLatchDc) || tLatchIc) && !reset)
 	begin
 //		$display("L1$, Latch I$, A=%X Opm=%X, OK=%d",
 //			ifMemAddr, ifMemOpm, memOK);
@@ -296,7 +299,7 @@ begin
 			tRegOutExc = { ifMemAddr, 16'h8003 };
 	end
 	else
-		if((tDfNzOpm && !tLatchIc) || tLatchDc)
+		if(((tDfNzOpm && !tLatchIc) || tLatchDc) && !reset)
 	begin
 //		$display("L1$, Latch D$, Opm=%X", dfMemOpm);
 
@@ -338,7 +341,7 @@ begin
 		dfMemNoRwx[5]=tTlbExc[15];
 	end
 
-	if(memOK==UMEM_OK_FAULT)
+	if((memOK==UMEM_OK_FAULT) && !reset)
 	begin
 		if(!tMsgLatch)
 		begin
@@ -351,7 +354,7 @@ begin
 		tRegOutExc = { tMemAddr, 16'h8000 };
 	end
 	
-	if(tTlbExc[15])
+	if(tTlbExc[15] && !reset)
 	begin
 //		$display("L1A TLB EXC %X", tTlbExc);
 		tRegOutExc = tTlbExc;

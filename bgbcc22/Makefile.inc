@@ -138,7 +138,7 @@ DEP_HDRS=\
 	include/bgbcc_auto.h
 
 LIBS=
-APPS=bgbcc$(BINSUF)
+APPS=bgbcc$(BINSUF) mkwad2list$(BINSUF) mkwad4list$(BINSUF)
 
 all: libs apps
 
@@ -164,6 +164,12 @@ include/bgbcc_auto.h: autohead$(BINSUF) $(META_SRCS)
 bgbcc$(BINSUF): $(DEP_HDRS) $(META_SRCS)
 	$(CC_OUTTOOL)bgbcc$(BINSUF) bgbcc_multi.c \
 		$(CFLAGS_META) $(LDFLAGS_META)
+
+mkwad2list$(BINSUF): wadtool/mkwad2list.c
+	$(CC_OUTTOOL)mkwad2list$(BINSUF) wadtool/mkwad2list.c
+
+mkwad4list$(BINSUF): wadtool/mkwad4list.c
+	$(CC_OUTTOOL)mkwad4list$(BINSUF) wadtool/mkwad4list.c
 		
 
 clean:

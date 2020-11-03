@@ -1,0 +1,207 @@
+WAD4 Idea:
+* Format intended for basic VFS use.
+* It will be intended for primarily read-only storage of directory trees.
+** Contents will typically be LZ compressed.
+** May cluster small files into combined chunks.
+** May split larger files into multiple smaller fragments.
+** The nominal chunking size and fragment size are likely to be equivalent.
+
+For now, will define 128K as the nominal chunk size.
+* Files larger than 128K are to be fragmented.
+* Smaller files may be coalesced into larger chunks.
+
+
+=== Header ===
+
+
+A WAD4 Image will begin with a WAD4 File Header:
+
+ HeaderW4 {
+ 	FOURCC	magic;		//00: 'WAD4'
+ 	U32		numlumps;	//04: Number of lumps in the directory.
+ 	U32		diroffs;	//08: Offset of Directory
+ 	U32		hashoffs;	//0C: Offset of Directory Hash.
+ 	U32		bmpoffs;	//10: Offset of Allocation Bitmap.
+ 	U32		bmpsize;	//14: Bitmap Size
+ 	U32		resv4;		//18: Reserved
+ 	U32		resv5;		//1C: Reserved
+ 	//...
+ }
+
+Header Fields:
+* magic:
+** Identifies this as a WAD4 Image.
+* numlumps:
+** Gives the number of entires in the directory.
+* diroffs:
+** Gives the starting offset of the directory in cells.
+* hashoffs:
+** Gives the offset of the directory hash table in cells.
+* bmpoffs:
+** Gives the starting offset of the allocation bitmap in cells.
+* bmpsize:
+** Gives the size of the bitmap in bytes.
+** The number of cells in the image may be determined by the bitmap size.
+
+
+=== Directory ===
+
+Somewhere in the image will be the WAD4 Directory.
+* This directory will consist of an array of WAD4 Directory Entries (DirEnt).
+* The first several entries in the directory will be special.
+** 0: Will be a NULL Dirent.
+*** It will encode information about the directory itself.
+*** DirID=0: Entries located in the Root Directory.
+** 1: Will be the Bitmap.
+*** DirID=1: Free Entries and Image-Level Metadata.
+
+ DirEntW4 {
+ 	U32		offs;		//00: offset of lump data (64B cell)
+ 	U32		csize;		//04: compressed size of lump (bytes)
+ 	U32		dsize;		//08: uncompressed size of lump (bytes)
+ 	BYTE	ety;		//0C: entry type (enum)
+ 	BYTE	cmp;		//0D: compression method (enum)
+ 	U16		chain;		//0E: Hash Lump Chain (DirEnt Index)
+ 	U16		dirid;		//10: Directory ID / Parent Directory (DirEnt Index)
+ 	U16		dirnext;	//12: Next in Directory (DirEnt Index)
+ 	U16		uid;		//14: UID
+ 	U16		gid;		//16: GID
+ 	U16		mode;		//18: Mode Flags (eeee-sssr-wxrw-xrwx)
+ 	U16		hibits;		//1A: Some extra bits
+ 	U32		mtime;		//1C: File timestamp
+ 	BYTE	name[32];	//20: name
+ }
+
+* offs:
+** Offset of the start of the lump data (in 64 byte units).
+** Holds the DirId and Offset for Packed Files.
+** Holds the first child DirEnt index for Directories.
+* csize:
+** Compressed Size (in bytes).
+* dsize:
+** Uncompressed Size (in bytes).
+* ety:
+** Entry Type.
+** 0: Unused Dirent
+** 1: Normal File
+** 2: Directory
+** 3: Symlink
+* cmp:
+** Compression Method.
+** 0: Uncompressed
+** 1: Fragmented File (Large File)
+** 2: Merged / Packed File (Small File)
+** 3: RP2 Compressed
+** 4: LZ4 Compressed
+* chain:
+** Link DirEnts together via their hash chain.
+** Holds the index number of the next entry in the directory.
+* dirid:
+** Directory ID of Parent Directory.
+** Holds the index number of the parent directory's lump.
+* dirnext:
+** Link lumps together within the same directory.
+** Holds the index number of the next lump within the directory.
+
+* uid:
+** User ID, may be keyed to a name.
+* gid:
+** Group ID, may be keyed to a name.
+* mode:
+** Access Mode Flags
+*** (15:13): Reserved
+*** (   12): ASCII/UTF8, Set to select UTF8
+*** (   11): SetUID
+*** (   10): SetGID
+*** (    9): Sticky
+*** (8/7/6): Read/Write/Execute User
+*** (5/4/3): Read/Write/Execute Group
+*** (2/1/0): Read/Write/Execute Other
+* hibits:
+** High order bits for several other fields.
+** ( 3: 0): chain-hi
+** ( 7: 4): dirnext-hi
+** (11: 8): dirid-hi
+** (15:12): mtime-hi
+*** Extend timestamp to 3062.
+* mtime:
+** Modification time in seconds since 1970-01-01.
+** Used in combination with mtime-hi to sidestep 2038 issue.
+
+* name:
+** Nominally, 32-characters.
+** A flag may select between CP1252 and UTF8 encodings.
+*** This will apply to both the name field as well as a symlink.
+
+Note that a symlink is encoded the same as a normal file lump, except that its payload will be interpreted as a path to another location.
+
+
+=== Packed File ===
+
+Multiple small files may be merged into a single combined lump to benefit from shared compression. This combined lump may also be referred to as a chunk.
+
+In these case, the offset field will be interpreted differently:
+* The high 16 bits will be the DirID holding the chunk data.
+* The low 16 bits will encode the offset within the chunk.
+** This offset will be scaled by 64.
+
+Packed lumps will have names like "$PACK:xxxxxxxx" and will be stored under DirID 1, where xx will be an assumed-unique hexadecimal number.
+
+
+=== Fragmented File ===
+
+In this case, the file will be broken up into multiple lumps.
+
+The offs and csize field, rather than giving the actual data, will give an array of 32-bit lump index values. Each index will be for the lump holding the payload data for this fragment, with the decompressed size of the lump being equivalent to the chunking size for the image.
+
+Packed lumps will have names like "$FRAG:xxxxxxxx" and will be stored under DirID 1, where xx will be an assumed-unique hexadecimal number.
+
+
+=== Allocation Bitmap ===
+
+An allocation bitmap may be present to allow basic Read/Write access.
+This format will focus primarily on a read-only use-case though.
+
+Offsets will be scaled by 64 bytes (This will be called a Cell).
+* Thus, the maximum theoretical WAD4 image size will be 256GB.
+* Each cell's status may be given via a bitmap, with 2 bits per cell.
+** 00: Free Cell
+** 01: Reserved
+** 10: Start of Object
+** 11: Object Data
+
+Any structure within the WAD4 image will consist of a contiguous span of cells.
+* Typically, these structures will have a corresponding entry in the directory.
+* The header will be special in the sense of not having a DirEnt.
+* The start of the bitmap will correspond to the start of the image file.
+** By implication, both the header and bitmap will exist within the bitmap.
+
+
+=== Directory Hash Table ===
+
+Directory Hash Table:
+* A hash-table will be used to allow faster lookups.
+* This hash table will be prebuilt and stored in the image.
+* It will hash the 'name' and 'dirid' fields.
+
+The exact format of the hash table will depend on the size of the directory:
+* (numlumps< 65536): 16-bit index numbers will be used.
+* (numlumps>=65536): 32-bit index numbers will be used.
+
+The size of the hash table will be based on the number of lumps:
+* n=log2u(numlumps)-4;
+** log2u: Log2 rounding upwards.
+* if(n < 6)n=6;
+* size=1 << n;
+
+Hash Function:
+* Sum the name as 4 Quadword values.
+* Add the DirID.
+* Add the high 32 bits to the low 32 bits.
+** Reducing the result to 32 bits.
+* Multiply the result by a large magic number.
+** / 0000_F7A8_3CF9_E588
+** E20B7AC6
+* / The high 16 bits of the result will be masked by the table size.
+* The bits (47:32) of the result will be masked by the table size.
+

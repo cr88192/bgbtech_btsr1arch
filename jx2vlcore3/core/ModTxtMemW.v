@@ -127,10 +127,13 @@ reg[63:0]	fontMem[255:0];
 reg[63:0]	fontGfx1Mem[127:0];
 reg[63:0]	fontGfx2Mem[127:0];
 
-reg[15:0]	fontRamA[511:0];
-reg[15:0]	fontRamB[511:0];
-reg[15:0]	fontRamC[511:0];
-reg[15:0]	fontRamD[511:0];
+//reg[15:0]	fontRamA[511:0];
+//reg[15:0]	fontRamB[511:0];
+//reg[15:0]	fontRamC[511:0];
+//reg[15:0]	fontRamD[511:0];
+
+reg[31:0]	fontRamA[511:0];
+reg[31:0]	fontRamB[511:0];
 
 // reg[31:0]	scrRegCtrl[7:0];	//Control Registers
 
@@ -348,9 +351,12 @@ begin
 	tFontDataAsc1	<= fontMem[tFontGlyph[7:0]];
 	tFontDataGfx1	<= fontGfx1Mem[tFontGlyph[6:0]];
 	tFontDataGfx2	<= fontGfx2Mem[tFontGlyph[6:0]];
+//	tFontDataRam	<= {
+//		fontRamD[tFontGlyph[8:0]],
+//		fontRamC[tFontGlyph[8:0]],
+//		fontRamB[tFontGlyph[8:0]],
+//		fontRamA[tFontGlyph[8:0]] };
 	tFontDataRam	<= {
-		fontRamD[tFontGlyph[8:0]],
-		fontRamC[tFontGlyph[8:0]],
 		fontRamB[tFontGlyph[8:0]],
 		fontRamA[tFontGlyph[8:0]] };
 	
@@ -382,10 +388,14 @@ begin
 				end
 				6'b001001: scrRegCtrl9	<= busData[31:0];
 
-				6'b001100: fontRamA[busData[24:16]]	<= busData[15:0];
-				6'b001101: fontRamB[busData[24:16]]	<= busData[15:0];
-				6'b001110: fontRamC[busData[24:16]]	<= busData[15:0];
-				6'b001111: fontRamD[busData[24:16]]	<= busData[15:0];
+//				6'b001100: fontRamA[busData[24:16]]	<= busData[15:0];
+//				6'b001101: fontRamB[busData[24:16]]	<= busData[15:0];
+//				6'b001110: fontRamC[busData[24:16]]	<= busData[15:0];
+//				6'b001111: fontRamD[busData[24:16]]	<= busData[15:0];
+
+				6'b001100: fontRamA[busData[40:32]]	<= busData[31:0];
+				6'b001101: fontRamB[busData[40:32]]	<= busData[31:0];
+
 				default: begin
 				end
 			endcase

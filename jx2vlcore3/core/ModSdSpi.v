@@ -217,6 +217,7 @@ begin
 		tMmioOutData	= { UV32_00, tRegCtrl };
 //		tMmioOutData[1]	= (tBitCnt!=0);
 		tMmioOutData[1]	= (tBitCnt!=0) || (tByteCnt!=0);
+		tNxtRegXmitDeb	= 0;
 		
 		tMmioOK			= UMEM_OK_OK;
 	end

@@ -17,6 +17,9 @@ Element Type:
   0101: Int32
   0110: Int64
   0111: Resv
+  1000: Fra16
+  1001: Fra32
+  1010: Fra64
   
   1100: Word16
   1101: Word32
@@ -68,6 +71,7 @@ begin
 	tExp		= 0;
 	tFrac		= 0;
 	tFracLsb	= 0;
+	tExpIsZero	= 0;
 
 	case(regVecPos[1:0])
 		2'b00: begin
@@ -201,7 +205,7 @@ begin
 			end
 		end
 
-		3'bz111: begin
+		4'bz111: begin
 		end
 
 		default: begin
@@ -211,7 +215,7 @@ begin
 
 	tRegSign	= tSign;
 	tRegExp		= tExp;
-	tRegFrac	= { 1'b0, tFrac, tFracLsb ? 7'h7F : 7'h00 };
+	tRegFrac	= { 1'b0, tFrac, tFracLsb ? 6'h3F : 6'h00 };
 end
 
 endmodule

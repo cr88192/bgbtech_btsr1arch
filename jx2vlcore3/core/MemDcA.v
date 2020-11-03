@@ -101,85 +101,62 @@ assign	memOpm		= tMemOpm;
 assign	memDataOut	= tMemDataOut;
 
 `ifdef jx2_expand_l1dsz
-	reg[127:0]		dcCaMemA[511:0];	//Local L1 tile memory (Even)
-	reg[127:0]		dcCaMemB[511:0];	//Local L1 tile memory (Odd)
+	reg[127:0]		dcCaMemA[255:0];	//Local L1 tile memory (Even)
+	reg[127:0]		dcCaMemB[255:0];	//Local L1 tile memory (Odd)
+	reg[127:0]		dcCaMemC[255:0];	//Local L1 tile memory (Even)
+	reg[127:0]		dcCaMemD[255:0];	//Local L1 tile memory (Odd)
 `ifdef jx2_enable_vaddr48
-//	reg[ 47:0]		dcCaAddrA[511:0];	//Local L1 tile address
-//	reg[ 51:0]		dcCaAddrA[511:0];	//Local L1 tile address
-	reg[ 71:0]		dcCaAddrA[511:0];	//Local L1 tile address
-//	reg[ 47:0]		dcCaAddrB[511:0];	//Local L1 tile address
-//	reg[ 51:0]		dcCaAddrB[511:0];	//Local L1 tile address
-	reg[ 71:0]		dcCaAddrB[511:0];	//Local L1 tile address
+	reg[ 71:0]		dcCaAddrA[255:0];	//Local L1 tile address
+	reg[ 71:0]		dcCaAddrB[255:0];	//Local L1 tile address
+//	reg[ 71:0]		dcCaAddrC[255:0];	//Local L1 tile address
+//	reg[ 71:0]		dcCaAddrD[255:0];	//Local L1 tile address
+	reg[ 47:0]		dcCaAddrC[255:0];	//Local L1 tile address
+	reg[ 47:0]		dcCaAddrD[255:0];	//Local L1 tile address
 `else
-//	reg[ 31:0]		dcCaAddrA[511:0];	//Local L1 tile address
-//	reg[ 35:0]		dcCaAddrA[511:0];	//Local L1 tile address
-	reg[ 55:0]		dcCaAddrA[511:0];	//Local L1 tile address
-//	reg[ 31:0]		dcCaAddrB[511:0];	//Local L1 tile address
-//	reg[ 35:0]		dcCaAddrB[511:0];	//Local L1 tile address
-	reg[ 55:0]		dcCaAddrB[511:0];	//Local L1 tile address
+	reg[ 55:0]		dcCaAddrA[255:0];	//Local L1 tile address
+	reg[ 55:0]		dcCaAddrB[255:0];	//Local L1 tile address
+//	reg[ 55:0]		dcCaAddrC[255:0];	//Local L1 tile address
+//	reg[ 55:0]		dcCaAddrD[255:0];	//Local L1 tile address
+	reg[ 31:0]		dcCaAddrC[255:0];	//Local L1 tile address
+	reg[ 31:0]		dcCaAddrD[255:0];	//Local L1 tile address
 `endif
-reg[511:0]			dcFlushMskA;
-reg[511:0]			dcFlushMskB;
-reg[511:0]			dcNxtFlushMskA;
-reg[511:0]			dcNxtFlushMskB;
+reg[255:0]			dcFlushMskA;
+reg[255:0]			dcFlushMskB;
+reg[255:0]			dcNxtFlushMskA;
+reg[255:0]			dcNxtFlushMskB;
 `else
-`ifdef jx2_reduce_l1sz
-(* ram_style = "distributed" *)
-	reg[127:0]		dcCaMemA[15:0];		//Local L1 tile memory (Even)
-(* ram_style = "distributed" *)
-	reg[127:0]		dcCaMemB[15:0];		//Local L1 tile memory (Odd)
-`ifdef jx2_enable_vaddr48
-(* ram_style = "distributed" *)
-//	reg[ 47:0]		dcCaAddrA[15:0];	//Local L1 tile address
-//	reg[ 51:0]		dcCaAddrA[15:0];	//Local L1 tile address
-	reg[ 71:0]		dcCaAddrA[15:0];	//Local L1 tile address
-(* ram_style = "distributed" *)
-//	reg[ 47:0]		dcCaAddrB[15:0];	//Local L1 tile address
-//	reg[ 51:0]		dcCaAddrB[15:0];	//Local L1 tile address
-	reg[ 71:0]		dcCaAddrB[15:0];	//Local L1 tile address
-`else
-(* ram_style = "distributed" *)
-//	reg[ 31:0]		dcCaAddrA[15:0];	//Local L1 tile address
-//	reg[ 35:0]		dcCaAddrA[15:0];	//Local L1 tile address
-	reg[ 55:0]		dcCaAddrA[15:0];	//Local L1 tile address
-(* ram_style = "distributed" *)
-//	reg[ 31:0]		dcCaAddrB[15:0];	//Local L1 tile address
-//	reg[ 35:0]		dcCaAddrB[15:0];	//Local L1 tile address
-	reg[ 55:0]		dcCaAddrB[15:0];	//Local L1 tile address
-`endif
-reg[15:0]			dcFlushMskA;
-reg[15:0]			dcFlushMskB;
-reg[15:0]			dcNxtFlushMskA;
-reg[15:0]			dcNxtFlushMskB;
-`else
+
 (* ram_style = "distributed" *)
 	reg[127:0]		dcCaMemA[63:0];		//Local L1 tile memory (Even)
 (* ram_style = "distributed" *)
 	reg[127:0]		dcCaMemB[63:0];		//Local L1 tile memory (Odd)
+(* ram_style = "distributed" *)
+	reg[127:0]		dcCaMemC[63:0];		//Local L1 tile memory (Even)
+(* ram_style = "distributed" *)
+	reg[127:0]		dcCaMemD[63:0];		//Local L1 tile memory (Odd)
 `ifdef jx2_enable_vaddr48
 (* ram_style = "distributed" *)
-//	reg[ 47:0]		dcCaAddrA[63:0];	//Local L1 tile address
-//	reg[ 51:0]		dcCaAddrA[63:0];	//Local L1 tile address
 	reg[ 71:0]		dcCaAddrA[63:0];	//Local L1 tile address
 (* ram_style = "distributed" *)
-//	reg[ 47:0]		dcCaAddrB[63:0];	//Local L1 tile address
-//	reg[ 51:0]		dcCaAddrB[63:0];	//Local L1 tile address
 	reg[ 71:0]		dcCaAddrB[63:0];	//Local L1 tile address
+(* ram_style = "distributed" *)
+	reg[ 47:0]		dcCaAddrA[63:0];	//Local L1 tile address
+(* ram_style = "distributed" *)
+	reg[ 47:0]		dcCaAddrB[63:0];	//Local L1 tile address
 `else
 (* ram_style = "distributed" *)
-//	reg[ 31:0]		dcCaAddrA[63:0];	//Local L1 tile address
-//	reg[ 35:0]		dcCaAddrA[63:0];	//Local L1 tile address
 	reg[ 55:0]		dcCaAddrA[63:0];	//Local L1 tile address
 (* ram_style = "distributed" *)
-//	reg[ 31:0]		dcCaAddrB[63:0];	//Local L1 tile address
-//	reg[ 35:0]		dcCaAddrB[63:0];	//Local L1 tile address
 	reg[ 55:0]		dcCaAddrB[63:0];	//Local L1 tile address
+(* ram_style = "distributed" *)
+	reg[ 31:0]		dcCaAddrA[63:0];	//Local L1 tile address
+(* ram_style = "distributed" *)
+	reg[ 31:0]		dcCaAddrB[63:0];	//Local L1 tile address
 `endif
 reg[63:0]			dcFlushMskA;
 reg[63:0]			dcFlushMskB;
 reg[63:0]			dcNxtFlushMskA;
 reg[63:0]			dcNxtFlushMskB;
-`endif
 `endif
 
 
@@ -199,52 +176,28 @@ reg[43:0]		tNxtAddrBL;
 reg				tNxtIsMmioL;
 
 `ifdef jx2_expand_l1dsz
-reg[ 8:0]		tNxtIxAL;
-reg[ 8:0]		tNxtIxBL;
-reg[ 8:0]		tNxtIxA;
-reg[ 8:0]		tNxtIxB;
-reg[ 8:0]		tReqIxA;
-reg[ 8:0]		tReqIxB;
-reg[ 8:0]		tLstIxA;
-reg[ 8:0]		tLstIxB;
-reg[ 8:0]		tNx2IxA;
-reg[ 8:0]		tNx2IxB;
-reg[ 8:0]		tBlkIxA;
-reg[ 8:0]		tBlkIxB;
-reg[ 8:0]		tBlkIx2A;
-reg[ 8:0]		tBlkIx2B;
-reg[ 8:0]		tLstBlkIxA;
-reg[ 8:0]		tLstBlkIxB;
-reg[ 8:0]		tStBlkIxA;
-reg[ 8:0]		tStBlkIxB;
-reg[ 8:0]		tMiBlkIxA;
-reg[ 8:0]		tMiBlkIxB;
-reg[ 8:0]		tLstStBlkIxA;
-reg[ 8:0]		tLstStBlkIxB;
-`else
-`ifdef jx2_reduce_l1sz
-reg[ 3:0]		tNxtIxAL;
-reg[ 3:0]		tNxtIxBL;
-reg[ 3:0]		tNxtIxA;
-reg[ 3:0]		tNxtIxB;
-reg[ 3:0]		tReqIxA;
-reg[ 3:0]		tReqIxB;
-reg[ 3:0]		tLstIxA;
-reg[ 3:0]		tLstIxB;
-reg[ 3:0]		tNx2IxA;
-reg[ 3:0]		tNx2IxB;
-reg[ 3:0]		tBlkIxA;
-reg[ 3:0]		tBlkIxB;
-reg[ 3:0]		tBlkIx2A;
-reg[ 3:0]		tBlkIx2B;
-reg[ 3:0]		tLstBlkIxA;
-reg[ 3:0]		tLstBlkIxB;
-reg[ 3:0]		tStBlkIxA;
-reg[ 3:0]		tStBlkIxB;
-reg[ 3:0]		tMiBlkIxA;
-reg[ 3:0]		tMiBlkIxB;
-reg[ 3:0]		tLstStBlkIxA;
-reg[ 3:0]		tLstStBlkIxB;
+reg[ 7:0]		tNxtIxAL;
+reg[ 7:0]		tNxtIxBL;
+reg[ 7:0]		tNxtIxA;
+reg[ 7:0]		tNxtIxB;
+reg[ 7:0]		tReqIxA;
+reg[ 7:0]		tReqIxB;
+reg[ 7:0]		tLstIxA;
+reg[ 7:0]		tLstIxB;
+reg[ 7:0]		tNx2IxA;
+reg[ 7:0]		tNx2IxB;
+reg[ 7:0]		tBlkIxA;
+reg[ 7:0]		tBlkIxB;
+reg[ 7:0]		tBlkIx2A;
+reg[ 7:0]		tBlkIx2B;
+reg[ 7:0]		tLstBlkIxA;
+reg[ 7:0]		tLstBlkIxB;
+reg[ 7:0]		tStBlkIxA;
+reg[ 7:0]		tStBlkIxB;
+reg[ 7:0]		tMiBlkIxA;
+reg[ 7:0]		tMiBlkIxB;
+reg[ 7:0]		tLstStBlkIxA;
+reg[ 7:0]		tLstStBlkIxB;
 `else
 reg[ 5:0]		tNxtIxAL;
 reg[ 5:0]		tNxtIxBL;
@@ -269,32 +222,60 @@ reg[ 5:0]		tMiBlkIxB;
 reg[ 5:0]		tLstStBlkIxA;
 reg[ 5:0]		tLstStBlkIxB;
 `endif
-`endif
 
 reg[127:0]		tBlkDataA;
 reg[127:0]		tBlkDataB;
+reg[127:0]		tBlkDataC;
+reg[127:0]		tBlkDataD;
+
 reg[ 43:0]		tBlkAddrA;
 reg[ 43:0]		tBlkAddrB;
+reg[ 43:0]		tBlkAddrC;
+reg[ 43:0]		tBlkAddrD;
+
 reg[  7:0]		tBlkFlagA;
 reg[  7:0]		tBlkFlagB;
+reg[  7:0]		tBlkFlagC;
+reg[  7:0]		tBlkFlagD;
+
 reg[ 19:0]		tBlkPhAdA;
 reg[ 19:0]		tBlkPhAdB;
+// reg[ 19:0]		tBlkPhAdC;
+// reg[ 19:0]		tBlkPhAdD;
+
 reg				tBlkDirtyA;
 reg				tBlkDirtyB;
-reg				tBlkFlushA;
-reg				tBlkFlushB;
+reg				tBlkDirtyC;
+reg				tBlkDirtyD;
+
 reg				tBlkNoTlbA;
 reg				tBlkNoTlbB;
+reg				tBlkNoTlbC;
+reg				tBlkNoTlbD;
 reg				tBlkNoTlb;
+
+reg				tBlkFlushA;
+reg				tBlkFlushB;
 
 reg[127:0]		tLstBlkDataA;
 reg[127:0]		tLstBlkDataB;
+reg[127:0]		tLstBlkDataC;
+reg[127:0]		tLstBlkDataD;
+
 reg[ 43:0]		tLstBlkAddrA;
 reg[ 43:0]		tLstBlkAddrB;
+reg[ 43:0]		tLstBlkAddrC;
+reg[ 43:0]		tLstBlkAddrD;
+
 reg[  7:0]		tLstBlkFlagA;
 reg[  7:0]		tLstBlkFlagB;
+reg[  7:0]		tLstBlkFlagC;
+reg[  7:0]		tLstBlkFlagD;
+
 reg[ 19:0]		tLstBlkPhAdA;
 reg[ 19:0]		tLstBlkPhAdB;
+// reg[ 19:0]		tLstBlkPhAdC;
+// reg[ 19:0]		tLstBlkPhAdD;
 
 reg[127:0]		tBlkData2A;
 reg[127:0]		tBlkData2B;
@@ -318,7 +299,16 @@ reg[63:0]		tDataInB;
 
 reg				tMissA;
 reg				tMissB;
+reg				tMissC;
+reg				tMissD;
+
+reg				tMissAddrA;
+reg				tMissAddrB;
+reg				tMissAddrC;
+reg				tMissAddrD;
+
 reg				tMiss;
+
 reg				tHold;
 reg				tHoldB;
 reg				tReqOpmNz;
@@ -328,15 +318,28 @@ reg				tLstHoldA;
 
 reg[127:0]		tStBlkDataA;
 reg[127:0]		tStBlkDataB;
+reg[127:0]		tStBlkDataC;
+reg[127:0]		tStBlkDataD;
+
 reg[ 43:0]		tStBlkAddrA;
 reg[ 43:0]		tStBlkAddrB;
+reg[ 43:0]		tStBlkAddrC;
+reg[ 43:0]		tStBlkAddrD;
+
 reg[  7:0]		tStBlkFlagA;
 reg[  7:0]		tStBlkFlagB;
+reg[  7:0]		tStBlkFlagC;
+reg[  7:0]		tStBlkFlagD;
+
 reg[ 19:0]		tStBlkPhAdA;
 reg[ 19:0]		tStBlkPhAdB;
+reg[ 19:0]		tStBlkPhAdC;
+reg[ 19:0]		tStBlkPhAdD;
 
 reg				tDoStBlkA;
 reg				tDoStBlkB;
+reg				tDoStBlkC;
+reg				tDoStBlkD;
 
 reg				tTlbMissInh;
 reg				tNxtTlbMissInh;
@@ -344,14 +347,28 @@ reg				tNxtTlbMissInh;
 
 reg[127:0]		tLstStBlkDataA;
 reg[127:0]		tLstStBlkDataB;
+reg[127:0]		tLstStBlkDataC;
+reg[127:0]		tLstStBlkDataD;
+
 reg[ 43:0]		tLstStBlkAddrA;
 reg[ 43:0]		tLstStBlkAddrB;
+reg[ 43:0]		tLstStBlkAddrC;
+reg[ 43:0]		tLstStBlkAddrD;
+
 reg[  7:0]		tLstStBlkFlagA;
 reg[  7:0]		tLstStBlkFlagB;
+reg[  7:0]		tLstStBlkFlagC;
+reg[  7:0]		tLstStBlkFlagD;
+
 reg[ 19:0]		tLstStBlkPhAdA;
 reg[ 19:0]		tLstStBlkPhAdB;
+reg[ 19:0]		tLstStBlkPhAdC;
+reg[ 19:0]		tLstStBlkPhAdD;
+
 reg				tLstDoStBlkA;
 reg				tLstDoStBlkB;
+reg				tLstDoStBlkC;
+reg				tLstDoStBlkD;
 
 
 reg[127:0]		tMiBlkDataA;
@@ -364,8 +381,11 @@ reg[ 19:0]		tMiBlkPhAdA;
 reg[ 19:0]		tMiBlkPhAdB;
 reg[5:0]		tMiNoRwxA;
 reg[5:0]		tMiNoRwxB;
+
 reg				tDoMiBlkA;
 reg				tDoMiBlkB;
+// reg			tDoMiBlkC;
+// reg			tDoMiBlkD;
 reg				tDoMiBlk;
 
 
@@ -427,6 +447,12 @@ reg			tNxtDbgHoldLatch;
 reg			tStoreHitA;
 reg			tStoreHitB;
 
+reg			tStoreDoBounceA;
+reg			tStoreDoBounceB;
+reg			tAccNoCross1;
+reg			tAccNoCross;
+reg			tAccNoMissA;
+reg			tAccNoMissB;
 
 always @*
 begin
@@ -456,17 +482,16 @@ begin
 `ifdef jx2_expand_l1dsz
 //	tNxtIxA=tNxtAddrA[9:1];
 //	tNxtIxB=tNxtAddrB[9:1];
-	tNxtIxA=tNxtAddrA[9:1]^tNxtAddrA[18:10];
-	tNxtIxB=tNxtAddrB[9:1]^tNxtAddrB[18:10];
+//	tNxtIxA=tNxtAddrA[9:1]^tNxtAddrA[18:10];
+//	tNxtIxB=tNxtAddrB[9:1]^tNxtAddrB[18:10];
+	tNxtIxA=tNxtAddrA[8:1]^tNxtAddrA[16:9];
+	tNxtIxB=tNxtAddrB[8:1]^tNxtAddrB[16:9];
+//	tNxtIxA=tNxtAddrA[8:1];
+//	tNxtIxB=tNxtAddrB[8:1];
 
-`else
-`ifdef jx2_reduce_l1sz
-	tNxtIxA=tNxtAddrA[4:1];
-	tNxtIxB=tNxtAddrB[4:1];
 `else
 	tNxtIxA=tNxtAddrA[6:1];
 	tNxtIxB=tNxtAddrB[6:1];
-`endif
 `endif
 
 	dcNxtFlushMskA	= dcFlushMskA;
@@ -502,8 +527,10 @@ begin
 			tNxtDcDoFlushA[9] = 1;
 			tNxtDcDoFlushB[9] = 1;
 `ifdef jx2_expand_l1dsz
-			tNxtDcDoFlushA[8:0]=tNxtIxA;
-			tNxtDcDoFlushB[8:0]=tNxtIxB;
+//			tNxtDcDoFlushA[8:0]=tNxtIxA;
+//			tNxtDcDoFlushB[8:0]=tNxtIxB;
+			tNxtDcDoFlushA[7:0]=tNxtIxA;
+			tNxtDcDoFlushB[7:0]=tNxtIxB;
 `else
 			tNxtDcDoFlushA[5:0]=tNxtIxA;
 			tNxtDcDoFlushB[5:0]=tNxtIxB;
@@ -517,14 +544,16 @@ begin
 		$display("L1D: FLUSH B");
 //		dcNxtFlushMskA = JX2_L1D_FLUSHMSK;
 
-		if(tDcDoFlushA[8:0]==0)
+//		if(tDcDoFlushA[8:0]==0)
+		if(tDcDoFlushA[7:0]==0)
 		begin
 			dcNxtFlushMskA = JX2_L1D_FLUSHMSK;
 		end
 		else
 		begin
 `ifdef jx2_expand_l1dsz
-			dcNxtFlushMskA[tDcDoFlushA[8:0]]=1;
+//			dcNxtFlushMskA[tDcDoFlushA[8:0]]=1;
+			dcNxtFlushMskA[tDcDoFlushA[7:0]]=1;
 `else
 			dcNxtFlushMskA[tDcDoFlushA[5:0]]=1;
 `endif
@@ -537,14 +566,16 @@ begin
 	begin
 //		dcNxtFlushMskB = JX2_L1D_FLUSHMSK;
 
-		if(tDcDoFlushB[8:0]==0)
+//		if(tDcDoFlushB[8:0]==0)
+		if(tDcDoFlushB[7:0]==0)
 		begin
 			dcNxtFlushMskB = JX2_L1D_FLUSHMSK;
 		end
 		else
 		begin
 `ifdef jx2_expand_l1dsz
-			dcNxtFlushMskB[tDcDoFlushB[8:0]]=1;
+//			dcNxtFlushMskB[tDcDoFlushB[8:0]]=1;
+			dcNxtFlushMskB[tDcDoFlushB[7:0]]=1;
 `else
 			dcNxtFlushMskB[tDcDoFlushB[5:0]]=1;
 `endif
@@ -558,25 +589,35 @@ begin
 	if(tReqOpmCcmd)
 		tNxtIsMmio = 1;
 
-	if(dcInHoldL && !tLstHold)
-	begin
-	end
-
 
 	/* Stage B */
 
 
 	tStBlkDataA		= UV128_00;
 	tStBlkDataB		= UV128_00;
+	tStBlkDataC		= UV128_00;
+	tStBlkDataD		= UV128_00;
+
 	tStBlkAddrA		= UV44_00;
 	tStBlkAddrB		= UV44_00;
+	tStBlkAddrC		= UV44_00;
+	tStBlkAddrD		= UV44_00;
 
 	tStBlkFlagA		= 0;
 	tStBlkFlagB		= 0;
+	tStBlkFlagC		= 0;
+	tStBlkFlagD		= 0;
+
 	tStBlkPhAdA		= 0;
 	tStBlkPhAdB		= 0;
+	tStBlkPhAdC		= 0;
+	tStBlkPhAdD		= 0;
+
 	tDoStBlkA		= 0;
 	tDoStBlkB		= 0;
+	tDoStBlkC		= 0;
+	tDoStBlkD		= 0;
+
 	tHoldWrCyc		= 0;
 	tNextHoldCyc	= 0;
 
@@ -584,23 +625,56 @@ begin
 	tAccFltW		= 0;
 
 	tRegOutVal		= UV64_00;
-//	tRegOutValB		= UV64_00;
-	tRegOutValB		= UV64_XX;
+	tRegOutValB		= UV64_00;
+	tStoreDoBounceA	= 0;
+	tStoreDoBounceB	= 0;
+
+	tAccNoCross		= 0;
+	tAccNoMissA		= 0;
+	tAccNoMissB		= 0;
+
+	if(tInOpm==UMEM_OPM_WR_TILE)
+	begin
+		if(tInAddr[4:0]==5'h00)
+			tStoreDoBounceA	= 1;
+		if(tInAddr[4:0]==5'h10)
+			tStoreDoBounceB	= 1;
+	end
 
 `ifdef jx2_expand_l1dsz
-	tStBlkIxA	= UV9_00;
-	tStBlkIxB	= UV9_00;
-`else
-`ifdef jx2_reduce_l1sz
-	tStBlkIxA	= UV4_00;
-	tStBlkIxB	= UV4_00;
+	tStBlkIxA	= UV8_00;
+	tStBlkIxB	= UV8_00;
 `else
 	tStBlkIxA	= UV6_00;
 	tStBlkIxB	= UV6_00;
 `endif
-`endif
 
 	tInByteIx	= tInAddr[2:0];
+
+	if(tStoreDoBounceA)
+		tAccNoMissB = 1;
+	if(tStoreDoBounceB)
+		tAccNoMissA = 1;
+
+	casez(tInOpm[2:0])
+		3'bz00: tAccNoCross = 1;
+//		3'bz01: tAccNoCross = !tInAddr[0]		|| (tInAddr[3:1]!=3'b111);
+//		3'bz10: tAccNoCross = (tInAddr[1:0]==0)	|| (tInAddr[3:2]!=2'b11);
+//		3'b011: tAccNoCross = (tInAddr[2:0]==0)	|| !tInAddr[3];
+		3'bz01: tAccNoCross = !tInAddr[0];
+		3'bz10: tAccNoCross = (tInAddr[1:0]==0);
+		3'b011: tAccNoCross = (tInAddr[2:0]==0);
+		3'b111: tAccNoCross = (tInAddr[3:0]==0);
+	endcase
+	
+	if(tAccNoCross)
+	begin
+		if(tInAddr[4])
+			tAccNoMissA = 1;
+		else
+			tAccNoMissB = 1;
+	end
+
 //	tReqOpmNz	= (tInOpm[4:3]!=0);
 	tReqOpmNz	= (tInOpm!=UMEM_OPM_READY);
 
@@ -652,30 +726,25 @@ begin
 
 	tBlkDirtyA	= tBlkFlag2A[2];
 	tBlkDirtyB	= tBlkFlag2B[2];
+
 	tBlkFlushA	= dcFlushMskA[tReqIxA];
 	tBlkFlushB	= dcFlushMskB[tReqIxB];
+
 	tBlkNoTlbA	= tBlkFlag2A[7];
 	tBlkNoTlbB	= tBlkFlag2B[7];
-
-`ifndef def_true
-	if(tBlkData2A[31:0]==32'h55BAADAA)
-	begin
-		if(!tBlkNoTlbA)
-		begin
-			$display("L1D: Missing NoTlb A");
-			tBlkNoTlbA = 1;
-		end
-	end
-	if(tBlkData2B[31:0]==32'h55BAADAA)
-	begin
-		if(!tBlkNoTlbB)
-		begin
-			$display("L1D: Missing NoTlb B");
-			tBlkNoTlbB = 1;
-		end
-	end
-`endif
+//	tBlkNoTlbC	= tBlkFlagC[7];
+//	tBlkNoTlbD	= tBlkFlagD[7];
+	tBlkNoTlbC	= 0;
+	tBlkNoTlbD	= 0;
 	
+`ifdef jx2_mem_l1d2way
+//	tBlkNoTlb	=
+//		tBlkNoTlbA || tBlkNoTlbB ||
+//		tBlkNoTlbC || tBlkNoTlbD;
+`else
+//	tBlkNoTlb	= tBlkNoTlbA || tBlkNoTlbB;
+`endif
+
 	tBlkNoTlb	= tBlkNoTlbA || tBlkNoTlbB;
 
 	if(tBlkNoTlbA)
@@ -701,14 +770,73 @@ begin
 			tBlkDirtyB = 0;
 			tBlkFlushB = 1;
 		end
+
+// `ifdef jx2_mem_l1d2way
+`ifndef def_true
+		if(tBlkNoTlbC)
+		begin
+			tBlkDirtyA = 0;
+			tBlkFlushA = 1;
+		end
+		if(tBlkNoTlbD)
+		begin
+			tBlkDirtyB = 0;
+			tBlkFlushB = 1;
+		end
+`endif
 	end
 
-	tMissA = (tBlkAddr2A != tReqAddrA) ||
-		(tBlkAddr2A[1:0]!=(~tBlkFlagA[1:0])) || tBlkFlushA;
-	tMissB = (tBlkAddr2B != tReqAddrB) ||
-		(tBlkAddr2B[1:0]!=(~tBlkFlagB[1:0])) || tBlkFlushB;
+	tMissAddrA = (tBlkAddrA != tReqAddrA) && !tAccNoMissA;
+	tMissAddrB = (tBlkAddrB != tReqAddrB) && !tAccNoMissB;
 
+//	tMissA = (tBlkAddr2A != tReqAddrA) ||
+	tMissA = tMissAddrA ||
+		(tBlkAddr2A[1:0]!=(~tBlkFlagA[1:0])) || tBlkFlushA;
+//	tMissB = (tBlkAddr2B != tReqAddrB) ||
+	tMissB = tMissAddrB ||
+		(tBlkAddr2B[1:0]!=(~tBlkFlagB[1:0])) || tBlkFlushB;
+	tMissC = 1;
+	tMissD = 1;
+	tMissAddrC = 1;
+	tMissAddrD = 1;
+
+`ifdef jx2_mem_l1d2way
+//	tMissAddrC = (tBlkAddrC != tReqAddrA);
+	tMissAddrC = (tBlkAddrC != tReqAddrA) && !tAccNoMissA;
+//	tMissAddrD = (tBlkAddrD != tReqAddrB);
+	tMissAddrD = (tBlkAddrD != tReqAddrB) && !tAccNoMissB;
+	tMissC = tMissAddrC ||
+		(tBlkAddrC[1:0]!=(~tBlkFlagC[1:0])) ||
+		tBlkFlushA || tInOpm[4];
+	tMissD = tMissAddrD ||
+		(tBlkAddrD[1:0]!=(~tBlkFlagD[1:0])) ||
+		tBlkFlushB || tInOpm[4];
+`endif
+
+`ifdef jx2_mem_l1d2way
+	tMiss = (tReqOpmNz && !tReqIsMmio) ?
+		((tMissA && tMissC) || (tMissB && tMissD)) : 0;
+`else
 	tMiss = (tReqOpmNz && !tReqIsMmio) ? (tMissA || tMissB) : 0;
+`endif
+
+`ifdef jx2_mem_l1d2way
+	if(tMissA && !tMissC)
+	begin
+		tBlkData2A	= tBlkDataC;
+		tBlkAddr2A	= tBlkAddrC;
+//		tBlkFlag2A	= tBlkFlagC;
+//		tBlkPhAd2A	= tBlkPhAdC;
+	end
+	if(tMissB && !tMissD)
+	begin
+		tBlkData2B	= tBlkDataD;
+		tBlkAddr2B	= tBlkAddrD;
+//		tBlkFlag2B	= tBlkFlagD;
+//		tBlkPhAd2B	= tBlkPhAdD;
+	end
+`endif
+
 	tHold = 0;
 
 	tBlkReady = 1;
@@ -731,7 +859,6 @@ begin
 		tBlkReady	= 0;
 	end
 
-
 	tDoMiBlk	= tDoMiBlkA || tDoMiBlkB;
 
 	if(tInOpm[4] && tBlkFlag2A[3] && !tMissA)
@@ -747,6 +874,7 @@ begin
 	endcase
 
 `ifdef jx2_debug_l1ds
+// `ifdef def_true
 	if(tReqOpmNz && !tReqIsMmio)
 	begin
 		if(!tMsgLatch)
@@ -767,23 +895,12 @@ begin
 	endcase
 
 `ifdef jx2_debug_l1ds
+// `ifdef def_true
 	if(tReqOpmNz && !tReqIsMmio)
 	begin
 		if(!tMsgLatch)
 			$display("tInByteIx=%X tBlkExData=%X", tInByteIx, tBlkExData);
 		tNxtMsgLatch=1;
-	end
-`endif
-
-`ifdef def_true
-	if(tBlkExData1[31:0]==32'h55BAADAA)
-	begin
-//		if(!tTlbMissInh && !tMiss && (tInOpm!=0))
-		if(!tTlbMissInh && !tMiss && (tInOpm[4:3]!=0))
-		begin
-			$display("L1D: Bad Marker Seen Outside Inhibit, A=%X D=%X O=%X",
-				tInAddr, tBlkExData1, tInOpm);
-		end
 	end
 `endif
 
@@ -808,6 +925,7 @@ begin
 	endcase
 	
 `ifdef jx2_debug_l1ds
+// `ifdef def_true
 	if(tReqOpmNz && !tReqIsMmio)
 	begin
 //		if(!tMsgLatch)
@@ -892,6 +1010,34 @@ begin
 		tNxtMsgLatch=1;
 `endif
 
+`ifdef jx2_debug_l1ds
+		if(tDoMiBlkA)
+		begin
+			$display("L1D$ DoMiBlkA A=%X D=%X", tMiBlkAddrA, tMiBlkDataA);
+		end
+		if(tDoMiBlkB)
+		begin
+			$display("L1D$ DoMiBlkB A=%X D=%X", tMiBlkAddrB, tMiBlkDataB);
+		end
+`endif
+
+`ifdef jx2_mem_l1d2way
+		tStBlkDataC = tBlkDataA;
+		tStBlkDataD = tBlkDataB;
+		tStBlkAddrC	= tBlkAddrA;
+		tStBlkAddrD	= tBlkAddrB;
+		tStBlkPhAdC	= tBlkPhAdA;
+		tStBlkPhAdD	= tBlkPhAdB;
+		tStBlkFlagC	= tBlkFlagA;
+		tStBlkFlagD	= tBlkFlagB;
+//		tDoStBlkC	= tDoMiBlkA && !(tBlkDirtyA || tBlkFlushA);
+//		tDoStBlkD	= tDoMiBlkB && !(tBlkDirtyB || tBlkFlushB);
+		tDoStBlkC	= tDoMiBlkA && !tBlkDirtyA;
+		tDoStBlkD	= tDoMiBlkB && !tBlkDirtyB;
+		if(tBlkFlushA)	tStBlkFlagC[1:0]=tBlkAddrA[1:0];
+		if(tBlkFlushB)	tStBlkFlagD[1:0]=tBlkAddrB[1:0];
+`endif
+
 		tStBlkDataA = tMiBlkDataA;
 		tStBlkDataB = tMiBlkDataB;
 		tStBlkAddrA	= tMiBlkAddrA;
@@ -935,6 +1081,22 @@ begin
 		tNxtMsgLatch=1;
 `endif
 
+`ifdef jx2_mem_l1d2way
+		tStBlkFlagC = tBlkFlagC;
+		tStBlkFlagD = tBlkFlagD;
+		tStBlkFlagC[1:0]=tBlkAddrC[1:0];
+		tStBlkFlagD[1:0]=tBlkAddrD[1:0];
+//		tDoStBlkC	= !tMissAddrC;
+		tDoStBlkC	= !tMissAddrC && !tAccNoMissA;
+//		tDoStBlkD	= !tMissAddrD;
+		tDoStBlkD	= !tMissAddrD && !tAccNoMissB;
+
+//		tDoStBlkC	= !tMissC;
+//		tDoStBlkD	= !tMissD;
+//		tDoStBlkC	= 1;
+//		tDoStBlkD	= 1;
+`endif
+
 //		tStBlkAddrA	= tReqAddrA;
 //		tStBlkAddrB	= tReqAddrB;
 		tStBlkAddrA	= tBlkAddr2A;
@@ -965,28 +1127,45 @@ begin
 			2'b00: begin
 				tStBlkDataA = tBlkDataW;
 //				tDoStBlkA	= 1;
+
 				tDoStBlkA	= !tHoldWrCyc;
+//				tDoStBlkA	= !tHoldWrCyc && !tAccNoMissA;
+
+//				tDoStBlkC	= !tMissAddrC && !tHoldWrCyc;
 			end
 			2'b01: begin
 				tStBlkDataA = { tBlkDataW[ 63: 0], tBlkData2A[ 63: 0] };
 				tStBlkDataB = { tBlkData2B[127:64], tBlkDataW[127:64] };
 //				tDoStBlkA	= 1;
 //				tDoStBlkB	= 1;
-				tDoStBlkA	= !tHoldWrCyc;
-				tDoStBlkB	= !tHoldWrCyc;
+//				tDoStBlkA	= !tHoldWrCyc;
+				tDoStBlkA	= !tHoldWrCyc && !tAccNoMissA;
+//				tDoStBlkB	= !tHoldWrCyc;
+				tDoStBlkB	= !tHoldWrCyc && !tAccNoMissB;
+
+//				tDoStBlkD	= !tMissAddrD && !tHoldWrCyc;
 			end
 			2'b10: begin
 				tStBlkDataB = tBlkDataW;
 //				tDoStBlkB	= 1;
 				tDoStBlkB	= !tHoldWrCyc;
+//				tDoStBlkB	= !tHoldWrCyc && !tAccNoMissB;
+
+//				tDoStBlkD	= !tMissAddrD && !tHoldWrCyc;
 			end
 			2'b11: begin
 				tStBlkDataB = { tBlkDataW[ 63: 0], tBlkData2B[ 63: 0] };
 				tStBlkDataA = { tBlkData2A[127:64], tBlkDataW[127:64] };
 //				tDoStBlkA	= 1;
 //				tDoStBlkB	= 1;
-				tDoStBlkA	= !tHoldWrCyc;
-				tDoStBlkB	= !tHoldWrCyc;
+
+//				tDoStBlkA	= !tHoldWrCyc;
+				tDoStBlkA	= !tHoldWrCyc && !tAccNoMissA;
+//				tDoStBlkB	= !tHoldWrCyc;
+				tDoStBlkB	= !tHoldWrCyc && !tAccNoMissB;
+
+//				tDoStBlkC	= !tMissAddrC && !tHoldWrCyc;
+//				tDoStBlkD	= !tMissAddrD && !tHoldWrCyc;
 			end
 		endcase
 	end
@@ -1017,6 +1196,9 @@ begin
 			tHold = 1;
 		end
 	end
+	
+//	$display("tRegOutVal=%X tRegOutVal2=%X hold=%d",
+//		tRegOutVal, tRegOutVal2, dcInHold);
 
 //	tHoldB	= tHold || dcInHold;
 	tHoldB	= tHold;
@@ -1129,10 +1311,20 @@ begin
 
 	tBlkDataA					<= dcCaMemA [tNx2IxA];
 	tBlkDataB					<= dcCaMemB [tNx2IxB];
-//	{ tBlkFlagA, tBlkAddrA }	<= dcCaAddrA[tNx2IxA];
-//	{ tBlkFlagB, tBlkAddrB }	<= dcCaAddrB[tNx2IxB];
 	{ tBlkPhAdA, tBlkFlagA, tBlkAddrA }	<= dcCaAddrA[tNx2IxA];
 	{ tBlkPhAdB, tBlkFlagB, tBlkAddrB }	<= dcCaAddrB[tNx2IxB];
+
+`ifdef jx2_mem_l1d2way
+	tBlkDataC					<= dcCaMemC [tNx2IxA];
+	tBlkDataD					<= dcCaMemD [tNx2IxB];
+//	{ tBlkPhAdC, tBlkFlagC, tBlkAddrC }	<= dcCaAddrC[tNx2IxA];
+//	{ tBlkPhAdD, tBlkFlagD, tBlkAddrD }	<= dcCaAddrD[tNx2IxB];
+//	{ tBlkFlagC, tBlkAddrC }	<= dcCaAddrC[tNx2IxA];
+//	{ tBlkFlagD, tBlkAddrD }	<= dcCaAddrD[tNx2IxB];
+	{ tBlkFlagC[3:0], tBlkAddrC }	<= dcCaAddrC[tNx2IxA];
+	{ tBlkFlagD[3:0], tBlkAddrD }	<= dcCaAddrD[tNx2IxB];
+`endif
+
 	tBlkIxA						<= tNx2IxA;
 	tBlkIxB						<= tNx2IxB;
 
@@ -1194,6 +1386,26 @@ begin
 		dcCaAddrB[tStBlkIxB]	<= { tStBlkPhAdB, tStBlkFlagB, tStBlkAddrB };
 		tDoMiBlkB				<= 0;
 	end
+
+`ifdef jx2_mem_l1d2way
+	if(tDoStBlkC)
+	begin
+		dcCaMemC [tStBlkIxA]	<= tStBlkDataC;
+//		dcCaAddrC[tStBlkIxA]	<= { tStBlkFlagC, tStBlkAddrC };
+		dcCaAddrC[tStBlkIxA]	<= { tStBlkFlagC[3:0], tStBlkAddrC };
+//		dcCaAddrC[tStBlkIxA]	<= { tStBlkPhAdC, tStBlkFlagC, tStBlkAddrC };
+//		tDoMiBlkC				<= 0;
+	end
+
+	if(tDoStBlkD)
+	begin
+		dcCaMemD [tStBlkIxB]	<= tStBlkDataD;
+//		dcCaAddrD[tStBlkIxB]	<= { tStBlkFlagD, tStBlkAddrD };
+		dcCaAddrD[tStBlkIxB]	<= { tStBlkFlagD[3:0], tStBlkAddrD };
+//		dcCaAddrD[tStBlkIxB]	<= { tStBlkPhAdD, tStBlkFlagD, tStBlkAddrD };
+//		tDoMiBlkD				<= 0;
+	end
+`endif
 
 
 	/* Stage B */
@@ -1304,7 +1516,10 @@ begin
 `endif
 
 				tMemLatchA		<= 1;
-				tMemOpm			<= UMEM_OPM_RD_TILE;
+//				tMemOpm			<= UMEM_OPM_RD_TILE;
+				tMemOpm			<= tStoreDoBounceA ?
+					UMEM_OPM_RD_BOUNCE	:
+					UMEM_OPM_RD_TILE;
 				tMemAddr		<= { tReqAddrA, 4'b0 };
 				tMemDataOut		<= UV128_XX;
 				tMemLatchWdA	<= tMemLatchWbA;
@@ -1400,7 +1615,10 @@ begin
 `endif
 
 				tMemLatchB		<= 1;
-				tMemOpm			<= UMEM_OPM_RD_TILE;
+//				tMemOpm			<= UMEM_OPM_RD_TILE;
+				tMemOpm			<= tStoreDoBounceB ?
+					UMEM_OPM_RD_BOUNCE	:
+					UMEM_OPM_RD_TILE;
 				tMemAddr		<= { tReqAddrB, 4'b0 };
 				tMemDataOut		<= UV128_XX;
 				tMemLatchWdB	<= tMemLatchWbB;

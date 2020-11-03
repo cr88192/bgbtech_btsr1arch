@@ -19,8 +19,11 @@ Loads from the NULL page will always return zeroes, and writes to this page will
 */
 
 `include "CoreDefs.v"
-`include "MemL2Dc.v"
 `include "MemL2Rom.v"
+
+`ifndef jx2_mem_l2skip
+`include "MemL2Dc.v"
+`endif
 
 module MemL2A(
 	clock,
@@ -70,6 +73,12 @@ reg[47:0]		tMemAddr;
 reg[47:0]		tMemAddrB;
 reg[127:0]		tMemDataIn;
 reg[4:0]		tMemOpm;
+
+reg[47:0]		tMemAddr2;
+reg[47:0]		tMemAddrB2;
+reg[127:0]		tMemDataIn2;
+reg[4:0]		tMemOpm2;
+
 
 reg[47:0]		tMemAddrL;
 reg[47:0]		tMemAddrBL;
@@ -125,6 +134,22 @@ assign			l2MemOpm = reqIsMmio ? UMEM_OPM_READY : tMemOpm;
 wire[127:0]		l2MemDataOut;
 wire[1:0]		l2MemOK;
 
+wire	tAddrIsRam;
+
+`ifdef jx2_mem_l2skip
+
+// assign	tAddrIsRam	= (tMemAddr[29:24]!=6'h00) &&
+//		(tMemAddr[31:30]==2'b00);
+
+assign 	ddrMemAddr = tMemAddr[31:0];
+assign 	ddrMemDataOut = tMemDataIn;
+assign 	ddrMemOpm = tAddrIsRam ? l2MemOpm : UMEM_OPM_READY;
+
+assign 	l2MemDataOut = ddrMemDataIn;
+assign	l2MemOK	= ddrMemOK;
+
+`else
+
 MemL2Dc		l2dc(
 	clock,		reset,
 
@@ -143,6 +168,9 @@ MemL2Dc		l2dc(
 	ddrMemOK
 	);
 
+`endif
+
+
 wire	tAddrIsLo64k;
 // assign	tAddrIsLo64k	= (memAddr[31:16] == UV16_00);
 assign	tAddrIsLo64k	= (tMemAddr[31:16] == UV16_00);
@@ -156,7 +184,7 @@ assign	tAddrIsZe1M	= (tMemAddr[31:20] == 12'h001);
 reg			tAddrIsLo4G;
 reg			tAddrIsHi4G;
 
-wire	tAddrIsRam;
+// wire	tAddrIsRam;
 // assign	tAddrIsRam	= (memAddr[31:24] != UV8_00) && (!memAddr[31]);
 assign	tAddrIsRam	= (tMemAddr[31:24] != UV8_00) && (!tMemAddr[31]);
 
@@ -219,9 +247,10 @@ begin
 	case(tMemOpm)
 		UMEM_OPM_LDTLB, UMEM_OPM_INVTLB: begin
 			/* These simply get OK here; MMU has already seen it. */
-//			tCcmdOK		= UMEM_OK_OK;
+			tCcmdOK		= UMEM_OK_OK;
 //			tCcmdOK		= (memOpm==tCcmdOpmC)?UMEM_OK_OK:UMEM_OK_HOLD;
-			tCcmdOK		= (tMemOpm==tCcmdOpmC)?UMEM_OK_OK:UMEM_OK_HOLD;
+//			tCcmdOK		= (tMemOpm==tCcmdOpmC)?UMEM_OK_OK:UMEM_OK_HOLD;
+//			tCcmdOK		= (tMemOpm==tCcmdOpmA)?UMEM_OK_OK:UMEM_OK_HOLD;
 			tCcmdData	= UV32_00;
 		end
 		UMEM_OPM_FLUSHIS, UMEM_OPM_FLUSHDS: begin
@@ -286,10 +315,24 @@ begin
 	tHoldLatch		<= tNxtHoldLatch;
 	tMemBounceIrqB	<= tMemBounceIrq;
 
+`ifdef jx2_mem_l2exbuf
+
+	tMemAddr2		<= memAddr;
+	tMemAddrB2		<= memAddrB;
+	tMemDataIn2		<= memDataIn;
+	tMemOpm2		<= memOpm;
+
+	tMemAddr		<= tMemAddr2;
+	tMemAddrB		<= tMemAddrB2;
+	tMemDataIn		<= tMemDataIn2;
+	tMemOpm			<= tMemOpm2;
+
+`else
 	tMemAddr		<= memAddr;
 	tMemAddrB		<= memAddrB;
 	tMemDataIn		<= memDataIn;
 	tMemOpm			<= memOpm;
+`endif
 
 	tMemAddrL		<= tMemAddr;
 //	tMemAddrBL		<= tMemAddrB;
@@ -336,6 +379,8 @@ begin
 		reqMmioLatch	<= 0;
 		reqLo64Latch	<= 0;
 		reqRamLatch		<= 0;
+
+		tMemOK			<= UMEM_OK_READY;
 	end
 	else
 		if((reqIsCcmd && !reqIsLatch) || reqCcmdLatch)
@@ -416,6 +461,12 @@ begin
 	tMmioAddr			<= tMemAddr[31:0];
 //	tMmioOpm			<= reqIsMmio ? memOpm : UMEM_OPM_READY;
 	tMmioOpm			<= reqIsMmio ? tMemOpm : UMEM_OPM_READY;
+
+	if(reset)
+	begin
+		tMmioAddr			<= 0;
+		tMmioOpm			<= UMEM_OPM_READY;
+	end
 
 `ifndef def_true
 // `ifdef def_true

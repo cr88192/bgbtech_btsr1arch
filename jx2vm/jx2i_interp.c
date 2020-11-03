@@ -105,19 +105,21 @@ BJX2_Trace *BJX2_ContextAllocTrace(BJX2_Context *ctx)
 
 void BJX2_ContextFreeOpcode(BJX2_Context *ctx, BJX2_Opcode *tmp)
 {
+	tmp->Run=NULL;
 	*(BJX2_Opcode **)tmp=ctx->free_op;
 	ctx->free_op=tmp;
 }
 
 void BJX2_ContextFreeTrace(BJX2_Context *ctx, BJX2_Trace *tmp)
 {
+	tmp->Run=NULL;
 	*(BJX2_Trace **)tmp=ctx->free_tr;
 	ctx->free_tr=tmp;
 }
 
 BJX2_Trace *BJX2_GetTraceForAddr(BJX2_Context *ctx, bjx2_addr addr)
 {
-	BJX2_Trace *cur, *prv;
+	BJX2_Trace *cur, *prv, *tmp;
 	int i, h;
 
 #if 0
@@ -158,6 +160,8 @@ BJX2_Trace *BJX2_GetTraceForAddr(BJX2_Context *ctx, bjx2_addr addr)
 			if(cur->addr==addr)
 				return(cur);
 		}
+
+		cur=ctx->trhash[h];
 			
 		prv=cur;
 		cur=cur->hnext;
@@ -176,16 +180,38 @@ BJX2_Trace *BJX2_GetTraceForAddr(BJX2_Context *ctx, bjx2_addr addr)
 		}
 	}
 #endif
-	
+
+	if(!(ctx->status))
+	{
+		BJX2_MemTranslateTlb(ctx, addr+ 0);
+		BJX2_MemTranslateTlb(ctx, addr+(32*8));
+	}
+
+	if(ctx->status)
+		return(NULL);
+
+
 	cur=BJX2_ContextAllocTrace(ctx);
 	cur->addr=addr;
+
+	ctx->rttr[h&63]=cur;
 
 	i=BJX2_DecodeTraceForAddr(ctx, cur, addr);
 	if(i<0)
 	{
+		ctx->rttr[h&63]=NULL;
 		BJX2_ContextFreeTrace(ctx, cur);
 		return(NULL);
 	}
+
+#if 0
+	if(ctx->status)
+	{
+		ctx->rttr[h&63]=NULL;
+		BJX2_ContextFreeTrace(ctx, cur);
+		return(NULL);
+	}
+#endif
 
 	cur->hnext=ctx->trhash[h];
 	ctx->trhash[h]=cur;
@@ -199,6 +225,11 @@ int BJX2_DecodeTraceFlushCache(BJX2_Context *ctx)
 {
 	BJX2_Trace *cur, *nxt;
 	int i;
+
+	ctx->prttr=NULL;
+
+	ctx->tr_rnxt=NULL;
+	ctx->tr_rjmp=NULL;
 	
 	for(i=0; i<64; i++)
 		ctx->rttr[i]=NULL;
@@ -1764,8 +1795,9 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 
 		if(bn2)
 		{
-			printf("PC @ %08X (%-28s+%5d) "
-				"Cyc=%5lldM(p=%lldM %.2f%%) %.2f%%\n",
+			printf("PC @ %04X_%08X (%-20s+%04X) "
+				"Cyc=%4lldM(p=%lldM %.2f%%) %.2f%%\n",
+				(u32)(trcur->addr>>32), 
 				(u32)(trcur->addr), bn2,
 				(int)(trcur->addr-ba2),
 				cyc>>20, trcur->acc_pencyc>>20,
@@ -1773,7 +1805,8 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 				pcnt);
 		}else
 		{
-			printf("PC @ %08X Cyc=%5lldM %.2f%%\n",
+			printf("PC @ %04X_%08X Cyc=%5lldM %.2f%%\n",
+				(u32)(trcur->addr>>32), 
 				(u32)(trcur->addr), cyc>>20, pcnt);
 		}
 
@@ -1842,47 +1875,49 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 	pcnt=((double)trtops)/trn;
 	printf("Average Trace Length: %.2f\n", pcnt);
 
-	pcnt=(100.0*ctx->tot_cyc_mem)/(ctx->tot_cyc);
-	printf("Cycles Spent, Mem Op: %.2f%%\n", pcnt);
-	pcnt=(100.0*(ctx->tot_cyc_mem+ctx->tot_cyc_miss))/(ctx->tot_cyc);
-	printf("Cycles Spent, Mem Tot: %.2f%%\n", pcnt);
+	if(ctx->tot_cyc_mem>0)
+	{
+		pcnt=(100.0*ctx->tot_cyc_mem)/(ctx->tot_cyc);
+		printf("Cycles Spent, Mem Op: %.2f%%\n", pcnt);
+		pcnt=(100.0*(ctx->tot_cyc_mem+ctx->tot_cyc_miss))/(ctx->tot_cyc);
+		printf("Cycles Spent, Mem Tot: %.2f%%\n", pcnt);
 
 
-	pcnt=(100.0*ctx->tot_cyc_miss)/(ctx->tot_cyc);
-	printf("Cycles Spent, Cache Miss: %.2f%%\n", pcnt);
-	pcnt=(100.0*ctx->tot_cyc_miss_l1)/(ctx->tot_cyc);
-	printf("Cycles Spent, Cache Miss L1: %.2f%%\n", pcnt);
-	pcnt=(100.0*ctx->tot_cyc_miss_l2)/(ctx->tot_cyc);
-	printf("Cycles Spent, Cache Miss L2: %.2f%%\n", pcnt);
+		pcnt=(100.0*ctx->tot_cyc_miss)/(ctx->tot_cyc);
+		printf("Cycles Spent, Cache Miss: %.2f%%\n", pcnt);
+		pcnt=(100.0*ctx->tot_cyc_miss_l1)/(ctx->tot_cyc);
+		printf("Cycles Spent, Cache Miss L1: %.2f%%\n", pcnt);
+		pcnt=(100.0*ctx->tot_cyc_miss_l2)/(ctx->tot_cyc);
+		printf("Cycles Spent, Cache Miss L2: %.2f%%\n", pcnt);
 
-	pcnt=(100.0*ctx->tot_cyc_mmio)/(ctx->tot_cyc);
-	printf("Cycles Spent, MMIO: %.2f%%\n", pcnt);
+		pcnt=(100.0*ctx->tot_cyc_mmio)/(ctx->tot_cyc);
+		printf("Cycles Spent, MMIO: %.2f%%\n", pcnt);
 
-	pcnt=(100.0*(ctx->tot_cnt_mem_l1i-ctx->tot_cnt_miss_l1i))/
-		(ctx->tot_cnt_mem_l1i);
-	printf("Total Count, Cache Hit  L1 I$: %.2f%%\n", pcnt);
-	pcnt=(100.0*ctx->tot_cnt_miss_l1i)/(ctx->tot_cnt_mem_l1i);
-	printf("Total Count, Cache Miss L1 I$: %.2f%%\n", pcnt);
+		pcnt=(100.0*(ctx->tot_cnt_mem_l1i-ctx->tot_cnt_miss_l1i))/
+			(ctx->tot_cnt_mem_l1i);
+		printf("Total Count, Cache Hit  L1 I$: %.2f%%\n", pcnt);
+		pcnt=(100.0*ctx->tot_cnt_miss_l1i)/(ctx->tot_cnt_mem_l1i);
+		printf("Total Count, Cache Miss L1 I$: %.2f%%\n", pcnt);
 
-	pcnt=(100.0*(ctx->tot_cnt_mem_l1-ctx->tot_cnt_miss_l1))/
-		(ctx->tot_cnt_mem_l1);
-	printf("Total Count, Cache Hit  L1 D$: %.2f%%\n", pcnt);
-	pcnt=(100.0*ctx->tot_cnt_miss_l1)/(ctx->tot_cnt_mem_l1);
-	printf("Total Count, Cache Miss L1 D$: %.2f%%\n", pcnt);
+		pcnt=(100.0*(ctx->tot_cnt_mem_l1-ctx->tot_cnt_miss_l1))/
+			(ctx->tot_cnt_mem_l1);
+		printf("Total Count, Cache Hit  L1 D$: %.2f%%\n", pcnt);
+		pcnt=(100.0*ctx->tot_cnt_miss_l1)/(ctx->tot_cnt_mem_l1);
+		printf("Total Count, Cache Miss L1 D$: %.2f%%\n", pcnt);
 
-	pcnt=(100.0*(ctx->tot_cnt_mem_l2-ctx->tot_cnt_miss_l2))/
-		(ctx->tot_cnt_mem_l2);
-	printf("Total Count, Cache Hit  L2   : %.2f%%\n", pcnt);
-	pcnt=(100.0*ctx->tot_cnt_miss_l2)/(ctx->tot_cnt_mem_l2);
-	printf("Total Count, Cache Miss L2   : %.2f%%\n", pcnt);
+		pcnt=(100.0*(ctx->tot_cnt_mem_l2-ctx->tot_cnt_miss_l2))/
+			(ctx->tot_cnt_mem_l2);
+		printf("Total Count, Cache Hit  L2   : %.2f%%\n", pcnt);
+		pcnt=(100.0*ctx->tot_cnt_miss_l2)/(ctx->tot_cnt_mem_l2);
+		printf("Total Count, Cache Miss L2   : %.2f%%\n", pcnt);
 
-	pcnt=(100.0*(ctx->tot_cnt_mem_l1i-ctx->tot_cnt_mem_dri))/
-		(ctx->tot_cnt_mem_l1i);
-	printf("Total Count, Cache Hit Combined I$: %.2f%%\n", pcnt);
-	pcnt=(100.0*(ctx->tot_cnt_mem_l1-ctx->tot_cnt_mem_drd))/
-		(ctx->tot_cnt_mem_l1);
-	printf("Total Count, Cache Hit Combined D$: %.2f%%\n", pcnt);
-
+		pcnt=(100.0*(ctx->tot_cnt_mem_l1i-ctx->tot_cnt_mem_dri))/
+			(ctx->tot_cnt_mem_l1i);
+		printf("Total Count, Cache Hit Combined I$: %.2f%%\n", pcnt);
+		pcnt=(100.0*(ctx->tot_cnt_mem_l1-ctx->tot_cnt_mem_drd))/
+			(ctx->tot_cnt_mem_l1);
+		printf("Total Count, Cache Hit Combined D$: %.2f%%\n", pcnt);
+	}
 
 	return(0);
 }
@@ -1916,8 +1951,11 @@ int BJX2_DbgDump(BJX2_Context *ctx)
 		BJX2_DbgTopTraces(ctx);
 	}
 	
-	printf("Branch Pred Hit %.2f%%\n",
-		(100.0*ctx->bpr_hit)/ctx->bpr_cnt);
+	if(ctx->bpr_cnt>0)
+	{
+		printf("Branch Pred Hit %.2f%%\n",
+			(100.0*ctx->bpr_hit)/ctx->bpr_cnt);
+	}
 	
 	return(0);
 }

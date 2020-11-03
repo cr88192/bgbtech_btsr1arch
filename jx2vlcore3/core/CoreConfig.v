@@ -10,7 +10,7 @@
 `define	jx2_fcmp_alu			//do FCMP via ALU
 
 // `define jx2_sprs_elrehr			//ELR/EHR/BP as special registers?
-// `define jx2_bra2stage			//Use 2-stage branch initiation
+`define jx2_bra2stage			//Use 2-stage branch initiation
 // `define jx2_gprs_usefsm			//Use finite-state-machine GPRs
 
 // `define jx2_enable_swapn		//Enable SWxP.x ops
@@ -59,10 +59,21 @@
 // `define jx2_ddr_bl64b		//DDR interface is 64-bit (DDR2)
 
 `define jx2_expand_l1dsz		//Make L1 D$ bigger
-`define jx2_expand_l1isz		//Make L1 I$ bigger
+
+`define jx2_mem_l1isz_256		//Make L1 I$ bigger
+// `define jx2_mem_l1isz_128		//Make L1 I$ bigger
+// `define jx2_mem_l1isz_64		//Make L1 I$ bigger
+
 `define jx2_expand_l2sz			//Make L2 Bigger
 
-`define jx2_expand_tlb			//Make TLB Bigger
+// `define jx2_mem_l1i2way			//Use 2-Way L1 I$
+`define jx2_mem_l1d2way			//Use 2-Way L1 D$
+
+// `define jx2_mem_l2skip			//Skip L2 Cache
+
+`define jx2_mem_l2exbuf		//Extra Buffer L2 Bus
+
+`define jx2_expand_tlb		//Make TLB Bigger
 
 // `define jx2_reduce_l1sz		//Make L1 smaller
 // `define jx2_reduce_l2sz		//Make L2 smaller

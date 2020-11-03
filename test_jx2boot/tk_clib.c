@@ -67,7 +67,7 @@ void *memset(void *dest, int val, size_t size)
 	return(dest);
 }
 
-#if 1
+#if 0
 void *memcpy(void *dest, const void *src, size_t size)
 {
 	byte *ct, *cs, *cte;

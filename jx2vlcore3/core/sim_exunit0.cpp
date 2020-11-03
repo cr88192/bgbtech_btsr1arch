@@ -875,6 +875,7 @@ void MemUpdateForBus()
 				top->memOK=1;
 			}else
 			{
+				printf("Sim Bad Addr %08X\n", addr);
 				top->memDataIn[0]=0xFFFFFFFFU;
 				top->memDataIn[1]=0xFFFFFFFFU;
 				top->memDataIn[2]=0xFFFFFFFFU;
@@ -919,6 +920,7 @@ void MemUpdateForBus()
 				
 				if((top->memDataIn[0]==0x55AA55AA) || (addr&3))
 				{
+					printf("Sim Bad Addr %08X\n", addr);
 					top->memDataIn[0]=0xFFFFFFFFU;
 					top->memDataIn[1]=0xFFFFFFFFU;
 					top->memDataIn[2]=0xFFFFFFFFU;
@@ -956,6 +958,7 @@ void MemUpdateForBus()
 				top->memOK=1;
 			}else
 			{
+				printf("Sim Bad Addr %08X\n", addr);
 				top->memDataIn[0]=0xFFFFFFFFU;
 				top->memDataIn[1]=0xFFFFFFFFU;
 				top->memDataIn[2]=0xFFFFFFFFU;
@@ -1023,6 +1026,7 @@ void MemUpdateForBus()
 				top->memOK=1;
 			}else
 			{
+				printf("Sim Bad Addr %08X\n", addr);
 				top->memOK=3;
 			}
 
@@ -1397,7 +1401,8 @@ int main(int argc, char **argv, char **env)
 	int t0, t1, t2;
 	int tt_frame;
 
-	mhz=100;
+//	mhz=100;
+	mhz=50;
 
 //	JX2R_UseImageCreateRamdisk(128*1024);
 	JX2R_UseImageCreateRamdisk(512*1024);

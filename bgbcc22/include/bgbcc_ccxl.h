@@ -63,6 +63,14 @@
 #define CCXL_TY_GIMAG			0x35		//128-bit float128 imaginary
 #define CCXL_TY_GCOMPLEX		0x36		//256-bit float128 complex
 
+#define CCXL_TY_VEC3FQ			0x38		//64-bit 3x float21
+#define CCXL_TY_VEC3FX			0x39		//128-bit 3x float42
+
+#define CCXL_TY_VARCLASS		0x3C		//
+#define CCXL_TY_VARSYMBOL		0x3D		//
+#define CCXL_TY_VARARR			0x3E		//
+
+
 #define CCXL_VTY_PCHAR			0x00001008	//'char *'
 #define CCXL_VTY_PWCHAR			0x0000100B	//'wchar_t *'
 
@@ -231,6 +239,8 @@ Base, Q1..Q3:
 #define CCXL_REGVEC_TY_V4UW		0x0D
 #define CCXL_REGVEC_TY_V4SI		0x0E
 #define CCXL_REGVEC_TY_V4UI		0x0F
+#define CCXL_REGVEC_TY_V3FX		0x10
+#define CCXL_REGVEC_TY_V3FQ		0x11
 
 #define CCXL_REGGBLA_DZMASK		0x000FFFFF00000000ULL	//displacement mask
 

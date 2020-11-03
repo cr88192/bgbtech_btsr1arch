@@ -59,6 +59,21 @@ reg				tFixedFrac4;
 reg[15:0]		tFixedExp4;
 reg[15:0]		tDiffExp4;
 
+reg				tSgnC3;
+reg				tSgnC3B;
+reg				tSgnC4;
+reg				tSgnC4B;
+
+reg[15:0]		tExpC3;
+reg[15:0]		tExpC3B;
+reg[15:0]		tExpC4;
+reg[15:0]		tExpC4B;
+
+reg[71:0]		tFraC3;
+reg[71:0]		tFraC3B;
+reg[71:0]		tFraC4;
+reg[71:0]		tFraC4B;
+
 always @*
 begin
 
@@ -93,7 +108,7 @@ begin
 		end
 		4'bz111: begin
 			tFixedFrac = 1;
-			tFixedExp = 16383+64;
+			tFixedExp = 16383+128;
 		end
 	endcase
 
@@ -119,7 +134,7 @@ begin
 				4'h7:		tFraC3B	= tFraC3>>56;
 				4'h8:		tFraC3B	= tFraC3>>64;
 				default:	tFraC3B	= 0;
-			end
+			endcase
 		end
 		else
 		if(tDiffExp3[14:7]==8'hFF)
@@ -135,59 +150,59 @@ begin
 				4'h8:		tFraC3B	= tFraC3<<56;
 				4'h7:		tFraC3B	= tFraC3<<64;
 				default:	tFraC3B	= 0;
-			end
+			endcase
 		end
 	end
 	else
 	if(tFraC3[71])
 	begin
-		tExpC3B	= {1'b0, tExpC3} + 1;
+		tExpC3B	= tExpC3 + 1;
 		tFraC3B	= {1'b0, tFraC3[71:1] };
 	end
 	else
 	if(tFraC3[70:62]!=0)
 	begin
-		tExpC3B	= {1'b0, tExpC3} ;
+		tExpC3B	= tExpC3 ;
 		tFraC3B	= tFraC3 ;
 	end
 	else if(tFraC3[61:54]!=0)
 	begin
-		tExpC3B	= {1'b0, tExpC3} - 8;
+		tExpC3B	= tExpC3 - 8;
 		tFraC3B	= tFraC3 << 8;
 	end
 	else if(tFraC3[53:46]!=0)
 	begin
-		tExpC3B	= {1'b0, tExpC3} - 16;
+		tExpC3B	= tExpC3 - 16;
 		tFraC3B	= tFraC3 << 16;
 	end
 	else if(tFraC3[45:38]!=0)
 	begin
-		tExpC3B	= {1'b0, tExpC3} - 24;
+		tExpC3B	= tExpC3 - 24;
 		tFraC3B	= tFraC3 << 24;
 	end
 	else if(tFraC3[37:30]!=0)
 	begin
-		tExpC3B	= {1'b0, tExpC3} - 32;
+		tExpC3B	= tExpC3 - 32;
 		tFraC3B	= tFraC3 << 32 ;
 	end
 	else if(tFraC3[29:22]!=0)
 	begin
-		tExpC3B	= {1'b0, tExpC3} - 40;
+		tExpC3B	= tExpC3 - 40;
 		tFraC3B	= tFraC3 << 40 ;
 	end
 	else if(tFraC3[21:14]!=0)
 	begin
-		tExpC3B	= {1'b0, tExpC3} - 48;
+		tExpC3B	= tExpC3 - 48;
 		tFraC3B	= tFraC3 << 48 ;
 	end
 	else if(tFraC3[13:6]!=0)
 	begin
-		tExpC3B	= {1'b0, tExpC3} - 56;
+		tExpC3B	= tExpC3 - 56;
 		tFraC3B	= tFraC3 << 56 ;
 	end
 	else if(tFraC3[5:0]!=0)
 	begin
-		tExpC3B	= {1'b0, tExpC3} - 64;
+		tExpC3B	= tExpC3 - 64;
 		tFraC3B	= tFraC3 << 64 ;
 	end
 	else
@@ -211,7 +226,7 @@ begin
 				3'h5:		tFraC4B	= tFraC4>>5;
 				3'h6:		tFraC4B	= tFraC4>>6;
 				3'h7:		tFraC4B	= tFraC4>>7;
-			end
+			endcase
 		end
 		else
 		if(tDiffExp4[14]==1'b1)
@@ -225,7 +240,7 @@ begin
 				3'h2:		tFraC4B	= tFraC4<<5;
 				3'h1:		tFraC4B	= tFraC4<<6;
 				3'h0:		tFraC4B	= tFraC4<<7;
-			end
+			endcase
 		end
 	end
 	else
@@ -303,10 +318,10 @@ begin
 
 	tVecDataOut		= regVecDataIn;
 
-	tResult16B1		= tResult16B + tRound16B;
-	tResult32B1		= tResult32B + tRound32B;
-	tResult64B1		= tResult64B + tRound64B;
-	tResultI64B1	= tResultI64B + tRoundI64B;
+	tResult16B1		= tResult16B + { 15'h0, tRound16B };
+	tResult32B1		= tResult32B + { 31'h0, tRound32B };
+	tResult64B1		= tResult64B + { 63'h0, tRound64B };
+	tResultI64B1	= tResultI64B + { 63'h0, tRoundI64B };
 	tResult128B1	= tResult128;
 
 	casez(regVecPos[5:2])
@@ -338,13 +353,43 @@ begin
 			endcase
 		end
 
-		4'b0010: begin
+		4'b0011: begin
 			case(regVecPos[1:0])
 				2'b00: tVecDataOut[127: 0] = tResult128B1;
 				2'b01: begin end
 				2'b10: begin end
 				2'b11: begin end
 			endcase
+		end
+
+		4'bz100, 4'b1000: begin
+			case(regVecPos[1:0])
+				2'b00: tVecDataOut[15: 0] = tResultI64B1[63:48];
+				2'b01: tVecDataOut[31:16] = tResultI64B1[63:48];
+				2'b10: tVecDataOut[47:32] = tResultI64B1[63:48];
+				2'b11: tVecDataOut[63:48] = tResultI64B1[63:48];
+			endcase
+		end
+
+		4'bz101, 4'b1001: begin
+			case(regVecPos[1:0])
+				2'b00: tVecDataOut[ 31: 0] = tResultI64B1[63:32];
+				2'b01: tVecDataOut[ 63:32] = tResultI64B1[63:32];
+				2'b10: tVecDataOut[ 95:64] = tResultI64B1[63:32];
+				2'b11: tVecDataOut[127:96] = tResultI64B1[63:32];
+			endcase
+		end
+
+		4'bz110, 4'b1010: begin
+			case(regVecPos[1:0])
+				2'b00: tVecDataOut[ 63: 0] = tResultI64B1[63:0];
+				2'b01: tVecDataOut[127:64] = tResultI64B1[63:0];
+				2'b10: begin end
+				2'b11: begin end
+			endcase
+		end
+
+		default: begin
 		end
 
 	endcase

@@ -400,6 +400,8 @@ int SimDdr(int clk, int cmd, int *rdqs, int *rdata)
 int main(int argc, char **argv, char **env)
 {
 	uint32_t *imgbuf;
+	uint64_t tw0, tw1, td0;
+	uint64_t tr0, tr1, td1;
 	int ddrlclk, cmd, data, dqs;
 	int n, inh;
 	int wn, rn, wdn, rdn, lim, bn1;
@@ -431,15 +433,17 @@ int main(int argc, char **argv, char **env)
 	
 //	lim=8388608-4;
 
-	lim=6144*1024;
+//	lim=6144*1024;
 
 //	lim=4194304;
-//	lim=1<<18;
+	lim=1<<18;
 //	lim=8;
 //	lim=16;
 //	lim=64;
 //	lim=65;
 //	lim=128;
+
+	tw0 = main_time;
 
 	printf("Begin\n");
 	top->memOpm=0x0;
@@ -493,6 +497,8 @@ int main(int argc, char **argv, char **env)
 				if(wn>=lim)
 				{
 					printf("\n");
+					tw1 = main_time;
+					tr0 = main_time;
 				}
 			}
 		}else
@@ -546,6 +552,7 @@ int main(int argc, char **argv, char **env)
 
 				if(rn>=lim)
 				{
+					tr1 = main_time;
 					printf("\n");
 					break;
 				}
@@ -630,6 +637,13 @@ int main(int argc, char **argv, char **env)
 //		top->eval();
 
 	}
+	
+	td0=tw1-tw0;
+	td1=tr1-tr0;
+	
+	printf("store %d cyc/op\n", (td0/2)/lim);
+	printf("load %d cyc/op\n", (td1/2)/lim);
+	
 	delete top;
 	exit(0);
 }

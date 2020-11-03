@@ -182,3 +182,147 @@ int TK_RamChk()
 	
 	return(0);
 }
+
+void memcpy_movx_test(void *dst, void *src, int sz);
+void memcpy_fixed128_test(void *dst, void *src, int sz);
+
+__asm {
+memcpy_movx_test:
+#if 1
+	CMP/GE	64, R6
+	BF		.L1
+	.L0:
+	MOV.X	(R5,  0), R16
+	MOV.X	(R5, 16), R18
+	MOV.X	(R5, 32), R20
+	MOV.X	(R5, 48), R22
+	ADD		64, R5		|	ADD		-64, R6
+	MOV.X	R16, (R4,  0)
+	MOV.X	R18, (R4, 16)
+	MOV.X	R20, (R4, 32)
+	MOV.X	R22, (R4, 48)
+	ADD		64, R4		|	CMP/GE	64, R6
+	BT		.L0
+	.L1:
+	RTSU
+#endif
+
+#if 0
+	CMP/GE	32, R6
+	BF		.L1
+	.L0:
+	MOV.X	(R5,  0), R20
+	MOV.X	(R5, 16), R22
+	ADD		32, R5		|	ADD		-32, R6
+	MOV.X	R20, (R4,  0)
+	MOV.X	R22, (R4, 16)
+	ADD		32, R4		|	CMP/GE	32, R6
+	BT		.L0
+	.L1:
+
+	CMP/GE	8, R6
+	BF		.L3
+	.L2:
+	ADD		-8, R6		|	MOV.Q	(R5,  0), R20
+	ADD		8, R5		|	MOV.Q	R20, (R4,  0)
+	ADD		8, R4		|	CMP/GE	8, R6
+	BT		.L2
+	.L3:
+
+	RTSU
+#endif
+
+memcpy_fixed128_test:
+	MOV.X	(R5,   0), R16
+	MOV.X	(R5,  16), R18
+	MOV.X	(R5,  32), R20
+	MOV.X	(R5,  48), R22
+	MOV.X	R16, (R4,   0)
+	MOV.X	R18, (R4,  16)
+	MOV.X	R20, (R4,  32)
+	MOV.X	R22, (R4,  48)
+	MOV.X	(R5,  64), R16
+	MOV.X	(R5,  80), R18
+	MOV.X	(R5,  96), R20
+	MOV.X	(R5, 112), R22
+	MOV.X	R16, (R4,  64)
+	MOV.X	R18, (R4,  80)
+	MOV.X	R20, (R4,  96)
+	MOV.X	R22, (R4, 112)
+	RTSU
+}
+
+int TK_RamBench()
+{
+	byte *cs, *ct;
+	int ci, cj, ck;
+	int tf, th, tl;
+	int i, j, k;
+
+	puts("RAM Bench:\n");
+
+	cs=(u32 *)TK_RAMCHK_BASE;
+	ct=cs+0x123450;
+	ci = TK_GetTimeMs();
+
+//	memcpy(ct, cs, 1<<20);
+//	memcpy(ct, cs, 1<<17);
+	memcpy_movx_test(ct, cs, 1<<17);
+
+	cj = TK_GetTimeMs();
+	ck = cj-ci;
+	if(ck>0)
+	{
+//		printf("memcpy: %dms, %d MB/s\n", ck, 1000/ck);
+
+//		tf=25600/ck;
+		tf=12800/ck;
+		th=tf/100;
+		tl=tf-(th*100);
+		printf("memcpy (DRAM): %dms, %d.%02d MB/s\n", ck, th, tl);
+	}
+
+
+	ci = TK_GetTimeMs();
+
+//	memcpy(ct, cs, 1<<20);
+	for(i=0; i<8192; i++)
+	{
+//		memcpy(ct, cs, 128);
+		memcpy_fixed128_test(ct, cs, 128);
+	}
+
+	cj = TK_GetTimeMs();
+	ck = cj-ci;
+	if(ck>0)
+	{
+		tf=102400/ck;
+//		tf=12800/ck;
+		th=tf/100;
+		tl=tf-(th*100);
+		printf("memcpy (L1): %dms, %d.%02d MB/s\n", ck, th, tl);
+	}
+
+
+	ci = TK_GetTimeMs();
+
+//	memcpy(ct, cs, 1<<20);
+	for(i=0; i<16; i++)
+	{
+//		memcpy(ct, cs, 16384);
+		memcpy_movx_test(ct, cs, 16384);
+	}
+
+	cj = TK_GetTimeMs();
+	ck = cj-ci;
+	if(ck>0)
+	{
+		tf=25600/ck;
+//		tf=12800/ck;
+		th=tf/100;
+		tl=tf-(th*100);
+		printf("memcpy (L2): %dms, %d.%02d MB/s\n", ck, th, tl);
+	}
+
+	return(0);
+}

@@ -584,11 +584,14 @@ int main(int argc, char **argv, char **env)
 			continue;
 		}
 
-		if(top->dcOutOK==2)
+		v=top->dcOutVal;
+
+//		if(top->dcOutOK==2)
+		if(top->dcInHold)
 		{
 			printf("Busy\n");
 		}else
-			if(top->dcOutOK==1)
+//			if(top->dcOutOK==1)
 		{
 			printf("SR1 %04X Got=%08X Expect=%08X %s\n",
 				addr, v, v1,
@@ -609,12 +612,15 @@ int main(int argc, char **argv, char **env)
 //			if(n>=2048)
 			if(n>=16384)
 				break;
-		}else if(top->dcOutOK==0)
+		}
+#if 0
+		else if(top->dcOutOK==0)
 		{
 			fail|=1;
 			printf("Fail, Expect OK\n");
 			break;
 		}
+#endif
 	}
 
 	if(fail)
@@ -677,11 +683,22 @@ int main(int argc, char **argv, char **env)
 			continue;
 		}
 
-		if(top->dcOutOK==2)
+		lv0=top->dcOutVal;
+		lv1=top->dcOutValB;
+
+		v0=membuf[n*2+0];
+		v1=membuf[n*2+1];
+		v2=membuf[n*2+2];
+		v3=membuf[n*2+3];
+		lv2=v0|(((uint64_t)v1)<<32);
+		lv3=v2|(((uint64_t)v3)<<32);
+
+//		if(top->dcOutOK==2)
+		if(top->dcInHold)
 		{
 			printf("Busy\n");
 		}else
-			if(top->dcOutOK==1)
+//			if(top->dcOutOK==1)
 		{
 			printf("SR1 %04X Got=%016llX-%016llX Expect=%016llX-%016llX %s\n",
 				addr, lv0, lv1, lv2, lv3,

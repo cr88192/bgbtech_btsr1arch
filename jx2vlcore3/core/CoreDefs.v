@@ -281,6 +281,8 @@ parameter[4:0] UMEM_OPM_WR_TILE	= 5'b10111;		//Write Tile
 
 parameter[4:0] UMEM_OPM_SW_TILE	= 5'b11111;		//Swap Tiles (Full Duplex)
 
+parameter[4:0] UMEM_OPM_RD_BOUNCE	= 5'b01100;	//Read Request, Bounce
+
 
 parameter[2:0] JX2_BTY_SB		= 3'b000;
 parameter[2:0] JX2_BTY_SW		= 3'b001;
@@ -520,10 +522,13 @@ parameter[5:0] JX2_UCIX_ALUW_PSUBW	= 6'h21;		//ALU SUB
 parameter[5:0] JX2_UCIX_ALUW_MOVHLD	= 6'h22;		//ALU (High, Low)
 parameter[5:0] JX2_UCIX_ALUW_MOVLHD	= 6'h23;		//ALU (Low, High)
 
-parameter[5:0] JX2_UCIX_ALUW_PSHUFB	= 6'h45;		//ALU PSHUF.B
+parameter[5:0] JX2_UCIX_ALUW_PSHUFB	= 6'h15;		//ALU PSHUF.B
 parameter[5:0] JX2_UCIX_ALUW_PSHUFW	= 6'h25;		//ALU PSHUF.W
 parameter[5:0] JX2_UCIX_ALUW_MOVLD	= 6'h26;		//ALU (Low DWords)
 parameter[5:0] JX2_UCIX_ALUW_MOVHD	= 6'h27;		//ALU (High DWords)
+
+parameter[5:0] JX2_UCIX_ALUW_PSRCHN	= 6'h18;		//Packed Search
+parameter[5:0] JX2_UCIX_ALUW_PSRCHE	= 6'h1C;		//Packed Search
 
 parameter[5:0] JX2_UCIX_ALUW_PCSELT	= 6'h2F;		//Packed CSELT
 
@@ -602,6 +607,11 @@ parameter[5:0] JX2_UCIX_FPU_FSUB	= 6'h01;		//FPU SUB
 parameter[5:0] JX2_UCIX_FPU_FMUL	= 6'h02;		//FPU MUL
 parameter[5:0] JX2_UCIX_FPU_FDIV	= 6'h03;		//FPU DIV
 parameter[5:0] JX2_UCIX_FPU_FMOV	= 6'h04;		//FPU MOV
+
+parameter[5:0] JX2_UCIX_FPU_FMAC	= 6'h09;		//FPU FMAS (a*b+c)
+parameter[5:0] JX2_UCIX_FPU_FMAS	= 6'h0B;		//FPU FMAC (a*b-c)
+parameter[5:0] JX2_UCIX_FPU_FMRS	= 6'h0D;		//FPU FMAC (c-a*b)
+// parameter[5:0] JX2_UCIX_FPU_FMAS	= 6'h0F;		//FPU FMAC (a*b-c)
 
 parameter[5:0] JX2_UCIX_FPU_PADD	= 6'h05;		//FPU ADD (2x F32)
 parameter[5:0] JX2_UCIX_FPU_PSUB	= 6'h06;		//FPU SUB (2x F32)
@@ -730,18 +740,22 @@ parameter[5:0] JX2_UCIX_IXS_INVDC	= 6'h11;		//Flush D$
 `endif
 `endif
 
-`ifdef jx2_expand_l1isz
+`ifdef jx2_mem_l1isz_256
 parameter[255:0] JX2_L1I_FLUSHMSK	= UV256_FF;		//
-`else
-`ifdef jx2_reduce_l1sz
-parameter[15:0] JX2_L1I_FLUSHMSK	= UV16_FF;		//
-`else
+`endif
+`ifdef jx2_mem_l1isz_128
+parameter[127:0] JX2_L1I_FLUSHMSK	= UV128_FF;		//
+`endif
+`ifdef jx2_mem_l1isz_64
 parameter[63:0] JX2_L1I_FLUSHMSK	= UV64_FF;		//
 `endif
+`ifdef jx2_mem_l1isz_16
+parameter[15:0] JX2_L1I_FLUSHMSK	= UV16_FF;		//
 `endif
 
 `ifdef jx2_expand_l1dsz
-parameter[511:0] JX2_L1D_FLUSHMSK	= UV512_FF;		//
+//parameter[511:0] JX2_L1D_FLUSHMSK	= UV512_FF;		//
+parameter[255:0] JX2_L1D_FLUSHMSK	= UV256_FF;		//
 `else
 `ifdef jx2_reduce_l1sz
 parameter[15:0] JX2_L1D_FLUSHMSK	= UV16_FF;		//

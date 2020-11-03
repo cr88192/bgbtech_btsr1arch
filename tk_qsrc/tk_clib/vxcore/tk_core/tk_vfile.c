@@ -44,11 +44,23 @@ int tk_vf_addmount(TK_MOUNT *mnt)
 	}
 }
 
+TK_MOUNT *tk_vf_nextmount(TK_MOUNT *mnt)
+{
+	return(mnt->next);
+}
+
+TK_MOUNT *tk_vf_firstmount(void)
+{
+	return(tk_vf_mount);
+}
+
 int tk_fat_init();
 int tk_mount_sdfat();
 
 int tk_sysc_init();
 int tk_mount_sysc();
+
+int tk_wad4_init();
 
 
 static int tk_vf_init=0;
@@ -122,6 +134,7 @@ int tk_vfile_init()
 	
 //		tk_ird_init();
 		tk_fat_init();
+		tk_wad4_init();
 	
 		tk_mount_sdfat();
 		tk_mount_devfs();
@@ -199,8 +212,25 @@ void tk_free_mount(TK_MOUNT *tmp)
 	tk_mnt_freelist=tmp;
 }
 
-int tk_fmount(char *src, char *dst, char *fsty, char *parm)
+int tk_fmount(char *devfn, char *mntfn, char *fsty, char *mode, char **opts)
 {
+	TK_FILE_VT *cur;
+	TK_MOUNT *mnt;
+	
+	cur=tk_fsty_root;
+	while(cur)
+	{
+		if(!strcmp(cur->fsname, fsty))
+		{
+			if(cur->mount)
+			{
+				mnt=cur->mount(devfn, mntfn, fsty, mode, opts);
+				if(mnt)
+					return(0);
+			}
+		}
+		cur=cur->next;
+	}
 	return(-1);
 }
 

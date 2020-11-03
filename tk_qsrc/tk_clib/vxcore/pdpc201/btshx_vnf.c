@@ -41,6 +41,20 @@ __vec4f		__vnf_v4f_div(__vec4f a, __vec4f b);
 __vec4f		__vnf_v4f_cross(__vec4f a, __vec4f b);
 float		__vnf_v4f_dot(__vec4f a, __vec4f b);
 
+__vec3fx	__vnf_v3fx_add(__vec3fx a, __vec3fx b);
+__vec3fx	__vnf_v3fx_sub(__vec3fx a, __vec3fx b);
+__vec3fx	__vnf_v3fx_mul(__vec3fx a, __vec3fx b);
+__vec3fx	__vnf_v3fx_div(__vec3fx a, __vec3fx b);
+__vec3fx	__vnf_v3fx_cross(__vec3fx a, __vec3fx b);
+double		__vnf_v3fx_dot(__vec3fx a, __vec3fx b);
+
+__vec3fq	__vnf_v3fq_add(__vec3fq a, __vec3fq b);
+__vec3fq	__vnf_v3fq_sub(__vec3fq a, __vec3fq b);
+__vec3fq	__vnf_v3fq_mul(__vec3fq a, __vec3fq b);
+__vec3fq	__vnf_v3fq_div(__vec3fq a, __vec3fq b);
+__vec3fq	__vnf_v3fq_cross(__vec3fq a, __vec3fq b);
+float		__vnf_v3fq_dot(__vec3fq a, __vec3fq b);
+
 
 __m64		__m64_float2(float x, float y);
 __m128		__m128_float3(float x, float y, float z);
@@ -50,6 +64,9 @@ __vec2f		__v2f_float2(float x, float y);
 __vec3f		__v3f_float3(float x, float y, float z);
 __vec4f		__v4f_float4(float x, float y, float z, float w);
 __quatf		__vqf_float4(float x, float y, float z, float w);
+
+__vec3fq	__v3fq_float3(float x, float y, float z);
+__vec3fx	__v3fx_float3(double x, double y, double z);
 
 __fcomplex	__c2f_float2(float x, float y);
 
@@ -241,6 +258,137 @@ __vnf_v4f_dot:
 	FLDCFH		R3, R19
 	FADD		R18, R19, R2
 	RTSU
+
+
+__v3fq_float3:
+	FSTCF	R4, R16
+	FSTCF	R5, R17
+	FSTCF	R6, R18
+	SHLD	R16, -11, R16
+	SHLD	R17, -11, R17
+	SHLD	R18, -10, R18
+	SHLD.Q	R17, 21, R17
+	SHLD.Q	R18, 42, R18
+	OR		R16, R17, R19
+	OR		R18, R19, R2
+	RTSU
+
+__v3fq_unpackx2:
+	SHLD.Q	R4, 11, R16
+	SHLD.Q	R4, -10, R17
+	SHLD.Q	R4, -32, R18
+
+	SHLD.Q	R5, 11, R20
+	SHLD.Q	R5, -10, R21
+	SHLD.Q	R5, -32, R22
+	MOVLD	R17, R16, R4
+	MOV		R18, R5
+	MOVLD	R21, R20, R6
+	MOV		R22, R7
+	RTSU
+
+__vnf_v3fq_add:
+	MOV			LR, R23
+	BSR			__v3fq_unpackx2
+	PADDX.F		R4, R6, R2
+	FLDCF		R2, R4
+	FLDCFH		R2, R5
+	FLDCF		R3, R6
+	BSR			__v3fq_float3
+	JMP			R23
+__vnf_v3fq_sub:
+	MOV			LR, R23
+	BSR			__v3fq_unpackx2
+	PSUBX.F		R4, R6, R2
+	FLDCF		R2, R4
+	FLDCFH		R2, R5
+	FLDCF		R3, R6
+	BSR			__v3fq_float3
+	JMP			R23
+__vnf_v3fq_mul:
+	MOV			LR, R23
+	BSR			__v3fq_unpackx2
+	PMULX.F		R4, R6, R2
+	FLDCF		R2, R4
+	FLDCFH		R2, R5
+	FLDCF		R3, R6
+	BSR			__v3fq_float3
+	JMP			R23
+
+__vnf_v3fq_dot:
+	MOV			LR, R23
+	BSR			__v3fq_unpackx2
+	MOV			R23, LR
+	BRA			__vnf_v3f_dot
+__vnf_v3fq_cross:
+	MOV			LR, R23
+	BSR			__v3fq_unpackx2
+	BSR			__vnf_v3f_cross
+	FLDCF		R2, R4
+	FLDCFH		R2, R5
+	FLDCF		R3, R6
+	BSR			__v3fq_float3
+	JMP			R23
+
+__v3fx_float3:
+	SHLD	R4, -21, R16
+	SHLD	R5, -21, R17
+	SHLD	R6, -22, R18
+	SHLD.Q	R18, 22, R18
+	SHLD.Q	R17,  43, R20
+	SHLD.Q	R17, -21, R21
+	OR		R16, R20, R2
+	OR		R18, R21, R3
+	RTSU
+
+__v3fx_unpackx2:
+	SHLD.Q	R4, 21, R16
+	MOV	R5, R18
+	SHLD.Q	R6, 21, R20
+	MOV	R7, R22
+	SHLD.Q	R4, -22, R19
+	SHLD.Q	R5, 22, R17
+	OR		R19, R17
+	SHLD.Q	R6, -22, R19
+	SHLD.Q	R7, 22, R21
+	OR		R19, R21
+	RTSU
+
+__vnf_v3fx_add:
+	MOV			LR, R23
+	BSR			__v3fx_unpackx2
+	FADD		R16, R20, R4
+	FADD		R17, R21, R5
+	FADD		R18, R22, R6
+	MOV			R23, LR
+	BRA			__v3fx_float3
+__vnf_v3fx_sub:
+	MOV			LR, R23
+	BSR			__v3fx_unpackx2
+	FSUB		R16, R20, R4
+	FSUB		R17, R21, R5
+	FSUB		R18, R22, R6
+	MOV			R23, LR
+	BRA			__v3fx_float3
+__vnf_v3fx_mul:
+	MOV			LR, R23
+	BSR			__v3fx_unpackx2
+	FMUL		R16, R20, R4
+	FMUL		R17, R21, R5
+	FMUL		R18, R22, R6
+	MOV			R23, LR
+	BRA			__v3fx_float3
+
+__vnf_v3fx_dot:
+	MOV			LR, R23
+	BSR			__v3fx_unpackx2
+	FMUL		R16, R20, R4
+	FMUL		R17, R21, R5
+	FMUL		R18, R22, R6
+	FADD		R4, R5, R3
+	FADD		R3, R6, R2
+	BRA			R23
+
 
 };
 

@@ -271,6 +271,14 @@ assign		sdc_ena		= 1'b0;
 
 reg			clock_halfMhz;
 
+reg[7:0]	regInitSanity;
+reg			reset_sanity;
+// reg			reset2;
+// assign		reset_sanity = (regInitSanity!=8'h55);
+// assign		reset2 = reset || reset_sanity;
+wire			reset2;
+assign		reset2 = reset;
+
 wire		clock_cpu;
 `ifdef jx2_cpu_halfclock
 // assign	clock_cpu	= clock_halfMhz;
@@ -295,7 +303,7 @@ reg		timerNoiseL6;
 reg		timerNoiseL7;
 
 MmiModClkp		clkp(
-	clock_100,	reset,
+	clock_100,	reset2,
 	timer4MHz,
 	timer1MHz,
 	timer64kHz,
@@ -314,7 +322,7 @@ assign		ddrAddr = ddrAddr1[13:0];
 
 MmiModDdr3		ddr(
 	clock_100,		clock_200,
-	reset,
+	reset2,
 
 	ddrMemDataIn,	ddrMemDataOut,
 	ddrMemAddr,		ddrMemOpm,
@@ -391,7 +399,7 @@ wire			dbg1OutStatus7;
 wire			dbg1OutStatus8;
 
 ExUnit	cpu1(
-	clock_cpu, 		reset,
+	clock_cpu, 		reset2,
 	{ 4'h0, timers },
 
 	mem1AddrA,		mem1AddrB,
@@ -442,7 +450,7 @@ wire			dbg2OutStatus7;
 wire			dbg2OutStatus8;
 
 ExUnit	cpu2(
-	clock_cpu, 		reset,
+	clock_cpu, 		reset2,
 	{ 4'h1, timers },
 
 	mem2AddrA,		mem2AddrB,
@@ -486,7 +494,7 @@ assign		dbgOutStatus7 = dbg1OutStatus7 || dbg2OutStatus7;
 assign		dbgOutStatus8 = dbg1OutStatus8 || dbg2OutStatus8;
 
 ExMemJoin	cpuJoin(
-	clock_cpu,	reset,
+	clock_cpu,	reset2,
 	memInData,	memOutData,
 	memAddr,	memAddrB,
 	memOpm,		memOK,
@@ -537,7 +545,7 @@ wire			dbgOutStatus7;
 wire			dbgOutStatus8;
 
 ExUnit	cpu(
-	clock_cpu, 		reset,
+	clock_cpu, 		reset2,
 	{ 4'h0, timers },
 
 	memAddr,		memAddrB,
@@ -599,7 +607,7 @@ assign			fixedPinsIn[15:2] = 0;
 assign			gpioPinsIn = 0;
 
 MmiModGpio	gpio(
-	clock_100,			reset,
+	clock_100,			reset2,
 	gpioPinsOut,	gpioPinsIn,		gpioPinsDir,
 	fixedPinsOut,	fixedPinsIn,
 	outTimer1MHz,	outTimer100MHz,
@@ -614,7 +622,7 @@ MmiModGpio	gpio(
 wire[63:0]		memBounceIrq;
 
 MemL2A	l2a(
-	clock_100,		reset,
+	clock_100,		reset2,
 
 	memAddr,		memAddrB,
 	memOutData,		memInData,
@@ -642,7 +650,7 @@ assign	vgaHsync	= scrnPwmOut[12];
 assign	vgaVsync	= scrnPwmOut[13];
 
 ModTxtNtW	scrn(
-	clock_100,			reset,				scrnPwmOut,
+	clock_100,		reset2,				scrnPwmOut,
 	mmioOutDataQ,	scrnMmioOutData,	mmioAddr,
 	mmioOpm,		scrnMmioOK,
 	timerNoise,		timer256Hz);
@@ -662,7 +670,7 @@ wire[7:0]	audAuxPcmL;
 wire[7:0]	audAuxPcmR;
 
 ModAudPcm	pcm(
-	clock_100,			reset,
+	clock_100,		reset2,
 	audPwmOut,		audPwmEna,
 	audAuxPcmL,		audAuxPcmR,
 	mmioOutData,	audMmioOutData,		mmioAddr,
@@ -674,7 +682,7 @@ wire[31:0]	fmMmioOutData;
 wire[1:0]	fmMmioOK;
 
 ModAudFm	fmsyn(
-	clock_100,			reset,
+	clock_100,		reset2,
 	audAuxPcmL,		audAuxPcmR,
 	mmioOutData,	fmMmioOutData,		mmioAddr,
 	mmioOpm,		fmMmioOK,
@@ -717,7 +725,7 @@ reg			ps2kb_dati;
 
 
 ModPs2Kb	ps2kb(
-	clock_100,			reset,
+	clock_100,			reset2,
 //	ps2kb_clk_i,		ps2kb_clk_o,		ps2kb_clk_d,	
 	ps2kb_clki,		ps2kb_clk_o,		ps2kb_clk_d,	
 //	ps2kb_data_i,		ps2kb_data_o,		ps2kb_data_d,
@@ -729,7 +737,7 @@ wire[63:0]	sdMmioOutData;
 wire[1:0]	sdMmioOK;
 
 ModSdSpi	sdspi(
-	clock_100,			reset,
+	clock_100,			reset2,
 	sdc_sclk,		sdc_di,
 	sdc_do,			sdc_cs,
 	mmioOutDataQ,	sdMmioOutData,	mmioAddr,
@@ -754,9 +762,14 @@ wire[7:0]		ssOutCharBit;
 wire[7:0]		ssOutSegBit;
 
 Mod7Seg		sevSeg(
-	clock_100,		reset,
+	clock_100,		reset2,
 	sevSegVal,		timer1kHz,	timerNoise,
 	ssOutCharBit,	ssOutSegBit);
+
+
+initial begin
+	regInitSanity = 0;
+end
 
 always @*
 begin
@@ -939,6 +952,24 @@ begin
 	
 	audPwmOut2			<= audPwmOut[0];
 	audPwmEna2			<= audPwmEna;
+
+`ifndef def_true
+//	if(reset || (regInitSanity!=8'h55))
+//	begin
+//	end
+
+	reset_sanity 	<= (regInitSanity!=8'h55);
+	reset2			<= reset || reset_sanity;
+
+	if(reset)
+	begin
+		regInitSanity	<= 0;
+	end
+	else
+	begin
+		regInitSanity	<= 8'h55;
+	end
+`endif
 
 end
 

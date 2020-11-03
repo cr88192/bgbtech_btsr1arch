@@ -745,6 +745,167 @@ X(__memcpy8_16):
 	mov.q r1, @(r4, 8)
 	rts
 
+
+.ifarch bjx2_movx
+memcpy_movx:
+	CMP/GE	32, R6
+	BF		.L1
+	.L0:
+	MOV.X	(R5,  0), R20
+	MOV.X	(R5, 16), R22
+	ADD		32, R5		|	ADD		-32, R6
+	MOV.X	R20, (R4,  0)
+	MOV.X	R22, (R4, 16)
+	ADD		32, R4		|	CMP/GE	32, R6
+	BT		.L0
+	.L1:
+
+	CMP/GE	8, R6
+	BF		.L3
+	.L2:
+	ADD		-8, R6		|	MOV.Q	(R5,  0), R20
+	ADD		8, R5		|	MOV.Q	R20, (R4,  0)
+	ADD		8, R4		|	CMP/GE	8, R6
+	BT		.L2
+	.L3:
+
+#if 1
+	TEST	R6, R6
+	RTSU?T
+//	BT		.L5
+
+	CMP/GE		4, R6
+	MOV.L?T		(R5), R2
+	MOV.L?T		R2, (R4)
+	ADD?T		4, R4
+	ADD?T		4, R5
+	ADD?T		-4, R6
+
+	CMP/GE		2, R6
+	MOV.W?T		(R5), R2
+	MOV.W?T		R2, (R4)
+	ADD?T		2, R4
+	ADD?T		2, R5
+	ADD?T		-2, R6
+
+	CMP/GE		1, R6
+	MOV.B?T		(R5), R2
+	MOV.B?T		R2, (R4)
+
+//	.L5:
+#endif
+
+	RTSU
+.endif
+
+.global X(memcpy)
+X(memcpy):
+#if 1
+.ifarch bjx2_movx
+	OR		r4, r5,	r7
+//	OR		r7, r6,	r7
+	TEST	#7, r7
+	BT		memcpy_movx
+.endif
+#endif
+
+.ifarch bjx2_wex
+	cmp/ge	#32, r6
+	bf		.L1
+	.L0:
+	mov.q	(r5,  0), r20
+	mov.q	(r5,  8), r21
+	mov.q	(r5, 16), r22
+	mov.q	(r5, 24), r23
+	mov.q	r20, (r4,  0)
+	mov.q	r21, (r4,  8)
+	add		#32, r5		| mov.q		r22, (r4, 16)
+	add		#-32, r6	| mov.q		r23, (r4, 24)
+	add		#32, r4		| cmp/ge	#32, r6
+	bt		.L0
+	.L1:
+
+	cmp/ge	#8, r6
+	bf		.L3
+	.L2:
+	add		#-8, r6		| mov.q		(r5), r2
+	add		#8, r5		| mov.q		r2, (r4)
+	add		#8, r4		| cmp/ge	#8, r6
+	bt		.L2
+	.L3:
+.else
+	cmp/ge	#32, r6
+	bf		.L1
+	.L0:
+	mov.q	(r5,  0), r20
+	mov.q	(r5,  8), r21
+	mov.q	(r5, 16), r22
+	mov.q	(r5, 24), r23
+	mov.q	r20, (r4,  0)
+	mov.q	r21, (r4,  8)
+	mov.q	r22, (r4, 16)
+	mov.q	r23, (r4, 24)
+	add		#32, r4
+	add		#32, r5
+	add		#-32, r6
+	cmp/ge	#32, r6
+	bt		.L0
+	.L1:
+
+	cmp/ge	#8, r6
+	bf		.L3
+	.L2:
+	mov.q	(r5), r2
+	mov.q	r2, (r4)
+	add		#8, r4
+	add		#8, r5
+	add		#-8, r6
+	cmp/ge	#8, r6
+	bt		.L2
+	.L3:
+.endif
+
+#if 0
+	cmp/ge #16, r6
+	mov.q?t		(r5,  0), r2
+	mov.q?t		(r5,  8), r3
+	mov.q?t		r2, (r4,  0)
+	mov.q?t		r3, (r4,  8)
+	add?t		#16, r4
+	add?t		#16, r5
+	add?t		#-16, r6
+
+	cmp/ge #8, r6
+	mov.q?t		(r5), r2
+	mov.q?t		r2, (r4)
+	add?t		#8, r4
+	add?t		#8, r5
+	add?t		#-8, r6
+#endif
+
+#if 1
+	cmp/ge #4, r6
+	mov.l?t		(r5), r2
+	mov.l?t		r2, (r4)
+	add?t		#4, r4
+	add?t		#4, r5
+	add?t		#-4, r6
+
+	cmp/ge #2, r6
+	mov.w?t		(r5), r2
+	mov.w?t		r2, (r4)
+	add?t		#2, r4
+	add?t		#2, r5
+	add?t		#-2, r6
+
+	cmp/ge #1, r6
+	mov.b?t		(r5), r2
+	mov.b?t		r2, (r4)
+#endif
+	rtsu
+
+
+
 .global X(sleep_0)
 X(sleep_0):
 	sleep
