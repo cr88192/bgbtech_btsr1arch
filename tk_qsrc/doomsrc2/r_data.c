@@ -162,6 +162,10 @@ byte**			texturecomposite;
 int*		flattranslation;
 int*		texturetranslation;
 
+byte		**flattransptr;
+int			*flattransptrlump;
+
+
 // needed for pre rendering
 fixed_t*	spritewidth;	
 fixed_t*	spriteoffset;
@@ -295,7 +299,8 @@ void R_GenerateComposite (int texnum)
 		i<texture->patchcount;
 		i++, patch++)
 	{
-		realpatch = W_CacheLumpNum (patch->patch, PU_CACHE);
+//		realpatch = W_CacheLumpNum (patch->patch, PU_CACHE);
+		realpatch = W_CachePatchNum (patch->patch, PU_CACHE);
 		x1 = patch->originx;
 		x2 = x1 + SHORT(realpatch->width);
 
@@ -371,7 +376,8 @@ void R_GenerateLookup (int texnum)
 		i<texture->patchcount;
 		i++, patch++)
 	{
-		realpatch = W_CacheLumpNum (patch->patch, PU_CACHE);
+//		realpatch = W_CacheLumpNum (patch->patch, PU_CACHE);
+		realpatch = W_CachePatchNum (patch->patch, PU_CACHE);
 		x1 = patch->originx;
 		x2 = x1 + SHORT(realpatch->width);
 		
@@ -443,7 +449,8 @@ byte *R_GetColumn
 	ofs = texturecolumnofs[tex][col];
 	
 	if (lump > 0)
-		return (byte *)W_CacheLumpNum(lump,PU_CACHE)+ofs;
+//		return (byte *)W_CacheLumpNum(lump,PU_CACHE)+ofs;
+		return (byte *)W_CachePatchNum(lump,PU_CACHE)+ofs;
 
 	if (!texturecomposite[tex])
 	{
@@ -497,7 +504,7 @@ void R_InitTextures (void)
 	int			temp2;
 	int			temp3;
 
-	tk_puts("R_IT\n");
+//	tk_puts("R_IT\n");
 
 	// Load the patch names from pnames.lmp.
 	name[8] = 0;	
@@ -670,12 +677,430 @@ void R_InitFlats (void)
 	numflats = lastflat - firstflat + 1;
 	
 	// Create translation table for global animation.
-	flattranslation = Z_Malloc ((numflats+1)*4, PU_STATIC, 0);
+//	flattranslation = Z_Malloc ((numflats+1)*4, PU_STATIC, 0);
+	flattranslation = Z_Malloc ((numflats+1)*sizeof(int), PU_STATIC, 0);
+	flattransptr = Z_Malloc ((numflats+1)*sizeof(byte *), PU_STATIC, 0);
+//	flattransptrlump = Z_Malloc ((numflats+1)*sizeof(int), PU_STATIC, 0);
 	
 	for (i=0 ; i<numflats ; i++)
 		flattranslation[i] = i;
 }
 
+void R_DecodeColorCell8(byte *cs, byte *ct, int xs)
+{
+	int ca, cb, px;
+
+	ca=cs[0];	cb=cs[1];
+	px=((u16 *)cs)[1];
+	
+//	ca=0x55;
+//	cb=0xAA;
+//	px=0x5A5A;
+	
+	ct[0]=(px&0x0001)?ca:cb;
+	ct[1]=(px&0x0002)?ca:cb;
+	ct[2]=(px&0x0004)?ca:cb;
+	ct[3]=(px&0x0008)?ca:cb;
+	ct+=xs;
+	ct[0]=(px&0x0010)?ca:cb;
+	ct[1]=(px&0x0020)?ca:cb;
+	ct[2]=(px&0x0040)?ca:cb;
+	ct[3]=(px&0x0080)?ca:cb;
+	ct+=xs;
+	ct[0]=(px&0x0100)?ca:cb;
+	ct[1]=(px&0x0200)?ca:cb;
+	ct[2]=(px&0x0400)?ca:cb;
+	ct[3]=(px&0x0800)?ca:cb;
+	ct+=xs;
+	ct[0]=(px&0x1000)?ca:cb;
+	ct[1]=(px&0x2000)?ca:cb;
+	ct[2]=(px&0x4000)?ca:cb;
+	ct[3]=(px&0x8000)?ca:cb;
+	ct+=xs;
+}
+
+void *W_CacheFlatNum(int flat, int tag)
+{
+	void *src, *buf;
+	byte *cs, *cse, *cs1e, *ct;
+	int lump, size, srci, flat2;
+
+	flat2 = flattranslation[flat];
+//	lump = firstflat + flattranslation[flat];
+	lump = firstflat + flat2;
+
+	src = flattransptr[flat2];
+//	srci = flattransptrlump[flat2];
+	if(src)
+		return(src);
+
+	size = lumpinfo[lump].size;
+	
+	if(size == 1024)
+	{
+		if(!src)
+			src = Z_Malloc (4096, tag, &flattransptr[flat2]);
+		buf = W_CacheLumpNum(lump, PU_CACHE);
+//		flattransptrlump[flat2] = lump;
+		
+		cs = buf;	ct = src;	cse = cs + 1024;
+		while(cs < cse)
+		{
+			cs1e=cs+64;
+			while(cs<cs1e)
+			{
+				R_DecodeColorCell8(cs, ct, 64);
+				cs+=4;
+				ct+=4;
+			}
+			ct+=3*64;
+		}
+
+		return(src);
+	}
+
+	if(size == 4096)
+	{
+		if(!src)
+			src = Z_Malloc (4096, tag, &flattransptr[flat2]);
+		buf = W_CacheLumpNum(lump, PU_CACHE);
+		memcpy(src, buf, 4096);
+		return(src);
+	}
+
+	src = W_CacheLumpNum(lump, tag);
+	return(src);
+}
+
+void		**patchcache;
+
+#ifndef BGBCC_FOURCC
+#define BGBCC_FOURCC(a, b, c, d)	((a)|((b)<<8)|((c)<<16)|((d)<<24))
+#endif
+
+void R_ColorCellPostDecode8(byte *cs, byte *ct)
+{
+	int ca, cb, px;
+
+	ca=cs[0];
+	cb=cs[1];
+	px=cs[2];
+		
+	ct[0]=(px&0x01)?ca:cb;
+	ct[1]=(px&0x02)?ca:cb;
+	ct[2]=(px&0x04)?ca:cb;
+	ct[3]=(px&0x08)?ca:cb;
+	ct[4]=(px&0x10)?ca:cb;
+	ct[5]=(px&0x20)?ca:cb;
+	ct[6]=(px&0x40)?ca:cb;
+	ct[7]=(px&0x80)?ca:cb;
+}
+
+int R_ColorCellPostDecodeC8(byte *cs, byte *ct, int len)
+{
+	int l;
+	
+	l=len;
+	while(l>0)
+	{
+		R_ColorCellPostDecode8(cs, ct);
+		cs+=3;	ct+=8;	l-=8;
+	}
+	return(0);
+}
+
+int R_ColorCellPostDecodeC16(byte *cs, byte *ct, int len)
+{
+	int l;
+	
+	l=len;
+	while(l>0)
+	{
+		R_DecodeColorCell8(cs, ct, 4);
+		cs+=4;	ct+=16;	l-=16;
+	}
+	return(0);
+}
+
+void *W_CachePatchNum(int lump, int tag)
+{
+	void		*src, *buf;
+	byte		*csbuf, *ctbuf, *cs, *ct;
+	u32			*csofs;
+	u16			*csofs16;
+    patch_t		*spatch, *tpatch;
+    int			size, size2, xs, ys, xs1, ys1, xs2, ys2, cctag;
+    int			x, y, py, pl, ofs, is8, is16, israw, isofs16;
+    int			isflat;
+
+	src = patchcache[lump];
+	if(src)
+		return(src);
+
+	size = lumpinfo[lump].size;
+
+	buf = W_CacheLumpNum(lump, PU_CACHE);
+
+	csbuf = buf;
+	spatch = (patch_t *)csbuf;
+	xs=SHORT(spatch->width);
+	ys=SHORT(spatch->height);
+
+	size2= 8 + (xs+1)*4;
+//	csofs = csbuf+8;
+	csofs = (u32 *)(spatch->columnofs);
+	csofs16 = (u16 *)csofs;
+
+	for(x=0; x<xs; x++)
+	{
+//		ofs=spatch->columnofs[x];
+		ofs=csofs[x];
+		if(ofs>>28)
+			break;
+	}
+
+//	if(memcmp(buf, "CP8A", 4))
+	if(x>=xs)
+	{
+		src = Z_Malloc (size, tag, &patchcache[lump]);
+		memcpy(src, buf, size);
+		return(src);
+	}
+
+	isofs16 = 0;
+	isflat = 0;
+
+	ofs = csofs[0];
+	if((ofs>>28)&0xC)
+		isofs16 = 1;
+
+	if(isofs16)
+	{
+		ofs = csofs16[0];
+		if((ofs&0x3FFF)<(8+(xs*2)))
+		{
+			isflat = 1;
+			if((ofs>>14)==1)	is8=1;
+			if((ofs>>14)==2)	is16=1;
+			if((ofs>>14)==3)	israw=1;
+		}
+	}
+
+#if 1
+	if(isflat)
+	{
+//		xs1=(xs+3)&(~3);	ys1=(ys+3)&(~3);
+		xs2=(xs+3)>>2;		ys2=(ys+3)>>2;
+		xs1=xs2<<2;			ys1=ys2<<2;
+		size2=8+((xs+1)*4);
+		size2+=xs1*(ys1+8);
+	}else
+	{
+		size2=8+((xs+1)*4);
+		for(x=0; x<xs; x++)
+		{
+			if(x>0)
+			{
+				if(spatch->columnofs[x]==spatch->columnofs[x-1])
+					continue;
+			}
+
+			if(isofs16)
+			{
+	//			ofs=spatch->columnofs[x];
+				ofs=csofs16[x];
+				israw=0;	is16=0;		is8=0;
+				if((ofs>>14)==1)	is8=1;
+				if((ofs>>14)==2)	is16=1;
+				if((ofs>>14)==3)	israw=1;
+				ofs&=0x3FFF;
+			}else
+			{
+	//			ofs=spatch->columnofs[x];
+				ofs=csofs[x];
+				israw=0;	is16=0;		is8=0;
+				if((ofs>>28)==1)	is8=1;
+				if((ofs>>28)==2)	is16=1;
+				if((ofs>>28)==3)	israw=1;
+				ofs&=0x00FFFFFF;
+			}
+
+			cs=csbuf+ofs;
+
+			while(1)
+			{
+				py=cs[0];
+				pl=cs[1];
+				if(py==0xFF)
+					{ size2++; break; }
+				if(is8)
+					{ cs+=2+((pl+7)/8)*3; }
+				else if(is16)
+					{ cs+=2+((pl+15)/16)*4; }
+				else if(israw)
+					{ cs+=2+pl; }
+				else
+					{ cs+=4+pl; }
+				size2+=pl+4;
+			}
+		}
+	}
+#endif	
+
+//	size2 = ((int *)buf)[1];
+	src = Z_Malloc (size2, tag, &patchcache[lump]);
+
+	csbuf = buf;
+	ctbuf = src;
+
+//	is16=!memcmp(buf, "CP16", 4);
+
+//	memcpy(src, ctbuf+16, 8);
+
+//	spatch = (patch_t *)(csbuf+8);
+	spatch = (patch_t *)csbuf;
+	tpatch = (patch_t *)ctbuf;
+
+	memcpy(tpatch, spatch, sizeof(patch_t));
+
+//	xs=SHORT(spatch->width);
+//	cctag=LONG(patch->columnofs[xs]);
+
+	if(isflat)
+	{
+		ofs=csofs16[0];
+		ofs&=0x3FFF;
+		cs=csbuf+ofs;
+
+		ct=ctbuf+8+((xs+1)*4);
+		ct+=3;
+
+		for(x=0; x<xs2; x++)
+		{
+			for(y=0; y<ys2; y++)
+			{
+				R_DecodeColorCell8(cs, ct, ys1+8);
+				cs+=4;
+				ct+=4;
+			}
+			ct+=8;
+			ct+=3*(ys1+8);
+		}
+
+		py=(csofs16[1])&255;
+		pl=ys;
+
+		ct=ctbuf+8+((xs+1)*4);
+		for(x=0; x<xs; x++)
+		{
+			tpatch->columnofs[x]=ct-ctbuf;
+			ct[0]=py;
+			ct[1]=pl;
+			ct[2]=ct[3];
+			ct[pl+3]=ct[pl+2];
+			ct[pl+4]=0xFF;
+			ct[pl+5]=0xFF;
+			ct[pl+6]=0xFF;
+			ct[pl+7]=0xFF;
+			ct+=ys1+8;
+		}
+	}else
+	{
+		ct=ctbuf+8+((xs+1)*4);
+		for(x=0; x<xs; x++)
+		{
+			if(x>0)
+			{
+				if(spatch->columnofs[x]==spatch->columnofs[x-1])
+				{
+					tpatch->columnofs[x]=tpatch->columnofs[x-1];
+					continue;
+				}
+			}
+
+			if(isofs16)
+			{
+	//			ofs=spatch->columnofs[x];
+				ofs=csofs16[x];
+				israw=0;	is16=0;		is8=0;
+				if((ofs>>14)==1)	is8=1;
+				if((ofs>>14)==2)	is16=1;
+				if((ofs>>14)==3)	israw=1;
+				ofs&=0x3FFF;
+			}else
+			{
+	//			ofs=spatch->columnofs[x];
+				ofs=csofs[x];
+				israw=0;	is16=0;		is8=0;
+				if((ofs>>28)==1)	is8=1;
+				if((ofs>>28)==2)	is16=1;
+				if((ofs>>28)==3)	israw=1;
+				ofs&=0x00FFFFFF;
+			}
+
+			cs=csbuf+ofs;
+			tpatch->columnofs[x]=ct-ctbuf;
+
+			while(1)
+			{
+				py=cs[0];
+				pl=cs[1];
+				if(py==0xFF)
+				{
+					*ct++=0xFF;
+					break;
+				}
+				
+				ct[0]=py;
+				ct[1]=pl;
+				
+				if(is8)
+				{
+					R_ColorCellPostDecodeC8(cs+2, ct+3, pl);
+					cs+=2+((pl+7)/8)*3;
+				}
+				else if(is16)
+				{
+					R_ColorCellPostDecodeC16(cs+2, ct+3, pl);
+					cs+=2+((pl+15)/16)*4;
+				}
+				else if(israw)
+				{
+					memcpy(ct+3, cs+2, pl);
+					cs+=2+pl;
+				}else
+				{
+					memcpy(ct+3, cs+3, pl);
+					cs+=4+pl;
+				}
+
+				ct[2]=ct[3];
+				ct[pl+3]=ct[pl+2];
+				
+				ct+=pl+4;
+			}
+		}
+	}
+
+//	src = W_CacheLumpNum(lump, tag);
+	return(src);
+}
+
+void *W_CachePatchName(char *name, int tag)
+{
+	int lump;
+
+	lump=W_GetNumForName (name);
+	return(W_CachePatchNum(lump, tag));
+}
+
+void *W_CacheFlatName(char *name, int tag)
+{
+	int lump;
+
+	lump=W_GetNumForName (name);
+	return(W_CacheFlatNum(lump-firstflat, tag));
+}
 
 //
 // R_InitSpriteLumps
@@ -711,7 +1136,8 @@ void R_InitSpriteLumps (void)
 		if (!(i&63))
 			printf (".");
 
-		patch = W_CacheLumpNum (firstspritelump+i, PU_CACHE);
+//		patch = W_CacheLumpNum (firstspritelump+i, PU_CACHE);
+		patch = W_CachePatchNum (firstspritelump+i, PU_CACHE);
 		spritewidth[i] = SHORT(patch->width)<<FRACBITS;
 		spriteoffset[i] = SHORT(patch->leftoffset)<<FRACBITS;
 		spritetopoffset[i] = SHORT(patch->topoffset)<<FRACBITS;
@@ -850,7 +1276,7 @@ lighttable_t *R_ColormapForLump(int lump, int lvl)
 //
 void R_InitData (void)
 {
-	tk_puts("TI ");
+//	tk_puts("TI ");
 //	printf ("\nIT");
 	R_InitTextures ();
 	printf ("\nInitTextures");

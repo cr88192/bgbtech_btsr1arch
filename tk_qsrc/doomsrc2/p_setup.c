@@ -1058,6 +1058,26 @@ void P_LoadBehavior (int lump)
 	return;
 }
 
+void P_LoadReject (int lump)
+{
+    byte*		data;
+    int			i, lsz, nsz;
+	
+	lsz = W_LumpLength (lump);
+	
+	nsz = ((numsectors * numsectors)+7)/8;
+	if(lsz < nsz)
+	{
+		rejectmatrix = Z_Malloc (nsz, PU_LEVEL, NULL);
+		memset (rejectmatrix, 0, nsz);
+		data = W_CacheLumpNum (lump, PU_CACHE);
+		memcpy (rejectmatrix, data, lsz);
+	}else
+	{
+		rejectmatrix = W_CacheLumpNum (lump, PU_LEVEL);
+    }
+}
+
 
 
 //
@@ -1243,8 +1263,11 @@ P_SetupLevel
     P_LoadSubsectors (lumpnum+ML_SSECTORS);
     P_LoadNodes (lumpnum+ML_NODES);
     P_LoadSegs (lumpnum+ML_SEGS);
+
+    P_LoadReject (lumpnum+ML_REJECT);
 	
-    rejectmatrix = W_CacheLumpNum (lumpnum+ML_REJECT,PU_LEVEL);
+//    rejectmatrix = W_CacheLumpNum (lumpnum+ML_REJECT,PU_LEVEL);
+
     P_GroupLines ();
 
     bodyqueslot = 0;

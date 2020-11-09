@@ -35,6 +35,10 @@
 // Visplane related.
 extern  short*		lastopening;
 
+#define MAXOPENINGS	SCREENWIDTH*64
+// #define MAXOPENINGS	SCREENWIDTH*256
+extern short			openings[MAXOPENINGS];
+
 
 typedef void (*planefunction_t) (int top, int bottom);
 

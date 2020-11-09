@@ -1,3 +1,12 @@
+#ifndef FOURCC
+#define FOURCC(a, b, c, d)		((a)|((b)<<8)|((c)<<16)|((d)<<24))
+#endif
+
+#define FCC_PLF3		FOURCC('P', 'L', 'F', '3')
+#define FCC_PLF4		FOURCC('P', 'L', 'F', '4')
+#define FCC_PEL3		FOURCC('P', 'E', 'L', '3')
+#define FCC_PEL4		FOURCC('P', 'E', 'L', '4')
+
 // extern u64 __arch_gbr;
 
 byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz)
@@ -618,7 +627,9 @@ int TKPE_ApplyStaticRelocs(byte *imgptr, byte *rlc, int szrlc,
 }
 #endif
 
-int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
+int TKPE_LoadStaticPE(
+	TK_FILE *fd, int fdoffs,
+	void **rbootptr, void **rbootgbr)
 {
 	byte tbuf[1024];
 	byte *imgptr, *ct, *cte, *bss_ptr;
@@ -633,13 +644,19 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 	int cb, nb, kb;
 	int i, l;
 	
-	tk_fseek(fd, 0, 0);
+//	tk_fseek(fd, 0, 0);
+	tk_fseek(fd, fdoffs, 0);
 	tk_fread(tbuf, 1, 1024, fd);
 
 	is_pel4=0;
 	
 	*rbootptr = NULL;
 	*rbootgbr = NULL;
+
+//	sig_mz=tkfat_getDWord(tbuf);
+//	if((sig_mz==FCC_PLF3) || (sig_mz==FCC_PLF4))
+//	{
+//	}
 
 #if 1
 	sig_mz=tkfat_getWord(tbuf);
@@ -745,7 +762,8 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 	
 	if(!is_pel4)
 	{
-		tk_fseek(fd, 0, 0);
+//		tk_fseek(fd, 0, 0);
+		tk_fseek(fd, fdoffs, 0);
 	//	tk_fread(imgptr, 1, imgsz, fd);
 
 #if 1

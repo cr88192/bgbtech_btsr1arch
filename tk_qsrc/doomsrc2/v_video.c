@@ -565,7 +565,8 @@ V_DrawPatchDirectName
 	if(lump < 0)
 		return;
 	
-    patch = W_CacheLumpNum (lump, PU_CACHE);
+//    patch = W_CacheLumpNum (lump, PU_CACHE);
+    patch = W_CachePatchNum (lump, PU_CACHE);
     tcol = R_ColormapForLump (lump, 0);
 //    V_DrawPatchDirect(x, y, scrn, patch);
 

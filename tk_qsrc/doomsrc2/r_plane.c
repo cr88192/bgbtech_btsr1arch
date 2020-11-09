@@ -59,7 +59,7 @@ visplane_t*		floorplane;
 visplane_t*		ceilingplane;
 
 // ?
-#define MAXOPENINGS	SCREENWIDTH*64
+// #define MAXOPENINGS	SCREENWIDTH*64
 // #define MAXOPENINGS	SCREENWIDTH*256
 short			openings[MAXOPENINGS];
 short*			lastopening;
@@ -443,10 +443,12 @@ void R_DrawPlanes (void)
 		}
 		
 		// regular flat
-		ds_source = W_CacheLumpNum(firstflat +
-					   flattranslation[pl->picnum],
-					   PU_STATIC);
-		
+//		ds_source = W_CacheLumpNum(firstflat +
+//					   flattranslation[pl->picnum],
+//					   PU_STATIC);
+
+		ds_source = W_CacheFlatNum(pl->picnum, PU_STATIC);
+
 		planeheight = abs(pl->height-viewz);
 		light = (pl->lightlevel >> LIGHTSEGSHIFT)+extralight;
 

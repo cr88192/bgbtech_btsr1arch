@@ -98,6 +98,11 @@ void*	W_CacheLumpName (char* name, int tag);
 void*	W_CacheLumpNameBase (int base, char* name, int tag);
 
 
+void *W_CacheFlatNum(int flat, int tag);
+void *W_CachePatchNum(int lump, int tag);
+void *W_CachePatchName(char *name, int tag);
+void *W_CacheFlatName(char *name, int tag);
+
 
 
 #endif

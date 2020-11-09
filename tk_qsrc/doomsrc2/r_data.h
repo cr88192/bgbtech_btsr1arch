@@ -49,6 +49,11 @@ void R_PrecacheLevel (void);
 // lookup by name. For animation?
 int R_FlatNumForName (char* name);
 
+void *W_CacheFlatNum(int flat, int tag);
+void *W_CachePatchNum(int lump, int tag);
+void *W_CachePatchName(char *name, int tag);
+void *W_CacheFlatName(char *name, int tag);
+
 
 // Called by P_Ticker for switches and animations,
 // returns the texture number for the texture name.

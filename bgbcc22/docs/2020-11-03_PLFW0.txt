@@ -1,0 +1,137 @@
+Random Idea:
+* Specify a Fat Binary format for PELZ.
+* Magic: 'PLFW' ("PELZ Fat WAD")
+
+General:
+* The format of this index will be similar to that of the IWAD format.
+* Will store a separate image within each lump.
+* Non-PELZ lumps will not necessarily require file alignment.
+** PELZ images will require a 1K file alignment.
+* Lumps may not overlap.
+* Lump name clashes are not allowed.
+
+
+The first 1K of the combined image will be used as an index.
+* In this form, the directory will need to fit within this region.
+
+
+Directory ordering may effect loader priority.
+* The first entry should be the "most generic".
+** Portable VM or IR formats go here.
+* The last entry will be the "most specialized".
+** Binaries for specific target machines go here.
+
+Only the first matching binary will be loaded, any other contents within the image will be ignored.
+
+If there is a valid binary for the target present, an installer or similar may reserve the right to replace the binary with the contents of its curresponding sub-image.
+
+If a VM image is present and an AOT Loader is identified, an installer may be allowed to invoke the AOT Compiler and replace the binary with its AOT-compiled counterpart if directed. Otherwise, it may identify an interpreter or similar.
+
+Header:
+ PLFW_Header {
+ FOURCC  magic;		//'PLFW'
+ U32     numlumps;	//number of lumps in directory
+ U32     diroffs;	//offset of the directory (bytes)
+ }
+
+Normally, this header will be located at the start of the file.
+* This header may also be located at the 128 byte mark.
+** This is intended to allow for possible use in combination with a hashbang.
+
+
+DirEnt:
+ PLFW_DirEnt {
+ U32     offs;		//offset of the sub-image in the file
+ U32     size;		//stored size of sub-image
+ BYTE    name[8];	//Lump Name
+ };
+
+Offs:
+* File offset of the start of the sub-image in bytes.
+** Formats may impose additional alignment requirements.
+
+Size:
+* Size of the sub-image in bytes.
+* This represents the storage (compressed) size of the image within this format.
+
+The name will generally be interpreted as an identifier for the target.
+* The name will be split into sub-fields:
+** Name1, First 4 characters
+** Name2, Last 4 characters
+** Name1A, First two characters of Name1
+** Name1B, Second two characters of Name1
+** Name2A, First two characters of Name2
+** Name2B, Second two characters of Name2
+
+Name1A:
+* Will identify the major platform or OS.
+* 'TK': TesrKern
+* 'LN': Linux (?)
+* ...
+
+Name1B:
+* Will identify the binary format.
+* 'PE': PELZ or PE/COFF;
+* 'EL': ELF;
+* 'TX': Text/ASCII formats, such as Shell Scripts.
+* 'VM': VM Bytecode Formats.
+** 'VM' + 'ALDR': May trigger AOT to compile image.
+
+Name2A:
+* Will identify the major architecture (PE/ELF).
+** 'B2': BJX2
+
+Name2B:
+* Will identify the sub-architecture.
+** BJX2 'DA': Revision D, Profile A.
+
+Name2 may also be interpreted as a FOURCC (PELZ or ELF):
+* The 'BJX2' FCC will be reserved for a "generic" case binary of BJX2.
+** This will use only a baseline set of ISA features.
+* 'IX86': x86 (32-bit)
+* 'IX64': x86-64
+* 'RV32': RISC-V (32-bit)
+* 'RV64': RISC-V (64-bit)
+* 'ARM7': ARMv7 (32-bit)
+* 'ARM8': ARMv8 (64-bit)
+* 'SH4A': SH-4 / SH-4A
+* ...
+
+Text Formats (Name2):
+* 'SCMD': Shell Command Script
+** Intended as a possible fallback case.
+** "TKTXSCMD": TestKern Shell Script
+* "TKTXALDR": Fallback AOT / Loader
+** Identify a loader to use trigger loading otherwise fails.
+** This is intended mostly for triggering an AOT compiler or similar.
+** This may be triggered at install-time for AOT images.
+
+VM Formats (Name2):
+* 'FR3A': FRBC3A
+** AOT or Interpreter
+* 'RIL3': RIL3
+** AOT Only
+
+
+AOT/Loader:
+* Will consist of multiple lines giving commands.
+* Execution may stop once a "TRY*" command has succeeded.
+** At this point, assume the loaders' work is done.
+** This is intended solely for program loaders, not as a shell script.
+* TRYRUN {program}
+** Attempt to load program instead.
+** Intended for the binary produced by an AOT compiler.
+** Command-line will be forwarded unchanged (similar to "#!").
+* TRYAOT {compiler} (options*)
+** Try to invoke the named AOT compiler.
+** Allowed to replace the original binary.
+* TRYVM {vm}
+** Try to invoke a VM as an interpreter.
+*** May be combined with TRYRUN to allow for AOT without Replacement.
+
+The programs may be encoded either as absolute paths, or use a textual substitution scheme, which may identify paths relative to the install location or similar:
+* "$INST", expand to the install path for the program in question.
+* "$BASE", expand to the base path for the binary being loaded.
+* "$CWD", expand to the current working directory.
+* ...
+

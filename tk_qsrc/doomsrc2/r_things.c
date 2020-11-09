@@ -113,45 +113,45 @@ R_InstallSpriteLump
 	int		r;
 	
 	if (frame >= 29 || rotation > 8)
-	I_Error("R_InstallSpriteLump: "
-		"Bad frame characters in lump %i", lump);
+		I_Error("R_InstallSpriteLump: "
+			"Bad frame characters in lump %i", lump);
 	
 	if ((int)frame > maxframe)
 	maxframe = frame;
 		
 	if (rotation == 0)
 	{
-	// the lump should be used for all rotations
-	if (sprtemp[frame].rotate == false)
-		I_Error ("R_InitSprites: Sprite %s frame %c has "
-			 "multip rot=0 lump", spritename, 'A'+frame);
+		// the lump should be used for all rotations
+		if (sprtemp[frame].rotate == false)
+			I_Error ("R_InitSprites: Sprite %s frame %c has "
+				 "multip rot=0 lump", spritename, 'A'+frame);
 
-	if (sprtemp[frame].rotate == true)
-		I_Error ("R_InitSprites: Sprite %s frame %c has rotations "
-			 "and a rot=0 lump", spritename, 'A'+frame);
-			
-	sprtemp[frame].rotate = false;
-	for (r=0 ; r<8 ; r++)
-	{
-		sprtemp[frame].lump[r] = lump - firstspritelump;
-		sprtemp[frame].flip[r] = (byte)flipped;
-	}
-	return;
+		if (sprtemp[frame].rotate == true)
+			I_Error ("R_InitSprites: Sprite %s frame %c has rotations "
+				 "and a rot=0 lump", spritename, 'A'+frame);
+				
+		sprtemp[frame].rotate = false;
+		for (r=0 ; r<8 ; r++)
+		{
+			sprtemp[frame].lump[r] = lump - firstspritelump;
+			sprtemp[frame].flip[r] = (byte)flipped;
+		}
+		return;
 	}
 	
 	// the lump is only used for one rotation
 	if (sprtemp[frame].rotate == false)
-	I_Error ("R_InitSprites: Sprite %s frame %c has rotations "
-		 "and a rot=0 lump", spritename, 'A'+frame);
+		I_Error ("R_InitSprites: Sprite %s frame %c has rotations "
+			 "and a rot=0 lump", spritename, 'A'+frame);
 		
 	sprtemp[frame].rotate = true;
 
 	// make 0 based
 	rotation--;		
 	if (sprtemp[frame].lump[rotation] != -1)
-	I_Error ("R_InitSprites: Sprite %s : %c : %c "
-		 "has two lumps mapped to it",
-		 spritename, 'A'+frame, '1'+rotation);
+		I_Error ("R_InitSprites: Sprite %s : %c : %c "
+			 "has two lumps mapped to it",
+			 spritename, 'A'+frame, '1'+rotation);
 		
 	sprtemp[frame].lump[rotation] = lump - firstspritelump;
 	sprtemp[frame].flip[rotation] = (byte)flipped;
@@ -183,7 +183,7 @@ void R_InitSpriteDefs (char** namelist)
 	int		l;
 	int		intname;
 	int		frame;
-	int		rotation;
+	int		rotation, rotn1;
 	int		start;
 	int		end;
 	int		patched;
@@ -242,10 +242,12 @@ void R_InitSpriteDefs (char** namelist)
 				frame = lumpinfo[l].name[4] - 'A';
 				rotation = lumpinfo[l].name[5] - '0';
 
-				if (modifiedgame)
-					patched = W_GetNumForName (lumpinfo[l].name);
-				else
-					patched = l;
+				patched = W_GetNumForName (lumpinfo[l].name);
+
+//				if (modifiedgame)
+//					patched = W_GetNumForName (lumpinfo[l].name);
+//				else
+//					patched = l;
 
 				R_InstallSpriteLump (patched, frame, rotation, false);
 
@@ -271,24 +273,42 @@ void R_InitSpriteDefs (char** namelist)
 		{
 			switch ((int)sprtemp[frame].rotate)
 			{
-			  case -1:
-			// no rotations were found for that frame at all
-			I_Error ("R_InitSprites: No patches found "
-				 "for %s frame %c", namelist[i], frame+'A');
-			break;
+			case -1:
+				// no rotations were found for that frame at all
+				I_Error ("R_InitSprites: No patches found "
+					 "for %s frame %c", namelist[i], frame+'A');
+				break;
 			
-			  case 0:
-			// only the first rotation is needed
-			break;
+			case 0:
+				// only the first rotation is needed
+				break;
 				
-			  case 1:
-			// must have all 8 frames
-			for (rotation=0 ; rotation<8 ; rotation++)
-				if (sprtemp[frame].lump[rotation] == -1)
-				I_Error ("R_InitSprites: Sprite %s frame %c "
-					 "is missing rotations",
-					 namelist[i], frame+'A');
-			break;
+			case 1:
+				// must have all 8 frames
+				for (rotation=0 ; rotation<8 ; rotation++)
+					if (sprtemp[frame].lump[rotation] == -1)
+				{
+					if(rotation>=4)
+						rotn1 = (rotation+1)&7;
+					else
+						rotn1 = (rotation-1)&7;
+				
+					if((rotation&1) &&
+						(sprtemp[frame].lump[rotn1]>0))
+					{
+						//BGB: Allow 4-angle sprites.
+						sprtemp[frame].lump[rotation]=
+							sprtemp[frame].lump[rotn1];
+						sprtemp[frame].flip[rotation]=
+							sprtemp[frame].flip[rotn1];
+						continue;
+					}
+					
+					I_Error ("R_InitSprites: Sprite %s frame %c "
+						 "is missing rotations",
+						 namelist[i], frame+'A');
+				}
+				break;
 			}
 		}
 		
@@ -427,7 +447,8 @@ R_DrawVisSprite
 	patch_t*		patch;
 	
 	
-	patch = W_CacheLumpNum (vis->patch+firstspritelump, PU_CACHE);
+//	patch = W_CacheLumpNum (vis->patch+firstspritelump, PU_CACHE);
+	patch = W_CachePatchNum (vis->patch+firstspritelump, PU_CACHE);
 
 	dc_colormap = vis->colormap;
 	

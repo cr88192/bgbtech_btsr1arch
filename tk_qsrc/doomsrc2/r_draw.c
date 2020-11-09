@@ -1299,7 +1299,8 @@ void R_FillBackScreen (void)
 	else
 		name = name1;
 	
-	src = W_CacheLumpName (name, PU_CACHE); 
+//	src = W_CacheLumpName (name, PU_CACHE); 
+	src = W_CacheFlatName (name, PU_CACHE); 
 	dest = screens[1]; 
 	
 //	cmap = ds_colormap;
@@ -1341,19 +1342,23 @@ void R_FillBackScreen (void)
 		}
 	} 
 	
-	patch = W_CacheLumpName ("brdr_t",PU_CACHE);
+//	patch = W_CacheLumpName ("brdr_t",PU_CACHE);
+	patch = W_CachePatchName ("brdr_t",PU_CACHE);
 
 	for (x=0 ; x<scaledviewwidth ; x+=8)
 		V_DrawPatch (viewwindowx+x,viewwindowy-8,1,patch);
-	patch = W_CacheLumpName ("brdr_b",PU_CACHE);
+//	patch = W_CacheLumpName ("brdr_b",PU_CACHE);
+	patch = W_CachePatchName ("brdr_b",PU_CACHE);
 
 	for (x=0 ; x<scaledviewwidth ; x+=8)
 		V_DrawPatch (viewwindowx+x,viewwindowy+viewheight,1,patch);
-	patch = W_CacheLumpName ("brdr_l",PU_CACHE);
+//	patch = W_CacheLumpName ("brdr_l",PU_CACHE);
+	patch = W_CachePatchName ("brdr_l",PU_CACHE);
 
 	for (y=0 ; y<viewheight ; y+=8)
 		V_DrawPatch (viewwindowx-8,viewwindowy+y,1,patch);
-	patch = W_CacheLumpName ("brdr_r",PU_CACHE);
+//	patch = W_CacheLumpName ("brdr_r",PU_CACHE);
+	patch = W_CachePatchName ("brdr_r",PU_CACHE);
 
 	for (y=0 ; y<viewheight ; y+=8)
 	V_DrawPatch (viewwindowx+scaledviewwidth,viewwindowy+y,1,patch);
@@ -1363,22 +1368,26 @@ void R_FillBackScreen (void)
 	V_DrawPatch (viewwindowx-8,
 		 viewwindowy-8,
 		 1,
-		 W_CacheLumpName ("brdr_tl",PU_CACHE));
+//		 W_CacheLumpName ("brdr_tl",PU_CACHE));
+		 W_CachePatchName ("brdr_tl",PU_CACHE));
 	
 	V_DrawPatch (viewwindowx+scaledviewwidth,
 		 viewwindowy-8,
 		 1,
-		 W_CacheLumpName ("brdr_tr",PU_CACHE));
+//		 W_CacheLumpName ("brdr_tr",PU_CACHE));
+		 W_CachePatchName ("brdr_tr",PU_CACHE));
 	
 	V_DrawPatch (viewwindowx-8,
 		 viewwindowy+viewheight,
 		 1,
-		 W_CacheLumpName ("brdr_bl",PU_CACHE));
+//		 W_CacheLumpName ("brdr_bl",PU_CACHE));
+		 W_CachePatchName ("brdr_bl",PU_CACHE));
 	
 	V_DrawPatch (viewwindowx+scaledviewwidth,
 		 viewwindowy+viewheight,
 		 1,
-		 W_CacheLumpName ("brdr_br",PU_CACHE));
+//		 W_CacheLumpName ("brdr_br",PU_CACHE));
+		 W_CachePatchName ("brdr_br",PU_CACHE));
 } 
  
 

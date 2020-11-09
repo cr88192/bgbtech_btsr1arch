@@ -358,6 +358,8 @@ int d_main_curtime;
 int d_main_lasttime;
 double d_snd_acctime;
 
+int		gfxdrv_kill;
+
 void D_DoomLoop (void)
 {
 	int dt;
@@ -378,7 +380,8 @@ void D_DoomLoop (void)
 
 	d_snd_acctime+=75;
 
-	while (1)
+//	while (1)
+	while (!gfxdrv_kill)
 	{
 //		d_main_curtime = I_GetTime();
 		d_main_curtime = I_GetTimeMs();

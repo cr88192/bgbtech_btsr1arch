@@ -409,7 +409,8 @@ void HU_Init(void)
 		for (i=0;i<HU_FONTSIZE;i++)
 		{
 		sprintf(buffer, "STCFN%.3d", j++);
-		hu_font[i] = (patch_t *) W_CacheLumpName(buffer, PU_STATIC);
+//		hu_font[i] = (patch_t *) W_CacheLumpName(buffer, PU_STATIC);
+		hu_font[i] = (patch_t *) W_CachePatchName(buffer, PU_STATIC);
 		}
 	}
 	else if ( W_CheckNumForName("FONTA01") >=0 )
@@ -419,7 +420,8 @@ void HU_Init(void)
 		for (i=0;i<59;i++)
 		{
 		sprintf(buffer, "FONTA%.2d", j++);
-		hu_font[i] = (patch_t *) W_CacheLumpName(buffer, PU_STATIC);
+//		hu_font[i] = (patch_t *) W_CacheLumpName(buffer, PU_STATIC);
+		hu_font[i] = (patch_t *) W_CachePatchName(buffer, PU_STATIC);
 		}
     }
 

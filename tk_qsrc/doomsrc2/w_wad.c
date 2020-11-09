@@ -61,7 +61,8 @@ int			numlumps;
 
 int			lumphash[64];
 
-void**			lumpcache;
+void		**lumpcache;
+void		**patchcache;
 
 
 // #define strcmpi	strcasecmp
@@ -1114,11 +1115,13 @@ void W_InitMultipleFiles (char** filenames)
 //	size = numlumps * sizeof(*lumpcache);
 	size = (numlumps + 64) * sizeof(*lumpcache);
 	lumpcache = malloc (size);
+	patchcache = malloc (size);
 	
 	if (!lumpcache)
 		I_Error ("Couldn't allocate lumpcache");
 
 	memset (lumpcache,0, size);
+	memset (patchcache,0, size);
 }
 
 
@@ -1657,8 +1660,8 @@ int		profilecount;
 
 void W_Profile (void)
 {
-#ifndef __BGBCC__		//BGB: Don't bother in this case
-// #if 0
+// #ifndef __BGBCC__		//BGB: Don't bother in this case
+#if 0
 	int		i, lhdl;
 	memblock_t*	block;
 	void*	ptr;

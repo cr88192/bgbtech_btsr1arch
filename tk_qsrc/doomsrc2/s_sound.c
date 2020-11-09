@@ -290,20 +290,20 @@ S_StartSoundAtVolume
 	// Initialize sound parameters
 	if (sfx->link)
 	{
-	pitch = sfx->pitch;
-	priority = sfx->priority;
-	volume += sfx->volume;
-	
-	if (volume < 1)
-		return;
-	
-	if (volume > snd_SfxVolume)
-		volume = snd_SfxVolume;
+		pitch = sfx->pitch;
+		priority = sfx->priority;
+		volume += sfx->volume;
+		
+		if (volume < 1)
+			return;
+		
+		if (volume > snd_SfxVolume)
+			volume = snd_SfxVolume;
 	}	
 	else
 	{
-	pitch = NORM_PITCH;
-	priority = NORM_PRIORITY;
+		pitch = NORM_PITCH;
+		priority = NORM_PRIORITY;
 	}
 
 
@@ -311,24 +311,24 @@ S_StartSoundAtVolume
 	//	and if not, modify the params
 	if (origin && origin != players[consoleplayer].mo)
 	{
-	rc = S_AdjustSoundParams(players[consoleplayer].mo,
-				 origin,
-				 &volume,
-				 &sep,
-				 &pitch);
-	
-	if ( origin->x == players[consoleplayer].mo->x
-	 && origin->y == players[consoleplayer].mo->y)
-	{	
-		sep 	= NORM_SEP;
-	}
-	
-	if (!rc)
-		return;
+		rc = S_AdjustSoundParams(players[consoleplayer].mo,
+					 origin,
+					 &volume,
+					 &sep,
+					 &pitch);
+		
+		if ( origin->x == players[consoleplayer].mo->x
+		 && origin->y == players[consoleplayer].mo->y)
+		{	
+			sep 	= NORM_SEP;
+		}
+		
+		if (!rc)
+			return;
 	}	
 	else
 	{
-	sep = NORM_SEP;
+		sep = NORM_SEP;
 	}
 	
 	// hacks to vary the sfx pitches
@@ -345,12 +345,12 @@ S_StartSoundAtVolume
 	else if (sfx_id != sfx_itemup
 		 && sfx_id != sfx_tink)
 	{
-	pitch += 16 - (M_Random()&31);
-	
-	if (pitch<0)
-		pitch = 0;
-	else if (pitch>255)
-		pitch = 255;
+		pitch += 16 - (M_Random()&31);
+		
+		if (pitch<0)
+			pitch = 0;
+		else if (pitch>255)
+			pitch = 255;
 	}
 
 	// kill old sound
@@ -360,7 +360,7 @@ S_StartSoundAtVolume
 	cnum = S_getChannel(origin, sfx);
 	
 	if (cnum<0)
-	return;
+		return;
 
 	//
 	// This is supposed to handle the loading/caching.
@@ -370,7 +370,7 @@ S_StartSoundAtVolume
 	
 	// get lumpnum if necessary
 	if (sfx->lumpnum < 0)
-	sfx->lumpnum = I_GetSfxLumpNum(sfx);
+		sfx->lumpnum = I_GetSfxLumpNum(sfx);
 
 #ifndef SNDSRV
 	// cache data if necessary

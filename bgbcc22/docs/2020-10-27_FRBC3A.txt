@@ -1,3 +1,5 @@
+Idea Spec.
+
 Register Bytecode, Intended for an interpreter.
 * Will primarily focus on 3-Register Ops.
 * Intended to keep VM complexity "within reason".

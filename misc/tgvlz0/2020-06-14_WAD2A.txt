@@ -1,0 +1,53 @@
+WAD2(A) is a container format holding a series of 'lumps'.
+Each lump has a 16 character name. It is closely related to the Quake WAD2 format.
+
+Header {
+	FOURCC	magic;		//'WAD2'
+	U32		numlumps;	//Number of lumps in the directory.
+	U32		diroffs;	//Offset of directory, in bytes
+	U32		typeoffs;	//Offset of types table
+}
+
+The header appears at the start of a file, and encodes the location of the directory.
+
+The types table will be an array of FOURCC values encoding types 0x20..0x7F, or enough space for 96 unique lump types. The FOURCC's will correspond either to known types (all caps), or generic file extensions (lower case). Unused entries are to be set to zero.
+
+If the typeoffs field is set to 0, then no types table is present.
+
+
+DirEnt {
+	U32		offs;		//offset of lump data (in bytes)
+	U32		csize;		//compressed size of lump
+	U32		dsize;		//uncompressed size of lump
+	BYTE	ety;		//entry type
+	BYTE	cmp;		//compression method
+	U16		chain;		//lump chain
+	BYTE	name[16];	//name
+}
+
+Entry types:
+* 00: Generic
+* 01..1F: Special / Reserved types
+* 20..7F: Various types, a table may be used to map these to file extensions.
+* 80..FF: Reserved
+
+Compression:
+* 00: Store
+* 01: Reserved
+* 02: Reserved
+* 03: RP2
+* 04: LZ4
+* 05: Reserved
+* 06: Reserved
+* 07: Reserved
+* 08: Deflate
+* 09: Deflate64
+* 0A: ? BTLZH
+
+
+Following the directory, there may be a lookup hash.
+This hash will consist of 64 entries each of which is 16 bits. These entries will point to the first entry of a search chain, or 0xFFFF if the chain is empty (0xFFFF will also indicated the last entry in a chain).
+
+If the chain field for the first entry in the WAD is 0, then the hash is to be ignored.
+
+

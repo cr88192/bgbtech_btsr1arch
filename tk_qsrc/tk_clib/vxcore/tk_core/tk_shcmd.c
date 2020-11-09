@@ -1,3 +1,29 @@
+#ifndef FOURCC
+#define FOURCC(a, b, c, d)		((a)|((b)<<8)|((c)<<16)|((d)<<24))
+#endif
+
+#ifndef TWOCC
+#define TWOCC(a, b)				((a)|((b)<<8))
+#endif
+
+#define TCC_HASHBANG	TWOCC('#', '!')
+
+#define TCC_PE			TWOCC('P', 'E')
+
+#define FCC_PLFW		FOURCC('P', 'L', 'F', 'W')
+
+#define FCC_TKPE		FOURCC('T', 'K', 'P', 'E')
+#define FCC_TKTX		FOURCC('T', 'K', 'T', 'X')
+
+#define FCC_B2DA		FOURCC('B', '2', 'D', 'A')
+#define FCC_BJX2		FOURCC('B', 'J', 'X', '2')
+#define FCC_SCMD		FOURCC('S', 'C', 'M', 'D')
+
+#ifdef __BJX2__
+#define PLF_FCC_CURARCH		FCC_B2DA
+#define PLF_FCC_GENARCH		FCC_BJX2
+#endif
+
 int TKSH_TryLoad(char *img, char **args);
 int TKSH_TryLoad_n(char *img, char **args);
 
@@ -960,7 +986,7 @@ void TK_FlushCacheL1D();
 
 int TKSH_TryLoad(char *img, char **args)
 {
-	byte tb[256];
+	byte tb[1024];
 	TK_FILE *fd;
 	char **a1;
 	char *cs, *ct, *cs1, *ct1;
@@ -974,6 +1000,8 @@ int TKSH_TryLoad(char *img, char **args)
 	void *boottbr;
 	void *sysc;
 	int (*bootptr)();
+	int plf_dofs, plf_dnum, plf_fdofs, plf_fdsz;
+	int plf_lofs, plf_lsz, plf_lname1, plf_lname2, plf_lname3;
 	int sig_is_pe, sig_is_asc;
 	int rv, nl, sz, sza;
 	int i, j, k;
@@ -986,11 +1014,25 @@ int TKSH_TryLoad(char *img, char **args)
 	while(fd)
 	{
 		tk_fseek(fd, 0, 0);
-		memset(tb, 0, 256);
-		tk_fread(tb, 1, 255, fd);
-		
-		if((tb[0]!='#') || (tb[1]!='!'))
+//		memset(tb, 0, 256);
+//		tk_fread(tb, 1, 255, fd);
+		memset(tb, 0, 1024);
+		tk_fread(tb, 1, 1023, fd);
+
+		plf_lname1=tkfat_getWord(tb);
+		plf_lname2=tkfat_getDWord(tb+128);
+//		plf_lname3=tkfat_getDWord(tb+256);
+
+//		if((tb[0]!='#') || (tb[1]!='!'))
+//			break;
+
+		if(plf_lname1==TCC_HASHBANG)
 			break;
+		if(plf_lname2==FCC_PLFW)
+			break;
+//		if((plf_lname2==FCC_PLFW) ||
+//			(plf_lname3==FCC_PLFW))
+//				break;
 
 		cs=tb+2; ct=tb;
 		while(*cs>=' ')
@@ -999,6 +1041,86 @@ int TKSH_TryLoad(char *img, char **args)
 		
 		tk_fclose(fd);
 		fd=tk_fopen(tb, "rb");
+	}
+
+	plf_fdofs=0;
+	plf_fdsz=0;
+	plf_dnum=0;
+	plf_dofs=0;
+
+#if 1
+	plf_lname1=tkfat_getDWord(tb+0);
+	plf_lname2=tkfat_getDWord(tb+128);
+	plf_lname3=tkfat_getDWord(tb+256);
+
+//	if((tb[0]=='P') && (tb[1]=='L') && (tb[2]=='F') && (tb[3]=='W'))
+	if(plf_lname1==FCC_PLFW)
+	{
+		plf_dnum=tkfat_getDWord(tb+4);
+		plf_dofs=tkfat_getDWord(tb+8);
+	}else if(plf_lname2==FCC_PLFW)
+	{
+		plf_dnum=tkfat_getDWord(tb+(128+4));
+		plf_dofs=tkfat_getDWord(tb+(128+8));
+	}
+#if 1
+	else if(plf_lname3==FCC_PLFW)
+	{
+		plf_dnum=tkfat_getDWord(tb+(256+4));
+		plf_dofs=tkfat_getDWord(tb+(256+8));
+	}
+#endif
+#endif
+
+#if 0
+	cs=(char *)tb;
+	for(i=0; i<6; i++)
+	{
+		plf_lname1=tkfat_getDWord(cs);
+		if(plf_lname1==FCC_PLFW)
+		{
+			plf_dnum=tkfat_getDWord(cs+4);
+			plf_dofs=tkfat_getDWord(cs+8);
+			break;
+		}
+		if(((u16)plf_lname1)==TCC_PE)
+			break;
+		cs+=128;
+	}
+#endif
+
+	
+	if(plf_dnum>0)
+	{
+		for(i=plf_dnum-1; i>=0; i--)
+		{
+			cs=(char *)tb+plf_dofs+(i*16);
+			plf_lofs	= tkfat_getDWord(cs+ 0);
+			plf_lsz		= tkfat_getDWord(cs+ 4);
+			plf_lname1	= tkfat_getDWord(cs+ 8);
+			plf_lname2	= tkfat_getDWord(cs+12);
+			
+			if(plf_lname1==FCC_TKPE)
+			{
+				if(plf_lname2==PLF_FCC_CURARCH)
+					{ plf_fdofs=plf_lofs; plf_fdsz=plf_lsz; break; }
+				if(plf_lname2==PLF_FCC_GENARCH)
+					{ plf_fdofs=plf_lofs; plf_fdsz=plf_lsz; break; }
+			}
+
+			if(plf_lname1==FCC_TKTX)
+			{
+				if(plf_lname2==FCC_SCMD)
+					{ plf_fdofs=plf_lofs; plf_fdsz=plf_lsz; break; }
+			}
+		}
+		
+		if(i>=0)
+		{
+			tk_fseek(fd, plf_fdofs, 0);
+//			tk_fread(tb, 1, 255, fd);
+			tk_fread(tb, 1, 1024, fd);
+		}
 	}
 	
 	sig_is_pe=0;
@@ -1011,7 +1133,7 @@ int TKSH_TryLoad(char *img, char **args)
 	if(fd && sig_is_pe)
 	{
 		bootgbr=0;
-		TKPE_LoadStaticPE(fd, &bootptr, &bootgbr);
+		TKPE_LoadStaticPE(fd, plf_fdofs, &bootptr, &bootgbr);
 		tk_printf("Boot Pointer %p, GBR=%p\n", bootptr, (void *)bootgbr);
 		
 		tk_fclose(fd);
@@ -1165,9 +1287,16 @@ int TKSH_TryLoad(char *img, char **args)
 		if(sig_is_asc)
 		{
 	//		TKSH_ExecCmdFd(fd);
-			tk_fseek(fd, 0, 2);
-			sz=tk_ftell(fd);
-			tk_fseek(fd, 0, 0);
+			if(plf_fdofs!=0)
+			{
+				tk_fseek(fd, plf_fdofs, 0);
+				sz=plf_fdsz;
+			}else
+			{
+				tk_fseek(fd, 0, 2);
+				sz=tk_ftell(fd);
+				tk_fseek(fd, 0, 0);
+			}
 			buf=tk_malloc(sz+16);
 			memset(buf, 0, sz+8);
 			tk_fread(buf, 1, sz, fd);

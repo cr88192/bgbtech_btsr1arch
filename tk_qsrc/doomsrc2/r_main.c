@@ -810,7 +810,7 @@ void R_Init (void)
 	v0=3;
 	v1=v0+1;
 
-	tk_puts("RI ");
+//	tk_puts("RI ");
 	R_InitData ();
 	printf ("\nR_InitData");
 	R_InitPointToAngle ();

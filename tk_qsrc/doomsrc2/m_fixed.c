@@ -62,9 +62,9 @@ FixedMul:
 fixed_t FixedMul(fixed_t a, fixed_t b)
 {
 	int c;
-//	c = ((long long) a * (long long) b) >> FRACBITS;
+	c = ((long long) a * (long long) b) >> FRACBITS;
 //	c = __smullq(a, b) >> FRACBITS;
-	c = __int32_dmuls(a, b) >> FRACBITS;
+//	c = __int32_dmuls(a, b) >> FRACBITS;
 	c = (int)c;
 	return(c);
 //	return ((long long) a * (long long) b) >> FRACBITS;
@@ -100,8 +100,12 @@ FixedDivSoft
 //	return FixedDiv2 (a,b);
 
 	r=M_SoftDivRcpS(b);
+#ifdef __BJX2__
 //	c=__smullq(a, r);
 	c = __int32_dmuls(a, r);
+#else
+	c = ((long long)a) * ((long long)r);
+#endif
 	return (fixed_t)(c>>16);
 }
 

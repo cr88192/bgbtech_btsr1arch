@@ -59,7 +59,10 @@ struct sfxinfo_struct
     int		usefulness;
 
     // lump number of sfx
-    int		lumpnum;		
+    int		lumpnum;
+
+	//samplerate
+    int		samprate;
 };
 
 

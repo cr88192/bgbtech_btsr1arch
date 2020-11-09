@@ -127,12 +127,13 @@ int			channelrightvol[NUM_CHANNELS];
 void*
 getsfx
 ( char*		 sfxname,
-	int*			len )
+	int		*rlen,
+	int		*rrate )
 {
 	unsigned char*		sfx;
 	unsigned char*		paddedsfx;
-	int				 i;
-	int				 size;
+	int				 i, j, k;
+	int				 size, rt, tg, len, pred;
 	int				 paddedsize;
 	char				name[40];
 	int				 sfxlump;
@@ -185,9 +186,15 @@ getsfx
 	
 	sfx = (unsigned char*)W_CacheLumpNum( sfxlump, PU_STATIC );
 
+	tg	= ((short *)sfx)[0];
+	rt	= ((short *)sfx)[1];
+	len	= ((short *)sfx)[2];
+
 	// Pads the sound effect out to the mixing buffer size.
 	// The original realloc would interfere with zone memory.
-	paddedsize = ((size-8 + (SAMPLECOUNT-1)) / SAMPLECOUNT) * SAMPLECOUNT;
+//	paddedsize = ((size-8 + (SAMPLECOUNT-1)) / SAMPLECOUNT) * SAMPLECOUNT;
+
+	paddedsize = ((len + (SAMPLECOUNT-1)) / SAMPLECOUNT) * SAMPLECOUNT;
 
 	// Allocate from zone memory.
 //	paddedsfx = (unsigned char*)Z_Malloc( paddedsize+8, PU_STATIC, 0 );
@@ -196,16 +203,37 @@ getsfx
 	// This should interfere with zone memory handling,
 	//	which does not kick in in the soundserver.
 
-	// Now copy and pad.
-	memcpy(	paddedsfx, sfx, size );
-	for (i=size ; i<paddedsize+8 ; i++)
-		paddedsfx[i] = 128;
+	if(tg==7)
+	{
+		memset(	paddedsfx, 128, paddedsize+8 );
+		
+		pred=128;
+		for(i=0; i<len; i++)
+		{
+			j=sfx[(i/2)+8];
+			j=((j>>((i&1)*4))&15)-7;
+			if(j>=0)
+				k=j*j;
+			else
+				k=-(j*j);
+			pred=pred+k;
+			paddedsfx[8+i]=pred;
+		}
+		
+	}else
+	{
+		// Now copy and pad.
+		memcpy(	paddedsfx, sfx, size );
+		for (i=size ; i<paddedsize+8 ; i++)
+			paddedsfx[i] = 128;
+	}
 
 	// Remove the cached lump.
 	Z_Free( sfx );
 	
 	// Preserve padded length.
-	*len = paddedsize;
+	*rlen = paddedsize;
+	*rrate = rt;
 
 	// Return allocated padded data.
 	return (void *) (paddedsfx + 8);
@@ -236,7 +264,7 @@ addsfx
 	
 	int		oldest = gametic;
 	int		oldestnum = 0;
-	int		slot;
+	int		slot, rate;
 
 	int		rightvol, lv;
 	int		leftvol, rv;
@@ -297,6 +325,12 @@ addsfx
 	channels[slot] = (unsigned char *) S_sfx[sfxid].data;
 	// Set pointer to end of raw data.
 	channelsend[slot] = channels[slot] + lengths[sfxid];
+	
+	rate = S_sfx[sfxid].samprate;
+	if((rate<1000) || (rate>100000))
+		rate = 11025;
+
+	step = (step * rate) / 11025;
 
 	// Reset current handle number, limited to 0..100.
 	if (!handlenums)
@@ -941,6 +975,7 @@ void
 I_InitSound()
 {
 	static int init=0;
+	int rate;
 	
 #if 1 
 	int i;
@@ -972,7 +1007,9 @@ I_InitSound()
 		if (!S_sfx[i].link)
 		{
 			// Load data from WAD file.
-			S_sfx[i].data = getsfx( S_sfx[i].name, &lengths[i] );
+			S_sfx[i].data = getsfx( S_sfx[i].name, &lengths[i], &rate );
+			S_sfx[i].samprate = rate;
+			
 		}	
 		else
 		{
