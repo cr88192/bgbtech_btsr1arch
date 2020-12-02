@@ -984,9 +984,10 @@ void __tk_farcall(void *fptr, void *gbr, void *newstack, void *tbr);
 int TK_DestroyTaskInfo(void *tkptr);
 void TK_FlushCacheL1D();
 
-int TKSH_TryLoad(char *img, char **args)
+int TKSH_TryLoad(char *img, char **args0)
 {
 	byte tb[1024];
+	char *args[64];
 	TK_FILE *fd;
 	char **a1;
 	char *cs, *ct, *cs1, *ct1;
@@ -1009,7 +1010,23 @@ int TKSH_TryLoad(char *img, char **args)
 	fd=tk_fopen(img, "rb");
 	
 	if(!fd)
+	{
+		tk_printf("Failed to open %s\n", img);
 		return(-1);
+	}
+	
+	if(args0)
+	{
+		for(i=0; args0[i]; i++)
+			args[i]=args0[i];
+		args[i]=NULL;
+		args[0]=img;
+	}else
+	{
+		args[0]=img;
+		args[1]=NULL;
+	}
+	
 	
 	while(fd)
 	{
@@ -1026,7 +1043,7 @@ int TKSH_TryLoad(char *img, char **args)
 //		if((tb[0]!='#') || (tb[1]!='!'))
 //			break;
 
-		if(plf_lname1==TCC_HASHBANG)
+		if(plf_lname1!=TCC_HASHBANG)
 			break;
 		if(plf_lname2==FCC_PLFW)
 			break;
@@ -1176,7 +1193,8 @@ int TKSH_TryLoad(char *img, char **args)
 			tk_printf("TKSH_TryLoad: task=%p, env=%p\n", task, env1);
 			
 			sza=0;
-			if(args)
+//			if(args)
+			if(1)
 			{
 				for(i=0; args[i]; i++)
 				{
@@ -1311,6 +1329,7 @@ int TKSH_TryLoad(char *img, char **args)
 	
 	if(fd)
 	{
+		tk_printf("Failed to execute %s\n", img);
 		tk_fclose(fd);
 		fd=NULL;
 	}
@@ -1350,6 +1369,12 @@ int TKSH_TryLoad_ext(char *img, char **args)
 
 	strcpy(tb, img);
 	strcat(tb, ".pf");
+	ri=TKSH_TryLoad(tb, args);
+	if(ri>0)
+		return(ri);
+
+	strcpy(tb, img);
+	strcat(tb, ".bxw");
 	ri=TKSH_TryLoad(tb, args);
 	if(ri>0)
 		return(ri);

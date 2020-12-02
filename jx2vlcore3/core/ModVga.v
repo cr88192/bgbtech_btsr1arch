@@ -69,14 +69,25 @@ reg			tPwmEn;
 // reg[21:0]	tCbAcc;				//Colorburst Accumulator
 // reg[21:0]	tCbNextAcc;			//Next Colorburst Accumulator
 
+reg[7:0]	tFraPixClk;			//Fractional Pixel Clock
+reg[7:0]	tFraNextPixClk;		//Next Fractional Pixel Clock
+reg			tFraPixClkCarry;
+
 reg[12:0]	tScanPixClk;		//Scan Pixel Clock
 reg[12:0]	tScanNextPixClk;	//Next Scan Pixel Clock
+
+reg[10:0]	tScanPixClkP0;		//Scan Pixel Clock (+0)
+reg[10:0]	tScanPixClkP1;		//Scan Pixel Clock (+1)
 
 reg[10:0]	tScanRowClk;		//Scan Row Clock
 reg[10:0]	tScanNextRowClk;	//Next Scan Row Clock
 
 reg[10:0]	tScanRowLim;		//Scan Row Clock
 reg[10:0]	tScanNextRowLim;	//Next Scan Row Clock
+
+reg			tHorzStrobe;		//Scan Pixel Clock
+reg			tNextHorzStrobe;	//Next Scan Pixel Clock
+
 
 reg[2:0]	tVSyncClk;
 reg[2:0]	tVSyncNextClk;
@@ -148,8 +159,8 @@ reg[7:0]	tPixCu;
 reg[7:0]	tPixCv;
 
 // assign	pwmOut		= tPwmOut;
-// assign	pwmOut		= tPwmOutC;
-assign	pwmOut		= tPwmOutA;
+assign	pwmOut		= tPwmOutC;
+// assign	pwmOut		= tPwmOutA;
 
 assign	pixPosX		= tPixPosX;
 assign	pixPosY		= tPixPosY;
@@ -165,6 +176,8 @@ reg			tHsync;
 reg			tVsync;
 reg			tNextHsync;
 reg			tNextVsync;
+
+reg			tHsyncL;
 
 reg[3:0]	tPwmOutAR;
 reg[3:0]	tPwmOutBR;
@@ -386,13 +399,47 @@ begin
 	end
 	else
 	begin
-		tScanNextRowLim = 525;
+//		tScanNextRowLim = 525;
+		if(ctrlRegVal[9])
+			tScanNextRowLim = 525;
+		else
+			tScanNextRowLim = 449;
 	end
 
 //	tHsync800	= 1;
 
+`ifdef jx2_cpu_mmioclock_75
+	tScanPixClkP0 = tScanPixClk[12:2];
+	tScanPixClkP1 = tScanPixClk[12:2] + 1;
+	{ tFraPixClkCarry, tFraNextPixClk }		= {1'b0, tFraPixClk} + 85;
+	
+//	if(tHsyncL^tHsync)
+//	if(tHsync && !tHsyncL)
+//		{ tFraPixClkCarry, tFraNextPixClk }	= 0;
+	
+	tScanNextPixClk	= {
+		tFraPixClkCarry ? tScanPixClkP1 : tScanPixClkP0,
+		tFraNextPixClk[7:6] };
+
+	if(tHorzStrobe)
+	begin
+		tFraNextPixClk		= 0;
+		tScanNextPixClk		= 0;
+	end
+`endif
+
 //	tCbNextAcc			= tCbAcc + 150137;
+
+`ifdef jx2_cpu_mmioclock_100
 	tScanNextPixClk		= tScanPixClk + 1;
+	tFraNextPixClk		= 0;
+`endif
+
+`ifdef jx2_cpu_mmioclock_50
+	tScanNextPixClk		= tScanPixClk + 2;
+	tFraNextPixClk		= 0;
+`endif
+
 	tScanNextRowClk		= tScanRowClk;
 	tVSyncNextClk		= tVSyncClk;
 	tVFieldNextCnt		= tVFieldCnt;
@@ -416,6 +463,7 @@ begin
 	tPwmNextValB		= 76;
 	
 	tScPwmCy			= 0;
+	tNextHorzStrobe		= 0;
 
 	tPixLineOdd			= tVFieldCnt[0];
 
@@ -456,7 +504,9 @@ begin
 //			tPixNextPosX = tScanPixClk[13:2] - 59;
 //			tPixNextPosX = tScanPixClk[13:2] - 69;
 //			tPixNextPosX = {1'b0, tScanPixClk[12:2]} - 69;
-			tPixNextPosX = {1'b0, tScanPixClk[12:2]} - 79;
+//			tPixNextPosX = {1'b0, tScanPixClk[12:2]} - 79;
+			tPixNextPosX = {1'b0, tScanPixClk[12:2]} - 76;
+//			tPixNextPosX = {1'b0, tScanPixClk[12:2]} - 83;
 //			tPixNextPosX = {1'b0, tScanPixClk[12:2]} +
 //				{8'b00000000, tScanPixClk[12:9]} - 79;
 
@@ -464,7 +514,13 @@ begin
 //			tPixNextPosY = tScanNextRowClk[11:0] - 30;
 //			tPixNextPosY = {1'b0, tScanNextRowClk[10:0]} - 30;
 //			tPixNextPosY = {1'b0, tScanRowClk[10:0]} - 30;
-			tPixNextPosY = {1'b0, tScanRowClk[10:0]} - 62;
+//			tPixNextPosY = {1'b0, tScanRowClk[10:0]} - 62;
+//			tPixNextPosY = {1'b0, tScanRowClk[10:0]} - 74;
+
+//			tPixNextPosY = {1'b0, tScanRowClk[10:0]} - 47;
+//			tPixNextPosY = {1'b0, tScanRowClk[10:0]} - 41;
+			tPixNextPosY = {1'b0, tScanRowClk[10:0]} - 43;
+
 //			tPixNextPosY = tScanNextRowClk[11:0] - 2;
 //			tPixNextPosY = tScanNextRowClk[11:0] - 3;
 //			tPixNextPosY = tScanNextRowClk[12:1] - 20;
@@ -527,6 +583,7 @@ begin
 //			if(pixAux[1])
 			tVSyncNextClk = tVSyncClk - 1;
 			tScanNextPixClk = 0;
+			tNextHorzStrobe	= 1;
 		end
 //		else if(tScanPixClk>=472)
 		else if(tScanPixClk>=236)
@@ -546,6 +603,7 @@ begin
 		begin
 			tVEqPulseNextClk = tVEqPulseClk - 1;
 			tScanNextPixClk = 0;
+			tNextHorzStrobe	= 1;
 		end
 //		else if(tScanPixClk>=2944)
 		else if(tScanPixClk>=1472)
@@ -570,6 +628,7 @@ begin
 //			begin
 				tScanNextRowClk = tScanRowClk + 1;
 				tScanNextPixClk = 0;
+				tNextHorzStrobe	= 1;
 //			end
 			
 //			if(tScanNextRowClk>=262)
@@ -630,8 +689,10 @@ begin
 	tPwmOutB	<= tPwmOutA;
 	tPwmOutC	<= tPwmOutB;
 
+	tHsyncL			<= tHsync;
 	tHsync			<= tNextHsync;
 	tVsync			<= tNextVsync;
+	tHorzStrobe		<= tNextHorzStrobe;
 
 	tPwmStR			<= tPwmNextStR;
 	tPwmStG			<= tPwmNextStG;
@@ -644,6 +705,7 @@ begin
 
 //	tCbAcc			<= tCbNextAcc;
 
+	tFraPixClk		<= tFraNextPixClk;
 	tScanPixClk		<= tScanNextPixClk;
 	tScanRowClk		<= tScanNextRowClk;
 	tScanRowLim		<= tScanNextRowLim;

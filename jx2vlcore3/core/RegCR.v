@@ -10,16 +10,14 @@ module RegCR(
 	regValCn1,		//Destination Value (EX1)
 	regIdCn2,		//Destination ID (EX2)
 	regValCn2,		//Destination Value (EX2)
-`ifdef jx2_stage_ex3
 	regIdCn3,		//Destination ID (EX3)
 	regValCn3,		//Destination Value (EX3)
-`endif
 
 	regEx1Flush,
 	regEx2Flush,
-`ifdef jx2_stage_ex3
 	regEx3Flush,
-`endif
+
+	gprValPc,		//PC Value (Synthesized)
 
 	regOutPc,	regInPc,
 	regOutLr,	regInLr,
@@ -52,11 +50,11 @@ input[63:0]		regValCn2;		//Destination Value
 input			regEx1Flush;
 input			regEx2Flush;
 
-`ifdef jx2_stage_ex3
 input[4:0]		regIdCn3;		//Destination ID
 input[63:0]		regValCn3;		//Destination Value
 input			regEx3Flush;
-`endif
+
+input [47:0]	gprValPc;		//PC Value (Synthesized)
 
 output[47:0]	regOutPc;
 input [47:0]	regInPc;
@@ -129,6 +127,8 @@ assign	regOutKrr	= UV64_00;
 reg[63:0]	tValCmA;
 reg			tValCmZz;
 
+reg			tIsIsrEdge;
+
 reg[5:0]		regIdCn2B;			//Destination ID
 reg[63:0]		regValCn2B;			//Destination Value
 reg[47:0]		regValCn2B_48b;		//Destination Value
@@ -176,25 +176,16 @@ begin
 	end
 `endif
 
+	tIsIsrEdge	= regInSr[28] ^ crRegSr[28];
 
-`ifdef jx2_stage_ex3
-// `ifndef jx2_stage_ex3
+
 	regIdCn2B	= { 1'b1, regIdCn3 };
 	regValCn2B	= regValCn3;
-	if(regEx3Flush)
+//	if(regEx3Flush)
+	if(1'b0)
 	begin
 		regIdCn2B	= JX2_CR_ZZR;
-//		tRegInLr	= crRegLr;
 	end
-`else
-	regIdCn2B	= { 1'b1, regIdCn2 };
-	regValCn2B	= regValCn2;
-	if(regEx2Flush)
-	begin
-		regIdCn2B = JX2_CR_ZZR;
-//		tRegInLr	= crRegLr;
-	end
-`endif
 
 `ifdef jx2_enable_vaddr48
 //	regValCn2B_48b	= regValCn2[47:0];
@@ -209,7 +200,8 @@ begin
 		JX2_CR_EXSR:	tValCmA=crRegExsr;
 
 `ifdef jx2_enable_vaddr48
-		JX2_CR_PC:		tValCmA={UV16_00, crRegPc};
+//		JX2_CR_PC:		tValCmA={UV16_00, crRegPc};
+		JX2_CR_PC:		tValCmA={UV16_00, gprValPc};
 		JX2_CR_LR:		tValCmA={UV16_00, crRegLr};
 		JX2_CR_VBR:		tValCmA={UV16_00, crRegVbr};
 		JX2_CR_SPC:		tValCmA={UV16_00, crRegSpc};
@@ -219,7 +211,8 @@ begin
 //		JX2_CR_TEA:		tValCmA={UV16_00, crRegTea};
 		JX2_CR_TEA:		tValCmA=crRegTea;
 `else
-		JX2_CR_PC:		tValCmA={UV32_00, crRegPc[31:0]};
+//		JX2_CR_PC:		tValCmA={UV32_00, crRegPc[31:0]};
+		JX2_CR_PC:		tValCmA={UV32_00, gprValPc[31:0]};
 		JX2_CR_LR:		tValCmA={UV32_00, crRegLr[31:0]};
 		JX2_CR_VBR:		tValCmA={UV32_00, crRegVbr[31:0]};
 		JX2_CR_SPC:		tValCmA={UV32_00, crRegSpc[31:0]};
@@ -267,10 +260,8 @@ begin
 `ifdef def_true
 	if(!tValCmZz)
 	begin
-`ifdef jx2_stage_ex3
 		if(regIdCm==regIdCn3)
 			tRegValCm=regValCn3;
-`endif
 		if(regIdCm==regIdCn2)
 			tRegValCm=regValCn2;
 		if(regIdCm==regIdCn1)
@@ -303,6 +294,7 @@ begin
 	end
 	else
 		if(!hold)
+//		if(!hold || tIsIsrEdge)
 	begin
 		crRegSr		<= (regIdCn2B==JX2_CR_SR  ) ? regValCn2B[63:0] : regInSr;
 		crRegExsr	<= (regIdCn2B==JX2_CR_EXSR) ? regValCn2B[63:0] : regInExsr;
@@ -337,11 +329,6 @@ begin
 		crRegTbr	<= (regIdCn2B==JX2_CR_TBR ) ? regValCn2B_48b : crRegTbr;
 `endif
 
-//		crRegSpc	<= (regIdCn2B==JX2_CR_SPC ) ? regValCn2B[47:0] : crRegSpc;
-//		crRegSsp	<= (regIdCn2B==JX2_CR_SSP ) ? regValCn2B[47:0] : crRegSsp;
-//		crRegTea	<= (regIdCn2B==JX2_CR_TEA ) ? regValCn2B[47:0] : crRegTea;
-//		crRegExsr	<= (regIdCn2B==JX2_CR_EXSR) ? regValCn2B[63:0] : crRegExsr;
-
 `ifdef jx2_enable_mmu
 		crRegTtb	<= (regIdCn2B==JX2_CR_TTB ) ? regValCn2B[47:0] : crRegTtb;
 		crRegMmcr	<= (regIdCn2B==JX2_CR_MMCR) ? regValCn2B[63:0] : crRegMmcr;
@@ -349,14 +336,6 @@ begin
 		crRegKrr	<= (regIdCn2B==JX2_CR_KRR ) ? regValCn2B[63:0] : crRegKrr;
 `endif
 
-	end
-	else
-	begin
-//		crRegSr		<= regInSr;
-//		crRegExsr	<= regInExsr;
-//		crRegSpc	<= regInSpc;
-//		crRegSsp	<= regInSsp;
-//		crRegTea	<= regInTea;
 	end
 end
 

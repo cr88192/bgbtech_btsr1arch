@@ -22,28 +22,17 @@ Holding/Completing a memory access will be the responsibility of EX2.
 `include "ExAGU.v"
 `endif
 
-// `include "ExALU.v"
 `include "ExConv2R.v"
 
 `include "ExCpuId.v"
 
 `ifndef jx2_merge_shadq
-//`include "ExShad32.v"
 `include "ExShad32B.v"
-// `include "ExShad64.v"
 `include "ExShad64B.v"
 `endif
 
 `ifdef jx2_merge_shadq
 `include "ExShad64C.v"
-`endif
-
-`ifdef jx2_enable_swapn
-`include "ExSwapN.v"
-`endif
-
-`ifdef jx2_enable_shlln
-`include "ExShllN.v"
 `endif
 
 /* verilator lint_off DEFPARAM */
@@ -52,7 +41,7 @@ module ExEX1(
 	clock, reset,
 	opUCmd, opUIxt,
 	exHold,	exTrapExc,
-	timers,
+	timers,	opUCmdOut,
 
 	regIdRs,		//Source A, ALU / Base
 	regIdRt,		//Source B, ALU / Index
@@ -100,6 +89,7 @@ output[1:0]		exHold;
 output[15:0]	exTrapExc;
 
 input[11:0]		timers;
+output[7:0]		opUCmdOut;
 
 input[5:0]		regIdRs;		//Source A, ALU / Base
 input[5:0]		regIdRt;		//Source B, ALU / Index
@@ -213,10 +203,6 @@ assign	tValAgu[47:32] = UV16_00;
 ExAGU	exAgu(regValRs[31:0], regValRt[31:0], opUIxt, tValAgu[31:0]);
 `endif
 
-// wire[63:0]	tValAlu;
-// wire		tAluSrT;
-// ExALU	exAlu(regValRs, regValRt, opUIxt, regInSr[0], tValAlu, tAluSrT);
-
 wire[63:0]	tValCnv;
 wire		tCnvSrT;
 ExConv2R	exConv2R(regValRs, opUIxt, regInSr[0], tValCnv, tCnvSrT);
@@ -242,23 +228,7 @@ assign	tValShad32 = tValShad64[31:0];
 
 ExShad64C	exShad64(clock, reset,
 	regValRs[63:0], regValRt[7:0],
-//	tValShad64, opUCmd[1:0]);
-//	tValShad64, {opUIxt[3:2], opUCmd[1:0]});
 	tValShad64, opUIxt[3:0]);
-`endif
-
-`ifdef jx2_enable_swapn
-wire[63:0]	tValSwapN;
-ExSwapN		exSwapN(clock, reset,
-	opUIxt, regValRs, tValSwapN);
-`endif
-
-`ifdef jx2_enable_shlln
-wire[63:0]	tValShllN;
-wire		tShllSrT;
-ExShllN		exShllN(
-	opUIxt, regValRs, tValShllN,
-	regInSr[0], tShllSrT);
 `endif
 
 wire[63:0]	tValCpuIdLo;
@@ -281,6 +251,9 @@ reg			tDoDelayCycle;
 (* max_fanout = 50 *)
 	reg[5:0]	tOpUCmd1;
 reg[5:0]	tOpUCmdF;
+reg[7:0]	tOpUCmd2;
+
+assign		opUCmdOut = tOpUCmd2;
 
 reg[63:0]	tValAguBra;
 reg[47:0]	tValBra;
@@ -331,8 +304,6 @@ begin
 	tDoDelayCycle	= 0;
 
 	tValAguBra		= { UV16_00, regValPc[47:32], tValAgu[31:0] };
-//	tValAguBra		= { UV16_00, regValPc[47:32],
-//		regValPc[31:1] + regValRt[30:0], 1'b0 };
 
 	tValBra			= tValAguBra[47:0];
 	tDoBra			= 0;
@@ -352,28 +323,6 @@ begin
 	tRegSpAdd16		= { regInSp[63:28], regInSp[27:4]+24'h1, regInSp[3:0]};
 	tRegSpSub16		= { regInSp[63:28], regInSp[27:4]-24'h1, regInSp[3:0]};
 
-`ifdef jx2_enable_addsp
-	tRegSpAddImm	=  { regInSp[63:28],
-//		regInSp[27:3]+regValImm[27:3],
-//		regInSp[2:0]};
-		regInSp[27:0] + {
-			regValImm[15] ? UV12_FF : UV12_00,
-			regValImm[15:3], 3'h0 } };
-`endif
-
-`ifndef def_true
-//	case(opUIxt[7:6])
-//	case(opUCmd[7:6])
-	casez( { opBraFlush, opUCmd[7:6] } )
-		3'b000: 	tOpEnable = 1;
-		3'b001: 	tOpEnable = 0;
-		3'b010: 	tOpEnable = regInSr[0];
-		3'b011: 	tOpEnable = !regInSr[0];
-		3'b1zz: 	tOpEnable = 0;
-	endcase
-`endif
-
-`ifdef def_true
 	casez( { opBraFlush, opUCmd[7:6], regInSr[0] } )
 		4'b000z: 	tOpEnable = 1;
 		4'b001z: 	tOpEnable = 0;
@@ -383,27 +332,12 @@ begin
 		4'b0111: 	tOpEnable = 0;
 		4'b1zzz: 	tOpEnable = 0;
 	endcase
-`endif
-	
-`ifndef def_true
-	tOpUCmdF	= JX2_UCMD_NOP;
-	if(!opBraFlush)
-	begin
-		case(opUCmd[5:0])
-			JX2_UCMD_BRA:	tOpUCmdF	= JX2_UCMD_BRA_NB;
-			default:		tOpUCmdF	= JX2_UCMD_NOP;
-		endcase
-	end
-	
-//	tOpUCmd1	= tOpEnable ? opUCmd[5:0] : JX2_UCMD_NOP;
-	tOpUCmd1	= tOpEnable ? opUCmd[5:0] : tOpUCmdF;
-`endif
 
-`ifdef def_true
 	tOpUCmdF	= ((opUCmd[5:0] == JX2_UCMD_BRA) && !opBraFlush) ?
 		JX2_UCMD_BRA_NB : JX2_UCMD_NOP ;
 	tOpUCmd1	= tOpEnable ? opUCmd[5:0] : tOpUCmdF;
-`endif
+	
+	tOpUCmd2	= { JX2_IXC_AL, tOpUCmd1 };
 
 	case(tOpUCmd1)
 		JX2_UCMD_NOP: begin
@@ -418,27 +352,11 @@ begin
 		end
 	
 		JX2_UCMD_LEA_MR: begin
-`ifdef jx2_addxl_agu
-			tRegIdRn1	= regIdRm;
-			if(opUIxt[2])
-			begin
-				tRegValRn1	= {
-					(opUIxt[3] && tValAgu[31]) ?
-						UV32_FF : UV32_00,
-					tValAgu[31:0] };
-			end
-			else
-			begin
-				tRegValRn1	= { UV32_00, tValAgu };
-			end
-`else
 			tRegIdRn1	= regIdRm;
 			tRegValRn1	= { UV16_00, tValAgu };
-`endif
 		end
 		JX2_UCMD_MOV_RM: begin
 			tDoMemOpm	= { 2'b10, opUIxt[2], opUIxt[5:4] };
-//			tDoMemOpm	= { 2'b10, opUIxt[3], opUIxt[5:4] };
 			tDoMemOp	= 1;
 
 `ifdef jx2_debug_ldst
@@ -448,7 +366,6 @@ begin
 		end
 		JX2_UCMD_MOV_MR: begin
 			tDoMemOpm = { 2'b01, opUIxt[2], opUIxt[5:4] };
-//			tDoMemOpm = { 2'b01, opUIxt[3], opUIxt[5:4] };
 			tDoMemOp	= 1;
 			tHeldIdRn1	= regIdRm;
 
@@ -458,120 +375,13 @@ begin
 `endif
 		end
 
-// `ifdef jx2_enable_fpu
-`ifdef jx2_enable_fmov
-// `ifdef jx2_enable_fprs
-		JX2_UCMD_FMOV_RM: begin
-			tDoMemOpm	= { 2'b10, opUIxt[2], opUIxt[5:4] };
-			tDoMemOp	= 1;
-			tMemDataOut = (opUIxt[1:0]==3) ? regValFRs : regFpuGRn;
-		end
-		JX2_UCMD_FMOV_MR: begin
-			tDoMemOpm = { 2'b01, opUIxt[2], opUIxt[5:4] };
-			tDoMemOp	= 1;
-		end
-`endif
-
-`ifndef def_true
-		JX2_UCMD_PUSHX: begin
-			tMemAddr	= tRegSpSub8[47:0];
-			tRegOutSp	= tRegSpSub8;
-			tDoMemOpm	= UMEM_OPM_WR_Q;
-			tDoMemOp	= 1;
-
-//			tHeldIdRn1	= JX2_GR_SP;
-			tHeldIdCn1	= JX2_GR_IMM[4:0];
-			tRegOutSchm[JX2_SCHM_SP]	= 1;
-			
-			case(opUIxt[2:0])
-//				3'b000: 	tMemDataOut = regValRm;
-				3'b000: 	tMemDataOut = regValRs;
-				3'b001: 	tMemDataOut = regValCRm;
-				3'b010: 	tMemDataOut = regValFRs;
-//				3'b011: 	tMemDataOut = regValRm;
-//				3'b011: 	tMemDataOut = regValRs;
-				3'b011: 	tMemDataOut = regValCRm;
-
-				3'b100: begin
-//					$display("EXA1: PushX Id=%d Rm=%X", regIdRm, regValRm);
-
-					tMemAddr	= tRegSpSub16[47:0];
-					tRegOutSp	= tRegSpSub16;
-					tDoMemOpm	= UMEM_OPM_WR_TILE;
-				 	tMemDataOut		= regValRm;
-//				 	tMemDataOut		= regValRs;
-//				 	tMemDataOutB	= regValRt;
-				end
-				
-				default: begin
-				end
-			endcase
-			
-`ifdef jx2_debug_ldst
-			$display("PUSH: SP=%X R=%X V=%X", tMemAddr, regIdRm, tMemDataOut);
-`endif
-		end
-		JX2_UCMD_POPX: begin
-			tMemAddr	= regInSp[47:0];
-			tRegOutSp	= tRegSpAdd8;
-			tDoMemOpm	= UMEM_OPM_RD_Q;
-			tDoMemOp	= 1;
-//			tHeldIdRn1	= regIdRm;
-//			tHeldIdCn1	= regIdRm[4:0];
-
-			tHeldIdCn1	= JX2_GR_IMM[4:0];
-			tRegOutSchm[JX2_SCHM_SP]	= 1;
-
-//			casez(opUIxt[1:0])
-//				2'b00:		tHeldIdRn1	= regIdRm;
-//				2'b01:		tHeldIdCn1	= regIdRm[4:0];
-//				default:	tHeldIdCn1	= JX2_GR_IMM[4:0];
-//			endcase
-
-			case(opUIxt[2:0])
-				3'b100: begin
-					tRegOutSp	= tRegSpAdd16;
-					tDoMemOpm	= UMEM_OPM_RD_TILE;
-				end
-				
-				default: begin
-				end
-			endcase
-
-`ifdef jx2_debug_ldst
-			$display("POP(1): SP=%X R=%X", tMemAddr, regIdRm);
-`endif
-		end
-`endif
-
-`ifdef jx2_enable_addsp
-		JX2_UCMD_ADDSP: begin
-			tRegOutSp	= tRegSpAddImm;
-			tHeldIdCn1	= JX2_GR_IMM[4:0];
-			tRegOutSchm[JX2_SCHM_SP]	= 1;
-		end
-`endif
-
-//		JX2_UCMD_ALU3: begin
 		JX2_UCMD_ALU3, JX2_UCMD_UNARY, JX2_UCMD_ALUW3: begin
 			tHeldIdRn1	= regIdRm;
-//			tRegIdRn1	= regIdRm;
-//			tRegValRn1	= tValAlu;
 		end
 
 		JX2_UCMD_ALUCMP: begin
-//			tRegOutSr[0]	= tAluSrT;
-//			tHeldIdCn1	= JX2_GR_IMM[4:0];
 		end
 	
-`ifndef def_true
-		JX2_UCMD_UNARY: begin
-			tHeldIdRn1	= regIdRm;
-//			tRegIdRn1	= regIdRm;
-//			tRegValRn1	= tValAlu;
-		end
-`endif
-
 		JX2_UCMD_CONV_RR: begin
 			tRegIdRn1		= regIdRm;
 			tRegValRn1		= tValCnv;
@@ -592,21 +402,17 @@ begin
 					tRegValRn1	= {
 						regValImm[32] ? UV32_FF : UV32_00,
 						regValImm[31:0] };
-//					tRegValRn1	= regValRs;
 				end
 				4'b0001: begin /* LDISH8 */
 					tRegIdRn1	= regIdRm;
-//					tRegValRn1	= { regValRm[55:0], regValImm[7:0] };
 					tRegValRn1	= { regValRs[55:0], regValImm[7:0] };
 				end
 				4'b0010: begin /* LDISH16 */
 					tRegIdRn1	= regIdRm;
-//					tRegValRn1	= { regValRm[47:0], regValImm[15:0] };
 					tRegValRn1	= { regValRs[47:0], regValImm[15:0] };
 				end
 				4'b0011: begin /* LDISH32 */
 					tRegIdRn1	= regIdRm;
-//					tRegValRn1	= { regValRm[31:0], regValImm[31:0] };
 					tRegValRn1	= { regValRs[31:0], regValImm[31:0] };
 				end
 				4'b0100: begin /* JLDIX */
@@ -625,9 +431,6 @@ begin
 		JX2_UCMD_BRA_NB: begin
 			if(opPreBra)
 			begin
-//				$display("EX: BRA_NB: PC2=%X", regValPc);
-//				tRegIdCn1	= JX2_CR_PC[4:0];
-//				tRegValCn1	= {UV16_00, regValPc};
 				tValBra		= regValPc[47:0];
 				tDoBra		= 1;
 			end
@@ -636,11 +439,6 @@ begin
 		JX2_UCMD_BRA: begin
 			if(!opPreBra)
 			begin
-//				$display("EX: BRA: PC2=%X", tValAgu);
-//				tRegIdCn1	= JX2_CR_PC[4:0];
-//				tRegValCn1	= {UV16_00, tValAgu};
-//				tRegValCn1	= tValAguBra;
-
 				tValBra		= tValAguBra[47:0];
 				tDoBra		= 1;
 			end
@@ -650,42 +448,23 @@ begin
 			tRegOutLr	= regValPc;
 			if(!opPreBra)
 			begin
-//				tRegIdCn1	= JX2_CR_PC[4:0];
-//				tRegValCn1	= {UV16_00, tValAgu};
-//				tRegValCn1	= tValAguBra;
-
 				tValBra		= tValAguBra[47:0];
 				tDoBra		= 1;
 			end
 		end
 		JX2_UCMD_JMP: begin
-//			$display("EX: JMP: PC2=%X", regValRs);
-//			tRegIdCn1	= JX2_CR_PC[4:0];
-`ifdef jx2_enable_vaddr48
-//			tRegValCn1	= {UV16_00, regValRs[47:0]};
-`else
-//			tRegValCn1	= {UV32_00, regValRs[31:0]};
-`endif
 			tValBra		= regValRs[47:0];
 			tDoBra		= 1;
 		end
 		JX2_UCMD_JSR: begin
 //			$display("EX: JSR: LR=%X PC2=%X", regValRs, regValPc);
 			tRegOutLr	= regValPc;
-//			tRegIdCn1	= JX2_CR_PC[4:0];
-`ifdef jx2_enable_vaddr48
-//			tRegValCn1	= {UV16_00, regValRs[47:0]};
-`else
-//			tRegValCn1	= {UV32_00, regValRs[31:0]};
-`endif
 			tValBra		= regValRs[47:0];
 			tDoBra		= 1;
 		end
 		
 		JX2_UCMD_MULW3: begin
 			tHeldIdRn1	= regIdRm;			//
-//			tRegIdRn1	= regIdRm;			//
-//			tRegValRn1	= regValMulwRes;		//
 		end
 
 `ifdef jx2_merge_shadq
@@ -718,105 +497,29 @@ begin
 `endif
 
 		JX2_UCMD_MUL3: begin
-//			tRegIdCn1	= JX2_GR_IMM[4:0];
-//			tHeldIdCn1	= JX2_GR_IMM[4:0];
-//			tRegOutSchm[JX2_SCHM_DLR]	= 1;
-//			tRegOutSchm[JX2_SCHM_DHR]	= 1;
 			tHeldIdRn1	= regIdRm;
-
-`ifndef def_true
-			casez(opUIxt[2:0])
-				3'b00z: begin
-					tHeldIdRn1	= regIdRm;
-				end
-`ifndef def_true
-				3'b01z: begin
-					tDoDelayCycle = 1;
-//					tRegIdCn1	= JX2_GR_IMM[4:0];
-		//			tHeldIdCn1	= JX2_GR_IMM[4:0];
-					tRegOutSchm[JX2_SCHM_DLR]	= 1;
-					tRegOutSchm[JX2_SCHM_DHR]	= 1;
-				end
-`endif
-				3'b10z: begin
-					tHeldIdRn1	= regIdRm;
-				end
-				default: begin
-					tHeldIdRn1	= regIdRm;
-				end
-			endcase
-`endif
-
 		end
-
-`ifdef jx2_enable_swapn
-		JX2_UCMD_SWAPN: begin
-			tRegIdRn1	= regIdRm;
-			tRegValRn1	= tValSwapN;
-		end
-`endif
-
-`ifdef jx2_enable_shlln
-		JX2_UCMD_SHLLN:	 begin
-			tRegIdRn1		= regIdRm;
-			tRegValRn1		= tValShllN;
-			tRegOutSr[0]	= tShllSrT;
-		end
-`endif
 	
 `ifdef jx2_enable_fpu
 		JX2_UCMD_FSTCX: begin
-//			tRegIdRn1		= regIdRm;
-//			tRegValRn1		= regFpuGRn;
 			tHeldIdRn1	= regIdRm;
 		end
 		
 		JX2_UCMD_FCMP: begin
-//			tRegOutSr[0]	= regFpuSrT;
 		end
 
-`ifdef jx2_enable_fprs
 		JX2_UCMD_FPU3: begin
-//			if(opUIxt[4])
-//			begin
-//				tRegIdRn1		= regIdRm;
-//				tRegValRn1		= regFpuGRn;
-//			end
-		end
-		JX2_UCMD_FIXS: begin
-//			if(opUIxt[4])
-//			begin
-//				tRegIdRn1		= regIdRm;
-//				tRegValRn1		= regFpuGRn;
-//			end
-		end
-		JX2_UCMD_FLDCX: begin
-//			if(opUIxt[4])
-//			begin
-//				tRegIdRn1		= regIdRm;
-//				tRegValRn1		= regFpuGRn;
-//			end
-		end
-`else
-		JX2_UCMD_FPU3: begin
-//			tRegIdRn1		= regIdRm;
-//			tRegValRn1		= regFpuGRn;
 			tHeldIdRn1	= regIdRm;
 		end
 		JX2_UCMD_FIXS: begin
-//			tRegIdRn1		= regIdRm;
-//			tRegValRn1		= regFpuGRn;
 			tHeldIdRn1	= regIdRm;
 		end
 
 		JX2_UCMD_FLDCX: begin
-//			tRegIdRn1		= regIdRm;
-//			tRegValRn1		= regFpuGRn;
 			tHeldIdRn1	= regIdRm;
 		end
 `endif
 
-`endif
 		JX2_UCMD_OP_IXS: begin
 			case(opUIxt[5:0])
 				JX2_UCIX_IXS_NOP: begin
@@ -836,9 +539,6 @@ begin
 					tMemOpm		= UMEM_OPM_FLUSHIS;
 					tMemAddr	= regValRm[47:0];
 
-//					tRegOutLr	= regValPc;
-//					tRegIdCn1	= JX2_CR_PC[4:0];
-//					tRegValCn1	= {UV16_00, regValPc};
 					tValBra		= regValPc[47:0];
 					tDoBra		= 1;
 				end
@@ -847,14 +547,9 @@ begin
 
 					tMemOpm		= UMEM_OPM_FLUSHDS;
 					tMemAddr	= regValRm[47:0];
-
-//					tDoMemOpm	= UMEM_OPM_FLUSHDS;
-//					tDoMemOp	= 1;
 				end
 
 				JX2_UCIX_IXS_TRAPB: begin
-//					tMemOpm		= UMEM_OPM_TRAP;
-//					tMemAddr	= regValRm[47:0];
 					tDoMemOpm	= UMEM_OPM_TRAP;
 					tDoMemOp	= 1;
 				end
@@ -864,7 +559,6 @@ begin
 						$display("EX: Unhandled Op-IXS %X", opUIxt);
 					tNextMsgLatch	= 1;
 					tExHold		= 1;
-//					tExHold		= !reset;
 				end
 			endcase
 		end
@@ -880,7 +574,6 @@ begin
 						$display("EX: BREAK, PC=%X", regValPc);
 					tNextMsgLatch	= 1;
 					tExHold		= 1;
-//					tExHold		= !reset;
 					if(regInExc[15])
 						tExHold		= 0;
 					
@@ -908,18 +601,12 @@ begin
 				JX2_UCIX_IXT_RTE: begin
 //					$display("EX1: RTE, PC=%X", regValPc);
 					tExTrapExc = 16'hFF00;
-//					tRegIdCn1	= JX2_GR_IMM[4:0];
 				end
 				JX2_UCIX_IXT_TRAPA: begin
 					tExTrapExc = { 12'hC08, regIdRm[3:0] };
-//					tRegIdCn1	= JX2_GR_IMM[4:0];
 				end
 
 				JX2_UCIX_IXT_CPUID: begin
-//					tRegOutDlr	= tValCpuIdLo;
-//					tRegOutDhr	= tValCpuIdHi;
-//					tRegIdCn1	= JX2_GR_IMM[4:0];
-
 					tRegIdRn1		= JX2_GR_DLR;
 					tRegValRn1		= tValCpuIdLo;
 				end
@@ -929,31 +616,23 @@ begin
 					case(regIdRm[3:0])
 						4'h0:		tRegOutSr[27]	= 0;
 						4'h1:		tRegOutSr[27]	= 1;
-`ifdef jx2_enable_wex3w
 						4'h2:		tRegOutSr[27]	= 1;
-`endif
 						default:	tRegOutSr[27]	= 0;
 					endcase
 `else
 					tRegOutSr[27]	= 0;
 `endif
-
-//					tRegOutSr[27]	= 0;
 				end
 
 				JX2_UCIX_IXT_SYSE: begin
 					tExTrapExc = { 4'hE, regInDlr[11:0] };
-//					tRegIdCn1	= JX2_GR_IMM[4:0];
 				end
 				
 				JX2_UCIX_IXT_LDTLB: begin
-//					$display("EX1: LDTLB");
-//					tMemOpm = UMEM_OPM_LDTLB;
 					tDoMemOpm	= UMEM_OPM_LDTLB;
 					tDoMemOp	= 1;
 				end
 				JX2_UCIX_IXT_INVTLB: begin
-//					tMemOpm = UMEM_OPM_INVTLB;
 					tDoMemOpm	= UMEM_OPM_INVTLB;
 					tDoMemOp	= 1;
 				end
@@ -1162,7 +841,6 @@ begin
 						$display("EX: Unhandled Op-IXT %X", opUIxt);
 					tNextMsgLatch	= 1;
 					tExHold		= 1;
-//					tExHold		= !reset;
 				end
 			endcase
 		end

@@ -192,9 +192,9 @@ V_CopyRect
 
     for ( ; height>0 ; height--) 
     { 
-	memcpy (dest, src, width*sizeof(dt_scrpix)); 
-	src += SCREENWIDTH; 
-	dest += SCREENWIDTH; 
+		memcpy (dest, src, width*sizeof(dt_scrpix)); 
+		src += SCREENWIDTH; 
+		dest += SCREENWIDTH; 
     } 
 } 
  
@@ -230,13 +230,17 @@ V_DrawPatchCmap
 	if(!patch)
 		return;
 	 
-    y -= SHORT(patch->topoffset); 
-    x -= SHORT(patch->leftoffset); 
+//    y -= SHORT(patch->topoffset); 
+    y -= (patch->topoffset); 
+//    x -= SHORT(patch->leftoffset); 
+    x -= (patch->leftoffset); 
 #ifdef RANGECHECK 
     if (x<0
-	||x+SHORT(patch->width) >SCREENWIDTH
+//	||x+SHORT(patch->width) >SCREENWIDTH
+	||x+(patch->width) >SCREENWIDTH
 	|| y<0
-	|| y+SHORT(patch->height)>SCREENHEIGHT 
+//	|| y+SHORT(patch->height)>SCREENHEIGHT 
+	|| y+(patch->height)>SCREENHEIGHT 
 	|| (unsigned)scrn>4)
     {
       fprintf( stderr, "Patch at %d,%d exceeds LFB\n", x,y );
@@ -248,7 +252,8 @@ V_DrawPatchCmap
  
     if (!scrn)
     {
-		V_MarkRect (x, y, SHORT(patch->width), SHORT(patch->height)); 
+//		V_MarkRect (x, y, SHORT(patch->width), SHORT(patch->height)); 
+		V_MarkRect (x, y, (patch->width), (patch->height)); 
 //		R_CellMarkBox(
 //			x, x+SHORT(patch->width),
 //			y, y+SHORT(patch->height));
@@ -257,11 +262,13 @@ V_DrawPatchCmap
     col = 0; 
     desttop = screens[scrn]+y*SCREENWIDTH+x; 
 	 
-    w = SHORT(patch->width); 
+//    w = SHORT(patch->width); 
+    w = (patch->width); 
 
     for ( ; col<w ; x++, col++, desttop++)
     { 
-		column = (column_t *)((byte *)patch + LONG(patch->columnofs[col])); 
+//		column = (column_t *)((byte *)patch + LONG(patch->columnofs[col])); 
+		column = (column_t *)((byte *)patch + (patch->columnofs[col])); 
 	 
 		// step through the posts in a column 
 		while (column->topdelta != 0xff ) 
@@ -400,6 +407,7 @@ V_DrawPatchFlipped
     int		count;
     int		col; 
     column_t*	column; 
+    lighttable_t *tcol;
     dt_scrpix	*desttop;
     dt_scrpix	*dest;
     byte*	source; 
@@ -408,13 +416,17 @@ V_DrawPatchFlipped
 	if(!patch)
 		return;
 	 
-    y -= SHORT(patch->topoffset); 
-    x -= SHORT(patch->leftoffset); 
+//    y -= SHORT(patch->topoffset); 
+    y -= (patch->topoffset); 
+//    x -= SHORT(patch->leftoffset); 
+    x -= (patch->leftoffset); 
 #ifdef RANGECHECK 
     if (x<0
-	||x+SHORT(patch->width) >SCREENWIDTH
+//	||x+SHORT(patch->width) >SCREENWIDTH
+	||x+(patch->width) >SCREENWIDTH
 	|| y<0
-	|| y+SHORT(patch->height)>SCREENHEIGHT 
+//	|| y+SHORT(patch->height)>SCREENHEIGHT 
+	|| y+(patch->height)>SCREENHEIGHT 
 	|| (unsigned)scrn>4)
     {
       fprintf( stderr, "Patch origin %d,%d exceeds LFB\n", x,y );
@@ -423,16 +435,21 @@ V_DrawPatchFlipped
 #endif 
  
     if (!scrn)
-	V_MarkRect (x, y, SHORT(patch->width), SHORT(patch->height)); 
+//		V_MarkRect (x, y, SHORT(patch->width), SHORT(patch->height)); 
+		V_MarkRect (x, y, (patch->width), (patch->height)); 
+
+	tcol = colormaps;
 
     col = 0; 
     desttop = screens[scrn]+y*SCREENWIDTH+x; 
 	 
-    w = SHORT(patch->width); 
+//    w = SHORT(patch->width); 
+    w = (patch->width); 
 
     for ( ; col<w ; x++, col++, desttop++) 
     { 
-		column = (column_t *)((byte *)patch + LONG(patch->columnofs[w-1-col])); 
+//		column = (column_t *)((byte *)patch + LONG(patch->columnofs[w-1-col])); 
+		column = (column_t *)((byte *)patch + (patch->columnofs[w-1-col])); 
 	 
 		// step through the posts in a column 
 		while (column->topdelta != 0xff ) 
@@ -440,12 +457,17 @@ V_DrawPatchFlipped
 			source = (byte *)column + 3; 
 			dest = desttop + column->topdelta*SCREENWIDTH; 
 			count = column->length; 
-				 
+
+#ifndef __BJX2__
 			while (count--) 
 			{ 
 				*dest = *source++; 
 				dest += SCREENWIDTH; 
 			} 
+#else
+			V_DrawPatchCmap_Col(source, dest, tcol, count);
+#endif
+
 			column = (column_t *)(  (byte *)column + column->length 
 						+ 4 ); 
 		} 
@@ -503,8 +525,8 @@ V_DrawPatchDirect
     byte*	source; 
     int		w; 
 	 
-    y -= SHORT(patch->topoffset); 
-    x -= SHORT(patch->leftoffset); 
+//    y -= SHORT(patch->topoffset); 
+//    x -= SHORT(patch->leftoffset); 
 
 #ifdef RANGECHECK 
     if (x<0
@@ -524,7 +546,7 @@ V_DrawPatchDirect
     for ( col = 0 ; col<w ; col++) 
     { 
 	outp (SC_INDEX+1,1<<(x&3)); 
-	column = (column_t *)((byte *)patch + LONG(patch->columnofs[col])); 
+//	column = (column_t *)((byte *)patch + LONG(patch->columnofs[col])); 
  
 	// step through the posts in a column 
 	 

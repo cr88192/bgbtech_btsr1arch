@@ -166,7 +166,7 @@ void *Z_Malloc (int size, int tag, void *user)
 //
 	size += sizeof(memblock_t);	// account for size of block header
 	
-	size = 2*size + 64;		//BGB: debug
+//	size = 2*size + 64;		//BGB: debug
 	
 //
 // if there is a free block behind the rover, back up over them

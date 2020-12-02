@@ -179,6 +179,14 @@ int				n_colormaps_alt;
 u16				d_8to16table_alt[8][256];
 
 
+void		**patchcache;
+
+#ifndef BGBCC_FOURCC
+#define BGBCC_FOURCC(a, b, c, d)	((a)|((b)<<8)|((c)<<16)|((d)<<24))
+#endif
+
+
+
 //
 // MAPTEXTURE_T CACHING
 // When a texture is first needed,
@@ -302,7 +310,8 @@ void R_GenerateComposite (int texnum)
 //		realpatch = W_CacheLumpNum (patch->patch, PU_CACHE);
 		realpatch = W_CachePatchNum (patch->patch, PU_CACHE);
 		x1 = patch->originx;
-		x2 = x1 + SHORT(realpatch->width);
+//		x2 = x1 + SHORT(realpatch->width);
+		x2 = x1 + (realpatch->width);
 
 		if (x1<0)
 			x = 0;
@@ -319,7 +328,8 @@ void R_GenerateComposite (int texnum)
 				continue;
 			
 			patchcol = (column_t *)((byte *)realpatch
-						+ LONG(realpatch->columnofs[x-x1]));
+//						+ LONG(realpatch->columnofs[x-x1]));
+						+ (realpatch->columnofs[x-x1]));
 			R_DrawColumnInCache (patchcol,
 					 block + colofs[x],
 					 patch->originy,
@@ -379,7 +389,8 @@ void R_GenerateLookup (int texnum)
 //		realpatch = W_CacheLumpNum (patch->patch, PU_CACHE);
 		realpatch = W_CachePatchNum (patch->patch, PU_CACHE);
 		x1 = patch->originx;
-		x2 = x1 + SHORT(realpatch->width);
+//		x2 = x1 + SHORT(realpatch->width);
+		x2 = x1 + (realpatch->width);
 		
 		if (x1 < 0)
 			x = 0;
@@ -392,7 +403,8 @@ void R_GenerateLookup (int texnum)
 		{
 			patchcount[x]++;
 			collump[x] = patch->patch;
-			colofs[x] = LONG(realpatch->columnofs[x-x1])+3;
+//			colofs[x] = LONG(realpatch->columnofs[x-x1])+3;
+			colofs[x] = (realpatch->columnofs[x-x1])+3;
 		}
 	}
 	
@@ -436,6 +448,7 @@ byte *R_GetColumn
 (	int		tex,
 	int		col )
 {
+	byte	*src;
 	int		lump;
 	int		ofs;
 	
@@ -449,16 +462,29 @@ byte *R_GetColumn
 	ofs = texturecolumnofs[tex][col];
 	
 	if (lump > 0)
+	{
+		src = patchcache[lump];
+		if(src)
+			return(src+ofs);
+
 //		return (byte *)W_CacheLumpNum(lump,PU_CACHE)+ofs;
 		return (byte *)W_CachePatchNum(lump,PU_CACHE)+ofs;
+	}
 
+	src = texturecomposite[tex];
+	if (src)
+		return(src + ofs);
+	R_GenerateComposite (tex);
+	return texturecomposite[tex] + ofs;
+
+#if 0
 	if (!texturecomposite[tex])
 	{
 		R_GenerateComposite (tex);
 //		return(NULL);
 	}
-
 	return texturecomposite[tex] + ofs;
+#endif
 }
 
 
@@ -663,8 +689,6 @@ void R_InitTextures (void)
 		texturetranslation[i] = i;
 }
 
-
-
 //
 // R_InitFlats
 //
@@ -679,7 +703,7 @@ void R_InitFlats (void)
 	// Create translation table for global animation.
 //	flattranslation = Z_Malloc ((numflats+1)*4, PU_STATIC, 0);
 	flattranslation = Z_Malloc ((numflats+1)*sizeof(int), PU_STATIC, 0);
-	flattransptr = Z_Malloc ((numflats+1)*sizeof(byte *), PU_STATIC, 0);
+//	flattransptr = Z_Malloc ((numflats+1)*sizeof(byte *), PU_STATIC, 0);
 //	flattransptrlump = Z_Malloc ((numflats+1)*sizeof(int), PU_STATIC, 0);
 	
 	for (i=0 ; i<numflats ; i++)
@@ -729,8 +753,9 @@ void *W_CacheFlatNum(int flat, int tag)
 //	lump = firstflat + flattranslation[flat];
 	lump = firstflat + flat2;
 
-	src = flattransptr[flat2];
+//	src = flattransptr[flat2];
 //	srci = flattransptrlump[flat2];
+	src = patchcache[lump];
 	if(src)
 		return(src);
 
@@ -739,7 +764,8 @@ void *W_CacheFlatNum(int flat, int tag)
 	if(size == 1024)
 	{
 		if(!src)
-			src = Z_Malloc (4096, tag, &flattransptr[flat2]);
+//			src = Z_Malloc (4096, tag, &flattransptr[flat2]);
+			src = Z_Malloc (4096, tag, &patchcache[lump]);
 		buf = W_CacheLumpNum(lump, PU_CACHE);
 //		flattransptrlump[flat2] = lump;
 		
@@ -762,7 +788,8 @@ void *W_CacheFlatNum(int flat, int tag)
 	if(size == 4096)
 	{
 		if(!src)
-			src = Z_Malloc (4096, tag, &flattransptr[flat2]);
+//			src = Z_Malloc (4096, tag, &flattransptr[flat2]);
+			src = Z_Malloc (4096, tag, &patchcache[lump]);
 		buf = W_CacheLumpNum(lump, PU_CACHE);
 		memcpy(src, buf, 4096);
 		return(src);
@@ -771,12 +798,6 @@ void *W_CacheFlatNum(int flat, int tag)
 	src = W_CacheLumpNum(lump, tag);
 	return(src);
 }
-
-void		**patchcache;
-
-#ifndef BGBCC_FOURCC
-#define BGBCC_FOURCC(a, b, c, d)	((a)|((b)<<8)|((c)<<16)|((d)<<24))
-#endif
 
 void R_ColorCellPostDecode8(byte *cs, byte *ct)
 {
@@ -854,10 +875,13 @@ void *W_CachePatchNum(int lump, int tag)
 	for(x=0; x<xs; x++)
 	{
 //		ofs=spatch->columnofs[x];
-		ofs=csofs[x];
+		ofs=LONG(csofs[x]);
 		if(ofs>>28)
 			break;
 	}
+	
+	if(SHORT(0x1234)!=0x1234)
+		x=-1;
 
 //	if(memcmp(buf, "CP8A", 4))
 	if(x>=xs)
@@ -870,13 +894,13 @@ void *W_CachePatchNum(int lump, int tag)
 	isofs16 = 0;
 	isflat = 0;
 
-	ofs = csofs[0];
+	ofs = LONG(csofs[0]);
 	if((ofs>>28)&0xC)
 		isofs16 = 1;
 
 	if(isofs16)
 	{
-		ofs = csofs16[0];
+		ofs = SHORT(csofs16[0]);
 		if((ofs&0x3FFF)<(8+(xs*2)))
 		{
 			isflat = 1;
@@ -908,7 +932,7 @@ void *W_CachePatchNum(int lump, int tag)
 			if(isofs16)
 			{
 	//			ofs=spatch->columnofs[x];
-				ofs=csofs16[x];
+				ofs=SHORT(csofs16[x]);
 				israw=0;	is16=0;		is8=0;
 				if((ofs>>14)==1)	is8=1;
 				if((ofs>>14)==2)	is16=1;
@@ -917,7 +941,7 @@ void *W_CachePatchNum(int lump, int tag)
 			}else
 			{
 	//			ofs=spatch->columnofs[x];
-				ofs=csofs[x];
+				ofs=LONG(csofs[x]);
 				israw=0;	is16=0;		is8=0;
 				if((ofs>>28)==1)	is8=1;
 				if((ofs>>28)==2)	is16=1;
@@ -962,13 +986,19 @@ void *W_CachePatchNum(int lump, int tag)
 	tpatch = (patch_t *)ctbuf;
 
 	memcpy(tpatch, spatch, sizeof(patch_t));
+	
+	tpatch->width=SHORT(spatch->width);
+	tpatch->height=SHORT(spatch->height);
+	tpatch->leftoffset=SHORT(spatch->leftoffset);
+	tpatch->topoffset=SHORT(spatch->topoffset);
+
 
 //	xs=SHORT(spatch->width);
 //	cctag=LONG(patch->columnofs[xs]);
 
 	if(isflat)
 	{
-		ofs=csofs16[0];
+		ofs=SHORT(csofs16[0]);
 		ofs&=0x3FFF;
 		cs=csbuf+ofs;
 
@@ -987,7 +1017,7 @@ void *W_CachePatchNum(int lump, int tag)
 			ct+=3*(ys1+8);
 		}
 
-		py=(csofs16[1])&255;
+		py=SHORT(csofs16[1])&255;
 		pl=ys;
 
 		ct=ctbuf+8+((xs+1)*4);
@@ -1021,7 +1051,7 @@ void *W_CachePatchNum(int lump, int tag)
 			if(isofs16)
 			{
 	//			ofs=spatch->columnofs[x];
-				ofs=csofs16[x];
+				ofs=SHORT(csofs16[x]);
 				israw=0;	is16=0;		is8=0;
 				if((ofs>>14)==1)	is8=1;
 				if((ofs>>14)==2)	is16=1;
@@ -1030,11 +1060,12 @@ void *W_CachePatchNum(int lump, int tag)
 			}else
 			{
 	//			ofs=spatch->columnofs[x];
-				ofs=csofs[x];
+				ofs=LONG(csofs[x]);
 				israw=0;	is16=0;		is8=0;
 				if((ofs>>28)==1)	is8=1;
 				if((ofs>>28)==2)	is16=1;
 				if((ofs>>28)==3)	israw=1;
+//				if((ofs>>28)==0)	israw=3;
 				ofs&=0x00FFFFFF;
 			}
 
@@ -1138,9 +1169,12 @@ void R_InitSpriteLumps (void)
 
 //		patch = W_CacheLumpNum (firstspritelump+i, PU_CACHE);
 		patch = W_CachePatchNum (firstspritelump+i, PU_CACHE);
-		spritewidth[i] = SHORT(patch->width)<<FRACBITS;
-		spriteoffset[i] = SHORT(patch->leftoffset)<<FRACBITS;
-		spritetopoffset[i] = SHORT(patch->topoffset)<<FRACBITS;
+//		spritewidth[i] = SHORT(patch->width)<<FRACBITS;
+		spritewidth[i] = (patch->width)<<FRACBITS;
+//		spriteoffset[i] = SHORT(patch->leftoffset)<<FRACBITS;
+		spriteoffset[i] = (patch->leftoffset)<<FRACBITS;
+//		spritetopoffset[i] = SHORT(patch->topoffset)<<FRACBITS;
+		spritetopoffset[i] = (patch->topoffset)<<FRACBITS;
 	}
 }
 

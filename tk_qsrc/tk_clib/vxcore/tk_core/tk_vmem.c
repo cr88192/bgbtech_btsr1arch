@@ -37,8 +37,8 @@ int tk_vmem_lru_last;
 int tk_vmem_lru_free;
 
 s64	tk_vmem_swap_lba;
-int	tk_vmem_swap_sz;
-int	tk_vmem_swap_psz;
+u32	tk_vmem_swap_sz;
+u32	tk_vmem_swap_psz;
 
 
 u64	*tk_vmem_pageroot;
@@ -479,14 +479,14 @@ int TK_VMem_SetPageTableEntry(s64 vaddr, u64 ptval)
 
 int TK_VMem_Init();
 
-int TK_VMem_AddSdSwap(s64 lba, int sz)
+int TK_VMem_AddSdSwap(s64 lba, u32 sz)
 {
 	tk_vmem_swap_lba=lba;
 	tk_vmem_swap_sz=sz;
 	tk_vmem_swap_psz=sz>>TK_VMEM_PAGESHL;
 
-	printf("TK_VMem_AddSdSwap: %X %d %d(pages)\n", (int)lba, sz,
-		tk_vmem_swap_psz);
+	printf("TK_VMem_AddSdSwap: %X %dK %d(pages)\n", (int)lba, (int)(sz>>10),
+		(int)(tk_vmem_swap_psz));
 	
 	TK_VMem_Init();
 }
@@ -1423,7 +1423,7 @@ void tk_vmem_tlbmiss(u64 ttb, u64 tea)
 		return;
 	}
 	
-	__debugbreak();
+//	__debugbreak();
 	TK_VMem_VaPageInAddr(tea);
 }
 

@@ -1,7 +1,6 @@
-`define FBUF_EN128K
-// `define FBUF_EN64K
-
-`define FBUF_ENBM		//Enable Bitmap Modes
+// `define JX2_FBUF_EN128K
+// `define JX2_FBUF_EN64K
+// `define JX2_FBUF_ENBM		//Enable Bitmap Modes
 
 `include "CoreDefs.v"
 

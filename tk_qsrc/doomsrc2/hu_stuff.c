@@ -779,3 +779,70 @@ boolean HU_Responder(event_t *ev)
     return eatkey;
 
 }
+
+int HU_DrawString(int xo, int yo, char *str)
+{
+	patch_t *p;
+	char *cs;
+	int c, x, y;
+
+//		    hu_font,
+//		    HU_FONTSTART, &message_on);
+
+	if(!hu_font[0])
+		return;
+
+	cs=str; x=xo; y=yo;
+	while(*cs)
+	{
+		c=*cs++;
+		
+		if(c<' ')
+		{
+			if(c=='\n')
+			{
+				p=hu_font[0];
+				if(!p)break;
+				x=xo;
+				y-=p->height;
+			}
+			continue;
+		}
+		
+		c=toupper(c)-HU_FONTSTART;
+
+		p=hu_font[c];
+		if(!p)break;
+	    V_DrawPatchDirect(x, y, FG, p);
+		x+=p->width;
+	}
+}
+
+patch_t		*hu_shortnum[10];
+
+int HU_DrawDecNum(int xo, int yo, int val, int w)
+{
+	char tb[16];
+	patch_t *p;
+	char *cs;
+	int c, x, y;
+	int i, v;
+	
+	v=val;
+	for(i=0; i<w; i++)
+	{
+		tb[w-i-1]=v%10;
+		v/=10;
+	}
+
+	x=xo; y=yo;
+	for(i=0; i<w; i++)
+	{
+		c=tb[i];
+
+		p=hu_shortnum[c];
+		if(!p)break;
+	    V_DrawPatchDirect(x, y, FG, p);
+		x+=p->width;
+	}
+}

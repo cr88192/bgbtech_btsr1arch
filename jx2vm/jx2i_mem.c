@@ -574,6 +574,7 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr)
 //	h=(addr>>5)&511;
 //	h=((addr>>5)^(addr>>14))&511;
 	h=((addr>>5)^(addr>>13))&255;
+//	h=((addr>>5)^(addr>>13))&1023;
 
 //	ctx->mem_cyc+=3;
 	ctx->mem_cyc+=2;
@@ -666,6 +667,9 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr)
 
 	ctx->mem_cnt_l2++;
 
+// #if 0  //Disable L2
+#if 1  //Enable L2
+
 //	h=(addr>>4)&1023;
 //	h=(addr>>4)&2047;
 //	h=(addr>>4)&4095;
@@ -691,6 +695,7 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr)
 
 	ctx->mem_l2h32k[(h<<1)|1]=ctx->mem_l2h32k[(h<<1)|0];
 	ctx->mem_l2h32k[(h<<1)|0]=addr>>4;
+#endif
 
 	/* Main RAM */
 

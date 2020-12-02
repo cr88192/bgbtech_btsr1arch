@@ -36,8 +36,25 @@ rcsid[] = "$Id: m_bbox.c,v 1.1 1997/02/03 22:45:10 b1 Exp $";
 
 
 long long __smullq(int a, int b);
+long long __int32_dmuls(int a, int b);
+u64 __int32_dmulu(u32 a, u32 b);
 
 // Fixme. __USE_C_FIXED__ or something.
+
+#ifdef __BJX2__
+// #if 0
+
+fixed_t FixedMul(fixed_t a, fixed_t b);
+
+__asm {
+FixedMul:
+	DMULS.L		R4, R5, R6
+	SHAD.Q		R6, -16, R7
+	EXTS.L		R7, R2
+	RTS
+};
+
+#else
 
 fixed_t
 FixedMul
@@ -45,12 +62,14 @@ FixedMul
   fixed_t	b )
 {
 	int c;
-//	c = ((long long) a * (long long) b) >> FRACBITS;
-	c = __smullq(a, b) >> FRACBITS;
+	c = ((long long) a * (long long) b) >> FRACBITS;
+//	c = __smullq(a, b) >> FRACBITS;
 	c = (int)c;
 	return(c);
 //	return ((long long) a * (long long) b) >> FRACBITS;
 }
+
+#endif
 
 
 
@@ -103,6 +122,25 @@ FixedDiv2
 #endif
 }
 
+#if 1
+fixed_t
+FixedDivSoft
+( fixed_t	a,
+  fixed_t	b )
+{
+	long long c;
+	int r;
+
+	if ( (abs(a)>>14) >= abs(b))
+		return ((a^b)<0) ? MININT : MAXINT;
+
+	r=M_SoftDivRcpS(b);
+//	c=__smullq(a, r);
+	c = __int32_dmuls(a, r);
+	return (fixed_t)(c>>16);
+}
+#endif
+
 
 static u32 m_softdiv_rcptab[4096];
 static int m_softdiv_init=0;
@@ -141,6 +179,15 @@ u32 M_SoftDivU(u32 a, u32 b)
 		return(c);
 	}
 
+	if(b<0x10000)
+	{
+		tb=m_softdiv_rcptab[b>>4]>>4;
+		ta=(u64)a;
+		tc=ta*tb;
+		c=(u32)(tc>>32);
+		return(c);
+	}
+
 	if(b<0x100000)
 	{
 		tb=m_softdiv_rcptab[b>>8]>>8;
@@ -150,8 +197,33 @@ u32 M_SoftDivU(u32 a, u32 b)
 		return(c);
 	}
 
-	c=a/b;
+	if(b<0x1000000)
+	{
+		tb=m_softdiv_rcptab[b>>12]>>12;
+		ta=(u64)a;
+		tc=ta*tb;
+		c=(u32)(tc>>32);
+		return(c);
+	}
+
+	if(b<0x10000000)
+	{
+		tb=m_softdiv_rcptab[b>>16]>>16;
+		ta=(u64)a;
+		tc=ta*tb;
+		c=(u32)(tc>>32);
+		return(c);
+	}
+
+	tb=m_softdiv_rcptab[b>>20]>>20;
+	ta=(u64)a;
+//	tc=ta*tb;
+	tc = __int32_dmulu(a, tb);
+	c=(u32)(tc>>32);
 	return(c);
+
+//	c=a/b;
+//	return(c);
 }
 
 s32 M_SoftDivS(s32 a, s32 b)
@@ -186,14 +258,35 @@ u32 M_SoftDivRcp(u32 b)
 		return(c);
 	}
 
+	if(b<0x10000)
+	{
+		c=m_softdiv_rcptab[b>>4]>>4;
+		return(c);
+	}
+
 	if(b<0x100000)
 	{
 		c=m_softdiv_rcptab[b>>8]>>8;
 		return(c);
 	}
 
-    c = (0x7fffffffu / b)<<1;
+	if(b<0x1000000)
+	{
+		c=m_softdiv_rcptab[b>>12]>>12;
+		return(c);
+	}
+
+	if(b<0x10000000)
+	{
+		c=m_softdiv_rcptab[b>>16]>>16;
+		return(c);
+	}
+
+	c=m_softdiv_rcptab[b>>20]>>20;
 	return(c);
+
+//    c = (0x7fffffffu / b)<<1;
+//	return(c);
 }
 
 s32 M_SoftDivRcpS(s32 b)

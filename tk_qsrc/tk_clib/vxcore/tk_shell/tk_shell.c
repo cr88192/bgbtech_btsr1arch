@@ -407,6 +407,82 @@ void Sys_CheckSanityB(void)
 		__debugbreak();
 }
 
+long long __int32_dmuls(int a, int b);
+
+void Sys_CheckSanityC(void)
+{
+	double f, g, h;
+	long long la, lb, lc;
+	int a, b, c;
+	
+	h=3.14159;
+	*(&f)=h;
+	g=f*100;
+	a=g;
+	if(a!=314)
+		__debugbreak();
+
+	g=f*1000;
+	a=g;
+	if(a!=3141)
+		__debugbreak();
+
+	g=f*10000;
+	a=g;
+	if(a!=31415)
+		__debugbreak();
+
+	g=f*100000;
+	a=g;
+	if(a!=314159)
+		__debugbreak();
+
+	g=f*(-10000);
+	a=g;
+	if(a!=(-31415))
+		__debugbreak();
+
+	g=f*0.1;
+	a=g;
+	if(a!=0)
+		__debugbreak();
+		
+	g=f*0.31;
+	a=g;
+	if(a!=0)
+		__debugbreak();
+		
+	g=sqrt(f);
+	h=g*g;
+	
+	tk_printf("%f %f\n", f, h);
+	
+	tk_printf("CS-C B0\n");
+	
+	a=314159; b=271828;
+	lc=__int32_dmuls(a, b);
+	if(lc!=85397212652LL)
+		__debugbreak();
+
+	tk_printf("CS-C B1\n");
+
+	a=314159; b=-271828;
+	lc=__int32_dmuls(a, b);
+	if(lc!=(-85397212652LL))
+		__debugbreak();
+
+//	__debugbreak();
+
+	tk_printf("CS-C B2\n");
+
+	a=-314159; b=271828;
+	lc=__int32_dmuls(a, b);
+	if(lc!=(-85397212652LL))
+		__debugbreak();
+	
+	tk_printf("CS-C B3\n");
+}
+
 int tk_shell_chksane()
 {
 	long long tba[32];
@@ -586,29 +662,46 @@ int tk_shell_chksane()
 
 	Sys_CheckSanityB();
 
-//	tk_shell_chksane_clz();
-//	tk_shell_chksane_simd();
+	tk_shell_chksane_clz();
+	tk_shell_chksane_simd();
+	
+	Sys_CheckSanityC();
 }
 
 int main(int argc, char *argv[])
 {
 	TKPE_TaskInfo *task;
+	char *ars[3];
 	char tb_cwd[256];
 	char tbuf[256];
 
 	tk_shell_chksane();
 
 	tk_con_reset();
+	
+	tk_printf("TKSH 0\n");
 
 	task=TK_AllocNewTask();
 	TK_SetCurrentTask(task);
 	
 	TKSH_InitCmds();
 
+	tk_printf("TKSH 1\n");
+
 	strcpy(tb_cwd, "/");
 	TK_Env_SetCwd(tb_cwd);
 
-	TKSH_TryLoad("autoexec.pf", NULL);
+	tk_printf("TKSH 2\n");
+//	TKSH_TryLoad("autoexec.pf", NULL);
+
+//	tk_printf("TKSH 3\n");
+
+	ars[0]="autoexec";
+	ars[1]=NULL;
+	TKSH_TryLoad_ext("autoexec", NULL);
+//	TKSH_TryLoad_ext("autoexec", ars);
+
+//	tk_printf("TKSH 4\n");
 
 	while(1)
 	{

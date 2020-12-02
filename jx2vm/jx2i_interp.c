@@ -1784,6 +1784,33 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 	}
 	
 	printf("Top Traces:\n");
+
+	for(i=0; i<48; i++)
+	{
+		trcur=tra[63-i];
+		bn2=BJX2_DbgNameForAddr(ctx, trcur->addr, &ba2);
+
+		cyc=trcur->runcnt*trcur->n_cyc+trcur->acc_pencyc;
+		pcnt=(100.0*cyc)/(ctx->tot_cyc);
+
+		if(bn2)
+		{
+			printf("PC @ %04X_%08X (%-20s+%04X) "
+				"Cyc=%4lldM(p=%lldM %.2f%%) %.2f%%\n",
+				(u32)(trcur->addr>>32), 
+				(u32)(trcur->addr), bn2,
+				(int)(trcur->addr-ba2),
+				cyc>>20, trcur->acc_pencyc>>20,
+				(100.0*trcur->acc_pencyc)/cyc,
+				pcnt);
+		}else
+		{
+			printf("PC @ %04X_%08X Cyc=%5lldM %.2f%%\n",
+				(u32)(trcur->addr>>32), 
+				(u32)(trcur->addr), cyc>>20, pcnt);
+		}
+	}
+
 	for(i=0; i<16; i++)
 	{
 		trcur=tra[15-i];

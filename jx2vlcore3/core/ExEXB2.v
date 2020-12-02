@@ -105,20 +105,8 @@ begin
 	tRegHeld		= 0;
 	tNextMsgLatch	= 0;
 
+// `ifdef def_true
 `ifndef def_true
-//	case(opUIxt[7:6])
-	casez( { opBraFlush, opUCmd[7:6] } )
-		3'b000: 	tOpEnable = 1;
-		3'b001: 	tOpEnable = 0;
-//		3'b010: 	tOpEnable = regInSr[0];
-		3'b010: 	tOpEnable = regInLastSr[0];
-//		3'b011: 	tOpEnable = !regInSr[0];
-		3'b011: 	tOpEnable = !regInLastSr[0];
-		3'b1zz: 	tOpEnable = 0;
-	endcase
-`endif
-
-`ifdef def_true
 	casez( { opBraFlush, opUCmd[7:6], regInLastSr[0] } )
 		4'b000z: 	tOpEnable = 1;
 		4'b001z: 	tOpEnable = 0;
@@ -130,6 +118,7 @@ begin
 	endcase
 `endif
 
+	tOpEnable	= !opBraFlush;
 	tOpUCmd1	= tOpEnable ? opUCmd[5:0] : JX2_UCMD_NOP;
 
 	case(tOpUCmd1)
@@ -163,12 +152,7 @@ begin
 		JX2_UCMD_MOV_RM: begin
 		end
 		JX2_UCMD_MOV_MR: begin
-`ifdef jx2_stage_memex3
 			tRegHeld	= 1;
-`else
-			tRegIdRn2	= regIdRm;
-			tRegValRn2	= memDataInB;
-`endif
 		end
 
 		JX2_UCMD_ADDSP: begin

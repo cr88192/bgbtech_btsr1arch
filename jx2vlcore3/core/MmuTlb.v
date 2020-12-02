@@ -32,8 +32,8 @@ input[47:0]		regInAddrB;		//input Address (Secondary)
 output[47:0]	regOutAddrB;	//output Address (Secondary)
 input[127:0]	regTlbData;		//input data (LDTLB)
 
-input[127:0]	regInData;		//input cache line
-output[127:0]	regOutData;		//output cache line
+`input_tile		regInData;		//input cache line
+`output_tile	regOutData;		//output cache line
 
 input[4:0]		regInOpm;		//Operation Size/Type
 // output[15:0]	regOutExc;		//Raise Exception
@@ -55,22 +55,32 @@ reg[63:0]		tRegOutTea2;
 reg[1:0]		tRegOutOK2;
 reg[4:0]		tRegOutOpm2;
 
+`reg_tile		tRegOutData;		//output cache line
+`reg_tile		tRegOutData2;		//output cache line
+
+`ifndef jx2_tlb_nofwmemout
 assign		regOutAddr = tRegOutAddr2;
 assign		regOutAddrB = tRegOutAddrB2;
 assign		regOutOK = tRegOutOK2;
 assign		regOutOpm = tRegOutOpm2;
 // assign		regOutExc = tRegOutExc2;
 // assign		regOutTea = tRegOutTea2;
+assign		regOutData = tRegOutData2;
+`endif
+
 assign		regOutExc = { tRegOutTea2[47:0], tRegOutExc2 };
 
-reg[127:0]		tRegOutData;		//output cache line
-reg[127:0]		tRegOutData2;		//output cache line
-assign		regOutData = tRegOutData2;
-
-// assign		regOutAddr = tRegOutAddr;
-// assign		regOutOK = tRegOutOK;
+`ifdef jx2_tlb_nofwmemout
+assign		regOutAddr = tRegOutAddr;
+assign		regOutAddrB = tRegOutAddrB;
+assign		regOutOK = tRegOutOK;
+assign		regOutOpm = tRegOutOpm;
 // assign		regOutExc = tRegOutExc;
 // assign		regOutTea = tRegOutTea;
+assign		regOutData = tRegOutData;
+
+// assign		regOutExc = { tRegOutTea[47:0], tRegOutExc };
+`endif
 
 reg[47:0]		tRegOutAddr;
 reg[47:0]		tRegOutAddrB;
@@ -84,7 +94,7 @@ reg[47:0]		regInAddrA;		//input Address
 reg[47:0]		tRegInAddrA;	//input Address
 reg[47:0]		tRegInAddrB;	//input Address
 reg[4:0]		tRegInOpm;		//Operation Size/Type
-reg[127:0]		tRegInData;		//output cache line
+`reg_tile		tRegInData;		//output cache line
 
 `ifdef jx2_expand_tlb
 
@@ -147,6 +157,11 @@ reg[127:0]	tlbHbDatB;
 reg[127:0]	tlbHbDatC;
 reg[127:0]	tlbHbDatD;
 
+reg[127:0]	tlbHbDatE;
+reg[127:0]	tlbHbDatF;
+reg[127:0]	tlbHbDatG;
+reg[127:0]	tlbHbDatH;
+
 reg[127:0]	tlbHdatA;
 reg[127:0]	tlbHdatB;
 reg[127:0]	tlbHdatC;
@@ -205,6 +220,15 @@ reg			tlbHitE_Lo;
 reg			tlbHitF_Lo;
 reg			tlbHitG_Lo;
 reg			tlbHitH_Lo;
+
+reg			tlbHitE_LoH;
+reg			tlbHitF_LoH;
+reg			tlbHitG_LoH;
+reg			tlbHitH_LoH;
+reg			tlbHitE_LoL;
+reg			tlbHitF_LoL;
+reg			tlbHitG_LoL;
+reg			tlbHitH_LoL;
 
 reg			tlbHitE;
 reg			tlbHitF;
@@ -454,11 +478,18 @@ begin
 	tlbLdHdatC = tlbHdatC;
 	tlbLdHdatD = tlbHdatD;
 
-`ifdef jx2_mem_fulldpx
-	tlbHdatE = { tlbBlkHiA[tlbHixB], tlbBlkLoA[tlbHixB]};
-	tlbHdatF = { tlbBlkHiB[tlbHixB], tlbBlkLoB[tlbHixB]};
-	tlbHdatG = { tlbBlkHiC[tlbHixB], tlbBlkLoC[tlbHixB]};
-	tlbHdatH = { tlbBlkHiD[tlbHixB], tlbBlkLoD[tlbHixB]};
+// `ifdef jx2_mem_fulldpx
+`ifndef def_true
+
+//	tlbHdatE = { tlbBlkHiA[tlbHixB], tlbBlkLoA[tlbHixB]};
+//	tlbHdatF = { tlbBlkHiB[tlbHixB], tlbBlkLoB[tlbHixB]};
+//	tlbHdatG = { tlbBlkHiC[tlbHixB], tlbBlkLoC[tlbHixB]};
+//	tlbHdatH = { tlbBlkHiD[tlbHixB], tlbBlkLoD[tlbHixB]};
+
+	tlbHdatE = tlbHbDatE;
+	tlbHdatF = tlbHbDatF;
+	tlbHdatG = tlbHbDatG;
+	tlbHdatH = tlbHbDatH;
 `else
 	tlbHdatE = 0;
 	tlbHdatF = 0;
@@ -474,7 +505,8 @@ begin
 		tlbHdatD[0] = 0;
 	end
 
-`ifdef jx2_mem_fulldpx
+// `ifdef jx2_mem_fulldpx
+`ifndef def_true
 	if(tlbFlushMask[tlbHixB])
 	begin
 		tlbHdatE[0] = 0;
@@ -498,7 +530,8 @@ begin
 	tlbHitC_Lo = (regInAddr [15:12] == tlbHdatC[79:76]);
 	tlbHitD_Lo = (regInAddr [15:12] == tlbHdatD[79:76]);
 
-`ifdef jx2_mem_fulldpx
+// `ifdef jx2_mem_fulldpx
+`ifndef def_true
 	tlbHitE_Hi = (regInAddrB[47:32] == tlbHdatE[111:96]);
 	tlbHitF_Hi = (regInAddrB[47:32] == tlbHdatF[111:96]);
 	tlbHitG_Hi = (regInAddrB[47:32] == tlbHdatG[111:96]);
@@ -542,7 +575,8 @@ begin
 	tlbHitC_Lo = tlbHitC_LoH && (tlbHitC_LoL || tlbMmuPg16K);
 	tlbHitD_Lo = tlbHitD_LoH && (tlbHitD_LoL || tlbMmuPg16K);
 
-`ifdef jx2_mem_fulldpx
+// `ifdef jx2_mem_fulldpx
+`ifndef def_true
 	tlbHitE_Hi = (tRegInAddrB[47:32] == tlbHdatE[111:96]);
 	tlbHitF_Hi = (tRegInAddrB[47:32] == tlbHdatF[111:96]);
 	tlbHitG_Hi = (tRegInAddrB[47:32] == tlbHdatG[111:96]);
@@ -578,7 +612,8 @@ begin
 		tlbHitB_Hi = 1;
 		tlbHitC_Hi = 1;
 		tlbHitD_Hi = 1;
-`ifdef jx2_mem_fulldpx
+// `ifdef jx2_mem_fulldpx
+`ifndef def_true
 		tlbHitE_Hi = 1;
 		tlbHitF_Hi = 1;
 		tlbHitG_Hi = 1;
@@ -592,7 +627,8 @@ begin
 		tlbHitB_Lo = 1;
 		tlbHitC_Lo = 1;
 		tlbHitD_Lo = 1;
-`ifdef jx2_mem_fulldpx
+// `ifdef jx2_mem_fulldpx
+`ifndef def_true
 		tlbHitE_Lo = 1;
 		tlbHitF_Lo = 1;
 		tlbHitG_Lo = 1;
@@ -605,7 +641,8 @@ begin
 	tlbHitC = tlbHitC_Hi && tlbHitC_Mi && tlbHitC_Lo && tlbHdatC[0];
 	tlbHitD = tlbHitD_Hi && tlbHitD_Mi && tlbHitD_Lo && tlbHdatD[0];
 
-`ifdef jx2_mem_fulldpx
+//`ifdef jx2_mem_fulldpx
+`ifndef def_true
 	tlbHitE = tlbHitE_Hi && tlbHitE_Mi && tlbHitE_Lo && tlbHdatE[0];
 	tlbHitF = tlbHitF_Hi && tlbHitF_Mi && tlbHitF_Lo && tlbHdatF[0];
 	tlbHitG = tlbHitG_Hi && tlbHitG_Mi && tlbHitG_Lo && tlbHdatG[0];
@@ -641,7 +678,8 @@ begin
 	if(tlbMmuPg64K)
 		tlbAddr[15:14] = tRegInAddrA[15:14];
 
-`ifdef jx2_mem_fulldpx
+// `ifdef jx2_mem_fulldpx
+`ifndef def_true
 	tlbAddrEF[47:12] = tlbHitE ? tlbHdatE[47:12] : tlbHdatF[47:12];
 	tlbAddrGH[47:12] = tlbHitG ? tlbHdatG[47:12] : tlbHdatH[47:12];
 	tlbAddrB[47:12] = tlbHitEF ? tlbAddrEF[47:12] : tlbAddrGH[47:12];
@@ -657,7 +695,8 @@ begin
 		tlbAddrB[15:14] = tRegInAddrB[15:14];
 
 `else
-	tlbAddrB = regInAddrB;
+//	tlbAddrB = regInAddrB;
+	tlbAddrB = tRegInAddrB;
 `endif
 
 	tlbAccAB = 
@@ -668,7 +707,8 @@ begin
 			{ tlbHdatD[127:112], tlbHdatD[75:64], tlbHdatD[7:4] };
 	tlbAcc = tlbHitAB ? tlbAccAB : tlbAccCD;
 
-`ifdef jx2_mem_fulldpx
+// `ifdef jx2_mem_fulldpx
+`ifndef def_true
 	tlbAccEF = 
 		tlbHitE ? { tlbHdatE[127:112], tlbHdatE[75:64], tlbHdatE[7:4] } :
 			{ tlbHdatF[127:112], tlbHdatF[75:64], tlbHdatF[7:4] };
@@ -679,6 +719,8 @@ begin
 `else
 	tlbAccB = 0;
 `endif
+
+	tlbMiss = 0;
 
 	tlbMmuSkip = 0;
 //	if(regInAddr[31])
@@ -699,7 +741,8 @@ begin
 				$display("Miss while in ISR");
 			end
 
-			$display("Miss A=%X SR=%X_%X", tRegInAddrA,
+			$display("Miss A=%X B=%X SR=%X_%X",
+				tRegInAddrA,	tRegInAddrB,
 				regInSR[63:32], regInSR[31:0]);
 
 //			tlbAddr		= regInAddrA[47:0];
@@ -710,7 +753,8 @@ begin
 //			tlbAddrB	= 0;
 
 			tlbAddr		= 48'h010000;
-			tlbAddrB	= 48'h010000;
+//			tlbAddrB	= 48'h010000;
+			tlbAddrB	= tRegInAddrB[47:0];
 
 //			if(tRegInOpm[4])
 //			begin
@@ -738,7 +782,14 @@ begin
 //	tRegOutTea[31:0] = regInAddr;
 //	tRegOutTea[47:0] = (tlbHitAB || tlbHitCD) ? regInAddrB : regInAddr;
 //	tRegOutTea[47:0] = regInAddr;
+//	tRegOutTea[47:0] = tRegInAddrA;
+
+// `ifdef jx2_mem_fulldpx
+`ifndef def_true
+	tRegOutTea[47:0] = (tlbHitAB || tlbHitCD) ? tRegInAddrB : tRegInAddrA;
+`else
 	tRegOutTea[47:0] = tRegInAddrA;
+`endif
 
 	if(tlbMmuEnable)
 	begin
@@ -801,9 +852,11 @@ begin
 		$display("TLB(A) %X -> %X", tRegInAddrA, tlbAddr);
 	end
 
-`ifdef jx2_mem_fulldpx
+//`ifdef jx2_mem_fulldpx
+`ifndef def_true
 //	if(regInAddrB[47:0]!=tlbAddrB[47:0])
-	if(tRegInAddrB[47:0]!=tlbAddrB[47:0])
+//	if(tRegInAddrB[47:0]!=tlbAddrB[47:0])
+	if((tRegInAddrB[47:0]!=tlbAddrB[47:0]) && (tRegInOpm[4:3]==3))
 	begin
 		$display("TLB(B) %X -> %X", tRegInAddrB, tlbAddrB);
 	end
@@ -829,6 +882,10 @@ begin
 	begin
 		tRegOutExc = 0;
 		tRegOutOpm   = UMEM_OPM_READY;
+`ifdef jx2_mem_line32B
+//		tRegOutOpm   = UMEM_OPM_INVTLB;	/* Signal to simulation. */
+		tRegOutOpm   = UMEM_OPM_WR_UB;	/* Signal to simulation. */
+`endif
 	end
 
 	if(regInIsLDTLB)
@@ -928,6 +985,14 @@ begin
 	tlbHbDatB		<= { tlbBlkHiB[tlbHixA], tlbBlkLoB[tlbHixA]};
 	tlbHbDatC		<= { tlbBlkHiC[tlbHixA], tlbBlkLoC[tlbHixA]};
 	tlbHbDatD		<= { tlbBlkHiD[tlbHixA], tlbBlkLoD[tlbHixA]};
+
+//`ifdef jx2_mem_fulldpx
+`ifndef def_true
+	tlbHbDatE		<= { tlbBlkHiA[tlbHixB], tlbBlkLoA[tlbHixB]};
+	tlbHbDatF		<= { tlbBlkHiB[tlbHixB], tlbBlkLoB[tlbHixB]};
+	tlbHbDatG		<= { tlbBlkHiC[tlbHixB], tlbBlkLoC[tlbHixB]};
+	tlbHbDatH		<= { tlbBlkHiD[tlbHixB], tlbBlkLoD[tlbHixB]};
+`endif
 
 	if(tlbDoLdtlb && !tlbLdtlbOK)
 	begin

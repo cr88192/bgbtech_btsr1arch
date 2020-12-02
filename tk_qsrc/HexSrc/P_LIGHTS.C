@@ -160,7 +160,8 @@ dt_bool EV_SpawnLight(line_t *line, byte *arg, lighttype_t type)
 			case LITE_FADE:
 				think = true;
 				light->value1 = arg1; // destination lightlevel
-				light->value2 = FixedDiv((arg1-sec->lightlevel)<<FRACBITS,
+//				light->value2 = FixedDiv((arg1-sec->lightlevel)<<FRACBITS,
+				light->value2 = FixedDivSoft((arg1-sec->lightlevel)<<FRACBITS,
 					arg2<<FRACBITS);  // delta lightlevel
 				if(sec->lightlevel <= arg1)
 				{

@@ -41,6 +41,7 @@ rcsid[] = "$Id: m_bbox.c,v 1.1 1997/02/03 22:45:10 b1 Exp $";
 
 long long __smullq(int a, int b);
 long long __int32_dmuls(int a, int b);
+u64 __int32_dmulu(u32 a, u32 b);
 
 // Fixme. __USE_C_FIXED__ or something.
 
@@ -218,7 +219,8 @@ u32 M_SoftDivU(u32 a, u32 b)
 
 	tb=m_softdiv_rcptab[b>>20]>>20;
 	ta=(u64)a;
-	tc=ta*tb;
+//	tc=ta*tb;
+	tc = __int32_dmulu(a, tb);
 	c=(u32)(tc>>32);
 	return(c);
 
@@ -252,6 +254,49 @@ u32 M_SoftDivRcp(u32 b)
 {
 	u32 c;
 
+#if 0
+	if(b<0x100)
+	{
+		c=m_softdiv_rcptab[b];
+		return(c);
+	}
+
+	if(b<0x1000)
+	{
+		c=m_softdiv_rcptab[b>>4]>>4;
+		return(c);
+	}
+
+	if(b<0x10000)
+	{
+		c=m_softdiv_rcptab[b>>8]>>8;
+		return(c);
+	}
+
+	if(b<0x100000)
+	{
+		c=m_softdiv_rcptab[b>>12]>>12;
+		return(c);
+	}
+
+	if(b<0x1000000)
+	{
+		c=m_softdiv_rcptab[b>>16]>>16;
+		return(c);
+	}
+
+	if(b<0x10000000)
+	{
+		c=m_softdiv_rcptab[b>>20]>>20;
+		return(c);
+	}
+
+	c=m_softdiv_rcptab[b>>24]>>24;
+	return(c);
+#endif
+
+
+#if 1
 	if(b<4096)
 	{
 		c=m_softdiv_rcptab[b];
@@ -284,6 +329,7 @@ u32 M_SoftDivRcp(u32 b)
 
 	c=m_softdiv_rcptab[b>>20]>>20;
 	return(c);
+#endif
 
 //    c = (0x7fffffffu / b)<<1;
 //	return(c);

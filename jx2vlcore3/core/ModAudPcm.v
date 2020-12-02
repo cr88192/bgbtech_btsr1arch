@@ -15,6 +15,22 @@ S.E3.M4
 	E=2:   512.. 1023 ( 5)
 	E=1:   256..  511 ( 4)
 	E=0:     0..  255 ( 4, Denorm)
+
+F0090000: Base Address
+  F0090000: Left / Mono
+  F0094000: Right
+F009F000: Control Regs
+
+Control Reg 0: (PCM)
+ (  0): Use Companding
+ (  1): Use 16-bit samples
+ (  2): Use Stereo
+ (  3): Enable audio output
+ (7:4): Sample Rate
+
+Control Reg 1: (Beeper)
+  (15:0): Frequency Divider (1MHz)
+
  */
 
 `include "CoreDefs.v"
@@ -66,16 +82,25 @@ reg[4:0]		tBusOpm;
 
 reg[1:0]	tPwmOut;
 reg[1:0]	tPwmOut2;
+reg[1:0]	tPwmOut2A;
+reg[1:0]	tPwmOut2B;
+reg[1:0]	tPwmOut2C;
 reg			tPwmEna;
 reg			tPwmEna2;
+reg			tPwmEna2A;
+reg			tPwmEna2B;
+reg			tPwmEna2C;
 
 reg[31:0]	tOutData;
 reg[31:0]	tOutData2;
 reg[1:0]	tOutOK;
 reg[1:0]	tOutOK2;
 
-assign		pwmOut		= tPwmOut2;
-assign		pwmEna		= tPwmEna2;
+// assign		pwmOut		= tPwmOut2;
+// assign		pwmEna		= tPwmEna2;
+assign		pwmOut		= tPwmOut2C;
+assign		pwmEna		= tPwmEna2C;
+
 assign		busOutData	= tOutData2;
 assign		busOK		= tOutOK2;
 
@@ -158,6 +183,21 @@ reg[13:0]	tNxtClkDivRst;
 reg			tClk1kHz;
 reg			tNxtClk1kHz;
 
+
+reg[15:0]	tBeepDivCnt;
+reg[15:0]	tBeepDivCnt1;
+reg[15:0]	tNxtBeepDivCnt;
+reg[15:0]	tBeepDivRst;
+reg[15:0]	tBeepDivRst1;
+reg[15:0]	tNxtBeepDivRst;
+reg			tBeepBit;
+reg			tBeepBit1;
+reg			tNxtBeepBit;
+reg			tBeepEna;
+reg			tBeepEna1;
+reg			tNxtBeepEna;
+
+
 `ifdef JX2_AUD_16K
 reg[13:0]	tSampPos;
 reg[13:0]	tNxtSampPos;
@@ -186,6 +226,7 @@ reg			tIsStereo;
 reg			tIsStereoR;
 
 reg[31:0]	tRegCtrl0;
+reg[31:0]	tRegCtrl1;
 
 reg[31:0]	tRegLfsr;
 reg[31:0]	tRegNxtLfsr;
@@ -228,6 +269,17 @@ begin
 	tNxtClkDivCnt	= tClkDivCnt - 1;
 	tNxtSampPos		= tSampPos;
 //	tUseCompand		= 1;
+
+	tNxtBeepDivCnt	= tBeepDivCnt - { 15'b0, tTimer1MHz };
+	tNxtBeepBit		= tBeepBit;
+	tNxtBeepEna		= (tBeepDivRst != 0);
+	tNxtBeepDivRst	= tRegCtrl1[15:0];
+
+	if(tBeepDivCnt==0)
+	begin
+		tNxtBeepDivCnt	= tBeepDivRst;
+		tNxtBeepBit		= !tBeepBit;
+	end
 
 	tUseCompand		= tRegCtrl0[0];
 	tUse16b			= tRegCtrl0[1];
@@ -433,6 +485,12 @@ begin
 		{ tAuxPcmR[ 7], tAuxPcmR[7:0], 6'h0, tTimerNoise };
 `endif
 
+	if(tBeepEna)
+	begin
+		tPcmAddValL = tBeepBit ? 16'h0FFF : 16'hF000;
+		tPcmAddValR = tBeepBit ? 16'h0FFF : 16'hF000;
+	end
+
 //	$display("noise=%d", tTimerNoise);
 
 //	tPwmNextValL = tPcmAddValL;
@@ -453,6 +511,7 @@ begin
 		begin
 			case(tBusAddr[7:2])
 				6'h00:	tOutData	= tRegCtrl0;
+				6'h01:	tOutData	= tRegCtrl1;
 
 `ifdef JX2_AUD_16K
 //				6'h08:	tOutData	= { 50'h0, tSampPos };
@@ -476,7 +535,13 @@ end
 always @(posedge clock)
 begin
 	tPwmOut2	<= tPwmOut;
+	tPwmOut2A	<= tPwmOut2;
+	tPwmOut2B	<= tPwmOut2A;
+	tPwmOut2C	<= tPwmOut2B;
 	tPwmEna2	<= tPwmEna;
+	tPwmEna2A	<= tPwmEna2;
+	tPwmEna2B	<= tPwmEna2A;
+	tPwmEna2C	<= tPwmEna2B;
 //	tClk1kHz	<= tNxtClk1kHz;
 
 	tRegLfsr	<= tRegNxtLfsr;
@@ -498,6 +563,16 @@ begin
 //	tAuxPcmR		<= auxPcmR;
 	tAuxPcmL		<= 0;
 	tAuxPcmR		<= 0;
+
+	tBeepDivCnt		<= tNxtBeepDivCnt;
+//	tBeepDivRst		<= tNxtBeepDivRst;
+	tBeepBit		<= tNxtBeepBit;
+//	tBeepEna		<= tNxtBeepEna;
+
+	tBeepDivRst1	<= tNxtBeepDivRst;
+	tBeepDivRst		<= tBeepDivRst1;
+	tBeepEna1		<= tNxtBeepEna;
+	tBeepEna		<= tBeepEna1;
 
 	tClkDivCnt	<= tNxtClkDivCnt;
 	tClkDivRst	<= tNxtClkDivRst;
@@ -533,6 +608,12 @@ begin
 				begin
 					$display("ModAudPcm: Ctrl0=%X", tRegCtrl0);
 					tRegCtrl0	<= tBusInData;
+				end
+
+				6'h01:
+				begin
+					$display("ModAudPcm: Ctrl1=%X", tRegCtrl1);
+					tRegCtrl1	<= tBusInData;
 				end
 
 				default: begin
@@ -585,6 +666,12 @@ begin
 
 	if(tTimer1MHz)
 		tTimerNoiseC	<= tTimerNoise;
+		
+	if(reset)
+	begin
+		tRegCtrl0	<= 0;
+		tRegCtrl1	<= 0;
+	end
 
 end
 

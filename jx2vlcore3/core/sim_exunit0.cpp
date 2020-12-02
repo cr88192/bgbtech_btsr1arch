@@ -808,12 +808,22 @@ uint32_t *drambuf;
 uint32_t *srambuf2;
 uint32_t *drambuf2;
 
+int membus_seed;
+int membus_256bit;
+
+int MemBusRand()
+{
+	membus_seed=(membus_seed*(65521*251))+1;
+	return((membus_seed>>24)&255);
+}
+
 void MemUpdateForBus()
 {
 	static byte mmio_latched=0;
+	static int opm_rand;
 	byte is_rom, is_sram, is_dram, is_mmio, is_zero;
 	byte is_sram_b, is_dram_b;
-	int opm_latch;
+	int opm_latch, swapfault;
 	uint32_t addr;
 	uint32_t addrb;
 
@@ -844,12 +854,79 @@ void MemUpdateForBus()
 
 		if((top->memOpm&0x18)==0x18)
 		{
-			if(is_rom)
+			while(!opm_rand)
+				opm_rand=MemBusRand();
+
+			swapfault=0;
+//			if((opm_rand&3)==0)
+			if((opm_rand&15)==0)
+				swapfault=1;
+			
+			if(!is_dram || !is_dram_b)
+				swapfault=1;
+			
+			if(swapfault)
+			{
+				top->memOK=3;
+			}
+			else if(is_sram_b)
+			{
+				srambuf[((addrb>>2)+0)&0x7FF]=top->memDataOut[0];
+				srambuf[((addrb>>2)+1)&0x7FF]=top->memDataOut[1];
+				srambuf[((addrb>>2)+2)&0x7FF]=top->memDataOut[2];
+				srambuf[((addrb>>2)+3)&0x7FF]=top->memDataOut[3];
+				if(membus_256bit)
+				{
+					srambuf[((addrb>>2)+4)&0x7FF]=top->memDataOut[4];
+					srambuf[((addrb>>2)+5)&0x7FF]=top->memDataOut[5];
+					srambuf[((addrb>>2)+6)&0x7FF]=top->memDataOut[6];
+					srambuf[((addrb>>2)+7)&0x7FF]=top->memDataOut[7];
+				}
+				top->memOK=1;
+			}else if(is_dram_b)
+			{
+				drambuf[((addrb>>2)+0)&0x1FFFFFF]=top->memDataOut[0];
+				drambuf[((addrb>>2)+1)&0x1FFFFFF]=top->memDataOut[1];
+				drambuf[((addrb>>2)+2)&0x1FFFFFF]=top->memDataOut[2];
+				drambuf[((addrb>>2)+3)&0x1FFFFFF]=top->memDataOut[3];
+				if(membus_256bit)
+				{
+					drambuf[((addrb>>2)+4)&0x1FFFFFF]=top->memDataOut[4];
+					drambuf[((addrb>>2)+5)&0x1FFFFFF]=top->memDataOut[5];
+					drambuf[((addrb>>2)+6)&0x1FFFFFF]=top->memDataOut[6];
+					drambuf[((addrb>>2)+7)&0x1FFFFFF]=top->memDataOut[7];
+				}
+				top->memOK=1;
+			}
+
+			if(swapfault)
+			{
+				top->memDataIn[0]=0;
+				top->memDataIn[1]=0;
+				top->memDataIn[2]=0;
+				top->memDataIn[3]=0;
+				if(membus_256bit)
+				{
+					top->memDataIn[4]=0;
+					top->memDataIn[5]=0;
+					top->memDataIn[6]=0;
+					top->memDataIn[7]=0;
+				}
+				top->memOK=3;
+			}
+			else if(is_rom)
 			{
 				top->memDataIn[0]=rombuf[((addr>>2)+0)&0x1FFF];
 				top->memDataIn[1]=rombuf[((addr>>2)+1)&0x1FFF];
 				top->memDataIn[2]=rombuf[((addr>>2)+2)&0x1FFF];
 				top->memDataIn[3]=rombuf[((addr>>2)+3)&0x1FFF];
+				if(membus_256bit)
+				{
+					top->memDataIn[4]=rombuf[((addr>>2)+4)&0x1FFF];
+					top->memDataIn[5]=rombuf[((addr>>2)+5)&0x1FFF];
+					top->memDataIn[6]=rombuf[((addr>>2)+6)&0x1FFF];
+					top->memDataIn[7]=rombuf[((addr>>2)+7)&0x1FFF];
+				}
 				top->memOK=1;
 			}else
 				if(is_sram)
@@ -858,6 +935,13 @@ void MemUpdateForBus()
 				top->memDataIn[1]=srambuf[((addr>>2)+1)&0x7FF];
 				top->memDataIn[2]=srambuf[((addr>>2)+2)&0x7FF];
 				top->memDataIn[3]=srambuf[((addr>>2)+3)&0x7FF];
+				if(membus_256bit)
+				{
+					top->memDataIn[4]=srambuf[((addr>>2)+4)&0x7FF];
+					top->memDataIn[5]=srambuf[((addr>>2)+5)&0x7FF];
+					top->memDataIn[6]=srambuf[((addr>>2)+6)&0x7FF];
+					top->memDataIn[7]=srambuf[((addr>>2)+7)&0x7FF];
+				}
 				top->memOK=1;
 			}else if(is_dram)
 			{
@@ -865,13 +949,29 @@ void MemUpdateForBus()
 				top->memDataIn[1]=drambuf[((addr>>2)+1)&0x1FFFFFF];
 				top->memDataIn[2]=drambuf[((addr>>2)+2)&0x1FFFFFF];
 				top->memDataIn[3]=drambuf[((addr>>2)+3)&0x1FFFFFF];
+				if(membus_256bit)
+				{
+					top->memDataIn[4]=drambuf[((addr>>2)+4)&0x1FFFFFF];
+					top->memDataIn[5]=drambuf[((addr>>2)+5)&0x1FFFFFF];
+					top->memDataIn[6]=drambuf[((addr>>2)+6)&0x1FFFFFF];
+					top->memDataIn[7]=drambuf[((addr>>2)+7)&0x1FFFFFF];
+				}
 				top->memOK=1;
+
+				opm_rand=-1;
 			}else if(is_zero)
 			{
 				top->memDataIn[0]=0;
 				top->memDataIn[1]=0;
 				top->memDataIn[2]=0;
 				top->memDataIn[3]=0;
+				if(membus_256bit)
+				{
+					top->memDataIn[4]=0;
+					top->memDataIn[5]=0;
+					top->memDataIn[6]=0;
+					top->memDataIn[7]=0;
+				}
 				top->memOK=1;
 			}else
 			{
@@ -883,26 +983,11 @@ void MemUpdateForBus()
 //				top->memOK=1;
 				top->memOK=3;
 			}
-
-			if(is_sram_b)
-			{
-				srambuf[((addrb>>2)+0)&0x7FF]=top->memDataOut[0];
-				srambuf[((addrb>>2)+1)&0x7FF]=top->memDataOut[1];
-				srambuf[((addrb>>2)+2)&0x7FF]=top->memDataOut[2];
-				srambuf[((addrb>>2)+3)&0x7FF]=top->memDataOut[3];
-				top->memOK=1;
-			}else if(is_dram_b)
-			{
-				drambuf[((addrb>>2)+0)&0x1FFFFFF]=top->memDataOut[0];
-				drambuf[((addrb>>2)+1)&0x1FFFFFF]=top->memDataOut[1];
-				drambuf[((addrb>>2)+2)&0x1FFFFFF]=top->memDataOut[2];
-				drambuf[((addrb>>2)+3)&0x1FFFFFF]=top->memDataOut[3];
-				top->memOK=1;
-			}
-
 		}else
 			if(top->memOpm&0x08)
 		{
+			opm_rand=0;
+
 			if(is_mmio)
 			{
 				if((top->memOpm&0x07)==0x03)
@@ -915,6 +1000,7 @@ void MemUpdateForBus()
 				{
 					top->memDataIn[0]=
 						mmio_ReadDWord(jx2_ctx, addr&0xFFFFFC);
+					top->memDataIn[1]=0;
 				}
 				top->memOK=1;
 				
@@ -933,6 +1019,13 @@ void MemUpdateForBus()
 				top->memDataIn[1]=rombuf[((addr>>2)+1)&0x1FFF];
 				top->memDataIn[2]=rombuf[((addr>>2)+2)&0x1FFF];
 				top->memDataIn[3]=rombuf[((addr>>2)+3)&0x1FFF];
+				if(membus_256bit)
+				{
+					top->memDataIn[4]=rombuf[((addr>>2)+4)&0x1FFF];
+					top->memDataIn[5]=rombuf[((addr>>2)+5)&0x1FFF];
+					top->memDataIn[6]=rombuf[((addr>>2)+6)&0x1FFF];
+					top->memDataIn[7]=rombuf[((addr>>2)+7)&0x1FFF];
+				}
 				top->memOK=1;
 			}else
 				if(is_sram)
@@ -941,6 +1034,13 @@ void MemUpdateForBus()
 				top->memDataIn[1]=srambuf[((addr>>2)+1)&0x7FF];
 				top->memDataIn[2]=srambuf[((addr>>2)+2)&0x7FF];
 				top->memDataIn[3]=srambuf[((addr>>2)+3)&0x7FF];
+				if(membus_256bit)
+				{
+					top->memDataIn[4]=srambuf[((addr>>2)+4)&0x7FF];
+					top->memDataIn[5]=srambuf[((addr>>2)+5)&0x7FF];
+					top->memDataIn[6]=srambuf[((addr>>2)+6)&0x7FF];
+					top->memDataIn[7]=srambuf[((addr>>2)+7)&0x7FF];
+				}
 				top->memOK=1;
 			}else if(is_dram)
 			{
@@ -948,6 +1048,13 @@ void MemUpdateForBus()
 				top->memDataIn[1]=drambuf[((addr>>2)+1)&0x1FFFFFF];
 				top->memDataIn[2]=drambuf[((addr>>2)+2)&0x1FFFFFF];
 				top->memDataIn[3]=drambuf[((addr>>2)+3)&0x1FFFFFF];
+				if(membus_256bit)
+				{
+					top->memDataIn[4]=drambuf[((addr>>2)+4)&0x1FFFFFF];
+					top->memDataIn[5]=drambuf[((addr>>2)+5)&0x1FFFFFF];
+					top->memDataIn[6]=drambuf[((addr>>2)+6)&0x1FFFFFF];
+					top->memDataIn[7]=drambuf[((addr>>2)+7)&0x1FFFFFF];
+				}
 				top->memOK=1;
 			}else if(is_zero)
 			{
@@ -955,6 +1062,13 @@ void MemUpdateForBus()
 				top->memDataIn[1]=0;
 				top->memDataIn[2]=0;
 				top->memDataIn[3]=0;
+				if(membus_256bit)
+				{
+					top->memDataIn[4]=0;
+					top->memDataIn[5]=0;
+					top->memDataIn[6]=0;
+					top->memDataIn[7]=0;
+				}
 				top->memOK=1;
 			}else
 			{
@@ -976,6 +1090,8 @@ void MemUpdateForBus()
 		}else
 		if(top->memOpm&0x10)
 		{
+			opm_rand=0;
+
 			top->memDataIn[0]=0xFFFFFFFFU;
 			top->memDataIn[1]=0xFFFFFFFFU;
 			top->memDataIn[2]=0xFFFFFFFFU;
@@ -1013,6 +1129,13 @@ void MemUpdateForBus()
 				srambuf[((addr>>2)+1)&0x7FF]=top->memDataOut[1];
 				srambuf[((addr>>2)+2)&0x7FF]=top->memDataOut[2];
 				srambuf[((addr>>2)+3)&0x7FF]=top->memDataOut[3];
+				if(membus_256bit)
+				{
+					srambuf[((addr>>2)+4)&0x7FF]=top->memDataOut[4];
+					srambuf[((addr>>2)+5)&0x7FF]=top->memDataOut[5];
+					srambuf[((addr>>2)+6)&0x7FF]=top->memDataOut[6];
+					srambuf[((addr>>2)+7)&0x7FF]=top->memDataOut[7];
+				}
 				top->memOK=1;
 			}else if(is_dram)
 			{
@@ -1020,6 +1143,13 @@ void MemUpdateForBus()
 				drambuf[((addr>>2)+1)&0x1FFFFFF]=top->memDataOut[1];
 				drambuf[((addr>>2)+2)&0x1FFFFFF]=top->memDataOut[2];
 				drambuf[((addr>>2)+3)&0x1FFFFFF]=top->memDataOut[3];
+				if(membus_256bit)
+				{
+					drambuf[((addr>>2)+4)&0x1FFFFFF]=top->memDataOut[4];
+					drambuf[((addr>>2)+5)&0x1FFFFFF]=top->memDataOut[5];
+					drambuf[((addr>>2)+6)&0x1FFFFFF]=top->memDataOut[6];
+					drambuf[((addr>>2)+7)&0x1FFFFFF]=top->memDataOut[7];
+				}
 				top->memOK=1;
 			}else if(is_zero)
 			{
@@ -1045,6 +1175,8 @@ void MemUpdateForBus()
 	{
 		top->memOK=0;
 		mmio_latched=0;
+		if(opm_rand<0)
+			opm_rand=0;
 	}
 }
 
@@ -1487,6 +1619,7 @@ int main(int argc, char **argv, char **env)
 
 	tt_start=FRGL_TimeMS();
 	tt_frame=tt_start;
+	membus_256bit=0;
 	
 //	ctick_rst=48828;
 //	ctick=ctick_rst;
@@ -1570,11 +1703,21 @@ int main(int argc, char **argv, char **env)
 
 			GfxDrv_EndDrawing();
 			
+			t1=FRGL_TimeMS();
 			tt_frame=t1;
 //			continue;
 		}
 
 		top->clock = (main_time>>0)&1;
+
+		top->reset=0;
+		if(main_time<256)
+		{
+			top->reset=1;
+//			if(top->memOpm==0x02)
+			if(top->memOpm==0x14)
+				membus_256bit=1;
+		}
 
 		if(top->clock)
 			top->memBusExc=0x0000;
@@ -1601,6 +1744,7 @@ int main(int argc, char **argv, char **env)
 			tot_bdl++;
 		}
 
+		main_time++;
 
 		lclk = top->clock;
 //		top->mode = 3;
@@ -1621,7 +1765,7 @@ int main(int argc, char **argv, char **env)
 
 		top->eval();
 
-		main_time++;
+//		main_time++;
 		
 //		if(main_time>256)
 //		if(main_time>1024)

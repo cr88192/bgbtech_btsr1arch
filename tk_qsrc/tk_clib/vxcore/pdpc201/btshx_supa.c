@@ -623,6 +623,8 @@ u32 TK_GetTimeMs(void)
 	us_lo=sreg[0];
 	us_hi=sreg[1];
 	us=(((u64)us_hi)<<32)|us_lo;
+	
+	us=(us*131)>>7;		//correct for (us>>10) vs us/1000.
 	ms=us>>10;
 
 //	sreg=(int *)0x007F8000;

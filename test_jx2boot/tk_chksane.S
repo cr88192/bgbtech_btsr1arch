@@ -318,6 +318,10 @@ X(tk_checksane_asm):
 	mov	0xE87AD208, r8
 	mov	0x014B6F5A, r9
 
+	mov	0x014B6F5AE87AD208, r10
+	mov	0x10882A3D75C123C0, r11
+	mov	0xFE53D3C575C123C0, r12
+
 #if 0
 	mulu	r4, r5
 	mov r0, r6
@@ -333,6 +337,52 @@ X(tk_checksane_asm):
 //	bf _checksane_fail_mul
 	break?f
 #endif
+
+#if 1
+	dmulu	r4, r5, r6
+
+	.L0C0:
+	cmpq/eq r6, r10
+	break?f
+
+	dmulu	r4, r8, r6
+
+	.L0C1:
+	cmpq/eq r6, r11
+	break?f
+
+	dmuls	r4, r8, r6
+	.L0C2:
+	cmpq/eq r6, r12
+	break?f
+#endif
+
+#if 1
+	mov 0x0004CB2F, R10
+	mov 0xFFFBDA2C, R11
+	mov 0xFFFFFFEC1DEDF214, R12
+
+	dmuls	r10, r11, r6
+	.L0C3:
+	cmpq/eq r6, r12
+	break?f
+#endif
+
+#if 1
+	mov	0x00000000E50C6E30, r10
+	mov	0xFFFFFFFFE50C6E30, r11
+
+	.L0C4:
+	mulu	r4, r9, r6
+	cmpq/eq r6, r10
+	break?f
+
+	.L0C5:
+	muls	r4, r9, r7
+	cmpq/eq r7, r11
+	break?f
+#endif
+
 
 	mov	0x75C123C0, r10
 	mov	0x10882A3D, r11

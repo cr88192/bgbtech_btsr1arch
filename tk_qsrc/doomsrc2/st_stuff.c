@@ -324,6 +324,8 @@ static patch_t*		tallpercent;
 // 0-9, short, yellow (,different!) numbers
 static patch_t*		shortnum[10];
 
+patch_t*		hu_shortnum[10];
+
 // 3 key-cards, 3 skulls
 static patch_t*		keys[NUMCARDS]; 
 
@@ -1177,6 +1179,8 @@ void ST_loadGraphics(void)
 			sprintf(namebuf, "STYSNUM%d", i);
 //			shortnum[i] = (patch_t *) W_CacheLumpName(namebuf, PU_STATIC);
 			shortnum[i] = (patch_t *) W_CachePatchName(namebuf, PU_STATIC);
+			
+			hu_shortnum[i]=shortnum[i];
 		}
     }
     else
@@ -1192,6 +1196,8 @@ void ST_loadGraphics(void)
 			sprintf(namebuf, "SMALLIN%d", i);
 //			shortnum[i] = (patch_t *) W_CacheLumpName(namebuf, PU_STATIC);
 			shortnum[i] = (patch_t *) W_CachePatchName(namebuf, PU_STATIC);
+
+			hu_shortnum[i]=shortnum[i];
 		}
     }
 

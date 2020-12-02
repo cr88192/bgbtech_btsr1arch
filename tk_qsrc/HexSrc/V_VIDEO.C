@@ -267,14 +267,37 @@ void V_DrawShadowedPatch(int x, int y, patch_t *patch)
 
 void V_MemCpy_ScrPix(dt_scrpix	*dst, byte *src, int cnt)
 {
-	byte		*cs, *cse;
-	dt_scrpix	*ct;
+	byte		*cs, *cse, *cse1;
+	dt_scrpix	*ct, *cmap;
+	int p0, p1, p2, p3;
 	
+	cmap=colormaps;
 	ct=dst;
-	cs=src; cse=src+cnt;
+	cs=src;
+	cse=src+cnt;
+
+	cse1=src+(cnt&(~3));
+	while(cs<cse1)
+	{
+		p0=cs[0];		p1=cs[1];
+		p2=cs[2];		p3=cs[3];
+		p0=cmap[p0];	p1=cmap[p1];
+		p2=cmap[p2];	p3=cmap[p3];
+		ct[0]=p0;		ct[1]=p1;
+		ct[2]=p2;		ct[3]=p3;
+
+//		ct[0]=cmap[cs[0]];
+//		ct[1]=cmap[cs[1]];
+//		ct[2]=cmap[cs[2]];
+//		ct[3]=cmap[cs[3]];
+
+		ct+=4; cs+=4;
+	}
+
 	while(cs<cse)
 	{
-		*ct++=colormaps[*cs++];
+//		*ct++=colormaps[*cs++];
+		*ct++=cmap[*cs++];
 	}
 }
 

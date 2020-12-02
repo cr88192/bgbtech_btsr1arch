@@ -214,8 +214,26 @@ begin
 	
 	nextTimer1MHz	= timer1MHz;
 	nextTimer100MHz	= timer100MHz + 1;
+
+`ifdef jx2_cpu_mmioclock_100
 	{ stepTimer1MHz, nextFracTimer1MHz }	=
 		{ 1'b0, fracTimer1MHz } + 17'h0290;
+`endif
+
+`ifdef jx2_cpu_mmioclock_150
+	{ stepTimer1MHz, nextFracTimer1MHz }	=
+		{ 1'b0, fracTimer1MHz } + 17'h01B5;
+`endif
+
+`ifdef jx2_cpu_mmioclock_75
+	{ stepTimer1MHz, nextFracTimer1MHz }	=
+		{ 1'b0, fracTimer1MHz } + 17'h036A;
+`endif
+
+`ifdef jx2_cpu_mmioclock_50
+	{ stepTimer1MHz, nextFracTimer1MHz }	=
+		{ 1'b0, fracTimer1MHz } + 17'h0520;
+`endif
 
 	if(stepTimer1MHz)
 	begin

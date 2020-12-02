@@ -79,7 +79,7 @@ struct TK_Wad4Lump_s
 
 struct TK_WadImage_s
 {
-	TK_FILE			*img_fd;
+	TK_FILE			*img_fd;		//Backing Image (file/device)
 	TK_Wad2Info		*w2inf;
 	TK_Wad4Info		*w4inf;
 	

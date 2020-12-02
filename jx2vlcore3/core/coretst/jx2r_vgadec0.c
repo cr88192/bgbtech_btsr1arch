@@ -211,6 +211,7 @@ byte neqp;
 sbyte qaofs;	//QAM phase offset
 byte bestqi;	//best QAM intensity
 int frame;
+int lbits;
 
 byte bsmode;	//bitstream mode
 };
@@ -233,8 +234,22 @@ int CDEC_UpdateForStreamCycle(cdec_imgbuf *ctx, int bits)
 		ctx->bpos=0;
 		ctx->epos=0;
 	}
+	
+	if((bits^ctx->lbits)&0x1000)
+	{
+//		while((ctx->epos&3)!=3)
+//		while((ctx->epos&3)!=0)
+		while((ctx->epos&3)!=1)
+//		while((ctx->epos&3)!=2)
+			ctx->bits[ctx->epos++]=bits;
+		ctx->bits[ctx->epos++]=bits;
+		ctx->lbits=bits;
+	}else
+	{
+		ctx->bits[ctx->epos++]=bits;
+		ctx->lbits=bits;
+	}
 
-	ctx->bits[ctx->epos++]=bits;
 	while((ctx->bpos+4)<=ctx->epos)
 		{ cdec_decode0y(ctx); }
 	return(0);

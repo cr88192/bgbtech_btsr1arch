@@ -293,9 +293,11 @@ fixed_t	R_PointToDist (fixed_t x, fixed_t y)
 		dy = temp;
 	}
 
-	angle = (tantoangle[ FixedDiv(dy,dx)>>DBITS ]+ANG90) >> ANGLETOFINESHIFT;
+//	angle = (tantoangle[ FixedDiv(dy,dx)>>DBITS ]+ANG90) >> ANGLETOFINESHIFT;
+	angle = (tantoangle[ FixedDivSoft(dy,dx)>>DBITS ]+ANG90) >> ANGLETOFINESHIFT;
 
-	dist = FixedDiv (dx, finesine[angle] );	// use as cosine
+//	dist = FixedDiv (dx, finesine[angle] );	// use as cosine
+	dist = FixedDivSoft (dx, finesine[angle] );	// use as cosine
 
 	return dist;
 }
@@ -371,7 +373,8 @@ fixed_t R_ScaleFromGlobalAngle (angle_t visangle)
 	den = FixedMul(rw_distance,sinea);
 	if (den > num>>16)
 	{
-		scale = FixedDiv (num, den);
+//		scale = FixedDiv (num, den);
+		scale = FixedDivSoft (num, den);
 		if (scale > 64*FRACUNIT)
 			scale = 64*FRACUNIT;
 		else if (scale < 256)
@@ -764,7 +767,8 @@ void R_SetupFrame(player_t *player)
 		centeryfrac = centery<<FRACBITS;
 		for(i = 0; i < viewheight; i++)
 		{
-			yslope[i] = FixedDiv ((viewwidth<<detailshift)/2*FRACUNIT,
+//			yslope[i] = FixedDiv ((viewwidth<<detailshift)/2*FRACUNIT,
+			yslope[i] = FixedDivSoft ((viewwidth<<detailshift)/2*FRACUNIT,
 				abs(((i-centery)<<FRACBITS)+FRACUNIT/2));
 		}
 	}

@@ -2,6 +2,10 @@ ccxl_status BGBCC_JX2C_FlattenImageROM(BGBCC_TransState *ctx,
 	byte *obuf, int *rosz, fourcc imgfmt)
 {
 	char tb[256];
+
+	s32 map_lvatab[16384];
+	char *map_lvntab[16384];
+
 	BGBCC_JX2_Context *sctx;
 	FILE *mapfd;
 	char *s0;
@@ -267,7 +271,7 @@ ccxl_status BGBCC_JX2C_FlattenImageROM(BGBCC_TransState *ctx,
 
 	BGBCC_JX2C_ApplyImageRelocs(ctx, sctx, obuf);
 
-#if 1
+#if 0
 	sprintf(tb, "%s.map", ctx->imgname);
 	mapfd=fopen(tb, "wt");
 //	mapfd=fopen("aout.map", "wt");
@@ -279,6 +283,46 @@ ccxl_status BGBCC_JX2C_FlattenImageROM(BGBCC_TransState *ctx,
 		lva=BGBCC_JX2C_LookupLabelImgVA(ctx, sctx, sctx->lbln_id[i]);
 		fprintf(mapfd, "%08X T %s\n", lva, sctx->lbln_name[i]);
 	}
+	fclose(mapfd);
+#endif
+
+#if 1
+	sprintf(tb, "%s.map", ctx->imgname);
+	mapfd=fopen(tb, "wt");
+//	mapfd=fopen("aout.map", "wt");
+	for(i=0; i<sctx->nlbln; i++)
+	{
+//		if(!strcmp(ctx->lbln_name[i], name))
+//			return(ctx->lbln_id[i]);
+
+		lva=BGBCC_JX2C_LookupLabelImgVA(ctx, sctx, sctx->lbln_id[i]);
+//		fprintf(mapfd, "%08X T %s\n", lva, sctx->lbln_name[i]);
+		map_lvatab[i]=lva;
+		map_lvntab[i]=sctx->lbln_name[i];
+	}
+	
+	for(i=0; i<sctx->nlbln; i++)
+	{
+		for(j=i+1; j<sctx->nlbln; j++)
+		{
+			if(map_lvatab[j]<map_lvatab[i])
+			{
+				k=map_lvatab[j];
+				map_lvatab[j]=map_lvatab[i];
+				map_lvatab[i]=k;
+
+				s0=map_lvntab[j];
+				map_lvntab[j]=map_lvntab[i];
+				map_lvntab[i]=s0;
+			}
+		}
+	}
+
+	for(i=0; i<sctx->nlbln; i++)
+	{
+		fprintf(mapfd, "%08X T %s\n", map_lvatab[i], map_lvntab[i]);
+	}
+
 	fclose(mapfd);
 #endif
 

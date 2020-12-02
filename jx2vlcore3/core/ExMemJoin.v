@@ -1,5 +1,6 @@
 module ExMemJoin(
-	clock,		reset,
+	clock_cpu,	clock_master,
+	reset,
 
 	memInData,	memOutData,
 	memAddrA,	memAddrB,
@@ -18,7 +19,8 @@ module ExMemJoin(
 
 	);
 
-input			clock;
+input			clock_cpu;
+input			clock_master;
 input			reset;
 
 input[127:0]	memInData;
@@ -64,10 +66,22 @@ reg[47:0]		tMemAddrA2;
 reg[47:0]		tMemAddrB2;
 reg[4:0]		tMemOpm2;
 
+`ifdef jx2_mem_l2exbuf
+reg[127:0]		tMemOutData3;
+reg[47:0]		tMemAddrA3;
+reg[47:0]		tMemAddrB3;
+reg[4:0]		tMemOpm3;
+
+assign		memOutData	= tMemOutData3;
+assign		memAddrA	= tMemAddrA3;
+assign		memAddrB	= tMemAddrB3;
+assign		memOpm		= tMemOpm3;
+`else
 assign		memOutData	= tMemOutData2;
 assign		memAddrA	= tMemAddrA2;
 assign		memAddrB	= tMemAddrB2;
 assign		memOpm		= tMemOpm2;
+`endif
 
 reg[127:0]		tMem1InData;
 reg[1:0]		tMem1OK;
@@ -204,7 +218,17 @@ begin
 
 end
 
-always @(posedge clock)
+`ifdef jx2_mem_l2exbuf
+always @(posedge clock_master)
+begin
+	tMemOutData3	<= tMemOutData2;
+	tMemAddrA3		<= tMemAddrA2;
+	tMemAddrB3		<= tMemAddrB2;
+	tMemOpm3		<= tMemOpm2;
+end
+`endif
+
+always @(posedge clock_cpu)
 begin
 `ifdef jx2_mem_l2exbuf
 	tMemInData2		<= memInData;

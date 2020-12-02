@@ -14,6 +14,7 @@ output[63:0]	regValFRn;
 reg[63:0]		tRegValFRm;
 
 reg[63:0]		tRegValFRn2;
+reg[79:0]		tRegValFRn2A;
 reg[63:0]		tRegValFRn3;
 reg[63:0]		tRegValFRnB;
 
@@ -35,18 +36,47 @@ begin
 
 	tRegSgn1	= tRegValFRm[63];
 	tRegExp1	= tRegValFRm[62:52];
-//	if(tRegValFRm[63])
-	if(0)
-	begin
-		tRegFra1 = -tRegValFRm[51:0];
-		tRegFraExt1 = 64'hFFFFFFFF_FFFFFFFE;
-	end
-	else
-	begin
-		tRegFra1 = tRegValFRm[51:0];
-		tRegFraExt1 = 64'h00000000_00000001;
-	end
+	tRegFra1 = tRegValFRm[51:0];
+	tRegFraExt1 = 64'h00000000_00000001;
+	tRegFraExt2 = 64'h00000000_00000001;
 
+`ifdef def_true
+// `ifndef def_true
+	casez(tRegExp2[10:4])
+		7'h3F:	tRegValFRn2A = { 15'h0, tRegFraExt2[63:0], tRegFra2[51] };
+		7'h40:	tRegValFRn2A = { tRegFraExt2[62:0], tRegFra2[51:35] };
+		7'h41:	tRegValFRn2A = { tRegFraExt2[46:0], tRegFra2[51:19] };
+		7'h42:	tRegValFRn2A = { tRegFraExt2[30:0], tRegFra2[51: 3] };
+		7'h43:	tRegValFRn2A = { tRegFraExt2[14:0], tRegFra2[51: 0], 13'b0  };
+//		7'h44:	tRegValFRn2A = { tRegFra2[50: 0], 29'b0  };
+//		7'h45:	tRegValFRn2A = { tRegFra2[34: 0], 45'b0  };
+//		7'h46:	tRegValFRn2A = { tRegFra2[18: 0], 61'b0  };
+		default:	tRegValFRn2A = UV80_00;
+	endcase
+
+	case(tRegExp2[3:0])
+		4'h0: tRegValFRn2 = tRegValFRn2A[79:16];
+		4'h1: tRegValFRn2 = tRegValFRn2A[78:15];
+		4'h2: tRegValFRn2 = tRegValFRn2A[77:14];
+		4'h3: tRegValFRn2 = tRegValFRn2A[76:13];
+		4'h4: tRegValFRn2 = tRegValFRn2A[75:12];
+		4'h5: tRegValFRn2 = tRegValFRn2A[74:11];
+		4'h6: tRegValFRn2 = tRegValFRn2A[73:10];
+		4'h7: tRegValFRn2 = tRegValFRn2A[72: 9];
+		4'h8: tRegValFRn2 = tRegValFRn2A[71: 8];
+		4'h9: tRegValFRn2 = tRegValFRn2A[70: 7];
+		4'hA: tRegValFRn2 = tRegValFRn2A[69: 6];
+		4'hB: tRegValFRn2 = tRegValFRn2A[68: 5];
+		4'hC: tRegValFRn2 = tRegValFRn2A[67: 4];
+		4'hD: tRegValFRn2 = tRegValFRn2A[66: 3];
+		4'hE: tRegValFRn2 = tRegValFRn2A[65: 2];
+		4'hF: tRegValFRn2 = tRegValFRn2A[64: 1];
+	endcase
+`endif
+
+
+`ifndef def_true
+// `ifdef def_true
 	case(tRegExp2)
 		11'h3FF: tRegValFRn2 =   tRegFraExt2[63:0]                   ;
 		11'h400: tRegValFRn2 = { tRegFraExt2[62:0], tRegFra2[51   ] };
@@ -122,7 +152,8 @@ begin
 //				tRegValFRn2 = tRegValFRm[63] ? UV64_FF : UV64_00;
 		end
 	endcase
-	
+`endif
+
 end
 
 always @(posedge clock)
@@ -132,7 +163,7 @@ begin
 		tRegSgn2		<= tRegSgn1;
 		tRegExp2		<= tRegExp1;
 		tRegFra2		<= tRegFra1;
-		tRegFraExt2		<= tRegFraExt1;
+//		tRegFraExt2		<= tRegFraExt1;
 	end
 
 //	tRegValFRm		<= regValFRm;

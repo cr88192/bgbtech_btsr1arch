@@ -197,22 +197,7 @@ begin
 	tDoHoldCyc		= 0;
 	tDoAluSrT		= 0;
 
-//	tRegOutSr[1:0]	= regValAluRes[65:64];
-
 `ifndef def_true
-//	case(opUIxt[7:6])
-	casez( { opBraFlush, opUCmd[7:6] } )
-		3'b000: 	tOpEnable = 1;
-		3'b001: 	tOpEnable = 0;
-//		3'b010: 	tOpEnable = regInSr[0];
-		3'b010: 	tOpEnable = regInLastSr[0];
-//		3'b011: 	tOpEnable = !regInSr[0];
-		3'b011: 	tOpEnable = !regInLastSr[0];
-		3'b1zz: 	tOpEnable = 0;
-	endcase
-`endif
-
-`ifdef def_true
 	casez( { opBraFlush, opUCmd[7:6], regInLastSr[0] } )
 		4'b000z: 	tOpEnable = 1;
 		4'b001z: 	tOpEnable = 0;
@@ -224,6 +209,7 @@ begin
 	endcase
 `endif
 	
+	tOpEnable	= !opBraFlush;
 	tOpUCmd1	= tOpEnable ? opUCmd[5:0] : JX2_UCMD_NOP;
 
 	case(tOpUCmd1)
@@ -240,7 +226,8 @@ begin
 				JX2_UCIX_IXT_SLEEP: begin
 					tDoHoldCyc = 15;
 				end
-				
+
+`ifndef def_true
 				JX2_UCIX_IXT_LDEKRR: begin
 					if(regValKrreRes[65:64]==2'b10)
 					begin
@@ -253,6 +240,7 @@ begin
 					tRegIdRn2	= JX2_GR_DLR;
 					tRegValRn2	= regValKrreRes[63:0];
 				end
+`endif
 				
 				default: begin
 				end
@@ -265,93 +253,21 @@ begin
 		JX2_UCMD_LEA_MR: begin
 		end
 		JX2_UCMD_MOV_RM: begin
-`ifdef jx2_stage_memex3
 			tRegHeld	= 1;
-`else
-			tDoMemOp	= 1;
-`endif
 		end
 		JX2_UCMD_MOV_MR: begin
-`ifdef jx2_stage_memex3
 			tRegHeld	= 1;
-`else
-			tDoMemOp	= 1;
-			tRegIdRn2	= regIdRm;
-			tRegValRn2	= memDataIn;
-`ifdef jx2_debug_ldst
-			$display("LOAD(2): R=%X V=%X", regIdRm, memDataIn);
-`endif
-`endif
 		end
 
-// `ifdef jx2_enable_fpu
-`ifdef jx2_enable_fmov
-// `ifdef jx2_enable_fprs
-		JX2_UCMD_FMOV_RM: begin
-			tDoMemOp	= 1;
-		end
-		JX2_UCMD_FMOV_MR: begin
-			tDoMemOp	= 1;
-			
-`ifdef jx2_enable_fprs
-			if(opUIxt[2])
-			begin
-				tRegIdRn2		= regIdRm;
-				tRegValRn2		= regFpuLdGRn;
-			end
-`else
-			tRegIdRn2		= regIdRm;
-			tRegValRn2		= regFpuLdGRn;
-`endif
-		end
-`endif
-
-`ifndef def_true
-		JX2_UCMD_PUSHX: begin
-			tDoMemOp	= 1;
-		end
-		JX2_UCMD_POPX: begin
-			tDoMemOp	= 1;
-			casez(opUIxt[1:0])
-				2'b00: tRegIdRn2	= regIdRm;
-				2'b01: tRegIdCn2	= regIdRm[4:0];
-				default: begin
-				end
-			endcase
-			tRegValRn2	= memDataIn;
-			tRegValCn2	= memDataIn;
-`ifdef jx2_debug_ldst
-			$display("POP(2): R=%X V=%X", regIdRm, memDataIn);
-`endif
-		end
-
-		JX2_UCMD_ADDSP: begin
-		end
-`endif
-
-//		JX2_UCMD_ALU3: begin
 		JX2_UCMD_ALU3, JX2_UCMD_UNARY, JX2_UCMD_ALUW3: begin
 			tRegIdRn2		= regIdRm;			//
 			tRegValRn2		= regValAluRes[63:0];		//
-//			tRegOutSr[1:0]	= regValAluRes[65:64];
 			tDoAluSrT		= 1;
 		end
 
 		JX2_UCMD_ALUCMP: begin
-//			tRegOutSr[0]	= regValAluRes[64];
-//			tRegOutSr[1:0]	= regValAluRes[65:64];
-//			tRegOutSr[7:4]	= regValAluRes[69:66];
 			tDoAluSrT		= 1;
 		end
-
-`ifndef def_true
-		JX2_UCMD_UNARY: begin
-			tRegIdRn2		= regIdRm;			//
-			tRegValRn2		= regValAluRes[63:0];		//
-//			tRegOutSr[1:0]	= regValAluRes[65:64];
-			tDoAluSrT		= 1;
-		end
-`endif
 
 		JX2_UCMD_BRA: begin
 		end
@@ -362,55 +278,13 @@ begin
 		JX2_UCMD_JSR: begin
 		end
 		
+		JX2_UCMD_BRA_NB: begin
+		end
+		
 		JX2_UCMD_MUL3: begin
 			tDoHoldCyc	= 3;
-//			if(tHoldCyc!=1)
-//			if(tHoldCyc!=4)
-//			if(tHoldCyc!=3)
-//				tExHold=1;
-
 			tRegIdRn2	= regIdRm;					//
 			tRegValRn2	= regValMulRes[63:0];		//
-
-`ifndef def_true
-			casez(opUIxt[2:0])
-				3'b000: begin
-					tRegIdRn2	= regIdRm;			//
-//					tRegValRn2	= regValMulRes;		//
-					tRegValRn2	= {
-						regValMulRes[31] ? UV32_FF : UV32_00,
-						regValMulRes[31:0] };		//
-				end
-				3'b001: begin
-					tRegIdRn2	= regIdRm;			//
-//					tRegValRn2	= regValMulRes;		//
-					tRegValRn2	= {
-						UV32_00,
-						regValMulRes[31:0] };		//
-				end
-`ifndef def_true
-				3'b010: begin
-					tRegOutDlr  = { UV32_00, regValMulRes[31:0] };
-					tRegOutDhr  = {
-						regValMulRes[63] ? UV32_FF : UV32_00,
-						regValMulRes[63:32] };
-				end
-				3'b011: begin
-					tRegOutDlr  = { UV32_00, regValMulRes[31: 0] };
-					tRegOutDhr  = { UV32_00, regValMulRes[63:32] };
-				end
-`endif
-
-				3'b100: begin
-					tRegIdRn2	= regIdRm;					//
-					tRegValRn2	= regValMulRes[63:0];		//
-				end
-				3'b101: begin
-					tRegIdRn2	= regIdRm;					//
-					tRegValRn2	= regValMulRes[63:0];		//
-				end
-			endcase
-`endif
 		end
 		
 		JX2_UCMD_MULW3: begin
@@ -438,30 +312,18 @@ begin
 		end
 		
 		JX2_UCMD_FPU3: begin
-//			if(regFpuOK[1])
-//			if(regFpuOK != UMEM_OK_OK)
-//				tExHold			= 1;
 			tRegIdRn2		= regIdRm;
 			tRegValRn2		= regFpuGRn;
 		end
 		JX2_UCMD_FLDCX: begin
-//			if(regFpuOK[1])
-//			if(regFpuOK != UMEM_OK_OK)
-//				tExHold			= 1;
 			tRegIdRn2		= regIdRm;
 			tRegValRn2		= regFpuGRn;
 		end
 		JX2_UCMD_FSTCX: begin
-//			if(regFpuOK[1])
-//			if(regFpuOK != UMEM_OK_OK)
-//				tExHold			= 1;
 			tRegIdRn2		= regIdRm;
 			tRegValRn2		= regFpuGRn;
 		end
 		JX2_UCMD_FIXS: begin
-//			if(regFpuOK[1])
-//			if(regFpuOK != UMEM_OK_OK)
-//				tExHold			= 1;
 			tRegIdRn2		= regIdRm;
 			tRegValRn2		= regFpuGRn;
 		end
@@ -469,11 +331,7 @@ begin
 		JX2_UCMD_FCMP: begin
 `ifdef jx2_fcmp_alu
 			tDoAluSrT		= 1;
-//			tRegOutSr[1:0]	= regValAluRes[65:64];
 `else
-//			if(regFpuOK[1])
-//			if(regFpuOK != UMEM_OK_OK)
-//				tExHold			= 1;
 			tRegOutSr[0]	= regFpuSrT;
 `endif
 		end
@@ -486,53 +344,10 @@ begin
 	
 	endcase
 	
-`ifdef jx2_stage_memex3
 	if(tDoMemOp)
 	begin
 		$display("EX2: DoMemOp but MemEx3 %X", opUCmd);
 	end
-`else
-	if(tDoMemOp)
-	begin
-`ifdef jx2_debug_ldst
-		$display("EX2: DoMemOp, OK=%X", memDataOK);
-`endif
-
-`ifndef jx2_do_ld1cyc
-//		if(tHoldCyc==0)
-//			tExHold=1;
-		tDoHoldCyc	= 1;
-`endif
-
-		if(memDataOK[1])
-		begin
-			if(memDataOK[0])
-			begin
-				if(!tMsgLatch)
-					$display("EX2: Memory Fault");
-				tNextMsgLatch	= 1;
-			end
-			else
-			begin
-`ifdef jx2_debug_ldst
-				$display("EX2: Memory Hold");
-`endif
-			end
-			tExHold=1;
-		end
-`ifndef def_true
-		else if(!memDataOK[0])
-		begin
-`ifdef jx2_debug_ldst
-			$display("EX2: Memory Ready");
-`endif
-			tExHold=1;
-		end
-`endif
-
-//		tMemOpm = tDoMemOpm;
-	end
-`endif
 
 	if(tDoAluSrT)
 	begin
@@ -546,17 +361,10 @@ begin
 		tRegIdCn2	= JX2_CR_ZZR[4:0];
 	end
 
-//	if((tDoHoldCyc != 0) && (tHoldCyc != tDoHoldCyc))
-//	if(tHoldCyc != tDoHoldCyc)
 	if(tHoldCyc < tDoHoldCyc)
 	begin
-//		if(!tExHold)
-//			$display("Hold Cyc %d %d", tHoldCyc, tDoHoldCyc);
 		tExHold=1;
 	end
-
-//	if(reset)
-//		tExHold=0;
 end
 
 always @(posedge clock)

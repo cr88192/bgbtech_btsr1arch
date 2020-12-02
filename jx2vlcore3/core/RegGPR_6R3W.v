@@ -36,14 +36,12 @@ module RegGPR_6R3W(
 	regIdRnC2,		//Destination ID (EX2, Lane 3)
 	regValRnC2,		//Destination Value (EX2, Lane 3)
 
-`ifdef jx2_stage_ex3
 	regIdRnA3,		//Destination ID (EX2, Lane 1)
 	regValRnA3,		//Destination Value (EX2, Lane 1)
 	regIdRnB3,		//Destination ID (EX2, Lane 2)
 	regValRnB3,		//Destination Value (EX2, Lane 2)
 	regIdRnC3,		//Destination ID (EX2, Lane 3)
 	regValRnC3,		//Destination Value (EX2, Lane 3)
-`endif
 	
 	regValPc,		//PC Value (Synthesized)
 	regValGbr,		//GBR Value (CR)
@@ -54,9 +52,7 @@ module RegGPR_6R3W(
 	
 	gprEx1Flush,
 	gprEx2Flush,
-`ifdef jx2_stage_ex3
 	gprEx3Flush,
-`endif
 
 	regOutDlr,	regInDlr,
 	regOutDhr,	regInDhr,
@@ -91,28 +87,22 @@ input[5:0]		regIdRnA1;		//Destination ID
 input[63:0]		regValRnA1;		//Destination Value
 input[5:0]		regIdRnA2;		//Destination ID
 input[63:0]		regValRnA2;		//Destination Value
-`ifdef jx2_stage_ex3
 input[5:0]		regIdRnA3;		//Destination ID
 input[63:0]		regValRnA3;		//Destination Value
-`endif
 
 input[5:0]		regIdRnB1;		//Destination ID
 input[63:0]		regValRnB1;		//Destination Value
 input[5:0]		regIdRnB2;		//Destination ID
 input[63:0]		regValRnB2;		//Destination Value
-`ifdef jx2_stage_ex3
 input[5:0]		regIdRnB3;		//Destination ID
 input[63:0]		regValRnB3;		//Destination Value
-`endif
 
 input[5:0]		regIdRnC1;		//Destination ID
 input[63:0]		regValRnC1;		//Destination Value
 input[5:0]		regIdRnC2;		//Destination ID
 input[63:0]		regValRnC2;		//Destination Value
-`ifdef jx2_stage_ex3
 input[5:0]		regIdRnC3;		//Destination ID
 input[63:0]		regValRnC3;		//Destination Value
-`endif
 
 input [47:0]	regValPc;		//PC Value (Synthesized)
 input [47:0]	regValGbr;		//GBR Value (CR)
@@ -123,9 +113,7 @@ input [47:0]	regValLr;		//GBR Value (CR)
 
 input			gprEx1Flush;
 input			gprEx2Flush;
-`ifdef jx2_stage_ex3
 input			gprEx3Flush;
-`endif
 
 
 output[63:0]	regOutDlr;
@@ -167,7 +155,8 @@ wire[5:0]		regIdRnCW;		//Destination ID
 wire[63:0]		regValRnCW;		//Destination Value
 wire			regFlushRnW;	//Flush Stage
 
-`ifdef jx2_stage_ex3
+// assign	regFlushRnW	= 1'b0;
+
 assign	regIdRnAW	= regIdRnA3;
 assign	regValRnAW	= regValRnA3;
 assign	regIdRnBW	= regIdRnB3;
@@ -175,15 +164,6 @@ assign	regValRnBW	= regValRnB3;
 assign	regIdRnCW	= regIdRnC3;
 assign	regValRnCW	= regValRnC3;
 assign	regFlushRnW	= gprEx3Flush;
-`else
-assign	regIdRnAW	= regIdRnA2;
-assign	regValRnAW	= regValRnA2;
-assign	regIdRnBW	= regIdRnB2;
-assign	regValRnBW	= regValRnB2;
-assign	regIdRnCW	= regIdRnC2;
-assign	regValRnCW	= regValRnC2;
-assign	regFlushRnW	= gprEx2Flush;
-`endif
 
 
 wire[5:0]		regIdRnA1B;
@@ -207,8 +187,6 @@ assign		regIdRnA2B = regIdRnA2;
 assign		regIdRnB2B = regIdRnB2;
 assign		regIdRnC2B = regIdRnC2;
 
-
-`ifdef jx2_stage_ex3
 wire[5:0]		regIdRnA3B;		//Destination ID
 wire[5:0]		regIdRnB3B;		//Destination ID
 wire[5:0]		regIdRnC3B;		//Destination ID
@@ -218,8 +196,6 @@ wire[5:0]		regIdRnC3B;		//Destination ID
 assign		regIdRnA3B = regIdRnA3;
 assign		regIdRnB3B = regIdRnB3;
 assign		regIdRnC3B = regIdRnC3;
-`endif
-
 
 reg[63:0]	gprArrA[31:0];
 reg[63:0]	gprArrB[31:0];
@@ -664,7 +640,6 @@ begin
 
 	if(!tValRsZz)
 	begin
-`ifdef jx2_stage_ex3
 //		if(!gprEx3Flush)
 		if(1'b1)
 		begin
@@ -675,7 +650,6 @@ begin
 			if(regIdRs==regIdRnA3B)
 				tRegValRs=regValRnA3;
 		end
-`endif
 
 //		if(!gprEx2Flush)
 		if(1'b1)
@@ -702,7 +676,6 @@ begin
 
 	if(!tValRtZz)
 	begin
-`ifdef jx2_stage_ex3
 //		if(!gprEx3Flush)
 		if(1'b1)
 		begin
@@ -713,7 +686,6 @@ begin
 			if(regIdRt==regIdRnA3B)
 				tRegValRt=regValRnA3;
 		end
-`endif
 
 //		if(!gprEx2Flush)
 		if(1'b1)
@@ -740,7 +712,6 @@ begin
 
 	if(!tValRuZz)
 	begin
-`ifdef jx2_stage_ex3
 //		if(!gprEx3Flush)
 		if(1'b1)
 		begin
@@ -751,7 +722,6 @@ begin
 			if(regIdRu==regIdRnA3B)
 				tRegValRu=regValRnA3;
 		end
-`endif
 
 //		if(!gprEx2Flush)
 		if(1'b1)
@@ -778,7 +748,6 @@ begin
 
 	if(!tValRvZz)
 	begin
-`ifdef jx2_stage_ex3
 //		if(!gprEx3Flush)
 		if(1'b1)
 		begin
@@ -789,7 +758,6 @@ begin
 			if(regIdRv==regIdRnA3B)
 				tRegValRv=regValRnA3;
 		end
-`endif
 
 //		if(!gprEx2Flush)
 		if(1'b1)
@@ -817,7 +785,6 @@ begin
 
 	if(!tValRxZz)
 	begin
-`ifdef jx2_stage_ex3
 //		if(!gprEx3Flush)
 		if(1'b1)
 		begin
@@ -828,7 +795,6 @@ begin
 			if(regIdRx==regIdRnA3B)
 				tRegValRx=regValRnA3;
 		end
-`endif
 
 //		if(!gprEx2Flush)
 		if(1'b1)
@@ -855,7 +821,6 @@ begin
 
 	if(!tValRyZz)
 	begin
-`ifdef jx2_stage_ex3
 //		if(!gprEx3Flush)
 		if(1'b1)
 		begin
@@ -866,7 +831,6 @@ begin
 			if(regIdRy==regIdRnA3B)
 				tRegValRy=regValRnA3;
 		end
-`endif
 
 //		if(!gprEx2Flush)
 		if(1'b1)

@@ -88,6 +88,10 @@ reg[13:0]	tPixCellIx_A;		//base cell index
 reg[3:0]	tPixCellFx_A;		//pixel index (4x4)
 reg[5:0]	tPixCellGx_A;		//glyph pix index (8x8)
 
+reg[13:0]	tPixCellIx_A0;		//base cell index
+reg[3:0]	tPixCellFx_A0;		//pixel index (4x4)
+reg[5:0]	tPixCellGx_A0;		//glyph pix index (8x8)
+
 reg[13:0]	tPixCellIx_B;			//base cell index
 reg[3:0]	tPixCellFx_B;			//base cell index
 reg[5:0]	tPixCellGx_B;			//base cell index
@@ -253,6 +257,7 @@ reg		tCellLimitX;
 reg		tCellLimitY;
 
 assign	pixCellIx = tPixCellIx_B;
+// assign	pixCellIx = tPixCellIx_C;
 assign	fontGlyph = tFontGlyph;
 
 assign	pixCy	= tPixCy2;
@@ -353,14 +358,10 @@ begin
 		begin
 			if(useRow50)
 			begin
-//				tPixCellY[6:0]	= tPixPosY_Z[9:3];
-//				tCellLimitY		= (tPixCellY[5:0] >= 98) || tPixCellY[6];
 				tNextPixCellMaxY	= 96;
 			end
 			else
 			begin
-//				tPixCellY[6:0]	= { tPixPosY_Z[9], tPixPosY_Z[9:4] };
-//				tCellLimitY		= (tPixCellY[5:0] >= 50) || tPixCellY[6];
 				tNextPixCellMaxY	= 48;
 			end
 		end
@@ -368,14 +369,10 @@ begin
 		begin
 			if(useRow50)
 			begin
-//				tPixCellY[6:0]	= tPixPosY_Z[9:3];
-//				tCellLimitY		= (tPixCellY[5:0] >= 66) || tPixCellY[6];
 				tNextPixCellMaxY	= 64;
 			end
 			else
 			begin
-//				tPixCellY[6:0]	= { tPixPosY_Z[9], tPixPosY_Z[9:4] };
-//				tCellLimitY		= (tPixCellY[5:0] >= 34) || tPixCellY[6];
 				tNextPixCellMaxY	= 32;
 			end
 		end
@@ -384,20 +381,10 @@ begin
 	else
 		if(useRow50)
 	begin
-//		tPixCellY[6:0]	= tPixPosY_Z[8:2];
-//		tPixCellY[6:0]	= tPixPosY_Z[9:3];
-//		tCellLimitY		= tPixCellY[5:0] >= 52;
-//		tCellLimitY		= (tPixCellY[5:0] >= 52) || tPixCellY[6];
 		tNextPixCellMaxY	= 50;
 	end
 	else
 	begin
-//		tPixCellY[6:0]	= tPixPosY_Z[9:3];
-//		tPixCellY[6:0]	= { 1'b0, tPixPosY_Z[9:4] };
-//		tPixCellY[6:0]	= { tPixPosY_Z[9], tPixPosY_Z[9:4] };
-//		tCellLimitY		= tPixCellY[5:0] >= 27;
-//		tCellLimitY		= (tPixCellY[5:0] >= 27) || tPixCellY[5];
-//		tCellLimitY		= (tPixCellY[5:0] >= 27) || tPixCellY[6];
 		tNextPixCellMaxY	= 25;
 	end
 
@@ -415,65 +402,35 @@ begin
 		if(useCol80 && !useHalfCell)
 		begin
 			tPixCellX[6:0] = tPixPosX_Z[9:3];
-//			tPixCellIx_A	= tPixCellY*128 + tPixCellX - 256;
-//			tCellLimitX		= tPixCellX[6:0] >= 128;
 			tNextPixCellMaxX	= 128;
-//			tNextCellIsOdd = 0;
 		end
 		else
 		begin
 			tPixCellX[5:0] = tPixPosX_Z[9:4];
-//			tPixCellIx_A	= tPixCellY*64 + tPixCellX - 128;
-//			tCellLimitX		= tPixCellX[5:0] >= 64;
 			tNextPixCellMaxX	= 64;
-//			tNextCellIsOdd = tPixPosX_Z[3];
 		end
 
 	end
 	else
-//		if(useCol80 && !useHalfCell)
 		if(useCol80)
 	begin
 		tPixCellX[6:0] = tPixPosX_Z[9:3];
-//		tPixCellY[6:0] = tPixPosY_Z[9:3];
 		if(useHorz800)
-		begin
-//			tPixCellIx_A	= tPixCellY*100 + tPixCellX - 200;
-//			tCellLimitX		= tPixCellX[6:0] >= 100;
 			tNextPixCellMaxX	= 100;
-		end
 		else
-		begin
-//			tPixCellIx_A	= tPixCellY*80 + tPixCellX - 160;
-//			tCellLimitX		= tPixCellX[6:0] >= 80;
 			tNextPixCellMaxX	= 80;
-		end
-//		tNextCellIsOdd = 0;
 	end
 	else
 	begin
 		tPixCellX[5:0] = tPixPosX_Z[9:4];
-//		tPixCellY[6:0] = tPixPosY_Z[9:3];
 		if(useHorz800)
-		begin
-//			tPixCellIx_A	= tPixCellY*50 + tPixCellX - 100;
-//			tCellLimitX		= tPixCellX[5:0] >= 50;
 			tNextPixCellMaxX	= 50;
-		end
 		else
-		begin
-//			tPixCellIx_A	= tPixCellY*40 + tPixCellX - 80;
-//			tCellLimitX		= tPixCellX[5:0] >= 40;
 			tNextPixCellMaxX	= 40;
-		end
-//		tNextCellIsOdd = tPixPosX_Z[3];
 	end
 
 	if(useQtrCell)
 	begin
-//		tPixCellIx_A	=
-//			(tPixCellY*({ 6'h0, tPixCellMaxX }>>2)) +
-//			(tPixCellX>>2) - { 6'h0, tPixCellMaxX>>1 };
 		tPixCellIx_A	=
 			(tPixCellY*({ 6'h0, tPixCellMaxX }>>2)) +
 			(tPixCellX>>2);
@@ -483,9 +440,6 @@ begin
 	else
 		if(useHalfCell)
 	begin
-//		tPixCellIx_A	=
-//			(tPixCellY*({6'h0, tPixCellMaxX}>>1)) +
-//			(tPixCellX>>1) - {6'h0, tPixCellMaxX};
 		tPixCellIx_A	=
 			(tPixCellY*({6'h0, tPixCellMaxX}>>1)) +
 			(tPixCellX>>1);
@@ -513,32 +467,32 @@ begin
 //		((tCellCursorX != 0) || (tCellCursorX != 0));
 	
 	
-	/* Stage A */
+	/* Stage A-0 */
 	
 	if(useRow50)
 	begin
-//		tPixCellFx_A[3:2] = 2'h3 - tPixPosY[1:0];
-//		tPixCellGx_A[5:3]	= 3'h7 - { tPixPosY[1:0], pixLineOdd };
-		tPixCellFx_A[3:2] = 2'h3 - tPixPosY[2:1];
-		tPixCellGx_A[5:3]	= 3'h7 - tPixPosY[2:0];
+//		tPixCellFx_A0[3:2] = 2'h3 - tPixPosY[1:0];
+//		tPixCellGx_A0[5:3]	= 3'h7 - { tPixPosY[1:0], pixLineOdd };
+		tPixCellFx_A0[3:2] = 2'h3 - tPixPosY[2:1];
+		tPixCellGx_A0[5:3]	= 3'h7 - tPixPosY[2:0];
 	end
 	else
 	begin
-//		tPixCellFx_A[3:2] = 2'h3 - tPixPosY[2:1];
-//		tPixCellGx_A[5:3]	= 3'h7 - tPixPosY[2:0];
-		tPixCellFx_A[3:2] = 2'h3 - tPixPosY[3:2];
-		tPixCellGx_A[5:3]	= 3'h7 - tPixPosY[3:1];
+//		tPixCellFx_A0[3:2] = 2'h3 - tPixPosY[2:1];
+//		tPixCellGx_A0[5:3]	= 3'h7 - tPixPosY[2:0];
+		tPixCellFx_A0[3:2] = 2'h3 - tPixPosY[3:2];
+		tPixCellGx_A0[5:3]	= 3'h7 - tPixPosY[3:1];
 	end
 	
 	if(useCol80)
 	begin
-		tPixCellFx_A[1:0] = 2'h3 - tPixPosX[2:1];
-		tPixCellGx_A[2:0]	= 3'h7 - tPixPosX[2:0];
+		tPixCellFx_A0[1:0] = 2'h3 - tPixPosX[2:1];
+		tPixCellGx_A0[2:0]	= 3'h7 - tPixPosX[2:0];
 	end
 	else
 	begin
-		tPixCellFx_A[1:0] = 2'h3 - tPixPosX[3:2];		
-		tPixCellGx_A[2:0]	= 3'h7 - tPixPosX[3:1];
+		tPixCellFx_A0[1:0] = 2'h3 - tPixPosX[3:2];		
+		tPixCellGx_A0[2:0]	= 3'h7 - tPixPosX[3:1];
 	end
 	
 //	tCellData = cellData;
@@ -571,6 +525,13 @@ begin
 	if(tCellLimitX || tCellLimitY)
 		tCellData0 = 0;
 
+`ifndef JX2_FBUF_CELLDE1
+	tCellData = tCellData0;
+	tPixCellFx_A = tPixCellFx_A0;
+	tPixCellGx_A = tPixCellGx_A0;
+`endif
+
+	/* Stage A-1 */
 
 	tFontGlyph = tCellData[15:0];
 	tClrA = tCellData[21:16];
@@ -915,7 +876,7 @@ begin
 		end
 	end
 
-`ifdef FBUF_ENBM
+`ifdef JX2_FBUF_ENBM
 
 	case(tPixCellFx_C)
 		4'hF: tPixClrBmYv16_C = tCellData_C[ 15:  0];
@@ -1233,17 +1194,17 @@ begin
 //	tPixPosX		<= tPixPosX_Z;
 //	tPixPosY		<= tPixPosY_Z;
 
-	tPixPosX_Y		<= tPixPosX_Z;
-	tPixPosY_Y		<= tPixPosY_Z;
-	tPixPosX		<= tPixPosX_Y;
-	tPixPosY		<= tPixPosY_Y;
-
 //	tPixPosX_Y		<= tPixPosX_Z;
 //	tPixPosY_Y		<= tPixPosY_Z;
-//	tPixPosX_X		<= tPixPosX_Y;
-//	tPixPosY_X		<= tPixPosY_Y;
-//	tPixPosX		<= tPixPosX_X;
-//	tPixPosY		<= tPixPosY_X;
+//	tPixPosX		<= tPixPosX_Y;
+//	tPixPosY		<= tPixPosY_Y;
+
+	tPixPosX_Y		<= tPixPosX_Z;
+	tPixPosY_Y		<= tPixPosY_Z;
+	tPixPosX_X		<= tPixPosX_Y;
+	tPixPosY_X		<= tPixPosY_Y;
+	tPixPosX		<= tPixPosX_X;
+	tPixPosY		<= tPixPosY_X;
 
 	tPixCellMaxX	<= tNextPixCellMaxX;
 	tPixCellMaxY	<= tNextPixCellMaxY;
@@ -1262,8 +1223,13 @@ begin
 	tCellIsOdd			<= tNextCellIsOdd;
 	tCellIsOddB			<= tNextCellIsOddB;
 	tBlinkStrobeB		<= tBlinkStrobeA;
-	
+
+`ifdef JX2_FBUF_CELLDE1
 	tCellData		<= tCellData0;
+	tPixCellFx_A	<= tPixCellFx_A0;
+	tPixCellGx_A	<= tPixCellGx_A0;
+`endif
+
 	tCellData_B		<= tCellData;
 	tCellData_C		<= tCellData_B;
 

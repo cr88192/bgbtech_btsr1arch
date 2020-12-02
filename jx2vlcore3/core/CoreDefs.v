@@ -113,6 +113,7 @@ parameter[ 43:0] UV44_XX		= 44'hXXXXXXX_XXXX;	//
 parameter[ 47:0] UV48_XX		= 48'hXXXXXXXX_XXXX;	//
 parameter[ 63:0] UV64_XX		= 64'hXXXXXXXX_XXXXXXXX;	//
 parameter[ 64:0] UV65_XX		= 65'hX_XXXXXXXX_XXXXXXXX;	//
+parameter[ 65:0] UV66_XX		= 66'hX_XXXXXXXX_XXXXXXXX;	//
 parameter[ 95:0] UV96_XX		= 96'hXXXXXXXX_XXXXXXXX_XXXXXXXX;	//
 parameter[127:0] UV128_XX		= { UV64_XX, UV64_XX };		//
 parameter[159:0] UV160_XX		= { UV32_XX, UV128_XX };	//
@@ -145,6 +146,9 @@ parameter[7:0] UV8_FF			= 8'hFF;	//
 
 parameter[8:0] UV9_00			= 9'h000;	//
 parameter[8:0] UV9_FF			= 9'h1FF;	//
+
+parameter[9:0] UV10_00			= 10'h000;	//
+parameter[9:0] UV10_FF			= 10'h3FF;	//
 
 parameter[11:0] UV12_00			= 12'h000;	//
 parameter[11:0] UV12_FF			= 12'hFFF;	//
@@ -230,6 +234,12 @@ parameter[63:0] UV64_FF			= 64'hFFFFFFFF_FFFFFFFF;	//
 parameter[64:0] UV65_00			= 65'h000000000_00000000;	//
 parameter[64:0] UV65_FF			= 65'h1FFFFFFFF_FFFFFFFF;	//
 
+parameter[65:0] UV66_00			= 66'h000000000_00000000;	//
+parameter[65:0] UV66_FF			= 66'h3FFFFFFFF_FFFFFFFF;	//
+
+parameter[79:0] UV80_00			= { UV16_00, UV64_00 };	//
+parameter[79:0] UV80_FF			= { UV16_FF, UV64_FF };	//
+
 parameter[95:0] UV96_00			= { UV32_00, UV64_00 };	//
 parameter[95:0] UV96_FF			= { UV32_FF, UV64_FF };	//
 
@@ -238,6 +248,9 @@ parameter[127:0] UV128_FF		= { UV64_FF, UV64_FF };	//
 
 parameter[191:0] UV192_00		= { UV64_00, UV128_00 };	//
 parameter[191:0] UV192_FF		= { UV64_FF, UV128_FF };	//
+
+parameter[223:0] UV224_00		= { UV96_00, UV128_00 };	//
+parameter[223:0] UV224_FF		= { UV96_FF, UV128_FF };	//
 
 parameter[255:0] UV256_00		= { UV128_00, UV128_00 };	//
 parameter[255:0] UV256_FF		= { UV128_FF, UV128_FF };	//
@@ -702,6 +715,54 @@ parameter[5:0] JX2_UCIX_IXS_TRAPB	= 6'h04;		//Trap
 
 parameter[5:0] JX2_UCIX_IXS_INVIC	= 6'h10;		//Flush I$
 parameter[5:0] JX2_UCIX_IXS_INVDC	= 6'h11;		//Flush D$
+
+
+
+`ifdef jx2_mem_line32B
+
+parameter[255:0] UVTILE_XX		= UV256_XX;	//
+parameter[255:0] UVTILE_00		= UV256_00;	//
+parameter[255:0] UVTILE_FF		= UV256_FF;	//
+`define reg_tile			reg[255:0]
+`define wire_tile			wire[255:0]
+`define input_tile			input[255:0]
+`define output_tile			output[255:0]
+`define reg_tile_pad		reg[269:0]		//pad to multiple of 18 bits
+`define reg_tile_pflag		reg[5:0]
+`define reg_tile_prov		reg[7:0]
+
+`else
+
+parameter[127:0] UVTILE_XX		= UV128_XX;	//
+parameter[127:0] UVTILE_00		= UV128_00;	//
+parameter[127:0] UVTILE_FF		= UV128_FF;	//
+`define reg_tile			reg[127:0]
+`define wire_tile			wire[127:0]
+`define input_tile			input[127:0]
+`define output_tile			output[127:0]
+`define reg_tile_pad		reg[143:0]		//pad to multiple of 18 bits
+`define reg_tile_pflag		reg[7:0]
+`define reg_tile_prov		reg[7:0]
+
+`endif
+
+`ifdef jx2_mem_ddr32B
+parameter[255:0] UVDDRT_XX		= UV256_XX;	//
+parameter[255:0] UVDDRT_00		= UV256_00;	//
+parameter[255:0] UVDDRT_FF		= UV256_FF;	//
+`define reg_ddrtile			reg[255:0]
+`define wire_ddrtile		wire[255:0]
+`define input_ddrtile		input[255:0]
+`define output_ddrtile		output[255:0]
+`else
+parameter[127:0] UVDDRT_XX		= UV128_XX;	//
+parameter[127:0] UVDDRT_00		= UV128_00;	//
+parameter[127:0] UVDDRT_FF		= UV128_FF;	//
+`define reg_ddrtile			reg[127:0]
+`define wire_ddrtile		wire[127:0]
+`define input_ddrtile		input[127:0]
+`define output_ddrtile		output[127:0]
+`endif
 
 `define def_true
 

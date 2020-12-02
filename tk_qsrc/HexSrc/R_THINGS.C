@@ -432,13 +432,15 @@ void R_DrawVisSprite (vissprite_t *vis, int x1, int x2)
 	for (dc_x=vis->x1 ; dc_x<=vis->x2 ; dc_x++, frac += vis->xiscale)
 	{
 		texturecolumn = frac>>FRACBITS;
-#ifdef RANGECHECK
+//#ifdef RANGECHECK
+//		if (texturecolumn < 0 || texturecolumn >= SHORT(patch->width))
+//			I_Error ("R_DrawSpriteRange: bad texturecolumn");
+//#endif
 		if (texturecolumn < 0 || texturecolumn >= SHORT(patch->width))
-			I_Error ("R_DrawSpriteRange: bad texturecolumn");
-#endif
+			break;
 		column = (column_t *) ((byte *)patch +
-		 LONG(patch->columnofs[texturecolumn]));
-		 R_DrawMaskedColumn (column, baseclip);
+			LONG(patch->columnofs[texturecolumn]));
+			R_DrawMaskedColumn (column, baseclip);
 	}
 
 	colfunc = basecolfunc;
@@ -490,7 +492,8 @@ void R_ProjectSprite (mobj_t *thing)
 
 	if (tz < MINZ)
 		return;		// thing is behind view plane
-	xscale = FixedDiv(projection, tz);
+//	xscale = FixedDiv(projection, tz);
+	xscale = FixedDivSoft(projection, tz);
 
 	gxt = -FixedMul(trx,viewsin);
 	gyt = FixedMul(try,viewcos);
@@ -579,7 +582,8 @@ void R_ProjectSprite (mobj_t *thing)
 
 	vis->x1 = x1 < 0 ? 0 : x1;
 	vis->x2 = x2 >= viewwidth ? viewwidth-1 : x2;
-	iscale = FixedDiv (FRACUNIT, xscale);
+//	iscale = FixedDiv (FRACUNIT, xscale);
+	iscale = FixedDivSoft (FRACUNIT, xscale);
 	if (flip)
 	{
 		vis->startfrac = spritewidth[lump]-1;

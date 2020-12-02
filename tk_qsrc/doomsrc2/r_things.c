@@ -476,18 +476,20 @@ R_DrawVisSprite
 	for (dc_x=vis->x1 ; dc_x<=vis->x2 ; dc_x++, frac += vis->xiscale)
 	{
 		texturecolumn = frac>>FRACBITS;
-		if(texturecolumn >= SHORT(patch->width))
+//		if(texturecolumn >= SHORT(patch->width))
+		if(texturecolumn >= (patch->width))
 			break;
 		if (texturecolumn < 0)
 			break;
 
-#ifdef RANGECHECK
-		if (texturecolumn < 0 || texturecolumn >= SHORT(patch->width))
-			I_Error ("R_DrawSpriteRange: bad texturecolumn");
-#endif
+//#ifdef RANGECHECK
+//		if (texturecolumn < 0 || texturecolumn >= SHORT(patch->width))
+//			I_Error ("R_DrawSpriteRange: bad texturecolumn");
+//#endif
 
 		column = (column_t *) ((byte *)patch +
-					   LONG(patch->columnofs[texturecolumn]));
+//					   LONG(patch->columnofs[texturecolumn]));
+					   (patch->columnofs[texturecolumn]));
 		R_DrawMaskedColumn (column);
 	}
 

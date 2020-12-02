@@ -29,9 +29,18 @@ reg[7:0]		tOutCharBit;
 reg[7:0]		tOutSegBit;
 reg[7:0]		tOutCharBit2;
 reg[7:0]		tOutSegBit2;
+reg[7:0]		tOutCharBit2A;
+reg[7:0]		tOutSegBit2A;
+reg[7:0]		tOutCharBit2B;
+reg[7:0]		tOutSegBit2B;
+reg[7:0]		tOutCharBit2C;
+reg[7:0]		tOutSegBit2C;
 
-assign		outCharBit = tOutCharBit2;
-assign		outSegBit = tOutSegBit2;
+// assign		outCharBit = tOutCharBit2;
+// assign		outSegBit = tOutSegBit2;
+
+assign		outCharBit = tOutCharBit2C;
+assign		outSegBit = tOutSegBit2C;
 
 reg[2:0]	tCharPos;
 reg[2:0]	tNxtCharPos;
@@ -107,6 +116,13 @@ always @(posedge clock)
 begin
 	tOutCharBit2	<= tOutCharBit;
 	tOutSegBit2		<= tOutSegBit;
+	tOutCharBit2A	<= tOutCharBit2;
+	tOutSegBit2A	<= tOutSegBit2;
+	tOutCharBit2B	<= tOutCharBit2A;
+	tOutSegBit2B	<= tOutSegBit2A;
+	tOutCharBit2C	<= tOutCharBit2B;
+	tOutSegBit2C	<= tOutSegBit2B;
+
 	tCharPos		<= tNxtCharPos;
 	tHexNibB		<= tHexNibA;
 	tAccStrobe		<= tNxtAccStrobe;

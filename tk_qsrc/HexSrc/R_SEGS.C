@@ -132,8 +132,8 @@ void R_RenderMaskedSegRange (drawseg_t *ds, int x1, int x2)
 			}
 
 			sprtopscreen = centeryfrac - FixedMul(dc_texturemid, spryscale);
-			dc_iscale = 0xffffffffu / (unsigned)spryscale;
-//			dc_iscale = M_SoftDivRcp(spryscale);
+//			dc_iscale = 0xffffffffu / (unsigned)spryscale;
+			dc_iscale = M_SoftDivRcp(spryscale);
 
 //			dc_iscale = 0x7fffffffu / (unsigned)spryscale;
 //			dc_iscale += dc_iscale;
@@ -229,8 +229,8 @@ void R_RenderSegLoop (void)
 				index = MAXLIGHTSCALE-1;
 			dc_colormap = walllights[index];
 			dc_x = rw_x;
-			dc_iscale = 0xffffffffu / (unsigned)rw_scale;
-//			dc_iscale = M_SoftDivRcp(rw_scale);
+//			dc_iscale = 0xffffffffu / (unsigned)rw_scale;
+			dc_iscale = M_SoftDivRcp(rw_scale);
 
 //			dc_iscale = 0x7fffffffu / (((unsigned)rw_scale)>>1);
 //			dc_iscale += dc_iscale + 1;
@@ -396,7 +396,7 @@ void R_StoreWallRange (int start, int stop)
 
 			gxt = FixedMul(trx,viewcos);
 			gyt = -FixedMul(try,viewsin);
-			ds_p->scale1 = FixedDiv(projection, gxt-gyt);
+//			ds_p->scale1 = FixedDiv(projection, gxt-gyt);
 		}
 #endif
 		ds_p->scale2 = ds_p->scale1;

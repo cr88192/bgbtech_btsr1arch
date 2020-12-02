@@ -207,8 +207,10 @@ void R_ClearPlanes(void)
 	memset(cachedheight, 0, sizeof(cachedheight));	
 	angle = (viewangle-ANG90)>>ANGLETOFINESHIFT; // left to right mapping
 	// Scale will be unit scale at SCREENWIDTH/2 distance
-	basexscale = FixedDiv(finecosine[angle], centerxfrac);
-	baseyscale = -FixedDiv(finesine[angle], centerxfrac);
+//	basexscale = FixedDiv(finecosine[angle], centerxfrac);
+//	baseyscale = -FixedDiv(finesine[angle], centerxfrac);
+	basexscale = FixedDivSoft(finecosine[angle], centerxfrac);
+	baseyscale = -FixedDivSoft(finesine[angle], centerxfrac);
 }
 
 //==========================================================================

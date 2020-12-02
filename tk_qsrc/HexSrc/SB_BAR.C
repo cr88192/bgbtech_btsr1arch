@@ -1458,7 +1458,8 @@ void DrawMainBar(void)
 	{
 		oldarmor = temp;
 		V_DrawPatch(255, 178, PatchARMCLEAR);
-		DrINumber(FixedDiv(temp, 5*FRACUNIT)>>FRACBITS, 250, 176);
+//		DrINumber(FixedDiv(temp, 5*FRACUNIT)>>FRACBITS, 250, 176);
+		DrINumber(FixedDivSoft(temp, 5*FRACUNIT)>>FRACBITS, 250, 176);
 		UpdateState |= I_STATBAR;
 	}
 	// Weapon Pieces

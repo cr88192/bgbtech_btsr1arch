@@ -426,6 +426,9 @@ void R_DrawPlanes (void)
 			//  by INVUL inverse mapping.
 			dc_colormap = colormaps;
 			dc_texturemid = skytexturemid;
+			if(fixedcolormap)
+				dc_colormap = fixedcolormap;
+
 			for (x=pl->minx ; x <= pl->maxx ; x++)
 			{
 				dc_yl = pl->top[x];

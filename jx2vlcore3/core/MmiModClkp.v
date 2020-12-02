@@ -63,6 +63,22 @@ assign	timer256Hz	= stepTimer256Hz;
 
 always @*
 begin
+
+`ifdef jx2_cpu_mmioclock_150
+
+	{ stepTimer1MHz, nextFracTimer1MHz }	=
+		{ 1'b0, fracTimer1MHz } + 17'h01B5;
+
+	{ stepTimer4MHz, nextFracTimer4MHz }	=
+		{ 1'b0, fracTimer4MHz } + 17'h06D4;
+
+	{ stepTimer64kHz, nextFracTimer64kHz }	=
+		{ 1'b0, fracTimer64kHz } + 21'h01BF;
+
+`endif
+
+`ifdef jx2_cpu_mmioclock_100
+
 	{ stepTimer1MHz, nextFracTimer1MHz }	=
 		{ 1'b0, fracTimer1MHz } + 17'h0290;
 
@@ -74,6 +90,34 @@ begin
 
 	{ stepTimer64kHz, nextFracTimer64kHz }	=
 		{ 1'b0, fracTimer64kHz } + 21'h02AC;
+
+`endif
+
+`ifdef jx2_cpu_mmioclock_75
+
+	{ stepTimer1MHz, nextFracTimer1MHz }	=
+		{ 1'b0, fracTimer1MHz } + 17'h036A;
+
+	{ stepTimer4MHz, nextFracTimer4MHz }	=
+		{ 1'b0, fracTimer4MHz } + 17'h0DA8;
+
+	{ stepTimer64kHz, nextFracTimer64kHz }	=
+		{ 1'b0, fracTimer64kHz } + 21'h037E;
+
+`endif
+
+`ifdef jx2_cpu_mmioclock_50
+
+	{ stepTimer1MHz, nextFracTimer1MHz }	=
+		{ 1'b0, fracTimer1MHz } + 17'h0520;
+
+	{ stepTimer4MHz, nextFracTimer4MHz }	=
+		{ 1'b0, fracTimer4MHz } + 17'h1480;
+
+	{ stepTimer64kHz, nextFracTimer64kHz }	=
+		{ 1'b0, fracTimer64kHz } + 21'h0558;
+
+`endif
 
 	{ stepTimer1kHz, nextFracTimer1kHz }	=
 		{ 1'b0, fracTimer1kHz } +

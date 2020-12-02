@@ -270,16 +270,6 @@ reg[63:0]	tVecdRnB;
 reg[63:0]	tNxtVecdRnA;
 reg[63:0]	tNxtVecdRnB;
 
-
-//wire[63:0]	tRegAddRn;		//Rn input value
-//`ifdef jx2_enable_fprs
-//assign tRegAddRn =
-//	(opCmd[5:0]==JX2_UCMD_FLDCX) ?
-//		regValGRm : tRegValRs;
-//`else
-//assign tRegAddRn = tRegValRs;
-// `endif
-
 reg[63:0]	tRegAddRs;		//Rn input value
 reg[63:0]	tRegAddRt;		//Rn input value
 
@@ -295,9 +285,7 @@ wire[1:0]	tRegAddExOK;
 
 FpuAdd	fpu_add(
 	clock,		reset,
-//	exHold,
 	tAddExHold,
-//	tRegValRt,	tRegAddRn,
 	tRegAddRt,	tRegAddRs,
 	tRegAddVal,	tRegAddExOp,
 	tRegAddExOK);
@@ -305,9 +293,7 @@ FpuAdd	fpu_add(
 reg[63:0]	tRegMulValL;	//Rn output value (last cycle)
 wire[63:0]	tRegMulVal;		//Rn output value
 FpuMul	fpu_mul(
-//	clock,		reset,		exHold,
 	clock,		reset,		tAddExHold,
-//	tRegValRt,	tRegValRs,	tRegMulVal);
 	tRegAddRt,	tRegAddRs,	tRegMulVal);
 
 wire	tFpuIsFpu3;
@@ -324,8 +310,6 @@ assign	tRegAddExOp	=
 	(tExCmdIsSimd) ? tRegAddSimdExOp :
 	(tFpuIsFpu3 && (tRegIdIxt[3:0]==JX2_UCIX_FPU_FADD[3:0])) ? 2'h1 :
 	(tFpuIsFpu3 && (tRegIdIxt[3:0]==JX2_UCIX_FPU_FSUB[3:0])) ? 2'h2 :
-//	(tFpuIsFpu3 && (tRegIdIxt[3:0]==JX2_UCIX_FPU_PADD[3:0])) ? 2'h1 :
-//	(tFpuIsFpu3 && (tRegIdIxt[3:0]==JX2_UCIX_FPU_PSUB[3:0])) ? 2'h2 :
 	(tFpuIsFldcx && (tRegIdIxt[3:0]==4'h2)) ? 2'h3 :
 	2'h0;
 

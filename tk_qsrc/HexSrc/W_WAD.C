@@ -1398,6 +1398,14 @@ int W_LumpLength(int lump)
 	return lumpinfo[lump].size;
 }
 
+char *W_GetNameForNum(int lump)
+{
+	static char tn[17];
+	memcpy(tn, lumpinfo[lump].name, 16);
+	tn[16]=0;
+	return(tn);
+}
+
 //==========================================================================
 //
 // W_ReadLump
@@ -1468,10 +1476,13 @@ void *W_CacheLumpNum(int lump, int tag)
 	{
 		I_Error("W_CacheLumpNum: %i >= numlumps", lump);
 	}
+
 	if(!lumpcache[lump])
 	{ // Need to read the lump in
 		ptr = Z_Malloc(W_LumpLength(lump)+24, tag, &lumpcache[lump]);
 		W_ReadLump(lump, lumpcache[lump]);
+		
+//		printf("W_CacheLumpNum: %d %s\n", lump, W_GetNameForNum(lump));
 	}
 	else
 	{

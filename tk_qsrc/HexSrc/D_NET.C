@@ -70,6 +70,20 @@ dt_bool                 reboundpacket;
 doomdata_t              reboundstore;
 
 
+#if 0
+int		I_DivTicdup(int v)
+{
+	if(ticdup<2)
+		return(v);
+	if(ticdup<3)
+		return(v>>1);
+	return(v/ticdup);
+}
+#endif
+
+#define		I_DivTicdup(v)	(v)
+
+
 int     NetbufferSize (void)
 {
 	return (nlint)&(((doomdata_t *)0)->cmds[netbuffer->numtics]);
@@ -438,7 +452,7 @@ void NetUpdate (void)
 //
 // build new ticcmds for console player
 //
-	gameticdiv = gametic/ticdup;
+	gameticdiv = I_DivTicdup(gametic);
 	for (i=0 ; i<newtics ; i++)
 	{
 		I_StartTic ();
@@ -803,7 +817,7 @@ void TryRunTics (void)
 //
 // get real tics
 //
-	entertic = I_GetTime ()/ticdup;
+	entertic = I_DivTicdup(I_GetTime ());
 	realtics = entertic - oldentertics;
 	oldentertics = entertic;
 
@@ -821,7 +835,7 @@ void TryRunTics (void)
 			if (nettics[i] < lowtic)
 				lowtic = nettics[i];
 		}
-	availabletics = lowtic - gametic/ticdup;
+	availabletics = lowtic - I_DivTicdup(gametic);
 
 
 //
@@ -875,7 +889,7 @@ if (debugfile)
 	//
 	// wait for new tics if needed
 	//
-		while (lowtic < gametic/ticdup + counts)
+		while (lowtic < I_DivTicdup(gametic) + counts)
 		{
 
 			NetUpdate ();
@@ -885,11 +899,11 @@ if (debugfile)
 				if (nodeingame[i] && nettics[i] < lowtic)
 					lowtic = nettics[i];
 
-			if (lowtic < gametic/ticdup)
+			if (lowtic < I_DivTicdup(gametic))
 				I_Error ("TryRunTics: lowtic < gametic");
 
 			// don't stay in here forever -- give the menu a chance to work
-			if (I_GetTime ()/ticdup - entertic >= 20)
+			if (I_DivTicdup(I_GetTime ()) - entertic >= 20)
 			{
 				MN_Ticker ();
 				return;
@@ -903,7 +917,7 @@ if (debugfile)
 	{
 		for (i=0 ; i<ticdup ; i++)
 		{
-			if (gametic/ticdup > lowtic)
+			if (I_DivTicdup(gametic) > lowtic)
 				I_Error ("gametic>lowtic");
 			if (advancedemo)
 				H2_DoAdvanceDemo ();
@@ -919,7 +933,7 @@ if (debugfile)
 				int                     buf;
 				int                     j;
 
-				buf = (gametic/ticdup)%BACKUPTICS;
+				buf = (I_DivTicdup(gametic))%BACKUPTICS;
 				for (j=0 ; j<MAXPLAYERS ; j++)
 				{
 					cmd = &netcmds[j][buf];

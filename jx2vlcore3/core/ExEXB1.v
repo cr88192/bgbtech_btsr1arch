@@ -26,7 +26,7 @@ opUIxt:
 module ExEXB1(
 	clock, reset,
 	opUCmd, opUIxt,
-	exHold,
+	exHold,	opUCmdOut,
 
 	regIdRs,		//Source A, ALU / Base
 	regIdRt,		//Source B, ALU / Index
@@ -51,6 +51,7 @@ input			reset;
 input[7:0]		opUCmd;
 input[7:0]		opUIxt;
 output[1:0]		exHold;
+output[7:0]		opUCmdOut;
 
 input[5:0]		regIdRs;		//Source A, ALU / Base
 input[5:0]		regIdRt;		//Source B, ALU / Index
@@ -117,6 +118,9 @@ reg			tOpEnable;
 
 (* max_fanout = 50 *)
 	reg[5:0]	tOpUCmd1;
+reg[7:0]	tOpUCmd2;
+
+assign		opUCmdOut = tOpUCmd2;
 
 reg tMsgLatch;
 reg tNextMsgLatch;
@@ -157,6 +161,7 @@ begin
 `endif
 
 	tOpUCmd1	= tOpEnable ? opUCmd[5:0] : JX2_UCMD_NOP;
+	tOpUCmd2	= { JX2_IXC_AL, tOpUCmd1 };
 
 	case(tOpUCmd1)
 		JX2_UCMD_NOP: begin

@@ -66,6 +66,8 @@ MMIO Space:
 
 `ifdef jx2_enable_dualcore
 `include "ExMemJoin.v"
+`else
+`include "ExMemJoinSc.v"
 `endif
 
 `include "MmiModGpio.v"
@@ -82,8 +84,17 @@ MMIO Space:
 
 module CoreUnit(
 	/* verilator lint_off UNUSED */
-	clock_100,		clock_200,
-	clock_50,	reset,
+	clock_200,
+	clock_150,
+	clock_100,
+	clock_75,
+	clock_50,
+
+	reset_200,
+	reset_150,
+	reset_100,
+	reset_75,
+	reset_50,
 
 	ddrDataI,	ddrDataO,	ddrDataEn,
 	ddrAddr,	ddrBa,
@@ -122,10 +133,18 @@ module CoreUnit(
 	dbg_outStatus8
 	);
 
-input			clock_100;
 input			clock_200;
+input			clock_150;
+input			clock_100;
+input			clock_75;
 input			clock_50;
-input			reset;
+
+input			reset_200;
+input			reset_150;
+input			reset_100;
+input			reset_75;
+input			reset_50;
+
 // inout[31:0]		gpioPins;
 // inout[15:0]		fixedPins;
 
@@ -276,15 +295,87 @@ reg			reset_sanity;
 // reg			reset2;
 // assign		reset_sanity = (regInitSanity!=8'h55);
 // assign		reset2 = reset || reset_sanity;
-wire			reset2;
-assign		reset2 = reset;
 
+wire			reset2_master;
+wire			reset2_mmio;
+wire			reset2_cpu;
+wire			reset2_ddr;
+
+wire			reset2_100;
+
+assign		reset2_100 = reset_100;
+
+wire		clock_master;
+wire		clock_mmio;
 wire		clock_cpu;
+wire		clock_ddr;
+
+`ifdef jx2_cpu_masterclock_50
+assign		clock_master	= clock_50;
+assign		reset2_master	= reset_50;
+assign		clock_cpu		= clock_50;
+assign		reset2_cpu		= reset_50;
+`endif
+
+`ifdef jx2_cpu_masterclock_150
+assign		clock_master	= clock_150;
+assign		reset2_master	= reset_150;
+
 `ifdef jx2_cpu_halfclock
-// assign	clock_cpu	= clock_halfMhz;
-assign	clock_cpu	= clock_50;
+assign		clock_cpu	= clock_75;
+assign		reset2_cpu	= reset_75;
 `else
-assign	clock_cpu	= clock_100;
+assign		clock_cpu	= clock_150;
+assign		reset2_cpu	= reset_150;
+`endif
+`endif
+
+`ifdef jx2_cpu_masterclock_100
+assign		clock_master	= clock_100;
+assign		reset2_master	= reset_100;
+
+`ifdef jx2_cpu_halfclock
+assign		clock_cpu	= clock_50;
+assign		reset2_cpu	= reset_50;
+`else
+assign		clock_cpu	= clock_100;
+assign		reset2_cpu	= reset_100;
+`endif
+`endif
+
+`ifdef jx2_cpu_mmioclock_75
+assign		clock_mmio		= clock_75;
+assign		reset2_mmio		= reset_75;
+`endif
+
+`ifdef jx2_cpu_mmioclock_150
+assign		clock_mmio		= clock_150;
+assign		reset2_mmio		= reset_150;
+`endif
+
+`ifdef jx2_cpu_mmioclock_100
+assign		clock_mmio		= clock_100;
+assign		reset2_mmio		= reset_100;
+`endif
+
+`ifdef jx2_cpu_mmioclock_50
+assign		clock_mmio		= clock_50;
+assign		reset2_mmio		= reset_50;
+`endif
+
+`ifdef jx2_cpu_ddrclock_150
+assign		clock_ddr		= clock_150;
+assign		reset2_ddr		= reset_150;
+`endif
+
+`ifdef jx2_cpu_ddrclock_100
+assign		clock_ddr		= clock_100;
+assign		reset2_ddr		= reset_100;
+`endif
+
+`ifdef jx2_cpu_ddrclock_200
+assign		clock_ddr		= clock_200;
+assign		reset2_ddr		= reset_200;
 `endif
 
 wire	timer4MHz;
@@ -303,15 +394,16 @@ reg		timerNoiseL6;
 reg		timerNoiseL7;
 
 MmiModClkp		clkp(
-	clock_100,	reset2,
+//	clock_100,	reset2_100,
+	clock_mmio,	reset2_mmio,
 	timer4MHz,
 	timer1MHz,
 	timer64kHz,
 	timer1kHz,
 	timer256Hz);
 
-wire[127:0]		ddrMemDataIn;
-wire[127:0]		ddrMemDataOut;
+`wire_ddrtile	ddrMemDataIn;
+`wire_ddrtile	ddrMemDataOut;
 wire[31:0]		ddrMemAddr;
 wire[4:0]		ddrMemOpm;
 wire[1:0]		ddrMemOK;
@@ -321,8 +413,10 @@ wire[13:0]		ddrAddr1;		//Address pins
 assign		ddrAddr = ddrAddr1[13:0];
 
 MmiModDdr3		ddr(
-	clock_100,		clock_200,
-	reset2,
+//	clock_100,		clock_200,
+//	clock_master,	clock_200,
+	clock_master,	clock_ddr,
+	reset2_master,	reset2_ddr,
 
 	ddrMemDataIn,	ddrMemDataOut,
 	ddrMemAddr,		ddrMemOpm,
@@ -335,19 +429,35 @@ MmiModDdr3		ddr(
 	ddrDqsP_I,	ddrDqsN_I,
 	ddrDqsP_O,	ddrDqsN_O,	ddrDqs_En);
 
+reg[63:0]		mmioInData_L;
+reg[1:0]		mmioOK_L;
+reg[63:0]		mmioBusExc_L;
+
+reg[63:0]		mmioBusExc;
+reg[63:0]		mmioBusExc_A2;
+reg[63:0]		mmioBusExc_A1;
+reg[63:0]		mmioBusExc_A0;
+reg[63:0]		mmioBusExcIn;
+
+reg[63:0]		memNxtBusExcIn;
+reg[63:0]		memBusExcIn;
+
 
 `ifdef jx2_enable_dualcore
 
-wire[127:0]		memInData;
-wire[127:0]		memOutData;
+`wire_tile		memInData;
+`wire_tile		memOutData;
 wire[47:0]		memAddr;
 wire[47:0]		memAddrB;
 wire[4:0]		memOpm;
 wire[1:0]		memOK;
-reg[63:0]		memBusExc;
 
+// reg[63:0]		memBusExcIn;
+
+reg[7:0]		timers_A2;
+reg[7:0]		timers_A1;
+reg[7:0]		timers_A0;
 reg[7:0]		timers;
-
 
 wire[47:0]		dbgOutPc;
 wire[95:0]		dbgOutIstr;
@@ -370,8 +480,8 @@ wire			dbgOutStatus7;
 wire			dbgOutStatus8;
 
 
-wire[127:0]		mem1InData;
-wire[127:0]		mem1OutData;
+`wire_tile		mem1InData;
+`wire_tile		mem1OutData;
 wire[47:0]		mem1AddrA;
 wire[47:0]		mem1AddrB;
 wire[4:0]		mem1Opm;
@@ -399,7 +509,7 @@ wire			dbg1OutStatus7;
 wire			dbg1OutStatus8;
 
 ExUnit	cpu1(
-	clock_cpu, 		reset2,
+	clock_cpu, 		reset2_cpu,
 	{ 4'h0, timers },
 
 	mem1AddrA,		mem1AddrB,
@@ -421,8 +531,8 @@ ExUnit	cpu1(
 	);
 
 
-wire[127:0]		mem2InData;
-wire[127:0]		mem2OutData;
+`wire_tile		mem2InData;
+`wire_tile		mem2OutData;
 wire[47:0]		mem2AddrA;
 wire[47:0]		mem2AddrB;
 wire[4:0]		mem2Opm;
@@ -450,7 +560,7 @@ wire			dbg2OutStatus7;
 wire			dbg2OutStatus8;
 
 ExUnit	cpu2(
-	clock_cpu, 		reset2,
+	clock_cpu, 		reset2_cpu,
 	{ 4'h1, timers },
 
 	mem2AddrA,		mem2AddrB,
@@ -494,11 +604,11 @@ assign		dbgOutStatus7 = dbg1OutStatus7 || dbg2OutStatus7;
 assign		dbgOutStatus8 = dbg1OutStatus8 || dbg2OutStatus8;
 
 ExMemJoin	cpuJoin(
-	clock_cpu,	reset2,
+	clock_cpu,	clock_master,	reset2_cpu,
 	memInData,	memOutData,
 	memAddr,	memAddrB,
 	memOpm,		memOK,
-	memBusExc,
+	memBusExcIn,
 
 	mem1InData,	mem1OutData,
 	mem1AddrA,	mem1AddrB,
@@ -513,14 +623,26 @@ ExMemJoin	cpuJoin(
 
 `else
 
-wire[127:0]		memInData;
-wire[127:0]		memOutData;
+`wire_tile		memInData;
+`wire_tile		memOutData;
 wire[47:0]		memAddr;
 wire[47:0]		memAddrB;
 wire[4:0]		memOpm;
 wire[1:0]		memOK;
-reg[63:0]		memBusExc;
 
+`wire_tile		mem1InData;
+`wire_tile		mem1OutData;
+wire[47:0]		mem1AddrA;
+wire[47:0]		mem1AddrB;
+wire[4:0]		mem1Opm;
+wire[1:0]		mem1OK;
+wire[63:0]		mem1BusExc;
+
+// reg[63:0]		memBusExcIn;
+
+reg[7:0]		timers_A2;
+reg[7:0]		timers_A1;
+reg[7:0]		timers_A0;
 reg[7:0]		timers;
 
 
@@ -545,13 +667,13 @@ wire			dbgOutStatus7;
 wire			dbgOutStatus8;
 
 ExUnit	cpu(
-	clock_cpu, 		reset2,
+	clock_cpu, 		reset2_cpu,
 	{ 4'h0, timers },
 
-	memAddr,		memAddrB,
-	memInData,		memOutData,
-	memOpm,			memOK,
-	memBusExc,
+	mem1AddrA,		mem1AddrB,
+	mem1InData,		mem1OutData,
+	mem1Opm,		mem1OK,
+	mem1BusExc,
 	
 	dbgOutPc,		dbgOutIstr,
 	dbgExHold1,		dbgExHold2,
@@ -566,16 +688,51 @@ ExUnit	cpu(
 	dbgOutStatus7,	dbgOutStatus8
 	);
 
+ExMemJoinSc	cpuJoin(
+	clock_cpu,	clock_master,	reset2_cpu,
+	memInData,	memOutData,
+	memAddr,	memAddrB,
+	memOpm,		memOK,
+	memBusExcIn,
+
+	mem1InData,	mem1OutData,
+	mem1AddrA,	mem1AddrB,
+	mem1Opm,	mem1OK,
+	mem1BusExc
+	);
+
 `endif
 
 
 // reg[31:0]		mmioInData;
-wire[31:0]		mmioOutData;
+wire[63:0]		mmioOutDataQ_A0;
+wire[31:0]		mmioAddr_A0;
+wire[4:0]		mmioOpm_A0;
+reg[63:0]		mmioOutDataQ_A1;
+reg[31:0]		mmioAddr_A1;
+reg[4:0]		mmioOpm_A1;
+reg[63:0]		mmioOutDataQ_A2;
+reg[31:0]		mmioAddr_A2;
+reg[4:0]		mmioOpm_A2;
+reg[63:0]		mmioOutDataQ_A3;
+reg[31:0]		mmioAddr_A3;
+reg[4:0]		mmioOpm_A3;
+reg[63:0]		mmioOutDataQ;
+reg[31:0]		mmioAddr;
+reg[4:0]		mmioOpm;
+
 reg[63:0]		mmioInData;
-wire[63:0]		mmioOutDataQ;
-wire[31:0]		mmioAddr;
-wire[4:0]		mmioOpm;
 reg[1:0]		mmioOK;
+reg[63:0]		mmioInData_A3;
+reg[1:0]		mmioOK_A3;
+reg[63:0]		mmioInData_A2;
+reg[1:0]		mmioOK_A2;
+reg[63:0]		mmioInData_A1;
+reg[1:0]		mmioOK_A1;
+reg[63:0]		mmioInData_A0;
+reg[1:0]		mmioOK_A0;
+
+wire[31:0]		mmioOutData;
 assign		mmioOutData = mmioOutDataQ[31:0];
 
 `ifdef def_true
@@ -607,7 +764,8 @@ assign			fixedPinsIn[15:2] = 0;
 assign			gpioPinsIn = 0;
 
 MmiModGpio	gpio(
-	clock_100,			reset2,
+//	clock_100,		reset2_100,
+	clock_mmio,		reset2_mmio,
 	gpioPinsOut,	gpioPinsIn,		gpioPinsDir,
 	fixedPinsOut,	fixedPinsIn,
 	outTimer1MHz,	outTimer100MHz,
@@ -622,7 +780,8 @@ MmiModGpio	gpio(
 wire[63:0]		memBounceIrq;
 
 MemL2A	l2a(
-	clock_100,		reset2,
+//	clock_100,		reset2_100,
+	clock_master,	reset2_master,
 
 	memAddr,		memAddrB,
 	memOutData,		memInData,
@@ -633,9 +792,9 @@ MemL2A	l2a(
 	ddrMemDataOut,	ddrMemDataIn,
 	ddrMemOK,
 
-	mmioAddr,		mmioOpm,
-	mmioInData,		mmioOutDataQ,
-	mmioOK
+	mmioAddr_A0,	mmioOpm_A0,
+	mmioInData_A0,	mmioOutDataQ_A0,
+	mmioOK_A0
 	);
 
 wire[15:0]	scrnPwmOut;
@@ -650,7 +809,9 @@ assign	vgaHsync	= scrnPwmOut[12];
 assign	vgaVsync	= scrnPwmOut[13];
 
 ModTxtNtW	scrn(
-	clock_100,		reset2,				scrnPwmOut,
+//	clock_100,		reset2_100,
+	clock_mmio,		reset2_mmio,
+	scrnPwmOut,
 	mmioOutDataQ,	scrnMmioOutData,	mmioAddr,
 	mmioOpm,		scrnMmioOK,
 	timerNoise,		timer256Hz);
@@ -670,7 +831,8 @@ wire[7:0]	audAuxPcmL;
 wire[7:0]	audAuxPcmR;
 
 ModAudPcm	pcm(
-	clock_100,		reset2,
+//	clock_100,		reset2_100,
+	clock_mmio,		reset2_mmio,
 	audPwmOut,		audPwmEna,
 	audAuxPcmL,		audAuxPcmR,
 	mmioOutData,	audMmioOutData,		mmioAddr,
@@ -682,7 +844,8 @@ wire[31:0]	fmMmioOutData;
 wire[1:0]	fmMmioOK;
 
 ModAudFm	fmsyn(
-	clock_100,		reset2,
+//	clock_100,		reset2_100,
+	clock_mmio,		reset2_mmio,
 	audAuxPcmL,		audAuxPcmR,
 	mmioOutData,	fmMmioOutData,		mmioAddr,
 	mmioOpm,		fmMmioOK,
@@ -723,13 +886,25 @@ reg			ps2kb_dati;
 // assign	ps2kb_clki = ps2kb_clk_i;
 // assign	ps2kb_dati = ps2kb_data_i;
 
+wire[1:0]	ps2_clkdat_i;
+wire[1:0]	ps2_clkdat_o;
+wire[1:0]	ps2_clkdat_d;
+
+assign		ps2_clkdat_i = { ps2kb_clk_i, ps2kb_data_i };
+
+assign		ps2kb_clk_o = ps2_clkdat_o[1];
+assign		ps2kb_data_o = ps2_clkdat_o[0];
+assign		ps2kb_clk_d = ps2_clkdat_d[1];
+assign		ps2kb_data_d = ps2_clkdat_d[0];
 
 ModPs2Kb	ps2kb(
-	clock_100,			reset2,
-//	ps2kb_clk_i,		ps2kb_clk_o,		ps2kb_clk_d,	
-	ps2kb_clki,		ps2kb_clk_o,		ps2kb_clk_d,	
-//	ps2kb_data_i,		ps2kb_data_o,		ps2kb_data_d,
-	ps2kb_dati,		ps2kb_data_o,		ps2kb_data_d,
+//	clock_100,		reset2_100,
+	clock_mmio,		reset2_mmio,
+//	ps2kb_clk_i,	ps2kb_clk_o,	ps2kb_clk_d,	
+//	ps2kb_clki,		ps2kb_clk_o,	ps2kb_clk_d,	
+//	ps2kb_data_i,	ps2kb_data_o,	ps2kb_data_d,
+//	ps2kb_dati,		ps2kb_data_o,	ps2kb_data_d,
+	ps2_clkdat_i,	ps2_clkdat_o,	ps2_clkdat_d,
 	mmioOutData,	kbMmioOutData,	mmioAddr,
 	mmioOpm,		kbMmioOK);
 
@@ -737,7 +912,8 @@ wire[63:0]	sdMmioOutData;
 wire[1:0]	sdMmioOK;
 
 ModSdSpi	sdspi(
-	clock_100,			reset2,
+//	clock_100,		reset2_100,
+	clock_mmio,		reset2_mmio,
 	sdc_sclk,		sdc_di,
 	sdc_do,			sdc_cs,
 	mmioOutDataQ,	sdMmioOutData,	mmioAddr,
@@ -762,7 +938,8 @@ wire[7:0]		ssOutCharBit;
 wire[7:0]		ssOutSegBit;
 
 Mod7Seg		sevSeg(
-	clock_100,		reset2,
+//	clock_100,		reset2_100,
+	clock_mmio,		reset2_mmio,
 	sevSegVal,		timer1kHz,	timerNoise,
 	ssOutCharBit,	ssOutSegBit);
 
@@ -784,7 +961,8 @@ begin
 	mmioInData	= UV64_00;
 	mmioOK		= UMEM_OK_READY;
 
-	memBusExc			= UV64_00;
+//	memBusExc			= UV64_00;
+	mmioBusExc			= UV64_00;
 	tNxtBusMissLatch	= 0;
 	tNxtBusMissCnt		= 0;
 
@@ -809,12 +987,12 @@ begin
 
 	if(timer1kHz && !timer1kHzL)
 //	if(timer256Hz)
-		memBusExc	= { UV48_00, 16'hC001 };
+		mmioBusExc	= { UV48_00, 16'hC001 };
 
 //	if(gpioBounceIrq[15])
-//		memBusExc	= gpioBounceIrq;
-	if(memBounceIrq[15])
-		memBusExc	= memBounceIrq;
+//		mmioBusExc	= gpioBounceIrq;
+//	if(memBounceIrq[15])
+//		mmioBusExc	= memBounceIrq;
 
 	if(gpioOK != UMEM_OK_READY)
 	begin
@@ -889,7 +1067,7 @@ begin
 	
 	sevSegVal			<= dbgOutPc[31:0];
 	
-	timers				<= {
+	timers_A2			<= {
 		1'b0,
 		1'b0,
 		timer4MHz,
@@ -899,9 +1077,77 @@ begin
 		timer256Hz,
 		timerNoise
 	};
+	
+	timers_A1	<= timers_A2;
+	timers_A0	<= timers_A1;
+	timers		<= timers_A0;
+
 end
 
-always @(posedge clock_100)
+always @*
+begin
+	memNxtBusExcIn = mmioBusExcIn;
+
+	if(memBounceIrq[15])
+		memNxtBusExcIn	= memBounceIrq;
+end
+
+
+always @(posedge clock_master)
+begin
+	memBusExcIn		<= memNxtBusExcIn;
+
+`ifdef jx2_mmio_exbuf
+	mmioInData_A3	<= mmioInData_L;
+	mmioOK_A3		<= mmioOK_L;
+	mmioInData_A2	<= mmioInData_A3;
+	mmioOK_A2		<= mmioOK_A3;
+	mmioInData_A1	<= mmioInData_A2;
+	mmioOK_A1		<= mmioOK_A2;
+	mmioInData_A0	<= mmioInData_A1;
+	mmioOK_A0		<= mmioOK_A1;
+
+	mmioBusExc_A2	<= mmioBusExc_L;
+	mmioBusExc_A1	<= mmioBusExc_A2;
+	mmioBusExc_A0	<= mmioBusExc_A1;
+	mmioBusExcIn	<= mmioBusExc_A0;
+
+`else
+//	mmioInData_A0	<= mmioInData;
+//	mmioOK_A0		<= mmioOK;
+//	mmioBusExcIn	<= mmioBusExc;
+
+	mmioInData_A0	<= mmioInData_L;
+	mmioOK_A0		<= mmioOK_L;
+	mmioBusExcIn	<= mmioBusExc_L;
+`endif
+end
+
+// always @(posedge clock_100)
+always @(posedge clock_mmio)
+begin
+`ifdef jx2_mmio_exbuf
+	mmioOutDataQ_A1		<= mmioOutDataQ_A0;
+	mmioAddr_A1			<= mmioAddr_A0;
+	mmioOpm_A1			<= mmioOpm_A0;
+	mmioOutDataQ_A2		<= mmioOutDataQ_A1;
+	mmioAddr_A2			<= mmioAddr_A1;
+	mmioOpm_A2			<= mmioOpm_A1;
+	mmioOutDataQ_A3		<= mmioOutDataQ_A2;
+	mmioAddr_A3			<= mmioAddr_A2;
+	mmioOpm_A3			<= mmioOpm_A2;
+	mmioOutDataQ		<= mmioOutDataQ_A3;
+	mmioAddr			<= mmioAddr_A3;
+	mmioOpm				<= mmioOpm_A3;
+`else
+	mmioOutDataQ		<= mmioOutDataQ_A0;
+	mmioAddr			<= mmioAddr_A0;
+	mmioOpm				<= mmioOpm_A0;
+`endif
+end
+
+// always @(posedge clock_100)
+always @(posedge clock_mmio)
 begin
 //	$display("Clock Edge");
 
@@ -921,10 +1167,10 @@ begin
 	timerNoise_S2	<= timerNoise_NS2;
 	timerNoise_S3	<= timerNoise_NS3;
 
-	mmioAddrL1	<= mmioAddr;
-	mmioAddrL2	<= mmioAddrL1;
-	mmioAddrL3	<= mmioAddrL2;
-	mmioAddrL4	<= mmioAddrL3;
+	mmioAddrL1		<= mmioAddr;
+	mmioAddrL2		<= mmioAddrL1;
+	mmioAddrL3		<= mmioAddrL2;
+	mmioAddrL4		<= mmioAddrL3;
 	tBusMissLatch	<= tNxtBusMissLatch;
 	tBusMissCnt		<= tNxtBusMissCnt;
 
@@ -933,6 +1179,10 @@ begin
 
 	ps2kb_clki		<= ps2kb_clk_i;
 	ps2kb_dati		<= ps2kb_data_i;
+
+	mmioInData_L	<= mmioInData;
+	mmioOK_L		<= mmioOK;
+	mmioBusExc_L	<= mmioBusExc;
 
 	tDbgExHold1B		<= tDbgExHold1;
 	tDbgExHold2B		<= tDbgExHold2;

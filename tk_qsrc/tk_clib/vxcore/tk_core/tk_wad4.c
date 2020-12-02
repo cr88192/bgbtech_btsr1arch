@@ -69,7 +69,7 @@ void *TK_Wad4_ZMalloc(int sz, int tag, void **user)
 	return(ptr1);
 }
 
-void TK_Wad4_ZFree(TK_WadZBlock *ptr)
+void TK_Wad4_ZFree(void *ptr)
 {
 	TK_WadZBlock *blk;
 	blk=*(((void **)ptr)-1);
@@ -205,6 +205,60 @@ TK_WadImage *TK_Wad4_OpenImage(TK_FILE *fd)
 	return(img);
 }
 
+TK_WadImage *TK_Wad4_CreateTempRamImage(int dirsz)
+{
+	TK_WadImage *img;
+	TK_Wad4Info *inf;
+	int wadver, hbits, hsz;
+
+	img=TK_Wad4_AllocImage();
+//	img->img_fd=fd;
+	
+	inf=tk_malloc(sizeof(TK_Wad4Info));
+	img->w4inf=(TK_Wad4Lump *)inf;
+	img->wadver=4;
+	
+	inf->numlumps=dirsz;
+
+	if(wadver==4)
+	{
+		img->w4dir=tk_malloc(inf->numlumps*sizeof(TK_Wad4Lump));
+		memset(img->w4dir, 0, inf->numlumps*sizeof(TK_Wad4Lump));
+
+//		tk_fseek(fd, inf->diroffs*64, 0);
+//		tk_fread(img->w4dir, 1, inf->numlumps*sizeof(TK_Wad4Lump), fd);
+		
+		hbits=tk_log2u(inf->numlumps)-4;
+		if(hbits<6)hbits=6;
+		if(hbits>16)hbits=16;
+		hsz=1<<hbits;
+		img->hashsz=hsz;
+		
+		if(inf->numlumps>=65536)
+		{
+			img->hash4=tk_malloc(hsz*4);
+			memset(img->hash4, 1, hsz*4);
+
+//			tk_fseek(fd, inf->hashoffs*64, 0);
+//			tk_fread(img->hash4, 1, hsz*4, fd);
+		}else
+		{
+			img->hash2=tk_malloc(hsz*2);
+			memset(img->hash2, 1, hsz*2);
+
+//			tk_fseek(fd, inf->hashoffs*64, 0);
+//			tk_fread(img->hash2, 1, hsz*2, fd);
+		}
+	}
+	
+	img->lca_data=tk_malloc(inf->numlumps*sizeof(void *));
+//	img->lca_sz=tk_malloc(inf->numlumps*sizeof(int));
+
+	memset(img->lca_data, 0, inf->numlumps*sizeof(void *));
+
+	return(img);
+}
+
 int TK_Wad4_GetLumpSize(TK_WadImage *img, int lump)
 {
 	if(img->w4dir)
@@ -220,6 +274,23 @@ int TK_Wad4_GetLumpSize(TK_WadImage *img, int lump)
 	return(-1);
 }
 
+int TK_Wad4_SetLumpSize(TK_WadImage *img, int lump, int newsz)
+{
+	if(img->w4dir)
+	{
+		img->w4dir[lump].dsize=newsz;
+		return(newsz);
+	}
+
+	if(img->w2dir)
+	{
+		img->w2dir[lump].dsize=newsz;
+		return(newsz);
+	}
+	
+	return(-1);
+}
+
 int TK_Wad4_GetLumpEntType(TK_WadImage *img, int lump)
 {
 	if(img->w4dir)
@@ -230,6 +301,23 @@ int TK_Wad4_GetLumpEntType(TK_WadImage *img, int lump)
 	if(img->w2dir)
 	{
 		return(img->w2dir[lump].ety);
+	}
+	
+	return(-1);
+}
+
+int TK_Wad4_SetLumpEntType(TK_WadImage *img, int lump, int newety)
+{
+	if(img->w4dir)
+	{
+		img->w4dir[lump].ety=newety;
+		return(newety);
+	}
+
+	if(img->w2dir)
+	{
+		img->w2dir[lump].ety=newety;
+		return(newety);
 	}
 	
 	return(-1);
@@ -615,6 +703,43 @@ void *TK_Wad4_GetCacheLumpNumOffs(TK_WadImage *img,
 	return(ptr);
 }
 
+void *TK_Wad4_GetCacheExpandLumpNum(TK_WadImage *img, int lump, int newsz)
+{
+	void *ptr, *ptr1;
+	int sz, fxi, sz1, cmp;
+
+	sz=TK_Wad4_GetLumpSize(img, lump);
+	if(sz>=newsz)
+	{
+		ptr=TK_Wad4_GetCacheLumpNum(img, lump, &sz);
+		return(ptr);
+	}
+	
+	ptr=img->lca_data[lump];
+
+	fxi=TK_Wad4_SizeToFxiU(newsz);
+	sz1=TK_Wad4_FxiToSize(fxi);
+	if(sz1<256)sz1=256;
+
+	ptr1=TK_Wad4_ZMalloc(sz1, TK_W4PU_CACHE, img->lca_data+lump);
+	img->lca_data[lump]=ptr1;
+	TK_Wad4_SetLumpSize(img, lump, newsz);
+
+	if(ptr)
+	{
+		memcpy(ptr1, ptr, sz);
+		TK_Wad4_ZFree(ptr);
+	}
+	
+	return(ptr1);
+
+//	if(sz<=0)
+//	{
+//		if(rsz)
+//			*rsz=0;
+//		return(NULL);
+//	}
+}
 
 int TK_Wad4_HashIndexForName16(char *s)
 {

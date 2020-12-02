@@ -324,7 +324,13 @@ getsfx
 		sfxlump = W_GetNumForName(name);
 	}
 	
+	if(sfxlump<0)
+		return(NULL);
+	
 	size = W_LumpLength( sfxlump );
+
+	if(size<=0)
+		return(NULL);
 
 	// Debug.
 	// fprintf( stderr, "." );
@@ -337,6 +343,19 @@ getsfx
 	tg	= ((short *)sfx)[0];
 	rt	= ((short *)sfx)[1];
 	len	= ((short *)sfx)[2];
+
+	if(tg==7)
+	{
+		if(len>((size-8)*2))
+			len=(size-8)*2;
+	}else
+	{
+		if(len>(size-8))
+			len=size-8;
+	}
+
+	if(len<=0)
+		return(NULL);
 
 	// Pads the sound effect out to the mixing buffer size.
 	// The original realloc would interfere with zone memory.
@@ -371,8 +390,10 @@ getsfx
 	}else
 	{
 		// Now copy and pad.
-		memcpy(	paddedsfx, sfx, size );
-		for (i=size ; i<paddedsize+8 ; i++)
+//		memcpy(	paddedsfx, sfx, size );
+		memcpy(	paddedsfx, sfx, len );
+//		for (i=size ; i<paddedsize+8 ; i++)
+		for (i=len ; i<paddedsize+8 ; i++)
 			paddedsfx[i] = 128;
 	}
 

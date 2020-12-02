@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
 //	fclose(fdod);
 #endif
 
-#if 1
+#if 0
 	n=(sz+15)/16;
 	
 	fdoa=fopen("bootrom_1a.txt", "wt");
@@ -100,6 +100,68 @@ int main(int argc, char *argv[])
 	fclose(fdod);
 #endif
 	
+#if 1
+	n=(sz+31)/32;
+	
+	fdoa=fopen("bootrom_2.txt", "wt");
+	
+	for(i=0; i<n; i++)
+	{
+		va=*(u32 *)(ibuf+i*32+ 0);
+		vb=*(u32 *)(ibuf+i*32+ 4);
+		vc=*(u32 *)(ibuf+i*32+ 8);
+		vd=*(u32 *)(ibuf+i*32+12);
+		ve=*(u32 *)(ibuf+i*32+16);
+		vf=*(u32 *)(ibuf+i*32+20);
+		vg=*(u32 *)(ibuf+i*32+24);
+		vh=*(u32 *)(ibuf+i*32+28);
+
+		fprintf(fdoa, "%08X", vh);
+		fprintf(fdoa, "%08X", vg);
+		fprintf(fdoa, "%08X", vf);
+		fprintf(fdoa, "%08X", ve);
+		fprintf(fdoa, "%08X", vd);
+		fprintf(fdoa, "%08X", vc);
+		fprintf(fdoa, "%08X", vb);
+		fprintf(fdoa, "%08X\n", va);
+	}
+	
+	fclose(fdoa);
+#endif
+
+#if 1
+	n=(sz+31)/32;
+	
+	fdoa=fopen("bootrom_2a.txt", "wt");
+	fdob=fopen("bootrom_2b.txt", "wt");
+	
+	for(i=0; i<n; i++)
+	{
+		va=*(u32 *)(ibuf+i*32+ 0);
+		vb=*(u32 *)(ibuf+i*32+ 4);
+		vc=*(u32 *)(ibuf+i*32+ 8);
+		vd=*(u32 *)(ibuf+i*32+12);
+
+		ve=*(u32 *)(ibuf+i*32+16);
+		vf=*(u32 *)(ibuf+i*32+20);
+		vg=*(u32 *)(ibuf+i*32+24);
+		vh=*(u32 *)(ibuf+i*32+28);
+
+		fprintf(fdoa, "%08X", vd);
+		fprintf(fdoa, "%08X", vc);
+		fprintf(fdoa, "%08X", vb);
+		fprintf(fdoa, "%08X\n", va);
+
+		fprintf(fdob, "%08X", vh);
+		fprintf(fdob, "%08X", vg);
+		fprintf(fdob, "%08X", vf);
+		fprintf(fdob, "%08X\n", ve);
+	}
+	
+	fclose(fdoa);
+	fclose(fdob);
+#endif
+
 #if 0
 	n=(sz+31)/32;
 	

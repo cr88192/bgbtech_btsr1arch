@@ -103,6 +103,7 @@ begin
 	tRegHeld		= 0;
 	tNextMsgLatch	= 0;
 
+`ifndef def_true
 	casez( { opBraFlush, opUCmd[7:6], regInLastSr[0] } )
 		4'b000z: 	tOpEnable = 1;
 		4'b001z: 	tOpEnable = 0;
@@ -112,7 +113,9 @@ begin
 		4'b0111: 	tOpEnable = 0;
 		4'b1zzz: 	tOpEnable = 0;
 	endcase
+`endif
 
+	tOpEnable	= !opBraFlush;
 	tOpUCmd1	= tOpEnable ? opUCmd[5:0] : JX2_UCMD_NOP;
 
 	case(tOpUCmd1)
@@ -134,16 +137,8 @@ begin
 		JX2_UCMD_MOV_RM: begin
 		end
 		JX2_UCMD_MOV_MR: begin
-`ifdef jx2_stage_memex3
 			tRegIdRn2	= regIdRm;
 			tRegValRn2	= memDataInB;
-
-			if(memDataInB[31:0]==32'h55BAADAA)
-			begin
-				$display("EX3B: Bad Marker Seen R=%X V=%X",
-					regIdRm, memDataInB);
-			end
-`endif
 		end
 
 		JX2_UCMD_ADDSP: begin

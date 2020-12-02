@@ -74,15 +74,9 @@ DRI Init:
 
 `include "CoreDefs.v"
 
-// `define mod_ddr3_isddr2		//We are dealing with DDR2, not DDR3
-
-// `define mod_ddr_dbgprn		//Debug DDR module
-
-// `define mod_ddr_fastcore		//Use faster clock internally
-// `define mod_ddr_extrabuf		//Do Extra IO Buffering (Clock Crossing)
-
 module MmiModDdr3(
-	clock,		clock2,	reset,
+	clock,		clock2,
+	reset,		reset2,
 	memDataIn,	memDataOut,
 	memAddr,	memOpm,
 	memOK,
@@ -97,8 +91,9 @@ module MmiModDdr3(
 input			clock;
 input			clock2;
 input			reset;
-input[127:0]	memDataIn;
-output[127:0]	memDataOut;
+input			reset2;
+`input_ddrtile	memDataIn;
+`output_ddrtile	memDataOut;
 input[31:0]		memAddr;
 input[4:0]		memOpm;
 output[1:0]		memOK;
@@ -134,6 +129,7 @@ parameter[15:0]	DDR_CAS_RL_M1	= 3;	//CAS RL Minus 1
 // parameter[15:0]	DDR_CAS_WL_M1	= 2;	//CAS WL Minus 1
 parameter[15:0]	DDR_CAS_WL_M1	= 1;	//CAS WL Minus 1
 parameter[15:0]	DDR_RAS_M1		= 8;	//RAS Minus 1
+// parameter[15:0]	DDR_RAS_M1		= 3;	//RAS Minus 1 (~ 40ns needed)
 
 parameter[15:0]	DDR_RAS_INIT	= 128;	//Wait several uS
 
@@ -179,11 +175,14 @@ wire[1:0]		ddrDqs;
 assign			ddrDqs = { ddrDqsN_I[0], ddrDqsP_I[0] };
 
 wire	ddr_coreclock;
+wire	ddr_corereset;
 
 `ifdef mod_ddr_fastcore
 assign	ddr_coreclock = clock2;
+assign	ddr_corereset = reset2;
 `else
 assign	ddr_coreclock = clock;
+assign	ddr_corereset = reset;
 `endif
 
 
@@ -258,22 +257,52 @@ assign		ddrCke	= tDdrLastCke;
 `endif
 
 reg[127:0]		tMemDataOut;
+reg[127:0]		tMemDataOutL;
 reg[1:0]		tMemOK;
-reg[127:0]		tMemDataOut2;
+reg[1:0]		tMemOKL;
+
+`ifdef jx2_mem_ddr32B
+`reg_ddrtile	tMemDataInA;
+`reg_ddrtile	tMemDataOutA;
+`reg_ddrtile	tNxtMemDataOutA;
+reg[1:0]		tMemOKA;
+reg[1:0]		tNxtMemOKA;
+reg[2:0]		tMemStateA;
+reg[2:0]		tNxtMemStateA;
+reg[31:0]		tMemAddrA;
+reg[4:0]		tMemOpmA;
+
+reg[127:0]		tNxtMemDataIn;
+reg[31:0]		tNxtMemAddr;
+reg[4:0]		tNxtMemOpm;
+`endif
+
+`reg_ddrtile	tMemDataOut2;
 reg[1:0]		tMemOK2;
 
 `ifdef mod_ddr_extrabuf
-reg[127:0]		tMemDataOut3;
+`reg_ddrtile	tMemDataOut3;
 reg[1:0]		tMemOK3;
-reg[127:0]		tMemDataOut4;
+`reg_ddrtile	tMemDataOut4;
 reg[1:0]		tMemOK4;
-reg[127:0]		tMemDataOut5;
+`reg_ddrtile	tMemDataOut5;
 reg[1:0]		tMemOK5;
-reg[127:0]		tMemDataOut6;
+`reg_ddrtile	tMemDataOut6;
 reg[1:0]		tMemOK6;
 assign			memOK		= tMemOK6;
 assign			memDataOut	= tMemDataOut6;
-`else
+`endif
+
+`ifdef mod_ddr_basicbuf
+`reg_ddrtile	tMemDataOut3;
+reg[1:0]		tMemOK3;
+`reg_ddrtile	tMemDataOut4;
+reg[1:0]		tMemOK4;
+assign			memOK		= tMemOK4;
+assign			memDataOut	= tMemDataOut4;
+`endif
+
+`ifdef mod_ddr_fastbuf
 assign			memOK		= tMemOK2;
 assign			memDataOut	= tMemDataOut2;
 `endif
@@ -282,23 +311,24 @@ reg[127:0]		tMemDataIn;
 reg[31:0]		tMemAddr;
 reg[4:0]		tMemOpm;
 
-reg[127:0]		tMemDataInB;
+
+`reg_ddrtile	tMemDataInB;
 reg[31:0]		tMemAddrB;
 reg[4:0]		tMemOpmB;
 
-reg[127:0]		tMemDataInC;
+`reg_ddrtile	tMemDataInC;
 reg[31:0]		tMemAddrC;
 reg[4:0]		tMemOpmC;
 
-reg[127:0]		tMemDataInD;
+`reg_ddrtile	tMemDataInD;
 reg[31:0]		tMemAddrD;
 reg[4:0]		tMemOpmD;
 
-reg[127:0]		tMemDataInE;
+`reg_ddrtile	tMemDataInE;
 reg[31:0]		tMemAddrE;
 reg[4:0]		tMemOpmE;
 
-reg[127:0]		tMemDataInF;
+`reg_ddrtile	tMemDataInF;
 reg[31:0]		tMemAddrF;
 reg[4:0]		tMemOpmF;
 
@@ -327,6 +357,11 @@ reg[ 2:0]		accNextBaAddr;
 
 reg[15:0]		accCkCas;		//Clock-CAS / Wait Time
 reg[15:0]		accNextCkCas;
+
+reg				accSkipRowClose;
+reg				accNxtSkipRowClose;
+reg				accSkipRowOpen;
+reg				accNxtSkipRowOpen;
 
 
 reg[15:0]		dreRowAddr;			//DRAM Refresh, Current Row
@@ -384,6 +419,9 @@ begin
 	tDdrDqs			= tDdrClk;
 	tDdrDqs_En		= 0;
 	tNxtPhaseHc		= tPhaseHc;
+
+	accNxtSkipRowClose	= accSkipRowClose;
+	accNxtSkipRowOpen	= accSkipRowOpen;
 
 	if(accState[0])
 	begin
@@ -489,7 +527,13 @@ begin
 
 		accNextState = 6'b000000;
 
-		if(tMemOpm[3] && !driStillInit && !dreIsZero)	/* Load Request */
+		if(tMemOpm[4:3]==2'b11)	/* Swap Request */
+		begin
+			tMemDataOut		= UV128_00;
+			tMemOK			= UMEM_OK_FAULT;
+		end
+		else
+			if(tMemOpm[3] && !driStillInit && !dreIsZero)	/* Load Request */
 		begin
 //			$display("ModDdr: Read Req, A=%X", tMemAddr);
 
@@ -497,6 +541,9 @@ begin
 			if(accCkLo)
 			begin
 				accNextState = 6'b010000;
+
+				if(accSkipRowOpen)
+					accNextState = 6'b010100;
 				
 				accNextAddr	= {4'h0, tMemAddr[27:4], 4'h0};
 
@@ -534,6 +581,9 @@ begin
 				else
 				begin
 					accNextState = 6'b011000;
+
+					if(accSkipRowOpen)
+						accNextState = 6'b011100;
 
 					accNextAddr	= {4'h0, tMemAddr[27:4], 4'h0};
 					accNextRowAddr = accNextAddr[28:13];
@@ -828,6 +878,9 @@ begin
 		tDdrCs	= 0;	tDdrRas	= 1;
 		tDdrCas	= 0;	tDdrWe	= 1;
 
+		if(accSkipRowClose)
+			tDdrAddr[10]	= 0;
+
 		accNextState	= 6'b010101;
 	end
 
@@ -908,6 +961,9 @@ begin
 		tDdrCke	= 1;
 		tDdrCs	= 0;	tDdrRas	= 1;
 		tDdrCas	= 0;	tDdrWe	= 0;
+
+		if(accSkipRowClose)
+			tDdrAddr[10]	= 0;
 
 		accNextState	= 6'b011101;
 	end
@@ -1006,7 +1062,6 @@ begin
 		accNextState			= 6'b100100;
 		accNextReadBlk[63:48]	= ddrData2p;
 //		tDdrDqs_En		= 1;
-// `ifdef mod_ddr3_isddr2
 `ifdef jx2_ddr_bl64b
 		accNextState			= 6'b000001;
 `endif
@@ -1083,7 +1138,6 @@ begin
 		$display("DDR Write Word3 %X (Ck=%d)", tDdrData, clock);
 `endif
 
-// `ifdef mod_ddr3_isddr2
 `ifdef jx2_ddr_bl64b
 		accNextState			= 6'b000001;
 `endif
@@ -1131,6 +1185,155 @@ begin
 
 	endcase
 	
+	
+`ifdef jx2_mem_ddr32B
+	/*
+	 * Deal with 256 bit cache-lines via another state machine.
+	 * Breaks the request into several sub-requests.
+	 */
+
+	tNxtMemDataOutA	= tMemDataOutA;
+	tNxtMemOKA		= tMemOKA;
+	tNxtMemStateA	= tMemStateA;
+
+//	if(tMemOpmA[4:3]!=0)
+//		tMemOK		= UMEM_OK_HOLD;
+
+//	if(tMemOK == UMEM_OK_HOLD)
+//		tNxtMemOKA = UMEM_OK_HOLD;
+
+	tNxtMemDataIn	= tMemDataIn;
+	tNxtMemAddr		= tMemAddr;
+	tNxtMemOpm		= tMemOpm;
+
+`ifndef def_true
+	if(tMemOpmA!=0)
+	begin
+		$display("DDR: State=%X OPMA=%X OKA=%X",
+			tNxtMemStateA, tMemOpmA, tMemOKA);
+		$display("DDR: OPMi=%X OKi=%X",
+			tMemOpm, tMemOK);
+	end
+`endif
+
+	case(tMemOKL)
+		UMEM_OK_READY: begin
+			case(tMemStateA)
+				3'b000: begin
+					tNxtMemOKA = UMEM_OK_READY;
+					if(tMemOpmA[4:3]==2'b11)
+					begin
+						tNxtMemStateA	= 3'b101;
+					end
+					else if(tMemOpmA[4:3]!=2'b00)
+					begin
+						tNxtMemStateA	= 3'b001;
+
+//						tNxtMemDataIn	= tMemDataInA[127:0];
+//						tNxtMemOpm		= tMemOpmA;
+//						tNxtMemAddr		= tMemAddrA;
+					end
+				end
+				
+				3'b001: begin
+					accNxtSkipRowClose	= 1;
+					accNxtSkipRowOpen	= 0;
+					tNxtMemDataIn	= tMemDataInA[127:0];
+					tNxtMemOpm		= tMemOpmA;
+					tNxtMemAddr		= tMemAddrA;
+					tNxtMemOKA		= UMEM_OK_HOLD;
+				end
+
+				3'b010, 3'b011: begin
+					accNxtSkipRowClose	= 0;
+					accNxtSkipRowOpen	= 1;
+					tNxtMemDataIn	= tMemDataInA[255:128];
+					tNxtMemOpm		= tMemOpmA;
+					tNxtMemAddr		= tMemAddrA;
+					tNxtMemAddr[5]	= 1;
+					tNxtMemOKA		= UMEM_OK_HOLD;
+					tNxtMemStateA	= 3'b011;
+				end
+
+				3'b100: begin
+					accNxtSkipRowClose	= 0;
+					accNxtSkipRowOpen	= 0;
+
+					tNxtMemOpm		= UMEM_OPM_READY;
+					tNxtMemOKA		= UMEM_OK_OK;
+//					if(tMemOpmA == UMEM_OPM_READY)
+					if(tMemOpmA[4:3]==2'b00)
+						tNxtMemStateA	= 3'b000;
+				end
+				3'b101: begin
+					accNxtSkipRowClose	= 0;
+					accNxtSkipRowOpen	= 0;
+
+					tNxtMemOpm		= UMEM_OPM_READY;
+					tNxtMemOKA		= UMEM_OK_FAULT;
+//					if(tMemOpmA == UMEM_OPM_READY)
+					if(tMemOpmA[4:3]==2'b00)
+						tNxtMemStateA	= 3'b000;
+				end
+				
+				default: begin
+					tNxtMemOpm		= UMEM_OPM_READY;
+					tNxtMemOKA		= UMEM_OK_FAULT;
+//					if(tMemOpmA == UMEM_OPM_READY)
+					if(tMemOpmA[4:3]==2'b00)
+						tNxtMemStateA	= 3'b000;
+				end
+			
+			endcase
+			
+		end
+		UMEM_OK_OK: begin
+			case(tMemStateA)
+				3'b000: begin
+					/* Wait for READY */
+				end
+				3'b010: begin
+					/* Wait for READY */
+				end
+				3'b100: begin
+					/* Wait for READY */
+				end
+
+				3'b001: begin
+					tNxtMemDataOutA[127:0]		= tMemDataOutL;
+					tNxtMemStateA				= 3'b010;
+				end
+				3'b011: begin
+					tNxtMemDataOutA[255:128]	= tMemDataOutL;
+					tNxtMemStateA				= 3'b100;
+				end
+				
+				default: begin
+					/* Wait for READY */
+				end
+			endcase
+			
+			tNxtMemOpm = UMEM_OPM_READY;
+		end
+		UMEM_OK_HOLD: begin
+			/* Wait for state to update. */
+		end
+		UMEM_OK_FAULT: begin
+			/* Faulted, send back result. */
+			tNxtMemDataOutA[127:0]		= tMemDataOutL;
+			tNxtMemStateA				= 3'b101;
+		end
+	endcase
+	
+	if(reset)
+	begin
+		accNxtSkipRowClose	= 0;
+		accNxtSkipRowOpen	= 0;
+		tNxtMemOpm = 0;
+	end
+	
+`endif
+	
 	if(tReset)
 	begin
 		accNextState		= 0;
@@ -1174,30 +1377,49 @@ begin
 
 	tCheckOK4		<= (tMemOK5 == tMemOK4);
 
-//	if(tCheckOK4)
-//	begin
-		tMemOK6			<= tMemOK5;
-		tMemDataOut6	<= tMemDataOut5;
-//	end
+	tMemOK6			<= tMemOK5;
+	tMemDataOut6	<= tMemDataOut5;
 
 	tMemDataInB		<= memDataIn;
 	tMemAddrB		<= memAddr;
 	tMemOpmB		<= memOpm;
 
-	tResetB			<= reset;
+//	tResetB			<= reset;
 end
 `endif
+
+
+`ifdef mod_ddr_basicbuf
+always @(posedge clock)
+begin
+	tMemOK3			<= tMemOK2;
+	tMemDataOut3	<= tMemDataOut2;
+
+	tMemOK4			<= tMemOK3;
+	tMemDataOut4	<= tMemDataOut3;
+
+	tMemDataInB		<= memDataIn;
+	tMemAddrB		<= memAddr;
+	tMemOpmB		<= memOpm;
+end
+`endif
+
 
 // always @(posedge clock)
 // always @(posedge clock2)
 always @(posedge ddr_coreclock)
 begin
-
+`ifdef jx2_mem_ddr32B
+	tMemOK2			<= tMemOKA;
+	tMemDataOut2	<= tMemDataOutA;
+`else
 	tMemOK2			<= tMemOK;
 	tMemDataOut2	<= tMemDataOut;
+`endif
 
 `ifdef mod_ddr_extrabuf
-	tResetC			<= tResetB;
+//	tResetC			<= tResetB;
+	tResetC			<= ddr_corereset;
 	tResetD			<= tResetC;
 	tReset			<= tResetD;
 
@@ -1213,20 +1435,55 @@ begin
 	tMemAddrE		<= tMemAddrD;
 	tMemOpmE		<= tMemOpmD;
 
-	tCheckD			<= (tMemOpmE == tMemOpmD);
+//	tCheckD			<= (tMemOpmE == tMemOpmD);
 
-//	if(tCheckD)
-//	begin
-		tMemDataIn		<= tMemDataInE;
-		tMemAddr		<= tMemAddrE;
-		tMemOpm			<= tMemOpmE;
-//	end
+`ifdef jx2_mem_ddr32B
+	tMemDataInA		<= tMemDataInE;
+	tMemAddrA		<= tMemAddrE;
+	tMemOpmA		<= tMemOpmE;
+`else
+	tMemDataIn		<= tMemDataInE;
+	tMemAddr		<= tMemAddrE;
+	tMemOpm			<= tMemOpmE;
+`endif
 
+`endif
+
+`ifdef mod_ddr_basicbuf
+	tResetC			<= ddr_corereset;
+	tResetD			<= tResetC;
+	tReset			<= tResetD;
+
+	tMemDataInC		<= tMemDataInB;
+	tMemAddrC		<= tMemAddrB;
+	tMemOpmC		<= tMemOpmB;
+
+`ifdef jx2_mem_ddr32B
+	tMemDataInA		<= tMemDataInC;
+	tMemAddrA		<= tMemAddrC;
+	tMemOpmA		<= tMemOpmC;
+`else
+	tMemDataIn		<= tMemDataInC;
+	tMemAddr		<= tMemAddrC;
+	tMemOpm			<= tMemOpmC;
+`endif
+
+`endif
+
+`ifdef mod_ddr_fastbuf
+
+`ifdef jx2_mem_ddr32B
+	tMemDataInA		<= memDataIn;
+	tMemAddrA		<= memAddr;
+	tMemOpmA		<= memOpm;
 `else
 	tMemDataIn		<= memDataIn;
 	tMemAddr		<= memAddr;
 	tMemOpm			<= memOpm;
-	tReset			<= reset;
+`endif
+
+//	tReset			<= reset;
+	tReset			<= ddr_corereset;
 `endif
 
 	ddrData2		<= ddrData;
@@ -1234,6 +1491,22 @@ begin
 	ddrData2H		<= ddrData1H;
 	ddrDqs2H		<= ddrDqs1H;
 	tPhaseHc		<= tNxtPhaseHc;
+
+	accSkipRowClose	<= accNxtSkipRowClose;
+	accSkipRowOpen	<= accNxtSkipRowOpen;
+
+`ifdef jx2_mem_ddr32B
+	tMemDataOutL	<= tMemDataOut;
+	tMemOKL			<= tMemOK;
+
+	tMemDataOutA	<= tNxtMemDataOutA;
+	tMemOKA			<= tNxtMemOKA;
+	tMemStateA		<= tNxtMemStateA;
+
+	tMemDataIn		<= tNxtMemDataIn;
+	tMemAddr		<= tNxtMemAddr;
+	tMemOpm			<= tNxtMemOpm;
+`endif
 
 //	ddrData2A		<= ddrData;
 //	ddrData2		<= ddrData2A;

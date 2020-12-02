@@ -4,6 +4,13 @@ Contain L1 Instruction and Data Caches.
 These caches provide a pipelined interface, recieving an address on one cycle, and producing output the next.
 
 These will produce a Hold signal if the request can't be handled immediately, and will not accept new input until the condition is resolved.
+
+FAULT Signal:
+Will interpret the low 16 bits of the Data as an exception code.
+If Bit(15) is Set, this raises an interrupt.
+If Bit(15) is Clear, this indicates a non-critical failure.
+
+In the case of Full-Duplex / Swap operations, a FAULT with a zero exception will indicate that the Swap operation could not be performed with this combination of locations. In this case, the L1 cache should fall back to Half-Duplex Load/Store operations.
 */
 
 `include "MemDcA.v"
@@ -38,7 +45,7 @@ module MemL1A(
 	regInSr,
 	
 	regOutExc,		regTraPc,
-	dcInTraPc,
+	dcInTraPc,		deadlockLatch,
 
 	memAddr,		memAddrB,
 	memDataIn,		memDataOut,
@@ -76,18 +83,20 @@ input[63:0]		regInSr;
 output[63:0]	regOutExc;
 output[63:0]	regTraPc;
 input [63:0]	dcInTraPc;		//input PC
+input			deadlockLatch;	//CPU Is Deadlocked
 
 output[ 47:0]	memAddr;		//Memory address (Primary)
 output[ 47:0]	memAddrB;		//Memory address (Secondary)
 output[  4:0]	memOpm;			//Memory Operation
-input [127:0]	memDataIn;		//Memory Data In
-output[127:0]	memDataOut;		//Memory Data Out
 input [  1:0]	memOK;			//Memory OK
+`input_tile		memDataIn;		//Memory Data In
+`output_tile	memDataOut;		//Memory Data Out
 
 reg[ 47:0]		tMemAddr;		//Memory address
 reg[ 47:0]		tMemAddrB;		//Memory address
 reg[  4:0]		tMemOpm;		//Memory Operation
-reg[127:0]		tMemDataOut;	//Memory Data Out
+
+`reg_tile		tMemDataOut;	//Memory Data Out
 
 reg[63:0]		tRegOutExc;
 reg[63:0]		tRegOutExc2;
@@ -104,7 +113,7 @@ wire[47:0]		tTlbAddrB;
 wire[63:0]		tTlbExc;
 wire[1:0]		tTlbOK;
 wire[4:0]		tTlbOpm;
-wire[127:0]		tTlbDataOut;	//Memory Data Out
+`wire_tile		tTlbDataOut;	//Memory Data Out
 
 assign	memAddr		= tTlbAddr;
 assign	memAddrB	= tTlbAddrB;
@@ -134,7 +143,7 @@ assign	dcOutHold	= tDcOutHold;
 `ifdef jx2_enable_mmu
 
 wire[127:0]		tTlbLdtlbData;
-assign	tTlbLdtlbData = { regInDhr, regInDlr };
+assign			tTlbLdtlbData = { regInDhr, regInDlr };
 
 MmuTlb	tlb(
 	clock,			reset,
@@ -148,15 +157,11 @@ MmuTlb	tlb(
 
 `endif
 
-reg [127:0]		ifMemData;
+`reg_tile		ifMemData;
 reg [  1:0]		ifMemOK;
 wire[ 47:0]		ifMemAddr;
 wire[  4:0]		ifMemOpm;
 reg [  5:0]		ifMemNoRwx;
-
-reg [127:0]		ifMemData2;
-reg [  1:0]		ifMemOK2;
-reg [  5:0]		ifMemNoRwx2;
 
 `ifdef jx2_enable_wex
 MemIcWxA		memIc(
@@ -165,9 +170,13 @@ MemIcWxA		memIc(
 	icOutPcOK,		icOutPcStep,
 	icInPcHold,		icInPcWxe,
 	dcInOpm,		regInSr,
-	ifMemData2,		ifMemAddr,
-	ifMemOpm,		ifMemOK2,
-	ifMemNoRwx2
+	ifMemData,		ifMemAddr,
+	ifMemOpm,		ifMemOK,
+	ifMemNoRwx
+
+//	ifMemData2,		ifMemAddr,
+//	ifMemOpm,		ifMemOK2,
+//	ifMemNoRwx2
 	);
 `else
 MemIcA		memIc(
@@ -188,11 +197,11 @@ wire[  1:0]		dfOutOKB;
 wire[ 47:0]		dfMemAddr;
 wire[ 47:0]		dfMemAddrB;
 wire[  4:0]		dfMemOpm;
-reg [127:0]		dfMemDataIn;
-wire[127:0]		dfMemDataOut;
 reg [  1:0]		dfMemOK;
 reg [  5:0]		dfMemNoRwx;
 reg [ 19:0]		dfMemPaBits;
+`reg_tile		dfMemDataIn;
+`wire_tile		dfMemDataOut;
 
 MemDcA		memDc(
 	clock,			reset,
@@ -217,6 +226,8 @@ reg		tDfNzOpm;
 
 reg		tMsgLatch;
 reg		tNxtMsgLatch;
+reg		tDeadlockLatch;
+reg		tDeadlockLatchL;
 
 always @*
 begin
@@ -233,8 +244,10 @@ begin
 //	tMemAddrB	= UV32_00;
 	tMemAddrB	= UV48_00;
 	tMemOpm		= UMEM_OPM_READY;
+
 //	tMemDataOut	= UV128_XX;
-	tMemDataOut	= UV128_00;
+//	tMemDataOut	= UV128_00;
+	tMemDataOut	= UVTILE_00;
 	
 //	tDcOutOK	= dfOutOK;
 	tDcOutOK	= dfOutOK[1:0];
@@ -260,6 +273,14 @@ begin
 //	dfMemOK	= tDfNzOpm ? UMEM_OK_HOLD : UMEM_OK_READY;
 	dfMemNoRwx	= 0;
 	ifMemNoRwx	= 0;
+	
+	if(memOK == UMEM_OK_FAULT)
+	begin
+		if(memDataIn[15])
+		begin
+			tRegOutExc = { dfMemAddr, memDataIn[15:0] };
+		end
+	end
 
 	if(dfMemOpm == UMEM_OPM_FAULT)
 	begin
@@ -284,15 +305,18 @@ begin
 		tMemAddrB	= 0;
 		tMemOpm		= ifMemOpm;
 //		tMemDataOut	= UV128_XX;
-		tMemDataOut	= UV128_00;
+//		tMemDataOut	= UV128_00;
+		tMemDataOut	= UVTILE_00;
 		tNxtLatchIc	= tIfNzOpm || (memOK != UMEM_OK_READY);
 
 		ifMemNoRwx[5]	= tTlbExc[15];
 
+`ifndef def_true
 		if(tTlbExc[15])
 		begin
 			ifMemData = 128'h30003000_30003000_30003000_30003000;
 		end
+`endif
 
 		if(tMemAccNoRwx[2])
 //			tRegOutExc = {UV16_00, ifMemAddr, 16'h8003 };
@@ -328,11 +352,13 @@ begin
 		end
 `endif
 
+`ifndef def_true
 		if(tTlbExc[15])
 		begin
 			$display("L1A: Inject Bad Marker %X", dfMemAddr);
 			dfMemDataIn = 128'h55BAADAA_55BAADAA_55BAADAA_55BAADAA;
 		end
+`endif
 
 		if(tMemAccNoRwx[0] && tMemAccNoRwx[1])
 //			tRegOutExc = {UV16_00, dfMemAddr, 16'h8001 };
@@ -341,7 +367,8 @@ begin
 		dfMemNoRwx[5]=tTlbExc[15];
 	end
 
-	if((memOK==UMEM_OK_FAULT) && !reset)
+`ifndef def_true
+	if((memOK==UMEM_OK_FAULT) && (memOpm[4:3]!=2'b11) && !reset)
 	begin
 		if(!tMsgLatch)
 		begin
@@ -353,6 +380,7 @@ begin
 //		tRegOutExc = {UV16_00, tMemAddr, 16'h8000 };
 		tRegOutExc = { tMemAddr, 16'h8000 };
 	end
+`endif
 	
 	if(tTlbExc[15] && !reset)
 	begin
@@ -376,15 +404,26 @@ begin
 		tMemDataOut	= { regInDhr, regInDlr };
 	end
 */
+
+	if(tDeadlockLatchL != tDeadlockLatch)
+	begin
+		$display("tLatchIc=%X tLatchDc=%X", tLatchIc, tLatchDc);
+		$display("ifMemOpm=%X dfMemOpm=%X", ifMemOpm, dfMemOpm);
+		$display("AddrA=%X AddrB=%X memOK=%d", memAddr, memAddrB, memOK);
+	end
+
 end
 
 always @(posedge clock)
 begin	
-	ifMemData2		<= ifMemData;
-	ifMemOK2		<= ifMemOK;
-	ifMemNoRwx2		<= ifMemNoRwx;
+//	ifMemData2		<= ifMemData;
+//	ifMemOK2		<= ifMemOK;
+//	ifMemNoRwx2		<= ifMemNoRwx;
 
 	dfMemPaBits		<= memAddr[31:12];
+
+	tDeadlockLatchL	<= tDeadlockLatch;
+	tDeadlockLatch	<= deadlockLatch;
 
 	if(reset)
 	begin

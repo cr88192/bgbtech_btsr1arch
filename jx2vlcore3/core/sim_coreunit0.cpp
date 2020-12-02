@@ -266,6 +266,8 @@ int BTSR1_MainAddTranslateKey(int key)
 	return(0);
 }
 
+int btn_reset;
+
 int BTSR1_MainPollKeyboard(void)
 {
 	u16 *kb;
@@ -399,6 +401,27 @@ int BTSR1_MainPollKeyboard(void)
 	while(*kb)
 	{
 		k=*kb++;
+		
+		if(FRGL_KeyDown(K_SHIFT))
+		{
+			if(k==K_F12)
+			{
+				btn_reset = !btn_reset;
+				
+				if(btn_reset)
+				{
+					printf("\n\n\n\n\n=== RESET ===\n\n\n\n\n");
+				}
+				
+				continue;
+			}
+
+			if(k==(0x8000|K_F12))
+			{
+				continue;
+			}
+		}
+
 		BTSR1_MainAddTranslateKey(k);
 		BTSR1_MainAddKey(k);
 	}
@@ -857,27 +880,45 @@ int update_ps2kb()
 	
 	update_uart();
 	
+//	if(top->clock_50 && !tlclk)
 	if(top->clock_100 && !tlclk)
+//	if(!top->clock_100 && tlclk)
 	{
 		if(xmitpos<=0)
 		{
-			if(ps2kbirov!=ps2kbrov)
+			xmitclk_cnt--;
+			if(xmitclk_cnt<=0)
 			{
-				xmit=ps2kbbuf[ps2kbirov];
-				ps2kbirov=(ps2kbirov+1)&255;
-				xmitpos=11;
-				
-				printf("update_ps2kb: scan=%02X\n", xmit);
+				if(!xmitclk_val)
+				{
+					tclk=1;
+					tdat=1;
+
+					xmitclk_val=1;
+//					xmitclk_cnt=6250;
+					xmitclk_cnt=625;
+				}else
+				{
+					if(ps2kbirov!=ps2kbrov)
+					{
+						xmit=ps2kbbuf[ps2kbirov];
+						ps2kbirov=(ps2kbirov+1)&255;
+						xmitpos=11;
+						
+						printf("update_ps2kb: scan=%02X\n", xmit);
+					}
+
+			//		top->ps2_clk_i=1;
+			//		top->ps2_data_i=1;
+					tclk=1;
+					tdat=1;
+
+					xmitclk_val=1;
+//					xmitclk_cnt=6250;
+					xmitclk_cnt=625;
+					xmit_upd=1;
+				}
 			}
-
-	//		top->ps2_clk_i=1;
-	//		top->ps2_data_i=1;
-			tclk=1;
-			tdat=1;
-
-			xmitclk_val=1;
-			xmitclk_cnt=6250;
-			xmit_upd=1;
 		}else
 		{
 			if(xmit_upd)
@@ -905,7 +946,8 @@ int update_ps2kb()
 			if(xmitclk_cnt<=0)
 			{
 				xmitclk_val=!xmitclk_val;
-				xmitclk_cnt=6250;
+//				xmitclk_cnt=6250;
+				xmitclk_cnt=625;
 	//			top->ps2_clk_i=xmitclk_val;
 				tclk=xmitclk_val;
 				xmit_upd=1;
@@ -916,6 +958,10 @@ int update_ps2kb()
 					pb=pb^b;
 					xmitpos--;
 					xmit_upd=0;
+//					tdat=b;
+				}else
+				{
+					tdat=b;
 				}
 				
 	//			printf("update_ps2kb: clk=%d data=%d\n",
@@ -926,6 +972,7 @@ int update_ps2kb()
 	}
 
 	tlclk=top->clock_100;
+//	tlclk=top->clock_50;
 
 	top->ps2kb_clk_i=tclk;
 	top->ps2kb_data_i=tdat;
@@ -1106,7 +1153,7 @@ int main(int argc, char **argv, char **env)
 	FILE *fd;
 	int lclk, mhz;
 	int sdc_lclk, sdc_lbit;
-	int tt_start, tt_frame;
+	int tt_start, tt_frame, tt_reset;
 	int cnt_dled, cnt_h1, cnt_h2,
 		cnt_d1, cnt_d2, cnt_d3, cnt_d4,
 		cnt_d5, cnt_d6, cnt_d7, cnt_d8;
@@ -1220,6 +1267,7 @@ int main(int argc, char **argv, char **env)
 
 	tt_start=FRGL_TimeMS();
 	tt_frame=tt_start;
+	tt_reset=1024;
 
 	while (!Verilated::gotFinish())
 	{
@@ -1238,7 +1286,8 @@ int main(int argc, char **argv, char **env)
 		cnt_d7+=(top->dbg_outStatus7!=0);
 		cnt_d8+=(top->dbg_outStatus8!=0);
 
-		if(t2>16)
+//		if(t2>16)
+		if((t2>16) && (cnt_dled>8))
 		{
 			BTSR1_MainPollKeyboard();
 
@@ -1320,6 +1369,11 @@ int main(int argc, char **argv, char **env)
 				14*16, 600-16, 6, top->aud_mono_out?0xFFFFFF00:0xFF000000);
 //				12*16, 600-16, 6, cnt_d8);
 
+			sim_fb_drawled(
+				(uint32_t *)btesh2_gfxcon_framebuf, 800, 600,
+				16*16, 600-16, 8, (tt_reset>0)?0xFFFF0000:0xFF000000);
+//				12*16, 600-16, 6, cnt_d8);
+
 			sim_fb_draw7seg_8x(
 				(uint32_t *)btesh2_gfxcon_framebuf, 800, 600,
 //				14*16, 600-16, 12, 0xFF000000, 0xFFFFFF00,
@@ -1337,33 +1391,63 @@ int main(int argc, char **argv, char **env)
 
 			GfxDrv_EndDrawing();
 			
+			t1=FRGL_TimeMS();
 			tt_frame=t1;
 //			continue;
 		}
 
 //		BTSR1_MainPollKeyboard();
 
+		if(btn_reset)
+		{
+			tt_reset=1024;
+		}
+
+
+		if(tt_reset>0)
+		{
+			top->reset_200=1;
+			top->reset_150=1;
+			top->reset_100=1;
+			top->reset_75=1;
+			top->reset_50=1;
+			tt_reset--;
+		}else
+		{
+			top->reset_200=0;
+			top->reset_150=0;
+			top->reset_100=0;
+			top->reset_75=0;
+			top->reset_50=0;
+		}
+
 #ifdef CLOCK_200MHZ
 		top->clock_200 = (main_time>>0)&1;
+		top->clock_150 = ((main_time*192)>>8)&1;
 		top->clock_100 = (main_time>>1)&1;
+		top->clock_75 = ((main_time*96)>>8)&1;
 		top->clock_50  = (main_time>>2)&1;
 		ctx->tot_cyc=main_time>>2;
 
-#ifdef CLOCK_200_AS_133
-		top->clock_200 = ((main_time*170)>>8)&1;
-#endif
+// #ifdef CLOCK_200_AS_133
+//		top->clock_200 = ((main_time*170)>>8)&1;
+// #endif
 
-#ifdef CLOCK_200_AS_150
-		top->clock_200 = ((main_time*192)>>8)&1;
-#endif
+// #ifdef CLOCK_200_AS_150
+//		top->clock_200 = ((main_time*192)>>8)&1;
+// #endif
 
 //		top->clock_200 = !top->clock_200;  //Debug: Flip Clock Polarity
 #else
 		top->clock_200 = (main_time>>0)&1;
+		top->clock_150 = (main_time>>0)&1;
 		top->clock_100 = (main_time>>0)&1;
+		top->clock_75  = (main_time>>1)&1;
 		top->clock_50  = (main_time>>1)&1;
 		ctx->tot_cyc=main_time>>1;
 #endif
+
+		main_time++;
 		
 		if(top->clock_100 && (lclk!=top->clock_100))
 		{
@@ -1433,7 +1517,7 @@ int main(int argc, char **argv, char **env)
 
 		update_ddr();
 
-		main_time++;
+//		main_time++;
 		
 		if(gfxdrv_kill)
 		{

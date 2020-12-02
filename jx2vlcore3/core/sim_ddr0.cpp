@@ -452,6 +452,7 @@ int main(int argc, char **argv, char **env)
 	while (!Verilated::gotFinish())
 	{
 		top->clock = (main_time>>0)&1;
+		top->clock2 = (main_time>>0)&1;
 		main_time++;
 
 //		if(!top->clock)

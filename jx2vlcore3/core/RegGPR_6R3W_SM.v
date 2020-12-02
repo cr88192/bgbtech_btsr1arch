@@ -39,14 +39,12 @@ module RegGPR_6R3W_SM(
 	regIdRnC2,		//Destination ID (EX2, Lane 3)
 	regValRnC2,		//Destination Value (EX2, Lane 3)
 
-`ifdef jx2_stage_ex3
 	regIdRnA3,		//Destination ID (EX2, Lane 1)
 	regValRnA3,		//Destination Value (EX2, Lane 1)
 	regIdRnB3,		//Destination ID (EX2, Lane 2)
 	regValRnB3,		//Destination Value (EX2, Lane 2)
 	regIdRnC3,		//Destination ID (EX2, Lane 3)
 	regValRnC3,		//Destination Value (EX2, Lane 3)
-`endif
 	
 	regValPc,		//PC Value (Synthesized)
 	regValGbr,		//GBR Value (CR)
@@ -88,28 +86,22 @@ input[5:0]		regIdRnA1;		//Destination ID
 input[63:0]		regValRnA1;		//Destination Value
 input[5:0]		regIdRnA2;		//Destination ID
 input[63:0]		regValRnA2;		//Destination Value
-`ifdef jx2_stage_ex3
 input[5:0]		regIdRnA3;		//Destination ID
 input[63:0]		regValRnA3;		//Destination Value
-`endif
 
 input[5:0]		regIdRnB1;		//Destination ID
 input[63:0]		regValRnB1;		//Destination Value
 input[5:0]		regIdRnB2;		//Destination ID
 input[63:0]		regValRnB2;		//Destination Value
-`ifdef jx2_stage_ex3
 input[5:0]		regIdRnB3;		//Destination ID
 input[63:0]		regValRnB3;		//Destination Value
-`endif
 
 input[5:0]		regIdRnC1;		//Destination ID
 input[63:0]		regValRnC1;		//Destination Value
 input[5:0]		regIdRnC2;		//Destination ID
 input[63:0]		regValRnC2;		//Destination Value
-`ifdef jx2_stage_ex3
 input[5:0]		regIdRnC3;		//Destination ID
 input[63:0]		regValRnC3;		//Destination Value
-`endif
 
 input [47:0]	regValPc;		//PC Value (Synthesized)
 input [47:0]	regValGbr;		//GBR Value (CR)
@@ -156,21 +148,12 @@ wire[63:0]		regValRnBW;		//Destination Value
 wire[5:0]		regIdRnCW;		//Destination ID
 wire[63:0]		regValRnCW;		//Destination Value
 
-`ifdef jx2_stage_ex3
 assign	regIdRnAW	= regIdRnA3;
 assign	regValRnAW	= regValRnA3;
 assign	regIdRnBW	= regIdRnB3;
 assign	regValRnBW	= regValRnB3;
 assign	regIdRnCW	= regIdRnC3;
 assign	regValRnCW	= regValRnC3;
-`else
-assign	regIdRnAW	= regIdRnA2;
-assign	regValRnAW	= regValRnA2;
-assign	regIdRnBW	= regIdRnB2;
-assign	regValRnBW	= regValRnB2;
-assign	regIdRnCW	= regIdRnC2;
-assign	regValRnCW	= regValRnC2;
-`endif
 
 // reg[63:0]	gprArrA[31:0];
 // reg[63:0]	gprArrB[31:0];
@@ -838,14 +821,12 @@ begin
 	
 	if(!tValRsZz)
 	begin
-`ifdef jx2_stage_ex3
 		if(regIdRs==regIdRnC3)
 			tRegValRs=regValRnC3;
 		if(regIdRs==regIdRnB3)
 			tRegValRs=regValRnB3;
 		if(regIdRs==regIdRnA3)
 			tRegValRs=regValRnA3;
-`endif
 
 		if(regIdRs==regIdRnC2)
 			tRegValRs=regValRnC2;
@@ -864,14 +845,12 @@ begin
 
 	if(!tValRtZz)
 	begin
-`ifdef jx2_stage_ex3
 		if(regIdRt==regIdRnC3)
 			tRegValRt=regValRnC3;
 		if(regIdRt==regIdRnB3)
 			tRegValRt=regValRnB3;
 		if(regIdRt==regIdRnA3)
 			tRegValRt=regValRnA3;
-`endif
 
 		if(regIdRt==regIdRnC2)
 			tRegValRt=regValRnC2;
@@ -890,14 +869,12 @@ begin
 
 	if(!tValRuZz)
 	begin
-`ifdef jx2_stage_ex3
 		if(regIdRu==regIdRnC3)
 			tRegValRu=regValRnC3;
 		if(regIdRu==regIdRnB3)
 			tRegValRu=regValRnB3;
 		if(regIdRu==regIdRnA3)
 			tRegValRu=regValRnA3;
-`endif
 
 		if(regIdRu==regIdRnC2)
 			tRegValRu=regValRnC2;
@@ -916,14 +893,12 @@ begin
 
 	if(!tValRvZz)
 	begin
-`ifdef jx2_stage_ex3
 		if(regIdRv==regIdRnC3)
 			tRegValRv=regValRnC3;
 		if(regIdRv==regIdRnB3)
 			tRegValRv=regValRnB3;
 		if(regIdRv==regIdRnA3)
 			tRegValRv=regValRnA3;
-`endif
 
 		if(regIdRv==regIdRnC2)
 			tRegValRv=regValRnC2;
@@ -943,14 +918,12 @@ begin
 
 	if(!tValRxZz)
 	begin
-`ifdef jx2_stage_ex3
 		if(regIdRx==regIdRnC3)
 			tRegValRx=regValRnC3;
 		if(regIdRx==regIdRnB3)
 			tRegValRx=regValRnB3;
 		if(regIdRx==regIdRnA3)
 			tRegValRx=regValRnA3;
-`endif
 
 		if(regIdRx==regIdRnC2)
 			tRegValRx=regValRnC2;
@@ -969,14 +942,12 @@ begin
 
 	if(!tValRyZz)
 	begin
-`ifdef jx2_stage_ex3
 		if(regIdRy==regIdRnC3)
 			tRegValRy=regValRnC3;
 		if(regIdRy==regIdRnB3)
 			tRegValRy=regValRnB3;
 		if(regIdRy==regIdRnA3)
 			tRegValRy=regValRnA3;
-`endif
 
 		if(regIdRy==regIdRnC2)
 			tRegValRy=regValRnC2;
