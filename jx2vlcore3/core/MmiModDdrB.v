@@ -8,6 +8,11 @@ This will move 128 bits to or from DRAM.
 
 This version will attempt to run at the clock 1:1, using posedge and negedge to drive outputs. Will still use a big state-machine.
 
+This will be given 3 clock signals:
+  clock, will be the clock for the IO bus;
+  clock2, will be the clock to run the RAM at;
+  clock3, will be 2x clock2, used for clock-edge signaling.
+
 
 
 CAS = Column Activate Strobe
@@ -50,6 +55,7 @@ States:
 
 Note: ddrData_I/ddrData_O;
 These exist because verilator lacks tristate IO.
+The En signals indicate whether to enable/drive the outputs, otherwise these function as inputs.
 
 
 DRI Init:
@@ -66,6 +72,7 @@ DRI Init:
 
 module MmiModDdrB(
 	clock,		clock2,		clock3,
+//	clock,		clock2,
 	reset,		reset2,
 	memDataIn,	memDataOut,
 	memAddr,	memOpm,
@@ -114,9 +121,10 @@ output[1:0]		ddrDqsP_O;
 output[1:0]		ddrDqsN_O;
 output			ddrDqs_En;
 
-// parameter[15:0]	DDR_CAS_RL_M1	= 4;	//CAS RL Minus 1
+// parameter[15:0]	DDR_CAS_RL_M1	= 5;	//CAS RL Minus 1
+parameter[15:0]	DDR_CAS_RL_M1	= 4;	//CAS RL Minus 1
 // parameter[15:0]	DDR_CAS_RL_M1	= 3;	//CAS RL Minus 1
-parameter[15:0]	DDR_CAS_RL_M1	= 3;	//CAS RL Minus 1
+// parameter[15:0]	DDR_CAS_RL_M1	= 3;	//CAS RL Minus 1
 // parameter[15:0]	DDR_CAS_RL_M1	= 2;	//CAS RL Minus 1
 // parameter[15:0]	DDR_CAS_WL_M1	= 4;	//CAS WL Minus 1
 // parameter[15:0]	DDR_CAS_WL_M1	= 2;	//CAS WL Minus 1
@@ -135,17 +143,25 @@ parameter[15:0]	DDR_RAS_INIT	= 128;	//Wait several uS
 
 
 parameter[15:0]	DDR_DRI_INIT_13	=	16'h8201;	/* Delay, NOP, 200+ cyc */
+
+`ifdef mod_ddrb_dllenable
 parameter[15:0]	DDR_DRI_INIT_12	=	16'h2004;	/* Load EMR, OCD Exit */
-// parameter[15:0]	DDR_DRI_INIT_12	=	16'h2005;	/* Load EMR, OCD Exit */
-// parameter[15:0]	DDR_DRI_INIT_11	=	16'h2384;	/* Load EMR, OCD Default */
+parameter[15:0]	DDR_DRI_INIT_11	=	16'h2384;	/* Load EMR, OCD Default */
+`else
+parameter[15:0]	DDR_DRI_INIT_12	=	16'h2005;	/* Load EMR, OCD Exit */
 parameter[15:0]	DDR_DRI_INIT_11	=	16'h2385;	/* Load EMR, OCD Default */
+`endif
+
 parameter[15:0]	DDR_DRI_INIT_10	=	16'h0233;	/* Load MR, Normal */
 parameter[15:0]	DDR_DRI_INIT_9	=	16'h8900;	/* REFRESH */
 parameter[15:0]	DDR_DRI_INIT_8	=	16'h8900;	/* REFRESH */
 parameter[15:0]	DDR_DRI_INIT_7	=	16'h8800;	/* PRELOAD ALL */
 parameter[15:0]	DDR_DRI_INIT_6	=	16'h0333;	/* Load MR, Reset DLL */
-// parameter[15:0]	DDR_DRI_INIT_5	=	16'h2004;	/* Load EMR, DLL Enable */
+`ifdef mod_ddrb_dllenable
+parameter[15:0]	DDR_DRI_INIT_5	=	16'h2004;	/* Load EMR, DLL Enable */
+`else
 parameter[15:0]	DDR_DRI_INIT_5	=	16'h2005;	/* Load EMR, DLL Disable */
+`endif
 parameter[15:0]	DDR_DRI_INIT_4	=	16'h6000;	/* Load EMR3 */
 parameter[15:0]	DDR_DRI_INIT_3	=	16'h4000;	/* Load EMR2 */
 parameter[15:0]	DDR_DRI_INIT_2	=	16'h8800;	/* PRELOAD ALL */
@@ -251,6 +267,17 @@ reg[15:0]		tDdrDataInN;
 reg[1:0]		tDdrDqsInN;
 reg[15:0]		tDdrDataInN1;
 reg[1:0]		tDdrDqsInN1;
+
+reg[15:0]		tDdrDataInP2;
+reg[1:0]		tDdrDqsInP2;
+reg[15:0]		tDdrDataInP3;
+reg[1:0]		tDdrDqsInP3;
+
+reg[15:0]		tDdrDataInN2;
+reg[1:0]		tDdrDqsInN2;
+reg[15:0]		tDdrDataInN3;
+reg[1:0]		tDdrDqsInN3;
+
 
 /* verilator lint_off MULTIDRIVEN */
 
@@ -407,9 +434,9 @@ end
 `ifdef def_true
 reg	tAccCkEdge;
 
-// always @(posedge ddr_coreclock2)
+always @(posedge ddr_coreclock2)
 // always @(negedge ddr_coreclock2)
-always @(posedge ddr_coreclock or negedge ddr_coreclock)
+// always @(posedge ddr_coreclock or negedge ddr_coreclock)
 begin
 //	tAccCkEdge		<= !tAccCkEdge;
 	tAccCkEdge1L	<= tAccCkEdge1;
@@ -461,6 +488,20 @@ begin
 	end
 end
 `endif
+
+// always @(posedge ddr_coreclock)
+always @(negedge ddr_coreclock)
+begin
+	tDdrDataInP2	<= tDdrDataInP;
+	tDdrDqsInP2		<= tDdrDqsInP;
+	tDdrDataInN2	<= tDdrDataInN;
+	tDdrDqsInN2		<= tDdrDqsInN;
+
+	tDdrDataInP3	<= tDdrDataInP1;
+	tDdrDqsInP3		<= tDdrDqsInP1;
+	tDdrDataInN3	<= tDdrDataInN1;
+	tDdrDqsInN3		<= tDdrDqsInN1;
+end
 
 /* verilator lint_on MULTIDRIVEN */
 
@@ -601,8 +642,11 @@ reg				tResetD;
 
 wire[15:0]		tDdrData2pP;
 wire[15:0]		tDdrData2pN;
-assign		tDdrData2pP = tPhaseHc ? tDdrDataInP1 : tDdrDataInP;
-assign		tDdrData2pN = tPhaseHc ? tDdrDataInN1 : tDdrDataInN;
+// assign		tDdrData2pP = tPhaseHc ? tDdrDataInP1 : tDdrDataInP;
+// assign		tDdrData2pN = tPhaseHc ? tDdrDataInN1 : tDdrDataInN;
+
+assign		tDdrData2pP = tPhaseHc ? tDdrDataInP3 : tDdrDataInP2;
+assign		tDdrData2pN = tPhaseHc ? tDdrDataInN3 : tDdrDataInN2;
 
 
 always @*
@@ -1100,17 +1144,23 @@ begin
 		accNextState			= 6'b100010;
 		
 		/* Attempt to align with DQS */
-		if(tDdrDqsInP1==2'b01)
+//		if(tDdrDqsInP1==2'b01)
+		if(tDdrDqsInP3==2'b01)
 		begin
-			accNextReadBlk[15:0]	= tDdrDataInP1;
-			accNextReadBlk[31:16]	= tDdrDataInN1;
+//			accNextReadBlk[15:0]	= tDdrDataInP1;
+//			accNextReadBlk[31:16]	= tDdrDataInN1;
+			accNextReadBlk[15:0]	= tDdrDataInP3;
+			accNextReadBlk[31:16]	= tDdrDataInN3;
 			tNxtPhaseHc = 1;
 		end
 		else
-			if(tDdrDqsInP==2'b01)
+//			if(tDdrDqsInP==2'b01)
+			if(tDdrDqsInP2==2'b01)
 		begin
-			accNextReadBlk[15:0]	= tDdrDataInP;
-			accNextReadBlk[31:16]	= tDdrDataInN;
+//			accNextReadBlk[15:0]	= tDdrDataInP;
+//			accNextReadBlk[31:16]	= tDdrDataInN;
+			accNextReadBlk[15:0]	= tDdrDataInP2;
+			accNextReadBlk[31:16]	= tDdrDataInN2;
 			tNxtPhaseHc = 0;
 		end
 		else
@@ -1227,7 +1277,7 @@ begin
 				end
 				
 				3'b001: begin
-					accNxtSkipRowClose	= 1;
+//					accNxtSkipRowClose	= 1;
 					accNxtSkipRowOpen	= 0;
 					tNxtMemDataIn	= tMemDataInA[127:0];
 					tNxtMemOpm		= tMemOpmA;
@@ -1237,11 +1287,11 @@ begin
 
 				3'b010, 3'b011: begin
 					accNxtSkipRowClose	= 0;
-					accNxtSkipRowOpen	= 1;
+//					accNxtSkipRowOpen	= 1;
 					tNxtMemDataIn	= tMemDataInA[255:128];
 					tNxtMemOpm		= tMemOpmA;
 					tNxtMemAddr		= tMemAddrA;
-					tNxtMemAddr[5]	= 1;
+					tNxtMemAddr[4]	= 1;
 					tNxtMemOKA		= UMEM_OK_HOLD;
 					tNxtMemStateA	= 3'b011;
 				end
@@ -1329,6 +1379,12 @@ begin
 	begin
 		accNextState		= 0;
 		driNextInitState	= 0;
+		tNxtMemOpm = 0;
+		tNxtMemStateA	= 0;
+
+//		tNxtMemDataOutA[255:0]		= UV256_00;
+		tNxtMemDataOutA[15: 0]		= 16'h1234;			/* Magic */
+		tNxtMemOKA					= UMEM_OK_READY;
 	end
 end
 

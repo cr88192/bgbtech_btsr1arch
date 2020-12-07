@@ -20,17 +20,21 @@
 // `define jx2_cpu_mmioclock_75			//Use 75MHz MMIO Clock
 `define jx2_cpu_mmioclock_50		//Use 50MHz MMIO Clock
 
-// `define jx2_cpu_ddrclock_150		//Use 150MHz DDR Clock
-`define jx2_cpu_ddrclock_100		//Use 100MHz DDR Clock
+`define jx2_cpu_ddrclock_150		//Use 150MHz DDR Clock
+// `define jx2_cpu_ddrclock_100		//Use 100MHz DDR Clock
 
-// `define jx2_mem_line32B				//Use 32-byte cache line
-// `define jx2_mem_ddr32B				//Use 32-byte DDR line
+// `define jx2_mem_useddrb			//Use newer DDR controller.
+
+`define jx2_mem_line32B				//Use 32-byte cache line
+`define jx2_mem_ddr32B				//Use 32-byte DDR line
+
+`define jx2_mem_fasttdown			//Faster teardown
 
 
-// `define jx2_mem_l2exbuf			//Extra Buffer L2 Bus
+// `define jx2_mem_jnexbuf			//Extra Buffer Y Joiner
+`define jx2_mem_jnfastbuf			//Fast Buffer Y Joiner
+
 // `define jx2_mmio_exbuf			//Extra Buffer For MMIO
-
-`define jx2_mem_l2fastbuf			//Fast Buffer L2 Bus
 
 // `define jx2_mem_l2exldcyc		//Extra L2 Load Cycle
 // `define jx2_mem_l2exstcyc		//Extra L2 Store Cycle
@@ -41,8 +45,8 @@
 // `define jx2_mem_fulldpx_syncb	//Full Duplex, Sync L2 AddrB
 
 // `define jx2_mem_l1dsz_1024		//L1 D$ is 1024 entries
-// `define jx2_mem_l1dsz_512		//L1 D$ is 512 entries
-`define jx2_mem_l1dsz_256			//L1 D$ is 256 entries
+`define jx2_mem_l1dsz_512		//L1 D$ is 512 entries
+// `define jx2_mem_l1dsz_256			//L1 D$ is 256 entries
 // `define jx2_mem_l1dsz_128		//L1 D$ is 128 entries
 // `define jx2_mem_l1dsz_64			//L1 D$ is 64 entries
 
@@ -70,8 +74,8 @@
 `define jx2_l1d_nofwmemin		//L1 D$: Skip Forwarding (Mem In)
 `define jx2_tlb_nofwmemout		//TLB: Skip Forwarding (Output)
 
-`define jx2_l2d_nofw_ddrout		//L2: Skip Forwarding (DDR Out)
-`define jx2_l2d_nofw_ddrin		//L2: Skip Forwarding (DDR In)
+// `define jx2_l2d_nofw_ddrout		//L2: Skip Forwarding (DDR Out)
+// `define jx2_l2d_nofw_ddrin		//L2: Skip Forwarding (DDR In)
 
 `define jx2_l2d_nofw_memout		//L2: Skip Forwarding (Mem Out)
 `define jx2_l2d_noedy_memin		//L2: Skip Forwarding (Mem In)
@@ -95,6 +99,8 @@
 // `define mod_ddr_extrabuf		//Do Extra IO Buffering (Clock Crossing)
 `define mod_ddr_basicbuf		//Do Basic IO Buffering (Clock Crossing)
 // `define mod_ddr_fastbuf		//Do Fast IO Buffer (Single Clock)
+
+`define mod_ddrb_dllenable		//Do Fast IO Buffer (Single Clock)
 
 
 `define JX2_FBUF_EN128K

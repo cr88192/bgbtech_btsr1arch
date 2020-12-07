@@ -506,6 +506,7 @@ begin
 //			tPixNextPosX = {1'b0, tScanPixClk[12:2]} - 69;
 //			tPixNextPosX = {1'b0, tScanPixClk[12:2]} - 79;
 			tPixNextPosX = {1'b0, tScanPixClk[12:2]} - 76;
+//			tPixNextPosX = {1'b0, tScanPixClk[12:2]} - 72;
 //			tPixNextPosX = {1'b0, tScanPixClk[12:2]} - 83;
 //			tPixNextPosX = {1'b0, tScanPixClk[12:2]} +
 //				{8'b00000000, tScanPixClk[12:9]} - 79;

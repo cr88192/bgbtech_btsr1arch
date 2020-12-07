@@ -1,10 +1,12 @@
 // #define X(n)	_##n
 #define X(n)	n
 //#define STACK_BASE	0x0000DFFC
+// #define STACK_BASE_ISR	0x0000DFC0
 #define STACK_BASE_ISR	0x0000DFF0
 // #define STACK_BASE_USR	0x0000DF00
 
-#define STACK_BASE_USR	0x010FFFF0
+// #define STACK_BASE_USR	0x010FFFF0
+#define STACK_BASE_USR	0x010FFFC0
 
 .section .text
 .align 2

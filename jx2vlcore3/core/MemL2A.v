@@ -2,9 +2,9 @@
 Deal with L2 Cache sending requests to the right place.
 
 * 00000000 .. 00007FFF: Boot ROM
-* 00008000 .. 0000BFFF: (Reserved)
+* 00008000 .. 0000BFFF: Reserved / More ROM
 * 0000C000 .. 0000DFFF: Boot SRAM
-* 0000E000 .. 0000FFFF: Reserved
+* 0000E000 .. 0000FFFF: Reserved / More SRAM
 * 00010000 .. 0001FFFF: NULL Page
 * 00020000 .. 000FFFFF: Reserved
 * 00100000 .. 00FFFFFF: Reserved
@@ -127,6 +127,12 @@ reg		reqLo64Latch;
 reg		reqRamLatch;
 reg		reqIsLatch;
 
+wire	tAddrIsRam;
+
+reg			tDoneLatch;
+`reg_tile	tDoneData;
+
+
 wire	reqIsCcmd;
 // assign	reqIsCcmd	= (memOpm[4:3] == 2'b00) && (memOpm[2:0] != 3'b000);
 // assign	reqIsCcmd	= (tMemOpm[4:3] == 2'b00) && (tMemOpm[2:0] != 3'b000);
@@ -139,7 +145,8 @@ assign	reqIsMem	= (tMemOpm[4:3] != 2'b00) && (tMemOpm[2:0] == 3'b111);
 
 wire[4:0]		l2MemOpm;
 // assign			l2MemOpm = reqIsMmio ? UMEM_OPM_READY : memOpm;
-assign			l2MemOpm = reqIsMmio ? UMEM_OPM_READY : tMemOpm;
+// assign			l2MemOpm = reqIsMmio ? UMEM_OPM_READY : tMemOpm;
+assign			l2MemOpm = (reqIsMmio || tDoneLatch) ? UMEM_OPM_READY : tMemOpm;
 
 
 `wire_tile		l2MemDataOut;
@@ -155,16 +162,13 @@ reg[1:0]		l2rMemOK2;
 reg[1:0]		l2rMemOK3;
 reg[1:0]		l2rMemOK4;
 
-wire	tAddrIsRam;
 
 `ifdef jx2_mem_l2skip
 
-// assign	tAddrIsRam	= (tMemAddr[29:24]!=6'h00) &&
-//		(tMemAddr[31:30]==2'b00);
-
 assign 	ddrMemAddr = tMemAddr[31:0];
 assign 	ddrMemDataOut = tMemDataIn;
-assign 	ddrMemOpm = tAddrIsRam ? l2MemOpm : UMEM_OPM_READY;
+// assign 	ddrMemOpm = tAddrIsRam ? l2MemOpm : UMEM_OPM_READY;
+assign 	ddrMemOpm = (tAddrIsRam && !tDoneLatch) ? l2MemOpm : UMEM_OPM_READY;
 
 assign 	l2MemDataOut = ddrMemDataIn;
 assign	l2MemOK	= ddrMemOK;
@@ -354,7 +358,15 @@ begin
 	tHoldLatchL		<= tHoldLatch;
 	tHoldLatch		<= tNxtHoldLatch;
 	tHoldStrobe		<= tHoldLatch!=tHoldLatchL;
-	
+
+`ifndef def_true	
+	if((memOpm[2:0]==3'b111) && (memOpm[4:3]!=2'b00))
+	begin
+		$display("L2A Cyc: memOpm=%X l2MemOpm=%X l2rMemOpm=%X memOK=%X l2MemOK=%X l2rMemOK=%X",
+		memOpm, l2MemOpm, l2rMemOpm, memOK, l2MemOK, l2rMemOK);
+	end
+`endif
+
 	tMemBounceIrqB	<= tMemBounceIrq;
 
 `ifndef jx2_l2a_nofw_memin
@@ -435,6 +447,7 @@ begin
 		reqMmioLatch	<= 0;
 		reqLo64Latch	<= 0;
 		reqRamLatch		<= 0;
+		tDoneLatch		<= 0;
 
 		tMemOK			<= UMEM_OK_READY;
 	end
@@ -463,12 +476,28 @@ begin
 
 `ifdef jx2_mem_line32B
 		tMemDataOut		<= { UV192_00, tMmioInData };
+		tDoneData		<= { UV192_00, tMmioInData };
 `else
 		tMemDataOut		<= { UV64_00, tMmioInData };
+		tDoneData		<= { UV64_00, tMmioInData };
 `endif
 		tMemOK			<= tMmioOK;
 		reqMmioLatch	<= (reqIsMmio && (tMemOpm[4:3]!=0)) ||
 			(tMmioOK != UMEM_OK_READY);
+
+`ifdef jx2_mem_fasttdown
+		if(tDoneLatch)
+		begin
+			tMemDataOut		<= tDoneData;
+			tMemOK			<= UMEM_OK_OK;
+		end
+		else
+		begin
+//			tDoneData		<= l2MemDataOut;
+			tDoneLatch		<= (tMmioOK == UMEM_OK_OK);
+		end
+`endif
+
 	end
 	else
 		if((tAddrIsLo64k && !reqIsLatch) || reqLo64Latch)
@@ -498,6 +527,22 @@ begin
 //		reqRamLatch		<= (tAddrIsRam && (memOpm[4:3]!=0)) ||
 		reqRamLatch		<= (tAddrIsRam && (tMemOpm[4:3]!=0)) ||
 			(l2MemOK != UMEM_OK_READY);
+
+`ifdef jx2_mem_fasttdown
+		if(tDoneLatch)
+		begin
+			tMemDataOut		<= tDoneData;
+			tMemOK			<= UMEM_OK_OK;
+//			tDoneLatch		<=
+//				(tMemOpm[4:3] != 0) ||
+//				(l2MemOK != UMEM_OK_READY);
+		end
+		else
+		begin
+			tDoneData		<= l2MemDataOut;
+			tDoneLatch		<= (l2MemOK == UMEM_OK_OK);
+		end
+`endif
 	end
 	else
 //		if(tAddrIsZe64k && reqIsMem)
@@ -528,6 +573,7 @@ begin
 
 		tMemDataOut		<= UVTILE_00;
 		tMemOK			<= UMEM_OK_READY;
+		tDoneLatch		<= 0;
 	end
 
 //	tDdrMemDataOut;
@@ -540,7 +586,14 @@ begin
 //	tMmioAddr			<= memAddr[31:0];
 	tMmioAddr			<= tMemAddr[31:0];
 //	tMmioOpm			<= reqIsMmio ? memOpm : UMEM_OPM_READY;
+//	tMmioOpm			<= reqIsMmio ? tMemOpm : UMEM_OPM_READY;
+`ifdef jx2_mem_fasttdown
+	tMmioOpm			<=
+		(reqIsMmio && !tDoneLatch) ?
+			tMemOpm : UMEM_OPM_READY;
+`else
 	tMmioOpm			<= reqIsMmio ? tMemOpm : UMEM_OPM_READY;
+`endif
 
 	if(reset)
 	begin

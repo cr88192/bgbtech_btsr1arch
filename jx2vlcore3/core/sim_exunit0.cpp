@@ -980,6 +980,13 @@ void MemUpdateForBus()
 				top->memDataIn[1]=0xFFFFFFFFU;
 				top->memDataIn[2]=0xFFFFFFFFU;
 				top->memDataIn[3]=0xFFFFFFFFU;
+				if(membus_256bit)
+				{
+					top->memDataIn[4]=0xFFFFFFFFU;
+					top->memDataIn[5]=0xFFFFFFFFU;
+					top->memDataIn[6]=0xFFFFFFFFU;
+					top->memDataIn[7]=0xFFFFFFFFU;
+				}
 //				top->memOK=1;
 				top->memOK=3;
 			}
@@ -1011,6 +1018,13 @@ void MemUpdateForBus()
 					top->memDataIn[1]=0xFFFFFFFFU;
 					top->memDataIn[2]=0xFFFFFFFFU;
 					top->memDataIn[3]=0xFFFFFFFFU;
+					if(membus_256bit)
+					{
+						top->memDataIn[4]=0xFFFFFFFFU;
+						top->memDataIn[5]=0xFFFFFFFFU;
+						top->memDataIn[6]=0xFFFFFFFFU;
+						top->memDataIn[7]=0xFFFFFFFFU;
+					}
 					top->memOK=3;
 				}
 			}else if(is_rom)
@@ -1077,6 +1091,13 @@ void MemUpdateForBus()
 				top->memDataIn[1]=0xFFFFFFFFU;
 				top->memDataIn[2]=0xFFFFFFFFU;
 				top->memDataIn[3]=0xFFFFFFFFU;
+				if(membus_256bit)
+				{
+					top->memDataIn[4]=0xFFFFFFFFU;
+					top->memDataIn[5]=0xFFFFFFFFU;
+					top->memDataIn[6]=0xFFFFFFFFU;
+					top->memDataIn[7]=0xFFFFFFFFU;
+				}
 //				top->memOK=1;
 				top->memOK=3;
 			}
@@ -1096,6 +1117,13 @@ void MemUpdateForBus()
 			top->memDataIn[1]=0xFFFFFFFFU;
 			top->memDataIn[2]=0xFFFFFFFFU;
 			top->memDataIn[3]=0xFFFFFFFFU;
+			if(membus_256bit)
+			{
+				top->memDataIn[4]=0xFFFFFFFFU;
+				top->memDataIn[5]=0xFFFFFFFFU;
+				top->memDataIn[6]=0xFFFFFFFFU;
+				top->memDataIn[7]=0xFFFFFFFFU;
+			}
 
 			if(is_mmio)
 			{

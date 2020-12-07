@@ -279,6 +279,9 @@ reg			tAddrIsPhys;
 
 wire[15:0]	tTlbExc;
 
+wire		regInIsREADY;
+assign		regInIsREADY = (regInOpm==UMEM_OPM_READY);
+
 wire		regInIsLDTLB;
 assign		regInIsLDTLB = (regInOpm==UMEM_OPM_LDTLB);
 
@@ -968,7 +971,12 @@ begin
 	tRegOutExc2		<= tRegOutExc;
 	tRegOutTea2		<= tRegOutTea;
 	tRegOutOK2		<= tRegOutOK;
+//	tRegOutOpm2		<= tRegOutOpm;
+`ifdef jx2_mem_fasttdown
+	tRegOutOpm2		<= (regInIsREADY && !reset) ? UMEM_OPM_READY : tRegOutOpm;
+`else
 	tRegOutOpm2		<= tRegOutOpm;
+`endif
 	tRegOutData2	<= tRegOutData;
 
 //	tRegInAddr		<= regInAddr;

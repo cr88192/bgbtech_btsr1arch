@@ -159,15 +159,17 @@ assign	aud_mono_out	= aud_mono_out1 ? 1'bz : 1'b0;
 // assign	aud_mono_en		= 1'b1;
 assign	aud_mono_en		= aud_mono_ena1;
 
-wire	clock_100mhz;
-wire	clock_150mhz;
+wire	clock_300mhz;
 wire	clock_200mhz;
+wire	clock_150mhz;
+wire	clock_100mhz;
 wire	clock_75mhz;
 wire	clock_50mhz;
 
 reg[15:0]	regInitSanity;
 reg			reset_sanity;
 
+reg			reset3_300;
 reg			reset3_200;
 reg			reset3_150;
 reg			reset3_100;
@@ -180,12 +182,14 @@ reg			reset3_50;
 
 CoreUnit core(
 //	clock, 		reset2,
+	clock_300mhz,
 	clock_200mhz,
 	clock_150mhz,
 	clock_100mhz,
 	clock_75mhz,
 	clock_50mhz,
 
+	reset2_300,
 	reset2_200,
 	reset2_150,
 	reset2_100,
@@ -229,6 +233,7 @@ CoreUnit core(
 `ifdef def_true
 wire	sys_clk;
 
+wire	gen_clk_300mhz;
 wire	gen_clk_200mhz;
 wire	gen_clk_150mhz;
 wire	gen_clk_100mhz;
@@ -239,6 +244,7 @@ wire	gen_clk_25mhz;
 // wire	gen_clk_66mhz;
 
 wire	clk_feedback, clk_locked;
+wire	gen_clk_300mhz_nobuf;
 wire	gen_clk_200mhz_nobuf;
 wire	gen_clk_150mhz_nobuf;
 wire	gen_clk_100mhz_nobuf;
@@ -282,7 +288,8 @@ PLLE2_BASE	#(
 	.CLKOUT0(gen_clk_100mhz_nobuf),
 	.CLKOUT1(gen_clk_200mhz_nobuf),
 	.CLKOUT2(gen_clk_50mhz_nobuf),
-	.CLKOUT3(gen_clk_25mhz),
+//	.CLKOUT3(gen_clk_25mhz),
+	.CLKOUT3(gen_clk_300mhz_nobuf),
 	.CLKOUT4(gen_clk_75mhz_nobuf),
 //	.CLKOUT5(gen_clk_66mhz),
 	.CLKOUT5(gen_clk_150mhz_nobuf),
@@ -307,7 +314,8 @@ PLLE2_BASE	#(
 	.CLKOUT2_DIVIDE(12),		// 100 MHz
 	.CLKOUT3_DIVIDE(16),		//  75 MHz
 	.CLKOUT4_DIVIDE(24),		//  50 MHz
-	.CLKOUT5_DIVIDE(48),		//  25 MHz
+//	.CLKOUT5_DIVIDE(48),		//  25 MHz
+	.CLKOUT5_DIVIDE(4),			//  300 MHz
 	// CLKOUT0_DUTY_CYCLE -- Duty cycle for each CLKOUT
 	.CLKOUT0_DUTY_CYCLE(0.5),
 	.CLKOUT1_DUTY_CYCLE(0.5),
@@ -332,7 +340,8 @@ PLLE2_BASE	#(
 	.CLKOUT2(gen_clk_100mhz_nobuf),
 	.CLKOUT3(gen_clk_75mhz_nobuf),
 	.CLKOUT4(gen_clk_50mhz_nobuf),
-	.CLKOUT5(gen_clk_25mhz_nobuf),
+//	.CLKOUT5(gen_clk_25mhz_nobuf),
+	.CLKOUT5(gen_clk_300mhz_nobuf),
 	.CLKFBOUT(clk_feedback), // 1-bit output, feedback clock
 	.LOCKED(clk_locked),
 	.CLKIN1(sys_clk),
@@ -346,12 +355,14 @@ PLLE2_BASE	#(
 BUFG	feedback_buffer(.I(clk_feedback),.O(clk_feedback_bufd));
 IBUF	sysclk_buf(.I(clock), .O(sys_clk));
 
+BUFG	clk300_buf(.I(gen_clk_300mhz_nobuf), .O(gen_clk_300mhz));
 BUFG	clk200_buf(.I(gen_clk_200mhz_nobuf), .O(gen_clk_200mhz));
 BUFG	clk150_buf(.I(gen_clk_150mhz_nobuf), .O(gen_clk_150mhz));
 BUFG	clk100_buf(.I(gen_clk_100mhz_nobuf), .O(gen_clk_100mhz));
 BUFG	clk75_buf(.I(gen_clk_75mhz_nobuf), .O(gen_clk_75mhz));
 BUFG	clk50_buf(.I(gen_clk_50mhz_nobuf), .O(gen_clk_50mhz));
 
+assign	clock_300mhz = gen_clk_300mhz;
 assign	clock_200mhz = gen_clk_200mhz;
 assign	clock_150mhz = gen_clk_150mhz;
 assign	clock_100mhz = gen_clk_100mhz;
@@ -365,6 +376,10 @@ initial begin
 	regInitSanity = 0;
 end
 
+always @(posedge clock_300mhz)
+begin
+	reset3_300		<= reset_sanity;
+end
 always @(posedge clock_200mhz)
 begin
 	reset3_200		<= reset_sanity;
@@ -412,6 +427,7 @@ begin
 	end
 end
 
+BUFG	reset2_300_buf(.I(reset3_300), .O(reset2_300));
 BUFG	reset2_200_buf(.I(reset3_200), .O(reset2_200));
 BUFG	reset2_150_buf(.I(reset3_150), .O(reset2_150));
 BUFG	reset2_100_buf(.I(reset3_100), .O(reset2_100));

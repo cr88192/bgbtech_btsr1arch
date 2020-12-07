@@ -66,7 +66,7 @@ reg[47:0]		tMemAddrA2;
 reg[47:0]		tMemAddrB2;
 reg[4:0]		tMemOpm2;
 
-`ifdef jx2_mem_l2exbuf
+`ifdef jx2_mem_jnexbuf
 reg[127:0]		tMemOutData3;
 reg[47:0]		tMemAddrA3;
 reg[47:0]		tMemAddrB3;
@@ -218,7 +218,7 @@ begin
 
 end
 
-`ifdef jx2_mem_l2exbuf
+`ifdef jx2_mem_jnexbuf
 always @(posedge clock_master)
 begin
 	tMemOutData3	<= tMemOutData2;
@@ -230,7 +230,7 @@ end
 
 always @(posedge clock_cpu)
 begin
-`ifdef jx2_mem_l2exbuf
+`ifdef jx2_mem_jnexbuf
 	tMemInData2		<= memInData;
 	tMemBusExc2		<= memBusExc;
 	tMemOK2			<= memOK;

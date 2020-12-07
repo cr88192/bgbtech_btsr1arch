@@ -71,8 +71,13 @@ MMIO Space:
 `endif
 
 `include "MmiModGpio.v"
-`include "MmiModDdr3.v"
 `include "MmiModClkp.v"
+
+`ifdef jx2_mem_useddrb
+`include "MmiModDdrB.v"
+`else
+`include "MmiModDdr3.v"
+`endif
 
 `include "ModTxtNtW.v"
 `include "ModAudPcm.v"
@@ -84,12 +89,14 @@ MMIO Space:
 
 module CoreUnit(
 	/* verilator lint_off UNUSED */
+	clock_300,
 	clock_200,
 	clock_150,
 	clock_100,
 	clock_75,
 	clock_50,
 
+	reset_300,
 	reset_200,
 	reset_150,
 	reset_100,
@@ -133,12 +140,14 @@ module CoreUnit(
 	dbg_outStatus8
 	);
 
+input			clock_300;
 input			clock_200;
 input			clock_150;
 input			clock_100;
 input			clock_75;
 input			clock_50;
 
+input			reset_300;
 input			reset_200;
 input			reset_150;
 input			reset_100;
@@ -309,6 +318,7 @@ wire		clock_master;
 wire		clock_mmio;
 wire		clock_cpu;
 wire		clock_ddr;
+wire		clock_ddr2;
 
 `ifdef jx2_cpu_masterclock_50
 assign		clock_master	= clock_50;
@@ -365,16 +375,19 @@ assign		reset2_mmio		= reset_50;
 
 `ifdef jx2_cpu_ddrclock_150
 assign		clock_ddr		= clock_150;
+assign		clock_ddr2		= clock_300;
 assign		reset2_ddr		= reset_150;
 `endif
 
 `ifdef jx2_cpu_ddrclock_100
 assign		clock_ddr		= clock_100;
+assign		clock_ddr2		= clock_200;
 assign		reset2_ddr		= reset_100;
 `endif
 
 `ifdef jx2_cpu_ddrclock_200
 assign		clock_ddr		= clock_200;
+assign		clock_ddr2		= clock_400;
 assign		reset2_ddr		= reset_200;
 `endif
 
@@ -412,11 +425,17 @@ wire[13:0]		ddrAddr1;		//Address pins
 // assign		ddrAddr = ddrAddr1[12:0];
 assign		ddrAddr = ddrAddr1[13:0];
 
+`ifdef jx2_mem_useddrb
+MmiModDdrB		ddr(
+	clock_master,	clock_ddr,	clock_ddr2,
+	reset2_master,	reset2_ddr,
+`else
 MmiModDdr3		ddr(
 //	clock_100,		clock_200,
 //	clock_master,	clock_200,
 	clock_master,	clock_ddr,
 	reset2_master,	reset2_ddr,
+`endif
 
 	ddrMemDataIn,	ddrMemDataOut,
 	ddrMemAddr,		ddrMemOpm,

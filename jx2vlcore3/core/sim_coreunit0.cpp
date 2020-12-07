@@ -4,7 +4,10 @@
 VCoreUnit *top = new VCoreUnit;
 
 vluint64_t main_time = 0;
+vluint64_t main_time3p = 0;
 
+
+#define CLOCK_400MHZ			//Enable 300MHz and 400MHz Clock
 
 #define CLOCK_200MHZ			//Enable 200MHz Clock
 // #define CLOCK_200_AS_133		//Scale 200MHz clock to 133MHz
@@ -1157,6 +1160,7 @@ int main(int argc, char **argv, char **env)
 	int cnt_dled, cnt_h1, cnt_h2,
 		cnt_d1, cnt_d2, cnt_d3, cnt_d4,
 		cnt_d5, cnt_d6, cnt_d7, cnt_d8;
+	int clk300, lclk300, clk150, lclk150, clk75;
 	int t0, t1, t2;
 	int i, j, k;
 
@@ -1421,7 +1425,37 @@ int main(int argc, char **argv, char **env)
 			top->reset_50=0;
 		}
 
+#ifdef CLOCK_400MHZ
+#if 0
+		clk300 = ((main_time*192)>>8)&1;
+		if(clk300 && !lclk300)
+			clk150 = !clk150;
+		lclk300 = clk300;
+		if(clk150 && !lclk150)
+			clk75 = !clk75;
+		lclk150 = clk150;
+
+		top->clock_300 = clk300;
+		top->clock_150 = clk150;
+		top->clock_75 = clk75;
+#endif
+
+		main_time3p=(main_time*192)>>8;
+		top->clock_300 = (main_time3p>>0)&1;
+		top->clock_150 = (main_time3p>>1)&1;
+		top->clock_75  = (main_time3p>>2)&1;
+
+//		top->clock_300 = ((main_time*192)>>8)&1;
+		top->clock_200 = (main_time>>1)&1;
+//		top->clock_150 = ((main_time*192)>>9)&1;
+		top->clock_100 = (main_time>>2)&1;
+//		top->clock_75 = ((main_time*96)>>9)&1;
+		top->clock_50  = (main_time>>3)&1;
+		ctx->tot_cyc=main_time>>3;
+#else
+
 #ifdef CLOCK_200MHZ
+		top->clock_300 = (main_time>>0)&1;
 		top->clock_200 = (main_time>>0)&1;
 		top->clock_150 = ((main_time*192)>>8)&1;
 		top->clock_100 = (main_time>>1)&1;
@@ -1439,6 +1473,7 @@ int main(int argc, char **argv, char **env)
 
 //		top->clock_200 = !top->clock_200;  //Debug: Flip Clock Polarity
 #else
+		top->clock_300 = (main_time>>0)&1;
 		top->clock_200 = (main_time>>0)&1;
 		top->clock_150 = (main_time>>0)&1;
 		top->clock_100 = (main_time>>0)&1;
@@ -1446,7 +1481,7 @@ int main(int argc, char **argv, char **env)
 		top->clock_50  = (main_time>>1)&1;
 		ctx->tot_cyc=main_time>>1;
 #endif
-
+#endif
 		main_time++;
 		
 		if(top->clock_100 && (lclk!=top->clock_100))

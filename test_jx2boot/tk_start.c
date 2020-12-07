@@ -171,8 +171,11 @@ TK_FlushCacheL1D_ReadBuf:
 	RTS
 };
 
-void TK_FlushCacheL1D(void *pptr)
+void TK_FlushCacheL1D(void *ptr)
 {
+	void *pptr;
+	pptr=(void *)(((u64)ptr)&(~16777215));
+	
 	TK_FlushCacheL1D_INVDC(NULL);
 	TK_FlushCacheL1D_ReadBuf(pptr, 65536);
 	TK_FlushCacheL1D_INVDC(NULL);

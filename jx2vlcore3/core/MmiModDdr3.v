@@ -128,7 +128,8 @@ parameter[15:0]	DDR_CAS_RL_M1	= 3;	//CAS RL Minus 1
 // parameter[15:0]	DDR_CAS_WL_M1	= 4;	//CAS WL Minus 1
 // parameter[15:0]	DDR_CAS_WL_M1	= 2;	//CAS WL Minus 1
 parameter[15:0]	DDR_CAS_WL_M1	= 1;	//CAS WL Minus 1
-parameter[15:0]	DDR_RAS_M1		= 8;	//RAS Minus 1
+// parameter[15:0]	DDR_RAS_M1		= 8;	//RAS Minus 1
+parameter[15:0]	DDR_RAS_M1		= 4;	//RAS Minus 1
 // parameter[15:0]	DDR_RAS_M1		= 3;	//RAS Minus 1 (~ 40ns needed)
 
 parameter[15:0]	DDR_RAS_INIT	= 128;	//Wait several uS
@@ -1207,6 +1208,7 @@ begin
 	tNxtMemOpm		= tMemOpm;
 
 `ifndef def_true
+// `ifdef def_true
 	if(tMemOpmA!=0)
 	begin
 		$display("DDR: State=%X OPMA=%X OKA=%X",
@@ -1223,7 +1225,8 @@ begin
 					tNxtMemOKA = UMEM_OK_READY;
 					if(tMemOpmA[4:3]==2'b11)
 					begin
-						tNxtMemStateA	= 3'b101;
+						tNxtMemDataOutA[127:0]		= UV128_00;
+						tNxtMemStateA	= 3'b110;
 					end
 					else if(tMemOpmA[4:3]!=2'b00)
 					begin
@@ -1236,7 +1239,7 @@ begin
 				end
 				
 				3'b001: begin
-					accNxtSkipRowClose	= 1;
+//					accNxtSkipRowClose	= 1;
 					accNxtSkipRowOpen	= 0;
 					tNxtMemDataIn	= tMemDataInA[127:0];
 					tNxtMemOpm		= tMemOpmA;
@@ -1246,11 +1249,11 @@ begin
 
 				3'b010, 3'b011: begin
 					accNxtSkipRowClose	= 0;
-					accNxtSkipRowOpen	= 1;
+//					accNxtSkipRowOpen	= 1;
 					tNxtMemDataIn	= tMemDataInA[255:128];
 					tNxtMemOpm		= tMemOpmA;
 					tNxtMemAddr		= tMemAddrA;
-					tNxtMemAddr[5]	= 1;
+					tNxtMemAddr[4]	= 1;
 					tNxtMemOKA		= UMEM_OK_HOLD;
 					tNxtMemStateA	= 3'b011;
 				end
@@ -1261,16 +1264,21 @@ begin
 
 					tNxtMemOpm		= UMEM_OPM_READY;
 					tNxtMemOKA		= UMEM_OK_OK;
-//					if(tMemOpmA == UMEM_OPM_READY)
-					if(tMemOpmA[4:3]==2'b00)
-						tNxtMemStateA	= 3'b000;
+					tNxtMemStateA	= 3'b111;
 				end
-				3'b101: begin
+
+				3'b110: begin
 					accNxtSkipRowClose	= 0;
 					accNxtSkipRowOpen	= 0;
 
 					tNxtMemOpm		= UMEM_OPM_READY;
 					tNxtMemOKA		= UMEM_OK_FAULT;
+					tNxtMemStateA	= 3'b111;
+				end
+
+				3'b111: begin
+					accNxtSkipRowClose	= 0;
+					accNxtSkipRowOpen	= 0;
 //					if(tMemOpmA == UMEM_OPM_READY)
 					if(tMemOpmA[4:3]==2'b00)
 						tNxtMemStateA	= 3'b000;
@@ -1280,8 +1288,9 @@ begin
 					tNxtMemOpm		= UMEM_OPM_READY;
 					tNxtMemOKA		= UMEM_OK_FAULT;
 //					if(tMemOpmA == UMEM_OPM_READY)
-					if(tMemOpmA[4:3]==2'b00)
-						tNxtMemStateA	= 3'b000;
+//					if(tMemOpmA[4:3]==2'b00)
+//						tNxtMemStateA	= 3'b000;
+					tNxtMemStateA	= 3'b111;
 				end
 			
 			endcase
@@ -1300,10 +1309,16 @@ begin
 				end
 
 				3'b001: begin
+//					if(tMemOpmA[3])
+//						$display("Data A Addr=%X Data=%X",
+//							tNxtMemAddr, tMemDataOutL);
 					tNxtMemDataOutA[127:0]		= tMemDataOutL;
 					tNxtMemStateA				= 3'b010;
 				end
 				3'b011: begin
+//					if(tMemOpmA[3])
+//						$display("Data B Addr=%X Data=%X",
+//							tNxtMemAddr, tMemDataOutL);
 					tNxtMemDataOutA[255:128]	= tMemDataOutL;
 					tNxtMemStateA				= 3'b100;
 				end
@@ -1321,7 +1336,7 @@ begin
 		UMEM_OK_FAULT: begin
 			/* Faulted, send back result. */
 			tNxtMemDataOutA[127:0]		= tMemDataOutL;
-			tNxtMemStateA				= 3'b101;
+			tNxtMemStateA				= 3'b110;
 		end
 	endcase
 	
@@ -1330,6 +1345,11 @@ begin
 		accNxtSkipRowClose	= 0;
 		accNxtSkipRowOpen	= 0;
 		tNxtMemOpm = 0;
+		tNxtMemStateA	= 0;
+
+//		tNxtMemDataOutA[255:0]		= UV256_00;
+		tNxtMemDataOutA[15: 0]		= 16'h1234;			/* Magic */
+		tNxtMemOKA					= UMEM_OK_READY;
 	end
 	
 `endif

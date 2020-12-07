@@ -52,7 +52,7 @@ reg[47:0]		tMemAddrA2;
 reg[47:0]		tMemAddrB2;
 reg[4:0]		tMemOpm2;
 
-`ifdef jx2_mem_l2exbuf
+`ifdef jx2_mem_jnexbuf
 `reg_tile		tMemOutData3;
 reg[47:0]		tMemAddrA3;
 reg[47:0]		tMemAddrB3;
@@ -63,10 +63,17 @@ assign		memAddrA	= tMemAddrA3;
 assign		memAddrB	= tMemAddrB3;
 assign		memOpm		= tMemOpm3;
 `else
+`ifdef jx2_mem_jnfastbuf
+assign		memOutData	= mem1OutData;
+assign		memAddrA	= mem1AddrA;
+assign		memAddrB	= mem1AddrB;
+assign		memOpm		= mem1Opm;
+`else
 assign		memOutData	= tMemOutData2;
 assign		memAddrA	= tMemAddrA2;
 assign		memAddrB	= tMemAddrB2;
 assign		memOpm		= tMemOpm2;
+`endif
 `endif
 
 `reg_tile		tMem1InData;
@@ -77,13 +84,21 @@ reg[63:0]		tMem1BusExc;
 reg[1:0]		tMem1OK2;
 reg[63:0]		tMem1BusExc2;
 
+`ifdef jx2_mem_jnfastbuf
+assign		mem1InData	= memInData;
+assign		mem1OK		= memOK;
+assign		mem1BusExc	= memBusExc;
+`else
 assign		mem1InData	= tMem1InData2;
 assign		mem1OK		= tMem1OK2;
 assign		mem1BusExc	= tMem1BusExc2;
+`endif
+
+`ifndef jx2_mem_jnfastbuf
 
 always @*
 begin
-`ifdef jx2_mem_l2fastbuf
+`ifdef jx2_mem_jnfastbuf
 	tMem1InData		= memInData;
 	tMem1BusExc		= memBusExc;
 	tMem1OK			= memOK;
@@ -99,7 +114,7 @@ begin
 	tMemOpm			= mem1Opm;
 end
 
-`ifdef jx2_mem_l2exbuf
+`ifdef jx2_mem_jnexbuf
 always @(posedge clock_master)
 begin
 	tMemOutData3	<= tMemOutData2;
@@ -109,7 +124,7 @@ begin
 end
 `endif
 
-`ifndef jx2_mem_l2exbuf
+`ifndef jx2_mem_jnexbuf
 always @(posedge clock_cpu)
 begin
 	tMemOutData2	<= tMemOutData;
@@ -121,7 +136,7 @@ end
 
 always @(posedge clock_cpu)
 begin
-`ifdef jx2_mem_l2exbuf
+`ifdef jx2_mem_jnexbuf
 	tMemInData2		<= memInData;
 	tMemBusExc2		<= memBusExc;
 	tMemOK2			<= memOK;
@@ -135,7 +150,7 @@ begin
 	tMemBusExc		<= memBusExc;
 `endif
 
-`ifdef jx2_mem_l2exbuf
+`ifdef jx2_mem_jnexbuf
 	tMemOutData2	<= tMemOutData;
 	tMemAddrA2		<= tMemAddrA;
 	tMemAddrB2		<= tMemAddrB;
@@ -146,5 +161,7 @@ begin
 	tMem1OK2		<= tMem1OK;
 	tMem1BusExc2	<= tMem1BusExc;
 end
+
+`endif
 
 endmodule

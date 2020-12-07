@@ -397,6 +397,8 @@ int SimDdr(int clk, int cmd, int *rdqs, int *rdata)
 }
 #endif
 
+int mem_tile32b;
+
 int main(int argc, char **argv, char **env)
 {
 	uint32_t *imgbuf;
@@ -444,6 +446,7 @@ int main(int argc, char **argv, char **env)
 //	lim=128;
 
 	tw0 = main_time;
+	mem_tile32b = 0;
 
 	printf("Begin\n");
 	top->memOpm=0x0;
@@ -451,6 +454,28 @@ int main(int argc, char **argv, char **env)
 	inh=256;
 	while (!Verilated::gotFinish())
 	{
+		if(main_time<256)
+		{
+			top->reset=1;
+			top->reset2=1;
+			
+			if(main_time>16)
+			{
+				i=top->memDataOut[0];
+				i=i&65535;
+				if(i==0x1234)
+				{
+					if(!mem_tile32b)
+						printf("Detect 32B Cache Line\n");
+					mem_tile32b = 1;
+				}
+			}
+		}else
+		{
+			top->reset=0;
+			top->reset2=0;
+		}
+	
 		top->clock = (main_time>>0)&1;
 		top->clock2 = (main_time>>0)&1;
 		main_time++;
@@ -460,6 +485,12 @@ int main(int argc, char **argv, char **env)
 //			top->eval();
 //			continue;
 //		}
+
+		if(top->reset)
+		{
+			top->eval();
+			continue;
+		}
 
 		top->eval();
 
@@ -474,7 +505,10 @@ int main(int argc, char **argv, char **env)
 					printf("\r%d/%d", wn, lim);
 					fflush(stdout);
 					wdn=1;
-					wn++;
+					if(mem_tile32b)
+						wn+=2;
+					else
+						wn++;
 				}
 			}else
 				if(top->memOK==2)
@@ -492,6 +526,13 @@ int main(int argc, char **argv, char **env)
 				top->memDataIn[1]=imgbuf[bn1*4+1];
 				top->memDataIn[2]=imgbuf[bn1*4+2];
 				top->memDataIn[3]=imgbuf[bn1*4+3];
+				if(mem_tile32b)
+				{
+					top->memDataIn[4]=imgbuf[bn1*4+4];
+					top->memDataIn[5]=imgbuf[bn1*4+5];
+					top->memDataIn[6]=imgbuf[bn1*4+6];
+					top->memDataIn[7]=imgbuf[bn1*4+7];
+				}
 				top->memOpm=0x17;
 				wdn=0;
 
@@ -518,6 +559,7 @@ int main(int argc, char **argv, char **env)
 						(top->memDataOut[2]!=imgbuf[bn1*4+2]) ||
 						(top->memDataOut[3]!=imgbuf[bn1*4+3]) )
 					{
+						printf("Addr=%X\n", top->memAddr);
 						printf("\nExpect %08X-%08X-%08X-%08X\n",
 							imgbuf[bn1*4+0], imgbuf[bn1*4+1],
 							imgbuf[bn1*4+2], imgbuf[bn1*4+3]);
@@ -526,12 +568,32 @@ int main(int argc, char **argv, char **env)
 							top->memDataOut[2], top->memDataOut[3]);
 						break;
 					}
+
+					if(mem_tile32b)
+					{
+						if(	(top->memDataOut[4]!=imgbuf[bn1*4+4]) ||
+							(top->memDataOut[5]!=imgbuf[bn1*4+5]) ||
+							(top->memDataOut[6]!=imgbuf[bn1*4+6]) ||
+							(top->memDataOut[7]!=imgbuf[bn1*4+7]) )
+						{
+							printf("\nExpect-B %08X-%08X-%08X-%08X\n",
+								imgbuf[bn1*4+4], imgbuf[bn1*4+5],
+								imgbuf[bn1*4+6], imgbuf[bn1*4+7]);
+							printf("Got-B %08X-%08X-%08X-%08X\n",
+								top->memDataOut[4], top->memDataOut[5],
+								top->memDataOut[6], top->memDataOut[7]);
+							break;
+						}
+					}
 				
 					printf("\r%d/%d", rn, lim);
 					fflush(stdout);
 					top->memOpm=0;
 					rdn=1;
-					rn++;
+					if(mem_tile32b)
+						rn+=2;
+					else
+						rn++;
 				}
 			}else
 				if(top->memOK==2)

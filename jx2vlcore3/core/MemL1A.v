@@ -157,6 +157,12 @@ MmuTlb	tlb(
 
 `endif
 
+reg			tDoneLatch;
+reg			tNxtDoneLatch;
+`reg_tile	tDoneData;
+
+
+
 `reg_tile		ifMemData;
 reg [  1:0]		ifMemOK;
 wire[ 47:0]		ifMemAddr;
@@ -236,6 +242,8 @@ begin
 	tNxtMsgLatch	= 0;
 	tRegOutExc	= UV64_00;
 	tRegTraPc	= UV64_00;
+	
+	tNxtDoneLatch	= tDoneLatch;
 
 //	tMemAddr	= UV32_XX;
 //	tMemAddr	= UV32_00;
@@ -259,6 +267,14 @@ begin
 
 	ifMemData	= memDataIn;
 	dfMemDataIn	= memDataIn;
+	
+`ifdef jx2_mem_fasttdown
+	if(tDoneLatch)
+	begin
+		ifMemData	= tDoneData;
+		dfMemDataIn	= tDoneData;
+	end
+`endif
 
 	tIfNzOpm	= (ifMemOpm != UMEM_OPM_READY);
 	tDfNzOpm	= (dfMemOpm != UMEM_OPM_READY);
@@ -333,7 +349,24 @@ begin
 		tMemAddrB	= dfMemAddrB;
 		tMemOpm		= dfMemOpm;
 		tMemDataOut	= dfMemDataOut;
-		tNxtLatchDc	= tDfNzOpm || (memOK != UMEM_OK_READY);
+//		tNxtLatchDc	= tDfNzOpm || (memOK != UMEM_OK_READY);
+		tNxtLatchDc	= tDfNzOpm || (memOK != UMEM_OK_READY) || tDoneLatch;
+
+`ifdef jx2_mem_fasttdown
+// `ifndef def_true
+		if(tDoneLatch)
+		begin
+			dfMemOK = UMEM_OK_OK;
+//			if(!tDfNzOpm)
+			if(!tDfNzOpm && (memOK == UMEM_OK_READY))
+				tNxtDoneLatch = 0;
+		end
+		else
+		begin
+			if(memOK == UMEM_OK_OK)
+				tNxtDoneLatch = 1;
+		end
+`endif
 
 		if(tMemAccNoRwx[4])
 		begin
@@ -366,6 +399,10 @@ begin
 
 		dfMemNoRwx[5]=tTlbExc[15];
 	end
+	else
+	begin
+		tNxtDoneLatch	= 0;
+	end
 
 `ifndef def_true
 	if((memOK==UMEM_OK_FAULT) && (memOpm[4:3]!=2'b11) && !reset)
@@ -393,6 +430,13 @@ begin
 //		ifMemOK	= tIfNzOpm ? UMEM_OK_OK : UMEM_OK_READY;
 //		dfMemOK	= tDfNzOpm ? UMEM_OK_OK : UMEM_OK_READY;
 //	end
+
+`ifdef jx2_mem_fasttdown
+	if(tDoneLatch)
+	begin
+		tMemOpm		= UMEM_OPM_READY;
+	end
+`endif
 
 /*
 	else
@@ -431,6 +475,7 @@ begin
 		tLatchIc	<= 0;
 		tLatchDc	<= 0;
 		tMsgLatch	<= 0;
+		tDoneLatch	<= 0;
 	end
 	else
 	begin
@@ -440,6 +485,10 @@ begin
 		tLatchIc	<= tNxtLatchIc;
 		tLatchDc	<= tNxtLatchDc;
 		tMsgLatch	<= tNxtMsgLatch;
+		tDoneLatch	<= tNxtDoneLatch;
+		
+		if(!tDoneLatch)
+			tDoneData	<= memDataIn;
 	end
 end
 
