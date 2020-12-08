@@ -311,7 +311,7 @@ int BJX2_ThrowFaultStatus(BJX2_Context *ctx, int status)
 
 		if(sr0&(1<<29))
 		{
-			__debugbreak();
+			JX2_DBGBREAK
 		}
 
 //		ctx->regs[BJX2_REG_EXSR]=status;
@@ -350,7 +350,7 @@ int BJX2_ThrowFaultStatus(BJX2_Context *ctx, int status)
 
 	if(sr0&(1<<29))
 	{
-		__debugbreak();
+		JX2_DBGBREAK
 	}
 
 //	exc=(ctx->regs[BJX2_REG_TEA]<<16)|(status&65535);
@@ -446,7 +446,7 @@ int BJX2_FaultEnterRegs(BJX2_Context *ctx, int exsr)
 
 	if(va&(1<<29))
 	{
-		__debugbreak();
+		JX2_DBGBREAK
 	}
 
 	va=ctx->regs[BJX2_REG_PC];
@@ -497,7 +497,7 @@ int BJX2_FaultExitRegs(BJX2_Context *ctx, int exsr)
 
 	if(va&(1<<29))
 	{
-		__debugbreak();
+		JX2_DBGBREAK
 	}
 
 //	va=ctx->regs[BJX2_REG_PC];
@@ -515,7 +515,7 @@ int BJX2_FaultExitRegs(BJX2_Context *ctx, int exsr)
 		ctx->regs[BJX2_REG_SSP]=va;
 	}else
 	{
-//		__debugbreak();
+//		JX2_DBGBREAK
 	}
 
 //	va=ctx->regs[BJX2_REG_LR];
@@ -549,7 +549,7 @@ int BJX2_FaultEnterInterrupt(BJX2_Context *ctx)
 		if((exsr&0xF000)==0xC000)
 			return(0);
 
-		__debugbreak();
+		JX2_DBGBREAK
 		return(0);
 	}
 
@@ -2067,7 +2067,7 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 		}
 
 //		if(cur && (cur->addr!=ctx->regs[BJX2_REG_PC]))
-//			__debugbreak();
+//			JX2_DBGBREAK
 		
 		cn1=cn;
 		if(cn1>=ctx->ttick_hk)
@@ -2114,7 +2114,7 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 		{
 			ctx->status=BJX2_FLT_PCMISH;
 			ctx->trcur=cur;
-//			__debugbreak();
+//			JX2_DBGBREAK
 			break;
 		}
 #endif

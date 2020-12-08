@@ -130,7 +130,7 @@ int BJX2_MemRamCb_SetFault(BJX2_Context *ctx,
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INV_MWR);
 	}else
 	{
-//		__debugbreak();
+//		JX2_DBGBREAK
 	}
 	return(0);
 }
@@ -145,7 +145,7 @@ int BJX2_MemRamCb_SetFaultQW(BJX2_Context *ctx,
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INV_MWR);
 	}else
 	{
-//		__debugbreak();
+//		JX2_DBGBREAK
 	}
 	return(0);
 }
@@ -813,7 +813,7 @@ bjx2_addr BJX2_MemTranslateTlb(BJX2_Context *ctx, bjx2_addr addr)
 				
 				if(addr!=addr1)
 				{
-//					__debugbreak();
+//					JX2_DBGBREAK
 				}
 
 #if 1
@@ -861,7 +861,7 @@ bjx2_addr BJX2_MemTranslateTlb(BJX2_Context *ctx, bjx2_addr addr)
 				
 				if(addr!=addr1)
 				{
-//					__debugbreak();
+//					JX2_DBGBREAK
 				}
 
 #if 1
@@ -929,7 +929,7 @@ bjx2_addr BJX2_MemTranslateTlb(BJX2_Context *ctx, bjx2_addr addr)
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_TLBMISS);
 	}else
 	{
-//		__debugbreak();
+//		JX2_DBGBREAK
 	}
 	return(addr);
 #endif
@@ -1000,7 +1000,7 @@ bjx2_addr BJX2_MemTranslateTlb(BJX2_Context *ctx, bjx2_addr addr)
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_TLBMISS);
 	}else
 	{
-		__debugbreak();
+		JX2_DBGBREAK
 	}
 	return(addr);
 #endif
@@ -1042,7 +1042,7 @@ int BJX2_MemGetByte_Dfl(BJX2_Context *ctx, bjx2_addr addr0)
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		}else
 		{
-			__debugbreak();
+			JX2_DBGBREAK
 		}
 		return(0);
 	}
@@ -1102,7 +1102,7 @@ int BJX2_MemGetWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0)
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		}else
 		{
-			__debugbreak();
+			JX2_DBGBREAK
 		}
 		return(0);
 	}
@@ -1162,7 +1162,7 @@ s32 BJX2_MemGetDWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0)
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		}else
 		{
-			__debugbreak();
+			JX2_DBGBREAK
 		}
 		return(0);
 	}
@@ -1223,7 +1223,7 @@ s64 BJX2_MemGetQWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0)
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		}else
 		{
-			__debugbreak();
+			JX2_DBGBREAK
 		}
 		return(0);
 	}
@@ -1283,7 +1283,7 @@ int BJX2_MemGetByte_NoAT(BJX2_Context *ctx, bjx2_addr addr0)
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		}else
 		{
-			__debugbreak();
+			JX2_DBGBREAK
 		}
 		return(0);
 	}
@@ -1336,7 +1336,7 @@ int BJX2_MemGetWord_NoAT(BJX2_Context *ctx, bjx2_addr addr0)
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		}else
 		{
-			__debugbreak();
+			JX2_DBGBREAK
 		}
 		return(0);
 	}
@@ -1389,7 +1389,7 @@ s32 BJX2_MemGetDWord_NoAT(BJX2_Context *ctx, bjx2_addr addr0)
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		}else
 		{
-			__debugbreak();
+			JX2_DBGBREAK
 		}
 		return(0);
 	}
@@ -1444,7 +1444,7 @@ s64 BJX2_MemGetQWord_NoAT(BJX2_Context *ctx, bjx2_addr addr0)
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		}else
 		{
-			__debugbreak();
+			JX2_DBGBREAK
 		}
 		return(0);
 	}
@@ -1513,7 +1513,7 @@ int BJX2_MemSetByte_Dfl(BJX2_Context *ctx, bjx2_addr addr0, int val)
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		}else
 		{
-			__debugbreak();
+			JX2_DBGBREAK
 		}
 		return(0);
 	}
@@ -1563,7 +1563,7 @@ int BJX2_MemSetWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0, int val)
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		}else
 		{
-			__debugbreak();
+			JX2_DBGBREAK
 		}
 		return(0);
 	}
@@ -1623,7 +1623,7 @@ int BJX2_MemSetDWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0, s32 val)
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		}else
 		{
-			__debugbreak();
+			JX2_DBGBREAK
 		}
 		return(0);
 	}
@@ -1683,7 +1683,7 @@ int BJX2_MemSetQWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0, s64 val)
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		}else
 		{
-			__debugbreak();
+			JX2_DBGBREAK
 		}
 		return(0);
 	}
@@ -1738,7 +1738,7 @@ int BJX2_MemSetDWord_NoAT(BJX2_Context *ctx, bjx2_addr addr0, s32 val)
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		}else
 		{
-			__debugbreak();
+			JX2_DBGBREAK
 		}
 		return(0);
 	}
@@ -1786,7 +1786,7 @@ int BJX2_MemSetQWord_NoAT(BJX2_Context *ctx, bjx2_addr addr0, s64 val)
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		}else
 		{
-			__debugbreak();
+			JX2_DBGBREAK
 		}
 		return(0);
 	}
@@ -1842,7 +1842,7 @@ int BJX2_MemSetTripwire_Dfl(BJX2_Context *ctx, bjx2_addr addr0, int val)
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		}else
 		{
-			__debugbreak();
+			JX2_DBGBREAK
 		}
 		return(0);
 	}
@@ -1898,7 +1898,7 @@ int BJX2_MemQueryTransit_Dfl(BJX2_Context *ctx,
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		}else
 		{
-			__debugbreak();
+			JX2_DBGBREAK
 		}
 		return(0);
 	}

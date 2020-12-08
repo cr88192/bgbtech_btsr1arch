@@ -728,7 +728,7 @@ void BJX2_Op_RTE_None(BJX2_Context *ctx, BJX2_Opcode *op)
 	}
 
 	if(!(ctx->regs[BJX2_REG_SPC]))
-		{ __debugbreak(); }
+		{ JX2_DBGBREAK }
 
 	BJX2_FaultLeaveInterrupt(ctx);
 //	ctx->regs[BJX2_REG_PC]=
@@ -736,7 +736,7 @@ void BJX2_Op_RTE_None(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->tr_rnxt=NULL;
 
 	if(!(ctx->regs[BJX2_REG_PC]))
-		{ __debugbreak(); }
+		{ JX2_DBGBREAK }
 	
 	if((exc&0xF000)==0xA000)
 	{
