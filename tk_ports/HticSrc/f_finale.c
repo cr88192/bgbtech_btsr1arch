@@ -1,7 +1,7 @@
 // F_finale.c
 
-#include "DoomDef.h"
-#include "R_local.h"
+#include "doomdef.h"
+#include "r_local.h"
 #include "soundst.h"
 #include <ctype.h>
 

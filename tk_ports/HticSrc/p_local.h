@@ -1,11 +1,11 @@
 
-// P_local.h
+// p_local.h
 
 #ifndef __P_LOCAL__
 #define __P_LOCAL__
 
 #ifndef __R_LOCAL__
-#include "R_local.h"
+#include "r_local.h"
 #endif
 
 #define STARTREDPALS	1
@@ -257,6 +257,6 @@ extern int SB_state;
 extern int ArtifactFlash;
 void SB_PaletteFlash(void);
 
-#include "P_spec.h"
+#include "p_spec.h"
 
 #endif // __P_LOCAL__

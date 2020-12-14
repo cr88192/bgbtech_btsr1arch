@@ -1,8 +1,8 @@
 
 // P_inter.c
 
-#include "DoomDef.h"
-#include "P_local.h"
+#include "doomdef.h"
+#include "p_local.h"
 #include "soundst.h"
 
 #define BONUSADD 6

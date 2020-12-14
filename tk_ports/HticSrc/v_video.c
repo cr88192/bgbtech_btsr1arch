@@ -1,8 +1,8 @@
 
 // V_video.c
 
-#include "DoomDef.h"
-#include "R_local.h"
+#include "doomdef.h"
+#include "r_local.h"
 
 #define SC_INDEX 0x3c4
 

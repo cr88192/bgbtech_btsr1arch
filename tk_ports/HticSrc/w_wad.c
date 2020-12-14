@@ -15,7 +15,7 @@
 //#include <sys/stat.h>
 //#endif
 
-#include "DoomDef.h"
+#include "doomdef.h"
 
 //===============
 //   TYPES

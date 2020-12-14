@@ -6,7 +6,7 @@
 ========================
 */
 
-#include "DoomDef.h"
+#include "doomdef.h"
 #include "soundst.h"
 
 typedef enum

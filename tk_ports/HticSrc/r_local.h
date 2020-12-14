@@ -1,4 +1,4 @@
-// R_local.h
+// r_local.h
 
 #ifndef __R_LOCAL__
 #define __R_LOCAL__

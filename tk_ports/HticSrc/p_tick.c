@@ -1,8 +1,8 @@
 
 // P_tick.c
 
-#include "DoomDef.h"
-#include "P_local.h"
+#include "doomdef.h"
+#include "p_local.h"
 
 int leveltime;
 int TimerGame;

@@ -13,7 +13,7 @@
 
 #include <ctype.h>
 
-#include "DoomDef.h"
+#include "doomdef.h"
 #include "soundst.h"
 
 #include "gfxdrv_keys.h"

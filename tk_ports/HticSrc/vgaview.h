@@ -1,7 +1,7 @@
 
 #import <appkit/appkit.h>
 
-#import "DoomDef.h"
+#import "doomdef.h"
 
 // a few globals
 extern byte	*bytebuffer;
