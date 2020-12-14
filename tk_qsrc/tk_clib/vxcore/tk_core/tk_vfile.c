@@ -131,13 +131,19 @@ int tk_vfile_init()
 		tk_devfs_init();
 		tk_bdspi_init();
 		tk_bdvfb_init();
+		tk_bdram_init();
 	
 //		tk_ird_init();
 		tk_fat_init();
 		tk_wad4_init();
-	
-		tk_mount_sdfat();
+
+		tk_mount_wad4temp(NULL);
+		tk_mount_sdfat("boot");
+
+//		tk_mount_sdfat(NULL);
 		tk_mount_devfs();
+		
+		tk_wad4_mount("boot/tkusrimg.wd4", "usr", "wad4", NULL, NULL);
 	}else
 	{
 		tk_sysc_init();	
@@ -210,6 +216,46 @@ void tk_free_mount(TK_MOUNT *tmp)
 {
 	tmp->udata0=tk_mnt_freelist;
 	tk_mnt_freelist=tmp;
+}
+
+int TK_VF_FlagsFromModeString(char *mode)
+{
+	int fl;
+	
+	fl=0;
+	
+	if(mode[0]=='r')
+	{
+		if(mode[1]='+')
+		{
+			fl|=TKVF_O_RDWR;
+		}else
+		{
+			fl|=TKVF_O_RDONLY;
+		}
+	}else
+		if(mode[0]=='w')
+	{
+		if(mode[1]='+')
+		{
+			fl|=TKVF_O_RDWR|TKVF_O_TRUNC|TKVF_O_CREAT;
+		}else
+		{
+			fl|=TKVF_O_WRONLY|TKVF_O_TRUNC|TKVF_O_CREAT;
+		}
+	}else
+		if(mode[0]=='a')
+	{
+		if(mode[1]='+')
+		{
+			fl|=TKVF_O_RDWR|TKVF_O_CREAT;
+		}else
+		{
+			fl|=TKVF_O_WRONLY|TKVF_O_CREAT;
+		}
+	}
+	
+	return(fl);
 }
 
 int tk_fmount(char *devfn, char *mntfn, char *fsty, char *mode, char **opts)

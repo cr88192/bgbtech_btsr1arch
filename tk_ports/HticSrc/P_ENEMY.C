@@ -320,14 +320,22 @@ dirtype_t diags[] = {DI_NORTHWEST,DI_NORTHEAST,DI_SOUTHWEST,DI_SOUTHEAST};
 void P_NewChaseDir (mobj_t *actor)
 {
 	fixed_t		deltax,deltay;
-	dirtype_t	d[3];
-	dirtype_t	tdir, olddir, turnaround;
+//	dirtype_t	d[3];
+//	dirtype_t	tdir, olddir, turnaround;
+	int			d[3];
+	int			tdir, olddir, turnaround;
 
 	if (!actor->target)
 		I_Error ("P_NewChaseDir: called with no target");
 		
 	olddir = actor->movedir;
+
+//	if(olddir>10)
+//	if(olddir>8)
+//		olddir &= 7;
+
 	turnaround=opposite[olddir];
+//	turnaround=opposite[olddir&7];
 
 	deltax = actor->target->x - actor->x;
 	deltay = actor->target->y - actor->y;

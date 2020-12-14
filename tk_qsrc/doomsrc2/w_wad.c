@@ -309,7 +309,8 @@ void W_AddFile (char *filename)
 	fileinfo = NULL;
 	wad2info = NULL;
 	
-	if (strcmpi (filename+strlen(filename)-3 , "wad" ) )
+//	if (strcmpi (filename+strlen(filename)-3 , "wad" ) )
+	if (strcmp (filename+strlen(filename)-3 , "wad" ) )
 	{
 		// single lump file
 		fileinfo = &singleinfo;

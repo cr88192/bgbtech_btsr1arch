@@ -551,8 +551,25 @@ void P_LoadBlockMap (int lump)
 	memset (blocklinks, 0, count);
 }
 
-
-
+void P_LoadReject (int lump)
+{
+    byte*		data;
+    int			i, lsz, nsz;
+	
+	lsz = W_LumpLength (lump);
+	
+	nsz = ((numsectors * numsectors)+7)/8;
+	if(lsz < nsz)
+	{
+		rejectmatrix = Z_Malloc (nsz, PU_LEVEL, NULL);
+		memset (rejectmatrix, 0, nsz);
+		data = W_CacheLumpNum (lump, PU_CACHE);
+		memcpy (rejectmatrix, data, lsz);
+	}else
+	{
+		rejectmatrix = W_CacheLumpNum (lump, PU_LEVEL);
+    }
+}
 
 /*
 =================
@@ -714,7 +731,8 @@ int P_SetupLevel(int episode, int map, int playermask, skill_t skill)
 	P_LoadSubsectors(lumpnum+ML_SSECTORS);
 	P_LoadNodes(lumpnum+ML_NODES);
 	P_LoadSegs(lumpnum+ML_SEGS);
-	rejectmatrix = W_CacheLumpNum(lumpnum+ML_REJECT, PU_LEVEL);
+    P_LoadReject (lumpnum+ML_REJECT);
+//	rejectmatrix = W_CacheLumpNum(lumpnum+ML_REJECT, PU_LEVEL);
 	P_GroupLines();
 	bodyqueslot = 0;
 	po_NumPolyobjs = 0;
@@ -770,7 +788,7 @@ int P_SetupLevel(int episode, int map, int playermask, skill_t skill)
 	}else
 	{
 		length = W_LumpLength (i);
-		data = Z_Malloc (length, PU_STATIC, 0);
+		data = Z_Malloc (length+32, PU_STATIC, 0);
 		W_ReadLump (i, data);
 		
 		for(j=0; j<length; j++)

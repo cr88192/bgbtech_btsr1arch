@@ -24,10 +24,20 @@
 // #define	strncasecmp strnicmp
 // #endif
 
+#ifndef __linux
 #define	strcasecmp stricmp
 #define	strncasecmp strnicmp
+#endif
 
-#define	strcmpi stricmp
+#define	strcmpi strcasecmp
+
+#ifdef __linux
+#define DT_BREAKPOINT	__builtin_trap();
+#endif
+
+#if defined(_MSC_VER) || defined(__BGBCC__)
+#define DT_BREAKPOINT	__debugbreak();
+#endif
 
 #ifndef O_BINARY
 #define O_BINARY 0
@@ -730,8 +740,10 @@ typedef struct player_s
 	int			keys;
 	int			pieces;					// Fourth Weapon pieces
 	signed int			frags[MAXPLAYERS];		// kills of other players
-	weapontype_t	readyweapon;
-	weapontype_t	pendingweapon;		// wp_nochange if not changing
+//	weapontype_t	readyweapon;
+	byte		readyweapon;
+//	weapontype_t	pendingweapon;		// wp_nochange if not changing
+	byte		pendingweapon;		// wp_nochange if not changing
 	dt_bool		weaponowned[NUMWEAPONS];
 	int			mana[NUMMANA];
 	int			attackdown, usedown;	// true if button down last tic
@@ -954,6 +966,13 @@ extern dt_bool autostart;
 fixed_t	FixedMul (fixed_t a, fixed_t b);
 fixed_t	FixedDiv (fixed_t a, fixed_t b);
 fixed_t	FixedDiv2 (fixed_t a, fixed_t b);
+fixed_t	FixedDivSoft (fixed_t a, fixed_t b);
+
+int M_InitSoftDiv();
+
+u32	M_SoftDivRcp (u32 a);
+
+int	M_SoftDivS (int a, int b);
 
 #ifdef __WATCOMC__
 #pragma aux FixedMul =	\
@@ -1025,6 +1044,8 @@ if (( (memblock_t *)( (byte *)(p) - sizeof(memblock_t)))->id!=0x1d4a11) \
 Z_ChangeTag2(p,t); \
 };
 
+void Z_CheckIntact (void *ptr);
+
 //-------
 //WADFILE
 //-------
@@ -1056,6 +1077,17 @@ int W_LumpLength(int lump);
 void W_ReadLump(int lump, void *dest);
 void *W_CacheLumpNum(int lump, int tag);
 void *W_CacheLumpName(char *name, int tag);
+
+int W_HashIndexForName(char *s);
+int W_CheckNumForNameBase (int base, char* name);
+
+int w_chkaccess(const char *name);
+int w_open(const char *name, const char *mode);
+int w_read(int hdl, void *buf, int sz);
+int w_write(int hdl, void *buf, int sz);
+int w_lseek(int hdl, int ofs, int set);
+int w_close(int hdl);
+int w_filelength (int hdl);
 
 //----------
 //BASE LEVEL
@@ -1103,6 +1135,8 @@ int I_GetTime (void);
 // called by H2_GameLoop
 // returns current time in tics
 
+int  I_GetTimeMs (void);
+
 void I_StartFrame (void);
 // called by H2_GameLoop
 // called before processing any tics in a frame (just after displaying a frame)
@@ -1139,6 +1173,8 @@ void I_Quit (void);
 
 void I_SetPalette (byte *palette);
 // takes full 8 bit values
+
+void I_SetPaletteIndex (int idx);
 
 void I_Update(void);
 // Copy buffer to video
@@ -1346,6 +1382,7 @@ void M_ForceUppercase(char *text);
 // Changes a string to uppercase
 
 int M_Random (void);
+int P_Random (void);
 // returns a number from 0 to 255
 
 extern unsigned char rndtable[256];
@@ -1525,6 +1562,8 @@ void Draw_TeleportIcon(void);
 void Draw_SaveIcon(void);
 void Draw_LoadIcon(void);
 
+void DrSmallNumber(int val, int x, int y);
+
 //-----------------
 // MENU (MN_menu.c)
 //-----------------
@@ -1555,6 +1594,9 @@ void V_DrawFuzzPatch(int x, int y, patch_t *patch);
 void V_DrawAltFuzzPatch(int x, int y, patch_t *patch);
 void V_DrawShadowedPatch(int x, int y, patch_t *patch);
 void V_DrawRawScreen(byte *raw);
+
+int V_BlendEven(int pixa, int pixb);
+void V_MemCpy_ScrPix(dt_scrpix	*dst, byte *src, int cnt);
 
 #include "sounds.h"
 

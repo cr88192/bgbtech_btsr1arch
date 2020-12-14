@@ -30,6 +30,14 @@ typedef long long nlint;
 // typedef byte dt_scrpix;
 typedef u16 dt_scrpix;
 
+#ifdef __linux
+#define DT_BREAKPOINT	__builtin_trap();
+#endif
+
+#if defined(_MSC_VER) || defined(__BGBCC__)
+#define DT_BREAKPOINT	__debugbreak();
+#endif
+
 /*
 ===============================================================================
 

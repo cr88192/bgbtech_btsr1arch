@@ -48,6 +48,9 @@ rcsid[] = "$Id: s_sound.c,v 1.6 1997/02/03 22:45:12 b1 Exp $";
 
 #include "h2def.h"
 
+#include "i_sound.h"
+#include "r_local.h"
+
 
 // Purpose?
 const char snd_prefixen[]
@@ -171,8 +174,8 @@ void S_Init()
 {	
 	int		i;
 	
-	if(s_init_wasinit != 314)
-		__debugbreak();
+//	if(s_init_wasinit != 314)
+//		__debugbreak();
 	s_init_wasinit = 1;
 
 	if(!numChannels)
@@ -393,7 +396,11 @@ S_StartSoundAtVolume
 	
 	// get lumpnum if necessary
 	if (sfx->lumpnum < 0)
+	{
 		sfx->lumpnum = I_GetSfxLumpNum(sfx);
+		if(sfx->lumpnum<0)
+			return;
+	}
 
 #ifndef SNDSRV
 	// cache data if necessary
@@ -914,6 +921,7 @@ int S_GetSoundID(char *name)
 
 dt_bool S_GetSoundPlayingInfo(mobj_t *mobj, int sound_id)
 {
+	return(false);
 }
 
 void S_GetChannelInfo(SoundInfo_t *s)

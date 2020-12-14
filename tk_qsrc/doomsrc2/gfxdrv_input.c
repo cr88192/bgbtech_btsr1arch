@@ -1,4 +1,5 @@
-#include "doomtype.h"
+// #include "doomtype.h"
+#include "doomdata.h"
 
 #include "gfxdrv_keys.h"
 

@@ -1,6 +1,7 @@
-#define		TK_W4PU_NONE	0
-#define		TK_W4PU_STATIC	16
-#define		TK_W4PU_CACHE	64
+#define		TK_W4PU_NONE		0
+#define		TK_W4PU_STATIC		16
+#define		TK_W4PU_CACHEDIRTY	32
+#define		TK_W4PU_CACHE		64
 
 #define		TK_W4ETY_UNUSED		0
 #define		TK_W4ETY_NORMAL		1
@@ -12,6 +13,8 @@
 #define		TK_W4CMP_PACKED		2
 #define		TK_W4CMP_RP2		3
 #define		TK_W4CMP_LZ4		4
+
+#define		TK_W4_FRAGSZ		262144
 
 typedef struct TK_Wad2Info_s	TK_Wad2Info;
 typedef struct TK_Wad4Info_s	TK_Wad4Info;
@@ -87,6 +90,7 @@ struct TK_WadImage_s
 	TK_Wad4Lump		*w4dir;
 	
 	byte			wadver;
+	byte			readwrite;		//Set if image is Read/Write
 	int				hashsz;
 	u16				*hash2;
 	u32				*hash4;
@@ -104,4 +108,7 @@ struct TK_WadZBlock_s
 	byte			*data;
 	int				size;
 	byte			tag;
+	
+	void			*evptr;
+	int				(*EvFunc)(void *blkptr, void *vfsptr);
 };

@@ -90,7 +90,8 @@ int M_CheckParm (char *check)
 
 	for (i = 1;i<myargc;i++)
 	{
-		if ( !strcasecmp(check, myargv[i]) )
+//		if ( !strcasecmp(check, myargv[i]) )
+		if ( !strcmp(check, myargv[i]) )
 			return i;
 	}
 
@@ -383,7 +384,8 @@ typedef struct
 {
 	char    *name;
 	int     *location;
-	int     defaultvalue;
+//	int     defaultvalue;
+	nlint     defaultvalue;
 	int     scantranslate;      // PC scan code hack
 	int     untranslated;       // lousy hack
 } default_t;
@@ -397,6 +399,17 @@ extern int snd_MusicDevice, // current music card # (index to dmxCodes)
 extern int     snd_SBport, snd_SBirq, snd_SBdma;       // sound blaster variables
 extern int     snd_Mport;                              // midi variables
 #endif
+
+static char *m_chatmacro0 = HUSTR_CHATMACRO0;
+static char *m_chatmacro1 = HUSTR_CHATMACRO1;
+static char *m_chatmacro2 = HUSTR_CHATMACRO2;
+static char *m_chatmacro3 = HUSTR_CHATMACRO3;
+static char *m_chatmacro4 = HUSTR_CHATMACRO4;
+static char *m_chatmacro5 = HUSTR_CHATMACRO5;
+static char *m_chatmacro6 = HUSTR_CHATMACRO6;
+static char *m_chatmacro7 = HUSTR_CHATMACRO7;
+static char *m_chatmacro8 = HUSTR_CHATMACRO8;
+static char *m_chatmacro9 = HUSTR_CHATMACRO9;
 
 default_t defaults[] =
 {
@@ -505,6 +518,7 @@ default_t defaults[] =
 
 	{ "usegamma", &usegamma, 0 },
 
+#if 0
 	{ "chatmacro0", (int *) &chat_macros[0], (nlint) HUSTR_CHATMACRO0 },
 	{ "chatmacro1", (int *) &chat_macros[1], (nlint) HUSTR_CHATMACRO1 },
 	{ "chatmacro2", (int *) &chat_macros[2], (nlint) HUSTR_CHATMACRO2 },
@@ -515,6 +529,23 @@ default_t defaults[] =
 	{ "chatmacro7", (int *) &chat_macros[7], (nlint) HUSTR_CHATMACRO7 },
 	{ "chatmacro8", (int *) &chat_macros[8], (nlint) HUSTR_CHATMACRO8 },
 	{ "chatmacro9", (int *) &chat_macros[9], (nlint) HUSTR_CHATMACRO9 }
+#endif
+
+#if 0
+	{ "chatmacro0", (int *) &chat_macros[0], m_chatmacro0 },
+	{ "chatmacro1", (int *) &chat_macros[1], m_chatmacro1 },
+	{ "chatmacro2", (int *) &chat_macros[2], m_chatmacro2 },
+	{ "chatmacro3", (int *) &chat_macros[3], m_chatmacro3 },
+	{ "chatmacro4", (int *) &chat_macros[4], m_chatmacro4 },
+	{ "chatmacro5", (int *) &chat_macros[5], m_chatmacro5 },
+	{ "chatmacro6", (int *) &chat_macros[6], m_chatmacro6 },
+	{ "chatmacro7", (int *) &chat_macros[7], m_chatmacro7 },
+	{ "chatmacro8", (int *) &chat_macros[8], m_chatmacro8 },
+	{ "chatmacro9", (int *) &chat_macros[9], m_chatmacro9 }
+#endif
+
+	{ NULL, NULL, 0 }
+
 };
 
 int numdefaults;
@@ -582,9 +613,22 @@ void M_LoadDefaults (void)
 //
 // set everything to base values
 //
-	numdefaults = sizeof(defaults)/sizeof(defaults[0]);
-	for (i=0 ; i<numdefaults ; i++)
+//	numdefaults = sizeof(defaults)/sizeof(defaults[0]);
+
+//	for(i=0; defaults[i].name; i++)
+//		{ /* No Op */ }
+//	numdefaults = i;
+
+//	for (i=0 ; i<numdefaults ; i++)
+	for (i=0 ; ; i++)
+	{
+		if(!defaults[i].name)
+			break;
 		*defaults[i].location = defaults[i].defaultvalue;
+	}
+	numdefaults = i;
+
+	printf("screenblocks=%d\n", screenblocks);
 
 //
 // check for a custom default file
@@ -610,6 +654,8 @@ void M_LoadDefaults (void)
 	f = fopen (defaultfile, "r");
 	if (f)
 	{
+		printf("Loading defaults from '%s'\n", defaultfile);
+	
 		while (!feof(f))
 		{
 			isstring = false;

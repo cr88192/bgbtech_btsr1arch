@@ -15,6 +15,8 @@ typedef unsigned long long u64;
 
 #define BGBCC_FOURCC(a, b, c, d)	((a)|((b)<<8)|((c)<<16)|((d)<<24))
 
+#define	FCC_DIRS					BGBCC_FOURCC('D', 'I', 'R', '$')
+
 typedef unsigned short word;
 
 typedef struct
@@ -143,6 +145,9 @@ int AddWadLump2(char *name, void *buf, int csz, int dsz,
 
 //	ety=WadTypeForTag(tag);
 	ety=1;
+	
+	if(tag==FCC_DIRS)
+		ety=2;
 
 	if(csz!=dsz)
 	{
@@ -162,7 +167,8 @@ int AddWadLump2(char *name, void *buf, int csz, int dsz,
 
 	wad_rover=(wad_rover+63)&(~63);
 
-	wad_dir[n].foffs=wad_rover/64;
+	if(ety!=2)
+		{ wad_dir[n].foffs=wad_rover/64; }
 	wad_dir[n].csize=csz;
 	wad_dir[n].dsize=dsz;
 	wad_dir[n].ety=ety;
@@ -278,6 +284,12 @@ int AddWadLump(char *name, byte *buf, int isz, int tag, int pfx)
 	byte *obuf1;
 	byte *obuf2;
 	int osz, osz1, osz2, n, cmp;
+
+	if(!isz)
+	{
+		n=AddWadLump2(name, buf, isz, isz, 0, tag, pfx);
+		return(n);
+	}
 
 	if((isz>131072) && (tag>0))
 	{
@@ -477,7 +489,8 @@ int GetWadPathId(char *name, int pfx, int tag)
 
 	id=n;
 
-	wad_dir[n].foffs=id;
+//	wad_dir[n].foffs=id;
+	wad_dir[n].foffs=0;
 	wad_dir[n].csize=0;
 	wad_dir[n].dsize=0;
 	wad_dir[n].ety=2;
@@ -783,8 +796,10 @@ int main(int argc, char *argv[])
 
 //	wad_n_lumps=2;
 
-	AddWadLump("$ROOT", tn, 0, 0, 0);
-	AddWadLump("$BITMAP", tn, 0, 0, 0);
+//	AddWadLump("$ROOT", tn, 0, 0, 0);
+	AddWadLump("$ROOT", tn, 0, FCC_DIRS, 0);
+//	AddWadLump("$BITMAP", tn, 0, 0, 0);
+	AddWadLump("$BITMAP", tn, 0, 0, 1);
 
 	wad_mincsz=99999999;
 	wad_maxcsz=0;
@@ -892,18 +907,38 @@ int main(int argc, char *argv[])
 	{
 		wad_hash[i]=0;
 	}
+
+	for(i=(wad_n_lumps-1); i>=0; i--)
+	{
+		if(wad_dir[i].name[0]=='$')
+			wad_dir[i].dirid=1;
+	}
 	
 	for(i=(wad_n_lumps-1); i>=0; i--)
 	{
 //		h=HashIndexForName16(wad_dir[i].name);
 		h=HashIndexForName32(wad_dir[i].name, wad_dir[i].dirid);
 		h&=(hashsz-1);
+
+		printf("TK_Wad4_LookupLumpNameW4: %s pfx=%d h=%X\n",
+			wad_dir[i].name, wad_dir[i].dirid, h);
+
 		wad_dir[i].chn=wad_hash[h];
 		wad_hash[h]=i;
 
 		j=wad_dir[i].dirid;
-		wad_dir[i].dirnext=wad_dir[j].foffs;
-		wad_dir[j].foffs=i;
+		if((i!=1) && (j!=1) && (i!=j) &&
+			(wad_dir[i].name[0]!='$'))
+		{
+			printf("TK_Wad4_LookupLumpNameW4: link %d -> %d\n",
+				i, wad_dir[j].foffs);
+
+			wad_dir[i].dirnext=wad_dir[j].foffs;
+			wad_dir[j].foffs=i;
+		}
+		
+		printf("TK_Wad4_LookupLumpNameW4: %s nxt=%d\n",
+			wad_dir[i].name, wad_dir[i].dirnext);
 	}
 
 	wad_rover=(wad_rover+63)&(~63);

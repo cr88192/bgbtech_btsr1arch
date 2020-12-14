@@ -142,16 +142,21 @@ int             turnheld;                   // for accelerative turning
 int				 lookheld;
 
 
-dt_bool         mousearray[4];
-dt_bool         *mousebuttons = &mousearray[1];
+// dt_bool         mousearray[4];
+// dt_bool         *mousebuttons = &mousearray[1];
 	// allow [-1]
 int             mousex, mousey;             // mouse values are used once
 int             dclicktime, dclickstate, dclicks;
 int             dclicktime2, dclickstate2, dclicks2;
 
 int             joyxmove, joyymove;         // joystick values are repeated
-dt_bool         joyarray[5];
-dt_bool         *joybuttons = &joyarray[1];     // allow [-1]
+// dt_bool         joyarray[5];
+// dt_bool         *joybuttons = &joyarray[1];     // allow [-1]
+
+byte         mousearray[8];
+byte         *mousebuttons = &mousearray[1];
+byte         joyarray[8];
+byte         *joybuttons = &joyarray[1];     // allow [-1]
 
 int     savegameslot;
 char    savedescription[32];
@@ -810,8 +815,10 @@ int G_DoLoadLevel (void)
 	joyxmove = joyymove = 0;
 	mousex = mousey = 0;
 	sendpause = sendsave = paused = false;
-	memset (mousebuttons, 0, sizeof(mousebuttons));
-	memset (joybuttons, 0, sizeof(joybuttons));
+//	memset (mousebuttons, 0, sizeof(mousebuttons));
+	memset (mousearray, 0, 8);
+//	memset (joybuttons, 0, sizeof(joybuttons));
+	memset (joyarray, 0, 8);
 	
 	return(0);
 }

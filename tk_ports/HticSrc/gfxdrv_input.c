@@ -2,6 +2,8 @@
 
 #include "gfxdrv_keys.h"
 
+#include <time.h>
+
 static byte frgl_keymap[32];
 static byte frgl_lkeymap[32];
 static unsigned short frgl_keybuf2[64];
@@ -169,19 +171,23 @@ int FRGL_TimeMS()
 	return(((tp.tv_sec-secbase)*1000)+tp.tv_usec/1000);
 #endif
 
-#ifndef linux
-	static int init;
-	int t;
+// #ifndef linux
+#if 1
+	static long long t_init;
+	long long t;
 
 	t=clock();
-	t*=CLOCKS_PER_SEC/1000.0;
+//	t*=CLOCKS_PER_SEC/1000.0;
+	t*=1000.0/CLOCKS_PER_SEC;
 //	t=FRGL_TimeMS();
 
-	if(!init)init=t;
+	if(!t_init)t_init=t;
 
-	return((unsigned int)(t-init));
+	return((unsigned int)(t-t_init));
 #endif
-#ifdef linux
+
+// #ifdef linux
+#if 0
 	struct timeval	tp;
 	static int      secbase; 
 
@@ -189,5 +195,6 @@ int FRGL_TimeMS()
 	if(!secbase)secbase=tp.tv_sec;
 	return(((tp.tv_sec-secbase)*1000)+tp.tv_usec/1000);
 #endif
+
 #endif
 }

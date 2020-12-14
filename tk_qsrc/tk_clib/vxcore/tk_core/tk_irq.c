@@ -243,6 +243,7 @@ void TK_FlushCacheL1D()
 	int i, j, k;
 
 	pptr=(u64 *)tk_task_list;	/* need memory to read from. */
+	pptr=(u64 *)(((u64)pptr)&(~16777215));	/* Align */
 
 	TK_FlushCacheL1D_INVDC(NULL);
 	TK_FlushCacheL1D_ReadBuf(pptr, 65536);

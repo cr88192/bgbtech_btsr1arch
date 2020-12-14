@@ -378,7 +378,8 @@ void SV_LoadGame(int slot)
 	SavePtr.b = SaveBuffer+HXS_DESCRIPTION_LENGTH;
 
 	// Check the version text
-	if(strcmp(SavePtr.b, HXS_VERSION_TEXT))
+//	if(strcmp(SavePtr.b, HXS_VERSION_TEXT))
+	if(strcmp((char *)(SavePtr.b), HXS_VERSION_TEXT))
 	{ // Bad version
 		return;
 	}

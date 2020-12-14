@@ -210,7 +210,8 @@ void EV_StopPlat(line_t *line, byte *args)
 
 	for(i = 0; i < MAXPLATS; i++)
 	{
-		if((activeplats[i])->tag = args[0])
+//		if((activeplats[i])->tag = args[0])
+		if((activeplats[i])->tag == args[0])
 		{
 			(activeplats[i])->sector->specialdata = NULL;
 			P_TagFinished((activeplats[i])->sector->tag);

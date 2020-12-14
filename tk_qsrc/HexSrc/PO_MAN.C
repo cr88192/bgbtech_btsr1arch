@@ -117,7 +117,9 @@ dt_bool EV_RotatePoly(line_t *line, byte *args, int direction, dt_bool
 	polyobj_t *poly;
 
 	polyNum = args[0];
-	if(poly = GetPolyobj(polyNum))
+	poly = GetPolyobj(polyNum);
+//	if(poly = GetPolyobj(polyNum))
+	if(poly)
 	{
 		if(poly->specialdata && !overRide)
 		{ // poly is already moving
@@ -152,7 +154,9 @@ dt_bool EV_RotatePoly(line_t *line, byte *args, int direction, dt_bool
 	SN_StartSequence((mobj_t *)&poly->startSpot, SEQ_DOOR_STONE+
 		poly->seqType);
 	
-	while(mirror = GetPolyobjMirror(polyNum))
+	mirror = GetPolyobjMirror(polyNum);
+//	while(mirror = GetPolyobjMirror(polyNum))
+	while(mirror)
 	{
 		poly = GetPolyobj(mirror);
 		if(poly && poly->specialdata && !overRide)
@@ -179,7 +183,10 @@ dt_bool EV_RotatePoly(line_t *line, byte *args, int direction, dt_bool
 		{
 			pe->dist = ANGLE_MAX-1;
 		}
-		if(poly = GetPolyobj(polyNum))
+
+		poly = GetPolyobj(polyNum);
+//		if(poly = GetPolyobj(polyNum))
+		if(poly)
 		{
 			poly->specialdata = pe;
 		}
@@ -192,6 +199,7 @@ dt_bool EV_RotatePoly(line_t *line, byte *args, int direction, dt_bool
 		polyNum = mirror;
 		SN_StartSequence((mobj_t *)&poly->startSpot, SEQ_DOOR_STONE+
 			poly->seqType);
+		mirror = GetPolyobjMirror(polyNum);
 	}
 	return true;
 }
@@ -247,7 +255,9 @@ dt_bool EV_MovePoly(line_t *line, byte *args, dt_bool timesEight, dt_bool
 	angle_t an;
 
 	polyNum = args[0];
-	if(poly = GetPolyobj(polyNum))
+	poly = GetPolyobj(polyNum);
+//	if(poly = GetPolyobj(polyNum))
+	if(poly)
 	{
 		if(poly->specialdata && !overRide)
 		{ // poly is already moving
@@ -281,7 +291,9 @@ dt_bool EV_MovePoly(line_t *line, byte *args, dt_bool timesEight, dt_bool
 	SN_StartSequence((mobj_t *)&poly->startSpot, SEQ_DOOR_STONE+
 		poly->seqType);
 
-	while(mirror = GetPolyobjMirror(polyNum))
+	mirror = GetPolyobjMirror(polyNum);
+//	while(mirror = GetPolyobjMirror(polyNum))
+	while(mirror)
 	{
 		poly = GetPolyobj(mirror);
 		if(poly && poly->specialdata && !overRide)
@@ -309,6 +321,8 @@ dt_bool EV_MovePoly(line_t *line, byte *args, dt_bool timesEight, dt_bool
 		polyNum = mirror;
 		SN_StartSequence((mobj_t *)&poly->startSpot, SEQ_DOOR_STONE+
 			poly->seqType);
+
+		mirror = GetPolyobjMirror(polyNum);
 	}
 	return true;
 }
@@ -454,7 +468,9 @@ dt_bool EV_OpenPolyDoor(line_t *line, byte *args, podoortype_t type)
 	angle_t an;
 
 	polyNum = args[0];
-	if(poly = GetPolyobj(polyNum))
+	poly = GetPolyobj(polyNum);
+//	if(poly = GetPolyobj(polyNum))
+	if(poly)
 	{
 		if(poly->specialdata)
 		{ // poly is already moving
@@ -497,7 +513,9 @@ dt_bool EV_OpenPolyDoor(line_t *line, byte *args, podoortype_t type)
 
 	poly->specialdata = pd;
 
-	while(mirror = GetPolyobjMirror(polyNum))
+	mirror = GetPolyobjMirror(polyNum);
+//	while(mirror = GetPolyobjMirror(polyNum))
+	while(mirror)
 	{
 		poly = GetPolyobj(mirror);
 		if(poly && poly->specialdata)
@@ -535,6 +553,7 @@ dt_bool EV_OpenPolyDoor(line_t *line, byte *args, podoortype_t type)
 				poly->seqType);
 		}
 		polyNum = mirror;
+		mirror = GetPolyobjMirror(polyNum);
 	}
 	return true;
 }

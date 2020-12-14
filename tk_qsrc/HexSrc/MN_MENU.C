@@ -137,7 +137,8 @@ static int MenuTime;
 static dt_bool soundchanged;
 
 dt_bool askforquit;
-dt_bool typeofask;
+// dt_bool typeofask;
+byte typeofask;
 static dt_bool FileMenuKeySteal;
 static dt_bool slottextloaded;
 static char SlotText[6][SLOTTEXTLEN+2];

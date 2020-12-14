@@ -40,6 +40,7 @@ rcsid[] = "$Id: m_bbox.c,v 1.1 1997/02/03 22:45:10 b1 Exp $";
 
 
 long long __smullq(int a, int b);
+long long __int32_dmuls(int a, int b);
 
 // Fixme. __USE_C_FIXED__ or something.
 

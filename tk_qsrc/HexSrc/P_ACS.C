@@ -782,8 +782,8 @@ static int Pop(void)
 	int pos;
 
 	pos=--ACScript->stackPtr;
-	if(pos<0)
-		__debugbreak();
+//	if(pos<0)
+//		__debugbreak();
 	return ACScript->stack[pos];
 
 //	return ACScript->stack[--ACScript->stackPtr];
@@ -900,8 +900,8 @@ static int CmdLSpec5(void)
 	SpecArgs[1] = Pop();
 	SpecArgs[0] = Pop();
 	
-	if(!SpecArgs[0])
-		__debugbreak();
+//	if(!SpecArgs[0])
+//		__debugbreak();
 	
 	P_ExecuteLineSpecial(special, SpecArgs, ACScript->line,
 		ACScript->side, ACScript->activator);

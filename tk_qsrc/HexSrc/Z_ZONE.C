@@ -111,6 +111,8 @@ void Z_Free (void *ptr)
 {
 	memblock_t	*block, *other;
 	
+	Z_CheckIntact(ptr);
+	
 	block = (memblock_t *) ( (byte *)ptr - sizeof(memblock_t));
 	if (block->id != ZONEID)
 		I_Error ("Z_Free: freed a pointer without ZONEID");
@@ -153,7 +155,8 @@ void Z_Free (void *ptr)
 ========================
 */
 
-#define MINFRAGMENT	64
+// #define MINFRAGMENT	64
+#define MINFRAGMENT	256
 
 void *Z_Malloc (int size, int tag, void *user)
 {
@@ -165,6 +168,9 @@ void *Z_Malloc (int size, int tag, void *user)
 // of sufficient size, throwing out any purgable blocks along the way
 //
 	size += sizeof(memblock_t);	// account for size of block header
+	
+//	size = (size+15) & (~15);
+	size = (size+31) & (~15);
 	
 //	size = 2*size + 64;		//BGB: debug
 	
@@ -232,8 +238,31 @@ void *Z_Malloc (int size, int tag, void *user)
 	
 	mainzone->rover = base->next;	// next allocation will start looking here
 	
+	*(int *)(((byte *)base)+(size-16))=0x12345678;
+	
 	base->id = ZONEID;
 	return (void *) ((byte *)base + sizeof(memblock_t));
+}
+
+void Z_CheckIntact (void *ptr)
+{
+	memblock_t	*block;
+	byte *dat1, *dat2;
+	
+	block = (memblock_t *) ( (byte *)ptr - sizeof(memblock_t));
+	if (block->id != ZONEID)
+	{
+		DT_BREAKPOINT
+//		I_Error ("Z_Free: freed a pointer without ZONEID");
+	}
+
+	dat1 = (void *) (((byte *)block) + sizeof(memblock_t));
+	dat2 = ((byte *)block) + (block->size-16);
+
+	if( (*(int *)dat2) != 0x12345678 )
+		{ DT_BREAKPOINT }
+
+	return ;
 }
 
 
@@ -363,7 +392,9 @@ void Z_CheckHeap (void)
 void Z_ChangeTag2 (void *ptr, int tag)
 {
 	memblock_t	*block;
-	
+
+	Z_CheckIntact (ptr);
+
 	block = (memblock_t *) ( (byte *)ptr - sizeof(memblock_t));
 	if (block->id != ZONEID)
 		I_Error ("Z_ChangeTag: freed a pointer without ZONEID");

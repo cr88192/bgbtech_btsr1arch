@@ -1869,6 +1869,40 @@ void I_FinishUpdate_ScanCopyVbl(u16 *ics, u32 *ict, int blkn, int vblend);
 
 #define I_SCR_BMP128K
 
+
+static int i_lastframems;
+
+void I_DrawFramerate()
+{
+	char tb[16];
+	int t0, dt, fps;
+	
+	t0=I_GetTimeMs();
+	dt=t0-i_lastframems;
+	i_lastframems=t0;
+	if((dt<=0) || (dt>=1000))
+		return;
+	
+	fps=1000/dt;
+
+//	HU_DrawDecNum(320-12, 2, fps, 2);
+//	DrSmallNumber(fps, 320-16, 2);
+	DrSmallNumber(fps, 320-12, 2);
+
+#if 0
+//	tb[0]='0'+((fps/100)%10);
+//	tb[1]='0'+((fps/ 10)%10);
+//	tb[2]='0'+((fps    )%10);
+//	tb[3]=0;
+
+	tb[0]='0'+((fps/ 10)%10);
+	tb[1]='0'+((fps    )%10);
+	tb[2]=0;
+	
+//	HU_DrawString(320-22, 2, tb);
+#endif
+}
+
 void I_FinishUpdate (void)
 {
 	u32 *conbufa;
@@ -1887,6 +1921,8 @@ void I_FinishUpdate (void)
 	int i, j, k;
 
 	__hint_use_egpr();
+
+	I_DrawFramerate();
 
 //	R_CellMarkBox(
 //		dirtybox[BOXLEFT],		dirtybox[BOXRIGHT],
@@ -1916,6 +1952,9 @@ void I_FinishUpdate (void)
 	ics16=(u16 *)screen;
 	icl16=vid_lastscreen;
 	ict=conbufa;
+	
+	if(!ics16)
+		return;
 
 // #if 1
 #ifdef I_SCR_BMP128K
@@ -1925,6 +1964,9 @@ void I_FinishUpdate (void)
 	{
 		ics16b=ics16;
 //		icl16b=icl16;
+
+		if(!ics16)
+			return;
 
 #if 0
 		I_FinishUpdate_ScanCopy(ics16, ict, 80);

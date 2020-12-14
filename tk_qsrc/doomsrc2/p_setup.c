@@ -163,6 +163,8 @@ void P_LoadVertexes (int lump)
 
 	Z_ChangeTag (vertexes, PU_LEVEL_VTX);  //BGB: Debug
 
+//	Z_CheckIntact (vertexes)
+
     // Free buffer memory.
     Z_Free (data);
 //	Z_ChangeTag (data, PU_CACHE);  //BGB: Debug

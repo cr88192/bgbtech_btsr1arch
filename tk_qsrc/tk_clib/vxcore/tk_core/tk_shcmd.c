@@ -318,6 +318,7 @@ int TKSH_Cmds_Chdir(char **args)
 {
 	char tb_cwd[256];
 	char tb[256];
+	TK_DIR *dir;
 	char *darg;
 	int i;
 
@@ -346,6 +347,15 @@ int TKSH_Cmds_Chdir(char **args)
 			strcat(tb, darg);
 		}
 		TKSH_NormalizePath(tb_cwd, tb);
+
+		dir=tk_opendir(tb_cwd);
+		if(!dir)
+		{
+			tk_printf("No such directory %s\n", tb_cwd);
+			return(-1);
+		}
+		tk_closedir(dir);
+
 		TK_Env_SetCwd(tb_cwd);
 	}else
 	{

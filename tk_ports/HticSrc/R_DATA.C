@@ -591,6 +591,7 @@ int	R_FlatNumForName (char *name)
 ================
 */
 
+#if 0
 int	R_CheckTextureNumForName (char *name)
 {
 	int		i;
@@ -599,8 +600,54 @@ int	R_CheckTextureNumForName (char *name)
 		return 0;
 		
 	for (i=0 ; i<numtextures ; i++)
-		if (!strncasecmp (textures[i]->name, name, 8) )
+//		if (!strncasecmp (textures[i]->name, name, 8) )
+		if (!strncmp (textures[i]->name, name, 8) )
 			return i;
+		
+	return -1;
+}
+#endif
+
+int	R_CheckTextureNumForName (char *name)
+{
+	char tname[9];
+	int		i, h, n;
+
+	// "NoTexture" marker.
+	if (name[0] == '-')		
+		return 0;
+	
+	w_strupr_n(tname, name, 8);
+	h = W_HashIndexForName(tname);
+	n = numtextures;
+
+#if 0
+	i = texturehash[h];
+	while(i>=0)
+//	while((i>=0) && (n>=0))
+	{
+		if (!memcmp (textures[i]->name, tname, 8) )
+			return(i);
+		i = textures[i]->next;
+
+		if(n<0)
+			break;
+		n--;
+	}
+#endif
+
+#if 1
+//	if(n<0)
+	if(1)
+	{
+		for (i=0 ; i<numtextures ; i++)
+		{
+	//		if (!strnicmp (textures[i]->name, name, 8) )
+			if (!memcmp (textures[i]->name, tname, 8) )
+				return i;
+		}
+	}
+#endif
 		
 	return -1;
 }

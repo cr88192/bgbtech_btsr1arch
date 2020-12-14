@@ -97,6 +97,17 @@ void I_SoundDelTimer( void );
 #endif
 
 
+int SoundDev_Init();
+int SoundDev_DeInit();
+int SoundDev_Submit();
+
+int SoundDev_WriteStereoSamples(short *buffer, int cnt);
+int SoundDev_WriteStereoSamples2(
+	short *buffer, int cnt, int ovcnt);
+int SoundDev_WriteSamples(short *buffer, int cnt);
+
+int FRGL_TimeMS();
+
 // A quick hack to establish a protocol between
 // synchronous mix buffer updates and asynchronous
 // audio writes. Probably redundant with gametic.
@@ -257,10 +268,14 @@ getsfx
 	paddedsize = ((size-8 + (SAMPLECOUNT-1)) / SAMPLECOUNT) * SAMPLECOUNT;
 
 	// Allocate from zone memory.
-	paddedsfx = (unsigned char*)Z_Malloc( paddedsize+8, PU_STATIC, 0 );
+//	paddedsfx = (unsigned char*)Z_Malloc( paddedsize+8, PU_STATIC, 0 );
+	paddedsfx = (unsigned char*)Z_Malloc( paddedsize+16, PU_STATIC, 0 );
 	// ddt: (unsigned char *) realloc(sfx, paddedsize+8);
 	// This should interfere with zone memory handling,
 	//	which does not kick in in the soundserver.
+
+	if(paddedsize < size)
+		size = paddedsize;
 
 	// Now copy and pad.
 	memcpy(	paddedsfx, sfx, size );
@@ -269,6 +284,8 @@ getsfx
 
 	// Remove the cached lump.
 	Z_Free( sfx );
+	
+	Z_CheckIntact (paddedsfx);
 	
 	// Preserve padded length.
 	*len = paddedsize;
@@ -458,7 +475,8 @@ int I_GetSfxLumpNum(sfxinfo_t* sfx)
 //		sprintf(namebuf, "ds%s", sfx->name);
 		memcpy(namebuf, sfx->lumpname, 8);
 		namebuf[8]=0;
-		return W_GetNumForName(namebuf);
+//		return W_GetNumForName(namebuf);
+		return W_CheckNumForName(namebuf);
 }
 
 //
@@ -807,7 +825,9 @@ I_UpdateSoundParams
 
 
 void I_ShutdownSound(void)
-{		
+{	
+#if 0
+	
 #ifdef SNDSERV
 	if (sndserver)
 	{
@@ -839,6 +859,8 @@ void I_ShutdownSound(void)
 	
 	// Cleaning up -releasing the DSP device.
 	close ( audio_fd );
+#endif
+
 #endif
 
 	// Done.

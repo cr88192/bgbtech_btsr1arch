@@ -200,6 +200,15 @@ typedef u64 tk_kptr;
 
 // #define P_INITRD_ABSADDR	((void *)(0x10000000+P_INITRD_ADDR))
 
+#define TKVF_O_CREAT	0x0002
+#define TKVF_O_TRUNC	0x0040
+
+#define TKVF_O_RDONLY	0x2000
+#define TKVF_O_RDWR		0xA000
+#define TKVF_O_SEARCH	0x4000
+#define TKVF_O_WRONLY	0x8000
+
+
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
@@ -351,6 +360,7 @@ int ifd;			//file handle
 int ipos;			//directory position
 s64 ofs;			//current file offset
 s64 size;			//file size
+int flags;			//Access Flags
 };
 
 struct TK_MOUNT_s {
@@ -404,6 +414,9 @@ TK_DIRENT de;
 struct TK_BLKDEVINFO_s {
 u32 lba_ofs;
 u32 lba_sz;
+
+void **buf_ptrs;		//buffer pointers
+int buf_max;			//max allocated pointers.
 };
 
 typedef struct TK_VFB_RECT_s TK_VFB_RECT;

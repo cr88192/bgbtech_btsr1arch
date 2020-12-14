@@ -2,6 +2,12 @@
 
 #include "gfxdrv_keys.h"
 
+#ifdef linux
+#include <sys/time.h>
+#endif
+
+#include <time.h>
+
 static byte frgl_keymap[32];
 static byte frgl_lkeymap[32];
 static unsigned short frgl_keybuf2[64];

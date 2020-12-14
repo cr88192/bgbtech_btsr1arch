@@ -33,13 +33,16 @@ byte gammatable[5][256] =
 
 extern byte *tinttable;
 
+int R_PixelBlend(int pixa, int pixb);
+
 int V_BlendEven(int pixa, int pixb)
 {
 	int pix;
 	if(sizeof(dt_scrpix)==1)
 		pix = tinttable[pixa+(pixb<<8)];
 	else
-		pix = VID_BlendEven16(pixa, pixb);
+//		pix = VID_BlendEven16(pixa, pixb);
+		pix = R_PixelBlend(pixa, pixb);
 	return(pix);
 }
 
@@ -137,7 +140,8 @@ void V_DrawFuzzPatch (int x, int y, patch_t *patch)
 				if(sizeof(dt_scrpix)==1)
 					*dest = tinttable[*dest + ((*source++)<<8)];
 				else
-					*dest = VID_BlendEven16(*dest, colormaps[(*source++)]);
+//					*dest = VID_BlendEven16(*dest, colormaps[(*source++)]);
+					*dest = R_PixelBlend(*dest, colormaps[(*source++)]);
 				dest += SCREENWIDTH;
 			}
 			column = (column_t *)((byte *)column+column->length+4);
@@ -195,7 +199,8 @@ void V_DrawAltFuzzPatch (int x, int y, patch_t *patch)
 				if(sizeof(dt_scrpix)==1)
 					*dest = tinttable[((*dest)<<8) + *source++];
 				else
-					*dest = VID_BlendEven16(*dest, colormaps[*source++]);
+//					*dest = VID_BlendEven16(*dest, colormaps[*source++]);
+					*dest = R_PixelBlend(*dest, colormaps[*source++]);
 				dest += SCREENWIDTH;
 			}
 			column = (column_t *)((byte *)column+column->length+4);
@@ -252,7 +257,8 @@ void V_DrawShadowedPatch(int x, int y, patch_t *patch)
 				if(sizeof(dt_scrpix)==1)
 					*dest2 = tinttable[((*dest2)<<8)];
 				else
-					*dest2 = VID_BlendEven16(*dest2, colormaps[0]);
+//					*dest2 = VID_BlendEven16(*dest2, colormaps[0]);
+					*dest2 = R_PixelBlend(*dest2, colormaps[0]);
 				dest2 += SCREENWIDTH;
 //				*dest = *source++;
 				*dest = colormaps[*source++];

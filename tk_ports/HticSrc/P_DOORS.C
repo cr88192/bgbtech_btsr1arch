@@ -28,12 +28,12 @@ void T_VerticalDoor(vldoor_t *door)
 			if(!--door->topcountdown)
 				switch(door->type)
 				{
-					case normal:
+					case vld_normal:
 						door->direction = -1; // time to go back down
 						S_StartSound((mobj_t *)
 							&door->sector->soundorg, sfx_doropn);
 						break;
-					case close30ThenOpen:
+					case vld_close30ThenOpen:
 						door->direction = 1;
 						S_StartSound((mobj_t *)
 							&door->sector->soundorg, sfx_doropn);
@@ -49,7 +49,7 @@ void T_VerticalDoor(vldoor_t *door)
 				{
 					case raiseIn5Mins:
 						door->direction = 1;
-						door->type = normal;
+						door->type = vld_normal;
 						S_StartSound((mobj_t *)
 							&door->sector->soundorg, sfx_doropn);
 						break;
@@ -65,14 +65,14 @@ void T_VerticalDoor(vldoor_t *door)
 			{
 				switch(door->type)
 				{
-					case normal:
-					case close:
+					case vld_normal:
+					case vld_close:
 						door->sector->specialdata = NULL;
 						P_RemoveThinker(&door->thinker);  // unlink and free
 						S_StartSound((mobj_t *)
 							&door->sector->soundorg, sfx_dorcls);
 						break;
-					case close30ThenOpen:
+					case vld_close30ThenOpen:
 						door->direction = 0;
 						door->topcountdown = 35*30;
 						break;
@@ -84,7 +84,7 @@ void T_VerticalDoor(vldoor_t *door)
 			{
 				switch(door->type)
 				{
-					case close: // DON'T GO BACK UP!
+					case vld_close: // DON'T GO BACK UP!
 						break;
 					default:
 						door->direction = 1;
@@ -101,12 +101,12 @@ void T_VerticalDoor(vldoor_t *door)
 			{
 				switch(door->type)
 				{
-					case normal:
+					case vld_normal:
 						door->direction = 0; // wait at top
 						door->topcountdown = door->topwait;
 						break;
-					case close30ThenOpen:
-					case open:
+					case vld_close30ThenOpen:
+					case vld_open:
 						door->sector->specialdata = NULL;
 						P_RemoveThinker (&door->thinker); // unlink and free
 						S_StopSound((mobj_t *)&door->sector->soundorg);
@@ -152,19 +152,19 @@ int EV_DoDoor(line_t *line, vldoor_e type, fixed_t speed)
 		door->sector = sec;
 		switch(type)
 		{
-			case close:
+			case vld_close:
 				door->topheight = P_FindLowestCeilingSurrounding(sec);
 				door->topheight -= 4*FRACUNIT;
 				door->direction = -1;
 				S_StartSound((mobj_t *)&door->sector->soundorg, sfx_doropn);
 				break;
-			case close30ThenOpen:
+			case vld_close30ThenOpen:
 				door->topheight = sec->ceilingheight;
 				door->direction = -1;
 				S_StartSound((mobj_t *)&door->sector->soundorg, sfx_doropn);
 				break;
-			case normal:
-			case open:
+			case vld_normal:
+			case vld_open:
 				door->direction = 1;
 				door->topheight = P_FindLowestCeilingSurrounding(sec);
 				door->topheight -= 4*FRACUNIT;
@@ -302,13 +302,13 @@ void EV_VerticalDoor(line_t *line, mobj_t *thing)
 		case 26:
 		case 27:
 		case 28:
-			door->type = normal;
+			door->type = vld_normal;
 			break;
 		case 31:
 		case 32:
 		case 33:
 		case 34:
-			door->type = open;
+			door->type = vld_open;
 			line->special = 0;
 			break;
 	}
@@ -338,7 +338,7 @@ void P_SpawnDoorCloseIn30(sector_t *sec)
 	door->thinker.function = T_VerticalDoor;
 	door->sector = sec;
 	door->direction = 0;
-	door->type = normal;
+	door->type = vld_normal;
 	door->speed = VDOORSPEED;
 	door->topcountdown = 30*35;
 }

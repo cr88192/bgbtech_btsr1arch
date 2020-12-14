@@ -529,6 +529,8 @@ void tk_printf(char *str, ...)
 		case 's':
 //			s1=*plst++;
 			s1=va_arg(lst, char *);
+			if(!s1)
+				s1="(null)";
 			tk_puts(s1);
 			break;
 

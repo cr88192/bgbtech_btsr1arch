@@ -284,11 +284,11 @@ static int ReadFile(char const *name, byte **buffer, int mallocType)
 
 	if(mallocType == MALLOC_ZONE)
 	{ // Use zone memory allocation
-		buf = Z_Malloc(length, PU_STATIC, NULL);
+		buf = Z_Malloc(length+16, PU_STATIC, NULL);
 	}
 	else
 	{ // Use c library memory allocation
-		buf = malloc(length);
+		buf = malloc(length+16);
 		if(buf == NULL)
 		{
 			I_Error("Couldn't malloc buffer %d for file %s.",

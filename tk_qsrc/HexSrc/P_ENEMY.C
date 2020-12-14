@@ -324,17 +324,41 @@ DI_NORTH, DI_NORTHWEST, DI_NODIR};
 
 dirtype_t diags[] = {DI_NORTHWEST,DI_NORTHEAST,DI_SOUTHWEST,DI_SOUTHEAST};
 
+void P_NewChaseDir_FixDirLLn (mobj_t *actor, char *lfn, int lln)
+{
+	if((actor->movedir<0) || (actor->movedir>8))
+	{
+		printf("P_NewChaseDir: Debug, Bad Movedir %s:%d\n", lfn, lln);
+		actor->movedir = DI_NODIR;
+	}		
+}
+
+#define	P_NewChaseDir_FixDir(actor)		\
+	P_NewChaseDir_FixDirLLn(actor, __FILE__, __LINE__)
+
 void P_NewChaseDir (mobj_t *actor)
 {
 	fixed_t         deltax,deltay;
-	dirtype_t       d[3];
-	dirtype_t       tdir, olddir, turnaround;
+//	dirtype_t       d[3];
+//	dirtype_t       tdir, olddir, turnaround;
+
+	int       d[3];
+	int       tdir, olddir, turnaround;
 
 	if (!actor->target)
 		I_Error ("P_NewChaseDir: called with no target");
 
+	P_NewChaseDir_FixDir(actor);
+
 	olddir = actor->movedir;
+	
+//	if(olddir>8)
+//		olddir=olddir&7;
+	
 	turnaround=opposite[olddir];
+
+	d[1]=DI_NODIR;
+	d[2]=DI_NODIR;
 
 	deltax = actor->target->x - actor->x;
 	deltay = actor->target->y - actor->y;
@@ -355,6 +379,8 @@ void P_NewChaseDir (mobj_t *actor)
 	if (d[1] != DI_NODIR && d[2] != DI_NODIR)
 	{
 		actor->movedir = diags[((deltay<0)<<1)+(deltax>0)];
+		P_NewChaseDir_FixDir(actor);
+
 		if (actor->movedir != turnaround && P_TryWalk(actor))
 			return;
 	}
@@ -375,6 +401,8 @@ void P_NewChaseDir (mobj_t *actor)
 	if (d[1]!=DI_NODIR)
 	{
 		actor->movedir = d[1];
+		P_NewChaseDir_FixDir(actor);
+
 		if (P_TryWalk(actor))
 			return;     /*either moved forward or attacked*/
 	}
@@ -382,6 +410,8 @@ void P_NewChaseDir (mobj_t *actor)
 	if (d[2]!=DI_NODIR)
 	{
 		actor->movedir =d[2];
+		P_NewChaseDir_FixDir(actor);
+
 		if (P_TryWalk(actor))
 			return;
 	}
@@ -391,6 +421,8 @@ void P_NewChaseDir (mobj_t *actor)
 	if (olddir!=DI_NODIR)
 	{
 		actor->movedir =olddir;
+		P_NewChaseDir_FixDir(actor);
+
 		if (P_TryWalk(actor))
 			return;
 	}
@@ -402,6 +434,8 @@ void P_NewChaseDir (mobj_t *actor)
 			if (tdir!=turnaround)
 			{
 				actor->movedir =tdir;
+				P_NewChaseDir_FixDir(actor);
+
 				if ( P_TryWalk(actor) )
 					return;
 			}
@@ -414,6 +448,8 @@ void P_NewChaseDir (mobj_t *actor)
 			if (tdir!=turnaround)
 			{
 				actor->movedir =tdir;
+				P_NewChaseDir_FixDir(actor);
+
 				if ( P_TryWalk(actor) )
 				return;
 			}
@@ -423,6 +459,8 @@ void P_NewChaseDir (mobj_t *actor)
 	if (turnaround !=  DI_NODIR)
 	{
 		actor->movedir =turnaround;
+		P_NewChaseDir_FixDir(actor);
+
 		if ( P_TryWalk(actor) )
 			return;
 	}
@@ -1101,16 +1139,19 @@ void A_MinotaurRoam(mobj_t *actor)
 	if (P_Random()<6)
 	{
 		//Choose new direction
-		actor->movedir = P_Random() % 8;
+//		actor->movedir = P_Random() % 8;
+		actor->movedir = P_Random() & 7;
 		FaceMovementDirection(actor);
 	}
 	if (!P_Move(actor))
 	{
 		// Turn
 		if (P_Random() & 1)
-			actor->movedir = (++actor->movedir)%8;
+//			actor->movedir = (++actor->movedir)%8;
+			actor->movedir = (++actor->movedir)&7;
 		else
-			actor->movedir = (actor->movedir+7)%8;
+//			actor->movedir = (actor->movedir+7)%8;
+			actor->movedir = (actor->movedir+7)&7;
 		FaceMovementDirection(actor);
 	}
 }

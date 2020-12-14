@@ -59,7 +59,7 @@ int tk_fat_init()
 	return(1);
 }
 
-int tk_mount_sdfat()
+int tk_mount_sdfat(char *path)
 {
 	TKFAT_FAT_DirEntExt tdee;
 	TKFAT_FAT_DirEntExt *dee, *dee2;
@@ -77,8 +77,12 @@ int tk_mount_sdfat()
 	mnt->vt=&tk_vfile_fat_vt;
 	mnt->udata0=img;
 	
-//	mnt->next=tk_vf_mount;
-//	tk_vf_mount=mnt;
+	if(path)
+	{
+		mnt->src=tk_strdup_in(path);
+		mnt->szSrc=strlen(mnt->src);
+	}
+	
 	tk_vf_addmount(mnt);
 
 

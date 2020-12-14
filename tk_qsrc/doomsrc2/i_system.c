@@ -33,6 +33,8 @@ rcsid[] = "$Id: m_bbox.c,v 1.1 1997/02/03 22:45:10 b1 Exp $";
 // #include <sys/time.h>
 // #include <unistd.h>
 
+#include <time.h>
+
 #include "doomdef.h"
 #include "m_misc.h"
 #include "i_video.h"
@@ -100,9 +102,12 @@ int  I_GetTime (void)
 //    newtics = (tp.tv_sec-basetime)*TICRATE + tp.tv_usec*TICRATE/1000000;
 
 	if (!basetime)
-		basetime = clock();
-	newtics = clock() - basetime;
+//		basetime = clock();
+		basetime = FRGL_TimeMS();
+//	newtics = clock() - basetime;
+	newtics = FRGL_TimeMS() - basetime;
 	newtics = newtics * (TICRATE/1000.0);
+//	newtics = newtics * (TICRATE/(1.0*CLOCKS_PER_SEC));
 
     return newtics;
 }
@@ -160,8 +165,9 @@ void I_WaitVBL(int count)
 #endif
 #endif
 
+#ifdef _WIN32
 	Sleep(0);
-
+#endif
 }
 
 void I_BeginRead(void)

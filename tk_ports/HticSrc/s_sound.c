@@ -46,6 +46,8 @@ rcsid[] = "$Id: s_sound.c,v 1.6 1997/02/03 22:45:12 b1 Exp $";
 extern sfxinfo_t S_sfx[];
 int 		lengths[NUMSFX];
 
+void S_StopMusic(void);
+
 
 // Purpose?
 // const char snd_prefixen[]
@@ -169,8 +171,9 @@ void S_Init
 {	
 	int		i;
 	
-	if(s_init_wasinit != 314)
-		__debugbreak();
+//	if(s_init_wasinit != 314)
+//		__debugbreak();
+
 	s_init_wasinit = 1;
 
 	fprintf( stderr, "S_Init: default sfx volume %d\n", sfxVolume);
@@ -613,7 +616,7 @@ void S_StartMusic(int m_id)
 	S_ChangeMusic(m_id, false);
 }
 
-musicinfo_t S_music[];
+extern musicinfo_t S_music[];
 
 #if 1
 int
@@ -635,7 +638,7 @@ S_ChangeMusic
 	music = &S_music[musicnum];
 
 	if (mus_playing == music)
-	return;
+		return(0);
 
 	// shutdown old music
 	S_StopMusic();

@@ -422,6 +422,16 @@ void R_InitTextures (void)
 		(numtextures+1)*sizeof(void *), PU_STATIC, 0);
 	for (i=0 ; i<numtextures ; i++)
 		texturetranslation[i] = i;
+
+	Z_ChangeTag (textures, PU_STATIC);
+	Z_ChangeTag (texturecolumnlump, PU_STATIC);
+	Z_ChangeTag (texturecolumnofs, PU_STATIC);
+	Z_ChangeTag (texturecomposite, PU_STATIC);
+	Z_ChangeTag (texturecompositesize, PU_STATIC);
+	Z_ChangeTag (texturewidthmask, PU_STATIC);
+	Z_ChangeTag (textureheight, PU_STATIC);
+
+	Z_ChangeTag (texturetranslation, PU_STATIC);
 }
 
 
@@ -446,6 +456,8 @@ void R_InitFlats (void)
 	flattranslation = Z_Malloc ((numflats+1)*sizeof(int), PU_STATIC, 0);
 	for (i=0 ; i<numflats ; i++)
 		flattranslation[i] = i;
+
+	Z_ChangeTag (flattranslation, PU_STATIC);
 }
 
 
@@ -479,6 +491,10 @@ void R_InitSpriteLumps (void)
 		spriteoffset[i] = SHORT(patch->leftoffset)<<FRACBITS;
 		spritetopoffset[i] = SHORT(patch->topoffset)<<FRACBITS;
 	}
+
+	Z_ChangeTag (spritewidth, PU_STATIC);
+	Z_ChangeTag (spriteoffset, PU_STATIC);
+	Z_ChangeTag (spritetopoffset, PU_STATIC);
 }
 
 
@@ -574,7 +590,7 @@ int	R_FlatNumForName (char *name)
 
 	j = i - firstflat;
 	if((j<0) || (j>numflats))
-		__debugbreak();
+		{ DT_BREAKPOINT }
 
 	return j;
 }

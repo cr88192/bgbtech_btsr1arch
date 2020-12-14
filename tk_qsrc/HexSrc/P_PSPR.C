@@ -1958,7 +1958,9 @@ static void CHolyFindTarget(mobj_t *actor)
 {
 	mobj_t *target;
 
-	if(target = P_RoughMonsterSearch(actor, 6))
+	target = P_RoughMonsterSearch(actor, 6);
+//	if(target = P_RoughMonsterSearch(actor, 6))
+	if(target)
 	{
 		actor->special1 = (nlint)target;
 		actor->flags |= MF_NOCLIP|MF_SKULLFLY;

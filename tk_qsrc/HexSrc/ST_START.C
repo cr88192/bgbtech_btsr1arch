@@ -293,7 +293,8 @@ void ST_Message(char *message, ...)
 		printf(buffer);
 	}
 #else
-	printf(buffer);
+//	printf(buffer);
+	puts(buffer);
 #endif
 }
 
@@ -317,7 +318,8 @@ void ST_RealMessage(char *message, ...)
 		I_Error("Long debug message has overwritten memory\n");
 	}
 
-	printf(buffer);		// Always print these messages
+//	printf(buffer);		// Always print these messages
+	puts(buffer);		// Always print these messages
 }
 
 

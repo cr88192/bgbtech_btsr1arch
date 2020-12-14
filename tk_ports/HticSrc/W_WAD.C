@@ -184,19 +184,21 @@ int w_read(int hdl, void *buf, int sz)
 {
 	FILE *fd;
 	int i;
-	
+
+#if 1	
 	if(hdl<0)
-		__debugbreak();
+		{ DT_BREAKPOINT }
 //		return(-1);
 	if(hdl>=32)
-		__debugbreak();
+		{ DT_BREAKPOINT }
 //		return(-1);
 	
 	fd=w_openfiles[hdl];
 	if(!fd)
-		__debugbreak();
+		{ DT_BREAKPOINT }
 //		return(-1);
-	
+#endif
+
 	i=fread(buf, 1, sz, fd);
 	return(i);
 }
@@ -205,18 +207,20 @@ int w_write(int hdl, void *buf, int sz)
 {
 	FILE *fd;
 	int i;
-	
+
+#if 1
 	if(hdl<0)
-		__debugbreak();
+		{ DT_BREAKPOINT }
 //		return(-1);
 	if(hdl>=32)
-		__debugbreak();
+		{ DT_BREAKPOINT }
 //		return(-1);
 	
 	fd=w_openfiles[hdl];
 	if(!fd)
-		__debugbreak();
+		{ DT_BREAKPOINT }
 //		return(-1);
+#endif
 	
 	i=fwrite(buf, 1, sz, fd);
 	return(i);
@@ -226,19 +230,21 @@ int w_lseek(int hdl, int ofs, int set)
 {
 	FILE *fd;
 	int i;
-	
+
+#if 1
 	if(hdl<0)
-		__debugbreak();
+		{ DT_BREAKPOINT }
 //		return(-1);
 	if(hdl>=32)
-		__debugbreak();
+		{ DT_BREAKPOINT }
 //		return(-1);
 	
 	fd=w_openfiles[hdl];
 	if(!fd)
-		__debugbreak();
+		{ DT_BREAKPOINT }
 //		return(-1);
-	
+#endif
+
 	i=fseek(fd, ofs, set);
 	return(i);
 }
@@ -247,18 +253,20 @@ int w_close(int hdl)
 {
 	FILE *fd;
 	int i;
-	
+
+#if 1
 	if(hdl<0)
-		__debugbreak();
+		{ DT_BREAKPOINT }
 //		return(-1);
 	if(hdl>=32)
-		__debugbreak();
+		{ DT_BREAKPOINT }
 //		return(-1);
 	
 	fd=w_openfiles[hdl];
 	if(!fd)
-		__debugbreak();
+		{ DT_BREAKPOINT }
 //		return(-1);
+#endif
 	
 	fclose(w_openfiles[hdl]);
 	w_m_openfiles&=~(1<<hdl);
@@ -270,19 +278,21 @@ int w_filelength (int hdl)
 {
 	FILE *fd;
 	int i;
-	
+
+#if 1
 	if(hdl<0)
-		__debugbreak();
+		{ DT_BREAKPOINT }
 //		return(-1);
 	if(hdl>=32)
-		__debugbreak();
+		{ DT_BREAKPOINT }
 //		return(-1);
 	
 	fd=w_openfiles[hdl];
 	if(!fd)
-		__debugbreak();
+		{ DT_BREAKPOINT }
 //		return(-1);
-	
+#endif
+
 	fseek(fd, 0, 2);
 	i=ftell(fd);
 	fseek(fd, 0, 0);
@@ -333,7 +343,8 @@ void W_AddFile (char *filename)
 	fileinfo = NULL;
 	wad2info = NULL;
 	
-	if (stricmp (filename+strlen(filename)-3 , "wad" ) )
+//	if (stricmp (filename+strlen(filename)-3 , "wad" ) )
+	if (strcmp (filename+strlen(filename)-3 , "wad" ) )
 	{
 	// single lump file
 		fileinfo = &singleinfo;
@@ -828,7 +839,7 @@ int W_DecodeBufferRP2(
 			continue;
 		}else
 		{
-			__debugbreak();
+//			{ DT_BREAKPOINT }
 		}
 
 		*(u64 *)ct=*(u64 *)cs;
@@ -958,7 +969,7 @@ int W_DecodeBufferRP2(
 			continue;
 		}else
 		{
-			__debugbreak();
+//			{ DT_BREAKPOINT }
 		}
 
 		*(u64 *)ct=*(u64 *)cs;

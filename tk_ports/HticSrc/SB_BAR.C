@@ -537,7 +537,8 @@ static void DrBNumber(signed int val, int x, int y)
 //
 //---------------------------------------------------------------------------
 
-static void DrSmallNumber(int val, int x, int y)
+// static void DrSmallNumber(int val, int x, int y)
+void DrSmallNumber(int val, int x, int y)
 {
 	patch_t *patch;
 
@@ -659,7 +660,7 @@ static void DrawSoundInfo(void)
 		MN_DrTextA(text, xPos[x++], y);
 		sprintf(text, "%d", c->mo->y>>FRACBITS);
 		MN_DrTextA(text, xPos[x++], y);
-		sprintf(text, "%d", c->id);
+		sprintf(text, "%d", (int)(c->id));
 		MN_DrTextA(text, xPos[x++], y);
 		sprintf(text, "%d", c->priority);
 		MN_DrTextA(text, xPos[x++], y);

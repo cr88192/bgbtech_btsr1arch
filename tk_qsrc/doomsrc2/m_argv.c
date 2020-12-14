@@ -45,7 +45,8 @@ int M_CheckParm (char *check)
 
     for (i = 1;i<myargc;i++)
     {
-	if ( !stricmp(check, myargv[i]) )
+//	if ( !stricmp(check, myargv[i]) )
+	if ( !strcmp(check, myargv[i]) )
 	    return i;
     }
 

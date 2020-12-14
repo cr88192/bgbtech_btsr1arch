@@ -474,7 +474,8 @@ static void osfopen(void)
 	{
 		mode = 1; /* write */
 	}
-	else if (modeType == 10)
+//	else if (modeType == 10)
+	else if ((modeType == 10) || (modeType == 7))
 	{
 		mode = 2; /* read+write */
 	}

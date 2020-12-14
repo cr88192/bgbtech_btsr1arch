@@ -34,7 +34,10 @@ apps: libs FORCE
 	cp vxcore/*.sys		$(BUILD)
 #	cp -rf $(BUILD)/*.ril $(INST_LIB)
 
-build: includes libs apps FORCE
+tkusrimg.wd4: includes libs apps tkusrimg_list.txt
+	mkwad4list tkusrimg_list.txt tkusrimg.wd4
+
+build: includes libs apps tkusrimg.wd4 FORCE
 
 clean: FORCE
 clean2: FORCE

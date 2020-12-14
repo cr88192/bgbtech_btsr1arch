@@ -24,6 +24,8 @@
 #endif
 #endif
 
+#include <ctype.h>
+
 #include "h2def.h"
 
 // MACROS ------------------------------------------------------------------
@@ -137,7 +139,7 @@ void w_strupr_n (char *t, char *s, int n)
 		*t++=0;
 }
 
-int w_chkaccess(char *name)
+int w_chkaccess(const char *name)
 {
 	FILE *fd;
 	int st;
@@ -154,7 +156,7 @@ int w_chkaccess(char *name)
 FILE *w_openfiles[32];
 u32 w_m_openfiles;
 
-int w_open(char *name, char *mode)
+int w_open(const char *name, const char *mode)
 {
 	FILE *fd;
 	int i;
@@ -184,15 +186,15 @@ int w_read(int hdl, void *buf, int sz)
 	int i;
 	
 	if(hdl<0)
-		__debugbreak();
+		{ DT_BREAKPOINT }
 //		return(-1);
 	if(hdl>=32)
-		__debugbreak();
+		{ DT_BREAKPOINT }
 //		return(-1);
 	
 	fd=w_openfiles[hdl];
 	if(!fd)
-		__debugbreak();
+		{ DT_BREAKPOINT }
 //		return(-1);
 	
 	i=fread(buf, 1, sz, fd);
@@ -205,15 +207,15 @@ int w_write(int hdl, void *buf, int sz)
 	int i;
 	
 	if(hdl<0)
-		__debugbreak();
+		{ DT_BREAKPOINT }
 //		return(-1);
 	if(hdl>=32)
-		__debugbreak();
+		{ DT_BREAKPOINT }
 //		return(-1);
 	
 	fd=w_openfiles[hdl];
 	if(!fd)
-		__debugbreak();
+		{ DT_BREAKPOINT }
 //		return(-1);
 	
 	i=fwrite(buf, 1, sz, fd);
@@ -226,15 +228,15 @@ int w_lseek(int hdl, int ofs, int set)
 	int i;
 	
 	if(hdl<0)
-		__debugbreak();
+		{ DT_BREAKPOINT }
 //		return(-1);
 	if(hdl>=32)
-		__debugbreak();
+		{ DT_BREAKPOINT }
 //		return(-1);
 	
 	fd=w_openfiles[hdl];
 	if(!fd)
-		__debugbreak();
+		{ DT_BREAKPOINT }
 //		return(-1);
 	
 	i=fseek(fd, ofs, set);
@@ -250,15 +252,15 @@ int w_close(int hdl)
 	int i;
 	
 	if(hdl<0)
-		__debugbreak();
+		{ DT_BREAKPOINT }
 //		return(-1);
 	if(hdl>=32)
-		__debugbreak();
+		{ DT_BREAKPOINT }
 //		return(-1);
 	
 	fd=w_openfiles[hdl];
 	if(!fd)
-		__debugbreak();
+		{ DT_BREAKPOINT }
 //		return(-1);
 	
 	fclose(w_openfiles[hdl]);
@@ -273,15 +275,15 @@ int w_filelength (int hdl)
 	int i;
 	
 	if(hdl<0)
-		__debugbreak();
+		{ DT_BREAKPOINT }
 //		return(-1);
 	if(hdl>=32)
-		__debugbreak();
+		{ DT_BREAKPOINT }
 //		return(-1);
 	
 	fd=w_openfiles[hdl];
 	if(!fd)
-		__debugbreak();
+		{ DT_BREAKPOINT }
 //		return(-1);
 	
 	fseek(fd, 0, 2);
@@ -954,7 +956,7 @@ int W_DecodeBufferRP2(
 			continue;
 		}else
 		{
-			__debugbreak();
+			{ DT_BREAKPOINT }
 		}
 
 		*(u64 *)ct=*(u64 *)cs;
@@ -1226,7 +1228,7 @@ int W_DecodeBufferRP2(
 			continue;
 		}else
 		{
-			__debugbreak();
+			{ DT_BREAKPOINT }
 		}
 
 		*(u64 *)ct=*(u64 *)cs;
@@ -1368,7 +1370,7 @@ int	W_GetNumForName (char *name)
 	int	i;
 
 	if((name[0]<=' ') || (name[0]>'~'))
-		__debugbreak();
+		{ DT_BREAKPOINT }
 
 	i = W_CheckNumForName(name);
 	if(i != -1)
@@ -1376,7 +1378,7 @@ int	W_GetNumForName (char *name)
 		return i;
 	}
 	
-	__debugbreak();
+	DT_BREAKPOINT
 	I_Error("W_GetNumForName: %s not found!", name);
 	return -1;
 }
@@ -1478,10 +1480,14 @@ void *W_CacheLumpNum(int lump, int tag)
 	}
 
 	if(!lumpcache[lump])
-	{ // Need to read the lump in
-		ptr = Z_Malloc(W_LumpLength(lump)+24, tag, &lumpcache[lump]);
+	{
+	 // Need to read the lump in
+//		ptr = Z_Malloc(W_LumpLength(lump)+24, tag, &lumpcache[lump]);
+		ptr = Z_Malloc(W_LumpLength(lump)+32, tag, &lumpcache[lump]);
 		W_ReadLump(lump, lumpcache[lump]);
-		
+
+		Z_CheckIntact (ptr);
+
 //		printf("W_CacheLumpNum: %d %s\n", lump, W_GetNameForNum(lump));
 	}
 	else

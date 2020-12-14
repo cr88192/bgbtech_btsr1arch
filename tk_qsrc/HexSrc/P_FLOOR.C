@@ -463,7 +463,7 @@ static void QueueStairSector(sector_t *sec, int type, int height)
 {
 	if((QueueTail+1)%STAIR_QUEUE_SIZE == QueueHead)
 	{
-		__debugbreak();
+		DT_BREAKPOINT
 		I_Error("BuildStairs:  Too many branches located.\n");
 	}
 	StairQueue[QueueTail].sector = sec;
@@ -610,7 +610,7 @@ int EV_BuildStairs(line_t *line, byte *args, int direction,
 	tag = args[0];
 	
 	if(!tag)
-		__debugbreak();
+		{ DT_BREAKPOINT }
 
 	// Set global stairs variables
 	TextureChange = 0;

@@ -68,7 +68,8 @@ void P_SetMessage(player_t *player, char *message, dt_bool ultmsg)
 	if(strlen(message) > 79)
 	{
 		memcpy(player->message, message, 80);
-		player->message[80] = 0;
+//		player->message[80] = 0;
+		player->message[79] = 0;
 	}
 	else
 	{
@@ -104,7 +105,8 @@ void P_SetYellowMessage(player_t *player, char *message, dt_bool ultmsg)
 	if(strlen(message) > 79)
 	{
 		memcpy(player->message, message, 80);
-		player->message[80] = 0;
+//		player->message[80] = 0;
+		player->message[79] = 0;
 	}
 	else
 	{
@@ -168,7 +170,8 @@ dt_bool P_GiveMana(player_t *player, manatype_t mana, int count)
 	{
 		return(false);
 	}
-	if(mana < 0 || mana > NUMMANA)
+//	if(mana < 0 || mana > NUMMANA)
+	if(mana > NUMMANA)
 	{
 		I_Error("P_GiveMana: bad type %i", mana);
 	}
