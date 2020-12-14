@@ -1,0 +1,106 @@
+TOOLPATH=/opt/cross/bin/
+
+CC=bgbcc
+
+# TK_CFL=-DARCH_SH4 -DARCH_SH4LE -mBJX2E /Os
+# TK_CFL=-DARCH_SH4 -DARCH_SH4LE -mBJX2E /O2 /fwex3w
+# TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2F /O2 /fwex3w /fwexj /Zz
+TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2 /O2 /fwex3w /fwexj /Zz
+# TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2F /O2 /fwex3w
+# TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2F /O2
+TK_LDFL= $(TK_CFL)
+
+BASE_CFLAGS=-I. -I../tk_clib/include -L../tk_clib 
+
+# -DNORMALUNIX
+
+CFLAGS=$(TK_CFL) $(BASE_CFLAGS)
+LDFLAGS=$(TK_LDFL) -lvxcore64
+
+#		i_system.c		\
+#		i_sound.c		\
+#		i_video.c		\
+#		i_net.c			\
+#		doomdef.c		\
+#		doomstat.c		\
+#		dstrings.c		\
+#		f_wipe.c 		\
+#		d_items.c		\
+#		m_argv.c  		\
+#		m_bbox.c			\
+#		m_swap.c			\
+#		m_cheat.c		\
+#		m_random.c		\
+#		m_menu.c			\
+#		p_acspec.c		\
+#		p_saveg.c		\
+#		r_polyobj.c		\
+#		r_sky.c			\
+#		wi_stuff.c		\
+#		st_lib.c			\
+#		st_stuff.c		\
+#		hu_stuff.c		\
+#		hu_lib.c			\
+
+# not too sophisticated dependency
+SRCS=						\
+		i_btesh4.c			\
+		i_sound_btsh.c		\
+		i_snd_btsh4.c		\
+		i_bgb_mus_btsh.c	\
+		\
+		tables.c			\
+		f_finale.c			\
+		d_main.c			\
+		d_net.c				\
+		g_game.c			\
+		m_misc.c			\
+		m_fixed.c			\
+		am_map.c			\
+		p_ceilng.c			\
+		p_doors.c			\
+		p_enemy.c			\
+		p_floor.c			\
+		p_inter.c			\
+		p_lights.c			\
+		p_map.c				\
+		p_maputl.c			\
+		p_plats.c			\
+		p_pspr.c			\
+		p_setup.c			\
+		p_sight.c			\
+		p_spec.c			\
+		p_switch.c			\
+		p_mobj.c			\
+		p_telept.c			\
+		p_tick.c			\
+		p_user.c			\
+		r_bsp.c				\
+		r_data.c			\
+		r_draw.c			\
+		r_main.c			\
+		r_plane.c			\
+		r_segs.c			\
+		r_things.c			\
+		w_wad.c				\
+		v_video.c			\
+		s_sound.c			\
+		z_zone.c			\
+		info.c				\
+		sounds.c			\
+		\
+		sb_bar.c			\
+		ct_chat.c			\
+		mn_menu.c			\
+		in_lude.c			\
+		\
+		r_draw_bjx2.S
+
+
+all:	 htic_bjx2.exe
+
+clean:
+
+htic_bjx2.exe:	$(SRCS) i_main.c
+	$(CC) $(CFLAGS) $(LDFLAGS) $(SRCS) i_main.c \
+	/Fehtic_bjx2.exe $(LIBS)
