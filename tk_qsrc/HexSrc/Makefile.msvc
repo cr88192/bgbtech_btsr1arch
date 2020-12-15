@@ -1,0 +1,85 @@
+################################################################
+#
+# $Id:$
+#
+# $Log:$
+#
+CC=cl
+
+CFLAGS=/I. /Zi
+LDFLAGS=
+LIBS=opengl32.lib gdi32.lib user32.lib winmm.lib kernel32.lib ole32.lib ws2_32.lib
+
+#		i_net.c			\
+
+# not too sophisticated dependency
+SRCS=					\
+		gfxdrv_w32.c	\
+		gfxdrv_input.c	\
+		sound_w32.c		\
+		\
+		i_bgb_w32.c		\
+		i_main.c		\
+		h2_main.c		\
+		i_sound.c		\
+		tables.c		\
+		f_finale.c		\
+		d_net.c			\
+		g_game.c		\
+		m_misc.c		\
+		am_map.c		\
+		p_ceilng.c		\
+		p_doors.c		\
+		p_enemy.c		\
+		p_floor.c		\
+		p_inter.c		\
+		p_lights.c		\
+		p_map.c			\
+		p_maputl.c		\
+		p_plats.c		\
+		p_pspr.c		\
+		p_setup.c		\
+		p_sight.c		\
+		p_spec.c		\
+		p_switch.c		\
+		p_mobj.c		\
+		p_telept.c		\
+		p_tick.c		\
+		p_user.c		\
+		r_bsp.c			\
+		r_data.c		\
+		r_draw.c		\
+		r_main.c		\
+		r_plane.c		\
+		r_segs.c		\
+		r_things.c		\
+		w_wad.c			\
+		v_video.c		\
+		z_zone.c		\
+		info.c			\
+		sounds.c		\
+		m_fixed.c		\
+		\
+		s_sound.c		\
+		\
+		a_action.c		\
+		ct_chat.c		\
+		in_lude.c		\
+		mn_menu.c		\
+		p_acs.c			\
+		p_anim.c		\
+		p_things.c		\
+		po_man.c		\
+		sb_bar.c		\
+		sc_man.c		\
+		sn_sonix.c		\
+		st_start.c		\
+		sv_save.c		\
+
+		
+all:	 hexen_t.exe
+
+clean:
+
+hexen_t.exe:	$(SRCS)
+	cl /Fehexen_t.exe $(CFLAGS) $(LDFLAGS) $(SRCS) $(LIBS)
