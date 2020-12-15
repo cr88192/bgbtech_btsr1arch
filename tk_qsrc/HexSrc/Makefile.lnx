@@ -82,4 +82,4 @@ all:	 hexen_t.elf
 clean:
 
 hexen_t.elf:	$(SRCS)
-	gcc -o hexen_t.elf $(CFLAGS) $(LDFLAGS) $(SRCS) $(LIBS)
+	clang -o hexen_t.elf $(CFLAGS) $(LDFLAGS) $(SRCS) $(LIBS)

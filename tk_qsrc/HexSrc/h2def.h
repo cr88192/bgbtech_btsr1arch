@@ -213,7 +213,11 @@ typedef signed long long s64;
 
 typedef unsigned int uint;
 
+#ifdef _M_X64
 typedef long long nlint;
+#else
+typedef long nlint;
+#endif
 
 // typedef unsigned char dt_scrpix;
 typedef unsigned short dt_scrpix;

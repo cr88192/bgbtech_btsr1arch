@@ -24,6 +24,16 @@ long long __smullq(int a, int b)
 	return(((s64)a) * ((s64)b));
 }
 
+s64 __int32_dmuls(s32 a, s32 b)
+{
+	return(((s64)a) * ((s64)b));
+}
+
+u64 __int32_dmulu(u32 a, u32 b)
+{
+	return(((u64)a) * ((u64)b));
+}
+
 void I_InitNetwork (void)
 {
     doomcom = malloc (sizeof (*doomcom) );
@@ -468,10 +478,11 @@ void I_StartTic (void)
 
 int UpdateState;
 
-
+#if 0
 void S_StartSongName(char *songLump, dt_bool loop)
 {
 }
+#endif
 
 #if 0
 void S_StartSound(mobj_t *origin, int sound_id)
@@ -599,4 +610,55 @@ void I_Init (void)
 	S_Init();
 	//IO_StartupTimer();
 //	S_Start();
+}
+
+byte *i_mus_songs[32];
+int i_mus_song_mask;
+
+static int	looping=0;
+static int	musicdies=-1;
+
+void I_InitMusic(void)	
+{
+}
+
+void I_ShutdownMusic(void)
+{
+}
+
+void I_PlaySong(int handle, int looping)
+{
+	// UNUSED.
+//	handle = looping = 0;
+//	musicdies = gametic + TICRATE*30;
+}
+
+void I_StopSong(int handle)
+{
+	// UNUSED.
+	handle = 0;
+	
+	looping = 0;
+	musicdies = 0;
+}
+
+void I_UnRegisterSong(int handle)
+{
+	i_mus_song_mask&=~(1<<handle);
+}
+
+int I_RegisterSong(void* data)
+{
+	int i;
+	
+	for(i=1; i<32; i++)
+		if(!(i_mus_song_mask&(1<<i)))
+			break;
+	
+	i_mus_songs[i]=data;
+	i_mus_song_mask|=(1<<i);
+	return(i);
+
+//	data = NULL;
+//	return 1;
 }

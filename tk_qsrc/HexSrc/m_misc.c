@@ -598,6 +598,7 @@ default_t defaults[] =
 
 	{ "messageson", (int *) &messageson, 1 },
 
+#if 0
 	{ "chatmacro0", (int *) &chat_macros[0], (nlint) HUSTR_CHATMACRO0 },
 	{ "chatmacro1", (int *) &chat_macros[1], (nlint) HUSTR_CHATMACRO1 },
 	{ "chatmacro2", (int *) &chat_macros[2], (nlint) HUSTR_CHATMACRO2 },
@@ -608,6 +609,9 @@ default_t defaults[] =
 	{ "chatmacro7", (int *) &chat_macros[7], (nlint) HUSTR_CHATMACRO7 },
 	{ "chatmacro8", (int *) &chat_macros[8], (nlint) HUSTR_CHATMACRO8 },
 	{ "chatmacro9", (int *) &chat_macros[9], (nlint) HUSTR_CHATMACRO9 }
+#endif
+
+	{ NULL, NULL, 0 }
 };
 
 int numdefaults;
@@ -670,9 +674,13 @@ void M_LoadDefaults(char *fileName)
 	dt_bool isstring;
 
 	// Set everything to base values
-	numdefaults = sizeof(defaults)/sizeof(defaults[0]);
-	for(i = 0; i < numdefaults; i++)
+//	numdefaults = sizeof(defaults)/sizeof(defaults[0]);
+//	for(i = 0; i < numdefaults; i++)
+	for(i = 0; ; i++)
 	{
+		if(!defaults[i].name)
+			break;
+
 		if (	(defaults[i].defaultvalue >= -0xffff) &&
 				(defaults[i].defaultvalue <=  0xffff))
 		{
@@ -682,6 +690,7 @@ void M_LoadDefaults(char *fileName)
 			*(nlint *)(defaults[i].location) = defaults[i].defaultvalue;
 		}
 	}
+	numdefaults = i;
 
 	// Check for a custom config file
 	i = M_CheckParm("-config");

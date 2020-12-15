@@ -35,6 +35,13 @@ extern byte *tinttable;
 
 int R_PixelBlend(int pixa, int pixb);
 
+#if 1
+int R_PixelBlend(int pixa, int pixb)
+{
+	return(((pixa&0x7BDE)+(pixb&0x7BDE))>>1);
+}
+#endif
+
 int V_BlendEven(int pixa, int pixb)
 {
 	int pix;
