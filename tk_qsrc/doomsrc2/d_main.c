@@ -271,17 +271,17 @@ void D_Display (void)
 	R_RenderPlayerView (&players[displayplayer]);
 
 	if (gamestate == GS_LEVEL && gametic)
-	HU_Drawer ();
+		HU_Drawer ();
 	
 	// clean up border stuff
 	if (gamestate != oldgamestate && gamestate != GS_LEVEL)
-	I_SetPalette (W_CacheLumpName ("PLAYPAL",PU_CACHE));
+		I_SetPalette (W_CacheLumpName ("PLAYPAL",PU_CACHE));
 
 	// see if the border needs to be initially drawn
 	if (gamestate == GS_LEVEL && oldgamestate != GS_LEVEL)
 	{
-	viewactivestate = false;		// view was not active
-	R_FillBackScreen ();	// draw the pattern into the back screen
+		viewactivestate = false;		// view was not active
+		R_FillBackScreen ();	// draw the pattern into the back screen
 	}
 
 	// see if the border needs to be updated to the screen

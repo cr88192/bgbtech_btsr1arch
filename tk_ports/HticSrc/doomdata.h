@@ -15,6 +15,7 @@ typedef int boolean;
 
 // typedef enum {false, true} boolean;
 typedef unsigned char byte;
+typedef signed char sbyte;
 #endif
 
 typedef unsigned short u16;
@@ -25,7 +26,11 @@ typedef signed short s16;
 typedef signed int s32;
 typedef signed long long s64;
 
+#ifdef _M_X64
 typedef long long nlint;
+#else
+typedef long nlint;
+#endif
 
 // typedef byte dt_scrpix;
 typedef u16 dt_scrpix;

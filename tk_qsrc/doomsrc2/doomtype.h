@@ -34,6 +34,7 @@ typedef int boolean;
 #endif
 
 typedef unsigned char byte;
+typedef signed char sbyte;
 
 typedef short s16;
 typedef unsigned short u16;

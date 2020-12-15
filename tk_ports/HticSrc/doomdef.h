@@ -1,5 +1,5 @@
 
-// doomdef.h
+// DoomDef.h
 
 #ifndef __DOOMDEF__
 #define __DOOMDEF__
@@ -147,8 +147,8 @@ typedef struct
 
 typedef struct
 {
-	char		forwardmove;		// *2048 for move
-	char		sidemove;			// *2048 for move
+	sbyte		forwardmove;		// *2048 for move
+	sbyte		sidemove;			// *2048 for move
 	short		angleturn;			// <<16 for angle delta
 	short		consistancy;		// checks for net game
 	byte		chatchar;

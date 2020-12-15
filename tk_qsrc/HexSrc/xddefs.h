@@ -17,6 +17,7 @@
 #define __BYTEBOOL__
 typedef enum {false, true} dt_bool;
 typedef unsigned char byte;
+typedef signed char sbyte;
 #endif
 
 //--------------------------------------------------------------------------
