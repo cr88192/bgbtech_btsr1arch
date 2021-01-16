@@ -1,8 +1,13 @@
 `define jx2_enable_mmu
 `define jx2_enable_fpu
 
-`define	jx2_use_fpu_w			//use wide FPU
+`define	jx2_use_fpu_w			//use wide FPU (GSVX)
 `define	jx2_fcmp_alu			//do FCMP via ALU
+
+`define	jx2_alu_wx				//Enable Wide-ALU
+
+// `define	jx2_fpu_longdbl			//Enable FPU LongDouble Ext
+// `define	jx2_fpu_fmac			//Enable FMAC Operation
 
 // `define jx2_sprs_elrehr			//ELR/EHR/BP as special registers?
 `define jx2_bra2stage			//Use 2-stage branch initiation
@@ -37,7 +42,7 @@
 
 `define jx2_merge_shadq		//Merge SHAD and SHAD.Q
 
-`define jx2_debug_keepinstr
+// `define jx2_debug_keepinstr
 
 
 // `define jx2_debug_l1ds		//Debug prints for L1 data cache

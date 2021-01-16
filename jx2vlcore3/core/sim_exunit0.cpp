@@ -1601,7 +1601,7 @@ int main(int argc, char **argv, char **env)
 		(char *)"../../tk_qsrc/id1/autoexec1.cfg");
 #endif
 
-	JX2R_UseImageAddFileBuffer("swapfile.sys", (byte *)NULL, 384*(1<<20));
+//	JX2R_UseImageAddFileBuffer("swapfile.sys", (byte *)NULL, 384*(1<<20));
 
 	Verilated::commandArgs(argc, argv);
 

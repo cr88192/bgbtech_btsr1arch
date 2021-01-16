@@ -133,7 +133,13 @@ Somewhere in the image will be the WAD4 Directory.
 ** A flag may select between CP1252 and UTF8 encodings.
 *** This will apply to both the name field as well as a symlink.
 
+
 Note that a symlink is encoded the same as a normal file lump, except that its payload will be interpreted as a path to another location.
+
+If a symlink starts with '/' it will be interpreted as an absolute path within the VFS. If the symlink starts with ':' it will be relative to the mount point for the image.
+
+Other paths may be relative to the location of the symlink within the filesystem image, and may contain '.' and '..'.
+
 
 
 === Packed File ===

@@ -10,9 +10,16 @@ ExOp:
 	1: Ro=Rn+Rm
 	2: Ro=Rn-Rm
 	3: Ro=I2F(Rn)
+	4: Ro=F2I(Rn)
 */
 
 `include "CoreDefs.v"
+
+`include "ExCsAdd64C.v"
+
+`include "ExCsShr64F.v"
+// `include "ExCsClz88F.v"
+// `include "ExCsShl90F.v"
 
 module FpuAdd(
 	/* verilator lint_off UNUSED */
@@ -32,7 +39,7 @@ input	exHold;
 input[63:0]		regValRm;
 input[63:0]		regValRn;
 output[63:0]	regValRo;
-input[1:0]		regExOp;
+input[3:0]		regExOp;
 output[1:0]		regExOK;
 
 reg[63:0]		tRegValRo2;
@@ -41,18 +48,24 @@ reg[1:0]		tRegExOK2;
 assign	regValRo	= tRegValRo2;
 assign	regExOK		= tRegExOK2;
 
+reg[63:0]		tRegValRm;
+reg[63:0]		tRegValRn;
+
 reg[63:0]		tRegValRo;
 reg[1:0]		tRegExOK;
 
-reg[1:0]		tRegExOp1;
+reg[3:0]		tRegExOp1;
 reg				tExEn1;
 reg				tSgnA1;
 reg				tSgnB1;
+reg				tFraNzA1;
+reg				tFraNzB1;
 reg[10:0]		tExpA1;
 reg[10:0]		tExpB1;
 reg[63:0]		tFraA1;
 reg[63:0]		tFraB1;
 reg				tFraGe1;
+reg				tFraDti1;
 
 reg[63:0]		tFraJ1;
 reg[63:0]		tRegValRn1;
@@ -63,7 +76,7 @@ reg[63:0]		tFraA1D;
 reg[63:0]		tFraB1D;
 
 
-reg[1:0]		tRegExOp2;
+reg[3:0]		tRegExOp2;
 reg				tExEn2;
 reg				tSgnA2;
 reg				tSgnB2;
@@ -77,19 +90,35 @@ reg[63:0]		tRegValRn2;
 reg				tSgnC2;
 reg[10:0]		tExpC2;
 reg[63:0]		tFraC2;
+reg[63:0]		tFraC2I;
 
+reg[63:0]		tFraC2_S;
+reg[63:0]		tFraC2_T;
+reg				tFraC2_Cin;
+wire[64:0]		tFraC2_C;
+ExCsAdd64C	tFraAdd(tFraC2_S, tFraC2_T, tFraC2_C, tFraC2_Cin);
+
+reg[63:0]		tFraShr1_S;
+wire[63:0]		tFraShr1_C;
+reg[7:0]		tFraShr1_Shr;
+ExCsShr64F	tFraShr(tFraShr1_S, tFraShr1_C, tFraShr1_Shr);
+
+reg[3:0]		tRegExOp3;
 reg				tExEn3;
 reg				tSgnC3;
 reg[10:0]		tExpC3;
 reg[63:0]		tFraC3;
+reg[63:0]		tFraC3I;
 reg				tSgnC3B;
 reg[11:0]		tExpC3B;
 reg[63:0]		tFraC3B;
 
+reg[3:0]		tRegExOp4;
 reg				tExEn4;
 reg				tSgnC4;
 reg[11:0]		tExpC4;
 reg[63:0]		tFraC4;
+reg[63:0]		tFraC4I;
 
 reg				tSgnC4B;
 reg[11:0]		tExpC4B;
@@ -99,10 +128,16 @@ reg[63:0]		tValC4;
 
 reg				tExEn5;
 
+reg				tFraUseA;
+
 always @*
 begin
 	tRegExOp1	= regExOp;
-	tExEn1		= regExOp != 0;
+//	tExEn1		= regExOp != 0;
+	tExEn1		= regExOp[2:0] != 0;
+
+	tRegValRm	= regValRm;
+	tRegValRn	= regValRn;
 	tRegValRn1	= regValRn;
 
 	tRegExOK=UMEM_OK_READY;
@@ -115,25 +150,76 @@ begin
 //	end
 	
 	/* Stage 1 */
-	tSgnA1	= regValRn[63];
-	tSgnB1	= regValRm[63] ^ regExOp[1];
-//	tSgnB1	= regValRm[63];
-	tExpA1	= regValRn[62:52];
-	tExpB1	= regValRm[62:52];
-	tFraA1	= {1'b0, (tExpA1!=0), regValRn[51:0], 10'h0};
-	tFraB1	= {1'b0, (tExpB1!=0), regValRm[51:0], 10'h0};
+
+	tFraDti1	= (tRegExOp1[2:0] == 4);
+
+	if(tFraDti1)
+	begin
+		tRegValRm	= 64'h43D0_0000_0000_0000;
+	end
+
+	tSgnA1	= tRegValRn[63];
+	tSgnB1	= tRegValRm[63] ^ regExOp[1];
+//	tSgnB1	= tRegValRm[63];
+	tExpA1	= tRegValRn[62:52];
+	tExpB1	= tRegValRm[62:52];
+
+	tFraNzA1	= (tExpA1 != 0);
+	tFraNzB1	= (tExpB1 != 0);
+	if(tFraDti1)
+	begin
+//		tFraNzA1	= 0;
+		tFraNzB1	= 0;
+		tSgnB1		= 0;
+		tExpB1		= 1085;
+	end
+
+//	tFraA1	= {1'b0, (tExpA1!=0), regValRn[51:0], 10'h0};
+//	tFraB1	= {1'b0, (tExpB1!=0), regValRm[51:0], 10'h0};
+	tFraA1	= {1'b0, tFraNzA1, tRegValRn[51:0], 10'h0};
+	tFraB1	= {1'b0, tFraNzB1, tRegValRm[51:0], 10'h0};
 	tExpA1D	= {1'b0, tExpA1} - {1'b0, tExpB1};
 	tExpB1D	= {1'b0, tExpB1} - {1'b0, tExpA1};
-	tFraA1D	= (tExpB1D<=52) ? (tFraA1 >> tExpB1D[5:0]) : 0;
-	tFraB1D	= (tExpA1D<=52) ? (tFraB1 >> tExpA1D[5:0]) : 0;
+//	tFraA1D	= (tExpB1D<=52) ? (tFraA1 >> tExpB1D[5:0]) : 0;
+//	tFraB1D	= (tExpA1D<=52) ? (tFraB1 >> tExpA1D[5:0]) : 0;
+//	tFraA1D	= (tExpB1D<=62) ? (tFraA1 >> tExpB1D[5:0]) : 0;
+//	tFraB1D	= (tExpA1D<=62) ? (tFraB1 >> tExpA1D[5:0]) : 0;
+//	tFraB1D	= ((tExpA1D<=62) && !tFraDti1) ?
+//		(tFraB1 >> tExpA1D[5:0]) : 0;
 
-	tFraGe1 = (tFraA1 >= tFraB1);
+//	tFraGe1 = (tFraA1 >= tFraB1);
 
-	tFraJ1	= regValRn;
+	tFraJ1	= tRegValRn;
+
+//	if(tRegExOp1[2:0] == 4)
+//	begin
+//		$display("FADD: D2I-1 A=%X B=%X Bd=%X (SHR=%d), Ra=%X Rb=%X",
+//			tFraA1, tFraB1, tFraB1D, tExpA1D,
+//			regValRn, regValRm);
+//	end
+
+	if(tExpA1D[11] || tFraDti1)
+//	if(tExpA1D[11] || tFraDti1 || tFraItf1)
+	begin
+		tFraUseA		= 0;
+		tFraShr1_S		= tFraA1;
+		tFraShr1_Shr	= { tExpB1D[9:7]!=0, tExpB1D[6:0] };
+	end else begin
+		tFraUseA		= 1;
+		tFraShr1_S		= tFraB1;
+		tFraShr1_Shr	= { tExpA1D[9:7]!=0, tExpA1D[6:0] };
+	end
 
 	/* Stage 2 */
+
+	tFraC2_S = tFraA2;
+//	tFraC2_T = (tSgnA2 == tSgnB2) ? tFraB2 : (-tFraB2);
+	tFraC2_T = (tSgnA2 == tSgnB2) ? tFraB2 : (~tFraB2);
+	tFraC2_Cin = (tSgnA2 != tSgnB2);
+
 //	if(regExOp == 3)
-	if(tRegExOp2 == 3)
+//	if(tRegExOp2 == 3)
+	if(tRegExOp2[2:0] == 3)
 	begin
 		if(tFraJ2[63])
 		begin
@@ -141,7 +227,8 @@ begin
 //			tExpC2	= 1086;
 			tExpC2	= 1085;
 //			tFraC2	= -regValRn;
-			tFraC2	= -tRegValRn2;
+//			tFraC2	= -tRegValRn2;
+			tFraC2_S = ~tFraJ2;
 		end
 		else
 		begin
@@ -149,17 +236,38 @@ begin
 //			tExpC2	= 1086;
 			tExpC2	= 1085;
 //			tFraC2	= regValRn;
-			tFraC2	= tRegValRn2;
+//			tFraC2	= tRegValRn2;
+			tFraC2_S = tFraJ2;
 		end
+
+//		tFraC2_S = tFraA2;
+		tFraC2_T = 0;
+		tFraC2_Cin = tFraJ2[63];
+		tFraC2	= tFraC2_C[63:0];
 	end
 	else
 	begin
 		tSgnC2	= tSgnA2;
 		tExpC2	= tExpA2;
-		tFraC2	= (tSgnA2 == tSgnB2) ?
-			(tFraA2 + tFraB2) :
-			(tFraA2 - tFraB2) ;
+		tFraC2	= tFraC2_C[63:0];
+//		tFraC2	= (tSgnA2 == tSgnB2) ?
+//			(tFraA2 + tFraB2) :
+//			(tFraA2 - tFraB2) ;
+
+		if(tFraC2_C[64] ^ (tSgnA2!=tSgnB2))
+		begin
+			tSgnC2	= !tSgnA2;
+			tFraC2	= ~tFraC2_C[63:0];
+		end
 	end
+
+	tFraC2I = tFraC2_C[63: 0];
+
+//	if(tRegExOp2[2:0] == 4)
+//	begin
+//		$display("FADD: D2I-2 C=%X A=%X B=%X", tFraC2, tFraA2, tFraB2);
+//	end
+	
 	
 	/* Stage 3 */
 	tSgnC3B	= tSgnC3;
@@ -278,6 +386,12 @@ begin
 //			(tFraC4B[9]?64'h1:64'h0);
 		tValC4 = { tSgnC4B, tExpC4B[10:0], tFraC4B[61:10] };
 	end
+
+	if(tRegExOp4[2:0] == 4)
+	begin
+//		$display("FADD: D2I-4 %X", tFraC4I);
+		tValC4 = tFraC4I;
+	end
 	
 end
 
@@ -289,17 +403,23 @@ begin
 	if(tExEn1 && !exHold)
 	begin
 //		if(tExpA1>=tExpB1)
-		if((tExpA1>tExpB1) || ((tExpA1==tExpB1) && tFraGe1))
+//		if((tExpA1>tExpB1) || ((tExpA1==tExpB1) && tFraGe1))
+//		if((tExpA1>tExpB1) || ((tExpA1==tExpB1) && tFraGe1) || tFraDti1)
+		if(tFraUseA)
 		begin
 			tSgnA2 <= tSgnA1;	tSgnB2 <= tSgnB1;
 			tExpA2 <= tExpA1;	tExpB2 <= tExpB1;
-			tFraA2 <= tFraA1;	tFraB2 <= tFraB1D;
+			tFraA2 <= tFraA1;
+//			tFraB2 <= tFraB1D;
+			tFraB2 <= tFraShr1_C;
 		end
 		else
 		begin
 			tSgnA2 <= tSgnB1;	tSgnB2 <= tSgnA1;
 			tExpA2 <= tExpB1;	tExpB2 <= tExpA1;
-			tFraA2 <= tFraB1;	tFraB2 <= tFraA1D;
+			tFraA2 <= tFraB1;
+//			tFraB2 <= tFraA1D;
+			tFraB2 <= tFraShr1_C;
 		end
 		
 		tRegExOp2	<= tRegExOp1;
@@ -314,13 +434,17 @@ begin
 
 	if(tExEn2)
 	begin
+		tRegExOp3	<= tRegExOp2;
 		tSgnC3		<= tSgnC2;
 		tExpC3		<= tExpC2;
 		tFraC3		<= tFraC2;
+		tFraC3I		<= tFraC2I;
 
+		tRegExOp4	<= tRegExOp3;
 		tSgnC4		<= tSgnC3B;
 		tExpC4		<= tExpC3B;
 		tFraC4		<= tFraC3B;
+		tFraC4I		<= tFraC3I;
 		
 		tExEn3		<= tExEn2;
 		tExEn4		<= tExEn3;

@@ -24,6 +24,7 @@ input			addrEnJq;
 
 output[47:0]	regOutAddr;
 
+reg[47:0]	tRegValRi;
 reg[47:0]	tRiSc0;
 reg[47:0]	tRiSc1;
 reg[47:0]	tRiSc2;
@@ -68,16 +69,23 @@ reg[15:0]	tAddrSc0C;
 // reg[15:0]	tAddrSc2C;
 // reg[15:0]	tAddrSc3C;
 
+reg			tCaVal0A;
+reg			tCaVal0B;
+reg			tCaVal0C;
+
 reg[47:0]	tAddr;
 
 assign		regOutAddr = tAddr;
 
 always @*
 begin
-	tRiSc0 = regValRi;
-	tRiSc1 = { regValRi[46:0], 1'b0 };
-	tRiSc2 = { regValRi[45:0], 2'b0 };
-	tRiSc3 = { regValRi[44:0], 3'b0 };
+//	tRegValRi = regValRi;
+	tRegValRi = { regValRi[31] ? 16'hFFFF : 16'h0000, regValRi[31:0] };
+
+	tRiSc0 = tRegValRi;
+	tRiSc1 = { tRegValRi[46:0], 1'b0 };
+	tRiSc2 = { tRegValRi[45:0], 2'b0 };
+	tRiSc3 = { tRegValRi[44:0], 3'b0 };
 
 	case(idUIxt[1:0])
 		2'b00:	tRiSc=tRiSc0;
@@ -93,10 +101,15 @@ begin
 	tAddrSc0C1 = { 1'b0, regValRm[47:32] } + { 1'b0, tRiSc[47:32] } + 1;
 	tAddrSc0B = tAddrSc0A[16] ? tAddrSc0B1 : tAddrSc0B0;
 
+	tCaVal0A = 0;
+	tCaVal0B = tAddrSc0A[16];
+	tCaVal0C = tCaVal0B ? tAddrSc0B1[16] : tAddrSc0B0[16];
+
 	tAddrSc0C = 16'h0000;
 	if(addrEnJq)
 	begin
-		tAddrSc0C = tAddrSc0B[16] ? tAddrSc0C1[15:0] : tAddrSc0C0[15:0];
+//		tAddrSc0C = tAddrSc0B[16] ? tAddrSc0C1[15:0] : tAddrSc0C0[15:0];
+		tAddrSc0C = tCaVal0C ? tAddrSc0C1[15:0] : tAddrSc0C0[15:0];
 	end
 
 	tAddrSc0 = { tAddrSc0C[15:0], tAddrSc0B[15:0], tAddrSc0A[15:0] };

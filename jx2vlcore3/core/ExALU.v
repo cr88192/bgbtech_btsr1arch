@@ -61,7 +61,8 @@ module ExALU(
 	exHold,
 	regInSrST,
 	regOutVal,
-	regOutSrST
+	regOutSrST,
+	regInCarryD
 	);
 
 input			clock;
@@ -76,6 +77,7 @@ input[5:0]		regInSrST;
 
 output[63:0]	regOutVal;
 output[5:0]		regOutSrST;
+input[7:0]		regInCarryD;
 
 wire			regInSrT;
 wire			regInSrS;
@@ -150,6 +152,26 @@ reg[16:0]	tSub1C0;
 reg[16:0]	tSub1C1;
 reg[16:0]	tSub1D0;
 reg[16:0]	tSub1D1;
+
+reg[1:0]	tAddCa1A0;
+reg[1:0]	tAddCa1A1;
+reg[1:0]	tAddCa1B0;
+reg[1:0]	tAddCa1B1;
+
+reg[1:0]	tSubCa1A0;
+reg[1:0]	tSubCa1A1;
+reg[1:0]	tSubCa1B0;
+reg[1:0]	tSubCa1B1;
+
+reg[3:0]	tAddCa2A0;
+reg[3:0]	tAddCa2A1;
+reg[3:0]	tSubCa2A0;
+reg[3:0]	tSubCa2A1;
+
+reg[4:0]	tAddCa2_Add;
+reg[4:0]	tAddCa2_Adc;
+reg[4:0]	tSubCa2_Sub;
+reg[4:0]	tSubCa2_Sbb;
 
 reg[32:0]	tAdd2A0;
 reg[32:0]	tAdd2A1;
@@ -228,7 +250,12 @@ reg			tSub1BSxVF;
 reg			tFCmpRsIsNaN;
 reg			tFCmpRtIsNaN;
 reg			tFCmpEqP;
+reg			tFCmpxEqP;
 reg			tFCmpGtP;
+reg			tFCmpxGtP;
+
+reg			tFCmpxRsIsNaN;
+reg			tFCmpxRtIsNaN;
 
 reg			tFCmpGtP_FA;
 reg			tFCmpGtP_FB;
@@ -242,10 +269,22 @@ reg[32:0]	tResultu1A;
 reg[32:0]	tResultu1B;
 reg[64:0]	tResultu2A;
 
+reg[64:0]	tResult_Add64;
+reg[64:0]	tResult_Sub64;
+// reg[64:0]	tResult_Adc64;
+// reg[64:0]	tResult_Sbb64;
+
+reg[32:0]	tResult_Add32;
+reg[32:0]	tResult_Sub32;
+// reg[32:0]	tResult_Adc32;
+// reg[32:0]	tResult_Sbb32;
+
 reg[32:0]	tResult1W;
 reg[64:0]	tResult2W;
 reg[32:0]	tResultShufB;
 reg[64:0]	tResultShufW;
+
+reg			tOpIsWx;
 
 
 always @*
@@ -283,6 +322,88 @@ begin
 	tSub3A0 = { tSub2A0[32]?tSub2B1:tSub2B0, tSub2A0[31:0] };
 	tSub3A1 = { tSub2A1[32]?tSub2B1:tSub2B0, tSub2A1[31:0] };
 
+	tOpIsWx = (idUIxt[7:6] == 2'b11);
+
+`ifdef def_true
+	tAddCa1A0 = { tAdd1A0[16]?tAdd1B1[16]:tAdd1B0[16], tAdd1A0[16] };
+	tAddCa1A1 = { tAdd1A1[16]?tAdd1B1[16]:tAdd1B0[16], tAdd1A1[16] };
+	tAddCa1B0 = { tAdd1C0[16]?tAdd1D1[16]:tAdd1D0[16], tAdd1C0[16] };
+	tAddCa1B1 = { tAdd1C1[16]?tAdd1D1[16]:tAdd1D0[16], tAdd1C1[16] };
+
+	tSubCa1A0 = { tSub1A0[16]?tSub1B1[16]:tSub1B0[16], tSub1A0[16] };
+	tSubCa1A1 = { tSub1A1[16]?tSub1B1[16]:tSub1B0[16], tSub1A1[16] };
+	tSubCa1B0 = { tSub1C0[16]?tSub1D1[16]:tSub1D0[16], tSub1C0[16] };
+	tSubCa1B1 = { tSub1C1[16]?tSub1D1[16]:tSub1D0[16], tSub1C1[16] };
+
+	tAddCa2A0 = { tAddCa1A0[1]?tAddCa1B1:tAddCa1B0, tAddCa1A0 };
+	tAddCa2A1 = { tAddCa1A1[1]?tAddCa1B1:tAddCa1B0, tAddCa1A1 };
+	tSubCa2A0 = { tSubCa1A0[1]?tSubCa1B1:tSubCa1B0, tSubCa1A0 };
+	tSubCa2A1 = { tSubCa1A1[1]?tSubCa1B1:tSubCa1B0, tSubCa1A1 };
+
+	tAdd3A0 = {	tAddCa2A0[3],
+				tAddCa2A0[2] ? tAdd1D1[15:0] :	tAdd1D0[15:0],
+				tAddCa2A0[1] ? tAdd1C1[15:0] :	tAdd1C0[15:0],
+				tAddCa2A0[0] ? tAdd1B1[15:0] :	tAdd1B0[15:0],
+												tAdd1A0[15:0] };
+	tAdd3A1 = {	tAddCa2A1[3],
+				tAddCa2A1[2] ? tAdd1D1[15:0] :	tAdd1D0[15:0],
+				tAddCa2A1[1] ? tAdd1C1[15:0] :	tAdd1C0[15:0],
+				tAddCa2A1[0] ? tAdd1B1[15:0] :	tAdd1B0[15:0],
+												tAdd1A1[15:0] };
+
+	tSub3A0 = {	tSubCa2A0[3],	
+				tSubCa2A0[2] ? tSub1D1[15:0] :	tSub1D0[15:0],
+				tSubCa2A0[1] ? tSub1C1[15:0] :	tSub1C0[15:0],
+				tSubCa2A0[0] ? tSub1B1[15:0] :	tSub1B0[15:0],
+												tSub1A0[15:0] };
+	tSub3A1 = {	tSubCa2A1[3],
+				tSubCa2A1[2] ? tSub1D1[15:0] :	tSub1D0[15:0],
+				tSubCa2A1[1] ? tSub1C1[15:0] :	tSub1C0[15:0],
+				tSubCa2A1[0] ? tSub1B1[15:0] :	tSub1B0[15:0],
+												tSub1A1[15:0] };
+
+	tAdd2A0 = { tAddCa1A0[1], tAdd3A0[31:0] };
+	tAdd2A1 = { tAddCa1A1[1], tAdd3A1[31:0] };
+	tSub2A0 = { tSubCa1A0[1], tSub3A0[31:0] };
+	tSub2A1 = { tSubCa1A1[1], tSub3A1[31:0] };
+
+	tAddCa2_Add = { tAddCa2A0, 1'b0 };
+	tSubCa2_Sub = { tSubCa2A1, 1'b1 };
+	tAddCa2_Adc = { regInSrT ? tAddCa2A1 : tAddCa2A0, regInSrT };
+	tSubCa2_Sbb = { regInSrT ? tSubCa2A0 : tSubCa2A1, !regInSrT };
+
+`ifdef jx2_alu_wx
+	if(tOpIsWx)
+	begin
+		tAddCa2_Add = {
+			regInCarryD[0] ? tAddCa2A1 : tAddCa2A0,
+			regInCarryD[0] };
+		tSubCa2_Sub = {
+			regInCarryD[3] ? tSubCa2A1 : tSubCa2A0,
+			regInCarryD[3] };
+	end
+`endif
+
+	if(idUIxt[1])
+	begin
+		tAddCa2_Add = tAddCa2_Adc;
+		tSubCa2_Sub = tSubCa2_Sbb;
+	end
+
+	tResult_Add64	= {	tAddCa2_Add[3],
+				tAddCa2_Add[3] ? tAdd1D1[15:0] : tAdd1D0[15:0],
+				tAddCa2_Add[2] ? tAdd1C1[15:0] : tAdd1C0[15:0],
+				tAddCa2_Add[1] ? tAdd1B1[15:0] : tAdd1B0[15:0],
+				tAddCa2_Add[0] ? tAdd1A1[15:0] : tAdd1A0[15:0]};
+	tResult_Sub64	= {	tSubCa2_Sub[3],
+				tSubCa2_Sub[3] ? tSub1D1[15:0] : tSub1D0[15:0],
+				tSubCa2_Sub[2] ? tSub1C1[15:0] : tSub1C0[15:0],
+				tSubCa2_Sub[1] ? tSub1B1[15:0] : tSub1B0[15:0],
+				tSubCa2_Sub[0] ? tSub1A1[15:0] : tSub1A0[15:0] };
+
+	tResult_Add32 = { tAddCa2_Add[2], tResult_Add64[31:0] };
+	tResult_Sub32 = { tSubCa2_Sub[2], tResult_Sub64[31:0] };
+`endif
 
 	tSub1WZF_A	= (tSub2A1[15: 0]==0);
 	tSub1WZF_B	= (tSub2A1[31:16]==0);
@@ -305,8 +426,12 @@ begin
 	tSub1BZF	= tSub1WZF_C && tSub1WZF_D;
 
 	tSub2ZF		= tSub1ZF && tSub1BZF;
-	tSub1CF = tSub2A1[32];
-	tSub2CF = tSub3A1[64];
+
+//	tSub1CF = tSub2A1[32];
+//	tSub2CF = tSub3A1[64];
+	tSub1CF = tSubCa2A1[1];
+	tSub2CF = tSubCa2A1[3];
+
 	tSub1SF = tSub2A1[31];
 	tSub2SF = tSub3A1[63];
 
@@ -339,7 +464,12 @@ begin
 	tFCmpRsIsNaN	= (regValRs[62:52]==11'h7FF) && (regValRs[51:48]!=0);
 	tFCmpRtIsNaN	= (regValRt[62:52]==11'h7FF) && (regValRt[51:48]!=0);
 
+	tFCmpxRsIsNaN	= (regValRs[62:48]==15'h7FFF) && (regValRs[47:44]!=0);
+	tFCmpxRtIsNaN	= (regValRt[62:48]==15'h7FFF) && (regValRt[47:44]!=0);
+
 	tFCmpEqP		= tSub2ZF && !tFCmpRsIsNaN;
+//	tFCmpxEqP		= tSub2ZF && !tFCmpxRsIsNaN;
+	tFCmpxEqP		= tSub2ZF && !tFCmpxRsIsNaN && regInCarryD[4];
 //	tFCmpGtP;
 
 	casez({regValRs[63], regValRt[63], tSub2SF, tSub2ZF})
@@ -358,6 +488,8 @@ begin
 
 		4'b1111: tFCmpGtP=0;	/* s==t */
 	endcase
+	
+	tFCmpxGtP = tFCmpGtP && (tSub2ZF && (regInCarryD[3] && !regInCarryD[4]));
 
 `ifdef def_true
 
@@ -621,13 +753,24 @@ begin
 	tResult1Q=regInSrQ;
 	tResult1R=regInSrR;
 	tResult1O=regInSrO;
+	
+	tOpIsWx = (idUIxt[7:6] == 2'b11);
 
 	case(idUIxt[3:0])
 		4'h0: begin		/* ADD */
-			tResult1A=tAdd2A0;
-			tResult2A=tAdd3A0;
+//			tResult1A=tAdd2A0;
+//			tResult2A=tAdd3A0;
+			tResult1A=tResult_Add32;
+			tResult2A=tResult_Add64;
 			tResult1T=regInSrT;
 			tResult2T=regInSrT;
+			
+`ifdef jx2_alu_wx
+//			if(tOpIsWx)
+//			begin
+//				tResult2A = regInCarryD[0] ? tAdd3A1 : tAdd3A0;
+//			end
+`endif
 
 			tResult1B=tAdd2B0;
 			tResult1S=regInSrS;
@@ -637,10 +780,19 @@ begin
 				tAdd1B0[15:0], tAdd1A0[15:0] };
 		end
 		4'h1: begin		/* SUB */
-			tResult1A=tSub2A1;
-			tResult2A=tSub3A1;
+//			tResult1A=tSub2A1;
+//			tResult2A=tSub3A1;
+			tResult1A=tResult_Sub32;
+			tResult2A=tResult_Sub64;
 			tResult1T=regInSrT;
 			tResult2T=regInSrT;
+
+`ifdef jx2_alu_wx
+//			if(tOpIsWx)
+//			begin
+//				tResult2A = regInCarryD[3] ? tSub3A1 : tSub3A0;
+//			end
+`endif
 
 			tResult1B=tSub2B1;
 			tResult1S=regInSrS;
@@ -650,10 +802,20 @@ begin
 				tSub1B1[15:0], tSub1A1[15:0] };
 		end
 		4'h2: begin		/* ADC */
-			tResult1A=regInSrT ? tAdd2A1 : tAdd2A0;
-			tResult2A=regInSrT ? tAdd3A1 : tAdd3A0;
+//			tResult1A=regInSrT ? tAdd2A1 : tAdd2A0;
+//			tResult2A=regInSrT ? tAdd3A1 : tAdd3A0;
+			tResult1A=tResult_Add32;
+			tResult2A=tResult_Add64;
 			tResult1T=tResult1A[32];
 			tResult2T=tResult2A[64];
+
+`ifdef jx2_alu_wx
+//			if(tOpIsWx)
+//			begin
+//				tResult2A = (regInSrT ? regInCarryD[1] : regInCarryD[0]) ?
+//					tAdd3A1 : tAdd3A0;
+//			end
+`endif
 
 			tResult1B=regInSrS ? tAdd2B1 : tAdd2B0;
 			tResult1S=tResult1B[32];
@@ -661,10 +823,20 @@ begin
 			tResult2W = { 1'b0, regValRs[63:32], regValRt[31:0] };
 		end
 		4'h3: begin		/* SBB */
-			tResult1A=regInSrT ? tSub2A0 : tSub2A1;
-			tResult2A=regInSrT ? tSub3A0 : tSub3A1;
+//			tResult1A=regInSrT ? tSub2A0 : tSub2A1;
+//			tResult2A=regInSrT ? tSub3A0 : tSub3A1;
+			tResult1A=tResult_Sub32;
+			tResult2A=tResult_Sub64;
 			tResult1T=!tResult1A[32];
 			tResult2T=!tResult2A[64];
+
+`ifdef jx2_alu_wx
+//			if(tOpIsWx)
+//			begin
+//				tResult2A = (regInSrT ? regInCarryD[2] : regInCarryD[3]) ?
+//					tSub3A1 : tSub3A0;
+//			end
+`endif
 
 			tResult1B=regInSrS ? tSub2B0 : tSub2B1;
 			tResult1S=!tResult1B[32];
@@ -785,6 +957,13 @@ begin
 			tResult2T=tSub2ZF;
 			tResult1S=tSub1BZF;
 
+`ifdef jx2_alu_wx
+			if(tOpIsWx)
+			begin
+				tResult2T = tSub2ZF && regInCarryD[4];
+			end
+`endif
+
 			tResult1P=tSub1WZF_A;
 			tResult1Q=tSub1WZF_B;
 			tResult1R=tSub1WZF_C;
@@ -809,6 +988,14 @@ begin
 			tResult2T=tSub2CF && !tSub2ZF;
 			tResult1S=tSub1BCF && !tSub1BZF;
 
+`ifdef jx2_alu_wx
+			if(tOpIsWx)
+			begin
+				tResult2T = tSub2CF ||
+					(tSub2ZF && (regInCarryD[3] && !regInCarryD[4]));
+			end
+`endif
+
 			tResult1P=tSub1WCF_A && !tSub1WZF_A;
 			tResult1Q=tSub1WCF_B && !tSub1WZF_B;
 			tResult1R=tSub1WCF_C && !tSub1WZF_C;
@@ -826,6 +1013,14 @@ begin
 			tResult1T=!tSub1ZF && !(tSub1SF^tSub1VF);
 			tResult2T=!tSub2ZF && !(tSub2SF^tSub2VF);
 			tResult1S=!tSub1BZF && !(tSub1BSF^tSub1BVF);
+
+`ifdef jx2_alu_wx
+			if(tOpIsWx)
+			begin
+				tResult2T = (!tSub2ZF && !(tSub2SF^tSub2VF)) ||
+					(tSub2ZF && (regInCarryD[3] && !regInCarryD[4]));
+			end
+`endif
 
 			tResult1P=!tSub1WSF_A && !tSub1WZF_A;
 			tResult1Q=!tSub1WSF_B && !tSub1WZF_B;
@@ -931,6 +1126,14 @@ begin
 		begin
 			tResult1T	= tFCmpEqP;
 			tResult2T	= tFCmpEqP;
+
+`ifdef jx2_alu_wx
+			if(idUIxt[5:4]==2'b10)
+			begin
+				tResult1T	= tFCmpxEqP;
+				tResult2T	= tFCmpxEqP;
+			end
+`endif
 			
 			if(idUIxt[5:4]==2'b11)
 			begin
@@ -946,7 +1149,14 @@ begin
 		begin
 			tResult1T = tFCmpGtP;
 			tResult2T = tFCmpGtP;
+			tResult1S = tSub2ZF;
 
+			if(idUIxt[5:4]==2'b10)
+			begin
+				tResult1T	= tFCmpxGtP;
+				tResult2T	= tFCmpxGtP;
+			end
+			
 			if(idUIxt[5:4]==2'b11)
 			begin
 				tResult1T	= tFCmpGtP_FA;
@@ -993,10 +1203,15 @@ begin
 	end
 	else
 	begin
-		if(idUIxt[4])
-			tRegOutVal = { UV32_00, tResult1A[31:0] };
-		else
-			tRegOutVal = { tResult1A[31]?UV32_FF:UV32_00, tResult1A[31:0] };
+//		if(idUIxt[4])
+//			tRegOutVal = { UV32_00, tResult1A[31:0] };
+//		else
+//			tRegOutVal = { tResult1A[31]?UV32_FF:UV32_00, tResult1A[31:0] };
+
+		tRegOutVal = {
+			(tResult1A[31] && !idUIxt[4]) ? UV32_FF : UV32_00,
+			tResult1A[31:0] };
+
 		tRegOutSrT = tResult1T;
 		tRegOutSrS = regInSrS;
 	end

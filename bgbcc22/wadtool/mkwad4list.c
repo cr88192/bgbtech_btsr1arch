@@ -1,3 +1,22 @@
+/*
+Make a WAD4 image from a list of files.
+
+Starting a line with '#' or '/' will result in a comment.
+
+Format is generally:
+  <lumppath> <filepath>
+Which will import a given file and added as a given lump path.
+
+Meanwhile:
+  <lumppath> $<dstpath>
+Will create a symbolic link.
+If dstpath begins with '/', it will be relative to the global VFS.
+If dstpath begins with ':', it will be relative to the mount point for the local filesystem.
+
+Otherwise, it will be relative to its base path within the filesystem.
+
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,6 +35,29 @@ typedef unsigned long long u64;
 #define BGBCC_FOURCC(a, b, c, d)	((a)|((b)<<8)|((c)<<16)|((d)<<24))
 
 #define	FCC_DIRS					BGBCC_FOURCC('D', 'I', 'R', '$')
+#define	FCC_SYMS					BGBCC_FOURCC('S', 'Y', 'M', '$')
+
+#define	FCC_EXE						BGBCC_FOURCC('E', 'X', 'E', ' ')
+#define	FCC_COM						BGBCC_FOURCC('C', 'O', 'M', ' ')
+#define	FCC_SH						BGBCC_FOURCC('S', 'H', ' ', ' ')
+#define	FCC_PF						BGBCC_FOURCC('P', 'F', ' ', ' ')
+
+#define TKFAT_EMODE_SETUID		0x00000800
+#define TKFAT_EMODE_SETGID		0x00000400
+#define TKFAT_EMODE_STICKY		0x00000200
+
+#define TKFAT_EMODE_ACC_USR		0x000001C0
+#define TKFAT_EMODE_ACC_GRP		0x00000038
+#define TKFAT_EMODE_ACC_OTH		0x00000007
+#define TKFAT_EMODE_ACC_RU		0x00000100
+#define TKFAT_EMODE_ACC_WU		0x00000080
+#define TKFAT_EMODE_ACC_XU		0x00000040
+#define TKFAT_EMODE_ACC_RG		0x00000020
+#define TKFAT_EMODE_ACC_WG		0x00000010
+#define TKFAT_EMODE_ACC_XG		0x00000008
+#define TKFAT_EMODE_ACC_RO		0x00000004
+#define TKFAT_EMODE_ACC_WO		0x00000002
+#define TKFAT_EMODE_ACC_XO		0x00000001
 
 typedef unsigned short word;
 
@@ -94,6 +136,8 @@ int		wad_mincsz;
 int		wad_maxcsz;
 int 	wad_cmp[16];
 
+u64		wad_curugm;
+
 void w_strupr_n (char *t, char *s, int n)
 {
 	int i;
@@ -135,6 +179,166 @@ int WadTypeForTag(int tag)
 	return(0);
 }
 
+int W_DefaultModeForTag(int tag)
+{
+	if((tag==FCC_EXE) || (tag==FCC_COM) || (tag==FCC_SH) || (tag==FCC_PF))
+	{
+		return(
+			TKFAT_EMODE_ACC_RU|TKFAT_EMODE_ACC_XU|
+			TKFAT_EMODE_ACC_RG|TKFAT_EMODE_ACC_XG|
+			TKFAT_EMODE_ACC_RO|TKFAT_EMODE_ACC_XO);
+	}
+
+	return(
+		TKFAT_EMODE_ACC_RU|TKFAT_EMODE_ACC_WU|
+		TKFAT_EMODE_ACC_RG| TKFAT_EMODE_ACC_RO);
+}
+
+u64 W_ParseUGM(char *str)
+{
+	char *s;
+	u64 v;
+	int gid, uid, mode;
+	
+	s=str;
+	uid=0;
+	gid=0;
+	mode=0;
+
+	if((*s>='0') && (*s<='9'))
+	{
+		uid=atoi(s);
+		while((*s>='0') && (*s<='9'))s++;
+	}
+	if(*s=='/')s++;
+	if((*s>='0') && (*s<='9'))
+	{
+		gid=atoi(s);
+		while((*s>='0') && (*s<='9'))s++;
+	}
+
+	while(*s)
+	{
+		if((s[0]=='u') && ((s[1]=='+') || (s[1]=='=')))
+		{
+			s+=2;
+			if(*s=='r')
+				{ mode|=TKFAT_EMODE_ACC_RU; s++; }
+			if(*s=='w')
+				{ mode|=TKFAT_EMODE_ACC_WU; s++; }
+			if(*s=='x')
+				{ mode|=TKFAT_EMODE_ACC_XU; s++; }
+
+			if(*s=='X')
+				{ mode|=TKFAT_EMODE_ACC_XU; s++; }
+			if(*s=='s')
+				{ mode|=TKFAT_EMODE_SETUID; s++; }
+			if(*s=='t')
+				{ mode|=TKFAT_EMODE_STICKY; s++; }
+			continue;
+		}
+		if((s[0]=='g') && ((s[1]=='+') || (s[1]=='=')))
+		{
+			s+=2;
+			if(*s=='r')
+				{ mode|=TKFAT_EMODE_ACC_RG; s++; }
+			if(*s=='w')
+				{ mode|=TKFAT_EMODE_ACC_WG; s++; }
+			if(*s=='x')
+				{ mode|=TKFAT_EMODE_ACC_XG; s++; }
+			if(*s=='X')
+				{ mode|=TKFAT_EMODE_ACC_XG; s++; }
+
+			if(*s=='s')
+				{ mode|=TKFAT_EMODE_SETUID; s++; }
+			if(*s=='t')
+				{ mode|=TKFAT_EMODE_STICKY; s++; }
+			continue;
+		}
+		if((s[0]=='o') && ((s[1]=='+') || (s[1]=='=')))
+		{
+			s+=2;
+			if(*s=='r')
+				{ mode|=TKFAT_EMODE_ACC_RO; s++; }
+			if(*s=='w')
+				{ mode|=TKFAT_EMODE_ACC_WO; s++; }
+			if(*s=='x')
+				{ mode|=TKFAT_EMODE_ACC_XO; s++; }
+			if(*s=='X')
+				{ mode|=TKFAT_EMODE_ACC_XO; s++; }
+
+			if(*s=='s')
+				{ mode|=TKFAT_EMODE_SETUID; s++; }
+			if(*s=='t')
+				{ mode|=TKFAT_EMODE_STICKY; s++; }
+			continue;
+		}
+
+		if((s[0]=='a') && ((s[1]=='+') || (s[1]=='=')))
+		{
+			s+=2;
+			if(*s=='r')
+				{ mode|=
+					TKFAT_EMODE_ACC_RU|
+					TKFAT_EMODE_ACC_RG|
+					TKFAT_EMODE_ACC_RO; s++; }
+			if(*s=='w')
+				{ mode|=
+					TKFAT_EMODE_ACC_WU|
+					TKFAT_EMODE_ACC_WG|
+					TKFAT_EMODE_ACC_WO; s++; }
+			if(*s=='x')
+				{ mode|=
+					TKFAT_EMODE_ACC_XU|
+					TKFAT_EMODE_ACC_XG|
+					TKFAT_EMODE_ACC_XO; s++; }
+
+			if(*s=='X')
+				{ mode|=
+					TKFAT_EMODE_ACC_XU|
+					TKFAT_EMODE_ACC_XG|
+					TKFAT_EMODE_ACC_XO; s++; }
+			if(*s=='s')
+				{ mode|=TKFAT_EMODE_SETUID; s++; }
+			if(*s=='t')
+				{ mode|=TKFAT_EMODE_STICKY; s++; }
+			continue;
+		}
+
+		if((s[0]=='u') && (s[1]=='g') && ((s[2]=='+') || (s[2]=='=')))
+		{
+			s+=3;
+			if(*s=='r')
+				{ mode|=TKFAT_EMODE_ACC_RU|TKFAT_EMODE_ACC_RG; s++; }
+			if(*s=='w')
+				{ mode|=TKFAT_EMODE_ACC_WU|TKFAT_EMODE_ACC_WG; s++; }
+			if(*s=='x')
+				{ mode|=TKFAT_EMODE_ACC_XU|TKFAT_EMODE_ACC_XG; s++; }
+
+			if(*s=='X')
+				{ mode|=TKFAT_EMODE_ACC_XU|TKFAT_EMODE_ACC_XG; s++; }
+			if(*s=='s')
+				{ mode|=TKFAT_EMODE_SETUID; s++; }
+			if(*s=='t')
+				{ mode|=TKFAT_EMODE_STICKY; s++; }
+			continue;
+		}
+
+		if((*s==',') || (*s==';'))
+		{
+			s++;
+			continue;
+		}
+
+		break;
+	}
+	
+	v=mode;
+	v=(v<<16)|gid;
+	v=(v<<16)|uid;
+	return(v);
+}
+
 int AddWadLump2(char *name, void *buf, int csz, int dsz,
 	int cmp, int tag, int pfx)
 {
@@ -148,6 +352,8 @@ int AddWadLump2(char *name, void *buf, int csz, int dsz,
 	
 	if(tag==FCC_DIRS)
 		ety=2;
+	if(tag==FCC_SYMS)
+		ety=3;
 
 	if(csz!=dsz)
 	{
@@ -176,7 +382,19 @@ int AddWadLump2(char *name, void *buf, int csz, int dsz,
 	wad_dir[n].chn=0;
 	wad_dir[n].dirid=pfx;
 	memcpy(wad_dir[n].name, tn, 32);
-	
+
+	if(wad_curugm)
+	{
+		wad_dir[n].uid =wad_curugm>> 0;
+		wad_dir[n].gid =wad_curugm>>16;
+		wad_dir[n].mode=wad_curugm>>32;
+	}else
+	{
+		wad_dir[n].mode=W_DefaultModeForTag(tag);
+		wad_dir[n].uid=0;
+		wad_dir[n].gid=0;
+	}
+
 	memcpy(wad_data+wad_rover, buf, csz);
 	wad_rover+=csz;
 	wad_rover=(wad_rover+63)&(~63);
@@ -253,6 +471,10 @@ int AddWadLumpPack(char *name, byte *buf, int isz, int tag, int pfx)
 		FlushPack();
 	}
 
+	ety=1;
+	if(tag==FCC_SYMS)
+		ety=3;
+
 	memset(tn, 0, 33);
 	strncpy(tn, name, 32);
 	
@@ -263,11 +485,25 @@ int AddWadLumpPack(char *name, byte *buf, int isz, int tag, int pfx)
 	wad_packlump[n].foffs=wad_packpos/64;
 	wad_packlump[n].csize=isz;
 	wad_packlump[n].dsize=isz;
-	wad_packlump[n].ety=1;
+//	wad_packlump[n].ety=1;
+	wad_packlump[n].ety=ety;
 	wad_packlump[n].cmp=2;
 	wad_packlump[n].chn=0;
 	wad_packlump[n].dirid=pfx;
 	memcpy(wad_packlump[n].name, tn, 32);
+
+	if(wad_curugm)
+	{
+		wad_packlump[n].uid =wad_curugm>> 0;
+		wad_packlump[n].gid =wad_curugm>>16;
+		wad_packlump[n].mode=wad_curugm>>32;
+	}else
+	{
+		wad_packlump[n].mode=W_DefaultModeForTag(tag);
+		wad_packlump[n].uid=0;
+		wad_packlump[n].gid=0;
+	}
+
 
 	memcpy(wad_packbuf+wad_packpos, buf, isz);
 	wad_packpos+=isz;
@@ -504,15 +740,13 @@ int GetWadPathId(char *name, int pfx, int tag)
 	return(id);
 }
 
-int AddWadLumpPathI(char *name, byte *buf, int isz, int pfx)
+int AddWadLumpPathI(char *name, byte *buf, int isz, int tag, int pfx)
 {
 	char tb[256];
-	int tag, pfx1;
+	int pfx1;
 	char *s, *t;
 	int i;
 
-	tag=FccTagForName(name);
-	
 	s=name; t=tb;
 	while(*s && (*s!='/'))
 		*t++=*s++;
@@ -530,19 +764,17 @@ int AddWadLumpPathI(char *name, byte *buf, int isz, int pfx)
 
 	tag=FccTagForName(tb);
 	pfx1=GetWadPathId(tb, pfx, tag);
-	i=AddWadLumpPathI(s+1, buf, isz, pfx1);
+	i=AddWadLumpPathI(s+1, buf, isz, tag, pfx1);
 	return(i);
 }
 
-int AddWadLumpPath(char *name, byte *buf, int isz)
+int AddWadLumpPathTag(char *name, byte *buf, int isz, int tag)
 {
 	char tb[256];
-	int tag, pfx;
+	int pfx;
 	char *s, *t;
 	int i;
 
-	tag=FccTagForName(name);
-	
 	s=name; t=tb;
 	while(*s && (*s!='/'))
 		*t++=*s++;
@@ -560,8 +792,15 @@ int AddWadLumpPath(char *name, byte *buf, int isz)
 
 	tag=FccTagForName(tb);
 	pfx=GetWadPathId(tb, 0, tag);
-	i=AddWadLumpPathI(s+1, buf, isz, pfx);
+	i=AddWadLumpPathI(s+1, buf, isz, tag, pfx);
 	return(i);
+}
+
+int AddWadLumpPath(char *name, byte *buf, int isz)
+{
+	int tag;
+	tag=FccTagForName(name);
+	return(AddWadLumpPathTag(name, buf, isz, tag));
 }
 
 void *LoadFile(char *name, int *rsz)
@@ -681,6 +920,15 @@ int FccTagForName(char *src)
 		if(!strcmp(tfc, "ico"))
 			return(BGBCC_FOURCC('I', 'C', 'O', ' '));
 
+		if(!strcmp(tfc, "exe"))
+			return(BGBCC_FOURCC('E', 'X', 'E', ' '));
+		if(!strcmp(tfc, "com"))
+			return(BGBCC_FOURCC('C', 'O', 'M', ' '));
+		if(!strcmp(tfc, "sh"))
+			return(BGBCC_FOURCC('S', 'H', ' ', ' '));
+		if(!strcmp(tfc, "pf"))
+			return(BGBCC_FOURCC('P', 'F', ' ', ' '));
+
 		memcpy(&v, tfc, 4);
 		return(v);
 	}
@@ -727,6 +975,10 @@ int print_usage(char *argv0)
 {
 	printf("Usage: %s [opts] <inlist> <outwad>\n", argv0);
 	printf("    -C <path>    Read input files from path\n");
+	printf("\n");
+	printf("Makes a WAD4 image from a listing file\n");
+	printf("  <path> <infile>    Import file given by input path\n");
+	printf("  <path> $<dstpath>  Create a symbolic link\n");
 	return(0);
 }
 
@@ -739,6 +991,7 @@ int main(int argc, char *argv[])
 	char *ifn, *ofn, *dir;
 	char **a;
 	char *s, *s1;
+	u64 ugm;
 	int isz, tag, tag1, tyofs, dirofs;
 	int hashofs, hashsz;
 	int i, j, k, h;
@@ -820,6 +1073,8 @@ int main(int argc, char *argv[])
 		return(-1);
 	}
 	
+	wad_curugm=0;
+	
 	while(!feof(ifd))
 	{
 		memset(tbuf, 0, 512);
@@ -847,8 +1102,17 @@ int main(int argc, char *argv[])
 		else
 			{ strcpy(tn, s); }
 
-//		ibuf=LoadFile(a[1], &isz);
-		ibuf=LoadFile(tn, &isz);
+		tag=FccTagForName(s1);
+		if(s[0]=='$')
+		{
+			tag=FCC_SYMS;
+			ibuf=strdup(s+1);
+			isz=strlen(ibuf);
+		}else
+		{
+//			ibuf=LoadFile(a[1], &isz);
+			ibuf=LoadFile(tn, &isz);
+		}
 		
 		if(!ibuf)
 		{
@@ -856,10 +1120,15 @@ int main(int argc, char *argv[])
 			continue;
 		}
 
+		wad_curugm=0;
+		if(a[2])
+			{ wad_curugm=W_ParseUGM(a[2]); }
+
 //		strncpy(tn, a[0], 256);
 //		strncpy(tn, s, 256);
 		strncpy(tn, s1, 256);
-		AddWadLumpPath(tn, ibuf, isz);
+//		AddWadLumpPath(tn, ibuf, isz);
+		AddWadLumpPathTag(tn, ibuf, isz, tag);
 
 //		tag=FccTagForName(a[1]);
 //		tag1=FccTagForName(a[0]);

@@ -875,6 +875,20 @@ int nmid;
 {"ocbwb",	BGBCC_SH_NMID_OCBWB},
 {"icbi",	BGBCC_SH_NMID_ICBI},
 
+{"faddx",	BGBCC_SH_NMID_FADDX},
+{"fsubx",	BGBCC_SH_NMID_FSUBX},
+{"fmulx",	BGBCC_SH_NMID_FMULX},
+{"fmacx",	BGBCC_SH_NMID_FMACX},
+{"fcmpxeq",	BGBCC_SH_NMID_FCMPXEQ},
+{"fcmpxgt",	BGBCC_SH_NMID_FCMPXGT},
+
+{"cmpxeq",	BGBCC_SH_NMID_CMPXEQ},
+{"cmpxgt",	BGBCC_SH_NMID_CMPXGT},
+{"addx",	BGBCC_SH_NMID_ADDX},
+{"subx",	BGBCC_SH_NMID_SUBX},
+{"adcx",	BGBCC_SH_NMID_ADCX},
+{"sbbx",	BGBCC_SH_NMID_SBBX},
+
 {"frcp",	BGBCC_SH_NMID_FRCP},
 {"fsqrta",	BGBCC_SH_NMID_FSQRTA},
 {"frcpa",	BGBCC_SH_NMID_FRCPA},
@@ -890,6 +904,12 @@ int nmid;
 
 {"fldcfh",	BGBCC_SH_NMID_FLDCFH},
 {"fstcfh",	BGBCC_SH_NMID_FSTCFH},
+
+{"fldcdx",	BGBCC_SH_NMID_FLDCDX},
+{"fstcdx",	BGBCC_SH_NMID_FSTCDX},
+{"fldcix",	BGBCC_SH_NMID_FLDCIX},
+{"fstcix",	BGBCC_SH_NMID_FSTCIX},
+
 
 {"movd.l",	BGBCC_SH_NMID_MOVDL},
 {"movd",	BGBCC_SH_NMID_MOVD},
@@ -1375,6 +1395,11 @@ int BGBCC_JX2A_ParseCheckFeature(BGBCC_JX2_Context *ctx, char *sym)
 		return(ctx->has_pushx2);
 	if(!bgbcc_stricmp(sym, "has_simdx2"))
 		return(ctx->has_simdx2);
+
+	if(!bgbcc_stricmp(sym, "has_alux"))
+		return(ctx->has_alux);
+	if(!bgbcc_stricmp(sym, "has_fpux"))
+		return(ctx->has_fpux);
 
 	tctx=ctx->tctx;
 

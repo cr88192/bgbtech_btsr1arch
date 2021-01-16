@@ -197,6 +197,8 @@ reg[5:0]		tReqIxBL;
 `reg_tile		tBlkDataD;
 `reg_tile		tBlkData2A;
 `reg_tile		tBlkData2B;
+`reg_tile		tBlkData2A2;
+`reg_tile		tBlkData2B2;
 
 `ifdef jx2_enable_vaddr48
 reg[43:0]		tBlkAddrA;
@@ -282,6 +284,8 @@ reg				tMissAddrD;
 
 // reg[127:0]		tBlkData;
 reg[159:0]		tBlkData;
+reg[127:0]		tBlkData0A;
+reg[255:0]		tBlkData1A;
 
 reg[3:0]		opLenA0;
 reg[3:0]		opLenA1;
@@ -544,6 +548,8 @@ begin
 //	end
 
 `ifdef jx2_mem_line32B
+
+`ifndef def_true
 	case(tInAddr[5:3])
 		3'b000: tBlkData = tBlkData2A[159: 0];
 		3'b001: tBlkData = tBlkData2A[223:64];
@@ -554,6 +560,41 @@ begin
 		3'b110: tBlkData = { tBlkData2A[31:0], tBlkData2B[255:128] };
 		3'b111: tBlkData = { tBlkData2A[95:0], tBlkData2B[255:192] };
 	endcase
+`endif
+
+`ifdef def_true
+	if(tInAddr[5])
+	begin
+		tBlkData2A2 = tBlkData2B;
+		tBlkData2B2 = tBlkData2A;
+	end
+	else
+	begin
+		tBlkData2A2 = tBlkData2A;
+		tBlkData2B2 = tBlkData2B;
+	end
+
+	if(tInAddr[4])
+		tBlkData1A = { tBlkData2B2[127:0], tBlkData2A2[255:128] };
+	else
+		tBlkData1A = tBlkData2A2[255: 0];
+
+	if(tInAddr[3])
+		tBlkData = tBlkData1A[223:64];
+	else
+		tBlkData = tBlkData1A[159: 0];
+
+`ifndef def_true
+	case(tInAddr[4:3])
+		2'b00: tBlkData = tBlkData2A2[159: 0];
+		2'b01: tBlkData = tBlkData2A2[223:64];
+		2'b10: tBlkData = { tBlkData2B2[31:0], tBlkData2A2[255:128] };
+		2'b11: tBlkData = { tBlkData2B2[95:0], tBlkData2A2[255:192] };
+	endcase
+`endif
+
+`endif
+
 `else
 	case(tInAddr[4:3])
 		2'b00: tBlkData = { tBlkData2B[31:0], tBlkData2A[127: 0] };
@@ -756,9 +797,18 @@ begin
 	tPcStepWB		= 0;
 	tPcStepJA		= 0;
 
+	if(tInWordIx[1])
+		tBlkData0A = tBlkData[159:32];
+	else
+		tBlkData0A = tBlkData[127: 0];
+	if(tInWordIx[0])
+		tRegOutPcVal = tBlkData0A[111:16];
+	else
+		tRegOutPcVal = tBlkData0A[95: 0];
+
 	case(tInWordIx)
 		2'b00: begin
-			tRegOutPcVal	= tBlkData[ 95:  0];
+//			tRegOutPcVal	= tBlkData[ 95:  0];
 			tRegOutPcStepA	= { 1'b0, opLenA0[1:0] };
 			tPcStepWA		= opLenA0[2];
 			tPcStepWB		= opLenA2[2];
@@ -767,7 +817,7 @@ begin
 			tPcStepBB		= opLenA2[0];
 		end
 		2'b01: begin
-			tRegOutPcVal	= tBlkData[111: 16];
+//			tRegOutPcVal	= tBlkData[111: 16];
 			tRegOutPcStepA	= {1'b0, opLenA1[1:0] };
 			tPcStepWA		= opLenA1[2];
 			tPcStepWB		= opLenA3[2];
@@ -776,7 +826,7 @@ begin
 			tPcStepBB		= opLenA3[0];
 		end
 		2'b10: begin
-			tRegOutPcVal	= tBlkData[127: 32];
+//			tRegOutPcVal	= tBlkData[127: 32];
 			tRegOutPcStepA	= {1'b0, opLenA2[1:0] };
 			tPcStepWA		= opLenA2[2];
 			tPcStepWB		= opLenA4[2];
@@ -785,7 +835,7 @@ begin
 			tPcStepBB		= opLenA4[0];
 		end
 		2'b11: begin
-			tRegOutPcVal	= tBlkData[143: 48];
+//			tRegOutPcVal	= tBlkData[143: 48];
 			tRegOutPcStepA	= {1'b0, opLenA3[1:0] };
 			tPcStepWA		= opLenA3[2];
 			tPcStepWB		= opLenA5[2];

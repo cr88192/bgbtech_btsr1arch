@@ -23,24 +23,24 @@ input			clock_cpu;
 input			clock_master;
 input			reset;
 
-input[127:0]	memInData;
-output[127:0]	memOutData;
+`input_tile		memInData;
+`output_tile	memOutData;
 output[47:0]	memAddrA;
 output[47:0]	memAddrB;
 output[4:0]		memOpm;
 input[1:0]		memOK;
 input[63:0]		memBusExc;
 
-output[127:0]	mem1InData;
-input[127:0]	mem1OutData;
+`output_tile	mem1InData;
+`input_tile		mem1OutData;
 input[47:0]		mem1AddrA;
 input[47:0]		mem1AddrB;
 input[4:0]		mem1Opm;
 output[1:0]		mem1OK;
 output[63:0]	mem1BusExc;
 
-output[127:0]	mem2InData;
-input[127:0]	mem2OutData;
+`output_tile	mem2InData;
+`input_tile		mem2OutData;
 input[47:0]		mem2AddrA;
 input[47:0]		mem2AddrB;
 input[4:0]		mem2Opm;
@@ -48,26 +48,26 @@ output[1:0]		mem2OK;
 output[63:0]	mem2BusExc;
 
 
-reg[127:0]		tMemInData;
+`reg_tile		tMemInData;
 reg[1:0]		tMemOK;
 reg[63:0]		tMemBusExc;
 
-reg[127:0]		tMemInData2;
+`reg_tile		tMemInData2;
 reg[1:0]		tMemOK2;
 reg[63:0]		tMemBusExc2;
 
-reg[127:0]		tMemOutData;
+`reg_tile		tMemOutData;
 reg[47:0]		tMemAddrA;
 reg[47:0]		tMemAddrB;
 reg[4:0]		tMemOpm;
 
-reg[127:0]		tMemOutData2;
+`reg_tile		tMemOutData2;
 reg[47:0]		tMemAddrA2;
 reg[47:0]		tMemAddrB2;
 reg[4:0]		tMemOpm2;
 
 `ifdef jx2_mem_jnexbuf
-reg[127:0]		tMemOutData3;
+`reg_tile		tMemOutData3;
 reg[47:0]		tMemAddrA3;
 reg[47:0]		tMemAddrB3;
 reg[4:0]		tMemOpm3;
@@ -83,17 +83,17 @@ assign		memAddrB	= tMemAddrB2;
 assign		memOpm		= tMemOpm2;
 `endif
 
-reg[127:0]		tMem1InData;
+`reg_tile		tMem1InData;
 reg[1:0]		tMem1OK;
 reg[63:0]		tMem1BusExc;
-reg[127:0]		tMem2InData;
+`reg_tile		tMem2InData;
 reg[1:0]		tMem2OK;
 reg[63:0]		tMem2BusExc;
 
-reg[127:0]		tMem1InData2;
+`reg_tile		tMem1InData2;
 reg[1:0]		tMem1OK2;
 reg[63:0]		tMem1BusExc2;
-reg[127:0]		tMem2InData2;
+`reg_tile		tMem2InData2;
 reg[1:0]		tMem2OK2;
 reg[63:0]		tMem2BusExc2;
 

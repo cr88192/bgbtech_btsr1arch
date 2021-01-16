@@ -166,6 +166,9 @@ byte has_simdx2;	//has 128-bit SIMD ops
 // byte pel_cmpr;
 byte no_wexify;		//has 128-bit SIMD ops
 
+byte has_alux;		//has 128-bit ALU ops
+byte has_fpux;		//has 128-bit FPU ops
+
 byte use_egpr;		//enable use of extended GPRs
 byte maxreg_gpr;	//current number of GPR register-slots
 byte maxreg_gpr_lf;	//current number of GPR register-slots (leaf)

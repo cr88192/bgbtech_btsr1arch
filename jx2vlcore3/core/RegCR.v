@@ -182,10 +182,10 @@ begin
 	regIdCn2B	= { 1'b1, regIdCn3 };
 	regValCn2B	= regValCn3;
 //	if(regEx3Flush)
-	if(1'b0)
-	begin
-		regIdCn2B	= JX2_CR_ZZR;
-	end
+//	if(1'b0)
+//	begin
+//		regIdCn2B	= JX2_CR_ZZR;
+//	end
 
 `ifdef jx2_enable_vaddr48
 //	regValCn2B_48b	= regValCn2[47:0];
@@ -275,10 +275,10 @@ begin
 	if(reset)
 	begin
 		crRegPc		<= UV48_00;
-		crRegLr		<= UV48_00;
-		crRegVbr	<= UV48_00;
-		crRegGbr	<= UV48_00;
-		crRegTbr	<= UV48_00;
+//		crRegLr		<= UV48_00;
+//		crRegVbr	<= UV48_00;
+//		crRegGbr	<= UV48_00;
+//		crRegTbr	<= UV48_00;
 
 		crRegSr		<= UV64_00;
 		crRegSr[30]	<= 1;
@@ -287,8 +287,8 @@ begin
 		crRegMmcr	<= UV64_00;
 		crRegKrr	<= UV64_00;
 
-		crRegTtb	<= UV48_00;
-		crRegSttb	<= UV48_00;
+//		crRegTtb	<= UV48_00;
+//		crRegSttb	<= UV48_00;
 `endif
 
 	end

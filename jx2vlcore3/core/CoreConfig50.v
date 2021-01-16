@@ -7,7 +7,7 @@
 
 // `define jx2_isr2stage			//Use 2-stage ISR initiation
 
-// `define jx2_enable_dualcore			//Enable Second Core
+`define jx2_enable_dualcore			//Enable Second Core
 
 `define jx2_cpu_halfclock				//Reduce CPU core clock speed by half
 // `define jx2_cpu_masterclock_150			//Use 150MHz Master Clock
@@ -45,8 +45,8 @@
 // `define jx2_mem_fulldpx_syncb	//Full Duplex, Sync L2 AddrB
 
 // `define jx2_mem_l1dsz_1024		//L1 D$ is 1024 entries
-`define jx2_mem_l1dsz_512		//L1 D$ is 512 entries
-// `define jx2_mem_l1dsz_256			//L1 D$ is 256 entries
+// `define jx2_mem_l1dsz_512		//L1 D$ is 512 entries
+`define jx2_mem_l1dsz_256			//L1 D$ is 256 entries
 // `define jx2_mem_l1dsz_128		//L1 D$ is 128 entries
 // `define jx2_mem_l1dsz_64			//L1 D$ is 64 entries
 
@@ -85,7 +85,7 @@
 
 `endif
 
-`define jx2_expand_tlb		//Make TLB Bigger
+// `define jx2_expand_tlb		//Make TLB Bigger
 
 // `define jx2_reduce_l1sz		//Make L1 smaller
 // `define jx2_reduce_l2sz		//Make L2 smaller

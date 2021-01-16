@@ -88,6 +88,19 @@ begin
 	arrCpuIdLo[1][15] = 1;
 `endif
 
+`ifdef jx2_enable_fpu_w
+	arrCpuIdLo[1][16] = 1;
+`endif
+`ifdef jx2_fpu_longdbl
+	arrCpuIdLo[1][17] = 1;
+`endif
+`ifdef jx2_fpu_fmac
+	arrCpuIdLo[1][18] = 1;
+`endif
+`ifdef jx2_alu_wx
+	arrCpuIdLo[1][19] = 1;
+`endif
+
 `endif
 
 `ifndef def_true

@@ -88,8 +88,8 @@ begin
 	endcase
 `endif
 
-// `ifdef	def_true
-`ifndef	def_true
+`ifdef	def_true
+// `ifndef	def_true
 	casez(tValRs[63:48])
 		16'b1zzz_zzzz_zzzz_zzzz: tValHiCnt0=0;
 		16'b01zz_zzzz_zzzz_zzzz: tValHiCnt0=1;
@@ -181,8 +181,8 @@ begin
 `endif
 
 
-`ifdef	def_true
-// `ifndef	def_true
+// `ifdef	def_true
+`ifndef	def_true
 	casez(tValRs[63:32])
 		32'b1zzz_zzzz_zzzz_zzzz_zzzz_zzzz_zzzz_zzzz: tValHiCnt0B= 0;
 		32'b01zz_zzzz_zzzz_zzzz_zzzz_zzzz_zzzz_zzzz: tValHiCnt0B= 1;

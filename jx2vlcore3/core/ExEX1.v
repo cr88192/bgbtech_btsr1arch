@@ -50,8 +50,8 @@ module ExEX1(
 	regValRt,		//Source B Value
 	regValRm,		//Source C Value
 
-	regValFRs,		//Source A Value (FPR)
-	regValFRt,		//Source B Value (FPR)
+//	regValFRs,		//Source A Value (FPR)
+//	regValFRt,		//Source B Value (FPR)
 	regValCRm,		//Source C Value (CR)
 
 	regIdRn1,		//Destination ID (EX1)
@@ -98,8 +98,8 @@ input[63:0]		regValRs;		//Source A Value
 input[63:0]		regValRt;		//Source B Value
 input[63:0]		regValRm;		//Source C Value
 
-input[63:0]		regValFRs;		//Source A Value (FPR)
-input[63:0]		regValFRt;		//Source B Value (FPR)
+// input[63:0]		regValFRs;		//Source A Value (FPR)
+// input[63:0]		regValFRt;		//Source B Value (FPR)
 input[63:0]		regValCRm;		//Source C Value (CR)
 
 output[5:0]		regIdRn1;		//Destination ID (EX1)

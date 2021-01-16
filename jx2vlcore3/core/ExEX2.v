@@ -30,8 +30,8 @@ module ExEX2(
 	regValRt,		//Source B Value
 	regValRm,		//Source C Value / Dest
 
-	regValFRs,		//Source A Value (FPR)
-	regValFRt,		//Source B Value (FPR)
+//	regValFRs,		//Source A Value (FPR)
+//	regValFRt,		//Source B Value (FPR)
 	regValCRm,		//Source C Value (CR)
 
 	regIdRn1,		//Destination ID (EX1)
@@ -50,6 +50,7 @@ module ExEX2(
 	regValMulRes,	//Multiplier Result
 	regValMulwRes,	//Multiplier Word Result
 	regValKrreRes,	//Keyring Result
+	regValAluResB,	//ALU Result (ALUB)
 
 	regFpuGRn,		//FPU GPR Result
 	regFpuLdGRn,		//FPU GPR Result
@@ -84,8 +85,8 @@ input[63:0]		regValRs;		//Source A Value
 input[63:0]		regValRt;		//Source B Value
 input[63:0]		regValRm;		//Source C Value
 
-input[63:0]		regValFRs;		//Source A Value (FPR)
-input[63:0]		regValFRt;		//Source B Value (FPR)
+// input[63:0]		regValFRs;		//Source A Value (FPR)
+// input[63:0]		regValFRt;		//Source B Value (FPR)
 input[63:0]		regValCRm;		//Source C Value (CR)
 
 input[5:0]		regIdRn1;		//Destination ID (EX1)
@@ -106,6 +107,7 @@ input[69:0]		regValAluRes;	//ALU Result
 input[63:0]		regValMulRes;	//Multiplier Result
 input[63:0]		regValMulwRes;	//Multiplier Result
 input[65:0]		regValKrreRes;	//Keyring Result
+input[65:0]		regValAluResB;	//ALU Result (ALUB)
 
 input[63:0]		regFpuGRn;		//FPU GPR Result
 input[63:0]		regFpuLdGRn;	//FPU GPR Result (Mem Load)
@@ -171,6 +173,7 @@ reg[3:0]	tDoHoldCyc;
 reg			tDoMemOp;
 reg			tOpEnable;
 reg			tDoAluSrT;
+reg[1:0]	tAluSrbOp;
 
 reg		tMsgLatch;
 reg		tNextMsgLatch;
@@ -196,6 +199,7 @@ begin
 	tNextMsgLatch	= 0;
 	tDoHoldCyc		= 0;
 	tDoAluSrT		= 0;
+	tAluSrbOp		= 0;
 
 `ifndef def_true
 	casez( { opBraFlush, opUCmd[7:6], regInLastSr[0] } )
@@ -331,6 +335,18 @@ begin
 		JX2_UCMD_FCMP: begin
 `ifdef jx2_fcmp_alu
 			tDoAluSrT		= 1;
+			tAluSrbOp		= 0;
+			
+`ifndef def_true
+			if(opUIxt[5])
+			begin
+				if(opUIxt[3:0]==4'hC)
+					tAluSrbOp		= 1;
+				else
+					tAluSrbOp		= 3;
+			end
+`endif
+
 `else
 			tRegOutSr[0]	= regFpuSrT;
 `endif
@@ -353,6 +369,23 @@ begin
 	begin
 		tRegOutSr[1:0]	= regValAluRes[65:64];
 		tRegOutSr[7:4]	= regValAluRes[69:66];
+
+`ifndef def_true
+// `ifdef jx2_fcmp_alu
+// `ifdef jx2_fpu_longdbl
+		case(tAluSrbOp)
+			2'b00: tRegOutSr[1:0]	= regValAluRes[65:64];
+			2'b01: tRegOutSr[1:0]	= regValAluRes[65:64] & regValAluResB[65:64];
+			2'b10: tRegOutSr[1:0]	= regValAluRes[65:64] | regValAluResB[65:64];
+			2'b11: begin
+				tRegOutSr[0]	= regValAluRes[64] |
+					(regValAluRes[65] & regValAluResB[64]);
+				tRegOutSr[1]	= regValAluRes[65];
+			end
+		endcase
+// `endif
+// `endif
+`endif
 	end
 
 	if(opBraFlush)

@@ -78,6 +78,11 @@ reg[5:0]		opRegCM;
 reg[5:0]		opRegCO;
 reg[5:0]		opRegCN;
 
+reg[5:0]		opRegAM0;
+reg[5:0]		opRegAO0;
+reg[5:0]		opRegAN0;
+
+
 reg[32:0]		opImmA;
 reg[7:0]		opUCmdA;
 reg[7:0]		opUIxtA;
@@ -89,6 +94,10 @@ reg[7:0]		opUIxtB;
 reg[32:0]		opImmC;
 reg[7:0]		opUCmdC;
 reg[7:0]		opUIxtC;
+
+reg[32:0]		opImmA0;
+reg[7:0]		opUCmdA0;
+reg[7:0]		opUIxtA0;
 
 assign	idRegS = opRegAM;
 assign	idRegT = opRegAO;
@@ -224,6 +233,7 @@ reg opIsWfA;	//WEX
 reg opIsScalar;		//Scalar Operation
 reg opIsDualLane;	//Op uses both lanes
 reg opIsDualLane3R;	//Op uses both lanes (with all 3 regs as 128b)
+reg opDualLaneSw;	//Dual lane op but swap A / B regs.
 
 reg opIsFxB;
 reg opIsFzB;
@@ -297,6 +307,7 @@ begin
 	opIsScalar		= 0;
 	opIsDualLane	= 0;
 	opIsDualLane3R	= 0;
+	opDualLaneSw	= 0;
 
 	casez(istrWord[15:10])
 		6'b1110zz: begin	//E0..EF
@@ -392,6 +403,12 @@ begin
 		opUCmdA	= decOpFzC_idUCmd;
 		opUIxtA	= decOpFzC_idUIxt;
 
+		opRegAM0	= decOpFzC_idRegM;
+		opRegAO0	= decOpFzC_idRegO;
+		opRegAN0	= decOpFzC_idRegN;
+		opUCmdA0	= decOpFzC_idUCmd;
+		opUIxtA0	= decOpFzC_idUIxt;
+
 		opRegBM	= JX2_GR_ZZR;
 		opRegBO	= JX2_GR_ZZR;
 		opRegBN	= JX2_GR_ZZR;
@@ -435,6 +452,12 @@ begin
 			opUCmdA	= decOpFC_idUCmd;
 			opUIxtA	= decOpFC_idUIxt;
 
+			opRegAN0	= decOpFC_idRegN;
+			opRegAM0	= decOpFC_idRegM;
+			opRegAO0	= decOpFC_idRegO;
+			opUCmdA0	= decOpFC_idUCmd;
+			opUIxtA0	= decOpFC_idUIxt;
+
 			opRegBN	= JX2_GR_ZZR;
 			opRegBM	= JX2_GR_ZZR;
 			opRegBO	= decOpFC_idRegN;
@@ -467,6 +490,12 @@ begin
 				opImmA	= decOpFzC_idImm;
 				opUCmdA	= decOpFzC_idUCmd;
 				opUIxtA	= decOpFzC_idUIxt;
+
+				opRegAM0	= decOpFzC_idRegM;
+				opRegAO0	= decOpFzC_idRegO;
+				opRegAN0	= decOpFzC_idRegN;
+				opUCmdA0	= decOpFzC_idUCmd;
+				opUIxtA0	= decOpFzC_idUIxt;
 
 				opRegBM	= decOpFzB_idRegM;
 				opRegBO	= decOpFzB_idRegO;
@@ -513,6 +542,12 @@ begin
 				opUCmdA	= decOpFzB_idUCmd;
 				opUIxtA	= decOpFzB_idUIxt;
 
+				opRegAM0	= decOpFzB_idRegM;
+				opRegAO0	= decOpFzB_idRegO;
+				opRegAN0	= decOpFzB_idRegN;
+				opUCmdA0	= decOpFzB_idUCmd;
+				opUIxtA0	= decOpFzB_idUIxt;
+
 				opRegBM	= decOpFzA_idRegM;
 				opRegBO	= decOpFzA_idRegO;
 				opRegBN	= decOpFzA_idRegN;
@@ -544,6 +579,12 @@ begin
 				opImmA	= decOpFzA_idImm;
 				opUCmdA	= decOpFzA_idUCmd;
 				opUIxtA	= decOpFzA_idUIxt;
+
+				opRegAM0	= decOpFzA_idRegM;
+				opRegAO0	= decOpFzA_idRegO;
+				opRegAN0	= decOpFzA_idRegN;
+				opUCmdA0	= decOpFzA_idUCmd;
+				opUIxtA0	= decOpFzA_idUIxt;
 				
 				opRegBM	= JX2_GR_ZZR;
 				opRegBO	= decOpFzA_idRegN;
@@ -578,6 +619,12 @@ begin
 		opUCmdA	= decOpBz_idUCmd;
 		opUIxtA	= decOpBz_idUIxt;
 
+		opRegAM0	= decOpBz_idRegM;
+		opRegAO0	= decOpBz_idRegO;
+		opRegAN0	= decOpBz_idRegN;
+		opUCmdA0	= decOpBz_idUCmd;
+		opUIxtA0	= decOpBz_idUIxt;
+
 		opRegBN	= JX2_GR_ZZR;
 		opRegBM	= JX2_GR_ZZR;
 		opRegBO	= decOpBz_idRegN;
@@ -604,25 +651,25 @@ begin
 
 `ifndef def_true
 //		if(opUCmdA[5:0]==JX2_UCMD_POPX)
-		if(opUCmdA[5:1]==5'h03)
+		if(opUCmdA0[5:1]==5'h03)
 		begin
 //			opIsDualLane = decOpBz_idUIxt[2];
-			opIsDualLane = opUIxtA[2];
+			opIsDualLane = opUIxtA0[2];
 		end
 `endif
 
-//		if(opUCmdA[5:0]==JX2_UCMD_MOV_MR)
-		if(opUCmdA[5:1]==5'h02)
+//		if(opUCmdA0[5:0]==JX2_UCMD_MOV_MR)
+		if(opUCmdA0[5:1]==5'h02)
 		begin
 //			opIsDualLane = (decOpBz_idUIxt[2:0]==3'b111);
 //			opIsDualLane = (opUIxtA[2:0]==3'b111);
-			opIsDualLane = ( {opUIxtA[2], opUIxtA[5:4]} == 3'b111);
+			opIsDualLane = ( {opUIxtA0[2], opUIxtA0[5:4]} == 3'b111);
 		end
 
 `ifndef def_true
-		if(opUCmdA[5:0]==JX2_UCMD_FPU3)
+		if(opUCmdA0[5:0]==JX2_UCMD_FPU3)
 		begin
-			opIsDualLane = opUIxtA[5];
+			opIsDualLane = opUIxtA0[5];
 			opIsDualLane3R = 1;
 		end
 `endif
@@ -631,13 +678,29 @@ begin
 
 `ifdef def_true
 // `ifndef def_true
-		if(opUIxtA[7:6]==JX2_IUC_WX)
+		if(opUIxtA0[7:6]==JX2_IUC_WX)
 		begin
 			opIsDualLane = 1;
-			if(opUCmdA[5:1] != 5'h02)
+			if(opUCmdA0[5:1] != 5'h02)
 				opIsDualLane3R = 1;
+
+`ifdef jx2_fpu_longdbl
+`ifdef jx2_fcmp_alu
+			if(opUCmdA0[5:0] == JX2_UCMD_FCMP)
+				opDualLaneSw	= 1;
+`endif
+`endif
+
+`ifdef jx2_alu_wx
+			if(opUCmdA0[5:0] == JX2_UCMD_ALU3)
+				opDualLaneSw	= 1;
+			if(opUCmdA0[5:0] == JX2_UCMD_ALUCMP)
+				opDualLaneSw	= 1;
+`endif
+
 		end
 `endif
+
 	end
 	
 	if(opIsDualLane)
@@ -655,6 +718,9 @@ begin
 			opUIxtC	= opUIxtB;
 		end
 		
+		if(opDualLaneSw)
+			opRegAN[0] = !opRegAN0[0];
+		
 		opRegBN	= opRegAN;
 		opRegBN[0] = !opRegAN[0];
 
@@ -667,6 +733,12 @@ begin
 
 		if(opIsDualLane3R)
 		begin
+			if(opDualLaneSw)
+			begin
+				opRegAM[0] = !opRegAM0[0];
+				opRegAO[0] = !opRegAO0[0];
+			end
+
 			opRegBM[0] = !opRegAM[0];
 			opRegBO[0] = !opRegAO[0];
 		end

@@ -677,9 +677,19 @@ int BGBCC_JX2_CheckOps32ValidWexSuffixFl(
 				return(0);
 		}
 
+		if((opw2&0xF008)==0x1000)
+		{
+			if(opw2&0x0800)
+			{
+				/* 128-bit ALU ops. */
+				return(0);
+			}
+		}
+
 		if((opw2&0xF000)==0x2000)
 		{
-			if((opw2&0x000C)==0x0004)
+			if(	((opw2&0x000C)==0x0004) ||
+				((opw2&0x000C)==0x000C)	)
 			{
 				if(opw2&0x0800)
 				{
@@ -702,6 +712,19 @@ int BGBCC_JX2_CheckOps32ValidWexSuffixFl(
 		{
 			/* MOV.X */
 			return(0);
+		}
+
+		if((opw2&0xF000)==0x5000)
+		{
+			if(	((opw2&0x000C)==0x0000) ||
+				((opw2&0x000C)==0x0008)	)
+			{
+				if(opw2&0x0800)
+				{
+					/* 128-bit SIMD ops. */
+					return(0);
+				}
+			}
 		}
 
 		return(1);
@@ -731,6 +754,15 @@ int BGBCC_JX2_CheckOps32ValidWexSuffixFl(
 //	if((opw1&0xFF00)==0xF200)
 	if((opw1&0xEB00)==0xE200)
 	{
+		if((opw2&0xC000)==0x8000)
+		{
+			if((opw2&0x0900)==0x0900)
+			{
+				/* 128-bit SIMD ops. */
+				return(0);
+			}
+		}
+
 		return(1);
 	}
 
@@ -747,6 +779,9 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix(
 	int ret;
 
 	if(BGBCC_JX2_CheckOps32Immovable(sctx, opw1, opw2)!=0)
+		return(0);
+
+	if(BGBCC_JX2_CheckOps32ValidWexSuffixFl(sctx, opw1, opw2, 1)<=0);
 		return(0);
 
 	if((opw1&0xF000)!=0xF000)
@@ -773,7 +808,12 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix(
 			case 0x0:	case 0x1:
 			case 0x5:	case 0x6:
 			case 0x7:
+				if(opw2&0x0800)
+					{ ret=0; break; }
 				ret=1;
+				break;
+
+			case 0x8:
 				break;
 
 			case 0x9:

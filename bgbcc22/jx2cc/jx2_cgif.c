@@ -83,6 +83,9 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	shctx->has_addsl=1;
 	shctx->has_pushx2=0;
 	
+	shctx->has_alux=0;		//128-bit ALU Ops
+	shctx->has_fpux=0;		//128-bit FPU Ops
+	
 //	shctx->no_fpu=1;
 	shctx->no_ext32=0;
 //	shctx->fpu_soft=1;
@@ -132,6 +135,11 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 #endif
 	}
 
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "alux"))
+		{ shctx->has_alux=1; }
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "fpux"))
+		{ shctx->has_fpux=1; }
+
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "pexe"))
 		ctx->pel_cmpr=255;
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "pel0"))
@@ -147,6 +155,11 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		shctx->has_simdx2=0;
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "nowexify"))
 		shctx->no_wexify=1;
+
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "noalux"))
+		{ shctx->has_alux=0; }
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "nofpux"))
+		{ shctx->has_fpux=0; }
 
 
 //	ctx->arch_has_predops=0;

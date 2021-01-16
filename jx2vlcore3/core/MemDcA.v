@@ -72,6 +72,11 @@ reg[63:0]		tRegOutValB;	//output data value (alternate)
 reg[ 1:0]		tRegOutOK;		//set if we have a valid value.
 reg[ 1:0]		tRegOutOKB;		//OK, alternate
 
+reg				tRegOutVal_ExA1;		//output data value
+reg[7:0]		tRegOutVal_ExA8;		//output data value
+reg[15:0]		tRegOutVal_ExA16;		//output data value
+reg[31:0]		tRegOutVal_ExA32;		//output data value
+
 `ifdef jx2_do_ld1cyc
 assign			regOutVal		= tRegOutVal;
 assign			regOutValB		= tRegOutValB;
@@ -441,6 +446,10 @@ reg[  7:0]		tBlkFlag2B;
 reg[ 19:0]		tBlkPhAd2A;
 reg[ 19:0]		tBlkPhAd2B;
 
+`reg_tile		tBlkData2A2;
+`reg_tile		tBlkData2B2;
+
+
 `reg_tile_prov	tBlkPRov2A;
 `reg_tile_prov	tBlkPRov2B;
 `reg_tile_pflag	tBlkPFl2A;
@@ -568,6 +577,7 @@ reg				tDoMiBlkB;
 reg				tDoMiBlk;
 
 
+reg[191:0]		tBlkData0A;
 reg[127:0]		tBlkData;
 reg[127:0]		tBlkDataW;
 reg[ 63:0]		tBlkExData;
@@ -577,6 +587,7 @@ reg[127:0]		tBlkData1;
 reg[ 63:0]		tBlkInData1;
 
 reg[ 95:0]		tBlkExData1;
+reg[ 79:0]		tBlkExData2;
 
 
 reg		tMemLatchA;
@@ -1225,6 +1236,43 @@ begin
 	tAccFlt		= tAccFltR || tAccFltW;
 
 `ifdef jx2_mem_line32B
+
+`ifdef def_true
+	if(tInAddr[5])
+	begin
+		tBlkData2A2 = tBlkData2B;
+		tBlkData2B2 = tBlkData2A;
+	end
+	else
+	begin
+		tBlkData2A2 = tBlkData2A;
+		tBlkData2B2 = tBlkData2B;
+	end
+	
+`ifdef def_true
+	if(tInAddr[4])
+		tBlkData0A = { tBlkData2B2[63:0], tBlkData2A2[255:128] };
+	else
+		tBlkData0A = tBlkData2A2[191: 0];
+	if(tInAddr[3])
+		tBlkData = tBlkData0A[191:64];
+	else
+		tBlkData = tBlkData0A[127: 0];
+`endif
+
+`ifndef def_true
+	case(tInAddr[4:3])
+		2'b00: tBlkData = tBlkData2A2[127:  0];
+		2'b01: tBlkData = tBlkData2A2[191: 64];
+		2'b10: tBlkData = tBlkData2A2[255:128];
+		2'b11: tBlkData = { tBlkData2B2[63:0], tBlkData2A2[255:192] };
+	endcase
+`endif
+
+`endif
+
+// `ifdef def_true
+`ifndef def_true
 	case(tInAddr[5:3])
 		3'b000: tBlkData = tBlkData2A[127:  0];
 		3'b001: tBlkData = tBlkData2A[191: 64];
@@ -1235,6 +1283,8 @@ begin
 		3'b110: tBlkData = tBlkData2B[255:128];
 		3'b111: tBlkData = { tBlkData2A[63:0], tBlkData2B[255:192] };
 	endcase
+`endif
+
 `else
 	case(tInAddr[4:3])
 		2'b00: tBlkData = tBlkData2A;
@@ -1258,12 +1308,27 @@ begin
 		tBlkExData1=tBlkData[127: 32];
 	else
 		tBlkExData1=tBlkData[95: 0];
+
+`ifdef def_true
+	if(tInByteIx[1])
+		tBlkExData2=tBlkExData1[95:16];
+	else
+		tBlkExData2=tBlkExData1[79: 0];
+
+	if(tInByteIx[0])
+		tBlkExData=tBlkExData2[71: 8];
+	else
+		tBlkExData=tBlkExData2[63: 0];
+`endif
+
+`ifndef def_true
 	case(tInByteIx[1:0])
 		2'b00: tBlkExData=tBlkExData1[ 63:  0];
 		2'b01: tBlkExData=tBlkExData1[ 71:  8];
 		2'b10: tBlkExData=tBlkExData1[ 79: 16];
 		2'b11: tBlkExData=tBlkExData1[ 87: 24];
 	endcase
+`endif
 
 `ifdef jx2_debug_l1ds
 // `ifdef def_true
@@ -1275,6 +1340,58 @@ begin
 	end
 `endif
 
+	tRegOutValB = tBlkData[127:64];
+	tRegOutVal  = tBlkData[ 63: 0];
+	
+`ifdef def_true
+// `ifndef def_true
+	if(tInOpm[2:0] != 3'b111)
+	begin
+		tRegOutVal  = tBlkExData[63:0];
+
+`ifndef def_true
+		if(tInOpm[1:0] == 2'b00)
+			tRegOutVal[15:8] = (tRegOutVal[7] && !tInOpm[2]) ?
+				UV8_FF : UV8_00;
+		if(tInOpm[1] == 1'b0)
+			tRegOutVal[31:16] = (tRegOutVal[15] && !tInOpm[2]) ?
+				UV16_FF : UV16_00;
+		if(tInOpm[1:0] != 2'b11)
+			tRegOutVal[63:32] = (tRegOutVal[31] && !tInOpm[2]) ?
+				UV32_FF : UV32_00;
+`endif
+
+`ifdef def_true
+		casez( {	tInOpm[2:0],
+					tBlkExData[31],
+					tBlkExData[15],
+					tBlkExData[ 7] } )
+			6'b000_zz0: tRegOutVal_ExA1 = 0;
+			6'b000_zz1: tRegOutVal_ExA1 = 1;
+			6'b001_z0z: tRegOutVal_ExA1 = 0;
+			6'b001_z1z: tRegOutVal_ExA1 = 1;
+			6'b010_0zz: tRegOutVal_ExA1 = 0;
+			6'b010_1zz: tRegOutVal_ExA1 = 1;
+			6'b011_zzz: tRegOutVal_ExA1 = 0;
+			6'b1zz_zzz: tRegOutVal_ExA1 = 0;
+		endcase
+		tRegOutVal_ExA8		= tRegOutVal_ExA1 ? UV8_FF : UV8_00;
+		tRegOutVal_ExA16	= tRegOutVal_ExA1 ? UV16_FF : UV16_00;
+		tRegOutVal_ExA32	= tRegOutVal_ExA1 ? UV32_FF : UV32_00;
+
+		if(tInOpm[1:0] == 2'b00)
+			tRegOutVal[15:8] = tRegOutVal_ExA8;
+		if(tInOpm[1] == 1'b0)
+			tRegOutVal[31:16] = tRegOutVal_ExA16;
+		if(tInOpm[1:0] != 2'b11)
+			tRegOutVal[63:32] = tRegOutVal_ExA32;
+`endif
+
+	end
+`endif
+
+`ifndef def_true
+// `ifdef def_true
 	case(tInOpm[2:0])
 		3'b000: tRegOutVal = {
 			tBlkExData[ 7]?UV56_FF:UV56_00,
@@ -1291,9 +1408,10 @@ begin
 		3'b110: tRegOutVal = { UV32_00, tBlkExData[31:0] };
 		3'b111: begin
 			tRegOutVal  = tBlkData[ 63: 0];
-			tRegOutValB = tBlkData[127:64];
+//			tRegOutValB = tBlkData[127:64];
 		end
 	endcase
+`endif
 	
 `ifdef jx2_debug_l1ds
 // `ifdef def_true
@@ -1306,12 +1424,28 @@ begin
 	end
 `endif
 	
+// `ifndef def_true
+`ifdef def_true
+	tBlkInData = tBlkExData [63: 0];
+	
+	tBlkInData[7:0] = tDataIn[ 7:0];
+	if(tInOpm[1:0] != 2'b00)
+		tBlkInData[15:8] = tDataIn[15:8];
+	if(tInOpm[1])
+		tBlkInData[31:16] = tDataIn[31:16];
+	if(tInOpm[1:0] == 2'b11)
+		tBlkInData[63:32] = tDataIn[63:32];
+`endif
+
+`ifndef def_true
+// `ifdef def_true
 	case(tInOpm[1:0])
 		2'b00: tBlkInData = { tBlkExData [63: 8], tDataIn[ 7:0] };
 		2'b01: tBlkInData = { tBlkExData [63:16], tDataIn[15:0] };
 		2'b10: tBlkInData = { tBlkExData [63:32], tDataIn[31:0] };
 		2'b11: tBlkInData = {                     tDataIn[63:0] };
 	endcase
+`endif
 
 	/* Stage C */
 
@@ -1320,6 +1454,8 @@ begin
 	tBlkInData1		= tBlkInData;
 `endif
 
+`ifndef def_true
+// `ifdef def_true
 	case(tInByteIx)
 		3'b000: tBlkDataW =
 			{ tBlkData1[127: 64], tBlkInData1                 };
@@ -1338,6 +1474,31 @@ begin
 		3'b111: tBlkDataW =
 			{ tBlkData1[127:120], tBlkInData1, tBlkData1[55:0] };
 	endcase
+`endif
+
+// `ifndef def_true
+`ifdef def_true
+	if(!tInByteIx[2])
+	begin
+		tBlkDataW[127:0] = tBlkData1[127:0];
+		case(tInByteIx[1:0])
+			2'b00: tBlkDataW[63: 0] = tBlkInData1;
+			2'b01: tBlkDataW[71: 8] = tBlkInData1;
+			2'b10: tBlkDataW[79:16] = tBlkInData1;
+			2'b11: tBlkDataW[87:24] = tBlkInData1;
+		endcase
+	end
+	else
+	begin
+		tBlkDataW[127:0] = tBlkData1[127:0];
+		case(tInByteIx[1:0])
+			2'b00: tBlkDataW[ 95:32] = tBlkInData1;
+			2'b01: tBlkDataW[103:40] = tBlkInData1;
+			2'b10: tBlkDataW[111:48] = tBlkInData1;
+			2'b11: tBlkDataW[119:56] = tBlkInData1;
+		endcase
+	end
+`endif
 	
 	if(tInOpm[2:0]==3'b111)
 	begin

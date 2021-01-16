@@ -63,7 +63,8 @@ module ExALUB(
 	exHold,
 	regInSrST,
 	regOutVal,
-	regOutSrST
+	regOutSrST,
+	regOutCarryD
 	);
 
 input			clock;
@@ -78,6 +79,7 @@ input[1:0]		regInSrST;
 
 output[63:0]	regOutVal;
 output[1:0]		regOutSrST;
+output[7:0]		regOutCarryD;
 
 wire			regInSrT;
 wire			regInSrS;
@@ -92,6 +94,9 @@ reg			tRegOutSrT2;
 reg			tRegOutSrS2;
 assign	regOutVal = tRegOutVal2;
 assign	regOutSrST = { tRegOutSrS2, tRegOutSrT2 };
+
+reg[7:0]	tRegOutCarryD;
+assign		regOutCarryD = tRegOutCarryD;
 
 reg[63:0]	tRegOutVal;
 reg			tRegOutSrT;
@@ -138,10 +143,57 @@ reg[32:0]	tSub2A1;
 reg[32:0]	tSub2B0;
 reg[32:0]	tSub2B1;
 
+reg[1:0]	tAddCa1A0;
+reg[1:0]	tAddCa1A1;
+reg[1:0]	tAddCa1B0;
+reg[1:0]	tAddCa1B1;
+
+reg[1:0]	tSubCa1A0;
+reg[1:0]	tSubCa1A1;
+reg[1:0]	tSubCa1B0;
+reg[1:0]	tSubCa1B1;
+
+reg[3:0]	tAddCa2A0;
+reg[3:0]	tAddCa2A1;
+reg[3:0]	tSubCa2A0;
+reg[3:0]	tSubCa2A1;
+
+reg[4:0]	tAddCa2_Add;
+reg[4:0]	tAddCa2_Adc;
+reg[4:0]	tSubCa2_Sub;
+reg[4:0]	tSubCa2_Sbb;
+
 reg[64:0]	tAdd3A0;
 reg[64:0]	tAdd3A1;
 reg[64:0]	tSub3A0;
 reg[64:0]	tSub3A1;
+
+reg			tSub2ZF;
+reg			tSub2CF;
+reg			tSub2SF;
+reg			tSub2VF;
+
+reg			tSub1BZF;
+reg			tSub1BCF;
+reg			tSub1BSF;
+reg			tSub1BVF;
+
+reg			tSub1WZF_A;
+reg			tSub1WCF_A;
+reg			tSub1WSF_A;
+reg			tSub1WZF_B;
+reg			tSub1WCF_B;
+reg			tSub1WSF_B;
+reg			tSub1WZF_C;
+reg			tSub1WCF_C;
+reg			tSub1WSF_C;
+reg			tSub1WZF_D;
+reg			tSub1WCF_D;
+reg			tSub1WSF_D;
+
+reg			tSub1ZF;
+reg			tSub1CF;
+reg			tSub1SF;
 
 reg[32:0]	tResult1A;
 reg			tResult1T;
@@ -152,6 +204,10 @@ reg			tResult1S;
 reg[64:0]	tResult2A;
 reg			tResult2T;
 
+reg[64:0]	tResult_Add64;
+reg[64:0]	tResult_Sub64;
+reg[32:0]	tResult_Add32;
+reg[32:0]	tResult_Sub32;
 
 reg[32:0]	tResultu1A;
 reg[32:0]	tResultu1B;
@@ -197,6 +253,111 @@ begin
 	tAdd3A1 = { tAdd2A1[32]?tAdd2B1:tAdd2B0, tAdd2A1[31:0] };
 	tSub3A0 = { tSub2A0[32]?tSub2B1:tSub2B0, tSub2A0[31:0] };
 	tSub3A1 = { tSub2A1[32]?tSub2B1:tSub2B0, tSub2A1[31:0] };
+
+`ifdef def_true
+	tAddCa1A0 = { tAdd1A0[16]?tAdd1B1[16]:tAdd1B0[16], tAdd1A0[16] };
+	tAddCa1A1 = { tAdd1A1[16]?tAdd1B1[16]:tAdd1B0[16], tAdd1A1[16] };
+	tAddCa1B0 = { tAdd1C0[16]?tAdd1D1[16]:tAdd1D0[16], tAdd1C0[16] };
+	tAddCa1B1 = { tAdd1C1[16]?tAdd1D1[16]:tAdd1D0[16], tAdd1C1[16] };
+
+	tSubCa1A0 = { tSub1A0[16]?tSub1B1[16]:tSub1B0[16], tSub1A0[16] };
+	tSubCa1A1 = { tSub1A1[16]?tSub1B1[16]:tSub1B0[16], tSub1A1[16] };
+	tSubCa1B0 = { tSub1C0[16]?tSub1D1[16]:tSub1D0[16], tSub1C0[16] };
+	tSubCa1B1 = { tSub1C1[16]?tSub1D1[16]:tSub1D0[16], tSub1C1[16] };
+
+	tAddCa2A0 = { tAddCa1A0[1]?tAddCa1B1:tAddCa1B0, tAddCa1A0 };
+	tAddCa2A1 = { tAddCa1A1[1]?tAddCa1B1:tAddCa1B0, tAddCa1A1 };
+	tSubCa2A0 = { tSubCa1A0[1]?tSubCa1B1:tSubCa1B0, tSubCa1A0 };
+	tSubCa2A1 = { tSubCa1A1[1]?tSubCa1B1:tSubCa1B0, tSubCa1A1 };
+
+	tAdd3A0 = {	tAddCa2A0[3],
+				tAddCa2A0[2] ? tAdd1D1[15:0] :	tAdd1D0[15:0],
+				tAddCa2A0[1] ? tAdd1C1[15:0] :	tAdd1C0[15:0],
+				tAddCa2A0[0] ? tAdd1B1[15:0] :	tAdd1B0[15:0],
+												tAdd1A0[15:0] };
+	tAdd3A1 = {	tAddCa2A1[3],
+				tAddCa2A1[2] ? tAdd1D1[15:0] :	tAdd1D0[15:0],
+				tAddCa2A1[1] ? tAdd1C1[15:0] :	tAdd1C0[15:0],
+				tAddCa2A1[0] ? tAdd1B1[15:0] :	tAdd1B0[15:0],
+												tAdd1A1[15:0] };
+
+	tSub3A0 = {	tSubCa2A0[3],	
+				tSubCa2A0[2] ? tSub1D1[15:0] :	tSub1D0[15:0],
+				tSubCa2A0[1] ? tSub1C1[15:0] :	tSub1C0[15:0],
+				tSubCa2A0[0] ? tSub1B1[15:0] :	tSub1B0[15:0],
+												tSub1A0[15:0] };
+	tSub3A1 = {	tSubCa2A1[3],
+				tSubCa2A1[2] ? tSub1D1[15:0] :	tSub1D0[15:0],
+				tSubCa2A1[1] ? tSub1C1[15:0] :	tSub1C0[15:0],
+				tSubCa2A1[0] ? tSub1B1[15:0] :	tSub1B0[15:0],
+												tSub1A1[15:0] };
+
+	tAdd2A0 = { tAddCa1A0[1], tAdd3A0[31:0] };
+	tAdd2A1 = { tAddCa1A1[1], tAdd3A1[31:0] };
+	tSub2A0 = { tSubCa1A0[1], tSub3A0[31:0] };
+	tSub2A1 = { tSubCa1A1[1], tSub3A1[31:0] };
+
+	tAddCa2_Add = { tAddCa2A0, 1'b0 };
+	tSubCa2_Sub = { tSubCa2A1, 1'b1 };
+	tAddCa2_Adc = { regInSrT ? tAddCa2A1 : tAddCa2A0, regInSrT };
+	tSubCa2_Sbb = { regInSrT ? tSubCa2A0 : tSubCa2A1, !regInSrT };
+
+	if(idUIxt[1])
+	begin
+		tAddCa2_Add = tAddCa2_Adc;
+		tSubCa2_Sub = tSubCa2_Sbb;
+	end
+
+	tResult_Add64	= {	tAddCa2_Add[3],
+				tAddCa2_Add[3] ? tAdd1D1[15:0] : tAdd1D0[15:0],
+				tAddCa2_Add[2] ? tAdd1C1[15:0] : tAdd1C0[15:0],
+				tAddCa2_Add[1] ? tAdd1B1[15:0] : tAdd1B0[15:0],
+				tAddCa2_Add[0] ? tAdd1A1[15:0] : tAdd1A0[15:0]};
+	tResult_Sub64	= {	tSubCa2_Sub[3],
+				tSubCa2_Sub[3] ? tSub1D1[15:0] : tSub1D0[15:0],
+				tSubCa2_Sub[2] ? tSub1C1[15:0] : tSub1C0[15:0],
+				tSubCa2_Sub[1] ? tSub1B1[15:0] : tSub1B0[15:0],
+				tSubCa2_Sub[0] ? tSub1A1[15:0] : tSub1A0[15:0] };
+
+	tResult_Add32 = { tAddCa2_Add[2], tResult_Add64[31:0] };
+	tResult_Sub32 = { tSubCa2_Sub[2], tResult_Sub64[31:0] };
+`endif
+
+	tSub1WZF_A	= (tSub2A1[15: 0]==0);
+	tSub1WZF_B	= (tSub2A1[31:16]==0);
+	tSub1WZF_C	= (tSub3A1[47:32]==0);
+	tSub1WZF_D	= (tSub3A1[63:48]==0);
+
+	tSub1WCF_A	= tSub1A0[16];
+	tSub1WCF_B	= tSub1B0[16];
+	tSub1WCF_C	= tSub1C0[16];
+	tSub1WCF_D	= tSub1D0[16];
+
+	tSub1WSF_A	= tSub1A0[15];
+	tSub1WSF_B	= tSub1B0[15];
+	tSub1WSF_C	= tSub1C0[15];
+	tSub1WSF_D	= tSub1D0[15];
+
+	tSub1ZF		= tSub1WZF_A && tSub1WZF_B;
+	tSub1BZF	= tSub1WZF_C && tSub1WZF_D;
+
+	tSub2ZF		= tSub1ZF && tSub1BZF;
+
+//	tSub1CF = tSub2A1[32];
+//	tSub2CF = tSub3A1[64];
+	tSub1CF = tSubCa2A1[1];
+	tSub2CF = tSubCa2A1[3];
+
+	tSub1SF = tSub2A1[31];
+	tSub2SF = tSub3A1[63];
+
+	tSub1BCF = tSub2B1[32];
+	tSub1BSF = tSub2B1[31];
+
+	tRegOutCarryD = {
+		3'b000,
+		tSub2ZF,
+		tSubCa2A1[3], tSubCa2A0[3], tAddCa2A1[3], tAddCa2A0[3] };
 
 	tResult1A=UV33_XX;
 	tResult2A=UV65_XX;
@@ -268,8 +429,10 @@ begin
 
 	case(idUIxt[3:0])
 		4'h0: begin		/* ADD */
-			tResult1A=tAdd2A0;
-			tResult2A=tAdd3A0;
+//			tResult1A=tAdd2A0;
+//			tResult2A=tAdd3A0;
+			tResult1A=tResult_Add32;
+			tResult2A=tResult_Add64;
 			tResult1T=regInSrT;
 			tResult2T=regInSrT;
 
@@ -281,8 +444,10 @@ begin
 				tAdd1B0[15:0], tAdd1A0[15:0] };
 		end
 		4'h1: begin		/* SUB */
-			tResult1A=tSub2A1;
-			tResult2A=tSub3A1;
+//			tResult1A=tSub2A1;
+//			tResult2A=tSub3A1;
+			tResult1A=tResult_Sub32;
+			tResult2A=tResult_Sub64;
 			tResult1T=regInSrT;
 			tResult2T=regInSrT;
 
@@ -294,8 +459,10 @@ begin
 				tSub1B1[15:0], tSub1A1[15:0] };
 		end
 		4'h2: begin		/* ADC */
-			tResult1A=regInSrT ? tAdd2A1 : tAdd2A0;
-			tResult2A=regInSrT ? tAdd3A1 : tAdd3A0;
+//			tResult1A=regInSrT ? tAdd2A1 : tAdd2A0;
+//			tResult2A=regInSrT ? tAdd3A1 : tAdd3A0;
+			tResult1A=tResult_Add32;
+			tResult2A=tResult_Add64;
 			tResult1T=tResult1A[32];
 			tResult2T=tResult2A[64];
 
@@ -305,8 +472,10 @@ begin
 			tResult2W = { 1'b0, regValRs[63:32], regValRt[31:0] };
 		end
 		4'h3: begin		/* SBB */
-			tResult1A=regInSrT ? tSub2A0 : tSub2A1;
-			tResult2A=regInSrT ? tSub3A0 : tSub3A1;
+//			tResult1A=regInSrT ? tSub2A0 : tSub2A1;
+//			tResult2A=regInSrT ? tSub3A0 : tSub3A1;
+			tResult1A=tResult_Sub32;
+			tResult2A=tResult_Sub64;
 			tResult1T=!tResult1A[32];
 			tResult2T=!tResult2A[64];
 
@@ -351,8 +520,14 @@ begin
 		end
 
 		4'hC: begin		/* CMPEQ */
+//			tResult1T=tSub1ZF;
+//			tResult2T=tSub2ZF;
+//			tResult1S=tSub1BZF;
 		end
 		4'hD: begin		/* CMPHI */
+//			tResult1T=tSub1CF && !tSub1ZF;
+//			tResult2T=tSub2CF && !tSub2ZF;
+//			tResult1S=tSub1BCF && !tSub1BZF;
 		end
 		4'hE: begin		/* CMPGT */
 		end
@@ -423,10 +598,15 @@ begin
 	end
 	else
 	begin
-		if(idUIxt[4])
-			tRegOutVal = { UV32_00, tResult1A[31:0] };
-		else
-			tRegOutVal = { tResult1A[31]?UV32_FF:UV32_00, tResult1A[31:0] };
+//		if(idUIxt[4])
+//			tRegOutVal = { UV32_00, tResult1A[31:0] };
+//		else
+//			tRegOutVal = { tResult1A[31]?UV32_FF:UV32_00, tResult1A[31:0] };
+
+		tRegOutVal = {
+			(tResult1A[31] && !idUIxt[4]) ? UV32_FF : UV32_00,
+			tResult1A[31:0] };
+
 		tRegOutSrT = tResult1T;
 		tRegOutSrS = regInSrS;
 	end
@@ -447,6 +627,25 @@ begin
 			tSub1SF, tSub1VF, tSub1ZF, tSub1CF);
 	end
 `endif
+
+`ifndef def_true
+//`ifdef jx2_fcmp_alu
+//`ifdef jx2_fpu_longdbl
+	if(idUCmd[5:0]==JX2_UCMD_FCMP)
+	begin
+		if(idUIxt[3:0]==JX2_UCIX_FPU_CMPEQ[3:0])
+		begin
+			tRegOutSrT = tSub2ZF;
+		end
+		else
+		begin
+			tRegOutSrT = tSub2CF && !tSub2ZF;
+		end
+	end
+//`endif
+//`endif
+`endif
+
 end
 
 always @(posedge clock)
