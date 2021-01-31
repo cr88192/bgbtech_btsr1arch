@@ -889,6 +889,15 @@ int nmid;
 {"adcx",	BGBCC_SH_NMID_ADCX},
 {"sbbx",	BGBCC_SH_NMID_SBBX},
 
+{"rotlx",	BGBCC_SH_NMID_ROTLX},
+{"shadx",	BGBCC_SH_NMID_SHADX},
+{"shldx",	BGBCC_SH_NMID_SHLDX},
+{"sharx",	BGBCC_SH_NMID_SHARX},
+{"shlrx",	BGBCC_SH_NMID_SHLRX},
+
+{"blkutx1",	BGBCC_SH_NMID_BLKUTX1},
+{"blkutx2",	BGBCC_SH_NMID_BLKUTX2},
+
 {"frcp",	BGBCC_SH_NMID_FRCP},
 {"fsqrta",	BGBCC_SH_NMID_FSQRTA},
 {"frcpa",	BGBCC_SH_NMID_FRCPA},

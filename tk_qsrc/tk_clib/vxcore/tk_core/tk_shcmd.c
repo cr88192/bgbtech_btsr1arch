@@ -177,7 +177,7 @@ void TKSH_ListDir(char *path, char **args)
 	TK_DIR *dir;
 	TK_DIRENT **tdearr;
 	TK_DIRENT *tde, *tde2;
-	char *s0, *cs, *ct, *cte;
+	char *s0, *cs, *ct, *cte, *altn;
 	int flag, num, max, mw, mwc, nrow;
 	int i, j, k;
 	
@@ -267,10 +267,15 @@ void TKSH_ListDir(char *path, char **args)
 		for(i=0; i<num; i++)
 		{
 			tde=tdearr[i];
-			printf("%-32s %9d %08X\n",
+			
+			altn="";
+			if((tde->st_mode&TKFAT_EMODE_IFMT)==TKFAT_EMODE_LINK)
+				altn=tde->st_link;
+			
+			printf("%-32s %9d %08X %s\n",
 				tde->d_name,
 				tde->st_size,
-				tde->st_mtime);
+				tde->st_mtime, altn);
 		}
 	}else
 	{
@@ -293,9 +298,14 @@ void TKSH_ListDir(char *path, char **args)
 					{ *ct++=' '; }
 				*ct++=0;
 				
-				if(tde->st_mode&TKFAT_EMODE_DIR)
+//				if(tde->st_mode&TKFAT_EMODE_DIR)
+				if((tde->st_mode&TKFAT_EMODE_IFMT)==TKFAT_EMODE_DIR)
 //					tk_puts("\x1B[34m");
 					tk_puts("\x1B[36m");
+
+//				if(tde->st_mode&TKFAT_EMODE_LINK)
+				if((tde->st_mode&TKFAT_EMODE_IFMT)==TKFAT_EMODE_LINK)
+					tk_puts("\x1B[35m");
 
 //				if(tde->st_mode&TKFAT_EMODE_ACC_XO)
 //					tk_puts("\x1B[32m");
@@ -389,26 +399,56 @@ int TKSH_Cmds_Echo(char **args)
 	return(0);
 }
 
+int THSH_CheckIsURI(char *src)
+{
+	char *s1;
+	int isuri;
+
+	isuri=0;
+	s1=src;
+	while(*s1 && (((*s1>='a') && (*s1<='z')) || ((*s1>='A') && (*s1<='Z'))))
+		s1++;
+	if(s1==':')
+		isuri=1;
+	return(isuri);
+}
+
 int THSH_QualifyPathArg(char *dst, char *src)
 {
 	char tb_cwd[256];
+	int isuri;
 
 	if(src)
 	{
-		if(src[0]=='/')
+		if((src[0]=='.') && (src[1]=='/'))
+			src+=2;
+		
+		isuri=THSH_CheckIsURI(src);
+		
+		if((src[0]=='/') || isuri)
 		{
 			strcpy(dst, src);
 		}else
 		{
 			TK_Env_GetCwd(tb_cwd, 256);
-			strcpy(dst, tb_cwd);
-			strcat(dst, "/");
-			strcat(dst, src);
+			if(!tb_cwd[0] || !strcmp(tb_cwd, "/"))
+			{
+				strcpy(dst, "/");
+				strcat(dst, src);
+			}else
+			{
+				strcpy(dst, tb_cwd);
+				strcat(dst, "/");
+				strcat(dst, src);
+			}
 		}
 	}else
 	{
 		TK_Env_GetCwd(dst, 256);
 	}
+	
+	TKSH_NormalizePath(dst, dst);
+	
 	return(0);
 }
 
@@ -467,7 +507,62 @@ int TKSH_Cmds_Mv(char **args)
 	{
 		THSH_QualifyPathArg(tb1, sarg);
 		THSH_QualifyPathArg(tb2, darg);
-		tk_rename(tb1, tb2);
+		tk_rename(tb1, tb2, "r");
+//		tk_unlink(tb);
+	}else
+	{
+	}
+	return(0);
+}
+
+int TKSH_Cmds_Ln(char **args)
+{
+	char tb1[256];
+	char tb2[256];
+	char *darg, *sarg, *mode;
+	char *s;
+	int i;
+
+	darg=NULL;
+	sarg=NULL;
+	mode="l";
+	for(i=1; args[i]; i++)
+	{
+		if(args[i][0]=='-')
+		{
+			if(!strcmp(args[i], "--symbolic"))
+				{ mode="S"; continue; }
+
+			if(args[i][1]!='-')
+			{
+				s=args[i]+1;
+				while(*s)
+				{
+					if(*s=='s')
+						{ mode="S"; }
+					s++;
+				}
+			}
+
+			continue;
+		}
+		if(!sarg)
+			{ sarg=args[i]; continue; }
+		if(!darg)
+			{ darg=args[i]; continue; }
+	}
+
+	if(sarg && darg)
+	{
+		if(*mode=='S')
+		{
+			strcpy(tb1, sarg);
+		}else
+		{
+			THSH_QualifyPathArg(tb1, sarg);
+		}
+		THSH_QualifyPathArg(tb2, darg);
+		tk_rename(tb1, tb2, mode);
 //		tk_unlink(tb);
 	}else
 	{
@@ -755,6 +850,7 @@ int TKSH_InitCmds(void)
 	TKSH_RegisterCommand("cls",		TKSH_Cmds_Cls);
 	TKSH_RegisterCommand("cp",		TKSH_Cmds_Cp);
 	TKSH_RegisterCommand("echo",	TKSH_Cmds_Echo);
+	TKSH_RegisterCommand("ln",		TKSH_Cmds_Ln);
 	TKSH_RegisterCommand("ls",		TKSH_Cmds_Ls);
 	TKSH_RegisterCommand("mv",		TKSH_Cmds_Mv);
 	TKSH_RegisterCommand("recvxm",	TKSH_Cmds_RecvXm);
@@ -1179,8 +1275,11 @@ int TKSH_TryLoad(char *img, char **args0)
 		
 		if(bootptr)
 		{
-			boot_newspb=TKMM_PageAlloc(1<<18);
-			boot_newsp=boot_newspb+((1<<18)-1024);
+//			boot_newspb=TKMM_PageAlloc(1<<18);
+//			boot_newsp=boot_newspb+((1<<18)-1024);
+
+			boot_newspb=TKMM_PageAlloc(1<<19);
+			boot_newsp=boot_newspb+((1<<19)-1024);
 
 			env0=TK_GetCurrentEnvContext();
 			env1=TK_EnvCtx_CloneContext(env0);

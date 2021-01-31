@@ -32,13 +32,19 @@ X(tk_checksane_gfp_asm):
 	fmul	r6, r10
 
 	cmpqeq r8, r5
-	bf _checksane_gfp_fail
+//	bf _checksane_gfp_fail
+	.A0_0:
+	break?f
 	
 	cmpqeq r9, r7
-	bf _checksane_gfp_fail
+//	bf _checksane_gfp_fail
+	.A0_1:
+	break?f
 
 	cmpqeq r10, r5
-	bf _checksane_gfp_fail
+//	bf _checksane_gfp_fail
+	.A0_2:
+	break?f
 
 
 	fadd r4, r4, r8
@@ -46,45 +52,69 @@ X(tk_checksane_gfp_asm):
 	fmul r4, r6, r10
 	
 	cmpqeq r8, r5
-	bf _checksane_gfp_fail
+//	bf _checksane_gfp_fail
+	.A0_3:
+	break?f
 	
 	cmpqeq r9, r7
-	bf _checksane_gfp_fail
+//	bf _checksane_gfp_fail
+	.A0_4:
+	break?f
 
 	cmpqeq r10, r5
-	bf _checksane_gfp_fail
+//	bf _checksane_gfp_fail
+	.A0_5:
+	break?f
 
 
 	fcmpeq r8, r5
-	bf _checksane_gfp_fail
+//	bf _checksane_gfp_fail
+	.A0_6:
+	break?f
 
 	fcmpeq r8, r7
-	bt _checksane_gfp_fail
+//	bt _checksane_gfp_fail
+	.A0_7:
+	break?t
 
 	fcmpgt r4, r4
-	bt _checksane_gfp_fail
+//	bt _checksane_gfp_fail
+	.A0_8:
+	break?t
 
 	fcmpgt r4, r5
-	bf _checksane_gfp_fail
+//	bf _checksane_gfp_fail
+	.A0_9:
+	break?f
 
 	fcmpgt r5, r4
-	bt _checksane_gfp_fail
+//	bt _checksane_gfp_fail
+	.A0_10:
+	break?t
 
 
 	fneg r4, r11
 	
 	fcmpeq r11, r4
-	bt _checksane_gfp_fail
+//	bt _checksane_gfp_fail
+	.A0_11:
+	break?t
 
 	fcmpgt r11, r4
-	bf _checksane_gfp_fail
+//	bf _checksane_gfp_fail
+	.A0_12:
+	break?f
 
 
 	fcmpgt r12, r13
-	bt _checksane_gfp_fail
+//	bt _checksane_gfp_fail
+	.A0_13:
+	break?t
 
 	fcmpgt r13, r12
-	bf _checksane_gfp_fail
+//	bf _checksane_gfp_fail
+	.A0_14:
+	break?f
 
 
 	fstci	r4, r8
@@ -92,17 +122,26 @@ X(tk_checksane_gfp_asm):
 	fstci	r6, r10
 
 	cmpeq	#3, r8
-	bf _checksane_gfp_fail
+//	bf _checksane_gfp_fail
+	.A1_0:
+	break?f
+
 	cmpeq	#6, r9
-	bf _checksane_gfp_fail
+//	bf _checksane_gfp_fail
+	.A1_1:
+	break?f
 	cmpeq	#2, r10
-	bf _checksane_gfp_fail
+//	bf _checksane_gfp_fail
+	.A1_2:
+	break?f
 
 
 	/* Verify that FCMPEQ returns false for NaN */
 	mov #0x7FFD000000000000, r19
 	fcmpeq r19, r19
-	bt _checksane_gfp_fail
+//	bt _checksane_gfp_fail
+	.A1_3:
+	break?t
 
 
 	mov #0x40490fd0, r18
@@ -112,10 +151,14 @@ X(tk_checksane_gfp_asm):
 	fldcf r8, r9
 
 	cmpeq r8, r18
-	bf _checksane_gfp_fail
+//	bf _checksane_gfp_fail
+	.A1_4:
+	break?f
 
 	cmpqeq r9, r19
-	bf _checksane_gfp_fail
+//	bf _checksane_gfp_fail
+	.A1_5:
+	break?f
 
 	mov #1234567, r20
 	mov #0x4132d68700000000, r21
@@ -126,21 +169,29 @@ X(tk_checksane_gfp_asm):
 	fstci r8, r9
 
 	cmpqeq r8, r21
-	bf _checksane_gfp_fail
+//	bf _checksane_gfp_fail
+	.A1_6:
+	break?f
 
 	cmpqeq r9, r20
-	bf _checksane_gfp_fail
+//	bf _checksane_gfp_fail
+	.A1_7:
+	break?f
 
 #if 1
 	fldci r22, r8
 	cmpqeq r8, r23
-	bf _checksane_gfp_fail
+//	bf _checksane_gfp_fail
+	.A1_8:
+	break?f
 #endif
 
 #if 1
 	fstci r8, r11
 	cmpqeq r11, r22
-	bf _checksane_gfp_fail
+//	bf _checksane_gfp_fail
+	.A1_9:
+	break?f
 #endif
 
 #if 1
@@ -149,7 +200,9 @@ X(tk_checksane_gfp_asm):
 
 	fstci r24, r12
 	cmpqeq r12, r25
-	bf _checksane_gfp_fail
+//	bf _checksane_gfp_fail
+	.A1_10:
+	break?f
 #endif
 
 //	pop lr

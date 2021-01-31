@@ -350,6 +350,8 @@ assign	tFpuIsFpu3 = (tOpCmd[5:0]==JX2_UCMD_FPU3);
 assign	tFpuIsFldcx = (tOpCmd[5:0]==JX2_UCMD_FLDCX);
 assign	tFpuIsFstcx = (tOpCmd[5:0]==JX2_UCMD_FSTCX);
 
+wire tExCmdIsCnvLd;
+
 wire	tFpuIsLongDbl;
 assign	tFpuIsLongDbl = tRegIdIxtL[5];
 
@@ -358,8 +360,18 @@ assign	tRegAddSimdExOp	=
 	(tRegIdIxtL[3:0]==JX2_UCIX_FPU_PSUB[3:0]) ? 4'h2 :
 	4'h0;
 
+wire[3:0]	tRegAddCnvLdExOp;
+
+assign	tRegAddCnvLdExOp	=
+	(tFpuIsFldcx && (tRegIdIxt[3:0]==1)) ? 4'h5 :
+	(tFpuIsFstcx && (tRegIdIxt[3:0]==1)) ? 4'hD :
+	(tFpuIsFldcx && (tRegIdIxt[3:0]==2)) ? 4'hB :
+	(tFpuIsFstcx && (tRegIdIxt[3:0]==2)) ? 4'hC :
+	4'h0;
+
 assign	tRegAddExOp	=
 	(tExCmdIsSimd) ? tRegAddSimdExOp :
+	(tExCmdIsCnvLd) ? tRegAddCnvLdExOp :
 	{ tFpuIsLongDbl,
 	(tFpuIsFpu3 && (tRegIdIxt[3:0]==JX2_UCIX_FPU_FADD[3:0])) ? 3'h1 :
 	(tFpuIsFpu3 && (tRegIdIxt[3:0]==JX2_UCIX_FPU_FSUB[3:0])) ? 3'h2 :
@@ -430,6 +442,12 @@ assign	tRegIdRn		= tExCmdLaneB ? regIdRnB : regIdRnA;
 assign	tRegValRs		= tExCmdLaneB ? regValRsB : regValRsA;
 assign	tRegValRt		= tExCmdLaneB ? regValRtB : regValRtA;
 assign	tRegValRn		= tExCmdLaneB ? regValRnB : regValRnA;
+
+assign	tExCmdIsCnvLd =
+	(	(tOpCmd[5:0]==JX2_UCMD_FLDCX)	||
+		(tOpCmd[5:0]==JX2_UCMD_FSTCX)	)	&&
+	(	(tRegIdIxt[5:0]==JX2_UCIX_FPCX_XE)	||
+		(tRegIdIxt[5:0]==JX2_UCIX_FPCX_XI) );
 
 assign	tExCmdIsSimd =
 	(tOpCmdL[5:0]==JX2_UCMD_FPU3) 	&&
@@ -765,6 +783,15 @@ begin
 					tRegValGRn	= tRegValRs;
 					tRegValGRnA	= tRegValGRn;
 					tRegValGRnB	= tRegValGRn;
+
+					if(tRegIdIxtL[5])
+					begin
+						tDoHoldCyc = 5;
+						tExCmdVecW = 1;
+						tRegValGRn	= tRegAddVal;
+						tRegValGRnA	= tRegAddVal;
+						tRegValGRnB	= tRegAddValHi;
+					end
 				end
 				3'h2: begin
 					tDoHoldCyc = 5;
@@ -799,6 +826,15 @@ begin
 					tRegValGRn	= tRegValRsL;
 					tRegValGRnA	= tRegValGRn;
 					tRegValGRnB	= tRegValGRn;
+
+					if(tRegIdIxtL[5])
+					begin
+						tDoHoldCyc = 5;
+						tExCmdVecW = 0;
+						tRegValGRn	= tRegAddVal;
+						tRegValGRnA	= tRegAddVal;
+						tRegValGRnB	= tRegAddVal;
+					end
 				end
 
 				4'h2: begin

@@ -72,6 +72,7 @@ qboolean	r_lastvertvalid;
 float __fpu_frcp_sf(float f);
 float __fpu_fdiv_sf(float f, float g);
 
+
 #if	!id386
 
 /*

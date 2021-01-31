@@ -681,8 +681,10 @@ int main(int argc, char *argv[])
 			continue;
 		}
 		
-		tag=FccTagForName(a[1]);
-		tag1=FccTagForName(a[0]);
+//		tag=FccTagForName(a[1]);
+//		tag1=FccTagForName(a[0]);
+		tag=FccTagForName(s);
+		tag1=FccTagForName(s1);
 
 		if(tag1)
 		{

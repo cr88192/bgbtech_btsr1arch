@@ -32,23 +32,8 @@ R_AnimateLight
 void R_AnimateLight (void)
 {
 	int			i,j,k;
-	
-//
-// light animations
-// 'm' is normal light, 'a' is no light, 'z' is double bright
-	i = (int)(cl.time*10);
 	for (j=0 ; j<MAX_LIGHTSTYLES ; j++)
-	{
-		if (!cl_lightstyle[j].length)
-		{
-			d_lightstylevalue[j] = 256;
-			continue;
-		}
-		k = i % cl_lightstyle[j].length;
-		k = cl_lightstyle[j].map[k] - 'a';
-		k = k*22;
-		d_lightstylevalue[j] = k;
-	}	
+		d_lightstylevalue[j] = 256;
 }
 
 /*
@@ -112,33 +97,6 @@ R_RenderDlights
 */
 void R_RenderDlights (void)
 {
-	int		i;
-	dlight_t	*l;
-
-	if (!gl_flashblend.value)
-		return;
-
-	r_dlightframecount = r_framecount + 1;	// because the count hasn't
-											//  advanced yet for this frame
-	qglDepthMask (0);
-	qglDisable (GL_TEXTURE_2D);
-	qglShadeModel (GL_SMOOTH);
-	qglEnable (GL_BLEND);
-	qglBlendFunc (GL_ONE, GL_ONE);
-
-	l = cl_dlights;
-	for (i=0 ; i<MAX_DLIGHTS ; i++, l++)
-	{
-		if (l->die < cl.time || !l->radius)
-			continue;
-		R_RenderDlight (l);
-	}
-
-	qglColor3f (1,1,1);
-	qglDisable (GL_BLEND);
-	qglEnable (GL_TEXTURE_2D);
-	qglBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	qglDepthMask (1);
 }
 
 
@@ -157,42 +115,6 @@ R_MarkLights
 */
 void R_MarkLights (dlight_t *light, int bit, mnode_t *node)
 {
-	mplane_t	*splitplane;
-	float		dist;
-	msurface_t	*surf;
-	int			i;
-	
-	if (node->contents < 0)
-		return;
-
-	splitplane = node->plane;
-	dist = DotProduct (light->origin, splitplane->normal) - splitplane->dist;
-	
-	if (dist > light->radius)
-	{
-		R_MarkLights (light, bit, node->children[0]);
-		return;
-	}
-	if (dist < -light->radius)
-	{
-		R_MarkLights (light, bit, node->children[1]);
-		return;
-	}
-		
-// mark the polygons
-	surf = cl.worldmodel->surfaces + node->firstsurface;
-	for (i=0 ; i<node->numsurfaces ; i++, surf++)
-	{
-		if (surf->dlightframe != r_dlightframecount)
-		{
-			surf->dlightbits = 0;
-			surf->dlightframe = r_dlightframecount;
-		}
-		surf->dlightbits |= bit;
-	}
-
-	R_MarkLights (light, bit, node->children[0]);
-	R_MarkLights (light, bit, node->children[1]);
 }
 
 
@@ -203,6 +125,7 @@ R_PushDlights
 */
 void R_PushDlights (void)
 {
+#if 0
 	int		i;
 	dlight_t	*l;
 
@@ -219,6 +142,7 @@ void R_PushDlights (void)
 			continue;
 		R_MarkLights ( l, 1<<i, cl.worldmodel->nodes );
 	}
+#endif
 }
 
 
@@ -332,7 +256,7 @@ int RecursiveLightPoint (mnode_t *node, vec3_t start, vec3_t end)
 	return RecursiveLightPoint (node->children[!side], mid, end);
 }
 
-int R_LightPoint (vec3_t p)
+int R_LightPointOrg (vec3_t p)
 {
 	vec3_t		strt;
 	vec3_t		end;
@@ -341,13 +265,16 @@ int R_LightPoint (vec3_t p)
 	if (!cl.worldmodel->lightdata)
 		return 255;
 
+//	return 255;
+
 	strt[0] = p[0];
 	strt[1] = p[1];
 	strt[2] = p[2] + 2;
 	
 	end[0] = p[0];
 	end[1] = p[1];
-	end[2] = p[2] - 2048;
+//	end[2] = p[2] - 2048;
+	end[2] = p[2] - 512;
 	
 //	r = RecursiveLightPoint (cl.worldmodel->nodes, p, end);
 	r = RecursiveLightPoint (cl.worldmodel->nodes, strt, end);
@@ -358,7 +285,7 @@ int R_LightPoint (vec3_t p)
 	return r;
 }
 
-int R_LightPointDir (vec3_t p, vec3_t dir)
+int R_LightPointDirOrg (vec3_t p, vec3_t dir)
 {
 	vec3_t		strt;
 	vec3_t		end;
@@ -371,9 +298,13 @@ int R_LightPointDir (vec3_t p, vec3_t dir)
 	strt[1] = p[1] + dir[1]*2;
 	strt[2] = p[2] + dir[2]*2;
 	
-	end[0] = p[0] - dir[0]*2048;
-	end[1] = p[1] - dir[1]*2048;
-	end[2] = p[2] - dir[2]*2048;
+//	end[0] = p[0] - dir[0]*2048;
+//	end[1] = p[1] - dir[1]*2048;
+//	end[2] = p[2] - dir[2]*2048;
+
+	end[0] = p[0] - dir[0]*512;
+	end[1] = p[1] - dir[1]*512;
+	end[2] = p[2] - dir[2]*512;
 	
 //	r = RecursiveLightPoint (cl.worldmodel->nodes, p, end);
 	r = RecursiveLightPoint (cl.worldmodel->nodes, strt, end);
@@ -384,3 +315,123 @@ int R_LightPointDir (vec3_t p, vec3_t dir)
 	return r;
 }
 
+#if 1
+//int R_LightPoint (vec3_t p)
+//{
+//	return(R_LightPointOrg(p));
+//}
+
+int R_LightPointDir (vec3_t p, vec3_t dir)
+{
+	return(R_LightPointDirOrg(p, dir));
+}
+
+
+// byte *lightcube;
+int *lightcube;
+byte lightcube_ready = false;
+
+int R_LightPoint (vec3_t p)
+{
+	int x, y, z, w;
+	int i, j, k, l;
+	
+	if(!lightcube)
+	{
+		lightcube=malloc(4096*sizeof(int));
+		lightcube_ready = false;
+	}
+	
+	if(!lightcube_ready)
+	{
+		memset(lightcube, 0x00, 4096*sizeof(int));
+		lightcube_ready = true;
+	}
+	
+//	x=(p[0]/64)+16;
+//	y=(p[1]/64)+16;
+//	z=(p[2]/64)+16;
+//	w=(z*32+y)*32+x;
+
+	x=((int)(p[0]/16))&255;
+	y=((int)(p[1]/16))&255;
+	z=((int)(p[2]/16))&255;
+//	w=(x*251+y)*251+z;
+//	w=w*251; w=w*251;
+	w=((x+y+z)<<2)^(x^y);
+	w=w*65521;
+	w=(w>>16)&4095;
+
+	j=(x<<16)|(y<<8)|z;
+
+	k=lightcube[w];
+	l=(k>>24)&255;
+//	if(l<=0)
+	if((k&0x00FFFFFF)!=j)
+	{
+		l=R_LightPointOrg(p);
+//		if(l<1)l=1;
+		lightcube[w]=(l<<24)|j;
+	}
+
+	return(l);
+}
+
+#endif
+
+#if 0
+byte *lightcube;
+byte lightcube_ready = false;
+
+void R_InitLightcube()
+{
+	vec3_t p;
+	int l;
+	int x, y, z, w;
+	
+	if(!lightcube)
+	{
+		lightcube=malloc(32*32*32);
+		memset(lightcube, 0xFF, 32*32*32);
+		lightcube_ready = false;
+	}
+	
+	if(lightcube_ready)
+		return;
+	lightcube_ready = 1;
+		
+	for(x=0; x<32; x++)
+		for(y=0; y<32; y++)
+			for(z=0; z<32; z++)
+	{
+		p[0]=(x-16)*64;
+		p[1]=(y-16)*64;
+		p[2]=(z-16)*64;
+
+		w=(z*32+y)*32+x;
+		
+		l = R_LightPointOrg(p);
+		l = 64+(l>>3);
+		lightcube[w] = l;
+	}
+}
+
+int R_LightPoint (vec3_t p)
+{
+	int x, y, z, w;
+	
+	R_InitLightcube();
+	
+	x=(p[0]/64)+16;
+	y=(p[1]/64)+16;
+	z=(p[2]/64)+16;
+	w=(z*32+y)*32+x;
+
+	return(lightcube[w]);
+}
+
+int R_LightPointDir (vec3_t p, vec3_t dir)
+{
+	return(R_LightPoint(p));
+}
+#endif

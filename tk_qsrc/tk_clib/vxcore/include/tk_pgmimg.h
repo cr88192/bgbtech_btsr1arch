@@ -55,7 +55,10 @@ tk_kptr		allocaptr;	//pointer to alloca mark
 tk_kptr		tlsptr;		//pointer to TLS data area
 
 int			pid;
-int			pad1;
+// int			pad1;
+short		uid;
+short		gid;
+
 tk_kptr		baseptr;		//base pointer for main binary
 tk_kptr		bootptr;		//entry point for main binary
 tk_kptr		basegbr;		//GBR for main binary, set on program startup.

@@ -25,20 +25,30 @@ int __xli_cmp_ntst(__int128 a, __int128 b);
 __asm {
 
 __xli_add:
+.ifarch has_alux
+	ADDX	R4, R6, R2
+	RTS
+.else
 	MOV		R6, R2
 	MOV		R7, R3
 	CLRT
 	ADDC	R4, R2
 	ADDC	R5, R3
 	RTS
+.endif
 
 __xli_sub:
+.ifarch has_alux
+	SUBX	R4, R6, R2
+	RTS
+.else
 	MOV		R6, R2
 	MOV		R7, R3
 	CLRT
 	SUBC	R4, R2
 	SUBC	R5, R3
 	RTS
+.endif
 
 __xli_and:
 	AND		R4, R6, R2

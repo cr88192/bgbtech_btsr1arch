@@ -41,9 +41,11 @@ Control Register 0 Bits:
 
 Basic Display Resolution
 * (DR3, DR2, DR1)
-** 000: 640x480
+** 000: / 640x480 / 640x400
+** 000: 640x400
 ** 001: 800x600
 ** 010: 1024x768
+** 100: 640x480
 
 Cell Width
 * (CW3, CW2, CW1)

@@ -1,3 +1,7 @@
+#ifndef __TK_CORE_H__
+#define __TK_CORE_H__
+
+
 // #ifdef ARCH_SH4
 #if defined(ARCH_SH4) || defined(ARCH_BJX1) || defined(ARCH_BJX1_64)
 
@@ -243,7 +247,12 @@ typedef __builtin_va_list va_list;
 
 #ifndef __SIZE_T_DEFINED
 #define __SIZE_T_DEFINED
-typedef unsigned int size_t;
+typedef unsigned long size_t;
+#endif
+
+#ifndef __OFF_T_DEFINED
+#define __OFF_T_DEFINED
+typedef long long off_t;
 #endif
 
 typedef struct TKMM_MemLnkObj_s TKMM_MemLnkObj;
@@ -307,6 +316,9 @@ typedef struct TK_DATETIME_s TK_DATETIME;
 typedef struct TK_MOUNT_s TK_DEVFSDEV;
 typedef struct TK_BLKDEVINFO_s TK_BLKDEVINFO;
 
+typedef struct TK_USERINFO_s TK_USERINFO;
+
+
 struct TK_FILE_VT_s {
 char *fsname;
 TK_FILE_VT *next;
@@ -314,15 +326,23 @@ TK_FILE_VT *next;
 TK_MOUNT *(*mount)(char *devfn, char *mntfn,
 	char *fsty, char *mode, char **opts);
 
-TK_FILE *(*fopen)(TK_MOUNT *mnt, char *name, char *mode);
-TK_DIR *(*opendir)(TK_MOUNT *mnt, char *name);
-int (*unlink)(TK_MOUNT *mnt, char *name);
-int (*rename)(TK_MOUNT *mnt, char *oldfn, char *newfn);
-int (*fstat)(TK_MOUNT *mnt, char *name, TK_FSTAT *st);
+TK_FILE *(*fopen)(TK_MOUNT *mnt, TK_USERINFO *usri,
+	char *path, char *mode);
+TK_DIR *(*opendir)(TK_MOUNT *mnt, TK_USERINFO *usri,
+	char *path);
+int (*unlink)(TK_MOUNT *mnt, TK_USERINFO *usri,
+	char *path);
+int (*rename)(TK_MOUNT *mnt, TK_USERINFO *usri,
+	char *oldfn, char *newfn, char *mode);
+int (*fstat)(TK_MOUNT *mnt, TK_USERINFO *usri,
+	char *path, TK_FSTAT *st);
 
-int (*mkdir)(TK_MOUNT *mnt, char *name, char *mode);
-int (*rmdir)(TK_MOUNT *mnt, char *name);
-int (*fsctl)(TK_MOUNT *mnt, int cmd, void *ptr);
+int (*mkdir)(TK_MOUNT *mnt, TK_USERINFO *usri,
+	char *path, char *mode);
+int (*rmdir)(TK_MOUNT *mnt, TK_USERINFO *usri,
+	char *path);
+int (*fsctl)(TK_MOUNT *mnt, TK_USERINFO *usri,
+	char *path, int cmd, void *ptr);
 
 /* FILE Ops */
 int (*fread)(void *buf, int sz1, int sz2, TK_FILE *fd);
@@ -347,6 +367,8 @@ int (*frecv)(TK_FILE *fd, int cmd,
 	void *sockaddr, int szsockaddr);
 };
 
+#define TK_FILE_SZTFDA	64
+
 struct TK_FILE_s {
 TK_FILE_VT *vt;
 void *udata0;		//user-data (VFS driver)
@@ -361,6 +383,7 @@ int ipos;			//directory position
 s64 ofs;			//current file offset
 s64 size;			//file size
 int flags;			//Access Flags
+byte tfda[TK_FILE_SZTFDA];		//temp array (user data)
 };
 
 struct TK_MOUNT_s {
@@ -401,6 +424,12 @@ byte min;
 byte sec;
 byte msc4;		//multiple of ~4 milliseconds
 u16 usc4;		//microseconds, range=4096
+};
+
+struct TK_USERINFO_s {
+u16 uid;
+u16 gid;
+u32 mode;
 };
 
 #if 0
@@ -461,3 +490,5 @@ char *TKMM_LVA_Strdup(char *str);
 
 // void *malloc(int sz);
 // int free(void *ptr);
+
+#endif

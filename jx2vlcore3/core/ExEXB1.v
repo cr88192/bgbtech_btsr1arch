@@ -14,6 +14,11 @@ opUIxt:
 
 // `include "ExConv2R.v"
 
+`ifdef jx2_merge_shadfn
+`include "ExShad64D.v"
+`endif
+
+`ifndef jx2_merge_shadfn
 `ifndef jx2_merge_shadq
 `include "ExShad32B.v"
 `include "ExShad64B.v"
@@ -21,6 +26,7 @@ opUIxt:
 
 `ifdef jx2_merge_shadq
 `include "ExShad64C.v"
+`endif
 `endif
 
 module ExEXB1(
@@ -35,6 +41,8 @@ module ExEXB1(
 	regValRt,		//Source B Value
 	regValRm,		//Source C Value
 
+	regValXs,		//Source A, 128-bit
+
 	regIdRn1,		//Destination ID (EX1)
 	regValRn1,		//Destination Value (EX1)
 	heldIdRn1,		//Held Destination ID (EX1)
@@ -42,7 +50,8 @@ module ExEXB1(
 	regValPc,		//PC Value (Synthesized)
 	regValImm,		//Immediate (Decode)
 	opBraFlush,
-	regInSr
+	regInSr,
+	idLane
 	);
 
 
@@ -52,6 +61,7 @@ input[7:0]		opUCmd;
 input[7:0]		opUIxt;
 output[1:0]		exHold;
 output[7:0]		opUCmdOut;
+input [1:0]		idLane;
 
 input[5:0]		regIdRs;		//Source A, ALU / Base
 input[5:0]		regIdRt;		//Source B, ALU / Index
@@ -60,10 +70,12 @@ input[63:0]		regValRs;		//Source A Value
 input[63:0]		regValRt;		//Source B Value
 input[63:0]		regValRm;		//Source C Value
 
+input[63:0]		regValXs;		//Source C Value
+
 output[5:0]		regIdRn1;		//Destination ID (EX1)
 output[63:0]	regValRn1;		//Destination Value (EX1)
 output[5:0]		heldIdRn1;		//Held Destination ID (EX1)
-	
+
 input[32:0]		regValImm;		//Immediate (Decode)
 input[47:0]		regValPc;
 input			opBraFlush;
@@ -87,6 +99,24 @@ assign	exHold		= { tRegHeld, tExHold };
 wire[63:0]	tValCnv;
 wire		tCnvSrT;
 ExConv2R	exConv2R(regValRs, opUIxt, regInSr[0], tValCnv, tCnvSrT);
+
+`ifdef jx2_merge_shadfn
+
+wire[63:0]	tValShad64;
+wire[31:0]	tValShad32;
+assign	tValShad32 = tValShad64[31:0];
+
+ExShad64D	exShad64(clock, reset,
+	regValRs[63:0],
+	regValXs[63:0],
+	regValRt[7:0],
+	tValShad64,
+	opUIxt[5:0], idLane);
+
+`endif
+
+
+`ifndef jx2_merge_shadfn
 
 `ifndef jx2_merge_shadq
 wire[31:0]	tValShad32;
@@ -112,6 +142,8 @@ ExShad64C	exShad64(clock, reset,
 //	tValShad64, opUCmd[1:0]);
 //	tValShad64, {opUIxt[3:2], opUCmd[1:0]});
 	tValShad64, opUIxt[3:0]);
+`endif
+
 `endif
 
 reg			tOpEnable;

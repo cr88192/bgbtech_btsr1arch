@@ -99,7 +99,9 @@ typedef struct texture_s
 typedef struct
 {
 	unsigned short	v[2];
-	unsigned int	cachededgeoffset;
+//	unsigned int	cachededgeoffset;
+	byte luma[2];
+	byte resv0[2];
 } medge_t;
 
 typedef struct
@@ -313,16 +315,33 @@ typedef struct {
 	int					commands;	// gl command list with embedded s/t
 	int					gl_texturenum[MAX_SKINS][4];
 	int					texels[MAX_SKINS];	// only for player skins
+
+	//BGB: add triangles / ..
+	int		p_stverts;		//ST verts, original
+	int		p_sttverts;		//ST verts, transformed
+	int		p_triangles;
+	int		p_poseverts;
+
+	int		n_osvidx;		//number of on-seam vertices
+	int		p_osvidx;		//on-seam vertex indices
+	int		p_tridx;		//triangle indices
+
 	maliasframedesc_t	frames[1];	// variable sized
+
 } aliashdr_t;
 
 #define	MAXALIASVERTS	1024
 #define	MAXALIASFRAMES	256
 #define	MAXALIASTRIS	2048
 extern	aliashdr_t	*pheader;
-extern	stvert_t	stverts[MAXALIASVERTS];
-extern	mtriangle_t	triangles[MAXALIASTRIS];
+// extern	stvert_t	stverts[MAXALIASVERTS];
+// extern	mtriangle_t	triangles[MAXALIASTRIS];
+extern	stvert_t	*stverts;
+extern	mtriangle_t	*triangles;
+
 extern	trivertx_t	*poseverts[MAXALIASFRAMES];
+// extern	trivertx_t	**poseverts;
+extern	int		*pposeverts;
 
 //===================================================================
 
@@ -428,5 +447,46 @@ void	Mod_TouchModel (char *name);
 
 mleaf_t *Mod_PointInLeaf (float *p, model_t *model);
 byte	*Mod_LeafPVS (mleaf_t *leaf, model_t *model);
+
+float qgl_fastsin(float rad);
+float qgl_fastcos(float rad);
+
+
+// === DDS ===
+
+#define QGL_FOURCC(a, b, c, d)	((a)|((b)<<8)|((c)<<16)|((d)<<24))
+
+typedef struct  {
+	u32 dwSize;
+	u32 dwFlags;
+	u32 dwFourCC;
+	u32 dwRGBBitCount;
+	u32 dwRBitMask;
+	u32 dwGBitMask;
+	u32 dwBBitMask;
+	u32 dwABitMask;
+} QGL_DDS_PIXFMT;
+
+typedef struct {
+	u32           dwSize;
+	u32           dwFlags;
+	u32           dwHeight;
+	u32           dwWidth;
+	u32           dwPitchOrLinearSize;
+	u32           dwDepth;
+	u32           dwMipMapCount;
+	u32           dwReserved1[11];
+	QGL_DDS_PIXFMT ddspf;
+	u32           dwCaps;
+	u32           dwCaps2;
+	u32           dwCaps3;
+	u32           dwCaps4;
+	u32           dwReserved2;
+} QGL_DDS_HEADER;
+
+typedef struct {
+	u32 dwMagic;
+	QGL_DDS_HEADER head;
+} QGL_DDS_FILEHEADER;
 
 #endif	// __MODEL__

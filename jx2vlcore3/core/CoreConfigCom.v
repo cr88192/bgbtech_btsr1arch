@@ -6,7 +6,7 @@
 
 `define	jx2_alu_wx				//Enable Wide-ALU
 
-// `define	jx2_fpu_longdbl			//Enable FPU LongDouble Ext
+`define	jx2_fpu_longdbl			//Enable FPU LongDouble Ext
 // `define	jx2_fpu_fmac			//Enable FMAC Operation
 
 // `define jx2_sprs_elrehr			//ELR/EHR/BP as special registers?
@@ -31,6 +31,9 @@
 `define jx2_enable_aluunary
 `define jx2_enable_clz
 
+`define jx2_enable_btcutx1				//UTX1 Block Conversion Op
+
+
 `define jx2_enable_wex3w				//Enable 3-wide WEX support
 `define jx2_enable_wex					//Enable WEX support (general)
 
@@ -41,6 +44,7 @@
 `define jx2_mem_l1dstall			//L1 D$ initiates stall directly
 
 `define jx2_merge_shadq		//Merge SHAD and SHAD.Q
+`define jx2_merge_shadfn	//Use Funnel Shift
 
 // `define jx2_debug_keepinstr
 

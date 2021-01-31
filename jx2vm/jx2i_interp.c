@@ -967,6 +967,9 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_PMULSHW:		s0="PMULS.HW";	break;
 	case BJX2_NMID_PMULUHW:		s0="PMULU.HW";	break;
 
+	case BJX2_NMID_BLKUTX1:		s0="BLKUTX1";	break;
+	case BJX2_NMID_BLKUTX2:		s0="BLKUTX2";	break;
+
 	case BJX2_NMID_PMORTL:		s0="PMORT.L";	break;
 	case BJX2_NMID_PMORTQ:		s0="PMORT.Q";	break;
 

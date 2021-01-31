@@ -1,1 +1,2 @@
 etc/test.cfg	tk_etc/test.cfg
+local			$/usr

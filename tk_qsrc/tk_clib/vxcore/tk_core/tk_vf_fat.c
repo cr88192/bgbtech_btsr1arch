@@ -1,12 +1,12 @@
 TK_MOUNT *tk_fat_mount(char *devfn, char *mntfn,
 	char *fsty, char *mode, char **opts);
-TK_FILE *tk_fat_fopen(TK_MOUNT *mnt, char *name, char *mode);
-TK_DIR *tk_fat_opendir(TK_MOUNT *mnt, char *name);
-int tk_fat_unlink(TK_MOUNT *mnt, char *name);
-int tk_fat_rename(TK_MOUNT *mnt, char *oldfn, char *newfn);
+TK_FILE *tk_fat_fopen(TK_MOUNT *mnt, TK_USERINFO *usri, char *name, char *mode);
+TK_DIR *tk_fat_opendir(TK_MOUNT *mnt, TK_USERINFO *usri, char *name);
+int tk_fat_unlink(TK_MOUNT *mnt, TK_USERINFO *usri, char *name);
+int tk_fat_rename(TK_MOUNT *mnt, TK_USERINFO *usri, char *oldfn, char *newfn, int flag);
 
-int tk_fat_mkdir(TK_MOUNT *mnt, char *name, char *mode);
-int tk_fat_rmdir(TK_MOUNT *mnt, char *name);
+int tk_fat_mkdir(TK_MOUNT *mnt, TK_USERINFO *usri, char *name, char *mode);
+int tk_fat_rmdir(TK_MOUNT *mnt, TK_USERINFO *usri, char *name);
 
 int tk_fat_fread(void *buf, int sz1, int sz2, TK_FILE *fd);
 int tk_fat_fwrite(void *buf, int sz1, int sz2, TK_FILE *fd);
@@ -109,7 +109,7 @@ TK_MOUNT *tk_fat_mount(char *devfn, char *mntfn,
 {
 }
 
-TK_FILE *tk_fat_fopen(TK_MOUNT *mnt, char *name, char *mode)
+TK_FILE *tk_fat_fopen(TK_MOUNT *mnt, TK_USERINFO *usri, char *name, char *mode)
 {
 	TKFAT_FAT_DirEntExt tdee;
 	TKFAT_FAT_DirEntExt *dee, *dee2;
@@ -154,7 +154,7 @@ TK_FILE *tk_fat_fopen(TK_MOUNT *mnt, char *name, char *mode)
 	return(fd);
 }
 
-int tk_fat_unlink(TK_MOUNT *mnt, char *name)
+int tk_fat_unlink(TK_MOUNT *mnt, TK_USERINFO *usri, char *name)
 {
 	TKFAT_FAT_DirEntExt tdee;
 	TKFAT_FAT_DirEntExt *dee, *dee2;
@@ -186,7 +186,7 @@ int tk_fat_unlink(TK_MOUNT *mnt, char *name)
 	return(1);
 }
 
-int tk_fat_rmdir(TK_MOUNT *mnt, char *name)
+int tk_fat_rmdir(TK_MOUNT *mnt, TK_USERINFO *usri, char *name)
 {
 	TKFAT_FAT_DirEntExt tdee;
 	TKFAT_FAT_DirEntExt *dee, *dee2;
@@ -218,7 +218,7 @@ int tk_fat_rmdir(TK_MOUNT *mnt, char *name)
 	return(1);
 }
 
-int tk_fat_mkdir(TK_MOUNT *mnt, char *name, char *mode)
+int tk_fat_mkdir(TK_MOUNT *mnt, TK_USERINFO *usri, char *name, char *mode)
 {
 	char tb[260];
 	TKFAT_FAT_DirEntExt tdee;
@@ -242,12 +242,17 @@ int tk_fat_mkdir(TK_MOUNT *mnt, char *name, char *mode)
 }
 
 
-int tk_fat_rename(TK_MOUNT *mnt, char *oldfn, char *newfn)
+int tk_fat_rename(TK_MOUNT *mnt, TK_USERINFO *usri, char *oldfn, char *newfn, char *mode)
 {
 	TKFAT_FAT_DirEntExt tdee1, tdee2;
 	TKFAT_FAT_DirEntExt *dee1, *dee2;
 	TKFAT_ImageInfo *img;
 	int i;
+	
+	if(mode && *mode && (*mode!='r'))
+	{
+		return(-1);
+	}
 
 	img=mnt->udata0;
 	dee1=&tdee1;
@@ -397,7 +402,7 @@ int tk_fat_fioctl(TK_FILE *fd, int cmd, void *ptr)
 }
 
 
-TK_DIR *tk_fat_opendir(TK_MOUNT *mnt, char *name)
+TK_DIR *tk_fat_opendir(TK_MOUNT *mnt, TK_USERINFO *usri, char *name)
 {
 	TKFAT_FAT_DirEntExt tdee, tdee1;
 	TKFAT_FAT_DirEntExt *dee, *dee1, *dee2;

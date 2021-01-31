@@ -98,6 +98,10 @@ struct TK_WadImage_s
 	void			**lca_data;		//Lump Cache, Data
 	int				*lca_sz;		//Lump Cache, LumpSize
 	int				*lca_id;		//Lump Cache, LumpID
+	
+	char			*tmp_ppath;		//Partial Path
+	char			*tmp_pbase;		//Partial Base (Symlink)
+	char			*mntbase;		//mount base path
 };
 
 typedef struct TK_WadZBlock_s TK_WadZBlock;

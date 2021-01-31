@@ -40,6 +40,8 @@ void *TKMM_MMList_AllocBrk(int sz)
 			tk_puts("TKMM_MMList_AllocBrk A: Fail\n");
 			return(NULL);
 		}
+
+		tk_printf("TKMM_MMList_AllocBrk A-1 %p..%p\n", ptr, ptr+sz);
 		
 		memset(ptr, 0, sz);
 

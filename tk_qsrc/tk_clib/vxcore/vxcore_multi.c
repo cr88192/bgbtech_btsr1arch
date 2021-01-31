@@ -26,6 +26,8 @@
 #include "tk_core/tk_mmcell.c"
 #include "tk_core/tk_mmllist.c"
 
+#include "tk_core/tk_mmap.c"
+
 #include "tk_core/tk_spi.c"
 #include "tk_core/tk_epoch.c"
 #include "tk_core/tk_fat.c"
@@ -72,3 +74,6 @@
 
 #include "pdpc201/btshx_vnf.c"
 #include "pdpc201/btshx_alloca.c"
+
+#include "pdpc201/bt_mman.c"
+#include "pdpc201/bt_readdir.c"

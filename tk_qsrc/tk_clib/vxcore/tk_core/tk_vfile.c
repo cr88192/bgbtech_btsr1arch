@@ -1,3 +1,25 @@
+/*
+open mode:
+  r		rb		//read
+  w		wb		//write (create, binary)
+  r+	r+b		//read/write (exists)
+  w+	w+b		//read/write (create/truncate)
+Text modes will be equivalent to the binary modes ('b' or 't' being ignored).
+
+rename mode:
+  r				//rename
+  l				//link
+  s				//symlink (normal)
+  S				//symlink (force absolute)
+With 'l', assume a local/relative link.
+  Fails if the target is not in the same filesystem.
+With 's', use a local link if possible.
+  Use an absolute link if target is not in the same filesystem.
+  May only link to VFS paths.
+With 'S', force an absolute link.
+
+*/
+
 // byte *tk_ird_imgbuf=NULL;
 
 char kerninit[256];
@@ -65,7 +87,7 @@ int tk_wad4_init();
 
 static int tk_vf_init=0;
 
-int TK_FindFreeObjHandle()
+int TK_FindFreeObjHandle(TKPE_TaskInfo *task)
 {
 	int i;
 	
@@ -77,13 +99,13 @@ int TK_FindFreeObjHandle()
 	return(-1);
 }
 
-int TK_FreeObjHandle(int ix)
+int TK_FreeObjHandle(TKPE_TaskInfo *task, int ix)
 {
 	tk_handle_arr[ix]=NULL;
 	return(0);
 }
 
-int TK_LookupHandleForPtr(void *ptr)
+int TK_LookupHandleForPtr(TKPE_TaskInfo *task, void *ptr)
 {
 	int i;
 	
@@ -98,13 +120,13 @@ int TK_LookupHandleForPtr(void *ptr)
 	return(-1);
 }
 
-int TK_GetHandleForPtr(void *ptr)
+int TK_GetHandleForPtr(TKPE_TaskInfo *task, void *ptr)
 {
 	int i;
-	i=TK_LookupHandleForPtr(ptr);
+	i=TK_LookupHandleForPtr(task, ptr);
 	if(i>=0)
 		return(i);
-	i=TK_FindFreeObjHandle();
+	i=TK_FindFreeObjHandle(task);
 	if(i>0)
 	{
 		tk_handle_arr[i]=ptr;
@@ -113,9 +135,48 @@ int TK_GetHandleForPtr(void *ptr)
 	return(-1);
 }
 
-void *TK_GetPtrForHandle(int ix)
+void *TK_GetPtrForHandle(TKPE_TaskInfo *task, int ix)
 {
 	return(tk_handle_arr[ix]);
+}
+
+/* Check if a given user (usr) can access a given target (tgt).
+ * Returns 1 if true, 0 if false, or negative on error.
+ */
+int TK_CheckUserAccess(TK_USERINFO *usr, TK_USERINFO *tgt)
+{
+	int usrm, tgtm;
+
+	if(!usr)		// NULL means root
+		return(1);
+	if(!tgt)
+	{
+		// NULL means root-only
+		if(usr->uid || usr->gid)
+			return(0);
+		return(1);
+	}
+	
+	usrm=(usr->mode)&7;
+	if(!usrm)
+		return(0);
+
+	tgtm=tgt->mode;
+	if(usr->gid==tgt->gid)
+	{
+		if(usr->uid==tgt->uid)
+		{
+			if(((tgtm>>6)&usrm)==usrm)
+				return(1);
+			return(0);
+		}
+		if(((tgtm>>3)&usrm)==usrm)
+			return(1);
+		return(0);
+	}
+	if(((tgtm>>0)&usrm)==usrm)
+		return(1);
+	return(0);
 }
 
 int tk_vfile_init()
@@ -144,6 +205,8 @@ int tk_vfile_init()
 		tk_mount_devfs();
 		
 		tk_wad4_mount("boot/tkusrimg.wd4", "usr", "wad4", NULL, NULL);
+
+		TK_Env_SetCwd("/boot");
 	}else
 	{
 		tk_sysc_init();	
@@ -224,6 +287,11 @@ int TK_VF_FlagsFromModeString(char *mode)
 	
 	fl=0;
 	
+	if((mode[0]=='0') && (mode[1]=='x'))
+	{
+		return(tk_atoi(mode));
+	}
+	
 	if(mode[0]=='r')
 	{
 		if(mode[1]='+')
@@ -280,7 +348,7 @@ int tk_fmount(char *devfn, char *mntfn, char *fsty, char *mode, char **opts)
 	return(-1);
 }
 
-int tk_unlink(char *name)
+int tk_unlink2(TK_USERINFO *usri, char *name)
 {
 	TK_MOUNT *mnt;
 	TK_FILE *fd;
@@ -321,7 +389,7 @@ int tk_unlink(char *name)
 //		fd=mnt->vt->fopen(mnt, name, mode);
 		if(mnt->vt->unlink)
 		{
-			i=mnt->vt->unlink(mnt, s1);
+			i=mnt->vt->unlink(mnt, usri, s1);
 			if(i>=0)
 				return(i);
 		}
@@ -332,7 +400,12 @@ int tk_unlink(char *name)
 	return(-1);
 }
 
-int tk_rmdir(char *name)
+int tk_unlink(char *name)
+{
+	return(tk_unlink2(NULL, name));
+}
+
+int tk_rmdir2(TK_USERINFO *usri, char *name)
 {
 	TK_MOUNT *mnt;
 	TK_FILE *fd;
@@ -373,7 +446,7 @@ int tk_rmdir(char *name)
 //		fd=mnt->vt->fopen(mnt, name, mode);
 		if(mnt->vt->rmdir)
 		{
-			i=mnt->vt->rmdir(mnt, s1);
+			i=mnt->vt->rmdir(mnt, usri, s1);
 			if(i>=0)
 				return(i);
 		}
@@ -384,8 +457,12 @@ int tk_rmdir(char *name)
 	return(-1);
 }
 
+int tk_rmdir(char *name)
+{
+	return(tk_rmdir2(NULL, name));
+}
 
-int tk_mkdir(char *name, char *mode)
+int tk_mkdir2(TK_USERINFO *usri, char *name, char *mode)
 {
 	TK_MOUNT *mnt;
 	TK_FILE *fd;
@@ -425,7 +502,7 @@ int tk_mkdir(char *name, char *mode)
 	
 		if(mnt->vt->mkdir)
 		{
-			i=mnt->vt->mkdir(mnt, s1, mode);
+			i=mnt->vt->mkdir(mnt, usri, s1, mode);
 			if(i>=0)
 				return(i);
 		}
@@ -436,14 +513,25 @@ int tk_mkdir(char *name, char *mode)
 	return(-1);
 }
 
-int tk_rename(char *oldname, char *newname)
+int tk_mkdir(char *name, char *mode)
 {
+	return(tk_mkdir2(NULL, name, mode));
+}
+
+int tk_rename2(TK_USERINFO *usri, char *oldname, char *newname, char *mode)
+{
+	char tb[512];
 	TK_MOUNT *mnt;
 	TK_FILE *fd;
-	char *s1, *t1;
+	char *oldname0, *newname0;
+	char *s1, *t1, *tn1;
+	int islink, isuri;
 	int i;
 
 	tk_vfile_init();
+
+	oldname0=oldname;
+	newname0=newname;
 
 	if((oldname[0]=='.') && (oldname[1]=='/'))
 		oldname+=2;
@@ -452,8 +540,27 @@ int tk_rename(char *oldname, char *newname)
 
 	if((newname[0]=='.') && (newname[1]=='/'))
 		newname+=2;
-	if(*oldname=='/')
+	if(*newname=='/')
 		newname++;
+
+	islink=0;
+	if(mode)
+	{
+		i=*mode;
+		if((i=='l') || (i=='L'))
+			islink=1;
+		if(i=='s')
+			islink=2;
+		if(i=='S')
+			islink=3;
+	}
+
+	isuri=0;
+	s1=oldname0;
+	while(*s1 && (*s1>='a') && (*s1<='z'))
+		s1++;
+	if(s1==':')
+		isuri=1;
 
 //	fd=tk_ird_fopen(NULL, name, mode);
 //	if(fd)return(fd);
@@ -465,53 +572,99 @@ int tk_rename(char *oldname, char *newname)
 		t1=newname;
 		if(mnt->src && (mnt->szSrc>0))
 		{
-			if(strncmp(mnt->src, oldname, mnt->szSrc) ||
-				strncmp(mnt->src, newname, mnt->szSrc))
+			if(strncmp(mnt->src, newname, mnt->szSrc))
 			{
+				tk_printf("tk_rename: skip %s, newname mismatch\n", mnt->src);
 				mnt=mnt->next;
 				continue;
 			}
+		
+			if(strncmp(mnt->src, oldname, mnt->szSrc) && !(islink&2))
+			{
+				tk_printf("tk_rename: skip %s, oldname mismatch\n", mnt->src);
+				mnt=mnt->next;
+				continue;
+			}
+
 			s1+=mnt->szSrc;
 			t1+=mnt->szSrc;
 
-			if(*s1 && (*s1!='/') && (*(s1-1)!=':'))
+			if(islink==3)
 			{
-				mnt=mnt->next;
-				continue;
+//				if(!isuri && (oldname0[0]!='/'))
+//					{ mnt=mnt->next; continue; }
+				s1=oldname0;
+			}else if(islink==2)
+			{
+				if(strncmp(mnt->src, oldname, mnt->szSrc) || isuri)
+				{
+					if(!isuri && (oldname0[0]!='/'))
+						{ mnt=mnt->next; continue; }
+					s1=oldname0;
+				}else
+				{
+					while(*s1=='/')
+						s1++;
+					tb[0]=':';
+					strcpy(tb+1, s1);
+					tn1=tk_rstrdup(tb);
+					
+					s1=tn1;
+				}
+			}else
+			{
+				if(*s1 && (*s1!='/') && (*(s1-1)!=':'))
+				{
+					tk_printf("tk_rename: skip %s, oldname no slash\n",
+						mnt->src);
+					mnt=mnt->next;
+					continue;
+				}
+				if(*s1=='/')
+					s1++;
 			}
-			if(*s1=='/')
-				s1++;
 
 			if(*t1 && (*t1!='/') && (*(t1-1)!=':'))
 			{
+				tk_printf("tk_rename: skip %s, newname no slash\n",
+					mnt->src);
 				mnt=mnt->next;
 				continue;
 			}
 			if(*t1=='/')
 				t1++;
+		}else
+		{
+			if(islink&2)
+				{ s1=oldname0; }
 		}
 	
 		if(mnt->vt->rename)
 		{
-	//		fd=mnt->vt->fopen(mnt, name, mode);
-			i=mnt->vt->rename(mnt, s1, t1);
+			i=mnt->vt->rename(mnt, usri, s1, t1, mode);
 			if(i>=0)
 				return(i);
 		}
 		mnt=mnt->next;
 	}
 
-	tk_printf("tk_rename: Fail %s %s\n", oldname, newname);
+	tk_printf("tk_rename: Fail old=%s new=%s mode=%s\n",
+		oldname0, newname0, mode);
 	return(-1);
 }
 
-int tk_fcopy(char *oldname, char *newname)
+int tk_rename(char *oldname, char *newname, char *mode)
+{
+	return(tk_rename2(NULL, oldname, newname, mode));
+}
+
+int tk_fcopy2(TK_USERINFO *usri, char *oldname, char *newname)
 {
 	char tb[1024];
 	TK_FILE *oldfd, *newfd;
 	int n;
 	
-	oldfd=tk_fopen(oldname, "rb");
+	oldfd=tk_fopen2(usri, oldname, "rb");
 
 	if(!oldfd)
 	{
@@ -519,7 +672,7 @@ int tk_fcopy(char *oldname, char *newname)
 		return(-1);
 	}
 
-	newfd=tk_fopen(newname, "wb");
+	newfd=tk_fopen2(usri, newname, "wb");
 	
 	if(!newfd)
 	{
@@ -547,9 +700,118 @@ int tk_fcopy(char *oldname, char *newname)
 	return(1);
 }
 
+int tk_fcopy(char *oldname, char *newname)
+{
+	return(tk_fcopy2(NULL, oldname, newname));
+}
+
+int tk_fstat2(TK_USERINFO *usri, char *name, TK_FSTAT *st)
+{
+	TK_MOUNT *mnt;
+	TK_FILE *fd;
+	char *s1;
+	int i;
+
+	tk_vfile_init();
+
+	if((name[0]=='.') && (name[1]=='/'))
+		name+=2;
+	if(*name=='/')
+		name++;
+
+	mnt=tk_vf_mount;
+	while(mnt)
+	{
+		s1=name;
+		if(mnt->src && (mnt->szSrc>0))
+		{
+			if(strncmp(mnt->src, name, mnt->szSrc))
+			{
+				mnt=mnt->next;
+				continue;
+			}
+			s1+=mnt->szSrc;
+			if(*s1 && (*s1!='/') && (*(s1-1)!=':'))
+			{
+				mnt=mnt->next;
+				continue;
+			}
+			if(*s1=='/')
+				s1++;
+		}
+	
+//		fd=mnt->vt->fopen(mnt, name, mode);
+		if(mnt->vt->fstat)
+		{
+			i=mnt->vt->fstat(mnt, usri, s1, st);
+			if(i>=0)
+				return(i);
+		}
+		mnt=mnt->next;
+	}
+
+	tk_printf("tk_fstat: Fail %s\n", name);
+	return(-1);
+}
+
 int tk_fstat(char *name, TK_FSTAT *st)
 {
+	return(tk_fstat2(NULL, name, st));
+}
+
+
+
+int tk_fsctl2(TK_USERINFO *usri, char *name, int cmd, void *ptr)
+{
+	TK_MOUNT *mnt;
+	TK_FILE *fd;
+	char *s1;
+	int i;
+
+	tk_vfile_init();
+
+	if((name[0]=='.') && (name[1]=='/'))
+		name+=2;
+	if(*name=='/')
+		name++;
+
+	mnt=tk_vf_mount;
+	while(mnt)
+	{
+		s1=name;
+		if(mnt->src && (mnt->szSrc>0))
+		{
+			if(strncmp(mnt->src, name, mnt->szSrc))
+			{
+				mnt=mnt->next;
+				continue;
+			}
+			s1+=mnt->szSrc;
+			if(*s1 && (*s1!='/') && (*(s1-1)!=':'))
+			{
+				mnt=mnt->next;
+				continue;
+			}
+			if(*s1=='/')
+				s1++;
+		}
+	
+		if(mnt->vt->fsctl)
+		{
+			i=mnt->vt->fsctl(mnt, usri, s1, cmd, ptr);
+			if(i>=0)
+				return(i);
+		}
+		mnt=mnt->next;
+	}
+
+	tk_printf("tk_fsctl: Fail %s\n", name);
 	return(-1);
+}
+
+int tk_fsctl(char *name, int cmd, void *ptr)
+{
+	return(tk_fsctl2(NULL, name, cmd, ptr));
 }
 
 #ifndef __TK_CLIB_ONLY__
@@ -559,11 +821,16 @@ int tk_fstat(char *name, TK_FSTAT *st)
 
 #include "tk_vf_sysc.c"
 
-TK_FILE *tk_fopen(char *name, char *mode)
+static int tk_open_reclim=0;
+
+TK_FILE *tk_fopen2(TK_USERINFO *usri, char *name, char *mode)
 {
 	TK_MOUNT *mnt;
 	TK_FILE *fd;
 	char *s1;
+
+	if(tk_open_reclim>=8)
+		return(NULL);
 
 	tk_vfile_init();
 
@@ -574,6 +841,8 @@ TK_FILE *tk_fopen(char *name, char *mode)
 
 //	fd=tk_ird_fopen(NULL, name, mode);
 //	if(fd)return(fd);
+
+	tk_open_reclim++;
 
 	mnt=tk_vf_mount;
 	while(mnt)
@@ -599,25 +868,25 @@ TK_FILE *tk_fopen(char *name, char *mode)
 		if(mnt->vt->fopen)
 		{
 	//		fd=mnt->vt->fopen(mnt, name, mode);
-			fd=mnt->vt->fopen(mnt, s1, mode);
+			fd=mnt->vt->fopen(mnt, usri, s1, mode);
 			if(fd)
+			{
+				tk_open_reclim--;
 				return(fd);
+			}
 		}
 		mnt=mnt->next;
 	}
 
 //	tk_printf("tk_fopen: Fail %s\n", name);
 
+	tk_open_reclim--;
 	return(NULL);
 }
 
-int tk_hfopen(char *name, char *mode)
+TK_FILE *tk_fopen(char *name, char *mode)
 {
-	FILE *fd;
-	fd=tk_fopen(name, mode);
-	if(!fd)
-		return(0);
-	return(TK_GetHandleForPtr(fd));
+	return(tk_fopen2(NULL, name, mode));
 }
 
 int tk_fread(void *buf, int sz1, int sz2, TK_FILE *fd)
@@ -728,58 +997,136 @@ int tk_frecv(TK_FILE *fd, int cmd,
 	return(-1);
 }
 
-int tk_hread(int iHdl, void *pBuf, int szBuf)
+int TK_InitUserInfoForTask(TKPE_TaskInfo *task, TK_USERINFO *usri)
 {
+	usri->uid=task->uid;
+	usri->gid=task->gid;
+	usri->mode=0;
+}
+
+int tk_hfmount(TKPE_TaskInfo *task,
+	char *devfn, char *mntfn, char *fsty,
+	char *mode, char **opts)
+{
+//	TK_USERINFO tacc;
+//	TK_InitUserInfoForTask(task, &tacc);
+
+	if(task->uid || task->gid)
+	{
+		return(-1);
+	}
+
+	return(tk_fmount(devfn, mntfn, fsty, mode, opts));
+}
+
+int tk_hfstat(TKPE_TaskInfo *task, char *name, TK_FSTAT *st)
+{
+	TK_USERINFO tacc;
+	TK_InitUserInfoForTask(task, &tacc);
+	return(tk_fstat2(&tacc, name, st));
+}
+
+int tk_hfsctl(TKPE_TaskInfo *task, char *name, int cmd, void *ptr)
+{
+	TK_USERINFO tacc;
+	TK_InitUserInfoForTask(task, &tacc);
+	return(tk_fsctl2(&tacc, name, cmd, ptr));
+}
+
+int tk_hunlink(TKPE_TaskInfo *task, char *name)
+{
+	TK_USERINFO tacc;
+	TK_InitUserInfoForTask(task, &tacc);
+	return(tk_unlink2(&tacc, name));
+}
+
+int tk_hrmdir(TKPE_TaskInfo *task, char *name)
+{
+	TK_USERINFO tacc;
+	TK_InitUserInfoForTask(task, &tacc);
+	return(tk_rmdir2(&tacc, name));
+}
+
+int tk_hmkdir(TKPE_TaskInfo *task, char *name, char *mode)
+{
+	TK_USERINFO tacc;
+	TK_InitUserInfoForTask(task, &tacc);
+	return(tk_mkdir2(&tacc, name, mode));
+}
+
+int tk_hrename(TKPE_TaskInfo *task,
+	char *oldname, char *newname, char *mode)
+{
+	TK_USERINFO tacc;
+	TK_InitUserInfoForTask(task, &tacc);
+	return(tk_rename2(&tacc, oldname, newname, mode));
+}
+
+
+int tk_hfopen(TKPE_TaskInfo *task, char *name, char *mode)
+{
+	TK_USERINFO tacc;
 	FILE *fd;
+
+	TK_InitUserInfoForTask(task, &tacc);
+	if(mode[0]=='r')
+	{
+		tacc.mode|=TKFAT_EMODE_ACC_RO;
+		if(mode[1]=='+')
+			{ tacc.mode|=TKFAT_EMODE_ACC_WO; }
+	}else if((mode[0]=='w') || (mode[0]=='a'))
+	{
+		tacc.mode|=TKFAT_EMODE_ACC_WO;
+		if(mode[1]=='+')
+			{ tacc.mode|=TKFAT_EMODE_ACC_RO; }
+	}
+
+//	fd=tk_fopen(name, mode);
+	fd=tk_fopen2(&tacc, name, mode);
+	if(!fd)
+		return(0);
+	return(TK_GetHandleForPtr(task, fd));
+}
+
+int tk_hread(TKPE_TaskInfo *task, int iHdl, void *pBuf, int szBuf)
+{
+	TK_USERINFO tacc;
+	TK_FILE *fd;
 	int i, sde;
 
-	fd=TK_GetPtrForHandle(iHdl);
+	TK_InitUserInfoForTask(task, &tacc);
+
+	fd=TK_GetPtrForHandle(task, iHdl);
 	if(!fd)
 		return(-1);
-
-#if 0
-	if(szBuf==1)
-	{
-		i=tk_fgetc(fd);
-		if(i<0)
-			return(0);
-		*(byte *)pBuf=i;
-		return(1);
-	}
-#endif
 
 	return(tk_fread(pBuf, 1, szBuf, fd));
 }
 
-int tk_hwrite(int iHdl, void *pBuf, int szBuf)
+int tk_hwrite(TKPE_TaskInfo *task, int iHdl, void *pBuf, int szBuf)
 {
-	FILE *fd;
+	TK_USERINFO tacc;
+	TK_FILE *fd;
 	int i, j, sde;
 
-	fd=TK_GetPtrForHandle(iHdl);
+	TK_InitUserInfoForTask(task, &tacc);
+
+	fd=TK_GetPtrForHandle(task, iHdl);
 	if(!fd)
 		return(-1);
-
-#if 0
-	if(szBuf==1)
-	{
-		i=*(byte *)pBuf;
-		j=tk_fputc(i, fd);
-		if(j<=0)
-			return(0);
-		return(1);
-	}
-#endif
 
 	return(tk_fwrite(pBuf, 1, szBuf, fd));
 }
 
-s64 tk_hseek(int iHdl, s64 lOffs, int iMod)
+s64 tk_hseek(TKPE_TaskInfo *task, int iHdl, s64 lOffs, int iMod)
 {
-	FILE *fd;
+	TK_USERINFO tacc;
+	TK_FILE *fd;
 	int i, sde;
 
-	fd=TK_GetPtrForHandle(iHdl);
+	TK_InitUserInfoForTask(task, &tacc);
+
+	fd=TK_GetPtrForHandle(task, iHdl);
 	if(!fd)
 		return(-1);
 
@@ -794,36 +1141,45 @@ s64 tk_hseek(int iHdl, s64 lOffs, int iMod)
 	return(tk_fseek(fd, lOffs, iMod));
 }
 
-int tk_hclose(int iHdl)
+int tk_hclose(TKPE_TaskInfo *task, int iHdl)
 {
-	FILE *fd;
+	TK_USERINFO tacc;
+	TK_FILE *fd;
 	int i, sde;
 
-	fd=TK_GetPtrForHandle(iHdl);
+	TK_InitUserInfoForTask(task, &tacc);
+
+	fd=TK_GetPtrForHandle(task, iHdl);
 	if(!fd)
 		return(-1);
 	return(tk_fclose(fd));
 }
 
-s64 tk_hioctl(int iHdl, int iCmd, void *ptr)
+s64 tk_hioctl(TKPE_TaskInfo *task, int iHdl, int iCmd, void *ptr)
 {
-	FILE *fd;
+	TK_USERINFO tacc;
+	TK_FILE *fd;
 	int i, sde;
 
-	fd=TK_GetPtrForHandle(iHdl);
+	TK_InitUserInfoForTask(task, &tacc);
+
+	fd=TK_GetPtrForHandle(task, iHdl);
 	if(!fd)
 		return(-1);
 	return(tk_fioctl(fd, iCmd, ptr));
 }
 
-s64 tk_hsend(int iHdl, int iCmd,
+s64 tk_hsend(TKPE_TaskInfo *task, int iHdl, int iCmd,
 	void *msgbuf, int szmsg, int flag,
 	void *sockaddr, int szsockaddr)
 {
+	TK_USERINFO tacc;
 	FILE *fd;
 	int i, sde;
 
-	fd=TK_GetPtrForHandle(iHdl);
+	TK_InitUserInfoForTask(task, &tacc);
+
+	fd=TK_GetPtrForHandle(task, iHdl);
 	if(!fd)
 		return(-1);
 	return(tk_fsend(fd, iCmd,
@@ -831,14 +1187,17 @@ s64 tk_hsend(int iHdl, int iCmd,
 		sockaddr, szsockaddr));
 }
 
-s64 tk_hrecv(int iHdl, int iCmd,
+s64 tk_hrecv(TKPE_TaskInfo *task, int iHdl, int iCmd,
 	void *msgbuf, int szmsg, int flag,
 	void *sockaddr, int szsockaddr)
 {
+	TK_USERINFO tacc;
 	FILE *fd;
 	int i, sde;
 
-	fd=TK_GetPtrForHandle(iHdl);
+	TK_InitUserInfoForTask(task, &tacc);
+
+	fd=TK_GetPtrForHandle(task, iHdl);
 	if(!fd)
 		return(-1);
 	return(tk_frecv(fd, iCmd,
@@ -846,11 +1205,18 @@ s64 tk_hrecv(int iHdl, int iCmd,
 		sockaddr, szsockaddr));
 }
 
-TK_DIR *tk_opendir(char *name)
+static int tk_opendir_reclim=0;
+
+TK_DIR *tk_opendir2(TK_USERINFO *usri, char *name)
 {
+	TK_DIR *fda[64];
 	TK_MOUNT *mnt;
 	TK_DIR *fd;
 	char *s1;
+	int nfd;
+
+	if(tk_opendir_reclim>=8)
+		return(NULL);
 
 	tk_vfile_init();
 
@@ -859,6 +1225,9 @@ TK_DIR *tk_opendir(char *name)
 	if(*name=='/')
 		name++;
 
+	tk_opendir_reclim++;
+
+	nfd=0;
 	mnt=tk_vf_mount;
 	while(mnt)
 	{
@@ -887,16 +1256,40 @@ TK_DIR *tk_opendir(char *name)
 		if(mnt->vt->opendir)
 		{
 	//		fd=mnt->vt->opendir(mnt, name);
-			fd=mnt->vt->opendir(mnt, s1);
+			fd=mnt->vt->opendir(mnt, usri, s1);
 			if(fd)
-				return(fd);
+			{
+				fda[nfd++]=fd;
+//				tk_opendir_reclim--;
+//				return(fd);
+			}
 		}
 		mnt=mnt->next;
 	}
+	
+	if(nfd==1)
+	{
+		fd=fda[0];
+		tk_opendir_reclim--;
+		return(fd);
+	}
+
+	if(nfd>1)
+	{
+		fd=tk_multidir_create(fda, nfd);
+//		fd=fda[0];
+		tk_opendir_reclim--;
+		return(fd);
+	}
 
 	tk_printf("tk_opendir: Fail %s\n", name);
-
+	tk_opendir_reclim--;
 	return(NULL);
+}
+
+TK_DIR *tk_opendir(char *name)
+{
+	return(tk_opendir2(NULL, name));
 }
 
 TK_DIRENT *tk_readdir(TK_DIR *fd)
@@ -920,21 +1313,27 @@ int tk_closedir(TK_DIR *fd)
 }
 
 
-int tk_hopendir(char *name)
+int tk_hopendir(TKPE_TaskInfo *task, char *name)
 {
+	TK_USERINFO tacc;
 	FILE *fd;
-	fd=tk_opendir(name);
-	return(TK_GetHandleForPtr(fd));
+
+	TK_InitUserInfoForTask(task, &tacc);
+	tacc.mode|=TKFAT_EMODE_ACC_RO;
+
+//	fd=tk_opendir(name);
+	fd=tk_opendir2(&tacc, name);
+	return(TK_GetHandleForPtr(task, fd));
 }
 
-int tk_hreaddir(int iHdl, void *pDe, int szDe, int nDe)
+int tk_hreaddir(TKPE_TaskInfo *task, int iHdl, void *pDe, int szDe, int nDe)
 {
 	TK_DIRENT *de;
 	void *de1;
 	FILE *fd;
 	int i, sde;
 
-	fd=TK_GetPtrForHandle(iHdl);
+	fd=TK_GetPtrForHandle(task, iHdl);
 	if(!fd)
 		return(-1);
 	
@@ -957,14 +1356,14 @@ int tk_hreaddir(int iHdl, void *pDe, int szDe, int nDe)
 //	return(TK_GetHandleForPtr(fd));
 }
 
-int tk_hclosedir(int iHdl)
+int tk_hclosedir(TKPE_TaskInfo *task, int iHdl)
 {
 	TK_DIRENT *de;
 	void *de1;
 	FILE *fd;
 	int i, sde;
 
-	fd=TK_GetPtrForHandle(iHdl);
+	fd=TK_GetPtrForHandle(task, iHdl);
 	if(!fd)
 		return(-1);
 	return(tk_closedir(fd));

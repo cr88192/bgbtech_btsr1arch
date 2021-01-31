@@ -163,7 +163,7 @@ TK_WadImage *TK_Wad4_OpenImage(TK_FILE *fd)
 {
 	TK_WadImage *img;
 	TK_Wad4Info *inf;
-	int wadver, hbits, hsz;
+	int wadver, hbits, hsz, nl0, nl1;
 
 	img=TK_Wad4_AllocImage();
 	img->img_fd=fd;
@@ -219,9 +219,16 @@ TK_WadImage *TK_Wad4_OpenImage(TK_FILE *fd)
 	{
 //		tk_printf("TK_Wad4_OpenImage: WAD4\n");
 
-		img->w4dir=tk_malloc(inf->numlumps*sizeof(TK_Wad4Lump));
+		nl0=inf->numlumps;
+		nl1=nl0+256;
+
+//		img->w4dir=tk_malloc(inf->numlumps*sizeof(TK_Wad4Lump));
+		img->w4dir=tk_malloc(nl1*sizeof(TK_Wad4Lump));
+		memset(img->w4dir, 0, nl1*sizeof(TK_Wad4Lump));
+		
 		tk_fseek(fd, inf->diroffs*64, 0);
-		tk_fread(img->w4dir, 1, inf->numlumps*sizeof(TK_Wad4Lump), fd);
+//		tk_fread(img->w4dir, 1, inf->numlumps*sizeof(TK_Wad4Lump), fd);
+		tk_fread(img->w4dir, 1, nl0*sizeof(TK_Wad4Lump), fd);
 		
 		hbits=tk_log2u(inf->numlumps)-4;
 		if(hbits<6)hbits=6;
@@ -246,6 +253,8 @@ TK_WadImage *TK_Wad4_OpenImage(TK_FILE *fd)
 			tk_fseek(fd, inf->hashoffs*64, 0);
 			tk_fread(img->hash2, 1, hsz*2, fd);
 		}
+		
+		inf->numlumps=nl1;
 	}
 	
 	img->lca_data=tk_malloc(inf->numlumps*sizeof(void *));
@@ -520,7 +529,8 @@ s64 TK_Wad4_GetLumpDirMtime(TK_WadImage *img, int lump)
 	return(-1);
 }
 
-int TK_Wad4_GetLumpDirLink(TK_WadImage *img, int lump, char *name)
+int TK_Wad4_GetLumpDirRawLink(TK_WadImage *img,
+	int lump, char *name)
 {
 	byte *cs, *cse, *ct, *ct0, *ptr;
 	int sz;
@@ -530,10 +540,9 @@ int TK_Wad4_GetLumpDirLink(TK_WadImage *img, int lump, char *name)
 	{
 		ptr=TK_Wad4_GetCacheLumpNum(img, lump, &sz);
 
+		ct=(byte *)name;
 		cs=ptr;
 		cse=cs+sz;
-		ct=(byte *)name;
-		ct0=ct;
 		
 		while(cs<cse)
 		{
@@ -545,16 +554,92 @@ int TK_Wad4_GetLumpDirLink(TK_WadImage *img, int lump, char *name)
 		}
 		*ct++=0;
 		return(ct-ct0);
-		
-//		return(img->w4dir[lump].dirnext);
 	}
 
 	if(img->w2dir)
 	{
-//		return(img->w2dir[lump].cmp);
 	}
 	
 	return(-1);
+}
+
+int TK_Wad4_GetLinkPBase(TK_WadImage *img,
+	char *bpath, char *ppath, char *obuf)
+{
+	char *cs, *ct;
+
+	ct=obuf;
+	*ct++='/';
+	cs=img->mntbase;
+	if(cs)
+	{
+		while(*cs)
+			{ *ct++=*cs++; }
+		*ct++='/';
+	}
+	cs=bpath;
+	while(*cs && (cs!=ppath))
+		{ *ct++=*cs++; }
+	while((ct>tb) && (*(ct-1)=='/'))	ct--;
+	while((ct>tb) && (*(ct-1)!='/'))	ct--;
+	while((ct>tb) && (*(ct-1)=='/'))	ct--;
+	*ct++=0;
+	return(ct-obuf);
+}
+
+int TK_Wad4_GetLumpDirBaseLink(TK_WadImage *img, int lump,
+	char *pbase, char *oname)
+{
+	char tb[256];
+	byte *cs, *cse, *ct, *ct0, *ptr;
+	int sz, isuri;
+	int i, j, k;
+	
+	TK_Wad4_GetLumpDirRawLink(img, lump, tb);
+	ptr=tb;
+
+	cs=ptr; i=*cs++;
+	while(((i>='a') && (i<='z')) || ((i>='A') && (i<='Z')))
+		i=*cs++;
+	isuri=(i==':');
+
+	ct=(byte *)oname;
+	ct0=ct;
+	
+	if(ptr[0]==':')
+	{
+		cs=img->mntbase;
+		if(cs)
+		{
+			while(*cs)
+				{ *ct++=*cs++; }
+		}
+		*ct++='/';
+		ptr[0]++;
+	}else if((ptr[0]!='/') && !isuri)
+	{
+		cs=pbase;
+		if(cs)
+		{
+			while(*cs)
+				{ *ct++=*cs++; }
+		}
+		*ct++='/';
+	}
+
+	cs=ptr;
+	cse=cs+sz;
+	
+	while(cs<cse)
+	{
+		i=*cs++;
+		if(!i)
+			break;
+		j=tkfat_asc2ucs(i);
+		ct=tkfat_emitUtf8(ct, j);
+	}
+	*ct++=0;
+	return(ct-ct0);
 }
 
 byte *tk_wad4_tcbuf=NULL;
@@ -567,47 +652,57 @@ void TK_Wad4_ReadLumpBuffer(TK_WadImage *img, int lump, void *buf)
 	TK_FILE		*fd;
 	byte		*tptr;
 	s64 offs;
-	int csz, lmp1, ofs1, csz1;
+	int csz, lmp1, offs0, ofs1, csz1;
 	int dsz;
 	int cmp;
 
 	if(img->w4dir)
 	{
 		w4l=img->w4dir+lump;
-		offs=(w4l->offs)<<6;
+		offs0=w4l->offs;
+		offs=offs0<<6;
 		csz=w4l->csize;
 		dsz=w4l->dsize;
 		cmp=w4l->cmp;
 	}else if(img->w2dir)
 	{
 		w2l=img->w2dir+lump;
-		offs=w2l->offs;
+		offs0=w2l->offs;
+		offs=offs0;
 		csz=w2l->csize;
 		dsz=w2l->dsize;
 		cmp=w2l->cmp;
 	}
 
-	fd=img->img_fd;
-
-	if(cmp==TK_W4CMP_NONE)
-	{
-		tk_fseek(fd, offs, 0);
-		tk_fread(buf, 1, dsz, fd);
-		return;
-	}
-
 	if(cmp==TK_W4CMP_PACKED)
 	{
-		lmp1=(offs>>16)&65535;
-		ofs1=(offs&65535)<<6;
+		lmp1=(offs0>>16)&65535;
+		ofs1=(offs0&65535)<<6;
 		tptr=TK_Wad4_GetCacheLumpNum(img, lmp1, &csz1);
 		memcpy(buf, tptr+ofs1, dsz);
 		return;
 	}
 	
-	if(cmp!=TK_W4CMP_FRAG)
+	if(cmp==TK_W4CMP_FRAG)
 	{
 		/* Base lump of fragmented file is not read this way. */
+		return;
+	}
+
+	fd=img->img_fd;
+	
+	if(!fd)
+	{
+		tk_printf("TK_Wad4_ReadLumpBuffer: Read with no image file\n");
+		memset(buf, 0, dsz);
+		return;
+	}
+	
+
+	if(cmp==TK_W4CMP_NONE)
+	{
+		tk_fseek(fd, offs, 0);
+		tk_fread(buf, 1, dsz, fd);
 		return;
 	}
 
@@ -683,6 +778,11 @@ void *TK_Wad4_GetCacheLumpNum(TK_WadImage *img, int lump, int *rsz)
 		/* Not the right interface for fragmented lumps. */
 		return(NULL);
 	}
+
+//	if(cmp==TK_W4CMP_PACK)
+//	{
+//		ptr=TK_Wad4_GetCacheLumpNum()
+//	}
 
 	TK_Wad4_ZCheckEvictCache();
 
@@ -867,7 +967,7 @@ int TK_Wad4_AllocateNewLump(TK_WadImage *img)
 		return(i);
 	}
 
-	return(0);
+	return(-1);
 }
 
 int TK_Wad4_AllocateNewFragLump(TK_WadImage *img)
@@ -1170,7 +1270,7 @@ int TK_Wad4_LookupLumpPathI(TK_WadImage *img, char *path, int pfx)
 {
 	char tn[48];
 	char *s, *t;
-	int pfx1, id;
+	int pfx1, id, ety;
 	
 	s=path;
 	if((s[0]=='.') && (s[1]=='/'))
@@ -1184,11 +1284,22 @@ int TK_Wad4_LookupLumpPathI(TK_WadImage *img, char *path, int pfx)
 	
 	if(!(*s))
 	{
+		img->tmp_ppath=NULL;
 		id=TK_Wad4_LookupLumpName(img, tn, pfx);
 		return(id);
 	}
 
 	pfx1=TK_Wad4_LookupDirName(img, tn, pfx);
+	if(pfx1<=0)
+		return(-1);
+	
+	ety=TK_Wad4_GetLumpEntType(img, pfx1);
+	if(ety==TK_W4ETY_SYMLINK)
+	{
+		img->tmp_ppath=s;
+		return(pfx1);
+	}
+	
 	id=TK_Wad4_LookupLumpPathI(img, s, pfx1);
 	return(id);
 }
@@ -1273,7 +1384,7 @@ int TK_Wad4_CreateLumpPathI(TK_WadImage *img, char *path, int pfx)
 {
 	char tn[48];
 	char *s, *t;
-	int pfx1, id;
+	int pfx1, id, pety;
 	
 	s=path;
 	if((s[0]=='.') && (s[1]=='/'))
@@ -1287,6 +1398,7 @@ int TK_Wad4_CreateLumpPathI(TK_WadImage *img, char *path, int pfx)
 	
 	if(!(*s))
 	{
+		img->tmp_ppath=NULL;
 		id=TK_Wad4_LookupLumpName(img, tn, pfx);
 		if(id>0)
 			return(id);
@@ -1295,8 +1407,15 @@ int TK_Wad4_CreateLumpPathI(TK_WadImage *img, char *path, int pfx)
 	}
 
 	pfx1=TK_Wad4_LookupDirName(img, tn, pfx);
-	if(pfx>0)
+	if(pfx1>0)
 	{
+		pety=TK_Wad4_GetLumpEntType(img, pfx1);
+		if(pety==TK_W4ETY_SYMLINK)
+		{
+			img->tmp_ppath=s;
+			return(pfx1);
+		}
+
 		id=TK_Wad4_CreateLumpPathI(img, s, pfx1);
 		return(id);
 	}
@@ -1325,6 +1444,31 @@ int TK_Wad4_CreateDirPath(TK_WadImage *img, char *path)
 		lmp->cmp=TK_W4CMP_NONE;
 		return(id);
 	}
+	return(-1);
+}
+
+int TK_Wad4_CreateLink(TK_WadImage *img, char *path, char *dest)
+{
+	TK_Wad4Lump *lmp;
+	char *ptr;
+	int id, sz;
+
+	tk_printf("TK_Wad4_CreateLink: %s %s\n", path, dest);
+
+	id=TK_Wad4_CreateLumpPath(img, path);
+	if(id<=0)
+		return(id);
+
+	lmp=img->w4dir+id;
+	if(!(lmp->offs) && !(lmp->dsize))
+	{
+		sz=strlen(dest)+1;
+		ptr=TK_Wad4_GetCacheExpandLumpNum(img, id, sz, &sz);
+		strcpy(ptr, dest);
+		lmp->ety=TK_W4ETY_SYMLINK;
+		return(id);
+	}
+
 	return(-1);
 }
 

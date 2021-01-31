@@ -511,9 +511,12 @@ void BJX2_Op_RGB5PCK32_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 void BJX2_Op_RGB5UPCK32_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	u64	vs, vt, vn, msk;
+	int ax, ay, az, aw, av;
+	u64 c;
 
 	vs=ctx->regs[op->rm];
 
+#if 1
 	vn=	((vs&0x0000001F)<< 3)|
 		((vs&0x000003E0)<< 6)|
 		((vs&0x00007C00)<< 9)|
@@ -521,6 +524,18 @@ void BJX2_Op_RGB5UPCK32_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 		((vs&0x03E00000)<<22)|
 		((vs&0x7C000000)<<25)|
 		0xFF000000FF000000ULL;
+#endif
+
+#if 0
+	av=(vs&0x0001)|((vs&0x0020)>>4)|((vs&0x0400)>>8);
+	av=av<<13;
+	ax=(vs&0x001F)<<11;
+	ay=(vs&0x03E0)<< 6;
+	az=(vs&0x7C00)<< 1;
+	aw=(vs&0x8000)?av:0xFFFF;
+	vn=	(((u64)ax)<< 0) | (((u64)ay)<<16) |
+		(((u64)az)<<32) | (((u64)aw)<<48) ;
+#endif
 
 	ctx->regs[op->rn]=vn;
 }
@@ -531,11 +546,13 @@ void BJX2_Op_RGB5PCK64_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 	vs=ctx->regs[op->rm];
 
+#if 1
 	vn=	((vs>>11)&0x001F)|
 		((vs>>22)&0x03E0)|
 		((vs>>33)&0x7C00);
 	vn|=vn<<16;
 	vn|=vn<<32;
+#endif
 
 	ctx->regs[op->rn]=vn;
 }
@@ -544,13 +561,28 @@ void BJX2_Op_RGB5PCK64_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 void BJX2_Op_RGB5UPCK64_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	u64	vs, vt, vn, msk;
+	int ax, ay, az, aw, av;
+	u64 c;
 
 	vs=ctx->regs[op->rm];
 
+#if 0
 	vn=	((vs&0x001F)<<11)|
 		((vs&0x03E0)<<22)|
 		((vs&0x7C00)<<33)|
 		0xFFFF000000000000ULL;
+#endif
+	
+#if 1
+	av=(vs&0x0001)|((vs&0x0020)>>4)|((vs&0x0400)>>8);
+	av=av<<13;
+	ax=(vs&0x001F)<<11;
+	ay=(vs&0x03E0)<< 6;
+	az=(vs&0x7C00)<< 1;
+	aw=(vs&0x8000)?av:0xFFFF;
+	vn=	(((u64)ax)<< 0) | (((u64)ay)<<16) |
+		(((u64)az)<<32) | (((u64)aw)<<48) ;
+#endif
 
 	ctx->regs[op->rn]=vn;
 }
@@ -897,4 +929,228 @@ void BJX2_Op_PSCHNEW_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=nc;
 	if(nc<4)	ctx->regs[BJX2_REG_SR]|= 1;
 	else		ctx->regs[BJX2_REG_SR]&=~1;
+}
+
+void BJX2_Op_BLKUTX1_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	int cr, cg, cb, cy;
+	int mr, mg, mb;
+	int nr, ng, nb;
+	u64 va, vb, vc, clra, clrb;
+	int ix, px;
+
+	va=ctx->regs[op->rm];
+	vb=ctx->regs[op->ro];
+	
+	cr=(va>> 8)&15;	cr=(cr<<4)|cr;
+	cg=(va>> 4)&15;	cg=(cg<<4)|cg;
+	cb=(va>> 0)&15;	cb=(cb<<4)|cb;
+	cy=(va>>12)&15;	cy=(cy<<4)|cy;
+	
+	mr=cr-(cy>>1);	nr=mr+cy;
+	mg=cg-(cy>>1);	ng=mg+cy;
+	mb=cb-(cy>>1);	nb=mb+cy;
+	
+	mr=(mr<<8)|mr;	mg=(mg<<8)|mg;	mb=(mb<<8)|mb;
+	nr=(nr<<8)|nr;	ng=(ng<<8)|ng;	nb=(nb<<8)|nb;
+
+	clra=0xFFFF000000000000ULL|
+		(((u64)nr)<<32)|
+		(((u64)ng)<<16)|
+		(((u64)nb)<< 0);
+	clrb=0xFFFF000000000000ULL|
+		(((u64)mr)<<32)|
+		(((u64)mg)<<16)|
+		(((u64)mb)<< 0);
+	
+	px=(va>>16)&65535;
+	ix=vb&15;
+	
+	vc=((px>>ix)&1)?clra:clrb;
+	ctx->regs[op->rn]=vc;
+}
+
+
+u64 tkra_pmuluhw(u64 a, u64 b)
+{
+	int ax, ay, az, aw;
+	int bx, by, bz, bw;
+	int cx, cy, cz, cw;
+	u64 c;
+	
+	ax=(u16)(a>> 0);	ay=(u16)(a>>16);
+	az=(u16)(a>>32);	aw=(u16)(a>>48);
+	bx=(u16)(b>> 0);	by=(u16)(b>>16);
+	bz=(u16)(b>>32);	bw=(u16)(b>>48);
+	cx=(ax*bx)>>16;		cy=(ay*by)>>16;
+	cz=(az*bz)>>16;		cw=(aw*bw)>>16;
+	cx=(u16)cx;			cy=(u16)cy;
+	cz=(u16)cz;			cw=(u16)cw;
+	c=	(((u64)cx)<< 0) | (((u64)cy)<<16) |
+		(((u64)cz)<<32) | (((u64)cw)<<48) ;
+	return(c);
+}
+
+u64 tkra_rgbupck64(u16 a)
+{
+	int ax, ay, az, aw, av;
+	u64 c;
+
+//	av=(a&0x0001)|((a&0x0020)>>5)|((a&0x0400)>>10);
+	av=(a&0x0001)|((a&0x0020)>>4)|((a&0x0400)>>8);
+	av=av<<13;
+	ax=(a&0x001F)<<11;
+	ay=(a&0x03E0)<< 6;
+	az=(a&0x7C00)<< 1;
+	aw=(a&0x8000)?av:0xFFFF;
+	c=	(((u64)ax)<< 0) | (((u64)ay)<<16) |
+		(((u64)az)<<32) | (((u64)aw)<<48) ;
+	return(c);
+	
+}
+
+int TKRA_GetPixel444A3_Alpha(int a)
+{
+	int av;
+	av=(a&0x0001)|((a&0x0020)>>4)|((a&0x0400)>>8);
+	av=(av<<5);
+	return(av);
+}
+
+u64 	tkra_utx2_cachedblka[64];
+u64		tkra_utx2_cachedpels[64][16];
+
+u64 TKRA_CachedBlkUtx2(u64 blk, int ix)
+{
+	u64 tca[4];
+	int pxa, pxb, pxv;
+	int axa, axb, axc;
+	u64 clra, clrb, clrc, clrd, clrp, clrq;
+	
+	int ix0, ix1, hxi;
+	int i;
+
+	ix0=ix&15;
+	ix1=ix>>4;
+//	hxi=((ix1*251)>>8)&255;
+//	hxi=(ix1^(ix1>>6))&63;
+	hxi=((((blk^(blk>>32))*65521)*251)>>8)&63;
+	
+	if((tkra_utx2_cachedblka[hxi]==blk))
+	{
+		return(tkra_utx2_cachedpels[hxi][ix0]);
+	}
+
+	pxa=(u16)(blk>> 0);
+	pxb=(u16)(blk>>16);
+	pxv=blk>>32;
+	clra=tkra_rgbupck64(pxa);
+	clrb=tkra_rgbupck64(pxb);
+
+	clrc=tkra_pmuluhw(clra, 0xAAAAAAAAAAAAAAAAULL);
+	clrd=tkra_pmuluhw(clrb, 0xAAAAAAAAAAAAAAAAULL);
+	clrp=tkra_pmuluhw(clra, 0x5555555555555555ULL);
+	clrq=tkra_pmuluhw(clrb, 0x5555555555555555ULL);
+	clrc+=clrq;
+	clrd+=clrp;
+
+	tca[0]=clrb;
+	tca[1]=clrd;
+	tca[2]=clrc;
+	tca[3]=clra;
+
+	if((pxa&0x8000) && (pxb&0x8000))
+	{
+		for(i=0; i<16; i++)
+		{
+//			clrp=((pxv>>(i*2+1))&1)?clra:clrb;
+			clrp=tca[(pxv>>(i*2))&3];
+			tkra_utx2_cachedpels[hxi][i]=clrp;
+		}
+	}else
+		if(pxb&0x8000)
+	{
+		axa=TKRA_GetPixel444A3_Alpha(pxa);
+		axb=TKRA_GetPixel444A3_Alpha(pxb);
+		axa=axa<<8;
+		axb=axb<<8;
+
+		for(i=0; i<16; i++)
+		{
+			clrp= ((pxv>>(i*2+1))&1)?clra:clrb;
+			axc = ((pxv>>(i*2+0))&1)?axa:axb;
+			clrp&=0x0000FFFFFFFFFFFFULL;
+			clrp|=((u64)axc)<<48;
+			tkra_utx2_cachedpels[hxi][i]=clrp;
+		}
+	}else
+	{
+		for(i=0; i<16; i++)
+		{
+//			clrp=((pxv>>(i*2+1))&1)?clra:clrb;
+			clrp=tca[(pxv>>(i*2))&3];
+			tkra_utx2_cachedpels[hxi][i]=clrp;
+		}
+	}
+
+	tkra_utx2_cachedblka[hxi]=blk;
+	return(tkra_utx2_cachedpels[hxi][ix0]);
+}
+
+void BJX2_Op_BLKUTX2_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	int cr, cg, cb, cy;
+	int mr, mg, mb;
+	int nr, ng, nb;
+	u64 va, vb, vc, clra, clrb;
+	int ix, px, cxa, cxb;
+
+	va=ctx->regs[op->rm];
+	vb=ctx->regs[op->ro];
+
+	vc=TKRA_CachedBlkUtx2(va, vb);
+
+#if 0
+//	printf("BLKUTX2 %016llX\n", va);
+	
+	cxa=(va    )&65535;
+	cxb=(va>>16)&65535;
+
+	nr=(cxa>>10)&31; nr=(nr<<3)|(nr>>2);
+	ng=(cxa>> 5)&31; ng=(ng<<3)|(ng>>2);
+	nb=(cxa>> 0)&31; nb=(nb<<3)|(nb>>2);
+
+	mr=(cxb>>10)&31; mr=(mr<<3)|(mr>>2);
+	mg=(cxb>> 5)&31; mg=(mg<<3)|(mg>>2);
+	mb=(cxb>> 0)&31; mb=(mb<<3)|(mb>>2);
+
+//	clra=0xFFFF000000000000ULL|
+//		(((u64)nr)<<32)|
+//		(((u64)ng)<<16)|
+//		(((u64)nb)<< 0);
+//	clrb=0xFFFF000000000000ULL|
+//		(((u64)mr)<<32)|
+//		(((u64)mg)<<16)|
+//		(((u64)mb)<< 0);
+
+	clra=0xFFFF000000000000ULL|
+		(((u64)nr)<<40)|
+		(((u64)ng)<<24)|
+		(((u64)nb)<< 8);
+	clrb=0xFFFF000000000000ULL|
+		(((u64)mr)<<40)|
+		(((u64)mg)<<24)|
+		(((u64)mb)<< 8);
+	
+	px=(u32)(va>>32);
+	ix=vb&15;
+
+	vc=((px>>(ix*2+1))&1)?clra:clrb;
+	
+//	vc=0xFFFF0000FFFF0000ULL;
+//	vc=(vc>>1)|0x8000000080000000ULL;
+//	vc=vc|0x8000000080000000ULL;
+#endif
+
+	ctx->regs[op->rn]=vc;
 }

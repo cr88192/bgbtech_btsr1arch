@@ -150,7 +150,7 @@ SKIP_SRCS=\
 	q1base/snd_mixa.c \
 	q1base/sys_dosa.o
 
-GLQUAKE_SRCS = \
+GLQUAKE_CORESRCS = \
 	q1base/cl_demo.c	\
 	q1base/cl_input.c	\
 	q1base/cl_main.c	\
@@ -203,11 +203,34 @@ GLQUAKE_SRCS = \
 	\
 	q1base/in_win.c \
 	q1base/sys_win.c \
-	q1base/glquake/gl_vidnt.c \
 	q1base/snd_dma.c \
 	q1base/snd_mem.c \
 	q1base/snd_mix.c \
 	q1base/snd_win.c \
+
+GLQUAKE_SRCS = \
+	$(GLQUAKE_CORESRCS)			\
+	q1base/glquake/gl_vidnt.c	\
+
+TKRA_SRCS = \
+	tkrast/tkr_context.c		\
+	tkrast/tkr_edge.c			\
+	tkrast/tkr_glbegin.c		\
+	tkrast/tkr_glenable.c		\
+	tkrast/tkr_glgpa.c			\
+	tkrast/tkr_glmatrix.c		\
+	tkrast/tkr_gltex.c			\
+	tkrast/tkr_matrix.c			\
+	tkrast/tkr_multi.c			\
+	tkrast/tkr_span.c			\
+	tkrast/tkr_teximg.c			\
+	tkrast/tkr_trans.c			\
+
+GLQUAKE_TKRA_SRCS = \
+	$(GLQUAKE_CORESRCS)			\
+	tkrast/tkr_multi.c			\
+	q1base/vid_win_tkra.c		\
+
 
 #	q1base/cd_linux.c	\
 #	q1base/sys_linux.c	\
@@ -216,7 +239,8 @@ GLQUAKE_SRCS = \
 #	q1base/net_bsd.c	\
 
 
-all: quake$(ARCH).exe glquake$(ARCH).exe
+
+all: quake$(ARCH).exe glquake$(ARCH).exe glquake_tkra$(ARCH).exe
 
 
 quake$(ARCH).exe: $(SQUAKE_SRCS)
@@ -224,6 +248,9 @@ quake$(ARCH).exe: $(SQUAKE_SRCS)
 
 glquake$(ARCH).exe: $(GLQUAKE_SRCS)
 	cl /Fe$@ $(GLQUAKE_SRCS) $(GL_CFLAGS) $(GL_LDFLAGS)
+
+glquake_tkra$(ARCH).exe: $(GLQUAKE_TKRA_SRCS) $(TKRA_SRCS)
+	cl /Fe$@ $(GLQUAKE_TKRA_SRCS) $(GL_CFLAGS) $(GL_LDFLAGS) /DUSE_TKRA
 
 ####
 

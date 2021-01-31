@@ -26,6 +26,11 @@ Holding/Completing a memory access will be the responsibility of EX2.
 
 `include "ExCpuId.v"
 
+`ifdef jx2_merge_shadfn
+`include "ExShad64D.v"
+`endif
+
+`ifndef jx2_merge_shadfn
 `ifndef jx2_merge_shadq
 `include "ExShad32B.v"
 `include "ExShad64B.v"
@@ -33,6 +38,11 @@ Holding/Completing a memory access will be the responsibility of EX2.
 
 `ifdef jx2_merge_shadq
 `include "ExShad64C.v"
+`endif
+`endif
+
+`ifdef jx2_enable_btcutx1
+`include "ExBtcUtx1.v"
 `endif
 
 /* verilator lint_off DEFPARAM */
@@ -49,6 +59,8 @@ module ExEX1(
 	regValRs,		//Source A Value
 	regValRt,		//Source B Value
 	regValRm,		//Source C Value
+
+	regValXs,		//Source A, 128-bit
 
 //	regValFRs,		//Source A Value (FPR)
 //	regValFRt,		//Source B Value (FPR)
@@ -97,6 +109,8 @@ input[5:0]		regIdRm;		//Source C, MemStore
 input[63:0]		regValRs;		//Source A Value
 input[63:0]		regValRt;		//Source B Value
 input[63:0]		regValRm;		//Source C Value
+
+input[63:0]		regValXs;		//Source C Value
 
 // input[63:0]		regValFRs;		//Source A Value (FPR)
 // input[63:0]		regValFRt;		//Source B Value (FPR)
@@ -207,6 +221,24 @@ wire[63:0]	tValCnv;
 wire		tCnvSrT;
 ExConv2R	exConv2R(regValRs, opUIxt, regInSr[0], tValCnv, tCnvSrT);
 
+`ifdef jx2_merge_shadfn
+
+wire[63:0]	tValShad64;
+wire[31:0]	tValShad32;
+assign	tValShad32 = tValShad64[31:0];
+
+ExShad64D	exShad64(clock, reset,
+	regValRs[63:0],
+	regValXs[63:0],
+	regValRt[7:0],
+	tValShad64,
+	opUIxt[5:0], 0);
+
+`endif
+
+
+`ifndef jx2_merge_shadfn
+
 `ifndef jx2_merge_shadq
 wire[31:0]	tValShad32;
 //ExShad32	exShad32(clock, reset,
@@ -230,6 +262,14 @@ ExShad64C	exShad64(clock, reset,
 	regValRs[63:0], regValRt[7:0],
 	tValShad64, opUIxt[3:0]);
 `endif
+
+`endif
+
+`ifdef jx2_enable_btcutx1
+wire[63:0]	tValUtx1;
+ExBtcUtx1	exUtx1(regValRs[63:0], regValRt[3:0], opUIxt, tValUtx1);
+`endif
+
 
 wire[63:0]	tValCpuIdLo;
 wire[63:0]	tValCpuIdHi;
@@ -552,6 +592,15 @@ begin
 				JX2_UCIX_IXS_TRAPB: begin
 					tDoMemOpm	= UMEM_OPM_TRAP;
 					tDoMemOp	= 1;
+				end
+				
+				JX2_UCIX_IXS_BLKUTX1: begin
+					tRegIdRn1		= regIdRm;
+					tRegValRn1		= tValUtx1;
+				end
+				JX2_UCIX_IXS_BLKUTX2: begin
+					tRegIdRn1		= regIdRm;
+					tRegValRn1		= tValUtx1;
 				end
 
 				default: begin

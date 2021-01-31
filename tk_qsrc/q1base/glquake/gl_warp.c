@@ -184,6 +184,58 @@ float	turbsin[] =
 };
 #define TURBSCALE (256.0 / (2 * M_PI))
 
+float qgl_sintab[256];
+
+float qgl_fastsin(float ra)
+{
+	int ix;
+	ix=ra*(128.0/M_PI)+0.5;
+	ix=ix&255;
+	return(qgl_sintab[ix]);
+}
+
+float qgl_fastcos(float ra)
+{
+	int ix;
+	ix=ra*(128.0/M_PI)+0.5;
+	ix=(ix+64)&255;
+	return(qgl_sintab[ix]);
+}
+
+#ifdef __BJX2__
+
+u64		__float64_getbits(double v);
+double	__float64_frombits(u64 v);
+
+double qgl_fastsqrt(double ra)
+{
+	u64 v;
+	v=__float64_getbits(ra);
+//	v=((v-0x3FF0000000000000ULL)>>1)+0x3FF0000000000000ULL;
+	v=(v>>1)+0x1FF8000000000000ULL;
+	return(__float64_frombits(v));
+}
+#else
+float qgl_fastsqrt(float ra)
+{
+	return(sqrt(ra));
+}
+#endif
+
+void qgl_initsin()
+{
+	float f;
+	int ix;
+	
+	for(ix=0; ix<256; ix++)
+	{
+		f = ix * (M_PI / 128.0);
+		qgl_sintab[ix] = sin(f);
+	}
+}
+
+#define TURBSCALE_1_8	(TURBSCALE * 0.125)
+
 /*
 =============
 EmitWaterPolys
@@ -196,8 +248,13 @@ void EmitWaterPolys (msurface_t *fa)
 	glpoly_t	*p;
 	float		*v;
 	int			i;
-	float		s, t, os, ot;
+	float		s, t, os, ot, ttsc, sofs, tofs;
 
+//	return;
+
+	ttsc = realtime * TURBSCALE;
+//	sofs = turbsin[(int)(ttsc) & 255];
+//	tofs = turbsin[(int)(ttsc) & 255];
 
 	for (p=fa->polys ; p ; p=p->next)
 	{
@@ -207,11 +264,18 @@ void EmitWaterPolys (msurface_t *fa)
 			os = v[3];
 			ot = v[4];
 
-			s = os + turbsin[(int)((ot*0.125+realtime) * TURBSCALE) & 255];
+//			s = os + turbsin[(int)((ot*0.125+realtime) * TURBSCALE) & 255];
+			s = os + turbsin[(int)(ot*TURBSCALE_1_8+ttsc) & 255];
+//			s = os + sofs;
 			s *= (1.0/64);
 
-			t = ot + turbsin[(int)((os*0.125+realtime) * TURBSCALE) & 255];
+//			t = ot + turbsin[(int)((os*0.125+realtime) * TURBSCALE) & 255];
+			t = ot + turbsin[(int)(os*TURBSCALE_1_8+ttsc) & 255];
+//			t = ot + tofs;
 			t *= (1.0/64);
+
+//			s=os;
+//			t=ot;
 
 			qglTexCoord2f (s, t);
 			qglVertex3fv (v);
@@ -246,7 +310,8 @@ void EmitSkyPolys (msurface_t *fa)
 			dir[2] *= 3;	// flatten the sphere
 
 			length = dir[0]*dir[0] + dir[1]*dir[1] + dir[2]*dir[2];
-			length = sqrt (length);
+//			length = sqrt (length);
+			length = qgl_fastsqrt (length);
 			length = 6*63/length;
 
 			dir[0] *= length;

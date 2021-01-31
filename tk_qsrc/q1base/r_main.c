@@ -1080,7 +1080,8 @@ SetVisibilityByPassages ();
 	cfrt=(dp_time2-r_time1);
 	afrt=(afrt*0.9)+(cfrt*0.1);
 	dfrt=afrt;
-	
+
+#if 0
 	if(dfrt>0.03)
 	{
 		r_lowfps=1;
@@ -1097,6 +1098,7 @@ SetVisibilityByPassages ();
 	{
 		r_lowfps=3;
 	}
+#endif
 
 	if (r_dowarp)
 		D_WarpScreen ();

@@ -1,7 +1,10 @@
 TK_MOUNT *tk_sysc_mount(char *devfn, char *mntfn,
 	char *fsty, char *mode, char **opts);
-TK_FILE *tk_sysc_fopen(TK_MOUNT *mnt, char *name, char *mode);
-TK_DIR *tk_sysc_opendir(TK_MOUNT *mnt, char *name);
+TK_FILE *tk_sysc_fopen(TK_MOUNT *mnt, TK_USERINFO *usri, char *name, char *mode);
+TK_DIR *tk_sysc_opendir(TK_MOUNT *mnt, TK_USERINFO *usri, char *name);
+
+int tk_sysc_rename(TK_MOUNT *mnt,
+	char *oldname, char *newname, char *mode);
 
 int tk_sysc_fread(void *buf, int sz1, int sz2, TK_FILE *fd);
 int tk_sysc_fwrite(void *buf, int sz1, int sz2, TK_FILE *fd);
@@ -29,7 +32,7 @@ tk_sysc_mount,		//mount
 tk_sysc_fopen,		//fopen
 tk_sysc_opendir,	//fopendir
 NULL,				//unlink
-NULL,				//rename
+tk_sysc_rename,		//rename
 NULL,				//fstat
 
 NULL,				//mkdir
@@ -81,7 +84,7 @@ TK_MOUNT *tk_sysc_mount(char *devfn, char *mntfn,
 {
 }
 
-TK_FILE *tk_sysc_fopen(TK_MOUNT *mnt, char *name, char *mode)
+TK_FILE *tk_sysc_fopen(TK_MOUNT *mnt, TK_USERINFO *usri, char *name, char *mode)
 {
 	char tfname[512];
 	TK_SysArg ar[4];
@@ -89,7 +92,8 @@ TK_FILE *tk_sysc_fopen(TK_MOUNT *mnt, char *name, char *mode)
 	void *p;
 	int i;
 	
-	TK_Env_GetCwdQualifyName(tfname, 512, name);
+//	TK_Env_GetCwdQualifyName(tfname, 512, name);
+	strcpy(tfname, name);
 	
 	tk_printf("tk_sysc_fopen: %s -> %s\n", name, tfname);
 	
@@ -107,7 +111,7 @@ TK_FILE *tk_sysc_fopen(TK_MOUNT *mnt, char *name, char *mode)
 	return(fd);
 }
 
-TK_DIR *tk_sysc_opendir(TK_MOUNT *mnt, char *name)
+TK_DIR *tk_sysc_opendir(TK_MOUNT *mnt, TK_USERINFO *usri, char *name)
 {
 	char tfname[512];
 	TK_SysArg ar[4];
@@ -116,7 +120,8 @@ TK_DIR *tk_sysc_opendir(TK_MOUNT *mnt, char *name)
 	void *p;
 	int i;
 
-	TK_Env_GetCwdQualifyName(tfname, 512, name);
+//	TK_Env_GetCwdQualifyName(tfname, 512, name);
+	strcpy(tfname, name);
 
 	tk_printf("tk_sysc_opendir: %s -> %s\n", name, tfname);
 	
@@ -135,6 +140,38 @@ TK_DIR *tk_sysc_opendir(TK_MOUNT *mnt, char *name)
 	fd->udata2=tde;
 	
 	return(fd);
+}
+
+int tk_sysc_rename(TK_MOUNT *mnt,
+	char *oldname, char *newname, char *mode)
+{
+	char tfoname[512];
+	char tfnname[512];
+	TK_SysArg ar[4];
+	TK_FILE *fd;
+	void *p;
+	int i;
+	
+//	if(*mode=='S')
+//		{ strcpy(tfoname, oldname); }
+//	else
+//		{ TK_Env_GetCwdQualifyName(tfoname, 512, oldname); }
+//	TK_Env_GetCwdQualifyName(tfnname, 512, newname);
+
+	strcpy(tfoname, oldname);
+	strcpy(tfnname, newname);
+	
+//	tk_printf("tk_sysc_fopen: %s -> %s\n", name, tfname);
+	
+//	ar[0].p=name;
+	ar[0].p=tfoname;
+	ar[1].p=tfnname;
+	ar[2].p=mode;
+	i=tk_syscall(NULL, TK_UMSG_VFRENAME, &p, ar);
+	if(i<=0)
+		return(-1);
+
+	return(i);
 }
 
 int tk_sysc_fclose(TK_FILE *fd)
@@ -305,3 +342,178 @@ TK_DIRENT *tk_sysc_readdir(TK_DIR *fd)
 		return(NULL);
 	return(fd->udata2);
 }
+
+
+int tk_multidir_closedir(TK_DIR *fd);
+TK_DIRENT *tk_multidir_readdir(TK_DIR *fd);
+int tk_multidir_fioctl(TK_FILE *fd, int cmd, void *ptr);
+
+TK_FILE_VT tk_vfile_multidir_vt={
+"multidir",			//fsname
+NULL,				//next
+NULL,				//mount
+NULL,				//fopen
+NULL,				//fopendir
+NULL,				//unlink
+NULL,				//rename
+NULL,				//fstat
+
+NULL,				//mkdir
+NULL,				//rmdir
+NULL,				//fsctl
+
+/* FILE Ops */
+NULL,				//fread
+NULL,				//fwrite
+NULL,				//fseek
+NULL,				//ftell
+NULL,				//fclose
+NULL,				//fgetc
+NULL,				//fputc
+tk_multidir_fioctl,		//ioctl
+
+/* DIR ops */
+tk_multidir_readdir,	//readdir
+tk_multidir_closedir,	//closedir
+
+/* Socket/Device Ops */
+NULL,				//fsend
+NULL				//frecv
+};
+
+struct tk_multidir_mergecache_s {
+u64 win[256];
+byte chn[256];
+byte hash[32];
+byte wpos;
+};
+
+u64 tk_multidir_hashname(char *str)
+{
+	char *cs;
+	u64 v;
+	int i;
+	
+	cs=str; v=0;
+	while(*cs)
+	{
+		i=*cs++;
+		v=v*0xE20B7AC6ULL+i;
+	}
+	v=v*0xE20B7AC6ULL;
+	return(v);
+}
+
+TK_DIR *tk_multidir_create(TK_DIR **fda, int nfd)
+{
+	TK_DIR **tfda;
+	TK_DIRENT *tde;
+	struct tk_multidir_mergecache_s *mce;
+	TK_DIR *fd;
+	int i, j, k;
+
+	void *p;
+	int i;
+
+//	tde=tk_malloc(sizeof(TK_DIRENT));
+//	memset(tde, 0, sizeof(TK_DIRENT));
+	tde=NULL;
+
+	mce=tk_malloc(sizeof(struct tk_multidir_mergecache_s));
+	memset(mce, 0, sizeof(struct tk_multidir_mergecache_s));
+
+	fd=tk_alloc_dir();
+	fd->vt=&tk_vfile_multidir_vt;
+
+	if((nfd*sizeof(void *))<=TK_FILE_SZTFDA)
+		{ tfda=(TK_DIR **)(fd->tfda); }
+	else
+		{ tfda=tk_malloc(nfd*sizeof(void *)); }
+
+	for(i=0; i<nfd; i++)
+		{ tfda[i]=fda[i]; }
+
+	fd->ifd=nfd;
+	fd->ipos=0;
+	fd->udata1=tfda;
+	fd->udata2=tde;
+	fd->udata3=mce;
+	
+	return(fd);
+}
+
+int tk_multidir_closedir(TK_DIR *fd)
+{
+	TK_DIR **fda;
+	void *p;
+	int i, nfd;
+	
+	fda=fd->udata1;
+	nfd=fd->ifd;
+	
+	for(i=0; i<nfd; i++)
+		{ tk_closedir(fda[i]); }
+	if((nfd*sizeof(void *))>TK_FILE_SZTFDA)
+		{ tk_free(fda); }
+	if(fd->udata3)
+		{ tk_free(fd->udata3); }
+	tk_free_dir(fd);
+	return(i);
+}
+
+TK_DIRENT *tk_multidir_readdir(TK_DIR *fd)
+{
+	struct tk_multidir_mergecache_s *mce;
+	TK_DIR **fda;
+	TK_DIRENT *tde;
+	void *p;
+	u64 v;
+	int i, j, k, h, c, nfd;
+	
+	fda=fd->udata1;
+	tde=fd->udata2;
+	mce=fd->udata3;
+	nfd=fd->ifd;
+
+	i=fd->ipos; tde=NULL;
+	while(!tde && (i<nfd))
+	{
+		tde=tk_readdir(fda[i]);
+		if(!tde)i++;
+		
+		/* Try to merge name collisions. */
+		if(tde && mce)
+		{
+			v=tk_multidir_hashname(tde->d_name);
+			h=(v>>32)&31;
+			j=mce->hash[h]; c=32;
+			while(j && (c>0))
+			{
+				if(mce->win[j]==v)
+					break;
+				j=mce->chn[j];
+			}
+			if(j && (c>0))
+			{
+				tde=NULL;
+			}else
+			{
+				j=(mce->wpos++)&255;
+				while(!j)
+					{ j=(mce->wpos++)&255; }
+				mce->win[j]=v;
+				mce->chn[j]=mce->hash[h];
+				mce->hash[h]=j;
+			}
+		}
+	}
+	fd->ipos=i;
+	
+	return(tde);
+}
+
+int tk_multidir_fioctl(TK_FILE *fd, int cmd, void *ptr)
+{
+	return(-1);
+}
+

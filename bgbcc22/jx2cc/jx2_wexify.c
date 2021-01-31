@@ -124,7 +124,21 @@ int BGBCC_JX2_CheckOps32GetRegs(
 
 		if((opw2&0xF000)==0x2000)
 		{
-			if((opw2&0x000C)==0x0004)
+			if(	((opw2&0x000C)==0x0004) ||
+				((opw2&0x000C)==0x000C))
+			{
+				if(opw2&0x0800)
+				{
+					spfl|=8;
+				}
+			}
+		}
+
+		if((opw2&0xF000)==0x3000)
+		{
+			if(	!(opw2&0x0008) &&
+				((opw2&0x000F)!=0x0000) &&
+				((opw2&0x000F)!=0x0007))
 			{
 				if(opw2&0x0800)
 				{
@@ -170,6 +184,15 @@ int BGBCC_JX2_CheckOps32GetRegs(
 //			return(-1);
 			spr=BGBCC_SH_REG_SR;
 			spw=BGBCC_SH_REG_SR;
+
+			if(	((opw2&0x000C)==0x0000) ||
+				((opw2&0x000C)==0x0008))
+			{
+				if(opw2&0x0800)
+				{
+					spfl|=8;
+				}
+			}
 		}
 
 #if 0

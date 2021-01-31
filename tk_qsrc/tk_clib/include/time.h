@@ -16,26 +16,14 @@
 #define CLOCKS_PER_SEC 1000
 #define NULL ((void *)0)
 
+#ifndef __SIZE_T_DEFINED
+#define __SIZE_T_DEFINED
+typedef unsigned long size_t;
+#endif
+
+#ifndef _CLOCK_T_DEFINED
 typedef unsigned int clock_t;
-
-#if 0
-#ifndef __SIZE_T_DEFINED
-#define __SIZE_T_DEFINED
-#if (defined(__OS2__) || defined(__32BIT__) || defined(__MVS__) \
-    || defined(__CMS__))
-typedef unsigned long size_t;
-#elif (defined(__MSDOS__) || defined(__DOS__) || defined(__POWERC) \
-    || defined(__WIN32__) || defined(__gnu_linux__))
-typedef unsigned int size_t;
-#endif
-#endif
-#endif
-
-#ifndef __SIZE_T_DEFINED
-#define __SIZE_T_DEFINED
-// typedef unsigned int size_t;
-// typedef long size_t;
-typedef unsigned long size_t;
+#define	_CLOCK_T_DEFINED
 #endif
 
 #ifndef _TIME_T_DEFINED

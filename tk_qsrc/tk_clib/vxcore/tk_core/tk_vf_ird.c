@@ -1,6 +1,6 @@
 TK_MOUNT *tk_ird_mount(char *devfn, char *mntfn,
 	char *fsty, char *mode, char **opts);
-TK_FILE *tk_ird_fopen(TK_MOUNT *mnt, char *name, char *mode);
+TK_FILE *tk_ird_fopen(TK_MOUNT *mnt, TK_USERINFO *usri, char *name, char *mode);
 
 int tk_ird_fread(void *buf, int sz1, int sz2, TK_FILE *fd);
 int tk_ird_fseek(TK_FILE *fd, int ofs, int rel);
@@ -105,7 +105,7 @@ int tk_ird_decoctal_n(byte *cs, int n)
 	return(v);
 }
 
-TK_FILE *tk_ird_fopen(TK_MOUNT *mnt, char *name, char *mode)
+TK_FILE *tk_ird_fopen(TK_MOUNT *mnt, TK_USERINFO *usri, char *name, char *mode)
 {
 	TK_FILE *fd;
 	u32 reladdr;

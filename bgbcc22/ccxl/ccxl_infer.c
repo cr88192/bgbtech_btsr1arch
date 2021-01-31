@@ -402,6 +402,17 @@ int BGBCC_CCXL_InferExpr(BGBCC_TransState *ctx,
 			*rdty=bty;
 			return(1);
 		}
+		
+		if(BGBCC_CCXL_TypeVecP(ctx, tty))
+		{
+			i=BGBCC_CCXL_VectorTypeIndexForName(ctx, tty, s0);
+			if(i>=0)
+			{
+				BGBCC_CCXL_TypeDerefType(ctx, tty, &dty);
+				*rdty=dty;
+				return(1);
+			}
+		}
 
 		return(0);
 

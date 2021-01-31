@@ -2442,9 +2442,14 @@ COM_InitFilesystem
 */
 void COM_InitFilesystem (void)
 {
+	FILE		*fd;
 	int             i, j;
 	char    basedir[MAX_OSPATH];
 	searchpath_t    *search;
+
+	fd=fopen("id1/dummy.txt", "rb");
+	if(fd)
+		fclose(fd);
 
 	tk_puts("COM_InitFilesystem: A0\n");
 //

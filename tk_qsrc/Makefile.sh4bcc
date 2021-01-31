@@ -47,7 +47,8 @@ all: targets
 
 # targets: quake_sh4b.elf quake_cgfx_sh4b.elf primecnt_sh4b.elf \
 #	quake_b64b.exe primecnt_b64b.exe
-targets: quake_b64b.exe dhry_b64b.exe
+targets: quake_b64b.exe dhry_b64b.exe \
+	glquake_tkra_b64b.exe
 # glquake_b64b.exe
 
 SQUAKE_SRCS = \
@@ -158,7 +159,7 @@ SKIP_SRCS=\
 	q1base/snd_mixa.c \
 	q1base/sys_dosa.o
 
-GLQUAKE_SRCS = \
+GLQUAKE_CORESRCS = \
 	q1base/cl_demo.c	\
 	q1base/cl_input.c	\
 	q1base/cl_main.c	\
@@ -211,11 +212,33 @@ GLQUAKE_SRCS = \
 	\
 	q1base/in_btsh4.c \
 	q1base/sys_btsh4.c \
-	q1base/vid_btsh4_gl.c \
 	q1base/snd_dma.c \
 	q1base/snd_mem.c \
 	q1base/snd_mix.c \
 	q1base/snd_btsh4.c
+
+GLQUAKE_SRCS = \
+	$(GLQUAKE_CORESRCS)			\
+	q1base/vid_btsh4_gl.c		\
+
+TKRA_SRCS = \
+	tkrast/tkr_context.c		\
+	tkrast/tkr_edge.c			\
+	tkrast/tkr_glbegin.c		\
+	tkrast/tkr_glenable.c		\
+	tkrast/tkr_glgpa.c			\
+	tkrast/tkr_glmatrix.c		\
+	tkrast/tkr_gltex.c			\
+	tkrast/tkr_matrix.c			\
+	tkrast/tkr_multi.c			\
+	tkrast/tkr_span.c			\
+	tkrast/tkr_teximg.c			\
+	tkrast/tkr_trans.c			\
+
+GLQUAKE_TKRA_SRCS = \
+	$(GLQUAKE_CORESRCS)			\
+	tkrast/tkr_multi.c			\
+	q1base/vid_btsh4_tkra.c		\
 
 DHRY_SRCS =			\
 	dhry/dhry_1.c	\
@@ -243,6 +266,9 @@ quake_b64b.exe: $(SQUAKE_SRCS)
 
 glquake_b64b.exe: $(GLQUAKE_SRCS)
 	$(CC) $(GL_CFLAGS64) -o $@ $(GLQUAKE_SRCS) $(LDFLAGS64)
+
+glquake_tkra_b64b.exe: $(GLQUAKE_TKRA_SRCS) $(TKRA_SRCS)
+	$(CC) $(GL_CFLAGS64) -o $@ $(GLQUAKE_TKRA_SRCS) $(LDFLAGS64) -DUSE_TKRA
 
 primecnt_b64b.exe: primecnt.c
 	$(CC) $(CFLAGS64) -o $@ primecnt.c $(LDFLAGS64)

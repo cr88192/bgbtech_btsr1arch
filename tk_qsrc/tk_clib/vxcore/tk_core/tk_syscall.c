@@ -117,86 +117,126 @@ int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 				break;
 			case 0x09:
 				sz=tk_getch();
-				*((int **)vParm1)=sz;
+				*((int *)vParm1)=sz;
 				ret=TK_URES_TRUE;
 				break;
 			case 0x0A:
 				sz=tk_kbhit();
-				*((int **)vParm1)=sz;
+				*((int *)vParm1)=sz;
 				ret=TK_URES_TRUE;
 				break;
 			
 			case 0x0B:
 				sz=TK_EnvCtx_GetEnvVarIdx(env, args[0].i,
 					args[1].p, args[2].p, args[3].i, args[4].i);
-				*((int **)vParm1)=sz;
+				*((int *)vParm1)=sz;
 				ret=TK_URES_TRUE;
 				break;
 			case 0x0C:
 				sz=TK_EnvCtx_GetEnvVar(env, args[0].p, args[1].p, args[2].i);
-				*((int **)vParm1)=sz;
+				*((int *)vParm1)=sz;
 				ret=TK_URES_TRUE;
 				break;
 			case 0x0D:
 				sz=TK_EnvCtx_SetEnvVar(env, args[0].p, args[1].p, args[2].i);
-				*((int **)vParm1)=sz;
+				*((int *)vParm1)=sz;
 				ret=TK_URES_TRUE;
+				break;
+
+			case 0x10:
+				p=tk_mmap2(task,
+					args[0].p, args[1].l, args[2].i, args[3].i,
+					args[4].i, args[5].l);
+				*((void **)vParm1)=p;
+				break;
+			case 0x11:
+				sz=tk_munmap2(task, args[0].p, args[1].l);
+				*((int *)vParm1)=sz;
+				break;
+			case 0x12:
+				sz=tk_mprotect2(task, args[0].p, args[1].l, args[2].i);
+				*((int *)vParm1)=sz;
+				break;
+			case 0x13:
+				sz=tk_msync2(task, args[0].p, args[1].l, args[2].i);
+				*((int *)vParm1)=sz;
+				break;
+
+			case 0x14:
+				sz=tk_mlock2(task, args[0].p, args[1].l);
+				*((int *)vParm1)=sz;
+				break;
+			case 0x15:
+				sz=tk_munlock2(task, args[0].p, args[1].l);
+				*((int *)vParm1)=sz;
+				break;
+			case 0x16:
+				sz=tk_mlockall2(task, args[1].i);
+				*((int *)vParm1)=sz;
+				break;
+			case 0x17:
+				sz=tk_munlockall2(task);
+				*((int *)vParm1)=sz;
 				break;
 			
 			case 0x20:
-				ret=tk_hfopen(args[0].p, args[1].p);
+				ret=tk_hfopen(task, args[0].p, args[1].p);
 				break;
 			case 0x21:
-				ret=tk_hopendir(args[0].p);
+				ret=tk_hopendir(task, args[0].p);
 				break;
 			case 0x22:
-				ret=tk_unlink(args[0].p);
+				ret=tk_hunlink(task, args[0].p);
 				break;
 			case 0x23:
-				ret=tk_rename(args[0].p, args[1].p);
+				ret=tk_hrename(task, args[0].p, args[1].p, args[2].p);
 				break;
 			case 0x24:
-				ret=tk_fstat(args[0].p, args[1].p);
+				ret=tk_hfstat(task, args[0].p, args[1].p);
 				break;
 			case 0x25:
 				ret=tk_fmount(args[0].p, args[1].p, args[2].p, args[3].p);
 				break;
 			case 0x26:
-				ret=tk_hreaddir(args[0].i, args[1].p, args[2].i, args[3].i);
+				ret=tk_hreaddir(task,
+					args[0].i, args[1].p, args[2].i, args[3].i);
 				break;
 			case 0x27:
-				ret=tk_hclosedir(args[0].i);
+				ret=tk_hclosedir(task, args[0].i);
 				break;
 			case 0x28:
-				ret=tk_hread(args[0].i, args[1].p, args[2].i);
+				ret=tk_hread(task, args[0].i, args[1].p, args[2].i);
 				break;
 			case 0x29:
-				ret=tk_hwrite(args[0].i, args[1].p, args[2].i);
+				ret=tk_hwrite(task, args[0].i, args[1].p, args[2].i);
 				break;
 			case 0x2A:
-				*((s64 *)vParm1)=tk_hseek(args[0].i, args[1].l, args[2].i);
+				*((s64 *)vParm1)=tk_hseek(task,
+					args[0].i, args[1].l, args[2].i);
 				ret=TK_URES_TRUE;
 				break;
 			case 0x2B:
-				ret=tk_hclose(args[0].i);
+				ret=tk_hclose(task, args[0].i);
 				break;
 			case 0x2C:
-				ret=tk_hioctl(args[0].i, args[1].i, args[2].p);
+				ret=tk_hioctl(task, args[0].i, args[1].i, args[2].p);
 				break;
-
+			case 0x2D:
+				ret=tk_hfsctl(task, args[0].p, args[1].i, args[2].p);
+				break;
 			case 0x2E:
-				ret=tk_mkdir(args[0].p, args[1].p);
+				ret=tk_hmkdir(task, args[0].p, args[1].p);
 				break;
 			case 0x2F:
-				ret=tk_rmdir(args[0].p);
+				ret=tk_hrmdir(task, args[0].p);
 				break;
 			case 0x30:
-				ret=tk_hsend(args[0].i, args[1].i,
+				ret=tk_hsend(task, args[0].i, args[1].i,
 					args[2].p, args[3].i, args[4].i,
 					args[5].p, args[6].i);
 				break;
 			case 0x31:
-				ret=tk_hrecv(args[0].i, args[1].i,
+				ret=tk_hrecv(task, args[0].i, args[1].i,
 					args[2].p, args[3].i, args[4].i,
 					args[5].p, args[6].i);
 				break;

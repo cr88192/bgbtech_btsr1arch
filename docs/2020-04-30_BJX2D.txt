@@ -1164,22 +1164,25 @@ F0zz Instruction Block:
 
 * F0zz_1zzz
 ** F0nm_1go0  ADD		Rm, Ro, Rn			//Rn=Rm+Ro
-** F0nm_1Go0 ? ADD		Rm, #imm5, Rn		//(PrWEX) Rn=Rm+Imm
+** F0nm_1Go0  ADDX		Xm, Xo, Xn			//(ALUX) Xn=Xm+Xo
 ** F0nm_1go1  SUB		Rm, Ro, Rn			//Rn=Rm-Ro
-** F0nm_1Go1 ? SUB		Rm, #imm5, Rn		//(PrWEX) Rn=Rm-Imm
+** F0nm_1Go1  SUBX		Xm, Xo, Xn			//(ALUX) Xn=Xm-Xo
 ** F0nm_1go2  MULS		Rm, Ro, Rn			//Rn=Rm*Ro (Signed Result)
-** F0nm_1Go2 ? MULS.Q	Rm, Ro, Rn			//(MULQ) Signed 64b Result
+** F0nm_1Go2  MULS.Q	Rm, Ro, Rn			//(MULQ) Signed 64b Result
 ** F0nm_1go3  MULU		Rm, Ro, Rn			//Rn=Rm*Ro (Unsigned Result)
-** F0nm_1Go3 ? MULU.Q	Rm, Ro, Rn			//(MULQ) Unsigned 64b Result
+** F0nm_1Go3  MULU.Q	Rm, Ro, Rn			//(MULQ) Unsigned 64b Result
 ** F0nm_1eo4  -
 ** F0nm_1go5  AND		Rm, Ro, Rn			//Rn=Rm AND Ro
-** F0nm_1Go5 ? AND		Rm, #imm5, Rn		//(PrWEX) Rn=Rm AND Imm
+** F0nm_1Go5  ANDX		Xm, Xo, Xn			//(ALUX) Xn=Xm&Xo
 ** F0nm_1go6  OR		Rm, Ro, Rn			//Rn=Rm OR  Ro
-** F0nm_1Go6 ? OR		Rm, #imm5, Rn		//(PrWEX) Rn=Rm OR Imm
+** F0nm_1Go6  ORX		Xm, Xo, Xn			//(ALUX) Xn=Xm|Xo
 ** F0nm_1go7  XOR		Rm, Ro, Rn			//Rn=Rm XOR Ro
-** F0nm_1Go7 ? XOR		Rm, #imm5, Rn		//(PrWEX) Rn=Rm XOR Imm
+** F0nm_1Go7  XORX		Xm, Xo, Xn			//(ALUX) Xn=Xm^Xo
 
 ** F0nm_1ez8
+*** F0nm_1GC8 CMPXEQ	Rm, Rn				//(ALUX) Rn==Rm
+*** F0nm_1GD8 CMPXHI	Rm, Rn				//(ALUX) Unsigned Rn GT Rm
+*** F0nm_1GE8 CMPXGT	Rm, Rn				//(ALUX) Signed Rn GT Rm
 
 ** F0nm_1ez9
 *** F0nm_1g09 ADD		Rm, Rn				//Rn=Rn+Rm
@@ -1244,8 +1247,10 @@ F0zz Instruction Block:
 ** F0nm_1ezB  / (GSV Block)
 
 ** F0nm_1ezC
-*** F0nm_1e0C  NOT		Rm, Rn				//Rn=~Rn
-*** F0nm_1e1C  NEG		Rm, Rn				//Rn=(~Rn)+1
+*** F0nm_1g0C  NOT		Rm, Rn				//Rn=~Rn
+*** F0nm_1G0C  NOTX		Xm, Xn				//(ALUX) Xn=~Xm
+*** F0nm_1g1C  NEG		Rm, Rn				//Rn=(~Rn)+1
+*** F0nm_1G1C  NEGX		Xm, Xn				//(ALUX) Xn=(~Xm)+1
 *** F0nm_1e2C  CLZ{Q}	Rm, Rn				//(CLZ) Count Leading Zeroes
 *** F0nm_1e3C  CTZ{Q}	Rm, Rn				//(CLZ) Count Trailing Zeroes
 *** F0nm_1e4C  BTRNS{Q}	Rm, Rn				//(CLZ) Bit Transpose
@@ -1269,16 +1274,20 @@ F0zz Instruction Block:
 *** F0nm_1eFC  CMP{Q}HS	Rm, Rn				//Unsigned Rn GE Rm
 
 ** F0nm_1ezD ? (GFP, GPR FPU, Opt)
-*** F0nm_1e0D  FLDCF		Rm, Rn		//Load Convert Float32 (Low Bits, ZX)
+*** F0nm_1g0D  FLDCF		Rm, Rn		//Load Convert Float32 (Low Bits, ZX)
+*** F0nm_1G0D  FLDCDX		Rm, Rn		//Load Convert Double (GFPX, F128)
 *** F0nm_1e1D  FLDCHF		Rm, Rn		//Load Convert Float32 (High Bits)
-*** F0nm_1e2D  FLDCI		Rm, Rn		//Load Convert Int
+*** F0nm_1g2D  FLDCI		Rm, Rn		//Load Convert Int
+*** F0nm_1G2D  FLDCXI		Rm, Rn		//Load Convert Int (GFPX, F128)
 *** F0nm_1e3D  FLDCH		Rm, Rn		//Load Convert Half (Low16)
-*** F0nm_1e4D  FSTCF		Rm, Rn		//Store Convert Float32 (Low Bits, ZX)
+*** F0nm_1g4D  FSTCF		Rm, Rn		//Store Convert Float32 (Low Bits, ZX)
+*** F0nm_1G4D  FSTCDX		Rm, Rn		//Store Convert Double (GFPX, F128)
 *** F0nm_1e5D  FSTCHF		Rm, Rn		//Store Convert Float32 (High Bits)
-*** F0nm_1e6D  FSTCI		Rm, Rn		//Store Convert Int
+*** F0nm_1g6D  FSTCI		Rm, Rn		//Store Convert Int
+*** F0nm_1G6D  FSTCXI		Rm, Rn		//Store Convert Int (GFPX, F128)
 *** F0nm_1e7D  FSTCH		Rm, Rn		//Store Convert Half (Low16)
-*** F0nm_1e8D  FNEG			Rm, Rn		//Negate
-*** F0nm_1e9D  FABS			Rm, Rn		//Absolute
+*** F0nm_1g8D  FNEG			Rm, Rn		//Negate
+*** F0nm_1g9D  FABS			Rm, Rn		//Absolute
 *** F0nm_1gAD  FCMPEQ		Rm, Rn		//SR.T=(FRn EQ FRm)
 *** F0nm_1GAD  FCMPXEQ		Xm, Xn		//SR.T=(FRn EQ FRm)  (GFPX)
 *** F0nm_1gBD  FCMPGT		Rm, Rn		//SR.T=(FRn GT FRm)
@@ -1329,13 +1338,16 @@ F0zz Instruction Block:
 ** F0nm_2Go9  MOVLHD	Rm, Ro, Rn			//(GSV) MOV, Low and High DWords
 ** F0nm_2goA  PSCHEQ.W	Rm, Ro, Rn			//(GSV) Check if Rm contains Ro
 ** F0nm_2goB  PSCHNE.W	Rm, Ro, Rn			//(GSV) Check if Rm contains Ro
-** F0nm_2goC  -
+** F0nm_2goC  BLKUTX1	Rm, Ro, Rn			//(RGB) Extract Pixel, UTX1
+** F0nm_2GoC  BLKUTX2	Rm, Ro, Rn			//(RGB) Extract Pixel, UTX2
 ** F0nm_2goD  PADD.H	Rm, Ro, Rn			//(GSVF) Packed FADD (4x Half)
 ** F0nm_2GoD  PADDX.D	Xm, Xo, Xn			//(GSVFX) Packed FADD (2x Double)
 ** F0nm_2goE  PSUB.H	Rm, Ro, Rn			//(GSVF) Packed FSUB (4x Half)
 ** F0nm_2GoE  PSUBX.D	Xm, Xo, Xn			//(GSVFX) Packed FSUB (2x Double)
 ** F0nm_2goF  PMUL.H	Rm, Ro, Rn			//(GSVF) Packed FMUL (4x Half)
 ** F0nm_2GoF  PMULX.D	Xm, Xo, Xn			//(GSVFX) Packed FMUL (2x Double)
+
+* F0zz_3zzz (Various 1R/2R/3R Ops)
 
 ** F0zz_3en0  (Single Register Ops, Mirror 3znz)
 *** 1111_0000_zzzz_zzzz_0011_qzzn_nnnn_0000 (1R)
@@ -1404,11 +1416,22 @@ F0zz Instruction Block:
 *** F082_3en0  /
 *** F083_3en0  /
 
-*** F0nm_3ez7  SWxP.x	Rm, Rn		//(GSV) SWAP and SWCP
+** F0nm_3eo1  -
+** F0nm_3go2  ROTL		Rm, Ro, Rn		//(ALU) Rotate Left (64b)
+** F0nm_3Go2  SHARX		Xm, Ro, Xn		//(ALUX) Shift Arithmetic (128b)
+** F0nm_3go3  ROTR		Rm, Ro, Rn		//(ALU) Rotate Right (64b)
+** F0nm_3Go3  SHLRX		Xm, Ro, Xn		//(ALUX) Shift Logical (128b)
+** F0nm_3go4  -
+** F0nm_3Go4  SHADX		Xm, Ro, Xn		//(ALUX) Shift Arithmetic (128b)
+** F0nm_3go5  -
+** F0nm_3Go5  SHLDX		Xm, Ro, Xn		//(ALUX) Shift Logical (128b)
+** F0nm_3go6  ROTL.L	Rm, Ro, Rn		//(ALUX) Rotate Left (32b)
+** F0nm_3Go6  ROTLX		Xm, Ro, Xn		//(ALUX) Rotate Left (128b)
+** F0nm_3ez7  SWxP.x	Rm, Rn			//(GSV) SWAP and SWCP
 
-*** F0nm_3ez8  (2R Block)
-*** ...
-*** F0nm_3ezF  (2R Block)
+** F0nm_3ez8  (2R Block)
+** ...
+** F0nm_3ezF  (2R Block)
 
 * F0nm_4eoz (Follows same pattern as F0nm_0zz0)
 ** F0nm_4eo0 ? MOV.X	Xn, (Rm, Disp5)		//(MOVX2) Store Pair
@@ -1434,9 +1457,9 @@ F0zz Instruction Block:
 ** F0nm_5go1 ? PMULS.W	Rm, Ro, Rn			//(GSV) Packed Multiply (2x16->2x32)
 ** F0nm_5Go1 ? PMULU.W	Rm, Ro, Rn			//(GSV) Packed Multiply (2x16->2x32)
 ** F0nm_5go2  DMULS.L	Rm, Ro, Rn			//(MULL) Sx 32b Mul (32*32->64)
-** F0nm_5Go2 ? DMULS.Q	Rm, Ro, Xn			//(MULQ) Sx 64b Mul (64*64->128)
+** F0nm_5Go2  DMULS.Q	Rm, Ro, Xn			//(MULQ) Sx 64b Mul (64*64->128)
 ** F0nm_5go3  DMULU.L	Rm, Ro, Rn			//(MULL) Zx 32b Mul (32*32->64)
-** F0nm_5Go3 ? DMULU.Q	Rm, Ro, Xn			//(MULQ) Zx 64b Mul (64*64->128)
+** F0nm_5Go3  DMULU.Q	Rm, Ro, Xn			//(MULQ) Zx 64b Mul (64*64->128)
 
 ** F0nm_5eo4  SHAD{Q}	Rm, Ro, Rn
 ** F0nm_5eo5  SHLD{Q}	Rm, Ro, Rn
@@ -1452,8 +1475,8 @@ F0zz Instruction Block:
 ** F0nm_5Go9  FSUBX		Xm, Xo, Xn			//(GFPX) FSUB, Binary128
 ** F0nm_5goA  FMUL		Rm, Ro, Rn			//(GFP) FMUL
 ** F0nm_5GoA  FMULX		Xm, Xo, Xn			//(GFPX) FMUL, Binary128
-** F0nm_5goB  FMAC		Rm, Ro, Rn			//(GFPX) FMAC, Rn+=Rm*Ro
-** F0nm_5GoB  FMACX		Xm, Xo, Xn			//(GFPX) FMAC, Binary128
+** F0nm_5goB  FMAC		Rm, Ro, Rn			//(GFP_MAC) FMAC, Rn+=Rm*Ro
+** F0nm_5GoB  FMACX		Xm, Xo, Xn			//(GFP_MAC) FMAC, Binary128
 ** F0nm_5goC  ADDS.L	Rm, Ro, Rn			//Rn=Rm+Ro, ADD 32-bit, Sign Extend
 ** F0nm_5GoC  ADDU.L	Rm, Ro, Rn			//Rn=Rm+Ro, ADD 32-bit, Zero Extend
 ** F0nm_5goD  SUBS.L	Rm, Ro, Rn			//Rn=Rm-Ro, ADD 32-bit, Sign Extend
@@ -1558,8 +1581,8 @@ F2zz Instruction Block  (Imm9 Block):
 
 * F2nm_9pjj  SHLD		Rm, #imm8, Rn		//E.i=0
 * F2nm_9Pjj  SHLD.Q		Rm, #imm8, Rn		//E.i=0
-* F2nm_8qjj  PCONV		Rm, #imm8, Rn		//(GSVX) E.i=1, Packed Convert
-* F2nm_8Qjj  PCONVX		Rm, #imm8, Rn		//(GSVX) E.i=1, Packed Convert
+* F2nm_9qjj  PCONV		Rm, #imm8, Rn		//(GSVX) E.i=1, Packed Convert
+* F2nm_9Qjj  PCONVX		Rm, #imm8, Rn		//(GSVX) E.i=1, Packed Convert
 
 * F2nz_Aejj  -
 * F2nz_Bejj  -

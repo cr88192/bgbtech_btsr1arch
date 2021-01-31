@@ -417,9 +417,13 @@ Index 1:
 * ( 10): Jumbo
 * ( 11): MMU
 * ( 12): Addr48
-* ( 13): GSV
+* ( 13): GSV (64-bit, Packed Integer Ops)
 * ( 14): PMORT.x
 * ( 15): FPU (GFP)
+* ( 16): GSVX (128-Bit FP-SIMD)
+* ( 17): GFPX (128-Bit Long-Double Ops)
+* ( 18): FMAC (FPU Multiply-Accumulate)
+* ( 19): ALUX (128-bit ALU Ops)
 
 Index 31:
 * Hardware Random Number
@@ -1627,12 +1631,13 @@ The nominal format of the BJX2 FPU is 64-bit Double.
 
 
 There will be a second level of FPU instructions under the name GFPX:
-* Adds FMAC
 * Adds Binary128
 ** At an implementation defined precision.
 * Rounding is tightened to 0.51 ULP for base ops.
 
-Binary128 support will be defined as, at a minimum, operating internally with a 52 bit mantissa, similar to that of Double. However, the supported exponent range and mantissa may also be larger than those of Double.
+Another Extension, GFP_MAC, will add FMAC:
+* Adds FMAC
+
 
 For now, the "baseline" Binary128 support will define:
 * 72-bit mantissa (for the portion treated as significant).

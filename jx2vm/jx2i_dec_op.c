@@ -3311,6 +3311,13 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 		break;
 	}
 	
+	if((op->fl&BJX2_OPFL_REGXM) && (op->rm&1))
+		op->Run=NULL;
+	if((op->fl&BJX2_OPFL_REGXN) && (op->rn&1))
+		op->Run=NULL;
+	if((op->fl&BJX2_OPFL_REGXO) && (op->ro&1))
+		op->Run=NULL;
+	
 	if(op->cyc==-1)
 	{
 //		op->cyc==1;

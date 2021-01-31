@@ -75,7 +75,7 @@ int __write(int handle, const void *buf, size_t len, int *errind);
 void __seek(int handle, long offset, int whence);
 void __close(int handle);
 void __remove(const char *filename);
-void __rename(const char *old, const char *new);
+void __rename(const char *oldfn, const char *newfn);
 long __tell(int handle);
 
 // static FILE permFiles[3];
@@ -1762,10 +1762,10 @@ __PDPCLIB_API__ int remove(const char *filename)
 	return (ret);
 }
 
-__PDPCLIB_API__ int rename(const char *old, const char *new)
+__PDPCLIB_API__ int rename(const char *oldfn, const char *newfn)
 {
 	int ret;
-	__rename(old, new);
+	__rename(oldfn, newfn);
 	ret = 0;
 	return (ret);
 }

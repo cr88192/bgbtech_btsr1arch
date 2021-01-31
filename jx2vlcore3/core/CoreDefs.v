@@ -109,6 +109,7 @@ parameter[ 15:0] UV16_XX		= 16'hXXXX;	//
 parameter[ 27:0] UV28_XX		= 28'hXXXXXXX;	//
 parameter[ 31:0] UV32_XX		= 32'hXXXXXXXX;	//
 parameter[ 32:0] UV33_XX		= 33'hXXXXXXXXX;	//
+parameter[ 35:0] UV36_XX		= 36'hXXXXXXXXX;	//
 parameter[ 43:0] UV44_XX		= 44'hXXXXXXX_XXXX;	//
 parameter[ 47:0] UV48_XX		= 48'hXXXXXXXX_XXXX;	//
 parameter[ 63:0] UV64_XX		= 64'hXXXXXXXX_XXXXXXXX;	//
@@ -594,10 +595,13 @@ parameter[5:0] JX2_UCIX_MUL3_DMUL3U	= 6'h05;		//
 
 parameter[5:0] JX2_UCIX_MUL3_PWMULS	= 6'h06;		//Packed-Widen
 parameter[5:0] JX2_UCIX_MUL3_PWMULU	= 6'h07;		//Packed-Widen
-parameter[5:0] JX2_UCIX_MUL3_PLMULS	= 6'h08;		//Packed-High
-parameter[5:0] JX2_UCIX_MUL3_PLMULU	= 6'h09;		//Packed-High
+parameter[5:0] JX2_UCIX_MUL3_PLMULS	= 6'h08;		//Packed-Low
+parameter[5:0] JX2_UCIX_MUL3_PLMULU	= 6'h09;		//Packed-Low
 parameter[5:0] JX2_UCIX_MUL3_PHMULS	= 6'h0A;		//Packed-High
 parameter[5:0] JX2_UCIX_MUL3_PHMULU	= 6'h0B;		//Packed-High
+
+parameter[5:0] JX2_UCIX_MUL3_PHMULSA	= 6'h0C;		//Packed-Mul Add
+parameter[5:0] JX2_UCIX_MUL3_PHMULUA	= 6'h0D;		//Packed-Mul Add
 
 parameter[5:0] JX2_UCIX_LDI_LDIX	= 6'h00;		//
 parameter[5:0] JX2_UCIX_LDI_LDISH8	= 6'h01;		//
@@ -613,6 +617,18 @@ parameter[5:0] JX2_UCIX_SHAD_SHAR3	= 6'h04;		//
 parameter[5:0] JX2_UCIX_SHAD_SHLR3	= 6'h05;		//
 parameter[5:0] JX2_UCIX_SHAD_SHARQ3	= 6'h06;		//
 parameter[5:0] JX2_UCIX_SHAD_SHLRQ3	= 6'h07;		//
+
+parameter[5:0] JX2_UCIX_SHAD_ROTL3	= 6'h08;		//
+parameter[5:0] JX2_UCIX_SHAD_ROTLQ3	= 6'h0A;		//
+parameter[5:0] JX2_UCIX_SHAD_ROTR3	= 6'h0C;		//
+parameter[5:0] JX2_UCIX_SHAD_ROTRQ3	= 6'h0E;		//
+
+parameter[5:0] JX2_UCIX_SHAD_SHADX3	= 6'h20;		//
+parameter[5:0] JX2_UCIX_SHAD_SHLDX3	= 6'h21;		//
+parameter[5:0] JX2_UCIX_SHAD_SHARX3	= 6'h24;		//
+parameter[5:0] JX2_UCIX_SHAD_SHLRX3	= 6'h25;		//
+parameter[5:0] JX2_UCIX_SHAD_ROTLX3	= 6'h28;		//
+parameter[5:0] JX2_UCIX_SHAD_ROTRX3	= 6'h2C;		//
 
 
 parameter[5:0] JX2_UCIX_FPU_FADD	= 6'h00;		//FPU ADD
@@ -692,6 +708,7 @@ parameter[5:0] JX2_UCIX_FPCX_IG		= 6'h12;		//FPU Int
 parameter[5:0] JX2_UCIX_FPCX_HG		= 6'h13;		//FPU Half
 parameter[5:0] JX2_UCIX_FPCX_S2G	= 6'h18;		//FPU Single (High)
 
+parameter[5:0] JX2_UCIX_FPCX_XE		= 6'h21;		//FPU LongDouble
 parameter[5:0] JX2_UCIX_FPCX_XI		= 6'h22;		//FPU Int (Binary128)
 
 parameter[5:0] JX2_UCIX_IXT_NOP		= 6'h00;		//No-Op
@@ -723,6 +740,9 @@ parameter[5:0] JX2_UCIX_IXS_MOVT	= 6'h01;		//Copy SR.T to Reg
 parameter[5:0] JX2_UCIX_IXS_MOVNT	= 6'h02;		//Copy !SR.T to Reg
 parameter[5:0] JX2_UCIX_IXS_LDSRMSK	= 6'h03;		//?
 parameter[5:0] JX2_UCIX_IXS_TRAPB	= 6'h04;		//Trap
+
+parameter[5:0] JX2_UCIX_IXS_BLKUTX1	= 6'h08;		//Get pixel, UTX1
+parameter[5:0] JX2_UCIX_IXS_BLKUTX2	= 6'h09;		//Get pixel, UTX2
 
 parameter[5:0] JX2_UCIX_IXS_INVIC	= 6'h10;		//Flush I$
 parameter[5:0] JX2_UCIX_IXS_INVDC	= 6'h11;		//Flush D$

@@ -1902,6 +1902,37 @@ void BJX2_Op_SHLDQ_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	}
 }
 
+void BJX2_Op_ROTL_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vc;
+	int shl, shr;
+	
+	va=ctx->regs[op->rm];
+	shl=(sbyte)ctx->regs[op->ro];
+	shr=-shl;
+	if(shl>=0)
+		{ vc=(va<<(shl&63))|(va>>(64-(shl&63))); }
+	else
+		{ vc=va>>(shr&63)|(va<<(64-(shr&63))); }
+	ctx->regs[op->rn]=vc;
+}
+
+void BJX2_Op_ROTR_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vc;
+	int shl, shr;
+	
+	va=ctx->regs[op->rm];
+	shl=(sbyte)ctx->regs[op->ro];
+	shl=-shl;
+	shr=-shl;
+	if(shl>=0)
+		{ vc=(va<<(shl&63))|(va>>(64-(shl&63))); }
+	else
+		{ vc=va>>(shr&63)|(va<<(64-(shr&63))); }
+	ctx->regs[op->rn]=vc;
+}
+
 #if 1
 void BJX2_Op_SHAR_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
@@ -1927,7 +1958,7 @@ void BJX2_Op_SHARQ_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	
 	shl=(sbyte)ctx->regs[op->ro];
 	ctx->regs[op->rn]=
-		ctx->regs[op->rm]>>(shl&63);
+		((s64)ctx->regs[op->rm])>>(shl&63);
 }
 
 void BJX2_Op_SHLRQ_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
@@ -1936,7 +1967,7 @@ void BJX2_Op_SHLRQ_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	
 	shl=(sbyte)ctx->regs[op->ro];
 	ctx->regs[op->rn]=
-		ctx->regs[op->rm]>>(shl&63);
+		((u64)ctx->regs[op->rm])>>(shl&63);
 }
 #endif
 

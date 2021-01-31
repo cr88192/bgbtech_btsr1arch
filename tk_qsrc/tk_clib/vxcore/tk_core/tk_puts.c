@@ -896,3 +896,55 @@ int TK_Dbg_RecvFileXM(char *name)
 	}
 	return(0);
 }
+
+
+s64 tk_strtol(char *str, int rdx)
+{
+	char *s;
+	s64 t;
+	int i, j;
+	
+	s=str; t=0;
+	while(*s)
+	{
+		if(*s=='_')
+			{ s++; continue; }
+
+		i=*s++; j=-1;
+		if((i>='0') && (i<='9'))
+			j=0+(i-'0');
+		if((i>='A') && (i<='Z'))
+			j=10+(i-'A');
+		if((i>='a') && (i<='z'))
+			j=10+(i-'a');
+		if((j<0) || (j>=rdx))
+			break;
+		t=t*rdx+j;
+	}
+	return(t);
+}
+
+s64 tk_atoi(char *str)
+{
+	s64 li;
+	char *s;
+	int sg;
+	
+	if(*str=='0')
+	{
+		if(str[1]=='x')
+			return(tk_strtol(str+2, 16));
+		if(str[1]=='d')
+			return(tk_strtol(str+2, 10));
+		if(str[1]=='b')
+			return(tk_strtol(str+2, 2));
+		return(tk_strtol(str+1, 8));
+	}
+	
+	s=str; sg=0;
+	if(*s=='-')
+		{ s++; sg=1; }
+	li=tk_strtol(s, 10);
+	if(sg)li=-li;
+	return(li);
+}

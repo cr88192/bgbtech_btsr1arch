@@ -169,3 +169,19 @@ void BJX2_PtrSetF128Ix(void *ptr, int ix, double val)
 
 //	memcpy(((byte *)ptr)+(ix*8), &val, 8);
 }
+
+typedef struct { u64 lo; u64 hi; } bjx2_val128;
+
+bjx2_val128 BJX2_PtrGetVal128Ix(void *ptr, int ix)
+{
+	bjx2_val128 v;
+	v.lo=BJX2_PtrGetQWordIx(ptr, ix+0);
+	v.hi=BJX2_PtrGetQWordIx(ptr, ix+1);
+	return(v);
+}
+
+void BJX2_PtrSetVal128Ix(void *ptr, int ix, bjx2_val128 val)
+{
+	BJX2_PtrSetQWordIx(ptr, ix+0, val.lo);
+	BJX2_PtrSetQWordIx(ptr, ix+1, val.hi);
+}

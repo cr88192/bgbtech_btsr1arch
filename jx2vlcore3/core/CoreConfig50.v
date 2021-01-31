@@ -25,8 +25,8 @@
 
 // `define jx2_mem_useddrb			//Use newer DDR controller.
 
-`define jx2_mem_line32B				//Use 32-byte cache line
-`define jx2_mem_ddr32B				//Use 32-byte DDR line
+// `define jx2_mem_line32B				//Use 32-byte cache line
+// `define jx2_mem_ddr32B				//Use 32-byte DDR line
 
 `define jx2_mem_fasttdown			//Faster teardown
 

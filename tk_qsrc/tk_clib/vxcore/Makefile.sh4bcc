@@ -45,6 +45,8 @@ SRCS_CLIB = \
 	pdpc201/btshx_xlf.c \
 	pdpc201/btshx_vnf.c \
 	pdpc201/btshx_alloca.c \
+	pdpc201/bt_mman.c \
+	pdpc201/bt_readdir.c \
 	\
 	tk_core/tk_bdev_spi.c \
 	tk_core/tk_bdev_vfb.c \
@@ -58,6 +60,7 @@ SRCS_CLIB = \
 	tk_core/tk_epoch.c \
 	tk_core/tk_fat.c \
 	tk_core/tk_irq.c \
+	tk_core/tk_mmap.c \
 	tk_core/tk_mmcell.c \
 	tk_core/tk_mmllist.c \
 	tk_core/tk_mmpage.c \

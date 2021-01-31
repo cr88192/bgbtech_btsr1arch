@@ -15,12 +15,14 @@ ExOp(2:0):
 	0: No Op
 	1: Ro=Rn+Rm
 	2: Ro=Rn-Rm
-	3: Ro=I2F(Rn)
-	4: Ro=F2I(Rn)
-	5: ? Ro=Rn+Rm*Ro
-	6: ? Ro=Rn-Rm*Ro
+	3: Ro=I2F(Rn), Int->Float
+	4: Ro=F2I(Rn), Float->Int
+	5: Ro=D2E / E2D
+		(LD=0): Double->LongDouble
+		(LD=1): LongDouble->Double
+	6: ?
 	7: Ro=Rn*Rm
-ExOp(3):
+ExOp(3): LD
 	0: Double
 	1: Long Double
 */
@@ -191,6 +193,15 @@ reg				tFraUseA;
 reg				tFraDti2;
 reg				tFraItf2;
 
+reg				tFraDte1;
+reg				tFraEtd1;
+reg				tFraDte2;
+reg				tFraEtd2;
+reg				tFraDte3;
+reg				tFraEtd3;
+reg				tFraDte4;
+reg				tFraEtd4;
+
 reg				tInfC4B;
 reg				tZeroC4B;
 reg				tInfC4D;
@@ -236,7 +247,11 @@ begin
 		regValRnLo[61:52]
 		};
 
+	tFraDte1	= (tRegExOp1[2:0] == 5) && !tRegExOp1[3];
+	tFraEtd1	= (tRegExOp1[2:0] == 5) &&  tRegExOp1[3];
+
 	if(tRegExOp1[3])
+//	if(tRegExOp1[3] || tFraEtd1)
 	begin
 		tSgnA1	= tRegValRnE[127];
 		tSgnB1	= tRegValRmE[127] ^ tRegExOp1[1];
@@ -281,6 +296,8 @@ begin
 //	if(tExpA1D[15])
 //	if(tExpA1D[15] || tFraDti1)
 	if(tExpA1D[15] || tFraDti1 || tFraItf1)
+//	if(tExpA1D[15] || tFraDti1 || tFraItf1 ||
+//		(!tExpB1D[15] && (tSgnA1!=tSgnB1)))
 	begin
 		tFraUseA		= 0;
 		tFraShr1_S		= tFraA1;
@@ -371,7 +388,9 @@ begin
 	if(tFraC4B[34] && !tValC4_Ru[8])
 		tValC4D[7:0] = tValC4_Ru[7:0];
 
-	tOutLd4 = tRegExOp4[3];
+//	tOutLd4 = tRegExOp4[3];
+	tOutLd4 = tRegExOp4[3] && !tFraEtd4;
+	
 	if(tRegExOp4[2:0] == 4)
 	begin
 		tValC4D = tFraC4I;
@@ -410,6 +429,9 @@ begin
 //		tRegValRni2	<= tRegValRni1;
 		tFraDti2	<= tFraDti1;
 		tFraItf2	<= tFraItf1;
+
+		tFraDte2	<= tFraDte1;
+		tFraEtd2	<= tFraEtd1;
 	end
 	else if(!exHold)
 	begin
@@ -439,6 +461,11 @@ begin
 		tRegExOp3	<= tRegExOp2;
 		tRegExOp4	<= tRegExOp3;
 		tRegExOp5	<= tRegExOp4;
+
+		tFraDte3	<= tFraDte2;
+		tFraEtd3	<= tFraEtd2;
+		tFraDte4	<= tFraDte3;
+		tFraEtd4	<= tFraEtd3;
 
 		tRegValRoLo	<= tValC4Lo;
 		tRegValRoHi	<= tValC4Hi;

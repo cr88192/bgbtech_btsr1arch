@@ -895,6 +895,11 @@ int main(int argc, char *argv[])
 			if(!strcmp(argv[i], "--mhz"))
 				{ mhz=atoi(argv[i+1]); i++; continue; }
 
+			if(!strcmp(argv[i], "--swap"))
+				{ swapsz=atoi(argv[i+1]); i++; continue; }
+			if(!strcmp(argv[i], "--noswap"))
+				{ swapsz=0; continue; }
+
 			if(!strcmp(argv[i], "--jit"))
 				{ usejit=1; continue; }
 			if(!strcmp(argv[i], "--nojit"))

@@ -760,6 +760,7 @@ int TK_VMem_Init()
 //	np=8192;
 	np=(32768<<10)>>TK_VMEM_PAGESHL;
 	tk_vmem_pagecache=TKMM_PageAlloc(np<<TK_VMEM_PAGESHL);
+	tk_vmem_npage=np;
 	
 	tk_vmem_pageinf=tk_malloc(np*sizeof(TK_VMem_PageInfo));
 	memset(tk_vmem_pageinf, 0, np*sizeof(TK_VMem_PageInfo));
@@ -1109,6 +1110,19 @@ int TK_VMem_MapPhysIdxToPageNum(int idx)
 	return(pn+idx);
 }
 
+int TK_VMem_MapAddrToPhysIdx(void *addr)
+{
+	int ix;
+	ix=((byte *)addr)-tk_vmem_pagecache;
+	if(ix<0)
+		return(-1);
+	ix=ix>>TK_VMEM_PAGESHL;
+	if(ix>=tk_vmem_npage)
+		return(-1);
+	return(ix);
+}
+
+
 int TK_VMem_FindFreeVirtPages(int n)
 {
 	int i0, i1;
@@ -1284,6 +1298,56 @@ int TK_VMem_VaCommitPages(s64 vaddr, int cnt)
 	}
 }
 
+int TK_VMem_VaFreePages(s64 vaddr, int cnt)
+{
+	u64 pte;
+	s64 vtaddr, paddr;
+	int ptpn, pidx;
+	int i, j, k;
+	
+	for(i=0; i<cnt; i++)
+	{
+		vtaddr=vaddr+(((s64)i)<<TKMM_PAGEBITS);
+		pte=TK_VMem_GetPageTableEntry(vtaddr);
+
+		if(!pte)
+			continue;
+
+		if(pte&1)
+		{
+			paddr=pte&0x0000FFFFFFFFF000ULL;
+			pidx=TK_VMem_MapAddrToPhysIdx((void *)paddr);
+			if(pidx>=0)
+			{
+				TK_VMem_VaEvictPageIndex(pidx);
+
+				pte=TK_VMem_GetPageTableEntry(vtaddr);
+				if(!pte)
+					continue;
+			}
+		}
+
+		ptpn=(pte>>12)&16777215;
+		if(ptpn)
+		{
+			TK_VMem_FreeVirtPages(ptpn, 1);
+			TK_VMem_SetPageTableEntry(vtaddr, 0);
+		}
+
+#if 0
+		ptpn=(pte>>12)&16777215;
+		if(!ptpn)
+		{
+			ptpn=TK_VMem_AllocVirtPages(1);
+//			TK_VMem_SetPageVAddr(ptpn, vtaddr);
+			pte|=((u64)ptpn)<<12;
+			pte&=~1;
+			TK_VMem_SetPageTableEntry(vtaddr, pte);
+		}
+#endif
+	}
+}
+
 void TK_VMem_VaEvictPageIndex(int pidx)
 {
 	s64 vaddr;
@@ -1398,6 +1462,18 @@ s64 TK_VMem_VaVirtualAlloc(s64 addr, s64 size, int flProt, int flMap)
 //	TK_VMem_VaReservePages(addr, vpn);
 	TK_VMem_VaCommitPages(addr, vpn);
 	return(addr);
+}
+
+int TK_VMem_CheckAddrIsVirtual(s64 addr)
+{
+	if(((addr>>32)&0xFFFF)!=0x0000)
+		return(1);
+	return(0);
+}
+
+int TK_VMem_CheckPtrIsVirtual(void *ptr)
+{
+	return(TK_VMem_CheckAddrIsVirtual((s64)ptr));
 }
 
 void tk_vmem_tlbmiss(u64 ttb, u64 tea)

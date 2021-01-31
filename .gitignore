@@ -62,6 +62,9 @@ bgbcc22/*.dat
 
 tk_qsrc/q1source/*
 tk_qsrc/doomsrc/*
+tk_qsrc/id1/glquake/*
+tk_qsrc/id1/texcache*/*
+tk_qsrc/id1/*
 
 vlcore/obj_dir/*
 jx2vlcore3/core/obj_dir/*

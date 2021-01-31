@@ -67,6 +67,9 @@ typedef struct entity_s
 	struct mnode_s			*topnode;		// for bmodels, first world node
 											//  that splits bmodel, or NULL if
 											//  not split
+
+	int ambientlight;		//BGB: Cache These
+	int shadelight;			//BGB: Cache These
 } entity_t;
 
 // !!! if this is changed, it must be changed in asm_draw.h too !!!

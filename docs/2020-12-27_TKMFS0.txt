@@ -1,0 +1,89 @@
+TestKern Medium Complexity Filesystem
+* Aims to be a full-scale filesystem (Unlike WAD4)
+* Goal is to not be overly complicated.
+* Will aim to support some level of extensibility.
+
+General Features:
+* Block Size will be Variable (512B to 64K).
+* Will use an INode Table
+** Inodes will be 512 bytes.
+
+
+TKMFS_BootHeader {
+byte pad_jmp[3];			//000, -
+byte oem_name[8];			//003, "TKMFS0  "
+byte bytes_sec[2];			//00B, Sector Size (Nominal=512)
+byte sectors_per_cluster;	//00D, Cluster Size
+byte resv0[2];				//00E, -
+byte resv1[3];				//010, -
+byte resv2[2];				//013, -
+byte media_type;			//015, Magic Value
+byte resv3[2];				//016, -
+byte resv4[4];				//018, Ignored
+byte hidden_sectors[4];		//01C, Reserved sectors at start of image.
+byte resv5[8];				//020, -
+byte total_sectors[8];		//028, Total Sectors in image.
+byte ino_clust[8];			//030, Inode Table (Primary)
+byte ino_backup_clust[8];	//038, Inode Table (Alternate)
+byte inode_size;			//040, Size of Inode (Log2)
+byte resv6[7];				//041, -
+byte volume_serial[8];		//048, Volume Serial Number
+byte checksum[4];			//050, Header Checksum
+byte pad[426];				//054, -
+byte aa55[2];				//1FE, 55-AA
+}
+
+
+The TKMFS Inodes will start with a 'INOD' FOURCC.
+
+Contents will consist of a series of short TLV tags.
+TKMFS_TLVTag {
+TWOCC tag;
+U16 len;
+BYTE data[len-4];
+}
+
+A tag holding 0x0000 will encode the end of the list.
+
+'FI': FileInfo
+FileInfo {
+ 	U64		offs;		//00: offset field (contextual)
+ 	U64		size;		//08: Logical File Size
+ 	BYTE	ety;		//10: entry type (enum)
+ 	BYTE	cmp;		//11: compression method (enum)
+ 	U16		flag;		//12: Base Flags
+ 	U32		chain;		//14: Hash Lump Chain (Inode)
+ 	U32		dir_id;		//18: Parent Directory (Inode)
+ 	U32		dir_next;	//1C: Next in Directory (Inode)
+ 	U16		uid;		//20: UID
+ 	U16		gid;		//22: GID
+ 	U16		mode;		//24: Mode Flags (eeee-sssr-wxrw-xrwx)
+ 	BYTE	ctime_hi;	//26: Creation Time, High Bits
+ 	BYTE	mtime_hi;	//27: Modified Time, High Bits
+ 	U32		ctime;		//28: Creation Time, Low Bits
+ 	U32		mtime;		//2C: Modified Time, Low Bits
+ }
+ 
+The offs field will depend on the type of file:
+* Regular file or directory:
+** Encodes a SPAN8, which may be used if no 'FF' or 'FD' exists.
+
+SPAN8 will encode a span, used for simple cases:
+* (63:60): Span Subtype
+* (59:40): Span Length (Clusters)
+* (39: 0): Base Cluster
+* Subtype 0: Basic span of clusters.
+** Span of disk raw/uncompressed clusters
+** If the base cluster is zero, no data is present (sparse file).
+
+'FN': File Name
+* Stores an inline filename.
+* First byte indicates the encoding.
+** 'a': ASCII / CP1252
+** 'b': M-UTF-8
+
+'FD': File Data (Inline)
+* Inline data for small files or symlinks.
+
+'FF': Fragmented File
+* Stores a list of spans.

@@ -151,6 +151,12 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_OPFL_NOWEX		0x40		//Invalid as a WEX form
 #define BJX2_OPFL_NOWEXSFX	0x80		//Invalid as a WEX suffix
 
+#define BJX2_OPFL_REGXM		0x0100		//Rm is Xm
+#define BJX2_OPFL_REGXN		0x0200		//Rn is Xn
+#define BJX2_OPFL_REGXO		0x0400		//Ro is Xo
+#define BJX2_OPFL_REGX2R	0x0300		//Rm and Rn are Xn
+#define BJX2_OPFL_REGX3R	0x0700		//Rm, Rn, and Ro are Xn
+
 #define BJX2_OPFL_PREDMSK	0xC1		//Mask copied for predicated ops.
 
 
@@ -406,8 +412,26 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_FCMPXGT		0xD9		//
 #define BJX2_NMID_PSCHEQW		0xDA		//
 #define BJX2_NMID_PSCHNEW		0xDB		//
-
 #define BJX2_NMID_JADD			0xDC		//
+#define BJX2_NMID_CMPXEQ		0xDD		//
+#define BJX2_NMID_CMPXGT		0xDE		//
+#define BJX2_NMID_CMPXHI		0xDF		//
+
+#define BJX2_NMID_ADDX			0xE0		//
+#define BJX2_NMID_SUBX			0xE1		//
+#define BJX2_NMID_ADCX			0xE2		//
+#define BJX2_NMID_SBBX			0xE3		//
+#define BJX2_NMID_ROTLX			0xE8		//
+#define BJX2_NMID_ANDX			0xE5		//
+#define BJX2_NMID_ORX			0xE6		//
+#define BJX2_NMID_XORX			0xE7		//
+#define BJX2_NMID_SHADX			0xE8		//
+#define BJX2_NMID_SHLDX			0xE9		//
+#define BJX2_NMID_SHARX			0xEA		//
+#define BJX2_NMID_SHLRX			0xEB		//
+
+#define BJX2_NMID_BLKUTX1		0xEC		//
+#define BJX2_NMID_BLKUTX2		0xED		//
 
 
 #define BJX2_FMID_NONE			0x00		//?
@@ -731,13 +755,13 @@ struct BJX2_Opcode_s {
 u16 opn;		//Opcode Value
 u16 opn2;		//Opcode Value
 u16 opn3;		//Opcode Value
-byte nmid;		//Opcode Number
+u16 nmid;		//Opcode Number
 byte fmid;		//Form ID
 byte rn;		//Dest Register
 byte rm;		//Source Register
 byte ro;		//Source Register
 sbyte cyc;		//Clock Cycles
-u16 fl;		//Opcodde Flags
+u16 fl;			//Opcode Flags
 // s32 imm;		//Immediate
 s64 imm;		//Immediate
 

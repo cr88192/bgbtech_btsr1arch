@@ -10,10 +10,10 @@ DLLPF=lib
 CC=gcc
 # CC=clang
 
-CC_OUTEXE=$(CC) -o 
+CC_OUTEXE=$(CC) -g -o 
 CC_OUTDLL=$(CC) -shared -o 
 CC_OUTOBJ=$(CC) -c -o 
-CC_OUTTOOL=$(CC) -o 
+CC_OUTTOOL=$(CC) -g -o 
 
 EXE = .elf
 BIN = .bin

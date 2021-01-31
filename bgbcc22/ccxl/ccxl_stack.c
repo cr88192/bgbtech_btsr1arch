@@ -3580,6 +3580,20 @@ ccxl_status BGBCC_CCXL_StackLoadSlotStoreI(
 	int i0, i1;
 	int i, j;
 
+	i=BGBCC_CCXL_PeekRegister(ctx, &sreg);
+	sty=BGBCC_CCXL_GetRegType(ctx, sreg);
+
+	if(BGBCC_CCXL_TypeVecP(ctx, sty))
+	{
+		i=BGBCC_CCXL_VectorTypeIndexForName(ctx, sty, name);
+		
+		if(i>=0)
+		{
+			return(BGBCC_CCXL_StackLoadIndexConstStoreI(ctx, i, dname));
+		}
+	}
+
+
 	i=BGBCC_CCXL_PopRegister(ctx, &sreg);
 	sty=BGBCC_CCXL_GetRegType(ctx, sreg);
 
@@ -3658,19 +3672,24 @@ ccxl_status BGBCC_CCXL_StackLoadSlotAddrStore(
 	return(CCXL_STATUS_ERR_BADOPARGS);
 }
 
-
 ccxl_status BGBCC_CCXL_StackLoadIndexConstStore(
 	BGBCC_TransState *ctx, int idx, char *dname)
 {
-	ccxl_register treg, dreg, sreg, sreg2;
-	ccxl_type bty, bty2, sty, sty2;
-	int i, j, k;
-
 	BGBCC_CCXL_DebugPrintStackLLn(ctx, "StLoadIndexC", __FILE__, __LINE__);
 
 	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_STLDIXC);
 	BGBCC_CCXLR3_EmitArgInt(ctx, idx);
 	BGBCC_CCXLR3_EmitArgString(ctx, dname);
+
+	return(BGBCC_CCXL_StackLoadIndexConstStoreI(ctx, idx, dname));
+}
+
+ccxl_status BGBCC_CCXL_StackLoadIndexConstStoreI(
+	BGBCC_TransState *ctx, int idx, char *dname)
+{
+	ccxl_register treg, dreg, sreg, sreg2;
+	ccxl_type bty, bty2, sty, sty2;
+	int i, j, k;
 
 	j=BGBCC_CCXL_LookupAsRegister(ctx, dname, &dreg);
 	if(j<=0)
@@ -4418,6 +4437,57 @@ ccxl_status BGBCC_CCXL_StackLoadSlot(BGBCC_TransState *ctx, char *name)
 	return(BGBCC_CCXL_StackLoadSlotSig(ctx, name, NULL));
 }
 
+int BGBCC_CCXL_VectorTypeIndexForName(BGBCC_TransState *ctx,
+	ccxl_type sty, char *name)
+{
+	int i;
+
+	i=-1;
+	
+	if((i<0) && BGBCC_CCXL_TypeComplexP(ctx, sty))
+	{
+		if(!strcmp(name, "r"))	i=0;
+		if(!strcmp(name, "i"))	i=1;
+
+		if(!strcmp(name, "real"))	i=0;
+		if(!strcmp(name, "imag"))	i=1;
+	}
+
+	if((i<0) && BGBCC_CCXL_TypeQuatP(ctx, sty))
+	{
+		if(!strcmp(name, "i"))	i=0;
+		if(!strcmp(name, "j"))	i=1;
+		if(!strcmp(name, "k"))	i=2;
+		if(!strcmp(name, "r"))	i=3;
+	}
+	
+	if(i<0)
+	{
+		if(!strcmp(name, "x"))	i=0;
+		if(!strcmp(name, "y"))	i=1;
+		if(!strcmp(name, "z"))	i=2;
+		if(!strcmp(name, "w"))	i=3;
+	}
+
+	if(i<0)
+	{
+		if(!strcmp(name, "b"))	i=0;
+		if(!strcmp(name, "g"))	i=1;
+		if(!strcmp(name, "r"))	i=2;
+		if(!strcmp(name, "a"))	i=3;
+	}
+
+	if(i<0)
+	{
+		if(!strcmp(name, "s"))	i=0;
+		if(!strcmp(name, "t"))	i=1;
+		if(!strcmp(name, "u"))	i=2;
+		if(!strcmp(name, "v"))	i=3;
+	}
+
+	return(i);
+}
+
 ccxl_status BGBCC_CCXL_StackLoadSlotSig(BGBCC_TransState *ctx,
 	char *name, char *sig)
 {
@@ -4433,48 +4503,7 @@ ccxl_status BGBCC_CCXL_StackLoadSlotSig(BGBCC_TransState *ctx,
 
 	if(BGBCC_CCXL_TypeVecP(ctx, sty))
 	{
-		i=-1;
-		
-		if((i<0) && BGBCC_CCXL_TypeComplexP(ctx, sty))
-		{
-			if(!strcmp(name, "r"))	i=0;
-			if(!strcmp(name, "i"))	i=1;
-
-			if(!strcmp(name, "real"))	i=0;
-			if(!strcmp(name, "imag"))	i=1;
-		}
-
-		if((i<0) && BGBCC_CCXL_TypeQuatP(ctx, sty))
-		{
-			if(!strcmp(name, "i"))	i=0;
-			if(!strcmp(name, "j"))	i=1;
-			if(!strcmp(name, "k"))	i=2;
-			if(!strcmp(name, "r"))	i=3;
-		}
-		
-		if(i<0)
-		{
-			if(!strcmp(name, "x"))	i=0;
-			if(!strcmp(name, "y"))	i=1;
-			if(!strcmp(name, "z"))	i=2;
-			if(!strcmp(name, "w"))	i=3;
-		}
-
-		if(i<0)
-		{
-			if(!strcmp(name, "b"))	i=0;
-			if(!strcmp(name, "g"))	i=1;
-			if(!strcmp(name, "r"))	i=2;
-			if(!strcmp(name, "a"))	i=3;
-		}
-
-		if(i<0)
-		{
-			if(!strcmp(name, "s"))	i=0;
-			if(!strcmp(name, "t"))	i=1;
-			if(!strcmp(name, "u"))	i=2;
-			if(!strcmp(name, "v"))	i=3;
-		}
+		i=BGBCC_CCXL_VectorTypeIndexForName(ctx, sty, name);
 		
 		if(i>=0)
 		{

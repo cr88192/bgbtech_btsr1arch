@@ -23,7 +23,10 @@
 #define O_SEARCH	0x4000
 #define O_WRONLY	0x8000
 
-typedef int mode_t;
+#ifndef __MODE_T_DEFINED
+#define __MODE_T_DEFINED
+typedef unsigned int mode_t;
+#endif
 
 int creat(const char *path, mode_t mode);
 int fcntl(int fd, int cmd, void *ptr=0);

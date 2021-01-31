@@ -433,6 +433,7 @@ void *TKMM_Malloc(int sz)
 #endif
 
 	ptr=TKMM_MMList_AllocBrk(sz+sizeof(TKMM_MemLnkObj));
+	np=(sz+sizeof(TKMM_MemLnkObj)+TKMM_PAGEMASK)>>TKMM_PAGEBITS;
 
 //	__debugbreak();
 	

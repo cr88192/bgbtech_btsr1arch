@@ -481,6 +481,7 @@ long __tell(int handle)
 
 int __open(const char *a, int b, int *rc)
 {
+	char tfn[512];
 	TK_FILE *fd;
 	char *s, *md;
 	int i;
@@ -492,8 +493,14 @@ int __open(const char *a, int b, int *rc)
 		md="r+b";
 
 	s=(char *)a;
+	TK_Env_GetCwdQualifyName(tfn, 512, s);
+	TKSH_NormalizePath(tfn, tfn);
+	
+	tk_printf("__open: %s\n", tfn);
+
 //	fd=tk_fopen(s, "rb");
-	fd=tk_fopen(s, md);
+//	fd=tk_fopen(s, md);
+	fd=tk_fopen(tfn, md);
 	if(!fd)
 	{
 //		*(int *)((long)((unsigned int)c))=-1;
@@ -542,6 +549,103 @@ void __close(int handle)
 //	close(handle);
 }
 
+void __ioctl(int handle, int req, void *ptr)
+{
+	TK_FILE *fd;
+	fd=btshx_tk_handles[handle];
+	tk_fioctl(fd, req, ptr);
+}
+
+int __unlink(const char *a, int b)
+{
+	char tfn[512];
+	TK_FILE *fd;
+	char *s, *md;
+	int i;
+
+	s=(char *)a;
+	TK_Env_GetCwdQualifyName(tfn, 512, s);
+	TKSH_NormalizePath(tfn, tfn);
+	
+	tk_printf("__unlink: %s\n", tfn);
+
+	tk_unlink(tfn);
+	return(0);
+}
+
+int __fsctl(const char *a, int b, void *c)
+{
+	char tfn[512];
+	TK_FILE *fd;
+	char *s, *md;
+	int i;
+
+	s=(char *)a;
+	TK_Env_GetCwdQualifyName(tfn, 512, s);
+	TKSH_NormalizePath(tfn, tfn);
+	
+	tk_printf("__fsctl: %s\n", tfn);
+
+	tk_fsctl(tfn, b, c);
+	return(0);
+}
+
+void __remove(const char *filename)
+{
+	__unlink(filename, 0);
+}
+
+int __rename2(const char *oldfn, const char *newfn, const char *mode)
+{
+	char tfno[512];
+	char tfnn[512];
+	TK_FILE *fd;
+	char *md;
+	int i;
+
+	if(*mode=='S')
+	{
+		strcpy(tfno, oldfn);
+	}else
+	{
+		TK_Env_GetCwdQualifyName(tfno, 512, (char *)oldfn);
+		TKSH_NormalizePath(tfno, tfno);
+	}
+
+	TK_Env_GetCwdQualifyName(tfnn, 512, (char *)newfn);
+	TKSH_NormalizePath(tfnn, tfnn);
+	
+	tk_printf("__rename2: %s %s %s\n", tfno, tfnn, mode);
+
+	tk_rename(tfno, tfnn, mode);
+	return(0);
+}
+
+void __rename(const char *oldfn, const char *newfn)
+{
+	__rename2(oldfn, newfn, "r");
+}
+
+#if 1
+int unlink(const char *path)
+{
+	__unlink(path, 0);
+	return(0);
+}
+
+int link(const char *oldpath, const char *newpath)
+{
+	__rename2(oldpath, newpath, "l");
+	return(0);
+}
+
+int symlink(const char *oldpath, const char *newpath)
+{
+	__rename2(oldpath, newpath, "S");
+	return(0);
+}
+#endif
+
 #if 1
 
 int open(const char *name, int flags, int mode)
@@ -588,19 +692,15 @@ long lseek(int handle, long offset, int whence)
 int close(int handle)
 {
 	__close(handle);
+	return(0);
+}
+
+int ioctl(int handle, int req, void *ptr)
+{
+	__ioctl(handle, req, ptr);
+	return(0);
 }
 #endif
-
-
-void __remove(const char *filename)
-{
-//	vx_remove(filename);
-}
-
-void __rename(const char *oldfn, const char *newfn)
-{
-//	vx_rename(old, new);
-}
 
 void __exita(int status)
 {

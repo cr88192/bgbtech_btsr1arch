@@ -29,6 +29,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #if defined( __LINT__ )
 
 #include <GL/gl.h>
+// #include <GL/glext.h>
 
 #elif defined( _WIN32 )
 
@@ -225,6 +226,12 @@ GLEXTERN  void ( APIENTRY * qglColor4usv )(const GLushort *v);
 GLEXTERN  void ( APIENTRY * qglColorMask )(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha);
 GLEXTERN  void ( APIENTRY * qglColorMaterial )(GLenum face, GLenum mode);
 GLEXTERN  void ( APIENTRY * qglColorPointer )(GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
+
+GLEXTERN  void ( APIENTRY * qglCompressedTexImage2D)(GLenum target,
+	GLint level, GLenum internalformat,
+	GLsizei width, GLsizei height, GLint border,
+	GLsizei imageSize, const void * data);
+
 GLEXTERN  void ( APIENTRY * qglCopyPixels )(GLint x, GLint y, GLsizei width, GLsizei height, GLenum type);
 GLEXTERN  void ( APIENTRY * qglCopyTexImage1D )(GLenum target, GLint level, GLenum internalFormat, GLint x, GLint y, GLsizei width, GLint border);
 GLEXTERN  void ( APIENTRY * qglCopyTexImage2D )(GLenum target, GLint level, GLenum internalFormat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border);

@@ -1182,6 +1182,7 @@ ccxl_status BGBCC_CCXL_StackLoadSlotStore(BGBCC_TransState *ctx, char *name, cha
 ccxl_status BGBCC_CCXL_StackLoadSlotStoreI(BGBCC_TransState *ctx, char *name, char *dname);
 ccxl_status BGBCC_CCXL_StackLoadSlotAddrStore(BGBCC_TransState *ctx, char *name, char *dname);
 ccxl_status BGBCC_CCXL_StackLoadIndexConstStore(BGBCC_TransState *ctx, int idx, char *dname);
+ccxl_status BGBCC_CCXL_StackLoadIndexConstStoreI(BGBCC_TransState *ctx, int idx, char *dname);
 ccxl_status BGBCC_CCXL_StackLoadIndexStore(BGBCC_TransState *ctx, char *dname);
 ccxl_status BGBCC_CCXL_StackCastSigStore(BGBCC_TransState *ctx, char *sig, char *dname);
 ccxl_status BGBCC_CCXL_StackPushConstSmallInt(BGBCC_TransState *ctx, s32 val, int st);
@@ -1212,6 +1213,7 @@ int BGBCC_CCXL_CheckForTypeSetter(BGBCC_TransState *ctx,ccxl_type sty, char *nam
 int BGBCC_CCXL_CheckForCNameGetter(BGBCC_TransState *ctx,char *cname, char *name);
 int BGBCC_CCXL_CheckForCNameSetter(BGBCC_TransState *ctx,char *cname, char *name);
 ccxl_status BGBCC_CCXL_StackLoadSlot(BGBCC_TransState *ctx, char *name);
+int BGBCC_CCXL_VectorTypeIndexForName(BGBCC_TransState *ctx,ccxl_type sty, char *name);
 ccxl_status BGBCC_CCXL_StackLoadSlotSig(BGBCC_TransState *ctx,char *name, char *sig);
 ccxl_status BGBCC_CCXL_StackStoreSlot(BGBCC_TransState *ctx, char *name);
 ccxl_status BGBCC_CCXL_StackLoadSlotAddr(BGBCC_TransState *ctx, char *name);

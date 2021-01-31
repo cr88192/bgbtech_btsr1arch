@@ -29,7 +29,7 @@ _start:
 	mov r1, gbr
 	mov r1, tbr
 	mov r1, mmcr
-	mov r1, sr
+//	mov r1, sr
 
 	bsr tk_checksane_asm
 

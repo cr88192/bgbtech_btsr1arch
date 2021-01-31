@@ -145,12 +145,16 @@ TK_EnvContext *TK_GetCurrentEnvContext()
 
 	task=__arch_tbr;
 	if(!task)
-		return(NULL);
+	{
+		task=TK_AllocNewTask();
+		TK_SetCurrentTask(task);
+//		return(NULL);
+	}
 	env=(void *)(task->envctx);
 	if(env)
 		return(env);
 
-	tk_printf("TK_GetCurrentEnvContext: New %p:%p", task, env);
+	tk_printf("TK_GetCurrentEnvContext: New %p:%p\n", task, env);
 
 	env=TK_EnvCtx_AllocContext();
 	task->envctx=(tk_kptr)env;

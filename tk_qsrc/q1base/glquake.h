@@ -250,3 +250,6 @@ extern qboolean gl_mtexable;
 
 void GL_DisableMultitexture(void);
 void GL_EnableMultitexture(void);
+
+float qgl_fastsin(float rad);
+float qgl_fastcos(float rad);

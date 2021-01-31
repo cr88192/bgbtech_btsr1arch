@@ -837,6 +837,8 @@ ExEX1	ex1(
 
 	ex1RegIdRs,		ex1RegIdRt,		ex1RegIdRm,
 	ex1RegValRs,	ex1RegValRt,	ex1RegValRm,
+	exB1RegValRs,
+	
 //	ex1RegValFRs,	ex1RegValFRt,
 	ex1RegValCRm,
 
@@ -891,7 +893,8 @@ ExMulW	ex1MulW(
 	clock,				reset,
 	ex1RegValRs,		ex1RegValRt,
 	ex1OpUCmd,			ex1OpUIxt,
-	exHold2,			ex1MulWVal
+	exHold2,			ex1MulWVal,
+	0
 	);
 
 wire[65:0]				ex1KrreLo;
@@ -1186,6 +1189,7 @@ ExEXB1	exb1(
 	exB1RegIdRs,	exB1RegIdRt,
 	exB1RegIdRm,	exB1RegValRs,
 	exB1RegValRt,	exB1RegValRm,
+	ex1RegValRs,
 
 	exB1RegIdRn1,	exB1RegValRn1,
 	exB1HldIdRn1,
@@ -1193,7 +1197,8 @@ ExEXB1	exb1(
 	ex1RegValPc,	exB1RegValImm,
 	ex1BraFlush,
 //	ex1BraFlush || reset,
-	ex1RegInSr
+	ex1RegInSr,
+	1
 	);
 	
 
@@ -1213,7 +1218,8 @@ ExMulW	exB1MulW(
 	clock,				reset,
 	exB1RegValRs,		exB1RegValRt,
 	exB1OpUCmd,			exB1OpUIxt,
-	exHold2,			exB1MulWVal
+	exHold2,			exB1MulWVal,
+	1
 	);
 
 
@@ -1341,6 +1347,7 @@ ExEXB1	exc1(
 	exC1RegIdRs,	exC1RegIdRt,
 	exC1RegIdRm,	exC1RegValRs,
 	exC1RegValRt,	exC1RegValRm,
+	UV64_00,
 
 	exC1RegIdRn1,	exC1RegValRn1,
 	exC1HldIdRn1,
@@ -1349,7 +1356,8 @@ ExEXB1	exc1(
 //	ex1BraFlush,	ex1RegInSr
 //	ex1BraFlush || reset,
 	ex1BraFlush,
-	ex1RegInSr
+	ex1RegInSr,
+	2
 	);
 	
 
@@ -1369,7 +1377,8 @@ ExMulW	exC1MulW(
 	clock,				reset,
 	exC1RegValRs,		exC1RegValRt,
 	exC1OpUCmd,			exC1OpUIxt,
-	exHold2,			exC1MulWVal
+	exHold2,			exC1MulWVal,
+	2
 	);
 
 
