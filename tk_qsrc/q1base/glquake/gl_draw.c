@@ -53,8 +53,8 @@ int		gl_alpha_format = 4;
 
 //int		gl_filter_min = GL_LINEAR_MIPMAP_NEAREST;
 int		gl_filter_min = GL_NEAREST_MIPMAP_NEAREST;
-// int		gl_filter_max = GL_LINEAR;
-int		gl_filter_max = GL_NEAREST;
+int		gl_filter_max = GL_LINEAR;
+// int		gl_filter_max = GL_NEAREST;
 
 qboolean	gl_force_square = false;
 
@@ -311,6 +311,7 @@ typedef struct
 glmode_t modes[] = {
 	{"GL_NEAREST", GL_NEAREST, GL_NEAREST},
 	{"GL_LINEAR", GL_LINEAR, GL_LINEAR},
+	{"GL_LINEAR_MIPMAP_NEAREST_2", GL_NEAREST_MIPMAP_NEAREST, GL_LINEAR},
 	{"GL_NEAREST_MIPMAP_NEAREST", GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST},
 	{"GL_LINEAR_MIPMAP_NEAREST", GL_LINEAR_MIPMAP_NEAREST, GL_LINEAR},
 	{"GL_NEAREST_MIPMAP_LINEAR", GL_NEAREST_MIPMAP_LINEAR, GL_NEAREST},
@@ -329,6 +330,14 @@ void Draw_TextureMode_f (void)
 
 	if (Cmd_Argc() == 1)
 	{
+		for (i=0 ; i< 6 ; i++)
+		if (	(gl_filter_min == modes[i].minimize) &&
+				(gl_filter_max == modes[i].maximize) )
+		{
+			Con_Printf ("%s\n", modes[i].name);
+			return;
+		}
+
 		for (i=0 ; i< 6 ; i++)
 			if (gl_filter_min == modes[i].minimize)
 			{
@@ -1019,6 +1028,10 @@ void GL_MipMap8Bit (byte *in, int width, int height)
 #define GL_COMPRESSED_RGBA_S3TC_DXT1_EXT  0x83F1
 #endif
 
+#ifndef GL_COMPRESSED_RGB_S3TC_DXT1_EXT
+#define GL_COMPRESSED_RGB_S3TC_DXT1_EXT  0x83F0
+#endif
+
 char *gl_savetexname = NULL;
 byte *gl_savetexbuf = NULL;
 
@@ -1686,7 +1699,7 @@ void GL_UploadCompressed (
 	QGL_DDS_HEADER *tdds;
 	byte *cs, *css;
 	int xs, ys;
-	int xshl, xshl1, isz, mip;
+	int xshl, xshl1, isz, mip, txc;
 	int i, j, k;
 	
 	if(!memcmp(data, "TXC0", 4))
@@ -1712,6 +1725,10 @@ void GL_UploadCompressed (
 			{ i>>=1; xshl++; }
 	}
 
+	txc=GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+	if(!alpha)
+		txc=GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+
 	cs=css; mip=0;
 	while(xshl>=0)
 	{
@@ -1725,7 +1742,8 @@ void GL_UploadCompressed (
 		isz=1<<(xshl1+xshl1+3);
 		qglCompressedTexImage2D(
 			GL_TEXTURE_2D, mip, 
-			GL_COMPRESSED_RGBA_S3TC_DXT1_EXT,
+//			GL_COMPRESSED_RGBA_S3TC_DXT1_EXT,
+			txc,
 			1<<xshl, 1<<xshl, 0, isz, cs);
 		cs+=isz;
 		xshl--; mip++;
@@ -1823,6 +1841,9 @@ int GL_LoadTexture (char *identifier,
 		gl_savetexname = tname;
 #endif
 	}
+
+//	if(identifier && !strncmp(identifier, "progs/", 6))
+//		{ alpha = 0; }
 
 	if(!imgbuf && !data)
 	{

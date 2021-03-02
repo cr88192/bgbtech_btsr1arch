@@ -9,6 +9,9 @@ module RegGPR_6R3W(
 	reset,
 	hold,
 
+	regIdUCmd,
+	regIdUIxt,
+
 	regIdRs,		//Source A, ALU / Base (Lane 1)
 	regIdRt,		//Source B, ALU / Index (Lane 1)
 	regIdRu,		//Source C, ALU / Base (Lane 2)
@@ -54,13 +57,12 @@ module RegGPR_6R3W(
 	gprEx2Flush,
 	gprEx3Flush,
 
+	gprEx1DualLane,
+	gprEx2DualLane,
+	gprEx3DualLane,
+
 	regOutDlr,	regInDlr,
 	regOutDhr,	regInDhr,
-`ifdef jx2_sprs_elrehr
-	regOutElr,	regInElr,
-	regOutEhr,	regInEhr,
-	regOutBp,	regInBp,
-`endif
 	regOutSp,	regInSp
 	);
 
@@ -68,6 +70,9 @@ module RegGPR_6R3W(
 input			clock;
 input			reset;
 input			hold;
+
+input[7:0]		regIdUCmd;
+input[7:0]		regIdUIxt;
 
 input[5:0]		regIdRs;		//Source A
 input[5:0]		regIdRt;		//Source B
@@ -115,6 +120,13 @@ input			gprEx1Flush;
 input			gprEx2Flush;
 input			gprEx3Flush;
 
+input			gprEx1DualLane;
+input			gprEx2DualLane;
+input			gprEx3DualLane;
+
+wire			gprId2DualLane;
+assign		gprId2DualLane = (regIdUIxt[7:6] == 2'b11);
+
 
 output[63:0]	regOutDlr;
 input [63:0]	regInDlr;
@@ -122,15 +134,6 @@ output[63:0]	regOutDhr;
 input [63:0]	regInDhr;
 output[63:0]	regOutSp;
 input [63:0]	regInSp;
-
-`ifdef jx2_sprs_elrehr
-output[63:0]	regOutElr;
-input [63:0]	regInElr;
-output[63:0]	regOutEhr;
-input [63:0]	regInEhr;
-output[63:0]	regOutBp;
-input [63:0]	regInBp;
-`endif
 
 reg[63:0]	tRegValRs;
 reg[63:0]	tRegValRt;
@@ -197,11 +200,19 @@ assign		regIdRnA3B = regIdRnA3;
 assign		regIdRnB3B = regIdRnB3;
 assign		regIdRnC3B = regIdRnC3;
 
+`ifdef jx2_enable_gpr48
+reg[63:0]	gprArrA[63:0];
+reg[63:0]	gprArrB[63:0];
+reg[63:0]	gprArrC[63:0];
+reg[63:0]	gprArrMA;
+reg[63:0]	gprArrMB;
+`else
 reg[63:0]	gprArrA[31:0];
 reg[63:0]	gprArrB[31:0];
 reg[63:0]	gprArrC[31:0];
 reg[31:0]	gprArrMA;
 reg[31:0]	gprArrMB;
+`endif
 
 // reg[63:0]	gprRegDlr;
 // reg[63:0]	gprRegDhr;
@@ -242,39 +253,6 @@ RegSpr_3W	gprModSp(
 	regInSp,	hold,
 	regFlushRnW);
 
-`ifdef jx2_sprs_elrehr
-wire[63:0]	gprRegElr;
-wire[63:0]	gprRegEhr;
-wire[63:0]	gprRegBp;
-
-RegSpr_3W	gprModElr(
-	clock,		reset,
-	JX2_GR_ELR,	gprRegElr,
-	regIdRnAW,	regValRnAW,
-	regIdRnBW,	regValRnBW,
-	regIdRnCW,	regValRnCW,
-	regInElr,	hold,
-	regFlushRnW);
-
-RegSpr_3W	gprModEhr(
-	clock,		reset,
-	JX2_GR_EHR,	gprRegEhr,
-	regIdRnAW,	regValRnAW,
-	regIdRnBW,	regValRnBW,
-	regIdRnCW,	regValRnCW,
-	regInEhr,	hold,
-	regFlushRnW);
-
-RegSpr_3W	gprModBp(
-	clock,		reset,
-	JX2_GR_BP,	gprRegBp,
-	regIdRnAW,	regValRnAW,
-	regIdRnBW,	regValRnBW,
-	regIdRnCW,	regValRnCW,
-	regInBp,	hold,
-	regFlushRnW);
-`endif
-
 `endif	
 
 
@@ -282,11 +260,6 @@ assign	regOutDlr = gprRegDlr;
 assign	regOutDhr = gprRegDhr;
 assign	regOutSp  = gprRegSp;
 
-`ifdef jx2_sprs_elrehr
-assign	regOutElr = gprRegElr;
-assign	regOutEhr = gprRegEhr;
-assign	regOutBp  = gprRegBp;
-`endif
 
 reg[63:0]	tValRsA0;
 reg[63:0]	tValRtA0;
@@ -305,12 +278,21 @@ reg[63:0]	tValRyA;
 reg[63:0]	tValJimm;
 reg[63:0]	tValJimm56;
 
-reg	tValRsZz;
-reg	tValRtZz;
-reg	tValRuZz;
-reg	tValRvZz;
-reg	tValRxZz;
-reg	tValRyZz;
+reg		tValRsZz;
+reg		tValRtZz;
+reg		tValRuZz;
+reg		tValRvZz;
+reg		tValRxZz;
+reg		tValRyZz;
+
+reg		tValRsPair;
+reg		tValRtPair;
+reg		tValRxPair;
+reg		tValRn3Pair;
+
+reg		tRegEx1NoForward;
+reg		tRegEx2NoForward;
+reg		tRegEx3NoForward;
 
 always @*
 begin
@@ -321,22 +303,90 @@ begin
 	tValRxZz=0;
 	tValRyZz=0;
 
-`ifdef jx2_enable_wexjumbo
-//	tValJimm={
-//		regValImmC[19:0],
-//		regValImmB[19:0],
-//		regValImmA[23:0] };
+	tValRsPair = 0;
+	tValRtPair = 0;
+	tValRxPair = 0;
+	tValRn3Pair = 0;
 
+	tRegEx1NoForward = 0;
+	tRegEx2NoForward = 0;
+	tRegEx3NoForward = 0;
+
+`ifdef jx2_enable_gpr48
+//	if(regIdUIxt[7:6]==2'b11)
+	if(gprId2DualLane)
+	begin
+		tValRsPair = (regIdRs[5:1] == regIdRu[5:1]) &&
+			(regIdRs[0] != regIdRu[0]);
+		tValRtPair = (regIdRt[5:1] == regIdRv[5:1]) &&
+			(regIdRs[0] != regIdRu[0]);
+		tValRxPair = (regIdRx[5:1] == regIdRy[5:1]) &&
+			(regIdRs[0] != regIdRu[0]);
+			
+		if((regIdRnA1[5]) && !gprEx1DualLane)
+			tRegEx1NoForward = 1;
+		if((regIdRnA2[5]) && !gprEx2DualLane)
+			tRegEx2NoForward = 1;
+		if((regIdRnA3[5]) && !gprEx3DualLane)
+			tRegEx3NoForward = 1;
+	end
+	else
+	begin
+		if((regIdRnA1[5]) && gprEx1DualLane)
+			tRegEx1NoForward = 1;
+		if((regIdRnA2[5]) && gprEx2DualLane)
+			tRegEx2NoForward = 1;
+		if((regIdRnA3[5]) && gprEx3DualLane)
+			tRegEx3NoForward = 1;
+	end
+	
+//	if(1'b1)
+	if(gprEx3DualLane)
+	begin
+		tValRn3Pair = (regIdRnA3[5:1] == regIdRnB3[5:1]) &&
+			(regIdRnA3[0] != regIdRnB3[0]);
+	end
+`endif
+
+
+`ifdef jx2_enable_wexjumbo
 	tValJimm={
 		regValImmB[31:0],
 		regValImmA[31:0] };
-
-//	tValJimm56={
-//		regValImmA[31] ? UV8_FF : UV8_00,
-//		regValImmB[31:8],
-//		regValImmA[31:0] };
 `endif
 
+`ifdef jx2_enable_gpr48
+	tValRsA0=gprArrMB[regIdRs[5:0]] ?
+		gprArrC[regIdRs[5:0]] :
+		(	gprArrMA[regIdRs[5:0]] ?
+			gprArrB[regIdRs[5:0]] :
+			gprArrA[regIdRs[5:0]]);
+	tValRtA0=gprArrMB[regIdRt[5:0]] ?
+		gprArrC[regIdRt[5:0]] :
+		(	gprArrMA[regIdRt[5:0]] ?
+			gprArrB[regIdRt[5:0]] :
+			gprArrA[regIdRt[5:0]]);
+	tValRuA0=gprArrMB[regIdRu[5:0]] ?
+		gprArrC[regIdRu[5:0]] :
+		(	gprArrMA[regIdRu[5:0]] ?
+			gprArrB[regIdRu[5:0]] :
+			gprArrA[regIdRu[5:0]]);
+	tValRvA0=gprArrMB[regIdRv[5:0]] ?
+		gprArrC[regIdRv[5:0]] :
+		(	gprArrMA[regIdRv[5:0]] ?
+			gprArrB[regIdRv[5:0]] :
+			gprArrA[regIdRv[5:0]]);
+	tValRxA0=gprArrMB[regIdRx[5:0]] ?
+		gprArrC[regIdRx[5:0]] :
+		(	gprArrMA[regIdRx[5:0]] ?
+			gprArrB[regIdRx[5:0]] :
+			gprArrA[regIdRx[5:0]]);
+	tValRyA0=gprArrMB[regIdRy[5:0]] ?
+		gprArrC[regIdRy[5:0]] :
+		(	gprArrMA[regIdRy[5:0]] ?
+			gprArrB[regIdRy[5:0]] :
+			gprArrA[regIdRy[5:0]]);
+`else
 	tValRsA0=gprArrMB[regIdRs[4:0]] ?
 		gprArrC[regIdRs[4:0]] :
 		(	gprArrMA[regIdRs[4:0]] ?
@@ -367,6 +417,7 @@ begin
 		(	gprArrMA[regIdRy[4:0]] ?
 			gprArrB[regIdRy[4:0]] :
 			gprArrA[regIdRy[4:0]]);
+`endif
 
 	casez(regIdRs)
 //		6'b0zzzzz:	tValRsA=gprArr[regIdRs[4:0]];
@@ -377,12 +428,6 @@ begin
 //		JX2_GR_DHR:	tValRsA=regInDhr;
 		JX2_GR_SP:	tValRsA=gprRegSp;
 //		JX2_GR_SP:	tValRsA=regInSp;
-
-`ifdef jx2_sprs_elrehr
-		JX2_GR_ELR:	tValRsA=gprRegElr;
-		JX2_GR_EHR:	tValRsA=gprRegEhr;
-		JX2_GR_BP:	tValRsA=gprRegBp;
-`endif
 
 `ifdef jx2_enable_vaddr48
 		JX2_GR_PC:	tValRsA={ UV16_00, regValPc };
@@ -417,9 +462,10 @@ begin
 //		end
 `endif
 
-		default: 	tValRsA=UV64_XX;
+//		default: 	tValRsA=UV64_XX;
+		default: 	tValRsA=tValRsA0;
 	endcase
-
+	
 	casez(regIdRt)
 		6'b0zzzzz:	tValRtA=tValRtA0;
 		JX2_GR_DLR:	tValRtA=gprRegDlr;
@@ -428,12 +474,6 @@ begin
 //		JX2_GR_DHR:	tValRtA=regInDhr;
 		JX2_GR_SP:	tValRtA=gprRegSp;
 //		JX2_GR_SP:	tValRtA=regInSp;
-
-`ifdef jx2_sprs_elrehr
-		JX2_GR_ELR:	tValRtA=gprRegElr;
-		JX2_GR_EHR:	tValRtA=gprRegEhr;
-		JX2_GR_BP:	tValRtA=gprRegBp;
-`endif
 
 		JX2_GR_IMM:	begin
 			tValRtA={
@@ -457,7 +497,8 @@ begin
 //		end
 `endif
 
-		default: 	tValRtA=UV64_XX;
+//		default: 	tValRtA=UV64_XX;
+		default: 	tValRtA=tValRtA0;
 	endcase
 
 	casez(regIdRu)
@@ -468,12 +509,6 @@ begin
 //		JX2_GR_DHR:	tValRuA=regInDhr;
 		JX2_GR_SP:	tValRuA=gprRegSp;
 //		JX2_GR_SP:	tValRuA=regInSp;
-
-`ifdef jx2_sprs_elrehr
-		JX2_GR_ELR:	tValRuA=gprRegElr;
-		JX2_GR_EHR:	tValRuA=gprRegEhr;
-		JX2_GR_BP:	tValRuA=gprRegBp;
-`endif
 
 		JX2_GR_IMM:begin
 			tValRuA={
@@ -486,7 +521,8 @@ begin
 			tValRuZz=1;
 		end
 
-		default: 	tValRuA=UV64_XX;
+//		default: 	tValRuA=UV64_XX;
+		default: 	tValRuA=tValRuA0;
 	endcase
 
 	casez(regIdRv)
@@ -497,12 +533,6 @@ begin
 //		JX2_GR_DHR:	tValRvA=regInDhr;
 		JX2_GR_SP:	tValRvA=gprRegSp;
 //		JX2_GR_SP:	tValRvA=regInSp;
-
-`ifdef jx2_sprs_elrehr
-		JX2_GR_ELR:	tValRvA=gprRegElr;
-		JX2_GR_EHR:	tValRvA=gprRegEhr;
-		JX2_GR_BP:	tValRvA=gprRegBp;
-`endif
 
 		JX2_GR_IMM:begin
 			tValRvA={
@@ -515,7 +545,8 @@ begin
 			tValRvZz=1;
 		end
 
-		default: 	tValRvA=UV64_XX;
+//		default: 	tValRvA=UV64_XX;
+		default: 	tValRvA=tValRvA0;
 	endcase
 
 	casez(regIdRx)
@@ -526,12 +557,6 @@ begin
 //		JX2_GR_DHR:	tValRxA=regInDhr;
 		JX2_GR_SP:	tValRxA=gprRegSp;
 //		JX2_GR_SP:	tValRxA=regInSp;
-
-`ifdef jx2_sprs_elrehr
-		JX2_GR_ELR:	tValRxA=gprRegElr;
-		JX2_GR_EHR:	tValRxA=gprRegEhr;
-		JX2_GR_BP:	tValRxA=gprRegBp;
-`endif
 
 		JX2_GR_IMM:begin
 			tValRxA={
@@ -544,7 +569,8 @@ begin
 			tValRxZz=1;
 		end
 
-		default: 	tValRxA=UV64_XX;
+//		default: 	tValRxA=UV64_XX;
+		default: 	tValRxA=tValRxA0;
 	endcase
 
 	casez(regIdRy)
@@ -555,12 +581,6 @@ begin
 //		JX2_GR_DHR:	tValRyA=regInDhr;
 		JX2_GR_SP:	tValRyA=gprRegSp;
 //		JX2_GR_SP:	tValRyA=regInSp;
-
-`ifdef jx2_sprs_elrehr
-		JX2_GR_ELR:	tValRyA=gprRegElr;
-		JX2_GR_EHR:	tValRyA=gprRegEhr;
-		JX2_GR_BP:	tValRyA=gprRegBp;
-`endif
 
 		JX2_GR_IMM:begin
 			tValRyA={
@@ -573,8 +593,30 @@ begin
 			tValRyZz=1;
 		end
 
-		default: 	tValRyA=UV64_XX;
+//		default: 	tValRyA=UV64_XX;
+		default: 	tValRyA=tValRyA0;
 	endcase
+
+`ifdef def_true
+// `ifndef def_true
+	if(tValRsPair && (regIdRs[5:4]==2'b11))
+	begin
+		tValRsA=tValRsA0;
+		tValRuA=tValRuA0;
+	end
+
+	if(tValRtPair && (regIdRt[5:4]==2'b11))
+	begin
+		tValRtA=tValRtA0;
+		tValRvA=tValRvA0;
+	end
+
+	if(tValRxPair && (regIdRx[5:4]==2'b11))
+	begin
+		tValRxA=tValRxA0;
+		tValRyA=tValRyA0;
+	end
+`endif
 
 	tRegValRs = tValRsA;
 	tRegValRt = tValRtA;
@@ -641,7 +683,8 @@ begin
 	if(!tValRsZz)
 	begin
 //		if(!gprEx3Flush)
-		if(1'b1)
+//		if(1'b1)
+		if(!tRegEx3NoForward)
 		begin
 			if(regIdRs==regIdRnC3B)
 				tRegValRs=regValRnC3;
@@ -652,7 +695,8 @@ begin
 		end
 
 //		if(!gprEx2Flush)
-		if(1'b1)
+//		if(1'b1)
+		if(!tRegEx2NoForward)
 		begin
 			if(regIdRs==regIdRnC2B)
 				tRegValRs=regValRnC2;
@@ -663,7 +707,8 @@ begin
 		end
 
 //		if(!gprEx1Flush)
-		if(1'b1)
+//		if(1'b1)
+		if(!tRegEx1NoForward)
 		begin
 			if(regIdRs==regIdRnC1B)
 				tRegValRs=regValRnC1;
@@ -677,7 +722,8 @@ begin
 	if(!tValRtZz)
 	begin
 //		if(!gprEx3Flush)
-		if(1'b1)
+//		if(1'b1)
+		if(!tRegEx3NoForward)
 		begin
 			if(regIdRt==regIdRnC3B)
 				tRegValRt=regValRnC3;
@@ -688,7 +734,8 @@ begin
 		end
 
 //		if(!gprEx2Flush)
-		if(1'b1)
+//		if(1'b1)
+		if(!tRegEx2NoForward)
 		begin
 			if(regIdRt==regIdRnC2B)
 				tRegValRt=regValRnC2;
@@ -699,7 +746,8 @@ begin
 		end
 
 //		if(!gprEx1Flush)
-		if(1'b1)
+//		if(1'b1)
+		if(!tRegEx1NoForward)
 		begin
 			if(regIdRt==regIdRnC1B)
 				tRegValRt=regValRnC1;
@@ -713,7 +761,8 @@ begin
 	if(!tValRuZz)
 	begin
 //		if(!gprEx3Flush)
-		if(1'b1)
+//		if(1'b1)
+		if(!tRegEx3NoForward)
 		begin
 			if(regIdRu==regIdRnC3B)
 				tRegValRu=regValRnC3;
@@ -724,7 +773,8 @@ begin
 		end
 
 //		if(!gprEx2Flush)
-		if(1'b1)
+//		if(1'b1)
+		if(!tRegEx2NoForward)
 		begin
 			if(regIdRu==regIdRnC2B)
 				tRegValRu=regValRnC2;
@@ -735,7 +785,8 @@ begin
 		end
 
 //		if(!gprEx1Flush)
-		if(1'b1)
+//		if(1'b1)
+		if(!tRegEx1NoForward)
 		begin
 			if(regIdRu==regIdRnC1B)
 				tRegValRu=regValRnC1;
@@ -749,7 +800,8 @@ begin
 	if(!tValRvZz)
 	begin
 //		if(!gprEx3Flush)
-		if(1'b1)
+//		if(1'b1)
+		if(!tRegEx3NoForward)
 		begin
 			if(regIdRv==regIdRnC3B)
 				tRegValRv=regValRnC3;
@@ -760,7 +812,8 @@ begin
 		end
 
 //		if(!gprEx2Flush)
-		if(1'b1)
+//		if(1'b1)
+		if(!tRegEx2NoForward)
 		begin
 			if(regIdRv==regIdRnC2B)
 				tRegValRv=regValRnC2;
@@ -771,7 +824,8 @@ begin
 		end
 
 //		if(!gprEx1Flush)
-		if(1'b1)
+//		if(1'b1)
+		if(!tRegEx1NoForward)
 		begin
 			if(regIdRv==regIdRnC1B)
 				tRegValRv=regValRnC1;
@@ -786,7 +840,8 @@ begin
 	if(!tValRxZz)
 	begin
 //		if(!gprEx3Flush)
-		if(1'b1)
+//		if(1'b1)
+		if(!tRegEx3NoForward)
 		begin
 			if(regIdRx==regIdRnC3B)
 				tRegValRx=regValRnC3;
@@ -797,7 +852,8 @@ begin
 		end
 
 //		if(!gprEx2Flush)
-		if(1'b1)
+//		if(1'b1)
+		if(!tRegEx2NoForward)
 		begin
 			if(regIdRx==regIdRnC2B)
 				tRegValRx=regValRnC2;
@@ -808,7 +864,8 @@ begin
 		end
 
 //		if(!gprEx1Flush)
-		if(1'b1)
+//		if(1'b1)
+		if(!tRegEx1NoForward)
 		begin
 			if(regIdRx==regIdRnC1B)
 				tRegValRx=regValRnC1;
@@ -822,7 +879,8 @@ begin
 	if(!tValRyZz)
 	begin
 //		if(!gprEx3Flush)
-		if(1'b1)
+//		if(1'b1)
+		if(!tRegEx3NoForward)
 		begin
 			if(regIdRy==regIdRnC3B)
 				tRegValRy=regValRnC3;
@@ -833,7 +891,8 @@ begin
 		end
 
 //		if(!gprEx2Flush)
-		if(1'b1)
+//		if(1'b1)
+		if(!tRegEx2NoForward)
 		begin
 			if(regIdRy==regIdRnC2B)
 				tRegValRy=regValRnC2;
@@ -844,7 +903,8 @@ begin
 		end
 
 //		if(!gprEx1Flush)
-		if(1'b1)
+//		if(1'b1)
+		if(!tRegEx1NoForward)
 		begin
 			if(regIdRy==regIdRnC1B)
 				tRegValRy=regValRnC1;
@@ -862,19 +922,37 @@ begin
 	if(!hold && !regFlushRnW)
 	begin
 `ifndef def_true
-
 		gprRegDlr	<= (regIdRnAW==JX2_GR_DLR) ? regValRnAW : regInDlr;
 		gprRegDhr	<= (regIdRnAW==JX2_GR_DHR) ? regValRnAW : regInDhr;
 		gprRegSp	<= (regIdRnAW==JX2_GR_SP ) ? regValRnAW : regInSp;
-
-`ifdef jx2_sprs_elrehr
-		gprRegElr	<= (regIdRnAW==JX2_GR_ELR) ? regValRnAW : regInElr;
-		gprRegEhr	<= (regIdRnAW==JX2_GR_EHR) ? regValRnAW : regInEhr;
-		gprRegBp	<= (regIdRnAW==JX2_GR_BP ) ? regValRnAW : regInBp;
 `endif
 
-`endif
+`ifdef jx2_enable_gpr48
 
+//		if((regIdRnAW[5:4]!=2'b11) || tValRn3Pair)
+		if(!regIdRnAW[5] || tValRn3Pair)
+		begin
+			gprArrA[regIdRnAW[5:0]]		<= regValRnAW;
+			gprArrMA[regIdRnAW[5:0]]	<= 1'b0;
+			gprArrMB[regIdRnAW[5:0]]	<= 1'b0;
+		end
+
+//		if((regIdRnBW[5:4]!=2'b11) || tValRn3Pair)
+		if(!regIdRnBW[5] || tValRn3Pair)
+		begin
+			gprArrB[regIdRnBW[5:0]]		<= regValRnBW;
+			gprArrMA[regIdRnBW[5:0]]	<= 1'b1;
+			gprArrMB[regIdRnBW[5:0]]	<= 1'b0;
+		end
+
+//		if(regIdRnCW[5:4]!=2'b11)
+		if(!regIdRnAW[5])
+		begin
+			gprArrC[regIdRnCW[5:0]]		<= regValRnCW;
+			gprArrMA[regIdRnCW[5:0]]	<= 1'b0;
+			gprArrMB[regIdRnCW[5:0]]	<= 1'b1;
+		end
+`else
 		if(!regIdRnAW[5])
 		begin
 			gprArrA[regIdRnAW[4:0]]		<= regValRnAW;
@@ -895,6 +973,8 @@ begin
 			gprArrMA[regIdRnCW[4:0]]	<= 1'b0;
 			gprArrMB[regIdRnCW[4:0]]	<= 1'b1;
 		end
+`endif
+
 	end
 end
 

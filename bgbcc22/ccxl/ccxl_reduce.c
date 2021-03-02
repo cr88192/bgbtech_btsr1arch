@@ -2231,6 +2231,49 @@ BCCX_Node *BGBCC_CCXL_ReduceForm(BGBCC_TransState *ctx,
 		}
 	}
 
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_offsetof, "offsetof"))
+	{
+		t=BCCX_FindTagCst(l, &bgbcc_rcst_type, "type");
+		if(!t)
+		{
+			t=BCCX_FetchCst(l, &bgbcc_rcst_tyexpr, "tyexpr");
+			if(t)t=BCCX_FindTagCst(t, &bgbcc_rcst_type, "type");
+		}
+
+		s=BCCX_GetCst(l, &bgbcc_rcst_name, "name");
+
+		v=BCCX_FetchCst(l, &bgbcc_rcst_value, "value");
+
+		if(ctx && t && s)
+		{
+			i=BGBCC_CCXL_TryGetOffsetofType(ctx, t, s);
+			if(i>=0)
+				return(BGBCC_CCXL_WrapInt(i));
+
+#if 0
+			if(flag&1)
+			{
+				i=BGBCC_CCXL_GetMinMaxSizeofType(ctx, t,
+					NULL, &i0, NULL, NULL);
+				if((i>=0) && (i0>0))
+					return(BGBCC_CCXL_WrapInt(i0));
+				BGBCC_DBGBREAK
+			}
+#endif
+		}
+
+		if(ctx && t && v)
+		{
+			s=BGBCC_CCXL_FlattenDottedName(ctx, v);
+			if(s)
+			{
+				i=BGBCC_CCXL_TryGetOffsetofType(ctx, t, s);
+				if(i>=0)
+					return(BGBCC_CCXL_WrapInt(i));
+			}
+		}
+	}
+
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_sizeof_expr, "sizeof_expr"))
 	{
 		t=BCCX_FetchCst(l, &bgbcc_rcst_value, "value");

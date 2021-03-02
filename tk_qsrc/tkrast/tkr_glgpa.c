@@ -13,6 +13,9 @@ const struct tkra_glfunc_s tkra_glfuncs[]={
 { "glDrawElements",			tkra_glDrawElements },
 { "glBegin",				tkra_glBegin },
 { "glEnd",					tkra_glEnd },
+{ "glArrayElement",			tkra_glArrayElement },
+{ "glLockArraysEXT",		tkra_glLockArraysEXT },
+{ "glUnlockArraysEXT",		tkra_glUnlockArraysEXT },
 
 { "glTexImage2D",			tkra_glTexImage2D },
 { "glTexSubImage2D",		tkra_glTexSubImage2D },
@@ -24,6 +27,7 @@ const struct tkra_glfunc_s tkra_glfuncs[]={
 { "glTexParameteriv",		tkra_glTexParameteriv },
 { "glTexEnvf",				tkra_glTexEnvf },
 { "glShadeModel",			tkra_glShadeModel },
+{ "glDeleteTextures",		tkra_glDeleteTextures },
 
 { "glColor3b",				tkra_glColor3b },
 { "glColor3s",				tkra_glColor3s },

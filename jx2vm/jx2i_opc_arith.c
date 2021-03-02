@@ -70,7 +70,7 @@ void BJX2_Op_MOV_Dr4Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 void BJX2_Op_ADD_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 #if 0
-	if(op->rn==15)
+	if(op->rn==BJX2_REG_SP)
 	{
 		printf("ADJ SP %llX %d(%X) ", ctx->regs[op->rn], op->imm, op->imm);
 	}
@@ -80,7 +80,7 @@ void BJX2_Op_ADD_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=ctx->regs[op->rn]+((s64)((s32)(op->imm)));
 
 #if 0
-	if(op->rn==15)
+	if(op->rn==BJX2_REG_SP)
 	{
 		printf("%llX\n", ctx->regs[op->rn]);
 	}

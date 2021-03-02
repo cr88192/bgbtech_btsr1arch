@@ -1,12 +1,82 @@
+void	*tkra_freelist[256];
+int		tkra_totbrk=0;
+
+#ifdef GLQUAKE
+void *Q_MallocLLn(int sz, char *lfn, int lln);
+void Q_FreeLLn(void *ptr, char *lfn, int lln);
+
+void *TKRA_Brk(int sz)
+{
+	tkra_totbrk+=sz;
+	return(Q_MallocLLn(sz, __FILE__, __LINE__));
+}
+#else
+void *TKRA_Brk(int sz)
+{
+	tkra_totbrk+=sz;
+	return(malloc(sz));
+}
+#endif
+
+int TKRA_MallocIndexForSize(int sz)
+{
+	int e, i, j;
+	
+	e=0; i=sz;
+	while(i>=16)
+	{
+		i=(i+1)>>1;
+		e++;
+	}
+	j=(e<<3)|(i&7);
+	return(j);
+}
+
+int TKRA_SizeForIndex(int ix)
+{
+	int e, f, sz;
+	
+	e=ix>>3;
+	f=8|(ix&7);
+	sz=f<<e;
+	return(sz);
+}
+
 void *tkra_malloc(int sz)
 {
-	return(malloc(sz));
+	byte *ptr;
+	int ix, sz1;
+	
+	ix=TKRA_MallocIndexForSize(sz+8);
+	
+	ptr=tkra_freelist[ix];
+	if(ptr)
+	{
+		tkra_freelist[ix]=*(byte **)ptr;
+		*(int *)ptr=ix;
+		return(ptr+8);
+	}
+	
+	sz1=TKRA_SizeForIndex(ix);
+	ptr=TKRA_Brk(sz1);
+	*(int *)ptr=ix;
+	return(ptr+8);
 }
 
 void tkra_free(void *ptr)
 {
-	free(ptr);
+	byte *ptr1;
+	int ix;
+	
+	if(!ptr)
+		return;
+
+	ptr1=((byte *)ptr)-8;
+	ix=*(int *)ptr1;
+	*(byte **)ptr1=tkra_freelist[ix];
+	tkra_freelist[ix]=ptr1;
 }
+
 
 int tkra_log2dn(int val)
 {
@@ -29,6 +99,32 @@ TKRA_TexImage *TKRA_AllocTexImg(TKRA_Context *ctx)
 	ctx->tex_list=tmp;
 	
 	return(tmp);
+}
+
+int TKRA_ResampleImage555(
+	tkra_rastpixel *src, int sxs, int sys,
+	tkra_rastpixel *dst, int dxs, int dys)
+{
+	tkra_rastpixel *ct, *cs0;
+	int ofs_x[1024], ofs_y[1024];
+	int x, y, qx, qy, sx, sy;
+	
+	sx=(sxs<<16)/dxs;
+	sy=(sys<<16)/dys;
+
+	qx=0; qy=0;
+	for(x=0; x<dxs; x++)
+		{ ofs_x[x]=qx>>16; qx+=sx; }
+	for(y=0; y<dys; y++)
+		{ ofs_y[y]=(qy>>16)*sxs; qy+=sy; }
+	
+	ct=dst;
+	for(y=0; y<dys; y++)
+		for(x=0; x<dxs; x++)
+	{
+		*ct++=src[ofs_y[y]+ofs_x[x]];
+	}
+	return(0);
 }
 
 int TKRA_GetPixel555Luma(int pix)
@@ -204,7 +300,7 @@ void TKRA_EncodeImgMortUtx2(tkra_rastpixel *pix, u32 *blk, int shl)
 }
 
 void TKRA_UpdateTexImg(TKRA_TexImage *img,
-	tkra_rastpixel *buf, int xs, int ys, int mip)
+	tkra_rastpixel *buf, int xs, int ys, int mip, int flag)
 {
 	int xshl, yshl, xsh1, ysh1, txfl, pix;
 	int x, y, m, bsz;
@@ -231,6 +327,8 @@ void TKRA_UpdateTexImg(TKRA_TexImage *img,
 		txfl=img->tex_flag;
 
 		txfl|=TKRA_TRFL_HASMIP;
+		if(mip>img->tex_nmip)
+			img->tex_nmip=mip;
 
 		if(xshl==yshl)
 		{
@@ -302,13 +400,16 @@ void TKRA_UpdateTexImg(TKRA_TexImage *img,
 			if(k>xshl)k=xshl;
 			if(k>yshl)k=yshl;
 			img->tex_mmip=k;
+			img->tex_nmip=0;
 			img->tex_flag=0;
 
 			for(k=0; k<j; k++)
 				img->tex_img[k]=0x7FFF;
 
-#if 0
-			if((xshl==yshl) && (xshl>=3) && (yshl>=3))
+#if 1
+//			if((xshl==yshl) && (xshl>=3) && (yshl>=3))
+			if((xshl==yshl) && (xshl>=3) && (yshl>=3) &&
+				(flag&TKRA_TRFL_DOCMP))
 			{
 				bsz=1;
 				i=0; j=0; xsh1=xshl-2; ysh1=yshl-2;
@@ -402,6 +503,9 @@ void TKRA_UpdateTexImgUtx2(TKRA_TexImage *img,
 			return;
 
 		txfl=img->tex_flag;
+		txfl|=TKRA_TRFL_HASMIP;
+		if(mip>img->tex_nmip)
+			img->tex_nmip=mip;
 
 		if(img->tex_img_bcn)
 		{
@@ -458,6 +562,7 @@ void TKRA_UpdateTexImgUtx2(TKRA_TexImage *img,
 			if(k>xshl)k=xshl;
 			if(k>yshl)k=yshl;
 			img->tex_mmip=k;
+			img->tex_nmip=0;
 			img->tex_flag=0;
 
 //			for(k=0; k<j; k++)
@@ -503,7 +608,7 @@ void TKRA_UpdateTexImgUtx2(TKRA_TexImage *img,
 	}
 }
 
-u64 TKRA_ConvBlockDxt1ToUtx2(u64 blk)
+u64 TKRA_ConvBlockDxt1ToUtx2A(u64 blk)
 {
 	u64 blk2;
 	u32 pxa, pxb;
@@ -579,8 +684,117 @@ u64 TKRA_ConvBlockDxt1ToUtx2(u64 blk)
 	return(blk2);
 }
 
+u64 TKRA_ConvBlockDxt1ToUtx2B(u64 blk)
+{
+	u64 blk2;
+	u32 pxa, pxb;
+	int clra, clrb, clrc, clrd, alpha;
+	int rek, ix;
+	int x, y, z;
+	int i, j, k;
+	
+	clra=(blk>> 0)&65535;
+	clrb=(blk>>16)&65535;
+	
+	clrc=((clra>>1)&0x7FE0)|(clra&0x001F);
+	clrd=((clrb>>1)&0x7FE0)|(clrb&0x001F);
+	rek=0x1203;
+	alpha=0;
+	
+	pxa=(blk>>32); pxb=0; ix=0;
+
+#if 1
+	for(y=0; y<4; y++)
+	{
+		z=tkra_morton8(0, y);
+		i=(pxa>>ix)&3;	ix+=2;
+		j=(rek>>(i*4))&3;
+		pxb|=j<<(z*2);
+
+		z=tkra_morton8(1, y);
+		i=(pxa>>ix)&3;	ix+=2;
+		j=(rek>>(i*4))&3;
+		pxb|=j<<(z*2);
+
+		z=tkra_morton8(2, y);
+		i=(pxa>>ix)&3;	ix+=2;
+		j=(rek>>(i*4))&3;
+		pxb|=j<<(z*2);
+
+		z=tkra_morton8(3, y);
+		i=(pxa>>ix)&3;	ix+=2;
+		j=(rek>>(i*4))&3;
+		pxb|=j<<(z*2);
+	}
+#endif
+	
+	blk2=((u64)clrc) | (((u64)clrd)<<16) | (((u64)pxb)<<32);
+	return(blk2);
+}
+
+u64 TKRA_ConvBlockDxt5ToUtx2(u64 cblk, u64 ablk)
+{
+	u64 blk2;
+	u32 pxa, pxb, pa0, pa1;
+	int clra, clrb, clrc, clrd, alpha;
+	int rek, ix, ixa;
+	int x, y, z, ia;
+	int i, j, k;
+	
+	clra=(cblk>> 0)&65535;
+	clrb=(cblk>>16)&65535;
+	pa0=(ablk>>0)&255;
+	pa1=(ablk>>8)&255;
+	
+	clrc=((clra>>1)&0x7FE0)|(clra&0x001F);
+	clrd=((clrb>>1)&0x7FE0)|(clrb&0x001F);
+	
+	rek=0x1203;
+//	rek=0x0303;
+	alpha=0;
+	
+	if((pa0<224) || (pa1<224))
+		alpha=1;
+
+	if(alpha)
+	{
+		clrc&=~0x0421;
+		clrd&=~0x0421;
+		clrd|= 0x8000;
+		
+		if(pa0&0x80)	clrc|=0x0400;
+		if(pa0&0x40)	clrc|=0x0020;
+		if(pa0&0x20)	clrc|=0x0001;
+
+		if(pa1&0x80)	clrd|=0x0400;
+		if(pa1&0x40)	clrd|=0x0020;
+		if(pa1&0x20)	clrd|=0x0001;
+		
+		rek=0x0202;
+	}
+	
+	pxa=(cblk>>32); pxb=0; ix=0; ixa=16;
+#if 1
+	for(y=0; y<4; y++)
+		for(x=0; x<4; x++)
+	{
+		z=tkra_morton8(x, y);
+		i=(pxa>>ix)&3;
+		ia=(ablk>>ixa)&7;
+		ix+=2; ixa+=3;
+		j=(rek>>(i*4))&3;
+		if(alpha && !(ia&1))
+			j|=1;
+		pxb|=j<<(z*2);
+	}
+#endif
+	
+	blk2=((u64)clrc) | (((u64)clrd)<<16) | (((u64)pxb)<<32);
+	return(blk2);
+}
+
 void TKRA_UpdateTexImgDxt1(TKRA_TexImage *img,
-	u64 *src, int xs, int ys, int mip)
+	u64 *src, int xs, int ys, int mip, int flag)
 {
 	static u64 *tmpbuf=NULL;
 	u64 sblk, dblk;
@@ -595,7 +809,53 @@ void TKRA_UpdateTexImgDxt1(TKRA_TexImage *img,
 	
 	if(!tmpbuf)
 	{
-		tmpbuf=malloc(64*64*8);
+		tmpbuf=tkra_malloc(64*64*8);
+	}
+	
+	if(flag&TKRA_TRFL_ALPHA)
+	{
+		xs1=(xs+3)>>2;
+		ys1=(ys+3)>>2;
+		for(y=0; y<ys1; y++)
+			for(x=0; x<xs1; x++)
+		{
+			sblk=src[y*xs1+x];		z=tkra_morton8(x, y);
+			dblk=TKRA_ConvBlockDxt1ToUtx2A(sblk);
+			tmpbuf[z]=dblk;
+		}
+	}else
+	{
+		xs1=(xs+3)>>2;
+		ys1=(ys+3)>>2;
+		for(y=0; y<ys1; y++)
+			for(x=0; x<xs1; x++)
+		{
+			sblk=src[y*xs1+x];		z=tkra_morton8(x, y);
+			dblk=TKRA_ConvBlockDxt1ToUtx2B(sblk);
+			tmpbuf[z]=dblk;
+		}
+	}
+
+	TKRA_UpdateTexImgUtx2(img, tmpbuf, xs, ys, mip);
+}
+
+void TKRA_UpdateTexImgDxt5(TKRA_TexImage *img,
+	u64 *src, int xs, int ys, int mip, int flag)
+{
+	static u64 *tmpbuf=NULL;
+	u64 sblk, ablk, dblk;
+	int xs1, ys1, x, y, z;
+	
+	if(xs!=ys)
+		return;
+	if(xs<0)
+		return;
+	if(xs>256)
+		return;
+	
+	if(!tmpbuf)
+	{
+		tmpbuf=tkra_malloc(64*64*8);
 	}
 	
 	xs1=(xs+3)>>2;
@@ -603,9 +863,10 @@ void TKRA_UpdateTexImgDxt1(TKRA_TexImage *img,
 	for(y=0; y<ys1; y++)
 		for(x=0; x<xs1; x++)
 	{
+		sblk=src[(y*xs1+x)*2+1];
+		ablk=src[(y*xs1+x)*2+0];
 		z=tkra_morton8(x, y);
-		sblk=src[y*xs1+x];
-		dblk=TKRA_ConvBlockDxt1ToUtx2(sblk);
+		dblk=TKRA_ConvBlockDxt5ToUtx2(sblk, ablk);
 		tmpbuf[z]=dblk;
 	}
 
@@ -669,13 +930,20 @@ int TKRA_AllocTexnum(TKRA_Context *ctx)
 int TKRA_BindTexImg(TKRA_Context *ctx, TKRA_TexImage *img)
 {
 	ctx->tex_cur=img;
-	ctx->tex_img=img->tex_img;
-	ctx->tex_img_bcn=img->tex_img_bcn;
+//	ctx->tex_img=img->tex_img;
+//	ctx->tex_img_bcn=img->tex_img_bcn;
 	ctx->tex_xshl=img->tex_xshl;
 	ctx->tex_yshl=img->tex_yshl;
 	ctx->tex_mmip=img->tex_mmip;
+	ctx->tex_nmip=img->tex_nmip;
 	ctx->tex_flag=img->tex_flag;
-	
+
+	ctx->tex_img=NULL;
+	ctx->tex_img_bcn=NULL;
+
+	ctx->span_trifl=-1;
+	ctx->span_tex_cur=NULL;
+
 	TKRA_SetupForState(ctx);
 	
 	return(0);

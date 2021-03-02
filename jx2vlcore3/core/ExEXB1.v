@@ -208,7 +208,8 @@ begin
 		end
 	
 		JX2_UCMD_LEA_MR: begin
-			tSlotUSup		= 0;
+//			tSlotUSup		= 0;
+			tSlotUSup		= 1;
 		end
 
 		JX2_UCMD_MOV_RM: begin
@@ -220,6 +221,7 @@ begin
 			tSlotUSup		= 1;
 			if(opUIxt[7:6]==JX2_IUC_WX)
 				tSlotUSup	= 0;
+			tHeldIdRn1	= regIdRm;
 		end
 
 `ifndef def_true

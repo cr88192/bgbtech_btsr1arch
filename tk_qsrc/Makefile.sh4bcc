@@ -222,6 +222,8 @@ GLQUAKE_SRCS = \
 	q1base/vid_btsh4_gl.c		\
 
 TKRA_SRCS = \
+	tkrast/tkr_blend.c			\
+	tkrast/tkr_blend_bjx2.c		\
 	tkrast/tkr_context.c		\
 	tkrast/tkr_edge.c			\
 	tkrast/tkr_glbegin.c		\
@@ -232,6 +234,12 @@ TKRA_SRCS = \
 	tkrast/tkr_matrix.c			\
 	tkrast/tkr_multi.c			\
 	tkrast/tkr_span.c			\
+	tkrast/tkr_span_bjx2.c		\
+	tkrast/tkr_span_zt.c		\
+	tkrast/tkr_span_zt_bjx2.c	\
+	tkrast/tkr_span_bf.c		\
+	tkrast/tkr_span_bf_bjx2.c	\
+	tkrast/tkr_span_hzt.c		\
 	tkrast/tkr_teximg.c			\
 	tkrast/tkr_trans.c			\
 

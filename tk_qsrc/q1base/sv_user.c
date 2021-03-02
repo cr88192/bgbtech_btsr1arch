@@ -574,6 +574,8 @@ nextmsg:
 					ret = 1;
 				else if (Q_strncasecmp(s, "god", 3) == 0)
 					ret = 1;
+				else if (Q_strncasecmp(s, "invul", 5) == 0)
+					ret = 1;
 				else if (Q_strncasecmp(s, "notarget", 8) == 0)
 					ret = 1;
 				else if (Q_strncasecmp(s, "fly", 3) == 0)

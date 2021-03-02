@@ -2828,6 +2828,9 @@ int BGBCC_JX2_TryEmitStoreRegLabelVarPbo24(
 			break;
 		}
 
+		if(prlty==BGBCC_SH_RLC_PBOJ32_BJX)
+			prlty=BGBCC_SH_RLC_PBO24_BJX;
+
 		if(!BGBCC_JX2_EmitCheckRegExtGPR(ctx, reg))
 			break;
 

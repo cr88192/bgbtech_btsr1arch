@@ -39,6 +39,8 @@ int BJX2_DecodeOpcode_DecF8(BJX2_Context *ctx,
 //	if(opw1&0x0100)
 //		rn_i16+=16;
 	rn_i16=opw1&31;
+	
+	rn_i16=BJX2_RemapGPR(ctx, rn_i16);
 
 	imm16u=(u16)opw2;
 	imm16n=opw2|(~65535);

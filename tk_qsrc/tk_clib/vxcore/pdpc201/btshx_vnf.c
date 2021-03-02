@@ -79,23 +79,39 @@ __asm {
 __v2f_float2:
 __c2f_float2:
 __m64_float2:
-	FSTCF	R4, R2
-	FSTCFH	R5, R2
-	RTSU
+//	FSTCF	R4, R2
+//	FSTCFH	R5, R2
+	FSTCF	R4, R16
+	FSTCF	R5, R17
+	MOVLD	R17, R16, R2
+	RTS
+
 __v3f_float3:
 __m128_float3:
-	FSTCF	R4, R2
-	FSTCFH	R5, R2
+//	FSTCF	R4, R2
+//	FSTCFH	R5, R2
+	FSTCF	R4, R16
+	FSTCF	R5, R17
+	MOVLD	R17, R16, R2
 	FSTCF	R6, R3
-	RTSU
+	RTS
+
 __v4f_float4:
 __vqf_float4:
 __m128_float4:
-	FSTCF	R4, R2
-	FSTCFH	R5, R2
-	FSTCF	R6, R3
-	FSTCFH	R7, R3
-	RTSU
+//	FSTCF	R4, R2
+//	FSTCFH	R5, R2
+//	FSTCF	R6, R3
+//	FSTCFH	R7, R3
+//	RTSU
+
+	FSTCF	R4, R16
+	FSTCF	R5, R17
+	MOVLD	R17, R16, R2
+	FSTCF	R6, R18
+	FSTCF	R7, R19
+	MOVLD	R19, R18, R3
+	RTS
 
 __v2d_double2:
 __c2d_double2:

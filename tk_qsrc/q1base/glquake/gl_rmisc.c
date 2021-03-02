@@ -476,11 +476,11 @@ int			r_numparticles;
 
 extern	cvar_t	sv_gravity;
 
-void *R_CheckExpandDelayPolyTris(int nvtx);
-float *R_GetExpandDelayPolyTris(int nvtx);
+qgl_hfloat *R_CheckExpandDelayPolyTris(int nvtx);
+qgl_hfloat *R_GetExpandDelayPolyTris(int nvtx);
 void R_ResetDelayPolyTris(void);
 int R_GetDelayPolyTrisSize(void);
-float *R_GetDelayPolyTrisBase(void);
+qgl_hfloat *R_GetDelayPolyTrisBase(void);
 
 
 void R_DrawParticles (void)
@@ -493,7 +493,7 @@ void R_DrawParticles (void)
 	float			dvel;
 	float			frametime;
 	
-	float			*fv;
+	qgl_hfloat		*fv;
 	
 	vec3_t			up, right;
 	float			scale;
@@ -566,7 +566,7 @@ void R_DrawParticles (void)
 #endif
 
 #if 1
-		fv=R_GetExpandDelayPolyTris(3);
+		fv = R_GetExpandDelayPolyTris(3);
 		fv[ 0] = p->org[0];
 		fv[ 1] = p->org[1];
 		fv[ 2] = p->org[2];
@@ -586,9 +586,16 @@ void R_DrawParticles (void)
 		fv[20] = 1;
 
 		i=d_8to24table[(int)p->color];
-		*((int *)(fv+7)) = i;
-		*((int *)(fv+5)) = i;
+#ifdef QGL_HFLOAT
+		*((int *)(fv+ 6)) = i;
+		*((int *)(fv+14)) = i;
+		*((int *)(fv+22)) = i;
+#else
+		*((int *)(fv+ 7)) = i;
+		*((int *)(fv+15)) = i;
 		*((int *)(fv+23)) = i;
+#endif
+
 #endif
 
 		p->org[0] += p->vel[0]*frametime;
@@ -656,7 +663,7 @@ void R_DrawParticles (void)
 	nv = R_GetDelayPolyTrisSize();
 	fv = R_GetDelayPolyTrisBase();
 	
-#if 1
+#if 0
 	if(nv>0)
 	{
 		qglEnableClientState(GL_VERTEX_ARRAY);
@@ -673,9 +680,11 @@ void R_DrawParticles (void)
 		qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
 		qglDisableClientState(GL_COLOR_ARRAY);
 	}
+	R_ResetDelayPolyTris();
 #endif
 
-	R_ResetDelayPolyTris();
+
+	R_RenderDelayPolyTris();
 
 //	qglBegin (GL_TRIANGLES);
 

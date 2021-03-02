@@ -30,6 +30,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <GL/gl.h>
 #include <GL/glu.h>
 
+#ifndef GL_HALF_FLOAT
+#define	GL_HALF_FLOAT						0x140B
+#endif
+
+
 void GL_BeginRendering (int *x, int *y, int *width, int *height);
 void GL_EndRendering (void);
 

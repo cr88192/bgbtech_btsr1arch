@@ -380,6 +380,9 @@ fourcc BGBCP_LangForName(char *name)
 		if(!bgbcp_strcmp(s, ".BMP"))	lang=BGBCC_FMT_BMP;
 		if(!bgbcp_strcmp(s, ".avi"))	lang=BGBCC_FMT_AVI;
 		if(!bgbcp_strcmp(s, ".AVI"))	lang=BGBCC_FMT_AVI;
+
+		if(!bgbcp_strcmp(s, ".def"))	lang=BGBCC_FMT_DEF;
+		if(!bgbcp_strcmp(s, ".DEF"))	lang=BGBCC_FMT_DEF;
 	}
 	
 	if(lang==BGBCC_LANG_BS)
@@ -892,7 +895,9 @@ BCCX_Node *BGBCP_ModuleBuffer(char *name, char *modname, char *buf)
 	bgbcp_err=0;
 
 	ctx->structs=NULL;
+	ctx->e_structs=NULL;
 	ctx->types=NULL;
+	ctx->e_types=NULL;
 
 	if(!ctx->cur_nsi)
 	{

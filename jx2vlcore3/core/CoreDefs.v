@@ -36,44 +36,64 @@ parameter[5:0] JX2_GR_R29		= 6'h1D;
 parameter[5:0] JX2_GR_R30		= 6'h1E;
 parameter[5:0] JX2_GR_R31		= 6'h1F;
 
+parameter[5:0] JX2_GR_R32		= 6'h20;
+parameter[5:0] JX2_GR_R33		= 6'h21;
+parameter[5:0] JX2_GR_R34		= 6'h22;
+parameter[5:0] JX2_GR_R35		= 6'h23;
+parameter[5:0] JX2_GR_R36		= 6'h24;
+parameter[5:0] JX2_GR_R37		= 6'h25;
+parameter[5:0] JX2_GR_R38		= 6'h26;
+parameter[5:0] JX2_GR_R39		= 6'h27;
+parameter[5:0] JX2_GR_R40		= 6'h28;
+parameter[5:0] JX2_GR_R41		= 6'h29;
+parameter[5:0] JX2_GR_R42		= 6'h2A;
+parameter[5:0] JX2_GR_R43		= 6'h2B;
+parameter[5:0] JX2_GR_R44		= 6'h2C;
+parameter[5:0] JX2_GR_R45		= 6'h2D;
+parameter[5:0] JX2_GR_R46		= 6'h2E;
+parameter[5:0] JX2_GR_R47		= 6'h2F;
+
 parameter[5:0] JX2_GR_DLR		= 6'h20;
 parameter[5:0] JX2_GR_DHR		= 6'h21;
 
-// parameter[5:0] JX2_GR_DCINB		= 6'h2D;
-parameter[5:0] JX2_GR_ZZR		= 6'h2E;
+parameter[5:0] JX2_GR_JIMM		= 6'h2E;
 parameter[5:0] JX2_GR_SP		= 6'h2F;
 
-parameter[5:0] JX2_GR_ELR		= 6'h30;
-parameter[5:0] JX2_GR_EHR		= 6'h31;
-parameter[5:0] JX2_GR_IMM		= 6'h32;
-parameter[5:0] JX2_GR_LR		= 6'h33;
-parameter[5:0] JX2_GR_PC		= 6'h34;
-parameter[5:0] JX2_GR_GBR		= 6'h35;
-parameter[5:0] JX2_GR_TBR		= 6'h36;
+parameter[5:0] JX2_GR_PC		= 6'h30;
+parameter[5:0] JX2_GR_LR		= 6'h31;
+parameter[5:0] JX2_GR_SR		= 6'h32;
+parameter[5:0] JX2_GR_VBR		= 6'h33;
+parameter[5:0] JX2_GR_SPC		= 6'h34;
+parameter[5:0] JX2_GR_SSP		= 6'h35;
+parameter[5:0] JX2_GR_GBR		= 6'h36;
+parameter[5:0] JX2_GR_TBR		= 6'h37;
+parameter[5:0] JX2_GR_TTB		= 6'h38;
+parameter[5:0] JX2_GR_TEA		= 6'h39;
+parameter[5:0] JX2_GR_MMCR		= 6'h3A;
+parameter[5:0] JX2_GR_EXSR		= 6'h3B;
+parameter[5:0] JX2_GR_STTB		= 6'h3C;
+parameter[5:0] JX2_GR_KRR		= 6'h3D;
+parameter[5:0] JX2_GR_IMM		= 6'h3E;
+parameter[5:0] JX2_GR_ZZR		= 6'h3F;
 
-parameter[5:0] JX2_GR_JIMM56	= 6'h3D;
-parameter[5:0] JX2_GR_JIMM		= 6'h3E;
-parameter[5:0] JX2_GR_BP		= 6'h3F;
 
+parameter[5:0] JX2_CR_PC		= 6'h30;
+parameter[5:0] JX2_CR_LR		= 6'h31;
+parameter[5:0] JX2_CR_SR		= 6'h32;
+parameter[5:0] JX2_CR_VBR		= 6'h33;
+parameter[5:0] JX2_CR_SPC		= 6'h34;
+parameter[5:0] JX2_CR_SSP		= 6'h35;
+parameter[5:0] JX2_CR_GBR		= 6'h36;
+parameter[5:0] JX2_CR_TBR		= 6'h37;
+parameter[5:0] JX2_CR_TTB		= 6'h38;
+parameter[5:0] JX2_CR_TEA		= 6'h39;
+parameter[5:0] JX2_CR_MMCR		= 6'h3A;
+parameter[5:0] JX2_CR_EXSR		= 6'h3B;
+parameter[5:0] JX2_CR_STTB		= 6'h3C;
+parameter[5:0] JX2_CR_KRR		= 6'h3D;
+parameter[5:0] JX2_CR_IMM		= 6'h3E;
+parameter[5:0] JX2_CR_ZZR		= 6'h3F;
 
-parameter[5:0] JX2_CR_PC		= 6'h20;
-parameter[5:0] JX2_CR_LR		= 6'h21;
-parameter[5:0] JX2_CR_SR		= 6'h22;
-parameter[5:0] JX2_CR_VBR		= 6'h23;
-parameter[5:0] JX2_CR_SPC		= 6'h24;
-parameter[5:0] JX2_CR_SSP		= 6'h25;
-parameter[5:0] JX2_CR_GBR		= 6'h26;
-parameter[5:0] JX2_CR_TBR		= 6'h27;
-parameter[5:0] JX2_CR_TTB		= 6'h28;
-parameter[5:0] JX2_CR_TEA		= 6'h29;
-parameter[5:0] JX2_CR_MMCR		= 6'h2A;
-parameter[5:0] JX2_CR_EXSR		= 6'h2B;
-parameter[5:0] JX2_CR_STTB		= 6'h2C;
-parameter[5:0] JX2_CR_KRR		= 6'h2D;
-
-parameter[5:0] JX2_CR_ZZR		= 6'h2E;
-
-parameter[5:0] JX2_CR_IMM		= 6'h32;
 
 parameter[2:0] JX2_SCHM_DLR		= 3'h0;
 parameter[2:0] JX2_SCHM_DHR		= 3'h1;
@@ -366,6 +386,10 @@ REGREG, Fz
 
 	UL: Rm, Cn, Cn
 	UQ: Cm, Rn, Rn
+
+	NW: Sm, Sn, Sn
+	NL: Rm, Sn, Sn
+	NQ: Sm, Rn, Rn
 
 REGIMMREG, Fz:
 	SW:	Rm, Imm9s, Rn

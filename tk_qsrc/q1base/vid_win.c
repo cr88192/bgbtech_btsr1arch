@@ -1984,6 +1984,42 @@ int VID_BlendRatio16(int pixa, int pixb, int rat)
 
 int VID_ColorMap16(int pix, int light)
 {
+	int llv, pix1;
+
+#if 0
+	llv = 255-(((light>>8)&255)*3);
+	
+	pix1 =
+		((((pix&0x7C00)*llv)>>8)&0x7C00) |
+		((((pix&0x03E0)*llv)>>8)&0x03E0) |
+		((((pix&0x001F)*llv)>>8)&0x001F) ;
+	return(pix1);
+	
+#endif
+
+#if 1
+	llv = 255-((byte)(light>>8)*3u);
+	llv >>= 4;
+
+	if((llv&15)==15)
+		return(pix);
+
+	pix1=0;
+	if(llv&1)
+		pix1 = pix1 + ((pix&0x4210)>>4);
+	if(llv&2)
+		pix1 = pix1 + ((pix&0x6318)>>3);
+	if(llv&4)
+		pix1 = pix1 + ((pix&0x739C)>>2);
+	if(llv&8)
+		pix1 = pix1 + ((pix&0x7BDE)>>1);
+	return(pix1);
+#endif
+}
+
+#if 0
+int VID_ColorMap16(int pix, int light)
+{
 	int d, sc, scuv;
 	int y1, u1, v1;
 	int m, m1;
@@ -2057,6 +2093,8 @@ int VID_ColorMap16(int pix, int light)
 
 	return(pix);
 }
+#endif
+
 
 void	VID_SetPalette (unsigned char *palette)
 {
@@ -2096,7 +2134,12 @@ void	VID_SetPalette (unsigned char *palette)
 		cu=vid_clamp255(cu+4)>>3;
 		cv=vid_clamp255(cv+4)>>3;
 
-		d_8to16table[i]=(cy<<10)|(cv<<5)|cu;
+//		d_8to16table[i]=(cy<<10)|(cv<<5)|cu;
+
+		d_8to16table[i]=
+			((cr<<7)&0x7C00)|
+			((cg<<2)&0x03E0)|
+			((cb>>3)&0x001F);
 
 //		d_8to16table[i]=((cy>>2)<<10)|((cv>>3)<<5)|(cu>>3);
 
@@ -2811,6 +2854,15 @@ u32 vid_tpix16_yuv655le(u16 px)
 }
 #endif
 
+u32 vid_tpix16_rgb555le(u16 px)
+{
+	u32 c;
+	
+	c=	((px&0x7C00)<<9) |
+		((px&0x03E0)<<6) |
+		((px&0x001F)<<3) ;
+	return(c);
+}
 
 /*
 ================
@@ -2893,7 +2945,8 @@ void FlipScreen(vrect_t *rects)
 				{
 					pix=*ics16++;
 					pix=VID_BlendRatio16(pix, vid_blendv, vid_blendp);
-					*ict++=vid_tpix16_yuv655le(pix);
+//					*ict++=vid_tpix16_yuv655le(pix);
+					*ict++=vid_tpix16_rgb555le(pix);
 				}
 				continue;
 			}
@@ -2901,7 +2954,8 @@ void FlipScreen(vrect_t *rects)
 			for(j=0; j<DIBWidth; j++)
 			{
 //				*ict++=d_8to24table[*ics++];
-				*ict++=vid_tpix16_yuv655le(*ics16++);
+//				*ict++=vid_tpix16_yuv655le(*ics16++);
+				*ict++=vid_tpix16_rgb555le(*ics16++);
 			}
 		}
 	}else

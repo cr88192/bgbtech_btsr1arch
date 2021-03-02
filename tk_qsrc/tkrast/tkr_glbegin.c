@@ -18,7 +18,11 @@ int TKRA_SetupContextBasic(int xs, int ys)
 	TKRA_SetupScreen(ractx, xs, ys);
 	TKRA_SetCurrentContext(ractx);
 	
-	ractx->clear_zbuf=0xFFFF;
+	ractx->clear_zbuf=0x7FFF;
+	ractx->clear_rgb5=0x0000;
+	ractx->clear_rgba=0x00000000;
+	ractx->zat_alfunc=TKRA_ZAT_AL;
+	ractx->zat_zfunc=TKRA_ZAT_LE;
 }
 
 void *TKRA_GetCurrentScreenBuffer_RGB(void)
@@ -30,44 +34,97 @@ void *TKRA_GetCurrentScreenBuffer_RGB(void)
 	return(ractx->screen_rgb);
 }
 
+int TKRA_CalcDefaultStride(int size, int type)
+{
+	int str;
+	
+	str=0;
+	switch(type)
+	{
+		case TKRA_BYTE:		case TKRA_UBYTE:
+			str=size;	break;
+		case TKRA_SHORT:	case TKRA_USHORT:
+		case TKRA_HFLOAT:	case TKRA_2_BYTES:
+			str=size*2;	break;
+		case TKRA_INT:		case TKRA_UINT:	
+		case TKRA_FLOAT:	case TKRA_4_BYTES:
+			str=size*4;	break;
+		case TKRA_DOUBLE:
+			str=size*8;	break;
+	}
+	return(str);
+}
+
 void tkra_glVertexPointer(int size, int type, int stride,
 	const void *pointer)
 {
 	TKRA_Context *ctx;
+
 	ctx=TKRA_GetCurrentContext();
+	
+	if(!stride)
+		stride=TKRA_CalcDefaultStride(size, type);
+	
 	ctx->tkgl_vptr_xyz_nsz=size;
 	ctx->tkgl_vptr_xyz_ty=type;
 	ctx->tkgl_vptr_xyz_str=stride;
 	ctx->tkgl_vptr_xyz_ptr=(void *)pointer;
+
+	ctx->VaGetPtr_xyz=TKRA_PrimitiveGetGetPtrXYZ(size, type);
+
+//	getptr_xyz=TKRA_PrimitiveGetGetPtrXYZ(xyz_n, xyz_ty);
+//	getptr_st =TKRA_PrimitiveGetGetPtrST(st_n, st_ty);
+//	getptr_rgb=TKRA_PrimitiveGetGetPtrRGB(rgb_n, rgb_ty);
+//	getptr_idx=TKRA_PrimitiveGetGetPtrIndex(idx_ty, &idx_str);
+
 }
 
 void tkra_glTexCoordPointer(int size, int type, int stride,
 	const void *pointer)
 {
 	TKRA_Context *ctx;
+
 	ctx=TKRA_GetCurrentContext();
+
+	if(!stride)
+		stride=TKRA_CalcDefaultStride(size, type);
+
 	ctx->tkgl_vptr_st_nsz=size;
 	ctx->tkgl_vptr_st_ty=type;
 	ctx->tkgl_vptr_st_str=stride;
 	ctx->tkgl_vptr_st_ptr=(void *)pointer;
+
+	ctx->VaGetPtr_st =TKRA_PrimitiveGetGetPtrST(size, type);
 }
 
 void tkra_glColorPointer(int size, int type, int stride,
 	const void *pointer)
 {
 	TKRA_Context *ctx;
+
 	ctx=TKRA_GetCurrentContext();
+
+	if(!stride)
+		stride=TKRA_CalcDefaultStride(size, type);
+
 	ctx->tkgl_vptr_rgb_nsz=size;
 	ctx->tkgl_vptr_rgb_ty=type;
 	ctx->tkgl_vptr_rgb_str=stride;
 	ctx->tkgl_vptr_rgb_ptr=(void *)pointer;
+
+	ctx->VaGetPtr_rgb=TKRA_PrimitiveGetGetPtrRGB(size, type);
 }
 
 void tkra_glNormalPointer(int type, int stride,
 	const void *pointer)
 {
 	TKRA_Context *ctx;
+
 	ctx=TKRA_GetCurrentContext();
+
+	if(!stride)
+		stride=TKRA_CalcDefaultStride(3, type);
+
 	ctx->tkgl_vptr_nv_ty=type;
 	ctx->tkgl_vptr_nv_str=stride;
 	ctx->tkgl_vptr_nv_ptr=(void *)pointer;
@@ -75,6 +132,7 @@ void tkra_glNormalPointer(int type, int stride,
 
 void tkra_glInterleavedArrays(int format, int stride, const void *pointer)
 {
+	__debugbreak();
 }
 
 void tkra_glDrawArrays(int mode, int first, int count)
@@ -515,3 +573,53 @@ void tkra_glNormal3iv(const tkra_s32 *v)
 							v[2]/2147483647.0); }
 void tkra_glNormal3sv(const tkra_s16 *v)
 	{ tkra_glNormal3fI(v[0]/32767.0, v[1]/32767.0, v[2]/32767.0); }
+
+void tkra_glArrayElement(int idx)
+{
+	TKRA_Context *ctx;
+	tkra_vec4f	xyz;
+	tkra_vec2f	st;
+	u32			rgb;
+	
+	ctx=TKRA_GetCurrentContext();
+
+	if(ctx->stateflag1&TKRA_STFL1_TEXCOORD_ARRAY)
+	{
+		st=ctx->VaGetPtr_st(
+			((byte *)(ctx->tkgl_vptr_st_ptr))+
+			(idx*ctx->tkgl_vptr_st_str));
+		ctx->tkgl_begin_st[0]=tkra_v2f_x(st);
+		ctx->tkgl_begin_st[1]=tkra_v2f_y(st);
+//		tkra_glTexCoord2fv((float *)(&st));
+	}
+
+	if(ctx->stateflag1&TKRA_STFL1_COLOR_ARRAY)
+	{
+		rgb=ctx->VaGetPtr_rgb(
+			((byte *)(ctx->tkgl_vptr_rgb_ptr))+
+			(idx*ctx->tkgl_vptr_rgb_str));
+		rgb=((rgb    )&0xFF00FF00U) |
+			((rgb>>16)&0x000000FFU) |
+			((rgb<<16)&0x00FF0000U) ;
+		ctx->tkgl_begin_rgba=rgb;
+//		tkra_glColor4ubv((byte *)(&rgb));
+	}
+
+	if(ctx->stateflag1&TKRA_STFL1_VERTEX_ARRAY)
+	{
+		xyz=ctx->VaGetPtr_xyz(
+			((byte *)(ctx->tkgl_vptr_xyz_ptr))+
+			(idx*ctx->tkgl_vptr_xyz_str));
+//		tkra_glVertex3fv((float *)(&xyz));
+		tkra_glVertex4fv((float *)(&xyz));
+	}
+}
+
+
+void tkra_glLockArraysEXT (int first, int count)
+{
+}
+
+void tkra_glUnlockArraysEXT (void)
+{
+}

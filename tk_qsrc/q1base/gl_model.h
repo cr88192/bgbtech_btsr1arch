@@ -47,6 +47,16 @@ BRUSH MODELS
 ==============================================================================
 */
 
+#ifdef __BJX2__
+// #define QGL_HFLOAT
+#endif
+
+#ifdef QGL_HFLOAT
+typedef short float qgl_hfloat;
+#else
+typedef float qgl_hfloat;
+// typedef double qgl_hfloat;
+#endif
 
 //
 // in memory representation
@@ -122,7 +132,8 @@ typedef struct glpoly_s
 	int		numverts;
 	int		flags;			// for SURF_UNDERWATER
 	int		prim;			// primitive type
-	float	verts[4][VERTEXSIZE];	// variable sized (xyz s1t1 s2t2)
+//	float	verts[4][VERTEXSIZE];	// variable sized (xyz s1t1 s2t2)
+	qgl_hfloat	verts[4][VERTEXSIZE];	// variable sized (xyz s1t1 s2t2)
 } glpoly_t;
 
 typedef struct msurface_s
@@ -137,8 +148,11 @@ typedef struct msurface_s
 	
 	short		texturemins[2];
 	short		extents[2];
+	
+	float		minmaxs[6];		// for bounding box culling
+	float		porg[4];		//bounding sphere
 
-	int			light_s, light_t;	// gl lightmap coordinates
+//	int			light_s, light_t;	// gl lightmap coordinates
 
 	glpoly_t	*polys;				// multiple if warped
 	struct	msurface_s	*texturechain;
@@ -151,7 +165,7 @@ typedef struct msurface_s
 
 	int			lightmaptexturenum;
 	byte		styles[MAXLIGHTMAPS];
-	int			cached_light[MAXLIGHTMAPS];	// values currently used in lightmap
+//	int			cached_light[MAXLIGHTMAPS];	// values currently used in lightmap
 	qboolean	cached_dlight;				// true if dynamic light in cache
 	byte		*samples;		// [numstyles*surfsize]
 } msurface_t;

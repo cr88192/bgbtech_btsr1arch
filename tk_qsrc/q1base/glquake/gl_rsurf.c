@@ -135,6 +135,7 @@ void R_AddDynamicLights (msurface_t *surf)
 }
 
 
+#if 0
 /*
 ===============
 R_BuildLightMap
@@ -228,7 +229,7 @@ store:
 		Sys_Error ("Bad lightmap format");
 	}
 }
-
+#endif
 
 /*
 ===============
@@ -313,14 +314,14 @@ void R_DrawSequentialPoly (msurface_t *s)
 }
 
 
-float	*gl_vatmp = NULL;
-int		gl_szvatmp = 0;
+qgl_hfloat	*gl_vatmp = NULL;
+int			gl_szvatmp = 0;
 
 /*
 Check and (if needed) expand the size of a scratchpad buffer for vertex arrays.
 Returns the buffer pointer.
  */
-void *GL_CheckExpandVaTemp(int size)
+qgl_hfloat *GL_CheckExpandVaTemp(int size)
 {
 	if(size > gl_szvatmp)
 	{
@@ -420,7 +421,8 @@ DrawGLPoly
 void DrawGLPoly (glpoly_t *p)
 {
 	int		i, j, step;
-	float	*v;
+//	float	*v;
+	qgl_hfloat	*v;
 	float	f;
 
 #if 1
@@ -429,10 +431,10 @@ void DrawGLPoly (glpoly_t *p)
 
 	f = shadelight * (1.0/128);
 
-	i = p->numverts * VERTEXSIZE * 4;
+	i = p->numverts * VERTEXSIZE * sizeof(qgl_hfloat);
 
 	v = p->verts[0];
-	step = VERTEXSIZE*4;
+	step = VERTEXSIZE * sizeof(qgl_hfloat);
 	memcpy(gl_vatmp, v, i);
 
 	j=f*255;
@@ -452,10 +454,17 @@ void DrawGLPoly (glpoly_t *p)
 //	qglEnableClientState(GL_NORMAL_ARRAY);
 	qglEnableClientState(GL_COLOR_ARRAY);
 
+#ifdef QGL_HFLOAT
+	qglVertexPointer(3, GL_HALF_FLOAT, step, v+0);
+	qglTexCoordPointer(2, GL_HALF_FLOAT, step, v+3);
+	qglColorPointer(4,  GL_UNSIGNED_BYTE, step, v+6);
+	qglDrawArrays(p->prim, 0, p->numverts);
+#else
 	qglVertexPointer(3, GL_FLOAT, step, v+0);
 	qglTexCoordPointer(2, GL_FLOAT, step, v+3);
 	qglColorPointer(4,  GL_UNSIGNED_BYTE, step, v+7);
 	qglDrawArrays(p->prim, 0, p->numverts);
+#endif
 
 	qglDisableClientState(GL_VERTEX_ARRAY);
 	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -465,25 +474,25 @@ void DrawGLPoly (glpoly_t *p)
 }
 
 
-float	*gl_vadptris = NULL;
-int		gl_szvadptris = 0;
-int		gl_nvadptris = 0;
+qgl_hfloat	*gl_vadptris = NULL;
+int			gl_szvadptris = 0;
+int			gl_nvadptris = 0;
 
 /*
 Check and (if needed) expand the size of the delayed-poly-triangle list.
  */
 
-void *R_CheckExpandDelayPolyTris(int nvtx)
+qgl_hfloat *R_CheckExpandDelayPolyTris(int nvtx)
 {
 	int size, size1;
 	
-	size=(gl_nvadptris + nvtx) * VERTEXSIZE * sizeof(float);
+	size=(gl_nvadptris + nvtx) * VERTEXSIZE * sizeof(qgl_hfloat);
 
 	if(size > gl_szvadptris)
 	{
 		size1 = gl_szvadptris;
-		if(size1 < (4096 * 16 * sizeof(float)))
-			size1 = (4096 * 16 * sizeof(float));
+		if(size1 < (4096 * 16 * sizeof(qgl_hfloat)))
+			size1 = (4096 * 16 * sizeof(qgl_hfloat));
 		while(size > size1)
 			size1 = size1 + (size1 >> 1);
 	
@@ -493,9 +502,9 @@ void *R_CheckExpandDelayPolyTris(int nvtx)
 	return(gl_vatmp);
 }
 
-float *R_GetExpandDelayPolyTris(int nvtx)
+qgl_hfloat *R_GetExpandDelayPolyTris(int nvtx)
 {
-	float *fv;
+	qgl_hfloat *fv;
 	R_CheckExpandDelayPolyTris(nvtx);
 	
 	fv = gl_vadptris + gl_nvadptris * VERTEXSIZE;
@@ -513,7 +522,7 @@ int R_GetDelayPolyTrisSize(void)
 	return(gl_nvadptris);
 }
 
-float *R_GetDelayPolyTrisBase(void)
+qgl_hfloat *R_GetDelayPolyTrisBase(void)
 {
 	return(gl_vadptris);
 }
@@ -521,12 +530,61 @@ float *R_GetDelayPolyTrisBase(void)
 void DrawGLPolyVtx (glpoly_t *p)
 {
 	int		i, step, pnv;
-	float	*v, *v0, *v1, *v2, *ctv;
+//	float	*v, *v0, *v1, *v2, *ctv;
+	qgl_hfloat	*v, *v0, *v1, *v2, *ctv;
 	float f;
 
 //	return;
 
+#if 0
+	v = p->verts[0];
+
+	pnv = p->numverts;
+	qglBegin(p->prim);
+	for (i=0 ; i<pnv ; i++)
+	{
+		qglColor4ubv((byte *)(v+7));
+		qglTexCoord2fv(v+3);
+		qglVertex3fv(v);
+		v += VERTEXSIZE;
+	}
+	qglEnd();
+#endif
+
+#if 0
+//	qglBegin (GL_POLYGON);
+	qglBegin (p->prim);
+	v = p->verts[0];
+	for (i=0 ; i<p->numverts ; i++, v+= VERTEXSIZE)
+	{
+//		f = v[7];
+//		qglColor4f(f,f,f,1.0);
+		qglColor4ubv((byte *)(v+7));
+		qglTexCoord2f (v[3], v[4]);
+		qglVertex3fv (v);
+	}
+	qglEnd ();
+#endif
+
 #if 1
+	qglEnableClientState(GL_VERTEX_ARRAY);
+	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	qglEnableClientState(GL_COLOR_ARRAY);
+
+	v = p->verts[0];
+	step = VERTEXSIZE*4;
+
+	qglVertexPointer(3, GL_FLOAT, step, v+0);
+	qglTexCoordPointer(2, GL_FLOAT, step, v+3);
+	qglColorPointer(4,  GL_UNSIGNED_BYTE, step, v+7);
+	qglDrawArrays(p->prim, 0, p->numverts);
+
+	qglDisableClientState(GL_VERTEX_ARRAY);
+	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	qglDisableClientState(GL_COLOR_ARRAY);
+#endif
+
+#if 0
 	R_CheckExpandDelayPolyTris((p->numverts-2)*3);
 
 	v = p->verts[0];
@@ -543,11 +601,11 @@ void DrawGLPolyVtx (glpoly_t *p)
 		v += VERTEXSIZE;
 		v2 = v;
 
-		memcpy(ctv, v0, VERTEXSIZE * sizeof(float));
+		memcpy(ctv, v0, VERTEXSIZE * sizeof(qgl_hfloat));
 		ctv += VERTEXSIZE;
-		memcpy(ctv, v1, VERTEXSIZE * sizeof(float));
+		memcpy(ctv, v1, VERTEXSIZE * sizeof(qgl_hfloat));
 		ctv += VERTEXSIZE;
-		memcpy(ctv, v2, VERTEXSIZE * sizeof(float));
+		memcpy(ctv, v2, VERTEXSIZE * sizeof(qgl_hfloat));
 		ctv += VERTEXSIZE;
 		gl_nvadptris+=3;
 	}
@@ -557,7 +615,8 @@ void DrawGLPolyVtx (glpoly_t *p)
 void DrawGLWaterPoly (glpoly_t *p)
 {
 	int		i, step, pnv;
-	float	*v, *v0, *v1, *v2, *ctv;
+//	float	*v, *v0, *v1, *v2, *ctv;
+	qgl_hfloat	*v, *v0, *v1, *v2, *ctv;
 	float f, ofs_s, ofs_t;
 
 #if 1
@@ -580,15 +639,15 @@ void DrawGLWaterPoly (glpoly_t *p)
 		v += VERTEXSIZE;
 		v2 = v;
 
-		memcpy(ctv, v0, VERTEXSIZE * sizeof(float));
+		memcpy(ctv, v0, VERTEXSIZE * sizeof(qgl_hfloat));
 		ctv[3]+=ofs_s;		ctv[4]+=ofs_t;
 		ctv += VERTEXSIZE;
 
-		memcpy(ctv, v1, VERTEXSIZE * sizeof(float));
+		memcpy(ctv, v1, VERTEXSIZE * sizeof(qgl_hfloat));
 		ctv[3]+=ofs_s;		ctv[4]+=ofs_t;
 		ctv += VERTEXSIZE;
 
-		memcpy(ctv, v2, VERTEXSIZE * sizeof(float));
+		memcpy(ctv, v2, VERTEXSIZE * sizeof(qgl_hfloat));
 		ctv[3]+=ofs_s;		ctv[4]+=ofs_t;
 		ctv += VERTEXSIZE;
 
@@ -599,7 +658,7 @@ void DrawGLWaterPoly (glpoly_t *p)
 
 int R_RenderDelayPolyTris()
 {
-	float *v;
+	qgl_hfloat *v;
 	int step;
 
 	if(gl_nvadptris<=0)
@@ -612,12 +671,19 @@ int R_RenderDelayPolyTris()
 	qglEnableClientState(GL_COLOR_ARRAY);
 
 	v = gl_vadptris;
-	step = VERTEXSIZE*4;
+	step = VERTEXSIZE * sizeof(qgl_hfloat);
 
+#ifdef QGL_HFLOAT
+	qglVertexPointer(3, GL_HALF_FLOAT, step, v+0);
+	qglTexCoordPointer(2, GL_HALF_FLOAT, step, v+3);
+	qglColorPointer(4,  GL_UNSIGNED_BYTE, step, v+6);
+	qglDrawArrays(GL_TRIANGLES, 0, gl_nvadptris);
+#else
 	qglVertexPointer(3, GL_FLOAT, step, v+0);
 	qglTexCoordPointer(2, GL_FLOAT, step, v+3);
 	qglColorPointer(4,  GL_UNSIGNED_BYTE, step, v+7);
 	qglDrawArrays(GL_TRIANGLES, 0, gl_nvadptris);
+#endif
 
 	qglDisableClientState(GL_VERTEX_ARRAY);
 	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -652,6 +718,9 @@ void R_RenderBrushPoly (msurface_t *fa)
 	glRect_t	*theRect;
 	float		f, g;
 	int smax, tmax;
+
+	if(!fa->polys)
+		return;
 
 	c_brush_polys++;
 
@@ -728,7 +797,7 @@ void R_RenderBrushPoly (msurface_t *fa)
 	if(currententity_world || currententity_world_bmodel)
 	{
 		DrawGLPolyVtx (fa->polys);
-		qglColor4f(1,1,1,1);
+//		qglColor4f(1,1,1,1);
 	}
 	else
 	{
@@ -785,7 +854,7 @@ void DrawTextureChains (void)
 	{
 		qglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 		qglShadeModel (GL_SMOOTH);
-//		qglEnable(GL_BLEND);
+		qglEnable(GL_BLEND);
 		qglHint (GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
 
 		t = cl.worldmodel->textures[i];
@@ -960,9 +1029,11 @@ void R_DrawBrushModel (entity_t *e)
 //			else
 //				R_DrawSequentialPoly (psurf);
 		}
+
+		R_RenderDelayPolyTris();
 	}
 
-	R_RenderDelayPolyTris();
+//	R_RenderDelayPolyTris();
 
 	R_BlendLightmaps ();
 
@@ -977,6 +1048,8 @@ void R_DrawBrushModel (entity_t *e)
 =============================================================
 */
 
+int r_totalsurfs;
+
 /*
 ================
 R_RecursiveWorldNode
@@ -989,14 +1062,16 @@ void R_RecursiveWorldNode (mnode_t *node)
 	mplane_t	*plane;
 	msurface_t	*surf, **mark;
 	mleaf_t		*pleaf;
+	texture_t	*texture;
 	double		d, dot;
 	vec3_t		mins, maxs;
+
+	if (node->visframe != r_visframecount)
+		return;
 
 	if (node->contents == CONTENTS_SOLID)
 		return;		// solid
 
-	if (node->visframe != r_visframecount)
-		return;
 	if (R_CullBox (node->minmaxs, node->minmaxs+3))
 		return;
 	
@@ -1029,6 +1104,7 @@ void R_RecursiveWorldNode (mnode_t *node)
 // find which side of the node we are on
 	plane = node->plane;
 
+#if 0
 	switch (plane->type)
 	{
 	case PLANE_X:
@@ -1044,11 +1120,15 @@ void R_RecursiveWorldNode (mnode_t *node)
 		dot = DotProduct (modelorg, plane->normal) - plane->dist;
 		break;
 	}
+#endif
 
-	if (dot >= 0)
-		side = 0;
-	else
-		side = 1;
+	dot = DotProduct (modelorg, plane->normal) - plane->dist;
+	side = dot < 0;
+
+//	if (dot >= 0)
+//		side = 0;
+//	else
+//		side = 1;
 
 // recurse down the children, front side first
 	R_RecursiveWorldNode (node->children[side]);
@@ -1056,31 +1136,64 @@ void R_RecursiveWorldNode (mnode_t *node)
 // draw stuff
 	c = node->numsurfaces;
 
-	if (c)
+//	if (c)
+	if (c>0)
 	{
+		r_totalsurfs += c;
+	
 		surf = cl.worldmodel->surfaces + node->firstsurface;
 
-		if (dot < 0 -BACKFACE_EPSILON)
-			side = SURF_PLANEBACK;
-		else if (dot > BACKFACE_EPSILON)
-			side = 0;
-		{
-			for ( ; c ; c--, surf++)
+//		if (dot < 0 -BACKFACE_EPSILON)
+//			side = SURF_PLANEBACK;
+//		else if (dot > BACKFACE_EPSILON)
+//			side = 0;
+
+//		{
+//			for ( ; c ; c--, surf++)
+			while(c)
 			{
 				if (surf->visframe != r_framecount)
-					continue;
+					{ surf++; c--; continue; }
+
+				if (!surf->polys)
+					{ surf++; c--; continue; }
 
 				// don't backface underwater surfaces, because they warp
-				if ( !(surf->flags & SURF_UNDERWATER) && 
-					( (dot < 0) ^ !!(surf->flags & SURF_PLANEBACK)) )
-						continue;		// wrong side
+//				if ( !(surf->flags & SURF_UNDERWATER) && 
+//					( (dot < 0) ^ !!(surf->flags & SURF_PLANEBACK)) )
+//						continue;		// wrong side
 
-				surf->texturechain = surf->texinfo->texture->texturechain;
-				surf->texinfo->texture->texturechain = surf;
+				if ( !(surf->flags & SURF_UNDERWATER) )
+				{
+					if(((surf->flags>>1)&1)^(dot<0))
+						{ surf++; c--; continue; }
+				}
+				
+//				if(R_CullSphere(surf->porg, surf->porg[3]))
+//					{ surf++; c--; continue; }
+
+				if(R_CullBox(surf->minmaxs+0, surf->minmaxs+3))
+					{ surf++; c--; continue; }
+
+//				if((r_totalsurfs^c)&1)
+//					{ surf++; c--; continue; }
+
+//				surf->texturechain = surf->texinfo->texture->texturechain;
+//				surf->texinfo->texture->texturechain = surf;
+
+				texture = surf->texinfo->texture;
+				surf->texturechain = texture->texturechain;
+				texture->texturechain = surf;
+				surf++;
+				c--;
 			}
-		}
+//		}
 
 	}
+
+//	if(r_totalsurfs > 200)
+//	if(r_totalsurfs > 400)
+//		return;
 
 // recurse down the back side
 	R_RecursiveWorldNode (node->children[!side]);
@@ -1117,6 +1230,8 @@ void R_DrawWorld (void)
 	R_ClearSkyBox ();
 #endif
 
+	r_totalsurfs = 0;
+
 	R_RecursiveWorldNode (cl.worldmodel->nodes);
 
 	DrawTextureChains ();
@@ -1143,13 +1258,19 @@ void R_MarkLeaves (void)
 	byte	*vis;
 	mnode_t	*node;
 	int		i;
-	byte	solid[4096];
+//	byte	solid[4096];
+//	static byte	solid[4096];
+	static byte *solid = NULL;
 
-	if (r_oldviewleaf == r_viewleaf && !r_novis.value)
+//	if (r_oldviewleaf == r_viewleaf && !r_novis.value)
+	if (r_oldviewleaf == r_viewleaf)
 		return;
 	
-	if (mirror)
-		return;
+//	if (mirror)
+//		return;
+
+	if(!solid)
+		solid = malloc(4096);
 
 	r_visframecount++;
 	r_oldviewleaf = r_viewleaf;
@@ -1234,6 +1355,108 @@ int AllocBlock (int w, int h, int *x, int *y)
 mvertex_t	*r_pcurrentvertbase;
 model_t		*currentmodel;
 
+void BoundSurface (msurface_t *fa)
+{
+	int			i, j, k;
+	int			lindex, lnumverts, s_axis, t_axis;
+	float		dist, lastdist, lzi, scale, u, v, frac;
+	unsigned	mask;
+//	vec3_t		local, transformed;
+	vec3_t		porg, ptmp;
+//	vec3_t		pdx, pdy, pdz;
+	vec3_t		mins, maxs;
+	float		pdist, prad;
+	
+	medge_t		*pedges, *r_pedge;
+	mplane_t	*pplane;
+	int			vertpage, newverts, newpage, lastvert;
+	int			luma, luma1;
+	qboolean	visible;
+	float		*vec, *vec1;
+	float		s, t, f;
+	glpoly_t	*poly;
+
+// reconstruct the polygon
+	pedges = currentmodel->edges;
+	lnumverts = fa->numedges;
+	vertpage = 0;
+	
+//	VectorZero(porg);
+	porg[0]=0;
+	porg[1]=0;
+	porg[2]=0;
+
+	mins[0]= 999999; 	mins[1]= 999999; 	mins[2]= 999999;
+	maxs[0]=-999999; 	maxs[1]=-999999; 	maxs[2]=-999999;
+
+	for (i=0 ; i<lnumverts ; i++)
+	{
+		lindex = currentmodel->surfedges[fa->firstedge + i];
+		if (lindex > 0)
+		{
+			r_pedge = &pedges[lindex];
+			vec = r_pcurrentvertbase[r_pedge->v[0]].position;
+//			vec = loadmodel->vertexes[loadmodel->edges[lindex].v[0]].position;
+		}
+		else
+		{
+			r_pedge = &pedges[-lindex];
+			vec = r_pcurrentvertbase[r_pedge->v[1]].position;
+//			vec = loadmodel->vertexes[loadmodel->edges[lindex].v[1]].position;
+		}
+		
+		VectorAdd(porg, vec, porg);
+		
+		if(vec[0]<mins[0])
+			mins[0]=vec[0];
+		if(vec[1]<mins[1])
+			mins[1]=vec[1];
+		if(vec[2]<mins[2])
+			mins[2]=vec[2];
+
+		if(vec[0]>maxs[0])
+			maxs[0]=vec[0];
+		if(vec[1]>maxs[1])
+			maxs[1]=vec[1];
+		if(vec[2]>maxs[2])
+			maxs[2]=vec[2];
+	}
+
+	VectorScale(porg, 1.0/lnumverts, porg);
+
+	prad = 0;
+	for (i=0 ; i<lnumverts ; i++)
+	{
+		lindex = currentmodel->surfedges[fa->firstedge + i];
+		if (lindex > 0)
+		{
+			r_pedge = &pedges[lindex];
+			vec = r_pcurrentvertbase[r_pedge->v[0]].position;
+//			vec = loadmodel->vertexes[loadmodel->edges[lindex].v[0]].position;
+		}
+		else
+		{
+			r_pedge = &pedges[-lindex];
+			vec = r_pcurrentvertbase[r_pedge->v[1]].position;
+//			vec = loadmodel->vertexes[loadmodel->edges[lindex].v[1]].position;
+		}
+		
+		VectorSubtract(porg, vec, ptmp);
+		pdist = Length(ptmp);
+		
+		if(pdist>prad)
+			prad=pdist;
+	}
+	
+	VectorCopy(mins, fa->minmaxs+0);
+	VectorCopy(maxs, fa->minmaxs+3);
+
+	fa->porg[0]=porg[0];
+	fa->porg[1]=porg[1];
+	fa->porg[2]=porg[2];
+	fa->porg[3]=prad;
+}
+
 int	nColinElim;
 
 /*
@@ -1250,6 +1473,7 @@ void BuildSurfaceDisplayList (msurface_t *fa)
 	vec3_t		local, transformed;
 	vec3_t		porg, ptmp;
 	vec3_t		pdx, pdy, pdz;
+	float		pdist, prad;
 	
 	medge_t		*pedges, *r_pedge;
 	mplane_t	*pplane;
@@ -1265,40 +1489,40 @@ void BuildSurfaceDisplayList (msurface_t *fa)
 	lnumverts = fa->numedges;
 	vertpage = 0;
 
+	BoundSurface(fa);
+	
+	VectorCopy(fa->porg, porg);
+
+	if(fa->porg[3] < 3)
+	{
+		fa->polys = NULL;
+		return;
+	}
+
+#if 1
+	k=0;
+	if((fa->minmaxs[3]-fa->minmaxs[0])<1) k++;
+	if((fa->minmaxs[4]-fa->minmaxs[1])<1) k++;
+	if((fa->minmaxs[5]-fa->minmaxs[2])<1) k++;
+	if(k>1)
+	{
+		fa->polys = NULL;
+		return;
+	}
+#endif
+
 	//
 	// draw texture
 	//
-	poly = Hunk_Alloc (sizeof(glpoly_t) + (lnumverts-4) * VERTEXSIZE*sizeof(float));
+//	poly = Hunk_Alloc (sizeof(glpoly_t) + (lnumverts-4) * VERTEXSIZE*sizeof(float));
+	poly = Hunk_Alloc (sizeof(glpoly_t) + (lnumverts-4) *
+		VERTEXSIZE * sizeof(qgl_hfloat));
 	poly->next = fa->polys;
 	poly->flags = fa->flags;
 	poly->prim = GL_POLYGON;
 	fa->polys = poly;
 	poly->numverts = lnumverts;
 
-//	VectorZero(porg);
-	porg[0]=0;
-	porg[1]=0;
-	porg[2]=0;
-
-	for (i=0 ; i<lnumverts ; i++)
-	{
-		lindex = currentmodel->surfedges[fa->firstedge + i];
-		if (lindex > 0)
-		{
-			r_pedge = &pedges[lindex];
-			vec = r_pcurrentvertbase[r_pedge->v[0]].position;
-//			vec1 = r_pcurrentvertbase[r_pedge->v[1]].position;
-		}
-		else
-		{
-			r_pedge = &pedges[-lindex];
-			vec = r_pcurrentvertbase[r_pedge->v[1]].position;
-//			vec1 = r_pcurrentvertbase[r_pedge->v[0]].position;
-		}
-		
-		VectorAdd(porg, vec, porg);
-	}
-	VectorScale(porg, 1.0/lnumverts, porg);
 
 	for (i=0 ; i<lnumverts ; i++)
 	{
@@ -1347,7 +1571,7 @@ void BuildSurfaceDisplayList (msurface_t *fa)
 			VectorSubtract(vec1, vec, pdx);
 			VectorSubtract(vec, porg, pdy);
 			CrossProduct(pdx, pdy, pdz);
-			VectorNormalize(pdz);
+			VectorNormalizeFast(pdz);
 
 	//		ptmp[0]=(vec[0]+porg[0])*0.5;
 	//		ptmp[1]=(vec[1]+porg[1])*0.5;
@@ -1384,7 +1608,11 @@ void BuildSurfaceDisplayList (msurface_t *fa)
 	#endif
 		}
 
+#ifdef QGL_HFLOAT
+		*(int *)((poly->verts[i])+6) = k;
+#else
 		((int *)(poly->verts[i]))[7] = k;
+#endif
 	}
 
 	//
@@ -1394,24 +1622,34 @@ void BuildSurfaceDisplayList (msurface_t *fa)
 	{
 		for (i = 0 ; i < lnumverts ; ++i)
 		{
-			vec3_t v1, v2;
-			float *prev, *this, *next;
-			float f;
+			vec3_t v1, v2, v3;
+			qgl_hfloat *prev, *cur, *next;
+			float f, d;
 
 			prev = poly->verts[(i + lnumverts - 1) % lnumverts];
-			this = poly->verts[i];
+			cur = poly->verts[i];
 			next = poly->verts[(i + 1) % lnumverts];
 
-			VectorSubtract( this, prev, v1 );
+			VectorSubtract( cur, prev, v1 );
 			VectorNormalize( v1 );
 			VectorSubtract( next, prev, v2 );
 			VectorNormalize( v2 );
 
+			VectorSubtract( next, cur, v3 );
+			d = VectorNormalize( v3 );
+
 			// skip co-linear points
-			#define COLINEAR_EPSILON 0.001
-			if ((fabs( v1[0] - v2[0] ) <= COLINEAR_EPSILON) &&
+//			#define COLINEAR_EPSILON 0.001
+			#define COLINEAR_EPSILON 0.01
+//			#define COLINEAR_EPSILON 0.1
+//			if ((fabs( v1[0] - v2[0] ) <= COLINEAR_EPSILON) &&
+//				(fabs( v1[1] - v2[1] ) <= COLINEAR_EPSILON) && 
+//				(fabs( v1[2] - v2[2] ) <= COLINEAR_EPSILON))
+
+			if (((fabs( v1[0] - v2[0] ) <= COLINEAR_EPSILON) &&
 				(fabs( v1[1] - v2[1] ) <= COLINEAR_EPSILON) && 
-				(fabs( v1[2] - v2[2] ) <= COLINEAR_EPSILON))
+				(fabs( v1[2] - v2[2] ) <= COLINEAR_EPSILON)) ||
+				(d<0.1))
 			{
 				int j;
 				for (j = i + 1; j < lnumverts; ++j)
@@ -1428,6 +1666,12 @@ void BuildSurfaceDisplayList (msurface_t *fa)
 		}
 	}
 	poly->numverts = lnumverts;
+
+	if(lnumverts<3)
+	{
+		fa->polys = NULL;
+		return;
+	}
 
 }
 

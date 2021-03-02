@@ -1225,6 +1225,11 @@ int BGBCC_LoadCSourcesCCXL(
 			continue;
 		}
 
+		if(lang==BGBCC_FMT_DEF)
+		{
+			continue;
+		}
+
 		t=BGBCC_LoadCSourceAST(names[i]);
 		if(!t)
 			break;

@@ -5423,7 +5423,19 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 		n=l;
 	}
 #endif
-	
+
+	if(imgfmt==BGBCC_IMGFMT_DLL)
+	{
+		i=BGBCC_JX2_LookupNamedLabel(sctx, "main");
+		j=BGBCC_JX2_LookupLabelIndex(sctx, i);
+		if(j<0)
+		{
+			BGBCC_JX2_SetSectionName(sctx, ".text");
+			BGBCC_JX2_EmitNamedLabel(sctx, "main");
+			BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_RTS);
+		}
+	}
+
 	BGBCC_JX2C_BuildPrestartInit(ctx);
 
 	BGBCC_JX2_SetSectionName(sctx, ".text");

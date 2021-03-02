@@ -144,6 +144,7 @@ u64 TKRA_CalcClrStepRcp(u64 cdst, u64 csrc, u16 rcp)
 
 #endif
 
+#ifndef __BJX2__
 /*
 Walk along a pair of edges, calling DrawSpan for each span.
 Default Version (Tex+Color+Z)
@@ -200,6 +201,8 @@ void TKRA_WalkEdges_Dfl(TKRA_Context *ctx,
 	dsparm[TKRA_DS_CTX]=(u64)(ctx);
 	dsparm[TKRA_DS_TEXIMG]=(u64)(ctx->tex_img);
 	dsparm[TKRA_DS_TEXBCN]=(u64)(ctx->tex_img_bcn);
+	dsparm[TKRA_DS_BLEND]=(u64)(ctx->Blend);
+	dsparm[TKRA_DS_ZATEST]=(u64)(ctx->ZaTest);
 
 //	dsparm[TKRA_DS_XMASK]=(1<<ctx->tex_xshl)-1;
 //	dsparm[TKRA_DS_YMASK]=(1<<ctx->tex_yshl)-1;
@@ -237,9 +240,10 @@ void TKRA_WalkEdges_Dfl(TKRA_Context *ctx,
 	ymax=ytop+cnt;
 	for(y=ytop; y<ymax; y++)
 	{
-		x0=(xpos_l      )>>16;
-//		x1=xpos_r>>16;
-		x1=(xpos_r+65535)>>16;
+//		x0=(xpos_l      )>>16;
+		x0=xpos_l>>16;
+		x1=xpos_r>>16;
+//		x1=(xpos_r+65535)>>16;
 		xcnt=x1-x0;
 //		if(xcnt<1)
 		if((xcnt<1) || (y<clip_y0) || (y>=clip_y1))
@@ -253,7 +257,8 @@ void TKRA_WalkEdges_Dfl(TKRA_Context *ctx,
 			continue;
 		}
 
-		xrcp=TKRA_SpanRcp(xcnt+1);
+//		xrcp=TKRA_SpanRcp(xcnt+1);
+		xrcp=TKRA_SpanRcp(xcnt);
 		
 //		tstep_d=tpos_r-tpos_l;
 //		tstep_c=TKRA_ScaleTexStepRcp(tstep_d, xrcp);
@@ -319,6 +324,7 @@ void TKRA_WalkEdges_Dfl(TKRA_Context *ctx,
 	edge_l[TKRA_ES_ZPOS] = zpos_l;
 	edge_r[TKRA_ES_ZPOS] = zpos_r;
 }
+#endif
 
 /* Half-Resolution Z-Buffer */
 void TKRA_WalkEdges_HZbuf(TKRA_Context *ctx,
@@ -376,6 +382,8 @@ void TKRA_WalkEdges_HZbuf(TKRA_Context *ctx,
 	dsparm[TKRA_DS_CTX]=(u64)(ctx);
 	dsparm[TKRA_DS_TEXIMG]=(u64)(ctx->tex_img);
 	dsparm[TKRA_DS_TEXBCN]=(u64)(ctx->tex_img_bcn);
+	dsparm[TKRA_DS_BLEND]=(u64)(ctx->Blend);
+	dsparm[TKRA_DS_ZATEST]=(u64)(ctx->ZaTest);
 
 //	dsparm[TKRA_DS_XMASK]=(1<<ctx->tex_xshl)-1;
 //	dsparm[TKRA_DS_YMASK]=(1<<ctx->tex_yshl)-1;
@@ -415,7 +423,8 @@ void TKRA_WalkEdges_HZbuf(TKRA_Context *ctx,
 	for(y=ytop; y<ymax; y++)
 	{
 		x0=(xpos_l      )>>16;
-		x1=(xpos_r+65535)>>16;
+//		x1=(xpos_r+65535)>>16;
+		x1=(xpos_r      )>>16;
 		xcnt=x1-x0;
 		if((xcnt<1) || (y<clip_y0) || (y>=clip_y1))
 		{
@@ -434,7 +443,8 @@ void TKRA_WalkEdges_HZbuf(TKRA_Context *ctx,
 			continue;
 		}
 
-		xrcp=TKRA_SpanRcp(xcnt+1);
+//		xrcp=TKRA_SpanRcp(xcnt+1);
+		xrcp=TKRA_SpanRcp(xcnt);
 		
 		tstep_c=TKRA_CalcTexStepRcp(tpos_r, tpos_l, xrcp);
 
@@ -526,6 +536,8 @@ void TKRA_WalkEdges_HZbuf(TKRA_Context *ctx,
 
 // #if 0
 #ifdef __BJX2__
+void TKRA_WalkEdges_Dfl(TKRA_Context *ctx,
+	int ytop, u64 *edge_l, u64 *edge_r, int cnt);
 void TKRA_WalkEdges_Zbuf(TKRA_Context *ctx,
 	int ytop, u64 *edge_l, u64 *edge_r, int cnt);
 
@@ -994,25 +1006,23 @@ R31		tstep_r
 	BF		.L_END
 
 	LEA.Q	(SP, 32*8), R14
-	MOV.Q	R4, (R14, TKRA_DS_CTX*8)
-
 	MOV.Q	(R4, offsetof TKRA_Context_s tex_img), R2
 	MOV.Q	(R4, offsetof TKRA_Context_s tex_img_bcn), R3
+	MOV.Q	(R4, offsetof TKRA_Context_s Blend), R8
+	MOV.Q	(R4, offsetof TKRA_Context_s ZaTest), R9
+	MOV.Q	R4, (R14, TKRA_DS_CTX*8)
 	MOV.Q	R2, (R14, TKRA_DS_TEXIMG*8)
 	MOV.Q	R3, (R14, TKRA_DS_TEXBCN*8)
+	MOV.Q	R8, (R14, TKRA_DS_BLEND*8)
+	MOV.Q	R9, (R14, TKRA_DS_ZATEST*8)
 
 	MOVU.B	(R4, offsetof TKRA_Context_s tex_xshl), R2
 	MOVU.B	(R4, offsetof TKRA_Context_s tex_yshl), R3
-	MOV		1, R1
-	SHAD	R1, R2, R19
-	ADD		R19, -1, R19
-	MOV.Q	R19, (R14, TKRA_DS_XMASK*8)
-	
-	ADD		R2, R3, R19
-	SHAD	R1, R19, R19
-	ADD		R19, -1, R19
-	MOV.Q	R19, (R14, TKRA_DS_YMASK*8)
-
+	MOV		1, R1		|	ADD		R2, R3, R9
+	SHAD	R1, R2, R8	|	SHAD	R1, R9, R9
+	ADD		R8, -1, R8	|	ADD		R9, -1, R9
+	MOV.Q	R8, (R14, TKRA_DS_XMASK*8)
+	MOV.Q	R9, (R14, TKRA_DS_YMASK*8)
 
 	MOV.X	(R6, TKRA_ES_CPOS*8), R8	//cpos_l, cstep_l
 	MOV.X	(R7, TKRA_ES_CPOS*8), R10	//cpos_r, cstep_r
@@ -1028,11 +1038,11 @@ R31		tstep_r
 	BF		.L4
 
 	SHAD.Q	R24, -48, R16		//		x0=(xzpos_l)>>48;
-//	SHAD.Q	R26, -48, R17		//		x1=(xzpos_r)>>48;
+	SHAD.Q	R26, -48, R17		//		x1=(xzpos_r)>>48;
 
-	SHAD.Q	R26, -32, R17		//		x1=(xzpos_r)>>48;
-	ADD		65535, R17
-	SHAD.Q	R17, -16, R17		//		x1=(xzpos_r)>>48;
+//	SHAD.Q	R26, -32, R17		//		x1=(xzpos_r)>>48;
+//	ADD		65535, R17
+//	SHAD.Q	R17, -16, R17		//		x1=(xzpos_r)>>48;
 
 	SUB		R17, R16, R18		//		xcnt=x1-x0;
 	
@@ -1053,7 +1063,8 @@ R31		tstep_r
 
 	.L1:
 	ADDS.L	R18, 1, R19		|	MOV		tkra_spanrcptab, R3
-	SUB		R30, R28, R2	|	MOVU.W	(R3, R19), R1
+//	SUB		R30, R28, R2	|	MOVU.W	(R3, R19), R1
+	SUB		R30, R28, R2	|	MOVU.W	(R3, R18), R1
 	EXTS.L	R2, R5			|	SHAD.Q	R2, -32, R3
 								DMULS.L	R5, R1, R2
 								DMULS.L	R3, R1, R3
@@ -1090,7 +1101,6 @@ R31		tstep_r
 								ADDS.L	R24, R2, R2
 								MOV.Q	R2, (R14, TKRA_DS_ZPOS*8)
 	.L2:
-
 	SHAD.Q	R22, -32, R2
 	CMPGT	R2, R17
 	MOV?T	R2, R17
@@ -1104,19 +1114,16 @@ R31		tstep_r
 	MOV.X	R6, (SP, 6*8)
 	MOV.X	R16, (SP, 16*8)
 	MOV.X	R18, (SP, 18*8)
-	MOV.X	R20, (SP, 20*8)
-	MOV.X	R22, (SP, 22*8)
-
 	MOV.Q	(R14, TKRA_DS_CTX*8), R19
+	MOV.X	R20, (SP, 20*8)
 	MOV.Q	(R19, offsetof TKRA_Context_s screen_zbuf), R4
+	MOV.X	R22, (SP, 22*8)
 	MOV.Q	(R19, offsetof TKRA_Context_s screen_rgb), R5
 	ADD		R12, R16, R3
 	LEA.W	(R4, R3), R4
 	LEA.W	(R5, R3), R5
-
-	MOV.X	R4, (SP, 48*8)
-
 	MOV.Q	(R19, offsetof TKRA_Context_s DrawSpanZb), R3
+	MOV.X	R4, (SP, 48*8)
 	MOV		R18, R5
 	MOV.X	(R14, TKRA_DS_ZPOS*8), R6
 	JSR		R3
@@ -1170,7 +1177,259 @@ R31		tstep_r
 
 	.L_END_F:
 	RTS
+#endif
 
+#if 1
+TKRA_WalkEdges_Dfl:
+
+	CMPGT	0, R20
+	BF		.L_END_F
+
+	SUB		512, SP
+	MOV		LR , R16
+	MOV.X	R8 , (SP, 8*8)
+	MOV.X	R10, (SP, 10*8)
+	MOV.X	R12, (SP, 12*8)
+	MOV.Q	R14, (SP, 14*8)
+	MOV.Q	R16, (SP, 15*8)
+
+	MOV.X	R24, (SP, 24*8)
+	MOV.X	R26, (SP, 26*8)
+	MOV.X	R28, (SP, 28*8)
+	MOV.X	R30, (SP, 30*8)
+
+/*
+
+R0		Scratch
+R1		Scratch
+R2		Scratch
+R3		Scratch
+
+R4		ctx			/ tstep_c
+R5		ytop		/ cstep_c
+R6		edge_l
+R7		edge_r
+
+R8		cpos_l
+R9		cstep_l
+R10		cpos_r
+R11		cstep_r
+
+R12		scr_offs
+R13		scr_xs
+R14		dsparm
+R15		SP
+
+R16		x0
+R17		x1
+R18		xcnt
+R19		Scratch
+
+R20		ycnt / ycur
+R21		ymax
+R22		clip_x1:clip_x0
+R23		clip_y1:clip_y0
+
+R24		xzpos_l
+R25		xzstep_l
+R26		xzpos_r
+R27		xzstep_r
+
+R28		tpos_l
+R29		tstep_l
+R30		tpos_r
+R31		tstep_r
+*/
+
+	MOV.X	(R4, offsetof TKRA_Context_s clip_x0), R22
+	MOV.L	(R4, offsetof TKRA_Context_s screen_xsize), R13
+
+	ADD		R5, R20, R21	
+	MOV		R5, R20			|	DMULS	R5, R13, R12
+	SHAD.Q	R22, -32, R2	|	SHAD.Q	R23, -32, R3	
+
+	CMPGT	R5, R3
+	BF		.L_END
+
+	CMPGT	R23, R21
+	BF		.L_END
+
+	LEA.Q	(SP, 32*8), R14
+	MOV.Q	(R4, offsetof TKRA_Context_s tex_img), R2
+	MOV.Q	(R4, offsetof TKRA_Context_s tex_img_bcn), R3
+	MOV.Q	(R4, offsetof TKRA_Context_s Blend), R8
+	MOV.Q	(R4, offsetof TKRA_Context_s ZaTest), R9
+	MOV.Q	R4, (R14, TKRA_DS_CTX*8)
+	MOV.Q	R2, (R14, TKRA_DS_TEXIMG*8)
+	MOV.Q	R3, (R14, TKRA_DS_TEXBCN*8)
+	MOV.Q	R8, (R14, TKRA_DS_BLEND*8)
+	MOV.Q	R9, (R14, TKRA_DS_ZATEST*8)
+
+	MOVU.B	(R4, offsetof TKRA_Context_s tex_xshl), R2
+	MOVU.B	(R4, offsetof TKRA_Context_s tex_yshl), R3
+	MOV		1, R1		|	ADD		R2, R3, R9
+	SHAD	R1, R2, R8	|	SHAD	R1, R9, R9
+	ADD		R8, -1, R8	|	ADD		R9, -1, R9
+	MOV.Q	R8, (R14, TKRA_DS_XMASK*8)
+	MOV.Q	R9, (R14, TKRA_DS_YMASK*8)
+
+	MOV.X	(R6, TKRA_ES_CPOS*8), R8	//cpos_l, cstep_l
+	MOV.X	(R7, TKRA_ES_CPOS*8), R10	//cpos_r, cstep_r
+
+	MOV.X	(R6, TKRA_ES_ZPOS*8), R24	//zpos_l, zstep_l
+	MOV.X	(R7, TKRA_ES_ZPOS*8), R26	//zpos_r, zstep_r
+	MOV.X	(R6, TKRA_ES_TPOS*8), R28	//tpos_l, tstep_l
+	MOV.X	(R7, TKRA_ES_TPOS*8), R30	//tpos_r, tstep_r
+
+
+	.L0:
+	CMPGT	R20, R21		//(ymax>ycur)
+	BF		.L4
+
+	SHAD.Q	R24, -48, R16		//		x0=(xzpos_l)>>48;
+	SHAD.Q	R26, -48, R17		//		x1=(xzpos_r)>>48;
+
+//	SHAD.Q	R26, -32, R17		//		x1=(xzpos_r)>>48;
+//	ADD		65535, R17
+//	SHAD.Q	R17, -16, R17		//		x1=(xzpos_r)>>48;
+
+	SUB		R17, R16, R18		//		xcnt=x1-x0;
+	
+	SHAD.Q	R22, -32, R0	|	SHAD.Q	R23, -32, R1	
+	SUBS.L	R20, R23, R2	|	SUBS.L	R17, R22, R3	
+	SUBS.L	R1, R20, R1		|	SUBS.L	R0, R16, R0
+	ADDS.L	R18, -1, R19	|	OR		R2, R3, R3
+	OR		R0, R1, R1		|	OR		R3, R19, R2
+	OR		R2, R1, R2
+	
+	CMPGE	0, R2
+	BT		.L1
+	ADD		R25, R24	|	ADD		R27, R26
+	ADD		R29, R28	|	ADD		R31, R30
+	ADD		R9 , R8		|	ADD		R11, R10
+	ADD		R13, R12	|	ADD		1, R20
+	BRA		.L0	
+
+	.L1:
+	ADDS.L	R18, 1, R19		|	MOV		tkra_spanrcptab, R3
+//	SUB		R30, R28, R2	|	MOVU.W	(R3, R19), R1
+	SUB		R30, R28, R2	|	MOVU.W	(R3, R18), R1
+	EXTS.L	R2, R5			|	SHAD.Q	R2, -32, R3
+								DMULS.L	R5, R1, R2
+								DMULS.L	R3, R1, R3
+	SHAD.Q	R2, -16, R2		|	SHAD.Q	R3, -16, R3
+								MOVLD	R3, R2, R4
+	/* Jumbo */					MOV		0xFFFEFFFEFFFEFFFE, R3
+	AND		R10, R3, R2		|	AND		R8, R3, R5
+	SHLD.Q	R2, -1, R2		|	SHLD.Q	R5, -1, R3
+	SUB			R2, R3, R2	|	PSHUF.W		R1, 0, R19
+								PMULS.HW	R2, R19, R2
+	SHLD.Q		R2, 1, R5	|	SUBS.L	R26, R24, R19
+								DMULS	R19, R1, R19
+								SHAD.Q	R19, -16, R19
+	EXTS.L	R24, R2			|	EXTS.L	R19, R3
+
+								MOV.Q	R28, (R14, TKRA_DS_TPOS*8)
+								MOV.Q	R4,  (R14, TKRA_DS_TSTEP*8)
+								MOV.Q	R8,  (R14, TKRA_DS_CPOS*8)
+								MOV.Q	R5,  (R14, TKRA_DS_CSTEP*8)
+								MOV.Q	R2,  (R14, TKRA_DS_ZPOS*8)
+								MOV.Q	R3,  (R14, TKRA_DS_ZSTEP*8)
+
+	CMPGT	R16, R22
+	BF		.L2
+								SUBS.L	R22, R16, R1
+	SHAD.Q	R4, -32, R3		|	DMULS		R4, R1, R2
+	PSHUF.W		R1, 0, R0	|	DMULS		R3, R1, R3
+								MOVLD		R3, R2, R2
+								PMULU.HW	R5, R0, R3
+	ADD		R28, R2, R2		|	ADD			R8, R3, R3
+								MOV.Q	R2, (R14, TKRA_DS_TPOS*8)
+								MOV.Q	R3, (R14, TKRA_DS_CPOS*8)
+	MOV		R22, R16		|	DMULS	R19, R1, R2
+								ADDS.L	R24, R2, R2
+								MOV.Q	R2, (R14, TKRA_DS_ZPOS*8)
+	.L2:
+	SHAD.Q	R22, -32, R2
+	CMPGT	R2, R17
+	MOV?T	R2, R17
+
+	SUB		R17, R16, R18
+
+	CMPGT	0, R18
+	BF		.L3
+
+	MOV.X	R4, (SP, 4*8)
+	MOV.X	R6, (SP, 6*8)
+	MOV.X	R16, (SP, 16*8)
+	MOV.X	R18, (SP, 18*8)
+	MOV.Q	(R14, TKRA_DS_CTX*8), R19
+	MOV.X	R20, (SP, 20*8)
+	MOV.Q	(R19, offsetof TKRA_Context_s screen_zbuf), R4
+	MOV.X	R22, (SP, 22*8)
+	MOV.Q	(R19, offsetof TKRA_Context_s screen_rgb), R5
+	ADD		R12, R16, R3
+//	LEA.W	(R4, R3), R4
+//	LEA.W	(R5, R3), R5
+	LEA.W	(R4, R3), R6
+	LEA.W	(R5, R3), R7
+
+//	MOV.Q	(R19, offsetof TKRA_Context_s DrawSpanZb), R3
+//	MOV.X	R4, (SP, 48*8)
+//	MOV		R18, R5
+//	MOV.X	(R14, TKRA_DS_ZPOS*8), R6
+//	JSR		R3
+
+//	MOV.X	(SP, 48*8), R6
+	MOV		R14, R4
+	MOV		R7, R5
+	MOV.Q	(SP, 18*8), R7
+//	MOV.Q	(R19, offsetof TKRA_Context_s DrawSpanZt), R3
+	MOV.Q	(R19, offsetof TKRA_Context_s DrawSpan), R3
+	JSR		R3
+
+	MOV.X	(SP,  4*8), R4
+	MOV.X	(SP,  6*8), R6
+	MOV.X	(SP, 16*8), R16
+	MOV.X	(SP, 18*8), R18
+	MOV.X	(SP, 20*8), R20
+	MOV.X	(SP, 22*8), R22
+
+	.L3:
+
+	ADD		R25, R24	|	ADD		R27, R26
+	ADD		R29, R28	|	ADD		R31, R30
+	ADD		R9 , R8		|	ADD		R11, R10
+	ADD		R13, R12	|	ADD		1, R20
+	BRA		.L0
+
+	.L4:
+
+	MOV.X	R8, (R6, TKRA_ES_CPOS*8)	//cpos_l, cstep_l
+	MOV.X	R10, (R7, TKRA_ES_CPOS*8)	//cpos_r, cstep_r
+
+	MOV.X	R24, (R6, TKRA_ES_ZPOS*8)	//zpos_l, zstep_l
+	MOV.X	R26, (R7, TKRA_ES_ZPOS*8)	//zpos_r, zstep_r
+	MOV.X	R28, (R6, TKRA_ES_TPOS*8)	//tpos_l, tstep_l
+	MOV.X	R30, (R7, TKRA_ES_TPOS*8)	//tpos_r, tstep_r
+
+	.L_END:
+
+	MOV.X	(SP,  8*8), R8
+	MOV.X	(SP, 10*8), R10
+	MOV.X	(SP, 12*8), R12
+	MOV.Q	(SP, 14*8), R14
+	MOV.Q	(SP, 15*8), R16
+	MOV.X	(SP, 24*8), R24
+	MOV.X	(SP, 26*8), R26
+	MOV.X	(SP, 28*8), R28
+	MOV.X	(SP, 30*8), R30
+	ADD		512, SP
+	JMP		R16
+	NOP
+
+	.L_END_F:
+	RTS
 #endif
 
 };
@@ -1235,6 +1494,8 @@ void TKRA_WalkEdges_Zbuf(TKRA_Context *ctx,
 	dsparm[TKRA_DS_CTX]=(u64)(ctx);
 	dsparm[TKRA_DS_TEXIMG]=(u64)(ctx->tex_img);
 	dsparm[TKRA_DS_TEXBCN]=(u64)(ctx->tex_img_bcn);
+	dsparm[TKRA_DS_BLEND]=(u64)(ctx->Blend);
+	dsparm[TKRA_DS_ZATEST]=(u64)(ctx->ZaTest);
 
 	xshl=ctx->tex_xshl;
 	yshl=ctx->tex_yshl;
@@ -1264,8 +1525,8 @@ void TKRA_WalkEdges_Zbuf(TKRA_Context *ctx,
 	{
 		x0=(xzpos_l)>>48;
 //		x0=(int)(xzpos_l>>48);
-		x1=(xzpos_r+0x0000FFFF00000000LL)>>48;
-//		x1=(xzpos_r)>>48;
+//		x1=(xzpos_r+0x0000FFFF00000000LL)>>48;
+		x1=(xzpos_r)>>48;
 
 		xcnt=x1-x0;
 
@@ -1550,8 +1811,75 @@ void TKRA_WalkTriangle(TKRA_Context *ctx,
 	
 }
 
+#if 1
+void TKRA_WalkPoint(TKRA_Context *ctx, u64 *vec0)
+{
+	void (*DrawSpan)(u64 *parm,
+		tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt);
+	void (*DrawSpanZ)(tkra_zbufpixel *dstz, int cnt, u64 zpos, u64 zstep);
+
+	u64	dsparm[TKRA_DS_NPARM];
+	tkra_rastpixel *scr_cb, *cb;
+	tkra_zbufpixel *scr_zb, *zb;
+	int x0, y0, z0;
+
+	int clip_x0, clip_x1, clip_y0, clip_y1;
+
+	int		xshl, yshl;
+	int		scr_xs, scr_ys;
+
+	y0=vec0[TKRA_VX_YPOS]>>16;
+	x0=vec0[TKRA_VX_XPOS]>>16;
+
+	clip_x0	= ctx->clip_x0;
+	clip_x1	= ctx->clip_x1;
+	clip_y0	= ctx->clip_y0;
+	clip_y1	= ctx->clip_y1;
+
+	if(	(x0>=clip_x1) ||
+		(x0<=clip_x0) ||
+		(y0>=clip_y1) ||
+		(y0<=clip_y0) )
+			return;
+
+	DrawSpan	= ctx->DrawSpanZt;
+	DrawSpanZ	= ctx->DrawSpanZb;
+	
+	scr_cb = ctx->screen_rgb;
+	scr_zb = ctx->screen_zbuf;
+	scr_xs = ctx->screen_xsize;
+	scr_ys = ctx->screen_ysize;
+
+	xshl=ctx->tex_xshl;
+	yshl=ctx->tex_yshl;
+
+	dsparm[TKRA_DS_CTX]=(u64)(ctx);
+	dsparm[TKRA_DS_TEXIMG]=(u64)(ctx->tex_img);
+	dsparm[TKRA_DS_TEXBCN]=(u64)(ctx->tex_img_bcn);
+	dsparm[TKRA_DS_BLEND]=(u64)(ctx->Blend);
+	dsparm[TKRA_DS_ZATEST]=(u64)(ctx->ZaTest);
+	dsparm[TKRA_DS_XMASK]=(1<<xshl)-1;
+	dsparm[TKRA_DS_YMASK]=(1<<(yshl+xshl))-1;
+	
+	z0 = (int)(vec0[TKRA_VX_ZPOS]);
+	dsparm[TKRA_DS_TPOS		]=vec0[TKRA_VX_TPOS];
+	dsparm[TKRA_DS_TSTEP	]=0;
+	dsparm[TKRA_DS_CPOS		]=vec0[TKRA_VX_CPOS];
+	dsparm[TKRA_DS_CSTEP	]=0;
+//	dsparm[TKRA_DS_ZPOS		]=vec0[TKRA_VX_ZPOS];
+	dsparm[TKRA_DS_ZPOS		]=z0;
+	dsparm[TKRA_DS_ZSTEP	]=0;
+
+	cb=scr_cb+(y0*scr_xs+x0);
+	zb=scr_zb+(y0*scr_xs+x0);
+	DrawSpanZ(zb, 1, z0, 0);
+	DrawSpan(dsparm, cb, zb, 1);
+}
+#endif
+
 int TKRA_SetupDrawEdgeForState(TKRA_Context *ctx)
 {
+#if 0
 	ctx->DrawSpan=TKRA_DrawSpan_ModTexMort;
 	ctx->DrawSpan_Min=TKRA_DrawSpan_ModTexMort;
 	ctx->DrawSpan_Mag=TKRA_DrawSpan_ModTexMort;
@@ -1587,8 +1915,11 @@ int TKRA_SetupDrawEdgeForState(TKRA_Context *ctx)
 	ctx->DrawSpanZt=TKRA_DrawSpan_AlphaModTexMortZt;
 	ctx->DrawSpanZt_Min=TKRA_DrawSpan_AlphaModTexMortZt;
 	ctx->DrawSpanZt_Mag=TKRA_DrawSpan_AlphaModTexMortZt;
+#endif
 
-	if(ctx->stateflag1&TKRA_STFL1_DEPTHTEST)
+//	if(ctx->stateflag1&TKRA_STFL1_DEPTHTEST)
+	if((ctx->stateflag1&TKRA_STFL1_DEPTHTEST) ||
+		(ctx->bfn_flag&TKRA_TRFL_DOBLEND))
 //	if(0)
 	{
 //		ctx->RasterWalkEdges=TKRA_WalkEdges_HZbuf;
@@ -1606,53 +1937,616 @@ int TKRA_SetupDrawEdgeForState(TKRA_Context *ctx)
 int TKRA_SetupDrawEdgeForTriFlag(TKRA_Context *ctx, int trifl)
 {
 	trifl|=ctx->tex_flag;
-	if(trifl&TKRA_TRFL_ALPHA)
+	trifl|=ctx->bfn_flag;
+
+	if(trifl&TKRA_TRFL_NOALPHA)
+		trifl&=~TKRA_TRFL_ALPHA;
+
+	if(trifl&TKRA_TRFL_NOCMOD)
+		trifl&=~TKRA_TRFL_ALPHA;
+		
+	if(		(trifl==ctx->span_trifl) &&
+			(ctx->tex_cur==ctx->span_tex_cur))
+		return(0);
+	ctx->span_trifl=trifl;
+	ctx->span_tex_cur=ctx->tex_cur;
+
+	if((trifl&TKRA_TRFL_MINBL) && (trifl&TKRA_TRFL_MAGBL))
+		trifl&=~TKRA_TRFL_MINBL;
+
+
+	ctx->triflag=trifl;
+
+	if(trifl&TKRA_TRFL_DOZABLEND)
+	{
+		ctx->DrawSpanZb = TKRA_DrawSpan_ZbNul;
+
+		if(trifl&TKRA_TRFL_MINBL)
+		{
+			if((trifl&TKRA_TRFL_CLAMPS) || (trifl&TKRA_TRFL_CLAMPT))
+			{
+				ctx->DrawSpan_Min=TKRA_DrawSpan_ZatModBlTexMortClampZt;
+				ctx->DrawSpanZt_Min=TKRA_DrawSpan_ZatModBlTexMortClampZt;
+			}else
+			{
+				ctx->DrawSpan_Min=TKRA_DrawSpan_ZatModBlTexMortZt;
+				ctx->DrawSpanZt_Min=TKRA_DrawSpan_ZatModBlTexMortZt;
+			}
+		}else
+		{
+			if((trifl&TKRA_TRFL_CLAMPS) || (trifl&TKRA_TRFL_CLAMPT))
+			{
+				ctx->DrawSpan_Min=TKRA_DrawSpan_ZatModTexMortClampZt;
+				ctx->DrawSpanZt_Min=TKRA_DrawSpan_ZatModTexMortClampZt;
+			}else
+			{
+				ctx->DrawSpan_Min=TKRA_DrawSpan_ZatModTexMortZt;
+				ctx->DrawSpanZt_Min=TKRA_DrawSpan_ZatModTexMortZt;
+			}
+		}
+
+		if(trifl&TKRA_TRFL_MAGBL)
+		{
+			if((trifl&TKRA_TRFL_CLAMPS) || (trifl&TKRA_TRFL_CLAMPT))
+			{
+				ctx->DrawSpan_Mag=TKRA_DrawSpan_ZatModBlTexMortClampZt;
+				ctx->DrawSpanZt_Mag=TKRA_DrawSpan_ZatModBlTexMortClampZt;
+			}else
+			{
+				ctx->DrawSpan_Mag=TKRA_DrawSpan_ZatModBlTexMortZt;
+				ctx->DrawSpanZt_Mag=TKRA_DrawSpan_ZatModBlTexMortZt;
+			}
+		}else
+		{
+			if((trifl&TKRA_TRFL_CLAMPS) || (trifl&TKRA_TRFL_CLAMPT))
+			{
+				ctx->DrawSpan_Mag=TKRA_DrawSpan_ZatModTexMortClampZt;
+				ctx->DrawSpanZt_Mag=TKRA_DrawSpan_ZatModTexMortClampZt;
+			}else
+			{
+				ctx->DrawSpan_Mag=TKRA_DrawSpan_ZatModTexMortZt;
+				ctx->DrawSpanZt_Mag=TKRA_DrawSpan_ZatModTexMortZt;
+			}
+		}
+
+		if(ctx->tex_cur->tex_img_bcn)
+		{
+			if(trifl&TKRA_TRFL_MINBL)
+			{
+				if((trifl&TKRA_TRFL_CLAMPS) || (trifl&TKRA_TRFL_CLAMPT))
+				{
+					ctx->DrawSpan_Min=TKRA_DrawSpan_ZatModBlUtx2MortClampZt;
+					ctx->DrawSpanZt_Min=TKRA_DrawSpan_ZatModBlUtx2MortClampZt;
+				}else
+				{
+					ctx->DrawSpan_Min=TKRA_DrawSpan_ZatModBlUtx2MortZt;
+					ctx->DrawSpanZt_Min=TKRA_DrawSpan_ZatModBlUtx2MortZt;
+				}
+			}else
+			{
+				if((trifl&TKRA_TRFL_CLAMPS) || (trifl&TKRA_TRFL_CLAMPT))
+				{
+					ctx->DrawSpan_Min=TKRA_DrawSpan_ZatModUtx2MortClampZt;
+					ctx->DrawSpanZt_Min=TKRA_DrawSpan_ZatModUtx2MortClampZt;
+				}else
+				{
+					ctx->DrawSpan_Min=TKRA_DrawSpan_ZatModUtx2MortZt;
+					ctx->DrawSpanZt_Min=TKRA_DrawSpan_ZatModUtx2MortZt;
+				}
+			}
+
+			if(trifl&TKRA_TRFL_MAGBL)
+			{
+				if((trifl&TKRA_TRFL_CLAMPS) || (trifl&TKRA_TRFL_CLAMPT))
+				{
+					ctx->DrawSpan_Mag=TKRA_DrawSpan_ZatModBlUtx2MortClampZt;
+					ctx->DrawSpanZt_Mag=TKRA_DrawSpan_ZatModBlUtx2MortClampZt;
+				}else
+				{
+					ctx->DrawSpan_Mag=TKRA_DrawSpan_ZatModBlUtx2MortZt;
+					ctx->DrawSpanZt_Mag=TKRA_DrawSpan_ZatModBlUtx2MortZt;
+				}
+			}else
+			{
+				if((trifl&TKRA_TRFL_CLAMPS) || (trifl&TKRA_TRFL_CLAMPT))
+				{
+					ctx->DrawSpan_Mag=TKRA_DrawSpan_ZatModUtx2MortClampZt;
+					ctx->DrawSpanZt_Mag=TKRA_DrawSpan_ZatModUtx2MortClampZt;
+				}else
+				{
+					ctx->DrawSpan_Mag=TKRA_DrawSpan_ZatModUtx2MortZt;
+					ctx->DrawSpanZt_Mag=TKRA_DrawSpan_ZatModUtx2MortZt;
+				}
+			}
+		}
+	}else
+
+		if(trifl&TKRA_TRFL_DOBLEND)
+//	if(	(trifl&TKRA_TRFL_DOBLEND) ||
+//		(trifl&TKRA_TRFL_CLAMPS) ||
+//		(trifl&TKRA_TRFL_CLAMPT))
+	{
+#if 0
+		ctx->DrawSpan=TKRA_DrawSpan_BlendModTexMort;
+		ctx->DrawSpan_Min=TKRA_DrawSpan_BlendModTexMort;
+		ctx->DrawSpan_Mag=TKRA_DrawSpan_BlendModTexMort;
+//		ctx->DrawSpan_Mag=TKRA_DrawSpan_BlendModBlTexMort;
+
+		ctx->DrawSpanZb=TKRA_DrawSpan_Zbuf;
+
+		ctx->DrawSpanZt=TKRA_DrawSpan_BlendModTexMortZt;
+		ctx->DrawSpanZt_Min=TKRA_DrawSpan_BlendModTexMortZt;
+		ctx->DrawSpanZt_Mag=TKRA_DrawSpan_BlendModTexMortZt;
+//		ctx->DrawSpanZt_Mag=TKRA_DrawSpan_BlendModBlTexMortZt;
+#endif
+
+		ctx->DrawSpanZb=TKRA_DrawSpan_Zbuf;
+//		ctx->DrawSpanZb = TKRA_DrawSpan_ZbNul;
+
+		if(trifl&TKRA_TRFL_NOZWRITE)
+			ctx->DrawSpanZb = TKRA_DrawSpan_ZbNul;
+
+
+		if(trifl&TKRA_TRFL_MINBL)
+		{
+			if((trifl&TKRA_TRFL_CLAMPS) || (trifl&TKRA_TRFL_CLAMPT))
+			{
+				ctx->DrawSpan_Min=TKRA_DrawSpan_BlendModBlTexMortClamp;
+				ctx->DrawSpanZt_Min=TKRA_DrawSpan_BlendModBlTexMortClampZt;
+			}else
+			{
+				ctx->DrawSpan_Min=TKRA_DrawSpan_BlendModBlTexMort;
+				ctx->DrawSpanZt_Min=TKRA_DrawSpan_BlendModBlTexMortZt;
+			}
+		}else
+		{
+			if((trifl&TKRA_TRFL_CLAMPS) || (trifl&TKRA_TRFL_CLAMPT))
+			{
+				ctx->DrawSpan_Min=TKRA_DrawSpan_BlendModTexMortClamp;
+				ctx->DrawSpanZt_Min=TKRA_DrawSpan_BlendModTexMortClampZt;
+			}else
+			{
+				ctx->DrawSpan_Min=TKRA_DrawSpan_BlendModTexMort;
+				ctx->DrawSpanZt_Min=TKRA_DrawSpan_BlendModTexMortZt;
+			}
+		}
+
+		if(trifl&TKRA_TRFL_MAGBL)
+		{
+			if((trifl&TKRA_TRFL_CLAMPS) || (trifl&TKRA_TRFL_CLAMPT))
+			{
+				ctx->DrawSpan_Mag=TKRA_DrawSpan_BlendModBlTexMortClamp;
+				ctx->DrawSpanZt_Mag=TKRA_DrawSpan_BlendModBlTexMortClampZt;
+			}else
+			{
+				ctx->DrawSpan_Mag=TKRA_DrawSpan_BlendModBlTexMort;
+				ctx->DrawSpanZt_Mag=TKRA_DrawSpan_BlendModBlTexMortZt;
+			}
+		}else
+		{
+			if((trifl&TKRA_TRFL_CLAMPS) || (trifl&TKRA_TRFL_CLAMPT))
+			{
+				ctx->DrawSpan_Mag=TKRA_DrawSpan_BlendModTexMortClamp;
+				ctx->DrawSpanZt_Mag=TKRA_DrawSpan_BlendModTexMortClampZt;
+			}else
+			{
+				ctx->DrawSpan_Mag=TKRA_DrawSpan_BlendModTexMort;
+				ctx->DrawSpanZt_Mag=TKRA_DrawSpan_BlendModTexMortZt;
+			}
+		}
+
+		if(ctx->tex_cur->tex_img_bcn)
+		{
+#if 0
+			ctx->DrawSpan=TKRA_DrawSpan_BlendModUtx2Mort;
+			ctx->DrawSpan_Min=TKRA_DrawSpan_BlendModUtx2Mort;
+			ctx->DrawSpan_Mag=TKRA_DrawSpan_BlendModUtx2Mort;
+//			ctx->DrawSpan_Mag=TKRA_DrawSpan_BlendModBlUtx2Mort;
+
+			ctx->DrawSpanZt=TKRA_DrawSpan_BlendModUtx2MortZt;
+			ctx->DrawSpanZt_Min=TKRA_DrawSpan_BlendModUtx2MortZt;
+			ctx->DrawSpanZt_Mag=TKRA_DrawSpan_BlendModUtx2MortZt;
+//			ctx->DrawSpanZt_Mag=TKRA_DrawSpan_BlendModBlUtx2MortZt;
+#endif
+
+			if(trifl&TKRA_TRFL_MINBL)
+			{
+				if((trifl&TKRA_TRFL_CLAMPS) || (trifl&TKRA_TRFL_CLAMPT))
+				{
+					ctx->DrawSpan_Min=TKRA_DrawSpan_BlendModBlUtx2MortClamp;
+					ctx->DrawSpanZt_Min=TKRA_DrawSpan_BlendModBlUtx2MortClampZt;
+				}else
+				{
+					ctx->DrawSpan_Min=TKRA_DrawSpan_BlendModBlUtx2Mort;
+					ctx->DrawSpanZt_Min=TKRA_DrawSpan_BlendModBlUtx2MortZt;
+				}
+			}else
+			{
+				if((trifl&TKRA_TRFL_CLAMPS) || (trifl&TKRA_TRFL_CLAMPT))
+				{
+					ctx->DrawSpan_Min=TKRA_DrawSpan_BlendModUtx2MortClamp;
+					ctx->DrawSpanZt_Min=TKRA_DrawSpan_BlendModUtx2MortClampZt;
+				}else
+				{
+					ctx->DrawSpan_Min=TKRA_DrawSpan_BlendModUtx2Mort;
+					ctx->DrawSpanZt_Min=TKRA_DrawSpan_BlendModUtx2MortZt;
+				}
+			}
+
+			if(trifl&TKRA_TRFL_MAGBL)
+			{
+				if((trifl&TKRA_TRFL_CLAMPS) || (trifl&TKRA_TRFL_CLAMPT))
+				{
+					ctx->DrawSpan_Mag=TKRA_DrawSpan_BlendModBlUtx2MortClamp;
+					ctx->DrawSpanZt_Mag=TKRA_DrawSpan_BlendModBlUtx2MortClampZt;
+				}else
+				{
+					ctx->DrawSpan_Mag=TKRA_DrawSpan_BlendModBlUtx2Mort;
+					ctx->DrawSpanZt_Mag=TKRA_DrawSpan_BlendModBlUtx2MortZt;
+				}
+			}else
+			{
+				if((trifl&TKRA_TRFL_CLAMPS) || (trifl&TKRA_TRFL_CLAMPT))
+				{
+					ctx->DrawSpan_Mag=TKRA_DrawSpan_BlendModUtx2MortClamp;
+					ctx->DrawSpanZt_Mag=TKRA_DrawSpan_BlendModUtx2MortClampZt;
+				}else
+				{
+					ctx->DrawSpan_Mag=TKRA_DrawSpan_BlendModUtx2Mort;
+					ctx->DrawSpanZt_Mag=TKRA_DrawSpan_BlendModUtx2MortZt;
+				}
+			}
+		}
+	}else
+
+#if 1
+	if(trifl&TKRA_TRFL_DOLMAP)
+	{
+		ctx->DrawSpanZb=TKRA_DrawSpan_Zbuf;
+		if(trifl&TKRA_TRFL_NOZWRITE)
+			ctx->DrawSpanZb = TKRA_DrawSpan_ZbNul;
+
+		if(trifl&TKRA_TRFL_MINBL)
+		{
+			if((trifl&TKRA_TRFL_CLAMPS) || (trifl&TKRA_TRFL_CLAMPT))
+			{
+				ctx->DrawSpan_Min=TKRA_DrawSpan_LmapModBlTexMortClampZt;
+				ctx->DrawSpanZt_Min=TKRA_DrawSpan_LmapModBlTexMortClampZt;
+			}else
+			{
+				ctx->DrawSpan_Min=TKRA_DrawSpan_LmapModBlTexMortZt;
+				ctx->DrawSpanZt_Min=TKRA_DrawSpan_LmapModBlTexMortZt;
+			}
+		}else
+		{
+			if((trifl&TKRA_TRFL_CLAMPS) || (trifl&TKRA_TRFL_CLAMPT))
+			{
+				ctx->DrawSpan_Min=TKRA_DrawSpan_LmapModTexMortClampZt;
+				ctx->DrawSpanZt_Min=TKRA_DrawSpan_LmapModTexMortClampZt;
+			}else
+			{
+				ctx->DrawSpan_Min=TKRA_DrawSpan_LmapModTexMortZt;
+				ctx->DrawSpanZt_Min=TKRA_DrawSpan_LmapModTexMortZt;
+			}
+		}
+
+		if(trifl&TKRA_TRFL_MAGBL)
+		{
+			if((trifl&TKRA_TRFL_CLAMPS) || (trifl&TKRA_TRFL_CLAMPT))
+			{
+				ctx->DrawSpan_Mag=TKRA_DrawSpan_LmapModBlTexMortClampZt;
+				ctx->DrawSpanZt_Mag=TKRA_DrawSpan_LmapModBlTexMortClampZt;
+			}else
+			{
+				ctx->DrawSpan_Mag=TKRA_DrawSpan_LmapModBlTexMortZt;
+				ctx->DrawSpanZt_Mag=TKRA_DrawSpan_LmapModBlTexMortZt;
+			}
+		}else
+		{
+			if((trifl&TKRA_TRFL_CLAMPS) || (trifl&TKRA_TRFL_CLAMPT))
+			{
+				ctx->DrawSpan_Mag=TKRA_DrawSpan_LmapModTexMortClampZt;
+				ctx->DrawSpanZt_Mag=TKRA_DrawSpan_LmapModTexMortClampZt;
+			}else
+			{
+				ctx->DrawSpan_Mag=TKRA_DrawSpan_LmapModTexMortZt;
+				ctx->DrawSpanZt_Mag=TKRA_DrawSpan_LmapModTexMortZt;
+			}
+		}
+
+		if(ctx->tex_cur->tex_img_bcn)
+		{
+			if(trifl&TKRA_TRFL_MINBL)
+			{
+				if((trifl&TKRA_TRFL_CLAMPS) || (trifl&TKRA_TRFL_CLAMPT))
+				{
+					ctx->DrawSpan_Min=TKRA_DrawSpan_LmapModBlUtx2MortClampZt;
+					ctx->DrawSpanZt_Min=TKRA_DrawSpan_LmapModBlUtx2MortClampZt;
+				}else
+				{
+					ctx->DrawSpan_Min=TKRA_DrawSpan_LmapModBlUtx2MortZt;
+					ctx->DrawSpanZt_Min=TKRA_DrawSpan_LmapModBlUtx2MortZt;
+				}
+			}else
+			{
+				if((trifl&TKRA_TRFL_CLAMPS) || (trifl&TKRA_TRFL_CLAMPT))
+				{
+					ctx->DrawSpan_Min=TKRA_DrawSpan_LmapModUtx2MortClampZt;
+					ctx->DrawSpanZt_Min=TKRA_DrawSpan_LmapModUtx2MortClampZt;
+				}else
+				{
+					ctx->DrawSpan_Min=TKRA_DrawSpan_LmapModUtx2MortZt;
+					ctx->DrawSpanZt_Min=TKRA_DrawSpan_LmapModUtx2MortZt;
+				}
+			}
+
+			if(trifl&TKRA_TRFL_MAGBL)
+			{
+				if((trifl&TKRA_TRFL_CLAMPS) || (trifl&TKRA_TRFL_CLAMPT))
+				{
+					ctx->DrawSpan_Mag=TKRA_DrawSpan_LmapModBlUtx2MortClampZt;
+					ctx->DrawSpanZt_Mag=TKRA_DrawSpan_LmapModBlUtx2MortClampZt;
+				}else
+				{
+					ctx->DrawSpan_Mag=TKRA_DrawSpan_LmapModBlUtx2MortZt;
+					ctx->DrawSpanZt_Mag=TKRA_DrawSpan_LmapModBlUtx2MortZt;
+				}
+			}else
+			{
+				if((trifl&TKRA_TRFL_CLAMPS) || (trifl&TKRA_TRFL_CLAMPT))
+				{
+					ctx->DrawSpan_Mag=TKRA_DrawSpan_LmapModUtx2MortClampZt;
+					ctx->DrawSpanZt_Mag=TKRA_DrawSpan_LmapModUtx2MortClampZt;
+				}else
+				{
+					ctx->DrawSpan_Mag=TKRA_DrawSpan_LmapModUtx2MortZt;
+					ctx->DrawSpanZt_Mag=TKRA_DrawSpan_LmapModUtx2MortZt;
+				}
+			}
+		}
+	}else
+#endif
+
+		if(trifl&TKRA_TRFL_ALPHA)
 	{
 //		ctx->DrawSpan=TKRA_DrawSpan_DirClr;
 //		ctx->DrawSpan_Min=TKRA_DrawSpan_DirClr;
 //		ctx->DrawSpan_Mag=TKRA_DrawSpan_DirClr;
 
 		ctx->DrawSpan=TKRA_DrawSpan_AlphaModTexMort;
+		ctx->DrawSpanZt=TKRA_DrawSpan_AlphaModTexMortZt;
+
+#if 0
 		ctx->DrawSpan_Min=TKRA_DrawSpan_AlphaModTexMort;
+//		ctx->DrawSpan_Min=TKRA_DrawSpan_AlphaModBlTexMort;
 		ctx->DrawSpan_Mag=TKRA_DrawSpan_AlphaModTexMort;
+//		ctx->DrawSpan_Mag=TKRA_DrawSpan_AlphaModBlTexMort;
+
+		if(ctx->stateflag1&TKRA_STFL1_ALPHATEST)
+		{
+			ctx->DrawSpan=TKRA_DrawSpan_AtestModTexMort;
+			ctx->DrawSpan_Min=TKRA_DrawSpan_AtestModTexMort;
+//			ctx->DrawSpan_Min=TKRA_DrawSpan_AtestModBlTexMort;
+//			ctx->DrawSpan_Mag=TKRA_DrawSpan_AtestModBlTexMort;
+			ctx->DrawSpan_Mag=TKRA_DrawSpan_AtestModTexMort;
+		}
+#endif
+
+		if(trifl&TKRA_TRFL_MINBL)
+		{
+			if(ctx->stateflag1&TKRA_STFL1_ALPHATEST)
+			{
+				ctx->DrawSpan_Min=TKRA_DrawSpan_AtestModBlTexMort;
+				ctx->DrawSpanZt_Min=TKRA_DrawSpan_AtestModBlTexMortZt;
+//				ctx->DrawSpanZt_Min=TKRA_DrawSpan_AlphaModBlTexMortZt;
+			}
+			else
+			{
+				ctx->DrawSpan_Min=TKRA_DrawSpan_AlphaModBlTexMort;
+				ctx->DrawSpanZt_Min=TKRA_DrawSpan_AlphaModBlTexMortZt;
+			}
+		}else
+		{
+			if(ctx->stateflag1&TKRA_STFL1_ALPHATEST)
+			{
+				ctx->DrawSpan_Min=TKRA_DrawSpan_AtestModTexMort;
+				ctx->DrawSpanZt_Min=TKRA_DrawSpan_AtestModTexMortZt;
+//				ctx->DrawSpanZt_Min=TKRA_DrawSpan_AlphaModTexMortZt;
+			}
+			else
+			{
+				ctx->DrawSpan_Min=TKRA_DrawSpan_AlphaModTexMort;
+				ctx->DrawSpanZt_Min=TKRA_DrawSpan_AlphaModTexMortZt;
+			}
+		}
+
+		if(trifl&TKRA_TRFL_MAGBL)
+		{
+			if(ctx->stateflag1&TKRA_STFL1_ALPHATEST)
+			{
+				ctx->DrawSpan_Mag=TKRA_DrawSpan_AtestModBlTexMort;
+//				ctx->DrawSpanZt_Mag=TKRA_DrawSpan_AlphaModBlTexMortZt;
+				ctx->DrawSpanZt_Mag=TKRA_DrawSpan_AtestModBlTexMortZt;
+			}
+			else
+			{
+				ctx->DrawSpan_Mag=TKRA_DrawSpan_AlphaModBlTexMort;
+				ctx->DrawSpanZt_Mag=TKRA_DrawSpan_AlphaModBlTexMortZt;
+			}
+		}else
+		{
+			if(ctx->stateflag1&TKRA_STFL1_ALPHATEST)
+			{
+				ctx->DrawSpan_Mag=TKRA_DrawSpan_AtestModTexMort;
+//				ctx->DrawSpanZt_Mag=TKRA_DrawSpan_AlphaModTexMortZt;
+				ctx->DrawSpanZt_Mag=TKRA_DrawSpan_AtestModTexMortZt;
+			}
+			else
+			{
+				ctx->DrawSpan_Mag=TKRA_DrawSpan_AlphaModTexMort;
+				ctx->DrawSpanZt_Mag=TKRA_DrawSpan_AlphaModTexMortZt;
+			}
+		}
 
 //		ctx->DrawSpanHZt=TKRA_DrawSpan_AlphaModBlTexMortHZt;
-		ctx->DrawSpanHZt=TKRA_DrawSpan_AlphaModTexMortHZt;
-		ctx->DrawSpanHZt_Min=TKRA_DrawSpan_AlphaModTexMortHZt;
+//		ctx->DrawSpanHZt=TKRA_DrawSpan_AlphaModTexMortHZt;
+//		ctx->DrawSpanHZt_Min=TKRA_DrawSpan_AlphaModTexMortHZt;
 //		ctx->DrawSpanHZt_Mag=TKRA_DrawSpan_AlphaModBlTexMortHZt;
-		ctx->DrawSpanHZt_Mag=TKRA_DrawSpan_AlphaModTexMortHZt;
+//		ctx->DrawSpanHZt_Mag=TKRA_DrawSpan_AlphaModTexMortHZt;
 
 		ctx->DrawSpanZb=TKRA_DrawSpan_Zbuf;
+//		ctx->DrawSpanZb = TKRA_DrawSpan_ZbNul;
 
-		ctx->DrawSpanZt=TKRA_DrawSpan_AlphaModTexMortZt;
-		ctx->DrawSpanZt_Min=TKRA_DrawSpan_AlphaModTexMortZt;
-		ctx->DrawSpanZt_Mag=TKRA_DrawSpan_AlphaModTexMortZt;
+		if(trifl&TKRA_TRFL_NOZWRITE)
+			ctx->DrawSpanZb = TKRA_DrawSpan_ZbNul;
+
+//		ctx->DrawSpanZt=TKRA_DrawSpan_AlphaModTexMortZt;
+//		ctx->DrawSpanZt_Min=TKRA_DrawSpan_AlphaModTexMortZt;
+//		ctx->DrawSpanZt_Mag=TKRA_DrawSpan_AlphaModTexMortZt;
+//		ctx->DrawSpanZt_Mag=TKRA_DrawSpan_AlphaModBlTexMortZt;
+
+//		if(trifl&TKRA_TRFL_MINBL)
+//		{
+//			ctx->DrawSpanZt_Min=TKRA_DrawSpan_AlphaModBlTexMortZt;
+//		}
+
+//		if(trifl&TKRA_TRFL_MAGBL)
+//		{
+//			ctx->DrawSpanZt_Mag=TKRA_DrawSpan_AlphaModBlTexMortZt;
+//		}
 
 		if(ctx->tex_cur->tex_img_bcn)
 		{
+#if 0
 			ctx->DrawSpan=TKRA_DrawSpan_AlphaModUtx2Mort;
 			ctx->DrawSpan_Min=TKRA_DrawSpan_AlphaModUtx2Mort;
-			ctx->DrawSpan_Mag=TKRA_DrawSpan_AlphaModUtx2Mort;
+//			ctx->DrawSpan_Min=TKRA_DrawSpan_AlphaModBlUtx2Mort;
+//			ctx->DrawSpan_Mag=TKRA_DrawSpan_AlphaModUtx2Mort;
+			ctx->DrawSpan_Mag=TKRA_DrawSpan_AlphaModBlUtx2Mort;
+
+			if(ctx->stateflag1&TKRA_STFL1_ALPHATEST)
+			{
+				ctx->DrawSpan=TKRA_DrawSpan_AtestModUtx2Mort;
+				ctx->DrawSpan_Min=TKRA_DrawSpan_AtestModUtx2Mort;
+//				ctx->DrawSpan_Min=TKRA_DrawSpan_AtestModBlUtx2Mort;
+//				ctx->DrawSpan_Mag=TKRA_DrawSpan_AtestModUtx2Mort;
+				ctx->DrawSpan_Mag=TKRA_DrawSpan_AtestModBlUtx2Mort;
+			}
 
 			ctx->DrawSpanZt=TKRA_DrawSpan_AlphaModUtx2MortZt;
 			ctx->DrawSpanZt_Min=TKRA_DrawSpan_AlphaModUtx2MortZt;
-			ctx->DrawSpanZt_Mag=TKRA_DrawSpan_AlphaModUtx2MortZt;
+//			ctx->DrawSpanZt_Mag=TKRA_DrawSpan_AlphaModUtx2MortZt;
+			ctx->DrawSpanZt_Mag=TKRA_DrawSpan_AlphaModBlUtx2MortZt;
 
 // #ifdef __BJX2__
 #if 1
 			ctx->DrawSpanZt=TKRA_DrawSpan_AlphaModUtx2MortZb;
 			ctx->DrawSpanZt_Min=TKRA_DrawSpan_AlphaModUtx2MortZb;
-			ctx->DrawSpanZt_Mag=TKRA_DrawSpan_AlphaModUtx2MortZb;
+//			ctx->DrawSpanZt_Mag=TKRA_DrawSpan_AlphaModUtx2MortZb;
+			ctx->DrawSpanZt_Mag=TKRA_DrawSpan_AlphaModBlUtx2MortZb;
 
 			ctx->DrawSpanZb = TKRA_DrawSpan_ZbNul;
 #endif
+#endif
+
+			if(trifl&TKRA_TRFL_MINBL)
+			{
+				if(ctx->stateflag1&TKRA_STFL1_ALPHATEST)
+				{
+					ctx->DrawSpan_Min=TKRA_DrawSpan_AtestModBlUtx2Mort;
+					if(trifl&TKRA_TRFL_NOZWRITE)
+						ctx->DrawSpanZt_Min=TKRA_DrawSpan_AtestModBlUtx2MortZt;
+					else
+						ctx->DrawSpanZt_Min=TKRA_DrawSpan_AtestModBlUtx2MortZb;
+//					ctx->DrawSpanZt_Min=TKRA_DrawSpan_AlphaModBlUtx2MortZb;
+				}
+				else
+				{
+					ctx->DrawSpan_Min=TKRA_DrawSpan_AlphaModBlUtx2Mort;
+					if(trifl&TKRA_TRFL_NOZWRITE)
+						ctx->DrawSpanZt_Min=TKRA_DrawSpan_AlphaModBlUtx2MortZt;
+					else
+						ctx->DrawSpanZt_Min=TKRA_DrawSpan_AlphaModBlUtx2MortZb;
+				}
+			}else
+			{
+				if(ctx->stateflag1&TKRA_STFL1_ALPHATEST)
+				{
+					ctx->DrawSpan_Min=TKRA_DrawSpan_AtestModUtx2Mort;
+					if(trifl&TKRA_TRFL_NOZWRITE)
+						ctx->DrawSpanZt_Min=TKRA_DrawSpan_AtestModUtx2MortZt;
+					else
+						ctx->DrawSpanZt_Min=TKRA_DrawSpan_AtestModUtx2MortZb;
+//					ctx->DrawSpanZt_Min=TKRA_DrawSpan_AlphaModUtx2MortZb;
+				}
+				else
+				{
+					ctx->DrawSpan_Min=TKRA_DrawSpan_AlphaModUtx2Mort;
+					if(trifl&TKRA_TRFL_NOZWRITE)
+						ctx->DrawSpanZt_Min=TKRA_DrawSpan_AlphaModUtx2MortZt;
+					else
+						ctx->DrawSpanZt_Min=TKRA_DrawSpan_AlphaModUtx2MortZb;
+				}
+			}
+
+			if(trifl&TKRA_TRFL_MAGBL)
+			{
+				if(ctx->stateflag1&TKRA_STFL1_ALPHATEST)
+				{
+					ctx->DrawSpan_Mag=TKRA_DrawSpan_AtestModBlUtx2Mort;
+					if(trifl&TKRA_TRFL_NOZWRITE)
+						ctx->DrawSpanZt_Mag=TKRA_DrawSpan_AtestModBlUtx2MortZt;
+					else
+						ctx->DrawSpanZt_Mag=TKRA_DrawSpan_AtestModBlUtx2MortZb;
+//					ctx->DrawSpanZt_Mag=TKRA_DrawSpan_AlphaModBlUtx2MortZb;
+				}
+				else
+				{
+					ctx->DrawSpan_Mag=TKRA_DrawSpan_AlphaModBlUtx2Mort;
+					if(trifl&TKRA_TRFL_NOZWRITE)
+						ctx->DrawSpanZt_Mag=TKRA_DrawSpan_AlphaModBlUtx2MortZt;
+					else
+						ctx->DrawSpanZt_Mag=TKRA_DrawSpan_AlphaModBlUtx2MortZb;
+				}
+			}else
+			{
+				if(ctx->stateflag1&TKRA_STFL1_ALPHATEST)
+				{
+					ctx->DrawSpan_Mag=TKRA_DrawSpan_AtestModUtx2Mort;
+					if(trifl&TKRA_TRFL_NOZWRITE)
+						ctx->DrawSpanZt_Mag=TKRA_DrawSpan_AtestModUtx2MortZt;
+					else
+						ctx->DrawSpanZt_Mag=TKRA_DrawSpan_AtestModUtx2MortZb;
+//					ctx->DrawSpanZt_Mag=TKRA_DrawSpan_AlphaModUtx2MortZb;
+				}
+				else
+				{
+					ctx->DrawSpan_Mag=TKRA_DrawSpan_AlphaModUtx2Mort;
+					if(trifl&TKRA_TRFL_NOZWRITE)
+						ctx->DrawSpanZt_Mag=TKRA_DrawSpan_AlphaModUtx2MortZt;
+					else
+						ctx->DrawSpanZt_Mag=TKRA_DrawSpan_AlphaModUtx2MortZb;
+				}
+			}
+
 		}
 
 	}else
 	{
+#if 0
 		ctx->DrawSpan=TKRA_DrawSpan_ModTexMort;
-		ctx->DrawSpan_Min=TKRA_DrawSpan_ModTexMort;
-		ctx->DrawSpan_Mag=TKRA_DrawSpan_ModTexMort;
+//		ctx->DrawSpan_Min=TKRA_DrawSpan_ModTexMort;
+		ctx->DrawSpan_Min=TKRA_DrawSpan_ModBlTexMort;
+//		ctx->DrawSpan_Mag=TKRA_DrawSpan_ModTexMort;
+		ctx->DrawSpan_Mag=TKRA_DrawSpan_ModBlTexMort;
+
+		if(ctx->stateflag1&TKRA_STFL1_ALPHATEST)
+		{
+			ctx->DrawSpan=TKRA_DrawSpan_AtestModTexMort;
+			ctx->DrawSpan_Min=TKRA_DrawSpan_AtestModTexMort;
+//			ctx->DrawSpan_Min=TKRA_DrawSpan_AtestModBlTexMort;
+			ctx->DrawSpan_Mag=TKRA_DrawSpan_AtestModBlTexMort;
+		}
 
 		ctx->DrawSpanHZt=TKRA_DrawSpan_ModBlTexMortHZt;
 //		ctx->DrawSpanHZt=TKRA_DrawSpan_ModTexMortHZt;
@@ -1665,29 +2559,190 @@ int TKRA_SetupDrawEdgeForTriFlag(TKRA_Context *ctx, int trifl)
 		ctx->DrawSpanZt=TKRA_DrawSpan_ModTexMortZt;
 		ctx->DrawSpanZt_Min=TKRA_DrawSpan_ModTexMortZt;
 		ctx->DrawSpanZt_Mag=TKRA_DrawSpan_ModTexMortZt;
+#endif
+
+		ctx->DrawSpanZb=TKRA_DrawSpan_Zbuf;
+		if(trifl&TKRA_TRFL_NOZWRITE)
+			ctx->DrawSpanZb = TKRA_DrawSpan_ZbNul;
+
+		if(trifl&TKRA_TRFL_MINBL)
+		{
+			if(ctx->stateflag1&TKRA_STFL1_ALPHATEST)
+			{
+				ctx->DrawSpan_Min=TKRA_DrawSpan_AtestModBlTexMort;
+//				ctx->DrawSpanZt_Min=TKRA_DrawSpan_AlphaModBlTexMortZt;
+				ctx->DrawSpanZt_Min=TKRA_DrawSpan_AtestModBlTexMortZt;
+			}
+			else
+			{
+				ctx->DrawSpan_Min=TKRA_DrawSpan_ModBlTexMort;
+				ctx->DrawSpanZt_Min=TKRA_DrawSpan_ModBlTexMortZt;
+			}
+		}else
+		{
+			if(ctx->stateflag1&TKRA_STFL1_ALPHATEST)
+			{
+				ctx->DrawSpan_Min=TKRA_DrawSpan_AtestModTexMort;
+//				ctx->DrawSpanZt_Min=TKRA_DrawSpan_AlphaModTexMortZt;
+				ctx->DrawSpanZt_Min=TKRA_DrawSpan_AtestModTexMortZt;
+			}
+			else
+			{
+				ctx->DrawSpan_Min=TKRA_DrawSpan_ModTexMort;
+				ctx->DrawSpanZt_Min=TKRA_DrawSpan_ModTexMortZt;
+			}
+		}
+
+		if(trifl&TKRA_TRFL_MAGBL)
+		{
+			if(ctx->stateflag1&TKRA_STFL1_ALPHATEST)
+			{
+				ctx->DrawSpan_Mag=TKRA_DrawSpan_AtestModBlTexMort;
+//				ctx->DrawSpanZt_Mag=TKRA_DrawSpan_AlphaModBlTexMortZt;
+				ctx->DrawSpanZt_Mag=TKRA_DrawSpan_AtestModBlTexMortZt;
+			}
+			else
+			{
+				ctx->DrawSpan_Mag=TKRA_DrawSpan_ModBlTexMort;
+				ctx->DrawSpanZt_Mag=TKRA_DrawSpan_ModBlTexMortZt;
+			}
+		}else
+		{
+			if(ctx->stateflag1&TKRA_STFL1_ALPHATEST)
+			{
+				ctx->DrawSpan_Mag=TKRA_DrawSpan_AtestModTexMort;
+//				ctx->DrawSpanZt_Mag=TKRA_DrawSpan_AlphaModTexMortZt;
+				ctx->DrawSpanZt_Mag=TKRA_DrawSpan_AtestModTexMortZt;
+			}
+			else
+			{
+				ctx->DrawSpan_Mag=TKRA_DrawSpan_ModTexMort;
+				ctx->DrawSpanZt_Mag=TKRA_DrawSpan_ModTexMortZt;
+			}
+		}
+
 
 		if(ctx->tex_cur->tex_img_bcn)
 		{
+#if 0
 //			ctx->DrawSpan=TKRA_DrawSpan_AlphaModUtx2Mort;
 //			ctx->DrawSpan_Min=TKRA_DrawSpan_AlphaModUtx2Mort;
 //			ctx->DrawSpan_Mag=TKRA_DrawSpan_AlphaModUtx2Mort;
 
 			ctx->DrawSpan=TKRA_DrawSpan_ModUtx2Mort;
 			ctx->DrawSpan_Min=TKRA_DrawSpan_ModUtx2Mort;
-			ctx->DrawSpan_Mag=TKRA_DrawSpan_ModUtx2Mort;
+//			ctx->DrawSpan_Mag=TKRA_DrawSpan_ModUtx2Mort;
+			ctx->DrawSpan_Mag=TKRA_DrawSpan_ModBlUtx2Mort;
+
+			if(ctx->stateflag1&TKRA_STFL1_ALPHATEST)
+			{
+				ctx->DrawSpan=TKRA_DrawSpan_AtestModUtx2Mort;
+				ctx->DrawSpan_Min=TKRA_DrawSpan_AtestModUtx2Mort;
+//				ctx->DrawSpan_Min=TKRA_DrawSpan_AtestModBlUtx2Mort;
+//				ctx->DrawSpan_Mag=TKRA_DrawSpan_AtestModUtx2Mort;
+				ctx->DrawSpan_Mag=TKRA_DrawSpan_AtestModBlUtx2Mort;
+			}
 
 			ctx->DrawSpanZt=TKRA_DrawSpan_ModUtx2MortZt;
 			ctx->DrawSpanZt_Min=TKRA_DrawSpan_ModUtx2MortZt;
-			ctx->DrawSpanZt_Mag=TKRA_DrawSpan_ModUtx2MortZt;
+//			ctx->DrawSpanZt_Mag=TKRA_DrawSpan_ModUtx2MortZt;
+			ctx->DrawSpanZt_Mag=TKRA_DrawSpan_ModBlUtx2MortZt;
 
 // #ifdef __BJX2__
 #if 1
 			ctx->DrawSpanZt=TKRA_DrawSpan_ModUtx2MortZb;
 			ctx->DrawSpanZt_Min=TKRA_DrawSpan_ModUtx2MortZb;
-			ctx->DrawSpanZt_Mag=TKRA_DrawSpan_ModUtx2MortZb;
+//			ctx->DrawSpanZt_Mag=TKRA_DrawSpan_ModUtx2MortZb;
+			ctx->DrawSpanZt_Mag=TKRA_DrawSpan_ModBlUtx2MortZb;
 
 			ctx->DrawSpanZb = TKRA_DrawSpan_ZbNul;
 #endif
+
+#endif
+
+			ctx->DrawSpan=TKRA_DrawSpan_ModUtx2Mort;
+			ctx->DrawSpanZt=TKRA_DrawSpan_ModUtx2MortZb;
+			ctx->DrawSpanZb = TKRA_DrawSpan_ZbNul;
+
+			if(trifl&TKRA_TRFL_MINBL)
+			{
+				if(ctx->stateflag1&TKRA_STFL1_ALPHATEST)
+				{
+					ctx->DrawSpan_Min=TKRA_DrawSpan_AtestModBlUtx2Mort;
+					if(trifl&TKRA_TRFL_NOZWRITE)
+						ctx->DrawSpanZt_Min=TKRA_DrawSpan_AtestModBlUtx2MortZt;
+					else
+						ctx->DrawSpanZt_Min=TKRA_DrawSpan_AtestModBlUtx2MortZb;
+//					ctx->DrawSpanZt_Min=TKRA_DrawSpan_AlphaModBlUtx2MortZb;
+				}
+				else
+				{
+					ctx->DrawSpan_Min=TKRA_DrawSpan_ModBlUtx2Mort;
+					if(trifl&TKRA_TRFL_NOZWRITE)
+						ctx->DrawSpanZt_Min=TKRA_DrawSpan_ModBlUtx2MortZt;
+					else
+						ctx->DrawSpanZt_Min=TKRA_DrawSpan_ModBlUtx2MortZb;
+				}
+			}else
+			{
+				if(ctx->stateflag1&TKRA_STFL1_ALPHATEST)
+				{
+					ctx->DrawSpan_Min=TKRA_DrawSpan_AtestModUtx2Mort;
+					if(trifl&TKRA_TRFL_NOZWRITE)
+						ctx->DrawSpanZt_Min=TKRA_DrawSpan_AtestModUtx2MortZt;
+					else
+						ctx->DrawSpanZt_Min=TKRA_DrawSpan_AtestModUtx2MortZb;
+//					ctx->DrawSpanZt_Min=TKRA_DrawSpan_AlphaModUtx2MortZb;
+				}
+				else
+				{
+					ctx->DrawSpan_Min=TKRA_DrawSpan_ModUtx2Mort;
+					if(trifl&TKRA_TRFL_NOZWRITE)
+						ctx->DrawSpanZt_Min=TKRA_DrawSpan_ModUtx2MortZt;
+					else
+						ctx->DrawSpanZt_Min=TKRA_DrawSpan_ModUtx2MortZb;
+				}
+			}
+
+			if(trifl&TKRA_TRFL_MAGBL)
+			{
+				if(ctx->stateflag1&TKRA_STFL1_ALPHATEST)
+				{
+					ctx->DrawSpan_Mag=TKRA_DrawSpan_AtestModBlUtx2Mort;
+//					ctx->DrawSpanZt_Mag=TKRA_DrawSpan_AlphaModBlUtx2MortZb;
+					if(trifl&TKRA_TRFL_NOZWRITE)
+						ctx->DrawSpanZt_Mag=TKRA_DrawSpan_AtestModBlUtx2MortZt;
+					else
+						ctx->DrawSpanZt_Mag=TKRA_DrawSpan_AtestModBlUtx2MortZb;
+				}
+				else
+				{
+					ctx->DrawSpan_Mag=TKRA_DrawSpan_ModBlUtx2Mort;
+					if(trifl&TKRA_TRFL_NOZWRITE)
+						ctx->DrawSpanZt_Mag=TKRA_DrawSpan_ModBlUtx2MortZt;
+					else
+						ctx->DrawSpanZt_Mag=TKRA_DrawSpan_ModBlUtx2MortZb;
+				}
+			}else
+			{
+				if(ctx->stateflag1&TKRA_STFL1_ALPHATEST)
+				{
+					ctx->DrawSpan_Mag=TKRA_DrawSpan_AtestModUtx2Mort;
+//					ctx->DrawSpanZt_Mag=TKRA_DrawSpan_AlphaModUtx2MortZb;
+					if(trifl&TKRA_TRFL_NOZWRITE)
+						ctx->DrawSpanZt_Mag=TKRA_DrawSpan_AtestModUtx2MortZt;
+					else
+						ctx->DrawSpanZt_Mag=TKRA_DrawSpan_AtestModUtx2MortZb;
+				}
+				else
+				{
+					ctx->DrawSpan_Mag=TKRA_DrawSpan_ModUtx2Mort;
+					if(trifl&TKRA_TRFL_NOZWRITE)
+						ctx->DrawSpanZt_Mag=TKRA_DrawSpan_ModUtx2MortZt;
+					else
+						ctx->DrawSpanZt_Mag=TKRA_DrawSpan_ModUtx2MortZb;
+				}
+			}
 		}
 	}
 

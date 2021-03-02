@@ -1,7 +1,10 @@
 /*
 MULx.W
  */
+
+`ifndef def_true
 `include "ModDsp48.v"
+`endif
 
 module ExMulW(
 	clock,		reset,
@@ -49,6 +52,7 @@ reg[35:0]		tValRtSxC;
 reg[35:0]		tValRsSxD;
 reg[35:0]		tValRtSxD;
 
+`ifndef def_true
 wire[47:0]	tResMacA;
 wire[47:0]	tResMacB;
 wire[47:0]	tResMacC;
@@ -69,6 +73,7 @@ ModDsp48	macD(
 	{ tValRs[63], tValRs[63], tValRs[63:48] },
 	{ tValRt[63], tValRt[63], tValRt[63:48] },
 	tResMacC, tResMacD);
+`endif
 
 always @*
 begin
@@ -130,10 +135,12 @@ begin
 				tValRn1C[31:16],
 				tValRn1B[31:16],
 				tValRn1A[31:16] };
+`ifndef def_true
 		4'h6:
 			tValRn = {
 				(tValRn1E[35] && !tIdUIxtB[0]) ? UV28_FF : UV28_00,
 				tValRn1E };
+`endif
 		default:
 			tValRn = UV64_00;
 	endcase
@@ -158,6 +165,7 @@ begin
 		tValRn1C	<= tValRsSxC[31:0] * tValRtSxC[31:0];
 		tValRn1D	<= tValRsSxD[31:0] * tValRtSxD[31:0];
 
+`ifndef def_true
 //		if(idLane == 0)
 		if(1'b1)
 		begin
@@ -172,6 +180,7 @@ begin
 		begin
 			tValRn1E <= UV36_XX;
 		end
+`endif
 
 	end
 end

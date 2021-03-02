@@ -95,7 +95,7 @@ ABI: SoftFP
 
 === Registers ===
 
-Registers:
+Registers (Baseline):
 * R0..R31, 64-bit
 ** There are 32, 64-bit GPRs.
 ** R0..R15 will be Primary GPRs (Partially excluding R0, R1, and R15).
@@ -103,11 +103,19 @@ Registers:
 * C0..C31, 64-bit.
 ** Control Registers.
 ** Not all of these necessarily exist.
-* S0..S31, 64-bit
-** Shadow Registers (Reserved).
-* R32..R63, Extended-2 Regs (Possible)
-** May not be encoded directly by most ops.
-** May alias with S0..S31.
+* S0..S31, 64-bit.
+** Reserved.
+
+Registers (Extended):
+* X0..X30, 128-bit
+** Will map to even numbered pairs of GPRs.
+** Encoded as an Xn register with the LSB Clear.
+** Currently, the results of accessing X0 or X14 are undefined.
+* X32..X62, 128-bit
+** Will exist as 128-bit registers beyond the normal GPR space.
+** Encoded as an Xn register with the LSB Set.
+** Will logically exist as pairs, even if not otherwise accessible.
+
 
 Special Purpose Registers:
 * R0 / DLR: Displacement/Low Register.
@@ -1199,8 +1207,8 @@ F0zz Instruction Block:
 *** F0nm_1g79 XOR		Rm, Rn				//
 *** F0nm_1g89 MOV		Rm, Rn				//Rn=Rm
 *** F0nm_1G89 MOVX		Rm, Rn				//MOV, 128-bit
-*** F0nm_1g99 /
-*** F0nm_1G99 /
+*** F0nm_1g99 MOV		Sm, Sn
+*** F0nm_1G99 -
 *** F0nm_1gA9 MOV		Rm, Cn				//Cn=Rm
 *** F0nm_1GA9 SETTRAP	Rn, (Rm)			//(Opt/Dbg) Set Trap Mode
 *** F0nm_1gB9 MOV		Cm, Rn				//Rn=Cm
@@ -1263,9 +1271,9 @@ F0zz Instruction Block:
 *** F0nm_1g9C  EXTS.W	Rm, Rn				//Q=0, I=0
 *** F0nm_1G9C  EXTU.W	Rm, Rn				//Q=1, I=0
 
-*** F0nm_1gAC  MOV		Rm, Sn				//Cn=Rm
+*** F0nm_1gAC  MOV		Rm, Sn				//Sn=Rm
 *** F0nm_1GAC /? SWAP.L	(Rm), Rn			//Exchange Rn with memory at (Rm)
-*** F0nm_1gBC  MOV		Sm, Rn				//Rn=Cm
+*** F0nm_1gBC  MOV		Sm, Rn				//Rn=Sm
 *** F0nm_1GBC /? SWAP.Q	(Rm), Rn			//Exchange Rn with memory at (Rm)
 
 *** F0nm_1eCC / CLNZ{Q}	Rm, Rn				//(CLZ) Count Leading Ones
@@ -1733,6 +1741,27 @@ Jumbo with certain blocks may escape into an alternate set of encoding spaces.
 * FEZZ_zzzz_F0nm_3eo8 ? "OP Rm, Ro, Rn" 
 * ..
 * FEZZ_zzzz_F0nm_3eoF ? "OP Rm, Ro, Rn" 
+
+
+Alternative:
+* FEHX_zzzz_F0nm_ZeoZ ? "OP Rm, Ro, Rn" 
+
+The 'HX' forms an 'Hn' Space.
+* H+e: hnmi+qnmi, Expand Reg fields to 6 bits.
+* FEH0_zzzz_F0nm_ZeoZ  "OP Rm, Ro, Rn" 
+* FEH1_dddd_F0nm_ZedZ  "OP (Rm, Disp22s), Rn" 
+* FEH2_iiii_F0nm_ZeiZ  "OP Rm, Imm22s, Rn" 
+* ...
+
+The H0 space basically mirrors the F0 space.
+* The 'z' bits are reserved for now.
+* For ops which map to F0, they are to be set to 0.
+* They are reserved for future expansion of the opcode space.
+
+The H1..H3 spaces mirror F1..F3.
+
+* FEH0_0ddd_F0dd_Cddd  BRA (PC, Disp33s)
+* FEH0_0ddd_F0dd_Dddd  BSR (PC, Disp33s)
 
 
 ==== Jumbo Op48 ====

@@ -39,7 +39,9 @@ byte	mod_novis[MAX_MAP_LEAFS/8];
 model_t	*mod_known = NULL;
 int		mod_numknown;
 
-cvar_t gl_subdivide_size = {"gl_subdivide_size", "128", true};
+// cvar_t gl_subdivide_size = {"gl_subdivide_size", "128", true};
+// cvar_t gl_subdivide_size = {"gl_subdivide_size", "256", true};
+cvar_t gl_subdivide_size = {"gl_subdivide_size", "512", true};
 
 /*
 ===============
@@ -98,10 +100,12 @@ mleaf_t *Mod_PointInLeaf (vec3_t p, model_t *model)
 			return (mleaf_t *)node;
 		plane = node->plane;
 		d = DotProduct (p,plane->normal) - plane->dist;
-		if (d > 0)
-			node = node->children[0];
-		else
-			node = node->children[1];
+		node = node->children[d<=0];
+
+//		if (d > 0)
+//			node = node->children[0];
+//		else
+//			node = node->children[1];
 	}
 	
 	return NULL;	// never reached
@@ -128,11 +132,15 @@ byte *Mod_DecompressVis (byte *in, model_t *model)
 #else
 	if (!in)
 	{	// no vis info, so make all visible
+#if 0
 		while (row)
 		{
 			*out++ = 0xff;
 			row--;
 		}
+#endif
+
+		memset(decompressed, 0xff, row);
 		return decompressed;		
 	}
 
@@ -146,6 +154,15 @@ byte *Mod_DecompressVis (byte *in, model_t *model)
 	
 		c = in[1];
 		in += 2;
+
+#if 1
+		while(c>=8)
+		{
+			*(u64 *)out = 0;
+			out+=8; c-=8;
+		}
+#endif
+
 		while (c)
 		{
 			*out++ = 0;

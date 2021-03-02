@@ -4,19 +4,62 @@ void tkra_glClearDepth(double depth)
 	int dr;
 	ctx=TKRA_GetCurrentContext();
 	
-	dr=depth*65535;
-	if(dr<0)dr=0;
-	if(dr>65535)dr=65535;
+	dr=depth*32767;
+//	dr=depth*16383;
+//	if(dr<0)dr=0;
+//	if(dr>65535)dr=65535;
+
+	if(dr<-32767)dr=-32767;
+	if(dr> 32767)dr= 32767;
+
+//	if(dr<-16383)dr=-16383;
+//	if(dr> 16383)dr= 16383;
 	
 	ctx->clear_zbuf=dr;
 }
 
 void tkra_glDepthFunc(int func)
 {
+	TKRA_Context *ctx;
+	ctx=TKRA_GetCurrentContext();
+
+	switch(func)
+	{
+	case GL_NEVER:		ctx->zat_zfunc=TKRA_ZAT_NV; break;
+	case GL_ALWAYS:		ctx->zat_zfunc=TKRA_ZAT_AL; break;
+	case GL_EQUAL:		ctx->zat_zfunc=TKRA_ZAT_EQ; break;
+	case GL_NOTEQUAL:	ctx->zat_zfunc=TKRA_ZAT_NE; break;
+	case GL_LESS:		ctx->zat_zfunc=TKRA_ZAT_LT; break;
+	case GL_LEQUAL:		ctx->zat_zfunc=TKRA_ZAT_LE; break;
+	case GL_GREATER:	ctx->zat_zfunc=TKRA_ZAT_GT; break;
+	case GL_GEQUAL:		ctx->zat_zfunc=TKRA_ZAT_GE; break;
+	default:
+		__debugbreak();
+		break;
+	}
+	
+//	TKRA_SetupDrawBlend(ctx);
+	ctx->blend_isready=0;
 }
 
 void tkra_glDepthMask(int flag)
 {
+	TKRA_Context *ctx;
+	ctx=TKRA_GetCurrentContext();
+	switch(flag)
+	{
+	case GL_TRUE:
+		ctx->stateflag1&=~TKRA_STFL1_NODEPTHWRITE;
+		break;
+	case GL_FALSE:
+		ctx->stateflag1|=TKRA_STFL1_NODEPTHWRITE;
+		break;
+	default:
+		ctx->stateflag1&=~TKRA_STFL1_NODEPTHWRITE;
+		break;
+	}
+//	TKRA_SetupDrawBlend(ctx);
+	ctx->blend_isready=0;
 }
 
 void tkra_glDepthRange(double near_val, double far_val)
@@ -26,6 +69,7 @@ void tkra_glDepthRange(double near_val, double far_val)
 	ctx->trans_znear=near_val;
 	ctx->trans_zfar=far_val;
 	ctx->trans_zrange=far_val-near_val;
+	TKRA_RecalcViewport(ctx);
 }
 
 
@@ -51,7 +95,8 @@ void tkra_glClear(unsigned int mask)
 	tkra_zbufpixel *zbuf, *zct, *zcte;
 	byte *sten;
 	u64 px4;
-	int xs, ys, px;
+	u32 px;
+	int xs, ys;
 	int i, j, k, n;
 	
 	ctx=TKRA_GetCurrentContext();
@@ -127,15 +172,41 @@ void tkra_glClear(unsigned int mask)
 
 void tkra_glIndexMask(unsigned int mask)
 {
+	__debugbreak();
 }
 
 void tkra_glColorMask(int red, int green, int blue, int alpha)
 {
+	__debugbreak();
 }
 
 void tkra_glAlphaFunc(int func, float ref)
 {
-	/* NO-OP, Alpha Test not implemented. */
+	TKRA_Context *ctx;
+	int i;
+
+	ctx=TKRA_GetCurrentContext();
+
+	i=ref*255;
+	ctx->zat_cref=(ctx->zat_cref&0x00FFFFFFU)|(i<<24);
+	
+	switch(func)
+	{
+	case GL_NEVER:		ctx->zat_alfunc=TKRA_ZAT_NV; break;
+	case GL_ALWAYS:		ctx->zat_alfunc=TKRA_ZAT_AL; break;
+	case GL_EQUAL:		ctx->zat_alfunc=TKRA_ZAT_EQ; break;
+	case GL_NOTEQUAL:	ctx->zat_alfunc=TKRA_ZAT_NE; break;
+	case GL_LESS:		ctx->zat_alfunc=TKRA_ZAT_LT; break;
+	case GL_LEQUAL:		ctx->zat_alfunc=TKRA_ZAT_LE; break;
+	case GL_GREATER:	ctx->zat_alfunc=TKRA_ZAT_GT; break;
+	case GL_GEQUAL:		ctx->zat_alfunc=TKRA_ZAT_GE; break;
+	default:
+		__debugbreak();
+		break;
+	}
+	
+//	TKRA_SetupDrawBlend(ctx);
+	ctx->blend_isready=0;
 }
 
 void tkra_glBlendFunc(int sfactor, int dfactor)
@@ -162,6 +233,9 @@ void tkra_glBlendFunc(int sfactor, int dfactor)
 			sfn=TKRA_BLEND_ONE_MINUS_DST_ALPHA;	break;
 		case TKRA_GL_ONE_MINUS_DST_COLOR:
 			sfn=TKRA_BLEND_ONE_MINUS_DST_COLOR;	break;
+		default:
+			__debugbreak();
+			break;
 	}
 
 	dfn=TKRA_BLEND_ZERO;
@@ -181,23 +255,60 @@ void tkra_glBlendFunc(int sfactor, int dfactor)
 			dfn=TKRA_BLEND_ONE_MINUS_DST_ALPHA;	break;
 		case TKRA_GL_ONE_MINUS_DST_COLOR:
 			dfn=TKRA_BLEND_ONE_MINUS_DST_COLOR;	break;
+		default:
+			__debugbreak();
+			break;
 	}
 	
 	ctx->blend_sfunc=sfn;
 	ctx->blend_dfunc=dfn;
+	
+//	TKRA_SetupDrawBlend(ctx);
+	ctx->blend_isready=0;
 }
 
 void tkra_glLogicOp(int opcode)
 {
 	/* NO-OP, Exclude Feature */
+	__debugbreak();
 }
 
 void tkra_glCullFace(int mode)
 {
+	TKRA_Context *ctx;
+
+	ctx=TKRA_GetCurrentContext();
+	
+	ctx->stateflag1&=~(TKRA_STFL1_CULL_FT|TKRA_STFL1_CULL_BK);
+	switch(mode)
+	{
+	case GL_FRONT:
+		ctx->stateflag1|=TKRA_STFL1_CULL_FT;
+		break;
+	case GL_BACK:
+		ctx->stateflag1|=TKRA_STFL1_CULL_BK;
+		break;
+	case GL_FRONT_AND_BACK:
+		ctx->stateflag1|=TKRA_STFL1_CULL_FT|TKRA_STFL1_CULL_BK;
+		break;
+	}
 }
 
 void tkra_glFrontFace(int mode)
 {
+	TKRA_Context *ctx;
+
+	ctx=TKRA_GetCurrentContext();
+	
+	switch(mode)
+	{
+	case GL_CW:
+		ctx->stateflag1|=TKRA_STFL1_CULL_CW;
+		break;
+	case GL_CCW:
+		ctx->stateflag1&=~TKRA_STFL1_CULL_CW;
+		break;
+	}
 }
 
 void tkra_glPointSize(float size)
@@ -236,10 +347,12 @@ void tkra_glGetPolygonStipple(byte *mask)
 
 void tkra_glEdgeFlag(int flag)
 {
+	__debugbreak();
 }
 
 void tkra_glEdgeFlagv(const int *flag)
 {
+	__debugbreak();
 }
 
 void tkra_glScissor(int x, int y, int width, int height)
@@ -248,10 +361,12 @@ void tkra_glScissor(int x, int y, int width, int height)
 
 void tkra_glClipPlane(int plane, const double *equation)
 {
+//	__debugbreak();
 }
 
 void tkra_glGetClipPlane(int plane, double *equation)
 {
+	__debugbreak();
 }
 
 void tkra_glDrawBuffer(int mode)
@@ -272,10 +387,35 @@ void tkra_glEnable(int cap)
 	{
 	case TKRA_GL_DEPTH_TEST:
 		ctx->stateflag1|=TKRA_STFL1_DEPTHTEST;
+//		TKRA_SetupDrawBlend(ctx);
+		break;
+	case TKRA_GL_ALPHA_TEST:
+		ctx->stateflag1|=TKRA_STFL1_ALPHATEST;
+//		TKRA_SetupDrawBlend(ctx);
+		break;
+	case TKRA_GL_BLEND:
+		ctx->stateflag1|=TKRA_STFL1_BLEND;
+//		TKRA_SetupDrawBlend(ctx);
+		break;
+	case GL_CULL_FACE:
+		ctx->stateflag1|=TKRA_STFL1_CULLFACE;
+		break;
+	case GL_TEXTURE_2D:
+		break;
+	case GL_SCISSOR_TEST:
+		break;
+	case GL_STENCIL_TEST:
+		break;
+	case GL_CLIP_PLANE0:
+		break;
+	case GL_POLYGON_OFFSET_FILL:
 		break;
 	default:
+		__debugbreak();
 		break;
 	}
+
+	ctx->blend_isready=0;
 }
 
 void tkra_glDisable(int cap)
@@ -286,12 +426,38 @@ void tkra_glDisable(int cap)
 	
 	switch(cap)
 	{
-	case TKRA_GL_DEPTH_TEST:
+//	case TKRA_GL_DEPTH_TEST:
+	case GL_DEPTH_TEST:
 		ctx->stateflag1&=~TKRA_STFL1_DEPTHTEST;
 		break;
+//	case TKRA_GL_ALPHA_TEST:
+	case GL_ALPHA_TEST:
+		ctx->stateflag1&=~TKRA_STFL1_ALPHATEST;
+		break;
+//	case TKRA_GL_BLEND:
+	case GL_BLEND:
+		ctx->stateflag1&=~TKRA_STFL1_BLEND;
+//		TKRA_SetupDrawBlend(ctx);
+		break;
+	case GL_CULL_FACE:
+		ctx->stateflag1&=~TKRA_STFL1_CULLFACE;
+		break;
+	case GL_TEXTURE_2D:
+		break;
+	case GL_SCISSOR_TEST:
+		break;
+	case GL_STENCIL_TEST:
+		break;
+	case GL_CLIP_PLANE0:
+		break;
+	case GL_POLYGON_OFFSET_FILL:
+		break;
 	default:
+		__debugbreak();
 		break;
 	}
+
+	ctx->blend_isready=0;
 }
 
 int tkra_glIsEnabled(int cap)
@@ -301,42 +467,113 @@ int tkra_glIsEnabled(int cap)
 
 void tkra_glEnableClientState(int cap)
 {
+	TKRA_Context *ctx;
+
+	ctx=TKRA_GetCurrentContext();
+	
+	switch(cap)
+	{
+	case GL_VERTEX_ARRAY:
+		ctx->stateflag1|=TKRA_STFL1_VERTEX_ARRAY;
+		break;
+	case GL_NORMAL_ARRAY:
+		ctx->stateflag1|=TKRA_STFL1_NORMAL_ARRAY;
+		break;
+	case GL_COLOR_ARRAY:
+		ctx->stateflag1|=TKRA_STFL1_COLOR_ARRAY;
+		break;
+	case GL_INDEX_ARRAY:
+		ctx->stateflag1|=TKRA_STFL1_INDEX_ARRAY;
+		break;
+	case GL_TEXTURE_COORD_ARRAY:
+		ctx->stateflag1|=TKRA_STFL1_TEXCOORD_ARRAY;
+		break;
+	case GL_EDGE_FLAG_ARRAY:
+		ctx->stateflag1|=TKRA_STFL1_EDGEFLAG_ARRAY;
+		break;
+	}
 }
 
 void tkra_glDisableClientState(int cap)
 {
+	TKRA_Context *ctx;
+
+	ctx=TKRA_GetCurrentContext();
+	
+	switch(cap)
+	{
+	case GL_VERTEX_ARRAY:
+		ctx->stateflag1&=~TKRA_STFL1_VERTEX_ARRAY;
+		break;
+	case GL_NORMAL_ARRAY:
+		ctx->stateflag1&=~TKRA_STFL1_NORMAL_ARRAY;
+		break;
+	case GL_COLOR_ARRAY:
+		ctx->stateflag1&=~TKRA_STFL1_COLOR_ARRAY;
+		break;
+	case GL_INDEX_ARRAY:
+		ctx->stateflag1&=~TKRA_STFL1_INDEX_ARRAY;
+		break;
+	case GL_TEXTURE_COORD_ARRAY:
+		ctx->stateflag1&=~TKRA_STFL1_TEXCOORD_ARRAY;
+		break;
+	case GL_EDGE_FLAG_ARRAY:
+		ctx->stateflag1&=~TKRA_STFL1_EDGEFLAG_ARRAY;
+		break;
+	}
 }
 
 void tkra_glGetBooleanv(int pname, int *params)
 {
+	*params = 0;
 }
 
 void tkra_glGetDoublev(int pname, double *params)
 {
+	*params = 0;
 }
 
 void tkra_glGetFloatv(int pname, float *params)
 {
+	*params = 0;
 }
 
 void tkra_glGetIntegerv(int pname, int *params)
 {
+	int val;
+	
+	val=0;
+
+	switch(pname)
+	{
+	case GL_MAX_TEXTURE_SIZE:
+		val=256; break;
+	default:
+		__debugbreak();
+		break;
+	}
+
+	*params = val;
 }
 
 void tkra_glPushAttrib(unsigned int mask)
 {
+	__debugbreak();
 }
 
 void tkra_glPopAttrib(void)
 {
+	__debugbreak();
 }
 
 void tkra_glPushClientAttrib(unsigned int mask)
 {
+	__debugbreak();
 }
 
 void tkra_glPopClientAttrib(void)
 {
+	__debugbreak();
 }
 
 int tkra_glRenderMode(int mode)

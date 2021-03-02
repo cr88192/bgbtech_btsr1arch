@@ -2690,6 +2690,38 @@ int BGBCC_JX2_ProbeEmitOpRegRegReg(BGBCC_JX2_Context *ctx,
 	return(i);
 }
 
+int BGBCC_JX2_TryNormalizeXReg(
+	BGBCC_JX2_Context *ctx, int nmid, int rs)
+{
+	if((rs&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_LR0)
+	{
+		rs&=31;
+	}
+	else if((rs&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_RQ0)
+	{
+		rs&=31;
+		if(rs&1)
+			return(-1);
+	}
+	else if((rs&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_R0)
+	{
+		rs&=31; 
+		if(rs&1)
+			return(-1);
+	}
+	else
+	{
+		return(-1);
+	}
+	
+	if(rs==0)
+		return(-1);
+	if(rs==14)
+		return(-1);
+	
+	return(rs);
+}
+
 int BGBCC_JX2_TryEmitOpRegRegReg(
 	BGBCC_JX2_Context *ctx, int nmid, int rs, int rt, int rn)
 {
@@ -2721,15 +2753,11 @@ int BGBCC_JX2_TryEmitOpRegRegReg(
 	case BGBCC_SH_NMID_ANDX:
 	case BGBCC_SH_NMID_ORX:
 	case BGBCC_SH_NMID_XORX:
-
-		if((rs&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_LR0)rs&=31;
-		if((rt&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_LR0)rt&=31;
-		if((rn&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_LR0)rn&=31;
-		
-		if(rs&1)	return(0);
-		if(rt&1)	return(0);
-		if(rn&1)	return(0);
-		
+		rs=BGBCC_JX2_TryNormalizeXReg(ctx, nmid, rs);
+		rt=BGBCC_JX2_TryNormalizeXReg(ctx, nmid, rt);
+		rn=BGBCC_JX2_TryNormalizeXReg(ctx, nmid, rn);
+		if((rs<0) || (rt<0) || (rn<0))
+			return(0);
 		break;
 
 	case BGBCC_SH_NMID_SHADX:
@@ -2737,15 +2765,10 @@ int BGBCC_JX2_TryEmitOpRegRegReg(
 	case BGBCC_SH_NMID_SHARX:
 	case BGBCC_SH_NMID_SHLRX:
 	case BGBCC_SH_NMID_ROTLX:
-
-		if((rs&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_LR0)rs&=31;
-//		if((rt&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_LR0)rt&=31;
-		if((rn&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_LR0)rn&=31;
-		
-		if(rs&1)	return(0);
-//		if(rt&1)	return(0);
-		if(rn&1)	return(0);
-		
+		rs=BGBCC_JX2_TryNormalizeXReg(ctx, nmid, rs);
+		rn=BGBCC_JX2_TryNormalizeXReg(ctx, nmid, rn);
+		if((rs<0) || (rn<0))
+			return(0);
 		break;
 	}
 

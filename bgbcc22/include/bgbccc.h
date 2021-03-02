@@ -480,6 +480,8 @@ extern "C" {
 #define BGBCC_FMT_BMP		BGBCC_FOURCC('B', 'M', 'P', ' ')
 #define BGBCC_FMT_AVI		BGBCC_FOURCC('A', 'V', 'I', ' ')
 
+#define BGBCC_FMT_DEF		BGBCC_FOURCC('D', 'E', 'F', ' ')
+
 #endif
 
 /* flags for features the frontend has seen used. */
@@ -611,7 +613,7 @@ BGBPP_Def *next;
 char *name;
 char *value;
 char **args;
-char *t_args[8];
+char *t_args[16];
 };
 
 struct BGBCC_TransState_s {
@@ -747,7 +749,7 @@ int lln;
 int *gs_srcpos;
 int gs_srcmax;
 
-char *fnidx_str[256];
+char *fnidx_str[1024];
 int fnidx_num;
 
 int reqlfn;

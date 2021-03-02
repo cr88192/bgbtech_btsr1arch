@@ -2554,3 +2554,7 @@ void COM_InitFilesystem (void)
 }
 
 
+void *Q_MallocLLn(int sz, char *fn, int ln)
+{
+	return(malloc(sz));
+}

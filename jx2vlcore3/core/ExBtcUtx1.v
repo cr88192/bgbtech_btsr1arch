@@ -59,6 +59,7 @@ reg[ 3:0]	tValSelIx;
 reg			tValSelB;
 reg			tValSelA;
 reg			tDoInterp;
+reg			tDoAlpha;
 
 `ifdef jx2_utx2_interp
 
@@ -69,12 +70,17 @@ assign		tColorB		= regValRs[31:16];
 
 wire[4:0]		tAlphaA;
 wire[4:0]		tAlphaB;
+//assign	tAlphaA = { tColorA[10], tColorA[5],
+//					tColorA[ 0], tColorA[10],
+//					tColorA[ 5] };
+//assign	tAlphaB = { tColorB[10], tColorB[5],
+//					tColorB[ 0], tColorB[10],
+//					tColorB[ 5] };
+
 assign	tAlphaA = { tColorA[10], tColorA[5],
-					tColorA[ 0], tColorA[10],
-					tColorA[ 5] };
+					tColorA[ 0], 2'b00 };
 assign	tAlphaB = { tColorB[10], tColorB[5],
-					tColorB[ 0], tColorB[10],
-					tColorB[ 5] };
+					tColorB[ 0], 2'b00 };
 
 wire[31:0]	tInterpA;
 wire[31:0]	tInterpB;
@@ -94,6 +100,7 @@ ExScAddSc511_8F	interp_Ba(tAlphaA[ 4: 0], tAlphaB[ 4: 0], tInterpB[31:24]);
 always @*
 begin
 	tDoInterp	= 0;
+	tDoAlpha	= 0;
 
 	if(idUIxt[0])
 	begin
@@ -111,17 +118,20 @@ begin
 		tValMr = { regValRs[30:26], regValRs[30:28] };
 		tValMg = { regValRs[25:21], regValRs[25:23] };
 		tValMb = { regValRs[20:16], regValRs[20:18] };
-		tValMa = 8'hFF;
+//		tValMa = 8'hFF;
+		tValMa = { tAlphaB, 3'b0 };
 
 		tValNr = { regValRs[14:10], regValRs[14:12] };
 		tValNg = { regValRs[ 9: 5], regValRs[ 9: 7] };
 		tValNb = { regValRs[ 4: 0], regValRs[ 4: 2] };
-		tValNa = 8'hFF;
+//		tValNa = 8'hFF;
+		tValNa = { tAlphaA, 3'b0 };
 
 		tDoInterp = !(regValRs[15] ^ regValRs[31]);
 		
 		if(regValRs[15])
 		begin
+			tDoAlpha = 1;
 			tValMb = {
 				regValRs[26], regValRs[21], regValRs[16],
 				regValRs[26], regValRs[21], regValRs[16],
@@ -167,28 +177,28 @@ begin
 	begin
 		case( { tValSelB, tValSelA } )
 			2'b00: begin
+				tValSa = tDoAlpha ? tValMa : 8'hFF;
 				tValSr = tValMr;
 				tValSg = tValMg;
 				tValSb = tValMb;
-				tValSa = tValMa;
 			end
 			2'b01: begin
-				tValSa = tInterpB[31:24];
+				tValSa = tDoAlpha ? tInterpB[31:24] : 8'hFF;
 				tValSr = tInterpB[23:16];
 				tValSg = tInterpB[15: 8];
 				tValSb = tInterpB[ 7: 0];
 			end
 			2'b10: begin
-				tValSa = tInterpA[31:24];
+				tValSa = tDoAlpha ? tInterpA[31:24] : 8'hFF;
 				tValSr = tInterpA[23:16];
 				tValSg = tInterpA[15: 8];
 				tValSb = tInterpA[ 7: 0];
 			end
 			2'b11: begin
+				tValSa = tDoAlpha ? tValNa : 8'hFF;
 				tValSr = tValNr;
 				tValSg = tValNg;
 				tValSb = tValNb;
-				tValSa = tValNa;
 			end
 		endcase
 	end

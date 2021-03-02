@@ -1,12 +1,14 @@
 `define jx2_enable_mmu
 `define jx2_enable_fpu
 
+`define jx2_enable_gpr48		//Enable R32..R47
+
 `define	jx2_use_fpu_w			//use wide FPU (GSVX)
 `define	jx2_fcmp_alu			//do FCMP via ALU
 
 `define	jx2_alu_wx				//Enable Wide-ALU
 
-`define	jx2_fpu_longdbl			//Enable FPU LongDouble Ext
+// `define	jx2_fpu_longdbl			//Enable FPU LongDouble Ext
 // `define	jx2_fpu_fmac			//Enable FMAC Operation
 
 // `define jx2_sprs_elrehr			//ELR/EHR/BP as special registers?

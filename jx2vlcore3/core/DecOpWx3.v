@@ -83,6 +83,10 @@ reg[5:0]		opRegAO0;
 reg[5:0]		opRegAN0;
 
 
+reg[5:0]		opRegXM;
+reg[5:0]		opRegXO;
+reg[5:0]		opRegXN;
+
 reg[32:0]		opImmA;
 reg[7:0]		opUCmdA;
 reg[7:0]		opUIxtA;
@@ -304,6 +308,10 @@ begin
 	opRegCO	= JX2_GR_ZZR;
 	opRegCN	= JX2_GR_ZZR;
 
+	opRegXM	= JX2_GR_ZZR;
+	opRegXO	= JX2_GR_ZZR;
+	opRegXN	= JX2_GR_ZZR;
+
 	opIsDwA = 0;
 	opIsDwB = 0;
 	opIsDwC = 0;
@@ -437,6 +445,8 @@ begin
 		opUCmdC	= UV8_00;
 		opUIxtC	= UV8_00;
 
+		opIsScalar	= 1;
+
 		if(opIsDzC)
 		begin
 			opUCmdA[7:6]=opIsDfC?JX2_IXC_CF:JX2_IXC_CT;
@@ -446,6 +456,10 @@ begin
 `endif
 	if(opIsFxA)
 	begin
+//		opRegXM = { istrWord[ 0], istrWord[25], istrWord[ 3: 1], 1'b0 };
+//		opRegXO = { istrWord[20], istrWord[24], istrWord[23:21], 1'b0 };
+//		opRegXN = { istrWord[ 4], istrWord[26], istrWord[ 7: 5], 1'b0 };
+
 `ifdef jx2_enable_ops48
 		if(opIsFCA)
 `else
@@ -570,6 +584,8 @@ begin
 				opUCmdC	= UV8_00;
 				opUIxtC	= UV8_00;
 
+				opIsScalar	= opIsWexJumboA;
+
 				if(opIsDzA)
 				begin
 					opUCmdB[7:6]=opIsDfA?JX2_IXC_CF:JX2_IXC_CT;
@@ -627,6 +643,10 @@ begin
 		opUCmdA	= decOpBz_idUCmd;
 		opUIxtA	= decOpBz_idUIxt;
 
+//		opRegXM = decOpBz_idRegM;
+//		opRegXO = decOpBz_idRegO;
+//		opRegXN = decOpBz_idRegN;
+
 		opRegAM0	= decOpBz_idRegM;
 		opRegAO0	= decOpBz_idRegO;
 		opRegAN0	= decOpBz_idRegN;
@@ -649,6 +669,34 @@ begin
 		
 		opIsScalar	= 1;
 	end
+
+`ifndef def_true
+	if(opIsFxA)
+	begin
+//		opRegXM = { istrWord[ 0], istrWord[25], istrWord[ 3: 1], 1'b0 };
+//		opRegXO = { istrWord[20], istrWord[24], istrWord[23:21], 1'b0 };
+//		opRegXN = { istrWord[ 4], istrWord[26], istrWord[ 7: 5], 1'b0 };
+
+//		opRegXM	= { decOpFzA_idRegM[0], decOpFzA_idRegM[4:1], 1'b0 };
+//		opRegXO	= { decOpFzA_idRegO[0], decOpFzA_idRegO[4:1], 1'b0 };
+//		opRegXN	= { decOpFzA_idRegN[0], decOpFzA_idRegN[4:1], 1'b0 };
+
+		opRegXM	= { opRegAM0[0], opRegAM0[4:1], 1'b0 };
+		opRegXO	= { opRegAO0[0], opRegAO0[4:1], 1'b0 };
+		opRegXN	= { opRegAN0[0], opRegAN0[4:1], 1'b0 };
+
+	end
+	else
+	begin
+		opRegXM = decOpBz_idRegM;
+		opRegXO = decOpBz_idRegO;
+		opRegXN = decOpBz_idRegN;
+	end
+`endif
+
+//	opRegXM	= { opRegAM0[0], opRegAM0[4:1], 1'b0 };
+//	opRegXO	= { opRegAO0[0], opRegAO0[4:1], 1'b0 };
+//	opRegXN	= { opRegAN0[0], opRegAN0[4:1], 1'b0 };
 
 //	if(opIsScalar)
 	if(1'b1)
@@ -747,6 +795,18 @@ begin
 `endif
 
 	end
+
+	opRegXM	= { opRegAM0[0], opRegAM0[4:1], opDualLaneSw };
+	opRegXO	= { opRegAO0[0], opRegAO0[4:1], opDualLaneSw };
+	opRegXN	= { opRegAN0[0], opRegAN0[4:1], opDualLaneSw };
+
+//	opRegXM	= { opRegAM0[0]^opRegAM0[5], opRegAM0[4:1], opDualLaneSw };
+//	opRegXO	= { opRegAO0[0]^opRegAO0[5], opRegAO0[4:1], opDualLaneSw };
+//	opRegXN	= { opRegAN0[0]^opRegAN0[5], opRegAN0[4:1], opDualLaneSw };
+
+//	opRegXM	= { opRegAM0[0]^(opRegAM0[4:1]==4'b0), opRegAM0[4:1], opDualLaneSw };
+//	opRegXO	= { opRegAO0[0]^(opRegAO0[4:1]==4'b0), opRegAO0[4:1], opDualLaneSw };
+//	opRegXN	= { opRegAN0[0]^(opRegAN0[4:1]==4'b0), opRegAN0[4:1], opDualLaneSw };
 	
 	if(opIsDualLane)
 	begin
@@ -778,8 +838,10 @@ begin
 		if(opIsDualLaneRn)
 //		if(1'b1)
 		begin
-			if(opDualLaneSw)
-				opRegAN[0] = !opRegAN0[0];
+			opRegAN = opRegXN;
+//			if(opDualLaneSw)
+//				opRegAN[0] = !opRegAN[0];
+//				opRegAN[0] = !opRegXN[0];
 			opRegBN	= opRegAN;
 			opRegBN[0] = !opRegAN[0];
 		end
@@ -801,15 +863,19 @@ begin
 `ifdef def_true
 		if(opIsDualLaneRm)
 		begin
-			if(opDualLaneSw)
-				opRegAM[0] = !opRegAM0[0];
+			opRegAM = opRegXM;
+//			if(opDualLaneSw)
+//				opRegAM[0] = !opRegAM[0];
+//				opRegAM[0] = !opRegXM[0];
 			opRegBM[0] = !opRegAM[0];
 		end
 
 		if(opIsDualLaneRo)
 		begin
-			if(opDualLaneSw)
-				opRegAO[0] = !opRegAO0[0];
+			opRegAO = opRegXO;
+//			if(opDualLaneSw)
+//				opRegAO[0] = !opRegAO[0];
+//				opRegAO[0] = !opRegXO[0];
 			opRegBO[0] = !opRegAO[0];
 		end
 `endif

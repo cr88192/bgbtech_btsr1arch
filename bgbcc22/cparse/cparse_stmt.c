@@ -512,7 +512,8 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 		if((b[0]=='i') && !bgbcp_strcmp2(b, "if"))
 		{
 			s=BGBCP_Token2(s, b, &ty, ctx->lang);	//(
-			n1=BGBCP_Expression(ctx, &s);
+//			n1=BGBCP_Expression(ctx, &s);
+			n1=BGBCP_Expression2(ctx, &s);
 			s=BGBCP_Token2(s, b, &ty, ctx->lang);	//)
 			n2=BGBCP_BlockStatement3(ctx, &s);
 
@@ -540,7 +541,8 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 		if((b[0]=='w') && !bgbcp_strcmp5(b, "while"))
 		{
 			s=BGBCP_Token2(s, b, &ty, ctx->lang);	//'('
-			n1=BGBCP_Expression(ctx, &s);
+//			n1=BGBCP_Expression(ctx, &s);
+			n1=BGBCP_Expression2(ctx, &s);
 			s=BGBCP_Token2(s, b, &ty, ctx->lang);	//')'
 
 			n2=BGBCP_BlockStatement3(ctx, &s);
@@ -611,7 +613,8 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 				s=BGBCP_Token2(s, b, &ty, ctx->lang);	//'while'
 
 				s=BGBCP_Token2(s, b, &ty, ctx->lang);	//'('
-				n1=BGBCP_Expression(ctx, &s);
+//				n1=BGBCP_Expression(ctx, &s);
+				n1=BGBCP_Expression2(ctx, &s);
 				s=BGBCP_Token2(s, b, &ty, ctx->lang);	//')'
 
 				n=BCCX_NewCst2(&bgbcc_rcst_do_while, "do_while",
@@ -629,7 +632,8 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 		if((b[0]=='s') && !bgbcp_strcmp6(b, "switch"))
 		{
 			s=BGBCP_Token2(s, b, &ty, ctx->lang);	//(
-			n1=BGBCP_Expression(ctx, &s);
+//			n1=BGBCP_Expression(ctx, &s);
+			n1=BGBCP_Expression2(ctx, &s);
 			s=BGBCP_Token2(s, b, &ty, ctx->lang);	//)
 
 			s=BGBCP_Token2(s, b, &ty, ctx->lang); //{

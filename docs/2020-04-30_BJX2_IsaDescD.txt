@@ -424,6 +424,7 @@ Index 1:
 * ( 17): GFPX (128-Bit Long-Double Ops)
 * ( 18): FMAC (FPU Multiply-Accumulate)
 * ( 19): ALUX (128-bit ALU Ops)
+* ( 20): X64R (Set if X32..X62 exist)
 
 Index 31:
 * Hardware Random Number
@@ -1556,27 +1557,31 @@ PSCHNE will update Rn and SR.T based on the first non-matching element.
 
 === RGB Pack/Unpack ===
 
-* F0nm_1g2E  RGB5PCK32		Rm, Rn		//(RGB) RGB555 Pack from RGB32
-* F0nm_1G2E  RGB5PCK64		Rm, Rn		//(RGB) RGB555 Pack from RGB64
-* F0nm_1g3E  RGB5UPCK32		Rm, Rn		//(RGB) RGB555 Unpack to RGB32
-* F0nm_1G3E  RGB5UPCK64		Rm, Rn		//(RGB) RGB555 Unpack to RGB64
-* F0nm_1G4E  RGB32PCK64		Rm, Rn		//(RGB) RGB32 Pack from RGB64
-* F0nm_1G5E  RGB32UPCK64	Rm, Rn		//(RGB) RGB32 Unpack to RGB64
+* F0nm_1g2E  RGB5PCK32		Rm, Rn		//(RGB) RGB555A Pack from RGBA32
+* F0nm_1G2E  RGB5PCK64		Rm, Rn		//(RGB) RGB555A Pack from RGBA64
+* F0nm_1g3E  RGB5UPCK32		Rm, Rn		//(RGB) RGB555A Unpack to RGBA32
+* F0nm_1G3E  RGB5UPCK64		Rm, Rn		//(RGB) RGB555A Unpack to RGBA64
+* F0nm_1G4E  RGB32PCK64		Rm, Rn		//(RGB) RGB32 Pack from RGBA64
+* F0nm_1G5E  RGB32UPCK64	Rm, Rn		//(RGB) RGB32 Unpack to RGBA64
 
 Pack or Unpack RGB values.
 Pack will convert from a wider format to a narrower one.
 Unpack will convert from a narrower format to a wider one.
 
-RGB555:
+RGB555A:
 * 0rrrrrgggggbbbbb, Opaque
 * 1rrrraggggabbbba, Translucent (3 bit Alpha)
 
-Unpacking to RGB555 to RGB32 will mirror the high bits of each component into the low bits, so 43210 is expanded to 8 bits as 43210432. Note that the alpha-blended case will unpack RGB the same as in the opaque case, so 4321a becomes 4321a432. The alpha value will be different, where translucent values will instead fill the low-order bits with 0.
+Unpacking to RGB555A to RGB32 will mirror the high bits of each component into the low bits, so 43210 is expanded to 8 bits as 43210432. Note that the alpha-blended case will unpack RGB the same as in the opaque case, so 4321a becomes 4321a432.
 
-Unpacking to RGB64 will repeat each RGB32 component twice, for all components.
-Unpacking RGB555 to RGB64 will behave as if the value were first unpacked to RGB32 and then to RGB64.
+When unpacking Alpha, the low order bits will be filled with zeroes.
+In the case of opaque pixels (MSB is zero), all alpha bits will be set to ones.
 
-Packing will do the reverse process, keeping only the high order bits and discarding the rest. When packing to RGB555, if the high 4 bits of Alpha are Set, then the pixel will be treated as opaque (and MSB will be clear), otherwise the MSB will be set and the LSB of each component will contain the one of the high 3 bits of the Alpha channel.
+Unpacking to RGBA64 will repeat each RGBA32 component twice, for all components.
+
+Unpacking RGB555A to RGBA64 will behave as if the value were first unpacked to RGBA32 and then from RGBA32 to RGBA64.
+
+Packing will do the reverse process, keeping only the high order bits and discarding the rest. When packing to RGB555A, if the high 4 bits of Alpha are Set, then the pixel will be treated as opaque (and MSB will be clear), otherwise the MSB will be set and the LSB of each component will contain the one of the high 3 bits of the Alpha channel.
 
 
 === SWxP.x (GSV) ===
@@ -1604,6 +1609,77 @@ SWAP.x will exchange a the low element with another element, whereas SWCP.x will
 
 Other than the first element, the others will be labeled as Low, Middle, and High. Low will correspond to the lower-order bits of the register, and High will correspond with the higher order bits.
 
+
+=== BLKUTX1 (RGB) ===
+
+* F0nm_2goC  BLKUTX1	Rm, Ro, Rn
+
+Extract pixels from blocks encoded in UTX1.
+
+UTX1 will encode 16 pixels in 32-bits (2bpp).
+
+The Rm field will give the pixel block, and Ro will give an index into this block. Only the low order bits of Ro will be used, with any other bits being ignored.
+
+The output given in Rn will be in unpacked RGBA64 form, with the alpha channel set as FFFF.
+
+For UTX1, the colors endpoints will be given as an RGB444 center, and a 4-bit Delta (YMax-YMin), with 16-bits for pixel data: PPPPDRGB.
+
+The RGB components and delta will be expanded to 8 bits by repeating the nybble.
+
+The Delta will be used to calculate the minimum and maximum colors, and will need to be chosen such that the RGB components do not overflow or underflow.
+
+Where:
+* Cm=Cc-(D>>1);		//Minimum
+* Cn=Cm+D;			//Maximum
+* Repeated for all 3 components.
+
+Within the pixel bits, 0 will select the minimum color, and 1 will select the maximum color.
+
+
+=== BLKUTX2 (RGB) ===
+
+* F0nm_2GoC  BLKUTX2	Rm, Ro, Rn
+
+Extract pixels from blocks encoded in UTX2.
+
+UTX2 will encode 16 pixels in 64-bits (4bpp).
+
+The Rm field will give the pixel block, and Ro will give an index into this block. Only the low order bits of Ro will be used, with any other bits being ignored.
+
+The output given in Rn will be in unpacked RGBA64 form.
+
+For UTX2, a pair of RGB555A endpoints will be given:
+* (15: 0): Color A
+* (31:16): Color B
+* (63:32): Pixel Bits (4x4, 2bpp)
+
+The alpha bits of the first and second endpoint will encode a mode (A,B):
+* 00: Opaque Block, Linear Interpolation.
+** Both endpoints will be interpreted as being Opaque.
+* 01: Bit-Select Alpha
+** Both endpoints will be interpreted as having Alpha.
+* 10: Reserved
+* 11: Translucent Block, Linear Interpolation.
+** Both endpoints will be interpreted as having Alpha.
+
+With linear interpolation, for each 2 bit pixel:
+* 00: ColorB
+* 01: 2/3*ColorB + 1/3*ColorA
+* 10: 1/3*ColorB + 2/3*ColorA
+* 11: ColorA
+
+For interpolated translucent blocks, the alpha will be interpolated along with the color.
+
+
+For bit select alpha, the high bit will be interpreted as selecting the color, with the low bit selecting the alpha. No interpolation will be performed.
+
+With bit-selection, for each 2 bit pixel:
+* 00: ColorB, AlphaB
+* 01: ColorB, AlphaA
+* 10: ColorA, AlphaB
+* 11: ColorA, AlphaA
+
+Pixel ordering will be such that 0 refers to the pixel at the low order bit position, and 15 at the high order bit position. These operations will not care about the internal pixel ordering within the block (which may be either raster or morton).
 
 
 == GFP Instructions (GPR FPU Ops, Optional) ==

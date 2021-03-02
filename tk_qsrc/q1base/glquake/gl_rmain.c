@@ -55,6 +55,7 @@ vec3_t	vup;
 vec3_t	vpn;
 vec3_t	vright;
 vec3_t	r_origin;
+vec3_t	v_relorg;
 
 float	r_world_matrix[16];
 float	r_base_world_matrix[16];
@@ -120,7 +121,40 @@ Returns true if the box is completely outside the frustom
 */
 qboolean R_CullBox (vec3_t mins, vec3_t maxs)
 {
+	vec3_t	org;
+	float rad, prj_r;
+	float prj_x, prj_y;
+	float dist, dist_r;
 	int		i;
+
+#if 0
+	rad = BoxCenterRadius(mins, maxs, org);
+	prj_x = DotProduct(org, vright) - v_relorg[0];
+	prj_y = DotProduct(org, vup) - v_relorg[1];
+	dist = DotProduct(org, vpn) - v_relorg[2];
+
+	if(dist < (-rad))
+		return(true);
+
+	if(dist<1)
+		dist = 1;
+
+//	dist_r = Q_rsqrt_d(dist);
+	dist_r = 1.0 / dist;
+
+	prj_x *= dist_r;
+	prj_y *= dist_r;
+	prj_r = rad * dist_r;
+	
+	if((prj_x+prj_r)<(-1.0))
+		return(true);
+	if((prj_x-prj_r)>( 1.0))
+		return(true);
+	if((prj_y+prj_r)<(-1.0))
+		return(true);
+	if((prj_y-prj_r)>( 1.0))
+		return(true);
+#endif
 
 	for (i=0 ; i<4 ; i++)
 		if (BoxOnPlaneSide (mins, maxs, &frustum[i]) == 2)
@@ -128,6 +162,22 @@ qboolean R_CullBox (vec3_t mins, vec3_t maxs)
 	return false;
 }
 
+qboolean R_CullSphere (vec3_t org, vec_t rad)
+{
+	mplane_t *p;
+	float	d;
+	int		i;
+
+	for (i=0 ; i<4 ; i++)
+	{
+//		p = &frustum[i];
+		p = frustum + i;
+		d = DotProduct(org, p->normal) - p->dist;
+		if( d < (-rad))
+			return true;
+	}
+	return(false);
+}
 
 void R_RotateForEntity (entity_t *e)
 {
@@ -299,7 +349,7 @@ GL_DrawAliasFrame
 void GL_DrawAliasFrame (aliashdr_t *paliashdr, int posenum)
 {
 //	static float	vtxa[MAXALIASVERTS*2*8];
-	static float	*vtxa = NULL;
+	static qgl_hfloat	*vtxa = NULL;
 
 	float	s, t, s2, scs, sct;
 	float 	l;
@@ -310,7 +360,8 @@ void GL_DrawAliasFrame (aliashdr_t *paliashdr, int posenum)
 	trivertx_t	*v, *verts;
 	stvert_t	*stverts, *st;
 	float		*stfverts, *stfv;
-	float 		*fv, *fv2;
+//	float 		*fv, *fv2;
+	qgl_hfloat 	*fv, *fv2;
 	short		*tridx;
 	int		i0, i1, i2;
 	mtriangle_t	*ptri;
@@ -367,7 +418,7 @@ lastposenum = posenum;
 #if 1
 	if(!vtxa)
 	{
-		vtxa=malloc(MAXALIASVERTS*2*8*sizeof(float));
+		vtxa=malloc(MAXALIASVERTS*2*8*sizeof(qgl_hfloat));
 	}
 
 	order = (void *)((byte *)paliashdr + paliashdr->p_poseverts);
@@ -416,7 +467,8 @@ lastposenum = posenum;
 //		j = l*255;
 //		if(j>255)j=255;
 //		j = 0xFF000000|(j<<16)|(j<<8)|j;
-		*((int *)(fv+7)) = j;
+//		*((int *)(fv+7)) = j;
+		*((int *)(fv+6)) = j;
 
 		fv += 8;
 		stfv += 2;
@@ -427,7 +479,7 @@ lastposenum = posenum;
 	for(i=0; i<paliashdr->n_osvidx; i++)
 	{
 		fv2 = vtxa + tridx[i]*8;
-		memcpy(fv, fv2, 8*sizeof(float));
+		memcpy(fv, fv2, 8*sizeof(qgl_hfloat));
 		fv[3] = stfv[0];
 		fv[4] = stfv[1];
 
@@ -439,17 +491,25 @@ lastposenum = posenum;
 	}
 
 	tridx = (void *)((byte *)paliashdr + paliashdr->p_tridx);
-	step = 8 * sizeof(float);
+	step = 8 * sizeof(qgl_hfloat);
 
 	qglEnableClientState(GL_VERTEX_ARRAY);
 	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	qglEnableClientState(GL_COLOR_ARRAY);
 
-	qglVertexPointer(3, GL_FLOAT, step, vtxa+0);
-	qglTexCoordPointer(2, GL_FLOAT, step, vtxa+3);
-	qglColorPointer(4,  GL_UNSIGNED_BYTE, step, vtxa+7);
+#ifdef QGL_HFLOAT
+	qglVertexPointer(3, GL_HALF_FLOAT, step, vtxa+0);
+	qglTexCoordPointer(2, GL_HALF_FLOAT, step, vtxa+3);
+	qglColorPointer(4,  GL_UNSIGNED_BYTE, step, vtxa+6);
 	qglDrawElements(GL_TRIANGLES, paliashdr->numtris*3,
 		GL_UNSIGNED_SHORT, tridx);
+#else
+	qglVertexPointer(3, GL_FLOAT, step, vtxa+0);
+	qglTexCoordPointer(2, GL_FLOAT, step, vtxa+3);
+	qglColorPointer(4,  GL_UNSIGNED_BYTE, step, vtxa+6);
+	qglDrawElements(GL_TRIANGLES, paliashdr->numtris*3,
+		GL_UNSIGNED_SHORT, tridx);
+#endif
 
 	qglDisableClientState(GL_VERTEX_ARRAY);
 	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -957,6 +1017,10 @@ void R_SetFrustum (void)
 		frustum[i].dist = DotProduct (r_origin, frustum[i].normal);
 		frustum[i].signbits = SignbitsForPlane (&frustum[i]);
 	}
+	
+	v_relorg[0] = DotProduct(r_origin, vright);
+	v_relorg[1] = DotProduct(r_origin, vup);
+	v_relorg[2] = DotProduct(r_origin, vpn);
 }
 
 

@@ -830,15 +830,18 @@ void btesh_main_iterate()
 		gfxdrv_kill=1;
 
 #if 1
-	do {
-		i=BJX2_RunLimit(ctx_c2, rcy);
+	if(ctx_c2)
+	{
+		do {
+			i=BJX2_RunLimit(ctx_c2, rcy);
 
-		if(i || ctx_c2->req_kill)
-			break;
+			if(i || ctx_c2->req_kill)
+				break;
 
-		ms1=FRGL_TimeMS();
-		ms=ms1-lms1;
-	} while((ctx_c2->tot_cyc<cyc) && (ms<28));
+			ms1=FRGL_TimeMS();
+			ms=ms1-lms1;
+		} while((ctx_c2->tot_cyc<cyc) && (ms<28));
+	}
 #endif
 
 // #ifndef linux
@@ -998,10 +1001,12 @@ int main(int argc, char *argv[])
 		ctx->dbg_bss_end=0;
 	}
 
-	ctx_c2=BJX2_CreateSubContext(ctx);
+//	ctx_c2=BJX2_CreateSubContext(ctx);
+	ctx_c2=NULL;
 	
 	ctx->core_id=0;
-	ctx_c2->core_id=1;
+	if(ctx_c2)
+		ctx_c2->core_id=1;
 
 	ctx->use_jit=0;
 	ctx->no_memcost=0;
@@ -1013,19 +1018,22 @@ int main(int argc, char *argv[])
 //	ctx->use_jit=1;
 //	ctx_c2->use_jit=1;
 	ctx->no_memcost=1;
-	ctx_c2->no_memcost=1;
+	if(ctx_c2)
+		ctx_c2->no_memcost=1;
 #endif
 
 	if(usejit)
 	{
 		ctx->use_jit=(usejit&1);
-		ctx_c2->use_jit=(usejit&1);
+		if(ctx_c2)
+			ctx_c2->use_jit=(usejit&1);
 	}
 
 	if(nomemcost)
 	{
 		ctx->no_memcost=(nomemcost&1);
-		ctx_c2->no_memcost=(nomemcost&1);
+		if(ctx_c2)
+			ctx_c2->no_memcost=(nomemcost&1);
 	}
 
 //	ctx->ttick_hk=3052;
@@ -1040,10 +1048,15 @@ int main(int argc, char *argv[])
 //	ctx->ttick_rst=100000000/1024;
 	ctx->ttick_hk=ctx->ttick_rst;
 
-	ctx_c2->tgt_mhz=ctx->tgt_mhz;
-	ctx_c2->rcp_mhz=ctx->rcp_mhz;
-	ctx_c2->ttick_rst=ctx->ttick_rst;
-	ctx_c2->ttick_hk=ctx->ttick_hk;
+	if(ctx_c2)
+	{
+		ctx_c2->tgt_mhz=ctx->tgt_mhz;
+		ctx_c2->rcp_mhz=ctx->rcp_mhz;
+		ctx_c2->ttick_rst=ctx->ttick_rst;
+		ctx_c2->ttick_hk=ctx->ttick_hk;
+	}
+
+//	ctx_c2=NULL;
 
 #ifdef __linux
 	i = fcntl(0, F_GETFL, 0);

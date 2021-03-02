@@ -492,9 +492,11 @@ void BJX2_Op_RGBMOD_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 void BJX2_Op_RGB5PCK32_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	u64	vs, vt, vn, msk;
+	int av;
 
 	vs=ctx->regs[op->rm];
 
+#if 0
 	vn=	((vs>> 3)&0x0000001F)|
 		((vs>> 6)&0x000003E0)|
 		((vs>> 9)&0x00007C00)|
@@ -502,7 +504,30 @@ void BJX2_Op_RGB5PCK32_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 		((vs>>22)&0x03E00000)|
 		((vs>>25)&0x7C000000);
 //	vn|=vn<<16;
-	vn|=vn<<32;
+//	vn|=vn<<32;
+#endif
+
+#if 1
+	vn=	((vs>> 3)&0x0000001F)|
+		((vs>> 6)&0x000003E0)|
+		((vs>> 9)&0x00007C00);
+//	vn|=vn<<16;
+//	vn|=vn<<32;
+
+	av=(vs>>28)&15;
+	if(av!=15)
+	{
+		vn&=0x7BDE;
+		vn|=0x8000;
+		if(av&8)
+			vn|=0x0400;
+		if(av&4)
+			vn|=0x0020;
+		if(av&2)
+			vn|=0x0001;
+	}
+
+#endif
 
 	ctx->regs[op->rn]=vn;
 }
@@ -516,7 +541,7 @@ void BJX2_Op_RGB5UPCK32_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 	vs=ctx->regs[op->rm];
 
-#if 1
+#if 0
 	vn=	((vs&0x0000001F)<< 3)|
 		((vs&0x000003E0)<< 6)|
 		((vs&0x00007C00)<< 9)|
@@ -526,15 +551,18 @@ void BJX2_Op_RGB5UPCK32_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 		0xFF000000FF000000ULL;
 #endif
 
-#if 0
+#if 1
 	av=(vs&0x0001)|((vs&0x0020)>>4)|((vs&0x0400)>>8);
-	av=av<<13;
-	ax=(vs&0x001F)<<11;
-	ay=(vs&0x03E0)<< 6;
-	az=(vs&0x7C00)<< 1;
-	aw=(vs&0x8000)?av:0xFFFF;
-	vn=	(((u64)ax)<< 0) | (((u64)ay)<<16) |
-		(((u64)az)<<32) | (((u64)aw)<<48) ;
+	av=av<<5;
+	ax=(vs&0x001F)<<3;
+	ay=(vs&0x03E0)>>2;
+	az=(vs&0x7C00)>>7;
+	ax|=ax>>5;
+	ay|=ay>>5;
+	az|=az>>5;
+	aw=(vs&0x80)?av:0xFF;
+	vn=	(((u64)ax)<< 0) | (((u64)ay)<<8) |
+		(((u64)az)<<16) | (((u64)aw)<<24) ;
 #endif
 
 	ctx->regs[op->rn]=vn;
@@ -543,6 +571,7 @@ void BJX2_Op_RGB5UPCK32_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 void BJX2_Op_RGB5PCK64_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	u64	vs, vt, vn, msk;
+	int av;
 
 	vs=ctx->regs[op->rm];
 
@@ -550,8 +579,19 @@ void BJX2_Op_RGB5PCK64_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	vn=	((vs>>11)&0x001F)|
 		((vs>>22)&0x03E0)|
 		((vs>>33)&0x7C00);
-	vn|=vn<<16;
-	vn|=vn<<32;
+	
+	av=(vs>>60)&15;
+	if(av!=15)
+	{
+		vn&=0x7BDE;
+		vn|=0x8000;
+		if(av&8)vn|=0x0400;
+		if(av&4)vn|=0x0020;
+		if(av&2)vn|=0x0001;
+	}
+		
+//	vn|=vn<<16;
+//	vn|=vn<<32;
 #endif
 
 	ctx->regs[op->rn]=vn;
@@ -575,10 +615,22 @@ void BJX2_Op_RGB5UPCK64_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	
 #if 1
 	av=(vs&0x0001)|((vs&0x0020)>>4)|((vs&0x0400)>>8);
-	av=av<<13;
-	ax=(vs&0x001F)<<11;
-	ay=(vs&0x03E0)<< 6;
-	az=(vs&0x7C00)<< 1;
+//	av=av<<13;
+//	ax=(vs&0x001F)<<11;
+//	ay=(vs&0x03E0)<< 6;
+//	az=(vs&0x7C00)<< 1;
+
+	av=av<<5;
+	av=av|(av<<8);
+
+	ax=(vs&0x001F)<<3;
+	ay=(vs&0x03E0)>>2;
+	az=(vs&0x7C00)>>7;
+	ax|=ax>>5; ay|=ay>>5; az|=az>>5;
+	ax=ax|(ax<<8);
+	ay=ay|(ay<<8);
+	az=az|(az<<8);
+
 	aw=(vs&0x8000)?av:0xFFFF;
 	vn=	(((u64)ax)<< 0) | (((u64)ay)<<16) |
 		(((u64)az)<<32) | (((u64)aw)<<48) ;
@@ -609,6 +661,7 @@ void BJX2_Op_RGB32UPCK64_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 		((vs&0x0000FF00)<<16)|
 		((vs&0x00FF0000)<<24)|
 		((vs&0xFF000000)<<32);
+	vn|=(vn>>8);
 	ctx->regs[op->rn]=vn;
 }
 
@@ -998,10 +1051,19 @@ u64 tkra_rgbupck64(u16 a)
 
 //	av=(a&0x0001)|((a&0x0020)>>5)|((a&0x0400)>>10);
 	av=(a&0x0001)|((a&0x0020)>>4)|((a&0x0400)>>8);
-	av=av<<13;
-	ax=(a&0x001F)<<11;
-	ay=(a&0x03E0)<< 6;
-	az=(a&0x7C00)<< 1;
+//	av=av<<13;
+//	ax=(a&0x001F)<<11;
+//	ay=(a&0x03E0)<< 6;
+//	az=(a&0x7C00)<< 1;
+
+	av=av<<5;
+	ax=(a&0x001F)<<3;
+	ay=(a&0x03E0)>>2;
+	az=(a&0x7C00)>>7;
+	ax|=(ax>>5);	ay|=(ay>>5);	az|=(az>>5);
+	ax=ax|(ax<<8);	ay=ay|(ay<<8);
+	az=az|(az<<8);	av=av|(av<<8);
+
 	aw=(a&0x8000)?av:0xFFFF;
 	c=	(((u64)ax)<< 0) | (((u64)ay)<<16) |
 		(((u64)az)<<32) | (((u64)aw)<<48) ;

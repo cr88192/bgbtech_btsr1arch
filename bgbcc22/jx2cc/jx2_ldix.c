@@ -558,8 +558,8 @@ int BGBCC_JX2C_EmitLdixVRegVRegVReg(
 		if(BGBCC_CCXL_TypeFloat16P(ctx, type) ||
 			BGBCC_CCXL_TypeBFloat16P(ctx, type))
 		{
-			if((cdreg&BGBCC_SH_REG_RTMASK)!=BGBCC_SH_REG_FR0)
-				{ BGBCC_DBGBREAK }
+//			if((cdreg&BGBCC_SH_REG_RTMASK)!=BGBCC_SH_REG_FR0)
+//				{ BGBCC_DBGBREAK }
 			ctreg2=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
 //			BGBCC_JX2_EmitOpRegReg(sctx,
 //				BGBCC_SH_NMID_STHF16, csreg, ctreg);

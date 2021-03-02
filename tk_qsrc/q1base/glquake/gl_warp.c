@@ -120,7 +120,9 @@ void SubdividePolygon (int numverts, float *verts)
 		return;
 	}
 
-	poly = Hunk_Alloc (sizeof(glpoly_t) + (numverts-4) * VERTEXSIZE*sizeof(float));
+//	poly = Hunk_Alloc (sizeof(glpoly_t) + (numverts-4) * VERTEXSIZE*sizeof(float));
+	poly = Hunk_Alloc (sizeof(glpoly_t) + (numverts-4) *
+		VERTEXSIZE * sizeof(qgl_hfloat));
 	poly->next = warpface->polys;
 	warpface->polys = poly;
 	poly->numverts = numverts;
@@ -133,6 +135,9 @@ void SubdividePolygon (int numverts, float *verts)
 		poly->verts[i][4] = t;
 	}
 }
+
+mvertex_t	*r_pcurrentvertbase;
+model_t		*currentmodel;
 
 /*
 ================
@@ -151,6 +156,13 @@ void GL_SubdivideSurface (msurface_t *fa)
 	int			lindex;
 	float		*vec;
 	texture_t	*t;
+
+//	return;
+
+	currentmodel = loadmodel;
+	r_pcurrentvertbase = currentmodel->vertexes;
+
+	BoundSurface(fa);
 
 	warpface = fa;
 
@@ -246,7 +258,8 @@ Does a water warp on the pre-fragmented glpoly_t chain
 void EmitWaterPolys (msurface_t *fa)
 {
 	glpoly_t	*p;
-	float		*v;
+//	float		*v;
+	qgl_hfloat	*v;
 	int			i;
 	float		s, t, os, ot, ttsc, sofs, tofs;
 
@@ -278,7 +291,8 @@ void EmitWaterPolys (msurface_t *fa)
 //			t=ot;
 
 			qglTexCoord2f (s, t);
-			qglVertex3fv (v);
+//			qglVertex3fv (v);
+			qglVertex3f (v[0], v[1], v[2]);
 		}
 		qglEnd ();
 	}
@@ -295,7 +309,8 @@ EmitSkyPolys
 void EmitSkyPolys (msurface_t *fa)
 {
 	glpoly_t	*p;
-	float		*v;
+//	float		*v;
+	qgl_hfloat	*v;
 	int			i;
 	float	s, t;
 	vec3_t	dir;
@@ -321,7 +336,8 @@ void EmitSkyPolys (msurface_t *fa)
 			t = (speedscale + dir[1]) * (1.0/128);
 
 			qglTexCoord2f (s, t);
-			qglVertex3fv (v);
+//			qglVertex3fv (v);
+			qglVertex3f (v[0], v[1], v[2]);
 		}
 		qglEnd ();
 	}
@@ -340,7 +356,7 @@ void EmitBothSkyLayers (msurface_t *fa)
 {
 	int			i;
 	int			lindex;
-	float		*vec;
+//	float		*vec;
 
 	GL_DisableMultitexture();
 

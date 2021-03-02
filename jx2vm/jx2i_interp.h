@@ -46,8 +46,6 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_REG_R14	14
 #define BJX2_REG_R15	15
 
-#define BJX2_REG_SP	15
-
 #define BJX2_REG_R16	16
 #define BJX2_REG_R17	17
 #define BJX2_REG_R18	18
@@ -65,20 +63,66 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_REG_R30	30
 #define BJX2_REG_R31	31
 
+// #define BJX2_REG_REMAP
 
+#ifndef BJX2_REG_REMAP
+#define BJX2_REG_DLR	0
+#define BJX2_REG_DHR	1
+#define BJX2_REG_SP		15
+#endif
+
+#ifdef BJX2_REG_REMAP
+#define BJX2_REG_DLR	32
+#define BJX2_REG_DHR	33
+#define BJX2_REG_SP		47
+#endif
+
+#define BJX2_REG_DR		BJX2_REG_DLR
+
+#define BJX2_REG_R32	32
+#define BJX2_REG_R33	33
+#define BJX2_REG_R34	34
+#define BJX2_REG_R35	35
+#define BJX2_REG_R36	36
+#define BJX2_REG_R37	37
+#define BJX2_REG_R38	38
+#define BJX2_REG_R39	39
+#define BJX2_REG_R40	40
+#define BJX2_REG_R41	41
+#define BJX2_REG_R42	42
+#define BJX2_REG_R43	43
+#define BJX2_REG_R44	44
+#define BJX2_REG_R45	45
+#define BJX2_REG_R46	46
+#define BJX2_REG_R47	47
+
+#define BJX2_REG_R48	48
+#define BJX2_REG_R49	49
+#define BJX2_REG_R50	50
+#define BJX2_REG_R51	51
+#define BJX2_REG_R52	52
+#define BJX2_REG_R53	53
+#define BJX2_REG_R54	54
+#define BJX2_REG_R55	55
+#define BJX2_REG_R56	56
+#define BJX2_REG_R57	57
+#define BJX2_REG_R58	58
+#define BJX2_REG_R59	59
+#define BJX2_REG_R60	60
+#define BJX2_REG_R61	61
+#define BJX2_REG_R62	62
+#define BJX2_REG_R63	63
+
+
+#if 0
 #define BJX2_REG_PC		32
 #define BJX2_REG_LR		33
 #define BJX2_REG_SR		34
 #define BJX2_REG_VBR	35
-
-// #define BJX2_REG_DLR	36
-// #define BJX2_REG_DHR	37
 #define BJX2_REG_SPC	36
 #define BJX2_REG_SSP	37
-
 #define BJX2_REG_GBR	38
 #define BJX2_REG_TBR	39
-
 #define BJX2_REG_TTB	40
 #define BJX2_REG_TEA	41
 #define BJX2_REG_MMCR	42
@@ -86,13 +130,50 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_REG_STTB	44
 #define BJX2_REG_KRR	45
 
+#define BJX2_REG_IMM	62
 #define BJX2_REG_ZZR	63
+#endif
 
-#define BJX2_REG_DLR	0
-#define BJX2_REG_DHR	1
+#if 0
+#define BJX2_REG_PC		48
+#define BJX2_REG_LR		49
+#define BJX2_REG_SR		50
+#define BJX2_REG_VBR	51
+#define BJX2_REG_SPC	52
+#define BJX2_REG_SSP	53
+#define BJX2_REG_GBR	54
+#define BJX2_REG_TBR	55
+#define BJX2_REG_TTB	56
+#define BJX2_REG_TEA	57
+#define BJX2_REG_MMCR	58
+#define BJX2_REG_EXSR	59
+#define BJX2_REG_STTB	60
+#define BJX2_REG_KRR	61
+#define BJX2_REG_IMM	62
+#define BJX2_REG_ZZR	63
+#endif
 
-#define BJX2_REG_DR	BJX2_REG_DLR
+#if 1
+#define BJX2_REG_PC		64
+#define BJX2_REG_LR		65
+#define BJX2_REG_SR		66
+#define BJX2_REG_VBR	67
+#define BJX2_REG_SPC	68
+#define BJX2_REG_SSP	69
+#define BJX2_REG_GBR	70
+#define BJX2_REG_TBR	71
+#define BJX2_REG_TTB	72
+#define BJX2_REG_TEA	73
+#define BJX2_REG_MMCR	74
+#define BJX2_REG_EXSR	75
+#define BJX2_REG_STTB	76
+#define BJX2_REG_KRR	77
+#define BJX2_REG_IMM	78
+#define BJX2_REG_ZZR	79
+#endif
 
+
+#if 0
 #define BJX2_REG_R0B	64
 #define BJX2_REG_R1B	65
 #define BJX2_REG_R2B	66
@@ -117,6 +198,7 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_REG_R21B	85
 #define BJX2_REG_R22B	86
 #define BJX2_REG_R23B	87
+#endif
 
 #define BJX2_TR_MAXOP	32
 

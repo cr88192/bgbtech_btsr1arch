@@ -27,8 +27,8 @@ void TKRA_UnpackMatrix16fv(tkra_mat4 mat, float *fv);
 #define tkra_v2f_x(a)	(a.x)
 #define tkra_v2f_y(a)	(a.y)
 
-#define	tkra_mkvec4f(x, y, z, w)	((__vec4f) { x, y, z, w })
-#define	tkra_mkvec2f(x, y)			((__vec2f) { x, y })
+// #define	tkra_mkvec4f(x, y, z, w)	((__vec4f) { x, y, z, w })
+// #define	tkra_mkvec2f(x, y)			((__vec2f) { x, y })
 
 #define tkra_v4f_xy(a)	tkra_mkvec2f(a.x, a.y)
 
@@ -59,6 +59,9 @@ float		__vnf_v4f_dot(__vec4f a, __vec4f b);
 float		__vnf_v2f_dot(__vec2f a, __vec2f b);
 #define tkra_v4fdot(a, b)	__vnf_v4f_dot(a, b)
 #define tkra_v2fdot(a, b)	__vnf_v2f_dot(a, b)
+
+// #define tkra_v4fdot(a, b)	((a)^(b))
+// #define tkra_v2fdot(a, b)	((a)^(b))
 
 float		__vnf_v2f_cross(__vec2f a, __vec2f b);
 #define tkra_v2fcross(a, b)	__vnf_v2f_cross(a, b)
@@ -114,8 +117,16 @@ tkra_mkvec2sfv:
 	MOVU.L	(R4), R5
 	SHAD	R5, -16, R6	|	FLDCH	R5, R16
 							FLDCH	R6, R17
-	FSTCF	R16, R2
-	FSTCFH	R17, R2
+//	FSTCF	R16, R2
+//	FSTCFH	R17, R2
+
+	FSTCF	R16, R20
+	FSTCF	R17, R21
+//	FSTCF	R18, R22
+//	FSTCF	R19, R23
+	MOVLD	R21, R20, R2
+//	MOVLD	R23, R22, R3
+
 	RTSU
 
 tkra_mkvec4sfv:
@@ -124,10 +135,18 @@ tkra_mkvec4sfv:
 	SHAD	R5, -32, R7	|	FLDCH	R6, R17
 	SHAD	R5, -48, R6	|	FLDCH	R7, R18
 							FLDCH	R6, R19
-	FSTCF	R16, R2
-	FSTCFH	R17, R2
-	FSTCF	R18, R3
-	FSTCFH	R19, R3
+//	FSTCF	R16, R2
+//	FSTCFH	R17, R2
+//	FSTCF	R18, R3
+//	FSTCFH	R19, R3
+
+	FSTCF	R16, R20
+	FSTCF	R17, R21
+	FSTCF	R18, R22
+	FSTCF	R19, R23
+	MOVLD	R21, R20, R2
+	MOVLD	R23, R22, R3
+
 	RTSU
 
 tkra_mkvec3sfv1:
@@ -136,10 +155,14 @@ tkra_mkvec3sfv1:
 	SHAD	R5, -32, R7	|	FLDCH	R6, R17
 							FLDCH	R7, R18
 							FLDCH	0x7C00, R19
-	FSTCF	R16, R2
-	FSTCFH	R17, R2
-	FSTCF	R18, R3
-	FSTCFH	R19, R3
+
+	FSTCF	R16, R20
+	FSTCF	R17, R21
+	FSTCF	R18, R22
+	FSTCF	R19, R23
+	MOVLD	R21, R20, R2
+	MOVLD	R23, R22, R3
+
 	RTSU
 };
 
@@ -244,6 +267,7 @@ float tkra_v2fcross(tkra_vec2f a, tkra_vec2f b)
 
 #define tkra_v4f_xy(a)	tkra_mkvec2f(a.x, a.y)
 
+#if 0
 tkra_vec4f tkra_mkvec4f(float x, float y, float z, float w)
 {
 	tkra_vec4f c;
@@ -258,6 +282,7 @@ tkra_vec2f tkra_mkvec2f(float x, float y)
 	c.x=x;	c.y=y;
 	return(c);
 }
+#endif
 
 #define tkra_v4f_xy(a)	tkra_mkvec2f(a.x, a.y)
 
@@ -372,7 +397,7 @@ tkra_rgba_midpoint:
 	AND		R4, R3, R4	| AND		R5, R3, R5
 	SHLD	R4, -1, R4	| SHLD		R5, -1, R5
 	ADD		R4, R5, R2
-	RTSU
+	RTS
 
 tkra_rgba_expand64:
 	MOV				0xFF70FF70FF70FF70, R6
@@ -380,7 +405,7 @@ tkra_rgba_expand64:
 	RGB32UPCK64		R4, R2
 	AND				R6, R2
 	OR				R7, R2
-	RTSU
+	RTS
 };
 
 #else
@@ -388,7 +413,7 @@ u32 tkra_rgba_midpoint(u32 a, u32 b)
 {
 	u32 c;
 //	c=((a&0xFEFEFEFE)>>1)+((b&0xFEFEFEFE)>>1)+((a&b)&0x01010101);
-	c=((a&0xFEFEFEFE)>>1)+((b&0xFEFEFEFE)>>1);
+	c=((a&0xFEFEFEFEU)>>1)+((b&0xFEFEFEFEU)>>1);
 	return(c);
 }
 
@@ -464,8 +489,12 @@ tkra_v4f_bboxmins3:
 	FCMPGT	R23, R18
 	CSELT	R23, R18, R23
 
+//	FSTCF	R22, R2
+//	FSTCFH	R23, R2
+
 	FSTCF	R22, R2
-	FSTCFH	R23, R2
+	FSTCF	R23, R3
+	MOVLD	R3, R2, R2
 
 	FLDCF	R5, R16
 	FLDCF	R7, R17
@@ -475,7 +504,20 @@ tkra_v4f_bboxmins3:
 	FCMPGT	R22, R18
 	CSELT	R22, R18, R22
 
+	FLDCFH	R5, R16
+	FLDCFH	R7, R17
+	FLDCFH	R21, R18
+	FCMPGT	R16, R17
+	CSELT	R16, R17, R23
+	FCMPGT	R23, R18
+	CSELT	R23, R18, R23
+
+//	FSTCF	R22, R3
+//	FSTCFH	R23, R3
+
 	FSTCF	R22, R3
+	FSTCF	R23, R1
+	MOVLD	R1, R3, R3
 
 	RTSU
 
@@ -496,8 +538,12 @@ tkra_v4f_bboxmaxs3:
 	FCMPGT	R23, R18
 	CSELT	R18, R23, R23
 
+//	FSTCF	R22, R2
+//	FSTCFH	R23, R2
+
 	FSTCF	R22, R2
-	FSTCFH	R23, R2
+	FSTCF	R23, R3
+	MOVLD	R3, R2, R2
 
 	FLDCF	R5, R16
 	FLDCF	R7, R17
@@ -507,7 +553,20 @@ tkra_v4f_bboxmaxs3:
 	FCMPGT	R22, R18
 	CSELT	R18, R22, R22
 
+	FLDCFH	R5, R16
+	FLDCFH	R7, R17
+	FLDCFH	R21, R18
+	FCMPGT	R16, R17
+	CSELT	R17, R16, R23
+	FCMPGT	R23, R18
+	CSELT	R18, R23, R23
+
+//	FSTCF	R22, R3
+//	FSTCFH	R23, R3
+
 	FSTCF	R22, R3
+	FSTCF	R23, R1
+	MOVLD	R1, R3, R3
 
 	RTSU
 
@@ -525,7 +584,7 @@ tkra_frcpabs:
 tkra_vec4f tkra_v4f_bboxmins3(tkra_vec4f a, tkra_vec4f b, tkra_vec4f c)
 {
 	float f0, f1, f2;
-	float mx, my, mz;
+	float mx, my, mz, mw;
 
 	f0=tkra_v4f_x(a);	f1=tkra_v4f_x(b);	f2=tkra_v4f_x(c);
 	mx=f0;
@@ -542,13 +601,18 @@ tkra_vec4f tkra_v4f_bboxmins3(tkra_vec4f a, tkra_vec4f b, tkra_vec4f c)
 	if(f1<mz)mz=f1;
 	if(f2<mz)mz=f2;
 
-	return(tkra_mkvec4f(mx, my, mz, 0));
+	f0=tkra_v4f_w(a);	f1=tkra_v4f_w(b);	f2=tkra_v4f_w(c);
+	mw=f0;
+	if(f1<mw)mw=f1;
+	if(f2<mw)mw=f2;
+
+	return(tkra_mkvec4f(mx, my, mz, mw));
 }
 
 tkra_vec4f tkra_v4f_bboxmaxs3(tkra_vec4f a, tkra_vec4f b, tkra_vec4f c)
 {
 	float f0, f1, f2;
-	float mx, my, mz;
+	float mx, my, mz, mw;
 
 	f0=tkra_v4f_x(a);	f1=tkra_v4f_x(b);	f2=tkra_v4f_x(c);
 	mx=f0;
@@ -565,11 +629,20 @@ tkra_vec4f tkra_v4f_bboxmaxs3(tkra_vec4f a, tkra_vec4f b, tkra_vec4f c)
 	if(f1>mz)mz=f1;
 	if(f2>mz)mz=f2;
 
-	return(tkra_mkvec4f(mx, my, mz, 0));
+	f0=tkra_v4f_w(a);	f1=tkra_v4f_w(b);	f2=tkra_v4f_w(c);
+	mw=f0;
+	if(f1>mw)mw=f1;
+	if(f2>mw)mw=f2;
+
+	return(tkra_mkvec4f(mx, my, mz, mw));
 }
 
 float tkra_frcpabs(float x)
 {
+//	if(fabs(x)<0.01)
+//		return(1.0);
+//	return(1.0/(x));
+
 //	return(1.0/(fabs(x)+0.25));
 	return(1.0/(fabs(x)+0.001));
 }
@@ -878,17 +951,20 @@ int TKRA_EmitProjectedTriangle(
 	u64	v3_parm[TKRA_VX_NPARM];
 	TKRA_TexImage *img;
 
-	int is0, is1, is2, it0, it1, it2, mip;
+	int is0, is1, is2, it0, it1, it2, mip, mag;
 	int ds0, ds1, ds2, dt0, dt1, dt2, dst;
 	int dx0, dx1, dx2, dy0, dy1, dy2, dxy, mmip;
-	int tx0, ty0, tz0;
+	int tx0, ty0, tz0, shx, shy;
 
 	is0=pv0.s;	is1=pv1.s;	is2=pv2.s;
 	it0=pv0.t;	it1=pv1.t;	it2=pv2.t;
 
-	mmip=ctx->tex_mmip;
-	if(mmip>0)
+//	mmip=ctx->tex_mmip;
+	mmip=ctx->tex_nmip;
+//	if(mmip>0)
+//	if((mmip>0) && (ctx->tex_flag&TKRA_TRFL_HASMIP))
 //	if(0)
+	if(1)
 	{
 #if 0
 		ds0=is1-is0;	ds1=is2-is1;	ds2=is0-is2;
@@ -899,46 +975,67 @@ int TKRA_EmitProjectedTriangle(
 		dx0=dx0^(dx0>>31);	dx1=dx1^(dx1>>31);	dx2=dx2^(dx2>>31);
 		dy0=dy0^(dy0>>31);	dy1=dy1^(dy1>>31);	dy2=dy2^(dy2>>31);
 		dxy=dx0+dx1+dx2+dy0+dy1+dy2;
+
 		ds0=ds0^(ds0>>31);	ds1=ds1^(ds1>>31);	ds2=ds2^(ds2>>31);
 		dt0=dt0^(dt0>>31);	dt1=dt1^(dt1>>31);	dt2=dt2^(dt2>>31);
 		dst=ds0+ds1+ds2+dt0+dt1+dt2;
 #endif
 
 #if 1
-		ds0=is1-is0;	ds1=is2-is1;
-		dt0=it1-it0;	dt1=it2-it1;
 		dx0=pv1.x-pv0.x;	dx1=pv2.x-pv1.x;
 		dy0=pv1.y-pv0.y;	dy1=pv2.y-pv1.y;
-		
 		dx0=dx0^(dx0>>31);	dx1=dx1^(dx1>>31);
 		dy0=dy0^(dy0>>31);	dy1=dy1^(dy1>>31);
 		dxy=dx0+dx1+dy0+dy1;
+
+		ds0=is1-is0;		ds1=is2-is1;
+		dt0=it1-it0;		dt1=it2-it1;
 		ds0=ds0^(ds0>>31);	ds1=ds1^(ds1>>31);
 		dt0=dt0^(dt0>>31);	dt1=dt1^(dt1>>31);
 		dst=ds0+ds1+dt0+dt1;
 #endif
 		
 		mip=0;
+//		mag=(dst*2)<dxy;
+		mag=dst<=dxy;
 
-#if 0
+#if 1
 		while((dst>dxy) && (mip<mmip))
-//		if(1)
-		{
-			is0>>=1;	is1>>=1;	is2>>=1;
-			it0>>=1;	it1>>=1;	it2>>=1;
-			dst>>=1;	mip++;
-		}
+			{ dst>>=1;	mip++; }
 #endif
 
-		img=ctx->tex_cur;
-		ctx->tex_img=img->tex_img+img->tex_mipofs[mip];
-		ctx->tex_img_bcn=img->tex_img_bcn+img->tex_mipofs_bcn[mip];
-		ctx->tex_xshl=(img->tex_xshl)-mip;
-		ctx->tex_yshl=(img->tex_yshl)-mip;
-		
-		if(mip>0)
-//		if(1)
+//		if(ctx->tex_flag&TKRA_TRFL_HASMIP)
+		if((mip>0) && (ctx->tex_flag&TKRA_TRFL_HASMIP))
 //		if(0)
+		{
+			is0>>=mip;	is1>>=mip;	is2>>=mip;
+			it0>>=mip;	it1>>=mip;	it2>>=mip;
+			mag=0;
+
+			img=ctx->tex_cur;
+
+			shx=img->tex_xshl-mip;
+			shy=img->tex_yshl-mip;
+			if(shx<0)shx=0;
+			if(shy<0)shy=0;
+
+			ctx->tex_img=img->tex_img+img->tex_mipofs[mip];
+			ctx->tex_img_bcn=img->tex_img_bcn+img->tex_mipofs_bcn[mip];
+			ctx->tex_xshl=shx;
+			ctx->tex_yshl=shy;
+		}else
+		{
+			img=ctx->tex_cur;
+			shx=img->tex_xshl;
+			shy=img->tex_yshl;
+			ctx->tex_img=img->tex_img;
+			ctx->tex_img_bcn=img->tex_img_bcn;
+			ctx->tex_xshl=shx;
+			ctx->tex_yshl=shy;
+		}
+		
+//		if(mip>0)
+		if(!mag)
 		{
 			ctx->DrawSpan=ctx->DrawSpan_Min;
 			ctx->DrawSpanHZt=ctx->DrawSpanHZt_Min;
@@ -962,22 +1059,6 @@ int TKRA_EmitProjectedTriangle(
 
 //	ctx->DrawSpanZb=TKRA_DrawSpan_Zbuf;
 
-#if 0
-// #ifdef __BJX2__
-	if(ctx->DrawSpanZt == TKRA_DrawSpan_ModUtx2MortZt)
-	{
-		ctx->DrawSpanZt	= TKRA_DrawSpan_ModUtx2MortZb;
-		ctx->DrawSpanZb = TKRA_DrawSpan_ZbNul;
-	}
-	
-	if(ctx->DrawSpanZt == TKRA_DrawSpan_AlphaModUtx2MortZt)
-	{
-		ctx->DrawSpanZt	= TKRA_DrawSpan_AlphaModUtx2MortZb;
-		ctx->DrawSpanZb = TKRA_DrawSpan_ZbNul;
-	}
-#endif
-
-
 //	__debugbreak();
 
 //	printf("pv0: %p  %d %d %d\n", &pv0, pv0.x, pv0.y, pv0.z);
@@ -989,7 +1070,9 @@ int TKRA_EmitProjectedTriangle(
 //	v1_parm[TKRA_VX_YPOS]=pv0.y<<16;
 //	v1_parm[TKRA_VX_ZPOS]=pv0.z<<16;
 
-	tx0=(pv0.x<<16);	ty0=(pv0.y<<16);	tz0=(pv0.z<<16);
+//	tx0=(pv0.x<<16);	ty0=(pv0.y<<16);	tz0=(pv0.z<<16);
+//	tx0=(pv0.x<<12);	ty0=(pv0.y<<12);	tz0=(pv0.z<<12);
+	tx0=pv0.x;		ty0=pv0.y;		tz0=pv0.z;
 	v1_parm[TKRA_VX_XPOS]=tx0;
 	v1_parm[TKRA_VX_YPOS]=ty0;
 	v1_parm[TKRA_VX_ZPOS]=((u32)tz0) | (((s64)tx0)<<32);
@@ -998,7 +1081,9 @@ int TKRA_EmitProjectedTriangle(
 //	v2_parm[TKRA_VX_YPOS]=pv1.y<<16;
 //	v2_parm[TKRA_VX_ZPOS]=pv1.z<<16;
 
-	tx0=(pv1.x<<16);	ty0=(pv1.y<<16);	tz0=(pv1.z<<16);
+//	tx0=(pv1.x<<16);	ty0=(pv1.y<<16);	tz0=(pv1.z<<16);
+//	tx0=(pv1.x<<12);	ty0=(pv1.y<<12);	tz0=(pv1.z<<12);
+	tx0=pv1.x;		ty0=pv1.y;		tz0=pv1.z;
 	v2_parm[TKRA_VX_XPOS]=tx0;
 	v2_parm[TKRA_VX_YPOS]=ty0;
 	v2_parm[TKRA_VX_ZPOS]=((u32)tz0) | (((s64)tx0)<<32);
@@ -1009,7 +1094,9 @@ int TKRA_EmitProjectedTriangle(
 //	v3_parm[TKRA_VX_YPOS]=pv2.y<<16;
 //	v3_parm[TKRA_VX_ZPOS]=pv2.z<<16;
 
-	tx0=(pv2.x<<16);	ty0=(pv2.y<<16);	tz0=(pv2.z<<16);
+//	tx0=(pv2.x<<16);	ty0=(pv2.y<<16);	tz0=(pv2.z<<16);
+//	tx0=(pv2.x<<12);	ty0=(pv2.y<<12);	tz0=(pv2.z<<12);
+	tx0=pv2.x;		ty0=pv2.y;		tz0=pv2.z;
 	v3_parm[TKRA_VX_XPOS]=tx0;
 	v3_parm[TKRA_VX_YPOS]=ty0;
 	v3_parm[TKRA_VX_ZPOS]=((u32)tz0) | (((s64)tx0)<<32);
@@ -1022,9 +1109,20 @@ int TKRA_EmitProjectedTriangle(
 //	v2_parm[TKRA_VX_TPOS]=(((u64)pv1.s)<<16) | (((u64)pv1.t)<<48);
 //	v3_parm[TKRA_VX_TPOS]=(((u64)pv2.s)<<16) | (((u64)pv2.t)<<48);
 
-	v1_parm[TKRA_VX_TPOS]=(((u64)((u16)is0))<<16) | (((u64)((u16)it0))<<48);
-	v2_parm[TKRA_VX_TPOS]=(((u64)((u16)is1))<<16) | (((u64)((u16)it1))<<48);
-	v3_parm[TKRA_VX_TPOS]=(((u64)((u16)is2))<<16) | (((u64)((u16)it2))<<48);
+//	v1_parm[TKRA_VX_TPOS]=(((u64)((u16)is0))<<16) | (((u64)((u16)it0))<<48);
+//	v2_parm[TKRA_VX_TPOS]=(((u64)((u16)is1))<<16) | (((u64)((u16)it1))<<48);
+//	v3_parm[TKRA_VX_TPOS]=(((u64)((u16)is2))<<16) | (((u64)((u16)it2))<<48);
+
+//	v1_parm[TKRA_VX_TPOS]=(((u64)((u16)is0))<<12) | (((u64)((u16)it0))<<44);
+//	v2_parm[TKRA_VX_TPOS]=(((u64)((u16)is1))<<12) | (((u64)((u16)it1))<<44);
+//	v3_parm[TKRA_VX_TPOS]=(((u64)((u16)is2))<<12) | (((u64)((u16)it2))<<44);
+
+//	is0<<=12;	is1<<=12;	is2<<=12;
+//	it0<<=12;	it1<<=12;	it2<<=12;
+
+	v1_parm[TKRA_VX_TPOS]=((u64)(u32)is0) | (((u64)((u32)it0))<<32);
+	v2_parm[TKRA_VX_TPOS]=((u64)(u32)is1) | (((u64)((u32)it1))<<32);
+	v3_parm[TKRA_VX_TPOS]=((u64)(u32)is2) | (((u64)((u32)it2))<<32);
 	
 	v1_parm[TKRA_VX_CPOS]=tkra_rgba_expand64(pv0.rgb);
 	v2_parm[TKRA_VX_CPOS]=tkra_rgba_expand64(pv1.rgb);
@@ -1034,7 +1132,148 @@ int TKRA_EmitProjectedTriangle(
 	return(0);
 }
 
+int TKRA_EmitProjectedPoint(
+	TKRA_Context *ctx,
+	tkra_projvertex pv0)
+{
+	u64	v1_parm[TKRA_VX_NPARM];
+	TKRA_TexImage *img;
+
+	int is0, it0;
+	int tx0, ty0, tz0, shx, shy;
+
+	if(1)
+	{		
+		img=ctx->tex_cur;
+		shx=img->tex_xshl;
+		shy=img->tex_yshl;
+		ctx->tex_img=img->tex_img;
+		ctx->tex_img_bcn=img->tex_img_bcn;
+		ctx->tex_xshl=shx;
+		ctx->tex_yshl=shy;
+		
+		ctx->DrawSpan=ctx->DrawSpan_Min;
+		ctx->DrawSpanHZt=ctx->DrawSpanHZt_Min;
+		ctx->DrawSpanZt=ctx->DrawSpanZt_Min;
+	}
+
+	is0=pv0.s;		it0=pv0.t;
+	tx0=pv0.x;		ty0=pv0.y;		tz0=pv0.z;
+	v1_parm[TKRA_VX_XPOS]=tx0;
+	v1_parm[TKRA_VX_YPOS]=ty0;
+	v1_parm[TKRA_VX_ZPOS]=((u32)tz0) | (((s64)tx0)<<32);
+	v1_parm[TKRA_VX_TPOS]=((u64)(u32)is0) | (((u64)((u32)it0))<<32);	
+	v1_parm[TKRA_VX_CPOS]=tkra_rgba_expand64(pv0.rgb);
+	TKRA_WalkPoint(ctx, v1_parm);
+
+//	TKRA_WalkTriangle(ctx, v1_parm, v2_parm, v3_parm);
+	return(0);
+}
+
+int TKRA_EmitProjectedTrianglePts(
+	TKRA_Context *ctx,
+	tkra_projvertex pv0,
+	tkra_projvertex pv1,
+	tkra_projvertex pv2)
+{
+	TKRA_EmitProjectedPoint(ctx, pv0);
+	TKRA_EmitProjectedPoint(ctx, pv1);
+	TKRA_EmitProjectedPoint(ctx, pv2);
+}
+
 float	__fpu_frcp_s(float x);
+
+tkra_vec4f		tkra_prj_xyzsc;
+tkra_vec4f		tkra_prj_xyzbi;
+
+#ifdef __BJX2__
+// #if 0
+
+tkra_vec4f TKRA_ProjectVertexB(tkra_vec4f vec, tkra_mat4 mat);
+
+__asm {
+TKRA_ProjectVertexB:
+	MOV.X		(R6,  0), R22
+	MOVLD		R4, R4, R20		|	MOVLD	R4, R4, R21
+	MOV.X		(R6, 16), R18
+	PMULX.F		R20, R22, R2
+	MOVHD		R4, R4, R20		|	MOVHD	R4, R4, R21
+	MOV.X		(R6, 32), R22
+	PMULX.F		R20, R18, R16
+	PADDX.F		R2, R16, R2
+	MOVLD		R5, R5, R20		|	MOVLD	R5, R5, R21
+	MOV.X		(R6, 48), R18
+	PMULX.F		R20, R22, R16
+	MOVHD		R5, R5, R20		|	MOVHD	R5, R5, R21
+	PADDX.F		R2, R16, R2
+	PMULX.F		R20, R18, R16
+	PADDX.F		R2, R16, R18
+
+	FLDCFH		R19, R4
+//	FLDCH		0x1A00, R5
+	FLDCH		0x0A00, R5
+	FABS		R4, R4
+	FADD		R5, R4
+
+//	MOV			0x7FF, R5	| MOV	0x3FF, R6
+	MOV			0x7FE, R5	| MOV	0x3FF, R6
+	SHLD.Q		R5, 52, R5	| MOV	0x400, R3
+	SHLD.Q		R6, 52, R6	| SUB	R5, R4, R5
+	SHLD.Q		R3, 52, R3	| FMUL	R5, R4, R7
+	SUB			R6, R7, R7
+	ADD			R7, R5, R2
+
+	FMUL		R2, R4, R6
+	FSUB		R3, R6, R7
+	FMUL		R7, R2
+
+//	FMUL		R2, R4, R6
+//	FSUB		R3, R6, R7
+//	FMUL		R7, R2
+
+//	MOV			tkra_prj_xyzsc, R22
+//	MOV			tkra_prj_xyzbi, R20
+//	MOV.X		(R22,0), R22
+//	MOV.X		(R20,0), R20
+
+	MOV.X		tkra_prj_xyzsc, R22
+	MOV.X		tkra_prj_xyzbi, R20
+	
+//	BREAK
+	
+	MOV			0x3F800000, R5	|	FSTCF		R2, R1
+	MOVLD		R1, R1, R16		|	MOVLD		R5, R1, R17
+	PMULX.F		R16, R22, R16
+	PMULX.F		R18, R16, R18
+	PADDX.F		R18, R20, R2
+	RTSU
+};
+
+#else
+tkra_vec4f TKRA_ProjectVertexB(tkra_vec4f vec, tkra_mat4 mat)
+{
+	tkra_vec4f		prj_xyzsc, prj_xyzbi;
+	tkra_vec4f		v0xyzw, v0ww, v0p;
+	float			f0, f1;
+
+	v0xyzw=TKRA_ProjectVertex(vec, mat);
+	f0=tkra_v4f_w(v0xyzw);
+	f1=tkra_frcpabs(f0);
+
+//	prj_xyzsc=tkra_prj_xyzsc;
+//	prj_xyzbi=tkra_prj_xyzbi;
+	v0ww=tkra_mkvec4f(f1, f1, f1, 1.0);
+//	if(f0<0)
+//		v0ww=tkra_mkvec4f(-f1, -f1, -f1, -1.0);
+	
+//	v0ww=tkra_v4fmul(v0ww, prj_xyzsc);
+	v0ww=tkra_v4fmul(v0ww, tkra_prj_xyzsc);
+//	v0p=tkra_v4fadd(tkra_v4fmul(v0xyzw, v0ww), prj_xyzbi);
+	v0p=tkra_v4fadd(tkra_v4fmul(v0xyzw, v0ww), tkra_prj_xyzbi);
+
+	return(v0p);
+}
+#endif
 
 int TKRA_TransformProjectTriangle(
 	TKRA_Context *ctx,
@@ -1044,10 +1283,11 @@ int TKRA_TransformProjectTriangle(
 //	tkra_mat4 xproj)
 	tkra_mat4 prjmat)
 {
-	tkra_trivertex v0stk[32];
-	tkra_trivertex v1stk[32];
-	tkra_trivertex v2stk[32];
+	tkra_trivertex v0stk[64];
+	tkra_trivertex v1stk[64];
+	tkra_trivertex v2stk[64];
 	int vstkpos;
+
 	tkra_projvertex pv0;
 	tkra_projvertex pv1;
 	tkra_projvertex pv2;
@@ -1057,35 +1297,53 @@ int TKRA_TransformProjectTriangle(
 	tkra_vec4f		v1xyzw, v1ww, v1p;
 	tkra_vec4f		v2xyzw, v2ww, v2p;
 	tkra_vec2f		v0dxy, v1dxy, v2dxy;
+	tkra_vec4f		prj_xyzsc, prj_xyzbi;
+
+	TKRA_TexImage *img;
+
 	float			scr_xsc, scr_ysc;
 	float			scr_xc, scr_yc;
 	float			scr_clip_l, scr_clip_r;
 	float			scr_clip_t, scr_clip_b;
-	float			txs, tys;
-	tkra_vec4f		prj_xyzsc, prj_xyzbi;
+	float			txs, tys, txsn1, tysn1, xbi, ybi;
 	float			f0, f1, f2, f3, f4, fdx, fdy;
+	float			w0, w1, w2;
 	int				i0, i1, i2, tfl;
 	int				ecfl;
+	byte			wasfrag;
 	
+	TKRA_SetupDrawBlend(ctx);
+
 	v0stk[0]=iv0;
 	v1stk[0]=iv1;
 	v2stk[0]=iv2;
 	vstkpos=1;
+	ctx->stat_base_tris++;
 	
 	tfl=0;
 
 	if((iv0.rgb&iv1.rgb&iv2.rgb&0xF0000000)!=0xF0000000)
 		tfl|=1;
 	
-	ctx->triflag=tfl;
+//	ctx->triflag=tfl;
 	TKRA_SetupDrawEdgeForTriFlag(ctx, tfl);
+	tfl=ctx->triflag;
+	
+	if(tfl&TKRA_TRFL_NOCMOD)
+	{
+		v0stk[0].rgb=0xFFFFFFFFU;
+		v1stk[0].rgb=0xFFFFFFFFU;
+		v2stk[0].rgb=0xFFFFFFFFU;
+	}
 
+#if 0
 	scr_xsc=ctx->scr_xscale;
 	scr_ysc=ctx->scr_yscale;
 	scr_xc=ctx->scr_xcenter;
 	scr_yc=ctx->scr_ycenter;
-//	prj_xyzsc=tkra_mkvec4f(scr_xsc, scr_ysc, 32767, 1);
-	prj_xyzsc=tkra_mkvec4f(scr_xsc, scr_ysc, 8192, 1);
+	prj_xyzsc=tkra_mkvec4f(scr_xsc, scr_ysc, 32767, 1);
+//	prj_xyzsc=tkra_mkvec4f(scr_xsc, scr_ysc, 16383, 1);
+//	prj_xyzsc=tkra_mkvec4f(scr_xsc, scr_ysc, 8192, 1);
 //	prj_xyzsc=tkra_mkvec4f(scr_xsc, scr_ysc, -8192, 1);
 	prj_xyzbi=tkra_mkvec4f(scr_xc, scr_yc, 0, 0);
 
@@ -1093,10 +1351,43 @@ int TKRA_TransformProjectTriangle(
 	scr_clip_r=scr_xc+scr_xsc;
 	scr_clip_t=scr_yc+scr_ysc;
 	scr_clip_b=scr_yc-scr_ysc;
-
-	txs=(1<<(ctx->tex_xshl));
-	tys=(1<<(ctx->tex_yshl));
+#endif
 	
+	prj_xyzsc=ctx->prj_xyzsc;
+	prj_xyzbi=ctx->prj_xyzbi;
+	
+	tkra_prj_xyzsc=prj_xyzsc;
+	tkra_prj_xyzbi=prj_xyzbi;
+//	*(tkra_vec4f *)(&tkra_prj_xyzsc)=prj_xyzsc;
+//	*(tkra_vec4f *)(&tkra_prj_xyzbi)=prj_xyzbi;
+	
+//	__debugbreak();
+
+	scr_clip_l=ctx->scr_clip_l;
+	scr_clip_r=ctx->scr_clip_r;
+	scr_clip_t=ctx->scr_clip_t;
+	scr_clip_b=ctx->scr_clip_b;
+
+
+//	txs=(1<<(ctx->tex_xshl));
+//	tys=(1<<(ctx->tex_yshl));
+
+	img=ctx->tex_cur;
+	txs=1<<img->tex_xshl;
+	tys=1<<img->tex_yshl;
+	txsn1=txs-1;
+	tysn1=tys-1;
+//	xbi=0.5;
+//	xbi=-0.5;
+//	xbi=-1.0;
+	xbi=0.0;
+//	ybi=0.5;
+//	ybi=-0.5;
+	ybi=-1.0;
+//	ybi=-2.0;
+//	ybi= 0.0;
+	wasfrag=0;
+
 	while(vstkpos>0)
 	{
 		vstkpos--;
@@ -1104,42 +1395,26 @@ int TKRA_TransformProjectTriangle(
 		v1=v1stk[vstkpos];
 		v2=v2stk[vstkpos];
 
-//		v0xyzw=TKRA_ProjectVertex(v0.xyz, xform);
-//		v1xyzw=TKRA_ProjectVertex(v1.xyz, xform);
-//		v2xyzw=TKRA_ProjectVertex(v2.xyz, xform);
-//		v0xyzw=TKRA_ProjectVertex(v0xyzw, xproj);
-//		v1xyzw=TKRA_ProjectVertex(v1xyzw, xproj);
-//		v2xyzw=TKRA_ProjectVertex(v2xyzw, xproj);
+// #if 0
+#if 1
+		v0p=TKRA_ProjectVertexB(v0.xyz, prjmat);
+		v1p=TKRA_ProjectVertexB(v1.xyz, prjmat);
+		v2p=TKRA_ProjectVertexB(v2.xyz, prjmat);
+#endif
 
+#if 0
+// #if 1
 		v0xyzw=TKRA_ProjectVertex(v0.xyz, prjmat);
 		v1xyzw=TKRA_ProjectVertex(v1.xyz, prjmat);
 		v2xyzw=TKRA_ProjectVertex(v2.xyz, prjmat);
-
-//		f0=1.0/tkra_v4f_w(v0xyzw);
-//		f1=1.0/tkra_v4f_w(v1xyzw);
-//		f2=1.0/tkra_v4f_w(v2xyzw);
-//		f0=1.0/fabs(tkra_v4f_w(v0xyzw));
-//		f1=1.0/fabs(tkra_v4f_w(v1xyzw));
-//		f2=1.0/fabs(tkra_v4f_w(v2xyzw));
 		
-		f0=tkra_v4f_w(v0xyzw);
-		f1=tkra_v4f_w(v1xyzw);
-		f2=tkra_v4f_w(v2xyzw);
-//		f0=1.0/(fabs(f0)+0.25);
-//		f1=1.0/(fabs(f1)+0.25);
-//		f2=1.0/(fabs(f2)+0.25);
+		w0=tkra_v4f_w(v0xyzw);
+		w1=tkra_v4f_w(v1xyzw);
+		w2=tkra_v4f_w(v2xyzw);
+		f0=tkra_frcpabs(w0);
+		f1=tkra_frcpabs(w1);
+		f2=tkra_frcpabs(w2);
 
-//		f0=__fpu_frcp_s(fabs(f0)+0.25);
-//		f1=__fpu_frcp_s(fabs(f1)+0.25);
-//		f2=__fpu_frcp_s(fabs(f2)+0.25);
-		f0=tkra_frcpabs(f0);
-		f1=tkra_frcpabs(f1);
-		f2=tkra_frcpabs(f2);
-
-//		f0=1.0/(fabs(f0)+0.10);
-//		f1=1.0/(fabs(f1)+0.10);
-//		f2=1.0/(fabs(f2)+0.10);
-		
 		v0ww=tkra_mkvec4f(f0, f0, f0, 1.0);
 		v1ww=tkra_mkvec4f(f1, f1, f1, 1.0);
 		v2ww=tkra_mkvec4f(f2, f2, f2, 1.0);
@@ -1147,66 +1422,82 @@ int TKRA_TransformProjectTriangle(
 		v1ww=tkra_v4fmul(v1ww, prj_xyzsc);
 		v2ww=tkra_v4fmul(v2ww, prj_xyzsc);
 
-//		TKRA_DumpVec4(v0ww, "TKRA_TransformProjectTriangle: v0ww");
-//		TKRA_DumpVec4(v1ww, "TKRA_TransformProjectTriangle: v1ww");
-//		TKRA_DumpVec4(v2ww, "TKRA_TransformProjectTriangle: v2ww");
-		
 		v0p=tkra_v4fadd(tkra_v4fmul(v0xyzw, v0ww), prj_xyzbi);
 		v1p=tkra_v4fadd(tkra_v4fmul(v1xyzw, v1ww), prj_xyzbi);
 		v2p=tkra_v4fadd(tkra_v4fmul(v2xyzw, v2ww), prj_xyzbi);
+#endif
 
-//		TKRA_DumpVec4(v0p, "TKRA_TransformProjectTriangle: v0p");
-//		TKRA_DumpVec4(v1p, "TKRA_TransformProjectTriangle: v1p");
-//		TKRA_DumpVec4(v2p, "TKRA_TransformProjectTriangle: v2p");
-		
 		v0ww=tkra_v4f_bboxmins3(v0p, v1p, v2p);
 		v1ww=tkra_v4f_bboxmaxs3(v0p, v1p, v2p);
 		
 		ecfl=0;
-		
-//		if(tkra_v4f_z(v1ww)<=0)
+
+//		if(tkra_v4f_z(v0ww)<(-32767))
+//			continue;
+//		if(tkra_v4f_z(v1ww)>( 32767))
 //			continue;
 
-		if(tkra_v4f_z(v1ww)<0.0)
+		if(tkra_v4f_w(v1ww)<0.0)
+		{
+			ctx->stat_reject_tris++;
+			ctx->stat_negw_tris++;
 			continue;
+		}
+
+		if(tkra_v4f_z(v1ww)<0.0)
+		{
+//			if(tkra_v4f_w(v0p)<0.0)
+
+//			if(ctx->stateflag1&TKRA_STFL1_DEPTHTEST)
+//				continue;
+
+//			if(tkra_v4f_z(v1ww)<(-32760))
+//				continue;
+		}
 
 		if(tkra_v4f_x(v0ww)>scr_clip_r)
+		{
+			ctx->stat_reject_tris++;
+			ctx->stat_frustum_tris++;
 			continue;
+		}
 
 		if(tkra_v4f_x(v1ww)<scr_clip_l)
+		{
+			ctx->stat_reject_tris++;
+			ctx->stat_frustum_tris++;
 			continue;
+		}
 
 		if(tkra_v4f_y(v0ww)>scr_clip_t)
+		{
+			ctx->stat_reject_tris++;
+			ctx->stat_frustum_tris++;
 			continue;
+		}
 
 		if(tkra_v4f_y(v1ww)<scr_clip_b)
+		{
+			ctx->stat_reject_tris++;
+			ctx->stat_frustum_tris++;
 			continue;
+		}
 
 #if 1
-		if(tkra_v4f_z(v0ww)<0.0)
-		{
-			ecfl|=1;
-//			ecfl=ecfl|1;
-		}
+//		if(tkra_v4f_z(v0ww)<0.0)
+//			{ ecfl|=1; }
 
+		if((tkra_v4f_z(v0ww)<0.0) && (tkra_v4f_z(v1ww)>0.0))
+			{ ecfl|=1; }
 		if(	(tkra_v4f_x(v1ww)>scr_clip_r) ||
 			(tkra_v4f_x(v0ww)<scr_clip_l) )
-		{
-			ecfl|=2;
-		}
-			
+				{ ecfl|=2; }
 		if(	(tkra_v4f_y(v1ww)>scr_clip_t) ||
 			(tkra_v4f_y(v0ww)<scr_clip_b) )
-		{
-			ecfl|=4;
-		}
+				{ ecfl|=4; }
 #endif
 
 		/* Check if triangle is below size limit. */
-//		f0=tkra_v4f_dist_xy(v0p, v1p);
-//		f1=tkra_v4f_dist_xy(v1p, v2p);
-//		f2=tkra_v4f_dist_xy(v2p, v0p);
-
 		v0dxy=tkra_v2fsub(tkra_v4f_xy(v1p), tkra_v4f_xy(v0p));
 		v1dxy=tkra_v2fsub(tkra_v4f_xy(v2p), tkra_v4f_xy(v1p));
 		v2dxy=tkra_v2fsub(tkra_v4f_xy(v0p), tkra_v4f_xy(v2p));
@@ -1214,15 +1505,128 @@ int TKRA_TransformProjectTriangle(
 		f1=tkra_v2fdot(v1dxy, v1dxy);
 		f2=tkra_v2fdot(v2dxy, v2dxy);
 		
-		f3=tkra_v2fcross(v0dxy, v1dxy);
+//		f3=tkra_v2fcross(v0dxy, v1dxy);
 //		if(f3<=0)
 //		if(f3>0)
 //			continue;
 
 		f3=f0+f1+f2;
 
+//		if(f3 < (5*5*3))
+//		if(f3 < (4*4*3))
+//		if(f3 < (3*3*3))
+//		if(f3 < (2*2*3))
+		if(f3 < (3*3))
+		{
+//			ctx->stat_reject_tris++;
+//			ctx->stat_micro_tris++;
+//			if(wasfrag&1)
+//				ctx->stat_microfrag_tris++;
+//			else
+//				ctx->stat_microbase_tris++;
+
+//			if(f3 < (0.5*3))
+			if(f3 < (0.75*3))
+			{
+				ctx->stat_microbase_tris++;
+				continue;				
+			}
+
+			if(f3 < (2*3))
+//			if(f3 < (2*2*3))
+			{
+				f0=tkra_v4f_x(v0p)+tkra_v4f_x(v1p)+tkra_v4f_x(v2p);
+				f1=tkra_v4f_y(v0p)+tkra_v4f_y(v1p)+tkra_v4f_y(v2p);
+				f2=tkra_v4f_z(v0p)+tkra_v4f_z(v1p)+tkra_v4f_z(v2p);
+				i0=f0*(65536*0.3333);
+				i1=f1*(65536*0.3333);
+				i2=f2*(65536*0.3333);
+				pv0.x=i0;
+				pv0.y=i1;
+				pv0.z=i2;
+//				f0=	tkra_v2f_x(v0.st)+
+//					tkra_v2f_x(v1.st)+
+//					tkra_v2f_x(v2.st);
+//				f1=	tkra_v2f_y(v0.st)+
+//					tkra_v2f_y(v1.st)+
+//					tkra_v2f_y(v2.st);
+//				f0=f0*0.3333;
+//				f1=f1*0.3333;
+
+				v0dxy=tkra_v2fadd(tkra_v2fadd(v0.st, v1.st), v2.st);
+				f0=tkra_v2f_x(v0dxy)*0.3333;
+				f1=tkra_v2f_y(v0dxy)*0.3333;
+
+				pv0.s=(f0*txs+xbi)*65536;
+				pv0.t=(f1*tys+ybi)*65536;
+				pv0.rgb=v0.rgb;
+
+				ctx->stat_drawpts1_tris++;
+				TKRA_EmitProjectedPoint(ctx, pv0);
+				continue;
+			}
+
+//			f0=	tkra_v2f_x(v0.st)+
+//				tkra_v2f_x(v1.st)+
+//				tkra_v2f_x(v2.st);
+//			f1=	tkra_v2f_y(v0.st)+
+//				tkra_v2f_y(v1.st)+
+//				tkra_v2f_y(v2.st);
+//			f0=f0*0.3333;
+//			f1=f1*0.3333;
+			v0dxy=tkra_v2fadd(tkra_v2fadd(v0.st, v1.st), v2.st);
+			f0=tkra_v2f_x(v0dxy)*0.3333;
+			f1=tkra_v2f_y(v0dxy)*0.3333;
+
+			i0=tkra_v4f_x(v0p)*65536;
+			i1=tkra_v4f_y(v0p)*65536;
+			i2=tkra_v4f_z(v0p)*65536;
+			pv0.x=i0;	pv0.y=i1;	pv0.z=i2;
+//			pv0.s=(tkra_v2f_x(v0.st)*txs+xbi)*65536;
+//			pv0.t=(tkra_v2f_y(v0.st)*tys+ybi)*65536;
+			pv0.s=(f0*txs+xbi)*65536;
+			pv0.t=(f1*tys+ybi)*65536;
+			pv0.rgb=v0.rgb;
+
+			i0=tkra_v4f_x(v1p)*65536;
+			i1=tkra_v4f_y(v1p)*65536;
+			i2=tkra_v4f_z(v1p)*65536;
+			pv1.x=i0;	pv1.y=i1;	pv1.z=i2;
+			i0=tkra_v4f_x(v2p)*65536;
+			i1=tkra_v4f_y(v2p)*65536;
+			i2=tkra_v4f_z(v2p)*65536;
+			pv2.x=i0;	pv2.y=i1;	pv2.z=i2;
+//			pv1.s=(tkra_v2f_x(v1.st)*txs+xbi)*65536;
+//			pv1.t=(tkra_v2f_y(v1.st)*tys+ybi)*65536;
+//			pv2.s=(tkra_v2f_x(v2.st)*txs+xbi)*65536;
+//			pv2.t=(tkra_v2f_y(v2.st)*tys+ybi)*65536;
+			pv1.s=pv0.s;		pv1.t=pv0.t;
+			pv2.s=pv0.s;		pv2.t=pv0.t;
+
+			pv1.rgb=v1.rgb;
+			pv2.rgb=v2.rgb;
+
+			ctx->stat_drawpts3_tris++;
+			TKRA_EmitProjectedTrianglePts(ctx, pv0, pv1, pv2);
+			continue;
+		}
+
+#if 0
+		if((f0<1) | (f1<1) | (f2<1))
+		{
+			ctx->stat_reject_tris++;
+//			ctx->stat_micro_tris++;
+			if(wasfrag&1)
+				ctx->stat_microfrag_tris++;
+			else
+				ctx->stat_microbase_tris++;
+			continue;
+		}
+#endif
+
 //		f4=(128*128*3);
 //		f4=(96*96*3);
+
 
 #if 1
 		f4=(72*72*3);
@@ -1247,10 +1651,22 @@ int TKRA_TransformProjectTriangle(
 //		if(0)
 		{
 //			if((vstkpos+5)>=32)
+			if((vstkpos+5)>=48)
+//			if((vstkpos+5)>=64)
 //			if((vstkpos+5)>=16)
-			if((vstkpos+5)>=24)
-//				continue;
+//			if((vstkpos+5)>=24)
+			{
+				printf("blown: Wn: %f %f %f\n", w0, w1, w2);
+				printf("blown: Fn: %f %f %f\n", f0, f1, f2);
+			
+				TKRA_DumpMatrix(prjmat, "PrjMat");
+				TKRA_DumpVec4(iv0.xyz, "Iv0");
+				TKRA_DumpVec4(iv1.xyz, "Iv1");
+				TKRA_DumpVec4(iv2.xyz, "Iv2");
+			
+				ctx->stat_blown_tris++;
 				return(-1);
+			}
 
 			/* Subdivide Triangle */
 			v3.xyz=tkra_v4f_midpoint(v0.xyz, v1.xyz);
@@ -1262,10 +1678,6 @@ int TKRA_TransformProjectTriangle(
 			v3.rgb=tkra_rgba_midpoint(v0.rgb, v1.rgb);
 			v4.rgb=tkra_rgba_midpoint(v1.rgb, v2.rgb);
 			v5.rgb=tkra_rgba_midpoint(v2.rgb, v0.rgb);
-
-//			if((vstkpos+5)>=32)
-//				continue;
-//				return(-1);
 
 			v0stk[vstkpos]=v0;
 			v1stk[vstkpos]=v3;
@@ -1284,37 +1696,82 @@ int TKRA_TransformProjectTriangle(
 			v2stk[vstkpos]=v5;
 			vstkpos++;
 
+			ctx->stat_frag_tris+=4;
+			wasfrag|=1;
+
 			continue;
 		}
-		
-//		pv0.x=tkra_v4f_x(v0p);	pv0.y=tkra_v4f_y(v0p);	pv0.z=tkra_v4f_z(v0p);
-//		pv1.x=tkra_v4f_x(v1p);	pv1.y=tkra_v4f_y(v1p);	pv1.z=tkra_v4f_z(v1p);
-//		pv2.x=tkra_v4f_x(v2p);	pv2.y=tkra_v4f_y(v2p);	pv2.z=tkra_v4f_z(v2p);
 
-		i0=tkra_v4f_x(v0p);	i1=tkra_v4f_y(v0p);	i2=tkra_v4f_z(v0p);
+#if 1
+		if(ctx->stateflag1&TKRA_STFL1_CULLFACE)
+		{
+			f3=tkra_v2fcross(v0dxy, v1dxy);
+			if(ctx->stateflag1&TKRA_STFL1_CULL_CW)
+				f3=-f3;
+//			if(f3<=0)
+//			if((ctx->stateflag1&TKRA_STFL1_CULL_BK) && (f3>0))
+			if((ctx->stateflag1&TKRA_STFL1_CULL_BK) && (f3<0))
+			{
+				ctx->stat_reject_tris++;
+				continue;
+			}
+//			if((ctx->stateflag1&TKRA_STFL1_CULL_FT) && (f3<=0))
+			if((ctx->stateflag1&TKRA_STFL1_CULL_FT) && (f3>=0))
+			{
+				ctx->stat_reject_tris++;
+				continue;
+			}
+		}
+#endif
+
+//		if(tkra_v4f_z(v0ww)<(-32767))
+//			continue;
+//		if(tkra_v4f_z(v1ww)>( 32767))
+//			continue;
+
+
+		ctx->stat_draw_tris++;
+
+		i0=tkra_v4f_x(v0p)*65536;
+		i1=tkra_v4f_y(v0p)*65536;
+		i2=tkra_v4f_z(v0p)*65536;
 		pv0.x=i0;	pv0.y=i1;	pv0.z=i2;
-//		printf("pv0: %d %d %d\n", i0, i1, i2);
 		
-		i0=tkra_v4f_x(v1p);	i1=tkra_v4f_y(v1p);	i2=tkra_v4f_z(v1p);
+		i0=tkra_v4f_x(v1p)*65536;
+		i1=tkra_v4f_y(v1p)*65536;
+		i2=tkra_v4f_z(v1p)*65536;
 		pv1.x=i0;	pv1.y=i1;	pv1.z=i2;
-//		printf("pv1: %d %d %d\n", i0, i1, i2);
 
-		i0=tkra_v4f_x(v2p);	i1=tkra_v4f_y(v2p);	i2=tkra_v4f_z(v2p);
+		i0=tkra_v4f_x(v2p)*65536;
+		i1=tkra_v4f_y(v2p)*65536;
+		i2=tkra_v4f_z(v2p)*65536;
 		pv2.x=i0;	pv2.y=i1;	pv2.z=i2;
-//		printf("pv2: %d %d %d\n", i0, i1, i2);
 		
-		pv0.s=tkra_v2f_x(v0.st)*txs;	pv0.t=tkra_v2f_y(v0.st)*tys;
-		pv1.s=tkra_v2f_x(v1.st)*txs;	pv1.t=tkra_v2f_y(v1.st)*tys;
-		pv2.s=tkra_v2f_x(v2.st)*txs;	pv2.t=tkra_v2f_y(v2.st)*tys;
-		
+//		pv0.s=tkra_v2f_x(v0.st)*txs*65536-32767;
+//		pv0.t=tkra_v2f_y(v0.st)*tys*65536-32767;
+//		pv1.s=tkra_v2f_x(v1.st)*txs*65536-32767;
+//		pv1.t=tkra_v2f_y(v1.st)*tys*65536-32767;
+//		pv2.s=tkra_v2f_x(v2.st)*txs*65536-32767;
+//		pv2.t=tkra_v2f_y(v2.st)*tys*65536-32767;
+
+//		pv0.s=tkra_v2f_x(v0.st)*txs*65536;
+//		pv0.t=tkra_v2f_y(v0.st)*tys*65536;
+//		pv1.s=tkra_v2f_x(v1.st)*txs*65536;
+//		pv1.t=tkra_v2f_y(v1.st)*tys*65536;
+//		pv2.s=tkra_v2f_x(v2.st)*txs*65536;
+//		pv2.t=tkra_v2f_y(v2.st)*tys*65536;
+
+		pv0.s=(tkra_v2f_x(v0.st)*txs+xbi)*65536;
+		pv0.t=(tkra_v2f_y(v0.st)*tys+ybi)*65536;
+		pv1.s=(tkra_v2f_x(v1.st)*txs+xbi)*65536;
+		pv1.t=(tkra_v2f_y(v1.st)*tys+ybi)*65536;
+		pv2.s=(tkra_v2f_x(v2.st)*txs+xbi)*65536;
+		pv2.t=(tkra_v2f_y(v2.st)*tys+ybi)*65536;
+
 		pv0.rgb=v0.rgb;
 		pv1.rgb=v1.rgb;
 		pv2.rgb=v2.rgb;
 
-//		printf("pv0: %p  %d %d %d\n", &pv0, pv0.x, pv0.y, pv0.z);
-//		printf("pv1: %p  %d %d %d\n", &pv1, pv1.x, pv1.y, pv1.z);
-//		printf("pv2: %p  %d %d %d\n", &pv2, pv2.x, pv2.y, pv2.z);
-		
 		TKRA_EmitProjectedTriangle(ctx, pv0, pv1, pv2);
 	}
 	
@@ -1804,6 +2261,111 @@ void *TKRA_PrimitiveGetGetPtrIndex(int idx_ty, int *rstr)
 	return(getptr_idx);
 }
 
+int TKRA_DrawPrimitive_TriangleComm(
+	TKRA_Context *ctx,
+	void *xyz,		int xyz_str,
+	void *st,		int st_str,
+	void *rgb,		int rgb_str,
+	int mode,		int count)
+{
+	tkra_trivertex	v0, v1, v2, v3;
+	byte *cxyz, *cst, *crgb;
+	int idx_str;
+	int i, j, k, cnt, ix;
+
+	cxyz=xyz;
+	cst=st;
+	crgb=rgb;
+
+	cnt=count/3;
+	for(i=0; i<cnt; i++)
+	{
+		v0.xyz=tkra_getptr_v4f_3fv1(cxyz);
+//		v0.st=tkra_getptr_v2f_2fv(cst);
+		v0.st=*(tkra_vec2f *)cst;
+		v0.rgb=tkra_getptr_rgba_4ubv(crgb);
+//		v0.rgb=*(u32 *)crgb;
+		cxyz+=xyz_str;
+		cst+=st_str;
+		crgb+=rgb_str;
+
+		v1.xyz=tkra_getptr_v4f_3fv1(cxyz);
+//		v1.st=tkra_getptr_v2f_2fv(cst);
+		v1.st=*(tkra_vec2f *)cst;
+		v1.rgb=tkra_getptr_rgba_4ubv(crgb);
+//		v1.rgb=*(u32 *)crgb;
+		cxyz+=xyz_str;
+		cst+=st_str;
+		crgb+=rgb_str;
+
+		v2.xyz=tkra_getptr_v4f_3fv1(cxyz);
+//		v2.st=tkra_getptr_v2f_2fv(cst);
+		v2.st=*(tkra_vec2f *)cst;
+		v2.rgb=tkra_getptr_rgba_4ubv(crgb);
+//		v2.rgb=*(u32 *)crgb;
+		cxyz+=xyz_str;
+		cst+=st_str;
+		crgb+=rgb_str;
+
+		TKRA_TransformProjectTriangle(ctx, v0, v1, v2, ctx->mat_tproj);
+	}
+	return(0);
+}
+
+int TKRA_DrawPrimitive_PolyComm(
+	TKRA_Context *ctx,
+	void *xyz,		int xyz_str,
+	void *st,		int st_str,
+	void *rgb,		int rgb_str,
+	int mode,		int count)
+{
+	tkra_trivertex	v0, v1, v2, v3;
+	byte *cxyz, *cst, *crgb;
+	int idx_str;
+	int i, j, k, cnt, ix;
+
+	cxyz=xyz;
+	cst=st;
+	crgb=rgb;
+
+	v0.xyz=tkra_getptr_v4f_3fv1(cxyz);
+//	v0.st=tkra_getptr_v2f_2fv(cst);
+	v0.st=*(tkra_vec2f *)cst;
+	v0.rgb=tkra_getptr_rgba_4ubv(crgb);
+//	v0.rgb=*(u32 *)crgb;
+	cxyz+=xyz_str;
+	cst+=st_str;
+	crgb+=rgb_str;
+
+	v1.xyz=tkra_getptr_v4f_3fv1(cxyz);
+//	v1.st=tkra_getptr_v2f_2fv(cst);
+	v1.st=*(tkra_vec2f *)cst;
+	v1.rgb=tkra_getptr_rgba_4ubv(crgb);
+//	v1.rgb=*(u32 *)crgb;
+	cxyz+=xyz_str;
+	cst+=st_str;
+	crgb+=rgb_str;
+
+
+	cnt=count-2;
+	for(i=0; i<cnt; i++)
+	{		
+		v2.xyz=tkra_getptr_v4f_3fv1(cxyz);
+//		v2.st=tkra_getptr_v2f_2fv(cst);
+		v2.st=*(tkra_vec2f *)cst;
+		v2.rgb=tkra_getptr_rgba_4ubv(crgb);
+//		v2.rgb=*(u32 *)crgb;
+		cxyz+=xyz_str;
+		cst+=st_str;
+		crgb+=rgb_str;
+
+		TKRA_TransformProjectTriangle(ctx, v0, v1, v2, ctx->mat_tproj);
+		v1=v2;
+	}
+
+	return(0);
+}
+
 int TKRA_DrawPrimitiveIndexArrayBasic(
 	TKRA_Context *ctx,
 	void *xyz,		int xyz_n,		int xyz_ty,		int xyz_str,
@@ -1828,6 +2390,33 @@ int TKRA_DrawPrimitiveIndexArrayBasic(
 	if(!st )st_ty=0;
 	if(!rgb)rgb_ty=0;
 	if(!idx)idx_ty=0;
+
+#if 1
+	if(	(xyz_ty==TKRA_FLOAT) &&
+		(st_ty==TKRA_FLOAT) &&
+		(rgb_ty==TKRA_UBYTE) &&
+		(idx_ty==0) &&
+		(xyz_n==3) &&
+		(st_n==2) &&
+		(rgb_n==4))
+	{
+		if(mode==TKRA_TRIANGLES)
+		{
+			TKRA_DrawPrimitive_TriangleComm(ctx,
+				xyz,	xyz_str,	st,		st_str,
+				rgb,	rgb_str,	mode,	count);
+			return;
+		}
+
+		if((mode==TKRA_TRIANGLE_FAN) || (mode==TKRA_POLYGON))
+		{
+			TKRA_DrawPrimitive_PolyComm(ctx,
+				xyz,	xyz_str,	st,		st_str,
+				rgb,	rgb_str,	mode,	count);
+			return;
+		}
+	}
+#endif
 	
 	getptr_xyz=TKRA_PrimitiveGetGetPtrXYZ(xyz_n, xyz_ty);
 	getptr_st =TKRA_PrimitiveGetGetPtrST(st_n, st_ty);

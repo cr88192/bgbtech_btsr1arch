@@ -291,6 +291,32 @@ int BGBCC_JX2A_GetRegId(char *str)
 				return(t1);
 			}
 		}
+
+		t=BGBCC_SH_REG_LR0;
+
+		if(!str[2])
+		{
+			if((str[1]>='0') && (str[1]<='9'))
+				{ return(t+(str[1]-'0')); }
+			break;
+		}
+
+		if(!str[3])
+		{
+			if((str[1]>='0') && (str[1]<='9') &&
+				(str[2]>='0') && (str[2]<='9'))
+			{
+				i=(str[1]-'0')*10+(str[2]-'0');
+				if(i>=64)
+					break;
+				if((i>=32) && (i&1))
+					break;
+
+				if(i>=32)
+					i=(i&0x1E)|1;
+				return(t+i);
+			}
+		}
 		break;
 
 	default:

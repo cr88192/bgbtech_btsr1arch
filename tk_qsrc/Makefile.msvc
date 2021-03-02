@@ -213,6 +213,8 @@ GLQUAKE_SRCS = \
 	q1base/glquake/gl_vidnt.c	\
 
 TKRA_SRCS = \
+	tkrast/tkr_blend.c			\
+	tkrast/tkr_blend_bjx2.c		\
 	tkrast/tkr_context.c		\
 	tkrast/tkr_edge.c			\
 	tkrast/tkr_glbegin.c		\
@@ -223,6 +225,12 @@ TKRA_SRCS = \
 	tkrast/tkr_matrix.c			\
 	tkrast/tkr_multi.c			\
 	tkrast/tkr_span.c			\
+	tkrast/tkr_span_bjx2.c		\
+	tkrast/tkr_span_zt.c		\
+	tkrast/tkr_span_zt_bjx2.c	\
+	tkrast/tkr_span_bf.c		\
+	tkrast/tkr_span_bf_bjx2.c	\
+	tkrast/tkr_span_hzt.c		\
 	tkrast/tkr_teximg.c			\
 	tkrast/tkr_trans.c			\
 
@@ -240,7 +248,8 @@ GLQUAKE_TKRA_SRCS = \
 
 
 
-all: quake$(ARCH).exe glquake$(ARCH).exe glquake_tkra$(ARCH).exe
+all: quake$(ARCH).exe glquake$(ARCH).exe \
+	glquake_tkra$(ARCH).exe quakert$(ARCH).exe
 
 
 quake$(ARCH).exe: $(SQUAKE_SRCS)
@@ -251,6 +260,9 @@ glquake$(ARCH).exe: $(GLQUAKE_SRCS)
 
 glquake_tkra$(ARCH).exe: $(GLQUAKE_TKRA_SRCS) $(TKRA_SRCS)
 	cl /Fe$@ $(GLQUAKE_TKRA_SRCS) $(GL_CFLAGS) $(GL_LDFLAGS) /DUSE_TKRA
+
+quakert$(ARCH).exe: $(SQUAKE_SRCS)
+	cl /Fe$@ $(SQUAKE_SRCS) $(CFLAGS) $(LDFLAGS) /DRAYTRACE
 
 ####
 

@@ -1350,6 +1350,10 @@ void D_DrawSpans16 (espan_t *pspan)
 
 	__hint_use_egpr();
 
+#ifdef RAYTRACE
+	return;
+#endif
+
 	sstep = 0;	// keep compiler happy
 	tstep = 0;	// ditto
 
@@ -1820,6 +1824,10 @@ void D_DrawZSpans (espan_t *pspan)
 	float			du, dv;
 
 //	return;
+
+#ifdef RAYTRACE
+//	return;
+#endif
 
 #if 1
 	if(r_lowfps>1)

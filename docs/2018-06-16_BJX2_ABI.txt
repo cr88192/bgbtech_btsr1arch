@@ -54,6 +54,10 @@ Basic C ABI:
 ** TBR will be a System register, and should not be modified by normal code.
 ** The use of TBR is outside the scope of the basic C ABI.
 
+Extended Xn Registers:
+* X32..X46: Scratch
+* X48..X62: Callee Preserve
+
 If insufficient free registers exist to pass an argument, it and any following arguments of the same class will be passed on the stack. The stack will not have any spill space.
 
 Items on the stack will have a 8-byte alignment, with the size of stack frames kept to a 16-byte alignment. The creation of a stack frame is optional for leaf functions.
@@ -99,6 +103,8 @@ Packed floating point types will be passed in GPRs, with each element represente
 === Passing 128-bit Types ===
 
 Passing 128-bit types will be via a pair of GPRs, if both values will fit into GPRs (otherwise both will be passed on the stack). The passing of 128-bit types will not respect register alignment for SIMD types, and the passed pair may also straddle R7 and R20.
+
+The Extended Xn registers are not used for argument passing in the base ABI.
 
 
 === 32-bit Sub ABI ===

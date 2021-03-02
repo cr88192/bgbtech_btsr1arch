@@ -643,6 +643,83 @@ int BGBCC_CCXL_GetMinMaxSizeofType(BGBCC_TransState *ctx, BCCX_Node *ty,
 	return(-1);
 }
 
+
+int BGBCC_CCXL_TryGetOffsetofSig(
+	BGBCC_TransState *ctx,
+	char *sig, char *name)
+{
+	char tname[256];
+	BGBCC_CCXL_LiteralInfo *st;
+	BGBCC_CCXL_RegisterInfo *fi;
+	ccxl_register sreg, dreg;
+	ccxl_type bty;
+	char *cs, *ct;
+	int fn, foffs, fsoffs;
+	int i;
+
+	if(!ctx)return(-1);
+	if(!sig)return(-1);
+	if(!name)return(-1);
+	
+	cs=name; ct=tname;
+	while(*cs)
+	{
+		if(*cs=='/')
+			break;
+		*ct++=*cs++;
+	}
+	if(*cs=='/')
+		cs++;
+	*ct++=0;
+	
+	bty=BGBCC_CCXL_TypeWrapBasicType(CCXL_TY_I);
+	st=BGBCC_CCXL_LookupStructureForSig(ctx, sig);
+	if(st->decl && st->decl->fxmsize &&
+		(st->decl->fxmsize==st->decl->fxnsize))
+	{
+		fn=BGBCC_CCXL_LookupStructFieldID(ctx, st, tname);
+		fi=st->decl->fields[fn];
+
+		foffs=-1;
+		fsoffs=0;
+
+		if(fi->fxmoffs==fi->fxnoffs)
+			foffs=fi->fxmoffs;
+
+		if(*cs)
+		{
+			fsoffs=BGBCC_CCXL_TryGetOffsetofSig(ctx, fi->sig, cs);
+		}
+
+		if((foffs>=0) && (fsoffs>=0))
+			return(foffs+fsoffs);
+		return(-1);
+		
+//		if(fi->fxmoffs==fi->fxnoffs)
+//		{
+//			return(fi->fxmoffs);
+//		}
+	}
+	return(-1);
+}
+
+int BGBCC_CCXL_TryGetOffsetofType(BGBCC_TransState *ctx,
+	BCCX_Node *ty, char *name)
+{
+	int sza[2], ala[2];
+	char *s;
+	int i;
+	
+	if(!ctx)return(-1);
+	if(!ty)return(-1);
+	if(!name)return(-1);
+	
+	s=BGBCC_CCXL_VarTypeString(ctx, ty);
+	i=BGBCC_CCXL_TryGetOffsetofSig(ctx, s, name);
+	return(i);
+}
+
+
 int BGBCC_CCXL_TryGetSizeofName(BGBCC_TransState *ctx, char *name)
 {
 	static int rcp=0;

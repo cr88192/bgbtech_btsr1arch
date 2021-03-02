@@ -1463,6 +1463,18 @@ int BGBCC_CCXL_TypeObjectLiteralIndex(
 	return(i-256);
 }
 
+bool BGBCC_CCXL_TypeObjectP(
+	BGBCC_TransState *ctx, ccxl_type ty)
+{
+	BGBCC_CCXL_LiteralInfo *obj;
+	int i;
+
+	i=BGBCC_CCXL_GetTypeBaseType(ctx, ty);
+	if(i>=256)
+		return(true);
+	return(false);
+}
+
 bool BGBCC_CCXL_TypeFunctionP(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
@@ -2231,6 +2243,15 @@ int BGBCC_CCXL_TypeGetLogicalSize(
 		{
 			return(obj->decl->fxmsize);
 		}
+
+		if(!obj)
+		{
+			sz=BGBCC_CCXL_TypeGetLogicalBaseSize(ctx, ty);
+			if(sz>0)
+				return(sz);
+		}
+
+		return(-1);
 	}
 
 	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
@@ -2246,6 +2267,46 @@ int BGBCC_CCXL_TypeGetLogicalSize(
 		if((ty.val&CCXL_TY_PTRMASK)==CCXL_TYB1_PTRIDXE)
 			return(0);
 		
+		return(-1);
+	}
+
+	
+	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+	{
+		if(ctx->arch_sizeof_ptr)
+			return(ctx->arch_sizeof_ptr);
+		return(-1);
+	}
+	
+	if(BGBCC_CCXL_TypeObjectP(ctx, ty))
+	{
+		obj=BGBCC_CCXL_LookupStructureForType(ctx, ty);
+
+		if(obj->littype==CCXL_LITID_TYPEDEF)
+		{
+			sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, obj->decl->type);
+			return(sz);
+		}
+
+		if(	(obj->littype==CCXL_LITID_STRUCT) ||
+			(obj->littype==CCXL_LITID_UNION))
+		{
+			if(!(obj->decl))
+				return(-1);
+
+			if(obj && obj->decl && obj->decl->fxmsize &&
+				(obj->decl->fxmsize==obj->decl->fxnsize))
+			{
+				return(obj->decl->fxmsize);
+			}
+		}
+
+		if(obj->littype==CCXL_LITID_CLASS)
+			return(-1);
+		if(obj->littype==CCXL_LITID_FUNCTION)
+			return(-1);
+
+		BGBCC_DBGBREAK
 		return(-1);
 	}
 
@@ -2271,6 +2332,15 @@ int BGBCC_CCXL_TypeGetLogicalAlign(
 		{
 			return(obj->decl->fxmalgn);
 		}
+
+		if(!obj)
+		{
+			al=BGBCC_CCXL_TypeGetLogicalBaseAlign(ctx, ty);
+			if(al>0)
+				return(al);
+		}
+
+		return(-1);
 	}
 
 	if(BGBCC_CCXL_TypeArrayP(ctx, ty))
@@ -2278,6 +2348,38 @@ int BGBCC_CCXL_TypeGetLogicalAlign(
 		BGBCC_CCXL_TypeDerefType(ctx, ty, &tty);
 		al=BGBCC_CCXL_TypeGetLogicalAlign(ctx, tty);
 		return(al);
+	}
+	
+	if(BGBCC_CCXL_TypeObjectP(ctx, ty))
+	{
+		obj=BGBCC_CCXL_LookupStructureForType(ctx, ty);
+
+		if(obj->littype==CCXL_LITID_TYPEDEF)
+		{
+			sz=BGBCC_CCXL_TypeGetLogicalAlign(ctx, obj->decl->type);
+			return(sz);
+		}
+
+		if(	(obj->littype==CCXL_LITID_STRUCT) ||
+			(obj->littype==CCXL_LITID_UNION))
+		{
+			if(!(obj->decl))
+				return(-1);
+
+			if(obj && obj->decl && obj->decl->fxmalgn &&
+				(obj->decl->fxmalgn==obj->decl->fxnalgn))
+			{
+				return(obj->decl->fxmalgn);
+			}
+		}
+
+		if(obj->littype==CCXL_LITID_CLASS)
+			return(-1);
+		if(obj->littype==CCXL_LITID_FUNCTION)
+			return(-1);
+
+		BGBCC_DBGBREAK
+		return(-1);
 	}
 
 	al=BGBCC_CCXL_TypeGetLogicalBaseAlign(ctx, ty);
@@ -3256,7 +3358,7 @@ ccxl_status BGBCC_CCXL_TypeFromSig(
 	}
 
 
-	if((*s=='A') && (s[1]>='0') && (s[1]<='9'))
+	while((*s=='A') && (s[1]>='0') && (s[1]<='9'))
 	{
 		s++; i=0;
 		while(*s)
@@ -3308,7 +3410,27 @@ ccxl_status BGBCC_CCXL_TypeFromSig(
 	}
 
 	while(*s=='P')
-		{ pn++; s++; }
+	{
+		pn++; s++;
+
+#if 1
+		if((*s=='A') && (s[1]>='0') && (s[1]<='9'))
+		{
+			s++; i=0;
+			while(*s)
+			{
+				if(*s==';')
+					{ s++; break; }
+				if(*s==',')
+					{ s++; continue; }
+				if((*s>='0') && (*s<='9'))
+					{ s++; continue; }
+				break;
+			}
+		}
+#endif
+	}
+
 	switch(*s)
 	{
 	case 'a': bty=CCXL_TY_SB; break;

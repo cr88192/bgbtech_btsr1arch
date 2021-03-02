@@ -176,9 +176,134 @@ void BOPS_Error (void)
 	Sys_Error ("BoxOnPlaneSide:  Bad signbits");
 }
 
-
-//#if	!id386
 #if 1
+
+#ifdef __BJX2__
+void _BoxCornersForSignbits (
+	vec3_t emins, vec3_t emaxs,
+	vec3_t cmins, vec3_t cmaxs,
+	int signbits);
+__asm {
+_BoxCornersForSignbits:
+#if 0
+	MOV.L	(R4, 0), R16
+	MOV.L	(R5, 0), R17
+	TEST	1, R20
+	CSELT	R16, R17, R18
+	CSELT	R17, R16, R19
+	MOV.L	R18, (R6, 0)
+	MOV.L	R19, (R7, 0)
+
+	MOV.L	(R4, 4), R16
+	MOV.L	(R5, 4), R17
+	TEST	2, R20
+	CSELT	R16, R17, R18
+	CSELT	R17, R16, R19
+	MOV.L	R18, (R6, 4)
+	MOV.L	R19, (R7, 4)
+#endif
+
+#if 1
+	MOV.Q	(R4, 0), R16
+	MOV.Q	(R5, 0), R17
+	TEST	1, R20
+	CSELT	R16, R17, R18	|	CSELT	R17, R16, R19
+	TEST	2, R20
+	CSELT	R16, R17, R22	|	CSELT	R17, R16, R23
+	MOVHLD	R22, R18, R18	|	MOVHLD	R23, R19, R19
+	MOV.Q	R18, (R6, 0)
+	MOV.Q	R19, (R7, 0)
+#endif
+
+	MOV.L	(R4, 8), R16
+	MOV.L	(R5, 8), R17
+	TEST	4, R20
+	CSELT	R16, R17, R18
+	CSELT	R17, R16, R19
+	MOV.L	R18, (R6, 8)
+	MOV.L	R19, (R7, 8)
+	
+	RTSU
+};
+
+#else
+
+void _BoxCornersForSignbits (
+	vec3_t emins, vec3_t emaxs,
+	vec3_t cmins, vec3_t cmaxs,
+	int signbits)
+{
+	if (signbits & 1)
+		{ cmaxs[0] = emins[0];	cmins[0] = emaxs[0]; }
+	else
+		{ cmins[0] = emins[0];	cmaxs[0] = emaxs[0]; }
+
+	if (signbits & 2)
+		{ cmaxs[1] = emins[1];	cmins[1] = emaxs[1]; }
+	else
+		{ cmins[1] = emins[1];	cmaxs[1] = emaxs[1]; }
+
+	if (signbits & 4)
+		{ cmaxs[2] = emins[2];	cmins[2] = emaxs[2]; }
+	else
+		{ cmins[2] = emins[2];	cmaxs[2] = emaxs[2]; }
+}
+#endif
+
+
+
+#ifdef __BJX2__
+// #if 0
+
+int BoxOnPlaneSide (vec3_t emins, vec3_t emaxs, mplane_t *p);
+
+__asm {
+BoxOnPlaneSide:
+	MOVU.B		(R6, offsetof mplane_s signbits), R7
+									MOV.Q		(R4, 0), R16
+									MOV.Q		(R5, 0), R17
+									TEST		1, R7
+	CSELT		R16, R17, R18	|	CSELT		R17, R16, R19
+									TEST		2, R7
+	CSELT		R16, R17, R22	|	CSELT		R17, R16, R23
+	MOVHLD		R22, R18, R20	|	MOVHLD		R23, R19, R22
+									MOVU.L		(R4, 8), R16
+									MOVU.L		(R5, 8), R17
+									TEST		4, R7
+	CSELT		R16, R17, R21	|	CSELT		R17, R16, R23
+	/* R21:R20 = cmins, R23:R22=cmaxs */
+									MOV.Q		(R6, 0), R18
+									MOV.Q		(R6, 8), R3
+	/* R19:R18 = p->normal, unaligned */
+	EXTU.L		R3, R19			|	FLDCFH		R3, R7
+	/* R7 = p->dist */
+
+	/* dist1 = _DotProduct (p->normal, cmaxs); */
+	PMULX.F		R22, R18, R16
+	PADD.F		R16, R17, R3
+	FLDCF		R3, R16
+	FLDCFH		R3, R17
+	FADD		R16, R17, R4
+	/* R4 = dist1 */
+
+	/* dist2 = _DotProduct (p->normal, cmins); */
+	PMULX.F		R20, R18, R16
+	PADD.F		R16, R17, R3
+	FLDCF		R3, R16
+	FLDCFH		R3, R17
+	FADD		R16, R17, R5
+	/* R5 = dist2 */
+
+	MOV			0, R2
+	FCMPGT		R4, R7
+	OR?F		R2, 1, R2
+	FCMPGT		R5, R7
+	OR?T		R2, 2, R2
+
+	RTSU
+};
+
+#else
 
 /*
 ==================
@@ -187,8 +312,44 @@ BoxOnPlaneSide
 Returns 1, 2, or 1 + 2
 ==================
 */
+
 int BoxOnPlaneSide (vec3_t emins, vec3_t emaxs, mplane_t *p)
 {
+	vec3_t	cmins, cmaxs;
+	float	dist1, dist2;
+	int		sides;
+
+	_BoxCornersForSignbits(emins, emaxs, cmins, cmaxs, p->signbits);
+	dist1 = _DotProduct (p->normal, cmaxs);
+	dist2 = _DotProduct (p->normal, cmins);
+	sides = 0;
+	if (dist1 >= p->dist)
+		sides = 1;
+	if (dist2 < p->dist)
+		sides |= 2;
+	return sides;
+}
+
+#endif
+
+#endif
+
+//#if	!id386
+// #if 1
+#if 0
+
+/*
+==================
+BoxOnPlaneSide
+
+Returns 1, 2, or 1 + 2
+==================
+*/
+
+int BoxOnPlaneSide (vec3_t emins, vec3_t emaxs, mplane_t *p)
+{
+//	vec3_t	corners[2];
+	vec3_t	cmins, cmaxs;
 	float	dist1, dist2;
 	int		sides;
 
@@ -204,7 +365,8 @@ int BoxOnPlaneSide (vec3_t emins, vec3_t emaxs, mplane_t *p)
 		return 3;
 	}
 #endif
-	
+
+#if 1
 // general case
 	switch (p->signbits)
 	{
@@ -245,6 +407,17 @@ dist2 = p->normal[0]*emaxs[0] + p->normal[1]*emaxs[1] + p->normal[2]*emaxs[2];
 		BOPS_Error ();
 		break;
 	}
+#endif
+
+#if 0
+//	_BoxCornersForSignbits(emins, emaxs, corners[1], corners[0], p->signbits);
+//	dist1 = _DotProduct (p->normal, corners[0]);
+//	dist2 = _DotProduct (p->normal, corners[1]);
+
+	_BoxCornersForSignbits(emins, emaxs, cmins, cmaxs, p->signbits);
+	dist1 = _DotProduct (p->normal, cmaxs);
+	dist2 = _DotProduct (p->normal, cmins);
+#endif
 
 #if 0
 	int		i;
@@ -335,7 +508,57 @@ void VectorMA (vec3_t veca, float scale, vec3_t vecb, vec3_t vecc)
 }
 
 
-vec_t _DotProduct (vec3_t v1, vec3_t v2)
+#ifdef __BJX2__
+// #if 0
+vec_t _DotProduct (const vec3_t v1, const vec3_t v2);
+void _VectorAdd (vec3_t veca, vec3_t vecb, vec3_t out);
+void _VectorSubtract (vec3_t veca, vec3_t vecb, vec3_t out);
+void _VectorCopy (vec3_t in, vec3_t out);
+
+__asm {
+
+_VectorAdd:
+	MOV.Q		(R4, 0), R20
+	MOVU.L		(R4, 8), R21
+	MOV.Q		(R5, 0), R22
+	MOVU.L		(R5, 8), R23
+	PADDX.F		R20, R22, R16
+	MOV.Q		R16, (R6, 0)
+	MOVU.L		R17, (R6, 8)
+	RTSU
+
+_VectorSubtract:
+	MOV.Q		(R4, 0), R20
+	MOVU.L		(R4, 8), R21
+	MOV.Q		(R5, 0), R22
+	MOVU.L		(R5, 8), R23
+	PSUBX.F		R20, R22, R16
+	MOV.Q		R16, (R6, 0)
+	MOVU.L		R17, (R6, 8)
+	RTSU
+
+_DotProduct:
+	MOV.Q		(R4, 0), R20
+	MOVU.L		(R4, 8), R21
+	MOV.Q		(R5, 0), R22
+	MOVU.L		(R5, 8), R23
+
+	PMULX.F		R20, R22, R16
+	PADD.F		R16, R17, R3
+	FLDCF		R3, R18
+	FLDCFH		R3, R19
+	FADD		R18, R19, R2
+	RTSU
+
+_VectorCopy:
+	MOV.Q	(R4, 0), R6
+	MOVU.L	(R4, 8), R7
+	MOV.Q	R6, (R5, 0)
+	MOVU.L	R7, (R5, 8)
+	RTSU
+};
+#else
+vec_t _DotProduct (const vec3_t v1, const vec3_t v2)
 {
 	return v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2];
 }
@@ -360,6 +583,78 @@ void _VectorCopy (vec3_t in, vec3_t out)
 	out[1] = in[1];
 	out[2] = in[2];
 }
+#endif
+
+#ifdef __BJX2__
+double Q_rsqrt_d( double number )
+{
+	long long i;
+	double x2, y;
+	const double threehalfs = 1.5;
+
+	x2 = number * 0.5;
+	y  = number;
+	i  = __float64_getbits(y);
+//	i  = * ( long * ) &y;
+//	i  = 0x5f3759df - ( i >> 1 );
+	i  = 0x5fe6eb3be0004a48ull - ( i >> 1 );
+//	y  = * ( float * ) &i;
+	y  = __float64_frombits(i);
+	y  = y * ( threehalfs - ( x2 * y * y ) );
+	y  = y * ( threehalfs - ( x2 * y * y ) );
+
+	return y;
+}
+
+float Q_rsqrt( float number )
+{
+	unsigned int i;
+	float x2, y;
+	const double threehalfs = 1.5f;
+
+	x2 = number * 0.5f;
+	y  = number;
+	i  = * ( unsigned int * ) &y;
+	i  = 0x5f3759df - ( i >> 1 );
+	y  = * ( float * ) &i;
+	y  = y * ( threehalfs - ( x2 * y * y ) );
+	y  = y * ( threehalfs - ( x2 * y * y ) );
+	return y;
+}
+
+#else
+double Q_rsqrt_d( double number )
+{
+	long long i;
+	double x2, y;
+	const double threehalfs = 1.5;
+
+	x2 = number * 0.5;
+	y  = number;
+	memcpy(&i, &y, sizeof(double));
+	i  = 0x5fe6eb3be0004a48ull - ( i >> 1 );
+	memcpy(&y, &i, sizeof(double));
+	y  = y * ( threehalfs - ( x2 * y * y ) );
+	y  = y * ( threehalfs - ( x2 * y * y ) );
+	return y;
+}
+
+float Q_rsqrt( float number )
+{
+	unsigned int i;
+	float x2, y;
+	const double threehalfs = 1.5f;
+
+	x2 = number * 0.5f;
+	y  = number;
+	i  = * ( unsigned int * ) &y;
+	i  = 0x5f3759df - ( i >> 1 );
+	y  = * ( float * ) &i;
+	y  = y * ( threehalfs - ( x2 * y * y ) );
+	y  = y * ( threehalfs - ( x2 * y * y ) );
+	return y;
+}
+#endif
 
 void CrossProduct (vec3_t v1, vec3_t v2, vec3_t cross)
 {
@@ -387,8 +682,10 @@ float VectorNormalize (vec3_t v)
 {
 	float	length, ilength;
 
-	length = v[0]*v[0] + v[1]*v[1] + v[2]*v[2];
+//	length = v[0]*v[0] + v[1]*v[1] + v[2]*v[2];
+	length = DotProduct(v, v);
 	length = sqrt (length);		// FIXME
+//	ilength = Q_rsqrt(length);
 
 	if (length)
 	{
@@ -400,6 +697,22 @@ float VectorNormalize (vec3_t v)
 		
 	return length;
 
+}
+
+float VectorNormalizeFast (vec3_t v)
+{
+	/* Optimized for BJX2... */
+	double	length, ilength;
+//	length = v[0]*v[0] + v[1]*v[1] + v[2]*v[2];
+	length = DotProduct(v, v);
+	ilength = Q_rsqrt_d(length);
+	if (length>0)
+	{
+		v[0] *= ilength;
+		v[1] *= ilength;
+		v[2] *= ilength;
+	}
+	return length;
 }
 
 void VectorInverse (vec3_t v)
@@ -425,6 +738,65 @@ int Q_log2(int val)
 	return answer;
 }
 
+#ifdef __BJX2__
+double Q_sqrt_fast( double number )
+{
+	long long i, j;
+	double x0, x1, y, x0r;
+	x0 = number;
+	x1 = number + 1;
+	i  = __float64_getbits(x0);
+	i  = 0x1ff8000000000000ull + ( i >> 1 );
+	j  = 0x7fd0000000000000ull - i;
+	y  = __float64_frombits(i);
+	x0r  = __float64_frombits(j);
+//	y  = y * ( x1 - x0r*y*y );
+	x0r *= x0r;
+	y  = y * ( 1.0 + ((x0 - y*y) * x0r) );
+	return y;
+}
+#else
+double Q_sqrt_fast( double number )
+{
+	long long i, j;
+	double x0, x1, y, x0r;
+	x0 = number;
+	x1 = number + 1;
+	memcpy(&i, &x0, sizeof(double));
+	i  = 0x1ff8000000000000ull + ( i >> 1 );
+	j  = 0x7fd0000000000000ull - i;
+	memcpy(&y, &i, sizeof(double));
+	memcpy(&x0r, &j, sizeof(double));
+//	y  = __float64_frombits(i);
+//	x0r  = __float64_frombits(j);
+//	y  = y * ( x1 - x0r*y*y );
+	x0r *= x0r;
+	y  = y * ( 1.0 + ((x0 - y*y) * x0r) );
+	return y;
+}
+#endif
+
+void Q_BoxCenter(vec3_t mins, vec3_t maxs, vec3_t org)
+{
+	org[0] = (mins[0] + maxs[0])*0.5;
+	org[1] = (mins[1] + maxs[1])*0.5;
+	org[2] = (mins[2] + maxs[2])*0.5;
+}
+
+vec_t Q_BoxCenterRadius(vec3_t mins, vec3_t maxs, vec3_t org)
+{
+	float dx, dy, dz, d;
+
+	org[0] = (mins[0] + maxs[0])*0.5;
+	org[1] = (mins[1] + maxs[1])*0.5;
+	org[2] = (mins[2] + maxs[2])*0.5;
+	
+	dx=maxs[0]-org[0];
+	dy=maxs[1]-org[1];
+	dz=maxs[2]-org[2];
+	d=dx*dx+dy*dy+dz*dz;
+	return(Q_sqrt_fast(d));
+}
 
 /*
 ================

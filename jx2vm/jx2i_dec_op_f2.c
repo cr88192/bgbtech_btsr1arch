@@ -48,6 +48,10 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 	if(opw2&0x0200)rm_dfl+=16;
 //	if(opw2&0x0010)ro_dfl+=16;
 
+	rn_dfl=BJX2_RemapGPR(ctx, rn_dfl);
+	rm_dfl=BJX2_RemapGPR(ctx, rm_dfl);
+//	ro_dfl=BJX2_RemapGPR(ctx, ro_dfl);
+
 //	disp5=(opw1   )&31;
 	eq=(opw2&0x0800)?1:0;
 	eo=(opw2&0x0100)?1:0;

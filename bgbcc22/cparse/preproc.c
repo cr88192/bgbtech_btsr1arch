@@ -828,14 +828,43 @@ char *BGBPP_LoadInclude(BGBCP_ParseState *ctx, char *name, int *rsz)
 	return(NULL);
 }
 
-void BGBPP_Include(BGBCP_ParseState *ctx, char *str)
+void BGBPP_Include(BGBCP_ParseState *ctx, char *str, int angle)
 {
 	char b[4096];
+	char *oldfn;
 	char *buf;
 	char *s;
 	int oisnew;
 	int l0, l1, l2, l3;
 	int i;
+
+	oldfn=bgbpp_cfn;
+	buf=NULL;
+
+//	if(bgbpp_seen_ninc>0)
+	if(bgbpp_cfn && !angle)
+	{
+//		i=bgbpp_seen_ninc-1;
+//		strcpy(b, bgbpp_seen_incname[i]);
+		strcpy(b, bgbpp_cfn);
+		s=b+strlen(b);
+		while(s>b)
+		{
+			if(*s=='/')
+				break;
+			s--;
+		}
+		
+		if(*s=='/')
+		{
+			s++;
+			strcpy(s, str);
+
+			buf=BGBPP_LoadInclude(ctx, b, NULL);
+			if(buf)
+				{ bgbpp_cfn=bgbcc_strdup(b); }
+		}
+	}
 
 #if 0
 	buf=NULL;
@@ -847,7 +876,12 @@ void BGBPP_Include(BGBCP_ParseState *ctx, char *str)
 	}
 #endif
 
-	buf=BGBPP_LoadInclude(ctx, str, NULL);
+	if(!buf)
+	{
+		buf=BGBPP_LoadInclude(ctx, str, NULL);
+		if(buf)
+			{ bgbpp_cfn=bgbcc_strdup(str); }
+	}
 
 	if(!buf)
 	{
@@ -890,6 +924,8 @@ void BGBPP_Include(BGBCP_ParseState *ctx, char *str)
 //	free(buf);
 
 	BGBCP_PopLinenum();
+
+	bgbpp_cfn=oldfn;
 
 	bgbpp_seen_isnew=oisnew;
 	bgbpp_seen_isabort=0;
@@ -1222,7 +1258,7 @@ void BGBPP_Directive(BGBCP_ParseState *ctx, char *str)
 				while(*s1 && (*s1!='>'))*t++=*s1++;
 				*t++=0;
 
-				BGBPP_Include(ctx, b2);
+				BGBPP_Include(ctx, b2, 1);
 				return;
 			}
 
@@ -1236,7 +1272,7 @@ void BGBPP_Directive(BGBCP_ParseState *ctx, char *str)
 			*t=0;
 #endif
 
-			BGBPP_Include(ctx, b2);
+			BGBPP_Include(ctx, b2, 0);
 			return;
 		}
 
@@ -1660,9 +1696,42 @@ int BGBPP_Expand(BGBCP_ParseState *ctx,
 		isws=((*s)<=' ');
 	
 		s=BGBCP_TokenCtx(ctx, s, b, &ty);
+		s1=BGBCP_TokenCtx(ctx, s, b2, &ty2);
 
 		if(isws)
 			*t++=' ';
+
+		if((ty==BTK_OPERATOR) && !strcmp(b, "#"))
+		{
+			if(ty2==BTK_NAME)
+			{
+				for(i=0; def->args[i]; i++)
+					if(!bgbpp_strcmp(def->args[i], b2))
+						break;
+
+				if(def->args[i])
+				{
+					if((t+strlen(ab[i])+16)>=te)
+					{
+						BGBPP_Error(ctx, "BGBPP_Expand: Buffer Overflow\n");
+						return(-1);
+					}
+
+					t=BGBPP_EmitString(t, ab[i]);
+					s=s1;
+					continue;
+				}
+
+				s=s1;
+				t=BGBPP_EmitString(t, b2);
+				continue;
+			}
+
+			s=s1;
+			t=BGBPP_EmitString(t, b2);
+			continue;
+		}
+
 
 		if(ty==BTK_NAME)
 		{

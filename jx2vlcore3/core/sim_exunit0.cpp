@@ -1593,9 +1593,25 @@ int main(int argc, char **argv, char **env)
 //		(char *)"BOOTLOAD.SYS",
 		(char *)"QUAKE.EXE",
 		(char *)"../../tk_qsrc/quake_b64b.exe");
+
 	JX2R_UseImageAddFile(
-		(char *)"ID1/PAK0.PAK",
-		(char *)"../../tk_qsrc/id1/pak0.pak");
+		(char *)"GLQUAKE.EXE",
+		(char *)"../../tk_qsrc/glquake_tkra_b64b.exe");
+
+//	JX2R_UseImageAddFile(
+//		(char *)"ID1/PAK0.PAK",
+//		(char *)"../../tk_qsrc/id1/pak0.pak");
+
+	JX2R_UseImageAddFile(
+		(char *)"ID1/PAK0LZ.WAD",
+		(char *)"../../tk_qsrc/id1/pak0lz.wad");
+	JX2R_UseImageAddFile(
+		(char *)"ID1/PAK1LZ.WAD",
+		(char *)"../../tk_qsrc/id1/pak1lz.wad");
+	JX2R_UseImageAddFile(
+		(char *)"ID1/PAK2LZ.WAD",
+		(char *)"../../tk_qsrc/id1/pak2lz.wad");
+
 	JX2R_UseImageAddFile(
 		(char *)"ID1/AUTOEXEC.CFG",
 		(char *)"../../tk_qsrc/id1/autoexec1.cfg");

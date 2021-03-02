@@ -38,7 +38,27 @@ force_inline void BJX2_DecTraceCb_SetupForTrace(
 	ctx->tr_cur=tr;
 	ctx->tr_rnxt=tr->lnknext;
 	ctx->tr_rjmp=tr->jmpnext;
-	ctx->regs[BJX2_REG_PC]=tr->addr_nxt;
+//	ctx->regs[BJX2_REG_PC]=tr->addr_nxt;
+
+//	ctx->tr_rnxt=NULL;
+//	ctx->tr_rjmp=NULL;
+
+	if(tr->addr_nxt)
+	{
+		ctx->regs[BJX2_REG_PC]=tr->addr_nxt;
+	}else
+	{
+		ctx->regs[BJX2_REG_PC]=-1;
+		ctx->tr_rnxt=NULL;
+	}
+
+//	if(tr->addr_jmp<0x10000)
+//	{
+//		ctx->tr_rjmp=NULL;
+//	}
+
+//	if(tr->addr && !ctx->regs[BJX2_REG_PC])
+//		{ JX2_DBGBREAK }
 
 #ifdef X86_64
 	if(!(ctx->use_jit))

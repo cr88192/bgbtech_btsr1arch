@@ -44,7 +44,8 @@ typedef unsigned short wchar_t;
 #endif
 
 #define NULL ((void *)0)
-#define offsetof(x, y) (size_t)&(((x *)0)->y)
+// #define offsetof(x, y) (size_t)&(((x *)0)->y)
+#define offsetof(x, y) __offsetof(x, y)
 
 #ifdef __PDPCLIB_DLL
 #define __PDPCLIB_API__ __declspec(dllexport)

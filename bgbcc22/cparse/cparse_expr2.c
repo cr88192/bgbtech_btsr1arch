@@ -541,17 +541,37 @@ BCCX_Node *BGBCP_ExpressionLit(BGBCP_ParseState *ctx, char **str)
 				BGBCP_Error(s, 
 					"offsetof token '%s'\n", b2);
 
-			s=BGBCP_Token(s, b, &ty);
+//			s=BGBCP_Token(s, b, &ty);
 //			n2=BCCX_NewCst(&bgbcc_rcst_symbol, "symbol"); BCCX_Set(n2, "name", b2);
+
+			n2=BGBCP_Expression2(ctx, &s);
 
 			s=BGBCP_Token(s, b2, &ty2);
 			if(bgbcp_strcmp1(b2, ")"))
+			{
 				BGBCP_Error(s, 
 					"offsetof token '%s'\n", b2);
+			}
 
-			n=BCCX_NewCst1(&bgbcc_rcst_offsetof, "offsetof",
-				BCCX_NewCst1V(&bgbcc_rcst_tyexpr, "tyexpr", n1));
-			BCCX_SetCst(n, &bgbcc_rcst_name, "name", b);
+			if(BCCX_TagIsCstP(n2, &bgbcc_rcst_ref, "ref"))
+			{
+				s1=BCCX_GetCst(n2, &bgbcc_rcst_name, "name");
+
+				n=BCCX_NewCst1(&bgbcc_rcst_offsetof, "offsetof",
+					BCCX_NewCst1V(&bgbcc_rcst_tyexpr, "tyexpr", n1));
+				BCCX_SetCst(n, &bgbcc_rcst_name, "name", s1);
+
+				*str=s;
+				return(n);
+			}
+
+			n=BCCX_NewCst2(&bgbcc_rcst_offsetof, "offsetof",
+				BCCX_NewCst1V(&bgbcc_rcst_tyexpr, "tyexpr", n1),
+				BCCX_NewCst1V(&bgbcc_rcst_value, "value", n2));
+
+//			n=BCCX_NewCst1(&bgbcc_rcst_offsetof, "offsetof",
+//				BCCX_NewCst1V(&bgbcc_rcst_tyexpr, "tyexpr", n1));
+//			BCCX_SetCst(n, &bgbcc_rcst_name, "name", b);
 
 			*str=s;
 			return(n);

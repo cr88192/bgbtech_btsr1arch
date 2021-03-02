@@ -1966,7 +1966,8 @@ void PF_Fixme (void)
 
 
 
-builtin_t pr_builtin[] =
+// builtin_t pr_builtin[] =
+const builtin_t pr_builtin[] =
 {
 PF_Fixme,
 PF_makevectors,	// void(entity e)	makevectors 		= #1;

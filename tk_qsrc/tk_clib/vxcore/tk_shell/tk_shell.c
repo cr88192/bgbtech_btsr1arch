@@ -3,6 +3,9 @@ int TKSH_InitCmds(void);
 // char tb_cwd[256];
 
 void tk_shell_chksane_simd_asm();
+void tk_shell_chksane_rgb5_asm();
+
+__vec4f		tk_shell_fv0_gbl;
 
 __asm {
 tk_shell_chksane_simd_asm:
@@ -129,6 +132,53 @@ tk_shell_chksane_simd_asm:
 	CMPQEQ		R19, R7
 	BREAK?F
 
+	MOV		0x0717153D18247A72, R16
+
+	PMULX.F		R20, R22, R18
+	CMPQEQ		R18, R16
+	BREAK?F
+	CMPQEQ		R19, R16
+	BREAK?F
+
+	MOV.X		(SP, 0), R18
+	PMULX.F		R20, R22, R18
+	CMPQEQ		R18, R16
+	BREAK?F
+	CMPQEQ		R19, R16
+	BREAK?F
+
+	MOV			GBR, R16
+	MOV			tk_shell_fv0_gbl, R17
+//	ADD			-384, R17
+	ADD			-6144, R17
+	MOV			R17, GBR
+
+
+	MOV.X		R4, tk_shell_fv0_gbl
+	NOP
+	MOV.X		tk_shell_fv0_gbl, R18
+
+	CMPQEQ		R18, R4
+	BREAK?F
+	CMPQEQ		R19, R5
+	BREAK?F
+
+//	MOV.X		R6, (GBR, 384)
+	MOV.X		R6, (GBR, 6144)
+	NOP
+//	MOV.X		(GBR, 384), R18
+	MOV.X		(GBR, 6144), R18
+
+	CMPQEQ		R18, R6
+	BREAK?F
+	CMPQEQ		R19, R7
+	BREAK?F
+
+
+	MOV			R16, GBR
+
+//	BREAK
+
 	MOV.Q	(SP), R1
 	MOV		R1, SR
 	ADD		8, SP
@@ -139,9 +189,154 @@ tk_shell_chksane_simd_asm:
 
 tk_fcn_clz:
 	clz		R4, R2
-	RTSU
+	RTS
+
 tk_fcn_clzq:
 	CLZQ	R4, R2
+	RTS
+
+tk_shell_chksane_rgb5_asm:
+	/* Basic Opaque Color */
+
+	MOV			0x1234, R16
+
+	MOV			0xFF218CA5, R20
+	MOV			0xFFFF21218C8CA5A5, R21
+
+	
+	RGB5UPCK32	R16, R4
+	RGB5UPCK64	R16, R5
+	
+	.L0:
+	CMPQEQ		R4, R20
+	BREAK?F
+	CMPQEQ		R5, R21
+	BREAK?F
+
+	RGB5PCK32	R4, R18
+	RGB5PCK64	R5, R19
+
+	CMPEQ		R18, R16
+	BREAK?F
+	CMPEQ		R19, R16
+	BREAK?F
+
+
+	/* Translucent Color */
+
+	MOV			0xABCD, R16
+
+	MOV			0x2052F76B, R20
+	MOV			0x20205252F7F76B6B, R21
+
+	RGB5UPCK32	R16, R4		|	RGB5UPCK64	R16, R5
+	
+	.L1:
+	CMPQEQ		R4, R20
+	BREAK?F
+	CMPQEQ		R5, R21
+	BREAK?F
+
+	RGB5PCK32	R4, R18		|	RGB5PCK64	R5, R19
+
+	CMPEQ		R18, R16
+	BREAK?F
+	CMPEQ		R19, R16
+	BREAK?F
+
+	/* RGB32 Pack / Unpack */
+
+	MOV			0x2052F76B, R20
+	MOV			0x20205252F7F76B6B, R21
+
+	RGB32UPCK64	R20, R4
+	RGB32PCK64	R21, R5
+
+	CMPQEQ		R4, R21
+	BREAK?F
+	CMPEQ		R5, R20
+	BREAK?F
+
+	/* Test Word Shuffle */
+
+	MOV			0x20205252F7F76B6B, R16
+	MOV			0x2052F76B, R17
+
+	MOV			0x2020202020202020, R20
+	MOV			0x6B6BF7F752522020, R21
+
+	MOV			0x20202020, R22
+	MOV			0x6BF75220, R23
+
+	PSHUF.W		R16, 0xFF, R4	|	PSHUF.W		R16, 0x1B, R5
+	PSHUF.B		R17, 0xFF, R6	|	PSHUF.B		R17, 0x1B, R7
+
+	.L2:
+	CMPQEQ		R4, R20
+	BREAK?F
+	CMPQEQ		R5, R21
+	BREAK?F
+
+	CMPEQ		R6, R22
+	BREAK?F
+	CMPEQ		R7, R23
+	BREAK?F
+
+
+	/* Morton Shuffle */
+
+	MOV			0xFFFF0000FF0000FF, R16
+	MOV			0xFF0000FFFFFF0000, R17
+	PMORT.L		R16, R4		|	PMORT.L		R17, R5
+	PMORT.Q		R16, R6		|	PMORT.Q		R17, R7
+
+	MOV			0xFFFFAAAA, R20
+	MOV			0xFFFF5555, R21
+	MOV			0xFFFFAAAA00005555, R22
+	MOV			0xFFFF55550000AAAA, R23
+
+	.L3:
+	CMPEQ		R4, R20
+	BREAK?F
+	CMPEQ		R5, R21
+	BREAK?F
+
+	CMPEQ		R6, R22
+	BREAK?F
+	CMPEQ		R7, R23
+	BREAK?F
+
+	/* UTX2 */
+
+	MOV			0xFFAA550012342BCD, R16
+
+	MOV			0xFFFF21218C8CA5A5, R20
+	MOV			0xFFFF5252F7F76B6B, R23
+
+	MOV			0, R2
+	MOV			15, R3
+	BLKUTX2		R16, R2, R4
+	BLKUTX2		R16, R3, R5
+
+	.L4:
+	CMPQEQ		R4, R20
+	BREAK?F
+	CMPQEQ		R5, R23
+	BREAK?F
+	
+	/* Test FLDCH Immed */
+	MOV			0x40159C0000000000, R20
+	MOV			0x40E2680000000000, R21
+
+	FLDCH	0x4567, R4
+	FLDCH	0x789A, R5
+
+	CMPQEQ		R4, R20
+	BREAK?F
+	CMPQEQ		R5, R21
+	BREAK?F
+
+
 	RTSU
 
 };
@@ -191,9 +386,12 @@ int tk_shell_chksane_simd()
 	double	f0, f1, f2, f3;
 	
 	tk_shell_chksane_simd_asm();
+	tk_shell_chksane_rgb5_asm();
 	
 //	mv0=__m128_float4(1.0, 2.0, 3.0, 5.0);
 	mv0=(__vec4f){1.0, 2.0, 3.0, 5.0};
+	
+	tk_shell_fv0_gbl = mv0;
 	
 //	__hint_cc_dbgbreak();
 	

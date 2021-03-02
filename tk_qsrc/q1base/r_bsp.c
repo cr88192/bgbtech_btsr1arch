@@ -22,6 +22,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "quakedef.h"
 #include "r_local.h"
 
+#ifdef RAYTRACE
+#include "d_local.h"
+#endif
+
 //
 // current entity info
 //
@@ -670,8 +674,7 @@ void R_RecursiveWorldNode (mnode_t *node, int clipflags)
 	}
 }
 
-
-
+#ifndef RAYTRACE
 /*
 ================
 R_RenderWorld
@@ -702,5 +705,105 @@ void R_RenderWorld (void)
 		}
 	}
 }
+#endif
 
+#ifdef RAYTRACE
+void R_RenderWorld(void)
+{
+	u16 *ct;
+	short	*ctz;
+	vec3_t dir, xdir, ydir, xydir;
+	vec3_t vos, voe;
+	int x, y, xo, yo, xh, yh, ys2;
+	float xf, yf, xhr, yhr;
+	u64 r;
+	int px, z;
 
+#if 1
+	int			i;
+	model_t		*clmodel;
+	btofpoly_t	btofpolys[MAX_BTOFPOLYS];
+
+	pbtofpolys = btofpolys;
+
+	currententity = &cl_entities[0];
+	VectorCopy (r_origin, modelorg);
+	clmodel = currententity->model;
+	r_pcurrentvertbase = clmodel->vertexes;
+
+	R_RecursiveWorldNode (clmodel->nodes, 15);
+
+// if the driver wants the polygons back to front, play the visible ones back
+// in that order
+	if (r_worldpolysbacktofront)
+	{
+		for (i=numbtofpolys-1 ; i>=0 ; i--)
+		{
+			R_RenderPoly (btofpolys[i].psurf, btofpolys[i].clipflags);
+		}
+	}
+#endif
+
+	ys2=screenheight-sb_lines;
+	xh=screenwidth/2;
+//	yh=screenheight/2;
+	yh=ys2/2;
+	xhr=1.0/xh;
+//	yhr=1.0/yh;
+	yhr=((1.0*yh)/xh)/yh;
+	
+//	ct=(u16 *)(vid.buffer);
+	ct=(u16 *)(d_viewbuffer);
+	ctz=d_pzbuffer;
+	
+//	for(y=0; y<screenheight; y++)
+	for(y=0; y<ys2; y++)
+		for(x=0; x<screenwidth; x++)
+	{
+		if(x&1)
+		{
+			*ct++=*(ct-1);
+			ctz++;
+			continue;
+		}
+
+		if(y&1)
+		{
+			*ct++=*(ct-screenwidth);
+			ctz++;
+			continue;
+		}
+
+		xo=x-xh;
+		yo=y-yh;
+		xf=xo*xhr;
+		yf=-(yo*yhr);
+		
+		VectorScale(vright, xf, xdir);
+		VectorScale(vup, yf, ydir);
+		VectorAdd(xdir, ydir, xydir);
+		VectorAdd(xydir, vpn, dir);
+		VectorNormalize(dir);
+		
+
+//		VectorScale(dir, 1024, xydir);
+		VectorScale(dir, 2048, xydir);
+		VectorCopy(r_origin, vos);
+		VectorAdd(r_origin, xydir, voe);
+	
+		r = RaycastPixel (cl.worldmodel->nodes, vos, voe);
+
+		px =	((r>>9)&0x7C00) |
+				((r>>6)&0x03E0) |
+				((r>>3)&0x001F) ;
+
+//		z=0x3FFF;
+
+		*ct=px;
+//		*ctz=z;
+
+		ct++;
+		ctz++;
+	}
+}
+#endif

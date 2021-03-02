@@ -128,6 +128,24 @@ void Host_God_f (void)
 		SV_ClientPrintf ("godmode ON\n");
 }
 
+void Host_Invul_f (void)
+{
+	if (cmd_source == src_command)
+	{
+		Cmd_ForwardToServer ();
+		return;
+	}
+
+	if (pr_global_struct->deathmatch && !host_client->privileged)
+		return;
+
+	sv_player->v.flags = (int)sv_player->v.flags ^ FL_GODMODE;
+	if (!((int)sv_player->v.flags & FL_GODMODE) )
+		SV_ClientPrintf ("invulnerability OFF\n");
+	else
+		SV_ClientPrintf ("invulnerability ON\n");
+}
+
 void Host_Notarget_f (void)
 {
 	if (cmd_source == src_command)
@@ -1881,6 +1899,7 @@ void Host_InitCommands (void)
 	Cmd_AddCommand ("status", Host_Status_f);
 	Cmd_AddCommand ("quit", Host_Quit_f);
 	Cmd_AddCommand ("god", Host_God_f);
+	Cmd_AddCommand ("invul", Host_Invul_f);
 	Cmd_AddCommand ("notarget", Host_Notarget_f);
 	Cmd_AddCommand ("fly", Host_Fly_f);
 	Cmd_AddCommand ("map", Host_Map_f);

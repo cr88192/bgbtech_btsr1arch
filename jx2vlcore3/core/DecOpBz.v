@@ -131,11 +131,18 @@ begin
 	opRegN_Dfl	= {tRegRnIsRs, 1'b0, istrWord[ 7:4]};
 	opRegM_Dfl	= {tRegRmIsRs, 1'b0, istrWord[ 3:0]};
 
-	opRegN_Cr	= {2'b10, istrWord[ 7:4]};
-	opRegM_Cr	= {2'b10, istrWord[ 3:0]};
+//	opRegN_Cr	= {2'b10, istrWord[ 7:4]};
+//	opRegM_Cr	= {2'b10, istrWord[ 3:0]};
 
-	opRegN_Sr	= {2'b11, istrWord[ 7:4]};
-	opRegM_Sr	= {2'b11, istrWord[ 3:0]};
+//	opRegN_Sr	= {2'b11, istrWord[ 7:4]};
+//	opRegM_Sr	= {2'b11, istrWord[ 3:0]};
+
+
+	opRegN_Sr	= {2'b10, istrWord[ 7:4]};
+	opRegM_Sr	= {2'b10, istrWord[ 3:0]};
+
+	opRegN_Cr	= {2'b11, istrWord[ 7:4]};
+	opRegM_Cr	= {2'b11, istrWord[ 3:0]};
 
 //	opRegO_Er	= {2'b01, istrWord[11:8]};
 //	opRegN_Er	= {2'b01, istrWord[ 7:4]};

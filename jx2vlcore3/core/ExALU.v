@@ -1072,7 +1072,7 @@ begin
 				regValRs[43], regValRs[11], regValRs[42], regValRs[10],
 				regValRs[41], regValRs[ 9], regValRs[40], regValRs[ 8],
 				regValRs[39], regValRs[ 7], regValRs[38], regValRs[ 6],
-				regValRs[47], regValRs[ 5], regValRs[36], regValRs[ 4],
+				regValRs[37], regValRs[ 5], regValRs[36], regValRs[ 4],
 				regValRs[35], regValRs[ 3], regValRs[34], regValRs[ 2],
 				regValRs[33], regValRs[ 1], regValRs[32], regValRs[ 0]
 			};
@@ -1089,7 +1089,7 @@ begin
 			tResultu2A = { tResultu1A, tResultu1B[31:0] };
 		end
 `endif
-		
+
 		default: begin
 		end
 	endcase

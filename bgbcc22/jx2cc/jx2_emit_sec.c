@@ -196,7 +196,8 @@ int BGBCC_JX2_EmitByteI(BGBCC_JX2_Context *ctx, int val)
 	if(ctx->emit_isprobe)
 		return(0);
 
-	BGBCC_JX2_EmitCheckExpand(ctx, 1);
+//	BGBCC_JX2_EmitCheckExpand(ctx, 1);
+	BGBCC_JX2_EmitCheckExpand(ctx, 256);
 
 	if(ctx->is_simpass)
 	{
@@ -1824,7 +1825,8 @@ int BGBCC_JX2_EmitWordI(BGBCC_JX2_Context *ctx, int val)
 //		k=-1;
 //	}
 
-	BGBCC_JX2_EmitCheckExpand(ctx, 2);
+//	BGBCC_JX2_EmitCheckExpand(ctx, 2);
+	BGBCC_JX2_EmitCheckExpand(ctx, 256);
 
 	if(ctx->is_le)
 	{
@@ -2569,6 +2571,9 @@ int BGBCC_JX2_EmitGetSecOffs(BGBCC_JX2_Context *ctx, int sec)
 int BGBCC_JX2_EmitBAlign(BGBCC_JX2_Context *ctx, int al)
 {
 	int i, j, k;
+	
+	if(al<=0)
+		return(0);
 	
 	i=BGBCC_JX2_EmitGetOffs(ctx);
 	if(!(i&(al-1)))

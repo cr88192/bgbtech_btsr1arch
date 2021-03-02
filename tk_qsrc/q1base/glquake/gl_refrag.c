@@ -187,6 +187,19 @@ void R_AddEfrags (entity_t *ent)
 }
 
 
+qboolean R_CullEntity (entity_t	*pent)
+{
+	model_t		*clmodel;
+	vec3_t mins;
+	vec3_t maxs;
+
+	clmodel = pent->model;
+
+	VectorAdd(pent->origin, clmodel->mins, mins);
+	VectorAdd(pent->origin, clmodel->maxs, maxs);
+	return(R_CullBox(mins, maxs));
+}
+
 /*
 ================
 R_StoreEfrags
@@ -199,12 +212,24 @@ void R_StoreEfrags (efrag_t **ppefrag)
 	entity_t	*pent;
 	model_t		*clmodel;
 	efrag_t		*pefrag;
+	vec3_t		mins;
+	vec3_t		maxs;
 
 
 	while ((pefrag = *ppefrag) != NULL)
 	{
 		pent = pefrag->entity;
 		clmodel = pent->model;
+
+		VectorAdd(pent->origin, clmodel->mins, mins);
+		VectorAdd(pent->origin, clmodel->maxs, maxs);
+
+//		if(R_CullEntity(pent))
+		if(R_CullBox(mins, maxs))
+		{
+			ppefrag = &pefrag->leafnext;
+			continue;
+		}
 
 		switch (clmodel->type)
 		{

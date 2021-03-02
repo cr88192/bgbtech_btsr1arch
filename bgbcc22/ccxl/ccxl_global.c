@@ -1141,6 +1141,10 @@ void BGBCC_CCXL_BeginName(BGBCC_TransState *ctx, int tag, char *name)
 				obj->decl->n_locals=0;
 				obj->decl->n_regs=0;
 				obj->decl->n_statics=0;
+
+				if(ctx->cur_objstackpos>=256)
+					{ BGBCC_DBGBREAK }
+
 				ctx->cur_objstack[ctx->cur_objstackpos++]=obj;
 				ctx->cur_obj=obj;
 				return;
@@ -1164,6 +1168,10 @@ void BGBCC_CCXL_BeginName(BGBCC_TransState *ctx, int tag, char *name)
 				obj->decl->n_locals=0;
 				obj->decl->n_regs=0;
 				obj->decl->n_statics=0;
+
+				if(ctx->cur_objstackpos>=256)
+					{ BGBCC_DBGBREAK }
+
 				ctx->cur_objstack[ctx->cur_objstackpos++]=obj;
 				ctx->cur_obj=obj;
 				return;
@@ -1201,6 +1209,10 @@ void BGBCC_CCXL_BeginName(BGBCC_TransState *ctx, int tag, char *name)
 				obj->decl->n_locals=0;
 				obj->decl->n_regs=0;
 				obj->decl->n_statics=0;
+
+				if(ctx->cur_objstackpos>=256)
+					{ BGBCC_DBGBREAK }
+
 				ctx->cur_objstack[ctx->cur_objstackpos++]=obj;
 				ctx->cur_obj=obj;
 				return;
@@ -1217,6 +1229,9 @@ void BGBCC_CCXL_BeginName(BGBCC_TransState *ctx, int tag, char *name)
 				obj=bgbcc_malloc(sizeof(BGBCC_CCXL_LiteralInfo));
 				obj->parent=ctx->cur_obj;
 	
+				if(ctx->cur_objstackpos>=256)
+					{ BGBCC_DBGBREAK }
+
 				ctx->cur_objstack[ctx->cur_objstackpos++]=obj;
 				ctx->cur_obj=obj;
 				
@@ -1250,6 +1265,9 @@ void BGBCC_CCXL_BeginName(BGBCC_TransState *ctx, int tag, char *name)
 //				obj=bgbcc_malloc(sizeof(BGBCC_CCXL_LiteralInfo));
 				obj->parent=ctx->cur_obj;
 	
+				if(ctx->cur_objstackpos>=256)
+					{ BGBCC_DBGBREAK }
+
 				ctx->cur_objstack[ctx->cur_objstackpos++]=obj;
 				ctx->cur_obj=obj;
 
@@ -1288,6 +1306,9 @@ void BGBCC_CCXL_BeginName(BGBCC_TransState *ctx, int tag, char *name)
 //				ctx->n_goto=0;
 //				ctx->n_lbl=0;
 
+				if(ctx->cur_objstackpos>=256)
+					{ BGBCC_DBGBREAK }
+
 				ctx->cur_objstack[ctx->cur_objstackpos++]=obj;
 				ctx->cur_obj=obj;
 				return;
@@ -1303,6 +1324,9 @@ void BGBCC_CCXL_BeginName(BGBCC_TransState *ctx, int tag, char *name)
 //				obj=bgbcc_malloc(sizeof(BGBCC_CCXL_LiteralInfo));
 				obj->parent=ctx->cur_obj;
 	
+				if(ctx->cur_objstackpos>=256)
+					{ BGBCC_DBGBREAK }
+
 				ctx->cur_objstack[ctx->cur_objstackpos++]=obj;
 				ctx->cur_obj=obj;
 
@@ -1325,6 +1349,9 @@ void BGBCC_CCXL_BeginName(BGBCC_TransState *ctx, int tag, char *name)
 					obj->decl->regtype=CCXL_LITID_TYPEDEF;
 				}
 			
+				if(ctx->cur_objstackpos>=256)
+					{ BGBCC_DBGBREAK }
+
 //				obj->decl->n_fields=0;
 				ctx->cur_objstack[ctx->cur_objstackpos++]=obj;
 				ctx->cur_obj=obj;
@@ -1341,6 +1368,9 @@ void BGBCC_CCXL_BeginName(BGBCC_TransState *ctx, int tag, char *name)
 //				obj=bgbcc_malloc(sizeof(BGBCC_CCXL_LiteralInfo));
 				obj->parent=ctx->cur_obj;
 	
+				if(ctx->cur_objstackpos>=256)
+					{ BGBCC_DBGBREAK }
+
 				ctx->cur_objstack[ctx->cur_objstackpos++]=obj;
 				ctx->cur_obj=obj;
 
@@ -1361,6 +1391,9 @@ void BGBCC_CCXL_BeginName(BGBCC_TransState *ctx, int tag, char *name)
 //	obj=bgbcc_malloc(sizeof(BGBCC_CCXL_LiteralInfo));
 	obj->parent=ctx->cur_obj;
 	
+	if(ctx->cur_objstackpos>=256)
+		{ BGBCC_DBGBREAK }
+
 	ctx->cur_objstack[ctx->cur_objstackpos++]=obj;
 	ctx->cur_obj=obj;
 	

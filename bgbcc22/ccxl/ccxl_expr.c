@@ -1272,10 +1272,32 @@ void BGBCC_CCXL_CompileForm(BGBCC_TransState *ctx, BCCX_Node *l)
 	}
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_offsetof, "offsetof"))
 	{
-		s0=BGBCC_CCXL_VarTypeString(ctx,
-			BCCX_FindTagCst(l, &bgbcc_rcst_type, "type"));
+//		t=BCCX_FindTagCst(l, &bgbcc_rcst_tyexpr, "tyexpr");
+//		t=BCCX_FindTagCst(t, &bgbcc_rcst_type, "type");
+		t=BCCX_FetchCst(l, &bgbcc_rcst_tyexpr, "tyexpr");
+		t=BCCX_FindTagCst(t, &bgbcc_rcst_type, "type");
+		s0=BGBCC_CCXL_VarTypeString(ctx, t);
+
 		s1=BCCX_GetCst(l, &bgbcc_rcst_name, "name");
-		BGBCC_CCXL_StackOffsetof(ctx, s0, s1);
+		if(s1)
+		{
+			BGBCC_CCXL_StackOffsetof(ctx, s0, s1);
+			return;
+		}
+
+		v=BCCX_FetchCst(l, &bgbcc_rcst_value, "value");
+		
+		if(v)
+		{
+			s1=BGBCC_CCXL_FlattenDottedName(ctx, v);
+			if(s1)
+			{
+				BGBCC_CCXL_StackOffsetof(ctx, s0, s1);
+				return;
+			}
+		}
+
+		BGBCC_CCXL_StubError(ctx);
 		return;
 	}
 
@@ -2365,10 +2387,19 @@ void BGBCC_CCXL_CompileExprAsTypeSig(BGBCC_TransState *ctx,
 void BGBCC_CCXL_CompileExprAsType(BGBCC_TransState *ctx,
 	BCCX_Node *ty, BCCX_Node *l)
 {
+	BGBCC_CCXL_LiteralInfo *sti;
 	char *s;
 	int i;
 
 	s=BGBCC_CCXL_VarTypeString(ctx, ty);
+
+	if(*s=='U')
+	{
+		sti=BGBCC_CCXL_LookupTypedefForSig2(ctx, s);
+		if(sti)
+			{ s=BGBCC_CCXL_TypeGetSig(ctx, sti->decl->type); }
+	}
+
 	BGBCC_CCXL_CompileExprAsTypeSig(ctx, s, l);
 
 //	BGBCC_CCXL_CompileExpr(ctx, l);

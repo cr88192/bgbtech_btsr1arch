@@ -601,6 +601,42 @@ void BJX2_Op_MOVX2_LdRegDispReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn+1]=BJX2_MemGetQWord(ctx, addr+8);
 }
 
+void BJX2_Op_MOVX2_RegStRegDisp1(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	bjx2_addr addr;
+	addr=(bjx2_addr)(ctx->regs[op->rn])+(op->imm*1);
+	ctx->trapc=op->pc;
+	if(addr&7)
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_MISAL);
+	if((addr&(~4095))!=((addr+16)&(~4095)))
+	{
+		BJX2_MemTranslateTlb(ctx, addr+0);
+		BJX2_MemTranslateTlb(ctx, addr+16);
+	}
+	BJX2_MemSetQWord(ctx, addr+0, ctx->regs[op->rm+0]);
+	BJX2_MemSetQWord(ctx, addr+8, ctx->regs[op->rm+1]);
+
+	BJX2_DbgAddrAccessTrap(ctx,
+		(bjx2_addr)(ctx->regs[op->rn]),
+		(bjx2_addr)(ctx->regs[op->rn])+(op->imm*1), 16);
+}
+
+void BJX2_Op_MOVX2_LdRegDisp1Reg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	bjx2_addr addr;
+	addr=(bjx2_addr)(ctx->regs[op->rm])+(op->imm*1);
+	ctx->trapc=op->pc;
+	if(addr&7)
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_MISAL);
+	if((addr&(~4095))!=((addr+16)&(~4095)))
+	{
+		BJX2_MemTranslateTlb(ctx, addr+0);
+		BJX2_MemTranslateTlb(ctx, addr+16);
+	}
+	ctx->regs[op->rn+0]=BJX2_MemGetQWord(ctx, addr+0);
+	ctx->regs[op->rn+1]=BJX2_MemGetQWord(ctx, addr+8);
+}
+
 void BJX2_Op_MOVX2_RegStReg2(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	bjx2_addr addr;

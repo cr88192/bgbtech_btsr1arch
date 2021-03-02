@@ -433,7 +433,8 @@ void	VID_SetPalette (unsigned char *palette)
 	}
 	
 	d_8to16table[255]=0x7FFF;
-	d_8to24table[255]=0x00FF00FF;
+//	d_8to24table[255]=0x00FF00FF;
+	d_8to24table[255]&=0x00FFFFFF;
 //	__debugbreak();
 }
 

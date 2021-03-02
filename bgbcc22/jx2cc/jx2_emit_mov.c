@@ -156,7 +156,10 @@ int BGBCC_JX2_TryEmitOpRegStReg(BGBCC_JX2_Context *ctx,
 			opw2=0x0300|((rn&15)<<4)|((rm&15)<<0);			break;
 
 		case BGBCC_SH_NMID_MOVX2:
-			if(rm&1)
+//			if(rm&1)
+//				{ BGBCC_DBGBREAK }
+			rm=BGBCC_JX2_TryNormalizeXReg(ctx, nmid, rm);
+			if(rm<0)
 				{ BGBCC_DBGBREAK }
 
 			if(1)
@@ -460,7 +463,10 @@ int BGBCC_JX2_TryEmitOpLdRegReg(BGBCC_JX2_Context *ctx,
 			opw2=0x0B00|((rn&15)<<4)|((rm&15)<<0);			break;
 
 		case BGBCC_SH_NMID_MOVX2:
-			if(rn&1)
+//			if(rn&1)
+//				{ BGBCC_DBGBREAK }
+			rn=BGBCC_JX2_TryNormalizeXReg(ctx, nmid, rn);
+			if(rn<0)
 				{ BGBCC_DBGBREAK }
 
 			if(1)
@@ -946,10 +952,40 @@ int BGBCC_JX2_TryEmitOpRegStRegDisp(
 
 	nmid=BGBCC_JX2_EmitRemapPseudoOp(ctx, nmid);
 
-	if(!(rn&31))
+	if((rn&31)==0)
 		{ BGBCC_DBGBREAK }
-	if((rn&31)==1)
+//	if((rn&31)==1)
+	if(((rn&31)==1) && (rn!=BGBCC_SH_REG_GBR))
 		{ BGBCC_DBGBREAK }
+
+	if(rn==BGBCC_SH_REG_PC)
+		rn=BGBCC_SH_REG_R0;
+	if(rn==BGBCC_SH_REG_GBR)
+		rn=BGBCC_SH_REG_R1;
+
+	if((rn&0x1E)==0x00)
+	{
+		/* HACK: Scale displacement for Byte-Scaled cases. */
+		switch(nmid)
+		{
+		case BGBCC_SH_NMID_MOVB:
+		case BGBCC_SH_NMID_MOVUB:
+			break;
+		case BGBCC_SH_NMID_MOVW:
+		case BGBCC_SH_NMID_MOVUW:
+			disp<<=1;
+			break;
+		case BGBCC_SH_NMID_MOVL:
+		case BGBCC_SH_NMID_MOVUL:
+		case BGBCC_SH_NMID_MOVDL:
+			disp<<=2;
+			break;
+		case BGBCC_SH_NMID_MOVQ:
+		case BGBCC_SH_NMID_MOVX2:
+			disp<<=3;
+			break;
+		}
+	}
 
 	ex=0; ex2=0;
 	opw1=-1; opw2=-1; opw3=-1; opw4=-1; odr=0;
@@ -1202,8 +1238,13 @@ int BGBCC_JX2_TryEmitOpRegStRegDisp(
 	case BGBCC_SH_NMID_MOVX2:
 		if(!BGBCC_JX2_EmitCheckRegAddrGPR(ctx, rn))		break;
 		if(!BGBCC_JX2_EmitCheckRegExtGPR(ctx, rm))		break;
+
 		if(rm&1)
 			break;
+//		rm=BGBCC_JX2_TryNormalizeXReg(ctx, nmid, rm);
+//		if(rm<0)
+//			break;
+
 		if((rn==BGBCC_SH_REG_SP) && ((disp&0x78)==disp))
 		{
 			odr=0;
@@ -1438,7 +1479,11 @@ int BGBCC_JX2_TryEmitOpRegStRegDisp(
 
 #if 1
 		case BGBCC_SH_NMID_MOVX2:
-			if(rm&1)
+//			if(rm&1)
+//				{ BGBCC_DBGBREAK }
+
+			rm=BGBCC_JX2_TryNormalizeXReg(ctx, nmid, rm);
+			if(rm<0)
 				{ BGBCC_DBGBREAK }
 
 #if 0
@@ -1454,6 +1499,17 @@ int BGBCC_JX2_TryEmitOpRegStRegDisp(
 				opw1=0xF100|((rn&15)<<4)|((rm&15)<<0);
 				opw2=0x5800|ex2|((disp>>3)&511);
 				break;
+			}
+#endif
+
+#if 1
+			if(ctx->has_jumbo && !ctx->op_is_wex2 && !(disp&7))
+			{
+				i=BGBCC_JX2_ComposeJumboRegImmRegF2A(ctx,
+					&opw1, &opw2, &opw3, &opw4,
+					0xF100, 0x5800,
+					rm, disp>>3, rn);
+				if(i>0)break;
 			}
 #endif
 
@@ -1620,10 +1676,40 @@ int BGBCC_JX2_TryEmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,
 
 	nmid=BGBCC_JX2_EmitRemapPseudoOp(ctx, nmid);
 
-	if(!(rm&31))
+	if((rm&31)==0)
 		{ BGBCC_DBGBREAK }
-	if((rm&31)==1)
+//	if((rm&31)==1)
+	if(((rm&31)==1) && (rm!=BGBCC_SH_REG_GBR))
 		{ BGBCC_DBGBREAK }
+
+	if(rm==BGBCC_SH_REG_PC)
+		rm=BGBCC_SH_REG_R0;
+	if(rm==BGBCC_SH_REG_GBR)
+		rm=BGBCC_SH_REG_R1;
+
+	if((rm&0x1E)==0x00)
+	{
+		/* HACK: Scale displacement for Byte-Scaled cases. */
+		switch(nmid)
+		{
+		case BGBCC_SH_NMID_MOVB:
+		case BGBCC_SH_NMID_MOVUB:
+			break;
+		case BGBCC_SH_NMID_MOVW:
+		case BGBCC_SH_NMID_MOVUW:
+			disp<<=1;
+			break;
+		case BGBCC_SH_NMID_MOVL:
+		case BGBCC_SH_NMID_MOVUL:
+		case BGBCC_SH_NMID_MOVDL:
+			disp<<=2;
+			break;
+		case BGBCC_SH_NMID_MOVQ:
+		case BGBCC_SH_NMID_MOVX2:
+			disp<<=3;
+			break;
+		}
+	}
 
 	opw1=-1; opw2=-1; opw3=-1; opw4=-1; odr=0; ex=0; ex2=0;
 	switch(nmid)
@@ -1896,6 +1982,9 @@ int BGBCC_JX2_TryEmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,
 		
 		if(rn&1)
 			break;
+//		rn=BGBCC_JX2_TryNormalizeXReg(ctx, nmid, rn);
+//		if(rn<0)
+//			{ BGBCC_DBGBREAK }
 
 		if((rm==BGBCC_SH_REG_SP) && ((disp&0x78)==disp))
 		{
@@ -2273,7 +2362,10 @@ int BGBCC_JX2_TryEmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,
 			opw2=0x0F00|((rn&15)<<4)|((rm&15)<<0);			break;
 
 		case BGBCC_SH_NMID_MOVX2:
-			if(rn&1)
+//			if(rn&1)
+//				{ BGBCC_DBGBREAK }
+			rn=BGBCC_JX2_TryNormalizeXReg(ctx, nmid, rn);
+			if(rn<0)
 				{ BGBCC_DBGBREAK }
 
 #if 0
@@ -2289,6 +2381,17 @@ int BGBCC_JX2_TryEmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,
 				opw1=0xF100|((rn&15)<<4)|((rm&15)<<0);
 				opw2=0x7800|ex2|((disp>>3)&511);
 				break;
+			}
+#endif
+
+#if 1
+			if(ctx->has_jumbo && !ctx->op_is_wex2 && !(disp&7))
+			{
+				i=BGBCC_JX2_ComposeJumboRegImmRegF2A(ctx,
+					&opw1, &opw2, &opw3, &opw4,
+					0xF100, 0x7800,
+					rm, disp>>3, rn);
+				if(i>0)break;
 			}
 #endif
 
@@ -2675,7 +2778,10 @@ int BGBCC_JX2_TryEmitOpRegStReg2(
 			opw2=0x0700|((rn&15)<<4)|((rm&15)<<0);			break;
 
 		case BGBCC_SH_NMID_MOVX2:
-			if(rm&1)
+//			if(rm&1)
+//				{ BGBCC_DBGBREAK }
+			rm=BGBCC_JX2_TryNormalizeXReg(ctx, nmid, rm);
+			if(rm<0)
 				{ BGBCC_DBGBREAK }
 
 			opw1=0xF000|ex;
@@ -2754,7 +2860,10 @@ int BGBCC_JX2_TryEmitOpRegStReg2(
 			opw2=0x0700|((rn&15)<<4)|((rm&15)<<0);			break;
 
 		case BGBCC_SH_NMID_MOVX2:
-			if(rm&1)
+//			if(rm&1)
+//				{ BGBCC_DBGBREAK }
+			rm=BGBCC_JX2_TryNormalizeXReg(ctx, nmid, rm);
+			if(rm<0)
 				{ BGBCC_DBGBREAK }
 
 			opw1=0xF000|ex|(ro&15);
@@ -3110,7 +3219,10 @@ int BGBCC_JX2_TryEmitOpLdReg2Reg(
 			opw2=0x0F00|((rn&15)<<4)|((rm&15)<<0);			break;
 
 		case BGBCC_SH_NMID_MOVX2:
-			if(rn&1)
+//			if(rn&1)
+//				{ BGBCC_DBGBREAK }
+			rn=BGBCC_JX2_TryNormalizeXReg(ctx, nmid, rn);
+			if(rn<0)
 				{ BGBCC_DBGBREAK }
 
 			opw1=0xF000|ex;
@@ -3198,7 +3310,10 @@ int BGBCC_JX2_TryEmitOpLdReg2Reg(
 			opw2=0x0F00|((rn&15)<<4)|((rm&15)<<0);			break;
 
 		case BGBCC_SH_NMID_MOVX2:
-			if(rn&1)
+//			if(rn&1)
+//				{ BGBCC_DBGBREAK }
+			rn=BGBCC_JX2_TryNormalizeXReg(ctx, nmid, rn);
+			if(rn<0)
 				{ BGBCC_DBGBREAK }
 
 			opw1=0xF000|ex|(ro&15);

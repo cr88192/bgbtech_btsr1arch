@@ -4315,6 +4315,14 @@ ccxl_status BGBCC_CCXL_StackOffsetof(BGBCC_TransState *ctx,
 	BGBCC_CCXLR3_EmitArgString(ctx, sig);
 	BGBCC_CCXLR3_EmitArgString(ctx, name);
 
+	i=BGBCC_CCXL_TryGetOffsetofSig(ctx, sig, name);
+	if(i>=0)
+	{
+		BGBCC_CCXL_StackPushConstInt(ctx, i);
+		return(CCXL_STATUS_YES);
+	}
+
+#if 0
 	bty=BGBCC_CCXL_TypeWrapBasicType(CCXL_TY_I);
 	st=BGBCC_CCXL_LookupStructureForSig(ctx, sig);
 	if(st->decl && st->decl->fxmsize &&
@@ -4329,6 +4337,10 @@ ccxl_status BGBCC_CCXL_StackOffsetof(BGBCC_TransState *ctx,
 			return(CCXL_STATUS_YES);
 		}
 	}
+#endif
+
+	bty=BGBCC_CCXL_TypeWrapBasicType(CCXL_TY_I);
+	st=BGBCC_CCXL_LookupStructureForSig(ctx, sig);
 
 	BGBCC_CCXL_RegisterAllocTemporary(ctx, bty, &dreg);
 	BGBCC_CCXL_EmitOffsetOf(ctx, bty, dreg, st, name);

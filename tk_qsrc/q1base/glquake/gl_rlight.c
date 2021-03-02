@@ -170,7 +170,7 @@ int RecursiveLightPoint (mnode_t *node, vec3_t start, vec3_t end)
 	mtexinfo_t	*tex;
 	byte		*lightmap;
 	unsigned	scale;
-	int			maps;
+	int			maps, step;
 
 	if (node->contents < 0)
 		return -1;		// didn't hit anything
@@ -181,6 +181,8 @@ int RecursiveLightPoint (mnode_t *node, vec3_t start, vec3_t end)
 	plane = node->plane;
 	front = DotProduct (start, plane->normal) - plane->dist;
 	back = DotProduct (end, plane->normal) - plane->dist;
+//	front = _DotProduct (start, plane->normal) - plane->dist;
+//	back = _DotProduct (end, plane->normal) - plane->dist;
 	side = front < 0;
 	
 	if ( (back < 0) == side)
@@ -212,16 +214,18 @@ int RecursiveLightPoint (mnode_t *node, vec3_t start, vec3_t end)
 		tex = surf->texinfo;
 		
 		s = DotProduct (mid, tex->vecs[0]) + tex->vecs[0][3];
-		t = DotProduct (mid, tex->vecs[1]) + tex->vecs[1][3];;
+		t = DotProduct (mid, tex->vecs[1]) + tex->vecs[1][3];
+//		s = _DotProduct (mid, tex->vecs[0]) + tex->vecs[0][3];
+//		t = _DotProduct (mid, tex->vecs[1]) + tex->vecs[1][3];
 
-		if (s < surf->texturemins[0] ||
-		t < surf->texturemins[1])
+		if ((s < surf->texturemins[0]) ||
+			(t < surf->texturemins[1]))
 			continue;
 		
 		ds = s - surf->texturemins[0];
 		dt = t - surf->texturemins[1];
 		
-		if ( ds > surf->extents[0] || dt > surf->extents[1] )
+		if ( (ds > surf->extents[0]) || (dt > surf->extents[1]) )
 			continue;
 
 		if (!surf->samples)
@@ -232,18 +236,24 @@ int RecursiveLightPoint (mnode_t *node, vec3_t start, vec3_t end)
 
 		lightmap = surf->samples;
 		r = 0;
-		if (lightmap)
+//		if (lightmap)
+		if(1)
 		{
 
 			lightmap += dt * ((surf->extents[0]>>4)+1) + ds;
+			step =	((surf->extents[0]>>4)+1) *
+					((surf->extents[1]>>4)+1);
 
 			for (maps = 0 ; maps < MAXLIGHTMAPS && surf->styles[maps] != 255 ;
 					maps++)
 			{
-				scale = d_lightstylevalue[surf->styles[maps]];
-				r += *lightmap * scale;
-				lightmap += ((surf->extents[0]>>4)+1) *
-						((surf->extents[1]>>4)+1);
+//				scale = d_lightstylevalue[surf->styles[maps]];
+//				r += *lightmap * scale;
+//				lightmap += ((surf->extents[0]>>4)+1) *
+//						((surf->extents[1]>>4)+1);
+
+				r += *lightmap * 256;
+				lightmap += step;
 			}
 			
 			r >>= 8;
@@ -323,6 +333,7 @@ int R_LightPointDirOrg (vec3_t p, vec3_t dir)
 
 int R_LightPointDir (vec3_t p, vec3_t dir)
 {
+//	return(255);
 	return(R_LightPointDirOrg(p, dir));
 }
 
@@ -335,6 +346,8 @@ int R_LightPoint (vec3_t p)
 {
 	int x, y, z, w;
 	int i, j, k, l;
+	
+//	return(255);
 	
 	if(!lightcube)
 	{
@@ -353,14 +366,21 @@ int R_LightPoint (vec3_t p)
 //	z=(p[2]/64)+16;
 //	w=(z*32+y)*32+x;
 
-	x=((int)(p[0]/16))&255;
-	y=((int)(p[1]/16))&255;
-	z=((int)(p[2]/16))&255;
+//	x=((int)(p[0]/16))&255;
+//	y=((int)(p[1]/16))&255;
+//	z=((int)(p[2]/16))&255;
+
+	x=((int)(p[0]/32))&255;
+	y=((int)(p[1]/32))&255;
+	z=((int)(p[2]/32))&255;
+
 //	w=(x*251+y)*251+z;
 //	w=w*251; w=w*251;
-	w=((x+y+z)<<2)^(x^y);
+//	w=((x+y+z)<<2)^(x^y);
+	w=((x+y+z)<<3)^(x^y);
 	w=w*65521;
-	w=(w>>16)&4095;
+//	w=(w>>16)&4095;
+	w=(w>>16)&1023;
 
 	j=(x<<16)|(y<<8)|z;
 

@@ -388,6 +388,10 @@ reg				gprEx1Flush;
 reg				gprEx2Flush;
 reg				gprEx3Flush;
 
+reg				gprEx1DualLane;
+reg				gprEx2DualLane;
+reg				gprEx3DualLane;
+
 `ifdef jx2_enable_wex3w
 
 reg[5:0]		gprIdRx;		//Source C
@@ -468,6 +472,9 @@ RegGPR_6R3W regGpr(
 //	exHold2,
 	exHold2 && !crIsIsrEdge,
 
+	idA2IdUCmd,
+	idA2IdUIxt,
+
 	gprIdRs,		//Source A, ALU / Base
 	gprIdRt,		//Source B, ALU / Index
 	gprIdRu,		//Source C
@@ -512,6 +519,10 @@ RegGPR_6R3W regGpr(
 	gprEx1Flush,	//Flush EX1
 	gprEx2Flush,	//Flush EX2
 	gprEx3Flush,	//Flush EX3
+
+	gprEx1DualLane,
+	gprEx2DualLane,
+	gprEx3DualLane,
 
 	gprOutDlr,	gprInDlr,
 	gprOutDhr,	gprInDhr,
@@ -1581,6 +1592,10 @@ begin
 	ex1TrapFlush	= 0;
 	ex2TrapFlush	= 0;
 	ex3TrapFlush	= 0;
+
+	gprEx1DualLane	= (ex1OpUIxt[7:6] == 2'b11);
+	gprEx2DualLane	= (ex2OpUIxt[7:6] == 2'b11);
+	gprEx3DualLane	= (ex3OpUIxt[7:6] == 2'b11);
 
 
 `ifdef jx2_debug_hitmiss
