@@ -46,49 +46,58 @@ X(tk_checksane_gfp_asm):
 	.A0_2:
 	break?f
 
-
+	/* Verify FPU Op */
 	fadd r4, r4, r8
 	fsub r4, r6, r9
 	fmul r4, r6, r10
 	
 	cmpqeq r8, r5
-//	bf _checksane_gfp_fail
 	.A0_3:
 	break?f
 	
 	cmpqeq r9, r7
-//	bf _checksane_gfp_fail
 	.A0_4:
 	break?f
 
 	cmpqeq r10, r5
-//	bf _checksane_gfp_fail
 	.A0_5:
+	break?f
+
+	/* FPU op mixed with mem-access */
+	ADD		SP, -512, R2
+	MOV.Q	(R2, 0), R3
+	fadd r4, r4, r8
+	MOV.Q	(R2, 32), R3
+	fsub r4, r6, r9
+	MOV.Q	(R2, 48), R3
+	fmul r4, r6, r10
+	
+	.A0_5B:
+	cmpqeq r8, r5
+	break?f
+	cmpqeq r9, r7
+	break?f
+	cmpqeq r10, r5
 	break?f
 
 
 	fcmpeq r8, r5
-//	bf _checksane_gfp_fail
 	.A0_6:
 	break?f
 
 	fcmpeq r8, r7
-//	bt _checksane_gfp_fail
 	.A0_7:
 	break?t
 
 	fcmpgt r4, r4
-//	bt _checksane_gfp_fail
 	.A0_8:
 	break?t
 
 	fcmpgt r4, r5
-//	bf _checksane_gfp_fail
 	.A0_9:
 	break?f
 
 	fcmpgt r5, r4
-//	bt _checksane_gfp_fail
 	.A0_10:
 	break?t
 
@@ -144,11 +153,14 @@ X(tk_checksane_gfp_asm):
 	break?t
 
 
+	/* Verify Single<->Double Convert */
 	mov #0x40490fd0, r18
 	mov #0x400921fa00000000, r19
+	mov #0x40490fd000000000, r20
 
 	fstcf r4, r8
 	fldcf r8, r9
+	fldcfh r20, r10
 
 	cmpeq r8, r18
 //	bf _checksane_gfp_fail
@@ -158,6 +170,10 @@ X(tk_checksane_gfp_asm):
 	cmpqeq r9, r19
 //	bf _checksane_gfp_fail
 	.A1_5:
+	break?f
+
+	cmpqeq r9, r10
+	.A1_5B:
 	break?f
 
 	mov #1234567, r20

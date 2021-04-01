@@ -921,8 +921,13 @@ int nmid;
 {"sharx",	BGBCC_SH_NMID_SHARX},
 {"shlrx",	BGBCC_SH_NMID_SHLRX},
 
-{"blkutx1",	BGBCC_SH_NMID_BLKUTX1},
-{"blkutx2",	BGBCC_SH_NMID_BLKUTX2},
+{"blkutx1",		BGBCC_SH_NMID_BLKUTX1},
+{"blkutx2",		BGBCC_SH_NMID_BLKUTX2},
+{"blkutx3h",	BGBCC_SH_NMID_BLKUTX3H},
+{"blkutx3l",	BGBCC_SH_NMID_BLKUTX3L},
+{"blint.w",		BGBCC_SH_NMID_BLINTW},
+{"blerp.w",		BGBCC_SH_NMID_BLERPW},
+{"blinta.w",	BGBCC_SH_NMID_BLINTAW},
 
 {"frcp",	BGBCC_SH_NMID_FRCP},
 {"fsqrta",	BGBCC_SH_NMID_FSQRTA},
@@ -944,6 +949,11 @@ int nmid;
 {"fstcdx",	BGBCC_SH_NMID_FSTCDX},
 {"fldcix",	BGBCC_SH_NMID_FLDCIX},
 {"fstcix",	BGBCC_SH_NMID_FSTCIX},
+
+{"pldch",	BGBCC_SH_NMID_PLDCH},
+{"pstch",	BGBCC_SH_NMID_PSTCH},
+{"pldchh",	BGBCC_SH_NMID_PLDCHH},
+// {"pstchh",	BGBCC_SH_NMID_FSTCFH},
 
 
 {"movd.l",	BGBCC_SH_NMID_MOVDL},
@@ -1354,6 +1364,7 @@ int BGBCC_JX2A_TryAssembleOpcode(
 		break;
 
 	case BGBCC_SH_FMID_LABEL:
+		BGBCC_JX2_EmitPadForOpWord(ctx, 0xF000);
 		lbl=BGBCC_JX2_GetNamedLabel(ctx, arg0->name);
 //		rt=BGBCC_JX2_TryEmitOpLabel(ctx, nmid, lbl);
 		rt=BGBCC_JX2_TryEmitOpAutoLabel(ctx, nmid, lbl);
@@ -1537,11 +1548,15 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 			
 			if((tk0[1]=='.') && bgbcc_jx2a_lastlbl)
 			{
+				BGBCC_JX2_EmitPadForOpWord(ctx, 0xF000);
+
 				sprintf(tb0, "%s%s", bgbcc_jx2a_lastlbl, tk0+1);
 				BGBCC_JX2_EmitNamedLabel(ctx, tb0);
 				BGBCC_JX2C_ResetModeDqUnknown(NULL, ctx);
 			}else
 			{
+				BGBCC_JX2_EmitPadForOpWord(ctx, 0xF000);
+
 				bgbcc_jx2a_lastlbl=bgbcc_strdup(tk0+1);
 				BGBCC_JX2_EmitNamedLabel(ctx, tk0+1);
 				BGBCC_JX2C_ResetModeDqUnknown(NULL, ctx);
@@ -1597,6 +1612,11 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 			cs3=BGBCC_JX2A_EatWhite(cs2);
 			if(cs3 && (*cs3=='|'))
 				{ wx=1; cs2=cs3; }
+		}
+		
+		if(wx || pfc)
+		{
+			BGBCC_JX2_EmitPadForOpWord(ctx, 0xF000);
 		}
 		
 //		if((ctx->is_align_wexj && (wx || pfc)) ||

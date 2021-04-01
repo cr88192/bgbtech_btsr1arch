@@ -183,6 +183,8 @@ int TK_RamChk()
 	return(0);
 }
 
+#ifndef JX2UC
+
 void memcpy_movx_test(void *dst, void *src, int sz);
 void memcpy_fixed128_test(void *dst, void *src, int sz);
 
@@ -326,3 +328,6 @@ int TK_RamBench()
 
 	return(0);
 }
+
+#endif
+

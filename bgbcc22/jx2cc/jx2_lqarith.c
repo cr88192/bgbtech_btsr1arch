@@ -215,6 +215,11 @@ int BGBCC_JX2C_EmitBinaryVRegVRegQLong(
 //			nm1=BGBCC_SH_NMID_SHLDQ;
 //		if(opr==CCXL_BINOP_SHRR)
 //			nm1=BGBCC_SH_NMID_SHLDQ;
+
+		if(opr==CCXL_BINOP_SHR)
+			nm1=BGBCC_SH_NMID_SHLRQ;
+		if(opr==CCXL_BINOP_SHRR)
+			nm1=BGBCC_SH_NMID_SHLRQ;
 	}else
 	{
 		if(opr==CCXL_BINOP_SHL)
@@ -223,6 +228,11 @@ int BGBCC_JX2C_EmitBinaryVRegVRegQLong(
 //			nm1=BGBCC_SH_NMID_SHADQ;
 //		if(opr==CCXL_BINOP_SHRR)
 //			nm1=BGBCC_SH_NMID_SHLDQ;
+
+		if(opr==CCXL_BINOP_SHR)
+			nm1=BGBCC_SH_NMID_SHARQ;
+		if(opr==CCXL_BINOP_SHRR)
+			nm1=BGBCC_SH_NMID_SHARQ;
 	}
 
 	if(nm1>=0)

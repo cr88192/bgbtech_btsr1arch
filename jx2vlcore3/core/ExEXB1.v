@@ -327,6 +327,10 @@ begin
 			tHeldIdRn1	= regIdRm;
 		end
 
+		JX2_UCMD_BLINT: begin
+			tHeldIdRn1	= regIdRm;
+		end
+
 		JX2_UCMD_OP_IXS: begin
 			case(opUIxt[5:0])
 				JX2_UCIX_IXS_NOP: begin

@@ -26,6 +26,8 @@ entity_t	r_worldentity;
 qboolean	r_cache_thrash;		// compatability
 
 vec3_t		modelorg, r_entorigin;
+vec3_t		modeldir;
+vec_t		modeldist;
 entity_t	*currententity;
 
 int			r_visframecount;	// bumped when going to a new PVS
@@ -589,6 +591,119 @@ void GL_DrawAliasShadow (aliashdr_t *paliashdr, int posenum)
 }
 
 
+void GL_DrawSheetXY (int x, int y, int z,
+	int sz, int texnum, int plane,
+	int tilex, int tiley, int tcnt, int tpx, int tsz)
+{
+	float s0, t0, s1, t1, t2, trcp;
+
+//	trcp=(1.0/tcnt);
+	trcp=((1.0*tcnt*tpx)/tsz)/tcnt;
+	s0=trcp*tilex; s1=s0+trcp;
+	t0=trcp*tiley; t1=t0+trcp;
+	
+	t2=t0; t0=t1; t1=t2;
+//	t0=1.0-t0;
+//	t1=1.0-t1;
+
+//	qglColor4f (1,1,1,1);
+	GL_Bind (texnum);
+
+	if(plane==2)
+	{
+		qglBegin (GL_QUADS);
+
+		qglTexCoord2f (s0, t0);
+		qglVertex3f (x-sz, y-sz, z);
+
+		qglTexCoord2f (s1, t0);
+		qglVertex3f (x+sz, y-sz, z);
+
+		qglTexCoord2f (s1, t1);
+		qglVertex3f (x+sz, y+sz, z);
+
+		qglTexCoord2f (s0, t1);
+		qglVertex3f (x-sz, y+sz, z);
+
+		qglEnd ();
+	}
+
+	if(plane==1)
+	{
+		qglBegin (GL_QUADS);
+
+		qglTexCoord2f (s0, t0);
+		qglVertex3f (x-sz, y, z-sz);
+
+		qglTexCoord2f (s1, t0);
+		qglVertex3f (x+sz, y, z-sz);
+
+		qglTexCoord2f (s1, t1);
+		qglVertex3f (x+sz, y, z+sz);
+
+		qglTexCoord2f (s0, t1);
+		qglVertex3f (x-sz, y, z+sz);
+
+		qglEnd ();
+	}
+
+	if(plane==0)
+	{
+		qglBegin (GL_QUADS);
+
+		qglTexCoord2f (s0, t0);
+		qglVertex3f (x, y-sz, z-sz);
+
+		qglTexCoord2f (s1, t0);
+		qglVertex3f (x, y+sz, z-sz);
+
+		qglTexCoord2f (s1, t1);
+		qglVertex3f (x, y+sz, z+sz);
+
+		qglTexCoord2f (s0, t1);
+		qglVertex3f (x, y-sz, z+sz);
+
+		qglEnd ();
+	}
+}
+
+void GL_DrawAliasAsSprite (aliashdr_t *phdr, int posenum)
+{
+	int x0, y0, z0;
+	int tx, ty, tc, tpx, tsz;
+
+	qglColor4f (shadelight,shadelight,shadelight,1);
+//	GL_Bind(phdr->spr_texnum[0]);
+
+	tc=phdr->spr_cellcnt;
+	tpx=phdr->spr_cellpix;
+	tsz=phdr->spr_sheetsz;
+	ty=posenum/tc;
+	tx=posenum-(ty*tc);
+	
+	qglDisable(GL_CULL_FACE);
+	qglDisable(GL_BLEND);
+	qglEnable(GL_ALPHA_TEST);
+	
+	x0=phdr->spr_bound[0];
+	y0=phdr->spr_bound[1];
+	z0=phdr->spr_bound[2];
+	
+	GL_DrawSheetXY( x0, y0, z0, phdr->spr_bound[3],
+		phdr->spr_texnum[0], 1, tx, ty, tc, tpx, tsz);
+	GL_DrawSheetXY( x0, y0, z0, phdr->spr_bound[3],
+		phdr->spr_texnum[1], 0, tx, ty, tc, tpx, tsz);
+		
+	if(fabs(modeldir[2]>0.25))
+	{
+		GL_DrawSheetXY( x0, y0, z0, phdr->spr_bound[3],
+			phdr->spr_texnum[2], 2, tx, ty, tc, tpx, tsz);
+	}
+
+//	qglEnable(GL_CULL_FACE);
+//	qglDisable(GL_ALPHA_TEST);
+//	qglEnable(GL_BLEND);
+}
 
 /*
 =================
@@ -599,7 +714,7 @@ R_SetupAliasFrame
 void R_SetupAliasFrame (int frame, aliashdr_t *paliashdr)
 {
 	int				pose, numposes;
-	float			interval;
+	float			interval, relsz;
 
 	if ((frame >= paliashdr->numframes) || (frame < 0))
 	{
@@ -616,7 +731,18 @@ void R_SetupAliasFrame (int frame, aliashdr_t *paliashdr)
 		pose += (int)(cl.time / interval) % numposes;
 	}
 
+	relsz=paliashdr->boundingradius/(modeldist+1);
+//	if(relsz<0.1)
+//	if((relsz<0.15) && (paliashdr->spr_texnum[0]>0))
+//	if((relsz<0.25) && (paliashdr->spr_texnum[0]>0))
+	if((relsz<0.2) && (paliashdr->spr_texnum[0]>0))
+	{
+		GL_DrawAliasAsSprite (paliashdr, pose);
+		return;
+	}
+
 	GL_DrawAliasFrame (paliashdr, pose);
+//	GL_DrawAliasAsSprite (paliashdr, pose);
 }
 
 
@@ -652,6 +778,9 @@ void R_DrawAliasModel (entity_t *e)
 
 	VectorCopy (currententity->origin, r_entorigin);
 	VectorSubtract (r_origin, r_entorigin, modelorg);
+	
+	VectorCopy(modelorg, modeldir);
+	modeldist=VectorNormalize(modeldir);
 
 	//
 	// get lighting information

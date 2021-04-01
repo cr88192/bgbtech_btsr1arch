@@ -41,8 +41,10 @@ Holding/Completing a memory access will be the responsibility of EX2.
 `endif
 `endif
 
-`ifdef jx2_enable_btcutx1
+`ifndef jx2_do_btcutx_alu
+`ifdef jx2_enable_btcutx
 `include "ExBtcUtx1.v"
+`endif
 `endif
 
 /* verilator lint_off DEFPARAM */
@@ -265,9 +267,15 @@ ExShad64C	exShad64(clock, reset,
 
 `endif
 
-`ifdef jx2_enable_btcutx1
+`ifndef jx2_do_btcutx_alu
+`ifdef jx2_enable_btcutx
 wire[63:0]	tValUtx1;
-ExBtcUtx1	exUtx1(regValRs[63:0], regValRt[3:0], opUIxt, tValUtx1);
+ExBtcUtx1	exUtx1(
+	regValRs[63:0],
+	regValXs[63:0],
+	regValRt[3:0],
+	opUIxt, tValUtx1);
+`endif
 `endif
 
 
@@ -415,7 +423,8 @@ begin
 `endif
 		end
 
-		JX2_UCMD_ALU3, JX2_UCMD_UNARY, JX2_UCMD_ALUW3: begin
+		JX2_UCMD_ALU3, JX2_UCMD_UNARY, JX2_UCMD_ALUW3,
+		JX2_UCMD_CONV2_RR: begin
 			tHeldIdRn1	= regIdRm;
 		end
 
@@ -560,6 +569,10 @@ begin
 		end
 `endif
 
+		JX2_UCMD_BLINT: begin
+			tHeldIdRn1	= regIdRm;
+		end
+
 		JX2_UCMD_OP_IXS: begin
 			case(opUIxt[5:0])
 				JX2_UCIX_IXS_NOP: begin
@@ -594,6 +607,8 @@ begin
 					tDoMemOp	= 1;
 				end
 				
+`ifndef jx2_do_btcutx_alu
+`ifdef jx2_enable_btcutx
 				JX2_UCIX_IXS_BLKUTX1: begin
 					tRegIdRn1		= regIdRm;
 					tRegValRn1		= tValUtx1;
@@ -602,6 +617,20 @@ begin
 					tRegIdRn1		= regIdRm;
 					tRegValRn1		= tValUtx1;
 				end
+
+`ifdef jx2_enable_btcutx3
+				JX2_UCIX_IXS_BLKUTX3H: begin
+					tRegIdRn1		= regIdRm;
+					tRegValRn1		= tValUtx1;
+				end
+				JX2_UCIX_IXS_BLKUTX3L: begin
+					tRegIdRn1		= regIdRm;
+					tRegValRn1		= tValUtx1;
+				end
+`endif
+
+`endif
+`endif
 
 				default: begin
 					if(!tMsgLatch)

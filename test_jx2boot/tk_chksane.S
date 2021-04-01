@@ -7,8 +7,11 @@ This is assumed to be called prior to transferring control to C land.
 
 #define X(n)	n
 
+#ifndef JX2UC
 #include "tk_chksane_gfp.S"
 #include "tk_chksane_wex.S"
+#endif
+
 #include "tk_chksane_mem.S"
 
 _checksane_fail:
@@ -737,34 +740,48 @@ X(tk_checksane_asm):
 
 //	bsr tk_checksane_mem_asm
 
+	.L8_0:
 	mov #28, r18
 	add #3, r18
 	cmpeq #31, r18
-	bf _checksane_fail_alu4
+//	bf _checksane_fail_alu4
+	break?f
 
+	.L8_1:
 	neg r18, r19
 	cmpeq #-31, r19
-	bf _checksane_fail_alu4
+//	bf _checksane_fail_alu4
+	break?f
 
+	.L8_2:
 	add #-3, r18
 	cmpeq #28, r18
-	bf _checksane_fail_alu4
+//	bf _checksane_fail_alu4
+	break?f
 
 
+	.L8_3:
 	xor r19, r19
 	tst	r19, r19
-	bf _checksane_fail_alu4
+//	bf _checksane_fail_alu4
+	break?f
 
+	.L8_4:
 	mov #3, r21
 	mov #0x8000, r20
 	tst	r20, r20
-	bt _checksane_fail_alu4
+//	bt _checksane_fail_alu4
+	break?t
 
+	.L8_5:
 	tst		#-4, r21
-	bf _checksane_fail_alu4
+//	bf _checksane_fail_alu4
+	break?f
 
+	.L8_6:
 	tst		#-4, r20
-	bt _checksane_fail_alu4
+//	bt _checksane_fail_alu4
+	break?t
 
 	mov	0x08889, r8
 	mov 0x11112, r9
@@ -773,14 +790,18 @@ X(tk_checksane_asm):
 	mov r8, r18
 	addc r8, r18
 
+	.L8_7:
 	cmpeq r9, r18
-	bf _checksane_fail_alu4
+//	bf _checksane_fail_alu4
+	break?f
 
 	mov r8, r18
 	addc r8, r18
 
+	.L8_8:
 	cmpeq r10, r18
-	bf _checksane_fail_alu4
+//	bf _checksane_fail_alu4
+	break?f
 
 	xor r6, r6
 	cmpeq r8, r8
@@ -792,10 +813,12 @@ X(tk_checksane_asm):
 	cmpgt r8, r8
 	addc r6, r6
 
+	.L8_9:
 //	mov 0xA, r7
 //	cmpeq r7, r6
 	cmpeq 0xA, r6
-	bf _checksane_fail_alu4
+//	bf _checksane_fail_alu4
+	break?f
 
 //	break
 
@@ -892,25 +915,41 @@ X(tk_checksane_asm):
 	mov.l tk_checksane_const, r8
 	mov.l tk_checksane_const2, r9
 
+	.L9_0:
+
 	cmpqeq r4, r8
-	bf _checksane_fail_alu4
+//	bf _checksane_fail_alu4
+	break?f
+
+	.L9_1:
 
 	cmpqeq r5, r9
-	bf _checksane_fail_alu4
+//	bf _checksane_fail_alu4
+	break?f
 	
 	mov.q tk_checksane_const3, r10
 
+	.L9_2:
+
 	cmpqeq r6, r10
-	bf _checksane_fail_alu4
+//	bf _checksane_fail_alu4
+	break?f
+
+	.L9_3:
 
 	cmpqeq r6, r7
-	bf _checksane_fail_alu4
+//	bf _checksane_fail_alu4
+	break?f
 
 	bsr X(tk_checksane_mem_asm)
+
+#ifndef JX2UC
 
 	bsr X(tk_checksane_gfp_asm)
 
 	bsr X(tk_checksane_wex_asm)
+
+#endif
 
 	mov #-1, r2
 	invic r2

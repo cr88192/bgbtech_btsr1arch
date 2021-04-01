@@ -380,6 +380,7 @@ REGREG, Bz:
 REGREG, Fz
 	SB: Rm, Ro, Rn
 	SW: Rm, Q?Imm5u:Ro, Rn
+	SL: Rm, Q?Imm5n:Ro, Rn
 
 	UB: Rm, Rn, Rn
 	NB: Rn, Rm, Rn
@@ -408,6 +409,10 @@ IMM8REG, Fz
 	SQ: Fzze_zznz_iiii	Rn, Imm17s, Rn
 	UQ: Fzze_zznz_iiii	Rn, Imm17u, Rn
 	NQ: Fzze_zznz_iiii	Rn, Imm17n, Rn
+
+JX2_FMID_LDREGDISPREG:
+	UB: (Rm, Disp5), Rn
+	SW: (Rm, Disp9), Rn
 
 */
 
@@ -461,6 +466,8 @@ parameter[5:0] JX2_UCMD_FMOV_RM		= 6'h08;		//FPU Store
 parameter[5:0] JX2_UCMD_FMOV_MR		= 6'h09;		//FPU Load
 parameter[5:0] JX2_UCMD_ADDSP		= 6'h0A;		//ADD Imm, SP
 
+parameter[5:0] JX2_UCMD_CONV2_RR	= 6'h0C;		//Convert (Via ALU)
+
 parameter[5:0] JX2_UCMD_INVOP		= 6'h0F;		//
 parameter[5:0] JX2_UCMD_ALU3		= 6'h10;		//ALU Command (3R)
 parameter[5:0] JX2_UCMD_ALUCMP		= 6'h11;		//ALU Compare
@@ -494,6 +501,8 @@ parameter[5:0] JX2_UCMD_FIXS		= 6'h25;		//FPU Unary Op (FPR)
 parameter[5:0] JX2_UCMD_FCMP		= 6'h26;		//FPU Compare
 parameter[5:0] JX2_UCMD_MULW3		= 6'h27;		//Multiply (Word)
 parameter[5:0] JX2_UCMD_ALUW3		= 6'h28;		//ALU, Packed Word (3R)
+
+parameter[5:0] JX2_UCMD_BLINT		= 6'h29;		//Interpolator
 
 parameter[5:0] JX2_UCMD_BRA_NB		= 6'h2C;		//No Branch
 
@@ -606,6 +615,23 @@ parameter[5:0] JX2_UCIX_CONV_RGB5PCK64		= 6'h1C;	//RGB64->RGB555
 parameter[5:0] JX2_UCIX_CONV_RGB5UPCK64		= 6'h1D;	//RGB555->RGB64
 parameter[5:0] JX2_UCIX_CONV_RGB32PCK64		= 6'h1E;	//RGB64->RGB32
 parameter[5:0] JX2_UCIX_CONV_RGB32UPCK64	= 6'h1F;	//RGB32->RGB64
+
+parameter[5:0] JX2_UCIX_CONV_RGB32PCK64FU	= 6'h20;	//RGB64F->RGB32F (U)
+parameter[5:0] JX2_UCIX_CONV_RGB32PCK64FS	= 6'h21;	//RGB64F->RGB32F (S)
+parameter[5:0] JX2_UCIX_CONV_RGB32UPCK64FU	= 6'h22;	//RGB32F->RGB64F (U)
+parameter[5:0] JX2_UCIX_CONV_RGB32UPCK64FS	= 6'h23;	//RGB32F->RGB64F (S)
+
+parameter[5:0] JX2_UCIX_CONV_RGB30APCK64F	= 6'h24;	//RGB64F->RGB30A
+parameter[5:0] JX2_UCIX_CONV_RGB30AUPCK64F	= 6'h25;	//RGB30A->RGB64F
+
+parameter[5:0] JX2_UCIX_CONV_FP16UPCK32L	= 6'h26;	//2x FP16->FP32 (Lo)
+parameter[5:0] JX2_UCIX_CONV_FP16UPCK32H	= 6'h27;	//2x FP16->FP32 (Hi)
+parameter[5:0] JX2_UCIX_CONV_FP16PCK32		= 6'h28;	//2x FP32->FP16
+
+parameter[5:0] JX2_UCIX_CONV2_BLKUTX1		= 6'h08;	//Get pixel, UTX1
+parameter[5:0] JX2_UCIX_CONV2_BLKUTX2		= 6'h09;	//Get pixel, UTX2
+parameter[5:0] JX2_UCIX_CONV2_BLKUTX3H		= 6'h0A;	//Get pixel, UTX3H
+parameter[5:0] JX2_UCIX_CONV2_BLKUTX3L		= 6'h0B;	//Get pixel, UTX3L
 
 // parameter[5:0] JX2_UCIX_CONV_MOVX		= 6'h23;		//MOVX
 
@@ -765,12 +791,16 @@ parameter[5:0] JX2_UCIX_IXS_MOVNT	= 6'h02;		//Copy !SR.T to Reg
 parameter[5:0] JX2_UCIX_IXS_LDSRMSK	= 6'h03;		//?
 parameter[5:0] JX2_UCIX_IXS_TRAPB	= 6'h04;		//Trap
 
-parameter[5:0] JX2_UCIX_IXS_BLKUTX1	= 6'h08;		//Get pixel, UTX1
-parameter[5:0] JX2_UCIX_IXS_BLKUTX2	= 6'h09;		//Get pixel, UTX2
+parameter[5:0] JX2_UCIX_IXS_BLKUTX1		= 6'h08;		//Get pixel, UTX1
+parameter[5:0] JX2_UCIX_IXS_BLKUTX2		= 6'h09;		//Get pixel, UTX2
+parameter[5:0] JX2_UCIX_IXS_BLKUTX3H	= 6'h0A;		//Get pixel, UTX3H
+parameter[5:0] JX2_UCIX_IXS_BLKUTX3L	= 6'h0B;		//Get pixel, UTX3L
 
 parameter[5:0] JX2_UCIX_IXS_INVIC	= 6'h10;		//Flush I$
 parameter[5:0] JX2_UCIX_IXS_INVDC	= 6'h11;		//Flush D$
 
+parameter[5:0] JX2_UCIX_BLINT_BILERP	= 6'h00;
+parameter[5:0] JX2_UCIX_BLINT_LERP		= 6'h01;
 
 
 `ifdef jx2_mem_line32B

@@ -59,7 +59,7 @@ input [47: 0]	icInPcAddr;		//input PC address
 // output[63: 0]	icOutPcVal;		//output PC value
 output[95: 0]	icOutPcVal;		//output PC value
 output[ 1: 0]	icOutPcOK;		//set if we have a valid value.
-output[ 2: 0]	icOutPcStep;	//PC step (Normal Op)
+output[ 3: 0]	icOutPcStep;	//PC step (Normal Op)
 input			icInPcHold;
 input			icInPcWxe;
 
@@ -325,7 +325,9 @@ begin
 		tMemDataOut	= UVTILE_00;
 		tNxtLatchIc	= tIfNzOpm || (memOK != UMEM_OK_READY);
 
+`ifdef jx2_enable_mmu
 		ifMemNoRwx[5]	= tTlbExc[15];
+`endif
 
 `ifndef def_true
 		if(tTlbExc[15])
@@ -397,7 +399,9 @@ begin
 //			tRegOutExc = {UV16_00, dfMemAddr, 16'h8001 };
 			tRegOutExc = { dfMemAddr, 16'h8001 };
 
+`ifdef jx2_enable_mmu
 		dfMemNoRwx[5]=tTlbExc[15];
+`endif
 	end
 	else
 	begin
@@ -419,11 +423,13 @@ begin
 	end
 `endif
 	
+`ifdef jx2_enable_mmu
 	if(tTlbExc[15] && !reset)
 	begin
 //		$display("L1A TLB EXC %X", tTlbExc);
 		tRegOutExc = tTlbExc;
 	end
+`endif
 
 //	if((tRegOutExc[15:12]==4'h8) || (tRegOutExc[15:12]==4'hA))
 //	begin

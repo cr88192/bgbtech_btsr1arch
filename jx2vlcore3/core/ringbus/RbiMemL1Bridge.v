@@ -2,12 +2,12 @@
 Bridge between the L1 and L2 Rings.
  */
 
-`include "RbiDefs.v"
+`include "ringbus/RbiDefs.v"
 
 module RbiMemL1Bridge(
 	/* verilator lint_off UNUSED */
 	clock,			reset,
-	regInMmcr,		regInKrr,		regInSr
+	regInMmcr,		regInKrr,		regInSr,
 
 	l1mAddrIn,		l1mAddrOut,
 	l1mDataIn,		l1mDataOut,
@@ -129,7 +129,7 @@ begin
 
 	tL2mSeqReq		= UV16_00;
 	tL2mOpmReq		= UV16_00;
-	tL2mAddrReq		= UV48_00;
+	tL2mAddrReq		= UV32_00;
 	tL2mDataReq		= UV128_XX;
 
 	if(!l1mRingIsIdle && !l1mRingIsReq)
@@ -176,7 +176,7 @@ begin
 		tL1mOpmOut  <= l1mOpmIn;
 		tL1mAddrOut <= l1mAddrIn;
 		tL1mDataOut <= l1mDataIn;
-		tL1ReqSent	<= 0;
+		tL1mReqSent	<= 0;
 	end
 
 	if(l2mRingIsIdle || (l2mRingIsResp && !tHoldL1b))
@@ -194,7 +194,7 @@ begin
 		tL2mOpmOut  <= l2mOpmIn;
 		tL2mAddrOut <= l2mAddrIn;
 		tL2mDataOut <= l2mDataIn;
-		tL2ReqSent	<= 0;
+		tL2mReqSent	<= 0;
 	end
 end
 

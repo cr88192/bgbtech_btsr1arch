@@ -21,6 +21,7 @@ One scheme may operate as:
 __declspec(syscall)
 int __isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 {
+#ifndef JX2UC
 	TK_SysArg *args;
 	int ret;
 
@@ -69,4 +70,5 @@ int __isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 	}
 	
 	return(ret);
+#endif
 }

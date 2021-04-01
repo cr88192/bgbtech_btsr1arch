@@ -398,6 +398,8 @@ begin
 
 
 
+`ifndef jx2_cfg_l2noram
+
 	tNxtDoFlushL2	= 0;
 	if(tReqOpm==UMEM_OPM_FLUSHDS)
 	begin
@@ -416,6 +418,15 @@ begin
 		tNxtFrov	= tCurFrov + 1;
 	end
 
+`else
+	tNxtFrov		= tCurFrov;
+	tNxtDoFlushL2	= 0;
+
+	tBlkLdData		= 0;
+	tBlkLdAddr		= 0;
+	tBlkLdIx		= 0;
+	tBlkLdFrov		= 0;
+`endif
 
 	/* Swap State */
 	
@@ -473,6 +484,13 @@ begin
 //	tAccReady	= (tReqIxL == tReqIx) && !tBlkDoStL;
 //	tAccReady	= (tReqIxL == tReqIx) && (tReqOpmL == tReqOpm);
 
+	tBlkFlush	= 0;
+	tBlkFlushB	= 0;
+	tBlkDirty	= 0;
+	tBlkDirtyB	= 0;
+
+`ifndef jx2_cfg_l2noram
+
 	tBlkFlush	= (tCurFrov != tBlkFrov);
 	tBlkFlushB	= (tCurFrov != tBlkFrovB);
 
@@ -526,6 +544,22 @@ begin
 //		$display("L2D Flush A=%X miss=%d dirty=%d",
 //			tBlkAddr, tMiss, tBlkDirty);
 //	end
+
+`else
+
+//	tBlkDirty	= tBlkFlag[0];
+	tBlkDirty	= 0;
+`ifdef jx2_mem_fulldpx
+//	tBlkDirtyB	= tBlkFlagB[0];
+	tBlkDirtyB	= 0;
+`endif
+
+	tMemDataOut	= tBlkData;
+
+	tMiss		= 0;
+	tMissB		= 0;
+
+`endif
 
 //	tHold		= tMiss || tAccLatch || !tAccReady;
 	tHold		= tMiss || tAccLatch || !tAccReady || tAccSticky;
@@ -1006,6 +1040,7 @@ begin
 //	tAccBlkHalf	<= tNxtBlkHalf;
 
 `ifdef jx2_mem_l2exldcyc
+
 	tBlkData	<= tBlkData_A0;
 	tBlkAddr	<= tBlkAddr_A0;
 	tBlkFlag	<= tBlkFlag_A0;
@@ -1017,14 +1052,22 @@ begin
 `endif
 
 	tBlkData_A0									<= memTileData[tReqIx];
+
+`ifndef jx2_cfg_l2noram
+
 	{ tBlkFrov_A0, tBlkFlag_A0, tBlkAddr_A0 }	<= memTileAddr[tReqIx];
 `ifdef jx2_mem_fulldpx
 	{ tBlkFrovB_A0, tBlkFlagB_A0, tBlkAddrB_A0 }	<= memTileAddrB[tReqIxB];
 `endif
 
+`endif
+
 `else
 
 	tBlkData					<= memTileData[tReqIx];
+
+`ifndef jx2_cfg_l2noram
+
 //	tBlkAddr					<= memTileAddr[tReqIx];
 //	{ tBlkFrov, tBlkFlag }		<= memTileFlag[tReqIx];
 	{ tBlkFrov, tBlkFlag, tBlkAddr }	<= memTileAddr[tReqIx];
@@ -1032,6 +1075,15 @@ begin
 //	tBlkAddrB					<= memTileAddrB[tReqIxB];
 //	{ tBlkFrovB, tBlkFlagB }	<= memTileFlagB[tReqIxB];
 	{ tBlkFrovB, tBlkFlagB, tBlkAddrB }	<= memTileAddrB[tReqIxB];
+`endif
+
+`else
+
+	{ tBlkFrov, tBlkFlag, tBlkAddr }	<= 0;
+`ifdef jx2_mem_fulldpx
+	{ tBlkFrovB, tBlkFlagB, tBlkAddrB }	<= 0;
+`endif
+
 `endif
 
 `endif
@@ -1049,16 +1101,21 @@ begin
 	if(tBlkDoSt)
 	begin
 		memTileData[tBlkStIx]	<= tBlkStData;
+
+`ifndef jx2_cfg_l2noram
 //		memTileAddr[tBlkStIx]	<= tBlkStAddr;
 //		memTileFlag[tBlkStIx]	<= { tBlkStFrov, 3'b100, tBlkStDirty};
 		memTileAddr[tBlkStIx]	<=
 			{ tBlkStFrov, 3'b100, tBlkStDirty, tBlkStAddr};
+
 `ifdef jx2_mem_fulldpx
 //		memTileAddrB[tBlkStIx]	<= tBlkStAddr;
 //		memTileFlagB[tBlkStIx]	<= { tBlkStFrov, 3'b100, tBlkStDirty};
 		memTileAddrB[tBlkStIx]	<=
 			{ tBlkStFrov, 3'b100, tBlkStDirty, tBlkStAddr};
 `endif
+`endif
+
 		tAccSticky	<= 0;
 	end
 `endif
@@ -1085,7 +1142,9 @@ begin
 
 		tDdrMemOpm		<= UMEM_OPM_READY;
 		tDdrMemAddr		<= 0;
+		tDdrMemDataOut	<= 0;
 	end
+`ifndef jx2_cfg_l2noram
 	else
 		if(tDoAcc || tAccLatch)
 	begin
@@ -1153,7 +1212,8 @@ begin
 			tDdrMemOpm		<= UMEM_OPM_READY;
 		end
 	end
-	else
+`endif
+		else
 	begin
 		tAccDone		<= 0;
 		tAccSwDone		<= 0;
@@ -1162,6 +1222,7 @@ begin
 
 		tDdrMemOpm		<= UMEM_OPM_READY;
 		tDdrMemAddr		<= 0;
+		tDdrMemDataOut	<= 0;
 	end
 
 	tMemDataOut2		<= tMemDataOut;

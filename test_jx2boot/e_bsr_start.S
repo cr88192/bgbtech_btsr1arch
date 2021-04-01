@@ -750,6 +750,8 @@ X(__memcpy8_16):
 
 .ifarch bjx2_movx
 memcpy_movx:
+
+#ifndef JX2UC
 	CMP/GE	32, R6
 	BF		.L1
 	.L0:
@@ -761,6 +763,7 @@ memcpy_movx:
 	ADD		32, R4		|	CMP/GE	32, R6
 	BT		.L0
 	.L1:
+#endif
 
 	CMP/GE	8, R6
 	BF		.L3
@@ -802,7 +805,8 @@ memcpy_movx:
 
 .global X(memcpy)
 X(memcpy):
-#if 1
+// #if 1
+#ifndef JX2UC
 .ifarch bjx2_movx
 	OR		r4, r5,	r7
 //	OR		r7, r6,	r7
@@ -911,6 +915,25 @@ X(memcpy):
 .global X(sleep_0)
 X(sleep_0):
 	sleep
+	sleep
+	sleep
+	sleep
+
+	sleep
+	sleep
+	sleep
+	sleep
+
+	sleep
+	sleep
+	sleep
+	sleep
+
+	sleep
+	sleep
+	sleep
+	sleep
+
 	rts
 
 .global X(__do_ldtlb)

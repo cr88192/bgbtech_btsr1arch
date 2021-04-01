@@ -44,14 +44,15 @@
 `define jx2_mem_fulldpx				//Full Duplex Mode
 // `define jx2_mem_fulldpx_syncb	//Full Duplex, Sync L2 AddrB
 
-// `define jx2_mem_l1dsz_1024		//L1 D$ is 1024 entries
-// `define jx2_mem_l1dsz_512		//L1 D$ is 512 entries
-`define jx2_mem_l1dsz_256			//L1 D$ is 256 entries
+`define jx2_mem_l1dsz_1024		//L1 D$ is 1024 entries
+// `define jx2_mem_l1dsz_512			//L1 D$ is 512 entries
+// `define jx2_mem_l1dsz_256		//L1 D$ is 256 entries
 // `define jx2_mem_l1dsz_128		//L1 D$ is 128 entries
 // `define jx2_mem_l1dsz_64			//L1 D$ is 64 entries
 
 
-`define jx2_mem_l1isz_256			//L1 I$ is 256 entries
+`define jx2_mem_l1isz_512			//L1 I$ is 512 entries
+// `define jx2_mem_l1isz_256			//L1 I$ is 256 entries
 // `define jx2_mem_l1isz_128		//L1 I$ is 128 entries
 // `define jx2_mem_l1isz_64			//L1 I$ is 64 entries
 
@@ -100,7 +101,7 @@
 `define mod_ddr_basicbuf		//Do Basic IO Buffering (Clock Crossing)
 // `define mod_ddr_fastbuf		//Do Fast IO Buffer (Single Clock)
 
-`define mod_ddrb_dllenable		//Do Fast IO Buffer (Single Clock)
+`define mod_ddrb_dllenable		//Enable DLL for DDRB
 
 
 `define JX2_FBUF_EN128K

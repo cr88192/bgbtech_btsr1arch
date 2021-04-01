@@ -28,9 +28,11 @@ void tk_con_init()
 	tk_con->x=0;
 	tk_con->y=0;
 
+#ifndef JX2UC
 //	((u32 *)0xF00BFF00)[0]=0x0015;		//320x200x16bpp
 //	((u32 *)0xF00BFF00)[0]=0x0005;		//
 	((u32 *)0xF00BFF00)[0]=0x0001;		//
+#endif
 }
 
 void *tk_con_getctx()
@@ -43,6 +45,7 @@ void tk_con_reset()
 	tk_con_init();
 }
 
+#ifndef JX2UC
 void tk_con_scroll_up()
 {
 	volatile u32 *buf;
@@ -118,9 +121,11 @@ void tk_con_newline()
 		tk_con->y--;
 	}
 }
+#endif
 
 void tk_con_putc(int ch)
 {
+#ifndef JX2UC
 	u32 px;
 	
 	if(ch<' ')
@@ -157,4 +162,5 @@ void tk_con_putc(int ch)
 	{
 		tk_con_newline();
 	}
+#endif
 }

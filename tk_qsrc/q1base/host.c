@@ -43,6 +43,8 @@ double		realtime;				// without any filtering or bounding
 double		oldrealtime;			// last frame run
 int			host_framecount;
 
+double		real_frametime;
+
 int			host_hunklevel;
 
 int			minimum_memory;
@@ -516,6 +518,8 @@ qboolean Host_FilterTime (float time)
 
 	host_frametime = realtime - oldrealtime;
 	oldrealtime = realtime;
+
+	real_frametime = host_frametime;
 
 	if (host_framerate.value > 0)
 	{

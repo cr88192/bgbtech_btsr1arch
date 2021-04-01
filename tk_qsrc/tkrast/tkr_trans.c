@@ -56,8 +56,10 @@ __m128 __m128_shufd(__m128 a, int b);
 //								((a)[3])*((b)[3])	)
 
 float		__vnf_v4f_dot(__vec4f a, __vec4f b);
+float		__vnf_v3f_dot(__vec4f a, __vec4f b);
 float		__vnf_v2f_dot(__vec2f a, __vec2f b);
 #define tkra_v4fdot(a, b)	__vnf_v4f_dot(a, b)
+#define tkra_v3fdot(a, b)	__vnf_v3f_dot(a, b)
 #define tkra_v2fdot(a, b)	__vnf_v2f_dot(a, b)
 
 // #define tkra_v4fdot(a, b)	((a)^(b))
@@ -176,6 +178,14 @@ tkra_vec4f tkra_v4fadd(tkra_vec4f a, tkra_vec4f b)
 	return(c);
 }
 
+tkra_vec4f tkra_v4fsub(tkra_vec4f a, tkra_vec4f b)
+{
+	tkra_vec4f c;
+	c.x=a.x-b.x;	c.y=a.y-b.y;
+	c.z=a.z-b.z;	c.w=a.w-b.w;
+	return(c);
+}
+
 tkra_vec4f tkra_v4fmul(tkra_vec4f a, tkra_vec4f b)
 {
 	tkra_vec4f c;
@@ -189,6 +199,13 @@ float tkra_v4fdot(tkra_vec4f a, tkra_vec4f b)
 	float c;
 	c=	(a.x*b.x) + (a.y*b.y) +
 		(a.z*b.z) + (a.w*b.w);
+	return(c);
+}
+
+float tkra_v3fdot(tkra_vec4f a, tkra_vec4f b)
+{
+	float c;
+	c=	(a.x*b.x) + (a.y*b.y) + (a.z*b.z);
 	return(c);
 }
 
@@ -1296,6 +1313,7 @@ int TKRA_TransformProjectTriangle(
 	tkra_vec4f		v0xyzw, v0ww, v0p;
 	tkra_vec4f		v1xyzw, v1ww, v1p;
 	tkra_vec4f		v2xyzw, v2ww, v2p;
+	tkra_vec4f		v0d, v1d, v2d;
 	tkra_vec2f		v0dxy, v1dxy, v2dxy;
 	tkra_vec4f		prj_xyzsc, prj_xyzbi;
 
@@ -1306,10 +1324,10 @@ int TKRA_TransformProjectTriangle(
 	float			scr_clip_l, scr_clip_r;
 	float			scr_clip_t, scr_clip_b;
 	float			txs, tys, txsn1, tysn1, xbi, ybi;
-	float			f0, f1, f2, f3, f4, fdx, fdy;
-	float			w0, w1, w2;
+	float			f0, f1, f2, f3, f4, f5, fdx, fdy;
+	float			w0, w1, w2, skew;
 	int				i0, i1, i2, tfl;
-	int				ecfl;
+	int				ecfl, lim;
 	byte			wasfrag;
 	
 	TKRA_SetupDrawBlend(ctx);
@@ -1388,8 +1406,11 @@ int TKRA_TransformProjectTriangle(
 //	ybi= 0.0;
 	wasfrag=0;
 
-	while(vstkpos>0)
+	lim=4096;
+
+	while((vstkpos>0) && (lim>0))
 	{
+		lim--;
 		vstkpos--;
 		v0=v0stk[vstkpos];
 		v1=v1stk[vstkpos];
@@ -1437,7 +1458,7 @@ int TKRA_TransformProjectTriangle(
 //		if(tkra_v4f_z(v1ww)>( 32767))
 //			continue;
 
-		if(tkra_v4f_w(v1ww)<0.0)
+		if(tkra_v4f_w(v1ww)<=0.0)
 		{
 			ctx->stat_reject_tris++;
 			ctx->stat_negw_tris++;
@@ -1487,8 +1508,11 @@ int TKRA_TransformProjectTriangle(
 //		if(tkra_v4f_z(v0ww)<0.0)
 //			{ ecfl|=1; }
 
-		if((tkra_v4f_z(v0ww)<0.0) && (tkra_v4f_z(v1ww)>0.0))
+		if((tkra_v4f_w(v0ww)<0.0) && (tkra_v4f_w(v1ww)>0.0))
 			{ ecfl|=1; }
+
+//		if((tkra_v4f_z(v0ww)<0.0) && (tkra_v4f_z(v1ww)>0.0))
+//			{ ecfl|=1; }
 		if(	(tkra_v4f_x(v1ww)>scr_clip_r) ||
 			(tkra_v4f_x(v0ww)<scr_clip_l) )
 				{ ecfl|=2; }
@@ -1497,6 +1521,15 @@ int TKRA_TransformProjectTriangle(
 				{ ecfl|=4; }
 #endif
 
+		skew=(	(tkra_v4f_x(v1ww)-tkra_v4f_x(v0ww))		+
+				(tkra_v4f_y(v1ww)-tkra_v4f_y(v0ww))		+ 1)
+				/
+				((tkra_v4f_z(v1ww)-tkra_v4f_z(v0ww))	+ 1);
+		
+		if(skew>4.0)skew=4.0;
+		if(skew<0.1)skew=0.1;
+		
+#if 0
 		/* Check if triangle is below size limit. */
 		v0dxy=tkra_v2fsub(tkra_v4f_xy(v1p), tkra_v4f_xy(v0p));
 		v1dxy=tkra_v2fsub(tkra_v4f_xy(v2p), tkra_v4f_xy(v1p));
@@ -1504,6 +1537,33 @@ int TKRA_TransformProjectTriangle(
 		f0=tkra_v2fdot(v0dxy, v0dxy);
 		f1=tkra_v2fdot(v1dxy, v1dxy);
 		f2=tkra_v2fdot(v2dxy, v2dxy);
+#endif
+
+#if 1
+		/* Check if triangle is below size limit. */
+		v0d=tkra_v4fsub(v1p, v0p);
+		v1d=tkra_v4fsub(v2p, v1p);
+		v2d=tkra_v4fsub(v0p, v2p);
+//		f0=tkra_v3fdot(v0d, v0d);
+//		f1=tkra_v3fdot(v1d, v1d);
+//		f2=tkra_v3fdot(v2d, v2d);
+
+		v0dxy=tkra_v4f_xy(v0d);
+		v1dxy=tkra_v4f_xy(v1d);
+		v2dxy=tkra_v4f_xy(v2d);
+		f0=tkra_v2fdot(v0dxy, v0dxy);
+		f1=tkra_v2fdot(v1dxy, v1dxy);
+		f2=tkra_v2fdot(v2dxy, v2dxy);		
+//		f0+=fabs(tkra_v4f_z(v0d));
+//		f1+=fabs(tkra_v4f_z(v1d));
+//		f2+=fabs(tkra_v4f_z(v2d));
+//		f3=tkra_v4f_z(v0d); f0+=f3*f3*(1.0/65536);
+//		f3=tkra_v4f_z(v1d); f1+=f3*f3*(1.0/65536);
+//		f3=tkra_v4f_z(v2d); f2+=f3*f3*(1.0/65536);
+		f3=tkra_v4f_z(v0d); f0+=f3*f3*(1.0/4096);
+		f3=tkra_v4f_z(v1d); f1+=f3*f3*(1.0/4096);
+		f3=tkra_v4f_z(v2d); f2+=f3*f3*(1.0/4096);
+#endif
 		
 //		f3=tkra_v2fcross(v0dxy, v1dxy);
 //		if(f3<=0)
@@ -1514,9 +1574,10 @@ int TKRA_TransformProjectTriangle(
 
 //		if(f3 < (5*5*3))
 //		if(f3 < (4*4*3))
-//		if(f3 < (3*3*3))
+///		if(f3 < (3*3*3))
 //		if(f3 < (2*2*3))
 		if(f3 < (3*3))
+//		if(f3 < (4*3))
 		{
 //			ctx->stat_reject_tris++;
 //			ctx->stat_micro_tris++;
@@ -1532,7 +1593,8 @@ int TKRA_TransformProjectTriangle(
 				continue;				
 			}
 
-			if(f3 < (2*3))
+			if(1)
+//			if(f3 < (2*3))
 //			if(f3 < (2*2*3))
 			{
 				f0=tkra_v4f_x(v0p)+tkra_v4f_x(v1p)+tkra_v4f_x(v2p);
@@ -1566,6 +1628,7 @@ int TKRA_TransformProjectTriangle(
 				continue;
 			}
 
+#if 0
 //			f0=	tkra_v2f_x(v0.st)+
 //				tkra_v2f_x(v1.st)+
 //				tkra_v2f_x(v2.st);
@@ -1609,6 +1672,7 @@ int TKRA_TransformProjectTriangle(
 			ctx->stat_drawpts3_tris++;
 			TKRA_EmitProjectedTrianglePts(ctx, pv0, pv1, pv2);
 			continue;
+#endif
 		}
 
 #if 0
@@ -1640,9 +1704,12 @@ int TKRA_TransformProjectTriangle(
 			f4=(48*48*3);
 
 		if(ecfl&1)
-			f4=(32*32*3);
+//			f4=(32*32*3);
 //			f4=(24*24*3);
+			f4=(16*16*3);
 #endif
+
+//		f4 *= skew;
 	
 //		if(f3>(64*64*3))
 //		if(f3>(32*32*3))
@@ -1678,6 +1745,77 @@ int TKRA_TransformProjectTriangle(
 			v3.rgb=tkra_rgba_midpoint(v0.rgb, v1.rgb);
 			v4.rgb=tkra_rgba_midpoint(v1.rgb, v2.rgb);
 			v5.rgb=tkra_rgba_midpoint(v2.rgb, v0.rgb);
+
+//			f5=f3*0.1;
+//			f5=f3*0.05;
+			f5=f3*0.066;
+
+			if(f5>f0)
+			{
+				v0stk[vstkpos]=v0;
+				v1stk[vstkpos]=v4;
+				v2stk[vstkpos]=v5;
+				vstkpos++;
+				v0stk[vstkpos]=v0;
+				v1stk[vstkpos]=v1;
+				v2stk[vstkpos]=v4;
+				vstkpos++;
+				v0stk[vstkpos]=v5;
+				v1stk[vstkpos]=v4;
+				v2stk[vstkpos]=v2;
+				vstkpos++;
+
+				ctx->stat_frag_tris+=3;
+				wasfrag|=1;
+
+				continue;
+			}
+
+#if 1
+			if(f5>f1)
+			{
+				v0stk[vstkpos]=v0;
+				v1stk[vstkpos]=v3;
+				v2stk[vstkpos]=v5;
+				vstkpos++;
+				v0stk[vstkpos]=v3;
+				v1stk[vstkpos]=v1;
+				v2stk[vstkpos]=v2;
+				vstkpos++;
+				v0stk[vstkpos]=v3;
+				v1stk[vstkpos]=v2;
+				v2stk[vstkpos]=v5;
+				vstkpos++;
+
+				ctx->stat_frag_tris+=3;
+				wasfrag|=1;
+
+				continue;
+			}
+#endif
+
+#if 1
+			if(f5>f2)
+			{
+				v0stk[vstkpos]=v0;
+				v1stk[vstkpos]=v3;
+				v2stk[vstkpos]=v2;
+				vstkpos++;
+				v0stk[vstkpos]=v2;
+				v1stk[vstkpos]=v3;
+				v2stk[vstkpos]=v4;
+				vstkpos++;
+				v0stk[vstkpos]=v3;
+				v1stk[vstkpos]=v1;
+				v2stk[vstkpos]=v4;
+				vstkpos++;
+
+				ctx->stat_frag_tris+=3;
+				wasfrag|=1;
+
+				continue;
+			}
+#endif
 
 			v0stk[vstkpos]=v0;
 			v1stk[vstkpos]=v3;
@@ -1723,6 +1861,13 @@ int TKRA_TransformProjectTriangle(
 			}
 		}
 #endif
+
+		if(tkra_v4f_w(v0ww)<0)
+		{
+			ctx->stat_reject_tris++;
+			ctx->stat_negw_tris++;
+			continue;
+		}
 
 //		if(tkra_v4f_z(v0ww)<(-32767))
 //			continue;

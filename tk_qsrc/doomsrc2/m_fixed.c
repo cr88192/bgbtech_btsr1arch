@@ -144,7 +144,8 @@ FixedDiv2
 }
 
 
-static u32 m_softdiv_rcptab[4096];
+// static u32 m_softdiv_rcptab[4096];
+static u32 m_softdiv_rcptab[1024];
 static int m_softdiv_init=0;
 
 int M_InitSoftDiv()
@@ -154,7 +155,8 @@ int M_InitSoftDiv()
 	if(!m_softdiv_init)
 	{
 		m_softdiv_init=1;
-		for(i=1; i<4096; i++)
+//		for(i=1; i<4096; i++)
+		for(i=1; i<1024; i++)
 		{
 			j=0x7fffffff / i;
 			m_softdiv_rcptab[i] = j<<1;
@@ -171,16 +173,24 @@ u32 M_SoftDivU(u32 a, u32 b)
 
 //	if(!b)return(0);
 	
-	if(b<4096)
+//	if(b<4096)
+	if(b<1024)
 	{
 		ta=(u64)a;
 		tb=m_softdiv_rcptab[b];
-		tc=ta*tb;
+//		tc=ta*tb;
+		tc = __int32_dmulu(a, tb);
 		c=(u32)(tc>>32);
 //		c=(((u64)a)*(m_softdiv_rcptab[b]))>>32;
 		return(c);
 	}
 
+	tb=M_SoftDivRcp(b);
+	tc = __int32_dmulu(a, tb);
+	c=(u32)(tc>>32);
+	return(c);
+
+#if 0
 	if(b<0x10000)
 	{
 		tb=m_softdiv_rcptab[b>>4]>>4;
@@ -223,6 +233,7 @@ u32 M_SoftDivU(u32 a, u32 b)
 	tc = __int32_dmulu(a, tb);
 	c=(u32)(tc>>32);
 	return(c);
+#endif
 
 //	c=a/b;
 //	return(c);
@@ -252,6 +263,7 @@ s32 M_SoftDivS(s32 a, s32 b)
 
 u32 M_SoftDivRcp(u32 b)
 {
+	u32 ix, shr;
 	u32 c;
 
 #if 0
@@ -295,8 +307,26 @@ u32 M_SoftDivRcp(u32 b)
 	return(c);
 #endif
 
-
 #if 1
+//	if(b<4096)
+	if(b<1024)
+	{
+		c=m_softdiv_rcptab[b];
+		return(c);
+	}
+
+	ix=b; shr=0;
+//	while(ix>=65536)
+	while(ix>=16384)
+		{ ix>>=4; shr+=4; }
+//	while(ix>=4096)
+	while(ix>=1024)
+		{ ix>>=1; shr++; }
+	c=m_softdiv_rcptab[ix]>>shr;
+	return(c);
+#endif
+
+#if 0
 	if(b<4096)
 	{
 		c=m_softdiv_rcptab[b];

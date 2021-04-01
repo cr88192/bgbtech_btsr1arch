@@ -41,13 +41,32 @@ void putc(int val)
 
 int kbhit(void)
 {
-	return(tk_ps2kb_kbhit());
+#ifndef JX2UC
+	if(tk_ps2kb_kbhit())
+		return(1);
+#endif
+	if(tk_dbg_kbhit())
+		return(1);
+	return(0);
+
+//	return(tk_ps2kb_kbhit());
 //	return(P_MMIO_DEBUG_STS&1);
 }
 
 int getch(void)
 {
-	return(tk_ps2getch());
+	while(1)
+	{
+#ifndef JX2UC
+		if(tk_ps2kb_kbhit())
+//			return(tk_ps2getch());
+			return(tk_ps2trygetch());
+#endif
+		if(P_MMIO_DEBUG_STS&1)
+			return(P_MMIO_DEBUG_RX);
+//		__halt();
+		sleep_0();
+	}
 
 #if 0
 	while(!(P_MMIO_DEBUG_STS&1))
@@ -77,6 +96,8 @@ void gets(char *buf)
 	while(1)
 	{
 		i=getch();
+		if(i<=0)
+			continue;
 		
 		if(i>=0x80)
 			continue;
@@ -106,6 +127,9 @@ char *async_gets(char *buf)
 {
 	char *t;
 	int i, eol;
+
+	if(!kbhit())
+		return(NULL);
 	
 	t=buf; eol=0;
 	while(*t)
@@ -399,6 +423,9 @@ void printf(char *str, ...)
 	va_end(lst);
 }
 
+#ifdef JX2UC
+byte tk_ralloc_tbuf[512];
+#endif
 
 byte *tk_ralloc_bufs=NULL;
 byte *tk_ralloc_bufe;
@@ -407,12 +434,21 @@ byte *tk_ralloc_bufr;
 void *tk_ralloc(int sz)
 {
 	void *p;
+#ifndef JX2UC
 	if(!tk_ralloc_bufs)
 	{
 		tk_ralloc_bufs=malloc(4096);
 		tk_ralloc_bufe=tk_ralloc_bufs+4096;
 		tk_ralloc_bufr=tk_ralloc_bufs;
 	}
+#else
+	if(!tk_ralloc_bufs)
+	{
+		tk_ralloc_bufs=tk_ralloc_tbuf;
+		tk_ralloc_bufe=tk_ralloc_bufs+512;
+		tk_ralloc_bufr=tk_ralloc_bufs;
+	}
+#endif
 	
 	if((tk_ralloc_bufr+sz)>=tk_ralloc_bufe)
 	{
@@ -435,7 +471,7 @@ char *tk_rstrdup(char *s)
 	return(t);
 }
 
-char *tk_rsplit(char *str)
+char **tk_rsplit(char *str)
 {
 	char tb[64];
 	char *ta[32];

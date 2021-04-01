@@ -6,9 +6,9 @@ Filters output from the L1's memory interface, so that L1 operates with virtual 
 
  */
 
-`include "RbiDefs.v"
+`include "ringbus/RbiDefs.v"
 
-`include "RbiMmuChkAcc.v"
+`include "ringbus/RbiMmuChkAcc.v"
 
 module RbiMmuTlb(
 	/* verilator lint_off UNUSED */

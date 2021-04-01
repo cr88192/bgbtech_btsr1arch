@@ -94,13 +94,27 @@ assign			regOutOKB		= tRegOutOKB;
 
 reg				dcInHoldL;
 
+// `ifdef jx2_enable_vaddr48
+`ifdef def_true
 reg[47:0]		tMemAddr;		//memory PC address (primary)
 reg[47:0]		tMemAddrB;		//memory PC address (secondary)
+`else
+reg[31:0]		tMemAddr;		//memory PC address (primary)
+reg[31:0]		tMemAddrB;		//memory PC address (secondary)
+`endif
+
 reg[ 4:0]		tMemOpm;		//memory PC output-enable
 `reg_tile		tMemDataOut;	//memory PC address
 
+// `ifdef jx2_enable_vaddr48
+`ifdef def_true
 assign	memAddr		= tMemAddr;
 assign	memAddrB	= tMemAddrB;
+`else
+assign	memAddr		= { UV16_00, tMemAddr };
+assign	memAddrB	= { UV16_00, tMemAddrB };
+`endif
+
 assign	memOpm		= tMemOpm;
 assign	memDataOut	= tMemDataOut;
 
@@ -231,10 +245,18 @@ reg[9:0]	tDcDoFlushB;
 reg[9:0]	tNxtDcDoFlushA;
 reg[9:0]	tNxtDcDoFlushB;
 
+`ifdef jx2_enable_vaddr48
 (* max_fanout = 50 *)
 	reg[43:0]		tNxtAddrA;
 (* max_fanout = 50 *)
 	reg[43:0]		tNxtAddrB;
+`else
+(* max_fanout = 50 *)
+	reg[27:0]		tNxtAddrA;
+(* max_fanout = 50 *)
+	reg[27:0]		tNxtAddrB;
+`endif
+
 reg				tNxtIsMmio;
 
 reg[43:0]		tNxtAddrAL;
@@ -373,10 +395,17 @@ reg[ 5:0]		tLstStBlkIxB;
 `reg_tile		tBlkDataC;
 `reg_tile		tBlkDataD;
 
+`ifdef jx2_enable_vaddr48
 reg[ 43:0]		tBlkAddrA;
 reg[ 43:0]		tBlkAddrB;
 reg[ 43:0]		tBlkAddrC;
 reg[ 43:0]		tBlkAddrD;
+`else
+reg[ 27:0]		tBlkAddrA;
+reg[ 27:0]		tBlkAddrB;
+reg[ 27:0]		tBlkAddrC;
+reg[ 27:0]		tBlkAddrD;
+`endif
 
 reg[  7:0]		tBlkFlagA;
 reg[  7:0]		tBlkFlagB;
@@ -422,10 +451,17 @@ reg				tDuplexFaultB;
 `reg_tile		tLstBlkDataC;
 `reg_tile		tLstBlkDataD;
 
+`ifdef jx2_enable_vaddr48
 reg[ 43:0]		tLstBlkAddrA;
 reg[ 43:0]		tLstBlkAddrB;
 reg[ 43:0]		tLstBlkAddrC;
 reg[ 43:0]		tLstBlkAddrD;
+`else
+reg[ 27:0]		tLstBlkAddrA;
+reg[ 27:0]		tLstBlkAddrB;
+reg[ 27:0]		tLstBlkAddrC;
+reg[ 27:0]		tLstBlkAddrD;
+`endif
 
 reg[  7:0]		tLstBlkFlagA;
 reg[  7:0]		tLstBlkFlagB;
@@ -439,8 +475,13 @@ reg[ 19:0]		tLstBlkPhAdB;
 
 `reg_tile		tBlkData2A;
 `reg_tile		tBlkData2B;
+`ifdef jx2_enable_vaddr48
 reg[ 43:0]		tBlkAddr2A;
 reg[ 43:0]		tBlkAddr2B;
+`else
+reg[ 27:0]		tBlkAddr2A;
+reg[ 27:0]		tBlkAddr2B;
+`endif
 reg[  7:0]		tBlkFlag2A;
 reg[  7:0]		tBlkFlag2B;
 reg[ 19:0]		tBlkPhAd2A;
@@ -455,8 +496,13 @@ reg[ 19:0]		tBlkPhAd2B;
 `reg_tile_pflag	tBlkPFl2A;
 `reg_tile_pflag	tBlkPFl2B;
 
+`ifdef jx2_enable_vaddr48
 reg[ 43:0]		tReqAddrA;
 reg[ 43:0]		tReqAddrB;
+`else
+reg[ 27:0]		tReqAddrA;
+reg[ 27:0]		tReqAddrB;
+`endif
 reg				tReqIsMmio;
 
 reg				tReqAddrA_IsRam;
@@ -499,10 +545,17 @@ reg				tLstHoldA;
 `reg_tile		tStBlkDataC;
 `reg_tile		tStBlkDataD;
 
+`ifdef jx2_enable_vaddr48
 reg[ 43:0]		tStBlkAddrA;
 reg[ 43:0]		tStBlkAddrB;
 reg[ 43:0]		tStBlkAddrC;
 reg[ 43:0]		tStBlkAddrD;
+`else
+reg[ 27:0]		tStBlkAddrA;
+reg[ 27:0]		tStBlkAddrB;
+reg[ 27:0]		tStBlkAddrC;
+reg[ 27:0]		tStBlkAddrD;
+`endif
 
 reg[  7:0]		tStBlkFlagA;
 reg[  7:0]		tStBlkFlagB;
@@ -538,10 +591,17 @@ reg				tNxtTlbMissInh;
 `reg_tile		tLstStBlkDataC;
 `reg_tile		tLstStBlkDataD;
 
+`ifdef jx2_enable_vaddr48
 reg[ 43:0]		tLstStBlkAddrA;
 reg[ 43:0]		tLstStBlkAddrB;
 reg[ 43:0]		tLstStBlkAddrC;
 reg[ 43:0]		tLstStBlkAddrD;
+`else
+reg[ 27:0]		tLstStBlkAddrA;
+reg[ 27:0]		tLstStBlkAddrB;
+reg[ 27:0]		tLstStBlkAddrC;
+reg[ 27:0]		tLstStBlkAddrD;
+`endif
 
 reg[  7:0]		tLstStBlkFlagA;
 reg[  7:0]		tLstStBlkFlagB;
@@ -561,8 +621,13 @@ reg				tLstDoStBlkD;
 
 `reg_tile		tMiBlkDataA;
 `reg_tile		tMiBlkDataB;
+`ifdef jx2_enable_vaddr48
 reg[ 43:0]		tMiBlkAddrA;
 reg[ 43:0]		tMiBlkAddrB;
+`else
+reg[ 27:0]		tMiBlkAddrA;
+reg[ 27:0]		tMiBlkAddrB;
+`endif
 // reg[  7:0]		tMiBlkFlagA;
 // reg[  7:0]		tMiBlkFlagB;
 reg[ 19:0]		tMiBlkPhAdA;
@@ -692,6 +757,8 @@ begin
 		tNxtAddrB=tNxtAddrA+2;
 	end
 `else
+
+`ifdef jx2_enable_vaddr48
 	if(tRegInAddr[4])
 	begin
 		tNxtAddrB=tRegInAddr[47:4];
@@ -700,6 +767,17 @@ begin
 		tNxtAddrA=tRegInAddr[47:4];
 		tNxtAddrB=tNxtAddrA+1;
 	end
+`else
+	if(tRegInAddr[4])
+	begin
+		tNxtAddrB=tRegInAddr[31:4];
+		tNxtAddrA=tNxtAddrB+1;
+	end else begin
+		tNxtAddrA=tRegInAddr[31:4];
+		tNxtAddrB=tNxtAddrA+1;
+	end
+`endif
+
 `endif
 
 `ifdef jx2_mem_l1dsz_1024
@@ -886,10 +964,17 @@ begin
 	tStBlkDataC		= UVTILE_00;
 	tStBlkDataD		= UVTILE_00;
 
+`ifdef jx2_enable_vaddr48
 	tStBlkAddrA		= UV44_00;
 	tStBlkAddrB		= UV44_00;
 	tStBlkAddrC		= UV44_00;
 	tStBlkAddrD		= UV44_00;
+`else
+	tStBlkAddrA		= UV28_00;
+	tStBlkAddrB		= UV28_00;
+	tStBlkAddrC		= UV28_00;
+	tStBlkAddrD		= UV28_00;
+`endif
 
 	tStBlkFlagA		= 0;
 	tStBlkFlagB		= 0;
@@ -1005,6 +1090,7 @@ begin
 //	tReqOpmNz	= (tInOpm[4:3]!=0);
 	tReqOpmNz	= (tInOpm!=UMEM_OPM_READY);
 
+`ifdef jx2_enable_vaddr48
 	tReqAddrA_IsRam =
 		((tReqAddrA[27:16]!=0) && (tReqAddrA[27:24]!=15)) ||
 		(tReqAddrA[43:28]!=0);
@@ -1017,6 +1103,16 @@ begin
 	tBlkAddrB_IsRam =
 		((tBlkAddrB[27:16]!=0) && (tBlkAddrB[27:24]!=15)) ||
 		(tBlkAddrB[43:28]!=0);
+`else
+	tReqAddrA_IsRam =
+		((tReqAddrA[27:16]!=0) && (tReqAddrA[27:24]!=15));
+	tReqAddrB_IsRam =
+		((tReqAddrB[27:16]!=0) && (tReqAddrB[27:24]!=15));
+	tBlkAddrA_IsRam =
+		((tBlkAddrA[27:16]!=0) && (tBlkAddrA[27:24]!=15));
+	tBlkAddrB_IsRam =
+		((tBlkAddrB[27:16]!=0) && (tBlkAddrB[27:24]!=15));
+`endif
 
 
 	tBlkData2A	= tBlkDataA;
@@ -1123,6 +1219,8 @@ begin
 
 // `ifndef def_true
 `ifdef def_true
+
+`ifdef jx2_enable_vaddr48
 	tMissAddrA = (
 		(tBlkAddrA[43:36] != tReqAddrA[43:36]) ||
 		(tBlkAddrA[35:24] != tReqAddrA[35:24]) ||
@@ -1135,6 +1233,17 @@ begin
 		(tBlkAddrB[23:12] != tReqAddrB[23:12]) ||
 		(tBlkAddrB[11: 0] != tReqAddrB[11: 0]) ) &&
 		!tAccNoMissB;
+`else
+	tMissAddrA = (
+		(tBlkAddrA[27:12] != tReqAddrA[27:12]) ||
+		(tBlkAddrA[11: 0] != tReqAddrA[11: 0]) ) &&
+		!tAccNoMissA;
+	tMissAddrB = (
+		(tBlkAddrB[27:12] != tReqAddrB[27:12]) ||
+		(tBlkAddrB[11: 0] != tReqAddrB[11: 0]) ) &&
+		!tAccNoMissB;
+`endif
+
 `endif
 
 //	tMissA = (tBlkAddr2A != tReqAddrA) ||
@@ -2041,7 +2150,12 @@ begin
 		if(tAccFltL && !tMemLatchA && !tMemLatchB && !tMmioLatch)
 	begin
 		tMemOpm		<= UMEM_OPM_FAULT;
+// `ifdef jx2_enable_vaddr48
+`ifdef def_true
 		tMemAddr	<= { UV44_00, 2'b00, tAccFltWL, tAccFltRL };
+`else
+		tMemAddr	<= { UV28_00, 2'b00, tAccFltWL, tAccFltRL };
+`endif
 	end
 	else
 		if(((tMiss && tMissA && tBlkReady) || tMemLatchA) &&
@@ -2187,7 +2301,11 @@ begin
 				tMemOpm			<= tStoreDoBounceA ?
 					UMEM_OPM_RD_BOUNCE	:
 					UMEM_OPM_RD_TILE;
+`ifdef jx2_enable_vaddr48
 				tMemAddr		<= { tReqAddrA, 4'b0 };
+`else
+				tMemAddr		<= { UV16_00, tReqAddrA, 4'b0 };
+`endif
 				tMemDataOut		<= UVTILE_00;
 				tMemLatchWdA	<= tMemLatchWbA;
 			end
@@ -2342,7 +2460,11 @@ begin
 				tMemOpm			<= tStoreDoBounceB ?
 					UMEM_OPM_RD_BOUNCE	:
 					UMEM_OPM_RD_TILE;
+`ifdef jx2_enable_vaddr48
 				tMemAddr		<= { tReqAddrB, 4'b0 };
+`else
+				tMemAddr		<= { UV16_00, tReqAddrB, 4'b0 };
+`endif
 				tMemDataOut		<= UVTILE_00;
 				tMemLatchWdB	<= tMemLatchWbB;
 			end

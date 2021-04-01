@@ -1,4 +1,4 @@
-`include "RbiDefs.v"
+`include "ringbus/RbiDefs.v"
 
 module RbiMemDcA(
 	/* verilator lint_off UNUSED */
@@ -13,6 +13,7 @@ module RbiMemDcA(
 	memDataIn,		memDataOut,
 	memOpmIn,		memOpmOut,
 	memSeqIn,		memSeqOut,
+
 	unitNodeId
 	);
 

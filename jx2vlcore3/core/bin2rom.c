@@ -8,16 +8,19 @@ typedef unsigned int u32;
 
 int main(int argc, char *argv[])
 {
+	char tb[256];
 	FILE *fd, *fdoa, *fdob, *fdoc, *fdod;
 	FILE *fdoe, *fdof, *fdog, *fdoh;
 	byte *ibuf;
 	char *infn;
+	char *ofn_pfx;
 	u32 va, vb, vc, vd;
 	u32 ve, vf, vg, vh;
 	int sz, n;
 	int i, j, k;
 	
 	infn=NULL;
+	ofn_pfx=NULL;
 	for(i=1; i<argc; i++)
 	{
 		if(argv[i][0]=='-')
@@ -26,7 +29,9 @@ int main(int argc, char *argv[])
 		}
 		
 		if(!infn)
-			infn=argv[i];
+			{ infn=argv[i]; continue; }
+		if(!ofn_pfx)
+			{ ofn_pfx=argv[i]; continue; }
 	}
 	
 	if(!infn)
@@ -35,6 +40,8 @@ int main(int argc, char *argv[])
 		return(-1);
 	}
 	
+	if(!ofn_pfx)
+		ofn_pfx="bootrom";
 	
 	fd=fopen(infn, "rb");
 	if(!fd)
@@ -52,7 +59,9 @@ int main(int argc, char *argv[])
 #if 1
 	n=(sz+15)/16;
 	
-	fdoa=fopen("bootrom_1.txt", "wt");
+	sprintf(tb, "%s_1.txt", ofn_pfx);
+//	fdoa=fopen("bootrom_1.txt", "wt");
+	fdoa=fopen(tb, "wt");
 	
 	for(i=0; i<n; i++)
 	{
@@ -103,7 +112,9 @@ int main(int argc, char *argv[])
 #if 1
 	n=(sz+31)/32;
 	
-	fdoa=fopen("bootrom_2.txt", "wt");
+	sprintf(tb, "%s_2.txt", ofn_pfx);
+//	fdoa=fopen("bootrom_2.txt", "wt");
+	fdoa=fopen(tb, "wt");
 	
 	for(i=0; i<n; i++)
 	{
@@ -132,9 +143,14 @@ int main(int argc, char *argv[])
 #if 1
 	n=(sz+31)/32;
 	
-	fdoa=fopen("bootrom_2a.txt", "wt");
-	fdob=fopen("bootrom_2b.txt", "wt");
-	
+//	fdoa=fopen("bootrom_2a.txt", "wt");
+//	fdob=fopen("bootrom_2b.txt", "wt");
+
+	sprintf(tb, "%s_2a.txt", ofn_pfx);
+	fdoa=fopen(tb, "wt");
+	sprintf(tb, "%s_2b.txt", ofn_pfx);
+	fdob=fopen(tb, "wt");
+
 	for(i=0; i<n; i++)
 	{
 		va=*(u32 *)(ibuf+i*32+ 0);

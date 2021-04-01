@@ -498,6 +498,19 @@ void TKRA_DrawSpan_ModUtx2MortZt(u64 *parm,
 	ctz=dstz;
 	while(ct<cte)
 	{
+#if 1
+		z=zpos>>16;
+		if(z>(*ctz))
+		{
+			ctz++;
+			ct++;
+			tpos+=tstep;
+			cpos+=cstep;
+			zpos+=zstep;
+			continue;
+		}
+#endif
+
 //		idx=((pos>>32)&ymask)|((pos>>16)&xmask);
 //		idx=tkra_morton8(((tpos>>16)&xmask), ((tpos>>48)&xmask));
 //		idx=tkra_morton8(tpos>>16, tpos>>48)&ymask;
@@ -557,6 +570,19 @@ void TKRA_DrawSpan_AlphaModUtx2MortZt(u64 *parm,
 	ctz=dstz;
 	while(ct<cte)
 	{
+#if 1
+		z=zpos>>16;
+		if(z>(*ctz))
+		{
+			ctz++;
+			ct++;
+			tpos+=tstep;
+			cpos+=cstep;
+			zpos+=zstep;
+			continue;
+		}
+#endif
+
 //		idx=((pos>>32)&ymask)|((pos>>16)&xmask);
 //		idx=tkra_morton8(((tpos>>16)&xmask), ((tpos>>48)&xmask));
 //		idx=tkra_morton8(tpos>>16, tpos>>48)&ymask;
@@ -700,7 +726,7 @@ void TKRA_DrawSpan_ModBlUtx2MortZt(u64 *parm,
 {
 	tkra_rastpixel *ct, *cte, *src;
 	tkra_zbufpixel *ctz;
-	u64	tpos, tstep;
+	u64	tpos, tstep, tpos1, tstep1;
 	u64	cpos, cstep;
 	u64 zpos, zstep;
 	u64 cval;
@@ -723,10 +749,27 @@ void TKRA_DrawSpan_ModBlUtx2MortZt(u64 *parm,
 	xmask=parm[TKRA_DS_XMASK];
 	ymask=parm[TKRA_DS_YMASK];
 
+	tstep1=0x0001000000010000ULL;
+
 	ct=dstc; cte=ct+cnt;
 	ctz=dstz;
 	while(ct<cte)
 	{
+#if 1
+		z=zpos>>16;
+		if(z>(*ctz))
+		{
+			ctz++;
+			ct++;
+			tpos+=tstep;
+			cpos+=cstep;
+			zpos+=zstep;
+			continue;
+		}
+#endif
+
+// #if 1
+#ifndef TKRA_CHEAP_BILIN
 		ix0=tkra_morton16((tpos>>16)+0, (tpos>>48)+0)&ymask;
 		ix1=tkra_morton16((tpos>>16)+1, (tpos>>48)+0)&ymask;
 		ix2=tkra_morton16((tpos>>16)+0, (tpos>>48)+1)&ymask;
@@ -737,6 +780,39 @@ void TKRA_DrawSpan_ModBlUtx2MortZt(u64 *parm,
 		pix3=TKRA_CachedBlkUtx2(src, ix3);
 		cval=TKRA_InterpBilinear64(pix0, pix1, pix2, pix3,
 			(u16)tpos, (u16)(tpos>>32));
+#endif
+
+#ifdef TKRA_CHEAP_BILIN
+		ix2=(tpos>>16);		ix3=(tpos>>48);
+		ix0=tkra_morton16(ix2+0, ix3+0)&ymask;
+		ix1=tkra_morton16(ix2+1, ix3+0)&ymask;
+		ix2=tkra_morton16(ix2+0, ix3+1)&ymask;
+		pix0=TKRA_CachedBlkUtx2(src, ix0);
+		pix1=TKRA_CachedBlkUtx2(src, ix1);
+		pix2=TKRA_CachedBlkUtx2(src, ix2);
+		cval=TKRA_InterpBilinear3Pt_64(pix0, pix1, pix2,
+			(u16)tpos, (u16)(tpos>>32));
+#endif
+
+#if 0
+		tpos1=tpos+tstep1;
+		ix0=tkra_morton16(tpos >>16, tpos >>48)&ymask;
+		ix1=tkra_morton16(tpos1>>16, tpos1>>48)&ymask;
+		pix0=TKRA_CachedBlkUtx2(src, ix0);
+		pix1=TKRA_CachedBlkUtx2(src, ix1);
+//		cval=TKRA_InterpLinear64(pix0, pix1,
+//			(((u16)tpos)+((u16)(tpos>>32)))>>1);
+//		cval=TKRA_InterpLinear64(pix0, pix1,
+//			((u16)tpos)+((u16)(tpos>>32)));
+
+//		ix2=((u16)tpos);
+		ix2=(((u16)tpos)+((u16)(tpos>>32)))>>1;
+		pix2=ix2;	pix2|=(pix2<<16);	pix2|=(pix2<<32);
+		pix3=~pix2;
+		cval=	tkra_pmuluhw(pix0, pix3) +
+				tkra_pmuluhw(pix1, pix2);
+#endif
+
 
 		cval=tkra_pmuluhw(cval, cpos);
 		pix=tkra_rgbpck64(cval);
@@ -784,6 +860,19 @@ void TKRA_DrawSpan_AlphaModBlUtx2MortZt(u64 *parm,
 	ctz=dstz;
 	while(ct<cte)
 	{
+#if 1
+		z=zpos>>16;
+		if(z>(*ctz))
+		{
+			ctz++;
+			ct++;
+			tpos+=tstep;
+			cpos+=cstep;
+			zpos+=zstep;
+			continue;
+		}
+#endif
+
 		ix0=tkra_morton16((tpos>>16)+0, (tpos>>48)+0)&ymask;
 		ix1=tkra_morton16((tpos>>16)+1, (tpos>>48)+0)&ymask;
 		ix2=tkra_morton16((tpos>>16)+0, (tpos>>48)+1)&ymask;
@@ -853,6 +942,19 @@ void TKRA_DrawSpan_AtestModBlUtx2MortZt(u64 *parm,
 	ctz=dstz;
 	while(ct<cte)
 	{
+#if 1
+		z=zpos>>16;
+		if(z>(*ctz))
+		{
+			ctz++;
+			ct++;
+			tpos+=tstep;
+			cpos+=cstep;
+			zpos+=zstep;
+			continue;
+		}
+#endif
+
 		ix0=tkra_morton16((tpos>>16)+0, (tpos>>48)+0)&ymask;
 		ix1=tkra_morton16((tpos>>16)+1, (tpos>>48)+0)&ymask;
 		ix2=tkra_morton16((tpos>>16)+0, (tpos>>48)+1)&ymask;
@@ -910,6 +1012,19 @@ void TKRA_DrawSpan_AtestModBlUtx2MortZb(u64 *parm,
 	ctz=dstz;
 	while(ct<cte)
 	{
+#if 1
+		z=zpos>>16;
+		if(z>(*ctz))
+		{
+			ctz++;
+			ct++;
+			tpos+=tstep;
+			cpos+=cstep;
+			zpos+=zstep;
+			continue;
+		}
+#endif
+
 		ix0=tkra_morton16((tpos>>16)+0, (tpos>>48)+0)&ymask;
 		ix1=tkra_morton16((tpos>>16)+1, (tpos>>48)+0)&ymask;
 		ix2=tkra_morton16((tpos>>16)+0, (tpos>>48)+1)&ymask;
@@ -1042,17 +1157,98 @@ u64 TKRA_InterpBilinear64(
 	u16 xfrac, u16 yfrac)
 {
 	u64 cv4, cv5, cv6;
-	u64 cxf, cyf, cxnf, cynf;
+	u64 cxf, cyf, cxnf, cynf, cxynf, cxf2, cyf2;
 
 	cxf=xfrac;	cxf|=cxf<<16;	cxf|=cxf<<32;
 	cyf=yfrac;	cyf|=cyf<<16;	cyf|=cyf<<32;
 	cxnf=~cxf;
 	cynf=~cyf;
 
+#ifndef TKRA_CHEAP_BILIN
 	cv4=tkra_pmuluhw(px0, cxnf)+tkra_pmuluhw(px1, cxf);
 	cv5=tkra_pmuluhw(px2, cxnf)+tkra_pmuluhw(px3, cxf);
 	cv6=tkra_pmuluhw(cv4, cynf)+tkra_pmuluhw(cv5, cyf);
 	return(cv6);
+#endif
+
+//	cv4=tkra_pmuluhw(px0, cxnf)+tkra_pmuluhw(px1, cxf);
+//	cv5=tkra_pmuluhw(px0, cynf)+tkra_pmuluhw(px3, cyf);
+//	cv6=tkra_paddhw(cv4, cv5)>>1;
+//	return(cv6);
+
+//	cv4=tkra_pmuluhw(px0, cxnf)+tkra_pmuluhw(px1, cxf);
+//	cv5=tkra_pmuluhw(px0, cynf)+tkra_pmuluhw(px2, cyf);
+//	cv6=tkra_paddhw(cv4, cv5)>>1;
+//	return(cv6);
+
+//	cv4=tkra_pmuluhw(px0, cxnf)+tkra_pmuluhw(px1, cxf);
+//	cv5=tkra_pmuluhw(px0, cynf)+tkra_pmuluhw(px2, cyf);
+//	cv6=((cv4>>1)&0x7FFE7FFE7FFE7FFEULL)+
+//		((cv5>>1)&0x7FFE7FFE7FFE7FFEULL);
+//	return(cv6);
+
+//	cv5=tkra_pmuluhw(px1, cynf)+tkra_pmuluhw(px3, cyf);
+//	cv4=tkra_pmuluhw(px0, cxnf)+tkra_pmuluhw(cv5, cxf);
+//	return(cv4);
+
+//	cv4=tkra_pmuluhw(px0, cxnf)+tkra_pmuluhw(px1, cxf);
+//	cv5=tkra_pmuluhw(cv4, cynf)+tkra_pmuluhw(px2, cyf);
+//	return(cv5);
+
+//	cxynf=tkra_pmuluhw(cxnf, cynf);
+//	cxf2=tkra_pmuluhw(cxf, cynf);
+//	cyf2=tkra_pmuluhw(cyf, cxnf);
+//	cv4=tkra_pmuluhw(px0, cxynf)+
+//		tkra_pmuluhw(px1, cxf2)+
+//		tkra_pmuluhw(px2, cyf2);
+//	return(cv4);
+
+#ifdef TKRA_CHEAP_BILIN
+	cxf2=((cxf>>1)&0x7FFE7FFE7FFE7FFEULL);
+	cyf2=((cyf>>1)&0x7FFE7FFE7FFE7FFEULL);
+//	cxf2=cxf;
+//	cyf2=cyf;
+	cxynf=~(cxf2+cyf2);
+	cv5=tkra_pmuluhw(px0, cxynf)+
+		tkra_pmuluhw(px1, cxf2)+
+		tkra_pmuluhw(px2, cyf2);
+	return(cv5);
+#endif
+}
+
+u64 TKRA_InterpLinear64(u64 px0, u64 px1, u16 frac)
+{
+	u64 cv4, cv5, cv6;
+	u64 cxf, cyf, cxnf, cynf;
+
+	cxf=frac;	cxf|=cxf<<16;	cxf|=cxf<<32;
+	cxnf=~cxf;
+
+	cv4=tkra_pmuluhw(px0, cxnf)+tkra_pmuluhw(px1, cxf);
+	return(cv4);
+}
+
+u64 TKRA_InterpBilinear3Pt_64(
+	u64 px0, u64 px1, u64 px2,
+	u16 xfrac, u16 yfrac)
+{
+	u64 cv4, cv5, cv6;
+	u64 cxf, cyf, cxnf, cynf, cxynf, cxf2, cyf2;
+
+	cxf=xfrac;	cxf|=cxf<<16;	cxf|=cxf<<32;
+	cyf=yfrac;	cyf|=cyf<<16;	cyf|=cyf<<32;
+	cxnf=~cxf;
+	cynf=~cyf;
+
+	cxf2=((cxf>>1)&0x7FFE7FFE7FFE7FFEULL);
+	cyf2=((cyf>>1)&0x7FFE7FFE7FFE7FFEULL);
+//	cxf2=cxf;
+//	cyf2=cyf;
+	cxynf=~(cxf2+cyf2);
+	cv5=tkra_pmuluhw(px0, cxynf)+
+		tkra_pmuluhw(px1, cxf2)+
+		tkra_pmuluhw(px2, cyf2);
+	return(cv5);
 }
 
 #endif

@@ -179,6 +179,11 @@ reg			reset3_50;
 // assign		reset_sanity = (regInitSanity!=8'h55);
 // assign		reset2 = reset || reset_sanity;
 
+wire[31:0]		gpioPinsIn;
+wire[31:0]		gpioPinsOut;
+wire[31:0]		gpioPinsDir;
+
+assign		gpioPinsIn = 0;
 
 CoreUnit core(
 //	clock, 		reset2,
@@ -227,7 +232,11 @@ CoreUnit core(
 	dbg_outStatus5,
 	dbg_outStatus6,
 	dbg_outStatus7,
-	dbg_outStatus8
+	dbg_outStatus8,
+
+	gpioPinsIn,
+	gpioPinsOut,
+	gpioPinsDir
 	);
 
 `ifdef def_true

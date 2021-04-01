@@ -91,6 +91,9 @@ typedef u32 fourcc;
 #define BGBCC_CCXL_StubNote(ctx)	\
 	BGBCC_CCXL_StubNoteLLn(ctx, __FILE__, __LINE__)
 
+#define BGBCC_CCXL_SanityError(ctx)	\
+	BGBCC_CCXL_SanityErrorLLn(ctx, __FILE__, __LINE__)
+
 #define BGBCC_FrBC_StubError(ctx)	\
 	BGBCC_FrBC_StubErrorLLn(ctx, __FILE__, __LINE__)
 #define BGBCC_FrBC_StubWarn(ctx)	\
@@ -755,6 +758,8 @@ int fnidx_num;
 int reqlfn;
 // int reqlln;
 int ctxflags;
+
+byte regrov;
 
 BCCX_Node *cur_structdef;
 BCCX_Node *reduce_tmp;

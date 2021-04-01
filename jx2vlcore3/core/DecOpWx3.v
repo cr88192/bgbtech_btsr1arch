@@ -23,6 +23,10 @@ For scalar Ops, Lane 2/3 will hold:
 `include "DecOpFz.v"
 // `include "DecOpFC.v"
 
+`ifdef jx2_enable_ops24
+`include "DecOpHz.v"
+`endif
+
 module DecOpWx3(
 	/* verilator lint_off UNUSED */
 	clock,		reset,
@@ -166,7 +170,7 @@ wire[3:0]		decOpFzC_idUFl;
 
 DecOpFz	decOpFzC(
 	clock,		reset,
-	{ UV32_XX, istrWord[95:64] },	1'b1,
+	{ UV32_XX, istrWord[95:64] },	4'h1,
 		{ opIsWexJumbo96, opIsWexJumboB, tOpJBitsC },
 	decOpFzC_idRegN,		decOpFzC_idRegM,
 	decOpFzC_idRegO,		decOpFzC_idImm,
@@ -184,7 +188,7 @@ wire[3:0]		decOpFzB_idUFl;
 
 DecOpFz	decOpFzB(
 	clock,		reset,
-	{ UV32_XX, istrWord[63:32] },	1'b1,
+	{ UV32_XX, istrWord[63:32] },	4'h1,
 		{ 1'b0, opIsWexJumboA, tOpJBitsB },
 	decOpFzB_idRegN,		decOpFzB_idRegM,
 	decOpFzB_idRegO,		decOpFzB_idImm,
@@ -202,7 +206,7 @@ wire[3:0]		decOpFzA_idUFl;
 
 DecOpFz	decOpFzA(
 	clock,		reset,
-	{ UV32_XX, istrWord[31: 0] },	1'b0,	UV26_00,
+	{ UV32_XX, istrWord[31: 0] },	4'h0,	UV26_00,
 	decOpFzA_idRegN,		decOpFzA_idRegM,
 	decOpFzA_idRegO,		decOpFzA_idImm,
 	decOpFzA_idUCmd,		decOpFzA_idUIxt,
@@ -223,6 +227,25 @@ DecOpFC	decOpFC(
 	decOpFC_idRegN,		decOpFC_idRegM,
 	decOpFC_idRegO,		decOpFC_idImm,
 	decOpFC_idUCmd,		decOpFC_idUIxt
+	);
+`endif
+
+`ifdef jx2_enable_ops24
+wire[5:0]		decOpHz_idRegN;
+wire[5:0]		decOpHz_idRegM;
+wire[5:0]		decOpHz_idRegO;
+wire[32:0]		decOpHz_idImm;
+wire[7:0]		decOpHz_idUCmd;
+wire[7:0]		decOpHz_idUIxt;
+wire[3:0]		decOpHz_idUFl;
+
+DecOpHz	decOpHz(
+	clock,		reset,
+	{ UV32_XX, istrWord[31: 0] },	4'h0,	UV26_00,
+	decOpHz_idRegN,		decOpHz_idRegM,
+	decOpHz_idRegO,		decOpHz_idImm,
+	decOpHz_idUCmd,		decOpHz_idUIxt,
+	decOpHz_idUFl
 	);
 `endif
 
@@ -643,25 +666,46 @@ begin
 		opUCmdA	= decOpBz_idUCmd;
 		opUIxtA	= decOpBz_idUIxt;
 
+`ifdef jx2_enable_ops24
+		if(	(istrWord[15:12] == 4'h9) ||
+			(istrWord[15:12] == 4'h7)	)
+		begin
+			opRegAM	= decOpHz_idRegM;
+			opRegAO	= decOpHz_idRegO;
+			opRegAN	= decOpHz_idRegN;
+			opImmA	= decOpHz_idImm;
+			opUCmdA	= decOpHz_idUCmd;
+			opUIxtA	= decOpHz_idUIxt;
+		end
+`endif
+
 //		opRegXM = decOpBz_idRegM;
 //		opRegXO = decOpBz_idRegO;
 //		opRegXN = decOpBz_idRegN;
 
-		opRegAM0	= decOpBz_idRegM;
-		opRegAO0	= decOpBz_idRegO;
-		opRegAN0	= decOpBz_idRegN;
-		opUCmdA0	= decOpBz_idUCmd;
-		opUIxtA0	= decOpBz_idUIxt;
+//		opRegAM0	= decOpBz_idRegM;
+//		opRegAO0	= decOpBz_idRegO;
+//		opRegAN0	= decOpBz_idRegN;
+//		opUCmdA0	= decOpBz_idUCmd;
+//		opUIxtA0	= decOpBz_idUIxt;
+
+		opRegAM0	= opRegAM;
+		opRegAO0	= opRegAO;
+		opRegAN0	= opRegAN;
+		opUCmdA0	= opUCmdA;
+		opUIxtA0	= opUIxtA;
 
 		opRegBN	= JX2_GR_ZZR;
 		opRegBM	= JX2_GR_ZZR;
-		opRegBO	= decOpBz_idRegN;
+//		opRegBO	= decOpBz_idRegN;
+		opRegBO	= opRegAN;
 		opImmB	= UV33_XX;
 		opUCmdB	= UV8_00;
 		opUIxtB	= UV8_00;
 
 		opRegCM	= JX2_GR_ZZR;
-		opRegCO	= decOpBz_idRegN;
+//		opRegCO	= decOpBz_idRegN;
+		opRegCO	= opRegAN;
 		opRegCN	= JX2_GR_ZZR;
 		opImmC	= UV33_XX;
 		opUCmdC	= UV8_00;

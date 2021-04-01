@@ -3,6 +3,9 @@ module RegGPR(
 	reset,
 	hold,
 
+	regIdUCmd,
+	regIdUIxt,
+
 	regIdRs,		//Source A, ALU / Base
 	regIdRt,		//Source B, ALU / Index
 	regIdRm,		//Source C, MemStore
@@ -14,10 +17,13 @@ module RegGPR(
 	regValRn1,		//Destination Value (EX1)
 	regIdRn2,		//Destination ID (EX2)
 	regValRn2,		//Destination Value (EX2)
+	regIdRn3,		//Destination ID (EX3)
+	regValRn3,		//Destination Value (EX3)
 	
 	regValPc,		//PC Value (Synthesized)
 	regValGbr,		//GBR Value (CR)
 	regValImm,		//Immediate (Decode)
+	regValImmB,		//Immediate (Decode)
 	regValLr,		//LR Value (CR)
 	
 	regOutDlr,	regInDlr,
@@ -35,6 +41,9 @@ input			clock;
 input			reset;
 input			hold;
 
+input[7:0]		regIdUCmd;
+input[7:0]		regIdUIxt;
+
 input[5:0]		regIdRs;		//Source A, ALU / Base
 input[5:0]		regIdRt;		//Source B, ALU / Index
 input[5:0]		regIdRm;		//Source C, MemStore
@@ -47,10 +56,13 @@ input[5:0]		regIdRn1;		//Destination ID
 input[63:0]		regValRn1;		//Destination Value
 input[5:0]		regIdRn2;		//Destination ID
 input[63:0]		regValRn2;		//Destination Value
+input[5:0]		regIdRn3;		//Destination ID
+input[63:0]		regValRn3;		//Destination Value
 
 input [47:0]	regValPc;		//PC Value (Synthesized)
 input [47:0]	regValGbr;		//GBR Value (CR)
 input [32:0]	regValImm;		//Immediate (Decode)
+input [32:0]	regValImmB;		//Immediate (Decode)
 input [47:0]	regValLr;		//GBR Value (CR)
 	
 output[63:0]	regOutDlr;
@@ -107,11 +119,23 @@ reg	tValRsZz;
 reg	tValRtZz;
 reg	tValRmZz;
 
+reg[63:0]	tValJimm;
+
+wire	tEnablePcLsb;
+assign	tEnablePcLsb = (regIdUIxt[2:0] == JX2_BTY_SB);
+
+
 always @*
 begin
 	tValRsZz=0;
 	tValRtZz=0;
 	tValRmZz=0;
+
+`ifdef jx2_enable_wexjumbo
+	tValJimm={
+		regValImmB[31:0],
+		regValImm [31:0] };
+`endif
 
 	casez(regIdRs)
 		6'b0zzzzz:	tValRsA=gprArr[regIdRs[4:0]];
@@ -129,11 +153,15 @@ begin
 `endif
 
 `ifdef jx2_enable_vaddr48
-		JX2_GR_PC:	tValRsA={ UV16_00, regValPc };
+//		JX2_GR_PC:	tValRsA={ UV16_00, regValPc };
+		JX2_GR_PC:	tValRsA={ UV16_00, regValPc[47:1],
+			regValPc[0] &tEnablePcLsb };
 		JX2_GR_GBR:	tValRsA={ UV16_00, regValGbr };
 		JX2_GR_LR:	tValRsA={ UV16_00, regValLr };
 `else
-		JX2_GR_PC:	tValRsA={ UV32_00, regValPc[31:0] };
+//		JX2_GR_PC:	tValRsA={ UV32_00, regValPc[31:0] };
+		JX2_GR_PC:	tValRsA={ UV32_00, regValPc[31:1],
+			regValPc[0] &tEnablePcLsb };
 		JX2_GR_GBR:	tValRsA={ UV32_00, regValGbr[31:0] };
 		JX2_GR_LR:	tValRsA={ UV32_00, regValLr[31:0] };
 `endif
@@ -144,6 +172,14 @@ begin
 				regValImm[31:0] };
 			tValRsZz=1;
 		end
+
+`ifdef jx2_enable_wexjumbo
+		JX2_GR_JIMM: begin
+			tValRsA=tValJimm;
+			tValRsZz=1;
+		end
+`endif
+
 		JX2_GR_ZZR:	begin
 			tValRsA=UV64_00;
 			tValRsZz=1;
@@ -173,6 +209,14 @@ begin
 				regValImm[31:0] };
 			tValRtZz=1;
 		end
+
+`ifdef jx2_enable_wexjumbo
+		JX2_GR_JIMM: begin
+			tValRtA=tValJimm;
+			tValRsZz=1;
+		end
+`endif
+
 		JX2_GR_ZZR:	begin
 			tValRtA=UV64_00;
 			tValRtZz=1;
@@ -216,6 +260,8 @@ begin
 	
 	if(!tValRsZz)
 	begin
+		if(regIdRs==regIdRn3)
+			tRegValRs=regValRn3;
 		if(regIdRs==regIdRn2)
 			tRegValRs=regValRn2;
 		if(regIdRs==regIdRn1)
@@ -224,6 +270,8 @@ begin
 
 	if(!tValRtZz)
 	begin
+		if(regIdRt==regIdRn3)
+			tRegValRt=regValRn3;
 		if(regIdRt==regIdRn2)
 			tRegValRt=regValRn2;
 		if(regIdRt==regIdRn1)
@@ -232,6 +280,8 @@ begin
 
 	if(!tValRmZz)
 	begin
+		if(regIdRm==regIdRn3)
+			tRegValRm=regValRn3;
 		if(regIdRm==regIdRn2)
 			tRegValRm=regValRn2;
 		if(regIdRm==regIdRn1)
@@ -243,9 +293,9 @@ always @(posedge clock)
 begin
 	if(!hold)
 	begin
-		gprRegDlr	<= (regIdRn2==JX2_GR_DLR) ? regValRn2 : regInDlr;
-		gprRegDhr	<= (regIdRn2==JX2_GR_DHR) ? regValRn2 : regInDhr;
-		gprRegSp	<= (regIdRn2==JX2_GR_SP ) ? regValRn2 : regInSp;
+		gprRegDlr	<= (regIdRn3==JX2_GR_DLR) ? regValRn3 : regInDlr;
+		gprRegDhr	<= (regIdRn3==JX2_GR_DHR) ? regValRn3 : regInDhr;
+		gprRegSp	<= (regIdRn3==JX2_GR_SP ) ? regValRn3 : regInSp;
 
 `ifdef jx2_sprs_elrehr
 		gprRegElr	<= (regIdRn2==JX2_GR_ELR) ? regValRn2 : regInElr;
@@ -253,9 +303,9 @@ begin
 		gprRegBp	<= (regIdRn2==JX2_GR_BP ) ? regValRn2 : regInBp;
 `endif
 
-		if(!regIdRn2[5])
+		if(!regIdRn3[5])
 		begin
-			gprArr[regIdRn2[4:0]] <= regValRn2;
+			gprArr[regIdRn3[4:0]] <= regValRn3;
 		end
 	end
 end

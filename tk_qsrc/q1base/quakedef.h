@@ -319,6 +319,7 @@ extern	cvar_t		developer;
 
 extern	qboolean	host_initialized;		// true if into command execution
 extern	double		host_frametime;
+extern	double		real_frametime;
 extern	byte		*host_basepal;
 extern	byte		*host_colormap;
 extern unsigned short		*host_colormap16;

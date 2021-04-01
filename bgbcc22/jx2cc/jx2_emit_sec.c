@@ -1078,7 +1078,25 @@ int BGBCC_JX2_EmitStatWord(BGBCC_JX2_Context *ctx, int val)
 	
 	if(ctx->is_fixed32)
 		{ BGBCC_DBGBREAK }
-	
+
+	if(ctx->has_ops24)
+	{
+		if((val>>12)==7)
+		{
+			ctx->stat_opc_7xx++;
+			ctx->stat_opc_issfx=0;
+			return(0);
+		}
+
+		if((val>>12)==9)
+		{
+			ctx->stat_opc_9xx++;
+			ctx->stat_opc_issfx=0;
+			return(0);
+		}
+	}
+
+
 	ctx->stat_opc_base16++;
 	ctx->stat_opc_issfx=0;
 	return(0);
@@ -1563,6 +1581,87 @@ int BGBCC_JX2_EmitPad32AlignLastOp(
 	return(0);
 }
 
+int BGBCC_JX2_EmitPadCheckExpandLastOp24(
+	BGBCC_JX2_Context *ctx)
+{
+	int op0, op1, opw1, opw2;
+	int i, j, k;
+
+//	return(0);
+
+	i=BGBCC_JX2_EmitGetOffs(ctx);
+	j=ctx->pos_pad_op0;
+
+	if((i-j)==2)
+	{
+		op0=BGBCC_JX2_EmitGetOffsWord(ctx, j);
+		opw1=-1;
+		opw2=-1;
+
+		BGBCC_JX2_EmitRemap16To32(ctx, op0, &opw1, &opw2);
+		BGBCC_JX2_EmitOpCheckRepackOp24(ctx, &opw1, &opw2, 0);
+		
+		if((opw2>>16)!=7)
+			return(0);
+
+		if((opw1>=0) && (opw2>=0))
+		{
+			BGBCC_JX2_EmitByteI(ctx, 0);
+
+			BGBCC_JX2_EmitSetOffsWord(ctx, j+0, opw1);
+			BGBCC_JX2_EmitSetOffsByte(ctx, j+2, opw2);
+			return(1);
+		}
+	}
+	
+	if((i-j)!=3)
+		return(0);
+	
+	op0=BGBCC_JX2_EmitGetOffsWord(ctx, j);
+	op1=BGBCC_JX2_EmitGetOffsByte(ctx, j+2);
+
+//	BGBCC_JX2_EmitRemap16To32(ctx, op0, &opw1, &opw2);
+	opw1=-1;
+	opw2=-1;
+
+	if((op0&0xF000)==0x9000)
+	{
+		opw1=0xF000 | (op0&0x00FF);
+		opw2=0x0000 |
+			((op1<<4)&0x0FF0) |
+			((op0>>8)&0x000F) ;
+	}
+
+	if((op0&0xF800)==0x7800)
+	{
+		opw1=0xF000 | (op0&0x00FF);
+		opw2=0x1000 |
+			((op1<<4)&0x0FF0) |
+			((op0>>8)&0x000F) ;
+	}
+
+	if(((op0&0xF800)==0x7000) && ((op1&0x80)==0x00))
+	{
+		opw1=0xF000 | (op0&0x00FF);
+		opw2=0x1000 |
+			((op1<<4)&0x0FF0) |
+			((op0>>8)&0x000F) ;
+	}
+
+	if((opw1>=0) && (opw2>=0))
+	{
+//		BGBCC_JX2_EmitWordI(ctx, 0x3000);
+		BGBCC_JX2_EmitByteI(ctx, 0);
+//		BGBCC_JX2_EmitByteI(ctx, 0);
+
+		BGBCC_JX2_EmitSetOffsWord(ctx, j+0, opw1);
+		BGBCC_JX2_EmitSetOffsWord(ctx, j+2, opw2);
+		return(1);
+	}
+
+	return(0);
+}
+
 int BGBCC_JX2_CheckPipelineMin(BGBCC_JX2_Context *ctx, int cnt)
 {
 	if((ctx->pos_pad_op7>=0) && (cnt<=8))
@@ -1586,7 +1685,9 @@ int BGBCC_JX2_CheckPipelineMin(BGBCC_JX2_Context *ctx, int cnt)
 	return(0);
 }
 
-/* If the instruction would cross a 32B boundary, pad-align. */
+/* If the instruction would cross a 32B boundary, pad-align.
+   Also pad for other cases which may require alignment.
+ */
 int BGBCC_JX2_EmitPadForOpWord(BGBCC_JX2_Context *ctx, int val)
 {
 	static int rec=0;
@@ -1594,7 +1695,22 @@ int BGBCC_JX2_EmitPadForOpWord(BGBCC_JX2_Context *ctx, int val)
 
 	if(ctx->emit_isprobe)
 		return(0);
-		
+
+	if(	((val&0xE000)==0xE000) ||
+		((val&0xFC00)==0x2000))
+	{
+		/* 32-bit ops require at least 16-bit alignment. */
+		i=BGBCC_JX2_EmitGetOffs(ctx);
+		if(i&1)
+		{
+			if(!BGBCC_JX2_EmitPadCheckExpandLastOp24(ctx))
+			{
+				BGBCC_JX2_EmitWordI(ctx, 0x7600);
+				BGBCC_JX2_EmitByteI(ctx,   0x00);
+			}
+		}
+	}
+
 #if 1
 	if(ctx->sec==BGBCC_SH_CSEG_TEXT)
 	{
@@ -2588,7 +2704,14 @@ int BGBCC_JX2_EmitBAlign(BGBCC_JX2_Context *ctx, int al)
 		if(ctx->is_fixed32)
 		{
 			if(j&1)
-				{ BGBCC_JX2_EmitByteI(ctx, 0); j--; }
+			{
+				BGBCC_JX2_EmitWordI(ctx, 0x7600);
+				BGBCC_JX2_EmitByteI(ctx,   0x00);
+				j-=3;
+				while(j<0)j+=al;
+
+//				BGBCC_JX2_EmitByteI(ctx, 0); j--;
+			}
 			if(j&2)
 			{
 				BGBCC_JX2_EmitByteI(ctx, 0x30);
@@ -2605,7 +2728,25 @@ int BGBCC_JX2_EmitBAlign(BGBCC_JX2_Context *ctx, int al)
 		}else
 		{
 			if(j&1)
-				{ BGBCC_JX2_EmitByteI(ctx, 0); j--; }
+			{
+				BGBCC_JX2_EmitWordI(ctx, 0x7600);
+				BGBCC_JX2_EmitByteI(ctx,   0x00);
+				j-=3;
+				while(j<0)j+=al;
+
+#if 0
+				if(j>=3)
+				{
+					BGBCC_JX2_EmitWordI(ctx, 0x7600);
+					BGBCC_JX2_EmitByteI(ctx,   0x00);
+					j-=3;
+				}else
+				{
+					BGBCC_JX2_EmitByteI(ctx, 0);
+					j--;
+				}
+#endif
+			}
 			while(j>0)
 			{
 	//			BGBCC_JX2_EmitWordI(ctx, 0x3000);
@@ -2628,6 +2769,13 @@ int BGBCC_JX2_EmitBAlign(BGBCC_JX2_Context *ctx, int al)
 byte *BGBCC_JX2_EmitGetPosForOffs(BGBCC_JX2_Context *ctx, int ofs)
 {
 	return(ctx->sec_buf[ctx->sec]+ofs);
+}
+
+int BGBCC_JX2_EmitGetOffsByte(BGBCC_JX2_Context *ctx, int ofs)
+{
+	byte *ptr;
+	ptr=BGBCC_JX2_EmitGetPosForOffs(ctx, ofs);
+	return(ptr[0]);
 }
 
 int BGBCC_JX2_EmitGetOffsWord(BGBCC_JX2_Context *ctx, int ofs)
@@ -2654,6 +2802,18 @@ int BGBCC_JX2_EmitGetOffsDWord(BGBCC_JX2_Context *ctx, int ofs)
 	{
 		return((ptr[0]<<24)|(ptr[1]<<16)|(ptr[2]<<8)|ptr[3]);
 	}
+}
+
+int BGBCC_JX2_EmitSetOffsByte(BGBCC_JX2_Context *ctx, int ofs, int val)
+{
+	byte *ptr;
+
+	if(ctx->is_simpass)
+		return(0);
+
+	ptr=BGBCC_JX2_EmitGetPosForOffs(ctx, ofs);
+	ptr[0]=val;
+	return(0);
 }
 
 int BGBCC_JX2_EmitSetOffsWord(BGBCC_JX2_Context *ctx, int ofs, int val)
@@ -2721,6 +2881,24 @@ int BGBCC_JX2_EmitByte(BGBCC_JX2_Context *ctx, int val)
 
 int BGBCC_JX2_EmitWord(BGBCC_JX2_Context *ctx, int val)
 {
+	if(val<0)
+	{
+		BGBCC_DBGBREAK
+	}
+
+	if(val>0xFFFF)
+	{
+		if(
+			(ctx->sec==BGBCC_SH_CSEG_TEXT) &&
+			((val>>16)==7) &&
+			ctx->has_ops24)
+		{
+			BGBCC_JX2_EmitByte(ctx, val);
+			return(0);
+		}
+		BGBCC_DBGBREAK
+	}
+
 	BGBCC_JX2_EmitWordI(ctx, val);
 
 	if(ctx->sec!=BGBCC_SH_CSEG_TEXT)

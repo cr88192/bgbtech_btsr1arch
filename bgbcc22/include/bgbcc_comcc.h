@@ -168,6 +168,10 @@ byte no_wexify;		//has 128-bit SIMD ops
 
 byte has_alux;		//has 128-bit ALU ops
 byte has_fpux;		//has 128-bit FPU ops
+byte has_ops24;		//has 24-bit opcodes
+
+byte rov_sreg;		//rover for scratch registers
+byte rov_rshuf;		//rover for register shuffle
 
 byte use_egpr;		//enable use of extended GPRs
 byte maxreg_gpr;	//current number of GPR register-slots
@@ -218,6 +222,7 @@ u32 *rlc_id;		//reloc label IDs
 byte *lbl_sec;		//label section
 byte *rlc_sec;		//reloc section
 byte *rlc_ty;		//reloc type
+s32 *rlc_chn;		//label section
 s32 *lbl_chn;		//label chains
 int nlbl, mlbl;
 int nrlc, mrlc;
@@ -227,6 +232,8 @@ u16 lbltrov;		//labels (temp)
 
 s32 lbl_hash[1024];		//label chain hash
 s32 lbl_simhash[64];	//label chain hash (simulation)
+
+s32 rlc_hash[1024];		//reloc chain hash (sec, offs)
 
 char **lbln_name;		//named label names
 u32 *lbln_id;			//named label IDs
@@ -296,6 +303,9 @@ int stat_opc_extCe;
 int stat_opc_extCC0;
 int stat_opc_extCC3;
 byte stat_opc_issfx;
+
+int stat_opc_7xx;
+int stat_opc_9xx;
 
 
 int sim_voffs;		//est' offset between real PC and sim PC
@@ -438,6 +448,9 @@ int eprhash_lbl[1024];
 int opcnt_hi8[256];
 int opcnt_3xx[256];
 int n_opcnt_3xx;
+
+// int opcnt_7xx[256];
+// int opcnt_9xx[256];
 
 int opcnt_f0xx[256];
 int opcnt_f1xx[256];

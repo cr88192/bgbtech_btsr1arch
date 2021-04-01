@@ -3195,6 +3195,11 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 		op->Run=BJX2_Op_MOV_ImmReg;
 		break;
 
+	case 0x7:	/* 7zzz */
+	case 0x9:	/* 9zzz */
+		ret=BJX2_DecodeOpcode_DecHz(ctx, op, addr, opw, opw2);
+		break;
+
 //	case 0xD:	/* Dzzz */
 	case 0xE:	/* Ezzz */
 		switch((opw>>8)&15)
@@ -3483,6 +3488,11 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 		case BJX2_NMID_MULUL:
 		case BJX2_NMID_MULSL:
 			op->cyc=4;
+			break;
+
+		case BJX2_NMID_BLINT:
+		case BJX2_NMID_BLERP:
+			op->cyc=6;
 			break;
 		
 		default:

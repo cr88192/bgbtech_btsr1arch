@@ -784,6 +784,56 @@ begin
 				opUCmdIx	= JX2_UCIX_CONV_EXTSW;
 			end
 
+`ifdef jx2_enable_ops24
+			11'h2z8: begin
+				opNmid		= JX2_UCMD_BRA;
+				opFmid		= JX2_FMID_REGPC;
+				opBty		= JX2_BTY_SB;
+			end
+			11'h2z9: begin
+				opNmid		= JX2_UCMD_BSR;
+				opFmid		= JX2_FMID_REGPC;
+				opBty		= JX2_BTY_SB;
+			end
+			11'h2zA: begin
+				opNmid		= JX2_UCMD_BRA;
+				opFmid		= JX2_FMID_REGPC;
+				opBty		= JX2_BTY_SB;
+				opCcty		= JX2_IXC_CT;
+			end
+			11'h2zB: begin
+				opNmid		= JX2_UCMD_BRA;
+				opFmid		= JX2_FMID_REGPC;
+				opBty		= JX2_BTY_SB;
+				opCcty		= JX2_IXC_CF;
+			end
+`endif
+
+`ifdef def_true
+			11'h2zC: begin
+				opNmid		= JX2_UCMD_BRA;
+				opFmid		= JX2_FMID_REGPC;
+				opBty		= JX2_BTY_SL;
+			end
+			11'h2zD: begin
+				opNmid		= JX2_UCMD_BSR;
+				opFmid		= JX2_FMID_REGPC;
+				opBty		= JX2_BTY_SL;
+			end
+			11'h2zE: begin
+				opNmid		= JX2_UCMD_BRA;
+				opFmid		= JX2_FMID_REGPC;
+				opBty		= JX2_BTY_SL;
+				opCcty		= JX2_IXC_CT;
+			end
+			11'h2zF: begin
+				opNmid		= JX2_UCMD_BRA;
+				opFmid		= JX2_FMID_REGPC;
+				opBty		= JX2_BTY_SL;
+				opCcty		= JX2_IXC_CF;
+			end
+`endif
+
 `ifndef def_true
 			11'h2zC: begin
 				opNmid		= JX2_UCMD_PUSHX;

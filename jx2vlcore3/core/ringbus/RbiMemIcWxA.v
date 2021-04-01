@@ -2,7 +2,7 @@
 L1 Instruction Cache, WEX
  */
 
-`include "RbiDefs.v"
+`include "ringbus/RbiDefs.v"
 
 module RbiMemIcWxA(
 	/* verilator lint_off UNUSED */
@@ -57,12 +57,6 @@ assign	regOutPcVal		= tRegOutPcVal;
 assign	regOutPcOK		= tRegOutPcOK;
 assign	regOutPcStep	= tRegOutPcStep;
 
-assign	memPcAddr	= tMemPcAddr;
-assign	memPcOpm	= tMemPcOpm;
-
-reg[47:0]		tMemPcAddr;		//memory PC address
-reg[ 4:0]		tMemPcOpm;		//memory PC output-enable
-
 reg[ 15:0]		tMemSeqOut;		//operation sequence
 reg[ 15:0]		tMemOpmOut;		//memory operation mode
 reg[ 47:0]		tMemAddrOut;		//memory output address
@@ -73,6 +67,25 @@ assign		memOpmOut = tMemOpmOut;
 assign		memAddrOut = tMemAddrOut;
 assign		memDataOut = tMemDataOut;
 
+
+`ifdef jx2_mem_l1isz_512
+reg[143:0]		icCaMemA[511:0];		//Local L1 tile memory (Even)
+reg[143:0]		icCaMemB[511:0];		//Local L1 tile memory (Odd)
+reg[143:0]		icCaMemC[511:0];		//Local L1 tile memory (Even)
+reg[143:0]		icCaMemD[511:0];		//Local L1 tile memory (Odd)
+
+`ifdef jx2_enable_vaddr48
+	reg[47:0]		icCaAddrA[511:0];	//Local L1 tile address
+	reg[47:0]		icCaAddrB[511:0];	//Local L1 tile address
+	reg[47:0]		icCaAddrC[511:0];	//Local L1 tile address
+	reg[47:0]		icCaAddrD[511:0];	//Local L1 tile address
+`else
+	reg[31:0]		icCaAddrA[511:0];	//Local L1 tile address
+	reg[31:0]		icCaAddrB[511:0];	//Local L1 tile address
+	reg[31:0]		icCaAddrC[511:0];	//Local L1 tile address
+	reg[31:0]		icCaAddrD[511:0];	//Local L1 tile address
+`endif
+`endif
 
 `ifdef jx2_mem_l1isz_256
 reg[143:0]		icCaMemA[255:0];		//Local L1 tile memory (Even)
@@ -169,6 +182,15 @@ reg[143:0]		icCaMemD[63:0];		//Local L1 tile memory (Odd)
 	reg[27:0]		tNxtAddrA;
 (* max_fanout = 50 *)
 	reg[27:0]		tNxtAddrB;
+`endif
+
+`ifdef jx2_mem_l1isz_512
+reg[8:0]		tNxtIxA;
+reg[8:0]		tNxtIxB;
+reg[8:0]		tReqIxA;
+reg[8:0]		tReqIxB;
+reg[8:0]		tReqIxAL;
+reg[8:0]		tReqIxBL;
 `endif
 
 `ifdef jx2_mem_l1isz_256
@@ -336,8 +358,11 @@ assign		memRingIsRespOkLdB =
 	(memSeqIn[7:6] == 2'b01);
 
 
-reg[  7:0]		tReqSeqIdxArr[15:0];
+reg[  8:0]		tReqSeqIdxArr[15:0];
 reg[ 43:0]		tReqSeqVaArr[15:0];
+
+reg[  8:0]		tReqSeqIdx;
+reg[ 43:0]		tReqSeqVa;
 
 reg[ 15:0]		tMemSeqReq;
 reg[ 15:0]		tMemOpmReq;
@@ -360,11 +385,11 @@ reg				tNxtMemReqLdM;	//Load MMIO
 reg[ 3:0]		tMemSeqRov;
 reg[ 3:0]		tNxtMemSeqRov;
 
-reg[7:0]		tMemSeqIx;
+reg[8:0]		tMemSeqIx;
 reg[43:0]		tMemSeqVa;
 
 reg				tRegOutHold;
-
+reg				tReqReady;
 
 always @*
 begin
@@ -448,6 +473,8 @@ begin
 
 	tFlushA = (tBlkPRovA != tFlushRov);
 	tFlushB = (tBlkPRovB != tFlushRov);
+	
+	tReqReady	= 1;
 	
 	if(!tTlbMissInh)
 	begin
@@ -780,23 +807,23 @@ begin
 		if(tMissA && !tMemReqLdA)
 		begin
 			tNxtMemSeqRov	= tMemSeqRov + 1;
-			tMemSeqIx		= tBlkMemIdxA;
-			tMemSeqVa		= tReqAxA;
+			tMemSeqIx		= tReqIxA;
+			tMemSeqVa		= tReqAddrA;
 			tMemSeqReq		= { unitNodeId, 4'b0000, tMemSeqRov };
 
 			tMemOpmReq		= { UV8_00, JX2_RBI_OPM_LDX };
-			tMemAddrReq		= { tReqAxA, 4'h00 };
+			tMemAddrReq		= { tReqAddrA, 4'h00 };
 			tNxtMemReqLdA = 1;
 		end
 		else if(tMissB && !tMemReqLdB)
 		begin
 			tNxtMemSeqRov	= tMemSeqRov + 1;
-			tMemSeqIx		= tBlkMemIdxB;
-			tMemSeqVa		= tReqAxB;
+			tMemSeqIx		= tReqIxB;
+			tMemSeqVa		= tReqAddrB;
 			tMemSeqReq		= { unitNodeId, 4'b0100, tMemSeqRov};
 
 			tMemOpmReq		= { UV8_00, JX2_RBI_OPM_LDX };
-			tMemAddrReq		= { tReqAxB, 4'h00 };
+			tMemAddrReq		= { tReqAddrB, 4'h00 };
 			tNxtMemReqLdB = 1;
 		end
 	end
@@ -853,6 +880,11 @@ reg[7:0]		tStBlkPRovC;
 reg[7:0]		tStBlkPRovD;
 
 
+
+`ifdef jx2_mem_l1isz_512
+reg[8:0]		tStBlkIxA;
+reg[8:0]		tStBlkIxB;
+`endif
 
 `ifdef jx2_mem_l1isz_256
 reg[7:0]		tStBlkIxA;
@@ -919,14 +951,14 @@ begin
 	begin
 		icCaMemA[tStBlkIxA]		<= { tStBlkPFlA, tStBlkPRovA, tStBlkDataA };
 		icCaAddrA[tStBlkIxA]	<= { tStBlkFlagA, tStBlkAddrA };
-		tDoStBlkA				<= 0;
+//		tDoStBlkA				<= 0;
 	end
 
 	if(tDoStBlkB)
 	begin
 		icCaMemB[tStBlkIxB]		<= { tStBlkPFlB, tStBlkPRovB, tStBlkDataB };
 		icCaAddrB[tStBlkIxB]	<= { tStBlkFlagB, tStBlkAddrB };
-		tDoStBlkB				<= 0;
+//		tDoStBlkB				<= 0;
 	end
 
 `ifdef jx2_mem_l1i2way

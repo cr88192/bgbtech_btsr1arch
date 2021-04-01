@@ -88,6 +88,82 @@ void tkra_glClearColor(float red, float green, float blue, float alpha)
 		red*255, green*255, blue*255, alpha*255);
 }
 
+#ifdef __BJX2__
+void tkra_memset_word(void *buf, u16 val, int cnt);
+
+__asm {
+tkra_memset_word:
+	PSHUF.W	R5, 0x00, R18
+	MOV		R18, R19
+	
+	LEA.W	(R4, R6), R7
+
+	ADD		R4, 64, R2
+	CMPQGT	R2, R7
+	BF		.L1
+	.L0:
+	MOV.X	R18, (R4, 0)
+	MOV.X	R18, (R4, 16)
+	MOV.X	R18, (R4, 32)
+	MOV.X	R18, (R4, 48)
+	MOV		R2, R4
+	ADD		R4, 64, R2
+	CMPQGT	R2, R7
+	BT		.L0
+	.L1:
+
+	ADD		R4, 8, R2
+	CMPQGT	R2, R7
+	BF		.L3
+	.L2:
+	MOV.Q	R18, (R4)
+	MOV		R2, R4
+	ADD		R4, 8, R2
+	CMPQGT	R2, R7
+	BT		.L2
+	.L3:
+
+	CMPQGT	R4, R7
+	BF		.L5
+	.L4:
+	MOV.W	R18, (R4)
+	ADD		2, R4
+	CMPQGT	R4, R7
+	BT		.L4
+	.L5:
+
+	RTS
+}
+
+#else
+void tkra_memset_word(void *buf, u16 px, int cnt)
+{
+	u64 px4;
+	u16 *ct, *cte;
+	
+	ct=buf; cte=ct+cnt;
+	px4=px|(px<<16); px4=px4|(px4<<32);
+	while((ct+32)<=cte)
+	{
+		((u64 *)ct)[0]=px4;	((u64 *)ct)[1]=px4;
+		((u64 *)ct)[2]=px4;	((u64 *)ct)[3]=px4;
+		((u64 *)ct)[4]=px4;	((u64 *)ct)[5]=px4;
+		((u64 *)ct)[6]=px4;	((u64 *)ct)[7]=px4;
+		ct+=32;
+	}
+	while((ct+8)<=cte)
+	{
+		((u64 *)ct)[0]=px4;
+		((u64 *)ct)[1]=px4;
+		ct+=8;
+	}
+	while(ct<cte)
+		{ *ct++=px; }
+}
+
+#endif
+
+
 void tkra_glClear(unsigned int mask)
 {
 	TKRA_Context *ctx;
@@ -114,6 +190,9 @@ void tkra_glClear(unsigned int mask)
 //		for(i=0; i<n; i++)
 //			{ rgb[i]=px; }
 
+		tkra_memset_word(rgb, px, n);
+
+#if 0
 		px4=px|(px<<16); px4=px4|(px4<<32);
 		cct=rgb;	ccte=rgb+n;
 		while((cct+32)<=ccte)
@@ -132,6 +211,7 @@ void tkra_glClear(unsigned int mask)
 		}
 		while(cct<ccte)
 			{ *cct++=px; }
+#endif
 	}
 
 	if(mask&TKRA_GL_DEPTH_BUFFER_BIT)
@@ -139,6 +219,10 @@ void tkra_glClear(unsigned int mask)
 		px=ctx->clear_zbuf;
 //		n=(xs>>1)*(ys>>1);
 		n=xs*ys;
+
+		tkra_memset_word(zbuf, px, n);
+
+#if 0
 //		for(i=0; i<n; i++)
 //			{ zbuf[i]=px; }
 		px4=px|(px<<16); px4=px4|(px4<<32);
@@ -159,6 +243,7 @@ void tkra_glClear(unsigned int mask)
 		}
 		while(zct<zcte)
 			{ *zct++=px; }
+#endif
 	}
 
 	if(mask&TKRA_GL_STENCIL_BUFFER_BIT)

@@ -63,43 +63,6 @@ reg[31:0]		gpioNextDir;
 assign			gpioPinsOut = gpioOut;
 assign			gpioPinsDir = gpioDir;
 
-`ifndef def_true
-assign			gpioPins = {
-			gpioDir[31]?gpioOut[31]:1'bz,
-			gpioDir[30]?gpioOut[30]:1'bz,
-			gpioDir[29]?gpioOut[29]:1'bz,
-			gpioDir[28]?gpioOut[28]:1'bz,
-			gpioDir[27]?gpioOut[27]:1'bz,
-			gpioDir[26]?gpioOut[26]:1'bz,
-			gpioDir[25]?gpioOut[25]:1'bz,
-			gpioDir[24]?gpioOut[24]:1'bz,
-			gpioDir[23]?gpioOut[23]:1'bz,
-			gpioDir[22]?gpioOut[22]:1'bz,
-			gpioDir[21]?gpioOut[21]:1'bz,
-			gpioDir[20]?gpioOut[20]:1'bz,
-			gpioDir[19]?gpioOut[19]:1'bz,
-			gpioDir[18]?gpioOut[18]:1'bz,
-			gpioDir[17]?gpioOut[17]:1'bz,
-			gpioDir[16]?gpioOut[16]:1'bz,
-			gpioDir[15]?gpioOut[15]:1'bz,
-			gpioDir[14]?gpioOut[14]:1'bz,
-			gpioDir[13]?gpioOut[13]:1'bz,
-			gpioDir[12]?gpioOut[12]:1'bz,
-			gpioDir[11]?gpioOut[11]:1'bz,
-			gpioDir[10]?gpioOut[10]:1'bz,
-			gpioDir[ 9]?gpioOut[ 9]:1'bz,
-			gpioDir[ 8]?gpioOut[ 8]:1'bz,
-			gpioDir[ 7]?gpioOut[ 7]:1'bz,
-			gpioDir[ 6]?gpioOut[ 6]:1'bz,
-			gpioDir[ 5]?gpioOut[ 5]:1'bz,
-			gpioDir[ 4]?gpioOut[ 4]:1'bz,
-			gpioDir[ 3]?gpioOut[ 3]:1'bz,
-			gpioDir[ 2]?gpioOut[ 2]:1'bz,
-			gpioDir[ 1]?gpioOut[ 1]:1'bz,
-			gpioDir[ 0]?gpioOut[ 0]:1'bz
-		};
-`endif
-
 reg		uartTx;
 reg		uartRx;
 
@@ -176,6 +139,9 @@ reg		tMmioLowCSel;
 // wire		tMmioLowCSel;
 // assign		tMmioLowCSel = (tMmioAddr[27:16]==12'h000);
 
+reg		tUartRxDebP;
+reg		tNxtUartRxDebP;
+
 always @*
 begin
 	gpioNextOut		= gpioOut;
@@ -186,6 +152,7 @@ begin
 	tMmioOutData	= UV64_XX;
 	
 	tOutBounceIrq		= 0;
+	tNxtUartRxDebP		= tUartRxDebP;
 
 	tMmioLowCSel		= (tMmioAddr[27:16]==12'h000);
 	mmioInOE			= (tMmioOpm[3]) && tMmioLowCSel;
@@ -483,9 +450,10 @@ begin
 
 			if(mmioInOE && !mmioInLastOE)
 			begin
+				tNxtUartRxDebP	= 1;
 				uartNextRxHoldByte = uartRxFifo[9:0];
-				uartRxNextFifo[79: 0]=
-					{ 10'b0, uartRxFifo[79:10] };
+//				uartRxNextFifo[79: 0]=
+//					{ 10'b0, uartRxFifo[79:10] };
 //				tMmioOutData	= { UV24_00, uartNextRxHoldByte[7:0] };
 				tMmioOutData	= { UV32_XX, UV24_00, uartNextRxHoldByte[7:0] };
 			end
@@ -504,8 +472,6 @@ begin
 		end
 
 		16'hE018: begin
-			if(mmioInOE)
-				tMmioOK			= UMEM_OK_OK;
 			tMmioOutData	= {
 				UV32_XX,
 				UV24_00,
@@ -515,6 +481,20 @@ begin
 				uartRxFifoFull,
 				uartRxFifoReady
 			};
+
+			if(mmioInOE)
+			begin
+				tMmioOK			= UMEM_OK_OK;
+
+				if(tUartRxDebP)
+				begin
+					tNxtUartRxDebP	= 0;
+					uartRxNextFifo[79: 0]=
+						{ 10'b0, uartRxFifo[79:10] };
+					tMmioOK			= UMEM_OK_HOLD;
+				end
+			end
+
 		end
 
 `ifndef def_true
@@ -573,6 +553,7 @@ end
 
 always @(posedge clock)
 begin
+	tUartRxDebP		<= tNxtUartRxDebP;
 
 	tMmioOK2		<= tMmioOK;
 	tMmioOutData2	<= tMmioOutData;

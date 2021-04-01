@@ -358,3 +358,267 @@ void GL_MakeAliasModelDisplayLists (model_t *m, aliashdr_t *hdr)
 			*verts++ = poseverts[i][vertexorder[j]];
 }
 
+
+extern float	shadelight, ambientlight;
+
+byte		alias_mins[4];
+byte		alias_maxs[4];
+
+void GL_MakeAliasModelSpriteSheets (model_t *mod, aliashdr_t *phdr)
+{
+	static byte *sheetbuf = NULL;
+	static byte *imgbuf = NULL;
+	static byte *img2buf = NULL;
+	char tname[256];
+	byte	bsphere[4];
+	float scale;
+	int cellcnt, cellpix, sheetsz;
+	int x0, y0, x1, y1, z0, z1, pose;
+	int cr, cg, cb, ctot;
+	int i, j, k;
+	
+	bsphere[0]=(alias_mins[0]+alias_maxs[0])/2;
+	bsphere[1]=(alias_mins[1]+alias_maxs[1])/2;
+	bsphere[2]=(alias_mins[2]+alias_maxs[2])/2;
+
+	x1=alias_maxs[0]-bsphere[0];
+	y1=alias_maxs[1]-bsphere[1];
+	z1=alias_maxs[2]-bsphere[2];
+
+	k=x1;
+	if(y1>k)k=y1;
+	if(z1>k)k=z1;
+	bsphere[3]=k;
+
+	memcpy(phdr->spr_bound, bsphere, 4);
+
+#if 1
+//	Con_Printf("Model: %s %d frames\n", mod->name, phdr->numposes);
+	
+	cellcnt=ceil(sqrt(phdr->numposes));
+	k=32*cellcnt;
+	if(k>256)k=256;
+	cellpix=k/cellcnt;
+	
+	k=cellcnt*cellpix;
+	j=2;
+	while(j<k)
+		j=j<<1;
+	if(j>256)j=256;
+	sheetsz=j;
+	cellpix=j/cellcnt;
+	
+//	Con_Printf("Model: %s cells=%d, cellpix=%d, sheet=%d\n",
+//		mod->name, cellcnt, cellpix, sheetsz);
+	
+	phdr->spr_cellcnt=cellcnt;
+	phdr->spr_cellpix=cellpix;
+	phdr->spr_sheetsz=sheetsz;
+#endif
+
+	for(i=0; i<3; i++)
+	{
+		sprintf (tname, "%s_sprs_%i", mod->name, i);
+		k=GL_LoadTexture32(tname, sheetsz, sheetsz, NULL, 1, 1);
+		phdr->spr_texnum[i]=k;
+		if(k<0)
+			break;
+	}
+	
+	if(i>=3)
+	{
+		return;
+	}
+
+#ifdef USE_TKRA
+	phdr->spr_texnum[0]=-1;
+	phdr->spr_texnum[1]=-1;
+	phdr->spr_texnum[2]=-1;
+	return;
+#endif
+
+// #ifndef __BJX2__
+#ifndef USE_TKRA
+
+	Con_Printf("GL_MakeAliasModelSpriteSheets: "
+			"%s cells=%d, cellpix=%d, sheet=%d\n",
+		mod->name, cellcnt, cellpix, sheetsz);
+
+	if(!sheetbuf)
+	{
+		sheetbuf=malloc(1024*1024*4);
+		imgbuf=malloc(256*256*4);
+		img2buf=malloc(256*256*4);
+	}
+
+//	scale=DotProduct(phdr->scale, phdr->scale);
+
+//	qglClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+
+	qglDepthFunc (GL_LEQUAL);
+	qglDepthRange (0, 1);
+
+	qglViewport(0, 0, 256, 256);
+
+	qglMatrixMode(GL_PROJECTION);
+	qglLoadIdentity ();
+//	qglOrtho  (0, vid.width, vid.height, 0, -99999, 99999);
+//	qglFrustum( -1,  1, -1, 1, 1, 1024 );
+
+//	qglOrtho  (-bsphere[3], bsphere[3], -bsphere[3], bsphere[3], -99999, 99999);
+	qglOrtho  (-bsphere[3], bsphere[3], bsphere[3], -bsphere[3], -99999, 99999);
+
+//	qglRotatef (-90,  1, 0, 0);		// put Z going up
+//	qglRotatef (90,  0, 0, 1);		// put Z going up
+
+//		qglTranslatef (0,  256,  -128);
+//	qglTranslatef (0,  0,  -128);
+//	qglTranslatef (-128,  0,  -128);
+//	qglTranslatef (-128,  128,  -128);
+//	qglTranslatef (-bsphere[0],  bsphere[3],  -bsphere[2]);
+//		qglTranslatef (0,  2,  0);
+//	qglRotatef (i*90,  0, 0, 1);
+
+//	qglMatrixMode(GL_MODELVIEW);
+//	qglLoadIdentity ();
+
+//	qglRotatef (-90,  1, 0, 0);		// put Z going up
+//	qglRotatef (90,  0, 0, 1);		// put Z going up
+//	qglRotatef (-r_refdef.viewangles[2],  1, 0, 0);
+//	qglRotatef (-r_refdef.viewangles[0],  0, 1, 0);
+//	qglRotatef (-r_refdef.viewangles[1],  0, 0, 1);
+//	qglTranslatef (-r_refdef.vieworg[0],  -r_refdef.vieworg[1],  -r_refdef.vieworg[2]);
+
+//	qglTranslatef (0,  256,  0);
+
+//	qglDisable (GL_DEPTH_TEST);
+	qglEnable (GL_DEPTH_TEST);
+	qglDisable (GL_CULL_FACE);
+	qglDisable (GL_BLEND);
+//	qglEnable (GL_ALPHA_TEST);
+	qglDisable (GL_ALPHA_TEST);
+
+	qglEnable (GL_TEXTURE_2D);
+
+//	qglColor4f (1,1,1,1);
+//	shadelight = 0.64;
+
+	GL_Bind(phdr->gl_texturenum[0][0]);
+
+//	for(i=0; i<8; i++)
+//	for(i=0; i<4; i++)
+//	for(i=0; i<6; i++)
+	for(i=0; i<3; i++)
+	{
+		qglClearColor(0, 1, 1, 1);
+		qglClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+
+		qglMatrixMode(GL_MODELVIEW);
+		qglLoadIdentity ();
+
+		qglEnable (GL_TEXTURE_2D);
+		GL_Bind(phdr->gl_texturenum[0][0]);
+
+//		qglTranslatef (-bsphere[0], -bsphere[1],  -bsphere[2]);
+
+//		if(i<4)
+		if(i<2)
+		{
+			qglRotatef (-90.0,  1.0, 0.0, 0.0);
+//			qglRotatef (i*90.0,  0.0, 0.0, 1.0);
+			qglRotatef (-i*90.0,  0.0, 0.0, 1.0);
+//			qglRotatef (i*90,  0, 1, 0);
+		}else
+		{
+//			qglRotatef ((i&1)?180.0:0.0,  1.0, 0.0, 0.0);
+//			qglRotatef (180.0,  1.0, 0.0, 0.0);
+		}
+
+		qglTranslatef (-bsphere[0], -bsphere[1],  -bsphere[2]);
+
+//		qglTranslatef (0, 2*bsphere[3],  0);
+
+		for(j=0; j<cellcnt; j++)
+			for(k=0; k<cellcnt; k++)
+		{
+			pose=j*cellcnt+k;
+			if(pose>=phdr->numposes)
+				continue;
+
+			x0=k*cellpix;
+			y0=j*cellpix;
+
+//			qglViewport(0, 0, 256, 256);
+			
+			qglViewport(x0, y0, cellpix, cellpix);
+
+			qglColor4f (1,1,1,1);
+//			shadelight = 0.64;
+			shadelight = 0.90;
+
+			GL_DrawAliasFrame (phdr, pose);
+
+#if 0
+			qglReadPixels(0, 0, 256, 256,
+				GL_RGBA, GL_UNSIGNED_BYTE,
+				imgbuf);
+			
+			GL_ResampleTexture(imgbuf, 256, 256, img2buf, cellpix, cellpix);
+			for(y1=0; y1<cellpix; y1++)
+				for(x1=0; x1<cellpix; x1++)
+			{
+				sheetbuf[]
+			}
+#endif
+		}
+		qglFinish();
+
+//		qglViewport(0, 0, sheetsz, sheetsz);
+		qglViewport(0, 0, 256, 256);
+		
+		qglReadPixels(0, 0, sheetsz, sheetsz,
+			GL_RGBA, GL_UNSIGNED_BYTE,
+			sheetbuf);
+		
+		cr=0; cg=0; cb=0; ctot=0;
+		for(j=0; j<(sheetsz*sheetsz); j++)
+		{
+			if(	(sheetbuf[j*4+0]<   8) &&
+				(sheetbuf[j*4+1]>=248) &&
+				(sheetbuf[j*4+2]>=248))
+			{
+				sheetbuf[j*4+3]=0;
+			}else
+			{
+				cr+=sheetbuf[j*4+0];
+				cg+=sheetbuf[j*4+1];
+				cb+=sheetbuf[j*4+2];
+				ctot++;
+			}
+		}
+		if(ctot>0)
+		{
+			cr/=ctot;
+			cg/=ctot;
+			cb/=ctot;
+
+			for(j=0; j<(sheetsz*sheetsz); j++)
+			{
+				if(sheetbuf[j*4+3]<128)
+				{
+					sheetbuf[j*4+0]=cr;
+					sheetbuf[j*4+1]=cg;
+					sheetbuf[j*4+2]=cb;
+				}
+			}
+		}
+		
+		sprintf (tname, "%s_sprs_%i", mod->name, i);
+		phdr->spr_texnum[i]=
+			GL_LoadTexture32(tname, sheetsz, sheetsz, sheetbuf, 1, 1);
+	}
+
+	qglClearColor(1, 0, 0, 1);
+#endif
+
+}

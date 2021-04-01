@@ -6,12 +6,14 @@ Block format resembles BC1, but uses a pair of RGB555 endpoints.
 module ExBcnBlk1(
 	/* verilator lint_off UNUSED */
 	regValRs,
+	regValXs,	//128-bit Block Formats
 	regValRt,
 	idUIxt,
 	regOutVal
 	);
 
 input[63:0]		regValRs;
+input[63:0]		regValXs;
 input[ 3:0]		regValRt;
 input[7:0]		idUIxt;
 

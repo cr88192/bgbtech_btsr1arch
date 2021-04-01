@@ -450,8 +450,21 @@ int BGBCC_JX2_EmitNamedCommSym(BGBCC_JX2_Context *ctx, char *name,
 
 int BGBCC_JX2_LookupRelocAtOffs(BGBCC_JX2_Context *ctx, int sec, int ofs)
 {
-	int i, j, k;
-	
+	int i, j, k, h;
+
+	h=(((ofs*251+sec)*251)>>8)&1023;
+
+	i=ctx->rlc_hash[h];
+	while(i>=0)
+	{
+		if(	(ctx->rlc_sec[i]==sec) &&
+			(ctx->rlc_ofs[i]==ofs)	)
+				return(i);
+		i=ctx->rlc_chn[i];
+	}
+	return(-1);
+
+#if 0
 	for(i=0; i<ctx->nrlc; i++)
 	{
 		if(	(ctx->rlc_sec[i]==sec) &&
@@ -459,10 +472,12 @@ int BGBCC_JX2_LookupRelocAtOffs(BGBCC_JX2_Context *ctx, int sec, int ofs)
 				return(i);
 	}
 	return(-1);
+#endif
 }
 
 int BGBCC_JX2_EmitRelocTy(BGBCC_JX2_Context *ctx, int lblid, int ty)
 {
+	int h, sec, ofs;
 	int i;
 	
 	if(lblid<=0)
@@ -476,8 +491,12 @@ int BGBCC_JX2_EmitRelocTy(BGBCC_JX2_Context *ctx, int lblid, int ty)
 		ctx->rlc_id =bgbcc_malloc(i*sizeof(u32));
 		ctx->rlc_sec=bgbcc_malloc(i*sizeof(byte));
 		ctx->rlc_ty =bgbcc_malloc(i*sizeof(byte));
+		ctx->rlc_chn=bgbcc_malloc(i*sizeof(s32));
 		ctx->nrlc=0;
 		ctx->mrlc=i;
+		
+		for(i=0; i<1024; i++)
+			ctx->rlc_hash[i]=-1;
 	}
 	
 	if((ctx->nrlc+1)>=ctx->mrlc)
@@ -487,6 +506,7 @@ int BGBCC_JX2_EmitRelocTy(BGBCC_JX2_Context *ctx, int lblid, int ty)
 		ctx->rlc_id =bgbcc_realloc(ctx->rlc_id , i*sizeof(u32));
 		ctx->rlc_sec=bgbcc_realloc(ctx->rlc_sec, i*sizeof(byte));
 		ctx->rlc_ty =bgbcc_realloc(ctx->rlc_ty , i*sizeof(byte));
+		ctx->rlc_chn=bgbcc_realloc(ctx->rlc_chn, i*sizeof(s32));
 		ctx->mrlc=i;
 	}
 
@@ -495,11 +515,18 @@ int BGBCC_JX2_EmitRelocTy(BGBCC_JX2_Context *ctx, int lblid, int ty)
 		return(0);
 	}
 
+	sec=ctx->sec;
+	ofs=BGBCC_JX2_EmitGetOffs(ctx);
+	h=(((ofs*251+sec)*251)>>8)&1023;
+
 	i=ctx->nrlc++;
 	ctx->rlc_id[i]=lblid;
-	ctx->rlc_ofs[i]=BGBCC_JX2_EmitGetOffs(ctx);
-	ctx->rlc_sec[i]=ctx->sec;
+	ctx->rlc_ofs[i]=ofs;
+	ctx->rlc_sec[i]=sec;
 	ctx->rlc_ty[i]=ty;
+	
+	ctx->rlc_chn[i]=ctx->rlc_hash[h];
+	ctx->rlc_hash[h]=i;
 	return(1);
 }
 

@@ -73,15 +73,23 @@ MMIO Space:
 `include "MmiModGpio.v"
 `include "MmiModClkp.v"
 
+`ifndef jx2_cfg_noddr
 `ifdef jx2_mem_useddrb
 `include "MmiModDdrB.v"
 `else
 `include "MmiModDdr3.v"
 `endif
+`endif
 
+`ifndef jx2_cfg_novga
 `include "ModTxtNtW.v"
+`endif
+
+`ifndef jx2_cfg_noaudio
 `include "ModAudPcm.v"
 `include "ModAudFm.v"
+`endif
+
 `include "ModPs2Kb.v"
 `include "ModSdSpi.v"
 
@@ -137,7 +145,11 @@ module CoreUnit(
 	dbg_outStatus5,
 	dbg_outStatus6,
 	dbg_outStatus7,
-	dbg_outStatus8
+	dbg_outStatus8,
+
+	gpioPinsIn,
+	gpioPinsOut,
+	gpioPinsDir
 	);
 
 input			clock_300;
@@ -154,7 +166,9 @@ input			reset_100;
 input			reset_75;
 input			reset_50;
 
-// inout[31:0]		gpioPins;
+input[31:0]			gpioPinsIn;
+output[31:0]		gpioPinsOut;
+output[31:0]		gpioPinsDir;
 // inout[15:0]		fixedPins;
 
 input[15:0]		ddrDataI;		//DDR data pins
@@ -425,6 +439,26 @@ wire[13:0]		ddrAddr1;		//Address pins
 // assign		ddrAddr = ddrAddr1[12:0];
 assign		ddrAddr = ddrAddr1[13:0];
 
+`ifdef jx2_cfg_noddr
+assign		ddrMemOK		= 0;
+assign		ddrMemDataOut	= 0;
+
+assign		ddrData_O	= 0;
+assign		ddrData_En	= 0;
+assign		ddrAddr1	= 0;
+assign		ddrBa		= 0;
+assign		ddrCs		= 0;
+assign		ddrRas		= 0;
+assign		ddrCas		= 0;
+assign		ddrWe		= 0;
+assign		ddrCke		= 0;
+assign		ddrClk		= 0;
+assign		ddrDqsP_O	= 0;
+assign		ddrDqsN_O	= 0;
+assign		ddrDqs_En	= 0;
+
+`else
+
 `ifdef jx2_mem_useddrb
 MmiModDdrB		ddr(
 	clock_master,	clock_ddr,	clock_ddr2,
@@ -447,6 +481,8 @@ MmiModDdr3		ddr(
 	ddrWe,		ddrCke,		ddrClk,
 	ddrDqsP_I,	ddrDqsN_I,
 	ddrDqsP_O,	ddrDqsN_O,	ddrDqs_En);
+
+`endif
 
 reg[63:0]		mmioInData_L;
 reg[1:0]		mmioOK_L;
@@ -762,9 +798,9 @@ reg[31:0]		gpioAddr;
 reg[4:0]		gpioOpm;
 wire[1:0]		gpioOK;
 
-wire[31:0]		gpioPinsOut;
-wire[31:0]		gpioPinsIn;
-wire[31:0]		gpioPinsDir;
+// wire[31:0]		gpioPinsOut;
+// wire[31:0]		gpioPinsIn;
+// wire[31:0]		gpioPinsDir;
 wire[15:0]		fixedPinsOut;
 wire[15:0]		fixedPinsIn;
 wire[63:0]		outTimer1MHz;
@@ -780,7 +816,7 @@ assign			fixedPinsIn[1] = uartRxD;
 
 assign			fixedPinsIn[0] = 0;
 assign			fixedPinsIn[15:2] = 0;
-assign			gpioPinsIn = 0;
+// assign			gpioPinsIn = 0;
 
 MmiModGpio	gpio(
 //	clock_100,		reset2_100,
@@ -816,6 +852,7 @@ MemL2A	l2a(
 	mmioOK_A0
 	);
 
+
 wire[15:0]	scrnPwmOut;
 // wire[31:0]	scrnMmioOutData;
 wire[63:0]	scrnMmioOutData;
@@ -827,6 +864,9 @@ assign	vgaBlu		= scrnPwmOut[ 3:0];
 assign	vgaHsync	= scrnPwmOut[12];
 assign	vgaVsync	= scrnPwmOut[13];
 
+
+`ifndef jx2_cfg_novga
+
 ModTxtNtW	scrn(
 //	clock_100,		reset2_100,
 	clock_mmio,		reset2_mmio,
@@ -834,6 +874,24 @@ ModTxtNtW	scrn(
 	mmioOutDataQ,	scrnMmioOutData,	mmioAddr,
 	mmioOpm,		scrnMmioOK,
 	timerNoise,		timer256Hz);
+
+`else
+
+wire		tScrnCSel;
+wire		tScrnOpmNz;
+
+assign		tScrnCSel =
+		(mmioAddr[27:16]==12'h00A) ||
+		(mmioAddr[27:16]==12'h00B);
+assign		tScrnOpmNz = (mmioOpm[4:3] != 0);
+
+assign	scrnPwmOut		= 0;
+assign	scrnMmioOutData	= 0;
+assign	scrnMmioOK		= (tScrnCSel && tScrnOpmNz) ?
+	UMEM_OK_OK : UMEM_OK_READY;
+
+`endif
+
 
 wire[1:0]	audPwmOut;
 wire		audPwmEna;
@@ -845,6 +903,12 @@ reg			audPwmEna2;
 // assign		aud_mono_out	= audPwmOut[0];
 assign		aud_mono_out	= audPwmOut2;
 assign		aud_mono_ena	= audPwmEna2;
+
+wire[31:0]	fmMmioOutData;
+wire[1:0]	fmMmioOK;
+
+
+`ifndef jx2_cfg_noaudio
 
 wire[7:0]	audAuxPcmL;
 wire[7:0]	audAuxPcmR;
@@ -859,8 +923,6 @@ ModAudPcm	pcm(
 	timer1MHz,		timer64kHz,
 	timer1kHz,		timerNoise);
 
-wire[31:0]	fmMmioOutData;
-wire[1:0]	fmMmioOK;
 
 ModAudFm	fmsyn(
 //	clock_100,		reset2_100,
@@ -870,6 +932,18 @@ ModAudFm	fmsyn(
 	mmioOpm,		fmMmioOK,
 	timer4MHz,		timer1MHz,		timer64kHz,
 	timer1kHz,		timerNoise);
+
+`else
+
+assign	audPwmOut		= 0;
+assign	audPwmEna		= 0;
+assign	audMmioOutData	= 0;
+assign	audMmioOK		= 0;
+
+assign	fmMmioOutData	= 0;
+assign	fmMmioOK		= 0;
+
+`endif
 
 wire		timerNoise_NS0;
 reg			timerNoise_S0;

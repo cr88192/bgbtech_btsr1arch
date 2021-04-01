@@ -183,7 +183,7 @@ assign tRegAddRn = tRegValRs;
 `endif
 
 wire[63:0]	tRegAddVal;		//Rn output value
-wire[1:0]	tRegAddExOp;	
+wire[3:0]	tRegAddExOp;	
 wire[1:0]	tRegAddExOK;	
 
 FpuAdd	fpu_add(
@@ -204,10 +204,10 @@ assign	tFpuIsFpu3 = (tOpCmd[5:0]==JX2_UCMD_FPU3);
 assign	tFpuIsFldcx = (tOpCmd[5:0]==JX2_UCMD_FLDCX);
 
 assign	tRegAddExOp	=
-	(tFpuIsFpu3 && (tRegIdIxt[3:0]==JX2_UCIX_FPU_FADD[3:0])) ? 2'h1 :
-	(tFpuIsFpu3 && (tRegIdIxt[3:0]==JX2_UCIX_FPU_FSUB[3:0])) ? 2'h2 :
-	(tFpuIsFldcx && (tRegIdIxt[3:0]==4'h2)) ? 2'h3 :
-	2'h0;
+	(tFpuIsFpu3 && (tRegIdIxt[3:0]==JX2_UCIX_FPU_FADD[3:0])) ? 4'h1 :
+	(tFpuIsFpu3 && (tRegIdIxt[3:0]==JX2_UCIX_FPU_FSUB[3:0])) ? 4'h2 :
+	(tFpuIsFldcx && (tRegIdIxt[3:0]==4'h2)) ? 4'h3 :
+	4'h0;
 
 `ifndef jx2_fcmp_alu
 wire[1:0]	tCmpExOK;
@@ -514,7 +514,9 @@ begin
 		tBraFlushL		<= tBraFlush;
 `endif
 
+`ifndef	jx2_fcmp_alu
 		tCmpSrTL		<= tCmpSrT;
+`endif
 
 		ctlInDlr_S2D_L	<= ctlInDlr_S2D;
 		ctlInDlr_H2D_L	<= ctlInDlr_H2D;

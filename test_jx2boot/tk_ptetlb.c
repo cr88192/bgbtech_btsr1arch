@@ -133,6 +133,7 @@ void ptetlb_tlbmiss(u64 ttb, u64 tea)
 
 __interrupt void __isr_mmu(void)
 {
+#ifndef JX2UC
 	u64 ttb, tea;
 	u16 exsr;
 	
@@ -156,4 +157,5 @@ __interrupt void __isr_mmu(void)
 		__arch_exsr=ptetlb_rethow_exc;
 		__do_rethrow_fault();
 	}
+#endif
 }

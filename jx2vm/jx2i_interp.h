@@ -215,6 +215,7 @@ Will use direct linking and assume a non-modifiable program space.
 
 #define BJX2_FLT_PCMISH		0x8801		//PC doesn't match trace addr
 #define BJX2_FLT_CCFLUSH	0x8802		//Cache Flush
+#define BJX2_FLT_BADPC		0x8803		//Invalid PC
 
 #define BJX2_FLT_TLBGF		0xA000		//TLB General Fault
 #define BJX2_FLT_TLBMISS	0xA001		//TLB Miss
@@ -238,6 +239,7 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_OPFL_REGXO		0x0400		//Ro is Xo
 #define BJX2_OPFL_REGX2R	0x0300		//Rm and Rn are Xn
 #define BJX2_OPFL_REGX3R	0x0700		//Rm, Rn, and Ro are Xn
+#define BJX2_OPFL_OP24		0x0800		//24-bit instruction
 
 #define BJX2_OPFL_PREDMSK	0xC1		//Mask copied for predicated ops.
 
@@ -412,25 +414,6 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_PUSHX2	0x9E		//
 #define BJX2_NMID_POPX2		0x9F		//
 
-#if 0
-#define BJX2_NMID_CMOVTB	0xA0		//CMOVT.B
-#define BJX2_NMID_CMOVTW	0xA1		//CMOVT.W
-#define BJX2_NMID_CMOVTL	0xA2		//CMOVT.L
-#define BJX2_NMID_CMOVTQ	0xA3		//CMOVT.Q
-#define BJX2_NMID_CMOVFB	0xA4		//CMOVF.B
-#define BJX2_NMID_CMOVFW	0xA5		//CMOVF.W
-#define BJX2_NMID_CMOVFL	0xA6		//CMOVF.L
-#define BJX2_NMID_CMOVFQ	0xA7		//CMOVF.Q
-#define BJX2_NMID_CMOVUTB	0xA8		//CMOVUT.B
-#define BJX2_NMID_CMOVUTW	0xA9		//CMOVUT.W
-#define BJX2_NMID_CMOVUTL	0xAA		//CMOVUT.L
-#define BJX2_NMID_CMOVDTL	0xAB		//CMOVDT.L
-#define BJX2_NMID_CMOVUFB	0xAC		//CMOVUF.B
-#define BJX2_NMID_CMOVUFW	0xAD		//CMOVUF.W
-#define BJX2_NMID_CMOVUFL	0xAE		//CMOVUF.L
-#define BJX2_NMID_CMOVDFL	0xAF		//CMOVDF.L
-#endif
-
 #define BJX2_NMID_MULSL		0xA0		//
 #define BJX2_NMID_MULUL		0xA1		//
 #define BJX2_NMID_LDIL		0xA2		//
@@ -511,9 +494,27 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_SHLDX			0xE9		//
 #define BJX2_NMID_SHARX			0xEA		//
 #define BJX2_NMID_SHLRX			0xEB		//
-
 #define BJX2_NMID_BLKUTX1		0xEC		//
 #define BJX2_NMID_BLKUTX2		0xED		//
+#define BJX2_NMID_BLKUTX3H		0xEE		//
+#define BJX2_NMID_BLKUTX3L		0xEF		//
+
+#define BJX2_NMID_BLINT			0xF0		//
+#define BJX2_NMID_BLINTA		0xF1		//
+#define BJX2_NMID_BLERP			0xF2		//
+
+#define BJX2_NMID_PLDCH			0xF4		//
+#define BJX2_NMID_PLDCHH		0xF5		//
+#define BJX2_NMID_PSTCH			0xF6		//
+#define BJX2_NMID_PSTCHH		0xF7		//
+#define BJX2_NMID_PLDCHX		0xF8		//
+#define BJX2_NMID_PSTCHX		0xF9		//
+#define BJX2_NMID_PLDCM30AH		0xFA		//
+#define BJX2_NMID_PSTCM30AH		0xFB		//
+#define BJX2_NMID_PLDCM8SH		0xFC		//
+#define BJX2_NMID_PLDCM8UH		0xFD		//
+#define BJX2_NMID_PSTCM8SH		0xFE		//
+#define BJX2_NMID_PSTCM8UH		0xFF		//
 
 
 #define BJX2_FMID_NONE			0x00		//?

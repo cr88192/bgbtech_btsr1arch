@@ -23,9 +23,9 @@ Multiple subset profiles will exist, and some features will be optional.
 
 Several ISA Profiles may exist:
 * A: Full, Full Features, 48-bit address space.
-* B: Lite + GFP + Fix32
+* B: Lite + Fix32 + GFP
 * C: Basic, Partial Features, 32-bit address space.
-* D: Lite + Fix32
+* D: Lite + Fix32 + SoftFPU
 * E: Lite + SoftFPU
 * F: Lite + GFP
 
@@ -39,8 +39,8 @@ BJX2 Full Profile
 * Will use a 48 bit virtual address space.
 * Will use a 32 or 48 bit physical address space.
 * Will support 16, 32, and 64/96 bit instruction encodings.
-* Will support GSV, GFP, and JCMP.
-* Will support WEX2 3W.
+* Will support GSV, GFP, and GSVF.
+* Will support WEX2 3W, Jumbo, and MOVX2.
 * Support MULQ is optional.
 
 ABI: HardFP (GFP), Base-Relocatable or PBO.
@@ -66,9 +66,10 @@ ABI: HardFP (GFP)
 BJX2 Lite Profile
 * Will leave MMU and FPU as optional.
 * Will use a 32-bit (physical) address space.
-* Will not support GSV or JCMP.
+* Will not support GSV, GSVF, or JCMP.
 * Will support 16 and 32 bit instruction encodings.
 * Support for WEX is optional.
+* Support for Jumbo is optional.
 
 ABI: SoftFP
 * Absolute Addressing for ROM
@@ -674,6 +675,10 @@ Note that the address mode used is not required to match the pointer width used 
 
 For branches and other instructions which directly use PC-relative addressing, only the low 32 bits are required to be computed. These instructions will be undefined if the target address crosses a 4GB boundary.
 
+For other cases, the nominal address calculation will be performed as 36 bits with a 33 bit sign-extended displacement. The remaining high-order address bits will be adjusted based on the results in the low-order bits.
+
+To support objects larger than those which support a 32 or 33 bit displacement, it will be necessary to use explicit ALU instructions.
+
 
 === Predicated Instructions ===
 
@@ -947,14 +952,15 @@ Instruction Space
 ** 32n5  EXTU.W	Rn
 ** 32n6  EXTS.B	Rn
 ** 32n7  EXTS.W	Rn
-** 32n8  -
-** 32n9  -
-** 32nA  -
-** 32nB  -
-** 32nC  -
-** 32nD  -
-** 32nE  -
-** 32nF  -
+
+** 32n8  BRA.B	(PC, Rn)			//(Op24) Byte Aligned Branch
+** 32n9  BSR.B	(PC, Rn)			//(Op24) Byte Aligned Branch
+** 32nA  BT.B	(PC, Rn)			//(Op24) Byte Aligned Branch
+** 32nB  BF.B	(PC, Rn)			//(Op24) Byte Aligned Branch
+** 32nC  BRA.L	(PC, Rn)			//DWord Aligned Branch
+** 32nD  BSR.L	(PC, Rn)			//DWord Aligned Branch
+** 32nE  BT.L	(PC, Rn)			//DWord Aligned Branch
+** 32nF  BF.L	(PC, Rn)			//DWord Aligned Branch
 
 ** 33n0  NOT	Rn					//Rn=~Rn
 ** 33n1  NEG	Rn					//Rn=(~Rn)+1
@@ -1060,6 +1066,7 @@ Instruction Space
 ** 6Fnj  CMPGE		#imm4u, Rk		//Rn==Imm4, Zero Extend
 
 * 7zzz ( Reserved )
+** (Possible) Op24 Escape
 
 * 8zzz ( MOV.L 1000-rddd-nnnn-mmmm, r=Store/Load )
 ** 80nm  MOVU.L		(Rm), Rn
@@ -1080,6 +1087,7 @@ Instruction Space
 ** 8Fnm  MOV.L		(Rm, 28), Rn
 
 * 9zzz ( Drop / Reserved )
+** (Possible) Op24 Escape
 
 * Ajjj  LDIZ		#imm12u, DLR	//Load 12 bit value into DLR (Zero Extend)
 * Bjjj  LDIN		#imm12u, DLR	//Load 12 bit value into DLR (One Extend)
@@ -1314,11 +1322,27 @@ F0zz Instruction Block:
 *** F0nm_1G3E  RGB5UPCK64	Rm, Rn		//(RGB) RGB555 Unpack to RGB64
 *** F0nm_1G4E  RGB32PCK64	Rm, Rn		//(RGB) RGB32 Pack from RGB64
 *** F0nm_1G5E  RGB32UPCK64	Rm, Rn		//(RGB) RGB32 Unpack to RGB64
+*** F0nm_1g6E  -
+*** F0nm_1G6E  -
+*** F0nm_1g7E  -
+*** F0nm_1G7E  -
 
-*** F0nm_1gCE ? PLDCHLF		Rm, Rn		//Packed Half to Single (Low)
-*** F0nm_1gDE ? PLDCHHF		Rm, Rn		//Packed Half to Single (High)
-*** F0nm_1gEE ? PSTCHLF		Rm, Rn		//Packed Single to Half (Low)
-*** F0nm_1gFE ? PSTCHHF		Rm, Rn		//Packed Single to Half (High)
+*** F0nm_1g8E  PLDCM8SH		Rm, Rn		//(GSVF) RGB32SF Unpack to RGB64F
+*** F0nm_1G8E  PLDCM8UH		Rm, Rn		//(GSVF) RGB32UF Unpack to RGB64F
+*** F0nm_1g9E  PLDCM30AH	Rm, Rn		//(RGBF) RGB30A Unpack to RGB64F
+*** F0nm_1G9E  -
+*** F0nm_1gAE  PSTCM8SH		Rm, Rn		//(GSVF) RGB32SF Pack from RGB64F
+*** F0nm_1GAE  PSTCM8UH		Rm, Rn		//(GSVF) RGB32UF Pack from RGB64F
+*** F0nm_1gBE  PSTCM30AH	Rm, Rn		//(RGBF) RGB30A Pack from RGB64F
+*** F0nm_1GBE  -
+*** F0nm_1gCE  PLDCH		Rm, Rn		//(GSVF) Packed Half to Single (2x)
+*** F0nm_1GCE  PLDCHH		Rm, Rn		//(GSVF) Packed Half to Single (Hi)
+*** F0nm_1gDE -
+*** F0nm_1GDE -
+*** F0nm_1gEE  PSTCH		Rm, Rn		//(GSVF) Packed Single to Half (2x)
+*** F0nm_1GEE -
+*** F0nm_1gFE -
+*** F0nm_1GFE -
 
 ** F0nm_1ezF  -
 
@@ -1406,6 +1430,15 @@ F0zz Instruction Block:
 *** F022_3en0  BT		Rn
 *** F023_3en0  BF		Rn
 
+*** F028_3en0  BRA.B	(PC, Rn)	//(Op24) BRA, Byte Scale
+*** F029_3en0  BSR.B	(PC, Rn)	//(Op24) BSR, Byte Scale
+*** F02A_3en0  BT.B		(PC, Rn)	//(Op24) BT, Byte Scale
+*** F02B_3en0  BF.B		(PC, Rn)	//(Op24) BF, Byte Scale
+*** F02C_3en0  BRA.L	(PC, Rn)	//Branch, DWord Scale
+*** F02D_3en0  BSR.L	(PC, Rn)	//Branch, DWord Scale
+*** F02E_3en0  BT.L		(PC, Rn)	//Branch, DWord Scale
+*** F02F_3en0  BF.L		(PC, Rn)	//Branch, DWord Scale
+
 *** F033_3en0  MOVNT	Rn
 *** F034_3en0  ROTL		Rn
 *** F035_3en0  ROTR		Rn
@@ -1461,9 +1494,9 @@ F0zz Instruction Block:
 
 * F0zz_5zzz
 ** F0nm_5go0  CSELT		Rm, Ro, Rn			//Rn=SR.T?Rm:Ro
-** F0nm_5Go0 / PCSELT.L	Rm, Ro, Rn			//(GSV) Packed CSELT (DWord)
-** F0nm_5go1 ? PMULS.W	Rm, Ro, Rn			//(GSV) Packed Multiply (2x16->2x32)
-** F0nm_5Go1 ? PMULU.W	Rm, Ro, Rn			//(GSV) Packed Multiply (2x16->2x32)
+** F0nm_5Go0  NOP3		Rm, Ro, Rn			//NOP (3-Register)
+** F0nm_5go1  PMULS.W	Rm, Ro, Rn			//(GSV) Packed Multiply (2x16->2x32)
+** F0nm_5Go1  PMULU.W	Rm, Ro, Rn			//(GSV) Packed Multiply (2x16->2x32)
 ** F0nm_5go2  DMULS.L	Rm, Ro, Rn			//(MULL) Sx 32b Mul (32*32->64)
 ** F0nm_5Go2  DMULS.Q	Rm, Ro, Xn			//(MULQ) Sx 64b Mul (64*64->128)
 ** F0nm_5go3  DMULU.L	Rm, Ro, Rn			//(MULL) Zx 32b Mul (32*32->64)
@@ -1472,10 +1505,10 @@ F0zz Instruction Block:
 ** F0nm_5eo4  SHAD{Q}	Rm, Ro, Rn
 ** F0nm_5eo5  SHLD{Q}	Rm, Ro, Rn
 
-** F0nm_5go6 ? PMULS.LW	Rm, Ro, Rn			//(GSV) Packed Mul (Low Word)
-** F0nm_5Go6 ? PMULU.LW	Rm, Ro, Rn			//(GSV) Packed Mul (Low Word)
-** F0nm_5go7 ? PMULS.HW	Rm, Ro, Rn			//(GSV) Packed Mul (High Word)
-** F0nm_5Go7 ? PMULU.HW	Rm, Ro, Rn			//(GSV) Packed Mul (High Word)
+** F0nm_5go6  PMULS.LW	Rm, Ro, Rn			//(GSV) Packed Mul (Low Word)
+** F0nm_5Go6  PMULU.LW	Rm, Ro, Rn			//(GSV) Packed Mul (Low Word)
+** F0nm_5go7  PMULS.HW	Rm, Ro, Rn			//(GSV) Packed Mul (High Word)
+** F0nm_5Go7  PMULU.HW	Rm, Ro, Rn			//(GSV) Packed Mul (High Word)
 
 ** F0nm_5go8  FADD		Rm, Ro, Rn			//(GFP) FADD
 ** F0nm_5Go8  FADDX		Xm, Xo, Xn			//(GFPX) FADD, Binary128
@@ -1495,6 +1528,27 @@ F0zz Instruction Block:
 ** F0nm_5GoF  MULU.W	Rm, Imm5u, Rn		//(MULW) Zx 16b Mul (16*16->32)
 
 * F0zz_6zzz
+** F0nm_6eo0  -
+** F0nm_6eo1  -
+** F0nm_6eo2  -
+** F0nm_6eo3  -
+** F0nm_6eo4  -
+** F0nm_6eo5  -
+** F0nm_6eo6  -
+** F0nm_6eo7  -
+** F0nm_6go8 ? BLKUTX2	Rm, Ro, Rn			//(RGB) Extract Pixel, UTX2 (Alt)
+** F0nm_6Go8 ? BLKUTX3H	Xm, Ro, Rn			//(RGBX) Extract Pixel, UTX3 HDR
+** F0nm_6go9 ? BLERP	Rm, Ro, Rn			//(RGBX) Linear Interpolate
+** F0nm_6Go9 ? BLKUTX3L	Xm, Ro, Rn			//(RGBX) Extract Pixel, UTX3 LDR
+** F0nm_6goA ? BLINTA	Rm, Ro, Rn			//(RGBX) Bilinear Interpolate (2p)
+** F0nm_6GoA ? BLINT	Xm, Xo, Xn			//(RGBX) Bilinear Interpolate
+
+** F0nm_6eoB  -
+** F0nm_6eoC  -
+** F0nm_6eoD  -
+** F0nm_6eoE  -
+** F0nm_6eoF  -
+
 
 * F0zz_7zzz
 *** F0nm_7ez8  (2R Block)
@@ -1582,7 +1636,7 @@ F2zz Instruction Block  (Imm9 Block):
 * F2nm_6gjj  OR			Rm, #imm9u, Rn		//
 * F2nm_7gjj  XOR		Rm, #imm9u, Rn		//
 
-* F2nm_8pjj  SHADQ		Rm, #imm8, Rn		//E.i=0
+* F2nm_8pjj  SHAD		Rm, #imm8, Rn		//E.i=0
 * F2nm_8Pjj  SHAD.Q		Rm, #imm8, Rn		//E.i=0
 * F2nm_8qjj  PSHUF.B	Rm, #imm8, Rn		//(GSV) E.i=1
 * F2nm_8Qjj  PSHUF.W	Rm, #imm8, Rn		//(GSV) E.i=1
@@ -1821,6 +1875,75 @@ While following a generic pattern:
 * FEzz_zzzz_Ezzz  (N/E)
 * FEzz_zzzz_Fzzz  (N/E)
 
+
+==== Op24 (Possible) ====
+
+Escape case for 24-bit instructions:
+* ZZnm_eo (3R)
+* ZZnm_eZ (2R)
+
+These could improve code density over the 32-bit encodings.
+
+* 70nm_go  ADD		Rm, Ro, Rn
+* 70nm_Go  ADD		Rm, Imm5, Rn
+* 71nm_go  SUB		Rm, Ro, Rn
+* 71nm_Go  SUB		Rm, Imm5, Rn
+* 72nm_go  MULS		Rm, Ro, Rn
+* 73nm_go  MULU		Rm, Ro, Rn
+* 74nm_go  ADDS.L	Rm, Ro, Rn
+* 74nm_Go  SHAD		Rm, Imm5u, Rn
+* 75nm_go  AND		Rm, Ro, Rn
+* 75nm_Go  SHAD		Rm, Imm5n, Rn
+* 76nm_go  OR		Rm, Ro, Rn
+* 76nm_Go  SHLD		Rm, Imm5u, Rn
+* 77nm_go  XOR		Rm, Ro, Rn
+* 77nm_Go  SHLD		Rm, Imm5n, Rn
+
+* 78nm_ez  (2R Block)
+* ...
+* 7Fnm_ez  (2R Block)
+
+The 2R blocks encode the same instructions as the F0nm_1eo8 .. F0nm_1eoF block.
+
+
+Map:
+* 90nm_go  MOV.B	Rn, (Rm, Disp5)
+* 90nm_Go  LEA.B	(Rm, Disp5), Rn
+* 91nm_go  MOV.W	Rn, (Rm, Disp5)
+* 91nm_Go  LEA.W	(Rm, Disp5), Rn
+* 92nm_go  MOV.L	Rn, (Rm, Disp5)
+* 92nm_Go  LEA.L	(Rm, Disp5), Rn
+* 93nm_go  MOV.Q	Rn, (Rm, Disp5)
+* 93nm_Go  LEA.Q	(Rm, Disp5), Rn
+* 94nm_go  MOV.B	Rn, (Rm, Ro)
+* 94nm_Go  LEA.B	(Rm, Ro), Rn
+* 95nm_go  MOV.W	Rn, (Rm, Ro)
+* 95nm_Go  LEA.W	(Rm, Ro), Rn
+* 96nm_go  MOV.L	Rn, (Rm, Ro)
+* 96nm_Go  LEA.L	(Rm, Ro), Rn
+* 97nm_go  MOV.Q	Rn, (Rm, Ro)
+* 97nm_Go  LEA.Q	(Rm, Ro), Rn
+* 98nm_go  MOV.B	(Rm, Disp5), Rn
+* 98nm_Go  MOVU.B	(Rm, Disp5), Rn
+* 99nm_go  MOV.W	(Rm, Disp5), Rn
+* 99nm_Go  MOVU.W	(Rm, Disp5), Rn
+* 9Anm_go  MOV.L	(Rm, Disp5), Rn
+* 9Anm_Go  MOVU.L	(Rm, Disp5), Rn
+* 9Bnm_go  MOV.Q	(Rm, Disp5), Rn
+* 9Bdd_Gd  Bxx.B	(PC, disp13s)
+* 9Cnm_go  MOV.B	(Rm, Ro), Rn
+* 9Cnm_Go  MOVU.B	(Rm, Ro), Rn
+* 9Dnm_go  MOV.W	(Rm, Ro), Rn
+* 9Dnm_Go  MOVU.W	(Rm, Ro), Rn
+* 9Enm_go  MOV.L	(Rm, Ro), Rn
+* 9Enm_Go  MOVU.L	(Rm, Ro), Rn
+* 9Fnm_go  MOV.Q	(Rm, Ro), Rn
+* 9Fnm_Go  -
+
+
+Odd addresses may only encode a 16 or 24-bit operation.
+
+Bxx.B will be a byte-aligned branch op.
 
 
 === Wide Execution 2 (Optional) ===

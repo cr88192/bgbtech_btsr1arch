@@ -254,7 +254,18 @@ int BJX2_ThrowFaultStatus(BJX2_Context *ctx, int status)
 	int i;
 
 	if(!ctx->regs[BJX2_REG_PC])
-		{ JX2_DBGBREAK }
+	{
+		if(ctx->status)
+			return(0);
+
+		exc=BJX2_FLT_BADPC;
+//		JX2_DBGBREAK
+		ctx->regs[BJX2_REG_EXSR]=exc;
+		ctx->tr_rnxt=NULL;
+		ctx->tr_rjmp=NULL;
+		ctx->status=status;
+		return(0);
+	}
 
 	if(status==BJX2_FLT_IOPOKE)
 	{
@@ -1807,27 +1818,37 @@ int BJX2_DbgPrintFpRegs(BJX2_Context *ctx)
 
 int BJX2_DbgTopTraces(BJX2_Context *ctx)
 {
-	BJX2_Trace *tra[65536];
+//	BJX2_Trace *tra[65536];
+	BJX2_Trace **tra;
+	char tb[256];
 	s64 cyc_nmid[256];
 	int idx_nmid[256];
+	char *topfn_name[1024];
+	int topfn_chn[1024];
+	int topfn_cyc[1024];
+	int topfn_hash[64];
+	int n_topfn;
 	BJX2_Trace *trcur;
 	bjx2_addr ba2;
-	s64 cyc;
+	s64 cyc, cy0, cy1;
 	double pcnt;
-	char *bn2;
+	char *bn2, *s0, *s1;
 	int trn, trtops;
-	int i, j, k;
+	int i, j, k, h;
 
 	for(i=0; i<256; i++)
 	{
 		cyc_nmid[i]=0;
 	}
 
+	tra=malloc(262144*sizeof(void *));
+
 	trn=0; trtops=0;
 	for(i=0; i<1024; i++)
 	{
 		trcur=ctx->trhash[i];
-		while(trcur && (trn<65536))
+//		while(trcur && (trn<65536))
+		while(trcur && (trn<262144))
 		{
 			tra[trn++]=trcur;
 			trcur=trcur->hnext;
@@ -1863,6 +1884,72 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 	{
 		/* If we don't have a run count here; skip further analysis. */
 		return(0);
+	}
+
+	for(i=0; i<64; i++)
+		topfn_hash[i]=-1;
+
+	n_topfn=0;
+	for(i=0; i<1024; i++)
+	{
+		trcur=tra[i];
+		bn2=BJX2_DbgNameForAddr(ctx, trcur->addr, &ba2);
+		if(!bn2)
+			continue;
+		strcpy(tb, bn2);
+		s0=tb;
+		while(*s0 && (*s0!='.'))s0++;
+		*s0=0;
+		
+		h=0; s0=tb;
+		while(*s0)
+			h=(h*251)+(*s0++);
+		h=((h*251)>>8)&63;
+		
+		j=topfn_hash[h];
+		while(j>=0)
+		{
+			if(!strcmp(topfn_name[j], tb))
+				break;
+			j=topfn_chn[j];
+		}
+
+		cyc=trcur->runcnt*trcur->n_cyc+trcur->acc_pencyc;
+
+		if(j>=0)
+		{
+			topfn_cyc[j]+=cyc;
+		}else
+		{
+			j=n_topfn++;
+			topfn_name[j]=strdup(tb);
+			topfn_cyc[j]=cyc;
+			topfn_chn[j]=topfn_hash[h];
+			topfn_hash[h]=j;
+		}
+	}
+
+	for(i=0; i<n_topfn; i++)
+		for(j=i+1; j<n_topfn; j++)
+	{
+		if(topfn_cyc[j]>topfn_cyc[i])
+		{
+			s0=topfn_name[i];	s1=topfn_name[j];
+			cy0=topfn_cyc[i];	cy1=topfn_cyc[j];
+			topfn_name[i]=s1;	topfn_name[j]=s0;
+			topfn_cyc[i]=cy1;	topfn_cyc[j]=cy0;
+		}
+	}
+
+	printf("Top Funcs:\n");
+
+	for(i=0; i<64; i++)
+	{
+		bn2=topfn_name[63-i];
+		cyc=topfn_cyc[63-i];
+		pcnt=(100.0*cyc)/(ctx->tot_cyc);
+
+		printf(" %-40s %.2f%%\n", bn2, pcnt);
 	}
 	
 	printf("Top Traces:\n");

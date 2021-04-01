@@ -1560,6 +1560,9 @@ int main(int argc, char **argv, char **env)
 	int x0, x1, x2, x3;
 	int t0, t1, t2;
 	int tt_frame;
+	int cnt_dled, cnt_h1, cnt_h2,
+		cnt_d1, cnt_d2, cnt_d3, cnt_d4,
+		cnt_d5, cnt_d6, cnt_d7, cnt_d8;
 
 //	mhz=100;
 	mhz=50;
@@ -1673,75 +1676,125 @@ int main(int argc, char **argv, char **env)
 		t1=FRGL_TimeMS();
 		t2=t1-tt_frame;
 
-		if(t2>16)
+		cnt_dled++;
+		cnt_h1+=(top->dbgExHold1!=0);
+		cnt_h2+=(top->dbgExHold2!=0);
+		cnt_d1+=(top->dbgOutStatus1!=0);
+		cnt_d2+=(top->dbgOutStatus2!=0);
+		cnt_d3+=(top->dbgOutStatus3!=0);
+		cnt_d4+=(top->dbgOutStatus4!=0);
+		cnt_d5+=(top->dbgOutStatus5!=0);
+		cnt_d6+=(top->dbgOutStatus6!=0);
+		cnt_d7+=(top->dbgOutStatus7!=0);
+		cnt_d8+=(top->dbgOutStatus8!=0);
+
+//		if(t2>16)
+		if((t2>16) && (cnt_dled>8))
 		{
 			BTSR1_MainPollKeyboard();
 
 			jx2i_gfxcon_dirty=1;
 			JX2I_GfxCon_Update();
 
+			cnt_h1=(255*cnt_h1)/cnt_dled;
+			cnt_h2=(255*cnt_h2)/cnt_dled;
+			cnt_d1=(255*cnt_d1)/cnt_dled;
+			cnt_d2=(255*cnt_d2)/cnt_dled;
+			cnt_d3=(255*cnt_d3)/cnt_dled;
+			cnt_d4=(255*cnt_d4)/cnt_dled;
+			cnt_d5=(255*cnt_d5)/cnt_dled;
+			cnt_d6=(255*cnt_d6)/cnt_dled;
+			cnt_d7=(255*cnt_d7)/cnt_dled;
+			cnt_d8=(255*cnt_d8)/cnt_dled;
+			
+			cnt_h1=0xFF00007F+(cnt_h1<<16)+(cnt_h1<<8)-(cnt_h1>>1);
+			cnt_h2=0xFF00007F+(cnt_h2<<16)+(cnt_h2<<8)-(cnt_h2>>1);
+
+			cnt_d1=0xFF00007F+(cnt_d1<<16)+(cnt_d1<<8)-(cnt_d1>>1);
+			cnt_d2=0xFF00007F+(cnt_d2<<16)+(cnt_d2<<8)-(cnt_d2>>1);
+			cnt_d3=0xFF00007F+(cnt_d3<<16)+(cnt_d3<<8)-(cnt_d3>>1);
+			cnt_d4=0xFF00007F+(cnt_d4<<16)+(cnt_d4<<8)-(cnt_d4>>1);
+			cnt_d5=0xFF00007F+(cnt_d5<<16)+(cnt_d5<<8)-(cnt_d5>>1);
+			cnt_d6=0xFF00007F+(cnt_d6<<16)+(cnt_d6<<8)-(cnt_d6>>1);
+			cnt_d7=0xFF00007F+(cnt_d7<<16)+(cnt_d7<<8)-(cnt_d7>>1);
+			cnt_d8=0xFF00007F+(cnt_d8<<16)+(cnt_d8<<8)-(cnt_d8>>1);
+
 			sim_fb_drawled(
 				(uint32_t *)btesh2_gfxcon_framebuf,
 				btesh2_gfxcon_fbxs, btesh2_gfxcon_fbys,
 				btesh2_gfxcon_fbxs-6, btesh2_gfxcon_fbys-1*8, 3,
-				top->dbgExHold1?0xFFFFFF00:0xFF00007F);
+//				top->dbgExHold1?0xFFFFFF00:0xFF00007F);
+				cnt_h1);
 
 			sim_fb_drawled(
 				(uint32_t *)btesh2_gfxcon_framebuf,
 				btesh2_gfxcon_fbxs, btesh2_gfxcon_fbys,
 				btesh2_gfxcon_fbxs-6, btesh2_gfxcon_fbys-2*8, 3,
-				top->dbgExHold2?0xFFFFFF00:0xFF00007F);
+//				top->dbgExHold2?0xFFFFFF00:0xFF00007F);
+				cnt_h2);
 
 
 			sim_fb_drawled(
 				(uint32_t *)btesh2_gfxcon_framebuf,
 				btesh2_gfxcon_fbxs, btesh2_gfxcon_fbys,
 				btesh2_gfxcon_fbxs-6, btesh2_gfxcon_fbys-4*8, 3,
-				top->dbgOutStatus1?0xFFFFFF00:0xFF00007F);
+//				top->dbgOutStatus1?0xFFFFFF00:0xFF00007F);
+				cnt_d1);
 
 			sim_fb_drawled(
 				(uint32_t *)btesh2_gfxcon_framebuf,
 				btesh2_gfxcon_fbxs, btesh2_gfxcon_fbys,
 				btesh2_gfxcon_fbxs-6, btesh2_gfxcon_fbys-5*8, 3,
-				top->dbgOutStatus3?0xFFFFFF00:0xFF00007F);
+//				top->dbgOutStatus2?0xFFFFFF00:0xFF00007F);
+				cnt_d2);
 
 			sim_fb_drawled(
 				(uint32_t *)btesh2_gfxcon_framebuf,
 				btesh2_gfxcon_fbxs, btesh2_gfxcon_fbys,
 				btesh2_gfxcon_fbxs-6, btesh2_gfxcon_fbys-6*8, 3,
-				top->dbgOutStatus3?0xFFFFFF00:0xFF00007F);
+//				top->dbgOutStatus3?0xFFFFFF00:0xFF00007F);
+				cnt_d3);
 
 			sim_fb_drawled(
 				(uint32_t *)btesh2_gfxcon_framebuf,
 				btesh2_gfxcon_fbxs, btesh2_gfxcon_fbys,
 				btesh2_gfxcon_fbxs-6, btesh2_gfxcon_fbys-7*8, 3,
-				top->dbgOutStatus4?0xFFFFFF00:0xFF00007F);
+//				top->dbgOutStatus4?0xFFFFFF00:0xFF00007F);
+				cnt_d4);
 
 
 			sim_fb_drawled(
 				(uint32_t *)btesh2_gfxcon_framebuf,
 				btesh2_gfxcon_fbxs, btesh2_gfxcon_fbys,
 				btesh2_gfxcon_fbxs-6, btesh2_gfxcon_fbys-9*8, 3,
-				top->dbgOutStatus5?0xFFFFFF00:0xFF00007F);
+//				top->dbgOutStatus5?0xFFFFFF00:0xFF00007F);
+				cnt_d5);
 
 			sim_fb_drawled(
 				(uint32_t *)btesh2_gfxcon_framebuf,
 				btesh2_gfxcon_fbxs, btesh2_gfxcon_fbys,
 				btesh2_gfxcon_fbxs-6, btesh2_gfxcon_fbys-10*8, 3,
-				top->dbgOutStatus6?0xFFFFFF00:0xFF00007F);
+//				top->dbgOutStatus6?0xFFFFFF00:0xFF00007F);
+				cnt_d6);
 
 			sim_fb_drawled(
 				(uint32_t *)btesh2_gfxcon_framebuf,
 				btesh2_gfxcon_fbxs, btesh2_gfxcon_fbys,
 				btesh2_gfxcon_fbxs-6, btesh2_gfxcon_fbys-11*8, 3,
-				top->dbgOutStatus7?0xFFFFFF00:0xFF00007F);
+//				top->dbgOutStatus7?0xFFFFFF00:0xFF00007F);
+				cnt_d7);
 
 			sim_fb_drawled(
 				(uint32_t *)btesh2_gfxcon_framebuf,
 				btesh2_gfxcon_fbxs, btesh2_gfxcon_fbys,
 				btesh2_gfxcon_fbxs-6, btesh2_gfxcon_fbys-12*8, 3,
-				top->dbgOutStatus8?0xFFFFFF00:0xFF00007F);
+//				top->dbgOutStatus8?0xFFFFFF00:0xFF00007F);
+				cnt_d8);
 
+			cnt_dled=0;
+			cnt_h1=0;	cnt_h2=0;
+			cnt_d1=0;	cnt_d2=0;	cnt_d3=0;	cnt_d4=0;
+			cnt_d5=0;	cnt_d6=0;	cnt_d7=0;	cnt_d8=0;
 
 			GfxDrv_BeginDrawing();
 

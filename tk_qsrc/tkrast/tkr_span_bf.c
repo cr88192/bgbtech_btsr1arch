@@ -509,6 +509,7 @@ void TKRA_DrawSpan_BlendModBlUtx2MortZt(u64 *parm,
 		}
 #endif
 
+#ifndef TKRA_CHEAP_BILIN
 		txs=(s16)(tpos>>16);
 		txt=(s16)(tpos>>48);
 		ix0=tkra_morton16(txs+0, txt+0)&ymask;
@@ -522,6 +523,19 @@ void TKRA_DrawSpan_BlendModBlUtx2MortZt(u64 *parm,
 		pix3=TKRA_CachedBlkUtx2(src, ix3);
 		cval=TKRA_InterpBilinear64(pix0, pix1, pix2, pix3,
 			(u16)tpos, (u16)(tpos>>32));
+#endif
+
+#ifdef TKRA_CHEAP_BILIN
+		txs=(tpos>>16);		txt=(tpos>>48);
+		ix0=tkra_morton16(txs+0, txt+0)&ymask;
+		ix1=tkra_morton16(txs+1, txt+0)&ymask;
+		ix2=tkra_morton16(txs+0, txt+1)&ymask;
+		pix0=TKRA_CachedBlkUtx2(src, ix0);
+		pix1=TKRA_CachedBlkUtx2(src, ix1);
+		pix2=TKRA_CachedBlkUtx2(src, ix2);
+		cval=TKRA_InterpBilinear3Pt_64(pix0, pix1, pix2,
+			(u16)tpos, (u16)(tpos>>32));
+#endif
 
 		dpix=*ct;
 

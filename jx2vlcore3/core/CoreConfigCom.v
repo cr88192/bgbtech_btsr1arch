@@ -30,10 +30,27 @@
 `define jx2_enable_ops16
 // `define jx2_enable_ops48
 
+// `define jx2_enable_ops24
+
 `define jx2_enable_aluunary
 `define jx2_enable_clz
 
-`define jx2_enable_btcutx1				//UTX1 Block Conversion Op
+`define jx2_enable_blint		//Enable Bilinear Interpolator
+
+`define jx2_enable_btcutx			//UTXn Block Conversion Ops
+// `define jx2_enable_btcutx1			//UTX1 Block Conversion Op
+`define jx2_enable_btcutx2			//UTX2 Block Conversion Op
+// `define jx2_enable_btcutx3			//UTX3 Block Conversion Op
+
+`define jx2_do_btcutx_alu
+
+`define jx2_enable_convrgb32f		//RGBA32F Conversion Op
+// `define jx2_enable_convrgb30a		//RGB30A Conversion Op
+
+`define jx2_enable_convfp16
+
+`define jx2_do_convfp16_alu
+`define jx2_enable_conv2_alu
 
 
 `define jx2_enable_wex3w				//Enable 3-wide WEX support
@@ -62,4 +79,3 @@
 // `define jx2_debug_alu		//Debug ALU
 
 // `define jx2_debug_hitmiss	//Debug Branch Predictor
-

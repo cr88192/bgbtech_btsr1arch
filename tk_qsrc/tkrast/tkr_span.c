@@ -421,6 +421,13 @@ u64 TKRA_InterpBilinear64(
 	u64 px0, u64 px1, u64 px2, u64 px3,
 	u16 xfrac, u16 yfrac);
 
+u64 TKRA_InterpLinear(u16 px0, u16 px1, u16 frac);
+u64 TKRA_InterpLinear64(u64 px0, u64 px1, u16 frac);
+
+u64 TKRA_InterpBilinear3Pt_64(
+	u64 px0, u64 px1, u64 px2,
+	u16 xfrac, u16 yfrac);
+
 
 void TKRA_DrawSpan_ModBlTexMort(u64 *parm,
 	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt)

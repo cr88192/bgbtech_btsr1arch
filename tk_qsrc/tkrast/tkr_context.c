@@ -12,25 +12,32 @@ TKRA_Context *TKRA_AllocContext()
 
 int TKRA_SetupScreen(TKRA_Context *ctx, int xs, int ys)
 {
+	byte *ptr;
 	int scr_memsz;
 	int ofs_rgb, ofs_zbuf, ofs_sten;
 	int i, j, k;
 
 	scr_memsz = (xs+2)*16*2;
-	scr_memsz = (scr_memsz+15)&(~15);
+	scr_memsz = (scr_memsz+63)&(~63);
 	ofs_rgb = scr_memsz;
 	scr_memsz += (xs+2)*(ys+4)*sizeof(tkra_rastpixel);
-	scr_memsz = (scr_memsz+15)&(~15);
+	scr_memsz = (scr_memsz+63)&(~63);
 	ofs_zbuf = scr_memsz;
 	scr_memsz += (xs+2)*(ys+4)*sizeof(tkra_zbufpixel);
-	scr_memsz = (scr_memsz+15)&(~15);
+	scr_memsz = (scr_memsz+63)&(~63);
 	ofs_sten = scr_memsz;
 	scr_memsz += (xs+2)*(ys+4)*sizeof(byte);
 
-	ctx->screen_mem=tkra_malloc(scr_memsz);
-	ctx->screen_rgb=(void *)(ctx->screen_mem+ofs_rgb);
-	ctx->screen_zbuf=(void *)(ctx->screen_mem+ofs_zbuf);
-	ctx->screen_sten=(void *)(ctx->screen_mem+ofs_sten);
+	ptr=tkra_malloc(scr_memsz+31);
+	ctx->screen_mem=ptr;
+	
+	k=(nlint)ptr;
+	if(k&15)
+		ptr+=(16-(k&15));
+	
+	ctx->screen_rgb=(void *)(ptr+ofs_rgb);
+	ctx->screen_zbuf=(void *)(ptr+ofs_zbuf);
+	ctx->screen_sten=(void *)(ptr+ofs_sten);
 
 //	ctx->screen_rgb=tkra_malloc((xs+4)*(ys+16)*sizeof(tkra_rastpixel));
 //	ctx->screen_zbuf=tkra_malloc((xs+4)*(ys+16)*sizeof(tkra_zbufpixel));

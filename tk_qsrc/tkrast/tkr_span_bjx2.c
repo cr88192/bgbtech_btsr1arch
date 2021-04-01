@@ -22,6 +22,10 @@ u64 TKRA_InterpBilinear64(
 	u64 px0, u64 px1, u64 px2, u64 px3,
 	u16 xfrac, u16 yfrac);
 
+u64 TKRA_InterpBilinear3Pt_64(
+	u64 px0, u64 px1, u64 px2,
+	u16 xfrac, u16 yfrac);
+
 __asm {
 tkra_morton8:
 tkra_morton16:
@@ -84,6 +88,18 @@ TKRA_InterpBilinear64:
 	PADD.W		R16, R17, R2	|	PADD.W		R18, R19, R3
 	PMULU.HW	R2, R21, R16	|	PMULU.HW	R3, R20, R17
 	PADD.W		R16, R17, R2
+	RTS
+
+TKRA_InterpBilinear3Pt_64:
+	MOV			0x7FFF, R3		|
+	SHLD		R7, -1, R7		|	SHLD		R20, -1, R20
+	AND			R3, R7			|	AND			R3, R20
+	PSHUF.W		R7, 0, R22		|	PSHUF.W		R20, 0, R20
+	PADD.W		R20, R22, R23
+	NOT			R23, R23		|	PMULU.HW	R6, R20, R18
+	PMULU.HW	R4, R23, R16	|	PMULU.HW	R5, R22, R17
+	PADD.W		R16, R17, R3
+	PADD.W		R18, R3, R2
 	RTS
 
 };

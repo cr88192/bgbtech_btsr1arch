@@ -121,7 +121,8 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 //		shctx->has_jumbo=1;
 	}
 
-	if(BGBCC_CCXL_CheckForOptStr(ctx, "wexj"))
+	if(	BGBCC_CCXL_CheckForOptStr(ctx, "wexj") ||
+		BGBCC_CCXL_CheckForOptStr(ctx, "jumbo"))
 	{
 #if 1
 //		shctx->use_wexmd=2;
@@ -140,6 +141,9 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "fpux"))
 		{ shctx->has_fpux=1; }
 
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "ops24"))
+		{ shctx->has_ops24=1; }
+
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "pexe"))
 		ctx->pel_cmpr=255;
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "pel0"))
@@ -148,18 +152,6 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		ctx->pel_cmpr=3;
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "pel4"))
 		ctx->pel_cmpr=4;
-
-	if(BGBCC_CCXL_CheckForOptStr(ctx, "nomovx"))
-		shctx->has_pushx2=0;
-	if(BGBCC_CCXL_CheckForOptStr(ctx, "nosimdx"))
-		shctx->has_simdx2=0;
-	if(BGBCC_CCXL_CheckForOptStr(ctx, "nowexify"))
-		shctx->no_wexify=1;
-
-	if(BGBCC_CCXL_CheckForOptStr(ctx, "noalux"))
-		{ shctx->has_alux=0; }
-	if(BGBCC_CCXL_CheckForOptStr(ctx, "nofpux"))
-		{ shctx->has_fpux=0; }
 
 
 //	ctx->arch_has_predops=0;
@@ -172,6 +164,13 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		shctx->no_ops48=1;
 		shctx->fpu_gfp=1;
 		shctx->is_pbo=1;
+
+#if 1
+		shctx->use_wexmd=2;
+		shctx->has_jumbo=1;
+		shctx->has_pushx2=1;
+		shctx->has_simdx2=1;
+#endif
 	}
 
 	if(ctx->sub_arch==BGBCC_ARCH_BJX2_JX2B)
@@ -228,6 +227,22 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		shctx->fpu_gfp=1;
 		shctx->is_pbo=1;
 	}
+
+
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "nomovx"))
+		shctx->has_pushx2=0;
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "nosimdx"))
+		shctx->has_simdx2=0;
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "nowexify"))
+		shctx->no_wexify=1;
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "nojumbo"))
+		shctx->has_jumbo=0;
+
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "noalux"))
+		{ shctx->has_alux=0; }
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "nofpux"))
+		{ shctx->has_fpux=0; }
+
 
 	if(ctx->imgfmt==BGBCC_IMGFMT_SYS)
 	{
@@ -1095,6 +1110,7 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 		BGBCC_JX2C_EmitLabelFlushRegisters(ctx, sctx);
 //		BGBCC_JX2C_ResetFpscrLocal(ctx, sctx);
 //		BGBCC_JX2_EmitForceFlushIndexImm(sctx);
+		BGBCC_JX2_EmitPadForOpWord(sctx, 0xF000);
 		if(sctx->is_align_wexj)
 			BGBCC_JX2_EmitPad32AlignLastOp(sctx);
 		BGBCC_JX2_EmitLabel(sctx,
@@ -1111,6 +1127,8 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 //			op->imm.si);
 //		BGBCC_JX2_EmitOpNone(sctx,
 //			BGBCC_SH_NMID_NOP);
+
+		BGBCC_JX2_EmitPadForOpWord(sctx, 0xF000);
 
 		BGBCC_JX2_EmitOpAutoLabel(sctx, BGBCC_SH_NMID_BRAN,
 			op->imm.si);
@@ -1129,6 +1147,9 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 //		BGBCC_JX2C_ResetFpscrLocal(ctx, sctx);
 //		BGBCC_JX2C_ResetFpscrUnknown(ctx, sctx);
 //		BGBCC_JX2_EmitForceFlushIndexImm(sctx);
+
+		BGBCC_JX2_EmitPadForOpWord(sctx, 0xF000);
+
 		BGBCC_JX2C_EmitJCmpVRegZero(ctx, sctx, op->type,
 			op->srca, op->opr, op->imm.si);
 		BGBCC_JX2C_EmitLabelFlushRegisters(ctx, sctx);
@@ -1138,6 +1159,9 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 //		BGBCC_JX2C_ResetFpscrLocal(ctx, sctx);
 //		BGBCC_JX2C_ResetFpscrUnknown(ctx, sctx);
 //		BGBCC_JX2_EmitForceFlushIndexImm(sctx);
+
+		BGBCC_JX2_EmitPadForOpWord(sctx, 0xF000);
+
 		BGBCC_JX2C_EmitJCmpVRegVReg(ctx, sctx, op->type,
 			op->srca, op->srcb, op->opr, op->imm.si);
 		BGBCC_JX2C_EmitLabelFlushRegisters(ctx, sctx);
@@ -1314,6 +1338,7 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 
 	case CCXL_VOP_JMPTAB:
 		BGBCC_JX2C_EmitSyncRegisters(ctx, sctx);
+		BGBCC_JX2_EmitPadForOpWord(sctx, 0xF000);
 		BGBCC_JX2C_EmitJmpTab(ctx, sctx,
 			op->type, op->srca,
 			op->imm.jmptab.vmin, op->imm.jmptab.nlbl, op->imm.jmptab.lbls);
@@ -1475,6 +1500,10 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 		BGBCC_JX2_BeginWex(sctx);
 	}
 
+	ps0=BGBCC_JX2_EmitGetOffs(sctx);
+	if(ps0&1)
+		{ BGBCC_DBGBREAK }
+
 #if 0
 	ps0=BGBCC_JX2_EmitGetOffs(sctx);
 	if(sctx->is_fixed32&16)
@@ -1557,7 +1586,17 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 		BGBCC_JX2C_CompileVirtOp(ctx, sctx, obj, vop);
 	}
 
+	ps1=BGBCC_JX2_EmitGetOffs(sctx);
+	if(ps1&1)
+	{
+		BGBCC_JX2_EmitPadForOpWord(sctx, 0xF000);
+	}
+
 	sctx->op_is_wex2=0;
+
+	ps1=BGBCC_JX2_EmitGetOffs(sctx);
+	if(ps1&1)
+		{ BGBCC_DBGBREAK }
 
 #if 0
 	ps1=BGBCC_JX2_EmitGetOffs(sctx);
@@ -1645,14 +1684,19 @@ ccxl_status BGBCC_JX2C_BuildFunctionBody(
 
 	ctx->cur_func=obj;
 	sctx->is_tr_leaf=0;
+	sctx->rov_sreg=0;
+	sctx->rov_rshuf=0;
 
 	BGBCC_JX2C_EmitLabelFlushRegisters(ctx, sctx);
 
 	BGBCC_JX2_SetSectionName(sctx, ".text");
 
+	BGBCC_JX2_EmitPadForOpWord(sctx, 0xF000);
+
 	bs=BGBCC_JX2_EmitGetOffs(sctx);
 
 	BGBCC_JX2C_EmitFrameProlog(ctx, sctx, obj, fcnlbl);
+	BGBCC_JX2_EmitPadForOpWord(sctx, 0xF000);
 	
 	bt=sctx->cur_fcnbase;
 	
@@ -1673,12 +1717,15 @@ ccxl_status BGBCC_JX2C_BuildFunctionBody(
 		}
 	}
 
+	BGBCC_JX2_EmitPadForOpWord(sctx, 0xF000);
+
 	co=BGBCC_JX2_EmitGetOffs(sctx);
 	sctx->fnsz_bod=co-bo;
 
 	sctx->is_tr_leaf=0;
 
 	BGBCC_JX2C_EmitFrameEpilog(ctx, sctx, obj);
+	BGBCC_JX2_EmitPadForOpWord(sctx, 0xF000);
 	
 	BGBCC_JX2C_EmitLabelFlushRegisters(ctx, sctx);
 
@@ -2532,7 +2579,7 @@ ccxl_status BGBCC_JX2C_BuildGlobal_EmitLitAsType(
 		if(BGBCC_CCXL_IsRegImmIntP(ctx, value))
 		{
 			i=BGBCC_CCXL_GetRegImmIntValue(ctx, value);
-			BGBCC_JX2_EmitByte(sctx, i);
+			BGBCC_JX2_EmitByte(sctx, i&0xFF);
 			return(1);
 		}
 
@@ -2547,7 +2594,7 @@ ccxl_status BGBCC_JX2C_BuildGlobal_EmitLitAsType(
 		if(BGBCC_CCXL_IsRegImmIntP(ctx, value))
 		{
 			i=BGBCC_CCXL_GetRegImmIntValue(ctx, value);
-			BGBCC_JX2_EmitWord(sctx, i);
+			BGBCC_JX2_EmitWord(sctx, i&0xFFFF);
 			return(1);
 		}
 
@@ -5471,20 +5518,24 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 //		printf("16=%.2f%% 8A=%.2f%% 8E=%.2f%% CE=%.2f%% "
 //				"CC0=%.2f%% CC3=%.2f%%\n",
 		printf("16=%.2f%% Fz=%.2f%% FC=%.2f%% FD=%.2f%% "
-				"CC0=%.2f%% CC3=%.2f%%\n",
+				"CC0=%.2f%% CC3=%.2f%% 7z=%.2f%% 9z=%.2f%% \n",
 			(100.0*sctx->stat_opc_base16)/k,
 			(100.0*sctx->stat_opc_ext8a)/k,
 			(100.0*sctx->stat_opc_ext8e)/k,
 			(100.0*sctx->stat_opc_extCe)/k,
 			(100.0*sctx->stat_opc_extCC0)/k,
-			(100.0*sctx->stat_opc_extCC3)/k
+			(100.0*sctx->stat_opc_extCC3)/k,
+			(100.0*sctx->stat_opc_7xx)/k,
+			(100.0*sctx->stat_opc_9xx)/k
 			);
 
-		printf("16=%.2fkB Fz=%.2fkB FC=%.2fkB FD=%.2fkB\n",
+		printf("16=%.2fkB Fz=%.2fkB FC=%.2fkB FD=%.2fkB 7z=%.2fkB 9z=%.2fkB\n",
 			(2.0*sctx->stat_opc_base16)/1024.0,
 			(4.0*sctx->stat_opc_ext8a)/1024.0,
 			(6.0*sctx->stat_opc_ext8e)/1024.0,
-			(6.0*sctx->stat_opc_extCe)/1024.0
+			(6.0*sctx->stat_opc_extCe)/1024.0,
+			(3.0*sctx->stat_opc_7xx)/1024.0,
+			(3.0*sctx->stat_opc_9xx)/1024.0
 			);
 	}
 	

@@ -211,6 +211,20 @@ void TKRA_DrawSpan_LmapModBlUtx2MortZt(u64 *parm,
 	ctz=dstz;
 	while(ct<cte)
 	{
+#if 1
+		z=zpos>>16;
+		if(z>(*ctz))
+		{
+			ctz++;
+			ct++;
+			tpos+=tstep;
+			cpos+=cstep;
+			zpos+=zstep;
+			continue;
+		}
+#endif
+
+#ifndef TKRA_CHEAP_BILIN
 		ix0=tkra_morton16((tpos>>16)+0, (tpos>>48)+0)&ymask;
 		ix1=tkra_morton16((tpos>>16)+1, (tpos>>48)+0)&ymask;
 		ix2=tkra_morton16((tpos>>16)+0, (tpos>>48)+1)&ymask;
@@ -221,6 +235,19 @@ void TKRA_DrawSpan_LmapModBlUtx2MortZt(u64 *parm,
 		pix3=TKRA_CachedBlkUtx2(src, ix3);
 		cval=TKRA_InterpBilinear64(pix0, pix1, pix2, pix3,
 			(u16)tpos, (u16)(tpos>>32));
+#endif
+
+#ifdef TKRA_CHEAP_BILIN
+		ix2=(tpos>>16);		ix3=(tpos>>48);
+		ix0=tkra_morton16(ix2+0, ix3+0)&ymask;
+		ix1=tkra_morton16(ix2+1, ix3+0)&ymask;
+		ix2=tkra_morton16(ix2+0, ix3+1)&ymask;
+		pix0=TKRA_CachedBlkUtx2(src, ix0);
+		pix1=TKRA_CachedBlkUtx2(src, ix1);
+		pix2=TKRA_CachedBlkUtx2(src, ix2);
+		cval=TKRA_InterpBilinear3Pt_64(pix0, pix1, pix2,
+			(u16)tpos, (u16)(tpos>>32));
+#endif
 
 		dpix=*ct;
 

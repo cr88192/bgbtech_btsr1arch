@@ -340,6 +340,12 @@ typedef struct {
 	int		p_osvidx;		//on-seam vertex indices
 	int		p_tridx;		//triangle indices
 
+	byte	spr_bound[4];
+	int		spr_cellcnt;
+	int		spr_cellpix;
+	int		spr_sheetsz;
+	int		spr_texnum[3];		//BGB: downrendered sprite sheets
+
 	maliasframedesc_t	frames[1];	// variable sized
 
 } aliashdr_t;

@@ -82,6 +82,17 @@ reg[4:0]		tMemOpm;
 `reg_tile		tMemDataIn;
 
 initial begin
+
+`ifdef jx2_cfg_ucrom
+
+`ifdef jx2_mem_line32B
+	$readmemh("bootrom_uc_2.txt", romTileData);
+`else
+	$readmemh("bootrom_uc_1.txt", romTileData);
+`endif
+
+`else
+
 `ifdef jx2_mem_line32B
 	$readmemh("bootrom_2.txt", romTileData);
 //	$readmemh("bootrom_2a.txt", romTileDataA);
@@ -89,6 +100,9 @@ initial begin
 `else
 	$readmemh("bootrom_1.txt", romTileData);
 `endif
+
+`endif
+
 end
 
 always @*

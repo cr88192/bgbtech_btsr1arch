@@ -15,10 +15,18 @@ int TKRA_InitSpanRcp(void)
 
 int TKRA_SpanRcp(int cnt)
 {
+	int ix, shr;
+
 	if(cnt<1024)
 		return(tkra_spanrcptab[cnt]);
 	/* Placeholder */
-	return(65536/cnt);
+
+	ix=cnt; shr=0;
+	while(ix>=1024)
+		{ ix=ix>>1; shr++; }
+	return(tkra_spanrcptab[ix]>>shr);
+	
+//	return(65536/cnt);
 }
 
 #ifdef __BJX2__
@@ -1062,7 +1070,8 @@ R31		tstep_r
 	BRA		.L0	
 
 	.L1:
-	ADDS.L	R18, 1, R19		|	MOV		tkra_spanrcptab, R3
+	MOV		tkra_spanrcptab, R3
+	ADDS.L	R18, 1, R19		
 //	SUB		R30, R28, R2	|	MOVU.W	(R3, R19), R1
 	SUB		R30, R28, R2	|	MOVU.W	(R3, R18), R1
 	EXTS.L	R2, R5			|	SHAD.Q	R2, -32, R3
@@ -1110,29 +1119,33 @@ R31		tstep_r
 	CMPGT	0, R18
 	BF		.L3
 
+	MOV.X	R18, (SP, 18*8)
+
+	MOV.Q	(R14, TKRA_DS_CTX*8), R19
+
 	MOV.X	R4, (SP, 4*8)
 	MOV.X	R6, (SP, 6*8)
-	MOV.X	R16, (SP, 16*8)
-	MOV.X	R18, (SP, 18*8)
-	MOV.Q	(R14, TKRA_DS_CTX*8), R19
-	MOV.X	R20, (SP, 20*8)
+
 	MOV.Q	(R19, offsetof TKRA_Context_s screen_zbuf), R4
-	MOV.X	R22, (SP, 22*8)
 	MOV.Q	(R19, offsetof TKRA_Context_s screen_rgb), R5
 	ADD		R12, R16, R3
+
+	MOV.X	R16, (SP, 16*8)
+	MOV.X	R20, (SP, 20*8)
+	MOV.X	R22, (SP, 22*8)
 	LEA.W	(R4, R3), R4
 	LEA.W	(R5, R3), R5
 	MOV.Q	(R19, offsetof TKRA_Context_s DrawSpanZb), R3
 	MOV.X	R4, (SP, 48*8)
-	MOV		R18, R5
 	MOV.X	(R14, TKRA_DS_ZPOS*8), R6
+	MOV		R18, R5
 	JSR		R3
 
 	MOV.X	(SP, 48*8), R6
 	MOV		R14, R4
+	MOV.Q	(R19, offsetof TKRA_Context_s DrawSpanZt), R3
 	MOV		R7, R5
 	MOV.Q	(SP, 18*8), R7
-	MOV.Q	(R19, offsetof TKRA_Context_s DrawSpanZt), R3
 	JSR		R3
 
 	MOV.X	(SP,  4*8), R4
@@ -1615,6 +1628,7 @@ void TKRA_WalkTriangle(TKRA_Context *ctx,
 	int y0, y1, y2, y3;
 	int y1cnt, y2cnt, y3cnt, y1rcp, y2rcp, y3rcp;
 	u64 t0, t1, t2;
+	s64 l1, l2, l3;
 
 	int x1pos, x2pos, x3pos, x1step, x2step, x3step;
 	int x1step_d, x1step_c;
@@ -1671,9 +1685,26 @@ void TKRA_WalkTriangle(TKRA_Context *ctx,
 	if(y1>y2)
 		{ __debugbreak(); }
 	
-	y0=tve0[TKRA_VX_YPOS]>>16;
-	y1=tve1[TKRA_VX_YPOS]>>16;
-	y2=tve2[TKRA_VX_YPOS]>>16;
+//	y0=tve0[TKRA_VX_YPOS]>>16;
+//	y1=tve1[TKRA_VX_YPOS]>>16;
+//	y2=tve2[TKRA_VX_YPOS]>>16;
+
+//	y0=(tve0[TKRA_VX_YPOS]+32767)>>16;
+//	y0=(tve0[TKRA_VX_YPOS]+    0)>>16;
+//	y0=(tve0[TKRA_VX_YPOS]+16383)>>16;
+//	y1=(tve1[TKRA_VX_YPOS]+32767)>>16;
+//	y2=(tve2[TKRA_VX_YPOS]+32767)>>16;
+//	y2=(tve2[TKRA_VX_YPOS]+49151)>>16;
+//	y2=(tve2[TKRA_VX_YPOS]+65535)>>16;
+
+	y0=(tve0[TKRA_VX_YPOS]+32767)>>16;
+	y1=(tve1[TKRA_VX_YPOS]+32767)>>16;
+	y2=(tve2[TKRA_VX_YPOS]+32767)>>16;
+
+//	y0=(tve0[TKRA_VX_YPOS]+16383)>>16;
+//	y1=(tve1[TKRA_VX_YPOS]+32767)>>16;
+//	y2=(tve2[TKRA_VX_YPOS]+49151)>>16;
+
 	y1cnt=y1-y0;
 	y2cnt=y2-y0;
 	y3cnt=y2-y1;
@@ -1684,15 +1715,50 @@ void TKRA_WalkTriangle(TKRA_Context *ctx,
 	t0=tve0[TKRA_VX_XPOS];
 	t1=tve1[TKRA_VX_XPOS];
 	t2=tve2[TKRA_VX_XPOS];
+
+#if 1
 	x1step_d=t1-t0;
 //	x1step_c=(((s64)x1step_d)*y1rcp)>>16;
-	x1step_c=tkra_dmuls(x1step_d, y1rcp)>>16;
+//	x1step_c=tkra_dmuls(x1step_d, y1rcp)>>16;
+	x1step_c=(tkra_dmuls(x1step_d, y1rcp)+32767)>>16;
+
+//	y3=tkra_dmuls(x1step_d, y1rcp);
+//	x1step_c=(y3+32767)>>16;
+
 	x2step_d=t2-t0;
 //	x2step_c=(((s64)x2step_d)*y2rcp)>>16;
-	x2step_c=tkra_dmuls(x2step_d, y2rcp)>>16;
+//	x2step_c=tkra_dmuls(x2step_d, y2rcp)>>16;
+	x2step_c=(tkra_dmuls(x2step_d, y2rcp)+32767)>>16;
+
 	x3step_d=t2-t1;
 //	x3step_c=(((s64)x3step_d)*y3rcp)>>16;
-	x3step_c=tkra_dmuls(x3step_d, y3rcp)>>16;
+//	x3step_c=tkra_dmuls(x3step_d, y3rcp)>>16;
+	x3step_c=(tkra_dmuls(x3step_d, y3rcp)+32767)>>16;
+#endif
+
+#if 0
+	x1step_d=t1-t0;
+	l3=tkra_dmuls(x1step_d, y1rcp);
+	if(l3>=0)	l3+=49151;
+		else	l3+=16383;
+	x1step_c=l3>>16;
+
+	x2step_d=t2-t0;
+	l3=tkra_dmuls(x2step_d, y2rcp);
+	if(l3>=0)	l3+=49151;
+		else	l3+=16383;
+	x2step_c=l3>>16;
+
+	x3step_d=t2-t1;
+	l3=tkra_dmuls(x3step_d, y3rcp);
+	if(l3>=0)	l3+=49151;
+		else	l3+=16383;
+	x3step_c=l3>>16;
+
+//	x1step_c=(tkra_dmuls(x1step_d, y1rcp)+32767)>>16;
+//	x2step_c=(tkra_dmuls(x2step_d, y2rcp)+32767)>>16;
+//	x3step_c=(tkra_dmuls(x3step_d, y3rcp)+32767)>>16;
+#endif
 
 	t0=tve0[TKRA_VX_TPOS];
 	t1=tve1[TKRA_VX_TPOS];

@@ -1250,7 +1250,8 @@ X(__fpu_frcp):
 	fneg?t r4
 
 	.L0:
-	mov #0x7FF, r5		| mov #0x3FF, r6
+//	mov #0x7FF, r5		| mov #0x3FF, r6
+	mov #0x7FE, r5		| mov #0x3FF, r6
 	shld.q r5, #52, r5	| mov #0x400, r3
 	shld.q r6, #52, r6	| sub r5, r4, r5
 	shld.q r3, #52, r3	| fmul r5, r4, r7
@@ -1297,7 +1298,8 @@ X(__fpu_frcp_s):
 	fneg?t r4
 
 	.L0:
-	mov #0x7FF, r5		| mov #0x3FF, r6
+//	mov #0x7FF, r5		| mov #0x3FF, r6
+	mov #0x7FE, r5		| mov #0x3FF, r6
 	shld.q r5, #52, r5	| mov #0x400, r3
 	shld.q r6, #52, r6	| sub r5, r4, r5
 	shld.q r3, #52, r3	| fmul r5, r4, r7
@@ -1341,7 +1343,8 @@ X(__fpu_frcp_sf):
 	cmpqgt #0, r4
 	fneg?f r4
 
-	mov #0x7FF, r5		| mov #0x3FF, r6
+//	mov #0x7FF, r5		| mov #0x3FF, r6
+	mov #0x7FE, r5		| mov #0x3FF, r6
 	shld.q r5, #52, r5	| mov #0x400, r3
 	shld.q r6, #52, r6	| sub r5, r4, r5
 	shld.q r3, #52, r3	| fmul r5, r4, r7
@@ -1362,7 +1365,8 @@ X(__fpu_fdiv_sf):
 //	nop
 	fneg?f r5
 	mov		#0x4000000000000000, r1
-	mov		#0x7FF0000000000000, r3
+//	mov		#0x7FF0000000000000, r3
+	mov		#0x7FE0000000000000, r3
 	mov		#0x3FF0000000000000, r6
 	sub		r3, r5, r3
 	fmul	r3, r5, r7

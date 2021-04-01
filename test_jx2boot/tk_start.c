@@ -232,6 +232,8 @@ void __start()
 	sanity_a();
 //	sanity_b();
 
+#ifndef JX2UC
+
 //	ci=I_GetTime();
 	ci = TK_GetTimeMs();
 	printf("%d\n", ci);
@@ -295,6 +297,9 @@ void __start()
 	}
 #endif
 
+#endif
+
+
 //	puts("Boot Failed\n");
 	puts("No BOOTLOAD.SYS found\n");
 	while(1)
@@ -315,7 +320,7 @@ void __start()
 		case 1:
 			if(a[1])
 			{
-				tk_tryload(a[1], a+1);
+//				tk_tryload(a[1], a+1);
 			}else
 			{
 				printf("usage: %s <image> [args*]\n", a[0]);

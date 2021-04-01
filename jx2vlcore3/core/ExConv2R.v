@@ -6,6 +6,25 @@ Do Simple MOV+Conv style operation.
 
 // `include "ExOpClz.v"
 
+`ifndef jx2_do_convfp16_alu
+
+`ifdef jx2_enable_convrgb32f
+`include "ExConv_Fp8Exp12.v"
+`include "ExConv_Fp12Pck8.v"
+`endif
+
+`ifdef jx2_enable_convrgb30a
+`include "ExConv_Rgb30aExp.v"
+// `include "ExConv_Rgb30aPck.v"
+`endif
+
+`ifdef jx2_enable_convfp16
+`include "ExConv_Fp16Exp32.v"
+`include "ExConv_Fp32Pck16.v"
+`endif
+
+`endif
+
 module ExConv2R(
 	/* verilator lint_off UNUSED */
 	regValRs,
@@ -35,6 +54,67 @@ ExOpClz	clz(0, 0,
 `endif
 
 reg[31:0]	tRegRgb5Upck32;
+
+
+`ifndef jx2_do_convfp16_alu
+
+wire[1:0]		tFp8ExpIsSign;
+assign		tFp8ExpIsSign = { 1'b0, idUIxt[0] };
+
+`ifdef jx2_enable_convrgb32f
+wire[63:0]	tRegRgb32Upck64F;
+ExConv_Fp8Exp12		conv_exp32a(
+	regValRs[ 7: 0], tRegRgb32Upck64F[15: 4], tFp8ExpIsSign);
+ExConv_Fp8Exp12		conv_exp32b(
+	regValRs[15: 8], tRegRgb32Upck64F[31:20], tFp8ExpIsSign);
+ExConv_Fp8Exp12		conv_exp32c(
+	regValRs[23:16], tRegRgb32Upck64F[47:36], tFp8ExpIsSign);
+ExConv_Fp8Exp12		conv_exp32d(
+	regValRs[31:24], tRegRgb32Upck64F[63:52], tFp8ExpIsSign);
+assign	tRegRgb32Upck64F[ 3: 0]=0;
+assign	tRegRgb32Upck64F[19:16]=0;
+assign	tRegRgb32Upck64F[35:32]=0;
+assign	tRegRgb32Upck64F[51:48]=0;
+
+wire[31:0]	tRegRgb32Pck64F;
+ExConv_Fp12Pck8		conv_pck32a(
+	regValRs[15: 4], tRegRgb32Pck64F[ 7: 0], tFp8ExpIsSign);
+ExConv_Fp12Pck8		conv_pck32b(
+	regValRs[31:20], tRegRgb32Pck64F[15: 8], tFp8ExpIsSign);
+ExConv_Fp12Pck8		conv_pck32c(
+	regValRs[47:36], tRegRgb32Pck64F[23:16], tFp8ExpIsSign);
+ExConv_Fp12Pck8		conv_pck32d(
+	regValRs[63:52], tRegRgb32Pck64F[31:24], tFp8ExpIsSign);
+
+`endif
+
+`ifdef jx2_enable_convrgb30a
+wire[63:0]	tRegRgb30aUpck64F;
+ExConv_Rgb30aExp	conv_upck30a(
+	regValRs[31:0], regValRs[31:30],
+	tRegRgb30aUpck64F);
+
+//wire[31:0]	tRegRgb30aPck64F;
+//ExConv_Rgb30aPck	conv_pck30a(
+//	regValRs[63:0], tRegRgb30aPck64F);
+`endif
+
+`ifdef jx2_enable_convfp16
+//wire[63:0]	tRegFp16Upck32L;
+//wire[63:0]	tRegFp16Upck32H;
+wire[63:0]	tRegFp16Upck32;
+wire[31:0]	tRegFp32Pck16;
+
+wire[31:0]	tRegFp16UPckT = idUIxt[0] ? regValRs[63:32] : regValRs[31: 0];
+ExConv_Fp16Exp32	conv_fp16upcka(tRegFp16UPckT[15: 0], tRegFp16Upck32[31: 0]);
+ExConv_Fp16Exp32	conv_fp16upckb(tRegFp16UPckT[31:16], tRegFp16Upck32[63:32]);
+
+ExConv_Fp32Pck16	conv_fp16pcka(regValRs[31: 0], tRegFp32Pck16[15: 0]);
+ExConv_Fp32Pck16	conv_fp16pckb(regValRs[63:32], tRegFp32Pck16[31:16]);
+`endif
+
+`endif
+
 
 always @*
 begin
@@ -290,6 +370,48 @@ begin
 			};
 			
 		end
+`endif
+
+`ifndef jx2_do_convfp16_alu
+
+`ifdef jx2_enable_convrgb32f
+		JX2_UCIX_CONV_RGB32PCK64FU: begin
+			tRegOutVal = { UV32_00, tRegRgb32Pck64F };
+		end
+		JX2_UCIX_CONV_RGB32PCK64FS: begin
+			tRegOutVal = { UV32_00, tRegRgb32Pck64F };
+		end
+		JX2_UCIX_CONV_RGB32UPCK64FU: begin
+			tRegOutVal = tRegRgb32Upck64F;
+		end
+		JX2_UCIX_CONV_RGB32UPCK64FS: begin
+			tRegOutVal = tRegRgb32Upck64F;
+		end
+`endif
+
+`ifdef jx2_enable_convrgb30a
+		JX2_UCIX_CONV_RGB30APCK64F: begin
+//			tRegOutVal = { UV32_00, tRegRgb30aPck64F };
+		end
+		JX2_UCIX_CONV_RGB30AUPCK64F: begin
+			tRegOutVal = tRegRgb30aUpck64F;
+		end
+`endif
+
+`ifdef jx2_enable_convfp16
+		JX2_UCIX_CONV_FP16UPCK32L: begin
+//			tRegOutVal = tRegFp16Upck32L;
+			tRegOutVal = tRegFp16Upck32;
+		end
+		JX2_UCIX_CONV_FP16UPCK32H: begin
+//			tRegOutVal = tRegFp16Upck32H;
+			tRegOutVal = tRegFp16Upck32;
+		end
+		JX2_UCIX_CONV_FP16PCK32: begin
+			tRegOutVal = { UV32_00, tRegFp32Pck16 };
+		end
+`endif
+
 `endif
 
 		default: begin

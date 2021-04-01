@@ -1881,6 +1881,120 @@ int GL_LoadTexture (char *identifier,
 
 /*
 ================
+GL_LoadTexture32
+================
+*/
+int GL_LoadTexture32 (char *identifier,
+	int width, int height, byte *data,
+	qboolean mipmap, qboolean alpha)
+{
+	u64 h;
+	char		tname[256], tid1[64];
+	qboolean	noalpha;
+	byte		*imgbuf;
+	char		*cs;
+	int			i, p, s, imgbufsz;
+	gltexture_t	*glt;
+
+	// see if the texture is allready present
+	if (identifier[0])
+	{
+		for (i=0, glt=gltextures ; i<numgltextures ; i++, glt++)
+		{
+			if (!strcmp (identifier, glt->identifier))
+			{
+				if (width != glt->width || height != glt->height)
+					Sys_Error ("GL_LoadTexture: cache mismatch");
+				return gltextures[i].texnum;
+			}
+		}
+	}
+	else {
+//		glt = &gltextures[numgltextures];
+//		numgltextures++;
+	}
+
+	gl_savetexname = NULL;
+	imgbuf = NULL;
+
+	if(identifier && (strlen(identifier)>2))
+	{
+		strcpy(tid1, identifier);
+		cs=tid1;
+		while(*cs)
+		{
+			i=*cs;
+			if((i>='a') && (i<='z'))
+				{ cs++; continue; }
+			if((i>='A') && (i<='Z'))
+				{ cs++; continue; }
+			if((i>='0') && (i<='9'))
+				{ cs++; continue; }
+			if((i=='_') || (i=='-'))
+				{ cs++; continue; }
+			*cs++='_';
+		}
+		
+		if(strlen(tid1)>12)
+		{
+			cs=identifier; h=0;
+			while(*cs)
+				{ h=(h*65521)+(*cs++); }
+			i=4;
+			while(i--)
+				{ h=(h*65521)+1; }
+			i=(h>>16)&0x7FFFFFFFU;
+			sprintf(tid1, "x%08x", i);
+		}
+		
+//		sprintf(tname, "texcache/%s.lmp", tid1);
+		sprintf(tname, "texcache/%s.dds", tid1);
+//		imgbuf = COM_LoadFileSz(tname, 1, &imgbufsz);
+		imgbuf = COM_LoadFileSz(tname, 5, &imgbufsz);
+#ifndef __BJX2__
+		gl_savetexname = tname;
+#endif
+	}
+
+//	if(identifier && !strncmp(identifier, "progs/", 6))
+//		{ alpha = 0; }
+
+	if(!imgbuf && !data)
+	{
+		return(-1);
+	}
+
+	glt = &gltextures[numgltextures];
+	numgltextures++;
+
+	strcpy (glt->identifier, identifier);
+	glt->texnum = texture_extension_number;
+	glt->width = width;
+	glt->height = height;
+	glt->mipmap = mipmap;
+
+	GL_Bind( texture_extension_number );
+
+	if(imgbuf)
+	{
+		GL_UploadCompressed (imgbuf, width, height, mipmap, alpha);
+
+		free(imgbuf);
+	}
+	else
+	{
+		GL_Upload32 (data, width, height, mipmap, alpha);
+	}
+
+	gl_savetexname = NULL;
+
+	texture_extension_number++;
+
+	return texture_extension_number-1;
+}
+
+/*
+================
 GL_LoadPicTexture
 ================
 */

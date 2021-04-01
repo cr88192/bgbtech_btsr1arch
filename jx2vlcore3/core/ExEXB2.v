@@ -212,6 +212,9 @@ begin
 			tRegValRn2		= regFpuGRn;
 		end
 
+		JX2_UCMD_BLINT: begin
+		end
+
 		default: begin
 			if(!tMsgLatch)
 				$display("EX2B: Unhandled UCmd %X", opUCmd);

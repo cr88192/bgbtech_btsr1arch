@@ -48,7 +48,7 @@ ccxl_status BGBCC_CCXL_RegisterAllocTemporaryLLn(
 {
 	BGBCC_CCXL_RegisterInfo *ri;
 	ccxl_register treg;
-	int i, j, k, z;
+	int i, j, k, z, bi, rov, nr;
 
 	BGBCC_CCXL_MarkTypeAccessed(ctx, bty);
 
@@ -78,8 +78,35 @@ ccxl_status BGBCC_CCXL_RegisterAllocTemporaryLLn(
 		}
 	}
 #endif
+
+	rov=ctx->regrov;
+	ctx->regrov=rov+1;
+	bi=-1;
+
+	nr=ctx->cur_func->n_regs;
+	for(i=0; i<nr; i++)
+	{
+		j=(i+rov)%nr;
+
+		ri=ctx->cur_func->regs[j];
+		if(!ri)
+			continue;
+
+		if(!ri->ucnt && (ri->type_zb==z))
+		{
+			if((BGBCC_CCXL_TypeValueObjectP(ctx, bty) ||
+				BGBCC_CCXL_TypeValueObjectP(ctx, ri->type)) &&
+				!BGBCC_CCXL_TypeEqualP(ctx, bty, ri->type))
+					continue;
+
+			bi=j;
+			break;
+		}
+	}
+
 	
-	for(i=0; i<256; i++)
+//	for(i=0; i<256; i++)
+	for(i=0; i<ctx->cur_func->m_regs; i++)
 	{
 //		j=ctx->cur_func->regs_tyseq[i];
 //		if(j && (((j>>16)&15)!=z))
@@ -126,6 +153,15 @@ ccxl_status BGBCC_CCXL_RegisterAllocTemporaryLLn(
 				BGBCC_CCXL_TypeValueObjectP(ctx, ri->type)) &&
 				!BGBCC_CCXL_TypeEqualP(ctx, bty, ri->type))
 					continue;
+
+			bi=i;
+			break;
+
+#if 0
+			if((BGBCC_CCXL_TypeValueObjectP(ctx, bty) ||
+				BGBCC_CCXL_TypeValueObjectP(ctx, ri->type)) &&
+				!BGBCC_CCXL_TypeEqualP(ctx, bty, ri->type))
+					continue;
 		
 			ri->cseq++;
 //			ri->type_zb=z;
@@ -139,7 +175,31 @@ ccxl_status BGBCC_CCXL_RegisterAllocTemporaryLLn(
 				ri->regid;
 			*rtreg=treg;
 			return(i);
+#endif
 		}
+	}
+	
+	if(bi>=0)
+	{
+		ri=ctx->cur_func->regs[bi];
+
+//		if((BGBCC_CCXL_TypeValueObjectP(ctx, bty) ||
+//			BGBCC_CCXL_TypeValueObjectP(ctx, ri->type)) &&
+//			!BGBCC_CCXL_TypeEqualP(ctx, bty, ri->type))
+//				continue;
+	
+		ri->cseq++;
+//		ri->type_zb=z;
+
+		ri->type=bty;
+		ri->regid=bi|((ri->cseq&4095)<<12);
+		ri->ucnt=1;
+
+		treg.val=CCXL_REGTY_TEMP|
+			(((u64)bty.val)<<CCXL_REGID_TYPESHIFT)|
+			ri->regid;
+		*rtreg=treg;
+		return(bi);
 	}
 
 	BGBCC_CCXL_TagError(ctx,

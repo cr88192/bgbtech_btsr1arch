@@ -51,6 +51,7 @@ module ExEX2(
 	regValMulwRes,	//Multiplier Word Result
 	regValKrreRes,	//Keyring Result
 	regValAluResB,	//ALU Result (ALUB)
+	regBlintRes,	//ALU Result (ALUB)
 
 	regFpuGRn,		//FPU GPR Result
 	regFpuLdGRn,		//FPU GPR Result
@@ -108,6 +109,8 @@ input[63:0]		regValMulRes;	//Multiplier Result
 input[63:0]		regValMulwRes;	//Multiplier Result
 input[65:0]		regValKrreRes;	//Keyring Result
 input[65:0]		regValAluResB;	//ALU Result (ALUB)
+
+input[63:0]		regBlintRes;	//BLINT Result
 
 input[63:0]		regFpuGRn;		//FPU GPR Result
 input[63:0]		regFpuLdGRn;	//FPU GPR Result (Mem Load)
@@ -263,7 +266,8 @@ begin
 			tRegHeld	= 1;
 		end
 
-		JX2_UCMD_ALU3, JX2_UCMD_UNARY, JX2_UCMD_ALUW3: begin
+		JX2_UCMD_ALU3, JX2_UCMD_UNARY, JX2_UCMD_ALUW3,
+		JX2_UCMD_CONV2_RR: begin
 			tRegIdRn2		= regIdRm;			//
 			tRegValRn2		= regValAluRes[63:0];		//
 			tDoAluSrT		= 1;
@@ -306,7 +310,15 @@ begin
 		JX2_UCMD_SHLDQ3: begin
 		end
 `endif
-		
+
+`ifdef jx2_enable_blint
+		JX2_UCMD_BLINT: begin
+			tDoHoldCyc	= 6;
+			tRegIdRn2	= regIdRm;			//
+			tRegValRn2	= regBlintRes;		//
+		end
+`endif
+
 		JX2_UCMD_CONV_RR: begin
 		end
 		

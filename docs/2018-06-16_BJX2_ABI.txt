@@ -54,9 +54,15 @@ Basic C ABI:
 ** TBR will be a System register, and should not be modified by normal code.
 ** The use of TBR is outside the scope of the basic C ABI.
 
+Note that R16..R19 may be stomped during prolog and epilog sequences.
+
 Extended Xn Registers:
-* X32..X46: Scratch
-* X48..X62: Callee Preserve
+* X32..X46: / Scratch
+* X48..X62: / Callee Preserve
+* X32..X38: Scratch
+* X40..X46: Callee Preserve
+* X48..X54: Scratch
+* X56..X62: Callee Preserve
 
 If insufficient free registers exist to pass an argument, it and any following arguments of the same class will be passed on the stack. The stack will not have any spill space.
 
@@ -127,17 +133,30 @@ General:
 * GBR reload will be required for functions which may be called externally.
 ** This includes exported functions and function pointers.
 
-Example of a GBR reload (64 bit address space):
+Example of a GBR reload (64 bit address space, Old):
  LDI #offs_pbo_base, R0		//special reloc
  MOV.Q (GBR, DLR), R1
  NOP4
  MOV R1, GBR
 
-Example of a GBR reload (32 bit address space):
+Example of a GBR reload (32 bit address space, Old):
  LDI #offs_pbo_base, R0		//special reloc
  MOV.L (GBR, DLR), R1
  NOP4
  MOV R1, GBR
+
+Change:
+Example of a GBR reload (New, No Jumbo):
+ MOV.Q (GBR, 0), R18
+ LDI #offs_pbo_base, R0		//(No Jumbo)
+ MOV.Q (R18, DLR), R18
+ MOV R18, GBR
+ 
+Example of a GBR reload (New, Jumbo):
+ MOV.Q (GBR, 0), R18
+ MOV.Q (R18, Disp33s), R18
+ MOV R18, GBR
+
 
 As emitted by the compiler, the PBO base offset will point to the start of the PBO data region, which will hold a pointer back to itself.
 

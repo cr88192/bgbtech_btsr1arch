@@ -3022,8 +3022,17 @@ int BGBCC_JX2C_EmitStoreFrameVRegReg(
 
 		if(BGBCC_CCXL_TypeVec128P(ctx, tty))
 		{
-			BGBCC_JX2C_EmitStoreBRegOfsReg(ctx, sctx,
-				BGBCC_SH_NMID_MOVX2, treg, 0, sreg);
+			if(sctx->has_pushx2 && !(sreg&1))
+			{
+				BGBCC_JX2C_EmitStoreBRegOfsReg(ctx, sctx,
+					BGBCC_SH_NMID_MOVX2, treg, 0, sreg);
+			}else
+			{
+				BGBCC_JX2C_EmitStoreBRegOfsReg(ctx, sctx,
+					BGBCC_SH_NMID_MOVQ, treg, 0, sreg+0);
+				BGBCC_JX2C_EmitStoreBRegOfsReg(ctx, sctx,
+					BGBCC_SH_NMID_MOVQ, treg, 8, sreg+1);
+			}
 			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, treg);
 			return(1);
 		}
@@ -5210,11 +5219,21 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 //			k+=sctx->is_addr64?2:1;
 
 			j=BGBCC_JX2_GetNamedLabel(sctx, "__global_ptr");
-			BGBCC_JX2_EmitLoadRegLabelVarRel24(sctx,
+//			BGBCC_JX2_EmitLoadRegLabelVarRel24(sctx,
+//				BGBCC_SH_NMID_MOVQ,
+//				BGBCC_SH_REG_R1, j);
+//			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_MOV,
+//				BGBCC_SH_REG_R1, BGBCC_SH_REG_GBR);
+
+			BGBCC_JX2_EmitRelocTy(sctx, j, BGBCC_SH_RLC_TBR12_BJX);
+			BGBCC_JX2_EmitOpLdRegDispReg(sctx,
 				BGBCC_SH_NMID_MOVQ,
-				BGBCC_SH_REG_R1, j);
+				BGBCC_SH_REG_GBR, 0, BGBCC_SH_REG_R18);
+			BGBCC_JX2_EmitOpLdRegDispReg(sctx,
+				BGBCC_SH_NMID_MOVQ_DISP,
+				BGBCC_SH_REG_R18, 0, BGBCC_SH_REG_R18);
 			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_MOV,
-				BGBCC_SH_REG_R1, BGBCC_SH_REG_GBR);
+				BGBCC_SH_REG_R18, BGBCC_SH_REG_GBR);
 		}
 #endif
 

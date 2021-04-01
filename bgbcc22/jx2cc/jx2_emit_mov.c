@@ -251,7 +251,7 @@ int BGBCC_JX2_TryEmitOpRegStReg(BGBCC_JX2_Context *ctx,
 
 		BGBCC_JX2DA_EmitOpRegStReg(ctx, nmid, rm, rn);
 	
-		BGBCC_JX2_EmitOpCheckRepack(ctx, &opw1, &opw2);
+		BGBCC_JX2_EmitOpCheckRepack(ctx, &opw1, &opw2, 0);
 		BGBCC_JX2_EmitPadForOpWord(ctx, opw1);
 		BGBCC_JX2_EmitWord(ctx, opw1);
 		if(opw2>=0)
@@ -558,7 +558,7 @@ int BGBCC_JX2_TryEmitOpLdRegReg(BGBCC_JX2_Context *ctx,
 
 		BGBCC_JX2DA_EmitOpLdRegReg(ctx, nmid, rm, rn);
 
-		BGBCC_JX2_EmitOpCheckRepack(ctx, &opw1, &opw2);
+		BGBCC_JX2_EmitOpCheckRepack(ctx, &opw1, &opw2, 0);
 		BGBCC_JX2_EmitPadForOpWord(ctx, opw1);
 		BGBCC_JX2_EmitWord(ctx, opw1);
 		if(opw2>=0)
@@ -1669,7 +1669,13 @@ int BGBCC_JX2_TryEmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,
 	int i, j, k;
 
 //	if(!disp)
-	if(!disp && (nmid!=BGBCC_SH_NMID_MOVX2))
+//	if(!disp && (nmid!=BGBCC_SH_NMID_MOVX2))
+	if(!disp &&
+		(nmid!=BGBCC_SH_NMID_MOVX2) &&
+		(nmid!=BGBCC_SH_NMID_MOVQ_DISP) &&
+		(rm!=BGBCC_SH_REG_PC) &&
+		(rm!=BGBCC_SH_REG_GBR) &&
+		(rm!=BGBCC_SH_REG_TBR))
 	{
 		return(BGBCC_JX2_TryEmitOpLdRegReg(ctx, nmid, rm, rn));
 	}
@@ -1705,6 +1711,7 @@ int BGBCC_JX2_TryEmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,
 			disp<<=2;
 			break;
 		case BGBCC_SH_NMID_MOVQ:
+		case BGBCC_SH_NMID_MOVQ_DISP:
 		case BGBCC_SH_NMID_MOVX2:
 			disp<<=3;
 			break;
@@ -2254,6 +2261,30 @@ int BGBCC_JX2_TryEmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,
 
 			opw1=0xF000|ex;	odr=8;
 			opw2=0x0F00|((rn&15)<<4)|((rm&15)<<0);			break;
+
+		case BGBCC_SH_NMID_MOVQ_DISP:
+			if(ctx->has_jumbo && !ctx->op_is_wex2 && !(disp&7))
+			{
+				i=BGBCC_JX2_ComposeJumboRegImmRegF2A(ctx,
+					&opw1, &opw2, &opw3, &opw4,
+					0xF100, 0xB000,
+					rm, disp>>3, rn);
+				if(i>0)break;
+			}
+
+//			opw1=0xF100|((rn&15)<<4)|((rm&15)<<0);
+//			opw2=0xB000|ex2|((disp>>3)&511);
+//			break;
+
+//			opw1=0xF000|ex;	odr=8;
+//			opw2=0x0F00|((rn&15)<<4)|((rm&15)<<0);
+//			break;
+
+			opw1=0xFA00|((disp>>19)&0x01FF);
+			opw2=0x0000|((disp>> 3)&0xFFFF);
+			opw3=0xF000|ex;
+			opw4=0x0F00|((rn&15)<<4)|((rm&15)<<0);
+			break;
 
 		case BGBCC_SH_NMID_MOVUB:
 //			if(!ctx->is_fixed32)

@@ -294,6 +294,13 @@ reg		tRegEx1NoForward;
 reg		tRegEx2NoForward;
 reg		tRegEx3NoForward;
 
+wire	tEnablePcLsb;
+`ifdef jx2_enable_ops24
+assign	tEnablePcLsb = (regIdUIxt[2:0] == JX2_BTY_SB);
+`else
+assign	tEnablePcLsb = 0;
+`endif
+
 always @*
 begin
 	tValRsZz=0;
@@ -430,11 +437,15 @@ begin
 //		JX2_GR_SP:	tValRsA=regInSp;
 
 `ifdef jx2_enable_vaddr48
-		JX2_GR_PC:	tValRsA={ UV16_00, regValPc };
+//		JX2_GR_PC:	tValRsA={ UV16_00, regValPc };
+		JX2_GR_PC:	tValRsA={ UV16_00, regValPc[47:1],
+			regValPc[0] &tEnablePcLsb };
 		JX2_GR_GBR:	tValRsA={ UV16_00, regValGbr };
 		JX2_GR_LR:	tValRsA={ UV16_00, regValLr };
 `else
-		JX2_GR_PC:	tValRsA={ UV32_00, regValPc[31:0] };
+//		JX2_GR_PC:	tValRsA={ UV32_00, regValPc[31:0] };
+		JX2_GR_PC:	tValRsA={ UV32_00, regValPc[31:1],
+			regValPc[0] &tEnablePcLsb };
 		JX2_GR_GBR:	tValRsA={ UV32_00, regValGbr[31:0] };
 		JX2_GR_LR:	tValRsA={ UV32_00, regValLr[31:0] };
 `endif

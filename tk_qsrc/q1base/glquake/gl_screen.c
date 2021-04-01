@@ -826,6 +826,8 @@ void SCR_UpdateScreen (void)
 {
 	static float	oldscr_viewsize;
 	vrect_t		vrect;
+	float		fps;
+	int			ifps;
 
 	if (block_drawing)
 		return;
@@ -918,6 +920,22 @@ void SCR_UpdateScreen (void)
 		Sbar_Draw ();
 		SCR_DrawConsole ();	
 		M_Draw ();
+
+		if(1)
+		{
+//			fps = 1.0 / (host_frametime+0.00001);
+			fps = 1.0 / (real_frametime+0.00001);
+			ifps = fps;
+
+			Draw_Character (scr_vrect.x + scr_vrect.width-18,
+//				scr_vrect.y + scr_vrect.height-12,
+				4,
+				'0'+(ifps/10));
+			Draw_Character (scr_vrect.x + scr_vrect.width-18+8,
+//				scr_vrect.y + scr_vrect.height-12,
+				4,
+				'0'+(ifps%10));
+		}
 	}
 
 	V_UpdatePalette ();

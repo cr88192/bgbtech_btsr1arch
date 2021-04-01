@@ -47,6 +47,8 @@ X(tk_checksane_mem_asm):
 	mov.q	r8,  (sp,  8)
 	mov.q	r10, (sp,  0)
 
+#ifndef JX2UC
+
 	mov.x	(sp, 32), r16
 	cmpqeq	r16, r10
 	break?f
@@ -74,6 +76,8 @@ X(tk_checksane_mem_asm):
 	break?f
 	cmpqeq	r7, r11
 	break?f
+
+#endif
 
 
 //	push r8

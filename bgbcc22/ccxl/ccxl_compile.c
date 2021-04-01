@@ -56,6 +56,13 @@ void BGBCC_CCXL_StubErrorLLn(BGBCC_TransState *ctx,
 	BGBCC_DBGBREAK
 }
 
+void BGBCC_CCXL_SanityErrorLLn(BGBCC_TransState *ctx,
+	char *file, int line)
+{
+	BGBCC_CCXL_Error(ctx, "SanityError %s:%d\n", file, line);
+	BGBCC_DBGBREAK
+}
+
 
 void BGBCC_CCXL_Warn2(BGBCC_TransState *ctx,
 	int lfni, int lln, char *str, ...)

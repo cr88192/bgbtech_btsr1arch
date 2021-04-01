@@ -565,18 +565,21 @@ int BGBCC_JX2C_EmitBinaryVRegVRegInt(
 	case CCXL_BINOP_SHR:
 		if(sctx->has_shad)
 		{
-			nm1=BGBCC_SH_NMID_SHAD;
-			nm2=BGBCC_SH_NMID_NEG;
+//			nm1=BGBCC_SH_NMID_SHAD;
+//			nm2=BGBCC_SH_NMID_NEG;
+			nm1=BGBCC_SH_NMID_SHAR;
 			if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
-				nm1=BGBCC_SH_NMID_SHLD;
+//				nm1=BGBCC_SH_NMID_SHLD;
+				nm1=BGBCC_SH_NMID_SHLR;
 			break;
 		}
 		break;
 	case CCXL_BINOP_SHRR:
 		if(sctx->has_shad)
 		{
-			nm1=BGBCC_SH_NMID_SHLD;
-			nm2=BGBCC_SH_NMID_NEG;
+//			nm1=BGBCC_SH_NMID_SHLD;
+			nm1=BGBCC_SH_NMID_SHLR;
+//			nm2=BGBCC_SH_NMID_NEG;
 			break;
 		}
 		break;
@@ -1173,13 +1176,17 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegInt(
 	case CCXL_BINOP_SHR:
 		if(sctx->has_shad)
 		{
-			nm1=BGBCC_SH_NMID_SHAD;
-			nm2=BGBCC_SH_NMID_NEG;
-			nm3=BGBCC_SH_NMID_SHAR;
+			nm1=BGBCC_SH_NMID_SHAR;
+
+//			nm1=BGBCC_SH_NMID_SHAD;
+//			nm2=BGBCC_SH_NMID_NEG;
+//			nm3=BGBCC_SH_NMID_SHAR;
 			if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
 			{
-				nm1=BGBCC_SH_NMID_SHLD;
-				nm3=BGBCC_SH_NMID_SHLR;
+//				nm1=BGBCC_SH_NMID_SHLD;
+//				nm3=BGBCC_SH_NMID_SHLR;
+
+				nm1=BGBCC_SH_NMID_SHLR;
 			}
 			break;
 		}
@@ -1187,8 +1194,9 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegInt(
 	case CCXL_BINOP_SHRR:
 		if(sctx->has_shad)
 		{
-			nm1=BGBCC_SH_NMID_SHLD;
-			nm2=BGBCC_SH_NMID_NEG;
+//			nm1=BGBCC_SH_NMID_SHLD;
+//			nm2=BGBCC_SH_NMID_NEG;
+			nm1=BGBCC_SH_NMID_SHLR;
 			break;
 		}
 		break;

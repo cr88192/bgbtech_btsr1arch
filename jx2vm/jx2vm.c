@@ -1001,8 +1001,8 @@ int main(int argc, char *argv[])
 		ctx->dbg_bss_end=0;
 	}
 
-//	ctx_c2=BJX2_CreateSubContext(ctx);
-	ctx_c2=NULL;
+	ctx_c2=BJX2_CreateSubContext(ctx);
+//	ctx_c2=NULL;
 	
 	ctx->core_id=0;
 	if(ctx_c2)

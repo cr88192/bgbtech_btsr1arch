@@ -1274,6 +1274,11 @@ int			posenum;
 byte		**player_8bit_texels_tbl;
 byte		*player_8bit_texels;
 
+byte		alias_usevert[MAXALIASVERTS];
+
+byte		alias_mins[4];
+byte		alias_maxs[4];
+
 /*
 =================
 Mod_LoadAliasFrame
@@ -1282,7 +1287,7 @@ Mod_LoadAliasFrame
 void * Mod_LoadAliasFrame (void * pin, maliasframedesc_t *frame)
 {
 	trivertx_t		*pframe, *pinframe;
-	int				i, j;
+	int				i, j, k;
 	daliasframe_t	*pdaliasframe;
 	
 	pdaliasframe = (daliasframe_t *)pin;
@@ -1296,7 +1301,12 @@ void * Mod_LoadAliasFrame (void * pin, maliasframedesc_t *frame)
 	// these are byte values, so we don't have to worry about
 	// endianness
 		frame->bboxmin.v[i] = pdaliasframe->bboxmin.v[i];
-		frame->bboxmin.v[i] = pdaliasframe->bboxmax.v[i];
+		frame->bboxmax.v[i] = pdaliasframe->bboxmax.v[i];
+		
+//		if(frame->bboxmin.v[i]<alias_mins[i])
+//			alias_mins[i]=frame->bboxmin.v[i];
+//		if(frame->bboxmax.v[i]>alias_maxs[i])
+//			alias_maxs[i]=frame->bboxmax.v[i];
 	}
 
 	pinframe = (trivertx_t *)(pdaliasframe + 1);
@@ -1305,6 +1315,19 @@ void * Mod_LoadAliasFrame (void * pin, maliasframedesc_t *frame)
 		pheader->numverts * sizeof(trivertx_t));
 	memcpy(poseverts[posenum], pinframe,
 		pheader->numverts * sizeof(trivertx_t));
+
+	for (i=0 ; i<pheader->numverts ; i++)
+		for (j=0 ; j<3 ; j++)
+	{
+		if(!alias_usevert[i])
+			continue;
+
+		k=pinframe[i].v[j];
+		if(k<alias_mins[j])
+			alias_mins[j]=k;
+		if(k>alias_maxs[j])
+			alias_maxs[j]=k;
+	}
 
 //	poseverts[posenum] = pinframe;
 	posenum++;
@@ -1323,8 +1346,9 @@ Mod_LoadAliasGroup
 void *Mod_LoadAliasGroup (void * pin,  maliasframedesc_t *frame)
 {
 	daliasgroup_t		*pingroup;
-	int					i, numframes;
+	int					i, j, k, l, numframes;
 	daliasinterval_t	*pin_intervals;
+	trivertx_t			*pinframe;
 	void				*ptemp;
 	
 	pingroup = (daliasgroup_t *)pin;
@@ -1338,7 +1362,12 @@ void *Mod_LoadAliasGroup (void * pin,  maliasframedesc_t *frame)
 	{
 	// these are byte values, so we don't have to worry about endianness
 		frame->bboxmin.v[i] = pingroup->bboxmin.v[i];
-		frame->bboxmin.v[i] = pingroup->bboxmax.v[i];
+		frame->bboxmax.v[i] = pingroup->bboxmax.v[i];
+		
+//		if(frame->bboxmin.v[i]<alias_mins[i])
+//			alias_mins[i]=frame->bboxmin.v[i];
+//		if(frame->bboxmax.v[i]>alias_maxs[i])
+//			alias_maxs[i]=frame->bboxmax.v[i];
 	}
 
 	pin_intervals = (daliasinterval_t *)(pingroup + 1);
@@ -1351,6 +1380,8 @@ void *Mod_LoadAliasGroup (void * pin,  maliasframedesc_t *frame)
 
 	for (i=0 ; i<numframes ; i++)
 	{
+		pinframe = (trivertx_t *)((daliasframe_t *)ptemp + 1);
+
 		poseverts[posenum] = Hunk_Alloc (
 			pheader->numverts * sizeof(trivertx_t));
 		memcpy(poseverts[posenum], ((daliasframe_t *)ptemp + 1),
@@ -1360,6 +1391,19 @@ void *Mod_LoadAliasGroup (void * pin,  maliasframedesc_t *frame)
 		posenum++;
 
 		ptemp = (trivertx_t *)((daliasframe_t *)ptemp + 1) + pheader->numverts;
+
+		for (k=0 ; k<pheader->numverts ; k++)
+			for (j=0 ; j<3 ; j++)
+		{
+			if(!alias_usevert[k])
+				continue;
+		
+			l=pinframe[k].v[j];
+			if(l<alias_mins[j])
+				alias_mins[j]=l;
+			if(l>alias_maxs[j])
+				alias_maxs[j]=l;
+		}
 	}
 
 	return ptemp;
@@ -1686,6 +1730,14 @@ void Mod_LoadAliasModel (model_t *mod, void *buffer)
 		Sys_Error ("%s has wrong version number (%i should be %i)",
 				 mod->name, version, ALIAS_VERSION);
 
+	for(i=0; i<4; i++)
+	{
+		alias_mins[i]=255;
+		alias_maxs[i]=0;
+	}
+
+	memset(alias_usevert, 0, MAXALIASVERTS);
+
 //
 // allocate space for a working header, plus all the data except the frames,
 // skin and group info
@@ -1785,8 +1837,9 @@ void Mod_LoadAliasModel (model_t *mod, void *buffer)
 
 		for (j=0 ; j<3 ; j++)
 		{
-			triangles[i].vertindex[j] =
-					LittleLong (pintriangles[i].vertindex[j]);
+			k = LittleLong (pintriangles[i].vertindex[j]);
+			triangles[i].vertindex[j] = k;
+			alias_usevert[k] = 1;
 		}
 	}
 	
@@ -1896,6 +1949,20 @@ void Mod_LoadAliasModel (model_t *mod, void *buffer)
 	// build the draw lists
 	//
 //	GL_MakeAliasModelDisplayLists (mod, pheader);
+
+	GL_MakeAliasModelSpriteSheets (mod, pheader);
+
+#if 0
+	Con_Printf("Model: %s %d frames\n", mod->name, pheader->numposes);
+	
+	k=ceil(sqrt(pheader->numposes));
+	j=32*k;
+	if(j>256)j=256;
+	j=j/k;
+	Con_Printf("Model: %s cells=%d, cellpix=%d, sheet=%d\n",
+		mod->name, k, j, k*j);
+	
+#endif
 
 //
 // move the complete, relocatable alias model to the cache

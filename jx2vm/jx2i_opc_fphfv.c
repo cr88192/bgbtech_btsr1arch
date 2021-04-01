@@ -1216,3 +1216,293 @@ void BJX2_Op_BLKUTX2_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 	ctx->regs[op->rn]=vc;
 }
+
+
+void BJX2_Op_BLKUTX3H_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+}
+
+void BJX2_Op_BLKUTX3L_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+}
+
+void BJX2_Op_BLINT_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 pxa, pxb, pxc, pxd, frsp, frtp;
+	u64 clrp, clrq, clrr;
+	u64 frsn, frtn;
+	int ix, px, cxa, cxb;
+
+	pxa=ctx->regs[op->rm+0];
+	pxc=ctx->regs[op->rm+1];
+	pxb=ctx->regs[op->ro+0];
+	pxd=ctx->regs[op->ro+1];
+	
+	frsp=ctx->regs[op->rn+0];
+	frtp=ctx->regs[op->rn+1];
+	frsn=~frsp;
+	frtn=~frtp;
+
+	clrp=tkra_pmuluhw(pxa, frsn) + tkra_pmuluhw(pxb, frsp);
+	clrq=tkra_pmuluhw(pxc, frsn) + tkra_pmuluhw(pxd, frsp);
+	clrr=tkra_pmuluhw(clrp, frtn) + tkra_pmuluhw(clrq, frtp);
+	ctx->regs[op->rn]=clrr;
+}
+
+void BJX2_Op_BLINTA_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	BJX2_Opcode *opa, *opb;
+	u64 pxa, pxb, pxc, pxd, frsp, frtp;
+	u64 clrp, clrq, clrr;
+	u64 frsn, frtn;
+	int ix, px, cxa, cxb;
+
+	opa=op;
+	opb=op->data;
+
+	if(!opb)
+	{
+		ctx->regs[op->rn]=0;
+		return;
+	}
+
+	pxa=ctx->regs[opa->rm];
+	pxc=ctx->regs[opb->rm];
+	pxb=ctx->regs[opa->ro];
+	pxd=ctx->regs[opb->ro];
+	
+	frsp=ctx->regs[opa->rn];
+	frtp=ctx->regs[opb->rn];
+	frsn=~frsp;
+	frtn=~frtp;
+
+	clrp=tkra_pmuluhw(pxa, frsn) + tkra_pmuluhw(pxb, frsp);
+	clrq=tkra_pmuluhw(pxc, frsn) + tkra_pmuluhw(pxd, frsp);
+	clrr=tkra_pmuluhw(clrp, frtn) + tkra_pmuluhw(clrq, frtp);
+	ctx->regs[op->rn]=clrr;
+}
+
+void BJX2_Op_BLERP_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 pxa, pxb, pxc, pxd, frsp, frtp;
+	u64 clrp, clrq, clrr;
+	u64 frsn, frtn;
+	int ix, px, cxa, cxb;
+
+	pxa=ctx->regs[op->rm];
+	pxb=ctx->regs[op->ro];
+	
+	frsp=ctx->regs[op->rn];
+	frsn=~frsp;
+	clrp=tkra_pmuluhw(pxa, frsn) + tkra_pmuluhw(pxb, frsp);
+	ctx->regs[op->rn]=clrp;
+}
+
+void BJX2_Op_PLDCH_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	float tv0[4], tv1[4], tv2[4];
+	u32 v0, v1;
+	u64	vs, vt, vn;
+
+	vs=ctx->regs[op->rm];
+	jx2_upvec_hf(tv0, vs);
+	
+	BJX2_PtrSetFloat(&v0, tv0[0]);
+	BJX2_PtrSetFloat(&v1, tv0[1]);
+	
+	vn=(((u64)v1)<<32)|v0;
+	ctx->regs[op->rn]=vn;
+	
+//	vn=jx2_mkvec_hf(tv2[0], tv2[1], tv2[2], tv2[3]);
+//	ctx->regs[op->rn]=vn;
+}
+
+void BJX2_Op_PLDCHH_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	float tv0[4], tv1[4], tv2[4];
+	u32 v0, v1;
+	u64	vs, vt, vn;
+
+	vs=ctx->regs[op->rm];
+	jx2_upvec_hf(tv0, vs);
+	
+	BJX2_PtrSetFloat(&v0, tv0[2]);
+	BJX2_PtrSetFloat(&v1, tv0[3]);
+	
+	vn=(((u64)v1)<<32)|v0;
+	ctx->regs[op->rn]=vn;
+	
+//	vn=jx2_mkvec_hf(tv2[0], tv2[1], tv2[2], tv2[3]);
+//	ctx->regs[op->rn]=vn;
+}
+
+void BJX2_Op_PLDCHX_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	float tv0[4], tv1[4], tv2[4];
+	u32 v0, v1, v2, v3;
+	u64	vs, vt, vn0, vn1;
+
+	vs=ctx->regs[op->rm];
+	jx2_upvec_hf(tv0, vs);
+	
+	BJX2_PtrSetFloat(&v0, tv0[0]);
+	BJX2_PtrSetFloat(&v1, tv0[1]);
+	BJX2_PtrSetFloat(&v2, tv0[2]);
+	BJX2_PtrSetFloat(&v3, tv0[3]);
+	
+	vn0=(((u64)v1)<<32)|v0;
+	vn1=(((u64)v3)<<32)|v2;
+	ctx->regs[op->rn+0]=vn0;
+	ctx->regs[op->rn+1]=vn1;
+	
+//	vn=jx2_mkvec_hf(tv2[0], tv2[1], tv2[2], tv2[3]);
+//	ctx->regs[op->rn]=vn;
+}
+
+
+void BJX2_Op_PSTCH_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	float tv0[4], tv1[4], tv2[4];
+	u32 v0, v1;
+	u64	vs, vt, vn;
+
+	vs=ctx->regs[op->rm];
+//	jx2_upvec_hf(tv0, vs);
+	
+//	BJX2_PtrSetFloat(&v0, tv0[0]);
+//	BJX2_PtrSetFloat(&v1, tv0[1]);
+	
+//	vn=(((u64)v1)<<32)|v0;
+//	ctx->regs[op->rn]=vn;
+	
+	v0=vs;
+	v1=vs>>32;
+	tv2[0]=BJX2_PtrGetFloat(&v0);
+	tv2[1]=BJX2_PtrGetFloat(&v1);
+	tv2[2]=0;
+	tv2[3]=0;
+	
+	vn=jx2_mkvec_hf(tv2[0], tv2[1], tv2[2], tv2[3]);
+	ctx->regs[op->rn]=vn;
+}
+
+void BJX2_Op_PSTCHX_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	float tv0[4], tv1[4], tv2[4];
+	u32 v0, v1, v2, v3;
+	u64	vs, vt, vn;
+
+	vs=ctx->regs[op->rm+0];
+	vt=ctx->regs[op->rm+1];
+//	jx2_upvec_hf(tv0, vs);
+	
+//	BJX2_PtrSetFloat(&v0, tv0[0]);
+//	BJX2_PtrSetFloat(&v1, tv0[1]);
+	
+//	vn=(((u64)v1)<<32)|v0;
+//	ctx->regs[op->rn]=vn;
+	
+	v0=vs;
+	v1=vs>>32;
+	v2=vt;
+	v3=vt>>32;
+	tv2[0]=BJX2_PtrGetFloat(&v0);
+	tv2[1]=BJX2_PtrGetFloat(&v1);
+	tv2[2]=BJX2_PtrGetFloat(&v2);
+	tv2[3]=BJX2_PtrGetFloat(&v3);
+	
+	vn=jx2_mkvec_hf(tv2[0], tv2[1], tv2[2], tv2[3]);
+	ctx->regs[op->rn]=vn;
+}
+
+
+u16 bjx2_ldm8uh(byte v)
+{
+	u16 v1;
+	v1=(v<<6)|(((~v)<<7)&0x4000);
+	return(v1);
+}
+
+u16 bjx2_ldm8sh(byte v)
+{
+	u16 v1;
+	v1= (((v )<<7)&0x3F80)|
+		(((~v)<<8)&0x4000)|
+		((( v)<<8)&0x8000);
+	return(v1);
+}
+
+byte bjx2_stm8uh(u16 v)
+{
+	u16 v1;
+	v1=v>>6;
+	if(((v>>13)&3)==0)
+		v1=0;
+	if(((v>>13)&3)==3)
+		v1=0xF0;
+	return(v1);
+}
+
+byte bjx2_stm8sh(u16 v)
+{
+	u16 v1;
+	v1=(v>>7)|((v>>8)&0x80);
+	if(((v>>13)&3)==0)
+		v1=0;
+	if(((v>>13)&3)==3)
+		v1|=0x78;
+	return(v1);
+}
+
+void BJX2_Op_PLDCM8UH_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u16 v0, v1, v2, v3;
+	u64	vs, vn;
+	vs=ctx->regs[op->rm];
+	v0=bjx2_ldm8uh((vs    )&255);
+	v1=bjx2_ldm8uh((vs>> 8)&255);
+	v2=bjx2_ldm8uh((vs>>16)&255);
+	v3=bjx2_ldm8uh((vs>>24)&255);
+	vn=(((u64)v3)<<48)|(((u64)v2)<<32)|(((u64)v1)<<16)|v0;
+	ctx->regs[op->rn]=vn;
+}
+
+void BJX2_Op_PLDCM8SH_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u16 v0, v1, v2, v3;
+	u64	vs, vn;
+	vs=ctx->regs[op->rm];
+	v0=bjx2_ldm8sh((vs    )&255);
+	v1=bjx2_ldm8sh((vs>> 8)&255);
+	v2=bjx2_ldm8sh((vs>>16)&255);
+	v3=bjx2_ldm8sh((vs>>24)&255);
+	vn=(((u64)v3)<<48)|(((u64)v2)<<32)|(((u64)v1)<<16)|v0;
+	ctx->regs[op->rn]=vn;
+}
+
+void BJX2_Op_PSTCM8UH_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u16 v0, v1, v2, v3;
+	u64	vs, vn;
+	vs=ctx->regs[op->rm];
+	v0=bjx2_stm8uh((vs    )&65535);
+	v1=bjx2_stm8uh((vs>>16)&65535);
+	v2=bjx2_stm8uh((vs>>32)&65535);
+	v3=bjx2_stm8uh((vs>>48)&65535);
+	vn=(((u64)v3)<<24)|(((u64)v2)<<16)|(((u64)v1)<<8)|v0;
+	ctx->regs[op->rn]=vn;
+}
+
+void BJX2_Op_PSTCM8SH_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u16 v0, v1, v2, v3;
+	u64	vs, vn;
+	vs=ctx->regs[op->rm];
+	v0=bjx2_stm8sh((vs    )&65535);
+	v1=bjx2_stm8sh((vs>>16)&65535);
+	v2=bjx2_stm8sh((vs>>32)&65535);
+	v3=bjx2_stm8sh((vs>>48)&65535);
+	vn=(((u64)v3)<<24)|(((u64)v2)<<16)|(((u64)v1)<<8)|v0;
+	ctx->regs[op->rn]=vn;
+}
+
