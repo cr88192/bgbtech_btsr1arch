@@ -677,7 +677,7 @@ int main(int argc, char *argv[])
 		
 		if(!ibuf)
 		{
-			printf("fail load %s\n", tn);
+			printf("fail load %s\n", a[1]);
 			continue;
 		}
 		

@@ -41,20 +41,16 @@ byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz)
 //			printf("TKPE_UnpackL4: Hit CSE\n");
 			break;
 		}
-
-		ll=(tg&15)+4;
 		
 //		ld=tkfat_getWord(cs);
 		ld=*(u16 *)cs;
 		cs+=2;
 		if(!ld)
 		{
-			if(ll==5)
-				continue;
 			printf("TKPE_UnpackL4: End Of Image\n");
 			break;
 		}
-//		ll=(tg&15)+4;
+		ll=(tg&15)+4;
 		if(ll==19)
 		{
 			i=*cs++;
@@ -459,8 +455,7 @@ byte *TKPE_UnpackBuffer(byte *ct, byte *ibuf, int isz, int cmp)
 	byte *ct1;
 	int rsz;
 
-//	if(cmp==4)
-	if((cmp==4) || (cmp==6))
+	if(cmp==4)
 	{
 		return(TKPE_UnpackL4(ct, ibuf, isz));
 	}

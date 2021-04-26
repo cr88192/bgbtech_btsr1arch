@@ -1195,11 +1195,8 @@ int BGBCC_JX2_EmitRemap16To32(
 
 	opw1=-1; opw2=-1; rt=0;
 
-//	if((((op0>>12)&15)==0) && ((op0&15)<2))
-	if((((op0>>12)&15)==0) && ((op0&15)==0))
-	{
+	if((((op0>>12)&15)==0) && ((op0&15)<2))
 		rt=1;
-	}
 
 	if((((op0>>8)&0xFC)==0x4C) && ((op0&15)<2))
 	{
@@ -1587,7 +1584,7 @@ int BGBCC_JX2_EmitPad32AlignLastOp(
 int BGBCC_JX2_EmitPadCheckExpandLastOp24(
 	BGBCC_JX2_Context *ctx)
 {
-	int op0, op1, opw1, opw2, opw3, opw4;
+	int op0, op1, opw1, opw2;
 	int i, j, k;
 
 //	return(0);
@@ -1601,22 +1598,11 @@ int BGBCC_JX2_EmitPadCheckExpandLastOp24(
 		opw1=-1;
 		opw2=-1;
 
-		BGBCC_JX2_EmitRemap16To32(ctx, op0, &opw3, &opw4);
-		opw1=opw3;
-		opw2=opw4;
+		BGBCC_JX2_EmitRemap16To32(ctx, op0, &opw1, &opw2);
 		BGBCC_JX2_EmitOpCheckRepackOp24(ctx, &opw1, &opw2, 0);
 		
 		if((opw2>>16)!=7)
-		{
-			if(((op0&0xFF00)==0x2000) ||
-				(op0==0x3010) || (op0==0x3012) || (op0==0x3030))
-			{
-				/* Not executed, So YOLO it. */
-				BGBCC_JX2_EmitByteI(ctx, 0);
-				return(1);
-			}
 			return(0);
-		}
 
 		if((opw1>=0) && (opw2>=0))
 		{
@@ -1635,11 +1621,32 @@ int BGBCC_JX2_EmitPadCheckExpandLastOp24(
 	op1=BGBCC_JX2_EmitGetOffsByte(ctx, j+2);
 
 //	BGBCC_JX2_EmitRemap16To32(ctx, op0, &opw1, &opw2);
-
 	opw1=-1;
 	opw2=-1;
 
-	BGBCC_JX2_EmitOpCheckExpandOp24(ctx, op0, op1, &opw1, &opw2);
+	if((op0&0xF000)==0x9000)
+	{
+		opw1=0xF000 | (op0&0x00FF);
+		opw2=0x0000 |
+			((op1<<4)&0x0FF0) |
+			((op0>>8)&0x000F) ;
+	}
+
+	if((op0&0xF800)==0x7800)
+	{
+		opw1=0xF000 | (op0&0x00FF);
+		opw2=0x1000 |
+			((op1<<4)&0x0FF0) |
+			((op0>>8)&0x000F) ;
+	}
+
+	if(((op0&0xF800)==0x7000) && ((op1&0x80)==0x00))
+	{
+		opw1=0xF000 | (op0&0x00FF);
+		opw2=0x1000 |
+			((op1<<4)&0x0FF0) |
+			((op0>>8)&0x000F) ;
+	}
 
 	if((opw1>=0) && (opw2>=0))
 	{
@@ -1678,73 +1685,10 @@ int BGBCC_JX2_CheckPipelineMin(BGBCC_JX2_Context *ctx, int cnt)
 	return(0);
 }
 
-int BGBCC_JX2_EmitPadTryAlignWord(
-	BGBCC_JX2_Context *ctx)
-{
-	int i;
-
-	i=BGBCC_JX2_EmitGetOffs(ctx);
-	if(i&1)
-	{
-		if(!BGBCC_JX2_EmitPadCheckExpandLastOp24(ctx))
-		{
-//			BGBCC_JX2_EmitWordI(ctx, 0x9F00);
-//			BGBCC_JX2_EmitByteI(ctx,   0x80);
-		}
-	}
-	return(0);
-}
-
-int BGBCC_JX2_EmitPadAlignWord(
-	BGBCC_JX2_Context *ctx)
-{
-	int i;
-
-	i=BGBCC_JX2_EmitGetOffs(ctx);
-	if(i&1)
-	{
-		if(!BGBCC_JX2_EmitPadCheckExpandLastOp24(ctx))
-		{
-			BGBCC_JX2_EmitWordI(ctx, 0x9F00);
-			BGBCC_JX2_EmitByteI(ctx,   0x80);
-		}
-		return(1);
-	}
-	return(0);
-}
-
-int BGBCC_JX2_EmitPadForLabel(BGBCC_JX2_Context *ctx)
-{
-	int i;
-
-	if(ctx->sec!=BGBCC_SH_CSEG_TEXT)
-		return(0);
-
-	/* 32-bit ops require at least 16-bit alignment. */
-	i=BGBCC_JX2_EmitGetOffs(ctx);
-	if(i&1)
-	{
-		BGBCC_JX2_EmitPadAlignWord(ctx);
-
-		i=BGBCC_JX2_EmitGetOffs(ctx);
-		if(i&1)
-			{ BGBCC_DBGBREAK }
-
-		return(1);
-	}
-
-	return(0);
-}
-
-int BGBCC_JX2_EmitPadForOpWord(BGBCC_JX2_Context *ctx, int val)
-{
-	return(BGBCC_JX2_EmitPadForOpWord2(ctx, val, 0));
-}
-
 /* If the instruction would cross a 32B boundary, pad-align.
    Also pad for other cases which may require alignment.
  */
-int BGBCC_JX2_EmitPadForOpWord2(BGBCC_JX2_Context *ctx, int val, int val2)
+int BGBCC_JX2_EmitPadForOpWord(BGBCC_JX2_Context *ctx, int val)
 {
 	static int rec=0;
 	int i, j, k;
@@ -1752,24 +1696,6 @@ int BGBCC_JX2_EmitPadForOpWord2(BGBCC_JX2_Context *ctx, int val, int val2)
 	if(ctx->emit_isprobe)
 		return(0);
 
-	if((val&0xFC00)==0x2000)
-	{
-		BGBCC_JX2_EmitPadTryAlignWord(ctx);
-	}
-
-	if(	((val&0xF70C)==0x3100) ||
-		((val&0xF70C)==0x320C))
-	{
-		BGBCC_JX2_EmitPadAlignWord(ctx);
-	}
-
-	if(	((val &0xEB00)==0xE000) &&
-		((val2&0xC000)==0xC000))
-	{
-		BGBCC_JX2_EmitPadAlignWord(ctx);
-	}
-
-#if 0
 	if(	((val&0xE000)==0xE000) ||
 		((val&0xFC00)==0x2000))
 	{
@@ -1784,7 +1710,6 @@ int BGBCC_JX2_EmitPadForOpWord2(BGBCC_JX2_Context *ctx, int val, int val2)
 			}
 		}
 	}
-#endif
 
 #if 1
 	if(ctx->sec==BGBCC_SH_CSEG_TEXT)
@@ -2961,24 +2886,24 @@ int BGBCC_JX2_EmitWord(BGBCC_JX2_Context *ctx, int val)
 		BGBCC_DBGBREAK
 	}
 
-	if((val>0xFFFF) && ((val>>16)!=6))
+	if(val>0xFFFF)
 	{
 		if(
 			(ctx->sec==BGBCC_SH_CSEG_TEXT) &&
 			((val>>16)==7) &&
 			ctx->has_ops24)
 		{
-			BGBCC_JX2_EmitByte(ctx, val&255);
+			BGBCC_JX2_EmitByte(ctx, val);
 			return(0);
 		}
 		BGBCC_DBGBREAK
 	}
 
-	BGBCC_JX2_EmitWordI(ctx, val&0xFFFF);
+	BGBCC_JX2_EmitWordI(ctx, val);
 
 	if(ctx->sec!=BGBCC_SH_CSEG_TEXT)
 	{
-		BGBCC_JX2DA_EmitWord(ctx, val&0xFFFF);
+		BGBCC_JX2DA_EmitWord(ctx, val);
 	}
 
 	return(0);

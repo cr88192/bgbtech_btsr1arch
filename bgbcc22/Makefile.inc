@@ -150,10 +150,10 @@ install: all
 	cp *$(BINSUF) $(INST_BIN)
 
 autohead$(BINSUF): autohead.c
-	$(CC_OUTTOOL)autohead$(BINSUF) autohead.c $(TOOL_CFLAGS)
+	$(CC_OUTTOOL)autohead$(BINSUF) autohead.c
 
 gen_ord$(BINSUF): gen_ord.c
-	$(CC_OUTTOOL)gen_ord$(BINSUF) gen_ord.c $(TOOL_CFLAGS)
+	$(CC_OUTTOOL)gen_ord$(BINSUF) gen_ord.c
 
 mm/cc_tokord.c: gen_ord$(BINSUF) bgbcc_token.txt
 	./gen_ord$(BINSUF)
@@ -166,10 +166,10 @@ bgbcc$(BINSUF): $(DEP_HDRS) $(META_SRCS)
 		$(CFLAGS_META) $(LDFLAGS_META)
 
 mkwad2list$(BINSUF): wadtool/mkwad2list.c
-	$(CC_OUTTOOL)mkwad2list$(BINSUF) wadtool/mkwad2list.c $(TOOL_CFLAGS)
+	$(CC_OUTTOOL)mkwad2list$(BINSUF) wadtool/mkwad2list.c
 
 mkwad4list$(BINSUF): wadtool/mkwad4list.c
-	$(CC_OUTTOOL)mkwad4list$(BINSUF) wadtool/mkwad4list.c $(TOOL_CFLAGS)
+	$(CC_OUTTOOL)mkwad4list$(BINSUF) wadtool/mkwad4list.c
 		
 
 clean:

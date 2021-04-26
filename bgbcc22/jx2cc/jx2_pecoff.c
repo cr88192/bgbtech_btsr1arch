@@ -609,9 +609,6 @@ int BGBCC_JX2C_PackBlockLZ_LookupMatch(
 		md=(1<<21)-1;
 	}
 
-	if(bgbcc_packlz_cmp==6)
-		{ ml=273; }
-
 //	return(0);
 
 //	cs1e=cs+268;
@@ -703,7 +700,7 @@ int BGBCC_JX2C_PackBlockLZ_EstRawCost(BGBCC_TransState *ctx, int rl)
 {
 	int i, j, c;
 
-	if((bgbcc_packlz_cmp==4) || (bgbcc_packlz_cmp==6))
+	if(bgbcc_packlz_cmp==4)
 	{
 		c=rl+1;
 		if(rl>=15)
@@ -736,7 +733,7 @@ int BGBCC_JX2C_PackBlockLZ_EstMatchCost(BGBCC_TransState *ctx,
 {
 	int c, i;
 
-	if((bgbcc_packlz_cmp==4) || (bgbcc_packlz_cmp==6))
+	if(bgbcc_packlz_cmp==4)
 	{
 		c=rl+1;
 		if(rl>=15)
@@ -892,28 +889,7 @@ int BGBCC_JX2C_PackBlockLZ4(BGBCC_TransState *ctx,
 					break;
 			}
 		}
-		
-		if(bgbcc_packlz_cmp==6)
-		{
-			if(rl>=268)
-			{
-				tg=0xF1;
-				*ct++=tg;
-				*ct++=rl-15;
-
-				while(cs0<cs)
-					{ *ct++=*cs0++; }
-
-				if(ct>cte)
-					{ BGBCC_DBGBREAK }
-				*(u16 *)ct=0;
-				ct+=2;
-				if(ct>cte)
-					{ BGBCC_DBGBREAK }
-				continue;
-			}
-		}
-
+	
 		if(i0>0)
 		{
 			rl=cs-cs0;
@@ -1467,7 +1443,7 @@ int BGBCC_JX2C_PackBlockLZ(BGBCC_TransState *ctx,
 {
 	int i, j, k;
 
-	if((bgbcc_packlz_cmp==4) || (bgbcc_packlz_cmp==6))
+	if(bgbcc_packlz_cmp==4)
 	{
 		i=BGBCC_JX2C_PackBlockLZ4(ctx, obuf, ibuf, obsz, ibsz);
 		return(i);
@@ -1558,8 +1534,6 @@ byte *BGBCC_TKPE_UnpackL4(byte *obuf, byte *ibuf, int isz, byte *imgbase)
 		if((cs+1)>=cse)
 			break;
 		
-		ll=(tg&15)+4;
-
 //		ld=tkfat_getWord(cs);
 		ld=*(u16 *)cs;
 //		if(!ld)
@@ -1567,15 +1541,11 @@ byte *BGBCC_TKPE_UnpackL4(byte *obuf, byte *ibuf, int isz, byte *imgbase)
 		cs+=2;
 		if(!ld)
 		{
-			if(ll==5)
-			{
-				continue;
-			}
-		
 			bgbcc_tkpe_endseen=1;
 			break;
 		}
 
+		ll=(tg&15)+4;
 		if(ll==19)
 		{
 			i=*cs++;
@@ -1834,7 +1804,7 @@ byte *BGBCC_TKPE_UnpackBuffer(
 	int cmp)
 {
 	int sz;
-	if((cmp==4) || (cmp==6))
+	if(cmp==4)
 	{
 		return(BGBCC_TKPE_UnpackL4(obuf, ibuf, isz, imgbase));
 	}

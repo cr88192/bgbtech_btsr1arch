@@ -94,8 +94,7 @@ A distance value of 0 is special, and if encoded may signal the end of the input
 
 In a special, the low 4 bits of the tag byte may be interpreted as a command:
 * 0: End of Data.
-* 1: Raw Literal Data (No match copy).
-* 2-14: Reserved.
+* 1-14: Reserved.
 * 15: Will escape a longer command, also reserved.
 ** The command tag encoding will be equivalent to that of a length.
 
@@ -109,12 +108,6 @@ Note that each block is to be handled separately, and as such a run of literal b
 A 1 byte tolerance is allowed because it may not be possible in all cases to end the run exactly on a block edge.
 
 
-=== LZ4LLB Encoding (PEL6) ===
-
-LZ4LLB will be a length-limited variant of LZ4.
-This case will be otherwise equivalent to the normal LZ4 case.
-
-
 === Image Checksum ===
 
 Traditional PE/COFF images will use the traditional PE/COFF checksum algorithm.
@@ -124,7 +117,7 @@ PELZ images will use a modified checksum.
  u32 TKPE_CalculateImagePel4BChecksum(byte *buf, int size)
  {
  	byte *cs, *cse;
- 	u32 csum, v0, v1, v2, v3;
+ 	u32 csum, v;
  	u64 acc_lo, acc_hi;
  	cs=buf;		cse=cs+size;
  	acc_lo=1;	acc_hi=0;

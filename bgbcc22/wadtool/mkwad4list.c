@@ -22,12 +22,6 @@ Otherwise, it will be relative to its base path within the filesystem.
 #include <string.h>
 #include <ctype.h>
 
-#ifdef linux
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#endif
-
 #define TGVLZ_NOMAIN
 #include "tgvlz1.c"
 
@@ -119,23 +113,19 @@ typedef struct
 
 FILE		*wad_fd;
 // wadlump_t	wad_dir[2048];
-// wad4lump_t	wad_dir[16384];
-wad4lump_t	*wad_dir;
+wad4lump_t	wad_dir[16384];
 wad4head_t	wad_head;
 int 		wad_n_lumps;
-int 		wad_m_lumps;
 int			wad_types[256];
 int			wad_ntypes;
 int			wad_ldirid;
 int			wad_dirid;
 int			wad_fragrov;
 
-// u16			wad_hash[8192];
-u16			wad_hash[65536];
+u16			wad_hash[8192];
 
 byte		*wad_data;
 int			wad_rover;
-int			wad_data_sz;
 
 byte		*iwad_data;
 wadlump_t	*iwad_dir;
@@ -349,31 +339,6 @@ u64 W_ParseUGM(char *str)
 	return(v);
 }
 
-int	WadCheckExpand(int csz)
-{
-	int osz;
-
-	if((wad_rover+csz+131072)>=wad_data_sz)
-	{
-		osz=wad_data_sz+(wad_data_sz>>1);
-		while((wad_rover+csz+64)>=osz)
-			osz=osz+(osz>>1);
-		printf("Expand %d->%d\n", wad_data_sz, osz);
-		wad_data=realloc(wad_data, osz);
-		wad_data_sz=osz;
-	}
-
-	if((wad_n_lumps+256)>wad_m_lumps)
-	{
-		osz=wad_m_lumps+(wad_m_lumps>>1);
-		printf("Expand Dir %d->%d\n", wad_m_lumps, osz);
-		wad_dir=realloc(wad_dir, osz*sizeof(wad4lump_t));
-		wad_m_lumps=osz;
-	}
-
-	return(0);
-}
-
 int AddWadLump2(char *name, void *buf, int csz, int dsz,
 	int cmp, int tag, int pfx)
 {
@@ -430,7 +395,6 @@ int AddWadLump2(char *name, void *buf, int csz, int dsz,
 		wad_dir[n].gid=0;
 	}
 
-	WadCheckExpand(csz);
 	memcpy(wad_data+wad_rover, buf, csz);
 	wad_rover+=csz;
 	wad_rover=(wad_rover+63)&(~63);
@@ -476,11 +440,7 @@ int FlushPack()
 	int i, j, k, n, n1;
 
 	if(wad_n_packlump<=0)
-	{
-		wad_packpos=0;
-		wad_n_packlump=0;
 		return(0);
-	}
 
 	j=wad_fragrov++;
 	sprintf(tn, "$PACK:%08X", j);
@@ -506,7 +466,7 @@ int AddWadLumpPack(char *name, byte *buf, int isz, int tag, int pfx)
 	int osz, ety;
 	int n;
 
-	if(((wad_packpos+isz+128)>=131072) || ((wad_n_packlump+1)>=256))
+	if(((wad_packpos+isz)>=131072) || ((wad_n_packlump+1)>=256))
 	{
 		FlushPack();
 	}
@@ -611,8 +571,7 @@ int AddWadLump(char *name, byte *buf, int isz, int tag, int pfx)
 		cmp=-1;
 	}
 	
-//	if(((1.2*osz)<isz) && (osz>64) && (cmp>0))
-	if(((1.2*osz)<isz) && (isz>128) && (cmp>0))
+	if(((1.2*osz)<isz) && (osz>64))
 //	if(((1.2*osz)<isz) && (osz>32))
 //	if(((1.2*osz)<isz) && (osz>16))
 	{
@@ -743,11 +702,10 @@ int GetWadPathId(char *name, int pfx, int tag)
 	i=GetDirLumpNumForName(tn, pfx);
 	if(i>=0)
 	{
-		return(i);
-//		id=(wad_dir[i].foffs)&32767;
+		id=(wad_dir[i].foffs)&32767;
 //		if((id<0) || (id>=wad_dirid))
 //			{ debug_break }
-//		return(id);
+		return(id);
 	}
 	
 //	if(wad_dirid!=(wad_ldirid+1))
@@ -785,7 +743,7 @@ int GetWadPathId(char *name, int pfx, int tag)
 int AddWadLumpPathI(char *name, byte *buf, int isz, int tag, int pfx)
 {
 	char tb[256];
-	int pfx1, tag1;
+	int pfx1;
 	char *s, *t;
 	int i;
 
@@ -804,8 +762,8 @@ int AddWadLumpPathI(char *name, byte *buf, int isz, int tag, int pfx)
 		return(AddWadLump(tb, buf, isz, tag, pfx));
 	}
 
-	tag1=FccTagForName(tb);
-	pfx1=GetWadPathId(tb, pfx, tag1);
+	tag=FccTagForName(tb);
+	pfx1=GetWadPathId(tb, pfx, tag);
 	i=AddWadLumpPathI(s+1, buf, isz, tag, pfx1);
 	return(i);
 }
@@ -813,7 +771,7 @@ int AddWadLumpPathI(char *name, byte *buf, int isz, int tag, int pfx)
 int AddWadLumpPathTag(char *name, byte *buf, int isz, int tag)
 {
 	char tb[256];
-	int pfx, tag1;
+	int pfx;
 	char *s, *t;
 	int i;
 
@@ -832,8 +790,8 @@ int AddWadLumpPathTag(char *name, byte *buf, int isz, int tag)
 		return(AddWadLump(tb, buf, isz, tag, 0));
 	}
 
-	tag1=FccTagForName(tb);
-	pfx=GetWadPathId(tb, 0, tag1);
+	tag=FccTagForName(tb);
+	pfx=GetWadPathId(tb, 0, tag);
 	i=AddWadLumpPathI(s+1, buf, isz, tag, pfx);
 	return(i);
 }
@@ -845,30 +803,11 @@ int AddWadLumpPath(char *name, byte *buf, int isz)
 	return(AddWadLumpPathTag(name, buf, isz, tag));
 }
 
-#ifdef linux
-int W_IsRegFile(const char *path)
-{
-    struct stat statbuf;
-    int r;
-    r=stat(path, &statbuf);
-    if(r<0)
-		return(0);
-    if (S_ISREG(statbuf.st_mode))
-        return(1);
-    return(0);
-}
-#endif
-
 void *LoadFile(char *name, int *rsz)
 {
 	FILE *fd;
 	void *buf;
 	int sz;
-
-#ifdef linux
-	if(!W_IsRegFile(name))
-		return(NULL);
-#endif
 	
 	fd=fopen(name, "rb");
 	if(!fd)return(NULL);
@@ -927,7 +866,6 @@ char **bgbcc_split(char *s)
 	int i;
 
 	a=bgbcc_ralloc(64*sizeof(char *));
-	memset(a, 0, 64*sizeof(char *));
 	i=0;
 	while(*s)
 	{
@@ -1052,10 +990,9 @@ int main(int argc, char *argv[])
 	char *ibuf;
 	char *ifn, *ofn, *dir;
 	char **a;
-	char *s, *s1, *sugm;
+	char *s, *s1;
 	u64 ugm;
 	int isz, tag, tag1, tyofs, dirofs;
-	int	rov1, rov2, drov;
 	int hashofs, hashsz;
 	int i, j, k, h;
 	
@@ -1104,13 +1041,7 @@ int main(int argc, char *argv[])
 		return(-1);
 	}
 
-//	wad_data_sz=1<<24;
-	wad_data_sz=1<<28;
-	wad_data=malloc(wad_data_sz);
-
-	wad_m_lumps=16384;
-	wad_dir=malloc(wad_m_lumps*sizeof(wad4lump_t));
-
+	wad_data=malloc(1<<26);
 	wad_rover=64;
 	wad_n_lumps=0;
 	wad_ldirid=0;
@@ -1126,7 +1057,7 @@ int main(int argc, char *argv[])
 	wad_mincsz=99999999;
 	wad_maxcsz=0;
 
-	memset(wad_data, 0, wad_data_sz);
+	memset(wad_data, 0, 1<<26);
 
 //	ibuf=LoadFile(ifn, &isz);
 
@@ -1155,10 +1086,8 @@ int main(int argc, char *argv[])
 		if((a[0][0]=='#') || (a[0][0]==';') || (a[0][0]=='/'))
 			continue;
 
-		sugm=NULL;
-
 		if(a[1])
-			{ s=a[1]; sugm=a[2]; }
+			{ s=a[1]; }
 		else
 			{ s=a[0]; }
 		if((s[0]=='.') && (s[1]=='/'))
@@ -1187,30 +1116,19 @@ int main(int argc, char *argv[])
 		
 		if(!ibuf)
 		{
-			printf("fail load %s\n", tn);
+			printf("fail load %s\n", a[1]);
 			continue;
 		}
 
 		wad_curugm=0;
-		if(sugm)
-			{ wad_curugm=W_ParseUGM(sugm); }
-
-		printf("Add: %-24s (%08X)  ", tn, tag);
-
-		rov1=wad_rover;
+		if(a[2])
+			{ wad_curugm=W_ParseUGM(a[2]); }
 
 //		strncpy(tn, a[0], 256);
 //		strncpy(tn, s, 256);
 		strncpy(tn, s1, 256);
 //		AddWadLumpPath(tn, ibuf, isz);
 		AddWadLumpPathTag(tn, ibuf, isz, tag);
-
-		rov2=wad_rover;
-		drov=rov2-rov1;
-		printf("%d->%d, %.2f%% (tot=%d)\n",
-			isz, drov, (100.0*drov)/(isz+1), rov2);
-
-		free(ibuf);
 
 //		tag=FccTagForName(a[1]);
 //		tag1=FccTagForName(a[0]);
@@ -1226,8 +1144,6 @@ int main(int argc, char *argv[])
 //			AddWadLump(tn, ibuf, isz, tag, 0);
 //		}
 	}
-	
-	printf("End Of List\n");
 
 	FlushPack();
 
@@ -1301,13 +1217,9 @@ int main(int argc, char *argv[])
 //	wad_rover+=wad_ntypes*4;
 //	wad_rover=(wad_rover+63)&(~63);
 
-	WadCheckExpand(wad_n_lumps*64);
-
 	dirofs=wad_rover;
 	wad_rover+=wad_n_lumps*64;
 	wad_rover=(wad_rover+63)&(~63);
-
-	WadCheckExpand(hashsz*2);
 
 	hashofs=wad_rover;
 	wad_rover+=hashsz*2;
@@ -1321,8 +1233,6 @@ int main(int argc, char *argv[])
 
 	wad_head.bmpoffs=0;
 	wad_head.bmpsize=0;
-
-	WadCheckExpand(1);
 
 //	memcpy(wad_data+wad_rover, wad_dir, wad_n_lumps*64);
 	memcpy(wad_data+dirofs, wad_dir, wad_n_lumps*64);

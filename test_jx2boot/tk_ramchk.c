@@ -86,7 +86,7 @@ int TK_RamChk()
 		{
 			if(ct[0]!=((u32)ct))
 			{
-//				__debugbreak();
+				__debugbreak();
 				break;
 			}
 			ct+=256;
@@ -186,15 +186,11 @@ int TK_RamChk()
 #ifndef JX2UC
 
 void memcpy_movx_test(void *dst, void *src, int sz);
-void memset_movx_test(void *dst, int val, int sz);
 void memcpy_fixed128_test(void *dst, void *src, int sz);
-void memcpy_fixed512_test(void *dst, void *src, int sz);
-void memset_fixed128_test(void *dst, int val, int sz);
-void memset_fixed512_test(void *dst, int val, int sz);
 
 __asm {
 memcpy_movx_test:
-#if 0
+#if 1
 	CMP/GE	64, R6
 	BF		.L1
 	.L0:
@@ -208,37 +204,6 @@ memcpy_movx_test:
 	MOV.X	R20, (R4, 32)
 	MOV.X	R22, (R4, 48)
 	ADD		64, R4		|	CMP/GE	64, R6
-	BT		.L0
-	.L1:
-	RTSU
-#endif
-
-#if 1
-	CMP/GE	128, R6
-	BF		.L1
-	.L0:
-
-	MOV.X	(R5,  0), R16
-	MOV.X	(R5, 16), R18
-	MOV.X	(R5, 32), R20
-	MOV.X	(R5, 48), R22
-	ADD		64, R5
-	MOV.X	R16, (R4,  0)
-	MOV.X	R18, (R4, 16)
-	MOV.X	R20, (R4, 32)
-	MOV.X	R22, (R4, 48)
-	ADD		64, R4
-
-	MOV.X	(R5,  0), R16
-	MOV.X	(R5, 16), R18
-	MOV.X	(R5, 32), R20
-	MOV.X	(R5, 48), R22
-	ADD		64, R5		|	ADD		-128, R6
-	MOV.X	R16, (R4,  0)
-	MOV.X	R18, (R4, 16)
-	MOV.X	R20, (R4, 32)
-	MOV.X	R22, (R4, 48)
-	ADD		64, R4		|	CMP/GE	128, R6
 	BT		.L0
 	.L1:
 	RTSU
@@ -287,185 +252,12 @@ memcpy_fixed128_test:
 	MOV.X	R20, (R4,  96)
 	MOV.X	R22, (R4, 112)
 	RTSU
-
-memcpy_fixed512_test:
-	MOV.X	(R5,   0), R16
-	MOV.X	(R5,  16), R18
-	MOV.X	(R5,  32), R20
-	MOV.X	(R5,  48), R22
-	MOV.X	R16, (R4,   0)
-	MOV.X	R18, (R4,  16)
-	MOV.X	R20, (R4,  32)
-	MOV.X	R22, (R4,  48)
-	MOV.X	(R5,  64), R16
-	MOV.X	(R5,  80), R18
-	MOV.X	(R5,  96), R20
-	MOV.X	(R5, 112), R22
-	MOV.X	R16, (R4,  64)
-	MOV.X	R18, (R4,  80)
-	MOV.X	R20, (R4,  96)
-	MOV.X	R22, (R4, 112)
-	ADD		128, R4			|	ADD		128, R5
-
-	MOV.X	(R5,   0), R16
-	MOV.X	(R5,  16), R18
-	MOV.X	(R5,  32), R20
-	MOV.X	(R5,  48), R22
-	MOV.X	R16, (R4,   0)
-	MOV.X	R18, (R4,  16)
-	MOV.X	R20, (R4,  32)
-	MOV.X	R22, (R4,  48)
-	MOV.X	(R5,  64), R16
-	MOV.X	(R5,  80), R18
-	MOV.X	(R5,  96), R20
-	MOV.X	(R5, 112), R22
-	MOV.X	R16, (R4,  64)
-	MOV.X	R18, (R4,  80)
-	MOV.X	R20, (R4,  96)
-	MOV.X	R22, (R4, 112)
-	ADD		128, R4			|	ADD		128, R5
-
-	MOV.X	(R5,   0), R16
-	MOV.X	(R5,  16), R18
-	MOV.X	(R5,  32), R20
-	MOV.X	(R5,  48), R22
-	MOV.X	R16, (R4,   0)
-	MOV.X	R18, (R4,  16)
-	MOV.X	R20, (R4,  32)
-	MOV.X	R22, (R4,  48)
-	MOV.X	(R5,  64), R16
-	MOV.X	(R5,  80), R18
-	MOV.X	(R5,  96), R20
-	MOV.X	(R5, 112), R22
-	MOV.X	R16, (R4,  64)
-	MOV.X	R18, (R4,  80)
-	MOV.X	R20, (R4,  96)
-	MOV.X	R22, (R4, 112)
-	ADD		128, R4			|	ADD		128, R5
-
-	MOV.X	(R5,   0), R16
-	MOV.X	(R5,  16), R18
-	MOV.X	(R5,  32), R20
-	MOV.X	(R5,  48), R22
-	MOV.X	R16, (R4,   0)
-	MOV.X	R18, (R4,  16)
-	MOV.X	R20, (R4,  32)
-	MOV.X	R22, (R4,  48)
-	MOV.X	(R5,  64), R16
-	MOV.X	(R5,  80), R18
-	MOV.X	(R5,  96), R20
-	MOV.X	(R5, 112), R22
-	MOV.X	R16, (R4,  64)
-	MOV.X	R18, (R4,  80)
-	MOV.X	R20, (R4,  96)
-	MOV.X	R22, (R4, 112)
-//	ADD		128, R4			|	ADD		128, R5
-
-	RTSU
-
-
-memset_movx_test:
-#if 0
-	PSHUF.B	R5, 0x00, R16
-	MOVLD	R16, R16, R18	|	MOVLD	R16, R16, R19
-	CMP/GE	64, R6
-	BF		.L1
-	.L0:
-	ADD		-64, R6
-	MOV.X	R18, (R4,  0)
-	MOV.X	R18, (R4, 16)
-	MOV.X	R18, (R4, 32)
-	MOV.X	R18, (R4, 48)
-	ADD		64, R4		|	CMP/GE	64, R6
-	BT		.L0
-	.L1:
-	RTSU
-#endif
-
-#if 1
-	PSHUF.B	R5, 0x00, R16
-	MOVLD	R16, R16, R18	|	MOVLD	R16, R16, R19
-	CMP/GE	128, R6
-	BF		.L1
-	.L0:
-	ADD		-128, R6
-	MOV.X	R18, (R4,   0)
-	MOV.X	R18, (R4,  16)
-	MOV.X	R18, (R4,  32)
-	MOV.X	R18, (R4,  48)
-	MOV.X	R18, (R4,  64)
-	MOV.X	R18, (R4,  80)
-	MOV.X	R18, (R4,  96)
-	MOV.X	R18, (R4, 112)
-	ADD		128, R4		|	CMP/GE	128, R6
-	BT		.L0
-	.L1:
-	RTSU
-#endif
-
-memset_fixed128_test:
-	MOV		0, R18 			|	MOV		0, R19
-//	PSHUF.B	R5, 0x00, R16
-//	MOVLD	R16, R16, R18	|	MOVLD	R16, R16, R19
-	MOV.X	R18, (R4,   0)
-	MOV.X	R18, (R4,  16)
-	MOV.X	R18, (R4,  32)
-	MOV.X	R18, (R4,  48)
-	MOV.X	R18, (R4,  64)
-	MOV.X	R18, (R4,  80)
-	MOV.X	R18, (R4,  96)
-	MOV.X	R18, (R4, 112)
-	RTSU
-
-memset_fixed512_test:
-	MOV		0, R18 			|	MOV		0, R19
-//	PSHUF.B	R5, 0x00, R16
-//	MOVLD	R16, R16, R18	|	MOVLD	R16, R16, R19
-	MOV.X	R18, (R4,   0)
-	MOV.X	R18, (R4,  16)
-	MOV.X	R18, (R4,  32)
-	MOV.X	R18, (R4,  48)
-	MOV.X	R18, (R4,  64)
-	MOV.X	R18, (R4,  80)
-	MOV.X	R18, (R4,  96)
-	MOV.X	R18, (R4, 112)
-	ADD		128, R4
-	MOV.X	R18, (R4,   0)
-	MOV.X	R18, (R4,  16)
-	MOV.X	R18, (R4,  32)
-	MOV.X	R18, (R4,  48)
-	MOV.X	R18, (R4,  64)
-	MOV.X	R18, (R4,  80)
-	MOV.X	R18, (R4,  96)
-	MOV.X	R18, (R4, 112)
-	ADD		128, R4
-	MOV.X	R18, (R4,   0)
-	MOV.X	R18, (R4,  16)
-	MOV.X	R18, (R4,  32)
-	MOV.X	R18, (R4,  48)
-	MOV.X	R18, (R4,  64)
-	MOV.X	R18, (R4,  80)
-	MOV.X	R18, (R4,  96)
-	MOV.X	R18, (R4, 112)
-	ADD		128, R4
-	MOV.X	R18, (R4,   0)
-	MOV.X	R18, (R4,  16)
-	MOV.X	R18, (R4,  32)
-	MOV.X	R18, (R4,  48)
-	MOV.X	R18, (R4,  64)
-	MOV.X	R18, (R4,  80)
-	MOV.X	R18, (R4,  96)
-	MOV.X	R18, (R4, 112)
-//	ADD		128, R4
-	RTSU
 }
 
 int TK_RamBench()
 {
 	byte *cs, *ct;
-//	int ci, cj, ck;
-	long long ci, cj;
-	int ck;
+	int ci, cj, ck;
 	int tf, th, tl;
 	int i, j, k;
 
@@ -473,173 +265,65 @@ int TK_RamBench()
 
 	cs=(u32 *)TK_RAMCHK_BASE;
 	ct=cs+0x123450;
-//	ci = TK_GetTimeMs();
-	ci = TK_GetTimeUs();
+	ci = TK_GetTimeMs();
 
 //	memcpy(ct, cs, 1<<20);
 //	memcpy(ct, cs, 1<<17);
 	memcpy_movx_test(ct, cs, 1<<17);
 
-//	cj = TK_GetTimeMs();
-	cj = TK_GetTimeUs();
+	cj = TK_GetTimeMs();
 	ck = cj-ci;
 	if(ck>0)
 	{
 //		printf("memcpy: %dms, %d MB/s\n", ck, 1000/ck);
 
 //		tf=25600/ck;
-//		tf=12800/ck;
-		tf=12800000/ck;
+		tf=12800/ck;
 		th=tf/100;
 		tl=tf-(th*100);
-		printf("memcpy (DRAM): %dus, %d.%02d MB/s\n", ck, th, tl);
+		printf("memcpy (DRAM): %dms, %d.%02d MB/s\n", ck, th, tl);
 	}
 
 
-//	ci = TK_GetTimeMs();
-	ci = TK_GetTimeUs();
+	ci = TK_GetTimeMs();
 
 //	memcpy(ct, cs, 1<<20);
-//	for(i=0; i<8192; i++)
-	for(i=0; i<4096; i++)
+	for(i=0; i<8192; i++)
 	{
 //		memcpy(ct, cs, 128);
-//		memcpy_fixed128_test(ct, cs, 128);
-		memcpy_fixed512_test(ct, cs, 512);
+		memcpy_fixed128_test(ct, cs, 128);
 	}
 
-//	cj = TK_GetTimeMs();
-	cj = TK_GetTimeUs();
+	cj = TK_GetTimeMs();
 	ck = cj-ci;
 	if(ck>0)
 	{
-//		tf=102400/ck;
-//		tf=204800/ck;
-		tf=204800000/ck;
+		tf=102400/ck;
 //		tf=12800/ck;
 		th=tf/100;
 		tl=tf-(th*100);
-		printf("memcpy (L1): %dus, %d.%02d MB/s\n", ck, th, tl);
+		printf("memcpy (L1): %dms, %d.%02d MB/s\n", ck, th, tl);
 	}
 
 
-//	memcpy_movx_test(ct, cs, 16384);		//Pre-warm L2
-	memcpy_movx_test(ct, cs, 49152);		//Pre-warm L2
-
-//	ci = TK_GetTimeMs();
-	ci = TK_GetTimeUs();
-
-//	memcpy(ct, cs, 1<<20);
-//	for(i=0; i<16; i++)
-//	for(i=0; i<4; i++)
-	for(i=0; i<8; i++)
-	{
-//		memcpy(ct, cs, 16384);
-//		memcpy_movx_test(ct, cs, 16384);
-//		memcpy_movx_test(ct, cs, 49152);
-		memcpy_movx_test(ct, cs, 32768);
-	}
-
-//	cj = TK_GetTimeMs();
-	cj = TK_GetTimeUs();
-	ck = cj-ci;
-	if(ck>0)
-	{
-//		tf=25600/ck;
-		tf=25600000/ck;
-//		tf=76800000/ck;
-//		tf=19200000/ck;
-//		tf=12800/ck;
-		th=tf/100;
-		tl=tf-(th*100);
-		printf("memcpy (L2): %dus, %d.%02d MB/s\n", ck, th, tl);
-	}
-
-
-#if 1
-//	ci = TK_GetTimeMs();
-	ci = TK_GetTimeUs();
-
-//	memcpy(ct, cs, 1<<20);
-//	for(i=0; i<8192; i++)
-	for(i=0; i<4096; i++)
-	{
-//		memcpy(ct, cs, 128);
-//		memcpy_fixed128_test(ct, cs, 128);
-		memcpy_fixed512_test(ct+8, cs+8, 512);
-	}
-
-//	cj = TK_GetTimeMs();
-	cj = TK_GetTimeUs();
-	ck = cj-ci;
-	if(ck>0)
-	{
-//		tf=102400/ck;
-//		tf=204800/ck;
-		tf=204800000/ck;
-//		tf=12800/ck;
-		th=tf/100;
-		tl=tf-(th*100);
-		printf("memcpy (L1, Misal): %dus, %d.%02d MB/s\n", ck, th, tl);
-	}
-#endif
-
-
-//	ci = TK_GetTimeMs();
-	ci = TK_GetTimeUs();
-
-//	memcpy(ct, cs, 1<<20);
-	for(i=0; i<4096; i++)
-//	for(i=0; i<8192; i++)
-//	for(i=0; i<16384; i++)
-	{
-//		memcpy(ct, cs, 128);
-//		memset_fixed128_test(ct, 0, 128);
-		memset_fixed512_test(ct, 0, 512);
-	}
-
-//	cj = TK_GetTimeMs();
-	cj = TK_GetTimeUs();
-	ck = cj-ci;
-	if(ck>0)
-	{
-//		tf=51200/ck;
-//		tf=102400/ck;
-//		tf=204800/ck;
-		tf=204800000/ck;
-//		tf=12800/ck;
-		th=tf/100;
-		tl=tf-(th*100);
-		printf("memset (L1): %dus, %d.%02d MB/s\n", ck, th, tl);
-	}
-
-
-//	memset_movx_test(ct, 0, 16384);		//Pre-warm L2
-	memset_movx_test(ct, 0, 49152);		//Pre-warm L2
-
-//	ci = TK_GetTimeMs();
-	ci = TK_GetTimeUs();
+	ci = TK_GetTimeMs();
 
 //	memcpy(ct, cs, 1<<20);
 	for(i=0; i<16; i++)
 	{
 //		memcpy(ct, cs, 16384);
-//		memset_movx_test(ct, 0, 16384);
-		memset_movx_test(ct, 0, 49152);
+		memcpy_movx_test(ct, cs, 16384);
 	}
 
-//	cj = TK_GetTimeMs();
-	cj = TK_GetTimeUs();
+	cj = TK_GetTimeMs();
 	ck = cj-ci;
 	if(ck>0)
 	{
-//		tf=25600/ck;
-//		tf=25600000/ck;
-		tf=76800000/ck;
+		tf=25600/ck;
 //		tf=12800/ck;
 		th=tf/100;
 		tl=tf-(th*100);
-		printf("memset (L2): %dus, %d.%02d MB/s\n", ck, th, tl);
+		printf("memcpy (L2): %dms, %d.%02d MB/s\n", ck, th, tl);
 	}
 
 	return(0);

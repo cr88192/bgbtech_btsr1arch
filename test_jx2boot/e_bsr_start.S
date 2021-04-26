@@ -990,4 +990,3 @@ X(__do_rethrow_fault):
 	jmp r2
 
 #include "tk_divi2.S"
-// #include "tk_divi3.S"

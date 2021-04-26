@@ -2375,28 +2375,6 @@ int BGBCC_JX2C_EmitSyncRegisters(
 	return(0);
 }
 
-int BGBCC_JX2C_EmitSyncLeafRegisters(
-	BGBCC_TransState *ctx,
-	BGBCC_JX2_Context *sctx)
-{
-	int i;
-
-	BGBCC_JX2C_EmitSyncFpRegisters(ctx, sctx);
-
-	/* value in register? */
-//	for(i=0; i<5; i++)
-//	for(i=0; i<bgbcc_jx2_maxreg; i++)
-//	for(i=0; i<sctx->maxreg_gpr; i++)
-	for(i=sctx->maxreg_gpr; i<sctx->maxreg_gpr_lf; i++)
-	{
-		BGBCC_JX2C_EmitSyncRegisterIndex2(ctx, sctx, i, 3);
-		sctx->regalc_utcnt[i]=0;
-		sctx->regalc_live&=~(1<<i);
-	}
-
-	return(0);
-}
-
 extern byte bgbcc_jx2_lminreg;
 extern byte bgbcc_jx2_lmaxreg;
 extern byte bgbcc_jx2_lmaxreg_lf;
