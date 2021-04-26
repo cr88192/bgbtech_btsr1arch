@@ -1057,6 +1057,25 @@ X(__memcpy8_16):
 
 .ifarch bjx2_movx
 memcpy_movx:
+#if 1
+	OR		R4, R5, R7
+	TEST	15, R7
+	BT		.L0A
+
+	CMP/GE		40, R6
+	BF			.L1
+
+//	AND		R4, 15, R16
+//	AND		R5, 15, R17
+//	CMPEQ	R16, R17
+//	BF		.L0A
+	ADD		-8, R6		|	MOV.Q	(R5,  0), R20
+	ADD		8, R5		|	MOV.Q	R20, (R4,  0)
+	ADD		8, R4
+
+	.L0A:
+#endif
+
 	CMP/GE	32, R6
 	BF		.L1
 	.L0:

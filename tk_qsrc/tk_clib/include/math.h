@@ -63,7 +63,7 @@ double fabs(double x);
 double floor(double x);
 double fmod(double x, double y);
 double atan2(double y, double x);
-double frexp(double value, int *exp);
+double frexp(double value, int *rexp);
 double ldexp(double x, int exp);
 double modf(double value, double *iptr);
 double pow(double x, double y);

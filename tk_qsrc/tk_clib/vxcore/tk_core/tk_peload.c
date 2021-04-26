@@ -45,13 +45,19 @@ byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz)
 		
 		if((cs+1)>=cse)
 			break;
+
+		ll=(tg&15)+4;
 		
 //		ld=tkfat_getWord(cs);
 		ld=*(u16 *)cs;
 		if(!ld)
+		{
+			if(ll==5)
+				continue;
 			break;
+		}
 		cs+=2;
-		ll=(tg&15)+4;
+//		ll=(tg&15)+4;
 		if(ll==19)
 		{
 			i=*cs++;
@@ -345,7 +351,8 @@ byte *TKPE_UnpackBuffer(byte *ct, byte *ibuf, int isz, int cmp)
 	byte *ct1;
 	int rsz;
 
-	if(cmp==4)
+//	if(cmp==4)
+	if((cmp==4) || (cmp==6))
 	{
 		return(TKPE_UnpackL4(ct, ibuf, isz));
 	}

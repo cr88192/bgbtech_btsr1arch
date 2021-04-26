@@ -21,21 +21,86 @@
 #endif
 __PDPCLIB_API__ void *memmove(void *s1, const void *s2, size_t n)
 {
-	char *p = s1;
-	const char *cs2 = s2;
-	size_t x;
+//	char *p = s1;
+//	const char *cs2 = s2;
+//	const char *cs2e = s2 + n;
+	char *p;
+	const char *cs2, *cs2s;
+	const char *cs2e, *cs2e1;
+	size_t x, d;
 
 	if (p <= cs2)
 	{
+		p = s1;
+		cs2 = s2;
+		cs2e = s2 + n;
+
+		d = (cs2-p);
+		if(d >= n)
+		{
+			memcpy(s1, s2, n);
+			return(s1);
+		}
+
+		if((n > d) && (d >= 8))
+		{
+			cs2e1 = cs2e - 8;
+			while(cs2<cs2e1)
+			{
+				*(long long *)p = *(long long *)cs2;
+				p+=8; cs2+=8;
+			}
+		}
+
+		while(cs2<cs2e)
+		{
+			*p = *cs2;
+			p++; cs2++;
+		}
+
+#if 0
 		for (x=0; x < n; x++)
 		{
 			*p = *cs2;
 			p++;
 			cs2++;
 		}
+#endif
 	}
 	else
 	{
+		p = s1;
+		cs2 = s2;
+		cs2e = s2 + n;
+
+		d = (p-cs2);
+		if(d >= n)
+		{
+			memcpy(s1, s2, n);
+			return(s1);
+		}
+		
+		cs2s = cs2;
+		p += n;
+		cs2 += n;
+
+		if((n > d) && (d >= 8))
+		{
+			cs2e1 = cs2s + 8;
+			while(cs2 >= cs2e1)
+			{
+				p-=8; cs2-=8;
+				*(long long *)p = *(long long *)cs2;
+			}
+		}
+		
+		while(cs2 > cs2s)
+		{
+			p--; cs2--;
+			*p = *cs2;
+		}
+
+#if 0
 		if (n != 0)
 		{
 			for (x=n-1; x > 0; x--)
@@ -44,7 +109,9 @@ __PDPCLIB_API__ void *memmove(void *s1, const void *s2, size_t n)
 			}
 			*(p+x) = *(cs2+x);
 		}
+#endif
 	}
+
 	return (s1);
 }
 
@@ -576,18 +643,79 @@ memset_movx:
 __PDPCLIB_API__ void *memset(void *s, int c, size_t n)
 {
 	unsigned char *ct, *cte, *cte0;
-	int v;
+	unsigned long long v1;
+	int v, a, n1;
 
 #ifdef __BJX2__
 // #if 0
 //	v=((int)s)|n;
-	v=(int)(((long)s)|n);
-	if(!(v&7))
+	a=(int)(((long)s)|n);
+//	if(!(a&7))
+	if(!(a&15))
 	{
 		memset_movx(s, c, n);
 		return(s);
 	}
+
+//	if(n>=256)
+	if(n>=1024)
+	{
+		v1=c; v1|=(v1<<8); v1|=(v1<<16); v1|=(v1<<32);
+		ct=s; cte=s+n;
+
+		a=(int)((long)s);
+		if(a&15)
+		{
+			((unsigned long long *)ct)[0]=v1;
+			((unsigned long long *)ct)[1]=v1;
+			ct+=15-(a&15);
+		}
+
+		n1=cte-ct;
+		if(!(n1&7))
+		{
+			memset_movx(ct, c, n1);
+			return(s);
+		}
+		
+		n1=n1&(~7);
+		memset_movx(ct, c, n1);
+		ct+=n1;
+		while(ct<cte)
+			{ *ct++=c; }
+	}else
+	{
+//		v=c; v|=(v<<8); v|=(v<<16);
+		v1=c; v1|=(v1<<8); v1|=(v1<<16); v1|=(v1<<32);
+		v=v1;
+		ct=s; cte=s+n;
+
+#if 1
+		cte0=cte-16;
+		while(ct<=cte0)
+		{
+			((unsigned long long *)ct)[0]=v1;
+			((unsigned long long *)ct)[1]=v1;
+//			((int *)ct)[0]=v;
+//			((int *)ct)[1]=v;
+//			((int *)ct)[2]=v;
+//			((int *)ct)[3]=v;
+			ct+=16;
+		}
 #endif
+
+#if 1
+		cte0=cte-4;
+		while(ct<=cte0)
+			{ *(int *)ct=v; ct+=4; }
+#endif
+
+		while(ct<cte)
+			{ *ct++=c; }
+
+		return (s);
+	}
+#else
 
 	v=c; v|=(v<<8); v|=(v<<16);
 	ct=s; cte=s+n;
@@ -620,6 +748,8 @@ __PDPCLIB_API__ void *memset(void *s, int c, size_t n)
 		{ *ct++=c; }
 
 	return (s);
+
+#endif
 }
 #endif
 

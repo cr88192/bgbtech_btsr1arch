@@ -76,3 +76,112 @@ char *getcwd(char *buf, size_t size)
 {
 	return(TK_Env_GetCwd(buf, size));
 }
+
+#if 1
+void MemLzCpy_MatchCopy2(uint8_t *dst, long sz, long d)
+{
+	uint8_t *cs, *ct, *cte;
+	uint64_t v;
+	
+	if(d<8)
+	{
+		if(d==1)
+		{
+			v=*(dst-d);
+			v=v|(v<<8);
+			v=v|(v<<16);
+			v=v|(v<<32);
+
+			ct=dst; cte=dst+sz;
+			while(ct<cte)
+			{
+				*(uint64_t *)ct=v;
+				ct+=8;
+			}
+		}else
+			if(d==2)
+		{
+			v=*(uint16_t *)(dst-d);
+			v=v|(v<<16);
+			v=v|(v<<32);
+
+			ct=dst; cte=dst+sz;
+			while(ct<cte)
+			{
+				*(uint64_t *)ct=v;
+				ct+=8;
+			}
+		}else
+			if(d==4)
+		{
+			v=*(uint32_t *)(dst-d);
+			v=v|(v<<32);
+
+			ct=dst; cte=dst+sz;
+			while(ct<cte)
+			{
+				*(uint64_t *)ct=v;
+				ct+=8;
+			}
+		}else
+		{
+			v=*(uint64_t *)(dst-d);
+			ct=dst; cte=dst+sz;
+			while(ct<cte)
+			{
+				*(uint64_t *)ct=v;
+				ct+=d;
+			}
+		}
+	}else
+		if(sz<=16)
+	{
+		cs=dst-d;
+		((uint64_t *)dst)[0]=((uint64_t *)cs)[0];
+		((uint64_t *)dst)[1]=((uint64_t *)cs)[1];
+	}else
+		if(sz<=32)
+	{
+		cs=dst-d;
+		((uint64_t *)dst)[0]=((uint64_t *)cs)[0];
+		((uint64_t *)dst)[1]=((uint64_t *)cs)[1];
+		((uint64_t *)dst)[2]=((uint64_t *)cs)[2];
+		((uint64_t *)dst)[3]=((uint64_t *)cs)[3];
+	}else
+	{
+		cs=dst-d;
+		ct=dst; cte=dst+sz;
+		while(ct<cte)
+		{
+			((uint64_t *)ct)[0]=((uint64_t *)cs)[0];
+			((uint64_t *)ct)[1]=((uint64_t *)cs)[1];
+			ct+=16; cs+=16;
+		}
+	}
+}
+#endif
+
+#if 1
+void *_memlzcpy(void *dst, void *src, size_t n)
+{
+	long d;
+	
+	d=((char *)dst)-((char *)src);
+	if(d<=0)
+	{
+		/* Copying backwards, use normal copy. */
+		if((-d)>=n)
+			{ memcpy(dst, src, n); }
+		else if(d!=0)
+			{ memmove(dst, src, n); }
+	}else if(d>=n)
+	{
+		/* No overlap, use memcpy. */
+		memcpy(dst, src, n);
+	}else
+	{
+		MemLzCpy_MatchCopy2(dst, n, d);
+	}
+	return(dst);
+}
+#endif

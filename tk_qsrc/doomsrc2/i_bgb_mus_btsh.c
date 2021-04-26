@@ -6,6 +6,8 @@
 #include "w_wad.h"
 #include "z_zone.h"
 
+#include <math.h>
+
 // #include "bgbmid1/bgbmid.h"
 
 volatile u32 *smus_regs;
@@ -94,6 +96,7 @@ int SMus_Init()
 {
 //	float freq, ph;
 	double freq, ph;
+	double *rph;
 	int i, j, k;
 	
 	if(smus_isinit)
@@ -101,6 +104,32 @@ int SMus_Init()
 	smus_isinit=1;
 
 	irq_addTimerIrq(smus_timer_irq);
+
+#if 0
+	ph = pow(3.14159, 6.69);
+	if((ph<2116) || (ph>2120))
+	{
+		rph = &ph;
+		*rph = 3.14159;
+		ph = 1.0 / ph;
+
+		printf("1.0 / 3.14159 = %f (expect ~ 0.318310)\n", ph);
+		
+//		printf("frexp(3.14159) -> (%f * 2^%d)\n", ph, k);
+
+		ph = pow(3.14159, 6.69);
+
+		printf("ph = %f (expect ~ 2118), "
+			"log(3.14159)=%f (expect 1.144729), "
+			"exp(7.65823729) = %f (expect ~ 2118)\n",
+			ph, log(3.14159), exp(7.65823729));
+			
+		ph = frexp(3.14159, &k);
+		printf("frexp(3.14159) -> (%f * 2^%d)\n", ph, k);
+		
+		__debugbreak();
+	}
+#endif
 
 //	smus_regs=(u32 *)0xA0081800;
 //	smus_regs=(u32 *)0xF0081800;
@@ -111,8 +140,8 @@ int SMus_Init()
 		smus_noteatt[i]=63-(i>>1);
 		
 //		freq=pow(2, (i-69)/12.0)*440;
-//		freq=pow(2.0, (i-69)/12.0)*440.0;
-		freq=smus_ipow2((i-69)/12.0)*440.0;
+		freq=pow(2.0, (i-69)/12.0)*440.0;
+//		freq=smus_ipow2((i-69)/12.0)*440.0;
 		
 //		ph=freq/62500.0;
 		ph=freq/64000.0;
