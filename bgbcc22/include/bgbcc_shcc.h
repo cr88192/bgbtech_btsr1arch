@@ -763,6 +763,15 @@
 #define BGBCC_SH_NMID_PLDCM8UH		0x0189	//
 #define BGBCC_SH_NMID_PSTCM8SH		0x018A	//
 #define BGBCC_SH_NMID_PSTCM8UH		0x018B	//
+#define BGBCC_SH_NMID_BRAB			0x018C	//
+#define BGBCC_SH_NMID_BSRB			0x018D	//
+#define BGBCC_SH_NMID_BTB			0x018E	//
+#define BGBCC_SH_NMID_BFB			0x018F	//
+
+#define BGBCC_SH_NMID_BRAL			0x0190	//
+#define BGBCC_SH_NMID_BSRL			0x0191	//
+#define BGBCC_SH_NMID_BTL			0x0192	//
+#define BGBCC_SH_NMID_BFL			0x0193	//
 
 
 #define BGBCC_SH_FMID_REGREG		0x01	//Rm, Rn
@@ -935,6 +944,8 @@
 #define BGBCC_SH_RLC_RELJ32_BJX		0x2F	//Relative Jumbo 32 bit (BYTE, BJX2)
 
 #define BGBCC_SH_RLC_TRIPWIRE_BJX	0x30	//Tripwire Location
+
+#define BGBCC_SH_RLC_RELB13_OP24	0x31	//Relative 13 bit (BYTE, BJX2)
 
 
 // #define BGBCC_SH_RLC_ABSW48A_BSR	0x20	//Absolute BYTE

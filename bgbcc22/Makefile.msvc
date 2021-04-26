@@ -25,6 +25,8 @@ LDFLAGS=../bgbgc.lib ../bgbdy.lib ../bgbasm.lib \
 DLL_LDFLAGS=../bgbgc.lib ../bgbdy.lib ../bgbasm.lib
 LDFLAGS_META=
 
+TOOL_CFLAGS=/Iinclude /Zi
+
 INST_BIN=$(USRLIB_HOME)/bin
 
 include Makefile.inc

@@ -435,6 +435,9 @@ int TgvLz_LookupMatch(TgvLz_Context *ctx,
 	ctx->pred_cs1=str;
 	ctx->pred_l1=bl;
 	ctx->pred_d1=bd;
+	
+	if(bd<=0)
+		bl=0;
 
 	*rl=bl;
 	*rd=bd;

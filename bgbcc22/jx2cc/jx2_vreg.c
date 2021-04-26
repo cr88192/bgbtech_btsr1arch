@@ -497,6 +497,9 @@ int BGBCC_JX2C_EmitMovVRegVReg(
 	int rcls, nm1;
 	int i, j, k;
 
+	if(BGBCC_CCXL_RegisterIdentEqualP(ctx, dreg, sreg))
+		return(0);
+
 	BGBCC_JX2C_NormalizeImmVRegInt(ctx, sctx, type, &sreg);
 
 #if 1
@@ -1888,6 +1891,8 @@ int BGBCC_JX2C_EmitJmpTab(
 	}
 
 	sctx->op_wex_align|=1;
+
+	BGBCC_JX2_EmitPadForLabel(sctx);
 
 	BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_SHLL1, ctreg);
 	BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_BRA2F, ctreg);

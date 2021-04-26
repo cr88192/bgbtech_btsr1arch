@@ -54,6 +54,8 @@
 
 #define BGBCC_MISAL_YES
 
+#define bgbcc_getu8(ptr)		(*(byte *)(ptr))
+
 #define bgbcc_getu16le(ptr)		(*(u16 *)(ptr))
 #define bgbcc_getu32le(ptr)		(*(u32 *)(ptr))
 #define bgbcc_getu64le(ptr)		(*(u64 *)(ptr))

@@ -884,18 +884,18 @@ int BGBCC_JX2_TryEmitOpReg(BGBCC_JX2_Context *ctx, int nmid, int reg)
 		case BGBCC_SH_NMID_BRA2F:
 			if(BGBCC_JX2_CheckPadAlign32(ctx))
 			{
-				opw1=0xF000|(reg&31);
-//				opw2=0x3068; break;
-				opw2=0x3010; break;
+				opw1=0x6F000|(reg&31);
+//				opw2=0x63068; break;
+				opw2=0x63010; break;
 			}else
 			{
 				if(ctx->is_fixed32 || ctx->op_is_wex2)
 					break;
 
-				opw1=0x3000;
-				opw2=0xF000|(reg&31);
-//				opw3=0x3068;
-				opw3=0x3010;
+				opw1=0x63000;
+				opw2=0x6F000|(reg&31);
+//				opw3=0x63068;
+				opw3=0x63010;
 			}
 			break;
 
