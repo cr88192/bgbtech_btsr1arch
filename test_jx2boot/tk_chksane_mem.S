@@ -49,11 +49,15 @@ X(tk_checksane_mem_asm):
 
 #ifndef JX2UC
 
+	.L0:
+
 	mov.x	(sp, 32), r16
 	cmpqeq	r16, r10
 	break?f
 	cmpqeq	r17, r11
 	break?f
+
+	.L1:
 
 	mov.x	(sp, 40), r18
 	cmpqeq	r18, r11
@@ -65,12 +69,16 @@ X(tk_checksane_mem_asm):
 	mov.x	r18,  (sp, 72)
 	mov.x	(sp, 64), r20
 
+	.L2:
+
 	cmpqeq	r20, r11
 	break?f
 	cmpqeq	r21, r11
 	break?f
 
 	mov.x	(sp, 64), r6
+
+	.L3:
 
 	cmpqeq	r6, r11
 	break?f
@@ -85,6 +93,8 @@ X(tk_checksane_mem_asm):
 //	push r10	
 	mov.l (sp, 0), r6
 	movu.l (sp, 0), r7
+
+	.L4:
 
 	cmpq/eq r6, r7
 	bt _checksane_fail_mem
@@ -102,6 +112,8 @@ X(tk_checksane_mem_asm):
 	movd.l (sp, 0), r6
 	cmp/eq r6, r8
 	bf _checksane_fail_mem
+
+	.L5:
 
 	exts.b r8, r12
 	exts.w r8, r13
@@ -129,6 +141,8 @@ X(tk_checksane_mem_asm):
 	bf _checksane_fail_mem
 	cmpq/eq r7, r11
 	bf _checksane_fail_mem
+
+	.L6:
 
 	mov.l r10, (sp, 12)
 	mov.q (sp, 8), r6

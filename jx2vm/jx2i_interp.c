@@ -1827,11 +1827,13 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 	int topfn_chn[1024];
 	int topfn_cyc[1024];
 	int topfn_hash[64];
+	float topfn_pcnt[64];
+	float topfn_tpcnt[64];
 	int n_topfn;
 	BJX2_Trace *trcur;
 	bjx2_addr ba2;
 	s64 cyc, cy0, cy1;
-	double pcnt;
+	double pcnt, tpcnt;
 	char *bn2, *s0, *s1;
 	int trn, trtops;
 	int i, j, k, h;
@@ -1943,13 +1945,27 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 
 	printf("Top Funcs:\n");
 
+//	float topfn_pcnt[64];
+//	float topfn_tpcnt[64];
+	tpcnt=0;
+	for(i=0; i<64; i++)
+	{
+		cyc=topfn_cyc[i];
+		pcnt=(100.0*cyc)/(ctx->tot_cyc);
+		tpcnt+=pcnt;
+		topfn_pcnt[i]=pcnt;
+		topfn_tpcnt[i]=tpcnt;
+	}
+
 	for(i=0; i<64; i++)
 	{
 		bn2=topfn_name[63-i];
 		cyc=topfn_cyc[63-i];
-		pcnt=(100.0*cyc)/(ctx->tot_cyc);
+//		pcnt=(100.0*cyc)/(ctx->tot_cyc);
+		pcnt=topfn_pcnt[63-i];
+		tpcnt=topfn_tpcnt[63-i];
 
-		printf(" %-40s %.2f%%\n", bn2, pcnt);
+		printf(" %-40s %.2f%% %.2f%%\n", bn2, pcnt, tpcnt);
 	}
 	
 	printf("Top Traces:\n");

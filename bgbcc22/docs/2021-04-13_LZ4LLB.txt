@@ -1,0 +1,31 @@
+LZ4LLB:
+* LZ4 Variant with lengths limited to a single byte.
+* Aims to allow a slightly smaller/simpler ASM implementation.
+
+Compressed Run:
+* Token [LitLen] LiteralBytes* Distance [MatchLen]
+
+Token:
+* High 4 bits: Literal Length (0..14, 15=Escape)
+* Low 4 bits: Match Length (4..17, 18=Escape)
+
+If a field within the token encodes the maximum value, an escaped length is used.
+In LZ4LLB, this will be a single byte in the range of 00..FE, with FF being considered as invalid.
+
+This will differ from mainline LZ4, which may use a chain of FF bytes to encode a longer run. Avoiding this case may allow for a simpler decoder.
+
+This limits the maximum run of literal bytes to 269 bytes, and the maximum match length to 273 bytes.
+
+
+The Distance will be encoded as a 16-bit value in little-endian order.
+
+If the Distace is 0, the match will be interpreted as an escape code.
+
+The Match Length field will be interpreted as an escape code:
+* 4: EOB (End Of Block)
+* 5: RawLit (Raw Literals, no match copy is performed).
+
+In the EOB case, after the literal bytes are copied to the output, the decoder terminates. This allows the compressed data to be self-terminating without reliance on an external length field.
+
+In the RawLit case, after the literal bytes are copied to the output, the decoder continues on without copying a match. This case is needed to be able to deal with longer runs of uncompressible data.
+

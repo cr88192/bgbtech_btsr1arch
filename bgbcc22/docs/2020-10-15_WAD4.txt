@@ -130,7 +130,7 @@ Somewhere in the image will be the WAD4 Directory.
 
 * name:
 ** Nominally, 32-characters.
-** A flag may select between CP1252 and UTF8 encodings.
+** A flag may select between Codepage 1252 and UTF-8 encodings.
 *** This will apply to both the name field as well as a symlink.
 
 

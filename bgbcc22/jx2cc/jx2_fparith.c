@@ -415,8 +415,9 @@ int BGBCC_JX2C_EmitUnaryVRegVRegFloat(
 		{
 			csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, sreg);
 			cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dreg);
-			BGBCC_JX2C_EmitMovRegReg(ctx, sctx, csreg, cdreg);
-			BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_FNEG, cdreg);
+//			BGBCC_JX2C_EmitMovRegReg(ctx, sctx, csreg, cdreg);
+//			BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_FNEG, cdreg);
+			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_FNEG, csreg, cdreg);
 			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
 			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, sreg);
 			return(1);
@@ -572,9 +573,10 @@ int BGBCC_JX2C_EmitUnaryVRegVRegFloat(
 			cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dreg);
 //			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_FMOV, csreg, cdreg);
 
-			BGBCC_JX2C_EmitMovRegReg(ctx, sctx, csreg, cdreg);
+//			BGBCC_JX2C_EmitMovRegReg(ctx, sctx, csreg, cdreg);
+//			BGBCC_JX2_EmitOpReg(sctx, nm1, cdreg);
+			BGBCC_JX2_EmitOpRegReg(sctx, nm1, csreg, cdreg);
 
-			BGBCC_JX2_EmitOpReg(sctx, nm1, cdreg);
 			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
 			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, sreg);
 		}
