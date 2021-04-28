@@ -843,6 +843,9 @@ begin
 		tNxtStLatch	= 0;
 	end
 
+//	if(tBlkDoSt)
+//		tHold = 1;
+
 	if(tBlkDoStL)
 		tHold = 1;
 

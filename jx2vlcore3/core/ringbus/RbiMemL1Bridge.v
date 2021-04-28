@@ -41,8 +41,8 @@ input [ 15:0]	l2mSeqIn;		//operation sequence
 output[ 15:0]	l2mSeqOut;		//operation sequence
 input [ 15:0]	l2mOpmIn;		//memory operation mode
 output[ 15:0]	l2mOpmOut;		//memory operation mode
-input [ 31:0]	l2mAddrIn;		//memory input address
-output[ 31:0]	l2mAddrOut;		//memory output address
+input [ 47:0]	l2mAddrIn;		//memory input address
+output[ 47:0]	l2mAddrOut;		//memory output address
 input [127:0]	l2mDataIn;		//memory input data
 output[127:0]	l2mDataOut;		//memory output data
 
@@ -57,7 +57,7 @@ reg[127:0]		tL1mDataOut;		//memory output data
 
 reg[ 15:0]		tL2mSeqOut;			//operation sequence
 reg[ 15:0]		tL2mOpmOut;			//memory operation mode
-reg[ 31:0]		tL2mAddrOut;		//memory output address
+reg[ 47:0]		tL2mAddrOut;		//memory output address
 reg[127:0]		tL2mDataOut;		//memory output data
 
 
@@ -83,11 +83,28 @@ assign		l2mRingIsIdle = (l2mOpmIn[7:0] == JX2_RBI_OPM_IDLE);
 wire			l1mRingIsReq;
 wire			l2mRingIsResp;
 
+wire			l1mRingIsIrq;
+wire			l2mRingIsIrq;
+wire			l2mRingIsIrqBc;
+
 assign		l1mRingIsReq = l1mOpmIn[ 7:6] == 2'b10;
 
 assign		l2mRingIsResp =
 	(l2mOpmIn[ 7:6] == 2'b01) &&
 	(l2mSeqIn[15:10] == unitNodeId[7:2]);
+
+assign		l1mRingIsIrq =
+	(l2mOpmIn[ 7:0] == JX2_RBI_OPM_IRQ) &&
+	((l2mDataIn[11:8] != unitNodeId[5:2]) ||
+//	 (l2mDataIn[11:8] == 4'h0) ||
+	 (l2mDataIn[11:8] == 4'hF));
+
+assign		l2mRingIsIrq =
+	(l2mOpmIn[ 7:0] == JX2_RBI_OPM_IRQ) &&
+	((l2mDataIn[11:8] == unitNodeId[5:2]) ||
+	 (l2mDataIn[11:8] == 4'h0) ||
+	 (l2mDataIn[11:8] == 4'hF));
+assign		l2mRingIsIrqBc = l2mRingIsIrq && (l2mDataIn[11:8] == 4'hF);
 
 reg[ 15:0]		tL1mSeqReq;			//operation sequence
 reg[ 15:0]		tL1mOpmReq;			//memory operation mode
@@ -96,8 +113,10 @@ reg[127:0]		tL1mDataReq;		//memory output data
 
 reg[ 15:0]		tL2mSeqReq;			//operation sequence
 reg[ 15:0]		tL2mOpmReq;			//memory operation mode
-reg[ 31:0]		tL2mAddrReq;		//memory output address
+reg[ 47:0]		tL2mAddrReq;		//memory output address
 reg[127:0]		tL2mDataReq;		//memory output data
+
+`ifndef def_true
 
 reg[ 15:0]		tTlbSeqReqIn;			//operation sequence
 reg[ 15:0]		tTlbOpmReqIn;			//memory operation mode
@@ -112,15 +131,20 @@ reg[127:0]		tTlbDataReqOut;		//memory output data
 wire			tlbRingIsIdle;
 assign		tlbRingIsIdle = (tTlbOpmReqOut[7:0] == JX2_RBI_OPM_IDLE);
 
+`endif
+
 
 reg				tHoldL2b;			//Can't transfer L1->L2
 reg				tHoldL1b;			//Can't transfer L2->L1
+
+reg				tUpdateL2b;			//Modify Value on L2 Ring
 
 always @*
 begin
 
 	tHoldL2b		= 0;
 	tHoldL1b		= 0;
+	tUpdateL2b		= 0;
 
 	tL1mSeqReq		= UV16_00;
 	tL1mOpmReq		= UV16_00;
@@ -129,7 +153,7 @@ begin
 
 	tL2mSeqReq		= UV16_00;
 	tL2mOpmReq		= UV16_00;
-	tL2mAddrReq		= UV32_00;
+	tL2mAddrReq		= UV48_00;
 	tL2mDataReq		= UV128_XX;
 
 	if(!l1mRingIsIdle && !l1mRingIsReq)
@@ -138,22 +162,42 @@ begin
 	if(!l2mRingIsIdle && !l2mRingIsResp)
 		tHoldL2b		= 1;
 		
-	if(tlbRingIsIdle)
-		tHoldL2b		= 0;
+//	if(tlbRingIsIdle)
+//		tHoldL2b		= 0;
 
-	if(l2mRingIsResp)
+	if(l2mRingIsIrqBc && (l2mSeqIn[15:10] != unitNodeId[7:2]))
+	begin
+		tL2mSeqReq		= l2mSeqIn;
+		tL2mOpmReq		= l2mOpmIn;
+		tL2mAddrReq		= l2mAddrIn;
+		tL2mDataReq		= l2mDataIn;
+		tUpdateL2b		= 1;
+
+		if(l2mSeqIn[15:10] == 6'h00)
+			tL2mSeqReq[15:10]	= unitNodeId[7:2];
+	end
+
+	if(tUpdateL2b)
+	begin
+//		tHoldL1b = 1;
+		tHoldL2b = 1;
+	end
+
+	if(l2mRingIsResp && !tUpdateL2b)
 	begin
 		tL1mSeqReq		= l2mSeqIn;
 		tL1mOpmReq		= l2mOpmIn;
-		tL1mAddrReq		= { JX2_RBI_ADDRHI_PHYS, l2mAddrIn };
+//		tL1mAddrReq		= { JX2_RBI_ADDRHI_PHYS, l2mAddrIn };
+		tL1mAddrReq		= l2mAddrIn;
 		tL1mDataReq		= l2mDataIn;
 	end
 
-	if(l1mRingIsReq)
+	if(l1mRingIsReq && !tUpdateL2b)
 	begin
 		tL2mSeqReq		= l1mSeqIn;
 		tL2mOpmReq		= l1mOpmIn;
-		tL2mAddrReq		= l1mAddrIn[31:0];
+//		tL2mAddrReq		= l1mAddrIn[31:0];
+		tL2mAddrReq		= l1mAddrIn;
 		tL2mDataReq		= l1mDataIn;
 	end
 
@@ -161,8 +205,19 @@ end
 
 always @(posedge clock)
 begin
-	if(l1mRingIsIdle || (l1mRingIsReq && !tHoldL2b))
+	if(l1mRingIsIdle || ((l1mRingIsReq || l1mRingIsIrq) && !tHoldL2b))
 	begin
+`ifndef def_true
+		if(tL1mOpmReq!=0)
+		begin
+			$display("L2->L1 O=%X S=%X A=%X D=%X",
+				tL1mOpmReq,
+				tL1mSeqReq,
+				tL1mAddrReq,
+				tL1mDataReq);
+		end
+`endif
+
 		tL1mSeqOut  <= tL1mSeqReq;
 		tL1mOpmOut  <= tL1mOpmReq;
 		tL1mAddrOut <= tL1mAddrReq;
@@ -179,8 +234,20 @@ begin
 		tL1mReqSent	<= 0;
 	end
 
-	if(l2mRingIsIdle || (l2mRingIsResp && !tHoldL1b))
+	if(l2mRingIsIdle || tUpdateL2b ||
+		((l2mRingIsResp || l2mRingIsIrq) && !tHoldL1b))
 	begin
+`ifndef def_true
+		if(tL2mOpmReq!=0)
+		begin
+			$display("L1->L2 O=%X S=%X A=%X D=%X",
+				tL2mOpmReq,
+				tL2mSeqReq,
+				tL2mAddrReq,
+				tL2mDataReq);
+		end
+`endif
+
 		tL2mSeqOut  <= tL2mSeqReq;
 		tL2mOpmOut  <= tL2mOpmReq;
 		tL2mAddrOut <= tL2mAddrReq;

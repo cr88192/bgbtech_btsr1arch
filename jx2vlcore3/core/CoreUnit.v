@@ -62,12 +62,19 @@ MMIO Space:
 
 
 `include "ExUnit.v"
-`include "MemL2A.v"
 
+`ifdef jx2_use_ringbus
+`include "ringbus/RbiMemL2A.v"
+`else
+`include "MemL2A.v"
+`endif
+
+`ifndef jx2_use_ringbus
 `ifdef jx2_enable_dualcore
 `include "ExMemJoin.v"
 `else
 `include "ExMemJoinSc.v"
+`endif
 `endif
 
 `include "MmiModGpio.v"
@@ -504,7 +511,11 @@ reg[63:0]		memBusExcIn;
 `wire_tile		memOutData;
 wire[47:0]		memAddr;
 wire[47:0]		memAddrB;
-wire[4:0]		memOpm;
+wire[47:0]		memAddrIn;
+wire[15:0]		memOpm;
+wire[15:0]		memOpmIn;
+wire[15:0]		memSeq;
+wire[15:0]		memSeqIn;
 wire[1:0]		memOK;
 
 // reg[63:0]		memBusExcIn;
@@ -539,9 +550,16 @@ wire			dbgOutStatus8;
 `wire_tile		mem1OutData;
 wire[47:0]		mem1AddrA;
 wire[47:0]		mem1AddrB;
-wire[4:0]		mem1Opm;
+wire[15:0]		mem1Opm;
 wire[1:0]		mem1OK;
 wire[63:0]		mem1BusExc;
+
+wire[47:0]		mem1AddrIn;
+wire[15:0]		mem1OpmIn;
+wire[15:0]		mem1SeqOut;
+wire[15:0]		mem1SeqIn;
+wire[7:0]		mem1NodeId;
+assign			mem1NodeId = 8'h04;
 
 wire[47:0]		dbg1OutPc;
 wire[95:0]		dbg1OutIstr;
@@ -572,6 +590,10 @@ ExUnit	cpu1(
 	mem1Opm,		mem1OK,
 	mem1BusExc,
 	
+	mem1AddrIn,		mem1OpmIn,
+	mem1SeqIn,		mem1SeqOut,
+	mem1NodeId,
+	
 	dbg1OutPc,		dbg1OutIstr,
 	dbg1ExHold1,	dbg1ExHold2,
 	
@@ -590,9 +612,17 @@ ExUnit	cpu1(
 `wire_tile		mem2OutData;
 wire[47:0]		mem2AddrA;
 wire[47:0]		mem2AddrB;
-wire[4:0]		mem2Opm;
+wire[15:0]		mem2Opm;
 wire[1:0]		mem2OK;
 wire[63:0]		mem2BusExc;
+
+wire[47:0]		mem2AddrIn;
+wire[15:0]		mem2OpmIn;
+wire[15:0]		mem2SeqIn;
+wire[15:0]		mem2SeqOut;
+
+wire[7:0]		mem2NodeId;
+assign			mem2NodeId = 8'h08;
 
 wire[47:0]		dbg2OutPc;
 wire[95:0]		dbg2OutIstr;
@@ -622,6 +652,10 @@ ExUnit	cpu2(
 	mem2InData,		mem2OutData,
 	mem2Opm,		mem2OK,
 	mem2BusExc,
+
+	mem2AddrIn,		mem2OpmIn,
+	mem2SeqIn,		mem2SeqOut,
+	mem2NodeId,
 	
 	dbg2OutPc,		dbg2OutIstr,
 	dbg2ExHold1,	dbg2ExHold2,
@@ -658,6 +692,32 @@ assign		dbgOutStatus6 = dbg1OutStatus6 || dbg2OutStatus6;
 assign		dbgOutStatus7 = dbg1OutStatus7 || dbg2OutStatus7;
 assign		dbgOutStatus8 = dbg1OutStatus8 || dbg2OutStatus8;
 
+`ifdef jx2_use_ringbus
+
+assign	mem1InData	= memInData;
+assign	mem2InData	= mem1OutData;
+assign	memOutData	= mem2OutData;
+
+assign	mem1AddrIn	= memAddrIn;
+assign	mem2AddrIn	= mem1AddrA;
+assign	memAddr		= mem2AddrA;
+
+assign	mem1SeqIn	= memSeqIn;
+assign	mem2SeqIn	= mem1SeqOut;
+assign	memSeq		= mem2SeqOut;
+
+assign	mem1OpmIn	= memOpmIn;
+assign	mem2OpmIn	= mem1Opm;
+assign	memOpm		= mem2Opm;
+
+assign	mem1OK		= 0;
+assign	mem2OK		= 0;
+
+assign	mem1BusExc	= 0;
+assign	mem2BusExc	= 0;
+
+`else
+
 ExMemJoin	cpuJoin(
 	clock_cpu,	clock_master,	reset2_cpu,
 	memInData,	memOutData,
@@ -676,22 +736,37 @@ ExMemJoin	cpuJoin(
 	mem2BusExc
 	);
 
+`endif
+
 `else
 
 `wire_tile		memInData;
 `wire_tile		memOutData;
 wire[47:0]		memAddr;
 wire[47:0]		memAddrB;
-wire[4:0]		memOpm;
+wire[15:0]		memOpm;
 wire[1:0]		memOK;
+
+wire[15:0]		memSeq;
+wire[15:0]		memSeqIn;
+wire[47:0]		memAddrIn;
+wire[15:0]		memOpmIn;
 
 `wire_tile		mem1InData;
 `wire_tile		mem1OutData;
 wire[47:0]		mem1AddrA;
 wire[47:0]		mem1AddrB;
-wire[4:0]		mem1Opm;
+wire[15:0]		mem1Opm;
 wire[1:0]		mem1OK;
 wire[63:0]		mem1BusExc;
+
+wire[47:0]		mem1AddrIn;
+wire[15:0]		mem1OpmIn;
+wire[15:0]		mem1SeqOut;
+wire[15:0]		mem1SeqIn;
+wire[ 7:0]		mem1NodeId;
+assign			mem1NodeId = 8'h04;
+
 
 // reg[63:0]		memBusExcIn;
 
@@ -729,6 +804,10 @@ ExUnit	cpu(
 	mem1InData,		mem1OutData,
 	mem1Opm,		mem1OK,
 	mem1BusExc,
+
+	mem1AddrIn,		mem1OpmIn,
+	mem1SeqIn,		mem1SeqOut,
+	mem1NodeId,
 	
 	dbgOutPc,		dbgOutIstr,
 	dbgExHold1,		dbgExHold2,
@@ -743,6 +822,24 @@ ExUnit	cpu(
 	dbgOutStatus7,	dbgOutStatus8
 	);
 
+`ifdef jx2_use_ringbus
+
+assign	mem1InData	= memInData;
+assign	memOutData	= mem1OutData;
+assign	mem1AddrIn	= memAddrIn;
+assign	memAddr		= mem1AddrA;
+
+assign	mem1SeqIn	= memSeqIn;
+assign	memSeq		= mem1SeqOut;
+
+assign	mem1OpmIn	= memOpmIn;
+assign	memOpm		= mem1Opm;
+assign	mem1OK		= 0;
+
+assign	mem1BusExc	= 0;
+
+`else
+
 ExMemJoinSc	cpuJoin(
 	clock_cpu,	clock_master,	reset2_cpu,
 	memInData,	memOutData,
@@ -755,6 +852,7 @@ ExMemJoinSc	cpuJoin(
 	mem1Opm,	mem1OK,
 	mem1BusExc
 	);
+`endif
 
 `endif
 
@@ -834,6 +932,54 @@ MmiModGpio	gpio(
 
 wire[63:0]		memBounceIrq;
 
+`ifdef jx2_use_ringbus
+
+wire[127:0]		l2aDataIn;
+wire[127:0]		l2aDataOut;
+wire[47:0]		l2aAddrIn;
+wire[47:0]		l2aAddrOut;
+wire[15:0]		l2aOpmIn;
+wire[15:0]		l2aOpmOut;
+wire[15:0]		l2aSeqIn;
+wire[15:0]		l2aSeqOut;
+wire[7:0]		l2aNodeId;
+
+RbiMemL2A	l2a(
+	clock_master,	reset2_master,
+
+	l2aAddrIn,		l2aAddrOut,
+	l2aDataIn,		l2aDataOut,
+	l2aOpmIn,		l2aOpmOut,
+	l2aSeqIn,		l2aSeqOut,
+	l2aNodeId,
+
+	ddrMemAddr,		ddrMemOpm,
+	ddrMemDataOut,	ddrMemDataIn,
+	ddrMemOK,
+
+	mmioAddr_A0,	mmioOpm_A0,
+	mmioInData_A0,	mmioOutDataQ_A0,
+	mmioOK_A0
+	);
+
+assign		l2aDataIn	= memOutData;
+assign		l2aAddrIn	= memAddr;
+assign		l2aOpmIn	= memOpm;
+assign		l2aSeqIn	= memSeq;
+
+assign		memInData	= l2aDataOut;
+assign		memAddrIn	= l2aAddrOut;
+assign		memOpmIn	= l2aOpmOut;
+assign		memSeqIn	= l2aSeqOut;
+
+assign		l2aNodeId	= 8'h82;
+
+assign		memOK = 2'b00;
+
+assign		memBounceIrq = 0;
+
+`else
+
 MemL2A	l2a(
 //	clock_100,		reset2_100,
 	clock_master,	reset2_master,
@@ -851,6 +997,8 @@ MemL2A	l2a(
 	mmioInData_A0,	mmioOutDataQ_A0,
 	mmioOK_A0
 	);
+
+`endif
 
 
 wire[15:0]	scrnPwmOut;

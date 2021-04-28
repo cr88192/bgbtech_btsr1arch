@@ -6,7 +6,12 @@ PF IF ID1 ID2 EX1 EX2 EX3 WB
 
 `include "CoreDefs.v"
 
+`ifdef jx2_use_ringbus
+`include "ringbus/RbiMemL1A.v"
+`else
 `include "MemL1A.v"
+`endif
+
 `include "RegCR.v"
 
 `ifdef jx2_enable_wex3w
@@ -68,6 +73,10 @@ module ExUnit(
 	memOpm,			memOK,
 	memBusExc,
 	
+	memAddrIn,		memOpmIn,
+	memSeqIn,		memSeqOut,
+	unitNodeId,
+	
 	dbgOutPc,		dbgOutIstr,
 	dbgExHold1,		dbgExHold2,
 
@@ -90,11 +99,22 @@ input[11:0]		timers;
 
 output[47:0]	memAddr;
 output[47:0]	memAddrB;
+input[47:0]		memAddrIn;
+
 `input_tile		memDataIn;
 `output_tile	memDataOut;
-output[4:0]		memOpm;
+
+output[15:0]	memOpm;
+input[15:0]		memOpmIn;
+
+output[15:0]	memSeqOut;
+input[15:0]		memSeqIn;
+
 input[1:0]		memOK;
 input[63:0]		memBusExc;
+
+input[7:0]		unitNodeId;
+	
 
 // output[31:0]	dbgOutPc;
 output[47:0]	dbgOutPc;
@@ -105,7 +125,7 @@ output			dbgExHold2;
 
 // output[31:0]	dbgDcInAddr;
 output[47:0]	dbgDcInAddr;
-output[ 4:0]	dbgDcInOpm;
+output[4:0]		dbgDcInOpm;
 output[63:0]	dbgDcOutVal;
 output[63:0]	dbgDcInVal;
 output[ 1:0]	dbgDcOutOK;
@@ -213,12 +233,13 @@ assign	dbgOutPc	= ifLastPc;
 assign	dbgOutIstr	= ifIstrWord;
 
 reg [47:0]		dcInAddr;
-reg [ 4:0]		dcInOpm;
+reg [4:0]		dcInOpm;
 wire[63:0]		dcOutVal;
 reg [63:0]		dcInVal;
 wire[ 1:0]		dcOutOK;
 reg				dcInHold;
 wire			dcOutHold;
+wire			dcBusWait;
 
 wire[63:0]		dcOutValB;
 reg [63:0]		dcInValB;
@@ -231,9 +252,43 @@ assign	dbgDcOutVal	= dcOutVal;
 assign	dbgDcInVal	= dcInVal;
 assign	dbgDcOutOK	= dcOutOK;
 
-
 wire[63:0]		memRegExc;
 wire[63:0]		memRegTraPc;
+
+`ifdef jx2_use_ringbus
+
+RbiMemL1A		memL1(
+	clock,			reset,
+
+	ifValPc,		ifIstrWord,
+	ifOutPcOK,		ifOutPcStep,
+	ifInPcHold,		ifInPcWxe,
+
+	dcInAddr,		dcInOpm,
+	dcOutVal,		dcInVal,
+	dcOutValB,		dcInValB,
+	dcOutOK,		dcInHold,
+	dcOutHold,		dcBusWait,
+
+	gprOutDlr,		gprOutDhr,
+	crOutMmcr,		crOutKrr,		crOutSr,
+
+	memRegExc,		memRegTraPc,
+	dcInTraPc,		tDeadlockLatch,
+
+	memAddrIn,		memAddr,
+	memDataIn,		memDataOut,
+	memOpmIn,		memOpm,
+	memSeqIn,		memSeqOut,
+	unitNodeId
+	);
+
+assign		memAddrB = 0;
+
+`else
+
+// assign	memSeqOut	= UV16_00;
+assign	memSeqOut	= 16'hFF00;
 
 MemL1A		memL1(
 	clock,			reset,
@@ -257,6 +312,7 @@ MemL1A		memL1(
 	memDataIn,		memDataOut,
 	memOpm,			memOK
 	);
+`endif
 
 /* ID1 */
 
@@ -1798,10 +1854,17 @@ begin
 	tDbgOutStatus3	= exHold1C;
 	tDbgOutStatus4	= exHold1D;
 
+`ifdef jx2_use_ringbus
+	tDbgOutStatus5	= ifOutPcOK[1];
+	tDbgOutStatus6	= dcOutOK[1];
+	tDbgOutStatus7	= dcBusWait;
+	tDbgOutStatus8	= memOpm[7:0] != 0;
+`else
 	tDbgOutStatus5	= ifOutPcOK[1];
 	tDbgOutStatus6	= dcOutOK[1];
 	tDbgOutStatus7	= memOK[1];
 	tDbgOutStatus8	= memOpm[3] || memOpm[4];
+`endif
 
 `ifdef jx2_debug_expipe
 	if(exHold1 &&

@@ -64,7 +64,7 @@ input			icInPcHold;
 input			icInPcWxe;
 
 input [47: 0]	dcInAddr;		//input PC address
-input [ 4: 0]	dcInOpm;		//input PC address
+input [4: 0]	dcInOpm;		//input PC address
 output[63: 0]	dcOutVal;		//output data value
 input [63: 0]	dcInVal;		//input data value
 output[ 1: 0]	dcOutOK;		//set if we have a valid value.
@@ -87,7 +87,7 @@ input			deadlockLatch;	//CPU Is Deadlocked
 
 output[ 47:0]	memAddr;		//Memory address (Primary)
 output[ 47:0]	memAddrB;		//Memory address (Secondary)
-output[  4:0]	memOpm;			//Memory Operation
+output[ 15:0]	memOpm;			//Memory Operation
 input [  1:0]	memOK;			//Memory OK
 `input_tile		memDataIn;		//Memory Data In
 `output_tile	memDataOut;		//Memory Data Out
@@ -117,7 +117,7 @@ wire[4:0]		tTlbOpm;
 
 assign	memAddr		= tTlbAddr;
 assign	memAddrB	= tTlbAddrB;
-assign	memOpm		= tTlbOpm;
+assign	memOpm		= { 11'h0, tTlbOpm };
 // assign	memDataOut	= tMemDataOut;
 assign	memDataOut	= tTlbDataOut;
 
@@ -125,7 +125,8 @@ assign	memDataOut	= tTlbDataOut;
 
 assign	memAddr		= tMemAddr;
 assign	memAddrB	= tMemAddrB;
-assign	memOpm		= tMemOpm;
+// assign	memOpm		= tMemOpm;
+assign	memOpm		= { 11'h0, tMemOpm };
 assign	memDataOut	= tMemDataOut;
 
 assign	tMemAccNoRwx	= 0;
@@ -175,7 +176,7 @@ MemIcWxA		memIc(
 	icInPcAddr,		icOutPcVal,
 	icOutPcOK,		icOutPcStep,
 	icInPcHold,		icInPcWxe,
-	dcInOpm,		regInSr,
+	dcInOpm[4:0],	regInSr,
 	ifMemData,		ifMemAddr,
 	ifMemOpm,		ifMemOK,
 	ifMemNoRwx

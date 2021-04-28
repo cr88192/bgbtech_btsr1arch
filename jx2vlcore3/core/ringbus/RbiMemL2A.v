@@ -1,0 +1,220 @@
+`include "ringbus/RbiDefs.v"
+
+`include "ringbus/RbiMemL2Dc.v"
+`include "ringbus/RbiMemL2Rom.v"
+`include "ringbus/RbiMemL2Mmio.v"
+
+module RbiMemL2A(
+	clock,
+	reset,
+	
+	memAddrIn,		memAddrOut,
+	memDataIn,		memDataOut,
+	memOpmIn,		memOpmOut,
+	memSeqIn,		memSeqOut,
+	unitNodeId,
+
+	ddrMemAddr,		ddrMemOpm,
+	ddrMemDataIn,	ddrMemDataOut,
+	ddrMemOK,
+
+	mmioAddr,		mmioOpm,
+	mmioInData,		mmioOutData,
+	mmioOK
+	);
+
+input			clock;
+input			reset;
+
+input [ 15:0]	memSeqIn;		//operation sequence
+output[ 15:0]	memSeqOut;		//operation sequence
+input [ 15:0]	memOpmIn;		//memory operation mode
+output[ 15:0]	memOpmOut;		//memory operation mode
+input [ 47:0]	memAddrIn;		//memory input address
+output[ 47:0]	memAddrOut;		//memory output address
+input [127:0]	memDataIn;		//memory input data
+output[127:0]	memDataOut;		//memory output data
+
+input [  7:0]	unitNodeId;		//Who Are We?
+
+`input_ddrtile	ddrMemDataIn;
+`output_ddrtile	ddrMemDataOut;
+
+output[31:0]	ddrMemAddr;
+output[4:0]		ddrMemOpm;
+input[1:0]		ddrMemOK;
+
+input[63:0]		mmioInData;
+output[63:0]	mmioOutData;
+output[31:0]	mmioAddr;
+output[4:0]		mmioOpm;
+input[1:0]		mmioOK;
+
+
+wire[ 15:0]		l2mSeqIn;
+wire[ 15:0]		l2mSeqOut;
+wire[ 15:0]		l2mOpmIn;
+wire[ 15:0]		l2mOpmOut;
+wire[ 47:0]		l2mAddrIn;
+wire[ 47:0]		l2mAddrOut;
+wire[127:0]		l2mDataIn;
+wire[127:0]		l2mDataOut;
+wire[  7:0]		l2mNodeId;
+wire			l2mDeadlockStrobe;
+
+RbiMemL2Dc		l2dc(
+	clock,			reset,
+	
+	l2mAddrIn,		l2mAddrOut,
+	l2mDataIn,		l2mDataOut,
+	l2mOpmIn,		l2mOpmOut,
+	l2mSeqIn,		l2mSeqOut,
+	l2mNodeId,
+
+	ddrMemAddr,		ddrMemOpm,
+	ddrMemDataIn,	ddrMemDataOut,
+	ddrMemOK,
+	
+	l2mDeadlockStrobe
+	);
+
+wire[ 15:0]		l2rSeqIn;
+wire[ 15:0]		l2rSeqOut;
+wire[ 15:0]		l2rOpmIn;
+wire[ 15:0]		l2rOpmOut;
+wire[ 47:0]		l2rAddrIn;
+wire[ 47:0]		l2rAddrOut;
+wire[127:0]		l2rDataIn;
+wire[127:0]		l2rDataOut;
+wire[  7:0]		l2rNodeId;
+
+RbiMemL2Rom		l2rom(
+	clock,			reset,
+	l2rAddrIn,		l2rAddrOut,
+	l2rDataIn,		l2rDataOut,
+	l2rOpmIn,		l2rOpmOut,
+	l2rSeqIn,		l2rSeqOut,
+	l2rNodeId
+	);
+
+wire[ 15:0]		l2bSeqIn;
+wire[ 15:0]		l2bSeqOut;
+wire[ 15:0]		l2bOpmIn;
+wire[ 15:0]		l2bOpmOut;
+wire[ 47:0]		l2bAddrIn;
+wire[ 47:0]		l2bAddrOut;
+wire[127:0]		l2bDataIn;
+wire[127:0]		l2bDataOut;
+wire[  7:0]		l2bNodeId;
+
+RbiMemL2Mmio	l2mmio(
+	clock,			reset,
+	l2bAddrIn,		l2bAddrOut,
+	l2bDataIn,		l2bDataOut,
+	l2bOpmIn,		l2bOpmOut,
+	l2bSeqIn,		l2bSeqOut,
+	l2bNodeId,
+
+	mmioAddr,		mmioOpm,
+	mmioInData,		mmioOutData,
+	mmioOK
+	);
+
+assign			l2mNodeId = 8'h82;
+assign			l2rNodeId = 8'h84;
+assign			l2bNodeId = 8'h86;
+assign			l2mDeadlockStrobe = 0;
+
+assign		l2mSeqIn	= memSeqIn;
+assign		l2mOpmIn	= memOpmIn;
+assign		l2mAddrIn	= memAddrIn;
+assign		l2mDataIn	= memDataIn;
+
+// assign		l2rSeqIn	= l2mSeqOut;
+// assign		l2rOpmIn	= l2mOpmOut;
+// assign		l2rAddrIn	= l2mAddrOut;
+// assign		l2rDataIn	= l2mDataOut;
+
+reg[ 15:0]		tL2mSeqOut;
+reg[ 15:0]		tL2mOpmOut;
+reg[ 47:0]		tL2mAddrOut;
+reg[127:0]		tL2mDataOut;
+
+assign		l2rSeqIn	= tL2mSeqOut;
+assign		l2rOpmIn	= tL2mOpmOut;
+assign		l2rAddrIn	= tL2mAddrOut;
+assign		l2rDataIn	= tL2mDataOut;
+
+assign		l2bSeqIn	= l2rSeqOut;
+assign		l2bOpmIn	= l2rOpmOut;
+assign		l2bAddrIn	= l2rAddrOut;
+assign		l2bDataIn	= l2rDataOut;
+
+// assign		memSeqOut	= l2bSeqOut;
+// assign		memOpmOut	= l2bOpmOut;
+// assign		memAddrOut	= l2bAddrOut;
+// assign		memDataOut	= l2bDataOut;
+
+reg[ 15:0]		tL2bSeqOut;
+reg[ 15:0]		tL2bOpmOut;
+reg[ 47:0]		tL2bAddrOut;
+reg[127:0]		tL2bDataOut;
+
+assign		memSeqOut	= tL2bSeqOut;
+assign		memOpmOut	= tL2bOpmOut;
+assign		memAddrOut	= tL2bAddrOut;
+assign		memDataOut	= tL2bDataOut;
+
+
+always @*
+begin
+	tL2mSeqOut		= l2mSeqOut;
+	tL2mOpmOut		= l2mOpmOut;
+	tL2mAddrOut		= l2mAddrOut;
+	tL2mDataOut		= l2mDataOut;
+
+	tL2bSeqOut		= l2bSeqOut;
+	tL2bOpmOut		= l2bOpmOut;
+	tL2bAddrOut		= l2bAddrOut;
+	tL2bDataOut		= l2bDataOut;
+
+//`ifndef def_true
+`ifdef def_true
+	if(	(l2bOpmOut[7:0] == 8'h00) &&
+//		(l2mOpmOut[7:0] != 8'h00) && 
+		(l2mOpmOut[7:6] == 2'b01))
+	begin
+		/* Shortcut */
+	
+		tL2mSeqOut		= l2bSeqOut;
+		tL2mOpmOut		= l2bOpmOut;
+		tL2mAddrOut		= l2bAddrOut;
+		tL2mDataOut		= l2bDataOut;
+
+		tL2bSeqOut		= l2mSeqOut;
+		tL2bOpmOut		= l2mOpmOut;
+		tL2bAddrOut		= l2mAddrOut;
+		tL2bDataOut		= l2mDataOut;
+	end
+`endif
+
+`ifndef def_true
+	if(memSeqIn[7:0]!=0)
+	begin
+		$display("L2A-0: S=%X O=%X A=%X D=%X",
+			memSeqIn, memOpmIn, memAddrIn, memDataIn);
+	end
+`endif
+
+`ifndef def_true
+// `ifdef def_true
+	if((memOpmOut[7:0]!=0) && (memOpmOut[ 7:6] != 2'b01))
+	begin
+		$display("L2A-0: S=%X O=%X A=%X D=%X",
+			memSeqOut, memOpmOut, memAddrOut, memDataOut);
+	end
+`endif
+
+end
+
+endmodule

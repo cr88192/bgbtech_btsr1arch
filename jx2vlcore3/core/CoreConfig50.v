@@ -7,7 +7,7 @@
 
 // `define jx2_isr2stage			//Use 2-stage ISR initiation
 
-`define jx2_enable_dualcore			//Enable Second Core
+// `define jx2_enable_dualcore			//Enable Second Core
 
 `define jx2_cpu_halfclock				//Reduce CPU core clock speed by half
 // `define jx2_cpu_masterclock_150			//Use 150MHz Master Clock
@@ -41,7 +41,7 @@
 
 // `define jx2_mem_fwstore			//Store Forwarding
 
-`define jx2_mem_fulldpx				//Full Duplex Mode
+// `define jx2_mem_fulldpx				//Full Duplex Mode
 // `define jx2_mem_fulldpx_syncb	//Full Duplex, Sync L2 AddrB
 
 `define jx2_mem_l1dsz_1024		//L1 D$ is 1024 entries
@@ -58,8 +58,8 @@
 
 // `define jx2_expand_l2sz			//Make L2 Bigger
 
-// `define jx2_mem_l2sz_8192			//L1 D$ is 8192 entries
-`define jx2_mem_l2sz_4096		//L1 D$ is 4096 entries
+`define jx2_mem_l2sz_8192			//L1 D$ is 8192 entries
+// `define jx2_mem_l2sz_4096		//L1 D$ is 4096 entries
 // `define jx2_mem_l2sz_2048		//L1 D$ is 2048 entries
 // `define jx2_mem_l2sz_1024		//L1 D$ is 1024 entries
 
@@ -68,6 +68,8 @@
 // `define jx2_mem_l1d2way			//Use 2-Way L1 D$
 
 // `define jx2_mem_l2skip			//Skip L2 Cache
+
+// `define jx2_mem_l2d2way				//Use 2-Way L2 Cache
 
 // `ifndef def_true
 `ifdef def_true
@@ -78,8 +80,8 @@
 // `define jx2_l2d_nofw_ddrout		//L2: Skip Forwarding (DDR Out)
 // `define jx2_l2d_nofw_ddrin		//L2: Skip Forwarding (DDR In)
 
-`define jx2_l2d_nofw_memout		//L2: Skip Forwarding (Mem Out)
-`define jx2_l2d_noedy_memin		//L2: Skip Forwarding (Mem In)
+// `define jx2_l2d_nofw_memout		//L2: Skip Forwarding (Mem Out)
+// `define jx2_l2d_noedy_memin		//L2: Skip Forwarding (Mem In)
 
 `define jx2_l2a_nofw_memin		//L2A: Skip Forwarding (Mem In)
 `define jx2_l2a_nofw_memout		//L2A: Skip Forwarding (Mem Out)

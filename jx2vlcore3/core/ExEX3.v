@@ -261,10 +261,11 @@ begin
 			end
 			else
 			begin
-`ifdef jx2_debug_ldst
+// `ifdef jx2_debug_ldst
+`ifdef def_true
 //				if(!exIsHold)
 //				begin
-					$display("EX3: Memory Hold");
+//					$display("EX3: Memory Hold");
 //				end
 `endif
 			end

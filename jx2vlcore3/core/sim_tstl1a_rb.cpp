@@ -1,10 +1,10 @@
-#include "VMemL1A.h"
+#include "VRbiMemL1A.h"
 #include "verilated.h"
 
 // #define HAS_OPS48
 #define HAS_WEX
 
-VMemL1A *top = new VMemL1A;
+VRbiMemL1A *top = new VRbiMemL1A;
 
 vluint64_t main_time = 0;
 
@@ -21,6 +21,8 @@ static int write_words2=16384;
 uint32_t *rombuf;
 uint32_t *srambuf;
 uint32_t *drambuf;
+
+uint32_t mmiobuf[1024];
 
 int LoadRomBuf()
 {
@@ -64,7 +66,7 @@ int LoadRomBuf()
 		sscanf(tbd, "%08X", &vd);
 		
 //		printf("%04X  %s %s %s %s\n", n*16, tba, tbb, tbc, tbd);
-		printf("%04X  %08X %08X %08X %08X\n", n*16, va, vb, vc, vd);
+//		printf("%04X  %08X %08X %08X %08X\n", n*16, va, vb, vc, vd);
 		
 		rombuf[n*4+0]=va;
 		rombuf[n*4+1]=vb;
@@ -93,10 +95,255 @@ int GetRomWord(int n)
 	return(v&0xFFFF);
 }
 
+uint64_t main_buslines;
+
 void MemUpdateForBus()
 {
-	int addr, isRom, isSRam, isDRam;
+	static uint32_t	l2addr1, l2addr2;
+	static uint32_t	l2seq1, l2seq2;
+	static uint32_t	l2opm1, l2opm2;
+	static uint32_t	l2data1a, l2data2a;
+	static uint32_t	l2data1b, l2data2b;
+	static uint32_t	l2data1c, l2data2c;
+	static uint32_t	l2data1d, l2data2d;
 
+	static uint32_t	l2addr3, l2addr4;
+	static uint32_t	l2seq3, l2seq4;
+	static uint32_t	l2opm3, l2opm4;
+	static uint32_t	l2data3a, l2data4a;
+	static uint32_t	l2data3b, l2data4b;
+	static uint32_t	l2data3c, l2data4c;
+	static uint32_t	l2data3d, l2data4d;
+
+	static uint32_t	l2addr5[32];
+	static uint32_t	l2seq5[32];
+	static uint32_t	l2opm5[32];
+	static uint32_t	l2data5a[32];
+	static uint32_t	l2data5b[32];
+	static uint32_t	l2data5c[32];
+	static uint32_t	l2data5d[32];
+
+	static	int			lclock;
+	int i;
+
+#if 1
+	top->l2mSeqIn=l2seq2;
+	top->l2mOpmIn=l2opm2;
+	top->l2mAddrIn=l2addr2;
+	top->l2mDataIn[0]=l2data2a;
+	top->l2mDataIn[1]=l2data2b;
+	top->l2mDataIn[2]=l2data2c;
+	top->l2mDataIn[3]=l2data2d;
+#endif
+
+#if 0
+	top->l2mSeqIn=l2seq4;
+	top->l2mOpmIn=l2opm4;
+	top->l2mAddrIn=l2addr4;
+	top->l2mDataIn[0]=l2data4a;
+	top->l2mDataIn[1]=l2data4b;
+	top->l2mDataIn[2]=l2data4c;
+	top->l2mDataIn[3]=l2data4d;
+#endif
+
+#if 0
+	top->l2mSeqIn=l2seq5[10];
+	top->l2mOpmIn=l2opm5[10];
+	top->l2mAddrIn=l2addr5[10];
+	top->l2mDataIn[0]=l2data5a[10];
+	top->l2mDataIn[1]=l2data5b[10];
+	top->l2mDataIn[2]=l2data5c[10];
+	top->l2mDataIn[3]=l2data5d[10];
+#endif
+
+#if 0
+	top->l2mSeqIn=l2seq5[14];
+	top->l2mOpmIn=l2opm5[14];
+	top->l2mAddrIn=l2addr5[14];
+	top->l2mDataIn[0]=l2data5a[14];
+	top->l2mDataIn[1]=l2data5b[14];
+	top->l2mDataIn[2]=l2data5c[14];
+	top->l2mDataIn[3]=l2data5d[14];
+#endif
+
+#if 0
+	top->l2mSeqIn=l2seq5[24];
+	top->l2mOpmIn=l2opm5[24];
+	top->l2mAddrIn=l2addr5[24];
+	top->l2mDataIn[0]=l2data5a[24];
+	top->l2mDataIn[1]=l2data5b[24];
+	top->l2mDataIn[2]=l2data5c[24];
+	top->l2mDataIn[3]=l2data5d[24];
+#endif
+
+	if(top->clock==lclock)
+		return;
+	lclock=top->clock;
+	
+	if(top->clock)
+	{
+		for(i=31; i>0; i--)
+		{
+			l2seq5[i]=l2seq5[i-1];
+			l2opm5[i]=l2opm5[i-1];
+			l2addr5[i]=l2addr5[i-1];
+			l2data5a[i]=l2data5a[i-1];
+			l2data5b[i]=l2data5b[i-1];
+			l2data5c[i]=l2data5c[i-1];
+			l2data5d[i]=l2data5d[i-1];
+		}
+
+		l2seq5[0]=l2seq4;
+		l2opm5[0]=l2opm4;
+		l2addr5[0]=l2addr4;
+		l2data5a[0]=l2data4a;
+		l2data5b[0]=l2data4b;
+		l2data5c[0]=l2data4c;
+		l2data5d[0]=l2data4d;
+	
+		l2seq4=l2seq3;
+		l2opm4=l2opm3;
+		l2addr4=l2addr3;
+		l2data4a=l2data3a;
+		l2data4b=l2data3b;
+		l2data4c=l2data3c;
+		l2data4d=l2data3d;
+
+		l2seq3=l2seq2;
+		l2opm3=l2opm2;
+		l2addr3=l2addr2;
+		l2data3a=l2data2a;
+		l2data3b=l2data2b;
+		l2data3c=l2data2c;
+		l2data3d=l2data2d;
+
+		l2seq2=l2seq1;
+		l2opm2=l2opm1;
+		l2addr2=l2addr1;
+		l2data2a=l2data1a;
+		l2data2b=l2data1b;
+		l2data2c=l2data1c;
+		l2data2d=l2data1d;
+
+		l2seq1=top->l2mSeqOut;
+		l2opm1=top->l2mOpmOut;
+		l2addr1=top->l2mAddrOut;
+		l2data1a=top->l2mDataOut[0];
+		l2data1b=top->l2mDataOut[1];
+		l2data1c=top->l2mDataOut[2];
+		l2data1d=top->l2mDataOut[3];
+
+#if 1
+		if(l2opm1)
+		{
+			printf("L2-1 O=%04X S=%04X A=%08X D=%08X_%08X_%08X_%08X\n",
+				l2opm1, l2seq1, l2addr1,
+				l2data1d, l2data1c, l2data1b, l2data1a);
+		}
+
+		if(l2opm2)
+		{
+			printf("L2-2 O=%04X S=%04X A=%08X D=%08X_%08X_%08X_%08X\n",
+				l2opm2, l2seq2, l2addr2,
+				l2data2d, l2data2c, l2data2b, l2data2a);
+		}
+#endif
+	}
+	
+
+	int addr, isRom, isSRam, isDRam, isMmio;
+	
+	addr	= l2addr1;
+	isRom	= (addr>=0x00000000) && (addr<=0x00007FFF);
+	isSRam	= (addr>=0x0000C000) && (addr<=0x0000DFFF);
+	isDRam	= (addr>=0x01000000) && (addr<=0x0FFFFFFF);
+	
+	isMmio = 0;
+	if(((l2opm1&0xF0)==0x90) && ((l2opm1&0x0F)!=0x07))
+		isMmio = 1;
+	if(((l2opm1&0xF0)==0xA0) && ((l2opm1&0x0F)!=0x07))
+		isMmio = 2;
+	
+	if(isMmio==1)
+	{
+		l2data1a=mmiobuf[(addr>>2)&1023];
+		l2data1b=0;
+		l2data1c=0;
+		l2data1d=0;
+		l2opm1=0x70;
+	}
+	
+	if(isMmio==2)
+	{
+		mmiobuf[(addr>>2)&1023]=l2data1a;
+		l2data1b=0;
+		l2data1c=0;
+		l2data1d=0;
+		l2opm1=0x70;
+	}
+	
+	if(l2opm1==0x97)
+	{
+		main_buslines++;
+		if(isRom)
+		{
+			l2data1a=rombuf[((addr>>2)+0)&0x1FFF];
+			l2data1b=rombuf[((addr>>2)+1)&0x1FFF];
+			l2data1c=rombuf[((addr>>2)+2)&0x1FFF];
+			l2data1d=rombuf[((addr>>2)+3)&0x1FFF];
+			l2opm1=0x70;
+		}
+
+		if(isSRam)
+		{
+			l2data1a=srambuf[((addr>>2)+0)&0x7FF];
+			l2data1b=srambuf[((addr>>2)+1)&0x7FF];
+			l2data1c=srambuf[((addr>>2)+2)&0x7FF];
+			l2data1d=srambuf[((addr>>2)+3)&0x7FF];
+			l2opm1=0x70;
+		}
+
+		if(isDRam)
+		{
+			l2data1a=drambuf[((addr>>2)+0)&0x3FFFFF];
+			l2data1b=drambuf[((addr>>2)+1)&0x3FFFFF];
+			l2data1c=drambuf[((addr>>2)+2)&0x3FFFFF];
+			l2data1d=drambuf[((addr>>2)+3)&0x3FFFFF];
+			l2opm1=0x70;
+		}
+	}
+
+	if(l2opm1==0xA7)
+	{
+		main_buslines++;
+
+		if(isRom)
+		{
+			l2opm1=0x60;
+		}
+
+		if(isSRam)
+		{
+			srambuf[((addr>>2)+0)&0x7FF]=l2data1a;
+			srambuf[((addr>>2)+1)&0x7FF]=l2data1b;
+			srambuf[((addr>>2)+2)&0x7FF]=l2data1c;
+			srambuf[((addr>>2)+3)&0x7FF]=l2data1d;
+			l2opm1=0x60;
+		}
+
+		if(isDRam)
+		{
+			drambuf[((addr>>2)+0)&0x3FFFFF]=l2data1a;
+			drambuf[((addr>>2)+1)&0x3FFFFF]=l2data1b;
+			drambuf[((addr>>2)+2)&0x3FFFFF]=l2data1c;
+			drambuf[((addr>>2)+3)&0x3FFFFF]=l2data1d;
+			l2opm1=0x60;
+		}
+	}
+	
+//	addr=
+
+#if 0
 	if(top->memOpm)
 	{
 		addr=top->memAddr;
@@ -180,8 +427,9 @@ void MemUpdateForBus()
 		}
 	}else
 	{
-		top->memOK=0;
+//		top->memOK=0;
 	}
+#endif
 }
 
 int main(int argc, char **argv, char **env)
@@ -190,6 +438,10 @@ int main(int argc, char **argv, char **env)
 	uint32_t *membuf;
 	uint32_t v, v0, v1, v2, v3, v4, v5;
 	uint64_t lv0, lv1, lv2, lv3;
+
+	uint64_t sr0_cyc0, sr0_cyc1, sr0_n;
+	uint64_t sr0_bus0, sr0_bus1;
+	double f, g, h;
 	int fail;
 	int addr, n, n1, inh, stp, stp1, rdy;
 	int i, j, k;
@@ -214,6 +466,7 @@ int main(int argc, char **argv, char **env)
 	top->regInSr=0;
 	top->regInMmcr=0;
 	top->regInKrr=0;
+	top->dcInHold=0;
 
 	fail=0;
 
@@ -233,7 +486,7 @@ int main(int argc, char **argv, char **env)
 //		top->icRegInOpm=0xA;
 //		top->icRegInData=rand();
 
-		if(top->clock)
+//		if(top->clock)
 			MemUpdateForBus();
 		top->eval();
 		
@@ -370,7 +623,7 @@ int main(int argc, char **argv, char **env)
 		addr=0x0000|(n1*2);
 		top->icInPcAddr=addr;
 
-		if(top->clock)
+//		if(top->clock)
 			MemUpdateForBus();
 		top->eval();
 
@@ -479,6 +732,9 @@ int main(int argc, char **argv, char **env)
 	}
 
 
+	sr0_cyc0=main_time;
+	sr0_bus0=main_buslines;
+
 #if 1
 	n=0; inh=2; rdy=0;
 	while (!Verilated::gotFinish())
@@ -501,15 +757,15 @@ int main(int argc, char **argv, char **env)
 
 //		if(inh==1)
 //			top->dcInHold=1;
-		if(!inh && (top->dcOutOK==2))
-			{ top->dcInHold=1; }
-//		if(top->dcOutHold)
+//		if(!inh && (top->dcOutOK==2))
 //			{ top->dcInHold=1; }
+		if(top->dcOutHold)
+			{ top->dcInHold=1; }
 
-		if(top->clock)
-		{
+//		if(top->clock)
+//		{
 			MemUpdateForBus();
-		}
+//		}
 
 		top->eval();
 
@@ -519,11 +775,13 @@ int main(int argc, char **argv, char **env)
 		if(!top->clock)
 			continue;
 
+#if 0
 		if(inh)
 		{
 			inh--;
 			continue;
 		}
+#endif
 
 #if 0
 		printf("W %d\n", n);
@@ -540,16 +798,25 @@ int main(int argc, char **argv, char **env)
 		{
 			printf("Busy %d\n", n);
 		}else
+			if(inh)
+		{
+			printf("Inhibit Cycle\n");
+			inh--;
+		}else
 //			if(top->dcOutOK==1)
 			if(1)
 		{
 			printf("W %d\n", n);
 			n++;
+//			if(n>=8)
+//			if(n>=256)
 //			if(n>=2048)
+//			if(n>=2058)
 			if(n>=4096)
 //			if(n>=16384)
 				break;
-			inh=1;
+			inh=0;
+//			inh=1;
 //			inh=2;
 //			inh=3;
 		}else if(top->dcOutOK==0)
@@ -560,6 +827,13 @@ int main(int argc, char **argv, char **env)
 		}
 #endif
 	}
+
+	sr0_cyc1=main_time;
+	sr0_bus1=main_buslines;
+	sr0_n=n;
+	
+//	fail=1;
+	
 
 	if(fail)
 	{
@@ -606,10 +880,10 @@ int main(int argc, char **argv, char **env)
 		if(top->dcOutHold)
 			{ top->dcInHold=1; }
 
-		if(top->clock)
-		{
+//		if(top->clock)
+//		{
 			MemUpdateForBus();
-		}
+//		}
 		top->eval();
 
 		if(!top->clock)
@@ -618,12 +892,14 @@ int main(int argc, char **argv, char **env)
 //		if(top->dcOutHold)
 //			{ top->dcInHold=1; continue; }
 
+#if 0
 		if(inh)
 		{
 			printf("Inhibit Cycle\n");
 			inh--;
 			continue;
 		}
+#endif
 
 		v=top->dcOutVal;
 
@@ -631,6 +907,11 @@ int main(int argc, char **argv, char **env)
 		if(top->dcInHold)
 		{
 			printf("Busy\n");
+		}else
+			if(inh)
+		{
+			printf("Inhibit Cycle\n");
+			inh--;
 		}else
 //			if(top->dcOutOK==1)
 		{
@@ -650,6 +931,8 @@ int main(int argc, char **argv, char **env)
 			inh=2;
 //			inh=3;
 			n++;
+//			if(n>=8)
+//			if(n>=256)
 			if(n>=2048)
 //			if(n>=16384)
 				break;
@@ -674,6 +957,7 @@ int main(int argc, char **argv, char **env)
 
 
 #if 1
+	top->dcInHold=0;
 	n=0; inh=2; rdy=0;
 	while (!Verilated::gotFinish())
 	{
@@ -705,27 +989,31 @@ int main(int argc, char **argv, char **env)
 //		if(inh==1)
 //			top->dcInHold=1;
 //		if(top->dcOutOK==2)
-		if(!inh && (top->dcOutOK==2))
+//		if(!inh && (top->dcOutOK==2))
+//			{ top->dcInHold=1; }
+		if(top->dcOutHold)
 			{ top->dcInHold=1; }
 
-		if(top->clock)
-		{
+//		if(top->clock)
+//		{
 			MemUpdateForBus();
-		}
+//		}
 		top->eval();
 
 		if(!top->clock)
 			continue;
 
 //		if(top->dcOutHold)
-//			{ top->dcInHold=1; continue; }
+//			{ top->dcInHold=1; }
 
+#if 0
 		if(inh)
 		{
 			printf("Inhibit Cycle\n");
 			inh--;
 			continue;
 		}
+#endif
 
 		lv0=top->dcOutVal;
 		lv1=top->dcOutValB;
@@ -741,6 +1029,11 @@ int main(int argc, char **argv, char **env)
 		if(top->dcInHold)
 		{
 			printf("Busy\n");
+		}else
+			if(inh)
+		{
+			printf("Inhibit Cycle\n");
+			inh--;
 		}else
 //			if(top->dcOutOK==1)
 		{
@@ -776,6 +1069,199 @@ int main(int argc, char **argv, char **env)
 	}
 #endif
 
+#if 0
+	while (!Verilated::gotFinish())
+	{
+		top->clock = (main_time>>0)&1;
+		main_time++;
+		top->dcInAddr=0;
+		top->dcInOpm=0;
+		top->dcInHold=0;
+		top->dcInVal=0;
+		if(top->dcOutHold)
+			{ top->dcInHold=1; }
+		MemUpdateForBus();
+		top->eval();
+		if(!top->clock)
+			continue;
+		if(!top->dcInHold)
+			break;
+	}
+#endif
+
+#if 1
+	top->dcInHold=0;
+	n=0; inh=2; rdy=0;
+	while (!Verilated::gotFinish())
+	{
+		top->clock = (main_time>>0)&1;
+		main_time++;
+
+		if(top->clock)
+		{
+//			printf("Clock %d MMIO-0 %d  \n", (int)(main_time/2), n);
+			fflush(stdout);
+		}
+
+		addr=0xF0000000|(n*4);
+		top->dcInAddr=addr;
+		top->dcInOpm=0x12;
+		top->dcInHold=0;
+		top->dcInVal=membuf[n];
+
+		if(top->dcOutHold)
+			{ top->dcInHold=1; }
+
+		MemUpdateForBus();
+		top->eval();
+
+		if(!top->clock)
+			continue;
+
+		if(inh)
+		{
+			printf("MMIO: Inhibit Cycle\n");
+			inh--;
+			continue;
+		}
+
+		v=top->dcOutVal;
+
+		if(top->dcInHold)
+		{
+//			printf("MMIO: Busy\n");
+		}else
+		{		
+			printf("MMIO W %d\n", n);
+			inh=0;
+//			inh=1;
+//			inh=2;
+//			inh=3;
+			n++;
+			if(n>=256)
+				break;
+		}
+	}
+
+	if(fail)
+	{
+		delete top;
+		exit(0);
+	}
+#endif
+
+#if 0
+	while (!Verilated::gotFinish())
+	{
+		top->clock = (main_time>>0)&1;
+		main_time++;
+		top->dcInAddr=0;
+		top->dcInOpm=0;
+		top->dcInHold=0;
+		top->dcInVal=0;
+		if(top->dcOutHold)
+			{ top->dcInHold=1; }
+		MemUpdateForBus();
+		top->eval();
+		if(!top->clock)
+			continue;
+		if(!top->dcInHold)
+			break;
+	}
+#endif
+
+#if 1
+	top->dcInHold=0;
+	n=0; inh=2; rdy=0;
+	while (!Verilated::gotFinish())
+	{
+		top->clock = (main_time>>0)&1;
+		main_time++;
+
+		if(top->clock)
+		{
+			printf("Clock %d MMIO-1 %d  \n", (int)(main_time/2), n);
+			fflush(stdout);
+		}
+
+//		addr=0xC000|(n*4);
+		addr=0xF0000000|(n*4);
+		top->dcInAddr=addr;
+		top->dcInOpm=0x0A;
+		top->dcInHold=0;
+//		top->dcInVal=membuf[n];
+		v=top->dcOutVal;
+		v1=membuf[n];
+
+		if(top->dcOutHold)
+			{ top->dcInHold=1; }
+
+		MemUpdateForBus();
+		top->eval();
+
+		if(!top->clock)
+			continue;
+
+#if 0
+		if(inh)
+		{
+			printf("Inhibit Cycle\n");
+			inh--;
+			continue;
+		}
+#endif
+
+		v=top->dcOutVal;
+
+		if(top->dcInHold)
+		{
+			printf("Busy\n");
+		}else
+			if(inh)
+		{
+			printf("Inhibit Cycle\n");
+			inh--;
+		}else
+		{
+			printf("MMIO-1 %04X Got=%08X Expect=%08X %s\n",
+				addr, v, v1,
+					(v1==v)?"Pass":"Fail");
+					
+			if(v1!=v)
+			{
+				printf("Mismatch, Ending Test (MMIO)\n");
+				fail|=2;
+				break;
+			}
+		
+//			printf("W %d\n", n);
+//			inh=1;
+			inh=2;
+//			inh=3;
+			n++;
+			if(n>=256)
+				break;
+		}
+	}
+
+	if(fail)
+	{
+		delete top;
+		exit(0);
+	}
+#endif
+
+
+
+	lv0=(sr0_cyc1-sr0_cyc0)>>1;
+	lv1=sr0_bus1-sr0_bus0;
+//	sr0_n=n;
+
+	f=lv0*(1.0/lv1);
+	g=(50*16)/f;
+
+	printf("%f cyc/store\n", lv0*(1.0/sr0_n));
+	printf("%f cycles/line, %f MB/s (@ 50MHz) \n", f, g);
 
 	delete top;
 	exit(0);

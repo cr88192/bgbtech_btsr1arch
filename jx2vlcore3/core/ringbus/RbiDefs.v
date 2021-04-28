@@ -66,17 +66,32 @@ Core Sequence (15:0)
 
 This is used to match up requests and responses, and to route responses back to their original requests.
 
+IRQ:
+  Data(15:12): Exception Class
+  Data(11: 8): Core ID (1..14)
+    0: Local to Core / First Valid Core.
+    1..14: Core Number (Routed Interrupt)
+    15: Broadcast Interrupt
+  Data(7:0): Exception Number
+  Seq(15:10): Core ID (First Seen)
+    If a broadcast message gets back here, drop request.
+
 */
 
 `ifndef HAS_RBIDEFS
 `define HAS_RBIDEFS
 
-`include "../CoreDefs.v"
+// `include "../CoreDefs.v"
+`include "CoreDefs.v"
 
 parameter[7:0] JX2_RBI_OPM_IDLE		= 8'h00;	//
 
-parameter[7:0] JX2_RBI_OPM_LDTLB	= 8'h81;	//
 parameter[7:0] JX2_RBI_OPM_INVTLB	= 8'h82;	//
+parameter[7:0] JX2_RBI_OPM_LDTLB	= 8'h83;	//
+parameter[7:0] JX2_RBI_OPM_FLUSHIS	= 8'h84;	//
+parameter[7:0] JX2_RBI_OPM_FLUSHDS	= 8'h85;	//
+// parameter[7:0] JX2_RBI_OPM_IRQ		= 8'h86;	//Interrupt Request
+parameter[7:0] JX2_RBI_OPM_IRQ		= 8'hC6;	//Interrupt Request
 
 parameter[7:0] JX2_RBI_OPM_LDSB		= 8'h90;	//
 parameter[7:0] JX2_RBI_OPM_LDSW		= 8'h91;	//
@@ -113,5 +128,8 @@ parameter[7:0] JX2_RBI_OPM_FAIL_RT	= 8'h50;	//No Route
 
 parameter[15:0] JX2_RBI_ADDRHI_PHYS	= 16'h8000;	//
 
+
+parameter[5:0] JX2_DCOPM_FLUSHIS	= 6'b000100;		//Flush I$ Request
+parameter[5:0] JX2_DCOPM_FLUSHDS	= 6'b000101;		//Flush D$ Request
 
 `endif

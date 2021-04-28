@@ -40,9 +40,8 @@ module RbiMemL1A(
 	dcInAddr,		dcInOpm,
 	dcOutVal,		dcInVal,
 	dcOutValB,		dcInValB,
-	dcOutOK,
-	dcInHold,
-	dcOutHold,
+	dcOutOK,		dcInHold,
+	dcOutHold,		dcBusWait,
 
 	regInDlr,		regInDhr,
 	regInMmcr,		regInKrr,
@@ -65,7 +64,7 @@ input [47: 0]	icInPcAddr;		//input PC address
 // output[63: 0]	icOutPcVal;		//output PC value
 output[95: 0]	icOutPcVal;		//output PC value
 output[ 1: 0]	icOutPcOK;		//set if we have a valid value.
-output[ 2: 0]	icOutPcStep;	//PC step (Normal Op)
+output[ 3: 0]	icOutPcStep;	//PC step (Normal Op)
 input			icInPcHold;
 input			icInPcWxe;
 
@@ -76,6 +75,7 @@ input [63: 0]	dcInVal;		//input data value
 output[ 1: 0]	dcOutOK;		//set if we have a valid value.
 input			dcInHold;
 output			dcOutHold;		//we need to stall the pipeline
+output			dcBusWait;		//we are waiting on the bus
 
 output[63: 0]	dcOutValB;		//output data value (alternate)
 input [63: 0]	dcInValB;		//input data value (alternate)
@@ -95,8 +95,8 @@ input [ 15:0]	l2mSeqIn;		//operation sequence
 output[ 15:0]	l2mSeqOut;		//operation sequence
 input [ 15:0]	l2mOpmIn;		//memory operation mode
 output[ 15:0]	l2mOpmOut;		//memory operation mode
-input [ 31:0]	l2mAddrIn;		//memory input address
-output[ 31:0]	l2mAddrOut;		//memory output address
+input [ 47:0]	l2mAddrIn;		//memory input address
+output[ 47:0]	l2mAddrOut;		//memory output address
 input [127:0]	l2mDataIn;		//memory input data
 output[127:0]	l2mDataOut;		//memory output data
 
@@ -154,9 +154,13 @@ assign	regTraPc	= tRegTraPc2;
 
 reg[1:0]		tDcOutOK;
 reg				tDcOutHold;
+reg				tDcBusWait;
 assign	dcOutOK		= tDcOutOK;
 assign	dcOutHold	= tDcOutHold;
+assign	dcBusWait	= tDcBusWait;
 
+
+wire[  7:0]		tlbMemNodeId;
 
 `ifdef jx2_enable_mmu
 
@@ -175,14 +179,20 @@ RbiMmuTlb	tlb(
 	tTlbAddrI,		tTlbAddrO,
 	tTlbDataI,		tTlbDataO,
 	tTlbOpmI,		tTlbOpmO,
-	tTlbSeqI,		tTlbSeqI,
+	tTlbSeqI,		tTlbSeqO,
+	tlbMemNodeId,
 
-	tTlbExc,		dcInHold,
+//	tTlbExc,		dcInHold,
+	tTlbExc,		1'b0,
 	regInMmcr,		regInKrr,
 	regInSr);
 
 `endif
 
+wire[5:0]		dfInOpm;
+assign		dfInOpm		= { dcInOpm[4:3], 1'b0, dcInOpm[2:0] };
+
+wire		ifMemWait;
 
 `wire_tile		ifMemDataI;
 `wire_tile		ifMemDataO;
@@ -199,7 +209,8 @@ RbiMemIcWxA		memIc(
 	icInPcAddr,		icOutPcVal,
 	icOutPcOK,		icOutPcStep,
 	icInPcHold,		icInPcWxe,
-	dcInOpm,		regInSr,
+	dfInOpm,		regInSr,
+	ifMemWait,
 
 	ifMemAddrI,		ifMemAddrO,
 	ifMemDataI,		ifMemDataO,
@@ -210,8 +221,7 @@ RbiMemIcWxA		memIc(
 	);
 
 wire			dfOutHold;
-wire[5:0]		dfInOpm;
-assign		dfInOpm		= { dcInOpm[4], 1'b0, dcInOpm[3:0] };
+wire			dfOutWait;
 
 `wire_tile		dfMemDataI;
 `wire_tile		dfMemDataO;
@@ -228,8 +238,8 @@ RbiMemDcA		memDc(
 	dcInAddr,		dfInOpm,
 	dcOutVal,		dcInVal,
 	dcOutValB,		dcInValB,
-	dcInHold,		dcOutHold,
-	regInSr,
+	dcInHold,		dfOutHold,
+	regInSr,		dfOutWait,
 
 	dfMemAddrI,		dfMemAddrO,
 	dfMemDataI,		dfMemDataO,
@@ -250,6 +260,7 @@ assign		dfMemOpmI		= ifMemOpmO;
 assign		dfMemSeqI		= ifMemSeqO;
 
 `ifdef jx2_enable_mmu
+// `ifndef def_true
 assign		tTlbDataI		= dfMemDataO;
 assign		tTlbAddrI		= dfMemAddrO;
 assign		tTlbOpmI		= dfMemOpmO;
@@ -269,6 +280,7 @@ assign		tBridgeSeqI		= dfMemSeqO;
 assign		tBridgeNodeId	= { unitNodeId[7:2], 2'b00 };
 assign		ifMemNodeId		= { unitNodeId[7:2], 2'b01 };
 assign		dfMemNodeId		= { unitNodeId[7:2], 2'b10 };
+assign		tlbMemNodeId	= { unitNodeId[7:2], 2'b11 };
 
 
 reg		tMsgLatch;
@@ -289,11 +301,84 @@ begin
 
 	tDcOutHold	= dfOutHold;
 
+	tDcBusWait	= dfOutWait || ifMemWait;
+
+	tDcOutOK	= UMEM_OK_OK;
+	if(dfOutHold)
+		tDcOutOK	= UMEM_OK_HOLD;
+
+	if(tTlbExc[15])
+		tRegOutExc = tTlbExc;
+
 
 end
 
 always @(posedge clock)
-begin	
+begin
+
+	tRegOutExc2		<= tRegOutExc;
+	tRegTraPc2		<= tRegTraPc;
+
+`ifndef def_true
+// `ifdef def_true
+//	if(ifMemOpmI!=0)
+	if(1'b0)
+	begin
+		$display("I$-In O=%X S=%X A=%X D=%X",
+			ifMemOpmI,
+			ifMemSeqI,
+			ifMemAddrI,
+			ifMemDataI);
+	end
+
+//	if(ifMemOpmO!=0)
+	if(	(ifMemOpmO[7:0]==JX2_RBI_OPM_LDX) ||
+		(ifMemOpmO[7:0]==JX2_RBI_OPM_LDSQ) ||
+		(ifMemOpmO[7:0]==JX2_RBI_OPM_STX) ||
+		(ifMemOpmO[7:0]==JX2_RBI_OPM_STSQ))
+	begin
+		$display("I$-Out O=%X S=%X A=%X D=%X",
+			ifMemOpmO,
+			ifMemSeqO,
+			ifMemAddrO,
+			ifMemDataO);
+	end
+
+//	if(ifMemOpmO!=0)
+	if(	(dfMemOpmO[7:0]==JX2_RBI_OPM_LDX) ||
+		(dfMemOpmO[7:0]==JX2_RBI_OPM_LDSQ) ||
+		(dfMemOpmO[7:0]==JX2_RBI_OPM_STX) ||
+		(dfMemOpmO[7:0]==JX2_RBI_OPM_STSQ))
+	begin
+		$display("D$-Out O=%X S=%X A=%X D=%X",
+			dfMemOpmO,
+			dfMemSeqO,
+			dfMemAddrO,
+			dfMemDataO);
+	end
+`endif
+
+
+`ifndef def_true
+// `ifdef def_true
+	if(tBridgeOpmI!=0)
+	begin
+		$display("BridgeIn O=%X S=%X A=%X D=%X",
+			tBridgeOpmI,
+			tBridgeSeqI,
+			tBridgeAddrI,
+			tBridgeDataI);
+	end
+
+	if(tBridgeOpmO!=0)
+	begin
+		$display("BridgeOut O=%X S=%X A=%X D=%X",
+			tBridgeOpmO,
+			tBridgeSeqO,
+			tBridgeAddrO,
+			tBridgeDataO);
+	end
+`endif
 
 end
 

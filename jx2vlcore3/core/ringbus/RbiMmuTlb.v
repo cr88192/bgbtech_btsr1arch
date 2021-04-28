@@ -17,6 +17,7 @@ module RbiMmuTlb(
 	regInData,		regOutData,
 	regInOpm,		regOutOpm,
 	regInSeq,		regOutSeq,
+	unitNodeId,
 	regOutExc,		regInHold,
 	regInMMCR,		regInKRR,		regInSR
 	);
@@ -32,6 +33,7 @@ input[15:0]		regInOpm;		//Operation Size/Type
 output[15:0]	regOutOpm;		//Operation Size/Type
 input[15:0]		regInSeq;		//Operation Size/Type
 output[15:0]	regOutSeq;		//Operation Size/Type
+input[7:0]		unitNodeId;		//Node ID
 
 output[63:0]	regOutExc;		//Exception EXC+TEA
 input			regInHold;		//Hold Pipeline
@@ -83,12 +85,12 @@ reg[143:0]	tlbBlkC[255:0];
 reg[143:0]	tlbBlkD[255:0];
 
 reg[7:0]	tlbHixA;
-reg[7:0]	tlbHixB;
+// reg[7:0]	tlbHixB;
 reg[7:0]	tlbHixSelA;
-reg[7:0]	tlbHixSelB;
+// reg[7:0]	tlbHixSelB;
 
 reg[7:0]	tlbHbIxA;
-reg[7:0]	tlbHbIxB;
+// reg[7:0]	tlbHbIxB;
 
 `else
 
@@ -102,12 +104,12 @@ reg[7:0]	tlbHbIxB;
 	reg[143:0]	tlbBlkD[63:0];
 
 reg[5:0]	tlbHixA;
-reg[5:0]	tlbHixB;
+// reg[5:0]	tlbHixB;
 reg[5:0]	tlbHixSelA;
-reg[5:0]	tlbHixSelB;
+// reg[5:0]	tlbHixSelB;
 
 reg[5:0]	tlbHbIxA;
-reg[5:0]	tlbHbIxB;
+// reg[5:0]	tlbHbIxB;
 
 `endif
 
@@ -207,6 +209,9 @@ assign		regInIsLDTLB = (tRegInOpm[7:0]==JX2_RBI_OPM_LDTLB);
 wire		regInIsINVTLB;
 assign		regInIsINVTLB = (tRegInOpm[7:0]==JX2_RBI_OPM_INVTLB);
 
+wire		regInIsIRQ;
+assign		regInIsIRQ = (tRegInOpm[7:0]==JX2_RBI_OPM_IRQ);
+
 reg		regInIsBounce;
 
 wire[5:0]	tChkAccNoRwx;	//No R/W/X
@@ -297,6 +302,7 @@ begin
 	tAddrIsPhys		= tAddrIsHi4G && !tRegInAddr[31];
 
 //	regInIsBounce	= (tRegInOpm == UMEM_OPM_RD_BOUNCE);
+	regInIsBounce	= 0;
 
 	if(regInSR[29] && regInSR[28])
 	begin
@@ -310,6 +316,7 @@ begin
 	end
 
 
+	icPageReady		= 1;
 
 //	icPageReady		= (tlbHbIxA == tlbHixA);
 //	if(!icPageEq)
@@ -463,6 +470,15 @@ begin
 	
 	tRegOutAddr  = tlbAddr;
 	tRegOutOpm   = tRegInOpm;
+	tRegOutSeq   = tRegInSeq;
+
+`ifndef def_true
+//	if(tRegInOpm!=0)
+	if(tRegInOpm[7:0]==JX2_RBI_OPM_LDX)
+	begin
+		$display("TLB-1, %X %X %X", tRegInOpm, tRegInSeq, tlbAddr);
+	end
+`endif
 
 	if(tlbMmuEnable &&
 		(tRegInOpm[5:4]!=0) && !tlbMmuSkip)
@@ -493,6 +509,18 @@ begin
 	if(regInIsINVTLB || reset)
 	begin
 		tNxtTlbRov		= tTlbRov + 1;
+	end
+
+	if(regInIsIRQ)
+	begin
+		if(	(unitNodeId[5:2]==regInData[11:8]) ||
+			(regInData[11:8]==4'h0) ||
+			(regInData[11:8]==4'hF))
+		begin
+			tRegOutTea[47:0] = regInData[63:16];
+			tRegOutExc	= regInData[15:0];
+			tRegOutOpm	= UV16_00;
+		end
 	end
 
 	if(reset)
@@ -567,11 +595,30 @@ always @ (posedge clock)
 begin
 	if(!regInHold)
 	begin
+// `ifdef def_true
+`ifndef def_true
+		if(!tlbMmuEnable)
+		begin
+			tRegOutAddr2	<= regInAddr;
+			tRegOutData2	<= regInData;
+			tRegOutOpm2		<= regInOpm;
+			tRegOutSeq2		<= regInSeq;
+		end
+		else
+		begin
+			tRegOutAddr2	<= tRegOutAddr;
+			tRegOutData2	<= tRegOutData;
+		//	tRegOutOpm2		<= tRegOutOpm;
+			tRegOutOpm2		<= { 2'b00, tChkAccNoRwx, tRegOutOpm[7:0] };
+			tRegOutSeq2		<= tRegOutSeq;
+		end
+`else
 		tRegOutAddr2	<= tRegOutAddr;
 		tRegOutData2	<= tRegOutData;
 	//	tRegOutOpm2		<= tRegOutOpm;
 		tRegOutOpm2		<= { 2'b00, tChkAccNoRwx, tRegOutOpm[7:0] };
 		tRegOutSeq2		<= tRegOutSeq;
+`endif
 
 		tRegOutAddr3	<= tRegOutAddr2;
 		tRegOutData3	<= tRegOutData2;
@@ -585,11 +632,18 @@ begin
 		tRegInData		<= regInData;
 		tRegInOpm		<= regInOpm;
 		tRegInSeq		<= regInSeq;
+		
+`ifndef def_true
+		if(regInOpm[7:0]==JX2_RBI_OPM_LDX)
+		begin
+			$display("TLB-0 %X %X %X", regInOpm, regInSeq, regInAddr);
+		end
+`endif
 
 		tTlbRov			<= tNxtTlbRov;
 
 		tlbHbIxA		<= tlbHixA;
-		tlbHbIxB		<= tlbHixB;
+//		tlbHbIxB		<= tlbHixB;
 	end
 
 	tlbHbDatA		<= tlbBlkA[tlbHixA];

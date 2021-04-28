@@ -65,7 +65,7 @@ int main(int argc, char **argv, char **env)
 	int y, x;
 	int cy, dy, cu, cv;
 	int pcy, pdy, pcu, pcv;
-	int wn, rn, wdn, rdn, lim, bn1;
+	int wn, rn, wdn, rdn, lim, bn1, inh;
 	int i, j, k;
 	
 	Verilated::commandArgs(argc, argv);
@@ -124,10 +124,30 @@ int main(int argc, char **argv, char **env)
 	lim=1<<18;
 //	lim=1<<20;
 
+	inh=3;
 	printf("Begin\n");
 	while (!Verilated::gotFinish())
 	{
 		top->clock = main_time&1;
+		main_time++;
+
+#if 0
+		if(top->clock)
+//		if(!(top->clock))
+		{
+			update_bus();
+			top->eval();
+			continue;
+		}
+#endif
+		
+		if(inh>0)
+		{
+			inh--;
+			update_bus();
+			top->eval();
+			continue;
+		}
 		
 		if((wn<lim) || wdn)
 		{
@@ -141,6 +161,7 @@ int main(int argc, char **argv, char **env)
 					top->memOpm=0;
 					wdn=1;
 					wn++;
+					inh=3;
 				}
 			}else
 				if(top->memOK==2)
@@ -159,10 +180,12 @@ int main(int argc, char **argv, char **env)
 				top->memDataIn[3]=imgbuf[bn1*4+3];
 				top->memOpm=0x17;
 				wdn=0;
+				inh=3;
 
 				if(wn>=lim)
 				{
-					printf("\n");
+					top->memOpm=0x00;
+					printf("\n\n");
 				}
 			}
 		}else
@@ -172,7 +195,7 @@ int main(int argc, char **argv, char **env)
 
 			if(top->memOK==1)
 			{
-				if(!rdn)
+				if(!rdn && !wdn)
 				{
 					if(	(top->memDataOut[0]!=imgbuf[bn1*4+0]) ||
 						(top->memDataOut[1]!=imgbuf[bn1*4+1]) ||
@@ -193,6 +216,7 @@ int main(int argc, char **argv, char **env)
 					top->memOpm=0;
 					rdn=1;
 					rn++;
+					inh=3;
 				}
 			}else
 				if(top->memOK==2)
@@ -208,21 +232,20 @@ int main(int argc, char **argv, char **env)
 //				top->memOpm=0x17;
 				top->memOpm=0x0F;
 				rdn=0;
+				wdn=0;
+//				inh=3;
 
 				if(rn>=lim)
 				{
-					printf("\n");
+					top->memOpm=0x00;
+					printf("\n\n");
 					break;
 				}
 			}
 		}
 
 		update_bus();
-
 		top->eval();
-
-		main_time++;
-
 	}
 	
 //	ofd=fopen("sim_text0_pwm.dat", "wb");

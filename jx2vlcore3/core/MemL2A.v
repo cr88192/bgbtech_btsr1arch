@@ -50,7 +50,7 @@ input[47:0]		memAddr;
 input[47:0]		memAddrB;
 `input_tile		memDataIn;
 `output_tile	memDataOut;
-input[4:0]		memOpm;
+input[15:0]		memOpm;
 output[1:0]		memOK;
 output[63:0]	memBounceIrq;
 
@@ -373,7 +373,8 @@ begin
 	tMemAddr		<= memAddr;
 	tMemAddrB		<= memAddrB;
 	tMemDataIn		<= memDataIn;
-	tMemOpm			<= memOpm;
+//	tMemOpm			<= memOpm;
+	tMemOpm			<= memOpm[4:0];
 `endif
 
 	tMemAddrL		<= tMemAddr;

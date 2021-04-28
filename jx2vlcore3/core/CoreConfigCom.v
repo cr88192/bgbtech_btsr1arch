@@ -27,6 +27,8 @@
 
 // `define jx2_enable_dualcore			//Enable Second Core
 
+// `define jx2_use_ringbus			//Use Ring-Bus
+
 `define jx2_enable_ops16
 // `define jx2_enable_ops48
 
@@ -65,7 +67,7 @@
 `define jx2_merge_shadq		//Merge SHAD and SHAD.Q
 `define jx2_merge_shadfn	//Use Funnel Shift
 
-// `define jx2_debug_keepinstr
+`define jx2_debug_keepinstr
 
 
 // `define jx2_debug_l1ds		//Debug prints for L1 data cache

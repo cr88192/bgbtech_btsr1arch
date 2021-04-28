@@ -21,7 +21,7 @@ input			reset;
 `output_tile	memOutData;
 output[47:0]	memAddrA;
 output[47:0]	memAddrB;
-output[4:0]		memOpm;
+output[15:0]	memOpm;
 input[1:0]		memOK;
 input[63:0]		memBusExc;
 
@@ -29,7 +29,7 @@ input[63:0]		memBusExc;
 `input_tile		mem1OutData;
 input[47:0]		mem1AddrA;
 input[47:0]		mem1AddrB;
-input[4:0]		mem1Opm;
+input[15:0]		mem1Opm;
 output[1:0]		mem1OK;
 output[63:0]	mem1BusExc;
 
@@ -45,18 +45,18 @@ reg[63:0]		tMemBusExc2;
 `reg_tile		tMemOutData;
 reg[47:0]		tMemAddrA;
 reg[47:0]		tMemAddrB;
-reg[4:0]		tMemOpm;
+reg[15:0]		tMemOpm;
 
 `reg_tile		tMemOutData2;
 reg[47:0]		tMemAddrA2;
 reg[47:0]		tMemAddrB2;
-reg[4:0]		tMemOpm2;
+reg[15:0]		tMemOpm2;
 
 `ifdef jx2_mem_jnexbuf
 `reg_tile		tMemOutData3;
 reg[47:0]		tMemAddrA3;
 reg[47:0]		tMemAddrB3;
-reg[4:0]		tMemOpm3;
+reg[15:0]		tMemOpm3;
 
 assign		memOutData	= tMemOutData3;
 assign		memAddrA	= tMemAddrA3;

@@ -27,7 +27,7 @@ input			reset;
 `output_tile	memOutData;
 output[47:0]	memAddrA;
 output[47:0]	memAddrB;
-output[4:0]		memOpm;
+output[15:0]	memOpm;
 input[1:0]		memOK;
 input[63:0]		memBusExc;
 
@@ -35,7 +35,7 @@ input[63:0]		memBusExc;
 `input_tile		mem1OutData;
 input[47:0]		mem1AddrA;
 input[47:0]		mem1AddrB;
-input[4:0]		mem1Opm;
+input[15:0]		mem1Opm;
 output[1:0]		mem1OK;
 output[63:0]	mem1BusExc;
 
@@ -43,7 +43,7 @@ output[63:0]	mem1BusExc;
 `input_tile		mem2OutData;
 input[47:0]		mem2AddrA;
 input[47:0]		mem2AddrB;
-input[4:0]		mem2Opm;
+input[15:0]		mem2Opm;
 output[1:0]		mem2OK;
 output[63:0]	mem2BusExc;
 
@@ -59,18 +59,18 @@ reg[63:0]		tMemBusExc2;
 `reg_tile		tMemOutData;
 reg[47:0]		tMemAddrA;
 reg[47:0]		tMemAddrB;
-reg[4:0]		tMemOpm;
+reg[15:0]		tMemOpm;
 
 `reg_tile		tMemOutData2;
 reg[47:0]		tMemAddrA2;
 reg[47:0]		tMemAddrB2;
-reg[4:0]		tMemOpm2;
+reg[15:0]		tMemOpm2;
 
 `ifdef jx2_mem_jnexbuf
 `reg_tile		tMemOutData3;
 reg[47:0]		tMemAddrA3;
 reg[47:0]		tMemAddrB3;
-reg[4:0]		tMemOpm3;
+reg[15:0]		tMemOpm3;
 
 assign		memOutData	= tMemOutData3;
 assign		memAddrA	= tMemAddrA3;
@@ -163,7 +163,7 @@ begin
 	if(tMem1Latch)
 	begin
 		tNextMem1Latch	=
-			(mem1Opm != UMEM_OPM_READY) ||
+			(mem1Opm[4:0] != UMEM_OPM_READY) ||
 			(tMemOK != UMEM_OK_READY);
 		tMem1OK			= tMemOK;
 //		tMem1BusExc		= tMemBusExc;
@@ -177,7 +177,7 @@ begin
 		if(tMem2Latch)
 	begin
 		tNextMem2Latch	=
-			(mem2Opm != UMEM_OPM_READY) ||
+			(mem2Opm[4:0] != UMEM_OPM_READY) ||
 			(tMemOK != UMEM_OK_READY);
 		tMem2OK			= tMemOK;
 //		tMem2BusExc		= tMemBusExc;
@@ -188,8 +188,8 @@ begin
 		tMemOpm			= mem2Opm;
 	end
 	else
-		if((mem1Opm != UMEM_OPM_READY) &&
-			!((mem2Opm != UMEM_OPM_READY) && tMemStrobe))
+		if((mem1Opm[4:0] != UMEM_OPM_READY) &&
+			!((mem2Opm[4:0] != UMEM_OPM_READY) && tMemStrobe))
 	begin
 		tNextMem1Latch	= 1;
 
@@ -199,7 +199,7 @@ begin
 //		tMemOpm			= mem1Opm;
 	end
 	else
-		if(mem2Opm != UMEM_OPM_READY)
+		if(mem2Opm[4:0] != UMEM_OPM_READY)
 	begin
 		tNextMem2Latch	= 1;
 
@@ -213,7 +213,7 @@ begin
 	begin
 		tNextMem1Latch	= 0;
 		tNextMem2Latch	= 0;
-		tMemOpm			= UMEM_OPM_READY;
+		tMemOpm			= { 11'h0, UMEM_OPM_READY };
 	end
 
 end
