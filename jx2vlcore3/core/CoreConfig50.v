@@ -58,8 +58,8 @@
 
 // `define jx2_expand_l2sz			//Make L2 Bigger
 
-`define jx2_mem_l2sz_8192			//L1 D$ is 8192 entries
-// `define jx2_mem_l2sz_4096		//L1 D$ is 4096 entries
+// `define jx2_mem_l2sz_8192			//L1 D$ is 8192 entries
+`define jx2_mem_l2sz_4096		//L1 D$ is 4096 entries
 // `define jx2_mem_l2sz_2048		//L1 D$ is 2048 entries
 // `define jx2_mem_l2sz_1024		//L1 D$ is 1024 entries
 
@@ -69,7 +69,7 @@
 
 // `define jx2_mem_l2skip			//Skip L2 Cache
 
-// `define jx2_mem_l2d2way				//Use 2-Way L2 Cache
+`define jx2_mem_l2d2way				//Use 2-Way L2 Cache
 
 // `ifndef def_true
 `ifdef def_true

@@ -27,7 +27,7 @@
 
 // `define jx2_enable_dualcore			//Enable Second Core
 
-// `define jx2_use_ringbus			//Use Ring-Bus
+`define jx2_use_ringbus			//Use Ring-Bus
 
 `define jx2_enable_ops16
 // `define jx2_enable_ops48

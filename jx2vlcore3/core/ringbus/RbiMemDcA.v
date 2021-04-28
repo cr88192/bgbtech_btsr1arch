@@ -205,6 +205,7 @@ reg				tReqMissAddrB;
 reg				tReqMissA;
 reg				tReqMissB;
 reg				tReqMiss;
+reg				tReqWaitResp;
 reg				tReqSx;
 
 reg				tReqFlushAddrA;
@@ -296,6 +297,11 @@ reg				tMemRespStB;		//Store B
 reg				tNxtMemRespStA;		//Store A
 reg				tNxtMemRespStB;		//Store B
 
+reg				tMemRespLdA;		//Store A
+reg				tMemRespLdB;		//Store B
+reg				tNxtMemRespLdA;		//Store A
+reg				tNxtMemRespLdB;		//Store B
+
 reg				tMemReqLdA;		//Load A
 reg				tMemReqLdB;		//Load B
 reg				tMemReqLdM;		//Load MMIO
@@ -332,6 +338,8 @@ begin
 
 	tNxtMemRespStA		= tMemRespStA;
 	tNxtMemRespStB		= tMemRespStB;
+	tNxtMemRespLdA		= tMemRespLdA;
+	tNxtMemRespLdB		= tMemRespLdB;
 	tMemRingSkipResp	= 0;
 
 
@@ -471,8 +479,8 @@ begin
 	tReqReadyB	= (tBlkMemIdxB == tReqIxB);
 	tReqReady	= tReqReadyA && tReqReadyB;
 
-// `ifdef def_true
-`ifndef def_true
+`ifdef def_true
+// `ifndef def_true
 	tBlkMemAddr2A = tBlkMemAddrA;
 	tBlkMemAddr2B = tBlkMemAddrB;
 
@@ -779,8 +787,8 @@ begin
 		tNxtMemRespStB = 1;
 	end
 	
-// `ifndef def_true
-`ifdef def_true
+`ifndef def_true
+// `ifdef def_true
 	if(memRingIsRespOkLdA)
 	begin
 		if(tMemReqStA && !tMemRespStA)
@@ -812,7 +820,9 @@ begin
 		tArrMemDataStA = memDataIn;
 		tArrMemIdxStA = tReqSeqIdx;
 		tArrMemDoStA = 1;
-		tNxtMemRespStA = 0;
+		tNxtMemRespLdA = 1;
+//		tNxtMemRespStA = 0;
+//		tNxtMemRespLdA = 0;
 	end
 
 	if(memRingIsRespOkLdB && !tMemRingSkipResp)
@@ -827,8 +837,24 @@ begin
 		tArrMemDataStB = memDataIn;
 		tArrMemIdxStB = tReqSeqIdx;
 		tArrMemDoStB = 1;
-		tNxtMemRespStB = 0;
+		tNxtMemRespLdB = 1;
+//		tNxtMemRespStB = 0;
 	end
+
+`ifdef def_true
+	tReqWaitResp = 0;
+	if(tMemReqLdA && !tNxtMemRespLdA)
+		tReqWaitResp = 1;
+	if(tMemReqLdB && !tNxtMemRespLdB)
+		tReqWaitResp = 1;
+	if(tMemReqStA && !tNxtMemRespStA)
+		tReqWaitResp = 1;
+	if(tMemReqStB && !tNxtMemRespStB)
+		tReqWaitResp = 1;
+
+	if(tReqWaitResp)
+		tRegOutHold = 1;
+`endif
 
 	if(memRingIsRespOkMmio)
 	begin
@@ -977,7 +1003,8 @@ begin
 		end
 	end
 	else
-		if((tReqMissA || tReqMissB) && tReqReady)
+//		if((tReqMissA || tReqMissB) && tReqReady)
+		if((tReqMissA || tReqMissB || tReqWaitResp) && tReqReady)
 //		if(tReqMissA || tReqMissB)
 	begin
 		tNxtMemReqStA	= tMemReqStA;
@@ -1241,8 +1268,15 @@ begin
 	tArrMemDidStA	<= tArrMemDoStA;
 	tArrMemDidStB	<= tArrMemDoStB;
 
-	tMemRespStA		<= tNxtMemRespStA;
-	tMemRespStB		<= tNxtMemRespStB;
+//	tMemRespStA		<= tNxtMemRespStA;
+//	tMemRespStB		<= tNxtMemRespStB;
+//	tMemRespLdA		<= tNxtMemRespLdA;
+//	tMemRespLdB		<= tNxtMemRespLdB;
+
+	tMemRespStA		<= dcInHold ? tNxtMemRespStA : 0;
+	tMemRespStB		<= dcInHold ? tNxtMemRespStB : 0;
+	tMemRespLdA		<= dcInHold ? tNxtMemRespLdA : 0;
+	tMemRespLdB		<= dcInHold ? tNxtMemRespLdB : 0;
 
 	if(reset)
 	begin

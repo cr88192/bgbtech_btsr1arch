@@ -821,10 +821,16 @@ static int			l2dc_hash_addr[8192];
 static int			l2dc_hash_addr2[8192];
 static byte		l2dc_hash_dirty[8192];
 static byte		l2dc_hash_dirty2[8192];
+static byte		l2dc_hash_epoch[8192];
 static int			l2dc_miss_cyc;
 static int			l2dc_miss_ix;
 static int			l2dc_miss_addr;
 static int			l2dc_miss_seq;
+static int			l2dc_miss_ldb;
+
+static int			l2dc_stat_hit;
+static int			l2dc_stat_hit2;
+static int			l2dc_stat_miss;
 
 static int			l2dc_evict_addr[8];
 static int			l2dc_evict_ix[8];
@@ -937,6 +943,7 @@ void MemUpdateForBusRing()
 	
 
 	int addr, isRom, isSRam, isDRam, isZero, isMmio, isCcmd, isSkip;
+	int isL2mRepeat, l2Epoch;
 	
 	addr	= l2addr1;
 	isRom	= (addr>=0x00000000) && (addr<=0x00007FFF);
@@ -955,6 +962,10 @@ void MemUpdateForBusRing()
 		isCcmd = 1;
 	
 	isSkip = 0;
+	isL2mRepeat = 1;
+//	l2Epoch = (main_time>>9)&15;
+//	l2Epoch = (main_time>>13)&15;
+	l2Epoch = (main_time>>15)&15;
 	
 //	sx=((l2seq1*65521)>>16)&4095;
 	sx=((l2seq1*65521)>>16)&7;
@@ -962,6 +973,7 @@ void MemUpdateForBusRing()
 //	if(l2opm1&255)
 	{
 		l2m_seqhash[sx]=l2seq1;
+		isL2mRepeat = 0;
 
 		for(i=0; i<8; i++)
 		{
@@ -985,6 +997,10 @@ void MemUpdateForBusRing()
 			case 4:	
 				ix=(addr>>4);
 				ix=ix^(ix>>13)^(ix>>7);
+				break;
+			case 5:	
+				ix=(addr>>4);
+				ix=ix^(ix>>12)^(ix>>16);
 				break;
 			default:
 				ix=addr>>4;
@@ -1020,47 +1036,76 @@ void MemUpdateForBusRing()
 				l2dc_evict_addr[0] = l2dc_hash_addr[l2dc_miss_ix];
 				l2dc_evict_ix[0] = l2dc_miss_ix;
 
-				l2dc_hash_addr2[l2dc_miss_ix] = l2dc_hash_addr[l2dc_miss_ix];
-				l2dc_hash_dirty2[l2dc_miss_ix] = l2dc_hash_dirty[l2dc_miss_ix];
+//				l2dc_hash_addr2[l2dc_miss_ix] = l2dc_hash_addr[l2dc_miss_ix];
+//				l2dc_hash_dirty2[l2dc_miss_ix] = l2dc_hash_dirty[l2dc_miss_ix];
+//				l2dc_hash_addr[l2dc_miss_ix]=l2dc_miss_addr;
+//				l2dc_hash_dirty[l2dc_miss_ix]=0;
 
-				l2dc_hash_addr[l2dc_miss_ix]=l2dc_miss_addr;
-				l2dc_hash_dirty[l2dc_miss_ix]=0;
+				if(l2dc_miss_ldb)
+				{
+					l2dc_hash_addr2[l2dc_miss_ix]=l2dc_miss_addr;
+					l2dc_hash_dirty2[l2dc_miss_ix]=0;
+				}else
+				{
+					l2dc_hash_addr[l2dc_miss_ix]=l2dc_miss_addr;
+					l2dc_hash_dirty[l2dc_miss_ix]=0;
+					l2dc_hash_epoch[l2dc_miss_ix]=l2Epoch;
+				}
 			}
 
 //			isSkip = 1;
 		}
 
-		ix=(addr>>4)^(addr>>16)^(addr>>20);
+		ix=(addr>>4);
+		ix=ix^(ix>>13)^(ix>>7);
+
+//		ix=(addr>>4)^(addr>>16)^(addr>>20);
+
 		ix=ix&8191;
+		
+		if(!isL2mRepeat)
+		{
+			if(l2dc_hash_addr[ix]==addr)
+				l2dc_stat_hit++;
+			if((l2dc_hash_addr2[ix]==addr) && ((l2opm1&0xFF)!=0xA7))
+				l2dc_stat_hit2++;
+		}
 		
 		if((l2dc_hash_addr2[ix]==addr) && ((l2opm1&0xFF)==0xA7))
 		{
-			l2dc_hash_dirty2[ix]=1;
+//			l2dc_hash_dirty2[ix]=1;
 		}else
 		{
 			i=l2dc_hash_dirty[ix];
 			if(!i && ((l2opm1&0xFF)==0xA7))
 			{
+//				l2dc_hash_addr2[ix]=l2dc_hash_addr[ix];
 				l2dc_hash_addr[ix]=addr;
 				l2dc_hash_dirty[ix]=1;
+				l2dc_hash_epoch[ix]=l2Epoch;
 			}
 		}
 		
 //		if(l2dc_hash_addr[ix]!=addr)
-		if((l2dc_hash_addr[ix]!=addr) && (l2dc_hash_addr2[ix]!=addr))
+		if((l2dc_hash_addr[ix]!=addr) &&
+			((l2dc_hash_addr2[ix]!=addr) || ((l2opm1&0xFF)==0xA7)))
 //		if(0)
 		{
-			i=l2dc_hash_dirty[ix];
-			for(j=0; j<7; j++)
-				if(addr==l2dc_evict_addr[j])
-					break;
+//			i=l2dc_hash_dirty[ix];
+//			for(j=0; j<7; j++)
+//				if(addr==l2dc_evict_addr[j])
+//					break;
 		
-			if(!i && (addr==l2dc_evict_addr[j]))
+//			if(!i && (addr==l2dc_evict_addr[j]))
+			if(0)
 			{
 				l2dc_hash_addr[ix]=l2dc_evict_addr[j];
 				l2dc_hash_dirty[ix]=0;
 			}else
 			{
+				if(!isL2mRepeat)
+					{ l2dc_stat_miss++; }
+
 				isSkip = 1;
 	//			if(l2dc_miss_cyc<=0)
 	//			if((l2dc_miss_cyc<=0) && (l2dc_miss_seq<=0))
@@ -1071,6 +1116,18 @@ void MemUpdateForBusRing()
 					l2dc_miss_addr=addr;
 					l2dc_miss_cyc=30;
 					l2dc_miss_seq=l2seq1;
+
+					l2dc_miss_ldb=0;
+					if((l2opm1&0xFF)!=0xA7)
+					{
+//						if(l2dc_hash_dirty[ix])
+						if(l2dc_hash_dirty[ix] || (addr&16))
+							l2dc_miss_ldb=1;
+					}
+					
+					if(l2dc_hash_dirty[ix] && ((l2Epoch-l2dc_hash_epoch[ix])&8))
+						l2dc_miss_ldb=0;
+					
 				}else
 				{
 					if((l2dc_miss_cyc<=0) && (l2dc_miss_seq>0))
@@ -1084,6 +1141,7 @@ void MemUpdateForBusRing()
 			if((l2opm1&0xFF)==0xA7)
 			{
 				l2dc_hash_dirty[ix]=1;
+				l2dc_hash_epoch[ix]=l2Epoch;
 			}
 		}
 		
@@ -2315,9 +2373,21 @@ int main(int argc, char **argv, char **env)
 	for(i=0; i<8; i++)
 	{
 		j=l2m_hash_hit[i]+l2m_hash_miss[i];
+		if(!j)
+			continue;
 		printf("Hash %d: %d/%d %.2f%%\n",
 			i, l2m_hash_hit[i], j,
 			(100.0*l2m_hash_hit[i])/j);
+	}
+	
+	j=l2dc_stat_hit+l2dc_stat_hit2+l2dc_stat_miss;
+	if(j>0)
+	{
+		printf("L2 Hit 1/2/Miss %d/%d/%d %.2f%%/%.2f%%/%.2f%%\n",
+			l2dc_stat_hit, l2dc_stat_hit2, l2dc_stat_miss,
+			(100.0*l2dc_stat_hit )/j,
+			(100.0*l2dc_stat_hit2)/j,
+			(100.0*l2dc_stat_miss)/j);
 	}
 	
 	delete top;
