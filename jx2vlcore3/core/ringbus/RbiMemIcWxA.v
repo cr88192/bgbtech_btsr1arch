@@ -758,6 +758,9 @@ begin
 	
 //	tRegOutPcOK = tMiss ? UMEM_OK_HOLD : UMEM_OK_OK;
 
+	if(reset)
+		tMiss = 0;
+
 	if(tMiss)
 		tRegOutHold = 1;
 
@@ -810,7 +813,16 @@ begin
 	tMemSeqVa		= 0;
 	tNxtMemSeqRov	= tMemSeqRov;
 
-	if((tMissA || tMissB) && tReqReady)
+	if(reset)
+	begin
+		tNxtMemReqLdA	= 0;
+		tNxtMemReqLdB	= 0;
+		tMemSeqIx		= 0;
+		tMemSeqVa		= 0;
+		tNxtMemSeqRov	= 0;
+	end
+	else
+		if((tMissA || tMissB) && tReqReady)
 	begin
 //		$display("L1 I$ Miss %X %X %X", tMissA, tMissB, tReqReady);
 	
@@ -855,7 +867,7 @@ begin
 	end
 	else
 	begin
-		if(tMemReqLdA | tMemReqLdB)
+		if(tMemReqLdA || tMemReqLdB)
 		begin
 			tRegOutHold = 1;
 		end
@@ -982,10 +994,15 @@ begin
 
 	if(reset)
 	begin
-		tMemSeqOut  <= memSeqIn;
-		tMemOpmOut  <= memOpmIn;
-		tMemAddrOut <= memAddrIn;
-		tMemDataOut <= memDataIn;
+		tMemSeqOut  <= 0;
+		tMemOpmOut  <= 0;
+		tMemAddrOut <= 0;
+		tMemDataOut <= 0;
+
+//		tMemSeqOut  <= memSeqIn;
+//		tMemOpmOut  <= memOpmIn;
+//		tMemAddrOut <= memAddrIn;
+//		tMemDataOut <= memDataIn;
 		tMemReqSent	<= 0;
 
 		tMemReqStA	<= 0;

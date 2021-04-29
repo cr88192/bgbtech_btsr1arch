@@ -131,7 +131,7 @@ begin
 	tNxtReqData		= tReqData;
 	tNxtReqLive		= tReqLive;
 	tNxtReqOpm2		= tReqOpm2;
-
+	
 	if(memRingIsMmio && !tReqLive)
 	begin
 		tNxtReqSeq		= memSeqIn;
@@ -160,6 +160,9 @@ begin
 
 	if(tRespDone)
 	begin
+		tNxtMmioAddr	= 0;
+		tNxtMmioOpm		= UMEM_OPM_READY;
+
 		if(!tMemReqRsM)
 		begin
 			tMemSeqReq		= tReqSeq;
@@ -194,6 +197,29 @@ begin
 			tNxtMmioAddr		= tReqAddr[31:0];
 			tNxtMmioOpm			= tReqOpm2;
 		end
+	end
+
+	if(reset)
+	begin
+		tMemSeqReq			= 0;
+		tMemOpmReq			= 0;
+		tMemAddrReq			= 0;
+		tMemDataReq			= 0;
+		tNxtMemReqRsM		= 0;
+
+		tNxtReqSeq			= 0;
+		tNxtReqOpm			= 0;
+		tNxtReqAddr			= 0;
+		tNxtReqData			= 0;
+		tNxtReqLive			= 0;
+		tNxtReqOpm2			= 0;
+
+		tNxtMmioOutData		= 0;
+		tNxtMmioAddr		= 0;
+		tNxtMmioOpm			= 0;
+
+		tNxtRespData		= 0;
+		tNxtRespDone		= 0;
 	end
 end
 

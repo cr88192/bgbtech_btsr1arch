@@ -1149,8 +1149,137 @@ int sim_fb_draw7seg_8x(uint32_t *fbuf, int xs, int ys,
 	}
 }
 
+int BTM_DrawGlyphFBuf(uint32_t *fbuf, int ystr, int cx, int cy,
+	u64 pix, uint32_t c1, uint32_t c0)
+{
+	uint32_t *ct;
+	int y, p1;
+	
+	ct=fbuf+(cy*ystr)+cx;
+	for(y=0; y<8; y++)
+	{
+		p1=(pix>>((7-y)*8))&255;
+
+		if(p1&0x80)		{ ct[0]=c1; }
+		else			{ ct[0]=c0; }
+		if(p1&0x40)		{ ct[1]=c1; }
+		else			{ ct[1]=c0; }
+		if(p1&0x20)		{ ct[2]=c1; }
+		else			{ ct[2]=c0; }
+		if(p1&0x10)		{ ct[3]=c1; }
+		else			{ ct[3]=c0; }
+
+		if(p1&0x08)		{ ct[4]=c1; }
+		else			{ ct[4]=c0; }
+		if(p1&0x04)		{ ct[5]=c1; }
+		else			{ ct[5]=c0; }
+		if(p1&0x02)		{ ct[6]=c1; }
+		else			{ ct[6]=c0; }
+		if(p1&0x01)		{ ct[7]=c1; }
+		else			{ ct[7]=c0; }
+
+		ct+=ystr;
+	}
+	return(0);
+}
+
+int BTM_DrawGlyphFBuf2x(uint32_t *fbuf, int ystr, int cx, int cy,
+	u64 pix, uint32_t c1, uint32_t c0)
+{
+	uint32_t *ct0, *ct1;
+	int y, p1;
+	
+	ct0=fbuf+(cy*ystr)+cx;
+	ct1=ct0+ystr;
+	for(y=0; y<8; y++)
+	{
+		p1=(pix>>((7-y)*8))&255;
+
+		if(p1&0x80)		{ ct0[0]=c1; ct0[1]=c1; ct1[0]=c1; ct1[1]=c1; }
+		else			{ ct0[0]=c0; ct0[1]=c0; ct1[0]=c0; ct1[1]=c0; }
+		if(p1&0x40)		{ ct0[2]=c1; ct0[3]=c1; ct1[2]=c1; ct1[3]=c1; }
+		else			{ ct0[2]=c0; ct0[3]=c0; ct1[2]=c0; ct1[3]=c0; }
+		if(p1&0x20)		{ ct0[4]=c1; ct0[5]=c1; ct1[4]=c1; ct1[5]=c1; }
+		else			{ ct0[4]=c0; ct0[5]=c0; ct1[4]=c0; ct1[5]=c0; }
+		if(p1&0x10)		{ ct0[6]=c1; ct0[7]=c1; ct1[6]=c1; ct1[7]=c1; }
+		else			{ ct0[6]=c0; ct0[7]=c0; ct1[6]=c0; ct1[7]=c0; }
+
+		if(p1&0x08)		{ ct0[ 8]=c1; ct0[ 9]=c1; ct1[ 8]=c1; ct1[ 9]=c1; }
+		else			{ ct0[ 8]=c0; ct0[ 9]=c0; ct1[ 8]=c0; ct1[ 9]=c0; }
+		if(p1&0x04)		{ ct0[10]=c1; ct0[11]=c1; ct1[10]=c1; ct1[11]=c1; }
+		else			{ ct0[10]=c0; ct0[11]=c0; ct1[10]=c0; ct1[11]=c0; }
+		if(p1&0x02)		{ ct0[12]=c1; ct0[13]=c1; ct1[12]=c1; ct1[13]=c1; }
+		else			{ ct0[12]=c0; ct0[13]=c0; ct1[12]=c0; ct1[13]=c0; }
+		if(p1&0x01)		{ ct0[14]=c1; ct0[15]=c1; ct1[14]=c1; ct1[15]=c1; }
+		else			{ ct0[14]=c0; ct0[15]=c0; ct1[14]=c0; ct1[15]=c0; }
+
+		ct0+=2*ystr;
+		ct1+=2*ystr;
+	}
+	return(0);
+}
+
+int BTM_DrawCharFBuf(uint32_t *fbuf, int ystr, int x, int y,
+	byte ch, uint32_t c1, uint32_t c0)
+{
+	BTM_DrawGlyphFBuf(fbuf, ystr, x, y, btesh2_gfxcon_glyphs[ch], c1, c0);
+	return(0);
+}
+
+int BTM_DrawStrFBuf(uint32_t *fbuf, int ystr, int x, int y,
+	char *str, uint32_t c1, uint32_t c0)
+{
+	char *s;
+	int ch;
+	
+	s=str;
+	while(*s)
+	{
+		ch=*s++;
+		BTM_DrawGlyphFBuf(fbuf, ystr, x, y, btesh2_gfxcon_glyphs[ch], c1, c0);
+		x+=8;
+	}
+	return(0);
+}
+
+int BTM_DrawStrFBuf2x(uint32_t *fbuf, int ystr, int x, int y,
+	char *str, uint32_t c1, uint32_t c0)
+{
+	char *s;
+	int ch;
+	
+	s=str;
+	while(*s)
+	{
+		ch=*s++;
+		BTM_DrawGlyphFBuf2x(fbuf, ystr, x, y, btesh2_gfxcon_glyphs[ch], c1, c0);
+		x+=16;
+	}
+	return(0);
+}
+
+int BTM_DrawDecimalFBuf(uint32_t *fbuf, int ystr, int x, int y,
+	uint64_t val, int n, uint32_t c1, uint32_t c0)
+{
+	char tb[64];
+	uint64_t v;
+	int i, j, k;
+	
+	v=val;
+	for(i=0; i<n; i++)
+	{
+		tb[n-i-1]='0'+(v%10);
+		v/=10;
+	}
+	tb[n]=0;
+//	BTM_DrawStrFBuf(fbuf, ystr, x, y, tb, c1, c0);
+	BTM_DrawStrFBuf2x(fbuf, ystr, x, y, tb, c1, c0);
+	return(0);
+}
+
 int main(int argc, char **argv, char **env)
 {
+	char tb[256];
 	BJX2_Context *ctx;
 	cdec_imgbuf *vgactx;
 	FILE *fd;
@@ -1161,6 +1290,7 @@ int main(int argc, char **argv, char **env)
 		cnt_d1, cnt_d2, cnt_d3, cnt_d4,
 		cnt_d5, cnt_d6, cnt_d7, cnt_d8;
 	int clk300, lclk300, clk150, lclk150, clk75;
+	uint64_t rvq;
 	int t0, t1, t2;
 	int i, j, k;
 
@@ -1402,6 +1532,20 @@ int main(int argc, char **argv, char **env)
 				top->seg_outSegBit,
 				top->seg_outCharBit
 				);
+			
+			rvq=(ctx->tot_cyc*ctx->rcp_mhz)>>16;
+//			BTM_DrawDecimalFBuf(
+//				(uint32_t *)btesh2_gfxcon_framebuf, 800,
+//				2*8, 600-48, rvq, 12, 0xFFFFFF80, 0xFF008000);
+
+			sprintf(tb, "%06d.%06d",
+				(int)(rvq/1000000),
+				(int)(rvq%1000000));
+
+			BTM_DrawStrFBuf2x(
+				(uint32_t *)btesh2_gfxcon_framebuf, 800,
+				2*8, 600-48, tb, 0xFFFFFF80, 0xFF008000);
+
 
 			cnt_dled=0;
 			cnt_h1=0;	cnt_h2=0;

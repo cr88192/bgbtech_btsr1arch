@@ -165,7 +165,7 @@ begin
 //	if(tlbRingIsIdle)
 //		tHoldL2b		= 0;
 
-	if(l2mRingIsIrqBc && (l2mSeqIn[15:10] != unitNodeId[7:2]))
+	if(l2mRingIsIrqBc && (l2mSeqIn[15:10] != unitNodeId[7:2]) && !reset)
 	begin
 		tL2mSeqReq		= l2mSeqIn;
 		tL2mOpmReq		= l2mOpmIn;
@@ -183,7 +183,7 @@ begin
 		tHoldL2b = 1;
 	end
 
-	if(l2mRingIsResp && !tUpdateL2b)
+	if(l2mRingIsResp && !tUpdateL2b && !reset)
 	begin
 		tL1mSeqReq		= l2mSeqIn;
 		tL1mOpmReq		= l2mOpmIn;
@@ -192,7 +192,7 @@ begin
 		tL1mDataReq		= l2mDataIn;
 	end
 
-	if(l1mRingIsReq && !tUpdateL2b)
+	if(l1mRingIsReq && !tUpdateL2b && !reset)
 	begin
 		tL2mSeqReq		= l1mSeqIn;
 		tL2mOpmReq		= l1mOpmIn;
@@ -205,7 +205,7 @@ end
 
 always @(posedge clock)
 begin
-	if(l1mRingIsIdle || ((l1mRingIsReq || l1mRingIsIrq) && !tHoldL2b))
+	if(l1mRingIsIdle || ((l1mRingIsReq || l1mRingIsIrq) && !tHoldL2b) || reset)
 	begin
 `ifndef def_true
 		if(tL1mOpmReq!=0)
@@ -235,7 +235,7 @@ begin
 	end
 
 	if(l2mRingIsIdle || tUpdateL2b ||
-		((l2mRingIsResp || l2mRingIsIrq) && !tHoldL1b))
+		((l2mRingIsResp || l2mRingIsIrq) && !tHoldL1b) || reset)
 	begin
 `ifndef def_true
 		if(tL2mOpmReq!=0)

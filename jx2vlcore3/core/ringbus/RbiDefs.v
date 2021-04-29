@@ -7,9 +7,12 @@ Data(127:0):
 
 Addr(47:32):
   0000..7FFF: VADDR (Userland)
-  8000..87FF: Physical Address Range
-  8800..8EFF: (Reserved)
-  8F00..BFFF: MMIO Range
+
+  8000..BFFF: VADDR (System)
+
+  C000..C7FF: Physical Address Range
+  C800..CEFF: (Reserved)
+  CF00..CFFF: MMIO Range
   9000..FFFF: VADDR (System)
 
 Virtual Addresses will exist in a 48-bit space.
@@ -126,7 +129,7 @@ parameter[7:0] JX2_RBI_OPM_OKLD		= 8'h70;	//
 
 parameter[7:0] JX2_RBI_OPM_FAIL_RT	= 8'h50;	//No Route
 
-parameter[15:0] JX2_RBI_ADDRHI_PHYS	= 16'h8000;	//
+parameter[15:0] JX2_RBI_ADDRHI_PHYS	= 16'hC000;			//Physical Address Range
 
 
 parameter[5:0] JX2_DCOPM_FLUSHIS	= 6'b000100;		//Flush I$ Request

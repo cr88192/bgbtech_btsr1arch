@@ -178,7 +178,7 @@ begin
 	tL2bAddrOut		= l2bAddrOut;
 	tL2bDataOut		= l2bDataOut;
 
-//`ifndef def_true
+// `ifndef def_true
 `ifdef def_true
 	if(	(l2bOpmOut[7:0] == 8'h00) &&
 //		(l2mOpmOut[7:0] != 8'h00) && 

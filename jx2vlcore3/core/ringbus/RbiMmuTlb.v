@@ -57,10 +57,15 @@ reg[15:0]		tRegOutSeq;
 reg[15:0]		tRegOutSeq2;
 reg[15:0]		tRegOutSeq3;
 
-assign		regOutAddr = tRegOutAddr3;
-assign		regOutData = tRegOutData3;
-assign		regOutOpm = tRegOutOpm3;
-assign		regOutSeq = tRegOutSeq3;
+// assign		regOutAddr = tRegOutAddr3;
+// assign		regOutData = tRegOutData3;
+// assign		regOutOpm = tRegOutOpm3;
+// assign		regOutSeq = tRegOutSeq3;
+
+assign		regOutAddr = tRegOutAddr2;
+assign		regOutData = tRegOutData2;
+assign		regOutOpm = tRegOutOpm2;
+assign		regOutSeq = tRegOutSeq2;
 
 reg[15:0]		tRegOutExc;
 reg[15:0]		tRegOutExc2;
@@ -200,19 +205,43 @@ wire[15:0]	tTlbExc;
 reg[7:0]	tTlbRov;
 reg[7:0]	tNxtTlbRov;
 
+wire		tRegInIsREADY;
+assign		tRegInIsREADY = (tRegInOpm[7:0]==JX2_RBI_OPM_IDLE);
+
+wire		tRegInIsLDTLB;
+assign		tRegInIsLDTLB = (tRegInOpm[7:0]==JX2_RBI_OPM_LDTLB);
+
+wire		tRegInIsINVTLB;
+assign		tRegInIsINVTLB = (tRegInOpm[7:0]==JX2_RBI_OPM_INVTLB);
+
+wire		tRegInIsIRQ;
+assign		tRegInIsIRQ = (tRegInOpm[7:0]==JX2_RBI_OPM_IRQ);
+
+
 wire		regInIsREADY;
-assign		regInIsREADY = (tRegInOpm[7:0]==JX2_RBI_OPM_IDLE);
+assign		regInIsREADY = (regInOpm[7:0]==JX2_RBI_OPM_IDLE);
 
-wire		regInIsLDTLB;
-assign		regInIsLDTLB = (tRegInOpm[7:0]==JX2_RBI_OPM_LDTLB);
+wire		regInIsPhysAddr;
+assign		regInIsPhysAddr = (regInAddrA[47:44]==4'hC);
 
-wire		regInIsINVTLB;
-assign		regInIsINVTLB = (tRegInOpm[7:0]==JX2_RBI_OPM_INVTLB);
+wire		regInIsLDX;
+wire		regInIsSTX;
+wire		regInIsNzX;
+assign		regInIsLDX = (regInOpm[7:0]==JX2_RBI_OPM_LDX);
+assign		regInIsSTX = (regInOpm[7:0]==JX2_RBI_OPM_STX);
+assign		regInIsNzX = regInIsLDX || regInIsSTX;
 
-wire		regInIsIRQ;
-assign		regInIsIRQ = (tRegInOpm[7:0]==JX2_RBI_OPM_IRQ);
+wire		regInIsLDIO;
+wire		regInIsSTIO;
+wire		regInIsMMIO;
+wire		regInIsReqIO;
+assign		regInIsLDIO = (regInOpm[7:4]==4'h9);
+assign		regInIsSTIO = (regInOpm[7:4]==4'hA);
+assign		regInIsMMIO = (regInIsLDIO || regInIsSTIO) && !regInIsNzX;
+assign		regInIsReqIO = regInIsLDIO || regInIsSTIO;
 
-reg		regInIsBounce;
+
+reg		tRegInIsBounce;
 
 wire[5:0]	tChkAccNoRwx;	//No R/W/X
 
@@ -299,10 +328,11 @@ begin
 	tAddrIsHi4G		= (tRegInAddr[47:32] == 16'hFFFF);
 	tAddrIsMMIO		= (tRegInAddr[31:28] == 4'hF) &&
 		(tAddrIsLo4G || tAddrIsHi4G || tlbIs32b);
-	tAddrIsPhys		= tAddrIsHi4G && !tRegInAddr[31];
+	tAddrIsPhys		= (tAddrIsHi4G && !tRegInAddr[31]) ||
+		(tRegInAddr[47:44] == 4'hC);
 
-//	regInIsBounce	= (tRegInOpm == UMEM_OPM_RD_BOUNCE);
-	regInIsBounce	= 0;
+//	tRegInIsBounce	= (tRegInOpm == UMEM_OPM_RD_BOUNCE);
+	tRegInIsBounce	= 0;
 
 	if(regInSR[29] && regInSR[28])
 	begin
@@ -448,8 +478,10 @@ begin
 	else
 	begin
 		tlbAddr		= tRegInAddr[47:0];
+		if(tAddrIsPhys)
+			tlbAddr[47:44]	= 4'hC;
 		if(tAddrIsPhys && tAddrIsHi4G)
-			tlbAddr[47:32]	= 0;
+			tlbAddr[43:32]	= 0;
 		tlbMiss		= 0;
 	end
 
@@ -501,17 +533,17 @@ begin
 		$display("TLB(A) %X -> %X", tRegInAddr, tlbAddr);
 	end
 
-	if(regInIsBounce && !tAddrIsMMIO)
+	if(tRegInIsBounce && !tAddrIsMMIO)
 	begin
 //		tRegOutOpm   = UMEM_OPM_LDTLB;
 	end
 	
-	if(regInIsINVTLB || reset)
+	if(tRegInIsINVTLB || reset)
 	begin
 		tNxtTlbRov		= tTlbRov + 1;
 	end
 
-	if(regInIsIRQ)
+	if(tRegInIsIRQ)
 	begin
 		if(	(unitNodeId[5:2]==regInData[11:8]) ||
 			(regInData[11:8]==4'h0) ||
@@ -529,7 +561,7 @@ begin
 		tRegOutOpm   = UV16_00;
 	end
 
-	if(regInIsLDTLB)
+	if(tRegInIsLDTLB)
 	begin
 		$display("MemTile-LDTLB %X %X-%X",
 			tRegInAddr,
@@ -595,14 +627,34 @@ always @ (posedge clock)
 begin
 	if(!regInHold)
 	begin
-// `ifdef def_true
-`ifndef def_true
+`ifdef def_true
+// `ifndef def_true
+		tRegInAddr		<= regInAddr;
+		tRegInData		<= regInData;
 		if(!tlbMmuEnable)
 		begin
 			tRegOutAddr2	<= regInAddr;
 			tRegOutData2	<= regInData;
 			tRegOutOpm2		<= regInOpm;
 			tRegOutSeq2		<= regInSeq;
+
+//			tRegInOpm		<= regInOpm;
+//			tRegInSeq		<= regInSeq;			
+			tRegInOpm		<= regInIsReqIO ? 0 : regInOpm;
+			tRegInSeq		<= regInIsReqIO ? 0 : regInSeq;
+		end
+		else if(
+			((regInIsPhysAddr && regInIsNzX) || regInIsMMIO) &&
+			(tRegOutOpm[7:0]==8'h00))
+		begin
+			/* Physical Addresses and MMIO may skip TLB */
+			tRegOutAddr2	<= regInAddr;
+			tRegOutData2	<= regInData;
+			tRegOutOpm2		<= regInOpm;
+			tRegOutSeq2		<= regInSeq;
+
+			tRegInOpm		<= 0;
+			tRegInSeq		<= 0;
 		end
 		else
 		begin
@@ -611,6 +663,9 @@ begin
 		//	tRegOutOpm2		<= tRegOutOpm;
 			tRegOutOpm2		<= { 2'b00, tChkAccNoRwx, tRegOutOpm[7:0] };
 			tRegOutSeq2		<= tRegOutSeq;
+
+			tRegInOpm		<= regInOpm;
+			tRegInSeq		<= regInSeq;
 		end
 `else
 		tRegOutAddr2	<= tRegOutAddr;
@@ -618,20 +673,25 @@ begin
 	//	tRegOutOpm2		<= tRegOutOpm;
 		tRegOutOpm2		<= { 2'b00, tChkAccNoRwx, tRegOutOpm[7:0] };
 		tRegOutSeq2		<= tRegOutSeq;
-`endif
-
-		tRegOutAddr3	<= tRegOutAddr2;
-		tRegOutData3	<= tRegOutData2;
-		tRegOutOpm3		<= tRegOutOpm2;
-		tRegOutSeq3		<= tRegOutSeq2;
-
-		tRegOutExc2		<= tRegOutExc;
-		tRegOutTea2		<= tRegOutTea;
 
 		tRegInAddr		<= regInAddr;
 		tRegInData		<= regInData;
 		tRegInOpm		<= regInOpm;
 		tRegInSeq		<= regInSeq;
+`endif
+
+//		tRegOutAddr3	<= tRegOutAddr2;
+//		tRegOutData3	<= tRegOutData2;
+//		tRegOutOpm3		<= tRegOutOpm2;
+//		tRegOutSeq3		<= tRegOutSeq2;
+
+		tRegOutExc2		<= tRegOutExc;
+		tRegOutTea2		<= tRegOutTea;
+
+//		tRegInAddr		<= regInAddr;
+//		tRegInData		<= regInData;
+//		tRegInOpm		<= regInOpm;
+//		tRegInSeq		<= regInSeq;
 		
 `ifndef def_true
 		if(regInOpm[7:0]==JX2_RBI_OPM_LDX)

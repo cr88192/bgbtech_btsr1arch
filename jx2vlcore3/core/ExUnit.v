@@ -246,6 +246,9 @@ reg [63:0]		dcInValB;
 
 reg [63:0]		dcInTraPc;
 
+reg			tDeadlockLatch;
+reg			tNxtDeadlockLatch;
+
 assign	dbgDcInAddr	= dcInAddr;
 assign	dbgDcInOpm	= dcInOpm;
 assign	dbgDcOutVal	= dcOutVal;
@@ -1631,8 +1634,8 @@ reg[15:0]	tBraNxtCycCnt;
 
 reg[15:0]	tHoldCycCnt;
 reg[15:0]	tHoldNxtCycCnt;
-reg			tDeadlockLatch;
-reg			tNxtDeadlockLatch;
+// reg			tDeadlockLatch;
+// reg			tNxtDeadlockLatch;
 
 reg			tExcLatch;
 reg			tNxtExcLatch;
@@ -2114,6 +2117,7 @@ begin
 	begin
 		exHold1		= 0;
 		exHold2		= 0;
+		tNxtDeadlockLatch	= 0;
 	end
 
 	if(tNxtRegExc[15])
@@ -2313,6 +2317,7 @@ begin
 //		nxtBraFlushMask = 8'h07;
 //		nxtBraFlushMask = 8'h0F;
 		nxtBraFlushMask = JX2_BRA_FLUSHMSK;
+		tNxtDeadlockLatch	= 0;
 	end
 	
 	case(tRegExc[14:13])

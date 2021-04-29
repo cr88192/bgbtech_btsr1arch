@@ -1027,10 +1027,10 @@ begin
 		tAccReady && !tAccDone && !(tBlkDoStL || tBlkDoStBL);
 	tNxtAccBlkDirty	= tBlkDirty;
 	
-	if(tAccDone)
+	if(tAccDone || reset)
 		tNxtDoAcc = 0;
 
-	if(tAccBusyLatch)
+	if(tAccBusyLatch && !reset)
 	begin
 		tNxtAccIx			= tAccIx;
 		tNxtAccAddr			= tAccAddr;
@@ -1044,7 +1044,6 @@ begin
 		tNxtAccDoLdB		= tAccDoLdB;
 		tNxtAccDoLdAzB		= tAccDoLdAzB;
 	end
-
 
 	if(tAccess && tMiss && !tSkipC2)
 	begin

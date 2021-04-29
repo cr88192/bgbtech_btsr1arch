@@ -1280,10 +1280,15 @@ begin
 
 	if(reset)
 	begin
-		tMemSeqOut  <= memSeqIn;
-		tMemOpmOut  <= memOpmIn;
-		tMemAddrOut <= memAddrIn;
-		tMemDataOut <= memDataIn;
+		tMemSeqOut  <= 0;
+		tMemOpmOut  <= 0;
+		tMemAddrOut <= 0;
+		tMemDataOut <= 0;
+
+//		tMemSeqOut  <= memSeqIn;
+//		tMemOpmOut  <= memOpmIn;
+//		tMemAddrOut <= memAddrIn;
+//		tMemDataOut <= memDataIn;
 		tMemReqSent	<= 0;
 
 		tMemReqStA	<= 0;
