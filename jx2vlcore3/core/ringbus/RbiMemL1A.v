@@ -303,11 +303,17 @@ begin
 
 	tDcBusWait	= dfOutWait || ifMemWait;
 
+	if(reset)
+	begin
+		tDcOutHold	= 0;
+		tDcBusWait	= 0;
+	end
+
 	tDcOutOK	= UMEM_OK_OK;
 	if(dfOutHold)
 		tDcOutOK	= UMEM_OK_HOLD;
 
-	if(tTlbExc[15])
+	if(tTlbExc[15] && !reset)
 		tRegOutExc = tTlbExc;
 
 

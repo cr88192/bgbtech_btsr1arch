@@ -5,15 +5,26 @@ Ring Bus Interface
 Data(127:0):
   Data passed with message.
 
+Physical Addr (Low 4GB):
+  00000000..00007FFF: Boot ROM (Base)
+  00008000..0000BFFF: Boot ROM (Ext)
+  0000C000..0000DFFF: Boot SRAM
+  0000E000..0000FFFF: Reserved
+  00010000..0001FFFF: Null Page
+  00020000..00FFFFFF: Reserved
+  01000000..3FFFFFFF: DRAM (Wrap based on RAM Size)
+  40000000..7FFFFFFF: Reserved (More DRAM)
+  80000000..EFFFFFFF: Reserved
+  F0000000..FFFFFFFF: MMIO
+
 Addr(47:32):
   0000..7FFF: VADDR (Userland)
 
   8000..BFFF: VADDR (System)
-
   C000..C7FF: Physical Address Range
   C800..CEFF: (Reserved)
   CF00..CFFF: MMIO Range
-  9000..FFFF: VADDR (System)
+  D000..FFFF: VADDR (System)
 
 Virtual Addresses will exist in a 48-bit space.
 Some of this space will be used as a physical address range.

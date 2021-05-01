@@ -945,10 +945,39 @@ void MemUpdateForBusRing()
 	int addr, isRom, isSRam, isDRam, isZero, isMmio, isCcmd, isSkip;
 	int isL2mRepeat, l2Epoch;
 	
+	char *src_unit;
+	
+	src_unit="?";
+	switch((l2seq1>>6)&15)
+	{
+	case 0x0:	case 0x1:
+	case 0x2:	case 0x3:
+		src_unit="Bridge";
+		break;
+
+	case 0x4:	src_unit="L1I$A";	break;
+	case 0x5:	src_unit="L1I$B";	break;
+	case 0x6:	src_unit="L1I$M";	break;
+	case 0x7:	src_unit="L1I$N";	break;
+
+	case 0x8:	src_unit="L1D$A";	break;
+	case 0x9:	src_unit="L1D$B";	break;
+	case 0xA:	src_unit="L1D$M";	break;
+	case 0xB:	src_unit="L1D$N";	break;
+
+	case 0xC:	src_unit="TLB-A";	break;
+	case 0xD:	src_unit="TLB-B";	break;
+	case 0xE:	src_unit="TLB-M";	break;
+	case 0xF:	src_unit="TLB-N";	break;
+	}
+	
+	
 	addr	= l2addr1;
 	isRom	= (addr>=0x00000000) && (addr<=0x00007FFF);
 	isSRam	= (addr>=0x0000C000) && (addr<=0x0000DFFF);
-	isDRam	= (addr>=0x01000000) && (addr<=0x0FFFFFFF);
+//	isDRam	= (addr>=0x01000000) && (addr<=0x0FFFFFFF);
+//	isDRam	= (addr>=0x01000000) && (addr<=0x7FFFFFFF);
+	isDRam	= (addr>=0x01000000) && (addr<=0x3FFFFFFF);
 	isZero	= (addr>=0x00010000) && (addr<=0x0001FFFF);
 	
 	isMmio = 0;
@@ -1237,7 +1266,7 @@ void MemUpdateForBusRing()
 			l2opm1=0x70;
 		}else
 		{
-			printf("Bad Address %08X\n", addr);
+			printf("Bad Address %08X %s\n", addr, src_unit);
 			printf("L2-1 O=%04X S=%04X A=%08X D=%08X_%08X_%08X_%08X\n",
 				l2opm1, l2seq1, l2addr1,
 				l2data1d, l2data1c, l2data1b, l2data1a);
@@ -1279,7 +1308,7 @@ void MemUpdateForBusRing()
 			l2opm1=0x60;
 		}else
 		{
-			printf("Bad Address %08X\n", addr);
+			printf("Bad Address %08X %s\n", addr, src_unit);
 			printf("L2-1 O=%04X S=%04X A=%08X D=%08X_%08X_%08X_%08X\n",
 				l2opm1, l2seq1, l2addr1,
 				l2data1d, l2data1c, l2data1b, l2data1a);

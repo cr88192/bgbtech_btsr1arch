@@ -1024,11 +1024,11 @@ begin
 		tSkipC2 = 1;
 
 	tNxtDoAcc	= (tAccess && tMiss && !tSkipC2) &&
-		tAccReady && !tAccDone && !(tBlkDoStL || tBlkDoStBL);
+		tAccReady && !tAccDone && !(tBlkDoStL || tBlkDoStBL) && !reset;
 	tNxtAccBlkDirty	= tBlkDirty;
 	
-	if(tAccDone || reset)
-		tNxtDoAcc = 0;
+//	if(tAccDone || reset)
+//		tNxtDoAcc = 0;
 
 	if(tAccBusyLatch && !reset)
 	begin
@@ -1141,6 +1141,12 @@ begin
 	begin
 //		$display("L2DC: Clear Miss Seq");
 		tNxtReqMissSeq	= 0;
+	end
+
+	if(reset)
+	begin
+		tNxtReqMissSeq	= 0;
+		tNxtReqMissIx	= 0;
 	end
 
 end
