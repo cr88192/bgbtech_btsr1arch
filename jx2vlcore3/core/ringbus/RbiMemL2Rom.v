@@ -98,10 +98,16 @@ wire		memAddrIsLo128k;
 wire		memAddrIsRom;
 wire		memAddrIsRam;
 wire		memAddrIsZero;
+wire		memAddrIsBad1;
+wire		memAddrIsBad2;
+
 assign	memAddrIsLo128k		= (memAddrIn[31:17] == UV15_00);
 assign	memAddrIsRom		= memAddrIsLo128k && (memAddrIn[16:15]==2'b00);
 assign	memAddrIsRam		= memAddrIsLo128k && (memAddrIn[16:13]==4'b0110);
 assign	memAddrIsZero		= memAddrIsLo128k && memAddrIn[16];
+
+assign	memAddrIsBad1		= (memAddrIn[31:24] == UV8_00) && !memAddrIsLo128k;
+assign	memAddrIsBad2		= (memAddrIn[31:30] != UV2_00);
 
 reg		mem2RingIsIdle;
 reg		mem2RingIsResp;
@@ -114,6 +120,8 @@ reg		mem2AddrIsRom;
 reg		mem2AddrIsRam;
 reg		mem2AddrIsZero;
 
+reg		mem2AddrIsBad1;
+reg		mem2AddrIsBad2;
 
 // reg[31:0]		tMemAddr;
 // reg[4:0]		tMemOpm;
@@ -169,6 +177,14 @@ begin
 		tMemOpmReq[7:0]	= JX2_RBI_OPM_OKLD;
 		tMemCcmdReq		= 1;
 	end
+
+	if((mem2AddrIsBad1 || mem2AddrIsBad2) && (mem2RingIsLdx || mem2RingIsStx))
+	begin
+		$display("L2Rom: Skip Invalid Address S=%X O=%X A=%X D=%X",
+			mem2SeqIn, mem2OpmIn, mem2AddrIn, mem2DataIn);
+		tMemCcmdReq		= 1;
+	end
+
 end
 
 always @(posedge clock)
@@ -188,6 +204,9 @@ begin
 	mem2AddrIsRom		<= memAddrIsRom;
 	mem2AddrIsRam		<= memAddrIsRam;
 	mem2AddrIsZero		<= memAddrIsZero;
+
+	mem2AddrIsBad1		<= memAddrIsBad1;
+	mem2AddrIsBad2		<= memAddrIsBad2;
 
 	tRomBlkIxL			<= tRomBlkIx;
 	tRamBlkIxL			<= tRamBlkIx;

@@ -466,6 +466,10 @@ begin
 	tNxtFlushRov	= tFlushRov;
 	tNxtAdvFlushRov	= 0;
 
+	if(reset)
+	begin
+		tNxtFlushRov		= 0;
+	end
 
 	if(((tInOpmB==JX2_DCOPM_FLUSHIS) && (tInOpmC!=JX2_DCOPM_FLUSHIS)) || reset)
 	begin
@@ -510,8 +514,8 @@ begin
 	
 	tInWordIx = tInAddr[2:1];
 
-	tFlushA = (tBlkPRovA != tFlushRov);
-	tFlushB = (tBlkPRovB != tFlushRov);
+	tFlushA = (tBlkPRovA != tFlushRov) || (tFlushRov == 0);
+	tFlushB = (tBlkPRovB != tFlushRov) || (tFlushRov == 0);
 	
 	tReqReady	= 1;
 	

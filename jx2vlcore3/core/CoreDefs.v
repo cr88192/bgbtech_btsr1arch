@@ -839,6 +839,7 @@ parameter[255:0] UVDDRT_FF		= UV256_FF;	//
 `define wire_ddrtile		wire[255:0]
 `define input_ddrtile		input[255:0]
 `define output_ddrtile		output[255:0]
+`define reg_ddrtile_pad		reg[269:0]		//pad to multiple of 18 bits
 `else
 parameter[127:0] UVDDRT_XX		= UV128_XX;	//
 parameter[127:0] UVDDRT_00		= UV128_00;	//
@@ -847,6 +848,13 @@ parameter[127:0] UVDDRT_FF		= UV128_FF;	//
 `define wire_ddrtile		wire[127:0]
 `define input_ddrtile		input[127:0]
 `define output_ddrtile		output[127:0]
+`define reg_ddrtile_pad		reg[143:0]		//pad to multiple of 18 bits
+`endif
+
+`ifdef jx2_mem_ddr32B
+`ifndef jx2_mem_line32B
+`define jx2_mem_line32to16		//Map 32B to 16B cache-lines
+`endif
 `endif
 
 `define def_true

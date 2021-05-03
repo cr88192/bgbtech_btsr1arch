@@ -250,7 +250,9 @@ void TK_FlushCacheL1D()
 	pptr=(u64 *)(((u64)pptr)&(~16777215));	/* Align */
 
 	TK_FlushCacheL1D_INVDC(NULL);
-	TK_FlushCacheL1D_ReadBuf(pptr, 65536);
+//	TK_FlushCacheL1D_ReadBuf(pptr, 65536);
+	TK_FlushCacheL1D_ReadBuf(pptr, 262144);
 	TK_FlushCacheL1D_INVDC(NULL);
-	TK_FlushCacheL1D_ReadBuf(pptr, 65536);
+//	TK_FlushCacheL1D_ReadBuf(pptr, 65536);
+	TK_FlushCacheL1D_ReadBuf(pptr, 262144);
 }

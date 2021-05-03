@@ -32,8 +32,8 @@ input [ 15:0]	memOpmIn;		//memory operation mode
 output[ 15:0]	memOpmOut;		//memory operation mode
 input [ 47:0]	memAddrIn;		//memory input address
 output[ 47:0]	memAddrOut;		//memory output address
-input [127:0]	memDataIn;		//memory input data
-output[127:0]	memDataOut;		//memory output data
+`input_tile		memDataIn;		//memory input data
+`output_tile	memDataOut;		//memory output data
 
 input [  7:0]	unitNodeId;		//Who Are We?
 
@@ -57,8 +57,8 @@ wire[ 15:0]		l2mOpmIn;
 wire[ 15:0]		l2mOpmOut;
 wire[ 47:0]		l2mAddrIn;
 wire[ 47:0]		l2mAddrOut;
-wire[127:0]		l2mDataIn;
-wire[127:0]		l2mDataOut;
+`wire_tile		l2mDataIn;
+`wire_tile		l2mDataOut;
 wire[  7:0]		l2mNodeId;
 wire			l2mDeadlockStrobe;
 
@@ -84,8 +84,8 @@ wire[ 15:0]		l2rOpmIn;
 wire[ 15:0]		l2rOpmOut;
 wire[ 47:0]		l2rAddrIn;
 wire[ 47:0]		l2rAddrOut;
-wire[127:0]		l2rDataIn;
-wire[127:0]		l2rDataOut;
+`wire_tile		l2rDataIn;
+`wire_tile		l2rDataOut;
 wire[  7:0]		l2rNodeId;
 
 RbiMemL2Rom		l2rom(
@@ -103,8 +103,8 @@ wire[ 15:0]		l2bOpmIn;
 wire[ 15:0]		l2bOpmOut;
 wire[ 47:0]		l2bAddrIn;
 wire[ 47:0]		l2bAddrOut;
-wire[127:0]		l2bDataIn;
-wire[127:0]		l2bDataOut;
+`wire_tile		l2bDataIn;
+`wire_tile		l2bDataOut;
 wire[  7:0]		l2bNodeId;
 
 RbiMemL2Mmio	l2mmio(
@@ -138,7 +138,7 @@ assign		l2mDataIn	= memDataIn;
 reg[ 15:0]		tL2mSeqOut;
 reg[ 15:0]		tL2mOpmOut;
 reg[ 47:0]		tL2mAddrOut;
-reg[127:0]		tL2mDataOut;
+`reg_tile		tL2mDataOut;
 
 assign		l2rSeqIn	= tL2mSeqOut;
 assign		l2rOpmIn	= tL2mOpmOut;
@@ -158,7 +158,7 @@ assign		l2bDataIn	= l2rDataOut;
 reg[ 15:0]		tL2bSeqOut;
 reg[ 15:0]		tL2bOpmOut;
 reg[ 47:0]		tL2bAddrOut;
-reg[127:0]		tL2bDataOut;
+`reg_tile		tL2bDataOut;
 
 assign		memSeqOut	= tL2bSeqOut;
 assign		memOpmOut	= tL2bOpmOut;

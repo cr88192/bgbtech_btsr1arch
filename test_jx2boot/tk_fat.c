@@ -2277,11 +2277,15 @@ int TKFAT_ListDir(TKFAT_ImageInfo *img, int clid)
 TKFAT_ImageInfo *TKFAT_CreateSdFatContext()
 {
 	TKFAT_ImageInfo *img;
+	int rt;
 
 	img=malloc(sizeof(TKFAT_ImageInfo));
 	memset(img, 0, sizeof(TKFAT_ImageInfo));
 	
-	TKSPI_InitDevice();
+	rt=TKSPI_InitDevice();
+	if(rt<=0)
+		return(NULL);
+	
 	TKFAT_ReadImageMBR(img);
 	TKFAT_ReadImageFAT(img);
 	

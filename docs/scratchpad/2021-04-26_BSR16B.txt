@@ -1,0 +1,12 @@
+BSR16: 16-bit BSR variant (possible, B).
+* Intended as a possible IO coprocessor for BJX2
+
+Overview:
+* 16-bit instructions;
+* 16x 16-bit GPRs
+** Most ALU ops will be 16-bit
+** Segmented address space: CS/PBR and DS/GBR
+* GPRs may (in certain cases) be used as 32-bit pairs.
+
+Issue:
+* How to access MMIO and the bus.

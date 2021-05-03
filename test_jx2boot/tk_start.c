@@ -177,9 +177,11 @@ void TK_FlushCacheL1D(void *ptr)
 	pptr=(void *)(((u64)ptr)&(~16777215));
 	
 	TK_FlushCacheL1D_INVDC(NULL);
-	TK_FlushCacheL1D_ReadBuf(pptr, 65536);
+//	TK_FlushCacheL1D_ReadBuf(pptr, 65536);
+	TK_FlushCacheL1D_ReadBuf(pptr, 262144);
 	TK_FlushCacheL1D_INVDC(NULL);
-	TK_FlushCacheL1D_ReadBuf(pptr, 65536);
+//	TK_FlushCacheL1D_ReadBuf(pptr, 65536);
+	TK_FlushCacheL1D_ReadBuf(pptr, 262144);
 
 	TK_FlushCacheL1D_INVIC(NULL);
 }

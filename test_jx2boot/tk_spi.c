@@ -487,39 +487,51 @@ int TKSPI_InitDevice(void)
 	static const char *hexchars="0123456789ABCDEF";
 	byte ocr[4];
 	byte s, cmd, ty;
-	u32 n, count;
+	u32 n, count, lim1;
 	
 	if(tkspi_init)
 		return(tkspi_init_ok);
 	tkspi_init=1;
 
-	printf("TKSPI_InitDevice: Init 1\n");
+	lim1=16384;
 
-	TKSPI_SetSpeed(0);
-
-	for (n=0; n<16384; n++)
-//	for (n=0; n<1024; n++)
-//	for (n=0; n<256; n++)
-		TKSPI_XchByte(0xFF);
-
-	TKSPI_SetSpeed(0);
-	TKSPI_SendCmd(MMC_CMD52, 1);
-	for (n=0; n<10; n++)
-		TKSPI_XchByte(0xFF);
-
-	printf("TKSPI_InitDevice: Init 2\n");
-
-//	count=256;
-	count=4096;
-	while(count>0)
+	while(1)
 	{
-		ty=0;
-		n=TKSPI_SendCmd(MMC_CMD0, 0);
-		count--;
-		if(n==0xFF)
-			continue;
-		if((n==0) || (n==1))
+		printf("TKSPI_InitDevice: Init 1\n");
+
+		TKSPI_SetSpeed(0);
+
+		for (n=0; n<lim1; n++)
+	//	for (n=0; n<16384; n++)
+	//	for (n=0; n<1024; n++)
+	//	for (n=0; n<256; n++)
+			TKSPI_XchByte(0xFF);
+
+		TKSPI_SetSpeed(0);
+		TKSPI_SendCmd(MMC_CMD52, 1);
+		for (n=0; n<10; n++)
+			TKSPI_XchByte(0xFF);
+
+		printf("TKSPI_InitDevice: Init 2\n");
+
+	//	count=256;
+		count=4096;
+		while(count>0)
+		{
+			ty=0;
+			n=TKSPI_SendCmd(MMC_CMD0, 0);
+			count--;
+			if(n==0xFF)
+				continue;
+			if((n==0) || (n==1))
+				break;
+		}
+		
+		if(n!=0xFF)
 			break;
+
+		printf("TKSPI_InitDevice: Retry\n");
+		lim1=1<<20;
 	}
 
 	if(n==1)

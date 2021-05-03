@@ -32,16 +32,16 @@ void *TKMM_MMList_AllocBrk(int sz)
 	if(sz>=TKMM_MAXMMLISTSZ)
 	{
 //		tk_puts("TKMM_MMList_AllocBrk A\n");
-		tk_printf("TKMM_MMList_AllocBrk A %d\n", sz);
+//		tk_printf("TKMM_MMList_AllocBrk A %d\n", sz);
 		ptr=TKMM_PageAlloc(sz);
 		
 		if(!ptr)
 		{
-			tk_puts("TKMM_MMList_AllocBrk A: Fail\n");
+//			tk_puts("TKMM_MMList_AllocBrk A: Fail\n");
 			return(NULL);
 		}
 
-		tk_printf("TKMM_MMList_AllocBrk A-1 %p..%p\n", ptr, ptr+sz);
+//		tk_printf("TKMM_MMList_AllocBrk A-1 %p..%p\n", ptr, ptr+sz);
 		
 		memset(ptr, 0, sz);
 

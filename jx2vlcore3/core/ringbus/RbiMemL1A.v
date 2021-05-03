@@ -97,8 +97,8 @@ input [ 15:0]	l2mOpmIn;		//memory operation mode
 output[ 15:0]	l2mOpmOut;		//memory operation mode
 input [ 47:0]	l2mAddrIn;		//memory input address
 output[ 47:0]	l2mAddrOut;		//memory output address
-input [127:0]	l2mDataIn;		//memory input data
-output[127:0]	l2mDataOut;		//memory output data
+`input_tile		l2mDataIn;		//memory input data
+`output_tile	l2mDataOut;		//memory output data
 
 input [  7:0]	unitNodeId;		//Who Are We?
 
@@ -153,9 +153,10 @@ assign	regOutExc	= tRegOutExc2;
 assign	regTraPc	= tRegTraPc2;
 
 reg[1:0]		tDcOutOK;
+reg[1:0]		tDcOutOK2;
 reg				tDcOutHold;
 reg				tDcBusWait;
-assign	dcOutOK		= tDcOutOK;
+assign	dcOutOK		= tDcOutOK2;
 assign	dcOutHold	= tDcOutHold;
 assign	dcBusWait	= tDcBusWait;
 
@@ -324,6 +325,7 @@ begin
 
 	tRegOutExc2		<= tRegOutExc;
 	tRegTraPc2		<= tRegTraPc;
+	tDcOutOK2		<= tDcOutOK;
 
 `ifndef def_true
 // `ifdef def_true

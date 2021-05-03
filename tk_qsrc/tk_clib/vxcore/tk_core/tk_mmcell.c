@@ -9,7 +9,7 @@ int TKMM_MMCell_AllocNewChunk(void)
 
 //	chk=TKMM_Malloc(sizeof(TKMM_MemCelChk));
 
-	tk_printf("TKMM_MMCell_AllocNewChunk: sz=%d\n", sizeof(TKMM_MemCelChk));
+//	tk_printf("TKMM_MMCell_AllocNewChunk: sz=%d\n", sizeof(TKMM_MemCelChk));
 
 	obj=TKMM_MMList_AllocObj(sizeof(TKMM_MemCelChk));
 	chk=(TKMM_MemCelChk *)(obj->data);

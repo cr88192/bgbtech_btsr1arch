@@ -668,7 +668,7 @@ __PDPCLIB_API__ void *memset(void *s, int c, size_t n)
 		{
 			((unsigned long long *)ct)[0]=v1;
 			((unsigned long long *)ct)[1]=v1;
-			ct+=15-(a&15);
+			ct+=16-(a&15);
 		}
 
 		n1=cte-ct;

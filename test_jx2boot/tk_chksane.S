@@ -116,6 +116,7 @@ X(tk_checksane_asm):
 	mov		lr, r1
 	mov.q	r1, (sp)
 
+	.L0A00:
 
 /* Stage 1, Basic ALU */
 	mov	0x12345678, r4

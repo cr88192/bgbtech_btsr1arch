@@ -42,6 +42,11 @@ int tk_mount_sdfat()
 	TK_MOUNT *mnt;
 
 	img=TKFAT_CreateSdFatContext();
+	if(!img)
+	{
+		printf("tk_mount_sdfat: failed\n");
+		return(0);
+	}
 
 	mnt=tk_alloc_mount();
 	mnt->vt=&tk_vfile_fat_vt;
@@ -49,6 +54,7 @@ int tk_mount_sdfat()
 	
 	mnt->next=tk_vf_mount;
 	tk_vf_mount=mnt;
+	return(1);
 }
 
 TK_MOUNT *tk_fat_mount(char *devfn, char *mntfn,

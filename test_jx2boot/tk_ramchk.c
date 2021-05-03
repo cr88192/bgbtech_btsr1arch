@@ -458,6 +458,27 @@ memset_fixed512_test:
 	MOV.X	R18, (R4, 112)
 //	ADD		128, R4
 	RTSU
+
+
+memcpy_movb_test:
+#if 0
+	CMP/GE	64, R6
+	BF		.L1
+	.L0:
+	MOV.B	(R5, 0), R16
+	MOV.B	(R5, 1), R18
+	MOV.B	(R5, 2), R20
+	MOV.B	(R5, 3), R22
+	ADD		4, R5		|	ADD		-4, R6
+	MOV.B	R16, (R4, 0)
+	MOV.B	R18, (R4, 1)
+	MOV.B	R20, (R4, 2)
+	MOV.B	R22, (R4, 3)
+	ADD		4, R4		|	CMP/GE	4, R6
+	BT		.L0
+	.L1:
+	RTSU
+#endif
 }
 
 int TK_RamBench()
@@ -465,6 +486,7 @@ int TK_RamBench()
 	byte *cs, *ct;
 //	int ci, cj, ck;
 	long long ci, cj;
+	u32 csum1, csum2;
 	int ck;
 	int tf, th, tl;
 	int i, j, k;
@@ -478,7 +500,8 @@ int TK_RamBench()
 
 //	memcpy(ct, cs, 1<<20);
 //	memcpy(ct, cs, 1<<17);
-	memcpy_movx_test(ct, cs, 1<<17);
+//	memcpy_movx_test(ct, cs, 1<<17);
+	memcpy_movx_test(ct, cs, 1<<18);
 
 //	cj = TK_GetTimeMs();
 	cj = TK_GetTimeUs();
@@ -489,7 +512,8 @@ int TK_RamBench()
 
 //		tf=25600/ck;
 //		tf=12800/ck;
-		tf=12800000/ck;
+//		tf=12800000/ck;
+		tf=25600000/ck;
 		th=tf/100;
 		tl=tf-(th*100);
 		printf("memcpy (DRAM): %dus, %d.%02d MB/s\n", ck, th, tl);
@@ -585,6 +609,24 @@ int TK_RamBench()
 #endif
 
 
+#if 1
+//	ci = TK_GetTimeMs();
+	ci = TK_GetTimeUs();
+
+	memset_movx_test(ct, cs, 1<<18);
+
+//	cj = TK_GetTimeMs();
+	cj = TK_GetTimeUs();
+	ck = cj-ci;
+	if(ck>0)
+	{
+		tf=25600000/ck;
+		th=tf/100;
+		tl=tf-(th*100);
+		printf("memset (DRAM): %dus, %d.%02d MB/s\n", ck, th, tl);
+	}
+#endif
+
 //	ci = TK_GetTimeMs();
 	ci = TK_GetTimeUs();
 
@@ -641,6 +683,18 @@ int TK_RamBench()
 		tl=tf-(th*100);
 		printf("memset (L2): %dus, %d.%02d MB/s\n", ck, th, tl);
 	}
+
+#if 1
+	memcpy_movx_test(ct, NULL, 32768);
+
+	csum1=TKPE_CalculateImagePel4BChecksum(NULL, 32768);
+	csum2=TKPE_CalculateImagePel4BChecksum(ct, 32768);
+	if(csum1!=csum2)
+	{
+		printf("Memcpy Checksum Fail %X!=%X\n", csum2, csum1);
+		__debugbreak();
+	}
+#endif
 
 	return(0);
 }

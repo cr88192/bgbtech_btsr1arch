@@ -1938,7 +1938,7 @@ Map:
 * 9Enm_go  MOV.L	(Rm, Ro), Rn
 * 9Enm_Go  MOVU.L	(Rm, Ro), Rn
 * 9Fnm_go  MOV.Q	(Rm, Ro), Rn
-* 9Fnm_Go  -
+* 9Fzz_Gn  (0R / 1R Space)
 
 
 Odd addresses may only encode a 16 or 24-bit operation.
