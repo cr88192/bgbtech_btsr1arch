@@ -2607,6 +2607,37 @@ begin
 					end
 `endif
 
+`ifdef jx2_enable_ldirot
+					4'b0100: begin		/* F2n4_Dejj */
+						opNmid		= JX2_UCMD_SHADQ3;
+						opFmid		= JX2_FMID_IMM4ZREG;
+						if(opExQ)
+						begin
+							opUCmdIx	= JX2_UCIX_SHAD_ROTLQ3;
+							opIty		= JX2_ITY_SW;
+						end
+						else
+						begin
+							opUCmdIx	= JX2_UCIX_SHAD_ROTL3;
+							opIty		= JX2_ITY_SB;
+						end
+					end
+					4'b0101: begin		/* F2n5_Dejj */
+						opNmid		= JX2_UCMD_SHADQ3;
+						opFmid		= JX2_FMID_IMM4NREG;
+						if(opExQ)
+						begin
+							opUCmdIx	= JX2_UCIX_SHAD_ROTLQ3;
+							opIty		= JX2_ITY_SW;
+						end
+						else
+						begin
+							opUCmdIx	= JX2_UCIX_SHAD_ROTL3;
+							opIty		= JX2_ITY_SB;
+						end
+					end
+`endif
+
 					default: begin
 					end
 				endcase
@@ -2633,14 +2664,16 @@ begin
 				begin
 					opNmid		= JX2_UCMD_MOV_IR;
 					opFmid		= JX2_FMID_IMM8REG;
-					opIty		= JX2_ITY_UW;
+//					opIty		= JX2_ITY_UW;
+					opIty		= JX2_ITY_UB;
 					opUCmdIx	= JX2_UCIX_LDI_LDIX;
 				end
 			end
 			3'b001: begin
 				opNmid		= JX2_UCMD_MOV_IR;
 				opFmid		= JX2_FMID_IMM8REG;
-				opIty		= JX2_ITY_NW;
+//				opIty		= JX2_ITY_NW;
+				opIty		= JX2_ITY_NB;
 				opUCmdIx	= JX2_UCIX_LDI_LDIX;
 			end
 			3'b010: begin
@@ -3188,6 +3221,39 @@ begin
 			opImm	= opImm_imm10n;
 			opRegN	= opRegN_Dfl;
 			opRegM	= JX2_GR_IMM;
+		end
+`endif
+		
+`ifdef jx2_enable_ldirot
+		JX2_FMID_IMM4ZREG: begin
+//			opImm	= opImm_imm10u;
+			opImm	= { opImm_imm10u[28:4], 8'h00 };
+			opRegM	= JX2_GR_R8IMMH;
+			opRegO	= JX2_GR_R8IMML;
+			opRegN	= opRegN_Dfl;
+//			if(opIty == JX2_ITY_SB)
+//				opRegO	= JX2_GR_R4IMM1;
+
+			opImm[7:0] = { 2'b00, opImm_imm10u[3:0], 2'b00 };
+			if(opIty == JX2_ITY_SB)
+				opImm[7:0] = { 3'b000, opImm_imm10u[3:0], 1'b0 };			
+			if(opIsJumbo)
+				opImm	= opImm_imm10u;
+		end
+
+		JX2_FMID_IMM4NREG: begin
+//			opImm	= opImm_imm10n;
+			opImm	= { opImm_imm10n[28:4], 8'h00 };
+			opRegM	= JX2_GR_R8IMMH;
+			opRegO	= JX2_GR_R8IMML;
+			opRegN	= opRegN_Dfl;
+//			if(opIty == JX2_ITY_SB)
+//				opRegO	= JX2_GR_R4IMM1;
+			opImm[7:0] = { 2'b00, opImm_imm10u[3:0], 2'b00 };
+			if(opIty == JX2_ITY_SB)
+				opImm[7:0] = { 3'b000, opImm_imm10u[3:0], 1'b0 };
+			if(opIsJumbo)
+				opImm	= opImm_imm10u;
 		end
 `endif
 		

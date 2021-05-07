@@ -109,6 +109,8 @@ int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
 	op->rm=rm_dfl;
 	op->imm=imm9us;
 
+	op->fl|=BJX2_OPFL_NOWEX;
+
 	ret=0;
 	switch((opw2>>12)&15)
 	{

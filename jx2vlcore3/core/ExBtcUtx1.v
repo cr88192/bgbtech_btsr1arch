@@ -169,14 +169,25 @@ begin
 		if(regValRs[15])
 		begin
 			tDoAlpha = 1;
-			tValMb = {
+`ifndef def_true
+			tValMa = {
 				regValRs[26], regValRs[21], regValRs[16],
 				regValRs[26], regValRs[21], regValRs[16],
 				regValRs[26], regValRs[21]	};
-			tValMa = {
+			tValNa = {
 				regValRs[10], regValRs[5], regValRs[0],
 				regValRs[10], regValRs[5], regValRs[0],
 				regValRs[10], regValRs[5]	};
+`endif
+
+// `ifdef def_true
+`ifndef def_true
+			tValMa = {
+				regValRs[26], regValRs[21], regValRs[16], 5'h0	};
+			tValNa = {
+				regValRs[10], regValRs[ 5], regValRs[ 0], 5'h0	};
+`endif
+
 		end
 `endif
 	end
@@ -245,10 +256,10 @@ begin
 	end
 	else
 	begin
+		tValSa = tValSelA ? tValNa : tValMa;
 		tValSr = tValSelB ? tValNr : tValMr;
 		tValSg = tValSelB ? tValNg : tValMg;
 		tValSb = tValSelB ? tValNb : tValMb;
-		tValSa = tValSelA ? tValNa : tValMa;
 	end
 `else
 	tValSr = tValSelB ? tValNr : tValMr;

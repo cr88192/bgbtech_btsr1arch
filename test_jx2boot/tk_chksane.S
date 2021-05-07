@@ -590,6 +590,39 @@ X(tk_checksane_asm):
 	mov	0x00000000AD208000, r18
 	mov	0xFFFFFFFFAD208000, r19
 
+#if 1
+	shad.q r16, 0, r6
+	shad.q r17, 0, r7
+
+	cmpqeq r6, r16
+	bf _checksane_fail_shad
+	cmpqeq r7, r17
+	bf _checksane_fail_shad
+
+	shld.q r16, 0, r6
+	shld.q r17, 0, r7
+
+	cmpqeq r6, r16
+	bf _checksane_fail_shad
+	cmpqeq r7, r17
+	bf _checksane_fail_shad
+#endif
+
+#if 1
+	shad	r16, 0, r6
+	shad	r17, 0, r7
+
+	cmpqeq r6, r16
+	bf _checksane_fail_shad
+	cmpqeq r7, r17
+	bf _checksane_fail_shad
+
+	shld	r11, 0, r6
+	cmpqeq	r6, r11
+	bf _checksane_fail_shad
+
+#endif
+
 	shld.q r11, 12, r6
 	shld r6, -12, r7
 

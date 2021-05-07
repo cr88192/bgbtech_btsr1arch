@@ -56,6 +56,10 @@ parameter[5:0] JX2_GR_R47		= 6'h2F;
 parameter[5:0] JX2_GR_DLR		= 6'h20;
 parameter[5:0] JX2_GR_DHR		= 6'h21;
 
+// parameter[5:0] JX2_GR_R4IMM1	= 6'h2C;		//Shift-4 Immed, Rot1
+// parameter[5:0] JX2_GR_R4IMM2	= 6'h2D;		//Shift-4 Immed, Rot2
+parameter[5:0] JX2_GR_R8IMMH	= 6'h2C;		//Shift Immed, High Part
+parameter[5:0] JX2_GR_R8IMML	= 6'h2D;		//Shift Immed, Low Part
 parameter[5:0] JX2_GR_JIMM		= 6'h2E;
 parameter[5:0] JX2_GR_SP		= 6'h2F;
 
@@ -228,6 +232,9 @@ parameter[31:0] UV32_FF			= 32'hFFFFFFFF;	//
 parameter[32:0] UV33_00			= 33'h000000000;	//
 parameter[32:0] UV33_FF			= 33'h1FFFFFFFF;	//
 
+parameter[35:0] UV36_00			= 36'h0_00000000;	//
+parameter[35:0] UV36_FF			= 36'hF_FFFFFFFF;	//
+
 parameter[39:0] UV40_00			= 40'h00_00000000;	//
 parameter[39:0] UV40_FF			= 40'hFF_FFFFFFFF;	//
 
@@ -245,6 +252,14 @@ parameter[55:0] UV56_FF			= 56'hFFFFFF_FFFFFFFF;	//
 
 parameter[56:0] UV57_00			= 57'h00000000_00000000;	//
 parameter[56:0] UV57_FF			= 57'h01FFFFFF_FFFFFFFF;	//
+
+parameter[57:0] UV58_00			= 58'h00000000_00000000;	//
+parameter[57:0] UV58_FF			= 58'h03FFFFFF_FFFFFFFF;	//
+
+parameter[58:0] UV59_00			= 59'h00000000_00000000;	//
+parameter[58:0] UV59_FF			= 59'h07FFFFFF_FFFFFFFF;	//
+
+
 
 parameter[62:0] UV63_00			= 63'h00000000_00000000;	//
 parameter[62:0] UV63_FF			= 63'h7FFFFFFF_FFFFFFFF;	//
@@ -404,6 +419,7 @@ IMM8REG, Fz
 	UB: Fzeo_jjjj		Ro, Imm16u, Ro
 	UW: Fzeo_jjjj		Imm16u, Ro, Ro
 
+	NB: Fzeo_jjjj		Ro, Imm16n, Ro
 	NW: Fzeo_jjjj		Imm16n, Ro, Ro
 
 	SQ: Fzze_zznz_iiii	Rn, Imm17s, Rn

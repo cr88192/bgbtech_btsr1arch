@@ -16,7 +16,8 @@ typedef signed short s16;
 typedef unsigned int u32;
 typedef signed int s32;
 
-int	mb_used = 12;
+// int	mb_used = 12;
+int	mb_used = 20;
 
 dt_scrpix	*screen;
 
@@ -1855,10 +1856,17 @@ void I_DrawFramerate()
 	t0=I_GetTimeMs();
 	dt=t0-i_lastframems;
 	i_lastframems=t0;
+
+//	dt=100;
+
 	if((dt<=0) || (dt>=1000))
 		return;
 	
+//	dt=100;
+	
 	fps=1000/dt;
+
+//	__debugbreak();
 
 	HU_DrawDecNum(320-12, 2, fps, 2);
 

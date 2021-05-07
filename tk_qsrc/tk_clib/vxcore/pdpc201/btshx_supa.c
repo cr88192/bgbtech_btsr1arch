@@ -713,6 +713,19 @@ void __exita(int status)
 
 u32 TK_GetTimeMs(void)
 {
+#if 1
+	u64 *sreg;
+	u64 us;
+	int ms;
+
+	sreg=(u64 *)0xF000E000;
+	us=sreg[0];
+	us=(us*131)>>7;		//correct for (us>>10) vs us/1000.
+	ms=us>>10;
+	return(ms);
+#endif
+
+#if 0
 	u32 *sreg;
 	u32 us_lo, us_hi;
 	u64 us;
@@ -731,10 +744,22 @@ u32 TK_GetTimeMs(void)
 //	ms=(P_AIC_RTC_NSEC>>20)|(P_AIC_RTC_SEC_LO*1000);
 //	ms=sreg[4];
 	return(ms);
+#endif
 }
 
 s64 TK_GetTimeUs(void)
 {
+#if 1
+	u64 *sreg;
+	u64 us;
+	int ms;
+
+	sreg=(u64 *)0xF000E000;
+	us=sreg[0];
+	return(us);
+#endif
+
+#if 0
 	u32 *sreg;
 	u32 us_lo, us_hi;
 	u64 us;
@@ -752,6 +777,7 @@ s64 TK_GetTimeUs(void)
 //	ms=sreg[4];
 //	return(ms);
 	return(us);
+#endif
 }
 
 s64 TK_GetTimeCycles(void)

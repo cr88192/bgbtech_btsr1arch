@@ -266,9 +266,8 @@ BoxOnPlaneSide:
 	CSELT		R16, R17, R18	|	CSELT		R17, R16, R19
 									TEST		2, R7
 	CSELT		R16, R17, R22	|	CSELT		R17, R16, R23
-	MOVHLD		R22, R18, R20	|	MOVHLD		R23, R19, R22
-									MOVU.L		(R4, 8), R16
-									MOVU.L		(R5, 8), R17
+	MOVHLD		R22, R18, R20	|	MOVU.L		(R4, 8), R16
+	MOVHLD		R23, R19, R22	|	MOVU.L		(R5, 8), R17
 									TEST		4, R7
 	CSELT		R16, R17, R21	|	CSELT		R17, R16, R23
 	/* R21:R20 = cmins, R23:R22=cmaxs */

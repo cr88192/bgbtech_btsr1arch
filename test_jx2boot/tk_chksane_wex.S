@@ -97,15 +97,31 @@ X(tk_checksane_wex_asm):
 
 	mov #0x5678, r4
 	mov #0xCDEF, r5
+	mov #0xFFFFFFFFFFFFCDEF, r6
 
-	shld r0, 16, r0		| shld r1, 16, r1
-	shld r0, -16, r0	| shld r1, -16, r1
+	shad r1, 16, r20	| shld r0, 16, r16		| shld r1, 16, r17
+	shad r20, -16, r21	| shld r16, -16, r18	| shld r17, -16, r19
 
-	cmpeq r0, r4
+	cmpeq r18, r4
 	break?f
-	cmpeq r1, r5
+	cmpeq r19, r5
+	break?f
+	cmpeq r21, r6
 	break?f
 
+#if 1
+	mov #0x091A2B3C, r4
+	mov #0x44D5E6F7, r5
+
+	shad.q r1, -1, r18	| shld.q r0, -1, r16	| shld.q r1, -1, r17
+
+	cmpeq r18, r5
+	break?f
+	cmpeq r16, r4
+	break?f
+	cmpeq r17, r5
+	break?f
+#endif
 
 	.L3:
 
@@ -163,6 +179,21 @@ X(tk_checksane_wex_asm):
 
 	.L5:
 
+.fix32_on
+
+	mov		0x2BCC, r7
+	and		r9, 0x7FFE, r4
+
+	cmpeq r4, r7
+	break?f
+	cmpeq 0x2BCC, r7
+	break?f
+
+.fix32_off
+
+//	break
+
+	.L6:
 	
 	wexmd #0
 

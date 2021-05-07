@@ -1854,11 +1854,18 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 				i=BGBCC_JX2_ConstConvFloatToHalf(j, &usk);
 				if(i>0)
 				{
+					BGBCC_JX2C_EmitOpImmReg(ctx, sctx,
+						BGBCC_SH_NMID_FLDCH,
+						usk, dreg);
+					return(1);
+
+#if 0
 					BGBCC_JX2_EmitLoadDrImm(sctx, usk);
 					BGBCC_JX2C_EmitOpRegReg(ctx, sctx,
 						BGBCC_SH_NMID_FLDCH,
 						BGBCC_SH_REG_R0, dreg);
 					return(1);
+#endif
 				}
 			}
 

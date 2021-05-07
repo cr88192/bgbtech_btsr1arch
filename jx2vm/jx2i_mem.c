@@ -776,7 +776,8 @@ bjx2_addr BJX2_MemTranslateTlb(BJX2_Context *ctx, bjx2_addr addr)
 //	if((addr>>32)==0)
 	if(((addr>>32)&0xFFFF)==0x0000)
 	{
-		if(((addr>>28)&15)==0xF)
+//		if(((addr>>28)&15)==0xF)
+		if((((addr>>28)&15)==0xF) && !(ctx->regs[BJX2_REG_SR]&(1<<31)))
 		{
 			return(addr);
 		}
@@ -787,6 +788,9 @@ bjx2_addr BJX2_MemTranslateTlb(BJX2_Context *ctx, bjx2_addr addr)
 		{
 			return(addr);
 		}
+	}
+	if(((addr>>32)&0xFFFF)==0xF000)
+	{
 	}
 #endif
 

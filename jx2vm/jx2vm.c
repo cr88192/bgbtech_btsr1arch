@@ -965,6 +965,7 @@ int main(int argc, char *argv[])
 	BJX2_MemDefineGfxCon(ctx,	"CGFX",	0xF00A0000U, 0xF00BFFFFU);
 
 #ifndef BJX2_ADDR32
+// #if 0
 //	BJX2_MemDefineMmgp(ctx,		"MMGP",	0xFFFFFFFFA000E000, 0xFFFFFFFFA000E3FF);
 //	BJX2_MemDefineSndSblk(ctx,	"SBAU",	0xFFFFFFFFA0080000, 0xFFFFFFFFA0081FFF);
 //	BJX2_MemDefineGfxCon(ctx,	"CGFX",	0xFFFFFFFFA00A0000, 0xFFFFFFFFA00AFFFF);
@@ -975,6 +976,14 @@ int main(int argc, char *argv[])
 	BJX2_MemDefineSmus(ctx,		"SMUS",	0xFFFFF008C000, 0xFFFFF008FFFF);
 	BJX2_MemDefineSndAuPcm(ctx,	"SPCM",	0xFFFFF0090000, 0xFFFFF009FFFF);
 	BJX2_MemDefineGfxCon(ctx,	"CGFX",	0xFFFFF00A0000, 0xFFFFF00BFFFF);
+#endif
+	
+#ifndef BJX2_ADDR32
+	BJX2_MemDefineMmgp(ctx,		"MMGP",	0xF0000000E000, 0xF0000000E3FF);
+	BJX2_MemDefineSndSblk(ctx,	"SBAU",	0xF00000080000, 0xF00000081FFF);
+	BJX2_MemDefineSmus(ctx,		"SMUS",	0xF0000008C000, 0xF0000008FFFF);
+	BJX2_MemDefineSndAuPcm(ctx,	"SPCM",	0xF00000090000, 0xF0000009FFFF);
+	BJX2_MemDefineGfxCon(ctx,	"CGFX",	0xF000000A0000, 0xF000000BFFFF);
 #endif
 	
 	if(ifn)

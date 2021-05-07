@@ -650,18 +650,21 @@ __PDPCLIB_API__ void *memset(void *s, int c, size_t n)
 // #if 0
 //	v=((int)s)|n;
 	a=(int)(((long)s)|n);
-//	if(!(a&7))
-	if(!(a&15))
+	if(!(a&7))
+//	if(!(a&15))
 	{
 		memset_movx(s, c, n);
 		return(s);
 	}
+#endif
 
+// #ifdef __BJX2__
+#if 0
 //	if(n>=256)
 	if(n>=1024)
 	{
 		v1=c; v1|=(v1<<8); v1|=(v1<<16); v1|=(v1<<32);
-		ct=s; cte=s+n;
+		ct=s; cte=ct+n;
 
 		a=(int)((long)s);
 		if(a&15)
@@ -683,6 +686,8 @@ __PDPCLIB_API__ void *memset(void *s, int c, size_t n)
 		ct+=n1;
 		while(ct<cte)
 			{ *ct++=c; }
+
+		return (s);
 	}else
 	{
 //		v=c; v|=(v<<8); v|=(v<<16);

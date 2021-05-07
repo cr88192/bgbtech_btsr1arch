@@ -21,6 +21,10 @@ vluint64_t main_time = 0;
 // #define USE_SDL
 #endif
 
+// #define JX2_SKIP_L2_MODEL			//skip trying to model L2 behavior.
+// #define JX2_L2_MISS_CYC		30	//skip trying to model L2 behavior.
+#define JX2_L2_MISS_CYC		10		//skip trying to model L2 behavior.
+
 
 typedef unsigned char byte;
 typedef signed char sbyte;
@@ -995,7 +999,8 @@ void MemUpdateForBusRing()
 //	l2Epoch = (main_time>>9)&15;
 //	l2Epoch = (main_time>>13)&15;
 	l2Epoch = (main_time>>15)&15;
-	
+
+#ifndef JX2_SKIP_L2_MODEL
 //	sx=((l2seq1*65521)>>16)&4095;
 	sx=((l2seq1*65521)>>16)&7;
 	if((l2opm1&255) && (l2m_seqhash[sx]!=l2seq1))
@@ -1143,7 +1148,8 @@ void MemUpdateForBusRing()
 				{
 					l2dc_miss_ix=ix;
 					l2dc_miss_addr=addr;
-					l2dc_miss_cyc=30;
+//					l2dc_miss_cyc=30;
+					l2dc_miss_cyc=JX2_L2_MISS_CYC;
 					l2dc_miss_seq=l2seq1;
 
 					l2dc_miss_ldb=0;
@@ -1180,7 +1186,7 @@ void MemUpdateForBusRing()
 				l2dc_miss_seq=0;
 		}
 	}
-
+#endif
 	
 	if(isMmio==1)
 	{

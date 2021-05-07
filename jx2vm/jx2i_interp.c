@@ -117,7 +117,7 @@ void BJX2_ContextFreeTrace(BJX2_Context *ctx, BJX2_Trace *tmp)
 	ctx->free_tr=tmp;
 }
 
-BJX2_Trace *BJX2_GetTraceForAddr(BJX2_Context *ctx, bjx2_addr addr)
+BJX2_Trace *BJX2_GetTraceForAddr(BJX2_Context *ctx, bjx2_addr addr, int fl)
 {
 	BJX2_Trace *cur, *prv, *tmp;
 	int i, h;
@@ -196,7 +196,7 @@ BJX2_Trace *BJX2_GetTraceForAddr(BJX2_Context *ctx, bjx2_addr addr)
 
 	ctx->rttr[h&63]=cur;
 
-	i=BJX2_DecodeTraceForAddr(ctx, cur, addr);
+	i=BJX2_DecodeTraceForAddr(ctx, cur, addr, fl);
 	if(i<0)
 	{
 		ctx->rttr[h&63]=NULL;
@@ -2148,7 +2148,7 @@ int BJX2_DbgDump(BJX2_Context *ctx)
 		{
 			pc=ctx->pclog[(ctx->pclogrov-32+i)&63];
 			ctx->trapc=pc;
-			cur=BJX2_GetTraceForAddr(ctx, pc);
+			cur=BJX2_GetTraceForAddr(ctx, pc, 0);
 			BJX2_DbgPrintTrace(ctx, cur);
 		}
 	}
@@ -2251,7 +2251,7 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 			}
 			
 			ctx->trapc=pc;
-			cur=BJX2_GetTraceForAddr(ctx, pc);
+			cur=BJX2_GetTraceForAddr(ctx, pc, 0);
 
 			if(ctx->status)
 			{

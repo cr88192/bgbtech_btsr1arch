@@ -317,6 +317,7 @@ s32 cur_fpscr;		//current FPSCR state
 s32 cur_srmode;		//current SR mode
 byte dfl_dq;
 byte use_wexmd;		//WEX Profile Mode
+u16 use_wexdbg;		//WEX Debug Options
 
 s64 image_base;		//image base address
 int gbr_rva;		//GBR base address

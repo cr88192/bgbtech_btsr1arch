@@ -160,7 +160,8 @@ __udivdi3:
 
 	.L1:
 	add		#-1, r18		| shll1		r5
-	shld.q	r4, #-63, r2	| shll1		r4
+	shld.q	r4, #-63, r2
+	shll1	r4
 	or		r2, r5			| or		r6, r4
 	cmpqgt	r5, r17
 	movnt	r6				| sub		r5, r17, r7

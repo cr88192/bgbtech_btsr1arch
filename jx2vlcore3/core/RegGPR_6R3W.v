@@ -473,8 +473,31 @@ begin
 //		end
 `endif
 
+// `ifdef jx2_enable_ldirot
+`ifndef def_true
+		JX2_GR_R4IMM1, JX2_GR_R4IMM2: begin
+			tValRsA={
+				regValImmA[32]?UV36_FF:UV36_00,
+				regValImmA[31:4]
+				};
+			tValRsZz=1;
+		end
+`endif
+
+`ifdef jx2_enable_ldirot
+// `ifndef def_true
+		JX2_GR_R8IMMH: begin
+			tValRsA={
+				regValImmA[32]?UV40_FF:UV40_00,
+				regValImmA[31:8]
+				};
+			tValRsZz=1;
+		end
+`endif
+
 //		default: 	tValRsA=UV64_XX;
-		default: 	tValRsA=tValRsA0;
+//		default: 	tValRsA=tValRsA0;
+		default: 	tValRsA=UV64_00;
 	endcase
 	
 	casez(regIdRt)
@@ -508,8 +531,30 @@ begin
 //		end
 `endif
 
+// `ifdef jx2_enable_ldirot
+`ifndef def_true
+		JX2_GR_R4IMM1: begin
+			tValRtA={ UV59_00, regValImmA[3:0], 1'b0 };
+			tValRtZz=1;
+		end
+		JX2_GR_R4IMM2: begin
+			tValRtA={ UV58_00, regValImmA[3:0], 2'b0 };
+			tValRtZz=1;
+		end
+`endif
+
+`ifdef jx2_enable_ldirot
+// `ifndef def_true
+		JX2_GR_R8IMML: begin
+			tValRtA={ UV56_00, regValImmA[7:0] };
+			tValRtZz=1;
+		end
+`endif
+
+
 //		default: 	tValRtA=UV64_XX;
-		default: 	tValRtA=tValRtA0;
+//		default: 	tValRtA=tValRtA0;
+		default: 	tValRtA=UV64_00;
 	endcase
 
 	casez(regIdRu)
@@ -532,8 +577,20 @@ begin
 			tValRuZz=1;
 		end
 
+// `ifdef jx2_enable_ldirot
+`ifndef def_true
+		JX2_GR_R4IMM1, JX2_GR_R4IMM2: begin
+			tValRuA={
+				regValImmB[32]?UV36_FF:UV36_00,
+				regValImmB[31:4]
+				};
+			tValRuZz=1;
+		end
+`endif
+
 //		default: 	tValRuA=UV64_XX;
-		default: 	tValRuA=tValRuA0;
+//		default: 	tValRuA=tValRuA0;
+		default: 	tValRuA=UV64_00;
 	endcase
 
 	casez(regIdRv)
@@ -556,8 +613,21 @@ begin
 			tValRvZz=1;
 		end
 
+// `ifdef jx2_enable_ldirot
+`ifndef def_true
+		JX2_GR_R4IMM1: begin
+			tValRvA={ UV59_00, regValImmB[3:0], 1'b0 };
+			tValRvZz=1;
+		end
+		JX2_GR_R4IMM2: begin
+			tValRvA={ UV58_00, regValImmB[3:0], 2'b0 };
+			tValRvZz=1;
+		end
+`endif
+
 //		default: 	tValRvA=UV64_XX;
-		default: 	tValRvA=tValRvA0;
+//		default: 	tValRvA=tValRvA0;
+		default: 	tValRvA=UV64_00;
 	endcase
 
 	casez(regIdRx)
@@ -580,8 +650,19 @@ begin
 			tValRxZz=1;
 		end
 
+// `ifdef jx2_enable_ldirot
+`ifndef def_true
+		JX2_GR_R4IMM1, JX2_GR_R4IMM2: begin
+			tValRxA={
+				regValImmC[32]?UV36_FF:UV36_00,
+				regValImmC[31:4]
+				};
+			tValRxZz=1;
+		end
+`endif
 //		default: 	tValRxA=UV64_XX;
-		default: 	tValRxA=tValRxA0;
+//		default: 	tValRxA=tValRxA0;
+		default: 	tValRxA=UV64_00;
 	endcase
 
 	casez(regIdRy)
@@ -604,8 +685,21 @@ begin
 			tValRyZz=1;
 		end
 
+// `ifdef jx2_enable_ldirot
+`ifndef def_true
+		JX2_GR_R4IMM1: begin
+			tValRyA={ UV59_00, regValImmC[3:0], 1'b0 };
+			tValRyZz=1;
+		end
+		JX2_GR_R4IMM2: begin
+			tValRyA={ UV58_00, regValImmC[3:0], 2'b0 };
+			tValRyZz=1;
+		end
+`endif
+
 //		default: 	tValRyA=UV64_XX;
-		default: 	tValRyA=tValRyA0;
+//		default: 	tValRyA=tValRyA0;
+		default: 	tValRyA=UV64_00;
 	endcase
 
 `ifdef def_true

@@ -702,6 +702,22 @@ Load Immediate with Shift.
 The value in DLR is shifted left 16 bits, and the low bits are set according to the pattern value given.
 
 
+=== LDIROz{Q} (Possible) ===
+
+* F2n4_Chjj  LDIROZ		#imm10u, Rn
+* F2n4_CHjj  LDIROZQ	#imm10u, Rn
+* F2n5_Chjj  LDIRON		#imm10n, Rn
+* F2n5_CHjj  LDIRONQ	#imm10n, Rn
+
+Load Rotated Immediate.
+
+The high-order bits of the immediate will be rotated-left by a shift given in the low 4 bits.
+
+If E.Q is Clear, then a 32-bit rotate will be used and the value will be shifted by a multiple of 2 bits.
+
+If E.Q is Set, then a 64-bit rotate will be used and the value will be shifted by a multiple of 4 bits.
+
+
 === MOV ===
 
 MOV, GPR

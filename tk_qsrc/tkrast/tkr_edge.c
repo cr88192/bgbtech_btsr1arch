@@ -96,7 +96,7 @@ __asm {
 TKRA_ScaleClrStepRcp:
 	PSHUF.W		R5, 0, R6		//(0000)
 	PMULU.HW	R4, R6, R2
-	RTSU
+	RTS
 
 TKRA_CalcClrStepRcp:
 	MOV		0xFFFEFFFEFFFEFFFE, R3

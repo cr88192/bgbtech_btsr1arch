@@ -895,7 +895,8 @@ int BGBCC_JX2C_PackBlockLZ4(BGBCC_TransState *ctx,
 		
 		if(bgbcc_packlz_cmp==6)
 		{
-			if(rl>=268)
+//			if(rl>=268)
+			if(rl>=256)
 			{
 				tg=0xF1;
 				*ct++=tg;

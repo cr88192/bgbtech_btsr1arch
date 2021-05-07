@@ -1015,11 +1015,11 @@ int main (int argc, char **argv)
 
 	tk_puts("Q Main\n");
 
-	Sys_CheckSanityB();
+//	Sys_CheckSanityB();
 
 	COM_InitEndianSwap();
 
-	Sys_CheckSanity();
+//	Sys_CheckSanity();
 
 	tk_puts("Q A0-0\n");
 

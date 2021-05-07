@@ -714,6 +714,13 @@ bool BGBCC_CCXL_IsRegImmIntP(
 			return(false);
 		}
 
+		if(	((reg.val&CCXL_REGINT_STMASK)==CCXL_REGINT_ST_L) ||
+			((reg.val&CCXL_REGINT_STMASK)==CCXL_REGINT_ST_UL) )
+		{
+			li=BGBCC_CCXL_GetRegImmLongValue(ctx, reg);
+			return(((s32)li)==li);
+		}
+
 		if(	((reg.val&CCXL_REGINT_STMASK)==CCXL_REGINT_ST_SB) ||
 			((reg.val&CCXL_REGINT_STMASK)==CCXL_REGINT_ST_UB) ||
 			((reg.val&CCXL_REGINT_STMASK)==CCXL_REGINT_ST_SS) ||

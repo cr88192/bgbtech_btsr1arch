@@ -119,6 +119,189 @@ byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz)
 	return(ct);
 }
 
+#ifndef __BJX2__
+byte *TKPE_UnpackL6(byte *ct, byte *ibuf, int isz)
+	{ return(TKPE_UnpackL4(ct, ibuf, isz)); }
+#endif
+
+#ifdef __BJX2__
+byte *TKPE_UnpackL6(byte *ct, byte *ibuf, int isz);
+
+__asm {
+TKPE_UnpackL6:
+//	cs=ibuf; cse=ibuf+isz;
+	WEXMD	2
+	ADD		R5, R6, R7
+	.L0:
+
+	/* Fetch Token Byte */
+	MOVU.B	(R5, 0), R16
+	MOVU.B	(R5, 1), R17
+	ADD		1, R5
+	SHLD	R16, -4, R18	|	AND		R16, 15, R19
+	/* Fetch Extended Length */
+	CMPEQ	15, R18
+	ADD?T	R17, R18		|	ADD?T	1, R5
+	ADD		R5, R18, R22
+	MOV		R4,	R20			|	MOV		R5,	R21
+	ADD		R18, R4			|	ADD		R18, R5
+	/* Copy Literal Bytes */
+	.L1:
+	MOV.Q	(R21, 0), R16
+	MOV.Q	(R21, 8), R17
+	ADD		16, R21
+	MOV.Q	R16, (R20, 0)
+	MOV.Q	R17, (R20, 8)
+	ADD		16, R20
+	CMPGT	R21, R22
+	BT		.L1
+
+	MOVU.W	(R5, 0), R18
+	MOVU.B	(R5, 2), R17
+	ADD		R5, 1, R23
+	ADD		2, R5
+
+	/* Hit end of buffer yet? */
+	CMPGT	R23, R7
+	BF		.Done
+	CMPEQ	15, R19
+	ADD?T	1, R5		| ADD?T	R17, R19
+	ADD		4, R19
+
+	/* Zero-Distance Cases? */
+	TEST	R18, R18
+	BF		.Copy
+	CMPEQ	5, R19
+	BT		.Cont
+	BRA		.Done
+
+	.Cont:
+	CMPGT	R5, R7
+	BT		.L0
+
+	.Done:
+	MOV		R4, R2
+	RTS
+
+/* Match Copy Stuff */
+
+	/* R4=Dest, R5=Source, R18=Dist, R19=Length */
+	.Copy:
+	ADD		R4, R19, R22	| SUB		R4, R18, R21
+	MOV		R4,	R20
+	ADD		R19, R4
+	CMPGE	8, R18
+	BF		.CopyRLE
+	CMPGE	16, R18
+	BF		.CopyL1S
+
+#if 1
+	.CopyL1:
+	MOV.Q	(R21, 0), R16
+	MOV.Q	(R21, 8), R17
+	ADD		16, R21
+	MOV.Q	R16, (R20, 0)
+	MOV.Q	R17, (R20, 8)
+	ADD		16, R20
+	CMPGT	R20, R22
+	BT		.CopyL1
+	BRA		.Cont
+#endif
+
+#if 1
+	.CopyL1S:
+	MOV.Q	(R21, 0), R16
+	MOV.Q	R16, (R20, 0)
+	MOV.Q	(R21, 8), R17
+	MOV.Q	R17, (R20, 8)
+	ADD		16, R21
+	ADD		16, R20
+	CMPGT	R20, R22
+	BT		.CopyL1S
+	BRA		.Cont
+#endif
+
+#if 0
+	.CopyL1:
+	MOV.B	(R21), R16
+	ADD		1, R21
+	MOV.B	R16, (R20)
+	ADD		1, R20
+	CMPGT	R20, R22
+	BT		.CopyL1
+	BRA		.Cont
+#endif
+	
+	.CopyRLE:
+
+#if 1
+	CMPEQ	1, R18
+	BT		.CopyRLE1
+	CMPEQ	2, R18
+	BT		.CopyRLE2
+	CMPEQ	4, R18
+	BT		.CopyRLE4
+//	CMPEQ	3, R18
+//	BT		.CopyRLE3
+#endif
+
+#if 1
+	MOV.Q		(R21), R16
+	.CopyRLE_L1:
+	MOV.Q	R16, (R20, 0)
+	ADD		R18, R20
+	CMPGT	R20, R22
+	BT		.CopyRLE_L1
+	BRA		.Cont
+#endif
+
+#if 0
+	.CopyRLE_L1:
+	MOV.B	(R21), R16
+	ADD		1, R21
+	MOV.B	R16, (R20, 0)
+	ADD		1, R20
+	CMPGT	R20, R22
+	BT		.CopyRLE_L1
+	BRA		.Cont
+#endif
+	
+	.CopyRLE1:
+	MOVU.B		(R21), R16
+	PSHUF.B		R16, 0x00, R16
+	PSHUF.W		R16, 0x00, R16
+	BRA			.CopyRLEN_L1
+	.CopyRLE2:
+	MOVU.W		(R21), R16
+	PSHUF.W		R16, 0x00, R16
+	BRA			.CopyRLEN_L1
+	.CopyRLE4:
+	MOVU.L		(R21), R16
+	MOVLLD		R16, R16, R16
+	BRA			.CopyRLEN_L1
+
+	.CopyRLE3:
+	MOVU.L		(R21), R16
+	MOV			6, R18
+//	MOV			0x00FFFFFF, R0
+//	AND			R0, R16
+	SHLD		R16, 8, R3		|	SHLD		R16, 24, R17
+	SHLD		R3, -8, R16
+	OR			R17, R16
+	BRA			.CopyRLE_L1
+
+	NOP
+
+	.CopyRLEN_L1:
+	MOV.Q	R16, (R20, 0)
+	MOV.Q	R16, (R20, 8)
+	ADD		16, R20
+	CMPGT	R20, R22
+	BT		.CopyRLEN_L1
+	BRA		.Cont
+};
+
+#endif
 
 void W_MatchCopy2(byte *dst, int sz, int d)
 {
@@ -459,6 +642,13 @@ byte *TKPE_UnpackBuffer(byte *ct, byte *ibuf, int isz, int cmp)
 	byte *ct1;
 	int rsz;
 
+#ifdef __BJX2__
+	if(cmp==6)
+	{
+		return(TKPE_UnpackL6(ct, ibuf, isz));
+	}
+#endif
+
 //	if(cmp==4)
 	if((cmp==4) || (cmp==6))
 	{
@@ -752,6 +942,8 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 	}else
 	{
 		mach=tkfat_getWord(tbuf+2);
+		if(mach==0x364C)
+			{ is_pel4=1; cmp=6; }
 		if(mach==0x344C)
 			{ is_pel4=1; cmp=4; }
 		if(mach==0x334C)

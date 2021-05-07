@@ -60,6 +60,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	ctx->uctx=shctx;
 
 	ctx->pel_cmpr=4;
+//	ctx->pel_cmpr=6;
 
 	shctx->tctx=ctx;
 	shctx->is_le=1;
@@ -100,6 +101,9 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 //	shctx->use_wexmd=1;
 	shctx->use_wexmd=0;
 	shctx->no_wexify=0;
+	shctx->use_wexdbg=0;
+
+	shctx->no_wexify=1;		//Debug
 
 //	shctx->fpu_gfp=1;
 //	shctx->is_pbo=1;
@@ -140,6 +144,9 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		{ shctx->has_alux=1; }
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "fpux"))
 		{ shctx->has_fpux=1; }
+
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "wexify"))
+		{ shctx->no_wexify=0; }
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "ops24"))
 		{ shctx->has_ops24=1; }
@@ -1367,12 +1374,15 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 		BGBCC_JX2C_EmitLabelFlushRegisters(ctx, sctx);
 
 		sctx->is_leaf&=(~4);
+		sctx->is_fixed32&=~16;
 
 //		ctx->lfn=op->imm.str;
 		BGBCC_JX2C_AssembleBuffer(ctx, sctx, op->imm.str);
 
 		BGBCC_JX2C_EmitSyncRegisters(ctx, sctx);
 		BGBCC_JX2C_EmitLabelFlushRegisters(ctx, sctx);
+
+		sctx->is_fixed32&=~16;
 		break;
 
 	default:
@@ -4974,7 +4984,8 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 //	BGBCC_JX2_SetSectionName(sctx, ".rsrc");
 //	BGBCC_JX2_EmitNamedLabel(sctx, "__rsrc_start");
 
-	if(sctx->is_pbo)
+//	if(sctx->is_pbo)
+	if(1)
 	{
 		/*
 		 * Emit pointer to self at the start of ".data"

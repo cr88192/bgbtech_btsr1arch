@@ -617,11 +617,15 @@ u64 TKRA_ConvBlockDxt1ToUtx2A(u64 blk)
 	int x, y, z;
 	int i, j, k;
 	
-	clra=(blk>> 0)&65535;
-	clrb=(blk>>16)&65535;
+//	clra=(blk>> 0)&65535;
+//	clrb=(blk>>16)&65535;
+	clra=(u16)(blk    );
+	clrb=(u16)(blk>>16);
 	
 	clrc=((clra>>1)&0x7FE0)|(clra&0x001F);
 	clrd=((clrb>>1)&0x7FE0)|(clrb&0x001F);
+	
+//	__debugbreak();
 	
 //	rek=0x2130;
 //	rek=0x1230;
@@ -681,6 +685,7 @@ u64 TKRA_ConvBlockDxt1ToUtx2A(u64 blk)
 #endif
 	
 	blk2=((u64)clrc) | (((u64)clrd)<<16) | (((u64)pxb)<<32);
+//	__debugbreak();
 	return(blk2);
 }
 
@@ -693,8 +698,10 @@ u64 TKRA_ConvBlockDxt1ToUtx2B(u64 blk)
 	int x, y, z;
 	int i, j, k;
 	
-	clra=(blk>> 0)&65535;
-	clrb=(blk>>16)&65535;
+//	clra=(blk>> 0)&65535;
+//	clrb=(blk>>16)&65535;
+	clra=(u16)(blk    );
+	clrb=(u16)(blk>>16);
 	
 	clrc=((clra>>1)&0x7FE0)|(clra&0x001F);
 	clrd=((clrb>>1)&0x7FE0)|(clrb&0x001F);

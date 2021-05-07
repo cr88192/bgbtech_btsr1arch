@@ -2233,6 +2233,30 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 			*rcs=cs2;
 			return(1);
 		}
+
+		if(!strcmp(tk0, "I.fix32") ||
+			!strcmp(tk0, "I.fix32_on"))
+		{
+			ctx->is_fixed32|=16;
+
+			cs2=cs1;
+			while(*cs2 && (*cs2!='\r') && (*cs2!='\n'))
+				cs2++;
+			*rcs=cs2;
+			return(1);
+		}
+
+		if(!strcmp(tk0, "I.endfix32") ||
+			!strcmp(tk0, "I.fix32_off"))
+		{
+			ctx->is_fixed32&=~16;
+
+			cs2=cs1;
+			while(*cs2 && (*cs2!='\r') && (*cs2!='\n'))
+				cs2++;
+			*rcs=cs2;
+			return(1);
+		}
 		
 		ctx->tctx->n_error++;
 		printf("unexpected token '%s'\n", tk0+1);

@@ -119,7 +119,8 @@ __udivsi3_i:
 
 	.L1:
 	add		#-1, r18		| shll1		r5
-	shld	r4, #-31, r2	| shll1		r4
+	shld	r4, #-31, r2
+	shll1	r4
 	or		r2, r5			| or		r6, r4
 	cmpgt	r5, r17
 	movnt	r6				| sub		r5, r17, r7

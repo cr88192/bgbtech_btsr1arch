@@ -145,7 +145,7 @@ __vnf_v2f_cross:
 	FLDCF	R6, R7
 	FLDCFH	R6, R3
 	FSUB	R7, R3, R2
-	RTSU
+	RTS
 
 __vnf_c2f_mul:
 	MOVLHD	R5, R5, R6		//{    Bi,     Br}

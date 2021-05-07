@@ -196,6 +196,7 @@ reg			tlbIs32b;
 reg			tlbIs48b;
 
 reg			tAddrIsMMIO;
+reg			tAddrIsHiMMIO;
 reg			tAddrIsLo4G;
 reg			tAddrIsHi4G;
 reg			tAddrIsPhys;
@@ -326,8 +327,11 @@ begin
 
 	tAddrIsLo4G		= (tRegInAddr[47:32] == 16'h0000);
 	tAddrIsHi4G		= (tRegInAddr[47:32] == 16'hFFFF);
-	tAddrIsMMIO		= (tRegInAddr[31:28] == 4'hF) &&
-		(tAddrIsLo4G || tAddrIsHi4G || tlbIs32b);
+//	tAddrIsHiMMIO	= (tRegInAddr[47:32] == 16'hF000);
+	tAddrIsHiMMIO	= (tRegInAddr[47:44] == 4'hF) && tlbIs48b;
+	tAddrIsMMIO		= ((tRegInAddr[31:28] == 4'hF) &&
+		((tAddrIsLo4G && tlbIs32b) || tAddrIsHi4G || tlbIs32b)) ||
+		tAddrIsHiMMIO;
 	tAddrIsPhys		= (tAddrIsHi4G && !tRegInAddr[31]) ||
 		(tRegInAddr[47:44] == 4'hC);
 

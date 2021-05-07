@@ -129,7 +129,7 @@ tkra_mkvec2sfv:
 	MOVLD	R21, R20, R2
 //	MOVLD	R23, R22, R3
 
-	RTSU
+	RTS
 
 tkra_mkvec4sfv:
 	MOV.Q	(R4), R5
@@ -1982,6 +1982,7 @@ int tkra_clamp255(int v)
 {
 	if(v<0)v=0;
 	if(v>255)v=255;
+//	__debugbreak();
 	return(v);
 }
 

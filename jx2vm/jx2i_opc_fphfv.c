@@ -1082,6 +1082,53 @@ int TKRA_GetPixel444A3_Alpha(int a)
 u64 	tkra_utx2_cachedblka[64];
 u64		tkra_utx2_cachedpels[64][16];
 
+byte	tkra_utx2_tab511_a[32] = {
+	0x00,	0x02,	0x05,	0x08,
+	0x0B,	0x0D,	0x10,	0x13,
+	0x16,	0x18,	0x1B,	0x1E,
+	0x21,	0x23,	0x26,	0x29,
+	0x2C,	0x2E,	0x31,	0x34,
+	0x37,	0x39,	0x3C,	0x3F,
+	0x42,	0x44,	0x47,	0x4A,
+	0x4D,	0x4F,	0x52,	0x55
+};
+
+byte	tkra_utx2_tab511_b[32] = {
+	0x00,	0x05,	0x0B,	0x10,
+	0x16,	0x1B,	0x21,	0x26,
+	0x2C,	0x31,	0x37,	0x3C,
+	0x42,	0x47,	0x4D,	0x52,
+	0x58,	0x5D,	0x63,	0x68,
+	0x6E,	0x73,	0x79,	0x7E,
+	0x84,	0x89,	0x8F,	0x94,
+	0x9A,	0x9F,	0xA5,	0xAA
+};
+
+u64	TKRA_Utx2Blend511(u64 clra, u64 clrb)
+{
+	u64 clrc;
+	int cra, crb, ca;
+	int cga, cgb, cr;
+	int cba, cbb, cg;
+	int caa, cab, cb;
+	
+	caa=(clra>>(56+3))&31;			cab=(clrb>>(56+3))&31;
+	cra=(clra>>(40+3))&31;			crb=(clrb>>(40+3))&31;
+	cga=(clra>>(24+3))&31;			cgb=(clrb>>(24+3))&31;
+	cba=(clra>>( 8+3))&31;			cbb=(clrb>>( 8+3))&31;
+	caa=tkra_utx2_tab511_a[caa];	cab=tkra_utx2_tab511_b[cab];
+	cra=tkra_utx2_tab511_a[cra];	crb=tkra_utx2_tab511_b[crb];
+	cga=tkra_utx2_tab511_a[cga];	cgb=tkra_utx2_tab511_b[cgb];
+	cba=tkra_utx2_tab511_a[cba];	cbb=tkra_utx2_tab511_b[cbb];
+	ca=caa+cab;		cr=cra+crb;
+	cg=cga+cgb;		cb=cba+cbb;
+	ca=ca|(ca<<8);	cr=cr|(cr<<8);
+	cg=cg|(cg<<8);	cb=cb|(cb<<8);
+	clrc=	(((u64)ca)<<48) | (((u64)cr)<<32) |
+			(((u64)cg)<<16) | (((u64)cb)<< 0) ;
+	return(clrc);
+}
+
 u64 TKRA_CachedBlkUtx2(u64 blk, int ix)
 {
 	u64 tca[4];
@@ -1109,12 +1156,15 @@ u64 TKRA_CachedBlkUtx2(u64 blk, int ix)
 	clra=tkra_rgbupck64(pxa);
 	clrb=tkra_rgbupck64(pxb);
 
-	clrc=tkra_pmuluhw(clra, 0xAAAAAAAAAAAAAAAAULL);
-	clrd=tkra_pmuluhw(clrb, 0xAAAAAAAAAAAAAAAAULL);
-	clrp=tkra_pmuluhw(clra, 0x5555555555555555ULL);
-	clrq=tkra_pmuluhw(clrb, 0x5555555555555555ULL);
-	clrc+=clrq;
-	clrd+=clrp;
+	clrc=TKRA_Utx2Blend511(clrb, clra);
+	clrd=TKRA_Utx2Blend511(clra, clrb);
+
+//	clrc=tkra_pmuluhw(clra, 0xAAAAAAAAAAAAAAAAULL);
+//	clrd=tkra_pmuluhw(clrb, 0xAAAAAAAAAAAAAAAAULL);
+//	clrp=tkra_pmuluhw(clra, 0x5555555555555555ULL);
+//	clrq=tkra_pmuluhw(clrb, 0x5555555555555555ULL);
+//	clrc+=clrq;
+//	clrd+=clrp;
 
 	tca[0]=clrb;
 	tca[1]=clrd;

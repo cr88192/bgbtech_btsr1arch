@@ -131,6 +131,7 @@ reg[9:0]		uartNextRxHoldByte;
 
 reg				mmioInOE;
 reg				mmioInWR;
+reg				mmioInQ;
 
 reg				mmioInLastOE;
 reg				mmioInLastWR;
@@ -157,6 +158,7 @@ begin
 	tMmioLowCSel		= (tMmioAddr[27:16]==12'h000);
 	mmioInOE			= (tMmioOpm[3]) && tMmioLowCSel;
 	mmioInWR			= (tMmioOpm[4]) && tMmioLowCSel;
+	mmioInQ				= tMmioOpm[1:0]==3;
 
 	uartNextFracTimer	= uartFracTimer;
 	uartStepTimer		= 0;
@@ -435,7 +437,10 @@ begin
 			if(mmioInOE)
 				tMmioOK			= UMEM_OK_OK;
 //			tMmioOutData	= timer1MHz[31:0];
-			tMmioOutData	= timer1MHz[63:0];
+//			tMmioOutData	= timer1MHz[63:0];
+			tMmioOutData = {
+				mmioInQ ? timer1MHz[63:32] : UV32_00,
+				timer1MHz[31:0] } ;
 		end
 		16'hE004: begin
 			if(mmioInOE)

@@ -307,6 +307,28 @@ begin
 	tPwmOut = tOutEnable ? { tPwmStCfR, tPwmStCfL } : 2'b11;
 //	tPwmOut = tOutEnable ? { tPwmStCfR, tPwmStCfL } : { tClk1kHz, tClk1kHz };
 
+`ifdef jx2_cpu_mmioclock_50
+	case(tRegCtrl0[7:4])
+		4'h0: tNxtClkDivRst= 6250;
+		4'h1: tNxtClkDivRst= 4535;
+		4'h2: tNxtClkDivRst= 3125;
+		4'h3: tNxtClkDivRst= 2268;
+		4'h4: tNxtClkDivRst= 1562;
+		4'h5: tNxtClkDivRst= 1134;
+		4'h6: tNxtClkDivRst=  781;
+		4'h7: tNxtClkDivRst=  567;
+		4'h8: tNxtClkDivRst=  390;
+		4'h9: tNxtClkDivRst= 1042;
+		4'hA: tNxtClkDivRst=  390;
+		4'hB: tNxtClkDivRst=  521;
+		4'hC: tNxtClkDivRst=  390;
+		4'hD: tNxtClkDivRst=  390;
+		4'hE: tNxtClkDivRst=  390;
+		4'hF: tNxtClkDivRst=  390;
+	endcase
+`endif
+
+`ifdef jx2_cpu_mmioclock_100
 	case(tRegCtrl0[7:4])
 		4'h0: tNxtClkDivRst=12500;
 		4'h1: tNxtClkDivRst= 9070;
@@ -325,6 +347,7 @@ begin
 		4'hE: tNxtClkDivRst=  781;
 		4'hF: tNxtClkDivRst=  781;
 	endcase
+`endif
 
 //	if(tClkDivCnt==6250)
 //	if(tClkDivCnt==tClkDivRst)
@@ -459,14 +482,16 @@ begin
 //`ifndef def_true
 `ifdef def_true
 	tPcmAddValL = 
-		{ tPcmValL[15] ? 2'b11 : 2'b00, tPcmValL[15:2] } +
+//		{ tPcmValL[15] ? 2'b11 : 2'b00, tPcmValL[15:2] } +
+		{ tPcmValL[15], tPcmValL[15:1] } +
 //		{ tAuxPcmL[ 7] ? 2'b11 : 2'b00, tAuxPcmL, 3'h0, tTimerNoise, 2'h0 };
 //		{ tAuxPcmL[ 7] ? 2'b11 : 2'b00, tAuxPcmL[7:2], tTimerNoise, 7'h0 };
 //		{ tAuxPcmL[ 7] ? 2'b11 : 2'b00, tAuxPcmL[7:0], tTimerNoiseC, 5'h0 };
 		{ tAuxPcmL[ 7] ? 2'b11 : 2'b00, tAuxPcmL[7:3], tTimerNoiseC, 8'h0 };
 //		{ tAuxPcmL[ 7] ? 2'b11 : 2'b00, tAuxPcmL[7:2], tTimerNoiseC, 7'h0 };
 	tPcmAddValR =
-		{ tPcmValR[15] ? 2'b11 : 2'b00, tPcmValR[15:2] } +
+//		{ tPcmValR[15] ? 2'b11 : 2'b00, tPcmValR[15:2] } +
+		{ tPcmValR[15], tPcmValR[15:1] } +
 //		{ tAuxPcmR[ 7] ? 2'b11 : 2'b00, tAuxPcmR, 3'h0, tTimerNoise, 2'h0 };
 //		{ tAuxPcmR[ 7] ? 2'b11 : 2'b00, tAuxPcmR, 3'h0, tTimerNoiseC, 2'h0 };
 //		{ tAuxPcmR[ 7] ? 2'b11 : 2'b00, tAuxPcmR[7:0], tTimerNoiseC, 5'h0 };

@@ -321,9 +321,16 @@ void tkra_glColor3f(tkra_f32 red, tkra_f32 green, tkra_f32 blue)
 	int cr, cg, cb, ca;
 	u32 px;
 
-	cr=tkra_clamp255((int)(red*255));
-	cg=tkra_clamp255((int)(green*255));
-	cb=tkra_clamp255((int)(blue*255));
+	cr=(int)(red*255);
+	cg=(int)(green*255);
+	cb=(int)(blue*255);
+	cr=tkra_clamp255(cr);
+	cg=tkra_clamp255(cg);
+	cb=tkra_clamp255(cb);
+
+//	cr=tkra_clamp255((int)(red*255));
+//	cg=tkra_clamp255((int)(green*255));
+//	cb=tkra_clamp255((int)(blue*255));
 	ca=255;
 	px=(ca<<24)|(cr<<16)|(cg<<8)|cb;
 
@@ -354,10 +361,19 @@ void tkra_glColor4f(tkra_f32 red, tkra_f32 green, tkra_f32 blue, tkra_f32 alpha)
 	int cr, cg, cb, ca;
 	u32 px;
 
-	cr=tkra_clamp255((int)(red*255));
-	cg=tkra_clamp255((int)(green*255));
-	cb=tkra_clamp255((int)(blue*255));
-	ca=tkra_clamp255((int)(alpha*255));
+	cr=(int)(red*255);
+	cg=(int)(green*255);
+	cb=(int)(blue*255);
+	ca=(int)(alpha*255);
+	cr=tkra_clamp255(cr);
+	cg=tkra_clamp255(cg);
+	cb=tkra_clamp255(cb);
+	ca=tkra_clamp255(ca);
+
+//	cr=tkra_clamp255((int)(red*255));
+//	cg=tkra_clamp255((int)(green*255));
+//	cb=tkra_clamp255((int)(blue*255));
+//	ca=tkra_clamp255((int)(alpha*255));
 	px=(ca<<24)|(cr<<16)|(cg<<8)|cb;
 
 	ctx=TKRA_GetCurrentContext();

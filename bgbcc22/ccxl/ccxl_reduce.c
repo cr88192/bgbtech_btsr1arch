@@ -2140,6 +2140,25 @@ BCCX_Node *BGBCC_CCXL_ReduceForm(BGBCC_TransState *ctx,
 		}
 #endif
 
+#if 1
+		if(BGBCC_CCXL_IsIntP(ctx, rn))
+		{
+			i=BCCX_GetIntCst(rn, &bgbcc_rcst_value, "value");
+			if(i==0)
+			{
+				if(	!bgbcp_strcmp1(s, "+") ||
+					!bgbcp_strcmp1(s, "-") ||
+					!bgbcp_strcmp1(s, "|") ||
+					!bgbcp_strcmp1(s, "^") ||
+					!bgbcp_strcmp1(s, "<<") ||
+					!bgbcp_strcmp1(s, ">>")	)
+				{
+					return(ln);
+				}
+			}
+		}
+#endif
+
 		x=BGBCP_BinaryExpr(s, ln, rn);
 		return(x);
 	}

@@ -280,13 +280,13 @@ void *TKMM_PageAllocV(int sz)
 	TK_SysArg ar[4];
 	void *p;
 	
-	tk_printf("TKMM_PageAllocV: sz=%d\n", sz);
+//	tk_printf("TKMM_PageAllocV: sz=%d\n", sz);
 	
 	p=NULL;
 	ar[0].i=sz;
 	tk_syscall(NULL, TK_UMSG_PAGEALLOC, &p, ar);
 
-	tk_printf("TKMM_PageAllocV: Vp=%p, p=%p\n", &p, p);
+//	tk_printf("TKMM_PageAllocV: Vp=%p, p=%p\n", &p, p);
 
 	return(p);
 }
@@ -459,8 +459,8 @@ void *TKMM_Malloc(int sz)
 	if(((s64)ptr)&TKMM_PAGEMASK)
 		__debugbreak();
 
-	tk_printf("TKMM_Malloc: pass D %X %X %d\n",
-		obj, obj->data, sz);
+//	tk_printf("TKMM_Malloc: pass D %X %X %d\n",
+//		obj, obj->data, sz);
 
 //	if(!TKMM_PageAlloc_f)
 //		__debugbreak();

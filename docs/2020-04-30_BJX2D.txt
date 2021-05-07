@@ -350,18 +350,32 @@ Addresses in the MMIO range will be masked to 28 bits, which will be used as the
 
 Access to MMIO will require being in Supervisor mode, and will not be subject to address translation via the MMU.
 
-In 48-bit Mode, the address space will be extended (bits 32..47):
-* 0000: Behaves the same as in 32-bit mode.
-* 0001..7FFF: Userland (MMU).
+In 48-bit Mode, the address space will be extended (bits 32..47, Old):
+* / 0000: Behaves the same as in 32-bit mode.
+* / 0001..7FFF: Userland (MMU).
 * 8000..BFFF: System (MMU).
-* C000..FBFF: System (No MMU; Absolute ~ 46-bit address).
-* FC00..FFFF: Expanded Processor/Chipset/MMIO.
-** This supports a 42-bit MMIO Space.
-** FC00_0zzz_zzzz will identity map to Fzzz_zzzz.
+* / C000..FBFF: System (No MMU; Absolute ~ 46-bit address).
+* C000..CFFF: System (No MMU; Absolute 44-bit address).
+* D000..EFFF: Reserved.
+* / FC00..FFFF: Expanded Processor/Chipset/MMIO.
+** / This supports a 42-bit MMIO Space.
+** / FC00_0zzz_zzzz will identity map to Fzzz_zzzz.
+* F000..FFFF: Expanded Processor/Chipset/MMIO (44-bit).
+
+In 48-bit Mode (MMU), the address space will be extended (bits 32..47):
+* 0000..7FFF: Userland (MMU).
+* 8000..BFFF: System (MMU).
+* C000..CFFF: System (No MMU; 44-bit physical address).
+* D000..EFFF: Reserved.
+* F000..FFFF: Expanded Processor/Chipset/MMIO (44-bit MMIO Address).
+** FFFF_Fzzz_zzzz will identity map to Fzzz_zzzz (28-bit MMIO Address).
 
 
 If more DRAM exists than fits into the low 2GB, then addresses above the 4GB mark will be used for DRAM. It will be implementation defined how the DRAM region below the 2GB mark maps into this larger space.
 
+Change:
+* If JQ is Set, the MMIO range at 0000Fzzzzzzz will be disabled. In this case, the entire 47 bit userland will behave as a contiguous address range.
+* The 44-bit Expanded MMIO range will only be enabled if JQ is Set.
 
 
 === MMU ===
@@ -1671,10 +1685,12 @@ F2zz Instruction Block  (Imm9 Block):
 * F2nz_Dfjj
 ** F2n0_Dfjj  ADD{D}	#imm10u, Rn				//Rn=Rn+Imm10u
 ** F2n1_Dfjj  ADD{D}	#imm10n, Rn				//Rn=Rn+Imm10n
-** F2n2_Dfjj  MUL{S/U}.W	#imm10u, Rn				//Rn=Rn*Imm10u
-** F2n3_Dfjj  MUL{S/U}.W	#imm10n, Rn				//Rn=Rn*Imm10n
-** F2n4_Dfjj  -
-** F2n5_Dfjj  -
+** F2n2_Dfjj  MUL{S/U}.W	#imm10u, Rn			//Rn=Rn*Imm10u
+** F2n3_Dfjj  MUL{S/U}.W	#imm10n, Rn			//Rn=Rn*Imm10n
+** F2n4_Dfjj ? LDIROZ{Q}	#imm10u, Rn			//Load + ROTL
+** F2n5_Dfjj ? LDIRON{Q}	#imm10n, Rn			//Load + ROTL
+** F2n6_Dfjj  -
+** F2n7_Dfjj  -
 * F2nz_Efjj
 * F2nz_Ffjj
 

@@ -54,6 +54,8 @@
 `define jx2_do_convfp16_alu
 `define jx2_enable_conv2_alu
 
+`define jx2_enable_ldirot			//Enable LDIROz
+
 
 `define jx2_enable_wex3w				//Enable 3-wide WEX support
 `define jx2_enable_wex					//Enable WEX support (general)

@@ -828,8 +828,13 @@ int BGBCC_JX2_CheckOps32SequenceOnly(
 	BGBCC_JX2_Context *sctx,
 	int opw1, int opw2, int opw3, int opw4)
 {
-	return(BGBCC_JX2_CheckOps32SequenceOnlyB(sctx,
-		opw1, opw2, opw3, opw4, 0));
+	int rt;
+	
+	rt=BGBCC_JX2_CheckOps32SequenceOnlyB(sctx,
+		opw1, opw2, opw3, opw4, 1);
+	if(rt!=0)
+		return(1);
+	return(0);
 }
 
 /* Return true if this operation is immovable and must remain in place. */
@@ -1268,14 +1273,14 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix(
 		case 2:		case 3:		ret=1;	break;
 		case 4:		case 5:		ret=1;	break;
 		case 6:		case 7:		ret=1;	break;
+		case 8:		case 9:		ret=0;	break;
 		default:
 			break;
 		}
 		return(ret);
 
 //		return(0);
-
-		return(1);
+//		return(1);
 	}
 	return(0);
 }

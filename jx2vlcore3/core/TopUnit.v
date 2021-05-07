@@ -157,7 +157,8 @@ wire aud_mono_ena1;
 assign	aud_mono_out	= aud_mono_out1 ? 1'bz : 1'b0;
 // assign	aud_mono_out = aud_mono_out1;
 // assign	aud_mono_en		= 1'b1;
-assign	aud_mono_en		= aud_mono_ena1;
+assign	aud_mono_en			= aud_mono_ena1;
+//assign	aud_mono_en		= !aud_mono_ena1;
 
 wire	clock_300mhz;
 wire	clock_200mhz;

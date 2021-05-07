@@ -258,21 +258,25 @@ begin
 			case(opUIxt[3:0])
 				4'b0000: begin /* LDIx */
 					tRegIdRn1	= regIdRm;
-					tRegValRn1	= {
-						regValImm[32] ? UV32_FF : UV32_00,
-						regValImm[31:0] };
+//					tRegValRn1	= {
+//						regValImm[32] ? UV32_FF : UV32_00,
+//						regValImm[31:0] };
+					tRegValRn1	= regValRt;
 				end
 				4'b0001: begin /* LDISH8 */
 					tRegIdRn1	= regIdRm;
-					tRegValRn1	= { regValRs[55:0], regValImm[7:0] };
+//					tRegValRn1	= { regValRs[55:0], regValImm[7:0] };
+					tRegValRn1	= { regValRs[55:0], regValRt[7:0] };
 				end
 				4'b0010: begin /* LDISH16 */
 					tRegIdRn1	= regIdRm;
-					tRegValRn1	= { regValRs[47:0], regValImm[15:0] };
+//					tRegValRn1	= { regValRs[47:0], regValImm[15:0] };
+					tRegValRn1	= { regValRs[47:0], regValRt[15:0] };
 				end
 				4'b0011: begin /* LDISH32 */
 					tRegIdRn1	= regIdRm;
-					tRegValRn1	= { regValRs[31:0], regValImm[31:0] };
+//					tRegValRn1	= { regValRs[31:0], regValImm[31:0] };
+					tRegValRn1	= { regValRs[31:0], regValRt[31:0] };
 				end
 
 				default: begin
