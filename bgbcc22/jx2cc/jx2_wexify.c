@@ -950,6 +950,9 @@ int BGBCC_JX2_CheckOps32ValidWexSuffixFl(
 	if((opw1&0xFE00)==0xFE00)
 		return(0);
 
+	if((opw1&0xFE00)==0xFA00)
+		return(0);
+
 
 	if((opw1&0xF000)==0xF000)
 	{
@@ -1246,7 +1249,8 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix(
 			switch(opw1&15)
 			{
 			case 0x0:	case 0x1:
-			case 0x2:	case 0x3:
+			case 0x2:
+//			case 0x3:
 				ret=1;
 				break;
 

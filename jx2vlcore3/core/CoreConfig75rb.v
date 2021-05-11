@@ -9,61 +9,44 @@
 
 // `define jx2_enable_dualcore			//Enable Second Core
 
-// `define jx2_agu_bra32				//Use 32-bit branches
-
-`define jx2_agu_bra48				//Enable 48-bit branches
-
-
 `define jx2_cpu_halfclock				//Reduce CPU core clock speed by half
 // `define jx2_cpu_masterclock_150			//Use 150MHz Master Clock
 
 // `define jx2_cpu_masterclock_100			//Use 100MHz Master Clock
-`define jx2_cpu_masterclock_50			//Use 50MHz Master Clock
+// `define jx2_cpu_masterclock_50			//Use 50MHz Master Clock
+`define jx2_cpu_masterclock_75			//Use 50MHz Master Clock
 
 // `define jx2_cpu_mmioclock_150		//Use 150MHz MMIO Clock
 // `define jx2_cpu_mmioclock_100		//Use 100MHz MMIO Clock
 // `define jx2_cpu_mmioclock_75			//Use 75MHz MMIO Clock
 `define jx2_cpu_mmioclock_50		//Use 50MHz MMIO Clock
 
-// `define jx2_cpu_ddrclock_150		//Use 150MHz DDR Clock
-`define jx2_cpu_ddrclock_100		//Use 100MHz DDR Clock
-
+`define jx2_cpu_ddrclock_150		//Use 150MHz DDR Clock
+// `define jx2_cpu_ddrclock_100		//Use 100MHz DDR Clock
 
 // `define jx2_mem_useddrb			//Use newer DDR controller.
 
 // `define jx2_mem_line32B				//Use 32-byte cache line
 // `define jx2_mem_ddr32B				//Use 32-byte DDR line
 
-`define jx2_mem_fasttdown			//Faster teardown
-
-
-// `define jx2_mem_jnexbuf			//Extra Buffer Y Joiner
-`define jx2_mem_jnfastbuf			//Fast Buffer Y Joiner
-
-// `define jx2_mmio_exbuf			//Extra Buffer For MMIO
-
-// `define jx2_mem_l2exldcyc		//Extra L2 Load Cycle
-// `define jx2_mem_l2exstcyc		//Extra L2 Store Cycle
+`define jx2_mmio_exbuf				//Extra Buffer For MMIO
 
 // `define jx2_mem_fwstore			//Store Forwarding
-
-`define jx2_mem_l1d_fwstore			//Store Forwarding
-`define jx2_mem_l1d_fwarray			//Block Array Forwarding
 
 // `define jx2_mem_fulldpx				//Full Duplex Mode
 // `define jx2_mem_fulldpx_syncb	//Full Duplex, Sync L2 AddrB
 
 // `define jx2_mem_l1dsz_1024		//L1 D$ is 1024 entries
-`define jx2_mem_l1dsz_512			//L1 D$ is 512 entries
+// `define jx2_mem_l1dsz_512			//L1 D$ is 512 entries
 // `define jx2_mem_l1dsz_256		//L1 D$ is 256 entries
 // `define jx2_mem_l1dsz_128		//L1 D$ is 128 entries
-// `define jx2_mem_l1dsz_64			//L1 D$ is 64 entries
+`define jx2_mem_l1dsz_64			//L1 D$ is 64 entries
 
 
-`define jx2_mem_l1isz_512			//L1 I$ is 512 entries
-// `define jx2_mem_l1isz_256			//L1 I$ is 256 entries
-// `define jx2_mem_l1isz_128		//L1 I$ is 128 entries
-// `define jx2_mem_l1isz_64			//L1 I$ is 64 entries
+// `define jx2_mem_l1isz_512		//L1 I$ is 512 entries
+// `define jx2_mem_l1isz_256		//L1 I$ is 256 entries
+// `define jx2_mem_l1isz_128			//L1 I$ is 128 entries
+`define jx2_mem_l1isz_64			//L1 I$ is 64 entries
 
 // `define jx2_expand_l2sz			//Make L2 Bigger
 
@@ -79,8 +62,6 @@
 // `define jx2_mem_l2skip			//Skip L2 Cache
 
 `define jx2_mem_l2d2way				//Use 2-Way L2 Cache
-
-
 
 // `ifndef def_true
 `ifdef def_true

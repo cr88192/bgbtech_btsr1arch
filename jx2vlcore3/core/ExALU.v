@@ -1252,12 +1252,14 @@ begin
 			tResult2T = tFCmpGtP;
 			tResult1S = tSub2ZF;
 
+`ifdef jx2_alu_wx
 			if(idUIxt[5:4]==2'b10)
 			begin
 				tResult1T	= tFCmpxGtP;
 				tResult2T	= tFCmpxGtP;
 			end
-			
+`endif
+
 			if(idUIxt[5:4]==2'b11)
 			begin
 				tResult1T	= tFCmpGtP_FA;

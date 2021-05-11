@@ -198,6 +198,8 @@ begin
 		end
 		
 		JX2_UCMD_MUL3: begin
+			tRegIdRn2	= regIdRm;					//
+			tRegValRn2	= regValMulRes[63:0];		//
 		end
 
 		JX2_UCMD_FLDCX: begin

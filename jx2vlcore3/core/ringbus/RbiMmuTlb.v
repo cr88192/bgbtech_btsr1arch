@@ -537,10 +537,10 @@ begin
 		$display("TLB(A) %X -> %X", tRegInAddr, tlbAddr);
 	end
 
-	if(tRegInIsBounce && !tAddrIsMMIO)
-	begin
+//	if(tRegInIsBounce && !tAddrIsMMIO)
+//	begin
 //		tRegOutOpm   = UMEM_OPM_LDTLB;
-	end
+//	end
 	
 	if(tRegInIsINVTLB || reset)
 	begin

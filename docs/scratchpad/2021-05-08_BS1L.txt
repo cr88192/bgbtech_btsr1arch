@@ -1,0 +1,134 @@
+General Idea:
+* "BS1L", BGBScript-Lite
+* Lightweight script language similar to the original BGBScript.
+* In its base form, the language should not require a complex implementation or runtime.
+* Will be primarily dynamically typed.
+** Purpose will be scripting, not implementation.
+** Conventional static types may exist in certain contexts.
+* The impementation will not require a full garbage collector.
+** Reference counting will be used as the primary GC strategy.
+
+Syntax:
+* Will use a C family syntax similar to the original BGBScript or ECMAScript.
+* Will probably use 'var' for both variable and function declarations.
+** Variables declared with var will be mutable by default.
+* A variable may also be declared 'const'.
+** A const variable may not be modified.
+** Values from any visible const value may be propagated during compilation.
+
+Examples:
+ var x0 = 10;			//variable, modifiable
+ var x1 = "String";		//string
+ var x2 = [1, 2, 3]; 	//array, immutable
+ var x3 = {foo: 1, bar: 2, baz: 3};  //object, immutable
+ var func1(a, b)
+	{ return(a+b); }	//function, normal form
+ var func2(a, b) a+b;	//function, compact / "one liner" form
+ const y0 = 10;			//constant, 'y0' may not be modified
+ z0 = var(a, b) a+b;	//create a lambda (no capture)
+ z1 = var(a)	a+x;	//create a lambda (captures x)
+ ...
+
+Dynamic Types:
+* Fixnum: Integer value, nominally 62 bits.
+* Flonum: Floating point value, roughly double precision.
+** May lose several bits of precison.
+* String: String literal.
+** String values are implicitly immutable.
+** Accessing a string with array notation may access codepoints.
+* Array: Array of values.
+* Object: Collection of Key/Value associations.
+** An object may be either mutable or immutable.
+** Assigning a non-existent field in a mutable object will create it.
+
+Arrays:
+* May be accessed with an integer index, limited to the size of the array.
+* An array may be either mutable or immutable.
+* Arrays will be fixed size and one dimensional.
+** A two-dimensional array may be built as an array of arrays.
+* An arrays will be composed of a single primitive type.
+
+Primitive Types:
+* Will exist for arrays and similar.
+* byte, sbyte: 8-bit byte
+* short, ushort: 16-bit short
+* int, uint: 32-bit integer
+* long, ulong: 64-bit integer
+* half: 16-bit half float
+* float: 32-bit float
+* double: 64-bit double
+* char: 16-bit character
+* var: dynamic type (any type)
+** object, string: Subtypes of 'var'.
+
+
+Scoping:
+* BS1L will use Lexical Scoping.
+* Objects may use delegation scoping.
+** This will be specific to objects.
+** The delegation chain will be assumed to be acyclic.
+* Methods will need to use 'this' to refer to object members.
+** A 'method' is simply a function or lambda within an object field.
+** Lambdas will only capture the lexical environment, not 'this'.
+
+Special Names:
+* true, boolean true
+* false, boolean false
+* null, null value
+* this, current object
+
+Mutability:
+* Some arrays or objects may be immutable.
+* It is in-error to attempt to modify an immutable object.
+* Whether or not an object is mutable will depend on how it is declared.
+** Objects initialized via a variable declaration will be immutable.
+** Objects initialized via an assignment statement will be mutable.
+* Immutable objects are not require to be identity preserving.
+** Two immutable objects with the same contents may have the same identity.
+** However, this is not required for objects or arrays.
+** String literals with the same contents will also share identity.
+* The lifetime of an immutable object is 'static'.
+
+Object Lifetime:
+* Static: Exists throughout the lifetime of the program.
+* Global: Visible from anywhere, will exist as long as references exist.
+** May also be destroyed using 'delete'.
+* Automatic: Will exist for the lifetime of the frame it is created in.
+** This is the default for objects created using an expression.
+** An object with automatic lifetime may be implicitly promoted to global.
+
+
+When an object is created within an automatic context, its lifetime will be initially tied to that context. When the context is destroyed, the object will be destroyed.
+
+Storing a reference to an automatic object within a global object or location will promote that object (along with any other objects it references) to global. At this point, the object will no longer be destroyed.
+
+A global object will continue to exist so long as references to it exist; if its reference count reaches zero, the object will be destroyed, and any objects it references may have their counts decremented (they will also be destroyed if their count falls to zero).
+
+
+Operator 'new':
+* x = new type[size];  //array of a given type and size
+* x = new ctor(args);  //object via a constructor function.
+** Constructor will be invoked with 'this' set to a new empty object.
+** Expression will return the new object.
+
+Operator 'delete':
+* delete obj;  //request that object be deleted
+** This may cause the memory for the object to be freed.
+** May have undefined results if the object is still in use.
+** An implementation with a full garbage collector may choose to ignore this.
+
+Operators:
+* "x == y", compare for value equivalence.
+** Will return true if 'x' and 'y' are compatible types holding the same value.
+** Returns false otherwise.
+** Will not perform any sort of "semantic" conversion, only type conversion.
+*** Eg: Will compare fixnum and flonum, but will not convert values from strings.
+* "x === y", compare for identity.
+** Returns true if both arguments represent the same object.
+** Returns false if the values have different types.
+* "x != y", defined as "!(x == y)"
+** "x !== y", defined as "!(x === y)"
+* "x + y", add values, depends on type and compatibility.
+** Compatible types will be operated on according to the type.
+** Incompatible types may either return null or result in an error.
+* ...

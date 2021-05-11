@@ -80,7 +80,8 @@ assign		regOutAddr = tAddr;
 always @*
 begin
 //	tRegValRi = regValRi;
-	tRegValRi = { regValRi[31] ? 16'hFFFF : 16'h0000, regValRi[31:0] };
+//	tRegValRi = { regValRi[31] ? 16'hFFFF : 16'h0000, regValRi[31:0] };
+	tRegValRi = { regValRi[32] ? 15'h7FFF : 15'h0000, regValRi[32:0] };
 
 	tRiSc0 = tRegValRi;
 	tRiSc1 = { tRegValRi[46:0], 1'b0 };

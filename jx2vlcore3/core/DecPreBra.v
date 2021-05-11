@@ -57,15 +57,17 @@ assign	preBraPc	= tPreBraPc;
 assign	preIsBra	= tPreBra;
 
 
-reg[31:0]	tBraDisp8;
-reg[31:0]	tBraDisp20;
+// reg[32:0]	tBraDisp8;
+// reg[32:0]	tBraDisp20;
+reg[24:0]	tBraDisp8;
+reg[24:0]	tBraDisp20;
 
 reg[31:0]	tDisp8;
 reg[31:0]	tDisp20;
 
-reg[10:0]	tBraDisp8HiP0;
-reg[10:0]	tBraDisp8HiP1;
-reg[10:0]	tBraDisp8HiN1;
+reg[11:0]	tBraDisp8HiP0;
+reg[11:0]	tBraDisp8HiP1;
+reg[11:0]	tBraDisp8HiN1;
 
 reg[20:0]	tBraDisp8Lo;
 reg[20:0]	tBraDisp20Lo;
@@ -110,7 +112,8 @@ reg[5:0]	tHistBitsB;
 
 always @*
 begin
-	tPreBraPc	= UV48_XX;
+//	tPreBraPc	= UV48_XX;
+	tPreBraPc	= istrBraPc;
 	tPreBra		= 0;
 	tHistBitsB	= tHistBits;
 	
@@ -159,8 +162,10 @@ begin
 		istrWord[7]?UV12_FF:UV12_00,
 		istrWord[7:0], istrWord[27:16] };
 	
-	tBraDisp8	= istrBraPc[31:0] + { tDisp8[30:0], 1'b0 };
-	tBraDisp20	= istrBraPc[31:0] + { tDisp20[30:0], 1'b0 };
+//	tBraDisp8	= {1'b0, istrBraPc[31:0] } + { tDisp8[31:0], 1'b0 };
+//	tBraDisp20	= {1'b0, istrBraPc[31:0] } + { tDisp20[31:0], 1'b0 };
+	tBraDisp8	= {1'b0, istrBraPc[23:0] } + { tDisp8[23:0], 1'b0 };
+	tBraDisp20	= {1'b0, istrBraPc[23:0] } + { tDisp20[23:0], 1'b0 };
 
 // `ifdef def_true
 `ifndef def_true
@@ -243,6 +248,18 @@ begin
 	end
 `endif
 	
+	if(tIsBra8 || tIsBraCc8)
+	begin
+//		tPreBraPc	= { istrBraPc[47:32], tBraDisp8[31:0] };
+		tPreBraPc	= { istrBraPc[47:24], tBraDisp8[23:0] };
+	end
+
+	if(tIsBra20 || tIsBraCc20)
+	begin
+//		tPreBraPc	= { istrBraPc[47:32], tBraDisp20[31:0] };
+		tPreBraPc	= { istrBraPc[47:24], tBraDisp20[23:0] };
+	end
+
 //	if(tIsBra8)
 	if(tIsBra8 || tDoBraCc8)
 	begin
@@ -251,8 +268,12 @@ begin
 //			istrWord[15:0], istrWord[31:16],
 //			tBraDisp8);
 //		tPreBraPc	= tBraDisp8;
-		tPreBraPc	= { istrBraPc[47:32], tBraDisp8 };
+//		tPreBraPc	= { istrBraPc[47:32], tBraDisp8 };
 		tPreBra		= 1;
+		
+//		if(tBraDisp8[32])
+		if(tBraDisp8[24])
+			tPreBra		= 0;
 	end
 
 //	if(tIsBra20)
@@ -261,8 +282,12 @@ begin
 //		$display("PreBra: BRA20, I=%X-%X PC2=%X",
 //			istrWord[15:0], istrWord[31:16], tBraDisp20);
 //		tPreBraPc	= tBraDisp20;
-		tPreBraPc	= { istrBraPc[47:32], tBraDisp20 };
+//		tPreBraPc	= { istrBraPc[47:32], tBraDisp20 };
 		tPreBra		= 1;
+
+//		if(tBraDisp20[32])
+		if(tBraDisp20[24])
+			tPreBra		= 0;
 	end
 	
 	if(tIsRtsu)

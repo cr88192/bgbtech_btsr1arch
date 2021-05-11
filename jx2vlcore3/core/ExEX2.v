@@ -290,9 +290,10 @@ begin
 		end
 		
 		JX2_UCMD_MUL3: begin
-			tDoHoldCyc	= 3;
-			tRegIdRn2	= regIdRm;					//
-			tRegValRn2	= regValMulRes[63:0];		//
+//			tDoHoldCyc	= 3;
+//			tRegIdRn2	= regIdRm;					//
+//			tRegValRn2	= regValMulRes[63:0];		//
+			tRegHeld	= 1;
 		end
 		
 		JX2_UCMD_MULW3: begin

@@ -266,6 +266,11 @@ reg[7:0]		tBlkPRovB;
 reg[7:0]		tBlkPRovC;
 reg[7:0]		tBlkPRovD;
 
+reg[7:0]		tBlkPFl2A;
+reg[7:0]		tBlkPFl2B;
+reg[7:0]		tBlkPRov2A;
+reg[7:0]		tBlkPRov2B;
+
 `ifdef jx2_enable_vaddr48
 reg[43:0]		tReqAddrA;
 reg[43:0]		tReqAddrB;
@@ -285,6 +290,7 @@ reg[5:0]		tInOpm;			//OPM (Used for cache-control)
 reg[5:0]		tInOpmB;		//OPM (Used for cache-control)
 reg[5:0]		tInOpmC;		//OPM (Used for cache-control)
 reg[5:0]		tInPcOpm;		//OPM (Used for cache-control)
+reg				tInPcWxe;
 
 reg				tTlbMissInh;
 reg				tNxtTlbMissInh;
@@ -364,11 +370,33 @@ assign		memRingIsRespOkLdB =
 	(memSeqIn[7:6] == 2'b01);
 
 
+`ifdef jx2_mem_l1isz_512
 reg[  8:0]		tReqSeqIdxArr[15:0];
-reg[ 43:0]		tReqSeqVaArr[15:0];
-
 reg[  8:0]		tReqSeqIdx;
+reg[8:0]		tMemSeqIx;
+`endif
+
+`ifdef jx2_mem_l1isz_256
+reg[  7:0]		tReqSeqIdxArr[15:0];
+reg[  7:0]		tReqSeqIdx;
+reg[7:0]		tMemSeqIx;
+`endif
+
+`ifdef jx2_mem_l1isz_128
+reg[  6:0]		tReqSeqIdxArr[15:0];
+reg[  6:0]		tReqSeqIdx;
+reg[6:0]		tMemSeqIx;
+`endif
+
+`ifdef jx2_mem_l1isz_64
+reg[  5:0]		tReqSeqIdxArr[15:0];
+reg[  5:0]		tReqSeqIdx;
+reg[5:0]		tMemSeqIx;
+`endif
+
+reg[ 43:0]		tReqSeqVaArr[15:0];
 reg[ 43:0]		tReqSeqVa;
+reg[43:0]		tMemSeqVa;
 
 reg[ 15:0]		tMemSeqReq;
 reg[ 15:0]		tMemOpmReq;
@@ -391,8 +419,6 @@ reg				tNxtMemReqLdM;	//Load MMIO
 reg[ 3:0]		tMemSeqRov;
 reg[ 3:0]		tNxtMemSeqRov;
 
-reg[8:0]		tMemSeqIx;
-reg[43:0]		tMemSeqVa;
 
 reg				tRegOutHold;
 reg				tRegOutHoldL;
@@ -466,16 +492,14 @@ begin
 	tNxtFlushRov	= tFlushRov;
 	tNxtAdvFlushRov	= 0;
 
-	if(reset)
-	begin
-		tNxtFlushRov		= 0;
-	end
-
-	if(((tInOpmB==JX2_DCOPM_FLUSHIS) && (tInOpmC!=JX2_DCOPM_FLUSHIS)) || reset)
+//	if(((tInOpmB==JX2_DCOPM_FLUSHIS) && (tInOpmC!=JX2_DCOPM_FLUSHIS)) || reset)
+//	if((tInOpmB==JX2_DCOPM_FLUSHIS) && (tInOpmC!=JX2_DCOPM_FLUSHIS) && !reset)
+	if((tInOpmB==JX2_DCOPM_FLUSHIS) && (tInOpmC!=JX2_DCOPM_FLUSHIS))
 	begin
 		icNxtDoFlush = 1;
 	end
 
+//	if((tFlushRov == 0) && !tAdvFlushRov && !reset)
 	if((tFlushRov == 0) && !tAdvFlushRov)
 		icNxtDoFlush = 1;
 	
@@ -487,6 +511,12 @@ begin
 			tNxtFlushRov	= tFlushRov+1;
 			tNxtAdvFlushRov	= 1;
 		end
+	end
+
+	if(reset)
+	begin
+		tNxtFlushRov		= 0;
+		icNxtDoFlush		= 0;
 	end
 
 	/* Stage B */
@@ -514,8 +544,10 @@ begin
 	
 	tInWordIx = tInAddr[2:1];
 
-	tFlushA = (tBlkPRovA != tFlushRov) || (tFlushRov == 0);
-	tFlushB = (tBlkPRovB != tFlushRov) || (tFlushRov == 0);
+//	tFlushA = (tBlkPRovA != tFlushRov) || (tFlushRov == 0);
+//	tFlushB = (tBlkPRovB != tFlushRov) || (tFlushRov == 0);
+	tFlushA = tBlkPRovA != tFlushRov;
+	tFlushB = tBlkPRovB != tFlushRov;
 	
 	tReqReady	= 1;
 	
@@ -527,13 +559,29 @@ begin
 			tFlushB = 1;
 	end
 
-	tBlkData2A = tBlkDataA;
-	tBlkAddr2A = tBlkAddrA;
-	tBlkFlag2A = tBlkFlagA;
+`ifndef def_true
+	if((~(tBlkPFlA[3:0])) != tFlushRov[3:0])
+		tFlushA = 1;
+	if((~(tBlkPFlB[3:0])) != tFlushRov[3:0])
+		tFlushB = 1;
+`endif
 
-	tBlkData2B = tBlkDataB;
-	tBlkAddr2B = tBlkAddrB;
-	tBlkFlag2B = tBlkFlagB;
+`ifdef def_true
+	if((~(tBlkPFlA[2:0])) != tFlushRov[2:0])
+		tFlushA = 1;
+	if((~(tBlkPFlB[2:0])) != tFlushRov[2:0])
+		tFlushB = 1;
+`endif
+
+	tBlkData2A	= tBlkDataA;
+	tBlkAddr2A	= tBlkAddrA;
+	tBlkFlag2A	= tBlkFlagA;
+	tBlkPFl2A	= tBlkPFlA;
+
+	tBlkData2B	= tBlkDataB;
+	tBlkAddr2B	= tBlkAddrB;
+	tBlkFlag2B	= tBlkFlagB;
+	tBlkPFl2B	= tBlkPFlB;
 
 
 `ifdef def_true
@@ -562,7 +610,10 @@ begin
 	tMiss = tMissA || tMissB;
 
 	if(reset)
-		tMiss = 0;
+	begin
+		tMiss		= 0;
+		tReqReady	= 0;
+	end
 
 	case(tInAddr[4:3])
 		2'b00: tBlkData = { tBlkData2B[31:0], tBlkData2A[127: 0] };
@@ -716,7 +767,8 @@ begin
 
 `ifdef jx2_enable_wexjumbo
 
-	casez( {icInPcWxe, tPcStepJA,
+//	casez( {icInPcWxe, tPcStepJA,
+	casez( {tInPcWxe, tPcStepJA,
 			tPcStepWA, tPcStepWB,
 			tPcStepBB, tPcStepBA})
 		6'b00zzz0: tRegOutPcStep = 4'b0100;
@@ -738,7 +790,8 @@ begin
 
 `else
 
-	if(icInPcWxe && tPcStepWA)
+//	if(icInPcWxe && tPcStepWA)
+	if(tInPcWxe && tPcStepWA)
 	begin
 		tRegOutPcStep = tPcStepWB ? 4'b1100 : 4'b1000;
 	end
@@ -750,7 +803,8 @@ begin
 `endif
 
 `else
-	if(icInPcWxe && tPcStepWA)
+//	if(icInPcWxe && tPcStepWA)
+	if(tInPcWxe && tPcStepWA)
 	begin
 		tRegOutPcStep = 4'b1000;
 	end
@@ -762,8 +816,10 @@ begin
 	
 //	tRegOutPcOK = tMiss ? UMEM_OK_HOLD : UMEM_OK_OK;
 
-	if(reset)
-		tMiss = 0;
+//	if(reset)
+//	begin
+//		tMiss = 0;
+//	end
 
 	if(tMiss)
 		tRegOutHold = 1;
@@ -774,14 +830,15 @@ begin
 	tReqSeqIdx = tReqSeqIdxArr[memSeqIn[3:0]];
 	tReqSeqVa = tReqSeqVaArr[memSeqIn[3:0]];
 
-	if(memRingIsRespOkLdA)
+	if(memRingIsRespOkLdA && !reset)
 	begin
 //		$display("L1 I$: Resp A, O=%X S=%X A=%X D=%X",
 //			memOpmIn, memSeqIn, memAddrIn, memDataIn);
 //		$display("  IX=%X VA=%X", tReqSeqIdx, tReqSeqVa);
 	
 		tStBlkIxA		= tReqSeqIdx;
-		tStBlkPFlA		= 0;
+//		tStBlkPFlA		= 0;
+		tStBlkPFlA		= { 4'b0, ~(tFlushRov[3:0]) };
 		tStBlkPRovA		= tFlushRov;
 		tStBlkDataA		= memDataIn;
 		tStBlkFlagA		= memOpmIn[3:0];
@@ -789,14 +846,15 @@ begin
 		tDoStBlkA		= 1;
 	end
 
-	if(memRingIsRespOkLdB)
+	if(memRingIsRespOkLdB && !reset)
 	begin
 //		$display("L1 I$: Resp B, O=%X S=%X A=%X D=%X",
 //			memOpmIn, memSeqIn, memAddrIn, memDataIn);
 //		$display("  IX=%X VA=%X", tReqSeqIdx, tReqSeqVa);
 
 		tStBlkIxB		= tReqSeqIdx;
-		tStBlkPFlB		= 0;
+//		tStBlkPFlB		= 0;
+		tStBlkPFlB		= { 4'b0, ~(tFlushRov[3:0]) };
 		tStBlkPRovB		= tFlushRov;
 		tStBlkDataB		= memDataIn;
 		tStBlkFlagB		= memOpmIn[3:0];
@@ -826,7 +884,8 @@ begin
 		tNxtMemSeqRov	= 0;
 	end
 	else
-		if((tMissA || tMissB) && tReqReady)
+//		if((tMissA || tMissB) && tReqReady)
+		if(tMissA || tMissB)
 	begin
 //		$display("L1 I$ Miss %X %X %X", tMissA, tMissB, tReqReady);
 	
@@ -835,7 +894,11 @@ begin
 		tNxtMemSeqRov	= tMemSeqRov;
 		tMemWait		= 1;
 
-		if(tMissA && !tMemReqLdA)
+		if(!tReqReady)
+		begin
+		end
+		else
+			if(tMissA && !tMemReqLdA)
 		begin
 			tNxtMemSeqRov	= tMemSeqRov + 1;
 			tMemSeqIx		= tReqIxA;
@@ -869,6 +932,7 @@ begin
 //			$display("I$ Wait");
 		end
 	end
+`ifndef def_true
 	else
 	begin
 		if(tMemReqLdA || tMemReqLdB)
@@ -876,6 +940,7 @@ begin
 			tRegOutHold = 1;
 		end
 	end
+`endif
 
 	tRegOutPcOK = tRegOutHold ? UMEM_OK_HOLD : UMEM_OK_OK;
 
@@ -958,6 +1023,7 @@ begin
 	tReqAddrB	<= tNxtAddrB;
 	tReqIxA		<= tNxtIxA;
 	tReqIxB		<= tNxtIxB;
+	tInPcWxe	<= icInPcWxe;
 
 	tReqAddrAL	<= tReqAddrA;
 	tReqAddrBL	<= tReqAddrB;

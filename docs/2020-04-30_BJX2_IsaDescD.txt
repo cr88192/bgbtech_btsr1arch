@@ -116,6 +116,9 @@ This instruction is only allowed in Lane 1.
 * F020_3en0  BRA		Rn					//Fix32
 * F0dd_Cddd  BRA		(PC, disp20s)		//Fix32
 
+* FEjj_jjjj_F202_C4jj	BRA		(PC, disp33s)
+* FFjj_jjjj_FAjj_jjjj	BRA		#abs48		//Abs48 Branch
+
 Branch to Address.
 The target address is computed and PC is updated to the new address.
 
@@ -140,6 +143,9 @@ The BREAK1/2/3 forms overlap with MOV.B, but will be regarded as invalid special
 * F011_3en0  BSR		(PC, Rn)			//Fix32
 * F021_3en0  BSR		Rn					//Fix32
 * F0dd_Dddd  BSR		(PC, disp20s)		//Fix32
+
+* FEjj_jjjj_F202_CCjj	BSR		(PC, disp33s)
+* FFjj_jjjj_FBjj_jjjj	BSR		#abs48			//Abs48 Call
 
 Branch to subroutine.
 The target address is computed and PC is updated to the new address, with the prior value for PC being stored in LR.
@@ -717,6 +723,10 @@ If E.Q is Clear, then a 32-bit rotate will be used and the value will be shifted
 
 If E.Q is Set, then a 64-bit rotate will be used and the value will be shifted by a multiple of 4 bits.
 
+In a Jumbo64 form, the 33-bit immediate will be interpreted as a 25 bit immediate with an 8 bit unscaled shift. Behavior will otherwise be similar to a normal rotate instruction.
+
+This operation may be limited to Lane 1.
+
 
 === MOV ===
 
@@ -940,6 +950,8 @@ Rn=(~Rn)+(!SR.T).
 Negate value in Rn and subtract the SR.T flag.
 The value of SR.T is updated to reflect the borrow status of the bit.
 
+This operation is only valid in Lane 1.
+
 
 === NOP ===
 
@@ -968,6 +980,8 @@ SR.S=!SR.S
 
 Invert the SR.S flag.
 
+This operation is only valid in Lane 1.
+
 
 === NOTT ===
 
@@ -977,6 +991,8 @@ Invert the SR.S flag.
 SR.T=!SR.T
 
 Invert the SR.T flag.
+
+This operation is only valid in Lane 1.
 
 
 === OR ===
@@ -1009,36 +1025,64 @@ Then this will produce as output:
 
 === ROTCL ===
 
-* 33n6	ROTCL	Rn
+* F036_3en0  ROTCL	Rn
 
 Rn'=(Rn SHL 1)|SR.T; SR.T=Rn.31
 
 Rotate the value in Rn left by 1 bit, pulling SR.T into the LSB, and putting the shifted out bit into SR.T.
 
+This operation is only valid in Lane 1.
+
 
 === ROTCR ===
 
-* 33n7	ROTCR	Rn
+* F037_3en0  ROTCR	Rn
 
 Rotate the value in Rn right by 1 bit, pulling SR.T into the MSB, and putting the shifted out bit into SR.T.
+
+This operation is only valid in Lane 1.
 
 
 === ROTL ===
 
-* 33n4	ROTL	Rn
+* F034_3en0  ROTL		Rn
 
 Rn=(Rn SHL 1)|(Rn SHR 31)
 
 Rotate the value in Rn left by 1 bit.
 
+This operation is only valid in Lane 1.
+
 
 === ROTR ===
 
-* 33n5	ROTR	Rn
+* F035_3en0  ROTR		Rn
 
 Rn=(Rn SHR 1)|(Rn SHL 31)
 
 Rotate the value in Rn right by 1 bit.
+
+This operation is only valid in Lane 1.
+
+
+=== ROTL (3R) ===
+
+* F0nm_3go2  ROTL		Rm, Ro, Rn		//(ALU) Rotate Left (64b)
+* F0nm_3go6  ROTL.L		Rm, Ro, Rn		//(ALUX) Rotate Left (32b)
+* F0nm_3Go6  ROTLX		Xm, Ro, Xn		//(ALUX) Rotate Left (128b)
+
+Rotate the value in Rn left by Ro.
+
+This operation is only valid in Lane 1.
+
+
+=== ROTR (3R) ===
+
+** F0nm_3go3  ROTR		Rm, Ro, Rn		//(ALU) Rotate Right (64b)
+
+Rotate the value in Rn right by Ro.
+
+This operation is only valid in Lane 1.
 
 
 === RTE ===
@@ -1131,11 +1175,11 @@ The Shift Value will behave as if it were a sign-extended byte. Positive values 
 For SHAD, the shift will be 32-bit modular.
 
 
-=== SHAD.Q ===
+=== SHADQ ===
 
-* F0nm_1G6C  SHAD.Q		Rm, Rn
-* F0nm_5Go4  SHAD.Q		Rm, Ro, Rn
-* F2nm_8Pjj  SHAD.Q		Rm, #imm9, Rn
+* F0nm_1G6C  SHADQ		Rm, Rn
+* F0nm_5Go4  SHADQ		Rm, Ro, Rn
+* F2nm_8Pjj  SHADQ		Rm, #imm9, Rn
 
 Barrel Shift, Arithmetic.
 Operates on a 64-bit value.
@@ -1143,6 +1187,16 @@ Operates on a 64-bit value.
 The Shift Value will behave as if it were a sign-extended byte. Positive values will encode left-shifts whereas negative values will encode right shifts.
 
 For SHADQ, the shift will be 64-bit modular.
+
+
+=== SHADX ===
+
+* F0nm_3Go4  SHADX		Xm, Ro, Xn		//(ALUX) Shift Arithmetic (128b)
+
+Barrel Shift, Arithmetic.
+Operates on a 128-bit value.
+
+The Shift Value will behave as if it were a sign-extended byte. Positive values will encode left-shifts whereas negative values will encode right shifts.
 
 
 === SHLD ===
@@ -1162,9 +1216,9 @@ For SHLD, the shift will be 32-bit modular.
 
 === SHLDQ ===
 
-* F0nm_1G7C  SHLD.Q		Rm, Rn
-* F0nm_5Go5  SHLD.Q		Rm, Ro, Rn
-* F2nm_9Pjj  SHLD.Q		Rm, #imm9u, Rn
+* F0nm_1G7C  SHLDQ		Rm, Rn
+* F0nm_5Go5  SHLDQ		Rm, Ro, Rn
+* F2nm_9Pjj  SHLDQ		Rm, #imm9u, Rn
 
 Barrel Shift, Logical.
 Operates on a 64-bit value.
@@ -1172,6 +1226,16 @@ Operates on a 64-bit value.
 The Shift Value will behave as if it were a sign-extended byte. Positive values will encode left-shifts whereas negative values will encode right shifts.
 
 For SHLD.Q, the shift will be 64-bit modular.
+
+
+=== SHLDX ===
+
+* F0nm_3Go5  SHLDX		Xm, Ro, Xn		//(ALUX) Shift Logical (128b)
+
+Barrel Shift, Logical.
+Operates on a 128-bit value.
+
+The Shift Value will behave as if it were a sign-extended byte. Positive values will encode left-shifts whereas negative values will encode right shifts.
 
 
 === SHAR ===
@@ -1188,10 +1252,10 @@ Positive values will correspond to a right shift, whereas negative values will b
 For SHAR, the shift will be 32-bit modular.
 
 
-=== SHAR.Q ===
+=== SHARQ ===
 
-* F0nm_2Go2  SHAR.Q		Rm, Ro, Rn
-* F2nm_8Pjj  SHAD.Q		Rm, -Imm9, Rn
+* F0nm_2Go2  SHARQ		Rm, Ro, Rn
+* F2nm_8Pjj  SHADQ		Rm, -Imm9, Rn
 
 Barrel Shift, Arithmetic Right.
 Operates on a 64-bit value.
@@ -1201,6 +1265,18 @@ The Shift Value will behave as if it were a sign-extended byte. Positive values 
 Positive values will correspond to a right shift, whereas negative values will be undefined. The immediate form will be encoded by inverting the sign.
 
 For SHADQ, the shift will be 64-bit modular.
+
+
+=== SHARX ===
+
+* F0nm_3Go2  SHARX		Xm, Ro, Xn		//(ALUX) Shift Arithmetic (128b)
+
+Barrel Shift, Arithmetic Right.
+Operates on a 128-bit value.
+
+The Shift Value will behave as if it were a sign-extended byte. Positive values will encode left-shifts whereas negative values will encode right shifts.
+
+Positive values will correspond to a right shift, whereas negative values will be undefined. The immediate form will be encoded by inverting the sign.
 
 
 === SHLR ===
@@ -1219,15 +1295,25 @@ For SHLR, the shift will be 32-bit modular.
 
 === SHLRQ ===
 
-* F0nm_2Go3  SHLR.Q		Rm, Ro, Rn
-* F2nm_9Pjj  SHLD.Q		Rm, -Imm9, Rn
+* F0nm_2Go3  SHLRQ		Rm, Ro, Rn
+* F2nm_9Pjj  SHLDQ		Rm, -Imm9, Rn
 
 Barrel Shift, Logical Right.
 Operates on a 64-bit value.
 
 Positive values will correspond to a right shift, whereas negative values will be undefined. The immediate form will be encoded by inverting the sign.
 
-For SHLR.Q, the shift will be 64-bit modular.
+For SHLRQ, the shift will be 64-bit modular.
+
+
+=== SHLRX ===
+
+* F0nm_3Go3  SHLRX		Xm, Ro, Xn		//(ALUX) Shift Logical (128b)
+
+Barrel Shift, Logical Right.
+Operates on a 128-bit value.
+
+Positive values will correspond to a right shift, whereas negative values will be undefined. The immediate form will be encoded by inverting the sign.
 
 
 === SLEEP ===

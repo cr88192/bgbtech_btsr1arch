@@ -1,7 +1,7 @@
 `define jx2_enable_mmu
 `define jx2_enable_fpu
 
-`define jx2_enable_gpr48		//Enable R32..R47
+// `define jx2_enable_gpr48		//Enable R32..R47
 
 `define	jx2_use_fpu_w			//use wide FPU (GSVX)
 `define	jx2_fcmp_alu			//do FCMP via ALU
@@ -37,7 +37,7 @@
 `define jx2_enable_aluunary
 `define jx2_enable_clz
 
-`define jx2_enable_blint		//Enable Bilinear Interpolator
+// `define jx2_enable_blint			//Enable Bilinear Interpolator
 
 `define jx2_enable_btcutx			//UTXn Block Conversion Ops
 // `define jx2_enable_btcutx1			//UTX1 Block Conversion Op
@@ -54,7 +54,8 @@
 `define jx2_do_convfp16_alu
 `define jx2_enable_conv2_alu
 
-`define jx2_enable_ldirot			//Enable LDIROz
+// `define jx2_enable_ldirot			//Enable LDIROz
+// `define jx2_enable_srtwid			//Enable SR.T Twiddle
 
 
 `define jx2_enable_wex3w				//Enable 3-wide WEX support

@@ -1668,6 +1668,7 @@ F2zz Instruction Block  (Imm9 Block):
 ** F2n1_Cfjj  LDIN{D}	#imm10n, Rn				//(PrWEX) Alt
 ** F2n2_Cfjj  LDISH		#imm8u, Rn				//(PrWEX) Rn=(Rn<<8)|Imm8
 *** Jumbo: LDISH32	#imm32, Rn
+*** Jumbo+(E.m==1): (E.q?BSR:BRA) Disp33s		//?
 ** F2n3_Cfjj  LDIHI{Q}	#imm10u, Rn				//Load immed into High bits (31:22) or (63:54)
 ** F2n4_Cfjj  TST{Q}	#imm10u, Rn				//SR.T=!(Imm AND Rn)
 ** F2n5_Cfjj  TST{Q}	#imm10n, Rn				//SR.T=!(Imm AND Rn)
@@ -1725,6 +1726,12 @@ FAzz/FBzz Instructions:
 
 * FAjj_jjjj	 LDIZ	#imm24u, DLR		//Zero Extend
 * FBjj_jjjj	 LDIN	#imm24n, DLR		//One Extend
+
+Jumbo64 (Possible):
+* FEjj_jjjj_FAjj_jjjj	 LDIZ	#imm48u, DLR		//Zero Extend
+* FEjj_jjjj_FBjj_jjjj	 LDIN	#imm48n, DLR		//One Extend
+* FFjj_jjjj_FAjj_jjjj	 BRA	#abs48				//Abs48 Branch
+* FFjj_jjjj_FBjj_jjjj	 BSR	#abs48				//Abs48 Call
 
 
 ==== EAzz/EBzz/EEzz/EFzz PrWEX Instruction Blocks ====

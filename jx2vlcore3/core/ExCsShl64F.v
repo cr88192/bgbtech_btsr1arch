@@ -26,8 +26,8 @@ begin
 	tVal3 = valShl[4] ? { tVal2[47:0], 16'h0 } : tVal2;
 	tVal4 = valShl[3] ? { tVal3[55:0],  8'h0 } : tVal3;
 	tVal5 = valShl[2] ? { tVal4[59:0],  4'h0 } : tVal4;
-	tVal6 = valShl[1] ? { tVal5[62:0],  2'h0 } : tVal5;
-	tVal7 = valShl[0] ? { tVal6[63:0],  1'h0 } : tVal6;
+	tVal6 = valShl[1] ? { tVal5[61:0],  2'h0 } : tVal5;
+	tVal7 = valShl[0] ? { tVal6[62:0],  1'h0 } : tVal6;
 end
 
 endmodule

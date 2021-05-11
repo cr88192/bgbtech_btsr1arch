@@ -74,9 +74,20 @@ reg[63:0]		tMmioOutData;
 reg[31:0]		tMmioAddr;
 reg[4:0]		tMmioOpm;
 
-assign		mmioOutData		= tMmioOutData;
-assign		mmioAddr		= tMmioAddr;
-assign		mmioOpm			= tMmioOpm;
+reg[63:0]		tMmioOutData2;
+reg[31:0]		tMmioAddr2;
+reg[4:0]		tMmioOpm2;
+
+// assign		mmioOutData		= tMmioOutData;
+// assign		mmioAddr		= tMmioAddr;
+// assign		mmioOpm			= tMmioOpm;
+
+assign		mmioOutData		= tMmioOutData2;
+assign		mmioAddr		= tMmioAddr2;
+assign		mmioOpm			= tMmioOpm2;
+
+reg[63:0]		tMmioInData;
+reg[1:0]		tMmioOK;
 
 reg[63:0]		tNxtMmioOutData;
 reg[31:0]		tNxtMmioAddr;
@@ -172,6 +183,11 @@ begin
 			tNxtMemReqRsM	= 1;
 		end
 		else
+			if(tMmioOK != UMEM_OK_READY)
+		begin
+			/* Wait it out. */
+		end
+		else
 		begin
 			tNxtMemReqRsM	= 0;
 			tNxtRespDone	= 0;
@@ -183,13 +199,18 @@ begin
 		tNxtMemReqRsM	= 0;
 	end
 
-	if(mmioOK == UMEM_OK_OK)
+	if(tMmioOK == UMEM_OK_OK)
 	begin
 		tNxtMmioOpm			= UMEM_OPM_READY;
-		tNxtRespDone		= 1;
-		tNxtRespData		= mmioInData;
+
+		if(!tRespDone)
+		begin
+			tNxtRespDone		= 1;
+			tNxtRespData		= tMmioInData;
+		end
+
 	end
-	else if(mmioOK == UMEM_OK_READY)
+	else if(tMmioOK == UMEM_OK_READY)
 	begin
 		if(tReqLive && !tRespDone)
 		begin
@@ -229,6 +250,13 @@ begin
 	tMmioOutData	<= tNxtMmioOutData;
 	tMmioAddr		<= tNxtMmioAddr;
 	tMmioOpm		<= tNxtMmioOpm;
+
+	tMmioOutData2	<= tMmioOutData;
+	tMmioAddr2		<= tMmioAddr;
+	tMmioOpm2		<= tMmioOpm;
+
+	tMmioInData		<= mmioInData;
+	tMmioOK			<= mmioOK;
 
 	tRespData		<= tNxtRespData;
 	tRespDone		<= tNxtRespDone;

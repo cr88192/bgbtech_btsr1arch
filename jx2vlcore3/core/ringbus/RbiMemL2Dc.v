@@ -582,7 +582,8 @@ begin
 		end
 	end
 
-	if((tCurFrov == 4'h0) && !tDoFlushL2 && !tDoFlushL2L)
+//	if((tCurFrov == 4'h0) && !tDoFlushL2 && !tDoFlushL2L)
+	if((tCurFrov == 4'h0) && !tDoFlushL2 && !tDoFlushL2L && !reset)
 		tNxtDoFlushL2 = 1;
 
 	tNxtFrov	= tCurFrov;

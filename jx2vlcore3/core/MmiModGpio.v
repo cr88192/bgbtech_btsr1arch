@@ -231,6 +231,11 @@ begin
 		uartRxStrobe = uartNextRxFracTimer[15] && !uartRxFracTimer[15];
 	end
 	
+	if(reset)
+	begin
+		nextTimer1MHz	= 0;
+	end
+	
 	uartTxFifoFull		=  uartTxFifo[79];
 	uartTxFifoEmpty		= !uartTxFifo[19];
 	uartRxFifoFull		=  uartRxFifo[79];

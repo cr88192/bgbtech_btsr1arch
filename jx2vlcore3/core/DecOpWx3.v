@@ -134,9 +134,9 @@ assign	idUIxtC = opUIxtC;
 // wire[21:0]		tOpJBitsA;
 // wire[21:0]		tOpJBitsB;
 // wire[21:0]		tOpJBitsC;
-wire[23:0]		tOpJBitsA;
-wire[23:0]		tOpJBitsB;
-wire[23:0]		tOpJBitsC;
+wire[24:0]		tOpJBitsA;
+wire[24:0]		tOpJBitsB;
+wire[24:0]		tOpJBitsC;
 
 wire		opIsWexJumboA;
 wire		opIsWexJumboB;
@@ -171,7 +171,8 @@ wire[3:0]		decOpFzC_idUFl;
 DecOpFz	decOpFzC(
 	clock,		reset,
 	{ UV32_XX, istrWord[95:64] },	4'h1,
-		{ opIsWexJumbo96, opIsWexJumboB, tOpJBitsC },
+		{ tOpJBitsB[24], tOpJBitsC[24],
+		opIsWexJumbo96, opIsWexJumboB, tOpJBitsC[23:0] },
 	decOpFzC_idRegN,		decOpFzC_idRegM,
 	decOpFzC_idRegO,		decOpFzC_idImm,
 	decOpFzC_idUCmd,		decOpFzC_idUIxt,
@@ -189,7 +190,7 @@ wire[3:0]		decOpFzB_idUFl;
 DecOpFz	decOpFzB(
 	clock,		reset,
 	{ UV32_XX, istrWord[63:32] },	4'h1,
-		{ 1'b0, opIsWexJumboA, tOpJBitsB },
+		{ 1'b0, tOpJBitsB[24], 1'b0, opIsWexJumboA, tOpJBitsB[23:0] },
 	decOpFzB_idRegN,		decOpFzB_idRegM,
 	decOpFzB_idRegO,		decOpFzB_idImm,
 	decOpFzB_idUCmd,		decOpFzB_idUIxt,
@@ -206,7 +207,7 @@ wire[3:0]		decOpFzA_idUFl;
 
 DecOpFz	decOpFzA(
 	clock,		reset,
-	{ UV32_XX, istrWord[31: 0] },	4'h0,	UV26_00,
+	{ UV32_XX, istrWord[31: 0] },	4'h0,	UV28_00,
 	decOpFzA_idRegN,		decOpFzA_idRegM,
 	decOpFzA_idRegO,		decOpFzA_idImm,
 	decOpFzA_idUCmd,		decOpFzA_idUIxt,
@@ -302,8 +303,8 @@ assign	opIsWexJumbo96 =
 assign	tOpJBitsA		= 0;
 // assign	tOpJBitsB		= { istrWord [7: 0], istrWord[29:16] };
 // assign	tOpJBitsC		= { istrWord[39:32], istrWord[61:48] };
-assign	tOpJBitsB		= { istrWord [7: 0], istrWord[31:16] };
-assign	tOpJBitsC		= { istrWord[39:32], istrWord[63:48] };
+assign	tOpJBitsB		= { istrWord [8: 0], istrWord[31:16] };
+assign	tOpJBitsC		= { istrWord[40:32], istrWord[63:48] };
 
 `else
 
@@ -608,6 +609,22 @@ begin
 				opUIxtC	= UV8_00;
 
 				opIsScalar	= opIsWexJumboA;
+
+				if(opIsWexJumboA)
+				begin
+					if(decOpFzC_idUFl[0])
+					begin
+						/* Jumbo24 + Imm16 */
+						opImmB	= {
+							opImmA[32] ? UV25_FF : UV25_00,
+							tOpJBitsB[23:16] };
+					end else begin
+						/* Jumbo24 + Imm24 */
+						opImmB	= {
+							opImmA[32] ? UV17_FF : UV17_00,
+							tOpJBitsB[23:8] };
+					end
+				end
 
 				if(opIsDzA)
 				begin

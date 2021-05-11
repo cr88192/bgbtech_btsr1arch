@@ -145,6 +145,31 @@ reg[143:0]		arrMemDataA[255:0];
 reg[143:0]		arrMemDataB[255:0];
 `endif
 
+`ifdef jx2_mem_l1dsz_128
+`define			reg_l1d_ix	reg[6:0]
+(* ram_style = "distributed" *)
+	reg[ 71:0]		arrMemAddrA[127:0];
+(* ram_style = "distributed" *)
+	reg[ 71:0]		arrMemAddrB[127:0];
+(* ram_style = "distributed" *)
+	reg[143:0]		arrMemDataA[127:0];
+(* ram_style = "distributed" *)
+	reg[143:0]		arrMemDataB[127:0];
+`endif
+
+`ifdef jx2_mem_l1dsz_64
+`define			reg_l1d_ix	reg[5:0]
+(* ram_style = "distributed" *)
+	reg[ 71:0]		arrMemAddrA[63:0];
+(* ram_style = "distributed" *)
+	reg[ 71:0]		arrMemAddrB[63:0];
+(* ram_style = "distributed" *)
+	reg[143:0]		arrMemDataA[63:0];
+(* ram_style = "distributed" *)
+	reg[143:0]		arrMemDataB[63:0];
+`endif
+
+
 reg[ 71:0]		tArrMemAddrStA;
 reg[ 71:0]		tArrMemAddrStB;
 reg[127:0]		tArrMemDataStA;
@@ -398,6 +423,16 @@ begin
 	tNxtReqBix		= regInAddr[4:0];
 	tNxtReqOpm		= regInOpm;
 
+`ifdef jx2_mem_l1dsz_64
+	tNxtReqIxA[5:0] = tNxtReqAxA[6:1];
+	tNxtReqIxB[5:0] = tNxtReqAxB[6:1];
+`endif
+
+`ifdef jx2_mem_l1dsz_128
+	tNxtReqIxA[6:0] = tNxtReqAxA[7:1];
+	tNxtReqIxB[6:0] = tNxtReqAxB[7:1];
+`endif
+
 `ifdef jx2_mem_l1dsz_256
 //	tNxtReqIxA[7:0] = tNxtReqAxA[7:0] ^ tNxtReqAxA[15:8];
 //	tNxtReqIxB[7:0] = tNxtReqAxB[7:0] ^ tNxtReqAxB[15:8];
@@ -442,23 +477,24 @@ begin
 	tNxtFlushRov		= tFlushRov;
 	tNxtDoFlush			= 0;
 
-	if(reset)
-	begin
-		tNxtFlushRov		= 0;
-	end
-
-	if(((tInOpm==JX2_DCOPM_FLUSHDS) && (tInOpmC!=JX2_DCOPM_FLUSHDS)) || reset)
+//	if(((tInOpm==JX2_DCOPM_FLUSHDS) && (tInOpmC!=JX2_DCOPM_FLUSHDS)) || reset)
+	if((tInOpm==JX2_DCOPM_FLUSHDS) && (tInOpmC!=JX2_DCOPM_FLUSHDS) && !reset)
 	begin
 		tNxtDoFlush = 1;
 	end
 	
-	if((tFlushRov == 0) && !tDoFlush)
+	if((tFlushRov == 0) && !tDoFlush && !reset)
 		tNxtDoFlush = 1;
 
 	if(tDoFlush && !tDoFlushL)
 	begin
 		$display("L1 D$ DoFlush rov=%X", tFlushRov);
 		tNxtFlushRov = tFlushRov + 1;
+	end
+
+	if(reset)
+	begin
+		tNxtFlushRov		= 0;
 	end
 end
 
@@ -610,7 +646,8 @@ begin
 	tBlk2StoreDextA		= { 8'h00, tBlk2StoreChkA };
 	tBlk2StoreDextB		= { 8'h00, tBlk2StoreChkB };
 
-`ifdef def_true
+`ifdef jx2_mem_l1d_fwstore
+// `ifdef def_true
 // `ifndef def_true
 
 	if(tReg2MissInterlockA)
@@ -664,7 +701,8 @@ begin
 	tMemArrInterlockA	= tArrMemDidStA && (tReqIxA == tArrMemDidStIxA);
 	tMemArrInterlockB	= tArrMemDidStB && (tReqIxB == tArrMemDidStIxB);
 
-`ifdef def_true
+`ifdef jx2_mem_l1d_fwarray
+// `ifdef def_true
 // `ifndef def_true
 //	if(tArrMemDidStA && (tReqIxA == tArrMemDidStIxA) && !tReg2StoreFwA)
 	if(tMemArrInterlockA && !tReg2StoreFwA)
@@ -734,8 +772,11 @@ begin
 
 //	tReqMissAddrA	= tBlkMemAddr2A[47:5] != tReqAxA[43:1];
 //	tReqMissAddrB	= tBlkMemAddr2B[47:5] != tReqAxB[43:1];
-	tReqFlushAddrA	= (tBlkMemAddr2A[71:68] != tFlushRov) || (tFlushRov==0);
-	tReqFlushAddrB	= (tBlkMemAddr2B[71:68] != tFlushRov) || (tFlushRov==0);
+//	tReqFlushAddrA	= (tBlkMemAddr2A[71:68] != tFlushRov) || (tFlushRov==0);
+//	tReqFlushAddrB	= (tBlkMemAddr2B[71:68] != tFlushRov) || (tFlushRov==0);
+
+	tReqFlushAddrA	= (tBlkMemAddr2A[71:68] != tFlushRov);
+	tReqFlushAddrB	= (tBlkMemAddr2B[71:68] != tFlushRov);
 
 `ifndef def_true
 //	if(tBlkMemChk2A != tBlkMemRChk2A)

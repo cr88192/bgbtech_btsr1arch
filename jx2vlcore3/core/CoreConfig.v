@@ -3,6 +3,7 @@
 `include "CoreConfigCom.v"
 
 // `include "CoreConfig75.v"
+// `include "CoreConfig75rb.v"
 `include "CoreConfig50.v"
 
 `else

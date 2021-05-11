@@ -89,8 +89,8 @@ wire[7:0]		decOpFz_idUCmd;
 wire[7:0]		decOpFz_idUIxt;
 wire[3:0]		decOpFz_idUFl;
 
-wire[25:0]		istrJBits;
-wire[25:0]		istrJBits2;
+wire[27:0]		istrJBits;
+wire[27:0]		istrJBits2;
 
 
 `ifdef jx2_enable_wexjumbo
@@ -104,10 +104,15 @@ assign	istrJBits [15: 0]	= istrWordL[31:16];
 assign	istrJBits [23:16]	= istrWordL[ 7: 0];
 assign	istrJBits [   24]	= istrIsJumboA;
 assign	istrJBits [   25]	= istrIsJumboA && istrIsJumboB;
+assign	istrJBits [   26]	= istrWordL[ 8];
+assign	istrJBits [   27]	= istrWordL[40];
+
 assign	istrJBits2[15: 0]	= istrWordL[63:48];
 assign	istrJBits2[23:16]	= istrWordL[39:32];
 assign	istrJBits2[   24]	= istrIsJumboB;
 assign	istrJBits2[   25]	= 0;
+assign	istrJBits [   26]	= istrWordL[40];
+assign	istrJBits [   27]	= 0;
 
 `else
 

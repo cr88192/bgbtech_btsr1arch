@@ -80,6 +80,7 @@ module ExEX1(
 	regFpuGRn,		//FPU GPR Result
 	regFpuSrT,		//FPU SR.T Result
 	opBraFlush,
+	opPreBraPc,
 	opPreBra,
 	
 	regOutDlr,	regInDlr,
@@ -130,6 +131,7 @@ input[32:0]		regValImm;		//Immediate (Decode)
 input[63:0]		regFpuGRn;		//FPU GPR Result
 input			regFpuSrT;
 input			opBraFlush;
+input[47:0]		opPreBraPc;
 input			opPreBra;
 
 parameter		isAltCore = 0;
@@ -303,6 +305,14 @@ reg[7:0]	tOpUCmd2;
 
 assign		opUCmdOut = tOpUCmd2;
 
+reg[47:0]	tValBraDispSc;
+
+reg[16:0]	tValAguBraA0;
+reg[16:0]	tValAguBraB0;
+reg[16:0]	tValAguBraB1;
+reg[16:0]	tValAguBraC0;
+reg[16:0]	tValAguBraC1;
+
 reg[63:0]	tValAguBra;
 reg[47:0]	tValBra;
 reg			tDoBra;
@@ -352,6 +362,61 @@ begin
 	tDoDelayCycle	= 0;
 
 	tValAguBra		= { UV16_00, regValPc[47:32], tValAgu[31:0] };
+//	tValAguBra		= { UV16_00, tValAgu };
+
+//	tValAguBra		= { UV16_00, regValPc[47:32],
+//		regValPc[31:0] + { regValRt[30:0], 1'b0 } };
+
+`ifdef jx2_agu_bra32
+
+	tValBraDispSc	= { regValRt[46:0], 1'b0 };
+	tValAguBraA0	=
+		{ 1'b0, regValPc[15:0] } +
+		{ 1'b0, tValBraDispSc[15:0] };
+	tValAguBraB0	=
+		{ 1'b0, regValPc[31:16] } +
+		{ 1'b0, tValBraDispSc[31:16] } + 0;
+	tValAguBraB1	=
+		{ 1'b0, regValPc[31:16] } +
+		{ 1'b0, tValBraDispSc[31:16] } + 1;
+
+	tValAguBra		= {
+		UV16_00,
+		regValPc[47:32],
+		tValAguBraA0[16] ?
+			tValAguBraB1[15:0] : tValAguBraB0[15:0],
+		tValAguBraA0[15:0]
+		};
+`endif
+
+`ifdef jx2_agu_bra48
+	tValBraDispSc	= { regValRt[46:0], 1'b0 };
+	tValAguBraA0	=
+		{ 1'b0, regValPc[15:0] } +
+		{ 1'b0, tValBraDispSc[15:0] };
+	tValAguBraB0	=
+		{ 1'b0, regValPc[31:16] } +
+		{ 1'b0, tValBraDispSc[31:16] } + 0;
+	tValAguBraB1	=
+		{ 1'b0, regValPc[31:16] } +
+		{ 1'b0, tValBraDispSc[31:16] } + 1;
+	tValAguBraC0	=
+		{ 1'b0, regValPc[47:32] } +
+		{ 1'b0, tValBraDispSc[47:32] } + 0;
+	tValAguBraC1	=
+		{ 1'b0, regValPc[47:32] } +
+		{ 1'b0, tValBraDispSc[47:32] } + 1;
+	tValAguBra		= {
+		UV16_00,
+		( tValAguBraA0[16] ? tValAguBraB1[16] : tValAguBraB0[16] ) ?
+			tValAguBraC1[15:0] : tValAguBraC0[15:0],
+		tValAguBraA0[16] ?
+			tValAguBraB1[15:0] : tValAguBraB0[15:0],
+		tValAguBraA0[15:0]
+		};
+	if(!tAguFlagJq)
+		tValAguBra[47:32] = regValPc[47:32];
+`endif
 
 	tValBra			= tValAguBra[47:0];
 	tDoBra			= 0;
@@ -726,6 +791,7 @@ begin
 				JX2_UCIX_IXT_LDEENC: begin
 				end
 
+`ifdef jx2_enable_srtwid
 				JX2_UCIX_IXT_SRTTWID: begin
 					tTempBit0	= regInSr[0] & regInSr[8];
 					tTempBit1	= regInSr[0] | regInSr[8];
@@ -917,6 +983,7 @@ begin
 						end
 					endcase
 				end
+`endif
 
 				default: begin
 					if(!tMsgLatch)

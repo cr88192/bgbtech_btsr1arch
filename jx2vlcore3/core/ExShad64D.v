@@ -30,8 +30,10 @@ input[ 5:0]		shOpA;
 output[63:0]	valRn;
 input[1:0]		idLane;
 
+wire			isLaneA;
 wire			isLaneB;
 wire			isLaneC;
+assign		isLaneA = (idLane[1:0]==0);
 assign		isLaneB = idLane[0];
 assign		isLaneC = idLane[1];
 
@@ -45,6 +47,7 @@ assign		shOpU = shOpA[0];	//Zero Extend
 assign		shOpQ = shOpA[1];	//QuadWord
 assign		shOpR = shOpA[2];	//Shift-Right
 assign		shOpO = shOpA[3];	//Rotate
+// assign		shOpO = shOpA[3] && !isLaneC;	//Rotate
 assign		shOpX = shOpA[5] && !isLaneC;	//Funnel
 
 assign		shOpL = !(shOpQ || shOpX);
@@ -101,7 +104,8 @@ begin
 
 // `ifndef def_true
 `ifdef def_true
-	if(shOpX)
+//	if(shOpX)
+	if(shOpX && !isLaneC)
 	begin
 		if(shOpO)
 		begin
@@ -119,7 +123,8 @@ begin
 	end
 	else if(shOpQ)
 	begin
-		if(shOpO)
+//		if(shOpO)
+		if(shOpO && isLaneA)
 		begin
 			tValRor		= valRs;
 			tValRol		= valRs;
@@ -134,7 +139,8 @@ begin
 	end
 	else
 	begin
-		if(shOpO)
+//		if(shOpO)
+		if(shOpO && isLaneA)
 		begin
 			tValRs			= { valRs[31:0], valRs[31:0] };
 			tValRor			= tValRs;

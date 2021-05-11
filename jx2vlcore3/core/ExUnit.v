@@ -29,7 +29,8 @@ PF IF ID1 ID2 EX1 EX2 EX3 WB
 `include "ExEX1.v"
 `include "ExEX2.v"
 `include "ExALU.v"
-`include "ExMulB.v"
+// `include "ExMulB.v"
+`include "ExMulC.v"
 `include "ExMulW.v"
 
 `ifdef jx2_enable_wex
@@ -188,6 +189,7 @@ reg			tDbgOutStatus6B;
 reg			tDbgOutStatus7B;
 reg			tDbgOutStatus8B;
 
+`ifndef def_true
 assign		dbgOutStatus1 = tDbgOutStatus1B;
 assign		dbgOutStatus2 = tDbgOutStatus2B;
 assign		dbgOutStatus3 = tDbgOutStatus3B;
@@ -196,7 +198,27 @@ assign		dbgOutStatus5 = tDbgOutStatus5B;
 assign		dbgOutStatus6 = tDbgOutStatus6B;
 assign		dbgOutStatus7 = tDbgOutStatus7B;
 assign		dbgOutStatus8 = tDbgOutStatus8B;
+`endif
 
+reg			tDbgOutStatus1C;
+reg			tDbgOutStatus2C;
+reg			tDbgOutStatus3C;
+reg			tDbgOutStatus4C;
+reg			tDbgOutStatus5C;
+reg			tDbgOutStatus6C;
+reg			tDbgOutStatus7C;
+reg			tDbgOutStatus8C;
+
+`ifdef def_true
+assign		dbgOutStatus1 = tDbgOutStatus1C;
+assign		dbgOutStatus2 = tDbgOutStatus2C;
+assign		dbgOutStatus3 = tDbgOutStatus3C;
+assign		dbgOutStatus4 = tDbgOutStatus4C;
+assign		dbgOutStatus5 = tDbgOutStatus5C;
+assign		dbgOutStatus6 = tDbgOutStatus6C;
+assign		dbgOutStatus7 = tDbgOutStatus7C;
+assign		dbgOutStatus8 = tDbgOutStatus8C;
+`endif
 
 
 /* IF */
@@ -420,6 +442,7 @@ assign		id1PreBra = 0;
 reg[47:0]		id2ValBPc;
 // reg[7:0]		id2IdUCmd;
 // reg[7:0]		id2IdUIxt;
+reg[47:0]		id2PreBraPc;
 reg				id2PreBra;
 reg[31:0]		id2IstrWord;	//source instruction word
 // reg[31:0]		id2IstrWordL;	//source instruction word
@@ -874,6 +897,7 @@ reg[1:0]		ex2MemDataOK;
 reg[7:0]		ex1OpUCmd;
 reg[7:0]		ex1OpUIxt;
 wire[1:0]		ex1Hold;
+reg[47:0]		ex1PreBraPc;
 reg				ex1PreBra;
 reg[31:0]		ex1IstrWord;	//source instruction word
 reg				ex1BraFlush;
@@ -951,7 +975,7 @@ ExEX1	ex1(
 	ex1FpuValGRn,	ex1FpuSrT,
 	ex1BraFlush,
 //	ex1BraFlush || reset,
-	ex1PreBra,
+	ex1PreBraPc,	ex1PreBra,
 	
 	ex1RegOutDlr,	ex1RegInDlr,
 	ex1RegOutDhr,	ex1RegInDhr,
@@ -983,7 +1007,8 @@ ExALU	exAlu(
 	exB1ValCarryD);
 
 // ExMul	ex1Mul(
-ExMulB	ex1Mul(
+// ExMulB	ex1Mul(
+ExMulC	ex1Mul(
 	clock,				reset,
 	ex1RegValRs[31:0],	ex1RegValRt[31:0],
 	ex1OpUCmd,			ex1OpUIxt,
@@ -1103,6 +1128,7 @@ reg[47:0]		ex2ValBPc;
 reg[7:0]		ex2OpUCmd;
 reg[7:0]		ex2OpUIxt;
 wire[1:0]		ex2Hold;
+reg[47:0]		ex2PreBraPc;
 reg				ex2PreBra;
 reg[31:0]		ex2IstrWord;	//source instruction word
 
@@ -2882,11 +2908,11 @@ begin
 `endif
 
 //	ex3RegAluRes	= ex1ValAlu;
-//	ex3RegMulRes	= ex1MulVal;
+	ex3RegMulRes	= ex1MulVal;
 //	ex3RegMulWRes	= ex1MulWVal;
 
 	ex3RegAluRes	= 0;
-	ex3RegMulRes	= 0;
+//	ex3RegMulRes	= 0;
 	ex3RegMulWRes	= 0;
 
 	dcInAddr		= ex1MemAddr;
@@ -3011,6 +3037,7 @@ begin
 
 		ex1OpUCmd		<= UV8_00;
 		ex1OpUIxt		<= UV8_00;
+		ex1PreBraPc		<= 0;
 		ex1PreBra		<= 0;
 
 //		ex1IstrWord		<= UV32_XX;
@@ -3194,6 +3221,7 @@ begin
 		crIdCm			<= idA1IdRegM[4:0];
 
 		gprValPc		<= id1ValPc;
+		id2PreBraPc		<= id1PreBraPc;
 		id2PreBra		<= id1PreBra;
 
 		id1IstrWordL1	<= nxtBraFlushMask[2] ? UV32_00: id1IstrWord[31:0];
@@ -3227,6 +3255,7 @@ begin
 //		id2ValBPc		<= id1ValBPc;
 		id2IdUCmd		<= id1IdUCmd;
 		id2IdUIxt		<= id1IdUIxt;
+		id2PreBraPc		<= id1PreBraPc;
 		id2PreBra		<= id1PreBra;
 //		id2IstrWord		<= id1IstrWord[31:0];
 
@@ -3255,6 +3284,7 @@ begin
 //			opBraFlushMask[0] ? JX2_IXC_NV : id2IdUCmd[7:6],
 //			id2IdUCmd[5:0] };
 //		ex1OpUIxt		<= id2IdUIxt;
+		ex1PreBraPc		<= id2PreBraPc;
 		ex1PreBra		<= id2PreBra;
 
 		ex1RegValPc		<= gprValPc;
@@ -3353,6 +3383,7 @@ begin
 //		ex1OpUCmd		<= UV8_XX;
 //		ex1OpUIxt		<= UV8_XX;
 		ex1OpUIxt		<= UV8_00;
+		ex1PreBraPc		<= 0;
 		ex1PreBra		<= 0;
 		ex1IstrWord		<= UV32_XX;
 
@@ -3602,6 +3633,7 @@ begin
 //		ex2OpUCmd		<= ex1OpUCmd;
 		ex2OpUCmd		<= ex1OpUCmd2;
 		ex2OpUIxt		<= ex1OpUIxt;
+		ex2PreBraPc		<= ex1PreBraPc;
 		ex2PreBra		<= ex1PreBra;
 //		ex2BraFlush		<= ex1BraFlush;
 		ex2BraFlush		<= ex1BraFlush || ex1TrapFlush;
@@ -3740,6 +3772,17 @@ begin
 	tDbgOutStatus6B		<= tDbgOutStatus6;
 	tDbgOutStatus7B		<= tDbgOutStatus7;
 	tDbgOutStatus8B		<= tDbgOutStatus8;
+
+`ifdef def_true
+	tDbgOutStatus1C		<= tDbgOutStatus1B;
+	tDbgOutStatus2C		<= tDbgOutStatus2B;
+	tDbgOutStatus3C		<= tDbgOutStatus3B;
+	tDbgOutStatus4C		<= tDbgOutStatus4B;
+	tDbgOutStatus5C		<= tDbgOutStatus5B;
+	tDbgOutStatus6C		<= tDbgOutStatus6B;
+	tDbgOutStatus7C		<= tDbgOutStatus7B;
+	tDbgOutStatus8C		<= tDbgOutStatus8B;
+`endif
 
 end
 

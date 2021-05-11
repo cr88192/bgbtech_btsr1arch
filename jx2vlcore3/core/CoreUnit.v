@@ -348,6 +348,13 @@ assign		clock_cpu		= clock_50;
 assign		reset2_cpu		= reset_50;
 `endif
 
+`ifdef jx2_cpu_masterclock_75
+assign		clock_master	= clock_75;
+assign		reset2_master	= reset_75;
+assign		clock_cpu		= clock_75;
+assign		reset2_cpu		= reset_75;
+`endif
+
 `ifdef jx2_cpu_masterclock_150
 assign		clock_master	= clock_150;
 assign		reset2_master	= reset_150;
@@ -1341,17 +1348,20 @@ begin
 `ifdef jx2_mmio_exbuf
 	mmioInData_A3	<= mmioInData_L;
 	mmioOK_A3		<= mmioOK_L;
+	mmioBusExc_A2	<= mmioBusExc_L;
+
 	mmioInData_A2	<= mmioInData_A3;
 	mmioOK_A2		<= mmioOK_A3;
+	mmioBusExc_A1	<= mmioBusExc_A2;
+
 	mmioInData_A1	<= mmioInData_A2;
 	mmioOK_A1		<= mmioOK_A2;
+	mmioBusExc_A0	<= mmioBusExc_A1;
+
 	mmioInData_A0	<= mmioInData_A1;
 	mmioOK_A0		<= mmioOK_A1;
-
-	mmioBusExc_A2	<= mmioBusExc_L;
-	mmioBusExc_A1	<= mmioBusExc_A2;
-	mmioBusExc_A0	<= mmioBusExc_A1;
 	mmioBusExcIn	<= mmioBusExc_A0;
+
 
 `else
 //	mmioInData_A0	<= mmioInData;
@@ -1368,15 +1378,19 @@ end
 always @(posedge clock_mmio)
 begin
 `ifdef jx2_mmio_exbuf
+
 	mmioOutDataQ_A1		<= mmioOutDataQ_A0;
 	mmioAddr_A1			<= mmioAddr_A0;
 	mmioOpm_A1			<= mmioOpm_A0;
+
 	mmioOutDataQ_A2		<= mmioOutDataQ_A1;
 	mmioAddr_A2			<= mmioAddr_A1;
 	mmioOpm_A2			<= mmioOpm_A1;
+
 	mmioOutDataQ_A3		<= mmioOutDataQ_A2;
 	mmioAddr_A3			<= mmioAddr_A2;
 	mmioOpm_A3			<= mmioOpm_A2;
+
 	mmioOutDataQ		<= mmioOutDataQ_A3;
 	mmioAddr			<= mmioAddr_A3;
 	mmioOpm				<= mmioOpm_A3;
