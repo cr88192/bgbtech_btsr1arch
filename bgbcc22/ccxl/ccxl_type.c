@@ -295,6 +295,16 @@ bool BGBCC_CCXL_TypeUnsignedP(
 	return(false);
 }
 
+bool BGBCC_CCXL_TypeSignedP(
+	BGBCC_TransState *ctx, ccxl_type ty)
+{
+	if(!BGBCC_CCXL_TypeSmallInt128P(ctx, ty))
+		return(false);
+	if(BGBCC_CCXL_TypeUnsignedP(ctx, ty))
+		return(false);
+	return(true);
+}
+
 bool BGBCC_CCXL_TypeIntP(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {

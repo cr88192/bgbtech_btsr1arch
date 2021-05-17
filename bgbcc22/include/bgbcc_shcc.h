@@ -946,6 +946,7 @@
 #define BGBCC_SH_RLC_TRIPWIRE_BJX	0x30	//Tripwire Location
 
 #define BGBCC_SH_RLC_RELB13_OP24	0x31	//Relative 13 bit (BYTE, BJX2)
+#define BGBCC_SH_RLC_ABS48_BJX		0x32	//Abs48, BYTE, FEjj_jjjj_FAjj_jjjj
 
 
 // #define BGBCC_SH_RLC_ABSW48A_BSR	0x20	//Absolute BYTE

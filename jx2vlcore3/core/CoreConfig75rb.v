@@ -5,7 +5,7 @@
 `define jx2_bra2stage			//Use 2-stage branch initiation
 // `define jx2_gprs_usefsm			//Use finite-state-machine GPRs
 
-// `define jx2_isr2stage			//Use 2-stage ISR initiation
+`define jx2_isr2stage			//Use 2-stage ISR initiation
 
 // `define jx2_enable_dualcore			//Enable Second Core
 
@@ -38,7 +38,7 @@
 
 // `define jx2_mem_l1dsz_1024		//L1 D$ is 1024 entries
 // `define jx2_mem_l1dsz_512			//L1 D$ is 512 entries
-// `define jx2_mem_l1dsz_256		//L1 D$ is 256 entries
+`define jx2_mem_l1dsz_256		//L1 D$ is 256 entries
 // `define jx2_mem_l1dsz_128		//L1 D$ is 128 entries
 `define jx2_mem_l1dsz_64			//L1 D$ is 64 entries
 
@@ -91,8 +91,8 @@
 // `define mod_ddr_dbgprn		//Debug DDR module
 
 `define mod_ddr_fastcore		//Use faster clock internally
-// `define mod_ddr_extrabuf		//Do Extra IO Buffering (Clock Crossing)
-`define mod_ddr_basicbuf		//Do Basic IO Buffering (Clock Crossing)
+`define mod_ddr_extrabuf		//Do Extra IO Buffering (Clock Crossing)
+// `define mod_ddr_basicbuf		//Do Basic IO Buffering (Clock Crossing)
 // `define mod_ddr_fastbuf		//Do Fast IO Buffer (Single Clock)
 
 `define mod_ddrb_dllenable		//Enable DLL for DDRB

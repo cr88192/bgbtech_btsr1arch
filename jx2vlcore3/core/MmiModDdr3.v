@@ -261,6 +261,7 @@ reg[127:0]		tMemDataOut;
 reg[127:0]		tMemDataOutL;
 reg[1:0]		tMemOK;
 reg[1:0]		tMemOKL;
+reg[1:0]		tMemOKL2;
 
 `ifdef jx2_mem_ddr32B
 `reg_ddrtile	tMemDataInA;
@@ -278,34 +279,69 @@ reg[31:0]		tNxtMemAddr;
 reg[4:0]		tNxtMemOpm;
 `endif
 
+reg[63:0]		tMemDataChk2A0;
+reg[31:0]		tMemDataChk2A1;
+reg[15:0]		tMemDataChk2A;
+
 `reg_ddrtile	tMemDataOut2;
-reg[1:0]		tMemOK2;
+reg[15:0]		tMemDataChk2;
+reg[3:0]		tMemOK2;
 
 `ifdef mod_ddr_extrabuf
 `reg_ddrtile	tMemDataOut3;
-reg[1:0]		tMemOK3;
+reg[15:0]		tMemDataChk3;
+reg[3:0]		tMemOK3;
 `reg_ddrtile	tMemDataOut4;
-reg[1:0]		tMemOK4;
+reg[15:0]		tMemDataChk4;
+reg[3:0]		tMemOK4;
 `reg_ddrtile	tMemDataOut5;
-reg[1:0]		tMemOK5;
+reg[15:0]		tMemDataChk5;
+reg[3:0]		tMemOK5;
 `reg_ddrtile	tMemDataOut6;
-reg[1:0]		tMemOK6;
-assign			memOK		= tMemOK6;
-assign			memDataOut	= tMemDataOut6;
+reg[15:0]		tMemDataChk6;
+reg[3:0]		tMemOK6;
+reg[3:0]		tMemOK7;
+
+
+reg[63:0]		tMemDataChk6A0;
+reg[31:0]		tMemDataChk6A1;
+reg[15:0]		tMemDataChk6A;
+
+`reg_ddrtile	tMemDataOutO;
+reg[1:0]		tMemOKO;
+`reg_ddrtile	tMemDataOutOL;
+reg[1:0]		tMemOKOL;
+
+// assign			memOK		= tMemOK6;
+// assign			memOK		= tMemOK7;
+// assign			memDataOut	= tMemDataOut6;
+assign			memOK		= tMemOKO;
+assign			memDataOut	= tMemDataOutO;
 `endif
 
 `ifdef mod_ddr_basicbuf
 `reg_ddrtile	tMemDataOut3;
-reg[1:0]		tMemOK3;
+reg[15:0]		tMemDataChk3;
+reg[3:0]		tMemOK3;
 `reg_ddrtile	tMemDataOut4;
-reg[1:0]		tMemOK4;
-assign			memOK		= tMemOK4;
-assign			memDataOut	= tMemDataOut4;
+reg[15:0]		tMemDataChk4;
+reg[3:0]		tMemOK4;
+// assign			memOK		= tMemOK4;
+// assign			memDataOut	= tMemDataOut4;
+
+`reg_ddrtile	tMemDataOutO;
+reg[1:0]		tMemOKO;
+`reg_ddrtile	tMemDataOutOL;
+reg[1:0]		tMemOKOL;
+
+assign			memOK		= tMemOKO;
+assign			memDataOut	= tMemDataOutO;
+
 `endif
 
 `ifdef mod_ddr_fastbuf
-assign			memOK		= tMemOK2;
-assign			memDataOut	= tMemDataOut2;
+assign			memOK		= tMemOK2[1:0];
+assign			memDataOut	= tMemDataOut2[1:0];
 `endif
 
 reg[127:0]		tMemDataIn;
@@ -313,25 +349,40 @@ reg[31:0]		tMemAddr;
 reg[4:0]		tMemOpm;
 
 
+reg[63:0]		tMemChkInB0;
+reg[31:0]		tMemChkInB1;
+reg[15:0]		tMemChkInB2;
+reg[15:0]		tMemChkInB2A;
+
+reg[63:0]		tMemChkInE0;
+reg[31:0]		tMemChkInE1;
+reg[15:0]		tMemChkInE2;
+reg[15:0]		tMemChkInE2A;
+
 `reg_ddrtile	tMemDataInB;
 reg[31:0]		tMemAddrB;
-reg[4:0]		tMemOpmB;
+reg[15:0]		tMemChkInB;
+reg[9:0]		tMemOpmB;
 
 `reg_ddrtile	tMemDataInC;
 reg[31:0]		tMemAddrC;
-reg[4:0]		tMemOpmC;
+reg[15:0]		tMemChkInC;
+reg[9:0]		tMemOpmC;
 
 `reg_ddrtile	tMemDataInD;
 reg[31:0]		tMemAddrD;
-reg[4:0]		tMemOpmD;
+reg[15:0]		tMemChkInD;
+reg[9:0]		tMemOpmD;
 
 `reg_ddrtile	tMemDataInE;
 reg[31:0]		tMemAddrE;
-reg[4:0]		tMemOpmE;
+reg[15:0]		tMemChkInE;
+reg[9:0]		tMemOpmE;
 
 `reg_ddrtile	tMemDataInF;
 reg[31:0]		tMemAddrF;
-reg[4:0]		tMemOpmF;
+reg[15:0]		tMemChkInF;
+reg[9:0]		tMemOpmF;
 
 
 reg[5:0]		accState;
@@ -1383,28 +1434,76 @@ begin
 	ddrDqs1H		<= ddrDqs;
 end
 
+always @*
+begin
+	tMemChkInB2A = memAddr[31:16] ^ memAddr[15:0];
+	tMemChkInB0 = memDataIn[127:64] ^ memDataIn[63:0];
+	tMemChkInB1 = tMemChkInB0[63:32] ^ tMemChkInB0[31:0];
+	tMemChkInB2 = tMemChkInB0[31:16] ^ tMemChkInB0[15:0] ^ tMemChkInB2A;
+end
+
+always @*
+begin
+	tMemDataChk6A0	= tMemDataOut6 [127:64] ^ tMemDataOut6   [63:0];
+	tMemDataChk6A1	= tMemDataChk6A0[63:32] ^ tMemDataChk6A0[31:0];
+	tMemDataChk6A	= tMemDataChk6A1[31:16] ^ tMemDataChk6A1[15:0];
+end
+
 `ifdef mod_ddr_extrabuf
 always @(posedge clock)
 begin
 	tMemOK3			<= tMemOK2;
 	tMemDataOut3	<= tMemDataOut2;
+	tMemDataChk3	<= tMemDataChk2;
 
 	tMemOK4			<= tMemOK3;
 	tMemDataOut4	<= tMemDataOut3;
+	tMemDataChk4	<= tMemDataChk3;
 
 	tMemOK5			<= tMemOK4;
 	tMemDataOut5	<= tMemDataOut4;
+	tMemDataChk5	<= tMemDataChk4;
 
 	tCheckOK4		<= (tMemOK5 == tMemOK4);
 
 	tMemOK6			<= tMemOK5;
 	tMemDataOut6	<= tMemDataOut5;
+	tMemDataChk6	<= tMemDataChk5;
+
+	tMemOK7			<= tMemOK6;
 
 	tMemDataInB		<= memDataIn;
 	tMemAddrB		<= memAddr;
-	tMemOpmB		<= memOpm;
+//	tMemOpmB		<= memOpm;
+	tMemOpmB		<= { ~memOpm, memOpm };
+	tMemChkInB		<= tMemChkInB2;
 
 //	tResetB			<= reset;
+
+	if((tMemOK7[1:0] == (~tMemOK7[3:2])) &&
+//	if((tMemOK6[1:0] == (~tMemOK6[3:2])) &&
+		(tMemDataChk6A == tMemDataChk6))
+//	if(1'b1)
+	begin
+		tMemDataOutO	<= tMemDataOut6;
+		tMemOKO			<= tMemOK7[1:0];
+//		tMemOKO			<= tMemOK6[1:0];
+	end
+	else
+	begin
+		if(tMemOK7[1:0] != (~tMemOK7[3:2]))
+//		if(tMemOK6[1:0] != (~tMemOK6[3:2]))
+			$display("DDR: OK Check Fail");
+		if(tMemDataChk6A != tMemDataChk6)
+			$display("DDR: Data Check Fail %X %X",
+				tMemDataChk6A, tMemDataChk6);
+	
+		tMemDataOutO	<= tMemDataOutOL;
+		tMemOKO			<= tMemOKOL;
+	end
+	tMemDataOutOL	<= tMemDataOutO;
+	tMemOKOL		<= tMemOKO;
+
 end
 `endif
 
@@ -1414,27 +1513,54 @@ always @(posedge clock)
 begin
 	tMemOK3			<= tMemOK2;
 	tMemDataOut3	<= tMemDataOut2;
+	tMemDataChk3	<= tMemDataChk2;
 
 	tMemOK4			<= tMemOK3;
 	tMemDataOut4	<= tMemDataOut3;
+	tMemDataChk4	<= tMemDataChk3;
+
+	tMemDataOutO	<= tMemDataOut4;
+	tMemOKO			<= tMemOK4[1:0];
+	tMemDataOutOL	<= tMemDataOutO;
+	tMemOKOL		<= tMemOKO;
 
 	tMemDataInB		<= memDataIn;
 	tMemAddrB		<= memAddr;
-	tMemOpmB		<= memOpm;
+//	tMemOpmB		<= memOpm;
+	tMemOpmB		<= { ~memOpm, memOpm };
 end
 `endif
 
+
+always @*
+begin
+	tMemChkInE2A = tMemAddrE[31:16] ^ tMemAddrE[15:0];
+	tMemChkInE0 = tMemDataInE[127:64] ^ tMemDataInE[63:0];
+	tMemChkInE1 = tMemChkInE0[63:32] ^ tMemChkInE0[31:0];
+	tMemChkInE2 = tMemChkInE0[31:16] ^ tMemChkInE0[15:0] ^ tMemChkInE2A;
+end
+
+always @*
+begin
+	tMemDataChk2A0	= tMemDataOut  [127:64] ^ tMemDataOut   [63:0];
+	tMemDataChk2A1	= tMemDataChk2A0[63:32] ^ tMemDataChk2A0[31:0];
+	tMemDataChk2A	= tMemDataChk2A1[31:16] ^ tMemDataChk2A1[15:0];
+end
 
 // always @(posedge clock)
 // always @(posedge clock2)
 always @(posedge ddr_coreclock)
 begin
 `ifdef jx2_mem_ddr32B
-	tMemOK2			<= tMemOKA;
+//	tMemOK2			<= tMemOKA;
+	tMemOK2			<= { ~tMemOKA, tMemOKA };
 	tMemDataOut2	<= tMemDataOutA;
+//	tMemDataChk2	<= tMemDataOutA;
 `else
-	tMemOK2			<= tMemOK;
+//	tMemOK2			<= tMemOK;
+	tMemOK2			<= { ~tMemOK, tMemOK };
 	tMemDataOut2	<= tMemDataOut;
+	tMemDataChk2	<= tMemDataChk2A;
 `endif
 
 `ifdef mod_ddr_extrabuf
@@ -1444,27 +1570,43 @@ begin
 	tReset			<= tResetD;
 
 	tMemDataInC		<= tMemDataInB;
+	tMemChkInC		<= tMemChkInB;
 	tMemAddrC		<= tMemAddrB;
 	tMemOpmC		<= tMemOpmB;
 
 	tMemDataInD		<= tMemDataInC;
+	tMemChkInD		<= tMemChkInC;
 	tMemAddrD		<= tMemAddrC;
 	tMemOpmD		<= tMemOpmC;
 
 	tMemDataInE		<= tMemDataInD;
+	tMemChkInE		<= tMemChkInD;
 	tMemAddrE		<= tMemAddrD;
 	tMemOpmE		<= tMemOpmD;
+
+	tMemOpmF		<= tMemOpmE;
 
 //	tCheckD			<= (tMemOpmE == tMemOpmD);
 
 `ifdef jx2_mem_ddr32B
-	tMemDataInA		<= tMemDataInE;
-	tMemAddrA		<= tMemAddrE;
-	tMemOpmA		<= tMemOpmE;
+//	if(tMemChkInE == tMemChkInE2)
+	if(	(tMemChkInE == tMemChkInE2) &&
+		(tMemOpmF[4:0] == (~tMemOpmF[9:5])))
+	begin
+		tMemDataInA		<= tMemDataInE;
+		tMemAddrA		<= tMemAddrE;
+//		tMemOpmA		<= tMemOpmE;
+		tMemOpmA		<= tMemOpmF[4:0];
+	end
 `else
-	tMemDataIn		<= tMemDataInE;
-	tMemAddr		<= tMemAddrE;
-	tMemOpm			<= tMemOpmE;
+	if((tMemChkInE == tMemChkInE2) &&
+		(tMemOpmF[4:0] == (~tMemOpmF[9:5])))
+	begin
+		tMemDataIn		<= tMemDataInE;
+		tMemAddr		<= tMemAddrE;
+//		tMemOpm			<= tMemOpmE;
+		tMemOpm			<= tMemOpmF[4:0];
+	end
 `endif
 
 `endif
@@ -1475,17 +1617,22 @@ begin
 	tReset			<= tResetD;
 
 	tMemDataInC		<= tMemDataInB;
+	tMemChkInC		<= tMemChkInB;
 	tMemAddrC		<= tMemAddrB;
 	tMemOpmC		<= tMemOpmB;
+
+	tMemOpmD		<= tMemOpmC;
 
 `ifdef jx2_mem_ddr32B
 	tMemDataInA		<= tMemDataInC;
 	tMemAddrA		<= tMemAddrC;
-	tMemOpmA		<= tMemOpmC;
+//	tMemOpmA		<= tMemOpmC;
+	tMemOpmA		<= tMemOpmD;
 `else
 	tMemDataIn		<= tMemDataInC;
 	tMemAddr		<= tMemAddrC;
-	tMemOpm			<= tMemOpmC;
+//	tMemOpm			<= tMemOpmC;
+	tMemOpm			<= tMemOpmD;
 `endif
 
 `endif

@@ -343,6 +343,7 @@ MemL1A		memL1(
 
 wire[47:0]		gprValGbr;
 wire[47:0]		gprValLr;
+wire[63:0]		gprValCm;
 
 //reg[31:0]		id2IstrWord;	//source instruction word
 //reg[31:0]		id2IstrWordL;	//source instruction word
@@ -539,6 +540,7 @@ reg [32:0]		gprValImmC;
 
 assign		gprValGbr = crOutGbr;
 assign		gprValLr = crOutLr;
+assign		gprValCm = crValCm;
 
 reg [63:0]		gprInDlr;
 reg [63:0]		gprInDhr;
@@ -609,6 +611,7 @@ RegGPR_6R3W regGpr(
 	gprValImmB,		//Immediate (Decode, B)
 	gprValImmC,		//Immediate (Decode, C)
 	gprValLr,		//LR Value (CR)
+	gprValCm,		//Cm Port (CR)
 
 	gprEx1Flush,	//Flush EX1
 	gprEx2Flush,	//Flush EX2
@@ -659,6 +662,7 @@ RegGPR_4R2W regGpr(
 	gprValImm,		//Immediate (Decode, A)
 	gprValImmB,		//Immediate (Decode, B)
 	gprValLr,		//LR Value (CR)
+	gprValCm,		//Cm Port (CR)
 	
 	gprOutDlr,	gprInDlr,
 	gprOutDhr,	gprInDhr,
@@ -709,6 +713,7 @@ reg [32:0]		gprValImmB;
 // wire[31:0]		gprValLr;
 assign		gprValGbr = crOutGbr;
 assign		gprValLr = crOutLr;
+assign		gprValCm = crValCm;
 
 // wire[63:0]		gprOutDlr;
 reg [63:0]		gprInDlr;
@@ -754,6 +759,7 @@ RegGPR regGpr(
 	gprValImm,		//Immediate (Decode)
 	gprValImmB,		//Immediate (Decode)
 	gprValLr,		//LR Value (CR)
+	gprValCm,		//Cm Port (CR)
 	
 	gprOutDlr,	gprInDlr,
 	gprOutDhr,	gprInDhr,
@@ -783,13 +789,17 @@ RegGPR regGpr(
 
 /* ID2, CR */
 
-reg [ 4:0]	crIdCm;		//Source ID
+//reg [ 4:0]	crIdCm;		//Source ID
+reg [ 5:0]	crIdCm;		//Source ID
 wire[63:0]	crValCm;		//Source Value
-reg [ 4:0]	crIdCn1;		//Destination ID (EX1)
+//reg [ 4:0]	crIdCn1;		//Destination ID (EX1)
+reg [ 5:0]	crIdCn1;		//Destination ID (EX1)
 reg [63:0]	crValCn1;		//Destination Value (EX1)
-reg [ 4:0]	crIdCn2;		//Destination ID (EX2)
+//reg [ 4:0]	crIdCn2;		//Destination ID (EX2)
+reg [ 5:0]	crIdCn2;		//Destination ID (EX2)
 reg [63:0]	crValCn2;		//Destination Value (EX2)
-reg [ 4:0]	crIdCn3;		//Destination ID (EX3)
+//reg [ 4:0]	crIdCn3;		//Destination ID (EX3)
+reg [ 5:0]	crIdCn3;		//Destination ID (EX3)
 reg [63:0]	crValCn3;		//Destination Value (EX3)
 wire[47:0]	crOutPc;
 reg [47:0]	crInPc;
@@ -922,11 +932,13 @@ reg[63:0]		ex1RegValCRm;		//Source C Value (CR)
 
 wire[5:0]		ex1RegIdRn1;		//Destination ID (EX1)
 wire[63:0]		ex1RegValRn1;		//Destination Value (EX1)
-wire[4:0]		ex1RegIdCn1;		//Destination ID (CR, EX1)
+//wire[4:0]		ex1RegIdCn1;		//Destination ID (CR, EX1)
+wire[5:0]		ex1RegIdCn1;		//Destination ID (CR, EX1)
 wire[63:0]		ex1RegValCn1;		//Destination Value (CR, EX1)
 
 wire[5:0]		ex1HldIdRn1;		//Held Dest ID (EX1)
-wire[4:0]		ex1HldIdCn1;		//Held Dest ID (CR, EX1)
+// wire[4:0]		ex1HldIdCn1;		//Held Dest ID (CR, EX1)
+wire[5:0]		ex1HldIdCn1;		//Held Dest ID (CR, EX1)
 	
 reg[47:0]		ex1RegValPc;		//PC Value (Synthesized)
 reg[32:0]		ex1RegValImm;		//Immediate (Decode)
@@ -1145,12 +1157,14 @@ reg[63:0]		ex2RegValCRm;		//Source C Value (CR)
 
 reg[5:0]		ex2RegIdRn1;		//Destination ID (EX1)
 reg[63:0]		ex2RegValRn1;		//Destination Value (EX1)
-reg[4:0]		ex2RegIdCn1;		//Destination ID (CR, EX1)
+// reg[4:0]		ex2RegIdCn1;		//Destination ID (CR, EX1)
+reg[5:0]		ex2RegIdCn1;		//Destination ID (CR, EX1)
 reg[63:0]		ex2RegValCn1;		//Destination Value (CR, EX1)
 	
 wire[5:0]		ex2RegIdRn2;		//Destination ID (EX1)
 wire[63:0]		ex2RegValRn2;		//Destination Value (EX1)
-wire[4:0]		ex2RegIdCn2;		//Destination ID (CR, EX1)
+//wire[4:0]		ex2RegIdCn2;		//Destination ID (CR, EX1)
+wire[5:0]		ex2RegIdCn2;		//Destination ID (CR, EX1)
 wire[63:0]		ex2RegValCn2;		//Destination Value (CR, EX1)
 	
 reg[47:0]		ex2RegValPc;		//PC Value (Synthesized)
@@ -1246,12 +1260,14 @@ reg[63:0]		ex3RegValRm;		//Source C Value
 
 reg[5:0]		ex3RegIdRn2;		//Destination ID (EX2)
 reg[63:0]		ex3RegValRn2;		//Destination Value (EX2)
-reg[4:0]		ex3RegIdCn2;		//Destination ID (CR, EX2)
+//reg[4:0]		ex3RegIdCn2;		//Destination ID (CR, EX2)
+reg[5:0]		ex3RegIdCn2;		//Destination ID (CR, EX2)
 reg[63:0]		ex3RegValCn2;		//Destination Value (CR, EX2)
 	
 wire[5:0]		ex3RegIdRn3;		//Destination ID (EX3)
 wire[63:0]		ex3RegValRn3;		//Destination Value (EX3)
-wire[4:0]		ex3RegIdCn3;		//Destination ID (CR, EX3)
+//wire[4:0]		ex3RegIdCn3;		//Destination ID (CR, EX3)
+wire[5:0]		ex3RegIdCn3;		//Destination ID (CR, EX3)
 wire[63:0]		ex3RegValCn3;		//Destination Value (CR, EX3)
 	
 reg[47:0]		ex3RegValPc;		//PC Value (Synthesized)
@@ -1843,6 +1859,9 @@ begin
 
 	exHold1C = 0;
 
+// `ifndef def_true
+`ifdef def_true
+
 	/* Hack for fix MemOp+Branch bug;
 	   TODO: Find/Fix actual cause of bug.
 	 */
@@ -1864,16 +1883,27 @@ begin
 			exHold1C = 1;
 `endif
 
-	if( ({1'b1, ex1RegIdCn1} != JX2_CR_ZZR) &&
-			({1'b1, ex1RegIdCn1} != JX2_CR_PC))
+`endif
+
+//	if( ({1'b1, ex1RegIdCn1} != JX2_CR_ZZR) &&
+//			({1'b1, ex1RegIdCn1} != JX2_CR_PC))
+	if( (ex1RegIdCn1 != JX2_CR_ZZR) &&
+			(ex1RegIdCn1 != JX2_CR_PC) &&
+			(ex1RegIdCn1[5:4] == 2'b11))
 		exHold1D = 1;
 
-	if( ({1'b1, ex2RegIdCn2} != JX2_CR_ZZR) &&
-			({1'b1, ex2RegIdCn2} != JX2_CR_PC))
+//	if( ({1'b1, ex2RegIdCn2} != JX2_CR_ZZR) &&
+//			({1'b1, ex2RegIdCn2} != JX2_CR_PC))
+	if( (ex2RegIdCn2 != JX2_CR_ZZR) &&
+			(ex2RegIdCn2 != JX2_CR_PC) &&
+			(ex2RegIdCn2[5:4] == 2'b11))
 		exHold1D = 1;
 
-	if( ({1'b1, ex3RegIdCn3} != JX2_CR_ZZR) &&
-			({1'b1, ex3RegIdCn3} != JX2_CR_PC))
+//	if( ({1'b1, ex3RegIdCn3} != JX2_CR_ZZR) &&
+//			({1'b1, ex3RegIdCn3} != JX2_CR_PC))
+	if( (ex3RegIdCn3 != JX2_CR_ZZR) &&
+			(ex3RegIdCn3 != JX2_CR_PC) &&
+			(ex3RegIdCn3[5:4] == 2'b11))
 		exHold1D = 1;
 
 	exHold1		= exHold1A || exHold1B || exHold1C || exHold1D;
@@ -2294,7 +2324,8 @@ begin
 	/* Handle if EX1 unit has initiated a branch. */
 //	nxtBraFlushMask	= { 1'b0, opBraFlushMask[7:1] };
 //	if(({1'b1, ex1RegIdCn1} == JX2_CR_PC) && !ex1PreBra)
-	if({1'b1, ex1RegIdCn1} == JX2_CR_PC)
+//	if({1'b1, ex1RegIdCn1} == JX2_CR_PC)
+	if(ex1RegIdCn1 == JX2_CR_PC)
 	begin
 //		$display("EX1 BRA %X", ex1RegValCn1);
 //		tValNextPc = ex1RegValCn1[31:0];
@@ -2767,8 +2798,8 @@ begin
 
 `ifdef jx2_isr2stage
 
-`ifndef def_true
-// `ifdef def_true
+// `ifndef def_true
+`ifdef def_true
 	if(braIsIsr)
 	begin
 		crInSpc		= braInSpc;
@@ -2783,8 +2814,8 @@ begin
 	end
 `endif
 
-`ifdef def_true
-// `ifndef def_true
+// `ifdef def_true
+`ifndef def_true
 	if(braNxtIsIsr)
 	begin
 		crInSpc		= braNxtInSpc;
@@ -2857,12 +2888,25 @@ begin
 	exC2RegAluRes	= exC1ValAlu;
 `endif
 
+//`ifndef def_true
+`ifndef jx2_gprs_mergecm
 	crIdCn1			= ex1RegIdCn1;
 	crValCn1		= ex1RegValCn1;
 	crIdCn2			= ex2RegIdCn2;
 	crValCn2		= ex2RegValCn2;
 	crIdCn3			= ex3RegIdCn3;
 	crValCn3		= ex3RegValCn3;
+`endif
+
+// `ifdef def_true
+`ifdef jx2_gprs_mergecm
+	crIdCn1			= ex1RegIdRn1;
+	crValCn1		= ex1RegValRn1;
+	crIdCn2			= ex2RegIdRn2;
+	crValCn2		= ex2RegValRn2;
+	crIdCn3			= ex3RegIdRn3;
+	crValCn3		= ex3RegValRn3;
+`endif
 
 	gprEx1Flush = ex1BraFlush || ex1TrapFlush;
 	gprEx2Flush = ex2BraFlush || ex2TrapFlush;
@@ -3218,7 +3262,8 @@ begin
 		idC2IdUIxt		<= idC1IdUIxt;
 `endif
 
-		crIdCm			<= idA1IdRegM[4:0];
+//		crIdCm			<= idA1IdRegM[4:0];
+		crIdCm			<= idA1IdRegM;
 
 		gprValPc		<= id1ValPc;
 		id2PreBraPc		<= id1PreBraPc;
@@ -3243,7 +3288,8 @@ begin
 		gprIdRm			<= id1IdRegN;
 		gprValPc		<= id1ValPc;
 		gprValImm		<= id1IdImm;
-		crIdCm			<= id1IdRegM[4:0];
+//		crIdCm			<= id1IdRegM[4:0];
+		crIdCm			<= id1IdRegM;
 
 `ifndef jx2_enable_wex
 		gprValImmB		<= id1IdImmB;

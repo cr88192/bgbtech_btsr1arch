@@ -52,6 +52,7 @@ module RegGPR_6R3W(
 	regValImmB,		//Immediate (Decode, Lane 2)
 	regValImmC,		//Immediate (Decode, Lane 3)
 	regValLr,		//LR Value (CR)
+	regValCm,		//Cm Value (CR)
 	
 	gprEx1Flush,
 	gprEx2Flush,
@@ -114,7 +115,8 @@ input [47:0]	regValGbr;		//GBR Value (CR)
 input [32:0]	regValImmA;		//Immediate (Decode)
 input [32:0]	regValImmB;		//Immediate (Decode)
 input [32:0]	regValImmC;		//Immediate (Decode)
-input [47:0]	regValLr;		//GBR Value (CR)
+input [47:0]	regValLr;		//LR Value (CR)
+input [63:0]	regValCm;		//Cm Value (CR)
 
 input			gprEx1Flush;
 input			gprEx2Flush;
@@ -450,6 +452,14 @@ begin
 		JX2_GR_LR:	tValRsA={ UV32_00, regValLr[31:0] };
 `endif
 
+`ifdef jx2_gprs_mergecm
+		JX2_GR_SR, JX2_GR_VBR, JX2_GR_SPC, JX2_GR_SSP,
+		JX2_GR_TBR, JX2_GR_TTB, JX2_GR_TEA, JX2_GR_MMCR,
+		JX2_GR_EXSR, JX2_GR_STTB, JX2_GR_KRR:
+			tValRsA = regValCm;
+`endif
+
+
 		JX2_GR_IMM: begin
 			tValRsA={
 				regValImmA[32]?UV32_FF:UV32_00,
@@ -495,9 +505,9 @@ begin
 		end
 `endif
 
-		default: 	tValRsA=UV64_XX;
+//		default: 	tValRsA=UV64_XX;
 //		default: 	tValRsA=tValRsA0;
-//		default: 	tValRsA=UV64_00;
+		default: 	tValRsA=UV64_00;
 	endcase
 	
 	casez(regIdRt)
@@ -552,9 +562,9 @@ begin
 `endif
 
 
-		default: 	tValRtA=UV64_XX;
+//		default: 	tValRtA=UV64_XX;
 //		default: 	tValRtA=tValRtA0;
-//		default: 	tValRtA=UV64_00;
+		default: 	tValRtA=UV64_00;
 	endcase
 
 	casez(regIdRu)
@@ -588,9 +598,9 @@ begin
 		end
 `endif
 
-		default: 	tValRuA=UV64_XX;
+//		default: 	tValRuA=UV64_XX;
 //		default: 	tValRuA=tValRuA0;
-//		default: 	tValRuA=UV64_00;
+		default: 	tValRuA=UV64_00;
 	endcase
 
 	casez(regIdRv)
@@ -660,9 +670,9 @@ begin
 			tValRxZz=1;
 		end
 `endif
-		default: 	tValRxA=UV64_XX;
+//		default: 	tValRxA=UV64_XX;
 //		default: 	tValRxA=tValRxA0;
-//		default: 	tValRxA=UV64_00;
+		default: 	tValRxA=UV64_00;
 	endcase
 
 	casez(regIdRy)
@@ -697,9 +707,9 @@ begin
 		end
 `endif
 
-		default: 	tValRyA=UV64_XX;
+//		default: 	tValRyA=UV64_XX;
 //		default: 	tValRyA=tValRyA0;
-//		default: 	tValRyA=UV64_00;
+		default: 	tValRyA=UV64_00;
 	endcase
 
 `ifdef def_true
@@ -1051,7 +1061,7 @@ begin
 		end
 
 //		if(regIdRnCW[5:4]!=2'b11)
-		if(!regIdRnAW[5])
+		if(!regIdRnCW[5])
 		begin
 			gprArrC[regIdRnCW[5:0]]		<= regValRnCW;
 			gprArrMA[regIdRnCW[5:0]]	<= 1'b0;

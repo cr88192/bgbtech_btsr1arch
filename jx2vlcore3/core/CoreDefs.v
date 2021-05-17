@@ -1,6 +1,8 @@
 `ifndef HAS_COREDEFS
 `define HAS_COREDEFS
 
+`define def_true
+
 `include "CoreConfig.v"
 
 parameter[5:0] JX2_GR_R0		= 6'h00;
@@ -873,7 +875,7 @@ parameter[127:0] UVDDRT_FF		= UV128_FF;	//
 `endif
 `endif
 
-`define def_true
+// `define def_true
 
 `ifdef jx2_enable_fpu
 `ifndef jx2_enable_fprs

@@ -52,6 +52,7 @@ module RegGPR_6R3W_SM(
 	regValImmB,		//Immediate (Decode, Lane 2)
 	regValImmC,		//Immediate (Decode, Lane 3)
 	regValLr,		//LR Value (CR)
+	regValCm,		//Cm Value (CR)
 	
 	regOutDlr,	regInDlr,
 	regOutDhr,	regInDhr,
@@ -108,7 +109,8 @@ input [47:0]	regValGbr;		//GBR Value (CR)
 input [32:0]	regValImmA;		//Immediate (Decode)
 input [32:0]	regValImmB;		//Immediate (Decode)
 input [32:0]	regValImmC;		//Immediate (Decode)
-input [47:0]	regValLr;		//GBR Value (CR)
+input [47:0]	regValLr;		//LR Value (CR)
+input [63:0]	regValCm;		//Cm Value (CR)
 	
 output[63:0]	regOutDlr;
 input [63:0]	regInDlr;
@@ -503,6 +505,14 @@ begin
 		JX2_GR_GBR:	tValRsA={ UV32_00, regValGbr[31:0] };
 		JX2_GR_LR:	tValRsA={ UV32_00, regValLr[31:0] };
 `endif
+
+`ifdef jx2_gprs_mergecm
+		JX2_GR_SR, JX2_GR_VBR, JX2_GR_SPC, JX2_GR_SSP,
+		JX2_GR_TBR, JX2_GR_TTB, JX2_GR_TEA, JX2_GR_MMCR,
+		JX2_GR_EXSR, JX2_GR_STTB, JX2_GR_KRR:
+			tValRsA = regValCm;
+`endif
+
 
 		JX2_GR_IMM: begin
 			tValRsA={

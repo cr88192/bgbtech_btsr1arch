@@ -154,6 +154,9 @@ reg[7:0]	tOpUCmd2;
 
 assign		opUCmdOut = tOpUCmd2;
 
+reg[63:0]	tValOutDfl;
+reg			tDoOutDfl;
+
 reg tMsgLatch;
 reg tNextMsgLatch;
 reg tSlotUSup;
@@ -169,6 +172,9 @@ begin
 	tRegHeld		= 0;
 	tNextMsgLatch	= 0;
 	tSlotUSup		= 0;
+
+	tValOutDfl		= UV64_XX;
+	tDoOutDfl		= 0;
 
 `ifndef def_true
 	casez( { opBraFlush, opUCmd[7:6] } )
@@ -221,7 +227,8 @@ begin
 			tSlotUSup		= 1;
 			if(opUIxt[7:6]==JX2_IUC_WX)
 				tSlotUSup	= 0;
-			tHeldIdRn1	= regIdRm;
+//			tHeldIdRn1	= regIdRm;
+			tRegHeld		= 1;
 		end
 
 `ifndef def_true
@@ -242,7 +249,8 @@ begin
 `endif
 
 		JX2_UCMD_ALU3, JX2_UCMD_UNARY, JX2_UCMD_ALUW3: begin
-			tHeldIdRn1	= regIdRm;
+//			tHeldIdRn1	= regIdRm;
+			tRegHeld		= 1;
 		end
 
 		JX2_UCMD_ALUCMP: begin
@@ -255,40 +263,48 @@ begin
 //			tRegOutSr[0]	= tCnvSrT;
 		end
 		JX2_UCMD_MOV_IR: begin
+			tValOutDfl		= regValRt;
+			tDoOutDfl		= 1;
+
 			case(opUIxt[3:0])
 				4'b0000: begin /* LDIx */
-					tRegIdRn1	= regIdRm;
+//					tRegIdRn1	= regIdRm;
 //					tRegValRn1	= {
 //						regValImm[32] ? UV32_FF : UV32_00,
 //						regValImm[31:0] };
-					tRegValRn1	= regValRt;
+//					tRegValRn1	= regValRt;
 				end
 				4'b0001: begin /* LDISH8 */
-					tRegIdRn1	= regIdRm;
+//					tRegIdRn1	= regIdRm;
 //					tRegValRn1	= { regValRs[55:0], regValImm[7:0] };
-					tRegValRn1	= { regValRs[55:0], regValRt[7:0] };
+//					tRegValRn1	= { regValRs[55:0], regValRt[7:0] };
+					tValOutDfl	= { regValRs[55:0], regValRt[7:0] };
 				end
 				4'b0010: begin /* LDISH16 */
-					tRegIdRn1	= regIdRm;
+//					tRegIdRn1	= regIdRm;
 //					tRegValRn1	= { regValRs[47:0], regValImm[15:0] };
-					tRegValRn1	= { regValRs[47:0], regValRt[15:0] };
+//					tRegValRn1	= { regValRs[47:0], regValRt[15:0] };
+					tValOutDfl	= { regValRs[47:0], regValRt[15:0] };
 				end
 				4'b0011: begin /* LDISH32 */
-					tRegIdRn1	= regIdRm;
+//					tRegIdRn1	= regIdRm;
 //					tRegValRn1	= { regValRs[31:0], regValImm[31:0] };
-					tRegValRn1	= { regValRs[31:0], regValRt[31:0] };
+//					tRegValRn1	= { regValRs[31:0], regValRt[31:0] };
+					tValOutDfl	= { regValRs[31:0], regValRt[31:0] };
+
 				end
 
 				default: begin
 					$display("ExEXB1: MOV_IR, Invalid UIxt %X", opUIxt);
-					tRegIdRn1	= regIdRm;
-					tRegValRn1	= regValRt;
+//					tRegIdRn1	= regIdRm;
+//					tRegValRn1	= regValRt;
 				end
 			endcase
 		end
 		
 		JX2_UCMD_MULW3: begin
-			tHeldIdRn1	= regIdRm;
+//			tHeldIdRn1	= regIdRm;
+			tRegHeld		= 1;
 //			tRegIdRn1	= regIdRm;			//
 //			tRegValRn1	= regValMulwRes;		//
 		end
@@ -299,27 +315,37 @@ begin
 //		JX2_UCMD_SHADQ3, JX2_UCMD_SHLDQ3:
 		JX2_UCMD_SHAD3:
 		begin
-			tRegIdRn1	= regIdRm;
-			tRegValRn1	= tValShad64;
+//			tRegIdRn1	= regIdRm;
+//			tRegValRn1	= tValShad64;
+			tValOutDfl		= tValShad64;
+			tDoOutDfl		= 1;
 		end
 
 `else
 		JX2_UCMD_SHAD3: begin
-			tRegIdRn1	= regIdRm;
-			tRegValRn1	= { tValShad32[31]?UV32_FF:UV32_00, tValShad32 };
+//			tRegIdRn1	= regIdRm;
+//			tRegValRn1	= { tValShad32[31]?UV32_FF:UV32_00, tValShad32 };
+			tValOutDfl		= { tValShad32[31]?UV32_FF:UV32_00, tValShad32 };
+			tDoOutDfl		= 1;
 		end
 		JX2_UCMD_SHLD3: begin
-			tRegIdRn1	= regIdRm;
-			tRegValRn1	= { UV32_00, tValShad32 };
+//			tRegIdRn1	= regIdRm;
+//			tRegValRn1	= { UV32_00, tValShad32 };
+			tValOutDfl		= { UV32_00, tValShad32 };
+			tDoOutDfl		= 1;
 		end
 	
 		JX2_UCMD_SHADQ3: begin
-			tRegIdRn1	= regIdRm;
-			tRegValRn1	= tValShad64;
+//			tRegIdRn1	= regIdRm;
+//			tRegValRn1	= tValShad64;
+			tValOutDfl		= tValShad64;
+			tDoOutDfl		= 1;
 		end
 		JX2_UCMD_SHLDQ3: begin
-			tRegIdRn1	= regIdRm;
-			tRegValRn1	= tValShad64;
+//			tRegIdRn1	= regIdRm;
+//			tRegValRn1	= tValShad64;
+			tValOutDfl		= tValShad64;
+			tDoOutDfl		= 1;
 		end
 `endif
 
@@ -328,11 +354,13 @@ begin
 		end
 
 		JX2_UCMD_FPU3: begin
-			tHeldIdRn1	= regIdRm;
+//			tHeldIdRn1	= regIdRm;
+			tRegHeld		= 1;
 		end
 
 		JX2_UCMD_BLINT: begin
-			tHeldIdRn1	= regIdRm;
+//			tHeldIdRn1	= regIdRm;
+			tRegHeld		= 1;
 		end
 
 		JX2_UCMD_OP_IXS: begin
@@ -340,12 +368,16 @@ begin
 				JX2_UCIX_IXS_NOP: begin
 				end
 				JX2_UCIX_IXS_MOVT: begin
-					tRegIdRn1		= regIdRm;
-					tRegValRn1		= {UV63_00, regInSr[0]};
+//					tRegIdRn1		= regIdRm;
+//					tRegValRn1		= {UV63_00, regInSr[0]};
+					tValOutDfl		= {UV63_00, regInSr[0]};
+					tDoOutDfl		= 1;
 				end
 				JX2_UCIX_IXS_MOVNT: begin
-					tRegIdRn1		= regIdRm;
-					tRegValRn1		= {UV63_00, !regInSr[0]};
+//					tRegIdRn1		= regIdRm;
+//					tRegValRn1		= {UV63_00, !regInSr[0]};
+					tValOutDfl		= {UV63_00, !regInSr[0]};
+					tDoOutDfl		= 1;
 				end
 				default: begin
 					if(!tMsgLatch)
@@ -391,13 +423,22 @@ begin
 	
 	endcase
 
+	if(tDoOutDfl)
+	begin
+		tRegIdRn1		= regIdRm;
+		tRegValRn1		= tValOutDfl;
+	end
+	
 	if(opBraFlush)
 	begin
 		tRegIdRn1	= JX2_GR_ZZR;
 	end
 
-	if(tHeldIdRn1 != JX2_GR_ZZR)
-		tRegHeld		= 1;
+	if(tRegHeld)
+		tHeldIdRn1	= regIdRm;
+
+//	if(tHeldIdRn1 != JX2_GR_ZZR)
+//		tRegHeld		= 1;
 
 	if(tSlotUSup)
 	begin

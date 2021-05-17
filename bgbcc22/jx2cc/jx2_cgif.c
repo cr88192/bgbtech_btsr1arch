@@ -87,6 +87,9 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	shctx->has_alux=0;		//128-bit ALU Ops
 	shctx->has_fpux=0;		//128-bit FPU Ops
 	
+	shctx->has_jumbo=0;
+	shctx->has_bra48=0;
+	
 //	shctx->no_fpu=1;
 	shctx->no_ext32=0;
 //	shctx->fpu_soft=1;
@@ -164,6 +167,9 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "pel6"))
 		ctx->pel_cmpr=6;
 
+
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "bra48"))
+		{ shctx->has_bra48=1; }
 
 //	ctx->arch_has_predops=0;
 	ctx->arch_has_predops=1;
@@ -4714,6 +4720,30 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			break;
 
 		case BGBCC_SH_RLC_TRIPWIRE_BJX:
+			break;
+
+		case BGBCC_SH_RLC_ABS48_BJX:
+			w0=bgbcc_getu16en(ctr+0, en);
+			w1=bgbcc_getu16en(ctr+2, en);
+			w2=bgbcc_getu16en(ctr+4, en);
+			w3=bgbcc_getu16en(ctr+6, en);
+			b=	(((u64)(w0&  255))<<40)|
+				(((u64)(w1&65535))<<24)|
+				(((u64)(w2&  255))<<16)|
+				 ((u64)(w3&65535));
+
+			b1=sctx->image_base+(ctl-imgbase);
+			d1=b+b1;
+
+			w0=(w0&0xFF00)|((d1>>40)&0x00FF);
+			w1=(w1&0x0000)|((d1>>24)&0xFFFF);
+			w2=(w2&0xFF00)|((d1>>16)&0x00FF);
+			w3=(w3&0x0000)|((d1    )&0xFFFF);
+
+			bgbcc_jx2cc_setu16en(ctr+0, en, w0);
+			bgbcc_jx2cc_setu16en(ctr+2, en, w1);
+			bgbcc_jx2cc_setu16en(ctr+4, en, w2);
+			bgbcc_jx2cc_setu16en(ctr+6, en, w3);
 			break;
 
 		default:

@@ -68,8 +68,8 @@ reg				tFraGe1;
 reg				tFraDti1;
 reg				tFraItf1;
 
-reg[63:0]		tFraJ1;
-reg				tFraJ1Sg;
+// reg[63:0]		tFraJ1;
+// reg				tFraJ1Sg;
 reg[63:0]		tRegValRn1;
 
 reg[11:0]		tExpA1D;
@@ -86,8 +86,8 @@ reg[10:0]		tExpA2;
 reg[10:0]		tExpB2;
 reg[63:0]		tFraA2;
 reg[63:0]		tFraB2;
-reg[63:0]		tFraJ2;
-reg				tFraJ2Sg;
+// reg[63:0]		tFraJ2;
+// reg				tFraJ2Sg;
 reg[63:0]		tRegValRn2;
 reg				tFraDti2;
 reg				tFraItf2;
@@ -108,6 +108,17 @@ wire[63:0]		tFraShr1_C;
 reg[7:0]		tFraShr1_Shr;
 ExCsShr64F	tFraShr(tFraShr1_S, tFraShr1_C, tFraShr1_Shr);
 
+`ifdef def_true
+reg[63:0]		tFraShr1A_S;
+wire[63:0]		tFraShr1A_C;
+reg[7:0]		tFraShr1A_Shr;
+ExCsShr64F	tFraShrA(tFraShr1A_S, tFraShr1A_C, tFraShr1A_Shr);
+
+reg[63:0]		tFraShr1B_S;
+wire[63:0]		tFraShr1B_C;
+reg[7:0]		tFraShr1B_Shr;
+ExCsShr64F	tFraShrB(tFraShr1B_S, tFraShr1B_C, tFraShr1B_Shr);
+`endif
 
 reg[63:0]		tFraClz1_S;
 wire[7:0]		tFraClz1_C;
@@ -121,10 +132,18 @@ ExCsShl64F	tFraShl(tFraShl1_S, tFraShl1_C, tFraShl1_Shl);
 
 reg[3:0]		tRegExOp3;
 reg				tExEn3;
-reg				tSgnC3;
+// reg				tSgnC3;
+reg				tSgnC3A;
 reg[10:0]		tExpC3;
-reg[63:0]		tFraC3;
+// reg[63:0]		tFraC3;
+reg[63:0]		tFraC3A;
 reg[63:0]		tFraC3I;
+
+wire			tSgnC3;
+wire[63:0]		tFraC3;
+assign		tSgnC3 = tSgnC3A ^ tFraC3A[63];
+assign		tFraC3 = tFraC3A[63] ? (~tFraC3A) : tFraC3A;
+
 reg				tSgnC3B;
 reg[11:0]		tExpC3B;
 reg[63:0]		tFraC3B;
@@ -189,24 +208,15 @@ begin
 		tFraB1		= 0;
 	end
 
-	tFraJ1Sg	= tRegValRn[63];
+//	tFraJ1Sg	= tRegValRn[63];
 //	tFraJ1		= tRegValRn;
-	tFraJ1		= tFraJ1Sg ? (~tRegValRn) : tRegValRn;
+//	tFraJ1		= tFraJ1Sg ? (~tRegValRn) : tRegValRn;
 
 	if(tFraItf1)
 	begin
-`ifndef def_true
-		tSgnA1	= tFraJ1Sg;
-//		tExpA1	= 1085;
-		tExpA1	= 1084;
-		tFraA1	= tFraJ1;
-`endif
-
-`ifdef def_true
 		tSgnA1	= 0;
 		tExpA1	= 1084;
 		tFraA1	= tRegValRn;
-`endif
 	end
 
 	tExpA1D	= {1'b0, tExpA1} - {1'b0, tExpB1};
@@ -214,11 +224,22 @@ begin
 
 	tFraUseB		= 1;
 
+`ifndef def_true
 	if(!tExpA1D[11] && !tExpB1D[11])
 	begin
 		if(tRegValRn[51:48] < tRegValRm[51:48])
 			tFraUseB		= 0;
 	end
+`endif
+
+`ifdef def_true
+	tFraShr1A_S		= tFraA1;
+	tFraShr1A_Shr	= { tExpB1D[9:7]!=0, tExpB1D[6:0] };
+
+	tFraShr1B_S		= tFraB1;
+	tFraShr1B_Shr	= { tExpA1D[9:7]!=0, tExpA1D[6:0] };
+`endif
+
 
 //	if(tExpA1D[11] || tFraDti1)
 //	if(tExpA1D[11] || tFraDti1 || tFraItf1)
@@ -243,18 +264,27 @@ begin
 	tExpC2	= tExpA2;
 	tFraC2	= tFraC2_C[63:0];
 
+`ifndef def_true
 	if(tFraC2_C[63])
 	begin
 //		$display("FpuAdd: S2 Flip Result");
 		tSgnC2	= !tSgnA2;
 		tFraC2	= ~tFraC2_C[63:0];
 	end
+`endif
 
 	tFraC2I = tFraC2_C[63: 0];
 	
 	
 	/* Stage 3 */
+
+//	tFraC3 = tFraC3A;
 	tSgnC3B	= tSgnC3;
+
+//	tSgnC3B	= tSgnC3 ^ tFraC3A[63];
+//	if(tFraC3A[63])
+//		tFraC3 = ~tFraC3A;
+
 	tFraClz1_S = { tFraC3[61:0], 2'b0 };
 
 	if(tFraC3[63] && tExEn3)
@@ -337,26 +367,29 @@ begin
 	tRegValRo2	<= tRegValRo;
 	tRegExOK2	<= tRegExOK;
 
-	if(!exHold && tExEn1)
+//	if(!exHold && tExEn1)
+	if(!exHold)
 	begin
 		if(tFraUseA)
 		begin
 			tSgnA2 <= tSgnA1;	tSgnB2 <= tSgnB1;
 			tExpA2 <= tExpA1;	tExpB2 <= tExpB1;
 			tFraA2 <= tFraA1;
-			tFraB2 <= tFraShr1_C;
+//			tFraB2 <= tFraShr1_C;
+			tFraB2 <= tFraShr1B_C;
 		end
 		else
 		begin
 			tSgnA2 <= tSgnB1;	tSgnB2 <= tSgnA1;
 			tExpA2 <= tExpB1;	tExpB2 <= tExpA1;
 			tFraA2 <= tFraB1;
-			tFraB2 <= tFraShr1_C;
+//			tFraB2 <= tFraShr1_C;
+			tFraB2 <= tFraShr1A_C;
 		end
 		
 		tRegExOp2	<= tRegExOp1;
-		tFraJ2		<= tFraJ1;
-		tFraJ2Sg	<= tFraJ1Sg;
+//		tFraJ2		<= tFraJ1;
+//		tFraJ2Sg	<= tFraJ1Sg;
 		tExEn2		<= tExEn1;
 		tRegValRn2	<= tRegValRn1;
 
@@ -365,9 +398,11 @@ begin
 	end
 
 	tRegExOp3	<= tRegExOp2;
-	tSgnC3		<= tSgnC2;
+//	tSgnC3		<= tSgnC2;
+	tSgnC3A		<= tSgnC2;
 	tExpC3		<= tExpC2;
-	tFraC3		<= tFraC2;
+//	tFraC3		<= tFraC2;
+	tFraC3A		<= tFraC2;
 	tFraC3I		<= tFraC2I;
 
 	tRegExOp4	<= tRegExOp3;

@@ -133,10 +133,14 @@ begin
 //	tNxtDivRst = { 2'b00, tRegCtrl[31:27], 7'h40 };
 //	tNxtDivRst = { 5'b00, tRegCtrl[31:27], 4'h8 };
 //	tNxtDivRst = { 2'b00, tRegCtrl[31:24], 4'h8 };
-	tNxtDivRst = { 2'b00, tRegCtrl[31:24], 4'hA };
+//	tNxtDivRst = { 2'b00, tRegCtrl[31:24], 4'hA };
 //	tNxtDivRst = { 3'b00, tRegCtrl[31:24], 3'h4 };
 //	tNxtDivRst = { 3'b00, tRegCtrl[31:24], 3'h6 };
 //	tNxtDivRst = 1000;
+
+//	tNxtDivRst = { 2'b00, tRegCtrl[31:24], 4'hA };
+	tNxtDivRst = { 2'b00, tRegCtrl[31:24], 4'hD };
+//	tNxtDivRst = { 1'b0, tRegCtrl[31:24], 5'h1A };
 
 	tNxtRegExchI	= tRegExchI;
 	tNxtRegExchO	= tRegExchO;

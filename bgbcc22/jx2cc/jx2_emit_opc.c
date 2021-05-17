@@ -3518,6 +3518,36 @@ int BGBCC_JX2_EmitOpImmReg(BGBCC_JX2_Context *ctx,
 	return(1);
 }
 
+int BGBCC_JX2_EmitOpImmRegPred(BGBCC_JX2_Context *ctx,
+	int nmid, s64 imm, int reg, int pfc)
+{
+	int opfc;
+
+	if((ctx->op_is_wex2) && (ctx->op_is_wex2!=pfc))
+		{ BGBCC_DBGBREAK }
+
+	opfc=ctx->op_is_wex2;
+	ctx->op_is_wex2=pfc;
+	if(!BGBCC_JX2_TryEmitOpImmReg(ctx, nmid, imm, reg))
+		{ BGBCC_DBGBREAK }
+	ctx->op_is_wex2=opfc;
+
+	return(1);
+}
+
+int BGBCC_JX2_EmitOpImmRegPredT(BGBCC_JX2_Context *ctx,
+	int nmid, s64 imm, int reg, int pfc)
+{
+	return(BGBCC_JX2_EmitOpImmRegPred(ctx, nmid, imm, reg, 4));
+}
+
+int BGBCC_JX2_EmitOpImmRegPredF(BGBCC_JX2_Context *ctx,
+	int nmid, s64 imm, int reg, int pfc)
+{
+	return(BGBCC_JX2_EmitOpImmRegPred(ctx, nmid, imm, reg, 5));
+}
+
+
 int BGBCC_JX2_ProbeEmitOpImmReg(BGBCC_JX2_Context *ctx,
 	int nmid, s64 imm, int reg)
 {

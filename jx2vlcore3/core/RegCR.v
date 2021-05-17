@@ -39,18 +39,18 @@ input			clock;
 input			reset;
 input			hold;
 
-input[4:0]		regIdCm;		//Source C, MemStore
+input[5:0]		regIdCm;		//Source C, MemStore
 output[63:0]	regValCm;
 
-input[4:0]		regIdCn1;		//Destination ID
+input[5:0]		regIdCn1;		//Destination ID
 input[63:0]		regValCn1;		//Destination Value
-input[4:0]		regIdCn2;		//Destination ID
+input[5:0]		regIdCn2;		//Destination ID
 input[63:0]		regValCn2;		//Destination Value
 
 input			regEx1Flush;
 input			regEx2Flush;
 
-input[4:0]		regIdCn3;		//Destination ID
+input[5:0]		regIdCn3;		//Destination ID
 input[63:0]		regValCn3;		//Destination Value
 input			regEx3Flush;
 
@@ -179,7 +179,8 @@ begin
 	tIsIsrEdge	= regInSr[28] ^ crRegSr[28];
 
 
-	regIdCn2B	= { 1'b1, regIdCn3 };
+//	regIdCn2B	= { 1'b1, regIdCn3 };
+	regIdCn2B	= regIdCn3;
 	regValCn2B	= regValCn3;
 //	if(regEx3Flush)
 //	if(1'b0)
@@ -195,7 +196,8 @@ begin
 	regValCn2B_48b	= { UV16_00, regValCn2B[31:0] };
 `endif
 
-	case({1'b1, regIdCm})
+//	case({1'b1, regIdCm})
+	case(regIdCm)
 		JX2_CR_SR:		tValCmA=crRegSr;
 		JX2_CR_EXSR:	tValCmA=crRegExsr;
 
@@ -256,8 +258,8 @@ begin
 	
 	tRegValCm = tValCmA;
 
-// `ifndef def_true
-`ifdef def_true
+`ifndef def_true
+// `ifdef def_true
 	if(!tValCmZz)
 	begin
 		if(regIdCm==regIdCn3)

@@ -169,6 +169,7 @@ byte no_wexify;		//has 128-bit SIMD ops
 byte has_alux;		//has 128-bit ALU ops
 byte has_fpux;		//has 128-bit FPU ops
 byte has_ops24;		//has 24-bit opcodes
+byte has_bra48;		//has 24-bit opcodes
 
 byte rov_sreg;		//rover for scratch registers
 byte rov_rshuf;		//rover for register shuffle

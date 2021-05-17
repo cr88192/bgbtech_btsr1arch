@@ -1,6 +1,8 @@
 `define jx2_enable_mmu
 `define jx2_enable_fpu
 
+// `define jx2_cfg_75mhz
+
 // `define jx2_enable_gpr48		//Enable R32..R47
 
 `define	jx2_use_fpu_w			//use wide FPU (GSVX)
@@ -11,11 +13,15 @@
 // `define	jx2_fpu_longdbl			//Enable FPU LongDouble Ext
 // `define	jx2_fpu_fmac			//Enable FMAC Operation
 
+// `define	jx2_fpu_lane2			//Allow FPU from Lane 2
+
 // `define jx2_sprs_elrehr			//ELR/EHR/BP as special registers?
 `define jx2_bra2stage			//Use 2-stage branch initiation
 // `define jx2_gprs_usefsm			//Use finite-state-machine GPRs
 
-// `define jx2_isr2stage			//Use 2-stage ISR initiation
+`define jx2_gprs_mergecm		//Merge Control-Regs into GPR Ports
+
+`define jx2_isr2stage			//Use 2-stage ISR initiation
 
 `define jx2_enable_pmort		//Enable Morton Shuffle
 
@@ -37,6 +43,9 @@
 `define jx2_enable_aluunary
 `define jx2_enable_clz
 
+// `ifndef jx2_cfg_75mhz
+`ifdef def_true
+
 // `define jx2_enable_blint			//Enable Bilinear Interpolator
 
 `define jx2_enable_btcutx			//UTXn Block Conversion Ops
@@ -50,6 +59,8 @@
 // `define jx2_enable_convrgb30a		//RGB30A Conversion Op
 
 `define jx2_enable_convfp16
+
+`endif
 
 `define jx2_do_convfp16_alu
 `define jx2_enable_conv2_alu

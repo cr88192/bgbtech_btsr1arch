@@ -1954,6 +1954,27 @@ int BGBCC_JX2_EmitLoadRegImm64P(
 #endif
 
 			if(	(opw1<0) &&
+				ctx->has_bra48 &&
+				((reg&31)==0))
+			{
+				if((imm&0x0000FFFFFFFFFFFFULL)==imm)
+				{
+					opw1=0xFE00|((imm>>40)&  255);
+					opw2=0x0000|((imm>>24)&65535);
+					opw3=0xFA00|((imm>>16)&  255);
+					opw4=0x0000|((imm>> 0)&65535);
+				}
+
+				if((imm|0xFFFF000000000000ULL)==imm)
+				{
+					opw1=0xFE00|((imm>>40)&  255);
+					opw2=0x0000|((imm>>24)&65535);
+					opw3=0xFB00|((imm>>16)&  255);
+					opw4=0x0000|((imm>> 0)&65535);
+				}
+			}
+
+			if(	(opw1<0) &&
 //				BGBCC_JX2_EmitCheckRegBaseGPR(ctx, reg) &&
 				BGBCC_JX2_EmitCheckRegExtGPR(ctx, reg) &&
 				BGBCC_JX2_ConstIsFull64(ctx, imm))

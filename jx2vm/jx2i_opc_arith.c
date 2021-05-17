@@ -964,6 +964,17 @@ void BJX2_Op_LDIN_Imm32(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[BJX2_REG_DR]=((u32)op->imm)|(~((1LL<<32)-1));
 }
 
+
+void BJX2_Op_LDIZ_Imm48(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[BJX2_REG_DR]=op->imm;
+}
+
+void BJX2_Op_LDIN_Imm48(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[BJX2_REG_DR]=op->imm|(~((1LL<<48)-1));
+}
+
 void BJX2_Op_LEAB_LdRegDispReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+(op->imm);

@@ -1127,6 +1127,7 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				op->nmid=BJX2_NMID_MOV;
 				op->fmid=BJX2_FMID_REGREG;
 				op->Run=BJX2_Op_MOV_RegReg;
+				op->fl|=BJX2_OPFL_NOWEX;
 				if(eq)
 				{
 					op->nmid=BJX2_NMID_MOVD;
@@ -3635,6 +3636,40 @@ int BJX2_DecodeOpcode_DecFJ(BJX2_Context *ctx,
 		case 0xF2:		case 0xF6:
 			ret=BJX2_DecodeOpcode_DecF2(ctx, op, addr, opw3, opw4, immb);
 			break;
+			
+		case 0xFA:
+		case 0xFB:
+//			op->fl|=BJX2_OPFL_TWOWORD;
+//			op->opn=opw1;
+//			op->opn2=opw2;
+			if(opw3&0x0100)
+			{
+				op->imm=
+					(((u64)immb)<<24)|
+					((opw3&255)<<16)|
+					((u16)opw4);
+				op->nmid=BJX2_NMID_LDIN;
+				op->fmid=BJX2_FMID_IMM;
+				op->Run=BJX2_Op_LDIN_Imm48;
+				
+				if(opw1&0x0100)
+					{ op->Run=BJX2_Op_BSR_Abs; }
+			}else
+			{
+				op->imm=
+					(((u64)immb)<<24)|
+					((opw3&255)<<16)|
+					((u16)opw4);
+				op->nmid=BJX2_NMID_LDIZ;
+				op->fmid=BJX2_FMID_IMM;
+				op->Run=BJX2_Op_LDIZ_Imm48;
+				
+				if(opw1&0x0100)
+					{ op->Run=BJX2_Op_BRA_Abs; }
+			}
+			break;
+			
+			
 		default:
 			ret=-1;
 			break;

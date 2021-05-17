@@ -92,12 +92,14 @@ input[63:0]		regValCRm;		//Source C Value (CR)
 
 input[5:0]		regIdRn1;		//Destination ID (EX1)
 input[63:0]		regValRn1;		//Destination Value (EX1)
-input[4:0]		regIdCn1;		//Destination ID (CR, EX1)
+//input[4:0]		regIdCn1;		//Destination ID (CR, EX1)
+input[5:0]		regIdCn1;		//Destination ID (CR, EX1)
 input[63:0]		regValCn1;		//Destination Value (CR, EX1)
 	
 output[5:0]		regIdRn2;		//Destination ID (EX1)
 output[63:0]	regValRn2;		//Destination Value (EX1)
-output[4:0]		regIdCn2;		//Destination ID (CR, EX1)
+//output[4:0]		regIdCn2;		//Destination ID (CR, EX1)
+output[5:0]		regIdCn2;		//Destination ID (CR, EX1)
 output[63:0]	regValCn2;		//Destination Value (CR, EX1)
 	
 input[47:0]		regValPc;		//PC Value (Synthesized)
@@ -146,7 +148,8 @@ assign	exHold		= { tRegHeld, tExHold };
 
 reg[ 5:0]		tRegIdRn2;
 reg[63:0]		tRegValRn2;
-reg[ 4:0]		tRegIdCn2;
+//reg[ 4:0]		tRegIdCn2;
+reg[ 5:0]		tRegIdCn2;
 reg[63:0]		tRegValCn2;
 reg[63:0]		tRegOutDlr;
 reg[63:0]		tRegOutDhr;
@@ -166,6 +169,9 @@ assign	regOutLr	= tRegOutLr;
 assign	regOutSr	= tRegOutSr;
 assign	regOutSchm	= tRegOutSchm;
 
+
+reg[63:0]	tValOutDfl;
+reg			tDoOutDfl;
 
 
 (* max_fanout = 50 *)
@@ -204,6 +210,9 @@ begin
 	tDoAluSrT		= 0;
 	tAluSrbOp		= 0;
 
+	tValOutDfl		= UV64_XX;
+	tDoOutDfl		= 0;
+
 `ifndef def_true
 	casez( { opBraFlush, opUCmd[7:6], regInLastSr[0] } )
 		4'b000z: 	tOpEnable = 1;
@@ -238,7 +247,8 @@ begin
 				JX2_UCIX_IXT_LDEKRR: begin
 					if(regValKrreRes[65:64]==2'b10)
 					begin
-						tRegIdCn2	= JX2_CR_KRR[4:0];
+//						tRegIdCn2	= JX2_CR_KRR[4:0];
+						tRegIdCn2	= JX2_CR_KRR;
 						tRegValCn2	= regValKrreRes[63:0];
 					end
 				end
@@ -268,9 +278,11 @@ begin
 
 		JX2_UCMD_ALU3, JX2_UCMD_UNARY, JX2_UCMD_ALUW3,
 		JX2_UCMD_CONV2_RR: begin
-			tRegIdRn2		= regIdRm;			//
-			tRegValRn2		= regValAluRes[63:0];		//
+//			tRegIdRn2		= regIdRm;			//
+//			tRegValRn2		= regValAluRes[63:0];		//
 			tDoAluSrT		= 1;
+			tValOutDfl		= regValAluRes[63:0];
+			tDoOutDfl		= 1;
 		end
 
 		JX2_UCMD_ALUCMP: begin
@@ -297,8 +309,10 @@ begin
 		end
 		
 		JX2_UCMD_MULW3: begin
-			tRegIdRn2	= regIdRm;			//
-			tRegValRn2	= regValMulwRes;		//
+//			tRegIdRn2	= regIdRm;			//
+//			tRegValRn2	= regValMulwRes;		//
+			tValOutDfl		= regValMulwRes;
+			tDoOutDfl		= 1;
 		end
 		
 		JX2_UCMD_SHAD3: begin
@@ -315,8 +329,10 @@ begin
 `ifdef jx2_enable_blint
 		JX2_UCMD_BLINT: begin
 			tDoHoldCyc	= 6;
-			tRegIdRn2	= regIdRm;			//
-			tRegValRn2	= regBlintRes;		//
+//			tRegIdRn2	= regIdRm;			//
+//			tRegValRn2	= regBlintRes;		//
+			tValOutDfl		= regBlintRes;
+			tDoOutDfl		= 1;
 		end
 `endif
 
@@ -329,20 +345,28 @@ begin
 		end
 		
 		JX2_UCMD_FPU3: begin
-			tRegIdRn2		= regIdRm;
-			tRegValRn2		= regFpuGRn;
+//			tRegIdRn2		= regIdRm;
+//			tRegValRn2		= regFpuGRn;
+			tValOutDfl		= regFpuGRn;
+			tDoOutDfl		= 1;
 		end
 		JX2_UCMD_FLDCX: begin
-			tRegIdRn2		= regIdRm;
-			tRegValRn2		= regFpuGRn;
+//			tRegIdRn2		= regIdRm;
+//			tRegValRn2		= regFpuGRn;
+			tValOutDfl		= regFpuGRn;
+			tDoOutDfl		= 1;
 		end
 		JX2_UCMD_FSTCX: begin
-			tRegIdRn2		= regIdRm;
-			tRegValRn2		= regFpuGRn;
+//			tRegIdRn2		= regIdRm;
+//			tRegValRn2		= regFpuGRn;
+			tValOutDfl		= regFpuGRn;
+			tDoOutDfl		= 1;
 		end
 		JX2_UCMD_FIXS: begin
-			tRegIdRn2		= regIdRm;
-			tRegValRn2		= regFpuGRn;
+//			tRegIdRn2		= regIdRm;
+//			tRegValRn2		= regFpuGRn;
+			tValOutDfl		= regFpuGRn;
+			tDoOutDfl		= 1;
 		end
 
 		JX2_UCMD_FCMP: begin
@@ -372,6 +396,12 @@ begin
 		end
 	
 	endcase
+	
+	if(tDoOutDfl)
+	begin
+		tRegIdRn2		= regIdRm;
+		tRegValRn2		= tValOutDfl;
+	end
 	
 	if(tDoMemOp)
 	begin
@@ -404,7 +434,8 @@ begin
 	if(opBraFlush)
 	begin
 		tRegIdRn2	= JX2_GR_ZZR;
-		tRegIdCn2	= JX2_CR_ZZR[4:0];
+//		tRegIdCn2	= JX2_CR_ZZR[4:0];
+		tRegIdCn2	= JX2_CR_ZZR;
 	end
 
 	if(tHoldCyc < tDoHoldCyc)

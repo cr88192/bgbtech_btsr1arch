@@ -1863,7 +1863,8 @@ begin
 						opNmid		= JX2_UCMD_OP_IXT;
 						opUCmdIx	= JX2_UCIX_IXT_CPUID;
 						opFmid		= JX2_FMID_REG;
-						opIty		= JX2_ITY_SB;
+//						opIty		= JX2_ITY_SB;
+						opIty		= JX2_ITY_XB;
 					end
 					8'h6B: begin
 						opNmid		= JX2_UCMD_OP_IXT;
@@ -2879,6 +2880,12 @@ begin
 					opRegM	= opRegO_Cr;
 					opRegO	= JX2_GR_ZZR;
 					opRegN	= opRegO_Cr;
+				end
+
+				JX2_ITY_XB: begin
+					opRegM	= JX2_GR_ZZR;
+					opRegO	= opRegO_Dfl;
+					opRegN	= JX2_GR_DLR;
 				end
 
 				default: begin

@@ -121,10 +121,12 @@ input[63:0]		regValCRm;		//Source C Value (CR)
 
 output[5:0]		regIdRn1;		//Destination ID (EX1)
 output[63:0]	regValRn1;		//Destination Value (EX1)
-output[4:0]		regIdCn1;		//Destination ID (CR, EX1)
+// output[4:0]		regIdCn1;		//Destination ID (CR, EX1)
+output[5:0]		regIdCn1;		//Destination ID (CR, EX1)
 output[63:0]	regValCn1;		//Destination Value (CR, EX1)
 output[5:0]		heldIdRn1;		//Held Destination ID (EX1)
-output[4:0]		heldIdCn1;		//Held Destination ID (CR, EX1)
+// output[4:0]		heldIdCn1;		//Held Destination ID (CR, EX1)
+output[5:0]		heldIdCn1;		//Held Destination ID (CR, EX1)
 	
 input[47:0]		regValPc;		//PC Value (Synthesized)
 input[32:0]		regValImm;		//Immediate (Decode)
@@ -166,7 +168,8 @@ input[63:0]		regInExc;
 
 reg[ 5:0]		tRegIdRn1;		//Destination ID (EX1)
 reg[63:0]		tRegValRn1;		//Destination Value (EX1)
-reg[ 4:0]		tRegIdCn1;		//Destination ID (CR, EX1)
+//reg[ 4:0]		tRegIdCn1;		//Destination ID (CR, EX1)
+reg[ 5:0]		tRegIdCn1;		//Destination ID (CR, EX1)
 reg[63:0]		tRegValCn1;		//Destination Value (CR, EX1)
 reg[63:0]		tRegOutDlr;
 reg[63:0]		tRegOutDhr;
@@ -176,7 +179,8 @@ reg[63:0]		tRegOutSr;
 reg[7:0]		tRegOutSchm;
 
 reg[ 5:0]		tHeldIdRn1;		//Destination ID (EX1)
-reg[ 4:0]		tHeldIdCn1;		//Destination ID (CR, EX1)
+//reg[ 4:0]		tHeldIdCn1;		//Destination ID (CR, EX1)
+reg[ 5:0]		tHeldIdCn1;		//Destination ID (CR, EX1)
 
 reg[15:0]		tExTrapExc;
 
@@ -284,7 +288,8 @@ ExBtcUtx1	exUtx1(
 wire[63:0]	tValCpuIdLo;
 wire[63:0]	tValCpuIdHi;
 ExCpuId		cpuid(clock, reset, timers,
-	regIdRm[4:0], tValCpuIdLo, tValCpuIdHi);
+//	regIdRm[4:0], tValCpuIdLo, tValCpuIdHi);
+	regIdRt[4:0], tValCpuIdLo, tValCpuIdHi);
 
 reg[63:0]	tRegSpAdd8;
 reg[63:0]	tRegSpSub8;
@@ -317,6 +322,9 @@ reg[63:0]	tValAguBra;
 reg[47:0]	tValBra;
 reg			tDoBra;
 
+reg[63:0]	tValOutDfl;
+reg			tDoOutDfl;
+
 reg			tTempBit0;
 reg			tTempBit1;
 reg			tTempBit2;
@@ -335,11 +343,13 @@ begin
 
 	tRegIdRn1	= JX2_GR_ZZR;		//Destination ID (EX1)
 	tRegValRn1	= UV64_XX;			//Destination Value (EX1)
-	tRegIdCn1	= JX2_CR_ZZR[4:0];	//Destination ID (CR, EX1)
+//	tRegIdCn1	= JX2_CR_ZZR[4:0];	//Destination ID (CR, EX1)
+	tRegIdCn1	= JX2_CR_ZZR;	//Destination ID (CR, EX1)
 	tRegValCn1	= UV64_XX;			//Destination Value (CR, EX1)
 	
 	tHeldIdRn1	= JX2_GR_ZZR;
-	tHeldIdCn1	= JX2_CR_ZZR[4:0];
+//	tHeldIdCn1	= JX2_CR_ZZR[4:0];
+	tHeldIdCn1	= JX2_CR_ZZR;
 
 	tRegOutDlr	= regInDlr;
 	tRegOutDhr	= regInDhr;
@@ -360,6 +370,9 @@ begin
 	tNextMsgLatch	= 0;
 	tExTrapExc		= 0;
 	tDoDelayCycle	= 0;
+
+	tValOutDfl		= UV64_XX;
+	tDoOutDfl		= 0;
 
 	tValAguBra		= { UV16_00, regValPc[47:32], tValAgu[31:0] };
 //	tValAguBra		= { UV16_00, tValAgu };
@@ -465,8 +478,10 @@ begin
 		end
 	
 		JX2_UCMD_LEA_MR: begin
-			tRegIdRn1	= regIdRm;
-			tRegValRn1	= { UV16_00, tValAgu };
+//			tRegIdRn1	= regIdRm;
+//			tRegValRn1	= { UV16_00, tValAgu };
+			tValOutDfl		= { UV16_00, tValAgu };
+			tDoOutDfl		= 1;
 		end
 		JX2_UCMD_MOV_RM: begin
 			tDoMemOpm	= { 2'b10, opUIxt[2], opUIxt[5:4] };
@@ -480,7 +495,8 @@ begin
 		JX2_UCMD_MOV_MR: begin
 			tDoMemOpm = { 2'b01, opUIxt[2], opUIxt[5:4] };
 			tDoMemOp	= 1;
-			tHeldIdRn1	= regIdRm;
+//			tHeldIdRn1	= regIdRm;
+			tRegHeld		= 1;
 
 `ifdef jx2_debug_ldst
 			$display("LOAD(1): A=%X R=%X",
@@ -490,58 +506,83 @@ begin
 
 		JX2_UCMD_ALU3, JX2_UCMD_UNARY, JX2_UCMD_ALUW3,
 		JX2_UCMD_CONV2_RR: begin
-			tHeldIdRn1	= regIdRm;
+//			tHeldIdRn1	= regIdRm;
+			tRegHeld		= 1;
 		end
 
 		JX2_UCMD_ALUCMP: begin
 		end
 	
 		JX2_UCMD_CONV_RR: begin
-			tRegIdRn1		= regIdRm;
-			tRegValRn1		= tValCnv;
+			tValOutDfl		= tValCnv;
+			tDoOutDfl		= 1;
+//			tRegIdRn1		= regIdRm;
+//			tRegValRn1		= tValCnv;
 			tRegOutSr[0]	= tCnvSrT;
 		end
 		JX2_UCMD_MOV_RC: begin
-			tRegIdCn1	= regIdRm[4:0];
+`ifdef jx2_gprs_mergecm
+			tValOutDfl		= regValRs;
+			tDoOutDfl		= 1;
+`else
+//			tRegIdCn1	= regIdRm[4:0];
+			tRegIdCn1	= regIdRm;
 			tRegValCn1	= regValRs;
+
+			tRegIdRn1	= regIdRm;
+			tRegValRn1	= regValRs;
+`endif
 		end
 		JX2_UCMD_MOV_CR: begin
-			tRegIdRn1	= regIdRm;
-			tRegValRn1	= regValCRm;
+`ifdef jx2_gprs_mergecm
+			tValOutDfl		= regValRs;
+			tDoOutDfl		= 1;
+`else
+//			tRegIdRn1	= regIdRm;
+//			tRegValRn1	= regValCRm;
+			tValOutDfl		= regValCRm;
+			tDoOutDfl		= 1;
+`endif
 		end
 		JX2_UCMD_MOV_IR: begin
+			tValOutDfl		= regValRt;
+			tDoOutDfl		= 1;
+
 			case(opUIxt[3:0])
 				4'b0000: begin /* LDIx */
-					tRegIdRn1	= regIdRm;
+//					tRegIdRn1	= regIdRm;
 //					tRegValRn1	= {
 //						regValImm[32] ? UV32_FF : UV32_00,
 //						regValImm[31:0] };
-					tRegValRn1	= regValRt;
+//					tRegValRn1	= regValRt;
 				end
 				4'b0001: begin /* LDISH8 */
-					tRegIdRn1	= regIdRm;
+//					tRegIdRn1	= regIdRm;
 //					tRegValRn1	= { regValRs[55:0], regValImm[7:0] };
-					tRegValRn1	= { regValRs[55:0], regValRt[7:0] };
+//					tRegValRn1	= { regValRs[55:0], regValRt[7:0] };
+					tValOutDfl	= { regValRs[55:0], regValRt[7:0] };
 				end
 				4'b0010: begin /* LDISH16 */
-					tRegIdRn1	= regIdRm;
+//					tRegIdRn1	= regIdRm;
 //					tRegValRn1	= { regValRs[47:0], regValImm[15:0] };
-					tRegValRn1	= { regValRs[47:0], regValRt[15:0] };
+//					tRegValRn1	= { regValRs[47:0], regValRt[15:0] };
+					tValOutDfl	= { regValRs[47:0], regValRt[15:0] };
 				end
 				4'b0011: begin /* LDISH32 */
-					tRegIdRn1	= regIdRm;
+//					tRegIdRn1	= regIdRm;
 //					tRegValRn1	= { regValRs[31:0], regValImm[31:0] };
-					tRegValRn1	= { regValRs[31:0], regValRt[31:0] };
+//					tRegValRn1	= { regValRs[31:0], regValRt[31:0] };
+					tValOutDfl	= { regValRs[31:0], regValRt[31:0] };
 				end
 				4'b0100: begin /* JLDIX */
-					tRegIdRn1	= regIdRm;
-					tRegValRn1	= regValRt;
+//					tRegIdRn1	= regIdRm;
+//					tRegValRn1	= regValRt;
 				end
 				
 				default: begin
 					$display("ExEX1: MOV_IR, Invalid UIxt %X", opUIxt);
-					tRegIdRn1	= regIdRm;
-					tRegValRn1	= regValRt;
+//					tRegIdRn1	= regIdRm;
+//					tRegValRn1	= regValRt;
 				end
 			endcase
 		end
@@ -582,7 +623,8 @@ begin
 		end
 		
 		JX2_UCMD_MULW3: begin
-			tHeldIdRn1	= regIdRm;			//
+//			tHeldIdRn1	= regIdRm;			//
+			tRegHeld		= 1;
 		end
 
 `ifdef jx2_merge_shadq
@@ -590,56 +632,72 @@ begin
 //		JX2_UCMD_SHADQ3, JX2_UCMD_SHLDQ3:
 		JX2_UCMD_SHAD3:
 		begin
-			tRegIdRn1	= regIdRm;
-			tRegValRn1	= tValShad64;
+//			tRegIdRn1	= regIdRm;
+//			tRegValRn1	= tValShad64;
+			tValOutDfl	= tValShad64;
+			tDoOutDfl	= 1;
 		end
 `else
 		JX2_UCMD_SHAD3: begin
-			tRegIdRn1	= regIdRm;
-			tRegValRn1	= { tValShad32[31]?UV32_FF:UV32_00, tValShad32 };
+//			tRegIdRn1	= regIdRm;
+//			tRegValRn1	= { tValShad32[31]?UV32_FF:UV32_00, tValShad32 };
+			tValOutDfl		= { tValShad32[31]?UV32_FF:UV32_00, tValShad32 };
+			tDoOutDfl		= 1;
 		end
 		JX2_UCMD_SHLD3: begin
-			tRegIdRn1	= regIdRm;
-			tRegValRn1	= { UV32_00, tValShad32 };
+//			tRegIdRn1	= regIdRm;
+//			tRegValRn1	= { UV32_00, tValShad32 };
+			tValOutDfl		= { UV32_00, tValShad32 };
+			tDoOutDfl		= 1;
 		end
 	
 		JX2_UCMD_SHADQ3: begin
-			tRegIdRn1	= regIdRm;
-			tRegValRn1	= tValShad64;
+//			tRegIdRn1	= regIdRm;
+//			tRegValRn1	= tValShad64;
+			tValOutDfl		= tValShad64;
+			tDoOutDfl		= 1;
 		end
 		JX2_UCMD_SHLDQ3: begin
-			tRegIdRn1	= regIdRm;
-			tRegValRn1	= tValShad64;
+//			tRegIdRn1	= regIdRm;
+//			tRegValRn1	= tValShad64;
+			tValOutDfl		= tValShad64;
+			tDoOutDfl		= 1;
 		end
 
 `endif
 
 		JX2_UCMD_MUL3: begin
-			tHeldIdRn1	= regIdRm;
+//			tHeldIdRn1	= regIdRm;
+			tRegHeld		= 1;
 		end
 	
 `ifdef jx2_enable_fpu
 		JX2_UCMD_FSTCX: begin
-			tHeldIdRn1	= regIdRm;
+//			tHeldIdRn1	= regIdRm;
+			tRegHeld		= 1;
 		end
 		
 		JX2_UCMD_FCMP: begin
 		end
 
 		JX2_UCMD_FPU3: begin
-			tHeldIdRn1	= regIdRm;
+//			tHeldIdRn1	= regIdRm;
+			tRegHeld		= 1;
 		end
 		JX2_UCMD_FIXS: begin
-			tHeldIdRn1	= regIdRm;
+//			tHeldIdRn1	= regIdRm;
+			tRegHeld		= 1;
 		end
 
 		JX2_UCMD_FLDCX: begin
-			tHeldIdRn1	= regIdRm;
+//			tHeldIdRn1	= regIdRm;
+			tRegHeld		= 1;
 		end
 `endif
 
 		JX2_UCMD_BLINT: begin
-			tHeldIdRn1	= regIdRm;
+//			tHeldIdRn1	= regIdRm;
+			tRegHeld		= 1;
 		end
 
 		JX2_UCMD_OP_IXS: begin
@@ -647,12 +705,16 @@ begin
 				JX2_UCIX_IXS_NOP: begin
 				end
 				JX2_UCIX_IXS_MOVT: begin
-					tRegIdRn1		= regIdRm;
-					tRegValRn1		= {UV63_00, regInSr[0]};
+//					tRegIdRn1		= regIdRm;
+//					tRegValRn1		= {UV63_00, regInSr[0]};
+					tValOutDfl		= {UV63_00, regInSr[0]};
+					tDoOutDfl		= 1;
 				end
 				JX2_UCIX_IXS_MOVNT: begin
-					tRegIdRn1		= regIdRm;
-					tRegValRn1		= {UV63_00, !regInSr[0]};
+//					tRegIdRn1		= regIdRm;
+//					tRegValRn1		= {UV63_00, !regInSr[0]};
+					tValOutDfl		= {UV63_00, !regInSr[0]};
+					tDoOutDfl		= 1;
 				end
 
 				JX2_UCIX_IXS_INVIC: begin
@@ -679,22 +741,30 @@ begin
 `ifndef jx2_do_btcutx_alu
 `ifdef jx2_enable_btcutx
 				JX2_UCIX_IXS_BLKUTX1: begin
-					tRegIdRn1		= regIdRm;
-					tRegValRn1		= tValUtx1;
+//					tRegIdRn1		= regIdRm;
+//					tRegValRn1		= tValUtx1;
+					tValOutDfl		= tValUtx1;
+					tDoOutDfl		= 1;
 				end
 				JX2_UCIX_IXS_BLKUTX2: begin
-					tRegIdRn1		= regIdRm;
-					tRegValRn1		= tValUtx1;
+//					tRegIdRn1		= regIdRm;
+//					tRegValRn1		= tValUtx1;
+					tValOutDfl		= tValUtx1;
+					tDoOutDfl		= 1;
 				end
 
 `ifdef jx2_enable_btcutx3
 				JX2_UCIX_IXS_BLKUTX3H: begin
-					tRegIdRn1		= regIdRm;
-					tRegValRn1		= tValUtx1;
+//					tRegIdRn1		= regIdRm;
+//					tRegValRn1		= tValUtx1;
+					tValOutDfl		= tValUtx1;
+					tDoOutDfl		= 1;
 				end
 				JX2_UCIX_IXS_BLKUTX3L: begin
-					tRegIdRn1		= regIdRm;
-					tRegValRn1		= tValUtx1;
+//					tRegIdRn1		= regIdRm;
+//					tRegValRn1		= tValUtx1;
+					tValOutDfl		= tValUtx1;
+					tDoOutDfl		= 1;
 				end
 `endif
 
@@ -754,8 +824,10 @@ begin
 				end
 
 				JX2_UCIX_IXT_CPUID: begin
-					tRegIdRn1		= JX2_GR_DLR;
-					tRegValRn1		= tValCpuIdLo;
+//					tRegIdRn1		= JX2_GR_DLR;
+//					tRegValRn1		= tValCpuIdLo;
+					tValOutDfl		= tValCpuIdLo;
+					tDoOutDfl		= 1;
 				end
 
 				JX2_UCIX_IXT_WEXMD: begin
@@ -1004,6 +1076,12 @@ begin
 	
 	endcase
 	
+	if(tDoOutDfl)
+	begin
+		tRegIdRn1		= regIdRm;
+		tRegValRn1		= tValOutDfl;
+	end
+	
 	if(tDoMemOp)
 	begin
 		tMemOpm			= tDoMemOpm;
@@ -1015,23 +1093,29 @@ begin
 	
 	if(tDoDelayCycle)
 	begin
-		tRegIdCn1	= JX2_GR_IMM[4:0];
+//		tRegIdCn1	= JX2_GR_IMM[4:0];
+		tRegIdCn1	= JX2_GR_IMM;
 	end
 	
 	if(tDoBra)
 	begin
-		tRegIdCn1	= JX2_CR_PC[4:0];
+//		tRegIdCn1	= JX2_CR_PC[4:0];
+		tRegIdCn1	= JX2_CR_PC;
 		tRegValCn1	= {UV16_00, tValBra};
 	end
 
 	if(opBraFlush)
 	begin
 		tRegIdRn1	= JX2_GR_ZZR;
-		tRegIdCn1	= JX2_CR_ZZR[4:0];
+//		tRegIdCn1	= JX2_CR_ZZR[4:0];
+		tRegIdCn1	= JX2_CR_ZZR;
 	end
 
-	if(tHeldIdRn1 != JX2_GR_ZZR)
-		tRegHeld		= 1;
+	if(tRegHeld)
+		tHeldIdRn1	= regIdRm;
+
+//	if(tHeldIdRn1 != JX2_GR_ZZR)
+//		tRegHeld		= 1;
 
 end
 

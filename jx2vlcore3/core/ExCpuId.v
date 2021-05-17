@@ -150,6 +150,19 @@ begin
 	valCpuIdLo1[15] = 1;
 `endif
 
+`ifdef jx2_enable_fpu_w
+	valCpuIdLo1[16] = 1;
+`endif
+`ifdef jx2_fpu_longdbl
+	valCpuIdLo1[17] = 1;
+`endif
+`ifdef jx2_fpu_fmac
+	valCpuIdLo1[18] = 1;
+`endif
+`ifdef jx2_alu_wx
+	valCpuIdLo1[19] = 1;
+`endif
+
 	tResLoA = arrCpuIdLo[index[2:0]];
 	tResHiA = UV64_00;
 //	tResHiA = arrCpuIdHi[index[2:0]];

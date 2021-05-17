@@ -3339,6 +3339,7 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 			break;
 
 		case 0xF:	/* FFzz */
+			ret=BJX2_DecodeOpcode_DecFJ(ctx, op, addr, opw, opw2);
 			break;
 
 //		case 0xC:	/* FCzz */

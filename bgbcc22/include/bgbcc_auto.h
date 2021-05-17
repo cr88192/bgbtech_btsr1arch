@@ -1289,6 +1289,7 @@ bool BGBCC_CCXL_TypeSmallUIntP(BGBCC_TransState *ctx, ccxl_type ty);
 bool BGBCC_CCXL_TypeSmallLongP(BGBCC_TransState *ctx, ccxl_type ty);
 bool BGBCC_CCXL_TypeSmallInt128P(BGBCC_TransState *ctx, ccxl_type ty);
 bool BGBCC_CCXL_TypeUnsignedP(BGBCC_TransState *ctx, ccxl_type ty);
+bool BGBCC_CCXL_TypeSignedP(BGBCC_TransState *ctx, ccxl_type ty);
 bool BGBCC_CCXL_TypeIntP(BGBCC_TransState *ctx, ccxl_type ty);
 bool BGBCC_CCXL_TypeLongP(BGBCC_TransState *ctx, ccxl_type ty);
 bool BGBCC_CCXL_TypeUnsignedIntP(BGBCC_TransState *ctx, ccxl_type ty);
@@ -2632,6 +2633,9 @@ int BGBCC_JX2_ProbeEmitOpRegRegReg(BGBCC_JX2_Context *ctx,int nmid, int rs, int 
 int BGBCC_JX2_TryNormalizeXReg(BGBCC_JX2_Context *ctx, int nmid, int rs);
 int BGBCC_JX2_TryEmitOpRegRegReg(BGBCC_JX2_Context *ctx, int nmid, int rs, int rt, int rn);
 int BGBCC_JX2_EmitOpImmReg(BGBCC_JX2_Context *ctx,int nmid, s64 imm, int reg);
+int BGBCC_JX2_EmitOpImmRegPred(BGBCC_JX2_Context *ctx,int nmid, s64 imm, int reg, int pfc);
+int BGBCC_JX2_EmitOpImmRegPredT(BGBCC_JX2_Context *ctx,int nmid, s64 imm, int reg, int pfc);
+int BGBCC_JX2_EmitOpImmRegPredF(BGBCC_JX2_Context *ctx,int nmid, s64 imm, int reg, int pfc);
 int BGBCC_JX2_ProbeEmitOpImmReg(BGBCC_JX2_Context *ctx,int nmid, s64 imm, int reg);
 int BGBCC_JX2_TryEmitOpImmReg(BGBCC_JX2_Context *ctx,int nmid, s64 imm, int reg);
 int BGBCC_JX2_EmitOpRegImmReg(BGBCC_JX2_Context *ctx,int nmid, int rm, s64 imm, int rn);
@@ -2994,6 +2998,8 @@ int BGBCC_JX2C_EmitOpRegStReg2Disp(BGBCC_TransState *ctx, BGBCC_JX2_Context *sct
 int BGBCC_JX2C_EmitOpLdReg2DispReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int rm, int ro, int disp, int rn);
 int BGBCC_JX2C_EmitOpRegRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int rs, int rt, int rn);
 int BGBCC_JX2C_EmitOpImmReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int imm, int reg);
+int BGBCC_JX2C_EmitOpImmRegPredT(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int imm, int reg);
+int BGBCC_JX2C_EmitOpImmRegPredF(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int imm, int reg);
 int BGBCC_JX2C_EmitOpRegImmReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int rm, int imm, int rn);
 int BGBCC_JX2C_EmitMovRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int sreg, int dreg);
 int BGBCC_JX2C_EmitLoadVRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg, int dreg);

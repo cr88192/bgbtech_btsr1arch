@@ -60,12 +60,14 @@ input[63:0]		regValRm;		//Source C Value
 
 input[5:0]		regIdRn1;		//Destination ID (EX1)
 input[63:0]		regValRn1;		//Destination Value (EX1)
-input[4:0]		regIdCn1;		//Destination ID (CR, EX1)
+//input[4:0]		regIdCn1;		//Destination ID (CR, EX1)
+input[5:0]		regIdCn1;		//Destination ID (CR, EX1)
 input[63:0]		regValCn1;		//Destination Value (CR, EX1)
 
 output[5:0]		regIdRn2;		//Destination ID (EX1)
 output[63:0]	regValRn2;		//Destination Value (EX1)
-output[4:0]		regIdCn2;		//Destination ID (CR, EX1)
+//output[4:0]		regIdCn2;		//Destination ID (CR, EX1)
+output[5:0]		regIdCn2;		//Destination ID (CR, EX1)
 output[63:0]	regValCn2;		//Destination Value (CR, EX1)
 
 input[47:0]		regValPc;		//PC Value (Synthesized)
@@ -91,13 +93,18 @@ assign	exHold		= { tRegHeld, tExHold };
 
 reg[ 5:0]		tRegIdRn2;
 reg[63:0]		tRegValRn2;
-reg[ 4:0]		tRegIdCn2;
+//reg[ 4:0]		tRegIdCn2;
+reg[ 5:0]		tRegIdCn2;
 reg[63:0]		tRegValCn2;
 
 assign	regIdRn2	= tRegIdRn2;
 assign	regValRn2	= tRegValRn2;
 assign	regIdCn2	= tRegIdCn2;
 assign	regValCn2	= tRegValCn2;
+
+
+reg[63:0]	tValOutDfl;
+reg			tDoOutDfl;
 
 
 (* max_fanout = 50 *)
@@ -124,6 +131,9 @@ begin
 	tRegHeld		= 0;
 	tNextMsgLatch	= 0;
 	tDoHoldCyc		= 0;
+
+	tValOutDfl		= UV64_XX;
+	tDoOutDfl		= 0;
 
 `ifndef def_true
 	casez( { opBraFlush, opUCmd[7:6], regInLastSr[0] } )
@@ -161,8 +171,10 @@ begin
 		end
 		JX2_UCMD_MOV_MR: begin
 			tDoMemOp	= 1;
-			tRegIdRn2	= regIdRm;
-			tRegValRn2	= memDataIn;
+//			tRegIdRn2	= regIdRm;
+//			tRegValRn2	= memDataIn;
+			tValOutDfl		= memDataIn;
+			tDoOutDfl		= 1;
 			
 `ifndef def_true
 			if(memDataIn[31:0]==32'h55BAADAA)
@@ -198,8 +210,10 @@ begin
 		end
 		
 		JX2_UCMD_MUL3: begin
-			tRegIdRn2	= regIdRm;					//
-			tRegValRn2	= regValMulRes[63:0];		//
+//			tRegIdRn2	= regIdRm;					//
+//			tRegValRn2	= regValMulRes[63:0];		//
+			tValOutDfl		= regValMulRes[63:0];
+			tDoOutDfl		= 1;
 		end
 
 		JX2_UCMD_FLDCX: begin
@@ -247,6 +261,12 @@ begin
 	
 	endcase
 
+	if(tDoOutDfl)
+	begin
+		tRegIdRn2		= regIdRm;
+		tRegValRn2		= tValOutDfl;
+	end
+	
 	if(tDoMemOp)
 	begin
 `ifdef jx2_debug_ldst
@@ -291,7 +311,8 @@ begin
 	if(opBraFlush)
 	begin
 		tRegIdRn2	= JX2_GR_ZZR;
-		tRegIdCn2	= JX2_CR_ZZR[4:0];
+//		tRegIdCn2	= JX2_CR_ZZR[4:0];
+		tRegIdCn2	= JX2_CR_ZZR;
 	end
 
 	if(tHoldCyc < tDoHoldCyc)

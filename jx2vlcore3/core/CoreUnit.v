@@ -500,6 +500,7 @@ MmiModDdr3		ddr(
 
 reg[63:0]		mmioInData_L;
 reg[1:0]		mmioOK_L;
+reg[1:0]		mmioOK_L2;
 reg[63:0]		mmioBusExc_L;
 
 reg[63:0]		mmioBusExc;
@@ -877,6 +878,7 @@ reg[4:0]		mmioOpm_A2;
 reg[63:0]		mmioOutDataQ_A3;
 reg[31:0]		mmioAddr_A3;
 reg[4:0]		mmioOpm_A3;
+reg[4:0]		mmioOpm_A4;
 reg[63:0]		mmioOutDataQ;
 reg[31:0]		mmioAddr;
 reg[4:0]		mmioOpm;
@@ -1347,7 +1349,8 @@ begin
 
 `ifdef jx2_mmio_exbuf
 	mmioInData_A3	<= mmioInData_L;
-	mmioOK_A3		<= mmioOK_L;
+//	mmioOK_A3		<= mmioOK_L;
+	mmioOK_A3		<= mmioOK_L2;
 	mmioBusExc_A2	<= mmioBusExc_L;
 
 	mmioInData_A2	<= mmioInData_A3;
@@ -1369,7 +1372,8 @@ begin
 //	mmioBusExcIn	<= mmioBusExc;
 
 	mmioInData_A0	<= mmioInData_L;
-	mmioOK_A0		<= mmioOK_L;
+//	mmioOK_A0		<= mmioOK_L;
+	mmioOK_A0		<= mmioOK_L2;
 	mmioBusExcIn	<= mmioBusExc_L;
 `endif
 end
@@ -1391,13 +1395,19 @@ begin
 	mmioAddr_A3			<= mmioAddr_A2;
 	mmioOpm_A3			<= mmioOpm_A2;
 
+	mmioOpm_A4			<= mmioOpm_A3;
+
 	mmioOutDataQ		<= mmioOutDataQ_A3;
 	mmioAddr			<= mmioAddr_A3;
-	mmioOpm				<= mmioOpm_A3;
+//	mmioOpm				<= mmioOpm_A3;
+	mmioOpm				<= mmioOpm_A4;
 `else
 	mmioOutDataQ		<= mmioOutDataQ_A0;
 	mmioAddr			<= mmioAddr_A0;
-	mmioOpm				<= mmioOpm_A0;
+//	mmioOpm				<= mmioOpm_A0;
+
+	mmioOpm_A1			<= mmioOpm_A0;
+	mmioOpm				<= mmioOpm_A1;
 `endif
 end
 
@@ -1437,6 +1447,7 @@ begin
 
 	mmioInData_L	<= mmioInData;
 	mmioOK_L		<= mmioOK;
+	mmioOK_L2		<= mmioOK_L;
 	mmioBusExc_L	<= mmioBusExc;
 
 	tDbgExHold1B		<= tDbgExHold1;

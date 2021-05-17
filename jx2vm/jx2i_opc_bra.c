@@ -1017,3 +1017,27 @@ void BJX2_Op_LDTLB_None(BJX2_Context *ctx, BJX2_Opcode *op)
 	
 //	printf("LDTLB H=%016llX L=%016llX\n", r1, r0);
 }
+
+
+void BJX2_Op_BRA_Abs(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[BJX2_REG_PC]=op->imm;
+	ctx->tr_rnxt=ctx->tr_rjmp;
+
+//	if(!ctx->regs[BJX2_REG_PC])
+	if((op->pc2>0x10000) && (ctx->regs[BJX2_REG_PC]<0x10000))
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVOP);
+}
+
+void BJX2_Op_BSR_Abs(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[BJX2_REG_LR]=op->pc2;
+	ctx->regs[BJX2_REG_PC]=op->imm;
+	ctx->tr_rnxt=ctx->tr_rjmp;
+
+//	if(!ctx->regs[BJX2_REG_PC])
+	if((op->pc2>0x10000) && (ctx->regs[BJX2_REG_PC]<0x10000))
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVOP);
+	if(!ctx->regs[BJX2_REG_LR])
+		{ JX2_DBGBREAK }
+}
