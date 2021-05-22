@@ -128,6 +128,14 @@ begin
 	
 	tDivRstH		= { 1'b0, tDivRst[13:1] };
 
+`ifdef jx2_cpu_mmioclock_50
+
+//	tNxtDivRst = { 3'b00, tRegCtrl[31:24], 3'h5 };
+//	tNxtDivRst = { 3'b00, tRegCtrl[31:24], 3'h4 };
+	tNxtDivRst = { 4'h0, tRegCtrl[31:24], 2'h3 };
+//	tNxtDivRst = { 4'h0, tRegCtrl[31:24], 2'h2 };
+
+`else
 //	tOutCs = tRegCtrl[0];
 //	tNxtDivRst = { 2'b00, tRegCtrl[31:27], 7'h00 };
 //	tNxtDivRst = { 2'b00, tRegCtrl[31:27], 7'h40 };
@@ -138,18 +146,31 @@ begin
 //	tNxtDivRst = { 3'b00, tRegCtrl[31:24], 3'h6 };
 //	tNxtDivRst = 1000;
 
-//	tNxtDivRst = { 2'b00, tRegCtrl[31:24], 4'hA };
-	tNxtDivRst = { 2'b00, tRegCtrl[31:24], 4'hD };
+	tNxtDivRst = { 2'b00, tRegCtrl[31:24], 4'hA };
+//	tNxtDivRst = { 2'b00, tRegCtrl[31:24], 4'hD };
 //	tNxtDivRst = { 1'b0, tRegCtrl[31:24], 5'h1A };
+`endif
 
 	tNxtRegExchI	= tRegExchI;
 	tNxtRegExchO	= tRegExchO;
 	tOutMosi		= tOutMosi2;
 	tOutCs			= tOutCs2;
 
+`ifdef def_true
+	if(tDivCnt!=0)
+	begin
+		tNxtDivCnt		= tDivCnt - 1;
+		if(tDivCnt==tDivRstH)
+		begin
+			tNxtOutSclk = 1;
+		end
+	end
+`endif
+
 	if(tBitCnt!=0)
 //	if((tBitCnt!=0) || !tOutSclk)
 	begin
+`ifndef def_true
 		tNxtDivCnt		= tDivCnt - 1;
 
 		if(tDivCnt==tDivRstH)
@@ -157,9 +178,21 @@ begin
 //			tNxtOutSclk = !tOutSclk;
 			tNxtOutSclk = 1;
 		end
-		
+`endif
+
 		if(tDivCnt==0)
 		begin
+`ifdef def_true
+			tOutMosi		= tRegExchO[7];
+			tNxtRegExchI	= { tRegExchI[14:0], tInMiso };
+			tNxtRegExchO	= { tRegExchO[6:0], 1'b0 };
+			tNxtDivCnt		= tDivRst;
+			tNxtOutSclk		= 0;
+			tNxtBitCnt		= tBitCnt - 1;
+			tOutCs			= tRegCtrl[0];
+`endif
+
+`ifndef def_true
 			if(tOutSclk)
 			begin
 //				tOutMosi		= tRegExch[0];
@@ -177,13 +210,15 @@ begin
 				tOutCs			= tRegCtrl[0];
 			end
 			else
+			begin
 				tNxtOutSclk		= 1;
 				tNxtDivCnt		= tDivRstH;
-			begin
 			end
 			
 //			$display("SdSpi Bit=%d Mosi=%d Miso=%d ExchI=%X ExchO=%X",
 //				tBitCnt, tOutMosi, spi_miso, tRegExchI, tRegExchO);
+`endif
+
 		end
 	end
 

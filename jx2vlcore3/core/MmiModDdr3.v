@@ -80,6 +80,7 @@ module MmiModDdr3(
 	memDataIn,	memDataOut,
 	memAddr,	memOpm,
 	memOK,
+	memOpSqI,	memOpSqO,
 	
 	ddrData_I,	ddrData_O,	ddrData_En,
 	ddrAddr,	ddrBa,
@@ -98,6 +99,9 @@ input[31:0]		memAddr;
 input[4:0]		memOpm;
 output[1:0]		memOK;
 	
+input[3:0]		memOpSqI;
+output[3:0]		memOpSqO;
+
 // inout[15:0]		ddrData;		//DDR data pins
 input[15:0]		ddrData_I;		//DDR data pins
 output[15:0]	ddrData_O;		//DDR data pins
@@ -127,10 +131,20 @@ parameter[15:0]	DDR_CAS_RL_M1	= 3;	//CAS RL Minus 1
 // parameter[15:0]	DDR_CAS_RL_M1	= 2;	//CAS RL Minus 1
 // parameter[15:0]	DDR_CAS_WL_M1	= 4;	//CAS WL Minus 1
 // parameter[15:0]	DDR_CAS_WL_M1	= 2;	//CAS WL Minus 1
-parameter[15:0]	DDR_CAS_WL_M1	= 1;	//CAS WL Minus 1
+// parameter[15:0]	DDR_CAS_WL_M1	= 1;	//CAS WL Minus 1
+parameter[15:0]	DDR_CAS_WL_M1	= 0;	//CAS WL Minus 1
 // parameter[15:0]	DDR_RAS_M1		= 8;	//RAS Minus 1
-parameter[15:0]	DDR_RAS_M1		= 4;	//RAS Minus 1
+// parameter[15:0]	DDR_RAS_M1		= 4;	//RAS Minus 1
 // parameter[15:0]	DDR_RAS_M1		= 3;	//RAS Minus 1 (~ 40ns needed)
+
+`ifdef jx2_cpu_ddrclock_150
+parameter[15:0]		DDR_RAS_M1		= 3;	//RAS Minus 1 (~ 40ns needed)
+// parameter[15:0]		DDR_RAS_M1		= 4;	//RAS Minus 1 (~ 40ns needed)
+`else
+// parameter[15:0]		DDR_RAS_M1		= 4;	//RAS Minus 1
+// parameter[15:0]		DDR_RAS_M1		= 3;	//RAS Minus 1 (~ 40ns needed)
+parameter[15:0]		DDR_RAS_M1		= 2;	//RAS Minus 1 (~ 40ns needed)
+`endif
 
 parameter[15:0]	DDR_RAS_INIT	= 128;	//Wait several uS
 
@@ -167,10 +181,27 @@ reg				tDdrOut;
 // assign			ddrData = tDdrOut ? tDdrData : 16'hzzzz;
 // assign			ddrData = tDdrData;
 
+reg[15:0]		tDdrData2;
+reg				tDdrOut2;
+
+reg[15:0]		tDdrData3;
+reg				tDdrOut3;
+
 wire[15:0]		ddrData;
-assign			ddrData_O = tDdrData;
 assign			ddrData = ddrData_I;
-assign			ddrData_En = tDdrOut;
+// assign			ddrData_O = tDdrData;
+// assign			ddrData_En = tDdrOut;
+
+// assign			ddrData_O = tDdrData2;
+// assign			ddrData_En = tDdrOut2;
+
+`ifdef jx2_cpu_ddr_obufcyc
+assign			ddrData_O = tDdrData2;
+assign			ddrData_En = tDdrOut2;
+`else
+assign			ddrData_O = tDdrData3;
+assign			ddrData_En = tDdrOut3;
+`endif
 
 wire[1:0]		ddrDqs;
 assign			ddrDqs = { ddrDqsN_I[0], ddrDqsP_I[0] };
@@ -200,10 +231,14 @@ reg[1:0]		ddrDqs2H;
 reg[1:0]		tDdrClk;			//clock pins
 reg[1:0]		tDdrClk2;			//clock pins
 reg[1:0]		tDdrClk3;			//clock pins
+reg[1:0]		tDdrClk4;			//clock pins
+reg[1:0]		tDdrClk5;			//clock pins
 // assign			ddrCmd = tDdrCmd;
 // assign			ddrClk = tDdrClk;
+
 // assign			ddrClk = tDdrClk2;
-assign			ddrClk = tDdrClk3;
+// assign			ddrClk = tDdrClk3;
+assign			ddrClk = tDdrClk5;
 
 reg[1:0]	tDdrDqs;
 reg			tDdrDqs_En;
@@ -211,15 +246,53 @@ reg			tDdrDqs_En;
 reg[1:0]	tDdrDqs2;
 reg			tDdrDqs2_En;
 reg[1:0]	tDdrDqs3;
+reg[1:0]	tDdrDqs3P;
+reg[1:0]	tDdrDqs3N;
 reg			tDdrDqs3_En;
+
+reg[1:0]	tDdrDqs4;
+reg[1:0]	tDdrDqs4P;
+reg[1:0]	tDdrDqs4N;
+reg			tDdrDqs4_En;
+
+reg[1:0]	tDdrDqs5;
+reg[1:0]	tDdrDqs5P;
+reg[1:0]	tDdrDqs5N;
+reg			tDdrDqs5_En;
+
+wire[1:0]	tDdrDqs2P;
+wire[1:0]	tDdrDqs2N;
+assign		tDdrDqs2P	= tDdrDqs2[0] ? 2'b11 : 2'b00;
+assign		tDdrDqs2N	= tDdrDqs2[1] ? 2'b11 : 2'b00;
+
+// assign		ddrDqsP_O	= tDdrDqs2P;
+// assign		ddrDqsN_O	= tDdrDqs2N;
+// assign		ddrDqs_En	= tDdrDqs2_En;
 
 // assign		ddrDqsP_O	= tDdrDqs2[0] ? 2'b11 : 2'b00;
 // assign		ddrDqsN_O	= tDdrDqs2[1] ? 2'b11 : 2'b00;
 // assign		ddrDqs_En	= tDdrDqs2_En;
 
-assign		ddrDqsP_O	= tDdrDqs3[0] ? 2'b11 : 2'b00;
-assign		ddrDqsN_O	= tDdrDqs3[1] ? 2'b11 : 2'b00;
-assign		ddrDqs_En	= tDdrDqs3_En;
+// assign		ddrDqsP_O	= tDdrDqs3[0] ? 2'b11 : 2'b00;
+// assign		ddrDqsN_O	= tDdrDqs3[1] ? 2'b11 : 2'b00;
+
+// assign		ddrDqsP_O	= tDdrDqs3P;
+// assign		ddrDqsN_O	= tDdrDqs3N;
+// assign		ddrDqs_En	= tDdrDqs3_En;
+
+// assign		ddrDqsP_O	= tDdrDqs4P;
+// assign		ddrDqsN_O	= tDdrDqs4N;
+// assign		ddrDqs_En	= tDdrDqs4_En;
+
+`ifdef jx2_cpu_ddr_obufcyc
+assign		ddrDqsP_O	= tDdrDqs4P;
+assign		ddrDqsN_O	= tDdrDqs4N;
+assign		ddrDqs_En	= tDdrDqs4_En;
+`else
+assign		ddrDqsP_O	= tDdrDqs5P;
+assign		ddrDqsN_O	= tDdrDqs5N;
+assign		ddrDqs_En	= tDdrDqs5_En;
+`endif
 
 reg[13:0]		tDdrAddr;		//Address pins
 reg[2:0]		tDdrBa;			//Bank Address pins
@@ -262,6 +335,8 @@ reg[127:0]		tMemDataOutL;
 reg[1:0]		tMemOK;
 reg[1:0]		tMemOKL;
 reg[1:0]		tMemOKL2;
+reg[3:0]		tMemOkSq;
+reg[3:0]		tMemOkSqL;
 
 `ifdef jx2_mem_ddr32B
 `reg_ddrtile	tMemDataInA;
@@ -281,51 +356,66 @@ reg[4:0]		tNxtMemOpm;
 
 reg[63:0]		tMemDataChk2A0;
 reg[31:0]		tMemDataChk2A1;
-reg[15:0]		tMemDataChk2A;
+reg[19:0]		tMemDataChk2A;
 
 `reg_ddrtile	tMemDataOut2;
-reg[15:0]		tMemDataChk2;
-reg[3:0]		tMemOK2;
+reg[19:0]		tMemDataChk2;
+reg[11:0]		tMemOK2;
+
+`ifdef mod_ddr_extrabuf
+reg[63:0]		tMemDataChk6A0;
+reg[31:0]		tMemDataChk6A1;
+reg[19:0]		tMemDataChk6A;
+`endif
+
+`ifdef mod_ddr_basicbuf
+reg[63:0]		tMemDataChk4A0;
+reg[31:0]		tMemDataChk4A1;
+reg[19:0]		tMemDataChk4A;
+
+reg[63:0]		tMemDataChk3A0;
+reg[31:0]		tMemDataChk3A1;
+reg[19:0]		tMemDataChk3A;
+`endif
+
 
 `ifdef mod_ddr_extrabuf
 `reg_ddrtile	tMemDataOut3;
-reg[15:0]		tMemDataChk3;
-reg[3:0]		tMemOK3;
+reg[19:0]		tMemDataChk3;
+reg[11:0]		tMemOK3;
 `reg_ddrtile	tMemDataOut4;
-reg[15:0]		tMemDataChk4;
-reg[3:0]		tMemOK4;
+reg[19:0]		tMemDataChk4;
+reg[11:0]		tMemOK4;
 `reg_ddrtile	tMemDataOut5;
-reg[15:0]		tMemDataChk5;
-reg[3:0]		tMemOK5;
+reg[19:0]		tMemDataChk5;
+reg[11:0]		tMemOK5;
 `reg_ddrtile	tMemDataOut6;
-reg[15:0]		tMemDataChk6;
-reg[3:0]		tMemOK6;
-reg[3:0]		tMemOK7;
-
-
-reg[63:0]		tMemDataChk6A0;
-reg[31:0]		tMemDataChk6A1;
-reg[15:0]		tMemDataChk6A;
+reg[19:0]		tMemDataChk6;
+reg[11:0]		tMemOK6;
+reg[11:0]		tMemOK7;
 
 `reg_ddrtile	tMemDataOutO;
 reg[1:0]		tMemOKO;
 `reg_ddrtile	tMemDataOutOL;
 reg[1:0]		tMemOKOL;
+reg[3:0]		tMemOpSqO;
+reg[3:0]		tMemOpSqOL;
 
 // assign			memOK		= tMemOK6;
 // assign			memOK		= tMemOK7;
 // assign			memDataOut	= tMemDataOut6;
 assign			memOK		= tMemOKO;
 assign			memDataOut	= tMemDataOutO;
+assign			memOpSqO	= tMemOpSqO;
 `endif
 
 `ifdef mod_ddr_basicbuf
 `reg_ddrtile	tMemDataOut3;
-reg[15:0]		tMemDataChk3;
-reg[3:0]		tMemOK3;
+reg[19:0]		tMemDataChk3;
+reg[11:0]		tMemOK3;
 `reg_ddrtile	tMemDataOut4;
-reg[15:0]		tMemDataChk4;
-reg[3:0]		tMemOK4;
+reg[19:0]		tMemDataChk4;
+reg[11:0]		tMemOK4;
 // assign			memOK		= tMemOK4;
 // assign			memDataOut	= tMemDataOut4;
 
@@ -333,15 +423,18 @@ reg[3:0]		tMemOK4;
 reg[1:0]		tMemOKO;
 `reg_ddrtile	tMemDataOutOL;
 reg[1:0]		tMemOKOL;
+reg[3:0]		tMemOpSqO;
+reg[3:0]		tMemOpSqOL;
 
 assign			memOK		= tMemOKO;
 assign			memDataOut	= tMemDataOutO;
+assign			memOpSqO	= tMemOpSqO;
 
 `endif
 
 `ifdef mod_ddr_fastbuf
 assign			memOK		= tMemOK2[1:0];
-assign			memDataOut	= tMemDataOut2[1:0];
+assign			memDataOut	= tMemDataOut2;
 `endif
 
 reg[127:0]		tMemDataIn;
@@ -351,38 +444,51 @@ reg[4:0]		tMemOpm;
 
 reg[63:0]		tMemChkInB0;
 reg[31:0]		tMemChkInB1;
-reg[15:0]		tMemChkInB2;
+reg[19:0]		tMemChkInB2;
 reg[15:0]		tMemChkInB2A;
 
+`ifdef mod_ddr_basicbuf
+reg[63:0]		tMemChkInC0;
+reg[31:0]		tMemChkInC1;
+reg[19:0]		tMemChkInC2;
+reg[15:0]		tMemChkInC2A;
+`endif
+
+`ifdef mod_ddr_extrabuf
 reg[63:0]		tMemChkInE0;
 reg[31:0]		tMemChkInE1;
-reg[15:0]		tMemChkInE2;
+reg[19:0]		tMemChkInE2;
 reg[15:0]		tMemChkInE2A;
+`endif
 
 `reg_ddrtile	tMemDataInB;
 reg[31:0]		tMemAddrB;
-reg[15:0]		tMemChkInB;
-reg[9:0]		tMemOpmB;
+reg[19:0]		tMemChkInB;
+reg[17:0]		tMemOpmB;
 
 `reg_ddrtile	tMemDataInC;
 reg[31:0]		tMemAddrC;
-reg[15:0]		tMemChkInC;
-reg[9:0]		tMemOpmC;
+reg[19:0]		tMemChkInC;
+reg[17:0]		tMemOpmC;
 
 `reg_ddrtile	tMemDataInD;
 reg[31:0]		tMemAddrD;
-reg[15:0]		tMemChkInD;
-reg[9:0]		tMemOpmD;
+reg[19:0]		tMemChkInD;
+reg[17:0]		tMemOpmD;
 
 `reg_ddrtile	tMemDataInE;
 reg[31:0]		tMemAddrE;
-reg[15:0]		tMemChkInE;
-reg[9:0]		tMemOpmE;
+reg[19:0]		tMemChkInE;
+reg[17:0]		tMemOpmE;
 
 `reg_ddrtile	tMemDataInF;
 reg[31:0]		tMemAddrF;
-reg[15:0]		tMemChkInF;
-reg[9:0]		tMemOpmF;
+reg[19:0]		tMemChkInF;
+reg[17:0]		tMemOpmF;
+
+reg[3:0]		tMemOpSq;
+reg[3:0]		tReqOpSq;
+reg[3:0]		tNxtReqOpSq;
 
 
 reg[5:0]		accState;
@@ -393,6 +499,9 @@ reg				accNextCkLo;
 
 reg[127:0]		accReadBlk;
 reg[127:0]		accNextReadBlk;
+
+reg[127:0]		accStoreFifo;
+reg[127:0]		accNextStoreFifo;
 
 reg[31:0]		accAddr;
 reg[31:0]		accNextAddr;
@@ -455,13 +564,17 @@ begin
 	accNextCkLo		= !accCkLo;
 
 	accNextReadBlk	= accReadBlk;
+//	accNextStoreFifo	= accStoreFifo;
 	tDdrOut			= 0;
-	tDdrData		= 0;
-//	tDdrData		= 16'hzzzz;
+//	tDdrData		= 0;
+	tDdrData		= 16'hzzzz;
 	
 //	tMemDataOut		= UV128_XX;
 	tMemDataOut		= UV128_00;
 	tMemOK			= UMEM_OK_READY;
+	tMemOkSq		= 0;
+
+	tNxtReqOpSq		= tReqOpSq;
 
 //	tDdrCmd			= 10'b0000000111;
 	tDdrClk			= accNextCkLo ? 2'b10 : 2'b01;
@@ -566,6 +679,16 @@ begin
 			tMemOK		= UMEM_OK_HOLD;
 	end
 
+	tDdrData 				= accStoreFifo[15:0];
+
+	accNextStoreFifo		= accReadBlk;
+	if(accState[5:3]==3'b110)
+	begin
+		accNextStoreFifo	= { 16'h00, accStoreFifo[127:16] };
+		tDdrOut				= 1;
+		tDdrDqs_En			= 1;
+	end
+
 //	$display("ModDdr: State %X", accState);
 
 	if(accState!=0)
@@ -579,7 +702,8 @@ begin
 
 		accNextState = 6'b000000;
 
-		if(tMemOpm[4:3]==2'b11)	/* Swap Request */
+		if((tMemOpm[4:3]==2'b11) &&
+			!driStillInit && !dreIsZero)	/* Swap Request */
 		begin
 			tMemDataOut		= UV128_00;
 			tMemOK			= UMEM_OK_FAULT;
@@ -596,7 +720,9 @@ begin
 
 				if(accSkipRowOpen)
 					accNextState = 6'b010100;
-				
+
+				tNxtReqOpSq	= tMemOpSq;
+
 				accNextAddr	= {4'h0, tMemAddr[27:4], 4'h0};
 
 //				accNextRowAddr = accNextAddr[24:9];
@@ -622,18 +748,19 @@ begin
 //			$display("ModDdr: Store Req, A=%X", tMemAddr);
 
 			accNextReadBlk	= tMemDataIn;
+//			accNextStoreFifo	= tMemDataIn;
 			tMemOK			= UMEM_OK_HOLD;
+			tNxtReqOpSq	= tMemOpSq;
 			if(accCkLo)
 			begin
 				if(tMemOpm==UMEM_OPM_WR_SW)
 				begin
-					accNextState = 6'b000010;
-					accNextRowAddr = tMemDataIn[15:0];
+					accNextState	= 6'b000010;
+					accNextRowAddr	= tMemDataIn[15:0];
 				end
 				else
 				begin
 					accNextState = 6'b011000;
-
 					if(accSkipRowOpen)
 						accNextState = 6'b011100;
 
@@ -641,7 +768,8 @@ begin
 					accNextRowAddr = accNextAddr[28:13];
 					accNextBaAddr = accNextAddr[12:10];
 					accNextColAddr = {6'b0, accNextAddr[ 9:0]};
-					accNextReadBlk = tMemDataIn;
+//					accNextReadBlk = tMemDataIn;
+//					accNextStoreFifo = tMemDataIn;
 				end
 			end
 		end
@@ -687,7 +815,9 @@ begin
 
 //					dreNextRowAddr	= { 3'b000, dreRowAddr[12:0] + 13'h1 };
 //					dreNextCount = 8192;
-					dreNextCount = 4096;
+//					dreNextCount = 4096;
+//					dreNextCount = 2048;
+					dreNextCount = 1024;
 				end
 				else
 				begin
@@ -708,7 +838,17 @@ begin
 			/* Hang out here until released. */
 			tMemDataOut		= accReadBlk;
 			tMemOK			= UMEM_OK_OK;
+			tMemOkSq		= tReqOpSq;
 			accNextState	= 6'b000001;
+
+//			$display("DDR: Sequence, %X %X", tReqOpSq, tMemOpSq);
+			
+			if(tReqOpSq != tMemOpSq)
+			begin
+//				$display("DDR: Sequence Trigger, %X %X", tReqOpSq, tMemOpSq);
+				/* Sequence Changed, Return to Idle */
+				accNextState	= 6'b000000;
+			end
 		end
 		else
 		begin
@@ -1156,36 +1296,44 @@ begin
 	
 	6'b110000: begin
 		accNextState			= 6'b110001;
-		tDdrData 				= accReadBlk[15:0];
-		tDdrOut					= 1;
-		tDdrDqs_En				= 1;
+//		tDdrData 				= accReadBlk[15:0];
+//		tDdrData 				= accStoreFifo[15:0];
+//		accNextStoreFifo			= { 16'h00, accStoreFifo[127:16] };
+//		tDdrOut					= 1;
+//		tDdrDqs_En				= 1;
 `ifdef mod_ddr_dbgprn
 		$display("DDR Write Word0 %X (Ck=%d)", tDdrData, clock);
 `endif
 	end
 	6'b110001: begin
 		accNextState			= 6'b110010;
-		tDdrData 				= accReadBlk[31:16];
-		tDdrOut					= 1;
-		tDdrDqs_En				= 1;
+//		tDdrData 				= accReadBlk[31:16];
+//		tDdrData 				= accStoreFifo[15:0];
+//		accNextStoreFifo			= { 16'h00, accStoreFifo[127:16] };
+//		tDdrOut					= 1;
+//		tDdrDqs_En				= 1;
 `ifdef mod_ddr_dbgprn
 		$display("DDR Write Word1 %X (Ck=%d)", tDdrData, clock);
 `endif
 	end
 	6'b110010: begin
 		accNextState			= 6'b110011;
-		tDdrData 				= accReadBlk[47:32];
-		tDdrOut					= 1;
-		tDdrDqs_En				= 1;
+//		tDdrData 				= accReadBlk[47:32];
+//		tDdrData 				= accStoreFifo[15:0];
+//		accNextStoreFifo			= { 16'h00, accStoreFifo[127:16] };
+//		tDdrOut					= 1;
+//		tDdrDqs_En				= 1;
 `ifdef mod_ddr_dbgprn
 		$display("DDR Write Word2 %X (Ck=%d)", tDdrData, clock);
 `endif
 	end
 	6'b110011: begin
 		accNextState			= 6'b110100;
-		tDdrData 				= accReadBlk[63:48];
-		tDdrOut					= 1;
-		tDdrDqs_En				= 1;
+//		tDdrData 				= accReadBlk[63:48];
+//		tDdrData 				= accStoreFifo[15:0];
+//		accNextStoreFifo			= { 16'h00, accStoreFifo[127:16] };
+//		tDdrOut					= 1;
+//		tDdrDqs_En				= 1;
 `ifdef mod_ddr_dbgprn
 		$display("DDR Write Word3 %X (Ck=%d)", tDdrData, clock);
 `endif
@@ -1196,36 +1344,44 @@ begin
 	end
 	6'b110100: begin
 		accNextState			= 6'b110101;
-		tDdrData 				= accReadBlk[79:64];
-		tDdrOut					= 1;
-		tDdrDqs_En				= 1;
+//		tDdrData 				= accReadBlk[79:64];
+//		tDdrData 				= accStoreFifo[15:0];
+//		accNextStoreFifo			= { 16'h00, accStoreFifo[127:16] };
+//		tDdrOut					= 1;
+//		tDdrDqs_En				= 1;
 `ifdef mod_ddr_dbgprn
 		$display("DDR Write Word4 %X (Ck=%d)", tDdrData, clock);
 `endif
 	end
 	6'b110101: begin
 		accNextState			= 6'b110110;
-		tDdrData 				= accReadBlk[95:80];
-		tDdrOut					= 1;
-		tDdrDqs_En				= 1;
+//		tDdrData 				= accReadBlk[95:80];
+//		tDdrData 				= accStoreFifo[15:0];
+//		accNextStoreFifo			= { 16'h00, accStoreFifo[127:16] };
+//		tDdrOut					= 1;
+//		tDdrDqs_En				= 1;
 `ifdef mod_ddr_dbgprn
 		$display("DDR Write Word5 %X (Ck=%d)", tDdrData, clock);
 `endif
 	end
 	6'b110110: begin
 		accNextState			= 6'b110111;
-		tDdrData 				= accReadBlk[111:96];
-		tDdrOut					= 1;
-		tDdrDqs_En				= 1;
+//		tDdrData 				= accReadBlk[111:96];
+//		tDdrData 				= accStoreFifo[15:0];
+//		accNextStoreFifo			= { 16'h00, accStoreFifo[127:16] };
+//		tDdrOut					= 1;
+//		tDdrDqs_En				= 1;
 `ifdef mod_ddr_dbgprn
 		$display("DDR Write Word6 %X (Ck=%d)", tDdrData, clock);
 `endif
 	end
 	6'b110111: begin
 		accNextState			= 6'b000001;
-		tDdrData 				= accReadBlk[127:112];
-		tDdrOut					= 1;
-		tDdrDqs_En				= 1;
+//		tDdrData 				= accReadBlk[127:112];
+//		tDdrData 				= accStoreFifo[15:0];
+//		accNextStoreFifo			= { 16'h00, accStoreFifo[127:16] };
+//		tDdrOut					= 1;
+//		tDdrDqs_En				= 1;
 `ifdef mod_ddr_dbgprn
 		$display("DDR Write Word7 %X (Ck=%d)", tDdrData, clock);
 `endif
@@ -1237,6 +1393,12 @@ begin
 
 	endcase
 	
+	if(reset)
+	begin
+		tMemOK			= UMEM_OK_READY;
+		accNextState	= 6'b000000;
+	end
+
 	
 `ifdef jx2_mem_ddr32B
 	/*
@@ -1426,27 +1588,88 @@ end
 // always @(negedge clock2)
 always @(negedge ddr_coreclock)
 begin
+`ifndef def_true
 	tDdrClk3		<= tDdrClk2;
 	tDdrDqs3		<= tDdrDqs2;
 	tDdrDqs3_En		<= tDdrDqs2_En;
+	tDdrDqs3P		<= tDdrDqs2P;
+	tDdrDqs3N		<= tDdrDqs2N;
+`endif
+
+`ifdef def_true
+	tDdrClk5		<= tDdrClk4;
+	tDdrDqs5		<= tDdrDqs4;
+	tDdrDqs5_En		<= tDdrDqs4_En;
+	tDdrDqs5P		<= tDdrDqs4P;
+	tDdrDqs5N		<= tDdrDqs4N;
+`endif
+
 //	ddrData2		<= ddrData;
 	ddrData1H		<= ddrData;
 	ddrDqs1H		<= ddrDqs;
 end
+
+always @(posedge ddr_coreclock)
+begin
+`ifdef def_true
+	tDdrClk3		<= tDdrClk2;
+	tDdrDqs3		<= tDdrDqs2;
+	tDdrDqs3_En		<= tDdrDqs2_En;
+	tDdrDqs3P		<= tDdrDqs2P;
+	tDdrDqs3N		<= tDdrDqs2N;
+
+	tDdrClk4		<= tDdrClk3;
+	tDdrDqs4		<= tDdrDqs3;
+	tDdrDqs4_En		<= tDdrDqs3_En;
+	tDdrDqs4P		<= tDdrDqs3P;
+	tDdrDqs4N		<= tDdrDqs3N;
+`endif
+
+	tDdrData2		<= tDdrData;
+	tDdrOut2		<= tDdrOut;
+
+	tDdrData3		<= tDdrData2;
+	tDdrOut3		<= tDdrOut2;
+end
+
 
 always @*
 begin
 	tMemChkInB2A = memAddr[31:16] ^ memAddr[15:0];
 	tMemChkInB0 = memDataIn[127:64] ^ memDataIn[63:0];
 	tMemChkInB1 = tMemChkInB0[63:32] ^ tMemChkInB0[31:0];
-	tMemChkInB2 = tMemChkInB0[31:16] ^ tMemChkInB0[15:0] ^ tMemChkInB2A;
+	tMemChkInB2 =	{
+		memOpSqI[1:0] ^ memOpSqI[3:2],
+		memOpm[4:3] ^ memOpm[1:0],
+		tMemChkInB0[31:16] ^ tMemChkInB0[15:0] ^ tMemChkInB2A };
 end
 
 always @*
 begin
+`ifdef mod_ddr_extrabuf
 	tMemDataChk6A0	= tMemDataOut6 [127:64] ^ tMemDataOut6   [63:0];
 	tMemDataChk6A1	= tMemDataChk6A0[63:32] ^ tMemDataChk6A0[31:0];
-	tMemDataChk6A	= tMemDataChk6A1[31:16] ^ tMemDataChk6A1[15:0];
+	tMemDataChk6A	= 
+		{ tMemOK6[5:4], tMemOK6[1:0],
+		tMemDataChk6A1[31:16] ^ tMemDataChk6A1[15:0] };
+`endif
+
+`ifdef mod_ddr_basicbuf
+	tMemDataChk4A0	= tMemDataOut4 [127:64] ^ tMemDataOut4   [63:0];
+	tMemDataChk4A1	= tMemDataChk4A0[63:32] ^ tMemDataChk4A0[31:0];
+	tMemDataChk4A	= 
+		{ tMemOK4[5:4], tMemOK4[1:0],
+			tMemDataChk4A1[31:16] ^ tMemDataChk4A1[15:0] };
+
+`ifdef def_true
+	tMemDataChk3A0	= tMemDataOut3 [127:64] ^ tMemDataOut3   [63:0];
+	tMemDataChk3A1	= tMemDataChk3A0[63:32] ^ tMemDataChk3A0[31:0];
+	tMemDataChk3A	= 
+		{ tMemOK3[5:4], tMemOK3[1:0],
+			tMemDataChk3A1[31:16] ^ tMemDataChk3A1[15:0] };
+`endif
+
+`endif
 end
 
 `ifdef mod_ddr_extrabuf
@@ -1475,24 +1698,27 @@ begin
 	tMemDataInB		<= memDataIn;
 	tMemAddrB		<= memAddr;
 //	tMemOpmB		<= memOpm;
-	tMemOpmB		<= { ~memOpm, memOpm };
+//	tMemOpmB		<= { ~memOpm, memOpm };
+	tMemOpmB		<= { ~memOpSqI, memOpSqI, ~memOpm, memOpm };
 	tMemChkInB		<= tMemChkInB2;
 
 //	tResetB			<= reset;
 
-	if((tMemOK7[1:0] == (~tMemOK7[3:2])) &&
-//	if((tMemOK6[1:0] == (~tMemOK6[3:2])) &&
+//	if((tMemOK7[1:0] == (~tMemOK7[3:2])) &&
+	if(	(tMemOK6[1:0] == (~tMemOK6[ 3:2])) &&
+		(tMemOK6[7:4] == (~tMemOK6[11:8])) &&
 		(tMemDataChk6A == tMemDataChk6))
 //	if(1'b1)
 	begin
 		tMemDataOutO	<= tMemDataOut6;
-		tMemOKO			<= tMemOK7[1:0];
-//		tMemOKO			<= tMemOK6[1:0];
+//		tMemOKO			<= tMemOK7[1:0];
+		tMemOKO			<= tMemOK6[1:0];
+		tMemOpSqO		<= tMemOK6[7:4];
 	end
 	else
 	begin
-		if(tMemOK7[1:0] != (~tMemOK7[3:2]))
-//		if(tMemOK6[1:0] != (~tMemOK6[3:2]))
+//		if(tMemOK7[1:0] != (~tMemOK7[3:2]))
+		if(tMemOK6[1:0] != (~tMemOK6[3:2]))
 			$display("DDR: OK Check Fail");
 		if(tMemDataChk6A != tMemDataChk6)
 			$display("DDR: Data Check Fail %X %X",
@@ -1500,13 +1726,16 @@ begin
 	
 		tMemDataOutO	<= tMemDataOutOL;
 		tMemOKO			<= tMemOKOL;
+		tMemOpSqO		<= tMemOpSqOL;
 	end
 	tMemDataOutOL	<= tMemDataOutO;
 	tMemOKOL		<= tMemOKO;
+	tMemOpSqOL		<= tMemOpSqO;
 
 end
 `endif
 
+reg tOpmOkSticky;
 
 `ifdef mod_ddr_basicbuf
 always @(posedge clock)
@@ -1519,32 +1748,104 @@ begin
 	tMemDataOut4	<= tMemDataOut3;
 	tMemDataChk4	<= tMemDataChk3;
 
-	tMemDataOutO	<= tMemDataOut4;
-	tMemOKO			<= tMemOK4[1:0];
+`ifdef def_true
+// `ifndef def_true
+	if(	(tMemOK3[1:0] == (~tMemOK3[3:2])) &&
+		(tMemOK3[7:4] == (~tMemOK3[11:8])) &&
+		(tMemDataChk3A == tMemDataChk3))
+	begin
+		tMemDataOutO	<= tMemDataOut3;
+		tMemOKO			<= tMemOK3[1:0];
+		tMemOpSqO		<= tMemOK3[7:4];
+
+	end
+	else
+	begin
+		tMemDataOutO	<= tMemDataOutOL;
+		tMemOKO			<= tMemOKOL;
+		tMemOpSqO		<= tMemOpSqOL;
+	end
+`endif
+
+`ifndef def_true
+// `ifdef def_true
+	if(	(tMemOK4[1:0] == (~tMemOK4[3:2])) &&
+		(tMemOK4[7:4] == (~tMemOK4[11:8])) &&
+		(tMemDataChk4A == tMemDataChk4))
+	begin
+// `ifdef def_true
+`ifndef def_true
+		if(tMemOpmB[4:0] == UMEM_OPM_READY)
+		begin
+			if(tMemOK4[1:0] != UMEM_OK_READY)
+				tOpmOkSticky <= 1;
+		end
+
+		if(tMemOK4[1:0] == UMEM_OK_READY)
+			tOpmOkSticky <= 0;
+
+		if(tOpmOkSticky)
+			tMemOKO			<= UMEM_OK_READY;
+		else
+			tMemOKO			<= tMemOK4[1:0];
+`endif
+	
+		tMemDataOutO	<= tMemDataOut4;
+		tMemOKO			<= tMemOK4[1:0];
+		tMemOpSqO		<= tMemOK4[7:4];
+
+	end
+	else
+	begin
+		tMemDataOutO	<= tMemDataOutOL;
+		tMemOKO			<= tMemOKOL;
+		tMemOpSqO		<= tMemOpSqOL;
+	end
+`endif
+
 	tMemDataOutOL	<= tMemDataOutO;
 	tMemOKOL		<= tMemOKO;
+	tMemOpSqOL		<= tMemOpSqO;
 
 	tMemDataInB		<= memDataIn;
+	tMemChkInB		<= tMemChkInB2;
 	tMemAddrB		<= memAddr;
 //	tMemOpmB		<= memOpm;
-	tMemOpmB		<= { ~memOpm, memOpm };
+//	tMemOpmB		<= { ~memOpm, memOpm };
+	tMemOpmB		<= { ~memOpSqI, memOpSqI, ~memOpm, memOpm };
 end
 `endif
 
 
 always @*
 begin
+`ifdef mod_ddr_basicbuf
+	tMemChkInC2A = tMemAddrC[31:16] ^ tMemAddrC[15:0];
+	tMemChkInC0 = tMemDataInC[127:64] ^ tMemDataInC[63:0];
+	tMemChkInC1 = tMemChkInC0[63:32] ^ tMemChkInC0[31:0];
+	tMemChkInC2 =	{
+		tMemOpmC[11:10] ^ tMemOpmC[13:12],
+		tMemOpmC[4:3] ^ tMemOpmC[1:0],
+		tMemChkInC0[31:16] ^ tMemChkInC0[15:0] ^ tMemChkInC2A };
+`endif
+
+`ifdef mod_ddr_extrabuf
 	tMemChkInE2A = tMemAddrE[31:16] ^ tMemAddrE[15:0];
 	tMemChkInE0 = tMemDataInE[127:64] ^ tMemDataInE[63:0];
 	tMemChkInE1 = tMemChkInE0[63:32] ^ tMemChkInE0[31:0];
-	tMemChkInE2 = tMemChkInE0[31:16] ^ tMemChkInE0[15:0] ^ tMemChkInE2A;
+	tMemChkInE2 =		{
+		tMemOpmE[11:10] ^ tMemOpmE[13:12],
+		tMemOpmE[4:3] ^ tMemOpmE[1:0],
+		tMemChkInE0[31:16] ^ tMemChkInE0[15:0] ^ tMemChkInE2A };
+`endif
 end
 
 always @*
 begin
 	tMemDataChk2A0	= tMemDataOut  [127:64] ^ tMemDataOut   [63:0];
 	tMemDataChk2A1	= tMemDataChk2A0[63:32] ^ tMemDataChk2A0[31:0];
-	tMemDataChk2A	= tMemDataChk2A1[31:16] ^ tMemDataChk2A1[15:0];
+	tMemDataChk2A	= { tMemOkSq[1:0], tMemOK,
+		tMemDataChk2A1[31:16] ^ tMemDataChk2A1[15:0] };
 end
 
 // always @(posedge clock)
@@ -1558,7 +1859,8 @@ begin
 //	tMemDataChk2	<= tMemDataOutA;
 `else
 //	tMemOK2			<= tMemOK;
-	tMemOK2			<= { ~tMemOK, tMemOK };
+//	tMemOK2			<= { ~tMemOK, tMemOK };
+	tMemOK2			<= { ~tMemOkSq, tMemOkSq, ~tMemOK, tMemOK };
 	tMemDataOut2	<= tMemDataOut;
 	tMemDataChk2	<= tMemDataChk2A;
 `endif
@@ -1599,13 +1901,19 @@ begin
 		tMemOpmA		<= tMemOpmF[4:0];
 	end
 `else
+//	if((tMemChkInE == tMemChkInE2) &&
+//		(tMemOpmF[4:0] == (~tMemOpmF[9:5])))
+//	if((tMemChkInE == tMemChkInE2) &&
+//		(tMemOpmE[4:0] == (~tMemOpmE[9:5])))
 	if((tMemChkInE == tMemChkInE2) &&
-		(tMemOpmF[4:0] == (~tMemOpmF[9:5])))
+		(tMemOpmE[ 4: 0] == (~tMemOpmE[ 9: 5])) &&
+		(tMemOpmE[13:10] == (~tMemOpmE[17:14])))
 	begin
 		tMemDataIn		<= tMemDataInE;
 		tMemAddr		<= tMemAddrE;
-//		tMemOpm			<= tMemOpmE;
-		tMemOpm			<= tMemOpmF[4:0];
+		tMemOpm			<= tMemOpmE[4:0];
+		tMemOpSq		<= tMemOpmE[13:10];
+//		tMemOpm			<= tMemOpmF[4:0];
 	end
 `endif
 
@@ -1629,10 +1937,21 @@ begin
 //	tMemOpmA		<= tMemOpmC;
 	tMemOpmA		<= tMemOpmD;
 `else
-	tMemDataIn		<= tMemDataInC;
-	tMemAddr		<= tMemAddrC;
-//	tMemOpm			<= tMemOpmC;
-	tMemOpm			<= tMemOpmD;
+//	if((tMemChkInC == tMemChkInC2) &&
+//		(tMemOpmD[4:0] == (~tMemOpmD[9:5])))
+//	if((tMemChkInC == tMemChkInC2) &&
+//		(tMemOpmC[4:0] == (~tMemOpmC[9:5])))
+	if(	(tMemChkInC == tMemChkInC2) &&
+		(tMemOpmC[ 4: 0] == (~tMemOpmC[ 9: 5])) &&
+		(tMemOpmC[13:10] == (~tMemOpmC[17:14])))
+	begin
+		tMemDataIn		<= tMemDataInC;
+		tMemAddr		<= tMemAddrC;
+		tMemOpm			<= tMemOpmC[4:0];
+		tMemOpSq		<= tMemOpmC[13:10];
+//		tMemOpm			<= tMemOpmD[4:0];
+
+	end
 `endif
 
 `endif
@@ -1647,6 +1966,7 @@ begin
 	tMemDataIn		<= memDataIn;
 	tMemAddr		<= memAddr;
 	tMemOpm			<= memOpm;
+	tMemOpSq		<= memOpSqI;
 `endif
 
 //	tReset			<= reset;
@@ -1665,6 +1985,7 @@ begin
 `ifdef jx2_mem_ddr32B
 	tMemDataOutL	<= tMemDataOut;
 	tMemOKL			<= tMemOK;
+	tMemOkSqL		<= tMemOkSq;
 
 	tMemDataOutA	<= tNxtMemDataOutA;
 	tMemOKA			<= tNxtMemOKA;
@@ -1678,9 +1999,12 @@ begin
 //	ddrData2A		<= ddrData;
 //	ddrData2		<= ddrData2A;
 
+	tReqOpSq		<= tNxtReqOpSq;
+
 	accState		<= accNextState;
 	accCkLo			<= accNextCkLo;
 	accReadBlk		<= accNextReadBlk;
+	accStoreFifo		<= accNextStoreFifo;
 	accCkCas		<= accNextCkCas;
 
 	accAddr			<= accNextAddr;

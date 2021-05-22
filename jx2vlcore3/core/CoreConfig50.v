@@ -25,8 +25,8 @@
 // `define jx2_cpu_mmioclock_75			//Use 75MHz MMIO Clock
 `define jx2_cpu_mmioclock_50		//Use 50MHz MMIO Clock
 
-`define jx2_cpu_ddrclock_150		//Use 150MHz DDR Clock
-// `define jx2_cpu_ddrclock_100		//Use 100MHz DDR Clock
+// `define jx2_cpu_ddrclock_150		//Use 150MHz DDR Clock
+`define jx2_cpu_ddrclock_100		//Use 100MHz DDR Clock
 
 
 // `define jx2_mem_useddrb			//Use newer DDR controller.
@@ -88,8 +88,8 @@
 `define jx2_l1d_nofwmemin		//L1 D$: Skip Forwarding (Mem In)
 `define jx2_tlb_nofwmemout		//TLB: Skip Forwarding (Output)
 
-// `define jx2_l2d_nofw_ddrout		//L2: Skip Forwarding (DDR Out)
-// `define jx2_l2d_nofw_ddrin		//L2: Skip Forwarding (DDR In)
+`define jx2_l2d_nofw_ddrout		//L2: Skip Forwarding (DDR Out)
+`define jx2_l2d_nofw_ddrin		//L2: Skip Forwarding (DDR In)
 
 // `define jx2_l2d_nofw_memout		//L2: Skip Forwarding (Mem Out)
 // `define jx2_l2d_noedy_memin		//L2: Skip Forwarding (Mem In)
@@ -110,8 +110,8 @@
 // `define mod_ddr_dbgprn		//Debug DDR module
 
 `define mod_ddr_fastcore		//Use faster clock internally
-`define mod_ddr_extrabuf		//Do Extra IO Buffering (Clock Crossing)
-// `define mod_ddr_basicbuf		//Do Basic IO Buffering (Clock Crossing)
+// `define mod_ddr_extrabuf		//Do Extra IO Buffering (Clock Crossing)
+`define mod_ddr_basicbuf		//Do Basic IO Buffering (Clock Crossing)
 // `define mod_ddr_fastbuf		//Do Fast IO Buffer (Single Clock)
 
 `define mod_ddrb_dllenable		//Enable DLL for DDRB

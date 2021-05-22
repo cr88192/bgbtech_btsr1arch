@@ -2136,6 +2136,15 @@ int main(int argc, char **argv, char **env)
 		(char *)"../../tk_qsrc/id1/autoexec1.cfg");
 #endif
 
+#if 1
+	JX2R_UseImageAddFile(
+		(char *)"HTIC/HTIC.EXE",
+		(char *)"../../tk_ports/HticSrc/htic_bjx2.exe");
+	JX2R_UseImageAddFile(
+		(char *)"HTIC/HTICULZ.WAD",
+		(char *)"../../tk_ports/HticSrc/hticulz.wad");
+#endif
+
 //	JX2R_UseImageAddFileBuffer("swapfile.sys", (byte *)NULL, 384*(1<<20));
 
 	Verilated::commandArgs(argc, argv);

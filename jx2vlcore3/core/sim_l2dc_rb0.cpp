@@ -29,9 +29,10 @@ uint32_t *dram_buf;
 
 void update_bus()
 {
-	int ta;
+	int ta, sq;
 	
 	ta=((top->ddrMemAddr)>>2)&0x00FFFFFF;
+	sq=top->ddrOpSqO;
 	
 	top->ddrMemOK=0;
 
@@ -42,6 +43,7 @@ void update_bus()
 		top->ddrMemDataIn[2]=dram_buf[ta+2];
 		top->ddrMemDataIn[3]=dram_buf[ta+3];
 		top->ddrMemOK=1;
+		top->ddrOpSqI=sq;
 		
 #if 0
 		printf("RD A=%08X D=%08X-%08X-%08X-%08X\n", ta,
@@ -55,6 +57,7 @@ void update_bus()
 		dram_buf[ta+2]=top->ddrMemDataOut[2];
 		dram_buf[ta+3]=top->ddrMemDataOut[3];
 		top->ddrMemOK=1;
+		top->ddrOpSqI=sq;
 
 #if 0
 //		printf("WR %08X\n", ta);

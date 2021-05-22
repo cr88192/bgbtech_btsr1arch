@@ -50,6 +50,12 @@ reg[1:0]		tMmioOK2;
 assign		mmioOutData = tMmioOutData2;
 assign		mmioOK		= tMmioOK2;
 
+wire[15:0]		tFixedPinsOut;
+reg[15:0]		tFixedPinsOutB;
+assign		fixedPinsOut = tFixedPinsOutB;
+
+reg[15:0]		tFixedPinsIn;
+
 reg[63:0]		tMmioInData;
 reg[31:0]		tMmioAddr;
 reg[4:0]		tMmioOpm;
@@ -66,7 +72,7 @@ assign			gpioPinsDir = gpioDir;
 reg		uartTx;
 reg		uartRx;
 
-assign	fixedPinsOut = {
+assign	tFixedPinsOut = {
 	12'hzzz,
 	2'bz,
 	1'bz,		//UART RX
@@ -179,7 +185,7 @@ begin
 	uartNextRxHoldByte	= uartRxHoldByte;
 
 	uartTx				= uartLastTx;
-	uartRx				= fixedPinsIn[1];
+	uartRx				= tFixedPinsIn[1];
 	
 	nextTimer1MHz	= timer1MHz;
 	nextTimer100MHz	= timer100MHz + 1;
@@ -563,6 +569,9 @@ end
 
 always @(posedge clock)
 begin
+	tFixedPinsOutB	<= tFixedPinsOut;
+	tFixedPinsIn	<= fixedPinsIn;
+
 	tUartRxDebP		<= tNxtUartRxDebP;
 
 	tMmioOK2		<= tMmioOK;

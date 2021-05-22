@@ -449,6 +449,9 @@ wire[31:0]		ddrMemAddr;
 wire[4:0]		ddrMemOpm;
 wire[1:0]		ddrMemOK;
 
+wire[3:0]		ddrOpSqI;
+wire[3:0]		ddrOpSqO;
+
 wire[13:0]		ddrAddr1;		//Address pins
 // assign		ddrAddr = ddrAddr1[12:0];
 assign		ddrAddr = ddrAddr1[13:0];
@@ -488,6 +491,7 @@ MmiModDdr3		ddr(
 	ddrMemDataIn,	ddrMemDataOut,
 	ddrMemAddr,		ddrMemOpm,
 	ddrMemOK,
+	ddrOpSqI,		ddrOpSqO,
 	
 	ddrData_I,	ddrData_O,	ddrData_En,
 	ddrAddr1,	ddrBa,
@@ -965,6 +969,7 @@ RbiMemL2A	l2a(
 	ddrMemAddr,		ddrMemOpm,
 	ddrMemDataOut,	ddrMemDataIn,
 	ddrMemOK,
+	ddrOpSqO,		ddrOpSqI,
 
 	mmioAddr_A0,	mmioOpm_A0,
 	mmioInData_A0,	mmioOutDataQ_A0,
@@ -1006,6 +1011,9 @@ MemL2A	l2a(
 	mmioInData_A0,	mmioOutDataQ_A0,
 	mmioOK_A0
 	);
+
+assign	ddrOpSqI = 0;
+
 
 `endif
 

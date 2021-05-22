@@ -76,13 +76,60 @@ assign	reset2a = !reset;
 
 wire[15:0]		ddrData_I;		//DDR data pins
 wire[15:0]		ddrData_O;		//DDR data pins
-wire			ddrData_En;		//DDR data pins
+
+wire	clock_150mhz;
+wire	clock_100mhz;
+wire	clock_ddr;
+`ifdef jx2_cpu_ddrclock_150
+assign	clock_ddr = clock_150mhz;
+`else
+assign	clock_ddr = clock_100mhz;
+`endif
+
+(* max_fanout = 2 *)
+	wire			ddrData_En;		//DDR data pins
+
+// `define jx2_cpu_ddr_obufcyc
 
 wire			ddrDqs_En;
 wire[1:0]		ddrDqsP_O;
 wire[1:0]		ddrDqsN_O;
 wire[1:0]		ddrDqsP_I;
 wire[1:0]		ddrDqsN_I;
+
+`ifdef jx2_cpu_ddr_obufcyc
+
+wire[15:0]		ddrData_T1;		//DDR data pins
+reg[15:0]		ddrData_T2;		//DDR data pins
+
+assign			ddrData_T1	= ddrData_En ? ddrData_O : 16'hzzzz;
+assign			ddrData		= ddrData_T2;
+assign			ddrData_I	= ddrData;
+
+wire[1:0]		ddrDqsP_T1;
+reg[1:0]		ddrDqsP_T2;
+wire[1:0]		ddrDqsN_T1;
+reg[1:0]		ddrDqsN_T2;
+
+assign			ddrDqsP_T1	= ddrDqs_En ? ddrDqsP_O : 2'bzz;
+assign			ddrDqsN_T1	= ddrDqs_En ? ddrDqsN_O : 2'bzz;
+assign			ddrDqsP		= ddrDqsP_T2;
+assign			ddrDqsN		= ddrDqsN_T2;
+assign			ddrDqsP_I	= ddrDqsP;
+assign			ddrDqsN_I	= ddrDqsN;
+
+always @(posedge clock_ddr)
+begin
+	ddrData_T2	<= ddrData_T1;
+end
+
+always @(negedge clock_ddr)
+begin
+	ddrDqsP_T2	<= ddrDqsP_T1;
+	ddrDqsN_T2	<= ddrDqsN_T1;
+end
+
+`else
 
 assign			ddrData		= ddrData_En ? ddrData_O : 16'hzzzz;
 assign			ddrData_I	= ddrData;
@@ -91,6 +138,8 @@ assign			ddrDqsP		= ddrDqs_En ? ddrDqsP_O : 2'bzz;
 assign			ddrDqsN		= ddrDqs_En ? ddrDqsN_O : 2'bzz;
 assign			ddrDqsP_I	= ddrDqsP;
 assign			ddrDqsN_I	= ddrDqsN;
+
+`endif
 
 output[3:0]		vgaRed;
 output[3:0]		vgaGrn;
@@ -162,8 +211,8 @@ assign	aud_mono_en			= aud_mono_ena1;
 
 wire	clock_300mhz;
 wire	clock_200mhz;
-wire	clock_150mhz;
-wire	clock_100mhz;
+// wire	clock_150mhz;
+// wire	clock_100mhz;
 wire	clock_75mhz;
 wire	clock_50mhz;
 

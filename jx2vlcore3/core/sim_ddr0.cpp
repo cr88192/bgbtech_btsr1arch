@@ -407,6 +407,7 @@ int main(int argc, char **argv, char **env)
 	int ddrlclk, cmd, data, dqs;
 	int n, inh;
 	int wn, rn, wdn, rdn, lim, bn1;
+	int rqsq, nsq, sqdn;
 	int i, j, k;
 
 	Verilated::commandArgs(argc, argv);
@@ -432,6 +433,7 @@ int main(int argc, char **argv, char **env)
 
 	wn=0;	rn=0;
 	wdn=0;	rdn=0;
+	rqsq=0;	nsq=0;
 	
 //	lim=8388608-4;
 
@@ -476,9 +478,23 @@ int main(int argc, char **argv, char **env)
 			top->reset2=0;
 		}
 	
-		top->clock = (main_time>>0)&1;
-		top->clock2 = (main_time>>0)&1;
+		top->clock = (main_time>>2)&1;
+		top->clock2 = (main_time>>1)&1;
+//		top->clock2 = (main_time>>0)&1;
+//		top->clock2 = ((main_time*3)/4)&1;
 		main_time++;
+
+		sqdn=0;
+		if((top->memOK==1) && (top->memOpSqO==rqsq) && (rqsq!=0))
+		{
+			sqdn=1;
+		}
+
+		if((top->memOK==1) && (top->memOpSqO==nsq))
+		{
+			rqsq=nsq;
+			nsq=(nsq+1)&15;
+		}
 
 //		if(!top->clock)
 //		{
@@ -496,8 +512,8 @@ int main(int argc, char **argv, char **env)
 
 		if((wn<lim) || wdn)
 		{
-			if(top->memOK==1)
-			{
+			if((top->memOK==1) && !sqdn)
+			{			
 				top->memOpm=0;
 //				printf("Wr OK\n");
 				if(!wdn)
@@ -515,7 +531,7 @@ int main(int argc, char **argv, char **env)
 			{
 //				printf("Wr Hold\n");
 			}else
-				if(top->memOK==0)
+				if((top->memOK==0) || sqdn)
 			{
 //				bn1=wn^(0x5A5A5A5A&(lim-1));
 				bn1=wn;
@@ -533,6 +549,7 @@ int main(int argc, char **argv, char **env)
 					top->memDataIn[6]=imgbuf[bn1*4+6];
 					top->memDataIn[7]=imgbuf[bn1*4+7];
 				}
+				top->memOpSqI=nsq;
 				top->memOpm=0x17;
 				wdn=0;
 
@@ -549,7 +566,7 @@ int main(int argc, char **argv, char **env)
 //			bn1=rn^(0xA5A5A5A5&(lim-1));
 			bn1=rn;
 
-			if(top->memOK==1)
+			if((top->memOK==1) && !sqdn)
 			{
 //				printf("Rd OK\n");
 				if(!rdn)
@@ -600,7 +617,7 @@ int main(int argc, char **argv, char **env)
 			{
 //				printf("Rd Hold\n");
 			}else
-				if(top->memOK==0)
+				if((top->memOK==0) || sqdn)
 			{
 //				printf("Rd OK\n");
 
@@ -609,6 +626,7 @@ int main(int argc, char **argv, char **env)
 //				top->memDataIn[1]=imgbuf[wn*4+1];
 //				top->memDataIn[2]=imgbuf[wn*4+2];
 //				top->memDataIn[3]=imgbuf[wn*4+3];
+				top->memOpSqI=nsq;
 //				top->memOpm=0x17;
 				top->memOpm=0x0F;
 				rdn=0;
@@ -704,8 +722,11 @@ int main(int argc, char **argv, char **env)
 	td0=tw1-tw0;
 	td1=tr1-tr0;
 	
-	printf("store %d cyc/op\n", (td0/2)/lim);
-	printf("load %d cyc/op\n", (td1/2)/lim);
+//	printf("store %d cyc/op\n", (td0/2)/lim);
+//	printf("load %d cyc/op\n", (td1/2)/lim);
+
+	printf("store %d cyc/op\n", (td0/8)/lim);
+	printf("load %d cyc/op\n", (td1/8)/lim);
 	
 	delete top;
 	exit(0);

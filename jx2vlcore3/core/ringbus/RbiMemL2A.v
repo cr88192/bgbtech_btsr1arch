@@ -17,6 +17,7 @@ module RbiMemL2A(
 	ddrMemAddr,		ddrMemOpm,
 	ddrMemDataIn,	ddrMemDataOut,
 	ddrMemOK,
+	ddrOpSqI,		ddrOpSqO,
 
 	mmioAddr,		mmioOpm,
 	mmioInData,		mmioOutData,
@@ -43,6 +44,10 @@ input [  7:0]	unitNodeId;		//Who Are We?
 output[31:0]	ddrMemAddr;
 output[4:0]		ddrMemOpm;
 input[1:0]		ddrMemOK;
+
+input[3:0]		ddrOpSqI;
+output[3:0]		ddrOpSqO;
+
 
 input[63:0]		mmioInData;
 output[63:0]	mmioOutData;
@@ -74,6 +79,7 @@ RbiMemL2Dc		l2dc(
 	ddrMemAddr,		ddrMemOpm,
 	ddrMemDataIn,	ddrMemDataOut,
 	ddrMemOK,
+	ddrOpSqI,		ddrOpSqO,
 	
 	l2mDeadlockStrobe
 	);
@@ -125,10 +131,20 @@ assign			l2rNodeId = 8'h84;
 assign			l2bNodeId = 8'h86;
 assign			l2mDeadlockStrobe = 0;
 
-assign		l2mSeqIn	= memSeqIn;
-assign		l2mOpmIn	= memOpmIn;
-assign		l2mAddrIn	= memAddrIn;
-assign		l2mDataIn	= memDataIn;
+reg[ 15:0]		tL2mSeqIn;
+reg[ 15:0]		tL2mOpmIn;
+reg[ 47:0]		tL2mAddrIn;
+`reg_tile		tL2mDataIn;
+
+assign		l2mSeqIn	= tL2mSeqIn;
+assign		l2mOpmIn	= tL2mOpmIn;
+assign		l2mAddrIn	= tL2mAddrIn;
+assign		l2mDataIn	= tL2mDataIn;
+
+// assign		l2mSeqIn	= memSeqIn;
+// assign		l2mOpmIn	= memOpmIn;
+// assign		l2mAddrIn	= memAddrIn;
+// assign		l2mDataIn	= memDataIn;
 
 // assign		l2rSeqIn	= l2mSeqOut;
 // assign		l2rOpmIn	= l2mOpmOut;
@@ -168,6 +184,11 @@ assign		memDataOut	= tL2bDataOut;
 
 always @*
 begin
+	tL2mSeqIn	= memSeqIn;
+	tL2mOpmIn	= memOpmIn;
+	tL2mAddrIn	= memAddrIn;
+	tL2mDataIn	= memDataIn;
+
 	tL2mSeqOut		= l2mSeqOut;
 	tL2mOpmOut		= l2mOpmOut;
 	tL2mAddrOut		= l2mAddrOut;
@@ -177,6 +198,25 @@ begin
 	tL2bOpmOut		= l2bOpmOut;
 	tL2bAddrOut		= l2bAddrOut;
 	tL2bDataOut		= l2bDataOut;
+
+`ifdef def_true
+	if(	(memOpmIn[7:0] == 8'h00) &&
+		((l2mOpmOut[7:0] == JX2_RBI_OPM_LDX) ||
+		(l2mOpmOut[7:0] == JX2_RBI_OPM_STX)) &&
+		(l2mAddrOut[29:24] != 6'h00) &&
+		(l2mAddrOut[31:30]==2'h0))
+	begin
+		tL2mSeqIn		= l2mSeqOut;
+		tL2mOpmIn		= l2mOpmOut;
+		tL2mAddrIn		= l2mAddrOut;
+		tL2mDataIn		= l2mDataOut;
+
+		tL2mSeqOut		= memSeqIn;
+		tL2mOpmOut		= memOpmIn;
+		tL2mAddrOut		= memAddrIn;
+		tL2mDataOut		= memDataIn;
+	end
+`endif
 
 // `ifndef def_true
 `ifdef def_true
