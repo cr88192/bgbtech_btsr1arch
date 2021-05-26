@@ -175,6 +175,7 @@ SR Bits:
 * 8..15: U0..U7, Context Dependent
 ** May be used as a Predicate Stack.
 * 16..23: Reserved
+* 26: WX2, WEX Secondary
 * 27: WXE, WEX Enable
 * 28: BL, Block Interrupts
 * 29: RB, Encodes the ISR register bank.
@@ -200,6 +201,13 @@ The JQ bit will effect the size of the address space:
 * Memory access will ignore high-order address bits.
 
 Clearing the WEX Enable flag will cause WEX instructions to be executed as scalar instructions on cores with WEX support. On other cores this flag will be ignored. This flag may be set of cleared depending on the results of the WEXMD operation.
+
+
+The Link Register (LR) will have the layout:
+* (63:52), Saved SR(15: 4), U and PQRO
+* (51:50), Saved SR(27:26), WXE, WX2
+* (48:48), Saved SR( 1: 0), S and T
+* (47: 0), Saved PC Address
 
 
 === Special Restrictions ===
@@ -700,11 +708,11 @@ The instructions encoded in the predicated ranges will be otherwise equivalent t
 
 Predicated instructions will be executed if the state of SR.T matches their expected value. If the state of this flag does not match (at the time the instruction is executed), the instruction will function as a NOP.
 
-Instructions whose behavior already depends on SR.T or whose function is to update SR.T may not be encoded as predicated instructions. Branches and other control-flow instructions similarly may not be predicated.
+Instructions whose behavior already depends on SR.T or whose function is to update SR.T may not be encoded as predicated instructions. Branches and other control-flow instructions similarly may not normally be predicated, with some exceptions.
 
 Examples of instructions which will not allow predication:
-* BRA, BSR, BT, and BF
-** RTS, RTSU, RTE, etc.
+* BT and BF
+* RTS, RTSU, RTE, etc.
 * CSELT and similar
 * CMPxx, ...
 * ADC, SBB
@@ -714,6 +722,14 @@ Similarly, instruction forms which are not otherwise encodable with predication 
 
 In the ASM syntax, they will be expressed via an "?T" or "?F" suffix:
 * MOV.B?T R3, (R5)	//Store if SR.T is True
+
+If BRA is predicated, its behavior will be analogous to the conditional forms:
+* BRA?T will behave the same as BT
+* BRA?F will behave the same as BF
+* BSR may be predicated.
+
+However:
+* BT and BF may not be predicated.
 
 
 Predicated Ranges will exist:
@@ -958,10 +974,10 @@ Instruction Space
 ** 31nE  -
 ** 31nF  -
 
-** 32n0  BRA	Rn					//Branch to address given in Rn
-** 32n1  BSR	Rn					//Branch Subroutine given by Rn
-** 32n2  BT		Rn
-** 32n3  BF		Rn
+** 32n0  JMP	Rn					//Branch to address given in Rn
+** 32n1  JSR	Rn					//Branch Subroutine given by Rn
+** 32n2  JT		Rn
+** 32n3  JF		Rn
 ** 32n4  EXTU.B	Rn
 ** 32n5  EXTU.W	Rn
 ** 32n6  EXTS.B	Rn
@@ -1439,10 +1455,10 @@ F0zz Instruction Block:
 *** F01C_3en0  INVIC	Rn
 *** F01D_3en0  INVDC	Rn
 
-*** F020_3en0  BRA		Rn
-*** F021_3en0  BSR		Rn
-*** F022_3en0  BT		Rn
-*** F023_3en0  BF		Rn
+*** F020_3en0  JMP		Rn
+*** F021_3en0  JSR		Rn
+*** F022_3en0  JT		Rn
+*** F023_3en0  JF		Rn
 
 *** F028_3en0  BRA.B	(PC, Rn)	//(Op24) BRA, Byte Scale
 *** F029_3en0  BSR.B	(PC, Rn)	//(Op24) BSR, Byte Scale
@@ -1472,9 +1488,9 @@ F0zz Instruction Block:
 *** F083_3en0  /
 
 ** F0nm_3eo1  -
-** F0nm_3go2  ROTL		Rm, Ro, Rn		//(ALU) Rotate Left (64b)
+** F0nm_3go2  ROTLQ		Rm, Ro, Rn		//(ALU) Rotate Left (64b)
 ** F0nm_3Go2  SHARX		Xm, Ro, Xn		//(ALUX) Shift Arithmetic (128b)
-** F0nm_3go3  ROTR		Rm, Ro, Rn		//(ALU) Rotate Right (64b)
+** F0nm_3go3  ROTRQ		Rm, Ro, Rn		//(ALU) Rotate Right (64b)
 ** F0nm_3Go3  SHLRX		Xm, Ro, Xn		//(ALUX) Shift Logical (128b)
 ** F0nm_3go4  -
 ** F0nm_3Go4  SHADX		Xm, Ro, Xn		//(ALUX) Shift Arithmetic (128b)
@@ -1730,8 +1746,8 @@ FAzz/FBzz Instructions:
 Jumbo64 (Possible):
 * FEjj_jjjj_FAjj_jjjj	 LDIZ	#imm48u, DLR		//Zero Extend
 * FEjj_jjjj_FBjj_jjjj	 LDIN	#imm48n, DLR		//One Extend
-* FFjj_jjjj_FAjj_jjjj	 BRA	#abs48				//Abs48 Branch
-* FFjj_jjjj_FBjj_jjjj	 BSR	#abs48				//Abs48 Call
+* FFjj_jjjj_FAjj_jjjj	 JMP	#abs48				//Abs48 Branch
+* FFjj_jjjj_FBjj_jjjj	 JSR	#abs48				//Abs48 Call
 
 
 ==== EAzz/EBzz/EEzz/EFzz PrWEX Instruction Blocks ====
@@ -1837,8 +1853,8 @@ The H0 space basically mirrors the F0 space.
 
 The H1..H3 spaces mirror F1..F3.
 
-* FEH0_0ddd_F0dd_Cddd  BRA (PC, Disp33s)
-* FEH0_0ddd_F0dd_Dddd  BSR (PC, Disp33s)
+* FEH0_0ddd_F0dd_Cddd / BRA (PC, Disp33s)
+* FEH0_0ddd_F0dd_Dddd / BSR (PC, Disp33s)
 
 
 ==== Jumbo Op48 ====

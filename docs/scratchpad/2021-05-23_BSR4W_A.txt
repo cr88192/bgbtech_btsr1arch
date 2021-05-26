@@ -1,0 +1,367 @@
+BSR4W-A:
+* 64-bit ISA, Variable-Bundle VLIW.
+* Width will depend on implementation, though assuming 4 or 5 wide.
+
+Registers:
+* R0..R63: 64-bit
+** R0 / DLR: Stomp
+** R1 / DHR: Stomp
+** R2..R31: Scratch
+** R32..R59: Callee Preserve
+** R60: SP
+** R61: LR
+** R62: GBR
+** R63: PC
+* Control Regs
+** C0..C63
+** SR: Will contain several Predicate Flags
+* P1..P3: Predicate Registers
+** Contained as bits within SR.
+* Registers may be paired:
+** X0, X2, ...
+** Will represent 128-bit SIMD vectors.
+
+PC/LR:
+* Low 48 bits: Address
+* High 48 bits: Aliased with Predicate and Mode flags.
+
+
+Instructions will be 32-bit:
+* G: ppqq-oooo oonn-nnnn ssss-sstt tttt-oooo  //3R
+* H: ppqq-oooo oonn-nnnn ssss-ssoo oooo-oooo  //2R
+* I: ppqq-oooo oonn-nnnn ssss-ssoi iiii-iiii  //3RI (Imm9)
+* J: ppqq-oooo oonn-nnnn oooo-ooii iiii-iiii  //2RI (Imm10)
+* K: ppqq-oooo oonn-nnnn iiii-iiii iiii-iiii  //2RI (Imm16)
+* L: ppqq-oooo oooo-iiii iiii-iiii iiii-iiii  //Imm20
+* M: ppqq-oooo iiii-iiii iiii-iiii iiii-iiii  //Imm24
+
+Instructions will be encoded using 32-bit little endian integers.
+The instruction stream is required to be 32-bit aligned.
+
+Bundles will be formed from a string of 32-bit instructions (up to an implementation-defined maximum width), and will be assumed to execute in parallel. Some instructions may be restricted to certain lanes.
+
+
+Lane Numbering will be reversed, such that Lane 1 is always the last instruction in the bundle. Higher numbered lanes will generally be more restrictive in terms of what they can include.
+
+Say, for example, 5 wide:
+* Lane 1, Everything
+* Lane 2, Excludes Branches
+* Lane 3, Excludes Mem-Ops or FPU
+* Lane 4, ALU Only (Or Jumbo Prefix)
+* Lane 5, ALU Only (Or Jumbo Prefix)
+* Lane 6 (Virtual), Jumbo Only
+* Lane 7 (Virtual), Jumbo Only
+* Lane 8 (Virtual), Jumbo Only
+
+Normally, each lane will be given 2 read ports and 1 write port.
+* 128-bit operations will span multiple lanes.
+** Each 128-bit port needs two 64-bit ports.
+* The last lanes will be used for the spare ports.
+** Memory store will eat the last lane.
+** 128-bit SIMD Ops will eat the last two lanes.
+** Eaten lanes may not contain executable instructions.
+** Eaten lanes may till contain Jumbo Prefixes
+
+
+FPU will be usable from Lane 1 or 2 (64-bit), or 1 (128-bit).
+Supported FPU Types:
+* Double (Binary64)
+* Long Double (Binary128)
+* 2x Single (Binary32)
+* 4x Single (Binary32)
+* 4x Half (Binary16)
+
+Scalar Single will not be supported, but may be faked by using 2x Single ops and ignoring the second value.
+
+
+PP, Predication:
+* 00, Non-Wide, Execute If True
+* 01, Non-Wide, Execute If False
+* 10, Wide, Execute If True
+* 11, Wide, Execute If False
+
+QQ, Predicate Source Register:
+* 00: Predicate 1 (P1)
+* 01: Predicate 2 (P2)
+* 10: Predicate 3 (P3)
+* 11: Unconditional
+
+RR, Predicate Destination Register:
+* 00: Predicate 1 (P1)
+* 01: Predicate 2 (P2)
+* 10: Predicate 3 (P3)
+* 11: Reserved
+
+Encodings will be expressed as the Form followed by the bits in the corresponding opcode fields.
+
+The ppqq field:
+* 0011: Normal Unconditional
+* 0111: Special Unconditional
+* 1011: Normal Unconditional, Wide-Execute
+* 1111: Special Unconditional, Wide-Execute
+* Other values will represent predicated ops.
+
+The Special spaces will include a few unconditional ops, along with large branches and jumbo prefixes.
+
+
+Normal Ops:
+
+* ppqq-oooo 00nn-nnnn ssss-ssoo oooo-oooo  (3R Space)
+** ppqq-0011 00nn-nnnn ssss-ssoo oooo-oooo  (1R and 2R spaces) 
+** ppqq-0011 00nn-nnnn oooo-oooo 0000-oooo  (1R/0R Space)
+
+* ppqq-oooo 01nn-nnnn ssss-ssoo oooo-oooo  (LD/ST Disp9 Space)
+* ppqq-oooo 10nn-nnnn ssss-ssoo oooo-oooo  (3RI Imm9 Space)
+* ppqq-oooo 10nn-nnnn ssss-ssoo oooo-oooo  (2RI Imm16 Space)
+
+* ppqq-0000 00nn-nnnn ssss-sstt tttt-0000  MOV.B	Rn, (Rs, Rt)
+* ppqq-0000 00nn-nnnn ssss-sstt tttt-0001  MOV.W	Rn, (Rs, Rt)
+* ppqq-0000 00nn-nnnn ssss-sstt tttt-0010  MOV.L	Rn, (Rs, Rt)
+* ppqq-0000 00nn-nnnn ssss-sstt tttt-0011  MOV.Q	Rn, (Rs, Rt)
+* ppqq-0000 00nn-nnnn ssss-sstt tttt-0100  LEA.B	Rn, (Rs, Rt)
+* ppqq-0000 00nn-nnnn ssss-sstt tttt-0101  LEA.W	Rn, (Rs, Rt)
+* ppqq-0000 00nn-nnnn ssss-sstt tttt-0110  LEA.L	Rn, (Rs, Rt)
+* ppqq-0000 00nn-nnnn ssss-sstt tttt-0111  LEA.Q	Rn, (Rs, Rt)
+* ppqq-0000 00nn-nnnn ssss-sstt tttt-1000  MOV.B	(Rs, Rt), Rn
+* ppqq-0000 00nn-nnnn ssss-sstt tttt-1001  MOV.W	(Rs, Rt), Rn
+* ppqq-0000 00nn-nnnn ssss-sstt tttt-1010  MOV.L	(Rs, Rt), Rn
+* ppqq-0000 00nn-nnnn ssss-sstt tttt-1011  MOV.Q	(Rs, Rt), Rn
+* ppqq-0000 00nn-nnnn ssss-sstt tttt-1100  MOVU.B	(Rs, Rt), Rn
+* ppqq-0000 00nn-nnnn ssss-sstt tttt-1101  MOVU.W	(Rs, Rt), Rn
+* ppqq-0000 00nn-nnnn ssss-sstt tttt-1110  MOVU.L	(Rs, Rt), Rn
+* ppqq-0000 00nn-nnnn ssss-sstt tttt-1111  -
+
+* ppqq-0001 00nn-nnnn ssss-sstt tttt-0000  ADD		Rs, Rt, Rn
+* ppqq-0001 00nn-nnnn ssss-sstt tttt-0001  SUB		Rs, Rt, Rn
+* ppqq-0001 00nn-nnnn ssss-sstt tttt-0010  MULS.L	Rs, Rt, Rn
+* ppqq-0001 00nn-nnnn ssss-sstt tttt-0011  MULU.L	Rs, Rt, Rn
+* ppqq-0001 00nn-nnnn ssss-sstt tttt-0100  -
+* ppqq-0001 00nn-nnnn ssss-sstt tttt-0101  AND		Rs, Rt, Rn
+* ppqq-0001 00nn-nnnn ssss-sstt tttt-0110  OR		Rs, Rt, Rn
+* ppqq-0001 00nn-nnnn ssss-sstt tttt-0111  XOR		Rs, Rt, Rn
+* ppqq-0001 00nn-nnnn ssss-sstt tttt-1000  SHAD.L	Rs, Rt, Rn
+* ppqq-0001 00nn-nnnn ssss-sstt tttt-1001  SHLD.L	Rs, Rt, Rn
+* ppqq-0001 00nn-nnnn ssss-sstt tttt-1010  SHAD.Q	Rs, Rt, Rn
+* ppqq-0001 00nn-nnnn ssss-sstt tttt-1011  SHLD.Q	Rs, Rt, Rn
+* ppqq-0001 00nn-nnnn ssss-sstt tttt-1100  ADC		Rs, Rt, Rn
+* ppqq-0001 00nn-nnnn ssss-sstt tttt-1101  SBB		Rs, Rt, Rn
+* ppqq-0001 00nn-nnnn ssss-sstt tttt-1110  DMULS.L	Rs, Rt, Rn
+* ppqq-0001 00nn-nnnn ssss-sstt tttt-1111  DMULU.L	Rs, Rt, Rn 
+
+* ppqq-0010 00nn-nnnn ssss-sstt tttt-0000  ADD.X	Rs, Rt, Rn
+* ppqq-0010 00nn-nnnn ssss-sstt tttt-0001  SUB.X	Rs, Rt, Rn
+* ppqq-0010 00nn-nnnn ssss-sstt tttt-1010  SHAD.X	Rs, Rt, Rn
+* ppqq-0010 00nn-nnnn ssss-sstt tttt-1011  SHLD.X	Rs, Rt, Rn
+* ppqq-0010 00nn-nnnn ssss-sstt tttt-0100  -
+* ppqq-0010 00nn-nnnn ssss-sstt tttt-0101  AND.X	Rs, Rt, Rn
+* ppqq-0010 00nn-nnnn ssss-sstt tttt-0110  OR.X		Rs, Rt, Rn
+* ppqq-0010 00nn-nnnn ssss-sstt tttt-0111  XOR.X	Rs, Rt, Rn
+
+* ppqq-0010 00nn-nnnn ssss-sstt tttt-1000  MOV.X	Rn, (Rs, Rt)
+* ppqq-0010 00nn-nnnn ssss-sstt tttt-1001  -
+* ppqq-0010 00nn-nnnn ssss-sstt tttt-1010  -
+* ppqq-0010 00nn-nnnn ssss-sstt tttt-1011  -
+* ppqq-0010 00nn-nnnn ssss-sstt tttt-1100  MOV.X	(Rs, Rt), Rn
+* ppqq-0010 00nn-nnnn ssss-sstt tttt-1101  -
+* ppqq-0010 00nn-nnnn ssss-sstt tttt-1110  -
+* ppqq-0010 00nn-nnnn ssss-sstt tttt-1111  -
+
+
+* ppqq-0011 00zz-zzzz 0000-0000 0000-0000  NOP
+* ppqq-0011 00zz-zzzz 0000-0100 0000-0000  RTS
+
+* ppqq-0011 00nn-nnnn ssss-ssrr 1000-0000  CMPEQ.L	Rs, Rn
+* ppqq-0011 00nn-nnnn ssss-ssrr 1000-0001  CMPEQ.Q	Rs, Rn
+* ppqq-0011 00nn-nnnn ssss-ssrr 1000-0010  CMPGT.L	Rs, Rn
+* ppqq-0011 00nn-nnnn ssss-ssrr 1000-0011  CMPGT.Q	Rs, Rn
+* ppqq-0011 00nn-nnnn ssss-ssrr 1000-0100  CMPHI.L	Rs, Rn
+* ppqq-0011 00nn-nnnn ssss-ssrr 1000-0101  CMPHI.Q	Rs, Rn
+* ppqq-0011 00nn-nnnn ssss-ssrr 1000-0110  CMPGE.L	Rs, Rn
+* ppqq-0011 00nn-nnnn ssss-ssrr 1000-0111  CMPGE.Q	Rs, Rn
+* ppqq-0011 00nn-nnnn ssss-ssrr 1000-1000  TEST.L	Rs, Rn
+* ppqq-0011 00nn-nnnn ssss-ssrr 1000-1001  TEST.Q	Rs, Rn
+* ppqq-0011 00nn-nnnn ssss-ssrr 1000-1010  CMPHS.L	Rs, Rn
+* ppqq-0011 00nn-nnnn ssss-ssrr 1000-1011  CMPHS.Q	Rs, Rn
+* ppqq-0011 00nn-nnnn ssss-ssrr 1000-1100  FCMPEQ.D	Rs, Rn
+* ppqq-0011 00nn-nnnn ssss-ssrr 1000-1101  FCMPEQ.X	Rs, Rn
+* ppqq-0011 00nn-nnnn ssss-ssrr 1000-1110  FCMPGT.D	Rs, Rn
+* ppqq-0011 00nn-nnnn ssss-ssrr 1000-1111  FCMPGT.X	Rs, Rn
+
+
+* ppqq-0100 00nn-nnnn ssss-sstt tttt-0000  FADD.D	Rs, Rt, Rn  //Double
+* ppqq-0100 00nn-nnnn ssss-sstt tttt-0001  FSUB.D	Rs, Rt, Rn
+* ppqq-0100 00nn-nnnn ssss-sstt tttt-0010  FMUL.D	Rs, Rt, Rn
+* ppqq-0100 00nn-nnnn ssss-sstt tttt-0011  MOVHHD	Rs, Rt, Rn	//High, High
+* ppqq-0100 00nn-nnnn ssss-sstt tttt-0100  FADD.X	Rs, Rt, Rn	//Long Double
+* ppqq-0100 00nn-nnnn ssss-sstt tttt-0101  FSUB.X	Rs, Rt, Rn
+* ppqq-0100 00nn-nnnn ssss-sstt tttt-0110  FMUL.X	Rs, Rt, Rn
+* ppqq-0100 00nn-nnnn ssss-sstt tttt-0111  MOVHLD	Rs, Rt, Rn	//High, Low
+* ppqq-0100 00nn-nnnn ssss-sstt tttt-1000  PADD.F	Rs, Rt, Rn	//2x Single
+* ppqq-0100 00nn-nnnn ssss-sstt tttt-1001  PSUB.F	Rs, Rt, Rn
+* ppqq-0100 00nn-nnnn ssss-sstt tttt-1010  PMUL.F	Rs, Rt, Rn
+* ppqq-0100 00nn-nnnn ssss-sstt tttt-1011  MOVLHD	Rs, Rt, Rn	//Low, High
+* ppqq-0100 00nn-nnnn ssss-sstt tttt-1100  PADDX.F	Rs, Rt, Rn	//4x Single
+* ppqq-0100 00nn-nnnn ssss-sstt tttt-1101  PSUBX.F	Rs, Rt, Rn
+* ppqq-0100 00nn-nnnn ssss-sstt tttt-1110  PMULX.F	Rs, Rt, Rn
+* ppqq-0100 00nn-nnnn ssss-sstt tttt-1111  MOVLLD	Rs, Rt, Rn	//Low, Low
+
+* ppqq-0101 00nn-nnnn ssss-sstt tttt-0000  PADD.W	Rs, Rt, Rn  //4x Word
+* ppqq-0101 00nn-nnnn ssss-sstt tttt-0001  PSUB.W	Rs, Rt, Rn
+* ppqq-0101 00nn-nnnn ssss-sstt tttt-0010  PMUL.W	Rs, Rt, Rn	//Low Result
+* ppqq-0101 00nn-nnnn ssss-sstt tttt-0011  -
+* ppqq-0101 00nn-nnnn ssss-sstt tttt-0100  -
+* ppqq-0101 00nn-nnnn ssss-sstt tttt-0101  -
+* ppqq-0101 00nn-nnnn ssss-sstt tttt-0110  PMULUH.W	Rs, Rt, Rn	//Unsigned High
+* ppqq-0101 00nn-nnnn ssss-sstt tttt-0111  PMULSH.W	Rs, Rt, Rn	//Signed High
+
+* ppqq-0101 00nn-nnnn ssss-sstt tttt-1000  PADD.H	Rs, Rt, Rn	//4x Half
+* ppqq-0101 00nn-nnnn ssss-sstt tttt-1001  PSUB.H	Rs, Rt, Rn
+* ppqq-0101 00nn-nnnn ssss-sstt tttt-1010  PMUL.H	Rs, Rt, Rn
+* ppqq-0101 00nn-nnnn ssss-sstt tttt-1011  -
+* ppqq-0101 00nn-nnnn ssss-sstt tttt-1100  ADDS.L	Rs, Rt, Rn
+* ppqq-0101 00nn-nnnn ssss-sstt tttt-1101  ADDU.L	Rs, Rt, Rn
+* ppqq-0101 00nn-nnnn ssss-sstt tttt-1110  SUBS.L	Rs, Rt, Rn
+* ppqq-0101 00nn-nnnn ssss-sstt tttt-1111  SUBU.L	Rs, Rt, Rn
+
+...
+
+
+* ppqq-0000 01nn-nnnn ssss-ss0i iiii-iiii  MOV.B	Rn, (Rs, Disp9)
+* ppqq-0000 01nn-nnnn ssss-ss1i iiii-iiii  LEA.B	Rn, (Rs, Disp9)
+* ppqq-0001 01nn-nnnn ssss-ss0i iiii-iiii  MOV.W	Rn, (Rs, Disp9)
+* ppqq-0001 01nn-nnnn ssss-ss1i iiii-iiii  LEA.W	Rn, (Rs, Disp9)
+* ppqq-0010 01nn-nnnn ssss-ss0i iiii-iiii  MOV.L	Rn, (Rs, Disp9)
+* ppqq-0010 01nn-nnnn ssss-ss1i iiii-iiii  LEA.L	Rn, (Rs, Disp9)
+* ppqq-0011 01nn-nnnn ssss-ss0i iiii-iiii  MOV.Q	Rn, (Rs, Disp9)
+* ppqq-0011 01nn-nnnn ssss-ss1i iiii-iiii  LEA.Q	Rn, (Rs, Disp9)
+* ppqq-0100 01nn-nnnn ssss-ss0i iiii-iiii  MOV.B	(Rs, Disp9), Rn
+* ppqq-0100 01nn-nnnn ssss-ss1i iiii-iiii  MOVU.B	(Rs, Disp9), Rn
+* ppqq-0101 01nn-nnnn ssss-ss0i iiii-iiii  MOV.W	(Rs, Disp9), Rn
+* ppqq-0101 01nn-nnnn ssss-ss1i iiii-iiii  MOVU.W	(Rs, Disp9), Rn
+* ppqq-0110 01nn-nnnn ssss-ss0i iiii-iiii  MOV.L	(Rs, Disp9), Rn
+* ppqq-0110 01nn-nnnn ssss-ss1i iiii-iiii  MOVU.L	(Rs, Disp9), Rn
+* ppqq-0111 01nn-nnnn ssss-ss0i iiii-iiii  MOV.Q	(Rs, Disp9), Rn
+* ppqq-0111 01nn-nnnn ssss-ss1i iiii-iiii  -
+
+* ppqq-1000 01nn-nnnn ssss-ss0i iiii-iiii  MOV.X	Rn, (Rs, Disp9)
+* ppqq-1000 01nn-nnnn ssss-ss1i iiii-iiii  -
+* ppqq-1001 01nn-nnnn ssss-ss0i iiii-iiii  -
+* ppqq-1001 01nn-nnnn ssss-ss1i iiii-iiii  -
+* ppqq-1010 01nn-nnnn ssss-ss0i iiii-iiii  -
+* ppqq-1010 01nn-nnnn ssss-ss1i iiii-iiii  -
+* ppqq-1011 01nn-nnnn ssss-ss0i iiii-iiii  -
+* ppqq-1011 01nn-nnnn ssss-ss1i iiii-iiii  -
+* ppqq-1100 01nn-nnnn ssss-ss0i iiii-iiii  MOV.X	Rn, (Rs, Disp9)
+* ppqq-1100 01nn-nnnn ssss-ss1i iiii-iiii  -
+* ppqq-1101 01nn-nnnn ssss-ss0i iiii-iiii  -
+* ppqq-1101 01nn-nnnn ssss-ss1i iiii-iiii  -
+* ppqq-1110 01nn-nnnn ssss-ss0i iiii-iiii  -
+* ppqq-1110 01nn-nnnn ssss-ss1i iiii-iiii  -
+* ppqq-1111 01nn-nnnn ssss-ss0i iiii-iiii  -
+* ppqq-1111 01nn-nnnn ssss-ss1i iiii-iiii  -
+
+...
+
+* ppqq-0000 10nn-nnnn ssss-ss0i iiii-iiii  ADD		Rs, Imm9u, Rn
+* ppqq-0000 10nn-nnnn ssss-ss1i iiii-iiii  ADD		Rs, Imm9n, Rn
+* ppqq-0001 10nn-nnnn ssss-ss0i iiii-iiii  MULS.L	Rs, Imm9u, Rn
+* ppqq-0001 10nn-nnnn ssss-ss1i iiii-iiii  MULU.L	Rs, Imm9n, Rn
+* ppqq-0010 10nn-nnnn ssss-ss0i iiii-iiii  ADDS.L	Rs, Imm9u, Rn
+* ppqq-0010 10nn-nnnn ssss-ss1i iiii-iiii  ADDS.L	Rs, Imm9n, Rn
+* ppqq-0011 10nn-nnnn ssss-ss0i iiii-iiii  ADDU.L	Rs, Imm9u, Rn
+* ppqq-0011 10nn-nnnn ssss-ss1i iiii-iiii  ADDU.L	Rs, Imm9n, Rn
+
+* ppqq-0100 10nn-nnnn ssss-ss00 0iii-iiii  SHAD.L	Rs, Imm7s, Rn
+* ppqq-0100 10nn-nnnn ssss-ss10 0iii-iiii  SHLD.L	Rs, Imm7s, Rn
+* ppqq-0100 10nn-nnnn ssss-ss01 0iii-iiii  SHAD.Q	Rs, Imm7s, Rn
+* ppqq-0100 10nn-nnnn ssss-ss11 0iii-iiii  SHLD.Q	Rs, Imm7s, Rn
+
+* ppqq-0101 10nn-nnnn ssss-ss0i iiii-iiii  AND		Rs, Imm9u, Rn
+* ppqq-0110 10nn-nnnn ssss-ss0i iiii-iiii  OR		Rs, Imm9u, Rn
+* ppqq-0111 10nn-nnnn ssss-ss0i iiii-iiii  XOR		Rs, Imm9u, Rn
+
+* ppqq-1000 10nn-nnnn 0000-rrii iiii-iiii  CMPEQ.L	Imm10u, Rn
+* ppqq-1000 10nn-nnnn 0001-rrii iiii-iiii  CMPEQ.L	Imm10n, Rn
+* ppqq-1000 10nn-nnnn 0010-rrii iiii-iiii  CMPEQ.Q	Imm10u, Rn
+* ppqq-1000 10nn-nnnn 0011-rrii iiii-iiii  CMPEQ.Q	Imm10n, Rn
+* ppqq-1000 10nn-nnnn 0100-rrii iiii-iiii  CMPGT.L	Imm10u, Rn
+* ppqq-1000 10nn-nnnn 0101-rrii iiii-iiii  CMPGT.L	Imm10n, Rn
+* ppqq-1000 10nn-nnnn 0110-rrii iiii-iiii  CMPGT.Q	Imm10u, Rn
+* ppqq-1000 10nn-nnnn 0111-rrii iiii-iiii  CMPGT.Q	Imm10n, Rn
+
+* ppqq-1000 10nn-nnnn 1000-rrii iiii-iiii  CMPHI.L	Imm10u, Rn
+* ppqq-1000 10nn-nnnn 1001-rrii iiii-iiii  CMPHI.L	Imm10n, Rn
+* ppqq-1000 10nn-nnnn 1010-rrii iiii-iiii  CMPHI.Q	Imm10u, Rn
+* ppqq-1000 10nn-nnnn 1011-rrii iiii-iiii  CMPHI.Q	Imm10n, Rn
+* ppqq-1000 10nn-nnnn 1100-rrii iiii-iiii  CMPGE.L	Imm10u, Rn
+* ppqq-1000 10nn-nnnn 1101-rrii iiii-iiii  CMPGE.L	Imm10n, Rn
+* ppqq-1000 10nn-nnnn 1110-rrii iiii-iiii  CMPGE.Q	Imm10u, Rn
+* ppqq-1000 10nn-nnnn 1111-rrii iiii-iiii  CMPGE.Q	Imm10n, Rn
+
+* ppqq-1001 10nn-nnnn 0000-rrii iiii-iiii  TEST.L	Imm10u, Rn
+* ppqq-1001 10nn-nnnn 0001-rrii iiii-iiii  TEST.L	Imm10n, Rn
+* ppqq-1001 10nn-nnnn 0010-rrii iiii-iiii  TEST.Q	Imm10u, Rn
+* ppqq-1001 10nn-nnnn 0011-rrii iiii-iiii  TEST.Q	Imm10n, Rn
+* ppqq-1001 10nn-nnnn 0100-rrii iiii-iiii  CMPHS.L	Imm10u, Rn
+* ppqq-1001 10nn-nnnn 0101-rrii iiii-iiii  CMPHS.L	Imm10n, Rn
+* ppqq-1001 10nn-nnnn 0110-rrii iiii-iiii  CMPHS.Q	Imm10u, Rn
+* ppqq-1001 10nn-nnnn 0111-rrii iiii-iiii  CMPHS.Q	Imm10n, Rn
+
+...
+
+* ppqq-0000 11nn-nnnn iiii-iiii iiii-iiii  LDIZ		Imm16u, Rn
+* ppqq-0001 11nn-nnnn iiii-iiii iiii-iiii  LDIN		Imm16n, Rn
+* ppqq-0010 11nn-nnnn iiii-iiii iiii-iiii  ADD		Imm16u, Rn
+* ppqq-0011 11nn-nnnn iiii-iiii iiii-iiii  ADD		Imm16n, Rn
+* ppqq-0100 11nn-nnnn iiii-iiii iiii-iiii  LDISH	Imm16u, Rn
+* ppqq-0101 11nn-nnnn iiii-iiii iiii-iiii  FLDCH	Imm16u, Rn
+
+* ppqq-1111 1100-iiii iiii-iiii iiii-iiii  BRA		Disp20
+* ppqq-1111 1101-iiii iiii-iiii iiii-iiii  BSR		Disp20
+
+...
+
+
+Where, ppqq==0111:
+* 0111-0000 iiii-iiii iiii-iiii iiii-iiii  -
+* 0111-0001 iiii-iiii iiii-iiii iiii-iiii  -
+* 0111-0010 iiii-iiii iiii-iiii iiii-iiii  LDIZ	Imm24, R0
+* 0111-0011 iiii-iiii iiii-iiii iiii-iiii  LDIN	Imm24, R0
+* 0111-0100 iiii-iiii iiii-iiii iiii-iiii  -
+* 0111-0101 iiii-iiii iiii-iiii iiii-iiii  -
+* 0111-0110 iiii-iiii iiii-iiii iiii-iiii  -
+* 0111-0111 iiii-iiii iiii-iiii iiii-iiii  -
+* 0111-10ii iiii-iiii iiii-iiii iiii-iiii  BRA	Disp26s
+* 0111-11ii iiii-iiii iiii-iiii iiii-iiii  BSR	Disp26s
+
+Where, ppqq==1111:
+* 1111-10kk iiii-iiii iiii-iiii iiii-iiii  Jumbo_Immed
+* 1111-11kk oooo-oooo xxxx-xxxx xxxx-xxxx  Jumbo_Instr
+** kk: Lane Pair Distance
+*** Indicates the distance until the paired instruction.
+*** This is intended to allow jumbo to be usable within bundles.
+** Jumbo_Immed will extend the Immediate for an existin instruction.
+*** Will not usually extend opcode space.
+** Jumbo_Instr is intended to form new/larger instructions.
+*** Primarily expands opcode space.
+
+
+64-bit Ops:
+* LDIZ	Imm48, R0
+** 1111-1000 iiii-iiii iiii-iiii iiii-iiii
+** 0111-0010 iiii-iiii iiii-iiii iiii-iiii
+* LDIN	Imm48, R0
+** 1111-1000 iiii-iiii iiii-iiii iiii-iiii
+** 0111-0011 iiii-iiii iiii-iiii iiii-iiii
+* JMP Abs48
+** 1111-1000 iiii-iiii iiii-iiii iiii-iiii
+** 0111-1000 iiii-iiii iiii-iiii iiii-iiii
+* JSR Abs48
+** 1111-1000 iiii-iiii iiii-iiii iiii-iiii
+** 0111-1100 iiii-iiii iiii-iiii iiii-iiii
+
+96-bit Ops:
+* LDIZ	Imm64, Rn
+** 1111-1000 iiii-iiii iiii-iiii iiii-iiii
+** 1111-1000 iiii-iiii iiii-iiii iiii-iiii
+** ppqq-0000 11nn-nnnn iiii-iiii iiii-iiii  

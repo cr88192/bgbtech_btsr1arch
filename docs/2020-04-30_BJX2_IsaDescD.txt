@@ -92,14 +92,15 @@ This form sign or zero extends the 32-bit result to 64 bits.
 Perform a bitwise AND of the source and destination values and store the result in the destination register.
 
 
-=== BF ===
+=== BF / JF ===
 
 * 23dd       BF		(PC, disp8s)
 * 31n3       BF		(PC, Rn)
-* 32n3       BF		Rn
 * F013_3en0  BF		(PC, Rn)			//Fix32
-* F023_3en0  BF		Rn					//Fix32
 * F0dd_Fddd  BF		(PC, disp20s)		//Branch False, +/- 1MB
+
+* 32n3       JF		Rn
+* F023_3en0  JF		Rn					//Fix32
 
 Branch if False (SR.T is 0).
 The target address is computed and PC is updated to the new address if the condition is met.
@@ -107,20 +108,25 @@ The target address is computed and PC is updated to the new address if the condi
 This instruction is only allowed in Lane 1.
 
 
-=== BRA ===
+=== BRA / JMP ===
 
 * 20dd       BRA		(PC, disp8s)
 * 31n0       BRA		(PC, Rn)
-* 32n0       BRA		Rn
 * F010_3en0  BRA		(PC, Rn)			//Fix32
-* F020_3en0  BRA		Rn					//Fix32
 * F0dd_Cddd  BRA		(PC, disp20s)		//Fix32
 
+* 32n0       JMP		Rn
+* F020_3en0  JMP		Rn					//Fix32
+
 * FEjj_jjjj_F202_C4jj	BRA		(PC, disp33s)
-* FFjj_jjjj_FAjj_jjjj	BRA		#abs48		//Abs48 Branch
+* FFjj_jjjj_FAjj_jjjj	JMP		#abs48		//Abs48 Branch
 
 Branch to Address.
-The target address is computed and PC is updated to the new address.
+For BRA, the target address is computed and PC is updated to the new address.
+
+For JMP, this performs an absolute jump to the address given.
+
+As a special case, if JMP is used with DHR, the high order bits of DHR will be interpreted as if this were an RTS instruction (copying these bits into the SR user flags). Otherwise, the contents of the SR user flags will be unmodified.
 
 This instruction is only allowed in Lane 1.
 
@@ -135,32 +141,40 @@ Trigger a Breakpoint exception.
 The BREAK1/2/3 forms overlap with MOV.B, but will be regarded as invalid special cases which will result in an exception rather than a MOV.
 
 
-=== BSR ===
+=== BSR / JSR ===
 
 * 21dd       BSR		(PC, disp8s)
 * 31n1       BSR		(PC, Rn)
-* 32n1       BSR		Rn
 * F011_3en0  BSR		(PC, Rn)			//Fix32
-* F021_3en0  BSR		Rn					//Fix32
 * F0dd_Dddd  BSR		(PC, disp20s)		//Fix32
 
+* 32n1       JSR		Rn
+* F021_3en0  JSR		Rn					//Fix32
+
 * FEjj_jjjj_F202_CCjj	BSR		(PC, disp33s)
-* FFjj_jjjj_FBjj_jjjj	BSR		#abs48			//Abs48 Call
+* FFjj_jjjj_FBjj_jjjj	JSR		#abs48			//Abs48 Call
 
 Branch to subroutine.
-The target address is computed and PC is updated to the new address, with the prior value for PC being stored in LR.
+The target address is computed and PC is updated to the new address, with the prior value for PC being stored in LR(47:0).
+
+The high order 16 bits of LR will contain saved user flag states:
+* LR(63:52) will be copied from SR(15: 4)
+* LR(51:50) will be copied from SR(27:26)
+* LR(49:48) will be copied from SR( 1: 0)
+
 
 This instruction is only allowed in Lane 1.
 
 
-=== BT ===
+=== BT / JT ===
 
 * 22dd       BT		(PC, disp8s)		//Branch True
 * 31n2       BT		(PC, Rn)			//Branch True to PC+(Rn*2)
-* 32n2       BT		Rn
 * F012_3en0  BT		(PC, Rn)			//Fix32
-* F022_3en0  BT		Rn					//Fix32
 * F0dd_Eddd  BT		(PC, disp20s)		//Branch True, +/- 1MB
+
+* 32n2       JT		Rn
+* F022_3en0  JT		Rn					//Fix32
 
 Branch if True (SR.T is 1).
 The target address is computed and PC is updated to the new address if the condition is met.
@@ -826,25 +840,6 @@ Load or store a Word to/from memory.
 The Word value is sign extended to the size of the register.
 
 
-
-=== MOVD.L (Deprecated) ===
-
-* F0nm_0GoF  MOVD.L	(Rm, Ro), Rn
-* F1nm_BGdd  MOVD.L	(Rm, disp9u), Rn
-
-Load a DWord from memory, but leaves the high order bits in an undefined state.
-
-The contents of the high order bits will be undefined following the memory load (the implementation may use whichever form of a DWord load is cheapest). 
-
-These bits will remain undefined following arithmetic operations, and any bits which depend on the high order bits of the register will themselves be undefined. This situation may exist de-facto, or be treated as a hint by the implementation. Note that this status effect would be removed following an explicit sign or zero extension.
-
-This operation is intended for cases where the high order bits of the register are considered as irrelevant.
-This may be relevant on implementations where leaving the high bits undefined can be more efficient than using either sign or zero extension.
-
-
-(Deprecate) This doesn't provide any real advantage over MOV.L or MOVU.L ...
-
-
 === MOVU.B ===
 
 * 50nm       MOVU.B	(Rm), Rn
@@ -917,12 +912,12 @@ This operation only exists in Lane 1.
 
 === MULx.x (3R) ===
 
-* F0nm_5go2  MULS.L	Rm, Ro, Rn			//(MULL) Sx 32b Mul (32*32->64)
-* F0nm_5go3  MULU.L	Rm, Ro, Rn			//(MULL) Zx 32b Mul (32*32->64)
-* F0nm_5goE  MULS.W	Rm, Ro, Rn			//(MULW) Sx 16b Mul (16*16->32)
-* F0nm_5GoE  MULS.W	Rm, #imm5u, Rn		//(MULW) Sx 16b Mul (16*16->32)
-* F0nm_5goF  MULU.W	Rm, Ro, Rn			//(MULW) Zx 16b Mul (16*16->32)
-* F0nm_5GoF  MULU.W	Rm, #imm5u, Rn		//(MULW) Zx 16b Mul (16*16->32)
+* F0nm_5go2  DMULS.L	Rm, Ro, Rn			//(MULL) Sx 32b Mul (32*32->64)
+* F0nm_5go3  DMULU.L	Rm, Ro, Rn			//(MULL) Zx 32b Mul (32*32->64)
+* F0nm_5goE  MULS.W		Rm, Ro, Rn			//(MULW) Sx 16b Mul (16*16->32)
+* F0nm_5GoE  MULS.W		Rm, #imm5u, Rn		//(MULW) Sx 16b Mul (16*16->32)
+* F0nm_5goF  MULU.W		Rm, Ro, Rn			//(MULW) Zx 16b Mul (16*16->32)
+* F0nm_5GoF  MULU.W		Rm, #imm5u, Rn		//(MULW) Zx 16b Mul (16*16->32)
 
 These produce widening multiplies of a given input size.
 The values in Rm and Ro are multiplied, and the result is stored in Rn.
@@ -1067,7 +1062,7 @@ This operation is only valid in Lane 1.
 
 === ROTL (3R) ===
 
-* F0nm_3go2  ROTL		Rm, Ro, Rn		//(ALU) Rotate Left (64b)
+* F0nm_3go2  ROTL.Q		Rm, Ro, Rn		//(ALU) Rotate Left (64b)
 * F0nm_3go6  ROTL.L		Rm, Ro, Rn		//(ALUX) Rotate Left (32b)
 * F0nm_3Go6  ROTLX		Xm, Ro, Xn		//(ALUX) Rotate Left (128b)
 
@@ -1078,7 +1073,7 @@ This operation is only valid in Lane 1.
 
 === ROTR (3R) ===
 
-** F0nm_3go3  ROTR		Rm, Ro, Rn		//(ALU) Rotate Right (64b)
+** F0nm_3go3  ROTR.Q	Rm, Ro, Rn		//(ALU) Rotate Right (64b)
 
 Rotate the value in Rn right by Ro.
 
@@ -1105,7 +1100,14 @@ Initiates the behavior for returning from an exception handler (described elsewh
 Return from Subroutine.
 This effectively restores the value from LR into PC, transferring control back to LR.
 
-RTSU will be functionally equivalent to RTS with the main exception that LR may not have been modified within an implementation-dependent number of instructions (based on the number of instructions which may be "in-flight" in the processor's execution pipeline). This is to allow the instruction to be treated like a direct unconditional branch.
+RTSU will be functionally equivalent to RTS with the main exception that LR may not have been modified within an implementation-dependent number of instructions (based on the number of instructions which may be "in-flight" in the processor's execution pipeline). This is to allow the instruction to be treated like a direct unconditional branch. The result of modifying LR within the pipeline is undefined.
+
+With RTS, the branch predictor may treat it as a predicted branch.
+
+The high order 16 bits of LR will contain saved user flag states:
+* LR(63:52) will be copied to SR(15: 4)
+* LR(51:50) will be copied to SR(27:26)
+* LR(49:48) will be copied to SR( 1: 0)
 
 
 === SBB ===
