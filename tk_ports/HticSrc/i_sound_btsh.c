@@ -11,7 +11,8 @@
 
 extern sfxinfo_t S_sfx[];
 
-#define SAMPLECOUNT		512
+// #define SAMPLECOUNT		512
+#define SAMPLECOUNT		256
 #define NUM_CHANNELS		8
 // It is 2 for 16bit, and 2 for two channels.
 #define BUFMUL									4
@@ -31,12 +32,12 @@ unsigned int	channelstepremainder[NUM_CHANNELS];
 unsigned char*		channels[NUM_CHANNELS];
 unsigned char*		channelsend[NUM_CHANNELS];
 
-int			channelstart[NUM_CHANNELS];
-int 		channelhandles[NUM_CHANNELS];
-int			channelids[NUM_CHANNELS];			
+int			channelstart[NUM_CHANNELS+4];
+int 		channelhandles[NUM_CHANNELS+4];
+int			channelids[NUM_CHANNELS+4];
 
-int			channel_lvol[NUM_CHANNELS];			
-int			channel_rvol[NUM_CHANNELS];			
+int			channel_lvol[NUM_CHANNELS+4];			
+int			channel_rvol[NUM_CHANNELS+4];			
 
 int		steptable[256];
 
@@ -105,6 +106,12 @@ addsfx
 		slot = oldestnum;
 	else
 		slot = i;
+
+	if(slot < 0)
+		return(-1);
+
+	if(slot >= NUM_CHANNELS)
+		return(-1);
 
 	channels[slot] = (unsigned char *) S_sfx[sfxid].snd_ptr;
 	channelsend[slot] = channels[slot] + lengths[sfxid];
@@ -365,10 +372,14 @@ void I_UpdateSound( void )
 
 // inits all sound stuff
 
+int i_sound_init;
+
 void I_StartupSound (void)
 {
 	char tmp[80];
 	int rc, i, j;
+
+	i_sound_init = 1;
 
 	for (i=-128 ; i<128 ; i++)
 	{

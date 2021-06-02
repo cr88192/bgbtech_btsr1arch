@@ -197,7 +197,8 @@ TK_EncBlock16P:
 	adc r3, r3				| cmpgt r2, r4
 	adc r1, r3				| shld r16, #-1, r16
 	shld.q r3, #-1, r22		| shld r17, #-1, r17
-	not r22					| add r16, #0x18000, r2
+	not r22
+	add r16, #0x18000, r2
 	and #0x55555555, r22
 	shad.q r2, #15, r2
 	xor r22, r3				| or r17, r2

@@ -342,7 +342,7 @@ MemL1A		memL1(
 /* ID1 */
 
 wire[47:0]		gprValGbr;
-wire[47:0]		gprValLr;
+wire[63:0]		gprValLr;
 wire[63:0]		gprValCm;
 
 //reg[31:0]		id2IstrWord;	//source instruction word
@@ -803,8 +803,8 @@ reg [ 5:0]	crIdCn3;		//Destination ID (EX3)
 reg [63:0]	crValCn3;		//Destination Value (EX3)
 wire[47:0]	crOutPc;
 reg [47:0]	crInPc;
-wire[47:0]	crOutLr;
-reg [47:0]	crInLr;
+wire[63:0]	crOutLr;
+reg [63:0]	crInLr;
 // wire[63:0]	crOutSr;
 // reg [63:0]	crInSr;
 
@@ -950,8 +950,8 @@ reg[63:0]		ex1RegInDhr;
 wire[63:0]		ex1RegOutSp;
 reg[63:0]		ex1RegInSp;
 
-wire[47:0]		ex1RegOutLr;
-reg[47:0]		ex1RegInLr;
+wire[63:0]		ex1RegOutLr;
+reg[63:0]		ex1RegInLr;
 wire[63:0]		ex1RegOutSr;
 reg[63:0]		ex1RegInSr;
 
@@ -983,7 +983,12 @@ ExEX1	ex1(
 	ex1RegIdCn1,	ex1RegValCn1,
 	ex1HldIdRn1,	ex1HldIdCn1,
 	
-	ex1RegValPc,	ex1RegValImm,
+//	ex1RegValPc,
+	{	crOutSr[15:4],
+		crOutSr[27:26],
+		crOutSr[1:0],
+		ex1RegValPc },
+	ex1RegValImm,
 	ex1FpuValGRn,	ex1FpuSrT,
 	ex1BraFlush,
 //	ex1BraFlush || reset,
@@ -1187,8 +1192,8 @@ reg[63:0]		ex2RegInDhr;
 wire[63:0]		ex2RegOutSp;
 reg[63:0]		ex2RegInSp;
 
-wire[47:0]		ex2RegOutLr;
-reg[47:0]		ex2RegInLr;
+wire[63:0]		ex2RegOutLr;
+reg[63:0]		ex2RegInLr;
 wire[63:0]		ex2RegOutSr;
 // reg[63:0]		ex2RegInSr;
 
@@ -1285,8 +1290,8 @@ wire[63:0]		ex3RegOutDlr;
 reg[63:0]		ex3RegInDlr;
 wire[63:0]		ex3RegOutDhr;
 reg[63:0]		ex3RegInDhr;
-wire[47:0]		ex3RegOutLr;
-reg[47:0]		ex3RegInLr;
+wire[63:0]		ex3RegOutLr;
+reg[63:0]		ex3RegInLr;
 
 ExEX3	ex3(
 	clock,			reset,
@@ -1648,6 +1653,8 @@ reg[47:0]	tIsrNextPc;
 
 reg[47:0]	tValBraPc;
 reg[47:0]	tValNextBraPc;
+reg[15:0]	tValBraSrT;
+reg[15:0]	tValNextBraSrT;
 reg[47:0]	tIsrBraPc;
 
 reg[7:0]	opBraFlushMask;
@@ -1689,7 +1696,7 @@ reg[47:0]		braInSpc;
 reg[63:0]		braInExsr;
 reg[63:0]		braInTea;
 reg[63:0]		braInSr;
-reg[47:0]		braInLr;
+reg[63:0]		braInLr;
 reg[63:0]		braInDlr;
 reg[63:0]		braInDhr;
 reg[47:0]		braInSp;
@@ -1700,7 +1707,7 @@ reg[47:0]		braNxtInSpc;
 reg[63:0]		braNxtInExsr;
 reg[63:0]		braNxtInTea;
 reg[63:0]		braNxtInSr;
-reg[47:0]		braNxtInLr;
+reg[63:0]		braNxtInLr;
 reg[63:0]		braNxtInDlr;
 reg[63:0]		braNxtInDhr;
 reg[47:0]		braNxtInSp;
@@ -1750,6 +1757,12 @@ begin
 //	tValNextBraPc	= UV32_XX;
 //	tValNextBraPc	= UV32_00;
 	tValNextBraPc	= UV48_00;
+//	tValNextBraSrT	= UV16_00;
+	tValNextBraSrT	= {
+		crOutSr[15: 4],
+		crOutSr[27:26],
+		crOutSr[ 1: 0] };
+
 
 	ex1TrapFlush	= 0;
 	ex2TrapFlush	= 0;
@@ -2331,6 +2344,7 @@ begin
 //		tValNextPc = ex1RegValCn1[31:0];
 //		tValNextBraPc = ex1RegValCn1[31:0];
 		tValNextBraPc = ex1RegValCn1[47:0];
+		tValNextBraSrT = ex1RegValCn1[63:48];
 //		nxtBraFlushMask = 8'h07;
 //		nxtBraFlushMask = 8'h0F;
 		nxtBraFlushMask = JX2_BRA_FLUSHMSK;
@@ -2360,6 +2374,7 @@ begin
 //		tValNextPc = ex2RegValCn2[31:0];
 //		tValNextBraPc = ex2RegValCn2[31:0];
 		tValNextBraPc = ex2RegValCn2[47:0];
+		tValNextBraSrT = ex2RegValCn2[63:48];
 //		nxtBraFlushMask = 8'h07;
 //		nxtBraFlushMask = 8'h0F;
 		nxtBraFlushMask = JX2_BRA_FLUSHMSK;
@@ -2839,6 +2854,14 @@ begin
 //		if(crOutSr[28])
 //			$display("Branch %X", tValNextBraPc);
 		tValNextPc = tValBraPc;
+		
+		if(!braIsIsr)
+		begin
+			crInSr[15: 4]	= tValBraSrT[15:4];
+			crInSr[27:26]	= tValBraSrT[3:2];
+			crInSr[ 1: 0]	= tValBraSrT[1:0];
+		end
+		
 		ifNxtValBraOk = 1;
 	end
 `else
@@ -3120,6 +3143,7 @@ begin
 
 `ifdef jx2_bra2stage
 		tValBraPc		<= tValNextBraPc;
+		tValBraSrT		<= tValNextBraSrT;
 `endif
 
 `ifndef def_true

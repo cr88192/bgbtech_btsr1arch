@@ -381,6 +381,9 @@ void NetUpdate (void)
 	int								realstart;
 	int								gameticdiv;
 	
+	I_MusicFineTick();
+	D_UpdateSound();
+	
 	// check time
 //	nowtime = I_GetTime ()/ticdup;
 	nowtime = NetDivTicdup(I_GetTime ());

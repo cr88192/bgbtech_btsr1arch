@@ -6543,7 +6543,8 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 						BGBCC_SH_REG_R18);
 					BGBCC_JX2_EmitOpLdRegDispReg(sctx, BGBCC_SH_NMID_MOVQ,
 						BGBCC_SH_REG_R15, (k-j)+8,
-						BGBCC_SH_REG_R19);
+//						BGBCC_SH_REG_R19);
+						BGBCC_SH_REG_R1);
 				}
 				k+=16;
 
@@ -6553,7 +6554,8 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 				BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_MOV,
 					BGBCC_SH_REG_R18, BGBCC_SH_REG_GBR);
 
-				BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_JMP, BGBCC_SH_REG_R19);
+//				BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_JMP, BGBCC_SH_REG_R19);
+				BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_JMP, BGBCC_SH_REG_R1);
 			}else
 			{
 				if(((k+8)!=sctx->frm_size) && !sctx->is_simpass)

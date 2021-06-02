@@ -1329,6 +1329,9 @@ int BGBCC_JX2_TryEmitOpImm(BGBCC_JX2_Context *ctx, int nmid, int imm)
 		}
 	}
 	
+	if((ctx->op_is_wex2&2) && (odr>0))
+		{ opw1=-1; odr=0; }
+
 	if(opw1>=0)
 	{
 		if(ctx->emit_isprobe)
@@ -4765,7 +4768,9 @@ int BGBCC_JX2_TryEmitOpImmReg(BGBCC_JX2_Context *ctx,
 			break;
 		}
 	}
-	
+
+	if((ctx->op_is_wex2&2) && (odr>0))
+		{ opw1=-1; odr=0; }
 
 	if(opw1>=0)
 	{
@@ -5670,6 +5675,9 @@ int BGBCC_JX2_TryEmitOpRegImmReg(
 			break;
 		}
 	}
+
+	if((ctx->op_is_wex2&2) && (odr>0))
+		{ opw1=-1; odr=0; }
 
 	if(opw1>=0)
 	{

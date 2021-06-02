@@ -389,6 +389,9 @@ void NetUpdate (void)
 	int                             realstart;
 	int                             gameticdiv;
 
+	I_MusicFineTick();
+	D_UpdateSound();
+
 //
 // check time
 //

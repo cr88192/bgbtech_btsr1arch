@@ -118,7 +118,7 @@ X(R_DrawColumn):
 //	MOV.W	R18, (R23)			// write final pixel
 
 .done:
-	RTSU
+	RTS
 	
 
 #if 1
@@ -310,7 +310,7 @@ X(R_DrawSpan):
 	MOV.W?F		R18, (R23)				// write final pixel
 	
 .hdone:
-	RTSU
+	RTS
 
 #endif
 
@@ -541,7 +541,7 @@ X(R_DrawSpanLow):
 //	NOP
 
 .hdone:
-	RTSU
+	RTS
 
 #endif
 
@@ -569,7 +569,7 @@ X(I_FinishUpdate_ScanCopy):
 	BF .loop
 
 	.done:
-	RTSU
+	RTS
 
 #endif
 
@@ -781,6 +781,6 @@ X(V_DrawPatchCmap_Col):
 	.done2:
 #endif
 
-	RTSU
+	RTS
 
 #endif

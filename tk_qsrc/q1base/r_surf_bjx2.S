@@ -451,7 +451,7 @@ X(R_DrawSurfaceBlock16_mip3A):
 //	POP.X	R10
 //	POP.X	R24
 //	POP.X	R26
-	RTSU
+	RTS
 
 #endif
 
@@ -478,7 +478,7 @@ X(I_FinishUpdate_ScanCopy):
 	BF .loop
 
 	.done:
-	RTSU
+	RTS
 
 #endif
 
@@ -529,7 +529,7 @@ X(D_DrawSpans16_InnerPx):
 //	MOV		X(d_pdest2), R2
 //	MOV.L	R19, (R2)
 
-	RTSU
+	RTS
 
 #endif
 
@@ -561,7 +561,7 @@ X(D_DrawSpans16_InnerPx2):
 	MOV.W	R16, (R5)
 	ADDS.L	R5, #2, R5
 	.L2:
-	RTSU
+	RTS
 
 #endif
 
@@ -624,7 +624,7 @@ X(D_DrawSpans16_InnerPx2Lo):
 	ADD		R5,  2, R5		|	TEST	R6, R6
 	BF		.L3
 	.L2:
-	RTSU
+	RTS
 
 #endif
 
@@ -664,7 +664,7 @@ X(D_DrawZSpans_Inner):
 	.L1:
 	SHLD		R5, #-16, R2	| TEST		R7, R7
 	MOV.W?F		R2, (R4)
-	RTSU
+	RTS
 
 #endif
 
@@ -703,7 +703,7 @@ X(D_DrawZSpans_InnerLo):
 	.L1:
 	SHLD		R5, #-16, R2	| TEST		R7, R7
 	MOV.W?F		R2, (R4)
-	RTSU
+	RTS
 
 #endif
 
@@ -724,7 +724,7 @@ X(SND_PaintChannelFrom8_Inner):
 	BT .L0
 	.L1:
 
-	RTSU
+	RTS
 #endif
 
 
@@ -737,21 +737,21 @@ D_SoftDivB_Df:
 
 //	MULS	R4, R6
 //	EXTS.L	R1, R2
-	RTSU
+	RTS
 
 D_SoftDivB_D0:
 D_SoftDivB_D1:
 	MOV R4, R2
-	RTSU
+	RTS
 D_SoftDivB_D2:
 	SHAD R4, #-1, R2
-	RTSU
+	RTS
 D_SoftDivB_D3:
 	MOV #0x55555555, R6
 	BRA	D_SoftDivB_Df
 D_SoftDivB_D4:
 	SHAD R4, #-2, R2
-	RTSU
+	RTS
 D_SoftDivB_D5:
 	MOV #0x33333333, R6
 	BRA	D_SoftDivB_Df
@@ -763,7 +763,7 @@ D_SoftDivB_D7:
 	BRA	D_SoftDivB_Df
 D_SoftDivB_D8:
 	SHAD R4, #-3, R2
-	RTSU
+	RTS
 D_SoftDivB_D9:
 	MOV #0x1C71C71C, R6
 	BRA	D_SoftDivB_Df
@@ -787,7 +787,7 @@ D_SoftDivB_D15:
 	BRA	D_SoftDivB_Df
 D_SoftDivB_D16:
 	SHAD R4, #-4, R2
-	RTSU
+	RTS
 
 .global X(D_SoftDivB)
 X(D_SoftDivB):
@@ -823,7 +823,7 @@ X(VID_BlendEven16):
 	AND		R5, R3, R7
 	ADD		R6, R7, R2
 	SHAD	R2, #-1, R2
-	RTSU
+	RTS
 #endif
 
 #if 1

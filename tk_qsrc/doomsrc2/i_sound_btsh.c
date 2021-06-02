@@ -53,7 +53,8 @@ static int flag = 0;
 //	mixing buffer, and the samplerate of the raw data.
 
 // Needed for calling the actual sound output.
-#define SAMPLECOUNT		512
+#define SAMPLECOUNT		256
+// #define SAMPLECOUNT		512
 // #define SAMPLECOUNT		2048
 // #define SAMPLECOUNT		1024
 #define NUM_CHANNELS		8
@@ -550,6 +551,8 @@ int I_SoundIsPlaying(int handle)
 }
 
 
+int		i_soundframe_ms;
+	
 
 
 //
@@ -586,6 +589,7 @@ void I_UpdateSound( void )
 
 	// Step in mixbuffer, left and right, thus two.
 	int				step;
+	int				framesamp;
 
 	// Mixing channel index.
 	int				chan;
@@ -628,9 +632,15 @@ void I_UpdateSound( void )
 	tmixl	= tmixbuf+0;
 	tmixr	= tmixbuf+1;
 
+	framesamp = SAMPLECOUNT;
+//	framesamp = i_soundframe_ms * 16 * 8;
+	if(framesamp > SAMPLECOUNT)
+		framesamp = SAMPLECOUNT;
+
 	// Determine end, for left channel only
 	//	(right channel is implicit).
 	leftend = mixbuffer + SAMPLECOUNT*step;
+//	leftend = mixbuffer + framesamp*step;
 
 	//BGB: count channels
 	nchan = 0;
@@ -894,6 +904,8 @@ void I_SubmitSound2(int extra)
 	ns=dt*16;
 	if(ns<0)ns=0;
 	if(ns>n)ns=n;
+
+	i_soundframe_ms = dt;
 	
 	if(ns<=0)
 		return;
@@ -991,22 +1003,23 @@ void I_ShutdownSound(void)
 
 
 
+int i_sound_init=0;
 
 void
 I_InitSound()
 {
-	static int init=0;
+//	static int init=0;
 	int rate;
 	
 #if 1 
 	int i;
 
-	if(init)
+	if(i_sound_init)
 	{
 		printf("I_InitSound: Skip\n");
 		return;
 	}
-	init=1;
+	i_sound_init=1;
 
 	
 	// Secure and configure sound device first.

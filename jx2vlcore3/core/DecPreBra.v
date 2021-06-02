@@ -42,7 +42,7 @@ input			reset;
 input[63:0]		istrWord;	//Instruction Word
 input[47:0]		istrBasePc;	//Instruction Base PC
 input[47:0]		istrBraPc;	//Branch Base PC
-input[47:0]		regValLr;	//Link Register
+input[63:0]		regValLr;	//Link Register
 
 input[47:0]		ifBraBPc;	//Fetch Branch PC
 input[47:0]		exBraBPc;	//Fetch Base PC
@@ -294,7 +294,7 @@ begin
 	begin
 //		$display("PreBra: RTSU, I=%X-%X PC2=%X",
 //			istrWord[15:0], istrWord[31:16], regValLr);
-		tPreBraPc	= regValLr;
+		tPreBraPc	= regValLr[47:0];
 		tPreBra		= 1;
 	end
 

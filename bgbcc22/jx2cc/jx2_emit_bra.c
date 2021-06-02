@@ -608,6 +608,21 @@ int BGBCC_JX2_TryEmitOpLabel(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 		opw1=0x9B00;
 		opw2=0x700E0;
 		break;
+
+	case BGBCC_SH_NMID_JMP:
+		rlty=BGBCC_SH_RLC_ABS48_BJX;
+		opw1=0xFF00;
+		opw2=0x0000;
+		opw3=0xFA00;
+		opw4=0x0000;
+		break;
+	case BGBCC_SH_NMID_JSR:
+		rlty=BGBCC_SH_RLC_ABS48_BJX;
+		opw1=0xFF00;
+		opw2=0x0000;
+		opw3=0xFB00;
+		opw4=0x0000;
+		break;
 	}
 
 //	if(ctx->is_fixed32)

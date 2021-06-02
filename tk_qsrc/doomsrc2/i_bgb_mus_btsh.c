@@ -103,7 +103,7 @@ int SMus_Init()
 		return(0);
 	smus_isinit=1;
 
-	irq_addTimerIrq(smus_timer_irq);
+//	irq_addTimerIrq(smus_timer_irq);
 
 #if 0
 	ph = pow(3.14159, 6.69);
@@ -409,6 +409,12 @@ int SMus_NoteOn(int ch, int d0, int d1)
 
 	vol=(smus_chanvol[ch]*d1)>>7;
 	vol=(vol*snd_MusicVolume)>>4;
+
+	vol=__int_clamp(vol, 0, 127);
+
+//	vol=__int_clamp(vol, 0, 63);
+//	if(vol<0)	vol=0;
+//	if(vol>63)	vol=63;
 
 	modvol=63-(modlvl&63);
 	carvol=63-(carlvl&63);
@@ -768,15 +774,20 @@ void I_MusicGetAdvanceSamples(short *buf, int sn, int snmax)
 }
 #endif
 
-void I_MusicSubmit(void)	
+void I_MusicFineTick(void)	
 {
-#if 0
+#if 1
 	int dt;
+
+	if(i_mus_curhandle<=0)
+		return;
 
 	imus_curms=TK_GetTimeMs();
 	dt=imus_curms-imus_lastms;
 	imus_lastms=imus_curms;
 	
+	if(dt<0)
+		dt=0;
 	if(dt>250)
 		dt=0;
 	
@@ -788,6 +799,12 @@ void I_MusicSubmit(void)
 	}
 #endif
 }
+
+void I_MusicSubmit(void)	
+{
+	I_MusicFineTick();
+}
+
 
 //
 // MUSIC API.

@@ -677,7 +677,7 @@ int I_SoundIsPlaying(int handle)
 }
 
 
-
+int		i_soundframe_ms;
 
 //
 // This function loops all active (internal) sound
@@ -711,6 +711,7 @@ void I_UpdateSound( void )
 	signed short*		leftend;
 	// Step in mixbuffer, left and right, thus two.
 	int				step;
+	int				framesamp;
 
 	// Mixing channel index.
 	int				chan;
@@ -735,9 +736,14 @@ void I_UpdateSound( void )
 	rightout = mixbuffer+1;
 	step = 2;
 
+	framesamp = i_soundframe_ms * 16 * 2;
+	if(framesamp > SAMPLECOUNT)
+		framesamp = SAMPLECOUNT;
+
 	// Determine end, for left channel only
 	//	(right channel is implicit).
-	leftend = mixbuffer + SAMPLECOUNT*step;
+//	leftend = mixbuffer + SAMPLECOUNT*step;
+	leftend = mixbuffer + framesamp*step;
 
 	// Mix sounds into the mixing buffer.
 	// Loop over step*SAMPLECOUNT,
@@ -890,6 +896,9 @@ I_SubmitSound2(int extra)
 	curms=FRGL_TimeMS();
 	dt=curms-lastms;
 	lastms=curms;
+	
+	i_soundframe_ms = dt;
+	
 	ns=dt*16;
 	if(ns<0)ns=0;
 	if(ns>n)ns=n;

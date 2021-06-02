@@ -128,7 +128,8 @@ output[5:0]		heldIdRn1;		//Held Destination ID (EX1)
 // output[4:0]		heldIdCn1;		//Held Destination ID (CR, EX1)
 output[5:0]		heldIdCn1;		//Held Destination ID (CR, EX1)
 	
-input[47:0]		regValPc;		//PC Value (Synthesized)
+// input[47:0]		regValPc;		//PC Value (Synthesized)
+input[63:0]		regValPc;		//PC Value (Synthesized)
 input[32:0]		regValImm;		//Immediate (Decode)
 input[63:0]		regFpuGRn;		//FPU GPR Result
 input			regFpuSrT;
@@ -146,11 +147,11 @@ input[63:0]		regInDhr;
 output[63:0]	regOutSp;
 input[63:0]		regInSp;
 
-output[47:0]	regOutLr;
-input[47:0]		regInLr;
+output[63:0]	regOutLr;
+input[63:0]		regInLr;
 output[63:0]	regOutSr;
 
-(* max_fanout = 50 *)
+// (* max_fanout = 50 *)
 	input[63:0]		regInSr;
 
 output[7:0]		regOutSchm;
@@ -174,7 +175,7 @@ reg[63:0]		tRegValCn1;		//Destination Value (CR, EX1)
 reg[63:0]		tRegOutDlr;
 reg[63:0]		tRegOutDhr;
 reg[63:0]		tRegOutSp;
-reg[47:0]		tRegOutLr;
+reg[63:0]		tRegOutLr;
 reg[63:0]		tRegOutSr;
 reg[7:0]		tRegOutSchm;
 
@@ -318,8 +319,10 @@ reg[16:0]	tValAguBraB1;
 reg[16:0]	tValAguBraC0;
 reg[16:0]	tValAguBraC1;
 
+reg[63:0]	tRegBraLr;
 reg[63:0]	tValAguBra;
-reg[47:0]	tValBra;
+// reg[47:0]	tValBra;
+reg[63:0]	tValBra;
 reg			tDoBra;
 
 reg[63:0]	tValOutDfl;
@@ -431,7 +434,16 @@ begin
 		tValAguBra[47:32] = regValPc[47:32];
 `endif
 
-	tValBra			= tValAguBra[47:0];
+//	tRegBraLr	= {
+//		regInSr[15: 4],
+//		regInSr[27:26],
+//		regInSr[ 1: 0],
+//		regValPc };
+	tRegBraLr	= regValPc;
+
+//	tValBra			= tValAguBra[47:0];
+//	tValBra			= { tRegBraLr[63:48], tValAguBra[47:0] };
+	tValBra			= { regValPc[63:48], tValAguBra[47:0] };
 	tDoBra			= 0;
 
 	tTempBit0		= 1'bX;
@@ -590,7 +602,9 @@ begin
 		JX2_UCMD_BRA_NB: begin
 			if(opPreBra)
 			begin
-				tValBra		= regValPc[47:0];
+//				tValBra		= regValPc[47:0];
+				tValBra		= regValPc[63:0];
+//				tValBra		= { tRegBraLr[63:48], regValPc[47:0] };
 				tDoBra		= 1;
 			end
 		end
@@ -598,27 +612,66 @@ begin
 		JX2_UCMD_BRA: begin
 			if(!opPreBra)
 			begin
-				tValBra		= tValAguBra[47:0];
+//				tValBra		= tValAguBra[47:0];
+				tValBra		= { tRegBraLr[63:48], tValAguBra[47:0] };
 				tDoBra		= 1;
 			end
 		end
 		JX2_UCMD_BSR: begin
 //			$display("EX: BSR: LR=%X PC2=%X", regValPc, tValAgu);
-			tRegOutLr	= regValPc;
+//			tRegOutLr	= regValPc;
+			tRegOutLr	= tRegBraLr;
+//			tRegOutLr	= {
+//				regInSr[15: 4],
+//				regInSr[27:26],
+//				regInSr[ 1: 0],
+//				regValPc };
 			if(!opPreBra)
 			begin
-				tValBra		= tValAguBra[47:0];
+//				tValBra		= tValAguBra[47:0];
+//				tValBra		= { tRegBraLr[63:48], tValAguBra[47:0] };
+				tValBra		= { regValPc[63:48], tValAguBra[47:0] };
 				tDoBra		= 1;
 			end
 		end
 		JX2_UCMD_JMP: begin
-			tValBra		= regValRs[47:0];
-			tDoBra		= 1;
+//			tValBra		= regValRs[47:0];
+//			tValBra		= { tRegBraLr[63:48], regValRs[47:0] };
+			tValBra		= { regValPc[63:48], regValRs[47:0] };
+//			tValBra		= regValRs[47:0];
+//			tValBra		= regValRs;
+//			tDoBra		= 1;
+			tDoBra		= !opPreBra;
+
+			if(	(regIdRs==JX2_GR_LR) ||
+				(regIdRs==JX2_GR_DHR))
+			begin
+				tValBra[63:48] = regValRs[63:48];
+			end
+
+
+`ifndef def_true
+//			if(regIdRs==JX2_GR_LR)
+			if(1'b1)
+			begin
+				tRegOutSr[ 1: 0] = regValRs[49:48];
+				tRegOutSr[27:26] = regValRs[51:50];
+				tRegOutSr[15: 4] = regValRs[63:52];
+			end
+`endif
 		end
 		JX2_UCMD_JSR: begin
 //			$display("EX: JSR: LR=%X PC2=%X", regValRs, regValPc);
-			tRegOutLr	= regValPc;
-			tValBra		= regValRs[47:0];
+//			tRegOutLr	= regValPc;
+			tRegOutLr	= tRegBraLr;
+//			tRegOutLr	= {
+//				regInSr[15: 4],
+//				regInSr[27:26],
+//				regInSr[ 1: 0],
+//				regValPc };
+//			tValBra		= regValRs[47:0];
+//			tValBra		= regValRs;
+			tValBra		= { regValPc[63:48], regValRs[47:0] };
 			tDoBra		= 1;
 		end
 		
@@ -723,7 +776,9 @@ begin
 					tMemOpm		= UMEM_OPM_FLUSHIS;
 					tMemAddr	= regValRm[47:0];
 
-					tValBra		= regValPc[47:0];
+//					tValBra		= regValPc[47:0];
+					tValBra		= regValPc;
+//					tValBra		= { tRegBraLr[63:48], regValPc[47:0] };
 					tDoBra		= 1;
 				end
 				JX2_UCIX_IXS_INVDC: begin
@@ -1101,7 +1156,8 @@ begin
 	begin
 //		tRegIdCn1	= JX2_CR_PC[4:0];
 		tRegIdCn1	= JX2_CR_PC;
-		tRegValCn1	= {UV16_00, tValBra};
+//		tRegValCn1	= {UV16_00, tValBra};
+		tRegValCn1	= tValBra;
 	end
 
 	if(opBraFlush)

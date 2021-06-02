@@ -821,7 +821,7 @@ R_StoreWallRange
 #endif
 
 	R_RenderSegLoop ();
-
+//	I_MusicFineTick ();
 	
 	// save sprite clipping info
 	if(!r_ispolyobj)

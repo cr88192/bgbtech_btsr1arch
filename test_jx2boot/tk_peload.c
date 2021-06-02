@@ -798,7 +798,8 @@ int TKPE_ApplyStaticRelocs(byte *imgptr, byte *rlc, int szrlc,
 {
 	byte *cs, *cse, *cs1, *cs1e;
 	byte *pdst;
-	u32 pv;
+	s64 v0, v1;
+	u32 pv, pv0, pv1;
 	int tgt_rva, gbr_end_rva;
 	int rva_page, sz_blk;
 	int tg;
@@ -860,7 +861,33 @@ int TKPE_ApplyStaticRelocs(byte *imgptr, byte *rlc, int szrlc,
 				break;
 			case 5:
 				pv=*((u32 *)pdst);
-				pv=(pv&0xFE000000)|((pv+disp)&0x01FFFFFF);
+				if((pv&0x0000FE00U)==0x0000FE00U)
+				{
+					pv0=((u32 *)pdst)[0];
+					pv1=((u32 *)pdst)[1];
+					v0=((pv0&0x00FF)<<16)|((pv0>>16)&0xFFFF);
+					v1=((pv1&0x00FF)<<16)|((pv1>>16)&0xFFFF);
+					v1+=disp;
+					v0+=(disp>>24)+(v1>>24);
+					pv0=(pv0&0x0000FF00U)|
+						((v0>>16)&0x000000FFU)|
+						((v0<<16)&0xFFFF0000U);
+					pv1=(pv1&0x0000FF00U)|
+						((v1>>16)&0x000000FFU)|
+						((v1<<16)&0xFFFF0000U);
+					((u32 *)pdst)[0]=pv0;
+					((u32 *)pdst)[1]=pv1;
+					break;
+				}
+			
+//				pv=*((u32 *)pdst);
+				v0=((pv&0x01FF)<<16)|((pv>>16)&0xFFFF);
+				v1=v0+disp;
+				pv=(pv&0x0000FE00U)|
+					((v1>>16)&0x1FF)|
+					((v1<<16)&0xFFFF0000U);
+				
+//				pv=(pv&0xFE000000)|((pv+disp)&0x01FFFFFF);
 				*((u32 *)pdst)=pv;
 				break;
 

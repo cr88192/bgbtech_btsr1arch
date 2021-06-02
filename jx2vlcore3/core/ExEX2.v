@@ -129,8 +129,8 @@ input [63:0]	regInDhr;
 output[63:0]	regOutSp;
 input [63:0]	regInSp;
 
-output[47:0]	regOutLr;
-input[47:0]		regInLr;
+output[63:0]	regOutLr;
+input[63:0]		regInLr;
 output[63:0]	regOutSr;
 input[63:0]		regInSr;
 
@@ -154,7 +154,7 @@ reg[63:0]		tRegValCn2;
 reg[63:0]		tRegOutDlr;
 reg[63:0]		tRegOutDhr;
 reg[63:0]		tRegOutSp;
-reg[47:0]		tRegOutLr;
+reg[63:0]		tRegOutLr;
 reg[63:0]		tRegOutSr;
 reg[7:0]		tRegOutSchm;
 

@@ -72,8 +72,9 @@ double smus_ipow2(double y)
 		x=1; z=y;
 		while(z>1)
 			{ x=x*2; z=z-1; }
-		z1=(z*z+z)*0.5;
-		z1=(z1+z)*0.5;
+//		z1=(z*z+z)*0.5;
+//		z1=(z1+z)*0.5;
+		z1=z;
 //		x=x*(z+1);
 		x=x*(1+z1);
 		return(x);
@@ -82,8 +83,9 @@ double smus_ipow2(double y)
 		x=1; z=-y;
 		while(z>1)
 			{ x=x*0.5; z=z-1; }
-		z1=(z*z+z)*0.5;
-		z1=(z1+z)*0.5;
+//		z1=(z*z+z)*0.5;
+//		z1=(z1+z)*0.5;
+		z1=z;
 //		x=x*(1-(z*0.5));
 		x=x*(1-(z1*0.5));
 		return(x);
@@ -100,7 +102,7 @@ int SMus_Init()
 		return(0);
 	smus_isinit=1;
 
-	irq_addTimerIrq(smus_timer_irq);
+//	irq_addTimerIrq(smus_timer_irq);
 
 //	smus_regs=(u32 *)0xA0081800;
 //	smus_regs=(u32 *)0xF0081800;
@@ -111,8 +113,8 @@ int SMus_Init()
 		smus_noteatt[i]=63-(i>>1);
 		
 //		freq=pow(2, (i-69)/12.0)*440;
-		freq=pow(2.0, (i-69)/12.0)*440.0;
-//		freq=smus_ipow2((i-69)/12.0)*440.0;
+//		freq=pow(2.0, (i-69)/12.0)*440.0;
+		freq=smus_ipow2((i-69)/12.0)*440.0;
 		
 //		ph=freq/62500.0;
 		ph=freq/64000.0;
@@ -739,6 +741,38 @@ void I_MusicGetAdvanceSamples(short *buf, int sn, int snmax)
 }
 #endif
 
+void I_MusicFineTick(void)	
+{
+#if 1
+	int dt;
+
+	if(i_mus_curhandle<=0)
+		return;
+
+	imus_curms=TK_GetTimeMs();
+	dt=imus_curms-imus_lastms;
+	imus_lastms=imus_curms;
+	
+	if(dt<0)
+		dt=0;
+	if(dt>250)
+		dt=0;
+	
+	imus_accdt+=dt;
+	while(imus_accdt>0)
+	{
+		I_SMus_Tick();
+		imus_accdt-=7;
+	}
+#endif
+}
+
+void I_MusicSubmit(void)	
+{
+	I_MusicFineTick();
+}
+
+#if 0
 void I_MusicSubmit(void)	
 {
 #if 0
@@ -759,6 +793,7 @@ void I_MusicSubmit(void)
 	}
 #endif
 }
+#endif
 
 //
 // MUSIC API.

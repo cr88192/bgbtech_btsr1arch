@@ -207,6 +207,42 @@ void D_Display(void)
 	I_Update();
 }
 
+int d_snd_curtime;
+int d_snd_lasttime;
+double d_snd_acctime;
+
+int i_sound_init;
+
+void D_UpdateSound (void)
+{
+	int dt;
+
+	if(i_sound_init<=0)
+		return;
+
+	d_snd_curtime = I_GetTimeMs();
+	dt = d_snd_curtime - d_snd_lasttime;
+	d_snd_lasttime = d_snd_curtime;
+
+	if((dt<0) || (dt>1000))
+		return;
+
+#if 1
+	d_snd_acctime+=dt;
+//	if(dt>72)
+	if(1)
+	{
+		while(d_snd_acctime>0)
+		{
+			I_UpdateSound();
+			I_SubmitSound2(1);
+//			d_snd_acctime-=46.4399;
+			d_snd_acctime-=23.22;
+		}
+	}
+#endif
+}
+
 //---------------------------------------------------------------------------
 //
 // PROC D_DoomLoop
@@ -248,6 +284,8 @@ void D_DoomLoop(void)
 		// Move positional sounds
 		S_UpdateSounds(players[consoleplayer].mo);
 		D_Display();
+
+		D_UpdateSound();
 	}
 }
 

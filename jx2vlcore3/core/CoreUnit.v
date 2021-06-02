@@ -1075,8 +1075,8 @@ wire[1:0]	fmMmioOK;
 
 `ifndef jx2_cfg_noaudio
 
-wire[7:0]	audAuxPcmL;
-wire[7:0]	audAuxPcmR;
+wire[11:0]	audAuxPcmL;
+wire[11:0]	audAuxPcmR;
 
 ModAudPcm	pcm(
 //	clock_100,		reset2_100,

@@ -58,8 +58,8 @@ input [47:0]	gprValPc;		//PC Value (Synthesized)
 
 output[47:0]	regOutPc;
 input [47:0]	regInPc;
-output[47:0]	regOutLr;
-input [47:0]	regInLr;
+output[63:0]	regOutLr;
+input [63:0]	regInLr;
 
 output[63:0]	regOutSr;
 input [63:0]	regInSr;
@@ -83,7 +83,7 @@ reg[63:0]	crRegSr;
 reg[63:0]	crRegExsr;
 
 reg[47:0]	crRegPc;
-reg[47:0]	crRegLr;
+reg[63:0]	crRegLr;
 reg[47:0]	crRegVbr;
 reg[47:0]	crRegSpc;
 reg[47:0]	crRegSsp;
@@ -101,7 +101,7 @@ reg[63:0]	crRegKrr;
 reg[63:0]	tRegValCm;
 assign	regValCm = tRegValCm;
 
-reg[47:0]	crRegLr2;
+reg[63:0]	crRegLr2;
 
 assign	regOutPc	= crRegPc;
 assign	regOutLr	= crRegLr;
@@ -133,7 +133,7 @@ reg[5:0]		regIdCn2B;			//Destination ID
 reg[63:0]		regValCn2B;			//Destination Value
 reg[47:0]		regValCn2B_48b;		//Destination Value
 
-reg[47:0]		tRegInLr;
+reg[63:0]		tRegInLr;
 
 always @*
 begin
@@ -204,7 +204,8 @@ begin
 `ifdef jx2_enable_vaddr48
 //		JX2_CR_PC:		tValCmA={UV16_00, crRegPc};
 		JX2_CR_PC:		tValCmA={UV16_00, gprValPc};
-		JX2_CR_LR:		tValCmA={UV16_00, crRegLr};
+//		JX2_CR_LR:		tValCmA={UV16_00, crRegLr};
+		JX2_CR_LR:		tValCmA=crRegLr;
 		JX2_CR_VBR:		tValCmA={UV16_00, crRegVbr};
 		JX2_CR_SPC:		tValCmA={UV16_00, crRegSpc};
 		JX2_CR_SSP:		tValCmA={UV16_00, crRegSsp};
@@ -309,7 +310,8 @@ begin
 
 `ifndef def_true
 		crRegPc		<= regInPc;
-		crRegLr		<= (regIdCn2B==JX2_CR_LR  ) ? regValCn2B[47:0] : regInLr;
+//		crRegLr		<= (regIdCn2B==JX2_CR_LR  ) ? regValCn2B[47:0] : regInLr;
+		crRegLr		<= (regIdCn2B==JX2_CR_LR  ) ? regValCn2B[63:0] : regInLr;
 		crRegSpc	<= (regIdCn2B==JX2_CR_SPC ) ? regValCn2B[47:0] : regInSpc;
 		crRegSsp	<= (regIdCn2B==JX2_CR_SSP ) ? regValCn2B[47:0] : regInSsp;
 //		crRegTea	<= (regIdCn2B==JX2_CR_TEA ) ? regValCn2B[47:0] : regInTea;
@@ -321,7 +323,8 @@ begin
 
 `ifdef def_true
 //		crRegLr		<= (regIdCn2B==JX2_CR_LR  ) ? regValCn2B_48b : regInLr;
-		crRegLr		<= (regIdCn2B==JX2_CR_LR  ) ? regValCn2B_48b : tRegInLr;
+//		crRegLr		<= (regIdCn2B==JX2_CR_LR  ) ? regValCn2B_48b : tRegInLr;
+		crRegLr		<= (regIdCn2B==JX2_CR_LR  ) ? regValCn2B     : tRegInLr;
 		crRegSpc	<= (regIdCn2B==JX2_CR_SPC ) ? regValCn2B_48b : regInSpc;
 		crRegSsp	<= (regIdCn2B==JX2_CR_SSP ) ? regValCn2B_48b : regInSsp;
 //		crRegTea	<= (regIdCn2B==JX2_CR_TEA ) ? regValCn2B_48b : regInTea;

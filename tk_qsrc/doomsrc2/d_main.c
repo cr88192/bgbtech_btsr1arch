@@ -356,9 +356,66 @@ extern  boolean		 demorecording;
 
 int d_main_curtime;
 int d_main_lasttime;
+
+int d_snd_curtime;
+int d_snd_lasttime;
 double d_snd_acctime;
 
 int		gfxdrv_kill;
+
+int i_sound_init;
+
+void D_UpdateSound (void)
+{
+	int dt;
+
+	if(i_sound_init<=0)
+		return;
+
+	d_snd_curtime = I_GetTimeMs();
+	dt = d_snd_curtime - d_snd_lasttime;
+	d_snd_lasttime = d_snd_curtime;
+
+	if((dt<0) || (dt>1000))
+		return;
+
+#if 1
+	d_snd_acctime+=dt;
+//	if(dt>72)
+	if(1)
+	{
+		while(d_snd_acctime>0)
+		{
+			I_UpdateSound();
+			I_SubmitSound2(1);
+//			d_snd_acctime-=46.4399;
+			d_snd_acctime-=23.22;
+		}
+	}
+
+#if 0
+	else if(d_snd_acctime>40)
+	{
+		d_snd_acctime=0;
+		// Sound mixing for the buffer is snychronous.
+		I_UpdateSound();
+		// Synchronous sound output is explicitly called.
+		// Update sound output.
+//			I_SubmitSound();
+		I_SubmitSound2(1);
+	}
+#endif
+
+#endif
+
+#if 0
+		// Sound mixing for the buffer is snychronous.
+		I_UpdateSound();
+		// Synchronous sound output is explicitly called.
+		// Update sound output.
+		I_SubmitSound();
+#endif
+}
 
 void D_DoomLoop (void)
 {
@@ -414,38 +471,7 @@ void D_DoomLoop (void)
 		// Update display, next frame, with current state.
 		D_Display ();
 
-#if 1
-		d_snd_acctime+=dt;
-//		if(d_snd_acctime>32)
-//		if(1)
-//		if(dt>28)
-//		if(0)
-		if(dt>72)
-		{
-			while(d_snd_acctime>0)
-			{
-				I_UpdateSound();
-				I_SubmitSound2(1);
-				d_snd_acctime-=46.4399;
-			}
-		}else
-		{
-			d_snd_acctime=0;
-			// Sound mixing for the buffer is snychronous.
-			I_UpdateSound();
-			// Synchronous sound output is explicitly called.
-			// Update sound output.
-			I_SubmitSound();
-		}
-#endif
-
-#if 0
-		// Sound mixing for the buffer is snychronous.
-		I_UpdateSound();
-		// Synchronous sound output is explicitly called.
-		// Update sound output.
-		I_SubmitSound();
-#endif
+		D_UpdateSound();
 	}
 }
 

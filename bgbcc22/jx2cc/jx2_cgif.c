@@ -106,7 +106,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	shctx->no_wexify=0;
 	shctx->use_wexdbg=0;
 
-	shctx->no_wexify=1;		//Debug
+//	shctx->no_wexify=1;		//Debug
 
 //	shctx->fpu_gfp=1;
 //	shctx->is_pbo=1;

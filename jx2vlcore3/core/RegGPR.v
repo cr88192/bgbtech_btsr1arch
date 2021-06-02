@@ -64,7 +64,7 @@ input [47:0]	regValPc;		//PC Value (Synthesized)
 input [47:0]	regValGbr;		//GBR Value (CR)
 input [32:0]	regValImm;		//Immediate (Decode)
 input [32:0]	regValImmB;		//Immediate (Decode)
-input [47:0]	regValLr;		//LR Value (CR)
+input [63:0]	regValLr;		//LR Value (CR)
 input [63:0]	regValCm;		//Cm Value (CR)
 	
 output[63:0]	regOutDlr;
@@ -159,7 +159,8 @@ begin
 		JX2_GR_PC:	tValRsA={ UV16_00, regValPc[47:1],
 			regValPc[0] &tEnablePcLsb };
 		JX2_GR_GBR:	tValRsA={ UV16_00, regValGbr };
-		JX2_GR_LR:	tValRsA={ UV16_00, regValLr };
+//		JX2_GR_LR:	tValRsA={ UV16_00, regValLr };
+		JX2_GR_LR:	tValRsA= regValLr;
 `else
 //		JX2_GR_PC:	tValRsA={ UV32_00, regValPc[31:0] };
 		JX2_GR_PC:	tValRsA={ UV32_00, regValPc[31:1],

@@ -19,7 +19,9 @@ typedef signed short s16;
 typedef unsigned int u32;
 typedef signed int s32;
 
-int	mb_used = 12;
+// int	mb_used = 12;
+// int	mb_used = 16;
+int		mb_used = 20;
 
 
 void S_StartSong(int song, boolean loop)
@@ -67,8 +69,9 @@ void I_NetCmd (void)
 void I_Update(void)
 {
 	I_FinishUpdate();
-	I_UpdateSound();
-	I_SubmitSound();
+//	I_UpdateSound();
+//	I_SubmitSound();
+	D_UpdateSound();
 }
 
 #if 0
@@ -1935,8 +1938,8 @@ void I_FinishUpdate (void)
 //	conbufa=(u32 *)0xA00A0000;
 	conbufa=(u32 *)0xF00A0000;
 
-	((u32 *)0xF00BFF00)[8]=vid_frnum;
-	vid_frnum++;
+//	((u32 *)0xF00BFF00)[8]=vid_frnum;
+//	vid_frnum++;
 
 #ifdef I_SCR_BMP128K
 //	((u32 *)0xF00BFF00)[0]=0x0015;		//320x200x16bpp, YUV655
@@ -2146,6 +2149,9 @@ void I_FinishUpdate (void)
 //		i_scrflash--;
 //	else
 //		i_scrflash=8;
+
+	((u32 *)0xF00BFF00)[8]=vid_frnum;
+	vid_frnum++;
 
 	IN_Commands();
 	

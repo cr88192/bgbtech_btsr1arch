@@ -59,8 +59,8 @@ output			pwmEna;
 output[31:0]	busOutData;
 output[1:0]		busOK;
 
-input[7:0]		auxPcmL;
-input[7:0]		auxPcmR;
+input[11:0]		auxPcmL;
+input[11:0]		auxPcmR;
 
 input			timer1MHz;
 input			timer64kHz;
@@ -169,8 +169,8 @@ reg[15:0]	tPcmNextValL;
 reg[15:0]	tPcmNextValR;
 `endif
 
-reg[7:0]	tAuxPcmL;
-reg[7:0]	tAuxPcmR;
+reg[11:0]	tAuxPcmL;
+reg[11:0]	tAuxPcmR;
 
 reg			tPwmStCfL;
 reg			tPwmStCfR;
@@ -479,15 +479,16 @@ begin
 		{ tAuxPcmR[ 7] ? 4'b1111 : 4'b0000, tAuxPcmR, 3'h0, tTimerNoise };
 `endif
 
-//`ifndef def_true
-`ifdef def_true
+`ifndef def_true
+// `ifdef def_true
 	tPcmAddValL = 
 //		{ tPcmValL[15] ? 2'b11 : 2'b00, tPcmValL[15:2] } +
 		{ tPcmValL[15], tPcmValL[15:1] } +
 //		{ tAuxPcmL[ 7] ? 2'b11 : 2'b00, tAuxPcmL, 3'h0, tTimerNoise, 2'h0 };
 //		{ tAuxPcmL[ 7] ? 2'b11 : 2'b00, tAuxPcmL[7:2], tTimerNoise, 7'h0 };
 //		{ tAuxPcmL[ 7] ? 2'b11 : 2'b00, tAuxPcmL[7:0], tTimerNoiseC, 5'h0 };
-		{ tAuxPcmL[ 7] ? 2'b11 : 2'b00, tAuxPcmL[7:3], tTimerNoiseC, 8'h0 };
+		{ tAuxPcmL[ 7], tAuxPcmL[7:0], tTimerNoiseC, 6'h0 };
+//		{ tAuxPcmL[ 7] ? 2'b11 : 2'b00, tAuxPcmL[7:3], tTimerNoiseC, 8'h0 };
 //		{ tAuxPcmL[ 7] ? 2'b11 : 2'b00, tAuxPcmL[7:2], tTimerNoiseC, 7'h0 };
 	tPcmAddValR =
 //		{ tPcmValR[15] ? 2'b11 : 2'b00, tPcmValR[15:2] } +
@@ -495,13 +496,25 @@ begin
 //		{ tAuxPcmR[ 7] ? 2'b11 : 2'b00, tAuxPcmR, 3'h0, tTimerNoise, 2'h0 };
 //		{ tAuxPcmR[ 7] ? 2'b11 : 2'b00, tAuxPcmR, 3'h0, tTimerNoiseC, 2'h0 };
 //		{ tAuxPcmR[ 7] ? 2'b11 : 2'b00, tAuxPcmR[7:0], tTimerNoiseC, 5'h0 };
-		{ tAuxPcmR[ 7] ? 2'b11 : 2'b00, tAuxPcmR[7:3], tTimerNoiseC, 8'h0 };
+		{ tAuxPcmR[ 7], tAuxPcmR[7:0], tTimerNoiseC, 6'h0 };
+//		{ tAuxPcmR[ 7] ? 2'b11 : 2'b00, tAuxPcmR[7:3], tTimerNoiseC, 8'h0 };
 //		{ tAuxPcmR[ 7] ? 2'b11 : 2'b00, tAuxPcmR[7:2], tTimerNoiseC, 7'h0 };
 //	tPwmNextValL = tPwmAddValL;
 //	tPwmNextValR = tPwmAddValR;
 `endif
 
+// `ifndef def_true
+`ifdef def_true
+	tPcmAddValL = 
+		{ tPcmValL[15] ? 2'b11 : 2'b00, tPcmValL[15:2] } +
+		{ tAuxPcmL[11] ? 2'b11 : 2'b00, tAuxPcmL[11:1], tTimerNoiseC, 2'b0 };
+	tPcmAddValR =
+		{ tPcmValR[15] ? 2'b11 : 2'b00, tPcmValR[15:2] } +
+		{ tAuxPcmR[11] ? 2'b11 : 2'b00, tAuxPcmR[11:1], tTimerNoiseC, 2'b0 };
+`endif
+
 `ifndef def_true
+// `ifdef def_true
 	tPcmAddValL = 
 		{ tPcmValL[15], tPcmValL[15:1] } +
 		{ tAuxPcmL[ 7], tAuxPcmL[7:0], 6'h0, tTimerNoise };
@@ -524,8 +537,52 @@ begin
 //	tPwmNextValL = tPcmAddVal2L;
 //	tPwmNextValR = tPcmAddVal2R;
 
-	tPwmNextValL = {~tPcmAddVal2L[15], tPcmAddVal2L[14:0]};
-	tPwmNextValR = {~tPcmAddVal2R[15], tPcmAddVal2R[14:0]};
+`ifndef def_true
+	case(tPcmAddVal2L[15:14])
+		2'b00: tPwmNextValL = {1'b1, tPcmAddVal2L[13:0], 1'b0};
+		2'b01: tPwmNextValL = 16'hFFFF;
+		2'b10: tPwmNextValL = 16'h0000;
+		2'b11: tPwmNextValL = {1'b0, tPcmAddVal2L[13:0], 1'b0};
+	endcase
+
+`ifndef jx2_audio_leftonly
+	case(tPcmAddVal2R[15:14])
+		2'b00: tPwmNextValR = {1'b1, tPcmAddVal2R[13:0], 1'b0};
+		2'b01: tPwmNextValR = 16'hFFFF;
+		2'b10: tPwmNextValR = 16'h0000;
+		2'b11: tPwmNextValR = {1'b0, tPcmAddVal2R[13:0], 1'b0};
+	endcase
+`endif
+`endif
+
+`ifdef def_true
+	case(tPcmAddVal2L[15:13])
+		3'b000: tPwmNextValL = {1'b1, tPcmAddVal2L[12:0], 2'b0};
+		3'b001: tPwmNextValL = 16'hFFFF;
+		3'b010: tPwmNextValL = 16'hFFFF;
+		3'b011: tPwmNextValL = 16'hFFFF;
+		3'b100: tPwmNextValL = 16'h0000;
+		3'b101: tPwmNextValL = 16'h0000;
+		3'b110: tPwmNextValL = 16'h0000;
+		3'b111: tPwmNextValL = {1'b0, tPcmAddVal2L[12:0], 2'b0};
+	endcase
+
+`ifndef jx2_audio_leftonly
+	case(tPcmAddVal2R[15:13])
+		3'b000: tPwmNextValR = {1'b1, tPcmAddVal2R[12:0], 2'b0};
+		3'b001: tPwmNextValR = 16'hFFFF;
+		3'b010: tPwmNextValR = 16'hFFFF;
+		3'b011: tPwmNextValR = 16'hFFFF;
+		3'b100: tPwmNextValR = 16'h0000;
+		3'b101: tPwmNextValR = 16'h0000;
+		3'b110: tPwmNextValR = 16'h0000;
+		3'b111: tPwmNextValR = {1'b0, tPcmAddVal2R[12:0], 2'b0};
+	endcase
+`endif
+`endif
+
+//	tPwmNextValL = {~tPcmAddVal2L[15], tPcmAddVal2L[14:0]};
+//	tPwmNextValR = {~tPcmAddVal2R[15], tPcmAddVal2R[14:0]};
 
 //	tPwmNextValL = {tPcmAddVal2L[15]?2'b00:2'b11, tPcmAddVal2L[14:1]};
 //	tPwmNextValR = {tPcmAddVal2R[15]?2'b00:2'b11, tPcmAddVal2R[14:1]};
@@ -584,10 +641,14 @@ begin
 	tPcmValR		<= tPcmNextValR;
 	tPwmValL		<= tPwmNextValL;
 	tPwmValR		<= tPwmNextValR;
-//	tAuxPcmL		<= auxPcmL;
-//	tAuxPcmR		<= auxPcmR;
-	tAuxPcmL		<= 0;
+	tAuxPcmL		<= auxPcmL;
+`ifndef jx2_audio_leftonly
+	tAuxPcmR		<= auxPcmR;
+`else
 	tAuxPcmR		<= 0;
+`endif
+//	tAuxPcmL		<= 0;
+//	tAuxPcmR		<= 0;
 
 	tBeepDivCnt		<= tNxtBeepDivCnt;
 //	tBeepDivRst		<= tNxtBeepDivRst;

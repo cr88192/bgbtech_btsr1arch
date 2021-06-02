@@ -130,9 +130,9 @@ begin
 
 `ifdef jx2_cpu_mmioclock_50
 
-//	tNxtDivRst = { 3'b00, tRegCtrl[31:24], 3'h5 };
+	tNxtDivRst = { 3'b00, tRegCtrl[31:24], 3'h5 };
 //	tNxtDivRst = { 3'b00, tRegCtrl[31:24], 3'h4 };
-	tNxtDivRst = { 4'h0, tRegCtrl[31:24], 2'h3 };
+//	tNxtDivRst = { 4'h0, tRegCtrl[31:24], 2'h3 };
 //	tNxtDivRst = { 4'h0, tRegCtrl[31:24], 2'h2 };
 
 `else

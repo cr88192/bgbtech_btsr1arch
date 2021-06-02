@@ -95,3 +95,8 @@
 // `define jx2_debug_alu		//Debug ALU
 
 // `define jx2_debug_hitmiss	//Debug Branch Predictor
+
+
+`define jx2_audio_leftonly		//Only left audio channel is used.
+// `define jx2_fmsyn_dyndcbias		//FM Synth: Dynamic DC Bias
+

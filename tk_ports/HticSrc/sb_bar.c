@@ -548,7 +548,8 @@ void DrSmallNumber(int val, int x, int y)
 	}
 	if(val > 9)
 	{
-		patch = PatchSmNumbers[val/10];
+//		patch = PatchSmNumbers[val/10];
+		patch = PatchSmNumbers[(val/10)%10];
 		V_DrawPatch(x, y, patch);
 	}
 	val = val%10;
