@@ -14,7 +14,7 @@ module RbiMemL2Mmio(
 
 	mmioAddr,		mmioOpm,
 	mmioInData,		mmioOutData,
-	mmioOK
+	mmioOK,			mmioExcIn
 	);
 
 input			clock;
@@ -36,6 +36,7 @@ output[63:0]	mmioOutData;
 output[31:0]	mmioAddr;
 output[4:0]		mmioOpm;
 input[1:0]		mmioOK;
+input[63:0]		mmioExcIn;
 
 
 reg[ 15:0]		tMemSeqOut;		//operation sequence
@@ -93,6 +94,10 @@ reg[63:0]		tNxtMmioOutData;
 reg[31:0]		tNxtMmioAddr;
 reg[4:0]		tNxtMmioOpm;
 
+reg[63:0]		tMmioExcIn;
+reg[63:0]		tMmioExcInL;
+
+
 reg[63:0]		tNxtRespData;
 reg[63:0]		tRespData;
 reg				tNxtRespDone;
@@ -108,6 +113,11 @@ wire		memRingIsLdQ;
 wire		memRingIsStQ;
 wire		memRingIsLdL;
 wire		memRingIsStL;
+
+reg[63:0]		tRingExc;
+reg[63:0]		tNxtRingExc;
+reg				tRingDoExc;
+reg				tNxtRingDoExc;
 
 assign	memRingIsIdle	= (memOpmIn[7:0] == JX2_RBI_OPM_IDLE);
 assign	memRingIsLdx	= (memOpmIn[7:0] == JX2_RBI_OPM_LDX);
@@ -135,6 +145,15 @@ begin
 	tMemAddrReq		= 0;
 	tMemDataReq		= 0;
 	tNxtMemReqRsM	= tMemReqRsM;
+
+	tNxtRingDoExc	= tRingDoExc;
+	tNxtRingExc		= tRingExc;
+
+	if(tMmioExcIn[15] && !tRingDoExc)
+	begin
+		tNxtRingDoExc	= 1;
+		tNxtRingExc		= tMmioExcIn;
+	end
 
 	tNxtReqSeq		= tReqSeq;
 	tNxtReqOpm		= tReqOpm;
@@ -220,6 +239,17 @@ begin
 		end
 	end
 
+`ifndef def_true
+	if(memRingIsIdle && tRingDoExc && !tNxtMemReqRsM)
+	begin
+		tMemSeqReq		= 0;
+		tMemOpmReq		= { 8'h00, JX2_RBI_OPM_IRQ };
+		tMemAddrReq		= 0;
+		tMemDataReq		= { UV64_00, tRingExc };
+		tNxtRingDoExc	= 0;
+	end
+`endif
+
 	if(reset)
 	begin
 		tMemSeqReq			= 0;
@@ -258,6 +288,12 @@ begin
 	tMmioInData		<= mmioInData;
 	tMmioOK			<= mmioOK;
 
+	tMmioExcIn		<= mmioExcIn;
+	tMmioExcInL		<= tMmioExcIn;
+
+	tRingExc		<= tNxtRingExc;
+	tRingDoExc		<= tNxtRingDoExc;
+
 	tRespData		<= tNxtRespData;
 	tRespDone		<= tNxtRespDone;
 
@@ -270,7 +306,8 @@ begin
 
 //	if(memRingIsIdle)
 	if((memRingIsMmio && !tReqLive) ||
-		(memRingIsIdle && tNxtMemReqRsM && !tMemReqRsM))
+		(memRingIsIdle && tNxtMemReqRsM && !tMemReqRsM) ||
+		(memRingIsIdle && tRingDoExc && !tNxtMemReqRsM))
 	begin
 		tMemSeqOut  <= tMemSeqReq;
 		tMemOpmOut  <= tMemOpmReq;

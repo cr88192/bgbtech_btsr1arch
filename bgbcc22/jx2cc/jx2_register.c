@@ -917,30 +917,30 @@ int BGBCC_JX2C_EmitReloadSavedFrameReg(
 }
 
 #if 0
-// const byte bgbcc_jx2_cachereg[6]={ 13, 11, 10, 9, 8, 255 };
-// const byte bgbcc_jx2_cachereg[8]={ 14, 13, 12, 11, 10, 9, 8, 255 };
-const byte bgbcc_jx2_cachereg[8]={
+// const short bgbcc_jx2_cachereg[6]={ 13, 11, 10, 9, 8, 255 };
+// const short bgbcc_jx2_cachereg[8]={ 14, 13, 12, 11, 10, 9, 8, 255 };
+const short bgbcc_jx2_cachereg[8]={
 	BGBCC_SH_REG_R14, BGBCC_SH_REG_R13,
 	BGBCC_SH_REG_R12, BGBCC_SH_REG_R11,
 	BGBCC_SH_REG_R10, BGBCC_SH_REG_R9,
 	BGBCC_SH_REG_R8, BGBCC_SH_REG_ZZR };
-const byte bgbcc_jx2_jcachereg[8]={
+const short bgbcc_jx2_jcachereg[8]={
 	BGBCC_SH_REG_RD14, BGBCC_SH_REG_RD13,
 	BGBCC_SH_REG_RD12, BGBCC_SH_REG_RD11,
 	BGBCC_SH_REG_RD10, BGBCC_SH_REG_RD9,
 	BGBCC_SH_REG_RD8, BGBCC_SH_REG_ZZR };
-const byte bgbcc_jx2_qcachereg[8]={
+const short bgbcc_jx2_qcachereg[8]={
 	BGBCC_SH_REG_RQ14, BGBCC_SH_REG_RQ13,
 	BGBCC_SH_REG_RQ12, BGBCC_SH_REG_RQ11,
 	BGBCC_SH_REG_RQ10, BGBCC_SH_REG_RQ9,
 	BGBCC_SH_REG_RQ8, BGBCC_SH_REG_ZZR };
-const byte bgbcc_jx2_maxreg=7;
+const short bgbcc_jx2_maxreg=7;
 #endif
 
 #if 0
-// const byte bgbcc_jx2_cachereg[6]={ 13, 11, 10, 9, 8, 255 };
-// const byte bgbcc_jx2_cachereg[8]={ 14, 13, 12, 11, 10, 9, 8, 255 };
-const byte bgbcc_jx2_cachereg[16]={
+// const short bgbcc_jx2_cachereg[6]={ 13, 11, 10, 9, 8, 255 };
+// const short bgbcc_jx2_cachereg[8]={ 14, 13, 12, 11, 10, 9, 8, 255 };
+const short bgbcc_jx2_cachereg[16]={
 	BGBCC_SH_REG_R14, BGBCC_SH_REG_R13,
 	BGBCC_SH_REG_R12, BGBCC_SH_REG_R11,
 	BGBCC_SH_REG_R10, BGBCC_SH_REG_R9,
@@ -950,7 +950,7 @@ const byte bgbcc_jx2_cachereg[16]={
 	BGBCC_SH_REG_R27, BGBCC_SH_REG_R26,
 	BGBCC_SH_REG_R25, BGBCC_SH_REG_R24, 
 	BGBCC_SH_REG_ZZR };
-const byte bgbcc_jx2_jcachereg[16]={
+const short bgbcc_jx2_jcachereg[16]={
 	BGBCC_SH_REG_RD14, BGBCC_SH_REG_RD13,
 	BGBCC_SH_REG_RD12, BGBCC_SH_REG_RD11,
 	BGBCC_SH_REG_RD10, BGBCC_SH_REG_RD9,
@@ -960,7 +960,7 @@ const byte bgbcc_jx2_jcachereg[16]={
 	BGBCC_SH_REG_RD27, BGBCC_SH_REG_RD26,
 	BGBCC_SH_REG_RD25, BGBCC_SH_REG_RD24, 
 	BGBCC_SH_REG_ZZR };
-const byte bgbcc_jx2_qcachereg[16]={
+const short bgbcc_jx2_qcachereg[16]={
 	BGBCC_SH_REG_RQ14, BGBCC_SH_REG_RQ13,
 	BGBCC_SH_REG_RQ12, BGBCC_SH_REG_RQ11,
 	BGBCC_SH_REG_RQ10, BGBCC_SH_REG_RQ9,
@@ -970,13 +970,13 @@ const byte bgbcc_jx2_qcachereg[16]={
 	BGBCC_SH_REG_RQ27, BGBCC_SH_REG_RQ26,
 	BGBCC_SH_REG_RQ25, BGBCC_SH_REG_RQ24, 
 	BGBCC_SH_REG_ZZR };
-const byte bgbcc_jx2_maxreg=7;
-const byte bgbcc_jx2_maxreg_egpr=15;
+const short bgbcc_jx2_maxreg=7;
+const short bgbcc_jx2_maxreg_egpr=15;
 #endif
 
 
 #if 1
-const byte bgbcc_jx2_jcachereg[16]={
+const short bgbcc_jx2_jcachereg[16]={
 	BGBCC_SH_REG_RD14, BGBCC_SH_REG_RD13,
 	BGBCC_SH_REG_RD12, BGBCC_SH_REG_RD11,
 	BGBCC_SH_REG_RD10, BGBCC_SH_REG_RD9,
@@ -985,7 +985,7 @@ const byte bgbcc_jx2_jcachereg[16]={
 	BGBCC_SH_REG_RD5, BGBCC_SH_REG_RD4,
 	BGBCC_SH_REG_RD3, BGBCC_SH_REG_RD2,
 	BGBCC_SH_REG_ZZR };
-const byte bgbcc_jx2_qcachereg[16]={
+const short bgbcc_jx2_qcachereg[16]={
 	BGBCC_SH_REG_RQ14, BGBCC_SH_REG_RQ13,
 	BGBCC_SH_REG_RQ12, BGBCC_SH_REG_RQ11,
 	BGBCC_SH_REG_RQ10, BGBCC_SH_REG_RQ9,
@@ -994,7 +994,7 @@ const byte bgbcc_jx2_qcachereg[16]={
 	BGBCC_SH_REG_RQ5, BGBCC_SH_REG_RQ4,
 	BGBCC_SH_REG_RQ3, BGBCC_SH_REG_RQ2,
 	BGBCC_SH_REG_ZZR };
-const byte bgbcc_jx2_pcachereg[16]={
+const short bgbcc_jx2_pcachereg[16]={
 	BGBCC_SH_REG_R14, BGBCC_SH_REG_R13,
 	BGBCC_SH_REG_R12, BGBCC_SH_REG_R11,
 	BGBCC_SH_REG_R10, BGBCC_SH_REG_R9,
@@ -1004,7 +1004,7 @@ const byte bgbcc_jx2_pcachereg[16]={
 	BGBCC_SH_REG_R3, BGBCC_SH_REG_R2,
 	BGBCC_SH_REG_ZZR };
 
-const byte bgbcc_jx2_jcachereg_egpr[32]={
+const short bgbcc_jx2_jcachereg_egpr[32]={
 	BGBCC_SH_REG_RD14, BGBCC_SH_REG_RD13,
 	BGBCC_SH_REG_RD12, BGBCC_SH_REG_RD11,
 	BGBCC_SH_REG_RD10, BGBCC_SH_REG_RD9,
@@ -1021,7 +1021,7 @@ const byte bgbcc_jx2_jcachereg_egpr[32]={
 	BGBCC_SH_REG_RD19, BGBCC_SH_REG_RD18,
 //	BGBCC_SH_REG_RD17, BGBCC_SH_REG_RD16, 
 	BGBCC_SH_REG_ZZR };
-const byte bgbcc_jx2_qcachereg_egpr[32]={
+const short bgbcc_jx2_qcachereg_egpr[32]={
 	BGBCC_SH_REG_RQ14, BGBCC_SH_REG_RQ13,
 	BGBCC_SH_REG_RQ12, BGBCC_SH_REG_RQ11,
 	BGBCC_SH_REG_RQ10, BGBCC_SH_REG_RQ9,
@@ -1038,7 +1038,7 @@ const byte bgbcc_jx2_qcachereg_egpr[32]={
 	BGBCC_SH_REG_RQ19, BGBCC_SH_REG_RQ18,
 //	BGBCC_SH_REG_RQ17, BGBCC_SH_REG_RQ16, 
 	BGBCC_SH_REG_ZZR };
-const byte bgbcc_jx2_pcachereg_egpr[32]={
+const short bgbcc_jx2_pcachereg_egpr[32]={
 	BGBCC_SH_REG_R14, BGBCC_SH_REG_R13,
 	BGBCC_SH_REG_R12, BGBCC_SH_REG_R11,
 	BGBCC_SH_REG_R10, BGBCC_SH_REG_R9,
@@ -1059,7 +1059,7 @@ const byte bgbcc_jx2_pcachereg_egpr[32]={
 //	BGBCC_SH_REG_R17, BGBCC_SH_REG_R16, 
 	BGBCC_SH_REG_ZZR };
 
-const byte bgbcc_jx2_shufreg0_egpr[32]={
+const short bgbcc_jx2_shufreg0_egpr[32]={
 	 0,  1,	 2,  3,
 	 4,  5,	 6,
 	
@@ -1074,7 +1074,7 @@ const byte bgbcc_jx2_shufreg0_egpr[32]={
 	27, 28,
 };
 
-const byte bgbcc_jx2_shufreg1_egpr[32]={
+const short bgbcc_jx2_shufreg1_egpr[32]={
 	 2,  3,	 0,  1,
 	 6,  5,	 4,
 	
@@ -1089,7 +1089,7 @@ const byte bgbcc_jx2_shufreg1_egpr[32]={
 	27, 28,
 };
 
-const byte bgbcc_jx2_shufreg2_egpr[32]={
+const short bgbcc_jx2_shufreg2_egpr[32]={
 	 6,  5,	 0,  1,	
 	 2,  3,	
 	 4,
@@ -1107,7 +1107,7 @@ const byte bgbcc_jx2_shufreg2_egpr[32]={
 	27, 28,
 };
 
-const byte bgbcc_jx2_shufreg3_egpr[32]={
+const short bgbcc_jx2_shufreg3_egpr[32]={
 	 2,  3,	 6,  5,
 	 0,  1,	 4,
 	
@@ -1124,7 +1124,7 @@ const byte bgbcc_jx2_shufreg3_egpr[32]={
 };
 
 
-const byte bgbcc_jx2_jcachereg_egt[24]={
+const short bgbcc_jx2_jcachereg_egt[24]={
 	BGBCC_SH_REG_RD14, BGBCC_SH_REG_RD13,
 	BGBCC_SH_REG_RD12, BGBCC_SH_REG_RD11,
 	BGBCC_SH_REG_RD10, BGBCC_SH_REG_RD9,
@@ -1136,7 +1136,7 @@ const byte bgbcc_jx2_jcachereg_egt[24]={
 	BGBCC_SH_REG_RD21, BGBCC_SH_REG_RD20,
 	BGBCC_SH_REG_RD19, BGBCC_SH_REG_RD18,
 	BGBCC_SH_REG_ZZR };
-const byte bgbcc_jx2_qcachereg_egt[24]={
+const short bgbcc_jx2_qcachereg_egt[24]={
 	BGBCC_SH_REG_RQ14, BGBCC_SH_REG_RQ13,
 	BGBCC_SH_REG_RQ12, BGBCC_SH_REG_RQ11,
 	BGBCC_SH_REG_RQ10, BGBCC_SH_REG_RQ9,
@@ -1148,7 +1148,7 @@ const byte bgbcc_jx2_qcachereg_egt[24]={
 	BGBCC_SH_REG_RQ21, BGBCC_SH_REG_RQ20,
 	BGBCC_SH_REG_RQ19, BGBCC_SH_REG_RQ18,
 	BGBCC_SH_REG_ZZR };
-const byte bgbcc_jx2_pcachereg_egt[24]={
+const short bgbcc_jx2_pcachereg_egt[24]={
 	BGBCC_SH_REG_R14, BGBCC_SH_REG_R13,
 	BGBCC_SH_REG_R12, BGBCC_SH_REG_R11,
 	BGBCC_SH_REG_R10, BGBCC_SH_REG_R9,
@@ -1162,13 +1162,13 @@ const byte bgbcc_jx2_pcachereg_egt[24]={
 	BGBCC_SH_REG_ZZR };
 
 
-const byte bgbcc_jx2_maxreg=7;
-const byte bgbcc_jx2_maxreg_egpr=15;
-const byte bgbcc_jx2_maxreg_lf=13;
-// const byte bgbcc_jx2_maxreg_egpr_lf=29;
-const byte bgbcc_jx2_maxreg_egpr_lf=27;
-const byte bgbcc_jx2_maxreg_egt=7;
-const byte bgbcc_jx2_maxreg_egt_lf=19;
+const short bgbcc_jx2_maxreg=7;
+const short bgbcc_jx2_maxreg_egpr=15;
+const short bgbcc_jx2_maxreg_lf=13;
+// const short bgbcc_jx2_maxreg_egpr_lf=29;
+const short bgbcc_jx2_maxreg_egpr_lf=27;
+const short bgbcc_jx2_maxreg_egt=7;
+const short bgbcc_jx2_maxreg_egt_lf=19;
 
 #endif
 
@@ -1179,7 +1179,7 @@ int BGBCC_JX2C_EmitRotateRegisterIndex(
 	BGBCC_JX2_Context *sctx,
 	int idx, int flag)
 {
-	const byte *shuf;
+	const short *shuf;
 	int m1, m2, m3;
 	int i1;
 

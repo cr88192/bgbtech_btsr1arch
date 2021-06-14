@@ -10,6 +10,7 @@ This is assumed to be called prior to transferring control to C land.
 #ifndef JX2UC
 #include "tk_chksane_gfp.S"
 #include "tk_chksane_wex.S"
+#include "tk_chksane_xgpr.S"
 #endif
 
 #include "tk_chksane_mem.S"
@@ -982,6 +983,10 @@ X(tk_checksane_asm):
 	bsr X(tk_checksane_gfp_asm)
 
 	bsr X(tk_checksane_wex_asm)
+
+.ifarch has_xgpr
+	bsr X(tk_checksane_xgpr_asm)
+.endif
 
 #endif
 

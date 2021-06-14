@@ -962,6 +962,13 @@ int BGBCC_JX2_EmitStatWord(BGBCC_JX2_Context *ctx, int val)
 				return(0);
 			}
 
+			if(	(((val>>12)&0xE)==0x7)	||
+				(((val>>12)&0xE)==0x9)	)
+			{
+				ctx->stat_opc_issfx=1;
+				return(0);
+			}
+
 			BGBCC_DBGBREAK
 		}
 
@@ -1092,6 +1099,23 @@ int BGBCC_JX2_EmitStatWord(BGBCC_JX2_Context *ctx, int val)
 		{
 			ctx->stat_opc_9xx++;
 			ctx->stat_opc_issfx=0;
+			return(0);
+		}
+	}else
+	{
+		if((val>>12)==7)
+		{
+			ctx->stat_opc_ext8a++;
+//			ctx->stat_opc_7xx++;
+			ctx->stat_opc_issfx=1;
+			return(0);
+		}
+
+		if((val>>12)==9)
+		{
+			ctx->stat_opc_ext8a++;
+//			ctx->stat_opc_9xx++;
+			ctx->stat_opc_issfx=1;
 			return(0);
 		}
 	}
@@ -1944,7 +1968,8 @@ int BGBCC_JX2_EmitWordI(BGBCC_JX2_Context *ctx, int val)
 	{
 		if(!ctx->stat_opc_issfx)
 		{
-			if(ctx->op_is_wex2&4)
+//			if(ctx->op_is_wex2&4)
+			if(ctx->op_is_wex2&12)
 			{
 #if 1
 				if((val&0xFC00)==0xF000)
@@ -1989,6 +2014,10 @@ int BGBCC_JX2_EmitWordI(BGBCC_JX2_Context *ctx, int val)
 				{
 					/* Can't do anything here. */
 				}else
+					if((val&0xFE00)==0xFE00)
+				{
+					/* Can't do anything here. */
+				}else
 				{
 					BGBCC_DBGBREAK
 				}
@@ -1996,6 +2025,13 @@ int BGBCC_JX2_EmitWordI(BGBCC_JX2_Context *ctx, int val)
 			}else
 				if((ctx->op_is_wex2)&1)
 			{
+#if 1
+				if((val&0xF000)==0x7000)
+					val|=0x0800;
+				if((val&0xF000)==0x9000)
+					val|=0x0800;
+#endif
+
 	//			if((val&0xFF00)==0xF000)
 				if((val&0xFC00)==0xF000)
 					val|=0x0400;
@@ -2954,6 +2990,14 @@ int BGBCC_JX2_EmitByte(BGBCC_JX2_Context *ctx, int val)
 	return(0);
 }
 
+/*
+ (19:16)=3: Flipped, 16-bit Op
+ (19:16)=4: Flipped, 32 First Word
+ (19:16)=5: Flipped, 32 Second Word
+ (19:16)=6: ?
+ (19:16)=7: Byte
+ 
+ */
 int BGBCC_JX2_EmitWord(BGBCC_JX2_Context *ctx, int val)
 {
 	if(val<0)
@@ -2961,7 +3005,8 @@ int BGBCC_JX2_EmitWord(BGBCC_JX2_Context *ctx, int val)
 		BGBCC_DBGBREAK
 	}
 
-	if((val>0xFFFF) && ((val>>16)!=6))
+	if((val>0xFFFF) && ((val>>16)!=6) &&
+		((val>>16)!=3) && ((val>>16)!=4) && ((val>>16)!=5))
 	{
 		if(
 			(ctx->sec==BGBCC_SH_CSEG_TEXT) &&

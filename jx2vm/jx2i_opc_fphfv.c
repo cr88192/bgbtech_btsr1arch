@@ -984,6 +984,86 @@ void BJX2_Op_PSCHNEW_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	else		ctx->regs[BJX2_REG_SR]&=~1;
 }
 
+void BJX2_Op_PSCHEQB_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+	u16 sa0, sb0, sc0;
+	u16 sa1, sb1, sc1;
+	u16 sa2, sb2, sc2;
+	u16 sa3, sb3, sc3;
+	u16 sa4, sb4, sc4;
+	u16 sa5, sb5, sc5;
+	u16 sa6, sb6, sc6;
+	u16 sa7, sb7, sc7;
+
+	int nc;
+
+	va=ctx->regs[op->ro];
+	vb=ctx->regs[op->rm];
+	sa0=(byte)(va>> 0);	sa1=(byte)(va>> 8);
+	sa2=(byte)(va>>16);	sa3=(byte)(va>>24);
+	sb0=(byte)(vb>> 0);	sb1=(byte)(vb>> 8);
+	sb2=(byte)(vb>>16);	sb3=(byte)(vb>>24);
+	sa4=(byte)(va>>32);	sa5=(byte)(va>>40);
+	sa6=(byte)(va>>48);	sa7=(byte)(va>>56);
+	sb4=(byte)(vb>>32);	sb5=(byte)(vb>>40);
+	sb6=(byte)(vb>>48);	sb7=(byte)(vb>>56);
+
+	if(sa0==sb0)		{ nc=0; }
+	else if(sa1==sb1)	{ nc=1; }
+	else if(sa2==sb2)	{ nc=2; }
+	else if(sa3==sb3)	{ nc=3; }
+	else if(sa4==sb4)	{ nc=4; }
+	else if(sa5==sb5)	{ nc=5; }
+	else if(sa6==sb6)	{ nc=6; }
+	else if(sa7==sb7)	{ nc=7; }
+	else				{ nc=8; }
+
+	ctx->regs[op->rn]=nc;
+	if(nc<8)	ctx->regs[BJX2_REG_SR]|= 1;
+	else		ctx->regs[BJX2_REG_SR]&=~1;
+}
+
+void BJX2_Op_PSCHNEB_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+	u16 sa0, sb0, sc0;
+	u16 sa1, sb1, sc1;
+	u16 sa2, sb2, sc2;
+	u16 sa3, sb3, sc3;
+	u16 sa4, sb4, sc4;
+	u16 sa5, sb5, sc5;
+	u16 sa6, sb6, sc6;
+	u16 sa7, sb7, sc7;
+
+	int nc;
+
+	va=ctx->regs[op->ro];
+	vb=ctx->regs[op->rm];
+	sa0=(byte)(va>> 0);	sa1=(byte)(va>> 8);
+	sa2=(byte)(va>>16);	sa3=(byte)(va>>24);
+	sb0=(byte)(vb>> 0);	sb1=(byte)(vb>> 8);
+	sb2=(byte)(vb>>16);	sb3=(byte)(vb>>24);
+	sa4=(byte)(va>>32);	sa5=(byte)(va>>40);
+	sa6=(byte)(va>>48);	sa7=(byte)(va>>56);
+	sb4=(byte)(vb>>32);	sb5=(byte)(vb>>40);
+	sb6=(byte)(vb>>48);	sb7=(byte)(vb>>56);
+
+	if(sa0!=sb0)		{ nc=0; }
+	else if(sa1!=sb1)	{ nc=1; }
+	else if(sa2!=sb2)	{ nc=2; }
+	else if(sa3!=sb3)	{ nc=3; }
+	else if(sa4!=sb4)	{ nc=4; }
+	else if(sa5!=sb5)	{ nc=5; }
+	else if(sa6!=sb6)	{ nc=6; }
+	else if(sa7!=sb7)	{ nc=7; }
+	else				{ nc=8; }
+
+	ctx->regs[op->rn]=nc;
+	if(nc<8)	ctx->regs[BJX2_REG_SR]|= 1;
+	else		ctx->regs[BJX2_REG_SR]&=~1;
+}
+
 void BJX2_Op_BLKUTX1_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	int cr, cg, cb, cy;

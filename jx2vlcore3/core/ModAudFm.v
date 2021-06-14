@@ -308,7 +308,7 @@ begin
 		(chRovL4 == chRov) &&
 		(chRovL5 != chRov) )
 	begin
-		$display("ModeFm: Step %d", chRov);
+//		$display("ModeFm: Step %d", chRov);
 
 		chNxtStsA[19:0]	= chStsA[19:0] + chCtr0A[19:0];
 		chNxtStsB[19:0]	= chStsB[19:0] + chCtr0B[19:0];
@@ -427,8 +427,10 @@ begin
 
 	if(chCtr0A[21])
 	begin
-		chTabIxA = chTabIxA + chTabPcmB3[7:2];
-		chTabIxC = chTabIxC + chTabPcmB3[7:2];
+//		chTabIxA = chTabIxA + chTabPcmB3[7:2];
+//		chTabIxC = chTabIxC + chTabPcmB3[7:2];
+		chTabIxA = chTabIxA + chTabPcmB3[9:4];
+		chTabIxC = chTabIxC + chTabPcmB3[9:4];
 	end
 
 //	chTabPcmA	= cbSinTab[chTabIxA];
@@ -555,8 +557,8 @@ begin
 //	if(tTimer4MHzB && !tTimer4MHzA)
 	if(tTimer4MHzA && !tTimer4MHz)
 	begin
-		$display("ModFm: Sample Pulse %d, V=%X Ph=%X",
-			chRov, chPcmA, chStsA[19:0]);
+//		$display("ModFm: Sample Pulse %d, V=%X Ph=%X",
+//			chRov, chPcmA, chStsA[19:0]);
 //		$display("%X %X", chTabPcmA, chTabPcmC);
 //		tNxtChAccumL = tChAccumL + { (chPcmA[9] ? 2'h3 : 2'h0), chPcmA };
 //		tNxtChAccumR = tChAccumR + { (chPcmA[9] ? 2'h3 : 2'h0), chPcmA };
@@ -587,7 +589,7 @@ begin
 //	if((chRov==15) && tTimer4MHz)
 	if((chRov==15) && tTimer4MHz && !tTimer4MHzL)
 	begin
-		$display("ModFm: Ch15 Pulse %d", chRov);
+//		$display("ModFm: Ch15 Pulse %d", chRov);
 
 //		tOutPcmL		= tChAccumL[7:0];
 //		tOutPcmR		= tChAccumR[7:0];
@@ -677,7 +679,7 @@ begin
 `endif
 `endif
 
-		$display("ModFm: Ch15 Out %X / %X", tOutPcmL, tOutPcmR);
+//		$display("ModFm: Ch15 Out %X / %X", tOutPcmL, tOutPcmR);
 
 `ifdef jx2_fmsyn_dyndcbias
 		tNxtChBiasL		= tChBiasL +

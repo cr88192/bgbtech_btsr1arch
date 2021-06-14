@@ -66,6 +66,10 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			opw2=(opw2&0xF9FF)|
 				((opw2<<1)&0x0400)|
 				((opw2>>1)&0x0200);
+			jbits=
+				( jbits    &0x9FFFFFFFU) |
+				((jbits<<1)&0x40000000U) |
+				((jbits>>1)&0x20000000U) ;
 		}
 #endif
 
@@ -89,7 +93,11 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 	if(opw1&0x0040)rn_dfl+=16;
 	if(opw1&0x0020)rm_dfl+=16;
 	if(opw1&0x0010)ro_dfl+=16;
-	
+
+	if(jbits&0x40000000U)rn_dfl+=32;
+	if(jbits&0x20000000U)rm_dfl+=32;
+	if(jbits&0x10000000U)ro_dfl+=32;
+
 	rn_dfl=BJX2_RemapGPR(ctx, rn_dfl);
 	rm_dfl=BJX2_RemapGPR(ctx, rm_dfl);
 	ro_dfl=BJX2_RemapGPR(ctx, ro_dfl);
@@ -105,6 +113,15 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 
 	imm20s=((opw1&255)<<12)|(opw2&4095);
 	imm20s=((s32)(imm20s<<12))>>12;
+
+	if(jbits&0x02000000U)
+	{
+		imm20s=
+			((jbits&4095)<<20) |
+			((opw1 & 255)<<12) |
+			 (opw2 &4095);
+		imm20s=(s32)imm20s;
+	}
 
 	ret=0;
 	switch((opw2>>12)&15)
@@ -1977,6 +1994,8 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			op->fl|=BJX2_OPFL_NOWEX;
 			if(eq)
 			{
+				op->nmid=BJX2_NMID_PSCHEQB;
+				op->Run=BJX2_Op_PSCHEQB_RegRegReg;
 //				op->nmid=BJX2_NMID_PADDXD;
 //				op->Run=BJX2_Op_PADDXD_RegRegReg;
 			}
@@ -1988,6 +2007,8 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			op->fl|=BJX2_OPFL_NOWEX;
 			if(eq)
 			{
+				op->nmid=BJX2_NMID_PSCHNEB;
+				op->Run=BJX2_Op_PSCHNEB_RegRegReg;
 //				op->nmid=BJX2_NMID_PADDXD;
 //				op->Run=BJX2_Op_PADDXD_RegRegReg;
 			}
@@ -3568,9 +3589,11 @@ int BJX2_DecodeOpcode_DecFJ(BJX2_Context *ctx,
 #endif
 
 #if 1
-		if((opw5&0xFFE0)==0xF800)
+//		if((opw5&0xFFE0)==0xF800)
+		if((opw5&0xFFC0)==0xF800)
 		{
-			rn	= (opw5&31);
+//			rn	= (opw5&31);
+			rn	= (opw5&63);
 			imm	=
 				((opw1&255ULL)<<56) |	((opw2&65535ULL)<<40) |
 				((opw3&255ULL)<<32) |	((opw4&65535ULL)<<16) |
@@ -3593,9 +3616,11 @@ int BJX2_DecodeOpcode_DecFJ(BJX2_Context *ctx,
 #endif
 
 #if 1
-		if((opw5&0xFFE0)==0xF840)
+//		if((opw5&0xFFE0)==0xF840)
+		if((opw5&0xFFC0)==0xF840)
 		{
-			rn	= (opw5&31);
+//			rn	= (opw5&31);
+			rn	= (opw5&63);
 			imm	=
 				((opw1&255ULL)<<56) |	((opw2&65535ULL)<<40) |
 				((opw3&255ULL)<<32) |	((opw4&65535ULL)<<16) |
@@ -3623,10 +3648,21 @@ int BJX2_DecodeOpcode_DecFJ(BJX2_Context *ctx,
 		op->data=op1;
 
 //		immb=((opw1&255)<<14)|(opw2&16383);
-		immb=((opw1&255)<<16)|(opw2&65535);
+//		immb=((opw1&255)<<16)|(opw2&65535);
+		immb=0x01000000U|((opw1&255)<<16)|(opw2&65535);
 //		switch((opw3>>8)&15)
 		switch((opw3>>8)&255)
 		{
+		case 0xE0:		case 0xE4:
+			ret=BJX2_DecodeOpcode_DecD4(ctx, op, addr, opw3, opw4, immb);
+			break;
+		case 0xE1:		case 0xE5:
+			ret=BJX2_DecodeOpcode_DecD5(ctx, op, addr, opw3, opw4, immb);
+			break;
+		case 0xE2:		case 0xE6:
+			ret=BJX2_DecodeOpcode_DecD6(ctx, op, addr, opw3, opw4, immb);
+			break;			
+			
 		case 0xF0:		case 0xF4:
 			ret=BJX2_DecodeOpcode_DecF0(ctx, op, addr, opw3, opw4, immb);
 			break;
@@ -3692,6 +3728,88 @@ int BJX2_DecodeOpcode_DecFJ(BJX2_Context *ctx,
 	return(0);
 }
 
+int BJX2_DecodeOpcode_DecFK(BJX2_Context *ctx,
+	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2)
+{
+	BJX2_Opcode *op1;
+	int opw3, opw4, opw5, opw6;
+	u32 immb;
+	u64 imm;
+	int ret;
+	byte rn;
+
+	opw3=BJX2_MemGetWord(ctx, addr+4);
+	opw4=BJX2_MemGetWord(ctx, addr+6);
+	opw5=BJX2_MemGetWord(ctx, addr+8);
+	opw6=BJX2_MemGetWord(ctx, addr+10);
+	
+	if((opw3&0xFE00)==0xFA00)
+	{
+		ret=BJX2_DecodeOpcode_DecFJ(ctx,
+			op, addr, opw1, opw2);
+		return(ret);
+	}
+	
+	if(1)
+	{
+		op1=BJX2_ContextAllocOpcode(ctx);
+		op->data=op1;
+
+//		immb=((opw1&255)<<14)|(opw2&16383);
+//		immb=((opw1&255)<<16)|(opw2&65535);
+		immb=0x02000000U|((opw1&255)<<16)|(opw2&65535);
+		
+		immb|=(opw1&0x00F0)<<24;
+		
+//		switch((opw3>>8)&15)
+		switch((opw3>>8)&255)
+		{
+		case 0xF0:		case 0xF4:
+			ret=BJX2_DecodeOpcode_DecF0(ctx, op, addr, opw3, opw4, immb);
+			break;
+		case 0xF1:		case 0xF5:
+			ret=BJX2_DecodeOpcode_DecF1(ctx, op, addr, opw3, opw4, immb);
+			break;
+		case 0xF2:		case 0xF6:
+			ret=BJX2_DecodeOpcode_DecF2(ctx, op, addr, opw3, opw4, immb);
+			break;			
+
+		case 0xF8:		case 0xFC:
+			ret=BJX2_DecodeOpcode_DecF8(ctx, op, addr, opw3, opw4, immb);
+			break;			
+
+		case 0xE0:		case 0xE4:
+			ret=BJX2_DecodeOpcode_DecD4(ctx, op, addr, opw3, opw4, immb);
+			break;
+		case 0xE1:		case 0xE5:
+			ret=BJX2_DecodeOpcode_DecD5(ctx, op, addr, opw3, opw4, immb);
+			break;
+		case 0xE2:		case 0xE6:
+			ret=BJX2_DecodeOpcode_DecD6(ctx, op, addr, opw3, opw4, immb);
+			break;			
+			
+		default:
+			ret=-1;
+			break;
+		}
+
+		op ->opn =opw1;
+		op ->opn2=opw2;
+		op1->opn =opw3;
+		op1->opn2=opw4;
+
+		op ->pc=addr;
+		op1->pc=addr+4;
+
+		op->fl&=~BJX2_OPFL_TWOWORD;
+		op->fl|=BJX2_OPFL_JUMBO64;
+
+		return(ret);
+	}
+
+	return(0);
+}
+
 int BJX2_DecodeOpcode_DecF4(BJX2_Context *ctx,
 	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2)
 {
@@ -3729,7 +3847,7 @@ int BJX2_DecodeOpcode_DecF4(BJX2_Context *ctx,
 }
 
 int BJX2_DecodeOpcode_DecD4(BJX2_Context *ctx,
-	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2)
+	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2, u32 jbits)
 {
 	BJX2_Opcode *op1;
 	int ret;
@@ -3741,7 +3859,7 @@ int BJX2_DecodeOpcode_DecD4(BJX2_Context *ctx,
 	op1=BJX2_ContextAllocOpcode(ctx);
 	op1->pc=addr;
 
-	ret=BJX2_DecodeOpcode_DecF0(ctx, op1, addr, opw1, opw2, 0);
+	ret=BJX2_DecodeOpcode_DecF0(ctx, op1, addr, opw1, opw2, jbits);
 	op->fl|=op1->fl&BJX2_OPFL_PREDMSK;
 
 	if(!op1->Run || !op1->opn)
@@ -3846,6 +3964,58 @@ int BJX2_DecodeOpcode_DecHz(BJX2_Context *ctx,
 			op->opn2=opw2&0x00FF;
 			return(ret);
 		}
+	}
+
+	return(0);
+}
+
+
+int BJX2_DecodeOpcode_DecXz(BJX2_Context *ctx,
+	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2)
+{
+	BJX2_Opcode *op1;
+	int opw3, opw4;
+	int ret, z, imm;
+
+	op->fl|=BJX2_OPFL_TWOWORD;
+	op->opn=opw1;
+	op->opn2=opw2;
+
+	if((opw1&0xF000)==0x7000)
+	{
+		opw3=0xF000|(opw1&0x00FF);
+		opw4=opw2;
+		imm=(opw1&0x0700)<<20;
+		if(opw1&0x0800)
+			opw3|=0x0400;
+		
+		ret=BJX2_DecodeOpcode_DecF0(ctx, op, addr, opw3, opw4, imm);
+		op->opn=opw1;
+		op->opn2=opw2;
+
+		return(ret);
+	}
+
+	if((opw1&0xF000)==0x9000)
+	{
+		opw3=0xF000|(opw1&0x00FF);
+		opw4=opw2;
+		imm=(opw1&0x0600)<<20;
+		if(opw1&0x0800)
+			opw3|=0x0400;
+		if(opw1&0x0100)
+			opw3|=0x0100;
+		else
+			opw3|=0x0200;
+		
+		if(opw1&0x0100)
+			ret=BJX2_DecodeOpcode_DecF1(ctx, op, addr, opw3, opw4, imm);
+		else
+			ret=BJX2_DecodeOpcode_DecF2(ctx, op, addr, opw3, opw4, imm);
+		op->opn=opw1;
+		op->opn2=opw2;
+
+		return(ret);
 	}
 
 	return(0);

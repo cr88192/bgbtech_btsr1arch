@@ -58,10 +58,10 @@ Accumulator:
 ** Where, logically the waveform cycles for each 2PI.
 ** Or, alternatively, each time the value wraps, the cycle repeats.
 
-Voise Status Register:
+Voice Status Register:
 * 19.. 0: Accumulator Position
-* 31..20: Status Flags
 ** Gives the current phase position of the accumulator.
+* 31..20: Status Flags
 
 
 Pair Link Flag

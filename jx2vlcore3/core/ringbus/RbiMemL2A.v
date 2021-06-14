@@ -21,7 +21,7 @@ module RbiMemL2A(
 
 	mmioAddr,		mmioOpm,
 	mmioInData,		mmioOutData,
-	mmioOK
+	mmioOK,			mmioExcIn
 	);
 
 input			clock;
@@ -54,6 +54,7 @@ output[63:0]	mmioOutData;
 output[31:0]	mmioAddr;
 output[4:0]		mmioOpm;
 input[1:0]		mmioOK;
+input[63:0]		mmioExcIn;
 
 
 wire[ 15:0]		l2mSeqIn;
@@ -123,7 +124,7 @@ RbiMemL2Mmio	l2mmio(
 
 	mmioAddr,		mmioOpm,
 	mmioInData,		mmioOutData,
-	mmioOK
+	mmioOK,			mmioExcIn
 	);
 
 assign			l2mNodeId = 8'h82;

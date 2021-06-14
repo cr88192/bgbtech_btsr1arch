@@ -13,22 +13,22 @@ input	reset;
 input[31:0]		valRs;
 input[31:0]		valRt;
 output[63:0]	valRn;
-input[7:0]		idUCmd;
-input[7:0]		idUIxt;
+input[8:0]		idUCmd;
+input[8:0]		idUIxt;
 input			exHold;
 
 reg[63:0]	tValRn;
 assign 	valRn = tValRn;
 
-reg[7:0]		tIdUCmd;
-reg[7:0]		tIdUIxt;
+reg[8:0]		tIdUCmd;
+reg[8:0]		tIdUIxt;
 
-reg[7:0]		tIdUCmd1;
-reg[7:0]		tIdUIxt1;
-reg[7:0]		tIdUCmd2;
-reg[7:0]		tIdUIxt2;
-reg[7:0]		tIdUCmd3;
-reg[7:0]		tIdUIxt3;
+reg[8:0]		tIdUCmd1;
+reg[8:0]		tIdUIxt1;
+reg[8:0]		tIdUCmd2;
+reg[8:0]		tIdUIxt2;
+reg[8:0]		tIdUCmd3;
+reg[8:0]		tIdUIxt3;
 
 reg[31:0]		tValRs;
 reg[31:0]		tValRt;

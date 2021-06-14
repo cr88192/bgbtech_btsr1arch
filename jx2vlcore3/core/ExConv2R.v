@@ -35,7 +35,7 @@ module ExConv2R(
 	);
 
 input[63:0]		regValRs;
-input[7:0]		idUIxt;
+input[8:0]		idUIxt;
 input			regInSrT;
 
 output[63:0]	regOutVal;

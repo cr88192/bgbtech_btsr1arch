@@ -14,12 +14,12 @@ input[63:0]		istrWord;	//source instruction word
 input[3:0]		isAltOp;
 input[25:0]		istrJBits;
 
-output[5:0]		idRegN;
-output[5:0]		idRegM;
-output[5:0]		idRegO;
+`output_gpr		idRegN;
+`output_gpr		idRegM;
+`output_gpr		idRegO;
 output[32:0]	idImm;
-output[7:0]		idUCmd;
-output[7:0]		idUIxt;
+output[8:0]		idUCmd;
+output[8:0]		idUIxt;
 output[3:0]		idUFl;
 
 reg[31:0]		hzistrWord;

@@ -3,7 +3,10 @@
 
 // `define jx2_cfg_75mhz
 
-// `define jx2_enable_gpr48		//Enable R32..R47
+// `define jx2_enable_gpr48		//Enable R32..R63 (SIMD)
+`define jx2_enable_xgpr		//Enable R32..R63 and XGPR ops
+
+`define jx2_enable_pred_s	//SR.S Predication
 
 `define	jx2_use_fpu_w			//use wide FPU (GSVX)
 `define	jx2_fcmp_alu			//do FCMP via ALU
@@ -21,7 +24,7 @@
 
 `define jx2_gprs_mergecm		//Merge Control-Regs into GPR Ports
 
-`define jx2_isr2stage			//Use 2-stage ISR initiation
+// `define jx2_isr2stage			//Use 2-stage ISR initiation
 
 `define jx2_enable_pmort		//Enable Morton Shuffle
 

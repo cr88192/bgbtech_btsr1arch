@@ -57,24 +57,24 @@ module ExEXB1(
 
 input			clock;
 input			reset;
-input[7:0]		opUCmd;
-input[7:0]		opUIxt;
+input[8:0]		opUCmd;
+input[8:0]		opUIxt;
 output[1:0]		exHold;
-output[7:0]		opUCmdOut;
+output[8:0]		opUCmdOut;
 input [1:0]		idLane;
 
-input[5:0]		regIdRs;		//Source A, ALU / Base
-input[5:0]		regIdRt;		//Source B, ALU / Index
-input[5:0]		regIdRm;		//Source C, MemStore
+`input_gpr		regIdRs;		//Source A, ALU / Base
+`input_gpr		regIdRt;		//Source B, ALU / Index
+`input_gpr		regIdRm;		//Source C, MemStore
 input[63:0]		regValRs;		//Source A Value
 input[63:0]		regValRt;		//Source B Value
 input[63:0]		regValRm;		//Source C Value
 
 input[63:0]		regValXs;		//Source C Value
 
-output[5:0]		regIdRn1;		//Destination ID (EX1)
+`output_gpr		regIdRn1;		//Destination ID (EX1)
 output[63:0]	regValRn1;		//Destination Value (EX1)
-output[5:0]		heldIdRn1;		//Held Destination ID (EX1)
+`output_gpr		heldIdRn1;		//Held Destination ID (EX1)
 
 input[32:0]		regValImm;		//Immediate (Decode)
 input[47:0]		regValPc;
@@ -83,9 +83,9 @@ input			opBraFlush;
 input[63:0]		regInSr;
 
 
-reg[ 5:0]		tRegIdRn1;		//Destination ID (EX1)
+`reg_gpr		tRegIdRn1;		//Destination ID (EX1)
 reg[63:0]		tRegValRn1;		//Destination Value (EX1)
-reg[ 5:0]		tHeldIdRn1;		//Destination ID (EX1)
+`reg_gpr		tHeldIdRn1;		//Destination ID (EX1)
 
 assign	regIdRn1	= tRegIdRn1;		//Destination ID (EX1)
 assign	regValRn1	= tRegValRn1;		//Destination Value (EX1)
@@ -150,7 +150,7 @@ reg			tOpEnable;
 
 (* max_fanout = 50 *)
 	reg[5:0]	tOpUCmd1;
-reg[7:0]	tOpUCmd2;
+reg[8:0]	tOpUCmd2;
 
 assign		opUCmdOut = tOpUCmd2;
 
@@ -176,17 +176,23 @@ begin
 	tValOutDfl		= UV64_XX;
 	tDoOutDfl		= 0;
 
-`ifndef def_true
-	casez( { opBraFlush, opUCmd[7:6] } )
-		3'b000: 	tOpEnable = 1;
-		3'b001: 	tOpEnable = 0;
-		3'b010: 	tOpEnable = regInSr[0];
-		3'b011: 	tOpEnable = !regInSr[0];
-		3'b1zz: 	tOpEnable = 0;
+`ifdef jx2_enable_pred_s
+	casez( { opBraFlush, opUCmd[8:6], regInSr[1:0] } )
+		6'b0000zz: 	tOpEnable = 1;
+		6'b0001zz: 	tOpEnable = 0;
+		6'b0010z0: 	tOpEnable = 0;
+		6'b0010z1: 	tOpEnable = 1;
+		6'b0011z0: 	tOpEnable = 1;
+		6'b0011z1: 	tOpEnable = 0;
+		6'b01000z: 	tOpEnable = 0;
+		6'b01001z: 	tOpEnable = 1;
+		6'b01010z: 	tOpEnable = 1;
+		6'b01011z: 	tOpEnable = 0;
+		6'b0110zz: 	tOpEnable = 1;
+		6'b0111zz: 	tOpEnable = 1;
+		6'b1zzzzz: 	tOpEnable = 0;
 	endcase
-`endif
-
-`ifdef def_true
+`else
 	casez( { opBraFlush, opUCmd[7:6], regInSr[0] } )
 		4'b000z: 	tOpEnable = 1;
 		4'b001z: 	tOpEnable = 0;
@@ -225,7 +231,8 @@ begin
 		end
 		JX2_UCMD_MOV_MR: begin
 			tSlotUSup		= 1;
-			if(opUIxt[7:6]==JX2_IUC_WX)
+//			if(opUIxt[7:6]==JX2_IUC_WX)
+			if(opUIxt[8:6]==JX2_IUC_WX)
 				tSlotUSup	= 0;
 //			tHeldIdRn1	= regIdRm;
 			tRegHeld		= 1;

@@ -35,6 +35,20 @@ Single register forms in 30zz..37zz will be mirrored in 38zz..3Fzz, but will enc
 
 The instructions in the F0zz..F3zz range will repeat in F4zz..F7zz (Parallel), E0zz..E3zz (Execute if True), and E4zz..E7zz (Execute if False) ranges.
 
+The instructions in the F8zz/F9zz range will repeat in FCzz/FDzz (Parallel), E8zz/E9zz (Execute if True), and ECzz/EDzz (Execute if False) ranges.
+
+
+The 7wnm_ZeoZ range will repeat the F0nm_ZeoZ range, just with the register fields extended to 6 bits, and the high bit of W will encode the WEX flag.
+
+The 9wnm_Zeii range will repeat the F2nm_Zeii and F1nm_Zeii and ranges, with 6 bit register IDs, just with Wi working as a range selector.
+
+The FEii_iiii-Fzzz_zzzz space will extend the immediate field by 24 bits for encodings which have an immediate. 'FE' or 'FE-FE' may be used as a shorthand for encodings which have one or two jumbo prefixes.
+
+The FFw0_0pii-Fzzz_zzzz space (W0) will repeat the entire 32-bit encoding space, just with registers expanded to 6 bits, and any immediate fields extended by 8 bits (MBZ for instructions which do not have an immediate field).
+
+Given the same base instructions apply to every sub-range, typically only those in the base ranges will be listed, except when the sub-range instruction differs from the base-range instruction.
+
+
 
 Immediates may have a suffix to indicate how the value is extended:
 * u: Value is extended with zeroes.
@@ -63,6 +77,11 @@ WEX: ADC will only update SR.T in Lane 1. If an ADC is in another lane, the stat
 * F2nm_1gjj  ADD		Rm, #imm9n, Rn		//
 * F84n_iiii  ADD		#imm16s, Rn
 * F85n_iiii  ADD		#imm16s, Rk
+
+* FE-FE F84n_iiii  ADD	#imm64, Rn		//R0 ..R15
+* FE-FE F85n_iiii  ADD	#imm64, Rk		//R16..R31
+* FE-FE F86n_iiii  ADD	#imm64, Rk		//R32..R47
+* FE-FE F87n_iiii  ADD	#imm64, Rk		//R48..R63
 
 Add the source and destination values and store the result in the destination register.
 
@@ -102,6 +121,8 @@ Perform a bitwise AND of the source and destination values and store the result 
 * 32n3       JF		Rn
 * F023_3en0  JF		Rn					//Fix32
 
+* FFw0_0ddd_F0dd_Fddd  BF	(PC, Disp33s)
+
 Branch if False (SR.T is 0).
 The target address is computed and PC is updated to the new address if the condition is met.
 
@@ -118,7 +139,8 @@ This instruction is only allowed in Lane 1.
 * 32n0       JMP		Rn
 * F020_3en0  JMP		Rn					//Fix32
 
-* FEjj_jjjj_F202_C4jj	BRA		(PC, disp33s)
+* FEjj_jjjj_F202_C4jj /	BRA		(PC, disp33s)
+* FFw0_0ddd_F0dd_Cddd	BRA		(PC, Disp33s)
 * FFjj_jjjj_FAjj_jjjj	JMP		#abs48		//Abs48 Branch
 
 Branch to Address.
@@ -151,7 +173,9 @@ The BREAK1/2/3 forms overlap with MOV.B, but will be regarded as invalid special
 * 32n1       JSR		Rn
 * F021_3en0  JSR		Rn					//Fix32
 
-* FEjj_jjjj_F202_CCjj	BSR		(PC, disp33s)
+* FEjj_jjjj_F202_CCjj /	BSR		(PC, disp33s)
+* FFw0_0ddd_F0dd_Dddd	BSR		(PC, Disp33s)
+
 * FFjj_jjjj_FBjj_jjjj	JSR		#abs48			//Abs48 Call
 
 Branch to subroutine.
@@ -175,6 +199,8 @@ This instruction is only allowed in Lane 1.
 
 * 32n2       JT		Rn
 * F022_3en0  JT		Rn					//Fix32
+
+* FFw0_0ddd_F0dd_Eddd  BT	(PC, Disp33s)
 
 Branch if True (SR.T is 1).
 The target address is computed and PC is updated to the new address if the condition is met.
@@ -234,7 +260,8 @@ These instructions are only allowed in Lane 1.
 * 2Dnj       CMPEQ		#imm4n, Rn
 * 6Cnj       CMPEQ		#imm4u, Rk
 * 6Dnj       CMPEQ		#imm4n, Rk
-* F0nm_1gC9  CMPEQ		Rm, Rn
+* F0nm_1gC9  CMPEQ		Rm, Rn			//E.i=0, Update SR.T
+* F0nm_1gC9  CMPEQS		Rm, Rn			//E.i=1, Update SR.S (PRED_S)
 * F2nC_Cgjj  CMPEQ		#imm9u, Rn
 * F2nD_Cgjj  CMPEQ		#imm9n, Rn
 
@@ -244,79 +271,93 @@ This provides both zero and one extended immediates, allowing a direct immediate
 
 
 This updates SR.T based on the result of the comparison.
-The contents of SR.S, and SR.PQRO are undefined following this operation.
+For the 2R form, if E.i is Set, SR.S is updated and SR.T is unchanged.
+For the 2RI form, if W.m is Set, SR.S is updated and SR.T is unchanged.
+The values of the other bits are unchanged by this operation.
 
 This instruction is only allowed in Lane 1.
 
 
 === CMPGE ===
 
-* 1Fnm       CMPGE	Rm, Rn
-* 2Fnj       CMPGE	#imm4u, Rn
-* 6Fnj       CMPGE	#imm4u, Rk
-* F0nm_1gEC  CMPGE	Rm, Rn				//Signed Rn GE Rm
-* F2nA_Cgjj  CMPGE	#imm9u, Rn
-* F2nB_Cgjj  CMPGE	#imm9n, Rn
+* 1Fnm       CMPGE		Rm, Rn
+* 2Fnj       CMPGE		#imm4u, Rn
+* 6Fnj       CMPGE		#imm4u, Rk
+* F0nm_1gEC  CMPGE		Rm, Rn			//E.i=0, Signed Rn GE Rm
+* F0nm_1gEC  CMPGES		Rm, Rn			//E.i=1, Update SR.S (PRED_S)
+* F2nA_Cgjj  CMPGE		#imm9u, Rn
+* F2nB_Cgjj  CMPGE		#imm9n, Rn
 
 Compare if Rn is Greater or Equal to the immediate.
 
 Only exists for immediates because this can be easily emulated for the two-register forms via swapping the registers and inverting the branch condition.
 
 This updates SR.T based on the result of the comparison.
-The contents of SR.S, and SR.PQRO are undefined following this operation.
+For the 2R form, if E.i is Set, SR.S is updated and SR.T is unchanged.
+For the 2RI form, if W.m is Set, SR.S is updated and SR.T is unchanged.
+The values of the other bits are unchanged by this operation.
 
 This instruction is only allowed in Lane 1.
 
 
 === CMPGT ===
 
-* 1Enm       CMPGT	Rm, Rn
-* 2Enj       CMPGT	#imm4u, Rn
-* 6Enj       CMPGT	#imm4u, Rk
-* F0nm_1gE9  CMPGT	Rm, Rn
-* F2nE_Cgjj  CMPGT	#imm9u, Rn
-* F2nF_Cgjj  CMPGT	#imm9n, Rn
+* 1Enm       CMPGT		Rm, Rn
+* 2Enj       CMPGT		#imm4u, Rn
+* 6Enj       CMPGT		#imm4u, Rk
+* F0nm_1gE9  CMPGT		Rm, Rn			//E.i=0
+* F0nm_1gE9  CMPGTS		Rm, Rn			//E.i=1, Update SR.S (PRED_S)
+* F2nE_Cgjj  CMPGT		#imm9u, Rn
+* F2nF_Cgjj  CMPGT		#imm9n, Rn
 
 Signed Rn GT Rm.
 
 Compare if destination is greater than the source using a signed comparison.
 
 This updates SR.T based on the result of the comparison.
-The contents of SR.S, and SR.PQRO are undefined following this operation.
+For the 2R form, if E.i is Set, SR.S is updated and SR.T is unchanged.
+For the 2RI form, if W.m is Set, SR.S is updated and SR.T is unchanged.
+The values of the other bits are unchanged by this operation.
 
 This instruction is only allowed in Lane 1.
 
 
 === CMPHI ===
 
-* 1Dnm       CMPHI	Rm, Rn
-* F0nm_1gD9  CMPHI	Rm, Rn
-* F2n8_Cgjj  CMPHI	#imm9u, Rn
-* F2n8_Cgjj  CMPHI	#imm9n, Rn
+* 1Dnm       CMPHI		Rm, Rn
+* F0nm_1gD9  CMPHI		Rm, Rn			//E.i=0
+* F0nm_1gD9  CMPHIS		Rm, Rn			//E.i=1, Update SR.S (PRED_S)
+* F2n8_Cgjj  CMPHI		#imm9u, Rn
+* F2n8_Cgjj  CMPHI		#imm9n, Rn
 
 Unsigned Rn GT Rm.
 
 Compare if destination is greater than the source using an unsigned comparison.
 
 This updates SR.T based on the result of the comparison.
-The contents of SR.S, and SR.PQRO are undefined following this operation.
+For the 2R form, if E.i is Set, SR.S is updated and SR.T is unchanged.
+For the 2RI form, if W.m is Set, SR.S is updated and SR.T is unchanged.
+The values of the other bits are unchanged by this operation.
 
 This instruction is only allowed in Lane 1.
 
 
 === CMPHS ===
 
-* 36nD       CMPHS	DLR, Rn
-* F0nm_1gFC  CMPHS	Rm, Rn				//Unsigned Rn GE Rm
-* F2n6_Cgjj  CMPHS	#imm9u, Rn
-* F2n7_Cgjj  CMPHS	#imm9n, Rn
+* 36nD       CMPHS		DLR, Rn
+* F0nm_1gFC  CMPHS		Rm, Rn			//E.i=0, Unsigned Rn GE Rm
+* F0nm_1gFC  CMPHSS		Rm, Rn			//E.i=1, Update SR.S (PRED_S)
+* F2n6_Cgjj  CMPHS		#imm9u, Rn
+* F2n7_Cgjj  CMPHS		#imm9n, Rn
 
 Unsigned (Rn GE DLR)
 
 Compare if destination is greater than or equal to the source using an unsigned comparison.
 
 This updates SR.T based on the result of the comparison.
-The contents of SR.S, and SR.PQRO are undefined following this operation.
+For the 2R form, if E.i is Set, SR.S is updated and SR.T is unchanged.
+For the 2RI form, if W.m is Set, SR.S is updated and SR.T is unchanged.
+The values of the other bits are unchanged by this operation.
 
 This instruction is only allowed in Lane 1.
 
@@ -324,7 +365,8 @@ This instruction is only allowed in Lane 1.
 === CMPQEQ ===
 
 * 5Fnm       CMPQEQ		Rm, Rn
-* F0nm_1GC9  CMPQEQ		Rm, Rn
+* F0nm_1GC9  CMPQEQ		Rm, Rn			//E.i=0
+* F0nm_1GC9  CMPQEQS	Rm, Rn			//E.i=1, Update SR.S (PRED_S)
 * F2nC_CGjj  CMPQEQ		#imm9u, Rn
 * F2nD_CGjj  CMPQEQ		#imm9n, Rn
 
@@ -334,14 +376,17 @@ This provides both zero and one extended immediates, allowing a direct immediate
 
 
 This updates SR.T based on the result of the comparison.
-The contents of SR.S, and SR.PQRO are undefined following this operation.
+For the 2R form, if E.i is Set, SR.S is updated and SR.T is unchanged.
+For the 2RI form, if W.m is Set, SR.S is updated and SR.T is unchanged.
+The values of the other bits are unchanged by this operation.
 
 This instruction is only allowed in Lane 1.
 
 
 === CMPQGE ===
 
-* F0nm_1GEC  CMPQGE		Rm, Rn
+* F0nm_1GEC  CMPQGE		Rm, Rn			//E.i=0
+* F0nm_1GEC  CMPQGES	Rm, Rn			//E.i=1, Update SR.S (PRED_S)
 * F2nA_CGjj  CMPQGE		#imm9u, Rn
 * F2nB_CGjj  CMPQGE		#imm9n, Rn
 
@@ -350,7 +395,9 @@ Compare if Rn is Greater or Equal to the immediate.
 Only exists for immediates because this can be easily emulated for the two-register forms via swapping the registers and inverting the branch condition.
 
 This updates SR.T based on the result of the comparison.
-The contents of SR.S, and SR.PQRO are undefined following this operation.
+For the 2R form, if E.i is Set, SR.S is updated and SR.T is unchanged.
+For the 2RI form, if W.m is Set, SR.S is updated and SR.T is unchanged.
+The values of the other bits are unchanged by this operation.
 
 This instruction is only allowed in Lane 1.
 
@@ -358,7 +405,8 @@ This instruction is only allowed in Lane 1.
 === CMPQGT ===
 
 * 5Enm       CMPQGT		Rm, Rn
-* F0nm_1GE9  CMPQGT		Rm, Rn
+* F0nm_1GE9  CMPQGT		Rm, Rn			//E.i=0
+* F0nm_1GE9  CMPQGTS	Rm, Rn			//E.i=1, Update SR.S (PRED_S)
 * F2nE_Cejj  CMPQGT		#imm9u, Rn
 * F2nF_Cejj  CMPQGT		#imm9n, Rn
 
@@ -367,7 +415,9 @@ Signed Rn GT Rm.
 Compare if destination is greater than the source using a signed comparison.
 
 This updates SR.T based on the result of the comparison.
-The contents of SR.S, and SR.PQRO are undefined following this operation.
+For the 2R form, if E.i is Set, SR.S is updated and SR.T is unchanged.
+For the 2RI form, if W.m is Set, SR.S is updated and SR.T is unchanged.
+The values of the other bits are unchanged by this operation.
 
 This instruction is only allowed in Lane 1.
 
@@ -375,7 +425,8 @@ This instruction is only allowed in Lane 1.
 === CMPQHI ===
 
 * 5Dnm       CMPQHI		Rm, Rn
-* F0nm_1GD9  CMPQHI		Rm, Rn
+* F0nm_1GD9  CMPQHI		Rm, Rn			//E.i=0
+* F0nm_1GD9  CMPQHIS	Rm, Rn			//E.i=1, Update SR.S (PRED_S)
 * F2n8_CGjj  CMPQHI		#imm9u, Rn
 * F2n8_CGjj  CMPQHI		#imm9n, Rn
 
@@ -384,14 +435,17 @@ Unsigned Rn GT Rm.
 Compare if destination is greater than the source using an unsigned comparison.
 
 This updates SR.T based on the result of the comparison.
-The contents of SR.S, and SR.PQRO are undefined following this operation.
+For the 2R form, if E.i is Set, SR.S is updated and SR.T is unchanged.
+For the 2RI form, if W.m is Set, SR.S is updated and SR.T is unchanged.
+The values of the other bits are unchanged by this operation.
 
 This instruction is only allowed in Lane 1.
 
 
 === CMPQHS ===
 
-* F0nm_1GFC  CMPQHS		Rm, Rn
+* F0nm_1GFC  CMPQHS		Rm, Rn			//E.i=0
+* F0nm_1GFC  CMPQHSS	Rm, Rn			//E.i=1, Update SR.S (PRED_S)
 * F2n6_CGjj  CMPQHS		#imm9u, Rn
 * F2n7_CGjj  CMPQHS		#imm9n, Rn
 
@@ -400,7 +454,9 @@ Unsigned (Rn GE DLR)
 Compare if destination is greater than or equal to the source using an unsigned comparison.
 
 This updates SR.T based on the result of the comparison.
-The contents of SR.S, and SR.PQRO are undefined following this operation.
+For the 2R form, if E.i is Set, SR.S is updated and SR.T is unchanged.
+For the 2RI form, if W.m is Set, SR.S is updated and SR.T is unchanged.
+The values of the other bits are unchanged by this operation.
 
 This instruction is only allowed in Lane 1.
 
@@ -677,6 +733,11 @@ Targeting GPRs:
 * F81n_iiii  LDIZ		#imm16u, Rk
 * F82n_iiii  LDIN		#imm16n, Rn
 * F83n_iiii  LDIN		#imm16n, Rk
+
+* FE-FE F80n_iiii  LDI	#imm64, Rn		//R0 ..R15
+* FE-FE F81n_iiii  LDI	#imm64, Rk		//R16..R31
+* FE-FE F82n_iiii  LDI	#imm64, Rk		//R32..R47
+* FE-FE F83n_iiii  LDI	#imm64, Rk		//R48..R63
 
 Load an 8, 12, or 24 bit value into DLR.
 Load an 8, 10, 16, or 32 bit value into a GPR.
@@ -1440,11 +1501,16 @@ A zero result will cause SR.T to be set, and a nonzero result will cause SR.T to
 
 This operation will only test the low 32 bits.
 
+For the 2R form, if E.i is Set, SR.S is updated and SR.T is unchanged.
+For the 2RI form, if W.m is Set, SR.S is updated and SR.T is unchanged.
+The values of the other bits are unchanged by this operation.
+
 
 === TSTQ ===
 
 * 54nm       TSTQ	Rm, Rn
-* F0nm_1G49  TSTQ	Rm, Rn				//SR.T=!(Rm&Rn)
+* F0nm_1G49  TSTQ	Rm, Rn				//SR.T=!(Rm&Rn), E.i=0
+* F0nm_1G49  TSTQS	Rm, Rn				//SR.S=!(Rm&Rn), E.i=1
 * F2n4_CGjj  TSTQ	#imm9u, Rn			//SR.T=!(Rm&Rn)
 * F2n5_CGjj  TSTQ	#imm9n, Rn			//SR.T=!(Rm&Rn)
 
@@ -1455,6 +1521,10 @@ Perform a bitwise AND of the source and destination registers, updating SR.T bas
 A zero result will cause SR.T to be set, and a nonzero result will cause SR.T to be cleared.
 
 This operation will test all 64 bits.
+
+For the 2R form, if E.i is Set, SR.S is updated and SR.T is unchanged.
+For the 2RI form, if W.m is Set, SR.S is updated and SR.T is unchanged.
+The values of the other bits are unchanged by this operation.
 
 
 === WEXMD (WEX) ===
@@ -1648,7 +1718,9 @@ Packed Shuffle of DWord element, operating on a logical 128-bit register.
 === PSCHxx.W ===
 
 * F0nm_2goA  PSCHEQ.W	Rm, Ro, Rn
+* F0nm_2GoA  PSCHEQ.B	Rm, Ro, Rn
 * F0nm_2goB  PSCHNE.W	Rm, Ro, Rn
+* F0nm_2GoB  PSCHNE.B	Rm, Ro, Rn
 
 Checks if the elements in Rm match those in Ro, storing the index of the first match into Rn.
 
@@ -1656,6 +1728,8 @@ SR.T is updated based on whether or not any match was found.
 
 PSCHEQ will update Rn and SR.T based on the first matching element.
 PSCHNE will update Rn and SR.T based on the first non-matching element.
+
+Elements may be either Packed Word or Packed Byte.
 
 
 

@@ -23,7 +23,7 @@ Registers:
 
 PC/LR:
 * Low 48 bits: Address
-* High 48 bits: Aliased with Predicate and Mode flags.
+* High 16 bits: Aliased with Predicate and Mode flags.
 
 
 Instructions will be 32-bit:
@@ -47,8 +47,8 @@ Say, for example, 5 wide:
 * Lane 1, Everything
 * Lane 2, Excludes Branches
 * Lane 3, Excludes Mem-Ops or FPU
-* Lane 4, ALU Only (Or Jumbo Prefix)
-* Lane 5, ALU Only (Or Jumbo Prefix)
+* Lane 4, ALU Only (or Jumbo Prefix)
+* Lane 5, ALU Only (or Jumbo Prefix)
 * Lane 6 (Virtual), Jumbo Only
 * Lane 7 (Virtual), Jumbo Only
 * Lane 8 (Virtual), Jumbo Only

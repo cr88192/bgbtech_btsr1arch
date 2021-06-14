@@ -10,13 +10,13 @@ module RegSpr_3W(
 
 input			clock;
 input			reset;
-input[5:0]		regId;
+`input_gpr		regId;
 output[63:0]	regVal;
-input[5:0]		wrIdA;
+`input_gpr		wrIdA;
 input[63:0]		wrValA;
-input[5:0]		wrIdB;
+`input_gpr		wrIdB;
 input[63:0]		wrValB;
-input[5:0]		wrIdC;
+`input_gpr		wrIdC;
 input[63:0]		wrValC;
 input[63:0]		regInVal;
 input			regHold;

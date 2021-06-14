@@ -26,7 +26,7 @@
 int BJX2_DecodeOpcode_DecF8(BJX2_Context *ctx,
 	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2, u32 jbits)
 {
-	s32 imm16u, imm16n, imm16s;
+	s64 imm16u, imm16n, imm16s;
 	int rn_i16;
 	int ret;
 	
@@ -39,12 +39,24 @@ int BJX2_DecodeOpcode_DecF8(BJX2_Context *ctx,
 //	if(opw1&0x0100)
 //		rn_i16+=16;
 	rn_i16=opw1&31;
+	if(jbits&0x40000000U)rn_i16+=32;
 	
 	rn_i16=BJX2_RemapGPR(ctx, rn_i16);
 
 	imm16u=(u16)opw2;
 	imm16n=opw2|(~65535);
 	imm16s=(s16)opw2;
+
+	if(jbits&0x02000000U)
+	{
+		imm16s=(u16)opw2;
+		imm16s|=((s64)(jbits&0xFFFF))<<16;
+		if(jbits&0x10000000U)
+			imm16s|=0xFFFFFFFF00000000LL;
+		
+		imm16u=imm16s;
+		imm16n=imm16s;
+	}
 
 	ret=0;
 	switch((opw1>>4)&15)

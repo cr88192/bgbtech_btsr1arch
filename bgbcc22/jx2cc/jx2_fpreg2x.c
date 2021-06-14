@@ -214,24 +214,24 @@ int BGBCC_JX2C_EmitReloadSavedFrameFpReg(
 }
 
 #if 1
-const byte bgbcc_jx2_fcachereg[16]={
+const short bgbcc_jx2_fcachereg[16]={
 	BGBCC_SH_REG_FR15, BGBCC_SH_REG_FR14,
 	BGBCC_SH_REG_FR13, BGBCC_SH_REG_FR12,
 	BGBCC_SH_REG_FR11, BGBCC_SH_REG_FR10,
 	BGBCC_SH_REG_FR9, BGBCC_SH_REG_FR8,
 	BGBCC_SH_REG_FR7, BGBCC_SH_REG_FR6,
 	BGBCC_SH_REG_FR5, BGBCC_SH_REG_FR4	};
-const byte bgbcc_jx2_dcachereg[16]={
+const short bgbcc_jx2_dcachereg[16]={
 	BGBCC_SH_REG_DR15, BGBCC_SH_REG_DR14,
 	BGBCC_SH_REG_DR13, BGBCC_SH_REG_DR12,
 	BGBCC_SH_REG_DR11, BGBCC_SH_REG_DR10,
 	BGBCC_SH_REG_DR9, BGBCC_SH_REG_DR8,
 	BGBCC_SH_REG_DR7, BGBCC_SH_REG_DR6,
 	BGBCC_SH_REG_DR5, BGBCC_SH_REG_DR4 };
-const byte bgbcc_jx2_fmaxreg=8;
-const byte bgbcc_jx2_fmaxreg_lf=12;
+const short bgbcc_jx2_fmaxreg=8;
+const short bgbcc_jx2_fmaxreg_lf=12;
 
-const byte bgbcc_jx2_fcachereg_efpr[32]={
+const short bgbcc_jx2_fcachereg_efpr[32]={
 	BGBCC_SH_REG_FR15, BGBCC_SH_REG_FR14,
 	BGBCC_SH_REG_FR13, BGBCC_SH_REG_FR12,
 	BGBCC_SH_REG_FR11, BGBCC_SH_REG_FR10,
@@ -245,7 +245,7 @@ const byte bgbcc_jx2_fcachereg_efpr[32]={
 	BGBCC_SH_REG_FR23, BGBCC_SH_REG_FR22,
 	BGBCC_SH_REG_FR21, BGBCC_SH_REG_FR20,
 	};
-const byte bgbcc_jx2_dcachereg_efpr[32]={
+const short bgbcc_jx2_dcachereg_efpr[32]={
 	BGBCC_SH_REG_DR15, BGBCC_SH_REG_DR14,
 	BGBCC_SH_REG_DR13, BGBCC_SH_REG_DR12,
 	BGBCC_SH_REG_DR11, BGBCC_SH_REG_DR10,
@@ -259,8 +259,8 @@ const byte bgbcc_jx2_dcachereg_efpr[32]={
 	BGBCC_SH_REG_DR23, BGBCC_SH_REG_DR22,
 	BGBCC_SH_REG_DR21, BGBCC_SH_REG_DR20,
 	};
-const byte bgbcc_jx2_fmaxreg_efpr=16;
-const byte bgbcc_jx2_fmaxreg_lf_efpr=24;
+const short bgbcc_jx2_fmaxreg_efpr=16;
+const short bgbcc_jx2_fmaxreg_lf_efpr=24;
 #endif
 
 /* For leaf traces, rotate index to prefer scratch registers.

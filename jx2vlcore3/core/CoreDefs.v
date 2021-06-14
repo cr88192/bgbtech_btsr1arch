@@ -5,6 +5,135 @@
 
 `include "CoreConfig.v"
 
+`ifdef jx2_enable_xgpr
+
+`define		reg_gpr		reg[6:0]
+`define		wire_gpr	wire[6:0]
+`define		input_gpr	input[6:0]
+`define		output_gpr	output[6:0]
+
+parameter[6:0] JX2_GR_GPR_Z		= 7'b0zzzzzz;
+
+parameter[6:0] JX2_GR_R0		= 7'h00;
+parameter[6:0] JX2_GR_R1		= 7'h01;
+parameter[6:0] JX2_GR_R2		= 7'h02;
+parameter[6:0] JX2_GR_R3		= 7'h03;
+parameter[6:0] JX2_GR_R4		= 7'h04;
+parameter[6:0] JX2_GR_R5		= 7'h05;
+parameter[6:0] JX2_GR_R6		= 7'h06;
+parameter[6:0] JX2_GR_R7		= 7'h07;
+parameter[6:0] JX2_GR_R8		= 7'h08;
+parameter[6:0] JX2_GR_R9		= 7'h09;
+parameter[6:0] JX2_GR_R10		= 7'h0A;
+parameter[6:0] JX2_GR_R11		= 7'h0B;
+parameter[6:0] JX2_GR_R12		= 7'h0C;
+parameter[6:0] JX2_GR_R13		= 7'h0D;
+parameter[6:0] JX2_GR_R14		= 7'h0E;
+parameter[6:0] JX2_GR_R15		= 7'h0F;
+parameter[6:0] JX2_GR_R16		= 7'h10;
+parameter[6:0] JX2_GR_R17		= 7'h11;
+parameter[6:0] JX2_GR_R18		= 7'h12;
+parameter[6:0] JX2_GR_R19		= 7'h13;
+parameter[6:0] JX2_GR_R20		= 7'h14;
+parameter[6:0] JX2_GR_R21		= 7'h15;
+parameter[6:0] JX2_GR_R22		= 7'h16;
+parameter[6:0] JX2_GR_R23		= 7'h17;
+parameter[6:0] JX2_GR_R24		= 7'h18;
+parameter[6:0] JX2_GR_R25		= 7'h19;
+parameter[6:0] JX2_GR_R26		= 7'h1A;
+parameter[6:0] JX2_GR_R27		= 7'h1B;
+parameter[6:0] JX2_GR_R28		= 7'h1C;
+parameter[6:0] JX2_GR_R29		= 7'h1D;
+parameter[6:0] JX2_GR_R30		= 7'h1E;
+parameter[6:0] JX2_GR_R31		= 7'h1F;
+
+parameter[6:0] JX2_GR_R32		= 7'h20;
+parameter[6:0] JX2_GR_R33		= 7'h21;
+parameter[6:0] JX2_GR_R34		= 7'h22;
+parameter[6:0] JX2_GR_R35		= 7'h23;
+parameter[6:0] JX2_GR_R36		= 7'h24;
+parameter[6:0] JX2_GR_R37		= 7'h25;
+parameter[6:0] JX2_GR_R38		= 7'h26;
+parameter[6:0] JX2_GR_R39		= 7'h27;
+parameter[6:0] JX2_GR_R40		= 7'h28;
+parameter[6:0] JX2_GR_R41		= 7'h29;
+parameter[6:0] JX2_GR_R42		= 7'h2A;
+parameter[6:0] JX2_GR_R43		= 7'h2B;
+parameter[6:0] JX2_GR_R44		= 7'h2C;
+parameter[6:0] JX2_GR_R45		= 7'h2D;
+parameter[6:0] JX2_GR_R46		= 7'h2E;
+parameter[6:0] JX2_GR_R47		= 7'h2F;
+parameter[6:0] JX2_GR_R48		= 7'h30;
+parameter[6:0] JX2_GR_R49		= 7'h31;
+parameter[6:0] JX2_GR_R50		= 7'h32;
+parameter[6:0] JX2_GR_R51		= 7'h33;
+parameter[6:0] JX2_GR_R52		= 7'h34;
+parameter[6:0] JX2_GR_R53		= 7'h35;
+parameter[6:0] JX2_GR_R54		= 7'h36;
+parameter[6:0] JX2_GR_R55		= 7'h37;
+parameter[6:0] JX2_GR_R56		= 7'h38;
+parameter[6:0] JX2_GR_R57		= 7'h39;
+parameter[6:0] JX2_GR_R58		= 7'h3A;
+parameter[6:0] JX2_GR_R59		= 7'h3B;
+parameter[6:0] JX2_GR_R60		= 7'h3C;
+parameter[6:0] JX2_GR_R61		= 7'h3D;
+parameter[6:0] JX2_GR_R62		= 7'h3E;
+parameter[6:0] JX2_GR_R63		= 7'h3F;
+
+parameter[6:0] JX2_GR_DLR		= 7'h40;
+parameter[6:0] JX2_GR_DHR		= 7'h41;
+
+parameter[6:0] JX2_GR_R8IMMH	= 7'h4C;		//Shift Immed, High Part
+parameter[6:0] JX2_GR_R8IMML	= 7'h4D;		//Shift Immed, Low Part
+parameter[6:0] JX2_GR_JIMM		= 7'h4E;
+parameter[6:0] JX2_GR_SP		= 7'h4F;
+
+parameter[6:0] JX2_GR_PC		= 7'h60;
+parameter[6:0] JX2_GR_LR		= 7'h61;
+parameter[6:0] JX2_GR_SR		= 7'h62;
+parameter[6:0] JX2_GR_VBR		= 7'h63;
+parameter[6:0] JX2_GR_SPC		= 7'h64;
+parameter[6:0] JX2_GR_SSP		= 7'h65;
+parameter[6:0] JX2_GR_GBR		= 7'h66;
+parameter[6:0] JX2_GR_TBR		= 7'h67;
+parameter[6:0] JX2_GR_TTB		= 7'h68;
+parameter[6:0] JX2_GR_TEA		= 7'h69;
+parameter[6:0] JX2_GR_MMCR		= 7'h6A;
+parameter[6:0] JX2_GR_EXSR		= 7'h6B;
+parameter[6:0] JX2_GR_STTB		= 7'h6C;
+parameter[6:0] JX2_GR_KRR		= 7'h6D;
+
+parameter[6:0] JX2_GR_IMM		= 7'h7E;
+parameter[6:0] JX2_GR_ZZR		= 7'h7F;
+
+
+parameter[6:0] JX2_CR_PC		= 7'h60;
+parameter[6:0] JX2_CR_LR		= 7'h61;
+parameter[6:0] JX2_CR_SR		= 7'h62;
+parameter[6:0] JX2_CR_VBR		= 7'h63;
+parameter[6:0] JX2_CR_SPC		= 7'h64;
+parameter[6:0] JX2_CR_SSP		= 7'h65;
+parameter[6:0] JX2_CR_GBR		= 7'h66;
+parameter[6:0] JX2_CR_TBR		= 7'h67;
+parameter[6:0] JX2_CR_TTB		= 7'h68;
+parameter[6:0] JX2_CR_TEA		= 7'h69;
+parameter[6:0] JX2_CR_MMCR		= 7'h6A;
+parameter[6:0] JX2_CR_EXSR		= 7'h6B;
+parameter[6:0] JX2_CR_STTB		= 7'h6C;
+parameter[6:0] JX2_CR_KRR		= 7'h6D;
+
+parameter[6:0] JX2_CR_IMM		= 7'h7E;
+parameter[6:0] JX2_CR_ZZR		= 7'h7F;
+
+`else
+
+`define		reg_gpr		reg[5:0]
+`define		wire_gpr	wire[5:0]
+`define		input_gpr	input[5:0]
+`define		output_gpr	output[5:0]
+
+parameter[5:0] JX2_GR_GPR_Z		= 6'b0zzzzz;
+
 parameter[5:0] JX2_GR_R0		= 6'h00;
 parameter[5:0] JX2_GR_R1		= 6'h01;
 parameter[5:0] JX2_GR_R2		= 6'h02;
@@ -55,6 +184,23 @@ parameter[5:0] JX2_GR_R45		= 6'h2D;
 parameter[5:0] JX2_GR_R46		= 6'h2E;
 parameter[5:0] JX2_GR_R47		= 6'h2F;
 
+parameter[5:0] JX2_GR_R48		= 6'h30;
+parameter[5:0] JX2_GR_R49		= 6'h31;
+parameter[5:0] JX2_GR_R50		= 6'h32;
+parameter[5:0] JX2_GR_R51		= 6'h33;
+parameter[5:0] JX2_GR_R52		= 6'h34;
+parameter[5:0] JX2_GR_R53		= 6'h35;
+parameter[5:0] JX2_GR_R54		= 6'h36;
+parameter[5:0] JX2_GR_R55		= 6'h37;
+parameter[5:0] JX2_GR_R56		= 6'h38;
+parameter[5:0] JX2_GR_R57		= 6'h39;
+parameter[5:0] JX2_GR_R58		= 6'h3A;
+parameter[5:0] JX2_GR_R59		= 6'h3B;
+parameter[5:0] JX2_GR_R60		= 6'h3C;
+parameter[5:0] JX2_GR_R61		= 6'h3D;
+parameter[5:0] JX2_GR_R62		= 6'h3E;
+parameter[5:0] JX2_GR_R63		= 6'h3F;
+
 parameter[5:0] JX2_GR_DLR		= 6'h20;
 parameter[5:0] JX2_GR_DHR		= 6'h21;
 
@@ -100,6 +246,8 @@ parameter[5:0] JX2_CR_KRR		= 6'h3D;
 parameter[5:0] JX2_CR_IMM		= 6'h3E;
 parameter[5:0] JX2_CR_ZZR		= 6'h3F;
 
+`endif
+
 
 parameter[2:0] JX2_SCHM_DLR		= 3'h0;
 parameter[2:0] JX2_SCHM_DHR		= 3'h1;
@@ -108,15 +256,17 @@ parameter[2:0] JX2_SCHM_BP		= 3'h3;
 parameter[2:0] JX2_SCHM_ELR		= 3'h4;
 parameter[2:0] JX2_SCHM_EHR		= 3'h5;
 
-parameter[1:0] JX2_IXC_AL	= 2'b00;	//Execute Always
-parameter[1:0] JX2_IXC_NV	= 2'b01;	//Execute Never
-parameter[1:0] JX2_IXC_CT	= 2'b10;	//Execute If True
-parameter[1:0] JX2_IXC_CF	= 2'b11;	//Execute If False
+parameter[2:0] JX2_IXC_AL	= 3'b000;	//Execute Always
+parameter[2:0] JX2_IXC_NV	= 3'b001;	//Execute Never
+parameter[2:0] JX2_IXC_CT	= 3'b010;	//Execute If True
+parameter[2:0] JX2_IXC_CF	= 3'b011;	//Execute If False
+parameter[2:0] JX2_IXC_CTS	= 3'b100;	//Execute If True (SR.S)
+parameter[2:0] JX2_IXC_CFS	= 3'b101;	//Execute If False (SR.S)
 
-parameter[1:0] JX2_IUC_SC	= 2'b00;	//Scalar
-parameter[1:0] JX2_IUC_WX	= 2'b01;	//Wide
-parameter[1:0] JX2_IUC_WT	= 2'b10;	//Wide+True
-parameter[1:0] JX2_IUC_WF	= 2'b11;	//Wide+False
+parameter[2:0] JX2_IUC_SC	= 3'b000;	//Scalar
+parameter[2:0] JX2_IUC_WX	= 3'b001;	//Wide
+parameter[2:0] JX2_IUC_WT	= 3'b010;	//Wide+True
+parameter[2:0] JX2_IUC_WF	= 3'b011;	//Wide+False
 
 parameter[  3:0] UV4_XX			= 4'hX;	//
 parameter[  4:0] UV5_XX			= 5'hXX;	//
@@ -194,6 +344,12 @@ parameter[15:0] UV16_FF			= 16'hFFFF;	//
 
 parameter[16:0] UV17_00			= 17'h00000;	//
 parameter[16:0] UV17_FF			= 17'h1FFFF;	//
+
+parameter[17:0] UV18_00			= 18'h00000;	//
+parameter[17:0] UV18_FF			= 18'h3FFFF;	//
+
+parameter[18:0] UV19_00			= 19'h00000;	//
+parameter[18:0] UV19_FF			= 19'h7FFFF;	//
 
 parameter[19:0] UV20_00			= 20'h00000;	//
 parameter[19:0] UV20_FF			= 20'hFFFFF;	//
@@ -521,6 +677,7 @@ parameter[5:0] JX2_UCMD_MULW3		= 6'h27;		//Multiply (Word)
 parameter[5:0] JX2_UCMD_ALUW3		= 6'h28;		//ALU, Packed Word (3R)
 
 parameter[5:0] JX2_UCMD_BLINT		= 6'h29;		//Interpolator
+parameter[5:0] JX2_UCMD_ALUB3		= 6'h2A;		//ALU, Packed Byte (3R)
 
 parameter[5:0] JX2_UCMD_BRA_NB		= 6'h2C;		//No Branch
 
@@ -555,6 +712,22 @@ parameter[5:0] JX2_UCIX_ALU_CMPGE	= 6'h0A;		//ALU Command
 parameter[5:0] JX2_UCIX_ALU_CMPEQ	= 6'h0C;		//ALU Command
 parameter[5:0] JX2_UCIX_ALU_CMPHI	= 6'h0D;		//ALU Command
 parameter[5:0] JX2_UCIX_ALU_CMPGT	= 6'h0E;		//ALU Command
+
+parameter[5:0] JX2_UCIX_ALU_TST_S		= 6'h14;		//ALU Command
+parameter[5:0] JX2_UCIX_ALU_CMPNE_S		= 6'h18;		//ALU CMPNE
+parameter[5:0] JX2_UCIX_ALU_CMPHS_S		= 6'h19;		//ALU CMPHS
+parameter[5:0] JX2_UCIX_ALU_CMPGE_S		= 6'h1A;		//ALU CMPGE
+parameter[5:0] JX2_UCIX_ALU_CMPEQ_S		= 6'h1C;		//ALU CMPEQ
+parameter[5:0] JX2_UCIX_ALU_CMPHI_S		= 6'h1D;		//ALU CMPHI
+parameter[5:0] JX2_UCIX_ALU_CMPGT_S		= 6'h1E;		//ALU CMPGT
+
+parameter[5:0] JX2_UCIX_ALU_TSTQ_S		= 6'h34;		//ALU Command
+parameter[5:0] JX2_UCIX_ALU_CMPQNE_S	= 6'h38;		//ALU CMPQNE
+parameter[5:0] JX2_UCIX_ALU_CMPQHS_S	= 6'h39;		//ALU CMPQHS
+parameter[5:0] JX2_UCIX_ALU_CMPQGE_S	= 6'h3A;		//ALU CMPQGE
+parameter[5:0] JX2_UCIX_ALU_CMPQEQ_S	= 6'h3C;		//ALU CMPQEQ
+parameter[5:0] JX2_UCIX_ALU_CMPQHI_S	= 6'h3D;		//ALU CMPQHI
+parameter[5:0] JX2_UCIX_ALU_CMPQGT_S	= 6'h3E;		//ALU CMPQGT
 
 parameter[5:0] JX2_UCIX_ALU_PADDL	= 6'h30;		//Packed ALU ADD
 parameter[5:0] JX2_UCIX_ALU_PSUBL	= 6'h31;		//Packed ALU SUB
@@ -596,6 +769,14 @@ parameter[5:0] JX2_UCIX_ALUW_PSRCHN	= 6'h18;		//Packed Search
 parameter[5:0] JX2_UCIX_ALUW_PSRCHE	= 6'h1C;		//Packed Search
 
 parameter[5:0] JX2_UCIX_ALUW_PCSELT	= 6'h2F;		//Packed CSELT
+
+parameter[5:0] JX2_UCIX_ALUW_PTST	= 6'h34;		//ALU Command
+parameter[5:0] JX2_UCIX_ALUW_PCMPNE	= 6'h38;		//ALU Command
+parameter[5:0] JX2_UCIX_ALUW_PCMPHS	= 6'h39;		//ALU Command
+parameter[5:0] JX2_UCIX_ALUW_PCMPGE	= 6'h3A;		//ALU Command
+parameter[5:0] JX2_UCIX_ALUW_PCMPEQ	= 6'h3C;		//ALU Command
+parameter[5:0] JX2_UCIX_ALUW_PCMPHI	= 6'h3D;		//ALU Command
+parameter[5:0] JX2_UCIX_ALUW_PCMPGT	= 6'h3E;		//ALU Command
 
 parameter[5:0] JX2_UCIX_PUSH_GR		= 6'h00;		//GPR
 parameter[5:0] JX2_UCIX_PUSH_CR		= 6'h01;		//Control Reg
@@ -739,10 +920,10 @@ parameter[5:0] JX2_UCIX_FPU_CMPGE	= 6'h0A;		//ALU Command
 parameter[5:0] JX2_UCIX_FPU_CMPEQ	= 6'h0C;		//ALU Command
 parameter[5:0] JX2_UCIX_FPU_CMPGT	= 6'h0E;		//ALU Command
 
-parameter[5:0] JX2_UCIX_FPU_CMPNE_G	= 6'h18;		//ALU Command
-parameter[5:0] JX2_UCIX_FPU_CMPGE_G	= 6'h1A;		//ALU Command
-parameter[5:0] JX2_UCIX_FPU_CMPEQ_G	= 6'h1C;		//ALU Command
-parameter[5:0] JX2_UCIX_FPU_CMPGT_G	= 6'h1E;		//ALU Command
+// parameter[5:0] JX2_UCIX_FPU_CMPNE_G	= 6'h18;		//ALU Command
+// parameter[5:0] JX2_UCIX_FPU_CMPGE_G	= 6'h1A;		//ALU Command
+// parameter[5:0] JX2_UCIX_FPU_CMPEQ_G	= 6'h1C;		//ALU Command
+// parameter[5:0] JX2_UCIX_FPU_CMPGT_G	= 6'h1E;		//ALU Command
 
 parameter[5:0] JX2_UCIX_FPU_CMPXNE	= 6'h28;		//ALU Command
 parameter[5:0] JX2_UCIX_FPU_CMPXGE	= 6'h2A;		//ALU Command

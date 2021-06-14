@@ -56,13 +56,11 @@ Basic C ABI:
 
 Note that R16..R19 may be stomped during prolog and epilog sequences.
 
-Extended Xn Registers:
-* X32..X46: / Scratch
-* X48..X62: / Callee Preserve
-* X32..X38: Scratch
-* X40..X46: Callee Preserve
-* X48..X54: Scratch
-* X56..X62: Callee Preserve
+Extended Rn / Xn Registers:
+* R32..R39 | X32..X38: Scratch
+* R40..R47 | X40..X46: Callee Preserve
+* R48..R55 | X48..X54: Scratch
+* R56..R63 | X56..X62: Callee Preserve
 
 If insufficient free registers exist to pass an argument, it and any following arguments of the same class will be passed on the stack. The stack will not have any spill space.
 

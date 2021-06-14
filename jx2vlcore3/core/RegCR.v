@@ -39,18 +39,18 @@ input			clock;
 input			reset;
 input			hold;
 
-input[5:0]		regIdCm;		//Source C, MemStore
+`input_gpr		regIdCm;		//Source C, MemStore
 output[63:0]	regValCm;
 
-input[5:0]		regIdCn1;		//Destination ID
+`input_gpr		regIdCn1;		//Destination ID
 input[63:0]		regValCn1;		//Destination Value
-input[5:0]		regIdCn2;		//Destination ID
+`input_gpr		regIdCn2;		//Destination ID
 input[63:0]		regValCn2;		//Destination Value
 
 input			regEx1Flush;
 input			regEx2Flush;
 
-input[5:0]		regIdCn3;		//Destination ID
+`input_gpr		regIdCn3;		//Destination ID
 input[63:0]		regValCn3;		//Destination Value
 input			regEx3Flush;
 
@@ -129,7 +129,7 @@ reg			tValCmZz;
 
 reg			tIsIsrEdge;
 
-reg[5:0]		regIdCn2B;			//Destination ID
+`reg_gpr		regIdCn2B;			//Destination ID
 reg[63:0]		regValCn2B;			//Destination Value
 reg[47:0]		regValCn2B_48b;		//Destination Value
 

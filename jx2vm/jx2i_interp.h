@@ -516,6 +516,9 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_PSTCM8SH		0xFE		//
 #define BJX2_NMID_PSTCM8UH		0xFF		//
 
+#define BJX2_NMID_PSCHEQB		0x100		//
+#define BJX2_NMID_PSCHNEB		0x101		//
+
 
 #define BJX2_FMID_NONE			0x00		//?
 #define BJX2_FMID_REG			0x01		//Rn

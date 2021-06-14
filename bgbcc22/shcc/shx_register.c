@@ -614,30 +614,30 @@ int BGBCC_SHXC_EmitReloadSavedFrameReg(
 }
 
 #if 0
-// const byte bgbcc_shx_cachereg[6]={ 13, 11, 10, 9, 8, 255 };
-// const byte bgbcc_shx_cachereg[8]={ 14, 13, 12, 11, 10, 9, 8, 255 };
-const byte bgbcc_shx_cachereg[8]={
+// const short bgbcc_shx_cachereg[6]={ 13, 11, 10, 9, 8, 255 };
+// const short bgbcc_shx_cachereg[8]={ 14, 13, 12, 11, 10, 9, 8, 255 };
+const short bgbcc_shx_cachereg[8]={
 	BGBCC_SH_REG_R14, BGBCC_SH_REG_R13,
 	BGBCC_SH_REG_R12, BGBCC_SH_REG_R11,
 	BGBCC_SH_REG_R10, BGBCC_SH_REG_R9,
 	BGBCC_SH_REG_R8, BGBCC_SH_REG_ZZR };
-const byte bgbcc_shx_jcachereg[8]={
+const short bgbcc_shx_jcachereg[8]={
 	BGBCC_SH_REG_RD14, BGBCC_SH_REG_RD13,
 	BGBCC_SH_REG_RD12, BGBCC_SH_REG_RD11,
 	BGBCC_SH_REG_RD10, BGBCC_SH_REG_RD9,
 	BGBCC_SH_REG_RD8, BGBCC_SH_REG_ZZR };
-const byte bgbcc_shx_qcachereg[8]={
+const short bgbcc_shx_qcachereg[8]={
 	BGBCC_SH_REG_RQ14, BGBCC_SH_REG_RQ13,
 	BGBCC_SH_REG_RQ12, BGBCC_SH_REG_RQ11,
 	BGBCC_SH_REG_RQ10, BGBCC_SH_REG_RQ9,
 	BGBCC_SH_REG_RQ8, BGBCC_SH_REG_ZZR };
-const byte bgbcc_shx_maxreg=7;
+const short bgbcc_shx_maxreg=7;
 #endif
 
 #if 1
-// const byte bgbcc_shx_cachereg[6]={ 13, 11, 10, 9, 8, 255 };
-// const byte bgbcc_shx_cachereg[8]={ 14, 13, 12, 11, 10, 9, 8, 255 };
-const byte bgbcc_shx_cachereg[16]={
+// const short bgbcc_shx_cachereg[6]={ 13, 11, 10, 9, 8, 255 };
+// const short bgbcc_shx_cachereg[8]={ 14, 13, 12, 11, 10, 9, 8, 255 };
+const short bgbcc_shx_cachereg[16]={
 	BGBCC_SH_REG_R14, BGBCC_SH_REG_R13,
 	BGBCC_SH_REG_R12, BGBCC_SH_REG_R11,
 	BGBCC_SH_REG_R10, BGBCC_SH_REG_R9,
@@ -647,7 +647,7 @@ const byte bgbcc_shx_cachereg[16]={
 	BGBCC_SH_REG_R27, BGBCC_SH_REG_R26,
 	BGBCC_SH_REG_R25, BGBCC_SH_REG_R24, 
 	BGBCC_SH_REG_ZZR };
-const byte bgbcc_shx_jcachereg[16]={
+const short bgbcc_shx_jcachereg[16]={
 	BGBCC_SH_REG_RD14, BGBCC_SH_REG_RD13,
 	BGBCC_SH_REG_RD12, BGBCC_SH_REG_RD11,
 	BGBCC_SH_REG_RD10, BGBCC_SH_REG_RD9,
@@ -657,7 +657,7 @@ const byte bgbcc_shx_jcachereg[16]={
 	BGBCC_SH_REG_RD27, BGBCC_SH_REG_RD26,
 	BGBCC_SH_REG_RD25, BGBCC_SH_REG_RD24, 
 	BGBCC_SH_REG_ZZR };
-const byte bgbcc_shx_qcachereg[16]={
+const short bgbcc_shx_qcachereg[16]={
 	BGBCC_SH_REG_RQ14, BGBCC_SH_REG_RQ13,
 	BGBCC_SH_REG_RQ12, BGBCC_SH_REG_RQ11,
 	BGBCC_SH_REG_RQ10, BGBCC_SH_REG_RQ9,
@@ -667,8 +667,8 @@ const byte bgbcc_shx_qcachereg[16]={
 	BGBCC_SH_REG_RQ27, BGBCC_SH_REG_RQ26,
 	BGBCC_SH_REG_RQ25, BGBCC_SH_REG_RQ24, 
 	BGBCC_SH_REG_ZZR };
-const byte bgbcc_shx_maxreg=7;
-const byte bgbcc_shx_maxreg_egpr=15;
+const short bgbcc_shx_maxreg=7;
+const short bgbcc_shx_maxreg_egpr=15;
 #endif
 
 /* Try to get Variable as register.

@@ -111,7 +111,8 @@ int BGBCC_JX2_EmitLabel(BGBCC_JX2_Context *ctx, int lblid)
 
 	BGBCC_JX2_CheckExpandLabel(ctx);
 
-	for(i=0; i<32; i++)
+//	for(i=0; i<32; i++)
+	for(i=0; i<64; i++)
 		ctx->reg_pszx[i]=0;
 
 	ctx->pos_pad_op7=-999;

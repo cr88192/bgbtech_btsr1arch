@@ -18,7 +18,7 @@ module ExBtcUtx3(
 input[63:0]		regValRs;
 input[63:0]		regValXs;
 input[ 3:0]		regValRt;
-input[7:0]		idUIxt;
+input[8:0]		idUIxt;
 
 output[63:0]	regOutVal;
 

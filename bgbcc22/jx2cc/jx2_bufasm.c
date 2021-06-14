@@ -222,7 +222,18 @@ int BGBCC_JX2A_GetRegId(char *str)
 			{
 				if((str[2]>='0') && (str[2]<='9') &&
 					(str[3]>='0') && (str[3]<='9'))
-						{ return(t+(str[2]-'0')*10+(str[3]-'0')); }
+				{
+					i=((str[2]-'0')*10)+(str[3]-'0');
+					
+					if((i>=0) && (i<=31))
+						return(t+i);
+					if((i>=32) && (i<=63))
+						return(BGBCC_SH_REG_R32+(i-32));
+				}
+			
+//				if((str[2]>='0') && (str[2]<='9') &&
+//					(str[3]>='0') && (str[3]<='9'))
+//						{ return(t+(str[2]-'0')*10+(str[3]-'0')); }
 			}
 			break;
 		}
@@ -238,9 +249,20 @@ int BGBCC_JX2A_GetRegId(char *str)
 
 		if(!str[3])
 		{
+//			if((str[1]>='0') && (str[1]<='9') &&
+//				(str[2]>='0') && (str[2]<='9'))
+//					{ return(t+(str[1]-'0')*10+(str[2]-'0')); }
+
 			if((str[1]>='0') && (str[1]<='9') &&
 				(str[2]>='0') && (str[2]<='9'))
-					{ return(t+(str[1]-'0')*10+(str[2]-'0')); }
+			{
+				i=((str[1]-'0')*10)+(str[2]-'0');
+				
+				if((i>=0) && (i<=31))
+					return(BGBCC_SH_REG_R0+i);
+				if((i>=32) && (i<=63))
+					return(BGBCC_SH_REG_R32+(i-32));
+			}
 		}
 		break;
 
@@ -939,6 +961,11 @@ int nmid;
 {"blerp.w",		BGBCC_SH_NMID_BLERPW},
 {"blinta.w",	BGBCC_SH_NMID_BLINTAW},
 
+{"pscheq.w",	BGBCC_SH_NMID_PSCHEQW},
+{"pscheq.b",	BGBCC_SH_NMID_PSCHEQB},
+{"pschne.w",	BGBCC_SH_NMID_PSCHNEW},
+{"pschne.b",	BGBCC_SH_NMID_PSCHNEB},
+
 {"frcp",	BGBCC_SH_NMID_FRCP},
 {"fsqrta",	BGBCC_SH_NMID_FSQRTA},
 {"frcpa",	BGBCC_SH_NMID_FRCPA},
@@ -1451,6 +1478,9 @@ int BGBCC_JX2A_ParseCheckFeature(BGBCC_JX2_Context *ctx, char *sym)
 
 	if(!bgbcc_stricmp(sym, "bjx2_movx"))
 		return(ctx->has_pushx2);
+
+	if(!bgbcc_stricmp(sym, "has_movx"))
+		return(ctx->has_pushx2);
 	if(!bgbcc_stricmp(sym, "has_simdx2"))
 		return(ctx->has_simdx2);
 
@@ -1458,6 +1488,11 @@ int BGBCC_JX2A_ParseCheckFeature(BGBCC_JX2_Context *ctx, char *sym)
 		return(ctx->has_alux);
 	if(!bgbcc_stricmp(sym, "has_fpux"))
 		return(ctx->has_fpux);
+
+	if(!bgbcc_stricmp(sym, "has_bra48"))
+		return(ctx->has_bra48);
+	if(!bgbcc_stricmp(sym, "has_xgpr"))
+		return(ctx->has_xgpr);
 
 	tctx=ctx->tctx;
 
@@ -1581,7 +1616,18 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 		
 		if(cs1[0]=='?')
 		{
-			if((cs1[1]=='t') || (cs1[1]=='T'))
+			if((cs1[1]=='s') || (cs1[1]=='S'))
+			{
+				if((cs1[2]=='t') || (cs1[2]=='T'))
+				{
+					cs1+=3; pfc=8;
+				}else
+					if((cs1[2]=='f') || (cs1[2]=='F'))
+				{
+					cs1+=3; pfc=9;
+				}
+			}else
+				if((cs1[1]=='t') || (cs1[1]=='T'))
 			{
 				cs1+=2; pfc=4;
 			}else

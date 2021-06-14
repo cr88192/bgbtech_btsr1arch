@@ -20,18 +20,18 @@ input			reset;
 input[63:0]		valRs;
 input[63:0]		valRt;
 output[63:0]	valRn;
-input[7:0]		idUCmd;
-input[7:0]		idUIxt;
+input[8:0]		idUCmd;
+input[8:0]		idUIxt;
 input			exHold;
 input[1:0]		idLane;
 
 reg[63:0]	tValRn;
 assign 	valRn = tValRn;
 
-reg[7:0]		tIdUCmd;
-reg[7:0]		tIdUIxt;
-reg[7:0]		tIdUCmdB;
-reg[7:0]		tIdUIxtB;
+reg[8:0]		tIdUCmd;
+reg[8:0]		tIdUIxt;
+reg[8:0]		tIdUCmdB;
+reg[8:0]		tIdUIxtB;
 
 reg[63:0]		tValRs;
 reg[63:0]		tValRt;

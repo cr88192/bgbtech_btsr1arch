@@ -973,7 +973,7 @@ RbiMemL2A	l2a(
 
 	mmioAddr_A0,	mmioOpm_A0,
 	mmioInData_A0,	mmioOutDataQ_A0,
-	mmioOK_A0
+	mmioOK_A0,		mmioBusExcIn
 	);
 
 assign		l2aDataIn	= memOutData;

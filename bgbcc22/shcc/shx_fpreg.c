@@ -3,27 +3,27 @@
  * Returns ZZR if it is unable to do so.
  */
 
-const byte bgbcc_shx_fcachereg[9]={
+const short bgbcc_shx_fcachereg[9]={
 	BGBCC_SH_REG_FR12, BGBCC_SH_REG_FR13,
 	BGBCC_SH_REG_FR14, BGBCC_SH_REG_FR15,
 	BGBCC_SH_REG_FR10, BGBCC_SH_REG_FR11,
 	BGBCC_SH_REG_FR8, BGBCC_SH_REG_FR9,
 	BGBCC_SH_REG_ZZR};
 
-//const byte bgbcc_shx_dcachereg[5]={
+//const short bgbcc_shx_dcachereg[5]={
 //	BGBCC_SH_REG_DR6, BGBCC_SH_REG_DR6,
 //	BGBCC_SH_REG_DR7, BGBCC_SH_REG_DR7,
 //	BGBCC_SH_REG_ZZR};
 
-const byte bgbcc_shx_dcachereg[9]={
+const short bgbcc_shx_dcachereg[9]={
 	BGBCC_SH_REG_DR12, BGBCC_SH_REG_DR12,
 	BGBCC_SH_REG_DR14, BGBCC_SH_REG_DR14,
 	BGBCC_SH_REG_DR10, BGBCC_SH_REG_FR10,
 	BGBCC_SH_REG_DR8, BGBCC_SH_REG_FR8,
 	BGBCC_SH_REG_ZZR};
 
-// const byte bgbcc_shx_fmaxreg=4;
-const byte bgbcc_shx_fmaxreg=8;
+// const short bgbcc_shx_fmaxreg=4;
+const short bgbcc_shx_fmaxreg=8;
 
 int BGBCC_SHXC_EmitRegIsGpReg(
 	BGBCC_TransState *ctx,

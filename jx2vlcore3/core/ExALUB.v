@@ -72,8 +72,8 @@ input			reset;
 
 input[63:0]		regValRs;
 input[63:0]		regValRt;
-input[7:0]		idUCmd;
-input[7:0]		idUIxt;
+input[8:0]		idUCmd;
+input[8:0]		idUIxt;
 input			exHold;
 input[1:0]		regInSrST;
 
@@ -86,7 +86,7 @@ wire			regInSrS;
 assign		regInSrT = regInSrST[0];
 assign		regInSrS = regInSrST[1];
 
-reg[7:0]		idUIxt2;
+reg[8:0]		idUIxt2;
 
 
 reg[63:0]	tRegOutVal2;

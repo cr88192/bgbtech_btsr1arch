@@ -2454,10 +2454,13 @@ int BGBCC_JX2C_EmitConvVRegVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, 
 //AHSRC:jx2cc/jx2_emit.c
 int BGBCC_JX2_EmitCheckRegQuad(BGBCC_JX2_Context *ctx, int reg);
 int BGBCC_JX2_EmitCheckRegExt4(BGBCC_JX2_Context *ctx, int reg);
+int BGBCC_JX2_EmitCheckRegExt5(BGBCC_JX2_Context *ctx, int reg);
 int BGBCC_JX2_EmitCheckRegNeedSx(BGBCC_JX2_Context *ctx, int reg);
 int BGBCC_JX2_EmitCheckRegNeedZx(BGBCC_JX2_Context *ctx, int reg);
 int BGBCC_JX2_EmitCheckRegNeedSzx(BGBCC_JX2_Context *ctx, int reg);
 int BGBCC_JX2_EmitCheckRegExtGPR(BGBCC_JX2_Context *ctx, int reg);
+int BGBCC_JX2_EmitCheckRegExt32GPR(BGBCC_JX2_Context *ctx, int reg);
+int BGBCC_JX2_EmitCheckRegBase32GPR(BGBCC_JX2_Context *ctx, int reg);
 int BGBCC_JX2_EmitCheckRegExtAddrGPR(BGBCC_JX2_Context *ctx, int reg);
 int BGBCC_JX2_EmitCheckRegBaseGPR(BGBCC_JX2_Context *ctx, int reg);
 int BGBCC_JX2_EmitCheckRegAddrGPR(BGBCC_JX2_Context *ctx, int reg);
@@ -2472,6 +2475,9 @@ int BGBCC_JX2_EmitOpGetLength(BGBCC_JX2_Context *ctx, int opw);
 int BGBCC_JX2_EmitOpCheckRepack4(BGBCC_JX2_Context *ctx, int *ropw1, int *ropw2, int *ropw3, int *ropw4);
 int BGBCC_JX2_EmitOpCheckRepack5(BGBCC_JX2_Context *ctx, int *ropw1, int *ropw2, int *ropw3, int *ropw4, int *ropw5);
 int BGBCC_JX2_EmitOpCheckRepack6(BGBCC_JX2_Context *ctx, int *ropw1, int *ropw2, int *ropw3, int *ropw4, int *ropw5, int *ropw6);
+int BGBCC_JX2_EmitOpCheckRepack2Exw(BGBCC_JX2_Context *ctx, int exw, int *ropw1, int *ropw2);
+int BGBCC_JX2_EmitOpCheckRepack4Exw(BGBCC_JX2_Context *ctx, int exw, int *ropw1, int *ropw2, int *ropw3, int *ropw4);
+int BGBCC_JX2_EmitOpCheckRepack6Exw(BGBCC_JX2_Context *ctx, int exw, int *ropw1, int *ropw2, int *ropw3, int *ropw4, int *ropw5, int *ropw6);
 int BGBCC_JX2_EmitLoadDrImm(BGBCC_JX2_Context *ctx, s64 imm);
 int BGBCC_JX2_EmitLoadRegImm(BGBCC_JX2_Context *ctx, int nmid, int reg, s32 imm);
 int BGBCC_JX2_EmitLoadRegImm(BGBCC_JX2_Context *ctx, int nmid, int reg, s32 imm);

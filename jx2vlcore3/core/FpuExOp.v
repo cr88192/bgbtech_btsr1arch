@@ -56,9 +56,9 @@ input			reset;
 input[7:0]		opCmd;			//command opcode
 input[7:0]		regIdIxt;		//ALU Index / Opcode Extension
 
-input[5:0]		regIdRs;
-input[5:0]		regIdRt;
-input[5:0]		regIdRn;
+`input_gpr		regIdRs;
+`input_gpr		regIdRt;
+`input_gpr		regIdRn;
 
 input[63:0]		regValRs;		//Rs input value (FPR)
 input[63:0]		regValRt;		//Rt input value (FPR)
@@ -70,7 +70,7 @@ output[63:0]	regValLdGRn;	//Rn output (Mem Load)
 output			regOutSrT;
 
 output[63:0]	regOutVal;		//Ro output value
-output[5:0]		regOutId;		//Ro, register to write (FPR)
+`output_gpr		regOutId;		//Ro, register to write (FPR)
 output[1:0]		regOutOK;		//execute status
 
 input[63:0]		memDataLd;		//memory data (load)
@@ -117,9 +117,9 @@ reg				tBraFlush;
 `ifdef def_true
 wire[7:0]		tOpCmd;			//command opcode
 wire[7:0]		tRegIdIxt;		//ALU Index / Opcode Extension
-wire[5:0]		tRegIdRs;
-wire[5:0]		tRegIdRt;
-wire[5:0]		tRegIdRn;
+`wire_gpr		tRegIdRs;
+`wire_gpr		tRegIdRt;
+`wire_gpr		tRegIdRn;
 wire[63:0]		tRegValRs;		//Rs input value (FPR)
 wire[63:0]		tRegValRt;		//Rt input value (FPR)
 wire[63:0]		tRegValRn;		//Rn input value (FPR, Duplicate)

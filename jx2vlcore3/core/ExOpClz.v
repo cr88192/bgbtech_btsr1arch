@@ -13,8 +13,8 @@ input	reset;
 
 input[63:0]		valRs;
 output[7:0]		valRn;
-input[7:0]		idUCmd;
-input[7:0]		idUIxt;
+input[8:0]		idUCmd;
+input[8:0]		idUIxt;
 // input			exHold;
 
 output[63:0]	clzValRs2;

@@ -1759,7 +1759,8 @@ int BJX2_DbgPrintRegs(BJX2_Context *ctx)
 		
 		if((i>=16) && !(ctx->regs[i*2+0]) && !(ctx->regs[i*2+1]))
 			continue;
-	
+
+#if 0
 		if(((i*2)>=BJX2_REG_R32) && ((i*2)<BJX2_REG_R63))
 		{
 			printf("X%2d=%08X_%08X_%08X_%08X",
@@ -1772,6 +1773,7 @@ int BJX2_DbgPrintRegs(BJX2_Context *ctx)
 			printf("\n");
 			continue;
 		}
+#endif
 	
 		for(j=0; j<2; j++)
 		{

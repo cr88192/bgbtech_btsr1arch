@@ -98,17 +98,17 @@ module ExEX1(
 
 input			clock;
 input			reset;
-input[7:0]		opUCmd;
-input[7:0]		opUIxt;
+input[8:0]		opUCmd;
+input[8:0]		opUIxt;
 output[1:0]		exHold;
 output[15:0]	exTrapExc;
 
 input[11:0]		timers;
-output[7:0]		opUCmdOut;
+output[8:0]		opUCmdOut;
 
-input[5:0]		regIdRs;		//Source A, ALU / Base
-input[5:0]		regIdRt;		//Source B, ALU / Index
-input[5:0]		regIdRm;		//Source C, MemStore
+`input_gpr		regIdRs;		//Source A, ALU / Base
+`input_gpr		regIdRt;		//Source B, ALU / Index
+`input_gpr		regIdRm;		//Source C, MemStore
 input[63:0]		regValRs;		//Source A Value
 input[63:0]		regValRt;		//Source B Value
 input[63:0]		regValRm;		//Source C Value
@@ -119,14 +119,14 @@ input[63:0]		regValXs;		//Source C Value
 // input[63:0]		regValFRt;		//Source B Value (FPR)
 input[63:0]		regValCRm;		//Source C Value (CR)
 
-output[5:0]		regIdRn1;		//Destination ID (EX1)
+`output_gpr		regIdRn1;		//Destination ID (EX1)
 output[63:0]	regValRn1;		//Destination Value (EX1)
 // output[4:0]		regIdCn1;		//Destination ID (CR, EX1)
-output[5:0]		regIdCn1;		//Destination ID (CR, EX1)
+`output_gpr		regIdCn1;		//Destination ID (CR, EX1)
 output[63:0]	regValCn1;		//Destination Value (CR, EX1)
-output[5:0]		heldIdRn1;		//Held Destination ID (EX1)
+`output_gpr		heldIdRn1;		//Held Destination ID (EX1)
 // output[4:0]		heldIdCn1;		//Held Destination ID (CR, EX1)
-output[5:0]		heldIdCn1;		//Held Destination ID (CR, EX1)
+`output_gpr		heldIdCn1;		//Held Destination ID (CR, EX1)
 	
 // input[47:0]		regValPc;		//PC Value (Synthesized)
 input[63:0]		regValPc;		//PC Value (Synthesized)
@@ -167,10 +167,10 @@ input[ 1:0]		memDataOK;
 input[63:0]		regInExc;
 
 
-reg[ 5:0]		tRegIdRn1;		//Destination ID (EX1)
+`reg_gpr		tRegIdRn1;		//Destination ID (EX1)
 reg[63:0]		tRegValRn1;		//Destination Value (EX1)
 //reg[ 4:0]		tRegIdCn1;		//Destination ID (CR, EX1)
-reg[ 5:0]		tRegIdCn1;		//Destination ID (CR, EX1)
+`reg_gpr		tRegIdCn1;		//Destination ID (CR, EX1)
 reg[63:0]		tRegValCn1;		//Destination Value (CR, EX1)
 reg[63:0]		tRegOutDlr;
 reg[63:0]		tRegOutDhr;
@@ -179,9 +179,9 @@ reg[63:0]		tRegOutLr;
 reg[63:0]		tRegOutSr;
 reg[7:0]		tRegOutSchm;
 
-reg[ 5:0]		tHeldIdRn1;		//Destination ID (EX1)
+`reg_gpr		tHeldIdRn1;		//Destination ID (EX1)
 //reg[ 4:0]		tHeldIdCn1;		//Destination ID (CR, EX1)
-reg[ 5:0]		tHeldIdCn1;		//Destination ID (CR, EX1)
+`reg_gpr		tHeldIdCn1;		//Destination ID (CR, EX1)
 
 reg[15:0]		tExTrapExc;
 
@@ -307,7 +307,7 @@ reg			tDoDelayCycle;
 (* max_fanout = 50 *)
 	reg[5:0]	tOpUCmd1;
 reg[5:0]	tOpUCmdF;
-reg[7:0]	tOpUCmd2;
+reg[8:0]	tOpUCmd2;
 
 assign		opUCmdOut = tOpUCmd2;
 
@@ -461,6 +461,23 @@ begin
 	tRegSpAdd16		= { regInSp[63:28], regInSp[27:4]+24'h1, regInSp[3:0]};
 	tRegSpSub16		= { regInSp[63:28], regInSp[27:4]-24'h1, regInSp[3:0]};
 
+`ifdef jx2_enable_pred_s
+	casez( { opBraFlush, opUCmd[8:6], regInSr[1:0] } )
+		6'b0000zz: 	tOpEnable = 1;
+		6'b0001zz: 	tOpEnable = 0;
+		6'b0010z0: 	tOpEnable = 0;
+		6'b0010z1: 	tOpEnable = 1;
+		6'b0011z0: 	tOpEnable = 1;
+		6'b0011z1: 	tOpEnable = 0;
+		6'b01000z: 	tOpEnable = 0;
+		6'b01001z: 	tOpEnable = 1;
+		6'b01010z: 	tOpEnable = 1;
+		6'b01011z: 	tOpEnable = 0;
+		6'b0110zz: 	tOpEnable = 1;
+		6'b0111zz: 	tOpEnable = 1;
+		6'b1zzzzz: 	tOpEnable = 0;
+	endcase
+`else
 	casez( { opBraFlush, opUCmd[7:6], regInSr[0] } )
 		4'b000z: 	tOpEnable = 1;
 		4'b001z: 	tOpEnable = 0;
@@ -470,6 +487,7 @@ begin
 		4'b0111: 	tOpEnable = 0;
 		4'b1zzz: 	tOpEnable = 0;
 	endcase
+`endif
 
 	tOpUCmdF	= ((opUCmd[5:0] == JX2_UCMD_BRA) && !opBraFlush) ?
 		JX2_UCMD_BRA_NB : JX2_UCMD_NOP ;
@@ -517,7 +535,7 @@ begin
 		end
 
 		JX2_UCMD_ALU3, JX2_UCMD_UNARY, JX2_UCMD_ALUW3,
-		JX2_UCMD_CONV2_RR: begin
+		JX2_UCMD_CONV2_RR, JX2_UCMD_ALUB3: begin
 //			tHeldIdRn1	= regIdRm;
 			tRegHeld		= 1;
 		end

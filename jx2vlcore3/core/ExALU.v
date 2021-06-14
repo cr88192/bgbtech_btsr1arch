@@ -98,8 +98,8 @@ input			reset;
 input[63:0]		regValRs;
 input[63:0]		regValRt;
 input[63:0]		regValXs;
-input[7:0]		idUCmd;
-input[7:0]		idUIxt;
+input[8:0]		idUCmd;
+input[8:0]		idUIxt;
 input			exHold;
 input[5:0]		regInSrST;
 
@@ -121,7 +121,7 @@ assign		regInSrQ = regInSrST[3];
 assign		regInSrR = regInSrST[4];
 assign		regInSrO = regInSrST[5];
 
-reg[7:0]		idUIxt2;
+reg[8:0]		idUIxt2;
 
 
 reg[63:0]	tRegOutVal2;
@@ -290,6 +290,7 @@ reg[64:0]	tSub3A1;
 reg[32:0]	tResult1A;
 reg			tResult1T;
 reg			tResultw1T;
+reg			tResultb1T;
 
 reg[32:0]	tResult1B;
 reg			tResult1S;
@@ -301,6 +302,11 @@ reg			tResult1P;
 reg			tResult1Q;
 reg			tResult1R;
 reg			tResult1O;
+
+reg			tResultb1P;
+reg			tResultb1Q;
+reg			tResultb1R;
+reg			tResultb1O;
 
 reg			tAdd1SF;
 reg			tAdd2SF;
@@ -342,6 +348,16 @@ reg			tSub1WZF_D;
 reg			tSub1WCF_D;
 reg			tSub1WSF_D;
 
+reg			tSub1BZF_A;
+reg			tSub1BZF_B;
+reg			tSub1BZF_C;
+reg			tSub1BZF_D;
+
+reg			tSub1BZF_E;
+reg			tSub1BZF_F;
+reg			tSub1BZF_G;
+reg			tSub1BZF_H;
+
 reg			tSub1SxVF;
 reg			tSub2SxVF;
 reg			tSub1BSxVF;
@@ -382,6 +398,9 @@ reg[32:0]	tResult1W;
 reg[64:0]	tResult2W;
 reg[32:0]	tResultShufB;
 reg[64:0]	tResultShufW;
+
+reg[32:0]	tResultb1W;
+reg[64:0]	tResultb2W;
 
 reg[63:0]	tRegConvVal;
 
@@ -505,6 +524,15 @@ begin
 	tResult_Add32 = { tAddCa2_Add[2], tResult_Add64[31:0] };
 	tResult_Sub32 = { tSubCa2_Sub[2], tResult_Sub64[31:0] };
 `endif
+
+	tSub1BZF_A	= (tSub2A1[ 7: 0]==0);
+	tSub1BZF_B	= (tSub2A1[15: 8]==0);
+	tSub1BZF_C	= (tSub2A1[23:16]==0);
+	tSub1BZF_D	= (tSub2A1[31:24]==0);
+	tSub1BZF_E	= (tSub3A1[39:32]==0);
+	tSub1BZF_F	= (tSub3A1[47:40]==0);
+	tSub1BZF_G	= (tSub3A1[55:48]==0);
+	tSub1BZF_H	= (tSub3A1[63:56]==0);
 
 	tSub1WZF_A	= (tSub2A1[15: 0]==0);
 	tSub1WZF_B	= (tSub2A1[31:16]==0);
@@ -843,6 +871,7 @@ begin
 	tResult1T=regInSrT;
 	tResult2T=regInSrT;
 	tResultw1T=regInSrT;
+	tResultb1T=regInSrT;
 
 	tResult1B=UV33_XX;
 	tResult1S=regInSrS;
@@ -850,10 +879,18 @@ begin
 	tResult1W=UV33_XX;
 	tResult2W=UV65_XX;
 
+	tResultb1W = UV33_XX;
+	tResultb2W = UV65_XX;
+
 	tResult1P=regInSrP;
 	tResult1Q=regInSrQ;
 	tResult1R=regInSrR;
 	tResult1O=regInSrO;
+
+	tResultb1P=regInSrP;
+	tResultb1Q=regInSrQ;
+	tResultb1R=regInSrR;
+	tResultb1O=regInSrO;
 	
 	tOpIsWx = (idUIxt[7:6] == 2'b11);
 
@@ -1002,6 +1039,41 @@ begin
 				4'b1000: tResult1W = { 29'h0, 4'h3};
 				4'b0000: tResult1W = { 29'h0, 4'h4};
 			endcase
+
+			tResultb1P=!tSub1BZF_A;
+			tResultb1Q=!tSub1BZF_B;
+			tResultb1R=!tSub1BZF_C;
+			tResultb1O=!tSub1BZF_D;
+
+			tResultb1T =
+				!tSub1BZF_A || !tSub1BZF_B ||
+				!tSub1BZF_C || !tSub1BZF_D ||
+				!tSub1BZF_E || !tSub1BZF_F ||
+				!tSub1BZF_G || !tSub1BZF_H ;
+			casez( { 
+					!tSub1BZF_H, !tSub1BZF_G, !tSub1BZF_F, !tSub1BZF_E,
+					!tSub1BZF_D, !tSub1BZF_C, !tSub1BZF_B, !tSub1BZF_A } )
+				8'bzzzzzzz1: tResultb1W = { 29'h0, 4'h0};
+				8'bzzzzzz10: tResultb1W = { 29'h0, 4'h1};
+				8'bzzzzz100: tResultb1W = { 29'h0, 4'h2};
+				8'bzzzz1000: tResultb1W = { 29'h0, 4'h3};
+				8'bzzz10000: tResultb1W = { 29'h0, 4'h4};
+				8'bzz100000: tResultb1W = { 29'h0, 4'h5};
+				8'bz1000000: tResultb1W = { 29'h0, 4'h6};
+				8'b10000000: tResultb1W = { 29'h0, 4'h7};
+				8'b00000000: tResultb1W = { 29'h0, 4'h8};
+			endcase
+
+//			tResultb1T =
+//				tResultb1P || tResultb1Q ||
+//				tResultb1R || tResultb1O ;
+//			casez( { tResultb1O, tResultb1R, tResultb1Q, tResultb1P } )
+//				4'bzzz1: tResultb1W = { 29'h0, 4'h0};
+//				4'bzz10: tResultb1W = { 29'h0, 4'h1};
+//				4'bz100: tResultb1W = { 29'h0, 4'h2};
+//				4'b1000: tResultb1W = { 29'h0, 4'h3};
+//				4'b0000: tResultb1W = { 29'h0, 4'h4};
+//			endcase
 		end
 		4'h9: begin		/* CMPHS */
 //			tResult1A=UV33_XX;
@@ -1077,6 +1149,49 @@ begin
 				4'b1000: tResult1W = { 29'h0, 4'h3};
 				4'b0000: tResult1W = { 29'h0, 4'h4};
 			endcase
+
+`ifndef def_true
+			tResultb1P=tSub1BZF_A;
+			tResultb1Q=tSub1BZF_B;
+			tResultb1R=tSub1BZF_C;
+			tResultb1O=tSub1BZF_D;
+			tResultb1T =
+				tResultb1P || tResultb1Q ||
+				tResultb1R || tResultb1O ;
+			casez( { tResultb1O, tResultb1R, tResultb1Q, tResultb1P } )
+				4'bzzz1: tResultb1W = { 29'h0, 4'h0};
+				4'bzz10: tResultb1W = { 29'h0, 4'h1};
+				4'bz100: tResultb1W = { 29'h0, 4'h2};
+				4'b1000: tResultb1W = { 29'h0, 4'h3};
+				4'b0000: tResultb1W = { 29'h0, 4'h4};
+			endcase
+`endif
+
+`ifdef def_true
+			tResultb1P=tSub1BZF_A;
+			tResultb1Q=tSub1BZF_B;
+			tResultb1R=tSub1BZF_C;
+			tResultb1O=tSub1BZF_D;
+			tResultb1T =
+				tSub1BZF_A || tSub1BZF_B ||
+				tSub1BZF_C || tSub1BZF_D ||
+				tSub1BZF_E || tSub1BZF_F ||
+				tSub1BZF_G || tSub1BZF_H ;
+			casez( { 
+					tSub1BZF_H, tSub1BZF_G, tSub1BZF_F, tSub1BZF_E,
+					tSub1BZF_D, tSub1BZF_C, tSub1BZF_B, tSub1BZF_A } )
+				8'bzzzzzzz1: tResultb1W = { 29'h0, 4'h0};
+				8'bzzzzzz10: tResultb1W = { 29'h0, 4'h1};
+				8'bzzzzz100: tResultb1W = { 29'h0, 4'h2};
+				8'bzzzz1000: tResultb1W = { 29'h0, 4'h3};
+				8'bzzz10000: tResultb1W = { 29'h0, 4'h4};
+				8'bzz100000: tResultb1W = { 29'h0, 4'h5};
+				8'bz1000000: tResultb1W = { 29'h0, 4'h6};
+				8'b10000000: tResultb1W = { 29'h0, 4'h7};
+				8'b00000000: tResultb1W = { 29'h0, 4'h8};
+			endcase
+`endif
+
 		end
 		4'hD: begin		/* CMPHI */
 //			tResult1A=UV33_XX;
@@ -1206,11 +1321,26 @@ begin
 `ifdef jx2_enable_gsv
 	if(idUCmd[5:0]==JX2_UCMD_ALUW3)
 	begin
-//		tResult1A = tResultu1A;
-//		tResult1B = tResultu1B;
-		tResult1A = tResult1W;
-//		tResult1B = tResult2W[63:32];
-		tResult2A = tResult2W;
+//		tResult1A	= tResultu1A;
+//		tResult1B	= tResultu1B;
+		tResult1A	= tResult1W;
+//		tResult1B	= tResult2W[63:32];
+		tResult2A	= tResult2W;
+		
+		tResult1T	= tResultw1T;
+	end
+
+	if(idUCmd[5:0]==JX2_UCMD_ALUB3)
+	begin
+		tResult1A	= tResultb1W;
+		tResult2A	= tResultb2W;
+		
+		tResult1T	= tResultb1T;
+
+		tResult1P	= tResultb1P;
+		tResult1Q	= tResultb1Q;
+		tResult1R	= tResultb1R;
+		tResult1O	= tResultb1O;
 	end
 `endif
 
@@ -1342,30 +1472,60 @@ begin
 	tRegOutSrR = regInSrR;
 	tRegOutSrO = regInSrO;
 
-	if(idUIxt[5])
-	begin
 `ifdef jx2_enable_gsv
-		if(idUIxt[4])
+	if(idUCmd[5:0]==JX2_UCMD_ALUW3)
+	begin
+		if(idUIxt[3])
 		begin
-			tRegOutVal = { tResult1B[31:0], tResult1A[31:0] };
-			tRegOutSrT = tResult1T;
-			tRegOutSrS = tResult1S;
-
 			tRegOutSrP = tResult1P;
 			tRegOutSrQ = tResult1Q;
 			tRegOutSrR = tResult1R;
 			tRegOutSrO = tResult1O;
+		end
+	end
+`endif
+
+	if(idUIxt[5])
+	begin
+`ifdef jx2_enable_gsv
+//		if(idUIxt[4])
+		if(idUIxt[4] && (idUCmd[5:0]==JX2_UCMD_ALU3))
+		begin
+			tRegOutVal = { tResult1B[31:0], tResult1A[31:0] };
+			tRegOutSrT = tResult1T;
+			tRegOutSrS = tResult1S;
 		end
 		else
 		begin
 			tRegOutVal = tResult2A[63:0];
 			tRegOutSrT = tResult2T;
 			tRegOutSrS = regInSrS;
+			
+`ifdef jx2_enable_pred_s
+			if(idUIxt[4] &&	(
+				(idUCmd[5:0]==JX2_UCMD_ALUCMP)	|| 
+				(idUCmd[5:0]==JX2_UCMD_FCMP)	))
+			begin
+				tRegOutSrS = tResult2T;
+				tRegOutSrT = regInSrT;
+			end
+`endif
 		end
 `else
 		tRegOutVal = tResult2A[63:0];
 		tRegOutSrT = tResult2T;
 		tRegOutSrS = regInSrS;
+
+`ifdef jx2_enable_pred_s
+		if(idUIxt[4] && (
+			(idUCmd[5:0]==JX2_UCMD_ALUCMP)	||
+			(idUCmd[5:0]==JX2_UCMD_FCMP)	))
+		begin
+			tRegOutSrS = tResult2T;
+			tRegOutSrT = regInSrT;
+		end
+`endif
+
 `endif
 	end
 	else
@@ -1381,6 +1541,17 @@ begin
 
 		tRegOutSrT = tResult1T;
 		tRegOutSrS = regInSrS;
+
+`ifdef jx2_enable_pred_s
+		if(idUIxt[4] && (
+			(idUCmd[5:0]==JX2_UCMD_ALUCMP)	||
+			(idUCmd[5:0]==JX2_UCMD_FCMP)	))
+		begin
+			tRegOutSrS = tResult2T;
+			tRegOutSrT = regInSrT;
+		end
+`endif
+
 	end
 
 `ifdef jx2_enable_conv2_alu

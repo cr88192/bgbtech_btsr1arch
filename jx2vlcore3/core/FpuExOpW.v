@@ -63,17 +63,17 @@ module FpuExOpW(
 input			clock;
 input			reset;
 
-input[7:0]		opCmdA;			//command opcode
-input[7:0]		opCmdB;			//command opcode
-input[7:0]		regIdIxtA;		//ALU Index / Opcode Extension
-input[7:0]		regIdIxtB;		//ALU Index / Opcode Extension
+input[8:0]		opCmdA;			//command opcode
+input[8:0]		opCmdB;			//command opcode
+input[8:0]		regIdIxtA;		//ALU Index / Opcode Extension
+input[8:0]		regIdIxtB;		//ALU Index / Opcode Extension
 
-input[5:0]		regIdRsA;
-input[5:0]		regIdRtA;
-input[5:0]		regIdRnA;
-input[5:0]		regIdRsB;
-input[5:0]		regIdRtB;
-input[5:0]		regIdRnB;
+`input_gpr		regIdRsA;
+`input_gpr		regIdRtA;
+`input_gpr		regIdRnA;
+`input_gpr		regIdRsB;
+`input_gpr		regIdRtB;
+`input_gpr		regIdRnB;
 
 input[63:0]		regValRsA;		//Rs input value (Lane 1)
 input[63:0]		regValRtA;		//Rt input value (Lane 1)
@@ -89,7 +89,7 @@ output[63:0]	regValGRnB;		//Rn output value (Lane 2)
 output			regOutSrT;
 
 // output[63:0]	regOutVal;		//Ro output value
-// output[5:0]		regOutId;		//Ro, register to write (FPR)
+// `output_gpr		regOutId;		//Ro, register to write (FPR)
 output[1:0]		regOutOK;		//execute status
 
 // input[63:0]		memDataLd;		//memory data (load)
@@ -100,7 +100,7 @@ input			braFlush;
 input			exHold;
 
 // reg[63:0]	tRegOutVal;			//Rn output value
-// reg[5:0]	tRegOutId;			//Rn, value to write
+// `reg_gpr	tRegOutId;			//Rn, value to write
 reg[1:0]	tRegOutOK;			//execute status
 reg			tRegOutSrT;
 reg[63:0]	tRegValGRn;			//GRn Out
@@ -109,7 +109,7 @@ reg[63:0]	tRegValGRnB;		//GRn Out
 // reg[63:0]	tRegValLdGRn;		//GRn Out
 
 // reg[63:0]	tRegOutVal2;		//Rn output value
-// reg[5:0]	tRegOutId2;			//Rn, value to write
+// `reg_gpr	tRegOutId2;			//Rn, value to write
 reg[1:0]	tRegOutOK2;			//execute status
 reg			tRegOutSrT2;
 reg[63:0]	tRegValGRn2;			//GRn Out
@@ -124,11 +124,11 @@ assign		regValGRnB		= tRegValGRnB;
 // assign		regValLdGRn		= tRegValLdGRn;
 
 `ifndef def_true
-reg[7:0]		tOpCmd;			//command opcode
-reg[7:0]		tRegIdIxt;		//ALU Index / Opcode Extension
-reg[5:0]		tRegIdRs;
-reg[5:0]		tRegIdRt;
-reg[5:0]		tRegIdRn;
+reg[8:0]		tOpCmd;			//command opcode
+reg[8:0]		tRegIdIxt;		//ALU Index / Opcode Extension
+`reg_gpr		tRegIdRs;
+`reg_gpr		tRegIdRt;
+`reg_gpr		tRegIdRn;
 reg[63:0]		tRegValRs;		//Rs input value (FPR)
 reg[63:0]		tRegValRt;		//Rt input value (FPR)
 reg[63:0]		tRegValRn;		//Rn input value (FPR, Duplicate)
@@ -137,29 +137,29 @@ reg				tBraFlush;
 `endif
 
 `ifdef def_true
-wire[7:0]		tOpCmd;			//command opcode
-wire[7:0]		tRegIdIxt;		//ALU Index / Opcode Extension
-wire[5:0]		tRegIdRs;
-wire[5:0]		tRegIdRt;
-wire[5:0]		tRegIdRn;
+wire[8:0]		tOpCmd;			//command opcode
+wire[8:0]		tRegIdIxt;		//ALU Index / Opcode Extension
+`wire_gpr		tRegIdRs;
+`wire_gpr		tRegIdRt;
+`wire_gpr		tRegIdRn;
 wire[63:0]		tRegValRs;		//Rs input value (FPR)
 wire[63:0]		tRegValRt;		//Rt input value (FPR)
 wire[63:0]		tRegValRn;		//Rn input value (FPR, Duplicate)
 
-wire[7:0]		tOpCmdA;			//command opcode
-wire[7:0]		tRegIdIxtA;		//ALU Index / Opcode Extension
-wire[5:0]		tRegIdRsA;
-wire[5:0]		tRegIdRtA;
-wire[5:0]		tRegIdRnA;
+wire[8:0]		tOpCmdA;			//command opcode
+wire[8:0]		tRegIdIxtA;		//ALU Index / Opcode Extension
+`wire_gpr		tRegIdRsA;
+`wire_gpr		tRegIdRtA;
+`wire_gpr		tRegIdRnA;
 wire[63:0]		tRegValRsA;		//Rs input value (FPR)
 wire[63:0]		tRegValRtA;		//Rt input value (FPR)
 wire[63:0]		tRegValRnA;		//Rn input value (FPR, Duplicate)
 
-wire[7:0]		tOpCmdB;			//command opcode
-wire[7:0]		tRegIdIxtB;		//ALU Index / Opcode Extension
-wire[5:0]		tRegIdRsB;
-wire[5:0]		tRegIdRtB;
-wire[5:0]		tRegIdRnB;
+wire[8:0]		tOpCmdB;			//command opcode
+wire[8:0]		tRegIdIxtB;		//ALU Index / Opcode Extension
+`wire_gpr		tRegIdRsB;
+`wire_gpr		tRegIdRtB;
+`wire_gpr		tRegIdRnB;
 wire[63:0]		tRegValRsB;		//Rs input value (FPR)
 wire[63:0]		tRegValRtB;		//Rt input value (FPR)
 wire[63:0]		tRegValRnB;		//Rn input value (FPR, Duplicate)
@@ -168,30 +168,30 @@ wire[63:0]		tRegInSr;
 wire			tBraFlush;
 `endif
 
-reg[7:0]		tOpCmdL;			//command opcode
-reg[7:0]		tRegIdIxtL;			//ALU Index / Opcode Extension
+reg[8:0]		tOpCmdL;			//command opcode
+reg[8:0]		tRegIdIxtL;			//ALU Index / Opcode Extension
 reg				tExCmdLaneBL;
 
-reg[5:0]		tRegIdRsL;
-reg[5:0]		tRegIdRtL;
-reg[5:0]		tRegIdRnL;
+`reg_gpr		tRegIdRsL;
+`reg_gpr		tRegIdRtL;
+`reg_gpr		tRegIdRnL;
 reg[63:0]		tRegValRsL;			//Rs input value (FPR)
 reg[63:0]		tRegValRtL;			//Rt input value (FPR)
 reg[63:0]		tRegValRnL;			//Rn input value (FPR, Duplicate)
 reg[63:0]		tRegInSrL;
 reg				tBraFlushL;
 
-reg[5:0]		tRegIdRsAL;
-reg[5:0]		tRegIdRtAL;
-reg[5:0]		tRegIdRnAL;
+`reg_gpr		tRegIdRsAL;
+`reg_gpr		tRegIdRtAL;
+`reg_gpr		tRegIdRnAL;
 reg[63:0]		tRegValRsAL;		//Rs input value (FPR)
 reg[63:0]		tRegValRtAL;		//Rt input value (FPR)
 reg[63:0]		tRegValRnAL;		//Rn input value (FPR, Duplicate)
 
 
-reg[5:0]		tRegIdRsBL;
-reg[5:0]		tRegIdRtBL;
-reg[5:0]		tRegIdRnBL;
+`reg_gpr		tRegIdRsBL;
+`reg_gpr		tRegIdRtBL;
+`reg_gpr		tRegIdRnBL;
 reg[63:0]		tRegValRsBL;		//Rs input value (FPR)
 reg[63:0]		tRegValRtBL;		//Rt input value (FPR)
 reg[63:0]		tRegValRnBL;		//Rn input value (FPR, Duplicate)
@@ -541,9 +541,9 @@ assign	tRegValRn		= regValRnA;
 `endif
 
 `ifndef def_true
-wire[5:0]		tRegIdRsH;
-wire[5:0]		tRegIdRtH;
-wire[5:0]		tRegIdRnH;
+`wire_gpr		tRegIdRsH;
+`wire_gpr		tRegIdRtH;
+`wire_gpr		tRegIdRnH;
 wire[63:0]		tRegValRsH;			//Rs input value (FPR)
 wire[63:0]		tRegValRtH;			//Rt input value (FPR)
 wire[63:0]		tRegValRnH;			//Rn input value (FPR, Duplicate)

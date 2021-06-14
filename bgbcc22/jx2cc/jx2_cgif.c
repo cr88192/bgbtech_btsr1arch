@@ -89,6 +89,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	
 	shctx->has_jumbo=0;
 	shctx->has_bra48=0;
+	shctx->has_xgpr=0;
 	
 //	shctx->no_fpu=1;
 	shctx->no_ext32=0;
@@ -170,6 +171,8 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "bra48"))
 		{ shctx->has_bra48=1; }
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "xgpr"))
+		{ shctx->has_xgpr=1; }
 
 //	ctx->arch_has_predops=0;
 	ctx->arch_has_predops=1;

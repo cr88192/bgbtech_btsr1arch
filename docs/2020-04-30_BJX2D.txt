@@ -101,6 +101,9 @@ Registers (Baseline):
 ** There are 32, 64-bit GPRs.
 ** R0..R15 will be Primary GPRs (Partially excluding R0, R1, and R15).
 ** R16..R31 are Extended GPRs.
+* R32..R63, 64-bit, XGPR
+** Will only be encodable with XGPR or Op64 ops.
+** Encodings will only be valid if the core supports XGPR.
 * C0..C31, 64-bit.
 ** Control Registers.
 ** Not all of these necessarily exist.
@@ -112,10 +115,10 @@ Registers (Extended):
 ** Will map to even numbered pairs of GPRs.
 ** Encoded as an Xn register with the LSB Clear.
 ** Currently, the results of accessing X0 or X14 are undefined.
-* X32..X62, 128-bit
-** Will exist as 128-bit registers beyond the normal GPR space.
+* X32..X62, 128-bit (XGPR)
+** Will exist as 128-bit registers within the XGPR space.
 ** Encoded as an Xn register with the LSB Set.
-** Will logically exist as pairs, even if not otherwise accessible.
+** Will logically exist as pairs.
 
 
 Special Purpose Registers:
@@ -763,6 +766,8 @@ Notation:
 * i: Signed immediate bits
 * j: Unsigned immediate bits
 * d: Displacement bits
+* e/f/g/G: The 'E' field.
+* w/W: The 'W' field.
 * x: First Value Placeholder bits.
 * y: Second Value Placeholder bits.
 * z: Undefined/Pattern/Third Value, Placeholder bits.
@@ -805,14 +810,14 @@ Immediate Notation
 * Etc.
 
 
-Notation for the 'e' field:
+Notation for the 'E' field:
 * e: qnmi
 ** q(E.q)=Quadword/Alternate Operation
 *** Selects between MOV.L and MOVU.L
 *** Selects between CMPxx and CMPQxx
-** n(E.n)=Bit4 of Rn
-** m(E.m)=Bit4 of Rm
-** i(E.i)=Bit4 of Ro/Ri
+** n(E.n)=Bit 4 of Rn
+** m(E.m)=Bit 4 of Rm
+** i(E.i)=Bit 4 of Ro/Ri
 * f: qnii (If n is in n position)
 * f: qiin (If n is in o position)
 
@@ -823,6 +828,12 @@ Notation for the 'e' field:
 * P/p: 1nm0 / 0nm0
 * Q/q: 1nm1 / 0nm1
 
+Notation for the 'W' field:
+* w: wnmi
+** w (W.w): WEX (7zzz/9zzz)
+** n(W.n)=Bit 5 of Rn
+** m(W.m)=Bit 5 of Rm
+** i(W.i)=Bit 5 of Ro/Ri
 
 Canonical F0 Block Instruction:
 * F0nm_ZeoZ
@@ -927,7 +938,7 @@ Instruction Space
 
 ** 3002  -
 ** 3012  RTSU						//PC=LR, Hint
-** 3022  SYSCALL						//Throw(DLR)
+** 3022  SYSCALL					//Throw(DLR)
 ** 3032  -
 ** 3042  -
 ** 3052  -
@@ -1095,8 +1106,8 @@ Instruction Space
 ** 6Enj  CMPGT		#imm4u, Rk		//Rn==Imm4, Zero Extend
 ** 6Fnj  CMPGE		#imm4u, Rk		//Rn==Imm4, Zero Extend
 
-* 7zzz ( Reserved )
-** (Possible) Op24 Escape
+* 7zzz  ( XGPR Escape )
+** 7wnm-ZeoZ (F0 Block)
 
 * 8zzz ( MOV.L 1000-rddd-nnnn-mmmm, r=Store/Load )
 ** 80nm  MOVU.L		(Rm), Rn
@@ -1116,8 +1127,8 @@ Instruction Space
 ** 8Enm  MOV.L		(Rm, 24), Rn
 ** 8Fnm  MOV.L		(Rm, 28), Rn
 
-* 9zzz ( Drop / Reserved )
-** (Possible) Op24 Escape
+* 9zzz  ( XGPR Escape )
+** 9wnm-Zeii (F1 and F2 Block)
 
 * Ajjj  LDIZ		#imm12u, DLR	//Load 12 bit value into DLR (Zero Extend)
 * Bjjj  LDIN		#imm12u, DLR	//Load 12 bit value into DLR (One Extend)
@@ -1147,7 +1158,7 @@ Major Ranges
 * FCzz_zzzz (Repeat F8zz, WEX2 Hint)
 * FDzz_zzzz (Repeat F9zz, WEX2 Hint)
 * FEzz_zzzz (Jumbo Imm24)
-* FFzz_zzzz (Jumbo Reserved)
+* FFzz_zzzz (Jumbo Op64)
 
 Additionally, Predicated Ranges will exist:
 * E0zz_zzzz (Execute if True, Repeats F0)
@@ -1399,7 +1410,9 @@ F0zz Instruction Block:
 ** F0nm_2go9  MOVHLD	Rm, Ro, Rn			//(GSV) MOV, High and Low DWords
 ** F0nm_2Go9  MOVLHD	Rm, Ro, Rn			//(GSV) MOV, Low and High DWords
 ** F0nm_2goA  PSCHEQ.W	Rm, Ro, Rn			//(GSV) Check if Rm contains Ro
+** F0nm_2GoA  PSCHEQ.B	Rm, Ro, Rn			//(GSV) Check if Rm contains Ro
 ** F0nm_2goB  PSCHNE.W	Rm, Ro, Rn			//(GSV) Check if Rm contains Ro
+** F0nm_2GoA  PSCHNE.B	Rm, Ro, Rn			//(GSV) Check if Rm contains Ro
 ** F0nm_2goC  BLKUTX1	Rm, Ro, Rn			//(RGB) Extract Pixel, UTX1
 ** F0nm_2GoC  BLKUTX2	Rm, Ro, Rn			//(RGB) Extract Pixel, UTX2
 ** F0nm_2goD  PADD.H	Rm, Ro, Rn			//(GSVF) Packed FADD (4x Half)
@@ -1776,7 +1789,7 @@ The EDzz and EFzz block will repeat the EAzz and EBzz block, but differ in their
 
 Several Jumbo blocks will be defined:
 * FEjj_jjjj Jumbo Imm24
-* FFzz_jjjj Jumbo Reserved
+* FFwZ_zzzz Jumbo Op64
 
 Jumbo Instructions will be larger instructions (64 or 96 bits), composed of multiple conjoined instruction words.
 Jumbo instructions will begin with FEzz_zzzz, which will serve as a "jumbo prefix".
@@ -1820,41 +1833,75 @@ Use with the F0 block will depend on the instruction:
 ** EI will serve as a sign-extension bit.
 
 
-Use of two jumbo prefixes followed by an F8-block instruction will encode an instruction with a 64-bit immediate.
+Use of two Jumbo Imm24 prefixes followed by an F8-block instruction will encode an instruction with a 64-bit immediate.
+
+Note that in the Imm64 case, the zero vs one extended distinction no longer exists.
+
+The layout of the F8 block will thus be modified slighly with XGPR and two Imm24 prefixes (Jumbo96):
+* FE-FE F80n_iiii  LDI		#imm64, Rn		//R0..R15
+* FE-FE F81n_iiii  LDI		#imm64, Rk		//R16..R31
+* FE-FE F82n_iiii  LDI		#imm64, Rk		//R32..R47
+* FE-FE F83n_iiii  LDI		#imm64, Rk		//R48..R63
+* FE-FE F84n_iiii  ADD		#imm64, Rn		//R0..R15
+* FE-FE F85n_iiii  ADD		#imm64, Rk		//R16..R31
+* FE-FE F86n_iiii  ADD		#imm64, Rn		//R32..R47
+* FE-FE F87n_iiii  ADD		#imm64, Rk		//R48..R63
 
 
 ==== Jumbo Op64 ====
 
-Possible:
-Jumbo with certain blocks may escape into an alternate set of encoding spaces.
+* FFw0_0ddd_F0dd_Cddd  BRA	(PC, Disp33s)
+* FFw0_0ddd_F0dd_Dddd  BSR	(PC, Disp33s)
+* FFw0_0ddd_F0dd_Eddd  BT	(PC, Disp33s)
+* FFw0_0ddd_F0dd_Fddd  BF	(PC, Disp33s)
 
-* FEZZ_iiii_F0nm_AeiZ  "OP Rm, Imm21, Rn"
-* FEZZ_iiii_F0nm_BeoZ  "OP Rm, Ro, Imm16, Rn"
+* FFjj_jjjj_FAjj_jjjj  JMP	#abs48				//Abs48 Branch
+* FFjj_jjjj_FBjj_jjjj  JSR	#abs48				//Abs48 Call
 
-* FEZZ_zzzz_F0nm_3eo8 ? "OP Rm, Ro, Rn" 
-* ..
-* FEZZ_zzzz_F0nm_3eoF ? "OP Rm, Ro, Rn" 
+Alternative 2 (Hx, W0):
+* FFw0_00zz_F0nm_ZeoZ  "OP Rm, Ro, Rn"
+* FFw0_00ii_F1nm_Zeii  "OP (Rm, Disp17s), Rn"
+* FFw0_00ii_F2nm_Zeii  "OP Rm, Imm17, Rn"
+* FFw0_00ii_F2nZ_Zeii  "OP Imm18, Rn"
+* FFw0_00zz_E0nm_ZeoZ  "OP Rm, Ro, Rn" 
+* FFw0_00ii_E1nm_Zeii  "OP (Rm, Disp17s), Rn" 
+* FFw0_00ii_E2nm_Zeii  "OP Rm, Imm17, Rn" 
+
+* FFw0_iiii_F8Zn_iiii  "OP Imm33s, Rn"
+
+** These extend the existing encoding space
+** Relying on the base-op for predication and/or WEX.
+
+For instructions within the W0 encoding spaces, the 32-bits following the Jumbo Op64 prefix will represent the same encoding space as used by 32-bit ops. This is not necessarily true of operations in other encoding spaces.
 
 
-Alternative:
-* FEHX_zzzz_F0nm_ZeoZ ? "OP Rm, Ro, Rn" 
+Immediate values may be extended by 8 bits:
+* Imm5u becomes Imm14s
+* Imm9u becomes Imm17u or Imm18s
+* Imm9n becomes Imm17n
+* Imm10u becomes Imm18u or Imm19s
+* Imm10n becomes Imm18n
+* Imm16u becomes Imm33s
+* Imm16n becomes Imm33s
+* Disp9u becomes Imm18s
 
-The 'HX' forms an 'Hn' Space.
-* H+e: hnmi+qnmi, Expand Reg fields to 6 bits.
-* FEH0_zzzz_F0nm_ZeoZ  "OP Rm, Ro, Rn" 
-* FEH1_dddd_F0nm_ZedZ  "OP (Rm, Disp22s), Rn" 
-* FEH2_iiii_F0nm_ZeiZ  "OP Rm, Imm22s, Rn" 
-* ...
+The extra bits are added between the base bits and E.i, so:
+* Imm18 = { Wi ? -1 : 0, Em, Ei, jbits(7:0), opw_b(7:0) }
+* Imm33s = { Wi ? -1 : 0, jbits(15:0), opw_b(15:0) }
 
-The H0 space basically mirrors the F0 space.
-* The 'z' bits are reserved for now.
-* For ops which map to F0, they are to be set to 0.
-* They are reserved for future expansion of the opcode space.
+For certain ops, Imm17u or Imm18u may function instead as Imm18s or Imm19s.
+* In these cases, W.i will serve as a sign bit.
+* In other cases, W.i is Reserved or Must Be Zero.
+* In most cases, this will be for ops where:
+** No one-extended partner exists;
+** The existence of a one-extended partner would makes sense.
 
-The H1..H3 spaces mirror F1..F3.
+For Imm5, W.i will function as a sign bit:
+* Imm14s = { Wi ? -1 : 0, Ei, jbits(7:0), opw_b(7:4) }
 
-* FEH0_0ddd_F0dd_Cddd / BRA (PC, Disp33s)
-* FEH0_0ddd_F0dd_Dddd / BSR (PC, Disp33s)
+
+The W.w bit may be used to select the use of SR.S as a Predicate.
+For CMPxx ops within F2zz, W.m will select SR.S as the output bit.
 
 
 ==== Jumbo Op48 ====
@@ -1916,6 +1963,8 @@ While following a generic pattern:
 
 
 ==== Op24 (Possible) ====
+
+These are only intended to exist in microcontroller configurations.
 
 Escape case for 24-bit instructions:
 * ZZnm_eo (3R)
@@ -1983,6 +2032,24 @@ Map:
 Odd addresses may only encode a 16 or 24-bit operation.
 
 Bxx.B will be a byte-aligned branch op.
+
+
+==== Op32_XGPR (Possible) ====
+
+The XGPR space will use an encoding space which overlaps with Op24, and is as such mutually exclusive.
+
+Will use the encoding spaces:
+* 7wnm_ZeoZ, Maps to F0nm_ZeoZ
+* 9wnm_Zejj, Maps to F2nm_Zejj or F1nm_Zejj (W.i)
+
+The w and e fields will combine to add two additional bits to GPRs:
+* w: wnmi (Bit 5)
+* e: qnmi (Bit 4)
+
+With 'W.w' as the WEX bit.
+* With the Imm9/Disp9 space, W.i selects between the F2 and F1 block.
+** W.i=0: Map to F2
+** W.i=1: Map to F1
 
 
 === Wide Execution 2 (Optional) ===

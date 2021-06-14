@@ -39,18 +39,18 @@ input			reset;		//clock
 input[63:0]		istrWord;	//source instruction word
 input[63:0]		istrWordL;	//Last Instruction Words
 
-output[5:0]		idRegN;
-output[5:0]		idRegM;
-output[5:0]		idRegO;
+`output_gpr		idRegN;
+`output_gpr		idRegM;
+`output_gpr		idRegO;
 output[32:0]	idImm;
 output[32:0]	idImmB;
 output[7:0]		idUCmd;
 output[7:0]		idUIxt;
 
 
-reg[5:0]		opRegN;
-reg[5:0]		opRegM;
-reg[5:0]		opRegO;
+`reg_gpr		opRegN;
+`reg_gpr		opRegM;
+`reg_gpr		opRegO;
 reg[32:0]		opImm;
 reg[32:0]		opImmB;
 reg[7:0]		opUCmd;
@@ -65,9 +65,9 @@ assign	idUCmd	= opUCmd;
 assign	idUIxt	= opUIxt;
 
 `ifdef jx2_enable_ops16
-wire[5:0]		decOpBz_idRegN;
-wire[5:0]		decOpBz_idRegM;
-wire[5:0]		decOpBz_idRegO;
+`wire_gpr		decOpBz_idRegN;
+`wire_gpr		decOpBz_idRegM;
+`wire_gpr		decOpBz_idRegO;
 wire[32:0]		decOpBz_idImm;
 wire[7:0]		decOpBz_idUCmd;
 wire[7:0]		decOpBz_idUIxt;
@@ -81,9 +81,9 @@ DecOpBz	decOpBz(
 	);
 `endif
 
-wire[5:0]		decOpFz_idRegN;
-wire[5:0]		decOpFz_idRegM;
-wire[5:0]		decOpFz_idRegO;
+`wire_gpr		decOpFz_idRegN;
+`wire_gpr		decOpFz_idRegM;
+`wire_gpr		decOpFz_idRegO;
 wire[32:0]		decOpFz_idImm;
 wire[7:0]		decOpFz_idUCmd;
 wire[7:0]		decOpFz_idUIxt;
@@ -132,9 +132,9 @@ DecOpFz	decOpFz(
 	);
 
 `ifdef jx2_enable_ops48
-wire[5:0]		decOpFC_idRegN;
-wire[5:0]		decOpFC_idRegM;
-wire[5:0]		decOpFC_idRegO;
+`wire_gpr		decOpFC_idRegN;
+`wire_gpr		decOpFC_idRegM;
+`wire_gpr		decOpFC_idRegO;
 wire[32:0]		decOpFC_idImm;
 wire[7:0]		decOpFC_idUCmd;
 wire[7:0]		decOpFC_idUIxt;

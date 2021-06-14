@@ -25,19 +25,19 @@ input			reset;		//clock
 
 input[63:0]		istrWord;	//source instruction word
 
-output[5:0]		idRegN;
-output[5:0]		idRegM;
-output[5:0]		idRegO;
+`output_gpr		idRegN;
+`output_gpr		idRegM;
+`output_gpr		idRegO;
 output[32:0]	idImm;
-output[7:0]		idUCmd;
-output[7:0]		idUIxt;
+output[8:0]		idUCmd;
+output[8:0]		idUIxt;
 
-reg[5:0]		opRegN;
-reg[5:0]		opRegM;
-reg[5:0]		opRegO;
+`reg_gpr		opRegN;
+`reg_gpr		opRegM;
+`reg_gpr		opRegO;
 reg[32:0]		opImm;
-reg[7:0]		opUCmd;
-reg[7:0]		opUIxt;
+reg[8:0]		opUCmd;
+reg[8:0]		opUIxt;
 
 assign	idRegN = opRegN;
 assign	idRegM = opRegM;
@@ -46,40 +46,40 @@ assign	idImm = opImm;
 assign	idUCmd = opUCmd;
 assign	idUIxt = opUIxt;
 
-reg[5:0]	opRegO_Dfl;
-reg[5:0]	opRegN_Dfl;
-reg[5:0]	opRegM_Dfl;
+`reg_gpr	opRegO_Dfl;
+`reg_gpr	opRegN_Dfl;
+`reg_gpr	opRegM_Dfl;
 
-reg[5:0]	opRegN_Cr;
-reg[5:0]	opRegM_Cr;
-reg[5:0]	opRegN_Sr;
-reg[5:0]	opRegM_Sr;
+`reg_gpr	opRegN_Cr;
+`reg_gpr	opRegM_Cr;
+`reg_gpr	opRegN_Sr;
+`reg_gpr	opRegM_Sr;
 
-reg[5:0]	opRegO_Er;
-reg[5:0]	opRegN_Er;		//Rk, R16..R31
-reg[5:0]	opRegM_Er;		//Rj, R16..R31
+`reg_gpr	opRegO_Er;
+`reg_gpr	opRegN_Er;		//Rk, R16..R31
+`reg_gpr	opRegM_Er;		//Rj, R16..R31
 
-reg[5:0]	opRegN_ECr;		//C16..C31
-reg[5:0]	opRegN_ESr;		//S16..S31
+`reg_gpr	opRegN_ECr;		//C16..C31
+`reg_gpr	opRegN_ESr;		//S16..S31
 
-reg[5:0]	opRegN_Xr;		//3znz 1R, R0..R31
-reg[5:0]	opRegN_Yr;		//2znz/6znz 1R, R0..R31
-reg[5:0]	opRegN_ZXr;		//zznz 1R, R0..R31 (xxxy -> yxxx0)
+`reg_gpr	opRegN_Xr;		//3znz 1R, R0..R31
+`reg_gpr	opRegN_Yr;		//2znz/6znz 1R, R0..R31
+`reg_gpr	opRegN_ZXr;		//zznz 1R, R0..R31 (xxxy -> yxxx0)
 
 /*
 Fixed registers for certain ops.
 Ro:Rm, may also be used as an immed.
  */
-reg[5:0]	opRegO_Fix;
-reg[5:0]	opRegN_Fix;
-reg[5:0]	opRegM_Fix;
+`reg_gpr	opRegO_Fix;
+`reg_gpr	opRegN_Fix;
+`reg_gpr	opRegM_Fix;
 
 reg[5:0]	opNmid;
 reg[4:0]	opFmid;
 reg[2:0]	opBty;
 reg[3:0]	opIty;
-reg[1:0]	opCcty;
-reg[1:0]	opUCty;
+reg[2:0]	opCcty;
+reg[2:0]	opUCty;
 
 reg[5:0]	opUCmdIx;
 
@@ -126,6 +126,35 @@ begin
 //	tRegRoIsRs = tRegRoIsRz | (istrWord[11:8]==4'b1111);
 //	tRegRnIsRs = tRegRnIsRz | (istrWord[ 7:4]==4'b1111);
 //	tRegRmIsRs = tRegRmIsRz | (istrWord[ 3:0]==4'b1111);
+
+`ifdef jx2_enable_xgpr
+
+	opRegO_Dfl	= {tRegRoIsRs, 2'b00, istrWord[11:8]};
+	opRegN_Dfl	= {tRegRnIsRs, 2'b00, istrWord[ 7:4]};
+	opRegM_Dfl	= {tRegRmIsRs, 2'b00, istrWord[ 3:0]};
+
+	opRegN_Sr	= {3'b100, istrWord[ 7:4]};
+	opRegM_Sr	= {3'b100, istrWord[ 3:0]};
+
+	opRegN_Cr	= {3'b110, istrWord[ 7:4]};
+	opRegM_Cr	= {3'b110, istrWord[ 3:0]};
+
+	opRegO_Er	= {3'b001, istrWord[11:8]};
+	opRegN_Er	= {3'b001, istrWord[ 7:4]};
+	opRegM_Er	= {3'b001, istrWord[ 3:0]};
+
+	opRegN_ECr	= opRegN_Cr;
+	opRegN_ESr	= opRegN_Sr;
+	
+	opRegN_Xr	= {tRegRnIsRs && (!istrWord[11]), 1'b0,
+		istrWord[11], istrWord[ 7:4]};
+	opRegN_Yr	= {tRegRnIsRs && (!istrWord[14]), 1'b0,
+		istrWord[14], istrWord[ 7:4]};
+
+	opRegN_ZXr	= {tRegRnIsRs & (!istrWord[ 4]), 1'b0,
+		istrWord[ 4], istrWord[ 7:5], 1'b0};
+
+`else
 
 	opRegO_Dfl	= {tRegRoIsRs, 1'b0, istrWord[11:8]};
 	opRegN_Dfl	= {tRegRnIsRs, 1'b0, istrWord[ 7:4]};
@@ -176,6 +205,8 @@ begin
 
 	opRegN_ZXr	= {tRegRnIsRs & (!istrWord[ 4]),
 		istrWord[ 4], istrWord[ 7:5], 1'b0};
+`endif
+
 `endif
 
 	opRegN_Fix	= JX2_GR_ZZR;
@@ -938,6 +969,7 @@ begin
 				opRegM_Fix = 0;
 				opRegO_Fix = 0;
 				case(istrWord[3:0])
+`ifndef def_true
 					4'h0:	begin opRegM_Fix = 6'h01; opRegO_Fix=6'h00; end
 					4'h1:	begin opRegM_Fix = 6'h02; opRegO_Fix=6'h00; end
 					4'h2:	begin opRegM_Fix = 6'h04; opRegO_Fix=6'h00; end
@@ -954,6 +986,42 @@ begin
 					4'hD:	begin opRegM_Fix = 6'h30; opRegO_Fix=6'h03; end
 					4'hE:	begin opRegM_Fix = 6'h30; opRegO_Fix=6'h13; end
 					4'hF:	begin opRegM_Fix = 6'h01; opRegO_Fix=6'h13; end
+`endif
+
+`ifdef def_true
+					4'h0:	begin 
+						opRegM_Fix = JX2_GR_R1; opRegO_Fix=JX2_GR_R0; end
+					4'h1:	begin
+						opRegM_Fix = JX2_GR_R2; opRegO_Fix=JX2_GR_R0; end
+					4'h2:	begin
+						opRegM_Fix = JX2_GR_R4; opRegO_Fix=JX2_GR_R0; end
+					4'h3:	begin
+						opRegM_Fix = JX2_GR_R8; opRegO_Fix=JX2_GR_R0; end
+					4'h4:	begin
+						opRegM_Fix = JX2_GR_R63; opRegO_Fix=JX2_GR_R3; end
+					4'h5:	begin
+						opRegM_Fix = JX2_GR_R62; opRegO_Fix=JX2_GR_R3; end
+					4'h6:	begin
+						opRegM_Fix = JX2_GR_R60; opRegO_Fix=JX2_GR_R3; end
+					4'h7:	begin
+						opRegM_Fix = JX2_GR_R56; opRegO_Fix=JX2_GR_R3; end
+					4'h8:	begin
+						opRegM_Fix = JX2_GR_R63; opRegO_Fix=JX2_GR_R19; end
+					4'h9:	begin
+						opRegM_Fix = JX2_GR_R62; opRegO_Fix=JX2_GR_R19; end
+					4'hA:	begin
+						opRegM_Fix = JX2_GR_R60; opRegO_Fix=JX2_GR_R19; end
+					4'hB:	begin
+						opRegM_Fix = JX2_GR_R56; opRegO_Fix=JX2_GR_R19; end
+					4'hC:	begin
+						opRegM_Fix = JX2_GR_R16; opRegO_Fix=JX2_GR_R0; end
+					4'hD:	begin
+						opRegM_Fix = JX2_GR_R48; opRegO_Fix=JX2_GR_R3; end
+					4'hE:	begin
+						opRegM_Fix = JX2_GR_R48; opRegO_Fix=JX2_GR_R19; end
+					4'hF:	begin
+						opRegM_Fix = JX2_GR_R1; opRegO_Fix=JX2_GR_R19; end
+`endif
 				endcase
 
 				opNmid	= opRegO_Fix[4]?JX2_UCMD_SHADQ3 : JX2_UCMD_SHLDQ3;
@@ -974,24 +1042,30 @@ begin
 				opUCmdIx	= JX2_UCIX_SHAD_SHLDQ3;
 				opFmid		= JX2_FMID_REG;
 				opIty		= JX2_ITY_XL;
-				opRegM_Fix	= 6'h20;
-				opRegO_Fix	= 6'h00;
+//				opRegM_Fix	= 6'h20;
+//				opRegO_Fix	= 6'h00;
+				opRegM_Fix	= JX2_GR_R32;
+				opRegO_Fix	= JX2_GR_R0;
 			end
 			11'h6z1: begin
 				opNmid		= JX2_UCMD_SHLDQ3;
 				opUCmdIx	= JX2_UCIX_SHAD_SHLDQ3;
 				opFmid		= JX2_FMID_REG;
 				opIty		= JX2_ITY_XL;
-				opRegM_Fix	= 6'h20;
-				opRegO_Fix	= 6'h03;
+//				opRegM_Fix	= 6'h20;
+//				opRegO_Fix	= 6'h03;
+				opRegM_Fix	= JX2_GR_R32;
+				opRegO_Fix	= JX2_GR_R3;
 			end
 			11'h6z2: begin
 				opNmid		= JX2_UCMD_SHADQ3;
 				opUCmdIx	= JX2_UCIX_SHAD_SHADQ3;
 				opFmid		= JX2_FMID_REG;
 				opIty		= JX2_ITY_XL;
-				opRegM_Fix	= 6'h20;
-				opRegO_Fix	= 6'h03;
+//				opRegM_Fix	= 6'h20;
+//				opRegO_Fix	= 6'h03;
+				opRegM_Fix	= JX2_GR_R32;
+				opRegO_Fix	= JX2_GR_R3;
 			end
 `else
 			11'h6z0: begin
@@ -1318,19 +1392,22 @@ begin
 			opNmid		= JX2_UCMD_FPU3;
 			opFmid		= JX2_FMID_REGREG;
 			opIty		= JX2_ITY_NB;
-			opUCmdIx	= JX2_UCIX_FPU_FADD_G;
+//			opUCmdIx	= JX2_UCIX_FPU_FADD_G;
+			opUCmdIx	= JX2_UCIX_FPU_FADD;
 		end
 		16'h61zz: begin
 			opNmid		= JX2_UCMD_FPU3;
 			opFmid		= JX2_FMID_REGREG;
 			opIty		= JX2_ITY_NB;
-			opUCmdIx	= JX2_UCIX_FPU_FSUB_G;
+//			opUCmdIx	= JX2_UCIX_FPU_FSUB_G;
+			opUCmdIx	= JX2_UCIX_FPU_FSUB;
 		end
 		16'h62zz: begin
 			opNmid		= JX2_UCMD_FPU3;
 			opFmid		= JX2_FMID_REGREG;
 			opIty		= JX2_ITY_NB;
-			opUCmdIx	= JX2_UCIX_FPU_FMUL_G;
+//			opUCmdIx	= JX2_UCIX_FPU_FMUL_G;
+			opUCmdIx	= JX2_UCIX_FPU_FMUL;
 		end
 		16'h63zz: begin
 			opNmid		= JX2_UCMD_FLDCX;
@@ -1342,13 +1419,15 @@ begin
 			opNmid		= JX2_UCMD_FCMP;
 			opFmid		= JX2_FMID_REGREG;
 			opIty		= JX2_ITY_NB;
-			opUCmdIx	= JX2_UCIX_FPU_CMPEQ_G;
+//			opUCmdIx	= JX2_UCIX_FPU_CMPEQ_G;
+			opUCmdIx	= JX2_UCIX_FPU_CMPEQ;
 		end
 		16'h65zz: begin
 			opNmid		= JX2_UCMD_FCMP;
 			opFmid		= JX2_FMID_REGREG;
 			opIty		= JX2_ITY_NB;
-			opUCmdIx	= JX2_UCIX_FPU_CMPGT_G;
+//			opUCmdIx	= JX2_UCIX_FPU_CMPGT_G;
+			opUCmdIx	= JX2_UCIX_FPU_CMPGT;
 		end
 		16'h66zz: begin
 			opNmid		= JX2_UCMD_FSTCX;
@@ -1408,6 +1487,13 @@ begin
 			opUCmdIx	= JX2_UCIX_ALU_CMPGE;
 		end
 
+`ifdef jx2_enable_xgpr
+		16'h7zzz: begin
+			opNmid		= JX2_UCMD_NOP;
+			opFmid		= JX2_FMID_Z;
+		end
+`endif
+
 		16'h8zzz: begin
 			if(istrWord[10:8]!=0)
 			begin
@@ -1442,6 +1528,13 @@ begin
 				end
 			end
 		end
+
+`ifdef jx2_enable_xgpr
+		16'h9zzz: begin
+			opNmid		= JX2_UCMD_NOP;
+			opFmid		= JX2_FMID_Z;
+		end
+`endif
 
 		16'hAzzz: begin
 			opNmid		= JX2_UCMD_MOV_IR;
@@ -1592,7 +1685,8 @@ begin
 					opRegO	= JX2_GR_IMM;
 					opImm	= {
 						opRegO_Fix[5]?UV21_FF:UV21_00,
-						opRegO_Fix, opRegM_Fix };
+//						opRegO_Fix, opRegM_Fix };
+						opRegO_Fix[5:0], opRegM_Fix[5:0] };
 				end
 				JX2_ITY_XQ: begin
 					opRegN	= JX2_GR_DLR;
@@ -1600,7 +1694,8 @@ begin
 					opRegO	= JX2_GR_IMM;
 					opImm	= {
 						opRegO_Fix[5]?UV21_FF:UV21_00,
-						opRegO_Fix, opRegM_Fix };
+//						opRegO_Fix, opRegM_Fix };
+						opRegO_Fix[5:0], opRegM_Fix[5:0] };
 				end
 
 				default: begin

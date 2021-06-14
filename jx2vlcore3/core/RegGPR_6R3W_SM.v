@@ -69,12 +69,12 @@ input			clock;
 input			reset;
 input			hold;
 
-input[5:0]		regIdRs;		//Source A
-input[5:0]		regIdRt;		//Source B
-input[5:0]		regIdRu;		//Source C
-input[5:0]		regIdRv;		//Source D
-input[5:0]		regIdRx;		//Source E
-input[5:0]		regIdRy;		//Source F
+`input_gpr		regIdRs;		//Source A
+`input_gpr		regIdRt;		//Source B
+`input_gpr		regIdRu;		//Source C
+`input_gpr		regIdRv;		//Source D
+`input_gpr		regIdRx;		//Source E
+`input_gpr		regIdRy;		//Source F
 
 output[63:0]	regValRs;
 output[63:0]	regValRt;
@@ -83,25 +83,25 @@ output[63:0]	regValRv;
 output[63:0]	regValRx;
 output[63:0]	regValRy;
 
-input[5:0]		regIdRnA1;		//Destination ID
+`input_gpr		regIdRnA1;		//Destination ID
 input[63:0]		regValRnA1;		//Destination Value
-input[5:0]		regIdRnA2;		//Destination ID
+`input_gpr		regIdRnA2;		//Destination ID
 input[63:0]		regValRnA2;		//Destination Value
-input[5:0]		regIdRnA3;		//Destination ID
+`input_gpr		regIdRnA3;		//Destination ID
 input[63:0]		regValRnA3;		//Destination Value
 
-input[5:0]		regIdRnB1;		//Destination ID
+`input_gpr		regIdRnB1;		//Destination ID
 input[63:0]		regValRnB1;		//Destination Value
-input[5:0]		regIdRnB2;		//Destination ID
+`input_gpr		regIdRnB2;		//Destination ID
 input[63:0]		regValRnB2;		//Destination Value
-input[5:0]		regIdRnB3;		//Destination ID
+`input_gpr		regIdRnB3;		//Destination ID
 input[63:0]		regValRnB3;		//Destination Value
 
-input[5:0]		regIdRnC1;		//Destination ID
+`input_gpr		regIdRnC1;		//Destination ID
 input[63:0]		regValRnC1;		//Destination Value
-input[5:0]		regIdRnC2;		//Destination ID
+`input_gpr		regIdRnC2;		//Destination ID
 input[63:0]		regValRnC2;		//Destination Value
-input[5:0]		regIdRnC3;		//Destination ID
+`input_gpr		regIdRnC3;		//Destination ID
 input[63:0]		regValRnC3;		//Destination Value
 
 input [47:0]	regValPc;		//PC Value (Synthesized)
@@ -143,11 +143,11 @@ assign	regValRx = tRegValRx;
 assign	regValRy = tRegValRy;
 
 
-wire[5:0]		regIdRnAW;		//Destination ID
+`wire_gpr		regIdRnAW;		//Destination ID
 wire[63:0]		regValRnAW;		//Destination Value
-wire[5:0]		regIdRnBW;		//Destination ID
+`wire_gpr		regIdRnBW;		//Destination ID
 wire[63:0]		regValRnBW;		//Destination Value
-wire[5:0]		regIdRnCW;		//Destination ID
+`wire_gpr		regIdRnCW;		//Destination ID
 wire[63:0]		regValRnCW;		//Destination Value
 
 assign	regIdRnAW	= regIdRnA3;

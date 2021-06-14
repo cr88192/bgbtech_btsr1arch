@@ -45,19 +45,19 @@ input			hold;
 input[7:0]		regIdUCmd;
 input[7:0]		regIdUIxt;
 
-input[5:0]		regIdRs;		//Source A, ALU / Base
-input[5:0]		regIdRt;		//Source B, ALU / Index
-input[5:0]		regIdRm;		//Source C, MemStore
+`input_gpr		regIdRs;		//Source A, ALU / Base
+`input_gpr		regIdRt;		//Source B, ALU / Index
+`input_gpr		regIdRm;		//Source C, MemStore
 
 output[63:0]	regValRs;
 output[63:0]	regValRt;
 output[63:0]	regValRm;
 
-input[5:0]		regIdRn1;		//Destination ID
+`input_gpr		regIdRn1;		//Destination ID
 input[63:0]		regValRn1;		//Destination Value
-input[5:0]		regIdRn2;		//Destination ID
+`input_gpr		regIdRn2;		//Destination ID
 input[63:0]		regValRn2;		//Destination Value
-input[5:0]		regIdRn3;		//Destination ID
+`input_gpr		regIdRn3;		//Destination ID
 input[63:0]		regValRn3;		//Destination Value
 
 input [47:0]	regValPc;		//PC Value (Synthesized)

@@ -1,0 +1,83 @@
+Graphics HAL Abstraction for TestKern:
+* Address both GUI and "Bare Hardware" use-cases.
+* Should try to limit overheads.
+
+General:
+* Window / Screen
+* User Input Events
+
+
+A window will have several parameters:
+* A location and size on the target display.
+* A logical resolution and color depth.
+** These need not match those of the target window.
+** Matching parameters would be preferable for performance.
+** Changing these parameters will invalidate any buffers.
+* Backing memory used as a drawing target.
+** Backing memory for secondary buffers.
+** Each buffer may have an associated TWOCC or FOURCC ID.
+* Possible "decoration" parameters, such as flags and a window title.
+
+Rather than treating a window as an abstract canvas which is redrawn using "Blit" operations and similar, the primary abstraction for the window's contents would be an in-memory framebuffer. The backend may itself perform the blit operation.
+
+The memory for these buffers will be provided by the HAL, and may (potentially) be mapped to memory managed by the graphics hardware. However, the memory will be required to exhibit RAM-like behavior (as opposed to raw MMIO).
+
+Memory may also be provided for off-screen buffers or for secondary buffers (such as a depth buffer).
+
+Pixel Formats:
+* RGB555 (16-bit, Default)
+* RGBA32 (32-bit)
+* RGB30A2 (32-bit, Possible)
+* RGBA64F (64-bit, Possible)
+
+Low depth formats, such as 16-color or 8-bit indexed color, are also possible.
+* Index color would associate the palette with the window.
+
+
+Events:
+* KeyUp / KeyDown
+* Mouse Movement
+* ...
+
+Window events will be accessed via polling with the handle:
+* ioctl(winHdl, TK_WINDOW_GETEVENT, eventObject);
+* ioctl(winHdl, TK_WINDOW_PUTEVENT, eventObject);
+
+The GETEVENT request will return a Null Event (FOURCC==0x00000000) in the case where no new events exist in the queue.
+
+ struct TkWinEvent_s {
+ FOURCC		fccEvent;	//Event Type
+ FOURCC		fccAttrib1;	//Attribute Parameter 1
+ FOURCC		fccAttrib2;	//Attribute Parameter 2
+ FOURCC		fccStatus;	//Status Code
+ void		*pData1;	//Event Data Pointer 1
+ void		*pData2;	//Event Data Pointer 2
+ int64_t	lParm1;		//Event Integer Parm 1
+ int64_t	lParm2;		//Event Integer Parm 2
+ };
+
+Event FourCC:
+* 'KYUP': Key Up
+* 'KYDN': Key Down
+* 'MSMV': Mouse Move
+* 'FBGT': Get FrameBuffer Data Pointer
+* 'FBUP': Framebuffer Update Begin
+* 'FBDN': Framebuffer Update Done
+* 'WSET': Set Window Parameter
+** May invalidate any buffers.
+
+Status FourCC:
+* 'OK  ': OK
+* 'FAIL': Request Failed (Generic)
+* 'BAD ': Bad Request (Generic)
+* ...
+
+On PUTEVENT, the status will be initialized to Null, and will be updated based on whether the event succeeded (or was sent).
+
+
+The Attrib fields in Framebuffer events will identify which framebuffer is in question.
+* 'RGB#': RGB Framebuffer
+** "RGB0": Main (Active) Window Image
+** "RGB1..RGB8": Back buffers
+** "RGB0" will alias to "RGB1" unless a different buffer is set.
+* "ZSB#": Depth/Stencil Buffer

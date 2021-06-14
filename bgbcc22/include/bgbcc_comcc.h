@@ -170,6 +170,7 @@ byte has_alux;		//has 128-bit ALU ops
 byte has_fpux;		//has 128-bit FPU ops
 byte has_ops24;		//has 24-bit opcodes
 byte has_bra48;		//has 24-bit opcodes
+byte has_xgpr;		//Has R32..R63
 
 byte rov_sreg;		//rover for scratch registers
 byte rov_rshuf;		//rover for register shuffle
@@ -339,15 +340,15 @@ byte nofs_s32tab;
 
 int jitfl;
 
-const byte *jcachereg;
-const byte *qcachereg;
-const byte *pcachereg;
+const short *jcachereg;
+const short *qcachereg;
+const short *pcachereg;
 
-const byte *fcachereg;
-const byte *dcachereg;
+const short *fcachereg;
+const short *dcachereg;
 
 
-byte reg_pszx[32];		//register sign/zero extension
+byte reg_pszx[64];		//register sign/zero extension
 
 ccxl_register regalc_map[32];
 byte regalc_ltcnt[32];	//lifetime count (who to evict)
