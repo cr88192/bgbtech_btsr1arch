@@ -1972,6 +1972,22 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 	
 	if(BGBCC_CCXL_IsRegGlobalP(ctx, sreg))
 	{
+//		sctx->is_leaftiny|=8;
+//		ctx->cur_func->regflags|=BGBCC_REGFL_NOTLEAFTINY;
+//		if(ctx->cur_func->regflags&BGBCC_REGFL_ALIASPTR)
+		if(sctx->is_pbo && (ctx->cur_func->regflags&BGBCC_REGFL_ALIASPTR))
+//		if(1)
+		{
+#if 0
+//			if(ctx->cur_func->regflags&BGBCC_REGFL_LEAFTINY)
+			if(!(ctx->cur_func->regflags&BGBCC_REGFL_NOTLEAFTINY))
+				printf("Reject LeafTiny PBO+Alias %s\n",
+					ctx->cur_func->qname);
+#endif
+
+			ctx->cur_func->regflags|=BGBCC_REGFL_NOTLEAFTINY;
+		}
+
 #if 0
 		if(BGBCC_CCXL_TypeFloatP(ctx, tty) &&
 			BGBCC_JX2C_EmitRegIsFpReg(ctx, sctx, dreg))
@@ -2723,6 +2739,22 @@ int BGBCC_JX2C_EmitStoreFrameVRegReg(
 	
 	if(BGBCC_CCXL_IsRegGlobalP(ctx, dreg))
 	{
+//		sctx->is_leaftiny|=8;
+//		ctx->cur_func->regflags|=BGBCC_REGFL_NOTLEAFTINY;
+
+//		if(ctx->cur_func->regflags&BGBCC_REGFL_ALIASPTR)
+		if(sctx->is_pbo && (ctx->cur_func->regflags&BGBCC_REGFL_ALIASPTR))
+//		if(1)
+		{
+#if 0
+//			if(ctx->cur_func->regflags&BGBCC_REGFL_LEAFTINY)
+			if(!(ctx->cur_func->regflags&BGBCC_REGFL_NOTLEAFTINY))
+				printf("Reject LeafTiny PBO+Alias %s\n",
+					ctx->cur_func->qname);
+#endif
+			ctx->cur_func->regflags|=BGBCC_REGFL_NOTLEAFTINY;
+		}
+
 #if 1
 		tty=BGBCC_CCXL_GetRegType(ctx, dreg);
 //		if(sctx->has_bjx1mov && !sctx->is_pic &&
@@ -3244,6 +3276,21 @@ int BGBCC_JX2C_EmitLdaFrameVRegReg(
 	
 	if(BGBCC_CCXL_IsRegGlobalP(ctx, sreg))
 	{
+//		sctx->is_leaftiny|=8;
+//		ctx->cur_func->regflags|=BGBCC_REGFL_NOTLEAFTINY;
+//		if(ctx->cur_func->regflags&BGBCC_REGFL_ALIASPTR)
+		if(sctx->is_pbo && (ctx->cur_func->regflags&BGBCC_REGFL_ALIASPTR))
+//		if(1)
+		{
+#if 0
+//			if(ctx->cur_func->regflags&BGBCC_REGFL_LEAFTINY)
+			if(!(ctx->cur_func->regflags&BGBCC_REGFL_NOTLEAFTINY))
+				printf("Reject LeafTiny PBO+Alias %s\n",
+					ctx->cur_func->qname);
+#endif
+			ctx->cur_func->regflags|=BGBCC_REGFL_NOTLEAFTINY;
+		}
+
 //		if(sctx->is_pic)
 		if(0)
 		{
@@ -4203,6 +4250,7 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 //		k-=4;
 		k-=8;
 		sctx->frm_offs_retstr=k;
+		obj->regflags|=BGBCC_REGFL_NOTLEAFTINY;
 	}
 
 	if((-k)>=BGBCC_MAXSTACKFRAME)
@@ -4841,6 +4889,294 @@ int BGBCC_JX2C_EmitFrameProlog_PushRegs(BGBCC_TransState *ctx,
 	return(k);
 }
 
+ccxl_status BGBCC_JX2C_TinyLeafProlog_ReserveReg(BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	BGBCC_CCXL_RegisterInfo *obj, ccxl_register reg)
+{
+	int csreg;
+
+	if(!reg.val)
+		return(0);
+
+	csreg=BGBCC_JX2C_EmitTryGetRegisterRead(ctx, sctx, reg);
+	
+	if((csreg<0) || (csreg==BGBCC_SH_REG_ZZR))
+	{
+#if 0
+		if(!(obj->regflags&BGBCC_REGFL_HYBLEAFTINY))
+		{
+			printf("BGBCC_JX2C_TinyLeafProlog_ReserveReg: "
+				"Reject Alloc Fail %s %016llX\n",
+				obj->qname, reg.val);
+		}
+#endif
+		obj->regflags|=BGBCC_REGFL_HYBLEAFTINY;
+	}else
+	{
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, reg);
+	}
+	
+	return(0);
+}
+
+ccxl_status BGBCC_JX2C_TinyLeafProlog_ReserveVopRegs(BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	BGBCC_CCXL_RegisterInfo *obj, BGBCC_CCXL_VirtOp *op)
+{
+	BGBCC_JX2C_TinyLeafProlog_ReserveReg(ctx, sctx, obj, op->srca);
+	BGBCC_JX2C_TinyLeafProlog_ReserveReg(ctx, sctx, obj, op->srcb);
+	BGBCC_JX2C_TinyLeafProlog_ReserveReg(ctx, sctx, obj, op->srcc);
+	BGBCC_JX2C_TinyLeafProlog_ReserveReg(ctx, sctx, obj, op->srcd);
+	BGBCC_JX2C_TinyLeafProlog_ReserveReg(ctx, sctx, obj, op->dst);
+	return(0);
+}
+
+int BGBCC_JX2C_EmitFrameProlog_TinyLeaf(BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	BGBCC_CCXL_RegisterInfo *obj, int fcnlbl)
+{
+	BGBCC_CCXL_VirtOp	*vop;
+	ccxl_register reg, treg;
+	ccxl_type tty;
+	int i, j, k, bo, ni, nf, vaix, rcls;
+
+	sctx->is_leaftiny=3;
+
+	BGBCC_JX2_EmitLabel(sctx, fcnlbl);
+
+	sctx->cur_fcnbase=BGBCC_JX2_EmitGetOffs(sctx);
+
+	BGBCC_JX2C_EmitLabelFlushRegisters(ctx, sctx);
+
+	sctx->cur_fpscr=0;
+	sctx->dfl_fpscr=0;
+
+	sctx->reg_save=0;
+	sctx->freg_save=0;
+	
+	sctx->sreg_held=0x00F4;
+	sctx->sfreg_held=0x0FF0;
+
+	sctx->sreg_live=sctx->sreg_held;
+	sctx->sfreg_live=sctx->sfreg_held;
+
+	bo=BGBCC_JX2_EmitGetOffs(sctx);
+
+	sctx->regalc_save=0;
+	sctx->regalc_live=0;
+	sctx->regalc_dirty=0;
+
+	sctx->fregalc_save=0;
+	sctx->fregalc_live=0;
+	sctx->fregalc_dirty=0;
+
+	sctx->sreg_held=0x0000;
+	sctx->sfreg_held=0x0000;
+	sctx->sreg_live=sctx->sreg_held;
+	sctx->sfreg_live=sctx->sfreg_held;
+
+	sctx->vsp_rsv=0;
+
+	sctx->lbl_ret=BGBCC_JX2_GenLabelTemp(sctx);
+	
+
+	ni=0; nf=0; vaix=-1;
+	for(i=0; i<obj->n_args; i++)
+	{
+		if(BGBCC_CCXL_TypeVarArgsP(ctx, obj->args[i]->type))
+			{ vaix=i; continue; }
+
+		tty=obj->args[i]->type;
+		treg.val=CCXL_REGTY_ARG|
+			(((u64)tty.val)<<CCXL_REGID_TYPESHIFT)|i;
+//		pr0=BGBCC_JX2C_GetVRegPriority(ctx, sctx, treg);
+	
+		rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, obj->args[i]->type);
+		switch(rcls)
+		{
+		case BGBCC_SH_REGCLS_GR:
+			if((ni>=4) && !sctx->has_bjx1egpr)
+				break;
+			if(ni>=8)
+				break;
+			k=obj->args[i]->fxoffs;
+			if(ni>=4)
+			{
+				BGBCC_JX2C_EmitBindVRegReg(ctx, sctx,
+					treg, BGBCC_SH_REG_RD20+(ni-4));
+				ni++;
+				break;
+			}
+			BGBCC_JX2C_EmitBindVRegReg(ctx, sctx,
+				treg, BGBCC_SH_REG_RD4+ni);
+			ni++;
+			break;
+
+		case BGBCC_SH_REGCLS_VO_GR:
+			obj->regflags|=BGBCC_REGFL_NOTLEAFTINY;
+
+			if((ni>=4) && !sctx->has_bjx1egpr)
+				break;
+			if(ni>=8)
+				break;
+			k=obj->args[i]->fxoffs;
+			if(ni>=4)
+			{
+				BGBCC_JX2C_EmitBindVRegReg(ctx, sctx,
+					treg, BGBCC_SH_REG_RD20+(ni-4));
+				ni++;
+				break;
+			}
+			BGBCC_JX2C_EmitBindVRegReg(ctx, sctx,
+				treg, BGBCC_SH_REG_RD4+ni);
+			ni++;
+			break;
+
+		case BGBCC_SH_REGCLS_VO_REF:
+		case BGBCC_SH_REGCLS_AR_REF:
+//			obj->regflags|=BGBCC_REGFL_NOTLEAFTINY;
+
+		case BGBCC_SH_REGCLS_QGR:
+			if((ni>=4) && !sctx->has_bjx1egpr)
+				break;
+			if(ni>=8)
+				break;
+			k=obj->args[i]->fxoffs;
+			if(ni>=4)
+			{
+				BGBCC_JX2C_EmitBindVRegReg(ctx, sctx,
+					treg, BGBCC_SH_REG_RQ20+(ni-4));
+				ni++;
+				break;
+			}
+			BGBCC_JX2C_EmitBindVRegReg(ctx, sctx,
+				treg, BGBCC_SH_REG_RQ4+ni);
+			ni++;
+			break;
+
+		case BGBCC_SH_REGCLS_VO_QGR:
+			obj->regflags|=BGBCC_REGFL_NOTLEAFTINY;
+
+			if((ni>=4) && !sctx->has_bjx1egpr)
+				break;
+			if(ni>=8)
+				break;
+			k=obj->args[i]->fxoffs;
+			if(ni>=4)
+			{
+				BGBCC_JX2C_EmitBindVRegReg(ctx, sctx,
+					treg, BGBCC_SH_REG_RQ20+(ni-4));
+				ni++;
+				break;
+			}
+			BGBCC_JX2C_EmitBindVRegReg(ctx, sctx,
+				treg, BGBCC_SH_REG_RQ4+ni);
+			ni++;
+			break;
+
+		case BGBCC_SH_REGCLS_GR2:
+		case BGBCC_SH_REGCLS_QGR2:
+		case BGBCC_SH_REGCLS_VO_GR2:
+		case BGBCC_SH_REGCLS_VO_QGR2:
+			obj->regflags|=BGBCC_REGFL_NOTLEAFTINY;
+			break;
+
+		default:
+			BGBCC_DBGBREAK
+			break;
+		}
+	}
+
+	tty=BGBCC_CCXL_GetTypeReturnType(ctx, obj->type);
+	rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, tty);
+
+	if(	(rcls==BGBCC_SH_REGCLS_VO_REF)	||
+		(rcls==BGBCC_SH_REGCLS_VO_QGR2)	||
+		(rcls==BGBCC_SH_REGCLS_VO_GR2)	||
+		(rcls==BGBCC_SH_REGCLS_GR2)		||
+		(rcls==BGBCC_SH_REGCLS_QGR2)	)
+		{ obj->regflags|=BGBCC_REGFL_NOTLEAFTINY; }
+
+	if(sctx->frm_offs_retstr)
+		{ obj->regflags|=BGBCC_REGFL_NOTLEAFTINY; }
+	if(sctx->frm_offs_thisptr)
+		{ obj->regflags|=BGBCC_REGFL_NOTLEAFTINY; }
+
+	sctx->is_leaftiny=1;
+
+//	obj->regflags|=BGBCC_REGFL_HYBLEAFTINY;
+
+	if(!(obj->regflags&BGBCC_REGFL_HYBLEAFTINY))
+	{
+		for(i=0; i<obj->n_vop; i++)
+		{
+			vop=obj->vop[i];
+			BGBCC_JX2C_TinyLeafProlog_ReserveVopRegs(
+				ctx, sctx, obj, vop);
+		}
+
+		if(obj->regflags&BGBCC_REGFL_HYBLEAFTINY)
+		{
+//			sctx->is_leaftiny=0;
+//			BGBCC_JX2C_EmitLabelFlushRegisters(ctx, sctx);
+
+//			sctx->is_leaftiny=3;
+			BGBCC_JX2C_EmitLabelFlushRegisters(ctx, sctx);
+		}
+	}
+	
+	sctx->is_leaftiny=1;
+	
+	return(0);
+}
+
+int BGBCC_JX2C_EmitFrameEpilog_TinyLeaf(BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	BGBCC_CCXL_RegisterInfo *obj)
+{
+	int i;
+
+	if(sctx->is_leaftiny&8)
+	{
+#if 0
+//		if(ctx->cur_func->regflags&BGBCC_REGFL_LEAFTINY)
+		if(!(ctx->cur_func->regflags&BGBCC_REGFL_NOTLEAFTINY))
+			printf("Reject LeafTiny, Epilog&8 %s\n",
+				ctx->cur_func->qname);
+#endif
+		obj->regflags|=BGBCC_REGFL_NOTLEAFTINY;
+	}
+
+//	bo=BGBCC_JX2_EmitGetOffs(sctx);
+
+	for(i=0; i<obj->n_locals; i++)
+	{
+		if(obj->locals[i]->regflags&BGBCC_REGFL_ACCESSED)
+			{ obj->locals[i]->regflags&=~BGBCC_REGFL_CULL; }
+		else
+			{ obj->locals[i]->regflags|=BGBCC_REGFL_CULL; }
+	}
+
+	BGBCC_JX2_EmitCheckFlushIndexImm(sctx);
+
+	if(sctx->lbl_ret)
+	{
+		if(sctx->is_align_wexj&2)
+			{ BGBCC_JX2_EmitPad32AlignLastOp(sctx); }
+		BGBCC_JX2_EmitLabel(sctx, sctx->lbl_ret);
+	}
+
+	sctx->is_leaftiny=3;
+
+	BGBCC_JX2C_EmitSyncRegisters(ctx, sctx);
+
+	BGBCC_JX2C_EmitLabelFlushRegisters(ctx, sctx);
+
+	BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_RTS);
+
+	return(0);
+}
+
 int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx,
 	BGBCC_CCXL_RegisterInfo *obj, int fcnlbl)
@@ -4852,6 +5188,16 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 	int ni, nf, rcls, ob, ov;
 	int epik, epix, epilbl, epij;
 	int i, j, k, fl, fl2;
+
+	if(obj->regflags&BGBCC_REGFL_NOTLEAFTINY)
+		obj->regflags&=~BGBCC_REGFL_LEAFTINY;
+	sctx->is_leaftiny=0;
+
+	if(obj->regflags&BGBCC_REGFL_LEAFTINY)
+	{
+		i=BGBCC_JX2C_EmitFrameProlog_TinyLeaf(ctx, sctx, obj, fcnlbl);
+		return(i);
+	}
 
 #if 1
 	sctx->reg_save=sctx->reg_vsave;
@@ -5082,6 +5428,18 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 	
 	if(sctx->use_egpr)
 		sctx->vsp_rsv+=3;
+	
+	if(!(sctx->is_simpass&64))
+	{
+		if(	!(ctx->cur_func->regflags&BGBCC_REGFL_NOSCRATCHDYN) &&
+			!(ctx->cur_func->regflags&BGBCC_REGFL_NOTLEAF))
+		{
+			if(sctx->use_egpr)
+				{ sctx->vsp_rsv+=8; }
+			else
+				{ sctx->vsp_rsv+=3; }
+		}
+	}
 	
 	if(sctx->use_bp)sctx->vsp_rsv--;
 	if(sctx->is_pic)sctx->vsp_rsv--;
@@ -5566,6 +5924,8 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 	k=sctx->frm_offs_retstr;
 	if(k)
 	{
+		obj->regflags|=BGBCC_REGFL_NOTLEAFTINY;
+
 		if(sctx->is_addr64)
 			BGBCC_JX2C_EmitStoreFrameOfsReg(ctx, sctx, k, BGBCC_SH_REG_RQ2);
 		else
@@ -6241,6 +6601,15 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 	int p0, tsz;
 	int i, j, k;
 
+	if(sctx->is_leaftiny&8)
+		obj->regflags|=BGBCC_REGFL_NOTLEAFTINY;
+
+	if(obj->regflags&BGBCC_REGFL_LEAFTINY)
+	{
+		i=BGBCC_JX2C_EmitFrameEpilog_TinyLeaf(ctx, sctx, obj);
+		return(i);
+	}
+
 	bo=BGBCC_JX2_EmitGetOffs(sctx);
 
 	for(i=0; i<obj->n_locals; i++)
@@ -6287,6 +6656,8 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 	k=sctx->frm_offs_retstr;
 	if(k)
 	{
+		obj->regflags|=BGBCC_REGFL_NOTLEAFTINY;
+
 		tsz=BGBCC_CCXL_TypeGetLogicalSize(ctx, tty);
 
 		if(sctx->is_addr64)

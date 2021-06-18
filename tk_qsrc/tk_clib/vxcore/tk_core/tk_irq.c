@@ -135,6 +135,7 @@ TKPE_TaskInfo *TK_GetCurrentTask()
 	TKPE_TaskInfo *task;
 
 	task=__arch_tbr;
+//	__debugbreak();
 	return(task);
 }
 
@@ -148,6 +149,7 @@ TK_EnvContext *TK_GetCurrentEnvContext()
 	{
 		task=TK_AllocNewTask();
 		TK_SetCurrentTask(task);
+//		__debugbreak();
 //		return(NULL);
 	}
 	env=(void *)(task->envctx);

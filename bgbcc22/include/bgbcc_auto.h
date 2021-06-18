@@ -2831,6 +2831,10 @@ int BGBCC_JX2C_SetupFrameVRegSpan(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx
 int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj);
 int BGBCC_JX2C_CalcFrameEpiKey(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, int rqt, int *repik, int *repix);
 int BGBCC_JX2C_EmitFrameProlog_PushRegs(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, int fl, int *rfl2);
+ccxl_status BGBCC_JX2C_TinyLeafProlog_ReserveReg(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, ccxl_register reg);
+ccxl_status BGBCC_JX2C_TinyLeafProlog_ReserveVopRegs(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, BGBCC_CCXL_VirtOp *op);
+int BGBCC_JX2C_EmitFrameProlog_TinyLeaf(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, int fcnlbl);
+int BGBCC_JX2C_EmitFrameEpilog_TinyLeaf(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj);
 int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, int fcnlbl);
 int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj);
 //AHSRC:jx2cc/jx2_ldix.c
@@ -2954,6 +2958,7 @@ int BGBCC_JX2C_EmitGetRegisterRead(BGBCC_TransState *ctx, BGBCC_JX2_Context *sct
 int BGBCC_JX2C_EmitTryGetRegisterDirty(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
 int BGBCC_JX2C_EmitTryGetRegisterWrite(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
 int BGBCC_JX2C_EmitTryGetRegisterRead(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
+int BGBCC_JX2C_EmitBindVRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg, int dreg);
 int BGBCC_JX2C_GetVRegPriority(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
 int BGBCC_JX2C_GetVRegLiveRange(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg, int *rbeg, int *rend);
 int BGBCC_JX2C_CheckVRegLiveRange(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
@@ -3035,6 +3040,7 @@ int BGBCC_JX2_CheckOps32SequenceOnlyB(BGBCC_JX2_Context *sctx, int opw1, int opw
 int BGBCC_JX2_InferOps32Interlock(BGBCC_JX2_Context *sctx, int opw1, int opw2, int opw3, int opw4, int opw5, int opw6, int fl);
 int BGBCC_JX2_CheckOps32SequenceOnly(BGBCC_JX2_Context *sctx, int opw1, int opw2, int opw3, int opw4);
 int BGBCC_JX2_CheckOps32Immovable(BGBCC_JX2_Context *sctx, int opw1, int opw2);
+int BGBCC_JX2_CheckOps32ImmovableFl(BGBCC_JX2_Context *sctx, int opw1, int opw2, int flag);
 int BGBCC_JX2_CheckCanSwapOps32(BGBCC_JX2_Context *sctx, int opw1, int opw2, int opw3, int opw4);
 int BGBCC_JX2_CheckOps32ValidWexSuffix(BGBCC_JX2_Context *sctx, int opw1, int opw2);
 int BGBCC_JX2_CheckOps32ValidWexSuffix3W(BGBCC_JX2_Context *sctx, int opw1, int opw2);

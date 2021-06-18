@@ -207,11 +207,18 @@ short GetLittleShort(void)
 int GetLittleLong(void)
 {
 	int val = 0;
+	
+//	val = *(int *)data_p;
+//	data_p += 4;
+
+#if 1
 	val = *data_p;
 	val = val + (*(data_p+1)<<8);
 	val = val + (*(data_p+2)<<16);
 	val = val + (*(data_p+3)<<24);
 	data_p += 4;
+#endif
+
 	return val;
 }
 
@@ -239,6 +246,7 @@ void FindNextChunk(char *name)
 		data_p -= 8;
 		last_chunk = data_p + 8 + ( (iff_chunk_len + 1) & ~1 );
 		if (!Q_strncmp(data_p, name, 4))
+//		if ( *(int *)data_p == *(int *)name )
 			return;
 	}
 }
@@ -291,7 +299,10 @@ wavinfo_t GetWavinfo (char *name, byte *wav, int wavlength)
 // find "RIFF" chunk
 	FindChunk("RIFF");
 	if (!(data_p && !Q_strncmp(data_p+8, "WAVE", 4)))
+//	if (!data_p || ((*(int *)(data_p+8)) != (*(int *)"WAVE")))
 	{
+		__debugbreak();
+
 		Con_Printf("Missing RIFF/WAVE chunks\n");
 		return info;
 	}

@@ -311,26 +311,31 @@ extern "C" {
 #define BGBCC_CTXFL_ENDOFTRACE		0x0002
 #define BGBCC_CTXFL_LASTOPRET		0x0004
 
-#define BGBCC_REGFL_ACCESSED		0x0001		//global: was used by code
-#define BGBCC_REGFL_CULL			0x0002		//global: omit from image
-#define BGBCC_REGFL_INITIALIZED		0x0004		//was initialized
+#define BGBCC_REGFL_ACCESSED		0x00000001		//global: was used by code
+#define BGBCC_REGFL_CULL			0x00000002		//global: omit from image
+#define BGBCC_REGFL_INITIALIZED		0x00000004		//was initialized
 	//field: structs were initialized with this field present
 	//struct: struct was initialized with data in-code
 	//register: was initialized with an object (destroy on release)
 
-#define BGBCC_REGFL_RECTRACE		0x0008		//hit by reachability trace
+#define BGBCC_REGFL_RECTRACE		0x00000008		//hit by reachability trace
 
-#define BGBCC_REGFL_DEMANDLOAD		0x0010		//demand-load requested
-#define BGBCC_REGFL_LOADED			0x0020		//already loaded
-#define BGBCC_REGFL_ALIASPTR		0x0040		//may be aliased by a pointer
+#define BGBCC_REGFL_DEMANDLOAD		0x00000010		//demand-load requested
+#define BGBCC_REGFL_LOADED			0x00000020		//already loaded
+#define BGBCC_REGFL_ALIASPTR		0x00000040		//may be aliased by a pointer
 
-#define BGBCC_REGFL_VARCONV			0x0080		//converted to/from variant
+#define BGBCC_REGFL_VARCONV			0x00000080		//converted to/from variant
 
-#define BGBCC_REGFL_TRYLEAF			0x0100		//Maybe Leaf?
-#define BGBCC_REGFL_NOTLEAF			0x0200		//Not Leaf
-#define BGBCC_REGFL_HASARRAY		0x0400		//May Contain Arrays
-#define BGBCC_REGFL_GOFAST			0x0800		//Speed hint seen.
-#define BGBCC_REGFL_ALLOCA			0x1000		//Function uses alloca.
+#define BGBCC_REGFL_TRYLEAF			0x00000100		//Maybe Leaf?
+#define BGBCC_REGFL_NOTLEAF			0x00000200		//Not Leaf
+#define BGBCC_REGFL_HASARRAY		0x00000400		//May Contain Arrays
+#define BGBCC_REGFL_GOFAST			0x00000800		//Speed hint seen.
+#define BGBCC_REGFL_ALLOCA			0x00001000		//Function uses alloca.
+
+#define BGBCC_REGFL_LEAFTINY		0x00002000		//Maybe Tiny Leaf? (No Frame)
+#define BGBCC_REGFL_NOTLEAFTINY		0x00004000		//Not Tiny Leaf
+#define BGBCC_REGFL_HYBLEAFTINY		0x00008000		//Hybrid Tiny Leaf
+#define BGBCC_REGFL_NOSCRATCHDYN	0x00010000		//Can't dynamically alloc
 
 
 #define	BGBCC_MAXSTACKOBJ			0x080000	//maximum allowed stack frame

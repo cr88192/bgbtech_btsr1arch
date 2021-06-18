@@ -54,7 +54,20 @@ int BGBCC_JX2C_ScratchSafeStompReg(
 		((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_RQ0))
 	{
 		if((reg&15)>=2)
+		{
+#if 0
+//			if(ctx->cur_func->regflags&BGBCC_REGFL_LEAFTINY)
+			if(!(ctx->cur_func->regflags&BGBCC_REGFL_NOTLEAFTINY) &&
+					!(sctx->is_leaftiny&8))
+				printf("Reject LeafTiny RegStomp %s\n",
+					ctx->cur_func->qname);
+#endif
+
 			sctx->is_leaf&=(~4);
+			sctx->is_leaftiny|=8;
+			ctx->cur_func->regflags|=BGBCC_REGFL_NOTLEAFTINY;
+			ctx->cur_func->regflags|=BGBCC_REGFL_NOSCRATCHDYN;
+		}
 
 		if((reg&15)>=8)
 			{ BGBCC_DBGBREAK }
@@ -63,7 +76,18 @@ int BGBCC_JX2C_ScratchSafeStompReg(
 		return(BGBCC_JX2C_ScratchStompReg(ctx, sctx, reg));
 	}
 
+#if 0
+//	if(ctx->cur_func->regflags&BGBCC_REGFL_LEAFTINY)
+	if(!(ctx->cur_func->regflags&BGBCC_REGFL_NOTLEAFTINY) &&
+			!(sctx->is_leaftiny&8))
+		printf("Reject LeafTiny RegStomp2 %s\n",
+			ctx->cur_func->qname);
+#endif
+
 	sctx->is_leaf&=(~4);
+	sctx->is_leaftiny|=8;
+	ctx->cur_func->regflags|=BGBCC_REGFL_NOTLEAFTINY;
+	ctx->cur_func->regflags|=BGBCC_REGFL_NOSCRATCHDYN;
 
 	if(((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_R16) ||
 		((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_RD16) ||
@@ -120,7 +144,20 @@ int BGBCC_JX2C_ScratchStompReg(
 		((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_RQ0))
 	{
 		if((reg&15)>=2)
+		{
+#if 0
+//			if(ctx->cur_func->regflags&BGBCC_REGFL_LEAFTINY)
+			if(!(ctx->cur_func->regflags&BGBCC_REGFL_NOTLEAFTINY) &&
+					!(sctx->is_leaftiny&8))
+				printf("Reject LeafTiny RegStomp3 %s\n",
+					ctx->cur_func->qname);
+#endif
+
 			sctx->is_leaf&=(~4);
+			sctx->is_leaftiny|=8;
+			ctx->cur_func->regflags|=BGBCC_REGFL_NOTLEAFTINY;
+			ctx->cur_func->regflags|=BGBCC_REGFL_NOSCRATCHDYN;
+		}
 
 		if((reg&15)>=8)
 			{ BGBCC_DBGBREAK }
@@ -128,7 +165,18 @@ int BGBCC_JX2C_ScratchStompReg(
 		return(1);
 	}
 
+#if 0
+//	if(ctx->cur_func->regflags&BGBCC_REGFL_LEAFTINY)
+	if(!(ctx->cur_func->regflags&BGBCC_REGFL_NOTLEAFTINY) &&
+			!(sctx->is_leaftiny&8))
+		printf("Reject LeafTiny RegStomp4 %s\n",
+			ctx->cur_func->qname);
+#endif
+
 	sctx->is_leaf&=(~4);
+	sctx->is_leaftiny|=8;
+	ctx->cur_func->regflags|=BGBCC_REGFL_NOTLEAFTINY;
+	ctx->cur_func->regflags|=BGBCC_REGFL_NOSCRATCHDYN;
 
 	if(((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_R16) ||
 		((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_RD16) ||
@@ -214,7 +262,20 @@ int BGBCC_JX2C_ScratchHoldReg(
 		((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_RQ0))
 	{
 		if((reg&15)>=2)
+		{
+#if 0
+//			if(ctx->cur_func->regflags&BGBCC_REGFL_LEAFTINY)
+			if(!(ctx->cur_func->regflags&BGBCC_REGFL_NOTLEAFTINY) &&
+					!(sctx->is_leaftiny&8))
+				printf("Reject LeafTiny RegHold %s\n",
+					ctx->cur_func->qname);
+#endif
+
 			sctx->is_leaf&=(~4);
+			sctx->is_leaftiny|=8;
+			ctx->cur_func->regflags|=BGBCC_REGFL_NOTLEAFTINY;
+			ctx->cur_func->regflags|=BGBCC_REGFL_NOSCRATCHDYN;
+		}
 
 		if((reg&15)>=8)
 			{ BGBCC_DBGBREAK }
@@ -222,7 +283,18 @@ int BGBCC_JX2C_ScratchHoldReg(
 		return(1);
 	}
 
+#if 0
+//	if(ctx->cur_func->regflags&BGBCC_REGFL_LEAFTINY)
+	if(!(ctx->cur_func->regflags&BGBCC_REGFL_NOTLEAFTINY) &&
+			!(sctx->is_leaftiny&8))
+		printf("Reject LeafTiny RegHold2 %s\n",
+			ctx->cur_func->qname);
+#endif
+
 	sctx->is_leaf&=(~4);
+	sctx->is_leaftiny|=8;
+	ctx->cur_func->regflags|=BGBCC_REGFL_NOTLEAFTINY;
+	ctx->cur_func->regflags|=BGBCC_REGFL_NOSCRATCHDYN;
 
 	if(((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_R16) ||
 		((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_RD16) ||
@@ -421,8 +493,20 @@ int BGBCC_JX2C_ScratchAllocReg(
 {
 	int i, j;
 
+#if 0
+//	if(ctx->cur_func->regflags&BGBCC_REGFL_LEAFTINY)
+	if(!(ctx->cur_func->regflags&BGBCC_REGFL_NOTLEAFTINY) &&
+			!(sctx->is_leaftiny&8))
+		printf("Reject LeafTiny ScratchAlloc %s\n",
+			ctx->cur_func->qname);
+#endif
+
 	sctx->is_leaf&=(~4);
+	sctx->is_leaftiny|=8;
 	ctx->cur_vtr->trfl&=~1;
+
+	ctx->cur_func->regflags|=BGBCC_REGFL_NOTLEAFTINY;
+	ctx->cur_func->regflags|=BGBCC_REGFL_NOSCRATCHDYN;
 	
 	if((sctx->is_tr_leaf&1) && !sctx->is_simpass)
 		{ BGBCC_DBGBREAK }
@@ -1172,6 +1256,35 @@ const short bgbcc_jx2_maxreg_egt_lf=19;
 
 #endif
 
+#if 0
+const short bgbcc_jx2_jcachereg_ltiny[32]={
+	BGBCC_SH_REG_RD7,  BGBCC_SH_REG_RD6,
+	BGBCC_SH_REG_RD5,  BGBCC_SH_REG_RD4,
+	BGBCC_SH_REG_RD3,  BGBCC_SH_REG_RD2,
+	BGBCC_SH_REG_RD23, BGBCC_SH_REG_RD22,
+	BGBCC_SH_REG_RD21, BGBCC_SH_REG_RD20,
+	BGBCC_SH_REG_RD19, BGBCC_SH_REG_RD18,
+	BGBCC_SH_REG_ZZR };
+const short bgbcc_jx2_qcachereg_ltiny[32]={
+	BGBCC_SH_REG_RQ7,  BGBCC_SH_REG_RQ6,
+	BGBCC_SH_REG_RQ5,  BGBCC_SH_REG_RQ4,
+	BGBCC_SH_REG_RQ3,  BGBCC_SH_REG_RQ2,
+	BGBCC_SH_REG_RQ23, BGBCC_SH_REG_RQ22,
+	BGBCC_SH_REG_RQ21, BGBCC_SH_REG_RQ20,
+	BGBCC_SH_REG_RQ19, BGBCC_SH_REG_RQ18,
+	BGBCC_SH_REG_ZZR };
+const short bgbcc_jx2_pcachereg_ltiny[32]={
+	BGBCC_SH_REG_R7,  BGBCC_SH_REG_R6,
+	BGBCC_SH_REG_R5,  BGBCC_SH_REG_R4,
+	BGBCC_SH_REG_R3,  BGBCC_SH_REG_R2,
+	BGBCC_SH_REG_R23, BGBCC_SH_REG_R22,
+	BGBCC_SH_REG_R21, BGBCC_SH_REG_R20,
+	BGBCC_SH_REG_R19, BGBCC_SH_REG_R18,
+	BGBCC_SH_REG_ZZR };
+
+const short bgbcc_jx2_maxreg_ltiny=12;
+#endif
+
 /* For leaf traces, rotate index to prefer scratch registers.
  */
 int BGBCC_JX2C_EmitRotateRegisterIndex(
@@ -1182,6 +1295,9 @@ int BGBCC_JX2C_EmitRotateRegisterIndex(
 	const short *shuf;
 	int m1, m2, m3;
 	int i1;
+
+	if(sctx->is_leaftiny&1)
+		return(idx);
 
 	switch(sctx->rov_rshuf&3)
 	{
@@ -1259,6 +1375,7 @@ int BGBCC_JX2C_EmitTryGetRegister(
 	if(	(rcls==BGBCC_SH_REGCLS_FR) ||
 		(rcls==BGBCC_SH_REGCLS_DR) )
 	{
+		sctx->is_leaftiny|=8;
 		return(BGBCC_JX2C_EmitTryGetFpRegister(ctx, sctx, reg, fl));
 	}
 
@@ -1281,6 +1398,8 @@ int BGBCC_JX2C_EmitTryGetRegister(
 	if((rcls==BGBCC_SH_REGCLS_GR2) ||
 		(rcls==BGBCC_SH_REGCLS_QGR2))
 	{
+		sctx->is_leaftiny|=8;
+
 		creg=BGBCC_JX2C_EmitTryGetLpRegister(ctx, sctx, reg, fl);
 		if((creg&1) && (creg!=BGBCC_SH_REG_ZZR))
 		{
@@ -1302,6 +1421,7 @@ int BGBCC_JX2C_EmitTryGetRegister(
 	case BGBCC_SH_REGCLS_VO_GR2:
 	case BGBCC_SH_REGCLS_VO_QGR2:
 	case BGBCC_SH_REGCLS_AR_REF:
+//		sctx->is_leaftiny|=8;
 		if(sctx->is_addr64)
 			userq=1;
 		else
@@ -1337,6 +1457,13 @@ int BGBCC_JX2C_EmitTryGetRegister(
 		maxreg=sctx->maxreg_gpr_lf;
 	vrsave=0x00FF00FC;
 
+	if(sctx->is_leaftiny&1)
+	{
+//		excl=0;
+//		vrsave=0xFFFFFF;
+		excl=0x00007FFF;
+	}
+
 #if 1
 	/* value already in a register? */
 //	for(i=0; i<5; i++)
@@ -1356,6 +1483,7 @@ int BGBCC_JX2C_EmitTryGetRegister(
 
 		j=(sctx->regalc_save)>>i;
 		if(!(j&1))
+//		if(!(j&1) && !sctx->is_leaftiny)
 		{
 			if(!j)
 				break;
@@ -1392,6 +1520,54 @@ int BGBCC_JX2C_EmitTryGetRegister(
 		}
 	}
 #endif
+
+//	if(sctx->is_leaftiny && ((fl&3)==1))
+	if(sctx->is_leaftiny&1)
+	{
+		bi=-1;
+		for(i=0; i<maxreg; i++)
+		{
+			if((excl>>i)&1)
+				continue;
+
+			i1=BGBCC_JX2C_EmitRotateRegisterIndex(ctx, sctx, i, 1);
+
+			reg1=sctx->regalc_map[i1];
+			if(!((sctx->regalc_save)&(1<<i1)))
+				{ bi=i1; break; }
+			if(BGBCC_JX2C_CheckVRegIsZRegP(ctx, sctx, reg1))
+				{ bi=i1; break; }
+		}
+
+		if(bi>=0)
+		{
+			i=bi;
+
+			BGBCC_JX2C_EmitSyncRegisterIndex2(ctx, sctx, i, 7);
+			BGBCC_JX2C_StompLpRegisterIndex(ctx, sctx, i);
+
+			sctx->regalc_save|=1<<i;
+			sctx->regalc_ltcnt[i]=0;
+			sctx->regalc_map[i]=reg;
+			sctx->regalc_utcnt[i]++;
+			sctx->regalc_live|=1<<i;
+			if(fl&1)
+				{ sctx->regalc_dirty|=1<<i; }
+			if(userq)
+				creg=sctx->qcachereg[i];
+			else if(usepq)
+				creg=sctx->pcachereg[i];
+			else
+				creg=sctx->jcachereg[i];
+//			BGBCC_JX2C_EmitSaveFrameReg(ctx, sctx, creg);
+			if(fl&2)
+				{ BGBCC_JX2C_EmitLoadFrameVRegReg(ctx, sctx, reg, creg); }
+			return(creg);
+		}
+
+		return(BGBCC_SH_REG_ZZR);
+	}
+
 
 	pr0=BGBCC_JX2C_GetVRegPriority(ctx, sctx, reg);
 
@@ -1537,7 +1713,33 @@ int BGBCC_JX2C_EmitGetRegister(
 
 	creg=BGBCC_JX2C_EmitTryGetRegister(ctx, sctx, reg, fl);
 	if((creg>=0) && (creg!=BGBCC_SH_REG_ZZR))
+	{
+		if(sctx->is_leaftiny&1)
+		{
+			if(BGBCC_JX2C_SaveFrameOfsForReg(ctx, sctx, creg)!=0)
+				{ BGBCC_DBGBREAK }
+		}
+
 		return(creg);
+	}
+
+	if(sctx->is_leaftiny&1)
+	{
+#if 0
+//		if(ctx->cur_func->regflags&BGBCC_REGFL_LEAFTINY)
+		if(!(ctx->cur_func->regflags&BGBCC_REGFL_NOTLEAFTINY) &&
+				!(sctx->is_leaftiny&8))
+			printf("Reject LeafTiny RegAllocFail %s\n",
+				ctx->cur_func->qname);
+#endif
+
+		ctx->cur_func->regflags|=BGBCC_REGFL_NOTLEAFTINY;
+		sctx->is_leaftiny|=8;
+		sctx->is_leaftiny|=4;
+		sctx->is_leaftiny&=~1;
+//		return(BGBCC_SH_REG_ZZR);
+	}
+
 
 	tty=BGBCC_CCXL_GetRegType(ctx, reg);
 	rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, tty);
@@ -1910,6 +2112,59 @@ int BGBCC_JX2C_EmitTryGetRegisterRead(
 	return(BGBCC_JX2C_EmitTryGetRegister(ctx, sctx, reg, 2));
 }
 
+int BGBCC_JX2C_EmitBindVRegReg(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	ccxl_register reg, int dreg)
+{
+	int i, bi, creg, maxreg;
+
+	maxreg=sctx->maxreg_gpr_lf;
+
+	bi=-1;
+	for(i=0; i<maxreg; i++)
+	{
+		creg=sctx->qcachereg[i];
+		if((creg&31)==(dreg&31))
+			{ bi=i; break; }
+	}
+
+	if(bi>=0)
+	{
+		i=bi;
+
+//		BGBCC_JX2C_EmitSyncRegisterIndex2(ctx, sctx, i, 7);
+//		BGBCC_JX2C_StompLpRegisterIndex(ctx, sctx, i);
+
+		if(BGBCC_CCXL_IsRegZzP(ctx, reg))
+			{ BGBCC_DBGBREAK }
+
+		sctx->regalc_save|=1<<i;
+		sctx->regalc_ltcnt[i]=0;
+		sctx->regalc_map[i]=reg;
+		sctx->regalc_utcnt[i]=1;
+		sctx->regalc_live|=1<<i;
+		creg=sctx->qcachereg[i];
+
+//		if(fl&1)
+//			sctx->regalc_dirty|=1<<i;
+//		if(userq)
+//			creg=sctx->qcachereg[i];
+//		else if(usepq)
+//			creg=sctx->pcachereg[i];
+//		else
+//			creg=sctx->jcachereg[i];
+//		BGBCC_JX2C_EmitSaveFrameReg(ctx, sctx, creg);
+//		if((fl&2) && (i>=sctx->vsp_rsv))
+//			{ BGBCC_JX2C_EmitLoadFrameVRegReg(ctx, sctx, reg, creg); }
+
+		sctx->rov_rshuf++;
+		return(creg);
+	}
+	
+	return(-1);
+}
+
 int BGBCC_JX2C_GetVRegPriority(
 	BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx,
@@ -2113,6 +2368,9 @@ int BGBCC_JX2C_EmitReleaseRegister(
 	int creg, regfl, rcls;
 	int i;
 
+	if(sctx->is_leaftiny&1)
+		return(0);
+
 	tty=BGBCC_CCXL_GetRegType(ctx, reg);
 	rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, tty);
 
@@ -2153,10 +2411,13 @@ int BGBCC_JX2C_EmitReleaseRegister(
 //			if(sctx->regalc_utcnt[i]>0)
 //				sctx->regalc_utcnt[i]--;
 
-			if(sctx->regalc_utcnt[i]<=0)
-				__debugbreak();
+			if(!(sctx->is_leaftiny&1))
+			{
+				if(sctx->regalc_utcnt[i]<=0)
+					__debugbreak();
 
-			sctx->regalc_utcnt[i]--;
+				sctx->regalc_utcnt[i]--;
+			}
 
 			regfl=BGBCC_JX2C_GetFrameVRegFlags(ctx, sctx, reg);
 
@@ -2202,6 +2463,12 @@ int BGBCC_JX2C_EmitSyncRegisterIndex2(
 	ccxl_type tty;
 	int creg, regfl, userq, usepq, rcls, vspfl;
 	int i;
+
+	if(sctx->is_leaftiny&1)	//no mem sync in tiny leaves
+	{
+		if(!(ctx->cur_func->regflags&BGBCC_REGFL_HYBLEAFTINY))
+			return(0);
+	}
 
 	i=rgix;
 
@@ -2319,7 +2586,10 @@ int BGBCC_JX2C_EmitSyncRegisterIndex2(
 		}
 
 //		if(!rchk)
-		if(!rchk && ((sctx->regalc_dirty)&(1<<i)))
+//		if(!rchk && ((sctx->regalc_dirty)&(1<<i)))
+		if(!rchk && ((sctx->regalc_dirty)&(1<<i)) &&
+			(	!(sctx->is_leaftiny&1) ||
+				BGBCC_CCXL_IsRegGlobalP(ctx, reg)))
 		{
 			rchk=1;
 			BGBCC_JX2C_EmitStoreFrameVRegReg(ctx, sctx, reg, creg);
@@ -2405,7 +2675,41 @@ int BGBCC_JX2C_EmitLabelFlushRegisters(
 	BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx)
 {
+	ccxl_register reg;
+	ccxl_type tty;
+
 	int i;
+
+	if((sctx->is_leaftiny&3)==1)
+	{
+#if 1
+		if(ctx->cur_func->regflags&BGBCC_REGFL_HYBLEAFTINY)
+		{
+			BGBCC_JX2C_EmitLabelFlushFpRegisters(ctx, sctx);
+
+			for(i=0; i<sctx->maxreg_gpr_lf; i++)
+			{
+				if(!((sctx->regalc_save)&(1<<i)))
+					continue;
+
+				reg=sctx->regalc_map[i];
+
+				if(		BGBCC_CCXL_IsRegLocalP(ctx, reg)	||
+						BGBCC_CCXL_IsRegArgP(ctx, reg)		||
+						BGBCC_CCXL_IsRegTempP(ctx, reg)		)
+							continue;
+
+				sctx->regalc_map[i].val=-1;
+				sctx->regalc_utcnt[i]=0;
+				sctx->regalc_ltcnt[i]=0;
+				sctx->regalc_dirty&=~(1<<i);
+				sctx->regalc_live&=~(1<<i);
+			}
+		}
+#endif
+
+		return(0);
+	}
 
 	BGBCC_JX2C_EmitLabelFlushFpRegisters(ctx, sctx);
 
@@ -2429,6 +2733,21 @@ int BGBCC_JX2C_EmitLabelFlushRegisters(
 
 	if(sctx->has_bjx1egpr && sctx->use_egpr)
 	{
+		sctx->jcachereg=bgbcc_jx2_jcachereg_egpr;
+		sctx->qcachereg=bgbcc_jx2_qcachereg_egpr;
+		sctx->pcachereg=bgbcc_jx2_pcachereg_egpr;
+		sctx->maxreg_gpr=bgbcc_jx2_maxreg_egpr;
+		sctx->maxreg_gpr_lf=bgbcc_jx2_maxreg_egpr_lf;
+	}
+
+	if(sctx->is_leaftiny&1)
+	{
+//		sctx->jcachereg=bgbcc_jx2_jcachereg_ltiny;
+//		sctx->qcachereg=bgbcc_jx2_qcachereg_ltiny;
+//		sctx->pcachereg=bgbcc_jx2_pcachereg_ltiny;
+//		sctx->maxreg_gpr=bgbcc_jx2_maxreg_ltiny;
+//		sctx->maxreg_gpr_lf=bgbcc_jx2_maxreg_ltiny;
+
 		sctx->jcachereg=bgbcc_jx2_jcachereg_egpr;
 		sctx->qcachereg=bgbcc_jx2_qcachereg_egpr;
 		sctx->pcachereg=bgbcc_jx2_pcachereg_egpr;

@@ -1,3 +1,5 @@
+TKMM_MemLnkObj *TKMM_MMList_AllocObj(int sz);
+
 TKMM_MemCelChk	*tkmm_mmcell_chunk[1024];
 int				tkmm_mmcell_nchunk=0;
 
@@ -264,7 +266,8 @@ void *TKMM_MMCell_Malloc(int sz)
 	int b;
 	int i, n;
 	
-	n=(sz+7)/8;
+//	n=(sz+7)/8;
+	n=(sz+15)/8;
 	
 //	n*=2;
 //	n+=2;
@@ -274,7 +277,7 @@ void *TKMM_MMCell_Malloc(int sz)
 		chk=tkmm_mmcell_chunk[i];
 		b=TKMM_MMCell_ChunkTryAllocSpanFlO(chk, n);
 		if(b>=0)
-			{ return(chk->data+b); }
+			{ return(chk->data+b+1); }
 	}
 	
 	for(i=0; i<tkmm_mmcell_nchunk; i++)
@@ -282,7 +285,7 @@ void *TKMM_MMCell_Malloc(int sz)
 		chk=tkmm_mmcell_chunk[i];
 		b=TKMM_MMCell_ChunkTryAllocSpan(chk, n);
 		if(b>=0)
-			{ return(chk->data+b); }
+			{ return(chk->data+b+1); }
 	}
 	
 	i=TKMM_MMCell_AllocNewChunk();
@@ -290,7 +293,7 @@ void *TKMM_MMCell_Malloc(int sz)
 	chk=tkmm_mmcell_chunk[i];
 	b=TKMM_MMCell_ChunkTryAllocSpan(chk, n);
 	if(b>=0)
-		{ return(chk->data+b); }
+		{ return(chk->data+b+1); }
 	
 	__debugbreak();
 }
@@ -347,5 +350,28 @@ int TKMM_MMCell_GetLnkObjCellSize(TKMM_MemLnkObj *obj, void *ptr)
 	if(l<0)
 		return(-1);
 	
-	return(l<<3);
+//	return(l<<3);
+	return((l<<3)-8);
+}
+
+u64 *TKMM_MMCell_GetLnkObjCellHeadPtr(TKMM_MemLnkObj *obj, void *ptr)
+{
+	TKMM_MemCelChk *chk;
+	int ofs, p, v, l;
+
+	chk=(TKMM_MemCelChk *)(obj->data);
+	ofs=((byte *)ptr)-((byte *)(chk->data));
+	p=ofs>>3;
+
+	if(chk->magic1!=0x12345678)
+		__debugbreak();
+	if(chk->magic2!=0x12345678)
+		__debugbreak();
+	if(chk->magic3!=0x12345678)
+		__debugbreak();
+
+	p=TKMM_MMCell_ChunkFindObjBase(chk, p);
+	if(p<0)
+		return(-1);
+	return(chk->data+p);
 }

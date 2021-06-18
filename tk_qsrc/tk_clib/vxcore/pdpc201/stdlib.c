@@ -128,6 +128,39 @@ __PDPCLIB_API__ void **_getreallocptr(void)
 __PDPCLIB_API__ void **_getmsizeptr(void)
 	{ return(&_msize_fptr); }
 
+#ifdef __BJX2__
+// #if 0
+
+__PDPCLIB_API__ void *malloc(size_t size);
+__PDPCLIB_API__ size_t _msize(void *ptr);
+__PDPCLIB_API__ size_t malloc_usable_size(void *ptr);
+__PDPCLIB_API__ void free(void *ptr);
+__PDPCLIB_API__ void *realloc(void *ptr, size_t size);
+
+__asm {
+malloc:
+	MOV.Q	_malloc_fptr, R3
+	JMP		R3
+
+_msize:
+	MOV.Q	_msize_fptr, R3
+	JMP		R3
+
+malloc_usable_size:
+	MOV.Q	_msize_fptr, R3
+	JMP		R3
+
+free:
+	MOV.Q	_free_fptr, R3
+	JMP		R3
+
+realloc:
+	MOV.Q	_realloc_fptr, R3
+	JMP		R3
+};
+
+#else
+
 __PDPCLIB_API__ void *malloc(size_t size)
 {
 	return(_malloc_fptr(size));
@@ -152,6 +185,8 @@ __PDPCLIB_API__ void *realloc(void *ptr, size_t size)
 {
 	return(_realloc_fptr(ptr, size));
 }
+
+#endif
 
 void *malloc_dfl(size_t size)
 {
@@ -639,6 +674,33 @@ __PDPCLIB_API__ size_t wcstombs(char *s, const wchar_t *pwcs, size_t n)
 #ifdef abs
 #undef abs
 #endif
+
+#ifdef labs
+#undef labs
+#endif
+
+#ifdef __BJX2__
+// #if 0
+
+__PDPCLIB_API__ int abs(int j);
+__PDPCLIB_API__ long int labs(long int j);
+
+__asm {
+abs:
+	MOV		R4, R2
+	CMPGT	0, R4
+	NEG?F	R2, R2
+	RTS
+
+labs:
+	MOV		R4, R2
+	CMPQGT	0, R4
+	NEG?F	R2, R2
+	RTS
+};
+
+#else
+
 __PDPCLIB_API__ int abs(int j)
 {
 	if (j < 0)
@@ -648,18 +710,6 @@ __PDPCLIB_API__ int abs(int j)
 	return (j);
 }
 
-__PDPCLIB_API__ div_t div(int numer, int denom)
-{
-	div_t x;
-
-	x.quot = numer / denom;
-	x.rem = numer % denom;
-	return (x);
-}
-
-#ifdef labs
-#undef labs
-#endif
 __PDPCLIB_API__ long int labs(long int j)
 {
 	if (j < 0)
@@ -667,6 +717,17 @@ __PDPCLIB_API__ long int labs(long int j)
 		j = -j;
 	}
 	return (j);
+}
+
+#endif
+
+__PDPCLIB_API__ div_t div(int numer, int denom)
+{
+	div_t x;
+
+	x.quot = numer / denom;
+	x.rem = numer % denom;
+	return (x);
 }
 
 __PDPCLIB_API__ ldiv_t ldiv(long int numer, long int denom)

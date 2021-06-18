@@ -129,6 +129,7 @@ byte is_stable;		//function is stable
 byte is_addr64;		//target uses a 64-bit ISA
 byte is_rawasm;		//is raw assembler
 byte is_leaf;		//function is a leaf function
+byte is_leaftiny;	//function is a tiny leaf function
 byte is_rom;		//building a ROM image
 byte is_betav;		//uses BetaVe tweaks.
 byte is_mergece;	//merge CC0e/CC3e into CExx

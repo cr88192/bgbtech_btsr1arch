@@ -522,6 +522,27 @@ void *tk_realloc(void *ptr, int sz)
 	return(ptr1);
 }
 
+int tk_mincref(void *ptr)
+{
+	return(TKMM_IncRef(ptr));
+}
+
+int tk_mdecref(void *ptr)
+{
+	return(TKMM_DecRef(ptr));
+}
+
+int tk_mgettag(void *ptr)
+{
+	return(TKMM_GetTag(ptr));
+}
+
+int tk_msettag(void *ptr, int tag)
+{
+	return(TKMM_SetTag(ptr, tag));
+}
+
+
 
 char *tk_strdup_in(char *str)
 {

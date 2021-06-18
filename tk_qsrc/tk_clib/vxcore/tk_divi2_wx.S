@@ -130,7 +130,8 @@ __udivsi3_i:
 	.L2:
 	shll1	r4
 	or		r6, r4		| mov		r23, lr
-	extu.l	r4, r2		| rts
+	extu.l	r4, r2
+	rts
 
 .Ret_Zero:
 	mov		#0, r2

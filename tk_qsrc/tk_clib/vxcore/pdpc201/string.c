@@ -151,6 +151,10 @@ __PDPCLIB_API__ char *strncpy(char *s1, const char *s2, size_t n)
 #ifdef strcat
 #undef strcat
 #endif
+
+#ifndef __BJX2__
+// #if 1
+
 __PDPCLIB_API__ char *strcat(char *s1, const char *s2)
 {
 	char *p = s1;
@@ -163,6 +167,7 @@ __PDPCLIB_API__ char *strcat(char *s1, const char *s2)
 	}
 	return (s1);
 }
+#endif
 
 #ifdef strncat
 #undef strncat
@@ -251,6 +256,7 @@ __PDPCLIB_API__ int memcmp(const void *s1, const void *s2, size_t n)
 #endif
 
 #if 0
+// #if 1
 __PDPCLIB_API__ int strcmp(const char *s1, const char *s2)
 {
 	const unsigned char *p1;
@@ -362,6 +368,9 @@ __PDPCLIB_API__ int strcoll(const char *s1, const char *s2)
 #ifdef strncmp
 #undef strncmp
 #endif
+
+#ifndef __BJX2__
+// #if 1
 __PDPCLIB_API__ int strncmp(const char *s1, const char *s2, size_t n)
 {
 	const unsigned char *p1;
@@ -379,6 +388,7 @@ __PDPCLIB_API__ int strncmp(const char *s1, const char *s2, size_t n)
 	}
 	return (0);
 }
+#endif
 
 #ifdef strxfrm
 #undef strxfrm
@@ -819,6 +829,152 @@ __PDPCLIB_API__ char *strerror(int errnum)
 #endif
 }
 
+
+#ifdef __BJX2__
+// #if 0
+
+__PDPCLIB_API__ size_t strlen(const char *s);
+__PDPCLIB_API__ int strcmp(const char *s1, const char *s2);
+__PDPCLIB_API__ int strncmp(const char *s1, const char *s2, size_t n);
+__PDPCLIB_API__ char *strcat(char *s1, const char *s2);
+
+__asm {
+strlen:
+	MOV		R4, R6
+	MOV		0, R5
+	
+	.L0:
+	MOV.Q		(R4), R7
+	PSCHEQ.B	R7, R5, R1
+	BT			.L1
+	ADD			8, R4
+	BRA			.L0
+	.L1:
+	SUB			R4, R6, R2
+	ADD			R1, R2
+	RTS
+	
+strcmp:
+	MOV			0, R2
+	.L0:
+	MOV.Q		(R4), R6
+	MOV.Q		(R5), R7
+	PSCHNE.B	R6, R7, R1
+	BT			.L1
+	PSCHEQ.B	R7, R2, R1
+	BT			.L2
+	ADD			8, R4		|	ADD			8, R5
+	BRA			.L0
+
+#if 1
+	.L1:
+	PSCHEQ.B	R7, R2, R3
+	CMPGT		R3, R1
+	BT			.L2
+	ADD			R1, R4		|	ADD			R1, R5
+	MOV.B		(R4), R6
+	MOV.B		(R5), R7
+#endif
+
+#if 0
+	.L1:
+	MOV.B		(R4), R6
+	MOV.B		(R5), R7
+	CMPQEQ		R6, R7
+	BF			.L3
+	TST			R6, R6
+	BT			.L2
+	ADD			1, R4		|	ADD			1, R5
+	BRA			.L1
+
+#endif
+
+	.L3:
+	CMPGT		R7, R6
+	MOV?T		1, R2
+	MOV?F		-1, R2	
+
+	.L2:
+	RTS
+
+
+strncmp:
+	MOV			0, R2
+	.L0:
+	MOV.Q		(R4), R16
+	MOV.Q		(R5), R17
+	PSCHNE.B	R16, R17, R1
+	BT			.L1
+
+	PSCHEQ.B	R17, R2, R1
+	BT			.L2
+	ADD			-8, R6
+	ADD			8, R4	|	ADD			8, R5
+	CMPGT		0, R6
+	BT			.L0
+	BRA			.L2
+
+#if 1
+	.L1:
+	PSCHEQ.B	R7, R2, R3
+	CMPGT		R3, R1
+	BT			.L2
+	CMPGT		R6, R1
+	BT			.L2
+
+	ADD			R1, R4
+	ADD			R1, R5
+	MOV.B		(R4), R6
+	MOV.B		(R5), R7
+#endif
+
+	.L3:
+	CMPGT		R7, R6
+	MOV?T		1, R2
+	MOV?F		-1, R2	
+
+	.L2:
+	RTS
+
+#if 1
+strcat:
+	MOV		R4, R2
+	MOV		0, R3
+	
+	.L0:
+	MOV.Q		(R4), R7
+	PSCHEQ.B	R7, R3, R1
+	BT			.L1
+	ADD			8, R4
+	BRA			.L0
+	.L1:
+	ADD			R1, R4
+
+	.L2:
+	MOV.Q		(R5), R7
+	PSCHEQ.B	R7, R3, R1
+	BT			.L3
+	MOV.Q		R7, (R4)
+	ADD			8, R4	|	ADD			8, R5
+	BRA			.L2
+
+	.L3:
+	MOV.B		(R5), R7
+	MOV.B		R7, (R4)
+	ADD			1, R4	|	ADD			1, R5
+	TST			R7, R7
+	BF			.L3
+
+	RTS
+#endif
+
+};
+
+#endif
+
+#ifndef __BJX2__
+// #if 1
+
 #ifdef strlen
 #undef strlen
 #endif
@@ -837,6 +993,8 @@ __PDPCLIB_API__ size_t strlen(const char *s)
 	return(n);
 //	return ((size_t)(p - s));
 }
+
+#endif
 
 __PDPCLIB_API__ int stricmp(const char *s1, const char *s2)
 {

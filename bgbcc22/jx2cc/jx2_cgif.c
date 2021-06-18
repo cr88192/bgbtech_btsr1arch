@@ -1401,14 +1401,17 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 
 	BGBCC_JX2_EmitCheckFlushIndexImm(sctx);
 	
-	if(sctx->regalc_live || sctx->fregalc_live)
+	if(!(sctx->is_leaftiny&1) && !(sctx->is_leaftiny&4))
 	{
-		BGBCC_DBGBREAK
-	}
+		if(sctx->regalc_live || sctx->fregalc_live)
+		{
+			BGBCC_DBGBREAK
+		}
 
-	if(sctx->sreg_live || sctx->sfreg_live)
-	{
-		BGBCC_DBGBREAK
+		if(sctx->sreg_live || sctx->sfreg_live)
+		{
+			BGBCC_DBGBREAK
+		}
 	}
 
 #if 1
@@ -1894,6 +1897,34 @@ ccxl_status BGBCC_JX2C_BuildFunction(BGBCC_TransState *ctx,
 		}
 	}
 
+#if 0
+//	if(simonly)
+//	if(sctx->is_simpass==2)
+//	if(sctx->is_simpass==1)
+	if(sctx->is_simpass && !simonly)
+	{
+		if((obj->n_args+obj->n_locals+obj->n_regs)<10)
+		{
+			if(!(obj->regflags&BGBCC_REGFL_NOTLEAFTINY))
+				obj->regflags|=BGBCC_REGFL_LEAFTINY;
+		}
+	}
+	
+	if(!sctx->is_simpass)
+	{
+		i=(obj->n_args+obj->n_locals+obj->n_regs);
+	
+		if(obj->regflags&BGBCC_REGFL_LEAFTINY)
+			printf("BGBCC_JX2C_BuildFunction: LeafTiny %s\n", obj->qname);
+		if(!(obj->regflags&BGBCC_REGFL_NOTLEAFTINY))
+			printf("BGBCC_JX2C_BuildFunction: Unclear Tiny %s %d\n",
+				obj->qname, i);
+	}
+#endif
+
+//	if(obj->regflags&BGBCC_REGFL_NOTLEAFTINY)
+//		printf("BGBCC_JX2C_BuildFunction: Cull Early %s\n",
+//			obj->qname);
 	
 	l0=obj->fxoffs;
 	if(l0<=0)
@@ -1964,6 +1995,17 @@ ccxl_status BGBCC_JX2C_BuildFunction(BGBCC_TransState *ctx,
 		{
 			BGBCC_JX2_SetBeginSimPass(sctx);
 			sctx->is_simpass=np+1;
+
+#if 1
+//			if((obj->n_args+obj->n_locals+obj->n_regs)<12)
+//			if((obj->n_args+obj->n_locals+obj->n_regs)<10)
+			if(((obj->n_args+obj->n_locals+obj->n_regs)<10) &&
+				(obj->n_args<8))
+			{
+				if(!(obj->regflags&BGBCC_REGFL_NOTLEAFTINY))
+					obj->regflags|=BGBCC_REGFL_LEAFTINY;
+			}
+#endif
 		}
 
 		BGBCC_JX2C_SetupFrameLayout(ctx, sctx, obj);
@@ -2080,6 +2122,21 @@ ccxl_status BGBCC_JX2C_BuildFunction(BGBCC_TransState *ctx,
 		fprintf(sctx->cgen_log, "BGBCC_JX2C_BuildFunction: EndSim %s np=%d\n",
 			obj->qname, np);
 		fflush(sctx->cgen_log);
+	}
+#endif
+
+
+#if 0
+//	if(!sctx->is_simpass)
+	if(1)
+	{
+		i=(obj->n_args+obj->n_locals+obj->n_regs);
+	
+		if(obj->regflags&BGBCC_REGFL_LEAFTINY)
+			printf("BGBCC_JX2C_BuildFunction: LeafTiny %s\n", obj->qname);
+		else if(!(obj->regflags&BGBCC_REGFL_NOTLEAFTINY))
+			printf("BGBCC_JX2C_BuildFunction: Unclear Tiny %s %d\n",
+				obj->qname, i);
 	}
 #endif
 

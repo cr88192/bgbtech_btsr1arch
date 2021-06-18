@@ -1260,7 +1260,8 @@ int BGBCC_JX2C_EmitMovVRegImm(
 
 	if((rcls==BGBCC_SH_REGCLS_QGR) || (rcls==BGBCC_SH_REGCLS_VO_QGR))
 	{
-		csreg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, BGBCC_SH_REGCLS_QGR);
+//		csreg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, BGBCC_SH_REGCLS_QGR);
+		csreg=BGBCC_JX2C_ScratchAllocTsReg(ctx, sctx, BGBCC_SH_REGCLS_QGR);
 //		BGBCC_JX2_EmitLoadRegImm(sctx, BGBCC_SH_NMID_MOV, csreg, imm);
 		BGBCC_JX2_EmitLoadRegImm64P(sctx, csreg, imm);
 		BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, csreg);
@@ -1268,7 +1269,8 @@ int BGBCC_JX2C_EmitMovVRegImm(
 		return(1);
 	}
 
-	csreg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, BGBCC_SH_REGCLS_GR);
+//	csreg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, BGBCC_SH_REGCLS_GR);
+	csreg=BGBCC_JX2C_ScratchAllocTsReg(ctx, sctx, BGBCC_SH_REGCLS_GR);
 	BGBCC_JX2_EmitLoadRegImm(sctx, BGBCC_SH_NMID_MOV, csreg, imm);
 	BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, csreg);
 	BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, csreg);
@@ -1321,7 +1323,8 @@ int BGBCC_JX2C_EmitOpNmidVRegVReg(
 	{
 		if((csreg>=0) && (csreg!=BGBCC_SH_REG_ZZR))
 		{
-			ctreg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, BGBCC_SH_REGCLS_GR);
+//			ctreg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, BGBCC_SH_REGCLS_GR);
+			ctreg=BGBCC_JX2C_ScratchAllocTsReg(ctx, sctx, BGBCC_SH_REGCLS_GR);
 			BGBCC_JX2C_EmitOpRegReg(ctx, sctx, nmid, csreg, ctreg);
 			BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, ctreg);
 			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, sreg);
@@ -1329,7 +1332,8 @@ int BGBCC_JX2C_EmitOpNmidVRegVReg(
 			return(1);
 		}
 
-		ctreg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, BGBCC_SH_REGCLS_GR);
+//		ctreg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, BGBCC_SH_REGCLS_GR);
+		ctreg=BGBCC_JX2C_ScratchAllocTsReg(ctx, sctx, BGBCC_SH_REGCLS_GR);
 		BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx, sreg, ctreg);
 		BGBCC_JX2C_EmitOpRegReg(ctx, sctx, nmid, ctreg, ctreg);
 		BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, ctreg);
@@ -1964,6 +1968,7 @@ int BGBCC_JX2C_EmitInitObj(
 			k=obj->regs[i]->fxoffs;
 
 			ctreg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
+//			ctreg=BGBCC_JX2C_ScratchAllocTsReg(ctx, sctx, 0);
 //			BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, BGBCC_SH_REG_R3);
 			if(sctx->is_addr64)
 			{

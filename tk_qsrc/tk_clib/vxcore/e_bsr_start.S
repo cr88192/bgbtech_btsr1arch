@@ -716,6 +716,48 @@ X(__longj):
 	mov.q  @(r4, 128), r1
 	mov r1, vbr
 
+.ifarch has_xgpr
+
+	mov.q	( 24,r4), r3
+	mov.q	( 40,r4), r5
+
+	mov.x	( 48,r4), r6
+	mov.x	( 64,r4), r8
+	mov.x	( 80,r4), r10
+	mov.x	( 96,r4), r12
+
+	mov.q	(112,r4), r14
+	mov.q	(120,r4), r15
+
+	mov.x	(128,r4), r16
+	mov.x	(144,r4), r18
+	mov.x	(160,r4), r20
+	mov.x	(176,r4), r22
+	mov.x	(192,r4), r24
+	mov.x	(208,r4), r26
+	mov.x	(224,r4), r28
+	mov.x	(240,r4), r30
+
+	mov.x	(256,r4), r32
+	mov.x	(272,r4), r34
+	mov.x	(288,r4), r36
+	mov.x	(304,r4), r38
+	mov.x	(320,r4), r40
+	mov.x	(336,r4), r42
+	mov.x	(352,r4), r44
+	mov.x	(368,r4), r46
+
+	mov.x	(384,r4), r48
+	mov.x	(400,r4), r50
+	mov.x	(416,r4), r52
+	mov.x	(432,r4), r54
+	mov.x	(448,r4), r56
+	mov.x	(464,r4), r58
+	mov.x	(480,r4), r60
+	mov.x	(496,r4), r62
+
+.else
+
 //	mov.q  @(  0,r4), r0
 //	mov.q  @(  8,r4), r1
 //	
@@ -750,6 +792,8 @@ X(__longj):
 	mov.q  @(240,r4), r30
 	mov.q  @(248,r4), r31
 
+.endif
+
 //	break
 
 
@@ -759,6 +803,50 @@ X(__longj):
 
 .global X(__setj)
 X(__setj):
+
+.ifarch has_xgpr
+
+	mov.q  r0, @(  0,r4)
+	mov.q  r1, @(  8,r4)
+
+	mov.x  r2, @( 16,r4)
+	mov.x  r4, @( 32,r4)
+	mov.x  r6, @( 48,r4)
+	mov.x  r8, @( 64,r4)
+	mov.x r10, @( 80,r4)
+	mov.x r12, @( 96,r4)
+
+	mov.q r14, @(112,r4)
+	mov.q r15, @(120,r4)
+
+	mov.x r16, @(128,r4)
+	mov.x r18, @(144,r4)
+	mov.x r20, @(160,r4)
+	mov.x r22, @(176,r4)
+	mov.x r24, @(192,r4)
+	mov.x r26, @(208,r4)
+	mov.x r28, @(224,r4)
+	mov.x r30, @(240,r4)
+
+	mov.x r32, @(256,r4)
+	mov.x r34, @(272,r4)
+	mov.x r36, @(288,r4)
+	mov.x r38, @(304,r4)
+	mov.x r40, @(320,r4)
+	mov.x r42, @(336,r4)
+	mov.x r44, @(352,r4)
+	mov.x r46, @(368,r4)
+
+	mov.x r48, @(384,r4)
+	mov.x r50, @(400,r4)
+	mov.x r52, @(416,r4)
+	mov.x r54, @(432,r4)
+	mov.x r56, @(448,r4)
+	mov.x r58, @(464,r4)
+	mov.x r60, @(480,r4)
+	mov.x r62, @(496,r4)
+
+.else
 
 	mov.q  r0, @(  0,r4)
 	mov.q  r1, @(  8,r4)
@@ -793,7 +881,9 @@ X(__setj):
 	mov.q r29, @(232,r4)
 	mov.q r30, @(240,r4)
 	mov.q r31, @(248,r4)
-	
+
+.endif
+
 //	sts pr, r1
 //	mov #16, r0
 //	mov.q  r1, @(r0,r4)
@@ -1719,7 +1809,7 @@ X(__fpu_frcp):
 
 #endif
 
-#if 1
+#if 0
 .global X(strcmp)
 X(strcmp):
 

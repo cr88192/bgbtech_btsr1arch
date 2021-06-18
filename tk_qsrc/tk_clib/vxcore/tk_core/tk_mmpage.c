@@ -80,6 +80,9 @@ int TKMM_InitBootParm()
 }
 
 void *TKMM_MMList_Malloc(int sz);
+u64 *TKMM_MMCell_GetLnkObjCellHeadPtr(TKMM_MemLnkObj *obj, void *ptr);
+int TKMM_MMList_FreeLnkObj(TKMM_MemLnkObj *obj);
+int TKMM_MMCell_FreeLnkObjCellPtr(TKMM_MemLnkObj *obj, void *ptr);
 
 // static int tkmm_findfree_rec=0;
 
@@ -531,4 +534,128 @@ int TKMM_GetSize(void *ptr)
 		sz1=TKMM_FxiToSize(obj->ix);
 	}
 	return(sz1);
+}
+
+int TKMM_IncRef(void *ptr)
+{
+	TKMM_MemLnkObj *obj;
+	u64	*pv;
+	u64 v;
+	int i, b, n, sz1;
+
+	if(!ptr)
+		return(-1);
+
+	obj=TKMM_MMList_GetPtrLnkObj(ptr);
+	if(!obj)
+		{ return(-1); }
+
+	if(obj->fl&8)
+	{
+		pv=TKMM_MMCell_GetLnkObjCellHeadPtr(obj, ptr);
+		v=*pv;
+		i=(v>>16)&255;
+		if(i<255)i++;
+		v=v&(~0x00FF0000ULL);
+		v|=i<<16;
+		*pv=v;
+		return(0);
+	}
+
+	i=obj->refcnt;
+	if(i<255)i++;
+	obj->refcnt=i;
+	return(0);
+}
+
+int TKMM_DecRef(void *ptr)
+{
+	TKMM_MemLnkObj *obj;
+	u64	*pv;
+	u64 v;
+	int i, b, n, sz1;
+
+	if(!ptr)
+		return(-1);
+
+	obj=TKMM_MMList_GetPtrLnkObj(ptr);
+	if(!obj)
+		{ return(-1); }
+
+	if(obj->fl&8)
+	{
+		pv=TKMM_MMCell_GetLnkObjCellHeadPtr(obj, ptr);
+		v=*pv;
+		i=(v>>16)&255;
+		if(i<255)i--;
+		v=v&(~0x00FF0000ULL);
+		v|=i<<16;
+		*pv=v;
+		if(i<=0)
+			{ TKMM_MMCell_FreeLnkObjCellPtr(obj, ptr); }
+		return(0);
+	}
+
+	i=obj->refcnt;
+	if(i<255)i--;
+	obj->refcnt=i;
+	
+	if(i<=0)
+	{
+		TKMM_Free(ptr);
+		return(1);
+	}
+	return(0);
+}
+
+int TKMM_GetTag(void *ptr)
+{
+	TKMM_MemLnkObj *obj;
+	u64	*pv;
+	u64 v;
+	int i, b, n, sz1;
+
+	if(!ptr)
+		return(-1);
+
+	obj=TKMM_MMList_GetPtrLnkObj(ptr);
+	if(!obj)
+		{ return(-1); }
+
+	if(obj->fl&8)
+	{
+		pv=TKMM_MMCell_GetLnkObjCellHeadPtr(obj, ptr);
+		v=*pv;
+		return(v&0xFFFF);
+	}
+
+	return(obj->dty_tag);
+}
+
+int TKMM_SetTag(void *ptr, int tag)
+{
+	TKMM_MemLnkObj *obj;
+	u64	*pv;
+	u64 v;
+	int i, b, n, sz1;
+
+	if(!ptr)
+		return(-1);
+
+	obj=TKMM_MMList_GetPtrLnkObj(ptr);
+	if(!obj)
+		{ return(-1); }
+
+	if(obj->fl&8)
+	{
+		pv=TKMM_MMCell_GetLnkObjCellHeadPtr(obj, ptr);
+		v=*pv;
+		v=v&(~0x0000FFFFULL);
+		v|=tag&0xFFFF;
+		*pv=v;
+		return(0);
+	}
+
+	obj->dty_tag=tag;
+	return(0);
 }
