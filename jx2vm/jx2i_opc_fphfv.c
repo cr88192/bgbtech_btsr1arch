@@ -1356,6 +1356,151 @@ void BJX2_Op_BLKUTX3L_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 }
 
+
+int bjx2_sblk0_dec8_12(int v)
+{
+	int e, v0, v1;
+	
+	if(v&0x70)
+	{
+		e=((v>>4)&7)-1;
+		v0=(v&15)|16;
+		v1=v0<<e;
+	}else
+	{
+		e=0;
+		v0=v&15;
+		v1=v0<<e;
+	}
+	if(v&0x80)
+		v1=-v1;
+	return(v1);
+}
+
+int bjx2_uab1_dec(u32 *samp, u64 blk)
+{
+	int avga, avgb, avge, avgf, avgl, avgp, p, phi, plo, bits;
+	int svl, svr;
+	int i, j, k;
+	
+	avga=(blk<<2)&0xFC;
+	avgb=(blk>>4)&0xFC;
+	avge=(blk>>9)&0x78;
+
+	bits=blk>>16;
+
+	avga=bjx2_sblk0_dec8_12(avga);
+	avgb=bjx2_sblk0_dec8_12(avgb);
+	avge=bjx2_sblk0_dec8_12(avge);
+
+	for(i=0; i<16; i++)
+	{
+		j=bits>>i;
+		avgp=(((31-2*i)*avga)+((2*i+1)*avgb))/32;
+		phi=avgp+avge;
+		plo=avgp-avge;
+		k=(j&1)?phi:plo;
+		svl=k<<4;	svr=k<<4;
+		samp[i]=(svl&0x0000FFFFU)|((svr<<16)&0xFFFF0000U);
+	}
+	return(0);
+}
+
+int bjx2_uab2_dec(u32 *samp, u64 blk)
+{
+	int avga, avgb, avge, avgf, avgl, avgp, p, phi, plo, bits;
+	int svl, svr;
+	int i, j, k;
+	
+	avga=(blk>> 0)&0xFF;
+	avgb=(blk>> 8)&0xFF;
+	avge=(blk>>16)&0xFF;
+	avgl=(blk>>16)&0xFF;
+
+	bits=blk>>32;
+
+	avga=bjx2_sblk0_dec8_12(avga);
+	avgb=bjx2_sblk0_dec8_12(avgb);
+	avge=bjx2_sblk0_dec8_12(avge);
+	avgl=bjx2_sblk0_dec8_12(avgl);
+
+	avgf=((avge*85)>>8);
+	
+	for(i=0; i<16; i++)
+	{
+		j=bits>>(i*2);
+	
+		avgp=(((31-2*i)*avga)+((2*i+1)*avgb))/32;
+		
+		if(j&1)
+		{
+			phi=avgp+avge;
+			plo=avgp-avge;
+		}else
+		{
+			phi=avgp+avgf;
+			plo=avgp-avgf;
+		}
+
+		k=(j&2)?phi:plo;
+
+//		if(k> 32767)k= 32767;
+//		if(k<-32767)k=-32767;
+
+		svl=(k+avgl)<<4;
+		svr=(k-avgl)<<4;
+
+		samp[i]=(svl&0x0000FFFFU)|((svr<<16)&0xFFFF0000U);
+	}
+	return(0);
+}
+
+u32 	bjx2_uab1_cachedblka[16];
+u32		bjx2_uab1_cachedpels[16][16];
+
+u64 	bjx2_uab2_cachedblka[16];
+u32		bjx2_uab2_cachedpels[16][16];
+
+void BJX2_Op_BLKUAB1_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+	int hxi, ix0, cxa, cxb;
+
+	va=ctx->regs[op->rm];
+	vb=ctx->regs[op->ro];
+
+	ix0=vb&15;
+	hxi=((((va^(va>>32))*65521)*251)>>24)&15;
+	if(bjx2_uab1_cachedblka[hxi]!=va)
+	{
+		bjx2_uab1_dec(bjx2_uab1_cachedpels[hxi], va);
+		bjx2_uab1_cachedblka[hxi]=va;
+	}
+
+	vc=bjx2_uab1_cachedpels[hxi][ix0];
+	ctx->regs[op->rn]=vc;
+}
+
+void BJX2_Op_BLKUAB2_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+	int hxi, ix0, cxa, cxb;
+
+	va=ctx->regs[op->rm];
+	vb=ctx->regs[op->ro];
+
+	ix0=vb&15;
+	hxi=((((va^(va>>32))*65521)*251)>>24)&15;
+	if(bjx2_uab2_cachedblka[hxi]!=va)
+	{
+		bjx2_uab2_dec(bjx2_uab2_cachedpels[hxi], va);
+		bjx2_uab2_cachedblka[hxi]=va;
+	}
+
+	vc=bjx2_uab2_cachedpels[hxi][ix0];
+	ctx->regs[op->rn]=vc;
+}
+
 void BJX2_Op_BLINT_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	u64 pxa, pxb, pxc, pxd, frsp, frtp;

@@ -635,6 +635,13 @@ void BJX2_Op_FLDCH_ImmGReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	v=BJX2_CvtHalfToFloat(v);
 	BJX2_PtrSetDoubleIx(ctx->regs, op->rn, BJX2_PtrGetFloat(&v));
 }
+
+void BJX2_Op_FLDCF_ImmGReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u32 v;
+	v=op->imm;
+	BJX2_PtrSetDoubleIx(ctx->regs, op->rn, BJX2_PtrGetFloat(&v));
+}
 #endif
 
 

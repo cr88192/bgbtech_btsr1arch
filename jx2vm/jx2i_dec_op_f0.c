@@ -3170,6 +3170,19 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				op->fl|=BJX2_OPFL_REGX3R;
 			}
 			break;
+
+		case 0xC:	/* F0ez_6Czz */
+			op->nmid=BJX2_NMID_BLKUAB1;
+			op->fmid=BJX2_FMID_REGREGREG;
+			op->Run=BJX2_Op_BLKUAB1_RegRegReg;
+			op->fl|=BJX2_OPFL_NOWEX;
+			if(eq)
+			{
+				op->nmid=BJX2_NMID_BLKUAB2;
+				op->fmid=BJX2_FMID_REGREGREG;
+				op->Run=BJX2_Op_BLKUAB2_RegRegReg;
+			}
+			break;
 		}
 		break;
 

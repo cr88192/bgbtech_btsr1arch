@@ -518,6 +518,8 @@ Will use direct linking and assume a non-modifiable program space.
 
 #define BJX2_NMID_PSCHEQB		0x100		//
 #define BJX2_NMID_PSCHNEB		0x101		//
+#define BJX2_NMID_BLKUAB1		0x102		//
+#define BJX2_NMID_BLKUAB2		0x103		//
 
 
 #define BJX2_FMID_NONE			0x00		//?
@@ -589,7 +591,7 @@ typedef signed long long nlint;
 
 #if defined(ARM)
 // #if 1
-#define BJX2_ADDR32
+// #define BJX2_ADDR32
 #endif
 
 #ifdef BJX2_ADDR32

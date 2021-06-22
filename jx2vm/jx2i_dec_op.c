@@ -3450,9 +3450,9 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 //			op->cyc=2;
 			break;
 		case BJX2_NMID_RTS:
-			op->cyc=5;
+//			op->cyc=5;
 //			op->cyc=3;
-//			op->cyc=2;
+			op->cyc=2;
 			break;
 		case BJX2_NMID_RTSU:
 //			op->cyc=3;

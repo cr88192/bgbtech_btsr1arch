@@ -301,6 +301,9 @@ int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
 #endif
 		if(eq)
 		{
+			if(op->rm&1)
+				op->rm=0x20|((op->rm)&0x1E);
+		
 			op->fl|=BJX2_OPFL_NOWEX;
 			op->fl|=BJX2_OPFL_NOWEXSFX;
 			op->nmid=BJX2_NMID_MOVX2;
@@ -344,6 +347,9 @@ int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
 #endif
 		if(eq)
 		{
+			if(op->rn&1)
+				op->rn=0x20|((op->rn)&0x1E);
+
 			op->fl|=BJX2_OPFL_NOWEX;
 			op->fl|=BJX2_OPFL_NOWEXSFX;
 			op->nmid=BJX2_NMID_MOVX2;

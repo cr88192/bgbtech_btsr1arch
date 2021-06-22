@@ -644,14 +644,23 @@ int BJX2_CheckWexSanity2W(BJX2_Context *ctx,
 	BJX2_Opcode *op1, BJX2_Opcode *op2)
 {
 	if(op1->fl&BJX2_OPFL_NOWEX)
+	{
+		printf("BJX2_CheckWexSanity2W: Invalid Prefix\n");
 		return(-1);
+	}
 	if(op2->fl&BJX2_OPFL_NOWEXSFX)
+	{
+		printf("BJX2_CheckWexSanity2W: Invalid Suffix\n");
 		return(-1);
+	}
 
 	if(op1->rn!=BJX2_REG_ZZR)
 	{
 		if((op1->rn==op2->rm) || (op1->rn==op2->ro))
+		{
+			printf("BJX2_CheckWexSanity2W: Bundle Dependency\n");
 			return(-1);
+		}
 	}
 
 	if(op2->rn!=BJX2_REG_ZZR)
@@ -885,7 +894,8 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 				op->Run=BJX2_Op_BREAK_None;
 			}				
 		}
-		
+
+#if 0
 		if(op->nmid==BJX2_NMID_RTSU)
 		{
 			if((i<6) && !(tfl&1))
@@ -894,6 +904,7 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 				op->Run=BJX2_Op_BREAK_None;
 			}
 		}
+#endif
 
 #if 1
 		if((op->fl&BJX2_OPFL_WEX) && op1)
@@ -907,12 +918,15 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 				op->Run=BJX2_Op_BREAK_None;
 			}
 
+#if 1
 			if(op->fl&BJX2_OPFL_NOWEX)
 			{
 				op->nmid=BJX2_NMID_BREAK;
 				op->Run=BJX2_Op_BREAK_None;
 			}
+#endif
 
+#if 1
 			if((op1->fl&BJX2_OPFL_WEX) && op2)
 			{
 				if(BJX2_CheckWexSanity3W(ctx, op, op1, op2)<=0)
@@ -928,6 +942,7 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 					op->Run=BJX2_Op_BREAK_None;
 				}
 			}
+#endif
 			
 			if(op1->nmid==BJX2_NMID_BLINTA)
 			{

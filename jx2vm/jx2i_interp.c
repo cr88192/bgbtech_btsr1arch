@@ -1016,6 +1016,11 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_RGB5PCK64:		s0="RGB5PCK64";		break;
 	case BJX2_NMID_RGB5UPCK64:		s0="RGB5UPCK64";	break;
 
+	case BJX2_NMID_PSCHEQW:		s0="PSCHEQ.W";	break;
+	case BJX2_NMID_PSCHNEW:		s0="PSCHNE.W";	break;
+	case BJX2_NMID_PSCHEQB:		s0="PSCHEQ.B";	break;
+	case BJX2_NMID_PSCHNEB:		s0="PSCHNE.B";	break;
+
 	default:
 		sprintf(tb, "?NM%02X", nmid);
 		s0=tb;
@@ -1823,8 +1828,8 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 //	BJX2_Trace *tra[65536];
 	BJX2_Trace **tra;
 	char tb[256];
-	s64 cyc_nmid[256];
-	int idx_nmid[256];
+	s64 cyc_nmid[1024];
+	int idx_nmid[1024];
 	char *topfn_name[1024];
 	int topfn_chn[1024];
 	int topfn_cyc[1024];
@@ -1840,7 +1845,7 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 	int trn, trtops;
 	int i, j, k, h;
 
-	for(i=0; i<256; i++)
+	for(i=0; i<1024; i++)
 	{
 		cyc_nmid[i]=0;
 	}
@@ -2034,11 +2039,11 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 #endif
 	}
 
-	for(i=0; i<256; i++)
+	for(i=0; i<1024; i++)
 		idx_nmid[i]=i;
 
-	for(i=0; i<256; i++)
-		for(j=i+1; j<256; j++)
+	for(i=0; i<1024; i++)
+		for(j=i+1; j<1024; j++)
 	{
 		if(cyc_nmid[idx_nmid[j]]>cyc_nmid[idx_nmid[i]])
 		{
@@ -2066,7 +2071,8 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 #if 1
 	printf("Cyc/Nmid:\n");
 //	for(i=0; i<64; i++)
-	for(i=0; i<128; i++)
+//	for(i=0; i<128; i++)
+	for(i=0; i<512; i++)
 	{
 		k=idx_nmid[i*2];
 		if(!cyc_nmid[k])
