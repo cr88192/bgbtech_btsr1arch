@@ -770,6 +770,36 @@ bool BGBCC_CCXL_IsRegImmUIntP(
 	return(false);
 }
 
+bool BGBCC_CCXL_IsRegImmUnsignedP(
+	BGBCC_TransState *ctx, ccxl_register reg)
+{
+	s64 li;
+
+	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_INT)
+	{
+		if((reg.val&CCXL_REGINT_STMASK)==CCXL_REGINT_ST_UI)
+		{
+			return(true);
+		}
+
+		if(
+			((reg.val&CCXL_REGINT_STMASK)==CCXL_REGINT_ST_UL) )
+		{
+			return(true);
+		}
+
+//		if(	((reg.val&CCXL_REGINT_STMASK)==CCXL_REGINT_ST_SB) ||
+//			((reg.val&CCXL_REGINT_STMASK)==CCXL_REGINT_ST_UB) ||
+//			((reg.val&CCXL_REGINT_STMASK)==CCXL_REGINT_ST_SS) ||
+//			((reg.val&CCXL_REGINT_STMASK)==CCXL_REGINT_ST_US) )
+//				return(true);
+
+		return(false);
+	}
+	return(false);
+}
+
+
 bool BGBCC_CCXL_IsRegImmFloatP(
 	BGBCC_TransState *ctx, ccxl_register reg)
 {

@@ -831,6 +831,8 @@ parameter[5:0] JX2_UCIX_CONV2_BLKUTX1		= 6'h08;	//Get pixel, UTX1
 parameter[5:0] JX2_UCIX_CONV2_BLKUTX2		= 6'h09;	//Get pixel, UTX2
 parameter[5:0] JX2_UCIX_CONV2_BLKUTX3H		= 6'h0A;	//Get pixel, UTX3H
 parameter[5:0] JX2_UCIX_CONV2_BLKUTX3L		= 6'h0B;	//Get pixel, UTX3L
+// parameter[5:0] JX2_UCIX_CONV2_BLKUAB1		= 6'h0C;	//Get Sample, UAB1
+// parameter[5:0] JX2_UCIX_CONV2_BLKUAB2		= 6'h0D;	//Get Sample, UAB2
 
 // parameter[5:0] JX2_UCIX_CONV_MOVX		= 6'h23;		//MOVX
 
@@ -851,6 +853,10 @@ parameter[5:0] JX2_UCIX_MUL3_PHMULU	= 6'h0B;		//Packed-High
 
 parameter[5:0] JX2_UCIX_MUL3_PHMULSA	= 6'h0C;		//Packed-Mul Add
 parameter[5:0] JX2_UCIX_MUL3_PHMULUA	= 6'h0D;		//Packed-Mul Add
+
+parameter[5:0] JX2_UCIX_MUL3_BLKUAB1	= 6'h1C;	//Get Sample, UAB1
+parameter[5:0] JX2_UCIX_MUL3_BLKUAB2	= 6'h1D;	//Get Sample, UAB2
+
 
 parameter[5:0] JX2_UCIX_LDI_LDIX	= 6'h00;		//
 parameter[5:0] JX2_UCIX_LDI_LDISH8	= 6'h01;		//

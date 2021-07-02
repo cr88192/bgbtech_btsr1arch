@@ -57,6 +57,10 @@ global_register extern int				dc_yh;
 global_register extern fixed_t			dc_scale;
 global_register extern fixed_t			dc_iscale;
 global_register extern fixed_t			dc_texturemid;
+global_register	extern int				dc_col;
+global_register	extern u16				dc_baseluma;
+//global_register	extern u16				dc_luma;
+global_register	extern u64				dc_color;
 
 extern byte		dc_isspr;
 extern fixed_t		dc_zdist;
@@ -70,6 +74,9 @@ global_register extern byte			*dc_source;
 //  here.
 void 	R_DrawColumn (void);
 void 	R_DrawColumnLow (void);
+
+void	R_DrawColumnUtx (void);
+void	R_DrawColumnLowUtx (void);
 
 void	R_DrawColumn_ZB (void);
 
@@ -106,15 +113,21 @@ global_register extern byte			*ds_source;
 global_register extern byte			*translationtables;
 global_register extern byte			*dc_translation;
 
+global_register extern u16				ds_baseluma;
+// global_register extern u16				ds_luma;
+global_register extern u64				ds_color;
+
 
 // Span blitting for rows, floor/ceiling.
 // No Sepctre effect needed.
 void 	R_DrawSpan (void);
+void	R_DrawSpanUtx (void);
 
 void 	R_DrawSpan_ZB (void);
 
 // Low resolution mode, 160x200?
 void 	R_DrawSpanLow (void);
+void	R_DrawSpanLowUtx (void);
 
 
 void

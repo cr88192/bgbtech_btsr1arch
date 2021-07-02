@@ -212,7 +212,8 @@ void R_InitSpriteDefs (char** namelist)
 	
 	printf("R_InitSpriteDefs: numsprites=%d\n", numsprites);
 	
-	sprites = Z_Malloc(numsprites *sizeof(*sprites), PU_STATIC, NULL);
+//	sprites = Z_Malloc(numsprites *sizeof(*sprites), PU_STATIC, NULL);
+	sprites = Z_Malloc((numsprites+16) *sizeof(*sprites), PU_STATIC, NULL);
 	
 	start = firstspritelump-1;
 	end = lastspritelump+1;
@@ -315,7 +316,7 @@ void R_InitSpriteDefs (char** namelist)
 		// allocate space for the frames present and copy sprtemp to it
 		sprites[i].numframes = maxframe;
 		sprites[i].spriteframes = 
-			Z_Malloc (maxframe * sizeof(spriteframe_t), PU_STATIC, NULL);
+			Z_Malloc ((maxframe+4) * sizeof(spriteframe_t), PU_STATIC, NULL);
 		memcpy (sprites[i].spriteframes, sprtemp,
 			maxframe*sizeof(spriteframe_t));
 	}
@@ -429,8 +430,105 @@ void R_DrawMaskedColumn (column_t* column)
 	dc_texturemid = basetexturemid;
 }
 
+#ifdef UTXSPRITE
 
+void R_DrawMaskedColumnUtx (u64 *blka, int len)
+{
+	int		topscreen;
+	int 	bottomscreen;
+	fixed_t	basetexturemid;
+	
+	basetexturemid = dc_texturemid;
+	
+	topscreen = sprtopscreen + spryscale*0;
+	bottomscreen = topscreen + spryscale*len;
 
+	dc_yl = (topscreen+FRACUNIT-1)>>FRACBITS;
+	dc_yh = (bottomscreen-1)>>FRACBITS;
+		
+	if (dc_yh >= mfloorclip[dc_x])
+		dc_yh = mfloorclip[dc_x]-1;
+	if (dc_yl <= mceilingclip[dc_x])
+		dc_yl = mceilingclip[dc_x]+1;
+
+	if (dc_yl <= dc_yh)
+	{
+		dc_source = (byte *)blka;
+		dc_texturemid = basetexturemid - (0<<FRACBITS);
+//		colfunc ();	
+		wallcolfunc ();	
+	}
+	
+	dc_texturemid = basetexturemid;
+}
+
+void
+R_DrawVisSprite
+( vissprite_t*		vis,
+  int			x1,
+  int			x2 )
+{
+	u64			*blka;
+	column_t	*column;
+	int			texturecolumn;
+	fixed_t		frac;
+	patch_t		*patch;
+	int			k, l, ys1;
+	
+	
+	patch = W_CachePatchNumUtx (vis->patch+firstspritelump, PU_CACHE);
+
+	dc_colormap = vis->colormap;
+
+	k = (dc_colormap - colormaps)>>8;
+	l = cmap_luma[k];
+	l = l << 8;
+
+	if(l < 0x0000) l = 0x0000;
+	if(l > 0xFFFF) l = 0xFFFF;
+	dc_color = (((u64)l)<<0) | (((u64)l)<<16) |
+		(((u64)l)<<32) | 0xFFFF000000000000ULL;
+	if(k==32)
+	{
+		dc_color = 0xFFFFAAAA55551111ULL;
+	}
+
+	if (!dc_colormap)
+	{
+		// NULL colormap = shadow draw
+		colfunc = fuzzcolfunc;
+	}
+	
+	dc_iscale = abs(vis->xiscale)>>detailshift;
+	dc_texturemid = vis->texturemid;
+	frac = vis->startfrac;
+	spryscale = vis->scale;
+    dc_scale = spryscale;
+    dc_zdist = vis->tz;
+	sprtopscreen = centeryfrac - FixedMul(dc_texturemid,spryscale);
+	dc_isspr = 1;
+	
+//	ys1=(patch->height+3)>>2;
+	ys1=(patch->height+7)>>2;
+	blka = (u64 *)(patch+1);
+	
+	for (dc_x=vis->x1 ; dc_x<=vis->x2 ; dc_x++, frac += vis->xiscale)
+	{
+		texturecolumn = frac>>FRACBITS;
+		if(texturecolumn >= (patch->width))
+			break;
+		if (texturecolumn < 0)
+			break;
+		k = texturecolumn >> 2;
+		
+		dc_col = texturecolumn;
+		R_DrawMaskedColumnUtx(blka+(k*ys1), patch->height);
+	}
+
+	colfunc = basecolfunc;
+}
+
+#else
 //
 // R_DrawVisSprite
 //  mfloorclip and mceilingclip should also be set.
@@ -445,13 +543,27 @@ R_DrawVisSprite
 	int			texturecolumn;
 	fixed_t		frac;
 	patch_t*		patch;
+	int			k, l;
 	
 	
 //	patch = W_CacheLumpNum (vis->patch+firstspritelump, PU_CACHE);
 	patch = W_CachePatchNum (vis->patch+firstspritelump, PU_CACHE);
 
 	dc_colormap = vis->colormap;
-	
+
+	k = (dc_colormap - colormaps)>>8;
+	l = cmap_luma[k];
+	l = l << 8;
+
+	if(l < 0x0000) l = 0x0000;
+	if(l > 0xFFFF) l = 0xFFFF;
+	dc_color = (((u64)l)<<0) | (((u64)l)<<16) |
+		(((u64)l)<<32) | 0xFFFF000000000000ULL;
+	if(k==32)
+	{
+		dc_color = 0xFFFFAAAA55551111ULL;
+	}
+
 	if (!dc_colormap)
 	{
 		// NULL colormap = shadow draw
@@ -496,6 +608,8 @@ R_DrawVisSprite
 	colfunc = basecolfunc;
 }
 
+#endif
+
 
 int lightlevel;
 
@@ -537,7 +651,8 @@ void R_ProjectSprite (mobj_t* thing)
 	
 	angle_t		ang;
 	fixed_t		iscale;
-	
+
+#if 0
 //	if((thing->spawnpoint.type>=0x9300) &&
 //		(thing->spawnpoint.type<=0x9303))
 	if((thing->type>=MT_POLYOBJ0) &&
@@ -546,6 +661,7 @@ void R_ProjectSprite (mobj_t* thing)
 		R_ProjectSprite_PolyObj(thing);
 		return;
 	}
+#endif
 	
 	// transform the origin point
 	tr_x = thing->x - viewx;

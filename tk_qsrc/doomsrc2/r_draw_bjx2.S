@@ -280,8 +280,6 @@ X(R_DrawSpan):
 #endif
 
 
-
-
 #if 1
 
 .global X(R_DrawColumnLow)
@@ -571,7 +569,8 @@ X(I_FinishUpdate_ScanCopyVbl):
 	OR		R2, R3
 	SHLD.Q	R3, 32, R2
 	OR		R2, R3
-	MOV		0xFBDEFBDEFBDEFBDE, R2
+//	MOV		0xFBDEFBDEFBDEFBDE, R2
+	MOV		0x7BDE7BDE7BDE7BDE, R2
 	AND		R2, R3
 	SHLD.Q	R3, #-1, R3
 	

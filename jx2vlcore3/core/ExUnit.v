@@ -426,12 +426,22 @@ reg[2:0]		ex1ValBraDir;
 wire[47:0]		id1PreBraPc;
 wire			id1PreBra;
 
+`ifdef jx2_prebra_rts
+reg				id1BraPipelineLr;
+`else
+wire			id1BraPipelineLr;
+assign		id1BraPipelineLr = 1'b1;
+`endif
+
+reg				id1BraPipelineLrL;
+
 DecPreBra	preBra(
 	clock,				reset,
 	id1IstrWord[63:0],	id1ValBPc,	id1ValPc,
 	id1PreBraPc,		id1PreBra,
 	gprValLr,			ifLastPc,
-	ex1ValBPc,			ex1ValBraDir);
+	ex1ValBPc,			ex1ValBraDir,
+	id1BraPipelineLrL);
 `else
 wire			id1PreBra;
 assign		id1PreBra = 0;
@@ -1033,10 +1043,10 @@ ExALU	exAlu(
 // ExMul	ex1Mul(
 // ExMulB	ex1Mul(
 ExMulC	ex1Mul(
-	clock,				reset,
-	ex1RegValRs[31:0],	ex1RegValRt[31:0],
-	ex1OpUCmd,			ex1OpUIxt,
-	exHold2,			ex1MulVal
+	clock,			reset,
+	ex1RegValRs,	ex1RegValRt,
+	ex1OpUCmd,		ex1OpUIxt,
+	exHold2,		ex1MulVal
 	);
 
 ExMulW	ex1MulW(
@@ -1905,8 +1915,22 @@ begin
 
 `endif
 
+`ifdef jx2_prebra_rts
+		id1BraPipelineLr =
+			(ex1RegIdCn1 == JX2_CR_LR) ||
+			(ex2RegIdCn1 == JX2_CR_LR) ||
+//			(ex3RegIdCn1 == JX2_CR_LR) ||
+			(ex1OpUCmd[5:0]==JX2_UCMD_JSR) ||
+			(ex1OpUCmd[5:0]==JX2_UCMD_BSR) ||
+			(ex2OpUCmd[5:0]==JX2_UCMD_JSR) ||
+			(ex2OpUCmd[5:0]==JX2_UCMD_BSR) ||
+			(ex3OpUCmd[5:0]==JX2_UCMD_JSR) ||
+			(ex3OpUCmd[5:0]==JX2_UCMD_BSR);
+`endif
+
 `ifdef jx2_enable_xgpr
 
+`ifndef def_true
 	if( (ex1RegIdCn1 != JX2_CR_ZZR) &&
 			(ex1RegIdCn1 != JX2_CR_PC) &&
 			(ex1RegIdCn1[6:5] == 2'b11))
@@ -1921,6 +1945,7 @@ begin
 			(ex3RegIdCn3 != JX2_CR_PC) &&
 			(ex3RegIdCn3[6:5] == 2'b11))
 		exHold1D = 1;
+`endif
 
 `else
 
@@ -3108,6 +3133,8 @@ begin
 		ex2BraFlush		<= 1;
 		ex3BraFlush		<= 1;
 
+		id1BraPipelineLrL	<= 0;
+
 		id1IstrWord		<= 96'h300030003000300030003000;
 
 `ifdef jx2_enable_wex
@@ -3287,7 +3314,7 @@ begin
 //		id1ValPc		<= tValNextPc;
 		id1ValPc		<= tOpNextPc;
 		id1IstrWord		<= ifIstrWord;
-
+		id1BraPipelineLrL	<= id1BraPipelineLr;
 
 		/* ID2 */
 

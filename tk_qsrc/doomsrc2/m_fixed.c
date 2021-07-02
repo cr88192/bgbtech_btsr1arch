@@ -138,7 +138,7 @@ FixedDiv2
 	c = (((double)a) * FRACUNIT) / ((double)b);
 
 	if (c >= 2147483648.0 || c < -2147483648.0)
-	I_Error("FixedDiv: divide by zero");
+		I_Error("FixedDiv: divide by zero");
 	return (fixed_t) c;
 #endif
 }
@@ -150,6 +150,7 @@ static int m_softdiv_init=0;
 
 int M_InitSoftDiv()
 {
+	unsigned int uj;
 	int i, j;
 
 	if(!m_softdiv_init)
@@ -158,8 +159,13 @@ int M_InitSoftDiv()
 //		for(i=1; i<4096; i++)
 		for(i=1; i<1024; i++)
 		{
-			j=0x7fffffff / i;
-			m_softdiv_rcptab[i] = j<<1;
+//			j=0x7fffffff / i;
+//			j=(0x7fffffffULL + (i-1)) / i;
+//			m_softdiv_rcptab[i] = j<<1;
+
+			uj=(0x100000000ULL + (i-1)) / i;
+//			uj=0x100000000ULL / i;
+			m_softdiv_rcptab[i] = uj;
 		}
 	}
 	
@@ -237,6 +243,32 @@ u32 M_SoftDivU(u32 a, u32 b)
 
 //	c=a/b;
 //	return(c);
+}
+
+u32 M_SoftDivU2(u32 a, u32 b)
+{
+	u32 c, d, e;
+	
+	c=M_SoftDivU(a, b);
+
+#if 0
+//	L0:
+	e=a-(c*b);
+	if(((s32)e)<0)
+		c--;
+//		{ c--; goto L0; }
+	if(e>=b)
+		c++;
+//		{ c++; goto L0; }
+#endif
+
+	e=a-(c*b);
+	while(((s32)e)<0)
+		{ c--; e=a-(c*b); }
+	while(e>=b)
+		{ c++; e=a-(c*b); }
+
+	return(c);
 }
 
 s32 M_SoftDivS(s32 a, s32 b)

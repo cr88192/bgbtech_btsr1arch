@@ -3495,6 +3495,15 @@ int BGBCC_JX2_TryEmitOpRegRegReg(
 			opw2=0x6A00|((rn&15)<<4)|((rs&15)<<0);
 			break;
 
+		case BGBCC_SH_NMID_BLKUAB1:
+			opw1=0xF000|ex|(rt&15);
+			opw2=0x6C00|((rn&15)<<4)|((rs&15)<<0);
+			break;
+		case BGBCC_SH_NMID_BLKUAB2:
+			opw1=0xF080|ex|(rt&15);
+			opw2=0x6C00|((rn&15)<<4)|((rs&15)<<0);
+			break;
+
 		case BGBCC_SH_NMID_PSCHEQW:
 			opw1=0xF000|ex|(rt&15);
 			opw2=0x2A00|((rn&15)<<4)|((rs&15)<<0);

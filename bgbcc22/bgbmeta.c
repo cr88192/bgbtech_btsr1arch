@@ -1532,6 +1532,27 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 		for(j=0; argv[i][j]; j++)
 			bgbcc_gshash=(bgbcc_gshash*65521+1)+argv[i][j];
 
+		if((argv[i][0]=='-') && (argv[i][1]=='-'))
+		{
+			if(!strncmp(argv[i]+2, "cfg=", 4))
+			{
+				cfg=argv[i]+6;
+				continue;
+			}
+
+			if(!strncmp(argv[i]+2, "home=", 5))
+			{
+				home=argv[i]+7;
+				continue;
+			}
+
+			if(!strncmp(argv[i]+2, "locale=", 7))
+			{
+				BGBCP_SetDefaultLocale(argv[i]+9);
+				continue;
+			}
+		}
+
 #if 1
 		if(((argv[i][0]=='/') || (argv[i][0]=='-')) &&
 			!BGBCC_CheckArgIsAbsPath(argv[i]))
@@ -1583,6 +1604,12 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 			if(!strncmp(argv[i]+1, "home=", 5))
 			{
 				home=argv[i]+6;
+				continue;
+			}
+
+			if(!strncmp(argv[i]+1, "locale=", 7))
+			{
+				BGBCP_SetDefaultLocale(argv[i]+8);
 				continue;
 			}
 

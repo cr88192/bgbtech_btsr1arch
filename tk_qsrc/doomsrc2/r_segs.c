@@ -141,11 +141,22 @@ R_RenderMaskedSegRange
 		lightnum++;
 
 	if (lightnum < 0)		
+	{
 		walllights = scalelight[0];
+		dc_baseluma = 0x0000;
+	}
 	else if (lightnum >= LIGHTLEVELS)
+	{
 		walllights = scalelight[LIGHTLEVELS-1];
+		dc_baseluma = 0xFF00;
+	}
 	else
+	{
 		walllights = scalelight[lightnum];
+//		dc_baseluma = (lightnum<<12);
+//		dc_baseluma = (cmap_luma[lightnum]<<8);
+		dc_baseluma = (cmap_luma[31-lightnum*2]<<8);
+	}
 
 	maskedtexturecol = ds->maskedtexturecol;
 
@@ -238,6 +249,7 @@ void R_RenderSegLoop (void)
 	int			top;
 	int			bottom;
 //	fixed_t		tz;
+	int			k, l;
 
 //	return;
 
@@ -310,7 +322,25 @@ void R_RenderSegLoop (void)
 			dc_iscale = M_SoftDivRcp(rw_scale);
 			dc_scale = rw_scale;
 			dc_zdist = rw_z;
+
+			k = (dc_colormap - colormaps)>>8;
+			l = cmap_luma[k];
+			l = l << 8;
+
+//			l = dc_baseluma + (index<<8);
+			if(l < 0x0000) l = 0x0000;
+			if(l >0xFFFF) l = 0xFFFF;
+//			dc_luma = l;
+
+			dc_color = (((u64)l)<<0) | (((u64)l)<<16) |
+				(((u64)l)<<32) | 0xFFFF000000000000ULL;
+			if(k==32)
+			{
+				dc_color = 0xFFFFAAAA55551111ULL;
+			}
 		}
+		
+		dc_col = texturecolumn;
 		
 		// draw the wall tiers
 		if (midtexture)
@@ -319,8 +349,12 @@ void R_RenderSegLoop (void)
 			dc_yl = yl;
 			dc_yh = yh;
 			dc_texturemid = rw_midtexturemid;
+#ifdef UTXWALLS
+			dc_source = R_GetColumnUtx(midtexture, texturecolumn>>2);
+#else
 			dc_source = R_GetColumn(midtexture,texturecolumn);
-			colfunc ();
+#endif
+			wallcolfunc ();
 			
 			if(!r_ispolyobj)
 			{
@@ -345,8 +379,13 @@ void R_RenderSegLoop (void)
 					dc_yl = yl;
 					dc_yh = mid;
 					dc_texturemid = rw_toptexturemid;
+#ifdef UTXWALLS
+					dc_source = R_GetColumnUtx(toptexture,
+								texturecolumn>>2);
+#else
 					dc_source = R_GetColumn(toptexture,texturecolumn);
-					colfunc ();
+#endif
+					wallcolfunc ();
 					ceilingclip[rw_x] = mid;
 				}
 				else
@@ -374,9 +413,14 @@ void R_RenderSegLoop (void)
 					dc_yl = mid;
 					dc_yh = yh;
 					dc_texturemid = rw_bottomtexturemid;
+#ifdef UTXWALLS
+					dc_source = R_GetColumnUtx(bottomtexture,
+								texturecolumn>>2);
+#else
 					dc_source = R_GetColumn(bottomtexture,
 								texturecolumn);
-					colfunc ();
+#endif
+					wallcolfunc ();
 					floorclip[rw_x] = mid;
 				}
 				else
@@ -747,11 +791,23 @@ R_StoreWallRange
 				lightnum++;
 
 			if (lightnum < 0)		
+			{
 				walllights = scalelight[0];
+				dc_baseluma = 0x0000;
+			}
 			else if (lightnum >= LIGHTLEVELS)
+			{
 				walllights = scalelight[LIGHTLEVELS-1];
+				dc_baseluma = 0xFF00;
+			}
 			else
+			{
 				walllights = scalelight[lightnum];
+//				dc_baseluma = (lightnum<<12);
+//				dc_baseluma = (cmap_luma[lightnum]<<8);
+//				dc_baseluma = (cmap_luma[31-lightnum*2]<<8);
+				dc_baseluma = (cmap_luma[31-lightnum*2]<<8);
+			}
 		}
 	}
 	

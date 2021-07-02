@@ -52,6 +52,8 @@ extern fixed_t*		spritetopoffset;
 
 extern lighttable_t*	colormaps;
 
+extern	byte			cmap_luma[64];
+
 extern int		viewwidth;
 extern int		scaledviewwidth;
 extern int		viewheight;

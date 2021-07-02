@@ -303,8 +303,9 @@ int BGBCC_CCXL_CompileSwitchJmpR(
 	ccxl_label dfl, ccxl_label dfl2)
 {
 	ccxl_label lclc, dflz;
-	int ncv, df;
-	int ncl, clc;
+	s64 cla, cla1;
+	s64 ncv, df;
+	int ncl, clc, clc0, clc1, clm0, cln0;
 	int i, j, k;
 	
 	/* Stack: Cond -- */
@@ -312,8 +313,46 @@ int BGBCC_CCXL_CompileSwitchJmpR(
 	ncl=cln-clm;
 	
 	ncv=clv[cln-1]-clv[clm];
+	clc0=(clm+cln)>>1;
 	
-	if((ncl*2)>ncv)
+	if(ncl>16)
+	{
+		cla=(clv[cln-1]+clv[clm])/2;
+
+#if 1
+		if(ncv<(1LL<<32))
+		{
+			cla1=0;
+			for(i=0; i<ncl; i++)
+				cla1+=clv[clm+i];
+			cla1/=ncl;
+			cla=(cla+cla1)/2;
+		}
+#endif
+		
+		clm0=clm; cln0=cln;
+		clc0=(clm0+cln0)>>1;
+		for(i=0; i<4; i++)
+		{
+			if(cla>=clv[clc0])
+			{
+				clm0=clc0;
+				clc1=(clm0+cln0)>>1;
+				if(clc1>=(cln-3))
+					break;
+				clc0=clc1;
+			}else
+			{
+				cln0=clc0;
+				clc1=(clm0+cln0)>>1;
+				if(clc1<=(clm+3))
+					break;
+				clc0=clc1;
+			}
+		}
+	}
+	
+	if(((ncl*2)>ncv) && (ncv>1))
 	{
 		df=(ncl*256)/ncv;
 	}else
@@ -357,7 +396,9 @@ int BGBCC_CCXL_CompileSwitchJmpR(
 	}else
 #endif
 	{
-		clc=(clm+cln)>>1;
+//		clc=(clm+cln)>>1;
+		clc=clc0;
+
 		lclc=BGBCC_CCXL_GenSym(ctx);
 //		dflz=dfl;
 		dflz=dfl2;
@@ -2267,9 +2308,11 @@ char *BGBCC_CCXL_VarTypeString_FlattenName(BGBCC_TransState *ctx,
 		if(!strcmp(s, "int128"))*t++='n';
 		if(!strcmp(s, "uint128"))*t++='o';
 
-		if(!strcmp(s, "float128"))*t++='g';
-		if(!strcmp(s, "float16"))*t++='k';
 		if(!strcmp(s, "bfloat16"))*t++='u';
+		if(!strcmp(s, "float16"))*t++='k';
+		if(!strcmp(s, "float32"))*t++='f';
+		if(!strcmp(s, "float64"))*t++='d';
+		if(!strcmp(s, "float128"))*t++='g';
 		if(!strcmp(s, "long_double"))*t++='g';
 
 		if(!strcmp(s, "variant"))*t++='r';
@@ -2630,6 +2673,9 @@ int BGBCC_CCXL_VarTypeString_ModifierChar(BGBCC_TransState *ctx, s64 i)
 
 	case BGBCC_TYFL_NEAR:			c=('C'<<8)|'x'; break;
 	case BGBCC_TYFL_FAR:			c=('C'<<8)|'y'; break;
+
+	case BGBCC_TYFL_IFARCH:			c=('D'<<8)|'a'; break;
+	case BGBCC_TYFL_IFNARCH:		c=('D'<<8)|'b'; break;
 
 	case BGBCC_TYFL_DLLEXPORT:		c=('D'<<8)|'e'; break;
 	case BGBCC_TYFL_DLLIMPORT:		c=('D'<<8)|'i'; break;
@@ -3307,7 +3353,7 @@ void BGBCC_CCXL_EmitVarFunc(BGBCC_TransState *ctx,
 	char *name, BCCX_Node *ty, BCCX_Node *args)
 {
 	BCCX_Node *t, *t1;
-	char *s, *s1, *s2;
+	char *s, *s1, *s2, *s3, *ifa;
 	s64 li;
 	int i;
 
@@ -3342,6 +3388,8 @@ void BGBCC_CCXL_EmitVarFunc(BGBCC_TransState *ctx,
 	t=BCCX_FindTagCst(ty, &bgbcc_rcst_declspec, "declspec");
 	t1=BCCX_FindTagCst(ty, &bgbcc_rcst_attribute, "attribute");
 
+	ifa=NULL;
+
 	if(t || t1)
 	{
 		if(BGBCC_CCXL_GetNodeAttribute(ctx, ty, "dllexport"))
@@ -3353,9 +3401,28 @@ void BGBCC_CCXL_EmitVarFunc(BGBCC_TransState *ctx,
 			{ li|=BGBCC_TYFL_INTERRUPT; }
 		if(BGBCC_CCXL_GetNodeAttribute(ctx, ty, "syscall"))
 			{ li|=BGBCC_TYFL_SYSCALL; }
+
+		s3=BGBCC_CCXL_GetNodeAttributeStringOrRef(ctx, ty, "ifarch");
+		if(s3)
+		{
+			li|=BGBCC_TYFL_IFARCH;
+			ifa=s3;
+		}
+
+		s3=BGBCC_CCXL_GetNodeAttributeStringOrRef(ctx, ty, "ifnarch");
+		if(s3)
+		{
+			li|=BGBCC_TYFL_IFNARCH;
+			ifa=s3;
+		}
 	}
 	
 	BGBCC_CCXL_AttribLong(ctx, CCXL_ATTR_FLAGS, li);
+	
+	if(ifa)
+	{
+		BGBCC_CCXL_AttribStr(ctx, CCXL_ATTR_IFARCH, ifa);
+	}
 }
 
 void BGBCC_CCXL_EmitVar(BGBCC_TransState *ctx,
@@ -4832,6 +4899,35 @@ char *BGBCC_CCXL_GetNodeAttributeString(BGBCC_TransState *ctx,
 		return(NULL);
 	s=BCCX_Get(cn, "value");
 	return(s);
+}
+
+char *BGBCC_CCXL_GetNodeAttributeStringOrRef(BGBCC_TransState *ctx,
+	BCCX_Node *l, char *name)
+{
+	BCCX_Node *attr, *cn;
+	char *s;
+	
+	attr=BGBCC_CCXL_GetNodeAttribute(ctx, l, name);
+	if(!attr)return(NULL);
+
+	s=BCCX_Get(attr, "name");
+
+	cn=BCCX_FetchCst(attr, &bgbcc_rcst_args, "args");
+	if(!cn)return(NULL);
+
+	if(BCCX_TagIsCstP(cn, &bgbcc_rcst_string, "string"))
+	{
+		s=BCCX_Get(cn, "value");
+		return(s);
+	}
+
+	if(BCCX_TagIsCstP(cn, &bgbcc_rcst_ref, "ref"))
+	{
+		s=BCCX_Get(cn, "name");
+		return(s);
+	}
+
+	return(NULL);
 }
 
 void BGBCC_CCXL_CompileTypedef(BGBCC_TransState *ctx, BCCX_Node *l)

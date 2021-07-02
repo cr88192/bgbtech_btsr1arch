@@ -131,6 +131,7 @@ R_MapPlane
 	fixed_t	distance;
 	fixed_t	length;
 	unsigned	index;
+	int k, l;
 	
 #ifdef RANGECHECK
 	if (x2 < x1
@@ -163,7 +164,9 @@ R_MapPlane
 	ds_yfrac = -viewy - FixedMul(finesine[angle], length);
 
 	if (fixedcolormap)
+	{
 		ds_colormap = fixedcolormap;
+	}
 	else
 	{
 		index = distance >> LIGHTZSHIFT;
@@ -172,6 +175,18 @@ R_MapPlane
 			index = MAXLIGHTZ-1;
 
 		ds_colormap = planezlight[index];
+	}
+
+	k = (ds_colormap - colormaps)>>8;
+	l = cmap_luma[k];
+	l = l << 8;
+	if(l < 0x0000) l = 0x0000;
+	if(l > 0xFFFF) l = 0xFFFF;
+	ds_color = (((u64)l)<<0) | (((u64)l)<<16) |
+		(((u64)l)<<32) | 0xFFFF000000000000ULL;
+	if(k==32)
+	{
+		ds_color = 0xFFFFAAAA55551111ULL;
 	}
 	
 	ds_y = y;
@@ -450,7 +465,11 @@ void R_DrawPlanes (void)
 //					   flattranslation[pl->picnum],
 //					   PU_STATIC);
 
+#ifdef UTXFLAT
+		ds_source = W_CacheUtxFlatNum(pl->picnum, PU_STATIC);
+#else
 		ds_source = W_CacheFlatNum(pl->picnum, PU_STATIC);
+#endif
 
 		planeheight = abs(pl->height-viewz);
 		light = (pl->lightlevel >> LIGHTSEGSHIFT)+extralight;
@@ -462,6 +481,9 @@ void R_DrawPlanes (void)
 			light = 0;
 
 		planezlight = zlight[light];
+		
+//		ds_baseluma = 0xFF00 - (light<<12);
+		ds_baseluma = (light<<12);
 
 		pl->top[pl->maxx+1] = 0xff;
 		pl->top[pl->minx-1] = 0xff;

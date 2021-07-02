@@ -17,6 +17,9 @@
 #include "ctype.h"
 #include "stddef.h"
 
+#include "locale.h"
+#include "tk_locale.h"
+
 /* PDOS and MSDOS use the same interface most of the time */
 #if defined(__PDOS__)
 #define __MSDOS__
@@ -604,33 +607,139 @@ __PDPCLIB_API__ long int strtol(const char *nptr, char **endptr, int base)
 
 __PDPCLIB_API__ int mblen(const char *s, size_t n)
 {
+	int i0, i1, i2;
 	if (s == NULL)
 	{
 		return (0);
 	}
-	if (n == 1)
+//	if (n == 1)
+	if (n >= 1)
 	{
+#if 1
+		if(locale_flags&TK_LOCALE_FLAG_UTF8)
+		{
+			if(!(*s))
+				return(0);
+			i0=*(const unsigned char *)s;
+			if(i0<0x80)
+				return(1);
+
+			if(i0<0xC0)
+				return(-1);
+
+			if(i0<0xE0)
+			{
+				if(n>=2)
+				{
+					i1=*(const unsigned char *)(s+1);
+					if((i1&0xC0)!=0x80)
+						return(-1);
+					return(2);
+				}
+				return(-1);
+			}
+
+			if(i0<0xF0)
+			{
+				if(n>=3)
+				{
+					i1=*(const unsigned char *)(s+1);
+					i2=*(const unsigned char *)(s+2);
+					if((i1&0xC0)!=0x80)
+						return(-1);
+					if((i2&0xC0)!=0x80)
+						return(-1);
+					return(3);
+				}
+				return(-1);
+			}
+
+			return(-1);
+		}
+#endif
+
 		return (1);
 	}
-	else
-	{
-		return (-1);
-	}
+
+	return (-1);
 }
+
+static short tk_cp1252rm0[32]={
+	0x20AC,0x0081,0x201A,0x0192,	0x201E,0x2026,0x2020,0x2021,
+	0x02C6,0x2030,0x0160,0x2039,	0x0152,0x008D,0x017D,0x008F,
+	0x0090,0x2018,0x2019,0x201C,	0x201D,0x2022,0x2013,0x2014,
+	0x02DC,0x2122,0x0161,0x203A,	0x0153,0x009D,0x017E,0x0178 };
 
 __PDPCLIB_API__ int mbtowc(wchar_t *pwc, const char *s, size_t n)
 {
+	const unsigned char *us;
+	int i0, i1, i2;
+	int j;
+
 	if (s == NULL)
 	{
 		return (0);
 	}
-	if (n == 1)
+//	if (n == 1)
+	if (n >= 1)
 	{
-		if (pwc != NULL)
+		if(!pwc)
+			return (-1);
+
+		us=(const unsigned char *)s;
+		i0=*us;
+		if(i0<=0x80)
 		{
-			*pwc = *s;
+			*pwc=i0;
+			return(1);
 		}
-		return (1);
+
+		if(locale_flags&TK_LOCALE_FLAG_CP1252)
+		{
+			if((i0>=0xA0) && (i0<=0xFF))
+			{
+				*pwc=i0;
+				return(1);
+			}
+
+			if((i0>=0x80) && (i0<=0x9F))
+			{
+				*pwc=tk_cp1252rm0[i0-0x80];
+				return(1);
+			}
+
+			return (-1);
+		}
+
+#if 1
+		if(locale_flags&TK_LOCALE_FLAG_UTF8)
+		{
+			if(i0<=0xC0)
+				{ return(-1); }
+			if(i0<=0xE0)
+			{
+				i1=us[1];
+				j=((i0&0x1F)<<6)|(i1&0x3F);
+				*pwc=j;
+				return(2);
+			}
+			if(i0<=0xF0)
+			{
+				i1=us[1];
+				i2=us[2];
+				j=((i0&0x0F)<<12)|((i1&0x3F)<<6)|(i2&0x3F);
+				*pwc=j;
+				return(3);
+			}
+		}
+	
+//		if (pwc != NULL)
+//		{
+//			*pwc = *s;
+//		}
+//		return (1);
+#endif
+
 	}
 	else
 	{
@@ -638,12 +747,70 @@ __PDPCLIB_API__ int mbtowc(wchar_t *pwc, const char *s, size_t n)
 	}
 }
 
-__PDPCLIB_API__ int wctomb(char *s, wchar_t wchar)
+__PDPCLIB_API__ int wctomb(char *s, wchar_t wc)
 {
+	unsigned char *us;
+	int i;
+
 	if (s != NULL)
 	{
-		*s = wchar;
-		return (1);
+		us = (unsigned char *)s;
+
+		if(locale_flags&TK_LOCALE_FLAG_CP1252)
+		{
+			if(wc<0x0080)
+			{
+				*us = wc;
+				return (1);
+			}
+
+			if((wc>=0x00A0) && (wc<0x0100))
+			{
+				*us = wc;
+				return (1);
+			}
+			
+			for(i=0; i<32; i++)
+				if(wc==tk_cp1252rm0[i])
+					break;
+			if(i<32)
+			{
+				*us = 0x80+i;
+				return (1);
+			}
+
+			*us = 0x8F;
+			return (1);
+			
+//			return(0);
+		}
+
+#if 1
+		if(locale_flags&TK_LOCALE_FLAG_UTF8)
+		{
+			if(wc<0x0080)
+			{
+				*us = wc;
+				return (1);
+			}
+
+			if(wc<0x0800)
+			{
+				us[0] = 0xC0 | ((wc>>6)&0x1F);
+				us[1] = 0x80 | ((wc>>0)&0x3F);
+				return (2);
+			}
+
+			if(1)
+			{
+				us[0] = 0xE0 | ((wc>>12)&0x0F);
+				us[1] = 0x80 | ((wc>> 6)&0x3F);
+				us[2] = 0x80 | ((wc>> 0)&0x3F);
+				return (3);
+			}
+		}
+#endif
+
 	}
 	else
 	{
@@ -653,22 +820,75 @@ __PDPCLIB_API__ int wctomb(char *s, wchar_t wchar)
 
 __PDPCLIB_API__ size_t mbstowcs(wchar_t *pwcs, const char *s, size_t n)
 {
-	strncpy((char *)pwcs, s, n);
-	if (strlen(s) >= n)
+	const unsigned char *cs;
+	wchar_t *ct, *cte;
+	int i;
+	
+	cs = (const unsigned char *)s;
+	ct = pwcs;
+	cte = ct + (n-1);
+	
+	while(*cs && (ct<cte))
 	{
-		return (n);
+		i=mbtowc(ct, cs, 9);
+		if(i<=0)
+			break;
+		cs+=i;
+		ct++;
 	}
-	return (strlen((char *)pwcs));
+	*ct=0;
+	return(ct-pwcs);
+
+//	strncpy((char *)pwcs, s, n);
+//	if (strlen(s) >= n)
+//	{
+//		return (n);
+//	}
+//	return (strlen((char *)pwcs));
 }
 
 __PDPCLIB_API__ size_t wcstombs(char *s, const wchar_t *pwcs, size_t n)
 {
-	strncpy(s, (const char *)pwcs, n);
-	if (strlen((const char *)pwcs) >= n)
+	char tb[4];
+	unsigned char *ct, *cte;
+	const wchar_t *cs;
+	int i, l;
+	
+	if(!s)
 	{
-		return (n);
+		cs = pwcs; l=0;
+		while(*cs)
+		{
+			i=wctomb(tb, *cs++);
+			if(i<=0)
+				break;
+			l+=i;
+		}
+		return(l);
 	}
-	return (strlen(s));
+	
+	cs = pwcs;
+	ct = (unsigned char *)s;
+	cte = ct + (n-1);
+
+	while(*cs && (ct<cte))
+	{
+		i=wctomb(ct, *cs++);
+		if(i<=0)
+			break;
+		ct+=i;
+	}
+
+	*ct=0;
+	return(ct-s);
+
+
+//	strncpy(s, (const char *)pwcs, n);
+//	if (strlen((const char *)pwcs) >= n)
+//	{
+//		return (n);
+//	}
+//	return (strlen(s));
 }
 
 #ifdef abs

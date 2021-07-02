@@ -909,9 +909,9 @@ void I_InitGraphics(void)
     }
 
     if (multiply == 1)
-	screens[0] = (unsigned char *) (image->data);
+		screens[0] = (unsigned char *) (image->data);
     else
-	screens[0] = (unsigned char *) malloc (SCREENWIDTH * SCREENHEIGHT);
+		screens[0] = (unsigned char *) malloc (SCREENWIDTH * SCREENHEIGHT);
 
 }
 

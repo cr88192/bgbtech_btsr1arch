@@ -4,7 +4,8 @@
 #
 # $Log:$
 #
-CC=gcc
+# CC=gcc
+CC=clang
 
 CFLAGS=-I. -g
 # CFLAGS=/I. /Os
@@ -89,4 +90,4 @@ all:	 doom_t.elf
 clean:
 
 doom_t.elf:	$(SRCS) i_main.c
-	gcc -o doom_t.elf $(CFLAGS) $(LDFLAGS) $(SRCS) i_main.c $(LIBS)
+	$(CC) -o doom_t.elf $(CFLAGS) $(LDFLAGS) $(SRCS) i_main.c $(LIBS)

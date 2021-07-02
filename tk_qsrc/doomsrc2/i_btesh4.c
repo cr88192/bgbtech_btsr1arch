@@ -329,10 +329,15 @@ void I_InitGraphics (void)
 	tk_con_disable();
 	
 //	screens[0]=malloc(BASEWIDTH*BASEHEIGHT*2);
-	screen=malloc(BASEWIDTH*BASEHEIGHT*2);
-	screens[0]=screen;
+//	screen=malloc(BASEWIDTH*BASEHEIGHT*2);
+//	screen=malloc(BASEWIDTH*(BASEHEIGHT+16)*2);
+//	screens[0]=screen;
+//	screens[1]=NULL;
+//	screens[2]=NULL;
+//	screens[3]=NULL;
 	
 	vid_lastscreen=malloc(BASEWIDTH*BASEHEIGHT*2);
+//	vid_lastscreen=malloc(BASEWIDTH*(BASEHEIGHT+16)*2);
 	
 	IN_Init();
 }
@@ -1734,15 +1739,18 @@ int VID_ConGfx_EncBlock16HQ(u16 *src, u16 *lsrc, u32 *rdst)
 int VID_BlendEven16(int pixa, int pixb)
 {
 	int pix;
-	pix=((pixa&0xFBDF)+(pixb&0xFBDF))>>1;
+//	pix=((pixa&0xFBDF)+(pixb&0xFBDF))>>1;
+	pix=((pixa&0x7BDE)+(pixb&0x7BDE))>>1;
 	return(pix);
 }
 
 u64 VID_BlendEven4x16(u64 pixa, u64 pixb)
 {
 	u64 pix;
-	pix=((pixa&0xFBDEFBDEFBDEFBDEULL)>>1)+
-		((pixb&0xFBDEFBDEFBDEFBDEULL)>>1);
+//	pix=((pixa&0xFBDEFBDEFBDEFBDEULL)>>1)+
+//		((pixb&0xFBDEFBDEFBDEFBDEULL)>>1);
+	pix=((pixa&0x7BDE7BDE7BDE7BDEULL)>>1)+
+		((pixb&0x7BDE7BDE7BDE7BDEULL)>>1);
 	return(pix);
 }
 

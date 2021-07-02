@@ -103,6 +103,8 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 	ro_dfl=BJX2_RemapGPR(ctx, ro_dfl);
 
 	disp5=(opw1   )&31;
+	if(opw1&0x0010)disp5|=~31;
+
 	eq=(opw1&0x0080)?1:0;
 	eo=(opw1&0x0010)?1:0;
 

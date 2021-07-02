@@ -313,7 +313,7 @@ static boolean		st_armson;
 static boolean		st_fragson; 
 
 // main bar left
-static patch_t*		sbar;
+static patch_t*		statusbar;
 
 // 0-9, tall numbers
 static patch_t*		tallnum[10];
@@ -533,7 +533,7 @@ void ST_refreshBackground(void)
 
     if (st_statusbaron)
     {
-	V_DrawPatchDirect(ST_X, 0, BG, sbar);
+	V_DrawPatchDirect(ST_X, 0, BG, statusbar);
 
 	if (netgame)
 	    V_DrawPatchDirect(ST_FX, 0, BG, faceback);
@@ -1237,8 +1237,8 @@ void ST_loadGraphics(void)
     faceback = (patch_t *) W_CachePatchName(namebuf, PU_STATIC);
 
     // status bar background bits
-//    sbar = (patch_t *) W_CacheLumpName("STBAR", PU_STATIC);
-    sbar = (patch_t *) W_CachePatchName("STBAR", PU_STATIC);
+//    statusbar = (patch_t *) W_CacheLumpName("STBAR", PU_STATIC);
+    statusbar = (patch_t *) W_CachePatchName("STBAR", PU_STATIC);
 
     // face states
     facenum = 0;
@@ -1313,7 +1313,7 @@ void ST_unloadGraphics(void)
     for (i=0;i<NUMCARDS;i++)
 	Z_ChangeTag(keys[i], PU_CACHE);
 
-    Z_ChangeTag(sbar, PU_CACHE);
+    Z_ChangeTag(statusbar, PU_CACHE);
     Z_ChangeTag(faceback, PU_CACHE);
 
     for (i=0;i<ST_NUMFACES;i++)

@@ -45,6 +45,7 @@ rcsid[] = "$Id: v_video.c,v 1.5 1997/02/03 22:45:13 b1 Exp $";
 // Each screen is [SCREENWIDTH*SCREENHEIGHT]; 
 dt_scrpix		*screens[5];	
 u16				*screens_zbuf;
+dt_scrpix		*screen;
 
 int				dirtybox[4]; 
 
@@ -221,7 +222,8 @@ V_DrawPatchCmap
     int		col; 
     column_t*	column; 
     dt_scrpix	*desttop;
-    dt_scrpix	*dest;
+    dt_scrpix	*scrp, *scrp_end;
+    dt_scrpix	*dest, *dest_end;
     byte*	source; 
     int		w; 
 
@@ -236,12 +238,13 @@ V_DrawPatchCmap
     x -= (patch->leftoffset); 
 #ifdef RANGECHECK 
     if (x<0
-//	||x+SHORT(patch->width) >SCREENWIDTH
-	||x+(patch->width) >SCREENWIDTH
-	|| y<0
-//	|| y+SHORT(patch->height)>SCREENHEIGHT 
-	|| y+(patch->height)>SCREENHEIGHT 
-	|| (unsigned)scrn>4)
+//	|| (x+SHORT(patch->width) >SCREENWIDTH)
+	|| (x+(patch->width) >SCREENWIDTH)
+	|| (y<0)
+//	|| (y+SHORT(patch->height)>SCREENHEIGHT)
+	|| (y+(patch->height)>SCREENHEIGHT) 
+	|| ((unsigned)scrn>4))
+//	|| ((unsigned)scrn>0))
     {
       fprintf( stderr, "Patch at %d,%d exceeds LFB\n", x,y );
       // No I_Error abort - what is up with TNT.WAD?
@@ -257,11 +260,21 @@ V_DrawPatchCmap
 //		R_CellMarkBox(
 //			x, x+SHORT(patch->width),
 //			y, y+SHORT(patch->height));
+	}else
+	{
+//		return;
 	}
 
     col = 0; 
-    desttop = screens[scrn]+y*SCREENWIDTH+x; 
-	 
+    scrp = screens[scrn];
+    if(!scrp)
+		return;
+    desttop = scrp+y*SCREENWIDTH+x; 
+	
+	scrp_end = scrp + SCREENWIDTH * SCREENHEIGHT;
+	
+//	__debugbreak();
+	
 //    w = SHORT(patch->width); 
     w = (patch->width); 
 
@@ -276,68 +289,40 @@ V_DrawPatchCmap
 			source = (byte *)column + 3; 
 			dest = desttop + column->topdelta*SCREENWIDTH; 
 			count = column->length; 
+			dest_end = dest + count*SCREENWIDTH; 
+
+//			if(dest<scr)
+//				break;
+
+//			if(dest_end>scr_end)
+//				break;
+
+			if((dest<scrp) || (dest_end>scrp_end))
+			{
+				while (count--) 
+				{ 
+//					if(dest<scrp)
+					if((dest<scrp) || (dest>scrp_end))
+					{
+						source++;
+						dest += SCREENWIDTH; 
+						continue;
+					}
+//					if(dest>scrp_end)
+//						break;
+
+	//				*dest = *source++; 
+					*dest = tcol[*source++];
+					dest += SCREENWIDTH; 
+				}
+
+				column = (column_t *)(
+					(byte *)column + column->length + 4 ); 
+				continue;
+			}
 
 #ifndef __BGBCC__
-
-#if 0
-			while (count>=4) 
-			{ 
-				*dest = tcol[*source++];
-				dest += SCREENWIDTH; 
-
-				*dest = tcol[*source++];
-				dest += SCREENWIDTH; 
-
-				*dest = tcol[*source++];
-				dest += SCREENWIDTH; 
-
-				*dest = tcol[*source++];
-				dest += SCREENWIDTH; 
-				
-				count-=4;
-			}
-#endif
-
-#if 0
-			while (count>=4) 
-			{ 
-				*dest = tcol[source[0]];
-				dest += SCREENWIDTH; 
-
-				*dest = tcol[source[1]];
-				dest += SCREENWIDTH; 
-
-				*dest = tcol[source[2]];
-				dest += SCREENWIDTH; 
-
-				*dest = tcol[source[3]];
-				dest += SCREENWIDTH; 
-				
-				source+=4;
-				count-=4;
-			}
-#endif
-
-#if 0
-			while (count>=8) 
-			{ 
-				dest[0*SCREENWIDTH] = tcol[source[0]];
-				dest[1*SCREENWIDTH] = tcol[source[1]];
-				dest[2*SCREENWIDTH] = tcol[source[2]];
-				dest[3*SCREENWIDTH] = tcol[source[3]];
-				dest += 4*SCREENWIDTH; 
-				source+=4;
-
-				dest[0*SCREENWIDTH] = tcol[source[0]];
-				dest[1*SCREENWIDTH] = tcol[source[1]];
-				dest[2*SCREENWIDTH] = tcol[source[2]];
-				dest[3*SCREENWIDTH] = tcol[source[3]];
-				dest += 4*SCREENWIDTH; 
-				source+=4;
-
-				count-=8;
-			}
-#endif
+//#if 1
 
 #if 1
 			while (count>=4) 
@@ -800,7 +785,8 @@ void V_Init (void)
     // stick these in low dos memory on PCs
 
     base = (dt_scrpix *)
-		I_AllocLow (SCREENWIDTH*SCREENHEIGHT*4*sizeof(dt_scrpix));
+//		I_AllocLow (SCREENWIDTH*SCREENHEIGHT*4*sizeof(dt_scrpix));
+		I_AllocLow (SCREENWIDTH*SCREENHEIGHT*5*sizeof(dt_scrpix));
 
     for (i=0 ; i<4 ; i++)
     {
@@ -809,4 +795,6 @@ void V_Init (void)
 
     screens_zbuf = (u16 *)
 		I_AllocLow (SCREENWIDTH*SCREENHEIGHT*sizeof(u16));
+		
+	screen = screens[0];
 }

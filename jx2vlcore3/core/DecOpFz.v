@@ -277,7 +277,9 @@ begin
 `ifdef jx2_enable_xgpr
 	opImm_imm5u	= {UV27_00, opRegO_Dfl[5:0]};
 	opImm_imm5n	= {UV27_FF, opRegO_Dfl[5:0]};
-	opImm_disp5u	= opImm_imm5u;
+
+//	opImm_disp5u	= opImm_imm5u;
+	opImm_disp5u	= {opExWI ? UV27_FF : UV27_00, opRegO_Dfl[5:0]};
 `else
 	opImm_imm5u	= {UV28_00, opRegO_Dfl[4:0]};
 	opImm_imm5n	= {UV28_FF, opRegO_Dfl[4:0]};
@@ -2423,6 +2425,23 @@ begin
 			end
 `endif
 
+			16'h6zzC: begin		/* F0nm_6eoC */
+				if(opExQ)
+				begin
+					opNmid		= JX2_UCMD_MUL3;
+					opFmid		= JX2_FMID_REGREG;
+					opIty		= JX2_ITY_SB;
+					opUCmdIx	= JX2_UCIX_MUL3_BLKUAB2;
+				end
+				else
+				begin
+					opNmid		= JX2_UCMD_MUL3;
+					opFmid		= JX2_FMID_REGREG;
+					opIty		= JX2_ITY_SB;
+					opUCmdIx	= JX2_UCIX_MUL3_BLKUAB1;
+				end
+			end
+
 			16'hCzzz: begin		/* F0dd_Cddd */
 //				opNmid	= JX2_UCMD_BRA;
 				opNmid	= tBlockIsF4 ? JX2_UCMD_NOP : JX2_UCMD_BRA;
@@ -3035,12 +3054,22 @@ begin
 
 `ifdef def_true
 			3'b100: begin
-				opNmid		= JX2_UCMD_FLDCX;
-//				opFmid		= JX2_FMID_REGREG;
-//				opIty		= JX2_ITY_UB;
-				opFmid		= JX2_FMID_IMM8REG;
-				opIty		= JX2_ITY_UW;
-				opUCmdIx	= JX2_UCIX_FPCX_HG;
+				if(opIsJumboAu)
+				begin
+					opNmid		= JX2_UCMD_FLDCX;
+					opFmid		= JX2_FMID_IMM8REG;
+					opIty		= JX2_ITY_UW;
+					opUCmdIx	= JX2_UCIX_FPCX_SG;
+				end
+				else
+				begin
+					opNmid		= JX2_UCMD_FLDCX;
+	//				opFmid		= JX2_FMID_REGREG;
+	//				opIty		= JX2_ITY_UB;
+					opFmid		= JX2_FMID_IMM8REG;
+					opIty		= JX2_ITY_UW;
+					opUCmdIx	= JX2_UCIX_FPCX_HG;
+				end
 			end
 `endif
 

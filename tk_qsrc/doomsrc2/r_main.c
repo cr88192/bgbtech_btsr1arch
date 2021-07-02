@@ -126,8 +126,10 @@ int			extralight;
 
 void (*colfunc) (void);
 void (*basecolfunc) (void);
+void (*sprcolfunc) (void);
 void (*fuzzcolfunc) (void);
 void (*transcolfunc) (void);
+void (*wallcolfunc) (void);
 void (*spanfunc) (void);
 
 
@@ -730,9 +732,21 @@ void R_ExecuteSetViewSize (void)
 	if (!detailshift)
 	{
 		colfunc = basecolfunc = R_DrawColumn;
+		wallcolfunc = basecolfunc;
+
+#ifdef UTXWALLS
+		wallcolfunc = R_DrawColumnUtx;
+#endif
+
+		sprcolfunc = R_DrawColumn;
 		fuzzcolfunc = R_DrawFuzzColumn;
 		transcolfunc = R_DrawTranslatedColumn;
+
+#ifdef UTXFLAT
+		spanfunc = R_DrawSpanUtx;
+#else
 		spanfunc = R_DrawSpan;
+#endif
 		
 //		if(r_usezbuff)
 //		{
@@ -742,9 +756,21 @@ void R_ExecuteSetViewSize (void)
 	else
 	{
 		colfunc = basecolfunc = R_DrawColumnLow;
+		wallcolfunc = basecolfunc;
+
+#ifdef UTXWALLS
+		wallcolfunc = R_DrawColumnLowUtx;
+#endif
+
+		sprcolfunc = R_DrawColumnLow;
 		fuzzcolfunc = R_DrawFuzzColumnLow;
 		transcolfunc = R_DrawTranslatedColumn;
+
+#ifdef UTXFLAT
+		spanfunc = R_DrawSpanLowUtx;
+#else
 		spanfunc = R_DrawSpanLow;
+#endif
 	}
 
 	R_InitBuffer (scaledviewwidth, viewheight);
@@ -884,21 +910,47 @@ void R_SetupFrame (player_t* player)
 	if (!detailshift)
 	{
 		colfunc = basecolfunc = R_DrawColumn;
+		wallcolfunc = basecolfunc;
+
+#ifdef UTXWALLS
+		wallcolfunc = R_DrawColumnUtx;
+#endif
+
+		sprcolfunc = R_DrawColumn;
 		fuzzcolfunc = R_DrawFuzzColumn;
 		transcolfunc = R_DrawTranslatedColumn;
+
+#ifdef UTXFLAT
+		spanfunc = R_DrawSpanUtx;
+#else
 		spanfunc = R_DrawSpan;
-		
+#endif
+
+#if 0
 		if(r_usezbuff)
 		{
-			colfunc = basecolfunc = R_DrawColumn_ZB;
-			spanfunc = R_DrawSpan_ZB;
+//			colfunc = basecolfunc = R_DrawColumn_ZB;
+//			spanfunc = R_DrawSpan_ZB;
 		}
+#endif
 	}else
 	{
 		colfunc = basecolfunc = R_DrawColumnLow;
+		wallcolfunc = basecolfunc;
+
+#ifdef UTXWALLS
+		wallcolfunc = R_DrawColumnLowUtx;
+#endif
+
+		sprcolfunc = R_DrawColumnLow;
 		fuzzcolfunc = R_DrawFuzzColumnLow;
 		transcolfunc = R_DrawTranslatedColumn;
+
+#ifdef UTXFLAT
+		spanfunc = R_DrawSpanLowUtx;
+#else
 		spanfunc = R_DrawSpanLow;
+#endif
 	}
 
 	viewplayer = player;

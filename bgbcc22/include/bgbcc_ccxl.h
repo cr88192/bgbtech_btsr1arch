@@ -355,6 +355,7 @@ Base, Q1..Q3:
 #define CCXL_ATTR_NAME					0x9005
 #define CCXL_ATTR_TUIDX					0x9006
 #define CCXL_ATTR_THISNAME				0x9007
+#define CCXL_ATTR_IFARCH				0x9008
 
 #define CCXL_TERR_GENERIC				0xA000
 #define CCXL_TERR_STACK_OVERFLOW		0xA001
@@ -542,12 +543,14 @@ typedef struct BGBCC_CCXL_LvaTagInfo_s BGBCC_CCXL_LvaTagInfo;
 struct BGBCC_CCXL_RegisterInfo_s {
 BGBCC_CCXL_RegisterInfo *next;
 BGBCC_CCXL_RegisterInfo *hashnext;		//next in lookup hash
+BGBCC_CCXL_RegisterInfo *chain;		//query chain
 char *pbname;			//scope path base name
 char *name;				//assigned variable name
 char *qname;			//assigned qualified name
 char *sig;				//type signature
 char *flagstr;			//flag string
 char *thisstr;			//this string
+char *ifarchstr;		//arch check string
 ccxl_type type;			//assigned type
 byte ucnt;				//use count
 byte type_zb;			//type Z base

@@ -299,6 +299,9 @@ extern "C" {
 #define BGBCC_TYFL_SYSCALL			(1LL<<39)
 #define BGBCC_TYFL_AUTO				(1LL<<40)
 
+#define BGBCC_TYFL_IFARCH			(1LL<<42)
+#define BGBCC_TYFL_IFNARCH			(1LL<<43)
+
 #define BGBCC_TYFL_DFL_MASK			\
 	(BGBCC_TYFL_PUBLIC|BGBCC_TYFL_PRIVATE|BGBCC_TYFL_PROTECTED)
 
@@ -336,6 +339,7 @@ extern "C" {
 #define BGBCC_REGFL_NOTLEAFTINY		0x00004000		//Not Tiny Leaf
 #define BGBCC_REGFL_HYBLEAFTINY		0x00008000		//Hybrid Tiny Leaf
 #define BGBCC_REGFL_NOSCRATCHDYN	0x00010000		//Can't dynamically alloc
+#define BGBCC_REGFL_IFACULL			0x00020000		//Culled via IfArch
 
 
 #define	BGBCC_MAXSTACKOBJ			0x080000	//maximum allowed stack frame
@@ -588,6 +592,7 @@ int blkidx;				//block index
 
 byte expect_type;		//force detecting a type
 byte in_func_body;		//parsing a function body
+short cur_codepage;
 
 s64	dfl_flags;
 

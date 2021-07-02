@@ -239,9 +239,27 @@ ccxl_status BGBCC_CCXL_GlobalMarkReachable(BGBCC_TransState *ctx,
 ccxl_status BGBCC_CCXL_GlobalMarkReachableB(BGBCC_TransState *ctx,
 	BGBCC_CCXL_RegisterInfo *obj, int afl)
 {
+	BGBCC_CCXL_RegisterInfo *objarr[64];
+	BGBCC_CCXL_RegisterInfo *objlst, *objcur;
+	int i, n;
+
 	if(obj->regflags&BGBCC_REGFL_RECTRACE)
 	{
 		obj->gblrefcnt++;
+		return(0);
+	}
+	
+	if(obj->regflags&BGBCC_REGFL_IFACULL)
+	{
+		obj->regflags|=BGBCC_REGFL_RECTRACE;
+
+		objlst=BGBCC_CCXL_LookupGlobalList(ctx, obj->qname);
+		objcur=objlst; n=0;
+		while(objcur)
+			{ objarr[n++]=objcur; objcur=objcur->chain; }
+		for(i=0; i<n; i++)
+			{ BGBCC_CCXL_GlobalMarkReachable(ctx, objarr[i]); }
+
 		return(0);
 	}
 
@@ -345,6 +363,9 @@ s64 BGBCC_CCXL_DecodeFlagStr(BGBCC_TransState *ctx, char *str)
 			i=*s++;
 			switch(i)
 			{
+			case 'a':	fl|=BGBCC_TYFL_IFARCH;			break;
+			case 'b':	fl|=BGBCC_TYFL_IFNARCH;			break;
+
 			case 'e':	fl|=BGBCC_TYFL_DLLEXPORT;		break;
 			case 'i':	fl|=BGBCC_TYFL_DLLIMPORT;		break;
 			default:

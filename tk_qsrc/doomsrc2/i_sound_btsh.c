@@ -191,7 +191,7 @@ getsfx
 	//		 sfxname, sfxlump, size );
 	//fflush( stderr );
 	
-	sfx = (unsigned char*)W_CacheLumpNum( sfxlump, PU_STATIC );
+	sfx = (unsigned char*)W_CacheLumpNum( sfxlump, PU_SOUND );
 
 	tg	= ((short *)sfx)[0];
 	rt	= ((short *)sfx)[1];
@@ -217,8 +217,9 @@ getsfx
 	paddedsize = ((len + (SAMPLECOUNT-1)) / SAMPLECOUNT) * SAMPLECOUNT;
 
 	// Allocate from zone memory.
-//	paddedsfx = (unsigned char*)Z_Malloc( paddedsize+8, PU_STATIC, 0 );
-	paddedsfx = (unsigned char*)Z_Malloc( paddedsize+16, PU_STATIC, 0 );
+//	paddedsfx = (unsigned char*)Z_Malloc( paddedsize+8, PU_SOUND, 0 );
+	paddedsfx = (unsigned char*)Z_Malloc( paddedsize+16, PU_SOUND, 0 );
+//	paddedsfx = (unsigned char*)Z_Malloc( paddedsize+SAMPLECOUNT+16, PU_SOUND, 0 );
 	// ddt: (unsigned char *) realloc(sfx, paddedsize+8);
 	// This should interfere with zone memory handling,
 	//	which does not kick in in the soundserver.

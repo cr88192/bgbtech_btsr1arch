@@ -1,8 +1,8 @@
 RIL3 is a binary version of RPNIL.
 
-This bytecode format is not intended to be interpreted nor to be used for program interchange; rather it is intended for intermediate storage of 'compiled' code (static libraries or object files) prior to final code generation.
+This bytecode format is not intended to be interpreted; rather it is intended for intermediate storage of compiled code (static libraries or object files) prior to final code generation.
 
-As such, specifics are subject to change, and generated code may contain target-specific constructions.
+Format specifics are subject to change, and generated code may contain target-specific constructions.
 
 
 Header:
@@ -147,31 +147,31 @@ If an arithmetic operation is performed between values of non-matching types, th
 
 Typed signatures are encoded as strings, with characters indicating value types.
 
-* 'a': signed char
-* 'b': bool
-* 'c': char
-* 'd': double
-* 'e': long double
-* 'f': float
-* 'g': float128
-* 'h': unsigned char
-* 'i': int
-* 'j': unsigned int
-* 'k': float16/half
-* 'l': long
-* 'm': unsigned long
-* 'n': int128
-* 'o': unsigned int128
-* 'p': intptr
+* 'a': signed char			(int8)
+* 'b': bool					(uint8)
+* 'c': char					(int8)
+* 'd': double				(float64)
+* 'e': long double			(float128)
+* 'f': float				(float32)
+* 'g': float128				(float128)
+* 'h': unsigned char		(uint8)
+* 'i': int					(int32)
+* 'j': unsigned int			(uint32)
+* 'k': float16/half			(float16)
+* 'l': long					(int32 | int64)
+* 'm': unsigned long		(uint32 | uint64)
+* 'n': int128				(int128)
+* 'o': unsigned int128		(uint128)
+* 'p': intptr				(int32 | int64)
 * 'q': reserved
-* 'r': variant (64-bit tagged value)
-* 's': short
-* 't': unsigned short
-* 'u': bfloat16
+* 'r': variant				(64-bit tagged value)
+* 's': short				(int16)
+* 't': unsigned short		(uint116)
+* 'u': bfloat16				(bfloat16, truncated float)
 * 'v': void
-* 'w': wchar
-* 'x': long long
-* 'y': unsigned long long
+* 'w': wchar				(uint16)
+* 'x': long long			(int64)
+* 'y': unsigned long long	(uint64)
 * 'z': vararg
 * 'Ca': __vec2f
 * 'Cb': __vec3f
@@ -293,10 +293,43 @@ Pointer/Array Class Modifer:
 * Cx: near pointer ("__near")
 * Cy: far pointer ("__far")
 
+* Da: ifarch (only build if ifarch pattern is true)
+* Db: ifnarch (only build if ifarch pattern is false)
+
 * De: dllexport
 * Di: dllimport
 
 * U{name};	//named flag
+
+
+=== IfArch String ===
+
+Will consist of a list of identifiers separated with operators, with the binary operators evaluated in a left-to-right (left associative) order in infix position.
+
+Identifiers will follow a similar pattern to C identifiers.
+
+An identifier will be 'true' if it names a property that is true for the target, or false if the property is not true or is unrecognized. These identifiers may identify things like the target instruction set, specific ISA features, or potentially features related to the target ABI or OS. In this sense, IfArch will serve a similar purpose to IfDef in C.
+
+
+Integer literals may also be present, and will be interpreted as true if the integer value is non-zero, or false if zero.
+
+Operators:
+* '&': AND, True if both the preceding and following value is true.
+* '|': OR, True if either the preceding or following value is true.
+* '!': True if the following identifier is false.
+
+Note that the operators here will be semantically short-circuiting, and as such are logical rather than bitwise operators.
+
+Parenthesis may also be used for grouping, where the grouped expression will be evaluated before proceeding with the parent expression.
+
+
+The use of an IfArch string will be in combination with a flag, where the flag will indicate whether the IfArch pattern string is required to be true or false for the declared object to be retained. If the pattern does not match, then the object will be culled from the image.
+
+Multiple versions of a function or variable will be allowed if (presumably mutually exclusive) IfArch patterns are used.
+
+Different versions of a function built with IfArch will be required to have a matching parameter list and return type.
+
+Different version of a variable built with IfArch will be required to have the same base type, though aspects like array size or initialization value will be allowed to differ.
 
 
 === Operators ===
@@ -322,14 +355,19 @@ Begin/Commands
 * 0x8012, MANIFOBJ
 * 0x8013, TYPEDEF
 * 0x8014, JMPTAB
+* 0x8015, METHODPROTO
+* 0x8016, ENUMDEF
+* 0x8017, GLOBALVARDECL
 
 Attribute/Literal
-* 0x9001, SIG
-* 0x9002, FLAGS
+* 0x9001, SIG (String)
+* 0x9002, FLAGS (String)
 * 0x9003, VALUE
 * 0x9004, SRCTOK
-* 0x9005, NAME
+* 0x9005, NAME (String)
 * 0x9006, TUIDX
+* 0x9007, THISNAME (String)
+* 0x9008, IFARCH (String)
 
 Commands/Attributes (Alt)
 * 0x01, VARVALUE
@@ -359,6 +397,10 @@ Commands/Attributes (Alt)
 * 0x24, SRCTOK
 * 0x25, NAME
 * 0x26, TUIDX
+* 0x27, THISNAME
+* 0x28, IFARCH
+
+The Command/Attribute Alt forms will be a compacted form of the tag, where 00..1F will map to 8000..801F, and 20..3F will map to 9000..901F. This is mostly to allow these tags to use a single-byte encoding.
 
 
 Binary Operator
@@ -535,11 +577,11 @@ Opcodes (Executable Code)
 ** Apply a unary operator.
 * 0x34, STBINOP ( ValL ValR -- )
 ** SVLI opr;
-** STRING name;
+** STRING dstname;
 ** Apply a binary operator and store result into variable.
 * 0x35, STCMPOP ( ValL ValR -- )
 ** SVLI opr;
-** STRING name;
+** STRING dstname;
 ** Apply a comparison operator and store result into variable.
 * 0x36, LDUNOP ( -- )
 ** SVLI opr;
@@ -690,13 +732,43 @@ Opcodes (Executable Code)
 * 0x67, SAR ( A B -- A>>B )
 
 * 0x68, STLDSLOT
+** STRING fname;
+** STRING dstname;
+** Load slot and store in dstname.
+
 * 0x69, STLDSLOTA
+** STRING fname;
+** STRING dstname;
+** Load slot address and store in dstname.
+
 * 0x6A, STLDIXC
+** SVLI idx;
+** STRING dstname;
+** Load constant index and store in dstname.
+
 * 0x6B, STLDIXAC
+** SVLI idx;
+** STRING dstname;
+** Load constant index address and store in dstname.
+
 * 0x6C, STLDIX
+** STRING dstname;
+** Load index and store in dstname.
+
 * 0x6D, STLDIXA
+** STRING dstname;
+** Load index address and store in dstname.
+
 * 0x6E, STCASTSIG
+** STRING sig;
+** STRING dstname;
+** Cast value to sig and store in dstname.
+
 * 0x6F, CSELCMP
+** SVLI opr;
+** Conditional Select Compare.
+*** 0..15: Compare two values.
+*** 16..31: Compare value with zero.
 
 * 0x70, DUPIX
 ** Dup with Index

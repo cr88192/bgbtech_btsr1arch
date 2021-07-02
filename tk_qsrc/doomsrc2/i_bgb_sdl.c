@@ -25,9 +25,11 @@ u64 __int32_dmulu(u32 a, u32 b)
 	return(((u64)a) * ((u64)b));
 }
 
+#ifndef __clang__
 void __debugbreak()
 {
 }
+#endif
 
 void I_InitNetwork (void)
 {

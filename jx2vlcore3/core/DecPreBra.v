@@ -35,7 +35,8 @@ module DecPreBra(
 	istrWord,	istrBasePc,	istrBraPc,
 	preBraPc,	preIsBra,
 	regValLr,	ifBraBPc,
-	exBraBPc,	exBraDir);
+	exBraBPc,	exBraDir,
+	pipeHasLr);
 
 input			clock;
 input			reset;
@@ -47,6 +48,7 @@ input[63:0]		regValLr;	//Link Register
 input[47:0]		ifBraBPc;	//Fetch Branch PC
 input[47:0]		exBraBPc;	//Fetch Base PC
 input[2:0]		exBraDir;
+input			pipeHasLr;
 
 output[47:0]	preBraPc;
 output			preIsBra;
@@ -212,8 +214,14 @@ begin
 		(istrWord[11: 8]==4'h0) &&
 		(istrWord[31:29]==3'b111);
 	
+`ifdef jx2_prebra_rts
+	tIsRtsu			=
+		(istrWord[15:0] == 16'h3012) ||
+		((istrWord[15:0] == 16'h3010) && !pipeHasLr);
+`else
 	tIsRtsu			=
 		(istrWord[15:0] == 16'h3012);
+`endif
 
 //	tIsBra8		= 0;
 //	tIsBra20	= 0;

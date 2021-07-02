@@ -714,6 +714,10 @@ void S_StopChannel(int cnum)
 {
 
 	int		i;
+	
+	if((cnum<0) || (cnum>=8))
+		return;
+	
 	channel_t*	c = &s_channels[cnum];
 
 	if (c->sfxinfo)

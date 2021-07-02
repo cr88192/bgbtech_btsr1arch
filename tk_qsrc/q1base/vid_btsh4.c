@@ -92,7 +92,8 @@ int vid_clamp255(int v)
 int VID_BlendEven16(int pixa, int pixb)
 {
 	int pix;
-	pix=((pixa&0xFBDF)+(pixb&0xFBDF))>>1;
+//	pix=((pixa&0xFBDF)+(pixb&0xFBDF))>>1;
+	pix=((pixa&0x7BDE)+(pixb&0x7BDE))>>1;
 	return(pix);
 }
 #endif
@@ -1262,8 +1263,10 @@ void VID_SetPaletteIndex (int idx)
 u64 VID_BlendEven4x16(u64 pixa, u64 pixb)
 {
 	u64 pix;
-	pix=((pixa&0xFBDEFBDEFBDEFBDEULL)>>1)+
-		((pixb&0xFBDEFBDEFBDEFBDEULL)>>1);
+//	pix=((pixa&0xFBDEFBDEFBDEFBDEULL)>>1)+
+//		((pixb&0xFBDEFBDEFBDEFBDEULL)>>1);
+	pix=((pixa&0x7BDE7BDE7BDE7BDEULL)>>1)+
+		((pixb&0x7BDE7BDE7BDE7BDEULL)>>1);
 	return(pix);
 }
 

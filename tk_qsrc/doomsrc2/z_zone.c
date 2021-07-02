@@ -230,16 +230,43 @@ Z_Malloc
   int		tag,
   void*		user )
 {
-	int		extra;
+	int		extra, size1;
 	memblock_t*	start;
 	memblock_t* rover;
 	memblock_t* newblock;
 	memblock_t*	base;
+	void		*ptr;
 
-	size *= 2;	//BGB: Debug
+//	size *= 2;	//BGB: Debug
+
+#if 0
+//	if(
+//		(tag==PU_STATIC) ||
+//		(tag==PU_LEVSPEC) ||
+//		(tag==PU_LEVELMOBJ) ||
+//		(tag==PU_LEVEL_GLINE)
+//		)
+	if(
+//		(tag!=PU_STATIC) &&
+//		(tag!=PU_LEVSPEC) &&
+		(tag!=PU_PATCH) &&
+		(tag!=PU_FLAT) &&
+		(tag!=PU_STATICLUMP) &&
+		(tag!=PU_LEVELMOBJ) &&
+		(tag!=PU_LEVEL_GLINE)
+//		1
+		)
+	{
+		size *= 2;	//BGB: Debug
+	}
+#endif
 
 //	size = (size + 3) & ~3;
-	size = (size + 7) & ~7;
+//	size = (size + 7) & ~7;
+//	size = (size + 15) & (~15);
+	size = (size + 31) & (~15);
+//	size = (size + 47) & (~15);
+	size1 = size;
 	
 	// scan through the block list,
 	// looking for the first free block
@@ -343,7 +370,11 @@ Z_Malloc
 
 	__setmemtrap(base, 3);
 	
-	return (void *) ((byte *)base + sizeof(memblock_t));
+	ptr = (void *) ((byte *)base + sizeof(memblock_t));
+//	memset(ptr, 0, size1);
+	return ptr;
+
+//	return (void *) ((byte *)base + sizeof(memblock_t));
 }
 
 

@@ -961,6 +961,10 @@ int nmid;
 {"blerp.w",		BGBCC_SH_NMID_BLERPW},
 {"blinta.w",	BGBCC_SH_NMID_BLINTAW},
 
+{"blkuab1",		BGBCC_SH_NMID_BLKUAB1},
+{"blkuab2",		BGBCC_SH_NMID_BLKUAB2},
+
+
 {"pscheq.w",	BGBCC_SH_NMID_PSCHEQW},
 {"pscheq.b",	BGBCC_SH_NMID_PSCHEQB},
 {"pschne.w",	BGBCC_SH_NMID_PSCHNEW},
@@ -1442,9 +1446,105 @@ int BGBCC_JX2A_TryAssembleOpcode(
 	return(rt);
 }
 
+int BGBCC_JX2A_ParseCheckFeatureList(BGBCC_JX2_Context *ctx, char *sym)
+{
+	char tb[256];
+	char *cs, *ct;
+	int dfl, ni;
+
+	dfl=0;
+	cs=sym;
+	ct=tb;
+	while(*cs)
+	{
+		if(*cs=='(')
+		{
+			cs++; ni=1;
+			while(*cs)
+			{
+				if(*cs=='(')
+				{
+					*ct++=*cs++;
+					ni++;
+					continue;
+				}
+				if(*cs==')')
+				{
+					ni--;
+					if(!ni)
+						break;
+					*ct++=*cs++;
+					continue;
+				}
+				*ct++=*cs++;
+			}
+			
+			ni=BGBCC_JX2A_ParseCheckFeatureList(ctx, tb);
+			sprintf(tb, "%d", ni);
+			ct=tb+strlen(tb);
+			continue;
+		}
+
+		if((*cs==',') || (*cs=='|'))
+		{
+			while(*cs==',')cs++;
+			while(*cs=='|')cs++;
+			*ct++=0;
+			if(tb[0])
+			{
+				if(BGBCC_JX2A_ParseCheckFeature(ctx, tb)!=0)
+					return(1);
+				ct=tb;
+				continue;
+			}
+			continue;
+		}
+
+		if(*cs=='&')
+		{
+			while(*cs=='&')cs++;
+			*ct++=0;
+			if(tb[0])
+			{
+				if(BGBCC_JX2A_ParseCheckFeature(ctx, tb)==0)
+					return(0);
+//				dfl=1;
+				ct=tb;
+				continue;
+			}
+			continue;
+		}
+		
+		*ct++=*cs++;
+	}
+
+	*ct++=0;
+	if(tb[0])
+	{
+		if(BGBCC_JX2A_ParseCheckFeature(ctx, tb)!=0)
+			return(1);
+	}
+	return(0);
+}
+
 int BGBCC_JX2A_ParseCheckFeature(BGBCC_JX2_Context *ctx, char *sym)
 {
 	BGBCC_TransState *tctx;
+	int i;
+
+	if(!bgbcc_stricmp(sym, "bjx2"))
+		return(1);
+	
+	if((*sym>='0') && *sym<='9')
+	{
+		i=atoi(sym);
+		return(i!=0);
+	}
+	
+	if(*sym=='!')
+	{
+		return(!BGBCC_JX2A_ParseCheckFeature(ctx, sym+1));
+	}
 
 	if(!bgbcc_stricmp(sym, "bjx1_egpr"))
 		return(ctx->has_bjx1egpr);
@@ -1453,12 +1553,15 @@ int BGBCC_JX2A_ParseCheckFeature(BGBCC_JX2_Context *ctx, char *sym)
 	if(!bgbcc_stricmp(sym, "bjx1_64"))
 		return(ctx->is_addr64);
 
-	if(!bgbcc_stricmp(sym, "bjx1_nofpu"))
+	if(	!bgbcc_stricmp(sym, "bjx1_nofpu") ||
+		!bgbcc_stricmp(sym, "bjx2_nofpu"))
 		return(ctx->no_fpu);
-	if(!bgbcc_stricmp(sym, "bjx1_noext32"))
+	if(	!bgbcc_stricmp(sym, "bjx1_noext32") ||
+		!bgbcc_stricmp(sym, "bjx2_noext32"))
 		return(ctx->no_ext32);
 
-	if(!bgbcc_stricmp(sym, "bjx1_fpu_gfp"))
+	if(	!bgbcc_stricmp(sym, "bjx1_fpu_gfp") ||
+		!bgbcc_stricmp(sym, "bjx2_fpu_gfp"))
 		return(ctx->fpu_gfp);
 
 	if(!bgbcc_stricmp(sym, "bjx2_ptr32"))
@@ -2229,7 +2332,8 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 			cs2=cs1;
 			cs2=BGBCC_JX2A_ParseTokenAlt(cs2, &tk0);
 
-			i=BGBCC_JX2A_ParseCheckFeature(ctx, tk0+1);
+//			i=BGBCC_JX2A_ParseCheckFeature(ctx, tk0+1);
+			i=BGBCC_JX2A_ParseCheckFeatureList(ctx, tk0+1);
 			if(i>0)
 				{ ctx->iflvl_t++; }
 			else
@@ -2247,7 +2351,8 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 			cs2=cs1;
 			cs2=BGBCC_JX2A_ParseTokenAlt(cs2, &tk0);
 
-			i=BGBCC_JX2A_ParseCheckFeature(ctx, tk0+1);
+//			i=BGBCC_JX2A_ParseCheckFeature(ctx, tk0+1);
+			i=BGBCC_JX2A_ParseCheckFeatureList(ctx, tk0+1);
 			if(i>0)
 				{ ctx->iflvl_f++; }
 			else

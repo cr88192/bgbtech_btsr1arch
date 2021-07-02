@@ -790,7 +790,7 @@ int HU_DrawString(int xo, int yo, char *str)
 //		    HU_FONTSTART, &message_on);
 
 	if(!hu_font[0])
-		return;
+		return(-1);
 
 	cs=str; x=xo; y=yo;
 	while(*cs)
@@ -816,6 +816,7 @@ int HU_DrawString(int xo, int yo, char *str)
 	    V_DrawPatchDirect(x, y, FG, p);
 		x+=p->width;
 	}
+	return(0);
 }
 
 patch_t		*hu_shortnum[10];

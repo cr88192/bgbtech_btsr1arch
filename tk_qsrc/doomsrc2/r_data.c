@@ -158,12 +158,18 @@ short**			texturecolumnlump;
 unsigned short**	texturecolumnofs;
 byte**			texturecomposite;
 
+int*			texutx_widthmask;
+short**			texutx_columnlump;
+short**			texutx_columnofs;
+u64**			texutx_composite;
+// int*			texutx_compositesize;
+
 // for global animation
 int*		flattranslation;
 int*		texturetranslation;
 
-byte		**flattransptr;
-int			*flattransptrlump;
+// byte		**flattransptr;
+// int		*flattransptrlump;
 
 
 // needed for pre rendering
@@ -173,6 +179,8 @@ fixed_t*	spritetopoffset;
 
 lighttable_t	*colormaps;
 
+byte			cmap_luma[64];
+
 lighttable_t	*colormaps_alt[8];
 int				colormaps_aidx[8];
 int				n_colormaps_alt;
@@ -180,6 +188,7 @@ u16				d_8to16table_alt[8][256];
 
 
 void		**patchcache;
+void		**utxcache;
 
 #ifndef BGBCC_FOURCC
 #define BGBCC_FOURCC(a, b, c, d)	((a)|((b)<<8)|((c)<<16)|((d)<<24))
@@ -342,6 +351,99 @@ void R_GenerateComposite (int texnum)
 	Z_ChangeTag (block, PU_CACHE);
 }
 
+void R_GenerateCompositeUtx (int texnum)
+{
+	u16			tblk[16];
+	u64				*block, *ct;
+	byte			*src;
+	texture_t*		texture;
+	texpatch_t*		patch;	
+	patch_t*		realpatch;
+	int			x, y, xs, ys, xs1, ys1, xs1b, ys1b;
+	int			x1, x2, ofs;
+	int			i, j, k;
+	column_t	*pcol0, *pcol1, *pcol2, *pcol3;
+	byte		*tcs0, *tcs1, *tcs2, *tcs3;
+	short*		collump;
+	unsigned short*	colofs;
+	u64			blk;
+	
+	texture = textures[texnum];
+
+	xs = texture->width;
+	ys = texture->height;
+	xs1 = xs>>2;
+	ys1 = ys>>2;
+	xs1b = (xs+3)>>2;
+	ys1b = (ys+3)>>2;
+
+	block = Z_Malloc (xs1b*ys1b*8,
+		PU_STATIC, 
+		&texutx_composite[texnum]);
+
+#if 0	
+	src = texturecomposite[texnum];
+
+	if(!src)
+	{
+//		R_GenerateComposite(texnum);
+	}
+#endif
+
+	ct = block;
+
+	for(x=0; x<xs1b; x++)
+	{
+		texutx_columnofs[texnum][x] = ct - block;
+
+#if 1
+		tcs0 = R_GetColumn(texnum, x*4+0);
+		tcs1 = R_GetColumn(texnum, x*4+1);
+		tcs2 = R_GetColumn(texnum, x*4+2);
+		tcs3 = R_GetColumn(texnum, x*4+3);
+#endif
+
+		for(y=0; y<ys1; y++)
+		{
+			tblk[ 0]=colormaps[tcs0[0]];	tblk[ 4]=colormaps[tcs0[1]];
+			tblk[ 8]=colormaps[tcs0[2]];	tblk[12]=colormaps[tcs0[3]];
+			tblk[ 1]=colormaps[tcs1[0]];	tblk[ 5]=colormaps[tcs1[1]];
+			tblk[ 9]=colormaps[tcs1[2]];	tblk[13]=colormaps[tcs1[3]];
+			tblk[ 2]=colormaps[tcs2[0]];	tblk[ 6]=colormaps[tcs2[1]];
+			tblk[10]=colormaps[tcs2[2]];	tblk[14]=colormaps[tcs2[3]];
+			tblk[ 3]=colormaps[tcs3[0]];	tblk[ 7]=colormaps[tcs3[1]];
+			tblk[11]=colormaps[tcs3[2]];	tblk[15]=colormaps[tcs3[3]];
+		
+			blk = W_EncodeBlockUtx2(tblk);
+			*ct++ = blk;
+		
+			tcs0+=4;	tcs1+=4;
+			tcs2+=4;	tcs3+=4;
+		}
+		if(ys1<ys1b)
+		{
+			for(i=0; i<(ys&3); i++)
+			{
+				tblk[i*4+0]=colormaps[tcs0[i]];
+				tblk[i*4+1]=colormaps[tcs1[i]];
+				tblk[i*4+2]=colormaps[tcs2[i]];
+				tblk[i*4+3]=colormaps[tcs3[i]];
+			}
+			for(; i<4; i++)
+			{
+				tblk[i*4+0]=tblk[(i-1)*4+0];
+				tblk[i*4+1]=tblk[(i-1)*4+1];
+				tblk[i*4+2]=tblk[(i-1)*4+2];
+				tblk[i*4+3]=tblk[(i-1)*4+3];
+			}
+
+			blk = W_EncodeBlockUtx2(tblk);
+			*ct++ = blk;
+		}
+	}
+
+	Z_ChangeTag (block, PU_CACHE);
+}
 
 //
 // R_GenerateLookup
@@ -488,6 +590,40 @@ byte *R_GetColumn
 }
 
 
+u64 *R_GetColumnUtx
+(	int		tex,
+	int		col )
+{
+	u64		*src;
+	int		lump;
+	int		ofs;
+		
+	col &= texutx_widthmask[tex];
+	lump = texutx_columnlump[tex][col];
+	ofs = texutx_columnofs[tex][col];
+
+#if 0
+	if (lump > 0)
+	{
+		src = patchcache[lump];
+		if(src)
+			return(src+ofs);
+
+//		return (byte *)W_CacheLumpNum(lump,PU_CACHE)+ofs;
+		return (byte *)W_CachePatchNum(lump,PU_CACHE)+ofs;
+	}
+#endif
+
+	src = texutx_composite[tex];
+	if (src)
+		return(src + ofs);
+	R_GenerateCompositeUtx (tex);
+
+	ofs = texutx_columnofs[tex][col];
+	return texutx_composite[tex] + ofs;
+}
+
+
 
 
 //
@@ -583,6 +719,14 @@ void R_InitTextures (void)
 	texturewidthmask = Z_Malloc (numtextures*sizeof(void*), PU_STATIC, 0);
 	textureheight = Z_Malloc (numtextures*sizeof(void*), PU_STATIC, 0);
 
+#ifdef UTXWALLS
+	texutx_columnlump = Z_Malloc (numtextures*sizeof(void*), PU_STATIC, 0);
+	texutx_columnofs = Z_Malloc (numtextures*sizeof(void*), PU_STATIC, 0);
+	texutx_composite = Z_Malloc (numtextures*sizeof(void*), PU_STATIC, 0);
+//	texutx_compositesize = Z_Malloc (numtextures*sizeof(void*), PU_STATIC, 0);
+	texutx_widthmask = Z_Malloc (numtextures*sizeof(void*), PU_STATIC, 0);
+#endif
+
 	totalwidth = 0;
 	
 	printf("\n");
@@ -657,8 +801,20 @@ void R_InitTextures (void)
 				 texture->name);
 			}
 		}		
-		texturecolumnlump[i] = Z_Malloc (texture->width*2, PU_STATIC,0);
-		texturecolumnofs[i] = Z_Malloc (texture->width*2, PU_STATIC,0);
+//		texturecolumnlump[i] = Z_Malloc (texture->width*2, PU_STATIC,0);
+//		texturecolumnofs[i] = Z_Malloc (texture->width*2, PU_STATIC,0);
+
+		texturecolumnlump[i] = Z_Malloc (
+			texture->width*sizeof(int), PU_STATIC,0);
+		texturecolumnofs[i] = Z_Malloc (
+			texture->width*sizeof(int), PU_STATIC,0);
+
+#ifdef UTXWALLS
+		texutx_columnlump[i] = Z_Malloc (
+			((texture->width+3)/4)*sizeof(int), PU_STATIC, 0);
+		texutx_columnofs[i] = Z_Malloc (
+			((texture->width+3)/4)*sizeof(int), PU_STATIC, 0);
+#endif
 
 		j = 1;
 		while (j*2 <= texture->width)
@@ -666,6 +822,10 @@ void R_InitTextures (void)
 
 		texturewidthmask[i] = j-1;
 		textureheight[i] = texture->height<<FRACBITS;
+
+#ifdef UTXWALLS
+		texutx_widthmask[i] = (j-1)>>2;
+#endif
 			
 		totalwidth += texture->width;
 
@@ -683,7 +843,7 @@ void R_InitTextures (void)
 		R_GenerateLookup (i);
 	
 	// Create translation table for global animation.
-	texturetranslation = Z_Malloc ((numtextures+1)*4, PU_STATIC, 0);
+	texturetranslation = Z_Malloc ((numtextures+1)*sizeof(int), PU_STATIC, 0);
 	
 	for (i=0 ; i<numtextures ; i++)
 		texturetranslation[i] = i;
@@ -749,15 +909,28 @@ void *W_CacheFlatNum(int flat, int tag)
 	byte *cs, *cse, *cs1e, *ct;
 	int lump, size, srci, flat2;
 
+	if(flat<=0)
+		return(NULL);
+	if(flat>=numlumps)
+		return(NULL);
+
 	flat2 = flattranslation[flat];
 //	lump = firstflat + flattranslation[flat];
 	lump = firstflat + flat2;
+
+	if(lump<=0)
+		return(NULL);
+	if(lump>=numlumps)
+		return(NULL);
 
 //	src = flattransptr[flat2];
 //	srci = flattransptrlump[flat2];
 	src = patchcache[lump];
 	if(src)
 		return(src);
+
+	if(tag == PU_STATIC)
+		tag = PU_FLAT;
 
 	size = lumpinfo[lump].size;
 	
@@ -795,7 +968,151 @@ void *W_CacheFlatNum(int flat, int tag)
 		return(src);
 	}
 
+	__debugbreak();
 	src = W_CacheLumpNum(lump, tag);
+	return(src);
+}
+
+int W_UtxPixelGetY(u16 pix)
+{
+	int cr, cg, cb, cy;
+	cr=(pix>>10)&31;
+	cg=(pix>> 5)&31;
+	cb=(pix>> 0)&31;
+	cr=(cr<<3)|(cr>>2);
+	cg=(cg<<3)|(cg>>2);
+	cb=(cb<<3)|(cb>>2);
+	cy=(8*cg+5*cr+3*cb)>>4;
+	return(cy);
+}
+
+u64 W_EncodeBlockUtx2(u16 *pix)
+{
+	byte pxy[16];
+	u64 blkv;
+	u16 px, mpx, npx;
+	u32 pxb;
+	int mcy, ncy, acy, rcy, cy, al;
+	int i, j, k;
+	
+	mcy=999; ncy=-999;	mpx=0; npx=0; al=0;
+//	acy=0;
+	for(i=0; i<16; i++)
+	{
+		px=pix[i];
+		if(px&0x8000)
+			{ al=1; continue; }
+		cy=W_UtxPixelGetY(px);
+		pxy[i]=cy;
+//		acy+=cy;
+		if(cy<mcy)	{ mcy=cy; mpx=px; }
+		if(cy>ncy)	{ ncy=cy; npx=px; }
+	}
+//	acy>>=4;
+	acy=(mcy+ncy)>>1;
+	rcy=(4*4096)/((ncy-mcy)+1);
+
+	pxb=0;
+	for(i=0; i<16; i++)
+	{
+		cy = pxy[i];
+		if(al)
+		{
+			px=pix[i];
+			j=0;
+			if(cy>acy)
+				j |= 2;
+			if(!(px&0x8000))
+				j |= 1;
+		}else
+		{
+			j = (((cy-acy)*rcy)>>12)+2;
+			if(j < 0) j = 0;
+			if(j > 3) j = 3;
+		}
+		pxb |= j<<(i*2);
+	}
+	
+	mpx&=0x7FFF;
+	npx&=0x7FFF;
+	if(al)
+	{
+		mpx&=0x7BDE;
+		npx&=0x7BDE;
+		mpx|=0x8000;
+		npx|=0x0421;
+	}
+	
+	blkv = (((u64)pxb)<<32) | (((u64)mpx)<<16) | (((u64)npx)<<0);
+	return(blkv);
+}
+
+void *W_CacheUtxFlatNum(int flat, int tag)
+{
+	static byte morttab4[16] = {
+		0x00, 0x01, 0x04, 0x05,	0x10, 0x11, 0x14, 0x15,
+		0x40, 0x41, 0x44, 0x45,	0x50, 0x51, 0x54, 0x55 };
+	u16		tblk[16];
+	byte *src, *buf;
+	byte *cs, *cse, *cs1e, *ct;
+	u64 blk;
+	int lump, size, srci, flat2;
+	int cx, cy, cz;
+
+	if(flat<=0)
+		return(NULL);
+	if(flat>=numlumps)
+		return(NULL);
+
+	flat2 = flattranslation[flat];
+//	lump = firstflat + flattranslation[flat];
+	lump = firstflat + flat2;
+
+	if(lump<=0)
+		return(NULL);
+	if(lump>=numlumps)
+		return(NULL);
+
+//	src = flattransptr[flat2];
+//	srci = flattransptrlump[flat2];
+	src = utxcache[lump];
+	if(src)
+		return(src);
+
+	buf = W_CacheFlatNum (flat, PU_CACHE);
+	src = Z_Malloc (2048, tag, &utxcache[lump]);
+
+	for(cy=0; cy<16; cy++)
+		for(cx=0; cx<16; cx++)
+	{
+		cs = buf + ((cy*4*64) + (cx*4));
+		cz = (morttab4[cy]<<1) | morttab4[cx];
+
+		tblk[ 0] = colormaps[cs[0*64+0]];
+		tblk[ 1] = colormaps[cs[0*64+1]];
+		tblk[ 4] = colormaps[cs[0*64+2]];
+		tblk[ 5] = colormaps[cs[0*64+3]];
+
+		tblk[ 2] = colormaps[cs[1*64+0]];
+		tblk[ 3] = colormaps[cs[1*64+1]];
+		tblk[ 6] = colormaps[cs[1*64+2]];
+		tblk[ 7] = colormaps[cs[1*64+3]];
+
+		tblk[ 8] = colormaps[cs[2*64+0]];
+		tblk[ 9] = colormaps[cs[2*64+1]];
+		tblk[12] = colormaps[cs[2*64+2]];
+		tblk[13] = colormaps[cs[2*64+3]];
+
+		tblk[10] = colormaps[cs[3*64+0]];
+		tblk[11] = colormaps[cs[3*64+1]];
+		tblk[14] = colormaps[cs[3*64+2]];
+		tblk[15] = colormaps[cs[3*64+3]];
+		
+		blk = W_EncodeBlockUtx2(tblk);
+		((u64 *)src)[cz] = blk;
+	}
+
+	utxcache[lump] = src;
 	return(src);
 }
 
@@ -843,6 +1160,81 @@ int R_ColorCellPostDecodeC16(byte *cs, byte *ct, int len)
 	return(0);
 }
 
+void *W_CachePatchNumUtx(int lump, int tag)
+{
+//	u16			tblk[128*4];
+	u16			tblk[224*4];
+	void		*src, *buf;
+	byte		*csbuf, *ctbuf, *cs, *ct;
+	u64			*blka;
+	u64			blk;
+	u32			*csofs;
+	u16			*csofs16;
+    patch_t		*spatch, *tpatch;
+	column_t	*tcol;
+    int			x, x1, col, xs, ys, xs1, ys1;
+    int			i, j, k, l, y;
+
+	if(lump<=0)
+		return(NULL);
+	if(lump>=numlumps)
+		return(NULL);
+
+	src = utxcache[lump];
+	if(src)
+		return(src);
+
+	spatch = W_CachePatchNum(lump, PU_CACHE);
+	if(!spatch)
+		return(NULL);
+	
+	xs = spatch->width;
+	ys = spatch->height;
+	xs1 = (xs+3)>>2;
+//	ys1 = (ys+3)>>2;
+	ys1 = (ys+7)>>2;
+	
+	tpatch = Z_Malloc (sizeof(patch_t)+(xs1*ys1*8),
+		PU_STATIC, &utxcache[lump]);
+	*tpatch = *spatch;
+	
+	blka = (u64 *)(tpatch+1);
+	
+	for(x=0; x<xs1; x++)
+	{
+		for(i=0; i<ys1*16; i++)
+			tblk[i]=0x8000;
+
+		for(x1=0; x1<4; x1++)
+		{
+			col = x*4+x1;
+
+			if(col >= spatch->width)
+				break;
+
+			tcol = (column_t *) ((byte *)spatch +
+				(spatch->columnofs[col]));
+			while(tcol->topdelta!=0xFF)
+			{
+				l = tcol->length;
+				y = tcol->topdelta;
+				for(i=0; i<l; i++)
+					{ tblk[(y+i)*4+x1]=colormaps[((byte *)tcol)[3+i]]; }
+//				tcol = ((byte *)tcol) + l + 4;
+				tcol = (column_t *)((byte *)tcol + tcol->length + 4);
+			}
+		}
+		
+		for(y=0; y<ys1; y++)
+		{
+			blk = W_EncodeBlockUtx2(tblk + y*4*4);
+			blka[x*ys1+y] = blk;
+		}
+	}
+	
+	return(tpatch);
+}
+
 void *W_CachePatchNum(int lump, int tag)
 {
 	void		*src, *buf;
@@ -854,13 +1246,26 @@ void *W_CachePatchNum(int lump, int tag)
     int			x, y, py, pl, ofs, is8, is16, israw, isofs16;
     int			isflat;
 
+	if(lump<=0)
+		return(NULL);
+	if(lump>=numlumps)
+		return(NULL);
+
 	src = patchcache[lump];
 	if(src)
 		return(src);
 
+	if(tag == PU_STATIC)
+		tag = PU_PATCH;
+
 	size = lumpinfo[lump].size;
 
 	buf = W_CacheLumpNum(lump, PU_CACHE);
+
+	if(!buf)
+	{
+		return(NULL);
+	}
 
 	csbuf = buf;
 	spatch = (patch_t *)csbuf;
@@ -886,10 +1291,13 @@ void *W_CachePatchNum(int lump, int tag)
 //	if(memcmp(buf, "CP8A", 4))
 	if(x>=xs)
 	{
-		src = Z_Malloc (size, tag, &patchcache[lump]);
+		src = Z_Malloc (size+256, tag, &patchcache[lump]);
+//		src = Z_Malloc (size*2+256, tag, &patchcache[lump]);
 		memcpy(src, buf, size);
 		return(src);
 	}
+
+//	__debugbreak();
 
 	isofs16 = 0;
 	isflat = 0;
@@ -972,7 +1380,8 @@ void *W_CachePatchNum(int lump, int tag)
 #endif	
 
 //	size2 = ((int *)buf)[1];
-	src = Z_Malloc (size2, tag, &patchcache[lump]);
+	src = Z_Malloc (size2+256, tag, &patchcache[lump]);
+//	src = Z_Malloc (size2*2+256, tag, &patchcache[lump]);
 
 	csbuf = buf;
 	ctbuf = src;
@@ -1117,7 +1526,7 @@ void *W_CachePatchNum(int lump, int tag)
 	return(src);
 }
 
-void *W_CachePatchName(char *name, int tag)
+void *W_CachePatchName(const char *name, int tag)
 {
 	int lump;
 
@@ -1125,7 +1534,7 @@ void *W_CachePatchName(char *name, int tag)
 	return(W_CachePatchNum(lump, tag));
 }
 
-void *W_CacheFlatName(char *name, int tag)
+void *W_CacheFlatName(const char *name, int tag)
 {
 	int lump;
 
@@ -1158,9 +1567,12 @@ void R_InitSpriteLumps (void)
 	}
 	
 	numspritelumps = lastspritelump - firstspritelump + 1;
-	spritewidth = Z_Malloc (numspritelumps*4, PU_STATIC, 0);
-	spriteoffset = Z_Malloc (numspritelumps*4, PU_STATIC, 0);
-	spritetopoffset = Z_Malloc (numspritelumps*4, PU_STATIC, 0);
+	spritewidth = Z_Malloc (
+		(numspritelumps+16)*sizeof(fixed_t), PU_STATIC, 0);
+	spriteoffset = Z_Malloc (
+		(numspritelumps+16)*sizeof(fixed_t), PU_STATIC, 0);
+	spritetopoffset = Z_Malloc (
+		(numspritelumps+16)*sizeof(fixed_t), PU_STATIC, 0);
 	
 	for (i=0 ; i< numspritelumps ; i++)
 	{
@@ -1186,12 +1598,14 @@ unsigned short	d_8to16table[256];
 //
 void R_InitColormaps (void)
 {
+	byte *pal;
 	byte *tbuf;
 	lighttable_t *tcol;
 	int	lump, length, blen, hdl, lump1, hdl1;
-	int i, j;
+	int i, j, k, l;
 
-	I_SetPalette (W_CacheLumpName ("PLAYPAL",PU_CACHE));
+	pal = W_CacheLumpName ("PLAYPAL", PU_CACHE);
+	I_SetPalette (pal);
 
 	// Load in the light tables, 
 	//	256 byte align tables.
@@ -1213,8 +1627,8 @@ void R_InitColormaps (void)
 	
 	tbuf=malloc(length);
 
-	colormaps = Z_Malloc (length*sizeof(lighttable_t), PU_STATIC, 0); 
-	colormaps = (lighttable_t *)( ((nlint)colormaps + 255)&~0xff); 
+	colormaps = Z_Malloc ((length+256)*sizeof(lighttable_t), PU_STATIC, 0); 
+	colormaps = (lighttable_t *)( ((nlint)colormaps + 255)&(~0xff)); 
 
 	colormaps_alt[0]=colormaps;
 	colormaps_aidx[0]=lump1;
@@ -1229,6 +1643,28 @@ void R_InitColormaps (void)
 	{
 //		colormaps[i] = tbuf[i];
 		colormaps[i] = d_8to16table[tbuf[i]];
+	}
+
+	for(i=0; i<64; i++)
+	{
+		l = 0;
+		for(j=0; j<256; j++)
+		{
+			k=tbuf[i*256+j];
+			k=(2*pal[k*3+1]+pal[k*3+0]+pal[k*3+2])/4;
+			l+=k;
+		}
+		cmap_luma[i] = l/256;
+	}
+	
+	l=65536/cmap_luma[0];
+	for(i=0; i<64; i++)
+	{
+		j = cmap_luma[i];
+		j = (j * l) >> 8;
+		if(j>255)
+			j = 255;
+		cmap_luma[i] = j;
 	}
 
 	lump = W_GetNumForNameBase(lump, "COLORMAP"); 

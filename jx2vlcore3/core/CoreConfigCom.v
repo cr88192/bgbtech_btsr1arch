@@ -33,6 +33,7 @@
 `define jx2_enable_gsv			//Enable GSV (Packed Integer) stuff.
 
 `define jx2_enable_prebra			//Enable PreBranch
+`define jx2_prebra_rts				//Enable PreBranch on RTS
 
 // `define jx2_enable_dualcore			//Enable Second Core
 
@@ -57,6 +58,8 @@
 // `define jx2_enable_btcutx3			//UTX3 Block Conversion Op
 
 `define jx2_do_btcutx_alu
+
+`define jx2_enable_btcuab1			//UAB1/2 Block Conversion Op
 
 `define jx2_enable_convrgb32f		//RGBA32F Conversion Op
 // `define jx2_enable_convrgb30a		//RGB30A Conversion Op

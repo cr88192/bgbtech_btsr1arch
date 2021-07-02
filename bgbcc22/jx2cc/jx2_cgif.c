@@ -5136,6 +5136,32 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 
 	for(i=0; i<ctx->n_reg_globals; i++)
 	{
+		obj=ctx->reg_globals[i];
+		if(!obj)
+			continue;
+
+		if((obj->flagsint&BGBCC_TYFL_IFARCH) && obj->ifarchstr)
+		{
+			if(BGBCC_JX2A_ParseCheckFeatureList(sctx, obj->ifarchstr)==0)
+			{
+				obj->regflags|=BGBCC_REGFL_CULL;
+				obj->regflags|=BGBCC_REGFL_IFACULL;
+			}
+		}
+
+		if((obj->flagsint&BGBCC_TYFL_IFNARCH) && obj->ifarchstr)
+		{
+			if(BGBCC_JX2A_ParseCheckFeatureList(sctx, obj->ifarchstr)!=0)
+			{
+				obj->regflags|=BGBCC_REGFL_CULL;
+				obj->regflags|=BGBCC_REGFL_IFACULL;
+			}
+		}
+
+	}
+
+	for(i=0; i<ctx->n_reg_globals; i++)
+	{
 //		j=shufarr[i];
 //		obj=ctx->reg_globals[j];
 

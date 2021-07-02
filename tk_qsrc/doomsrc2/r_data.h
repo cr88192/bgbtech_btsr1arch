@@ -33,15 +33,15 @@
 #endif
 
 // Retrieve column data for span blitting.
-byte*
-R_GetColumn
-( int		tex,
-  int		col );
+byte *R_GetColumn (int tex, int col);
+u64 *R_GetColumnUtx (int tex, int col);
 
 
 // I/O, setting up the stuff.
 void R_InitData (void);
 void R_PrecacheLevel (void);
+
+u64 W_EncodeBlockUtx2(u16 *pix);
 
 
 // Retrieval.
@@ -51,8 +51,11 @@ int R_FlatNumForName (char* name);
 
 void *W_CacheFlatNum(int flat, int tag);
 void *W_CachePatchNum(int lump, int tag);
-void *W_CachePatchName(char *name, int tag);
-void *W_CacheFlatName(char *name, int tag);
+void *W_CachePatchName(const char *name, int tag);
+void *W_CacheFlatName(const char *name, int tag);
+
+void *W_CacheUtxFlatNum(int flat, int tag);
+void *W_CachePatchNumUtx(int lump, int tag);
 
 
 // Called by P_Ticker for switches and animations,

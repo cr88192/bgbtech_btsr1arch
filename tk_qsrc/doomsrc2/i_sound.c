@@ -1072,3 +1072,7 @@ void I_SoundDelTimer()
 	if ( I_SoundSetTimer( 0 ) == -1)
 		fprintf( stderr, "I_SoundDelTimer: failed to remove interrupt. Doh!\n");
 }
+
+void I_MusicFineTick(void)	
+{
+}

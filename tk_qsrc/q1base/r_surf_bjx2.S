@@ -818,7 +818,8 @@ X(D_SoftDivB):
 #if 1
 .global X(VID_BlendEven16)
 X(VID_BlendEven16):
-	MOV		#0xFBDF, R3
+//	MOV		#0xFBDF, R3
+	MOV		#0x7BDE, R3
 	AND		R4, R3, R6
 	AND		R5, R3, R7
 	ADD		R6, R7, R2

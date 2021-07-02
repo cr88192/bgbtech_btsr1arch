@@ -63,6 +63,7 @@ int			lumphash[64];
 
 void		**lumpcache;
 void		**patchcache;
+void		**utxcache;
 
 
 // #define strcmpi	strcasecmp
@@ -73,7 +74,7 @@ void w_strupr (char *s)
 	while (*s) { *s = toupper(*s); s++; }
 }
 
-void w_strupr_n (char *t, char *s, int n)
+void w_strupr_n (char *t, const char *s, int n)
 {
 	int i;
 	for(i=0; *s && (i<n); i++)
@@ -82,7 +83,7 @@ void w_strupr_n (char *t, char *s, int n)
 		*t++=0;
 }
 
-int w_chkaccess(char *name)
+int w_chkaccess(const char *name)
 {
 	FILE *fd;
 	int st;
@@ -1114,15 +1115,18 @@ void W_InitMultipleFiles (char** filenames)
 	
 	// set up caching
 //	size = numlumps * sizeof(*lumpcache);
-	size = (numlumps + 64) * sizeof(*lumpcache);
+//	size = (numlumps + 64) * sizeof(*lumpcache);
+	size = (numlumps + 64) * sizeof(void *);
 	lumpcache = malloc (size);
 	patchcache = malloc (size);
+	utxcache = malloc (size);
 	
-	if (!lumpcache)
+	if (!lumpcache || !patchcache || !utxcache)
 		I_Error ("Couldn't allocate lumpcache");
 
 	memset (lumpcache,0, size);
 	memset (patchcache,0, size);
+	memset (utxcache,0, size);
 }
 
 
@@ -1159,7 +1163,7 @@ int W_NumLumps (void)
 //
 
 #if 0
-int W_CheckNumForNameBase (int base, char* name)
+int W_CheckNumForNameBase (int base, const char* name)
 {
 	union {
 //	char	s[9];
@@ -1265,7 +1269,7 @@ int W_CheckNumForNameBase (int base, char* name)
 #endif
 
 #if 1
-int W_CheckNumForNameBase (int base, char* name)
+int W_CheckNumForNameBase (int base, const char* name)
 {
 	union {
 //	char	s[9];
@@ -1363,7 +1367,7 @@ int W_CheckNumForNameBase (int base, char* name)
 }
 #endif
 
-int W_CheckNumForName (char* name)
+int W_CheckNumForName (const char* name)
 {
 	return(W_CheckNumForNameBase(numlumps, name));
 }
@@ -1376,7 +1380,7 @@ void W_PrintLumps (void);
 // W_GetNumForName
 // Calls W_CheckNumForName, but bombs out if not found.
 //
-int W_GetNumForName (char* name)
+int W_GetNumForName (const char* name)
 {
 	int	i;
 
@@ -1459,8 +1463,10 @@ W_ReadLump
 	void*		dest )
 {
 	static void *tbuf=NULL;
+	static byte	*tdbuf=NULL;
 	static byte	*tcbuf=NULL;
 	static int		tcsize;
+	static int		tdsize;
 	byte *ct;
 	int n;
 	
@@ -1497,9 +1503,33 @@ W_ReadLump
 			ofs2 = (ofs&65535)*64;
 			ct = W_CacheLumpNum(ofs1, PU_CACHE);
 			
+			if(!ct)
+				return;
+			
 			memcpy(dest, ct+ofs2, l->size);
 			return;
 		}
+	
+		c = l->size + 256;
+		if(!tdbuf || (c > tdsize))
+		{
+			if(tdbuf)
+			{
+				csz=tdsize;
+				while(c > csz)
+					csz=csz+(csz>>1);
+				tdbuf=realloc(tdbuf, csz);
+				tdsize=csz;
+			}else
+			{
+				csz=131072;
+				while(c > csz)
+					csz=csz+(csz>>1);
+				tdbuf=malloc(csz);
+				tdsize=csz;
+			}
+		}
+
 	
 		if(!tcbuf || (l->csize>tcsize))
 		{
@@ -1527,9 +1557,17 @@ W_ReadLump
 			I_Error ("W_ReadLump: only read %i of %i on lump %i",
 				c,l->csize,lump);
 		if(l->cmp==3)
-			{ W_DecodeBufferRP2(tcbuf, dest, l->csize, l->size); }
+		{
+//			W_DecodeBufferRP2(tcbuf, dest, l->csize, l->size);
+			W_DecodeBufferRP2(tcbuf, tdbuf, l->csize, l->size);
+			memcpy(dest, tdbuf, l->size);
+		}
 		else if(l->cmp==4)
-			{ W_DecodeBufferLZ4(tcbuf, dest, l->csize, l->size); }
+		{
+//			W_DecodeBufferLZ4(tcbuf, dest, l->csize, l->size);
+			W_DecodeBufferLZ4(tcbuf, tdbuf, l->csize, l->size);
+			memcpy(dest, tdbuf, l->size);
+		}
 		
 		return;
 	}
@@ -1591,6 +1629,8 @@ W_CacheLumpNum
 
 	if(tag == PU_CACHE)		//BGB
 		tag = PU_CACHELUMP;
+//	if(tag == PU_STATIC)		//BGB
+//		tag = PU_STATICLUMP;
 
 	if ((unsigned)lump >= numlumps)
 		I_Error ("W_CacheLumpNum: %i >= numlumps",lump);
@@ -1602,7 +1642,8 @@ W_CacheLumpNum
 		//printf ("cache miss on lump %i\n",lump);
 		sz = W_LumpLength (lump);
 		ptr = Z_Malloc (sz+256, tag, &lumpcache[lump]);
-		memset(ptr, 0, sz);
+//		ptr = Z_Malloc (sz+1024, tag, &lumpcache[lump]);
+//		memset(ptr, 0, sz+256);
 		
 		W_ReadLump (lump, lumpcache[lump]);
 	}
@@ -1633,7 +1674,7 @@ int W_GetNumForCache (void *ptr)
 //
 void*
 W_CacheLumpName
-( char*		name,
+( const char*		name,
 	int		tag )
 {
 	return W_CacheLumpNum (W_GetNumForName(name), tag);

@@ -406,6 +406,11 @@ static patch_t**	lnames;
 
 void WI_slamBackground(void)
 {
+	if(!screens[0])
+		return;
+	if(!screens[1])
+		return;
+
 	memcpy(screens[0], screens[1],
 		SCREENWIDTH * SCREENHEIGHT *
 		sizeof(dt_scrpix));
@@ -1611,39 +1616,39 @@ void WI_loadData(void)
 	if ((gamemode == commercial) || (gamemode == hexen))
 	{
 		NUMCMAPS = 32;								
-		lnames = (patch_t **) Z_Malloc(sizeof(patch_t*) * NUMCMAPS,
+		lnames = (patch_t **) Z_Malloc(sizeof(patch_t*) * (NUMCMAPS+8),
 							 PU_STATIC, 0);
 		for (i=0 ; i<NUMCMAPS ; i++)
 		{								
 			sprintf(name, "CWILV%2.2d", i);
-//			lnames[i] = W_CacheLumpName(name, PU_STATIC);
-			lnames[i] = W_CachePatchName(name, PU_STATIC);
+//			lnames[i] = W_CacheLumpName(name, PU_PATCH);
+			lnames[i] = W_CachePatchName(name, PU_PATCH);
 		}					
 	}
 	else
 	{
-		lnames = (patch_t **) Z_Malloc(sizeof(patch_t*) * NUMMAPS,
+		lnames = (patch_t **) Z_Malloc(sizeof(patch_t*) * (NUMMAPS+4),
 							 PU_STATIC, 0);
 		for (i=0 ; i<NUMMAPS ; i++)
 		{
 			sprintf(name, "WILV%d%d", wbs->epsd, i);
-//			lnames[i] = W_CacheLumpName(name, PU_STATIC);
-			lnames[i] = W_CachePatchName(name, PU_STATIC);
+//			lnames[i] = W_CacheLumpName(name, PU_PATCH);
+			lnames[i] = W_CachePatchName(name, PU_PATCH);
 		}
 
 		printf("WI_loadData: A-1\n");
 
 		// you are here
-//		yah[0] = W_CacheLumpName("WIURH0", PU_STATIC);
-		yah[0] = W_CachePatchName("WIURH0", PU_STATIC);
+//		yah[0] = W_CacheLumpName("WIURH0", PU_PATCH);
+		yah[0] = W_CachePatchName("WIURH0", PU_PATCH);
 
 		// you are here (alt.)
-//		yah[1] = W_CacheLumpName("WIURH1", PU_STATIC);
-		yah[1] = W_CachePatchName("WIURH1", PU_STATIC);
+//		yah[1] = W_CacheLumpName("WIURH1", PU_PATCH);
+		yah[1] = W_CachePatchName("WIURH1", PU_PATCH);
 
 		// splat
-//		splat = W_CacheLumpName("WISPLAT", PU_STATIC); 
-		splat = W_CachePatchName("WISPLAT", PU_STATIC); 
+//		splat = W_CacheLumpName("WISPLAT", PU_PATCH); 
+		splat = W_CachePatchName("WISPLAT", PU_PATCH); 
 		
 		printf("WI_loadData: A-2\n");
 
@@ -1663,8 +1668,8 @@ void WI_loadData(void)
 					{
 						// animations
 						sprintf(name, "WIA%d%.2d%.2d", wbs->epsd, j, i);	
-//						a->p[i] = W_CacheLumpName(name, PU_STATIC);
-						a->p[i] = W_CachePatchName(name, PU_STATIC);
+//						a->p[i] = W_CacheLumpName(name, PU_PATCH);
+						a->p[i] = W_CachePatchName(name, PU_PATCH);
 					}
 					else
 					{
@@ -1679,40 +1684,40 @@ void WI_loadData(void)
 	printf("WI_loadData: B\n");
 
 	// More hacks on minus sign.
-//	wiminus = W_CacheLumpName("WIMINUS", PU_STATIC); 
-	wiminus = W_CachePatchName("WIMINUS", PU_STATIC); 
+//	wiminus = W_CacheLumpName("WIMINUS", PU_PATCH); 
+	wiminus = W_CachePatchName("WIMINUS", PU_PATCH); 
 
 	for (i=0;i<10;i++)
 	{
 		 // numbers 0-9
 		sprintf(name, "WINUM%d", i);	 
-//		num[i] = W_CacheLumpName(name, PU_STATIC);
-		num[i] = W_CachePatchName(name, PU_STATIC);
+//		num[i] = W_CacheLumpName(name, PU_PATCH);
+		num[i] = W_CachePatchName(name, PU_PATCH);
 	}
 
 	// percent sign
-//	percent = W_CacheLumpName("WIPCNT", PU_STATIC);
-	percent = W_CachePatchName("WIPCNT", PU_STATIC);
+//	percent = W_CacheLumpName("WIPCNT", PU_PATCH);
+	percent = W_CachePatchName("WIPCNT", PU_PATCH);
 
 	// "finished"
-//	finished = W_CacheLumpName("WIF", PU_STATIC);
-	finished = W_CachePatchName("WIF", PU_STATIC);
+//	finished = W_CacheLumpName("WIF", PU_PATCH);
+	finished = W_CachePatchName("WIF", PU_PATCH);
 
 	// "entering"
-//	entering = W_CacheLumpName("WIENTER", PU_STATIC);
-	entering = W_CachePatchName("WIENTER", PU_STATIC);
+//	entering = W_CacheLumpName("WIENTER", PU_PATCH);
+	entering = W_CachePatchName("WIENTER", PU_PATCH);
 
 	// "kills"
-//	kills = W_CacheLumpName("WIOSTK", PU_STATIC);	 
-	kills = W_CachePatchName("WIOSTK", PU_STATIC);	 
+//	kills = W_CacheLumpName("WIOSTK", PU_PATCH);	 
+	kills = W_CachePatchName("WIOSTK", PU_PATCH);	 
 
 	// "scrt"
-//	secret = W_CacheLumpName("WIOSTS", PU_STATIC);
-	secret = W_CachePatchName("WIOSTS", PU_STATIC);
+//	secret = W_CacheLumpName("WIOSTS", PU_PATCH);
+	secret = W_CachePatchName("WIOSTS", PU_PATCH);
 
 	 // "secret"
-//	sp_secret = W_CacheLumpName("WISCRT2", PU_STATIC);
-	sp_secret = W_CachePatchName("WISCRT2", PU_STATIC);
+//	sp_secret = W_CacheLumpName("WISCRT2", PU_PATCH);
+	sp_secret = W_CachePatchName("WISCRT2", PU_PATCH);
 
 	printf("WI_loadData: C\n");
 
@@ -1721,54 +1726,54 @@ void WI_loadData(void)
 	{
 		// "items"
 		if (netgame && !deathmatch)
-//			items = W_CacheLumpName("WIOBJ", PU_STATIC);	
-			items = W_CachePatchName("WIOBJ", PU_STATIC);	
+//			items = W_CacheLumpName("WIOBJ", PU_PATCH);	
+			items = W_CachePatchName("WIOBJ", PU_PATCH);	
 		else
-//			items = W_CacheLumpName("WIOSTI", PU_STATIC);
-			items = W_CachePatchName("WIOSTI", PU_STATIC);
+//			items = W_CacheLumpName("WIOSTI", PU_PATCH);
+			items = W_CachePatchName("WIOSTI", PU_PATCH);
 	} else
-//		items = W_CacheLumpName("WIOSTI", PU_STATIC);
-		items = W_CachePatchName("WIOSTI", PU_STATIC);
+//		items = W_CacheLumpName("WIOSTI", PU_PATCH);
+		items = W_CachePatchName("WIOSTI", PU_PATCH);
 
 	// "frgs"
-//	frags = W_CacheLumpName("WIFRGS", PU_STATIC);	
-	frags = W_CachePatchName("WIFRGS", PU_STATIC);	
+//	frags = W_CacheLumpName("WIFRGS", PU_PATCH);	
+	frags = W_CachePatchName("WIFRGS", PU_PATCH);	
 
 	// ":"
-//	colon = W_CacheLumpName("WICOLON", PU_STATIC); 
-	colon = W_CachePatchName("WICOLON", PU_STATIC); 
+//	colon = W_CacheLumpName("WICOLON", PU_PATCH); 
+	colon = W_CachePatchName("WICOLON", PU_PATCH); 
 
 	// "time"
-//	wi_time = W_CacheLumpName("WITIME", PU_STATIC);	 
-	wi_time = W_CachePatchName("WITIME", PU_STATIC);	 
+//	wi_time = W_CacheLumpName("WITIME", PU_PATCH);	 
+	wi_time = W_CachePatchName("WITIME", PU_PATCH);	 
 
 	// "sucks"
-//	sucks = W_CacheLumpName("WISUCKS", PU_STATIC);	
-	sucks = W_CachePatchName("WISUCKS", PU_STATIC);	
+//	sucks = W_CacheLumpName("WISUCKS", PU_PATCH);	
+	sucks = W_CachePatchName("WISUCKS", PU_PATCH);	
 
 	// "par"
-//	par = W_CacheLumpName("WIPAR", PU_STATIC);	 
-	par = W_CachePatchName("WIPAR", PU_STATIC);	 
+//	par = W_CacheLumpName("WIPAR", PU_PATCH);	 
+	par = W_CachePatchName("WIPAR", PU_PATCH);	 
 
 	// "killers" (vertical)
-//	killers = W_CacheLumpName("WIKILRS", PU_STATIC);
-	killers = W_CachePatchName("WIKILRS", PU_STATIC);
+//	killers = W_CacheLumpName("WIKILRS", PU_PATCH);
+	killers = W_CachePatchName("WIKILRS", PU_PATCH);
 
 	// "victims" (horiz)
-//	victims = W_CacheLumpName("WIVCTMS", PU_STATIC);
-	victims = W_CachePatchName("WIVCTMS", PU_STATIC);
+//	victims = W_CacheLumpName("WIVCTMS", PU_PATCH);
+	victims = W_CachePatchName("WIVCTMS", PU_PATCH);
 
 	// "total"
-//	total = W_CacheLumpName("WIMSTT", PU_STATIC);	 
-	total = W_CachePatchName("WIMSTT", PU_STATIC);	 
+//	total = W_CacheLumpName("WIMSTT", PU_PATCH);	 
+	total = W_CachePatchName("WIMSTT", PU_PATCH);	 
 
 	// your face
-//	star = W_CacheLumpName("STFST01", PU_STATIC);
-	star = W_CachePatchName("STFST01", PU_STATIC);
+//	star = W_CacheLumpName("STFST01", PU_PATCH);
+	star = W_CachePatchName("STFST01", PU_PATCH);
 
 	// dead face
-//	bstar = W_CacheLumpName("STFDEAD0", PU_STATIC);	
-	bstar = W_CachePatchName("STFDEAD0", PU_STATIC);	
+//	bstar = W_CacheLumpName("STFDEAD0", PU_PATCH);	
+	bstar = W_CachePatchName("STFDEAD0", PU_PATCH);	
 
 	printf("WI_loadData: D\n");
 
@@ -1776,13 +1781,13 @@ void WI_loadData(void)
 	{
 		// "1,2,3,4"
 		sprintf(name, "STPB%d", i);		
-//		p[i] = W_CacheLumpName(name, PU_STATIC);
-		p[i] = W_CachePatchName(name, PU_STATIC);
+//		p[i] = W_CacheLumpName(name, PU_PATCH);
+		p[i] = W_CachePatchName(name, PU_PATCH);
 
 		// "1,2,3,4"
 		sprintf(name, "WIBP%d", i+1);	 
-//		bp[i] = W_CacheLumpName(name, PU_STATIC);
-		bp[i] = W_CachePatchName(name, PU_STATIC);
+//		bp[i] = W_CacheLumpName(name, PU_PATCH);
+		bp[i] = W_CachePatchName(name, PU_PATCH);
 	}
 
 	printf("WI_loadData: E\n");

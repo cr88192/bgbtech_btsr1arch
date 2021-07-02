@@ -1,6 +1,6 @@
 .ifarch has_xgpr
 
-#define CHKSANE_EN_XGPR
+// #define CHKSANE_EN_XGPR
 
 .global X(tk_checksane_xgpr_asm)
 X(tk_checksane_xgpr_asm):

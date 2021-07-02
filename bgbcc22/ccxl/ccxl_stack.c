@@ -2427,8 +2427,10 @@ ccxl_status BGBCC_CCXL_StackBinaryOp(BGBCC_TransState *ctx, char *op)
 				}
 			}
 
+#if 1
 			if(BGBCC_CCXL_IsRegImmIntP(ctx, treg) &&
-				BGBCC_CCXL_TypeSmallLongP(ctx, dty))
+				BGBCC_CCXL_TypeSmallLongP(ctx, dty) &&
+				BGBCC_CCXL_TypeUnsignedP(ctx, dty))
 			{
 				j=BGBCC_CCXL_GetRegImmIntValue(ctx, treg);
 				if((j>1) && !(j&(j-1)))
@@ -2439,6 +2441,7 @@ ccxl_status BGBCC_CCXL_StackBinaryOp(BGBCC_TransState *ctx, char *op)
 					opr=CCXL_BINOP_SHR;
 				}
 			}
+#endif
 		}
 
 #if 1
@@ -2479,6 +2482,7 @@ ccxl_status BGBCC_CCXL_StackBinaryOp(BGBCC_TransState *ctx, char *op)
 //				 BGBCC_CCXL_TypeSmallLongP(ctx, dty)))
 
 			if(BGBCC_CCXL_IsRegImmILFDP(ctx, treg) &&
+				!BGBCC_CCXL_IsRegImmUnsignedP(ctx, treg) &&
 //				BGBCC_CCXL_TypeSmallDoubleP(ctx, dty))
 				BGBCC_CCXL_TypeSmallFloat128P(ctx, dty) &&
 				BGBCC_CCXL_TypeSmallTypeP(ctx, sty, tty))
@@ -2987,7 +2991,8 @@ ccxl_status BGBCC_CCXL_StackBinaryOpStore(BGBCC_TransState *ctx,
 			}
 
 			if(BGBCC_CCXL_IsRegImmIntP(ctx, treg) &&
-				BGBCC_CCXL_TypeSmallLongP(ctx, dty))
+				BGBCC_CCXL_TypeSmallLongP(ctx, dty) &&
+				BGBCC_CCXL_TypeUnsignedP(ctx, dty))
 			{
 				j=BGBCC_CCXL_GetRegImmIntValue(ctx, treg);
 				if((j>1) && !(j&(j-1)))
@@ -3035,6 +3040,7 @@ ccxl_status BGBCC_CCXL_StackBinaryOpStore(BGBCC_TransState *ctx,
 			!BGBCC_CCXL_TypeCompatibleP(ctx, dty2, tty))
 		{
 			if(BGBCC_CCXL_IsRegImmILFDP(ctx, treg) &&
+				!BGBCC_CCXL_IsRegImmUnsignedP(ctx, treg) &&
 				BGBCC_CCXL_TypeSmallFloat128P(ctx, dty2) &&
 				BGBCC_CCXL_TypeSmallTypeP(ctx, sty, tty))
 			{

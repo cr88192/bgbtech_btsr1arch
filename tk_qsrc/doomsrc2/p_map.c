@@ -270,8 +270,10 @@ boolean PIT_CheckThing (mobj_t* thing)
 	if (!(thing->flags & (MF_SOLID|MF_SPECIAL|MF_SHOOTABLE) ))
 		return true;
 	
-	if(R_ThingIsPolyObjP(thing))
+//	if(R_ThingIsPolyObjP(thing))
+	if(0)
 	{
+#if 0
 		R_PolyObjGetBox(thing, &x1, &y1, &x2, &y2);
 
 		pbox[BOXTOP] = y2;
@@ -281,7 +283,7 @@ boolean PIT_CheckThing (mobj_t* thing)
 		
 		if(!M_CheckBoxCollide(tmbbox, pbox))
 			return(true);
-
+#endif
 	}else
 	{
 		blockdist = thing->radius + tmthing->radius;

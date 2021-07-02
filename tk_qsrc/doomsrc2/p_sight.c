@@ -65,24 +65,24 @@ P_DivlineSide
 
 	if (!node->dx)
 	{
-	if (x==node->x)
-		return 2;
-	
-	if (x <= node->x)
-		return node->dy > 0;
+		if (x==node->x)
+			return 2;
+		
+		if (x <= node->x)
+			return node->dy > 0;
 
-	return node->dy < 0;
+		return node->dy < 0;
 	}
 	
 	if (!node->dy)
 	{
-	if (x==node->y)
-		return 2;
+		if (x==node->y)
+			return 2;
 
-	if (y <= node->y)
-		return node->dx < 0;
+		if (y <= node->y)
+			return node->dx < 0;
 
-	return node->dx > 0;
+		return node->dx > 0;
 	}
 	
 	dx = (x - node->x);
@@ -92,10 +92,11 @@ P_DivlineSide
 	right = (dy>>FRACBITS) * (node->dx>>FRACBITS);
 	
 	if (right < left)
-	return 0;	// front side
+		return 0;	// front side
 	
 	if (left == right)
-	return 2;
+		return 2;
+
 	return 1;		// back side
 }
 
@@ -273,17 +274,17 @@ boolean P_CrossBSPNode (int bspnum)
 	// decide which side the start point is on
 	side = P_DivlineSide (strace.x, strace.y, (divline_t *)bsp);
 	if (side == 2)
-	side = 0;	// an "on" should cross both sides
+		side = 0;	// an "on" should cross both sides
 
 	// cross the starting side
 	if (!P_CrossBSPNode (bsp->children[side]) )
-	return false;
+		return false;
 	
 	// the partition plane is crossed here
 	if (side == P_DivlineSide (t2x, t2y,(divline_t *)bsp))
 	{
-	// the line doesn't touch the other side
-	return true;
+		// the line doesn't touch the other side
+		return true;
 	}
 	
 	// cross the ending side		
@@ -366,12 +367,14 @@ P_CheckSight
 	if(!P_CrossBSPNode (numnodes-1))
 		return(false);
 
+#if 0
 	if(R_BlkMapCheckBlockablesP())
 	{
 		if(!P_PathTraverse(t1->x, t1->y, t2->x, t2->y,
 			PT_ADDTHINGS, PTR_SightTraverse))
 				return(false);
 	}
+#endif
 
 	return(true);
 }

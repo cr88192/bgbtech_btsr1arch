@@ -14,6 +14,10 @@ extern int bgbcc_msec_tot;
 
 extern byte bgbcc_dumpast;
 
+char *bgbcp_defaultlocale;
+int bgbcp_codepage;
+
+
 
 BCCX_Node *BGBCP_FunArgs(BGBCP_ParseState *ctx, char **str)
 {
@@ -857,6 +861,15 @@ BCCX_Node *BGBCP_ModuleBuffer(char *name, char *modname, char *buf)
 	
 	ctx->tuidx=BGBCC_GenSymInt();
 	
+	if(bgbcp_defaultlocale)
+	{
+		BGBCP_SetLocale(ctx, bgbcp_defaultlocale);
+	}
+	else
+	{
+		BGBCP_SetLocale(ctx, "C");
+	}
+	
 	BGBCC_CCXL_SetupParserForArch(ctx);
 
 	t0=clock();
@@ -964,4 +977,46 @@ BCCX_Node *BGBCP_ModuleBuffer(char *name, char *modname, char *buf)
 
 
 	return(n);
+}
+
+int BGBCP_SetDefaultLocale(char *locale)
+{
+	bgbcp_defaultlocale=bgbcc_strdup(locale);
+	return(0);
+}
+
+int BGBCP_SetLocale(BGBCP_ParseState *ctx, char *locale)
+{
+	if(	!stricmp(locale, "CP1252")	||
+		!stricmp(locale, "EN-US")	||
+		!stricmp(locale, "C")		||
+		!stricmp(locale, "POSIX")	||
+		!strnicmp(locale, "EN-", 3)	||
+		!strnicmp(locale, "DE-", 3)	||
+		!strnicmp(locale, "ES-", 3)	||
+		0)
+	{
+		ctx->cur_codepage=1252;
+		bgbcp_codepage=1252;
+		return(1);
+	}
+
+	if(	!stricmp(locale, "UTF8")		||
+		!stricmp(locale, ".UTF8")		||
+		!stricmp(locale, "C.UTF8")		||
+		!stricmp(locale, "EN-US.UTF8")	)
+	{
+		ctx->cur_codepage=8;
+		bgbcp_codepage=8;
+		return(1);
+	}
+
+	if(	!stricmp(locale, "CP437")	)
+	{
+		ctx->cur_codepage=437;
+		bgbcp_codepage=437;
+		return(1);
+	}
+
+	return(0);
 }

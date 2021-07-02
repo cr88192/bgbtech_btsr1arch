@@ -1,5 +1,9 @@
 `include "ExCsAdd64F.v"
 
+`ifdef jx2_enable_btcuab1
+`include "ExBtcUab1.v"
+`endif
+
 module ExMulC(
 	clock,		reset,
 	valRs,		valRt,
@@ -10,8 +14,8 @@ module ExMulC(
 input	clock;
 input	reset;
 
-input[31:0]		valRs;
-input[31:0]		valRt;
+input[63:0]		valRs;
+input[63:0]		valRt;
 output[63:0]	valRn;
 input[8:0]		idUCmd;
 input[8:0]		idUIxt;
@@ -32,6 +36,15 @@ reg[8:0]		tIdUIxt3;
 
 reg[31:0]		tValRs;
 reg[31:0]		tValRt;
+
+`ifdef jx2_enable_btcuab1
+wire[63:0]		tValUab1;
+ExBtcUab1	uab1(
+	clock, reset,
+	valRs, valRt[3:0],
+	idUIxt,
+	tValUab1);
+`endif
 
 // reg[31:0]		tValRsSx;
 // reg[31:0]		tValRtSx;
@@ -75,8 +88,8 @@ always @*
 begin
 	tIdUCmd	= idUCmd;
 	tIdUIxt	= idUIxt;
-	tValRs	= valRs;
-	tValRt	= valRt;
+	tValRs	= valRs[31:0];
+	tValRt	= valRt[31:0];
 
 	if(idUIxt[0])
 		ttMul1C = UV32_00;
@@ -107,6 +120,13 @@ begin
 	if(!tIdUIxt2[2])
 		tMul3C[63:32] = (tMul3C_A[31] && !tIdUIxt2[0]) ?
 			UV32_FF : UV32_00;
+
+	if(tIdUIxt2[4])
+	begin
+`ifdef jx2_enable_btcuab1
+		tMul3C = tValUab1;
+`endif
+	end
 
 	tValRn	= tMul3C;
 end

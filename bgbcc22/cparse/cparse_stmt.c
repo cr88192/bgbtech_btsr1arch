@@ -738,11 +738,27 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 				return(n);
 			}
 
-			if(!bgbcp_strcmp(b, "__pragma"))
+			if(	!bgbcp_strcmp(b, "__pragma") ||
+				!bgbcp_strcmp(b, "_Pragma"))
 			{
 				s=*str;
 				n1=BGBCP_Expression(ctx, &s);
 				n=BCCX_NewCst1(&bgbcc_rcst_pragma, "pragma", n1);
+
+				if(BCCX_TagIsP(n1, "funcall"))
+				{
+					s0=BCCX_GetCst(n1, &bgbcc_rcst_name, "name");
+					if(!strcmp(s0, "setlocale"))
+					{
+						n2=BCCX_FetchCst(n1, &bgbcc_rcst_args, "args");
+						if(BCCX_TagIsCstP(n2, &bgbcc_rcst_string, "string"))
+						{
+							s2=BCCX_Get(n2, "value");
+							BGBCP_SetLocale(ctx, s2);
+						}
+					}
+				}
+
 				*str=s;
 				return(n);
 			}
@@ -1084,6 +1100,23 @@ BCCX_Node *BGBCP_BlockStatementI(BGBCP_ParseState *ctx, char **str, int flag)
 
 		b[0]=0;
 		BGBCP_Token2(s, b, &ty, ctx->lang);
+	}
+#endif
+
+#if 0
+	if(b[0]=='_')
+	{
+		if(	!strcmp(b, "_Pragma") ||
+			!strcmp(b, "__pragma"))
+		{
+			n=BGBCP_DeclAttributeC(ctx, &s);
+
+			if(n)
+				BCCX_CheckDeleteUnlinked(n);
+
+			*str=s;
+			return(n);
+		}
 	}
 #endif
 

@@ -1391,6 +1391,14 @@ void BGBPP_Directive(BGBCP_ParseState *ctx, char *str)
 				bgbpp_seen_isabort=1;
 		}
 	
+		if(!bgbcp_strcmp4(b2, "setlocale"))
+		{
+			s1=BGBCP_TokenCtx(ctx, s1, b3, &ty2);	//'('
+			s1=BGBCP_TokenCtx(ctx, s1, b3, &ty2);
+			sprintf(bgbpp_obuf, "_Pragma(setlocale(\"%s\"))\n", b3);
+			return;
+		}
+
 		return;
 	}
 

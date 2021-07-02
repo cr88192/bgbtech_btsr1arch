@@ -275,7 +275,10 @@ void D_Display (void)
 	
 	// clean up border stuff
 	if (gamestate != oldgamestate && gamestate != GS_LEVEL)
+	{
 		I_SetPalette (W_CacheLumpName ("PLAYPAL",PU_CACHE));
+		I_SetPaletteIndex (0);
+	}
 
 	// see if the border needs to be initially drawn
 	if (gamestate == GS_LEVEL && oldgamestate != GS_LEVEL)

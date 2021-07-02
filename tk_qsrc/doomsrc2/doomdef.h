@@ -78,6 +78,10 @@ typedef enum
 // most parameter validation debugging code will not be compiled
 #define RANGECHECK
 
+// #define UTXFLAT
+// #define UTXWALLS
+// #define UTXSPRITE
+
 // Do or do not use external soundserver.
 // The sndserver binary to be run separately
 //  has been introduced by Dave Taylor.

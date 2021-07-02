@@ -20,6 +20,11 @@ long long __smullq(int a, int b)
 	return(((s64)a) * ((s64)b));
 }
 
+u64 __int32_dmulu(u32 a, u32 b)
+{
+	return(((u64)a) * ((u64)b));
+}
+
 void I_InitNetwork (void)
 {
     doomcom = malloc (sizeof (*doomcom) );

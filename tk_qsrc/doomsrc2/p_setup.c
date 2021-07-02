@@ -78,6 +78,7 @@ line_t*		fakelines;		//BGB: Fake Lines, for ACS stuff
 int		numsides;
 side_t*		sides;
 
+int			totallines;
 
 // BLOCKMAP
 // Created from axis aligned bounding box
@@ -131,42 +132,42 @@ int p_map_hexenfmt;
 //
 void P_LoadVertexes (int lump)
 {
-    byte*		data;
-    int			i, lsz;
-    mapvertex_t*	ml;
-    vertex_t*		li;
+	byte*		data;
+	int			i, lsz;
+	mapvertex_t*	ml;
+	vertex_t*		li;
 
 	lsz = W_LumpLength (lump);
 	if(lsz % sizeof(mapvertex_t))
 		__debugbreak();
 
-    // Determine number of lumps:
-    //  total lump length / vertex record length.
-    numvertexes = lsz / sizeof(mapvertex_t);
+	// Determine number of lumps:
+	//  total lump length / vertex record length.
+	numvertexes = lsz / sizeof(mapvertex_t);
 
-    // Allocate zone memory for buffer.
-    vertexes = Z_Malloc (numvertexes*sizeof(vertex_t),PU_LEVEL_VTX,0);	
+	// Allocate zone memory for buffer.
+	vertexes = Z_Malloc (numvertexes*sizeof(vertex_t),PU_LEVEL_VTX,0);	
 
-    // Load data into cache.
-    data = W_CacheLumpNum (lump,PU_STATIC);
+	// Load data into cache.
+	data = W_CacheLumpNum (lump,PU_STATIC);
 	
-    ml = (mapvertex_t *)data;
-    li = vertexes;
+	ml = (mapvertex_t *)data;
+	li = vertexes;
 
-    // Copy and convert vertex coordinates,
-    // internal representation as fixed.
-    for (i=0 ; i<numvertexes ; i++, li++, ml++)
-    {
+	// Copy and convert vertex coordinates,
+	// internal representation as fixed.
+	for (i=0 ; i<numvertexes ; i++, li++, ml++)
+	{
 		li->x = SHORT(ml->x)<<FRACBITS;
 		li->y = SHORT(ml->y)<<FRACBITS;
-    }
+	}
 
 	Z_ChangeTag (vertexes, PU_LEVEL_VTX);  //BGB: Debug
 
 //	Z_CheckIntact (vertexes)
 
-    // Free buffer memory.
-    Z_Free (data);
+	// Free buffer memory.
+	Z_Free (data);
 //	Z_ChangeTag (data, PU_CACHE);  //BGB: Debug
 }
 
@@ -177,27 +178,27 @@ void P_LoadVertexes (int lump)
 //
 void P_LoadSegs (int lump)
 {
-    byte*		data;
-    int			i, lsz;
-    mapseg_t*		ml;
-    seg_t*		li;
-    line_t*		ldef;
-    int			linedef;
-    int			side;
+	byte*		data;
+	int			i, lsz;
+	mapseg_t*		ml;
+	seg_t*		li;
+	line_t*		ldef;
+	int			linedef;
+	int			side;
 	
 	lsz = W_LumpLength (lump);
 	if(lsz % sizeof(mapseg_t))
 		__debugbreak();
 
-    numsegs = lsz / sizeof(mapseg_t);
-    segs = Z_Malloc (numsegs*sizeof(seg_t), PU_LEVEL_SEGS, 0);	
-    memset (segs, 0, numsegs*sizeof(seg_t));
-    data = W_CacheLumpNum (lump, PU_STATIC);
+	numsegs = lsz / sizeof(mapseg_t);
+	segs = Z_Malloc (numsegs*sizeof(seg_t), PU_LEVEL_SEGS, 0);	
+	memset (segs, 0, numsegs*sizeof(seg_t));
+	data = W_CacheLumpNum (lump, PU_STATIC);
 	
-    ml = (mapseg_t *)data;
-    li = segs;
-    for (i=0 ; i<numsegs ; i++, li++, ml++)
-    {
+	ml = (mapseg_t *)data;
+	li = segs;
+	for (i=0 ; i<numsegs ; i++, li++, ml++)
+	{
 	li->v1 = &vertexes[SHORT(ml->v1)];
 	li->v2 = &vertexes[SHORT(ml->v2)];
 					
@@ -210,14 +211,14 @@ void P_LoadSegs (int lump)
 	li->sidedef = &sides[ldef->sidenum[side]];
 	li->frontsector = sides[ldef->sidenum[side]].sector;
 	if (ldef-> flags & ML_TWOSIDED)
-	    li->backsector = sides[ldef->sidenum[side^1]].sector;
+		li->backsector = sides[ldef->sidenum[side^1]].sector;
 	else
-	    li->backsector = 0;
-    }
+		li->backsector = 0;
+	}
 
 	Z_ChangeTag (segs, PU_LEVEL_SEGS);  //BGB: Debug
 	
-    Z_Free (data);
+	Z_Free (data);
 }
 
 
@@ -226,32 +227,32 @@ void P_LoadSegs (int lump)
 //
 void P_LoadSubsectors (int lump)
 {
-    byte*		data;
-    int			i, lsz;
-    mapsubsector_t*	ms;
-    subsector_t*	ss;
+	byte*		data;
+	int			i, lsz;
+	mapsubsector_t*	ms;
+	subsector_t*	ss;
 	
 	lsz = W_LumpLength (lump);
 	if(lsz % sizeof(mapsubsector_t))
 		__debugbreak();
 
-    numsubsectors = lsz / sizeof(mapsubsector_t);
-    subsectors = Z_Malloc (numsubsectors*sizeof(subsector_t),PU_LEVEL_SUBS,0);	
-    data = W_CacheLumpNum (lump,PU_STATIC);
+	numsubsectors = lsz / sizeof(mapsubsector_t);
+	subsectors = Z_Malloc (numsubsectors*sizeof(subsector_t),PU_LEVEL_SUBS,0);	
+	data = W_CacheLumpNum (lump,PU_STATIC);
 	
-    ms = (mapsubsector_t *)data;
-    memset (subsectors,0, numsubsectors*sizeof(subsector_t));
-    ss = subsectors;
-    
-    for (i=0 ; i<numsubsectors ; i++, ss++, ms++)
-    {
+	ms = (mapsubsector_t *)data;
+	memset (subsectors,0, numsubsectors*sizeof(subsector_t));
+	ss = subsectors;
+	
+	for (i=0 ; i<numsubsectors ; i++, ss++, ms++)
+	{
 		ss->numlines = SHORT(ms->numsegs);
 		ss->firstline = SHORT(ms->firstseg);
-    }
+	}
 
 	Z_ChangeTag (subsectors, PU_LEVEL_SUBS);  //BGB: Debug
 	
-    Z_Free (data);
+	Z_Free (data);
 }
 
 
@@ -261,24 +262,24 @@ void P_LoadSubsectors (int lump)
 //
 void P_LoadSectors (int lump)
 {
-    byte*		data;
-    int			i, lsz;
-    mapsector_t*	ms;
-    sector_t*		ss;
+	byte*		data;
+	int			i, lsz;
+	mapsector_t*	ms;
+	sector_t*		ss;
 	
 	lsz = W_LumpLength (lump);
 	if(lsz % sizeof(mapsector_t))
 		__debugbreak();
 
-    numsectors = lsz / sizeof(mapsector_t);
-    sectors = Z_Malloc (numsectors*sizeof(sector_t),PU_LEVEL_SECT,0);	
-    memset (sectors, 0, numsectors*sizeof(sector_t));
-    data = W_CacheLumpNum (lump,PU_STATIC);
+	numsectors = lsz / sizeof(mapsector_t);
+	sectors = Z_Malloc ((numsectors+4)*sizeof(sector_t),PU_LEVEL_SECT,0);	
+	memset (sectors, 0, numsectors*sizeof(sector_t));
+	data = W_CacheLumpNum (lump,PU_STATIC);
 	
-    ms = (mapsector_t *)data;
-    ss = sectors;
-    for (i=0 ; i<numsectors ; i++, ss++, ms++)
-    {
+	ms = (mapsector_t *)data;
+	ss = sectors;
+	for (i=0 ; i<numsectors ; i++, ss++, ms++)
+	{
 		ss->floorheight = SHORT(ms->floorheight)<<FRACBITS;
 		ss->ceilingheight = SHORT(ms->ceilingheight)<<FRACBITS;
 		ss->floorpic = R_FlatNumForName(ms->floorpic);
@@ -287,11 +288,11 @@ void P_LoadSectors (int lump)
 		ss->special = SHORT(ms->special);
 		ss->tag = SHORT(ms->tag);
 		ss->thinglist = NULL;
-    }
+	}
 
 	Z_ChangeTag (sectors, PU_LEVEL_SECT);  //BGB: Debug
 	
-    Z_Free (data);
+	Z_Free (data);
 }
 
 
@@ -300,42 +301,42 @@ void P_LoadSectors (int lump)
 //
 void P_LoadNodes (int lump)
 {
-    byte*	data;
-    int		i;
-    int		j;
-    int		k;
-    int		lsz;
-    mapnode_t*	mn;
-    node_t*	no;
+	byte*	data;
+	int		i;
+	int		j;
+	int		k;
+	int		lsz;
+	mapnode_t*	mn;
+	node_t*	no;
 	
 	lsz = W_LumpLength (lump);
 	if(lsz % sizeof(mapnode_t))
 		__debugbreak();
 
-    numnodes = lsz / sizeof(mapnode_t);
-    nodes = Z_Malloc (numnodes*sizeof(node_t),PU_LEVEL_NODE,0);	
-    data = W_CacheLumpNum (lump,PU_STATIC);
+	numnodes = lsz / sizeof(mapnode_t);
+	nodes = Z_Malloc ((numnodes+4)*sizeof(node_t),PU_LEVEL_NODE,0);	
+	data = W_CacheLumpNum (lump,PU_STATIC);
 	
-    mn = (mapnode_t *)data;
-    no = nodes;
-    
-    for (i=0 ; i<numnodes ; i++, no++, mn++)
-    {
+	mn = (mapnode_t *)data;
+	no = nodes;
+	
+	for (i=0 ; i<numnodes ; i++, no++, mn++)
+	{
 	no->x = SHORT(mn->x)<<FRACBITS;
 	no->y = SHORT(mn->y)<<FRACBITS;
 	no->dx = SHORT(mn->dx)<<FRACBITS;
 	no->dy = SHORT(mn->dy)<<FRACBITS;
 	for (j=0 ; j<2 ; j++)
 	{
-	    no->children[j] = SHORT(mn->children[j]);
-	    for (k=0 ; k<4 ; k++)
+		no->children[j] = SHORT(mn->children[j]);
+		for (k=0 ; k<4 ; k++)
 		no->bbox[j][k] = SHORT(mn->bbox[j][k])<<FRACBITS;
 	}
-    }
+	}
 
 	Z_ChangeTag (nodes, PU_LEVEL_NODE);  //BGB: Debug
 	
-    Z_Free (data);
+	Z_Free (data);
 }
 
 
@@ -634,29 +635,29 @@ int P_SetupRemapThingType(int type)
 //
 void P_LoadThings (int lump)
 {
-    mapthing2_t	mtt;
+	mapthing2_t	mtt;
 
-    byte*		data;
-    int			i, ttype;
-    mapthing_t	*mt;
-    mapthing2_t	*mt2;
-    int			numthings;
-    boolean		spawn;
+	byte*		data;
+	int			i, ttype;
+	mapthing_t	*mt;
+	mapthing2_t	*mt2;
+	int			numthings;
+	boolean		spawn;
 	
-    data = W_CacheLumpNum (lump,PU_STATIC);
-    
-    if(p_map_hexenfmt)
-    {
+	data = W_CacheLumpNum (lump,PU_STATIC);
+	
+	if(p_map_hexenfmt)
+	{
 		numthings = W_LumpLength (lump) / sizeof(mapthing2_t);
-    }else
-    {
+	}else
+	{
 		numthings = W_LumpLength (lump) / sizeof(mapthing_t);
-    }
+	}
 	
-    mt = (mapthing_t *)data;
-    mt2 = (mapthing2_t *)data;
-    for (i=0 ; i<numthings ; i++, mt++, mt2++)
-    {
+	mt = (mapthing_t *)data;
+	mt2 = (mapthing2_t *)data;
+	for (i=0 ; i<numthings ; i++, mt++, mt2++)
+	{
 		spawn = true;
 		
 		if(p_map_hexenfmt)
@@ -695,7 +696,7 @@ void P_LoadThings (int lump)
 		}
 		if (spawn == false)
 		{
-	//	    break;
+	//		break;
 			continue;
 		}
 
@@ -753,11 +754,11 @@ void P_LoadThings (int lump)
 		
 		P_SpawnMapThing (&mtt);
 #endif
-    }
+	}
 
 //	Z_ChangeTag (things, PU_LEVEL);  //BGB: Debug
 	
-    Z_Free (data);
+	Z_Free (data);
 }
 
 
@@ -767,13 +768,13 @@ void P_LoadThings (int lump)
 //
 void P_LoadLineDefs (int lump)
 {
-    byte*		data;
-    int			i, lsz, acpr;
-    maplinedef_t	*mld;
-    maplinedef2_t	*mld2;
-    line_t*		ld;
-    vertex_t*		v1;
-    vertex_t*		v2;
+	byte*		data;
+	int			i, lsz, acpr;
+	maplinedef_t	*mld;
+	maplinedef2_t	*mld2;
+	line_t*		ld;
+	vertex_t*		v1;
+	vertex_t*		v2;
 		
 	lsz = W_LumpLength (lump);
 
@@ -802,19 +803,19 @@ void P_LoadLineDefs (int lump)
 	}else
 	{
 		numlines = lsz / sizeof(maplinedef_t);
-    }
+	}
 
-    lines = Z_Malloc ((numlines+10)*sizeof(line_t),PU_LEVEL_LINES,0);	
-    memset (lines, 0, (numlines+10)*sizeof(line_t));
-    data = W_CacheLumpNum (lump,PU_STATIC);
-    
-    fakelines = lines+numlines;
+	lines = Z_Malloc ((numlines+10)*sizeof(line_t),PU_LEVEL_LINES,0);	
+	memset (lines, 0, (numlines+10)*sizeof(line_t));
+	data = W_CacheLumpNum (lump,PU_STATIC);
 	
-    mld = (maplinedef_t *)data;
-    mld2 = (maplinedef2_t *)data;
-    ld = lines;
-    for (i=0 ; i<numlines ; i++, mld++, mld2++, ld++)
-    {
+	fakelines = lines+numlines;
+	
+	mld = (maplinedef_t *)data;
+	mld2 = (maplinedef2_t *)data;
+	ld = lines;
+	for (i=0 ; i<numlines ; i++, mld++, mld2++, ld++)
+	{
 		if(p_map_hexenfmt)
 		{
 //			ld->special = SHORT(mld2->special);
@@ -950,11 +951,11 @@ void P_LoadLineDefs (int lump)
 			ld->backsector = sides[ld->sidenum[1]].sector;
 		else
 			ld->backsector = 0;
-    }
+	}
 
 	Z_ChangeTag (lines, PU_LEVEL_LINES);  //BGB: Debug
 
-    Z_Free (data);
+	Z_Free (data);
 }
 
 
@@ -963,35 +964,35 @@ void P_LoadLineDefs (int lump)
 //
 void P_LoadSideDefs (int lump)
 {
-    byte*		data;
-    int			i, lsz;
-    mapsidedef_t*	msd;
-    side_t*		sd;
+	byte*		data;
+	int			i, lsz;
+	mapsidedef_t*	msd;
+	side_t*		sd;
 	
 	lsz = W_LumpLength (lump);
 	if(lsz % sizeof(mapsidedef_t))
 		__debugbreak();
 
-    numsides = lsz / sizeof(mapsidedef_t);
-    sides = Z_Malloc (numsides*sizeof(side_t),PU_LEVEL_SIDES,0);	
-    memset (sides, 0, numsides*sizeof(side_t));
-    data = W_CacheLumpNum (lump,PU_STATIC);
+	numsides = lsz / sizeof(mapsidedef_t);
+	sides = Z_Malloc (numsides*sizeof(side_t),PU_LEVEL_SIDES,0);	
+	memset (sides, 0, numsides*sizeof(side_t));
+	data = W_CacheLumpNum (lump,PU_STATIC);
 	
-    msd = (mapsidedef_t *)data;
-    sd = sides;
-    for (i=0 ; i<numsides ; i++, msd++, sd++)
-    {
+	msd = (mapsidedef_t *)data;
+	sd = sides;
+	for (i=0 ; i<numsides ; i++, msd++, sd++)
+	{
 		sd->textureoffset = SHORT(msd->textureoffset)<<FRACBITS;
 		sd->rowoffset = SHORT(msd->rowoffset)<<FRACBITS;
 		sd->toptexture = R_TextureNumForName(msd->toptexture);
 		sd->bottomtexture = R_TextureNumForName(msd->bottomtexture);
 		sd->midtexture = R_TextureNumForName(msd->midtexture);
 		sd->sector = &sectors[SHORT(msd->sector)];
-    }
+	}
 
 	Z_ChangeTag (sides, PU_LEVEL_SIDES);  //BGB: Debug
 
-    Z_Free (data);
+	Z_Free (data);
 }
 
 
@@ -1000,33 +1001,33 @@ void P_LoadSideDefs (int lump)
 //
 void P_LoadBlockMap (int lump)
 {
-    int		i;
-    int		count;
+	int		i;
+	int		count;
 	
-    blockmaplump = W_CacheLumpNum (lump,PU_LEVEL_BMAP);
-    blockmap = blockmaplump+4;
-    count = W_LumpLength (lump)/2;
+	blockmaplump = W_CacheLumpNum (lump,PU_LEVEL_BMAP);
+	blockmap = blockmaplump+4;
+	count = W_LumpLength (lump)/2;
 
-    for (i=0 ; i<count ; i++)
+	for (i=0 ; i<count ; i++)
 		blockmaplump[i] = SHORT(blockmaplump[i]);
 		
-    bmaporgx = blockmaplump[0]<<FRACBITS;
-    bmaporgy = blockmaplump[1]<<FRACBITS;
-    bmapwidth = blockmaplump[2];
-    bmapheight = blockmaplump[3];
+	bmaporgx = blockmaplump[0]<<FRACBITS;
+	bmaporgy = blockmaplump[1]<<FRACBITS;
+	bmapwidth = blockmaplump[2];
+	bmapheight = blockmaplump[3];
 	
-    // clear out mobj chains
-    count = sizeof(*blocklinks)* bmapwidth*bmapheight;
-    blocklinks = Z_Malloc (count,PU_LEVEL_BMAP, 0);
-    memset (blocklinks, 0, count);
+	// clear out mobj chains
+	count = sizeof(*blocklinks)* bmapwidth*bmapheight;
+	blocklinks = Z_Malloc (count,PU_LEVEL_BMAP, 0);
+	memset (blocklinks, 0, count);
 }
 
 
 void P_LoadBehavior (int lump)
 {
-    byte*		data;
-    int			i, lsz;
-//    mapsidedef_t*	msd;
+	byte*		data;
+	int			i, lsz;
+//	mapsidedef_t*	msd;
  //   side_t*		sd;
 	
 	lsz = W_LumpLength (lump);
@@ -1037,8 +1038,8 @@ void P_LoadBehavior (int lump)
 		return;
 	}
 
-//    numsides = lsz / sizeof(mapsidedef_t);
-    data = W_CacheLumpNum (lump,PU_STATIC);
+//	numsides = lsz / sizeof(mapsidedef_t);
+	data = W_CacheLumpNum (lump,PU_STATIC);
 
 	if(!data)
 	{
@@ -1056,28 +1057,68 @@ void P_LoadBehavior (int lump)
 
 	p_map_hexenfmt = 1;
 	P_SetupAcsImage(data, lsz);
-//    Z_Free (data);
+//	Z_Free (data);
 	return;
+}
+
+void P_PadRejectArray(byte *array, unsigned int len)
+{
+	unsigned int i, j, len1;
+	byte *dest;
+
+	// Values to pad the REJECT array with:
+
+	unsigned int rejectpad[4] =
+	{
+		0,									// Size
+		0,									// Part of z_zone block header
+		50,									// PU_LEVEL
+		0x1d4a11							// DOOM_CONST_ZONEID
+	};
+
+	printf("P_PadRejectArray: Do Reject Pad, Len=%d\n", len);
+
+	rejectpad[0] = ((totallines * 4 + 3) & ~3) + 24;
+
+	dest = array;
+	len1 = len;
+	if(len1 > sizeof(rejectpad))
+		len1 = sizeof(rejectpad);
+
+	for (i=0; i<len1; i++)
+	{
+		j = i&3;
+		*dest++ = (rejectpad[i>>2]>>(j*8))&255;
+	}
+
+	if (len > len1)
+	{
+		printf("P_PadRejectArray: Insufficient Pad, Rem=%d\n", len-len1);
+		memset(array + len1, 0, len - len1);
+	}
 }
 
 void P_LoadReject (int lump)
 {
-    byte*		data;
-    int			i, lsz, nsz;
+	byte*		data;
+	int			i, lsz, nsz;
 	
 	lsz = W_LumpLength (lump);
 	
 	nsz = ((numsectors * numsectors)+7)/8;
 	if(lsz < nsz)
 	{
-		rejectmatrix = Z_Malloc (nsz, PU_LEVEL, NULL);
-		memset (rejectmatrix, 0, nsz);
-		data = W_CacheLumpNum (lump, PU_CACHE);
-		memcpy (rejectmatrix, data, lsz);
+		rejectmatrix = Z_Malloc (nsz, PU_LEVEL, &rejectmatrix);
+		W_ReadLump(lump, rejectmatrix);
+		P_PadRejectArray(rejectmatrix + lsz, nsz - lsz);
+
+//		memset (rejectmatrix, 0, nsz);
+//		data = W_CacheLumpNum (lump, PU_CACHE);
+//		memcpy (rejectmatrix, data, lsz);
 	}else
 	{
 		rejectmatrix = W_CacheLumpNum (lump, PU_LEVEL);
-    }
+	}
 }
 
 
@@ -1089,48 +1130,48 @@ void P_LoadReject (int lump)
 //
 void P_GroupLines (void)
 {
-    line_t**		linebuffer;
-    line_t**		linebuf;
-    int			i;
-    int			j;
-    int			total;
-    line_t*		li;
-    sector_t*		sector;
-    subsector_t*	ss;
-    seg_t*		seg;
-    fixed_t		bbox[4];
-    int			block;
+	line_t**		linebuffer;
+	line_t**		linebuf;
+	int			i;
+	int			j;
+	line_t*		li;
+	sector_t*		sector;
+	subsector_t*	ss;
+	seg_t*		seg;
+	fixed_t		bbox[4];
+	int			block;
 	
-    // look up sector number for each subsector
-    ss = subsectors;
-    for (i=0 ; i<numsubsectors ; i++, ss++)
-    {
+	// look up sector number for each subsector
+	ss = subsectors;
+	for (i=0 ; i<numsubsectors ; i++, ss++)
+	{
 		seg = &segs[ss->firstline];
 		ss->sector = seg->sidedef->sector;
-    }
+	}
 
-    // count number of lines in each sector
-    li = lines;
-    total = 0;
-    for (i=0 ; i<numlines ; i++, li++)
-    {
-		total++;
+	// count number of lines in each sector
+	li = lines;
+	totallines = 0;
+	for (i=0 ; i<numlines ; i++, li++)
+	{
+		totallines++;
 		li->frontsector->linecount++;
 
 		if (li->backsector && li->backsector != li->frontsector)
 		{
 			li->backsector->linecount++;
-			total++;
+			totallines++;
 		}
-    }
+	}
 	
-    // build line tables for each sector	
-//    linebuffer = Z_Malloc (total*4, PU_LEVEL, 0);
-    linebuffer = Z_Malloc (total*sizeof(void *), PU_LEVEL_GLINE, 0);
-    linebuf	= linebuffer;
-    sector = sectors;
-    for (i=0 ; i<numsectors ; i++, sector++)
-    {
+	// build line tables for each sector	
+//	linebuffer = Z_Malloc (total*4, PU_LEVEL, 0);
+//	linebuffer = Z_Malloc (total*sizeof(void *), PU_LEVEL_GLINE, 0);
+	linebuffer = Z_Malloc ((totallines+4)*sizeof(void *), PU_LEVEL_GLINE, 0);
+	linebuf	= linebuffer;
+	sector = sectors;
+	for (i=0 ; i<numsectors ; i++, sector++)
+	{
 		M_ClearBox (bbox);
 		sector->lines = linebuffer;
 		li = lines;
@@ -1166,7 +1207,7 @@ void P_GroupLines (void)
 		block = (bbox[BOXLEFT]-bmaporgx-MAXRADIUS)>>MAPBLOCKSHIFT;
 		block = block < 0 ? 0 : block;
 		sector->blockbox[BOXLEFT]=block;
-    }
+	}
 
 	Z_ChangeTag (linebuf, PU_LEVEL_GLINE);  //BGB: Debug
 
@@ -1183,102 +1224,101 @@ P_SetupLevel
   int		playermask,
   skill_t	skill)
 {
-    int		i;
-    char	lumpname[9];
-    int		lumpnum;
+	int		i;
+	char	lumpname[9];
+	int		lumpnum;
 	
-    totalkills = totalitems = totalsecret = wminfo.maxfrags = 0;
-    wminfo.partime = 180;
-    for (i=0 ; i<MAXPLAYERS ; i++)
-    {
+	totalkills = totalitems = totalsecret = wminfo.maxfrags = 0;
+	wminfo.partime = 180;
+	for (i=0 ; i<MAXPLAYERS ; i++)
+	{
 	players[i].killcount = players[i].secretcount 
-	    = players[i].itemcount = 0;
-    }
+		= players[i].itemcount = 0;
+	}
 
-    // Initial height of PointOfView
-    // will be set by player think.
-    players[consoleplayer].viewz = 1; 
+	// Initial height of PointOfView
+	// will be set by player think.
+	players[consoleplayer].viewz = 1; 
 
-    // Make sure all sounds are stopped before Z_FreeTags.
-    S_Start ();			
+	// Make sure all sounds are stopped before Z_FreeTags.
+	S_Start ();			
 
-    
+	
 #if 0 // UNUSED
-    if (debugfile)
-    {
+	if (debugfile)
+	{
 	Z_FreeTags (PU_LEVEL, MAXINT);
 	Z_FileDumpHeap (debugfile);
-    }
-    else
+	}
+	else
 #endif
 	Z_FreeTags (PU_LEVEL, PU_PURGELEVEL-1);
 
 
-    // W_Profile ();	//BGB: Enabled
+	// W_Profile ();	//BGB: Enabled
 
-    P_InitThinkers ();
+	P_InitThinkers ();
 
-    // if working with a devlopment map, reload it
-    W_Reload ();			
+	// if working with a devlopment map, reload it
+	W_Reload ();			
 	   
-    // find map name
-//    if ( gamemode == commercial)
-    if ( (gamemode == commercial) ||
+	// find map name
+//	if ( gamemode == commercial)
+	if ( (gamemode == commercial) ||
 		(gamemode == hexen))
-    {
+	{
 	if (map<10)
-	    sprintf (lumpname,"map0%i", map);
+		sprintf (lumpname,"map0%i", map);
 	else
-	    sprintf (lumpname,"map%i", map);
-    }
-    else
-    {
+		sprintf (lumpname,"map%i", map);
+	}
+	else
+	{
 		lumpname[0] = 'E';
 		lumpname[1] = '0' + episode;
 		lumpname[2] = 'M';
 		lumpname[3] = '0' + map;
 		lumpname[4] = 0;
-    }
+	}
 
-    lumpnum = W_GetNumForName (lumpname);
-    
-    if(lumpnum<0)
-    {
-		return;
-    }
+	lumpnum = W_GetNumForName (lumpname);
 	
-    leveltime = 0;
+	if(lumpnum<0)
+	{
+		return;
+	}
+	
+	leveltime = 0;
 
 	p_map_hexenfmt = 0;		//BGB: Assume map not in Hexen format.
 	
 	R_FlushPolyObj();
 	
-    // note: most of this ordering is important	
-    P_LoadBlockMap (lumpnum+ML_BLOCKMAP);
-    P_LoadVertexes (lumpnum+ML_VERTEXES);
-    P_LoadSectors (lumpnum+ML_SECTORS);
-    P_LoadSideDefs (lumpnum+ML_SIDEDEFS);
+	// note: most of this ordering is important	
+	P_LoadBlockMap (lumpnum+ML_BLOCKMAP);
+	P_LoadVertexes (lumpnum+ML_VERTEXES);
+	P_LoadSectors (lumpnum+ML_SECTORS);
+	P_LoadSideDefs (lumpnum+ML_SIDEDEFS);
 
-    P_LoadBehavior (lumpnum+ML_BEHAVIOR);	//BGB: Hints map format
+	P_LoadBehavior (lumpnum+ML_BEHAVIOR);	//BGB: Hints map format
 
-    P_LoadLineDefs (lumpnum+ML_LINEDEFS);
-    P_LoadSubsectors (lumpnum+ML_SSECTORS);
-    P_LoadNodes (lumpnum+ML_NODES);
-    P_LoadSegs (lumpnum+ML_SEGS);
+	P_LoadLineDefs (lumpnum+ML_LINEDEFS);
+	P_LoadSubsectors (lumpnum+ML_SSECTORS);
+	P_LoadNodes (lumpnum+ML_NODES);
+	P_LoadSegs (lumpnum+ML_SEGS);
 
-    P_LoadReject (lumpnum+ML_REJECT);
+	P_GroupLines ();
+	P_LoadReject (lumpnum+ML_REJECT);
 	
-//    rejectmatrix = W_CacheLumpNum (lumpnum+ML_REJECT,PU_LEVEL);
+//	rejectmatrix = W_CacheLumpNum (lumpnum+ML_REJECT,PU_LEVEL);
 
-    P_GroupLines ();
-
-    bodyqueslot = 0;
-    deathmatch_p = deathmatchstarts;
-    P_LoadThings (lumpnum+ML_THINGS);
-    
-    // if deathmatch, randomly spawn the active players
-    if (deathmatch)
-    {
+	bodyqueslot = 0;
+	deathmatch_p = deathmatchstarts;
+	P_LoadThings (lumpnum+ML_THINGS);
+	
+	// if deathmatch, randomly spawn the active players
+	if (deathmatch)
+	{
 		for (i=0 ; i<MAXPLAYERS ; i++)
 		{
 			if (playeringame[i])
@@ -1287,24 +1327,24 @@ P_SetupLevel
 				G_DeathMatchSpawnPlayer (i);
 			}
 		}
-    }
+	}
 
-    // clear special respawning que
-    iquehead = iquetail = 0;		
+	// clear special respawning que
+	iquehead = iquetail = 0;		
 	
-    // set up world state
-    P_SpawnSpecials ();
+	// set up world state
+	P_SpawnSpecials ();
 	
-    // build subsector connect matrix
-    //	UNUSED P_ConnectSubsectors ();
+	// build subsector connect matrix
+	//	UNUSED P_ConnectSubsectors ();
 
-    // preload graphics
-    if (precache)
-    {
+	// preload graphics
+	if (precache)
+	{
 		R_PrecacheLevel ();
 	}
 
-    //printf ("free memory: 0x%x\n", Z_FreeMemory());
+	//printf ("free memory: 0x%x\n", Z_FreeMemory());
 
 }
 
@@ -1315,12 +1355,12 @@ P_SetupLevel
 //
 void P_Init (void)
 {
-	printf(" A");
-    P_InitSwitchList ();
-	printf("B");
-    P_InitPicAnims ();
-	printf("C");
-    R_InitSprites ((char **)sprnames);
+//	printf(" A");
+	P_InitSwitchList ();
+//	printf("B");
+	P_InitPicAnims ();
+//	printf("C");
+	R_InitSprites ((char **)sprnames);
 //	printf("\n");
 }
 

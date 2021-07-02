@@ -426,6 +426,29 @@ BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_LookupGlobalFull(
 	return(NULL);
 }
 
+BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_LookupGlobalList(
+	BGBCC_TransState *ctx, char *name)
+{
+	BGBCC_CCXL_RegisterInfo *cur, *nxt;
+	BGBCC_CCXL_RegisterInfo *llst;
+	BGBCC_CCXL_RegisterInfo *sel;
+	int i;
+
+	llst=NULL;
+	for(i=1; i<ctx->n_reg_globals; i++)
+	{
+		cur=ctx->reg_globals[i];
+//		if(cur->name && !strcmp(cur->name, name))
+//			return(cur);
+		if(cur->qname && !strcmp(cur->qname, name))
+		{
+			cur->chain=llst;
+			llst=cur;
+		}
+	}
+	return(llst);
+}
+
 int bgbcc_strcpy_nosig(char *dst, char *src)
 {
 	char *s, *t;
@@ -1224,6 +1247,16 @@ void BGBCC_CCXL_BeginName(BGBCC_TransState *ctx, int tag, char *name)
 			(tag==CCXL_CMD_METHOD))
 		{
 			decl=BGBCC_CCXL_LookupGlobal(ctx, name);
+			
+			if(decl)
+			{
+				if(	(decl->flagsint&BGBCC_TYFL_IFARCH) ||
+					(decl->flagsint&BGBCC_TYFL_IFNARCH))
+				{
+					decl=NULL;
+				}
+			}
+			
 			if(decl)
 			{
 				obj=bgbcc_malloc(sizeof(BGBCC_CCXL_LiteralInfo));
@@ -1259,6 +1292,16 @@ void BGBCC_CCXL_BeginName(BGBCC_TransState *ctx, int tag, char *name)
 		if(tag==CCXL_CMD_PROTOTYPE)
 		{
 			decl=BGBCC_CCXL_LookupGlobal(ctx, name);
+
+			if(decl)
+			{
+				if(	(decl->flagsint&BGBCC_TYFL_IFARCH) ||
+					(decl->flagsint&BGBCC_TYFL_IFNARCH))
+				{
+					decl=NULL;
+				}
+			}
+			
 			if(decl)
 			{
 				obj=BGBCC_CCXL_AllocLiteral(ctx);
@@ -1318,6 +1361,16 @@ void BGBCC_CCXL_BeginName(BGBCC_TransState *ctx, int tag, char *name)
 		if((tag==CCXL_CMD_VARDECL) && !ctx->cur_obj)
 		{
 			decl=BGBCC_CCXL_LookupGlobal(ctx, name);
+
+			if(decl)
+			{
+				if(	(decl->flagsint&BGBCC_TYFL_IFARCH) ||
+					(decl->flagsint&BGBCC_TYFL_IFNARCH))
+				{
+					decl=NULL;
+				}
+			}
+			
 			if(decl)
 			{
 				obj=BGBCC_CCXL_AllocLiteral(ctx);
@@ -1362,6 +1415,16 @@ void BGBCC_CCXL_BeginName(BGBCC_TransState *ctx, int tag, char *name)
 		if(tag==CCXL_CMD_GLOBALVARDECL)
 		{
 			decl=BGBCC_CCXL_LookupGlobal(ctx, name);
+
+			if(decl)
+			{
+				if(	(decl->flagsint&BGBCC_TYFL_IFARCH) ||
+					(decl->flagsint&BGBCC_TYFL_IFNARCH))
+				{
+					decl=NULL;
+				}
+			}
+			
 			if(decl)
 			{
 				obj=BGBCC_CCXL_AllocLiteral(ctx);
@@ -1879,6 +1942,7 @@ void BGBCC_CCXL_EndFunction(BGBCC_TransState *ctx,
 		obj->decl->name=obj->decl->defv->name;
 		obj->decl->sig=obj->decl->defv->sig;
 		obj->decl->flagstr=obj->decl->defv->flagstr;
+		obj->decl->ifarchstr=obj->decl->defv->ifarchstr;
 	}
 
 	if(obj->decl->flagstr)
@@ -3315,6 +3379,12 @@ void BGBCC_CCXL_AttribStr(BGBCC_TransState *ctx, int attr, char *str)
 			else
 				{ obj->decl->thisstr=NULL; }
 			break;
+		case CCXL_ATTR_IFARCH:
+			if(str && (*str))
+				{ obj->decl->ifarchstr=bgbcc_strdup(str); }
+			else
+				{ obj->decl->ifarchstr=NULL; }
+			break;
 		default:
 			break;
 		}
@@ -3330,6 +3400,10 @@ void BGBCC_CCXL_AttribStr(BGBCC_TransState *ctx, int attr, char *str)
 		case CCXL_ATTR_SIG:
 			obj->decl->sig=bgbcc_strdup(str);
 			if(!obj->sig)obj->sig=obj->decl->sig;
+			break;
+		case CCXL_ATTR_IFARCH:
+			obj->decl->ifarchstr=bgbcc_strdup(str);
+//			if(!obj->ifarchstr)obj->ifarchstr=obj->decl->ifarchstr;
 			break;
 		case CCXL_CMD_ARGS:
 		case CCXL_CMD_IMPLEMENTS:

@@ -37,6 +37,15 @@
 #define PU_SOUND		2	// static while playing
 #define PU_MUSIC		3	// static while playing
 #define PU_DAVE		4	// anything else Dave wants static
+
+#define PU_PATCH		8	// static patch
+#define PU_FLAT			9	// static flat
+#define PU_STATICLUMP	10
+
+// #define PU_PATCH		PU_STATIC	// static patch
+// #define PU_FLAT			PU_STATIC	// static flat
+// #define PU_STATICLUMP	PU_STATIC
+
 #define PU_LEVEL		50	// static until level exited
 #define PU_LEVSPEC		51      // a special thinker in a level
 #define PU_LEVELMOBJ	52	// static until level exited
