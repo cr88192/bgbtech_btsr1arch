@@ -14,6 +14,7 @@ Header:
 
 The header is directly followed by instructions, which proceed until the end of the file.
 
+
 === Values ===
 
 OpVLI:
@@ -115,7 +116,17 @@ Strings will generally be encoded without a null-terminator, with the exception 
 
 LZ strings will have the initial size encode the compressed size (relative to 64), with a second SVLI size giving the raw uncompressed size.
 
-Wide strings are given as UTF-8 or M-UTF-8.
+Strings:
+* Strings are encoded using M-UTF-8.
+** The NUL byte (0x00) will be encoded as C0-80.
+* ASCII string literals will encode values between 0x00 and 0xFF.
+** These may represent codepage symbols.
+** If the character encoding is UTF-8, the string will be double-encoded.
+*** Each byte of the UTF-8 symbol will be itself encoded using UTF-8.
+* Strings which natively represent a UTF format will use M-UTF-8 directly.
+* UTF-16 strings will encode non-BMP characters as surrogate pairs.
+* UTF-8 and UTF-32 strings will encode codepoints directly.
+
 
 DataBlob:
 * Encoded the same as Strings or TextBlobs, but holding binary data.

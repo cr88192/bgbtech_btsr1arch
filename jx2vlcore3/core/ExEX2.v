@@ -294,6 +294,19 @@ begin
 		JX2_UCMD_BSR: begin
 		end
 		JX2_UCMD_JMP: begin
+`ifdef def_true
+			if(	(regIdRs==JX2_GR_LR) ||
+				(regIdRs==JX2_GR_DHR))
+			begin
+//				tRegOutSr[15: 4]	= regValRs[15:4];
+//				tRegOutSr[27:26]	= regValRs[3:2];
+//				tRegOutSr[ 1: 0]	= regValRs[1:0];
+
+				tRegOutSr[15: 4] = regValRs[63:52];
+				tRegOutSr[27:26] = regValRs[51:50];
+				tRegOutSr[ 1: 0] = regValRs[49:48];
+			end
+`endif
 		end
 		JX2_UCMD_JSR: begin
 		end

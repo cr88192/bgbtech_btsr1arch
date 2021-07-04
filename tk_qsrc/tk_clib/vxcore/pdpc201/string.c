@@ -919,7 +919,8 @@ strncmp:
 	PSCHEQ.B	R7, R2, R3
 	CMPGT		R3, R1
 	BT			.L2
-	CMPGT		R6, R1
+//	CMPGT		R6, R1
+	CMPGE		R6, R1
 	BT			.L2
 
 	ADD			R1, R4

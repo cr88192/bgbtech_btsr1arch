@@ -35,6 +35,7 @@ module DecPreBra(
 	istrWord,	istrBasePc,	istrBraPc,
 	preBraPc,	preIsBra,
 	regValLr,	ifBraBPc,
+	regValDlr,	regValDhr,
 	exBraBPc,	exBraDir,
 	pipeHasLr);
 
@@ -44,19 +45,21 @@ input[63:0]		istrWord;	//Instruction Word
 input[47:0]		istrBasePc;	//Instruction Base PC
 input[47:0]		istrBraPc;	//Branch Base PC
 input[63:0]		regValLr;	//Link Register
+input[63:0]		regValDlr;	//Link Register
+input[63:0]		regValDhr;	//Link Register
 
 input[47:0]		ifBraBPc;	//Fetch Branch PC
 input[47:0]		exBraBPc;	//Fetch Base PC
 input[2:0]		exBraDir;
-input			pipeHasLr;
+input[3:0]		pipeHasLr;
 
 output[47:0]	preBraPc;
-output			preIsBra;
+output[1:0]		preIsBra;
 
 reg[47:0]	tPreBraPc;
 reg			tPreBra;
 assign	preBraPc	= tPreBraPc;
-assign	preIsBra	= tPreBra;
+assign	preIsBra	= { 1'b0, tPreBra };
 
 
 // reg[32:0]	tBraDisp8;
@@ -77,6 +80,7 @@ reg[20:0]	tBraDisp20Lo;
 reg			tIsBra8;		//Unconditional Branch (8-bit Disp)
 reg			tIsBra20;		//Unconditional Branch (16-bit Disp)
 reg			tIsRtsu;
+reg			tIsRtsR1;
 
 reg			tIsBraCc8;		//Conditional Branch (8-bit Disp)
 reg			tIsBraCc20;		//Conditional Branch (20-bit Disp)
@@ -217,10 +221,14 @@ begin
 `ifdef jx2_prebra_rts
 	tIsRtsu			=
 		(istrWord[15:0] == 16'h3012) ||
-		((istrWord[15:0] == 16'h3010) && !pipeHasLr);
+		((istrWord[15:0] == 16'h3010) && !pipeHasLr[0]);
+//	tIsRtsR1		= 0;
+	tIsRtsR1		=
+		(istrWord[15:0] == 16'h3210) && !pipeHasLr[1];
 `else
 	tIsRtsu			=
 		(istrWord[15:0] == 16'h3012);
+	tIsRtsR1		= 0;
 `endif
 
 //	tIsBra8		= 0;
@@ -305,6 +313,18 @@ begin
 		tPreBraPc	= regValLr[47:0];
 		tPreBra		= 1;
 	end
+
+`ifdef jx2_prebra_rts
+// `ifndef def_true
+	if(tIsRtsR1)
+	begin
+		tPreBraPc	= regValDhr[47:0];
+		tPreBra		= 1;
+	end
+`endif
+
+	if(pipeHasLr[2])
+		tPreBra		= 0;
 
 //	tPreBra		= 0;
 end

@@ -1916,18 +1916,20 @@ int BGBCC_JX2C_EmitJmpTab(
 		}
 	}
 
-	sctx->op_wex_align|=1;
+//	sctx->op_wex_align|=1;
 
 	BGBCC_JX2_EmitPadForLabel(sctx);
 
-	BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_SHLL1, ctreg);
-	BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_BRA2F, ctreg);
+//	BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_SHLL1, ctreg);
+	BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_ADD, ctreg, ctreg);
+//	BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_BRA2F, ctreg);
+	BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_BRAF, ctreg);
 //	BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_BRK);
 
 	for(i=0; i<=nlbl; i++)
 	{
-		if(!BGBCC_JX2_CheckPadAlign32(sctx) && !(sctx->is_simpass))
-			{ BGBCC_DBGBREAK }
+//		if(!BGBCC_JX2_CheckPadAlign32(sctx) && !(sctx->is_simpass))
+//			{ BGBCC_DBGBREAK }
 		j=BGBCC_JX2_TryEmitOpFar20Label(sctx, BGBCC_SH_NMID_BRAN, lbls[i].id);
 		if(j<=0)
 			{ BGBCC_DBGBREAK }

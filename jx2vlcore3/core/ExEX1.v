@@ -135,7 +135,7 @@ input[63:0]		regFpuGRn;		//FPU GPR Result
 input			regFpuSrT;
 input			opBraFlush;
 input[47:0]		opPreBraPc;
-input			opPreBra;
+input[1:0]		opPreBra;
 
 parameter		isAltCore = 0;
 defparam		cpuid.isAltCore = isAltCore;
@@ -618,7 +618,8 @@ begin
 		end
 
 		JX2_UCMD_BRA_NB: begin
-			if(opPreBra)
+//			if(opPreBra)
+			if(opPreBra!=2'b00)
 			begin
 //				tValBra		= regValPc[47:0];
 				tValBra		= regValPc[63:0];
@@ -628,7 +629,8 @@ begin
 		end
 	
 		JX2_UCMD_BRA: begin
-			if(!opPreBra)
+//			if(!opPreBra)
+			if(opPreBra!=2'b01)
 			begin
 //				tValBra		= tValAguBra[47:0];
 				tValBra		= { tRegBraLr[63:48], tValAguBra[47:0] };
@@ -644,7 +646,9 @@ begin
 //				regInSr[27:26],
 //				regInSr[ 1: 0],
 //				regValPc };
-			if(!opPreBra)
+//			if(!opPreBra)
+
+			if(opPreBra!=2'b01)
 			begin
 //				tValBra		= tValAguBra[47:0];
 //				tValBra		= { tRegBraLr[63:48], tValAguBra[47:0] };
@@ -659,14 +663,14 @@ begin
 //			tValBra		= regValRs[47:0];
 //			tValBra		= regValRs;
 //			tDoBra		= 1;
-			tDoBra		= !opPreBra;
+//			tDoBra		= !opPreBra;
+			tDoBra		= (opPreBra != 2'b01);
 
 			if(	(regIdRs==JX2_GR_LR) ||
 				(regIdRs==JX2_GR_DHR))
 			begin
 				tValBra[63:48] = regValRs[63:48];
 			end
-
 
 `ifndef def_true
 //			if(regIdRs==JX2_GR_LR)

@@ -70,18 +70,18 @@ WEX: ADC will only update SR.T in Lane 1. If an ADC is in another lane, the stat
 
 * 10nm       ADD		Rm, Rn
 * 58nm       ADD		Rm, DLR, Rn			//Rn=Rm+DLR
-* Cnii       ADD		#imm8s, Rn
+* Cnii       ADD		Imm8s, Rn
 * F0nm_1go0  ADD		Rm, Ro, Rn			//Rn=Rm+Ro
 * F0nm_1e09  ADD		Rm, Rn				//Rn=Rn+Rm
-* F2nm_0gjj  ADD		Rm, #imm9u, Rn		//
-* F2nm_1gjj  ADD		Rm, #imm9n, Rn		//
-* F84n_iiii  ADD		#imm16s, Rn
-* F85n_iiii  ADD		#imm16s, Rk
+* F2nm_0gjj  ADD		Rm, Imm9u, Rn		//
+* F2nm_1gjj  ADD		Rm, Imm9n, Rn		//
+* F84n_iiii  ADD		Imm16s, Rn
+* F85n_iiii  ADD		Imm16s, Rk
 
-* FE-FE F84n_iiii  ADD	#imm64, Rn		//R0 ..R15
-* FE-FE F85n_iiii  ADD	#imm64, Rk		//R16..R31
-* FE-FE F86n_iiii  ADD	#imm64, Rk		//R32..R47
-* FE-FE F87n_iiii  ADD	#imm64, Rk		//R48..R63
+* FE-FE F84n_iiii  ADD	Imm64, Rn		//R0 ..R15
+* FE-FE F85n_iiii  ADD	Imm64, Rk		//R16..R31
+* FE-FE F86n_iiii  ADD	Imm64, Rk		//R32..R47
+* FE-FE F87n_iiii  ADD	Imm64, Rk		//R48..R63
 
 Add the source and destination values and store the result in the destination register.
 
@@ -90,10 +90,10 @@ Add the source and destination values and store the result in the destination re
 
 * F0nm_5goC  ADDS.L	Rm, Ro, Rn
 * F0nm_5GoC  ADDU.L	Rm, Ro, Rn
-* F2gj_3gjj  ADDS.L	Rm, #imm9u, Rn
-* F2nm_3Gjj  ADDU.L	Rm, #imm9u, Rn
-* F2nm_4gjj  ADDS.L	Rm, #imm9n, Rn
-* F2nm_4Gjj  ADDU.L	Rm, #imm9n, Rn
+* F2gj_3gjj  ADDS.L	Rm, Imm9u, Rn
+* F2nm_3Gjj  ADDU.L	Rm, Imm9u, Rn
+* F2nm_4gjj  ADDS.L	Rm, Imm9n, Rn
+* F2nm_4Gjj  ADDU.L	Rm, Imm9n, Rn
 
 Add the source and destination values and store the result in the destination register.
 
@@ -106,7 +106,7 @@ This form sign or zero extends the 32-bit result to 64 bits.
 * 5Anm       AND		Rm, DLR, Rn
 * F0nm_1go5  AND		Rm, Ro, Rn
 * F0nm_1e59  AND		Rm, Rn
-* F2nm_5gjj  AND		Rm, #imm9u, Rn
+* F2nm_5gjj  AND		Rm, Imm9u, Rn
 
 Perform a bitwise AND of the source and destination values and store the result in the destination register.
 
@@ -141,7 +141,7 @@ This instruction is only allowed in Lane 1.
 
 * FEjj_jjjj_F202_C4jj /	BRA		(PC, disp33s)
 * FFw0_0ddd_F0dd_Cddd	BRA		(PC, Disp33s)
-* FFjj_jjjj_FAjj_jjjj	JMP		#abs48		//Abs48 Branch
+* FFjj_jjjj_FAjj_jjjj	JMP		Abs48		//Abs48 Branch
 
 Branch to Address.
 For BRA, the target address is computed and PC is updated to the new address.
@@ -176,7 +176,7 @@ The BREAK1/2/3 forms overlap with MOV.B, but will be regarded as invalid special
 * FEjj_jjjj_F202_CCjj /	BSR		(PC, disp33s)
 * FFw0_0ddd_F0dd_Dddd	BSR		(PC, Disp33s)
 
-* FFjj_jjjj_FBjj_jjjj	JSR		#abs48			//Abs48 Call
+* FFjj_jjjj_FBjj_jjjj	JSR		Abs48			//Abs48 Call
 
 Branch to subroutine.
 The target address is computed and PC is updated to the new address, with the prior value for PC being stored in LR(47:0).
@@ -256,14 +256,14 @@ These instructions are only allowed in Lane 1.
 === CMPEQ ===
 
 * 1Cnm       CMPEQ		Rm, Rn
-* 2Cnj       CMPEQ		#imm4u, Rn
-* 2Dnj       CMPEQ		#imm4n, Rn
-* 6Cnj       CMPEQ		#imm4u, Rk
-* 6Dnj       CMPEQ		#imm4n, Rk
+* 2Cnj       CMPEQ		Imm4u, Rn
+* 2Dnj       CMPEQ		Imm4n, Rn
+* 6Cnj       CMPEQ		Imm4u, Rk
+* 6Dnj       CMPEQ		Imm4n, Rk
 * F0nm_1gC9  CMPEQ		Rm, Rn			//E.i=0, Update SR.T
 * F0nm_1gC9  CMPEQS		Rm, Rn			//E.i=1, Update SR.S (PRED_S)
-* F2nC_Cgjj  CMPEQ		#imm9u, Rn
-* F2nD_Cgjj  CMPEQ		#imm9n, Rn
+* F2nC_Cgjj  CMPEQ		Imm9u, Rn
+* F2nD_Cgjj  CMPEQ		Imm9n, Rn
 
 Compare if source and destination are Equal.
 
@@ -281,12 +281,12 @@ This instruction is only allowed in Lane 1.
 === CMPGE ===
 
 * 1Fnm       CMPGE		Rm, Rn
-* 2Fnj       CMPGE		#imm4u, Rn
-* 6Fnj       CMPGE		#imm4u, Rk
+* 2Fnj       CMPGE		Imm4u, Rn
+* 6Fnj       CMPGE		Imm4u, Rk
 * F0nm_1gEC  CMPGE		Rm, Rn			//E.i=0, Signed Rn GE Rm
 * F0nm_1gEC  CMPGES		Rm, Rn			//E.i=1, Update SR.S (PRED_S)
-* F2nA_Cgjj  CMPGE		#imm9u, Rn
-* F2nB_Cgjj  CMPGE		#imm9n, Rn
+* F2nA_Cgjj  CMPGE		Imm9u, Rn
+* F2nB_Cgjj  CMPGE		Imm9n, Rn
 
 Compare if Rn is Greater or Equal to the immediate.
 
@@ -303,12 +303,12 @@ This instruction is only allowed in Lane 1.
 === CMPGT ===
 
 * 1Enm       CMPGT		Rm, Rn
-* 2Enj       CMPGT		#imm4u, Rn
-* 6Enj       CMPGT		#imm4u, Rk
+* 2Enj       CMPGT		Imm4u, Rn
+* 6Enj       CMPGT		Imm4u, Rk
 * F0nm_1gE9  CMPGT		Rm, Rn			//E.i=0
 * F0nm_1gE9  CMPGTS		Rm, Rn			//E.i=1, Update SR.S (PRED_S)
-* F2nE_Cgjj  CMPGT		#imm9u, Rn
-* F2nF_Cgjj  CMPGT		#imm9n, Rn
+* F2nE_Cgjj  CMPGT		Imm9u, Rn
+* F2nF_Cgjj  CMPGT		Imm9n, Rn
 
 Signed Rn GT Rm.
 
@@ -327,8 +327,8 @@ This instruction is only allowed in Lane 1.
 * 1Dnm       CMPHI		Rm, Rn
 * F0nm_1gD9  CMPHI		Rm, Rn			//E.i=0
 * F0nm_1gD9  CMPHIS		Rm, Rn			//E.i=1, Update SR.S (PRED_S)
-* F2n8_Cgjj  CMPHI		#imm9u, Rn
-* F2n8_Cgjj  CMPHI		#imm9n, Rn
+* F2n8_Cgjj  CMPHI		Imm9u, Rn
+* F2n8_Cgjj  CMPHI		Imm9n, Rn
 
 Unsigned Rn GT Rm.
 
@@ -347,8 +347,8 @@ This instruction is only allowed in Lane 1.
 * 36nD       CMPHS		DLR, Rn
 * F0nm_1gFC  CMPHS		Rm, Rn			//E.i=0, Unsigned Rn GE Rm
 * F0nm_1gFC  CMPHSS		Rm, Rn			//E.i=1, Update SR.S (PRED_S)
-* F2n6_Cgjj  CMPHS		#imm9u, Rn
-* F2n7_Cgjj  CMPHS		#imm9n, Rn
+* F2n6_Cgjj  CMPHS		Imm9u, Rn
+* F2n7_Cgjj  CMPHS		Imm9n, Rn
 
 Unsigned (Rn GE DLR)
 
@@ -367,8 +367,8 @@ This instruction is only allowed in Lane 1.
 * 5Fnm       CMPQEQ		Rm, Rn
 * F0nm_1GC9  CMPQEQ		Rm, Rn			//E.i=0
 * F0nm_1GC9  CMPQEQS	Rm, Rn			//E.i=1, Update SR.S (PRED_S)
-* F2nC_CGjj  CMPQEQ		#imm9u, Rn
-* F2nD_CGjj  CMPQEQ		#imm9n, Rn
+* F2nC_CGjj  CMPQEQ		Imm9u, Rn
+* F2nD_CGjj  CMPQEQ		Imm9n, Rn
 
 Compare if source and destination are Equal.
 
@@ -387,8 +387,8 @@ This instruction is only allowed in Lane 1.
 
 * F0nm_1GEC  CMPQGE		Rm, Rn			//E.i=0
 * F0nm_1GEC  CMPQGES	Rm, Rn			//E.i=1, Update SR.S (PRED_S)
-* F2nA_CGjj  CMPQGE		#imm9u, Rn
-* F2nB_CGjj  CMPQGE		#imm9n, Rn
+* F2nA_CGjj  CMPQGE		Imm9u, Rn
+* F2nB_CGjj  CMPQGE		Imm9n, Rn
 
 Compare if Rn is Greater or Equal to the immediate.
 
@@ -407,8 +407,8 @@ This instruction is only allowed in Lane 1.
 * 5Enm       CMPQGT		Rm, Rn
 * F0nm_1GE9  CMPQGT		Rm, Rn			//E.i=0
 * F0nm_1GE9  CMPQGTS	Rm, Rn			//E.i=1, Update SR.S (PRED_S)
-* F2nE_Cejj  CMPQGT		#imm9u, Rn
-* F2nF_Cejj  CMPQGT		#imm9n, Rn
+* F2nE_Cejj  CMPQGT		Imm9u, Rn
+* F2nF_Cejj  CMPQGT		Imm9n, Rn
 
 Signed Rn GT Rm.
 
@@ -427,8 +427,8 @@ This instruction is only allowed in Lane 1.
 * 5Dnm       CMPQHI		Rm, Rn
 * F0nm_1GD9  CMPQHI		Rm, Rn			//E.i=0
 * F0nm_1GD9  CMPQHIS	Rm, Rn			//E.i=1, Update SR.S (PRED_S)
-* F2n8_CGjj  CMPQHI		#imm9u, Rn
-* F2n8_CGjj  CMPQHI		#imm9n, Rn
+* F2n8_CGjj  CMPQHI		Imm9u, Rn
+* F2n8_CGjj  CMPQHI		Imm9n, Rn
 
 Unsigned Rn GT Rm.
 
@@ -446,8 +446,8 @@ This instruction is only allowed in Lane 1.
 
 * F0nm_1GFC  CMPQHS		Rm, Rn			//E.i=0
 * F0nm_1GFC  CMPQHSS	Rm, Rn			//E.i=1, Update SR.S (PRED_S)
-* F2n6_CGjj  CMPQHS		#imm9u, Rn
-* F2n7_CGjj  CMPQHS		#imm9n, Rn
+* F2n6_CGjj  CMPQHS		Imm9u, Rn
+* F2n7_CGjj  CMPQHS		Imm9n, Rn
 
 Unsigned (Rn GE DLR)
 
@@ -463,8 +463,8 @@ This instruction is only allowed in Lane 1.
 
 === CPUID ===
 
-* 36jA       CPUID	#imm4
-* F06A_3en0  CPUID	#Imm5
+* 36jA       CPUID	Imm4
+* F06A_3en0  CPUID	Imm5
 
 Load CPUID bits into DLR.
 The immediate gives an index into a table of CPUID bits.
@@ -718,26 +718,26 @@ This will use a scale factor of 2.
 === LDIN / LDIZ ===
 
 Targeting R0/DLR:
-* Ajjj       LDIZ	#imm12u, DLR
-* Bjjj       LDIN	#imm12n, DLR
-* FAjj_jjjj	 LDIZ	#imm24u, DLR		//Zero Extend
-* FBjj_jjjj	 LDIN	#imm24n, DLR		//One Extend
+* Ajjj       LDIZ	Imm12u, DLR
+* Bjjj       LDIN	Imm12n, DLR
+* FAjj_jjjj	 LDIZ	Imm24u, DLR		//Zero Extend
+* FBjj_jjjj	 LDIN	Imm24n, DLR		//One Extend
 
 Targeting GPRs:
-* Dnii       LDI		#imm8s, Rn		//Rn=Imm8s
-* F2n0_Chjj  LDIZ		#imm10u, Rn		//(WEX2), Rn=Imm10u
-* F2n0_CHjj  LDIZD		#imm10u, Rn		//(WEX2), Rn=Imm10u (Hi=Undef)
-* F2n1_Chjj  LDIN		#imm10n, Rn		//(WEX2), Rn=Imm10n
-* F2n1_CHjj  LDIND		#imm10n, Rn		//(WEX2), Rn=Imm10n (Hi=Undef)
-* F80n_iiii  LDIZ		#imm16u, Rn
-* F81n_iiii  LDIZ		#imm16u, Rk
-* F82n_iiii  LDIN		#imm16n, Rn
-* F83n_iiii  LDIN		#imm16n, Rk
+* Dnii       LDI		Imm8s, Rn		//Rn=Imm8s
+* F2n0_Chjj  LDIZ		Imm10u, Rn		//(WEX2), Rn=Imm10u
+* F2n0_CHjj  LDIZD		Imm10u, Rn		//(WEX2), Rn=Imm10u (Hi=Undef)
+* F2n1_Chjj  LDIN		Imm10n, Rn		//(WEX2), Rn=Imm10n
+* F2n1_CHjj  LDIND		Imm10n, Rn		//(WEX2), Rn=Imm10n (Hi=Undef)
+* F80n_iiii  LDIZ		Imm16u, Rn
+* F81n_iiii  LDIZ		Imm16u, Rk
+* F82n_iiii  LDIN		Imm16n, Rn
+* F83n_iiii  LDIN		Imm16n, Rk
 
-* FE-FE F80n_iiii  LDI	#imm64, Rn		//R0 ..R15
-* FE-FE F81n_iiii  LDI	#imm64, Rk		//R16..R31
-* FE-FE F82n_iiii  LDI	#imm64, Rk		//R32..R47
-* FE-FE F83n_iiii  LDI	#imm64, Rk		//R48..R63
+* FE-FE F80n_iiii  LDI	Imm64, Rn		//R0 ..R15
+* FE-FE F81n_iiii  LDI	Imm64, Rk		//R16..R31
+* FE-FE F82n_iiii  LDI	Imm64, Rk		//R32..R47
+* FE-FE F83n_iiii  LDI	Imm64, Rk		//R48..R63
 
 Load an 8, 12, or 24 bit value into DLR.
 Load an 8, 10, 16, or 32 bit value into a GPR.
@@ -749,8 +749,8 @@ LDIN will extend the value with ones up to the size of the register.
 
 === LDISH ===
 
-* 26jj       LDISH	#imm8u, DLR
-* F2n2_Chjj  LDISH	#imm8u, Rn
+* 26jj       LDISH	Imm8u, DLR
+* F2n2_Chjj  LDISH	Imm8u, Rn
 
 Load Immediate with Shift.
 
@@ -761,8 +761,8 @@ The 32-bit encoding is mostly intended for use with WEX2. The high 2 bits of the
 
 === LDIHI{Q} ===
 
-* F2n3_Chjj  LDIHI	#imm10u, Rn
-* F2n3_CHjj  LDIHIQ	#imm10u, Rn
+* F2n3_Chjj  LDIHI	Imm10u, Rn
+* F2n3_CHjj  LDIHIQ	Imm10u, Rn
 
 Load High Immediate.
 
@@ -775,8 +775,8 @@ If used with a Jumbo Prefix, LDIHI will load a 32 bit immediate into (47:16) and
 
 === LDISH16 ===
 
-* F86n_iiii  LDISH16	#imm16u, Rn
-* F87n_iiii  LDISH16	#imm16u, Rk
+* F86n_iiii  LDISH16	Imm16u, Rn
+* F87n_iiii  LDISH16	Imm16u, Rk
 
 Load Immediate with Shift.
 
@@ -785,10 +785,10 @@ The value in DLR is shifted left 16 bits, and the low bits are set according to 
 
 === LDIROz{Q} (Possible) ===
 
-* F2n4_Chjj  LDIROZ		#imm10u, Rn
-* F2n4_CHjj  LDIROZQ	#imm10u, Rn
-* F2n5_Chjj  LDIRON		#imm10n, Rn
-* F2n5_CHjj  LDIRONQ	#imm10n, Rn
+* F2n4_Chjj  LDIROZ		Imm10u, Rn
+* F2n4_CHjj  LDIROZQ	Imm10u, Rn
+* F2n5_Chjj  LDIRON		Imm10n, Rn
+* F2n5_CHjj  LDIRONQ	Imm10n, Rn
 
 Load Rotated Immediate.
 
@@ -962,8 +962,8 @@ The results of trying to load or store using a misaligned address are undefined.
 * 5Anm       MULS	Rm, DLR, Rn
 * F0nm_1go2  MULS	Rm, Ro, Rn
 * F0nm_1go3  MULU	Rm, Ro, Rn
-* F2nm_2gjj  MULS	Rm, #imm9u, Rn
-* F2nm_2Gjj  MULU	Rm, #imm9u, Rn
+* F2nm_2gjj  MULS	Rm, Imm9u, Rn
+* F2nm_2Gjj  MULU	Rm, Imm9u, Rn
 
 Performs a narrow multiply (32 bit).
 Only the low 32 bits are used from the input registers, and the resulting value is 32-bit sign or zero extended.
@@ -976,9 +976,9 @@ This operation only exists in Lane 1.
 * F0nm_5go2  DMULS.L	Rm, Ro, Rn			//(MULL) Sx 32b Mul (32*32->64)
 * F0nm_5go3  DMULU.L	Rm, Ro, Rn			//(MULL) Zx 32b Mul (32*32->64)
 * F0nm_5goE  MULS.W		Rm, Ro, Rn			//(MULW) Sx 16b Mul (16*16->32)
-* F0nm_5GoE  MULS.W		Rm, #imm5u, Rn		//(MULW) Sx 16b Mul (16*16->32)
+* F0nm_5GoE  MULS.W		Rm, Imm5u, Rn		//(MULW) Sx 16b Mul (16*16->32)
 * F0nm_5goF  MULU.W		Rm, Ro, Rn			//(MULW) Zx 16b Mul (16*16->32)
-* F0nm_5GoF  MULU.W		Rm, #imm5u, Rn		//(MULW) Zx 16b Mul (16*16->32)
+* F0nm_5GoF  MULU.W		Rm, Imm5u, Rn		//(MULW) Zx 16b Mul (16*16->32)
 
 These produce widening multiplies of a given input size.
 The values in Rm and Ro are multiplied, and the result is stored in Rn.
@@ -1057,7 +1057,7 @@ This operation is only valid in Lane 1.
 * 5Bnm       OR	Rm, DLR, Rn
 * F0nm_1go6  OR	Rm, Ro, Rn
 * F0nm_1e69  OR	Rm, Rn
-* F2nm_6gjj  OR	Rm, #imm9u, Rn
+* F2nm_6gjj  OR	Rm, Imm9u, Rn
 
 Perform a bitwise OR of the source and destination, storing the result in the destination.
 
@@ -1227,7 +1227,7 @@ Note that this feature is optional and intended for debugging, as such:
 
 * F0nm_1g6C  SHAD	Rm, Rn
 * F0nm_5go4  SHAD	Rm, Ro, Rn
-* F2nm_8pjj  SHAD	Rm, #imm9, Rn
+* F2nm_8pjj  SHAD	Rm, Imm9, Rn
 
 Barrel Shift, Arithmetic.
 Operates on a 32-bit value.
@@ -1242,7 +1242,7 @@ For SHAD, the shift will be 32-bit modular.
 
 * F0nm_1G6C  SHADQ		Rm, Rn
 * F0nm_5Go4  SHADQ		Rm, Ro, Rn
-* F2nm_8Pjj  SHADQ		Rm, #imm9, Rn
+* F2nm_8Pjj  SHADQ		Rm, Imm9, Rn
 
 Barrel Shift, Arithmetic.
 Operates on a 64-bit value.
@@ -1266,7 +1266,7 @@ The Shift Value will behave as if it were a sign-extended byte. Positive values 
 
 * F0nm_1g7C  SHLD	Rm, Rn
 * F0nm_5go5  SHLD	Rm, Ro, Rn
-* F2nm_9pjj  SHLD	Rm, #imm9u, Rn
+* F2nm_9pjj  SHLD	Rm, Imm9u, Rn
 
 Barrel Shift, Logical.
 Operates on a 32-bit value.
@@ -1281,7 +1281,7 @@ For SHLD, the shift will be 32-bit modular.
 
 * F0nm_1G7C  SHLDQ		Rm, Rn
 * F0nm_5Go5  SHLDQ		Rm, Ro, Rn
-* F2nm_9Pjj  SHLDQ		Rm, #imm9u, Rn
+* F2nm_9Pjj  SHLDQ		Rm, Imm9u, Rn
 
 Barrel Shift, Logical.
 Operates on a 64-bit value.
@@ -1391,8 +1391,8 @@ May generate an fault if used in a context where this would halt the processor i
 
 === SRTTWID (?) ===
 
-* 36nB       SRTTWID	#Imm4
-* F06B_3en0  SRTTWID	#Imm5
+* 36nB       SRTTWID	Imm4
+* F06B_3en0  SRTTWID	Imm5
 
 Twiddle SR.T status bits, using SR.U0 .. SR.U7 as a predicate stack.
 
@@ -1465,7 +1465,7 @@ This variant sign or zero extends the 32 bit result to 64 bits.
 
 === TRAP ===
 
-* 36j3       TRAP	#imm4u
+* 36j3       TRAP	Imm4u
 * 36n8       TRAP	Rn
 * F068_3en0  TRAP	Rn
 
@@ -1490,8 +1490,8 @@ Within a multi-core setup, bits (11:8) may be used to route the interrupt to a d
 
 * 14nm       TST	Rm, Rn
 * F0nm_1g49  TST	Rm, Rn				//SR.T=!(Rm&Rn)
-* F2n4_Cgjj  TST	#imm9u, Rn			//SR.T=!(Rm&Rn)
-* F2n5_Cgjj  TST	#imm9n, Rn			//SR.T=!(Rm&Rn)
+* F2n4_Cgjj  TST	Imm9u, Rn			//SR.T=!(Rm&Rn)
+* F2n5_Cgjj  TST	Imm9n, Rn			//SR.T=!(Rm&Rn)
 
 SR.T=!(Rm AND Rn)
 
@@ -1511,8 +1511,8 @@ The values of the other bits are unchanged by this operation.
 * 54nm       TSTQ	Rm, Rn
 * F0nm_1G49  TSTQ	Rm, Rn				//SR.T=!(Rm&Rn), E.i=0
 * F0nm_1G49  TSTQS	Rm, Rn				//SR.S=!(Rm&Rn), E.i=1
-* F2n4_CGjj  TSTQ	#imm9u, Rn			//SR.T=!(Rm&Rn)
-* F2n5_CGjj  TSTQ	#imm9n, Rn			//SR.T=!(Rm&Rn)
+* F2n4_CGjj  TSTQ	Imm9u, Rn			//SR.T=!(Rm&Rn)
+* F2n5_CGjj  TSTQ	Imm9n, Rn			//SR.T=!(Rm&Rn)
 
 SR.T=!(Rm AND Rn)
 
@@ -1529,8 +1529,8 @@ The values of the other bits are unchanged by this operation.
 
 === WEXMD (WEX) ===
 
-* 36n9  WEXMD	#imm4 //( 0..15)
-* 3En9  WEXMD	#imm4 //(16..31)
+* 36n9  WEXMD	Imm4 //( 0..15)
+* 3En9  WEXMD	Imm4 //(16..31)
 
 Sets the Active WEX Profile.
 This instruction is No-Op if the core does not support WEX.
@@ -1546,7 +1546,7 @@ If WEX is disabled, any WEX sequences encountered will be treated as if they wer
 * 5Cnm       XOR		Rm, DLR, Rn
 * F0nm_1go7  XOR		Rm, Ro, Rn				//Rn=Rm XOR Ro, Q=0
 * F0nm_1e79  XOR		Rm, Rn
-* F2nm_7gjj  XOR		Rm, #imm9u, Rn		//
+* F2nm_7gjj  XOR		Rm, Imm9u, Rn		//
 
 Perform a bitwise XOR of the source and destination registers, storing the result in the destination.
 
@@ -1696,8 +1696,8 @@ PSELT will select the Word from Rm if the corresponding bit is Set, selecting th
 
 === PSHUF.x ===
 
-* F2nm_8qjj  PSHUF.B	Rm, #imm8, Rn
-* F2nm_8Qjj  PSHUF.W	Rm, #imm8, Rn
+* F2nm_8qjj  PSHUF.B	Rm, Imm8, Rn
+* F2nm_8Qjj  PSHUF.W	Rm, Imm8, Rn
 
 Packed Shuffle of Byte or Word elements.
 
@@ -1709,7 +1709,7 @@ Each element will be given as a 2-bit value, with 00 mapping to the low-order bi
 
 === PSHUFX.L ===
 
-*  PSHUFX.L	Rm, #imm8, Rn
+*  PSHUFX.L	Rm, Imm8, Rn
 
 This instruction is synthetic.
 Packed Shuffle of DWord element, operating on a logical 128-bit register.
@@ -1786,6 +1786,82 @@ Swap or Copy elements within a register.
 SWAP.x will exchange a the low element with another element, whereas SWCP.x will copy the low element into another element.
 
 Other than the first element, the others will be labeled as Low, Middle, and High. Low will correspond to the lower-order bits of the register, and High will correspond with the higher order bits.
+
+
+=== BLKUAB (UAB) ===
+
+* F0nm_6goC  BLKUAB1	Rm, Ro, Rn
+* F0nm_6GoC  BLKUAB2	Rm, Ro, Rn
+
+Extract an audio sample from a block.
+
+These blocks will come in two formats, UAB1 and UAB2.
+The UAB1 format will store 16 samples in 32 bits.
+The UAB2 format will store 16 samples in 64 bits.
+
+The block is given in Rm, with a sample index in Ro.
+
+The result is unpacked to 16-bit linear PCM and stored in Rn.
+
+For UAB1, the output will be encoded as:
+* (15: 0): Sample Value
+* (31:16): Sample Value (Repeat)
+
+For UAB2, the output will be encoded as:
+* (15: 0): Sample Value (Left)
+* (31:16): Sample Value (Right)
+
+
+UAB1:
+* ( 5: 0): Line Start (S.E3.F2)
+* (11: 6): Line End   (S.E3.F2)
+* (15:12): Line Sigma (  E3.F1)
+* (31:16): Sample Selector Bits
+
+UAB2:
+* ( 7: 0): Line Start (S.E3.F4)
+* (15: 8): Line End   (S.E3.F4)
+* (23:16): Line Sigma (Z.E3.F4)
+* (31:24): Left/Right Bias (Zero for Mono)
+* (63:32): Sample Selector Bits
+
+The block will represent a line segment given as a start and end endpoint.
+To decode a sample, linearly interpolate between the start and end value via the sample index.
+
+The Sigma will represent a distance above or below this line segment, which will be either added to or subtracted from the interpolated value (based on 
+the selector bits) to get the result.
+
+The line sigma will always be positive for a UAB2 block. The use of a negative Sigma will be reserved, and may be used to escape to another block format.
+
+The Left/Right bias will represent a constant bias which will be added to the left channel and subtracted from the right channel.
+
+
+Selector bits are organized with the first sample in the low order bits, and the last sample in the high bits.
+
+For each selector, 1 Bit:
+* 0: V=Pred-Sigma
+* 1: V=Pred+Sigma
+
+For each selector, 2 Bits:
+* 00: Small Negative (-0.333 * Sigma)
+* 01: Large Negative (-1.000 * Sigma)
+* 10: Small Positive (+0.333 * Sigma)
+* 11: Large Positive (+1.000 * Sigma)
+
+Endpoints are encoded as a microfloat value which expands into a 12-bit integer format (PCM):
+0: 00000000xxxx
+1: 00000001xxxx
+2: 0000001xxxx0
+3: 000001xxxx00
+4: 00001xxxx000
+5: 0001xxxx0000
+6: 001xxxx00000
+7: 01xxxx000000
+
+Negative values will invert the value of the decoded sample.
+
+Interpolation and other calculations will be performed in terms of PCM values.
+An encoder should ensure that decoded values will not go out of range.
 
 
 === BLKUTX1 (RGB) ===
@@ -1941,8 +2017,8 @@ If either value is NaN, the resulting state of SR.T is undefined.
 
 === FCONV (GFPX) ===
 
-* F2nm_8qjj  PCONV		Rm, #imm8, Rn		//E.i=1, Packed Convert
-* F2nm_8Qjj  PCONVX		Rm, #imm8, Rn		//E.i=1, Packed Convert
+* F2nm_8qjj  PCONV		Rm, Imm8, Rn		//E.i=1, Packed Convert
+* F2nm_8Qjj  PCONVX		Rm, Imm8, Rn		//E.i=1, Packed Convert
 
 Packed convert vectors.
 The E.q parameter selects between the use of 64 and 128 bit vectors.
@@ -2003,12 +2079,15 @@ When converting a narrower floating point type to a wider one:
 ** Mantissa bits still copied directly.
 
 
-=== FLDCH Imm (GFP) ===
+=== FLDCx Imm (GFP) ===
 
-* F88n_iiii  FLDCH		#imm16u, Rn
-* F89n_iiii  FLDCH		#imm16u, Rk
+* F88n_iiii  FLDCH		Imm16u, Rn
+* F89n_iiii  FLDCH		Imm16u, Rk
 
-Load a half-float immediate and convert to Double.
+* FFw0_iiii_F88n_iiii  FLDCF	Imm32u, Rn		//(Op64)
+* FFw0_iiii_F89n_iiii  FLDCF	Imm32u, Rk		//(Op64)
+
+Load a floating point immediate and convert to Double.
 Conversion will be the same as that for the register instruction.
 
 
@@ -2083,11 +2162,11 @@ Moved to core ISA Spec.
 Jumbo Load is an "instruction" which loads a 64-bit constant all at once.
 
 Basic Encoding:
-* FEjj_jjjj-F2n0_Cgjj            LDIZ		#imm32u, Rn
-* FEjj_jjjj-F2n1_Cgjj            LDIN		#imm32n, Rn
-* FEzz_zzzz-FEyy_yyyy-F80n_xxxx  JLDI		#imm64, Rn
-* FEjj_jjjj-F2n3_Cgjj            LDIHI.L	#imm32u, Rn		//Rn=Imm32u<<16
-* FEjj_jjjj-F2n3_CGjj            LDIHI.Q	#imm32u, Rn		//Rn=Imm32u<<32
+* FEjj_jjjj-F2n0_Cgjj            LDIZ		Imm32u, Rn
+* FEjj_jjjj-F2n1_Cgjj            LDIN		Imm32n, Rn
+* FEzz_zzzz-FEyy_yyyy-F80n_xxxx  JLDI		Imm64, Rn
+* FEjj_jjjj-F2n3_Cgjj            LDIHI.L	Imm32u, Rn		//Rn=Imm32u<<16
+* FEjj_jjjj-F2n3_CGjj            LDIHI.Q	Imm32u, Rn		//Rn=Imm32u<<32
 
 The immediate fields for JLDI will be interpreted as a 64-bit value:
 * zzzz_zzyy_yyyy_xxxx

@@ -905,16 +905,16 @@ Instruction Space
 ** 23dd  BF		(PC, disp8s)		//Branch False
 ** 24jj  -
 ** 25jj  -
-** 26jj  LDISH	#imm8u, DLR			//DLR=(DLR SHL 8)|Imm8u
+** 26jj  LDISH	Imm8u, DLR			//DLR=(DLR SHL 8)|Imm8u
 ** 27nj  -
 ** 28nd  MOVU.L	(SP, disp4u), Rn	//Stack-Relative ZX Load
 ** 29nj  MOV.X	Rx, (SP, disp4u)	//(MOVX2) Stack-Relative Store Pair
 ** 2And  MOVU.L	(SP, disp4u), Rk	//Stack-Relative ZX Load
 ** 2Bnj  MOV.X	(SP, disp4u), Rx	//(MOVX2) Stack-Relative Load Pair
-** 2Cnj  CMPEQ	#imm4u, Rn			//Rn==Imm4, Zero Extend
-** 2Dnj  CMPEQ	#imm4n, Rn			//Rn==Imm4, One Extend
-** 2Enj  CMPGT	#imm4u, Rn			//Rn==Imm4, Zero Extend
-** 2Fnj  CMPGE	#imm4u, Rn			//Rn==Imm4, Zero Extend
+** 2Cnj  CMPEQ	Imm4u, Rn			//Rn==Imm4, Zero Extend
+** 2Dnj  CMPEQ	Imm4n, Rn			//Rn==Imm4, One Extend
+** 2Enj  CMPGT	Imm4u, Rn			//Rn==Imm4, Zero Extend
+** 2Fnj  CMPGE	Imm4u, Rn			//Rn==Imm4, Zero Extend
 
 * 3zzz
 ** 3000  NOP						//Do Nothing
@@ -1027,15 +1027,15 @@ Instruction Space
 ** 36n0  -
 ** 36n1  -
 ** 36n2  -
-** 36j3  TRAP		#imm4u			//Generate an Interrupt
+** 36j3  TRAP		Imm4u			//Generate an Interrupt
 ** 36n4  EXTU.L		Rn				//Zero Extend DWord to QWord
 ** 36n5  EXTS.L		Rn				//Sign Extend DWord to QWord
 ** 36n6  SHAD		DLR, Rn			//Barrel Shift, Arithmetic
 ** 36n7  SHLD		DLR, Rn			//Barrel Shift, Logical
 ** 36n8  TRAP		Rn				//Raise an Exception.
-** 36n9  WEXMD		#imm4			//Set WEX Profile
-** 36jA  CPUID		#imm4			//Load CPUID bits into DHR:DLR
-** 36nB  SRTTWID	#imm4			//Twiddle SR.T
+** 36n9  WEXMD		Imm4			//Set WEX Profile
+** 36jA  CPUID		Imm4			//Load CPUID bits into DHR:DLR
+** 36nB  SRTTWID	Imm4			//Twiddle SR.T
 ** 36nC  -
 ** 36nD  CMPHS		DLR, Rn			//Unsigned (Rn GE DLR)
 ** 36nE /? CMPGE	DLR, Rn			//Signed (Rn GE DLR)
@@ -1097,14 +1097,14 @@ Instruction Space
 ** 65nm  FCMPGT		Rm, Rn			//(GFP) FCMPGT
 ** 66nm  FSTCF		Rm, Rn			//(GFP) Double->Single
 ** 67nz  -
-** 68nj  ADD		#imm4u, Rk
-** 69nj  ADD		#imm4n, Rk
-** 6Anj  LDIZ		#imm4u, Rk
-** 6Bnj  LDIN		#imm4n, Rk
-** 6Cnj  CMPEQ		#imm4u, Rk		//Rn==Imm4, Zero Extend
-** 6Dnj  CMPEQ		#imm4n, Rk		//Rn==Imm4, One Extend
-** 6Enj  CMPGT		#imm4u, Rk		//Rn==Imm4, Zero Extend
-** 6Fnj  CMPGE		#imm4u, Rk		//Rn==Imm4, Zero Extend
+** 68nj  ADD		Imm4u, Rk
+** 69nj  ADD		Imm4n, Rk
+** 6Anj  LDIZ		Imm4u, Rk
+** 6Bnj  LDIN		Imm4n, Rk
+** 6Cnj  CMPEQ		Imm4u, Rk		//Rn==Imm4, Zero Extend
+** 6Dnj  CMPEQ		Imm4n, Rk		//Rn==Imm4, One Extend
+** 6Enj  CMPGT		Imm4u, Rk		//Rn==Imm4, Zero Extend
+** 6Fnj  CMPGE		Imm4u, Rk		//Rn==Imm4, Zero Extend
 
 * 7zzz  ( XGPR Escape )
 ** 7wnm-ZeoZ (F0 Block)
@@ -1130,10 +1130,10 @@ Instruction Space
 * 9zzz  ( XGPR Escape )
 ** 9wnm-Zeii (F1 and F2 Block)
 
-* Ajjj  LDIZ		#imm12u, DLR	//Load 12 bit value into DLR (Zero Extend)
-* Bjjj  LDIN		#imm12u, DLR	//Load 12 bit value into DLR (One Extend)
-* Cnii  ADD			#imm8s, Rn		//Rn=Rn+Imm8
-* Dnii  LDI			#imm8s, Rn		//Rn=Imm8
+* Ajjj  LDIZ		Imm12u, DLR	//Load 12 bit value into DLR (Zero Extend)
+* Bjjj  LDIN		Imm12u, DLR	//Load 12 bit value into DLR (One Extend)
+* Cnii  ADD			Imm8s, Rn		//Rn=Rn+Imm8
+* Dnii  LDI			Imm8s, Rn		//Rn=Imm8
 * Ezzz  (Escape32, Predicate Block)
 * Fzzz  (Escape32, Normal Block)
 
@@ -1186,14 +1186,14 @@ The encoding of predicated forms will be otherwise equivalent to their Fz counte
 
 F0zz Instruction Block:
 * F0zz_0zzz
-** F0nm_0gd0  MOV.B		Rn, (Rm, Disp5)		//(PrWEX + WEXMV)
-** F0nm_0Gd0  LEA.B		(Rm, Disp5), Rn		//(PrWEX + WEXMV)
-** F0nm_0gd1  MOV.W		Rn, (Rm, Disp5)		//(PrWEX + WEXMV)
-** F0nm_0Gd1  LEA.W		(Rm, Disp5), Rn		//(PrWEX + WEXMV)
-** F0nm_0gd2  MOV.L		Rn, (Rm, Disp5)		//(PrWEX + WEXMV)
-** F0nm_0Gd2  LEA.L		(Rm, Disp5), Rn		//(PrWEX + WEXMV)
-** F0nm_0gd3  MOV.Q		Rn, (Rm, Disp5)		//(PrWEX + WEXMV)
-** F0nm_0Gd3  LEA.Q		(Rm, Disp5), Rn		//(PrWEX + WEXMV)
+** F0nm_0gd0  MOV.B		Rn, (Rm, Disp5)		//(PrWEX + WEXMV | XGPR)
+** F0nm_0Gd0  LEA.B		(Rm, Disp5), Rn		//(PrWEX + WEXMV | XGPR)
+** F0nm_0gd1  MOV.W		Rn, (Rm, Disp5)		//(PrWEX + WEXMV | XGPR)
+** F0nm_0Gd1  LEA.W		(Rm, Disp5), Rn		//(PrWEX + WEXMV | XGPR)
+** F0nm_0gd2  MOV.L		Rn, (Rm, Disp5)		//(PrWEX + WEXMV | XGPR)
+** F0nm_0Gd2  LEA.L		(Rm, Disp5), Rn		//(PrWEX + WEXMV | XGPR)
+** F0nm_0gd3  MOV.Q		Rn, (Rm, Disp5)		//(PrWEX + WEXMV | XGPR)
+** F0nm_0Gd3  LEA.Q		(Rm, Disp5), Rn		//(PrWEX + WEXMV | XGPR)
 ** F0nm_0go4  MOV.B		Rn, (Rm, Ro)		//Q=0
 ** F0nm_0Go4  LEA.B		(Rm, Ro), Rn		//Q=1
 ** F0nm_0go5  MOV.W		Rn, (Rm, Ro)		//Q=0
@@ -1202,14 +1202,14 @@ F0zz Instruction Block:
 ** F0nm_0Go6  LEA.L		(Rm, Ro), Rn		//Q=1
 ** F0nm_0go7  MOV.Q		Rn, (Rm, Ro)		//Q=0
 ** F0nm_0Go7  LEA.Q		(Rm, Ro), Rn		//Q=1
-** F0nm_0gd8  MOV.B		(Rm, Disp5), Rn		//(PrWEX + WEXMV)
-** F0nm_0Gd8  MOVU.B	(Rm, Disp5), Rn		//(PrWEX + WEXMV)
-** F0nm_0gd9  MOV.W		(Rm, Disp5), Rn		//(PrWEX + WEXMV)
-** F0nm_0Gd9  MOVU.W	(Rm, Disp5), Rn		//(PrWEX + WEXMV)
-** F0nm_0gdA  MOV.L		(Rm, Disp5), Rn		//(PrWEX + WEXMV)
-** F0nm_0GdA  MOVU.L	(Rm, Disp5), Rn		//(PrWEX + WEXMV)
-** F0nm_0gdB  MOV.Q		(Rm, Disp5), Rn		//(PrWEX + WEXMV)
-** F0nm_0GdB  MOV?		(Rm, Disp5), Rn		//(PrWEX + WEXMV)
+** F0nm_0gd8  MOV.B		(Rm, Disp5), Rn		//(PrWEX + WEXMV | XGPR)
+** F0nm_0Gd8  MOVU.B	(Rm, Disp5), Rn		//(PrWEX + WEXMV | XGPR)
+** F0nm_0gd9  MOV.W		(Rm, Disp5), Rn		//(PrWEX + WEXMV | XGPR)
+** F0nm_0Gd9  MOVU.W	(Rm, Disp5), Rn		//(PrWEX + WEXMV | XGPR)
+** F0nm_0gdA  MOV.L		(Rm, Disp5), Rn		//(PrWEX + WEXMV | XGPR)
+** F0nm_0GdA  MOVU.L	(Rm, Disp5), Rn		//(PrWEX + WEXMV | XGPR)
+** F0nm_0gdB  MOV.Q		(Rm, Disp5), Rn		//(PrWEX + WEXMV | XGPR)
+** F0nm_0GdB  MOV?		(Rm, Disp5), Rn		//(PrWEX + WEXMV | XGPR)
 ** F0nm_0goC  MOV.B		(Rm, Ro), Rn		//Q=0
 ** F0nm_0GoC  MOVU.B	(Rm, Ro), Rn		//Q=1
 ** F0nm_0goD  MOV.W		(Rm, Ro), Rn		//Q=0
@@ -1492,9 +1492,9 @@ F0zz Instruction Block:
 *** F03A_3en0  SHAR		Rn
 
 *** F068_3en0  TRAP		Rn
-*** F069_3en0  WEXMD	#Imm5
-*** F06A_3en0  CPUID	#Imm5
-*** F06B_3en0 ? SRTTWID	#Imm5	//SR.T Twiddle
+*** F069_3en0  WEXMD	Imm5u
+*** F06A_3en0  CPUID	Imm5u
+*** F06B_3en0 ? SRTTWID	Imm5u	//SR.T Twiddle
 *** F06F_3en0  MOVT		Rn
 
 *** F082_3en0  /
@@ -1587,7 +1587,10 @@ F0zz Instruction Block:
 ** F0nm_6GoA ? BLINT	Xm, Xo, Xn			//(RGBX) Bilinear Interpolate
 
 ** F0nm_6eoB  -
-** F0nm_6eoC  -
+
+** F0nm_6goC ? BLKUAB1	Rm, Ro, Rn			//(UAB) Extract Sample
+** F0nm_6GoC ? BLKUAB2	Rm, Ro, Rn			//(UAB) Extract Sample
+
 ** F0nm_6eoD  -
 ** F0nm_6eoE  -
 ** F0nm_6eoF  -
@@ -1667,58 +1670,58 @@ F1zz Instruction Block:
 
 F2zz Instruction Block  (Imm9 Block):
 
-* F2nm_0gjj  ADD		Rm, #imm9u, Rn		//
-* F2nm_1gjj  ADD		Rm, #imm9n, Rn		//
-* F2nm_2gjj  MULS		Rm, #imm9u, Rn		//32*32=>32, Signed result
-* F2nm_2Gjj  MULU		Rm, #imm9u, Rn		//32*32=>32, Unsigned result
-* F2nm_3gjj  ADDS.L		Rm, #imm9u, Rn		//ADD 32 SX, Zero-Ext Imm
-* F2nm_3Gjj  ADDU.L		Rm, #imm9u, Rn		//ADD 32 ZX, Zero-Ext Imm
-* F2nm_4gjj  ADDS.L		Rm, #imm9n, Rn		//ADD 32 SX, One-Ext Imm
-* F2nm_4Gjj  ADDU.L		Rm, #imm9n, Rn		//ADD 32 ZX, One-Ext Imm
-* F2nm_5gjj  AND		Rm, #imm9u, Rn		//
-* F2nm_6gjj  OR			Rm, #imm9u, Rn		//
-* F2nm_7gjj  XOR		Rm, #imm9u, Rn		//
+* F2nm_0gjj  ADD		Rm, Imm9u, Rn		//
+* F2nm_1gjj  ADD		Rm, Imm9n, Rn		//
+* F2nm_2gjj  MULS		Rm, Imm9u, Rn		//32*32=>32, Signed result
+* F2nm_2Gjj  MULU		Rm, Imm9u, Rn		//32*32=>32, Unsigned result
+* F2nm_3gjj  ADDS.L		Rm, Imm9u, Rn		//ADD 32 SX, Zero-Ext Imm
+* F2nm_3Gjj  ADDU.L		Rm, Imm9u, Rn		//ADD 32 ZX, Zero-Ext Imm
+* F2nm_4gjj  ADDS.L		Rm, Imm9n, Rn		//ADD 32 SX, One-Ext Imm
+* F2nm_4Gjj  ADDU.L		Rm, Imm9n, Rn		//ADD 32 ZX, One-Ext Imm
+* F2nm_5gjj  AND		Rm, Imm9u, Rn		//
+* F2nm_6gjj  OR			Rm, Imm9u, Rn		//
+* F2nm_7gjj  XOR		Rm, Imm9u, Rn		//
 
-* F2nm_8pjj  SHAD		Rm, #imm8, Rn		//E.i=0
-* F2nm_8Pjj  SHAD.Q		Rm, #imm8, Rn		//E.i=0
-* F2nm_8qjj  PSHUF.B	Rm, #imm8, Rn		//(GSV) E.i=1
-* F2nm_8Qjj  PSHUF.W	Rm, #imm8, Rn		//(GSV) E.i=1
+* F2nm_8pjj  SHAD		Rm, Imm8, Rn		//E.i=0
+* F2nm_8Pjj  SHAD.Q		Rm, Imm8, Rn		//E.i=0
+* F2nm_8qjj  PSHUF.B	Rm, Imm8, Rn		//(GSV) E.i=1
+* F2nm_8Qjj  PSHUF.W	Rm, Imm8, Rn		//(GSV) E.i=1
 
-* F2nm_9pjj  SHLD		Rm, #imm8, Rn		//E.i=0
-* F2nm_9Pjj  SHLD.Q		Rm, #imm8, Rn		//E.i=0
-* F2nm_9qjj  PCONV		Rm, #imm8, Rn		//(GSVX) E.i=1, Packed Convert
-* F2nm_9Qjj  PCONVX		Rm, #imm8, Rn		//(GSVX) E.i=1, Packed Convert
+* F2nm_9pjj  SHLD		Rm, Imm8, Rn		//E.i=0
+* F2nm_9Pjj  SHLD.Q		Rm, Imm8, Rn		//E.i=0
+* F2nm_9qjj  PCONV		Rm, Imm8, Rn		//(GSVX) E.i=1, Packed Convert
+* F2nm_9Qjj  PCONVX		Rm, Imm8, Rn		//(GSVX) E.i=1, Packed Convert
 
 * F2nz_Aejj  -
 * F2nz_Bejj  -
 
 * F2nz_Cfjj
-** F2n0_Cfjj  LDIZ{D}	#imm10u, Rn				//(PrWEX) Alt
-** F2n1_Cfjj  LDIN{D}	#imm10n, Rn				//(PrWEX) Alt
-** F2n2_Cfjj  LDISH		#imm8u, Rn				//(PrWEX) Rn=(Rn<<8)|Imm8
-*** Jumbo: LDISH32	#imm32, Rn
+** F2n0_Cfjj  LDIZ{D}	Imm10u, Rn				//(PrWEX) Alt
+** F2n1_Cfjj  LDIN{D}	Imm10n, Rn				//(PrWEX) Alt
+** F2n2_Cfjj  LDISH		Imm8u, Rn				//(PrWEX) Rn=(Rn<<8)|Imm8
+*** Jumbo: LDISH32	Imm32, Rn
 *** Jumbo+(E.m==1): (E.q?BSR:BRA) Disp33s		//?
-** F2n3_Cfjj  LDIHI{Q}	#imm10u, Rn				//Load immed into High bits (31:22) or (63:54)
-** F2n4_Cfjj  TST{Q}	#imm10u, Rn				//SR.T=!(Imm AND Rn)
-** F2n5_Cfjj  TST{Q}	#imm10n, Rn				//SR.T=!(Imm AND Rn)
-** F2n6_Cfjj  CMP{Q}HS	#imm10u, Rn				//Unsigned Rn GE Imm
-** F2n7_Cfjj  CMP{Q}HS	#imm10n, Rn				//Unsigned Rn GE Imm
-** F2n8_Cfjj  CMP{Q}HI	#imm10u, Rn				//Unsigned Rn GT Imm
-** F2n9_Cfjj  CMP{Q}HI	#imm10n, Rn				//Unsigned Rn GT Imm
-** F2nA_Cfjj  CMP{Q}GE	#imm10u, Rn				//Signed Rn GE Imm
-** F2nB_Cfjj  CMP{Q}GE	#imm10n, Rn				//Signed Rn GE Imm
-** F2nC_Cfjj  CMP{Q}EQ	#imm10u, Rn				//Rn==Imm
-** F2nD_Cfjj  CMP{Q}EQ	#imm10n, Rn				//Rn==Imm
-** F2nE_Cfjj  CMP{Q}GT	#imm10u, Rn				//Signed Rn GT Imm
-** F2nF_Cfjj  CMP{Q}GT	#imm10n, Rn				//Signed Rn GT Imm
+** F2n3_Cfjj  LDIHI{Q}	Imm10u, Rn				//Load immed into High bits (31:22) or (63:54)
+** F2n4_Cfjj  TST{Q}	Imm10u, Rn				//SR.T=!(Imm AND Rn)
+** F2n5_Cfjj  TST{Q}	Imm10n, Rn				//SR.T=!(Imm AND Rn)
+** F2n6_Cfjj  CMP{Q}HS	Imm10u, Rn				//Unsigned Rn GE Imm
+** F2n7_Cfjj  CMP{Q}HS	Imm10n, Rn				//Unsigned Rn GE Imm
+** F2n8_Cfjj  CMP{Q}HI	Imm10u, Rn				//Unsigned Rn GT Imm
+** F2n9_Cfjj  CMP{Q}HI	Imm10n, Rn				//Unsigned Rn GT Imm
+** F2nA_Cfjj  CMP{Q}GE	Imm10u, Rn				//Signed Rn GE Imm
+** F2nB_Cfjj  CMP{Q}GE	Imm10n, Rn				//Signed Rn GE Imm
+** F2nC_Cfjj  CMP{Q}EQ	Imm10u, Rn				//Rn==Imm
+** F2nD_Cfjj  CMP{Q}EQ	Imm10n, Rn				//Rn==Imm
+** F2nE_Cfjj  CMP{Q}GT	Imm10u, Rn				//Signed Rn GT Imm
+** F2nF_Cfjj  CMP{Q}GT	Imm10n, Rn				//Signed Rn GT Imm
 
 * F2nz_Dfjj
-** F2n0_Dfjj  ADD{D}	#imm10u, Rn				//Rn=Rn+Imm10u
-** F2n1_Dfjj  ADD{D}	#imm10n, Rn				//Rn=Rn+Imm10n
-** F2n2_Dfjj  MUL{S/U}.W	#imm10u, Rn			//Rn=Rn*Imm10u
-** F2n3_Dfjj  MUL{S/U}.W	#imm10n, Rn			//Rn=Rn*Imm10n
-** F2n4_Dfjj ? LDIROZ{Q}	#imm10u, Rn			//Load + ROTL
-** F2n5_Dfjj ? LDIRON{Q}	#imm10n, Rn			//Load + ROTL
+** F2n0_Dfjj  ADD{D}	Imm10u, Rn				//Rn=Rn+Imm10u
+** F2n1_Dfjj  ADD{D}	Imm10n, Rn				//Rn=Rn+Imm10n
+** F2n2_Dfjj  MUL{S/U}.W	Imm10u, Rn			//Rn=Rn*Imm10u
+** F2n3_Dfjj  MUL{S/U}.W	Imm10n, Rn			//Rn=Rn*Imm10n
+** F2n4_Dfjj ? LDIROZ{Q}	Imm10u, Rn			//Load + ROTL
+** F2n5_Dfjj ? LDIRON{Q}	Imm10n, Rn			//Load + ROTL
 ** F2n6_Dfjj  -
 ** F2n7_Dfjj  -
 * F2nz_Efjj
@@ -1729,16 +1732,16 @@ F2zz Instruction Block  (Imm9 Block):
 
 F8zz Instruction Block:
 
-* F80n_iiii  LDIZ		#imm16u, Rn		//R0..R15, Zero Extend
-* F81n_iiii  LDIZ		#imm16u, Rk		//R16..R31, Zero Extend
-* F82n_iiii  LDIN		#imm16n, Rn		//R0..R15, One Extend
-* F83n_iiii  LDIN		#imm16n, Rk		//R16..R31, One Extend
-* F84n_iiii  ADD		#imm16s, Rn		//R0..R15
-* F85n_iiii  ADD		#imm16s, Rk		//R16..R31
-* F86n_iiii  LDISH16	#imm16u, Rn		//R0..R15
-* F87n_iiii  LDISH16	#imm16u, Rk		//R16..R31
-* F88n_iiii  FLDCH		#imm16u, Rn		//R0..R15, Load Half-Float
-* F89n_iiii  FLDCH		#imm16u, Rk		//R16..R31, Load Half-Float
+* F80n_iiii  LDIZ		Imm16u, Rn		//R0..R15, Zero Extend
+* F81n_iiii  LDIZ		Imm16u, Rk		//R16..R31, Zero Extend
+* F82n_iiii  LDIN		Imm16n, Rn		//R0..R15, One Extend
+* F83n_iiii  LDIN		Imm16n, Rk		//R16..R31, One Extend
+* F84n_iiii  ADD		Imm16s, Rn		//R0..R15
+* F85n_iiii  ADD		Imm16s, Rk		//R16..R31
+* F86n_iiii  LDISH16	Imm16u, Rn		//R0..R15
+* F87n_iiii  LDISH16	Imm16u, Rk		//R16..R31
+* F88n_iiii  FLDCH		Imm16u, Rn		//R0..R15, Load Half-Float
+* F89n_iiii  FLDCH		Imm16u, Rk		//R16..R31, Load Half-Float
 * F8An_iiii  -
 * F8Bn_iiii  -
 * F8Cn_iiii  -
@@ -1753,14 +1756,14 @@ The FCzz block will repeat the F8zz block, but with the primary difference that 
 
 FAzz/FBzz Instructions:
 
-* FAjj_jjjj	 LDIZ	#imm24u, DLR		//Zero Extend
-* FBjj_jjjj	 LDIN	#imm24n, DLR		//One Extend
+* FAjj_jjjj	 LDIZ	Imm24u, DLR		//Zero Extend
+* FBjj_jjjj	 LDIN	Imm24n, DLR		//One Extend
 
 Jumbo64 (Possible):
-* FEjj_jjjj_FAjj_jjjj	 LDIZ	#imm48u, DLR		//Zero Extend
-* FEjj_jjjj_FBjj_jjjj	 LDIN	#imm48n, DLR		//One Extend
-* FFjj_jjjj_FAjj_jjjj	 JMP	#abs48				//Abs48 Branch
-* FFjj_jjjj_FBjj_jjjj	 JSR	#abs48				//Abs48 Call
+* FEjj_jjjj_FAjj_jjjj	 LDIZ	Imm48u, DLR		//Zero Extend
+* FEjj_jjjj_FBjj_jjjj	 LDIN	Imm48n, DLR		//One Extend
+* FFjj_jjjj_FAjj_jjjj	 JMP	Abs48			//Abs48 Branch
+* FFjj_jjjj_FBjj_jjjj	 JSR	Abs48			//Abs48 Call
 
 
 ==== EAzz/EBzz/EEzz/EFzz PrWEX Instruction Blocks ====
@@ -1788,8 +1791,8 @@ The EDzz and EFzz block will repeat the EAzz and EBzz block, but differ in their
 === Jumbo Instructions ===
 
 Several Jumbo blocks will be defined:
-* FEjj_jjjj Jumbo Imm24
-* FFwZ_zzzz Jumbo Op64
+* FEjj_jjjj Jumbo_Imm24
+* FFwZ_zzzz Jumbo_Op64
 
 Jumbo Instructions will be larger instructions (64 or 96 bits), composed of multiple conjoined instruction words.
 Jumbo instructions will begin with FEzz_zzzz, which will serve as a "jumbo prefix".
@@ -1838,14 +1841,14 @@ Use of two Jumbo Imm24 prefixes followed by an F8-block instruction will encode 
 Note that in the Imm64 case, the zero vs one extended distinction no longer exists.
 
 The layout of the F8 block will thus be modified slighly with XGPR and two Imm24 prefixes (Jumbo96):
-* FE-FE F80n_iiii  LDI		#imm64, Rn		//R0..R15
-* FE-FE F81n_iiii  LDI		#imm64, Rk		//R16..R31
-* FE-FE F82n_iiii  LDI		#imm64, Rk		//R32..R47
-* FE-FE F83n_iiii  LDI		#imm64, Rk		//R48..R63
-* FE-FE F84n_iiii  ADD		#imm64, Rn		//R0..R15
-* FE-FE F85n_iiii  ADD		#imm64, Rk		//R16..R31
-* FE-FE F86n_iiii  ADD		#imm64, Rn		//R32..R47
-* FE-FE F87n_iiii  ADD		#imm64, Rk		//R48..R63
+* FE-FE F80n_iiii  LDI		Imm64, Rn		//R0..R15
+* FE-FE F81n_iiii  LDI		Imm64, Rk		//R16..R31
+* FE-FE F82n_iiii  LDI		Imm64, Rk		//R32..R47
+* FE-FE F83n_iiii  LDI		Imm64, Rk		//R48..R63
+* FE-FE F84n_iiii  ADD		Imm64, Rn		//R0..R15
+* FE-FE F85n_iiii  ADD		Imm64, Rk		//R16..R31
+* FE-FE F86n_iiii  ADD		Imm64, Rn		//R32..R47
+* FE-FE F87n_iiii  ADD		Imm64, Rk		//R48..R63
 
 
 ==== Jumbo Op64 ====
@@ -1855,8 +1858,9 @@ The layout of the F8 block will thus be modified slighly with XGPR and two Imm24
 * FFw0_0ddd_F0dd_Eddd  BT	(PC, Disp33s)
 * FFw0_0ddd_F0dd_Fddd  BF	(PC, Disp33s)
 
-* FFjj_jjjj_FAjj_jjjj  JMP	#abs48				//Abs48 Branch
-* FFjj_jjjj_FBjj_jjjj  JSR	#abs48				//Abs48 Call
+
+* FFjj_jjjj_FAjj_jjjj  JMP	Abs48				//Abs48 Branch
+* FFjj_jjjj_FBjj_jjjj  JSR	Abs48				//Abs48 Call
 
 Alternative 2 (Hx, W0):
 * FFw0_00zz_F0nm_ZeoZ  "OP Rm, Ro, Rn"
@@ -1868,6 +1872,9 @@ Alternative 2 (Hx, W0):
 * FFw0_00ii_E2nm_Zeii  "OP Rm, Imm17, Rn" 
 
 * FFw0_iiii_F8Zn_iiii  "OP Imm33s, Rn"
+
+* FFw0_iiii_F88n_iiii  FLDCF	Imm32u, Rn		//(Op64)
+* FFw0_iiii_F89n_iiii  FLDCF	Imm32u, Rk		//(Op64)
 
 ** These extend the existing encoding space
 ** Relying on the base-op for predication and/or WEX.
@@ -2051,6 +2058,8 @@ With 'W.w' as the WEX bit.
 ** W.i=0: Map to F2
 ** W.i=1: Map to F1
 
+For Disp5u encodings in the F0nm_ZeoZ block, the Disp5u is expanded to Disp6s.
+
 
 === Wide Execution 2 (Optional) ===
 
@@ -2105,7 +2114,7 @@ Thoughts:
 * Currently, only 32-bit instruction forms are allowed in WEX constructs.
 
 
-The "WEXMD #imm4" instruction will indicate the WEX2 Profile. It will update the SR bits as appropriate for the given profile.
+The "WEXMD Imm4" instruction will indicate the WEX2 Profile. It will update the SR bits as appropriate for the given profile.
 * This instruction will either enable or disable WEX based on the result.
 * If WEX is not supported on the core, it will be treated as a NOP.
 * No WEX forms will be allowed within the following 3 instructions.
