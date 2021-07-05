@@ -918,6 +918,17 @@ int BGBCP_StrlenUCS2(u16 *str)
 	return(n);
 }
 
+int BGBCP_StrlenUCS4(u32 *str)
+{
+	u32 *s;
+	int n;
+
+	s=str; n=0;
+	while(*s)
+		{ s++; n++; }
+	return(n);
+}
+
 int BGBCP_StrcmpUCS2(u16 *stra, u16 *strb)
 {
 	u16 *sa, *sb;
@@ -938,6 +949,26 @@ int BGBCP_StrcmpUCS4(u32 *stra, u32 *strb)
 	while(*sa && (*sa==*sb))
 		{ sa++; sb++; }
 	return(*sa-*sb);
+}
+
+int BGBCP_MemcmpUCS2(u16 *stra, u16 *strb, int len)
+{
+	int i, n;
+
+	for(i=0; i<len; i++)
+		if(stra[i]!=strb[i])
+			return(stra[i]-strb[i]);
+	return(0);
+}
+
+int BGBCP_MemcmpUCS4(u32 *stra, u32 *strb, int len)
+{
+	int i, n;
+
+	for(i=0; i<len; i++)
+		if(stra[i]!=strb[i])
+			return(stra[i]-strb[i]);
+	return(0);
 }
 
 int BGBCP_ParseChar(char **str)

@@ -116,7 +116,8 @@ Strings will generally be encoded without a null-terminator, with the exception 
 
 LZ strings will have the initial size encode the compressed size (relative to 64), with a second SVLI size giving the raw uncompressed size.
 
-Strings:
+
+String Character Encodings:
 * Strings are encoded using M-UTF-8.
 ** The NUL byte (0x00) will be encoded as C0-80.
 * ASCII string literals will encode values between 0x00 and 0xFF.
@@ -126,6 +127,14 @@ Strings:
 * Strings which natively represent a UTF format will use M-UTF-8 directly.
 * UTF-16 strings will encode non-BMP characters as surrogate pairs.
 * UTF-8 and UTF-32 strings will encode codepoints directly.
+
+ASCII String Codepoint Ranges:
+* 0000..00FF: Literal Byte
+* 0100..06FF: Pass Through UTF-8
+* 0700..077F: Byte 00..7F followed by 00
+* 0780..07FF: Remap UTF-8, 0080..00FF.
+* 0800..7FFF: Pass Through UTF-8
+* 8000..FFFF: Two Byte Pairs
 
 
 DataBlob:
