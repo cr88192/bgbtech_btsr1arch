@@ -2684,7 +2684,12 @@ int BGBCC_JX2_EmitGetStrtabLabelUCS2(BGBCC_JX2_Context *ctx, u16 *str, int len)
 #endif
 
 #if 1
-	if(l<2048)
+	if(l<64)
+	{
+		BGBCC_JX2_EmitByteI(ctx, 'w');
+		BGBCC_JX2_EmitByteI(ctx, 0x80|((l>> 0)&63));
+	}else
+		if(l<2048)
 	{
 		BGBCC_JX2_EmitByteI(ctx, 'w');
 		BGBCC_JX2_EmitByteI(ctx, 0x80|((l>> 0)&63));
@@ -2699,7 +2704,8 @@ int BGBCC_JX2_EmitGetStrtabLabelUCS2(BGBCC_JX2_Context *ctx, u16 *str, int len)
 #endif
 
 	BGBCC_JX2_EmitLabel(ctx, k);
-	BGBCC_JX2_EmitStringUCS2(ctx, str);
+//	BGBCC_JX2_EmitStringUCS2(ctx, str);
+	BGBCC_JX2_EmitStringUCS2L(ctx, str, l);
 //	BGBCC_JX2DA_EmitStringUCS2(ctx, str);
 	ctx->sec=sn0;
 	return(k);
@@ -2795,7 +2801,7 @@ int BGBCC_JX2_EmitGetStrtabLabelUCS4(BGBCC_JX2_Context *ctx, u32 *str, int len)
 //			if(j&1)continue;
 			if(j&3)continue;
 			s0=(u32 *)(ctx->sec_buf[BGBCC_SH_CSEG_STRTAB]+j);
-			if(!BGBCP_StrcmpUCS4(s0, str, len))
+			if(!BGBCP_MemcmpUCS4(s0, str, len+1))
 			{
 				return(ctx->lbl_id[i]);
 			}
@@ -2818,7 +2824,12 @@ int BGBCC_JX2_EmitGetStrtabLabelUCS4(BGBCC_JX2_Context *ctx, u32 *str, int len)
 #endif
 
 #if 1
-	if(l<2048)
+	if(l<64)
+	{
+		BGBCC_JX2_EmitByteI(ctx, 'j');
+		BGBCC_JX2_EmitByteI(ctx, 0x80|((l>> 0)&63));
+	}else
+		if(l<2048)
 	{
 		BGBCC_JX2_EmitByteI(ctx, 'j');
 		BGBCC_JX2_EmitByteI(ctx, 0x80|((l>> 0)&63));
