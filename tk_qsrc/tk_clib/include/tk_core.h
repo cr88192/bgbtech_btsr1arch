@@ -460,6 +460,10 @@ short xstr;			//X stride (pixels)
 short ystr;			//Y stride (pixels)
 };
 
+typedef struct TK_BIGINT_s TK_BIGINT;
+struct TK_BIGINT_s {
+u64 val[6];
+};
 
 #ifndef TK_APIEXPORT
 #ifdef __BGBCC__

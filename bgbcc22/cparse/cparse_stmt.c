@@ -208,6 +208,12 @@ char *BGBCP_EatSemicolonRequired(BGBCP_ParseState *ctx, char *s)
 		s++;
 	}else
 	{
+		if(	(ctx->lang==BGBCC_LANG_BS)	||
+			(ctx->lang==BGBCC_LANG_BS2)	)
+		{
+			return(s);
+		}
+
 		BGBCP_ErrorCtx(ctx, s, "Missing expected ';'\n");
 	}
 	s=BGBCP_EatWhite(s);

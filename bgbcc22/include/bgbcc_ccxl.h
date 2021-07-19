@@ -63,12 +63,18 @@
 #define CCXL_TY_GIMAG			0x35		//128-bit float128 imaginary
 #define CCXL_TY_GCOMPLEX		0x36		//256-bit float128 complex
 
+#define CCXL_TY_FATVARIANT		0x37		//Fat Variant
+
 #define CCXL_TY_VEC3FQ			0x38		//64-bit 3x float21
 #define CCXL_TY_VEC3FX			0x39		//128-bit 3x float42
 
 #define CCXL_TY_VARCLASS		0x3C		//
 #define CCXL_TY_VARSYMBOL		0x3D		//
 #define CCXL_TY_VARARR			0x3E		//
+
+#define CCXL_TY_BIGINT			0x40		//large boxed integer
+#define CCXL_TY_FIXNUM			0x41		//large boxed integer
+#define CCXL_TY_FLONUM			0x42		//large boxed integer
 
 
 #define CCXL_VTY_PCHAR			0x00001008	//'char *'
@@ -177,6 +183,7 @@ Base, Q1..Q3:
 
 #define CCXL_REGTY_THISIDX			0x1000000000000000ULL	//path within 'this'
 // #define CCXL_REGTY_IMM_VEC_LVT		0x1100000000000000ULL	//pair of indices
+#define CCXL_REGTY_IMM_FIELDNAME	0x1200000000000000ULL
 
 #define CCXL_REGTY2_TYMASK			0xE000000000000000ULL
 #define CCXL_REGTY2_IMM_LONG		0x2000000000000000ULL	//long(61b)
@@ -383,6 +390,7 @@ Base, Q1..Q3:
 #define CCXL_BINOP_MULH			0x0B
 #define CCXL_BINOP_UMULH		0x0C
 #define CCXL_BINOP_UDIV			0x0D
+#define CCXL_BINOP_CONS			0x0E	//Variant: (cons rn ln)
 
 #define CCXL_UNOP_MOV			0x00
 #define CCXL_UNOP_NEG			0x01
@@ -401,6 +409,8 @@ Base, Q1..Q3:
 #define CCXL_CMP_NV				0x07
 #define CCXL_CMP_TST			0x08		//if(x&y)
 #define CCXL_CMP_NTST			0x09		//if(!(x&y))
+#define CCXL_CMP_EQQ			0x0A
+#define CCXL_CMP_NEQQ			0x0B
 
 #define CCXL_VOP_NONE				0x00
 // #define CCXL_VOP_DBGFN				0x01
@@ -732,8 +742,11 @@ bccx_cxstate bgbcc_rcst_index;
 bccx_cxstate bgbcc_rcst_init;
 bccx_cxstate bgbcc_rcst_int;
 bccx_cxstate bgbcc_rcst_int128;
+bccx_cxstate bgbcc_rcst_instanceof;
 bccx_cxstate bgbcc_rcst_interface;
 bccx_cxstate bgbcc_rcst_iproto;
+
+bccx_cxstate bgbcc_rcst_jnew;
 
 bccx_cxstate bgbcc_rcst_keyword;
 

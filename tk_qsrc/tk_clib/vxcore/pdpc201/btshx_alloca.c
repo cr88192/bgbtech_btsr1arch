@@ -11,6 +11,7 @@ void *__alloca_begin()
 
 void __alloca_end(void *mark)
 {
+	int (*Free)(void *ptr);
 	void **rpm;
 	void *p, *p1;
 
@@ -18,8 +19,11 @@ void __alloca_end(void *mark)
 	p=*rpm;
 	while(p && (p!=mark))
 	{
-		p1=*(void **)p;
-		tk_free(p);
+//		p1=*(void **)p;
+		p1=((void **)p)[0];
+		Free=((void **)p)[1];
+//		tk_free(p);
+		Free(p);
 		p=p1;
 	}
 	*rpm=p;
@@ -32,10 +36,12 @@ void *__alloca(int size)
 
 	rpm=TK_GetAllocaMark();
 	
-	ptr=tk_malloc(size+sizeof(void *));
-	ptr1=(void *)(((void **)ptr)+1);
+	ptr=tk_malloc(size+2*sizeof(void *));
+	ptr1=(void *)(((void **)ptr)+2);
 	
-	*(void **)ptr=*rpm;
+//	*(void **)ptr=*rpm;
+	((void **)ptr)[0]=*rpm;
+	((void **)ptr)[1]=tk_free;
 	*rpm=ptr;
 	return(ptr1);
 }
@@ -47,16 +53,19 @@ void *__alloca_noframe(int size)
 
 	rpm=TK_GetAllocaMark();
 	
-	ptr=tk_malloc(size+sizeof(void *));
+	ptr=tk_malloc(size+2*sizeof(void *));
 	if(!ptr)
 	{
 		tk_printf("alloca failed alloc %d\n", size);
 		return(NULL);
 	}
 	
-	ptr1=(void *)(((void **)ptr)+1);
+	ptr1=(void *)(((void **)ptr)+2);
 	
-	*(void **)ptr=*rpm;
+//	*(void **)ptr=*rpm;
+	((void **)ptr)[0]=*rpm;
+	((void **)ptr)[1]=tk_free;
+
 	*rpm=ptr;
 	return(ptr1);
 }
@@ -79,11 +88,11 @@ void *__alloca_initvla1(char *sig, int n1)
 		tk_printf("alloca_initvla1: fail n=%d sz0=%d sig=%s\n", n1, sz0, sig);
 		return(NULL);
 	}
-	arr->p.vt=tkmm_lva_clsvt;
-	arr->p.dptr=arr->p.data;
-	arr->p.size=n1;
-	arr->p.tty=tty;
-	arr->p.pad=0;
+	arr->vt=tkmm_lva_clsvt;
+	arr->data=arr->t_data;
+	arr->size=n1;
+	arr->tty=tty;
+	arr->base=0;
 	return(arr);
 }
 
@@ -105,13 +114,13 @@ void *__alloca_initvla2(char *sig, int n1, int n2)
 	arr=__alloca_noframe(sizeof(LVA_TagArray)+sz);
 	if(!arr)
 		return(NULL);
-	arr->p.vt=tkmm_lva_clsvt;
-	buf=arr->p.data;
+	arr->vt=tkmm_lva_clsvt;
+	buf=arr->t_data;
 	a0=buf+(sz0*n1*n2);
-	arr->p.dptr=a0;
-	arr->p.size=n1*n2;
-	arr->p.tty=tty;
-	arr->p.pad=0;
+	arr->data=a0;
+	arr->size=n1*n2;
+	arr->tty=tty;
+	arr->base=0;
 	
 	pos=0; stp=n2*sz0;
 	for(i=0; i<n1; i++)

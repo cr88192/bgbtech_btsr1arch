@@ -822,6 +822,9 @@
 #define BGBCC_SH_NMID_PSCHNEW		0x0196	//
 #define BGBCC_SH_NMID_PSCHNEB		0x0197	//
 
+#define BGBCC_SH_NMID_CONVFXI		0x0198	//
+#define BGBCC_SH_NMID_CONVFLI		0x0199	//
+
 
 #define BGBCC_SH_FMID_REGREG		0x01	//Rm, Rn
 #define BGBCC_SH_FMID_REGRM			0x02	//Rm
@@ -996,6 +999,8 @@
 
 #define BGBCC_SH_RLC_RELB13_OP24	0x31	//Relative 13 bit (BYTE, BJX2)
 #define BGBCC_SH_RLC_ABS48_BJX		0x32	//Abs48, BYTE, FEjj_jjjj_FAjj_jjjj
+
+#define BGBCC_SH_RLC_RVA24			0x33	//RVA (24-bit)
 
 
 // #define BGBCC_SH_RLC_ABSW48A_BSR	0x20	//Absolute BYTE

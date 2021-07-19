@@ -787,6 +787,7 @@ void sanity_glColor4f(float red, float green, float blue, float alpha)
 //	tkra_glColor4ubI(red*255.0, green*255.0, blue*255.0, alpha*255.0);
 }
 
+#include "tk_shell_chksvar.c"
 
 int tk_shell_chksane()
 {
@@ -979,4 +980,6 @@ int tk_shell_chksane()
 	{
 		__debugbreak();
 	}
+	
+	tk_shell_chksane_var();
 }

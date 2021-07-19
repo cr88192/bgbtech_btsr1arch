@@ -1209,6 +1209,12 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 	cs=*rcs;
 //	op=*cs++;
 	op=BGBCC_CCXLR3_ReadOpVLI(ctx, &cs);
+	if(!op)
+	{
+		*rcs=NULL;
+		return;
+	}
+	
 	switch(op)
 	{
 	case BGBCC_RIL3OP_END:
@@ -1249,6 +1255,12 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		i0=BGBCC_CCXLR3_ReadTag(ctx, &cs);
 		s1=BGBCC_CCXLR3_ReadString(ctx, &cs);
 		BGBCC_CCXL_AttribStr(ctx, i0, s1);
+		break;
+
+	case BGBCC_RIL3OP_LITSETFID:
+		i0=BGBCC_CCXLR3_ReadTag(ctx, &cs);
+		s1=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		BGBCC_CCXL_LiteralSetField(ctx, i0, s1);
 		break;
 
 	case BGBCC_RIL3OP_LITINT:
@@ -1410,6 +1422,12 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		case CCXL_BINOP_SHL: s0="<<"; break;
 		case CCXL_BINOP_SHR: s0=">>"; break;
 		case CCXL_BINOP_SHRR: s0=">>>"; break;
+
+		case CCXL_BINOP_MULH: s0="*^"; break;
+		case CCXL_BINOP_UMULH: s0="*^^"; break;
+		case CCXL_BINOP_UDIV: s0="/^"; break;
+		case CCXL_BINOP_CONS: s0="CONS"; break;
+
 		default: s0=NULL; BGBCC_DBGBREAK; break;
 		}
 		BGBCC_CCXL_StackBinaryOp(ctx, s0);
@@ -1463,6 +1481,11 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		case CCXL_BINOP_SHL: s0="<<"; break;
 		case CCXL_BINOP_SHR: s0=">>"; break;
 		case CCXL_BINOP_SHRR: s0=">>>"; break;
+
+		case CCXL_BINOP_MULH: s0="*^"; break;
+		case CCXL_BINOP_UMULH: s0="*^^"; break;
+		case CCXL_BINOP_UDIV: s0="/^"; break;
+		case CCXL_BINOP_CONS: s0="CONS"; break;
 		default: s0=NULL; BGBCC_DBGBREAK; break;
 		}
 		BGBCC_CCXL_StackBinaryOpStore(ctx, s0, s1);
@@ -1842,6 +1865,12 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		BGBCC_CCXL_InlineAsmBlob(ctx, s0);
 		break;
 
+	case BGBCC_RIL3OP_LDAVSIG:
+		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s1=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		BGBCC_CCXL_StackLoadAddrVSig(ctx, s0, s1);
+		break;
+
 	default:
 		__debugbreak();
 		break;
@@ -1873,8 +1902,12 @@ void BGBCC_CCXLR3_LoadBufferRIL(
 	BGBCC_CCXL_LiteralInfo *obj;
 	BGBCC_CCXL_RegisterInfo *gbl;
 	byte *cs;
+	byte *rscs, *rscse;
+	byte *rtcs, *rtcse;
+	byte *rdcs, *rdcse;
 	byte *cse;
-	int i;
+	int onl, rtsize, rdsize, sz;
+	int i, j, k;
 
 	if(!buf)
 		return;
@@ -1885,30 +1918,124 @@ void BGBCC_CCXLR3_LoadBufferRIL(
 		return;
 	}
 
-	ctx->ril3_norec=1;
-	
-	BGBCC_CCXLR3_CheckLzWindow(ctx);
-	
-	cs=buf; cse=buf+bufsz;
-	cs+=8;
-	while(cs<cse)
-		{ BGBCC_CCXLR3_DecodeBufCmd(ctx, &cs); }
-
-	ctx->ril3_norec=0;
-
-	for(i=0; i<ctx->n_literals; i++)
+	if(!memcmp(buf, "RIL3", 4))
 	{
-		obj=ctx->literals[i];
-		if(!obj)
-			continue;
-		if(obj->littype!=CCXL_LITID_MANIFOBJ)
-			continue;
-		if(obj->decl->regflags&BGBCC_REGFL_DEMANDLOAD)
+		ctx->ril3_norec=1;
+		onl=ctx->n_literals;
+		
+		BGBCC_CCXLR3_CheckLzWindow(ctx);
+		
+		cs=buf; cse=buf+bufsz;
+		cs+=8;
+		while(cs && cs<cse)
+			{ BGBCC_CCXLR3_DecodeBufCmd(ctx, &cs); }
+
+		ctx->ril3_norec=0;
+
+	//	for(i=0; i<ctx->n_literals; i++)
+		for(i=onl; i<ctx->n_literals; i++)
 		{
-			obj->decl->regflags&=~BGBCC_REGFL_DEMANDLOAD;
-			obj->decl->regflags|=BGBCC_REGFL_LOADED;
-			BGBCC_CCXLR3_LoadBufferRIL(ctx,
-				obj->decl->text, obj->decl->sz_text);
+			obj=ctx->literals[i];
+			if(!obj)
+				continue;
+			if(obj->littype!=CCXL_LITID_MANIFOBJ)
+				continue;
+			if(obj->decl->regflags&BGBCC_REGFL_DEMANDLOAD)
+			{
+				obj->decl->regflags&=~BGBCC_REGFL_DEMANDLOAD;
+				obj->decl->regflags|=BGBCC_REGFL_LOADED;
+				BGBCC_CCXLR3_LoadBufferRIL(ctx,
+					obj->decl->text, obj->decl->sz_text);
+			}
 		}
+	}
+
+	if(	!memcmp(buf+0, "RIFF", 4) &&
+		!memcmp(buf+8, "RIL3", 4))
+	{
+		ctx->ril3_norec=1;
+		onl=ctx->n_literals;
+		
+		BGBCC_CCXLR3_CheckLzWindow(ctx);
+		
+		rtsize=*(u32 *)(buf+4);
+		rtcs=buf+12;
+		rtcse=buf+8+((rtsize+1)&(~1));
+		
+		rdcs=NULL;
+		rscs=NULL;
+		while(rtcs<rtcse)
+		{
+			if(!memcmp(rtcs+0, "strs", 4))
+			{
+				j=*(u32 *)(rtcs+4);
+				rscs=rtcs+12;
+				rscse=rtcs+8+((j+1)&(~1));
+				break;
+			}
+
+			if(	!memcmp(rtcs+0, "LIST", 4) &&
+				!memcmp(rtcs+8, "r3bc", 4))
+			{
+				rdsize=*(u32 *)(rtcs+4);
+				rdcs=rtcs+12;
+				rdcse=rtcs+8+((rdsize+1)&(~1));
+				break;
+			}
+			
+			j=*(u32 *)(rtcs+4);
+			j=(j+1)&(~1);
+			rtcs+=j;
+		}
+		
+		if(!rdcs)
+			return;
+
+		while(rdcs<rdcse)
+		{
+			if(!memcmp(rdcs+0, "blob", 4))
+			{
+				sz=*(u32 *)(rdcs+4);
+				cs=rdcs+8;
+				cse=rdcs+8+((sz+1)&(~1));
+
+				if(rscs)
+				{
+					j=rscse-rscs;
+					if(j>16380)
+						j=16380;
+					memcpy(ctx->ril_txwin, rscs, j);
+					ctx->ril_txrov=j;
+				}
+
+				while(cs && cs<cse)
+					{ BGBCC_CCXLR3_DecodeBufCmd(ctx, &cs); }
+			}
+			
+			j=*(u32 *)(rdcs+4);
+			j=(j+1)&(~1);
+			rdcs+=j;
+		}
+
+		ctx->ril3_norec=0;
+
+	//	for(i=0; i<ctx->n_literals; i++)
+		for(i=onl; i<ctx->n_literals; i++)
+		{
+			obj=ctx->literals[i];
+			if(!obj)
+				continue;
+			if(obj->littype!=CCXL_LITID_MANIFOBJ)
+				continue;
+			if(obj->decl->regflags&BGBCC_REGFL_DEMANDLOAD)
+			{
+				obj->decl->regflags&=~BGBCC_REGFL_DEMANDLOAD;
+				obj->decl->regflags|=BGBCC_REGFL_LOADED;
+				BGBCC_CCXLR3_LoadBufferRIL(ctx,
+					obj->decl->text, obj->decl->sz_text);
+			}
+		}
+		
+		return;
 	}
 }

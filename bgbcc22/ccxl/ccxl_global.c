@@ -3577,6 +3577,30 @@ void BGBCC_CCXL_ListAddLiteral(BGBCC_TransState *ctx,
 //	BGBCC_CCXL_StubError(ctx);
 }
 
+void BGBCC_CCXL_LiteralSetField(BGBCC_TransState *ctx,
+	int attr, char *name)
+{
+	BGBCC_CCXL_LiteralInfo *obj;
+	ccxl_register reg;
+	int i, j, k;
+
+	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_LITSETFID);
+	BGBCC_CCXLR3_EmitArgTag(ctx, attr);
+	BGBCC_CCXLR3_EmitArgString(ctx, name);
+
+	obj=ctx->cur_obj;
+	switch(obj->littype)
+	{
+	case CCXL_LITID_LIST:
+		BGBCC_CCXL_GetRegForFieldIdValue(ctx, &reg, name);
+		BGBCC_CCXL_ListAddLiteral(ctx, ctx->cur_obj, reg);
+		break;
+	default:
+		BGBCC_CCXL_StubError(ctx);
+		break;
+	}
+}
+
 void BGBCC_CCXL_LiteralInt(BGBCC_TransState *ctx, int attr, s32 val)
 {
 	BGBCC_CCXL_LiteralInfo *obj;
@@ -3880,6 +3904,28 @@ int BGBCC_CCXL_HandleMissingProto(BGBCC_TransState *ctx, char *name)
 	BGBCC_CCXL_Begin(ctx, CCXL_CMD_ARGS);
 	BGBCC_CCXL_Marker(ctx, CCXL_CMD_VARARGS);
 	BGBCC_CCXL_End(ctx);
+
+	BGBCC_CCXL_End(ctx);
+	
+	i=BGBCC_CCXL_LookupGlobalIndex(ctx, name);
+	return(i);
+}
+
+int BGBCC_CCXL_HandleMissingVSig(BGBCC_TransState *ctx,
+	char *name, char *sig)
+{
+	int i;
+
+	BGBCC_CCXL_BeginName(ctx, CCXL_CMD_GLOBALVARDECL, name);
+//	BGBCC_CCXL_BeginName(ctx, CCXL_CMD_STATICVARDECL, name);
+
+	BGBCC_CCXL_AttribStr(ctx, CCXL_ATTR_NAME, name);
+	BGBCC_CCXL_AttribStr(ctx, CCXL_ATTR_SIG, sig);
+//	BGBCC_CCXL_AttribStr(ctx, CCXL_ATTR_FLAGS, s2);
+
+//	BGBCC_CCXL_Begin(ctx, CCXL_CMD_ARGS);
+//	BGBCC_CCXL_Marker(ctx, CCXL_CMD_VARARGS);
+//	BGBCC_CCXL_End(ctx);
 
 	BGBCC_CCXL_End(ctx);
 	

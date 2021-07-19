@@ -41,39 +41,49 @@ int  gbr_sz;
 };
 
 struct TKPE_TaskInfo_s {
-tk_kptr		resv0_0;		//reserved pointer
-tk_kptr		resv0_1;		//reserved pointer
-// int (*SysCall)(void *sObj, int uMsg, void *vParm1, void *vParm2);
-tk_kptr		SysCall;
-tk_kptr		resv1;		//reserved function pointer
-tk_kptr		resv2;		//reserved function pointer
-tk_kptr		resv3;		//reserved function pointer
-tk_kptr		resv4;		//reserved function pointer
-tk_kptr		resv5;		//reserved function pointer
-tk_kptr		resv6;		//reserved function pointer
-tk_kptr		allocaptr;	//pointer to alloca mark
-tk_kptr		tlsptr;		//pointer to TLS data area
+tk_kptr		resv0_0;	//00, reserved pointer
+tk_kptr		resv0_1;	//08, reserved pointer
+tk_kptr		SysCall;	//10, System Call (Entry Point)
+tk_kptr		resv1;		//18, reserved function pointer
+tk_kptr		resv2;		//20, reserved function pointer
+tk_kptr		resv3;		//28, reserved function pointer
+tk_kptr		eh_obj;		//30, Exception Object
+tk_kptr		eh_vars;	//38, Exception Unwind Vars (Array Pointer)
+tk_kptr		eh_oldlr;	//40, Saved LR (Exception Unwind)
+tk_kptr		allocaptr;	//48, pointer to alloca mark
+tk_kptr		tlsptr;		//50, pointer to TLS data area
 
-int			pid;
-// int			pad1;
-short		uid;
-short		gid;
+int			pid;		//58
+short		uid;		//5C
+short		gid;		//5E
 
-tk_kptr		baseptr;		//base pointer for main binary
-tk_kptr		bootptr;		//entry point for main binary
-tk_kptr		basegbr;		//GBR for main binary, set on program startup.
-tk_kptr		boottbr;		//main process TBR (threads), self-pointer for main thread.
+tk_kptr		baseptr;		//60, base pointer for main binary
+tk_kptr		bootptr;		//68, entry point for main binary
+tk_kptr		basegbr;		//70, GBR for main binary, set on program startup.
+tk_kptr		boottbr;		//78, main process TBR (threads) | self-pointer.
 
-tk_kptr		boot_sps;		//Stack Start
-tk_kptr		boot_spe;		//Stack End
-// char **argv;
-tk_kptr		argv;
-// char **env;
+tk_kptr		boot_sps;		//80, Stack Start
+tk_kptr		boot_spe;		//88, Stack End
+tk_kptr		argv;			//90, argument string
+tk_kptr		envctx;			//98, Environment Context
 
-// TK_EnvContext *envctx;
-tk_kptr		envctx;
+tk_kptr		resv4;			//A0, reserved pointer
+tk_kptr		resv5;			//A8, reserved pointer
+tk_kptr		resv6;			//B0, reserved pointer
+tk_kptr		resv7;			//B8, reserved pointer
+tk_kptr		resv8;			//C0, reserved pointer
+tk_kptr		resv9;			//C8, reserved pointer
+tk_kptr		resv10;			//D0, reserved pointer
+tk_kptr		resv11;			//D8, reserved pointer
+tk_kptr		resv12;			//E0, reserved pointer
+tk_kptr		resv13;			//E8, reserved pointer
+tk_kptr		resv14;			//F0, reserved pointer
+tk_kptr		resv15;			//F8, reserved pointer
 
-u64			ctx_regsave[64];	//saved registers (context switch)
+//End of fixed area.
+
+// u64			ctx_regsave[64];	//saved registers (context switch)
+u64			ctx_regsave[128];	//saved registers (context switch)
 
 u64			tlsdat[2048];	//data for TLS
 

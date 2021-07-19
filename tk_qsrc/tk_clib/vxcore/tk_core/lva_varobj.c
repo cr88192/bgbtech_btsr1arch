@@ -410,7 +410,7 @@ void TKMM_LVA_TrySetSigPtrVar(void *ptr, char *sig, u64 val)
 		}
 		break;
 	}
-	return(0);
+//	return(0);
 }
 
 u64 TKMM_LVA_TryObjGetFieldVar(LVA_ObjectBasic *obj, char *name)
@@ -442,6 +442,96 @@ int TKMM_LVA_TryObjSetFieldVar(LVA_ObjectBasic *obj, char *name, u64 val)
 	return(1);
 }
 
+#ifdef __BJX2__
+u64 TKMM_LVA_VarObjFetchKeyA(LVA_VarObject *obj, int key);
+u64 TKMM_LVA_VarObjSetKeyA(LVA_VarObject *obj, int key, u64 val);
+
+__asm {
+TKMM_LVA_VarObjFetchKeyA:
+	MOVU.W		(R4, 16), R3
+	MOV.Q		(R4, 0), R6
+	MOV.Q		(R4, 8), R7	
+	CMPGT		16, R3
+	BT			TKMM_LVA_VarObjFetchKey
+	
+	MOV.X		(R6), R16
+	PSHUF.W		R5, 0x00, R5
+
+//	MOV.Q		(R6, 0), R16
+//	MOV.Q		(R6, 8), R17
+	PSCHEQ.W	R16, R5, R3
+	BT			.Found
+	PSCHEQ.W	R17, R5, R3
+	BT			.Found1
+	
+	ADD			16, R6
+	ADD			64, R7
+
+	MOV.X		(R6), R16
+//	MOV.Q		(R6, 0), R16
+//	MOV.Q		(R6, 8), R17
+	PSCHEQ.W	R16, R5, R3
+	BT			.Found
+	PSCHEQ.W	R17, R5, R3
+	BT			.Found1
+	
+	BRA			.NotFound
+	
+	.Found1:
+//	ADD			32, R7
+	ADD			4, R3
+	.Found:
+	MOV.Q		(R7, R3), R2
+	RTS
+	
+	.NotFound:
+	MOV			1, R2
+	RTS
+
+TKMM_LVA_VarObjSetKeyA:
+	MOVU.W		(R4, 16), R3
+	MOV.Q		(R4, 0), R18
+	MOV.Q		(R4, 8), R19
+	CMPGT		16, R3
+	BT			TKMM_LVA_VarObjSetKey
+	
+	MOV.X		(R18), R16
+	PSHUF.W		R5, 0x00, R5
+
+//	MOV.Q		(R18, 0), R16
+//	MOV.Q		(R18, 8), R17
+	PSCHEQ.W	R16, R5, R3
+	BT			.Found
+	PSCHEQ.W	R17, R5, R3
+	BT			.Found1
+	
+	ADD			16, R18
+	ADD			64, R19
+
+	MOV.X		(R18), R16
+//	MOV.Q		(R18, 0), R16
+//	MOV.Q		(R18, 8), R17
+	PSCHEQ.W	R16, R5, R3
+	BT			.Found
+	PSCHEQ.W	R17, R5, R3
+	BT			.Found1
+	
+	BRA			.NotFound
+	
+	.Found1:
+	ADD			4, R3
+	.Found:
+	MOV.Q		R7, (R19, R3)
+	RTS
+	
+	.NotFound:
+	BRA			TKMM_LVA_VarObjSetKey
+//	MOV			-1, R2
+//	RTS
+};
+
+#endif
+
 u64 TKMM_LVA_VarObjFetchKey(LVA_VarObject *obj, int key)
 {
 	u16 *keys;		//dynamic alloc keys
@@ -454,6 +544,7 @@ u64 TKMM_LVA_VarObjFetchKey(LVA_VarObject *obj, int key)
 	keys=obj->keys;
 	vals=obj->vals;
 
+#if 0
 	k_m=0; k_n=nk;
 	while(k_n>k_m)
 	{
@@ -466,6 +557,16 @@ u64 TKMM_LVA_VarObjFetchKey(LVA_VarObject *obj, int key)
 		else
 			{ break; }
 	}
+#endif
+
+#if 1
+	for(k_c=0; k_c<nk; k_c++)
+	{
+		k_cv=keys[k_c];
+		if(k_cv==key)
+			break;
+	}
+#endif
 
 	kv=vals[k_c];
 	if(k_cv==key)
@@ -486,6 +587,7 @@ int TKMM_LVA_VarObjSetKey(LVA_VarObject *obj, int key, u64 val)
 	keys=obj->keys;
 	vals=obj->vals;
 
+#if 0
 	k_m=0; k_n=nk;
 	while(k_n>k_m)
 	{
@@ -498,6 +600,16 @@ int TKMM_LVA_VarObjSetKey(LVA_VarObject *obj, int key, u64 val)
 		else
 			{ break; }
 	}
+#endif
+
+#if 1
+	for(k_c=0; k_c<nk; k_c++)
+	{
+		k_cv=keys[k_c];
+		if(k_cv==key)
+			break;
+	}
+#endif
 
 	if(k_cv==key)
 	{
@@ -534,7 +646,7 @@ int TKMM_LVA_VarObjSetKey(LVA_VarObject *obj, int key, u64 val)
 		}
 	}
 	
-	for(i=nk; i>0; i++)
+	for(i=nk; i>0; i--)
 	{
 		if(keys[i-1]<key)
 			break;
@@ -543,23 +655,246 @@ int TKMM_LVA_VarObjSetKey(LVA_VarObject *obj, int key, u64 val)
 	}
 	keys[i]=key;
 	vals[i]=val;
-	obj->mkey=nk+1;
+	obj->nkey=nk+1;
 	
 	return(1);
 }
 
+#ifdef __BJX2__
+#define LVO_GETSLOT_CST_GEN	__lvo_getslot_cstgen
+#define LVO_SETSLOT_CST_GEN	__lvo_setslot_cstgen
+__declspec(nocull) __variant
+	__lvo_getslot_cstgen(__object obj, char *name, u16 *rfid);
+__declspec(nocull) void
+	__lvo_setslot_cstgen(__object obj, char *name, u16 *rfid, __variant val);
+#endif
 
-__variant  __lvo_getslot(__object obj, char *name)
+LVA_VarObject *TKMM_LVA_AllocVarObj(void)
+{
+	void *p;
+	LVA_VarObject *ov;
+	
+//	TKMM_LVA_ArrayInit();
+//	p=LVO_GETSLOT_CST_GEN;
+//	p=LVO_SETSLOT_CST_GEN;
+	
+	ov=TKMM_LVA_TagMalloc(tkmm_lvatyi_tagobj, sizeof(LVA_VarObject));
+
+	ov->keys=ov->fx_key;
+	ov->vals=ov->fx_val;
+
+	ov->nkey=0;
+	ov->mkey=0;
+
+	return(ov);
+}
+
+__object __lvo_emptyobject(void)
+{
+	LVA_VarObject *ov;
+	u64 v;	
+
+	ov=TKMM_LVA_AllocVarObj();
+	v=((u64)ov)|(((u64)tkmm_lvatyi_tagobj)<<48);
+	return(__object_frombits(v));
+}
+
+#ifdef __BJX2__
+// #define LVO_GETSLOT_CST_GEN	__lvo_getslot_cstgen
+// #define LVO_SETSLOT_CST_GEN	__lvo_setslot_cstgen
+
+__declspec(nocull) __variant
+	__lvo_getslot_cst(__object obj, char *name, u16 *rfid);
+__declspec(nocull) void
+	__lvo_setslot_cst(__object obj, char *name, u16 *rfid, __variant val);
+
+// __variant  __lvo_getslot_cstgen(__object obj, char *name, u16 *rfid);
+// void __lvo_setslot_cstgen(__object obj, char *name, u16 *rfid, __variant val);
+
+__asm {
+__lvo_getslot_cst:
+	SHLD.Q	R4, -48, R17
+	MOVU.W	(R6), R16
+	CMPEQ	LVA_LVATY_TAGOBJ, R17
+	BF		.Generic
+	TEST	R16, R16
+	BT		.Generic
+	
+	MOV		R16, R5
+	BRA		TKMM_LVA_VarObjFetchKeyA
+	
+	.Generic:
+	BRA		__lvo_getslot_cstgen
+
+__lvo_setslot_cst:
+	SHLD.Q	R4, -48, R17
+	MOVU.W	(R6), R16
+	CMPEQ	LVA_LVATY_TAGOBJ, R17
+	BF		.Generic
+	TEST	R16, R16
+	BT		.Generic
+	
+	MOV		R16, R5
+	MOV		R7, R6
+	BRA		TKMM_LVA_VarObjSetKeyA
+	
+	.Generic:
+	BRA		__lvo_setslot_cstgen
+};
+
+#else
+
+#define LVO_GETSLOT_CST_GEN	__lvo_getslot_cst
+#define LVO_SETSLOT_CST_GEN	__lvo_setslot_cst
+
+#endif
+
+//__variant  __lvo_getslot_cst(__object obj, char *name, u16 *rfid)
+__declspec(nocull) __variant
+	LVO_GETSLOT_CST_GEN(__object obj, char *name, u16 *rfid)
 {
 	LVA_ObjectBasic *ob;
+	LVA_VarObject *ov;
 	u64 objv;
 	u64 v;
 	int tag, key;
 
 	objv=__object_getbits(obj);
-	if(TKMM_LVA_ObjRefP(obj))
+//	if(TKMM_LVA_ObjRefP(objv))
+	if(1)
+	{
+//		tag=TKMM_LVA_GetObjTag(objv);
+		tag=(objv>>48);
+
+		if(tag==tkmm_lvatyi_tagobj)
+		{
+			ov=(void *)objv;
+			key=*rfid;
+			if(key<=0)
+			{
+				key=TKMM_LVA_VarObjKeyForSymbol(name);
+				*rfid=key;
+			}
+#ifdef __BJX2__
+			v=TKMM_LVA_VarObjFetchKeyA(ov, key);
+#else
+			v=TKMM_LVA_VarObjFetchKey(ov, key);
+#endif
+//			__debugbreak();
+			return(__object_frombits(v));
+		}
+
+		if(tag==tkmm_lvatyi_classobj)
+		{
+			ob=(void *)objv;
+			v=TKMM_LVA_TryObjGetFieldVar(ob, name);
+			if(v!=LVA_MAGIC_UNDEFINED)
+				{ return(__object_frombits(v)); }
+			
+			if(ob->vo)
+			{
+				key=*rfid;
+				if(key<=0)
+				{
+					key=TKMM_LVA_VarObjKeyForSymbol(name);
+					*rfid=key;
+				}
+
+				v=TKMM_LVA_VarObjFetchKey(ob->vo, key);
+				return(__object_frombits(v));
+			}
+			
+			v=LVA_MAGIC_UNDEFINED;
+			return(__object_frombits(v));
+		}
+	}
+}
+
+//void __lvo_setslot_cst(__object obj, char *name, u16 *rfid, __variant val)
+__declspec(nocull) void
+	LVO_SETSLOT_CST_GEN(__object obj, char *name, u16 *rfid, __variant val)
+{
+	LVA_ObjectBasic *ob;
+	LVA_VarObject *ov;
+	u64 objv, valv;
+	int tag, key;
+
+//	__debugbreak();
+
+	objv=__object_getbits(obj);
+
+//	if(TKMM_LVA_ObjRefP(objv))
+	if(1)
+	{
+//		tag=TKMM_LVA_GetObjTag(objv);
+		tag=(objv>>48);
+
+		if(tag==tkmm_lvatyi_tagobj)
+		{
+			valv=__object_getbits(val);
+			ov=(void *)objv;
+			key=*rfid;
+			if(key<=0)
+			{
+				key=TKMM_LVA_VarObjKeyForSymbol(name);
+				*rfid=key;
+			}
+#ifdef __BJX2__
+			TKMM_LVA_VarObjSetKeyA(ov, key, valv);
+#else
+			TKMM_LVA_VarObjSetKey(ov, key, valv);
+#endif
+//			__debugbreak();
+			return;
+		}
+
+		if(tag==tkmm_lvatyi_classobj)
+		{
+			valv=__object_getbits(val);
+
+			ob=(void *)objv;
+			if(TKMM_LVA_TryObjSetFieldVar(ob, name, valv)>0)
+				return;
+			
+			if(ob->vo)
+			{
+				key=*rfid;
+				if(key<=0)
+				{
+					key=TKMM_LVA_VarObjKeyForSymbol(name);
+					*rfid=key;
+				}
+				TKMM_LVA_VarObjSetKey(ob->vo, key, valv);
+				return;
+			}
+			
+			return;
+		}
+	}
+}
+
+__variant  __lvo_getslot(__object obj, char *name)
+{
+	LVA_ObjectBasic *ob;
+	LVA_VarObject *ov;
+	u64 objv;
+	u64 v;
+	int tag, key;
+
+	objv=__object_getbits(obj);
+	if(TKMM_LVA_ObjRefP(objv))
 	{
 		tag=TKMM_LVA_GetObjTag(objv);
+
+		if(tag==tkmm_lvatyi_tagobj)
+		{
+			ov=(void *)objv;
+			key=TKMM_LVA_VarObjKeyForSymbol(name);
+			v=TKMM_LVA_VarObjFetchKey(ov, key);
+//			__debugbreak();
+			return(__object_frombits(v));
+		}
+
 		if(tag==tkmm_lvatyi_classobj)
 		{
 			ob=(void *)objv;
@@ -583,13 +918,28 @@ __variant  __lvo_getslot(__object obj, char *name)
 void __lvo_setslot(__object obj, char *name, __variant val)
 {
 	LVA_ObjectBasic *ob;
+	LVA_VarObject *ov;
 	u64 objv, valv;
 	int tag, key;
 
+//	__debugbreak();
+
 	objv=__object_getbits(obj);
-	if(TKMM_LVA_ObjRefP(obj))
+
+	if(TKMM_LVA_ObjRefP(objv))
 	{
 		tag=TKMM_LVA_GetObjTag(objv);
+
+		if(tag==tkmm_lvatyi_tagobj)
+		{
+			valv=__object_getbits(val);
+			ov=(void *)objv;
+			key=TKMM_LVA_VarObjKeyForSymbol(name);
+			TKMM_LVA_VarObjSetKey(ov, key, valv);
+//			__debugbreak();
+			return;
+		}
+
 		if(tag==tkmm_lvatyi_classobj)
 		{
 			valv=__object_getbits(val);

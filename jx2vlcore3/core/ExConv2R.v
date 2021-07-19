@@ -208,6 +208,11 @@ begin
 		end
 `endif
 
+		JX2_UCIX_CONV_STFXI:
+			tRegOutVal	= { 2'b01, regValRs[61:0] };
+		JX2_UCIX_CONV_STFLI:
+			tRegOutVal	= { 2'b10, regValRs[63:2] };
+
 		JX2_UCIX_CONV_FNEG:
 			tRegOutVal	= { ~regValRs[63], regValRs[62:0] };
 		JX2_UCIX_CONV_FABS:

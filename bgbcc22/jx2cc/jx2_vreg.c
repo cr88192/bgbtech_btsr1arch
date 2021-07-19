@@ -606,7 +606,7 @@ int BGBCC_JX2C_EmitMovVRegVReg(
 				BGBCC_SH_REGCLS_QGR);
 			BGBCC_JX2_EmitLoadRegImm64P(sctx, tr1, ((u64)tg0)<<48);
 
-			cdreg=BGBCC_JX2C_EmitTryGetRegisterWrite(ctx, sctx, dreg);
+			cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dreg);
 			BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx, sreg, cdreg);
 			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_OR,
 				tr1, cdreg);
@@ -1643,6 +1643,12 @@ int BGBCC_JX2C_EmitJCmpVRegVReg(
 	if(BGBCC_CCXL_TypeFloat128P(ctx, type))
 	{
 		return(BGBCC_JX2C_EmitJCmpVRegVRegFloat128(ctx, sctx,
+			type, sreg, treg, cmp, lbl));
+	}
+
+	if(BGBCC_CCXL_TypeVarRefP(ctx, type))
+	{
+		return(BGBCC_JX2C_EmitJCmpVRegVRegVariant(ctx, sctx,
 			type, sreg, treg, cmp, lbl));
 	}
 

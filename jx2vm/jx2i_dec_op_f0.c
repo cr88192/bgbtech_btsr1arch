@@ -823,6 +823,19 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				break;
 #endif
 
+#if 1
+			case 0xF:	/* F0eF_18nm */
+				op->nmid=BJX2_NMID_CONVFXI;
+				op->fmid=BJX2_FMID_REGREG;
+				op->Run=BJX2_Op_CONVFXI_RegReg;
+				if(eq)
+				{
+					op->nmid=BJX2_NMID_CONVFLI;
+					op->Run=BJX2_Op_CONVFLI_RegReg;
+				}
+				break;
+#endif
+
 #if 0
 			case 0x0:	/* F0e0_18zz */
 				op->nmid=BJX2_NMID_MOVB;

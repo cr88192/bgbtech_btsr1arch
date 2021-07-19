@@ -520,7 +520,7 @@ BCCX_Node *BGBCP_ExpressionLit(BGBCP_ParseState *ctx, char **str)
 
 	if(ty==BTK_NAME)
 	{
-		BGBCP_Token(s, b2, &ty2);
+		s1=BGBCP_Token(s, b2, &ty2);
 
 		if((b[0]=='_') && !bgbcp_strcmp10(b, "__offsetof"))
 		{
@@ -577,9 +577,33 @@ BCCX_Node *BGBCP_ExpressionLit(BGBCP_ParseState *ctx, char **str)
 			return(n);
 		}
 
-		if(!bgbcp_strcmp3(b, "new") && (ctx->lang!=BGBCC_LANG_C))
+		if((!bgbcp_strcmp3(b, "new") && (ctx->lang!=BGBCC_LANG_C)) ||
+			!bgbcp_strcmp5(b, "__new") ||
+			!bgbcp_strcmp6(b, "__jnew") ||
+			!bgbcp_strcmp6(b, "__vnew"))
 		{
-			n=BCCX_NewCst(&bgbcc_rcst_new, "new");
+			if(!bgbcp_strcmp3(b, "new"))
+			{
+				if(ctx->lang!=BGBCC_LANG_CPP)
+				{
+					n=BCCX_NewCst(&bgbcc_rcst_jnew, "jnew");
+				}else
+				{
+					n=BCCX_NewCst(&bgbcc_rcst_new, "new");
+				}
+			}else
+				if(!bgbcp_strcmp6(b, "__vnew"))
+			{
+				n=BCCX_NewCst(&bgbcc_rcst_new, "new");
+			}else
+				if(	!bgbcp_strcmp6(b, "__jnew") ||
+					!bgbcp_strcmp5(b, "__new"))
+			{
+				n=BCCX_NewCst(&bgbcc_rcst_jnew, "jnew");
+			}else
+			{
+				n=BCCX_NewCst(&bgbcc_rcst_new, "new");
+			}
 
 			if(ctx->lang==BGBCC_LANG_BS2)
 			{
@@ -620,6 +644,13 @@ BCCX_Node *BGBCP_ExpressionLit(BGBCP_ParseState *ctx, char **str)
 				BCCX_Add(n, BCCX_NewCst1V(&bgbcc_rcst_args, "args", n1));
 			}
 
+			if(!bgbcp_strcmp1(b, "["))
+			{
+				s=BGBCP_Token(s, b, &ty); //'['
+				n1=BGBCP_FunArgs(ctx, &s);
+				BCCX_Add(n, BCCX_NewCst1V(&bgbcc_rcst_size, "size", n1));
+			}
+
 			*str=s;
 			return(n);
 		}
@@ -638,7 +669,71 @@ BCCX_Node *BGBCP_ExpressionLit(BGBCP_ParseState *ctx, char **str)
 			return(n);
 		}
 
-		if((b[0]=='_') && !bgbcp_strcmp8(b, "__func__"))
+		if(!bgbcp_strcmp5 (b, "__var") ||
+			((ctx->lang==BGBCC_LANG_BS2) &&
+				!bgbcp_strcmp3(b, "var"))
+			)
+		{
+			if(!bgbcp_strcmp1(b2, "{") && (ty2==BTK_BRACE))
+			{
+				s=s1;
+
+//				n1=BGBCP_FunArgs(ctx, &s);
+				n1=BGBCP_FunArgsFlag(ctx, &s, 1);
+				n1=BCCX_NewCst1(&bgbcc_rcst_list, "list", n1);
+				n=BCCX_NewCst1(&bgbcc_rcst_object, "object", n1);
+
+				s1=BGBCP_Token(s, b, &ty);
+				if(!bgbcp_strcmp1(b, ":"))
+				{
+					s=s1;
+					n1=BGBCP_DefExpectType(ctx, &s);
+					if(n1)
+						BCCX_Add(n, n1);
+				}else if(ty==BTK_NAME)
+				{
+					s=s1;
+					BCCX_SetCst(n, &bgbcc_rcst_tysuf, "tysuf", b);
+				}
+
+				*str=s;
+				return(n);
+			}
+
+			if(!bgbcp_strcmp1(b2, "[") && (ty2==BTK_BRACE))
+			{
+				s=s1;
+
+				n1=BGBCP_FunArgs(ctx, &s);
+				n1=BCCX_NewCst1(&bgbcc_rcst_list, "list", n1);
+				n=BCCX_NewCst1(&bgbcc_rcst_array, "array", n1);
+
+				s1=BGBCP_Token(s, b, &ty);
+				if(!bgbcp_strcmp1(b, ":"))
+				{
+					s=s1;
+					n1=BGBCP_DefExpectType(ctx, &s);
+					if(n1)
+						BCCX_Add(n, n1);
+				}else if(ty==BTK_NAME)
+				{
+					s=s1;
+					BCCX_SetCst(n, &bgbcc_rcst_tysuf, "tysuf", b);
+				}
+
+				*str=s;
+				return(n);
+			}
+		}
+
+		if(	((b[0]=='_') &&
+				(	!bgbcp_strcmp8 (b, "__func__")		||
+					!bgbcp_strcmp10(b, "__function")	||
+					!bgbcp_strcmp5 (b, "__var")			)) ||
+			((ctx->lang==BGBCC_LANG_BS2) &&
+				(	!bgbcp_strcmp8(b, "function")	||
+					!bgbcp_strcmp3(b, "var")		))
+			)
 		{
 			n1=NULL;
 			n2=NULL;
@@ -1209,21 +1304,38 @@ BCCX_Node *BGBCP_ExpressionCast(BGBCP_ParseState *ctx, char **str)
 
 			s=s1;
 			s=BGBCP_Token(s, b, &ty);
+			s1=BGBCP_Token(s, b2, &ty2);
+
 			if(bgbcp_strcmp1(b, ")"))
 			{
 //				printf("parser, cast token '%s'\n", b);
 				BGBCP_ErrorCtx(ctx, s, "parser, cast token '%s'\n", b);
 			}
 
-			n1=BGBCP_ExpressionCast(ctx, &s);
+			if(!bgbcp_strcmp1(b2, "{") && (ty2==BTK_BRACE))
+			{
+				s=s1;
 
-			BCCX_CheckDeleteUnlinked(n);
+//				n1=BGBCP_FunArgs(ctx, &s);
+				n1=BGBCP_FunArgsFlag(ctx, &s, 1);
+				n1=BCCX_NewCst1(&bgbcc_rcst_list, "list", n1);
+				n=BCCX_NewCst1(&bgbcc_rcst_object, "object", n1);
+				BCCX_Add(n, n2);
 
-			n=BCCX_NewCst2(&bgbcc_rcst_cast, "cast", n2,
-				BCCX_NewCst1V(&bgbcc_rcst_value, "value", n1));
+				*str=s;
+				return(n);
+			}else
+			{
+				n1=BGBCP_ExpressionCast(ctx, &s);
 
-			*str=s;
-			return(n);
+				BCCX_CheckDeleteUnlinked(n);
+
+				n=BCCX_NewCst2(&bgbcc_rcst_cast, "cast", n2,
+					BCCX_NewCst1V(&bgbcc_rcst_value, "value", n1));
+
+				*str=s;
+				return(n);
+			}
 		}
 	}
 
@@ -1419,7 +1531,7 @@ BCCX_Node *BGBCP_ExpressionSHLR(BGBCP_ParseState *ctx, char **str)
 BCCX_Node *BGBCP_ExpressionRCmp(BGBCP_ParseState *ctx, char **str)
 {
 	char b[256], b2[256];
-	char *s, *t;
+	char *s, *t, *s1;
 	int ty, ty2;
 	BCCX_Node *n, *n1, *n2, *n3;
 
@@ -1429,7 +1541,25 @@ BCCX_Node *BGBCP_ExpressionRCmp(BGBCP_ParseState *ctx, char **str)
 
 	while(1)
 	{
-		BGBCP_Token(s, b, &ty);
+		s1=BGBCP_Token(s, b, &ty);
+
+		if(ty==BTK_NAME)
+		{
+			if(	(!bgbcp_strcmp(b, "instanceof") && (
+					(ctx->lang==BGBCC_LANG_JAVA) ||
+					(ctx->lang==BGBCC_LANG_BS2))) ||
+				!bgbcp_strcmp(b, "__instanceof"))
+			{
+				n2=BGBCP_DefExpectType(ctx, &s1);
+				if(n2)
+				{
+					s=s1;
+					n=BCCX_NewCst2(&bgbcc_rcst_instanceof, "instanceof", n2,
+						BCCX_NewCst1V(&bgbcc_rcst_value, "value", n));
+					continue;
+				}
+			}
+		}
 
 		if(ty!=BTK_OPERATOR)
 			break;

@@ -22,6 +22,67 @@
 #define		LVA_MAGIC_UNDEFINED		0x0000000000000001ULL
 #define		LVA_POINTER_MASK		0x0000FFFFFFFFFFFFULL
 
+#define		LVA_OPR_ADD				0x00
+#define		LVA_OPR_SUB				0x01
+#define		LVA_OPR_MUL				0x02
+#define		LVA_OPR_DIV				0x03
+#define		LVA_OPR_MOD				0x04
+#define		LVA_OPR_AND				0x05
+#define		LVA_OPR_OR				0x06
+#define		LVA_OPR_XOR				0x07
+#define		LVA_OPR_SHL				0x08
+#define		LVA_OPR_SHR				0x09
+
+#define		LVA_OPR_NEG				0x0C
+#define		LVA_OPR_NOT				0x0D
+#define		LVA_OPR_CMPEQ			0x0E
+#define		LVA_OPR_CMPGT			0x0F
+#define		LVA_OPR_INC				0x10
+#define		LVA_OPR_DEC				0x11
+
+
+#define		LVA_TAGAMT_SI			0x00
+#define		LVA_TAGAMT_SL			0x01
+#define		LVA_TAGAMT_F			0x02
+#define		LVA_TAGAMT_D			0x03
+#define		LVA_TAGAMT_P			0x04
+#define		LVA_TAGAMT_VAR			0x05
+
+#define		LVA_TAGAMT_NL			0x07
+#define		LVA_TAGAMT_SB			0x08
+#define		LVA_TAGAMT_UB			0x09
+#define		LVA_TAGAMT_SS			0x0A
+#define		LVA_TAGAMT_US			0x0B
+#define		LVA_TAGAMT_UI			0x0C
+#define		LVA_TAGAMT_UL			0x0D
+#define		LVA_TAGAMT_UNL			0x0E
+
+#define		LVA_LVATY_TAGARRAY		0x01
+#define		LVA_LVATY_VARIANT		0x02
+#define		LVA_LVATY_STRING		0x03
+#define		LVA_LVATY_WSTRING		0x04
+#define		LVA_LVATY_USTRING		0x05
+#define		LVA_LVATY_CLASSOBJ		0x06
+#define		LVA_LVATY_POINTER		0x07
+#define		LVA_LVATY_BYTE			0x08
+#define		LVA_LVATY_SBYTE			0x09
+#define		LVA_LVATY_SHORT			0x0A
+#define		LVA_LVATY_USHORT		0x0B
+#define		LVA_LVATY_INT			0x0C
+#define		LVA_LVATY_UINT			0x0D
+#define		LVA_LVATY_LONG			0x0E
+#define		LVA_LVATY_ULONG			0x0F
+#define		LVA_LVATY_FLOAT			0x10
+#define		LVA_LVATY_DOUBLE		0x11
+#define		LVA_LVATY_INT128		0x12
+#define		LVA_LVATY_FLOAT128		0x13
+
+#define		LVA_LVATY_FIXNUM		0x14
+#define		LVA_LVATY_FLONUM		0x15
+#define		LVA_LVATY_TAGOBJ		0x16
+#define		LVA_LVATY_CONS			0x17
+#define		LVA_LVATY_BIGINT		0x18
+
 typedef struct LVA_FieldInfo_s		LVA_FieldInfo;
 typedef struct LVA_FieldInfoD_s	LVA_FieldInfoD;
 typedef struct LVA_ClassInfo_s		LVA_ClassInfo;
@@ -30,7 +91,8 @@ typedef struct LVA_ObjectBasic_s	LVA_ObjectBasic;
 typedef struct LVA_VarObject_s		LVA_VarObject;
 typedef struct LVA_TagInfo_s		LVA_TagInfo;
 
-typedef union LVA_TagArray_s		LVA_TagArray;
+//typedef union LVA_TagArray_s		LVA_TagArray;
+typedef struct LVA_TagArray_s		LVA_TagArray;
 
 struct LVA_FieldInfo_s {
 char *name;		//field/method name (QName for Interfaces)
@@ -71,12 +133,12 @@ byte data[1];				//object data
 };
 
 struct LVA_VarObject_s {
-short nkey;			//number of keys
-short mkey;			//max allocated keys (0 if fixed)
 u16 *keys;			//dynamic alloc keys
 u64 *vals;			//dynamic alloc values
-u16 fx_key[16];		//fixed keys
+short nkey;			//number of keys
+short mkey;			//max allocated keys (0 if fixed)
 u64 fx_val[16];		//fixed values
+u16 fx_key[16];		//fixed keys
 };
 
 struct LVA_TagInfo_s {
@@ -85,6 +147,7 @@ short idx;
 short chain;
 };
 
+#if 0
 union LVA_TagArray_s {
 	struct {
 		LVA_VTableBasic *vt;
@@ -102,18 +165,52 @@ union LVA_TagArray_s {
 		u64 data_ty;
 	}n;
 };
+#endif
+
+#if 1
+struct LVA_TagArray_s {
+	LVA_VTableBasic *vt;	//00
+	void *data;				//08
+	u32 size;				//10
+	u16 tty;				//14
+	s16 base;				//16
+	u64 t_data[1];			//18
+};
+#endif
+
+typedef struct LVA_TagOperator_s LVA_TagOperator;
+struct LVA_TagOperator_s {
+LVA_TagOperator	*next;
+LVA_TagOperator	*hnext;
+// u64 (*Run)(u64 vala, u64 valb);
+void *run;
+u64 ident;
+//u16 lty;
+//u16 rty;
+//byte opr;
+};
 
 #ifdef _BGBMETA
 typedef __object tk_lva_object;
 typedef __variant tk_lva_variant;
 #define tk_lva_object_null __object_null
 #define	tk_lva_object_getbits(obj)	__object_getbits(obj)
+#define	tk_lva_object_frombits(obj)	__object_frombits(obj)
 #else
 typedef long long tk_lva_object;
 typedef long long tk_lva_variant;
 #define tk_lva_object_null 0
 #define	tk_lva_object_getbits(obj)	(obj)
+#define	tk_lva_object_frombits(obj)	(obj)
 #endif
+
+typedef struct LVA_Cons_s LVA_Cons;
+struct LVA_Cons_s {
+// tk_lva_variant car;
+// tk_lva_variant cdr;
+u64 car;
+u64 cdr;
+};
 
 void TKMM_LVA_ArrayInit(void);
 

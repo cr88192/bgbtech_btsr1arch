@@ -58,9 +58,12 @@
 #include "tk_core/tk_shcmd.c"
 #include "tk_core/tk_irq.c"
 
+#include "tk_core/tku_bigint.c"
+
 #include "tk_core/lva_array.c"
 #include "tk_core/lva_strdup.c"
 #include "tk_core/lva_tagobj.c"
+#include "tk_core/lva_tagopr.c"
 #include "tk_core/lva_varobj.c"
 
 #include "tk_core/tk_rwad.c"

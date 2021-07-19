@@ -413,8 +413,10 @@ int BJX2_MemDefineMmgp(BJX2_Context *ctx,
 
 int BJX2_ContextLoadMap(BJX2_Context *ctx, char *name)
 {
-	bjx2_addr tmap_addr[16384];
-	char *tmap_name[16384];
+//	static bjx2_addr tmap_addr[16384];
+//	static char *tmap_name[16384];
+	static bjx2_addr tmap_addr[32768];
+	static char *tmap_name[32768];
 	char tb[256];
 	BJX2_FILE *fd;
 	char **a;
@@ -475,9 +477,11 @@ int BJX2_ContextLoadMap(BJX2_Context *ctx, char *name)
 		}
 	}
 	
-	ctx->map_addr=malloc(tmn*sizeof(bjx2_addr));
-	ctx->map_name=malloc(tmn*sizeof(char *));
+	ctx->map_addr=malloc((tmn+64)*sizeof(bjx2_addr));
+	ctx->map_name=malloc((tmn+64)*sizeof(char *));
 	ctx->map_n_ents=tmn;
+	
+	memset(ctx->map_name, 0, (tmn+64)*sizeof(char *));
 	
 	for(i=0; i<tmn; i++)
 	{

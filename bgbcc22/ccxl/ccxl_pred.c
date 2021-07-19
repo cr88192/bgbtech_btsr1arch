@@ -228,6 +228,7 @@ ccxl_type BGBCC_CCXL_MakeTypeID(
 ccxl_type BGBCC_CCXL_GetRegType(
 	BGBCC_TransState *ctx, ccxl_register reg)
 {
+	BGBCC_CCXL_LiteralInfo *linf;
 	u64 regty;
 	ccxl_type tty;
 	int i;
@@ -370,6 +371,18 @@ ccxl_type BGBCC_CCXL_GetRegType(
 		if(regty==CCXL_REGTY_THISIDX)
 		{
 			tty.val=(reg.val&CCXL_REGID_TYPEMASK)>>CCXL_REGID_TYPESHIFT;
+			if(!tty.val && ((reg.val&0xFFF)==0xFFF))
+			{
+				if(ctx->cur_func->thisstr)
+				{
+					linf=BGBCC_CCXL_LookupStructure(ctx,
+						ctx->cur_func->thisstr);
+//					tty.val=linf->litid+256;
+					tty=BGBCC_CCXL_MakeTypeID(ctx,
+						linf->litid+256);
+					return(tty);
+				}
+			}
 			BGBCC_CCXL_TypeGetTypedefType(ctx, tty, &tty);
 			return(tty);
 		}
@@ -849,6 +862,19 @@ bool BGBCC_CCXL_IsRegImmFloat128P(
 {
 	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_F128_LVT)
 		return(true);
+	return(false);
+}
+
+bool BGBCC_CCXL_IsRegImmFieldNameP(
+	BGBCC_TransState *ctx, ccxl_register reg)
+{
+	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_FIELDNAME)
+	{
+		if((((reg.val>>52)&15)==0) || (((reg.val>>52)&15)==1))
+			return(true);
+		return(false);
+//		return(true);
+	}
 	return(false);
 }
 
@@ -1682,6 +1708,9 @@ char *BGBCC_CCXL_GetRegImmStringValue(
 	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_STRING)
 		{ return(ctx->strtab+(reg.val&CCXL_REGINT_MASK)); }
 
+	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_FIELDNAME)
+		{ return(ctx->strtab+(reg.val&CCXL_REGINT_MASK)); }
+
 	return(NULL);
 }
 
@@ -1952,6 +1981,21 @@ ccxl_status BGBCC_CCXL_GetRegForW4StringValue(
 		{ BGBCC_DBGBREAK }
 	
 	treg.val=(i&CCXL_REGINT_MASK)|CCXL_REGTY_IMM_WSTRING|(3LL<<52);
+	*rreg=treg;
+	return(CCXL_STATUS_YES);
+}
+
+ccxl_status BGBCC_CCXL_GetRegForFieldIdValue(
+	BGBCC_TransState *ctx, ccxl_register *rreg, char *str)
+{
+	ccxl_register treg;
+	int i;
+	
+	i=BGBCC_CCXL_IndexString(ctx, str);
+	if(i<0)
+		{ BGBCC_DBGBREAK }
+	
+	treg.val=(i&CCXL_REGINT_MASK)|CCXL_REGTY_IMM_FIELDNAME;
 	*rreg=treg;
 	return(CCXL_STATUS_YES);
 }

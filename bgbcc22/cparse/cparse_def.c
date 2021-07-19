@@ -1004,6 +1004,9 @@ BCCX_Node *BGBCP_DefinitionOldStyle(BGBCP_ParseState *ctx, char **str)
 	int tk0, tk1, tk2;
 	int i, ty, ty2;
 
+	if(ctx->lang!=BGBCC_LANG_C)
+		return(NULL);
+
 	s=*str;
 
 	s2=BGBCP_Token2(s, b, &ty, ctx->lang);
@@ -1038,6 +1041,8 @@ BCCX_Node *BGBCP_DefinitionOldStyle(BGBCP_ParseState *ctx, char **str)
 					BCCX_Add(ntl, n2);
 				}else
 				{
+					if(!(*s2))
+						return(NULL);
 					BGBCP_ErrorCtx(ctx, s, "Parse ArgDecl Fail");
 					break;
 				}

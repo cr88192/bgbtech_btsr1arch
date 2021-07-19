@@ -94,6 +94,22 @@ BCCX_Node *BGBCP_WrapReal(double f)
 	return(t);
 }
 
+BCCX_Node *BGBCP_WrapString(char *str)
+{
+	BCCX_Node *t;
+	t=BCCX_NewCst(&bgbcc_rcst_string, "string");
+	BCCX_SetCst(t, &bgbcc_rcst_value, "value", str);
+	return(t);
+}
+
+BCCX_Node *BGBCP_WrapRef(char *str)
+{
+	BCCX_Node *t;
+	t=BCCX_NewCst(&bgbcc_rcst_ref, "ref");
+	BCCX_SetCst(t, &bgbcc_rcst_name, "name", str);
+	return(t);
+}
+
 int BGBCP_IsIntP(BGBCP_ParseState *ctx, BCCX_Node *l)
 {
 	if(BCCX_TagIsP(l, "int"))return(1);
@@ -905,6 +921,13 @@ BCCX_Node *BGBCP_ReduceForm(BGBCP_ParseState *ctx,
 			t=BGBCP_WrapInt(0);
 			return(t);
 		}
+		
+		s=BCCX_GetCst(l, &bgbcc_rcst_name, "name");
+		t=BGBPP_PpiFetchNameReduce(ctx, s);
+		if(t)
+			return(t);
+
+		return(BCCX_Clone(l));
 	}
 
 	if(BCCX_TagIsP(l, "sizeof"))
@@ -1003,6 +1026,13 @@ BCCX_Node *BGBCP_ReduceForm(BGBCP_ParseState *ctx,
 //		t=BGBCP_ReduceExpr(ctx, t);
 //		i=BGBCP_BoolExpr(ctx, t);
 //		return(i);
+	}
+
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_funcall, "funcall"))
+	{
+		t=BGBPP_PpiInterpTryReduce(ctx, l);
+		if(t)
+			return(t);
 	}
 
 	return(BCCX_Clone(l));

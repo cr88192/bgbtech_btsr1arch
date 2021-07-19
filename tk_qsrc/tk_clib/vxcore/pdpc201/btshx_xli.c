@@ -2,6 +2,7 @@ __int128 __xli_add (__int128 a, __int128 b);
 __int128 __xli_sub (__int128 a, __int128 b);
 __int128 __xli_smul(__int128 a, __int128 b);
 __int128 __xli_sdiv(__int128 a, __int128 b);
+__int128 __xli_smod(__int128 a, __int128 b);
 __int128 __xli_and (__int128 a, __int128 b);
 __int128 __xli_or  (__int128 a, __int128 b);
 __int128 __xli_xor (__int128 a, __int128 b);
@@ -442,7 +443,7 @@ __xli_cmp_ntst:
 };
 
 
-#if 0
+#if 1
 static int _fcn_clz128(__uint128 v)
 {
 	const __uint128 m1 =0x80000000000000000000000000000000ULL;
@@ -468,7 +469,7 @@ static int _fcn_clz128(__uint128 v)
 }
 #endif
 
-#if 0
+#if 1
 __uint128 __xli_udiv(__uint128 n, __uint128 d)
 {
 	__uint128 q, r;
@@ -476,7 +477,8 @@ __uint128 __xli_udiv(__uint128 n, __uint128 d)
 //	int sr;
 	byte sr;
 
-	if(!d || !n)
+//	if(!d || !n)
+	if((d==0) || (n==0))
 		return(0);
 	sr=(byte)(_fcn_clz128(d)-_fcn_clz128(n));
 
@@ -502,7 +504,7 @@ __uint128 __xli_udiv(__uint128 n, __uint128 d)
 }
 #endif
 
-#if 0
+#if 1
 __int128 __xli_sdiv(__int128 a, __int128 b)
 {
 	__int128	sga, sgb;
@@ -510,5 +512,21 @@ __int128 __xli_sdiv(__int128 a, __int128 b)
 	a=(a^sga)-sga;	b=(b^sgb)-sgb;
 	sga^=sgb;
 	return((__xli_udiv(a, b)^sga)-sga);
+}
+#endif
+
+#if 1
+__int128 __xli_smod(__int128 a, __int128 b)
+{
+	__int128	c, d;
+	
+	c=__xli_sdiv(a, b);
+	d=a-(c*b);
+	return(d);
+	
+//	sga=a>>127;		sgb=b>>127;
+//	a=(a^sga)-sga;	b=(b^sgb)-sgb;
+//	sga^=sgb;
+//	return((__xli_udiv(a, b)^sga)-sga);
 }
 #endif

@@ -520,6 +520,8 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_PSCHNEB		0x101		//
 #define BJX2_NMID_BLKUAB1		0x102		//
 #define BJX2_NMID_BLKUAB2		0x103		//
+#define BJX2_NMID_CONVFXI		0x104		//
+#define BJX2_NMID_CONVFLI		0x105		//
 
 
 #define BJX2_FMID_NONE			0x00		//?

@@ -18,12 +18,16 @@ char *bgbcp_defaultlocale;
 int bgbcp_codepage;
 
 
-
 BCCX_Node *BGBCP_FunArgs(BGBCP_ParseState *ctx, char **str)
 {
-	char b[256], b2[256];
+	return(BGBCP_FunArgsFlag(ctx, str, 0));
+}
+
+BCCX_Node *BGBCP_FunArgsFlag(BGBCP_ParseState *ctx, char **str, int flag)
+{
+	char b[256], b2[256], b3[256];
 	char *s, *s1, *s2;
-	int ty, ty2;
+	int ty, ty2, ty3;
 	BCCX_Node *n, *n1, *lst, *lste;
 
 	s=*str; lst=NULL; lste=NULL;
@@ -31,6 +35,8 @@ BCCX_Node *BGBCP_FunArgs(BGBCP_ParseState *ctx, char **str)
 	{
 		b[0]=0;
 		s1=BGBCP_Token(s, b, &ty);
+		s2=BGBCP_Token(s1, b2, &ty2);
+		BGBCP_Token(s2, b3, &ty3);
 
 		if(ty==BTK_NULL)break;		
 		if((ty==BTK_BRACE) &&
@@ -52,7 +58,8 @@ BCCX_Node *BGBCP_FunArgs(BGBCP_ParseState *ctx, char **str)
 		n=NULL;
 
 		if(	(ctx->lang==BGBCC_LANG_CS) ||
-			(ctx->lang==BGBCC_LANG_BS2))
+			(ctx->lang==BGBCC_LANG_BS2) ||
+			(flag&1))
 		{
 			if((ty==BTK_NAME) && !BGBCP_CheckTokenKeyword(ctx, b))
 			{
@@ -61,9 +68,26 @@ BCCX_Node *BGBCP_FunArgs(BGBCP_ParseState *ctx, char **str)
 				{
 					s=s2;
 					n1=BGBCP_Expression(ctx, &s);
-					n=BCCX_NewCst1(&bgbcc_rcst_attr, "attr", n1);
+					n=BCCX_NewCst1(&bgbcc_rcst_attr, "attr",
+						BCCX_NewCst1V(&bgbcc_rcst_value, "value", n1));
 					BCCX_SetCst(n, &bgbcc_rcst_name, "name", b);
 				}
+			}
+		}
+
+		if(	(ctx->lang==BGBCC_LANG_C)	||
+			(ctx->lang==BGBCC_LANG_CPP)	)
+		{
+			if(	!n						&&
+				!bgbcp_strcmp1(b, ".")	&&
+				(ty2==BTK_NAME)			&&
+				!bgbcp_strcmp1(b3, "=")	)
+			{
+				s=s2;
+				n1=BGBCP_Expression(ctx, &s);
+				n=BCCX_NewCst1(&bgbcc_rcst_attr, "attr",
+					BCCX_NewCst1V(&bgbcc_rcst_value, "value", n1));
+				BCCX_SetCst(n, &bgbcc_rcst_name, "name", b2);
 			}
 		}
 
@@ -823,7 +847,7 @@ BCCX_Node *BGBCP_ModuleBuffer(char *name, char *modname, char *buf)
 	static char *tbuf=NULL;
 	char b[256];
 //	VFILE *fd;
-	BGBCP_ParseState *ctx;
+	BGBCP_ParseState *ctx, *ppictx;
 //	char *tbuf;
 	char *s;
 	BCCX_Node *n, *n1, *n2, *c;
@@ -854,6 +878,13 @@ BCCX_Node *BGBCP_ModuleBuffer(char *name, char *modname, char *buf)
 
 	ctx=bgbcc_malloc(sizeof(BGBCP_ParseState));
 	memset(ctx, 0, sizeof(BGBCP_ParseState));
+
+	ppictx=bgbcc_malloc(sizeof(BGBCP_ParseState));
+	memset(ppictx, 0, sizeof(BGBCP_ParseState));
+	ctx->ppi_ctx=ppictx;
+	ppictx->ppi_upctx=ctx;
+	
+	ppictx->lang=BGBCC_LANG_BS;
 
 	ctx->lang=lang;
 	ctx->arch=BGBCC_GetArch();
@@ -975,6 +1006,8 @@ BCCX_Node *BGBCP_ModuleBuffer(char *name, char *modname, char *buf)
 		c=n1;
 	}
 
+	bgbcc_free(ppictx);
+	bgbcc_free(ctx);
 
 	return(n);
 }

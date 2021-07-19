@@ -911,6 +911,19 @@ begin
 					end
 `endif
 
+					4'hF: begin
+`ifdef def_true
+						opNmid		= JX2_UCMD_CONV_RR;
+						opFmid		= JX2_FMID_REGREG;
+						opUCmdIx	= JX2_UCIX_CONV_STFXI;
+						if(opExQ)
+						begin
+//							opUCty		= JX2_IUC_WX;
+							opUCmdIx	= JX2_UCIX_CONV_STFLI;
+						end
+`endif
+					end
+
 					default: begin
 					end
 				endcase

@@ -587,11 +587,15 @@ szFuncLength:
 ** BJX2: Will be Clear otherwise.
 * (   31): Set to indicate an exception handler exists.
 
-Directly following the function, there will be one of:
-* A branch to the start of the Epilog sequence.
-* The entry point for the exception handler.
+Directly following the end of the function, there will be the entry point for either an exception handler or an unwind sequence. The unwind sequence may in turn reuse the function's epilog sequence.
 
-If no exception handler is present, the function will be unwound following the pattern given in the epilog sequence. Otherwise, control will be transferred to the exception handler. The exception handler then will be responsible any dispatching or unwinding.
+If no exception handler is present, the function will be unwound following the pattern given in the prolog or epilog sequence. Otherwise, control will be transferred to the exception handler. The exception handler then will be responsible subsequent dispatching or unwinding.
+
+For the exception handler or unwind entry point:
+* R4: Target address to return to unwind logic.
+* (TBR, 0x30): Exception Object
+* (TBR, 0x38): Exception Unwind Vars (Array Pointer)
+* (TBR, 0x40): Saved LR goes Here.
 
 
 === Global Pointer ===

@@ -1771,6 +1771,9 @@ ccxl_status BGBCC_JX2C_BuildFunctionBody(
 
 	ce=BGBCC_JX2_EmitGetOffs(sctx);
 
+	//Exception / Unwind Entry point goes here.
+	BGBCC_JX2C_EmitFrameEpilogUnwind(ctx, sctx, obj);
+
 	plsz=(bo-bt)/2;
 	fnsz=(ce-bt)/2;
 
@@ -2236,7 +2239,7 @@ ccxl_status BGBCC_JX2C_BuildGlobal_EmitLitAsType(
 	ccxl_type tty;
 	s64 li, lj;
 	double f, g;
-	char *s0;
+	char *s0, *s1;
 	int n, sz, sz1, al, asz, bty;
 	int i, j, k;
 
@@ -2814,25 +2817,56 @@ ccxl_status BGBCC_JX2C_BuildGlobal_EmitLitAsType(
 			{
 //				BGBCC_JX2_EmitBAlign(sctx, al);
 
-				n=littyobj->decl->n_fields;
-				if(litobj->decl->n_listdata<n)
-					n=litobj->decl->n_listdata;
+				if(BGBCC_CCXL_IsRegImmFieldNameP(ctx,
+					litobj->decl->listdata[0]))
+				{
+					n=littyobj->decl->n_fields;
+					BGBCC_CCXL_GetRegForIntValue(ctx, &treg, 0);
+
+					for(i=0; i<n; i++)
+					{
+						for(j=0; j<litobj->decl->n_listdata; j+=2)
+						{
+							s0=BGBCC_CCXL_GetRegImmStringValue(ctx,
+								litobj->decl->listdata[j]);
+							s1=littyobj->decl->fields[i]->name;
+							if(!strcmp(s0, s1))
+								{ j++; break; }
+						}
+						if(j&1)
+						{
+							BGBCC_JX2C_BuildGlobal_EmitLitAsType(ctx, sctx,
+								littyobj->decl->fields[i]->type,
+								litobj->decl->listdata[j]);
+						}else
+						{
+							BGBCC_JX2C_BuildGlobal_EmitLitAsType(ctx, sctx,
+								littyobj->decl->fields[i]->type, treg);
+						}
+					}
+				}else
+				{
+					n=littyobj->decl->n_fields;
+					if(litobj->decl->n_listdata<n)
+						n=litobj->decl->n_listdata;
 				
-				for(i=0; i<n; i++)
-				{
-					BGBCC_JX2C_BuildGlobal_EmitLitAsType(ctx, sctx,
-						littyobj->decl->fields[i]->type,
-						litobj->decl->listdata[i]);
+					for(i=0; i<n; i++)
+					{
+						BGBCC_JX2C_BuildGlobal_EmitLitAsType(ctx, sctx,
+							littyobj->decl->fields[i]->type,
+							litobj->decl->listdata[i]);
+					}
+
+					BGBCC_CCXL_GetRegForIntValue(ctx, &treg, 0);
+					for(i=n; i<littyobj->decl->n_fields; i++)
+					{
+						BGBCC_JX2C_BuildGlobal_EmitLitAsType(ctx, sctx,
+							littyobj->decl->fields[i]->type, treg);
+					}
+
+	//				BGBCC_JX2_EmitBAlign(sctx, al);
 				}
 
-				BGBCC_CCXL_GetRegForIntValue(ctx, &treg, 0);
-				for(i=n; i<littyobj->decl->n_fields; i++)
-				{
-					BGBCC_JX2C_BuildGlobal_EmitLitAsType(ctx, sctx,
-						littyobj->decl->fields[i]->type, treg);
-				}
-
-//				BGBCC_JX2_EmitBAlign(sctx, al);
 
 				return(1);
 			}
@@ -4005,6 +4039,14 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			d1=(ctl-imgbase);
 			b=bgbcc_gets32en(ctr, en);
 			bgbcc_sets32en(ctr, en, b+d1);
+			break;
+
+		case BGBCC_SH_RLC_RVA24:
+			d1=(ctl-imgbase);
+			b=bgbcc_gets32en(ctr, en);
+			b1=	((b+d1)&0x00FFFFFFU) |
+				( b    &0xFF000000U) ;
+			bgbcc_sets32en(ctr, en, b1);
 			break;
 
 		case BGBCC_SH_RLC_RELW12:
@@ -5191,7 +5233,9 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 		}
 #endif
 		
-		if(obj->flagsint&BGBCC_TYFL_DLLEXPORT)
+//		if(obj->flagsint&BGBCC_TYFL_DLLEXPORT)
+		if(	(obj->flagsint&BGBCC_TYFL_DLLEXPORT) ||
+			(obj->flagsint&BGBCC_TYFL_NOCULL))
 		{
 			BGBCC_CCXL_GlobalMarkReachable(ctx, obj);
 			continue;

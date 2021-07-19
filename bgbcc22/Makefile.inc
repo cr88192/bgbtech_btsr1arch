@@ -6,6 +6,7 @@ SRCS=\
 	cparse/cparse_expr2.c \
 	cparse/cparse_reduce.c \
 	cparse/cparse_stmt.c \
+	cparse/cppi_interp.c \
 	cparse/preproc.c \
 	\
 	mm/cc_tokord.c \

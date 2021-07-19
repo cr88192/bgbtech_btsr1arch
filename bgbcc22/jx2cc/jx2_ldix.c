@@ -130,6 +130,12 @@ int BGBCC_JX2C_EmitLdix_FillSzNmTy(
 		sz=16; nm1=BGBCC_SH_NMID_MOVX2; nm2=-1;
 		break;
 
+	case CCXL_TY_I128:
+	case CCXL_TY_UI128:
+	case CCXL_TY_F128:
+		sz=16; nm1=BGBCC_SH_NMID_MOVX2; nm2=-1;
+		break;
+
 	case CCXL_TY_FIMAG:
 		sctx->is_leaftiny|=8;
 		sz=4; nm1=BGBCC_SH_NMID_MOVL; nm2=BGBCC_SH_NMID_SHLL32;
@@ -206,6 +212,9 @@ int BGBCC_JX2C_EmitLdixVRegVRegImm(
 
 		if(BGBCC_CCXL_TypeVarObjP(ctx, type))
 			s0="__lvo_loadindex_v";
+		if(BGBCC_CCXL_TypeVariantP(ctx, stype))
+			s0="__lvo_loadindex_var";
+
 		if(BGBCC_CCXL_TypeSgIntP(ctx, type))
 			s0="__lvo_loadindex_i";
 		if(BGBCC_CCXL_TypeSgLongP(ctx, type))
@@ -429,6 +438,9 @@ int BGBCC_JX2C_EmitLdixVRegVRegVReg(
 
 		if(BGBCC_CCXL_TypeVarObjP(ctx, type))
 			s0="__lvo_loadindex_v";
+		if(BGBCC_CCXL_TypeVariantP(ctx, stype))
+			s0="__lvo_loadindex_var";
+
 		if(BGBCC_CCXL_TypeSgIntP(ctx, type))
 			s0="__lvo_loadindex_i";
 		if(BGBCC_CCXL_TypeSgLongP(ctx, type))

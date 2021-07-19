@@ -377,6 +377,8 @@ void TKMM_Init()
 //		(tkmm_pageend-tkmm_pagebase)>>20);
 	
 	TKMM_MMList_Init();
+	
+	TKMM_LVA_ArrayInit();
 }
 
 void *TKMM_Malloc(int sz)

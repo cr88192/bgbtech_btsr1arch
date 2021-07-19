@@ -5,6 +5,8 @@ This bytecode format is not intended to be interpreted; rather it is intended fo
 Format specifics are subject to change, and generated code may contain target-specific constructions.
 
 
+=== Basic Header ===
+
 Header:
 * FOURCC magic;		//'RIL3'
 * BYTE ver;			//major.minor
@@ -12,7 +14,31 @@ Header:
 * BYTE resv2;
 * BYTE resv3;
 
-The header is directly followed by instructions, which proceed until the end of the file.
+The header is directly followed by instructions, which proceed until the end of the file. An 0x00 opcode may terminate decoding earlier.
+
+This is the simple version of the format, which will parse the whole image in a single pass.
+
+
+=== RIFF Variant ===
+
+Will also define a version of RIL3 packaged inside of a RIFF container.
+
+Toplevel Tag: RIFF("RIL3")
+* "strs": Global String Table
+** Consists of a table of M-UTF-8 strings.
+** Also gives initial contents of 16K sliding window.
+*** Truncated if longer than 16380 bytes.
+* LIST("r3bc"): List of RIL3 Bytecode Blobs
+** "blob": Bytecode Blob
+* 'bcix': Bytecode Blob Index
+
+The bytecode blob index consists of pairs of offsets:
+* DWORD ofsBc;
+** Bytecode offset, relative to start of 'r3bc' LIST tag.
+* DWORD ofsQName;
+** QName Offset, within "strs"
+** Set to 0 if blob does not have a QName.
+
 
 
 === Values ===
@@ -130,11 +156,14 @@ String Character Encodings:
 
 ASCII String Codepoint Ranges:
 * 0000..00FF: Literal Byte
+** 00 is encoded via an overlong encoding.
 * 0100..06FF: Pass Through UTF-8
 * 0700..077F: Byte 00..7F followed by 00
 * 0780..07FF: Remap UTF-8, 0080..00FF.
 * 0800..7FFF: Pass Through UTF-8
 * 8000..FFFF: Two Byte Pairs
+** High 8 bits: First Byte
+** Low 8 bits: Second Byte
 
 
 DataBlob:
@@ -238,12 +267,16 @@ Typed signatures are encoded as strings, with characters indicating value types.
 * 'Dp':
 * 'Dq': __quatd
 
-
 * 'Dz': va_list
+
 * 'Gd': _Imaginary double
 * 'Ge': _Imaginary long double
 * 'Gf': _Imaginary float
 * 'Gg': _Imaginary float128
+
+* 'Gw': bigint
+* 'Gx': fixnum
+* 'Gy': flonum
 
 * 'D{n}{sig}'
 ** Vector Type (n elements of a given type signature)
@@ -315,6 +348,7 @@ Pointer/Array Class Modifer:
 
 * Da: ifarch (only build if ifarch pattern is true)
 * Db: ifnarch (only build if ifarch pattern is false)
+* Dc: nocull (do not cull, always assume reachable)
 
 * De: dllexport
 * Di: dllimport

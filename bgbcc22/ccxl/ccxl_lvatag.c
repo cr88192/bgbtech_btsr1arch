@@ -25,6 +25,19 @@ int ccxl_lvatyi_wstring;
 int ccxl_lvatyi_ustring;
 int ccxl_lvatyi_classobj;
 
+int ccxl_lvatyi_int128;
+int ccxl_lvatyi_float128;
+
+int ccxl_lvatyi_string;
+int ccxl_lvatyi_wstring;
+int ccxl_lvatyi_ustring;
+int ccxl_lvatyi_classobj;
+
+int ccxl_lvatyi_fixnum;
+int ccxl_lvatyi_flonum;
+int ccxl_lvatyi_tagobj;
+int ccxl_lvatyi_cons;
+
 int ccxl_lvatyi_arrmt[16];
 int ccxl_lvatyi_arrmsc[16];
 
@@ -148,22 +161,27 @@ void CCXL_LVA_Init(BGBCC_TransState *ctx)
 
 	CCXL_LVA_TagInit(ctx);
 
-	ccxl_lvatyi_tagarray=CCXL_LVA_GetTagIndexForName(ctx, "_TagArray");
-	ccxl_lvatyi_variant	=CCXL_LVA_GetTagIndexForName(ctx, "_Variant");
-	ccxl_lvatyi_string	=CCXL_LVA_GetTagIndexForName(ctx, "_String");
-	ccxl_lvatyi_wstring	=CCXL_LVA_GetTagIndexForName(ctx, "_WString");
-	ccxl_lvatyi_ustring	=CCXL_LVA_GetTagIndexForName(ctx, "_UString");
-	ccxl_lvatyi_classobj=CCXL_LVA_GetTagIndexForName(ctx, "_ClassObj");
-
-	ccxl_lvatyi_pointer	=CCXL_LVA_GetTagIndexForName(ctx, "_Pointer");
-	ccxl_lvatyi_byte	=CCXL_LVA_GetTagIndexForName(ctx, "_Byte");
-	ccxl_lvatyi_sbyte	=CCXL_LVA_GetTagIndexForName(ctx, "_SByte");
-	ccxl_lvatyi_short	=CCXL_LVA_GetTagIndexForName(ctx, "_Short");
-	ccxl_lvatyi_ushort	=CCXL_LVA_GetTagIndexForName(ctx, "_UShort");
-	ccxl_lvatyi_int		=CCXL_LVA_GetTagIndexForName(ctx, "_Int");
-	ccxl_lvatyi_uint	=CCXL_LVA_GetTagIndexForName(ctx, "_UInt");
-	ccxl_lvatyi_long	=CCXL_LVA_GetTagIndexForName(ctx, "_Long");
-	ccxl_lvatyi_ulong	=CCXL_LVA_GetTagIndexForName(ctx, "_ULong");
-	ccxl_lvatyi_float	=CCXL_LVA_GetTagIndexForName(ctx, "_Float");
-	ccxl_lvatyi_double	=CCXL_LVA_GetTagIndexForName(ctx, "_Double");
+	ccxl_lvatyi_tagarray	=CCXL_LVA_GetTagIndexForName(ctx, "_TagArray");	//01
+	ccxl_lvatyi_variant		=CCXL_LVA_GetTagIndexForName(ctx, "_Variant");	//02
+	ccxl_lvatyi_string		=CCXL_LVA_GetTagIndexForName(ctx, "_String");	//03
+	ccxl_lvatyi_wstring		=CCXL_LVA_GetTagIndexForName(ctx, "_WString");	//04
+	ccxl_lvatyi_ustring		=CCXL_LVA_GetTagIndexForName(ctx, "_UString");	//05
+	ccxl_lvatyi_classobj	=CCXL_LVA_GetTagIndexForName(ctx, "_ClassObj");	//06
+	ccxl_lvatyi_pointer		=CCXL_LVA_GetTagIndexForName(ctx, "_Pointer");	//07
+	ccxl_lvatyi_byte		=CCXL_LVA_GetTagIndexForName(ctx, "_Byte");		//08
+	ccxl_lvatyi_sbyte		=CCXL_LVA_GetTagIndexForName(ctx, "_SByte");	//09
+	ccxl_lvatyi_short		=CCXL_LVA_GetTagIndexForName(ctx, "_Short");	//0A
+	ccxl_lvatyi_ushort		=CCXL_LVA_GetTagIndexForName(ctx, "_UShort");	//0B
+	ccxl_lvatyi_int			=CCXL_LVA_GetTagIndexForName(ctx, "_Int");		//0C
+	ccxl_lvatyi_uint		=CCXL_LVA_GetTagIndexForName(ctx, "_UInt");		//0D
+	ccxl_lvatyi_long		=CCXL_LVA_GetTagIndexForName(ctx, "_Long");		//0E
+	ccxl_lvatyi_ulong		=CCXL_LVA_GetTagIndexForName(ctx, "_ULong");	//0F
+	ccxl_lvatyi_float		=CCXL_LVA_GetTagIndexForName(ctx, "_Float");	//10
+	ccxl_lvatyi_double		=CCXL_LVA_GetTagIndexForName(ctx, "_Double");	//11
+	ccxl_lvatyi_int128		=CCXL_LVA_GetTagIndexForName(ctx, "_Int128");	//12
+	ccxl_lvatyi_float128	=CCXL_LVA_GetTagIndexForName(ctx, "_Float128");	//13
+	ccxl_lvatyi_fixnum		=CCXL_LVA_GetTagIndexForName(ctx, "_Fixnum");	//14
+	ccxl_lvatyi_flonum		=CCXL_LVA_GetTagIndexForName(ctx, "_Flonum");	//15
+	ccxl_lvatyi_tagobj		=CCXL_LVA_GetTagIndexForName(ctx, "_TagObj");	//16
+	ccxl_lvatyi_cons		=CCXL_LVA_GetTagIndexForName(ctx, "_Cons");		//17
 }

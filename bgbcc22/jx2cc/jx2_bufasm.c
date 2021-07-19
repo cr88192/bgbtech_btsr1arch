@@ -964,6 +964,9 @@ int nmid;
 {"blkuab1",		BGBCC_SH_NMID_BLKUAB1},
 {"blkuab2",		BGBCC_SH_NMID_BLKUAB2},
 
+{"convfxi",		BGBCC_SH_NMID_CONVFXI},
+{"convfli",		BGBCC_SH_NMID_CONVFLI},
+
 
 {"pscheq.w",	BGBCC_SH_NMID_PSCHEQW},
 {"pscheq.b",	BGBCC_SH_NMID_PSCHEQB},

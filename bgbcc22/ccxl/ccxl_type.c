@@ -638,7 +638,10 @@ bool BGBCC_CCXL_TypeVarRefP(
 	bt=BGBCC_CCXL_GetTypeBaseType(ctx, ty);
 	if(	(bt==CCXL_TY_VARIANT) ||
 		(bt==CCXL_TY_VAROBJECT) ||
-		(bt==CCXL_TY_VARSTRING))
+		(bt==CCXL_TY_VARSTRING) ||
+		(bt==CCXL_TY_FIXNUM) ||
+		(bt==CCXL_TY_FLONUM) ||
+		(bt==CCXL_TY_BIGINT))
 	{
 		ctx->ccxl_tyc_seen|=BGBCC_TYCSEEN_VARIANT;
 		return(true);
@@ -3533,6 +3536,10 @@ ccxl_status BGBCC_CCXL_TypeFromSig(
 		case 'f': bty=CCXL_TY_FIMAG; break;
 		case 'g': bty=CCXL_TY_GIMAG; break;
 		case 'k': bty=CCXL_TY_HIMAG; break;
+
+		case 'w': bty=CCXL_TY_BIGINT; break;
+		case 'x': bty=CCXL_TY_FIXNUM; break;
+		case 'y': bty=CCXL_TY_FLONUM; break;
 
 		default:  bty=-1; break;
 		}

@@ -1,0 +1,140 @@
+CxVar
+* C Variant with extended features (BGBCC).
+* Adds a dynamic type system.
+* Add class/instance OO.
+* Adds preprocessor extensions.
+
+
+=== Preprocessor Extensions ===
+
+Block Macro:
+ # defmacro NAME  //block macro (no args)
+ ...
+ # endmacro
+ 
+ # defmacro NAME(ARGS)  //block macro (with args)
+ ...
+ # endmacro
+ 
+ # assign NAME EXPR		//computed redefine
+
+A block macro will define a macro which spans multiple lines.
+
+The assign directive line will evaluate the expression and define the result.
+If the define already exists, it will be replaced with the new value.
+
+Note that certain preprocessor directive, namely if/ifdef/else/endif, are allowed within the body of a block macro. These will be evaluated at the time the macro is declared, and as such will modify the contents of the macro.
+
+
+Macro Scripts:
+  # macroed
+  ...
+  # endmacro
+  #`` EXPR
+
+Macro scripts will represent small programs with a JS-like syntax.
+These programs will be evaluated in the preprocessor, and may produce output
+which is piped back into the preprocessor.
+
+The macroed block will behave similar to a block macro.
+
+Macroed Statements:
+ var NAME;  //declare a variable
+ var NAME = VALUE;  //declare a variable with a value.
+ function NAME(ARGS) { ... BODY ... }  //function
+
+Wirh some built-in functions defined:
+ isDefined("NAME");  //returns boolean true if a preprocessor define exists.
+ getDefineStr("NAME");  //get the value string of a define
+ addDefineStr("NAME", "VALUE");  //assign the value string of a define.
+ print("PATTERN", VALUES);  //print a format string (fed back into PP output)
+ echo(VALUES);  //print a series of values to the PP output.
+ 
+
+=== Dynamic Types ===
+
+New Type Keywords:
+* __var:
+** Value is either dynamically typed or type-inferred.
+** The __var keyword may also introduce some other constructs.
+
+* __variant:
+** Variant is a dynamically typed value.
+** Nominally represented as a 64-bit tagged reference value.
+* __object:
+** Same format as variant, but is opaque and does not allow operators.
+* __string:
+** Same format as variant, but only holds string type values.
+* __boxint:
+** Same format as variant, but only holds boxint values.
+
+
+Dynamic typed values will represent their own set of types:
+* fixnum: Nominally 62-bits, signed integer.
+* flonum: Nominally 62-bits, floating point number.
+* string: Literal string.
+* tagarr: Reference type array;
+* tagobj: Associative dictionary object.
+* boxint: Large Boxed Integer Type (128 to 384 bits).
+
+Tagged Arrays are always 1-dimensional, and may contain various primitive types (including object and variant). Note that non-primitive types will generally be stored in the same format as object and variant.
+
+Casting a value to or from object or variant will attempt to type-convert the value.
+* Casting from other tagged-pointer types will copy the value unchanged.
+* Integer or Floating point types will be converted to fixnum or flonum.
+* Casting pointer types will be assumed to be object pointers.
+** The type-tag will be fetched from the corresponding heap allocation.
+** Casting a pointer to variant is undefined if the pointer is not a heap object.
+
+
+Many operators may also be used on variant values, and will behave similarly to operators on primitive types. Operators between fixnum values will operate on fixnum, and will be 62-bit sign modular (twos complement).
+
+Note that long values outside of the fixnum range may be truncated if cast to variant. It will be necessary to cast to boxint instead if a larger value is needed.
+
+
+Variant will define or redefine a few operators:
+* a==b / a!=b, Compare by value (Soft)
+** Values of compatible types may be compared after conversion to a common type.
+* a===b / a!==b, Compare by identity (Hard)
+** Values are compared using the literal bit-pattern in the tagged reference.
+** Values will only compare equal if they refer to the same object.
+* a &gt;&gt; b, Signed right shift (integer types)
+* a &gt;&gt;&gt; b, Unsigned signed right shift (integer types)
+
+As well as add new operators:
+* OBJ __instanceof TYPE
+** Check if an object is an instance of a given type.
+* __new TYPE [ SIZE ]
+** Create new tag array with a given size.
+
+
+=== Object System ===
+
+An object system with single inheritance and interfaces will be defined.
+* Object instances in this system will use tagged references.
+
+New Keywords:
+* __class NAME [ __extends SUPER ] [ __implements LIST ] { BODY }
+** Define a new class.
+** A class may extend a single superclass.
+** A class may implement zero or more interfaces.
+* __interface NAME { BODY }
+** Define a new interface.
+* __public: Mark a field as public
+* __private: Mark a field as private
+* __protected: Mark a field as protected
+* __virtual: Mark a method as virtual.
+* __final: Mark a method or field as final.
+* __new CLASS(CTOR_ARGS)
+** Create a new Class Instance.
+* OBJ __instanceof CLASS
+** Check if an object is an instance of a given class.
+* OBJ __instanceof IFACE
+** Check if an object implements a given interface.
+
+Methods may be unmarked, virtual, or final.
+
+An unmarked method will be either virtual or final.
+* An final method may not be overridden in a child class.
+* A virtual method may be overriden in a child class.
+* Overriding an unmarked method is undefined.

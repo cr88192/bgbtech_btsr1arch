@@ -302,6 +302,9 @@ extern "C" {
 #define BGBCC_TYFL_IFARCH			(1LL<<42)
 #define BGBCC_TYFL_IFNARCH			(1LL<<43)
 
+#define BGBCC_TYFL_NOCULL			(1LL<<44)
+
+
 #define BGBCC_TYFL_DFL_MASK			\
 	(BGBCC_TYFL_PUBLIC|BGBCC_TYFL_PRIVATE|BGBCC_TYFL_PROTECTED)
 
@@ -562,6 +565,9 @@ typedef struct BGBCP_ParseItem_s BGBCP_ParseItem;
 typedef struct BGBCP_ParseState_s BGBCP_ParseState;
 typedef struct BGBPP_Def_s BGBPP_Def;
 
+typedef struct BGBPP_PpiDef_s BGBPP_PpiDef;
+typedef struct BGBPP_PpiFrame_s BGBPP_PpiFrame;
+
 typedef struct BGBCP_ParseState_s BGBJP_ParseState;
 typedef struct BGBCC_TransState_s BGBCC_TransState;
 
@@ -605,6 +611,16 @@ BCCX_Node *e_types;
 // BGBPP_Def *ppdef[256];
 BGBPP_Def *ppdef[BGBCC_PPDEF_SIZE];
 
+BGBCP_ParseState *ppi_ctx;
+BGBCP_ParseState *ppi_upctx;
+BGBPP_PpiDef *ppi_toplevel;
+BGBPP_PpiDef *ppi_freedef;
+BGBPP_PpiFrame *ppi_callframe;
+BGBPP_PpiFrame *ppi_freeframe;
+byte ppi_break;
+BCCX_Node *ppi_retval;
+
+
 BCCX_Node *struct_hash[256];
 BCCX_Node *type_hash[1024];
 
@@ -627,6 +643,24 @@ char *name;
 char *value;
 char **args;
 char *t_args[16];
+};
+
+struct BGBPP_PpiDef_s {
+BGBPP_PpiDef *next;
+char *name;
+//char *value;
+//char **args;
+//char *t_args[16];
+BCCX_Node *args;
+BCCX_Node *body;
+BCCX_Node *value;
+};
+
+struct BGBPP_PpiFrame_s {
+BGBPP_PpiFrame *next;
+//BCCX_Node *value;
+
+BGBPP_PpiDef *vars;
 };
 
 struct BGBCC_TransState_s {

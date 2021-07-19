@@ -81,9 +81,12 @@ SRCS_CLIB = \
 	tk_core/tk_vmem.c \
 	tk_core/tk_wad4.c \
 	\
+	tk_core/tku_bigint.c \
+	\
 	tk_core/lva_array.c \
 	tk_core/lva_strdup.c \
 	tk_core/lva_tagobj.c \
+	tk_core/lva_tagopr.c \
 	tk_core/lva_varobj.c \
 	\
 	inttypes.c \

@@ -1212,6 +1212,21 @@ void BJX2_Op_EXTSL_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=(s32)ctx->regs[op->rm];
 }
 
+void BJX2_Op_CONVFXI_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[op->rn]=
+		( ctx->regs[op->rm] &
+			0x3FFFFFFFFFFFFFFFULL ) | 
+			0x4000000000000000ULL ;
+}
+
+void BJX2_Op_CONVFLI_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[op->rn]=
+		(ctx->regs[op->rm]>>2) |
+		0x8000000000000000ULL ;
+}
+
 
 void BJX2_Op_SHLL_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {

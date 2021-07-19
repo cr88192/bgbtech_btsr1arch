@@ -5,6 +5,7 @@
 #include "cparse/cparse_expr2.c"
 #include "cparse/cparse_stmt.c"
 #include "cparse/cparse_reduce.c"
+#include "cparse/cppi_interp.c"
 #include "cparse/preproc.c"
 
 // #include "jparse/jp_token2.c"

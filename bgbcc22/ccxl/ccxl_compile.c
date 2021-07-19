@@ -1357,7 +1357,9 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 		}
 #endif
 
-		if(BGBCC_CCXL_TypeCompatibleP(ctx, lty, rty))
+		if(BGBCC_CCXL_TypeCompatibleP(ctx, lty, rty) &&
+			!BGBCC_CCXL_TypeVariantP(ctx, lty) &&
+			!BGBCC_CCXL_TypeVariantP(ctx, rty))
 		{
 			if(BCCX_TagIsCstP(ln, &bgbcc_rcst_ref, "ref") &&
 				BCCX_TagIsCstP(rn, &bgbcc_rcst_objref, "objref"))
@@ -2315,6 +2317,8 @@ char *BGBCC_CCXL_VarTypeString_FlattenName(BGBCC_TransState *ctx,
 		if(!strcmp(s, "float128"))*t++='g';
 		if(!strcmp(s, "long_double"))*t++='g';
 
+		if(!strcmp(s, "auto"))*t++='r';
+		if(!strcmp(s, "var"))*t++='r';
 		if(!strcmp(s, "variant"))*t++='r';
 		if(!strcmp(s, "variantf"))
 			{ *t++='C'; *t++='r'; }
@@ -2399,6 +2403,13 @@ char *BGBCC_CCXL_VarTypeString_FlattenName(BGBCC_TransState *ctx,
 			{ *t++='D'; *t++='h'; }
 		if(!strcmp(s, "vec3fq"))
 			{ *t++='D'; *t++='l'; }
+
+		if(!strcmp(s, "bigint"))
+			{ *t++='G'; *t++='w'; }
+		if(!strcmp(s, "fixnum"))
+			{ *t++='G'; *t++='x'; }
+		if(!strcmp(s, "flonum"))
+			{ *t++='G'; *t++='y'; }
 
 		*t=0;
 	}
@@ -2676,6 +2687,7 @@ int BGBCC_CCXL_VarTypeString_ModifierChar(BGBCC_TransState *ctx, s64 i)
 
 	case BGBCC_TYFL_IFARCH:			c=('D'<<8)|'a'; break;
 	case BGBCC_TYFL_IFNARCH:		c=('D'<<8)|'b'; break;
+	case BGBCC_TYFL_NOCULL:			c=('D'<<8)|'c'; break;
 
 	case BGBCC_TYFL_DLLEXPORT:		c=('D'<<8)|'e'; break;
 	case BGBCC_TYFL_DLLIMPORT:		c=('D'<<8)|'i'; break;
@@ -3401,6 +3413,8 @@ void BGBCC_CCXL_EmitVarFunc(BGBCC_TransState *ctx,
 			{ li|=BGBCC_TYFL_INTERRUPT; }
 		if(BGBCC_CCXL_GetNodeAttribute(ctx, ty, "syscall"))
 			{ li|=BGBCC_TYFL_SYSCALL; }
+		if(BGBCC_CCXL_GetNodeAttribute(ctx, ty, "nocull"))
+			{ li|=BGBCC_TYFL_NOCULL; }
 
 		s3=BGBCC_CCXL_GetNodeAttributeStringOrRef(ctx, ty, "ifarch");
 		if(s3)
@@ -5145,6 +5159,16 @@ void BGBCC_CCXL_EmitVarValue(BGBCC_TransState *ctx, BCCX_Node *v)
 		if(s) { i=BGBCP_ParseChar(&s); }
 			else i=0;
 		BGBCC_CCXL_LiteralInt(ctx, CCXL_ATTR_VALUE, i);
+		return;
+	}
+
+	if(BCCX_TagIsCstP(v, &bgbcc_rcst_attr, "attr"))
+	{
+		s=BCCX_GetCst(v, &bgbcc_rcst_name, "name");
+		nv1=BCCX_FetchCst(v, &bgbcc_rcst_value, "value");
+		
+		BGBCC_CCXL_LiteralSetField(ctx, CCXL_ATTR_VALUE, s);
+		BGBCC_CCXL_EmitVarValue(ctx, nv1);
 		return;
 	}
 

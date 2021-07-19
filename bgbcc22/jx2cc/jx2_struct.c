@@ -287,9 +287,10 @@ int BGBCC_JX2C_EmitLoadSlotVRegVRegImm(
 			csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, sreg);
 			cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dreg);
 
-			nm1=BGBCC_SH_NMID_MOVL;
-			if(sctx->is_addr64)
-				nm1=BGBCC_SH_NMID_MOVQ;
+//			nm1=BGBCC_SH_NMID_MOVL;
+//			if(sctx->is_addr64)
+//				nm1=BGBCC_SH_NMID_MOVQ;
+			nm1=BGBCC_SH_NMID_MOV;
 
 			if(BGBCC_JX2C_EmitRegIsLpReg(ctx, sctx, cdreg))
 			{
@@ -304,8 +305,9 @@ int BGBCC_JX2C_EmitLoadSlotVRegVRegImm(
 			{
 //				j=BGBCC_CCXL_GetRegID(ctx, sreg);
 				k=BGBCC_JX2C_GetGblIndexLabel(ctx, sctx, j);
-				BGBCC_JX2_EmitLoadRegLabelVarRel24(sctx,
-					nm1, cdreg, k);
+//				BGBCC_JX2_EmitLoadRegLabelVarRel24(sctx,
+//					nm1, cdreg, k);
+				BGBCC_JX2_EmitOpLblReg(sctx, nm1, k, cdreg);
 			}
 
 			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);

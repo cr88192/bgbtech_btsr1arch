@@ -199,6 +199,7 @@ BJX2_Trace *BJX2_GetTraceForAddr(BJX2_Context *ctx, bjx2_addr addr, int fl)
 	i=BJX2_DecodeTraceForAddr(ctx, cur, addr, fl);
 	if(i<0)
 	{
+		ctx->status=BJX2_FLT_BADPC;
 		ctx->rttr[h&63]=NULL;
 		BJX2_ContextFreeTrace(ctx, cur);
 		return(NULL);
@@ -681,6 +682,7 @@ char *BJX2_DbgNameForAddrSz(BJX2_Context *ctx,
 
 	m=0;
 	n=ctx->map_n_ents;
+	bn=NULL;
 	
 	while(n>(m+3))
 	{
@@ -991,6 +993,10 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 
 	case BJX2_NMID_BLKUTX1:		s0="BLKUTX1";	break;
 	case BJX2_NMID_BLKUTX2:		s0="BLKUTX2";	break;
+	case BJX2_NMID_BLKUAB1:		s0="BLKUAB1";	break;
+	case BJX2_NMID_BLKUAB2:		s0="BLKUAB2";	break;
+	case BJX2_NMID_CONVFXI:		s0="CONVFXI";	break;
+	case BJX2_NMID_CONVFLI:		s0="CONVFLI";	break;
 
 	case BJX2_NMID_PMORTL:		s0="PMORT.L";	break;
 	case BJX2_NMID_PMORTQ:		s0="PMORT.Q";	break;
@@ -1898,6 +1904,9 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 	for(i=0; i<64; i++)
 		topfn_hash[i]=-1;
 
+	for(i=0; i<1024; i++)
+		topfn_name[0]=NULL;
+
 	n_topfn=0;
 	for(i=0; i<1024; i++)
 	{
@@ -1971,6 +1980,13 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 //		pcnt=(100.0*cyc)/(ctx->tot_cyc);
 		pcnt=topfn_pcnt[63-i];
 		tpcnt=topfn_tpcnt[63-i];
+
+		if(!bn2)
+		{
+			if(!pcnt)
+				continue;
+			bn2="?";
+		}
 
 		printf(" %-40s %.2f%% %.2f%%\n", bn2, pcnt, tpcnt);
 	}
@@ -2189,6 +2205,8 @@ int BJX2_UpdateForStatus(BJX2_Context *ctx)
 	}
 	if(ctx->status==BJX2_FLT_BREAK)
 		return(0);
+	if(ctx->status==BJX2_FLT_BADPC)
+		return(0);
 
 	if(ctx->status==BJX2_FLT_PCMISH)
 		return(0);
@@ -2265,6 +2283,7 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 			{
 				if(BJX2_UpdateForStatus(ctx))
 					continue;
+				break;
 			}
 		}
 

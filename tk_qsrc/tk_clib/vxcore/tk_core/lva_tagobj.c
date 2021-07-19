@@ -270,3 +270,45 @@ void *TKMM_LVA_UnwrapPointer(u64 val)
 {
 	return((void *)(val&LVA_POINTER_MASK));
 }
+
+int __lvo_fixnump(tk_lva_object obj)
+{
+	u64 objv;
+	objv=__object_getbits(obj);
+	return((objv>>62)==1);
+}
+
+int __lvo_flonump(tk_lva_object obj)
+{
+	u64 objv;
+	objv=__object_getbits(obj);
+	return((objv>>62)==2);
+}
+
+int __lvo_stringp(tk_lva_object obj)
+{
+	u64 objv;
+	objv=__object_getbits(obj);
+	return((objv>>48)==LVA_LVATY_STRING);
+}
+
+int __lvo_wstringp(tk_lva_object obj)
+{
+	u64 objv;
+	objv=__object_getbits(obj);
+	return((objv>>48)==LVA_LVATY_WSTRING);
+}
+
+int __lvo_tagarrp(tk_lva_object obj)
+{
+	u64 objv;
+	objv=__object_getbits(obj);
+	return((objv>>48)==LVA_LVATY_TAGARRAY);
+}
+
+int __lvo_tagobjp(tk_lva_object obj)
+{
+	u64 objv;
+	objv=__object_getbits(obj);
+	return((objv>>48)==LVA_LVATY_TAGOBJ);
+}

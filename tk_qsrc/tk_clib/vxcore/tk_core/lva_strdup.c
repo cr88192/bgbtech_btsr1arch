@@ -60,53 +60,92 @@ void TKMM_LVA_StrcpyU16(u16 *strd, u16 *strs)
 	*ct++=ca;
 }
 
-void TKMM_LVA_StrEncodeLengthRev(byte *dst, int len)
+void TKMM_LVA_StrEncodeLengthRev(byte *dst, int len, int tag)
 {
 	if(len<0)
 		return;
-	if(len<128)
+//	if(len<128)
+	if(len<64)
 	{
-		*dst=len;
+		dst[0]=tag;
+		dst[1]=0x80|len;
 		return;
 	}
+
 	if(len<4096)
 	{
-		(dst-1)[0]=0xC0|((len>>6)&0x1F);
-		(dst-1)[1]=0x80|((len>>0)&0x3F);
+		dst--;
+		dst[0]=tag;
+		dst[1]=0x80|((len>>0)&0x3F);
+		dst[2]=0xC0|((len>>6)&0x1F);
+
+//		(dst-1)[0]=0xC0|((len>>6)&0x1F);
+//		(dst-1)[1]=0x80|((len>>0)&0x3F);
 		return;
 	}
+
 	if(len<65536)
 	{
-		(dst-2)[0]=0xE0|((len>>12)&0x0F);
-		(dst-2)[1]=0x80|((len>> 6)&0x3F);
-		(dst-2)[2]=0x80|((len>> 0)&0x3F);
+		dst-=2;
+		dst[0]=tag;
+		dst[1]=0x80|((len>> 0)&0x3F);
+		dst[2]=0x80|((len>> 6)&0x3F);
+		dst[3]=0xE0|((len>>12)&0x0F);
+
+//		(dst-2)[0]=0xE0|((len>>12)&0x0F);
+//		(dst-2)[1]=0x80|((len>> 6)&0x3F);
+//		(dst-2)[2]=0x80|((len>> 0)&0x3F);
 		return;
 	}
 	if(len<2097152)
 	{
-		(dst-3)[0]=0xF0|((len>>18)&0x07);
-		(dst-3)[1]=0x80|((len>>12)&0x3F);
-		(dst-3)[2]=0x80|((len>> 6)&0x3F);
-		(dst-3)[3]=0x80|((len>> 0)&0x3F);
+		dst-=3;
+		dst[0]=tag;
+		dst[1]=0x80|((len>> 0)&0x3F);
+		dst[2]=0x80|((len>> 6)&0x3F);
+		dst[3]=0x80|((len>>12)&0x3F);
+		dst[4]=0xF0|((len>>18)&0x07);
+
+//		(dst-3)[0]=0xF0|((len>>18)&0x07);
+//		(dst-3)[1]=0x80|((len>>12)&0x3F);
+//		(dst-3)[2]=0x80|((len>> 6)&0x3F);
+//		(dst-3)[3]=0x80|((len>> 0)&0x3F);
 		return;
 	}
 	if(len<67108864)
 	{
-		(dst-4)[0]=0xF8|((len>>24)&0x03);
-		(dst-4)[1]=0x80|((len>>18)&0x3F);
-		(dst-4)[2]=0x80|((len>>12)&0x3F);
-		(dst-4)[3]=0x80|((len>> 6)&0x3F);
-		(dst-4)[4]=0x80|((len>> 0)&0x3F);
+		dst-=4;
+		dst[0]=tag;
+		dst[1]=0x80|((len>> 0)&0x3F);
+		dst[2]=0x80|((len>> 6)&0x3F);
+		dst[3]=0x80|((len>>12)&0x3F);
+		dst[4]=0x80|((len>>18)&0x3F);
+		dst[5]=0xF8|((len>>24)&0x03);
+
+//		(dst-4)[0]=0xF8|((len>>24)&0x03);
+//		(dst-4)[1]=0x80|((len>>18)&0x3F);
+//		(dst-4)[2]=0x80|((len>>12)&0x3F);
+//		(dst-4)[3]=0x80|((len>> 6)&0x3F);
+//		(dst-4)[4]=0x80|((len>> 0)&0x3F);
 		return;
 	}
 	if(len<2147483647)
 	{
-		(dst-5)[0]=0xFC|((len>>30)&0x01);
-		(dst-5)[1]=0x80|((len>>24)&0x3F);
-		(dst-5)[2]=0x80|((len>>18)&0x3F);
-		(dst-5)[3]=0x80|((len>>12)&0x3F);
-		(dst-5)[4]=0x80|((len>> 6)&0x3F);
-		(dst-5)[5]=0x80|((len>> 0)&0x3F);
+		dst-=5;
+		dst[0]=tag;
+		dst[1]=0x80|((len>> 0)&0x3F);
+		dst[2]=0x80|((len>> 6)&0x3F);
+		dst[3]=0x80|((len>>12)&0x3F);
+		dst[4]=0x80|((len>>18)&0x3F);
+		dst[5]=0x80|((len>>24)&0x3F);
+		dst[6]=0xFC|((len>>30)&0x01);
+
+//		(dst-5)[0]=0xFC|((len>>30)&0x01);
+//		(dst-5)[1]=0x80|((len>>24)&0x3F);
+//		(dst-5)[2]=0x80|((len>>18)&0x3F);
+//		(dst-5)[3]=0x80|((len>>12)&0x3F);
+//		(dst-5)[4]=0x80|((len>> 6)&0x3F);
+//		(dst-5)[5]=0x80|((len>> 0)&0x3F);
 		return;
 	}
 }
@@ -135,9 +174,9 @@ char *TKMM_LVA_StrdupPfx(char *str, byte pfx)
 		c=TKMM_MMList_Malloc(l+24);
 		s1=(char *)(((char **)c)+2);
 		strcpy(s1, str);
-		*(s1-1)=pfx;
+//		*(s1-1)=pfx;
 //		*(u16 *)(s1-4)=l;
-		TKMM_LVA_StrEncodeLengthRev((byte *)(s1-2), l);
+		TKMM_LVA_StrEncodeLengthRev((byte *)(s1-2), l, pfx);
 		*(char **)c=tk_lva_strbuf_hash[h];
 		tk_lva_strbuf_hash[h]=c;
 		return(s1);
@@ -161,9 +200,9 @@ char *TKMM_LVA_StrdupPfx(char *str, byte pfx)
 	tk_lva_strbuf_pos=c+l+24;
 	s1=(char *)(((char **)c)+2);
 	strcpy(s1, str);
-	*(s1-1)=pfx;
+//	*(s1-1)=pfx;
 //	*(u16 *)(s1-4)=l;
-	TKMM_LVA_StrEncodeLengthRev((byte *)(s1-2), l);
+	TKMM_LVA_StrEncodeLengthRev((byte *)(s1-2), l, pfx);
 	*(char **)c=tk_lva_strbuf_hash[h];
 	tk_lva_strbuf_hash[h]=c;
 	return(s1);
@@ -199,9 +238,9 @@ u16 *TKMM_LVA_StrdupU16(u16 *str)
 		s1=(char *)(((char **)c)+2);
 //		strcpy(s1, str);
 		TKMM_LVA_StrcpyU16((u16 *)s1, str);
-		*(s1-1)='w';
+//		*(s1-1)='w';
 //		*(u16 *)(s1-4)=l;
-		TKMM_LVA_StrEncodeLengthRev((byte *)(s1-2), l);
+		TKMM_LVA_StrEncodeLengthRev((byte *)(s1-2), l, 'w');
 		*(char **)c=tk_lva_strbuf_hash[h];
 		tk_lva_strbuf_hash[h]=c;
 		return((u16 *)s1);
@@ -225,9 +264,9 @@ u16 *TKMM_LVA_StrdupU16(u16 *str)
 	tk_lva_strbuf_pos=c+(l*2)+24;
 	s1=(char *)(((char **)c)+2);
 	TKMM_LVA_StrcpyU16((u16 *)s1, str);
-	*(s1-1)='w';
+//	*(s1-1)='w';
 //	*(u16 *)(s1-4)=l;
-	TKMM_LVA_StrEncodeLengthRev((byte *)(s1-2), l);
+	TKMM_LVA_StrEncodeLengthRev((byte *)(s1-2), l, 'w');
 	*(char **)c=tk_lva_strbuf_hash[h];
 	tk_lva_strbuf_hash[h]=c;
 	return((u16 *)s1);

@@ -495,9 +495,14 @@ static char *bgbcp_basetypes_c[]={
 "__variant_va", "__variant_this", "__variant_cls",
 "__gnuc_va_list", "__builtin_va_list",
 "_Bool",
+"__auto",	"__var",
 
 "__object",
 "__string",
+
+"__fixnum",
+"__flonum",
+"__boxint",
 
 NULL
 };
@@ -929,8 +934,12 @@ s64 BGBCP_DefTypeFlag(BGBCP_ParseState *ctx, char *tag)
 			if(!bgbcp_strcmp(tag, "__virtual"))i=BGBCC_TYFL_VIRTUAL;
 			if(!bgbcp_strcmp(tag, "__native"))i=BGBCC_TYFL_NATIVE;
 			if(!bgbcp_strcmp(tag, "__abstract"))i=BGBCC_TYFL_ABSTRACT;
+
+			if(!bgbcp_strcmp(tag, "__byref"))i=BGBCC_TYFL_BYREF;
+			if(!bgbcp_strcmp(tag, "__delegate"))i=BGBCC_TYFL_DELEGATE;
 		}
 
+//		if(i)
 		return(i);
 	}
 
@@ -996,6 +1005,9 @@ s64 BGBCP_DefTypeFlag(BGBCP_ParseState *ctx, char *tag)
 		if(!bgbcp_strcmp(tag, "native"))i=BGBCC_TYFL_NATIVE;
 
 		if(!bgbcp_strcmp(tag, "typedef"))i=BGBCC_TYFL_TYPEDEF;
+
+		if(!bgbcp_strcmp(tag, "byref"))i=BGBCC_TYFL_BYREF;
+		if(!bgbcp_strcmp(tag, "delegate"))i=BGBCC_TYFL_DELEGATE;
 	}
 
 	return(i);
@@ -1109,6 +1121,41 @@ BCCX_Node *BGBCP_DefClassC(BGBCP_ParseState *ctx, char **str)
 				BGBCP_Token2(s, b, &ty, ctx->lang);
 				if(bgbcp_strcmp1(b, ","))break;
 				s=BGBCP_Token2(s, b, &ty, ctx->lang);
+			}
+			BCCX_Add(n, n1);
+			BGBCP_Token2(s, b, &ty, ctx->lang);
+		}
+
+		if(n && (
+			!bgbcp_strcmp(b, "extends") ||
+			!bgbcp_strcmp(b, "__extends")))
+		{
+			s=BGBCP_Token2(s, b, &ty, ctx->lang);	//'extends'
+
+//			n1=BGBCP_DefType(ctx, &s);
+			n1=BGBCP_DefExpectType(ctx, &s);
+			BCCX_AddV(n, BCCX_NewCst1V(&bgbcc_rcst_super, "super", n1));
+			BGBCP_Token2(s, b, &ty, ctx->lang);
+		}
+
+		if(n && (
+			!bgbcp_strcmp(b, "implements") ||
+			!bgbcp_strcmp(b, "__implements")))
+		{
+			s=BGBCP_Token2(s, b, &ty, ctx->lang);	//'implements'
+
+			n1=BCCX_NewCst(&bgbcc_rcst_impl, "impl");
+
+			while(1)
+			{
+//				n2=BGBCP_DefType(ctx, &s);
+				n2=BGBCP_DefExpectType(ctx, &s);
+				BCCX_Add(n1, n2);
+
+				BGBCP_Token2(s, b, &ty, ctx->lang);
+				if(bgbcp_strcmp1(b, ","))
+					break;
+				s=BGBCP_Token2(s, b, &ty, ctx->lang);	//','
 			}
 			BCCX_Add(n, n1);
 			BGBCP_Token2(s, b, &ty, ctx->lang);
@@ -1651,6 +1698,15 @@ BCCX_Node *BGBCP_DefTypeC(BGBCP_ParseState *ctx, char **str)
 
 		break;
 	}
+	
+	if(!bty)
+	{
+		if(fl&BGBCC_TYFL_AUTO)
+		{
+			fl&=~BGBCC_TYFL_AUTO;
+			bty="auto";
+		}
+	}
 
 //	if(ty!=BTK_NAME)
 	if((ty==BTK_STRING) || (ty==BTK_CHARSTRING))
@@ -1850,11 +1906,15 @@ BCCX_Node *BGBCP_DefTypeC(BGBCP_ParseState *ctx, char **str)
 		return(n);
 	}
 
-	if(ctx->lang==BGBCC_LANG_CPP)
+	if(	(ctx->lang==BGBCC_LANG_CPP) ||
+		(ctx->lang==BGBCC_LANG_BS2) ||
+		(ctx->expect_type&1))
 	{
 		n=BGBCP_LookupStruct(ctx, b);
 		if(n)
 		{
+			s=BGBCP_Token2(s, b, &ty, ctx->lang);
+
 			n1=n;
 			s1=BCCX_GetCst(n1, &bgbcc_rcst_name, "name");
 			fl2=BCCX_GetIntCst(n1, &bgbcc_rcst_flags, "flags");
@@ -2023,11 +2083,14 @@ BCCX_Node *BGBCP_DefClassJ(BGBCP_ParseState *ctx, char **str)
 
 				BGBCP_Token2(s, b, &ty, ctx->lang);
 			}
-			BCCX_Add(n, n1);
+			if(n1)
+				BCCX_Add(n, n1);
 			BGBCP_Token2(s, b, &ty, ctx->lang);
 		}
 
-		if(n && !bgbcp_strcmp(b, "extends"))
+		if(n && (
+			!bgbcp_strcmp(b, "extends") ||
+			!bgbcp_strcmp(b, "__extends")))
 		{
 			s=BGBCP_Token2(s, b, &ty, ctx->lang);	//'extends'
 
@@ -2037,7 +2100,9 @@ BCCX_Node *BGBCP_DefClassJ(BGBCP_ParseState *ctx, char **str)
 			BGBCP_Token2(s, b, &ty, ctx->lang);
 		}
 
-		if(n && !bgbcp_strcmp(b, "implements"))
+		if(n && (
+			!bgbcp_strcmp(b, "implements") ||
+			!bgbcp_strcmp(b, "__implements")))
 		{
 			s=BGBCP_Token2(s, b, &ty, ctx->lang);	//'implements'
 
@@ -2229,9 +2294,16 @@ BCCX_Node *BGBCP_DefTypeJ(BGBCP_ParseState *ctx, char **str)
 		}
 	}
 
-	if(ctx->lang==BGBCC_LANG_BS2)
+	if(	(ctx->lang==BGBCC_LANG_BS)	||
+		(ctx->lang==BGBCC_LANG_BS2)	)
 	{
-		if(bgbcp_chktoklst(b, bgbcp_basetypes_bs2))
+		if(	!bgbcc_strcmp(b, "var")			||
+			!bgbcc_strcmp(b, "function")	)
+		{
+			s=BGBCP_Token2(s, b, &ty, ctx->lang);
+			bty=bgbcc_strdup("var");
+		}else
+			if(bgbcp_chktoklst(b, bgbcp_basetypes_bs2))
 		{
 			s=BGBCP_Token2(s, b, &ty, ctx->lang);
 
@@ -2420,6 +2492,8 @@ BCCX_Node *BGBCP_DefType(BGBCP_ParseState *ctx, char **str)
 		return(BGBCP_DefTypeJ(ctx, str));
 
 	if(ctx->lang==BGBCC_LANG_BS2)
+		return(BGBCP_DefTypeJ(ctx, str));
+	if(ctx->lang==BGBCC_LANG_BS)
 		return(BGBCP_DefTypeJ(ctx, str));
 
 	return(NULL);

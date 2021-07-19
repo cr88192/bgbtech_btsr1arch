@@ -1927,6 +1927,15 @@ char *BGBCP_TokenI(char *s, char *b, int *ty, int lang, int sz)
 			return(s);
 		}
 
+#if 1
+		if(!bgbcp_strncmp3(s, "#``"))
+		{
+			*t++=*s++; *t++=*s++; *t++=*s++; *t++=0;
+			*ty=BTK_OPERATOR;
+			return(s);
+		}
+#endif
+
 #if 0
 		if(	!strncmp(s, "#<`", 3) || !strncmp(s, "#{`", 3) ||
 			!strncmp(s, "#[`", 3) || !strncmp(s, "#(`", 3)

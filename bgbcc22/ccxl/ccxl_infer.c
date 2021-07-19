@@ -377,6 +377,13 @@ int BGBCC_CCXL_InferExpr(BGBCC_TransState *ctx,
 		i0=BGBCC_CCXL_InferExpr(ctx, t, &tty);
 		if(!i0)
 			return(0);
+
+		if(BGBCC_CCXL_TypeVariantP(ctx, tty))
+		{
+			*rdty=tty;
+			return(1);
+		}
+
 		BGBCC_CCXL_TypeDerefType(ctx, tty, &dty);
 		*rdty=dty;
 		return(1);
@@ -412,6 +419,12 @@ int BGBCC_CCXL_InferExpr(BGBCC_TransState *ctx,
 				*rdty=dty;
 				return(1);
 			}
+		}
+
+		if(BGBCC_CCXL_TypeVariantP(ctx, tty))
+		{
+			*rdty=tty;
+			return(1);
 		}
 
 		return(0);

@@ -98,6 +98,12 @@ int BGBCC_JX2C_EmitBinaryVRegVRegInt128(
 		else
 			s0="__xli_sdiv";
 		break;
+	case CCXL_BINOP_MOD:
+		if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
+			s0="__xli_umod";
+		else
+			s0="__xli_smod";
+		break;
 	case CCXL_BINOP_AND:	s0="__xli_and"; break;
 	case CCXL_BINOP_OR:		s0="__xli_or"; break;
 	case CCXL_BINOP_XOR:	s0="__xli_xor"; break;
@@ -107,6 +113,9 @@ int BGBCC_JX2C_EmitBinaryVRegVRegInt128(
 			s0="__xli_shlr";
 		else
 			s0="__xli_shar";
+		break;
+	case CCXL_BINOP_SHRR:
+		s0="__xli_shlr";
 		break;
 	}
 
@@ -223,6 +232,12 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegInt128(
 		else
 			s0="__xli_sdiv";
 		break;
+	case CCXL_BINOP_MOD:
+		if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
+			s0="__xli_umod";
+		else
+			s0="__xli_smod";
+		break;
 	case CCXL_BINOP_AND:	s0="__xli_and"; break;
 	case CCXL_BINOP_OR:		s0="__xli_or"; break;
 	case CCXL_BINOP_XOR:	s0="__xli_xor"; break;
@@ -232,6 +247,9 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegInt128(
 			s0="__xli_shlr";
 		else
 			s0="__xli_shar";
+		break;
+	case CCXL_BINOP_SHRR:
+		s0="__xli_shlr";
 		break;
 	}
 
@@ -258,6 +276,7 @@ int BGBCC_JX2C_EmitUnaryVRegVRegInt128(
 	ccxl_type type, ccxl_register dreg,
 	int opr, ccxl_register sreg)
 {
+	ccxl_register ttreg;
 	int csreg, ctreg, cdreg;
 	char *s0;
 	int nm1, nm2, nm3, nm4;
@@ -269,7 +288,16 @@ int BGBCC_JX2C_EmitUnaryVRegVRegInt128(
 		BGBCC_JX2C_EmitMovVRegVReg(ctx, sctx, type, dreg, sreg);
 		return(1);
 	}
-	
+
+	if(opr==CCXL_UNOP_LNOT)
+	{
+//		ttreg.val=CCXL_REGTY_IMM_INT;
+		BGBCC_CCXL_GetRegForInt128Value(ctx, &ttreg, 0, 0);
+		i=BGBCC_JX2C_EmitCompareVRegVRegVRegInt128(ctx, sctx,
+			type, dreg, CCXL_CMP_EQ, sreg, ttreg);
+		return(0);
+	}
+
 	s0=NULL;
 	switch(opr)
 	{
