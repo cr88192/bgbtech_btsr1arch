@@ -644,7 +644,7 @@ BCCX_Node *BGBCC_CCXL_ReduceForm(BGBCC_TransState *ctx,
 	BCCX_Node *l, int flag)
 {
 	char tb1[256], tb2[256];
-	BCCX_Node *c, *t, *v, *x, *ln, *rn;
+	BCCX_Node *c, *d, *t, *u, *v, *x, *ln, *rn;
 	BGBCC_CCXL_RegisterInfo *ri;
 	BGBCC_CCXL_LiteralInfo *obj;
 	ccxl_type bty;
@@ -2433,6 +2433,31 @@ BCCX_Node *BGBCC_CCXL_ReduceForm(BGBCC_TransState *ctx,
 		return(BCCX_Clone(l));
 	}
 
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_lambda, "lambda"))
+	{
+		t=BCCX_FindTagCst(l, &bgbcc_rcst_type, "type");
+		u=BCCX_FetchCst(l, &bgbcc_rcst_args, "args");
+		v=BCCX_FetchCst(l, &bgbcc_rcst_body, "body");
+		d=BCCX_FetchCst(l, &bgbcc_rcst_list, "list");
+		i=BCCX_GetIntCst(l, &bgbcc_rcst_index, "index");
+
+		v=BGBCC_CCXL_ReduceStatementForm(ctx, v, 0);
+
+		x=BCCX_NewCst(&bgbcc_rcst_lambda, "lambda");
+		if(t)
+			BCCX_AddV(x, BCCX_Clone(t));
+		if(u)
+			BCCX_AddV(x, BCCX_NewCst1V(&bgbcc_rcst_args, "args", u));
+		if(v)
+			BCCX_AddV(x, BCCX_NewCst1V(&bgbcc_rcst_body, "body", v));
+		if(d)
+			BCCX_AddV(x, BCCX_NewCst1V(&bgbcc_rcst_list, "list", d));
+
+		BCCX_SetIntCst(x, &bgbcc_rcst_index, "index", i);
+
+		return(x);
+	}
+
 	return(BCCX_Clone(l));
 }
 
@@ -2626,7 +2651,6 @@ BCCX_Node *BGBCC_CCXL_ReduceStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 
 	return(t);
 }
-
 
 BCCX_Node *BGBCC_CCXL_ReduceExprConst(BGBCC_TransState *ctx, BCCX_Node *l)
 {

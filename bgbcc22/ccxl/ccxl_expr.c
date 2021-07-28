@@ -1372,13 +1372,14 @@ void BGBCC_CCXL_CompileExprDeref(BGBCC_TransState *ctx, BCCX_Node *l)
 
 void BGBCC_CCXL_CompileForm(BGBCC_TransState *ctx, BCCX_Node *l)
 {
-	char tb[128];
+	char tb[128], tb1[128], tb2[128];
 	byte *ips[64];
 	ccxl_label l0, l1, l2, l3;
 	ccxl_register sreg, treg;
 	ccxl_type bty, dty, sty, tty, lty, rty;
-	char *s0, *s1, *s2, *s3;
-	BCCX_Node *c, *d, *t, *u, *v, *ln, *rn;
+	BGBCC_CCXL_LiteralInfo *obj;
+	char *s, *s0, *s1, *s2, *s3;
+	BCCX_Node *c, *d, *t, *u, *v, *ln, *rn, *n;
 	int i0, i1, i2, i3;
 	int i, j, k;
 
@@ -2292,6 +2293,164 @@ void BGBCC_CCXL_CompileForm(BGBCC_TransState *ctx, BCCX_Node *l)
 			c=BCCX_Next(c);
 		}
 
+		return;
+	}
+
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_lambda, "lambda"))
+	{
+		t=BCCX_FindTagCst(l, &bgbcc_rcst_type, "type");
+		u=BCCX_FetchCst(l, &bgbcc_rcst_args, "args");
+		v=BCCX_FetchCst(l, &bgbcc_rcst_body, "body");
+		d=BCCX_FetchCst(l, &bgbcc_rcst_list, "list");
+		i=BCCX_GetIntCst(l, &bgbcc_rcst_index, "index");
+
+//		j=BGBCC_CCXL_InferLambdaCapRef(ctx, v);
+
+		sprintf(tb, "__lfn_%X", i);
+//		j=BGBCC_CCXL_LookupStructureID(ctx, tb);
+		obj=BGBCC_CCXL_LookupStructure(ctx, tb);
+		
+//		if(j>=0)
+		if(obj)
+		{
+			BGBCC_CCXL_PushMark(ctx);
+
+			sprintf(tb, "__lfn_%X/fn", i);
+			BGBCC_CCXL_StackLoadAddr(ctx, bgbcc_strdup(tb));
+
+			sprintf(tb, "X__lfn_%X;", i);
+			sprintf(tb1, "PX__lfn_%X;", i);
+			BGBCC_CCXL_PushMark(ctx);
+			BGBCC_CCXL_StackSizeofSig(ctx, tb);
+			
+//			if(i&1)
+			if(i&0x10000000U)
+			{
+				BGBCC_CCXL_StackCallName(ctx, "__alloca_wxe", 0);
+			}else
+			{
+//				BGBCC_CCXL_StackCallName(ctx, "tk_malloc_wxe", 0);
+				BGBCC_CCXL_StackCallName(ctx, "__lvo_alloc_wxe", 0);
+			}
+
+			BGBCC_CCXL_StackCastSig(ctx, tb1);
+
+#if 1
+			for(j=0; j<obj->decl->n_fields; j++)
+			{
+				s=obj->decl->fields[j]->name;
+				if(!s)
+					continue;
+				if((s[0]=='_') && (s[1]=='_'))
+					continue;
+
+				n=BCCX_NewCst(&bgbcc_rcst_ref, "ref");
+				BCCX_SetCst(n, &bgbcc_rcst_name, "name", s);
+				n=BGBCC_CCXL_ReduceExpr(ctx, n);
+
+				s0=BCCX_GetCst(n, &bgbcc_rcst_name, "name");
+				k=BGBCC_CCXL_LookupLocalIndex(ctx, s0);
+				if(k<0)
+					continue;
+
+				BGBCC_CCXL_StackDupB(ctx);
+				BGBCC_CCXL_CompileExpr(ctx, n);
+				BGBCC_CCXL_StackExch(ctx);
+				BGBCC_CCXL_StackStoreSlot(ctx, s);
+			}
+			
+			c=d;
+			while(c)
+			{
+				if(BCCX_TagIsCstP(c, &bgbcc_rcst_assign, "assign"))
+				{
+					ln=BCCX_FetchCst(c, &bgbcc_rcst_left, "left");
+					rn=BCCX_FetchCst(c, &bgbcc_rcst_right, "right");
+					s=BCCX_GetCst(ln, &bgbcc_rcst_name, "name");
+
+					BGBCC_CCXL_StackDupB(ctx);
+//					BGBCC_CCXL_CompileExpr(ctx, rn);
+					BGBCC_CCXL_CompileExprAsTypeSig(ctx, "r", rn);
+					BGBCC_CCXL_StackExch(ctx);
+					BGBCC_CCXL_StackStoreSlot(ctx, s);
+				}
+
+				c=BCCX_Next(c);
+			}
+#endif
+
+#if 0
+			for(j=0; j<ctx->n_lambda_capref; j++)
+			{
+				strcpy(tb2, ctx->lambda_capref[j]);
+				s=tb2;
+				while(*s && (*s!='!'))
+					s++;
+				*s=0;
+				
+				s=bgbcc_strdup(tb2);
+				
+				n=BCCX_NewCst(&bgbcc_rcst_ref, "ref");
+				BCCX_SetCst(n, &bgbcc_rcst_name, "name", s);
+				n=BGBCC_CCXL_ReduceExpr(ctx, n);
+			
+				BGBCC_CCXL_StackDupB(ctx);
+//				BGBCC_CCXL_PushLoad(ctx, ctx->lambda_capref[j]);
+				BGBCC_CCXL_CompileExpr(ctx, n);
+				BGBCC_CCXL_StackExch(ctx);
+//				BGBCC_CCXL_StackStoreSlot(ctx, ctx->lambda_capref[j]);
+//				BGBCC_CCXL_StackStoreSlot(ctx, bgbcc_strdup(tb2));
+				BGBCC_CCXL_StackStoreSlot(ctx, s);
+			}
+#endif
+
+			BGBCC_CCXL_StackCallName(ctx, "__lvo_makelambda", 0);
+
+			sprintf(tb1, "PX__lfn_%X/fn;", i);
+			BGBCC_CCXL_StackCastSig(ctx, tb1);
+
+			return;
+
+#if 0
+			sprintf(tb, "__lfn_%X", i);
+			s0=bgbcc_strdup(tb);
+
+			n=BCCX_NewCst(&bgbcc_rcst_struct, "struct");
+			BCCX_SetCst(n, &bgbcc_rcst_name, "name", s0);
+			ctx->dynobj=BCCX_AddEnd2(ctx->dynobj, &(ctx->dynobj_e), n);
+
+			sprintf(tb, "__lfn_%X/fn", i);
+			s0=bgbcc_strdup(tb);
+
+			n=BCCX_NewCst(&bgbcc_rcst_defun, "defun");
+			BCCX_AddV(n, BCCX_Clone(t));
+			BCCX_AddV(n, BCCX_NewCst1V(&bgbcc_rcst_args, "args", u));
+			BCCX_AddV(n, BCCX_NewCst1V(&bgbcc_rcst_body, "body", v));
+			BCCX_SetCst(n, &bgbcc_rcst_name, "name", s0);
+
+			ctx->dynobj=BCCX_AddEnd2(ctx->dynobj, &(ctx->dynobj_e), n);
+#endif
+		}else
+		{
+			sprintf(tb, "__fn_%X", i);
+			s0=bgbcc_strdup(tb);
+
+#if 0
+			n=BCCX_NewCst(&bgbcc_rcst_defun, "defun");
+			BCCX_AddV(n, BCCX_Clone(t));
+			BCCX_AddV(n, BCCX_NewCst1V(&bgbcc_rcst_args, "args", u));
+			BCCX_AddV(n, BCCX_NewCst1V(&bgbcc_rcst_body, "body", v));
+			BCCX_SetCst(n, &bgbcc_rcst_name, "name", s0);
+
+			ctx->dynobj=BCCX_AddEnd2(ctx->dynobj, &(ctx->dynobj_e), n);
+#endif
+
+			BGBCC_CCXL_StackLoadAddr(ctx, s0);
+			return;
+		}
+
+//		BGBCC_CCXL_StackPushConstInt(ctx, 0);
+//		BGBCC_CCXL_StubError(ctx);
 		return;
 	}
 

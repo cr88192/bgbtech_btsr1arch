@@ -342,7 +342,71 @@ __xlf_cmp_ge:
 	RTS
 };
 
-#if 0
+double __xlf_todbl(__float128 x);
+__float128 __xlf_fromdbl(double x);
+long long __xlf_toint(__float128 x);
+__float128 __xlf_fromint(long long x);
+
+__asm {
+__xlf_todbl:
+	MOV		-60, R16
+	MOV		0x3C00000000000000, R17
+	MOV		0x07FE000000000000, R18
+	MOV		0x7FFF000000000000, R19
+	MOV		0x000FFFFFFFFFFFFF, R20
+	MOV		0x8000000000000000, R21
+	SHLD.X	R4, R16, R2
+	SUB		R5, R17, R3
+	AND		R5, R21, R23
+	AND		R20, R2
+	AND		R19, R3
+	CMPQHI	R18, R3
+	BT		.RangeFail
+	SHLD.Q	R3, 4, R3
+	OR		R3, R2
+	OR		R23, R2
+	RTS
+	.RangeFail:
+	MOV		0x4000000000000000, R22
+	TSTQ	R22, R3
+	BF		.Inf
+	MOV		0, R2
+	RTS
+	.Inf:
+	MOV		0x7FF0000000000000, R2
+	OR		R23, R2
+	RTS
+
+__xlf_fromdbl:
+	MOV		60, R16
+	MOV		0x3C00000000000000, R17
+	MOV		0x07FF000000000000, R18
+	MOV		0x7FFF000000000000, R19
+	MOV		0x000FFFFFFFFFFFFF, R20
+	MOV		0x8000000000000000, R21
+	MOV		R4, R2
+	MOV		0, R3
+	AND		R4, R21, R23
+	SHLD.X	R2, R16, R2
+	AND		R18, R3
+	TSTQ	R18, R3
+	ADD?F	R17, R3
+	OR		R23, R3
+	RTS
+	
+__xlf_toint:
+	MOV		LR, R1
+	BSR		__xlf_todbl
+	FSTCI	R2, R2
+	JMP		R1
+__xlf_fromint:
+	FLDCI	R4, R4
+	JMP		__xlf_fromdbl
+
+};
+
+
+#if 1
 
 #define XLF_GETBITS(x)	((__uint128)((__m128)(x)))
 #define XLF_FROMBITS(x)	((__float128)((__m128)(x)))

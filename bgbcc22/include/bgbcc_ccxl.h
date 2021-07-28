@@ -67,16 +67,20 @@
 
 #define CCXL_TY_VEC3FQ			0x38		//64-bit 3x float21
 #define CCXL_TY_VEC3FX			0x39		//128-bit 3x float42
+#define CCXL_TY_SBITINT			0x3A		//signed _BitInt(n)
+#define CCXL_TY_UBITINT			0x3B		//unsigned _BitInt(n)
 
 #define CCXL_TY_VARCLASS		0x3C		//
 #define CCXL_TY_VARSYMBOL		0x3D		//
 #define CCXL_TY_VARARR			0x3E		//
+
 
 #define CCXL_TY_BIGINT			0x40		//large boxed integer
 #define CCXL_TY_FIXNUM			0x41		//large boxed integer
 #define CCXL_TY_FLONUM			0x42		//large boxed integer
 
 
+#define CCXL_VTY_PVOID			0x00001005	//'void *'
 #define CCXL_VTY_PCHAR			0x00001008	//'char *'
 #define CCXL_VTY_PWCHAR			0x0000100B	//'wchar_t *'
 

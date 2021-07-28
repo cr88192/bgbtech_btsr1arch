@@ -43,11 +43,17 @@ __xli_sub:
 	SUBX	R4, R6, R2
 	RTS
 .else
-	MOV		R6, R2
-	MOV		R7, R3
+//	MOV		R6, R2
+//	MOV		R7, R3
+//	CLRT
+//	SUBC	R4, R2
+//	SUBC	R5, R3
+
+	MOV		R4, R2
+	MOV		R5, R3
 	CLRT
-	SUBC	R4, R2
-	SUBC	R5, R3
+	SUBC	R6, R2
+	SUBC	R7, R3
 	RTS
 .endif
 
@@ -83,8 +89,8 @@ __xli_shl:
 	CMPGE		64, R6
 	BT			.L0
 	CMPGT		0, R6
-	BT			.L1
-	ADD			R4, -64, R7
+	BF			.L1
+	ADD			R6, -64, R7
 	SHLD.Q		R4, R6, R2
 	SHLD.Q		R5, R6, R3
 	SHLD.Q		R4, R7, R16
@@ -104,8 +110,8 @@ __xli_shlr:
 	CMPGE		64, R6
 	BT			.L0
 	CMPGT		0, R6
-	BT			.L1
-	ADD			R4, -64, R7
+	BF			.L1
+	ADD			R6, -64, R7
 	NEG			R6, R6
 	NEG			R7, R7
 	SHLD.Q		R4, R6, R2
@@ -128,8 +134,8 @@ __xli_shar:
 	CMPGE		64, R6
 	BT			.L0
 	CMPGT		0, R6
-	BT			.L1
-	ADD			R4, -64, R7
+	BF			.L1
+	ADD			R6, -64, R7
 	NEG			R6, R6
 	NEG			R7, R7
 	SHLD.Q		R4, R6, R2
@@ -171,6 +177,9 @@ __xli_umuldq:
 	CLRT
 	ADDC	R22, R2
 	ADDC	R23, R3
+	
+//	BREAK
+	
 	RTSU
 
 #if 1
@@ -196,6 +205,8 @@ __xli_smul:
 	DMULU	R9, R10, R17
 	ADD		R16, R17, R18
 	ADD		R18, R3
+
+//	BREAK
 
 	MOV.Q	(SP, 56), R1
 	MOV.Q	(SP, 48), R14
@@ -376,10 +387,13 @@ __xli_cmp_ne:
 	RTS
 
 __xli_cmp_gt:
+	CMPQGT	R7, R5
+	BT		.True
 	CMPQGT	R5, R7
 	BT		.False
-	CMPQGT	R6, R4
+	CMPQHI	R6, R4
 	BF		.False
+	.True:
 	MOV		1, R2
 	RTS
 	.False:
@@ -387,10 +401,13 @@ __xli_cmp_gt:
 	RTS
 
 __xli_cmp_ge:
+	CMPQGT	R7, R5
+	BT		.True
 	CMPQGT	R5, R7
 	BT		.False
-	CMPQGT	R4, R6
+	CMPQHI	R4, R6
 	BT		.False
+	.True:
 	MOV		1, R2
 	RTS
 	.False:
@@ -398,20 +415,26 @@ __xli_cmp_ge:
 	RTS
 
 __xli_cmp_hi:
+	CMPQHI	R7, R5
+	BT		.True
 	CMPQHI	R5, R7
 	BT		.False
 	CMPQHI	R6, R4
 	BF		.False
+	.True:
 	MOV		1, R2
 	RTS
 	.False:
 	MOV		0, R2
 	RTS
 __xli_cmp_he:
+	CMPQHI	R7, R5
+	BT		.True
 	CMPQHI	R5, R7
 	BT		.False
 	CMPQHI	R4, R6
 	BT		.False
+	.True:
 	MOV		1, R2
 	RTS
 	.False:
@@ -446,13 +469,16 @@ __xli_cmp_ntst:
 #if 1
 static int _fcn_clz128(__uint128 v)
 {
-	const __uint128 m1 =0x80000000000000000000000000000000ULL;
-	const __uint128 m8 =0xFF000000000000000000000000000000ULL;
-	const __uint128 m16=0xFFFF0000000000000000000000000000ULL;
-	const __uint128 m32=0xFFFFFFFF000000000000000000000000ULL;
-	const __uint128 m64=0xFFFFFFFFFFFFFFFF0000000000000000ULL;
+	const __uint128 m1 =0x80000000000000000000000000000000UI128;
+	const __uint128 m8 =0xFF000000000000000000000000000000UI128;
+	const __uint128 m16=0xFFFF0000000000000000000000000000UI128;
+	const __uint128 m32=0xFFFFFFFF000000000000000000000000UI128;
+	const __uint128 m64=0xFFFFFFFFFFFFFFFF0000000000000000UI128;
 	__uint128 c;
 	int n;
+
+	if(v==0)
+		return(128);
 
 	c=v; n=0;
 	if(!(c&m64))
@@ -461,10 +487,13 @@ static int _fcn_clz128(__uint128 v)
 		{ n+=32; c<<=32; }
 	if(!(c&m16))
 		{ n+=16; c<<=16; }
+//	__debugbreak();
 	while(!(c&m8))
 		{ n+=8; c<<=8; }
+//	__debugbreak();
 	while(!(c&m1))
 		{ n++; c+=c; }
+//	__debugbreak();
 	return(n);
 }
 #endif
@@ -480,6 +509,7 @@ __uint128 __xli_udiv(__uint128 n, __uint128 d)
 //	if(!d || !n)
 	if((d==0) || (n==0))
 		return(0);
+
 	sr=(byte)(_fcn_clz128(d)-_fcn_clz128(n));
 
 	if(sr>=127)
@@ -490,6 +520,7 @@ __uint128 __xli_udiv(__uint128 n, __uint128 d)
 	}
 
 	sr++;
+	
 	q=n<<(128-sr); r=n>>sr; c=0;
 	while(sr--)
 	{
@@ -505,13 +536,44 @@ __uint128 __xli_udiv(__uint128 n, __uint128 d)
 #endif
 
 #if 1
+__int128 __xli_umod(__uint128 a, __uint128 b)
+{
+	__uint128	c, d;
+	
+	c=__xli_udiv(a, b);
+	d=a-(c*b);
+	
+	if(d>=b)
+		__debugbreak();
+	
+	return(d);
+}
+#endif
+
+#if 1
 __int128 __xli_sdiv(__int128 a, __int128 b)
 {
-	__int128	sga, sgb;
-	sga=a>>127;		sgb=b>>127;
-	a=(a^sga)-sga;	b=(b^sgb)-sgb;
-	sga^=sgb;
-	return((__xli_udiv(a, b)^sga)-sga);
+	__uint128	av, bv, cv;
+	int			sg;
+	
+	sg=0;
+	av=a;
+	bv=b;
+	
+	if(a<0)
+		{ av=-a; sg=!sg; }
+	if(b<0)
+		{ bv=-b; sg=!sg; }
+	cv=__xli_udiv(av, bv);
+	if(sg)
+		cv=-cv;
+	return(cv);
+	
+//	__int128	sga, sgb;
+//	sga=a>>127;		sgb=b>>127;
+//	a=(a^sga)-sga;	b=(b^sgb)-sgb;
+//	sga^=sgb;
+//	return((__xli_udiv(a, b)^sga)-sga);
 }
 #endif
 
@@ -522,11 +584,9 @@ __int128 __xli_smod(__int128 a, __int128 b)
 	
 	c=__xli_sdiv(a, b);
 	d=a-(c*b);
+
+//	__debugbreak();
+
 	return(d);
-	
-//	sga=a>>127;		sgb=b>>127;
-//	a=(a^sga)-sga;	b=(b^sgb)-sgb;
-//	sga^=sgb;
-//	return((__xli_udiv(a, b)^sga)-sga);
 }
 #endif

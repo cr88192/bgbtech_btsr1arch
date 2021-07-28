@@ -490,6 +490,15 @@ void *tk_malloc(int sz)
 	return(TKMM_Malloc(sz));
 }
 
+void *tk_malloc_wxe(int sz)
+{
+//	if(!TKMM_PageAlloc_f)
+//		__debugbreak();
+
+//	return(TKMM_MMList_Malloc(sz));
+	return(TKMM_Malloc(sz));
+}
+
 int tk_free(void *ptr)
 {
 //	return(TKMM_MMList_Free(ptr));

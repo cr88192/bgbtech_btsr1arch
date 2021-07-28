@@ -497,6 +497,8 @@ static char *bgbcp_basetypes_c[]={
 "_Bool",
 "__auto",	"__var",
 
+"_BitInt",
+
 "__object",
 "__string",
 
@@ -1541,9 +1543,9 @@ BCCX_Node *BGBCP_DeclAttributeJ(BGBCP_ParseState *ctx, char **str)
 BCCX_Node *BGBCP_DefTypeC(BGBCP_ParseState *ctx, char **str)
 {
 	char b[256], b2[256], b3[256];
-	char *s, *s1, *s2, *bty;
+	char *s, *s1, *s2, *s3, *bty;
 	s64 fl, fl2, li;
-	int i, j, ty, ty2, ty3;
+	int i, j, k, ty, ty2, ty3;
 	BCCX_Node *n, *n1, *n2, *attrl, *attrle;
 
 	s=*str;
@@ -1557,6 +1559,7 @@ BCCX_Node *BGBCP_DefTypeC(BGBCP_ParseState *ctx, char **str)
 	while(1)
 	{
 		s1=BGBCP_Token2(s, b, &ty, ctx->lang);
+		s2=BGBCP_Token2(s1, b2, &ty2, ctx->lang);
 		if(ty!=BTK_NAME)break;
 
 		if(!strcmp(b, "vec3_t"))
@@ -1564,7 +1567,7 @@ BCCX_Node *BGBCP_DefTypeC(BGBCP_ParseState *ctx, char **str)
 
 		if(ctx->lang==BGBCC_LANG_CPP)
 		{
-			s2=BGBCP_Token2(s1, b2, &ty2, ctx->lang);
+//			s2=BGBCP_Token2(s1, b2, &ty2, ctx->lang);
 
 			if(!bgbcp_strcmp6(b, "extern"))
 			{
@@ -1614,7 +1617,8 @@ BCCX_Node *BGBCP_DefTypeC(BGBCP_ParseState *ctx, char **str)
 			{
 				if(bty && !bgbcp_strcmp4(bty, "long"))
 				{
-					bty=bgbcc_strdup("llong");
+//					bty=bgbcc_strdup("llong");
+					bty=bgbcc_strdup("long_long");
 				}else
 				{
 					bty=bgbcc_strdup("long");
@@ -1640,6 +1644,8 @@ BCCX_Node *BGBCP_DefTypeC(BGBCP_ParseState *ctx, char **str)
 				}
 			}else
 			{
+				s3=BGBCP_Token2(s1, b3, &ty3, ctx->lang);
+
 				bty=bgbcc_strdup(b);
 				if(bty[0]=='_')
 				{
@@ -1652,7 +1658,39 @@ BCCX_Node *BGBCP_DefTypeC(BGBCP_ParseState *ctx, char **str)
 							bty+=7;
 						else
 							bty+=2;
+					}if(!strcmp(bty, "_BitInt"))
+					{
+						if(!strcmp(b2, "(") && (ty3==BTK_NUMBER))
+						{
+							s=BGBCP_Token2(s3, b2, &ty2, ctx->lang);
+
+							k=atoi(b3);
+							if(k<=8)
+								{ bty=bgbcc_strdup("char"); }
+							else if(k<=16)
+								{ bty=bgbcc_strdup("short"); }
+							else if(k<=32)
+								{ bty=bgbcc_strdup("int"); }
+							else if(k<=64)
+//								{ bty=bgbcc_strdup("llong"); }
+								{ bty=bgbcc_strdup("long_long"); }
+							else if(k<=128)
+								{ bty=bgbcc_strdup("int128"); }
+							else if(k<=256)
+								{ bty=bgbcc_strdup("bitint_256"); }
+							else if(k<=384)
+								{ bty=bgbcc_strdup("bitint_384"); }
+							else if(k<=512)
+								{ bty=bgbcc_strdup("bitint_512"); }
+							else
+							{
+								k=((k+127)/128)*128;
+								sprintf(b2, "bitint_%d", k);
+								bty=bgbcc_strdup(b2);
+							}
+						}
 					}
+
 #if 0
 					else
 						if(bty[1]=='I')
@@ -1664,7 +1702,8 @@ BCCX_Node *BGBCP_DefTypeC(BGBCP_ParseState *ctx, char **str)
 						if(!strcmp(bty, "_Int32"))
 							bty=bgbcc_strdup("int");
 						if(!strcmp(bty, "_Int64"))
-							bty=bgbcc_strdup("llong");
+//							bty=bgbcc_strdup("llong");
+							bty=bgbcc_strdup("long_long");
 						if(!strcmp(bty, "_Int128"))
 							bty=bgbcc_strdup("int128");
 					}

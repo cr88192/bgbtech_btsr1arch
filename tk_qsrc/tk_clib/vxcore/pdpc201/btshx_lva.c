@@ -313,7 +313,7 @@ __int128 __lva_conv_toi128(u64 val)
 	}
 
 	tag=val>>48;
-	if(tag==LVA_LVATY_INT128)
+	if(tag==LVA_LVATY_BIGINT)
 	{
 		ptr=(void *)val;
 		return(*(__int128 *)ptr);
@@ -1498,4 +1498,72 @@ tk_lva_variant __lva_cons(tk_lva_variant car, tk_lva_variant cdr)
 	return(val);
 }
 
+char *__lva_conv_tostring(u64 val)
+{
+	char tb[128];
+	char *ct;
+	s64 li, lj, lk, ll;
+	double lf, lg;
+	int j, k, sg;
+	
+	if(__lva_fixnump(val))
+	{
+		li=__lva_conv_toi64(val);
+		sg=0;
+		if(li<0)
+			{ li=-li; sg=1; }
+		
+		ct=tb+127;
+		*(--ct)=0;
+		do {
+			lj=li/10;
+			j=li-(lj*10);
+			*(--ct)='0'+j;
+			li=lj;
+		}while(li!=0);
+		
+		if(sg)
+			*(--ct)='-';
+		
+		return(tk_rstrdup(ct));
+	}
+
+	if(__lva_flonump(val))
+	{
+		lf=__lva_conv_tof64(val);
+		li=(long)lf;
+		lg=lf-((double)li);
+		lj=lg*1000000+0.5;
+		
+		ct=tb+127;
+		*(--ct)=0;
+
+		lk=lj;
+//		while(lk!=0)
+		for(i=0; i<6; i++)
+		{
+			ll=lk/10;
+			j=lk-(ll*10);
+			*(--ct)='0'+j;
+			lk=ll;
+		}
+
+		*(--ct)='.';
+
+		lk=li;
+		do{
+			ll=lk/10;
+			j=lk-(ll*10);
+			*(--ct)='0'+j;
+			lk=ll;
+		}while(lk!=0);
+
+		if(sg)
+			*(--ct)='-';
+		
+		return(tk_rstrdup(ct));
+	}
+	
+	return("?");
+}
 #endif

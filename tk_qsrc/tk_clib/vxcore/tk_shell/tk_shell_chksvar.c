@@ -93,6 +93,8 @@ int tk_shell_chksane_var()
 	__string str;
 	__var v0, v1, v2;
 	__var o0, o1, o2;
+	int (*run1)(int x, int y);
+	void *p1, *p2, *p3;
 	int	i, j, k;
 	
 	str="Test";
@@ -158,6 +160,90 @@ int tk_shell_chksane_var()
 
 //	tk_chksane_sieve1a();
 //	tk_chksane_sieve1v();
+
+	p1 = __var(int x, int y):int { return(x+y); };
+	p2 = __var(int x, int y):int { return(x+y+k); };
+
+//	p3 = [=](int x, int y)->int { return(x+y); };
+	p3 = [w=j*k](int x, int y)->int { return(x+y+k+w); };
+
+	run1 = p1;
+	j = run1(3, 4);
+	if(j!=7)
+		__debugbreak();
+
+	run1 = p2;
+	j = run1(3, 4);
+	if(j!=151)
+		__debugbreak();
+
+//	__debugbreak();
+}
+
+
+int tk_shell_chksane_int128()
+{
+	__uint128 v0, v1, v2, v3;
+	__int128 sv0, sv1, sv2, sv3;
+	
+	v0=0xDECAFB0F_DECAFB0F_DECAFB0F_DECAFB0FUI128;
+	v1=0xBD95F61F_BD95F61F_BD95F61F_BD95F61EUI128;
+
+	v2=v0;
+	if(v2!=v0)
+		__debugbreak();
+
+	if(v1==v0)
+		__debugbreak();
+
+	if(v2>v0)
+		__debugbreak();
+	if(v2<v0)
+		__debugbreak();
+
+	if(v1>v0)
+		__debugbreak();
+	if(v1>=v0)
+		__debugbreak();
+
+	if(v0<v1)
+		__debugbreak();
+	if(v0<=v1)
+		__debugbreak();
+
+
+	v2=v0+v0;
+	if(v2!=v1)
+		__debugbreak();
+
+	v2=v1-v0;
+
+//	__debugbreak();
+
+	if(v2!=v0)
+		__debugbreak();
+	
+	v3=0xD95F61FB_D95F61FB_D95F61FB_D95F61E0UI128;
+	v2=v0<<5;
+	if(v2!=v3)
+		__debugbreak();
+
+	v3=0x006F657D_87EF657D_87EF657D_87EF657DUI128;
+	v2=v0>>9;
+	if(v2!=v3)
+		__debugbreak();
+
+	v2=-v0;
+	v3=0x213504F0_213504F0_213504F0_213504F1UI128;
+	if(v2!=v3)
+		__debugbreak();
+
+	sv0=0x00000000_00000000_00000000_DECAFB0FUI128;
+	sv1=0x00000000_00000000_C1E4AC5F_2DE26AE1UI128;
+	sv2=sv0*sv0;
+	if(sv2!=sv1)
+		__debugbreak();
+	
 
 //	__debugbreak();
 }

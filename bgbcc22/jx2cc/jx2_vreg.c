@@ -1646,6 +1646,12 @@ int BGBCC_JX2C_EmitJCmpVRegVReg(
 			type, sreg, treg, cmp, lbl));
 	}
 
+	if(BGBCC_CCXL_TypeBitIntP(ctx, type))
+	{
+		return(BGBCC_JX2C_EmitJCmpVRegVRegBitInt(ctx, sctx,
+			type, sreg, treg, cmp, lbl));
+	}
+
 	if(BGBCC_CCXL_TypeVarRefP(ctx, type))
 	{
 		return(BGBCC_JX2C_EmitJCmpVRegVRegVariant(ctx, sctx,

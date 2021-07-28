@@ -169,6 +169,16 @@ int BGBCC_CCXL_GetRegID(
 	return(reg.val&CCXL_REGID_REGMASK);
 }
 
+ccxl_type BGBCC_CCXL_MakeTypeVTy(
+	BGBCC_TransState *ctx, int id)
+{
+//	BGBCC_CCXL_TypeOverflow ovf;
+	ccxl_type tty;
+//	int i, j, k;
+	tty.val=id;
+	return(tty);
+}
+
 ccxl_type BGBCC_CCXL_MakeTypeID(
 	BGBCC_TransState *ctx, int id)
 {
@@ -214,6 +224,70 @@ ccxl_type BGBCC_CCXL_MakeTypeID(
 	memset(&ovf, 0, sizeof(BGBCC_CCXL_TypeOverflow));
 
 	ovf.base=id;
+	i=BGBCC_CCXL_TypeFromOverflow(ctx, &tty, ovf);
+	if(i>0)
+	{
+		return(tty);
+	}
+
+	BGBCC_DBGBREAK
+	tty.val=0;
+	return(tty);
+}
+
+ccxl_type BGBCC_CCXL_MakeTypeID_Arr(
+	BGBCC_TransState *ctx, int id, int asz)
+{
+	BGBCC_CCXL_TypeOverflow ovf;
+	ccxl_type tty;
+	int i, j, k;
+	
+	if(id<0)
+		{ BGBCC_DBGBREAK }
+
+	switch(id)
+	{
+	case CCXL_TY_I128:
+	case CCXL_TY_UI128:
+		ctx->ccxl_tyc_seen|=BGBCC_TYCSEEN_INT128;
+		break;
+	case CCXL_TY_F128:
+		ctx->ccxl_tyc_seen|=BGBCC_TYCSEEN_FLOAT128;
+		break;
+	case CCXL_TY_VARIANT:
+	case CCXL_TY_VARSTRING:
+	case CCXL_TY_VAROBJECT:
+		ctx->ccxl_tyc_seen|=BGBCC_TYCSEEN_VARIANT;
+		break;
+	case CCXL_TY_F:
+	case CCXL_TY_D:
+		ctx->ccxl_tyc_seen|=BGBCC_TYCSEEN_FLOAT_FPU;
+		break;
+	}
+
+	if((id<CCXL_TY_BASETYMAX) && (asz>=0) && (asz<CCXL_TY_BASEARRMAX))
+	{
+		tty.val=CCXL_TY_TYTY_BASIC|id|(asz<<CCXL_TY_ARRSHL);
+		return(tty);
+	}
+
+	if((id<CCXL_TYB2_BASETYMAX) && (asz>=0) && (asz<CCXL_TYB2_BASEARRMAX))
+	{
+		tty.val=CCXL_TY_TYTY_BASIC2|id|(asz<<CCXL_TYB2_ARRSHL);
+		return(tty);
+	}
+	
+	if((id<CCXL_TYB3_BASETYMAX) && (asz>=0) && (asz<CCXL_TYB3_BASEARRMAX))
+	{
+		tty.val=CCXL_TY_TYTY_BASIC3|id|(asz<<CCXL_TYB3_ARRSHL);
+		return(tty);
+	}
+
+	memset(&ovf, 0, sizeof(BGBCC_CCXL_TypeOverflow));
+
+	ovf.base=id;
+	ovf.asz[0]=asz;
+	ovf.an=1;
 	i=BGBCC_CCXL_TypeFromOverflow(ctx, &tty, ovf);
 	if(i>0)
 	{

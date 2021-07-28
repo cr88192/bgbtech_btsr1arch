@@ -312,3 +312,45 @@ int __lvo_tagobjp(tk_lva_object obj)
 	objv=__object_getbits(obj);
 	return((objv>>48)==LVA_LVATY_TAGOBJ);
 }
+
+
+void *__lvo_alloc_wxe(int sz)
+{
+//	if(!TKMM_PageAlloc_f)
+//		__debugbreak();
+
+//	return(TKMM_MMList_Malloc(sz));
+	return(TKMM_Malloc(sz));
+}
+
+void *__lvo_makelambda(void *obj, void *fn)
+{
+	u64 obja;
+	
+	obja=(u64)obj;
+
+	((u16 *)obj)[0]=0xF110;
+	((u16 *)obj)[1]=0xB014;
+
+	((u16 *)obj)[2]=0xFE00|((obja>>56)&  255);
+	((u16 *)obj)[3]=0x0000|((obja>>40)&65535);
+	((u16 *)obj)[4]=0xFE00|((obja>>32)&  255);
+	((u16 *)obj)[5]=0x0000|((obja>>16)&65535);
+	((u16 *)obj)[6]=0xF803;
+	((u16 *)obj)[7]=0x0000|((obja>> 0)&65535);
+
+	((u16 *)obj)[8]=0xF020;
+	((u16 *)obj)[9]=0x3010;
+
+	((u16 *)obj)[10]=0x3030;
+	((u16 *)obj)[11]=0x3030;
+	
+	((u64 *)obj)[3]=fn;
+
+	return(obj);
+}
+
+void __lvo_freelambda(void *obj)
+{
+	tk_free(obj);
+}

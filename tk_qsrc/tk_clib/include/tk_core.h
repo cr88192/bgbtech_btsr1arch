@@ -24,6 +24,9 @@ typedef signed int s32;
 typedef unsigned long long u64;
 typedef signed long long s64;
 
+typedef unsigned __int128 u128;
+typedef signed __int128 s128;
+
 typedef volatile u32 vol_u32;
 typedef volatile u64 vol_u64;
 

@@ -982,4 +982,6 @@ int tk_shell_chksane()
 	}
 	
 	tk_shell_chksane_var();
+	
+	tk_shell_chksane_int128();
 }

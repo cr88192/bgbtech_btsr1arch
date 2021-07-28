@@ -329,6 +329,7 @@ X(__smulsq):
 	umuldq: Unsigned Multiply, Double Quad
 */
 .global X(__umuldq)
+X(__umuldq):
 #if 1
 	shld.q	r4, -32, r6
 	shld.q	r5, -32, r7
@@ -388,6 +389,7 @@ X(__smulsq):
 	smuldq: Signed Multiply, Double Quad
 */
 .global X(__smuldq)
+X(__smuldq):
 #if 1
 	shad.q	r4, -32, r6
 	shad.q	r5, -32, r7

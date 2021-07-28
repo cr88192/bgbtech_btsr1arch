@@ -953,6 +953,11 @@ int nmid;
 {"sharx",	BGBCC_SH_NMID_SHARX},
 {"shlrx",	BGBCC_SH_NMID_SHLRX},
 
+{"shad.x",	BGBCC_SH_NMID_SHADX},
+{"shld.x",	BGBCC_SH_NMID_SHLDX},
+{"shar.x",	BGBCC_SH_NMID_SHARX},
+{"shlr.x",	BGBCC_SH_NMID_SHLRX},
+
 {"blkutx1",		BGBCC_SH_NMID_BLKUTX1},
 {"blkutx2",		BGBCC_SH_NMID_BLKUTX2},
 {"blkutx3h",	BGBCC_SH_NMID_BLKUTX3H},

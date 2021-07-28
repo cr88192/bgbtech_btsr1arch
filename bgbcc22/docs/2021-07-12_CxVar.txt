@@ -5,6 +5,23 @@ CxVar
 * Adds preprocessor extensions.
 
 
+=== Core C Type Extensions ===
+
+Types:
+* __int128, 128 bit signed integer.
+* __uint128, 128 bit unsigned integer.
+* _BitInt(n), Bit sized integer.
+** May use a native type for smaller integer sizes.
+** May support much larger virtual integer types.
+* __float128, 128-bit floating point number
+
+Printf:
+* I(n), type modifier, specify a given sized value.
+** "%I32d" maps to "%d", specifies a 32-bit value
+** "%I64d" maps to "%lld", specifies a 64-bit value
+** "%I128d" allows printing __int128 values.
+* 'v' | 'V': Print a '__variant' value.
+
 === Preprocessor Extensions ===
 
 Block Macro:
@@ -138,3 +155,44 @@ An unmarked method will be either virtual or final.
 * An final method may not be overridden in a child class.
 * A virtual method may be overriden in a child class.
 * Overriding an unmarked method is undefined.
+
+
+=== Lambda Expressions ===
+
+Lambda expressions will create a function as an expression.
+
+These will come in several syntactic variants:
+* __var ( args ) : type { body }
+* __var! ( args ) : type { body }
+* __function { body }
+* __function! { body }
+* __function ( args ) : type { body }
+* __function! ( args ) : type { body }
+* __function [ capture_list ] ( args ) : type { body }
+* __function! [ capture_list ] ( args ) : type { body }
+* [ capture_list ] { body }						//C23 Style
+* [ capture_list ] ( args ) -> type { body }	//C23 Style
+
+With several sub-variants:
+* Nothing is captured.
+** This case is semantically equivalent to a bare function.
+** The value generated is a bare function pointer.
+* Variables are captured, lambda is dynamically allocated.
+** A heap allocated object is created, not automatically destroyed.
+** This scenario may leak memory of the lambda is not freed.
+* Variables are captured, lambda has automatic lifetime.
+** The lambda will be implicitly destroyed when the parent function returns.
+
+The __var and __function versions will create a lambda with dynamic lifetime.
+The __var! and __function! versions will create a lambda with automatic lifetime.
+
+The C23 style lambdas will have automatic lifetime by default.
+
+A capture list may give either an implicit capture mode, or a list of variables to be captured.
+* [   ]  Capture Nothing.
+* [ = ]  Capture implicitly by value.
+* [ name ]  Capture a named variable (explicit).
+* [ name = expr ]  Create a capture variable containing the result of an expression.
+
+For forms without a capture list, it will behave as if the list were [ = ] by default. These will fall back to the no-capture case if nothing is captured.
+

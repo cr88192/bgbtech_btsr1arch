@@ -70,6 +70,11 @@ void *__alloca_noframe(int size)
 	return(ptr1);
 }
 
+void *__alloca_wxe(int size)
+{
+	return(__alloca_noframe(size));
+}
+
 void *__alloca_initvla1(char *sig, int n1)
 {
 	LVA_TagArray *arr;

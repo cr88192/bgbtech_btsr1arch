@@ -741,6 +741,7 @@ int BGBCC_JX2C_EmitVaArg(
 		break;
 
 	case BGBCC_SH_REGCLS_VO_QGR2:
+	case BGBCC_SH_REGCLS_QGR2:
 		BGBCC_JX2C_EmitCallName(ctx, sctx, "__va64_arg_x");
 		BGBCC_JX2C_ResetModeDqUnknown(ctx, sctx);
 

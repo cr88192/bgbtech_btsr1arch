@@ -509,6 +509,7 @@ extern "C" {
 #define BGBCC_TYCSEEN_ISHL_VAR	0x0040	//saw int shift left, variable
 #define BGBCC_TYCSEEN_ISHR_VAR	0x0080	//saw int shift right (log), variable
 #define BGBCC_TYCSEEN_ISAR_VAR	0x0100	//saw int shift right (arith), variable
+#define BGBCC_TYCSEEN_BITINT	0x0200	//saw int128
 
 typedef union {
 	struct {
@@ -671,8 +672,8 @@ byte tail;	//this expression is in tail position
 byte i_cx_p;	//infer: expression is clean (cleared to indicate dirty)
 byte i_cap;	//infer: guess as to whether or not there is var capture
 
-char *cf_n;
-BCCX_Node *cf_ty;
+char *cf_n;			//current function name
+BCCX_Node *cf_ty;	//current function return type
 
 //ccxl_label *goto_name;
 //byte **goto_dest;
@@ -737,6 +738,9 @@ BCCX_Node *types;
 BCCX_Node *structs;
 BCCX_Node *struct_hash[256];
 
+BCCX_Node *dynobj;
+BCCX_Node *dynobj_e;
+
 
 BCCX_Node *static_init;
 int static_init_seq;
@@ -751,9 +755,20 @@ int cur_idx4;	//property
 char *imp_ns[256];
 int n_imp;
 
+char *lambda_capref[256];
+BCCX_Node *lambda_captype[256];
+int n_lambda_capref;
+byte do_lambda_capref;
+
+char *vlcn_names[512];
+BCCX_Node *vlcn_types[512];
+int vlcn_npos;
+
+
 int vlcl_seq;
 int vlcl_curseq;
 int vlcl_stack[256];
+int vlcl_stack_npos[256];
 int vlcl_stackpos;
 
 fourcc lang;

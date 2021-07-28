@@ -461,6 +461,15 @@ The values of the other bits are unchanged by this operation.
 This instruction is only allowed in Lane 1.
 
 
+=== CONVFXI / CONVFLI (?) ===
+
+* F0nm_1gF8  CONVFXI	Rm, Rn				//Convert Int64 -> Fixint
+* F0nm_1GF8  CONVFLI	Rm, Rn				//Convert Binary64 -> Flonum
+
+The CONVFXI instruction sets the high bits to 01 and copies the low order bits from Rm(61:0).
+The CONVFLI instruction sets the high bits to 10 and copies the low order bits from Rm(63:2).
+
+
 === CPUID ===
 
 * 36jA       CPUID	Imm4
@@ -500,7 +509,7 @@ Index 1:
 * ( 17): GFPX (128-Bit Long-Double Ops)
 * ( 18): FMAC (FPU Multiply-Accumulate)
 * ( 19): ALUX (128-bit ALU Ops)
-* ( 20): X64R (Set if X32..X62 exist)
+* ( 20): XGPR (Set if R32..R63 exist)
 
 Index 31:
 * Hardware Random Number
@@ -1725,11 +1734,13 @@ Packed Shuffle of DWord element, operating on a logical 128-bit register.
 Checks if the elements in Rm match those in Ro, storing the index of the first match into Rn.
 
 SR.T is updated based on whether or not any match was found.
+SR.T will be set if the condition is true, and cleared if false.
 
 PSCHEQ will update Rn and SR.T based on the first matching element.
 PSCHNE will update Rn and SR.T based on the first non-matching element.
 
 Elements may be either Packed Word or Packed Byte.
+Elements will be numbered starting from the low-order bits.
 
 
 
@@ -1983,14 +1994,28 @@ Get the absolute value of the double precision value in Rm and store the result 
 
 === FADD (GFP) ===
 
-* 60nm       FADD		Rm, Rn
-* F0nm_5go8  FADD		Rm, Ro, Rn
-* F0nm_5Go8  FADDX		Xm, Xo, Xn		//(GFPX)
+* 60nm                 FADD		Rm, Rn
+* F0nm_5go8            FADD		Rm, Ro, Rn
+* F0nm_5Go8            FADDX	Xm, Xo, Xn		//(GFPX)
+* FFw0_00ii_F0nm_5go8  FADD		Rm, Ro, Rn, Imm8
+* FFw0_00ii_F0nm_5Go8  FADDX	Xm, Xo, Xn, Imm8
 
 Add the double precision value in Ro to the value from Rm and store the resulting value in Rn.
 
 FADDX will operate instead on a Binary128 value.
 This may be partial precision, with the range of mantissa bits supported being implementation defined. If supported, the minimum will be 52 bits.
+
+
+In the Op64 case, the Imm8 may encode a rounding mode:
+* 00: Round to Nearest
+* 01: Truncate / Round towards zero.
+* 02: Round toward +Inf
+* 03: Round toward -Inf
+* 04: Round, ULP+2, Inexact Status
+
+In rounding mode 4, the ULP will be moved upwards by 2 bits.
+The low 2 bits of inputs and results will be treated as an inexact status.
+If these bits hold 0, the result is exact, otherwise the result is inexact. This state will be sticky.
 
 
 === FCMPEQ (GFP) ===
@@ -2103,9 +2128,11 @@ FMACX will operate instead on a Binary128 value (partial precision).
 
 === FMUL (GFP) ===
 
-* 62nm       FMUL		Rm, Rn			//(GFP) FMUL
-* F0nm_5goA  FMUL		Rm, Ro, Rn		//(GFP) FMUL
-* F0nm_5GoA  FMULX		Xm, Xo, Xn		//(GFPX) FMUL
+* 62nm                 FMUL		Rm, Rn			//(GFP) FMUL
+* F0nm_5goA            FMUL		Rm, Ro, Rn		//(GFP) FMUL
+* F0nm_5GoA            FMULX	Xm, Xo, Xn		//(GFPX) FMUL
+* FFw0_00ii_F0nm_5goA  FMUL		Rm, Ro, Rn, Imm8
+* FFw0_00ii_F0nm_5GoA  FMULX	Xm, Xo, Xn, Imm8
 
 Multiply the double precision value in Ro with the value from Rm and store the resulting value in Rn.
 
@@ -2143,9 +2170,11 @@ Conversion to integer will truncate towards zero. Its output will be a 64-bit in
 
 === FSUB (GFP) ===
 
-* 61nm       FSUB		Rm, Rn			//(GFP) FSUB
-* F0nm_5go9  FSUB		Rm, Ro, Rn		//(GFP) FSUB
-* F0nm_5Go9  FSUBX		Rm, Ro, Rn		//(GFPX) FSUB
+* 61nm                 FSUB		Rm, Rn			//(GFP) FSUB
+* F0nm_5go9            FSUB		Rm, Ro, Rn		//(GFP) FSUB
+* F0nm_5Go9            FSUBX	Rm, Ro, Rn		//(GFPX) FSUB
+* FFw0_00ii_F0nm_5go9  FSUB		Rm, Ro, Rn, Imm8
+* FFw0_00ii_F0nm_5Go9  FSUBX	Xm, Xo, Xn, Imm8
 
 Subtract the double precision value in Ro from the value from Rm and store the resulting value in Rn.
 

@@ -267,6 +267,9 @@ Typed signatures are encoded as strings, with characters indicating value types.
 * 'Dp':
 * 'Dq': __quatd
 
+* 'Dx{n}': Signed BitInt
+* 'Dy{n}': Unsigned BitInt
+
 * 'Dz': va_list
 
 * 'Gd': _Imaginary double

@@ -143,7 +143,19 @@ Control Registers:
 * C13 / KRR: MMU Keyring Register.
 * C14 / IMM (U,R/O): ? Undefined Value (Internal)
 * C15 / ZZR (U,R/O): ? Always returns Zero (Internal)
-* C16 .. C31: Reserved
+* / C16 .. C31: Reserved
+* C16 / PC2: Program Counter (SMT)
+* C17 / LR2: Link Register (SMT)
+* C18 / SR2: Status Register (SMT)
+* C19: Reserved
+* C20 / SPC2: Saved PC (SMT)
+* C21 / SSP2: Saved SP (SMT)
+* C22 / GBR2: Global Base Register (SMT)
+* C23 / TBR2: Thread Base Register (SMT)
+* C24: Reserved
+* C25: Reserved
+* ..
+* C31: Reserved
 
 Access to SPRs will depend on Mode:
 * C0: All Modes
@@ -181,7 +193,9 @@ SR Bits:
 * 26: WX2, WEX Secondary
 * 27: WXE, WEX Enable
 * 28: BL, Block Interrupts
+** SMT1 (SR2 Specific)
 * 29: RB, Encodes the ISR register bank.
+** SMT2 (SR2 Specific)
 ** Set when interrupt occurs.
 ** Cleared when interrupt returns.
 * 30: MD, User/Supervisor.
@@ -703,6 +717,80 @@ For branches and other instructions which directly use PC-relative addressing, o
 For other cases, the nominal address calculation will be performed as 36 bits with a 33 bit sign-extended displacement. The remaining high-order address bits will be adjusted based on the results in the low-order bits.
 
 To support objects larger than those which support a 32 or 33 bit displacement, it will be necessary to use explicit ALU instructions.
+
+
+=== Symmetric Multithreading (SMT) ===
+
+Multithreading may be provided as an optional feature.
+* In this mode, two logical user threads may run in parallel.
+* This mode will temporarily suspend itself during interrupts.
+** The second thread will not execute while in an interrupt.
+
+Within SR2, the RB and BL flags will be reused as SMT1/SMT2 flags.
+* (SMT2,SMT1) = 00: SMT is Disabled
+* (SMT2,SMT1) = 01: SMT is Suspended (Interrupts/Etc)
+** May return to Active when the interrupt returns.
+* (SMT2,SMT1) = 1z: SMT is Active
+** SMT1 will be used as an internal SMT state flag in Active mode.
+** SMT mode is to be entered in the 10 state.
+
+In most other regards, the secondary set of control registers will mirror the behavior of the primary set during an interrupt. An OS scheduler may schedule a pair of threads in roughly a similar way to a single thread.
+
+
+In SMT mode, the set of 64 GPRs will effectively be divided in half, giving each thread is own logical set of 32 GPRs.
+* R0..R31 will belong to Thread 1.
+** R15: SP1
+* R32..R63 will belong to Thread 2.
+** R47: SP2
+
+Code within the second thread will be decoded as if it were the base ISA with 32 GPRs, and any attempts to use XGPR operations with extended GPRs will be undefined when SMT is Active.
+
+Several additional control registers will be defined as partial duplicates of the primary control registers. Within the second thread, these registers will appear to be equivalent to the base registers.
+
+Note that both threads are to operate within the same virtual address space.
+
+
+Note also that a core may allow WEX3W in SMT mode but 5W or 6W with SMT Disabled or Suspended. In this case the maximum number of pipeline lanes will be effectively doubled when SMT is Disabled or Suspended.
+
+For bundles wider than 3, the lanes will be interleved by default:
+* OP2A | OP1A
+* OP3A | OP2A | OP1A
+* OP2B | OP2A | OP1B | OP1A
+* OP3A | OP2B | OP2A | OP1B | OP1A
+* OP3B | OP3A | OP2B | OP2A | OP1B | OP1A
+
+However, interleved modes may be used for narrower bundles:
+* OP1B | OP1A
+* OP2A | OP1B | OP1A
+
+If Lane 2 would otherwise contain an operation which is not allowed in Lane 2 in 3W mode (such as an F1 block instruction), or if Lane 3 contains a Jumbo Prefix and Lane 2 contains a non-Jumbo instruction (Most F0 block instructions).
+
+Interleved decoding will be invalid if Lane 2 contains a Jumbo Prefix. Similarly, bundles longer than 3 will be invalid with a Jumbo prefix in Lane 2.
+
+
+This interleving may effect the operation of Jumbo Prefixes.
+* J2B | J2A | OP1B | OP1A
+
+For narrow bundles:
+*      F4 | Fz: Non Interleve
+*      F5 | Fz: Interleve (Invalid In 3W)
+*      F6 | Fz: Non Interleve
+*      F7 | F0: Reserved
+*      FC | F0: Non Interleve
+*      FD | F0: Reserved
+*      FE | Fz: Non Interleve
+*      FF | Fz: Non Interleve
+* FE | FE | Fz: Non Interleve (Jumbo96)
+* Fz | FE | Fz: Non Interleve
+* Fz | FF | Fz: Non Interleve
+* FE | F4 | F0: Interleve (Invalid In 3W)
+* FE | F4 | F1: Interleve (Invalid In 3W)
+* FE | F4 | F2: Interleve (Invalid In 3W)
+* FE | F5 | F0: Invalid (Encoding Violation)
+* FE | F6 | F0: Non Interleve
+* FE | F5 | F1: Interleve (Invalid In 3W, Jumbo combines with Lane 1)
+* FE | F6 | F1: Undefined (Ambiguous)
+* FF | Fz | Fz: Undefined (Invalid in 5W/6W)
 
 
 === Predicated Instructions ===
@@ -1240,6 +1328,8 @@ F0zz Instruction Block:
 *** F0nm_1GC8 CMPXEQ	Rm, Rn				//(ALUX) Rn==Rm
 *** F0nm_1GD8 CMPXHI	Rm, Rn				//(ALUX) Unsigned Rn GT Rm
 *** F0nm_1GE8 CMPXGT	Rm, Rn				//(ALUX) Signed Rn GT Rm
+*** F0nm_1gF8 CONVFXI	Rm, Rn				//Convert Int64 -> Fixint
+*** F0nm_1GF8 CONVFLI	Rm, Rn				//Convert Binary64 -> Flonum
 
 ** F0nm_1ez9
 *** F0nm_1g09 ADD		Rm, Rn				//Rn=Rn+Rm
@@ -1864,6 +1954,7 @@ The layout of the F8 block will thus be modified slighly with XGPR and two Imm24
 
 Alternative 2 (Hx, W0):
 * FFw0_00zz_F0nm_ZeoZ  "OP Rm, Ro, Rn"
+* FFw0_00ii_F0nm_ZeoZ  "OP Rm, Ro, Rn, Imm8"
 * FFw0_00ii_F1nm_Zeii  "OP (Rm, Disp17s), Rn"
 * FFw0_00ii_F2nm_Zeii  "OP Rm, Imm17, Rn"
 * FFw0_00ii_F2nZ_Zeii  "OP Imm18, Rn"
@@ -2132,16 +2223,28 @@ Profile 1 (WEX 2-Wide): Dual Lane ALU, Single IO Lane.
 * Second lane only has ALU ops.
 * Restrictions on the use of memory store.
 
-Profile 2 (WEX 3-Wide): Triple Lane ALU, Single IO Lane.
+Profile 2 (WEX 3-Wide, WEX3W): Triple Lane ALU, Single IO Lane.
 * ZZZZ_ZZZZ YYYY_YYYY XXXX_XXXX
 * Lanes are in a 3/2/1 ordering.
 * The second and third lanes only have ALU ops.
 
-Profile 3 (WEX 3-Wide): Triple Lane ALU, Triple Lane IO
-* Lanes 2 and 3 are able to perform memory Loads.
+Profile 3 (WEX 3-Wide): Triple Lane ALU, Dual Lane IO
+* Lane 2 is able to perform memory Loads.
 * Store is only available in Lane 1.
 * Accessing MMIO is only allowed from Lane 1.
 * Simultaneous load and store to the same cache line will be undefined as to whether the old or new value is read.
+
+Profile 4 (WEX 5-Wide, WEX5W): Five Lane ALU, Dual Lane IO
+* There are 5 WEX lanes (5/4/3/2/1)
+* Both the first and second lane may perform IO.
+* Lanes will use interleving rules as defined for SMT.
+** SMT Interleving rules will apply even if SMT is not used.
+
+Profile 5 (WEX 6-Wide, WEX6W): Six Lane ALU, Dual Lane IO
+* There are 6 WEX lanes (6/5/4/3/2/1)
+* Both the first and second lane may perform IO.
+* Lanes will use interleving rules as defined for SMT.
+** SMT Interleving rules will apply even if SMT is not used.
 
 Many instructions will only exist in the first lane:
 * Memory operations

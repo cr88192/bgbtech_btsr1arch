@@ -488,6 +488,8 @@ If absent, these fields will be set to NULL. A list which is empty (but present)
 
 Fields and methods will be optional, and may be omitted on internal classes if the class is never accessed dynamically. Interfaces will be needed if an object may be dynamically cast to an interface.
 
+The FieldInfo lists will have a 32-bit alignment, and if the LSB of the RVA is set, this selects the Small variant.
+
 
 FieldInfo:
  FieldInfo {
@@ -495,6 +497,14 @@ FieldInfo:
    String_RVA sig;
    DWORD flags;
    DWORD offset;
+ }
+
+FieldInfoSmall:
+ FieldInfoSmall {
+   String_RVA24 name;
+   String_RVA24 sig;
+   DWORD flags;
+   WORD offset;
  }
 
 For interfaces, the FieldInfo is similar, but differs mostly in that name gives the interface QName, and sig gives an interface pointer.
@@ -522,6 +532,7 @@ Current Scheme (4 bit MSB Tag):
 ** 1E..1F: Reserved
 * 001z: Reserved
 * 01zz: FixLong (62 bit)
+** 62-bit, Twos Complement
 * 10zz: Flonum (62 bit)
 ** Double shifted right 2 bits.
 * 1100: TagArray

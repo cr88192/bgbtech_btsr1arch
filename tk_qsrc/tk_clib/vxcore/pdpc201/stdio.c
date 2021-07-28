@@ -1178,13 +1178,17 @@ static void fwriteSlowB(const void *ptr,
 static int vvprintf(const char *format, va_list arg, FILE *fq, char *s)
 {
 	int fin;
-	int vint;
+//	int vint;
+	long long vint;
 	double vdbl;
-	unsigned int uvint;
+//	unsigned int uvint;
+	unsigned long long uvint;
 	const char *vcptr;
 	int chcount;
 	size_t len;
 	char numbuf[50];
+	char pad, ljust, llong;
+	int width, prec;
 	char *nptr;
 	int *viptr;
 
@@ -1200,10 +1204,64 @@ static int vvprintf(const char *format, va_list arg, FILE *fq, char *s)
 		else if (*format == '%')
 		{
 			format++;
+			pad=' ';
+
+#if 0
+			ljust=0;
+			llong=0;
+			width=0;
+			prec=0;
+			
+			if(*format=='0')
+				{ pad='0'; format++; }
+			if(*format==' ')
+				{ pad=' '; format++; }
+			if(*format=='-')
+				{ ljust|=1; format++; }
+			if(*format=='+')
+				{ ljust|=2; format++; }
+			
+			while((*format>='0') && (*format<='9'))
+				{ width=(width*10)+((*format++)-'0'); }
+
+			if(*format=='*')
+			{
+				format++;
+				width = va_arg(arg, int);
+			}
+
+			if(*format=='.')
+			{
+				format++;
+				while((*format>='0') && (*format<='9'))
+					{ prec = (prec*10)+((*format++)-'0'); }
+
+				if(*format=='*')
+				{
+					format++;
+					prec = va_arg(arg, int);
+				}
+			}
+			
+			if(*format=='l')
+			{
+				format++;
+				if(*format=='l')
+					format++;
+				llong=1;
+			}
+#endif
+			
 //			if (*format == 'd')
 			if ((*format == 'd') || (*format == 'i'))
 			{
-				vint = va_arg(arg, int);
+				if(llong)
+				{
+					vint = va_arg(arg, long long);
+				}else
+				{
+					vint = va_arg(arg, int);
+				}
 
 				if (vint < 0)
 					{ uvint = -vint; }
@@ -1219,6 +1277,9 @@ static int vvprintf(const char *format, va_list arg, FILE *fq, char *s)
 
 				if (vint < 0)
 					{ *nptr++ = '-'; }
+//				else if(ljust&2)
+//					{ *nptr++ = '+'; }
+
 				do
 				{
 					nptr--;
@@ -1320,12 +1381,24 @@ static int examine(const char **formt, FILE *fq, char *s, va_list *arg,
 	int precision = -1;
 	int half = 0;
 	int lng = 0;
+	int llng = 0;
+	int xlng = 0;
 	int specifier = 0;
 	int fin;
-	long lvalue;
+#if defined(__BJX2__)
+// #if 0
+	__int128 lvalue;
+	__uint128 ulvalue;
+	unsigned long long ui64value;
+#else
+//	long lvalue;
+//	unsigned long ulvalue;
+	long long lvalue;
+	unsigned long long ulvalue;
+	unsigned long long ui64value;
+#endif
 	short int hvalue;
 	int ivalue;
-	unsigned long ulvalue;
 	double vdbl;
 	char *svalue;
 	char work[50];
@@ -1338,7 +1411,7 @@ static int examine(const char **formt, FILE *fq, char *s, va_list *arg,
 	int neg;
 	int length;
 	size_t slen;
-	int n;
+	int i, n;
 
 #if 0
 	extraCh = 0;
@@ -1440,10 +1513,38 @@ static int examine(const char **formt, FILE *fq, char *s, va_list *arg,
 	else if (*format == 'l')
 	{
 		lng = 1;
+		if(format[1]=='l')
+		{
+			llng = 1;
+			format++;
+		}
 	}
-	else if (*format == 'L')
+	else if (*format == 't')
 	{
 		lng = 1;
+	}
+	else if (*format == 'L')
+//	else if ((*format == 'L') || (*format == 't'))
+	{
+		lng = 1;
+	}
+	else if (*format == 'j')
+	{
+		xlng = 1;
+	}
+	else if ((*format == 'I') && (format[1]>='0') && (format[1]<='9'))
+	{
+//		xlng = 1;
+		format++;
+		i=0;
+		while((*format>='0') && (*format<='9'))
+			i=(i*10)+((*format++)-'0');
+		format--;
+		
+		if((i>32) && (i<=64))
+			{ llng = 1; }
+		else if((i>64) && (i<=128))
+			{ xlng = 1; }
 	}
 	else
 	{
@@ -1460,13 +1561,33 @@ static int examine(const char **formt, FILE *fq, char *s, va_list *arg,
 		{
 			precision = 1;
 		}
+
 #if defined(__MSDOS__) && !defined(__PDOS__) && !defined(__gnu_linux__)
 		if (specifier == 'p')
 		{
 			lng = 1;
 		}
 #endif
-		if (lng)
+
+#if defined(__BJX2__)
+		if (specifier == 'p')
+		{
+			lng = 1;
+		}
+#endif
+
+#if defined(__BJX2__)
+		if (xlng)
+		{
+			lvalue = va_arg(*arg, __int128);
+		}
+		else
+			if (llng)
+		{
+			lvalue = va_arg(*arg, long long);
+		}
+#endif
+			if (lng)
 		{
 			lvalue = va_arg(*arg, long);
 		}
@@ -1483,7 +1604,8 @@ static int examine(const char **formt, FILE *fq, char *s, va_list *arg,
 			if (specifier == 'u') lvalue = (unsigned int)ivalue;
 			else lvalue = ivalue;
 		}
-		ulvalue = (unsigned long)lvalue;
+//		ulvalue = (unsigned long)lvalue;
+		ulvalue = lvalue;
 		if ((lvalue < 0) && ((specifier == 'd') || (specifier == 'i')))
 		{
 			neg = 1;
@@ -1518,6 +1640,11 @@ static int examine(const char **formt, FILE *fq, char *s, va_list *arg,
 #else
 			precision = 8;
 #endif
+
+#if defined(__BJX2__)
+			precision = 12;
+#endif
+
 		}
 		x = 0;
 		n = 64;
@@ -1620,7 +1747,13 @@ static int examine(const char **formt, FILE *fq, char *s, va_list *arg,
 		{
 			precision = 6;
 		}
-		vdbl = va_arg(*arg, double);
+		if(lng || xlng)
+		{
+			vdbl = va_arg(*arg, long double);
+		}else
+		{
+			vdbl = va_arg(*arg, double);
+		}
 		dblcvt(vdbl, specifier, width, precision, work);   /* 'e','f' etc. */
 		slen = strlen(work);
 		if (fq == NULL)
@@ -1641,6 +1774,60 @@ static int examine(const char **formt, FILE *fq, char *s, va_list *arg,
 			precision = 1;
 		}
 		svalue = va_arg(*arg, char *);
+		fillCh = ' ';
+		if (precision > 1)
+		{
+			char *p;
+
+			p = memchr(svalue, '\0', precision);
+			if (p != NULL)
+			{
+				length = (int)(p - svalue);
+			}
+			else
+			{
+				length = precision;
+			}
+		}
+		else
+		{
+			length = strlen(svalue);
+		}
+		if (!flagMinus)
+		{
+			if (length < width)
+			{
+				extraCh += (width - length);
+				for (x = 0; x < (width - length); x++)
+				{
+					outch(fillCh);
+				}
+			}
+		}
+		for (x = 0; x < length; x++)
+		{
+			outch(svalue[x]);
+		}
+		extraCh += length;
+		if (flagMinus)
+		{
+			if (length < width)
+			{
+				extraCh += (width - length);
+				for (x = 0; x < (width - length); x++)
+				{
+					outch(fillCh);
+				}
+			}
+		}
+	}
+	else if ((specifier == 'v') || (specifier == 'V'))
+	{
+		if (precision < 0)
+		{
+			precision = 1;
+		}
+		svalue = va_arg(*arg, long long);
 		fillCh = ' ';
 		if (precision > 1)
 		{

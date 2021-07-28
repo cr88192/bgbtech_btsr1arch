@@ -24,6 +24,7 @@ SRCS=\
 	ccxl/ccxl_compile.c \
 	ccxl/ccxl_const.c \
 	ccxl/ccxl_expr.c \
+	ccxl/ccxl_fold.c \
 	ccxl/ccxl_global.c \
 	ccxl/ccxl_index.c \
 	ccxl/ccxl_infer.c \
@@ -112,6 +113,7 @@ SRCS=\
 	jx2cc/jx2_lqarith.c \
 	jx2cc/jx2_lvarith.c \
 	jx2cc/jx2_lxarith.c \
+	jx2cc/jx2_lzarith.c \
 	jx2cc/jx2_v4arith.c \
 	jx2cc/jx2_pecoff.c \
 	jx2cc/jx2_register.c \

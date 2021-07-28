@@ -155,6 +155,7 @@ BCCX_Node *BGBCP_ForceDefinition(BGBCP_ParseState *ctx, char **str);
 int BGBCP_AddExpression(char *name,BCCX_Node *(*func)(BGBCP_ParseState *ctx, char **s));
 BCCX_Node *BGBCP_ParseExpressionName(BGBCP_ParseState *ctx, char *name, char **s);
 BCCX_Node *BGBCP_Number(BGBCP_ParseState *ctx, char *str);
+BCCX_Node *BGBCP_NumberSuf(BGBCP_ParseState *ctx, char *str, char *suf);
 BCCX_Node *BGBCP_NumberXF(BGBCP_ParseState *ctx, char *str);
 BCCX_Node *BGBCP_ExpressionLitString(BGBCP_ParseState *ctx, char **str);
 BCCX_Node *BGBCP_ExpressionLitStringQQQ(BGBCP_ParseState *ctx, char **str);
@@ -850,6 +851,12 @@ void BGBCC_CCXL_CompileExprTail(BGBCC_TransState *ctx, BCCX_Node *l);
 int BGBCC_CCXL_CompileExprValueObject(BGBCC_TransState *ctx,char *sig, ccxl_type ty, BCCX_Node *l);
 void BGBCC_CCXL_CompileExprAsTypeSig(BGBCC_TransState *ctx,char *sig, BCCX_Node *l);
 void BGBCC_CCXL_CompileExprAsType(BGBCC_TransState *ctx,BCCX_Node *ty, BCCX_Node *l);
+//AHSRC:ccxl/ccxl_fold.c
+int BGBCC_CCXL_DoFoldLookupLocalIndex(BGBCC_TransState *ctx, char *name);
+void BGBCC_CCXL_DoExpressionLambdaFold(BGBCC_TransState *ctx, BCCX_Node *l);
+void BGBCC_CCXL_DoStatementLambdaFold(BGBCC_TransState *ctx, BCCX_Node *l);
+void BGBCC_CCXL_LambdaFoldAddArgs(BGBCC_TransState *ctx, BCCX_Node *args);
+void BGBCC_CCXL_SetupLambdaFold(BGBCC_TransState *ctx, BCCX_Node *args);
 //AHSRC:ccxl/ccxl_global.c
 void BGBCC_CCXL_CheckExpandGlobals(BGBCC_TransState *ctx);
 int BGBCC_CCXL_HashName(char *name);
@@ -946,10 +953,13 @@ void BGBCC_CCXL_CompilePredCmpZero(BGBCC_TransState *ctx);
 void BGBCC_CCXL_CompilePredCmpNonZero(BGBCC_TransState *ctx);
 int BGBCC_CCXL_CompilePredExpr(BGBCC_TransState *ctx, BCCX_Node *l);
 //AHSRC:ccxl/ccxl_infer.c
+void BGBCC_CCXL_InferExpr_CapRef(BGBCC_TransState *ctx,int lvl, char *name);
 int BGBCC_CCXL_InferExpr(BGBCC_TransState *ctx,BCCX_Node *l, ccxl_type *rdty);
 int BGBCC_CCXL_InferExprCleanP(BGBCC_TransState *ctx, BCCX_Node *l);
 int BGBCC_CCXL_InferBlockPredSafeP(BGBCC_TransState *ctx, BCCX_Node *l);
 int BGBCC_CCXL_InferExprSimpleCmpP(BGBCC_TransState *ctx, BCCX_Node *l);
+int BGBCC_CCXL_InferBlockCapRef(BGBCC_TransState *ctx, BCCX_Node *l);
+int BGBCC_CCXL_InferLambdaCapRef(BGBCC_TransState *ctx, BCCX_Node *l);
 //AHSRC:ccxl/ccxl_pred.c
 bool BGBCC_CCXL_IsRegBasicP(BGBCC_TransState *ctx, ccxl_register reg);
 bool BGBCC_CCXL_IsRegArgBasicP(BGBCC_TransState *ctx, ccxl_register reg);
@@ -967,7 +977,9 @@ bool BGBCC_CCXL_IsRegThisIdxP(BGBCC_TransState *ctx, ccxl_register reg);
 bool BGBCC_CCXL_IsRegThisP(BGBCC_TransState *ctx, ccxl_register reg);
 bool BGBCC_CCXL_IsRegZzP(BGBCC_TransState *ctx, ccxl_register reg);
 int BGBCC_CCXL_GetRegID(BGBCC_TransState *ctx, ccxl_register reg);
+ccxl_type BGBCC_CCXL_MakeTypeVTy(BGBCC_TransState *ctx, int id);
 ccxl_type BGBCC_CCXL_MakeTypeID(BGBCC_TransState *ctx, int id);
+ccxl_type BGBCC_CCXL_MakeTypeID_Arr(BGBCC_TransState *ctx, int id, int asz);
 ccxl_type BGBCC_CCXL_GetRegType(BGBCC_TransState *ctx, ccxl_register reg);
 int BGBCC_CCXL_GetRegAsType(BGBCC_TransState *ctx, ccxl_register reg, ccxl_type tty, ccxl_register *rtreg);
 ccxl_type BGBCC_CCXL_GetRegDerefType(BGBCC_TransState *ctx, ccxl_register reg);
@@ -1329,7 +1341,10 @@ bool BGBCC_CCXL_TypeSmallShortP(BGBCC_TransState *ctx, ccxl_type ty);
 bool BGBCC_CCXL_TypeSmallSIntP(BGBCC_TransState *ctx, ccxl_type ty);
 bool BGBCC_CCXL_TypeSmallUIntP(BGBCC_TransState *ctx, ccxl_type ty);
 bool BGBCC_CCXL_TypeSmallLongP(BGBCC_TransState *ctx, ccxl_type ty);
+bool BGBCC_CCXL_TypeSgInt128P(BGBCC_TransState *ctx, ccxl_type ty);
 bool BGBCC_CCXL_TypeSmallInt128P(BGBCC_TransState *ctx, ccxl_type ty);
+bool BGBCC_CCXL_TypeBitIntP(BGBCC_TransState *ctx, ccxl_type ty);
+bool BGBCC_CCXL_TypeSmallBitIntP(BGBCC_TransState *ctx, ccxl_type ty);
 bool BGBCC_CCXL_TypeUnsignedP(BGBCC_TransState *ctx, ccxl_type ty);
 bool BGBCC_CCXL_TypeSignedP(BGBCC_TransState *ctx, ccxl_type ty);
 bool BGBCC_CCXL_TypeIntP(BGBCC_TransState *ctx, ccxl_type ty);
@@ -1416,6 +1431,8 @@ ccxl_status BGBCC_CCXL_TypeAutoPromoteType(BGBCC_TransState *ctx, ccxl_type sty,
 int BGBCC_CCXL_TypeGetArraySize(BGBCC_TransState *ctx, ccxl_type sty);
 int BGBCC_CCXL_TypeArrayAdjustSize(BGBCC_TransState *ctx, ccxl_type sty, ccxl_type *rdty, int newsz);
 int BGBCC_CCXL_TypeGetArrayDimSize(BGBCC_TransState *ctx, ccxl_type sty);
+int BGBCC_CCXL_TypeGetBitIntSize(BGBCC_TransState *ctx, ccxl_type sty);
+int BGBCC_CCXL_TypeGetArrayFinalSize(BGBCC_TransState *ctx, ccxl_type sty);
 int BGBCC_CCXL_TypeGetPointerClass(BGBCC_TransState *ctx, ccxl_type sty);
 int BGBCC_CCXL_TypeNearPointerP(BGBCC_TransState *ctx, ccxl_type sty);
 int BGBCC_CCXL_TypeFarPointerP(BGBCC_TransState *ctx, ccxl_type sty);
@@ -2950,6 +2967,13 @@ int BGBCC_JX2C_EmitConvVRegVRegToFloat128(BGBCC_TransState *ctx, BGBCC_JX2_Conte
 int BGBCC_JX2C_EmitConvVRegVRegFromFloat128(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type dtype, ccxl_register dreg, ccxl_register sreg);
 int BGBCC_JX2C_EmitCompareVRegVRegVRegFloat128(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
 int BGBCC_JX2C_EmitJCmpVRegVRegFloat128(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp, int lbl);
+//AHSRC:jx2cc/jx2_lzarith.c
+int BGBCC_JX2C_EmitBinaryVRegVRegBitInt(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
+int BGBCC_JX2C_EmitBinaryVRegVRegVRegBitInt(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
+int BGBCC_JX2C_EmitUnaryVRegVRegBitInt(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);
+int BGBCC_JX2C_EmitCompareVRegVRegVRegBitInt(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
+int BGBCC_JX2C_EmitJCmpVRegVRegBitInt(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp, int lbl);
+int BGBCC_JX2C_EmitConvFromVRegVRegBitInt(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type dtype, ccxl_type stype, ccxl_register dreg, ccxl_register sreg);
 //AHSRC:jx2cc/jx2_v4arith.c
 int BGBCC_JX2C_LoadVectorField64(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, int ofs, int csreg, int cdreg);
 int BGBCC_JX2C_LoadVectorField128(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, int ofs, int csreg, int cdreg);
