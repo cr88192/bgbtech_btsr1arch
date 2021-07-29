@@ -8,7 +8,8 @@ module FpuMul(
 	exHold,
 	regValRm,
 	regValRn,
-	regValRo
+	regValRo,
+	regRMode
 	);
 
 input	clock;
@@ -18,6 +19,7 @@ input	exHold;
 input[63:0]		regValRm;
 input[63:0]		regValRn;
 output[63:0]	regValRo;
+input[7:0]		regRMode;
 
 reg[63:0]		tRegValRo;
 assign	regValRo	= tRegValRo;
@@ -30,6 +32,7 @@ reg[10:0]		tExpB1;
 reg[12:0]		tExpC1;
 reg[53:0]		tFraA1;
 reg[53:0]		tFraB1;
+reg				tInxC1;
 
 reg[35:0]		tFraC1_AC;
 reg[35:0]		tFraC1_BB;
@@ -46,6 +49,7 @@ reg[9:0]		tFraC1_BA_C5;
 
 reg				tSgnC2;
 reg[12:0]		tExpC2;
+reg				tInxC2;
 
 reg[35:0]		tFraC2_AC;
 reg[35:0]		tFraC2_BB;
@@ -66,6 +70,7 @@ reg[63:0]		tFraC2_R;
 
 reg				tSgnC3;
 reg[12:0]		tExpC3;
+reg				tInxC3;
 
 reg[63:0]		tFraC3_P;
 reg[63:0]		tFraC3_Q;
@@ -77,12 +82,15 @@ ExCsAdd64F		fpmulAdd(tFraC3_Q, tFraC3_R, tFraC3_S);
 reg				tSgnC4;
 reg[12:0]		tExpC4;
 reg[63:0]		tFraC4_S;
+reg				tInxC4;
 
 reg				tSgnC4B;
 reg[12:0]		tExpC4B;
 reg[53:0]		tFraC4B;
+reg				tInxC4B;
 
 reg				tFraRbit4B;
+reg				tFraRbit4B2;
 reg[8:0]		tFraRnd4B;
 
 reg[63:0]		tValC4;
@@ -127,6 +135,9 @@ begin
 	if((tExpA1==0) || (tExpB1==0))
 		tExpC1	= 0;
 
+	tInxC1=0;
+	if(regRMode[3:0]==4)
+		tInxC1 = (regValRn[1:0]!=0) || (regValRm[1:0]!=0);
 
 //	$display("FpuMul: Exp %X %X %X", tExpA1, tExpB1, tExpC1);
 
@@ -184,6 +195,8 @@ begin
 		tExpC4B = 0;
 		tFraC4B = 0;
 		tFraRbit4B	= 0;
+		tFraRbit4B2	= 0;
+		tInxC4B = tInxC4 || tExpC4[12];
 	end
 	else
 	if(tExpC4[11] || (tExpC4==2047))
@@ -192,6 +205,8 @@ begin
 		tExpC4B = 2047;
 		tFraC4B = 0;
 		tFraRbit4B	= 0;
+		tFraRbit4B2	= 0;
+		tInxC4B = tInxC4 || tExpC4[11];
 	end
 	else
 	if(tFraC4_S[61])
@@ -202,6 +217,8 @@ begin
 //			(tFraC4_S[8]?54'h1:54'h0);
 		tFraC4B = tFraC4_S[62:9];
 		tFraRbit4B	= tFraC4_S[8];
+		tFraRbit4B2	= tFraC4_S[10];
+		tInxC4B = tInxC4 || (tFraC4_S[10:0]!=0);
 	end
 	else
 	begin
@@ -211,18 +228,36 @@ begin
 //			(tFraC4_S[7]?54'h1:54'h0);
 		tFraC4B = tFraC4_S[61:8];
 		tFraRbit4B	= tFraC4_S[7];
+		tFraRbit4B2	= tFraC4_S[9];
+		tInxC4B = tInxC4 || (tFraC4_S[9:0]!=0);
 	end
 	
-	tFraRnd4B = { 1'b0, tFraC4B[7:0] } + { 8'b0, tFraRbit4B };
+	if(regRMode[3:0]==1)
+		tFraRbit4B=0;
+	if(regRMode[3:0]==2)
+		tFraRbit4B=!tSgnC4;
+	if(regRMode[3:0]==3)
+		tFraRbit4B=tSgnC4;
+	if(regRMode[3:0]!=4)
+		tFraRbit4B2=0;
+	
+//	tFraRnd4B = { 1'b0, tFraC4B[7:0] } + { 8'b0, tFraRbit4B };
+	tFraRnd4B = { 1'b0, tFraC4B[7:0] } + { 5'b0,
+		tFraRbit4B2, 1'b0,
+		tFraRbit4B };
+
 	if(!tFraRnd4B[8])
 		tFraC4B[7:0] = tFraRnd4B[7:0];
+
+	if(regRMode[3:0]==4)
+		tFraC4B[1:0] = tInxC4B ? 2'b01 : 2'b00;
 
 //	$display("FpuMul: ExpB %X %X", tExpC4, tExpC4B);
 
 	tValC4 = { tSgnC4B, tExpC4B[10:0], tFraC4B[51:0] };
 	
 //	$display("FpuMul: Val=%X", tValC4);
-	
+
 end
 
 always @(posedge clock)
@@ -231,6 +266,7 @@ begin
 	begin
 		tSgnC2		<= tSgnC1;
 		tExpC2		<= tExpC1;
+		tInxC2		<= tInxC1;
 
 		tFraC2_AC	<= tFraC1_AC;
 		tFraC2_BB	<= tFraC1_BB;
@@ -247,12 +283,14 @@ begin
 
 	tSgnC3		<= tSgnC2;
 	tExpC3		<= tExpC2;
+	tInxC3		<= tInxC2;
 	tFraC3_P	<= tFraC2_P;
 	tFraC3_Q	<= tFraC2_Q;
 	tFraC3_R	<= tFraC2_R;
 
 	tSgnC4		<= tSgnC3;
 	tExpC4		<= tExpC3;
+	tInxC4		<= tInxC3;
 	tFraC4_S	<= tFraC3_S;
 
 	tRegValRo	<= tValC4;

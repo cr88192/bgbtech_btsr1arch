@@ -29,7 +29,8 @@ module FpuAdd(
 	regValRn,
 	regValRo,
 	regExOp,
-	regExOK
+	regExOK,
+	regRMode
 	);
 
 input	clock;
@@ -41,6 +42,7 @@ input[63:0]		regValRn;
 output[63:0]	regValRo;
 input[3:0]		regExOp;
 output[1:0]		regExOK;
+input[7:0]		regRMode;
 
 reg[63:0]		tRegValRo2;
 reg[1:0]		tRegExOK2;
@@ -58,6 +60,7 @@ reg[3:0]		tRegExOp1;
 reg				tExEn1;
 reg				tSgnA1;
 reg				tSgnB1;
+reg				tInxC1;
 reg				tFraNzA1;
 reg				tFraNzB1;
 reg[10:0]		tExpA1;
@@ -94,6 +97,7 @@ reg				tFraItf2;
 
 reg				tSgnC2;
 reg[10:0]		tExpC2;
+reg				tInxC2;
 reg[63:0]		tFraC2;
 reg[63:0]		tFraC2I;
 
@@ -139,6 +143,8 @@ reg[10:0]		tExpC3;
 reg[63:0]		tFraC3A;
 reg[63:0]		tFraC3I;
 
+
+reg				tInxC3;
 wire			tSgnC3;
 wire[63:0]		tFraC3;
 assign		tSgnC3 = tSgnC3A ^ tFraC3A[63];
@@ -156,6 +162,7 @@ reg				tSgnC4;
 reg[11:0]		tExpC4;
 reg[63:0]		tFraC4;
 reg[63:0]		tFraC4I;
+reg				tInxC4;
 reg				tExpIsZeroC4;
 reg				tExpIsZeroC4B;
 reg[6:0]		tFraShlC4;
@@ -163,9 +170,13 @@ reg[6:0]		tFraShlC4;
 reg				tSgnC4B;
 reg[11:0]		tExpC4B;
 reg[63:0]		tFraC4B;
+reg				tInxC4B;
 
 reg[4:0]		tValRoundC4;
 reg[63:0]		tValC4;
+
+reg				tFraRbit4B;
+reg				tFraRbit4B2;
 
 reg				tExEn5;
 
@@ -199,6 +210,10 @@ begin
 
 	tFraA1	= {2'b0, tFraNzA1, tRegValRn[51:0], 9'h0};
 	tFraB1	= {2'b0, tFraNzB1, tRegValRm[51:0], 9'h0};
+
+	tInxC1=0;
+	if(regRMode[3:0]==4)
+		tInxC1 = (regValRn[1:0]!=0) || (regValRm[1:0]!=0);
 
 	if(tFraDti1 || tFraItf1)
 	begin
@@ -345,14 +360,33 @@ begin
 
 	tSgnC4B			= tSgnC4;
 	tFraC4B			= tFraShl1_C;
-	tExpC4B			= tExpC4;	
+	tExpC4B			= tExpC4;
+	tInxC4B			= tInxC4 || (tFraC4B[10:0] != 0);
+	tFraRbit4B		= tFraC4B[8];
+	tFraRbit4B2		= tFraC4B[10];
 
 	tValC4		= { tSgnC4B, tExpC4B[10:0], tFraC4B[60:9] };
 
-	tValRoundC4 = { 1'b0, tValC4[3:0] } + 1;
-	if(tFraC4B[8] && !tValRoundC4[4])
+	if(regRMode[3:0]==1)
+		tFraRbit4B=0;
+	if(regRMode[3:0]==2)
+		tFraRbit4B=!tSgnC4;
+	if(regRMode[3:0]==3)
+		tFraRbit4B=tSgnC4;
+	if(regRMode[3:0]!=4)
+		tFraRbit4B2=0;
+
+	tValRoundC4 = { 1'b0, tValC4[3:0] } + {
+		1'b0, tFraRbit4B2,
+		1'b0, tFraRbit4B };
+	
+//	tValRoundC4 = { 1'b0, tValC4[3:0] } + 1;
+//	if(tFraC4B[8] && !tValRoundC4[4])
+	if(!tValRoundC4[4])
 		tValC4[3:0] = tValRoundC4[3:0];
 
+	if(regRMode[3:0]==4)
+		tValC4[1:0] = tInxC4B ? 2'b01 : 2'b00;
 
 	if(tRegExOp4[2:0] == 4)
 	begin
@@ -395,6 +429,7 @@ begin
 
 		tFraDti2	<= tFraDti1;
 		tFraItf2	<= tFraItf1;
+		tInxC2		<= tInxC1;
 	end
 
 	tRegExOp3	<= tRegExOp2;
@@ -404,12 +439,14 @@ begin
 //	tFraC3		<= tFraC2;
 	tFraC3A		<= tFraC2;
 	tFraC3I		<= tFraC2I;
+	tInxC3		<= tInxC2;
 
 	tRegExOp4	<= tRegExOp3;
 	tSgnC4		<= tSgnC3B;
 	tExpC4		<= tExpC3B;
 	tFraC4		<= tFraC3B;
 	tFraC4I		<= tFraC3I;
+	tInxC4		<= tInxC3;
 
 	tExpIsZeroC4	<= tExpIsZeroC3;
 	tFraShlC4		<= tFraShlC3B;

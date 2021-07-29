@@ -85,11 +85,13 @@ output[8:0]		idUIxtC;
 `reg_gpr		opRegAM0;
 `reg_gpr		opRegAO0;
 `reg_gpr		opRegAN0;
+`reg_gpr		opRegAP0;
 
 
 `reg_gpr		opRegXM;
 `reg_gpr		opRegXO;
 `reg_gpr		opRegXN;
+`reg_gpr		opRegXP;
 
 reg[32:0]		opImmA;
 reg[8:0]		opUCmdA;
@@ -163,6 +165,7 @@ DecOpBz	decOpBz(
 `wire_gpr		decOpFzC_idRegN;
 `wire_gpr		decOpFzC_idRegM;
 `wire_gpr		decOpFzC_idRegO;
+`wire_gpr		decOpFzC_idRegP;
 wire[32:0]		decOpFzC_idImm;
 wire[8:0]		decOpFzC_idUCmd;
 wire[8:0]		decOpFzC_idUIxt;
@@ -174,7 +177,8 @@ DecOpFz	decOpFzC(
 		{ tOpJBitsB[24], tOpJBitsC[24],
 		opIsWexJumbo96, opIsWexJumboB, tOpJBitsC[23:0] },
 	decOpFzC_idRegN,		decOpFzC_idRegM,
-	decOpFzC_idRegO,		decOpFzC_idImm,
+	decOpFzC_idRegO,		decOpFzC_idRegP,
+	decOpFzC_idImm,
 	decOpFzC_idUCmd,		decOpFzC_idUIxt,
 	decOpFzC_idUFl
 	);
@@ -182,6 +186,7 @@ DecOpFz	decOpFzC(
 `wire_gpr		decOpFzB_idRegN;
 `wire_gpr		decOpFzB_idRegM;
 `wire_gpr		decOpFzB_idRegO;
+`wire_gpr		decOpFzB_idRegP;
 wire[32:0]		decOpFzB_idImm;
 wire[8:0]		decOpFzB_idUCmd;
 wire[8:0]		decOpFzB_idUIxt;
@@ -192,7 +197,8 @@ DecOpFz	decOpFzB(
 	{ UV32_XX, istrWord[63:32] },	4'h1,
 		{ 1'b0, tOpJBitsB[24], 1'b0, opIsWexJumboA, tOpJBitsB[23:0] },
 	decOpFzB_idRegN,		decOpFzB_idRegM,
-	decOpFzB_idRegO,		decOpFzB_idImm,
+	decOpFzB_idRegO,		decOpFzB_idRegP,
+	decOpFzB_idImm,
 	decOpFzB_idUCmd,		decOpFzB_idUIxt,
 	decOpFzB_idUFl
 	);
@@ -200,6 +206,7 @@ DecOpFz	decOpFzB(
 `wire_gpr		decOpFzA_idRegN;
 `wire_gpr		decOpFzA_idRegM;
 `wire_gpr		decOpFzA_idRegO;
+`wire_gpr		decOpFzA_idRegP;
 wire[32:0]		decOpFzA_idImm;
 wire[8:0]		decOpFzA_idUCmd;
 wire[8:0]		decOpFzA_idUIxt;
@@ -209,7 +216,8 @@ DecOpFz	decOpFzA(
 	clock,		reset,
 	{ UV32_XX, istrWord[31: 0] },	4'h0,	UV28_00,
 	decOpFzA_idRegN,		decOpFzA_idRegM,
-	decOpFzA_idRegO,		decOpFzA_idImm,
+	decOpFzA_idRegO,		decOpFzA_idRegP,
+	decOpFzA_idImm,
 	decOpFzA_idUCmd,		decOpFzA_idUIxt,
 	decOpFzA_idUFl
 	);
@@ -493,6 +501,7 @@ begin
 		opRegAM0	= decOpFzC_idRegM;
 		opRegAO0	= decOpFzC_idRegO;
 		opRegAN0	= decOpFzC_idRegN;
+		opRegAP0	= decOpFzC_idRegP;
 		opUCmdA0	= decOpFzC_idUCmd;
 		opUIxtA0	= decOpFzC_idUIxt;
 
@@ -546,6 +555,7 @@ begin
 			opUIxtA	= decOpFC_idUIxt;
 
 			opRegAN0	= decOpFC_idRegN;
+			opRegAP0	= decOpFC_idRegN;
 			opRegAM0	= decOpFC_idRegM;
 			opRegAO0	= decOpFC_idRegO;
 			opUCmdA0	= decOpFC_idUCmd;
@@ -580,6 +590,7 @@ begin
 				opRegAM	= decOpFzC_idRegM;
 				opRegAO	= decOpFzC_idRegO;
 				opRegAN	= decOpFzC_idRegN;
+//				opRegAN	= decOpFzC_idRegN;
 				opImmA	= decOpFzC_idImm;
 				opUCmdA	= decOpFzC_idUCmd;
 				opUIxtA	= decOpFzC_idUIxt;
@@ -587,6 +598,7 @@ begin
 				opRegAM0	= decOpFzC_idRegM;
 				opRegAO0	= decOpFzC_idRegO;
 				opRegAN0	= decOpFzC_idRegN;
+				opRegAP0	= decOpFzC_idRegP;
 				opUCmdA0	= decOpFzC_idUCmd;
 				opUIxtA0	= decOpFzC_idUIxt;
 
@@ -640,6 +652,7 @@ begin
 				opRegAM0	= decOpFzB_idRegM;
 				opRegAO0	= decOpFzB_idRegO;
 				opRegAN0	= decOpFzB_idRegN;
+				opRegAP0	= decOpFzB_idRegP;
 				opUCmdA0	= decOpFzB_idUCmd;
 				opUIxtA0	= decOpFzB_idUIxt;
 
@@ -650,8 +663,10 @@ begin
 				opUCmdB	= decOpFzA_idUCmd;
 				opUIxtB	= decOpFzA_idUIxt;
 
-				opRegCM	= decOpFzA_idRegN;
-				opRegCO	= decOpFzB_idRegN;
+//				opRegCM	= decOpFzA_idRegN;
+//				opRegCO	= decOpFzB_idRegN;
+				opRegCM	= decOpFzA_idRegP;
+				opRegCO	= decOpFzB_idRegP;
 				opRegCN	= JX2_GR_ZZR;
 				opImmC	= UV33_XX;
 				opUCmdC	= UV9_00;
@@ -698,6 +713,7 @@ begin
 				opRegAM0	= decOpFzA_idRegM;
 				opRegAO0	= decOpFzA_idRegO;
 				opRegAN0	= decOpFzA_idRegN;
+				opRegAP0	= decOpFzA_idRegP;
 				opUCmdA0	= decOpFzA_idUCmd;
 				opUIxtA0	= decOpFzA_idUIxt;
 				
@@ -709,7 +725,8 @@ begin
 				opUIxtB	= UV9_00;
 				
 				opRegCM	= JX2_GR_ZZR;
-				opRegCO	= decOpFzA_idRegN;
+//				opRegCO	= decOpFzA_idRegN;
+				opRegCO	= decOpFzA_idRegP;
 				opRegCN	= JX2_GR_ZZR;
 				opImmC	= UV33_XX;
 				opUCmdC	= UV9_00;
@@ -760,6 +777,7 @@ begin
 		opRegAM0	= opRegAM;
 		opRegAO0	= opRegAO;
 		opRegAN0	= opRegAN;
+		opRegAP0	= opRegAN;
 		opUCmdA0	= opUCmdA;
 		opUIxtA0	= opUIxtA;
 
@@ -913,12 +931,14 @@ begin
 	opRegXM	= { 1'b0, opRegAM0[0], opRegAM0[4:1], opDualLaneSw };
 	opRegXO	= { 1'b0, opRegAO0[0], opRegAO0[4:1], opDualLaneSw };
 	opRegXN	= { 1'b0, opRegAN0[0], opRegAN0[4:1], opDualLaneSw };
+	opRegXP	= { 1'b0, opRegAP0[0], opRegAP0[4:1], opDualLaneSw };
 	
 `else
 
 	opRegXM	= { opRegAM0[0], opRegAM0[4:1], opDualLaneSw };
 	opRegXO	= { opRegAO0[0], opRegAO0[4:1], opDualLaneSw };
 	opRegXN	= { opRegAN0[0], opRegAN0[4:1], opDualLaneSw };
+	opRegXP	= { opRegAP0[0], opRegAP0[4:1], opDualLaneSw };
 
 `endif
 
@@ -958,54 +978,37 @@ begin
 		end
 
 		if(opIsDualLaneRn)
-//		if(1'b1)
 		begin
 			opRegAN = opRegXN;
-//			if(opDualLaneSw)
-//				opRegAN[0] = !opRegAN[0];
-//				opRegAN[0] = !opRegXN[0];
 			opRegBN	= opRegAN;
 			opRegBN[0] = !opRegAN[0];
-		end
 
-`ifndef def_true
-		if(opIsDualLane3R)
-		begin
-			if(opDualLaneSw)
+			if(opIsScalar)
 			begin
-				opRegAM[0] = !opRegAM0[0];
-				opRegAO[0] = !opRegAO0[0];
+				opRegCO		= opRegXP;
+				opRegCM		= opRegCO;
+				opRegCM[0]	= !opRegCO[0];
 			end
-
-			opRegBM[0] = !opRegAM[0];
-			opRegBO[0] = !opRegAO[0];
 		end
-`endif
 
 `ifdef def_true
 		if(opIsDualLaneRm)
 		begin
 			opRegAM = opRegXM;
-//			if(opDualLaneSw)
-//				opRegAM[0] = !opRegAM[0];
-//				opRegAM[0] = !opRegXM[0];
 			opRegBM[0] = !opRegAM[0];
 		end
 
 		if(opIsDualLaneRo)
 		begin
 			opRegAO = opRegXO;
-//			if(opDualLaneSw)
-//				opRegAO[0] = !opRegAO[0];
-//				opRegAO[0] = !opRegXO[0];
 			opRegBO[0] = !opRegAO[0];
 		end
 `endif
 
 		if(opIsScalar)
 		begin
-			opRegCM	= opRegBN;
-			opRegCO	= opRegAN;
+//			opRegCM	= opRegBN;
+//			opRegCO	= opRegAN;
 		end
 	end
 end

@@ -40,6 +40,7 @@ module FpuExOpW(
 	clock,		reset,
 	opCmdA,		regIdIxtA,
 	opCmdB,		regIdIxtB,
+	regValImmA,	regValImmB,
 
 	regIdRsA,	regValRsA,
 	regIdRtA,	regValRtA,
@@ -67,6 +68,9 @@ input[8:0]		opCmdA;			//command opcode
 input[8:0]		opCmdB;			//command opcode
 input[8:0]		regIdIxtA;		//ALU Index / Opcode Extension
 input[8:0]		regIdIxtB;		//ALU Index / Opcode Extension
+
+input[32:0]		regValImmA;
+input[32:0]		regValImmB;
 
 `input_gpr		regIdRsA;
 `input_gpr		regIdRtA;
@@ -126,6 +130,7 @@ assign		regValGRnB		= tRegValGRnB;
 `ifndef def_true
 reg[8:0]		tOpCmd;			//command opcode
 reg[8:0]		tRegIdIxt;		//ALU Index / Opcode Extension
+reg[7:0]		tRegValRMode;
 `reg_gpr		tRegIdRs;
 `reg_gpr		tRegIdRt;
 `reg_gpr		tRegIdRn;
@@ -139,6 +144,7 @@ reg				tBraFlush;
 `ifdef def_true
 wire[8:0]		tOpCmd;			//command opcode
 wire[8:0]		tRegIdIxt;		//ALU Index / Opcode Extension
+wire[7:0]		tRegValRMode;
 `wire_gpr		tRegIdRs;
 `wire_gpr		tRegIdRt;
 `wire_gpr		tRegIdRn;
@@ -148,6 +154,8 @@ wire[63:0]		tRegValRn;		//Rn input value (FPR, Duplicate)
 
 wire[8:0]		tOpCmdA;			//command opcode
 wire[8:0]		tRegIdIxtA;		//ALU Index / Opcode Extension
+wire[7:0]		tRegRModeA;		//Rounding Mode
+
 `wire_gpr		tRegIdRsA;
 `wire_gpr		tRegIdRtA;
 `wire_gpr		tRegIdRnA;
@@ -157,6 +165,7 @@ wire[63:0]		tRegValRnA;		//Rn input value (FPR, Duplicate)
 
 wire[8:0]		tOpCmdB;			//command opcode
 wire[8:0]		tRegIdIxtB;		//ALU Index / Opcode Extension
+wire[7:0]		tRegRModeB;		//Rounding Mode
 `wire_gpr		tRegIdRsB;
 `wire_gpr		tRegIdRtB;
 `wire_gpr		tRegIdRnB;
@@ -170,6 +179,7 @@ wire			tBraFlush;
 
 reg[8:0]		tOpCmdL;			//command opcode
 reg[8:0]		tRegIdIxtL;			//ALU Index / Opcode Extension
+reg[7:0]		tRegValRModeL;
 reg				tExCmdLaneBL;
 
 `reg_gpr		tRegIdRsL;
@@ -271,12 +281,14 @@ reg[63:0]	tVecdRnB;
 reg[63:0]	tNxtVecdRnA;
 reg[63:0]	tNxtVecdRnB;
 
+reg[7:0]	tRegAddRMode;	//Rounding Mode
 reg[63:0]	tRegAddRs;		//Rn input value
 reg[63:0]	tRegAddRt;		//Rn input value
 reg[63:0]	tRegAddRsHi;	//Rn input value (High Bits, LD Ext)
 reg[63:0]	tRegAddRtHi;	//Rn input value (High Bits, LD Ext)
 reg			tRegAddIsLD;	//Is Long-Double
 
+reg[7:0]	tRegMulRMode;	//Rounding Mode
 reg[63:0]	tRegMulRs;		//Rn input value
 reg[63:0]	tRegMulRt;		//Rn input value
 reg[63:0]	tRegMulRsHi;	//Rn input value (High Bits, LD Ext)
@@ -296,7 +308,6 @@ wire			tMulExHold;
 
 assign		tAddExHold = 0;
 assign		tMulExHold = 0;
-
 
 wire[63:0]	tRegAddVal;		//Rn output value
 wire[63:0]	tRegAddValHi;	//Rn output value
@@ -320,7 +331,7 @@ FpuAddG	fpu_add(
 	tRegAddRs,	tRegAddRsHi,
 	tRegAddVal,	tRegAddValHi,
 	tRegAddExOp,
-	tRegAddExOK);
+	tRegAddExOK, tRegMulRMode);
 
 FpuMulG	fpu_mul(
 	clock,		reset,		tMulExHold,
@@ -329,7 +340,7 @@ FpuMulG	fpu_mul(
 	tRegMulRt,	tRegMulRtHi,
 	tRegMulRs,	tRegMulRsHi,
 	tRegMulVal,	tRegMulValHi,
-	tRegAddExOp
+	tRegAddExOp,	tRegMulRMode
 	);
 
 `else
@@ -343,12 +354,14 @@ FpuAdd	fpu_add(
 	tRegAddRt,	tRegAddRs,
 	tRegAddVal,
 	tRegAddExOp,
-	tRegAddExOK);
+	tRegAddExOK,
+	tRegMulRMode);
 
 FpuMul	fpu_mul(
 	clock,		reset,		tMulExHold,
 //	tRegAddRt,	tRegAddRs,	tRegMulVal);
-	tRegMulRt,	tRegMulRs,	tRegMulVal);
+	tRegMulRt,	tRegMulRs,	tRegMulVal,
+	tRegMulRMode);
 
 `endif
 
@@ -472,6 +485,8 @@ assign	tOpCmdA			= opCmdA;
 assign	tRegIdIxtA		= regIdIxtA;
 assign	tOpCmdB			= opCmdB;
 assign	tRegIdIxtB		= regIdIxtB;
+assign	tRegRModeA		= regValImmA[7:0];
+assign	tRegRModeB		= regValImmB[7:0];
 
 assign	tRegIdRsA		= regIdRsA;
 assign	tRegIdRtA		= regIdRtA;
@@ -516,6 +531,7 @@ assign	tExCmdLaneB = tExCmdLaneB1 && !tExCmdLaneA;
 	
 assign	tOpCmd			= tExCmdLaneB ? opCmdB : opCmdA;
 assign	tRegIdIxt		= tExCmdLaneB ? regIdIxtB : regIdIxtA;
+assign	tRegValRMode	= tExCmdLaneB ? regRModeB : regRModeA;
 
 assign	tRegIdRs		= tExCmdLaneB ? regIdRsB : regIdRsA;
 assign	tRegIdRt		= tExCmdLaneB ? regIdRtB : regIdRtA;
@@ -667,6 +683,9 @@ begin
 	tRegMulRsHi	= tRegValRsBL;
 	tRegMulRtHi	= tRegValRtBL;
 `endif
+
+	tRegAddRMode	= tRegValRModeL;
+	tRegMulRMode	= tRegValRModeL;
 
 //	tAddExHold	= exHold;
 	tRegAddIsLD	= 0;
@@ -1101,6 +1120,7 @@ begin
 		tRegValRsL		<= tRegValRs;
 		tRegValRtL		<= tRegValRt;
 		tRegValRnL		<= tRegValRn;
+		tRegValRModeL	<= tRegValRMode;
 
 		tRegIdRsAL		<= tRegIdRsA;
 		tRegIdRtAL		<= tRegIdRtA;

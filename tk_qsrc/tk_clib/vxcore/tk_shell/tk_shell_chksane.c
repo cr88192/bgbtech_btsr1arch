@@ -972,7 +972,9 @@ int tk_shell_chksane()
 	tk_shell_chksane_simd();
 	
 	Sys_CheckSanityC();
-	
+
+	tk_printf("CS B5\n");
+
 	sanity_glColor4f_pf = sanity_glColor4f;
 	sanity_glColor4f_pf(1.0, 0.5, 1.0, 0.5);
 	ui=sanity_tmpobj1.tkgl_begin_rgba;
@@ -981,7 +983,13 @@ int tk_shell_chksane()
 		__debugbreak();
 	}
 	
+	tk_printf("CS B6\n");
+
 	tk_shell_chksane_var();
-	
+
+	tk_printf("CS B7\n");
+
 	tk_shell_chksane_int128();
+
+	tk_printf("CS B8\n");
 }

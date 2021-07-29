@@ -88,6 +88,11 @@ parameter[6:0] JX2_GR_R8IMML	= 7'h4D;		//Shift Immed, Low Part
 parameter[6:0] JX2_GR_JIMM		= 7'h4E;
 parameter[6:0] JX2_GR_SP		= 7'h4F;
 
+parameter[6:0] JX2_GR_DLR2		= 7'h50;
+parameter[6:0] JX2_GR_DHR2		= 7'h51;
+
+parameter[6:0] JX2_GR_SP2		= 7'h5F;
+
 parameter[6:0] JX2_GR_PC		= 7'h60;
 parameter[6:0] JX2_GR_LR		= 7'h61;
 parameter[6:0] JX2_GR_SR		= 7'h62;
@@ -103,6 +108,16 @@ parameter[6:0] JX2_GR_EXSR		= 7'h6B;
 parameter[6:0] JX2_GR_STTB		= 7'h6C;
 parameter[6:0] JX2_GR_KRR		= 7'h6D;
 
+parameter[6:0] JX2_GR_PC2		= 7'h70;
+parameter[6:0] JX2_GR_LR2		= 7'h71;
+parameter[6:0] JX2_GR_SR2		= 7'h72;
+
+parameter[6:0] JX2_GR_SPC2		= 7'h74;
+parameter[6:0] JX2_GR_SSP2		= 7'h75;
+parameter[6:0] JX2_GR_GBR2		= 7'h76;
+parameter[6:0] JX2_GR_TBR2		= 7'h77;
+
+parameter[6:0] JX2_GR_KRR2		= 7'h7D;
 parameter[6:0] JX2_GR_IMM		= 7'h7E;
 parameter[6:0] JX2_GR_ZZR		= 7'h7F;
 
@@ -556,6 +571,7 @@ REGREG, Fz
 	SL: Rm, Q?Imm5n:Ro, Rn
 
 	UB: Rm, Rn, Rn
+	UW: Rm, Rn, Rn
 	NB: Rn, Rm, Rn
 
 	UL: Rm, Cn, Cn
@@ -564,6 +580,20 @@ REGREG, Fz
 	NW: Sm, Sn, Sn
 	NL: Rm, Sn, Sn
 	NQ: Sm, Rn, Rn
+
+	XB: Rm, Ro, Rn
+	XW: Rm, Ro, Rn
+
+REGREG, Fz+Au (Rm, Ro, Rp, Rn)
+	SB: Rm, Ro, Rn, Rn
+	SW: Rm, Q?Imm13u:Ro, Rn
+	SL: Rm, Q?Imm13n:Ro, Rn
+
+	UB: Rm, Rn, Rn, Rn
+	UW: Rm, Rn, Imm8, Rn
+
+	XB: Rm, Ro, Rp, Rn
+	XW: Rm, Ro, Imm8, Rn
 
 REGIMMREG, Fz:
 	SW:	Rm, Imm9s, Rn

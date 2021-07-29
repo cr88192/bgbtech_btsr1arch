@@ -96,6 +96,8 @@ int tk_shell_chksane_var()
 	int (*run1)(int x, int y);
 	void *p1, *p2, *p3;
 	int	i, j, k;
+
+	tk_printf("CS-VA B0\n");
 	
 	str="Test";
 	v0=1234;
@@ -107,6 +109,8 @@ int tk_shell_chksane_var()
 
 	if(v2!=6912)
 		__debugbreak();
+
+	tk_printf("CS-VA B1\n");
 
 	o0=__lvo_emptyobject();
 	o0.x=v0;
@@ -122,6 +126,8 @@ int tk_shell_chksane_var()
 //	if(j!=6912)
 //		__debugbreak();
 
+	tk_printf("CS-VA B2\n");
+
 	o1 = __var {x: 3, y: 4};
 
 //	v2=o1.x;
@@ -136,6 +142,8 @@ int tk_shell_chksane_var()
 	o2 = __var [1, 2, 3, 4, 5];
 	if((o2[2]+o2[3])!=7)
 		__debugbreak();
+
+	tk_printf("CS-VA B3\n");
 
 //	fobj = __new __class TkChkSane_Foo();
 	fobj = __new TkChkSane_Foo();
@@ -157,6 +165,8 @@ int tk_shell_chksane_var()
 	k=bobj.sum2();
 	if(k!=144)
 		__debugbreak();
+
+	tk_printf("CS-VA B4\n");
 
 //	tk_chksane_sieve1a();
 //	tk_chksane_sieve1v();

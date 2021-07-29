@@ -1504,7 +1504,7 @@ char *__lva_conv_tostring(u64 val)
 	char *ct;
 	s64 li, lj, lk, ll;
 	double lf, lg;
-	int j, k, sg;
+	int i, j, k, sg;
 	
 	if(__lva_fixnump(val))
 	{

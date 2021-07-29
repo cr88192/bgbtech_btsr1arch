@@ -323,12 +323,39 @@ void *__lvo_alloc_wxe(int sz)
 	return(TKMM_Malloc(sz));
 }
 
+void TK_FlushCacheL1D_INVDC(void *ptr);
+void TK_FlushCacheL1D_ReadBuf(void *ptr, int sz);
+
 void *__lvo_makelambda(void *obj, void *fn)
 {
-	u64 obja;
+	u64 obja, fna;
 	
 	obja=(u64)obj;
+	fna=(u64)fn;
 
+#if 1
+	((u16 *)obj)[ 0]=0xFE00|((obja>>56)&  255);
+	((u16 *)obj)[ 1]=0x0000|((obja>>40)&65535);
+	((u16 *)obj)[ 2]=0xFE00|((obja>>32)&  255);
+	((u16 *)obj)[ 3]=0x0000|((obja>>16)&65535);
+	((u16 *)obj)[ 4]=0xF803;
+	((u16 *)obj)[ 5]=0x0000|((obja>> 0)&65535);
+
+	((u16 *)obj)[ 6]=0xFE00|((fna>>56)&  255);
+	((u16 *)obj)[ 7]=0x0000|((fna>>40)&65535);
+	((u16 *)obj)[ 8]=0xFE00|((fna>>32)&  255);
+	((u16 *)obj)[ 9]=0x0000|((fna>>16)&65535);
+	((u16 *)obj)[10]=0xF801;
+	((u16 *)obj)[11]=0x0000|((fna>> 0)&65535);
+
+	((u16 *)obj)[12]=0xF020;
+	((u16 *)obj)[13]=0x3010;
+
+	((u16 *)obj)[14]=0x3030;
+	((u16 *)obj)[15]=0x3030;
+#endif
+
+#if 0
 	((u16 *)obj)[0]=0xF110;
 	((u16 *)obj)[1]=0xB014;
 
@@ -346,6 +373,13 @@ void *__lvo_makelambda(void *obj, void *fn)
 	((u16 *)obj)[11]=0x3030;
 	
 	((u64 *)obj)[3]=fn;
+#endif
+
+//	TK_FlushCacheL1D();
+
+	TK_FlushCacheL1D_INVDC(NULL);
+	TK_FlushCacheL1D_ReadBuf(obj, 32);
+	TK_FlushCacheL1D_INVIC(NULL);
 
 	return(obj);
 }

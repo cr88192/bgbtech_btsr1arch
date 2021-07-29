@@ -28,7 +28,7 @@ module FpuMulG(
 	regValRmLo,	regValRmHi,
 	regValRnLo,	regValRnHi,
 	regValRoLo,	regValRoHi,
-	regExOp
+	regExOp,	regRMode
 	);
 
 input	clock;
@@ -42,6 +42,7 @@ input[63:0]		regValRnHi;
 output[63:0]	regValRoLo;
 output[63:0]	regValRoHi;
 input[3:0]		regExOp;
+input[7:0]		regRMode;
 
 reg[95:0]		tRegValRmE;
 reg[95:0]		tRegValRnE;

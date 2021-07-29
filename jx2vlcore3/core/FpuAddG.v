@@ -42,7 +42,8 @@ module FpuAddG(
 	regValRnLo,	regValRnHi,
 	regValRoLo,	regValRoHi,
 	regExOp,
-	regExOK
+	regExOK,
+	regRMode
 	);
 
 input	clock;
@@ -57,6 +58,7 @@ output[63:0]	regValRoLo;
 output[63:0]	regValRoHi;
 input[3:0]		regExOp;
 output[1:0]		regExOK;
+input[7:0]		regRMode;
 
 reg[63:0]		tRegValRoLo2;
 reg[63:0]		tRegValRoHi2;

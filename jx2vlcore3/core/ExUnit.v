@@ -1102,6 +1102,7 @@ FpuExOpW	ex1Fpu(
 
 	ex1OpUCmd,		ex1OpUIxt,
 	exB1OpUCmd,		exB1OpUIxt,
+	ex1RegValImm,	exB1RegValImm,
 
 	ex1RegIdRs,		ex1RegValRs,
 	ex1RegIdRt,		ex1RegValRt,

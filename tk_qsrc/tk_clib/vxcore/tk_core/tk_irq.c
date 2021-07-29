@@ -225,10 +225,17 @@ int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 
 
 void TK_FlushCacheL1D_INVDC(void *ptr);
+void TK_FlushCacheL1D_INVIC(void *ptr);
 void TK_FlushCacheL1D_ReadBuf(void *ptr, int sz);
 __asm {
 TK_FlushCacheL1D_INVDC:
 	INVDC	R4
+	NOP
+	NOP
+	RTS
+
+TK_FlushCacheL1D_INVIC:
+	INVIC	R4
 	NOP
 	NOP
 	RTS

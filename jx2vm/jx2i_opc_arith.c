@@ -225,7 +225,8 @@ void BJX2_Op_ADC_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	vb=ctx->regs[op->rm];
 	vc=va+vb+(ctx->regs[BJX2_REG_SR]&1);
 	ctx->regs[op->rn]=vc;
-	if((vc>>32)&1)
+	if(vc<(va|vb))
+//	if((vc>>32)&1)
 		ctx->regs[BJX2_REG_SR]|=1;
 	else
 		ctx->regs[BJX2_REG_SR]&=~1;
@@ -241,7 +242,9 @@ void BJX2_Op_SBB_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	vb=ctx->regs[op->rm];
 	vc=va+(~vb)+(!(ctx->regs[BJX2_REG_SR]&1));
 	ctx->regs[op->rn]=vc;
-	if((vc>>32)&1)
+//	if(vc<(va|(~vb)))
+	if(!(vc<(va|(~vb))))
+//	if((vc>>32)&1)
 		ctx->regs[BJX2_REG_SR]|=1;
 	else
 		ctx->regs[BJX2_REG_SR]&=~1;
