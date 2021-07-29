@@ -1230,6 +1230,16 @@ void BJX2_Op_CONVFLI_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 		0x8000000000000000ULL ;
 }
 
+void BJX2_Op_SNIPEDC_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[op->rn]=0x10000 | ((u16)ctx->regs[op->rm]);
+}
+
+void BJX2_Op_SNIPEIC_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[op->rn]=0x30000 | ((u16)ctx->regs[op->rm]);
+}
+
 
 void BJX2_Op_SHLL_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {

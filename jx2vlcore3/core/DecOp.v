@@ -84,6 +84,7 @@ DecOpBz	decOpBz(
 `wire_gpr		decOpFz_idRegN;
 `wire_gpr		decOpFz_idRegM;
 `wire_gpr		decOpFz_idRegO;
+`wire_gpr		decOpFz_idRegP;
 wire[32:0]		decOpFz_idImm;
 wire[7:0]		decOpFz_idUCmd;
 wire[7:0]		decOpFz_idUIxt;
@@ -126,7 +127,8 @@ DecOpFz	decOpFz(
 	clock,		reset,
 	istrWord,	4'h0,	istrJBits,
 	decOpFz_idRegN,		decOpFz_idRegM,
-	decOpFz_idRegO,		decOpFz_idImm,
+	decOpFz_idRegO,		decOpFz_idRegP,
+	decOpFz_idImm,
 	decOpFz_idUCmd,		decOpFz_idUIxt,
 	decOpFz_idUFl
 	);

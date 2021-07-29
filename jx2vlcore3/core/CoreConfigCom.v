@@ -14,9 +14,9 @@
 `define	jx2_alu_wx				//Enable Wide-ALU
 
 // `define	jx2_fpu_longdbl			//Enable FPU LongDouble Ext
-// `define	jx2_fpu_fmac			//Enable FMAC Operation
+`define	jx2_fpu_fmac			//Enable FMAC Operation
 
-// `define	jx2_fpu_lane2			//Allow FPU from Lane 2
+`define	jx2_fpu_lane2			//Allow FPU from Lane 2
 
 // `define jx2_sprs_elrehr			//ELR/EHR/BP as special registers?
 `define jx2_bra2stage			//Use 2-stage branch initiation
@@ -34,6 +34,10 @@
 
 `define jx2_enable_prebra			//Enable PreBranch
 `define jx2_prebra_rts				//Enable PreBranch on RTS
+
+`define jx2_l1d_nohash			//Disable L1 address hashing.
+`define jx2_l1i_nohash			//Disable L1 address hashing.
+
 
 // `define jx2_enable_dualcore			//Enable Second Core
 

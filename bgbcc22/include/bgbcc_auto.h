@@ -2462,8 +2462,8 @@ int BGBCC_JX2A_ParseOperand_OffsetOf(BGBCC_JX2_Context *ctx,char *objn, char *fl
 int BGBCC_JX2A_ParseOperand(BGBCC_JX2_Context *ctx, char **rcs, BGBCC_JX2_OpcodeArg *opv);
 int BGBCC_JX2A_Init();
 int BGBCC_JX2A_LookupOpcodeNmid(char *name);
-int BGBCC_JX2A_LookupOpcodeFmid(BGBCC_JX2_OpcodeArg *arg0, BGBCC_JX2_OpcodeArg *arg1, BGBCC_JX2_OpcodeArg *arg2);
-int BGBCC_JX2A_TryAssembleOpcode(BGBCC_JX2_Context *ctx, char *name, BGBCC_JX2_OpcodeArg *arg0, BGBCC_JX2_OpcodeArg *arg1, BGBCC_JX2_OpcodeArg *arg2);
+int BGBCC_JX2A_LookupOpcodeFmid(BGBCC_JX2_OpcodeArg *arg0, BGBCC_JX2_OpcodeArg *arg1, BGBCC_JX2_OpcodeArg *arg2, BGBCC_JX2_OpcodeArg *arg3);
+int BGBCC_JX2A_TryAssembleOpcode(BGBCC_JX2_Context *ctx, char *name, BGBCC_JX2_OpcodeArg *arg0, BGBCC_JX2_OpcodeArg *arg1, BGBCC_JX2_OpcodeArg *arg2, BGBCC_JX2_OpcodeArg *arg3);
 int BGBCC_JX2A_ParseCheckFeatureList(BGBCC_JX2_Context *ctx, char *sym);
 int BGBCC_JX2A_ParseCheckFeature(BGBCC_JX2_Context *ctx, char *sym);
 int BGBCC_JX2A_ParseOpcode_ScanForBar(BGBCC_JX2_Context *ctx, char *cs0);
@@ -2707,6 +2707,12 @@ int BGBCC_JX2_TryEmitOpImmReg(BGBCC_JX2_Context *ctx,int nmid, s64 imm, int reg)
 int BGBCC_JX2_EmitOpRegImmReg(BGBCC_JX2_Context *ctx,int nmid, int rm, s64 imm, int rn);
 int BGBCC_JX2_ProbeEmitOpRegImmReg(BGBCC_JX2_Context *ctx,int nmid, int rm, s64 imm, int rn);
 int BGBCC_JX2_TryEmitOpRegImmReg(BGBCC_JX2_Context *ctx, int nmid, int rm, s64 imm, int rn);
+int BGBCC_JX2_EmitOpRegRegRegReg(BGBCC_JX2_Context *ctx,int nmid, int rs, int rt, int rp, int rn);
+int BGBCC_JX2_ProbeEmitOpRegRegRegReg(BGBCC_JX2_Context *ctx,int nmid, int rs, int rt, int rp, int rn);
+int BGBCC_JX2_TryEmitOpRegRegRegReg(BGBCC_JX2_Context *ctx, int nmid, int rs, int rt, int rp, int rn);
+int BGBCC_JX2_EmitOpRegRegImmReg(BGBCC_JX2_Context *ctx,int nmid, int rs, int rt, int imm, int rn);
+int BGBCC_JX2_ProbeEmitOpRegRegImmReg(BGBCC_JX2_Context *ctx,int nmid, int rs, int rt, int imm, int rn);
+int BGBCC_JX2_TryEmitOpRegRegImmReg(BGBCC_JX2_Context *ctx, int nmid, int rs, int rt, int imm, int rn);
 //AHSRC:jx2cc/jx2_emit_sec.c
 BGBCC_JX2_Context *BGBCC_JX2_AllocContext();
 int BGBCC_JX2_SetBeginSimPass(BGBCC_JX2_Context *ctx);

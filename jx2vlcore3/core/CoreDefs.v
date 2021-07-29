@@ -839,7 +839,8 @@ parameter[5:0] JX2_UCIX_CONV_LDIQHI16	= 6'h10;		//Load High Bits
 parameter[5:0] JX2_UCIX_CONV_LDIQHI32	= 6'h11;		//Load High Bits
 parameter[5:0] JX2_UCIX_CONV_FNEG		= 6'h12;		//Float FNEG
 parameter[5:0] JX2_UCIX_CONV_FABS		= 6'h13;		//Float FABS
-
+parameter[5:0] JX2_UCIX_CONV_SNIPEIC	= 6'h14;		//
+parameter[5:0] JX2_UCIX_CONV_SNIPEDC	= 6'h15;		//
 
 
 parameter[5:0] JX2_UCIX_CONV_RGBSHR1		= 6'h18;	//RGB555, Shift Right 1

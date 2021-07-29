@@ -326,8 +326,13 @@ void *__lvo_alloc_wxe(int sz)
 void TK_FlushCacheL1D_INVDC(void *ptr);
 void TK_FlushCacheL1D_ReadBuf(void *ptr, int sz);
 
+void *__snipe_dc(void *addr);
+void *__snipe_ic(void *addr);
+
 void *__lvo_makelambda(void *obj, void *fn)
 {
+	void *objb;
+	void (*fnb)();
 	u64 obja, fna;
 	
 	obja=(u64)obj;
@@ -375,11 +380,27 @@ void *__lvo_makelambda(void *obj, void *fn)
 	((u64 *)obj)[3]=fn;
 #endif
 
+	objb=__snipe_dc(((byte *)obj)-8);
+	fna =((int *)objb)[ 0];
+	fna+=((int *)objb)[ 2];
+	fna+=((int *)objb)[ 4];
+	fna+=((int *)objb)[ 6];
+	fna+=((int *)objb)[ 8];
+	fna+=((int *)objb)[10];
+
+	fnb=__snipe_ic(((byte *)obj)-8);	fnb();
+	fnb=__snipe_ic(((byte *)obj)+0);	fnb();
+	fnb=__snipe_ic(((byte *)obj)+8);	fnb();
+	fnb=__snipe_ic(((byte *)obj)+16);	fnb();
+	fnb=__snipe_ic(((byte *)obj)+24);	fnb();
+	fnb=__snipe_ic(((byte *)obj)+32);	fnb();
+	
+
 //	TK_FlushCacheL1D();
 
-	TK_FlushCacheL1D_INVDC(NULL);
-	TK_FlushCacheL1D_ReadBuf(obj, 32);
-	TK_FlushCacheL1D_INVIC(NULL);
+//	TK_FlushCacheL1D_INVDC(NULL);
+//	TK_FlushCacheL1D_ReadBuf(obj, 32);
+//	TK_FlushCacheL1D_INVIC(NULL);
 
 	return(obj);
 }

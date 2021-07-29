@@ -971,6 +971,8 @@ int nmid;
 
 {"convfxi",		BGBCC_SH_NMID_CONVFXI},
 {"convfli",		BGBCC_SH_NMID_CONVFLI},
+{"snipe.dc",	BGBCC_SH_NMID_SNIPEDC},
+{"snipe.ic",	BGBCC_SH_NMID_SNIPEIC},
 
 
 {"pscheq.w",	BGBCC_SH_NMID_PSCHEQW},
@@ -1151,7 +1153,8 @@ int BGBCC_JX2A_LookupOpcodeNmid(char *name)
 int BGBCC_JX2A_LookupOpcodeFmid(
 	BGBCC_JX2_OpcodeArg *arg0,
 	BGBCC_JX2_OpcodeArg *arg1,
-	BGBCC_JX2_OpcodeArg *arg2)
+	BGBCC_JX2_OpcodeArg *arg2,
+	BGBCC_JX2_OpcodeArg *arg3)
 {
 	int fm;
 
@@ -1256,7 +1259,8 @@ int BGBCC_JX2A_LookupOpcodeFmid(
 		return(fm);
 	}
 
-	if(1)
+//	if(1)
+	if(!arg3->ty)
 	{
 		fm=0;
 		switch(arg0->ty)
@@ -1285,6 +1289,56 @@ int BGBCC_JX2A_LookupOpcodeFmid(
 		return(fm);
 	}
 
+	if(1)
+//	if(!arg3->ty)
+	{
+		fm=0;
+		switch(arg0->ty)
+		{
+		case BGBCC_SH_OPVTY_REG:
+			switch(arg1->ty)
+			{
+			case BGBCC_SH_OPVTY_REG:
+				switch(arg2->ty)
+				{
+				case BGBCC_SH_OPVTY_REG:
+					switch(arg3->ty)
+					{
+					case BGBCC_SH_OPVTY_REG:
+						fm=BGBCC_SH_FMID_REGREGREGREG; break;
+					case BGBCC_SH_OPVTY_IMM:
+						fm=BGBCC_SH_FMID_REGREGREGIMM; break;
+					default: fm=0; break;
+					}
+					break;
+				case BGBCC_SH_OPVTY_IMM:
+					switch(arg3->ty)
+					{
+					case BGBCC_SH_OPVTY_REG:
+						fm=BGBCC_SH_FMID_REGREGIMMREG; break;
+					default: fm=0; break;
+					}
+					break;
+				default: fm=0; break;
+				}
+				break;
+#if 0
+			case BGBCC_SH_OPVTY_IMM:
+				switch(arg2->ty)
+				{
+				case BGBCC_SH_OPVTY_REG:
+					fm=BGBCC_SH_FMID_REGIMMREG; break;
+				default: fm=0; break;
+				}
+				break;
+#endif
+			default: fm=0; break;
+			}
+			break;
+		}
+		return(fm);
+	}
+
 	return(0);
 }
 
@@ -1293,7 +1347,8 @@ int BGBCC_JX2A_TryAssembleOpcode(
 	char *name,
 	BGBCC_JX2_OpcodeArg *arg0,
 	BGBCC_JX2_OpcodeArg *arg1,
-	BGBCC_JX2_OpcodeArg *arg2)
+	BGBCC_JX2_OpcodeArg *arg2,
+	BGBCC_JX2_OpcodeArg *arg3)
 {
 	int nmid, fmid, rt, lbl;
 	
@@ -1321,7 +1376,7 @@ int BGBCC_JX2A_TryAssembleOpcode(
 	}
 #endif
 
-	fmid=BGBCC_JX2A_LookupOpcodeFmid(arg0, arg1, arg2);
+	fmid=BGBCC_JX2A_LookupOpcodeFmid(arg0, arg1, arg2, arg3);
 	if(fmid<=0)
 		return(0);
 
@@ -1363,6 +1418,19 @@ int BGBCC_JX2A_TryAssembleOpcode(
 	case BGBCC_SH_FMID_REGIMMREG:
 		rt=BGBCC_JX2_TryEmitOpRegImmReg(ctx,
 			nmid, arg0->breg, arg1->disp, arg2->breg);
+		break;
+
+	case BGBCC_SH_FMID_REGREGREGREG:
+		rt=BGBCC_JX2_TryEmitOpRegRegRegReg(ctx,
+			nmid, arg0->breg, arg1->breg, arg2->breg, arg3->breg);
+		break;
+	case BGBCC_SH_FMID_REGREGIMMREG:
+		rt=BGBCC_JX2_TryEmitOpRegRegImmReg(ctx,
+			nmid, arg0->breg, arg1->breg, arg2->disp, arg3->breg);
+		break;
+	case BGBCC_SH_FMID_REGREGREGIMM:
+		rt=BGBCC_JX2_TryEmitOpRegRegImmReg(ctx,
+			nmid, arg0->breg, arg1->breg, arg3->disp, arg2->breg);
 		break;
 
 	case BGBCC_SH_FMID_REGST:
@@ -1749,8 +1817,9 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 		}
 
 		cs2=cs1;
-		arg[0].ty=0; arg[1].ty=0; arg[2].ty=0;
-		for(i=0; i<3; i++)
+		arg[0].ty=0; arg[1].ty=0; arg[2].ty=0; arg[3].ty=0;
+//		for(i=0; i<3; i++)
+		for(i=0; i<4; i++)
 		{
 			if(BGBCC_JX2A_ParseOperand(ctx, &cs2, &arg[i])<=0)
 				break;
@@ -1812,7 +1881,9 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 				ctx->op_is_wex2=pfc;
 		}
 
-		k=BGBCC_JX2A_TryAssembleOpcode(ctx, tk0+1, &arg[0], &arg[1], &arg[2]);
+//		k=BGBCC_JX2A_TryAssembleOpcode(ctx, tk0+1, &arg[0], &arg[1], &arg[2]);
+		k=BGBCC_JX2A_TryAssembleOpcode(ctx, tk0+1,
+			&arg[0], &arg[1], &arg[2], &arg[3]);
 		if(k>0)
 		{
 			if(*cs2==';')

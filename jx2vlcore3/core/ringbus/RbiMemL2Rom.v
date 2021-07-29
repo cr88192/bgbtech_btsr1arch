@@ -8,6 +8,7 @@ Implement a 32K ROM and 8K of SRAM.
  C000.. DFFF: SRAM
  E000.. FFFF: SRAM-1
 10000..1FFFF: Zero Page
+20000..3FFFF: RTS Page
 */
 
 `include "ringbus/RbiDefs.v"
@@ -98,16 +99,33 @@ wire		memAddrIsLo128k;
 wire		memAddrIsRom;
 wire		memAddrIsRam;
 wire		memAddrIsZero;
+wire		memAddrIsNop;
+wire		memAddrIsRts;
 wire		memAddrIsBad1;
 wire		memAddrIsBad2;
 
+`ifndef def_true
 assign	memAddrIsLo128k		= (memAddrIn[31:17] == UV15_00);
 assign	memAddrIsRom		= memAddrIsLo128k && (memAddrIn[16:15]==2'b00);
 assign	memAddrIsRam		= memAddrIsLo128k && (memAddrIn[16:13]==4'b0110);
 assign	memAddrIsZero		= memAddrIsLo128k && memAddrIn[16];
-
+assign	memAddrIsNop		= 0;
+assign	memAddrIsRts		= 0;
 assign	memAddrIsBad1		= (memAddrIn[31:24] == UV8_00) && !memAddrIsLo128k;
 assign	memAddrIsBad2		= (memAddrIn[31:30] != UV2_00);
+`endif
+
+`ifdef def_true
+assign	memAddrIsLo128k		= (memAddrIn[31:18] == UV14_00);
+assign	memAddrIsRom		= memAddrIsLo128k && (memAddrIn[17:15]==3'b000);
+assign	memAddrIsRam		= memAddrIsLo128k && (memAddrIn[17:13]==5'b00110);
+assign	memAddrIsZero		= memAddrIsLo128k && (memAddrIn[17:16]==2'b01);
+assign	memAddrIsNop		= memAddrIsLo128k && (memAddrIn[17:16]==2'b10);
+assign	memAddrIsRts		= memAddrIsLo128k && (memAddrIn[17:16]==2'b11);
+assign	memAddrIsBad1		= (memAddrIn[31:24] == UV8_00) && !memAddrIsLo128k;
+assign	memAddrIsBad2		= (memAddrIn[31:30] != UV2_00);
+`endif
+
 
 reg		mem2RingIsIdle;
 reg		mem2RingIsResp;
@@ -119,6 +137,8 @@ reg		mem2AddrIsLo128k;
 reg		mem2AddrIsRom;
 reg		mem2AddrIsRam;
 reg		mem2AddrIsZero;
+reg		mem2AddrIsNop;
+reg		mem2AddrIsRts;
 
 reg		mem2AddrIsBad1;
 reg		mem2AddrIsBad2;
@@ -171,6 +191,10 @@ begin
 		tMemDataReq		= tRomBlkData;
 	if(mem2AddrIsRam)
 		tMemDataReq		= tRamBlkData;
+	if(mem2AddrIsNop)
+		tMemDataReq		= 128'h3000_3000_3000_3000_3000_3000_3000_3000;
+	if(mem2AddrIsRts)
+		tMemDataReq		= 128'h3010_3010_3010_3010_3010_3010_3010_3010;
 	
 	if(mem2RingIsCcmd)
 	begin
@@ -201,9 +225,12 @@ begin
 	mem2RingIsCcmd		<= memRingIsCcmd;
 
 	mem2AddrIsLo128k	<= memAddrIsLo128k;
+//	mem2AddrIsLo128k	<= memAddrIsLo256k;
 	mem2AddrIsRom		<= memAddrIsRom;
 	mem2AddrIsRam		<= memAddrIsRam;
 	mem2AddrIsZero		<= memAddrIsZero;
+	mem2AddrIsNop		<= memAddrIsNop;
+	mem2AddrIsRts		<= memAddrIsRts;
 
 	mem2AddrIsBad1		<= memAddrIsBad1;
 	mem2AddrIsBad2		<= memAddrIsBad2;

@@ -2885,6 +2885,30 @@ int BGBCC_JX2C_EmitCallBuiltinArgs(
 		return(1);
 	}
 
+	if(!strcmp(name, "__snipe_dc") && (narg==1))
+	{
+		csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[0]);
+		cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dst);
+		BGBCC_JX2C_EmitOpRegReg(ctx, sctx,
+			BGBCC_SH_NMID_SNIPEDC, csreg, cdreg);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[0]);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dst);
+		sctx->csrv_skip=1;
+		return(1);
+	}
+
+	if(!strcmp(name, "__snipe_ic") && (narg==1))
+	{
+		csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[0]);
+		cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dst);
+		BGBCC_JX2C_EmitOpRegReg(ctx, sctx,
+			BGBCC_SH_NMID_SNIPEIC, csreg, cdreg);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[0]);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dst);
+		sctx->csrv_skip=1;
+		return(1);
+	}
+
 	if(!strcmp(name, "__int_min") && (narg==2))
 	{
 		csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[0]);

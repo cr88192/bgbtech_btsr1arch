@@ -525,6 +525,13 @@ assign	tExCmdLaneB1 =
 	(tOpCmdB[5:0]==JX2_UCMD_FLDCX)	||
 	(tOpCmdB[5:0]==JX2_UCMD_FSTCX)	;
 
+wire[7:0]		regRModeA;
+wire[7:0]		regRModeB;
+
+assign		regRModeA = regValImmA[7:0];
+assign		regRModeB = regValImmB[7:0];
+
+
 `ifdef jx2_fpu_lane2
 
 assign	tExCmdLaneB = tExCmdLaneB1 && !tExCmdLaneA;
@@ -546,6 +553,7 @@ assign	tExCmdLaneB = 0;
 	
 assign	tOpCmd			= opCmdA;
 assign	tRegIdIxt		= regIdIxtA;
+assign	tRegValRMode	= regRModeA;
 
 assign	tRegIdRs		= regIdRsA;
 assign	tRegIdRt		= regIdRtA;

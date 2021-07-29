@@ -115,6 +115,8 @@ ExConv_Fp32Pck16	conv_fp16pckb(regValRs[63:32], tRegFp32Pck16[31:16]);
 
 `endif
 
+reg[27:0]	tNxtReqAddrA;
+reg[10:0]	tNxtReqIxA;
 
 always @*
 begin
@@ -418,6 +420,47 @@ begin
 `endif
 
 `endif
+
+		JX2_UCIX_CONV_SNIPEIC: begin
+`ifdef jx2_l1i_nohash
+
+			tRegOutVal	= { UV40_00, 8'h03, regValRs[15:0] };
+
+`else
+
+			tRegOutVal	= { UV40_00, 8'h03, regValRs[15:0] };
+
+`endif
+		end
+
+		JX2_UCIX_CONV_SNIPEDC: begin
+`ifdef jx2_l1d_nohash
+
+			tRegOutVal	= { UV40_00, 8'h01, regValRs[15:0] };
+
+`else
+
+			tRegOutVal	= { UV40_00, 8'h01, regValRs[15:0] };
+			tNxtReqAxA = regValRs[31:4];
+			tNxtReqIxA = 0;
+
+`ifdef jx2_mem_l1dsz_256
+			tNxtReqIxA[7:0] = tNxtReqAxA[8:1] ^ tNxtReqAxA[16:9];
+`endif
+
+`ifdef jx2_mem_l1dsz_512
+			tNxtReqIxA[8:0] = tNxtReqAxA[9:1] ^ tNxtReqAxA[18:10];
+`endif
+
+`ifdef jx2_mem_l1dsz_1024
+			tNxtReqIxA[9:0] = tNxtReqAxA[10:1] ^ tNxtReqAxA[19:10];
+`endif
+
+			tRegOutVal	= { UV40_00, 8'h01, tNxtReqIxA, tNxtReqAxA[0], 4'h0 };
+
+`endif
+
+		end
 
 		default: begin
 		end

@@ -947,6 +947,9 @@ int main(int argc, char *argv[])
 	ctx=BJX2_AllocContext();
 	BJX2_MemDefineROM(ctx,		"ROM",	0x00000000U, 0x00007FFFU);
 	BJX2_MemDefineRAM(ctx,		"SRAM",	0x0000C000U, 0x0000DFFFU);
+
+	BJX2_MemDefineROM(ctx,		"ZERO",	0x00010000U, 0x0003FFFFU);
+
 //	BJX2_MemDefineMmgp(ctx,		"MMGP",	0x0000E000U, 0x0000E3FFU);
 //	BJX2_MemDefineGfxCon(ctx,	"CGFX",	0x000A0000U, 0x000AFFFFU);
 //	BJX2_MemDefineRAM(ctx,		"DRAM",	0x01000000U, 0x18000000U);
@@ -986,6 +989,7 @@ int main(int argc, char *argv[])
 	BJX2_MemDefineGfxCon(ctx,	"CGFX",	0xF000000A0000, 0xF000000BFFFF);
 #endif
 	
+	BJX2_ContextSetupZero(ctx);
 	if(ifn)
 	{
 		BJX2_ContextLoadRom(ctx, ifn);

@@ -56,6 +56,7 @@ assign	idUFl = opUFl;
 `reg_gpr	opRegM_Dfl;
 `reg_gpr	opRegO_Dfl;
 `reg_gpr	opRegN_Dfl;
+`reg_gpr	opRegP_Dfl;
 
 `reg_gpr	opRegM_Fix;
 `reg_gpr	opRegO_Fix;
@@ -236,6 +237,7 @@ begin
 		opExWM, opExM, istrWord[ 3: 0]};
 	opRegO_Dfl	= {tRegRoIsRs && (!opExI) && (!opExWI),
 		opExWI, opExI, istrWord[23:20]};
+	opRegP_Dfl	= opRegN_Dfl;
 
 	opRegO_Df2	= {tRegRmIsRs && !(istrWord[4]),
 		1'b0, istrWord[4], istrWord[3:0]};
@@ -347,6 +349,7 @@ begin
 			istrWord[7:0], istrWord[23:20] };
 
 		opImm_imm8au	= { UV25_00, istrJBits[7:0] };
+		opRegP_Dfl		= { 1'b0, istrJBits[5:0] };
 
 		opImm_imm16s	= { opExWI, istrJBits[15:0], istrWord[31:16] };
 		opImm_imm16u	= opImm_imm16s;
@@ -894,6 +897,16 @@ begin
 
 			16'h1zz8: begin	/* F0nm_1ez8 */
 				case(istrWord[23:20])
+					4'hB: begin
+						if(opExQ)
+							opUCmdIx	= JX2_UCIX_CONV_SNIPEIC;
+						else
+							opUCmdIx	= JX2_UCIX_CONV_SNIPEDC;
+						opNmid	= JX2_UCMD_CONV_RR;
+						opFmid	= JX2_FMID_REGREG;
+						opIty	= JX2_ITY_UB;
+					end
+
 `ifdef jx2_alu_wx
 					4'hC: begin
 						opUCmdIx	= JX2_UCIX_ALU_CMPQEQ;
@@ -3363,9 +3376,12 @@ begin
 
 				JX2_ITY_XB: begin
 					opImm	= opImm_imm8au;
+//					opRegP	= opRegN_Dfl;
+					opRegP	= opRegP_Dfl;
 				end
 				JX2_ITY_XW: begin
 					opImm	= opImm_imm8au;
+					opRegP	= JX2_GR_IMM;
 				end
 				
 				default: begin

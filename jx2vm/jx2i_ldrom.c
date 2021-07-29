@@ -491,6 +491,29 @@ int BJX2_ContextLoadMap(BJX2_Context *ctx, char *name)
 	return(0);
 }
 
+int BJX2_ContextSetupZero(BJX2_Context *ctx)
+{
+	BJX2_MemSpan *sp;
+	int i, j, k;
+
+	sp=BJX2_MemSpanForName(ctx, "ZERO");
+	if(!sp)
+	{
+		printf("Failed find ZERO span\n");
+		return(-1);
+	}
+	
+	memset(sp->data, 0, 3*65536);
+	for(i=0; i<32768; i++)
+	{
+		((u16 *)(sp->data))[32768+i]=0x3000;
+		((u16 *)(sp->data))[65536+i]=0x3010;
+	}
+	
+	
+	return(0);
+}
+
 int BJX2_ContextLoadRom(BJX2_Context *ctx, char *name)
 {
 	char tb[256];

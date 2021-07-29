@@ -946,7 +946,9 @@ void MemUpdateForBusRing()
 	}
 	
 
-	int addr, isRom, isSRam, isDRam, isZero, isMmio, isCcmd, isSkip;
+	int addr, isRom, isSRam, isDRam,
+		isZero, isNopPg, isRtsPg,
+		isMmio, isCcmd, isSkip;
 	int isL2mRepeat, l2Epoch;
 	
 	char *src_unit;
@@ -983,6 +985,8 @@ void MemUpdateForBusRing()
 //	isDRam	= (addr>=0x01000000) && (addr<=0x7FFFFFFF);
 	isDRam	= (addr>=0x01000000) && (addr<=0x3FFFFFFF);
 	isZero	= (addr>=0x00010000) && (addr<=0x0001FFFF);
+	isNopPg	= (addr>=0x00020000) && (addr<=0x0002FFFF);
+	isRtsPg	= (addr>=0x00030000) && (addr<=0x0003FFFF);
 	
 	isMmio = 0;
 	if(((l2opm1&0xF0)==0x90) && ((l2opm1&0x0F)!=0x07))
@@ -1261,6 +1265,22 @@ void MemUpdateForBusRing()
 			l2data1b=0;
 			l2data1c=0;
 			l2data1d=0;
+			l2opm1=0x70;
+		}else
+			if(isNopPg)
+		{
+			l2data1a=0x30003000;
+			l2data1b=0x30003000;
+			l2data1c=0x30003000;
+			l2data1d=0x30003000;
+			l2opm1=0x70;
+		}else
+			if(isRtsPg)
+		{
+			l2data1a=0x30103010;
+			l2data1b=0x30103010;
+			l2data1c=0x30103010;
+			l2data1d=0x30103010;
 			l2opm1=0x70;
 		}else
 			if(isDRam)

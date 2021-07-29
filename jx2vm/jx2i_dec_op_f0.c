@@ -781,6 +781,18 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			op->ro=BJX2_REG_ZZR;
 			switch(opw1&15)
 			{
+
+			case 0xB:	/* F0eB_18nm */
+				op->nmid=BJX2_NMID_SNIPEDC;
+				op->fmid=BJX2_FMID_REGREG;
+				op->Run=BJX2_Op_SNIPEDC_RegReg;
+				if(eq)
+				{
+					op->nmid=BJX2_NMID_SNIPEIC;
+					op->Run=BJX2_Op_SNIPEIC_RegReg;
+				}
+				break;
+
 #if 1
 			case 0xC:	/* F0eC_18nm */
 				op->nmid=BJX2_NMID_CMPEQ;

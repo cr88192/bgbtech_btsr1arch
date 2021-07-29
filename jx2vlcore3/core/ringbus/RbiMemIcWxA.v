@@ -463,6 +463,30 @@ begin
 		tNxtAddrB	= tReqAddrB;
 	end
 
+`ifdef jx2_l1i_nohash
+
+`ifdef jx2_mem_l1isz_512
+	tNxtIxA=tNxtAddrA[9:1];
+	tNxtIxB=tNxtAddrB[9:1];
+`endif
+
+`ifdef jx2_mem_l1isz_256
+	tNxtIxA=tNxtAddrA[8:1];
+	tNxtIxB=tNxtAddrB[8:1];
+`endif
+
+`ifdef jx2_mem_l1isz_128
+	tNxtIxA=tNxtAddrA[7:1];
+	tNxtIxB=tNxtAddrB[7:1];
+`endif
+
+`ifdef jx2_mem_l1isz_64
+	tNxtIxA=tNxtAddrA[6:1];
+	tNxtIxB=tNxtAddrB[6:1];
+`endif
+
+`else
+
 `ifdef jx2_mem_l1isz_512
 //	tNxtIxA=tNxtAddrA[9:1];
 //	tNxtIxB=tNxtAddrB[9:1];
@@ -485,6 +509,8 @@ begin
 `ifdef jx2_mem_l1isz_64
 	tNxtIxA=tNxtAddrA[6:1];
 	tNxtIxB=tNxtAddrB[6:1];
+`endif
+
 `endif
 
 	icNxtDoFlush = 0;

@@ -433,6 +433,26 @@ begin
 	tNxtReqIxB[6:0] = tNxtReqAxB[7:1];
 `endif
 
+`ifdef jx2_l1d_nohash
+
+`ifdef jx2_mem_l1dsz_256
+	tNxtReqIxA[7:0] = tNxtReqAxA[8:1];
+	tNxtReqIxB[7:0] = tNxtReqAxB[8:1];
+`endif
+
+`ifdef jx2_mem_l1dsz_512
+	tNxtReqIxA[8:0] = tNxtReqAxA[9:1];
+	tNxtReqIxB[8:0] = tNxtReqAxB[9:1];
+`endif
+
+`ifdef jx2_mem_l1dsz_1024
+	tNxtReqIxA[9:0] = tNxtReqAxA[10:1];
+	tNxtReqIxB[9:0] = tNxtReqAxB[10:1];
+`endif
+
+
+`else
+
 `ifdef jx2_mem_l1dsz_256
 //	tNxtReqIxA[7:0] = tNxtReqAxA[7:0] ^ tNxtReqAxA[15:8];
 //	tNxtReqIxB[7:0] = tNxtReqAxB[7:0] ^ tNxtReqAxB[15:8];
@@ -454,6 +474,8 @@ begin
 //	tNxtReqIxB[9:0] = tNxtReqAxB[9:0] ^ tNxtReqAxB[17:8];
 	tNxtReqIxA[9:0] = tNxtReqAxA[10:1] ^ tNxtReqAxA[19:10];
 	tNxtReqIxB[9:0] = tNxtReqAxB[10:1] ^ tNxtReqAxB[19:10];
+`endif
+
 `endif
 
 	tNxtReqInValA	= regInValA;

@@ -825,6 +825,9 @@
 #define BGBCC_SH_NMID_CONVFXI		0x0198	//
 #define BGBCC_SH_NMID_CONVFLI		0x0199	//
 
+#define BGBCC_SH_NMID_SNIPEDC		0x019A	//
+#define BGBCC_SH_NMID_SNIPEIC		0x019B	//
+
 
 #define BGBCC_SH_FMID_REGREG		0x01	//Rm, Rn
 #define BGBCC_SH_FMID_REGRM			0x02	//Rm
@@ -878,6 +881,9 @@
 
 #define BGBCC_SH_FMID_REG1ABS		0x30	//Rn, @(Abs)
 #define BGBCC_SH_FMID_REG2ABS		0x31	//Rm, Rn, @(Abs)
+#define BGBCC_SH_FMID_REGREGREGREG	0x32	//Rm, Ro, Rp, Rn
+#define BGBCC_SH_FMID_REGREGIMMREG	0x33	//Rm, Ro, Imm, Rn
+#define BGBCC_SH_FMID_REGREGREGIMM	0x34	//Rm, Ro, Rn, Imm
 
 #define BGBCC_SH_FMID_DREGST		0x36	//DRm, @Rn
 #define BGBCC_SH_FMID_DREGLD		0x37	//@Rm, DRn
