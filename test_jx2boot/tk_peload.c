@@ -1,5 +1,7 @@
 // extern u64 __arch_gbr;
 
+byte tkpe_imgend;
+
 byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz)
 {
 	byte *cs, *cse;
@@ -52,6 +54,7 @@ byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz)
 			if(ll==5)
 				continue;
 			printf("TKPE_UnpackL4: End Of Image\n");
+			tkpe_imgend=1;
 			break;
 		}
 //		ll=(tg&15)+4;
@@ -1070,6 +1073,8 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 	}else
 	{
 		memcpy(imgptr, tbuf, 1024);
+		tkpe_imgend=0;
+
 #if 1
 		cb=0; nb=imgsz>>10;
 		ct=imgptr+1024; cte=imgptr+imgsz;
@@ -1087,6 +1092,8 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 //			ct=TKPE_UnpackL4(ct, tbuf, 1024);
 //			ct=TKPE_UnpackL4(ct, tbuf, l);
 			ct=TKPE_UnpackBuffer(ct, tbuf, l, cmp);
+			if(tkpe_imgend)
+				break;
 			if(l<1024)
 				break;
 //			ct+=1024;

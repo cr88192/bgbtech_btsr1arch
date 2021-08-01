@@ -1827,7 +1827,10 @@ static int examine(const char **formt, FILE *fq, char *s, va_list *arg,
 		{
 			precision = 1;
 		}
-		svalue = va_arg(*arg, long long);
+
+		ui64value = va_arg(*arg, unsigned long long);
+		svalue = __lva_conv_tostring(ui64value);
+
 		fillCh = ' ';
 		if (precision > 1)
 		{

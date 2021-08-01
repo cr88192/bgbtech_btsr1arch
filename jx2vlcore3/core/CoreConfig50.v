@@ -80,6 +80,8 @@
 
 `define jx2_mem_l2d2way				//Use 2-Way L2 Cache
 
+`define jx2_mem_l2dokseq			//L2: Use OK Sequencing
+
 
 
 // `ifndef def_true

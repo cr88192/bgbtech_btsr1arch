@@ -26,7 +26,10 @@ Base Physical Memory Map (32-bit, New):
 * 00008000 .. 0000BFFF: (Reserved)
 * 0000C000 .. 0000DFFF: Boot SRAM
 * 0000E000 .. 0000FFFF: Reserved
-* 00010000 .. 000FFFFF: Reserved
+* 00010000 .. 0001FFFF: ZERO Page
+* 00020000 .. 0002FFFF: NOP Page
+* 00030000 .. 0003FFFF: RTS Page
+* 00040000 .. 000FFFFF: Reserved
 * 00100000 .. 00FFFFFF: Reserved
 * 01000000 .. 7FFFFFFF: DRAM
 * 80000000 .. EFFFFFFF: Reserved
@@ -40,6 +43,12 @@ Logical Memory Map (32-bit, New):
 * F0000000 .. FFFFFFFF: MMIO (No MMU, Bypass)
 
 The System MMU range will be functionally equivalent to the Userland MMU space in terms of how they are treated by the MMU. There may be a difference based on where the TTB/STTB split is located when both page tables are used.
+
+The ZERO, NOP, and RTS pages will be special purpose.
+* Within the ZERO page, anything read will return zeroes.
+* Within the NOP page, only NOP instructions will be present.
+* Within the RTS page, only RTS instructions will be present.
+* Stores into these pages will not be preserved.
 
 
 Addresses in the MMIO ranges will "bypass" the normal memory access mechanisms and go directly to the MMIO Bus.

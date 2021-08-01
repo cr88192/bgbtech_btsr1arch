@@ -1857,11 +1857,17 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 	}
 
 	tra=malloc(262144*sizeof(void *));
+	memset(tra, 0, 262144*sizeof(void *));
 
 	trn=0; trtops=0;
 	for(i=0; i<1024; i++)
 	{
 		trcur=ctx->trhash[i];
+
+		cyc=trcur->runcnt*trcur->n_cyc+trcur->acc_pencyc;
+		if(cyc<=0)
+			break;
+
 //		while(trcur && (trn<65536))
 		while(trcur && (trn<262144))
 		{
@@ -1905,12 +1911,14 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 		topfn_hash[i]=-1;
 
 	for(i=0; i<1024; i++)
-		topfn_name[0]=NULL;
+		topfn_name[i]=NULL;
 
 	n_topfn=0;
 	for(i=0; i<1024; i++)
 	{
 		trcur=tra[i];
+		if(!trcur)
+			continue;
 		bn2=BJX2_DbgNameForAddr(ctx, trcur->addr, &ba2);
 		if(!bn2)
 			continue;
@@ -1996,9 +2004,16 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 	for(i=0; i<48; i++)
 	{
 		trcur=tra[63-i];
+		if(!trcur)
+			continue;
 		bn2=BJX2_DbgNameForAddr(ctx, trcur->addr, &ba2);
+		if(!bn2)
+			continue;
 
-		cyc=trcur->runcnt*trcur->n_cyc+trcur->acc_pencyc;
+		cyc=trcur->runcnt*trcur->n_cyc+trcur->acc_pencyc+1;
+		if(cyc<1)
+			cyc=1;
+
 		pcnt=(100.0*cyc)/(ctx->tot_cyc);
 
 		if(bn2)

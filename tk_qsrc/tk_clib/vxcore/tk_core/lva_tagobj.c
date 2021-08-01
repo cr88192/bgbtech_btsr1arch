@@ -380,6 +380,7 @@ void *__lvo_makelambda(void *obj, void *fn)
 	((u64 *)obj)[3]=fn;
 #endif
 
+#if 0
 	objb=__snipe_dc(((byte *)obj)-8);
 	fna =((int *)objb)[ 0];
 	fna+=((int *)objb)[ 2];
@@ -387,15 +388,85 @@ void *__lvo_makelambda(void *obj, void *fn)
 	fna+=((int *)objb)[ 6];
 	fna+=((int *)objb)[ 8];
 	fna+=((int *)objb)[10];
+#endif
 
-	fnb=__snipe_ic(((byte *)obj)-8);	fnb();
-	fnb=__snipe_ic(((byte *)obj)+0);	fnb();
-	fnb=__snipe_ic(((byte *)obj)+8);	fnb();
+#if 0
+
+#if 1
+	objb=__snipe_dc(((byte *)obj)- 8);	fna =*((int *)objb);
+	objb=__snipe_dc(((byte *)obj)+ 0);	fna+=*((int *)objb);
+	objb=__snipe_dc(((byte *)obj)+ 8);	fna+=*((int *)objb);
+	objb=__snipe_dc(((byte *)obj)+16);	fna+=*((int *)objb);
+	objb=__snipe_dc(((byte *)obj)+24);	fna+=*((int *)objb);
+	objb=__snipe_dc(((byte *)obj)+32);	fna+=*((int *)objb);
+#endif
+
+	fnb=__snipe_ic(((byte *)obj)- 8);	fnb();
+	fnb=__snipe_ic(((byte *)obj)+ 0);	fnb();
+	fnb=__snipe_ic(((byte *)obj)+ 8);	fnb();
 	fnb=__snipe_ic(((byte *)obj)+16);	fnb();
 	fnb=__snipe_ic(((byte *)obj)+24);	fnb();
 	fnb=__snipe_ic(((byte *)obj)+32);	fnb();
-	
 
+#endif
+
+#if 1
+	objb=__snipe_dc(((byte *)obj)-8);
+	if(objb)
+	{
+		objb=__snipe_dc(((byte *)obj)- 8);	fna =*((int *)objb);
+		objb=__snipe_dc(((byte *)obj)+ 0);	fna+=*((int *)objb);
+//		objb=__snipe_dc(((byte *)obj)+ 8);	fna+=*((int *)objb);
+		objb=__snipe_dc(((byte *)obj)+16);	fna+=*((int *)objb);
+//		objb=__snipe_dc(((byte *)obj)+24);	fna+=*((int *)objb);
+		objb=__snipe_dc(((byte *)obj)+32);	fna+=*((int *)objb);
+	}else
+	{
+		TK_FlushCacheL1D_INVDC(((byte *)obj)- 8);
+		TK_FlushCacheL1D_INVDC(((byte *)obj)+ 0);
+//		TK_FlushCacheL1D_INVDC(((byte *)obj)+ 8);
+		TK_FlushCacheL1D_INVDC(((byte *)obj)+16);
+//		TK_FlushCacheL1D_INVDC(((byte *)obj)+24);
+		TK_FlushCacheL1D_INVDC(((byte *)obj)+32);
+
+		objb = ((byte *)obj)-8;
+		fna =((int *)objb)[ 0];
+//		fna+=((int *)objb)[ 2];
+		fna+=((int *)objb)[ 4];
+//		fna+=((int *)objb)[ 6];
+		fna+=((int *)objb)[ 8];
+//		fna+=((int *)objb)[10];
+
+		TK_FlushCacheL1D_INVDC(((byte *)obj)- 8);
+		TK_FlushCacheL1D_INVDC(((byte *)obj)+ 0);
+//		TK_FlushCacheL1D_INVDC(((byte *)obj)+ 8);
+		TK_FlushCacheL1D_INVDC(((byte *)obj)+16);
+//		TK_FlushCacheL1D_INVDC(((byte *)obj)+24);
+		TK_FlushCacheL1D_INVDC(((byte *)obj)+32);
+	}
+
+	objb=__snipe_ic(((byte *)obj)- 8);
+	if(objb)
+	{
+		fnb=__snipe_ic(((byte *)obj)- 8);	fnb();
+		fnb=__snipe_ic(((byte *)obj)+ 0);	fnb();
+//		fnb=__snipe_ic(((byte *)obj)+ 8);	fnb();
+		fnb=__snipe_ic(((byte *)obj)+16);	fnb();
+//		fnb=__snipe_ic(((byte *)obj)+24);	fnb();
+		fnb=__snipe_ic(((byte *)obj)+32);	fnb();
+	}else
+	{
+		TK_FlushCacheL1D_INVIC(NULL);
+
+//		TK_FlushCacheL1D_INVIC(((byte *)obj)- 8);
+//		TK_FlushCacheL1D_INVIC(((byte *)obj)+ 0);
+//		TK_FlushCacheL1D_INVIC(((byte *)obj)+ 8);
+//		TK_FlushCacheL1D_INVIC(((byte *)obj)+16);
+//		TK_FlushCacheL1D_INVIC(((byte *)obj)+24);
+//		TK_FlushCacheL1D_INVIC(((byte *)obj)+32);
+	}
+
+#endif
 //	TK_FlushCacheL1D();
 
 //	TK_FlushCacheL1D_INVDC(NULL);

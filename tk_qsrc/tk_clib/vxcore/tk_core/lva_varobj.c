@@ -485,8 +485,9 @@ TKMM_LVA_VarObjFetchKeyA:
 	RTS
 	
 	.NotFound:
-	MOV			1, R2
-	RTS
+	BRA			TKMM_LVA_VarObjFetchKey
+//	MOV			1, R2
+//	RTS
 
 TKMM_LVA_VarObjSetKeyA:
 	MOVU.W		(R4, 16), R3
@@ -532,13 +533,23 @@ TKMM_LVA_VarObjSetKeyA:
 
 #endif
 
-u64 TKMM_LVA_VarObjFetchKey(LVA_VarObject *obj, int key)
+u64 TKMM_LVA_VarObjFetchKeyR(LVA_VarObject *obj, int key,
+	LVA_VarObject **dsarr, int *rndsa)
 {
+	LVA_VarObject *obj1;
 	u16 *keys;		//dynamic alloc keys
 	u64 *vals;		//dynamic alloc values
+	char *skey, *skey1;
 	u64 kv;
 	int k_m, k_n, k_c, k_cv;
-	int nk;
+	int i, nk, ndsa;
+	
+	ndsa=*rndsa;
+	for(i=0; i<ndsa; i++)
+		if(obj==dsarr[i])
+			return(1);
+	dsarr[ndsa++]=obj;
+	*rndsa=ndsa;
 	
 	nk=obj->nkey;
 	keys=obj->keys;
@@ -571,18 +582,64 @@ u64 TKMM_LVA_VarObjFetchKey(LVA_VarObject *obj, int key)
 	kv=vals[k_c];
 	if(k_cv==key)
 		return(kv);
-	return(0);
+
+	skey=tkmm_lva_syms_name[key];
+
+#if 1
+	for(k_c=0; k_c<nk; k_c++)
+	{
+		k_cv=keys[k_c];
+		skey1=tkmm_lva_syms_name[k_cv];
+//		if(*skey1=='.')
+//		if((skey1[0]=='_') && (skey1[1]!='_'))
+//		if(*skey1=='$')
+		if((skey1[0]=='$') && (skey1[1]!='$'))
+		{
+			kv=vals[k_c];
+			if(!strcmp(skey1+1, skey))
+				return(kv);
+			obj1=(LVA_VarObject *)kv;
+			kv=TKMM_LVA_VarObjFetchKeyR(obj1, key, dsarr, rndsa);
+			if(kv!=1)
+				return(kv);
+		}
+//		if(k_cv==key)
+//			break;
+	}
+#endif
+
+	return(1);
 }
 
-int TKMM_LVA_VarObjSetKey(LVA_VarObject *obj, int key, u64 val)
+u64 TKMM_LVA_VarObjFetchKey(LVA_VarObject *obj, int key)
 {
-	u16 *keys;		//dynamic alloc keys
-	u64 *vals;		//dynamic alloc values
+	LVA_VarObject *dsarr[256];
+	int n_dsarr;
+	n_dsarr=0;
+	return(TKMM_LVA_VarObjFetchKeyR(obj, key, dsarr, &n_dsarr));
+}
+
+
+int TKMM_LVA_VarObjTrySetKeyR(LVA_VarObject *obj, int key, u64 val,
+	LVA_VarObject **dsarr, int *rndsa)
+{
+	LVA_VarObject *obj1;
+	u16		*keys;		//dynamic alloc keys
+	u64		*vals;		//dynamic alloc values
+	char	*skey;
+	char	*skey1;
 	u64 kv;
 	int k_m, k_n, k_c, k_cv;
-	int nk, mk, mk1;
+	int nk, mk, mk1, ndsa;
 	int i, j, k;
-	
+
+	ndsa=*rndsa;
+	for(i=0; i<ndsa; i++)
+		if(obj==dsarr[i])
+			return(1);
+	dsarr[ndsa++]=obj;
+	*rndsa=ndsa;
+
 	nk=obj->nkey;
 	keys=obj->keys;
 	vals=obj->vals;
@@ -616,7 +673,87 @@ int TKMM_LVA_VarObjSetKey(LVA_VarObject *obj, int key, u64 val)
 		vals[k_c]=val;
 		return(1);
 	}
-	
+
+	skey=tkmm_lva_syms_name[key];
+
+#if 1
+	for(k_c=0; k_c<nk; k_c++)
+	{
+		k_cv=keys[k_c];
+		skey1=tkmm_lva_syms_name[k_cv];
+//		if((skey1[0]=='_') && (skey1[1]!='_'))
+		if((skey1[0]=='$') && (skey1[1]!='$'))
+		{
+			kv=vals[k_c];
+			if(!strcmp(skey1+1, skey))
+				return(kv);
+			obj1=(LVA_VarObject *)kv;
+			j=TKMM_LVA_VarObjTrySetKeyR(obj1, key, val, dsarr, rndsa);
+			if(j>0)
+				return(j);
+		}
+//		if(k_cv==key)
+//			break;
+	}
+#endif
+
+	return(0);
+}
+
+int TKMM_LVA_VarObjSetKey(LVA_VarObject *obj, int key, u64 val)
+{
+	LVA_VarObject *dsarr[256];
+	u16 *keys;		//dynamic alloc keys
+	u64 *vals;		//dynamic alloc values
+	int n_dsarr;
+	u64 kv;
+	int k_m, k_n, k_c, k_cv;
+	int nk, mk, mk1;
+	int i, j, k;
+
+	n_dsarr=0;
+	j=TKMM_LVA_VarObjTrySetKeyR(obj, key, val, dsarr, &n_dsarr);
+	if(j>0)
+		return(j);
+
+	nk=obj->nkey;
+	keys=obj->keys;
+	vals=obj->vals;
+
+#if 0
+
+#if 0
+	k_m=0; k_n=nk;
+	while(k_n>k_m)
+	{
+		k_c=(k_m+k_n)>>1;
+		k_cv=keys[k_c];
+		if(k_cv>key)
+			{ k_n=k_c; }
+		else if((k_cv<key) && (k_c!=k_m))
+			{ k_m=k_c; }
+		else
+			{ break; }
+	}
+#endif
+
+#if 1
+	for(k_c=0; k_c<nk; k_c++)
+	{
+		k_cv=keys[k_c];
+		if(k_cv==key)
+			break;
+	}
+#endif
+
+	if(k_cv==key)
+	{
+		vals[k_c]=val;
+		return(1);
+	}
+
+#endif
+
 	mk=obj->mkey;
 	if(mk)
 	{

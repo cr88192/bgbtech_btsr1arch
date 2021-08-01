@@ -632,7 +632,10 @@ Doing a proper flush of an address, as such, will involve a process:
   Invalidate the address again (to discard anything just loaded).
 
 
-If INVIC or INVDC is given an address in the MMIO range, additional special behaviors may be triggered. Using these with FFFFFFFF will cause the whole cache to be flushed.
+If INVIC or INVDC is given an address in the MMIO range, additional special behaviors may be triggered. Using these with FFFFFFFF will cause the whole L1 cache to be flushed.
+
+Passing -2 to INVDC will trigger an L2 Flush. Note that getting something written back from L2 will require first flushing it from the L1.
+
 
 The INVTLB instruction will flush the TLB. This would be done as part of changing the active page tables.
 
@@ -1398,6 +1401,23 @@ Causes the processor to sleep until the next interrupt.
 May generate an fault if used in a context where this would halt the processor indefinitely.
 
 
+=== SNIPExx ===
+
+* F0nm_1gB8  SNIPEDC	Rm, Rn		//Calculate L1 D$ Snipe Address
+* F0nm_1GB8  SNIPEIC	Rm, Rn		//Calculate L1 I$ Snipe Address
+
+For the address given in Rm, calculate a "sniper" address within the ZERO or RTS pages. These instructions assume either physical memory mapping, or that these pages are identity mapped.
+
+Accessing the address returned by these SNIPEDC will evict whatever was in the cache-line pointed to by Rm from the L1 D-Cache.
+
+Calling to the address returned by SNIPEIC will evict whatever was in this location in the L1 I-Cache.
+
+These operations will only work for direct-mapped caches.
+
+
+The SNIPExx instructions will generate a NULL result if SNIPExx is not valid (such as due to using an associative cache). In this case, an INVDC or INVIC cache-flush process will be required instead.
+
+
 === SRTTWID (?) ===
 
 * 36nB       SRTTWID	Imm4
@@ -1972,17 +1992,30 @@ The nominal format of the BJX2 FPU is 64-bit Double.
 
 
 There will be a second level of FPU instructions under the name GFPX:
-* Adds Binary128
-** At an implementation defined precision.
+* Adds LongDouble / Binary128
+** LongDouble will nominally be defined as truncated Binary128.
+** Most FPU ops are ignore the low-order bits.
+** Operations which ignore the low-order bits are to zero them in results.
 * Rounding is tightened to 0.51 ULP for base ops.
 
 Another Extension, GFP_MAC, will add FMAC:
 * Adds FMAC
 
 
-For now, the "baseline" Binary128 support will define:
+For now, the "baseline" Binary128 support will define (Old):
 * 72-bit mantissa (for the portion treated as significant).
+* Though, 80-bit mantissa will be considered nominal.
 * Full 15 bit exponent range.
+
+Will define the GFPX instructions as using LongDouble (New):
+* Basic representation is the same as Binary128.
+** The mantissa will nominally be 80 bits.
+** The actual number of mantissa bits will be implementation dependent.
+* Nominally, the low bits for normal FPU operations will be ignored.
+* The 32-bits of the result are to be set to zero.
+* Some GFPX operations may use the full width mantissa.
+** An implementation may, optionally, implement full Binary128.
+** FADD, FSUB, and FMUL should use the same number of bits.
 
 
 === FABS (GFP) ===
@@ -2002,7 +2035,7 @@ Get the absolute value of the double precision value in Rm and store the result 
 
 Add the double precision value in Ro to the value from Rm and store the resulting value in Rn.
 
-FADDX will operate instead on a Binary128 value.
+FADDX will operate instead on a LongDouble value.
 This may be partial precision, with the range of mantissa bits supported being implementation defined. If supported, the minimum will be 52 bits.
 
 
@@ -2118,12 +2151,16 @@ Conversion will be the same as that for the register instruction.
 
 === FMAC (GFPX) ===
 
-* F0nm_5goB  FMAC		Rm, Ro, Rn			//(GFPX) FMAC, Rn+=Rm*Ro
-* F0nm_5GoB  FMACX		Xm, Xo, Xn			//(GFPX) FMAC, Binary128
+* F0nm_5goB            FMAC		Rm, Ro, Rn			//(GFPX) FMAC, Rn+=Rm*Ro
+* F0nm_5GoB            FMACX	Xm, Xo, Xn			//(GFPX) FMAC, LongDbl
+* FFw0_00pp_F0nm_5goB  FMAC		Rm, Ro, Rp, Rn		//(GFPX) FMAC, Rn=Rm*Ro+Rp
+* FFw0_00pp_F0nm_5GoB  FMACX	Xm, Xo, Rp, Xn		//(GFPX) FMAC, LongDbl
 
 Multiply the double precision value in Ro with the value from Rm and add this to the value in Rn, storing the result in Rn.
 
-FMACX will operate instead on a Binary128 value (partial precision).
+The four register form will add against the value from Rp, storing the result in Rn.
+
+FMACX will operate instead on a LongDouble value (partial precision).
 
 
 === FMUL (GFP) ===
@@ -2136,7 +2173,7 @@ FMACX will operate instead on a Binary128 value (partial precision).
 
 Multiply the double precision value in Ro with the value from Rm and store the resulting value in Rn.
 
-FMULX will operate instead on a Binary128 value.
+FMULX will operate instead on a LongDouble value.
 
 
 === FNEG (GFP) ===
@@ -2178,7 +2215,7 @@ Conversion to integer will truncate towards zero. Its output will be a 64-bit in
 
 Subtract the double precision value in Ro from the value from Rm and store the resulting value in Rn.
 
-FSUBX will operate instead on a Binary128 value.
+FSUBX will operate instead on a LongDouble value.
 
 
 == Jumbo Instructions (Optional / Experimental) ==

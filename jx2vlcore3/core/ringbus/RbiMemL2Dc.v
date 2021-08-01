@@ -710,6 +710,20 @@ begin
 //		$display("L2DC: Hit B");
 `endif
 
+// `ifdef jx2_mem_l2d2way
+`ifndef def_true
+	if(tBlkAddr == tBlkAddrB)
+	begin
+		if(tBlkAddr!=0)
+		begin
+			$display("L2DC: (Sanity) A/B Address Clash Ix=%X A=%X",
+				tBlkIx, tBlkAddr);
+		end
+		tBlkFlush	= 1;
+		tBlkFlushB	= 1;
+	end
+`endif
+
 `ifndef jx2_mem_l2d2way
 	tBlkFlushB	= 0;
 	tMissAddrB	= 1;
@@ -1200,10 +1214,14 @@ begin
 		tNxtReqMissSeq	= 0;
 	end
 
+`ifdef jx2_mem_l2dokseq
 	tAccIsOkSeq		=
 		(tDdrMemOK == UMEM_OK_OK) &&
 		(tDdrMemOpSqI == tAccOpSqDone) &&
 		(tDdrMemOpSqI != 0);
+`else
+	tAccIsOkSeq		= 0;
+`endif
 
 //	tAccIsOkSeq		= 0;
 

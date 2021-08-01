@@ -115,7 +115,8 @@ ExConv_Fp32Pck16	conv_fp16pckb(regValRs[63:32], tRegFp32Pck16[31:16]);
 
 `endif
 
-reg[27:0]	tNxtReqAddrA;
+reg[27:0]	tNxtReqAxA;
+reg[27:0]	tNxtReqAxB;
 reg[10:0]	tNxtReqIxA;
 
 always @*
@@ -424,11 +425,32 @@ begin
 		JX2_UCIX_CONV_SNIPEIC: begin
 `ifdef jx2_l1i_nohash
 
-			tRegOutVal	= { UV40_00, 8'h03, regValRs[15:0] };
+//			tRegOutVal	= { UV40_00, 8'h03, regValRs[15:0] };
+			tRegOutVal	= { 16'hC000, 16'h0000, 16'h0003, regValRs[15:0] };
 
 `else
 
-			tRegOutVal	= { UV40_00, 8'h03, regValRs[15:0] };
+//			tRegOutVal	= { UV40_00, 8'h03, regValRs[15:0] };
+			tNxtReqAxA = regValRs[31:4];
+			tNxtReqAxB = { 16'h0003, 12'h000 };
+			tNxtReqIxA = 0;
+
+`ifdef jx2_mem_l1isz_256
+			tNxtReqIxA[7:0] = tNxtReqAxA[8:1] ^
+				tNxtReqAxA[16:9] ^ tNxtReqAxB[16:9];
+`endif
+
+`ifdef jx2_mem_l1isz_512
+			tNxtReqIxA[8:0] = tNxtReqAxA[9:1] ^
+				tNxtReqAxA[18:10] ^ tNxtReqAxB[18:10];
+`endif
+
+`ifdef jx2_mem_l1isz_1024
+			tNxtReqIxA[9:0] = tNxtReqAxA[10:1] ^
+				tNxtReqAxA[19:10] ^ tNxtReqAxB[19:10];
+`endif
+
+			tRegOutVal	= { UV40_00, 8'h03, tNxtReqIxA, tNxtReqAxA[0], 4'h0 };
 
 `endif
 		end
@@ -436,24 +458,29 @@ begin
 		JX2_UCIX_CONV_SNIPEDC: begin
 `ifdef jx2_l1d_nohash
 
-			tRegOutVal	= { UV40_00, 8'h01, regValRs[15:0] };
+//			tRegOutVal	= { UV40_00, 8'h01, regValRs[15:0] };
+			tRegOutVal	= { 16'hC000, 16'h0000, 16'h0001, regValRs[15:0] };
 
 `else
 
-			tRegOutVal	= { UV40_00, 8'h01, regValRs[15:0] };
+//			tRegOutVal	= { UV40_00, 8'h01, regValRs[15:0] };
 			tNxtReqAxA = regValRs[31:4];
+			tNxtReqAxB = { 16'h0001, 12'h000 };
 			tNxtReqIxA = 0;
 
 `ifdef jx2_mem_l1dsz_256
-			tNxtReqIxA[7:0] = tNxtReqAxA[8:1] ^ tNxtReqAxA[16:9];
+			tNxtReqIxA[7:0] = tNxtReqAxA[8:1] ^
+				tNxtReqAxA[16:9] ^ tNxtReqAxB[16:9];
 `endif
 
 `ifdef jx2_mem_l1dsz_512
-			tNxtReqIxA[8:0] = tNxtReqAxA[9:1] ^ tNxtReqAxA[18:10];
+			tNxtReqIxA[8:0] = tNxtReqAxA[9:1] ^
+				tNxtReqAxA[18:10] ^ tNxtReqAxB[18:10];
 `endif
 
 `ifdef jx2_mem_l1dsz_1024
-			tNxtReqIxA[9:0] = tNxtReqAxA[10:1] ^ tNxtReqAxA[19:10];
+			tNxtReqIxA[9:0] = tNxtReqAxA[10:1] ^
+				tNxtReqAxA[19:10] ^ tNxtReqAxB[19:10];
 `endif
 
 			tRegOutVal	= { UV40_00, 8'h01, tNxtReqIxA, tNxtReqAxA[0], 4'h0 };

@@ -1129,6 +1129,32 @@ ccxl_status BGBCC_CCXL_EmitLoadSlotAddr(BGBCC_TransState *ctx,
 	return(0);
 }
 
+ccxl_status BGBCC_CCXL_EmitLoadSlotID(BGBCC_TransState *ctx,
+	ccxl_type type, ccxl_register dst, ccxl_register src,
+	BGBCC_CCXL_LiteralInfo *st, int fn)
+{
+	BGBCC_CCXL_VirtOp *op;
+	BGBCC_CCXL_LiteralInfo *st1;
+
+	if(ctx->cgif_no3ac)
+		return(0);
+
+	if(fn<0)
+		{ BGBCC_DBGBREAK }
+
+	op=BGBCC_CCXL_AllocVirtOp(ctx);
+	op->opn=CCXL_VOP_LOADSLOT;
+	op->prd=ctx->curprd;
+	op->type=type;
+	op->dst=dst;
+	op->srca=src;
+	op->imm.obj.gid=st->litid;
+	op->imm.obj.fid=fn;
+	op->immty=CCXL_VOPITY_GFID;
+	BGBCC_CCXL_AddVirtOp(ctx, op);
+	return(0);
+}
+
 ccxl_status BGBCC_CCXL_EmitLoadSlotAddrID(BGBCC_TransState *ctx,
 	ccxl_type type, ccxl_register dst, ccxl_register src,
 	BGBCC_CCXL_LiteralInfo *st, int fn)

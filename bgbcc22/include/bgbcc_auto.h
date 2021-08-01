@@ -677,6 +677,7 @@ ccxl_status BGBCC_CCXL_EmitOffsetOf(BGBCC_TransState *ctx,ccxl_type type, ccxl_r
 ccxl_status BGBCC_CCXL_EmitLoadSlot(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register src, BGBCC_CCXL_LiteralInfo *st, char *name, char *sig);
 ccxl_status BGBCC_CCXL_EmitStoreSlot(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register src, BGBCC_CCXL_LiteralInfo *st, char *name);
 ccxl_status BGBCC_CCXL_EmitLoadSlotAddr(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register src, BGBCC_CCXL_LiteralInfo *st, char *name);
+ccxl_status BGBCC_CCXL_EmitLoadSlotID(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register src, BGBCC_CCXL_LiteralInfo *st, int fn);
 ccxl_status BGBCC_CCXL_EmitLoadSlotAddrID(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register src, BGBCC_CCXL_LiteralInfo *st, int fn);
 ccxl_status BGBCC_CCXL_EmitInitObj(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, BGBCC_CCXL_LiteralInfo *st);
 ccxl_status BGBCC_CCXL_EmitDropObj(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, BGBCC_CCXL_LiteralInfo *st);

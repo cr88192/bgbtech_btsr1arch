@@ -6627,6 +6627,10 @@ int BGBCC_JX2C_EmitFrameEpilogUnwind(BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx,
 	BGBCC_CCXL_RegisterInfo *obj)
 {
+	if(	(ctx->imgfmt==BGBCC_IMGFMT_ROM) ||
+		(ctx->imgfmt==BGBCC_IMGFMT_SYS)	)
+			return(0);
+
 	if(sctx->is_leaf&1)
 	{
 		BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_MOV,

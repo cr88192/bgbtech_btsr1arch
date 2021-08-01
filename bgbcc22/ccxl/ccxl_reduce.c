@@ -856,6 +856,8 @@ BCCX_Node *BGBCC_CCXL_ReduceForm(BGBCC_TransState *ctx,
 		}
 		
 		if(ctx->lang==BGBCC_LANG_CS)
+//		if(	(ctx->lang==BGBCC_LANG_CS) ||
+//			(ctx->lang==BGBCC_LANG_BS2))
 		{
 			if(ctx->cur_struct)
 			{

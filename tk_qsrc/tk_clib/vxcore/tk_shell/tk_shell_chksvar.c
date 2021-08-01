@@ -85,10 +85,21 @@ __class TkChkSane_Bar __extends TkChkSane_Foo {
 	}
 };
 
+struct TkChkSane_Foo_DlgTst1_s {
+	int x;
+};
+
+struct TkChkSane_Foo_DlgTst2_s {
+	int y;
+	__delegate struct TkChkSane_Foo_DlgTst1_s *s1;
+};
+
 int tk_shell_chksane_var()
 {
 	__class TkChkSane_Foo fobj;
 	__class TkChkSane_Bar bobj;
+	struct TkChkSane_Foo_DlgTst1_s *ds1;
+	struct TkChkSane_Foo_DlgTst2_s *ds2;
 
 	__string str;
 	__var v0, v1, v2;
@@ -188,6 +199,15 @@ int tk_shell_chksane_var()
 		__debugbreak();
 
 //	__debugbreak();
+
+	ds1=tk_malloc(sizeof(struct TkChkSane_Foo_DlgTst1_s));
+	ds2=tk_malloc(sizeof(struct TkChkSane_Foo_DlgTst2_s));
+	ds2->s1=ds1;
+	ds1->x=3;
+	ds2->y=4;
+	j=ds2->x+ds2->y;
+	if(j!=7)
+		__debugbreak();
 }
 
 

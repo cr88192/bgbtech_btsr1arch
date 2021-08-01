@@ -795,6 +795,32 @@ begin
 				JX2_UCIX_IXS_INVIC: begin
 					$display("EX1 JX2_UCIX_IXS_INVIC");
 
+// `ifdef jx2_l1i_nohash
+`ifndef def_true
+					if(	(	(regValRm[31:28]!=4'hF) &&
+							(regValRm[31:24]!=8'h00)) ||
+						(	(regValRm[47:32]!=16'h0000) &&
+							(regValRm[47:32]!=16'hFFFF)))
+					begin
+//						tMemOpm		= UMEM_OPM_FLUSHIS;
+//						tMemAddr	= regValRm[47:0];
+//						tMemAddr	= { 16'h0000, 16'h0003, regValRm[15:0] };
+						tMemAddr	= { 16'hC000, 16'h0003, regValRm[15:0] };
+						tRegOutLr	= tRegBraLr;
+						tValBra		= { regValPc[63:48], tMemAddr };
+						tDoBra		= 1;
+					end
+					else
+					begin
+						tMemOpm		= UMEM_OPM_FLUSHIS;
+						tMemAddr	= regValRm[47:0];
+
+	//					tValBra		= regValPc[47:0];
+						tValBra		= regValPc;
+	//					tValBra		= { tRegBraLr[63:48], regValPc[47:0] };
+						tDoBra		= 1;
+					end
+`else
 					tMemOpm		= UMEM_OPM_FLUSHIS;
 					tMemAddr	= regValRm[47:0];
 
@@ -802,12 +828,32 @@ begin
 					tValBra		= regValPc;
 //					tValBra		= { tRegBraLr[63:48], regValPc[47:0] };
 					tDoBra		= 1;
+`endif
+
 				end
 				JX2_UCIX_IXS_INVDC: begin
 					$display("EX1 JX2_UCIX_IXS_INVDC");
 
+// `ifdef jx2_l1d_nohash
+`ifndef def_true
+					if(	(	(regValRm[31:28]!=4'hF) &&
+							(regValRm[31:24]!=8'h00)) ||
+						(	(regValRm[47:32]!=16'h0000) &&
+							(regValRm[47:32]!=16'hFFFF)))
+					begin
+						tMemOpm		= UMEM_OPM_RD_Q;
+//						tMemAddr	= { 16'h0000, 16'h0001, regValRm[15:0] };
+						tMemAddr	= { 16'hC000, 16'h0001, regValRm[15:0] };
+					end
+					else
+					begin
+						tMemOpm		= UMEM_OPM_FLUSHDS;
+						tMemAddr	= regValRm[47:0];
+					end
+`else
 					tMemOpm		= UMEM_OPM_FLUSHDS;
 					tMemAddr	= regValRm[47:0];
+`endif
 				end
 
 				JX2_UCIX_IXS_TRAPB: begin

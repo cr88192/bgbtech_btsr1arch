@@ -879,8 +879,10 @@ int main(int argc, char *argv[])
 //	ifmd=0; rdsz=128;
 //	ifmd=0; rdsz=256;
 	ifmd=0; rdsz=512;
-	swapsz=384;
-	mhz=100; usejit=0; nomemcost=0;
+//	swapsz=384;
+	swapsz=0;
+//	mhz=100; usejit=0; nomemcost=0;
+	mhz=50; usejit=0; nomemcost=0;
 	chkbss=0;
 	for(i=1; i<argc; i++)
 	{

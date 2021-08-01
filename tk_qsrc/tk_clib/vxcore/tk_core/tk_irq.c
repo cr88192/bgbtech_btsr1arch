@@ -229,16 +229,20 @@ void TK_FlushCacheL1D_INVIC(void *ptr);
 void TK_FlushCacheL1D_ReadBuf(void *ptr, int sz);
 __asm {
 TK_FlushCacheL1D_INVDC:
+	MOV		LR, R1
 	INVDC	R4
 	NOP
 	NOP
-	RTS
+	JMP		R1
+//	RTS
 
 TK_FlushCacheL1D_INVIC:
+	MOV		LR, R1
 	INVIC	R4
 	NOP
 	NOP
-	RTS
+	JMP		R1
+//	RTS
 
 TK_FlushCacheL1D_ReadBuf:
 	.L0:
@@ -259,9 +263,71 @@ void TK_FlushCacheL1D()
 	pptr=(u64 *)(((u64)pptr)&(~16777215));	/* Align */
 
 	TK_FlushCacheL1D_INVDC(NULL);
-//	TK_FlushCacheL1D_ReadBuf(pptr, 65536);
-	TK_FlushCacheL1D_ReadBuf(pptr, 262144);
+	TK_FlushCacheL1D_ReadBuf(pptr, 65536);
+//	TK_FlushCacheL1D_ReadBuf(pptr, 262144);
 	TK_FlushCacheL1D_INVDC(NULL);
-//	TK_FlushCacheL1D_ReadBuf(pptr, 65536);
-	TK_FlushCacheL1D_ReadBuf(pptr, 262144);
+	TK_FlushCacheL1D_ReadBuf(pptr, 65536);
+//	TK_FlushCacheL1D_ReadBuf(pptr, 262144);
+}
+
+
+void TK_SmallFlushL1D(void *ptr, int sz)
+{
+	byte *cs, *cse, *cs2;
+	int fn;
+
+	fn=0;
+	cs=((byte *)ptr)-8;
+	cse=((byte *)ptr)+sz+8;
+	cs2=__snipe_dc(cs);
+
+	if(cs2)
+	{
+		while(cs<cse)
+		{
+			cs2=__snipe_dc(cs);
+			fn+=*((int *)cs2);
+			cs+=16;
+		}
+		return;
+	}
+
+	while(cs<cse)
+	{
+		TK_FlushCacheL1D_INVDC(cs);
+		fn+=*((int *)cs);
+		TK_FlushCacheL1D_INVDC(cs);
+		cs+=16;
+	}
+	return;
+}
+
+void TK_SmallFlushL1I(void *ptr, int sz)
+{
+	void (*fnb)();
+	byte *cs, *cse, *cs2;
+	int fn;
+
+	fn=0;
+	cs=((byte *)ptr)-8;
+	cse=((byte *)ptr)+sz+8;
+	cs2=__snipe_ic(cs);
+
+	if(cs2)
+	{
+		while(cs<cse)
+		{
+			fnb=__snipe_ic(cs);
+			fnb();
+			cs+=16;
+		}
+		return;
+	}
+
+	while(cs<cse)
+	{
+		TK_FlushCacheL1D_INVIC(cs);
+		cs+=16;
+	}
+	return;
 }
