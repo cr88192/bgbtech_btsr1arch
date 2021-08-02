@@ -596,6 +596,8 @@ BJX2_Trace *BJX2_DecTraceCb_Run32(BJX2_Context *ctx, BJX2_Trace *tr)
 	return(ctx->tr_rnxt);
 }
 
+BJX2_Trace *BJX2_DecTraceCb_RunUnpack(BJX2_Context *ctx, BJX2_Trace *tr);
+
 BJX2_Trace *BJX2_DecTraceCb_Bad(BJX2_Context *ctx, BJX2_Trace *tr)
 {
 //	ctx->trapc=op->pc;
@@ -1227,6 +1229,8 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 		tr->n_ops=0;
 		tr->n_cyc=0;
 		tr->Run=BJX2_DecTraceCb_Bad;
+		if(ctx->status==BJX2_FLT_TLBMISS)
+			tr->Run=BJX2_DecTraceCb_RunUnpack;
 		return(-1);
 	}
 
@@ -1269,4 +1273,13 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 	
 	rec--;
 	return(0);
+}
+
+BJX2_Trace *BJX2_DecTraceCb_RunUnpack(BJX2_Context *ctx, BJX2_Trace *tr)
+{
+	int i;
+	i=BJX2_DecodeTraceForAddr(ctx, tr, tr->addr, 0);
+	if(i>=0)
+		return(tr->Run(ctx, tr));
+	return(NULL);
 }

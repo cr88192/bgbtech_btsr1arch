@@ -1170,6 +1170,8 @@ begin
 	if(mem3RingIsStx)
 		tMemOpmReq[7:0]	= JX2_RBI_OPM_OKST;
 
+	tMemOpmReq[3:0] = mem3OpmIn[11:8];
+
 	if((tReqSeqC3!=mem3SeqIn) && !tMemSkipReq && !tHold)
 	begin
 		$display("L2DC: Request Misalignment");

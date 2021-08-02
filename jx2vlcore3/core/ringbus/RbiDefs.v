@@ -142,7 +142,8 @@ parameter[7:0] JX2_RBI_OPM_FAIL_RT	= 8'h50;	//No Route
 
 parameter[15:0] JX2_RBI_ADDRHI_PHYS	= 16'hC000;			//Physical Address Range
 
-
+parameter[5:0] JX2_DCOPM_INVTLB		= 6'b000010;		//Flush I$ Request
+parameter[5:0] JX2_DCOPM_LDTLB		= 6'b000011;		//Flush D$ Request
 parameter[5:0] JX2_DCOPM_FLUSHIS	= 6'b000100;		//Flush I$ Request
 parameter[5:0] JX2_DCOPM_FLUSHDS	= 6'b000101;		//Flush D$ Request
 

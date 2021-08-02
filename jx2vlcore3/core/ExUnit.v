@@ -2694,7 +2694,8 @@ begin
 `ifdef def_true
 				if(!ex3BraFlush)
 				begin
-					$display("ISR from EX3");
+//					$display("ISR from EX3");
+
 `ifndef jx2_isr2stage
 					crInSpc			= ex3ValBPc;
 					crInExsr[39:32]	= ex3RegInLastSr;

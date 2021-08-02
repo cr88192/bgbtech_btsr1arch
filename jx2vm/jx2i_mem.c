@@ -792,6 +792,11 @@ bjx2_addr BJX2_MemTranslateTlb(BJX2_Context *ctx, bjx2_addr addr)
 	if(((addr>>32)&0xFFFF)==0xF000)
 	{
 	}
+
+	if(((addr>>32)&0xFFFF)==0xC000)
+	{
+		return(addr);
+	}
 #endif
 
 #if 1
@@ -817,6 +822,8 @@ bjx2_addr BJX2_MemTranslateTlb(BJX2_Context *ctx, bjx2_addr addr)
 				
 				if(addr!=addr1)
 				{
+					printf("BJX2_MemTranslateTlb %llX -> %llX\n",
+						addr, addr1);
 //					JX2_DBGBREAK
 				}
 

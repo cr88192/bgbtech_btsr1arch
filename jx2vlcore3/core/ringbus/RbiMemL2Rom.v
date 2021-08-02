@@ -186,6 +186,8 @@ begin
 	if(tRamDoStL)
 		tMemOpmReq[7:0]	= JX2_RBI_OPM_OKST;
 
+	tMemOpmReq[3:0] = mem2OpmIn[11:8];
+
 	tMemDataReq		= UV128_00;
 	if(mem2AddrIsRom)
 		tMemDataReq		= tRomBlkData;

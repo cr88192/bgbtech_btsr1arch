@@ -122,6 +122,9 @@ BJX2_Trace *BJX2_GetTraceForAddr(BJX2_Context *ctx, bjx2_addr addr, int fl)
 	BJX2_Trace *cur, *prv, *tmp;
 	int i, h;
 
+	if(ctx->status && !(fl&2))
+		return(NULL);
+
 #if 0
 	h=((addr*65521)>>16)&1023;
 	cur=ctx->trhash[h];
@@ -169,9 +172,9 @@ BJX2_Trace *BJX2_GetTraceForAddr(BJX2_Context *ctx, bjx2_addr addr, int fl)
 		{
 			if(cur->addr==addr)
 			{
-				prv->hnext=cur->hnext;
-				cur->hnext=ctx->trhash[h];
-				ctx->trhash[h]=cur;
+//				prv->hnext=cur->hnext;
+//				cur->hnext=ctx->trhash[h];
+//				ctx->trhash[h]=cur;
 				return(cur);
 			}
 			
@@ -181,29 +184,42 @@ BJX2_Trace *BJX2_GetTraceForAddr(BJX2_Context *ctx, bjx2_addr addr, int fl)
 	}
 #endif
 
-	if(!(ctx->status))
+	if(!(ctx->status) && !(fl&2))
 	{
 		BJX2_MemTranslateTlb(ctx, addr+ 0);
 		BJX2_MemTranslateTlb(ctx, addr+(32*8));
 	}
 
-	if(ctx->status)
+	if(ctx->status && !(fl&2))
 		return(NULL);
 
 
 	cur=BJX2_ContextAllocTrace(ctx);
 	cur->addr=addr;
-
 	ctx->rttr[h&63]=cur;
+//	ctx->rttr[h&63]=NULL;
+
+	cur->hnext=ctx->trhash[h];
+	ctx->trhash[h]=cur;
 
 	i=BJX2_DecodeTraceForAddr(ctx, cur, addr, fl);
 	if(i<0)
 	{
-		ctx->status=BJX2_FLT_BADPC;
-		ctx->rttr[h&63]=NULL;
-		BJX2_ContextFreeTrace(ctx, cur);
+		if(!ctx->status)
+			ctx->status=BJX2_FLT_BADPC;
+		cur->n_ops=-1;
+
+		if(ctx->status==BJX2_FLT_TLBMISS)
+			cur->Run=BJX2_DecTraceCb_RunUnpack;
+
+//		ctx->rttr[h&63]=NULL;
+//		ctx->trhash[h]=NULL;
+//		BJX2_ContextFreeTrace(ctx, cur);
 		return(NULL);
 	}
+
+//	ctx->rttr[h&63]=NULL;
+//	ctx->rttr[h&63]=cur;
 
 #if 0
 	if(ctx->status)
@@ -214,8 +230,8 @@ BJX2_Trace *BJX2_GetTraceForAddr(BJX2_Context *ctx, bjx2_addr addr, int fl)
 	}
 #endif
 
-	cur->hnext=ctx->trhash[h];
-	ctx->trhash[h]=cur;
+//	cur->hnext=ctx->trhash[h];
+//	ctx->trhash[h]=cur;
 	
 	BJX2_CheckJitTrace(ctx, cur);
 
@@ -278,9 +294,20 @@ int BJX2_ThrowFaultStatus(BJX2_Context *ctx, int status)
 		ctx->tr_rjmp=NULL;
 		return(0);
 	}
+	
+	if(status==BJX2_FLT_SLEEP)
+	{
+		ctx->tr_rnxt=NULL;
+		ctx->tr_rjmp=NULL;
+		return(0);
+	}
 
 	if(ctx->status)
+	{
+		ctx->tr_rnxt=NULL;
+		ctx->tr_rjmp=NULL;
 		return(0);
+	}
 
 	if(status==BJX2_FLT_SCRPOKE)
 	{
@@ -336,6 +363,12 @@ int BJX2_ThrowFaultStatus(BJX2_Context *ctx, int status)
 			ctx->ex_fpreg[i]=ctx->fpreg[i];
 	}
 #endif
+
+	if((status&0xF000)==0x8000)
+	{
+		i=-1;
+//		printf("BREAK\n");
+	}
 
 	if((status&0xF000)==0xE000)
 	{
@@ -1901,7 +1934,7 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 	}
 
 	trcur=tra[0];
-	if(!trcur->runcnt)
+	if(!trcur || !trcur->runcnt)
 	{
 		/* If we don't have a run count here; skip further analysis. */
 		return(0);
@@ -2187,7 +2220,7 @@ int BJX2_DbgDump(BJX2_Context *ctx)
 		{
 			pc=ctx->pclog[(ctx->pclogrov-32+i)&63];
 			ctx->trapc=pc;
-			cur=BJX2_GetTraceForAddr(ctx, pc, 0);
+			cur=BJX2_GetTraceForAddr(ctx, pc, 2);
 			BJX2_DbgPrintTrace(ctx, cur);
 		}
 	}

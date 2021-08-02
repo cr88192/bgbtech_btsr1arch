@@ -163,6 +163,9 @@ assign	dcBusWait	= tDcBusWait;
 
 wire[  7:0]		tlbMemNodeId;
 
+wire[127:0]		tTlbInLdtlb;
+assign		tTlbInLdtlb = { regInDhr, regInDlr };
+
 `ifdef jx2_enable_mmu
 
 `wire_tile		tTlbDataI;
@@ -181,7 +184,7 @@ RbiMmuTlb	tlb(
 	tTlbDataI,		tTlbDataO,
 	tTlbOpmI,		tTlbOpmO,
 	tTlbSeqI,		tTlbSeqO,
-	tlbMemNodeId,
+	tlbMemNodeId,	tTlbInLdtlb,
 
 //	tTlbExc,		dcInHold,
 	tTlbExc,		1'b0,

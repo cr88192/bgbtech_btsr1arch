@@ -17,7 +17,7 @@ module RbiMmuTlb(
 	regInData,		regOutData,
 	regInOpm,		regOutOpm,
 	regInSeq,		regOutSeq,
-	unitNodeId,
+	unitNodeId,		regInLdtlb,
 	regOutExc,		regInHold,
 	regInMMCR,		regInKRR,		regInSR
 	);
@@ -42,6 +42,7 @@ input[63:0]		regInMMCR;		//MMU Control Register
 input[63:0]		regInKRR;		//Keyring Register
 input[63:0]		regInSR;		//Status Register
 
+input[127:0]	regInLdtlb;
 
 
 reg[47:0]		tRegOutAddr;
@@ -81,6 +82,7 @@ reg[47:0]		tRegInAddr;	//input Address
 reg[15:0]		tRegInOpm;		//Operation Size/Type
 reg[15:0]		tRegInSeq;		//
 reg[127:0]		tRegInData;		//output cache line
+reg[127:0]		tRegInLdtlb;	//input LDTLB
 
 `ifdef jx2_expand_tlb
 
@@ -282,7 +284,8 @@ begin
 
 	if(regInOpm[7:0]==JX2_RBI_OPM_LDTLB)
 	begin
-		regInAddrA		= regInData[111:64];
+//		regInAddrA		= regInData[111:64];
+		regInAddrA		= regInLdtlb[111:64];
 	end
 
 `ifdef jx2_expand_tlb
@@ -465,6 +468,9 @@ begin
 	begin
 		tlbMiss = ! tlbHit;
 		
+		if(tRegInIsLDTLB)
+			tlbMiss = 0;
+		
 		if(tlbMiss)
 		begin
 			if(regInSR[29] && regInSR[28])
@@ -476,7 +482,8 @@ begin
 //				tRegInAddr,	tRegInAddrB,
 //				regInSR[63:32], regInSR[31:0]);
 
-			tlbAddr		= 48'h010000;
+//			tlbAddr		= 48'h010000;
+			tlbAddr		= { 36'h010, tRegInAddr[11:0] };
 		end
 	end
 	else
@@ -569,11 +576,14 @@ begin
 	begin
 		$display("MemTile-LDTLB %X %X-%X",
 			tRegInAddr,
-			tRegInData[127:64],
-			tRegInData[ 63: 0]);
+//			tRegInData[127:64],
+			tRegInLdtlb[127:64],
+//			tRegInData[ 63: 0]);
+			regInLdtlb[ 63: 0]);
 		tlbDoLdtlb	= icPageReady;
 
-		tlbLdHdatA = { 8'h00, tTlbRov, tRegInData[127:0] };
+//		tlbLdHdatA = { 8'h00, tTlbRov, tRegInData[127:0] };
+		tlbLdHdatA = { 8'h00, tTlbRov, tRegInLdtlb[127:0] };
 		tlbLdHdatB = tlbHdatA;
 		tlbLdHdatC = tlbHdatB;
 		tlbLdHdatD = tlbHdatC;
@@ -631,10 +641,11 @@ always @ (posedge clock)
 begin
 	if(!regInHold)
 	begin
-`ifdef def_true
-// `ifndef def_true
+// `ifdef def_true
+`ifndef def_true
 		tRegInAddr		<= regInAddr;
 		tRegInData		<= regInData;
+		tRegInLdtlb		<= regInLdtlb;
 		if(!tlbMmuEnable)
 		begin
 			tRegOutAddr2	<= regInAddr;
@@ -665,7 +676,10 @@ begin
 			tRegOutAddr2	<= tRegOutAddr;
 			tRegOutData2	<= tRegOutData;
 		//	tRegOutOpm2		<= tRegOutOpm;
-			tRegOutOpm2		<= { 2'b00, tChkAccNoRwx, tRegOutOpm[7:0] };
+//			tRegOutOpm2		<= { 2'b00, tChkAccNoRwx, tRegOutOpm[7:0] };
+			tRegOutOpm2		<= { 2'b00,
+				tChkAccNoRwx | tRegOutOpm[13:8],
+				tRegOutOpm[7:0] };
 			tRegOutSeq2		<= tRegOutSeq;
 
 			tRegInOpm		<= regInOpm;
@@ -675,11 +689,15 @@ begin
 		tRegOutAddr2	<= tRegOutAddr;
 		tRegOutData2	<= tRegOutData;
 	//	tRegOutOpm2		<= tRegOutOpm;
-		tRegOutOpm2		<= { 2'b00, tChkAccNoRwx, tRegOutOpm[7:0] };
+		tRegOutOpm2		<= { 2'b00,
+			tChkAccNoRwx | tRegOutOpm[13:8],
+//			tChkAccNoRwx,
+			tRegOutOpm[7:0] };
 		tRegOutSeq2		<= tRegOutSeq;
 
 		tRegInAddr		<= regInAddr;
 		tRegInData		<= regInData;
+		tRegInLdtlb		<= regInLdtlb;
 		tRegInOpm		<= regInOpm;
 		tRegInSeq		<= regInSeq;
 `endif

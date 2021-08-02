@@ -681,7 +681,7 @@ BJX2_Trace *prttr;			//return traces (pred)
 BJX2_Trace *trhash[1024];
 BJX2_Trace *trcur;			//cached trace for interpreter loop.
 
-BJX2_MemSpan *span[32];	//memory spans, sorted by address
+BJX2_MemSpan *span[64];	//memory spans, sorted by address
 int n_span;
 
 bjx2_addr	 psp_pbase;		//Predict Span/Page Base

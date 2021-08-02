@@ -1235,7 +1235,7 @@ void MemUpdateForBusRing()
 		l2opm1=0x70;
 	}
 	
-	if((l2opm1==0x97) && !isSkip)
+	if(((l2opm1&0xFF)==0x97) && !isSkip)
 	{
 		if(addr&15)
 		{
@@ -1249,7 +1249,8 @@ void MemUpdateForBusRing()
 			l2data1b=rombuf[((addr>>2)+1)&0x1FFF];
 			l2data1c=rombuf[((addr>>2)+2)&0x1FFF];
 			l2data1d=rombuf[((addr>>2)+3)&0x1FFF];
-			l2opm1=0x70;
+//			l2opm1=0x70;
+			l2opm1=0x70 | ((l2opm1>>8)&0x0F);
 		}else
 			if(isSRam)
 		{
@@ -1257,7 +1258,8 @@ void MemUpdateForBusRing()
 			l2data1b=srambuf[((addr>>2)+1)&0x7FF];
 			l2data1c=srambuf[((addr>>2)+2)&0x7FF];
 			l2data1d=srambuf[((addr>>2)+3)&0x7FF];
-			l2opm1=0x70;
+//			l2opm1=0x70;
+			l2opm1=0x70 | ((l2opm1>>8)&0x0F);
 		}else
 			if(isZero)
 		{
@@ -1265,7 +1267,8 @@ void MemUpdateForBusRing()
 			l2data1b=0;
 			l2data1c=0;
 			l2data1d=0;
-			l2opm1=0x70;
+//			l2opm1=0x70;
+			l2opm1=0x70 | ((l2opm1>>8)&0x0F);
 		}else
 			if(isNopPg)
 		{
@@ -1273,7 +1276,8 @@ void MemUpdateForBusRing()
 			l2data1b=0x30003000;
 			l2data1c=0x30003000;
 			l2data1d=0x30003000;
-			l2opm1=0x70;
+//			l2opm1=0x70;
+			l2opm1=0x70 | ((l2opm1>>8)&0x0F);
 		}else
 			if(isRtsPg)
 		{
@@ -1281,7 +1285,8 @@ void MemUpdateForBusRing()
 			l2data1b=0x30103010;
 			l2data1c=0x30103010;
 			l2data1d=0x30103010;
-			l2opm1=0x70;
+//			l2opm1=0x70;
+			l2opm1=0x70 | ((l2opm1>>8)&0x0F);
 		}else
 			if(isDRam)
 		{
@@ -1289,7 +1294,8 @@ void MemUpdateForBusRing()
 			l2data1b=drambuf[((addr>>2)+1)&0x1FFFFFF];
 			l2data1c=drambuf[((addr>>2)+2)&0x1FFFFFF];
 			l2data1d=drambuf[((addr>>2)+3)&0x1FFFFFF];
-			l2opm1=0x70;
+//			l2opm1=0x70;
+			l2opm1=0x70 | ((l2opm1>>8)&0x0F);
 		}else
 		{
 			printf("Bad Address %08X %s\n", addr, src_unit);
@@ -1300,11 +1306,12 @@ void MemUpdateForBusRing()
 			l2data1b=0;
 			l2data1c=0;
 			l2data1d=0;
-			l2opm1=0x70;
+//			l2opm1=0x70;
+			l2opm1=0x70 | ((l2opm1>>8)&0x0F);
 		}
 	}
 
-	if((l2opm1==0xA7) && !isSkip)
+	if(((l2opm1&0xFF)==0xA7) && !isSkip)
 	{
 		if(addr&15)
 		{
@@ -1313,7 +1320,7 @@ void MemUpdateForBusRing()
 	
 //		main_buslines++;
 
-		if(isRom || isZero)
+		if(isRom || isZero || isNopPg || isRtsPg)
 		{
 			l2opm1=0x60;
 		}else

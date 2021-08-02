@@ -433,8 +433,12 @@ begin
 //	if(tMemNoRwx[5])
 //		tNxtTlbMissInh = 1;
 	
-//	if((tInOpmB == UMEM_OPM_LDTLB) || tRegInSr[29])
-//		tNxtTlbMissInh = 0;
+	if((tInOpmB == JX2_DCOPM_LDTLB) || tRegInSr[29])
+	begin
+		if(tTlbMissInh)
+			$display("L1I$ Clear TLB Inhibit");
+		tNxtTlbMissInh = 0;
+	end
 	
 
 	/* Stage A */
@@ -898,6 +902,12 @@ begin
 		tStBlkFlagA		= memOpmIn[3:0];
 		tStBlkAddrA		= tReqSeqVa[43:0];
 		tDoStBlkA		= 1;
+
+		if(memOpmIn[3])
+		begin
+			$display("L1I$ Set TLB Inhibit A");
+			tNxtTlbMissInh = 1;
+		end
 	end
 
 	if(memRingIsRespOkLdB && !reset)
@@ -914,6 +924,12 @@ begin
 		tStBlkFlagB		= memOpmIn[3:0];
 		tStBlkAddrB		= tReqSeqVa[43:0];
 		tDoStBlkB		= 1;
+
+		if(memOpmIn[3])
+		begin
+			$display("L1I$ Set TLB Inhibit B");
+			tNxtTlbMissInh = 1;
+		end
 	end
 
 	

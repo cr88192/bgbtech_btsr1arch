@@ -402,6 +402,10 @@ reg				tNxtDoFlush;
 reg				tDoFlush;
 reg				tDoFlushL;
 
+reg				tTlbMissInh;
+reg				tNxtTlbMissInh;
+
+
 
 always @*
 begin
@@ -496,8 +500,16 @@ end
 
 always @*
 begin
+	tNxtTlbMissInh		= tTlbMissInh;
 	tNxtFlushRov		= tFlushRov;
 	tNxtDoFlush			= 0;
+
+	if((tInOpm == JX2_DCOPM_LDTLB) || regInSr[29])
+	begin
+		if(tTlbMissInh)
+			$display("L1D$ Clear TLB Inhibit");
+		tNxtTlbMissInh = 0;
+	end
 
 //	if(((tInOpm==JX2_DCOPM_FLUSHDS) && (tInOpmC!=JX2_DCOPM_FLUSHDS)) || reset)
 	if((tInOpm==JX2_DCOPM_FLUSHDS) && (tInOpmC!=JX2_DCOPM_FLUSHDS) && !reset)
@@ -799,6 +811,14 @@ begin
 
 	tReqFlushAddrA	= (tBlkMemAddr2A[71:68] != tFlushRov);
 	tReqFlushAddrB	= (tBlkMemAddr2B[71:68] != tFlushRov);
+
+	if(!tTlbMissInh)
+	begin
+		if(tBlkMemAddr2A[3])
+			tReqFlushAddrA = 1;
+		if(tBlkMemAddr2B[3])
+			tReqFlushAddrB = 1;
+	end
 
 `ifndef def_true
 //	if(tBlkMemChk2A != tBlkMemRChk2A)
@@ -1130,6 +1150,12 @@ begin
 			tArrMemDextStA	= { 8'h00, tArrMemChkStA };
 			tArrMemDoStA = 1;
 			tNxtMemRespLdA = 1;
+
+			if(memOpmIn[3])
+			begin
+				$display("L1D$ Set TLB Inhibit A");
+				tNxtTlbMissInh = 1;
+			end
 		end
 		
 		if(memAddrIn[4])
@@ -1168,6 +1194,12 @@ begin
 			tArrMemDextStB	= { 8'h00, tArrMemChkStB };
 			tArrMemDoStB = 1;
 			tNxtMemRespLdB = 1;
+
+			if(memOpmIn[3])
+			begin
+				$display("L1D$ Set TLB Inhibit A");
+				tNxtTlbMissInh = 1;
+			end
 		end
 
 		if(!memAddrIn[4])
@@ -1521,6 +1553,7 @@ end
 
 always @(posedge clock)
 begin
+	tTlbMissInh		<= tNxtTlbMissInh;
 
 	if(!dcInHold)
 	begin
