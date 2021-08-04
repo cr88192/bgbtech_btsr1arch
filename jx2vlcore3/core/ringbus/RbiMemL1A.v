@@ -197,6 +197,7 @@ wire[5:0]		dfInOpm;
 assign		dfInOpm		= { dcInOpm[4:3], 1'b0, dcInOpm[2:0] };
 
 wire		ifMemWait;
+wire[63:0]		ifOutExc;
 
 `wire_tile		ifMemDataI;
 `wire_tile		ifMemDataO;
@@ -214,7 +215,7 @@ RbiMemIcWxA		memIc(
 	icOutPcOK,		icOutPcStep,
 	icInPcHold,		icInPcWxe,
 	dfInOpm,		regInSr,
-	ifMemWait,
+	ifMemWait,		ifOutExc,
 
 	ifMemAddrI,		ifMemAddrO,
 	ifMemDataI,		ifMemDataO,
@@ -226,6 +227,7 @@ RbiMemIcWxA		memIc(
 
 wire			dfOutHold;
 wire			dfOutWait;
+wire[63:0]		dfOutExc;
 
 `wire_tile		dfMemDataI;
 `wire_tile		dfMemDataO;
@@ -244,6 +246,7 @@ RbiMemDcA		memDc(
 	dcOutValB,		dcInValB,
 	dcInHold,		dfOutHold,
 	regInSr,		dfOutWait,
+	dfOutExc,
 
 	dfMemAddrI,		dfMemAddrO,
 	dfMemDataI,		dfMemDataO,
@@ -317,9 +320,15 @@ begin
 	if(dfOutHold)
 		tDcOutOK	= UMEM_OK_HOLD;
 
-	if(tTlbExc[15] && !reset)
-		tRegOutExc = tTlbExc;
-
+	if(!reset)
+	begin
+		if(tTlbExc[15])
+			tRegOutExc = tTlbExc;
+		else if(dfOutExc[15])
+			tRegOutExc = dfOutExc;
+		else if(ifOutExc[15])
+			tRegOutExc = ifOutExc;
+	end
 
 end
 

@@ -220,6 +220,14 @@ assign		tRegInIsINVTLB = (tRegInOpm[7:0]==JX2_RBI_OPM_INVTLB);
 wire		tRegInIsIRQ;
 assign		tRegInIsIRQ = (tRegInOpm[7:0]==JX2_RBI_OPM_IRQ);
 
+wire		tRegInIsCCmd;
+assign		tRegInIsCCmd = (tRegInOpm[7:4]==4'h8);
+
+wire		tRegInIsLDX;
+wire		tRegInIsSTX;
+assign		tRegInIsLDX = (tRegInOpm[7:4]==4'h9);
+assign		tRegInIsSTX = (tRegInOpm[7:4]==4'hA);
+
 
 wire		regInIsREADY;
 assign		regInIsREADY = (regInOpm[7:0]==JX2_RBI_OPM_IDLE);
@@ -463,8 +471,21 @@ begin
 	
 	if(tAddrIsPhys)
 		tlbMmuSkip = 1;
+		
+	if(tRegInIsCCmd)
+		tlbMmuSkip = 1;
 
-	if(tlbMmuEnable && !tlbMmuSkip && (tRegInOpm[4:3]!=0))
+	if(tRegInIsIRQ)
+		tlbMmuSkip = 1;
+
+	if(!(tRegInIsLDX || tRegInIsSTX))
+		tlbMmuSkip = 1;
+
+	tRegOutOpm   = tRegInOpm;
+	tRegOutSeq   = tRegInSeq;
+
+//	if(tlbMmuEnable && !tlbMmuSkip && (tRegInOpm[4:3]!=0))
+	if(tlbMmuEnable && !tlbMmuSkip)
 	begin
 		tlbMiss = ! tlbHit;
 		
@@ -484,6 +505,7 @@ begin
 
 //			tlbAddr		= 48'h010000;
 			tlbAddr		= { 36'h010, tRegInAddr[11:0] };
+			tRegOutOpm[11:8] = 4'hF;
 		end
 	end
 	else
@@ -512,8 +534,8 @@ begin
 	end
 	
 	tRegOutAddr  = tlbAddr;
-	tRegOutOpm   = tRegInOpm;
-	tRegOutSeq   = tRegInSeq;
+//	tRegOutOpm   = tRegInOpm;
+//	tRegOutSeq   = tRegInSeq;
 
 `ifndef def_true
 //	if(tRegInOpm!=0)
@@ -641,8 +663,8 @@ always @ (posedge clock)
 begin
 	if(!regInHold)
 	begin
-// `ifdef def_true
-`ifndef def_true
+`ifdef def_true
+// `ifndef def_true
 		tRegInAddr		<= regInAddr;
 		tRegInData		<= regInData;
 		tRegInLdtlb		<= regInLdtlb;

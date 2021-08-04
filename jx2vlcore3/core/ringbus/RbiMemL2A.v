@@ -190,6 +190,12 @@ begin
 	tL2mAddrIn	= memAddrIn;
 	tL2mDataIn	= memDataIn;
 
+	if(memOpmIn[11])
+		$display("L2A: TLB Missed A O=%X A=%X", memOpmIn, memAddrIn);
+
+	if(memOpmOut[11])
+		$display("L2A: TLB Missed B O=%X A=%X", memOpmOut, memAddrOut);
+
 	tL2mSeqOut		= l2mSeqOut;
 	tL2mOpmOut		= l2mOpmOut;
 	tL2mAddrOut		= l2mAddrOut;
@@ -200,6 +206,7 @@ begin
 	tL2bAddrOut		= l2bAddrOut;
 	tL2bDataOut		= l2bDataOut;
 
+// `ifndef def_true
 `ifdef def_true
 	if(	(memOpmIn[7:0] == 8'h00) &&
 		((l2mOpmOut[7:0] == JX2_RBI_OPM_LDX) ||

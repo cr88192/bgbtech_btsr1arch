@@ -101,7 +101,7 @@
 
 `endif
 
-// `define jx2_expand_tlb		//Make TLB Bigger
+`define jx2_expand_tlb		//Make TLB Bigger
 
 // `define jx2_reduce_l1sz		//Make L1 smaller
 // `define jx2_reduce_l2sz		//Make L2 smaller

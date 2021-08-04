@@ -8,6 +8,7 @@ module RbiMemDcA(
 	regOutValB,		regInValB,
 	dcInHold,		regOutHold,
 	regInSr,		regOutWait,
+	regOutExc,
 
 	memAddrIn,		memAddrOut,
 	memDataIn,		memDataOut,
@@ -34,6 +35,7 @@ output			regOutHold;
 output			regOutWait;
 
 input [63: 0]	regInSr;
+output[63: 0]	regOutExc;
 
 
 
@@ -53,6 +55,10 @@ reg[63: 0]	tRegOutValA;
 reg[63: 0]	tRegOutValB;
 assign	regOutValA = tRegOutValA;
 assign	regOutValB = tRegOutValB;
+
+reg[63: 0]	tRegOutExc;
+reg[63: 0]	tRegOutExc2;
+assign	regOutExc = tRegOutExc2;
 
 
 reg[ 15:0]		tMemSeqOut;		//operation sequence
@@ -251,6 +257,14 @@ reg				tReqMissL;
 reg				tReqFlushAddrA;
 reg				tReqFlushAddrB;
 
+reg				tReqNoReadA;
+reg				tReqNoReadB;
+
+reg				tReqReadOnlyA;
+reg				tReqReadOnlyB;
+reg				tReq2ReadOnlyA;
+reg				tReq2ReadOnlyB;
+
 reg				tReqNoCross;
 reg				tReqMissSkipA;
 reg				tReqMissSkipB;
@@ -404,6 +418,7 @@ reg				tDoFlushL;
 
 reg				tTlbMissInh;
 reg				tNxtTlbMissInh;
+reg				tNxtTlbMissInh2;
 
 
 
@@ -536,6 +551,7 @@ always @*
 begin
 	tReqSeqIdx		= tReqSeqIdxArr[memSeqIn[3:0]];
 	tReqSeqVa		= tReqSeqVaArr[memSeqIn[3:0]];
+	tNxtTlbMissInh2	= 0;
 
 	tArrMemDoStA		= 0;
 	tArrMemDoStB		= 0;
@@ -547,6 +563,8 @@ begin
 	tNxtMemRespLdA		= tMemRespLdA;
 	tNxtMemRespLdB		= tMemRespLdB;
 	tMemRingSkipResp	= 0;
+
+	tRegOutExc			= 0;
 
 
 	/* EX2 */
@@ -812,12 +830,37 @@ begin
 	tReqFlushAddrA	= (tBlkMemAddr2A[71:68] != tFlushRov);
 	tReqFlushAddrB	= (tBlkMemAddr2B[71:68] != tFlushRov);
 
+	tReqNoReadA		= tBlkMemAddr2A[0];
+	tReqNoReadB		= tBlkMemAddr2B[0];
+
+	tReqReadOnlyA	= tBlkMemAddr2A[1];
+	tReqReadOnlyB	= tBlkMemAddr2B[1];
+
 	if(!tTlbMissInh)
 	begin
 		if(tBlkMemAddr2A[3])
 			tReqFlushAddrA = 1;
 		if(tBlkMemAddr2B[3])
 			tReqFlushAddrB = 1;
+	end
+
+	tRegOutExc[63:16] = tReqAddr[47:0];
+
+	if(!tBlkMemAddr2A[3] && !tBlkMemAddr2B[3])
+	begin
+		if(	(tReqNoReadA && !tReqMissSkipA) ||
+			(tReqNoReadB && !tReqMissSkipB) )
+		begin
+			if(tReqOpm[4])
+				tRegOutExc[15:0] = 16'h8001;
+		end
+
+		if(	(tReqReadOnlyA && !tReqMissSkipA) ||
+			(tReqReadOnlyB && !tReqMissSkipB) )
+		begin
+			if(tReqOpm[5])
+				tRegOutExc[15:0] = 16'h8002;
+		end
 	end
 
 `ifndef def_true
@@ -838,6 +881,9 @@ begin
 	tReqMissA	= (tReqMissAddrA && !tReqMissSkipA) || tReqFlushAddrA;
 	tReqMissB	= (tReqMissAddrB && !tReqMissSkipB) || tReqFlushAddrB;
 	tReqMiss	= (tReqMissA || tReqMissB) && tReqIsNz;
+
+	if(tReqMiss)
+		tRegOutExc[15] = 0;
 
 	if(!tReqIsNz)
 	begin
@@ -1007,6 +1053,12 @@ begin
 //		tBlkExDataB = UV64_00;
 	end
 	
+	if(tReqNoReadA || tReqNoReadB)
+	begin
+		tBlkExDataA = UV64_00;
+		tBlkExDataB = UV64_00;
+	end
+	
 	tBlkInsData4 = tReqInValA;
 	if(tReqOpm[1:0]==2'b00)
 		tBlkInsData4[15:8] = tBlkExData4[15:8];
@@ -1154,7 +1206,7 @@ begin
 			if(memOpmIn[3])
 			begin
 				$display("L1D$ Set TLB Inhibit A");
-				tNxtTlbMissInh = 1;
+				tNxtTlbMissInh2 = 1;
 			end
 		end
 		
@@ -1165,8 +1217,8 @@ begin
 			$display("L1D$: In!=Req IxA, %X %X",
 				tReqSeqIdx, tReqIxA);
 		if(memAddrIn[31:5]!=tReqSeqVa[27:1])
-			$display("L1D$: Virt!=Phys A, %X %X",
-				memAddrIn[31:4], tReqSeqVa[43:0]);
+			$display("L1D$: Virt!=Phys A, PA=%X VA=%X O=%X",
+				memAddrIn[31:4], tReqSeqVa[43:0], memOpmIn);
 		if(tReqSeqVa[43:1]!=tReqAxA[43:1])
 			$display("L1D$: In!=Req A, %X %X",
 				tReqAxA[43:1], tReqSeqVa[43:0]);
@@ -1197,8 +1249,8 @@ begin
 
 			if(memOpmIn[3])
 			begin
-				$display("L1D$ Set TLB Inhibit A");
-				tNxtTlbMissInh = 1;
+				$display("L1D$ Set TLB Inhibit B");
+				tNxtTlbMissInh2 = 1;
 			end
 		end
 
@@ -1209,8 +1261,8 @@ begin
 			$display("L1D$: In!=Req IxB, %X %X",
 				tReqSeqIdx, tReqIxB);
 		if(memAddrIn[31:5]!=tReqSeqVa[27:1])
-			$display("L1D$: Virt!=Phys B, %X %X",
-				memAddrIn[31:4], tReqSeqVa[43:0]);
+			$display("L1D$: Virt!=Phys B, PA=%X VA=%X O=%X",
+				memAddrIn[31:4], tReqSeqVa[43:0], memOpmIn);
 		if(tReqSeqVa[43:1]!=tReqAxB[43:1])
 			$display("L1D$: In!=Req B, %X %X",
 				tReqAxB[43:1], tReqSeqVa[43:0]);
@@ -1290,8 +1342,10 @@ begin
 			end
 `endif
 
-			tArrMemDoStA = !tReq2MissSkipA;
-			tArrMemDoStB = !tReq2MissSkipB;
+//			tArrMemDoStA = !tReq2MissSkipA;
+//			tArrMemDoStB = !tReq2MissSkipB;
+			tArrMemDoStA = !tReq2MissSkipA && !tReq2ReadOnlyA;
+			tArrMemDoStB = !tReq2MissSkipB && !tReq2ReadOnlyB;
 
 			if((tBlk2MemAddrA[31:5]!=tReq2AxA[27:1]) && !tReq2MissSkipA)
 			begin
@@ -1553,7 +1607,8 @@ end
 
 always @(posedge clock)
 begin
-	tTlbMissInh		<= tNxtTlbMissInh;
+//	tTlbMissInh		<= tNxtTlbMissInh;
+	tTlbMissInh		<= tNxtTlbMissInh || tNxtTlbMissInh2;
 
 	if(!dcInHold)
 	begin
@@ -1596,6 +1651,8 @@ begin
 		tReq2NoCross		<= tReqNoCross;
 		tReq2MissSkipA		<= tReqMissSkipA;
 		tReq2MissSkipB		<= tReqMissSkipB;
+		tReq2ReadOnlyA		<= tReqReadOnlyA;
+		tReq2ReadOnlyB		<= tReqReadOnlyB;
 
 		tReq2StoreSticky	<= 0;
 		tMemMmioData		<= 0;
@@ -1687,6 +1744,8 @@ begin
 	tReqMissAL		<= tReqMissA;
 	tReqMissBL		<= tReqMissB;
 	tReqMissL		<= tReqMiss;
+
+	tRegOutExc2		<= tRegOutExc;
 
 	if(reset)
 	begin

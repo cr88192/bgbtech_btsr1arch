@@ -181,9 +181,16 @@ begin
 	tMemAddrReq		= mem2AddrIn;
 //	tMemDataReq		= mem2DataIn;
 	tMemCcmdReq		= 0;
+	
+	if(mem2OpmIn[11])
+		$display("L2ROM: TLB Missed O=%X A=%X", mem2OpmIn, mem2AddrIn);
+
+	if(mem2AddrIsZero)
+		$display("L2ROM: Zero O=%X A=%X", mem2OpmIn, mem2AddrIn);
 
 	tMemOpmReq[7:0]	= JX2_RBI_OPM_OKLD;
-	if(tRamDoStL)
+//	if(tRamDoStL)
+	if(mem2RingIsStx)
 		tMemOpmReq[7:0]	= JX2_RBI_OPM_OKST;
 
 	tMemOpmReq[3:0] = mem2OpmIn[11:8];
@@ -201,6 +208,7 @@ begin
 	if(mem2RingIsCcmd)
 	begin
 		tMemOpmReq[7:0]	= JX2_RBI_OPM_OKLD;
+		tMemOpmReq[3:0] = mem2OpmIn[11:8];
 		tMemCcmdReq		= 1;
 	end
 

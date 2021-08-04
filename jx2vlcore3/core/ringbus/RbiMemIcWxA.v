@@ -12,7 +12,7 @@ module RbiMemIcWxA(
 	regOutPcStep,
 	icInPcHold,		icInPcWxe,
 	icInPcOpm,		regInSr,
-	icMemWait,
+	icMemWait,		regOutExc,
 
 	memAddrIn,		memAddrOut,
 	memDataIn,		memDataOut,
@@ -36,6 +36,7 @@ input[5:0]		icInPcOpm;		//OPM (Used for cache-control)
 input [63: 0]	regInSr;
 
 output			icMemWait;
+output[63: 0]	regOutExc;
 
 input [ 15:0]	memSeqIn;		//operation sequence
 output[ 15:0]	memSeqOut;		//operation sequence
@@ -62,6 +63,10 @@ assign	regOutPcStep	= tRegOutPcStep;
 
 reg			tMemWait;
 assign	icMemWait = tMemWait;
+
+reg[63: 0]	tRegOutExc;
+reg[63: 0]	tRegOutExc2;
+assign	regOutExc = tRegOutExc2;
 
 reg[ 15:0]		tMemSeqOut;		//operation sequence
 reg[ 15:0]		tMemOpmOut;		//memory operation mode
@@ -429,6 +434,7 @@ begin
 	tNxtTlbMissInh		= tTlbMissInh;
 	tRegOutHold			= 0;
 	tMemWait			= 0;
+	tRegOutExc			= 0;
 
 //	if(tMemNoRwx[5])
 //		tNxtTlbMissInh = 1;
@@ -589,6 +595,11 @@ begin
 			tFlushB = 1;
 	end
 
+	tRegOutExc[63:16] = tInAddr;
+	if(tBlkFlagA[2] && !tBlkFlagA[3])
+		tRegOutExc[15:0] = 16'h8003;
+	
+
 `ifndef def_true
 	if((~(tBlkPFlA[3:0])) != tFlushRov[3:0])
 		tFlushA = 1;
@@ -638,6 +649,9 @@ begin
 	tMissD = 1;
 
 	tMiss = tMissA || tMissB;
+
+	if(tMiss)
+		tRegOutExc[15] = 0;
 
 	if(reset)
 	begin
@@ -1085,6 +1099,8 @@ begin
 	tRegInSr		<= regInSr;
 
 	tRegOutHoldL	<= tRegOutHold;
+
+	tRegOutExc2		<= tRegOutExc;
 
 
 	/* Stage A */
