@@ -383,8 +383,9 @@ wire[8:0]		idC1IdUCmd;
 wire[8:0]		idC1IdUIxt;
 
 DecOpWx3	decOp(
-	clock,	reset,
-	id1IstrWord,	ifInPcWxe,
+	clock,			reset,
+//	id1IstrWord,	ifInPcWxe,
+	id1IstrWord,	crOutSr,
 
 	idA1IdRegM,		idA1IdRegO,
 	idA1IdRegN,		idA1IdImm,

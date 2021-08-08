@@ -186,8 +186,8 @@ BJX2_Trace *BJX2_GetTraceForAddr(BJX2_Context *ctx, bjx2_addr addr, int fl)
 
 	if(!(ctx->status) && !(fl&2))
 	{
-		BJX2_MemTranslateTlb(ctx, addr+ 0);
-		BJX2_MemTranslateTlb(ctx, addr+(32*8));
+		BJX2_MemTranslateTlb(ctx, addr+ 0, 4);
+		BJX2_MemTranslateTlb(ctx, addr+(32*8), 4);
 	}
 
 	if(ctx->status && !(fl&2))

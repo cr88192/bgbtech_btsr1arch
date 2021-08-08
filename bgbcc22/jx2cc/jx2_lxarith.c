@@ -179,6 +179,21 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegInt128(
 		}
 	}
 
+	if(BGBCC_CCXL_IsRegImmIntP(ctx, treg))
+	{
+		j=BGBCC_CCXL_GetRegImmIntValue(ctx, treg);
+		if(opr==CCXL_BINOP_SHL)
+		{
+			if(j==1)
+			{
+				return(BGBCC_JX2C_EmitBinaryVRegVRegVRegInt128(
+					ctx, sctx,
+					type, dreg,
+					CCXL_BINOP_ADD, sreg, sreg));
+			}
+		}
+	}
+
 	nm1=-1;
 	
 	if(sctx->has_alux)
@@ -230,7 +245,12 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegInt128(
 	{
 	case CCXL_BINOP_ADD:	s0="__xli_add"; break;
 	case CCXL_BINOP_SUB:	s0="__xli_sub"; break;
-	case CCXL_BINOP_MUL:	s0="__xli_smul"; break;
+	case CCXL_BINOP_MUL:
+		if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
+			s0="__xli_umul";
+		else
+			s0="__xli_smul";
+		break;
 	case CCXL_BINOP_DIV:
 		if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
 			s0="__xli_udiv";

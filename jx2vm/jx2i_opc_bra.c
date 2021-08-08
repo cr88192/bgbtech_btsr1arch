@@ -1010,6 +1010,27 @@ void BJX2_Op_WEXMD_Imm(BJX2_Context *ctx, BJX2_Opcode *op)
 	}
 }
 
+void BJX2_AdvanceRng(BJX2_Context *ctx, u32 val)
+{
+	ctx->hw_rng[0] += val + 1;
+	ctx->hw_rng[1] += ctx->hw_rng[0]>>48;
+	ctx->hw_rng[2] += ctx->hw_rng[1]>>48;
+	ctx->hw_rng[3] += ctx->hw_rng[2]>>48;
+	ctx->hw_rng[0] += ctx->hw_rng[3]>>48;
+	ctx->hw_rng[0] *= 0x0000FC4BA2F7ACABULL;
+	ctx->hw_rng[1] *= 0x0000F7A83CF9E588ULL;
+	ctx->hw_rng[2] *= 0x0000FC4BA2F7ACABULL;
+	ctx->hw_rng[3] *= 0x0000F7A83CF9E588ULL;
+}
+
+void BJX2_AdvanceRngB(BJX2_Context *ctx, u32 val)
+{
+	BJX2_AdvanceRng(ctx, val);
+	BJX2_AdvanceRng(ctx, 0);
+	BJX2_AdvanceRng(ctx, 0);
+	BJX2_AdvanceRng(ctx, 0);
+}
+
 void BJX2_Op_CPUID_Imm(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	char tb[16];
@@ -1025,6 +1046,14 @@ void BJX2_Op_CPUID_Imm(BJX2_Context *ctx, BJX2_Opcode *op)
 		break;
 	case 1:
 		v=ctx->core_id;
+		break;
+	
+	case 31:
+		BJX2_AdvanceRngB(ctx, ctx->tot_cyc);
+		v=	((ctx->hw_rng[0]>>48)<<48)	|
+			((ctx->hw_rng[1]>>48)<<32)	|
+			((ctx->hw_rng[2]>>48)<<16)	|
+			((ctx->hw_rng[3]>>48)<< 0)	;
 		break;
 	default:
 		v=0;

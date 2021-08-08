@@ -4,7 +4,7 @@ Redo to use new F0 block, and merge F0/F1/F2.
 
 module DecOpFz(
 	/* verilator lint_off UNUSED */
-	clock,		reset,
+	clock,		reset,		srUser,
 	istrWord,	isAltOpB,	istrJBits,
 	idRegN,		idRegM,
 	idRegO,		idRegP,
@@ -13,7 +13,8 @@ module DecOpFz(
 	);
 
 input			clock;		//clock
-input			reset;		//clock
+input			reset;		//reset
+input			srUser;		//usermode
 
 input[63:0]		istrWord;	//source instruction word
 input[3:0]		isAltOpB;
@@ -103,7 +104,6 @@ reg[2:0]	opCcty;
 
 reg[5:0]	opUCmdIx;
 reg[2:0]	opUCty;
-reg			opSvOnly;
 
 reg		opExQ;
 reg		opExN;
@@ -167,6 +167,26 @@ reg tBlockIsEz;
 reg tBlockIsEA_F0;
 reg tBlockIsEA_F2;
 reg tBlockIsEA_09;
+
+`ifdef jx2_enable_xgpr
+wire[31:0]	usrRejectCmMask;
+wire[31:0]	usrRejectCnMask;
+assign	usrRejectCmMask = 32'b1111_1111_1111_1111_1111_1111_0011_1000;
+assign	usrRejectCnMask = 32'b1111_1111_1111_1111_1111_1111_1011_1100;
+`else
+wire[15:0]	usrRejectCmMask;
+wire[15:0]	usrRejectCnMask;
+assign	usrRejectCmMask = 16'b1111_1111_0011_1000;
+assign	usrRejectCnMask = 16'b1111_1111_1011_1100;
+`endif
+
+reg		usrRejectCmR;
+reg		usrRejectCmW;
+reg		usrRejectCoR;
+reg		usrRejectCoW;
+reg		usrRejectCnR;
+reg		usrRejectCnW;
+reg		usrReject;
 
 
 always @*
@@ -484,6 +504,23 @@ begin
 //	tRegRoIsR0	= tRegRoIsRz & !opRegO_Dfl[0];
 //	tRegRoIsR1	= tRegRoIsRz &  opRegO_Dfl[0];
 
+	usrReject		= 0;
+`ifdef jx2_enable_xgpr
+	usrRejectCmR	= usrRejectCmMask[opRegM_Cr[4:0]];
+	usrRejectCmW	= usrRejectCnMask[opRegM_Cr[4:0]];
+	usrRejectCoR	= usrRejectCmMask[opRegO_Cr[4:0]];
+	usrRejectCoW	= usrRejectCnMask[opRegO_Cr[4:0]];
+	usrRejectCnR	= usrRejectCmMask[opRegN_Cr[4:0]];
+	usrRejectCnW	= usrRejectCnMask[opRegN_Cr[4:0]];
+`else
+	usrRejectCmR	= usrRejectCmMask[opRegM_Cr[3:0]];
+	usrRejectCmW	= usrRejectCnMask[opRegM_Cr[3:0]];
+	usrRejectCoR	= usrRejectCmMask[opRegO_Cr[3:0]];
+	usrRejectCoW	= usrRejectCnMask[opRegO_Cr[3:0]];
+	usrRejectCnR	= usrRejectCmMask[opRegN_Cr[3:0]];
+	usrRejectCnW	= usrRejectCnMask[opRegN_Cr[3:0]];
+`endif
+
 	opNmid		= JX2_UCMD_INVOP;
 	opRegN		= JX2_GR_ZZR;
 	opRegM		= JX2_GR_ZZR;
@@ -500,7 +537,6 @@ begin
 	opRegM_Fix	= JX2_GR_ZZR;
 	opRegO_Fix	= JX2_GR_ZZR;
 	opRegN_Fix	= JX2_GR_ZZR;
-	opSvOnly	= 0;
 
 	tBlockIsF0 =
 		(istrWord[11:8] == 4'b0000) ||
@@ -1054,6 +1090,7 @@ begin
 						begin
 							opNmid	= JX2_UCMD_NOP;
 						end
+						usrReject	= 1;
 					end
 
 					4'hC: begin
@@ -1857,7 +1894,7 @@ begin
 								opNmid		= JX2_UCMD_OP_IXT;
 								opFmid		= JX2_FMID_Z;
 								opUCmdIx	= JX2_UCIX_IXT_RTE;
-								opSvOnly	= 1;
+								usrReject	= 1;
 							end
 
 							4'hF: begin
@@ -1866,7 +1903,7 @@ begin
 								opUCmdIx	= JX2_UCIX_IXT_LDTLB;
 								opRegM_Fix	= JX2_GR_DHR;
 								opRegN_Fix	= JX2_GR_DLR;
-								opSvOnly	= 1;
+								usrReject	= 1;
 							end
 
 							default: begin
@@ -1886,12 +1923,22 @@ begin
 								opRegM_Fix	= JX2_GR_LR;
 							end
 
+							4'h4: begin
+								opNmid		= JX2_UCMD_OP_IXT;
+								opFmid		= JX2_FMID_Z;
+								opUCmdIx	= JX2_UCIX_IXT_LDACL;
+								opRegM_Fix	= JX2_GR_DHR;
+								opRegN_Fix	= JX2_GR_DLR;
+								usrReject	= 1;
+							end
+
 							4'hC: begin
 								opNmid		= JX2_UCMD_OP_IXT;
 								opFmid		= JX2_FMID_Z;
 								opUCmdIx	= JX2_UCIX_IXT_LDEKRR;
 //								opIty		= JX2_ITY_UB;
 //								opUCty		= JX2_IUC_WX;
+								usrReject	= 1;
 							end
 							4'hD: begin
 								opNmid		= JX2_UCMD_OP_IXT;
@@ -1899,7 +1946,7 @@ begin
 								opUCmdIx	= JX2_UCIX_IXT_LDEKEY;
 //								opIty		= JX2_ITY_UB;
 //								opUCty		= JX2_IUC_WX;
-								opSvOnly	= 1;
+								usrReject	= 1;
 							end
 							4'hE: begin
 								opNmid		= JX2_UCMD_OP_IXT;
@@ -1907,14 +1954,14 @@ begin
 								opUCmdIx	= JX2_UCIX_IXT_LDEENC;
 								opIty		= JX2_ITY_UB;
 								opUCty		= JX2_IUC_WX;
-								opSvOnly	= 1;
+								usrReject	= 1;
 							end
 
 							4'hF: begin
 								opNmid		= JX2_UCMD_OP_IXT;
 								opFmid		= JX2_FMID_Z;
 								opUCmdIx	= JX2_UCIX_IXT_INVTLB;
-								opSvOnly	= 1;
+								usrReject	= 1;
 							end
 
 							default: begin
@@ -1970,6 +2017,7 @@ begin
 						opFmid		= JX2_FMID_REG;
 						opIty		= JX2_ITY_NB;
 						opUCmdIx	= JX2_UCIX_PUSH_CR;
+						usrReject	= 1;
 					end
 					8'h1A: begin
 						opNmid		= JX2_UCMD_POPX;
@@ -1982,6 +2030,7 @@ begin
 						opFmid		= JX2_FMID_REG;
 						opIty		= JX2_ITY_NB;
 						opUCmdIx	= JX2_UCIX_PUSH_CR;
+						usrReject	= 1;
 					end
 `endif
 
@@ -2108,6 +2157,7 @@ begin
 						opUCmdIx	= JX2_UCIX_IXS_TRAPB;
 						opFmid		= JX2_FMID_REG;
 						opIty		= JX2_ITY_SB;
+						usrReject	= 1;
 					end
 
 					8'h69: begin
@@ -2127,6 +2177,7 @@ begin
 						opFmid		= JX2_FMID_REG;
 //						opIty		= JX2_ITY_SB;
 						opIty		= JX2_ITY_XB;
+						usrReject	= 1;
 					end
 					8'h6B: begin
 						opNmid		= JX2_UCMD_OP_IXT;
@@ -3251,6 +3302,8 @@ begin
 					opRegO	= JX2_GR_ZZR;
 					opRegN	= opRegO_Cr;
 					opRegP	= opRegO_Cr;
+					if(usrRejectCoW)
+						usrReject = 1;
 				end
 
 				JX2_ITY_XB: begin
@@ -3346,12 +3399,16 @@ begin
 					opRegO	= opRegN_Cr;
 					opRegN	= opRegN_Cr;
 					opRegP	= opRegN_Cr;
+					if(usrRejectCnW)
+						usrReject = 1;
 				end
 				JX2_ITY_UQ: begin
 					opRegM	= opRegM_Cr;
 					opRegO	= opRegN_Dfl;
 					opRegN	= opRegN_Dfl;
 					opRegP	= opRegN_Dfl;
+					if(usrRejectCmR)
+						usrReject = 1;
 				end
 
 				JX2_ITY_NW: begin
@@ -3359,6 +3416,7 @@ begin
 					opRegO	= opRegN_Sr;
 					opRegN	= opRegN_Sr;
 					opRegP	= opRegN_Sr;
+					usrReject = 1;
 				end
 				
 				JX2_ITY_NL: begin
@@ -3366,12 +3424,14 @@ begin
 					opRegO	= opRegN_Sr;
 					opRegN	= opRegN_Sr;
 					opRegP	= opRegN_Sr;
+					usrReject = 1;
 				end
 				JX2_ITY_NQ: begin
 					opRegM	= opRegM_Sr;
 					opRegO	= opRegN_Dfl;
 					opRegN	= opRegN_Dfl;
 					opRegP	= opRegN_Dfl;
+					usrReject = 1;
 				end
 
 				JX2_ITY_XB: begin
@@ -3894,6 +3954,15 @@ begin
 			tNextMsgLatch=1;
 		end
 	endcase
+
+	if(usrReject && srUser)
+	begin
+		$display("DecOpFz: Usermode Reject %X-%X",
+			istrWord[15:0], istrWord[31:16]);
+		opNmid	= JX2_UCMD_INVOP;
+		opFmid	= JX2_FMID_INV;
+	end
+
 end
 
 always @(posedge clock)

@@ -947,8 +947,10 @@ int main(int argc, char *argv[])
 	}
 	
 	ctx=BJX2_AllocContext();
-	BJX2_MemDefineROM(ctx,		"ROM",	0x00000000U, 0x00007FFFU);
-	BJX2_MemDefineRAM(ctx,		"SRAM",	0x0000C000U, 0x0000DFFFU);
+//	BJX2_MemDefineROM(ctx,		"ROM",	0x00000000U, 0x00007FFFU);
+	BJX2_MemDefineROM(ctx,		"ROM",	0x00000000U, 0x0000BFFFU);
+//	BJX2_MemDefineRAM(ctx,		"SRAM",	0x0000C000U, 0x0000DFFFU);
+	BJX2_MemDefineRAM(ctx,		"SRAM",	0x0000C000U, 0x0000FFFFU);
 
 	BJX2_MemDefineROM(ctx,		"ZERO",	0x00010000U, 0x0003FFFFU);
 

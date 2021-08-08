@@ -510,6 +510,9 @@ Index 1:
 * ( 18): FMAC (FPU Multiply-Accumulate)
 * ( 19): ALUX (128-bit ALU Ops)
 * ( 20): XGPR (Set if R32..R63 exist)
+* ( 21): PRED_S (Allow SR.S Predicates)
+* ( 22): FPU Lane 2 (Allow FPU ops in Lane 2)
+* ( 23): Conv FP16 (Packed FP8 and FP16 conversion Ops)
 
 Index 31:
 * Hardware Random Number
@@ -638,6 +641,31 @@ Passing -2 to INVDC will trigger an L2 Flush. Note that getting something writte
 
 
 The INVTLB instruction will flush the TLB. This would be done as part of changing the active page tables.
+
+
+=== LDACL ===
+
+* 3042       LDACL
+* F002_3040  LDACL
+
+Load DLR into the ACL Cache.
+
+This entry associates a set of access modes with a pair of VUGID keys.
+* (15: 0): TLB VUGID	//VUGID from the TLB (ACLID).
+* (31:16): KRR VUGID	//VUGID from the KRR.
+* (43:32): Access Mode	//Same format as in TLBE.
+* (63:44): Reserved
+
+Note that unlike with normal TLBE VUGID matching, the ACL entries will require an exact match for both the TLBE and KRR VUGIDs. In this case, only the User and Mode flags in the Access Mode will be used.
+
+Modes:
+* 000: Ignore
+* 001: Use 'User' flags if an exact match is found.
+* 010: Reserved
+* ...
+* 111: Reserved
+
+When ACL Checking is used in the TLBE, then the contents of the ACL cache will be matched with the keys in the KRR, and if a match is found, the flags from the matching entry will be used. Failure to find a valid match will result in an ACL Check exception.
 
 
 === LDTLB ===
@@ -1667,6 +1695,29 @@ Note that bits other than those defined for the comparison will be undefined fol
 PCSELT.L will select elements between Rm or Ro based on the value of SR.S and SR.T, storing the result in Rn. If SR.T is set, the low 32 bits from Rm is used, otherwise the low 32 bits from Ro are used. If SR.S is set, the high 32 bits from Rm is used, otherwise the high 32 bits from Ro are used.
 
 PCSELT.W will select each Word element from Rm or Rn depending on the corresponding P/Q/R/O bits in SR. If set, the word from Rm will be selected, otherwise the value from Ro will be used.
+
+=== PDOTT.x (GSVF, Possible) ===
+
+*** F0ni_1g9A  PDOTT.H		Imm5u, Rn	//(GSVF? Predict Dot Predicate)
+*** F0ni_1G9A  PDOTT.F		Imm5u, Rn	//(GSVF? Predict Dot Predicate)
+
+Make a prediction about a Dot Vector.
+These predictions will be fairly loose in terms of accuracy requirements.
+In particular, the operation need not actually perform a floating point horizontal add, but may instead use lookup tables or similar to infer whether or not the predicate is likely to be true.
+
+For inexact cases, this operation will be biased in favor of a false positive than a false negative.
+
+The Imm5u value will encode the requested predicate (Half):
+* 0: (Rx+Ry+Rz+Rw) >= 0
+* 1: (Rx+Ry+Rz+Rw) <= 0
+* 2: (Rx+Ry+Rz+Rw) >= 1
+* 3: (Rx+Ry+Rz+Rw) <= 1
+
+The Imm5u value will encode the requested predicate (Single):
+* 0: (Rx+Ry) >= 0
+* 1: (Rx+Ry) <= 0
+* 2: (Rx+Ry) >= 1
+* 3: (Rx+Ry) <= 1
 
 
 === PMUL.F 3R (GSVF) ===

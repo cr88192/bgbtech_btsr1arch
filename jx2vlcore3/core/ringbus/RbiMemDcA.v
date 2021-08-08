@@ -420,6 +420,14 @@ reg				tTlbMissInh;
 reg				tNxtTlbMissInh;
 reg				tNxtTlbMissInh2;
 
+reg[2:0]		tVolatileInhSet;	//Volatile Inhibit Cycles (Set)
+reg[2:0]		tVolatileInhCnt;	//Volatile Inhibit Cycles (Count)
+reg[2:0]		tNxtVolatileInh;
+`reg_l1d_ix		tVolatileIxA;		//Volatile Evict Index
+`reg_l1d_ix		tVolatileIxB;		//Volatile Evict Index
+`reg_l1d_ix		tNxtVolatileIxA;
+`reg_l1d_ix		tNxtVolatileIxB;
+
 
 
 always @*
@@ -497,6 +505,11 @@ begin
 
 `endif
 
+	if((tVolatileIxA != 0) && (regInOpm[5:4] == 2'b00))
+		tNxtReqIxA = tVolatileIxA;
+	if((tVolatileIxB != 0) && (regInOpm[5:4] == 2'b00))
+		tNxtReqIxB = tVolatileIxB;
+
 	tNxtReqInValA	= regInValA;
 	tNxtReqInValB	= regInValB;
 
@@ -552,6 +565,12 @@ begin
 	tReqSeqIdx		= tReqSeqIdxArr[memSeqIn[3:0]];
 	tReqSeqVa		= tReqSeqVaArr[memSeqIn[3:0]];
 	tNxtTlbMissInh2	= 0;
+
+	tNxtVolatileInh		= tVolatileInhCnt;
+	if(tVolatileInhCnt!=0)
+		tNxtVolatileInh	= tVolatileInhCnt - 1;
+	tNxtVolatileIxA		= tVolatileIxA;
+	tNxtVolatileIxB		= tVolatileIxB;
 
 	tArrMemDoStA		= 0;
 	tArrMemDoStB		= 0;
@@ -838,10 +857,26 @@ begin
 
 	if(!tTlbMissInh)
 	begin
-		if(tBlkMemAddr2A[3])
+//		if(tBlkMemAddr2A[3])
+		if(tBlkMemAddr2A[3:2] == 2'b11)
 			tReqFlushAddrA = 1;
-		if(tBlkMemAddr2B[3])
+//		if(tBlkMemAddr2B[3])
+		if(tBlkMemAddr2B[3:2] == 2'b11)
 			tReqFlushAddrB = 1;
+
+		if(tVolatileInhCnt == 0)
+		begin
+			if(tBlkMemAddr2A[3:2] == 2'b10)
+			begin
+				tReqFlushAddrA	= 1;
+				tReqIsNz		= 1;
+			end
+			if(tBlkMemAddr2B[3:2] == 2'b10)
+			begin
+				tReqFlushAddrB	= 1;
+				tReqIsNz		= 1;
+			end
+		end
 	end
 
 	tRegOutExc[63:16] = tReqAddr[47:0];
@@ -1205,8 +1240,16 @@ begin
 
 			if(memOpmIn[3])
 			begin
-				$display("L1D$ Set TLB Inhibit A");
-				tNxtTlbMissInh2 = 1;
+				if(memOpmIn[2])
+				begin
+					$display("L1D$ Set TLB Inhibit A");
+					tNxtTlbMissInh2 = 1;
+				end
+				else
+				begin
+					tNxtVolatileInh		= 5;
+					tNxtVolatileIxA		= tReqIxA;
+				end
 			end
 		end
 		
@@ -1249,8 +1292,16 @@ begin
 
 			if(memOpmIn[3])
 			begin
-				$display("L1D$ Set TLB Inhibit B");
-				tNxtTlbMissInh2 = 1;
+				if(memOpmIn[2])
+				begin
+					$display("L1D$ Set TLB Inhibit B");
+					tNxtTlbMissInh2 = 1;
+				end
+				else
+				begin
+					tNxtVolatileInh		= 5;
+					tNxtVolatileIxB		= tReqIxB;
+				end
 			end
 		end
 
@@ -1609,9 +1660,15 @@ always @(posedge clock)
 begin
 //	tTlbMissInh		<= tNxtTlbMissInh;
 	tTlbMissInh		<= tNxtTlbMissInh || tNxtTlbMissInh2;
+//	tVolatileInh	<= tNxtVolatileInh;
+	tVolatileIxA	<= tNxtVolatileIxA;
+	tVolatileIxB	<= tNxtVolatileIxB;
 
 	if(!dcInHold)
 	begin
+		tVolatileInhCnt	<= tNxtVolatileInh;
+		tVolatileInhSet	<= 0;
+
 		tSrJQ			<= regInSr[31];
 	
 		/* EX1 -> EX2 */
@@ -1664,6 +1721,9 @@ begin
 		tReq2StoreSticky	<= tNxtReq2StoreSticky;
 		tMemMmioData		<= tNxtMemMmioData;
 		tMemMmioReady		<= tNxtMemMmioReady;
+
+		tVolatileInhSet	<= tNxtVolatileInh;
+		tVolatileInhCnt	<= tVolatileInhCnt;
 	end
 
 	tFlushRov		<= tNxtFlushRov;

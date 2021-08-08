@@ -14,7 +14,7 @@ RegReg
 module DecOpBz(
 	/* verilator lint_off UNUSED */
 	clock,		reset,
-	istrWord,
+	istrWord,	srUser,
 	idRegN,		idRegM,		idRegO,
 	idImm,		idUCmd,
 	idUIxt
@@ -24,6 +24,7 @@ input			clock;		//clock
 input			reset;		//clock
 
 input[63:0]		istrWord;	//source instruction word
+input			srUser;
 
 `output_gpr		idRegN;
 `output_gpr		idRegM;
@@ -102,6 +103,16 @@ reg opIsFx;
 reg	tMsgLatch;
 reg	tNextMsgLatch;
 
+wire[15:0]	usrRejectCmMask;
+wire[15:0]	usrRejectCnMask;
+assign	usrRejectCmMask = 16'b1111_1111_0011_1000;
+assign	usrRejectCnMask = 16'b1111_1111_1011_1100;
+
+reg		usrRejectCmR;
+reg		usrRejectCmW;
+reg		usrRejectCnR;
+reg		usrRejectCnW;
+reg		usrReject;
 
 always @*
 begin
@@ -208,6 +219,12 @@ begin
 `endif
 
 `endif
+
+	usrReject	= 0;
+	usrRejectCmR = usrRejectCmMask[opRegM_Cr[3:0]];
+	usrRejectCmW = usrRejectCnMask[opRegM_Cr[3:0]];
+	usrRejectCnR = usrRejectCmMask[opRegN_Cr[3:0]];
+	usrRejectCnW = usrRejectCnMask[opRegN_Cr[3:0]];
 
 	opRegN_Fix	= JX2_GR_ZZR;
 	opRegM_Fix	= JX2_GR_ZZR;
@@ -625,6 +642,7 @@ begin
 					opNmid		= JX2_UCMD_OP_IXT;
 					opFmid		= JX2_FMID_Z;
 					opUCmdIx	= JX2_UCIX_IXT_RTE;
+					usrReject	= 1;
 				end
 
 				8'hF0: begin
@@ -633,6 +651,7 @@ begin
 					opUCmdIx	= JX2_UCIX_IXT_LDTLB;
 					opRegM_Fix	= JX2_GR_DHR;
 					opRegN_Fix	= JX2_GR_DLR;
+					usrReject	= 1;
 				end
 
 				8'h12: begin
@@ -646,10 +665,20 @@ begin
 					opUCmdIx	= JX2_UCIX_IXT_SYSE;
 				end
 
+				8'h42: begin
+					opNmid		= JX2_UCMD_OP_IXT;
+					opFmid		= JX2_FMID_Z;
+					opUCmdIx	= JX2_UCIX_IXT_LDACL;
+					opRegM_Fix	= JX2_GR_DHR;
+					opRegN_Fix	= JX2_GR_DLR;
+					usrReject	= 1;
+				end
+
 				8'hF2: begin
 					opNmid		= JX2_UCMD_OP_IXT;
 					opFmid		= JX2_FMID_Z;
 					opUCmdIx	= JX2_UCIX_IXT_INVTLB;
+					usrReject	= 1;
 				end
 				
 				default: begin
@@ -744,12 +773,14 @@ begin
 				opFmid		= JX2_FMID_REG;
 				opIty		= JX2_ITY_SB;
 				opUCmdIx	= JX2_UCIX_IXS_INVIC;
+				usrReject	= 1;
 			end
 			11'h1zD: begin
 				opNmid		= JX2_UCMD_OP_IXS;
 				opFmid		= JX2_FMID_REG;
 				opIty		= JX2_ITY_SB;
 				opUCmdIx	= JX2_UCIX_IXS_INVDC;
+				usrReject	= 1;
 			end
 `endif
 
@@ -1117,6 +1148,7 @@ begin
 				opNmid		= JX2_UCMD_OP_IXS;
 				opFmid		= JX2_FMID_REG;
 				opUCmdIx	= JX2_UCIX_IXS_TRAPB;
+				usrReject	= 1;
 			end
 
 			11'h6z9: begin
@@ -1137,6 +1169,7 @@ begin
 				opFmid		= JX2_FMID_REG;
 				opUCmdIx	= JX2_UCIX_IXT_CPUID;
 				opIty		= JX2_ITY_XB;
+				usrReject	= 1;
 			end
 			11'h6zB: begin
 				opNmid		= JX2_UCMD_OP_IXT;
@@ -1637,35 +1670,45 @@ begin
 				JX2_ITY_UB: begin
 					opRegN	= opRegN_Cr;
 					opRegM	= JX2_GR_ZZR;
+					if(usrRejectCnW)
+						usrReject = 1;
 				end
 				JX2_ITY_UW: begin
 					opRegN	= opRegN_ECr;
 					opRegM	= JX2_GR_ZZR;
+					usrReject = 1;
 				end
 				JX2_ITY_UL: begin
 					opRegN	= opRegN_Sr;
 					opRegM	= JX2_GR_ZZR;
+					usrReject = 1;
 				end
 				JX2_ITY_UQ: begin
 					opRegN	= opRegN_ESr;
 					opRegM	= JX2_GR_ZZR;
+					usrReject = 1;
 				end
 
 				JX2_ITY_NB: begin
 					opRegN	= JX2_GR_ZZR;
 					opRegM	= opRegN_Cr;
+					if(usrRejectCnR)
+						usrReject = 1;
 				end
 				JX2_ITY_NW: begin
 					opRegN	= JX2_GR_ZZR;
 					opRegM	= opRegN_ECr;
+					usrReject = 1;
 				end
 				JX2_ITY_NL: begin
 					opRegN	= JX2_GR_ZZR;
 					opRegM	= opRegN_Sr;
+					usrReject = 1;
 				end
 				JX2_ITY_NQ: begin
 					opRegN	= JX2_GR_ZZR;
 					opRegM	= opRegN_ESr;
+					usrReject = 1;
 				end
 
 				JX2_ITY_XB: begin
@@ -1759,21 +1802,27 @@ begin
 					opRegN	= opRegN_Cr;
 					opRegM	= opRegM_Dfl;
 					opRegO	= JX2_GR_DLR;
+					if(usrRejectCnW)
+						usrReject = 1;
 				end
 				JX2_ITY_UW: begin
 					opRegN	= opRegN_Dfl;
 					opRegM	= opRegM_Cr;
 					opRegO	= JX2_GR_DLR;
+					if(usrRejectCmR)
+						usrReject = 1;
 				end
 				JX2_ITY_UL: begin
 					opRegN	= opRegN_Sr;
 					opRegM	= opRegM_Dfl;
 					opRegO	= JX2_GR_DLR;
+					usrReject = 1;
 				end
 				JX2_ITY_UQ: begin
 					opRegN	= opRegN_Dfl;
 					opRegM	= opRegM_Sr;
 					opRegO	= JX2_GR_DLR;
+					usrReject = 1;
 				end
 				
 				JX2_ITY_NB: begin
@@ -1967,6 +2016,8 @@ begin
 					opRegM	= opRegN_Cr;
 					opRegN	= JX2_GR_DLR;
 					opRegO	= JX2_GR_DLR;
+					if(usrRejectCnR)
+						usrReject = 1;
 				end
 
 				JX2_ITY_NB: begin
@@ -2069,6 +2120,14 @@ begin
 		end
 
 	endcase
+
+	if(usrReject && srUser)
+	begin
+		$display("DecOpBz: Usermode Reject %X", istrWord[15:0]);
+		opNmid	= JX2_UCMD_INVOP;
+		opFmid	= JX2_FMID_INV;
+	end
+
 end
 
 always @(posedge clock)

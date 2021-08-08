@@ -695,10 +695,10 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 	if(!(ctx->status))
 	{
 //		ctx->trapc=addr;
-		BJX2_MemTranslateTlb(ctx, addr+ 0);
+		BJX2_MemTranslateTlb(ctx, addr+ 0, 4);
 //		BJX2_MemTranslateTlb(ctx, addr+12);
 //		BJX2_MemTranslateTlb(ctx, addr+4096);
-		BJX2_MemTranslateTlb(ctx, addr+(32*8));
+		BJX2_MemTranslateTlb(ctx, addr+(32*8), 4);
 	}
 
 	if(ctx->status)
@@ -707,7 +707,11 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 
 		tr->n_ops=0;
 		tr->n_cyc=0;
-		tr->Run=BJX2_DecTraceCb_Bad;
+//		if(ctx->status==BJX2_FLT_TLBMISS)
+		if((ctx->status&0xF000)==0xA000)
+			tr->Run=BJX2_DecTraceCb_RunUnpack;
+		else
+			tr->Run=BJX2_DecTraceCb_Bad;
 		return(-1);
 	}
 
@@ -1228,9 +1232,11 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 
 		tr->n_ops=0;
 		tr->n_cyc=0;
-		tr->Run=BJX2_DecTraceCb_Bad;
-		if(ctx->status==BJX2_FLT_TLBMISS)
+//		if(ctx->status==BJX2_FLT_TLBMISS)
+		if((ctx->status&0xF000)==0xA000)
 			tr->Run=BJX2_DecTraceCb_RunUnpack;
+		else
+			tr->Run=BJX2_DecTraceCb_Bad;
 		return(-1);
 	}
 

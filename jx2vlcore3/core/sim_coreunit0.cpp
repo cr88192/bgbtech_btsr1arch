@@ -1362,7 +1362,7 @@ int main(int argc, char **argv, char **env)
 #endif
 
 
-//	JX2R_UseImageAddFileBuffer("swapfile.sys", (byte *)NULL, 384*(1<<20));
+	JX2R_UseImageAddFileBuffer("swapfile.sys", (byte *)NULL, 384*(1<<20));
 
 	rombuf=(uint32_t *)malloc(32768);
 //	srambuf=(uint32_t *)malloc(8192);

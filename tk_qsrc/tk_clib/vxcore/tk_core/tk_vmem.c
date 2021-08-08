@@ -481,6 +481,11 @@ int TK_VMem_Init();
 
 int TK_VMem_AddSdSwap(s64 lba, u32 sz)
 {
+	if(!tk_iskernel())
+	{
+		return(0);
+	}
+
 	tk_vmem_swap_lba=lba;
 	tk_vmem_swap_sz=sz;
 	tk_vmem_swap_psz=sz>>TK_VMEM_PAGESHL;
@@ -489,6 +494,8 @@ int TK_VMem_AddSdSwap(s64 lba, u32 sz)
 		(int)(tk_vmem_swap_psz));
 	
 	TK_VMem_Init();
+
+	return(0);
 }
 
 #ifdef __BJX2__
@@ -746,6 +753,12 @@ int TK_VMem_Init()
 	int np, b;
 	int i, j, k, n;
 
+	if(!tk_iskernel())
+	{
+		__debugbreak();
+		return(0);
+	}
+
 	if(tk_vmem_pagecache)
 		return(0);
 	
@@ -780,12 +793,13 @@ int TK_VMem_Init()
 		cpi->next=tk_vmem_lru_free;
 		tk_vmem_lru_free=i;
 	}
-	
+
 	tk_printf("TK_VMem_Init: A-1\n");
 
 	tk_vmem_pageroot=TKMM_PageAlloc(1<<TK_VMEM_PAGESHL);
 	memset(tk_vmem_pageroot, 0, 1<<TK_VMEM_PAGESHL);
 
+#if 1
 //	i=(tk_vmem_swap_psz+7)/8;
 	i=((tk_vmem_swap_psz+63)/64)*8;
 	tk_vmem_pagebmp=tk_malloc(i);
@@ -794,6 +808,7 @@ int TK_VMem_Init()
 //	memset(tk_vmem_pagebmp, 0, 16384);
 	tk_vmem_maxpage=tk_vmem_swap_psz;
 	tk_vmem_pagerov=0;
+#endif
 
 	tk_printf("TK_VMem_Init: A-2\n");
 
@@ -1443,6 +1458,10 @@ s64 TK_VMem_VaVirtualAlloc(s64 addr, s64 size, int flProt, int flMap)
 	int vpn, vpb;
 	int qfl;
 
+//	__debugbreak();
+//	return(0);
+
+#if 1
 	vpb=addr>>TKMM_PAGEBITS;
 	vpn=size>>TKMM_PAGEBITS;
 
@@ -1462,6 +1481,7 @@ s64 TK_VMem_VaVirtualAlloc(s64 addr, s64 size, int flProt, int flMap)
 //	TK_VMem_VaReservePages(addr, vpn);
 	TK_VMem_VaCommitPages(addr, vpn);
 	return(addr);
+#endif
 }
 
 int TK_VMem_CheckAddrIsVirtual(s64 addr)
@@ -1479,6 +1499,17 @@ int TK_VMem_CheckPtrIsVirtual(void *ptr)
 void tk_vmem_tlbmiss(u64 ttb, u64 tea)
 {
 	u64 pte;
+
+#if 0
+//	if(!pte)
+	if(1)
+	{
+		tea&=0x0000FFFFFFFFFFFFULL;
+		pte=((tea>>TKMM_PAGEBITS)<<12)|1;
+		tk_vmem_loadpte(tea, pte);
+		return;
+	}
+#endif
 	
 //	__debugbreak();
 	
@@ -1493,8 +1524,11 @@ void tk_vmem_tlbmiss(u64 ttb, u64 tea)
 	
 	if(!pte)
 	{
-		__debugbreak();
-		pte=((0x10000>>TKMM_PAGEBITS)<<12)|1;
+		tea&=0x0000FFFFFFFFFFFFULL;
+		pte=((tea>>TKMM_PAGEBITS)<<12)|1;
+
+//		__debugbreak();
+//		pte=((0x10000>>TKMM_PAGEBITS)<<12)|1;
 		tk_vmem_loadpte(tea, pte);
 		return;
 	}
@@ -1504,6 +1538,7 @@ void tk_vmem_tlbmiss(u64 ttb, u64 tea)
 }
 
 __interrupt void __isr_tlbfault(void)
+// __declspec(dllexport) void isr_tlbfault_i(void)
 {
 	u64 ttb, tea, exc;
 	u16 exsr;
@@ -1535,3 +1570,63 @@ __interrupt void __isr_tlbfault(void)
 #endif
 }
 
+#if 0
+__asm {
+
+ldtlb_dummy:
+	MOV		TEA, R4
+	MOV		0x0000FFFFFFFFC000, R1
+	AND		R1, R4
+	OR		R4, 1, R5
+	MOV		R4, R1
+	MOV		R5, R0
+	LDTLB
+	NOP
+	RTS
+
+__isr_tlbfault:
+	ADD		-256, SP
+	
+	MOV.Q	R0, (SP, 0)
+	MOV.Q	R1, (SP, 8)
+	MOV.X	R2, (SP, 16)
+	MOV.X	R4, (SP, 32)
+	MOV.X	R6, (SP, 48)
+	MOV.X	R16, (SP, 64)
+	MOV.X	R18, (SP, 80)
+	MOV.X	R20, (SP, 96)
+	MOV.X	R22, (SP, 112)
+
+	MOV		LR, R1
+	MOV		GBR, R2
+	MOV		TBR, R3
+	MOV.Q	R1, (SP, 128)
+	MOV.Q	R2, (SP, 136)
+	MOV.Q	R3, (SP, 144)
+
+//	BSR		isr_tlbfault_i
+	BSR		ldtlb_dummy
+
+	MOV.Q	(SP, 128), R1
+	MOV.Q	(SP, 136), R2
+	MOV.Q	(SP, 144), R3
+	MOV		R1, LR
+	MOV		R2, GBR
+	MOV		R3, TBR
+
+//	BREAK
+
+	MOV.X	(SP, 16), R2
+	MOV.X	(SP, 32), R4
+	MOV.X	(SP, 48), R6
+	MOV.X	(SP, 64), R16
+	MOV.X	(SP, 80), R18
+	MOV.X	(SP, 96), R20
+	MOV.X	(SP, 112), R22
+	MOV.Q	(SP, 0), R0
+	MOV.Q	(SP, 8), R1
+	
+	ADD		256, SP
+	RTE
+};
+#endif

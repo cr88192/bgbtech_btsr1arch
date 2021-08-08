@@ -272,6 +272,11 @@ reg[31:0]	tlbAccB;
 reg			tlbIs32b;
 reg			tlbIs48b;
 
+reg[47:0]	aclEntryA;
+reg[47:0]	aclEntryB;
+reg[47:0]	aclEntryC;
+reg[47:0]	aclEntryD;
+
 reg			tAddrIsMMIO;
 reg			tAddrIsLo4G;
 reg			tAddrIsHi4G;

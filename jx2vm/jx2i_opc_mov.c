@@ -574,8 +574,8 @@ void BJX2_Op_MOVX2_RegStRegDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_MISAL);
 	if((addr&(~4095))!=((addr+16)&(~4095)))
 	{
-		BJX2_MemTranslateTlb(ctx, addr+0);
-		BJX2_MemTranslateTlb(ctx, addr+16);
+		BJX2_MemTranslateTlb(ctx, addr+0, 2);
+		BJX2_MemTranslateTlb(ctx, addr+16, 2);
 	}
 	BJX2_MemSetQWord(ctx, addr+0, ctx->regs[op->rm+0]);
 	BJX2_MemSetQWord(ctx, addr+8, ctx->regs[op->rm+1]);
@@ -594,8 +594,8 @@ void BJX2_Op_MOVX2_LdRegDispReg(BJX2_Context *ctx, BJX2_Opcode *op)
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_MISAL);
 	if((addr&(~4095))!=((addr+16)&(~4095)))
 	{
-		BJX2_MemTranslateTlb(ctx, addr+0);
-		BJX2_MemTranslateTlb(ctx, addr+16);
+		BJX2_MemTranslateTlb(ctx, addr+0, 1);
+		BJX2_MemTranslateTlb(ctx, addr+16, 1);
 	}
 	ctx->regs[op->rn+0]=BJX2_MemGetQWord(ctx, addr+0);
 	ctx->regs[op->rn+1]=BJX2_MemGetQWord(ctx, addr+8);
@@ -610,8 +610,8 @@ void BJX2_Op_MOVX2_RegStRegDisp1(BJX2_Context *ctx, BJX2_Opcode *op)
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_MISAL);
 	if((addr&(~4095))!=((addr+16)&(~4095)))
 	{
-		BJX2_MemTranslateTlb(ctx, addr+0);
-		BJX2_MemTranslateTlb(ctx, addr+16);
+		BJX2_MemTranslateTlb(ctx, addr+0, 2);
+		BJX2_MemTranslateTlb(ctx, addr+16, 2);
 	}
 	BJX2_MemSetQWord(ctx, addr+0, ctx->regs[op->rm+0]);
 	BJX2_MemSetQWord(ctx, addr+8, ctx->regs[op->rm+1]);
@@ -630,8 +630,8 @@ void BJX2_Op_MOVX2_LdRegDisp1Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_MISAL);
 	if((addr&(~4095))!=((addr+16)&(~4095)))
 	{
-		BJX2_MemTranslateTlb(ctx, addr+0);
-		BJX2_MemTranslateTlb(ctx, addr+16);
+		BJX2_MemTranslateTlb(ctx, addr+0, 1);
+		BJX2_MemTranslateTlb(ctx, addr+16, 1);
 	}
 	ctx->regs[op->rn+0]=BJX2_MemGetQWord(ctx, addr+0);
 	ctx->regs[op->rn+1]=BJX2_MemGetQWord(ctx, addr+8);
@@ -646,8 +646,8 @@ void BJX2_Op_MOVX2_RegStReg2(BJX2_Context *ctx, BJX2_Opcode *op)
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_MISAL);
 	if((addr&(~4095))!=((addr+16)&(~4095)))
 	{
-		BJX2_MemTranslateTlb(ctx, addr+0);
-		BJX2_MemTranslateTlb(ctx, addr+16);
+		BJX2_MemTranslateTlb(ctx, addr+0, 2);
+		BJX2_MemTranslateTlb(ctx, addr+16, 2);
 	}
 	BJX2_MemSetQWord(ctx, addr+0, ctx->regs[op->rm+0]);
 	BJX2_MemSetQWord(ctx, addr+8, ctx->regs[op->rm+1]);
@@ -666,8 +666,8 @@ void BJX2_Op_MOVX2_LdReg2Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_MISAL);
 	if((addr&(~4095))!=((addr+16)&(~4095)))
 	{
-		BJX2_MemTranslateTlb(ctx, addr+0);
-		BJX2_MemTranslateTlb(ctx, addr+16);
+		BJX2_MemTranslateTlb(ctx, addr+0, 1);
+		BJX2_MemTranslateTlb(ctx, addr+16, 1);
 	}
 
 	BJX2_DbgAddrAccessTrap(ctx,
@@ -687,8 +687,8 @@ void BJX2_Op_MOVX2_RegStReg2B(BJX2_Context *ctx, BJX2_Opcode *op)
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_MISAL);
 	if((addr&(~4095))!=((addr+16)&(~4095)))
 	{
-		BJX2_MemTranslateTlb(ctx, addr+0);
-		BJX2_MemTranslateTlb(ctx, addr+16);
+		BJX2_MemTranslateTlb(ctx, addr+0, 2);
+		BJX2_MemTranslateTlb(ctx, addr+16, 2);
 	}
 	BJX2_MemSetQWord(ctx, addr+0, ctx->regs[op->rm+0]);
 	BJX2_MemSetQWord(ctx, addr+8, ctx->regs[op->rm+1]);
@@ -707,8 +707,8 @@ void BJX2_Op_MOVX2_LdReg2RegB(BJX2_Context *ctx, BJX2_Opcode *op)
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_MISAL);
 	if((addr&(~4095))!=((addr+16)&(~4095)))
 	{
-		BJX2_MemTranslateTlb(ctx, addr+0);
-		BJX2_MemTranslateTlb(ctx, addr+16);
+		BJX2_MemTranslateTlb(ctx, addr+0, 1);
+		BJX2_MemTranslateTlb(ctx, addr+16, 1);
 	}
 	ctx->regs[op->rn+0]=BJX2_MemGetQWord(ctx, addr+0);
 	ctx->regs[op->rn+1]=BJX2_MemGetQWord(ctx, addr+8);
@@ -723,8 +723,8 @@ void BJX2_Op_MOVX2_RegStPcIdx(BJX2_Context *ctx, BJX2_Opcode *op)
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_MISAL);
 	if((addr&(~4095))!=((addr+16)&(~4095)))
 	{
-		BJX2_MemTranslateTlb(ctx, addr+0);
-		BJX2_MemTranslateTlb(ctx, addr+16);
+		BJX2_MemTranslateTlb(ctx, addr+0, 2);
+		BJX2_MemTranslateTlb(ctx, addr+16, 2);
 	}
 	BJX2_MemSetQWord(ctx, addr+0, ctx->regs[op->rm+0]);
 	BJX2_MemSetQWord(ctx, addr+8, ctx->regs[op->rm+1]);
@@ -739,8 +739,8 @@ void BJX2_Op_MOVX2_LdPcIdxReg(BJX2_Context *ctx, BJX2_Opcode *op)
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_MISAL);
 	if((addr&(~4095))!=((addr+16)&(~4095)))
 	{
-		BJX2_MemTranslateTlb(ctx, addr+0);
-		BJX2_MemTranslateTlb(ctx, addr+16);
+		BJX2_MemTranslateTlb(ctx, addr+0, 1);
+		BJX2_MemTranslateTlb(ctx, addr+16, 1);
 	}
 	ctx->regs[op->rn+0]=BJX2_MemGetQWord(ctx, addr+0);
 	ctx->regs[op->rn+1]=BJX2_MemGetQWord(ctx, addr+8);

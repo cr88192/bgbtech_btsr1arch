@@ -141,9 +141,8 @@ Control Registers:
 * C11 / EXSR: Exception Status Register.
 * C12 / STTB: System TTB.
 * C13 / KRR: MMU Keyring Register.
-* C14 / IMM (U,R/O): ? Undefined Value (Internal)
-* C15 / ZZR (U,R/O): ? Always returns Zero (Internal)
-* / C16 .. C31: Reserved
+* C14: Reserved
+* C15: Reserved
 * C16 / PC2: Program Counter (SMT)
 * C17 / LR2: Link Register (SMT)
 * C18 / SR2: Status Register (SMT)
@@ -154,7 +153,11 @@ Control Registers:
 * C23 / TBR2: Thread Base Register (SMT)
 * C24: Reserved
 * C25: Reserved
-* ..
+* C26: Reserved
+* C27: Reserved
+* C28: Reserved
+* C29 / KRR2: MMU Keyring Register (SMT).
+* C30: Reserved
 * C31: Reserved
 
 Access to SPRs will depend on Mode:
@@ -173,8 +176,12 @@ Access to SPRs will depend on Mode:
 * C11: Supervisor Only
 * C12: Supervisor Only
 * C13: Supervisor Only
-* C14: All Modes (Read Only, Undefined)
-* C15: All Modes (Read Only, Zero)
+* C14: Supervisor Only
+* C15: Supervisor Only
+* C16: Supervisor Only
+* ...
+* C31: Supervisor Only
+
 
 SR Bits:
 * 0: T, Used as a True/False status, or Carry for ADC/SBB.
@@ -194,7 +201,7 @@ SR Bits:
 * 27: WXE, WEX Enable
 * 28: BL, Block Interrupts
 ** SMT1 (SR2 Specific)
-* 29: RB, Encodes the ISR register bank.
+* 29: RB, Encodes the ISR Status (MD=1).
 ** SMT2 (SR2 Specific)
 ** Set when interrupt occurs.
 ** Cleared when interrupt returns.
@@ -392,7 +399,8 @@ In 48-bit Mode (MMU), the address space will be extended (bits 32..47):
 * 0000..7FFF: Userland (MMU).
 * 8000..BFFF: System (MMU).
 * C000..CFFF: System (No MMU; 44-bit physical address).
-* D000..EFFF: Reserved.
+* D000..DFFF: System (No MMU; 44-bit physical address; Volatile).
+* E000..EFFF: Reserved.
 * F000..FFFF: Expanded Processor/Chipset/MMIO (44-bit MMIO Address).
 ** FFFF_Fzzz_zzzz will identity map to Fzzz_zzzz (28-bit MMIO Address).
 
@@ -413,7 +421,7 @@ During a TLB Miss Exception, the ISR is to fetch the relevant data from the Page
 The TLB will be loaded via the LDTLB instruction, which will load the 128 bit entry from the DHR:DLR pair.
 
 TLB Entry:
-* (127:112) = VUGID
+* (127:112) = VUGID / ACLID
 * (111: 76) = Virtual Address Page
 * ( 75: 64) = KR Access
 * ( 63: 48) = Available
@@ -421,8 +429,8 @@ TLB Entry:
 * ( 11:  0) = Page Control bits
 
 VUGID:
-* (15:10) = VGID
-* ( 9: 0) = VUID
+* (15:10) = VGID / VUID(Swap)
+* ( 9: 0) = VUID / VGID(Swap)
 
 KR Access:
 * (11): Other X
@@ -441,18 +449,15 @@ KR Access:
 If Keyring Check is Enabled, VUGID Mode will have several modes:
 * 000: Access Check Always Fails (Access Fault)
 * 001: Perform VUGID Check, Access Check is Pass or Fail (Access Fault).
-* 010: Always Generate ACL Check Exception
-* 011: Perform VUGID Check, Generate ACL Check on Fail.
+* 010: Always Generate ACL Check Exception (on ACL Miss)
+* 011: Perform VUGID Check, Generate ACL Check if no keys match (ACL Miss).
 * 100: Reserved
-* 101: Reserved
+* 101: Same as in 001, But swap the UID and GID fields.
 * 110: Reserved
-* 111: Reserved
+* 111: Same as in 011, But swap the UID and GID fields.
 
 If Keyring Check is Disabled, VUGID access checks are ignored (Always Pass).
 * Only the normal page access checks are used.
-
-Note that Keyring checks are placed after normal page access checks, so with Keyring access enabled, both the Normal and Keyring checks are required to allow access to the page.
-
 
 
 Page Control:
@@ -471,7 +476,8 @@ Page Control:
 * ( 4): PR.NR (Read Disable)
 ** Page may not be read from.
 * ( 3): Page Is Non-Cachable
-** Set to indicate accesses to page will bypass cache.
+** Set to indicate accesses to this page are volatile.
+** Contents in this page should not be retained in the L1 cache.
 * ( 2): PR.D, (Dirty)
 ** Set if page has been modified.
 * ( 1): PR.SH, Page Is Shared
@@ -508,8 +514,25 @@ The keyring values are compared against the VUGID value in the TLB:
 * Otherwise: Check using Other RWX bits.
 
 If any of the four keys will allow the requested access, access will pass.
-* Otherwise, if ACL Check is set, generate an ACL Check Exception.
-* Otherwise, generate an Access Fault Exception.
+* Otherwise, if ACL Check is set, generate an ACL Check Exception on ACL Miss.
+* Otherwise, the access will generate an Access Fault Exception.
+
+Note that Keyring checks are placed after normal page access checks, so with Keyring access enabled, both the Normal and Keyring checks are required to pass in order to allow access to the page.
+
+Note that if the normal modes, there will be 64 Groups of 1024 Users, but these may be flipped per-page to effectively allow 1024 Groups of 64 Users. 
+
+Note that if both fields are equal, the result will be equivalent regardless of the flip.
+
+The KRR Keys may also be checked against an ACL Cache, with entries of the form:
+* (15: 0): TLB VUGID / ACLID
+* (31:16): KRR VUGID / PID
+* (43:32): KR Access Mode
+
+The entries in the ACL Cache will be matched against those in the KRR if an ACL Check mode is used. If a matching entry is found, it will be used, otherwise an ACL Check exception will be generated if the TLBE doesn't match.
+
+The ACL Check handler may then upload an ACL Entry via LDACL which may either grant or deny access to the page ACLID in question.
+
+Note that ACL Entries will require an exact match for both IDs, which will be interpreted as a single 16-bit value.
 
 
 MMCR Bits:
@@ -1036,7 +1059,7 @@ Instruction Space
 ** 3012  RTSU						//PC=LR, Hint
 ** 3022  SYSCALL					//Throw(DLR)
 ** 3032  -
-** 3042  -
+** 3042  LDACL
 ** 3052  -
 ** 3062  -
 ** 3072  -
@@ -1378,17 +1401,16 @@ F0zz Instruction Block:
 *** F0nm_1g3A /
 *** F0nm_1G3A /
 *** F0nm_1g4A -
-*** F0nm_1g5A / PADD.H		Rm, Rn				//(GSVF) Packed ADD Half
-*** F0nm_1G5A / PADD.F		Rm, Rn				//(GSVF) Packed ADD Float
-*** F0nm_1g6A / PSUB.H		Rm, Rn				//(GSVF) Packed SUB Half
-*** F0nm_1G6A / PSUB.F		Rm, Rn				//(GSVF) Packed SUB Float
-*** F0nm_1g7A / PMUL.H		Rm, Rn				//(GSVF) Packed MUL Half
-*** F0nm_1G7A / PMUL.F		Rm, Rn				//(GSVF) Packed MUL Float
-*** F0nm_1g8A / MOVHD		Rm, Rn				//(GSV) Move High DWord
-*** F0nm_1G8A / MOVLD		Rm, Rn				//(GSV) Move Low DWord
-*** F0nm_1g9A -
-*** F0nm_1G9A -
-
+*** F0nm_1g5A / PADD.H		Rm, Rn			//(GSVF) Packed ADD Half
+*** F0nm_1G5A / PADD.F		Rm, Rn			//(GSVF) Packed ADD Float
+*** F0nm_1g6A / PSUB.H		Rm, Rn			//(GSVF) Packed SUB Half
+*** F0nm_1G6A / PSUB.F		Rm, Rn			//(GSVF) Packed SUB Float
+*** F0nm_1g7A / PMUL.H		Rm, Rn			//(GSVF) Packed MUL Half
+*** F0nm_1G7A / PMUL.F		Rm, Rn			//(GSVF) Packed MUL Float
+*** F0nm_1g8A / MOVHD		Rm, Rn			//(GSV) Move High DWord
+*** F0nm_1G8A / MOVLD		Rm, Rn			//(GSV) Move Low DWord
+*** F0ni_1g9A  PDOTT.H		Imm5u, Rn		//(GSVF? Predict Dot Predicate)
+*** F0ni_1G9A  PDOTT.F		Imm5u, Rn		//(GSVF? Predict Dot Predicate)
 *** F0nm_1gAA  PCMPEQ.H		Rm, Rn			//Packed Compare Half, Equal
 *** F0nm_1GAA  PCMPEQ.F		Rm, Rn			//Packed Compare Single, Equal
 *** F0nm_1gBA  PCMPGT.H		Rm, Rn			//Packed Compare Half, Greater
@@ -1547,6 +1569,8 @@ F0zz Instruction Block:
 *** F000_30F0  LDTLB
 
 *** F002_3010  RTSU
+
+*** F002_3040  LDACL
 
 *** F002_30C0  LDEKRR	//Load Encoded Keyring
 *** F002_30D0  LDEKEY	//Load Encoded Key

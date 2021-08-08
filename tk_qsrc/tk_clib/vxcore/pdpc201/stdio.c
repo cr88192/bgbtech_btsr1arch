@@ -1408,7 +1408,7 @@ static int examine(const char **formt, FILE *fq, char *s, va_list *arg,
 	const char *format;
 	int base;
 	int fillCh;
-	int neg;
+	int neg, isunsgn;
 	int length;
 	size_t slen;
 	int i, n;
@@ -1562,6 +1562,13 @@ static int examine(const char **formt, FILE *fq, char *s, va_list *arg,
 			precision = 1;
 		}
 
+		isunsgn = 0;
+		if (	(specifier == 'u') ||
+				(specifier == 'p') ||
+				(specifier == 'x') ||
+				(specifier == 'X')	)
+			isunsgn = 1;
+
 #if defined(__MSDOS__) && !defined(__PDOS__) && !defined(__gnu_linux__)
 		if (specifier == 'p')
 		{
@@ -1585,28 +1592,53 @@ static int examine(const char **formt, FILE *fq, char *s, va_list *arg,
 			if (llng)
 		{
 			lvalue = va_arg(*arg, long long);
+
+//			if (	(specifier == 'u') ||
+//					(specifier == 'x') ||
+//					(specifier == 'X')	)
+			if(isunsgn)
+				lvalue = (unsigned long long)lvalue;
 		}
 #endif
 			if (lng)
 		{
 			lvalue = va_arg(*arg, long);
+
+//			if (	(specifier == 'u') ||
+//					(specifier == 'x') ||
+//					(specifier == 'X')	)
+			if(isunsgn)
+				lvalue = (unsigned long)lvalue;
 		}
 		else if (half)
 		{
 /*			hvalue = va_arg(*arg, short); */  /* BGB: gcc warnings */
 			hvalue = va_arg(*arg, int);
-			if (specifier == 'u') lvalue = (unsigned short)hvalue;
-			else lvalue = hvalue;
+//			if (specifier == 'u')
+//			if (	(specifier == 'u') ||
+//					(specifier == 'x') ||
+//					(specifier == 'X')	)
+			if(isunsgn)
+				lvalue = (unsigned short)hvalue;
+			else
+				lvalue = hvalue;
 		}
 		else
 		{
 			ivalue = va_arg(*arg, int);
-			if (specifier == 'u') lvalue = (unsigned int)ivalue;
-			else lvalue = ivalue;
+//			if (specifier == 'u')
+//			if (	(specifier == 'u') ||
+//					(specifier == 'x') ||
+//					(specifier == 'X')	)
+			if(isunsgn)
+				lvalue = (unsigned int)ivalue;
+			else
+				lvalue = ivalue;
 		}
 //		ulvalue = (unsigned long)lvalue;
 		ulvalue = lvalue;
-		if ((lvalue < 0) && ((specifier == 'd') || (specifier == 'i')))
+//		if ((lvalue < 0) && ((specifier == 'd') || (specifier == 'i')))
+		if ((lvalue < 0) && !isunsgn)
 		{
 			neg = 1;
 			ulvalue = -lvalue;

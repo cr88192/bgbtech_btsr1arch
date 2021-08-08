@@ -50,6 +50,15 @@ Access Status Bits(Request/Response):
     All 4 bits will be set on a TLB Miss.
     No Cache will indicate that the cache line should be evicted early.
 
+Special cases may be encoded when No-Cache is set:
+  1000: Volatile Memory (Read/Write)
+  1001: Volatile Memory (Write Only)
+  1010: Volatile Memory (Read Only)
+  1011: Volatile Inaccessible (Address Not Memory)
+  1111: Request was part of a TLB Miss
+
+On OKLD or OKST responses, the low 4 bits will hold the Status Bits.
+
 Operation Mode (Request):
   00: IDLE or CCMD
   01: LOAD
@@ -104,6 +113,10 @@ parameter[7:0] JX2_RBI_OPM_INVTLB	= 8'h82;	//
 parameter[7:0] JX2_RBI_OPM_LDTLB	= 8'h83;	//
 parameter[7:0] JX2_RBI_OPM_FLUSHIS	= 8'h84;	//
 parameter[7:0] JX2_RBI_OPM_FLUSHDS	= 8'h85;	//
+
+// parameter[7:0] JX2_RBI_OPM_INVACL	= 8'h86;	//
+parameter[7:0] JX2_RBI_OPM_LDACL	= 8'h87;	//
+
 // parameter[7:0] JX2_RBI_OPM_IRQ		= 8'h86;	//Interrupt Request
 parameter[7:0] JX2_RBI_OPM_IRQ		= 8'hC6;	//Interrupt Request
 

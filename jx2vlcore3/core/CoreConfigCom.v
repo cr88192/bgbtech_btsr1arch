@@ -1,12 +1,17 @@
 `define jx2_enable_mmu
 `define jx2_enable_fpu
 
+`define jx2_enable_mmu_acl		//Enable ACL Checks
+
 // `define jx2_cfg_75mhz
 
 // `define jx2_enable_gpr48		//Enable R32..R63 (SIMD)
 `define jx2_enable_xgpr		//Enable R32..R63 and XGPR ops
 
 `define jx2_enable_pred_s	//SR.S Predication
+
+`define jx2_enable_rom48k	//Expand ROM to 48K
+// `define jx2_enable_sram16k	//Expand SRAM to 16K
 
 `define	jx2_use_fpu_w			//use wide FPU (GSVX)
 `define	jx2_fcmp_alu			//do FCMP via ALU

@@ -2172,7 +2172,7 @@ int main(int argc, char **argv, char **env)
 		(char *)"../../tk_ports/HticSrc/hticulz.wad");
 #endif
 
-//	JX2R_UseImageAddFileBuffer("swapfile.sys", (byte *)NULL, 384*(1<<20));
+	JX2R_UseImageAddFileBuffer("swapfile.sys", (byte *)NULL, 384*(1<<20));
 
 	Verilated::commandArgs(argc, argv);
 

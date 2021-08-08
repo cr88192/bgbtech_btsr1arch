@@ -482,6 +482,7 @@ parameter[4:0] UMEM_OPM_LDTLB	= 5'b00011;		//Load TLB
 parameter[4:0] UMEM_OPM_FLUSHIS	= 5'b00100;		//Flush I$ Request
 parameter[4:0] UMEM_OPM_FLUSHDS	= 5'b00101;		//Flush D$ Request
 parameter[4:0] UMEM_OPM_TRAP	= 5'b00110;		//Raise Interrupt
+parameter[4:0] UMEM_OPM_LDACL	= 5'b00111;		//Raise Interrupt
 
 parameter[4:0] UMEM_OPM_RD_SB	= 5'b01000;		//Read Byte
 parameter[4:0] UMEM_OPM_RD_SW	= 5'b01001;		//Read Word
@@ -1025,6 +1026,7 @@ parameter[5:0] JX2_UCIX_IXT_LDEKEY	= 6'h12;		//Load Encode Key
 parameter[5:0] JX2_UCIX_IXT_LDEENC	= 6'h13;		//Encode KRR into Key
 
 parameter[5:0] JX2_UCIX_IXT_SRTTWID	= 6'h14;		//Twiddle SR.T Bits
+parameter[5:0] JX2_UCIX_IXT_LDACL	= 6'h15;		//Load ACL
 
 parameter[5:0] JX2_UCIX_IXS_NOP		= 6'h00;		//No-Op
 parameter[5:0] JX2_UCIX_IXS_MOVT	= 6'h01;		//Copy SR.T to Reg

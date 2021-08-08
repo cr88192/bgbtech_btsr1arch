@@ -891,6 +891,7 @@ int nmid;
 {"invic",	BGBCC_SH_NMID_INVIC},
 {"invdc",	BGBCC_SH_NMID_INVDC},
 {"invtlb",	BGBCC_SH_NMID_INVTLB},
+{"ldacl",	BGBCC_SH_NMID_LDACL},
 
 {"wexmd",	BGBCC_SH_NMID_WEXMD},
 {"cpuid",	BGBCC_SH_NMID_CPUID},

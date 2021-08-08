@@ -747,12 +747,105 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr)
 	return(1);
 }
 
-bjx2_addr BJX2_MemTranslateTlb(BJX2_Context *ctx, bjx2_addr addr)
+int BJX2_MemTlbCheckAccess(BJX2_Context *ctx, int acc, int pgbits,
+	u64 krr, u32 kra)
+{
+	int noacc, vugid, vugid2, ugm;
+	int i, j, k;
+	
+	if(!acc)
+		return(0);
+
+	noacc=0;
+
+	if(pgbits&0x10)
+		noacc|=1;
+	if(pgbits&0x20)
+		noacc|=2;
+	if(pgbits&0x40)
+		noacc|=4;
+
+	if((pgbits&0x80) && !(ctx->regs[BJX2_REG_SR]&(1<<30)))
+		noacc|=7;
+
+	ugm=0;
+	if(((u16)krr)!=0)
+	{
+		ugm=1;
+		vugid=kra>>16;
+		for(i=0; i<4; i++)
+		{
+			vugid2=(u16)(krr>>(i*16));
+			if(!vugid2)
+				continue;
+			if(vugid2==vugid)
+				{ ugm=3; break; }
+			if(((vugid2&0xFC00)==(vugid&0xFC00)) && !(kra&4))
+				ugm=2;
+			if(((vugid2&0x03FF)==(vugid&0x03FF)) &&  (kra&4))
+				ugm=2;
+		}
+		
+		switch(kra&7)
+		{
+		case 0:		case 4:
+			noacc|=7;
+			break;
+		case 1:		case 5:
+			j=kra>>(12-(ugm*3));
+			noacc|=(~j)&7;
+			break;
+		case 2:		case 6:
+			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_TLBACL);
+			break;
+		case 3:		case 7:
+			if(ugm<=1)
+			{
+				BJX2_ThrowFaultStatus(ctx, BJX2_FLT_TLBACL);
+				break;
+			}
+			j=kra>>(12-(ugm*3));
+			noacc|=(~j)&7;
+//			noacc|=16;
+			break;
+		}
+	}
+
+	if((acc&noacc)&1)
+	{
+//		if(noacc&16)
+//			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_TLBACL);
+//		else
+			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INV_MRD);
+		return(-1);
+	}
+	if((acc&noacc)&2)
+	{
+//		if(noacc&16)
+//			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_TLBACL);
+//		else
+			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INV_MWR);
+		return(-1);
+	}
+	if((acc&noacc)&4)
+	{
+//		if(noacc&16)
+//			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_TLBACL);
+//		else
+			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INV_MEX);
+		return(-1);
+	}
+
+	return(0);
+}
+
+bjx2_addr BJX2_MemTranslateTlb(BJX2_Context *ctx, bjx2_addr addr, int acc)
 {
 	bjx2_addr addr1;
 	u64 tlbhi2, tlblo2;
 	u64 tlbhi0, tlblo0;
 	u64 tlbhi1, tlblo1;
+	u64	krr;
 	int i, j, k, h;
 
 	if(ctx->regs[BJX2_REG_SR]&(1<<31))
@@ -771,6 +864,29 @@ bjx2_addr BJX2_MemTranslateTlb(BJX2_Context *ctx, bjx2_addr addr)
 	if(	(ctx->regs[BJX2_REG_SR]&(1<<29)) &&
 		(ctx->regs[BJX2_REG_SR]&(1<<28)))
 		return(addr);
+
+	krr=ctx->regs[BJX2_REG_KRR];
+
+	if(((addr>>47)&1) && !(ctx->regs[BJX2_REG_SR]&(1<<30)))
+	{
+		if(acc&1)
+		{
+			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INV_MRD);
+			return(addr);
+		}
+		if(acc&2)
+		{
+			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INV_MWR);
+			return(addr);
+		}
+		if(acc&4)
+		{
+			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INV_MEX);
+			return(addr);
+		}
+//		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
+	}
+
 
 #if 1
 //	if((addr>>32)==0)
@@ -794,6 +910,11 @@ bjx2_addr BJX2_MemTranslateTlb(BJX2_Context *ctx, bjx2_addr addr)
 	}
 
 	if(((addr>>32)&0xFFFF)==0xC000)
+	{
+		return(addr);
+	}
+
+	if(((addr>>32)&0xFFFF)==0xD000)
 	{
 		return(addr);
 	}
@@ -838,6 +959,9 @@ bjx2_addr BJX2_MemTranslateTlb(BJX2_Context *ctx, bjx2_addr addr)
 				ctx->mem_tlb_hi[h*4+0]=tlbhi2;
 				ctx->mem_tlb_lo[h*4+0]=tlblo2;
 #endif
+				
+				BJX2_MemTlbCheckAccess(ctx, acc, tlblo2&255, krr,
+					(tlbhi2&0x0000FFFFU)|((tlbhi2>>32)&0xFFFF0000U));
 				
 				return(addr1);
 			}
@@ -886,6 +1010,9 @@ bjx2_addr BJX2_MemTranslateTlb(BJX2_Context *ctx, bjx2_addr addr)
 				ctx->mem_tlb_hi[h*4+0]=tlbhi2;
 				ctx->mem_tlb_lo[h*4+0]=tlblo2;
 #endif
+
+				BJX2_MemTlbCheckAccess(ctx, acc, tlblo2&255, krr,
+					(tlbhi2&0x0000FFFFU)|((tlbhi2>>32)&0xFFFF0000U));
 				
 				return(addr1);
 			}
@@ -926,6 +1053,9 @@ bjx2_addr BJX2_MemTranslateTlb(BJX2_Context *ctx, bjx2_addr addr)
 				ctx->mem_tlb_hi[h*4+0]=tlbhi2;
 				ctx->mem_tlb_lo[h*4+0]=tlblo2;
 #endif
+
+				BJX2_MemTlbCheckAccess(ctx, acc, tlblo2&255, krr,
+					(tlbhi2&0x0000FFFFU)|((tlbhi2>>32)&0xFFFF0000U));
 
 				return(addr1);
 			}
@@ -1025,7 +1155,7 @@ int BJX2_MemGetByte_Dfl(BJX2_Context *ctx, bjx2_addr addr0)
 	bjx2_addr addr;
 	int ra;
 
-	addr=BJX2_MemTranslateTlb(ctx, addr0);
+	addr=BJX2_MemTranslateTlb(ctx, addr0, 1);
 	if(ctx->status)
 		return(0);
 
@@ -1085,7 +1215,7 @@ int BJX2_MemGetWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0)
 	bjx2_addr addr;
 	int ra;
 
-	addr=BJX2_MemTranslateTlb(ctx, addr0);
+	addr=BJX2_MemTranslateTlb(ctx, addr0, 1);
 	if(ctx->status)
 		return(0);
 
@@ -1145,7 +1275,7 @@ s32 BJX2_MemGetDWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0)
 	bjx2_addr addr;
 	int ra;
 
-	addr=BJX2_MemTranslateTlb(ctx, addr0);
+	addr=BJX2_MemTranslateTlb(ctx, addr0, 1);
 	if(ctx->status)
 		return(0);
 
@@ -1206,7 +1336,7 @@ s64 BJX2_MemGetQWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0)
 	s64 t;
 	int ra;
 
-	addr=BJX2_MemTranslateTlb(ctx, addr0);
+	addr=BJX2_MemTranslateTlb(ctx, addr0, 1);
 	if(ctx->status)
 		return(0);
 
@@ -1490,7 +1620,7 @@ int BJX2_MemSetByte_Dfl(BJX2_Context *ctx, bjx2_addr addr0, int val)
 	bjx2_addr addr;
 	int ra, ra4;
 
-	addr=BJX2_MemTranslateTlb(ctx, addr0);
+	addr=BJX2_MemTranslateTlb(ctx, addr0, 2);
 	if(ctx->status)
 		return(0);
 
@@ -1540,7 +1670,7 @@ int BJX2_MemSetWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0, int val)
 	bjx2_addr addr;
 	int ra, ra4;
 
-	addr=BJX2_MemTranslateTlb(ctx, addr0);
+	addr=BJX2_MemTranslateTlb(ctx, addr0, 2);
 	if(ctx->status)
 		return(0);
 
@@ -1600,7 +1730,7 @@ int BJX2_MemSetDWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0, s32 val)
 	bjx2_addr addr;
 	int ra, ra4;
 
-	addr=BJX2_MemTranslateTlb(ctx, addr0);
+	addr=BJX2_MemTranslateTlb(ctx, addr0, 2);
 	if(ctx->status)
 		return(0);
 
@@ -1660,7 +1790,7 @@ int BJX2_MemSetQWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0, s64 val)
 	bjx2_addr addr;
 	int ra, ra4;
 
-	addr=BJX2_MemTranslateTlb(ctx, addr0);
+	addr=BJX2_MemTranslateTlb(ctx, addr0, 2);
 	if(ctx->status)
 		return(0);
 
@@ -1822,7 +1952,7 @@ int BJX2_MemSetTripwire_Dfl(BJX2_Context *ctx, bjx2_addr addr0, int val)
 	bjx2_addr addr;
 	int ra;
 
-	addr=BJX2_MemTranslateTlb(ctx, addr0);
+	addr=BJX2_MemTranslateTlb(ctx, addr0, 2);
 	if(ctx->status)
 		return(0);
 
@@ -1872,8 +2002,8 @@ int BJX2_MemQueryTransit_Dfl(BJX2_Context *ctx,
 	bjx2_addr addr, addrb;
 	int ra;
 
-	addr=BJX2_MemTranslateTlb(ctx, addr0);
-	addrb=BJX2_MemTranslateTlb(ctx, addr1);
+	addr=BJX2_MemTranslateTlb(ctx, addr0, 0);
+	addrb=BJX2_MemTranslateTlb(ctx, addr1, 0);
 	if(ctx->status)
 		return(0);
 

@@ -1,6 +1,7 @@
 __int128 __xli_add (__int128 a, __int128 b);
 __int128 __xli_sub (__int128 a, __int128 b);
 __int128 __xli_smul(__int128 a, __int128 b);
+__int128 __xli_umul(__int128 a, __int128 b);
 __int128 __xli_sdiv(__int128 a, __int128 b);
 __int128 __xli_smod(__int128 a, __int128 b);
 __int128 __xli_and (__int128 a, __int128 b);
@@ -169,20 +170,25 @@ __xli_umuldq:
 	SHLD.Q	R18,  32, R22
 	SHLD.Q	R18, -32, R23
 
+	CLRT
+	ADDC	R22, R20
+	ADDC	R23, R21
+
 	MOV		R16, R2
 	MOV		R19, R3
 	CLRT
 	ADDC	R20, R2
 	ADDC	R21, R3
-	CLRT
-	ADDC	R22, R2
-	ADDC	R23, R3
+//	CLRT
+//	ADDC	R22, R2
+//	ADDC	R23, R3
 	
 //	BREAK
 	
 	RTSU
 
 #if 1
+__xli_umul:
 __xli_smul:
 	ADD		-96, SP
 	MOV		LR, R1
@@ -201,10 +207,26 @@ __xli_smul:
 	MOV		R10, R5
 	BSR		__xli_umuldq
 
-	DMULU	R8, R11, R16
-	DMULU	R9, R10, R17
-	ADD		R16, R17, R18
-	ADD		R18, R3
+	MOV		R2, R12
+	MOV		R3, R13
+
+	MOV		R8, R4
+	MOV		R11, R5
+	BSR		__xli_umuldq
+	MOV		R2, R14
+
+	MOV		R9, R4
+	MOV		R10, R5
+	BSR		__xli_umuldq
+	ADD		R2, R14
+	
+	MOV		R12, R2
+	ADD		R13, R14, R3
+
+//	DMULU	R8, R11, R16
+//	DMULU	R9, R10, R17
+//	ADD		R16, R17, R18
+//	ADD		R18, R3
 
 //	BREAK
 
@@ -287,6 +309,7 @@ __xli_umul_hi:
 
 
 #if 0
+__xli_umul:
 __xli_smul:
 	ADD		-96, SP
 	MOV		LR, R1
@@ -502,13 +525,31 @@ static int _fcn_clz128(__uint128 v)
 __uint128 __xli_udiv(__uint128 n, __uint128 d)
 {
 	__uint128 q, r;
-	int s, c;
+//	int s, c;
+	__int128 s, c;
 //	int sr;
 	byte sr;
 
 //	if(!d || !n)
 	if((d==0) || (n==0))
 		return(0);
+	
+	if(d>n)
+		return(0);
+
+#if 0
+	if(!(d&(d-1)))
+	{
+		q=n;
+		r=d;
+		while(!(r&1))
+		{
+			q=q>>1;
+			r=r>>1;
+		}
+		return(q);
+	}
+#endif
 
 	sr=(byte)(_fcn_clz128(d)-_fcn_clz128(n));
 

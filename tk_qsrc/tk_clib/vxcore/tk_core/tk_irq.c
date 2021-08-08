@@ -331,3 +331,14 @@ void TK_SmallFlushL1I(void *ptr, int sz)
 	}
 	return;
 }
+
+u64 TK_GetRandom();
+
+__asm {
+TK_GetRandom:
+	CPUID	31
+	NOP
+	NOP
+	MOV		DLR, R2
+	RTS
+};

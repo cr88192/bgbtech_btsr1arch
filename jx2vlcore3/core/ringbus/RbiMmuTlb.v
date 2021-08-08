@@ -187,21 +187,32 @@ reg			icPageEq;
 
 reg[47:0]	tlbAddrAB;
 reg[47:0]	tlbAddrCD;
-reg[31:0]	tlbAccAB;
-reg[31:0]	tlbAccCD;
+reg[35:0]	tlbAccAB;
+reg[35:0]	tlbAccCD;
 
 reg[47:0]	tlbAddr;
-reg[31:0]	tlbAcc;
+reg[35:0]	tlbAcc;
 reg[47:0]	tlbAddrB;
-reg[31:0]	tlbAccB;
+reg[35:0]	tlbAccB;
 reg			tlbIs32b;
 reg			tlbIs48b;
+
+reg[47:0]	aclEntryA;
+reg[47:0]	aclEntryB;
+reg[47:0]	aclEntryC;
+reg[47:0]	aclEntryD;
+
+reg[47:0]	nxtAclEntryA;
+reg[47:0]	nxtAclEntryB;
+reg[47:0]	nxtAclEntryC;
+reg[47:0]	nxtAclEntryD;
 
 reg			tAddrIsMMIO;
 reg			tAddrIsHiMMIO;
 reg			tAddrIsLo4G;
 reg			tAddrIsHi4G;
 reg			tAddrIsPhys;
+reg			tAddrIsPhysV;
 
 wire[15:0]	tTlbExc;
 
@@ -216,6 +227,12 @@ assign		tRegInIsLDTLB = (tRegInOpm[7:0]==JX2_RBI_OPM_LDTLB);
 
 wire		tRegInIsINVTLB;
 assign		tRegInIsINVTLB = (tRegInOpm[7:0]==JX2_RBI_OPM_INVTLB);
+
+wire		tRegInIsLDACL;
+assign		tRegInIsLDACL = (tRegInOpm[7:0]==JX2_RBI_OPM_LDACL);
+
+// wire		tRegInIsINVACL;
+// assign		tRegInIsINVACL = (tRegInOpm[7:0]==JX2_RBI_OPM_INVACL);
 
 wire		tRegInIsIRQ;
 assign		tRegInIsIRQ = (tRegInOpm[7:0]==JX2_RBI_OPM_IRQ);
@@ -233,7 +250,11 @@ wire		regInIsREADY;
 assign		regInIsREADY = (regInOpm[7:0]==JX2_RBI_OPM_IDLE);
 
 wire		regInIsPhysAddr;
-assign		regInIsPhysAddr = (regInAddrA[47:44]==4'hC);
+wire		regInIsPhysAddrC;
+wire		regInIsPhysAddrV;
+assign		regInIsPhysAddrC = (regInAddrA[47:44]==4'hC);
+assign		regInIsPhysAddrV = (regInAddrA[47:44]==4'hD);
+assign		regInIsPhysAddr = regInIsPhysAddrC || regInIsPhysAddrV;
 
 wire		regInIsLDX;
 wire		regInIsSTX;
@@ -264,6 +285,8 @@ RbiMmuChkAcc tlbChkAcc(
 	regInSR,
 	regInOpm[7:0],
 	tlbAcc,
+	aclEntryA,	aclEntryB,
+	aclEntryC,	aclEntryD,
 	tTlbExc,
 	tChkAccNoRwx);
 
@@ -271,7 +294,7 @@ always @*
 begin
 	tlbDoLdtlb		= 0;
 	tRegOutTea		= UV64_00;
-	tlbAcc			= UV32_00;
+	tlbAcc			= UV36_00;
 	tNxtTlbRov		= tTlbRov;
 
 	tlbMmuEnable	= regInMMCR[0];
@@ -332,7 +355,10 @@ begin
 	tlbHixA = tlbHixSelA[5:0] ^ regInAddrA[21:16];
 `endif
 
-
+	nxtAclEntryA	= aclEntryA;
+	nxtAclEntryB	= aclEntryB;
+	nxtAclEntryC	= aclEntryC;
+	nxtAclEntryD	= aclEntryD;
 
 //	icPageEq		= (tRegInAddr[47:12] == regInAddrA[47:12]);
 
@@ -344,7 +370,10 @@ begin
 		((tAddrIsLo4G && tlbIs32b) || tAddrIsHi4G || tlbIs32b)) ||
 		tAddrIsHiMMIO;
 	tAddrIsPhys		= (tAddrIsHi4G && !tRegInAddr[31]) ||
-		(tRegInAddr[47:44] == 4'hC);
+		(tRegInAddr[47:44] == 4'hC) ||
+		(tRegInAddr[47:44] == 4'hD);
+	tAddrIsPhysV	= 
+		(tRegInAddr[47:44] == 4'hD);
 
 //	tRegInIsBounce	= (tRegInOpm == UMEM_OPM_RD_BOUNCE);
 	tRegInIsBounce	= 0;
@@ -455,12 +484,12 @@ begin
 	if(tlbMmuPg64K)
 		tlbAddr[15:14] = tRegInAddr[15:14];
 
-	tlbAccAB = 
-		tlbHitA ? { tlbHdatA[127:112], tlbHdatA[75:64], tlbHdatA[7:4] } :
-			{ tlbHdatB[127:112], tlbHdatB[75:64], tlbHdatB[7:4] };
-	tlbAccCD = 
-		tlbHitC ? { tlbHdatC[127:112], tlbHdatC[75:64], tlbHdatC[7:4] } :
-			{ tlbHdatD[127:112], tlbHdatD[75:64], tlbHdatD[7:4] };
+	tlbAccAB = 	tlbHitA ?
+		{ tlbHdatA[3:0], tlbHdatA[127:112], tlbHdatA[75:64], tlbHdatA[7:4] } :
+		{ tlbHdatB[3:0], tlbHdatB[127:112], tlbHdatB[75:64], tlbHdatB[7:4] } ;
+	tlbAccCD = 	tlbHitC ?
+		{ tlbHdatC[3:0], tlbHdatC[127:112], tlbHdatC[75:64], tlbHdatC[7:4] } :
+		{ tlbHdatD[3:0], tlbHdatD[127:112], tlbHdatD[75:64], tlbHdatD[7:4] };
 	tlbAcc = tlbHitAB ? tlbAccAB : tlbAccCD;
 
 	tlbMiss = 0;
@@ -483,6 +512,17 @@ begin
 
 	tRegOutOpm   = tRegInOpm;
 	tRegOutSeq   = tRegInSeq;
+
+	if(tAddrIsPhysV)
+		tRegOutOpm[11]	= 1;
+
+	if((tRegInAddr[47] && tRegInIsLDX) || tAddrIsMMIO)
+	begin
+		if(tlbMmuEnable && !regInSR[30])
+		begin
+			tRegOutOpm[11:8]	= 4'h7;
+		end
+	end
 
 //	if(tlbMmuEnable && !tlbMmuSkip && (tRegInOpm[4:3]!=0))
 	if(tlbMmuEnable && !tlbMmuSkip)
@@ -574,6 +614,11 @@ begin
 	if(tRegInIsINVTLB || reset)
 	begin
 		tNxtTlbRov		= tTlbRov + 1;
+
+		nxtAclEntryA	= 0;
+		nxtAclEntryB	= 0;
+		nxtAclEntryC	= 0;
+		nxtAclEntryD	= 0;
 	end
 
 	if(tRegInIsIRQ)
@@ -592,6 +637,24 @@ begin
 	begin
 		tRegOutExc = 0;
 		tRegOutOpm   = UV16_00;
+	end
+
+`ifndef def_true
+	if(tRegInIsINVACL || reset)
+	begin
+		nxtAclEntryA	= 0;
+		nxtAclEntryB	= 0;
+		nxtAclEntryC	= 0;
+		nxtAclEntryD	= 0;
+	end
+`endif
+
+	if(tRegInIsLDACL)
+	begin
+		nxtAclEntryA	= regInLdtlb[47:0];
+		nxtAclEntryB	= aclEntryA;
+		nxtAclEntryC	= aclEntryB;
+		nxtAclEntryD	= aclEntryC;
 	end
 
 	if(tRegInIsLDTLB)
@@ -618,7 +681,7 @@ begin
 
 `ifdef def_true
 		if(tlbMmuEnable && icPageReady &&
-			!tlbMiss &&
+			!tlbMiss && !tlbMmuSkip &&
 			(tRegInOpm[4:3]!=0) && !tlbMmuSkip)
 		begin
 			/* Special: Shuffle TLBE's based on TLB Hits.
@@ -675,6 +738,9 @@ begin
 			tRegOutOpm2		<= regInOpm;
 			tRegOutSeq2		<= regInSeq;
 
+			if(regInIsPhysAddrV)
+				tRegOutOpm2[11]	<= 1;
+
 //			tRegInOpm		<= regInOpm;
 //			tRegInSeq		<= regInSeq;			
 			tRegInOpm		<= regInIsReqIO ? 0 : regInOpm;
@@ -689,6 +755,9 @@ begin
 			tRegOutData2	<= regInData;
 			tRegOutOpm2		<= regInOpm;
 			tRegOutSeq2		<= regInSeq;
+			
+			if(regInIsPhysAddrV)
+				tRegOutOpm2[11]	<= 1;
 
 			tRegInOpm		<= 0;
 			tRegInSeq		<= 0;
@@ -749,6 +818,11 @@ begin
 		tlbHbIxA		<= tlbHixA;
 //		tlbHbIxB		<= tlbHixB;
 	end
+
+	aclEntryA		<= nxtAclEntryA;
+	aclEntryB		<= nxtAclEntryB;
+	aclEntryC		<= nxtAclEntryC;
+	aclEntryD		<= nxtAclEntryD;
 
 	tlbHbDatA		<= tlbBlkA[tlbHixA];
 	tlbHbDatB		<= tlbBlkB[tlbHixA];

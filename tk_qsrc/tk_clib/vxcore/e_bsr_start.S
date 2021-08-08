@@ -685,6 +685,9 @@ X(__longj):
 //	mov r4, r1
 	mov r5, r2
 
+	test	r2, r2
+	mov?t	1, r2
+
 //	mov.q  @(16,r4), r0
 //	lds r0, pr
 
@@ -697,12 +700,13 @@ X(__longj):
 	mov.q  @(r4, 16), r1
 	mov r1, sr
 
-	mov.q  @(r4, 24), r1
-	mov r1, ssp
+//	mov.q  @(r4, 24), r1
+//	mov r1, ssp
 
 //	mov		STACK_BASE_ISR, r0
 //	mov		r0, ssp
 
+#if 0
 	mov.q  @(r4, 32), r1
 	mov r1, tbr
 
@@ -712,11 +716,12 @@ X(__longj):
 	mov.q  @(r4, 48), r1
 	mov r1, mmcr
 
-	mov.q  @(r4, 56), r1
-	mov r1, krr
-
 	mov.q  @(r4, 128), r1
 	mov r1, vbr
+#endif
+
+	mov.q  @(r4, 56), r1
+	mov r1, krr
 
 .ifarch has_xgpr
 
@@ -899,6 +904,7 @@ X(__setj):
 	mov sr, r1
 	mov.q  r1, @(r4, 16)
 
+#if 0
 	mov ssp, r1
 	mov.q  r1, @(r4, 24)
 
@@ -911,11 +917,12 @@ X(__setj):
 	mov mmcr, r1
 	mov.q  r1, @(r4, 48)
 
-	mov krr, r1
-	mov.q  r1, @(r4, 56)
-
 	mov vbr, r1
 	mov.q  r1, @(r4, 128)
+#endif
+
+	mov krr, r1
+	mov.q  r1, @(r4, 56)
 	
 //	mov #0, r0
 	mov #0, r2

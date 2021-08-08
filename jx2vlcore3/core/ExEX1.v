@@ -979,6 +979,11 @@ begin
 					tDoMemOp	= 1;
 				end
 
+				JX2_UCIX_IXT_LDACL: begin
+					tDoMemOpm	= UMEM_OPM_LDACL;
+					tDoMemOp	= 1;
+				end
+
 				JX2_UCIX_IXT_LDEKRR: begin
 				end
 				JX2_UCIX_IXT_LDEKEY: begin

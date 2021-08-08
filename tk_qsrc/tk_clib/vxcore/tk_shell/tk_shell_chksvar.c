@@ -107,6 +107,7 @@ int tk_shell_chksane_var()
 	int (*run1)(int x, int y);
 	void *p1, *p2, *p3;
 	int	i, j, k;
+	long long li, lj, lk;
 
 	tk_printf("CS-VA B0\n");
 	
@@ -208,8 +209,17 @@ int tk_shell_chksane_var()
 	j=ds2->x+ds2->y;
 	if(j!=7)
 		__debugbreak();
+
+
+	li=TK_GetRandom();
+	lj=TK_GetRandom();
+	printf("RNG %X-%X %X-%X\n",
+		(u32)(li>>32), (u32)(li>>0),
+		(u32)(lj>>32), (u32)(lj>>0));
+
 }
 
+u64 TK_GetRandom();
 
 int tk_shell_chksane_int128()
 {
@@ -274,6 +284,5 @@ int tk_shell_chksane_int128()
 	if(sv2!=sv1)
 		__debugbreak();
 	
-
 //	__debugbreak();
 }

@@ -44,15 +44,17 @@ int BGBCC_JX2_TryEmitOpNone(BGBCC_JX2_Context *ctx, int nmid)
 
 	case BGBCC_SH_NMID_SYSCALL:	opw1=0x3022; break;
 
+	case BGBCC_SH_NMID_LDACL:	opw1=0x3042; break;
+
 //	case BGBCC_SH_NMID_CLRMAC:	opw1=0x0028; break;
 
 //	case BGBCC_SH_NMID_RET:		opw1=0x300B; break;
 //	case BGBCC_SH_NMID_RET:		opw1=0x310B; break;
-	case BGBCC_SH_NMID_RET:
+//	case BGBCC_SH_NMID_RET:
 //		opw1=0x310B;
-		opw1=0x311B;
-		opw2=0x3010;
-		break;
+//		opw1=0x311B;
+//		opw2=0x3010;
+//		break;
 
 	default:
 		break;

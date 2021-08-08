@@ -219,7 +219,7 @@ Will use direct linking and assume a non-modifiable program space.
 
 #define BJX2_FLT_TLBGF		0xA000		//TLB General Fault
 #define BJX2_FLT_TLBMISS	0xA001		//TLB Miss
-#define BJX2_FLT_TLBACL		0xA002		//TLB ACL
+#define BJX2_FLT_TLBACL		0xA002		//TLB ACL Check
 
 #define BJX2_FLT_TIMER		0xC001		//kHz timer
 #define BJX2_FLT_IOPOKE		0xC002		//IO Poke
@@ -790,6 +790,8 @@ bjx2_addr mem_l1addr1;		//L1 addr
 bjx2_addr mem_l1addr2;		//L1 addr
 bjx2_addr mem_l1addr3;		//L1 addr
 bjx2_addr mem_l1addr4;		//L1 addr
+
+u64		hw_rng[4];
 
 bjx2_addr mem_l1h4k[4096];		//L1 addr (4kB)
 // bjx2_addr mem_l2h32k[8192];	//L2 addr (32/64kB)

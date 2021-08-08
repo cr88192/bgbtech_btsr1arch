@@ -61,14 +61,28 @@ reg[ 47:0]	mem2AddrIn;		//memory input address
 reg[127:0]	mem2DataIn;		//memory input data
 
 
+`ifdef jx2_enable_rom48k
+reg[127:0]	romTileData[3071:0];
+reg[11:0]	tRomBlkIx;
+reg[11:0]	tRomBlkIxL;
+`else
 reg[127:0]	romTileData[2047:0];
-reg[127:0]	ramTileData[ 511:0];
-
 reg[10:0]	tRomBlkIx;
 reg[10:0]	tRomBlkIxL;
+`endif
+
+`ifdef jx2_enable_sram16k
+reg[127:0]	ramTileData[1023:0];
+reg[9:0]	tRamBlkIx;
+reg[9:0]	tRamBlkIxL;
+reg[9:0]	tRamStBlkIx;
+`else
+reg[127:0]	ramTileData[ 511:0];
 reg[8:0]	tRamBlkIx;
 reg[8:0]	tRamBlkIxL;
 reg[8:0]	tRamStBlkIx;
+`endif
+
 
 reg[127:0]	tRomBlkData;
 reg[127:0]	tRamBlkData;
@@ -117,8 +131,20 @@ assign	memAddrIsBad2		= (memAddrIn[31:30] != UV2_00);
 
 `ifdef def_true
 assign	memAddrIsLo128k		= (memAddrIn[31:18] == UV14_00);
+
+`ifdef jx2_enable_rom48k
+assign	memAddrIsRom		= memAddrIsLo128k &&
+	((memAddrIn[17:15]==3'b000) || (memAddrIn[17:14]==4'b0010));
+`else
 assign	memAddrIsRom		= memAddrIsLo128k && (memAddrIn[17:15]==3'b000);
+`endif
+
+`ifdef jx2_enable_sram16k
+assign	memAddrIsRam		= memAddrIsLo128k && (memAddrIn[17:14]==4'b0011);
+`else
 assign	memAddrIsRam		= memAddrIsLo128k && (memAddrIn[17:13]==5'b00110);
+`endif
+
 assign	memAddrIsZero		= memAddrIsLo128k && (memAddrIn[17:16]==2'b01);
 assign	memAddrIsNop		= memAddrIsLo128k && (memAddrIn[17:16]==2'b10);
 assign	memAddrIsRts		= memAddrIsLo128k && (memAddrIn[17:16]==2'b11);
@@ -158,8 +184,17 @@ end
 
 always @*
 begin
+`ifdef jx2_enable_rom48k
+	tRomBlkIx		= memAddrIn[15:4];
+`else
 	tRomBlkIx		= memAddrIn[14:4];
+`endif
+
+`ifdef jx2_enable_sram16k
+	tRamBlkIx		= memAddrIn[13:4];
+`else
 	tRamBlkIx		= memAddrIn[12:4];
+`endif
 	
 //	tMemOK			= UMEM_OK_READY;
 
@@ -216,6 +251,7 @@ begin
 	begin
 		$display("L2Rom: Skip Invalid Address S=%X O=%X A=%X D=%X",
 			mem2SeqIn, mem2OpmIn, mem2AddrIn, mem2DataIn);
+		tMemOpmReq[3:0] = 4'b1011;
 		tMemCcmdReq		= 1;
 	end
 
