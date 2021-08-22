@@ -1115,6 +1115,120 @@ void BJX2_Op_LDTLB_None(BJX2_Context *ctx, BJX2_Opcode *op)
 //	printf("LDTLB H=%016llX L=%016llX\n", r1, r0);
 }
 
+void BJX2_Op_LDACL_None(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->mem_tlb_acl[3]=ctx->mem_tlb_acl[2];
+	ctx->mem_tlb_acl[2]=ctx->mem_tlb_acl[1];
+	ctx->mem_tlb_acl[1]=ctx->mem_tlb_acl[0];
+	ctx->mem_tlb_acl[0]=ctx->regs[BJX2_REG_DLR];
+}
+
+void BJX2_Op_INVTLB_None(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	int i, j, k;
+
+	ctx->mem_tlb_acl[3]=0;
+	ctx->mem_tlb_acl[2]=0;
+	ctx->mem_tlb_acl[1]=0;
+	ctx->mem_tlb_acl[0]=0;
+	
+	for(i=0; i<256; i++)
+	{
+		for(j=0; j<4; j++)
+		{
+			ctx->mem_tlb_lo[i*4+j]=0;
+			ctx->mem_tlb_hi[i*4+j]=0;
+		}
+	}
+}
+
+void BJX2_Op_SXENTR_None(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 lr, sr;
+	
+	sr=ctx->regs[BJX2_REG_SR];
+	sr&=~(0x0000000070000000ULL);
+	sr|= (0x0000000010000000ULL);
+	ctx->regs[BJX2_REG_SR]=sr;
+}
+
+void BJX2_Op_SUENTR_None(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 lr, sr;
+	
+	sr=ctx->regs[BJX2_REG_SR];
+	sr&=~(0x0000000070000000ULL);
+	ctx->regs[BJX2_REG_SR]=sr;
+}
+
+void BJX2_Op_SVENTR_None(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 lr, sr;
+	
+	sr=ctx->regs[BJX2_REG_SR];
+	sr&=~(0x0000000070000000ULL);
+	sr|= (0x0000000040000000ULL);
+	ctx->regs[BJX2_REG_SR]=sr;
+}
+
+void BJX2_Op_SVEKRR_None(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 sk0, sk1, krr0;
+	u64 sk2, sk3;
+
+	sk0=ctx->krr_key[0];
+	sk1=ctx->krr_key[1];
+	krr0=ctx->regs[BJX2_REG_KRR];
+	
+	sk2=krr0^sk0;
+	sk3=krr0^sk1;
+	ctx->regs[BJX2_REG_DLR]=sk2;
+	ctx->regs[BJX2_REG_DHR]=sk3;
+}
+
+void BJX2_Op_LDEKRR_None(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 sk0, sk1, krr0;
+	u64 sk2, sk3;
+	u64 sk4, sk5;
+
+	sk0=ctx->krr_key[0];
+	sk1=ctx->krr_key[1];
+	sk2=ctx->regs[BJX2_REG_DLR];
+	sk3=ctx->regs[BJX2_REG_DHR];
+
+	sk4=sk2^sk0;
+	sk5=sk3^sk1;
+
+	if(sk4!=sk5)
+	{
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVKRR);
+		return;
+	}
+
+	ctx->regs[BJX2_REG_KRR]=sk4;
+}
+
+void BJX2_Op_LDEENC_None(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 sk0, sk1, krr0;
+	u64 sk2, sk3;
+
+	sk0=ctx->krr_key[0];
+	sk1=ctx->krr_key[1];
+	krr0=ctx->regs[BJX2_REG_DLR];
+	
+	sk2=krr0^sk0;
+	sk3=krr0^sk1;
+	ctx->regs[BJX2_REG_DLR]=sk2;
+	ctx->regs[BJX2_REG_DHR]=sk3;
+}
+
+void BJX2_Op_LDEKEY_None(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->krr_key[0]=ctx->regs[BJX2_REG_DLR];
+	ctx->krr_key[1]=ctx->regs[BJX2_REG_DHR];
+}
 
 void BJX2_Op_BRA_Abs(BJX2_Context *ctx, BJX2_Opcode *op)
 {

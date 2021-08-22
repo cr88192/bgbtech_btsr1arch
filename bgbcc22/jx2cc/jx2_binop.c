@@ -4439,6 +4439,9 @@ int BGBCC_JX2C_EmitCallVReg(
 #if 0
 		if(rcls==BGBCC_SH_REGCLS_VO_GR2)
 		{
+			if(sctx->abi_evenonly)
+				ni=(ni+1)&(~1);
+		
 			if(sctx->is_addr64)
 			{
 				BGBCC_DBGBREAK
@@ -4466,6 +4469,9 @@ int BGBCC_JX2C_EmitCallVReg(
 		if((rcls==BGBCC_SH_REGCLS_VO_QGR2) ||
 			(rcls==BGBCC_SH_REGCLS_QGR2))
 		{
+			if(sctx->abi_evenonly)
+				ni=(ni+1)&(~1);
+		
 			if(ni<3)
 			{
 				BGBCC_JX2C_EmitLoadFrameVRegByValReg(ctx, sctx,
@@ -4503,7 +4509,8 @@ int BGBCC_JX2C_EmitCallVReg(
 				continue;
 			}
 		}
-		
+
+#if 0
 //		if(BGBCC_CCXL_TypeFloatP(ctx, tty))
 		if(rcls==BGBCC_SH_REGCLS_FR)
 		{
@@ -4545,6 +4552,7 @@ int BGBCC_JX2C_EmitCallVReg(
 				continue;
 			}
 		}
+#endif
 
 #if 0
 //		if(BGBCC_CCXL_TypeDoubleP(ctx, tty))

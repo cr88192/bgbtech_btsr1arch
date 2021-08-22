@@ -728,7 +728,7 @@ char *BGBCC_CCXL_VarTypeString_FlattenExpr(BGBCC_TransState *ctx,char *dst, BCCX
 BCCX_Node *BGBCC_CCXL_LookupStructureNodeForNameI(BGBCC_TransState *ctx,char *name);
 BCCX_Node *BGBCC_CCXL_LookupStructureNodeForName(BGBCC_TransState *ctx,char *name);
 char *BGBCC_CCXL_StrPrintInt(char *t, s32 val);
-char *BGBCC_CCXL_VarTypeString_FlattenName(BGBCC_TransState *ctx,char *t, char *s, int fl);
+char *BGBCC_CCXL_VarTypeString_FlattenName(BGBCC_TransState *ctx,char *t, char *s, int fl, int vsz);
 int BGBCC_CCXL_VarTypeString_ModifierChar(BGBCC_TransState *ctx, s64 i);
 char *BGBCC_CCXL_VarTypeString_FlattenModifiers(BGBCC_TransState *ctx,char *t, s64 fl);
 char *BGBCC_CCXL_VarTypeString_FlattenModifiers2(BGBCC_TransState *ctx,char *t, s64 fl);
@@ -766,6 +766,7 @@ BCCX_Node *BGBCC_CCXL_CompileSProto(BGBCC_TransState *ctx, BCCX_Node *l);
 BCCX_Node *BGBCC_CCXL_GetNodeAttribute(BGBCC_TransState *ctx,BCCX_Node *l, char *name);
 char *BGBCC_CCXL_GetNodeAttributeString(BGBCC_TransState *ctx,BCCX_Node *l, char *name);
 char *BGBCC_CCXL_GetNodeAttributeStringOrRef(BGBCC_TransState *ctx,BCCX_Node *l, char *name);
+s64 BGBCC_CCXL_GetNodeAttributeInt(BGBCC_TransState *ctx,BCCX_Node *l, char *name);
 void BGBCC_CCXL_CompileTypedef(BGBCC_TransState *ctx, BCCX_Node *l);
 void BGBCC_CCXL_CompileSetupNsPath(BGBCC_TransState *ctx, char *nsp);
 void BGBCC_CCXL_CompileStructs(BGBCC_TransState *ctx);

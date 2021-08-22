@@ -100,10 +100,14 @@ wire		memRingIsIdle;
 wire		memRingIsResp;
 wire		memRingIsLdx;
 wire		memRingIsStx;
+wire		memRingIsPfx;
 wire		memRingIsCcmd;
 assign	memRingIsIdle	= (memOpmIn[7:0] == JX2_RBI_OPM_IDLE);
 assign	memRingIsLdx	= (memOpmIn[7:0] == JX2_RBI_OPM_LDX);
 assign	memRingIsStx	= (memOpmIn[7:0] == JX2_RBI_OPM_STX);
+assign	memRingIsPfx	=
+	(memOpmIn[7:0] == JX2_RBI_OPM_PFX) ||
+	(memOpmIn[7:0] == JX2_RBI_OPM_SPX);
 assign	memRingIsCcmd	= (memOpmIn[7:4] == 4'h8);
 assign	memRingIsResp	=
 	(memOpmIn[ 7:6] == 2'b01) &&
@@ -157,6 +161,7 @@ reg		mem2RingIsIdle;
 reg		mem2RingIsResp;
 reg		mem2RingIsLdx;
 reg		mem2RingIsStx;
+reg		mem2RingIsPfx;
 reg		mem2RingIsCcmd;
 
 reg		mem2AddrIsLo128k;
@@ -247,7 +252,8 @@ begin
 		tMemCcmdReq		= 1;
 	end
 
-	if((mem2AddrIsBad1 || mem2AddrIsBad2) && (mem2RingIsLdx || mem2RingIsStx))
+	if((mem2AddrIsBad1 || mem2AddrIsBad2) &&
+		(mem2RingIsLdx || mem2RingIsStx || mem2RingIsPfx))
 	begin
 		$display("L2Rom: Skip Invalid Address S=%X O=%X A=%X D=%X",
 			mem2SeqIn, mem2OpmIn, mem2AddrIn, mem2DataIn);
@@ -268,6 +274,7 @@ begin
 	mem2RingIsResp		<= memRingIsResp;
 	mem2RingIsLdx		<= memRingIsLdx;
 	mem2RingIsStx		<= memRingIsStx;
+	mem2RingIsPfx		<= memRingIsPfx;
 	mem2RingIsCcmd		<= memRingIsCcmd;
 
 	mem2AddrIsLo128k	<= memAddrIsLo128k;
@@ -293,7 +300,9 @@ begin
 		ramTileData[tRamStBlkIx]	<= tRamStBlkData;
 	end
 
-	if((mem2AddrIsLo128k && (mem2RingIsLdx || mem2RingIsStx)) || tMemCcmdReq)
+	if((mem2AddrIsLo128k &&
+			( mem2RingIsLdx || mem2RingIsStx || mem2RingIsPfx )	) ||
+			tMemCcmdReq)
 	begin
 		tMemSeqOut		<= tMemSeqReq;
 		tMemOpmOut		<= tMemOpmReq;

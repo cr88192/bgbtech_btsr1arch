@@ -13,6 +13,7 @@ module RbiMemIcWxA(
 	icInPcHold,		icInPcWxe,
 	icInPcOpm,		regInSr,
 	icMemWait,		regOutExc,
+	regOutPcSxo,
 
 	memAddrIn,		memAddrOut,
 	memDataIn,		memDataOut,
@@ -28,6 +29,7 @@ input [47: 0]	regInPc;		//input PC address
 output[95: 0]	regOutPcVal;	//output PC value
 output[ 1: 0]	regOutPcOK;		//set if we have a valid value.
 output[ 3: 0]	regOutPcStep;	//PC step (Normal Op)
+output[ 3: 0]	regOutPcSxo;
 (* max_fanout = 100 *)
 	input			icInPcHold;
 input			icInPcWxe;
@@ -56,10 +58,12 @@ reg[95:0]		tRegOutPcVal;	//output PC value
 reg[ 1:0]		tRegOutPcOK;	//set if we have a valid value.
 reg[ 3: 0]		tRegOutPcStep;	//PC step (Normal Op)
 reg[ 3: 0]		tRegOutPcStepA;	//PC step (Normal Op)
+reg[ 3: 0]		tRegOutPcSxo;	//
 
 assign	regOutPcVal		= tRegOutPcVal;
 assign	regOutPcOK		= tRegOutPcOK;
 assign	regOutPcStep	= tRegOutPcStep;
+assign	regOutPcSxo		= tRegOutPcSxo;
 
 reg			tMemWait;
 assign	icMemWait = tMemWait;
@@ -429,6 +433,8 @@ reg				tRegOutHold;
 reg				tRegOutHoldL;
 reg				tReqReady;
 
+reg				tBlkIsSxo;
+
 always @*
 begin
 	tNxtTlbMissInh		= tTlbMissInh;
@@ -439,7 +445,8 @@ begin
 //	if(tMemNoRwx[5])
 //		tNxtTlbMissInh = 1;
 	
-	if((tInOpmB == JX2_DCOPM_LDTLB) || tRegInSr[29])
+//	if((tInOpmB == JX2_DCOPM_LDTLB) || tRegInSr[29])
+	if((tInOpmB == JX2_DCOPM_LDTLB) || (tRegInSr[29] && tRegInSr[30]))
 	begin
 		if(tTlbMissInh)
 			$display("L1I$ Clear TLB Inhibit");
@@ -589,15 +596,22 @@ begin
 	
 	if(!tTlbMissInh)
 	begin
-		if(tBlkFlagA[3])
+//		if(tBlkFlagA[3])
+		if(tBlkFlagA[3:2]==2'b11)
 			tFlushA = 1;
-		if(tBlkFlagB[3])
+//		if(tBlkFlagB[3])
+		if(tBlkFlagB[3:2]==2'b11)
 			tFlushB = 1;
 	end
 
 	tRegOutExc[63:16] = tInAddr;
 	if(tBlkFlagA[2] && !tBlkFlagA[3])
 		tRegOutExc[15:0] = 16'h8003;
+	
+	tBlkIsSxo = 0;
+//	if(tBlkFlagA[3:0]==4'b1011)
+	if(tBlkFlagA[3] && tBlkFlagA[1])
+		tBlkIsSxo = 1;
 	
 
 `ifndef def_true
@@ -787,9 +801,13 @@ begin
 	tRegOutPcVal	= UV96_00;
 	tRegOutPcStep	= 0;
 	tRegOutPcStepA	= 0;
+	tRegOutPcSxo	= 0;
 	tPcStepWA		= 0;
 	tPcStepWB		= 0;
 	tPcStepJA		= 0;
+
+	if(tBlkIsSxo)
+		tRegOutPcSxo[0]=1;
 
 	if(tInWordIx[1])
 		tBlkData0A = tBlkData[159:32];
@@ -917,7 +935,8 @@ begin
 		tStBlkAddrA		= tReqSeqVa[43:0];
 		tDoStBlkA		= 1;
 
-		if(memOpmIn[3])
+//		if(memOpmIn[3])
+		if(memOpmIn[3:2]==2'b11)
 		begin
 			$display("L1I$ Set TLB Inhibit A");
 			tNxtTlbMissInh = 1;
@@ -939,7 +958,8 @@ begin
 		tStBlkAddrB		= tReqSeqVa[43:0];
 		tDoStBlkB		= 1;
 
-		if(memOpmIn[3])
+//		if(memOpmIn[3])
+		if(memOpmIn[3:2]==2'b11)
 		begin
 			$display("L1I$ Set TLB Inhibit B");
 			tNxtTlbMissInh = 1;

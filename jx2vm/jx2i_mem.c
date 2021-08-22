@@ -750,6 +750,7 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr)
 int BJX2_MemTlbCheckAccess(BJX2_Context *ctx, int acc, int pgbits,
 	u64 krr, u32 kra)
 {
+	u64 acl;
 	int noacc, vugid, vugid2, ugm;
 	int i, j, k;
 	
@@ -771,43 +772,74 @@ int BJX2_MemTlbCheckAccess(BJX2_Context *ctx, int acc, int pgbits,
 	ugm=0;
 	if(((u16)krr)!=0)
 	{
-		ugm=1;
-		vugid=kra>>16;
-		for(i=0; i<4; i++)
+		ugm=0;
+
+		if(((kra&7)==2) || ((kra&7)==6) ||
+			((kra&7)==3) || ((kra&7)==7))
 		{
-			vugid2=(u16)(krr>>(i*16));
-			if(!vugid2)
-				continue;
-			if(vugid2==vugid)
-				{ ugm=3; break; }
-			if(((vugid2&0xFC00)==(vugid&0xFC00)) && !(kra&4))
-				ugm=2;
-			if(((vugid2&0x03FF)==(vugid&0x03FF)) &&  (kra&4))
-				ugm=2;
-		}
-		
-		switch(kra&7)
-		{
-		case 0:		case 4:
-			noacc|=7;
-			break;
-		case 1:		case 5:
-			j=kra>>(12-(ugm*3));
-			noacc|=(~j)&7;
-			break;
-		case 2:		case 6:
-			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_TLBACL);
-			break;
-		case 3:		case 7:
-			if(ugm<=1)
+			vugid=kra>>16;
+			for(i=0; i<4; i++)
 			{
+				vugid2=(u16)(krr>>(i*16));
+				for(j=0; j<4; j++)
+				{
+					acl=ctx->mem_tlb_acl[j];
+					if(	(((acl>> 0)&0xFFFF)==vugid ) &&
+						(((acl>>16)&0xFFFF)==vugid2) &&
+						((acl>>32)&7))
+							break;
+				}
+				if(j<4)
+					break;
+			}
+			
+			if(i<4)
+			{
+				ugm=3;
+				noacc|=(~(acl>>(32+3)))&7;
+			}
+		}
+	
+		if(ugm<=0)
+		{
+			ugm=1;
+			vugid=kra>>16;
+			for(i=0; i<4; i++)
+			{
+				vugid2=(u16)(krr>>(i*16));
+				if(!vugid2)
+					continue;
+				if(vugid2==vugid)
+					{ ugm=3; break; }
+				if(((vugid2&0xFC00)==(vugid&0xFC00)) && !(kra&4))
+					ugm=2;
+				if(((vugid2&0x03FF)==(vugid&0x03FF)) &&  (kra&4))
+					ugm=2;
+			}
+
+			switch(kra&7)
+			{
+			case 0:		case 4:
+				noacc|=7;
+				break;
+			case 1:		case 5:
+				j=kra>>(12-(ugm*3));
+				noacc|=(~j)&7;
+				break;
+			case 2:		case 6:
 				BJX2_ThrowFaultStatus(ctx, BJX2_FLT_TLBACL);
 				break;
+			case 3:		case 7:
+				if(ugm<=1)
+				{
+					BJX2_ThrowFaultStatus(ctx, BJX2_FLT_TLBACL);
+					break;
+				}
+				j=kra>>(12-(ugm*3));
+				noacc|=(~j)&7;
+	//			noacc|=16;
+				break;
 			}
-			j=kra>>(12-(ugm*3));
-			noacc|=(~j)&7;
-//			noacc|=16;
-			break;
 		}
 	}
 
@@ -2075,7 +2107,8 @@ int BJX2_MemSetupState(BJX2_Context *ctx)
 	else
 		ctx->MemSpanForAddr=BJX2_MemSpanForAddr32;
 
-	if(!(ctx->regs[BJX2_REG_MMCR]&1) && (ctx->use_jit || ctx->no_memcost))
+//	if(!(ctx->regs[BJX2_REG_MMCR]&1) && (ctx->use_jit || ctx->no_memcost))
+	if(0)
 	{
 		if(!(ctx->regs[BJX2_REG_SR]&0x80000000))
 		{

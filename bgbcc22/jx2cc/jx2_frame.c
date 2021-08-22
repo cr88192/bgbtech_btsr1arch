@@ -3996,7 +3996,7 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 				sctx->use_egpr=1;
 				break;
 			}
-		}	
+		}
 	}
 
 	if(!strcmp(obj->name, "TKRA_MatrixIdentify"))
@@ -4321,6 +4321,9 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		case BGBCC_SH_REGCLS_QGR2:
 		case BGBCC_SH_REGCLS_VO_GR2:
 		case BGBCC_SH_REGCLS_VO_QGR2:
+			if(sctx->abi_evenonly)
+				ni=(ni+1)&(~1);
+		
 			if(sctx->is_addr64)
 			{
 //				if(ni<7)
@@ -6179,6 +6182,9 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 		case BGBCC_SH_REGCLS_QGR2:
 		case BGBCC_SH_REGCLS_VO_GR2:
 		case BGBCC_SH_REGCLS_VO_QGR2:
+			if(sctx->abi_evenonly)
+				ni=(ni+1)&(~1);
+		
 			if(sctx->is_addr64)
 			{
 				if((ni>=3) && !sctx->has_bjx1egpr)
@@ -6221,6 +6227,7 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 				k+4, BGBCC_SH_REG_R4+ni+1);
 			ni+=2;
 			break;
+#if 0
 		case BGBCC_SH_REGCLS_FR:
 			if(nf>=4)
 				break;
@@ -6246,6 +6253,7 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 			BGBCC_JX2C_EmitStoreFrameOfsReg(ctx, sctx, k, BGBCC_SH_REG_DR4+nf);
 			nf++;
 			break;
+#endif
 		default:
 			BGBCC_DBGBREAK
 			break;

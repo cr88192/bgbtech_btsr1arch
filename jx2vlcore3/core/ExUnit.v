@@ -60,7 +60,9 @@ PF IF ID1 ID2 EX1 EX2 EX3 WB
 `include "ExModBlint.v"
 `endif
 
-// `include "ExModKrrEnc.v"
+`ifdef jx2_enable_ldekey
+`include "ExModKrrEnc.v"
+`endif
 
 /* verilator lint_off DEFPARAM */
 
@@ -241,6 +243,7 @@ wire[1:0]		ifOutPcOK;
 wire[3:0]		ifOutPcStep;
 reg[3:0]		ifLastPcStep;
 reg				ifInPcHold;
+wire[3:0]		ifOutPcSxo;
 
 reg				ifValBraOk;
 reg				ifNxtValBraOk;
@@ -290,6 +293,7 @@ RbiMemL1A		memL1(
 	ifValPc,		ifIstrWord,
 	ifOutPcOK,		ifOutPcStep,
 	ifInPcHold,		ifInPcWxe,
+	ifOutPcSxo,
 
 	dcInAddr,		dcInOpm,
 	dcOutVal,		dcInVal,
@@ -357,6 +361,7 @@ reg[47:0]		id1ValPc;
 reg[95:0]		id1IstrWord;	//source instruction word
 reg[31:0]		id1IstrWordL1;	//source instruction word
 reg[31:0]		id1IstrWordL2;	//source instruction word
+reg[3:0]		id1IstrSxo;
 
 `ifdef jx2_enable_wex
 
@@ -386,6 +391,7 @@ DecOpWx3	decOp(
 	clock,			reset,
 //	id1IstrWord,	ifInPcWxe,
 	id1IstrWord,	crOutSr,
+	id1IstrSxo,
 
 	idA1IdRegM,		idA1IdRegO,
 	idA1IdRegN,		idA1IdImm,
@@ -837,6 +843,10 @@ reg [47:0]	crInSsp;
 wire[63:0]	crOutTea;
 reg [63:0]	crInTea;
 
+wire[15:0]	crOutFpsr;
+// reg [15:0]	crInFpsr;
+wire[15:0]	crInFpsr;
+
 wire[47:0]	crOutVbr;
 wire[47:0]	crOutGbr;
 wire[47:0]	crOutTbr;
@@ -872,6 +882,7 @@ RegCR regCr(
 	crOutSpc,	crInSpc,
 	crOutSsp,	crInSsp,
 	crOutTea,	crInTea,
+	crOutFpsr,	crInFpsr,
 
 	crOutVbr,
 	crOutGbr,
@@ -1070,16 +1081,21 @@ ExMulW	ex1MulW(
 wire[65:0]				ex1KrreLo;
 wire[65:0]				ex1KrreHi;
 
-`ifdef def_true
-assign		ex1KrreLo = UV66_00;
-assign		ex1KrreHi = UV66_00;
-`else
+// `ifdef def_true
+`ifdef jx2_enable_ldekey
 ExModKrrEnc	ex1KrrEnc(
 	clock,				reset,
 	ex1OpUCmd,			ex1OpUIxt,
 	exHold2,
-	ex1RegInDlr,		ex1RegInDhr,
+	ex1RegInDlr,		ex1RegInDhr,	crOutKrr,
 	ex1KrreLo,			ex1KrreHi);
+`else
+// assign		ex1KrreLo = UV66_00;
+assign		ex1KrreLo = {
+		((ex1OpUCmd[5:0]==JX2_UCMD_OP_IXT) &&
+		(ex1OpUIxt[5:0]==JX2_UCIX_IXT_LDEKRR)) ? 2'b11 : 2'b00,
+		UV64_00 };
+assign		ex1KrreHi = UV66_00;
 `endif
 
 `ifdef jx2_enable_fpu
@@ -1114,6 +1130,7 @@ FpuExOpW	ex1Fpu(
 	exB1RegIdRm,	exB1RegValRm,
 
 	ex1FpuOK,		ex1FpuSrT,
+	crOutFpsr,		crInFpsr,
 	
 	ex2RegInSr,
 //	ex1BraFlush || reset,
@@ -1342,7 +1359,7 @@ ExEX3	ex3(
 	
 	ex3RegValPc,	ex3RegValImm,
 	ex3RegAluRes,	ex3RegMulRes,
-	ex3RegMulWRes,
+	ex3RegMulWRes,	ex1KrreLo,
 	ex1FpuValGRn,
 
 //	ex3BraFlush || reset,
@@ -1507,7 +1524,7 @@ ExEXB3		exb3(
 	
 	ex3RegValPc,
 	exB3RegValImm,	exB3RegAluRes,
-	exB3RegMulWRes,
+	exB3RegMulWRes,	ex1KrreHi,
 	exB1FpuValGRn,
 //	ex3BraFlush || reset,
 	ex3BraFlush,
@@ -1666,7 +1683,7 @@ ExEXB3		exc3(
 	
 	ex3RegValPc,
 	exC3RegValImm,	exB3RegAluRes,
-	exC3RegMulWRes,
+	exC3RegMulWRes,	ex1KrreHi,
 	exC1FpuValGRn,
 //	ex3BraFlush || reset,
 	ex3BraFlush,
@@ -2272,6 +2289,9 @@ begin
 	if(ex1TrapExc[15] && !tRegExc[15])
 		tNxtRegExc = { UV48_00, ex1TrapExc };
 
+	if(ex1KrreLo[65:64]==2'b11)
+		tNxtRegExc = { UV48_00, 16'h800D };
+
 	if(reset)
 	begin
 		exHold1		= 0;
@@ -2586,7 +2606,8 @@ begin
 			crInSr			= { crOutSr[63:32], crOutExsr[63:32] };
 `endif
 
-			if(crOutSr[29])
+//			if(crOutSr[29])
+			if(crOutSr[29] && crOutSr[30])
 			begin
 `ifndef jx2_isr2stage
 				gprInSp			= { UV16_00, crOutSsp };
@@ -2610,7 +2631,7 @@ begin
 `endif
 
 `ifndef def_true
-			if(crInSr[29] || crInSr[28])
+			if(crOutSr[30] && (crInSr[29] || crInSr[28]))
 			begin
 				$display("RTE, Exit RB Set, SPC=%X SR=",
 					crOutSpc, crInSr);
@@ -2648,7 +2669,7 @@ begin
 
 // `ifndef def_true
 `ifdef def_true
-				if(crOutSr[29] || crOutSr[28])
+				if(crOutSr[30] && (crOutSr[29] || crOutSr[28]))
 				begin
 					$display("Fault, RB Set, SPC=%X SR=",
 						crOutSpc, crOutSr);
@@ -2882,7 +2903,8 @@ begin
 `endif
 				end
 
-				if(!crOutSr[29])
+//				if(!crOutSr[29])
+				if(!(crOutSr[29] && crOutSr[30]))
 				begin
 `ifndef jx2_isr2stage
 					crInSsp			= ex1RegOutSp[47:0];
@@ -3356,6 +3378,7 @@ begin
 //		id1ValPc		<= tValNextPc;
 		id1ValPc		<= tOpNextPc;
 		id1IstrWord		<= ifIstrWord;
+		id1IstrSxo		<= ifOutPcSxo;
 //		id1BraPipelineLrL	<= id1BraPipelineLr;
 //		id1BraPipelineLrL	<= { id1BraPipelineR1, id1BraPipelineLr };
 		id1BraPipelineLrL	<= {

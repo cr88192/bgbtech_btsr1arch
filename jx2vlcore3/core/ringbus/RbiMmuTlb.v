@@ -258,10 +258,14 @@ assign		regInIsPhysAddr = regInIsPhysAddrC || regInIsPhysAddrV;
 
 wire		regInIsLDX;
 wire		regInIsSTX;
+wire		regInIsPFX;
 wire		regInIsNzX;
 assign		regInIsLDX = (regInOpm[7:0]==JX2_RBI_OPM_LDX);
 assign		regInIsSTX = (regInOpm[7:0]==JX2_RBI_OPM_STX);
-assign		regInIsNzX = regInIsLDX || regInIsSTX;
+assign		regInIsPFX =
+	(regInOpm[7:0]==JX2_RBI_OPM_PFX) ||
+	(regInOpm[7:0]==JX2_RBI_OPM_SPX);
+assign		regInIsNzX = regInIsLDX || regInIsSTX || regInIsPFX;
 
 wire		regInIsLDIO;
 wire		regInIsSTIO;
@@ -491,6 +495,9 @@ begin
 		{ tlbHdatC[3:0], tlbHdatC[127:112], tlbHdatC[75:64], tlbHdatC[7:4] } :
 		{ tlbHdatD[3:0], tlbHdatD[127:112], tlbHdatD[75:64], tlbHdatD[7:4] };
 	tlbAcc = tlbHitAB ? tlbAccAB : tlbAccCD;
+	
+	if(tlbAddr[47:44] == 4'h0)
+		tlbAddr[47:44] = 4'hC;
 
 	tlbMiss = 0;
 
@@ -601,7 +608,8 @@ begin
 	end
 
 
-	if((tRegInAddr[47:0]!=tlbAddr[47:0]) && !tAddrIsPhys)
+//	if((tRegInAddr[47:0]!=tlbAddr[47:0]) && !tAddrIsPhys)
+	if((tRegInAddr[43:0]!=tlbAddr[43:0]) && !tAddrIsPhys)
 	begin
 		$display("TLB(A) %X -> %X", tRegInAddr, tlbAddr);
 	end

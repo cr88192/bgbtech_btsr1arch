@@ -1037,7 +1037,46 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 					op->fl|=BJX2_OPFL_CTRLF;
 					break;
 
+				case 0x4:
+					op->nmid=BJX2_NMID_LDACL;
+					op->Run=BJX2_Op_LDACL_None;
+					break;
 
+				case 0x8:
+					op->nmid=BJX2_NMID_SXENTR;
+					op->Run=BJX2_Op_SXENTR_None;
+					break;
+				case 0x9:
+					op->nmid=BJX2_NMID_SUENTR;
+					op->Run=BJX2_Op_SUENTR_None;
+					break;
+				case 0xA:
+					op->nmid=BJX2_NMID_SVEKRR;
+					op->Run=BJX2_Op_SVEKRR_None;
+					break;
+				case 0xB:
+					op->nmid=BJX2_NMID_SVENTR;
+					op->Run=BJX2_Op_SVENTR_None;
+					break;
+				case 0xC:
+					op->nmid=BJX2_NMID_LDEKRR;
+					op->Run=BJX2_Op_LDEKRR_None;
+					break;
+				case 0xD:
+					op->nmid=BJX2_NMID_LDEKEY;
+					op->Run=BJX2_Op_SVENTR_None;
+					break;
+				case 0xE:
+					op->nmid=BJX2_NMID_LDEENC;
+					op->Run=BJX2_Op_LDEENC_None;
+					break;
+				case 0xF:
+					op->nmid=BJX2_NMID_INVTLB;
+					op->Run=BJX2_Op_INVTLB_None;
+					break;
+
+
+#if 0
 //				case 0x7:
 //					op->rn=BJX2_REG_SP;
 //					op->rm=BJX2_REG_SP;
@@ -1070,6 +1109,7 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 					op->nmid=BJX2_NMID_LDISH20;
 					op->Run=BJX2_Op_LDISH20_Imm;
 					break;
+#endif
 				}
 				break;
 

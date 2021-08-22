@@ -36,6 +36,7 @@ module RbiMemL1A(
 	icInPcAddr,		icOutPcVal,
 	icOutPcOK,		icOutPcStep,
 	icInPcHold,		icInPcWxe,
+	icOutPcSxo,
 
 	dcInAddr,		dcInOpm,
 	dcOutVal,		dcInVal,
@@ -65,6 +66,7 @@ input [47: 0]	icInPcAddr;		//input PC address
 output[95: 0]	icOutPcVal;		//output PC value
 output[ 1: 0]	icOutPcOK;		//set if we have a valid value.
 output[ 3: 0]	icOutPcStep;	//PC step (Normal Op)
+output[ 3: 0]	icOutPcSxo;		//Secure Execute
 input			icInPcHold;
 input			icInPcWxe;
 
@@ -103,13 +105,19 @@ output[ 47:0]	l2mAddrOut;		//memory output address
 input [  7:0]	unitNodeId;		//Who Are We?
 
 
-`wire_tile		tBridgeDataI;
+// `wire_tile		tBridgeDataI;
+// wire[47:0]		tBridgeAddrI;
+// wire[15:0]		tBridgeOpmI;
+// wire[15:0]		tBridgeSeqI;
+
+`reg_tile		tBridgeDataI;
+reg[47:0]		tBridgeAddrI;
+reg[15:0]		tBridgeOpmI;
+reg[15:0]		tBridgeSeqI;
+
 `wire_tile		tBridgeDataO;
-wire[47:0]		tBridgeAddrI;
 wire[47:0]		tBridgeAddrO;
-wire[15:0]		tBridgeOpmI;
 wire[15:0]		tBridgeOpmO;
-wire[15:0]		tBridgeSeqI;
 wire[15:0]		tBridgeSeqO;
 wire[ 7:0]		tBridgeNodeId;
 
@@ -168,13 +176,19 @@ assign		tTlbInLdtlb = { regInDhr, regInDlr };
 
 `ifdef jx2_enable_mmu
 
-`wire_tile		tTlbDataI;
+// `wire_tile		tTlbDataI;
+// wire[47:0]		tTlbAddrI;
+// wire[15:0]		tTlbOpmI;
+// wire[15:0]		tTlbSeqI;
+
+`reg_tile		tTlbDataI;
+reg[47:0]		tTlbAddrI;
+reg[15:0]		tTlbOpmI;
+reg[15:0]		tTlbSeqI;
+
 `wire_tile		tTlbDataO;
-wire[47:0]		tTlbAddrI;
 wire[47:0]		tTlbAddrO;
-wire[15:0]		tTlbOpmI;
 wire[15:0]		tTlbOpmO;
-wire[15:0]		tTlbSeqI;
 wire[15:0]		tTlbSeqO;
 
 RbiMmuTlb	tlb(
@@ -199,13 +213,19 @@ assign		dfInOpm		= { dcInOpm[4:3], 1'b0, dcInOpm[2:0] };
 wire		ifMemWait;
 wire[63:0]		ifOutExc;
 
-`wire_tile		ifMemDataI;
+// `wire_tile		ifMemDataI;
+// wire[ 47:0]		ifMemAddrI;
+// wire[ 15:0]		ifMemOpmI;
+// wire[ 15:0]		ifMemSeqI;
+
+`reg_tile		ifMemDataI;
+reg[ 47:0]		ifMemAddrI;
+reg[ 15:0]		ifMemOpmI;
+reg[ 15:0]		ifMemSeqI;
+
 `wire_tile		ifMemDataO;
-wire[ 47:0]		ifMemAddrI;
 wire[ 47:0]		ifMemAddrO;
-wire[ 15:0]		ifMemOpmI;
 wire[ 15:0]		ifMemOpmO;
-wire[ 15:0]		ifMemSeqI;
 wire[ 15:0]		ifMemSeqO;
 wire[  7:0]		ifMemNodeId;
 
@@ -216,6 +236,7 @@ RbiMemIcWxA		memIc(
 	icInPcHold,		icInPcWxe,
 	dfInOpm,		regInSr,
 	ifMemWait,		ifOutExc,
+	icOutPcSxo,
 
 	ifMemAddrI,		ifMemAddrO,
 	ifMemDataI,		ifMemDataO,
@@ -229,13 +250,19 @@ wire			dfOutHold;
 wire			dfOutWait;
 wire[63:0]		dfOutExc;
 
-`wire_tile		dfMemDataI;
+// `wire_tile		dfMemDataI;
+// wire[ 47:0]		dfMemAddrI;
+// wire[ 15:0]		dfMemOpmI;
+// wire[ 15:0]		dfMemSeqI;
+
+`reg_tile		dfMemDataI;
+reg[ 47:0]		dfMemAddrI;
+reg[ 15:0]		dfMemOpmI;
+reg[ 15:0]		dfMemSeqI;
+
 `wire_tile		dfMemDataO;
-wire[ 47:0]		dfMemAddrI;
 wire[ 47:0]		dfMemAddrO;
-wire[ 15:0]		dfMemOpmI;
 wire[ 15:0]		dfMemOpmO;
-wire[ 15:0]		dfMemSeqI;
 wire[ 15:0]		dfMemSeqO;
 wire[  7:0]		dfMemNodeId;
 
@@ -246,7 +273,7 @@ RbiMemDcA		memDc(
 	dcOutValB,		dcInValB,
 	dcInHold,		dfOutHold,
 	regInSr,		dfOutWait,
-	dfOutExc,
+	dfOutExc,		regInMmcr,
 
 	dfMemAddrI,		dfMemAddrO,
 	dfMemDataI,		dfMemDataO,
@@ -255,6 +282,8 @@ RbiMemDcA		memDc(
 
 	dfMemNodeId
 	);
+
+`ifndef def_true
 
 assign		ifMemDataI		= tBridgeDataO;
 assign		ifMemAddrI		= tBridgeAddrO;
@@ -284,21 +313,95 @@ assign		tBridgeOpmI		= dfMemOpmO;
 assign		tBridgeSeqI		= dfMemSeqO;
 `endif
 
+`endif
+
+
 assign		tBridgeNodeId	= { unitNodeId[7:2], 2'b00 };
 assign		ifMemNodeId		= { unitNodeId[7:2], 2'b01 };
 assign		dfMemNodeId		= { unitNodeId[7:2], 2'b10 };
 assign		tlbMemNodeId	= { unitNodeId[7:2], 2'b11 };
 
+reg		tSkipTlb;
 
 reg		tMsgLatch;
 reg		tNxtMsgLatch;
 
 always @*
 begin
+	dfMemDataI		= tBridgeDataO;
+	dfMemAddrI		= tBridgeAddrO;
+	dfMemOpmI		= tBridgeOpmO;
+	dfMemSeqI		= tBridgeSeqO;
+
+	ifMemDataI		= dfMemDataO;
+	ifMemAddrI		= dfMemAddrO;
+	ifMemOpmI		= dfMemOpmO;
+	ifMemSeqI		= dfMemSeqO;
+
+`ifdef jx2_enable_mmu
+// `ifndef def_true
+	tTlbDataI		= ifMemDataO;
+	tTlbAddrI		= ifMemAddrO;
+	tTlbOpmI		= ifMemOpmO;
+	tTlbSeqI		= ifMemSeqO;
+
+	tBridgeDataI	= tTlbDataO;
+	tBridgeAddrI	= tTlbAddrO;
+	tBridgeOpmI		= tTlbOpmO;
+	tBridgeSeqI		= tTlbSeqO;
+
+`ifdef def_true
+	/* Check if L1 D$ request should skip over L1 I$ and TLB. */
+	tSkipTlb		= 0;
+	if(tTlbOpmO[7:0] == JX2_RBI_OPM_IDLE)
+	begin
+		if(	(dfMemOpmO[7:0]==JX2_RBI_OPM_LDSQ) ||
+			(dfMemOpmO[7:0]==JX2_RBI_OPM_STSQ) ||
+			(dfMemOpmO[7:0]==JX2_RBI_OPM_LDSL) ||
+			(dfMemOpmO[7:0]==JX2_RBI_OPM_STSL) )
+		begin
+			tSkipTlb	= 1;
+		end
+		else if(	(dfMemOpmO[7:0]==JX2_RBI_OPM_LDX) ||
+					(dfMemOpmO[7:0]==JX2_RBI_OPM_STX) ||
+					(dfMemOpmO[7:0]==JX2_RBI_OPM_PFX) ||
+					(dfMemOpmO[7:0]==JX2_RBI_OPM_SPX) )
+		begin
+			tSkipTlb	=
+				(dfMemAddrO[47:44] == 4'hC) ||
+				((dfMemAddrO[47:44] == 4'h0) && !regInMmcr[0]);
+		end
+	end
+
+	if(tSkipTlb)
+	begin
+		/* Do Skip. */
+		ifMemDataI		= tTlbDataO;
+		ifMemAddrI		= tTlbAddrO;
+		ifMemOpmI		= tTlbOpmO;
+		ifMemSeqI		= tTlbSeqO;
+
+		tBridgeDataI	= dfMemDataO;
+		tBridgeAddrI	= dfMemAddrO;
+		tBridgeOpmI		= dfMemOpmO;
+		tBridgeSeqI		= dfMemSeqO;
+	end
+`endif
+
+`else
+	tBridgeDataI	= dfMemDataO;
+	tBridgeAddrI	= dfMemAddrO;
+	tBridgeOpmI		= dfMemOpmO;
+	tBridgeSeqI		= dfMemSeqO;
+`endif
+end
+
+always @*
+begin
 	tNxtMsgLatch	= 0;
 	tRegOutExc	= UV64_00;
 	tRegTraPc	= UV64_00;
-	
+
 //	tDcOutOK	= dfOutOK[1:0];
 	
 //	tDcOutHold	= 0;

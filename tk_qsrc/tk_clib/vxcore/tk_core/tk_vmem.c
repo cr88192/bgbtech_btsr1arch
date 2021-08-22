@@ -43,6 +43,11 @@ u32	tk_vmem_swap_psz;
 
 u64	*tk_vmem_pageroot;
 
+u16	*tk_vmem_usrexpage;		//User, Execute Only, Memory
+u16	*tk_vmem_usrexonly;		//User, Execute Only, Ex-Only Addr
+int	tk_vmem_usrexoffs;		//User, Execute Only, Offset
+byte tk_vmem_useldekrr;
+
 // byte tk_vmem_pagebmp[16384];	//virtual page
 byte *tk_vmem_pagebmp;	//virtual page
 int tk_vmem_maxpage;
@@ -764,6 +769,15 @@ int TK_VMem_Init()
 	
 	if(!tk_vmem_swap_psz)
 	{
+		if(!tk_vmem_usrexpage)
+		{
+			tk_vmem_usrexpage=TKMM_PageAlloc(1<<TK_VMEM_PAGESHL);
+//			tk_vmem_usrexonly=(void *)TKMM_EXOSTART;
+			tk_vmem_usrexonly=tk_vmem_usrexpage;
+			tk_vmem_usrexoffs=0;
+			tk_vmem_useldekrr=0;
+		}
+
 		/* Don't set up virtual memory if no pagefile. */
 		return(0);
 	}
@@ -848,6 +862,15 @@ int TK_VMem_Init()
 
 	tk_vmem_varov_lo=TKMM_VAS_START_LO>>TK_VMEM_PAGESHL;
 	tk_vmem_varov_hi=TKMM_VAS_START_HI>>TK_VMEM_PAGESHL;
+
+	tk_vmem_usrexpage=TKMM_PageAlloc(1<<TK_VMEM_PAGESHL);
+	tk_vmem_usrexonly=(void *)TKMM_EXOSTART;
+	tk_vmem_usrexoffs=0;
+	tk_vmem_useldekrr=0;
+
+	tva=(u64)tk_vmem_usrexonly;
+	i=((u64)tk_vmem_usrexpage)>>TK_VMEM_PAGESHL;
+	TK_VMem_SetPageTableEntry(tva, (i<<12)|1);
 
 	/* Enable MMU */
 

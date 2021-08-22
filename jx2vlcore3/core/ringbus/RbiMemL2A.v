@@ -1,6 +1,11 @@
 `include "ringbus/RbiDefs.v"
 
+`ifdef jx2_mem_useddrwa
+`include "ringbus/RbiMemL2DcWa.v"
+`else
 `include "ringbus/RbiMemL2Dc.v"
+`endif
+
 `include "ringbus/RbiMemL2Rom.v"
 `include "ringbus/RbiMemL2Mmio.v"
 
@@ -68,7 +73,11 @@ wire[ 47:0]		l2mAddrOut;
 wire[  7:0]		l2mNodeId;
 wire			l2mDeadlockStrobe;
 
+`ifdef jx2_mem_useddrwa
+RbiMemL2DcWa		l2dc(
+`else
 RbiMemL2Dc		l2dc(
+`endif
 	clock,			reset,
 	
 	l2mAddrIn,		l2mAddrOut,
@@ -210,7 +219,9 @@ begin
 `ifdef def_true
 	if(	(memOpmIn[7:0] == 8'h00) &&
 		((l2mOpmOut[7:0] == JX2_RBI_OPM_LDX) ||
-		(l2mOpmOut[7:0] == JX2_RBI_OPM_STX)) &&
+		(l2mOpmOut[7:0] == JX2_RBI_OPM_STX) ||
+		(l2mOpmOut[7:0] == JX2_RBI_OPM_PFX) ||
+		(l2mOpmOut[7:0] == JX2_RBI_OPM_SPX)) &&
 		(l2mAddrOut[29:24] != 6'h00) &&
 		(l2mAddrOut[31:30]==2'h0))
 	begin

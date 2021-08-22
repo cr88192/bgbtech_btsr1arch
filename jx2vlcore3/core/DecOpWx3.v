@@ -31,7 +31,7 @@ module DecOpWx3(
 	/* verilator lint_off UNUSED */
 	clock,		reset,
 //	istrWord,	srWxe,
-	istrWord,	regSr,
+	istrWord,	regSr,		istrSxo,
 	idRegS,		idRegT,		idRegM,
 	idImmA,		idUCmdA,	idUIxtA,
 	idRegU,		idRegV,		idRegN,
@@ -46,11 +46,17 @@ input			reset;		//clock
 input[95:0]		istrWord;	//source instruction word
 // input			srWxe;
 input[63:0]		regSr;
+input[3:0]		istrSxo;	//source instruction word
 
 wire			srWxe;
 wire			srUser;
+wire			srSxo;
 assign		srWxe	= regSr[27];
 assign		srUser	= !regSr[30];
+assign		srSxo	= istrSxo[0];
+
+wire[2:0]		srMod;
+assign		srMod = { regSr[29], srSxo, srUser };
 
 `output_gpr		idRegS;
 `output_gpr		idRegT;
@@ -163,7 +169,7 @@ wire[8:0]		decOpBz_idUIxt;
 
 DecOpBz	decOpBz(
 	clock,		reset,
-	istrWord[63:0],		srUser,
+	istrWord[63:0],		srMod,
 	decOpBz_idRegN,		decOpBz_idRegM,
 	decOpBz_idRegO,		decOpBz_idImm,
 	decOpBz_idUCmd,		decOpBz_idUIxt
@@ -179,7 +185,7 @@ wire[8:0]		decOpFzC_idUIxt;
 wire[3:0]		decOpFzC_idUFl;
 
 DecOpFz	decOpFzC(
-	clock,		reset,	srUser,
+	clock,		reset,	srMod,
 	{ UV32_XX, istrWord[95:64] },	4'h1,
 		{ tOpJBitsB[24], tOpJBitsC[24],
 		opIsWexJumbo96, opIsWexJumboB, tOpJBitsC[23:0] },
@@ -200,7 +206,7 @@ wire[8:0]		decOpFzB_idUIxt;
 wire[3:0]		decOpFzB_idUFl;
 
 DecOpFz	decOpFzB(
-	clock,		reset,	srUser,
+	clock,		reset,	srMod,
 	{ UV32_XX, istrWord[63:32] },	4'h1,
 		{ 1'b0, tOpJBitsB[24], 1'b0, opIsWexJumboA, tOpJBitsB[23:0] },
 	decOpFzB_idRegN,		decOpFzB_idRegM,
@@ -220,7 +226,7 @@ wire[8:0]		decOpFzA_idUIxt;
 wire[3:0]		decOpFzA_idUFl;
 
 DecOpFz	decOpFzA(
-	clock,		reset,	srUser,
+	clock,		reset,	srMod,
 	{ UV32_XX, istrWord[31: 0] },	4'h0,	UV28_00,
 	decOpFzA_idRegN,		decOpFzA_idRegM,
 	decOpFzA_idRegO,		decOpFzA_idRegP,

@@ -292,12 +292,12 @@ ExCpuId		cpuid(clock, reset, timers,
 //	regIdRm[4:0], tValCpuIdLo, tValCpuIdHi);
 	regIdRt[4:0], tValCpuIdLo, tValCpuIdHi);
 
-reg[63:0]	tRegSpAdd8;
-reg[63:0]	tRegSpSub8;
-reg[63:0]	tRegSpAddImm;
+// reg[63:0]	tRegSpAdd8;
+// reg[63:0]	tRegSpSub8;
+// reg[63:0]	tRegSpAddImm;
 
-reg[63:0]	tRegSpAdd16;
-reg[63:0]	tRegSpSub16;
+// reg[63:0]	tRegSpAdd16;
+// reg[63:0]	tRegSpSub16;
 
 reg			tOpEnable;
 reg			tDoMemOp;
@@ -456,10 +456,10 @@ begin
 	tIfElsePP		= regInSr[15:12] + 1;
 	tIfElseNN		= regInSr[15:12] - 1;
 
-	tRegSpAdd8		= { regInSp[63:28], regInSp[27:3]+25'h1, regInSp[2:0]};
-	tRegSpSub8		= { regInSp[63:28], regInSp[27:3]-25'h1, regInSp[2:0]};
-	tRegSpAdd16		= { regInSp[63:28], regInSp[27:4]+24'h1, regInSp[3:0]};
-	tRegSpSub16		= { regInSp[63:28], regInSp[27:4]-24'h1, regInSp[3:0]};
+//	tRegSpAdd8		= { regInSp[63:28], regInSp[27:3]+25'h1, regInSp[2:0]};
+//	tRegSpSub8		= { regInSp[63:28], regInSp[27:3]-25'h1, regInSp[2:0]};
+//	tRegSpAdd16		= { regInSp[63:28], regInSp[27:4]+24'h1, regInSp[3:0]};
+//	tRegSpSub16		= { regInSp[63:28], regInSp[27:4]-24'h1, regInSp[3:0]};
 
 `ifdef jx2_enable_pred_s
 	casez( { opBraFlush, opUCmd[8:6], regInSr[1:0] } )
@@ -984,11 +984,33 @@ begin
 					tDoMemOp	= 1;
 				end
 
+				JX2_UCIX_IXT_SVEKRR: begin
+					tRegHeld		= 1;
+				end
 				JX2_UCIX_IXT_LDEKRR: begin
+					tRegHeld		= 1;
 				end
 				JX2_UCIX_IXT_LDEKEY: begin
+					tRegHeld		= 1;
 				end
 				JX2_UCIX_IXT_LDEENC: begin
+					tRegHeld		= 1;
+				end
+
+				JX2_UCIX_IXT_SXENTR: begin
+					tRegOutSr[30:29]	= 2'b01;
+					tValBra				= regValPc;
+					tDoBra				= 1;
+				end
+				JX2_UCIX_IXT_SUENTR: begin
+					tRegOutSr[30:29]	= 2'b00;
+					tValBra				= regValPc;
+					tDoBra				= 1;
+				end
+				JX2_UCIX_IXT_SVENTR: begin
+					tRegOutSr[30:29]	= 2'b10;
+					tValBra				= regValPc;
+					tDoBra				= 1;
 				end
 
 `ifdef jx2_enable_srtwid

@@ -203,6 +203,7 @@ SR Bits:
 ** SMT1 (SR2 Specific)
 * 29: RB, Encodes the ISR Status (MD=1).
 ** SMT2 (SR2 Specific)
+** Enables Superuser Mode (MD=0).
 ** Set when interrupt occurs.
 ** Cleared when interrupt returns.
 * 30: MD, User/Supervisor.
@@ -232,6 +233,19 @@ The Link Register (LR) will have the layout:
 * (51:50), Saved SR(27:26), WXE, WX2
 * (48:48), Saved SR( 1: 0), S and T
 * (47: 0), Saved PC Address
+
+The Global Base Register (GBR) will have the layout:
+* (63:48), FPU Status/Control (FPSCR)
+* (47: 0), GBR Address
+
+FPSCR Will be defined as:
+* (15: 8), Status Bits
+** (11): Sticky, Invalid Operation
+** (10): Sticky, Overflow
+** ( 9): Sticky, Underflow
+** ( 8): Sticky, Inexact
+* (7:4), Control Bits
+* (3:0), Rounding Mode
 
 
 === Special Restrictions ===
@@ -290,6 +304,9 @@ EXSR Codes:
 ** 0x800A: Misaligned Write
 ** 0x800B: Misaligned Execute ((PC&1)!=0)
 ** 0x800C: SMT_Fault (Invalid Operation in SMT Mode)
+** 0x800D: Load Keyring Fault (LDEKRR Failed)
+** 0x800E: Invalid Opcode
+** 0x800F: Bounds Fault
 * Interrupts:
 ** 0xC000: General Interrupt
 ** 0xC001: Interval Timer
@@ -428,6 +445,15 @@ TLB Entry:
 * ( 47: 12) = Physical Address Page
 * ( 11:  0) = Page Control bits
 
+XTLB Entry / LDXTLB (XMOV):
+* (255:240) = VUGID / ACLID
+* (239:140) = Virtual Address Page
+* (139:128) = KR Access
+* (127:112) = Available
+* (111: 12) = Physical Address Page
+* ( 11:  0) = Page Control bits
+
+
 VUGID:
 * (15:10) = VGID / VUID(Swap)
 * ( 9: 0) = VUID / VGID(Swap)
@@ -475,9 +501,10 @@ Page Control:
 ** Page may not be written to.
 * ( 4): PR.NR (Read Disable)
 ** Page may not be read from.
-* ( 3): Page Is Non-Cachable
-** Set to indicate accesses to this page are volatile.
+* ( 3): Page Is Volatile / Non-Cachable
+** Set to indicate accesses to this page are volatile (Data).
 ** Contents in this page should not be retained in the L1 cache.
+** Indicates Secure-Execute if NW is also Set and NX is Clear.
 * ( 2): PR.D, (Dirty)
 ** Set if page has been modified.
 * ( 1): PR.SH, Page Is Shared
@@ -524,9 +551,10 @@ Note that if the normal modes, there will be 64 Groups of 1024 Users, but these 
 Note that if both fields are equal, the result will be equivalent regardless of the flip.
 
 The KRR Keys may also be checked against an ACL Cache, with entries of the form:
-* (15: 0): TLB VUGID / ACLID
-* (31:16): KRR VUGID / PID
+* (63:44): Reserved / MBZ
 * (43:32): KR Access Mode
+* (31:16): KRR VUGID / PID
+* (15: 0): TLB VUGID / ACLID
 
 The entries in the ACL Cache will be matched against those in the KRR if an ACL Check mode is used. If a matching entry is found, it will be used, otherwise an ACL Check exception will be generated if the TLBE doesn't match.
 
@@ -824,6 +852,30 @@ For narrow bundles:
 Note that interleaving the jumbo prefixes violates the equivalence between sequential and parallel execution. By extension, profiles which allow the use interleaved jumbo encodings will drop the requirement for sequential equivalence.
 
 
+=== XMOV (Possible) ===
+
+Possible Extension, Extended Address Space
+* Will extend the address space to 96 or 112 bits.
+* Addresses in the extended space will be encoded as pairs.
+* Note that only the low 48 bits are necessarily linear.
+** The high 48 may represent a sparse and non-linear space.
+** Operations like LEA will only be defined relative to the low 48 bits.
+
+The Low Register (Even) will encode the low 48 bits of the address.
+* This is part is equivalent between XMOV and Non-XMOV Addressing.
+* Some encodings will explicitly extend to the full address width.
+** Use of PC, GBR, or TBR as a base register.
+
+The High Register (Odd) will encode the high order bits of the address.
+
+The control registers which contain addresses will be similarly expanded, however the high-order part will only be accessible via MOVX encodings.
+* PC, LR, GBR, TBR, VBR, ... will be expanded.
+
+Modifying a Control Register with a 64-bit instruction will only modify the low-order bits, with the high order bits being kept as-is.
+
+Accessing memory using a Non-XMOV encoding with a GPR as a base register will copy the high order bits of the address from GBR.
+
+
 === Predicated Instructions ===
 
 The instructions encoded in the predicated ranges will be otherwise equivalent to their non-predicated counterparts.
@@ -1060,16 +1112,16 @@ Instruction Space
 ** 3022  SYSCALL					//Throw(DLR)
 ** 3032  -
 ** 3042  LDACL
-** 3052  -
+** 3052  LDXTLB						//(XMOV) Load entry into TLB
 ** 3062  -
 ** 3072  -
-** 3082  -
-** 3092  -
-** 30A2  -
-** 30B2  -
-** 30C2  -
-** 30D2  -
-** 30E2  -
+** 3082  SXENTR		//Enter Superuser Mode
+** 3092  SUENTR		//Enter User Mode
+** 30A2  SVEKRR		//Save Encoded Keyring
+** 30B2  SVENTR		//Enter Supervisor Mode (From Superuser Mode)
+** 30C2  LDEKRR		//Load Encoded Keyring
+** 30D2  LDEKEY		//Load Encoded Key
+** 30E2  LDEENC		//Encode Key
 ** 30F2  INVTLB		//Flush the TLB
 
 ** 30z3  -
@@ -1444,8 +1496,9 @@ F0zz Instruction Block:
 *** F0nm_1G9C  EXTU.W	Rm, Rn				//Q=1, I=0
 
 *** F0nm_1gAC  MOV		Rm, Sn				//Sn=Rm
-*** F0nm_1GAC /? SWAP.L	(Rm), Rn			//Exchange Rn with memory at (Rm)
+*** F0nm_1GAC  MOVX		Xm, XCn				//(XMOV) XCn=Xm
 *** F0nm_1gBC  MOV		Sm, Rn				//Rn=Sm
+*** F0nm_1GBC  MOVX		XCm, Xn				//(XMOV) Xn=XCm
 *** F0nm_1GBC /? SWAP.Q	(Rm), Rn			//Exchange Rn with memory at (Rm)
 
 *** F0nm_1eCC / CLNZ{Q}	Rm, Rn				//(CLZ) Count Leading Ones
@@ -1572,6 +1625,10 @@ F0zz Instruction Block:
 
 *** F002_3040  LDACL
 
+*** F002_3080  SXENTR	//Enter Superuser Mode
+*** F002_3090  SUENTR	//Enter User Mode
+*** F002_30A0  SVEKRR	//Save Encoded Keyring
+*** F002_30B0  SVENTR	//Enter Supervisor Mode (From Superuser Mode)
 *** F002_30C0  LDEKRR	//Load Encoded Keyring
 *** F002_30D0  LDEKEY	//Load Encoded Key
 *** F002_30E0  LDEENC	//Encode Key
@@ -1593,10 +1650,12 @@ F0zz Instruction Block:
 *** F01C_3en0  INVIC	Rn
 *** F01D_3en0  INVDC	Rn
 
-*** F020_3en0  JMP		Rn
-*** F021_3en0  JSR		Rn
-*** F022_3en0  JT		Rn
-*** F023_3en0  JF		Rn
+*** F020_3gn0  JMP		Rn
+*** F020_3Gn0  JMPX		Rn			//(XMOV) JMP
+*** F021_3gn0  JSR		Rn
+*** F021_3Gn0  JSRX		Rn			//(XMOV) JSR
+*** F022_3gn0  JT		Rn
+*** F023_3gn0  JF		Rn
 
 *** F028_3en0  BRA.B	(PC, Rn)	//(Op24) BRA, Byte Scale
 *** F029_3en0  BSR.B	(PC, Rn)	//(Op24) BSR, Byte Scale
@@ -1642,23 +1701,40 @@ F0zz Instruction Block:
 ** ...
 ** F0nm_3ezF  (2R Block)
 
-* F0nm_4eoz (Follows same pattern as F0nm_0zz0)
-** F0nm_4eo0 ? MOV.X	Xn, (Rm, Disp5)		//(MOVX2) Store Pair
-** F0nm_4eo1  -
-** F0nm_4eo2  -
+* F0nm_4eoz (Follows a similar pattern as F0nm_0zz0)
+** F0nm_4go0  MOV.X		Xn, (Rm, Disp5)		//(MOVX2) Store Pair
+** F0nm_4Go0 ? XMOV.B	Rn, (Xm, Disp5)		//(XMOV)
+** F0nm_4go1 ? XMOV.X	Xn, (Xm, Disp5)		//(XMOV)
+** F0nm_4Go1 ? XMOV.W	Rn, (Xm, Disp5)		//(XMOV)
+** F0nm_4go2  -
+** F0nm_4Go2 ? XMOV.L	Rn, (Xm, Disp5)		//(XMOV)
 ** F0nm_4eo3  -
-** F0nm_4eo4  MOV.X		Xn, (Rm, Ro)		//(MOVX2) Store Pair
-** F0nm_4eo5  -
-** F0nm_4eo6  -
-** F0nm_4eo7  -
-** F0nm_4eo8 ? MOV.X	(Rm, Disp5), Xn		//(MOVX2) Load Pair
-** F0nm_4eo9  -
-** F0nm_4eoA  -
-** F0nm_4eoB  -
-** F0nm_4eoC  MOV.X		(Rm, Ro), Xn		//(MOVX2) Load Pair
-** F0nm_4eoD  -
-** F0nm_4eoE  -
-** F0nm_4eoF  -
+** F0nm_4Go3 ? XMOV.Q	Rn, (Xm, Disp5)		//(XMOV)
+** F0nm_4go4  MOV.X		Xn, (Rm, Ro)		//(MOVX2) Store Pair
+** F0nm_4Go4 ? XMOV.B	Rn, (Xm, Ro)		//(XMOV)
+** F0nm_4go5 ? XMOV.X	Xn, (Xm, Ro)		//(XMOV)
+** F0nm_4Go5 ? XMOV.W	Rn, (Xm, Ro)		//(XMOV)
+** F0nm_4go6  -
+** F0nm_4Go6 ? XMOV.L	Rn, (Xm, Ro)		//(XMOV)
+** F0nm_4go7  -
+** F0nm_4Go7 ? XMOV.Q	Rn, (Xm, Ro)		//(XMOV)
+
+** F0nm_4go8  MOV.X		(Rm, Disp5), Xn		//(MOVX2) Load Pair
+** F0nm_4Go8 ? XMOV.B	(Xm, Disp5), Rn		//(XMOV)
+** F0nm_4go9 ? XMOV.X	(Xm, Disp5), Xn		//(XMOV)
+** F0nm_4Go9 ? XMOV.W	(Xm, Disp5), Rn		//(XMOV)
+** F0nm_4goA  -
+** F0nm_4GoA ? XMOV.L	(Xm, Disp5), Rn		//(XMOV)
+** F0nm_4goB  -
+** F0nm_4GoB ? XMOV.Q	(Xm, Disp5), Rn		//(XMOV)
+** F0nm_4goC  MOV.X		(Rm, Ro), Xn		//(MOVX2) Load Pair
+** F0nm_4GoC ? XMOV.B	(Xm, Ro), Rn		//(XMOV)
+** F0nm_4goD ? XMOV.X	(Xm, Ro), Xn		//(XMOV)
+** F0nm_4GoD ? XMOV.W	(Xm, Ro), Rn		//(XMOV)
+** F0nm_4goE  -
+** F0nm_4GoE ? XMOV.L	(Xm, Ro), Rn		//(XMOV)
+** F0nm_4goF  -
+** F0nm_4GoF ? XMOV.Q	(Xm, Ro), Rn		//(XMOV)
 
 * F0zz_5zzz
 ** F0nm_5go0  CSELT		Rm, Ro, Rn			//Rn=SR.T?Rm:Ro
@@ -1716,9 +1792,9 @@ F0zz Instruction Block:
 ** F0nm_6goC ? BLKUAB1	Rm, Ro, Rn			//(UAB) Extract Sample
 ** F0nm_6GoC ? BLKUAB2	Rm, Ro, Rn			//(UAB) Extract Sample
 
-** F0nm_6eoD  -
-** F0nm_6eoE  -
-** F0nm_6eoF  -
+** F0nm_6goD  FADDG		Rm, Ro, Rn			//(GFP) FADD (Dynamic Rounding)
+** F0nm_6goE  FSUBG		Rm, Ro, Rn			//(GFP) FSUB (Dynamic Rounding)
+** F0nm_6goF  FMULG		Rm, Ro, Rn			//(GFP) FMUL (Dynamic Rounding)
 
 
 * F0zz_7zzz

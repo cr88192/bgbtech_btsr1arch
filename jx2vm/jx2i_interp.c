@@ -232,8 +232,9 @@ BJX2_Trace *BJX2_GetTraceForAddr(BJX2_Context *ctx, bjx2_addr addr, int fl)
 
 //	cur->hnext=ctx->trhash[h];
 //	ctx->trhash[h]=cur;
-	
-	BJX2_CheckJitTrace(ctx, cur);
+
+//	cur->jit_inh=1024;
+//	BJX2_CheckJitTrace(ctx, cur);
 
 	return(cur);
 }
@@ -1944,7 +1945,10 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 		topfn_hash[i]=-1;
 
 	for(i=0; i<1024; i++)
+	{
 		topfn_name[i]=NULL;
+		topfn_cyc[i]=0;
+	}
 
 	n_topfn=0;
 	for(i=0; i<1024; i++)
@@ -2070,6 +2074,9 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 	for(i=0; i<16; i++)
 	{
 		trcur=tra[15-i];
+		if(!trcur)
+			continue;
+
 //		trcur=tra[i];
 		bn2=BJX2_DbgNameForAddr(ctx, trcur->addr, &ba2);
 

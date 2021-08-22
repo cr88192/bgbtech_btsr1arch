@@ -142,6 +142,21 @@ reg				tUpdateL2b;			//Modify Value on L2 Ring
 always @*
 begin
 
+`ifdef jx2_rbi_nobridge
+		tL1mSeqOut  = l2mSeqIn;
+		tL1mOpmOut  = l2mOpmIn;
+		tL1mAddrOut = l2mAddrIn;
+		tL1mDataOut = l2mDataIn;
+
+		tL2mSeqOut  = l1mSeqIn;
+		tL2mOpmOut  = l1mOpmIn;
+		tL2mAddrOut = l1mAddrIn;
+		tL2mDataOut = l1mDataIn;
+`endif
+
+
+`ifndef jx2_rbi_nobridge
+
 	tHoldL2b		= 0;
 	tHoldL1b		= 0;
 	tUpdateL2b		= 0;
@@ -201,7 +216,11 @@ begin
 		tL2mDataReq		= l1mDataIn;
 	end
 
+`endif
+
 end
+
+`ifndef jx2_rbi_nobridge
 
 always @(posedge clock)
 begin
@@ -264,5 +283,7 @@ begin
 		tL2mReqSent	<= 0;
 	end
 end
+
+`endif
 
 endmodule

@@ -1854,9 +1854,11 @@ always @(posedge ddr_coreclock)
 begin
 `ifdef jx2_mem_ddr32B
 //	tMemOK2			<= tMemOKA;
-	tMemOK2			<= { ~tMemOKA, tMemOKA };
+//	tMemOK2			<= { ~tMemOKA, tMemOKA };
+	tMemOK2			<= { ~tMemOkSq, tMemOkSq, ~tMemOK, tMemOK };
 	tMemDataOut2	<= tMemDataOutA;
 //	tMemDataChk2	<= tMemDataOutA;
+	tMemDataChk2	<= tMemDataChk2A;
 `else
 //	tMemOK2			<= tMemOK;
 //	tMemOK2			<= { ~tMemOK, tMemOK };
@@ -1935,7 +1937,9 @@ begin
 	tMemDataInA		<= tMemDataInC;
 	tMemAddrA		<= tMemAddrC;
 //	tMemOpmA		<= tMemOpmC;
-	tMemOpmA		<= tMemOpmD;
+	tMemOpmA		<= tMemOpmC[4:0];
+//	tMemOpmA		<= tMemOpmD;
+	tMemOpSq		<= tMemOpmC[13:10];
 `else
 //	if((tMemChkInC == tMemChkInC2) &&
 //		(tMemOpmD[4:0] == (~tMemOpmD[9:5])))

@@ -1022,11 +1022,16 @@ parameter[5:0] JX2_UCIX_IXT_LDTLB	= 6'h0F;		//Load TLB
 parameter[5:0] JX2_UCIX_IXT_INVTLB	= 6'h10;		//Flush TLB
 
 parameter[5:0] JX2_UCIX_IXT_LDEKRR	= 6'h11;		//Load Encoded KRR
-parameter[5:0] JX2_UCIX_IXT_LDEKEY	= 6'h12;		//Load Encode Key
-parameter[5:0] JX2_UCIX_IXT_LDEENC	= 6'h13;		//Encode KRR into Key
+parameter[5:0] JX2_UCIX_IXT_LDEKEY	= 6'h12;		//Load Encoding Key
+parameter[5:0] JX2_UCIX_IXT_LDEENC	= 6'h13;		//Encode Keyring into Key
 
 parameter[5:0] JX2_UCIX_IXT_SRTTWID	= 6'h14;		//Twiddle SR.T Bits
 parameter[5:0] JX2_UCIX_IXT_LDACL	= 6'h15;		//Load ACL
+parameter[5:0] JX2_UCIX_IXT_SVEKRR	= 6'h16;		//Save KRR into Encoded Key
+parameter[5:0] JX2_UCIX_IXT_SVENTR	= 6'h17;		//Enter Supervisor Mode
+parameter[5:0] JX2_UCIX_IXT_SXENTR	= 6'h18;		//Enter Superuser Mode
+parameter[5:0] JX2_UCIX_IXT_SUENTR	= 6'h19;		//Enter User Mode
+
 
 parameter[5:0] JX2_UCIX_IXS_NOP		= 6'h00;		//No-Op
 parameter[5:0] JX2_UCIX_IXS_MOVT	= 6'h01;		//Copy SR.T to Reg
@@ -1074,6 +1079,16 @@ parameter[127:0] UVTILE_FF		= UV128_FF;	//
 
 `endif
 
+`ifdef jx2_mem_useddrwa
+
+`define reg_ddrtile			reg[511:0]
+`define wire_ddrtile		wire[511:0]
+`define input_ddrtile		input[511:0]
+`define output_ddrtile		output[511:0]
+`define reg_ddrtile_pad		reg[539:0]		//pad to multiple of 18 bits
+
+`else
+
 `ifdef jx2_mem_ddr32B
 parameter[255:0] UVDDRT_XX		= UV256_XX;	//
 parameter[255:0] UVDDRT_00		= UV256_00;	//
@@ -1094,11 +1109,17 @@ parameter[127:0] UVDDRT_FF		= UV128_FF;	//
 `define reg_ddrtile_pad		reg[143:0]		//pad to multiple of 18 bits
 `endif
 
+`endif
+
 `ifdef jx2_mem_ddr32B
 `ifndef jx2_mem_line32B
 `define jx2_mem_line32to16		//Map 32B to 16B cache-lines
 `endif
 `endif
+
+parameter[511:0] UVDDRW_XX		= UV512_XX;	//
+parameter[511:0] UVDDRW_00		= UV512_00;	//
+parameter[511:0] UVDDRW_FF		= UV512_FF;	//
 
 // `define def_true
 
@@ -1166,5 +1187,7 @@ parameter[7:0] JX2_BRA_FLUSHMSK	= 8'h1F;		//
 `else
 parameter[7:0] JX2_BRA_FLUSHMSK	= 8'h0F;		//
 `endif
+
+`include "ExModKrrKeys.v"
 
 `endif

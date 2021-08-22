@@ -410,6 +410,19 @@ begin
 //					tExHold		= !reset;
 				end
 
+				JX2_UCIX_IXT_SVEKRR: begin
+					tRegHeld		= 1;
+				end
+				JX2_UCIX_IXT_LDEKRR: begin
+					tRegHeld		= 1;
+				end
+				JX2_UCIX_IXT_LDEKEY: begin
+					tRegHeld		= 1;
+				end
+				JX2_UCIX_IXT_LDEENC: begin
+					tRegHeld		= 1;
+				end
+
 				default: begin
 					if(!tMsgLatch)
 						$display("EX1B: Unhandled Op-IXT %X", opUIxt);

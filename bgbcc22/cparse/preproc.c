@@ -1257,12 +1257,12 @@ int BGBPP_LineArith(BGBCP_ParseState *ctx, char *str)
 void BGBPP_Directive(BGBCP_ParseState *ctx, char *str)
 {
 //	char b[256], b2[4096], b3[256];
-	char b[4096], b2[4096], b3[4096];
+	char b[4096], b2[4096], b3[4096], b4[256];
 	char *ab[256];
 	BGBPP_Def *def;
 	BCCX_Node *exp;
 	char *s, *t, *s1, *s2, *tn;
-	int ty, ty2;
+	int ty, ty2, ty3, ty4;
 	int i, j, n;
 
 #if 0
@@ -1670,6 +1670,26 @@ void BGBPP_Directive(BGBCP_ParseState *ctx, char *str)
 			s1=BGBCP_TokenCtx(ctx, s1, b3, &ty2);
 			sprintf(bgbpp_obuf, "_Pragma(setlocale(\"%s\"))\n", b3);
 			return;
+		}
+
+		if(!bgbcp_strcmp(b2, "fenv_access"))
+		{
+			s1=BGBCP_TokenCtx(ctx, s1, b3, &ty2);	//'('
+			s1=BGBCP_TokenCtx(ctx, s1, b3, &ty2);
+			sprintf(bgbpp_obuf, "_Pragma(fenv_access(\"%s\"))\n", b3);
+			return;
+		}
+
+		if(!bgbcp_strcmp(b2, "STDC"))
+		{
+			s1=BGBCP_TokenCtx(ctx, s1, b3, &ty3);
+			s1=BGBCP_TokenCtx(ctx, s1, b4, &ty4);
+			
+			if(!bgbcp_strcmp(b3, "FENV_ACCESS"))
+			{
+				sprintf(bgbpp_obuf, "_Pragma(fenv_access(\"%s\"))\n", b4);
+				return;
+			}
 		}
 
 		return;

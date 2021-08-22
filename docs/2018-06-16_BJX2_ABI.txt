@@ -110,6 +110,8 @@ Passing 128-bit types will be via a pair of GPRs, if both values will fit into G
 
 The Extended Xn registers are not used for argument passing in the base ABI.
 
+Change: For modes where 128-bit operations exist, the ABI may require 128-bit types to be passed in even-numbered registers. In cases where 
+
 
 === 32-bit Sub ABI ===
 

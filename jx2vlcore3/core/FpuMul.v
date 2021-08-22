@@ -9,6 +9,8 @@ module FpuMul(
 	regValRm,
 	regValRn,
 	regValRo,
+	regExOp,
+	regExOK,
 	regRMode
 	);
 
@@ -19,10 +21,16 @@ input	exHold;
 input[63:0]		regValRm;
 input[63:0]		regValRn;
 output[63:0]	regValRo;
+input[3:0]		regExOp;
+output[1:0]		regExOK;
 input[7:0]		regRMode;
 
 reg[63:0]		tRegValRo;
 assign	regValRo	= tRegValRo;
+
+reg[1:0]		tRegExOK;
+reg[1:0]		tRegExOK2;
+assign	regExOK		= tRegExOK2;
 
 reg				tSgnA1;
 reg				tSgnB1;
@@ -117,6 +125,8 @@ RQP
 
 always @*
 begin
+	tRegExOK	= 0;
+
 	/* Stage 1 */
 	tSgnA1	= regValRn[63];
 	tSgnB1	= regValRm[63];
@@ -258,6 +268,8 @@ begin
 	
 //	$display("FpuMul: Val=%X", tValC4);
 
+	tRegExOK[0] = tInxC4B;
+
 end
 
 always @(posedge clock)
@@ -294,6 +306,7 @@ begin
 	tFraC4_S	<= tFraC3_S;
 
 	tRegValRo	<= tValC4;
+	tRegExOK2	<= tRegExOK;
 end
 
 endmodule

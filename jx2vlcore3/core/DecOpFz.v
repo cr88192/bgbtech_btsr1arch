@@ -4,7 +4,7 @@ Redo to use new F0 block, and merge F0/F1/F2.
 
 module DecOpFz(
 	/* verilator lint_off UNUSED */
-	clock,		reset,		srUser,
+	clock,		reset,		srMod,
 	istrWord,	isAltOpB,	istrJBits,
 	idRegN,		idRegM,
 	idRegO,		idRegP,
@@ -14,7 +14,8 @@ module DecOpFz(
 
 input			clock;		//clock
 input			reset;		//reset
-input			srUser;		//usermode
+// input			srUser;		//usermode
+input[2:0]		srMod;		//mode
 
 input[63:0]		istrWord;	//source instruction word
 input[3:0]		isAltOpB;
@@ -33,6 +34,11 @@ wire			isAltOp;
 wire			isOp24;
 assign		isAltOp	= isAltOpB[0];
 assign		isOp24	= isAltOpB[1];
+
+wire			srUser;				//Usermode
+wire			srSuperuser;		//Superuser mode
+assign		srUser = srMod[0];
+assign		srSuperuser = (srMod[0] && srMod[1]) || (srMod[0] && srMod[2]);
 
 `reg_gpr		opRegN;
 `reg_gpr		opRegM;
@@ -180,13 +186,15 @@ assign	usrRejectCmMask = 16'b1111_1111_0011_1000;
 assign	usrRejectCnMask = 16'b1111_1111_1011_1100;
 `endif
 
-reg		usrRejectCmR;
-reg		usrRejectCmW;
-reg		usrRejectCoR;
-reg		usrRejectCoW;
-reg		usrRejectCnR;
-reg		usrRejectCnW;
-reg		usrReject;
+reg			usrRejectCmR;
+reg			usrRejectCmW;
+reg			usrRejectCoR;
+reg			usrRejectCoW;
+reg			usrRejectCnR;
+reg			usrRejectCnW;
+reg			usrReject;
+reg[1:0]	usrSuAllow;
+reg			usrSuAllowEn;
 
 
 always @*
@@ -505,6 +513,8 @@ begin
 //	tRegRoIsR1	= tRegRoIsRz &  opRegO_Dfl[0];
 
 	usrReject		= 0;
+	usrSuAllow		= 0;
+
 `ifdef jx2_enable_xgpr
 	usrRejectCmR	= usrRejectCmMask[opRegM_Cr[4:0]];
 	usrRejectCmW	= usrRejectCnMask[opRegM_Cr[4:0]];
@@ -1932,6 +1942,45 @@ begin
 								usrReject	= 1;
 							end
 
+							4'h8: begin
+								opNmid		= JX2_UCMD_OP_IXT;
+								opFmid		= JX2_FMID_Z;
+								opUCmdIx	= JX2_UCIX_IXT_SXENTR;
+								opIty		= JX2_ITY_SB;
+								usrReject	= 1;
+//								usrSuAllow	= srMod[1];
+								usrSuAllow	= 2;
+							end
+							4'h9: begin
+								opNmid		= JX2_UCMD_OP_IXT;
+								opFmid		= JX2_FMID_Z;
+								opUCmdIx	= JX2_UCIX_IXT_SUENTR;
+								opIty		= JX2_ITY_SB;
+								usrReject	= 1;
+//								usrSuAllow	= srMod[1];
+								usrSuAllow	= 2;
+							end
+
+							4'hA: begin
+								opNmid		= JX2_UCMD_OP_IXT;
+								opFmid		= JX2_FMID_Z;
+								opUCmdIx	= JX2_UCIX_IXT_SVEKRR;
+								opIty		= JX2_ITY_UB;
+								opUCty		= JX2_IUC_WX;
+								usrReject	= 1;
+								usrSuAllow	= 1;
+							end
+
+							4'hB: begin
+								opNmid		= JX2_UCMD_OP_IXT;
+								opFmid		= JX2_FMID_Z;
+								opUCmdIx	= JX2_UCIX_IXT_SVENTR;
+								opIty		= JX2_ITY_SB;
+								usrReject	= 1;
+//								usrSuAllow	= srMod[1] && srMod[2];
+								usrSuAllow	= 3;
+							end
+
 							4'hC: begin
 								opNmid		= JX2_UCMD_OP_IXT;
 								opFmid		= JX2_FMID_Z;
@@ -1939,6 +1988,7 @@ begin
 //								opIty		= JX2_ITY_UB;
 //								opUCty		= JX2_IUC_WX;
 								usrReject	= 1;
+								usrSuAllow	= 1;
 							end
 							4'hD: begin
 								opNmid		= JX2_UCMD_OP_IXT;
@@ -2527,6 +2577,25 @@ begin
 					opIty		= JX2_ITY_SB;
 					opUCmdIx	= JX2_UCIX_MUL3_BLKUAB1;
 				end
+			end
+
+			16'h6zzD: begin		/* F0nm_6eoD */
+				opNmid		= JX2_UCMD_FPU3;
+				opFmid		= JX2_FMID_REGREG;
+				opIty		= JX2_ITY_SB;
+				opUCmdIx	= JX2_UCIX_FPU_FADD_G;
+			end
+			16'h6zzE: begin		/* F0nm_6eoE */
+				opNmid		= JX2_UCMD_FPU3;
+				opFmid		= JX2_FMID_REGREG;
+				opIty		= JX2_ITY_SB;
+				opUCmdIx	= JX2_UCIX_FPU_FSUB_G;
+			end
+			16'h6zzF: begin		/* F0nm_6eoF */
+				opNmid		= JX2_UCMD_FPU3;
+				opFmid		= JX2_FMID_REGREG;
+				opIty		= JX2_ITY_SB;
+				opUCmdIx	= JX2_UCIX_FPU_FMUL_G;
 			end
 
 			16'hCzzz: begin		/* F0dd_Cddd */
@@ -3955,7 +4024,16 @@ begin
 		end
 	endcase
 
-	if(usrReject && srUser)
+	usrSuAllowEn = 0;
+	case(usrSuAllow)
+		2'b00: usrSuAllowEn = 0;					//Supervisor Only
+		2'b01: usrSuAllowEn = srSuperuser;			//Superuser
+		2'b10: usrSuAllowEn = srMod[1];				//Secure Execute
+		2'b11: usrSuAllowEn = srMod[1] && srMod[2];	//Superuser+Secure Exe
+	endcase
+
+//	if(usrReject && srUser && !(usrSuAllow && srSuperuser))
+	if(usrReject && srUser && !usrSuAllowEn)
 	begin
 		$display("DecOpFz: Usermode Reject %X-%X",
 			istrWord[15:0], istrWord[31:16]);

@@ -54,7 +54,8 @@ Special cases may be encoded when No-Cache is set:
   1000: Volatile Memory (Read/Write)
   1001: Volatile Memory (Write Only)
   1010: Volatile Memory (Read Only)
-  1011: Volatile Inaccessible (Address Not Memory)
+  1011: / Volatile Inaccessible (Address Not Memory)
+  1011: Inaccessible D$, Secure Execute Only I$
   1111: Request was part of a TLB Miss
 
 On OKLD or OKST responses, the low 4 bits will hold the Status Bits.
@@ -73,11 +74,11 @@ Operation Mode (Response):
 
 Operation Element (Load/Store):
   0000: Signed Byte (N/A)
-  0001: Signed Byte (N/A)
+  0001: Signed Word  (N/A)
   0010: Signed DWord (MMIO)
   0011: QWord (MMIO)
-  0100: Unsigned Byte (N/A)
-  0101: Unsigned Byte (N/A)
+  0100: Unsigned Byte / Prefetch
+  0101: Unsigned Word / Tile256 (If 256-bit Ringbus)
   0110: Unsigned DWord (MMIO)
   0111: Tile128 (RAM)
 
@@ -129,6 +130,8 @@ parameter[7:0] JX2_RBI_OPM_LDUW		= 8'h95;	//
 parameter[7:0] JX2_RBI_OPM_LDUL		= 8'h96;	//
 parameter[7:0] JX2_RBI_OPM_LDX		= 8'h97;	//
 
+parameter[7:0] JX2_RBI_OPM_PFX		= 8'h94;	//Load Prefetch
+
 parameter[7:0] JX2_RBI_OPM_STSB		= 8'hA0;	//
 parameter[7:0] JX2_RBI_OPM_STSW		= 8'hA1;	//
 parameter[7:0] JX2_RBI_OPM_STSL		= 8'hA2;	//
@@ -137,6 +140,8 @@ parameter[7:0] JX2_RBI_OPM_STUB		= 8'hA4;	//
 parameter[7:0] JX2_RBI_OPM_STUW		= 8'hA5;	//
 parameter[7:0] JX2_RBI_OPM_STUL		= 8'hA6;	//
 parameter[7:0] JX2_RBI_OPM_STX		= 8'hA7;	//
+
+parameter[7:0] JX2_RBI_OPM_SPX		= 8'hA4;	//Store Prefetch
 
 parameter[7:0] JX2_RBI_OPM_SWSB		= 8'hB0;	//
 parameter[7:0] JX2_RBI_OPM_SWSW		= 8'hB1;	//

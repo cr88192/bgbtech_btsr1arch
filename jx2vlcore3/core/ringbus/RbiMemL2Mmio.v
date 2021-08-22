@@ -108,6 +108,7 @@ wire		memRingIsIdle;
 wire		memRingIsResp;
 wire		memRingIsLdx;
 wire		memRingIsStx;
+wire		memRingIsPfx;
 
 wire		memRingIsLdQ;
 wire		memRingIsStQ;
@@ -122,6 +123,7 @@ reg				tNxtRingDoExc;
 assign	memRingIsIdle	= (memOpmIn[7:0] == JX2_RBI_OPM_IDLE);
 assign	memRingIsLdx	= (memOpmIn[7:0] == JX2_RBI_OPM_LDX);
 assign	memRingIsStx	= (memOpmIn[7:0] == JX2_RBI_OPM_STX);
+assign	memRingIsPfx	= (memOpmIn[7:0] == JX2_RBI_OPM_PFX);
 
 assign	memRingIsLdQ	= (memOpmIn[7:0] == JX2_RBI_OPM_LDSQ);
 assign	memRingIsStQ	= (memOpmIn[7:0] == JX2_RBI_OPM_STSQ);

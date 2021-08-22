@@ -59,6 +59,9 @@
 #include <windows.h>
 #endif
 
+#define USE_FENV
+#include <fenv.h>
+
 #include "jx2i_multi.c"
 
 FILE *bjx2_vmoutlog=NULL;

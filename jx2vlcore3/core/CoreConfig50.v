@@ -34,6 +34,8 @@
 // `define jx2_mem_line32B				//Use 32-byte cache line
 // `define jx2_mem_ddr32B				//Use 32-byte DDR line
 
+// `define jx2_mem_useddrwa			//Use DDR Wide-Access (512-bit)
+
 `define jx2_mem_fasttdown			//Faster teardown
 
 
@@ -49,6 +51,8 @@
 
 `define jx2_mem_l1d_fwstore			//Store Forwarding
 `define jx2_mem_l1d_fwarray			//Block Array Forwarding
+
+`define jx2_mem_l1d_utlb			//Micro TLB
 
 // `define jx2_mem_fulldpx				//Full Duplex Mode
 // `define jx2_mem_fulldpx_syncb	//Full Duplex, Sync L2 AddrB
@@ -72,6 +76,7 @@
 // `define jx2_mem_l2sz_2048		//L1 D$ is 2048 entries
 // `define jx2_mem_l2sz_1024		//L1 D$ is 1024 entries
 
+`define jx2_mem_l2wsz_1024		//L1 D$ is 1024 entries
 
 // `define jx2_mem_l1i2way			//Use 2-Way L1 I$
 // `define jx2_mem_l1d2way			//Use 2-Way L1 D$
@@ -79,8 +84,9 @@
 // `define jx2_mem_l2skip			//Skip L2 Cache
 
 `define jx2_mem_l2d2way				//Use 2-Way L2 Cache
-
 `define jx2_mem_l2dokseq			//L2: Use OK Sequencing
+
+`define jx2_rbi_nobridge			//Ringbus: Bypass Bridge, join rings directly
 
 
 

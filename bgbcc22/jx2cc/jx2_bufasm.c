@@ -893,6 +893,11 @@ int nmid;
 {"invtlb",	BGBCC_SH_NMID_INVTLB},
 {"ldacl",	BGBCC_SH_NMID_LDACL},
 
+{"ldekrr",	BGBCC_SH_NMID_LDEKRR},
+{"svekrr",	BGBCC_SH_NMID_SVEKRR},
+{"ldekey",	BGBCC_SH_NMID_LDEKEY},
+{"ldeenc",	BGBCC_SH_NMID_LDEENC},
+
 {"wexmd",	BGBCC_SH_NMID_WEXMD},
 {"cpuid",	BGBCC_SH_NMID_CPUID},
 
@@ -940,6 +945,14 @@ int nmid;
 {"fmacx",	BGBCC_SH_NMID_FMACX},
 {"fcmpxeq",	BGBCC_SH_NMID_FCMPXEQ},
 {"fcmpxgt",	BGBCC_SH_NMID_FCMPXGT},
+
+{"faddg",	BGBCC_SH_NMID_FADDG},
+{"fsubg",	BGBCC_SH_NMID_FSUBG},
+{"fmulg",	BGBCC_SH_NMID_FMULG},
+
+{"fadd.g",	BGBCC_SH_NMID_FADDG},
+{"fsub.g",	BGBCC_SH_NMID_FSUBG},
+{"fmul.g",	BGBCC_SH_NMID_FMULG},
 
 {"cmpxeq",	BGBCC_SH_NMID_CMPXEQ},
 {"cmpxgt",	BGBCC_SH_NMID_CMPXGT},
@@ -1673,6 +1686,9 @@ int BGBCC_JX2A_ParseCheckFeature(BGBCC_JX2_Context *ctx, char *sym)
 		return(ctx->has_bra48);
 	if(!bgbcc_stricmp(sym, "has_xgpr"))
 		return(ctx->has_xgpr);
+
+	if(!bgbcc_stricmp(sym, "abi_evenonly"))
+		return(ctx->abi_evenonly);
 
 	tctx=ctx->tctx;
 

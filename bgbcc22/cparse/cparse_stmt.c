@@ -763,6 +763,11 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 							BGBCP_SetLocale(ctx, s2);
 						}
 					}
+
+					if(!strcmp(s0, "fenv_access"))
+					{
+						ctx->fenv_access=1;
+					}
 				}
 
 				*str=s;

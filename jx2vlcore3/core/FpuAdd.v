@@ -193,7 +193,8 @@ begin
 	tRegValRn	= regValRn;
 	tRegValRn1	= regValRn;
 
-	tRegExOK=UMEM_OK_READY;
+// 	tRegExOK=UMEM_OK_READY;
+	tRegExOK	= 0;
 	
 	/* Stage 1 */
 

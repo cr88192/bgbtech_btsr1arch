@@ -8,7 +8,8 @@ module MmiModClkp(
 	timer1MHz,
 	timer64kHz,
 	timer1kHz,
-	timer256Hz
+	timer256Hz,
+	timerNPat
 	);
 
 input	clock;
@@ -19,6 +20,7 @@ output	timer1MHz;
 output	timer64kHz;
 output	timer1kHz;
 output	timer256Hz;
+output	timerNPat;
 
 
 reg[15:0]	fracTimer1MHz;
@@ -41,6 +43,15 @@ reg[15:0]	fracTimer1kHz;
 reg[15:0]	nextFracTimer1kHz;
 reg			stepTimer1kHz;
 
+reg[15:0]	fracTimerNa;
+reg[15:0]	nextFracTimerNa;
+reg			stepTimerNa;
+
+reg[15:0]	fracTimerNb;
+reg[15:0]	nextFracTimerNb;
+reg			stepTimerNb;
+
+
 reg			curClk512Hz;
 reg			nxtClk512Hz;
 reg			curClk256Hz;
@@ -54,12 +65,15 @@ reg			stepTimer64kHzB;
 reg			stepTimer1kHzB;
 reg			stepTimer256HzB;
 
+reg			tTimerNPat;		//Noise Pattern
+
 assign	timer4MHz	= stepTimer4MHzB;
 assign	timer1MHz	= stepTimer1MHzB;
 assign	timer64kHz	= stepTimer64kHzB;
 assign	timer1kHz	= stepTimer1kHzB;
 
 assign	timer256Hz	= stepTimer256Hz;
+assign	timerNPat	= tTimerNPat;
 
 always @*
 begin
@@ -140,6 +154,20 @@ begin
 		if(!curClk256Hz)
 			stepTimer256Hz	= 1;
 	end
+
+//	{ stepTimerNa, nextFracTimerNa }	=
+//		{ 1'b0, fracTimerNa } + 17'h00001;
+//	{ stepTimerNb, nextFracTimerNb }	=
+//		{ 1'b0, fracTimerNb } + 17'h0000D;
+
+	{ stepTimerNa, nextFracTimerNa }	=
+		{ 1'b0, fracTimerNa } + 17'h00003;
+	{ stepTimerNb, nextFracTimerNb }	=
+		{ 1'b0, fracTimerNb } + 17'h00011;
+
+	tTimerNPat =
+		JX2_KRR_FIXKEY3[fracTimerNa[5:0]] ^
+		JX2_KRR_FIXKEY4[fracTimerNb[5:0]];
 	
 end
 
@@ -158,6 +186,9 @@ begin
 	fracTimer1kHz	<= nextFracTimer1kHz;
 	curClk512Hz		<= nxtClk512Hz;
 	curClk256Hz		<= nxtClk256Hz;
+
+	fracTimerNa		<= nextFracTimerNa;
+	fracTimerNb		<= nextFracTimerNb;
 end
 
 endmodule

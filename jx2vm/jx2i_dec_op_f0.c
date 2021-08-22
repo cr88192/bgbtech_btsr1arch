@@ -2324,6 +2324,51 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 					op->fl|=BJX2_OPFL_NOWEXSFX;
 					break;
 
+				case 0x2:
+					op->nmid=BJX2_NMID_SYSCALL;
+					op->fmid=BJX2_FMID_Z;
+					op->Run=BJX2_Op_SYSCALL_None;
+					op->fl|=BJX2_OPFL_CTRLF;
+					break;
+
+				case 0x4:
+					op->nmid=BJX2_NMID_LDACL;
+					op->Run=BJX2_Op_LDACL_None;
+					break;
+
+				case 0x8:
+					op->nmid=BJX2_NMID_SXENTR;
+					op->Run=BJX2_Op_SXENTR_None;
+					break;
+				case 0x9:
+					op->nmid=BJX2_NMID_SUENTR;
+					op->Run=BJX2_Op_SUENTR_None;
+					break;
+				case 0xA:
+					op->nmid=BJX2_NMID_SVEKRR;
+					op->Run=BJX2_Op_SVEKRR_None;
+					break;
+				case 0xB:
+					op->nmid=BJX2_NMID_SVENTR;
+					op->Run=BJX2_Op_SVENTR_None;
+					break;
+				case 0xC:
+					op->nmid=BJX2_NMID_LDEKRR;
+					op->Run=BJX2_Op_LDEKRR_None;
+					break;
+				case 0xD:
+					op->nmid=BJX2_NMID_LDEKEY;
+					op->Run=BJX2_Op_SVENTR_None;
+					break;
+				case 0xE:
+					op->nmid=BJX2_NMID_LDEENC;
+					op->Run=BJX2_Op_LDEENC_None;
+					break;
+				case 0xF:
+					op->nmid=BJX2_NMID_INVTLB;
+					op->Run=BJX2_Op_INVTLB_None;
+					break;
+
 #if 0
 				case 0x0:	/* F0e0_3002 */
 					op->nmid=BJX2_NMID_BRA;
@@ -3208,6 +3253,46 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				op->nmid=BJX2_NMID_BLKUAB2;
 				op->fmid=BJX2_FMID_REGREGREG;
 				op->Run=BJX2_Op_BLKUAB2_RegRegReg;
+			}
+			break;
+
+		case 0xD:	/* F0ez_6Dzz */
+			op->nmid=BJX2_NMID_FADD;
+			op->fmid=BJX2_FMID_REGREGREG;
+			op->Run=BJX2_Op_FADDG_RegRegReg;
+			op->fl|=BJX2_OPFL_NOWEX;
+			if(eq)
+			{
+				op->nmid=BJX2_NMID_FADDX;
+				op->Run=BJX2_Op_FADDX_RegRegReg;
+				op->fl|=BJX2_OPFL_NOWEXSFX;
+				op->fl|=BJX2_OPFL_REGX3R;
+			}
+			break;
+		case 0xE:	/* F0ez_6Ezz */
+			op->nmid=BJX2_NMID_FSUB;
+			op->fmid=BJX2_FMID_REGREGREG;
+			op->Run=BJX2_Op_FSUBG_RegRegReg;
+			op->fl|=BJX2_OPFL_NOWEX;
+			if(eq)
+			{
+				op->nmid=BJX2_NMID_FSUBX;
+				op->Run=BJX2_Op_FSUBX_RegRegReg;
+				op->fl|=BJX2_OPFL_NOWEXSFX;
+				op->fl|=BJX2_OPFL_REGX3R;
+			}
+			break;
+		case 0xF:	/* F0ez_6Fzz */
+			op->nmid=BJX2_NMID_FMUL;
+			op->fmid=BJX2_FMID_REGREGREG;
+			op->Run=BJX2_Op_FMULG_RegRegReg;
+			op->fl|=BJX2_OPFL_NOWEX;
+			if(eq)
+			{
+				op->nmid=BJX2_NMID_FMULX;
+				op->Run=BJX2_Op_FMULX_RegRegReg;
+				op->fl|=BJX2_OPFL_NOWEXSFX;
+				op->fl|=BJX2_OPFL_REGX3R;
 			}
 			break;
 		}

@@ -8,7 +8,7 @@ module RbiMemDcA(
 	regOutValB,		regInValB,
 	dcInHold,		regOutHold,
 	regInSr,		regOutWait,
-	regOutExc,
+	regOutExc,		regInMmcr,
 
 	memAddrIn,		memAddrOut,
 	memDataIn,		memDataOut,
@@ -35,6 +35,7 @@ output			regOutHold;
 output			regOutWait;
 
 input [63: 0]	regInSr;
+input [63: 0]	regInMmcr;
 output[63: 0]	regOutExc;
 
 
@@ -59,6 +60,8 @@ assign	regOutValB = tRegOutValB;
 reg[63: 0]	tRegOutExc;
 reg[63: 0]	tRegOutExc2;
 assign	regOutExc = tRegOutExc2;
+
+reg[63: 0]		tRegInSr;
 
 
 reg[ 15:0]		tMemSeqOut;		//operation sequence
@@ -207,6 +210,9 @@ reg[ 43:0]		tReqSeqVa;
 reg[  3:0]		tFlushRov;
 reg[  3:0]		tNxtFlushRov;
 
+reg[  3:0]		tFlushRovTlb;
+reg[  3:0]		tNxtFlushRovTlb;
+
 reg[ 47:0]		tNxtReqAddr;
 `reg_l1d_ix		tNxtReqIxA;
 `reg_l1d_ix		tNxtReqIxB;
@@ -221,6 +227,9 @@ reg[ 43:0]		tReqAxB;
 `reg_l1d_ix		tReq1IxB;
 `reg_l1d_ix		tArrMemDidStIxA;
 `reg_l1d_ix		tArrMemDidStIxB;
+
+// reg[ 47:0]		tReqAddrUtlb;
+// reg				tReqAddrUtlbHit;
 
 
 reg[  4:0]		tNxtReqBix;
@@ -281,6 +290,11 @@ reg				tReqIsMmio;
 reg				tReq2IsMmio;
 reg				tReqIsCcmd;
 reg				tReq2IsCcmd;
+
+reg				tReqDoPfxA;
+reg				tReqDoPfxB;
+reg				tReqDoSpxA;
+reg				tReqDoSpxB;
 
 
 reg[ 71:0]		tBlkMemAddrA;
@@ -413,8 +427,11 @@ reg[5:0]		tInOpm;			//OPM (Used for cache-control)
 reg[5:0]		tInOpmB;		//OPM (Used for cache-control)
 reg[5:0]		tInOpmC;		//OPM (Used for cache-control)
 reg				tNxtDoFlush;
+reg				tNxtDoFlushTlb;
 reg				tDoFlush;
+reg				tDoFlushTlb;
 reg				tDoFlushL;
+reg				tDoFlushTlbL;
 
 reg				tTlbMissInh;
 reg				tNxtTlbMissInh;
@@ -429,12 +446,30 @@ reg[2:0]		tNxtVolatileInh;
 `reg_l1d_ix		tNxtVolatileIxB;
 
 
+reg[79:0]		tUtlbArr[15:0];
+reg[79:0]		tUtlbStAddr;
+reg[3:0]		tUtlbStIx;
+reg				tUtlbDoSt;
+
+reg[79:0]		tUtlbBlkAddr;
+reg[3:0]		tUtlbBlkIx;
+reg[3:0]		tUtlb1BlkIx;
+reg[3:0]		tNxtUtlbBlkIx;
+reg				tUtlbBlkFlush;
+
+reg[43:0]		tReqUtlbAxA;
+reg[43:0]		tReqUtlbAxB;
+reg[3:0]		tReqUtlbAccA;
+reg[3:0]		tReqUtlbAccB;
+reg				tReqUtlbHitHi;
+reg				tReqUtlbHitAxA;
+reg				tReqUtlbHitAxB;
+
 
 always @*
 begin
 	/* EX1 */
 
-`ifdef def_true
 	if(regInAddr[4])
 	begin
 		tNxtReqAxB = regInAddr[47:4];
@@ -449,6 +484,10 @@ begin
 	tNxtReqAddr		= regInAddr[47:0];
 	tNxtReqBix		= regInAddr[4:0];
 	tNxtReqOpm		= regInOpm;
+	
+	tNxtUtlbBlkIx	= regInAddr[15:12] ^ regInAddr[19:16];
+
+`ifdef def_true
 
 `ifdef jx2_mem_l1dsz_64
 	tNxtReqIxA[5:0] = tNxtReqAxA[6:1];
@@ -515,13 +554,15 @@ begin
 
 	if(dcInHold)
 	begin
-		tReq1IxA = tReqIxA;
-		tReq1IxB = tReqIxB;
+		tReq1IxA		= tReqIxA;
+		tReq1IxB		= tReqIxB;
+		tUtlb1BlkIx		= tUtlbBlkIx;
 	end
 	else
 	begin
-		tReq1IxA = tNxtReqIxA;
-		tReq1IxB = tNxtReqIxB;
+		tReq1IxA		= tNxtReqIxA;
+		tReq1IxB		= tNxtReqIxB;
+		tUtlb1BlkIx		= tNxtUtlbBlkIx;
 	end
 `endif
 end
@@ -530,9 +571,12 @@ always @*
 begin
 	tNxtTlbMissInh		= tTlbMissInh;
 	tNxtFlushRov		= tFlushRov;
+	tNxtFlushRovTlb		= tFlushRovTlb;
 	tNxtDoFlush			= 0;
+	tNxtDoFlushTlb		= 0;
 
-	if((tInOpm == JX2_DCOPM_LDTLB) || regInSr[29])
+//	if((tInOpm == JX2_DCOPM_LDTLB) || tRegInSr[29])
+	if((tInOpm == JX2_DCOPM_LDTLB) || (tRegInSr[29] && tRegInSr[30]))
 	begin
 		if(tTlbMissInh)
 			$display("L1D$ Clear TLB Inhibit");
@@ -543,10 +587,18 @@ begin
 	if((tInOpm==JX2_DCOPM_FLUSHDS) && (tInOpmC!=JX2_DCOPM_FLUSHDS) && !reset)
 	begin
 		tNxtDoFlush = 1;
+		tNxtDoFlushTlb = 1;
+	end
+
+	if((tInOpm==JX2_DCOPM_INVTLB) && (tInOpmC!=JX2_DCOPM_INVTLB) && !reset)
+	begin
+		tNxtDoFlushTlb = 1;
 	end
 	
 	if((tFlushRov == 0) && !tDoFlush && !reset)
 		tNxtDoFlush = 1;
+	if((tFlushRovTlb == 0) && !tDoFlushTlb && !reset)
+		tNxtDoFlushTlb = 1;
 
 	if(tDoFlush && !tDoFlushL)
 	begin
@@ -554,9 +606,16 @@ begin
 		tNxtFlushRov = tFlushRov + 1;
 	end
 
+	if(tDoFlushTlb && !tDoFlushTlbL)
+	begin
+		$display("L1 D$ DoFlushTlb rov=%X", tFlushRovTlb);
+		tNxtFlushRovTlb = tFlushRovTlb + 1;
+	end
+
 	if(reset)
 	begin
 		tNxtFlushRov		= 0;
+		tNxtFlushRovTlb		= 0;
 	end
 end
 
@@ -622,6 +681,10 @@ begin
 	tReqMissSkipA	= 0;
 	tReqMissSkipB	= 0;
 	tReqMissNoSkip	= 0;
+	tReqDoPfxA		= 0;
+	tReqDoPfxB		= 0;
+	tReqDoSpxA		= 0;
+	tReqDoSpxB		= 0;
 
 	tNxtMemMmioData = tMemMmioData;
 	tNxtMemMmioReady = tMemMmioReady;
@@ -668,6 +731,25 @@ begin
 			tReqMissSkipA	= 1;
 		else
 			tReqMissSkipB	= 1;
+	end
+`endif
+
+`ifdef def_true	
+// `ifndef def_true	
+	if(tReqOpm[5:4]==2'b10)
+	begin
+		if((tReqOpm[2:0] == 3'b111) && tReqNoCross)
+		begin
+			if(tReqBix[4])
+				tReqDoSpxB		= 1;
+//				tReqDoPfxB		= 1;
+			else
+				tReqDoSpxA		= 1;
+//				tReqDoPfxA		= 1;
+
+	//		tReqDoPfxA		= 0;
+	//		tReqDoPfxB		= 0;
+		end
 	end
 `endif
 
@@ -848,6 +930,49 @@ begin
 
 	tReqFlushAddrA	= (tBlkMemAddr2A[71:68] != tFlushRov);
 	tReqFlushAddrB	= (tBlkMemAddr2B[71:68] != tFlushRov);
+
+`ifdef jx2_mem_l1d_utlb
+	tUtlbBlkFlush	= (tUtlbBlkAddr[7:4] != tFlushRovTlb);
+	tReqUtlbAxA		= { tUtlbBlkAddr[79:46], tReqAxA[9:0] };
+	tReqUtlbAxB		= { tUtlbBlkAddr[79:46], tReqAxB[9:0] };
+	tReqUtlbAccA	= tUtlbBlkAddr[3:0];
+	tReqUtlbAccB	= tUtlbBlkAddr[3:0];
+
+//	tReqUtlbHitHi	= tReqAxA[43:16] == tUtlbBlkAddr[43:16];
+	tReqUtlbHitHi	=
+		(tReqAxA[43:28] == tUtlbBlkAddr[43:28]) &&
+		(tReqAxA[27:16] == tUtlbBlkAddr[27:16]) ;
+	if(tReqAxA[16] != tReqAxB[16])
+		tReqUtlbHitHi = 0;
+	tReqUtlbHitAxA	= tReqUtlbHitHi &&
+		(tReqAxA[15:10] == tUtlbBlkAddr[15:10]) &&
+		!tUtlbBlkFlush && regInMmcr[0];
+	tReqUtlbHitAxB	= tReqUtlbHitHi &&
+		(tReqAxB[15:10] == tUtlbBlkAddr[15:10]) &&
+		!tUtlbBlkFlush && regInMmcr[0];
+
+	if(regInMmcr[5:4]==2'b00)
+	begin
+		/* 4K pages. */
+		tReqUtlbAxA[9:8]=tUtlbBlkAddr[45:44];
+		tReqUtlbAxB[9:8]=tUtlbBlkAddr[45:44];
+		if(tReqAxA[9:8] != tUtlbBlkAddr[9:8])
+			tReqUtlbHitAxA = 0;
+		if(tReqAxB[9:8] != tUtlbBlkAddr[9:8])
+			tReqUtlbHitAxB = 0;
+	end
+
+`ifndef def_true
+	if(regInMmcr[0] && tReqIsNz && !tReqIsMmio && !tReqIsCcmd)
+	begin
+		if(tReqUtlbHitAxA)
+			$display("Utlb Hit, %X %X", tUtlbBlkAddr, tReqAxA);
+		else
+			$display("Utlb Miss, %X %X", tUtlbBlkAddr, tReqAxA);
+	end
+`endif
+
+`endif
 
 	tReqNoReadA		= tBlkMemAddr2A[0];
 	tReqNoReadB		= tBlkMemAddr2B[0];
@@ -1162,6 +1287,12 @@ begin
 
 	/* EX3 */
 
+
+	tUtlbStAddr		= 0;
+	tUtlbStIx		= 0;
+	tUtlbDoSt		= 0;
+
+
 	tNxtReq2StoreSticky = 0;
 
 	if(memRingIsRespOkStA)
@@ -1238,6 +1369,14 @@ begin
 			tArrMemDoStA = 1;
 			tNxtMemRespLdA = 1;
 
+			tUtlbStAddr		= {
+				memAddrIn[47:12],
+				tReqSeqVa[43: 8],
+				tFlushRovTlb,
+				memOpmIn[3:0] };
+			tUtlbStIx		= tReqSeqVa[11:8] ^ tReqSeqVa[15:12];
+			tUtlbDoSt		= (memOpmIn[3:2] != 2'b11);
+
 			if(memOpmIn[3])
 			begin
 				if(memOpmIn[2])
@@ -1289,6 +1428,14 @@ begin
 			tArrMemDextStB	= { 8'h00, tArrMemChkStB };
 			tArrMemDoStB = 1;
 			tNxtMemRespLdB = 1;
+
+			tUtlbStAddr		= {
+				memAddrIn[47:12],
+				tReqSeqVa[43: 8],
+				tFlushRovTlb,
+				memOpmIn[3:0] };
+			tUtlbStIx		= tReqSeqVa[11:8] ^ tReqSeqVa[15:12];
+			tUtlbDoSt		= (memOpmIn[3:2] != 2'b11);
 
 			if(memOpmIn[3])
 			begin
@@ -1610,6 +1757,19 @@ begin
 //			tMemDataReq		= tBlkMemData2A;
 			tMemOpmReq		= { UV8_00, JX2_RBI_OPM_LDX };
 			tMemAddrReq		= { tReqAxA, 4'h00 };
+
+			if(tReqDoPfxA)
+				tMemOpmReq		= { UV8_00, JX2_RBI_OPM_PFX };
+			if(tReqDoSpxA)
+				tMemOpmReq		= { UV8_00, JX2_RBI_OPM_SPX };
+
+`ifdef jx2_mem_l1d_utlb
+			if(tReqUtlbHitAxA)
+			begin
+				tMemAddrReq			= { tReqUtlbAxA, 4'h00 };
+				tMemOpmReq[11:8]	= tReqUtlbAccA;
+			end
+`endif
 			tNxtMemReqLdA = 1;
 		end
 		else
@@ -1623,6 +1783,19 @@ begin
 //			tMemDataReq		= tBlkMemData2B;
 			tMemOpmReq		= { UV8_00, JX2_RBI_OPM_LDX };
 			tMemAddrReq		= { tReqAxB, 4'h00 };
+
+			if(tReqDoPfxB)
+				tMemOpmReq		= { UV8_00, JX2_RBI_OPM_PFX };
+			if(tReqDoSpxB)
+				tMemOpmReq		= { UV8_00, JX2_RBI_OPM_SPX };
+
+`ifdef jx2_mem_l1d_utlb
+			if(tReqUtlbHitAxB)
+			begin
+				tMemAddrReq			= { tReqUtlbAxB, 4'h00 };
+				tMemOpmReq[11:8]	= tReqUtlbAccB;
+			end
+`endif
 			tNxtMemReqLdB	= 1;
 		end
 `endif
@@ -1670,6 +1843,7 @@ begin
 		tVolatileInhSet	<= 0;
 
 		tSrJQ			<= regInSr[31];
+		tRegInSr		<= regInSr;
 	
 		/* EX1 -> EX2 */
 		tReqAddr		<= tNxtReqAddr;
@@ -1681,6 +1855,9 @@ begin
 		tReqOpm			<= tNxtReqOpm;
 		tReqInValA		<= tNxtReqInValA;
 		tReqInValB		<= tNxtReqInValB;
+		
+//		tUtlbBlkIx		<= tNxtReqAddr[11:8];
+		tUtlbBlkIx		<= tNxtUtlbBlkIx;
 
 		/* EX2 -> EX3 */
 		tRegOutValA		<= tBlkExDataA;
@@ -1727,6 +1904,7 @@ begin
 	end
 
 	tFlushRov		<= tNxtFlushRov;
+	tFlushRovTlb	<= tNxtFlushRovTlb;
 
 	tReqReadyL		<= tReqReady;
 
@@ -1734,7 +1912,9 @@ begin
 	tInOpmB			<= tInOpm;
 	tInOpmC			<= tInOpmB;
 	tDoFlush		<= tNxtDoFlush;
+	tDoFlushTlb		<= tNxtDoFlushTlb;
 	tDoFlushL		<= tDoFlush;
+	tDoFlushTlbL	<= tDoFlushTlb;
 	
 	tRegOutHoldL	<= tRegOutHold;
 	tReqMissNoSkipL	<= tReqMissNoSkip;
@@ -1764,6 +1944,15 @@ begin
 		arrMemAddrB[tArrMemIdxStB]	<= tArrMemAddrStB;
 		arrMemDataB[tArrMemIdxStB]	<= { tArrMemDextStB, tArrMemDataStB };
 	end
+
+`ifdef jx2_mem_l1d_utlb
+	if(tUtlbDoSt)
+	begin
+		tUtlbArr[tUtlbStIx]		 <= tUtlbStAddr;
+	end
+	tUtlbBlkAddr		<= tUtlbArr[tUtlb1BlkIx];
+`endif
+
 
 	tArrMemDidStAddrA	<= tArrMemAddrStA;
 	tArrMemDidStAddrB	<= tArrMemAddrStB;

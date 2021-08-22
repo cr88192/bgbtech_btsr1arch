@@ -27,6 +27,7 @@ module RegCR(
 	regOutSpc,	regInSpc,
 	regOutSsp,	regInSsp,
 	regOutTea,	regInTea,
+	regOutFpsr,	regInFpsr,
 
 	regOutVbr,
 	regOutGbr,
@@ -73,6 +74,9 @@ input [47:0]	regInSsp;
 output[63:0]	regOutTea;
 input [63:0]	regInTea;
 
+output[15:0]	regOutFpsr;
+input [15:0]	regInFpsr;
+
 output[47:0]	regOutVbr;
 output[47:0]	regOutGbr;
 output[47:0]	regOutTbr;
@@ -90,6 +94,7 @@ reg[47:0]	crRegSsp;
 reg[47:0]	crRegGbr;
 reg[47:0]	crRegTbr;
 reg[63:0]	crRegTea;
+reg[15:0]	crRegFpsr;
 
 `ifdef jx2_enable_mmu
 reg[47:0]	crRegTtb;
@@ -115,6 +120,7 @@ assign	regOutVbr	= crRegVbr;
 assign	regOutGbr	= crRegGbr;
 assign	regOutTbr	= crRegTbr;
 assign	regOutTea	= crRegTea;
+assign	regOutFpsr	= crRegFpsr;
 
 `ifdef jx2_enable_mmu
 assign	regOutMmcr	= crRegMmcr;
@@ -132,6 +138,7 @@ reg			tIsIsrEdge;
 `reg_gpr		regIdCn2B;			//Destination ID
 reg[63:0]		regValCn2B;			//Destination Value
 reg[47:0]		regValCn2B_48b;		//Destination Value
+reg[15:0]		regValCn2B_16h;		//Destination Value
 
 reg[63:0]		tRegInLr;
 
@@ -196,6 +203,8 @@ begin
 	regValCn2B_48b	= { UV16_00, regValCn2B[31:0] };
 `endif
 
+	regValCn2B_16h	= regValCn2B[63:48];
+
 //	case({1'b1, regIdCm})
 	case(regIdCm)
 		JX2_CR_SR:		tValCmA=crRegSr;
@@ -209,7 +218,8 @@ begin
 		JX2_CR_VBR:		tValCmA={UV16_00, crRegVbr};
 		JX2_CR_SPC:		tValCmA={UV16_00, crRegSpc};
 		JX2_CR_SSP:		tValCmA={UV16_00, crRegSsp};
-		JX2_CR_GBR:		tValCmA={UV16_00, crRegGbr};
+//		JX2_CR_GBR:		tValCmA={UV16_00, crRegGbr};
+		JX2_CR_GBR:		tValCmA={crRegFpsr, crRegGbr};
 		JX2_CR_TBR:		tValCmA={UV16_00, crRegTbr};
 //		JX2_CR_TEA:		tValCmA={UV16_00, crRegTea};
 		JX2_CR_TEA:		tValCmA=crRegTea;
@@ -220,7 +230,8 @@ begin
 		JX2_CR_VBR:		tValCmA={UV32_00, crRegVbr[31:0]};
 		JX2_CR_SPC:		tValCmA={UV32_00, crRegSpc[31:0]};
 		JX2_CR_SSP:		tValCmA={UV32_00, crRegSsp[31:0]};
-		JX2_CR_GBR:		tValCmA={UV32_00, crRegGbr[31:0]};
+//		JX2_CR_GBR:		tValCmA={UV32_00, crRegGbr[31:0]};
+		JX2_CR_GBR:		tValCmA={crRegFpsr, UV16_00, crRegGbr[31:0]};
 		JX2_CR_TBR:		tValCmA={UV32_00, crRegTbr[31:0]};
 //		JX2_CR_TEA:		tValCmA={UV32_00, crRegTea[31:0]};
 		JX2_CR_TEA:		tValCmA=crRegTea;
@@ -332,6 +343,7 @@ begin
 		crRegVbr	<= (regIdCn2B==JX2_CR_VBR ) ? regValCn2B_48b : crRegVbr;
 		crRegGbr	<= (regIdCn2B==JX2_CR_GBR ) ? regValCn2B_48b : crRegGbr;
 		crRegTbr	<= (regIdCn2B==JX2_CR_TBR ) ? regValCn2B_48b : crRegTbr;
+		crRegFpsr	<= (regIdCn2B==JX2_CR_GBR ) ? regValCn2B_16h : regInFpsr;
 `endif
 
 `ifdef jx2_enable_mmu

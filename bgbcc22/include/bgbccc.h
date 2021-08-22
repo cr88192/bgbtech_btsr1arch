@@ -303,6 +303,7 @@ extern "C" {
 #define BGBCC_TYFL_IFNARCH			(1LL<<43)
 
 #define BGBCC_TYFL_NOCULL			(1LL<<44)
+#define BGBCC_TYFL_FENVACC			(1LL<<45)
 
 
 #define BGBCC_TYFL_DFL_MASK			\
@@ -600,6 +601,7 @@ int blkidx;				//block index
 byte expect_type;		//force detecting a type
 byte in_func_body;		//parsing a function body
 short cur_codepage;
+byte	fenv_access;
 
 s64	dfl_flags;
 

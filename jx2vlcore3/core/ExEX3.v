@@ -35,6 +35,8 @@ module ExEX3(
 	regValAluRes,	//ALU Result
 	regValMulRes,	//ALU Result
 	regValMulwRes,	//ALU Result
+	regValKrreRes,	//Keyring Result
+
 	regFpuGRn,		//FPU GPR Result
 	opBraFlush,
 
@@ -76,6 +78,8 @@ input[32:0]		regValImm;		//Immediate (Decode)
 // input[65:0]		regValAluRes;	//ALU Result
 input[69:0]		regValAluRes;	//ALU Result
 input[63:0]		regValMulwRes;	//MUL.W Result
+input[65:0]		regValKrreRes;	//Keyring Result
+
 input[63:0]		regValMulRes;	//MUL.W Result
 input[63:0]		regFpuGRn;		//FPU GPR Result
 
@@ -158,6 +162,33 @@ begin
 		end
 		
 		JX2_UCMD_OP_IXT: begin
+			case(opUIxt[5:0])
+
+// `ifndef def_true
+`ifdef jx2_enable_ldekey
+				JX2_UCIX_IXT_LDEKRR: begin
+					if(regValKrreRes[65:64]==2'b10)
+					begin
+//						tRegIdCn2	= JX2_CR_KRR[4:0];
+						tRegIdCn2	= JX2_CR_KRR;
+						tRegValCn2	= regValKrreRes[63:0];
+					end
+				end
+				
+				JX2_UCIX_IXT_LDEENC: begin
+					tRegIdRn2	= JX2_GR_DLR;
+					tRegValRn2	= regValKrreRes[63:0];
+				end
+				
+				JX2_UCIX_IXT_SVEKRR: begin
+					tRegIdRn2	= JX2_GR_DLR;
+					tRegValRn2	= regValKrreRes[63:0];
+				end
+`endif
+
+				default: begin
+				end
+			endcase
 		end
 		
 		JX2_UCMD_MOV_IR: begin

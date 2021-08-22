@@ -81,10 +81,14 @@ MMIO Space:
 `include "MmiModClkp.v"
 
 `ifndef jx2_cfg_noddr
+`ifdef jx2_mem_useddrwa
+`include "MmiModDdrWa.v"
+`else
 `ifdef jx2_mem_useddrb
 `include "MmiModDdrB.v"
 `else
 `include "MmiModDdr3.v"
+`endif
 `endif
 `endif
 
@@ -424,6 +428,8 @@ wire	timer1MHz;
 wire	timer64kHz;
 wire	timer1kHz;
 wire	timer256Hz;
+wire	timerNPat;
+
 reg		timerNoise;
 wire	timerNoiseL0;
 reg		timerNoiseL1;
@@ -441,7 +447,8 @@ MmiModClkp		clkp(
 	timer1MHz,
 	timer64kHz,
 	timer1kHz,
-	timer256Hz);
+	timer256Hz,
+	timerNPat);
 
 `wire_ddrtile	ddrMemDataIn;
 `wire_ddrtile	ddrMemDataOut;
@@ -476,6 +483,12 @@ assign		ddrDqs_En	= 0;
 
 `else
 
+`ifdef jx2_mem_useddrwa
+MmiModDdrWa		ddr(
+	clock_master,	clock_ddr,
+	reset2_master,	reset2_ddr,
+`else
+
 `ifdef jx2_mem_useddrb
 MmiModDdrB		ddr(
 	clock_master,	clock_ddr,	clock_ddr2,
@@ -486,6 +499,8 @@ MmiModDdr3		ddr(
 //	clock_master,	clock_200,
 	clock_master,	clock_ddr,
 	reset2_master,	reset2_ddr,
+`endif
+
 `endif
 
 	ddrMemDataIn,	ddrMemDataOut,
@@ -1122,7 +1137,9 @@ reg			timerNoise_S3;
 assign		timerNoise_NS0 = (scrnPwmOut[8] ^ scrnPwmOut[4] ^ scrnPwmOut[0]);
 assign		timerNoise_NS1 = (sdc_di ^ sdc_do);
 // assign		timerNoise_NS2 = dbg_exHold1 ^ audPwmOut2;
-assign		timerNoise_NS2 = dbg_exHold1 ^ audPwmOut2 ^ clock_halfMhz;
+assign		timerNoise_NS2 =
+	dbg_exHold1 ^ audPwmOut2 ^ clock_halfMhz ^
+	timerNPat;
 assign		timerNoise_NS3 =
 	memAddr[1] ^ memAddr[2] ^ memAddr[3] ^
 	memAddr[5] ^ memAddr[7] ^ memAddr[11];

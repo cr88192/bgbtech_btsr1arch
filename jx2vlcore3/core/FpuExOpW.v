@@ -51,6 +51,7 @@ module FpuExOpW(
 	regIdRnB,	regValRnB,
 
 	regOutOK,	regOutSrT,
+	regInFpsr,	regOutFpsr,
 
 	regInSr,	braFlush,
 	exHold,
@@ -102,6 +103,12 @@ output[1:0]		regOutOK;		//execute status
 input[63:0]		regInSr;		//input SR
 input			braFlush;
 input			exHold;
+
+input[15:0]		regInFpsr;
+output[15:0]	regOutFpsr;
+
+reg[15:0]		tRegOutFpsr;
+assign		regOutFpsr = tRegOutFpsr;
 
 // reg[63:0]	tRegOutVal;			//Rn output value
 // `reg_gpr	tRegOutId;			//Rn, value to write
@@ -321,6 +328,7 @@ reg[3:0]	tRegAddExOpL;
 reg[63:0]	tRegMulValL;	//Rn output value (last cycle)
 wire[63:0]	tRegMulVal;		//Rn output value
 wire[63:0]	tRegMulValHi;		//Rn output value
+wire[1:0]	tRegMulExOK;	
 
 `ifdef jx2_fpu_longdbl
 
@@ -334,13 +342,14 @@ FpuAddG	fpu_add(
 	tRegAddExOK, tRegMulRMode);
 
 FpuMulG	fpu_mul(
-	clock,		reset,		tMulExHold,
-//	tRegAddRt,	tRegAddRtHi,
-//	tRegAddRs,	tRegAddRsHi,
-	tRegMulRt,	tRegMulRtHi,
-	tRegMulRs,	tRegMulRsHi,
-	tRegMulVal,	tRegMulValHi,
-	tRegAddExOp,	tRegMulRMode
+	clock,			reset,		tMulExHold,
+//	tRegAddRt,		tRegAddRtHi,
+//	tRegAddRs,		tRegAddRsHi,
+	tRegMulRt,		tRegMulRtHi,
+	tRegMulRs,		tRegMulRsHi,
+	tRegMulVal,		tRegMulValHi,
+	tRegAddExOp,	tRegMulExOK,
+	tRegMulRMode
 	);
 
 `else
@@ -358,9 +367,10 @@ FpuAdd	fpu_add(
 	tRegMulRMode);
 
 FpuMul	fpu_mul(
-	clock,		reset,		tMulExHold,
-//	tRegAddRt,	tRegAddRs,	tRegMulVal);
-	tRegMulRt,	tRegMulRs,	tRegMulVal,
+	clock,			reset,		tMulExHold,
+//	tRegAddRt,		tRegAddRs,	tRegMulVal);
+	tRegMulRt,		tRegMulRs,	tRegMulVal,
+	tRegAddExOp,	tRegMulExOK,
 	tRegMulRMode);
 
 `endif
@@ -610,6 +620,8 @@ begin
 	tNxtVecdRnB		= tVecdRnB;
 	tDoHoldCyc		= 0;
 
+	tRegOutFpsr		= regInFpsr;
+
 `ifndef def_true
 	casez( { tBraFlushL || reset, tOpCmdL[7:6] } )
 		3'b000: 	tOpEnable = 1;
@@ -694,6 +706,22 @@ begin
 
 	tRegAddRMode	= tRegValRModeL;
 	tRegMulRMode	= tRegValRModeL;
+
+//	regInFpsr
+
+	if(tOpUCmd1==JX2_UCMD_FPU3)
+	begin
+		if(tRegIdIxtL[5:2]==4'b0100)
+		begin
+			tRegAddRMode	= regInFpsr[7:0];
+			tRegMulRMode	= regInFpsr[7:0];
+			
+			if(tRegAddExOK[0] && !tRegIdIxtL[1])
+				tRegOutFpsr[8] = 1;
+			if(tRegMulExOK[0] && tRegIdIxtL[1])
+				tRegOutFpsr[8] = 1;
+		end
+	end
 
 //	tAddExHold	= exHold;
 	tRegAddIsLD	= 0;

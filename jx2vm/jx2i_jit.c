@@ -1414,6 +1414,9 @@ int BJX2_TryJitTrace(BJX2_Context *cpu, BJX2_Trace *tr)
 	if(uax_fault)
 		return(0);
 
+	if(tr->n_ops<=0)
+		return(0);
+
 //	if(cpu->archfl&BJX2_ARFL_NOJIT)
 //		return(0);
 
@@ -1647,8 +1650,19 @@ int BJX2_TryJitTrace(BJX2_Context *cpu, BJX2_Trace *tr)
 	UAX_AsmInsnStRegDispReg(jctx, UAX_OP_MOV,
 		UAX_REG_RCCTX, offsetof(BJX2_Context, tr_cur), UAX_REG_RAX);
 
-//	BJX2_JitStoreVMRegImm(jctx, BJX2_REG_PC, (s32)(tr->addr_nxt));
-	BJX2_JitStoreVMRegImm(jctx, BJX2_REG_PC, tr->addr_nxt);
+	if(tr->addr_nxt)
+	{
+//		BJX2_JitStoreVMRegImm(jctx, BJX2_REG_PC, (s32)(tr->addr_nxt));
+		BJX2_JitStoreVMRegImm(jctx, BJX2_REG_PC, tr->addr_nxt);
+	}else
+	{
+//		BJX2_JitStoreVMRegImm(jctx, BJX2_REG_PC, (s32)(tr->addr_nxt));
+		BJX2_JitStoreVMRegImm(jctx, BJX2_REG_PC, -1);
+
+		UAX_AsmInsnRegReg(jctx, UAX_OP_XOR, UAX_REG_RAX, UAX_REG_RAX);
+		UAX_AsmInsnStRegDispReg(jctx, UAX_OP_MOV,
+			UAX_REG_RCCTX, offsetof(BJX2_Context, tr_rnxt), UAX_REG_RAX);
+	}
 
 
 #if 1
@@ -1673,7 +1687,7 @@ int BJX2_TryJitTrace(BJX2_Context *cpu, BJX2_Trace *tr)
 	{
 		op=tr->ops[i];
 
-#if 1
+#if 0
 		if((op->nmid==BJX2_NMID_PRED_T) ||
 			(op->nmid==BJX2_NMID_PRED_F))
 		{
@@ -1697,7 +1711,7 @@ int BJX2_TryJitTrace(BJX2_Context *cpu, BJX2_Trace *tr)
 		}
 #endif
 	
-#if 1
+#if 0
 		if(BJX2_TryJitOpcode(jctx, cpu, tr, tr->ops[i])>0)
 			continue;
 #endif
@@ -1715,6 +1729,7 @@ int BJX2_TryJitTrace(BJX2_Context *cpu, BJX2_Trace *tr)
 
 	BJX2_JitSyncRegs(jctx, cpu, tr);
 
+//	BJX2_JitLoadFrame(jctx, BTEJ_X64_FRIDX_RCCTX, UAX_REG_RCCTX);
 	UAX_AsmInsnRegLdRegDisp(jctx, UAX_OP_MOV,
 		UAX_REG_RAX, UAX_REG_RCCTX, offsetof(BJX2_Context, tr_rnxt));
 

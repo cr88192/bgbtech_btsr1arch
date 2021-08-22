@@ -342,3 +342,162 @@ TK_GetRandom:
 	MOV		DLR, R2
 	RTS
 };
+
+__uint128 TK_WithKrrEncodeKey(u64 key);
+
+__asm {
+TK_WithKrrEncodeKey:
+	MOV		R4, R0
+	NOP
+	LDEENC
+	NOP
+	NOP
+	MOV		R0, R2
+	MOV		R1, R3
+	RTS
+};
+
+u16	*tk_vmem_usrexpage;		//User, Execute Only, Memory
+u16	*tk_vmem_usrexonly;		//User, Execute Only, Ex-Only Addr
+int	tk_vmem_usrexoffs;		//User, Execute Only, Offset
+byte tk_vmem_useldekrr;
+
+void *TK_WithKrrSetuidB(void *func, u64 key)
+{
+	__uint128	kx;
+	u64 fna, khi, klo;
+	u16 *cts, *ct;
+	int ofs, h, h0, h1, fl;
+
+	if(!tk_vmem_useldekrr)
+	{
+		return(func);
+	}
+
+	kx=TK_WithKrrEncodeKey(key);
+	khi=kx>>64;
+	klo=kx;
+	
+	fna=(u64)func;
+	
+	ofs=tk_vmem_usrexoffs;
+	ct=tk_vmem_usrexpage+ofs;
+	cts=ct;
+	
+	h=(ofs*251)>>8;
+	h0=((h>>0)&3)+1;
+	h1=((h>>2)&3)+1;
+	if((h1==h0))
+	{
+		if(h&0x40)
+			h1=((h0-1)&3)+1;
+		else
+			h1=((h0+1)&3)+1;
+	}
+	
+	*ct++=0xCFC0;					// ADD		-64, SP
+	*ct++=0x4511;					// MOV		LR, R1
+	*ct++=0x4110;					// MOV.Q	R1, (SP, 0)
+
+	*ct++=0x30A2;					// SVEKRR
+	*ct++=0x3000;					// NOP
+	*ct++=0x3000;					// NOP
+	*ct++=0x4100|h0;				// MOV.Q	R0, (SP, 16)
+	*ct++=0x4110|h1;				// MOV.Q	R1, (SP, 24)
+
+//	if((h>>4)&2)
+	if(h&0x20)
+	{
+//		if((h>>4)&1)
+		if(h&0x10)
+		{	*ct++=0x1701;			// XOR		R1, R0
+			*ct++=0x1010;	}		// ADD		R0, R1
+		else
+		{	*ct++=0x1701;			// XOR		R1, R0
+			*ct++=0x1110;	}		// SUB		R0, R1
+	}else
+	{
+//		if((h>>4)&1)
+		if(h&0x10)
+		{	*ct++=0x1001;			// ADD		R1, R0
+			*ct++=0x1710;	}		// XOR		R0, R1
+		else
+		{	*ct++=0x1101;			// SUB		R1, R0
+			*ct++=0x1710;	}		// XOR		R0, R1
+	}
+
+	if((h0!=1) && (h1!=1))
+		*ct++=0x4101;				// MOV.Q	R0, (SP, 8)
+	if((h0!=2) && (h1!=2))
+		*ct++=0x4112;				// MOV.Q	R1, (SP, 16)
+	if((h0!=3) && (h1!=3))
+		*ct++=0x4103;				// MOV.Q	R0, (SP, 24)
+	if((h0!=4) && (h1!=4))
+		*ct++=0x4114;				// MOV.Q	R1, (SP, 32)
+
+	*ct++=0xFF00|((klo>>56)&0x00FF);
+	*ct++=0x0000|((klo>>40)&0xFFFF);
+	*ct++=0xFF00|((klo>>32)&0x00FF);
+	*ct++=0x0000|((klo>>16)&0xFFFF);
+	*ct++=0xF800;
+	*ct++=0x0000|((klo>> 0)&0xFFFF);
+	
+	*ct++=0xFF00|((khi>>56)&0x00FF);
+	*ct++=0x0000|((khi>>40)&0xFFFF);
+	*ct++=0xFF00|((khi>>32)&0x00FF);
+	*ct++=0x0000|((khi>>16)&0xFFFF);
+	*ct++=0xF801;
+	*ct++=0x0000|((khi>> 0)&0xFFFF);
+
+	*ct++=0x3000;					// NOP
+	*ct++=0x3000;					// NOP
+	*ct++=0x30A2;					// LDEKRR
+	
+	
+	*ct++=0xFF00|((fna>>40)&0x00FF);
+	*ct++=0x0000|((fna>>24)&0xFFFF);
+	*ct++=0xFB00|((fna>>16)&0x00FF);
+	*ct++=0x0000|((fna>> 0)&0xFFFF);
+
+	*ct++=0x4500|h0;				// MOV.Q	(SP, 16), R0
+	*ct++=0x4510|h1;				// MOV.Q	(SP, 24), R1
+	*ct++=0x3000;					// NOP
+	*ct++=0x3000;					// NOP
+	*ct++=0x30A2;					// LDEKRR
+
+	*ct++=0x4510;					// MOV.Q	(SP, 0), R1
+	*ct++=0xCF40;					// ADD		64, SP
+	*ct++=0x3210;					// JMP		R1
+
+	TK_SmallFlushL1D(cts, (ct-cts)*2);
+
+
+	cts=tk_vmem_usrexonly+ofs;
+
+	return(cts);
+}
+
+void *TK_WithKrrSetuid(void *func, u64 key)
+{
+	TK_SysArg ar[4];
+	void *p;
+	
+	if(tk_iskernel())
+	{
+		p=TK_WithKrrSetuidB(func, key);
+		return(p);
+	}
+
+//	tk_printf("TK_WithKeySetuid: sz=%d\n", sz);
+	
+	p=NULL;
+	ar[0].p=func;
+	ar[1].i=key;
+	tk_syscall(NULL, TK_UMSG_WITHKRRSETUID, &p, ar);
+
+//	tk_printf("TK_WithKeySetuid: Vp=%p, p=%p\n", &p, p);
+
+	return(p);
+
+}
+

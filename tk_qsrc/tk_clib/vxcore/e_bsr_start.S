@@ -983,18 +983,25 @@ __va64_arg_l.L0:
 .global X(__va64_arg_x)
 X(__va64_arg_x):
 	mov.l @(r4, 96), r2
-	mov #56, r3
-	cmp/gt r2, r3
-	bf __va64_arg_x.L0
-	mov r2, r3
-	add r4, r3
-	mov.q @r3, r6
-	add #8, r3
-	mov.q @r3, r7
-	add #8, r3
-	mov.l  r3, @(r4, 96)
-	mov r6, r2
-	mov r7, r3
+.ifarch abi_evenonly
+	test	#8, r2
+	add?f	#8, r2
+.endif
+	mov		#56, r3
+	cmp/gt	r2, r3
+	bf		__va64_arg_x.L0
+	mov		r2, r3
+	add		r4, r3
+//	mov.q	@r3, r6
+//	add		#8, r3
+//	mov.q	@r3, r7
+//	add		#8, r3
+	mov.q	@(r3, 0), r6
+	mov.q	@(r3, 8), r7
+	add		#16, r2
+	mov.l	r2, @(r4, 96)
+	mov		r6, r2
+	mov		r7, r3
 	rts
 	nop
 __va64_arg_x.L0:

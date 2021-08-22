@@ -989,9 +989,13 @@ void MemUpdateForBusRing()
 	isRtsPg	= (addr>=0x00030000) && (addr<=0x0003FFFF);
 	
 	isMmio = 0;
-	if(((l2opm1&0xF0)==0x90) && ((l2opm1&0x0F)!=0x07))
+	if(((l2opm1&0xF0)==0x90) &&
+			((l2opm1&0x0F)!=0x07) &&
+			((l2opm1&0x0F)!=0x04) )
 		isMmio = 1;
-	if(((l2opm1&0xF0)==0xA0) && ((l2opm1&0x0F)!=0x07))
+	if(((l2opm1&0xF0)==0xA0) &&
+			((l2opm1&0x0F)!=0x07) &&
+			((l2opm1&0x0F)!=0x04))
 		isMmio = 2;
 	
 	isCcmd = 0;
@@ -1059,7 +1063,13 @@ void MemUpdateForBusRing()
 //	static int			l2dc_miss_ix;
 //	static int			l2dc_miss_addr;
 
-	if(isDRam && ((l2opm1&0xFF)!=0) && ((l2opm1&0x0F)==7))
+//	if(isDRam && ((l2opm1&0xFF)!=0) &&
+//	if(isDRam && ((l2opm1&0xFF)!=0) &&
+//		(((l2opm1&0x0F)==7) || ((l2opm1&0x0F)==4)))
+	if(isDRam && (
+		((l2opm1&0xFF)==0x97) ||
+		((l2opm1&0xFF)==0xA7) ||
+		((l2opm1&0xFF)==0x94) )	)
 	{
 		if(l2dc_miss_cyc>0)
 		{
@@ -1105,11 +1115,14 @@ void MemUpdateForBusRing()
 		{
 			if(l2dc_hash_addr[ix]==addr)
 				l2dc_stat_hit++;
-			if((l2dc_hash_addr2[ix]==addr) && ((l2opm1&0xFF)!=0xA7))
+			if((l2dc_hash_addr2[ix]==addr) &&
+					((l2opm1&0xFF)!=0xA7) && ((l2opm1&0xFF)!=0xA4))
 				l2dc_stat_hit2++;
 		}
 		
-		if((l2dc_hash_addr2[ix]==addr) && ((l2opm1&0xFF)==0xA7))
+		if((l2dc_hash_addr2[ix]==addr) &&
+			(	((l2opm1&0xFF)==0xA7) ||
+				((l2opm1&0xFF)==0xA4)	))
 		{
 //			l2dc_hash_dirty2[ix]=1;
 		}else
@@ -1126,7 +1139,9 @@ void MemUpdateForBusRing()
 		
 //		if(l2dc_hash_addr[ix]!=addr)
 		if((l2dc_hash_addr[ix]!=addr) &&
-			((l2dc_hash_addr2[ix]!=addr) || ((l2opm1&0xFF)==0xA7)))
+			((l2dc_hash_addr2[ix]!=addr) ||
+				((l2opm1&0xFF)==0xA7) ||
+				((l2opm1&0xFF)==0xA4)))
 //		if(0)
 		{
 //			i=l2dc_hash_dirty[ix];
@@ -1190,6 +1205,12 @@ void MemUpdateForBusRing()
 				l2dc_miss_seq=0;
 		}
 	}
+
+	if((l2opm1&0xFF)==0x94)
+		isSkip = 0;
+	if((l2opm1&0xFF)==0xA4)
+		isSkip = 0;
+
 #endif
 	
 	if(isMmio==1)
@@ -1235,7 +1256,10 @@ void MemUpdateForBusRing()
 		l2opm1=0x70;
 	}
 	
-	if(((l2opm1&0xFF)==0x97) && !isSkip)
+	if((((l2opm1&0xFF)==0x97) || ((l2opm1&0xFF)==0x94)) && !isSkip)
+//	if((((l2opm1&0xFF)==0x97) ||
+//		((l2opm1&0xFF)==0x94) ||
+//		((l2opm1&0xFF)==0xA4)) && !isSkip)
 	{
 		if(addr&15)
 		{
@@ -1311,6 +1335,15 @@ void MemUpdateForBusRing()
 		}
 	}
 
+	if(((l2opm1&0xFF)==0xA4) && !isSkip)
+	{
+		l2opm1=0x70 | ((l2opm1>>8)&0x0F);
+		l2data1a=0x9FA49FA4;
+		l2data1b=0x9FA49FA4;
+		l2data1c=0x9FA49FA4;
+		l2data1d=0x9FA49FA4;
+	}
+
 	if(((l2opm1&0xFF)==0xA7) && !isSkip)
 	{
 		if(addr&15)
@@ -1320,7 +1353,7 @@ void MemUpdateForBusRing()
 	
 //		main_buslines++;
 
-		if(isRom || isZero || isNopPg || isRtsPg)
+		if(isRom || isZero || isNopPg || isRtsPg || ((l2opm1&0xFF)==0xA4))
 		{
 			l2opm1=0x60;
 		}else

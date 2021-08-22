@@ -173,6 +173,8 @@ byte has_ops24;		//has 24-bit opcodes
 byte has_bra48;		//has 24-bit opcodes
 byte has_xgpr;		//Has R32..R63
 
+byte abi_evenonly;	//Pass register pairs in Even Registers.
+
 byte rov_sreg;		//rover for scratch registers
 byte rov_rshuf;		//rover for register shuffle
 

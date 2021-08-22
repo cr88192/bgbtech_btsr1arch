@@ -64,6 +64,18 @@ force_inline void BJX2_DecTraceCb_SetupForTrace(
 	if(!(ctx->use_jit))
 		{ BJX2_MemSimTraceIS(ctx, tr); }
 #endif
+
+	if(tr->jit_inh>0)
+	{
+		tr->jit_inh--;
+		if(tr->jit_inh<=0)
+		{
+			BJX2_CheckJitTrace(ctx, tr);
+		}
+	}
+
+//	cur->jit_inh=1024;
+//	BJX2_CheckJitTrace(ctx, cur);
 }
 
 BJX2_Trace *BJX2_DecTraceCb_Run1(BJX2_Context *ctx, BJX2_Trace *tr)
@@ -707,12 +719,23 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 
 		tr->n_ops=0;
 		tr->n_cyc=0;
+		tr->jit_inh=-1;
 //		if(ctx->status==BJX2_FLT_TLBMISS)
 		if((ctx->status&0xF000)==0xA000)
 			tr->Run=BJX2_DecTraceCb_RunUnpack;
 		else
 			tr->Run=BJX2_DecTraceCb_Bad;
 		return(-1);
+	}
+
+//	if(rec>=16)
+	if(rec>=32)
+	{
+		tr->n_ops=0;
+		tr->n_cyc=0;
+		tr->jit_inh=-1;
+		tr->Run=BJX2_DecTraceCb_RunUnpack;
+		return(0);
 	}
 
 	rec++;
@@ -842,6 +865,7 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 	{
 		tr->n_ops=0;
 		tr->n_cyc=0;
+		tr->jit_inh=-1;
 		tr->Run=BJX2_DecTraceCb_Bad;
 		return(-1);
 	}
@@ -917,12 +941,14 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 		{
 			if((i+2)>nc)
 				continue;
-			
+				
+#if 0
 			if(!wexmd)
 			{
 				op->nmid=BJX2_NMID_BREAK;
 				op->Run=BJX2_Op_BREAK_None;
 			}
+#endif
 
 #if 1
 			if(op->fl&BJX2_OPFL_NOWEX)
@@ -1228,10 +1254,13 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 
 	if(ctx->status)
 	{
+		rec--;
+
 //		__debugbreak();
 
 		tr->n_ops=0;
 		tr->n_cyc=0;
+		tr->jit_inh=-1;
 //		if(ctx->status==BJX2_FLT_TLBMISS)
 		if((ctx->status&0xF000)==0xA000)
 			tr->Run=BJX2_DecTraceCb_RunUnpack;
@@ -1240,6 +1269,7 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 		return(-1);
 	}
 
+	tr->jit_inh=1024;
 
 	switch(nc)
 	{
@@ -1285,7 +1315,7 @@ BJX2_Trace *BJX2_DecTraceCb_RunUnpack(BJX2_Context *ctx, BJX2_Trace *tr)
 {
 	int i;
 	i=BJX2_DecodeTraceForAddr(ctx, tr, tr->addr, 0);
-	if(i>=0)
+	if((i>=0) && (tr->Run!=BJX2_DecTraceCb_RunUnpack))
 		return(tr->Run(ctx, tr));
 	return(NULL);
 }

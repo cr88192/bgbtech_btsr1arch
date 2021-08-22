@@ -243,7 +243,18 @@ begin
 					tDoHoldCyc = 15;
 				end
 
+`ifdef def_true
+				JX2_UCIX_IXT_LDEENC: begin
+					tRegHeld		= 1;
+				end
+
+				JX2_UCIX_IXT_SVEKRR: begin
+					tRegHeld		= 1;
+				end
+`endif
+
 `ifndef def_true
+// `ifdef jx2_enable_ldekey
 				JX2_UCIX_IXT_LDEKRR: begin
 					if(regValKrreRes[65:64]==2'b10)
 					begin
@@ -254,6 +265,11 @@ begin
 				end
 				
 				JX2_UCIX_IXT_LDEENC: begin
+					tRegIdRn2	= JX2_GR_DLR;
+					tRegValRn2	= regValKrreRes[63:0];
+				end
+
+				JX2_UCIX_IXT_SVEKRR: begin
 					tRegIdRn2	= JX2_GR_DLR;
 					tRegValRn2	= regValKrreRes[63:0];
 				end

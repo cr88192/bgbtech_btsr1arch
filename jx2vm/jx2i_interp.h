@@ -209,9 +209,17 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_FLT_INV_MEX	0x8003		//invalid memory execute
 #define BJX2_FLT_BREAK		0x8004		//BREAK
 #define BJX2_FLT_SLEEP		0x8005		//SLEEP
-#define BJX2_FLT_INVOP		0x8006		//Invalid Opcode
-#define BJX2_FLT_MISAL		0x8007		//Invalid Misaligned Access
-#define BJX2_FLT_BOUNDCHK	0x8008		//Bounds Check Fail
+#define BJX2_FLT_TRAP		0x8006		//Invalid Misaligned Access
+#define BJX2_FLT_PAGEFLT	0x8007		//Invalid Misaligned Access
+
+#define BJX2_FLT_MISAL		0x8008		//Invalid Misaligned Access
+#define BJX2_FLT_MISAL_R	0x8009		//Invalid Misaligned Access (R)
+#define BJX2_FLT_MISAL_W	0x800A		//Invalid Misaligned Access (W)
+#define BJX2_FLT_MISAL_X	0x800B		//Invalid Misaligned Access (X)
+#define BJX2_FLT_INVSMT		0x800C		//Invalid SMT
+#define BJX2_FLT_INVKRR		0x800D		//Invalid KRR
+#define BJX2_FLT_INVOP		0x800E		//Invalid Opcode
+#define BJX2_FLT_BOUNDCHK	0x800F		//Bounds Check Fail
 
 #define BJX2_FLT_PCMISH		0x8801		//PC doesn't match trace addr
 #define BJX2_FLT_CCFLUSH	0x8802		//Cache Flush
@@ -502,7 +510,7 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_BLINT			0xF0		//
 #define BJX2_NMID_BLINTA		0xF1		//
 #define BJX2_NMID_BLERP			0xF2		//
-
+#define BJX2_NMID_LDACL			0xF3		//
 #define BJX2_NMID_PLDCH			0xF4		//
 #define BJX2_NMID_PLDCHH		0xF5		//
 #define BJX2_NMID_PSTCH			0xF6		//
@@ -524,6 +532,14 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_CONVFLI		0x105		//
 #define BJX2_NMID_SNIPEDC		0x106		//
 #define BJX2_NMID_SNIPEIC		0x107		//
+
+#define BJX2_NMID_SXENTR		0x108		//
+#define BJX2_NMID_SUENTR		0x109		//
+#define BJX2_NMID_SVEKRR		0x10A		//
+#define BJX2_NMID_SVENTR		0x10B		//
+#define BJX2_NMID_LDEKRR		0x10C		//
+#define BJX2_NMID_LDEKEY		0x10D		//
+#define BJX2_NMID_LDEENC		0x10E		//
 
 
 #define BJX2_FMID_NONE			0x00		//?
@@ -793,6 +809,8 @@ bjx2_addr mem_l1addr4;		//L1 addr
 
 u64		hw_rng[4];
 
+u64		krr_key[2];
+
 bjx2_addr mem_l1h4k[4096];		//L1 addr (4kB)
 // bjx2_addr mem_l2h32k[8192];	//L2 addr (32/64kB)
 bjx2_addr mem_l2h32k[16384];	//L2 addr (32/64kB)
@@ -803,6 +821,8 @@ bjx2_addr mem_l1ih4k[4096];		//L1 addr (4kB)
 // u64 mem_tlb_lo[64*4];
 u64 mem_tlb_hi[256*4];
 u64 mem_tlb_lo[256*4];
+
+u64 mem_tlb_acl[4];
 
 u64 mem_tlb_pr0_hi;
 u64 mem_tlb_pr0_lo;
@@ -871,6 +891,7 @@ struct BJX2_Trace_s {
 BJX2_Opcode *ops[BJX2_TR_MAXOP];
 int n_ops;
 int n_cyc;
+s16	jit_inh;
 s64 runcnt;
 s64 acc_pencyc;			//accumulated penalty cycles
 

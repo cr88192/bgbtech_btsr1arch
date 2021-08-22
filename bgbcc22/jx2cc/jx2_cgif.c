@@ -115,6 +115,8 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 //	shctx->is_align_wexj=3;
 //	shctx->is_align_wexj=1;
 	shctx->is_align_wexj=0;
+	
+	shctx->abi_evenonly=0;
 
 	if(ctx->optmode==BGBCC_OPT_SIZE)
 		shctx->use_wexmd=0;
@@ -263,6 +265,8 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "nofpux"))
 		{ shctx->has_fpux=0; }
 
+	if(shctx->has_pushx2 || shctx->has_simdx2)
+		shctx->abi_evenonly = 1;
 
 	if(ctx->imgfmt==BGBCC_IMGFMT_SYS)
 	{

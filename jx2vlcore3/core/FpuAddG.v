@@ -41,8 +41,7 @@ module FpuAddG(
 	regValRmLo,	regValRmHi,
 	regValRnLo,	regValRnHi,
 	regValRoLo,	regValRoHi,
-	regExOp,
-	regExOK,
+	regExOp,	regExOK,
 	regRMode
 	);
 

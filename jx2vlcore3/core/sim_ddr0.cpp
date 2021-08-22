@@ -14,6 +14,7 @@ int ddr_parm_wl=3;	//CAS WL*2+1
 int ddr_parm_rl=7;	//CAS RL*2+1
 int ddr_row, ddr_col, ddr_bank;
 int ddr_state, ddr_cas, ddr_burst;
+int ddr_bcol, ddr_bstate;
 
 int ddr_burstlen;
 int ddr_mr0;
@@ -220,7 +221,7 @@ int SimDdr(int clk, int cmd, int *rdata)
 #define SIMDDR_MSK_NOP	(SIMDDR_MSK_RAS|SIMDDR_MSK_CAS|SIMDDR_MSK_WE)
 
 
-#if 1
+#if 0
 int SimDdr(int clk, int cmd, int *rdqs, int *rdata)
 {
 	int		data, row, col, bank, pos;
@@ -342,6 +343,220 @@ int SimDdr(int clk, int cmd, int *rdqs, int *rdata)
 //				ddr_cas=ddr_parm_wl*2-1;
 				ddr_cas=ddr_parm_wl*2-2;
 				ddr_burst=ddr_burstlen;
+			}
+		}
+	}else
+	{
+		if(cmd&SIMDDR_MSK_CAS)
+		{
+			if(cmd&SIMDDR_MSK_WE)
+			{
+//				printf("Activate Row\n");
+				ddr_row=addr;
+			}else
+			{
+//				printf("Precharge Row\n");
+			}
+		}else
+		{
+			if(cmd&SIMDDR_MSK_WE)
+			{
+				printf("Auto-Refresh Row\n");
+			}else
+			{
+				printf("Load Mode Register C=%04X\n", cmd&0xFFFF);
+//				switch((cmd>>14)&3)
+				switch((cmd>>13)&7)
+				{
+				case 0:		ddr_mr0=addr;	break;
+				case 1:		ddr_mr1=addr;	break;
+				case 2:		ddr_mr2=addr;	break;
+				case 3:		ddr_mr3=addr;	break;
+				}
+				
+				ddr_burstlen=(ddr_mr0&1)?8:4;
+				
+				cas=(ddr_mr0>>4)&7;
+//				ddr_parm_rl=cas*2+1;		//CAS RL*2+1
+//				ddr_parm_wl=ddr_parm_rl-2;	//CAS WL=RL-1
+				ddr_parm_rl=cas;			//CAS RL*2+1
+				ddr_parm_wl=ddr_parm_rl-1;	//CAS WL=RL-1
+				
+				printf("BurstLen=%d, CAS=%d\n", ddr_burstlen, cas);
+
+#if 1
+				printf("  DLL=%s\n", (ddr_mr1&1)?"Disable":"Enable");
+				printf("  ODS=%s\n", (ddr_mr1&2)?"Reduce":"Full");
+
+				printf("  DQS#=%s\n", (ddr_mr1&1024)?"Disable":"Enable");
+				printf("  RDQS=%s\n", (ddr_mr1&2048)?"Yes":"No");
+				printf("  Outp=%s\n", (ddr_mr1&4096)?"Disable":"Enable");
+#endif
+			}
+		}
+	}
+}
+#endif
+
+
+#if 1
+int SimDdr(int clk, int cmd, int *rdqs, int *rdata)
+{
+	int		nxtburst, nxtbcol, nxtbstate;
+	int		data, row, col, bank, pos;
+	int addr, cas, dqs;
+
+//Cs;
+//			cmd=(cmd<<1)|top->ddrRas;
+//			cmd=(cmd<<1)|top->ddrCas;
+//			cmd=(cmd<<1)|top->ddrWe;
+//			cmd=(cmd<<1)|top->ddrCke;
+//			cmd=(cmd<<2)|top->ddrBa
+
+	dqs=*rdqs;
+	data=*rdata;
+
+#if 0
+//	printf("%03X %04X\n", cmd, data);
+	printf("Cs=%d Ras=%d Cas=%d We=%d Cke=%d Ba=%d A=%04X D=%04X\n",
+		(cmd>>20)&1,	
+		(cmd>>19)&1,	(cmd>>18)&1,
+		(cmd>>17)&1,	(cmd>>16)&1,
+		(cmd>>14)&3,	(cmd&0x3FFF),
+		data);
+#endif
+
+	nxtburst = ddr_burst;
+	nxtbcol = ddr_bcol;
+	nxtbstate = ddr_bstate;
+
+//	if(ddr_cas<0)
+	if(1)
+	{
+		if(ddr_bstate==1)
+		{
+			if(ddr_burst>0)
+			{
+	//			ddr_burst--;
+				nxtburst = ddr_burst-1;
+
+				pos=(ddr_row<<13)+(ddr_bank<<10)+ddr_bcol;
+				pos&=(1<<28)-1;
+				data=ddr_ram[pos>>1];
+				nxtbcol=ddr_bcol+2;
+
+				*rdata=data;
+//				*rdqs=(ddr_burst&1)?1:2;
+				*rdqs=(nxtburst&1)?1:2;
+
+	//			printf("RD %08X: %04X\n", pos, data);
+
+			}else
+			{
+				*rdata=0xBAAD;
+			}
+		}else if(ddr_bstate==2)
+		{
+			if(ddr_burst>0)
+			{
+				if((dqs&3)!=(clk&3))
+				{
+					printf("DDR DQS Issue %d!=%d\n", dqs&3, clk&3);
+				}
+				
+	//			ddr_burst--;
+				nxtburst = ddr_burst-1;
+
+				data=*rdata;
+				pos=(ddr_row<<13)+(ddr_bank<<10)+ddr_bcol;
+				pos&=(1<<28)-1;
+				ddr_ram[pos>>1]=data;
+				nxtbcol=ddr_bcol+2;
+				
+	//			printf("ST %08X = %04X\n", pos, data);
+			}
+		}else
+		{
+			*rdata=0xBAAD;
+		}
+	}
+
+	if(ddr_cas>=0)
+	{
+		ddr_cas--;
+		if((ddr_state==1) && (ddr_burst<=0))
+//		if(ddr_state==1)
+			*rdqs=2;
+
+		if(ddr_cas<0)
+		{
+//			ddr_burst=ddr_burstlen;
+			nxtburst = ddr_burstlen;
+			nxtbcol = ddr_col;
+			nxtbstate = ddr_state;
+		}
+	}
+	
+	ddr_burst = nxtburst;
+	ddr_bcol = nxtbcol;
+	ddr_bstate = nxtbstate;
+
+//	if(!clk)
+	if(!(clk&1))
+	{
+		return(0);
+	}
+
+
+//	addr=(cmd&0x3FFF);
+	addr=(cmd&0x1FFF);
+	bank=(cmd>>13)&7;
+	addr|=((cmd>>SIMDDR_SHL_A13)&7)<<13;
+	
+	if(cmd&SIMDDR_MSK_CS)
+	{
+//		printf("Command Inhibit\n");
+		return(0);
+	}
+
+	if(cmd&SIMDDR_MSK_RAS)
+	{
+		if(cmd&SIMDDR_MSK_CAS)
+		{
+			if(cmd&SIMDDR_MSK_WE)
+			{
+//				printf("No-Op\n");
+			}else
+			{
+				printf("Burst Terminate\n");
+			}
+		}else
+		{
+			if(cmd&SIMDDR_MSK_WE)
+			{
+//				printf("Read Active Row, Ba=%X Col=%X\n", bank, addr);
+//				ddr_col=addr;
+				ddr_col=(addr&0x03FF)|((addr>>1)&0x0400);
+				ddr_bank=bank;
+				ddr_state=1;
+//				ddr_cas=ddr_parm_rl*2+1;
+//				ddr_cas=ddr_parm_rl*2;
+				ddr_cas=ddr_parm_rl*2-1;
+//				ddr_cas=ddr_parm_rl*2-2;
+//				ddr_cas=4*2+1;
+//				ddr_burst=ddr_burstlen;
+			}else
+			{
+//				printf("Write Active Row, Ba=%X Col=%X\n", bank, addr);
+//				ddr_col=addr;
+				ddr_col=(addr&0x03FF)|((addr>>1)&0x0400);
+				ddr_bank=bank;
+				ddr_state=2;
+//				ddr_cas=ddr_parm_wl*2+1;
+//				ddr_cas=ddr_parm_wl*2;
+//				ddr_cas=ddr_parm_wl*2-1;
+				ddr_cas=ddr_parm_wl*2-2;
+//				ddr_burst=ddr_burstlen;
 			}
 		}
 	}else

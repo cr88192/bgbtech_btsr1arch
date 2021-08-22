@@ -161,8 +161,15 @@ void GfxDrv_EndDrawing(void)
 	int w1, h1;
 	int t0, t1;
 
-	t0=clock();
+	t1=glGetError();
+	while(t1)
+	{
+		printf("GL Error %X\n", t1);
+		t1=glGetError();
+	}
 
+	t0=clock();
+	
 //	if(btesh2_gfxcon_framebuf && btesh2_gfxcon_fb_dirty)
 //	if(btesh2_gfxcon_framebuf)
 	if(btesh2_gfxcon_framebuf && (btesh2_gfxcon_fb_dirty>0))

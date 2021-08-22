@@ -46,6 +46,16 @@ int BGBCC_JX2C_EmitBinaryVRegVRegFloat(
 
 	default:		nm1=-1; nm2=-1; break;
 	}
+	
+	if(ctx->cur_func->flagsint&BGBCC_TYFL_FENVACC)
+	{
+		if(nm1==BGBCC_SH_NMID_FADD)
+			nm1=BGBCC_SH_NMID_FADDG;
+		if(nm1==BGBCC_SH_NMID_FSUB)
+			nm1=BGBCC_SH_NMID_FSUBG;
+		if(nm1==BGBCC_SH_NMID_FMUL)
+			nm1=BGBCC_SH_NMID_FMULG;
+	}
 
 	if(sctx->fpu_lite)
 	{
@@ -292,6 +302,16 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegFloat(
 //		case CCXL_BINOP_DIV:	nm1=BGBCC_SH_NMID_FDIV;	nm2=-1; break;
 
 		default:		nm1=-1; nm2=-1; break;
+		}
+	
+		if(ctx->cur_func->flagsint&BGBCC_TYFL_FENVACC)
+		{
+			if(nm1==BGBCC_SH_NMID_FADD)
+				nm1=BGBCC_SH_NMID_FADDG;
+			if(nm1==BGBCC_SH_NMID_FSUB)
+				nm1=BGBCC_SH_NMID_FSUBG;
+			if(nm1==BGBCC_SH_NMID_FMUL)
+				nm1=BGBCC_SH_NMID_FMULG;
 		}
 
 		if(sctx->fpu_lite)

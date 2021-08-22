@@ -473,9 +473,13 @@ wire		memRingIsIdle;
 wire		memRingIsResp;
 wire		memRingIsLdx;
 wire		memRingIsStx;
+wire		memRingIsPfx;
+wire		memRingIsSpx;
 assign	memRingIsIdle	= (memOpmIn[7:0] == JX2_RBI_OPM_IDLE);
 assign	memRingIsLdx	= (memOpmIn[7:0] == JX2_RBI_OPM_LDX);
 assign	memRingIsStx	= (memOpmIn[7:0] == JX2_RBI_OPM_STX);
+assign	memRingIsPfx	= (memOpmIn[7:0] == JX2_RBI_OPM_PFX);
+assign	memRingIsSpx	= (memOpmIn[7:0] == JX2_RBI_OPM_SPX);
 assign	memRingIsResp	=
 	(memOpmIn[ 7:6] == 2'b01) &&
 	(memSeqIn[15:8] == unitNodeId);
@@ -487,12 +491,15 @@ assign	memRingAddrIsRam	=
 
 wire		memRingAddrIsRamReq;
 assign	memRingAddrIsRamReq	=
-	memRingAddrIsRam && (memRingIsLdx || memRingIsStx);
+	memRingAddrIsRam && (memRingIsLdx || memRingIsStx ||
+		memRingIsPfx || memRingIsSpx);
 
 reg		mem2RingIsIdle;
 reg		mem2RingIsResp;
 reg		mem2RingIsLdx;
 reg		mem2RingIsStx;
+reg		mem2RingIsPfx;
+reg		mem2RingIsSpx;
 
 reg		mem2RingAddrIsRam;
 reg		mem2RingAddrIsRamReq;
@@ -501,6 +508,8 @@ reg		mem3RingIsIdle;
 reg		mem3RingIsResp;
 reg		mem3RingIsLdx;
 reg		mem3RingIsStx;
+reg		mem3RingIsPfx;
+reg		mem3RingIsSpx;
 
 reg		mem3RingAddrIsRam;
 reg		mem3RingAddrIsRamReq;
@@ -509,6 +518,8 @@ reg		mem4RingIsIdle;
 reg		mem4RingIsResp;
 reg		mem4RingIsLdx;
 reg		mem4RingIsStx;
+reg		mem4RingIsPfx;
+reg		mem4RingIsSpx;
 
 reg		mem4RingAddrIsRam;
 reg		mem4RingAddrIsRamReq;
@@ -574,6 +585,12 @@ begin
 //	end
 
 	tNxtAccOpSq	= tAccOpSq;
+
+	if(memOpmIn[7:0] == 8'h00)
+	begin
+		nxtReqAddr	= tBlkAddr[27:0];
+		nxtReqIx	= tRovIx;
+	end
 
 	nxtReqIx2	= nxtReqIx;
 
@@ -643,6 +660,7 @@ begin
 	tNxtAccDoLdAzB	= 0;
 
 	tSkipC2			= 0;
+	tAccess			= 0;
 
 	tNxtReqMissSeq	= tReqMissSeq;
 	tNxtReqMissIx	= tReqMissIx;
@@ -652,8 +670,12 @@ begin
 	
 	tAccReady	= 1;
 
-	tOpmIsLoad	= (tReqOpm[7:0]==JX2_RBI_OPM_LDX);
-	tOpmIsStore	= (tReqOpm[7:0]==JX2_RBI_OPM_STX);
+	tOpmIsLoad	=
+		(tReqOpm[7:0]==JX2_RBI_OPM_LDX) || 
+		(tReqOpm[7:0]==JX2_RBI_OPM_PFX);
+	tOpmIsStore	=
+		(tReqOpm[7:0]==JX2_RBI_OPM_STX) ||
+		(tReqOpm[7:0]==JX2_RBI_OPM_SPX);
 	tOpmIsNz	= tOpmIsLoad || tOpmIsStore ;
 
 //	tAccStoreOnly	= tOpmIsStore;
@@ -741,7 +763,12 @@ begin
 	if(!tBlkDirty)
 		tNxtAccStoreOnly = 0;
 
-	tMiss		= (tMissAddr || tBlkFlush) &&
+//	tMiss		= (tMissAddr || tBlkFlush) &&
+	tMiss		=
+		 (tMissAddr || tBlkFlush) &&
+//		(	(tMissAddr && tOpmIsLoad ) ||
+//			((tMissAddr && tBlkDirty) && tOpmIsStore) ||
+//			tBlkFlush )	&&
 		(tOpmIsNz && tAddrIsRam);
 //		(tOpmIsNz && (tAddrIsRam || tBlkFlush));
 
@@ -750,10 +777,26 @@ begin
 
 	tMiss		=
 		(tMissAddr || tBlkFlush) &&
+//		(	(tMissAddr && tOpmIsLoad) ||
+//			((tMissAddr && tBlkDirty) && tOpmIsStore) ||
+//			tBlkFlush )	&&
 		(tMissAddrB || tBlkFlushB || (tOpmIsStore && tBlkDirty) || tBlkFlush) &&
+//		(tMissAddrB || tBlkFlushB || (tOpmIsStore && tBlkDirty)) &&
 		(tOpmIsNz && tAddrIsRam);
 //	if(tBlkFlush && tBlkDirty && (tOpmIsNz && tAddrIsRam))
 //		tMiss = 1;
+`endif
+
+// `ifdef def_true
+`ifndef def_true
+	/* Auto-evict old dirty lines when idle. */
+	if(tBlkEpochRel[3] && tBlkDirty && !tOpmIsNz && !tMissAddr)
+	begin
+//		tMiss = 1;
+		tBlkFlush	= 1;
+		tMiss		= 1;
+		tAccess		= 1;
+	end
 `endif
 
 `ifdef jx2_mem_l2d2way
@@ -769,7 +812,10 @@ begin
 `endif
 
 `ifndef jx2_mem_line32to16
-	if(tOpmIsStore && !tBlkDirty && (tReqIx != tReqMissIx))
+//	if(tOpmIsStore && !tBlkDirty && (tReqIx != tReqMissIx))
+	if(tOpmIsStore && !tBlkDirty)
+//	if(tOpmIsStore && !tBlkDirty &&
+//		((tReqIx != tReqMissIx) || (tReqMissSeq==0)) )
 	begin
 		tMiss = 0;
 //		tNxtAccStoreOnly = 1;
@@ -785,8 +831,8 @@ begin
 
 	if((tBlkFlush && !tMissAddr) && tMiss && !tMissL)
 	begin
-		$display("L2DC: Flush Flag, Ix=%X A=%X Rov=%X,%X",
-			tReqIx, tReqAddr, tCurFrov, tBlkFrov);
+//		$display("L2DC: Flush Flag, Ix=%X A=%X Rov=%X,%X",
+//			tReqIx, tReqAddr, tCurFrov, tBlkFrov);
 	end
 	
 	if(tMiss && !tMissL)
@@ -816,7 +862,7 @@ begin
 //	tHold		= tMiss || tAccLatch || !tAccReady || tAccSticky;
 //	tHold		= tMiss || tAccBusyLatch || !tAccReady || tAccSticky;
 	tHold		= tMiss;
-	tAccess		= 0;
+//	tAccess		= 0;
 	
 `ifndef def_true
 	if(tHold)
@@ -928,7 +974,17 @@ begin
 		
 	if(tAddrIsRam)
 	begin
-		if(tReqOpm[7:0]==JX2_RBI_OPM_LDX)
+		if(tReqOpm[7:0]==JX2_RBI_OPM_SPX)
+		begin
+//			tAccess		= tMissAddr && tBlkDirty;
+//			tAccess		= tBlkFlush || tBlkDirty;
+			tAccess		= 1;
+		end
+		else if(tReqOpm[7:0]==JX2_RBI_OPM_PFX)
+		begin
+			tAccess		= 1;
+		end
+		else if(tReqOpm[7:0]==JX2_RBI_OPM_LDX)
 		begin
 //			$display("L2: LDX");
 	
@@ -969,6 +1025,9 @@ begin
 					tSkipC2		= 1;
 			end
 `endif
+
+			if(tAccBusyLatch && (tReqIx == tAccIx))
+				tSkipC2		= 1;
 
 			tAccess		= 1;
 
@@ -1170,6 +1229,9 @@ begin
 	if(mem3RingIsStx)
 		tMemOpmReq[7:0]	= JX2_RBI_OPM_OKST;
 
+	if(mem3RingIsPfx || mem3RingIsSpx)
+		tMemSkipReq = 0;
+
 	tMemOpmReq[3:0] = mem3OpmIn[11:8];
 
 	if((tReqSeqC3!=mem3SeqIn) && !tMemSkipReq && !tHold)
@@ -1200,6 +1262,9 @@ begin
 	tMemOpmReq[7:0]	= JX2_RBI_OPM_OKLD;
 	if(mem4RingIsStx)
 		tMemOpmReq[7:0]	= JX2_RBI_OPM_OKST;
+
+	if(mem4RingIsPfx || mem4RingIsSpx)
+		tMemSkipReq = 0;
 
 	if((tReqSeqC4!=mem4SeqIn) && !tMemSkipReq && !tHold)
 	begin
@@ -1582,6 +1647,8 @@ begin
 	mem2RingIsResp		<= memRingIsResp;
 	mem2RingIsLdx		<= memRingIsLdx;
 	mem2RingIsStx		<= memRingIsStx;
+	mem2RingIsPfx		<= memRingIsPfx;
+	mem2RingIsSpx		<= memRingIsSpx;
 	mem2RingAddrIsRam	<= memRingAddrIsRam;
 
 	/* Cycle 2->3 */
@@ -1595,6 +1662,8 @@ begin
 	mem3RingIsResp		<= mem2RingIsResp;
 	mem3RingIsLdx		<= mem2RingIsLdx;
 	mem3RingIsStx		<= mem2RingIsStx;
+	mem3RingIsPfx		<= mem2RingIsPfx;
+	mem3RingIsSpx		<= mem2RingIsSpx;
 	mem3RingAddrIsRam	<= mem2RingAddrIsRam;
 
 	/* Cycle 3->4 */
@@ -1608,12 +1677,15 @@ begin
 	mem4RingIsResp		<= mem3RingIsResp;
 	mem4RingIsLdx		<= mem3RingIsLdx;
 	mem4RingIsStx		<= mem3RingIsStx;
+	mem4RingIsPfx		<= mem3RingIsPfx;
+	mem4RingIsSpx		<= mem3RingIsSpx;
 	mem4RingAddrIsRam	<= mem3RingAddrIsRam;
 
 `ifdef def_true
 	/* Cycle 4->Out */
 
-	if(mem3RingAddrIsRam && (mem3RingIsLdx || mem3RingIsStx) &&
+	if(mem3RingAddrIsRam && (mem3RingIsLdx || mem3RingIsStx ||
+			mem3RingIsPfx || mem3RingIsSpx) &&
 		!tHold && !tMemSkipReq)
 	begin
 		tMemSeqOut		<= tMemSeqReq;

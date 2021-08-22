@@ -198,6 +198,119 @@ void BJX2_Op_FMULD_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 }
 #endif
 
+
+#if 1
+#ifdef _MSC_VER
+#pragma fenv_access(on)
+#endif
+
+void BJX2_Op_FADDG_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+#ifndef _MSC_VER
+	#pragma STDC FENV_ACCESS ON
+#endif
+	fenv_t tfenv;
+	int rm;
+	double a, b, c;
+	
+	switch((ctx->regs[BJX2_REG_GBR]>>48)&15)
+	{
+	case 0:		rm=FE_TONEAREST;	break;
+	case 1:		rm=FE_TOWARDZERO;	break;
+	case 2:		rm=FE_DOWNWARD;		break;
+	case 3:		rm=FE_UPWARD;		break;
+	default:	rm=FE_TOWARDZERO;	break;
+	}
+	
+	fegetenv(&tfenv);
+	feclearexcept(FE_ALL_EXCEPT);
+	fesetround(rm);
+	
+	a=BJX2_PtrGetDoubleIx(ctx->regs, op->rm);
+	b=BJX2_PtrGetDoubleIx(ctx->regs, op->ro);
+	c=a+b;
+	BJX2_PtrSetDoubleIx(ctx->regs, op->rn, c);
+
+	if(fetestexcept(FE_INEXACT))
+		ctx->regs[BJX2_REG_GBR]|=(0x0100ULL<<48);
+
+	fesetenv(&tfenv);
+}
+
+void BJX2_Op_FSUBG_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+#ifndef _MSC_VER
+	#pragma STDC FENV_ACCESS ON
+#endif
+	fenv_t tfenv;
+	int rm;
+	double a, b, c;
+	
+	switch((ctx->regs[BJX2_REG_GBR]>>48)&15)
+	{
+	case 0:		rm=FE_TONEAREST;	break;
+	case 1:		rm=FE_TOWARDZERO;	break;
+	case 2:		rm=FE_DOWNWARD;		break;
+	case 3:		rm=FE_UPWARD;		break;
+	default:	rm=FE_TOWARDZERO;	break;
+	}
+	
+	fegetenv(&tfenv);
+	feclearexcept(FE_ALL_EXCEPT);
+	fesetround(rm);
+	
+	a=BJX2_PtrGetDoubleIx(ctx->regs, op->rm);
+	b=BJX2_PtrGetDoubleIx(ctx->regs, op->ro);
+	c=a-b;
+	BJX2_PtrSetDoubleIx(ctx->regs, op->rn, c);
+
+	if(fetestexcept(FE_INEXACT))
+		ctx->regs[BJX2_REG_GBR]|=(0x0100ULL<<48);
+
+	fesetenv(&tfenv);
+}
+
+void BJX2_Op_FMULG_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+#ifndef _MSC_VER
+	#pragma STDC FENV_ACCESS ON
+#endif
+	fenv_t tfenv;
+	int rm;
+	double a, b, c;
+	
+	switch((ctx->regs[BJX2_REG_GBR]>>48)&15)
+	{
+	case 0:		rm=FE_TONEAREST;	break;
+	case 1:		rm=FE_TOWARDZERO;	break;
+	case 2:		rm=FE_DOWNWARD;		break;
+	case 3:		rm=FE_UPWARD;		break;
+	default:	rm=FE_TOWARDZERO;	break;
+	}
+	
+	fegetenv(&tfenv);
+	feclearexcept(FE_ALL_EXCEPT);
+	fesetround(rm);
+	
+	a=BJX2_PtrGetDoubleIx(ctx->regs, op->rm);
+	b=BJX2_PtrGetDoubleIx(ctx->regs, op->ro);
+	c=a*b;
+	BJX2_PtrSetDoubleIx(ctx->regs, op->rn, c);
+
+	if(fetestexcept(FE_INEXACT))
+		ctx->regs[BJX2_REG_GBR]|=(0x0100ULL<<48);
+
+	fesetenv(&tfenv);
+}
+
+#ifdef _MSC_VER
+#pragma fenv_access(off)
+#endif
+
+#endif
+
+
+
 void BJX2_Op_FMOVS_RegStReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	float sf;
