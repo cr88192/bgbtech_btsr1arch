@@ -1760,6 +1760,7 @@ PCSELT.L will select elements between Rm or Ro based on the value of SR.S and SR
 
 PCSELT.W will select each Word element from Rm or Rn depending on the corresponding P/Q/R/O bits in SR. If set, the word from Rm will be selected, otherwise the value from Ro will be used.
 
+
 === PDOTT.x (GSVF, Possible) ===
 
 *** F0ni_1g9A  PDOTT.H		Imm5u, Rn	//(GSVF? Predict Dot Predicate)
@@ -1782,6 +1783,60 @@ The Imm5u value will encode the requested predicate (Single):
 * 1: (Rx+Ry) <= 0
 * 2: (Rx+Ry) >= 1
 * 3: (Rx+Ry) <= 1
+
+
+=== PLDCH / PSTCH (GSVF) ===
+
+* F0nm_1gCE  PLDCH		Rm, Rn		//(GSVF) Packed Half to Single (2x)
+* F0nm_1GCE  PLDCHH		Rm, Rn		//(GSVF) Packed Half to Single (Hi)
+* F0nm_1gDE  PLDCEHL	Rm, Rn		//(GSVF) Packed Ext-Half to Single (Lo)
+* F0nm_1GDE  PLDCEHH	Rm, Rn		//(GSVF) Packed Ext-Half to Single (Hi)
+* F0nm_1gEE  PSTCH		Rm, Rn		//(GSVF) Packed Single to Half (2x)
+
+Convert between Packed Half and Packed Single.
+
+These operations will convert between Packed Half and the Packed Single format.
+
+The Unpacking conversion will pad the low-order bits with zeroes.
+The Packing conversion will truncate the low order bits.
+
+The PLDCH instruction will unpack two Half Precision values from the low order
+bits of the source register into two single-precision values in the destination.
+
+The PLDCHH instruction will instead pull the two values from the high order bits of the source register.
+
+The PLDCEHL and PLDCEHH will support a 3x Extended-Half format.
+* The first 3 elements will be treated as Half Float numbers.
+* The last element will consist of "Extension Bits" for the other elements.
+* When each element is unpacked, its fraction will be extended by 5 bits.
+** (52:48): Extension for First Element
+** (57:53): Extension for Second Element
+** (62:58): Extension for Third Element
+* PLDCEHH: Will decode the Third Element.
+** The Fourth element will be decoded as Zero.
+
+
+=== PLDCM8x / PSTCM8x (GSVF) ===
+
+* F0nm_1g8E  PLDCM8SH	Rm, Rn		//(GSVF) RGB32SF Unpack to RGB64F
+* F0nm_1G8E  PLDCM8UH	Rm, Rn		//(GSVF) RGB32UF Unpack to RGB64F
+* F0nm_1gAE  PSTCM8SH	Rm, Rn		//(GSVF) RGB32SF Pack from RGB64F
+* F0nm_1GAE  PSTCM8UH	Rm, Rn		//(GSVF) RGB32UF Pack from RGB64F
+
+These perform Packed Format Conversions for 8-bit microfloats.
+
+These operations will convert between signed and unsigned 8-bit microfloats and the Packed Binary16 format.
+
+The Unpacking conversion will pad the low-order bits with zeroes.
+The Packing conversion will truncate the low order bits.
+
+Formats here:
+* RGB32SF: 4x FP8S (S.E4.F3), 32 bits
+* RGB32UF: 4x FP8U (E4.F4), 32 bits
+* RGB64F: 4x Binary16 (Packed Half), 64 bits
+
+The FP8S and FP8U formats will consist a microfloat with a bias of 7.
+* Includes Zero, does not include Inf or NaN.
 
 
 === PMUL.F 3R (GSVF) ===

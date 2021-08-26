@@ -275,7 +275,10 @@ void __start()
 	bootparm.magic3=BOOTPARM_MAGIC3;
 	bootparm.magic4=BOOTPARM_MAGIC4;
 
-	puts("Boot 1\n");
+//	puts("Boot 1\n");
+
+	ci = TK_GetTimeMs();
+	printf("Boot 1 %d\n", ci);
 
 	tk_tryload("bootload.sys", NULL);
 

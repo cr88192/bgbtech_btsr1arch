@@ -68,11 +68,22 @@ __quatf		__vqf_float4(float x, float y, float z, float w);
 __vec3fq	__v3fq_float3(float x, float y, float z);
 __vec3fx	__v3fx_float3(double x, double y, double z);
 
+__vec4h		__v4h_float4(float x, float y, float z, float w);
+
 __fcomplex	__c2f_float2(float x, float y);
 
 __m128		__m128_double2(double x, double y);
 __vec2d		__v2d_double2(double x, double y);
 __dcomplex	__c2d_double2(double x, double y);
+
+
+__vec3fq	__vnf_v3fq_from_v3f(__vec3f a);
+__vec3f		__vnf_v3f_from_v3fq(__vec3fq a);
+__vec4h		__vnf_v4h_from_v4f(__vec4f a);
+__vec4f		__vnf_v4f_from_v4h(__vec4h a);
+
+__vec3fx	__vnf_v3fx_from_v3f(__vec3f a);
+__vec3f		__vnf_v3f_from_v3fx(__vec3fx a);
 
 __asm {
 
@@ -279,17 +290,42 @@ __vnf_v4f_dot:
 __v3fq_float3:
 	FSTCF	R4, R16
 	FSTCF	R5, R17
-	FSTCF	R6, R18
-	SHLD	R16, -11, R16
-	SHLD	R17, -11, R17
-	SHLD	R18, -10, R18
-	SHLD.Q	R17, 21, R17
-	SHLD.Q	R18, 42, R18
-	OR		R16, R17, R19
-	OR		R18, R19, R2
+	FSTCF	R6, R19
+	MOVLLD	R17, R16, R18
+	PSTCH	R18, R2
+	PSTCH	R19, R3
+
+	SHLD	R4, -8, R20
+	SHLD	R5, -3, R21
+	SHLD	R6,  2, R22
+	AND		0x001F, R20
+	AND		0x03E0, R21
+	AND		0x7C00, R22
+	OR		R20, R21, R23
+	OR		R23, R22, R23
+	SHLD.Q	R23, 48, R23
+	OR		R23, R3
 	RTSU
 
+//	SHLD	R16, -11, R16
+//	SHLD	R17, -11, R17
+//	SHLD	R18, -10, R18
+//	SHLD.Q	R17, 21, R17
+//	SHLD.Q	R18, 42, R18
+//	OR		R16, R17, R19
+//	OR		R18, R19, R2
+//	RTSU
+
 __v3fq_unpackx2:
+	PLDCEHL	R4, R20
+	PLDCEHH	R4, R21
+	PLDCEHL	R5, R22
+	PLDCEHH	R5, R23
+	MOVX	R20, R4
+	MOVX	R22, R6
+	RTS
+
+#if 0
 	SHLD.Q	R4, 11, R16
 	SHLD.Q	R4, -10, R17
 	SHLD.Q	R4, -32, R18
@@ -302,49 +338,140 @@ __v3fq_unpackx2:
 	MOVLD	R21, R20, R6
 	MOV		R22, R7
 	RTSU
+#endif
+
+__v3fq_packx:
+	PSTCH	R2, R18
+	PSTCH	R3, R19
+
+	SHLD.Q	R2,  -8, R20
+	SHLD.Q	R2, -35, R21
+	SHLD.Q	R3,   2, R22
+	AND		0x001F, R20
+	AND		0x03E0, R21
+	AND		0x7C00, R22
+	OR		R20, R21, R23
+	OR		R23, R22, R23
+
+	SHLD.Q	R19, 32, R19
+	OR		R19, R18
+
+	SHLD.Q	R23, 48, R23
+	OR		R23, R18
+
+	MOV		R18, R2
+
+	RTS
 
 __vnf_v3fq_add:
-	MOV			LR, R23
+	MOV			LR, R1
 	BSR			__v3fq_unpackx2
+//	PADDX.F		R4, R6, R2
+//	FLDCF		R2, R4
+//	FLDCFH		R2, R5
+//	FLDCF		R3, R6
+//	BSR			__v3fq_float3
+
 	PADDX.F		R4, R6, R2
-	FLDCF		R2, R4
-	FLDCFH		R2, R5
-	FLDCF		R3, R6
-	BSR			__v3fq_float3
-	JMP			R23
+	BSR			__v3fq_packx
+	JMP			R1
+
 __vnf_v3fq_sub:
-	MOV			LR, R23
+	MOV			LR, R1
 	BSR			__v3fq_unpackx2
+//	PSUBX.F		R4, R6, R2
+//	FLDCF		R2, R4
+//	FLDCFH		R2, R5
+//	FLDCF		R3, R6
+//	BSR			__v3fq_float3
+//	JMP			R1
 	PSUBX.F		R4, R6, R2
-	FLDCF		R2, R4
-	FLDCFH		R2, R5
-	FLDCF		R3, R6
-	BSR			__v3fq_float3
-	JMP			R23
+	BSR			__v3fq_packx
+	JMP			R1
+
 __vnf_v3fq_mul:
-	MOV			LR, R23
+	MOV			LR, R1
 	BSR			__v3fq_unpackx2
 	PMULX.F		R4, R6, R2
-	FLDCF		R2, R4
-	FLDCFH		R2, R5
-	FLDCF		R3, R6
-	BSR			__v3fq_float3
-	JMP			R23
+	BSR			__v3fq_packx
+	JMP			R1
+
+//	PMULX.F		R4, R6, R2
+//	FLDCF		R2, R4
+//	FLDCFH		R2, R5
+//	FLDCF		R3, R6
+//	BSR			__v3fq_float3
+//	JMP			R23
 
 __vnf_v3fq_dot:
-	MOV			LR, R23
+	MOV			LR, R1
 	BSR			__v3fq_unpackx2
-	MOV			R23, LR
+	MOV			R1, LR
 	BRA			__vnf_v3f_dot
 __vnf_v3fq_cross:
-	MOV			LR, R23
+	MOV			LR, R1
 	BSR			__v3fq_unpackx2
 	BSR			__vnf_v3f_cross
-	FLDCF		R2, R4
-	FLDCFH		R2, R5
-	FLDCF		R3, R6
-	BSR			__v3fq_float3
-	JMP			R23
+	BSR			__v3fq_packx
+//	FLDCF		R2, R4
+//	FLDCFH		R2, R5
+//	FLDCF		R3, R6
+//	BSR			__v3fq_float3
+	JMP			R1
+
+
+__vnf_v3fq_from_v3f:
+	PSTCH	R4, R18
+	PSTCH	R5, R19
+
+	SHLD.Q	R4,  -8, R20
+	SHLD.Q	R4, -35, R21
+	SHLD.Q	R5,   2, R22
+	AND		0x001F, R20
+	AND		0x03E0, R21
+	AND		0x7C00, R22
+	OR		R20, R21, R23
+	OR		R23, R22, R23
+
+	SHLD.Q	R19, 32, R19
+	OR		R19, R18
+
+	SHLD.Q	R23, 48, R23
+	OR		R23, R18
+
+	MOV		R18, R2
+
+	RTS
+
+__vnf_v3f_from_v3fq:
+	PLDCEHL	R4, R2
+	PLDCEHH	R4, R3
+	RTS
+
+__vnf_v4h_from_v4f:
+	PSTCH	R4, R2
+	PSTCH	R5, R3
+	SHLD.Q	R3, 32, R3
+	OR		R3, R2
+	RTS
+
+__vnf_v4f_from_v4h:
+	PLDCHL	R4, R2
+	PLDCHH	R4, R3
+	RTS
+
+__v4h_float4:
+	FSTCH	R4, R20
+	FSTCH	R5, R21
+	FSTCH	R6, R22
+	FSTCH	R7, R23
+	SHLD.Q	R21, 16, R21
+	SHLD.Q	R22, 32, R22
+	SHLD.Q	R23, 48, R23
+	OR		R20, R21, R18
+	OR		R22, R23, R19
+	OR		R18, R19, R2
+	RTS
 
 __v3fx_float3:
 	SHLD	R4, -21, R16

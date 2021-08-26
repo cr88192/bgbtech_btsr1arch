@@ -1611,6 +1611,51 @@ void BJX2_Op_PLDCHH_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 //	ctx->regs[op->rn]=vn;
 }
 
+void BJX2_Op_PLDCEHL_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	float tv0[4], tv1[4], tv2[4];
+	u32 v0, v1;
+	u64	vs, vt, vn;
+
+	vs=ctx->regs[op->rm];
+	jx2_upvec_hf(tv0, vs);
+	
+	BJX2_PtrSetFloat(&v0, tv0[0]);
+	BJX2_PtrSetFloat(&v1, tv0[1]);
+	
+	v0|=((vs>>(48+0))&0x1F)<<8;
+	v1|=((vs>>(48+5))&0x1F)<<8;
+	
+	vn=(((u64)v1)<<32)|v0;
+	ctx->regs[op->rn]=vn;
+	
+//	vn=jx2_mkvec_hf(tv2[0], tv2[1], tv2[2], tv2[3]);
+//	ctx->regs[op->rn]=vn;
+}
+
+void BJX2_Op_PLDCEHH_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	float tv0[4], tv1[4], tv2[4];
+	u32 v0, v1;
+	u64	vs, vt, vn;
+
+	vs=ctx->regs[op->rm];
+	jx2_upvec_hf(tv0, vs);
+	
+	BJX2_PtrSetFloat(&v0, tv0[2]);
+	BJX2_PtrSetFloat(&v1, tv0[3]);
+
+	v0|=((vs>>(48+10))&0x1F)<<8;
+//	v1|=((vs>>(48+5))&0x1F)<<8;
+	v1=0;
+	
+	vn=(((u64)v1)<<32)|v0;
+	ctx->regs[op->rn]=vn;
+	
+//	vn=jx2_mkvec_hf(tv2[0], tv2[1], tv2[2], tv2[3]);
+//	ctx->regs[op->rn]=vn;
+}
+
 void BJX2_Op_PLDCHX_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	float tv0[4], tv1[4], tv2[4];

@@ -294,7 +294,8 @@ int main(int argc, char **argv, char **env)
 //	for(i=0; i<(128<<20); i++)
 //		ddr_ram[i]=rand();
 
-	memset(ddr_ram, 0, 256<<20);
+//	memset(ddr_ram, 0, 256<<20);
+	memset(ddr_ram, 0x55, 256<<20);
 
 
 	imgbuf=(uint32_t *)malloc((1<<28)+128);
@@ -327,8 +328,8 @@ int main(int argc, char **argv, char **env)
 	shuf=(int *)malloc(lim*sizeof(int));
 
 	l=lim/4;
-	for(i=0; i<l; i++)
-		shuf[i]=l;
+	for(i=0; i<(l+16); i++)
+		shuf[i]=i;
 
 	for(i=0; i<l; i++)
 	{
@@ -401,6 +402,19 @@ int main(int argc, char **argv, char **env)
 		{
 			if((top->memOK==1) && !sqdn)
 			{			
+				if((top->memOpm==0x1F) &&
+					(top->memDataOut[0]!=0x55555555) &&
+					(top->memAddr != top->memAddrSw) &&
+					!wdn)
+				{
+					printf("\nAddr=%X %X\n", top->memAddr, top->memAddrSw);
+					printf("Swap Mismatch, Got=%X, In=%X Img=%X\n",
+						top->memDataOut[0],
+						top->memDataIn[ 0],
+						imgbuf[bn1*4+ 0]);
+					break;
+				}
+
 				top->memOpm=0;
 //				printf("Wr OK\n");
 				if(!wdn)
@@ -409,7 +423,7 @@ int main(int argc, char **argv, char **env)
 					fflush(stdout);
 					wdn=1;
 					wn+=4;
-				}
+				}				
 			}else
 				if(top->memOK==2)
 			{
@@ -420,10 +434,15 @@ int main(int argc, char **argv, char **env)
 //				bn1=wn^(0x5A5A5A5C&(lim-1));
 //				bn1=(((wn^(wn>>8))*251)>>8)&(lim-1);
 //				bn1=wn;
+
+				bn1=shuf[(wn+4)>>2]<<2;
+				top->memAddr=0x1000000 + (bn1*16);
+
 				bn1=shuf[wn>>2]<<2;
 			
 //				printf("Wr Ready\n");
-				top->memAddr=0x1000000 + (bn1*16);
+//				top->memAddr=0x1000000 + (bn1*16);
+				top->memAddrSw=0x1000000 + (bn1*16);
 				top->memDataIn[ 0]=imgbuf[bn1*4+ 0];
 				top->memDataIn[ 1]=imgbuf[bn1*4+ 1];
 				top->memDataIn[ 2]=imgbuf[bn1*4+ 2];
@@ -442,7 +461,8 @@ int main(int argc, char **argv, char **env)
 				top->memDataIn[15]=imgbuf[bn1*4+15];
 
 				top->memOpSqI=nsq;
-				top->memOpm=0x17;
+//				top->memOpm=0x17;
+				top->memOpm=0x1F;
 				wdn=0;
 
 				if(wn>=lim)

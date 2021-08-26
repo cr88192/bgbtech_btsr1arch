@@ -1016,9 +1016,13 @@ int nmid;
 {"fstcix",	BGBCC_SH_NMID_FSTCIX},
 
 {"pldch",	BGBCC_SH_NMID_PLDCH},
+{"pldchl",	BGBCC_SH_NMID_PLDCH},
 {"pstch",	BGBCC_SH_NMID_PSTCH},
 {"pldchh",	BGBCC_SH_NMID_PLDCHH},
 // {"pstchh",	BGBCC_SH_NMID_FSTCFH},
+
+{"pldcehl",	BGBCC_SH_NMID_PLDCEHL},
+{"pldcehh",	BGBCC_SH_NMID_PLDCEHH},
 
 
 {"movd.l",	BGBCC_SH_NMID_MOVDL},

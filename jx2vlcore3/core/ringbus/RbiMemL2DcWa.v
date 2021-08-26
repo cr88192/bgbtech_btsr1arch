@@ -16,7 +16,8 @@ module RbiMemL2DcWa(
 	memSeqIn,		memSeqOut,
 	unitNodeId,
 
-	ddrMemAddr,		ddrMemOpm,
+	ddrMemAddr,		ddrMemAddrSw,
+	ddrMemOpm,
 	ddrMemDataIn,	ddrMemDataOut,
 	ddrMemOK,
 	ddrOpSqI,		ddrOpSqO,
@@ -42,6 +43,7 @@ input [  7:0]	unitNodeId;		//Who Are We?
 input [511:0]	ddrMemDataIn;
 output[511:0]	ddrMemDataOut;
 output[ 31:0]	ddrMemAddr;
+output[ 31:0]	ddrMemAddrSw;
 output[  4:0]	ddrMemOpm;
 input [  1:0]	ddrMemOK;
 
@@ -59,6 +61,8 @@ reg[1:0]		tDdrMemOK;
 reg[1:0]		tDdrMemOKB;
 reg[ 31:0]		tDdrMemAddr;
 reg[ 31:0]		tDdrMemAddrB;
+reg[ 31:0]		tDdrMemAddrSw;
+reg[ 31:0]		tDdrMemAddrSwB;
 reg[  4:0]		tDdrMemOpm;
 reg[  4:0]		tDdrMemOpmB;
 reg[  3:0]		tDdrMemOpSq;
@@ -70,6 +74,7 @@ reg[  3:0]		tDdrMemOpSqIB;
 // `ifndef def_true
 assign	ddrMemDataOut	= tDdrMemDataOutB;
 assign	ddrMemAddr		= tDdrMemAddrB;
+assign	ddrMemAddrSw	= tDdrMemAddrSwB;
 assign	ddrMemOpm		= tDdrMemOpmB;
 assign	ddrOpSqO		= tDdrMemOpSqB;
 `endif
@@ -78,6 +83,7 @@ assign	ddrOpSqO		= tDdrMemOpSqB;
 // `ifdef def_true
 assign	ddrMemDataOut	= tDdrMemDataOut;
 assign	ddrMemAddr		= tDdrMemAddr;
+assign	ddrMemAddrSw	= tDdrMemAddrSw;
 assign	ddrMemOpm		= tDdrMemOpm;
 assign	ddrOpSqO		= tDdrMemOpSq;
 `endif
@@ -284,6 +290,8 @@ reg[25:0]	tReqAddr;
 reg[25:0]	tReqAddrL;
 reg[25:0]	tAccAddr;
 reg[25:0]	tNxtAccAddr;
+reg			tAccNoClashA;
+reg			tNxtAccNoClashA;
 
 reg[5:0]	tReqAddrLo;
 
@@ -390,6 +398,12 @@ reg[25:0]		tBlkLdAddr;
 reg[3:0]		tBlkLdFrov;
 reg				tBlkLdB;
 reg				tBlkLdAzB;
+reg				tBlkLdAtB;
+
+`ifdef jx2_mem_l2d_ldatb
+reg[511:0]		tBlkLdDataB;
+reg[25:0]		tBlkLdAddrB;
+`endif
 
 reg[127:0]		tBlkStData0A;
 reg[127:0]		tBlkStData1A;
@@ -470,8 +484,10 @@ reg		tNxtAccBlkAddrIsRam;
 
 reg		tAccDoLdB;
 reg		tAccDoLdAzB;
+reg		tAccDoLdAtB;
 reg		tNxtAccDoLdB;
 reg		tNxtAccDoLdAzB;
+reg		tNxtAccDoLdAtB;
 
 reg[511:0]		tAccBlkData;
 reg[511:0]		tNxtAccBlkData;
@@ -578,6 +594,10 @@ begin
 //	nxtReqIx	= nxtReqAddr [9:0];
 `endif
 
+`ifdef jx2_mem_l2wsz_2048
+	nxtReqIx	= nxtReqAddr [10:0] ^ nxtReqAddr [21:11];
+`endif
+
 `ifdef jx2_mem_l2wsz_4096
 	nxtReqIx	= nxtReqAddr [11:0] ^ nxtReqAddr [23:12];
 `endif
@@ -649,6 +669,7 @@ begin
 
 	tNxtAccDoLdB	= 0;
 	tNxtAccDoLdAzB	= 0;
+	tNxtAccDoLdAtB	= 0;
 
 	tSkipC2			= 0;
 	tAccess			= 0;
@@ -727,6 +748,14 @@ begin
 	tMiss		=
 		 (tMissAddr || tBlkFlushA) &&
 		(tOpmIsNz && tAddrIsRam);
+//	tNxtAccNoClashA	= tMissAddr;
+//	tNxtAccNoClashA	= tMissAddr && !tBlkFlushA;
+	tNxtAccNoClashA	= 	
+//		((tReqAddr [15: 8] != tBlkAddrA[15: 8]) ||
+//		 (tReqAddr [ 7: 0] != tBlkAddrA[ 7: 0])) &&
+		!tBlkFlushA && !tBlkFlushB;
+
+//	tNxtAccNoClashA	= 	0;
 
 `ifdef jx2_mem_l2d2way
 	tBlkDirtyB			= tBlkFlagB[0];
@@ -761,6 +790,15 @@ begin
 		tNxtAccDoLdAzB	= 1;		
 //	if(tNxtAccDoLdB)
 //		$display("L2DC: Do Load B");
+
+	if(tMiss && !tMissAddrB && !tNxtAccDoLdB)
+		tNxtAccDoLdAzB	= 1;
+
+//	if(!tNxtAccDoLdB && tBlkDirtyA && !tBlkFlushA)
+	if(!tNxtAccDoLdB && !tBlkFlushA)
+//		tNxtAccDoLdAtB	= 1;
+		tNxtAccDoLdAtB	= tNxtAccDoLdAzB || !tBlkEpochCmp;		
+
 `endif
 
 	if((tBlkFlushA && !tMissAddr) && tMiss && !tMissL)
@@ -827,6 +865,43 @@ begin
 `endif
 	tBlkDoStB		= 0;
 
+
+`ifdef jx2_mem_l2d2way
+
+// `ifdef def_true
+`ifdef jx2_mem_l2d_stswab
+	/* See if we can handle miss by swapping blocks. */
+	if(tOpmIsStore && !tBlkDirtyA &&
+		!tAccSticky && tMiss && tMissAddr && !tMissAddrB &&
+		!tBlkFlushA && !tBlkFlushB && !tAccBusyLatch)
+	begin
+		tBlkStIx		= tBlkIx;
+
+		tBlkStData0A	= tBlkData0B;
+		tBlkStData1A	= tBlkData1B;
+		tBlkStData2A	= tBlkData2B;
+		tBlkStData3A	= tBlkData3B;
+		tBlkStAddrA		= tBlkAddrB;
+		tBlkStFrovA		= tCurFrov;
+		tBlkStDirtyA	= 0;
+		tBlkDoStA		= 1;
+
+		tBlkStData0B	= tBlkData0A;
+		tBlkStData1B	= tBlkData1A;
+		tBlkStData2B	= tBlkData2A;
+		tBlkStData3B	= tBlkData3A;
+		tBlkStAddrB		= tBlkAddrA;
+		tBlkStFrovB		= tCurFrov;
+		tBlkStDirtyB	= 0;
+		tBlkDoStB		= 1;
+
+		tSkipC2			= 1;
+	end
+`endif
+
+`endif
+
+
 	if(tAccSticky)
 	begin
 `ifdef jx2_mem_l2d2way
@@ -854,6 +929,21 @@ begin
 			tBlkStFrovA		= tCurFrov;
 			tBlkStDirtyA	= 0;
 			tBlkDoStA		= 1;
+
+`ifdef jx2_mem_l2d_ldatb
+			if(tBlkLdAtB)
+			begin
+				tBlkStData0B	= tBlkLdDataB[127:  0];
+				tBlkStData1B	= tBlkLdDataB[255:128];
+				tBlkStData2B	= tBlkLdDataB[383:256];
+				tBlkStData3B	= tBlkLdDataB[511:384];
+				tBlkStAddrB		= tBlkLdAddrB;
+				tBlkStFrovB		= tCurFrov;
+				tBlkStDirtyB	= 0;
+				tBlkDoStB		= 1;
+			end
+			else
+`endif
 
 			if(tBlkLdAzB)
 			begin
@@ -1021,9 +1111,11 @@ begin
 		tNxtAccBlkAddr		= tAccBlkAddr;
 		tNxtAccBlkDirty		= tAccBlkDirty;
 		tNxtAccBlkAddrIsRam	= tAccBlkAddrIsRam;
+		tNxtAccNoClashA		= tAccNoClashA;
 
 		tNxtAccDoLdB		= tAccDoLdB;
 		tNxtAccDoLdAzB		= tAccDoLdAzB;
+		tNxtAccDoLdAtB		= tAccDoLdAtB;
 	end
 
 	if(tAccess && tMiss && !tSkipC2)
@@ -1077,7 +1169,7 @@ begin
 //	tMemDataReq		= mem3AddrIn[4] ?
 //		tBlkDataC3[255:128] : tBlkDataC3[127:0];
 
-	if(mem3AddrIn[5:4]==2'b00)
+//	if(mem3AddrIn[5:4]==2'b00)
 		tMemDataReq		= tBlkData0AC3;
 	if(mem3AddrIn[5:4]==2'b01)
 		tMemDataReq		= tBlkData1AC3;
@@ -1108,8 +1200,8 @@ begin
 	if(mem3RingIsStx)
 		tMemOpmReq[7:0]	= JX2_RBI_OPM_OKST;
 
-//	if(mem3RingIsPfx || mem3RingIsSpx)
-//		tMemSkipReq = 0;
+	if(mem3RingIsPfx || mem3RingIsSpx)
+		tMemSkipReq = 0;
 
 	tMemOpmReq[3:0] = mem3OpmIn[11:8];
 
@@ -1239,9 +1331,11 @@ begin
 //	tStLatch			<= tNxtStLatch;
 	tDoAcc				<= tNxtDoAcc;
 	tAccAddr			<= tNxtAccAddr;
+	tAccNoClashA		<= tNxtAccNoClashA;
 	tAccIx				<= tNxtAccIx;
 	tAccDoLdB			<= tNxtAccDoLdB;
 	tAccDoLdAzB			<= tNxtAccDoLdAzB;
+	tAccDoLdAtB			<= tNxtAccDoLdAtB;
 
 	tAccBlkDirty		<= tNxtAccBlkDirty;
 	tAccBlkData			<= tNxtAccBlkData;
@@ -1251,6 +1345,7 @@ begin
 
 	tDdrMemDataOutB	<= tDdrMemDataOut;
 	tDdrMemAddrB	<= tDdrMemAddr;
+	tDdrMemAddrSwB	<= tDdrMemAddrSw;
 	tDdrMemOpmB		<= tDdrMemOpm;
 	tDdrMemOpSqB	<= tDdrMemOpSq;
 
@@ -1365,6 +1460,7 @@ begin
 		tDdrMemOpm		<= UMEM_OPM_READY;
 		tDdrMemOpSq		<= 0;
 		tDdrMemAddr		<= 0;
+		tDdrMemAddrSw	<= 0;
 		tDdrMemDataOut	<= 0;
 	end
 	else
@@ -1403,6 +1499,7 @@ begin
 			end
 			else
 `endif
+
 //				if(!tAccBlkDirty || tAccStDone)
 				if(!tAccBlkDirty || tAccStDone || tAccStoreOnly)
 			begin
@@ -1420,16 +1517,25 @@ begin
 				
 				tBlkLdData		<= tDdrMemDataIn;
 //				tBlkLdAddr		<= tAccAddr;
-				tBlkLdAddr		<= tAccStoreOnly ? 0 : tAccAddr;
+//				tBlkLdAddr		<= tAccStoreOnly ? 0 : tAccAddr;
+				tBlkLdAddr		<= tAccAddr;
 				tBlkLdIx		<= tAccIx;
 				tBlkLdFrov		<= tCurFrov;
-				tBlkLdB			<= tAccStoreOnly ? 0 : tAccDoLdB;
+//				tBlkLdB			<= tAccStoreOnly ? 0 : tAccDoLdB;
+				tBlkLdB			<= tAccDoLdB;
 				tBlkLdAzB		<= tAccDoLdAzB;
+				tBlkLdAtB		<= tAccDoLdAtB;
 				tAccDone		<= 1;
 				tAccSticky		<= 1;
 				tAccStickyLatch	<= 1;
 				tAccLatch		<= 0;
 				tAccBusyLatch	<= 0;
+
+`ifdef jx2_mem_l2d_ldatb
+				tBlkLdDataB		<= tAccBlkData;
+				tBlkLdAddrB		<= tAccBlkAddr;
+`endif
+
 				if(!tAccDone)
 				begin
 //					$display("L2DC: OpSqA %X %X, In=%X",
@@ -1455,6 +1561,7 @@ begin
 		begin
 			tDdrMemDataOut	<= tDdrMemDataOut;
 			tDdrMemAddr		<= tDdrMemAddr;
+			tDdrMemAddrSw	<= tDdrMemAddrSw;
 			tDdrMemOpm		<= tDdrMemOpm;
 			tDdrMemOpSq		<= tDdrMemOpSq;
 		end
@@ -1470,7 +1577,34 @@ begin
 			end
 
 			tDdrMemDataOut	<= tAccBlkData;
+			tDdrMemAddrSw	<= {tAccBlkAddr, 6'h00};
 
+`ifdef jx2_mem_ddrswap 
+// `ifndef def_true
+//			if(tAccBlkDirty && !tAccDone && tAccNoClashA)
+			if(tAccBlkDirty && !tAccDone && tAccNoClashA && !tAccDoLdB)
+			begin
+				tDdrMemAddr		<= {tAccAddr, 6'h00};
+				tDdrMemOpm		<= UMEM_OPM_SW_TILE;
+				tDdrMemOpSq		<= tAccOpSq;
+				tAccLatch		<= 1;
+				tAccStDone		<= 1;
+			end
+			else if(tAccBlkDirty && !tNxtStDone)
+			begin
+				tDdrMemAddr		<= {tAccBlkAddr, 6'h00};
+				tDdrMemOpm		<= UMEM_OPM_WR_TILE;
+				tDdrMemOpSq		<= tAccOpSq;
+				tAccLatch		<= 1;
+			end
+			else if(!tAccDone)
+			begin
+				tDdrMemAddr		<= {tAccAddr, 6'h00};
+				tDdrMemOpm		<= UMEM_OPM_RD_TILE;
+				tDdrMemOpSq		<= tAccOpSq;
+				tAccLatch		<= 1;
+			end
+`else
 			if(tAccBlkDirty && !tNxtStDone)
 			begin
 //				tDdrMemDataOut	<= tAccBlkData;
@@ -1493,6 +1627,7 @@ begin
 //				if(!tAccLdLatch)
 //					tAccOpSq	<= tAccOpSq + 1;
 			end
+`endif
 		end
 		else
 		begin

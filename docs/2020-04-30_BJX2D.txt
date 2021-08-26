@@ -441,7 +441,7 @@ TLB Entry:
 * (127:112) = VUGID / ACLID
 * (111: 76) = Virtual Address Page
 * ( 75: 64) = KR Access
-* ( 63: 48) = Available
+* ( 63: 48) = Available / ASID
 * ( 47: 12) = Physical Address Page
 * ( 11:  0) = Page Control bits
 
@@ -1554,8 +1554,8 @@ F0zz Instruction Block:
 *** F0nm_1GBE  -
 *** F0nm_1gCE  PLDCH		Rm, Rn		//(GSVF) Packed Half to Single (2x)
 *** F0nm_1GCE  PLDCHH		Rm, Rn		//(GSVF) Packed Half to Single (Hi)
-*** F0nm_1gDE -
-*** F0nm_1GDE -
+*** F0nm_1gDE  PLDCEHL		Rm, Rn		//(GSVF) Packed Ext-Half to Single (Lo)
+*** F0nm_1GDE  PLDCEHH		Rm, Rn		//(GSVF) Packed Ext-Half to Single (Hi)
 *** F0nm_1gEE  PSTCH		Rm, Rn		//(GSVF) Packed Single to Half (2x)
 *** F0nm_1GEE -
 *** F0nm_1gFE -

@@ -210,9 +210,14 @@ ExConv_Rgb30aExp	conv_upck30a(
 wire[63:0]	tRegFp16Upck32;
 wire[31:0]	tRegFp32Pck16;
 
+wire[9:0]	tRegFp16UPckE = idUIxt[1] ?
+	( idUIxt[0] ? { 5'h0, regValRs[62:58] } : regValRs[57:48] ) : 10'h000;
+
 wire[31:0]	tRegFp16UPckT = idUIxt[0] ? regValRs[63:32] : regValRs[31: 0];
-ExConv_Fp16Exp32	conv_fp16upcka(tRegFp16UPckT[15: 0], tRegFp16Upck32[31: 0]);
-ExConv_Fp16Exp32	conv_fp16upckb(tRegFp16UPckT[31:16], tRegFp16Upck32[63:32]);
+ExConv_Fp16Exp32	conv_fp16upcka(
+	tRegFp16UPckT[15: 0], tRegFp16UPckE[4:0], tRegFp16Upck32[31: 0]);
+ExConv_Fp16Exp32	conv_fp16upckb(
+	tRegFp16UPckT[31:16], tRegFp16UPckE[9:5], tRegFp16Upck32[63:32]);
 
 ExConv_Fp32Pck16	conv_fp16pcka(regValRs[31: 0], tRegFp32Pck16[15: 0]);
 ExConv_Fp32Pck16	conv_fp16pckb(regValRs[63:32], tRegFp32Pck16[31:16]);
@@ -1438,6 +1443,13 @@ begin
 		end
 		JX2_UCIX_CONV_FP16UPCK32H: begin
 			tRegConvVal = tRegFp16Upck32;
+		end
+		JX2_UCIX_CONV_FP16EUPCK32L: begin
+			tRegConvVal = tRegFp16Upck32;
+		end
+		JX2_UCIX_CONV_FP16EUPCK32H: begin
+//			tRegConvVal = tRegFp16Upck32;
+			tRegConvVal = { UV32_00, tRegFp16Upck32[31:0] };
 		end
 		JX2_UCIX_CONV_FP16PCK32: begin
 			tRegConvVal = { UV32_00, tRegFp32Pck16 };

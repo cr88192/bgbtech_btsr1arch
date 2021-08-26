@@ -23,19 +23,39 @@ vluint64_t main_time_st1e;
 vluint64_t main_time_ld1s;
 vluint64_t main_time_ld1e;
 
+vluint64_t main_accnt_st0s;
+vluint64_t main_accnt_st0e;
+vluint64_t main_accnt_ld0s;
+vluint64_t main_accnt_ld0e;
+vluint64_t main_accnt_st1s;
+vluint64_t main_accnt_st1e;
+vluint64_t main_accnt_ld1s;
+vluint64_t main_accnt_ld1e;
+
+
 vluint64_t main_time_end0;
 
 uint32_t *dram_buf;
 
+static int dram_lseq;
+static int dram_count;
+
+
 void update_bus()
 {
-	int ta, sq;
+	int ta, tast, sq;
 	
 	if(top->ddrMemAddr&63)
 		printf("update_bus: address misaligned %X\n", top->ddrMemAddr);
 	
 	ta=((top->ddrMemAddr)>>2)&0x00FFFFFF;
+	tast=ta;
 	sq=top->ddrOpSqO;
+
+	if((top->ddrMemOpm&0x18)==0x18)
+	{
+		tast=((top->ddrMemAddrSw)>>2)&0x00FFFFFF;
+	}
 	
 	top->ddrMemOK=0;
 
@@ -59,35 +79,47 @@ void update_bus()
 		top->ddrMemDataIn[15]=dram_buf[ta+15];
 
 		top->ddrMemOK=1;
-		top->ddrOpSqI=sq;
-	}else if(top->ddrMemOpm&16)
+		top->ddrOpSqI=sq;		
+	}
+	
+	if(top->ddrMemOpm&16)
 	{
-		dram_buf[ta+ 0]=top->ddrMemDataOut[ 0];
-		dram_buf[ta+ 1]=top->ddrMemDataOut[ 1];
-		dram_buf[ta+ 2]=top->ddrMemDataOut[ 2];
-		dram_buf[ta+ 3]=top->ddrMemDataOut[ 3];
-		dram_buf[ta+ 4]=top->ddrMemDataOut[ 4];
-		dram_buf[ta+ 5]=top->ddrMemDataOut[ 5];
-		dram_buf[ta+ 6]=top->ddrMemDataOut[ 6];
-		dram_buf[ta+ 7]=top->ddrMemDataOut[ 7];
-		dram_buf[ta+ 8]=top->ddrMemDataOut[ 8];
-		dram_buf[ta+ 9]=top->ddrMemDataOut[ 9];
-		dram_buf[ta+10]=top->ddrMemDataOut[10];
-		dram_buf[ta+11]=top->ddrMemDataOut[11];
-		dram_buf[ta+12]=top->ddrMemDataOut[12];
-		dram_buf[ta+13]=top->ddrMemDataOut[13];
-		dram_buf[ta+14]=top->ddrMemDataOut[14];
-		dram_buf[ta+15]=top->ddrMemDataOut[15];
+		dram_buf[tast+ 0]=top->ddrMemDataOut[ 0];
+		dram_buf[tast+ 1]=top->ddrMemDataOut[ 1];
+		dram_buf[tast+ 2]=top->ddrMemDataOut[ 2];
+		dram_buf[tast+ 3]=top->ddrMemDataOut[ 3];
+		dram_buf[tast+ 4]=top->ddrMemDataOut[ 4];
+		dram_buf[tast+ 5]=top->ddrMemDataOut[ 5];
+		dram_buf[tast+ 6]=top->ddrMemDataOut[ 6];
+		dram_buf[tast+ 7]=top->ddrMemDataOut[ 7];
+		dram_buf[tast+ 8]=top->ddrMemDataOut[ 8];
+		dram_buf[tast+ 9]=top->ddrMemDataOut[ 9];
+		dram_buf[tast+10]=top->ddrMemDataOut[10];
+		dram_buf[tast+11]=top->ddrMemDataOut[11];
+		dram_buf[tast+12]=top->ddrMemDataOut[12];
+		dram_buf[tast+13]=top->ddrMemDataOut[13];
+		dram_buf[tast+14]=top->ddrMemDataOut[14];
+		dram_buf[tast+15]=top->ddrMemDataOut[15];
 
 		top->ddrMemOK=1;
 		top->ddrOpSqI=sq;
 
 #if 0
 //		printf("WR %08X\n", ta);
-		printf("WR A=%08X D=%08X-%08X-%08X-%08X\n", ta,
-			dram_buf[ta+0], dram_buf[ta+1],
-			dram_buf[ta+2], dram_buf[ta+3]);
+		printf("WR A=%08X D=%08X-%08X-%08X-%08X\n", tast,
+			dram_buf[tast+0], dram_buf[tast+1],
+			dram_buf[tast+2], dram_buf[tast+3]);
 #endif
+	}
+	
+	if(top->ddrMemOpm&0x18)
+	{
+		if(sq!=dram_lseq)
+			dram_count++;
+		dram_lseq=sq;
+	}else
+	{
+		dram_lseq=-1;
 	}
 }
 
@@ -307,6 +339,8 @@ int main(int argc, char **argv, char **env)
 		k=k*65521+rand();
 		imgbuf[i]=k;
 	}
+	
+	dram_count=0;
 
 //	obuf=(uint32_t *)malloc(1<<23);
 //	memset(obuf, 0, 1<<23);
@@ -344,6 +378,7 @@ int main(int argc, char **argv, char **env)
 //	lim=1<<20;
 
 	main_time_st0s = main_time;
+	main_accnt_st0s = dram_count;
 	inh=3;
 	printf("Begin\n");
 	while (!Verilated::gotFinish())
@@ -388,8 +423,8 @@ int main(int argc, char **argv, char **env)
 			}else
 			{
 //				bn1=wn;
-				bn1=wn^15;
-//				bn1=wn^(0x5A5A5A5A&(lim-1));
+//				bn1=wn^15;
+				bn1=wn^(0x5A5A5A5A&(lim-1));
 
 //				if(!ring_req_done)
 //					printf("Wr Ready\n");
@@ -410,14 +445,16 @@ int main(int argc, char **argv, char **env)
 					printf("\n\n");
 					main_time_st0e = main_time;
 					main_time_ld0s = main_time;
+					main_accnt_st0e = dram_count;
+					main_accnt_ld0s = dram_count;
 				}
 			}
 		}else
 			if((rn<lim) || rdn)
 		{
 //			bn1=rn;
-			bn1=rn^15;
-//			bn1=rn^(0xA5A5A5A5&(lim-1));
+//			bn1=rn^15;
+			bn1=rn^(0xA5A5A5A5&(lim-1));
 
 			if(ring_resp_done)
 			{
@@ -464,6 +501,10 @@ int main(int argc, char **argv, char **env)
 //					main_time_end0 = main_time;
 					main_time_ld0e = main_time;
 					main_time_ld1s = main_time;
+
+					main_accnt_ld0e = dram_count;
+					main_accnt_ld1s = dram_count;
+
 					printf("\n\n");
 //					break;
 				}
@@ -492,6 +533,7 @@ int main(int argc, char **argv, char **env)
 			if(rn2>=lim)
 			{
 				main_time_ld1e = main_time;
+				main_accnt_ld1e = dram_count;
 				printf("\n\n");
 				break;
 			}
@@ -509,6 +551,15 @@ int main(int argc, char **argv, char **env)
 
 	dt1 = main_time_ld1e - main_time_ld1s;
 	printf("%f cycles / load (hit 0)\n", (dt1*0.5)/lim);
+	
+
+	dt0 = main_accnt_st0e - main_accnt_st0s;
+	dt1 = main_accnt_ld0e - main_accnt_ld0s;
+	printf("%f access / store (miss 0)\n", (dt0*1.0)/lim);
+	printf("%f access / load (miss 0)\n", (dt1*1.0)/lim);
+
+	dt1 = main_accnt_ld1e - main_accnt_ld1s;
+	printf("%f access / load (hit 0)\n", (dt1*1.0)/lim);
 	
 //	ofd=fopen("sim_text0_pwm.dat", "wb");
 //	fwrite(obuf, 1, bpos/8, ofd);

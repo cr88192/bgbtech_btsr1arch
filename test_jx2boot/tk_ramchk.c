@@ -192,6 +192,9 @@ void memcpy_fixed512_test(void *dst, void *src, int sz);
 void memset_fixed128_test(void *dst, int val, int sz);
 void memset_fixed512_test(void *dst, int val, int sz);
 
+void memload_movx_test(void *dst, int val, int sz);
+void memload_fixed512_test(void *dst, int val, int sz);
+
 __asm {
 memcpy_movx_test:
 #if 0
@@ -460,6 +463,66 @@ memset_fixed512_test:
 	RTSU
 
 
+memload_movx_test:
+#if 1
+	CMP/GE	128, R6
+	BF		.L1
+	.L0:
+	ADD		-128, R6
+	MOV.X	(R4,   0), R16
+	MOV.X	(R4,  16), R18
+	MOV.X	(R4,  32), R20
+	MOV.X	(R4,  48), R22
+	MOV.X	(R4,  64), R16
+	MOV.X	(R4,  80), R18
+	MOV.X	(R4,  96), R20
+	MOV.X	(R4, 112), R22
+	ADD		128, R4		|	CMP/GE	128, R6
+	BT		.L0
+	.L1:
+	RTSU
+#endif
+
+memload_fixed512_test:
+	MOV.X	(R4,   0), R16
+	MOV.X	(R4,  16), R18
+	MOV.X	(R4,  32), R20
+	MOV.X	(R4,  48), R22
+	MOV.X	(R4,  64), R16
+	MOV.X	(R4,  80), R18
+	MOV.X	(R4,  96), R20
+	MOV.X	(R4, 112), R22
+	ADD		128, R4
+	MOV.X	(R4,   0), R16
+	MOV.X	(R4,  16), R18
+	MOV.X	(R4,  32), R20
+	MOV.X	(R4,  48), R22
+	MOV.X	(R4,  64), R16
+	MOV.X	(R4,  80), R18
+	MOV.X	(R4,  96), R20
+	MOV.X	(R4, 112), R22
+	ADD		128, R4
+	MOV.X	(R4,   0), R16
+	MOV.X	(R4,  16), R18
+	MOV.X	(R4,  32), R20
+	MOV.X	(R4,  48), R22
+	MOV.X	(R4,  64), R16
+	MOV.X	(R4,  80), R18
+	MOV.X	(R4,  96), R20
+	MOV.X	(R4, 112), R22
+	ADD		128, R4
+	MOV.X	(R4,   0), R16
+	MOV.X	(R4,  16), R18
+	MOV.X	(R4,  32), R20
+	MOV.X	(R4,  48), R22
+	MOV.X	(R4,  64), R16
+	MOV.X	(R4,  80), R18
+	MOV.X	(R4,  96), R20
+	MOV.X	(R4, 112), R22
+//	ADD		128, R4
+	RTSU
+
+
 memcpy_movb_test:
 #if 0
 	CMP/GE	64, R6
@@ -494,7 +557,8 @@ int TK_RamBench()
 	puts("RAM Bench:\n");
 
 	cs=(u32 *)TK_RAMCHK_BASE;
-	ct=cs+0x123450;
+//	ct=cs+0x123450;
+	ct=cs+0x123480;
 //	ci = TK_GetTimeMs();
 	ci = TK_GetTimeUs();
 
@@ -523,6 +587,7 @@ int TK_RamBench()
 //	ci = TK_GetTimeMs();
 	ci = TK_GetTimeUs();
 
+#if 0
 //	memcpy(ct, cs, 1<<20);
 //	for(i=0; i<8192; i++)
 	for(i=0; i<4096; i++)
@@ -531,6 +596,17 @@ int TK_RamBench()
 //		memcpy_fixed128_test(ct, cs, 128);
 		memcpy_fixed512_test(ct, cs, 512);
 	}
+#endif
+
+#if 1
+	for(i=0; i<1024; i++)
+	{
+		memcpy_fixed512_test(ct, cs, 512);
+		memcpy_fixed512_test(ct, cs, 512);
+		memcpy_fixed512_test(ct, cs, 512);
+		memcpy_fixed512_test(ct, cs, 512);
+	}
+#endif
 
 //	cj = TK_GetTimeMs();
 	cj = TK_GetTimeUs();
@@ -584,6 +660,7 @@ int TK_RamBench()
 //	ci = TK_GetTimeMs();
 	ci = TK_GetTimeUs();
 
+#if 0
 //	memcpy(ct, cs, 1<<20);
 //	for(i=0; i<8192; i++)
 	for(i=0; i<4096; i++)
@@ -592,6 +669,17 @@ int TK_RamBench()
 //		memcpy_fixed128_test(ct, cs, 128);
 		memcpy_fixed512_test(ct+8, cs+8, 512);
 	}
+#endif
+
+#if 1
+	for(i=0; i<1024; i++)
+	{
+		memcpy_fixed512_test(ct+8, cs+8, 512);
+		memcpy_fixed512_test(ct+8, cs+8, 512);
+		memcpy_fixed512_test(ct+8, cs+8, 512);
+		memcpy_fixed512_test(ct+8, cs+8, 512);
+	}
+#endif
 
 //	cj = TK_GetTimeMs();
 	cj = TK_GetTimeUs();
@@ -630,6 +718,7 @@ int TK_RamBench()
 //	ci = TK_GetTimeMs();
 	ci = TK_GetTimeUs();
 
+#if 0
 //	memcpy(ct, cs, 1<<20);
 	for(i=0; i<4096; i++)
 //	for(i=0; i<8192; i++)
@@ -639,6 +728,17 @@ int TK_RamBench()
 //		memset_fixed128_test(ct, 0, 128);
 		memset_fixed512_test(ct, 0, 512);
 	}
+#endif
+
+#if 1
+	for(i=0; i<1024; i++)
+	{
+		memset_fixed512_test(ct, 0, 512);
+		memset_fixed512_test(ct, 0, 512);
+		memset_fixed512_test(ct, 0, 512);
+		memset_fixed512_test(ct, 0, 512);
+	}
+#endif
 
 //	cj = TK_GetTimeMs();
 	cj = TK_GetTimeUs();
@@ -683,6 +783,103 @@ int TK_RamBench()
 		tl=tf-(th*100);
 		printf("memset (L2): %dus, %d.%02d MB/s\n", ck, th, tl);
 	}
+
+#if 1
+
+
+#if 1
+//	ci = TK_GetTimeMs();
+	ci = TK_GetTimeUs();
+
+	memload_movx_test(ct, cs, 1<<18);
+	
+//	__debugbreak();
+
+//	cj = TK_GetTimeMs();
+	cj = TK_GetTimeUs();
+	ck = cj-ci;
+	if(ck>0)
+	{
+		tf=25600000/ck;
+		th=tf/100;
+		tl=tf-(th*100);
+		printf("memload (DRAM): %dus, %d.%02d MB/s\n", ck, th, tl);
+	}
+#endif
+
+//	ci = TK_GetTimeMs();
+	ci = TK_GetTimeUs();
+
+#if 0
+//	memcpy(ct, cs, 1<<20);
+	for(i=0; i<4096; i++)
+//	for(i=0; i<8192; i++)
+//	for(i=0; i<16384; i++)
+	{
+//		memcpy(ct, cs, 128);
+//		memset_fixed128_test(ct, 0, 128);
+		memload_fixed512_test(ct, 0, 512);
+	}
+#endif
+
+#if 1
+	for(i=0; i<1024; i++)
+	{
+		memload_fixed512_test(ct, 0, 512);
+		memload_fixed512_test(ct, 0, 512);
+		memload_fixed512_test(ct, 0, 512);
+		memload_fixed512_test(ct, 0, 512);
+	}
+#endif
+
+//	cj = TK_GetTimeMs();
+	cj = TK_GetTimeUs();
+	ck = cj-ci;
+	if(ck>0)
+	{
+//		tf=51200/ck;
+//		tf=102400/ck;
+//		tf=204800/ck;
+		tf=204800000/ck;
+//		tf=12800/ck;
+		th=tf/100;
+		tl=tf-(th*100);
+		printf("memload (L1): %dus, %d.%02d MB/s\n", ck, th, tl);
+	}
+
+
+//	memset_movx_test(ct, 0, 16384);		//Pre-warm L2
+	memload_movx_test(ct, 0, 49152);	//Pre-warm L2
+
+//	ci = TK_GetTimeMs();
+	ci = TK_GetTimeUs();
+
+//	memcpy(ct, cs, 1<<20);
+	for(i=0; i<16; i++)
+	{
+//		memcpy(ct, cs, 16384);
+//		memset_movx_test(ct, 0, 16384);
+		memload_movx_test(ct, 0, 49152);
+	}
+
+//	cj = TK_GetTimeMs();
+	cj = TK_GetTimeUs();
+	ck = cj-ci;
+	if(ck>0)
+	{
+//		tf=25600/ck;
+//		tf=25600000/ck;
+		tf=76800000/ck;
+//		tf=12800/ck;
+		th=tf/100;
+		tl=tf-(th*100);
+		printf("memload (L2): %dus, %d.%02d MB/s\n", ck, th, tl);
+	}
+
+
+#endif
+
+//	__debugbreak();
 
 #if 1
 	memcpy_movx_test(ct, NULL, 32768);

@@ -815,6 +815,7 @@ BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_LookupNamespace(BGBCC_TransState *ctx, char *
 BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_GetNamespace(BGBCC_TransState *ctx, char *str);
 void BGBCC_CCXL_GetNamespaceBuildPath(BGBCC_TransState *ctx, char *str);
 int BGBCC_CCXL_CheckForOptStr(BGBCC_TransState *ctx, char *str);
+int BGBCC_CCXL_ConstFloatAsHalf(float f, u16 *rv, u16 *rve);
 //AHSRC:ccxl/ccxl_expr.c
 char *BGBCC_CCXL_CIfy(char *s);
 void BGBCC_CCXL_CompileAssign(BGBCC_TransState *ctx, BCCX_Node *l);
@@ -2988,6 +2989,7 @@ int BGBCC_JX2C_LoadVectorField128(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx
 int BGBCC_JX2C_EmitBinaryVRegVRegVReg_Vec64F(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
 int BGBCC_JX2C_EmitBinaryVRegVRegVReg_Vec128F(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
 int BGBCC_JX2C_EmitBinaryVRegVRegVReg_Vec(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
+int BGBCC_JX2C_EmitConvVRegVRegVec(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type dtype, ccxl_type stype, ccxl_register dreg, ccxl_register sreg);
 //AHSRC:jx2cc/jx2_pecoff.c
 int BGBCC_JX2C_CoffLoadBufferDLL(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, byte *buf, int sz);
 int BGBCC_JX2C_CoffBuildExports(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);

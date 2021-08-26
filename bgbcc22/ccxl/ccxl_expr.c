@@ -2776,6 +2776,7 @@ void BGBCC_CCXL_CompileExprAsTypeSig(BGBCC_TransState *ctx,
 			case CCXL_TY_VEC3FQ:	vty=CCXL_REGVEC_TY_V3FQ;	break;
 			case CCXL_TY_VEC3FX:	vty=CCXL_REGVEC_TY_V3FX;	break;
 			case CCXL_TY_VEC4F:		vty=CCXL_REGVEC_TY_V4F;		break;
+			case CCXL_TY_VEC4H:		vty=CCXL_REGVEC_TY_V4H;		break;
 			case CCXL_TY_QUATF:		vty=CCXL_REGVEC_TY_QUATF;	break;
 			case CCXL_TY_VEC2D:		vty=CCXL_REGVEC_TY_V2D;		break;
 			case CCXL_TY_FCOMPLEX:	vty=CCXL_REGVEC_TY_FCPX;	break;
@@ -2796,6 +2797,7 @@ void BGBCC_CCXL_CompileExprAsTypeSig(BGBCC_TransState *ctx,
 			case CCXL_TY_VEC3FQ:	vfn="__v3fq_float3";		break;
 			case CCXL_TY_VEC3FX:	vfn="__v3fx_float3";		break;
 			case CCXL_TY_VEC4F:		vfn="__v4f_float4";			break;
+			case CCXL_TY_VEC4H:		vfn="__v4h_float4";			break;
 			case CCXL_TY_QUATF:		vfn="__vqf_float4";			break;
 			case CCXL_TY_VEC2D:		vfn="__v2d_double2";		break;
 			case CCXL_TY_FCOMPLEX:	vfn="__c2f_float2";			break;

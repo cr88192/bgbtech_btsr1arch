@@ -1104,6 +1104,7 @@ assign		ex1KrreHi = UV66_00;
 
 reg[8:0]		exB1OpUCmd;
 reg[8:0]		exB1OpUIxt;
+reg[32:0]		exB1RegValImm;		//Immediate (Decode)
 
 `reg_gpr		exB1RegIdRs;		//Source A, ALU / Base
 `reg_gpr		exB1RegIdRt;		//Source B, ALU / Index
@@ -1379,6 +1380,7 @@ wire[63:0]		exB1MulWVal;
 `ifndef jx2_use_fpu_w
 reg[8:0]		exB1OpUCmd;
 reg[8:0]		exB1OpUIxt;
+reg[32:0]		exB1RegValImm;		//Immediate (Decode)
 
 `reg_gpr		exB1RegIdRs;		//Source A, ALU / Base
 `reg_gpr		exB1RegIdRt;		//Source B, ALU / Index
@@ -1394,7 +1396,7 @@ wire[1:0]		exB1Hold;
 wire[63:0]		exB1RegValRn1;		//Destination Value (EX1)
 `wire_gpr		exB1HldIdRn1;		//Held Dest ID (EX1)
 
-reg[32:0]		exB1RegValImm;		//Immediate (Decode)
+//reg[32:0]		exB1RegValImm;		//Immediate (Decode)
 
 wire[8:0]		exB1OpUCmd2;
 

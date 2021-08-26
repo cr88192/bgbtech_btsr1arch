@@ -453,6 +453,7 @@ MmiModClkp		clkp(
 `wire_ddrtile	ddrMemDataIn;
 `wire_ddrtile	ddrMemDataOut;
 wire[31:0]		ddrMemAddr;
+wire[31:0]		ddrMemAddrB;
 wire[4:0]		ddrMemOpm;
 wire[1:0]		ddrMemOK;
 
@@ -487,6 +488,12 @@ assign		ddrDqs_En	= 0;
 MmiModDdrWa		ddr(
 	clock_master,	clock_ddr,
 	reset2_master,	reset2_ddr,
+
+	ddrMemDataIn,	ddrMemDataOut,
+	ddrMemAddr,		ddrMemAddrB,
+	ddrMemOpm,		ddrMemOK,
+	ddrOpSqI,		ddrOpSqO,
+	
 `else
 
 `ifdef jx2_mem_useddrb
@@ -501,13 +508,13 @@ MmiModDdr3		ddr(
 	reset2_master,	reset2_ddr,
 `endif
 
-`endif
-
 	ddrMemDataIn,	ddrMemDataOut,
 	ddrMemAddr,		ddrMemOpm,
 	ddrMemOK,
 	ddrOpSqI,		ddrOpSqO,
-	
+
+`endif
+
 	ddrData_I,	ddrData_O,	ddrData_En,
 	ddrAddr1,	ddrBa,
 	ddrCs,		ddrRas,		ddrCas,
@@ -981,7 +988,8 @@ RbiMemL2A	l2a(
 	l2aSeqIn,		l2aSeqOut,
 	l2aNodeId,
 
-	ddrMemAddr,		ddrMemOpm,
+	ddrMemAddr,		ddrMemAddrB,
+	ddrMemOpm,
 	ddrMemDataOut,	ddrMemDataIn,
 	ddrMemOK,
 	ddrOpSqO,		ddrOpSqI,

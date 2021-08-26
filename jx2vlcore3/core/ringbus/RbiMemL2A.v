@@ -19,7 +19,8 @@ module RbiMemL2A(
 	memSeqIn,		memSeqOut,
 	unitNodeId,
 
-	ddrMemAddr,		ddrMemOpm,
+	ddrMemAddr,		ddrMemAddrB,
+	ddrMemOpm,
 	ddrMemDataIn,	ddrMemDataOut,
 	ddrMemOK,
 	ddrOpSqI,		ddrOpSqO,
@@ -47,6 +48,7 @@ input [  7:0]	unitNodeId;		//Who Are We?
 `output_ddrtile	ddrMemDataOut;
 
 output[31:0]	ddrMemAddr;
+output[31:0]	ddrMemAddrB;
 output[4:0]		ddrMemOpm;
 input[1:0]		ddrMemOK;
 
@@ -86,7 +88,8 @@ RbiMemL2Dc		l2dc(
 	l2mSeqIn,		l2mSeqOut,
 	l2mNodeId,
 
-	ddrMemAddr,		ddrMemOpm,
+	ddrMemAddr,		ddrMemAddrB,
+	ddrMemOpm,
 	ddrMemDataIn,	ddrMemDataOut,
 	ddrMemOK,
 	ddrOpSqI,		ddrOpSqO,

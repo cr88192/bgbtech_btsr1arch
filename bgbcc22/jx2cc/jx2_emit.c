@@ -2023,7 +2023,7 @@ int BGBCC_JX2_ConstConvFloatToHalf(u32 v, u16 *rv)
 {
 	int exp, sgn;
 	u32 fra, fra1;
-	u16 v1;
+	u16 v1, ve;
 	int ret;
 	
 	if(!v)
@@ -2040,6 +2040,8 @@ int BGBCC_JX2_ConstConvFloatToHalf(u32 v, u16 *rv)
 	
 	exp=(exp-127)+15;
 	fra1=fra>>13;
+	
+	ve=(fra>>8)&31;
 	
 	if((fra1<<13)!=fra)
 		ret=0;
@@ -2060,6 +2062,7 @@ int BGBCC_JX2_ConstConvFloatToHalf(u32 v, u16 *rv)
 
 	v1=(sgn<<15)|(exp<<10)|fra1;
 	*rv=v1;
+//	*rve=ve;
 	return(ret);
 }
 

@@ -34,7 +34,8 @@
 // `define jx2_mem_line32B				//Use 32-byte cache line
 // `define jx2_mem_ddr32B				//Use 32-byte DDR line
 
-// `define jx2_mem_useddrwa			//Use DDR Wide-Access (512-bit)
+`define jx2_mem_useddrwa			//Use DDR Wide-Access (512-bit)
+`define jx2_mem_ddrswap				//Enable DDR Swap Requests
 
 `define jx2_mem_fasttdown			//Faster teardown
 
@@ -71,12 +72,14 @@
 
 // `define jx2_expand_l2sz			//Make L2 Bigger
 
-// `define jx2_mem_l2sz_8192			//L1 D$ is 8192 entries
-`define jx2_mem_l2sz_4096		//L1 D$ is 4096 entries
-// `define jx2_mem_l2sz_2048		//L1 D$ is 2048 entries
-// `define jx2_mem_l2sz_1024		//L1 D$ is 1024 entries
+// `define jx2_mem_l2sz_8192			//L2 is 8192 entries
+`define jx2_mem_l2sz_4096		//L2 is 4096 entries
+// `define jx2_mem_l2sz_2048		//L2 is 2048 entries
+// `define jx2_mem_l2sz_1024		//L2 is 1024 entries
 
-`define jx2_mem_l2wsz_1024		//L1 D$ is 1024 entries
+`define jx2_mem_l2wsz_1024		//L2 is 1024 entries
+// `define jx2_mem_l2wsz_2048		//L2 is 2048 entries
+// `define jx2_mem_l2wsz_4096			//L2 is 4096 entries
 
 // `define jx2_mem_l1i2way			//Use 2-Way L1 I$
 // `define jx2_mem_l1d2way			//Use 2-Way L1 D$
@@ -85,6 +88,8 @@
 
 `define jx2_mem_l2d2way				//Use 2-Way L2 Cache
 `define jx2_mem_l2dokseq			//L2: Use OK Sequencing
+// `define jx2_mem_l2d_ldatb		//L2: Copy A to B during L2 Miss
+// `define jx2_mem_l2d_stswab		//L2: Stores may swap A and B.
 
 `define jx2_rbi_nobridge			//Ringbus: Bypass Bridge, join rings directly
 

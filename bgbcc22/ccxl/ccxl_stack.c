@@ -2174,7 +2174,7 @@ ccxl_status BGBCC_CCXL_StackCastSig(BGBCC_TransState *ctx, char *sig)
 ccxl_status BGBCC_CCXL_StackBinaryOp(BGBCC_TransState *ctx, char *op)
 {
 	ccxl_register sreg, treg, dreg, sreg2, treg2, dreg2;
-	ccxl_type sty, tty, dty, bty, pty;
+	ccxl_type sty, tty, dty, dty2, bty, pty;
 	double f, g;
 	int opr, is_shl;
 	int i, j, k;
@@ -2254,6 +2254,15 @@ ccxl_status BGBCC_CCXL_StackBinaryOp(BGBCC_TransState *ctx, char *op)
 		sty=BGBCC_CCXL_GetRegType(ctx, sreg);
 		tty=BGBCC_CCXL_GetRegType(ctx, treg);
 		BGBCC_CCXL_GetTypeBinaryDest(ctx, opr, sty, tty, &dty);
+		dty2=dty;
+
+		if(	BGBCC_CCXL_TypeVecP(ctx, sty) &&
+			BGBCC_CCXL_TypeVecP(ctx, tty) &&
+			!BGBCC_CCXL_TypeVecP(ctx, dty)	)
+		{
+			BGBCC_CCXL_GetTypeBinaryDest(ctx,
+				CCXL_BINOP_ADD, sty, tty, &dty2);
+		}
 
 		if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, sty) &&
 			BGBCC_CCXL_TypeArrayOrPointerP(ctx, tty) &&
@@ -2477,8 +2486,8 @@ ccxl_status BGBCC_CCXL_StackBinaryOp(BGBCC_TransState *ctx, char *op)
 #if 1
 //		if(	!BGBCC_CCXL_TypeEqualP(ctx, dty, sty) ||
 //			!BGBCC_CCXL_TypeEqualP(ctx, dty, tty))
-		if(	!BGBCC_CCXL_TypeCompatibleP(ctx, dty, sty) ||
-			!BGBCC_CCXL_TypeCompatibleP(ctx, dty, tty))
+		if(	!BGBCC_CCXL_TypeCompatibleP(ctx, dty2, sty) ||
+			!BGBCC_CCXL_TypeCompatibleP(ctx, dty2, tty))
 		{
 //			if(BGBCC_CCXL_IsRegImmP(ctx, treg) &&
 //				(BGBCC_CCXL_TypeDoubleP(ctx, dty) ||
@@ -2487,7 +2496,7 @@ ccxl_status BGBCC_CCXL_StackBinaryOp(BGBCC_TransState *ctx, char *op)
 			if(BGBCC_CCXL_IsRegImmILFDP(ctx, treg) &&
 				!BGBCC_CCXL_IsRegImmUnsignedP(ctx, treg) &&
 //				BGBCC_CCXL_TypeSmallDoubleP(ctx, dty))
-				BGBCC_CCXL_TypeSmallFloat128P(ctx, dty) &&
+				BGBCC_CCXL_TypeSmallFloat128P(ctx, dty2) &&
 				BGBCC_CCXL_TypeSmallTypeP(ctx, sty, tty))
 			{
 				dty=sty; tty=sty;
@@ -2513,11 +2522,11 @@ ccxl_status BGBCC_CCXL_StackBinaryOp(BGBCC_TransState *ctx, char *op)
 
 //		if(BGBCC_CCXL_TypeEqualP(ctx, dty, sty) &&
 //			BGBCC_CCXL_TypeEqualP(ctx, dty, tty))
-		if(BGBCC_CCXL_TypeCompatibleP(ctx, dty, sty) &&
-			(BGBCC_CCXL_TypeCompatibleP(ctx, dty, tty) || is_shl))
+		if(BGBCC_CCXL_TypeCompatibleP(ctx, dty2, sty) &&
+			(BGBCC_CCXL_TypeCompatibleP(ctx, dty2, tty) || is_shl))
 		{
 			BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &dreg);
-			BGBCC_CCXL_EmitBinaryOp(ctx, dty, opr, dreg, sreg, treg);
+			BGBCC_CCXL_EmitBinaryOp(ctx, dty2, opr, dreg, sreg, treg);
 			BGBCC_CCXL_PushRegister(ctx, dreg);
 			BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
 			BGBCC_CCXL_RegisterCheckRelease(ctx, treg);
@@ -2527,14 +2536,14 @@ ccxl_status BGBCC_CCXL_StackBinaryOp(BGBCC_TransState *ctx, char *op)
 		BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &dreg);
 //		if((dty.val!=sty.val) && (dty.val!=tty.val))
 //		if(1)
-		if(!BGBCC_CCXL_TypeCompatibleP(ctx, dty, sty) &&
-			!(BGBCC_CCXL_TypeCompatibleP(ctx, dty, tty) || is_shl))
+		if(!BGBCC_CCXL_TypeCompatibleP(ctx, dty2, sty) &&
+			!(BGBCC_CCXL_TypeCompatibleP(ctx, dty2, tty) || is_shl))
 		{
-			BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &sreg2);
-			BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &treg2);
-			BGBCC_CCXL_EmitConv(ctx, dty, sty, sreg2, sreg);
+			BGBCC_CCXL_RegisterAllocTemporary(ctx, dty2, &sreg2);
+			BGBCC_CCXL_RegisterAllocTemporary(ctx, dty2, &treg2);
+			BGBCC_CCXL_EmitConv(ctx, dty2, sty, sreg2, sreg);
 			if((opr!=CCXL_BINOP_SHL) && (opr!=CCXL_BINOP_SHR))
-				{ BGBCC_CCXL_EmitConv(ctx, dty, tty, treg2, treg); }
+				{ BGBCC_CCXL_EmitConv(ctx, dty2, tty, treg2, treg); }
 			else
 				{ BGBCC_CCXL_EmitMov(ctx, tty, treg2, treg); }
 			BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
@@ -2543,10 +2552,10 @@ ccxl_status BGBCC_CCXL_StackBinaryOp(BGBCC_TransState *ctx, char *op)
 		{
 //			if(dty.val!=sty.val)
 //			if(1)
-			if(!BGBCC_CCXL_TypeCompatibleP(ctx, dty, sty))
+			if(!BGBCC_CCXL_TypeCompatibleP(ctx, dty2, sty))
 			{
-				BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &sreg2);
-				BGBCC_CCXL_EmitConv(ctx, dty, sty, sreg2, sreg);
+				BGBCC_CCXL_RegisterAllocTemporary(ctx, dty2, &sreg2);
+				BGBCC_CCXL_EmitConv(ctx, dty2, sty, sreg2, sreg);
 				BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
 			}
 			else
@@ -2554,13 +2563,13 @@ ccxl_status BGBCC_CCXL_StackBinaryOp(BGBCC_TransState *ctx, char *op)
 
 //			if(dty.val!=tty.val)
 //			if(1)
-			if(!(BGBCC_CCXL_TypeCompatibleP(ctx, dty, tty) || is_shl))
+			if(!(BGBCC_CCXL_TypeCompatibleP(ctx, dty2, tty) || is_shl))
 			{
 //				BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &treg2);
 				if((opr!=CCXL_BINOP_SHL) && (opr!=CCXL_BINOP_SHR))
 				{
-					BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &treg2);
-					BGBCC_CCXL_EmitConv(ctx, dty, tty, treg2, treg);
+					BGBCC_CCXL_RegisterAllocTemporary(ctx, dty2, &treg2);
+					BGBCC_CCXL_EmitConv(ctx, dty2, tty, treg2, treg);
 				}
 				else
 				{
@@ -2573,7 +2582,7 @@ ccxl_status BGBCC_CCXL_StackBinaryOp(BGBCC_TransState *ctx, char *op)
 				{ treg2=treg; }
 		}
 
-		BGBCC_CCXL_EmitBinaryOp(ctx, dty, opr, dreg, sreg2, treg2);
+		BGBCC_CCXL_EmitBinaryOp(ctx, dty2, opr, dreg, sreg2, treg2);
 		BGBCC_CCXL_PushRegister(ctx, dreg);
 		BGBCC_CCXL_RegisterCheckRelease(ctx, sreg2);
 		BGBCC_CCXL_RegisterCheckRelease(ctx, treg2);
@@ -2888,6 +2897,13 @@ ccxl_status BGBCC_CCXL_StackBinaryOpStore(BGBCC_TransState *ctx,
 		tty=BGBCC_CCXL_GetRegType(ctx, treg);
 		dty=BGBCC_CCXL_GetRegType(ctx, dreg);
 		BGBCC_CCXL_GetTypeBinaryDest(ctx, opr, sty, tty, &dty2);
+		
+		if(	BGBCC_CCXL_TypeVecP(ctx, sty) &&
+			BGBCC_CCXL_TypeVecP(ctx, tty) &&
+			!BGBCC_CCXL_TypeVecP(ctx, dty2)	)
+		{
+			BGBCC_CCXL_GetTypeBinaryDest(ctx, CCXL_BINOP_ADD, sty, tty, &dty2);
+		}
 
 		if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, sty) &&
 			BGBCC_CCXL_TypeArrayOrPointerP(ctx, tty) &&
@@ -3137,7 +3153,17 @@ ccxl_status BGBCC_CCXL_StackBinaryOpStore(BGBCC_TransState *ctx,
 		if(BGBCC_CCXL_TypeCompatibleP(ctx, dty2, sty) &&
 			BGBCC_CCXL_TypeCompatibleP(ctx, dty2, tty))
 		{
-			if(BGBCC_CCXL_TypeCompatibleP(ctx, dty, dty2) &&
+			if(BGBCC_CCXL_TypeVecP(ctx, dty2) &&
+				!BGBCC_CCXL_TypeVecP(ctx, dty))
+			{
+				BGBCC_CCXL_EmitBinaryOp(ctx, dty2, opr, dreg, sreg, treg);
+				BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
+				BGBCC_CCXL_RegisterCheckRelease(ctx, treg);
+				BGBCC_CCXL_RegisterCheckRelease(ctx, dreg);
+				return(CCXL_STATUS_YES);
+			}
+		
+			if(	BGBCC_CCXL_TypeCompatibleP(ctx, dty, dty2) &&
 				!BGBCC_CCXL_RegisterIdentEqualP(ctx, dreg, treg))
 			{
 				BGBCC_CCXL_EmitBinaryOp(ctx, dty2, opr, dreg, sreg, treg);
@@ -3159,7 +3185,9 @@ ccxl_status BGBCC_CCXL_StackBinaryOpStore(BGBCC_TransState *ctx,
 		}
 #endif
 		
-		if(BGBCC_CCXL_TypeCompatibleP(ctx, dty, dty2))
+		if(BGBCC_CCXL_TypeCompatibleP(ctx, dty, dty2)	||
+			(	 BGBCC_CCXL_TypeVecP(ctx, dty2) &&
+				!BGBCC_CCXL_TypeVecP(ctx, dty )	)	)
 		{
 	//		BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &dreg);
 			BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &sreg2);
@@ -3242,7 +3270,8 @@ ccxl_status BGBCC_CCXL_StackBinaryOpStore(BGBCC_TransState *ctx,
 		sty=BGBCC_CCXL_GetRegType(ctx, sreg);
 		tty=BGBCC_CCXL_GetRegType(ctx, treg);
 //		dty=BGBCC_CCXL_GetRegType(ctx, dreg);
-		BGBCC_CCXL_GetTypeBinaryDest(ctx, opr, sty, tty, &dty);
+//		BGBCC_CCXL_GetTypeBinaryDest(ctx, opr, sty, tty, &dty);
+		BGBCC_CCXL_GetTypeCompareBinaryDest(ctx, opr, sty, tty, &dty);
 
 //		if(BGBCC_CCXL_TypeEqualP(ctx, dty, sty) &&
 //			BGBCC_CCXL_TypeEqualP(ctx, dty, tty))
@@ -4028,6 +4057,7 @@ ccxl_status BGBCC_CCXL_StackPushConstVec4F(
 	ccxl_register sreg;
 	u32 i0, i1, i2, i3;
 	u64 j0, j1, j2, j3;
+	u16 k0, k1, k2, k3, k4, k5, k6, k7;
 	u64 vi, vj;
 	BGBCC_CCXL_DebugPrintStackLLn(ctx, "PushConstV4F", __FILE__, __LINE__);
 
@@ -4068,13 +4098,35 @@ ccxl_status BGBCC_CCXL_StackPushConstVec4F(
 		vj=((u64)i2) | (((u64)i3)<<32);
 		break;
 
+	case CCXL_REGVEC_TY_V4H:
+		BGBCC_CCXL_ConstFloatAsHalf(x0, &k0, &k4);
+		BGBCC_CCXL_ConstFloatAsHalf(x1, &k1, &k5);
+		BGBCC_CCXL_ConstFloatAsHalf(x2, &k2, &k6);
+		BGBCC_CCXL_ConstFloatAsHalf(x3, &k3, &k7);
+
+		i0=k0|(((u32)k1)<<16);
+		i1=k2|(((u32)k3)<<16);
+		vi=i0|(((u64)i1)<<32);
+		break;
+
 	case CCXL_REGVEC_TY_V3FQ:
+		BGBCC_CCXL_ConstFloatAsHalf(x0, &k0, &k4);
+		BGBCC_CCXL_ConstFloatAsHalf(x1, &k1, &k5);
+		BGBCC_CCXL_ConstFloatAsHalf(x2, &k2, &k6);
+		
+		i2=k4|(k5<<5)|(k6<<10);
+		i0=k0|(((u32)k1)<<16);
+		i1=k2|(i2<<16);
+		vi=i0|(((u64)i1)<<32);
+	
+#if 0
 		*(float *)(&i0)=x0;
 		*(float *)(&i1)=x1;
 		*(float *)(&i2)=x2;
 		vi=	((i0&0x00000000FFFFFC00ULL)>>10) |
 			((i1&0x00000000FFFFFC00ULL)<<10) |
 			((i2&0x00000000FFFFFC00ULL)<<32);
+#endif
 		break;
 
 	case CCXL_REGVEC_TY_V3FX:

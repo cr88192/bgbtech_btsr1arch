@@ -2415,6 +2415,9 @@ char *BGBCC_CCXL_VarTypeString_FlattenName(BGBCC_TransState *ctx,
 		if(!strcmp(s, "vec3fq"))
 			{ *t++='D'; *t++='l'; }
 
+		if(!strcmp(s, "vec3h") || !strcmp(s, "vec3sf"))
+			{ *t++='D'; *t++='k'; }
+
 		if(!strcmp(s, "bigint"))
 			{ *t++='G'; *t++='w'; }
 		if(!strcmp(s, "fixnum"))

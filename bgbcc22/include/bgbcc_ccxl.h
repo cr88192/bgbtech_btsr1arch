@@ -30,13 +30,12 @@
 #define CCXL_TY_FATP			0x18		//Fat Pointer
 #define CCXL_TY_FATP_AREF		0x19		//Fat Pointer, Array Reference
 #define CCXL_TY_FATP_VMTH		0x1A		//Fat Pointer, Virtual Method
-
 #define CCXL_TY_VARSTRING		0x1B		//Variant String
 #define CCXL_TY_VAROBJECT		0x1C		//Variant Object
-
 #define CCXL_TY_M128P			0x1D		//128-bit vector (unaligned)
 #define CCXL_TY_M64				0x1E		//64-bit vector
 #define CCXL_TY_M128			0x1F		//128-bit vector
+
 #define CCXL_TY_VEC2F			0x20		//64-bit float2 vector
 #define CCXL_TY_VEC3F			0x21		//128-bit float4 vector
 #define CCXL_TY_VEC4F			0x22		//128-bit float4 vector
@@ -54,15 +53,14 @@
 #define CCXL_TY_VEC4UW			0x2D		//64-bit 4x ushort vector
 #define CCXL_TY_VEC4SI			0x2E		//128-bit 4x int vector
 #define CCXL_TY_VEC4UI			0x2F		//128-bit 4x uint vector
-#define CCXL_TY_HCOMPLEX		0x30		//32-bit half2 complex
-#define CCXL_TY_VEC4H			0x31		//128-bit 4x uint vector
 
+#define CCXL_TY_HCOMPLEX		0x30		//32-bit half2 complex
+#define CCXL_TY_VEC4H			0x31		//64-bit 4x half vector
 #define CCXL_TY_FIMAG			0x32		//32-bit float imaginary
 #define CCXL_TY_DIMAG			0x33		//64-bit double imaginary
 #define CCXL_TY_HIMAG			0x34		//16-bit half imaginary
 #define CCXL_TY_GIMAG			0x35		//128-bit float128 imaginary
 #define CCXL_TY_GCOMPLEX		0x36		//256-bit float128 complex
-
 #define CCXL_TY_FATVARIANT		0x37		//Fat Variant
 
 #define CCXL_TY_VEC3FQ			0x38		//64-bit 3x float21
@@ -78,6 +76,7 @@
 #define CCXL_TY_BIGINT			0x40		//large boxed integer
 #define CCXL_TY_FIXNUM			0x41		//large boxed integer
 #define CCXL_TY_FLONUM			0x42		//large boxed integer
+#define CCXL_TY_VEC3H			0x43		//64-bit 3x Half
 
 
 #define CCXL_VTY_PVOID			0x00001005	//'void *'
@@ -252,6 +251,7 @@ Base, Q1..Q3:
 #define CCXL_REGVEC_TY_V4UI		0x0F
 #define CCXL_REGVEC_TY_V3FX		0x10
 #define CCXL_REGVEC_TY_V3FQ		0x11
+#define CCXL_REGVEC_TY_V4H		0x12
 
 #define CCXL_REGGBLA_DZMASK		0x000FFFFF00000000ULL	//displacement mask
 

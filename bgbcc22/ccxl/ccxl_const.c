@@ -859,3 +859,51 @@ int BGBCC_CCXL_CheckForOptStr(
 	}
 	return(0);
 }
+
+int BGBCC_CCXL_ConstFloatAsHalf(float f, u16 *rv, u16 *rve)
+{
+	int exp, sgn;
+	u32 fra, fra1, v;
+	u16 v1, ve;
+	int ret;
+	
+	v=*(u32 *)(&f);
+	
+	if(!v)
+	{
+		*rv=0;
+		return(1);
+	}
+	
+	ret=1;
+
+	fra=v&0x007FFFFF;
+	exp=(v>>23)&255;
+	sgn=(v>>31)&1;
+	
+	exp=(exp-127)+15;
+	fra1=fra>>13;
+	ve=(fra>>8)&31;
+	
+	if((fra1<<13)!=fra)
+		ret=0;
+	
+	if(exp<=0)
+	{
+		ret=0;
+		exp=0;
+		fra1=0;
+	}
+	
+	if(exp>=31)
+	{
+		ret=-1;
+		exp=31;
+		fra1=0;
+	}
+
+	v1=(sgn<<15)|(exp<<10)|fra1;
+	*rv=v1;
+	*rve=ve;
+	return(ret);
+}

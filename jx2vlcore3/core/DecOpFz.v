@@ -1630,6 +1630,16 @@ begin
 							opUCmdIx	= JX2_UCIX_CONV_FP16UPCK32L;
 					end
 
+					4'hD: begin
+						opNmid		= JX2_UCMD_CONV2_RR;
+						opFmid		= JX2_FMID_REGREG;
+						opIty		= JX2_ITY_UB;
+						if(opExQ)
+							opUCmdIx	= JX2_UCIX_CONV_FP16EUPCK32H;
+						else
+							opUCmdIx	= JX2_UCIX_CONV_FP16EUPCK32L;
+					end
+
 					4'hE: begin
 						opNmid		= JX2_UCMD_CONV2_RR;
 						opFmid		= JX2_FMID_REGREG;
