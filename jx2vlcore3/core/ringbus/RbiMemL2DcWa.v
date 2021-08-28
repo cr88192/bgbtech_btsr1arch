@@ -1201,7 +1201,10 @@ begin
 		tMemOpmReq[7:0]	= JX2_RBI_OPM_OKST;
 
 	if(mem3RingIsPfx || mem3RingIsSpx)
+	begin
+		tMemOpmReq[12] = tMemSkipReq;
 		tMemSkipReq = 0;
+	end
 
 	tMemOpmReq[3:0] = mem3OpmIn[11:8];
 

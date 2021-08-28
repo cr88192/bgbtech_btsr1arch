@@ -489,11 +489,6 @@ MmiModDdrWa		ddr(
 	clock_master,	clock_ddr,
 	reset2_master,	reset2_ddr,
 
-	ddrMemDataIn,	ddrMemDataOut,
-	ddrMemAddr,		ddrMemAddrB,
-	ddrMemOpm,		ddrMemOK,
-	ddrOpSqI,		ddrOpSqO,
-	
 `else
 
 `ifdef jx2_mem_useddrb
@@ -508,13 +503,13 @@ MmiModDdr3		ddr(
 	reset2_master,	reset2_ddr,
 `endif
 
-	ddrMemDataIn,	ddrMemDataOut,
-	ddrMemAddr,		ddrMemOpm,
-	ddrMemOK,
-	ddrOpSqI,		ddrOpSqO,
-
 `endif
 
+	ddrMemDataIn,	ddrMemDataOut,
+	ddrMemAddr,		ddrMemAddrB,
+	ddrMemOpm,		ddrMemOK,
+	ddrOpSqI,		ddrOpSqO,
+	
 	ddrData_I,	ddrData_O,	ddrData_En,
 	ddrAddr1,	ddrBa,
 	ddrCs,		ddrRas,		ddrCas,
@@ -969,6 +964,15 @@ wire[63:0]		memBounceIrq;
 
 `ifdef jx2_use_ringbus
 
+wire[ 15:0]		mmiSeqIn;		//operation sequence
+wire[ 15:0]		mmiSeqOut;		//operation sequence
+wire[ 15:0]		mmiOpmIn;		//memory operation mode
+wire[ 15:0]		mmiOpmOut;		//memory operation mode
+wire[ 47:0]		mmiAddrIn;		//memory input address
+wire[ 47:0]		mmiAddrOut;		//memory output address
+wire[127:0]		mmiDataIn;		//memory input data
+wire[127:0]		mmiDataOut;		//memory output data
+
 wire[127:0]		l2aDataIn;
 wire[127:0]		l2aDataOut;
 wire[47:0]		l2aAddrIn;
@@ -1004,10 +1008,20 @@ assign		l2aAddrIn	= memAddr;
 assign		l2aOpmIn	= memOpm;
 assign		l2aSeqIn	= memSeq;
 
-assign		memInData	= l2aDataOut;
-assign		memAddrIn	= l2aAddrOut;
-assign		memOpmIn	= l2aOpmOut;
-assign		memSeqIn	= l2aSeqOut;
+// assign		memInData	= l2aDataOut;
+// assign		memAddrIn	= l2aAddrOut;
+// assign		memOpmIn	= l2aOpmOut;
+// assign		memSeqIn	= l2aSeqOut;
+
+assign		mmiDataIn	= l2aDataOut;
+assign		mmiAddrIn	= l2aAddrOut;
+assign		mmiOpmIn	= l2aOpmOut;
+assign		mmiSeqIn	= l2aSeqOut;
+
+assign		memInData	= mmiDataOut;
+assign		memAddrIn	= mmiAddrOut;
+assign		memOpmIn	= mmiOpmOut;
+assign		memSeqIn	= mmiSeqOut;
 
 assign		l2aNodeId	= 8'h82;
 
@@ -1055,13 +1069,23 @@ assign	vgaVsync	= scrnPwmOut[13];
 
 `ifndef jx2_cfg_novga
 
+wire[7:0]	scrnNodeId;
+// assign		scrnNodeId	= 8'h84;
+assign		scrnNodeId	= 8'h86;
+
 ModTxtNtW	scrn(
 //	clock_100,		reset2_100,
 	clock_mmio,		reset2_mmio,
 	scrnPwmOut,
 	mmioOutDataQ,	scrnMmioOutData,	mmioAddr,
 	mmioOpm,		scrnMmioOK,
-	timerNoise,		timer256Hz);
+	timerNoise,		timer256Hz,
+
+	mmiAddrIn,		mmiAddrOut,
+	mmiDataIn,		mmiDataOut,
+	mmiOpmIn,		mmiOpmOut,
+	mmiSeqIn,		mmiSeqOut,
+	scrnNodeId		);
 
 `else
 
@@ -1211,8 +1235,8 @@ reg[31:0]		mmioAddrL4;
 reg				tBusMissLatch;
 reg				tNxtBusMissLatch;
 
-reg[5:0]		tBusMissCnt;
-reg[5:0]		tNxtBusMissCnt;
+reg[11:0]		tBusMissCnt;
+reg[11:0]		tNxtBusMissCnt;
 
 reg			timer1kHzL;
 
@@ -1312,8 +1336,10 @@ begin
 	else if(mmioOpm!=0)
 	begin
 		tNxtBusMissCnt = tBusMissCnt + 1;
+		if(tBusMissCnt == 511)
+//		if(tBusMissCnt == 255)
 //		if(tBusMissCnt == 63)
-		if(tBusMissCnt == 15)
+//		if(tBusMissCnt == 15)
 		begin
 			tNxtBusMissCnt	= tBusMissCnt;
 			mmioInData		= UV64_00;
@@ -1321,8 +1347,10 @@ begin
 		end
 
 //		if(mmioAddr == mmioAddrL4)
+		if(tBusMissCnt == 511)
+//		if(tBusMissCnt == 255)
 //		if(tBusMissCnt == 63)
-		if(tBusMissCnt == 15)
+//		if(tBusMissCnt == 15)
 		begin
 			if(!tBusMissLatch)
 				$display("MMIO Bus Miss A=%X", mmioAddr);

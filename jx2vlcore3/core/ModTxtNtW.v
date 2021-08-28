@@ -6,13 +6,26 @@
 
 // `include "ModNtsc.v"
 `include "ModVga.v"
-`include "ModTxtMemW.v"
 `include "ModFbTxtW.v"
 
+`ifndef jx2_mem_l2vram
+`include "ModTxtMemW.v"
+`endif
+
+`ifdef jx2_mem_l2vram
+`include "ringbus/RbiMemVramA.v"
+`endif
 
 module ModTxtNtW(clock, reset, pwmOut,
 	busInData, busOutData, busAddr, busOpm, busOK,
-	timerNoise, timer256Hz);
+	timerNoise, timer256Hz,
+	
+	memAddrIn,		memAddrOut,
+	memDataIn,		memDataOut,
+	memOpmIn,		memOpmOut,
+	memSeqIn,		memSeqOut,
+	unitNodeId
+	);
 
 /* verilator lint_off UNUSED */
 
@@ -29,6 +42,17 @@ input[4:0]		busOpm;
 output[1:0]		busOK;
 input			timerNoise;
 input			timer256Hz;
+
+input [ 15:0]	memSeqIn;		//operation sequence
+output[ 15:0]	memSeqOut;		//operation sequence
+input [ 15:0]	memOpmIn;		//memory operation mode
+output[ 15:0]	memOpmOut;		//memory operation mode
+input [ 47:0]	memAddrIn;		//memory input address
+output[ 47:0]	memAddrOut;		//memory output address
+input [127:0]	memDataIn;		//memory input data
+output[127:0]	memDataOut;		//memory output data
+
+input [  7:0]	unitNodeId;		//Who Are We?
 
 wire	busOE;
 wire	busWR;
@@ -68,11 +92,40 @@ ModVga fbvga(
 	pixPosX,	pixPosY,
 	pixLineOdd,	timerNoise);
 
+`ifndef jx2_mem_l2vram
+assign	memAddrOut	= memAddrIn;	//memory input address
+assign	memDataOut	= memDataIn;	//memory input data
+assign	memSeqOut	= memSeqIn;		//operation sequence
+assign	memOpmOut	= memOpmIn;		//memory operation mode
+
 ModTxtMemW fbmem(clock, reset,
 	pixCellIx, cellData1,
 	fontGlyph, fontData1,
 	ctrlRegVal,
 	busAddr, busInData, busOutData, busOE, busWR, busQW, busOK);
+`endif
+
+`ifdef jx2_mem_l2vram
+RbiMemVramA		fbmem(
+	clock,			reset,
+
+	busAddr,		busOpm,
+	busOutData,		busInData,
+	busOK,
+
+	pixCellIx,		cellData1,
+	fontGlyph,		fontData1,
+	ctrlRegVal,
+
+	memAddrIn,		memAddrOut,
+	memDataIn,		memDataOut,
+	memOpmIn,		memOpmOut,
+	memSeqIn,		memSeqOut,
+
+	unitNodeId
+	);
+`endif
+
 
 ModFbTxtW fbcc(clock, reset,
 	pixPosX,	pixPosY,

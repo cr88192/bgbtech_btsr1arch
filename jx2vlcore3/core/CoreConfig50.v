@@ -39,6 +39,8 @@
 
 `define jx2_mem_fasttdown			//Faster teardown
 
+`define jx2_mem_l2vram				//Use external RAM for VRAM
+
 
 // `define jx2_mem_jnexbuf			//Extra Buffer Y Joiner
 `define jx2_mem_jnfastbuf			//Fast Buffer Y Joiner
@@ -58,8 +60,8 @@
 // `define jx2_mem_fulldpx				//Full Duplex Mode
 // `define jx2_mem_fulldpx_syncb	//Full Duplex, Sync L2 AddrB
 
-// `define jx2_mem_l1dsz_1024		//L1 D$ is 1024 entries
-`define jx2_mem_l1dsz_512			//L1 D$ is 512 entries
+`define jx2_mem_l1dsz_1024		//L1 D$ is 1024 entries
+// `define jx2_mem_l1dsz_512			//L1 D$ is 512 entries
 // `define jx2_mem_l1dsz_256		//L1 D$ is 256 entries
 // `define jx2_mem_l1dsz_128		//L1 D$ is 128 entries
 // `define jx2_mem_l1dsz_64			//L1 D$ is 64 entries
@@ -77,8 +79,8 @@
 // `define jx2_mem_l2sz_2048		//L2 is 2048 entries
 // `define jx2_mem_l2sz_1024		//L2 is 1024 entries
 
-`define jx2_mem_l2wsz_1024		//L2 is 1024 entries
-// `define jx2_mem_l2wsz_2048		//L2 is 2048 entries
+// `define jx2_mem_l2wsz_1024		//L2 is 1024 entries
+`define jx2_mem_l2wsz_2048		//L2 is 2048 entries
 // `define jx2_mem_l2wsz_4096			//L2 is 4096 entries
 
 // `define jx2_mem_l1i2way			//Use 2-Way L1 I$

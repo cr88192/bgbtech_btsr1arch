@@ -449,7 +449,7 @@ int SimDdr(int clk, int cmd, int *rdqs, int *rdata)
 //				*rdqs=(ddr_burst&1)?1:2;
 				*rdqs=(nxtburst&1)?1:2;
 
-	//			printf("RD %08X: %04X\n", pos, data);
+//				printf("RD %08X: %04X\n", pos, data);
 
 			}else
 			{
@@ -473,7 +473,7 @@ int SimDdr(int clk, int cmd, int *rdqs, int *rdata)
 				ddr_ram[pos>>1]=data;
 				nxtbcol=ddr_bcol+2;
 				
-	//			printf("ST %08X = %04X\n", pos, data);
+//				printf("ST %08X = %04X\n", pos, data);
 			}
 		}else
 		{
@@ -617,13 +617,14 @@ int mem_tile32b;
 int main(int argc, char **argv, char **env)
 {
 	uint32_t *imgbuf;
+	int *shuf;
 	uint64_t tw0, tw1, td0;
 	uint64_t tr0, tr1, td1;
 	int ddrlclk, cmd, data, dqs;
 	int n, inh;
 	int wn, rn, wdn, rdn, lim, bn1;
 	int rqsq, nsq, sqdn;
-	int i, j, k;
+	int i, j, k, l;
 
 	Verilated::commandArgs(argc, argv);
 	
@@ -632,7 +633,7 @@ int main(int argc, char **argv, char **env)
 //	for(i=0; i<(128<<20); i++)
 //		ddr_ram[i]=rand();
 
-	memset(ddr_ram, 0, 256<<20);
+	memset(ddr_ram, 0x55, 256<<20);
 
 
 	imgbuf=(uint32_t *)malloc((1<<28)+128);
@@ -661,6 +662,18 @@ int main(int argc, char **argv, char **env)
 //	lim=64;
 //	lim=65;
 //	lim=128;
+
+	shuf=(int *)malloc(lim*sizeof(int));
+
+	l=lim;
+	for(i=0; i<(l+16); i++)
+		shuf[i]=i;
+
+	for(i=0; i<l; i++)
+	{
+		j=(rand()*rand())&(l-1);
+		k=shuf[i]; shuf[i]=shuf[j]; shuf[j]=k;
+	}
 
 	tw0 = main_time;
 	mem_tile32b = 0;
@@ -729,6 +742,19 @@ int main(int argc, char **argv, char **env)
 		{
 			if((top->memOK==1) && !sqdn)
 			{			
+				if((top->memOpm==0x1F) &&
+					(top->memDataOut[0]!=0x55555555) &&
+					(top->memAddr != top->memAddrSw) &&
+					!wdn)
+				{
+					printf("\nAddr=%X %X\n", top->memAddr, top->memAddrSw);
+					printf("Swap Mismatch, Got=%X, In=%X Img=%X\n",
+						top->memDataOut[0],
+						top->memDataIn[ 0],
+						imgbuf[bn1*4+ 0]);
+					break;
+				}
+
 				top->memOpm=0;
 //				printf("Wr OK\n");
 				if(!wdn)
@@ -749,10 +775,16 @@ int main(int argc, char **argv, char **env)
 				if((top->memOK==0) || sqdn)
 			{
 //				bn1=wn^(0x5A5A5A5A&(lim-1));
-				bn1=wn;
+//				bn1=wn;
 			
-//				printf("Wr Ready\n");
+				bn1=shuf[wn+1];
 				top->memAddr=0x1000000 + (bn1*16);
+
+				bn1=shuf[wn];
+
+//				printf("Wr Ready\n");
+//				top->memAddr=0x1000000 + (bn1*16);
+				top->memAddrSw=0x1000000 + (bn1*16);
 				top->memDataIn[0]=imgbuf[bn1*4+0];
 				top->memDataIn[1]=imgbuf[bn1*4+1];
 				top->memDataIn[2]=imgbuf[bn1*4+2];
@@ -765,7 +797,8 @@ int main(int argc, char **argv, char **env)
 					top->memDataIn[7]=imgbuf[bn1*4+7];
 				}
 				top->memOpSqI=nsq;
-				top->memOpm=0x17;
+//				top->memOpm=0x17;
+				top->memOpm=0x1F;
 				wdn=0;
 
 				if(wn>=lim)

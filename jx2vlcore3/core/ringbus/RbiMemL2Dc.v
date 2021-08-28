@@ -266,6 +266,8 @@ reg[27:0]	tReqAddr;
 reg[27:0]	tReqAddrL;
 reg[27:0]	tAccAddr;
 reg[27:0]	tNxtAccAddr;
+reg			tAccNoClashA;
+reg			tNxtAccNoClashA;
 
 reg[4:0]	tReqAddrLo;
 
@@ -848,6 +850,11 @@ begin
 	end
 `endif
 
+	tNxtAccNoClashA	= 	
+		!tBlkFlush && !tBlkFlushB && !tNxtAccStoreOnly;
+
+//	tNxtAccNoClashA	= 	0;
+
 	if((tBlkFlush && !tMissAddr) && tMiss && !tMissL)
 	begin
 //		$display("L2DC: Flush Flag, Ix=%X A=%X Rov=%X,%X",
@@ -1206,6 +1213,7 @@ begin
 		tNxtAccBlkAddr		= tAccBlkAddr;
 		tNxtAccBlkDirty		= tAccBlkDirty;
 		tNxtAccBlkAddrIsRam	= tAccBlkAddrIsRam;
+		tNxtAccNoClashA		= tAccNoClashA;
 
 		tNxtAccDoLdB		= tAccDoLdB;
 		tNxtAccDoLdAzB		= tAccDoLdAzB;
@@ -1445,6 +1453,7 @@ begin
 //	tStLatch			<= tNxtStLatch;
 	tDoAcc				<= tNxtDoAcc;
 	tAccAddr			<= tNxtAccAddr;
+	tAccNoClashA		<= tNxtAccNoClashA;
 	tAccIx				<= tNxtAccIx;
 	tAccDoLdB			<= tNxtAccDoLdB;
 	tAccDoLdAzB			<= tNxtAccDoLdAzB;
@@ -1655,8 +1664,36 @@ begin
 				$display("L2: Store Non-RAM Block Addr=%X", tBlkAddr);
 			end
 
+			tDdrMemDataOut		<= tAccBlkData;
 			tDdrMemAddrSw		<= {tAccBlkAddr, 4'b0000};
-				
+
+`ifdef jx2_mem_ddrswap 
+// `ifndef def_true
+//			if(tAccBlkDirty && !tAccDone && tAccNoClashA)
+			if(tAccBlkDirty && !tAccDone && tAccNoClashA &&
+				!tAccDoLdB && !tAccStoreOnly)
+			begin
+				tDdrMemAddr		<= {tAccAddr, 4'h00};
+				tDdrMemOpm		<= UMEM_OPM_SW_TILE;
+				tDdrMemOpSq		<= tAccOpSq;
+				tAccLatch		<= 1;
+				tAccStDone		<= 1;
+			end
+			else if(tAccBlkDirty && !tNxtStDone)
+			begin
+				tDdrMemAddr		<= {tAccBlkAddr, 4'h00};
+				tDdrMemOpm		<= UMEM_OPM_WR_TILE;
+				tDdrMemOpSq		<= tAccOpSq;
+				tAccLatch		<= 1;
+			end
+			else if(!tAccDone)
+			begin
+				tDdrMemAddr		<= {tAccAddr, 4'h00};
+				tDdrMemOpm		<= UMEM_OPM_RD_TILE;
+				tDdrMemOpSq		<= tAccOpSq;
+				tAccLatch		<= 1;
+			end
+`else
 			if(tAccBlkDirty && !tNxtStDone)
 			begin
 				tDdrMemDataOut	<= tAccBlkData;
@@ -1679,6 +1716,7 @@ begin
 //				if(!tAccLdLatch)
 //					tAccOpSq	<= tAccOpSq + 1;
 			end
+`endif
 		end
 		else
 		begin
