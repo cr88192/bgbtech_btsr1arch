@@ -47,6 +47,15 @@ struct tm
 #define _TM_DEFINED
 #endif
 
+#ifndef _TIMESPEC_DEFINED
+struct timespec
+{
+    time_t tv_sec;
+    long tv_nsec;
+};
+#define _TIMESPEC_DEFINED
+#endif
+
 time_t time(time_t *timer);
 clock_t clock(void);
 double difftime(time_t time1, time_t time0);

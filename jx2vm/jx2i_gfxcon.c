@@ -529,8 +529,9 @@ u32 JX2I_GfxCon_Rng32(void)
 	return((seed1>>32)+seed0);
 }
 
-int JX2I_GfxCon_Startup()
+int JX2I_GfxCon_Startup(BJX2_Context *ctx)
 {
+	BJX2_MemSpan *sp;
 	int i;
 
 	for(i=0; i<64; i++)
@@ -568,8 +569,23 @@ int JX2I_GfxCon_Startup()
 //	jx2i_gfxcon_conbuf=malloc(8192*sizeof(u32));
 //	jx2i_gfxcon_conbuf=malloc(16384*sizeof(u32));
 //	jx2i_gfxcon_lconbuf=malloc(16384*sizeof(u32));
+
 	jx2i_gfxcon_conbuf=malloc(32768*sizeof(u32));
 	jx2i_gfxcon_lconbuf=malloc(32768*sizeof(u32));
+	
+	sp=BJX2_MemSpanForName(ctx, "DRAM");
+	if(sp)
+	{
+		jx2i_gfxcon_conbuf=(u32 *)(((byte *)sp->data)+
+			((0x200A0000-sp->modbase)&sp->modmask));
+		jx2i_gfxcon_lconbuf=jx2i_gfxcon_conbuf+262144;
+//		jx2i_gfxcon_conbuf=malloc(32768*sizeof(u32));
+//		jx2i_gfxcon_lconbuf=malloc(32768*sizeof(u32));
+	}else
+	{
+		jx2i_gfxcon_conbuf=malloc(32768*sizeof(u32));
+		jx2i_gfxcon_lconbuf=malloc(32768*sizeof(u32));
+	}
 	
 //	for(i=0; i<40*25*4; i++)
 //	for(i=0; i<40*25*8; i++)
@@ -2083,13 +2099,61 @@ int BJX2_MemDefineGfxCon(BJX2_Context *ctx,
 	sp->GetWord=BJX2_MemGfxConCb_GetWord;
 	sp->GetDWord=BJX2_MemGfxConCb_GetDWord;
 	sp->GetQWord=BJX2_MemGfxConCb_GetQWord;
-	
+	sp->GetXWord=BJX2_MemRamCb_GetFaultXW;
+
 	sp->SetByte=BJX2_MemGfxConCb_SetByte;
 	sp->SetWord=BJX2_MemGfxConCb_SetWord;
 	sp->SetDWord=BJX2_MemGfxConCb_SetDWord;
 	sp->SetQWord=BJX2_MemGfxConCb_SetQWord;
-	
+	sp->SetXWord=BJX2_MemRamCb_SetFaultXW;
+
 	BJX2_MemAddSpan(ctx, sp);
 	return(0);
 }
 
+int BJX2_ContextSimVidTick(BJX2_Context *ctx)
+{
+	int addr;
+	int ix;
+	int i, j, k;
+
+	if(ctx->use_jit || ctx->no_memcost)
+		return(0);
+	
+	if(!jx2i_gfxcon_conbuf)
+		return(0);
+
+	ctx->tr_cur=NULL;
+
+	ix=ctx->mem_vidrov;
+	ctx->mem_vidrov=(ix+1)&15;
+	
+	addr=0x10A00000+(ix*8192);
+	
+	for(i=0; i<128; i++)
+	{
+		BJX2_MemSimAddrL2(ctx, addr+i*64, 16);
+		
+//		if(jx2i_gfxcon_dirty)
+//			continue;
+
+//		j=ix*2048+i*16;
+//		if(memcmp(jx2i_gfxcon_conbuf+j, jx2i_gfxcon_lconbuf+j, 64))
+//		{
+//			memcpy(jx2i_gfxcon_lconbuf+j, jx2i_gfxcon_conbuf+j, 64);
+//			jx2i_gfxcon_dirty=1;
+//		}
+	}
+
+	if(!jx2i_gfxcon_dirty)
+	{
+		j=ix*2048;
+		if(memcmp(jx2i_gfxcon_lconbuf+j, jx2i_gfxcon_conbuf+j, 128*64))
+		{
+			memcpy(jx2i_gfxcon_lconbuf+j, jx2i_gfxcon_conbuf+j, 128*64);
+			jx2i_gfxcon_dirty=1;
+		}
+	}
+
+	return(0);
+}

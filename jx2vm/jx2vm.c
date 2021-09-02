@@ -961,7 +961,8 @@ int main(int argc, char *argv[])
 //	BJX2_MemDefineGfxCon(ctx,	"CGFX",	0x000A0000U, 0x000AFFFFU);
 //	BJX2_MemDefineRAM(ctx,		"DRAM",	0x01000000U, 0x18000000U);
 //	BJX2_MemDefineRAM(ctx,		"DRAM",	0x01000000U, 0x08000000U);
-	BJX2_MemDefineModRAM(ctx,	"DRAM",	0x01000000U, 0x18000000U, 0x08000000U);
+//	BJX2_MemDefineModRAM(ctx,	"DRAM",	0x01000000U, 0x18000000U, 0x08000000U);
+	BJX2_MemDefineModRAM(ctx,	"DRAM",	0x01000000U, 0x3F000000U, 0x08000000U);
 
 //	BJX2_MemDefineMmgp(ctx,		"MMGP",	0xA000E000U, 0xA000E3FFU);
 //	BJX2_MemDefineSndSblk(ctx,	"SBAU",	0xA0080000U, 0xA0081FFFU);
@@ -1086,7 +1087,7 @@ int main(int argc, char *argv[])
 
 	GfxDrv_Start();
 	SoundDev_Init();
-	JX2I_GfxCon_Startup();
+	JX2I_GfxCon_Startup(ctx);
 
 //	t0=clock();
 	t0=FRGL_TimeMS();

@@ -1,19 +1,7 @@
 /*
-Stuff for implementing the libdl interface.
+Mostly a stub, as these are provided by libc.
  */
-
-void *dlopen(const char *path, int flags)
-{
-}
-
-char *dlerror(void)
-{
-}
-
-void *dlsym(void *handle, const char *symbol)
-{
-}
-
-void dlclose(void *handle)
+ 
+void libdl_dummy(void)
 {
 }

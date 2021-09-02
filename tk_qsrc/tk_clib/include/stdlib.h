@@ -33,6 +33,11 @@ typedef unsigned long size_t;
 // typedef long size_t;
 #endif
 
+#ifndef __ERRNO_T_DEFINED
+#define __ERRNO_T_DEFINED
+typedef int errno_t;
+#endif
+
 #ifndef __WCHAR_T_DEFINED
 #define __WCHAR_T_DEFINED
 #ifndef _WCHAR_T_DEFINED
@@ -42,6 +47,9 @@ typedef unsigned short wchar_t;
 #endif
 typedef struct { int quot; int rem; } div_t;
 typedef struct { long int quot; long int rem; } ldiv_t;
+
+typedef void (*constraint_handler_t)(
+	const char *msg, void *ptr, errno_t error);
 
 #define NULL ((void *)0)
 #define EXIT_SUCCESS 0
@@ -106,5 +114,11 @@ int _Builtin __abs(int j);
 long int _Builtin __labs(long int j);
 #define labs(j) (__labs((j)))
 #endif
+
+constraint_handler_t set_constraint_handler_s( constraint_handler_t handler );
+errno_t call_constraint_handler_s(const char * msg, void *ptr, errno_t error);
+
+void abort_handler_s( const char * msg, void *ptr, errno_t error);
+void ignore_handler_s( const char * msg, void *ptr, errno_t error);
 
 #endif

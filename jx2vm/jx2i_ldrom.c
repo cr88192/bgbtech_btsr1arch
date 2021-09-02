@@ -401,12 +401,14 @@ int BJX2_MemDefineMmgp(BJX2_Context *ctx,
 	sp->GetWord=BJX2_MemMmgpCb_GetWord;
 	sp->GetDWord=BJX2_MemMmgpCb_GetDWord;
 	sp->GetQWord=BJX2_MemMmgpCb_GetQWord;
+	sp->GetXWord=BJX2_MemRamCb_GetFaultXW;
 	
 	sp->SetByte=BJX2_MemMmgpCb_SetByte;
 	sp->SetWord=BJX2_MemMmgpCb_SetWord;
 	sp->SetDWord=BJX2_MemMmgpCb_SetDWord;
 	sp->SetQWord=BJX2_MemMmgpCb_SetQWord;
-	
+	sp->SetXWord=BJX2_MemRamCb_SetFaultXW;
+
 	BJX2_MemAddSpan(ctx, sp);
 	return(0);
 }

@@ -449,7 +449,7 @@ XTLB Entry / LDXTLB (XMOV):
 * (255:240) = VUGID / ACLID
 * (239:140) = Virtual Address Page
 * (139:128) = KR Access
-* (127:112) = Available
+* (127:112) = Available / ASID
 * (111: 12) = Physical Address Page
 * ( 11:  0) = Page Control bits
 
@@ -487,10 +487,10 @@ If Keyring Check is Disabled, VUGID access checks are ignored (Always Pass).
 
 
 Page Control:
-* (11): PR.U3 (User 3)
-* (10): PR.U2 (User 2)
-* ( 9): PR.U1 (User 1)
-* ( 8): PR.U0 (User 0)
+* (11): PR.U3 (User 3, OS / Virtual Memory)
+* (10): PR.U2 (User 2, OS / Virtual Memory)
+* ( 9): PR.U1 (User 1, OS / Virtual Memory)
+* ( 8): PR.U0 (User 0, OS / Virtual Memory)
 * ( 9): PR.S1 (Size 1)
 * ( 8): PR.S0 (Size 0)
 * ( 7): PR.NU (Not User Accessible)
@@ -501,7 +501,7 @@ Page Control:
 ** Page may not be written to.
 * ( 4): PR.NR (Read Disable)
 ** Page may not be read from.
-* ( 3): Page Is Volatile / Non-Cachable
+* ( 3): PR.NC, Page Is Volatile / Non-Cachable
 ** Set to indicate accesses to this page are volatile (Data).
 ** Contents in this page should not be retained in the L1 cache.
 ** Indicates Secure-Execute if NW is also Set and NX is Clear.
@@ -527,6 +527,12 @@ Size 0/1 (Base=16K):
 * 01: 32M Page (2048 Pages)
 * 10: 64K Page (4 Pages)
 * 11: -
+
+If NC is Set and NU is Clear:
+* If NX is Clear, This page has Secure-Execute privledge.
+** Secure-Execute may also require NW to be Set.
+* If NR or NW are Set, these are ignored in Supervisor Mode.
+** The NC flag is Ignored if NX is Set.
 
 
 Keyring checks are enabled via the Keyring Register (KRR):

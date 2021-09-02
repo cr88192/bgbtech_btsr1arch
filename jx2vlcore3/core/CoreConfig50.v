@@ -90,7 +90,7 @@
 
 `define jx2_mem_l2d2way				//Use 2-Way L2 Cache
 `define jx2_mem_l2dokseq			//L2: Use OK Sequencing
-// `define jx2_mem_l2d_ldatb		//L2: Copy A to B during L2 Miss
+`define jx2_mem_l2d_ldatb			//L2: Copy A to B during L2 Miss
 // `define jx2_mem_l2d_stswab		//L2: Stores may swap A and B.
 
 `define jx2_rbi_nobridge			//Ringbus: Bypass Bridge, join rings directly

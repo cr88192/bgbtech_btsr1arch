@@ -913,6 +913,11 @@ s64 BGBCP_DefTypeFlag(BGBCP_ParseState *ctx, char *tag)
 
 				if(!bgbcp_strcmp(tag, "_Near"))i=BGBCC_TYFL_NEAR;
 				if(!bgbcp_strcmp(tag, "_Far"))i=BGBCC_TYFL_FAR;
+
+				if(!bgbcp_strcmp(tag, "_Thread_local"))
+					i=BGBCC_TYFL_THREAD;
+				if(!bgbcp_strcmp(tag, "_Noreturn"))
+					i=BGBCC_TYFL_ABSTRACT;
 			}
 		}
 #endif

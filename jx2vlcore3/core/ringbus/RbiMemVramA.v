@@ -4,6 +4,11 @@ VRAM on the Ringbus.
 
 This is a modified L1 cache which will either handle requests or provide a block for display.
 
+
+Put the VRAM into C000_20A0000, which is assumed to be in the "wraparound" region located before the start of RAM.
+
+For QWord access via MMIO, if the access is misaligned, then the low order bits are interpreted as high-order bits within an extended space, in units of 64K. This can allow access to framebuffer memory beyond the original 128K limit.
+
  */
 
 `include "ringbus/RbiDefs.v"
@@ -276,10 +281,15 @@ reg				tReq2MissSkipB;
 reg				tReq2MissA;
 reg				tReq2MissB;
 
+reg				tNxtReqIsCSel;
+reg				tNxtReqIsCRs;
+reg				tNxtReqIsNz;
+
 reg				tReqIsCSel;
 reg				tReqIsCRs;
-reg				tReq2IsCRs;
 reg				tReqIsNz;
+
+reg				tReq2IsCRs;
 reg				tReq2IsNz;
 
 reg[ 27:0]		tBlkMemAddrA;
@@ -416,6 +426,8 @@ reg[5:0]		tInOpm;			//OPM (Used for cache-control)
 reg[5:0]		tInOpmB;		//OPM (Used for cache-control)
 reg[5:0]		tInOpmC;		//OPM (Used for cache-control)
 
+reg[3:0]		tRegInAddrHb;
+
 reg[27:0]		tRegInAddr;
 reg[27:0]		tRegInAddrC;
 reg[27:0]		tRegInAddrD;
@@ -507,29 +519,49 @@ begin
 	tRegInOpm = { regInOpm[4:3], 1'b0, regInOpm[2:0] };
 
 	if(tRegInOpm[5:4] == 2'b00)
-		tRegInAddr = { 8'b0, 3'b101, pixCellIx[11:0], 5'h000 };
+//		tRegInAddr = { 8'b0, 3'b101, pixCellIx[11:0], 5'h000 };
+		tRegInAddr = { 8'h0A, 1'b0, pixCellIx[13:0], 5'h000 };
+
+//	tNxtReqAddr		= tRegInAddr[27:0];
+	tNxtReqBix		= tRegInAddr[4:0];
+	tNxtReqOpm		= tRegInOpm;
+	tNxtReqInValA	= regInVal;
+	
+	tRegInAddrHb = { 3'b000, tRegInAddr[16] };
+
+	if((tRegInOpm[2:0] == 3'b011) && (tRegInAddr[2:0]!=3'b000))
+	begin
+		tRegInAddrHb = { tRegInAddr[16], tRegInAddr[2:0] };
+	end
+
+	tNxtReqAddr		= { 8'h0A, tRegInAddrHb, tRegInAddr[15:2], 2'b00 };
 
 	if(tRegInAddr[4])
 	begin
-		tNxtReqAxB = tRegInAddr[27:4];
+		tNxtReqAxB = tNxtReqAddr[27:4];
 		tNxtReqAxA = tNxtReqAxB + 1;
 	end
 	else
 	begin
-		tNxtReqAxA = tRegInAddr[27:4];
+		tNxtReqAxA = tNxtReqAddr[27:4];
 		tNxtReqAxB = tNxtReqAxA + 1;
 	end
 	
-	tNxtReqAddr		= tRegInAddr[27:0];
-	tNxtReqBix		= tRegInAddr[4:0];
-	tNxtReqOpm		= tRegInOpm;
-
 	tNxtReqIxA[5:0] = tNxtReqAxA[6:1];
 	tNxtReqIxB[5:0] = tNxtReqAxB[6:1];
 
-	tNxtReqInValA	= regInVal;
 	tReq1IxA		= tNxtReqIxA;
 	tReq1IxB		= tNxtReqIxB;
+
+`ifdef def_true
+	tNxtReqIsCSel		=
+		(tRegInAddr[27:20] == 8'h00) &&
+		(tRegInAddr[19:17] == 3'b101);
+	tNxtReqIsCRs = tNxtReqIsCSel && (tRegInAddr[16:8] == 9'h1FF);
+	
+	tNxtReqIsNz		=
+		(tRegInOpm[5:4] != 2'b00) && tNxtReqIsCSel;
+`endif
 
 //	tPixCellIxLim = 80 * 25;
 	tNxtPixCellIxLim = 80 * 26;
@@ -580,18 +612,24 @@ begin
 
 //	tPixCellIxC = pixCellIx + 14'h0080;
 //	tPixCellIxC = pixCellIx + 14'h0040;
-	tPixCellIxC = pixCellIx + { 7'h00, tProbeCyc[2:0], 4'h0 };
+	tPixCellIxC = pixCellIx + { 7'h00, tProbeCyc[1:0], 5'h0 };
+//	tPixCellIxC = pixCellIx + { 7'h00, tProbeCyc[2:0], 4'h0 };
+//	tPixCellIxC = pixCellIx + { 7'h00, tProbeCyc[3:0], 3'h0 };
 	tPixCellIxD = pixCellIx;
 	
 	tPixCellIxCi = { 1'b0, tPixCellIxC } - { 1'b0, tPixCellIxLim };
-	if(!tPixCellIxCi[14])
-		tPixCellIxC = tPixCellIxCi[13:0];
+//	if(!tPixCellIxCi[14])
+//		tPixCellIxC = tPixCellIxCi[13:0];
 
 //	if(tPixCellIxC >= tPixCellIxLim)
 //		tPixCellIxC = tPixCellIxC - tPixCellIxLim;
 
-	tRegInAddrC = { 8'b0, 3'b101, tPixCellIxC[11:0], 5'h000 };
-	tRegInAddrD = { 8'b0, 3'b101, tPixCellIxD[11:0], 5'h000 };
+//	tRegInAddrC = { 8'b0, 3'b101, tPixCellIxC[11:0], 5'h000 };
+//	tRegInAddrD = { 8'b0, 3'b101, tPixCellIxD[11:0], 5'h000 };
+
+	tRegInAddrC = { 8'h0A, 1'b0, tPixCellIxC[13:0], 5'h000 };
+	tRegInAddrD = { 8'h0A, 1'b0, tPixCellIxD[13:0], 5'h000 };
+
 	tNxtReqAxC = tRegInAddrC[27:4];
 //	tNxtReqAxD = tNxtReqAxC + 1;
 	tNxtReqAxD = tRegInAddrD[27:4];
@@ -675,6 +713,7 @@ begin
 	tReqMissSkipB	= 0;
 	tReqMissNoSkip	= 0;
 
+`ifndef def_true
 	tReqIsCSel		=
 		(tReqAddr[27:20] == 8'h00) &&
 		(tReqAddr[19:17] == 3'b101);
@@ -682,6 +721,7 @@ begin
 	
 	tReqIsNz		=
 		(tReqOpm[5:4] != 2'b00) && tReqIsCSel;
+`endif
 
 	tFontRamStDataA = tReqInValA[31:0];
 	tFontRamStDataB = tReqInValA[31:0];
@@ -1027,7 +1067,7 @@ begin
 		tArrMemDataStC	= memDataIn;
 		tArrMemIdxStC	= memAddrIn[12:5];
 //		tArrMemDoStC	= 1;
-		tArrMemDoStC	= !memOpmIn[12];
+		tArrMemDoStC	= !memOpmIn[14];
 //		tNxtMemRespLdC	= 1;
 		tNxtMemReqLdC	= 0;
 	end
@@ -1040,7 +1080,7 @@ begin
 		tArrMemDataStD	= memDataIn;
 		tArrMemIdxStD	= memAddrIn[12:5];
 //		tArrMemDoStD	= 1;
-		tArrMemDoStD	= !memOpmIn[12];
+		tArrMemDoStD	= !memOpmIn[14];
 //		tNxtMemRespLdD	= 1;
 		tNxtMemReqLdD	= 0;
 	end
@@ -1392,8 +1432,9 @@ begin
 		tReqOpm			<= tNxtReqOpm;
 		tReqInValA		<= tNxtReqInValA;
 
-		tRegOutValL		<= tRegOutVal;
-		tRegOutOKL		<= tRegOutOK;
+		tReqIsCSel		<= tNxtReqIsCSel;
+		tReqIsCRs		<= tNxtReqIsCRs;
+		tReqIsNz		<= tNxtReqIsNz;
 
 		/* EX2 -> EX3 */
 //		tRegOutVal		<= tBlkExData;
@@ -1423,6 +1464,9 @@ begin
 		tReq2MissSkipB		<= tReqMissSkipB;
 
 		tReq2StoreSticky	<= 0;
+
+		tRegOutValL		<= tRegOutVal;
+		tRegOutOKL		<= tRegOutOK;
 	end
 	else
 	begin

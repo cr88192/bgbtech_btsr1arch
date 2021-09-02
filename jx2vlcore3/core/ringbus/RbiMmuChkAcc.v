@@ -311,6 +311,18 @@ begin
 	if(tlbInAcc[0] || tUsDeny)
 		tRegOutNoRwx[0] = 1;
 
+//	if(tlbInAcc[35] && !tlbInAcc[2])
+	if(tlbInAcc[35] && !tlbInAcc[3])
+	begin
+		if(tlbInAcc[1:0]!=2'b00 && tlbInAcc[2])
+			tRegOutNoRwx[3] = 0;
+
+		if(regInSR[30])
+		begin
+			tRegOutNoRwx[1:0] = 0;
+		end
+	end
+
 	if(!tlbMmuEnable)
 	begin
 		tAccOutExc	= 0;

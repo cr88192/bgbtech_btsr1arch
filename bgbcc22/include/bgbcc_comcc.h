@@ -451,6 +451,17 @@ int eprhash_key[1024];
 int eprhash_lbl[1024];
 
 
+/* TLS Section. */
+
+int tlsvar_lbl[512];
+int tlsvar_ofs[512];
+int tlsvar_sz[512];
+int n_tlsvar;
+int sz_tlsvar;
+int tlsi_lbl;		//label for TLS Index
+
+
+
 int opcnt_hi8[256];
 int opcnt_3xx[256];
 int n_opcnt_3xx;

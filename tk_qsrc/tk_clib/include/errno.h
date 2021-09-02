@@ -68,6 +68,11 @@
 
 #endif
 
+#ifndef __ERRNO_T_DEFINED
+#define __ERRNO_T_DEFINED
+typedef int errno_t;
+#endif
+
 /* extern int errno; */
 
 #define errno (*(__get_errno()))

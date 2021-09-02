@@ -1,3 +1,16 @@
+#include "stdio.h"
+#include "stdlib.h"
+#include "signal.h"
+#include "string.h"
+#include "ctype.h"
+#include "stddef.h"
+
+#include "wchar.h"
+
+#include "locale.h"
+#include "tk_locale.h"
+
+
 static const char *itoa_radix="0123456789abcdefghijklmnopqrstuvwxyz";
 
 char *lltoa(long long value, char *str, int base)
@@ -185,3 +198,156 @@ void *_memlzcpy(void *dst, void *src, size_t n)
 	return(dst);
 }
 #endif
+
+
+constraint_handler_t global_constraint_handler;
+
+constraint_handler_t set_constraint_handler_s( constraint_handler_t handler )
+{
+	constraint_handler_t old;
+	
+	if(!handler)
+		handler = ignore_handler_s;
+	
+	old = global_constraint_handler;
+	global_constraint_handler = handler;
+	return(old);
+}
+
+errno_t call_constraint_handler_s( const char * msg, void *ptr, errno_t error)
+{
+	global_constraint_handler(msg, ptr, error);
+	return(error);
+}
+
+void abort_handler_s( const char * msg, void *ptr, errno_t error)
+{
+	fprintf(stderr, "abort_handler_s called: %s %p %d\n",
+		msg, ptr, error);
+	abort();
+}
+
+void ignore_handler_s( const char * msg, void *ptr, errno_t error)
+{
+	/* does nothing. */
+}
+
+
+size_t strnlen_s( const char *str, size_t strsz )
+{
+	const char *p, *pe;
+	int n;
+
+	if(!str)
+		return(0);
+
+	p = str;	pe = str + strsz;	n = 0;
+	while(*p && p<pe) { p++; n++; }
+	return(n);
+}
+
+errno_t memcpy_s(
+	void *restrict dest, rsize_t destsz,
+	const void *restrict src, rsize_t count )
+{
+	if(!dest || !src)
+		{ return(call_constraint_handler_s("null argument", NULL, EFAULT)); }
+	if(count > destsz)
+		{ return(call_constraint_handler_s("bad size argument", ERANGE)); }
+	memcpy(dest, src, count);
+	return(0);
+}
+
+errno_t memmove_s(void *dest, rsize_t destsz, const void *src, rsize_t count)
+{
+	if(!dest || !src)
+		{ return(call_constraint_handler_s("null argument", NULL, EFAULT)); }
+	if(count > destsz)
+		{ return(call_constraint_handler_s("bad size argument", ERANGE)); }
+	memmove(dest, src, count);
+	return(0);
+}
+
+errno_t wmemcpy_s(
+	wchar_t *restrict dest, rsize_t destsz,
+	const wchar_t *restrict src, rsize_t count )
+{
+	if(!dest || !src)
+		{ return(call_constraint_handler_s("null argument", NULL, EFAULT)); }
+	if(count > destsz)
+		{ return(call_constraint_handler_s("bad size argument", ERANGE)); }
+	memcpy(dest, src, count * sizeof(wchar_t));
+	return(0);
+}
+
+errno_t wmemmove_s(
+	wchar_t *restrict dest, rsize_t destsz,
+	const wchar_t *restrict src, rsize_t count )
+{
+	if(!dest || !src)
+		{ return(call_constraint_handler_s("null argument", NULL, EFAULT)); }
+	if(count > destsz)
+		{ return(call_constraint_handler_s("bad size argument", ERANGE)); }
+	memmove(dest, src, count * sizeof(wchar_t));
+	return(0);
+}
+
+errno_t strcat_s(
+	char *restrict dest, rsize_t destsz,
+	const char *restrict src)
+{
+	if(!dest || !src)
+		{ return(call_constraint_handler_s("null argument", NULL, EFAULT)); }
+	if((strlen(dest) + strlen(src)) >= destsz)
+		{ return(call_constraint_handler_s("bad size argument", ERANGE)); }
+	strcat(dest, src);
+	return(0);
+}
+
+errno_t strcpy_s(
+	char *restrict dest, rsize_t destsz,
+	const char *restrict src)
+{
+	if(!dest || !src)
+		{ return(call_constraint_handler_s("null argument", NULL, EFAULT)); }
+	if(strlen(src) >= destsz)
+		{ return(call_constraint_handler_s("bad size argument", ERANGE)); }
+	strcpy(dest, src);
+	return(0);
+}
+
+errno_t strncat_s(
+	char *restrict dest, rsize_t destsz,
+	const char *restrict src, rsize_t count)
+{
+	if(!dest || !src)
+		{ return(call_constraint_handler_s("null argument", NULL, EFAULT)); }
+	if((strlen(dest) + strnlen_s(src, count)) >= destsz)
+		{ return(call_constraint_handler_s("bad size argument", ERANGE)); }
+	strncat(dest, src, count);
+	return(0);
+}
+
+errno_t strncpy_s(
+	char *restrict dest, rsize_t destsz,
+	const char *restrict src, rsize_t count)
+{
+	if(!dest || !src)
+		{ return(call_constraint_handler_s("null argument", NULL, EFAULT)); }
+	if(strnlen_s(src, count) >= destsz)
+		{ return(call_constraint_handler_s("bad size argument", ERANGE)); }
+	strncpy(dest, src, count);
+	return(0);
+}
+
+errno_t wcscpy_s(
+	wchar_t *restrict dest, rsize_t destsz,
+	const wchar_t *restrict src )
+{
+	if(!dest || !src)
+		{ return(call_constraint_handler_s("null argument", NULL, EFAULT)); }
+	if(strlen(src) >= destsz)
+		{ return(call_constraint_handler_s("bad size argument", ERANGE)); }
+	wcscpy(dest, src);
+	return(0);
+}

@@ -34,6 +34,7 @@ SRCS_CLIB = \
 	pdpc201/locale.c \
 	pdpc201/ctype.c \
 	pdpc201/setjmp.c \
+	pdpc201/threads.c \
 	pdpc201/math.c \
 	pdpc201/math2.c \
 	pdpc201/__memmgr.c \
@@ -48,6 +49,7 @@ SRCS_CLIB = \
 	pdpc201/btshx_alloca.c \
 	pdpc201/bt_mman.c \
 	pdpc201/bt_readdir.c \
+	pdpc201/bt_dlfcn.c \
 	\
 	tk_core/tk_bdev_spi.c \
 	tk_core/tk_bdev_vfb.c \

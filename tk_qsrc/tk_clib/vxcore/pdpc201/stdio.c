@@ -82,7 +82,8 @@ long __tell(int handle);
 static FILE permFiles[3];
 
 #define unused(x) ((void)(x))
-#define outch(ch) ((fq == NULL) ? *s++ = (char)ch : putc(ch, fq))
+// #define outch(ch) ((fq == NULL) ? *s++ = (char)ch : putc(ch, fq))
+#define outch(ch) ((fq == NULL) ? ((s<dste) ? (*s++ = (char)ch) : 0) : putc(ch, fq))
 #define inch() ((fp == NULL) ? \
 	(ch = (unsigned char)*s++) : (ch = getc(fp)))
 
@@ -133,7 +134,8 @@ __PDPCLIB_API__ FILE **__get_stderr()
 
 static void dblcvt(double num, char cnvtype, size_t nwidth,
 				   int nprecision, char *result);
-static int vvprintf(const char *format, va_list arg, FILE *fq, char *s);
+static int vvprintf(const char *format, va_list arg,
+	FILE *fq, char *s, int nmax);
 static int vvscanf(const char *format, va_list arg, FILE *fp, const char *s);
 static void fopen2(void);
 static void fopen3(void);
@@ -167,7 +169,7 @@ static void freadSlowB(void *ptr,
 #endif
 
 static int examine(const char **formt, FILE *fq, char *s, va_list *arg,
-				   int chcount);
+				   int chcount, char *dste);
 
 
 __PDPCLIB_API__ int printf(const char *format, ...)
@@ -202,7 +204,7 @@ __PDPCLIB_API__ int vfprintf(FILE *stream, const char *format, va_list arg)
 	int ret;
 
 	stream->quickText = 0;
-	ret = vvprintf(format, arg, stream, NULL);
+	ret = vvprintf(format, arg, stream, NULL, 99999999);
 	return (ret);
 }
 
@@ -1175,7 +1177,8 @@ static void fwriteSlowB(const void *ptr,
 	return;
 }
 
-static int vvprintf(const char *format, va_list arg, FILE *fq, char *s)
+static int vvprintf(const char *format, va_list arg,
+	FILE *fq, char *s, int nmax)
 {
 	int fin;
 //	int vint;
@@ -1189,8 +1192,10 @@ static int vvprintf(const char *format, va_list arg, FILE *fq, char *s)
 	char numbuf[50];
 	char pad, ljust, llong;
 	int width, prec;
-	char *nptr;
+	char *nptr, *dste;
 	int *viptr;
+
+	dste=s+nmax;
 
 	fin=0;
 	chcount=0;
@@ -1301,7 +1306,8 @@ static int vvprintf(const char *format, va_list arg, FILE *fq, char *s)
 				if(!fq)
 				{
 					len = strlen(vcptr);
-					memcpy(s, vcptr, len);
+					if((s+len)<dste)
+						memcpy(s, vcptr, len);
 					s += len;
 					chcount += len;
 				}
@@ -1336,7 +1342,8 @@ static int vvprintf(const char *format, va_list arg, FILE *fq, char *s)
 
 				if (fq == NULL)
 				{
-					memcpy(s, numbuf, len);
+					if((s+len)<dste)
+						memcpy(s, numbuf, len);
 					s += len;
 				}
 				else
@@ -1349,7 +1356,7 @@ static int vvprintf(const char *format, va_list arg, FILE *fq, char *s)
 			{
 				int extraCh;
 
-				extraCh = examine(&format, fq, s, &arg, chcount);
+				extraCh = examine(&format, fq, s, &arg, chcount, dste);
 				chcount += extraCh;
 				if (s != NULL)
 				{
@@ -1369,7 +1376,7 @@ static int vvprintf(const char *format, va_list arg, FILE *fq, char *s)
 }
 
 static int examine(const char **formt, FILE *fq, char *s, va_list *arg,
-				   int chcount)
+				   int chcount, char *dste)
 {
 	int extraCh = 0;
 	int flagMinus = 0;
@@ -2007,13 +2014,38 @@ __PDPCLIB_API__ int vsprintf(char *s, const char *format, va_list arg)
 {
 	int ret;
 
-	ret = vvprintf(format, arg, NULL, s);
+	ret = vvprintf(format, arg, NULL, s, 99999999);
 	if (ret >= 0)
 	{
 		*(s + ret) = '\0';
 	}
 	return (ret);
 }
+
+
+int vsnprintf(char *s, size_t n, const char *format, va_list arg)
+{
+	int ret;
+
+	ret = vvprintf(format, arg, NULL, s, n);
+	if (ret >= 0)
+	{
+		*(s + ret) = '\0';
+	}
+	return (ret);
+}
+
+int snprintf(char *s, size_t n, const char *format, ...)
+{
+	va_list arg;
+	int ret;
+
+	va_start(arg, format);
+	ret = vsnprintf(s, n, format, arg);
+	va_end(arg);
+	return (ret);
+}
+
 
 /*
 
@@ -2560,6 +2592,14 @@ __PDPCLIB_API__ int scanf(const char *format, ...)
 	return (ret);
 }
 
+__PDPCLIB_API__ int vscanf(const char *format, va_list arg)
+{
+	int ret;
+
+	ret = vvscanf(format, arg, stdin, NULL);
+	return (ret);
+}
+
 __PDPCLIB_API__ int sscanf(const char *s, const char *format, ...)
 {
 	va_list arg;
@@ -2568,6 +2608,13 @@ __PDPCLIB_API__ int sscanf(const char *s, const char *format, ...)
 	va_start(arg, format);
 	ret = vvscanf(format, arg, NULL, s);
 	va_end(arg);
+	return (ret);
+}
+
+__PDPCLIB_API__ int vsscanf(const char *s, const char *format, va_list arg)
+{
+	int ret;
+	ret = vvscanf(format, arg, NULL, s);
 	return (ret);
 }
 

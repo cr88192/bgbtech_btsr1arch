@@ -43,6 +43,11 @@ typedef unsigned long size_t;
 typedef unsigned short wchar_t;
 #endif
 
+#ifndef __ERRNO_T_DEFINED
+#define __ERRNO_T_DEFINED
+typedef int errno_t;
+#endif
+
 #define NULL ((void *)0)
 // #define offsetof(x, y) (size_t)&(((x *)0)->y)
 #define offsetof(x, y) __offsetof(x, y)

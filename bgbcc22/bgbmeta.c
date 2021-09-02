@@ -1648,6 +1648,13 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 			if(argv[i][1]=='f')
 			{
 				bgbcc_opts[bgbcc_nopts++]=bgbcc_strdup(argv[i]+2);
+				continue;
+			}
+
+			if(!strncmp(argv[i]+1, "stack=", 6))
+			{
+				bgbcc_opts[bgbcc_nopts++]=bgbcc_strdup(argv[i]+2);
+				continue;
 			}
 
 

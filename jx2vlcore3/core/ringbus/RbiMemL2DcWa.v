@@ -1082,8 +1082,8 @@ begin
 			begin
 				if(!tHold && !tSkipC2)
 				begin
-					$display("L2DC Store Miss: Ix=%X A=%X",
-						tReqIx, tReqAddr);
+//					$display("L2DC Store Miss: Ix=%X A=%X",
+//						tReqIx, tReqAddr);
 					tSkipC2		= 1;
 				end
 			end
@@ -1202,7 +1202,7 @@ begin
 
 	if(mem3RingIsPfx || mem3RingIsSpx)
 	begin
-		tMemOpmReq[12] = tMemSkipReq;
+		tMemOpmReq[14] = tMemSkipReq;
 		tMemSkipReq = 0;
 	end
 

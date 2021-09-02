@@ -49,6 +49,7 @@ int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 	TKPE_TaskInfo *task;
 	TK_EnvContext *env;
 	TK_SysArg *args;
+	s64 li;
 	void *p;
 	int ret, sz;
 
@@ -184,7 +185,43 @@ int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 				sz=tk_munlockall2(task);
 				*((int *)vParm1)=sz;
 				break;
-			
+
+			case 0x18:
+				TK_YieldCurrentThreadB(args[0].l);
+				ret=TK_URES_TRUE;
+				break;
+			case 0x19:
+				sz=TK_AllocNewTlsB(task);
+				*((int *)vParm1)=sz;
+				ret=TK_URES_TRUE;
+				break;
+
+			case 0x1A:
+				sz=TK_SpawnNewThreadB(task, args[0].p, args[1].p);
+				*((int *)vParm1)=sz;
+				ret=TK_URES_TRUE;
+				break;
+			case 0x1B:
+				TK_SuspendThreadB(args[0].i, args[1].l);
+				ret=TK_URES_TRUE;
+				break;
+			case 0x1C:
+				li=TK_GetThreadStatusB(args[0].i);
+				*((s64 *)vParm1)=li;
+				ret=TK_URES_TRUE;
+				break;
+
+			case 0x1E:
+				p=TK_DlOpenB(task, args[0].p, args[1].i);
+				*((void **)vParm1)=p;
+				ret=TK_URES_TRUE;
+				break;
+			case 0x1F:
+				p=TK_DlSymB(task, args[0].p, args[1].p, args[2].i);
+				*((void **)vParm1)=p;
+				ret=TK_URES_TRUE;
+				break;
+
 			case 0x20:
 				ret=tk_hfopen(task, args[0].p, args[1].p);
 				break;

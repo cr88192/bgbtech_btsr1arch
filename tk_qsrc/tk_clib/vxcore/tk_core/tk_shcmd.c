@@ -1094,6 +1094,7 @@ int TKSH_TryLoad(char *img, char **args0)
 {
 	byte tb[1024];
 	char *args[64];
+	u64 tlsix[8];
 	TK_FILE *fd;
 	char **a1;
 	char *cs, *ct, *cs1, *ct1;
@@ -1101,10 +1102,12 @@ int TKSH_TryLoad(char *img, char **args0)
 //	u64 bootgbr;
 	u64	pb_gbr;
 	TKPE_TaskInfo *task;
+	TKPE_TaskInfoKern *tkern;
 	TK_EnvContext *env0, *env1;
 	void *bootgbr;
 	byte *boot_newspb, *boot_newsp;
-	void *boottbr;
+	byte *boot_newspbk, *boot_newspk;
+	void *boottbr, *boottls;
 	void *sysc;
 	int (*bootptr)();
 	int plf_dofs, plf_dnum, plf_fdofs, plf_fdsz;
@@ -1256,7 +1259,7 @@ int TKSH_TryLoad(char *img, char **args0)
 	if(fd && sig_is_pe)
 	{
 		bootgbr=0;
-		TKPE_LoadStaticPE(fd, plf_fdofs, &bootptr, &bootgbr);
+		TKPE_LoadStaticPE(fd, plf_fdofs, &bootptr, &bootgbr, tlsix);
 		tk_printf("Boot Pointer %p, GBR=%p\n", bootptr, (void *)bootgbr);
 		
 		tk_fclose(fd);
@@ -1281,17 +1284,28 @@ int TKSH_TryLoad(char *img, char **args0)
 			boot_newspb=TKMM_PageAlloc(1<<19);
 			boot_newsp=boot_newspb+((1<<19)-1024);
 
+			boot_newspbk=TKMM_PageAlloc(1<<16);
+			boot_newspk=boot_newspb+((1<<16)-1024);
+
 			env0=TK_GetCurrentEnvContext();
 			env1=TK_EnvCtx_CloneContext(env0);
 
 			boottbr=TK_AllocNewTask();
 			task=boottbr;
+			tkern=(TKPE_TaskInfoKern *)(task->krnlptr);
+
+			task->baseptr=(tk_kptr)tlsix[6];
 			task->bootptr=(tk_kptr)bootptr;
 			task->basegbr=(tk_kptr)bootgbr;
 			task->boottbr=(tk_kptr)boottbr;
 
 			task->boot_sps=(tk_kptr)boot_newspb;
 			task->boot_spe=(tk_kptr)boot_newsp;
+
+			tkern->usr_boot_sps=(tk_kptr)boot_newspb;
+			tkern->usr_boot_spe=(tk_kptr)boot_newsp;
+			tkern->krn_boot_sps=(tk_kptr)boot_newspbk;
+			tkern->krn_boot_spe=(tk_kptr)boot_newspk;
 			
 			task->envctx=(tk_kptr)env1;
 //			task->SysCall=tk_isr_syscall;
@@ -1299,6 +1313,24 @@ int TKSH_TryLoad(char *img, char **args0)
 			sysc=tk_isr_syscall;
 			task->SysCall=(tk_kptr)sysc;
 			
+			if(tlsix[0])
+			{
+				boottls=TKMM_PageAlloc(tlsix[1]);
+				if(tlsix[2])
+					{ memcpy(boottls, (void *)(tlsix[2]), tlsix[3]); }
+				TK_TlsSetB(task, tlsix[0], boottls);
+			}
+			
+			task->imgbaseptrs=task->img_baseptrs;
+			task->imggbrptrs=task->img_gbrptrs;
+			task->imgtlsrvas=task->img_tlsrvas;
+			
+			task->img_baseptrs[0]=(tk_kptr)tlsix[6];
+			task->img_gbrptrs[0]=(tk_kptr)bootgbr;
+			task->img_tlsrvas[0]=tlsix[7];
+			
+			*(tk_kptr *)bootgbr=task->img_gbrptrs;
+
 			tk_printf("TKSH_TryLoad: task=%p, env=%p\n", task, env1);
 			
 			sza=0;

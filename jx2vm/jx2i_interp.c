@@ -1032,6 +1032,8 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_CONVFXI:		s0="CONVFXI";	break;
 	case BJX2_NMID_CONVFLI:		s0="CONVFLI";	break;
 
+	case BJX2_NMID_CPUID:		s0="CPUID";	break;
+
 	case BJX2_NMID_PMORTL:		s0="PMORT.L";	break;
 	case BJX2_NMID_PMORTQ:		s0="PMORT.Q";	break;
 
@@ -1060,6 +1062,19 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_PSCHNEW:		s0="PSCHNE.W";	break;
 	case BJX2_NMID_PSCHEQB:		s0="PSCHEQ.B";	break;
 	case BJX2_NMID_PSCHNEB:		s0="PSCHNE.B";	break;
+
+//	case BJX2_NMID_CONVFXI:		s0="CONVFXI";	break;
+//	case BJX2_NMID_CONVFLI:		s0="CONVFLI";	break;
+	case BJX2_NMID_SNIPEDC:		s0="SNIPEDC";	break;
+	case BJX2_NMID_SNIPEIC:		s0="SNIPEIC";	break;
+
+	case BJX2_NMID_SXENTR:		s0="SXENTR";	break;
+	case BJX2_NMID_SUENTR:		s0="SUENTR";	break;
+	case BJX2_NMID_SVEKRR:		s0="SVEKRR";	break;
+	case BJX2_NMID_SVENTR:		s0="SVENTR";	break;
+	case BJX2_NMID_LDEKRR:		s0="LDEKRR";	break;
+	case BJX2_NMID_LDEKEY:		s0="LDEKEY";	break;
+	case BJX2_NMID_LDEENC:		s0="LDEENC";	break;
 
 	default:
 		sprintf(tb, "?NM%02X", nmid);
@@ -1898,13 +1913,20 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 	{
 		trcur=ctx->trhash[i];
 
-		cyc=trcur->runcnt*trcur->n_cyc+trcur->acc_pencyc;
-		if(cyc<=0)
-			break;
+//		cyc=trcur->runcnt*trcur->n_cyc+trcur->acc_pencyc;
+//		if(cyc<=0)
+//			break;
 
 //		while(trcur && (trn<65536))
 		while(trcur && (trn<262144))
 		{
+			cyc=trcur->runcnt*trcur->n_cyc+trcur->acc_pencyc;
+			if(cyc<=0)
+			{
+				trcur=trcur->hnext;
+				continue;
+			}
+
 			tra[trn++]=trcur;
 			trcur=trcur->hnext;
 		}
@@ -2176,10 +2198,25 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 
 		pcnt=(100.0*ctx->tot_cyc_miss)/(ctx->tot_cyc);
 		printf("Cycles Spent, Cache Miss: %.2f%%\n", pcnt);
-		pcnt=(100.0*ctx->tot_cyc_miss_l1)/(ctx->tot_cyc);
+//		pcnt=(100.0*ctx->tot_cyc_miss_l1)/(ctx->tot_cyc);
+		pcnt=(100.0*
+			(ctx->tot_cyc_miss_l1+ctx->tot_cyc_miss_l1i))/
+			(ctx->tot_cyc);
 		printf("Cycles Spent, Cache Miss L1: %.2f%%\n", pcnt);
-		pcnt=(100.0*ctx->tot_cyc_miss_l2)/(ctx->tot_cyc);
+
+//		pcnt=(100.0*ctx->tot_cyc_miss_l2)/(ctx->tot_cyc);
+		pcnt=(100.0*(
+			ctx->tot_cyc_miss_l2+
+			ctx->tot_cyc_miss_l2i+
+			ctx->tot_cyc_miss_l2v))/(ctx->tot_cyc);
 		printf("Cycles Spent, Cache Miss L2: %.2f%%\n", pcnt);
+
+		pcnt=(100.0*ctx->tot_cyc_miss_l2)/(ctx->tot_cyc);
+		printf("    D$: %.2f%%", pcnt);
+		pcnt=(100.0*ctx->tot_cyc_miss_l2i)/(ctx->tot_cyc);
+		printf("  I$: %.2f%%", pcnt);
+		pcnt=(100.0*ctx->tot_cyc_miss_l2v)/(ctx->tot_cyc);
+		printf("  VRAM: %.2f%%\n", pcnt);
 
 		pcnt=(100.0*ctx->tot_cyc_mmio)/(ctx->tot_cyc);
 		printf("Cycles Spent, MMIO: %.2f%%\n", pcnt);
@@ -2199,8 +2236,19 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 		pcnt=(100.0*(ctx->tot_cnt_mem_l2-ctx->tot_cnt_miss_l2))/
 			(ctx->tot_cnt_mem_l2);
 		printf("Total Count, Cache Hit  L2   : %.2f%%\n", pcnt);
-		pcnt=(100.0*ctx->tot_cnt_miss_l2)/(ctx->tot_cnt_mem_l2);
+
+//		pcnt=(100.0*ctx->tot_cnt_miss_l2)/(ctx->tot_cnt_mem_l2);
+		pcnt=(100.0*
+			(ctx->tot_cnt_miss_l2+ctx->tot_cnt_miss_l2i+ctx->tot_cnt_miss_l2v))/
+			(ctx->tot_cnt_mem_l2+ctx->tot_cnt_mem_l2i+ctx->tot_cnt_mem_l2v);
 		printf("Total Count, Cache Miss L2   : %.2f%%\n", pcnt);
+
+		pcnt=(100.0*ctx->tot_cnt_miss_l2)/(ctx->tot_cnt_mem_l2);
+		printf("    L2-D$: %.2f%%", pcnt);
+		pcnt=(100.0*ctx->tot_cnt_miss_l2i)/(ctx->tot_cnt_mem_l2i);
+		printf("  L2-I$: %.2f%%", pcnt);
+		pcnt=(100.0*ctx->tot_cnt_miss_l2v)/(ctx->tot_cnt_mem_l2v);
+		printf("  L2-VR: %.2f%%\n", pcnt);
 
 		pcnt=(100.0*(ctx->tot_cnt_mem_l1i-ctx->tot_cnt_mem_dri))/
 			(ctx->tot_cnt_mem_l1i);
@@ -2208,6 +2256,12 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 		pcnt=(100.0*(ctx->tot_cnt_mem_l1-ctx->tot_cnt_mem_drd))/
 			(ctx->tot_cnt_mem_l1);
 		printf("Total Count, Cache Hit Combined D$: %.2f%%\n", pcnt);
+
+		printf("Ratio, L2/L1: %.2f, L2i/L1i %.2f, DRAM/L2: %.2f\n",
+			(1.0*ctx->tot_cnt_mem_l2)/(ctx->tot_cnt_miss_l1+1.0),
+			(1.0*ctx->tot_cnt_mem_l2i)/(ctx->tot_cnt_miss_l1i+1.0),
+			(1.0*ctx->tot_cnt_mem_dram)/
+				(ctx->tot_cnt_miss_l2+ctx->tot_cnt_miss_l2i+1.0));
 	}
 
 	return(0);
@@ -2280,6 +2334,12 @@ int BJX2_UpdateForStatus(BJX2_Context *ctx)
 		if(ctx->cc_flush&1)
 		{
 			BJX2_DecodeTraceFlushCache(ctx);
+		}
+
+		if(ctx->cc_flush&2)
+		{
+			BJX2_MemFlushL1(ctx);
+			BJX2_MemFlushL2(ctx);
 		}
 
 		ctx->status=0;
@@ -2404,16 +2464,26 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 #ifdef X86_64
 		ctx->tot_cyc_mem+=ctx->mem_cyc;
 		ctx->tot_cyc_miss+=ctx->miss_cyc;
+
 		ctx->tot_cyc_miss_l1+=ctx->miss_cyc_l1;
+		ctx->tot_cyc_miss_l1i+=ctx->miss_cyc_l1i;
 		ctx->tot_cyc_miss_l2+=ctx->miss_cyc_l2;
+		ctx->tot_cyc_miss_l2i+=ctx->miss_cyc_l2i;
+
 		ctx->tot_cyc_mmio+=ctx->mem_cyc_mmio;
 
+		ctx->tot_cnt_mem+=ctx->mem_cnt_mem;
 		ctx->tot_cnt_mem_l1+=ctx->mem_cnt_l1;
 		ctx->tot_cnt_mem_l1i+=ctx->mem_cnt_l1i;
 		ctx->tot_cnt_mem_l2+=ctx->mem_cnt_l2;
+		ctx->tot_cnt_mem_l2i+=ctx->mem_cnt_l2i;
+
 		ctx->tot_cnt_miss_l1+=ctx->miss_cnt_l1;
 		ctx->tot_cnt_miss_l1i+=ctx->miss_cnt_l1i;
 		ctx->tot_cnt_miss_l2+=ctx->miss_cnt_l2;
+		ctx->tot_cnt_miss_l2i+=ctx->miss_cnt_l2i;
+
+		ctx->tot_cnt_mem_dram+=ctx->mem_cnt_dram;
 		ctx->tot_cnt_mem_dri+=ctx->mem_cnt_dri;
 		ctx->tot_cnt_mem_drd+=ctx->mem_cnt_drd;
 
@@ -2421,15 +2491,21 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 		ctx->mem_cyc=0;
 		ctx->miss_cyc=0;
 		ctx->miss_cyc_l1=0;
+		ctx->miss_cyc_l1i=0;
 		ctx->miss_cyc_l2=0;
+		ctx->miss_cyc_l2i=0;
 		ctx->mem_cyc_mmio=0;
 
+		ctx->mem_cnt_mem=0;
 		ctx->mem_cnt_l1=0;
-		ctx->mem_cnt_l2=0;
 		ctx->mem_cnt_l1i=0;
+		ctx->mem_cnt_l2=0;
+		ctx->mem_cnt_l2i=0;
 		ctx->miss_cnt_l1=0;
-		ctx->miss_cnt_l2=0;
 		ctx->miss_cnt_l1i=0;
+		ctx->miss_cnt_l2=0;
+		ctx->miss_cnt_l2i=0;
+		ctx->mem_cnt_dram=0;
 		ctx->mem_cnt_dri=0;
 		ctx->mem_cnt_drd=0;
 #endif
@@ -2450,6 +2526,8 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_TIMER);
 			while(ctx->ttick_hk<=0)
 				ctx->ttick_hk+=ctx->ttick_rst;
+			
+			BJX2_ContextSimVidTick(ctx);
 		}
 
 		if(ctx->status)

@@ -860,6 +860,42 @@ int BGBCC_CCXL_CheckForOptStr(
 	return(0);
 }
 
+char *BGBCC_CCXL_CheckForOptParmStr(
+	BGBCC_TransState *ctx, char *str)
+{
+	char *s;
+	int l;
+	int i;
+	
+	l=strlen(str);
+	
+	for(i=0; i<ctx->noptstrs; i++)
+	{
+		s=ctx->optstrs[i];
+		if(!strncmp(s, str, l) && (s[l]=='='))
+			return(s+l+1);
+	}
+	return(NULL);
+}
+
+int BGBCC_CCXL_CheckForOptParmInt(
+	BGBCC_TransState *ctx, char *str)
+{
+	char *s;
+	int l;
+	int i;
+	
+	l=strlen(str);
+	
+	for(i=0; i<ctx->noptstrs; i++)
+	{
+		s=ctx->optstrs[i];
+		if(!strncmp(s, str, l) && (s[l]=='='))
+			return(atoi(s+l+1));
+	}
+	return(0);
+}
+
 int BGBCC_CCXL_ConstFloatAsHalf(float f, u16 *rv, u16 *rve)
 {
 	int exp, sgn;

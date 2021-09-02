@@ -9,15 +9,17 @@ Every data section within a process will point to every other data section withi
 
  */
 
-int tkpe_npboix=1;
-
 // char *tkpe_binpath[256];
 // int tkpe_n_binpath;
 
 char **tk_env_pathlst;
 int tk_env_npathlst;
 
+int tkpe_npboix=1;
+int tkpe_nimgix=1;
+
 TKPE_ImageInfo	*tkpe_pbo_image[256];
+TKPE_ImageInfo	*tkpe_pbo_dllimg[256];
 
 // void *tkpe_pbo_imgbase[256];
 // char *tkpe_pbo_imgname[256];
@@ -36,7 +38,8 @@ int TKPE_ApplyBaseRelocs(byte *imgptr, byte *rlc, int szrlc,
 {
 	byte *cs, *cse, *cs1, *cs1e;
 	byte *pdst;
-	u32 pv;
+	u32 pv, pv0, pv1;
+	s64 v0, v1;
 	int tgt_rva, gbr_end_rva;
 	int rva_page, sz_blk;
 	int tg;
@@ -84,7 +87,30 @@ int TKPE_ApplyBaseRelocs(byte *imgptr, byte *rlc, int szrlc,
 				break;
 			case 5:
 				pv=*((u32 *)pdst);
-				pv=(pv&0xFE000000)|((pv+disp)&0x01FFFFFF);
+				if((pv&0x0000FE00U)==0x0000FE00U)
+				{
+					pv0=((u32 *)pdst)[0];
+					pv1=((u32 *)pdst)[1];
+					v0=((pv0&0x00FF)<<16)|((pv0>>16)&0xFFFF);
+					v1=((pv1&0x00FF)<<16)|((pv1>>16)&0xFFFF);
+					v1+=disp;
+					v0+=(disp>>24)+(v1>>24);
+					pv0=(pv0&0x0000FF00U)|
+						((v0>>16)&0x000000FFU)|
+						((v0<<16)&0xFFFF0000U);
+					pv1=(pv1&0x0000FF00U)|
+						((v1>>16)&0x000000FFU)|
+						((v1<<16)&0xFFFF0000U);
+					((u32 *)pdst)[0]=pv0;
+					((u32 *)pdst)[1]=pv1;
+					break;
+				}
+			
+				v0=((pv&0x01FF)<<16)|((pv>>16)&0xFFFF);
+				v1=v0+disp;
+				pv=(pv&0x0000FE00U)|
+					((v1>>16)&0x1FF)|
+					((v1<<16)&0xFFFF0000U);
 				*((u32 *)pdst)=pv;
 				break;
 
@@ -114,6 +140,8 @@ int TKPE_ApplyBaseRelocs(byte *imgptr, byte *rlc, int szrlc,
 				break;
 			case 10:
 				*((s64 *)pdst)=(*((s64 *)pdst))+disp;
+				break;
+			case 11:
 				break;
 			}
 		}
@@ -199,32 +227,33 @@ int TKPE_ApplyDataRelocs(
 
 #if 1
 // byte *TKPE_LoadDynPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
-TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, char *imgname)
+TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
+	char *imgname, char *cwd, int is_dll)
 {
-#if 1
 	byte tbuf[1024];
-	TKPE_ImageInfo *img;
+	TKPE_ImageInfo *img, *idll;
 	byte *imgptr, *ct, *cte;
-	byte *cs, *cse;
+	byte *cs, *cse, *p0, *p1;
+	char *s0, *s1;
 	u64 imgbase;
 	u32 imgsz, startrva, gbr_rva, gbr_sz;
 	byte is64;
-	byte is_pel4;
+	byte is_pel4, cmp;
+	u32 csum1, csum2;
 	int sig_mz, sig_pe, mach, mmagic;
 	int rva_rlc, sz_rlc, rlc_disp;
+	u32 tls_rva, tls_sz, tls_iptr, tls_key, tls_rds, tls_rde;
+	int rva_imp, sz_imp, rva_ilt, rva_iat;
+	int rva_exp, sz_exp;
 	int ofs_pe, pboix, szcpy;
 	int cb, nb, kb;
-	int i, l;
-#endif
+	int i, j, k, l, n;
 	
-#if 1
-	tk_fseek(fd, 0, 0);
+	tk_fseek(fd, fdoffs, 0);
 	tk_fread(tbuf, 1, 1024, fd);
 
 	is_pel4=0;
-#endif
 
-#if 1
 	sig_mz=tkfat_getWord(tbuf);
 	if(sig_mz!=0x4550)
 	{
@@ -244,8 +273,12 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, char *imgname)
 	}else
 	{
 		mach=tkfat_getWord(tbuf+2);
+		if(mach==0x364C)
+			{ is_pel4=1; cmp=6; }
 		if(mach==0x344C)
-			is_pel4=1;
+			{ is_pel4=1; cmp=4; }
+		if(mach==0x334C)
+			{ is_pel4=1; cmp=3; }
 	
 		ofs_pe=0;
 		sig_pe=sig_mz;
@@ -275,9 +308,7 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, char *imgname)
 		tk_printf("TKPE: Unexpected mMagic %04X\n", mach);
 		return(-1);
 	}
-#endif
 
-#if 1
 	if(is64)
 	{
 //		puts("TKPE: PE64\n");
@@ -289,6 +320,15 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, char *imgname)
 
 		rva_rlc=*(u32 *)(tbuf+ofs_pe+0xB0);
 		sz_rlc=*(u32 *)(tbuf+ofs_pe+0xB4);
+
+		tls_rva=*(u32 *)(tbuf+ofs_pe+0xD0);
+		tls_sz=*(u32 *)(tbuf+ofs_pe+0xD4);
+
+		rva_exp=*(u32 *)(tbuf+ofs_pe+0x88);
+		sz_exp=*(u32 *)(tbuf+ofs_pe+0x8C);
+		rva_imp=*(u32 *)(tbuf+ofs_pe+0x90);
+		sz_imp=*(u32 *)(tbuf+ofs_pe+0x94);
+
 	}else
 	{
 //		puts("TKPE: PE32\n");
@@ -300,6 +340,14 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, char *imgname)
 
 		rva_rlc=*(u32 *)(tbuf+ofs_pe+0xA0);
 		sz_rlc=*(u32 *)(tbuf+ofs_pe+0xA4);
+
+		tls_rva=*(u32 *)(tbuf+ofs_pe+0xC0);
+		tls_sz=*(u32 *)(tbuf+ofs_pe+0xC4);
+
+		rva_exp=*(u32 *)(tbuf+ofs_pe+0x78);
+		sz_exp=*(u32 *)(tbuf+ofs_pe+0x7C);
+		rva_imp=*(u32 *)(tbuf+ofs_pe+0x80);
+		sz_imp=*(u32 *)(tbuf+ofs_pe+0x84);
 	}
 	
 	tk_printf("TKPE: Base=%08X Sz=%d BootRVA=%08X GbrRVA=%08X\n",
@@ -309,7 +357,6 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, char *imgname)
 	memset(img, 0, sizeof(TKPE_ImageInfo));
 
 	imgptr=TKMM_PageAlloc(imgsz);
-//	imgptr=(byte *)imgbase;
 
 	img->imgbase=imgptr;
 	img->imgname=TKMM_LVA_Strdup(imgname);
@@ -318,9 +365,8 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, char *imgname)
 	
 	if(!is_pel4)
 	{
-		tk_fseek(fd, 0, 0);
+		tk_fseek(fd, fdoffs, 0);
 
-#if 1
 		cb=0; nb=imgsz>>10;
 		ct=imgptr; cte=imgptr+imgsz;
 		while((ct+1024)<=cte)
@@ -332,11 +378,10 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, char *imgname)
 		tk_printf("%d/%dkB\r", cb, nb);
 		tk_fread(ct, 1, cte-ct, fd);
 		tk_printf("\n", cb, nb);
-#endif
 	}else
 	{
 		memcpy(imgptr, tbuf, 1024);
-#if 1
+
 		cb=0; nb=imgsz>>10;
 		ct=imgptr+1024; cte=imgptr+imgsz;
 		l=1024;
@@ -346,7 +391,8 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, char *imgname)
 //			tk_printf("%d/%dkB\r", cb, nb);
 			tk_printf("%d/%dkB\r", kb, nb);
 			l=tk_fread(tbuf, 1, 1024, fd);
-			ct=TKPE_UnpackL4(ct, tbuf, l);
+//			ct=TKPE_UnpackL4(ct, tbuf, l);
+			ct=TKPE_UnpackBuffer(ct, tbuf, l, cmp);
 			if(l<1024)
 				break;
 			cb++;
@@ -357,20 +403,63 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, char *imgname)
 		if(l>=1024)
 		{
 			l=tk_fread(tbuf, 1, 1024, fd);
-			ct=TKPE_UnpackL4(ct, tbuf, l);
+//			ct=TKPE_UnpackL4(ct, tbuf, l);
+			ct=TKPE_UnpackBuffer(ct, tbuf, l, cmp);
 		}
 		tk_printf("\n");
-#endif
 	}
-#endif
-	
+
+
+	if(is_pel4)
+	{
+		csum1=*(u32 *)(imgptr+ofs_pe+0x58);
+		
+		if(csum1)
+		{
+			if(ct!=cte)
+			{
+				tk_printf("Image Size Mismatch %08X -> %08X\n",
+					cte-imgptr, ct-imgptr);
+				__debugbreak();
+			}
+		
+			*(u16 *)(imgptr+ofs_pe+0x02)=0;		
+			*(u32 *)(imgptr+ofs_pe+0x58)=0;
+			
+			csum2=TKPE_CalculateImagePel4BChecksum(imgptr, imgsz);
+			if(csum1!=csum2)
+			{
+				tk_printf("Image Checksum Mismatch %08X -> %08X\n",
+					csum1, csum2);
+				__debugbreak();
+			}
+		}
+	}
+
 #if 1
 	pboix=0;
 	if(gbr_sz!=0)
 	{
-		pboix=tkpe_npboix++;
-		tkpe_pbo_image[pboix]=img;
-		img->pboix=pboix;
+		img->isdll=is_dll;
+
+		i=tkpe_nimgix++;
+		tkpe_pbo_image[i]=img;
+		img->imgix=i;
+
+		*(u32 *)(imgptr+0x0C)=i;
+
+		if(is_dll&1)
+		{
+			pboix=tkpe_npboix++;
+			tkpe_pbo_dllimg[pboix]=img;
+			img->pboix=pboix;
+		}
+		else
+		{
+			/* EXE images always remain as 0. */
+			img->pboix=0;
+			pboix=0;
+		}
 	}
 	
 	TKPE_ApplyBaseRelocs(imgptr, imgptr+rva_rlc, sz_rlc, rlc_disp, pboix,
@@ -394,64 +483,300 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, char *imgname)
 	img->gbr_sz=gbr_sz;
 #endif
 
-//	*rbootptr=imgptr+startrva;
-//	*rbootgbr=imgptr+gbr_rva;
+	img->tls_rva=tls_rva;
+
+	if(tls_rva)
+	{
+		tls_key=TK_AllocNewTlsGbl();
+		tls_iptr=*(u32 *)(imgptr+tls_rva+0x08);
+		tls_rds=*(u32 *)(imgptr+tls_rva+0x00);
+		tls_rde=*(u32 *)(imgptr+tls_rva+0x04);
+		*(u32 *)(imgptr+tls_iptr)=tls_key;
+		
+		img->tls_key=tls_key;
+		img->tls_rvaraw=tls_rds;
+		img->tls_szraw=tls_rde-tls_rds;
+		img->tls_dsize=*(u32 *)(imgptr+tls_rva+0x10);
+	}
+
+	img->rva_imp=rva_imp;
+	img->rva_exp=rva_exp;
+	img->sz_imp=sz_imp;
+	img->sz_exp=sz_exp;
+
+	if(rva_imp)
+	{
+		n=sz_imp/20;
+		for(i=0; i<n; i++)
+		{
+			j=rva_imp+(i*20);
+			k=*(u32 *)(imgptr+j+0x0C);
+			if(!k)
+				break;
+			s0=(char *)(imgptr+k);
+			idll=TKPE_TryLoadProgramImage(s0, cwd, 1);
+			img->dll[img->n_dll++]=idll;
+			
+			rva_ilt=*(u32 *)(imgptr+j+0x00);
+			rva_iat=*(u32 *)(imgptr+j+0x10);
+			
+			for(j=0;; j++)
+			{
+				k=*(u64 *)(imgptr+rva_ilt+j*8);
+				if(!k)
+					break;
+				s0=(char *)(imgptr+k);
+				p0=TKPE_LookupImageDllExport(idll, s0);
+				*(u64 *)(imgptr+rva_iat+j*8)=(u64)p0;
+			}
+		}
+	}
 
 	return(img);
+}
+
+void *TKPE_LookupImageDllExport(TKPE_ImageInfo *img, char *name)
+{
+	byte *imgptr;
+	char *s0, *s1;
+	int rva_exp, sz_exp;
+	int rva_eat, rva_ent, rva_eot, n_ent, n_eob;
+	int i, j, k;
+	
+	imgptr=img->imgbase;
+	rva_exp=img->rva_exp;
+	sz_exp=img->sz_exp;
+	
+	rva_eat=*(u32 *)(imgptr+rva_exp+0x1C);
+
+	rva_ent=*(u32 *)(imgptr+rva_exp+0x20);
+	rva_eot=*(u32 *)(imgptr+rva_exp+0x24);
+	n_ent=*(u32 *)(imgptr+rva_exp+0x18);
+	n_eob=*(u32 *)(imgptr+rva_exp+0x10);
+	
+	for(i=0; i<n_ent; i++)
+	{
+		j=*(u32 *)(imgptr+rva_ent+i*4);
+		s0=(char *)(imgptr+j);
+		if(!strcmp(s0, name))
+		{
+			j=(*(u32 *)(imgptr+rva_eot+i*2))-n_eob;
+			k=*(u32 *)(imgptr+rva_eat+j*4);
+			return(imgptr+k);
+		}
+	}
+
+	return(NULL);
 }
 #endif
 
 #if 1
-TK_FILE *TKPE_TryOpenImage(char *imgname)
+TK_FILE *TKPE_TryOpenImage(
+	char *imgname, char *cwd, char **rpath, int isdll)
 {
 	char tbuf[512];
 	TK_FILE *fd;
 	char **path;
-	int npath;
+	int npath, isext;
 	int i;
+
+	isext=(strchr(imgname, '.')!=NULL);
+
+	if(cwd)
+	{
+		tk_sprintf(tbuf, "%s/%s", cwd, imgname);
+		fd=tk_fopen(tbuf, "rb");
+		if(!fd && !isext && (isdll&1))
+		{
+			tk_sprintf(tbuf, "%s/%s.dll", cwd, imgname);
+			fd=tk_fopen(tbuf, "rb");
+		}
+		if(!fd && !isext && !(isdll&1))
+		{
+			tk_sprintf(tbuf, "%s/%s.exe", cwd, imgname);
+			fd=tk_fopen(tbuf, "rb");
+		}
+		if(fd)
+		{
+			if(rpath)
+				*rpath=TKMM_LVA_Strdup(tbuf);
+			return(fd);
+		}
+	}
 
 	TK_Env_GetPathList(&path, &npath);
 	for(i=0; i<npath; i++)
 	{
-		tk_sprintf(tbuf, "%s/%s.dll", path[i], imgname);
+		tk_sprintf(tbuf, "%s/%s", path[i], imgname);
 		fd=tk_fopen(tbuf, "rb");
+		if(!fd && !isext && (isdll&1))
+		{
+			tk_sprintf(tbuf, "%s/%s.dll", path[i], imgname);
+			fd=tk_fopen(tbuf, "rb");
+		}
+		if(!fd && !isext && !(isdll&1))
+		{
+			tk_sprintf(tbuf, "%s/%s.exe", path[i], imgname);
+			fd=tk_fopen(tbuf, "rb");
+		}
 		if(fd)
+		{
+			if(rpath)
+				*rpath=TKMM_LVA_Strdup(tbuf);
 			return(fd);
+		}
 	}
 	return(NULL);
 }
 
-int TKPE_LookupPboImageName(char *imgname)
+int TKPE_LookupPboImageName(char *imgname, int isdll)
 {
+	TKPE_ImageInfo *img;
 	int i;
 	
-	for(i=1; i<tkpe_npboix; i++)
+	for(i=1; i<tkpe_nimgix; i++)
 	{
-		if(!strcmp(tkpe_pbo_image[i]->imgname, imgname))
+		img=tkpe_pbo_image[i];
+		if((isdll&1) && !(img->pboix))
+			continue;
+		if(!strcmp(img->imgname, imgname))
 			return(i);
 	}
 	return(0);
 }
 
-TKPE_ImageInfo *TKPE_TryLoadProgramImage(char *imgname)
+int TKPE_LookupPboImagePath(char *imgpath, int isdll)
 {
 	TKPE_ImageInfo *img;
+	int i;
+	
+	for(i=1; i<tkpe_nimgix; i++)
+	{
+		img=tkpe_pbo_image[i];
+		if((isdll&1) && !(img->pboix))
+			continue;
+		if(!strcmp(img->imgpath, imgpath))
+			return(i);
+	}
+	return(0);
+}
+
+int TKPE_LookupPboImageRelPath(char *imgname, char *cwd, int isdll)
+{
+	char tbuf[512];
+	TK_FILE *fd;
+	char **path;
+	int npath, isext;
+	int i, j;
+
+	isext=(strchr(imgname, '.')!=NULL);
+
+	if(cwd)
+	{
+		tk_sprintf(tbuf, "%s/%s", cwd, imgname);
+		i=TKPE_LookupPboImagePath(tbuf, isdll);
+		if(i>0)
+			return(i);
+		if(!isext && (isdll&1))
+		{
+			tk_sprintf(tbuf, "%s/%s.dll", cwd, imgname);
+			i=TKPE_LookupPboImagePath(tbuf, isdll);
+			if(i>0)
+				return(i);
+		}
+		if(!isext && !(isdll&1))
+		{
+			tk_sprintf(tbuf, "%s/%s.exe", cwd, imgname);
+			i=TKPE_LookupPboImagePath(tbuf, isdll);
+			if(i>0)
+				return(i);
+		}
+	}
+
+	TK_Env_GetPathList(&path, &npath);
+	for(i=0; i<npath; i++)
+	{
+		tk_sprintf(tbuf, "%s/%s", path[i], imgname);
+		j=TKPE_LookupPboImagePath(tbuf, isdll);
+		if(j>0)
+			return(j);
+		if(!isext && (isdll&1))
+		{
+			tk_sprintf(tbuf, "%s/%s.dll", path[i], imgname);
+			j=TKPE_LookupPboImagePath(tbuf, isdll);
+			if(j>0)
+				return(j);
+		}
+		if(!isext && !(isdll&1))
+		{
+			tk_sprintf(tbuf, "%s/%s.exe", path[i], imgname);
+			j=TKPE_LookupPboImagePath(tbuf, isdll);
+			if(j>0)
+				return(j);
+		}
+	}
+	return(0);
+}
+
+int TKPE_TryLoadProgramImage(char *imgname, char *cwd, int isdll)
+{
+	char tbuf[128];
+	TKPE_ImageInfo *img;
+	char *basename;
+	char *path, *ls1, *ls2;
 	TK_FILE *fd;
 	int i;
 	
-	i=TKPE_LookupPboImageName(imgname);
-	if(i>0)
+	ls1=strrchr(imgname, '/');
+	if(ls1)
 	{
-		return(i);
+		if(imgname[0]=='/')
+		{
+			i=TKPE_LookupPboImagePath(imgname, isdll);
+			if(i>0)
+				return(i);
+		}else if(cwd)
+		{
+			i=TKPE_LookupPboImageRelPath(imgname, cwd, isdll);
+			if(i>0)
+				return(i);
+		}
+		
+		strcpy_s(tbuf, 128, ls1+1);
+		ls2=strchr(tbuf, '.');
+		if(ls2)
+			*ls2=0;
+		basename=TKMM_LVA_Strdup(tbuf);
+	}else
+	{
+		strcpy_s(tbuf, 128, imgname);
+		ls2=strchr(tbuf, '.');
+		if(ls2)
+		{
+			*ls2=0;
+			basename=TKMM_LVA_Strdup(tbuf);
+		}else
+		{
+			basename=imgname;
+		}
+
+		i=TKPE_LookupPboImageName(basename, isdll);
+		if(i>0)
+		{
+			return(i);
+		}
 	}
 	
-	fd=TKPE_TryOpenImage(imgname);
+	path=NULL;
+	fd=TKPE_TryOpenImage(imgname, cwd, &path, isdll);
 	if(!fd)
-		return(-1);
-	img=TKPE_LoadDynPE(fd, imgname);
+		return(0);
+	img=TKPE_LoadDynPE(fd, 0, basename, cwd, isdll);
 	if(!img)
-		return(-1);
-	return(img);
+		return(0);
+	img->imgpath=path;
+	
+	return(img->imgix);
 }
 
 int TKPE_SetupTaskForImage(TKPE_TaskInfo *task, TKPE_ImageInfo *img)
@@ -494,3 +819,120 @@ int TKPE_TryLoadProgramInstance(char *imgname,
 {
 }
 #endif
+
+void *TK_DlOpenB(TKPE_TaskInfo *task, const char *path, int flags)
+{
+	char tbuf[256];
+	TKPE_ImageInfo *img;
+	byte *gbrdat, *tlsdat;
+	int ix, gbrsz, tlssz;
+	
+	TK_TaskGetCwd(task, tbuf, 256);
+
+	ix=TKPE_TryLoadProgramImage(path, tbuf, 1);
+	if(ix<=0)
+		return(NULL);
+
+	img=tkpe_pbo_image[ix];
+
+	gbrsz=img->gbr_sz;
+	gbrdat=TKMM_PageAlloc(gbrsz);
+	TK_TaskAddPageAlloc(task, gbrdat, gbrsz);
+	
+	memcpy(gbrdat, img->imgbase+img->gbr_rva, img->gbr_szcpy);
+	TK_PboGbrSetB(task, img->pboix, (tk_kptr)(gbrdat));
+	*(tk_kptr *)gbrdat=task->imggbrptrs;
+	
+	TK_PboImgBaseSetB(task, img->pboix, (tk_kptr)(img->imgbase));
+	
+	if(img->tls_rva)
+	{
+		tlssz=img->tls_dsize;
+		tlsdat=TKMM_PageAlloc(tlssz);
+		TK_TaskAddPageAlloc(task, tlsdat, tlssz);
+		if(img->tls_rvaraw)
+		{
+			memcpy(tlsdat, img->imgbase+img->tls_rvaraw, img->tls_szraw);
+		}
+		TK_TlsSetB(task, img->tls_key, tlsdat);
+	}
+	
+	return(img->imgbase);
+}
+
+void *TK_DlSymB(TKPE_TaskInfo *task,
+	void *handle, const char *sym, int flags)
+{
+	TKPE_ImageInfo *img;
+	void *p;
+	int ix;
+	
+	if(handle && sym)
+	{
+		/* dlsym */
+		ix=*(int *)(((byte *)handle)+0x0C);
+		img=tkpe_pbo_image[ix];
+
+//		img=handle;
+		p=TKPE_LookupImageDllExport(img, sym);
+		return(p);
+	}
+
+	if(handle && !sym && ((flags&7)==7))
+	{
+		/* dlclose */
+		return(NULL);
+	}
+
+	if(!handle && !sym && ((flags&7)==5))
+	{
+		/* dlerror */
+		return(NULL);
+	}
+
+	/* otherwise */
+	return(NULL);
+}
+
+void *TK_DlOpenA(const char *path, int flags)
+{
+	TK_SysArg ar[4];
+	void *p;
+	int tid;
+	
+#ifndef __TK_CLIB_ONLY__
+	if(tk_iskernel())
+	{
+		p=TK_DlOpenB((TKPE_TaskInfo *)__arch_tbr, path, flags);
+		return(p);
+	}
+#endif
+
+	p=0;
+	ar[0].p=path;
+	ar[1].i=flags;
+	tk_syscall(NULL, TK_UMSG_DLOPEN, &p, ar);
+	return(p);
+}
+
+void *TK_DlSymA(void *handle, const char *symbol, int flags)
+{
+	TK_SysArg ar[4];
+	void *p;
+	int tid;
+	
+#ifndef __TK_CLIB_ONLY__
+	if(tk_iskernel())
+	{
+		p=TK_DlSymB((TKPE_TaskInfo *)__arch_tbr, handle, symbol, flags);
+		return(p);
+	}
+#endif
+
+	p=0;
+	ar[0].p=handle;
+	ar[1].p=symbol;
+	ar[2].i=flags;
+	tk_syscall(NULL, TK_UMSG_DLSYM, &p, ar);
+	return(p);
+}

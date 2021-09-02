@@ -265,7 +265,7 @@ struct PeMainHeader64
     WORD  mMachine;                     //0004:
     WORD  mNumberOfSections;            //0006:
     DWORD mTimeDateStamp;               //0008: (Creation Time, Unix Time)
-    DWORD mPointerToSymbolTable;        //000C: (Unused, 0)
+    DWORD mPointerToSymbolTable;        //000C: (Unused, 0, Loaded Image Index)
     DWORD mNumberOfSymbols;             //0010: (Unused, 0)
     WORD  mSizeOfOptionalHeader;        //0014: Size of rest of header.
     WORD  mCharacteristics;             //0016:
@@ -355,6 +355,8 @@ Machine:
 The Image starts with an 'MZ' header for traditional PE/COFF.
 
 This header is unused and the image will begin directly at the 'PE' header in Testkern PE and PEL4 images.
+
+Following initial loading, TestKern may use mPointerToSymbolTable as a handle index for the loaded program binary.
 
 
 === Section Headers ===
@@ -468,6 +470,7 @@ Set Tripwire (PBO Only):
 * Attempts to address across this location may trigger a fault.
 ** A tripwire will normally have a 16-byte alignment and 16-byte size.
 
+
 === Exports Table ===
 
 This is located within the '.edata' section, and referenced via the optional header.
@@ -496,14 +499,16 @@ mOrdinalBase:
 * Starting index for the ordinal table, normally 1.
 
 Export Address Table:
-* Array of exported addresses.
+* Array of exported addresses (RVA32).
 * If the address is within '.edata', it is a forwarder string.
 * This table is indexed by ordinal (relative to OrdinalBase).
 
 ExportNamePointerTable and ExportOrdinalTable
 * These are used together to find exported symbols.
-* ExportNamePointerTable holds addresses to the exported names as strings.
+* ExportNamePointerTable holds addresses to the exported names as strings (RVA).
+** Each entry in the Export Name Table is a 32-bit RVA.
 * ExportOrdinalTable maps these names to ordinal indices.
+** Each entry in the ordinal table is a 16-bit Word.
 
 
 === Imports Table ===
@@ -543,28 +548,34 @@ Imports are given by a Name/Hint string:
 === TLS Directory ===
 
 Located in ".tls" section if TLS is used.
+The format of the TLS Directory will differ slightly from mainline PE/COFF.
 
 <pre>
 struct PeTlsDirectory
 {
-    DWORD vaRawDataStart;               //0x00
-    DWORD vaRawDataEnd;                 //0x04
-    DWORD vaAddressOfIndex;             //0x08
-    DWORD vaAddressCallbacks;           //0x0C
-    DWORD szSizeOfZeroFill;             //0x10
-    DWORD mCharacteristics;             //0x14
+    DWORD rvaRawDataStart;              //0x00, RVA of Raw Data Start
+    DWORD rvaRawDataEnd;                //0x04, RVA of Raw Data End
+    DWORD rvaAddressOfIndex;            //0x08, RVA of TLS Index
+    DWORD rvaAddressCallbacks;          //0x0C, RVA of callbacks
+    DWORD szSizeOfZeroFill;             //0x10, Size of TLS Region
+    DWORD mCharacteristics;             //0x14, Flags
 };
 </pre>
 
-vaAddressOfIndex:
-* Address of a slot used to hold the TLS Index (as a pointer-sized value).
-* The pointed-to address may be initialized with the VA of a string identifying the TLS section.
+rvaAddressOfIndex:
+* Address of a slot used to hold the TLS Index.
+* The pointed-to address may be initialized with the RVA of a string identifying the TLS section.
 
-vaAddressCallbacks:
+rvaAddressCallbacks:
 * Optional array of callback functions for thread creation and destruction.
 * Testkern: Ignored.
 
-Upon thread creation, a TLS section is allocated and its address is assigned to its associated TLS variable slot.
+Upon thread creation, a TLS section is allocated and its address is assigned to its associated TLS variable index.
+
+The allocated region has a size given by the szSizeOfZeroFill variable.
+
+If rvaRawDataStart is non-zero, it will define the start of a region used to
+initialize the allocated TLS region.
 
 
 === Exception Handling ===

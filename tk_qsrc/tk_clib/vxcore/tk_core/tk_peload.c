@@ -882,7 +882,8 @@ int TKPE_ApplyStaticRelocs(byte *imgptr, byte *rlc, int szrlc,
 
 int TKPE_LoadStaticPE(
 	TK_FILE *fd, int fdoffs,
-	void **rbootptr, void **rbootgbr)
+	void **rbootptr, void **rbootgbr,
+	u64 *tlsix)
 {
 	byte tbuf[1024];
 	byte *imgptr, *ct, *cte, *bss_ptr;
@@ -890,6 +891,7 @@ int TKPE_LoadStaticPE(
 	s64 reloc_disp;
 	u32 imgsz, startrva, gbr_rva, gbr_sz, imgsz1, imgsz2;
 	u32 reloc_rva, reloc_sz, bss_sz;
+	u32 tls_rva, tls_sz, tls_iptr, tls_key, tls_rds, tls_rde;
 	byte is64, is_pel4, cmp;
 	u32 csum1, csum2;
 	int sig_mz, sig_pe, mach, mmagic;
@@ -905,11 +907,6 @@ int TKPE_LoadStaticPE(
 	
 	*rbootptr = NULL;
 	*rbootgbr = NULL;
-
-//	sig_mz=tkfat_getDWord(tbuf);
-//	if((sig_mz==FCC_PLF3) || (sig_mz==FCC_PLF4))
-//	{
-//	}
 
 #if 1
 	sig_mz=tkfat_getWord(tbuf);
@@ -977,6 +974,9 @@ int TKPE_LoadStaticPE(
 		gbr_sz=*(u32 *)(tbuf+ofs_pe+0xCC);
 		reloc_rva=*(u32 *)(tbuf+ofs_pe+0xB0);
 		reloc_sz=*(u32 *)(tbuf+ofs_pe+0xB4);
+
+		tls_rva=*(u32 *)(tbuf+ofs_pe+0xD0);
+		tls_sz=*(u32 *)(tbuf+ofs_pe+0xD4);
 	}else
 	{
 //		puts("TKPE: PE32\n");
@@ -987,6 +987,9 @@ int TKPE_LoadStaticPE(
 		gbr_sz=*(u32 *)(tbuf+ofs_pe+0xBC);
 		reloc_rva=*(u32 *)(tbuf+ofs_pe+0xA0);
 		reloc_sz=*(u32 *)(tbuf+ofs_pe+0xA4);
+
+		tls_rva=*(u32 *)(tbuf+ofs_pe+0xC0);
+		tls_sz=*(u32 *)(tbuf+ofs_pe+0xC4);
 	}
 	
 	tk_printf("TKPE: Base=%08X Sz=%d BootRVA=%08X GbrRVA=%08X\n",
@@ -1112,6 +1115,30 @@ int TKPE_LoadStaticPE(
 		tk_printf("Reloc: RVA=%08X, sz=%d\n", reloc_rva, reloc_sz);
 		TKPE_ApplyStaticRelocs(imgptr, imgptr+reloc_rva, reloc_sz,
 			reloc_disp, 0, imgbase, gbr_rva, gbr_sz);
+	}
+
+	tlsix[0]=0;
+	tlsix[1]=0;
+	tlsix[2]=0;
+	tlsix[3]=0;
+	tlsix[6]=(u64)imgptr;
+	tlsix[7]=tls_rva;
+
+	if(tls_rva)
+	{
+		tls_key=TK_AllocNewTlsGbl();
+		tls_iptr=*(u32 *)(imgptr+tls_rva+0x08);
+		tls_rds=*(u32 *)(imgptr+tls_rva+0x00);
+		tls_rde=*(u32 *)(imgptr+tls_rva+0x04);
+		*(u32 *)(imgptr+tls_iptr)=tls_key;
+		tlsix[0]=tls_key;
+		tlsix[1]=*(u32 *)(imgptr+tls_rva+0x10);
+
+		if(tls_rds)
+		{
+			tlsix[2]=(u64)(imgptr+tls_rds);
+			tlsix[3]=tls_rde-tls_rds;
+		}
 	}
 
 	*rbootptr=imgptr+startrva;

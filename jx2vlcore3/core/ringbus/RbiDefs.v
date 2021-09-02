@@ -43,6 +43,10 @@ Operation Category:
   11: Message/Interrupt
 
 Access Status Bits(Request/Response):
+  (7): Reserved
+  (6): Prefetch Hit/Miss (L2 Response)
+  (5): Reserved
+  (4): No User (Supervisor Only)
   (3): No Cache
   (2): No Execute
   (1): No Write
@@ -64,7 +68,7 @@ Operation Mode (Request):
   00: IDLE or CCMD
   01: LOAD
   10: STORE
-  11: SWAP (Load+Store)
+  11: SWAP (Load+Store), Possible
 
 Operation Mode (Response):
   00: NONE
@@ -99,6 +103,9 @@ IRQ:
   Data(7:0): Exception Number
   Seq(15:10): Core ID (First Seen)
     If a broadcast message gets back here, drop request.
+
+Swap:
+
 
 */
 

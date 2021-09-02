@@ -247,6 +247,7 @@ reg		useHalfCell;
 reg		useQtrCell;
 reg		useHorz800;
 reg		useColPow2;
+reg		useVert480;
 
 reg		tCellIsOdd;
 reg		tNextCellIsOdd;
@@ -329,6 +330,7 @@ begin
 	
 	tScrMode	= tCtrlRegVal[7:4];
 	useColPow2	= tCtrlRegVal[8];
+	useVert480	= tCtrlRegVal[9];
 	useQtrCell	= tCtrlRegVal[10];
 
 	tScrClrsMod		= tCtrlRegVal[15:12];
@@ -382,10 +384,14 @@ begin
 		if(useRow50)
 	begin
 		tNextPixCellMaxY	= 50;
+		if(useVert480)
+			tNextPixCellMaxY	= 60;
 	end
 	else
 	begin
 		tNextPixCellMaxY	= 25;
+		if(useVert480)
+			tNextPixCellMaxY	= 30;
 	end
 
 	if(useRow50)

@@ -220,6 +220,17 @@ extern size_t	wcsrtombs __Q8_PARAMS((char * __Q8_RESTRICT __dst,
 			__Q8_CONST wchar_t ** __Q8_RESTRICT __src, size_t __len,
 			mbstate_t * __Q8_RESTRICT __ps));
 
+errno_t wmemcpy_s(
+	wchar_t *restrict dest, rsize_t destsz,
+	const wchar_t *restrict src, rsize_t count );
+errno_t wmemmove_s(
+	wchar_t *restrict dest, rsize_t destsz,
+	const wchar_t *restrict src, rsize_t count );
+
+errno_t wcscpy_s(
+	wchar_t *restrict dest, rsize_t destsz,
+	const wchar_t *restrict src );
+
 #ifdef	__cplusplus
 		}
 #endif

@@ -13,25 +13,29 @@
 #ifndef __STRING_INCLUDED
 #define __STRING_INCLUDED
 
-#if 0
 #ifndef __SIZE_T_DEFINED
 #define __SIZE_T_DEFINED
-//#if (defined(__OS2__) || defined(__32BIT__) || defined(__MVS__) \
-//    || defined(__CMS__))
 typedef unsigned long size_t;
-//#elif (defined(__MSDOS__) || defined(__DOS__) || defined(__POWERC) \
-//    || defined(__WIN32__) || defined(__gnu_linux__))
-//typedef unsigned int size_t;
-//#endif
-#endif
 #endif
 
-#ifndef __SIZE_T_DEFINED
-#define __SIZE_T_DEFINED
-// typedef unsigned int size_t;
-typedef unsigned long size_t;
-// typedef long size_t;
+#ifndef __RSIZE_T_DEFINED
+#define __RSIZE_T_DEFINED
+typedef size_t rsize_t;
 #endif
+
+#ifndef __WCHAR_T_DEFINED
+#define __WCHAR_T_DEFINED
+#ifndef _WCHAR_T_DEFINED
+#define _WCHAR_T_DEFINED
+#endif
+typedef unsigned short wchar_t;
+#endif
+
+#ifndef __ERRNO_T_DEFINED
+#define __ERRNO_T_DEFINED
+typedef int errno_t;
+#endif
+
 
 #define NULL ((void *)0)
 void *memcpy(void *s1, const void *s2, size_t n);
@@ -60,6 +64,29 @@ size_t strlen(const char *s);
 char *strdup(char *str);
 char *strndup(char *str, size_t n);
 
+#if 1
+
+errno_t memcpy_s(
+	void *restrict dest, rsize_t destsz,
+	const void *restrict src, rsize_t count );
+errno_t memmove_s(
+	void *dest, rsize_t destsz, const void *src, rsize_t count);
+
+errno_t strcat_s(
+	char *restrict dest, rsize_t destsz,
+	const char *restrict src);
+errno_t strcpy_s(
+	char *restrict dest, rsize_t destsz,
+	const char *restrict src);
+size_t strnlen_s( const char *str, size_t strsz );
+
+errno_t strncat_s(
+	char *restrict dest, rsize_t destsz,
+	const char *restrict src, rsize_t count);
+errno_t strncpy_s(
+	char *restrict dest, rsize_t destsz,
+	const char *restrict src, rsize_t count);
+#endif
 
 #ifdef __WATCOMC__
 #ifdef __INLINE_FUNCTIONS__

@@ -815,6 +815,8 @@ BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_LookupNamespace(BGBCC_TransState *ctx, char *
 BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_GetNamespace(BGBCC_TransState *ctx, char *str);
 void BGBCC_CCXL_GetNamespaceBuildPath(BGBCC_TransState *ctx, char *str);
 int BGBCC_CCXL_CheckForOptStr(BGBCC_TransState *ctx, char *str);
+char *BGBCC_CCXL_CheckForOptParmStr(BGBCC_TransState *ctx, char *str);
+int BGBCC_CCXL_CheckForOptParmInt(BGBCC_TransState *ctx, char *str);
 int BGBCC_CCXL_ConstFloatAsHalf(float f, u16 *rv, u16 *rve);
 //AHSRC:ccxl/ccxl_expr.c
 char *BGBCC_CCXL_CIfy(char *s);
@@ -2498,6 +2500,7 @@ int BGBCC_JX2C_BuildFunctionLastTraceP(BGBCC_TransState *ctx, BGBCC_JX2_Context 
 ccxl_status BGBCC_JX2C_BuildFunctionBody(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, int fcnlbl);
 ccxl_status BGBCC_JX2C_BuildFunction(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *obj);
 ccxl_status BGBCC_JX2C_BuildGlobal_EmitLitAsType(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register value);
+ccxl_status BGBCC_JX2C_BuildGlobalTls(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *obj);
 ccxl_status BGBCC_JX2C_BuildGlobal(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *obj);
 ccxl_status BGBCC_JX2C_BuildAsmBlob(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *obj);
 ccxl_status BGBCC_JX2C_BuildPrestartInit(BGBCC_TransState *ctx);
@@ -2507,6 +2510,7 @@ int BGBCC_JX2C_LookupLabelImgOffs(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx
 int BGBCC_JX2C_LookupLabelImgVA(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int lblid);
 void bgbcc_jx2cc_setu16en(byte *ct, int en, u16 v);
 ccxl_status BGBCC_JX2C_ApplyImageRelocs(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, byte *imgbase);
+ccxl_status BGBCC_JX2C_CheckTlsInit(BGBCC_TransState *ctx);
 ccxl_status BGBCC_JX2C_CheckRWadInit(BGBCC_TransState *ctx);
 ccxl_status BGBCC_JX2C_AddRWadLump(BGBCC_TransState *ctx,char *name, byte *buf, int csz, int dsz, int cmp, int ety);
 int BGBCC_JX2C_ResourceTypeForFourcc(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, fourcc fmt);
@@ -2561,6 +2565,8 @@ int BGBCC_JX2_EmitLoadRegLabelRel24(BGBCC_JX2_Context *ctx, int reg, int lbl);
 int BGBCC_JX2_TryEmitLoadRegLabelVarPbo24(BGBCC_JX2_Context *ctx, int nmid, int reg, int lbl);
 int BGBCC_JX2_TryEmitStoreRegLabelVarPbo24(BGBCC_JX2_Context *ctx, int nmid, int reg, int lbl);
 int BGBCC_JX2_EmitLoadRegLabelVarRel24(BGBCC_JX2_Context *ctx, int nmid, int reg, int lbl);
+int BGBCC_JX2_TryEmitLoadRegLabelVarTls(BGBCC_JX2_Context *ctx, int nmid, int reg, int lbl);
+int BGBCC_JX2_EmitStoreRegLabelVarTls(BGBCC_JX2_Context *ctx, int nmid, int reg, int lbl);
 int BGBCC_JX2_TryEmitLoadRegLabelVarRel24(BGBCC_JX2_Context *ctx, int nmid, int reg, int lbl);
 int BGBCC_JX2_EmitStoreRegLabelVarRel24(BGBCC_JX2_Context *ctx, int nmid, int reg, int lbl);
 int BGBCC_JX2_EmitShufDWord(BGBCC_JX2_Context *ctx, int reg, int shuf);

@@ -2035,7 +2035,8 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 	int nm, fl, lva, rva, lsz, sn_strs, imty;
 	int lpg, szrlc, ofsrlc, nrlce, mach, lbl;
 	int ofsimp, szimp, ofsexp, szexp;
-	int ofsexc, szexc, ofsrsrc, szrsrc;
+	int ofsexc, szexc, ofsrsrc, szrsrc, ofstlsd, sztlsd;
+	int szstack;
 	int i, j, k;
 
 	sctx=ctx->uctx;
@@ -2425,6 +2426,12 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 	{	ofsrsrc=sctx->sec_rva[i];
 		szrsrc=sctx->sec_lsz[i];		}
 
+	ofstlsd=0;	sztlsd=0;
+	i=BGBCC_JX2_LookupSectionID(sctx, ".tls");
+	if(i>=0)
+	{	ofstlsd=sctx->sec_rva[i];
+		sztlsd=sctx->sec_lsz[i];		}
+
 
 	ofsrlc=sctx->sec_rva[BGBCC_SH_CSEG_RELOC]+ofsrlc;
 	ctb=obuf+ofsrlc;
@@ -2529,6 +2536,17 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 			mach=0xB232;
 	}
 
+	szstack=1<<19;
+	
+	i=BGBCC_CCXL_CheckForOptParmInt(ctx, "stack");
+	if(i>0)
+	{
+		if(!(i&(i-1)) && (i>=1024))
+			szstack=i;
+		if((i>=10) && (i<=26))
+			szstack=1<<i;
+	}
+
 #if 1
 	bgbcc_setu16en(ct+0x04, en, mach);		//mMachine
 	bgbcc_setu16en(ct+0x06, en, ne_shdr);	//mNumberOfSections
@@ -2568,7 +2586,8 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		bgbcc_setu16en(ct+0x5C, en, 1);			//mSubsystem
 		bgbcc_setu16en(ct+0x5E, en, 0x0140);	//mDllCharacteristics
 
-		bgbcc_setu32en(ct+0x60, en, 0x100000);	//mSizeOfStackReserve
+//		bgbcc_setu32en(ct+0x60, en, 0x100000);	//mSizeOfStackReserve
+		bgbcc_setu32en(ct+0x60, en, szstack);	//mSizeOfStackReserve
 		bgbcc_setu32en(ct+0x64, en, 0x10000);	//mSizeOfStackCommit
 		bgbcc_setu32en(ct+0x68, en, 0);			//mSizeOfHeapReserve
 		bgbcc_setu32en(ct+0x6C, en, 0);			//mSizeOfHeapCommit
@@ -2591,6 +2610,9 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		bgbcc_setu32en(ct+0xB8, en, j);			//RVA of GBR Base
 		j=sctx->is_pbo?(ofs_mend-sctx->gbr_rva):0;
 		bgbcc_setu32en(ct+0xBC, en, j);			//Size of PBO Region
+
+		bgbcc_setu32en(ct+0xC0, en, ofstlsd);	//rvaTlsTable
+		bgbcc_setu32en(ct+0xC4, en, sztlsd);	//szTlsTable
 	}else
 	{
 		bgbcc_setu16en(ct+0x14, en, 240);		//mSizeOfOptionalHeader
@@ -2623,7 +2645,8 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		bgbcc_setu16en(ct+0x5C, en, 1);			//mSubsystem
 		bgbcc_setu16en(ct+0x5E, en, 0x0140);	//mDllCharacteristics
 
-		bgbcc_setu64en(ct+0x60, en, 0x100000);	//mSizeOfStackReserve
+//		bgbcc_setu64en(ct+0x60, en, 0x100000);	//mSizeOfStackReserve
+		bgbcc_setu64en(ct+0x60, en, szstack);	//mSizeOfStackReserve
 		bgbcc_setu64en(ct+0x68, en, 0x10000);	//mSizeOfStackCommit
 		bgbcc_setu64en(ct+0x70, en, 0);			//mSizeOfHeapReserve
 		bgbcc_setu64en(ct+0x78, en, 0);			//mSizeOfHeapCommit
@@ -2647,6 +2670,9 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		bgbcc_setu32en(ct+0xC8, en, j);			//RVA of GBR Base
 		j=sctx->is_pbo?(ofs_mend-sctx->gbr_rva):0;
 		bgbcc_setu32en(ct+0xCC, en, j);			//Size of PBO Region
+
+		bgbcc_setu32en(ct+0xD0, en, ofstlsd);	//rvaTlsTable
+		bgbcc_setu32en(ct+0xD4, en, sztlsd);	//szTlsTable
 	}
 #endif
 

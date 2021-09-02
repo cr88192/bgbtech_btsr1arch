@@ -3008,6 +3008,59 @@ ccxl_status BGBCC_JX2C_BuildGlobal_EmitLitAsType(
 	return(0);
 }
 
+ccxl_status BGBCC_JX2C_BuildGlobalTls(BGBCC_TransState *ctx,
+	BGBCC_CCXL_RegisterInfo *obj)
+{
+	BGBCC_JX2_Context *sctx;
+	ccxl_type tty;
+	int ix, sz, al, ofs, l0, l1;
+	
+	sctx=ctx->uctx;
+	
+	ix=sctx->n_tlsvar++;
+	if(!ix)
+	{
+		BGBCC_JX2C_CheckTlsInit(ctx);
+	}
+
+	obj->fxoffs=BGBCC_SH_LBL_TLSSTRT+ix;
+
+
+	sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, obj->type);
+	al=BGBCC_CCXL_TypeGetLogicalAlign(ctx, obj->type);
+
+	if(BGBCC_CCXL_TypeArrayP(ctx, obj->type))
+	{
+		BGBCC_CCXL_TypeDerefType(ctx, obj->type, &tty);
+		al=BGBCC_CCXL_TypeGetLogicalAlign(ctx, tty);
+	}
+
+	if(al<1)al=1;
+	if(sctx->is_addr64)
+		{ if(al>8)al=8; }
+	else
+		{ if(al>4)al=4; }
+	if(al&(al-1))al=4;
+
+	if(sz<1)sz=1;
+//		sz=(sz+3)&(~3);
+	sz=(sz+(al-1))&(~(al-1));
+
+	ofs=sctx->sz_tlsvar;
+	ofs=(ofs+(al-1))&(~(al-1));
+	sctx->sz_tlsvar=ofs+sz;
+
+
+	sctx->tlsvar_lbl[ix]=obj->fxoffs;	
+	obj->fxnoffs=ix;
+
+	sctx->tlsvar_ofs[ix]=ofs;
+	sctx->tlsvar_sz[ix]=sz;
+
+//	BGBCC_JX2_EmitCommSym(sctx, l0, sz, al);
+	return(1);
+}
+
 ccxl_status BGBCC_JX2C_BuildGlobal(BGBCC_TransState *ctx,
 	BGBCC_CCXL_RegisterInfo *obj)
 {
@@ -3029,6 +3082,12 @@ ccxl_status BGBCC_JX2C_BuildGlobal(BGBCC_TransState *ctx,
 
 	if(!obj->qname)
 		obj->qname=obj->name;
+
+	if(	(obj->flagsint&BGBCC_TYFL_THREAD)	||
+		(obj->flagsint&BGBCC_TYFL_DYNAMIC)	)
+	{
+		return(BGBCC_JX2C_BuildGlobalTls(ctx, obj));
+	}
 
 	l0=obj->fxoffs;
 	if(l0<=0)
@@ -4872,6 +4931,38 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 
 extern byte bgbcc_dumpast;
 
+ccxl_status BGBCC_JX2C_CheckTlsInit(BGBCC_TransState *ctx)
+{
+	BGBCC_JX2_Context *sctx;
+	int lbl;
+
+	sctx=ctx->uctx;
+
+	if(sctx->tlsi_lbl)
+		return(0);
+
+	lbl=BGBCC_JX2_GetNamedLabel(sctx, "__tls_globalindex");
+	BGBCC_JX2_EmitCommSym(sctx, lbl, 8, 8);
+	sctx->tlsi_lbl=lbl;
+
+
+	lbl=BGBCC_JX2_GetNamedLabel(sctx, "__tls_directory");
+
+	BGBCC_JX2_SetSectionName(sctx, ".tls");
+
+	BGBCC_JX2_EmitLabel(sctx, lbl);
+
+	BGBCC_JX2_EmitDWordI(sctx, 0);		//00, vaRawDataStart
+	BGBCC_JX2_EmitDWordI(sctx, 0);		//04, vaRawDataEnd
+	BGBCC_JX2_EmitRelocTy(sctx, sctx->tlsi_lbl, BGBCC_SH_RLC_RVA32);
+	BGBCC_JX2_EmitDWordI(sctx, 0);		//08, vaAddressOfIndex
+	BGBCC_JX2_EmitDWordI(sctx, 0);		//0C, vaAddressCallbacks
+	BGBCC_JX2_EmitDWordI(sctx, 0);		//10, szSizeOfZeroFill
+	BGBCC_JX2_EmitDWordI(sctx, 0);		//14, mCharacteristics
+	
+	return(0);
+}
+
 ccxl_status BGBCC_JX2C_CheckRWadInit(BGBCC_TransState *ctx)
 {
 	BGBCC_JX2_Context *sctx;
@@ -6090,6 +6181,13 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 			BGBCC_JX2_EmitWordI(sctx, sctx->rwad_hash[i]);
 		}
 	}
+
+	if(sctx->tlsi_lbl)
+	{
+		BGBCC_JX2_SetSectionName(sctx, ".tls");
+		BGBCC_JX2_EmitSetOffsDWord(sctx, 0x10, sctx->sz_tlsvar);
+	}
+
 
 	if(ctx->n_error)
 	{

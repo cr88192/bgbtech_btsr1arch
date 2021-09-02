@@ -751,7 +751,10 @@ s64 tot_cyc;
 s64 tot_cyc_mem;
 s64 tot_cyc_miss;
 s64 tot_cyc_miss_l1;
+s64 tot_cyc_miss_l1i;
 s64 tot_cyc_miss_l2;
+s64 tot_cyc_miss_l2i;
+s64 tot_cyc_miss_l2v;
 s64 tot_cyc_mmio;
 s64 tot_ops;
 s16 tgt_mhz;				//target MHz
@@ -762,28 +765,45 @@ int nttick_irq;				//number of timer-tick IRQs
 int mem_cyc;				//cache miss cycles
 int miss_cyc;				//cache miss cycles
 int miss_cyc_l1;			//cache miss cycles (L1 miss)
+int miss_cyc_l1i;			//cache miss cycles (L1 miss)
 int miss_cyc_l2;			//cache miss cycles (L2 miss)
+int miss_cyc_l2i;			//cache miss cycles (L2 miss)
 int mem_cyc_mmio;			//cycles spent in MMIO
 
+int mem_cnt_mem;			//cache miss cycles
 int mem_cnt_l1;				//cache miss cycles
-int mem_cnt_l2;				//cache miss cycles
 int mem_cnt_l1i;			//cache miss cycles
+int mem_cnt_l2;				//cache miss cycles
+int mem_cnt_l2i;			//cache miss cycles
+int mem_cnt_dram;			//cache miss cycles
+
 int miss_cnt_l1;			//cache miss cycles (L1 miss D$)
-int miss_cnt_l2;			//cache miss cycles (L2 miss)
 int miss_cnt_l1i;			//cache miss cycles (L1 miss I$)
+int miss_cnt_l2;			//cache miss cycles (L2 miss)
+int miss_cnt_l2i;			//cache miss cycles (L2 miss)
 int mem_cnt_dri;			//cache miss cycles
 int mem_cnt_drd;			//cache miss cycles
 
+s64 tot_cnt_mem;
 s64 tot_cnt_mem_l1;
-s64 tot_cnt_mem_l2;
 s64 tot_cnt_mem_l1i;
+s64 tot_cnt_mem_l2;
+s64 tot_cnt_mem_l2i;
+s64 tot_cnt_mem_l2v;
+s64 tot_cnt_mem_dram;
 s64 tot_cnt_miss_l1;
 s64 tot_cnt_miss_l2;
+s64 tot_cnt_miss_l2i;
+s64 tot_cnt_miss_l2v;
 s64 tot_cnt_miss_l1i;
 int tot_cnt_mem_dri;		//total I$ to DRAM misses
 int tot_cnt_mem_drd;		//total D$ to DRAM misses
 
 s64 tot_cnt_tlbmiss;
+
+byte mem_l2rov;
+byte mem_l1rov;
+byte mem_vidrov;
 
 byte bpr_tab[256];			//state tables
 byte bpr_sctab[256];		//state tables
@@ -806,6 +826,11 @@ bjx2_addr mem_l1addr1;		//L1 addr
 bjx2_addr mem_l1addr2;		//L1 addr
 bjx2_addr mem_l1addr3;		//L1 addr
 bjx2_addr mem_l1addr4;		//L1 addr
+
+bjx2_addr mem_l2addr1;		//L1 addr
+bjx2_addr mem_l2addr2;		//L1 addr
+bjx2_addr mem_l2addr3;		//L1 addr
+bjx2_addr mem_l2addr4;		//L1 addr
 
 u64		hw_rng[4];
 
@@ -855,11 +880,13 @@ int (*MemGetByte)(BJX2_Context *ctx, bjx2_addr addr0);
 int (*MemGetWord)(BJX2_Context *ctx, bjx2_addr addr0);
 s32 (*MemGetDWord)(BJX2_Context *ctx, bjx2_addr addr0);
 s64 (*MemGetQWord)(BJX2_Context *ctx, bjx2_addr addr0);
+int (*MemGetXWord)(BJX2_Context *ctx, bjx2_addr addr0, u64 *rvlo, u64 *rvhi);
 
 int (*MemSetByte)(BJX2_Context *ctx, bjx2_addr addr0, int val);
 int (*MemSetWord)(BJX2_Context *ctx, bjx2_addr addr0, int val);
 int (*MemSetDWord)(BJX2_Context *ctx, bjx2_addr addr0, s32 val);
 int (*MemSetQWord)(BJX2_Context *ctx, bjx2_addr addr0, s64 val);
+int (*MemSetXWord)(BJX2_Context *ctx, bjx2_addr addr0, u64 vlo, u64 vho);
 int (*MemSetTripwire)(BJX2_Context *ctx, bjx2_addr addr0, int val);
 int (*MemQueryTransit)(BJX2_Context *ctx,
 	bjx2_addr addr0, bjx2_addr addr1, int val);
@@ -926,6 +953,8 @@ s32 (*GetDWord)(BJX2_Context *ctx,
 	BJX2_MemSpan *sp, bjx2_addr addr);
 s64 (*GetQWord)(BJX2_Context *ctx,
 	BJX2_MemSpan *sp, bjx2_addr addr);
+int (*GetXWord)(BJX2_Context *ctx,
+	BJX2_MemSpan *sp, bjx2_addr addr, u64 *rvlo, u64 *rvhi);
 
 int (*SetByte)(BJX2_Context *ctx,
 	BJX2_MemSpan *sp, bjx2_addr addr, int val);
@@ -935,6 +964,8 @@ int (*SetDWord)(BJX2_Context *ctx,
 	BJX2_MemSpan *sp, bjx2_addr addr, s32 val);
 int (*SetQWord)(BJX2_Context *ctx,
 	BJX2_MemSpan *sp, bjx2_addr addr, s64 val);
+int (*SetXWord)(BJX2_Context *ctx,
+	BJX2_MemSpan *sp, bjx2_addr addr, u64 vlo, u64 vhi);
 int (*SetTripwire)(BJX2_Context *ctx,
 	BJX2_MemSpan *sp, bjx2_addr addr, int mode);
 int (*MemQueryTransit)(BJX2_Context *ctx,
@@ -964,6 +995,12 @@ int bjx2_vmputc(BJX2_Context *ctx, int val);
 int BJX2_VmMsgRxUpdate(BJX2_Context *ctx);
 int BJX2_VmMsgTxUpdate(BJX2_Context *ctx);
 
+int BJX2_MemRamCb_GetFaultXW(BJX2_Context *ctx,
+	BJX2_MemSpan *sp, bjx2_addr addr, u64 *rvlo, u64 *rvhi);
+int BJX2_MemRamCb_SetFaultXW(BJX2_Context *ctx,
+	BJX2_MemSpan *sp, bjx2_addr addr, u64 vlo, u64 vhi);
 
 
+
+BJX2_MemSpan *BJX2_MemSpanForName(BJX2_Context *ctx, char *name);
 BJX2_MemSpan *BJX2_MemSpanForAddr(BJX2_Context *ctx, bjx2_addr addr);
