@@ -3171,6 +3171,17 @@ void BGBCC_CCXL_End(BGBCC_TransState *ctx)
 			BGBCC_CCXL_GetSigMinMaxSize(ctx, obj->decl->sig, sza, ala);
 			obj->decl->fxmsize=sza[0];	obj->decl->fxnsize=sza[1];
 			obj->decl->fxmalgn=ala[0];	obj->decl->fxnalgn=ala[1];
+
+			if(obj->parent)
+			{
+				if(	(obj->parent->littype==CCXL_LITID_STRUCT) ||
+					(obj->parent->littype==CCXL_LITID_UNION) ||
+					(obj->parent->littype==CCXL_LITID_CLASS) )
+				{
+					obj->parent->decl->fxmsize=-1;
+					obj->parent->decl->fxnsize=-1;
+				}
+			}
 		}
 		if(obj->decl->value.val)
 		{

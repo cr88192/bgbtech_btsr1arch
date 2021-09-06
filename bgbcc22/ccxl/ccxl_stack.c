@@ -290,6 +290,13 @@ int BGBCC_CCXL_LookupLocalIndex(BGBCC_TransState *ctx, char *name)
 	{
 		if(!ctx->cur_func->locals[i])
 			continue;
+			
+		if(ctx->cur_func->locals[i]->flagsint&BGBCC_TYFL_DYNAMIC)
+		{
+			/* Dynamic local variables are not used directly. */
+			continue;
+		}
+			
 		if(!strcmp(ctx->cur_func->locals[i]->name, name))
 			return(i);
 	}

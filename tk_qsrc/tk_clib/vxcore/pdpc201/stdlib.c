@@ -131,7 +131,8 @@ __PDPCLIB_API__ void **_getreallocptr(void)
 __PDPCLIB_API__ void **_getmsizeptr(void)
 	{ return(&_msize_fptr); }
 
-#ifdef __BJX2__
+// #ifdef __BJX2__
+#if defined(__BJX2__) && !defined(__TK_CLIB_DLLSTUB__)
 // #if 0
 
 __PDPCLIB_API__ void *malloc(size_t size);
@@ -166,6 +167,7 @@ realloc:
 
 __PDPCLIB_API__ void *malloc(size_t size)
 {
+	stdio_doinit();
 	return(_malloc_fptr(size));
 }
 
@@ -186,10 +188,13 @@ __PDPCLIB_API__ void free(void *ptr)
 
 __PDPCLIB_API__ void *realloc(void *ptr, size_t size)
 {
+	stdio_doinit();
 	return(_realloc_fptr(ptr, size));
 }
 
 #endif
+
+#ifndef __TK_CLIB_DLLSTUB__
 
 void *malloc_dfl(size_t size)
 {
@@ -236,6 +241,8 @@ void *realloc_dfl(void *ptr, size_t size)
 	}
 	return (newptr);
 }
+#endif
+
 #endif
 
 __PDPCLIB_API__ void *calloc(size_t nmemb, size_t size)

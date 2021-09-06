@@ -226,6 +226,7 @@ int fflush(FILE *stream);
 char *tmpnam(char *s);
 FILE *tmpfile(void);
 int fscanf(FILE *stream, const char *format, ...);
+int vfscanf(FILE *stream, const char *format, __va_list arg);
 int scanf(const char *format, ...);
 int vscanf(const char *format, __va_list arg);
 int sscanf(const char *s, const char *format, ...);
@@ -233,21 +234,21 @@ int vsscanf(const char *s, const char *format, __va_list arg);
 char *gets(char *s);
 int puts(const char *s);
 
-#ifndef __POWERC
+// #ifndef __POWERC
 int getchar(void);
 int putchar(int c);
 int getc(FILE *stream);
 int putc(int c, FILE *stream);
 int feof(FILE *stream);
 int ferror(FILE *stream);
-#endif
+// #endif
 
-#define getchar() (getc(stdin))
-#define putchar(c) (putc((c), stdout))
-#define getc(stream) (fgetc((stream)))
-#define putc(c, stream) (fputc((c), (stream)))
-#define feof(stream) ((stream)->eofInd)
-#define ferror(stream) ((stream)->errorInd)
+// #define getchar() (getc(stdin))
+// #define putchar(c) (putc((c), stdout))
+// #define getc(stream) (fgetc((stream)))
+// #define putc(c, stream) (fputc((c), (stream)))
+// #define feof(stream) ((stream)->eofInd)
+// #define ferror(stream) ((stream)->errorInd)
 
 #endif
 

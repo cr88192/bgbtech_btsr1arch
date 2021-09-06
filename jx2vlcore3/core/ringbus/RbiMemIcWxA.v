@@ -610,7 +610,7 @@ begin
 	
 	tBlkIsSxo = 0;
 //	if(tBlkFlagA[3:0]==4'b1011)
-	if(tBlkFlagA[3] && tBlkFlagA[1])
+	if(tBlkFlagA[3] && tBlkFlagA[1] && !tBlkFlagA[2])
 		tBlkIsSxo = 1;
 	
 

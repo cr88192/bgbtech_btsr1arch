@@ -398,6 +398,7 @@ int BGBCC_JX2C_CoffBuildImports(
 			BGBCC_JX2_EmitDWord(sctx, 0);	//name
 			if(sctx->is_addr64 && !sctx->is_addr_x32)
 				BGBCC_JX2_EmitDWord(sctx, 0);
+			j=obj->fxmalgn;
 		}
 		BGBCC_JX2_EmitDWord(sctx, 0);
 		if(sctx->is_addr64 && !sctx->is_addr_x32)
@@ -418,6 +419,7 @@ int BGBCC_JX2C_CoffBuildImports(
 			BGBCC_JX2_EmitDWord(sctx, 0);	//name
 			if(sctx->is_addr64 && !sctx->is_addr_x32)
 				BGBCC_JX2_EmitDWord(sctx, 0);
+			j=obj->fxmalgn;
 		}
 		BGBCC_JX2_EmitDWord(sctx, 0);
 		if(sctx->is_addr64 && !sctx->is_addr_x32)
@@ -2398,7 +2400,8 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		{ va_strt=BGBCC_JX2C_LookupLabelImgVA(ctx, sctx, lb_strt); }
 	else
 	{
-		printf("BGBCC_JX2C_FlattenImageELF: No Entry Point Found\n");
+		if(ctx->imgfmt!=BGBCC_IMGFMT_DLL)
+			printf("BGBCC_JX2C_FlattenImagePECOFF: No Entry Point Found\n");
 		va_strt=0;
 	}
 

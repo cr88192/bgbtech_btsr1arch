@@ -186,11 +186,22 @@ typedef u64 tk_kptr;
 #define TKMM_MAXMMCELLSZ		(1<<TKMM_MAXMMCELLBITS)
 #define TKMM_MAXMMSEGBLK		(1<<TKMM_MAXMMSEGBLKBITS)
 
+#define TKMM_MCAT_DFL		0
+#define TKMM_MCAT_URO		1
+#define TKMM_MCAT_KRN_RW	2
+#define TKMM_MCAT_USR_RW	3
+#define TKMM_MCAT_USR_RWX	4
 
 #define TKMM_PROT_NONE		0x0000
 #define TKMM_PROT_READ		0x0001
 #define TKMM_PROT_WRITE		0x0002
 #define TKMM_PROT_EXEC		0x0004
+
+#define TKMM_PROT_NOCACHE	0x0010
+#define TKMM_PROT_NOUSER	0x0020
+
+#define TKMM_PROT_USR_SXO	(TKMM_PROT_EXEC|TKMM_PROT_NOCACHE)
+#define TKMM_PROT_USR_RO	(TKMM_PROT_READ|TKMM_PROT_NOCACHE)
 
 #define TKMM_MAP_SHARED		0x0001
 #define TKMM_MAP_PRIVATE	0x0002
@@ -273,7 +284,7 @@ u16 dty_tag;			//type tag
 byte fl;				//object flags
 byte check;				//check value
 byte refcnt;			//reference count
-byte pad;
+byte cat;				//category
 // int flag;
 // u32 size;
 //double data[1];	//start of data

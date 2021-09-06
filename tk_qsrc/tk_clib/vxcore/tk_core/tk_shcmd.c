@@ -1093,6 +1093,7 @@ void TK_FlushCacheL1D();
 int TKSH_TryLoad(char *img, char **args0)
 {
 	byte tb[1024];
+	byte cwd[256];
 	char *args[64];
 	u64 tlsix[8];
 	TK_FILE *fd;
@@ -1104,6 +1105,7 @@ int TKSH_TryLoad(char *img, char **args0)
 	TKPE_TaskInfo *task;
 	TKPE_TaskInfoKern *tkern;
 	TK_EnvContext *env0, *env1;
+	TKPE_ImageInfo *pimg;
 	void *bootgbr;
 	byte *boot_newspb, *boot_newsp;
 	byte *boot_newspbk, *boot_newspk;
@@ -1113,17 +1115,21 @@ int TKSH_TryLoad(char *img, char **args0)
 	int plf_dofs, plf_dnum, plf_fdofs, plf_fdsz;
 	int plf_lofs, plf_lsz, plf_lname1, plf_lname2, plf_lname3;
 	int sig_is_pe, sig_is_asc;
-	int rv, nl, sz, sza;
+	int rv, nl, sz, sza, ix;
 	int i, j, k;
 
-	fd=tk_fopen(img, "rb");
+	pimg=NULL;
+	fd=NULL;
+	sig_is_pe=0;
+
+	TK_Env_GetCwd(cwd, 256);
 	
-	if(!fd)
+	ix=TKPE_TryLoadProgramImage(img, cwd, 2);
+	if(ix>0)
 	{
-		tk_printf("Failed to open %s\n", img);
-		return(-1);
+		pimg=TK_GetImageForIndex(ix);
 	}
-	
+
 	if(args0)
 	{
 		for(i=0; args0[i]; i++)
@@ -1135,136 +1141,155 @@ int TKSH_TryLoad(char *img, char **args0)
 		args[0]=img;
 		args[1]=NULL;
 	}
-	
-	
-	while(fd)
+
+	if(!pimg)
 	{
-		tk_fseek(fd, 0, 0);
-//		memset(tb, 0, 256);
-//		tk_fread(tb, 1, 255, fd);
-		memset(tb, 0, 1024);
-		tk_fread(tb, 1, 1023, fd);
-
-		plf_lname1=tkfat_getWord(tb);
-		plf_lname2=tkfat_getDWord(tb+128);
-//		plf_lname3=tkfat_getDWord(tb+256);
-
-//		if((tb[0]!='#') || (tb[1]!='!'))
-//			break;
-
-		if(plf_lname1!=TCC_HASHBANG)
-			break;
-		if(plf_lname2==FCC_PLFW)
-			break;
-//		if((plf_lname2==FCC_PLFW) ||
-//			(plf_lname3==FCC_PLFW))
-//				break;
-
-		cs=tb+2; ct=tb;
-		while(*cs>=' ')
-			*ct++=*cs++;
-		*ct++=0;
+		fd=tk_fopen(img, "rb");
 		
-		tk_fclose(fd);
-		fd=tk_fopen(tb, "rb");
-	}
+		if(!fd)
+		{
+			tk_printf("Failed to open %s\n", img);
+			return(-1);
+		}
 
-	plf_fdofs=0;
-	plf_fdsz=0;
-	plf_dnum=0;
-	plf_dofs=0;
+		while(fd)
+		{
+			tk_fseek(fd, 0, 0);
+	//		memset(tb, 0, 256);
+	//		tk_fread(tb, 1, 255, fd);
+			memset(tb, 0, 1024);
+			tk_fread(tb, 1, 1023, fd);
 
-#if 1
-	plf_lname1=tkfat_getDWord(tb+0);
-	plf_lname2=tkfat_getDWord(tb+128);
-	plf_lname3=tkfat_getDWord(tb+256);
+			plf_lname1=tkfat_getWord(tb);
+			plf_lname2=tkfat_getDWord(tb+128);
+	//		plf_lname3=tkfat_getDWord(tb+256);
 
-//	if((tb[0]=='P') && (tb[1]=='L') && (tb[2]=='F') && (tb[3]=='W'))
-	if(plf_lname1==FCC_PLFW)
-	{
-		plf_dnum=tkfat_getDWord(tb+4);
-		plf_dofs=tkfat_getDWord(tb+8);
-	}else if(plf_lname2==FCC_PLFW)
-	{
-		plf_dnum=tkfat_getDWord(tb+(128+4));
-		plf_dofs=tkfat_getDWord(tb+(128+8));
-	}
-#if 1
-	else if(plf_lname3==FCC_PLFW)
-	{
-		plf_dnum=tkfat_getDWord(tb+(256+4));
-		plf_dofs=tkfat_getDWord(tb+(256+8));
-	}
-#endif
-#endif
+	//		if((tb[0]!='#') || (tb[1]!='!'))
+	//			break;
 
-#if 0
-	cs=(char *)tb;
-	for(i=0; i<6; i++)
-	{
-		plf_lname1=tkfat_getDWord(cs);
+			if(plf_lname1!=TCC_HASHBANG)
+				break;
+			if(plf_lname2==FCC_PLFW)
+				break;
+	//		if((plf_lname2==FCC_PLFW) ||
+	//			(plf_lname3==FCC_PLFW))
+	//				break;
+
+			cs=tb+2; ct=tb;
+			while(*cs>=' ')
+				*ct++=*cs++;
+			*ct++=0;
+			
+			tk_fclose(fd);
+			fd=tk_fopen(tb, "rb");
+		}
+
+		plf_fdofs=0;
+		plf_fdsz=0;
+		plf_dnum=0;
+		plf_dofs=0;
+
+	#if 1
+		plf_lname1=tkfat_getDWord(tb+0);
+		plf_lname2=tkfat_getDWord(tb+128);
+		plf_lname3=tkfat_getDWord(tb+256);
+
+	//	if((tb[0]=='P') && (tb[1]=='L') && (tb[2]=='F') && (tb[3]=='W'))
 		if(plf_lname1==FCC_PLFW)
 		{
-			plf_dnum=tkfat_getDWord(cs+4);
-			plf_dofs=tkfat_getDWord(cs+8);
-			break;
-		}
-		if(((u16)plf_lname1)==TCC_PE)
-			break;
-		cs+=128;
-	}
-#endif
-
-	
-	if(plf_dnum>0)
-	{
-		for(i=plf_dnum-1; i>=0; i--)
+			plf_dnum=tkfat_getDWord(tb+4);
+			plf_dofs=tkfat_getDWord(tb+8);
+		}else if(plf_lname2==FCC_PLFW)
 		{
-			cs=(char *)tb+plf_dofs+(i*16);
-			plf_lofs	= tkfat_getDWord(cs+ 0);
-			plf_lsz		= tkfat_getDWord(cs+ 4);
-			plf_lname1	= tkfat_getDWord(cs+ 8);
-			plf_lname2	= tkfat_getDWord(cs+12);
-			
-			if(plf_lname1==FCC_TKPE)
-			{
-				if(plf_lname2==PLF_FCC_CURARCH)
-					{ plf_fdofs=plf_lofs; plf_fdsz=plf_lsz; break; }
-				if(plf_lname2==PLF_FCC_GENARCH)
-					{ plf_fdofs=plf_lofs; plf_fdsz=plf_lsz; break; }
-			}
+			plf_dnum=tkfat_getDWord(tb+(128+4));
+			plf_dofs=tkfat_getDWord(tb+(128+8));
+		}
+	#if 1
+		else if(plf_lname3==FCC_PLFW)
+		{
+			plf_dnum=tkfat_getDWord(tb+(256+4));
+			plf_dofs=tkfat_getDWord(tb+(256+8));
+		}
+	#endif
+	#endif
 
-			if(plf_lname1==FCC_TKTX)
+	#if 0
+		cs=(char *)tb;
+		for(i=0; i<6; i++)
+		{
+			plf_lname1=tkfat_getDWord(cs);
+			if(plf_lname1==FCC_PLFW)
 			{
-				if(plf_lname2==FCC_SCMD)
-					{ plf_fdofs=plf_lofs; plf_fdsz=plf_lsz; break; }
+				plf_dnum=tkfat_getDWord(cs+4);
+				plf_dofs=tkfat_getDWord(cs+8);
+				break;
+			}
+			if(((u16)plf_lname1)==TCC_PE)
+				break;
+			cs+=128;
+		}
+	#endif
+
+		
+		if(plf_dnum>0)
+		{
+			for(i=plf_dnum-1; i>=0; i--)
+			{
+				cs=(char *)tb+plf_dofs+(i*16);
+				plf_lofs	= tkfat_getDWord(cs+ 0);
+				plf_lsz		= tkfat_getDWord(cs+ 4);
+				plf_lname1	= tkfat_getDWord(cs+ 8);
+				plf_lname2	= tkfat_getDWord(cs+12);
+				
+				if(plf_lname1==FCC_TKPE)
+				{
+					if(plf_lname2==PLF_FCC_CURARCH)
+						{ plf_fdofs=plf_lofs; plf_fdsz=plf_lsz; break; }
+					if(plf_lname2==PLF_FCC_GENARCH)
+						{ plf_fdofs=plf_lofs; plf_fdsz=plf_lsz; break; }
+				}
+
+				if(plf_lname1==FCC_TKTX)
+				{
+					if(plf_lname2==FCC_SCMD)
+						{ plf_fdofs=plf_lofs; plf_fdsz=plf_lsz; break; }
+				}
+			}
+			
+			if(i>=0)
+			{
+				tk_fseek(fd, plf_fdofs, 0);
+	//			tk_fread(tb, 1, 255, fd);
+				tk_fread(tb, 1, 1024, fd);
 			}
 		}
 		
-		if(i>=0)
-		{
-			tk_fseek(fd, plf_fdofs, 0);
-//			tk_fread(tb, 1, 255, fd);
-			tk_fread(tb, 1, 1024, fd);
-		}
+		sig_is_pe=0;
+		if((tb[0]=='M') && (tb[1]=='Z'))
+			sig_is_pe=1;
+		if((tb[0]=='P') && (tb[1]=='E'))
+			sig_is_pe=1;
 	}
-	
-	sig_is_pe=0;
-	if((tb[0]=='M') && (tb[1]=='Z'))
-		sig_is_pe=1;
-	if((tb[0]=='P') && (tb[1]=='E'))
-		sig_is_pe=1;
 	
 //	if(fd)
-	if(fd && sig_is_pe)
+	if(pimg || (fd && sig_is_pe))
 	{
 		bootgbr=0;
-		TKPE_LoadStaticPE(fd, plf_fdofs, &bootptr, &bootgbr, tlsix);
-		tk_printf("Boot Pointer %p, GBR=%p\n", bootptr, (void *)bootgbr);
-		
-		tk_fclose(fd);
-		fd=NULL;
-		
+//		TKPE_LoadStaticPE(fd, plf_fdofs, &bootptr, &bootgbr, tlsix);
+//		tk_printf("Boot Pointer %p, GBR=%p\n", bootptr, (void *)bootgbr);
+
+		if(!pimg)
+			pimg=TKPE_LoadDynPE(fd, 0, img, NULL, 0);
+
+		bootptr=pimg->bootptr;
+
+		if(fd)
+		{
+			tk_fclose(fd);
+			fd=NULL;
+		}
+
+#if 0
 		if(bootgbr)
 		{
 			pb_gbr=*(u64 *)bootgbr;
@@ -1275,6 +1300,7 @@ int TKSH_TryLoad(char *img, char **args0)
 				__debugbreak();
 			}
 		}
+#endif
 		
 		if(bootptr)
 		{
@@ -1294,10 +1320,13 @@ int TKSH_TryLoad(char *img, char **args0)
 			task=boottbr;
 			tkern=(TKPE_TaskInfoKern *)(task->krnlptr);
 
-			task->baseptr=(tk_kptr)tlsix[6];
+#if 1
+//			task->baseptr=(tk_kptr)tlsix[6];
+			task->baseptr=(tk_kptr)pimg->imgbase;
 			task->bootptr=(tk_kptr)bootptr;
 			task->basegbr=(tk_kptr)bootgbr;
 			task->boottbr=(tk_kptr)boottbr;
+#endif
 
 			task->boot_sps=(tk_kptr)boot_newspb;
 			task->boot_spe=(tk_kptr)boot_newsp;
@@ -1312,7 +1341,8 @@ int TKSH_TryLoad(char *img, char **args0)
 
 			sysc=tk_isr_syscall;
 			task->SysCall=(tk_kptr)sysc;
-			
+
+#if 0
 			if(tlsix[0])
 			{
 				boottls=TKMM_PageAlloc(tlsix[1]);
@@ -1330,9 +1360,15 @@ int TKSH_TryLoad(char *img, char **args0)
 			task->img_tlsrvas[0]=tlsix[7];
 			
 			*(tk_kptr *)bootgbr=task->img_gbrptrs;
+#endif
+
+			TKPE_SetupTaskForImage(task, pimg);
+			bootgbr=task->basegbr;
 
 			tk_printf("TKSH_TryLoad: task=%p, env=%p\n", task, env1);
-			
+
+			tk_printf("TKPE_SetupTaskForImage: GBR=%p\n", bootgbr);
+
 			sza=0;
 //			if(args)
 			if(1)

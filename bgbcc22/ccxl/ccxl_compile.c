@@ -3745,7 +3745,10 @@ void BGBCC_CCXL_EmitVar2(BGBCC_TransState *ctx,
 	}
 
 //	if(ctx->vlcl_curseq && !(li&BGBCC_TYFL_STATIC))
-	if(ctx->vlcl_curseq)
+	if(ctx->vlcl_curseq &&
+		!(li&BGBCC_TYFL_DYNAMIC) &&
+		!(li&BGBCC_TYFL_EXTERN))
+//	if(ctx->vlcl_curseq)
 	{
 		sprintf(tb, "%s!%d", s1, ctx->vlcl_curseq);
 		s1=bgbcc_strdup(tb);

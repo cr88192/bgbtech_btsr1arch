@@ -2435,6 +2435,8 @@ int main(int argc, char *argv[], char **env)
 					continue;
 				if(!strcmp(s0, "-lc"))
 					break;
+				if(!strcmp(s0, "-lcdll"))
+					break;
 				if(!strncmp(s0+2, "vxcore", 6))
 					break;
 			}

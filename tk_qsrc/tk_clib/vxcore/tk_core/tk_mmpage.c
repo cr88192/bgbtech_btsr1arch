@@ -661,3 +661,63 @@ int TKMM_SetTag(void *ptr, int tag)
 	obj->dty_tag=tag;
 	return(0);
 }
+
+#ifndef __TK_CLIB_ONLY__
+void *TKMM_MallocCat(int sz, int cat)
+{
+	TKMM_MemLnkObj *obj;
+	void *ptr, *ptr1;
+	int pg, np, np1;
+	
+	if(sz<TKMM_MAXMMLISTSZ)
+	{
+		ptr=TKMM_MMList_MallocCat(sz, cat);
+
+		if(!ptr)
+			tk_printf("TKMM_MallocURo: failed A %d\n", sz);
+
+		return(ptr);
+	}
+
+	ptr=TKMM_MMList_AllocBrkCat(sz+sizeof(TKMM_MemLnkObj), cat);
+	np=(sz+sizeof(TKMM_MemLnkObj)+TKMM_PAGEMASK)>>TKMM_PAGEBITS;
+
+	if(!ptr)
+	{
+		tk_printf("TKMM_MallocURo: failed C %d\n", sz);
+		return(NULL);
+	}
+	
+	obj=ptr;
+
+	if(!obj)
+		{ __debugbreak(); }
+
+	obj->cnext=NULL;
+	obj->cprev=NULL;
+	obj->ix=np;
+	obj->fl=5;
+	obj->cat=cat;
+
+	if(((s64)ptr)&TKMM_PAGEMASK)
+		__debugbreak();
+
+	return((byte *)(obj->data));
+}
+
+void *TKMM_MallocURo(int sz)
+{
+	return(TKMM_MallocCat(sz, 1));
+}
+
+void *TKMM_MallocKrn(int sz)
+{
+	return(TKMM_MallocCat(sz, 2));
+}
+
+void *TKMM_MallocUsr(int sz)
+{
+	return(TKMM_MallocCat(sz, 3));
+}
+
+#endif

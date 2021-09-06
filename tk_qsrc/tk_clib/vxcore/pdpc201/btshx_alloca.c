@@ -36,12 +36,14 @@ void *__alloca(int size)
 
 	rpm=TK_GetAllocaMark();
 	
-	ptr=tk_malloc(size+2*sizeof(void *));
+//	ptr=tk_malloc(size+2*sizeof(void *));
+	ptr=malloc(size+2*sizeof(void *));
 	ptr1=(void *)(((void **)ptr)+2);
 	
 //	*(void **)ptr=*rpm;
 	((void **)ptr)[0]=*rpm;
-	((void **)ptr)[1]=tk_free;
+//	((void **)ptr)[1]=tk_free;
+	((void **)ptr)[1]=free;
 	*rpm=ptr;
 	return(ptr1);
 }
@@ -53,10 +55,11 @@ void *__alloca_noframe(int size)
 
 	rpm=TK_GetAllocaMark();
 	
-	ptr=tk_malloc(size+2*sizeof(void *));
+//	ptr=tk_malloc(size+2*sizeof(void *));
+	ptr=malloc(size+2*sizeof(void *));
 	if(!ptr)
 	{
-		tk_printf("alloca failed alloc %d\n", size);
+//		tk_printf("alloca failed alloc %d\n", size);
 		return(NULL);
 	}
 	
@@ -64,7 +67,8 @@ void *__alloca_noframe(int size)
 	
 //	*(void **)ptr=*rpm;
 	((void **)ptr)[0]=*rpm;
-	((void **)ptr)[1]=tk_free;
+//	((void **)ptr)[1]=tk_free;
+	((void **)ptr)[1]=free;
 
 	*rpm=ptr;
 	return(ptr1);
@@ -74,6 +78,9 @@ void *__alloca_wxe(int size)
 {
 	return(__alloca_noframe(size));
 }
+
+
+#ifndef __TK_CLIB_DLLSTUB__
 
 void *__alloca_initvla1(char *sig, int n1)
 {
@@ -90,7 +97,7 @@ void *__alloca_initvla1(char *sig, int n1)
 	arr=__alloca_noframe(sizeof(LVA_TagArray)+sz);
 	if(!arr)
 	{
-		tk_printf("alloca_initvla1: fail n=%d sz0=%d sig=%s\n", n1, sz0, sig);
+//		tk_printf("alloca_initvla1: fail n=%d sz0=%d sig=%s\n", n1, sz0, sig);
 		return(NULL);
 	}
 	arr->vt=tkmm_lva_clsvt;
@@ -136,3 +143,5 @@ void *__alloca_initvla2(char *sig, int n1, int n2)
 	
 	return(arr);
 }
+
+#endif

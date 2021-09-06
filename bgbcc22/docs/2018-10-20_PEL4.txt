@@ -465,6 +465,11 @@ TLS Index:
 ** This case will be interpreted as being relative to GBR, not TBR.
 * This will be replaced by the relative offset of the corresponding variable.
 
+Relocation 6:
+* Will depend some on what follows.
+* A000: Adjust PBO Index for the Start of the GBR (Negative Displacement).
+* FA00_0000: Adjust for Positive PBO Index.
+
 Set Tripwire (PBO Only):
 * This address should be set as a tripwire following initialization.
 * Attempts to address across this location may trigger a fault.

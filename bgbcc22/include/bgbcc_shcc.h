@@ -792,6 +792,8 @@
 #define BGBCC_SH_NMID_CMPXHI		0x0179	//
 #define BGBCC_SH_NMID_CMPXGT		0x017A	//
 
+#define BGBCC_SH_NMID_MOVQ_DISP24	0x017B	//MOV.Q, explicit 24b displacement
+
 #define BGBCC_SH_NMID_BLKUTX1		0x017C	//
 #define BGBCC_SH_NMID_BLKUTX2		0x017D	//
 #define BGBCC_SH_NMID_BLKUTX3H		0x017E	//

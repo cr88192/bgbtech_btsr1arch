@@ -38,7 +38,7 @@ int TKPE_ApplyBaseRelocs(byte *imgptr, byte *rlc, int szrlc,
 {
 	byte *cs, *cse, *cs1, *cs1e;
 	byte *pdst;
-	u32 pv, pv0, pv1;
+	u32 pv, pv0, pv1, pv2, pv3;
 	s64 v0, v1;
 	int tgt_rva, gbr_end_rva;
 	int rva_page, sz_blk;
@@ -62,7 +62,8 @@ int TKPE_ApplyBaseRelocs(byte *imgptr, byte *rlc, int szrlc,
 			pdst=imgptr+rva_page+(tg&4095);
 
 			tgt_rva=pdst-imgptr;
-			if((pboix>0) && (tgt_rva>=gbr_rva) && (tgt_rva<gbr_end_rva))
+//			if((pboix>0) && (tgt_rva>=gbr_rva) && (tgt_rva<gbr_end_rva))
+			if((tgt_rva>=gbr_rva) && (tgt_rva<gbr_end_rva))
 			{
 				/* Pointer is within data area. */
 				continue;
@@ -122,6 +123,56 @@ int TKPE_ApplyBaseRelocs(byte *imgptr, byte *rlc, int szrlc,
 					*((u16 *)pdst)=pv;
 					break;
 				}
+
+				pv=*((u32 *)pdst);
+				if((pv==0x0000FA00UL) && pboix)
+				{
+					v0=((pboix*8)&0x01FFFFFF);
+					pv=(pv&0x0000FF00U)|
+						((v0>>16)&0x000000FFU)|
+						((v0<<16)&0xFFFF0000U);
+					*((u32 *)pdst)=pv;
+					break;
+				}
+
+#if 0
+				pv0=((u32 *)pdst)[0];
+				pv1=((u32 *)pdst)[1];
+				pv2=((u32 *)pdst)[2];
+				if(	((pv0&0xFDFFFF0FU)==0xB000F101UL) && pboix)
+				{
+					if((pv1&0xF9FFFF00U)==0xB000F100UL)
+					{
+						pv1|=(pboix*8)<<16;
+						((u32 *)pdst)[1]=pv1;
+						break;
+					}
+					
+					if(pv1==0x0000FA00UL)
+					{
+						v0=((pboix*8)&0x01FFFFFF);
+						pv1=(pv1&0x0000FF00U)|
+							((v0>>16)&0x000000FFU)|
+							((v0<<16)&0xFFFF0000U);
+						((u32 *)pdst)[1]=pv1;
+						break;
+					}
+
+					if((pv1==0x0000FE00U) &&
+						((pv2&0xF9FFFF00U)==0xB000F100U))
+					{
+						v0=(pboix*8);
+						
+						pv1=(pv1&0x0000FF00U)|
+							((v0>>24)&0x000000FFU)|
+							((v0<< 8)&0xFFFF0000U);
+						pv2|=(v0<<16)&0x00FF0000U;
+						((u32 *)pdst)[1]=pv1;
+						((u32 *)pdst)[2]=pv2;
+						break;
+					}
+				}
+#endif
 				break;
 				
 			case 7:
@@ -131,9 +182,15 @@ int TKPE_ApplyBaseRelocs(byte *imgptr, byte *rlc, int szrlc,
 
 			case 9:
 				pv=*((u32 *)pdst);
-				if((pv==0xFA000000UL) && pboix)
+//				if((pv==0xFA000000UL) && pboix)
+				if((pv==0x0000FA00UL) && pboix)
 				{
-					pv=pv|(((-pboix)*8)&0x01FFFFFF);
+//					v0=((pv&0x00FF)<<16)|((pv>>16)&0xFFFF);
+//					pv=pv|(((-pboix)*8)&0x01FFFFFF);
+					v0=(((-pboix)*8)&0x01FFFFFF);
+					pv=(pv&0x0000FF00U)|
+						((v0>>16)&0x000000FFU)|
+						((v0<<16)&0xFFFF0000U);
 					*((u32 *)pdst)=pv;
 					break;
 				}
@@ -142,6 +199,11 @@ int TKPE_ApplyBaseRelocs(byte *imgptr, byte *rlc, int szrlc,
 				*((s64 *)pdst)=(*((s64 *)pdst))+disp;
 				break;
 			case 11:
+				break;
+			default:
+				tk_printf("TKPE_ApplyBaseRelocs: Unhandled Reloc %d\n",
+					(tg>>12)&15);
+				__debugbreak();
 				break;
 			}
 		}
@@ -165,6 +227,9 @@ int TKPE_ApplyDataRelocs(
 	int tgt_rva, gbr_end_rva;
 	int rva_page, rva_dest, sz_blk;
 	int tg;
+
+	tk_printf("TKPE_ApplyDataRelocs: disp_base=%X, disp_data=%X\n",
+		disp_base, disp_data);
 
 	gbr_end_rva=gbr_rva+gbr_sz;
 
@@ -194,6 +259,8 @@ int TKPE_ApplyDataRelocs(
 			
 			switch((tg>>12)&15)
 			{
+			case 0:
+				break;
 			case 3:
 				tgt_rva=(*((u32 *)pdst))-imgbase;				
 				if((tgt_rva>=gbr_rva) && (tgt_rva<gbr_end_rva))
@@ -203,9 +270,9 @@ int TKPE_ApplyDataRelocs(
 				}
 				*((u32 *)pdst)=(*((u32 *)pdst))+disp_base;
 				break;
-			case 4:
+//			case 4:
 //				*((u32 *)pdst)=(*((u32 *)pdst))+(disp>>32);
-				break;
+//				break;
 
 			case 10:
 				tgt_rva=(*((s64 *)pdst))-imgbase;				
@@ -216,8 +283,13 @@ int TKPE_ApplyDataRelocs(
 				}
 				*((s64 *)pdst)=(*((s64 *)pdst))+disp_base;
 				break;
+			case 11:
+				break;
 
 			default:
+				tk_printf("TKPE_ApplyDataRelocs: Unhandled Reloc %d\n",
+					(tg>>12)&15);
+				__debugbreak();
 				break;
 			}
 		}
@@ -259,7 +331,7 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 	{
 		if(sig_mz!=0x5A4D)
 		{
-			printf("TKPE: MZ Sig Fail\n");
+//			printf("TKPE: MZ Sig Fail\n");
 			return(NULL);
 		}
 
@@ -267,7 +339,7 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 		sig_pe=tkfat_getWord(tbuf+ofs_pe);
 		if(sig_pe!=0x4550)
 		{
-			printf("TKPE: PE Sig Fail\n");
+//			printf("TKPE: PE Sig Fail\n");
 			return(NULL);
 		}
 	}else
@@ -570,7 +642,6 @@ void *TKPE_LookupImageDllExport(TKPE_ImageInfo *img, char *name)
 }
 #endif
 
-#if 1
 TK_FILE *TKPE_TryOpenImage(
 	char *imgname, char *cwd, char **rpath, int isdll)
 {
@@ -582,18 +653,49 @@ TK_FILE *TKPE_TryOpenImage(
 
 	isext=(strchr(imgname, '.')!=NULL);
 
+//	tk_printf("TKPE_TryOpenImage: name=%s\n", imgname);
+
+	if((imgname[0]=='/') || (isdll&2))
+	{
+//		tk_printf("TKPE_TryOpenImage: try %s\n", imgname);
+		fd=tk_fopen(imgname, "rb");
+		if(!fd && !isext && (isdll&1))
+		{
+			tk_sprintf(tbuf, "%s.dll", imgname);
+//			tk_printf("TKPE_TryOpenImage: try %s\n", tbuf);
+			fd=tk_fopen(tbuf, "rb");
+		}
+		if(!fd && !isext && !(isdll&1))
+		{
+			tk_sprintf(tbuf, "%s.exe", imgname);
+//			tk_printf("TKPE_TryOpenImage: try %s\n", tbuf);
+			fd=tk_fopen(tbuf, "rb");
+		}
+		if(fd)
+		{
+			if(rpath)
+				*rpath=TKMM_LVA_Strdup(tbuf);
+			return(fd);
+		}
+		
+		return(NULL);
+	}
+
 	if(cwd)
 	{
 		tk_sprintf(tbuf, "%s/%s", cwd, imgname);
+//		tk_printf("TKPE_TryOpenImage: try %s\n", tbuf);
 		fd=tk_fopen(tbuf, "rb");
 		if(!fd && !isext && (isdll&1))
 		{
 			tk_sprintf(tbuf, "%s/%s.dll", cwd, imgname);
+//			tk_printf("TKPE_TryOpenImage: try %s\n", tbuf);
 			fd=tk_fopen(tbuf, "rb");
 		}
 		if(!fd && !isext && !(isdll&1))
 		{
 			tk_sprintf(tbuf, "%s/%s.exe", cwd, imgname);
+//			tk_printf("TKPE_TryOpenImage: try %s\n", tbuf);
 			fd=tk_fopen(tbuf, "rb");
 		}
 		if(fd)
@@ -608,15 +710,18 @@ TK_FILE *TKPE_TryOpenImage(
 	for(i=0; i<npath; i++)
 	{
 		tk_sprintf(tbuf, "%s/%s", path[i], imgname);
+//		tk_printf("TKPE_TryOpenImage: try %s\n", tbuf);
 		fd=tk_fopen(tbuf, "rb");
 		if(!fd && !isext && (isdll&1))
 		{
 			tk_sprintf(tbuf, "%s/%s.dll", path[i], imgname);
+//			tk_printf("TKPE_TryOpenImage: try %s\n", tbuf);
 			fd=tk_fopen(tbuf, "rb");
 		}
 		if(!fd && !isext && !(isdll&1))
 		{
 			tk_sprintf(tbuf, "%s/%s.exe", path[i], imgname);
+//			tk_printf("TKPE_TryOpenImage: try %s\n", tbuf);
 			fd=tk_fopen(tbuf, "rb");
 		}
 		if(fd)
@@ -669,7 +774,35 @@ int TKPE_LookupPboImageRelPath(char *imgname, char *cwd, int isdll)
 	int npath, isext;
 	int i, j;
 
+	if(*imgname=='/')
+		imgname++;
+	if(cwd && (*cwd=='/'))
+		cwd++;
+
 	isext=(strchr(imgname, '.')!=NULL);
+
+	if((*imgname=='/') || (isdll&2))
+	{
+		i=TKPE_LookupPboImagePath(imgname, isdll);
+		if(i>0)
+			return(i);
+		if(!isext && (isdll&1))
+		{
+			tk_sprintf(tbuf, "%s.dll", imgname);
+			i=TKPE_LookupPboImagePath(tbuf, isdll);
+			if(i>0)
+				return(i);
+		}
+		if(!isext && !(isdll&1))
+		{
+			tk_sprintf(tbuf, "%s.exe", imgname);
+			i=TKPE_LookupPboImagePath(tbuf, isdll);
+			if(i>0)
+				return(i);
+		}
+		
+		return(0);
+	}
 
 	if(cwd)
 	{
@@ -779,12 +912,87 @@ int TKPE_TryLoadProgramImage(char *imgname, char *cwd, int isdll)
 	return(img->imgix);
 }
 
+TKPE_ImageInfo *TK_GetImageForIndex(int ix)
+{
+	TKPE_ImageInfo *img;
+	img=tkpe_pbo_image[ix];
+	return(img);
+}
+
+void TK_InstanceImageInTask(TKPE_TaskInfo *task, TKPE_ImageInfo *img)
+{
+	byte *gbrdat, *tlsdat;
+	int ix, gbrsz, tlssz, gbrszcpy;
+	int i, j;
+
+	gbrdat=(byte *)TK_PboGbrGetB(task, img->pboix);
+	if(gbrdat)
+		return;
+
+	gbrsz=img->gbr_sz;
+	gbrdat=TKMM_PageAlloc(gbrsz);
+	TK_TaskAddPageAlloc(task, gbrdat, gbrsz);
+	
+	tk_printf("TK_InstanceImageInTask: GBR RVA=%X sz_cpy=%d sz=%d pboix=%d\n",
+		img->gbr_rva, img->gbr_szcpy, gbrsz, img->pboix);
+	
+	gbrszcpy=img->gbr_szcpy;
+	gbrszcpy&=~15;
+	if(gbrsz>gbrszcpy)
+		memset(gbrdat+gbrszcpy, 0, gbrsz-gbrszcpy);
+
+	memcpy(gbrdat, img->imgbase+img->gbr_rva, img->gbr_szcpy);
+
+	TKPE_ApplyDataRelocs(
+		img->imgbase, img->ptr_reloc, img->sz_reloc,
+		gbrdat,
+		(s64)(img->imgbase)-img->rlc_imgbase,
+//		(s64)(gbrdat)-img->rlc_imgbase,
+		(s64)(gbrdat)-(img->rlc_imgbase+img->gbr_rva),
+		img->pboix,
+		img->rlc_imgbase, img->gbr_rva, img->gbr_sz);
+
+	TK_PboImgBaseSetB(task, img->pboix, (tk_kptr)(img->imgbase));
+
+	TK_PboGbrSetB(task, img->pboix, (tk_kptr)(gbrdat));
+	*(tk_kptr *)gbrdat=task->imggbrptrs;
+
+	
+	if(img->tls_rva)
+	{
+		tlssz=img->tls_dsize;
+		tlsdat=TKMM_PageAlloc(tlssz);
+		TK_TaskAddPageAlloc(task, tlsdat, tlssz);
+		if(img->tls_rvaraw)
+		{
+			memcpy(tlsdat, img->imgbase+img->tls_rvaraw, img->tls_szraw);
+		}
+		TK_TlsSetB(task, img->tls_key, tlsdat);
+	}
+	
+	for(i=0; i<img->n_dll; i++)
+	{
+		TK_InstanceImageInTask(task, img->dll[i]);
+	}
+}
+
 int TKPE_SetupTaskForImage(TKPE_TaskInfo *task, TKPE_ImageInfo *img)
 {
 	byte *gbrdat, *gbrdatb;
 	int gbrsz, szpbix;
 	int i, j, k;
-	
+
+	task->imgbaseptrs=task->img_baseptrs;
+	task->imggbrptrs=task->img_gbrptrs;
+	task->imgtlsrvas=task->img_tlsrvas;
+
+	TK_InstanceImageInTask(task, img);
+
+	gbrdat=(byte *)TK_PboGbrGetB(task, img->pboix);
+
+	tk_printf("TKPE_SetupTaskForImage: GBR=%p\n", gbrdat);
+
+#if 0
 	szpbix=(256*sizeof(void *));
 	gbrsz=img->gbr_sz+szpbix;
 	gbrdat=TKMM_PageAlloc(gbrsz);
@@ -804,21 +1012,17 @@ int TKPE_SetupTaskForImage(TKPE_TaskInfo *task, TKPE_ImageInfo *img)
 		(s64)(img->imgbase)-img->rlc_imgbase,
 		(s64)(gbrdatb)-img->rlc_imgbase, img->pboix,
 		img->rlc_imgbase, img->gbr_rva, img->gbr_sz);
+#endif
 
 	task->baseptr=img->imgbase;
 	task->bootptr=img->bootptr;
-	task->basegbr=gbrdat+szpbix;
+//	task->basegbr=gbrdat+szpbix;
+	task->basegbr=gbrdat;
 	task->boottbr=task;
+
 	return(1);
 }
 
-int TKPE_TryLoadProgramInstance(char *imgname,
-	void **rbootptr,
-	void **rbootgbr,
-	void **rboottbr)
-{
-}
-#endif
 
 void *TK_DlOpenB(TKPE_TaskInfo *task, const char *path, int flags)
 {
@@ -834,28 +1038,7 @@ void *TK_DlOpenB(TKPE_TaskInfo *task, const char *path, int flags)
 		return(NULL);
 
 	img=tkpe_pbo_image[ix];
-
-	gbrsz=img->gbr_sz;
-	gbrdat=TKMM_PageAlloc(gbrsz);
-	TK_TaskAddPageAlloc(task, gbrdat, gbrsz);
-	
-	memcpy(gbrdat, img->imgbase+img->gbr_rva, img->gbr_szcpy);
-	TK_PboGbrSetB(task, img->pboix, (tk_kptr)(gbrdat));
-	*(tk_kptr *)gbrdat=task->imggbrptrs;
-	
-	TK_PboImgBaseSetB(task, img->pboix, (tk_kptr)(img->imgbase));
-	
-	if(img->tls_rva)
-	{
-		tlssz=img->tls_dsize;
-		tlsdat=TKMM_PageAlloc(tlssz);
-		TK_TaskAddPageAlloc(task, tlsdat, tlssz);
-		if(img->tls_rvaraw)
-		{
-			memcpy(tlsdat, img->imgbase+img->tls_rvaraw, img->tls_szraw);
-		}
-		TK_TlsSetB(task, img->tls_key, tlsdat);
-	}
+	TK_InstanceImageInTask(task, img);
 	
 	return(img->imgbase);
 }

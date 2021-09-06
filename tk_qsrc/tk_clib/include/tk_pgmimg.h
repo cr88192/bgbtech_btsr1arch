@@ -30,9 +30,9 @@ int pboix;
 int imgix;
 int isdll;
 
-byte *imgbase;
 char *imgname;		//image name, no path or extension
 char *imgpath;		//full image path
+byte *imgbase;
 byte *bootptr;		//entry point for image
 byte *bootgbr;		//pointer to start of data section
 byte *bootgbre;		//pointer to end of data section
@@ -76,7 +76,7 @@ tk_kptr		eh_vars;		//38, Exception Unwind Vars (Array Pointer)
 tk_kptr		eh_oldlr;		//40, Saved LR (Exception Unwind)
 tk_kptr		allocamrk;		//48, pointer to alloca mark
 tk_kptr		tlsptr;			//50, pointer to TLS data area
-tk_kptr		resv_58;		//58, reserved pointer
+tk_kptr		clib_gpa;		//58, C Library, GetProcAddress
 tk_kptr		resv_60;		//60, reserved pointer
 tk_kptr		resv_68;		//68, reserved pointer
 tk_kptr		resv_70;		//70, reserved pointer
@@ -137,7 +137,7 @@ tk_kptr		SysCall;		//10, System Call (Entry Point)
 tk_kptr		resv_18;		//18, reserved function pointer
 tk_kptr		resv_20;		//20, reserved function pointer
 tk_kptr		resv_28;		//28, reserved function pointer
-tk_kptr		krnlptr;		//30, reserved function pointer
+tk_kptr		krnlptr;		//30, pointer to kernel-only area
 tk_kptr		ystatus;		//38, Sleep / Terminate Status
 tk_kptr		usrptr;			//40, pointer to user-modifiable area
 tk_kptr		allocaptr;		//48, pointer to alloca mark

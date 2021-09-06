@@ -902,6 +902,47 @@ int TK_VMem_Init()
 	return(1);
 }
 
+int TK_VMem_MProtectPages(u64 addr, size_t len, int prot)
+{
+	u64 tva, tpte;
+	int b, n;
+	int i, j;
+
+	if(!tk_vmem_pageroot)
+		return(0);
+
+	b=(addr>>TK_VMEM_PAGESHL);
+	n=(len>>TK_VMEM_PAGESHL);
+	for(i=0; i<n; i++)
+	{
+		tva=((u64)(b+i))<<TK_VMEM_PAGESHL;
+
+		tpte=TK_VMem_GetPageTableEntry(tva);
+
+		tpte&=~0x00F8;
+
+		if(!(prot&0x01))
+			tpte|=0x10;
+		if(!(prot&0x02))
+			tpte|=0x20;
+		if(!(prot&0x04))
+			tpte|=0x40;
+
+		if(prot&0x10)
+			tpte|=0x08;
+		if(prot&0x20)
+			tpte|=0x80;
+
+//		tpte=(2<<8)|(1<<10)|1;
+//		tpte=(0<<8)|(1<<10)|1;
+//		tpte|=(b+i)<<12;
+
+		TK_VMem_SetPageTableEntry(tva, tpte);
+	}
+
+	return(0);
+}
+
 void TK_VMem_UnlinkPageHash(int i)
 {
 	TK_VMem_PageInfo *cpi, *lpi, *npi;

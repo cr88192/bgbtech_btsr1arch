@@ -1134,7 +1134,9 @@ __PDPCLIB_API__ void *memcpy(void *s1, const void *s2, size_t n)
 #endif /* USE_ASSEMBLER */
 #endif
 
-#if 0
+// #if 0
+#ifdef __TK_CLIB_DLLSTUB__
+
 __PDPCLIB_API__ void *memcpy(void *s1, const void *s2, size_t n)
 {
 	register long long *p = (long long *)s1;
@@ -1147,29 +1149,7 @@ __PDPCLIB_API__ void *memcpy(void *s1, const void *s2, size_t n)
 
 	endi = (long long *)((char *)p + (n & (~0x07)));
 
-#if 0
-	while ((p+4) <= endi)
-	{
-		p[0] = cs2[0];
-		p[1] = cs2[1];
-		p[2] = cs2[2];
-		p[3] = cs2[3];
-		p+=4;	cs2+=4;
-	}
-	if ((p+2) <= endi)
-	{
-		p[0] = cs2[0];
-		p[1] = cs2[1];
-		p+=2;	cs2+=2;
-	}
-	if (p < endi)
-	{
-		*p++ = *cs2++;
-	}
-#endif
-
 #if 1
-//	while (p != endi)
 	while (p < endi)
 	{
 		*p++ = *cs2++;

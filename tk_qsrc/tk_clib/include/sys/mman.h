@@ -8,6 +8,13 @@
 #define PROT_WRITE		0x0002
 #define PROT_EXEC		0x0004
 
+// #define PROT_NOCACHE		0x0010
+// #define PROT_NOUSER		0x0020
+
+// #define PROT_USR_SXO		(PROT_EXEC|PROT_NOCACHE)
+// #define PROT_USR_RO		(PROT_READ|PROT_NOCACHE)
+
+
 #define MAP_SHARED		0x0001
 #define MAP_PRIVATE		0x0002
 #define MAP_ANONYMOUS	0x0004

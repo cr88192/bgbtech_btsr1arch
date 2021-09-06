@@ -5616,13 +5616,17 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 //			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_MOV,
 //				BGBCC_SH_REG_R1, BGBCC_SH_REG_GBR);
 
-			BGBCC_JX2_EmitRelocTy(sctx, j, BGBCC_SH_RLC_TBR12_BJX);
+//			BGBCC_JX2_EmitRelocTy(sctx, j, BGBCC_SH_RLC_TBR12_BJX);
 			BGBCC_JX2_EmitOpLdRegDispReg(sctx,
 				BGBCC_SH_NMID_MOVQ,
 				BGBCC_SH_REG_GBR, 0, BGBCC_SH_REG_R18);
+
+			BGBCC_JX2_EmitRelocTy(sctx, j, BGBCC_SH_RLC_TBR12_BJX);
 			BGBCC_JX2_EmitOpLdRegDispReg(sctx,
-				BGBCC_SH_NMID_MOVQ_DISP,
+//				BGBCC_SH_NMID_MOVQ_DISP,
+				BGBCC_SH_NMID_MOVQ_DISP24,
 				BGBCC_SH_REG_R18, 0, BGBCC_SH_REG_R18);
+
 			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_MOV,
 				BGBCC_SH_REG_R18, BGBCC_SH_REG_GBR);
 		}
@@ -6295,6 +6299,19 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, BGBCC_SH_REG_R3);
 		}
 		
+		if(obj->locals[i]->flagsint&BGBCC_TYFL_DYNAMIC)
+		{
+			j=BGBCC_CCXL_LookupGlobalIndex(ctx, obj->locals[i]->name);
+			if(j<=0)
+				continue;
+			tty=ctx->reg_globals[j]->type;
+			reg.val=CCXL_REGTY_GLOBAL|
+				(((s64)tty.val)<<CCXL_REGID_TYPESHIFT)|j;
+			treg.val=CCXL_REGTY_LOCAL|
+				(((s64)tty.val)<<CCXL_REGID_TYPESHIFT)|i;
+			BGBCC_JX2C_EmitMovVRegVReg(ctx, sctx, tty, treg, reg);
+		}
+
 		if(BGBCC_CCXL_TypeVaListP(ctx, obj->locals[i]->type) && (vaix>0))
 		{
 			if(sctx->is_addr64)
@@ -6676,6 +6693,7 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx,
 	BGBCC_CCXL_RegisterInfo *obj)
 {
+	ccxl_register reg, treg;
 	ccxl_type tty;
 	u64 uli;
 	int epik, epix, epilbl;
@@ -6713,6 +6731,23 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 
 //		BGBCC_JX2C_ResetFpscrLocal(ctx, sctx);
 		BGBCC_JX2_EmitLabel(sctx, sctx->lbl_ret);
+	}
+
+	for(i=0; i<obj->n_locals; i++)
+	{
+		if(obj->locals[i]->flagsint&BGBCC_TYFL_DYNAMIC)
+		{
+			j=BGBCC_CCXL_LookupGlobalIndex(ctx, obj->locals[i]->name);
+			if(j<=0)
+				continue;
+			tty=ctx->reg_globals[j]->type;
+			reg.val=CCXL_REGTY_GLOBAL|
+				(((s64)tty.val)<<CCXL_REGID_TYPESHIFT)|j;
+			treg.val=CCXL_REGTY_LOCAL|
+				(((s64)tty.val)<<CCXL_REGID_TYPESHIFT)|i;
+			BGBCC_JX2C_EmitMovVRegVReg(ctx, sctx, tty, reg, treg);
+			obj->regflags|=BGBCC_REGFL_NOTLEAFTINY;
+		}
 	}
 
 	sctx->sreg_held=0x0003;

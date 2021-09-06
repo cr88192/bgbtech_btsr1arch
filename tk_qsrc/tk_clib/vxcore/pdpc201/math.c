@@ -715,7 +715,7 @@ __PDPCLIB_API__ double sqrt(double x)
 	if(n<=0)
 	{
 //		tk_puts("sqrt fail\n");
-		tk_printf("sqrt fail %f\n", x);
+//		tk_printf("sqrt fail %f\n", x);
 		return(0);
 	}
 

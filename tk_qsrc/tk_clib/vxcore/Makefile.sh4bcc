@@ -12,6 +12,8 @@ TK_LDFL64= -L. -lvxcore64 -fwex3w -fwexj
 # TK_LDFL64= -L. -lvxcore64
 #  /fwex3w
 
+TK_LDFL64_DLL= -L. -lcdll -fwex3w -fwexj
+
 TOOLPATH=
 
 CC=$(TOOLPATH)bgbcc
@@ -24,6 +26,7 @@ COPTS64= -g -c -O2 -Iinclude -I. -Itk_core $(TK_CFL) -DARCH_BJX1_64 -mBJX2 -Zz
 
 SRCS_CLIB = \
 	pdpc201/stdio.c \
+	pdpc201/stdio_gpa.c \
 	pdpc201/string.c \
 	pdpc201/stdlib.c \
 	pdpc201/start.c \
@@ -50,6 +53,7 @@ SRCS_CLIB = \
 	pdpc201/bt_mman.c \
 	pdpc201/bt_readdir.c \
 	pdpc201/bt_dlfcn.c \
+	pdpc201/bt_libcgpa.c \
 	\
 	tk_core/tk_bdev_spi.c \
 	tk_core/tk_bdev_vfb.c \
@@ -109,6 +113,11 @@ SRCS_ASM_2 = \
 	tk_divi2_sc.S		\
 	tk_divi3.S			\
 
+SRCS_ASM_DLL = \
+	tk_divi2.S			\
+	tk_divi3.S			\
+	tk_softfp.S			\
+
 SRCS_BS2 = \
 	tk_bs2/bscore_io.bs
 
@@ -127,9 +136,9 @@ libs2: FORCE
 #	cp pdpc201/crt0.o	$(BUILD)
 
 libs: libs2 libvxcore.ril libvxcore64.ril libvxcore_bjx2.ril \
-	libc.bjx2.ril libm.bjx2.ril libdl.bjx2.ril
+	libc.bjx2.ril libm.bjx2.ril libdl.bjx2.ril libcdll.bjx2.ril
 
-bins: tkshell.sys
+bins: tkshell.sys tkshdll.dll
 
 apps: bins FORCE
 #	make -C pdpc201 -f Makefile.vx86 apps
@@ -153,8 +162,14 @@ libm.bjx2.ril: $(SRCS_CLIB) $(SRCS_ASM) $(SRCS_BS2) $(SRCS_ASM_2)
 libdl.bjx2.ril: $(SRCS_CLIB) $(SRCS_ASM) $(SRCS_BS2) $(SRCS_ASM_2)
 	$(CC) -o libdl.bjx2.ril libdl_multi.c $(COPTS64)
 
+libcdll.bjx2.ril: $(SRCS_CLIB) $(SRCS_ASM_DLL)
+	$(CC) -o libcdll.bjx2.ril libcdll_multi.c $(SRCS_ASM_DLL) $(COPTS64)
+
 tkshell.sys: $(SRCS_TKSH)
 	$(CC) -o tkshell.sys tkshell_multi.c $(COPTS64) $(TK_LDFL64)
+
+tkshdll.dll: $(SRCS_TKSH)
+	$(CC) -o tkshdll.dll tkshdll_multi.c $(COPTS64) $(TK_LDFL64_DLL)
 
 FORCE:
 

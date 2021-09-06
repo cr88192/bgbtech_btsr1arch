@@ -210,6 +210,16 @@ __PDPCLIB_API__ int vfprintf(FILE *stream, const char *format, va_list arg)
 
 __PDPCLIB_API__ FILE *fopen(const char *filename, const char *mode)
 {
+	if((*filename=='$') && !mode)
+	{
+		if(!strcmp(filename, "$STDIN"))
+			return(stdin);
+		if(!strcmp(filename, "$STDOUT"))
+			return(stdout);
+		if(!strcmp(filename, "$STDERR"))
+			return(stderr);
+	}
+
 	fnm = filename;
 	modus = mode;
 	err = 0;
@@ -2568,6 +2578,13 @@ __PDPCLIB_API__ char *tmpnam(char *s)
 __PDPCLIB_API__ FILE *tmpfile(void)
 {
 	return (fopen("ZZZZZZZA.$$$", "wb+"));
+}
+
+__PDPCLIB_API__ int vfscanf(FILE *stream, const char *format, va_list arg)
+{
+	int ret;
+	ret = vvscanf(format, arg, stream, NULL);
+	return (ret);
 }
 
 __PDPCLIB_API__ int fscanf(FILE *stream, const char *format, ...)

@@ -1806,6 +1806,7 @@ ccxl_status BGBCC_JX2C_BuildFunction(BGBCC_TransState *ctx,
 	BGBCC_CCXL_RegisterInfo *obj)
 {
 	BGBCC_JX2_Context *sctx;
+//	char tbuf[256];
 	int fnsz[8];
 	int fnsz_pro[8];
 	int fnsz_epi[8];
@@ -1845,7 +1846,8 @@ ccxl_status BGBCC_JX2C_BuildFunction(BGBCC_TransState *ctx,
 		l1=obj->fxnoffs;
 		if(l1<=0)
 		{
-			l1=BGBCC_JX2_GetNamedLabel(sctx, obj->qname);
+			l1=BGBCC_JX2_GenLabel(sctx);
+//			l1=BGBCC_JX2_GetNamedLabel(sctx, obj->qname);
 			obj->fxnoffs=l1;
 		}
 
@@ -3052,7 +3054,7 @@ ccxl_status BGBCC_JX2C_BuildGlobalTls(BGBCC_TransState *ctx,
 
 
 	sctx->tlsvar_lbl[ix]=obj->fxoffs;	
-	obj->fxnoffs=ix;
+//	obj->fxnoffs=ix;
 
 	sctx->tlsvar_ofs[ix]=ofs;
 	sctx->tlsvar_sz[ix]=sz;
@@ -3083,8 +3085,10 @@ ccxl_status BGBCC_JX2C_BuildGlobal(BGBCC_TransState *ctx,
 	if(!obj->qname)
 		obj->qname=obj->name;
 
-	if(	(obj->flagsint&BGBCC_TYFL_THREAD)	||
-		(obj->flagsint&BGBCC_TYFL_DYNAMIC)	)
+//	if(	(obj->flagsint&BGBCC_TYFL_THREAD)	||
+//		(obj->flagsint&BGBCC_TYFL_DYNAMIC)	)
+
+	if(obj->flagsint&BGBCC_TYFL_THREAD)
 	{
 		return(BGBCC_JX2C_BuildGlobalTls(ctx, obj));
 	}
@@ -4506,7 +4510,11 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 //			d1=b1+(d-4);
 			d1=b1+((d-2)>>1);
 			if((((s32)(d1<<24))>>24)!=d1)
-				__debugbreak();
+			{
+				BGBCC_CCXL_Error(ctx, "Symbol Out of Range\n");
+				break;
+//				__debugbreak();
+			}
 			if((w0&0xFE00)==0x2400)
 				w0=(w0&0xFE00)|(d1&0x01FF);
 			else
@@ -4520,7 +4528,11 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			b1=((s32)(b<<20))>>20;
 			d1=b1+((d-2)>>1);
 			if((((s32)(d1<<20))>>20)!=d1)
-				__debugbreak();
+			{
+				BGBCC_CCXL_Error(ctx, "Symbol Out of Range\n");
+				break;
+//				__debugbreak();
+			}
 			bgbcc_jx2cc_setu16en(ctr, en, (b&0xF000)|(d1&0x0FFF));
 			break;
 
@@ -4537,7 +4549,11 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			if((w0&0xFE00)==0x2400)
 			{
 				if((((s32)(d1<<15))>>15)!=d1)
-					__debugbreak();
+				{
+					BGBCC_CCXL_Error(ctx, "Symbol Out of Range\n");
+					break;
+//					__debugbreak();
+				}
 				w0=(w0&0xFE00)|((d1>>8)&0x01FF);
 				w1=(w1&0xFF00)|((d1   )&0x00FF);
 			}
@@ -4572,7 +4588,11 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			if((w0&0xFE00)==0x2400)
 			{
 				if((((s32)(d1<<15))>>15)!=d1)
-					__debugbreak();
+				{
+					BGBCC_CCXL_Error(ctx, "Symbol Out of Range\n");
+					break;
+//					__debugbreak();
+				}
 				w0=(w0&0xFE00)|((d1>>8)&0x01FF);
 				w1=(w1&0xFF00)|((d1   )&0x00FF);
 			}
@@ -4588,7 +4608,11 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			else
 			{
 				if((((s32)(d1<<16))>>16)!=d1)
-					__debugbreak();
+				{
+					BGBCC_CCXL_Error(ctx, "Symbol Out of Range\n");
+					break;
+//					__debugbreak();
+				}
 				w0=(w0&0xFF00)|((d1>>8)&0x00FF);
 				w1=(w1&0xFF00)|((d1   )&0x00FF);
 			}
@@ -4604,7 +4628,11 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			b1=((s32)(b<<16))>>16;
 			d1=b1+((d-4)>>1);
 			if((((s32)(d1<<16))>>16)!=d1)
-				__debugbreak();
+			{
+				BGBCC_CCXL_Error(ctx, "Symbol Out of Range\n");
+				break;
+//				__debugbreak();
+			}
 			if((((s32)(d1<<24))>>24)==d1)
 					sctx->stat_ovlbl8++;
 			if((w0&0xE000)==0xA000)
@@ -4623,7 +4651,11 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			b1=((s32)(b<<16))>>16;
 			d1=b1+(d-4);
 			if((((s32)(d1<<15))>>15)!=d1)
-				__debugbreak();
+			{
+				BGBCC_CCXL_Error(ctx, "Symbol Out of Range\n");
+				break;
+//				__debugbreak();
+			}
 			if((((s32)(d1<<24))>>24)==d1)
 					sctx->stat_ovlbl8++;
 			w0=(w0&0xE000)|((d1>>4)&0x1FFF);
@@ -4640,7 +4672,11 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			b1=((s32)(b<<8))>>8;
 			d1=b1+((d-6)>>1);
 			if((((s32)(d1<<8))>>8)!=d1)
-				__debugbreak();
+			{
+				BGBCC_CCXL_Error(ctx, "Symbol Out of Range\n");
+				break;
+//				__debugbreak();
+			}
 			if((((s32)(d1<<24))>>24)==d1)
 					sctx->stat_ovlbl8++;
 			if((w0&0xFE00)==0x2400)
@@ -4663,7 +4699,11 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			b1=((s32)(b<<8))>>8;
 			d1=b1+(d-6);
 			if((((s32)(d1<<8))>>8)!=d1)
-				__debugbreak();
+			{
+				BGBCC_CCXL_Error(ctx, "Symbol Out of Range\n");
+				break;
+//				__debugbreak();
+			}
 			if((w0&0xFE00)==0x2400)
 				w0=(w0&0xFE00)|((d1>>16)&0x01FF);
 			else

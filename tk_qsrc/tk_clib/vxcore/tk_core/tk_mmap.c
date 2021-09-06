@@ -56,13 +56,21 @@ void *tk_mmap2(TKPE_TaskInfo *task,
 	byte *ptr;
 	int ix;
 
+	/*
+	 * The mmap/mporotect interface will disallow NOCACHE and NOUSER.
+	 * These flags will be considered as supervisor-only features.
+	 */
+	prot&=~(TKMM_PROT_NOCACHE|TKMM_PROT_NOUSER);
+
 	if(flags&TKMM_MAP_ANONYMOUS)
 	{
 		if(addr)
 		{
+			return(NULL);
 		}
 	
 		ptr=TKMM_PageAlloc(len);
+		TK_VMem_MProtectPages((u64)ptr, len, prot);
 		
 //		ix=tkmm_mmap_n_map++;
 		ix=TK_MMap_AllocIndex();
@@ -73,6 +81,8 @@ void *tk_mmap2(TKPE_TaskInfo *task,
 		
 		return(ptr);
 	}
+
+	return(NULL);
 }
 
 int tk_munmap2(TKPE_TaskInfo *task, void *addr, size_t len)
@@ -144,6 +154,10 @@ int tk_munmap2(TKPE_TaskInfo *task, void *addr, size_t len)
 
 int tk_mprotect2(TKPE_TaskInfo *task, void *addr, size_t len, int prot)
 {
+	prot&=~(TKMM_PROT_NOCACHE|TKMM_PROT_NOUSER);
+
+	/* FIXME: This only works with a single address space. */
+	TK_VMem_MProtectPages((u64)addr, len, prot);
 }
 
 int tk_msync2(TKPE_TaskInfo *task, void *addr, size_t len, int flags)
@@ -223,6 +237,7 @@ void *TKMM_MmapL(
 	void *addr, size_t len, int prot, int flags,
 	int fd, off_t offs)
 {
+//	prot&=~(TKMM_PROT_NOCACHE|TKMM_PROT_NOUSER);
 	return(tk_mmap2(NULL, addr, len, prot, flags, fd, offs));
 }
 
@@ -235,6 +250,7 @@ void *TKMM_MunmapL(
 void *TKMM_MProtectL(
 	void *addr, size_t len, int prot)
 {
+//	prot&=~(TKMM_PROT_NOCACHE|TKMM_PROT_NOUSER);
 	return(tk_mprotect2(NULL, addr, len, prot));
 }
 
@@ -255,6 +271,9 @@ int (*TKMM_MSyncF)(void *addr, size_t len, int flag);
 void TKMM_InitMMap()
 {
 	int i;
+
+	if(TKMM_MmapF)
+		return;
 
 #ifndef __TK_CLIB_ONLY__
 	if(!tk_iskernel())
@@ -282,22 +301,26 @@ void TKMM_InitMMap()
 void *tk_mmap(void *addr, size_t len, int prot, int flags,
 	int fd, off_t offs)
 {
+	TKMM_InitMMap();
 	return(TKMM_MmapF(addr, len, prot, flags, fd, offs));
 }
 
 
 int tk_munmap(void *addr, size_t len)
 {
+	TKMM_InitMMap();
 	return(TKMM_MunmapF(addr, len));
 }
 
 int tk_mprotect(void *addr, size_t len, int prot)
 {
+	TKMM_InitMMap();
 	return(TKMM_MProtectF(addr, len, prot));
 }
 
 int tk_msync(void *addr, size_t len, int flags)
 {
+	TKMM_InitMMap();
 	return(TKMM_MSyncF(addr, len, flags));
 }
 

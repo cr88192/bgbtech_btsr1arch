@@ -101,9 +101,14 @@ void *TK_AllocNewTask()
 	if(pid<=0)
 		return(NULL);
 
-	task=tk_malloc(sizeof(TKPE_TaskInfo));
-	tusr=tk_malloc(sizeof(TKPE_TaskInfoUser));
-	tknl=tk_malloc(sizeof(TKPE_TaskInfoKern));
+//	task=tk_malloc(sizeof(TKPE_TaskInfo));
+//	tusr=tk_malloc(sizeof(TKPE_TaskInfoUser));
+//	tknl=tk_malloc(sizeof(TKPE_TaskInfoKern));
+
+	task=TKMM_MallocURo(sizeof(TKPE_TaskInfo));
+	tusr=TKMM_MallocUsr(sizeof(TKPE_TaskInfoUser));
+	tknl=TKMM_MallocKrn(sizeof(TKPE_TaskInfoKern));
+
 	memset(task, 0, sizeof(TKPE_TaskInfo));
 	memset(tusr, 0, sizeof(TKPE_TaskInfoUser));
 	memset(tknl, 0, sizeof(TKPE_TaskInfoKern));
