@@ -53,6 +53,13 @@ BJX2_Context *BJX2_CreateSubContext(BJX2_Context *pctx)
 	return(tmp);
 }
 
+int BJX2_ContextPowerOnState(BJX2_Context *ctx)
+{
+	ctx->regs[BJX2_REG_PC]=0;
+	ctx->regs[BJX2_REG_VBR]=0;
+	ctx->regs[BJX2_REG_SR]=0x40000000ULL;
+}
+
 BJX2_Opcode *BJX2_ContextAllocOpcode(BJX2_Context *ctx)
 {
 	BJX2_Opcode *tmp;

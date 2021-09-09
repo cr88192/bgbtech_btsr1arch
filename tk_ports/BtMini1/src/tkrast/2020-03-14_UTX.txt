@@ -1,0 +1,183 @@
+UTX Formats:
+* UTX1, 32-bit
+* UTX2, 64-bit
+* UTX3, 128-bit
+
+Pixel Formats:
+* RGB555A
+* RGB30A
+* FP8S / RGBA32FS
+* FP8U / RGBA32FU
+* RGBA32
+
+
+=== RGB555A ===
+
+RGB555A pixels will take the form:
+* 0rrr-rrgg-gggb-bbbb
+* 1rrr-ragg-ggab-bbba
+
+So, encodes a 3-bit alpha at the expense of 1-bit lost from every color endpoint.
+Opaque blocks are encoded the same as RGB555. The RGB components will always be decoded as if they were RGB555.
+
+Nominally, expanding RGB555 or RGB555A to RGB24 will duplicate the high-order 3 bits of the source component into the low order bits of the result.
+
+If the MSB is 0, Alpha will be decoded as 0xFF, otherwise the alpha will be decoded as aaa00000.
+
+
+=== RGB30A, 32-bit ===
+
+Will store a tag in the high-order 2 bits, with the remaining bits depending on interpretation.
+
+Tag:
+* 00: RGB30 (Signed)
+* 01: RGB30 (Unsigned)
+* 10: RGBA7878 (Signed)
+* 11: RGBA7878 (Unsigned)
+
+RGB30 will store the endpoint as FP10S or FP10U values:
+*  eeeeefffff: FP10U
+* seeeeeffff : FP10S
+
+RGBA7878 will be similar, except that the components will be 7 or 8 bits.
+* seeeefff : FP8S
+* seeeeff  : FP7S
+*  eeeeffff: FP8U
+*  eeeefff : FP7U
+
+Where Green/Alpha are 8-bit, and Red/Blue are 7-bit.
+
+
+=== RGBA32 ===
+
+Will contain four 8 bit values:
+* aarrggbb
+
+Seen as an 32-bit value, the low byte will contain the blue component, and the high byte will contain the alpha component.
+
+
+=== RGBA32F(S/U), 32-bit ===
+
+These pixel formats will store 4 floating point values in FP8S or FP8U form using the same layout as RGBA32.
+
+Exponent Range:
+* 15, Inf/NaN Space
+* 14,  128.0 ..  256.0
+* 13,   64.0 ..  128.0
+* 12,   32.0 ..   64.0
+* 11,   16.0 ..   32.0
+* 10,    8.0 ..   16.0
+*  9,    4.0 ..    8.0
+*  8,    2.0 ..    4.0
+*  7,    1.0 ..    2.0
+*  6,    0.5 ..    1.0
+*  5,   0.25 ..    0.5
+*  5,  0.125 ..   0.25
+*  4, 0.0625 ..  0.125
+*  3, 0.0313 .. 0.0625
+*  2, 0.0156 .. 0.0313
+*  1, 0.0078 .. 0.0156
+*  0, Zero
+
+Inf and NaN semantics will not be enforced for this format, and as such the interpretation or enforcement of Inf or NaN semantics will depend on context.
+
+Conversion ops for this format will assume denormal-as-zero semantics.
+
+
+=== UTX1 ===
+
+UTX1:
+* pppp_drgb
+** High 16-bits, endpoint selectors.
+** Low 16-bits, pixel bits, center/distance.
+
+
+=== UTX2 ===
+
+UTX2:
+* pppp_pppp_bbbb_aaaa
+** High 32-bits, Endpoint Selectors (4x4x2)
+** Low 32-bits, RGB555A Endpoints
+
+Selectors are 2-bit each, with index 0 being in the low bits, and 15 in the high bits. Selectors are indexed linearly, but will normally represent pixels in Morton order.
+
+
+In UTX2, the high bit of each endpoint will encode the block format (A,B):
+** 00: Opaque Block, Linear Interpolation
+** 01: Alpha Select Block, 1-bit color, 1-bit alpha.
+** 10: Reserved
+** 11: Translucent, Linear Interpolation
+
+
+Endpoints in UTX2 are to be decoded as if they were first unpacked to RGBA32, and then doubled to form a 64-bit endpoint.
+
+
+=== UTX3(New) ===
+
+UTX3:
+* Bits (127:96): Alpha  Selectors (4x4x2)
+* Bits ( 95:64): RGB    Selectors (4x4x2)
+* Bits ( 63:32): Color Endpoint B
+* Bits ( 31: 0): Color Endpoint A
+
+
+There will be two sub-variants of this format, known as HDR and LDR:
+* HDR: Endpoints nominally encode FP8 values.
+* LDR: Endpoints represent unit-range 8-bit values.
+
+Endpoint layout will be the same as RGBA32.
+
+In HDR mode, the values will be interpreted as 8-bit minifloats.
+* E4.F4
+
+
+=== UTX3(Old) ===
+
+UTX3:
+* Bits (127:96): G /  A  Selectors (4x4x2)
+* Bits ( 95:64): RB/RGB  Selectors (4x4x2)
+* Bits ( 63:32): Color Endpoint B
+* Bits ( 31: 0): Color Endpoint A
+
+Each endpoint will use the high-2 bits as a tag.
+
+Endpoints will be interpreted as either RGB30, or as RGBA7878.
+
+Tags, Endpoint A:
+* 00: RGB30 (Signed)
+* 01: RGB30 (Unsigned)
+* 10: RGBA7878 (Signed)
+* 11: RGBA7878 (Unsigned)
+
+Tags, Endpoint B, RGB30:
+* 00: R G B, 4-bpp Linear
+* 01: R-B G, 2-bpp RB/G
+* 10: R G B, 2-bpp RB/G
+* 11: G R-B, 2-bpp RB/G
+
+Tags, Endpoint B, RGBA7878 (2-bpp, RGB/A):
+* 00: A R G B
+* 01: R A G B
+* 10: G R A B
+* 11: B R G A
+
+Or, in effect, for RGB30, the encoding can reorder components such that one component can be interpolated separately from the others.
+
+In a 4bpp Linear mode, both sets of interpolators will function as a logical 4-bit interpolator.
+
+In RGB30 Unsigned mode, the RGB components are shifted right by 1 bit. As a result, the high-order bit of each component will be set to zero. Note that this will not effect the Alpha value.
+
+
+There will be two sub-variants of this format, known as HDR and LDR:
+* HDR: Endpoints nominally encode Half-Float values.
+** Shift-Right allows omitting the sign bits.
+** Constant alpha is decoded as 0x3C00 (1.0)
+* LDR: Endpoints represent integer values.
+** Constant alpha is decoded as 0xFFFF.
+
+In RGBA7878 mode in HDR, the values will be interpreted as minifloats.
+* E4.F3 (R,B, Unsigned)
+* E4.F4 (G,A, Unsigned)
+* S.E4.F2 (R,B, Signed)
+* S.E4.F3 (G,A, Signed)
+

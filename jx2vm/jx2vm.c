@@ -1069,12 +1069,16 @@ int main(int argc, char *argv[])
 //	ctx->ttick_rst=100000000/1024;
 	ctx->ttick_hk=ctx->ttick_rst;
 
+	BJX2_ContextPowerOnState(ctx);
+
 	if(ctx_c2)
 	{
 		ctx_c2->tgt_mhz=ctx->tgt_mhz;
 		ctx_c2->rcp_mhz=ctx->rcp_mhz;
 		ctx_c2->ttick_rst=ctx->ttick_rst;
 		ctx_c2->ttick_hk=ctx->ttick_hk;
+
+		BJX2_ContextPowerOnState(ctx);
 	}
 
 //	ctx_c2=NULL;

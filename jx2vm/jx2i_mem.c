@@ -1269,7 +1269,7 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr, int opm)
 int BJX2_MemTlbCheckAccess(BJX2_Context *ctx, int acc, int pgbits,
 	u64 krr, u32 kra)
 {
-	u64 acl;
+	u64 acl, sr;
 	int noacc, vugid, vugid2, ugm;
 	int i, j, k;
 	
@@ -1285,12 +1285,14 @@ int BJX2_MemTlbCheckAccess(BJX2_Context *ctx, int acc, int pgbits,
 	if(pgbits&0x40)
 		noacc|=4;
 
-	if((pgbits&0x80) && !(ctx->regs[BJX2_REG_SR]&(1<<30)))
+	sr=ctx->regs[BJX2_REG_SR];
+
+	if((pgbits&0x80) && !(sr&(1<<30)))
 		noacc|=7;
 
 	if((pgbits&0x08) && !(pgbits&0x80))
 	{
-		if(ctx->regs[BJX2_REG_SR]&(1<<30))
+		if(sr&(1<<30))
 			noacc&=~3;
 //		noacc|=1;
 	}
