@@ -496,17 +496,20 @@ int __open(const char *a, int b, int *rc)
 	TK_Env_GetCwdQualifyName(tfn, 512, s);
 	TKSH_NormalizePath(tfn, tfn);
 	
-	tk_printf("__open: %s\n", tfn);
+//	tk_printf("__open: %s\n", tfn);
 
 //	fd=tk_fopen(s, "rb");
 //	fd=tk_fopen(s, md);
 	fd=tk_fopen(tfn, md);
 	if(!fd)
 	{
+		tk_printf("__open: %s, tk_fopen returned NULL\n", tfn);
 //		*(int *)((long)((unsigned int)c))=-1;
 		*rc=-1;
 		return(-1);
 	}
+
+//	tk_printf("__open: %s  Z\n", tfn);
 
 //	*(int *)((u32)c)=0;
 //	*(int *)((long)((unsigned int)c))=0;
@@ -516,6 +519,8 @@ int __open(const char *a, int b, int *rc)
 	{
 		if(!btshx_tk_handles[i])
 		{
+//			tk_printf("__open: %s  A\n", tfn);
+			*rc=0;
 			btshx_tk_handles[i]=fd;
 			return(i);
 		}
@@ -523,12 +528,16 @@ int __open(const char *a, int b, int *rc)
 	
 	if(btshx_tk_nhandles>=256)
 	{
+		tk_printf("__open: %s, no free handles\n", tfn);
 //		*(int *)((u32)c)=-1;
 //		*(int *)((long)((unsigned int)c))=-1;
 		*rc=-1;
 		return(-1);
 	}
-	
+
+//	tk_printf("__open: %s  B\n", tfn);
+
+	*rc=0;
 	i=btshx_tk_nhandles++;
 	btshx_tk_handles[i]=fd;
 	return(i);
@@ -902,6 +911,7 @@ int __start_early()
 
 int __start_late()
 {
+	tk_vfile_init();
 	__start_init();
 	return(0);
 }
@@ -1198,7 +1208,7 @@ void tk_printf(char *str, ...)
 
 		case 'p':
 			s1=va_arg(lst, char *);
-			tk_print_hex((u32)s1);
+			tk_print_hexptr((long)s1);
 			break;
 
 #ifdef ARCH_HAS_FPU

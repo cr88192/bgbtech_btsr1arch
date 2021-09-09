@@ -277,18 +277,19 @@ typedef struct TKMM_MemLnkSeg_s TKMM_MemLnkSeg;
 typedef struct TKMM_MemCelChk_s TKMM_MemCelChk;
 
 struct TKMM_MemLnkObj_s {
-TKMM_MemLnkObj *cnext;	//next object in chunk
-TKMM_MemLnkObj *cprev;	//previous object in chunk
+// TKMM_MemLnkObj *cnext;	//next object in chunk
+// TKMM_MemLnkObj *cprev;	//previous object in chunk
 u16 ix;					//size index value
 u16 dty_tag;			//type tag
 byte fl;				//object flags
 byte check;				//check value
 byte refcnt;			//reference count
 byte cat;				//category
+u64		pad_resv;
 // int flag;
 // u32 size;
 //double data[1];	//start of data
-u32 data[1];	//start of data
+u64 data[1];	//start of data
 };
 
 struct TKMM_MemLnkSeg_s {
@@ -319,7 +320,8 @@ int		magic3;
 
 
 // #define TKMM_OFFS_DATA	((int)(((TKMM_MemLnkObj *)0)->data))
-#define TKMM_OFFS_DATA	((long)(((TKMM_MemLnkObj *)0)->data))
+// #define TKMM_OFFS_DATA	((long)(((TKMM_MemLnkObj *)0)->data))
+#define TKMM_OFFS_DATA	__offsetof(TKMM_MemLnkObj, data)
 
 typedef struct TK_FILE_VT_s TK_FILE_VT;
 typedef struct TK_FILE_s TK_FILE;

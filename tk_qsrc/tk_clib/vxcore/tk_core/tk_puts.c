@@ -354,7 +354,8 @@ void tk_print_hex_n(u32 v, int n)
 
 void tk_print_hexptr(long v)
 {
-	if(sizeof(void *)>4)
+//	if(sizeof(void *)>4)
+	if(sizeof(long)>4)
 	{
 		tk_print_hex_n(v>>32, 4);
 	}
@@ -545,7 +546,7 @@ void tk_printf(char *str, ...)
 
 		case 'p':
 			s1=va_arg(lst, char *);
-			tk_print_hex((u32)s1);
+			tk_print_hexptr((long)s1);
 			break;
 
 #ifdef ARCH_HAS_FPU

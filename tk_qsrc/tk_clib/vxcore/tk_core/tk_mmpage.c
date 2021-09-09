@@ -390,7 +390,7 @@ void *TKMM_Malloc(int sz)
 	if(!TKMM_PageAlloc_f)
 		__debugbreak();
 
-#if 1
+#if 0
 	if(sz<TKMM_MAXMMCELLSZ)
 	{
 		ptr=TKMM_MMCell_Malloc(sz);
@@ -437,7 +437,7 @@ void *TKMM_Malloc(int sz)
 
 #endif
 
-	ptr=TKMM_MMList_AllocBrk(sz+sizeof(TKMM_MemLnkObj));
+	ptr=TKMM_MMList_AllocBrk(sz+sizeof(TKMM_MemLnkObj)+15);
 	np=(sz+sizeof(TKMM_MemLnkObj)+TKMM_PAGEMASK)>>TKMM_PAGEBITS;
 
 //	__debugbreak();
@@ -454,10 +454,11 @@ void *TKMM_Malloc(int sz)
 	if(!obj)
 		{ __debugbreak(); }
 
-	obj->cnext=NULL;
-	obj->cprev=NULL;
+//	obj->cnext=NULL;
+//	obj->cprev=NULL;
 	obj->ix=np;
 	obj->fl=5;
+	obj->cat=0;
 
 //	__debugbreak();
 
@@ -693,8 +694,8 @@ void *TKMM_MallocCat(int sz, int cat)
 	if(!obj)
 		{ __debugbreak(); }
 
-	obj->cnext=NULL;
-	obj->cprev=NULL;
+//	obj->cnext=NULL;
+//	obj->cprev=NULL;
 	obj->ix=np;
 	obj->fl=5;
 	obj->cat=cat;

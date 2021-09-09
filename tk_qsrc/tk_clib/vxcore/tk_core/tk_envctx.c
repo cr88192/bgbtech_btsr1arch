@@ -222,10 +222,19 @@ char *TK_EnvCtx_GetCwd(TK_EnvContext *ctx, char *buf, int sz)
 	char *cwd;
 	int l;
 	
+//	tk_printf("TK_EnvCtx_GetCwd env=%p\n", ctx);
+	
 	cwd=NULL;
 	if(ctx)	
 		{ cwd=ctx->cwd; }
-	if(!cwd)cwd="/";
+	if(!cwd)
+	{
+//		tk_printf("TK_EnvCtx_GetCwd env=%p, CWD was NULL\n", ctx);
+		cwd="/";
+	}else
+	{
+//		tk_printf("TK_EnvCtx_GetCwd env=%p, CWD=%s (%p)\n", ctx, cwd, cwd);
+	}
 	
 	l=strlen(cwd);
 	

@@ -503,6 +503,8 @@ static void osfopen(void)
 		tk_printf("osfopen: bad mode %d\n", modeType);
 		return;
 	}
+	
+	errind = 0;
 
 //	myfile->hfile = __open(fnm, mode, (int)&errind);
 //	myfile->hfile = __open(fnm, mode, (long)(&errind));

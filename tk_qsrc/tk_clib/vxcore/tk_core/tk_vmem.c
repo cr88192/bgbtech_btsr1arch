@@ -41,7 +41,7 @@ u32	tk_vmem_swap_sz;
 u32	tk_vmem_swap_psz;
 
 
-u64	*tk_vmem_pageroot;
+u64	*tk_vmem_pageroot=NULL;
 
 u16	*tk_vmem_usrexpage;		//User, Execute Only, Memory
 u16	*tk_vmem_usrexonly;		//User, Execute Only, Ex-Only Addr
@@ -908,8 +908,12 @@ int TK_VMem_MProtectPages(u64 addr, size_t len, int prot)
 	int b, n;
 	int i, j;
 
+//	return(0);
+
 	if(!tk_vmem_pageroot)
 		return(0);
+
+	tk_printf("TK_VMem_MProtectPages: %p %X %X\n", addr, len, prot);
 
 	b=(addr>>TK_VMEM_PAGESHL);
 	n=(len>>TK_VMEM_PAGESHL);
@@ -919,19 +923,19 @@ int TK_VMem_MProtectPages(u64 addr, size_t len, int prot)
 
 		tpte=TK_VMem_GetPageTableEntry(tva);
 
-		tpte&=~0x00F8;
+		tpte&=~0x00F8ULL;
 
 		if(!(prot&0x01))
-			tpte|=0x10;
+			tpte|=0x10ULL;
 		if(!(prot&0x02))
-			tpte|=0x20;
+			tpte|=0x20ULL;
 		if(!(prot&0x04))
-			tpte|=0x40;
+			tpte|=0x40ULL;
 
 		if(prot&0x10)
-			tpte|=0x08;
+			tpte|=0x08ULL;
 		if(prot&0x20)
-			tpte|=0x80;
+			tpte|=0x80ULL;
 
 //		tpte=(2<<8)|(1<<10)|1;
 //		tpte=(0<<8)|(1<<10)|1;

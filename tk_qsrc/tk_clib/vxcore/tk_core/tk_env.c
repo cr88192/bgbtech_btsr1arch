@@ -41,6 +41,7 @@ int TK_Env_GetEnvVarI(char *varn, char *buf, int sz)
 		env=TK_GetCurrentEnvContext();
 		if(!env)
 		{
+			tk_printf("TK_Env_GetEnvVarI: No Env\n");
 			*buf=0;
 			return(-1);
 		}
@@ -106,6 +107,9 @@ int TK_Env_GetCwdQualifyName(char *buf, int sz, char *fn)
 	}
 	
 	TK_Env_GetCwd(tcwd, 256);
+
+//	tk_printf("TK_Env_GetCwdQualifyName: cwd=%s\n", tcwd);
+	
 	strcpy(tnam, tcwd);
 	strcat(tnam, "/");
 	strcat(tnam, fn);
