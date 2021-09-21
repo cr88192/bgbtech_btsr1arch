@@ -410,12 +410,26 @@ void BGBCC_CCXL_CompileJmpCond(BGBCC_TransState *ctx,
 		return;
 	}
 
-	BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &rega2);
-	BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &regb2);
-	BGBCC_CCXL_EmitConv(ctx, dty, sty, rega2, rega);
-	BGBCC_CCXL_EmitConv(ctx, dty, tty, regb2, regb);
-	BGBCC_CCXL_RegisterCheckRelease(ctx, rega);
-	BGBCC_CCXL_RegisterCheckRelease(ctx, regb);
+	if(!BGBCC_CCXL_TypeEqualP(ctx, dty, sty))
+	{
+		BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &rega2);
+		BGBCC_CCXL_EmitConv(ctx, dty, sty, rega2, rega);
+		BGBCC_CCXL_RegisterCheckRelease(ctx, rega);
+	}else
+	{
+		rega2=rega;
+	}
+
+	if(!BGBCC_CCXL_TypeEqualP(ctx, dty, tty))
+	{
+		BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &regb2);
+		BGBCC_CCXL_EmitConv(ctx, dty, tty, regb2, regb);
+		BGBCC_CCXL_RegisterCheckRelease(ctx, regb);
+	}else
+	{
+		regb2=regb;
+	}
+
 	BGBCC_CCXL_EmitJumpRegCmp(ctx, dty, opr, rega2, regb2, lbl);
 	BGBCC_CCXL_RegisterCheckRelease(ctx, rega2);
 	BGBCC_CCXL_RegisterCheckRelease(ctx, regb2);
@@ -562,6 +576,9 @@ int BGBCC_CCXL_TryGetSizeofType(BGBCC_TransState *ctx, BCCX_Node *ty)
 	i=BCCX_GetInt(ty, "ind");
 	if(i)
 	{
+//		if(BGBCC_IsEmitRil(ctx))
+//			return(-1);
+	
 		if(ctx->arch_sizeof_ptr)
 			return(ctx->arch_sizeof_ptr);
 		return(-1);
@@ -584,6 +601,8 @@ int BGBCC_CCXL_TryGetSizeofType(BGBCC_TransState *ctx, BCCX_Node *ty)
 	{
 		if(!strcmp(s, "long") || !strcmp(s, "ulong"))
 		{
+//			if(BGBCC_IsEmitRil(ctx))
+//				return(-1);
 			if(ctx->arch_sizeof_long)
 				return(ctx->arch_sizeof_long);
 			return(4);
@@ -1161,12 +1180,26 @@ void BGBCC_CCXL_CompilePredCmp(BGBCC_TransState *ctx, char *op)
 		return;
 	}
 
-	BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &rega2);
-	BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &regb2);
-	BGBCC_CCXL_EmitConv(ctx, dty, sty, rega2, rega);
-	BGBCC_CCXL_EmitConv(ctx, dty, tty, regb2, regb);
-	BGBCC_CCXL_RegisterCheckRelease(ctx, rega);
-	BGBCC_CCXL_RegisterCheckRelease(ctx, regb);
+	if(!BGBCC_CCXL_TypeEqualP(ctx, dty, sty))
+	{
+		BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &rega2);
+		BGBCC_CCXL_EmitConv(ctx, dty, sty, rega2, rega);
+		BGBCC_CCXL_RegisterCheckRelease(ctx, rega);
+	}else
+	{
+		rega2=rega;
+	}
+
+	if(!BGBCC_CCXL_TypeEqualP(ctx, dty, tty))
+	{
+		BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &regb2);
+		BGBCC_CCXL_EmitConv(ctx, dty, tty, regb2, regb);
+		BGBCC_CCXL_RegisterCheckRelease(ctx, regb);
+	}else
+	{
+		regb2=regb;
+	}
+
 	BGBCC_CCXL_EmitPredCmpOp(ctx, dty, opr, rega2, regb2);
 	BGBCC_CCXL_RegisterCheckRelease(ctx, rega2);
 	BGBCC_CCXL_RegisterCheckRelease(ctx, regb2);

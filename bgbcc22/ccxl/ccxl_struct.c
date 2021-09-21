@@ -666,6 +666,8 @@ ccxl_status BGBCC_CCXL_GetSigFixedSize(
 	case 'i':	case 'j':
 		sz=4;	break;
 	case 'l':	case 'm':
+		if(BGBCC_IsEmitRil(ctx))
+			__debugbreak();
 		if(ctx->arch_sizeof_long)
 			{ sz=ctx->arch_sizeof_long; break; }
 		sz=4;
@@ -702,6 +704,8 @@ ccxl_status BGBCC_CCXL_GetSigFixedSize(
 		break;
 
 	case 'P':
+		if(BGBCC_IsEmitRil(ctx))
+			__debugbreak();
 		if(ctx->arch_sizeof_ptr)
 			{ sz=ctx->arch_sizeof_ptr; break; }
 		sz=4;
@@ -799,6 +803,7 @@ ccxl_status BGBCC_CCXL_GetSigMinMaxSize(
 		ala[0]=4; ala[1]=4;
 		break;
 	case 'l':	case 'm':
+//		if(ctx->arch_sizeof_long && !BGBCC_IsEmitRil(ctx))
 		if(ctx->arch_sizeof_long)
 		{
 			i=ctx->arch_sizeof_long;
@@ -835,6 +840,7 @@ ccxl_status BGBCC_CCXL_GetSigMinMaxSize(
 		break;
 
 	case 'P':
+//		if(ctx->arch_sizeof_ptr && !BGBCC_IsEmitRil(ctx))
 		if(ctx->arch_sizeof_ptr)
 		{
 			i=ctx->arch_sizeof_ptr;
@@ -940,6 +946,7 @@ ccxl_status BGBCC_CCXL_GetSigMinMaxSize(
 		case 'z':
 			sz=ctx->arch_sizeof_valist;
 			al=ctx->arch_align_max;
+//			if((sz>0) && !BGBCC_IsEmitRil(ctx))
 			if(sz>0)
 			{
 				sza[0]=sz; sza[1]=sz;

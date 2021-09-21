@@ -12,9 +12,12 @@
 
 #include "bt1h_targa.c"
 
+#include "btm_voxtype.c"
+
 #include "btra_span.c"
 #include "btra_col.c"
 #include "btra_wall.c"
+
 #include "btra_ray2.c"
 
 // #include "rat_loadply.c"

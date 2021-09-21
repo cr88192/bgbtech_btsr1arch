@@ -2407,7 +2407,19 @@ int BGBCC_CCXL_TypeGetLogicalSize(
 		}
 
 		if(obj->littype==CCXL_LITID_CLASS)
+		{
+			if(!(obj->decl))
+				return(-1);
+
+			if(obj && obj->decl && (obj->decl->fxmsize>0) &&
+				(obj->decl->fxmsize==obj->decl->fxnsize))
+			{
+				return(obj->decl->fxmsize);
+			}
+
 			return(-1);
+		}
+
 		if(obj->littype==CCXL_LITID_FUNCTION)
 			return(-1);
 
@@ -3247,6 +3259,24 @@ int BGBCC_CCXL_TypeFarPointerP(
 	return(pcls==CCXL_PCLS_FAR);
 }
 
+int BGBCC_CCXL_TypeVolatilePointerP(
+	BGBCC_TransState *ctx, ccxl_type sty)
+{
+	int pcls;
+	
+	pcls=BGBCC_CCXL_TypeGetPointerClass(ctx, sty);
+	return(pcls==CCXL_PCLS_VOLATILE);
+}
+
+int BGBCC_CCXL_TypeRestrictPointerP(
+	BGBCC_TransState *ctx, ccxl_type sty)
+{
+	int pcls;
+	
+	pcls=BGBCC_CCXL_TypeGetPointerClass(ctx, sty);
+	return(pcls==CCXL_PCLS_RESTRICT);
+}
+
 int BGBCC_CCXL_TypeUnpackOverflow(
 	BGBCC_TransState *ctx,
 	ccxl_type ty,
@@ -3516,6 +3546,8 @@ ccxl_status BGBCC_CCXL_TypeFromSig(
 		case 'p': pcls=CCXL_PCLS_PACKED; break;
 		case 'b': pcls=CCXL_PCLS_BIGEND; break;
 		case 'l': pcls=CCXL_PCLS_LTLEND; break;
+		case 'r': pcls=CCXL_PCLS_RESTRICT; break;
+		case 'v': pcls=CCXL_PCLS_VOLATILE; break;
 		default:
 			break;
 		}
@@ -4248,10 +4280,34 @@ int BGBCC_CCXL_TypeCompatibleFlP(
 		}
 	}
 
+	if(BGBCC_CCXL_TypeSgNLongP(ctx, dty))
+	{
+		if(BGBCC_CCXL_TypeSgNLongP(ctx, dty))
+			return(1);
+		
+		if(!BGBCC_IsEmitRil(ctx))
+		{
+			if(ctx->arch_sizeof_long==8)
+			{
+				if(BGBCC_CCXL_TypeSgLongP(ctx, sty))
+					return(1);
+			}
+		}
+	}
+
 	if(BGBCC_CCXL_TypeSgLongP(ctx, dty))
 	{
 		if(BGBCC_CCXL_TypeSgLongP(ctx, sty))
 			return(1);
+
+		if(!BGBCC_IsEmitRil(ctx))
+		{
+			if(ctx->arch_sizeof_long==8)
+			{
+				if(BGBCC_CCXL_TypeSgNLongP(ctx, sty))
+					return(1);
+			}
+		}
 		
 		if(fl&4)
 		{
@@ -4873,6 +4929,11 @@ bool BGBCC_CCXL_TypeSupportsOperatorP(
 	BGBCC_TransState *ctx, ccxl_type ty, int opr)
 {
 	if(BGBCC_CCXL_TypeSmallIntP(ctx, ty))
+	{
+		return(true);
+	}
+
+	if(BGBCC_CCXL_TypeSgNLongP(ctx, ty))
 	{
 		return(true);
 	}

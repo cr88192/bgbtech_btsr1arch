@@ -76,7 +76,32 @@ void *__alloca_noframe(int size)
 
 void *__alloca_wxe(int size)
 {
-	return(__alloca_noframe(size));
+	void **rpm;
+	void *ptr, *ptr1;
+	int sz;
+
+	rpm=TK_GetAllocaMark();
+	
+//	ptr=tk_malloc(size+2*sizeof(void *));
+	sz=size+2*sizeof(void *);
+	ptr=_malloc_cat(sz, 4);
+	if(!ptr)
+	{
+//		tk_printf("alloca failed alloc %d\n", size);
+		return(NULL);
+	}
+	
+	ptr1=(void *)(((void **)ptr)+2);
+	
+//	*(void **)ptr=*rpm;
+	((void **)ptr)[0]=*rpm;
+//	((void **)ptr)[1]=tk_free;
+	((void **)ptr)[1]=free;
+
+	*rpm=ptr;
+	return(ptr1);
+
+//	return(__alloca_noframe(size));
 }
 
 

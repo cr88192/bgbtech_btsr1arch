@@ -341,6 +341,13 @@ void BGBCC_CCXLR3_EmitOp(
 	BGBCC_CCXLR3_EmitOpVLI(ctx, op);
 }
 
+int BGBCC_IsEmitRil(BGBCC_TransState *ctx)
+{
+	if(ctx->ril_ip)
+		return(1);
+	return(0);
+}
+
 void BGBCC_CCXLR3_EmitArgInt(
 	BGBCC_TransState *ctx, s64 val)
 {

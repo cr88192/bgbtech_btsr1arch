@@ -182,7 +182,7 @@ void GfxDrv_EndDrawing(void)
 //	glFinish();
 	SwapBuffers(maindc);
 	
-	FRGL_EndInputFrame();
+//	FRGL_EndInputFrame();
 
 	window_lastactive=window_active;
 

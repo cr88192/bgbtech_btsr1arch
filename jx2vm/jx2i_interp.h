@@ -335,7 +335,8 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_FCMPEQ	0x4C		//
 #define BJX2_NMID_FCMPGT	0x4D		//
 #define BJX2_NMID_FMOVS		0x4E		//
-#define BJX2_NMID_FMOVD		0x4F		//
+#define BJX2_NMID_FMOVH		0x4F		//
+// #define BJX2_NMID_FMOVD		0x4F		//
 
 #define BJX2_NMID_FMOV		0x50		//
 #define BJX2_NMID_FNEG		0x51		//

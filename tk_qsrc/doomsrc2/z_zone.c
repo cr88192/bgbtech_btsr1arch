@@ -117,7 +117,7 @@ void Z_Init (void)
 	mainzone->blocklist.tag = PU_STATIC;
 	mainzone->blocklist.id = ZONEID;
 	mainzone->rover = block;
-	
+
 	block->prev = block->next = &mainzone->blocklist;
 
 	// NULL indicates a free block.
@@ -126,6 +126,9 @@ void Z_Init (void)
 	block->id = 0;
 	
 	block->size = mainzone->size - sizeof(memzone_t);
+
+	if(((long)block)&15)
+		__debugbreak();
 }
 
 
@@ -141,6 +144,9 @@ void Z_Free (void* ptr)
 		return;
 	
 	block = (memblock_t *) ( (byte *)ptr - sizeof(memblock_t));
+	
+	if(((long)block)&15)
+		__debugbreak();
 	
 	__setmemtrap(block, 2);
 
@@ -267,7 +273,10 @@ Z_Malloc
 	size = (size + 31) & (~15);
 //	size = (size + 47) & (~15);
 	size1 = size;
-	
+
+	if(((long)size)&15)
+		__debugbreak();
+
 	// scan through the block list,
 	// looking for the first free block
 	// of sufficient size,
@@ -367,6 +376,9 @@ Z_Malloc
 	mainzone->rover = base->next;	
 	
 	base->id = ZONEID;
+
+	if(((long)base)&15)
+		__debugbreak();
 
 	__setmemtrap(base, 3);
 	

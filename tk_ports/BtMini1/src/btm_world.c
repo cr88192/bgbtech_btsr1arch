@@ -232,50 +232,144 @@ int BTM_RaycastScene(BTM_World *wrl)
 	return(0);
 }
 
-int BTM_UpdateWorldBlockOccCix(BTM_World *wrl, int cix, int xsh, int msk)
+int BTM_UpdateWorldBlockOccBlkCheck(
+	BTM_World *wrl, u32 blka, u32 blkb)
 {
-	int cix1, xsh2;
+	if(blkb&BTM_BLKDFL_NODRAW)
+		return(0);
+
+	if(blkb&BTM_BLKDFL_SEETHRU)
+	{
+		if(blka&BTM_BLKDFL_SEETHRU)
+			return(1);
+		return(0);
+	}
+
+	if(blkb&BTM_BLKDFL_NONSOLID)
+	{
+		if(blka&BTM_BLKDFL_NONSOLID)
+			return(1);
+		if(blka&BTM_BLKDFL_FLUID)
+			return(1);
+		return(0);
+	}
+
+	if(blkb&BTM_BLKDFL_FLUID)
+	{
+		if(blka&BTM_BLKDFL_FLUID)
+			return(1);
+		return(0);
+	}
+
+	return(1);
+}
+
+int BTM_UpdateWorldBlockOccCix(BTM_World *wrl, int cix)
+{
+	int xmsk, ymsk;
+	int cix1, xsh2, bt;
+	int xsh, zsh, msk;
 	u64 bm;
-	u32 blk;
+	u32 blk, blkd, blk2, blk2d;
+
+	xsh=wrl->xsh;
+	zsh=wrl->zsh;
+	msk=(1<<(xsh+xsh+zsh))-1;
 
 	cix&=msk;
+	
+	xmsk=(1<<xsh)-1;
+	ymsk=xmsk<<xsh;
 
 	xsh2=xsh<<1;
 	blk=wrl->vox[cix];
 
+	bt=(blk&0xFF);
+	if(bt<2)
+	{
+//		wrl->vox[cix]=blk;
+		return(0);
+	}
+
+	blkd=btmgl_vox_atlas_side[bt];
+
+	if(blkd&BTM_BLKDFL_NODRAW)
+	{
+		blk|=(0x3FU<<24);
+		wrl->vox[cix]=blk;
+		return(0);
+	}
+
+	
 	blk&=~(0x3FU<<24);
-	
-	cix1=(cix-1)&msk;
-	bm=wrl->voxbm[cix1>>6];
-	if(bm&(1ULL<<(cix1&63)))
-		blk|=1U<<(24+3);
 
-	cix1=(cix+1)&msk;
+//	cix1=(cix-1)&msk;
+	cix1=((cix-1)&xmsk)|(cix&(~xmsk));
 	bm=wrl->voxbm[cix1>>6];
 	if(bm&(1ULL<<(cix1&63)))
-		blk|=1U<<(24+1);
-	
-	cix1=(cix-(1<<xsh))&msk;
-	bm=wrl->voxbm[cix1>>6];
-	if(bm&(1ULL<<(cix1&63)))
-		blk|=1U<<(24+0);
+	{
+		blk2=wrl->vox[cix1];
+		blk2d=btmgl_vox_atlas_side[blk2&255];
+		if(BTM_UpdateWorldBlockOccBlkCheck(wrl, blkd, blk2d))
+			blk|=1U<<(24+3);
+	}
 
-	cix1=(cix+(1<<xsh))&msk;
+//	cix1=(cix+1)&msk;
+	cix1=((cix+1)&xmsk)|(cix&(~xmsk));
 	bm=wrl->voxbm[cix1>>6];
 	if(bm&(1ULL<<(cix1&63)))
-		blk|=1U<<(24+2);
+	{
+		blk2=wrl->vox[cix1];
+		blk2d=btmgl_vox_atlas_side[blk2&255];
+		if(BTM_UpdateWorldBlockOccBlkCheck(wrl, blkd, blk2d))
+			blk|=1U<<(24+1);
+	}
+	
+//	cix1=(cix-(1<<xsh))&msk;
+	cix1=((cix-(1<<xsh))&ymsk)|(cix&(~ymsk));
+	bm=wrl->voxbm[cix1>>6];
+	if(bm&(1ULL<<(cix1&63)))
+	{
+		blk2=wrl->vox[cix1];
+		blk2d=btmgl_vox_atlas_side[blk2&255];
+		if(BTM_UpdateWorldBlockOccBlkCheck(wrl, blkd, blk2d))
+			blk|=1U<<(24+0);
+	}
+
+//	cix1=(cix+(1<<xsh))&msk;
+	cix1=((cix+(1<<xsh))&ymsk)|(cix&(~ymsk));
+	bm=wrl->voxbm[cix1>>6];
+	if(bm&(1ULL<<(cix1&63)))
+	{
+		blk2=wrl->vox[cix1];
+		blk2d=btmgl_vox_atlas_side[blk2&255];
+		if(BTM_UpdateWorldBlockOccBlkCheck(wrl, blkd, blk2d))
+			blk|=1U<<(24+2);
+	}
 
 	cix1=(cix-(1<<xsh2))&msk;
 	bm=wrl->voxbm[cix1>>6];
 	if(bm&(1ULL<<(cix1&63)))
-		blk|=1U<<(24+5);
+	{
+		blk2=wrl->vox[cix1];
+		blk2d=btmgl_vox_atlas_side[blk2&255];
+		if(BTM_UpdateWorldBlockOccBlkCheck(wrl, blkd, blk2d))
+			blk|=1U<<(24+5);
+	}
 
 	cix1=(cix+(1<<xsh2))&msk;
 	bm=wrl->voxbm[cix1>>6];
 	if(bm&(1ULL<<(cix1&63)))
-		blk|=1U<<(24+4);
+	{
+		blk2=wrl->vox[cix1];
+		blk2d=btmgl_vox_atlas_side[blk2&255];
+		if(BTM_UpdateWorldBlockOccBlkCheck(wrl, blkd, blk2d))
+			blk|=1U<<(24+4);
+	}
 
 	wrl->vox[cix]=blk;
+	
+	return(0);
 }
 
 int BTM_SetWorldBlockCix(BTM_World *wrl, int cix, u32 blk)
@@ -327,6 +421,31 @@ int BTM_SetWorldBlockXYZ(BTM_World *wrl,
 	return(0);
 }
 
+int BTM_UpdateWorldBlockOccCix2(BTM_World *wrl, int cix)
+{
+	int xsh, xsh2;
+	
+	xsh=wrl->xsh;
+	xsh2=xsh<<1;
+
+	BTM_UpdateWorldBlockOccCix(wrl, cix);
+	BTM_UpdateWorldBlockOccCix(wrl, cix+1);
+	BTM_UpdateWorldBlockOccCix(wrl, cix-1);
+	BTM_UpdateWorldBlockOccCix(wrl, cix+(1<<xsh));
+	BTM_UpdateWorldBlockOccCix(wrl, cix-(1<<xsh));
+	BTM_UpdateWorldBlockOccCix(wrl, cix+(1<<xsh2));
+	BTM_UpdateWorldBlockOccCix(wrl, cix-(1<<xsh2));
+	return(0);
+}
+
+u32 BTM_GetWorldBlockCix(BTM_World *wrl, int cix)
+{
+	u32 blk;
+
+	blk=wrl->vox[cix];
+	return(blk);
+}
+
 u32 BTM_GetWorldBlockXYZ(BTM_World *wrl,
 	int cx, int cy, int cz)
 {
@@ -348,6 +467,16 @@ u32 BTM_GetWorldBlockXYZ(BTM_World *wrl,
 	return(wrl->vox[ix&msk]);
 }
 
+u32 BTM_GetWorldBlockCorg(BTM_World *wrl, u64 corg)
+{
+	int cx, cy, cz;
+	
+	cx=corg>>8;
+	cy=corg>>32;
+	cz=corg>>56;
+	return(BTM_GetWorldBlockXYZ(wrl, cx, cy, cz));
+}
+
 int BTM_UpdateWorldBlockOcc(BTM_World *wrl)
 {
 	int xsh, zsh, msk;
@@ -357,7 +486,7 @@ int BTM_UpdateWorldBlockOcc(BTM_World *wrl)
 	zsh=wrl->zsh;
 	msk=(1<<(xsh+xsh+zsh))-1;
 	for(i=0; i<(msk+1); i++)
-		BTM_UpdateWorldBlockOccCix(wrl, i, xsh, msk);
+		BTM_UpdateWorldBlockOccCix(wrl, i);
 	return(0);
 }
 
@@ -530,29 +659,6 @@ static const int  btmgl_cube_quads[6*4]=
 	1, 0, 2, 3	//-Z
 };
 
-static const u32 btmgl_vox_atlas_side[256]={
-0x01000000, 0x01000000, 0x00000101, 0x00000202,		/* 00-03 */
-0x00000303, 0x00000404, 0x00001010, 0x00001111,		/* 04-07 */
-0x00001212, 0x00001313, 0x0000FFFF, 0x00000F0F,		/* 08-0B */
-0x00002020, 0x00002121, 0x00002222, 0x00002323,		/* 0C-0F */
-0x00002424, 0x00002525, 0x00002626, 0x00002727,		/* 10-13 */
-0x00002828, 0x00002929, 0x00001F1F, 0x00000E0E,		/* 14-17 */
-0x00000505, 0x00001414, 0x00001515, 0x00001616,		/* 18-1B */
-0x00000707, 0x00000606, 0x00001717, 0x0000EEEE,		/* 1C-1F */
-0x0000EFEF, 0x0000FEFE, 0x0100E0E0, 0x0100E1E1,		/* 20-23 */
-0x0100F1F1, 0x00001E1E, 0x00002E2E, 0x00002F2F,		/* 24-27 */
-0x00001818, 0x00000808, 0x00000909, 0x00001919,		/* 28-2B */
-0x00000A0A, 0x00001A1A, 0x00002A2A, 0x00000B0B,		/* 2C-2F */
-0x00001B1B, 0x00003E3E, 0x00003333, 0x00003434,		/* 30-33 */
-0x00003535, 0x00003636, 0x00003737, 0x00003838,		/* 34-37 */
-0x00003939, 0x00000B0B, 0x00002B2B, 0x00003A3A,		/* 38-3B */
-0x00003B3B, 0x0000EDED, 0x00001C1C, 0x00002C2C,		/* 3C-3F */
-0x00003232, 0x00004242, 0x00003030, 0x00003434,		/* 40-43 */
-0x00004444, 0x00004545, 0x00001414, 0x00001313,		/* 44-47 */
-0x00005353, 0x00005454, 0x00005151, 0x00005252,		/* 48-4B */
-0x00005555, 0x00005656, 0x00004F4F,
-};
-
 float *btmgl_blkemit_xyz;
 float *btmgl_blkemit_st;
 u32 *btmgl_blkemit_rgb;
@@ -613,7 +719,7 @@ int BTMGL_EmitBlockFaces(int cx, int cy, int cz, int fm, u32 blk)
 	int bt, tx, ty;
 	int i, j, k;
 	
-	if(!fm)
+	if(!(fm&0x3F))
 		return(0);
 	
 	bt=blk&255;
@@ -624,7 +730,7 @@ int BTMGL_EmitBlockFaces(int cx, int cy, int cz, int fm, u32 blk)
 	
 	k=(blk>>24)&0x3F;
 	fm&=~k;
-	if(!fm)
+	if(!(fm&0x3F))
 		return(0);
 	
 	binf=btmgl_vox_atlas_side[bt];
@@ -733,6 +839,11 @@ int BTMGL_EmitBlockFaces(int cx, int cy, int cz, int fm, u32 blk)
 		{
 			rgb=0xFFBFBFBFU;
 			st=sta;
+		}
+		
+		if(fm&64)
+		{
+			rgb&=0xFF7FFF7FU;
 		}
 
 		tri=btmgl_cube_quads+i*4;
@@ -844,6 +955,9 @@ int BTMGL_DrawSceneBlocks(BTM_World *wrl)
 			fm&=~32;
 		else
 			fm&=~16;
+
+		if(cix==wrl->scr_lhit)
+			fm|=64;
 
 		BTMGL_EmitBlockFaces(cx, cy, cz, fm, blk);
 
@@ -961,18 +1075,42 @@ int BTM_GenTree(BTM_World *wrl, int cx, int cy, int cz)
 	}
 }
 
-int BTM_CheckWorldMoveSpot(BTM_World *wrl, float *org)
+int BTM_CheckWorldMoveBlockContents(BTM_World *wrl, int btm)
 {
+	u32 blkd;
+
+	blkd=btmgl_vox_atlas_side[btm&0xFF];
+
+	if(blkd&BTM_BLKDFL_NONSOLID)
+		{ return(0); }
+	if(blkd&BTM_BLKDFL_FLUID)
+		{ return(2); }
+
+	return(1);
+}
+
+int BTM_CheckWorldMoveSpot(BTM_World *wrl, float *org, const float *bbox)
+{
+	int cont;
 	int cxm, cxn, cym, cyn, czm, czn;
 	u32 blk0, blk1, blk2, blk3;
+	u32 blk4, blk5, blk6, blk7;
 
-	cxm=org[0]-0.35;
-	cxn=org[0]+0.35;
-	cym=org[1]-0.35;
-	cyn=org[1]+0.35;
+//	cxm=org[0]-0.35;
+//	cxn=org[0]+0.35;
+//	cym=org[1]-0.35;
+//	cyn=org[1]+0.35;
 
-	czm=org[2]-1.7;
-	czn=org[2]+0.1;
+//	czm=org[2]-1.7;
+//	czn=org[2]+0.1;
+
+	cxm=org[0]+bbox[0];
+	cxn=org[0]+bbox[3];
+	cym=org[1]+bbox[1];
+	cyn=org[1]+bbox[4];
+
+	czm=org[2]+bbox[2];
+	czn=org[2]+bbox[5];
 
 //	blk0=BTM_GetWorldBlockXYZ(wrl, org[0], org[1], org[2]-2);
 //	blk1=BTM_GetWorldBlockXYZ(wrl, org[0], org[1], org[2]-1);
@@ -982,47 +1120,62 @@ int BTM_CheckWorldMoveSpot(BTM_World *wrl, float *org)
 	blk2=BTM_GetWorldBlockXYZ(wrl, cxm, cyn, czm);
 	blk3=BTM_GetWorldBlockXYZ(wrl, cxn, cyn, czm);
 
-	if((blk0&255)>=2)
-		return(0);
-	if((blk1&255)>=2)
-		return(0);
-	if((blk2&255)>=2)
-		return(0);
-	if((blk3&255)>=2)
-		return(0);
+	cont=0;
 
-	blk0=BTM_GetWorldBlockXYZ(wrl, cxm, cym, czn);
-	blk1=BTM_GetWorldBlockXYZ(wrl, cxn, cym, czn);
-	blk2=BTM_GetWorldBlockXYZ(wrl, cxm, cyn, czn);
-	blk3=BTM_GetWorldBlockXYZ(wrl, cxn, cyn, czn);
+	cont|=BTM_CheckWorldMoveBlockContents(wrl, blk0);
+	cont|=BTM_CheckWorldMoveBlockContents(wrl, blk1);
+	cont|=BTM_CheckWorldMoveBlockContents(wrl, blk2);
+	cont|=BTM_CheckWorldMoveBlockContents(wrl, blk3);
 
-	if((blk0&255)>=2)
-		return(0);
-	if((blk1&255)>=2)
-		return(0);
-	if((blk2&255)>=2)
-		return(0);
-	if((blk3&255)>=2)
-		return(0);
+//	if(((blk0&255)>=2) && BTM_CheckWorldMoveBlockSolidP(wrl, blk0))
+//		cont|=1;
+//	if(((blk1&255)>=2) && BTM_CheckWorldMoveBlockSolidP(wrl, blk1))
+//		cont|=1;
+//	if(((blk2&255)>=2) && BTM_CheckWorldMoveBlockSolidP(wrl, blk2))
+//		cont|=1;
+//	if(((blk3&255)>=2) && BTM_CheckWorldMoveBlockSolidP(wrl, blk3))
+//		cont|=1;
+
+	blk4=BTM_GetWorldBlockXYZ(wrl, cxm, cym, czn);
+	blk5=BTM_GetWorldBlockXYZ(wrl, cxn, cym, czn);
+	blk6=BTM_GetWorldBlockXYZ(wrl, cxm, cyn, czn);
+	blk7=BTM_GetWorldBlockXYZ(wrl, cxn, cyn, czn);
+
+//	if(((blk4&255)>=2) && BTM_CheckWorldMoveBlockSolidP(wrl, blk4))
+//		cont|=1;
+//	if(((blk5&255)>=2) && BTM_CheckWorldMoveBlockSolidP(wrl, blk5))
+//		cont|=1;
+//	if(((blk6&255)>=2) && BTM_CheckWorldMoveBlockSolidP(wrl, blk6))
+//		cont|=1;
+//	if(((blk7&255)>=2) && BTM_CheckWorldMoveBlockSolidP(wrl, blk7))
+//		cont|=1;
+
+	cont|=BTM_CheckWorldMoveBlockContents(wrl, blk4);
+	cont|=BTM_CheckWorldMoveBlockContents(wrl, blk5);
+	cont|=BTM_CheckWorldMoveBlockContents(wrl, blk6);
+	cont|=BTM_CheckWorldMoveBlockContents(wrl, blk7);
+
+	if((blk4|blk5|blk6|blk7)&2)
+		cont|=4;
 
 //	if(((blk0&255)<2) && ((blk1&255)<2))
 //		return(1);
 
-	return(1);
+	return(cont);
 }
 
-int BTM_CheckWorldMoveVel(BTM_World *wrl, float dt,
-	float *sorg, float *svel,
+int BTM_CheckWorldBoxMoveVel(BTM_World *wrl, float dt,
+	float *sorg, float *svel, const float *bbox,
 	float *dorg, float *dvel, int *rfl)
 {
 	float tdo[4], tdv[4];
-	int fl;
+	int fl, cfl;
 	int i, j, k;
 
 	if(dt>0.1)
 	{
-		BTM_CheckWorldMoveVel(wrl, dt*0.5, sorg, svel, tdo, tdv, rfl);
-		BTM_CheckWorldMoveVel(wrl, dt*0.5, tdo, tdv, dorg, dvel, rfl);
+		BTM_CheckWorldBoxMoveVel(wrl, dt*0.5, sorg, svel, bbox, tdo, tdv, rfl);
+		BTM_CheckWorldBoxMoveVel(wrl, dt*0.5, tdo, tdv, bbox, dorg, dvel, rfl);
 		return(0);
 	}
 
@@ -1035,10 +1188,17 @@ int BTM_CheckWorldMoveVel(BTM_World *wrl, float dt,
 	if(svel[2]>0)
 		fl&=~1;
 
-	if(BTM_CheckWorldMoveSpot(wrl, tdo))
+	cfl=BTM_CheckWorldMoveSpot(wrl, tdo, bbox);
+
+	if(!(cfl&1))
 	{
 		if(svel[2]<0)
 			fl&=~1;
+
+		if(cfl&2)		
+			fl|=2;
+		else
+			fl&=~2;
 
 		TKRA_Vec3F_Copy(tdo, dorg);
 		TKRA_Vec3F_Copy(tdv, dvel);
@@ -1053,7 +1213,7 @@ int BTM_CheckWorldMoveVel(BTM_World *wrl, float dt,
 		tdv[2]=0;
 
 		TKRA_Vec3F_AddScale(sorg, tdv, dt, tdo);
-		if(BTM_CheckWorldMoveSpot(wrl, tdo))
+		if(!(BTM_CheckWorldMoveSpot(wrl, tdo, bbox)&1))
 		{
 			if(svel[2]<=0)
 				fl|=1;
@@ -1073,7 +1233,7 @@ int BTM_CheckWorldMoveVel(BTM_World *wrl, float dt,
 		TKRA_Vec3F_AddScale(sorg, tdv, dt, tdo);
 		tdo[2]+=0.5;
 		
-		if(BTM_CheckWorldMoveSpot(wrl, tdo))
+		if(!(BTM_CheckWorldMoveSpot(wrl, tdo, bbox)&1))
 		{
 //			if(svel[2]<0)
 //				fl|=1;
@@ -1091,7 +1251,7 @@ int BTM_CheckWorldMoveVel(BTM_World *wrl, float dt,
 		tdv[0]=0;
 
 		TKRA_Vec3F_AddScale(sorg, tdv, dt, tdo);
-		if(BTM_CheckWorldMoveSpot(wrl, tdo))
+		if(!(BTM_CheckWorldMoveSpot(wrl, tdo, bbox)&1))
 		{
 			TKRA_Vec3F_Copy(tdo, dorg);
 			TKRA_Vec3F_Copy(tdv, dvel);
@@ -1106,7 +1266,7 @@ int BTM_CheckWorldMoveVel(BTM_World *wrl, float dt,
 		tdv[1]=0;
 
 		TKRA_Vec3F_AddScale(sorg, tdv, dt, tdo);
-		if(BTM_CheckWorldMoveSpot(wrl, tdo))
+		if(!(BTM_CheckWorldMoveSpot(wrl, tdo, bbox)&1))
 		{
 			TKRA_Vec3F_Copy(tdo, dorg);
 			TKRA_Vec3F_Copy(tdv, dvel);
@@ -1122,7 +1282,7 @@ int BTM_CheckWorldMoveVel(BTM_World *wrl, float dt,
 		tdv[0]=0;
 
 		TKRA_Vec3F_AddScale(sorg, tdv, dt, tdo);
-		if(BTM_CheckWorldMoveSpot(wrl, tdo))
+		if(!(BTM_CheckWorldMoveSpot(wrl, tdo, bbox)&1))
 		{
 			if(svel[2]<=0)
 				fl|=1;
@@ -1141,7 +1301,7 @@ int BTM_CheckWorldMoveVel(BTM_World *wrl, float dt,
 		tdv[1]=0;
 
 		TKRA_Vec3F_AddScale(sorg, tdv, dt, tdo);
-		if(BTM_CheckWorldMoveSpot(wrl, tdo))
+		if(!(BTM_CheckWorldMoveSpot(wrl, tdo, bbox)&1))
 		{
 			if(svel[2]<=0)
 				fl|=1;
@@ -1160,7 +1320,7 @@ int BTM_CheckWorldMoveVel(BTM_World *wrl, float dt,
 		tdv[1]=0;
 
 		TKRA_Vec3F_AddScale(sorg, tdv, dt, tdo);
-		if(BTM_CheckWorldMoveSpot(wrl, tdo))
+		if(!(BTM_CheckWorldMoveSpot(wrl, tdo, bbox)&1))
 		{
 			TKRA_Vec3F_Copy(tdo, dorg);
 			TKRA_Vec3F_Copy(tdv, dvel);
@@ -1169,7 +1329,7 @@ int BTM_CheckWorldMoveVel(BTM_World *wrl, float dt,
 		}
 	}
 
-	if(!BTM_CheckWorldMoveSpot(wrl, sorg))
+	if(BTM_CheckWorldMoveSpot(wrl, sorg, bbox)&1)
 	{
 		tdv[0]=0;
 		tdv[1]=0;
@@ -1179,7 +1339,7 @@ int BTM_CheckWorldMoveVel(BTM_World *wrl, float dt,
 		TKRA_Vec3F_Copy(sorg, tdo);
 		tdo[2]+=1.25;
 
-		if(BTM_CheckWorldMoveSpot(wrl, tdo))
+		if(!(BTM_CheckWorldMoveSpot(wrl, tdo, bbox)&1))
 		{
 			TKRA_Vec3F_Copy(tdo, dorg);
 			TKRA_Vec3F_Copy(tdv, dvel);
@@ -1195,7 +1355,7 @@ int BTM_CheckWorldMoveVel(BTM_World *wrl, float dt,
 			tdo[0]+=k*0.25;
 			tdo[1]+=j*0.25;
 			tdo[2]+=i*0.25;
-			if(BTM_CheckWorldMoveSpot(wrl, tdo))
+			if(!(BTM_CheckWorldMoveSpot(wrl, tdo, bbox)&1))
 			{
 				TKRA_Vec3F_Copy(tdo, dorg);
 				TKRA_Vec3F_Copy(tdv, dvel);
@@ -1214,4 +1374,13 @@ int BTM_CheckWorldMoveVel(BTM_World *wrl, float dt,
 	TKRA_Vec3F_Copy(tdv, dvel);
 	*rfl=fl;
 	return(0);
+}
+
+int BTM_CheckWorldMoveVel(BTM_World *wrl, float dt,
+	float *sorg, float *svel,
+	float *dorg, float *dvel, int *rfl)
+{
+	static const float box[6] = { -0.35, -0.35, -1.7, 0.35, 0.35, 0.1};
+	return(BTM_CheckWorldBoxMoveVel(wrl, dt,
+		sorg, svel, box, dorg, dvel, rfl));
 }

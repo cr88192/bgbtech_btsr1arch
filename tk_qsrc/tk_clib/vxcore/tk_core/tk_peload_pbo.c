@@ -308,7 +308,7 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 	byte *cs, *cse, *p0, *p1;
 	char *s0, *s1;
 	u64 imgbase;
-	u32 imgsz, startrva, gbr_rva, gbr_sz;
+	u32 imgsz, imgsz1, startrva, gbr_rva, gbr_sz;
 	byte is64;
 	byte is_pel4, cmp;
 	u32 csum1, csum2;
@@ -428,7 +428,12 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 	img=tk_malloc(sizeof(TKPE_ImageInfo));
 	memset(img, 0, sizeof(TKPE_ImageInfo));
 
-	imgptr=TKMM_PageAlloc(imgsz);
+	imgsz1=(imgsz+16383)&(~16383);
+
+	imgptr=TKMM_PageAlloc(imgsz1);
+	TK_VMem_MProtectPages(imgptr, imgsz1,
+		TKMM_PROT_READ|TKMM_PROT_WRITE|
+		TKMM_PROT_EXEC);
 
 	img->imgbase=imgptr;
 	img->imgname=TKMM_LVA_Strdup(imgname);

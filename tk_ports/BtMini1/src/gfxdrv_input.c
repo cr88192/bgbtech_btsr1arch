@@ -39,6 +39,12 @@ int FRGL_KeyDown(int key)
 	return(0);
 }
 
+int FRGL_KeyDownL(int key)
+{
+	if(frgl_lkeymap[key>>3]&(1<<(key&7)))return(1);
+	return(0);
+}
+
 int GfxDev_Key_Event(int key, int down)
 {
 	static int skm=0, skmd=0;

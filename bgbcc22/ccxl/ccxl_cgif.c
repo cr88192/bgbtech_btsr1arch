@@ -266,6 +266,10 @@ ccxl_status BGBCC_CCXL_EmitMov(BGBCC_TransState *ctx,
 
 	sty=BGBCC_CCXL_GetRegType(ctx, sreg);
 	dty=BGBCC_CCXL_GetRegType(ctx, dreg);
+
+	BGBCC_CCXL_TypeArrayP(ctx, dty);
+	BGBCC_CCXL_TypeArrayP(ctx, sty);
+	BGBCC_CCXL_TypeArrayP(ctx, type);
 	
 	if(!BGBCC_CCXL_TypeCompatibleArchP(ctx, dty, sty) &&
 		!(BGBCC_CCXL_TypePointerP(ctx, dty) &&
@@ -542,11 +546,15 @@ ccxl_status BGBCC_CCXL_EmitConv(BGBCC_TransState *ctx,
 	if(dtype.val==CCXL_TY_V)
 		{ BGBCC_DBGBREAK }
 
-//	if(dtype.val==stype.val)
-//	{
+	if(dtype.val==stype.val)
+	{
+		op=NULL;
 //		BGBCC_CCXL_EmitMov(ctx, dtype, dst, src);
 //		return(0);
-//	}
+	}
+
+	BGBCC_CCXL_TypeArrayP(ctx, dtype);
+	BGBCC_CCXL_TypeArrayP(ctx, stype);
 
 	if(BGBCC_CCXL_TypeSmallIntP(ctx, stype) &&
 		BGBCC_CCXL_IsRegDoubleP(ctx, src))

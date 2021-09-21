@@ -117,7 +117,7 @@ __PDPCLIB_API__ void *realloc(void *ptr, size_t size)
 
 #if 1
 
-void *(*_malloc_fptr)(size_t size);
+void *(*_malloc_fptr)(size_t size, int cat);
 void (*_free_fptr)(void *ptr);
 void *(*_realloc_fptr)(void *ptr, size_t size);
 size_t (*_msize_fptr)(void *ptr);
@@ -136,6 +136,7 @@ __PDPCLIB_API__ void **_getmsizeptr(void)
 // #if 0
 
 __PDPCLIB_API__ void *malloc(size_t size);
+__PDPCLIB_API__ void *_malloc_cat(size_t size, int cat);
 __PDPCLIB_API__ size_t _msize(void *ptr);
 __PDPCLIB_API__ size_t malloc_usable_size(void *ptr);
 __PDPCLIB_API__ void free(void *ptr);
@@ -143,6 +144,11 @@ __PDPCLIB_API__ void *realloc(void *ptr, size_t size);
 
 __asm {
 malloc:
+	MOV		0, R5
+	MOV.Q	_malloc_fptr, R3
+	JMP		R3
+
+_malloc_cat:
 	MOV.Q	_malloc_fptr, R3
 	JMP		R3
 
@@ -168,7 +174,13 @@ realloc:
 __PDPCLIB_API__ void *malloc(size_t size)
 {
 	stdio_doinit();
-	return(_malloc_fptr(size));
+	return(_malloc_fptr(size, 0));
+}
+
+__PDPCLIB_API__ void *_malloc_cat(size_t size, int cat)
+{
+	stdio_doinit();
+	return(_malloc_fptr(size, cat));
 }
 
 __PDPCLIB_API__ size_t _msize(void *ptr)
@@ -196,7 +208,7 @@ __PDPCLIB_API__ void *realloc(void *ptr, size_t size)
 
 #ifndef __TK_CLIB_DLLSTUB__
 
-void *malloc_dfl(size_t size)
+void *malloc_dfl(size_t size, int cat)
 {
 	void *ptr;
 	__allocmem(size, &ptr);

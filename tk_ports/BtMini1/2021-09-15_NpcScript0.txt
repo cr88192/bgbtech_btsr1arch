@@ -1,0 +1,63 @@
+NPC Script:
+* Will use a notation with a vaguely similar structure to MediaWiki or Markdown.
+* Will primarily represent dialog trees and sequences of events.
+** Raw lines of text will be printed via dialog boxes.
+** Link choices may be provided.
+* Will generally be processed one line at a time.
+
+
+Notation:
+ = ScriptName =
+ Gives the name of a script, if multiple scripts exist in a file.
+ Otherwise, ScriptName will be assumed to identify the name of a script file.
+ 
+ When a script is run, this section will be executed first.
+ 
+ == Label / Heading ==
+ === Label / Heading ===
+   Describes a label or heading.
+   When used in a dialog tree, it is not normally displayed.
+ 
+ /command options
+   Command to be executed.
+  
+ * [[Target]]
+ * [[Target|DialogText]]
+ Dialog option linking to a given target.
+ Target will take the form of:
+   ScriptName
+   ScriptName#Label
+   #Label
+ If no dialog text is given, the script or label name will be displayed by itself.
+ If no star is used, this is treated as a direct jump (no delay).
+ If only a single option is given, no option is shown.
+   Wait for user input then jump.
+ 
+ (expr) ? Action
+ (expr) ? Action : ElseAction
+ Evaluate expression, then perform Action based on the result.
+ Expressions will have a similar notation to commands.
+
+Expressions:
+* Expressions may nest in a similar way to S-Expression syntax.
+* has_item ItemName MinCount
+** True if user has at least MinCount versions it Item in their inventory.
+* and (expr1) (expr2) ...
+* or (expr1) (expr2) ...
+** Logical relation between expressions.
+* not (expr)
+** Logical inverse of expression.
+* !(expr)
+** Shorthand for (not (expr))
+
+Commands:
+* May effect either world state or dialog system state.
+** dlgset: Modify dialog property
+
+Dialog Properties:
+* dlgtype
+** Set the type of dialog box to use.
+* portrait
+** Set the character face image for the dialog box.
+* voice
+** Set the voice sound-effect when printing text.

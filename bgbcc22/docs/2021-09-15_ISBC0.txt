@@ -1,0 +1,246 @@
+ISBC: Interpretable Stack Bytecode
+* Goal: Bytecode format which is better suited to direct interpretation.
+
+
+=== Packaging ===
+
+Will use TLV Packaging.
+
+Words will be encoded in little-endian order, with structures being byte-aligned.
+
+TLV Chunks will begin with a 16-bit WORD, with LSB bits identifying the type:
+* zz00: WORD,TWOCC (16K)
+* zz01: DWORD,TWOCC (1GB)
+* zz10: DWORD,FOURCC (1GB)
+* z011: Small Tag (32B with a BYTE tag)
+** Tag is in bits (15:8)
+** Length is in bits (7:3)
+
+TWOCC tags will use case to identify Tag Type:
+* 'aa': Structure or Data
+** Contains a raw structure or other Non-TLV data.
+* 'AA': Compound Tag
+** Contains TLV tags.
+* A letter followed by a non-leter will behave as one of the above.
+
+Non-ASCII characters are not allowed in a TWOCC or FOURCC. A valid TWOCC or FOURCC will be padded as needed with spaces.
+
+A narrower tag may be promoted to a wider one by padding with zeroes.
+As such, the value range of the tag will be able to identify the type of the tag if it had been promoted from a narrower type.
+
+Tags will include the tag header in their length, thus the small BYTE tag is limited to 30 bytes of data. If this limit is exceeded, it will be promoted to a TWOCC.
+
+BYTE tags:
+* 00: Ignored
+* 01..7F: Context Dependent
+* 80: Long String Attribute
+* 81: Short String Attribute
+* 82: Integer Attribute
+
+An all-zeroes tag will be ignored, and may be used to align file structures.
+
+
+=== Structures ===
+
+Ax: Address
+* Will be encoded as a signed 16-bit word.
+
+Ix: Variable Index
+* LSB Clear: Byte Index from 00..7F
+* LSB Set: Word Index 0000..7FFF
+
+Cj: Constant Unsigned Integer
+* zzzz-zzz0: 00..7F
+* zzzz-zzzz(1x) zzzz-z001: 0000..1FFF
+* zzzz-zzzz(3x) zzzz-z011: 00000000..1FFFFFFF
+* zzzz-zzzz(7x) zzzz-z101: 0000000000000000..1FFFFFFFFFFFFFFF
+* zzzz-zzzz(8x) 0000-0111: 0000000000000000..FFFFFFFFFFFFFFFF
+
+Ci: Constant Signed Integer
+* Same as Cj, but sign-folded into LSB (0, -1, 1, -2, 2, ...).
+
+CiN (8/16/32/64):
+* Integer constant with an explicit size.
+
+Gx: Global Table
+* LSB Clear: 16-bit
+* LSB Set: 32-bit
+
+
+=== Base Types ===
+
+* I: Int32 (Signed or Unsigned)
+* L: Int64 (Signed or Unsigned)
+* F: Float
+* D: Double
+* A: Address / Object Reference
+* X: 128-bit Pair
+
+Nominally, stack items and values will be treated as an untyped 64-bit quantity. These items may hold 32-bit types using half of the variable (in which case, the remaining 32 bits of the value are in an undefined state).
+
+Floating point arithmetic operations will only be provided for Double value, with single-precision floating point values typically being converted into a 64 bit format.
+
+
+=== Instruction Set ===
+
+Instructions
+* 00, ADDI				//A B => A+B
+* 01, SUBI				//A B => A-B
+* 02, MULI				//A B => A*B
+* 03, ANDI				//A B => A&B
+* 04, ORI				//A B => A|B
+* 05, XORI				//A B => A^B
+* 06, SHLI				//A B => A<<B
+* 07, SARI				//A B => A>>B
+* 08, ADDL				//A B => A+B
+* 09, SUBL				//A B => A-B
+* 0A, MULL				//A B => A*B
+* 0B, ANDL				//A B => A&B
+* 0C, ORL				//A B => A|B
+* 0D, XORL				//A B => A^B
+* 0E, SHLL				//A B => A<<B
+* 0F, SARL				//A B => A>>B
+
+* 10, ADDD				//A B => A+B
+* 11, SUBD				//A B => A-B
+* 12, MULD				//A B => A*B
+* 13, DIVD				//A B => A/B
+* 14, SHRI				//A B => A>>>B
+* 15, DIVI				//A B => A/B
+* 16, SHRL				//A B => A>>>B
+* 17, DIVL				//A B => A/B
+
+* 18, NEGI				//A => -A
+* 19, NEGL				//A => -A
+* 1A, NEGD				//A => -A
+* 1B, LNTA				//A => !A (Address)
+* 1C, NOTI				//A => ~A
+* 1D, NOTL				//A => ~A
+* 1E, LNTI				//A => !A
+* 1F, LNTL				//A => !A
+
+* 20 Ix, LDL			// Load Local ( => A )
+* 21 Ix, LDLX			// Load Local Pair ( => A B )
+* 22 Ix, STL			// Store Local ( A => )
+* 23 Ix, STLX			// Store Local Pair ( A B => )
+* 24 Zi, LDLA			//Load Local Address
+
+* 28, CMPI				//Compare Int
+* 29, CMPL				//Compare Long
+* 2A, CMPD				//Compare Double
+* 2B, CMPUI				//Unsigned Compare Int
+* 2C, CMPA				//Compare Address (Logical)
+* 2D, CMP2A				//Compare Address (Strict)
+* 2E, CMP2D				//Compare Double (Unordered)
+* 2F, CMPUL				//Unsigned Compare Long
+
+* 30 Ax, JEQ			//Jump Int Equal ( (A==0) => )
+* 31 Ax, JNE			//Jump Int Not-Equal ( (A!=0) => )
+* 32 Ax, JLT			//Jump Int Less Than ( (A<0) => )
+* 33 Ax, JGT			//Jump Int Greater Than ( (A>0) => )
+* 34 Ax, JLE			//Jump Int Less Equal ( (A<=0) => )
+* 35 Ax, JGE			//Jump Int Greater Equal ( (A>=0) => )
+* 36 Ax, JMP			//Jump
+* 37, LABEL				//Break the current trace
+
+* 38 Ci, CMPIC			//Compare Int Const
+* 39 Ix, CMPIL			//Compare Int Local
+* 3A, INCI				//Increment Integer ( A => A+1 )
+* 3B, DECI				//Decrement Integer ( A => A-1 )
+* 3C, POP				//Pop / Discard Stack Item
+* 3D, DUP				//Duplicate Stack Item
+* 3E, EXCH				//Swap Items
+* 3F, PUSH				//Push null / zero
+
+* 40, LDIXI				//Load Index Int ( A I => B )
+* 41, LDIXL				//Load Index Long ( A I => B )
+* 42, LDIXF				//Load Index Float ( A I => B )
+* 43, LDIXD				//Load Index Double ( A I => B )
+* 44, STIXI				//Store Index Int ( V A I => )
+* 45, STIXL				//Store Index Long ( V A I => )
+* 46, STIXF				//Store Index Float ( V A I => )
+* 47, STIXD				//Store Index Double ( V A I => )
+* 48, LDIXSB			//Load Index Signed Byte ( A I => B )
+* 49, LDIXUB			//Load Index Unsigned Byte ( A I => B )
+* 4A, LDIXSS			//Load Index Signed Short ( A I => B )
+* 4B, LDIXUS			//Load Index Unsigned Short ( A I => B )
+* 4C, LDIXA				//Load Index Address ( A I => B )
+* 4D, STIXA				//Store Index Address ( V A I => )
+* 4E, STIXB				//Store Index Byte ( V A I => )
+* 4F, STIXS				//Store Index Short ( V A I => )
+
+* 50 Ci, LDIXIC			//Load Index Int ( I; A => B )
+* 51 Ci, LDIXLC			//Load Index Long ( I; A => B )
+* 52 Ci, LDIXFC			//Load Index Float ( I; A => B )
+* 53 Ci, LDIXDC			//Load Index Double ( I; A => B )
+* 54 Ci, STIXIC			//Store Index Int ( I; V A => )
+* 55 Ci, STIXLC			//Store Index Long ( I; V A => )
+* 56 Ci, STIXFC			//Store Index Float ( I; V A => )
+* 57 Ci, STIXDC			//Store Index Double ( I; V A => )
+* 58 Ci, LDIXSBC		//Load Index Signed Byte ( I; A => B )
+* 59 Ci, LDIXUBC		//Load Index Unsigned Byte ( I; A => B )
+* 5A Ci, LDIXSSC		//Load Index Signed Short ( I; A => B )
+* 5B Ci, LDIXUSC		//Load Index Unsigned Short ( I; A => B )
+* 5C Ci, LDIXAC			//Load Index Address ( I; A => B )
+* 5D Ci, STIXAC			//Store Index Address ( I; V A => )
+* 5E Ci, STIXBC			//Store Index Byte ( I; V A => )
+* 5F Ci, STIXSC			//Store Index Short ( I; V A => )
+
+* 60, HNOEX				//Non-Execute, Trace
+* 61, HNOEX1			//Non-Execute, 1 Op
+* 62, HNOEX2			//Non-Execute, 2 Ops
+* 63, HNOEX3			//Non-Execute, 3 Ops
+
+* 70 Gx, CALLG			//Call Static/Global Function
+* 71 Gx, CALLA			//Call Function Reference (Pops Func)
+* 72 Gx, CALLV			//Call Virtual Method (Pops Obj)
+* 73 Gj, CALLL			//Call Local Function Reference
+
+* 74, RET1				//Return Stack Value
+* 75, RETV				//Return Void
+* 76 Zi, RET2			//Return Local
+
+* 7A Gx, LDOSA			//Load Address of Instance Variable, ( O => A )
+* 7B Gx, LDGSA			//Load Address of Global Variable, ( => A )
+* 7C Gx, LDOS			//Load Object Variable, ( O => A )
+* 7D Gx, STOS			//Store Object Variable ( V O => )
+* 7E Gx, LDGS			//Load Global Variable, ( => A )
+* 7F Gx, STGS			//Store Global Variable ( V => )
+
+
+
+* 90, CVTI2L				//Convert Int->Long
+* 91, CVTI2F				//Convert Int->Float
+* 92, CVTI2D				//Convert Int->Double
+* 93, CVTL2I				//Convert Long->Int
+* 94, CVTL2F				//Convert Long->Float
+* 95, CVTL2D				//Convert Long->Double
+* 96, CVTF2I				//Convert Float->Int
+* 97, CVTF2L				//Convert Float->Long
+* 98, CVTF2D				//Convert Float->Double
+* 99, CVTD2I				//Convert Double->Int
+* 9A, CVTD2L				//Convert Double->Long
+* 9B, CVTD2F				//Convert Double->Float
+* 9C, CVTSB2I				//Convert SByte->Int
+* 9D, CVTUB2I				//Convert UByte->Int
+* 9E, CVTSS2I				//Convert Short->Int
+* 9F, CVTUS2I				//Convert UShort->Int
+
+* B0 Cj, ADDIC				//A B => A+C
+* B1 Cj, SUBIC				//A B => A-C
+* B2 Ci, MULIC				//A B => A*C
+* B3 Ci, ANDIC				//A B => A&C
+* B4 Ci, ORIC				//A B => A|C
+* B5 Ci, XORIC				//A B => A^C
+* B6 Ci, SHLIC				//A B => A<<C, A>>>(-C)
+* B7 Ci, SARIC				//A B => A>>C
+* B8 Ix, ADDIL				//A B => A+I
+* B9 Ix, SUBIL				//A B => A-I
+* BA Ix, MULIL				//A B => A*I
+* BB Ix, ANDIL				//A B => A&I
+* BC Ix, ORIL				//A B => A|I
+* BD Ix, XORIL				//A B => A^I
+* BE Ix, SHLIL				//A B => A<<I
+* BF Ix, SARIL				//A B => A>>I
+
+

@@ -260,7 +260,7 @@ extern "C" {
 // #define BGBCC_TYFL_NEW				BGBCC_TYFL_CONST
 #define BGBCC_TYFL_OVERRIDE			BGBCC_TYFL_STRICT
 // #define BGBCC_TYFL_ALIASPTR			BGBCC_TYFL_STRICT
-#define BGBCC_TYFL_RESTRICT			BGBCC_TYFL_STRICT
+// #define BGBCC_TYFL_RESTRICT			BGBCC_TYFL_STRICT
 
 #define BGBCC_TYFL_CONST2			BGBCC_TYFL_FINAL
 
@@ -304,6 +304,8 @@ extern "C" {
 
 #define BGBCC_TYFL_NOCULL			(1LL<<44)
 #define BGBCC_TYFL_FENVACC			(1LL<<45)
+
+#define BGBCC_TYFL_RESTRICT			(1LL<<46)
 
 
 #define BGBCC_TYFL_DFL_MASK			\
@@ -623,7 +625,6 @@ BGBPP_PpiFrame *ppi_freeframe;
 byte ppi_break;
 BCCX_Node *ppi_retval;
 
-
 BCCX_Node *struct_hash[256];
 BCCX_Node *type_hash[1024];
 
@@ -787,6 +788,8 @@ byte arch_align_max;	//don't use alignments larger than this
 byte arch_align_objmin;	//minimum alignment for value-objects
 byte arch_has_predops;	//arch has predicated instructions
 
+byte opt_ptrcache;		//enable caching struct and pointer accesses.
+
 byte ril3_norec;
 byte cgif_no3ac;
 byte ril3_noril;
@@ -824,6 +827,14 @@ byte regrov;
 
 BCCX_Node *cur_structdef;
 BCCX_Node *reduce_tmp;
+
+
+ccxl_register loadslot_cache_dreg[256];
+ccxl_register loadslot_cache_sreg[256];
+BGBCC_CCXL_LiteralInfo *loadslot_cache_st[256];
+char *loadslot_cache_name[256];
+byte loadslot_cache_srov;
+byte loadslot_cache_erov;
 
 
 BGBCC_CCXL_RegisterInfo *cur_func;

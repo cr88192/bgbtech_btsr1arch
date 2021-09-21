@@ -167,6 +167,8 @@ begin
 
 		if(opUIxt[5:0]==JX2_UCIX_IXT_LDEKRR)
 		begin
+			$display("ModKrrEnc: LDEKRR");
+
 //			tRegOutLo = { 2'b00, tDecKrr };
 			tRegOutLo = { 2'b11, tDecKrrLo };
 //			if((tRegParityKrr == tDecPar) && !tKeyDisable)
@@ -177,6 +179,8 @@ begin
 		if(	(opUIxt[5:0]==JX2_UCIX_IXT_LDEENC) ||
 			(opUIxt[5:0]==JX2_UCIX_IXT_SVEKRR) )
 		begin
+			$display("ModKrrEnc: LDEENC / SVEKRR");
+
 //			tRegOutLo = { 2'b00, regInDlr ^ tCurKey };
 //			tRegOutHi = { 2'b00, 48'h0, tRegParityDlr ^ tCurKey[15:0] };
 

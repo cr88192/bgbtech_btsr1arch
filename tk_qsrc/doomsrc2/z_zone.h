@@ -77,6 +77,7 @@ void    Z_ChangeTag2 (void *ptr, int tag);
 int     Z_FreeMemory (void);
 
 
+#if 0
 typedef struct memblock_s
 {
     int			size;	// including the header and possibly tiny fragments
@@ -86,6 +87,21 @@ typedef struct memblock_s
     struct memblock_s*	next;
     struct memblock_s*	prev;
 } memblock_t;
+#endif
+
+#if 1
+typedef struct memblock_s
+{
+    int			id;		// 00, should be ZONEID
+    int			size;	// 04, including the header and possibly tiny fragments
+    int			tag;	// 08, purgelevel
+    int			pad_0;	// 0C, pad
+    void**		user;	// 10, NULL if a free block
+    void *		pad_1;	// 18, pad
+    struct memblock_s*	next;	// 20, next pointer
+    struct memblock_s*	prev;	// 28, previous pointer
+} memblock_t;
+#endif
 
 //
 // This is used to get the local FILE:LINE info from CPP

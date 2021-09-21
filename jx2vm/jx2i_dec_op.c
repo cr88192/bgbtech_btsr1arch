@@ -3451,7 +3451,8 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 		case BJX2_NMID_MOVUW:
 		case BJX2_NMID_MOVUL:
 		case BJX2_NMID_FMOVS:
-		case BJX2_NMID_FMOVD:
+//		case BJX2_NMID_FMOVD:
+		case BJX2_NMID_FMOVH:
 		case BJX2_NMID_PUSH:
 		case BJX2_NMID_POP:
 		case BJX2_NMID_FPUSH:

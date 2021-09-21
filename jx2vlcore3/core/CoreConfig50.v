@@ -10,8 +10,7 @@
 // `define jx2_enable_dualcore			//Enable Second Core
 
 // `define jx2_agu_bra32				//Use 32-bit branches
-
-`define jx2_agu_bra48				//Enable 48-bit branches
+// `define jx2_agu_bra48				//Enable 48-bit branches
 
 
 `define jx2_cpu_halfclock				//Reduce CPU core clock speed by half

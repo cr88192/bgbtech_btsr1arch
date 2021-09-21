@@ -1,0 +1,23 @@
+BtLite:
+* Like BtMini but with a chunked terrain system.
+
+Chunks:
+* 16x16*16
+* Organized into 16x16x4 regions.
+** Possibly 16x16x16 with the upper 12 chunk layers unused.
+
+Chunk Format:
+* Chunk Header (Bit-Packed)
+* 1-256x 32-bits (up to 1K), voxel type data
+* 4K: voxel-type indices.
+* 512B: voxel "not air" bitmask (? generate on chunk-load).
+* 4K: voxel occlusion bits (? generate on chunk-load)
+
+The chunk will likely use either LZ4 or RP2 encoding.
+
+The region would consist of:
+* A header;
+* A series of chunk offsets
+* A compressed-chunk data data.
+
+The region would be defined in terms of 16-byte cells, possibly with a cell bitmap.

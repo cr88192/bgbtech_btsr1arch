@@ -486,6 +486,8 @@ int __open(const char *a, int b, int *rc)
 	char *s, *md;
 	int i;
 
+	tk_vfile_init();
+
 	md="rb";
 	if(b==1)
 		md="wb";
@@ -503,7 +505,7 @@ int __open(const char *a, int b, int *rc)
 	fd=tk_fopen(tfn, md);
 	if(!fd)
 	{
-		tk_printf("__open: %s, tk_fopen returned NULL\n", tfn);
+//		tk_printf("__open: %s, tk_fopen returned NULL\n", tfn);
 //		*(int *)((long)((unsigned int)c))=-1;
 		*rc=-1;
 		return(-1);
@@ -888,12 +890,13 @@ int __start_first()
 #endif
 }
 
-void *(*_malloc_fptr)(size_t size);
+void *(*_malloc_fptr)(size_t size, int cat);
 void (*_free_fptr)(void *ptr);
 void *(*_realloc_fptr)(void *ptr, size_t size);
 size_t (*_msize_fptr)(void *ptr);
 
 void *tk_malloc(int sz);
+void *tk_malloc_cat(int sz, int cat);
 int tk_free(void *ptr);
 void *tk_realloc(void *ptr, int sz);
 int tk_msize(void *ptr);
@@ -902,7 +905,7 @@ int tk_msize(void *ptr);
 int __start_early()
 {
 	TKMM_Init();
-	_malloc_fptr=tk_malloc;
+	_malloc_fptr=tk_malloc_cat;
 	_free_fptr=tk_free;
 	_realloc_fptr=tk_realloc;
 	_msize_fptr=tk_msize;
@@ -911,7 +914,7 @@ int __start_early()
 
 int __start_late()
 {
-	tk_vfile_init();
+//	tk_vfile_init();
 	__start_init();
 	return(0);
 }

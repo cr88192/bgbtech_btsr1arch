@@ -54,6 +54,9 @@ int I_SystemFrame(u16 *fbuf, int xs, int ys)
 //	SoundDev_WriteStereoSamples(tsampbuf, tsamplen);
 //	SoundDev_Submit();
 
+	FRGL_EndInputFrame();
+
+
 	GfxDrv_BeginDrawing();
 	
 	for(y=0; y<ys; y++)
@@ -91,6 +94,11 @@ int I_KeyDown(int key)
 	return(FRGL_KeyDown(key));
 }
 
+int I_KeyDownL(int key)
+{
+	return(FRGL_KeyDownL(key));
+}
+
 
 u16 i_keyrov[256];
 byte i_keypos;
@@ -99,7 +107,9 @@ void I_UpdateKeys (void)
 {
 	u16 *cs;
 	int key;
-	
+
+//	FRGL_EndInputFrame();
+
 	cs=FRGL_GetKeybuf();
 	while(*cs)
 	{
@@ -230,6 +240,7 @@ int I_TimeMS()
 }
 
 u32 i_keymask[8];
+u32 i_lkeymask[8];
 u16 i_keyrov[256];
 byte i_keypos;
 
@@ -248,6 +259,8 @@ void I_KeyEvent(int key, int dn)
 void I_UpdateKeys (void)
 {
 	int c, dn;
+	
+	memcpy(i_lkeymask, i_keymask, 8*4);
 
 	while(tk_kbhit())
 	{
@@ -295,6 +308,12 @@ void I_UpdateKeys (void)
 int I_KeyDown(int key)
 {
 	return(i_keymask[key>>5]&(1<<(key&31)));
+//	return(0);
+}
+
+int I_KeyDownL(int key)
+{
+	return(i_lkeymask[key>>5]&(1<<(key&31)));
 //	return(0);
 }
 
@@ -598,12 +617,14 @@ int main(int argc, char *argv[])
 	btmgl_filter_min=GL_NEAREST_MIPMAP_NEAREST;
 	btmgl_filter_max=GL_NEAREST;
 
+#if 0
 	tbuf=BTM_LoadFile("sky1b1.dds", &j);
 	if(tbuf)
 	{
 		tkra_glBindTexture(TKRA_TEXTURE_2D, 1);
 		BTMGL_UploadCompressed(tbuf, 1, 1);
 	}
+#endif
 
 //	for(y=0; y<256; y++)
 //		for(x=0; x<256; x++)
@@ -748,6 +769,35 @@ int main(int argc, char *argv[])
 
 		I_UpdateKeys();
 
+		if(I_KeyDown('\\'))
+		{
+			if(wrl->scr_lhit)
+			{
+				wrl->sel_blk=BTM_GetWorldBlockCix(wrl, wrl->scr_lhit);
+				wrl->sel_bt=wrl->sel_blk&255;
+			}
+		}
+
+		if(I_KeyDown(K_INS) && !I_KeyDownL(K_INS))
+		{
+			if(wrl->scr_lahit)
+			{
+				BTM_SetWorldBlockCix(wrl, wrl->scr_lahit, wrl->sel_bt);
+				BTM_UpdateWorldBlockOccCix2(wrl, wrl->scr_lahit);
+			}
+		}
+
+//		if(I_KeyDown(K_DEL) && !I_KeyDownL(K_DEL))
+		if(I_KeyDown(K_BACKSPACE) && !I_KeyDownL(K_BACKSPACE))
+		{
+			if(wrl->scr_lhit)
+			{
+				BTM_SetWorldBlockCix(wrl, wrl->scr_lhit, BTM_BLKTY_AIR);
+				BTM_UpdateWorldBlockOccCix2(wrl, wrl->scr_lhit);
+			}
+		}
+
+
 		if(I_KeyDown(K_LEFTARROW))
 			cam_ang_yaw-=dt*(90/1000.0);
 		if(I_KeyDown(K_RIGHTARROW))
@@ -788,6 +838,18 @@ int main(int argc, char *argv[])
 //			else
 				cam_vel[2]-=16*dtf;
 			
+			if(cam_mvflags&4)
+			{
+				frc=1.0-4*dtf;
+				cam_vel[2]=cam_vel[2]*frc+26*dtf;
+			}else
+				if(cam_mvflags&2)
+			{
+				frc=1.0-2*dtf;
+				cam_vel[2]=cam_vel[2]*frc+20*dtf;
+			}
+
+			
 			if(I_KeyDown(K_HOME))
 			{
 				if(cam_mvflags&1)
@@ -795,12 +857,17 @@ int main(int argc, char *argv[])
 					if(cam_vel[2]<0)
 						cam_vel[2]=0;
 					cam_vel[2]+=6;
+				}else if(cam_mvflags&2)
+				{
+					cam_ivel[2]=12;
 				}
 //				else
 //					cam_ivel[2]=12;
 			}
 			if(I_KeyDown(K_END))
+			{
 				cam_ivel[2]=-12;
+			}
 
 			if(I_KeyDown(K_UPARROW))
 			{
@@ -814,6 +881,11 @@ int main(int argc, char *argv[])
 			}
 			
 			frc=1.0-8*dtf;
+
+			if(cam_mvflags&2)
+				frc=1.0-1*dtf;
+
+
 			if(frc<0)
 				frc=0;
 
@@ -821,6 +893,19 @@ int main(int argc, char *argv[])
 				frc=0;
 
 			if(cam_mvflags&1)
+			{
+				f0=TKRA_Vec3F_DotProduct(cam_vel, cam_ivel);
+				f1=TKRA_Vec3F_DotProduct(cam_vel, cam_vel)+0.01;
+				f2=f0/f1;
+			
+				if(f2<=0.9)
+				{
+					cam_vel[0]*=frc;
+					cam_vel[1]*=frc;
+//					TKRA_Vec3F_Scale(cam_vel, frc, cam_vel);
+				}
+			}else
+				if(cam_mvflags&2)
 			{
 				f0=TKRA_Vec3F_DotProduct(cam_vel, cam_ivel);
 				f1=TKRA_Vec3F_DotProduct(cam_vel, cam_vel)+0.01;
@@ -841,6 +926,12 @@ int main(int argc, char *argv[])
 					cam_vel[0]+=cam_ivel[0]*dtf*4.0;
 					cam_vel[1]+=cam_ivel[1]*dtf*4.0;
 					cam_vel[2]+=cam_ivel[2]*dtf*4.0;
+				}else
+					if(cam_mvflags&2)
+				{
+					cam_vel[0]+=cam_ivel[0]*dtf*1.0;
+					cam_vel[1]+=cam_ivel[1]*dtf*1.0;
+					cam_vel[2]+=cam_ivel[2]*dtf*1.0;
 				}else
 				{
 					cam_vel[0]+=cam_ivel[0]*dtf*0.1;

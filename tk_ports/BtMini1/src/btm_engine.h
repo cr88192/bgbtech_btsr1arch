@@ -148,6 +148,11 @@ typedef int64_t	s64;
 #define BTM_BLKTY_REDGRASS			0x4D
 #define BTM_BLKTY_LADDER			0x4E
 
+#define BTM_BLKDFL_NODRAW		0x01000000U		//Not Drawn
+#define BTM_BLKDFL_SEETHRU		0x02000000U		//Does not block visibility.
+#define BTM_BLKDFL_NONSOLID		0x04000000U		//Block is Non-Solid.
+#define BTM_BLKDFL_FLUID		0x08000000U		//Block is Fluid
+
 typedef u16		btmra_rastpixel;
 typedef u16		btmra_zbufpixel;
 
@@ -175,7 +180,12 @@ int		scr_npts;
 int		scr_hpred;				//hit prediction
 int		scr_cxpred[64];			//cix predictor 2
 
+int		scr_lhit;				//last hit
+int		scr_lahit;				//last air before hit
+
 int		frame;
+u32		sel_blk;
+byte	sel_bt;
 
 BTM_TexImg	*texlist[256];
 

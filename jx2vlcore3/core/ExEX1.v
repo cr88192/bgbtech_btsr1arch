@@ -47,6 +47,11 @@ Holding/Completing a memory access will be the responsibility of EX2.
 `endif
 `endif
 
+`ifdef jx2_enable_fmov
+`include "FpuConvD2S.v"
+`include "FpuConvD2H.v"
+`endif
+
 /* verilator lint_off DEFPARAM */
 
 module ExEX1(
@@ -341,6 +346,13 @@ reg[3:0]	tIfElseNN;
 reg tMsgLatch;
 reg tNextMsgLatch;
 
+`ifdef jx2_enable_fmov
+wire[31:0]	regValRm_D2S;		//memory data (Double to Single)
+wire[15:0]	regValRm_D2H;		//memory data (Double to Half)
+FpuConvD2S	mem_cnv_d2s(regValRm[63:0], regValRm_D2S);
+FpuConvD2H	mem_cnv_d2h(regValRm[63:0], regValRm_D2H);
+`endif
+
 always @*
 begin
 
@@ -377,8 +389,12 @@ begin
 	tValOutDfl		= UV64_XX;
 	tDoOutDfl		= 0;
 
-	tValAguBra		= { UV16_00, regValPc[47:32], tValAgu[31:0] };
+//	tValAguBra		= { UV16_00, regValPc[47:32], tValAgu[31:0] };
 //	tValAguBra		= { UV16_00, tValAgu };
+
+	tValAguBra		= { UV16_00, tValAgu[47:0] };
+	if(!tAguFlagJq)
+		tValAguBra[47:32] = regValPc[47:32];
 
 //	tValAguBra		= { UV16_00, regValPc[47:32],
 //		regValPc[31:0] + { regValRt[30:0], 1'b0 } };
@@ -533,6 +549,35 @@ begin
 				tMemAddr, regIdRm);
 `endif
 		end
+
+`ifdef jx2_enable_fmov
+		JX2_UCMD_FMOV_RM: begin
+			tDoMemOpm	= { 2'b10, opUIxt[2], opUIxt[5:4] };
+			tDoMemOp	= 1;
+			
+			tMemDataOut[31:0] = regValRm_D2S;
+`ifdef jx2_enable_fmovh
+			if(opUIxt[4])
+				tMemDataOut[15:0] = regValRm_D2H;
+`endif
+
+`ifdef jx2_debug_ldst
+			$display("FSTORE(1): A=%X R=%X V=%X",
+				tMemAddr, regIdRm, tMemDataOut);
+`endif
+		end
+		JX2_UCMD_FMOV_MR: begin
+			tDoMemOpm = { 2'b01, opUIxt[2], opUIxt[5:4] };
+			tDoMemOp	= 1;
+//			tHeldIdRn1	= regIdRm;
+			tRegHeld		= 1;
+
+`ifdef jx2_debug_ldst
+			$display("FLOAD(1): A=%X R=%X",
+				tMemAddr, regIdRm);
+`endif
+		end
+`endif
 
 		JX2_UCMD_ALU3, JX2_UCMD_UNARY, JX2_UCMD_ALUW3,
 		JX2_UCMD_CONV2_RR, JX2_UCMD_ALUB3: begin

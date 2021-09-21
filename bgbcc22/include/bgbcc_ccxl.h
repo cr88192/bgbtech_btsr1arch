@@ -288,8 +288,10 @@ Base, Q1..Q3:
 #define CCXL_PCLS_NEAR			0x01	//near pointer
 #define CCXL_PCLS_FAR			0x02	//far pointer
 #define CCXL_PCLS_PACKED		0x03	//packed pointer
-#define CCXL_PCLS_BIGEND		0x04	//packed pointer
-#define CCXL_PCLS_LTLEND		0x05	//packed pointer
+#define CCXL_PCLS_BIGEND		0x04	//big endian
+#define CCXL_PCLS_LTLEND		0x05	//little endian
+#define CCXL_PCLS_VOLATILE		0x06	//volatile
+#define CCXL_PCLS_RESTRICT		0x07	//restrict
 
 #define CCXL_LITID_STRUCT		1
 #define CCXL_LITID_UNION		2

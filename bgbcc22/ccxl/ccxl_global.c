@@ -2600,7 +2600,9 @@ void BGBCC_CCXL_FixupObjSize(BGBCC_TransState *ctx,
 				obj->decl->fields[i]->fxoffs=msz;
 			}else
 			{
-				BGBCC_DBGBREAK
+				obj->decl->fields[i]->fxoffs=-1;
+				if(flag&1)
+					{ BGBCC_DBGBREAK }
 			}
 
 			msz+=msz2;	nsz+=nsz2;

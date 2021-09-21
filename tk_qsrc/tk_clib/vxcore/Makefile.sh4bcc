@@ -12,7 +12,7 @@ TK_LDFL64= -L. -lvxcore64 -fwex3w -fwexj
 # TK_LDFL64= -L. -lvxcore64
 #  /fwex3w
 
-TK_LDFL64_DLL= -L. -lcdll -fwex3w -fwexj
+TK_LDFL64_DLL= -L. -lcdll -fwex3w -fwexj -fptropt0
 
 TOOLPATH=
 

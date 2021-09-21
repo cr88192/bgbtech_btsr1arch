@@ -390,6 +390,8 @@ void *TKMM_Malloc(int sz)
 	if(!TKMM_PageAlloc_f)
 		__debugbreak();
 
+//	tk_printf("TKMM_Malloc: sz=%d\n", sz);
+
 #if 0
 	if(sz<TKMM_MAXMMCELLSZ)
 	{

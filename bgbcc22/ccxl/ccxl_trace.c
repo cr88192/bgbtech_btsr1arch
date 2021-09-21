@@ -118,7 +118,9 @@ int BGBCC_CCXL_EmitMarkEndTrace(BGBCC_TransState *ctx)
 
 	if(n<0)
 		{ BGBCC_DBGBREAK }
-	
+
+	BGBCC_CCXL_LoadslotCacheFlush(ctx);
+
 	tr=BGBCC_CCXL_AllocVirtTr(ctx);
 
 	tr->b_ops=ctx->s_vop;
@@ -352,7 +354,11 @@ s64 BGBCC_CCXL_DecodeFlagStr(BGBCC_TransState *ctx, char *str)
 			case 'f':	fl|=BGBCC_TYFL_INTERRUPT;		break;
 			case 'g':	fl|=BGBCC_TYFL_SYSCALL;			break;
 			case 'i':	fl|=BGBCC_TYFL_INTERFACE;		break;
+
+			case 'r':	fl|=BGBCC_TYFL_RESTRICT;		break;
 			case 's':	fl|=BGBCC_TYFL_SYNCHRONIZED;	break;
+
+			case 'v':	fl|=BGBCC_TYFL_VOLATILE;		break;
 			case 'x':	fl|=BGBCC_TYFL_NEAR;			break;
 			case 'y':	fl|=BGBCC_TYFL_FAR;				break;
 			default:

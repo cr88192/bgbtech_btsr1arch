@@ -251,6 +251,13 @@ typedef unsigned __Q8_QT	uint_fast64_t;
 	possible), but I'm unaware of any platform where they fail.
 */
 
+#ifdef __BGBCC__
+
+typedef __intptr		intptr_t;
+typedef __uintptr		uintptr_t;
+
+#else
+
 #if	defined(__Q8_PW)
 #if	__Q8_IW >= __Q8_PW
 typedef int			intptr_t;
@@ -265,6 +272,8 @@ typedef unsigned __Q8_QT	uintptr_t;
 typedef __Q8_MT			intptr_t;
 typedef unsigned __Q8_MT	uintptr_t;
 #endif
+#endif
+
 #endif
 
 /*

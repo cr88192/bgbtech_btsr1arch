@@ -56,7 +56,7 @@ BCCX_Node *BGBCP_Number(BGBCP_ParseState *ctx, char *str)
 BCCX_Node *BGBCP_NumberSuf(BGBCP_ParseState *ctx, char *str, char *suf)
 {
 	BCCX_Node *n;
-	char *s;
+	char *s, *suf1;
 	s64 li, lj;
 	int i;
 
@@ -69,6 +69,45 @@ BCCX_Node *BGBCP_NumberSuf(BGBCP_ParseState *ctx, char *str, char *suf)
 //		li=bgbcc_atoi(str);
 
 		bgbcc_atoxl(str, (u64 *)(&li), (u64 *)(&lj));
+		
+		suf1=suf;
+#if 1
+		if(!suf && (*str=='0'))
+		{
+			if(li!=((s32)li))
+			{
+				if(li==((u32)li))
+				{
+					suf1="U";
+				}else
+				{
+					if(lj!=(li>>63))
+						{ suf1="ULL"; }
+					else
+						{ suf1="LL"; }
+				}
+			}
+			
+			if((lj!=0) && (lj!=(-1)))
+			{
+				if(lj>>63)
+					{ suf1="UXL"; }
+				else
+					{ suf1="XL"; }
+			}
+		}else if(!suf)
+		{
+			if(li!=((s32)li))
+			{
+				suf1="LL";
+			}
+
+			if(((lj!=0) && (lj!=(-1))) || (lj!=(li>>63)))
+			{
+				suf1="XL";
+			}
+		}
+#endif
 		
 		if(((lj!=0) && (lj!=(-1))) ||
 			(suf && (lj!=(li>>63)) &&
@@ -84,6 +123,10 @@ BCCX_Node *BGBCP_NumberSuf(BGBCP_ParseState *ctx, char *str, char *suf)
 		n=BCCX_NewCst(&bgbcc_rcst_int, "int");
 //		BCCX_SetCst(n, &bgbcc_rcst_value, "value", str);
 		BCCX_SetIntCst(n, &bgbcc_rcst_value, "value", li);
+		
+		if(suf1)
+			BCCX_SetCst(n, &bgbcc_rcst_tysuf, "tysuf", suf1);
+
 		return(n);
 	}
 

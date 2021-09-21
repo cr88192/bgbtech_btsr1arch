@@ -24,6 +24,8 @@
 
 `define	jx2_fpu_lane2			//Allow FPU from Lane 2
 
+`define jx2_enable_fmov
+
 // `define jx2_sprs_elrehr			//ELR/EHR/BP as special registers?
 `define jx2_bra2stage			//Use 2-stage branch initiation
 // `define jx2_gprs_usefsm			//Use finite-state-machine GPRs

@@ -2239,14 +2239,21 @@ BCCX_Node *BGBCC_CCXL_ReduceForm(BGBCC_TransState *ctx,
 		if(ctx && t)
 		{
 			i=BGBCC_CCXL_TryGetSizeofType(ctx, t);
-			if(i>0)return(BGBCC_CCXL_WrapInt(i));
+			if(i>0)
+			{
+//				BGBCC_CCXL_Note(ctx, "reduced sizeof A, %d\n", i);
+				return(BGBCC_CCXL_WrapInt(i));
+			}
 			
 			if(flag&1)
 			{
 				i=BGBCC_CCXL_GetMinMaxSizeofType(ctx, t,
 					NULL, &i0, NULL, NULL);
 				if((i>=0) && (i0>0))
+				{
+//					BGBCC_CCXL_Note(ctx, "reduced sizeof B, %d\n", i0);
 					return(BGBCC_CCXL_WrapInt(i0));
+				}
 				BGBCC_DBGBREAK
 			}
 		}

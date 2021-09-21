@@ -176,8 +176,8 @@ void TKMM_MMList_MProtectCat(byte *ptr, int sz, int cat)
 //				TKMM_PROT_NOUSER|TKMM_PROT_READ|TKMM_PROT_WRITE);
 		}else
 		{
-			tk_mprotect((u64)ptr, sz,
-				TKMM_PROT_READ|TKMM_PROT_WRITE);
+//			tk_mprotect((u64)ptr, sz,
+//				TKMM_PROT_READ|TKMM_PROT_WRITE);
 		}
 		return;
 	}
@@ -396,10 +396,12 @@ TKMM_MemLnkObj *TKMM_MMList_AllocObjCat(int sz, int cat)
 	TKMM_MemLnkObj **freelist;
 	byte *p1, *p2;
 	int ix, ix1;
-	int sz1, sz2;
+	int isz, sz1, sz2;
 
 	if(!TKMM_PageAlloc_f)
 		__debugbreak();
+
+	isz=sz;
 
 	if(sz<=0)return(NULL);
 //	if(sz<256)sz=256;
@@ -410,9 +412,23 @@ TKMM_MemLnkObj *TKMM_MMList_AllocObjCat(int sz, int cat)
 //	sz=(sz+TKMM_OFFS_DATA+15)&(~7);
 //	sz=(sz+TKMM_OFFS_DATA+31)&(~7);
 //	sz=(sz+TKMM_OFFS_DATA+31)&(~15);
-	sz=(sz+sizeof(TKMM_MemLnkObj)+31)&(~15);
+//	sz2=(sz+sizeof(TKMM_MemLnkObj)+31)&(~15);
+	sz2=(sz+sizeof(TKMM_MemLnkObj)+15)&(~15);
+	sz1=sz+sizeof(TKMM_MemLnkObj);
+
+	if(sz2<sz1)
+		__debugbreak();
+	if(sz1<sz)
+		__debugbreak();
+	
+	sz=sz2;
 
 	if(!TKMM_OFFS_DATA)
+		__debugbreak();
+	if(sz&15)
+		__debugbreak();
+
+	if(TKMM_OFFS_DATA&15)
 		__debugbreak();
 
 	ix=TKMM_SizeToFxiU(sz);
@@ -435,6 +451,9 @@ TKMM_MemLnkObj *TKMM_MMList_AllocObjCat(int sz, int cat)
 	obj=freelist[ix];
 	if(obj)
 	{
+		if(((long)obj)&15)
+			__debugbreak();
+	
 		if(obj->check!=0x5A)
 			__debugbreak();
 
@@ -463,10 +482,13 @@ TKMM_MemLnkObj *TKMM_MMList_AllocObjCat(int sz, int cat)
 
 	if(!p1)
 	{
-		tk_printf("TKMM_MMList_Malloc: BRK Failed %d\n", sz1);
+		tk_printf("TKMM_MMList_AllocObjCat: BRK Failed %d\n", sz1);
 		__debugbreak();
 		return(NULL);
 	}
+
+	if(((long)obj)&15)
+		__debugbreak();
 
 	p2=p1+sz1;
 	obj=(TKMM_MemLnkObj *)p1;
@@ -484,6 +506,9 @@ TKMM_MemLnkObj *TKMM_MMList_AllocObjCat(int sz, int cat)
 	obj->fl&=~1;
 
 //	__setmemtrap(obj, 3);
+
+//	tk_printf("TKMM_MMList_AllocObjCat: Data=%p..%p, isz=%d, sz1=%d\n",
+//		(byte *)obj->data, ((byte *)obj->data)+isz, isz, sz1);
 
 //	return((byte *)obj->data);
 	return(obj);
@@ -711,6 +736,19 @@ void *tk_malloc(int sz)
 
 //	return(TKMM_MMList_Malloc(sz));
 	return(TKMM_Malloc(sz));
+}
+
+void *tk_malloc_cat(int sz, int cat)
+{
+#ifndef __TK_CLIB_ONLY__
+	if(cat)
+		return(TKMM_MallocCat(sz, cat));
+	else
+		return(TKMM_Malloc(sz));
+#else
+//	return(TKMM_MallocCat(sz, cat));
+	return(TKMM_Malloc(sz));
+#endif
 }
 
 void *tk_malloc_wxe(int sz)

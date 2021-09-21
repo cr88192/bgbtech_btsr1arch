@@ -1180,6 +1180,12 @@ void BJX2_Op_SVEKRR_None(BJX2_Context *ctx, BJX2_Opcode *op)
 	sk1=ctx->krr_key[1];
 	krr0=ctx->regs[BJX2_REG_KRR];
 	
+	if((sk0&15) || (sk1&15))
+	{
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVKRR);
+		return;
+	}
+
 	sk2=krr0^sk0;
 	sk3=krr0^sk1;
 	ctx->regs[BJX2_REG_DLR]=sk2;
@@ -1196,6 +1202,12 @@ void BJX2_Op_LDEKRR_None(BJX2_Context *ctx, BJX2_Opcode *op)
 	sk1=ctx->krr_key[1];
 	sk2=ctx->regs[BJX2_REG_DLR];
 	sk3=ctx->regs[BJX2_REG_DHR];
+
+	if((sk0&15) || (sk1&15))
+	{
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVKRR);
+		return;
+	}
 
 	sk4=sk2^sk0;
 	sk5=sk3^sk1;
@@ -1218,6 +1230,12 @@ void BJX2_Op_LDEENC_None(BJX2_Context *ctx, BJX2_Opcode *op)
 	sk1=ctx->krr_key[1];
 	krr0=ctx->regs[BJX2_REG_DLR];
 	
+	if((sk0&15) || (sk1&15))
+	{
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVKRR);
+		return;
+	}
+
 	sk2=krr0^sk0;
 	sk3=krr0^sk1;
 	ctx->regs[BJX2_REG_DLR]=sk2;

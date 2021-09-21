@@ -211,9 +211,17 @@ int BJX2_MemRamCb_SetTripwire(BJX2_Context *ctx,
 	BJX2_MemSpan *sp, bjx2_addr addr, int mode)
 {
 	int ra, ra4;
+
 //	ra=addr-sp->addr_base;
 	ra=(addr-sp->modbase)&(sp->modmask);
 //	BJX2_PtrSetQWordOfsLe(sp->data, ra, val);
+
+	if(ra&15)
+	{
+		printf("BJX2_MemRamCb_SetTripwire: Misaligned A=%llX mode=%d\n",
+			(long long)addr, mode);
+		return(0);
+	}
 
 	ra4=(ra>>4);
 //	if(sp->tripwire[ra4>>3]&(1<<(ra4&7)))
@@ -221,10 +229,14 @@ int BJX2_MemRamCb_SetTripwire(BJX2_Context *ctx,
 
 	if(mode==3)
 	{
+//		printf("BJX2_MemRamCb_SetTripwire: Set A=%llX\n", (long long)addr);
+	
 //		sp->tripwire[ra4>>3]|=(1<<(ra4&7));
 		sp->tripwire[ra4>>5]|=(1<<(ra4&31));
 	}else if(mode==2)
 	{
+//		printf("BJX2_MemRamCb_SetTripwire: Clear A=%llX\n", (long long)addr);
+
 //		sp->tripwire[ra4>>3]&=~(1<<(ra4&7));
 		sp->tripwire[ra4>>5]&=~(1<<(ra4&31));
 	}

@@ -126,7 +126,8 @@ int BTM_RaycastLineSingle(BTM_World *wrl, int max,
 	register u64 *voxbm;
 	register u64 cpos, cstep;
 	u64 blk, clpos;
-	int cx, cy, cz, cix;
+	u32 blk_v, blk_d;
+	int cx, cy, cz, cix, cix2;
 	int adx, ady, adz;
 	int cxm, czm, xsh, zsh;
 	int n;
@@ -145,18 +146,19 @@ int BTM_RaycastLineSingle(BTM_World *wrl, int max,
 	if((cxm==255) && (czm==63))
 	{
 #if 1
+		clpos=cpos;
 		while(n>4)
 		{
 			i=0;
-			clpos=cpos;
+//			clpos=cpos;
 
 //			cx=(byte)(cpos>> 8);
 //			cy=(byte)(cpos>>32);
 //			cz=(cpos>>56)&63;
 //			cix=(cz<<16)|(cy<<8)|cx;
-			cix=	((cpos>>40)&0x003F0000) |
-					((cpos>>24)&0x0000FF00) |
-					((cpos>> 8)&0x000000FF) ;
+			cix=	((cpos>>40)&0x003F0000ULL) |
+					((cpos>>24)&0x0000FF00ULL) |
+					((cpos>> 8)&0x000000FFULL) ;
 			blk=voxbm[cix>>6];
 //			i|=((blk>>(cix&63))&1);
 			i|=(blk>>(cix&63));
@@ -166,9 +168,9 @@ int BTM_RaycastLineSingle(BTM_World *wrl, int max,
 //			cy=(byte)(cpos>>32);
 //			cz=(cpos>>56)&63;
 //			cix=(cz<<16)|(cy<<8)|cx;
-			cix=	((cpos>>40)&0x003F0000) |
-					((cpos>>24)&0x0000FF00) |
-					((cpos>> 8)&0x000000FF) ;
+			cix=	((cpos>>40)&0x003F0000ULL) |
+					((cpos>>24)&0x0000FF00ULL) |
+					((cpos>> 8)&0x000000FFULL) ;
 			blk=voxbm[cix>>6];
 			i|=(blk>>(cix&63));
 			cpos+=cstep;
@@ -177,9 +179,9 @@ int BTM_RaycastLineSingle(BTM_World *wrl, int max,
 //			cy=(byte)(cpos>>32);
 //			cz=(cpos>>56)&63;
 //			cix=(cz<<16)|(cy<<8)|cx;
-			cix=	((cpos>>40)&0x003F0000) |
-					((cpos>>24)&0x0000FF00) |
-					((cpos>> 8)&0x000000FF) ;
+			cix=	((cpos>>40)&0x003F0000ULL) |
+					((cpos>>24)&0x0000FF00ULL) |
+					((cpos>> 8)&0x000000FFULL) ;
 			blk=voxbm[cix>>6];
 			i|=(blk>>(cix&63));
 			cpos+=cstep;
@@ -188,9 +190,9 @@ int BTM_RaycastLineSingle(BTM_World *wrl, int max,
 //			cy=(byte)(cpos>>32);
 //			cz=(cpos>>56)&63;
 //			cix=(cz<<16)|(cy<<8)|cx;
-			cix=	((cpos>>40)&0x003F0000) |
-					((cpos>>24)&0x0000FF00) |
-					((cpos>> 8)&0x000000FF) ;
+			cix=	((cpos>>40)&0x003F0000ULL) |
+					((cpos>>24)&0x0000FF00ULL) |
+					((cpos>> 8)&0x000000FFULL) ;
 			blk=voxbm[cix>>6];
 			i|=(blk>>(cix&63));
 			cpos+=cstep;
@@ -198,6 +200,7 @@ int BTM_RaycastLineSingle(BTM_World *wrl, int max,
 			if(i&1)
 				{ cpos=clpos; break; }
 
+			clpos=cpos;
 			n-=4;
 		}
 #endif
@@ -214,10 +217,12 @@ int BTM_RaycastLineSingle(BTM_World *wrl, int max,
 			if((blk>>(cix&63))&1)
 				break;
 
+			clpos=cpos;
 			cpos+=cstep;
 		}
 	}else
 	{
+		clpos=cpos;
 		while((n--)>0)
 		{
 			cx=(cpos>> 8)&cxm;
@@ -230,12 +235,37 @@ int BTM_RaycastLineSingle(BTM_World *wrl, int max,
 			if((blk>>(cix&63))&1)
 				break;
 
+			clpos=cpos;
 			cpos+=step;
 		}
 	}
 
 	if(n<=0)
+	{
+		wrl->scr_lhit=0;
+		wrl->scr_lahit=0;
 		return(0);
+	}
+	
+	blk_v=wrl->vox[cix];
+	i=blk_v&255;
+	blk_d=btmgl_vox_atlas_side[i];
+	if(i<2)
+		return(0);
+
+	if(blk_d&BTM_BLKDFL_SEETHRU)
+	{
+		i=BTM_RaycastTryAddHitCix(wrl, cix);
+		i+=BTM_RaycastLineSingle(wrl, n-1, cpos+step, step);
+		return(i);
+	}
+	
+	cix2=	((clpos>>40)&0x003F0000) |
+			((clpos>>24)&0x0000FF00) |
+			((clpos>> 8)&0x000000FF) ;
+	
+	wrl->scr_lhit=cix;
+	wrl->scr_lahit=cix2;
 	
 	i=BTM_RaycastTryAddHitCix(wrl, cix);
 	return(i);
@@ -375,15 +405,66 @@ int BTM_RaycastLineQuad(BTM_World *wrl, int max, int frmax,
 }
 
 
+int BTM_WorldCameraDistCix(BTM_World *wrl, int cix)
+{
+	int cx, cy, cz;
+	int vx, vy, vq;
+	int dx, dy, d;
+	
+	cx=(cix>>0)&255;
+	cy=(cix>>8)&255;
+//	cz=(cz>>0)&255;
+
+	vx=(wrl->cam_org>> 8)&255;
+	vy=(wrl->cam_org>>32)&255;
+	
+	dx=(signed char)(vx-cx);
+	dy=(signed char)(vy-cy);
+
+	vq=(wrl->cam_yaw>>5)&7;
+	
+	switch(vq)
+	{
+	case 7: case 0:
+		if(dy<0)
+			dy<<=3;
+		break;
+	case 1: case 2:
+		if(dx>0)
+			dx<<=3;
+		break;
+	case 3: case 4:
+		if(dy>0)
+			dy<<=3;
+		break;
+	case 5: case 6:
+		if(dx<0)
+			dx<<=3;
+		break;
+	}
+	
+	
+	dx^=dx>>31;
+	dy^=dy>>31;
+	
+	if(dx>dy)
+		d=dx+(dy>>1);
+	else
+		d=dy+(dx>>1);
+	
+	return(d);
+}
+
 int BTM_RaycastSceneQuad(BTM_World *wrl)
 {
 //	short	*
-	u64		corg, step_fw;
+	u64		corg, corg1, step_fw;
 	u64		step0, step1, step2, step3;
+	u32 blk;
 	int		x, y, yaw, pitch, yji, pji;
 	int		y0_ang, p0_ang;
 	int		y1_ang, p1_ang;
-	int		i, j, k, h, n;
+	int		i, j, k, l, h, n;
 
 	BTM_RaycastInitTables();
 
@@ -401,6 +482,11 @@ int BTM_RaycastSceneQuad(BTM_World *wrl)
 		if(j<=0)
 			continue;
 		k=wrl->scr_pts_list[i];
+		
+		l=BTM_WorldCameraDistCix(wrl, k);
+		if(l>28)
+			continue;
+		
 		BTM_RaycastTryAddHitCix1(wrl, k, j-1);
 	}
 	
@@ -582,14 +668,20 @@ int BTM_RaycastSceneQuad(BTM_World *wrl)
 //		step0=BTM_RaycastStepVector(y0_ang, p0_ang);
 		step0=BTM_RaycastStepVectorB(y0_ang, p0_ang);
 		
-//		BTM_RaycastLineSingle(wrl, 28,
-		BTM_RaycastLineSingle(wrl, 24,
-//			corg,
-			corg+(step_fw-step0),
-//			corg-(step_fw+step0),
-			step0);
+		corg1=corg+(step_fw-step0);
+		blk=BTM_GetWorldBlockCorg(wrl, corg1);
+		if((blk&255)>=2)
+			corg1=corg;
+		
+//		BTM_RaycastLineSingle(wrl, 28, corg1, step0);
+		BTM_RaycastLineSingle(wrl, 24, corg1, step0);
 	}
 #endif
+
+	/* Raycast directly forwards. */
+	step0=BTM_RaycastStepVectorB(yaw*4, pitch*4);
+	BTM_RaycastLineSingle(wrl, 24,
+		corg, step0);
 	
 	return(0);
 }

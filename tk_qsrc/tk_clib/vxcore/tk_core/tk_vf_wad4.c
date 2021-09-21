@@ -113,6 +113,9 @@ TK_MOUNT *tk_mount_wad4temp(char *path)
 
 	img=TK_Wad4_CreateTempRamImage(1024);
 
+	if(__offsetof(TK_WadImage, mntbase)>=sizeof(TK_WadImage))
+		__debugbreak();
+
 	if(!path)
 	{
 		TK_Wad4_CreateDirPath(img, "boot");

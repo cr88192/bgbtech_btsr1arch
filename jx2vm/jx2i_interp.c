@@ -941,7 +941,8 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_FCMPEQ:		s0="FCMPEQ";	break;
 	case BJX2_NMID_FCMPGT:		s0="FCMPGT";	break;
 	case BJX2_NMID_FMOVS:		s0="FMOV.S";	break;
-	case BJX2_NMID_FMOVD:		s0="FMOV.D";	break;
+//	case BJX2_NMID_FMOVD:		s0="FMOV.D";	break;
+	case BJX2_NMID_FMOVH:		s0="FMOV.H";	break;
 	case BJX2_NMID_FMOV:		s0="FMOV";		break;
 	case BJX2_NMID_FNEG:		s0="FNEG";		break;
 	case BJX2_NMID_FLDCF:		s0="FLDCF";		break;
@@ -1422,8 +1423,10 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 
 	case BJX2_NMID_FMOVS:
 		msc=4;	break;
-	case BJX2_NMID_FMOVD:
-		msc=8;	break;
+//	case BJX2_NMID_FMOVD:
+//		msc=8;	break;
+	case BJX2_NMID_FMOVH:
+		msc=2;	break;
 	}
 
 	op1=NULL;

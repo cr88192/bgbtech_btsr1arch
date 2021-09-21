@@ -143,6 +143,7 @@ ccxl_status BGBCC_CCXL_RegisterAllocTemporaryLLn(
 			treg.val=CCXL_REGTY_TEMP|
 				(((u64)bty.val)<<CCXL_REGID_TYPESHIFT)|
 				ri->regid;
+			BGBCC_CCXL_LoadslotCacheFlushReg(ctx, treg);
 			*rtreg=treg;
 			return(i);
 		}
@@ -173,6 +174,7 @@ ccxl_status BGBCC_CCXL_RegisterAllocTemporaryLLn(
 			treg.val=CCXL_REGTY_TEMP|
 				(((u64)bty.val)<<CCXL_REGID_TYPESHIFT)|
 				ri->regid;
+			BGBCC_CCXL_LoadslotCacheFlushReg(ctx, treg);
 			*rtreg=treg;
 			return(i);
 #endif
@@ -198,6 +200,7 @@ ccxl_status BGBCC_CCXL_RegisterAllocTemporaryLLn(
 		treg.val=CCXL_REGTY_TEMP|
 			(((u64)bty.val)<<CCXL_REGID_TYPESHIFT)|
 			ri->regid;
+		BGBCC_CCXL_LoadslotCacheFlushReg(ctx, treg);
 		*rtreg=treg;
 		return(bi);
 	}
@@ -426,4 +429,188 @@ ccxl_status BGBCC_CCXL_RegisterSequenceEqualP(
 	if(sreg.val!=treg.val)
 		return(CCXL_STATUS_NO);
 	return(CCXL_STATUS_YES);
+}
+
+ccxl_status BGBCC_CCXL_LoadslotCacheFlush(
+	BGBCC_TransState *ctx)
+{
+	ctx->loadslot_cache_srov=ctx->loadslot_cache_erov;
+	return(CCXL_STATUS_YES);
+}
+
+ccxl_status BGBCC_CCXL_LoadslotCacheFlushStorePtr(
+	BGBCC_TransState *ctx, ccxl_register dreg)
+{
+	ccxl_type dty, bty, ssty;
+	int sr, er;
+	int i;
+	
+	if(ctx->opt_ptrcache<2)
+	{
+		BGBCC_CCXL_LoadslotCacheFlush(ctx);
+		return(CCXL_STATUS_YES);
+	}
+
+	sr=ctx->loadslot_cache_srov;
+	er=ctx->loadslot_cache_erov;
+	
+	if(sr==er)
+		return(CCXL_STATUS_NO);
+
+	dty=BGBCC_CCXL_GetRegType(ctx, dreg);
+//	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, dty))
+		BGBCC_CCXL_TypeDerefType(ctx, dty, &dty);
+
+	i=sr;
+	while(i!=er)
+	{
+		ssty=BGBCC_CCXL_GetRegType(ctx, ctx->loadslot_cache_sreg[i]);
+		if(BGBCC_CCXL_TypeRestrictPointerP(ctx, ssty))
+			continue;
+
+		bty=BGBCC_CCXL_GetRegType(ctx, ctx->loadslot_cache_dreg[i]);
+//		if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, bty))
+//			BGBCC_CCXL_TypeDerefType(ctx, bty, &bty);
+
+		if(BGBCC_CCXL_TypeCompatibleP(ctx, dty, bty))
+		{
+			ctx->loadslot_cache_st[i]=NULL;
+		}
+		
+		i=(i+1)&255;
+	}
+
+	return(CCXL_STATUS_NO);
+//	BGBCC_CCXL_LoadslotCacheFlush(ctx);
+//	return(CCXL_STATUS_YES);
+}
+
+ccxl_status BGBCC_CCXL_LoadslotCacheFlushStoreSlot(
+	BGBCC_TransState *ctx, ccxl_register dreg,
+	BGBCC_CCXL_LiteralInfo *st, char *name,
+	ccxl_register sreg)
+{
+	ccxl_type dty, bty, ssty;
+	int sr, er;
+	int i;
+
+	sr=ctx->loadslot_cache_srov;
+	er=ctx->loadslot_cache_erov;
+	
+	if(sr==er)
+		return(CCXL_STATUS_NO);
+
+	if(ctx->opt_ptrcache<2)
+	{
+		BGBCC_CCXL_LoadslotCacheFlush(ctx);
+		return(CCXL_STATUS_YES);
+	}
+
+	i=sr;
+	while(i!=er)
+	{
+		ssty=BGBCC_CCXL_GetRegType(ctx, ctx->loadslot_cache_sreg[i]);
+		if(BGBCC_CCXL_TypeRestrictPointerP(ctx, ssty))
+			continue;
+
+		if(
+//			BGBCC_CCXL_RegisterIdentEqualP(ctx,
+//				ctx->loadslot_cache_sreg[i], dreg) &&
+			(ctx->loadslot_cache_st[i]==st) &&
+			!strcmp(ctx->loadslot_cache_name[i], name)	)
+		{
+			ctx->loadslot_cache_st[i]=NULL;
+		}
+		
+		i=(i+1)&255;
+	}
+
+	return(CCXL_STATUS_NO);
+
+//	BGBCC_CCXL_LoadslotCacheFlushReg(ctx, dreg);
+}
+
+ccxl_status BGBCC_CCXL_LoadslotCacheFlushReg(
+	BGBCC_TransState *ctx, ccxl_register sreg)
+{
+	int sr, er;
+	int i;
+
+	sr=ctx->loadslot_cache_srov;
+	er=ctx->loadslot_cache_erov;
+	
+	if(sr==er)
+		return(CCXL_STATUS_YES);
+
+	i=sr;
+	while(i!=er)
+	{
+//		if(	(ctx->loadslot_cache_sreg[i]==sreg) ||
+//			(ctx->loadslot_cache_dreg[i]==sreg)	)
+		if(	BGBCC_CCXL_RegisterIdentEqualP(ctx,
+				ctx->loadslot_cache_sreg[i], sreg) ||
+			BGBCC_CCXL_RegisterIdentEqualP(ctx,
+				ctx->loadslot_cache_dreg[i], sreg)	)
+		{
+			ctx->loadslot_cache_st[i]=NULL;
+		}
+		
+		i=(i+1)&255;
+	}
+
+//	ctx->loadslot_cache_srov=ctx->loadslot_cache_erov;
+	return(CCXL_STATUS_YES);
+}
+
+ccxl_status BGBCC_CCXL_LoadslotCacheAdd(
+	BGBCC_TransState *ctx,
+	ccxl_register dreg, ccxl_register sreg,
+	BGBCC_CCXL_LiteralInfo *st, char *name)
+{
+	byte erov;
+
+	if(ctx->opt_ptrcache==0)
+		return(CCXL_STATUS_NO);
+
+	erov=ctx->loadslot_cache_erov++;
+	ctx->loadslot_cache_dreg[erov]=dreg;
+	ctx->loadslot_cache_sreg[erov]=sreg;
+	ctx->loadslot_cache_st	[erov]=st;
+	ctx->loadslot_cache_name[erov]=name;
+	return(CCXL_STATUS_YES);
+}
+
+ccxl_status BGBCC_CCXL_LoadslotCacheCheck(
+	BGBCC_TransState *ctx,
+	ccxl_register sreg,
+	BGBCC_CCXL_LiteralInfo *st, char *name,
+	ccxl_register *rdreg2)
+{
+	int sr, er;
+	int i;
+
+	sr=ctx->loadslot_cache_srov;
+	er=ctx->loadslot_cache_erov;
+	
+	if(sr==er)
+		return(CCXL_STATUS_NO);
+
+	if(ctx->opt_ptrcache==0)
+		return(CCXL_STATUS_NO);
+
+	i=sr;
+	while(i!=er)
+	{
+		if(	(ctx->loadslot_cache_sreg[i].val==sreg.val) &&
+			(ctx->loadslot_cache_st  [i]==st  ) &&
+			!strcmp(ctx->loadslot_cache_name[i], name)	)
+		{
+			*rdreg2=ctx->loadslot_cache_dreg[i];
+			return(CCXL_STATUS_YES);
+		}
+		
+		i=(i+1)&255;
+	}
+
+	return(CCXL_STATUS_NO);
 }

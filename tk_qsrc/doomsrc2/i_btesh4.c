@@ -158,6 +158,10 @@ byte* I_ZoneBase (int*	size)
 	byte *ptr;
     *size = mb_used*1024*1024;
     ptr = (byte *) malloc (*size);
+    
+    if(((long)ptr)&15)
+		__debugbreak();
+    
     TKMM_Malloc(1);
     return ptr;
 }

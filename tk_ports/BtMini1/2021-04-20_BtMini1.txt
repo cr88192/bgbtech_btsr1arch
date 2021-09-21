@@ -1,0 +1,6 @@
+Create a reasonably small/cheap blocky 3D engine which targets BJX2.
+
+Will be an intermediate between Wolf3D/ROTT and something like Minecraft.
+Will consist of multiple layers.
+Size is either 1 or 2 meters.
+Do raycast to find visible blocks.

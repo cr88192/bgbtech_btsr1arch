@@ -278,6 +278,18 @@ int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
 			op->rn=BJX2_REG_GBR;			
 		if(op->rn==BJX2_REG_DLR)
 			break;
+
+#if 1
+		op->nmid=BJX2_NMID_FMOVS;
+		op->fmid=BJX2_FMID_REGSTREGDISP;
+		op->Run=BJX2_Op_FMOVS_GRegStRegDisp;
+		if(eq)
+		{
+			op->nmid=BJX2_NMID_FMOVH;
+			op->Run=BJX2_Op_FMOVH_GRegStRegDisp;
+		}
+#endif
+
 #if 0
 		op->nmid=BJX2_NMID_FMOVS;
 		op->fmid=BJX2_FMID_REGSTREGDISP;
@@ -324,6 +336,18 @@ int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
 			break;
 		if(op->rm==BJX2_REG_DHR)
 			op->rm=BJX2_REG_GBR;
+
+#if 1
+		op->nmid=BJX2_NMID_FMOVS;
+		op->fmid=BJX2_FMID_LDREGDISPREG;
+		op->Run=BJX2_Op_FMOVS_LdRegDispGReg;
+		if(eq)
+		{
+			op->nmid=BJX2_NMID_FMOVH;
+			op->Run=BJX2_Op_FMOVH_LdRegDispGReg;
+		}
+#endif
+
 #if 0
 		op->nmid=BJX2_NMID_FMOVS;
 		op->fmid=BJX2_FMID_LDREGDISPREG;

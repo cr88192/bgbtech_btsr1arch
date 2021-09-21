@@ -925,6 +925,7 @@ int nmid;
 {"fmov",	BGBCC_SH_NMID_FMOV},
 {"fmov.s",	BGBCC_SH_NMID_FMOVS},
 {"fmov.d",	BGBCC_SH_NMID_FMOVD},
+{"fmov.h",	BGBCC_SH_NMID_FMOVH},
 {"fmul",	BGBCC_SH_NMID_FMUL},
 {"fneg",	BGBCC_SH_NMID_FNEG},
 {"fschg",	BGBCC_SH_NMID_FSCHG},

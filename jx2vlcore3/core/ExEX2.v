@@ -292,6 +292,13 @@ begin
 			tRegHeld	= 1;
 		end
 
+		JX2_UCMD_FMOV_RM: begin
+			tRegHeld	= 1;
+		end
+		JX2_UCMD_FMOV_MR: begin
+			tRegHeld	= 1;
+		end
+
 		JX2_UCMD_ALU3, JX2_UCMD_UNARY, JX2_UCMD_ALUW3,
 		JX2_UCMD_CONV2_RR, JX2_UCMD_ALUB3: begin
 //			tRegIdRn2		= regIdRm;			//

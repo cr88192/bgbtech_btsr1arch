@@ -267,8 +267,8 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegFloat(
 			return(i);
 		}
 		
-		BGBCC_CCXL_StubError(ctx);
-		return(0);
+//		BGBCC_CCXL_StubError(ctx);
+//		return(0);
 	}
 
 	BGBCC_JX2C_NormalizeImmVRegInt(ctx, sctx, type, &sreg);

@@ -1054,7 +1054,8 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 			(op->nmid==BJX2_NMID_MOVUL) ||
 			(op->nmid==BJX2_NMID_MOVDL) ||
 			(op->nmid==BJX2_NMID_FMOVS) ||
-			(op->nmid==BJX2_NMID_FMOVD) ||
+//			(op->nmid==BJX2_NMID_FMOVD) ||
+			(op->nmid==BJX2_NMID_FMOVH) ||
 			(op->nmid==BJX2_NMID_MOVX2))
 		{		
 			if((op->fmid==BJX2_FMID_LDREGREG) ||

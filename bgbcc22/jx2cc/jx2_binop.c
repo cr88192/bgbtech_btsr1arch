@@ -137,11 +137,19 @@ int BGBCC_JX2C_EmitBinaryVRegVRegInt(
 					shl=i;
 		}
 
-//		nm1=-1;
-//		if((opr==CCXL_BINOP_AND) && (j==255))
-//			nm1=BGBCC_SH_NMID_EXTUB;
-//		if((opr==CCXL_BINOP_AND) && (j==65535))
-//			nm1=BGBCC_SH_NMID_EXTUW;
+		nm1=-1;
+		if((opr==CCXL_BINOP_AND) && (j==255))
+			nm1=BGBCC_SH_NMID_EXTUB;
+		if((opr==CCXL_BINOP_AND) && (j==65535))
+			nm1=BGBCC_SH_NMID_EXTUW;
+
+		if(nm1>=0)
+		{
+			cdreg=BGBCC_JX2C_EmitGetRegisterDirty(ctx, sctx, dreg);
+			BGBCC_JX2_TryEmitOpRegReg(sctx, nm1, cdreg, cdreg);
+			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
+			return(1);
+		}
 
 		nm1=-1; k=0;
 		if((opr==CCXL_BINOP_ADD) && (j==(sbyte)j))

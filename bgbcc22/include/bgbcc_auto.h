@@ -1128,6 +1128,12 @@ ccxl_status BGBCC_CCXL_RegisterCheckRelease(BGBCC_TransState *ctx, ccxl_register
 ccxl_status BGBCC_CCXL_RegisterCheckAcquire(BGBCC_TransState *ctx, ccxl_register reg);
 ccxl_status BGBCC_CCXL_RegisterIdentEqualP(BGBCC_TransState *ctx, ccxl_register sreg, ccxl_register treg);
 ccxl_status BGBCC_CCXL_RegisterSequenceEqualP(BGBCC_TransState *ctx, ccxl_register sreg, ccxl_register treg);
+ccxl_status BGBCC_CCXL_LoadslotCacheFlush(BGBCC_TransState *ctx);
+ccxl_status BGBCC_CCXL_LoadslotCacheFlushStorePtr(BGBCC_TransState *ctx, ccxl_register dreg);
+ccxl_status BGBCC_CCXL_LoadslotCacheFlushStoreSlot(BGBCC_TransState *ctx, ccxl_register dreg, BGBCC_CCXL_LiteralInfo *st, char *name, ccxl_register sreg);
+ccxl_status BGBCC_CCXL_LoadslotCacheFlushReg(BGBCC_TransState *ctx, ccxl_register sreg);
+ccxl_status BGBCC_CCXL_LoadslotCacheAdd(BGBCC_TransState *ctx, ccxl_register dreg, ccxl_register sreg, BGBCC_CCXL_LiteralInfo *st, char *name);
+ccxl_status BGBCC_CCXL_LoadslotCacheCheck(BGBCC_TransState *ctx, ccxl_register sreg, BGBCC_CCXL_LiteralInfo *st, char *name, ccxl_register *rdreg2);
 //AHSRC:ccxl/ccxl_ril3.c
 int BGBCC_CCXLR3_LabelToIndex(BGBCC_TransState *ctx, ccxl_label lbl);
 ccxl_label BGBCC_CCXLR3_IndexToLabel(BGBCC_TransState *ctx, int ix);
@@ -1143,6 +1149,7 @@ int BGBCC_CCXLR3_TextLookupMatch(BGBCC_TransState *ctx, byte *str, byte *stre, i
 void BGBCC_CCXLR3_EmitTextByte(BGBCC_TransState *ctx, int val);
 void BGBCC_CCXLR3_EmitRawString(BGBCC_TransState *ctx, char *str);
 void BGBCC_CCXLR3_EmitOp(BGBCC_TransState *ctx, int op);
+int BGBCC_IsEmitRil(BGBCC_TransState *ctx);
 void BGBCC_CCXLR3_EmitArgInt(BGBCC_TransState *ctx, s64 val);
 void BGBCC_CCXLR3_EmitArgTag(BGBCC_TransState *ctx, s64 val);
 void BGBCC_CCXLR3_EmitArgFloat(BGBCC_TransState *ctx, f64 val);
@@ -1200,6 +1207,7 @@ ccxl_status BGBCC_CCXL_PopStore(BGBCC_TransState *ctx, char *name);
 ccxl_status BGBCC_CCXL_PushThis(BGBCC_TransState *ctx);
 ccxl_status BGBCC_CCXL_PushSuper(BGBCC_TransState *ctx);
 ccxl_status BGBCC_CCXL_MovLoadStore(BGBCC_TransState *ctx,char *dname, char *sname);
+ccxl_status BGBCC_CCXL_StackTransforCallArgsDbg(BGBCC_TransState *ctx, char *name);
 ccxl_status BGBCC_CCXL_StackTransforCallArgs(BGBCC_TransState *ctx);
 int BGBCC_CCXL_StackGetCntCallArgs(BGBCC_TransState *ctx);
 int BGBCC_CCXL_StackGetConvCallArgs(BGBCC_TransState *ctx,ccxl_register fnreg);
@@ -1441,6 +1449,8 @@ int BGBCC_CCXL_TypeGetArrayFinalSize(BGBCC_TransState *ctx, ccxl_type sty);
 int BGBCC_CCXL_TypeGetPointerClass(BGBCC_TransState *ctx, ccxl_type sty);
 int BGBCC_CCXL_TypeNearPointerP(BGBCC_TransState *ctx, ccxl_type sty);
 int BGBCC_CCXL_TypeFarPointerP(BGBCC_TransState *ctx, ccxl_type sty);
+int BGBCC_CCXL_TypeVolatilePointerP(BGBCC_TransState *ctx, ccxl_type sty);
+int BGBCC_CCXL_TypeRestrictPointerP(BGBCC_TransState *ctx, ccxl_type sty);
 int BGBCC_CCXL_TypeUnpackOverflow(BGBCC_TransState *ctx, ccxl_type ty, BGBCC_CCXL_TypeOverflow *rovf);
 int BGBCC_CCXL_TypeIndexOverflow(BGBCC_TransState *ctx, BGBCC_CCXL_TypeOverflow ovf);
 ccxl_status BGBCC_CCXL_TypeFromOverflow(BGBCC_TransState *ctx, ccxl_type *rty, BGBCC_CCXL_TypeOverflow ovf);

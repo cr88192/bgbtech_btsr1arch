@@ -1491,6 +1491,8 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 	int i, j, k, m, endian;
 	char *s, *t;
 	char *mach_name, *gcc_ver, *home, *base, *cfg, *prefix;
+	time_t tt0;
+	struct tm *tm0;
 //#ifdef linux
 //	struct utsname utsbuf;
 //#endif
@@ -1927,9 +1929,19 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 	BGBPP_AddStaticDefine(NULL, "_BGBCC", "");
 	BGBPP_AddStaticDefine(NULL, "__BGBCC__", "");
 
+	tt0 = time(NULL);
+//	tm0 = localtime(&tt0);
+	tm0 = gmtime(&tt0);
+
 	//FIXME: do this properly
-	BGBPP_AddStaticDefine(NULL, "__DATE__", "\"Apr 01 2000\"");
-	BGBPP_AddStaticDefine(NULL, "__TIME__", "\"23:59:59\"");
+//	BGBPP_AddStaticDefine(NULL, "__DATE__", "\"Apr 01 2000\"");
+//	BGBPP_AddStaticDefine(NULL, "__TIME__", "\"23:59:59\"");
+
+	strftime(tb, 255, "\"%b %d %Y\"", tm0);
+	BGBPP_AddStaticDefine(NULL, "__DATE__", strdup(tb));
+
+	strftime(tb, 255, "\"%H:%M:%S\"", tm0);
+	BGBPP_AddStaticDefine(NULL, "__TIME__", strdup(tb));
 
 #if 0
 //	if(!(m&64))

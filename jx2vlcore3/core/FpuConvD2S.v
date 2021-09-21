@@ -1,3 +1,6 @@
+`ifndef HAS_FPUCONVD2S
+`define HAS_FPUCONVD2S
+
 module FpuConvD2S(
 	regValFRm,
 	regValFRn);
@@ -73,3 +76,5 @@ begin
 end
 
 endmodule
+
+`endif

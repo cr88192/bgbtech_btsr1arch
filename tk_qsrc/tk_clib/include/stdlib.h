@@ -65,6 +65,7 @@ typedef void (*constraint_handler_t)(
 extern void (*__userExit[__NATEXIT])(void);
 
 void *malloc(size_t size);
+void *_malloc_cat(size_t size, int cat);
 void *calloc(size_t nmemb, size_t size);
 void *realloc(void *ptr, size_t size);
 void free(void *ptr);

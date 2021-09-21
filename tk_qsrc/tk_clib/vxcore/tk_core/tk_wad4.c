@@ -140,8 +140,15 @@ void TK_Wad4_ZCheckEvictCache()
 TK_WadImage *TK_Wad4_AllocImage()
 {
 	TK_WadImage *img;
+
 	img=tk_malloc(sizeof(TK_WadImage));
 	memset(img, 0, sizeof(TK_WadImage));
+
+	if(__offsetof(TK_WadImage, mntbase)>=sizeof(TK_WadImage))
+		__debugbreak();
+
+//	tk_printf("TK_Wad4_AllocImage: p=%p, sz=%d\n", img, sizeof(TK_WadImage));
+
 	return(img);
 }
 

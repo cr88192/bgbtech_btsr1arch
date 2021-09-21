@@ -8,6 +8,11 @@ Continues on the work from the first 2 stages.
 
 `include "CoreDefs.v"
 
+`ifdef jx2_enable_fmov
+`include "FpuConvS2D.v"
+`include "FpuConvH2D.v"
+`endif
+
 module ExEX3(
 	clock,		reset,
 	opUCmd,		opUIxt,
@@ -122,6 +127,13 @@ reg			tOpEnable;
 reg		tMsgLatch;
 reg		tNextMsgLatch;
 
+`ifdef jx2_enable_fmov
+wire[63:0]	memDataIn_S2D;		//memory data (Single To Double)
+wire[63:0]	memDataIn_H2D;		//memory data (Single To Double)
+FpuConvS2D	mem_cnv_s2d(memDataIn[31:0], memDataIn_S2D);
+FpuConvH2D	mem_cnv_h2d(memDataIn[15:0], memDataIn_H2D);
+`endif
+
 
 always @*
 begin
@@ -218,6 +230,24 @@ begin
 			$display("LOAD(3): R=%X V=%X", regIdRm, memDataIn);
 `endif
 		end
+
+`ifdef jx2_enable_fmov
+		JX2_UCMD_FMOV_RM: begin
+			tDoMemOp	= 1;
+		end
+		JX2_UCMD_FMOV_MR: begin
+			tDoMemOp		= 1;
+			tValOutDfl		= memDataIn_S2D;
+`ifdef jx2_enable_fmovh
+			if(opUIxt[4])
+				tValOutDfl	= memDataIn_H2D;
+`endif
+			tDoOutDfl		= 1;
+`ifdef jx2_debug_ldst
+			$display("LOAD(3): R=%X V=%X", regIdRm, memDataIn);
+`endif
+		end
+`endif
 
 		JX2_UCMD_ADDSP: begin
 		end

@@ -297,12 +297,14 @@ Typed signatures are encoded as strings, with characters indicating value types.
 * '({args}){ret}': Function Signature
 
 Pointer/Array Class Modifer:
-* 'Ab': Packed / Big Endian
+* 'Ab': Packed + Big Endian
 * 'Af': Far
-* 'Al': Packed / Little Endian
+* 'Al': Packed + Little Endian
 
 * 'An': Near
 * 'Ap': Packed
+* 'Av': Volatile
+* 'Ar': Restrict
 * 'Aw': ? Wide
 
 
@@ -342,9 +344,11 @@ Pointer/Array Class Modifer:
 * Ce: event ("__event")
 * Cf: interrupt ("__interrupt")
 * Ci: interface ("__interface")
+* Cr: restrict
 * Cs: synchronized ("__synchronized")
 * Ct: thread ("__thread")
 
+* Cv: volatile
 * Cw: wide ("__wide")
 * Cx: near pointer ("__near")
 * Cy: far pointer ("__far")

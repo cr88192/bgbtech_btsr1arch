@@ -2321,6 +2321,10 @@ char *BGBCC_CCXL_VarTypeString_FlattenName(BGBCC_TransState *ctx,
 		if(!strcmp(s, "int128"))*t++='n';
 		if(!strcmp(s, "uint128"))*t++='o';
 
+		if(!strcmp(s, "intptr"))*t++='l';
+		if(!strcmp(s, "uintptr"))*t++='m';
+
+
 		if(!strcmp(s, "bfloat16"))*t++='u';
 		if(!strcmp(s, "float16"))*t++='k';
 		if(!strcmp(s, "float32"))*t++='f';
@@ -2854,7 +2858,10 @@ int BGBCC_CCXL_VarTypeString_ModifierChar(BGBCC_TransState *ctx, s64 i)
 
 	case BGBCC_TYFL_INTERFACE:		c=('C'<<8)|'i'; break;
 
+	case BGBCC_TYFL_RESTRICT:		c=('C'<<8)|'r'; break;
 	case BGBCC_TYFL_SYNCHRONIZED:	c=('C'<<8)|'s'; break;
+
+	case BGBCC_TYFL_VOLATILE:		c=('C'<<8)|'v'; break;
 
 	case BGBCC_TYFL_NEAR:			c=('C'<<8)|'x'; break;
 	case BGBCC_TYFL_FAR:			c=('C'<<8)|'y'; break;
@@ -3061,6 +3068,12 @@ char *BGBCC_CCXL_VarTypeString(BGBCC_TransState *ctx, BCCX_Node *ty)
 				{ *t++='A'; *t++='b'; }
 			else if(li&BGBCC_TYFL_PACKED)
 				{ *t++='A'; *t++='p'; }
+
+			if(li&BGBCC_TYFL_RESTRICT)
+				{ *t++='A'; *t++='r'; }
+
+			if(li&BGBCC_TYFL_VOLATILE)
+				{ *t++='A'; *t++='v'; }
 		}
 
 #if 1
@@ -4355,6 +4368,8 @@ BCCX_Node *BGBCC_CCXL_CompileBlock2(BGBCC_TransState *ctx,
 	ctx->contstackpos=0;
 	ctx->breakstackpos=0;
 
+	BGBCC_CCXL_LoadslotCacheFlush(ctx);
+
 	ocs_n=ctx->cur_struct;
 	ocf_n=ctx->cf_n;
 	ocf_ty=ctx->cf_ty;
@@ -4476,6 +4491,8 @@ BCCX_Node *BGBCC_CCXL_CompileBlock2(BGBCC_TransState *ctx,
 	ctx->cf_ty=ocf_ty;
 	ctx->n_imp=o_nimp;
 	ctx->ccxl_in_func=o_infunc;
+
+	BGBCC_CCXL_LoadslotCacheFlush(ctx);
 
 	return(NULL);
 }
@@ -6095,6 +6112,21 @@ int BGBCC_CCXL_CompileModuleCTX(
 	ctx->n_imp=0;
 	ctx->static_init=NULL;
 	ctx->loop_localstate=0;
+	ctx->opt_ptrcache=1;
+//	ctx->opt_ptrcache=0;
+
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "noptropt"))
+		ctx->opt_ptrcache=0;
+
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "ptropts"))
+		ctx->opt_ptrcache=2;
+
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "ptropt0"))
+		ctx->opt_ptrcache=0;
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "ptropt1"))
+		ctx->opt_ptrcache=1;
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "ptropt2"))
+		ctx->opt_ptrcache=2;
 
 	s=BCCX_GetCst(l, &bgbcc_rcst_lang, "lang");
 	ctx->lang=BGBCP_LangForName(s);
