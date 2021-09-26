@@ -1134,6 +1134,10 @@ ccxl_status BGBCC_CCXL_LoadslotCacheFlushStoreSlot(BGBCC_TransState *ctx, ccxl_r
 ccxl_status BGBCC_CCXL_LoadslotCacheFlushReg(BGBCC_TransState *ctx, ccxl_register sreg);
 ccxl_status BGBCC_CCXL_LoadslotCacheAdd(BGBCC_TransState *ctx, ccxl_register dreg, ccxl_register sreg, BGBCC_CCXL_LiteralInfo *st, char *name);
 ccxl_status BGBCC_CCXL_LoadslotCacheCheck(BGBCC_TransState *ctx, ccxl_register sreg, BGBCC_CCXL_LiteralInfo *st, char *name, ccxl_register *rdreg2);
+ccxl_status BGBCC_CCXL_LoadIndexCacheAdd(BGBCC_TransState *ctx, ccxl_register dreg, ccxl_register sreg, ccxl_register ireg);
+ccxl_status BGBCC_CCXL_LoadIndexCacheCheck(BGBCC_TransState *ctx, ccxl_register sreg, ccxl_register ireg, ccxl_register *rdreg2);
+ccxl_status BGBCC_CCXL_LoadIndexConstCacheAdd(BGBCC_TransState *ctx, ccxl_register dreg, ccxl_register sreg, int idx);
+ccxl_status BGBCC_CCXL_LoadIndexConstCacheCheck(BGBCC_TransState *ctx, ccxl_register sreg, int idx, ccxl_register *rdreg2);
 //AHSRC:ccxl/ccxl_ril3.c
 int BGBCC_CCXLR3_LabelToIndex(BGBCC_TransState *ctx, ccxl_label lbl);
 ccxl_label BGBCC_CCXLR3_IndexToLabel(BGBCC_TransState *ctx, int ix);

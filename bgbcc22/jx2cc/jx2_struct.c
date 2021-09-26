@@ -1814,7 +1814,8 @@ int BGBCC_JX2C_EmitLoadTypeBRegOfsReg(
 		if(sctx->fpu_soft)
 			{ sz=8; nm1=BGBCC_SH_NMID_MOVQ; nm2=-1; break; }
 		else
-			{ sz=8; nm1=BGBCC_SH_NMID_FMOVS; nm2=-1; break; }
+//			{ sz=8; nm1=BGBCC_SH_NMID_FMOVS; nm2=-1; break; }
+			{ sz=8; nm1=BGBCC_SH_NMID_FMOVD; nm2=-1; break; }
 	case CCXL_TY_L:	case CCXL_TY_UL:
 		if(sctx->is_addr64)
 			{ sz=8; nm1=BGBCC_SH_NMID_MOVQ; nm2=-1; break; }

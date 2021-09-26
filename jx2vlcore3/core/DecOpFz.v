@@ -242,6 +242,7 @@ begin
 	opExWN		= istrWord[10] && opIsXGpr;
 	opExWM		= istrWord[ 9] && opIsXGpr;
 	opExWI		= istrWord[ 8] && opIsXGpr;
+//	opExWI		= istrWord[ 8] && opIsXGpr && (istrWord[15:12]!=4'b1001);
 
 	if(opIsJumboAu)
 	begin
@@ -550,16 +551,13 @@ begin
 
 	tBlockIsF0 =
 		(istrWord[11:8] == 4'b0000) ||
-		(istrWord[11:8] == 4'b0100) ||
-		tOpIsXGprX0;
+		(istrWord[11:8] == 4'b0100);
 	tBlockIsF1 =
 		(istrWord[11:8] == 4'b0001) ||
-		(istrWord[11:8] == 4'b0101) ||
-		tOpIsXGprX1;
+		(istrWord[11:8] == 4'b0101);
 	tBlockIsF2 =
 		(istrWord[11:8] == 4'b0010) ||
-		(istrWord[11:8] == 4'b0110) ||
-		tOpIsXGprX2;
+		(istrWord[11:8] == 4'b0110);
 	tBlockIsF3 =
 		(istrWord[11:8] == 4'b0011) ||
 		(istrWord[11:8] == 4'b0111);
@@ -582,9 +580,6 @@ begin
 //		tBlockIsF9;
 	tBlockIsWex		= istrWord[10];
 
-	if(opIsXGpr)
-		tBlockIsWex		= istrWord[11];
-
 	tBlockIsFA =
 		(istrWord[11:8] == 4'b1010);
 	tBlockIsFB =
@@ -594,6 +589,37 @@ begin
 		(istrWord[11:8] == 4'b1110);
 	tBlockIsFF =
 		(istrWord[11:8] == 4'b1111);
+
+
+	if(opIsNotFx)
+	begin
+		tBlockIsF0 = 0;
+		tBlockIsF1 = 0;
+		tBlockIsF2 = 0;
+		tBlockIsF3 = 0;
+		tBlockIsF4 = 0;
+		tBlockIsF5 = 0;
+		tBlockIsF6 = 0;
+		tBlockIsF7 = 0;
+		tBlockIsF8 = 0;
+		tBlockIsF9 = 0;
+		tBlockIsFA = 0;
+		tBlockIsFB = 0;
+
+		tBlockIsFE = 0;
+		tBlockIsFF = 0;
+	end
+
+	if(tOpIsXGprX0)
+		tBlockIsF0 = 1;
+	if(tOpIsXGprX1)
+		tBlockIsF1 = 1;
+	if(tOpIsXGprX2)
+		tBlockIsF2 = 1;
+
+
+	if(opIsXGpr)
+		tBlockIsWex		= istrWord[11];
 
 	tBlockIsPrWxA =
 		(istrWord[11:8] == 4'b1010) ||

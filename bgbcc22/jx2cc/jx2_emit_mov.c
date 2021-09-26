@@ -75,11 +75,11 @@ int BGBCC_JX2_TryEmitOpRegStReg(BGBCC_JX2_Context *ctx,
 		opw1=0x0300|((rn&15)<<4)|((rm&15)<<0);			break;
 
 #if 0
-	case BGBCC_SH_NMID_FMOVS:
+//	case BGBCC_SH_NMID_FMO//VS:
 		if(!BGBCC_JX2_EmitCheckRegBaseFPR(ctx, rm))		break;
 		if(!BGBCC_JX2_EmitCheckRegAddrGPR(ctx, rn))		break;
 		opw1=0x9000|((rn&15)<<4)|((rm&15)<<0);			break;
-	case BGBCC_SH_NMID_FMOVD:
+//	case BGBCC_SH_NMID_FMO//VD:
 		if(!BGBCC_JX2_EmitCheckRegBaseFPR(ctx, rm))		break;
 		if(!BGBCC_JX2_EmitCheckRegAddrGPR(ctx, rn))		break;
 		opw1=0x9100|((rn&15)<<4)|((rm&15)<<0);			break;
@@ -184,10 +184,12 @@ int BGBCC_JX2_TryEmitOpRegStReg(BGBCC_JX2_Context *ctx,
 
 		case BGBCC_SH_NMID_FMOVS:
 			opw1=0xF100|((rn&15)<<4)|((rm&15)<<0);
-			opw2=0x4000|ex2;			break;
+			opw2=0x4000|ex2;
+			break;
 		case BGBCC_SH_NMID_FMOVH:
 			opw1=0xF100|((rn&15)<<4)|((rm&15)<<0);
-			opw2=0x4800|ex2;			break;
+			opw2=0x4800|ex2;
+			break;
 
 #if 0
 		case BGBCC_SH_NMID_CMOVTB:
@@ -243,7 +245,7 @@ int BGBCC_JX2_TryEmitOpRegStReg(BGBCC_JX2_Context *ctx,
 	
 		switch(nmid)
 		{
-		case BGBCC_SH_NMID_FMOVS:
+//		case BGBCC_SH_NMID_FMO//VS:
 //			opw1=0xF000|ex;
 //			opw2=0x9C00|((rn&15)<<4)|((rm&15)<<0);			break;
 //			opw1=0xF000|ex;
@@ -350,7 +352,7 @@ int BGBCC_JX2_TryEmitOpLdRegReg(BGBCC_JX2_Context *ctx,
 		opw1=0x0B00|((rn&15)<<4)|((rm&15)<<0);			break;
 
 #if 0
-	case BGBCC_SH_NMID_FMOVS:
+//	case BGBCC_SH_NMID_FMO..VS:
 		if(!BGBCC_JX2_EmitCheckRegAddrGPR(ctx, rm))		break;
 		if(!BGBCC_JX2_EmitCheckRegBaseFPR(ctx, rn))		break;
 		opw1=0x9400|((rn&15)<<4)|((rm&15)<<0);			break;
@@ -525,10 +527,12 @@ int BGBCC_JX2_TryEmitOpLdRegReg(BGBCC_JX2_Context *ctx,
 
 		case BGBCC_SH_NMID_FMOVS:
 			opw1=0xF100|((rn&15)<<4)|((rm&15)<<0);
-			opw2=0x6000|ex2;			break;
+			opw2=0x6000|ex2;
+			break;
 		case BGBCC_SH_NMID_FMOVH:
 			opw1=0xF100|((rn&15)<<4)|((rm&15)<<0);
-			opw2=0x6800|ex2;			break;
+			opw2=0x6800|ex2;
+			break;
 
 #if 0
 		case BGBCC_SH_NMID_CMOVTB:
@@ -584,7 +588,7 @@ int BGBCC_JX2_TryEmitOpLdRegReg(BGBCC_JX2_Context *ctx,
 	
 		switch(nmid)
 		{
-		case BGBCC_SH_NMID_FMOVS:
+//		case BGBCC_SH_NMID_FM..OVS:
 //			opw1=0xF004|ex;
 //			opw2=0x9C00|((rn&15)<<4)|((rm&15)<<0);			break;
 //			opw1=0xF000|ex;
@@ -1088,11 +1092,13 @@ int BGBCC_JX2_TryEmitOpRegStRegDisp(
 			break;
 		case BGBCC_SH_NMID_MOVW:
 		case BGBCC_SH_NMID_MOVUW:
+		case BGBCC_SH_NMID_FMOVH:
 			disp<<=1;
 			break;
 		case BGBCC_SH_NMID_MOVL:
 		case BGBCC_SH_NMID_MOVUL:
 		case BGBCC_SH_NMID_MOVDL:
+		case BGBCC_SH_NMID_FMOVS:
 			disp<<=2;
 			break;
 		case BGBCC_SH_NMID_MOVQ:
@@ -1381,7 +1387,7 @@ int BGBCC_JX2_TryEmitOpRegStRegDisp(
 #endif
 
 #if 0
-	case BGBCC_SH_NMID_FMOVS:	
+//	case BGBCC_SH_NMID_FMO..VS:	
 		if(!BGBCC_JX2_EmitCheckRegBaseFPR(ctx, rm))		break;
 		if(!BGBCC_JX2_EmitCheckRegAddrGPR(ctx, rn))		break;
 		if(!BGBCC_JX2_CheckPadCross32(ctx))
@@ -1916,11 +1922,13 @@ int BGBCC_JX2_TryEmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,
 			break;
 		case BGBCC_SH_NMID_MOVW:
 		case BGBCC_SH_NMID_MOVUW:
+		case BGBCC_SH_NMID_FMOVH:
 			disp<<=1;
 			break;
 		case BGBCC_SH_NMID_MOVL:
 		case BGBCC_SH_NMID_MOVUL:
 		case BGBCC_SH_NMID_MOVDL:
+		case BGBCC_SH_NMID_FMOVS:
 			disp<<=2;
 			break;
 		case BGBCC_SH_NMID_MOVQ:
@@ -2265,7 +2273,7 @@ int BGBCC_JX2_TryEmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,
 		odr=4; opw1=0x8800|((rn&15)<<4)|((rm&15)<<0);	break;
 
 #if 0
-	case BGBCC_SH_NMID_FMOVS:
+//	case BGBCC_SH_NMID_FMO..VS:
 		if(!BGBCC_JX2_EmitCheckRegBaseFPR(ctx, rn))		break;
 		if(!BGBCC_JX2_EmitCheckRegAddrGPR(ctx, rm))		break;
 		if(!BGBCC_JX2_CheckPadCross32(ctx))
@@ -2861,7 +2869,7 @@ int BGBCC_JX2_TryEmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,
 	
 		switch(nmid)
 		{
-		case BGBCC_SH_NMID_FMOVS:
+//		case BGBCC_SH_NMID_FMO..VS:
 			if(((disp&0x7FC)==disp) && !(nowxi>>2))
 			{
 				opw1=0xF100|((rn&15)<<4)|((rm&15)<<0);
@@ -3257,7 +3265,7 @@ int BGBCC_JX2_TryEmitOpRegStReg2(
 
 		switch(nmid)
 		{
-		case BGBCC_SH_NMID_FMOVS:
+//		case BGBCC_SH_NMID_FMO,,VS:
 			opw1=0xF000|ex|(ro&15);
 			opw2=0x9200|((rn&15)<<4)|((rm&15)<<0);			break;
 		case BGBCC_SH_NMID_FMOVD:	
@@ -3782,10 +3790,10 @@ int BGBCC_JX2_TryEmitOpLdReg2Reg(
 
 		switch(nmid)
 		{
-		case BGBCC_SH_NMID_FMOVS:
+//		case BGBCC_SH_NMID_FM//OVS:
 			opw1=0xF000|ex|(ro&15);
 			opw2=0x9600|((rn&15)<<4)|((rm&15)<<0);			break;
-		case BGBCC_SH_NMID_FMOVD:	
+//		case BGBCC_SH_NMID_FM//OVD:	
 			opw1=0xF000|ex|(ro&15);
 			opw2=0x9700|((rn&15)<<4)|((rm&15)<<0);			break;
 		}

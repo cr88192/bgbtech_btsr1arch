@@ -517,7 +517,7 @@ begin
 		
 		JX2_UCMD_INVOP: begin
 			if(!tMsgLatch)
-				$display("EX: Invalid Opcode");
+				$display("EX1: Invalid Opcode %X", tOpUCmd1);
 			tNextMsgLatch	= 1;
 			tExHold		= 1;
 //			tExHold		= !reset;

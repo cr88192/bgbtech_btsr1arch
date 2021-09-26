@@ -831,6 +831,7 @@ BCCX_Node *reduce_tmp;
 
 ccxl_register loadslot_cache_dreg[256];
 ccxl_register loadslot_cache_sreg[256];
+ccxl_register loadslot_cache_ireg[256];
 BGBCC_CCXL_LiteralInfo *loadslot_cache_st[256];
 char *loadslot_cache_name[256];
 byte loadslot_cache_srov;

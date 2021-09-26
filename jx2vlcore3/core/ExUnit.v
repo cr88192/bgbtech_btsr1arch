@@ -237,7 +237,7 @@ reg [63:0]		crInSr;
 
 reg[47:0]		ifValPc;
 reg[47:0]		ifLastPc;
-// wire[63:0]		ifIstrWord;	//source instruction word
+// wire[63:0]	ifIstrWord;	//source instruction word
 wire[95:0]		ifIstrWord;	//source instruction word
 wire[1:0]		ifOutPcOK;
 wire[3:0]		ifOutPcStep;
@@ -357,10 +357,12 @@ wire[63:0]		gprValCm;
 
 reg[47:0]		id1ValBPc;
 reg[47:0]		id1ValPc;
-// reg[63:0]		id1IstrWord;	//source instruction word
+// reg[63:0]	id1IstrWord;	//source instruction word
 reg[95:0]		id1IstrWord;	//source instruction word
-reg[31:0]		id1IstrWordL1;	//source instruction word
-reg[31:0]		id1IstrWordL2;	//source instruction word
+// reg[31:0]	id1IstrWordL1;	//source instruction word
+// reg[31:0]	id1IstrWordL2;	//source instruction word
+reg[95:0]		id1IstrWordL1;	//source instruction word
+reg[95:0]		id1IstrWordL2;	//source instruction word
 reg[3:0]		id1IstrSxo;
 
 `ifdef jx2_enable_wex
@@ -471,7 +473,8 @@ reg[47:0]		id2ValBPc;
 // reg[8:0]		id2IdUIxt;
 reg[47:0]		id2PreBraPc;
 reg[1:0]		id2PreBra;
-reg[31:0]		id2IstrWord;	//source instruction word
+// reg[31:0]		id2IstrWord;	//source instruction word
+reg[95:0]		id2IstrWord;	//source instruction word
 // reg[31:0]		id2IstrWordL;	//source instruction word
 
 wire	crIsIsrEdge;
@@ -940,7 +943,8 @@ reg[8:0]		ex1OpUIxt;
 wire[1:0]		ex1Hold;
 reg[47:0]		ex1PreBraPc;
 reg[1:0]		ex1PreBra;
-reg[31:0]		ex1IstrWord;	//source instruction word
+// reg[31:0]	ex1IstrWord;	//source instruction word
+reg[95:0]		ex1IstrWord;	//source instruction word
 reg				ex1BraFlush;
 reg				ex1TrapFlush;
 reg[11:0]		ex1Timers;
@@ -1193,7 +1197,8 @@ reg[8:0]		ex2OpUIxt;
 wire[1:0]		ex2Hold;
 reg[47:0]		ex2PreBraPc;
 reg[1:0]		ex2PreBra;
-reg[31:0]		ex2IstrWord;	//source instruction word
+// reg[31:0]	ex2IstrWord;	//source instruction word
+reg[95:0]		ex2IstrWord;	//source instruction word
 
 `reg_gpr		ex2RegIdRs;		//Source A, ALU / Base
 `reg_gpr		ex2RegIdRt;		//Source B, ALU / Index
@@ -1305,7 +1310,8 @@ reg[8:0]		ex3OpUCmd;
 reg[8:0]		ex3OpUIxt;
 wire[1:0]		ex3Hold;
 reg[1:0]		ex3PreBra;
-reg[31:0]		ex3IstrWord;	//source instruction word
+// reg[31:0]	ex3IstrWord;	//source instruction word
+reg[95:0]		ex3IstrWord;	//source instruction word
 
 `reg_gpr		ex3RegIdRs;		//Source A, ALU / Base
 `reg_gpr		ex3RegIdRt;		//Source B, ALU / Index
@@ -2096,9 +2102,11 @@ begin
 				dcOutHold, ifOutPcOK[1], ex1FpuOK[1]);
 
 `ifdef jx2_enable_wex
-			$display("ID1: PC0=%X PC2=%X D=%X-%X OpA=%X-%X OpB=%X-%X F=%d",
+			$display("ID1: PC0=%X PC2=%X D=%X-%X-%X-%X-%X-%X OpA=%X-%X OpB=%X-%X F=%d",
 				id1ValBPc,	id1ValPc,
 				id1IstrWord[15: 0], id1IstrWord[31:16],
+				id1IstrWord[47:32], id1IstrWord[63:48],
+				id1IstrWord[79:64], id1IstrWord[95:80],
 				idA1IdUCmd, idA1IdUIxt,
 				idB1IdUCmd, idB1IdUIxt,
 				opBraFlushMask[2]);
@@ -2110,9 +2118,11 @@ begin
 				idC1IdRegM, idC1IdRegO, idC1IdRegN);
 `endif
 
-			$display("ID2: PC0=%X PC2=%X D=%X-%X OpA=%X-%X OpB=%X-%X F=%d",
+			$display("ID2: PC0=%X PC2=%X D=%X-%X-%X-%X-%X-%X OpA=%X-%X OpB=%X-%X F=%d",
 				id2ValBPc,	gprValPc,
 				id2IstrWord[15: 0], id2IstrWord[31:16],
+				id2IstrWord[47:32], id2IstrWord[63:48],
+				id2IstrWord[79:64], id2IstrWord[95:80],
 				idA2IdUCmd, idA2IdUIxt, idB2IdUCmd, idB2IdUIxt,
 				opBraFlushMask[1]);
 			$display("     Rs=%X(%X) Rt=%X(%X) Rm=%X(%X)",
@@ -2148,9 +2158,11 @@ begin
 				gprIdRm, gprValRm);
 `endif
 
-			$display("EX1: PC0=%X PC2=%X D=%X-%X Op=%X-%X F=%d",
+			$display("EX1: PC0=%X PC2=%X D=%X-%X-%X-%X-%X-%X Op=%X-%X F=%d",
 				ex1ValBPc,	ex1RegValPc,
 				ex1IstrWord[15: 0], ex1IstrWord[31:16],
+				ex1IstrWord[47:32], ex1IstrWord[63:48],
+				ex1IstrWord[79:64], ex1IstrWord[95:80],
 				ex1OpUCmd, ex1OpUIxt, ex1BraFlush);
 			$display("     Rs=%X(%X) Rt=%X(%X) Rn0=%X(%X)",
 				ex1RegIdRs, ex1RegValRs,
@@ -2160,9 +2172,11 @@ begin
 				ex1RegIdRn1, ex1RegValRn1,
 				ex1RegIdCn1, ex1RegValCn1);
 
-			$display("EX2: PC0=%X PC2=%X D=%X-%X Op=%X-%X F=%d",
+			$display("EX2: PC0=%X PC2=%X D=%X-%X-%X-%X-%X-%X Op=%X-%X F=%d",
 				ex2ValBPc,	ex2RegValPc,
 				ex2IstrWord[15: 0], ex2IstrWord[31:16],
+				ex2IstrWord[47:32], ex2IstrWord[63:48],
+				ex2IstrWord[79:64], ex2IstrWord[95:80],
 				ex2OpUCmd, ex2OpUIxt, ex2BraFlush);
 			$display("     Rs=%X(%X) Rt=%X(%X) Rn=%X(%X)",
 				ex2RegIdRs, ex2RegValRs,
@@ -2201,9 +2215,11 @@ begin
 `endif
 
 
-			$display("EX3: PC0=%X PC2=%X D=%X-%X Op=%X-%X F=%d",
+			$display("EX3: PC0=%X PC2=%X D=%X-%X-%X-%X-%X-%X Op=%X-%X F=%d",
 				ex3ValBPc,	ex3RegValPc,
 				ex3IstrWord[15: 0], ex3IstrWord[31:16],
+				ex3IstrWord[47:32], ex3IstrWord[63:48],
+				ex3IstrWord[79:64], ex3IstrWord[95:80],
 				ex3OpUCmd, ex3OpUIxt, ex3BraFlush);
 			$display("     Rs=%X(%X) Rt=%X(%X) Rn=%X(%X)",
 				ex3RegIdRs, ex3RegValRs,
@@ -3422,12 +3438,14 @@ begin
 		id2PreBraPc		<= id1PreBraPc;
 		id2PreBra		<= id1PreBra;
 
-		id1IstrWordL1	<= nxtBraFlushMask[2] ? UV32_00: id1IstrWord[31:0];
+//		id1IstrWordL1	<= nxtBraFlushMask[2] ? UV32_00: id1IstrWord[31:0];
+		id1IstrWordL1	<= nxtBraFlushMask[2] ? UV96_00: id1IstrWord[95:0];
 		id1IstrWordL2	<= id1IstrWordL1;
 
 `ifdef jx2_debug_keepinstr
 // `ifdef def_true
-		id2IstrWord		<= id1IstrWord[31:0];
+//		id2IstrWord		<= id1IstrWord[31:0];
+		id2IstrWord		<= id1IstrWord;
 //		id2IstrWordL	<= id2IstrWord;
 		id2ValBPc		<= id1ValBPc;
 `else
@@ -3585,7 +3603,8 @@ begin
 		ex1OpUIxt		<= UV9_00;
 		ex1PreBraPc		<= 0;
 		ex1PreBra		<= 0;
-		ex1IstrWord		<= UV32_XX;
+//		ex1IstrWord		<= UV32_XX;
+		ex1IstrWord		<= UV96_XX;
 
 //		ex1RegValPc		<= UV32_XX;
 		ex1RegValPc		<= UV48_XX;

@@ -441,6 +441,7 @@ ccxl_status BGBCC_CCXL_LoadslotCacheFlush(
 ccxl_status BGBCC_CCXL_LoadslotCacheFlushStorePtr(
 	BGBCC_TransState *ctx, ccxl_register dreg)
 {
+	ccxl_register ireg;
 	ccxl_type dty, bty, ssty;
 	int sr, er;
 	int i;
@@ -453,7 +454,8 @@ ccxl_status BGBCC_CCXL_LoadslotCacheFlushStorePtr(
 
 	sr=ctx->loadslot_cache_srov;
 	er=ctx->loadslot_cache_erov;
-	
+	ireg.val=CCXL_REGID_REG_Z;
+
 	if(sr==er)
 		return(CCXL_STATUS_NO);
 
@@ -475,6 +477,7 @@ ccxl_status BGBCC_CCXL_LoadslotCacheFlushStorePtr(
 		if(BGBCC_CCXL_TypeCompatibleP(ctx, dty, bty))
 		{
 			ctx->loadslot_cache_st[i]=NULL;
+			ctx->loadslot_cache_ireg[i]=ireg;
 		}
 		
 		i=(i+1)&255;
@@ -490,6 +493,8 @@ ccxl_status BGBCC_CCXL_LoadslotCacheFlushStoreSlot(
 	BGBCC_CCXL_LiteralInfo *st, char *name,
 	ccxl_register sreg)
 {
+	char *sn;
+	ccxl_register ireg;
 	ccxl_type dty, bty, ssty;
 	int sr, er;
 	int i;
@@ -506,6 +511,8 @@ ccxl_status BGBCC_CCXL_LoadslotCacheFlushStoreSlot(
 		return(CCXL_STATUS_YES);
 	}
 
+	ireg.val=CCXL_REGID_REG_Z;
+
 	i=sr;
 	while(i!=er)
 	{
@@ -513,13 +520,16 @@ ccxl_status BGBCC_CCXL_LoadslotCacheFlushStoreSlot(
 		if(BGBCC_CCXL_TypeRestrictPointerP(ctx, ssty))
 			continue;
 
+		sn=ctx->loadslot_cache_name[i];
+
 		if(
 //			BGBCC_CCXL_RegisterIdentEqualP(ctx,
 //				ctx->loadslot_cache_sreg[i], dreg) &&
 			(ctx->loadslot_cache_st[i]==st) &&
-			!strcmp(ctx->loadslot_cache_name[i], name)	)
+			sn && !strcmp(sn, name)	)
 		{
 			ctx->loadslot_cache_st[i]=NULL;
+			ctx->loadslot_cache_ireg[i]=ireg;
 		}
 		
 		i=(i+1)&255;
@@ -533,14 +543,20 @@ ccxl_status BGBCC_CCXL_LoadslotCacheFlushStoreSlot(
 ccxl_status BGBCC_CCXL_LoadslotCacheFlushReg(
 	BGBCC_TransState *ctx, ccxl_register sreg)
 {
+	ccxl_register ireg;
 	int sr, er;
 	int i;
+
+	if(sreg.val==CCXL_REGID_REG_Z)
+		return(CCXL_STATUS_NO);
 
 	sr=ctx->loadslot_cache_srov;
 	er=ctx->loadslot_cache_erov;
 	
 	if(sr==er)
 		return(CCXL_STATUS_YES);
+
+	ireg.val=CCXL_REGID_REG_Z;
 
 	i=sr;
 	while(i!=er)
@@ -550,8 +566,11 @@ ccxl_status BGBCC_CCXL_LoadslotCacheFlushReg(
 		if(	BGBCC_CCXL_RegisterIdentEqualP(ctx,
 				ctx->loadslot_cache_sreg[i], sreg) ||
 			BGBCC_CCXL_RegisterIdentEqualP(ctx,
-				ctx->loadslot_cache_dreg[i], sreg)	)
+				ctx->loadslot_cache_dreg[i], sreg) ||
+			BGBCC_CCXL_RegisterIdentEqualP(ctx,
+				ctx->loadslot_cache_ireg[i], sreg)	)
 		{
+			ctx->loadslot_cache_ireg[i]=ireg;
 			ctx->loadslot_cache_st[i]=NULL;
 		}
 		
@@ -567,14 +586,18 @@ ccxl_status BGBCC_CCXL_LoadslotCacheAdd(
 	ccxl_register dreg, ccxl_register sreg,
 	BGBCC_CCXL_LiteralInfo *st, char *name)
 {
+	ccxl_register ireg;
 	byte erov;
 
 	if(ctx->opt_ptrcache==0)
 		return(CCXL_STATUS_NO);
 
+	ireg.val=CCXL_REGID_REG_Z;
+
 	erov=ctx->loadslot_cache_erov++;
 	ctx->loadslot_cache_dreg[erov]=dreg;
 	ctx->loadslot_cache_sreg[erov]=sreg;
+	ctx->loadslot_cache_ireg[erov]=ireg;
 	ctx->loadslot_cache_st	[erov]=st;
 	ctx->loadslot_cache_name[erov]=name;
 	return(CCXL_STATUS_YES);
@@ -586,6 +609,7 @@ ccxl_status BGBCC_CCXL_LoadslotCacheCheck(
 	BGBCC_CCXL_LiteralInfo *st, char *name,
 	ccxl_register *rdreg2)
 {
+	char *sn;
 	int sr, er;
 	int i;
 
@@ -601,9 +625,10 @@ ccxl_status BGBCC_CCXL_LoadslotCacheCheck(
 	i=sr;
 	while(i!=er)
 	{
+		sn=ctx->loadslot_cache_name[i];
 		if(	(ctx->loadslot_cache_sreg[i].val==sreg.val) &&
 			(ctx->loadslot_cache_st  [i]==st  ) &&
-			!strcmp(ctx->loadslot_cache_name[i], name)	)
+			sn && !strcmp(sn, name)	)
 		{
 			*rdreg2=ctx->loadslot_cache_dreg[i];
 			return(CCXL_STATUS_YES);
@@ -613,4 +638,79 @@ ccxl_status BGBCC_CCXL_LoadslotCacheCheck(
 	}
 
 	return(CCXL_STATUS_NO);
+}
+
+ccxl_status BGBCC_CCXL_LoadIndexCacheAdd(
+	BGBCC_TransState *ctx,
+	ccxl_register dreg, ccxl_register sreg, ccxl_register ireg)
+{
+	byte erov;
+
+	if(ctx->opt_ptrcache==0)
+		return(CCXL_STATUS_NO);
+
+	erov=ctx->loadslot_cache_erov++;
+	ctx->loadslot_cache_dreg[erov]=dreg;
+	ctx->loadslot_cache_sreg[erov]=sreg;
+	ctx->loadslot_cache_ireg[erov]=ireg;
+	ctx->loadslot_cache_st	[erov]=NULL;
+	ctx->loadslot_cache_name[erov]=NULL;
+	return(CCXL_STATUS_YES);
+}
+
+ccxl_status BGBCC_CCXL_LoadIndexCacheCheck(
+	BGBCC_TransState *ctx,
+	ccxl_register sreg,
+	ccxl_register ireg,
+	ccxl_register *rdreg2)
+{
+	int sr, er;
+	int i;
+
+//	return(CCXL_STATUS_NO);
+
+	sr=ctx->loadslot_cache_srov;
+	er=ctx->loadslot_cache_erov;
+	
+	if(sr==er)
+		return(CCXL_STATUS_NO);
+
+	if(ctx->opt_ptrcache==0)
+		return(CCXL_STATUS_NO);
+
+	i=sr;
+	while(i!=er)
+	{
+		if(	(ctx->loadslot_cache_sreg[i].val==sreg.val) &&
+			(ctx->loadslot_cache_ireg[i].val==ireg.val) )
+		{
+			*rdreg2=ctx->loadslot_cache_dreg[i];
+			return(CCXL_STATUS_YES);
+		}
+		
+		i=(i+1)&255;
+	}
+
+	return(CCXL_STATUS_NO);
+}
+
+ccxl_status BGBCC_CCXL_LoadIndexConstCacheAdd(
+	BGBCC_TransState *ctx,
+	ccxl_register dreg, ccxl_register sreg, int idx)
+{
+	ccxl_register ireg;
+	byte erov;
+	BGBCC_CCXL_GetRegForIntValue(ctx, &ireg, idx);
+	return(BGBCC_CCXL_LoadIndexCacheAdd(ctx, dreg, sreg, ireg));
+}
+
+ccxl_status BGBCC_CCXL_LoadIndexConstCacheCheck(
+	BGBCC_TransState *ctx,
+	ccxl_register sreg, int idx,
+	ccxl_register *rdreg2)
+{
+	ccxl_register ireg;
+	byte erov;
+	BGBCC_CCXL_GetRegForIntValue(ctx, &ireg, idx);
+	return(BGBCC_CCXL_LoadIndexCacheCheck(ctx, sreg, ireg, rdreg2));
 }

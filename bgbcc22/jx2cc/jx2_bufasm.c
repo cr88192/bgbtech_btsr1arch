@@ -1692,6 +1692,11 @@ int BGBCC_JX2A_ParseCheckFeature(BGBCC_JX2_Context *ctx, char *sym)
 	if(!bgbcc_stricmp(sym, "has_xgpr"))
 		return(ctx->has_xgpr);
 
+	if(!bgbcc_stricmp(sym, "has_fmovs"))
+		return((ctx->has_fmovs&1)!=0);
+	if(!bgbcc_stricmp(sym, "has_fmovh"))
+		return((ctx->has_fmovs&2)!=0);
+
 	if(!bgbcc_stricmp(sym, "abi_evenonly"))
 		return(ctx->abi_evenonly);
 

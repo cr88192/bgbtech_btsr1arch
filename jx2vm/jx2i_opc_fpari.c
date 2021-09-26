@@ -765,6 +765,7 @@ void BJX2_Op_FMOVS_GRegStRegDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	float sf;
 	u32 v;
+	ctx->trapc=op->pc;
 	sf=BJX2_PtrGetDoubleIx(ctx->regs, op->rm);
 //	BJX2_PtrSetFloat(&v, sf);
 	BJX2_PtrSetFloat(&v, sf);
@@ -774,7 +775,27 @@ void BJX2_Op_FMOVS_GRegStRegDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 void BJX2_Op_FMOVS_LdRegDispGReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	u32 v;
+	ctx->trapc=op->pc;
 	v=BJX2_MemGetDWord(ctx, ctx->regs[op->rm]+(op->imm*4));
+	BJX2_PtrSetDoubleIx(ctx->regs, op->rn, BJX2_PtrGetFloat(&v));
+}
+
+void BJX2_Op_FMOVS_GRegStRegDisp1(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	float sf;
+	u32 v;
+	ctx->trapc=op->pc;
+	sf=BJX2_PtrGetDoubleIx(ctx->regs, op->rm);
+//	BJX2_PtrSetFloat(&v, sf);
+	BJX2_PtrSetFloat(&v, sf);
+	BJX2_MemSetDWord(ctx, ctx->regs[op->rn]+(op->imm*1), v);
+}
+
+void BJX2_Op_FMOVS_LdRegDisp1GReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u32 v;
+	ctx->trapc=op->pc;
+	v=BJX2_MemGetDWord(ctx, ctx->regs[op->rm]+(op->imm*1));
 	BJX2_PtrSetDoubleIx(ctx->regs, op->rn, BJX2_PtrGetFloat(&v));
 }
 
@@ -782,6 +803,7 @@ void BJX2_Op_FMOVS_GRegStReg2(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	float sf;
 	u32 v;
+	ctx->trapc=op->pc;
 	sf=BJX2_PtrGetDoubleIx(ctx->regs, op->rm);
 	BJX2_PtrSetFloat(&v, sf);
 	BJX2_MemSetDWord(ctx, ctx->regs[op->rn]+(ctx->regs[op->ro]*4), v);
@@ -790,6 +812,7 @@ void BJX2_Op_FMOVS_GRegStReg2(BJX2_Context *ctx, BJX2_Opcode *op)
 void BJX2_Op_FMOVS_LdReg2GReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	u32 v;
+	ctx->trapc=op->pc;
 	v=BJX2_MemGetDWord(ctx, ctx->regs[op->rm]+(ctx->regs[op->ro]*4));
 	BJX2_PtrSetDoubleIx(ctx->regs, op->rn, BJX2_PtrGetFloat(&v));
 }
