@@ -199,10 +199,14 @@ void tk_tryload(char *img, char **args)
 		TKPE_LoadStaticPE(fd, &bootptr, &bootgbr);
 		printf("Boot Pointer %p, GBR=%p\n", bootptr, (void *)bootgbr);
 		
-		pb_gbr=*(u64 *)bootgbr;
-		if(pb_gbr!=bootgbr)
+		if(bootgbr)
 		{
-			printf("Boot GBR Mismatch, Got=%p Expect=%p\n", pb_gbr, bootgbr);
+			pb_gbr=*(u64 *)bootgbr;
+			if(pb_gbr!=bootgbr)
+			{
+				printf("Boot GBR Mismatch, Got=%p Expect=%p\n",
+					pb_gbr, bootgbr);
+			}
 		}
 		
 		if(bootptr)

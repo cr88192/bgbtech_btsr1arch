@@ -9,6 +9,7 @@ module RbiMemDcA(
 	dcInHold,		regOutHold,
 	regInSr,		regOutWait,
 	regOutExc,		regInMmcr,
+	regKrrHash,
 
 	memAddrIn,		memAddrOut,
 	memDataIn,		memDataOut,
@@ -37,6 +38,8 @@ output			regOutWait;
 input [63: 0]	regInSr;
 input [63: 0]	regInMmcr;
 output[63: 0]	regOutExc;
+
+input[7:0]		regKrrHash;
 
 
 
@@ -236,6 +239,9 @@ reg[  4:0]		tNxtReqBix;
 reg[  4:0]		tReqBix;
 reg[  5:0]		tNxtReqOpm;
 reg[  5:0]		tReqOpm;
+
+reg[3:0]		tInPmode;
+reg[3:0]		tNxtInPmode;
 
 reg[63: 0]		tReqInValA;
 reg[63: 0]		tReqInValB;
@@ -484,7 +490,10 @@ begin
 	tNxtReqAddr		= regInAddr[47:0];
 	tNxtReqBix		= regInAddr[4:0];
 	tNxtReqOpm		= regInOpm;
-	
+
+//	tNxtInPmode		= regInSr[31:28];
+	tNxtInPmode		= regInSr[31:28] ^ regKrrHash[3:0] ^ regKrrHash[7:4];
+
 	tNxtUtlbBlkIx	= regInAddr[15:12] ^ regInAddr[19:16];
 
 `ifdef def_true
@@ -670,7 +679,7 @@ begin
 	tArrMemChkStB	= 0;
 	tArrMemDextStB	= 0;
 	
-	if(tReq2Opm[5] && !tReq2IsMmio && !tReq2StoreSticky)
+	if(tReq2Opm[5] && !tReq2IsMmio && !tReq2IsCcmd && !tReq2StoreSticky)
 	begin
 		tReg2MissInterlockA		= (tReqIxA == tReq2IxA) && !tReq2MissSkipA;
 		tReg2MissInterlockB		= (tReqIxB == tReq2IxB) && !tReq2MissSkipB;
@@ -693,8 +702,8 @@ begin
 	tReqIsNz		= tReqOpm[5:4] != 2'b00;
 	tReqIsMmio		= tReqIsNz &&
 		((((tReqAddr[47:32] == 16'h0000) && !tSrJQ) ||
-		 (tReqAddr[47:32] == 16'hFFFF)) &&
-		(tReqAddr[31:28] == 4'hF)) ||
+			(tReqAddr[47:32] == 16'hFFFF)) &&
+			(tReqAddr[31:28] == 4'hF)) ||
 //		(tReqAddr[47:32] == 16'hF000);
 		((tReqAddr[47:44] == 4'hF) && tSrJQ);
 	tReqIsCcmd		= (tReqOpm[5:4] == 2'b00) && (tReqOpm[3:0] != 4'b0000);
@@ -796,8 +805,11 @@ begin
 		~(tBlk2StoreAddrB[71:68] ^ tBlk2StoreAddrB[8:5]),
 		 (tBlk2StoreAddrB[71:68] ^ tBlk2StoreAddrB[8:5]) };
 
-	tBlk2StoreDextA		= { 8'h00, tBlk2StoreChkA };
-	tBlk2StoreDextB		= { 8'h00, tBlk2StoreChkB };
+//	tBlk2StoreDextA		= { 8'h00, tBlk2StoreChkA };
+//	tBlk2StoreDextB		= { 8'h00, tBlk2StoreChkB };
+
+	tBlk2StoreDextA		= { 4'h0, tInPmode, tBlk2StoreChkA };
+	tBlk2StoreDextB		= { 4'h0, tInPmode, tBlk2StoreChkB };
 
 `ifdef jx2_mem_l1d_fwstore
 // `ifdef def_true
@@ -980,14 +992,19 @@ begin
 	tReqReadOnlyA	= tBlkMemAddr2A[1];
 	tReqReadOnlyB	= tBlkMemAddr2B[1];
 
-	if(!tTlbMissInh)
+//	if(!tTlbMissInh)
+	if(!tTlbMissInh && !tReqIsMmio && !tReqIsCcmd)
 	begin
 //		if(tBlkMemAddr2A[3])
 		if(tBlkMemAddr2A[3:2] == 2'b11)
+		begin
 			tReqFlushAddrA = 1;
+		end
 //		if(tBlkMemAddr2B[3])
 		if(tBlkMemAddr2B[3:2] == 2'b11)
+		begin
 			tReqFlushAddrB = 1;
+		end
 
 		if(tVolatileInhCnt == 0)
 		begin
@@ -1002,6 +1019,20 @@ begin
 				tReqIsNz		= 1;
 			end
 		end
+
+`ifndef def_true
+// `ifdef def_true
+		if((tBlkMemDext2A[11:8] != tInPmode) && !tReqMissSkipA)
+		begin
+			tReqFlushAddrA	= 1;
+//			tReqIsNz		= 1;
+		end
+		if((tBlkMemDext2B[11:8] != tInPmode) && !tReqMissSkipB)
+		begin
+			tReqFlushAddrB	= 1;
+//			tReqIsNz		= 1;
+		end
+`endif
 	end
 
 	tRegOutExc[63:16] = tReqAddr[47:0];
@@ -1365,7 +1396,8 @@ begin
 			tArrMemChkStA		= {
 				~(tArrMemAddrStA[71:68] ^ tArrMemAddrStA[8:5]),
 				 (tArrMemAddrStA[71:68] ^ tArrMemAddrStA[8:5]) };
-			tArrMemDextStA	= { 8'h00, tArrMemChkStA };
+//			tArrMemDextStA	= { 8'h00, tArrMemChkStA };
+			tArrMemDextStA	= { 4'h0, tInPmode, tArrMemChkStA };
 			tArrMemDoStA = 1;
 			tNxtMemRespLdA = 1;
 
@@ -1425,7 +1457,8 @@ begin
 			tArrMemChkStB		= {
 				~(tArrMemAddrStB[71:68] ^ tArrMemAddrStB[8:5]),
 				 (tArrMemAddrStB[71:68] ^ tArrMemAddrStB[8:5]) };
-			tArrMemDextStB	= { 8'h00, tArrMemChkStB };
+//			tArrMemDextStB	= { 8'h00, tArrMemChkStB };
+			tArrMemDextStB	= { 4'h0, tInPmode, tArrMemChkStB };
 			tArrMemDoStB = 1;
 			tNxtMemRespLdB = 1;
 
@@ -1481,14 +1514,17 @@ begin
 		tRegOutHold = 1;
 `endif
 
-	if(memRingIsRespOkMmio)
+//	if(memRingIsRespOkMmio)
+//	if(memRingIsRespOkMmio && tReqIsMmio)
+	if(memRingIsRespOkMmio && (tReqIsMmio || tReqIsCcmd))
 	begin
 //		$display("L1 D$: MMIO Response Seen");
 		tNxtMemMmioData = memDataIn[63:0];
 		tNxtMemMmioReady = 1;
 	end
 
-	if(tReq2Opm[5] && !tReq2IsMmio)
+//	if(tReq2Opm[5] && !tReq2IsMmio)
+	if(tReq2Opm[5] && !tReq2IsMmio && !tReq2IsCcmd)
 	begin
 		tNxtReq2StoreSticky = tReq2StoreSticky;
 
@@ -1544,6 +1580,11 @@ begin
 //			tArrMemDoStB = !tReq2MissSkipB;
 			tArrMemDoStA = !tReq2MissSkipA && !tReq2ReadOnlyA;
 			tArrMemDoStB = !tReq2MissSkipB && !tReq2ReadOnlyB;
+
+			if(tBlk2StoreAddrA[3:2]==2'b11)
+				tArrMemDoStA = 0;
+			if(tBlk2StoreAddrB[3:2]==2'b11)
+				tArrMemDoStB = 0;
 
 			if((tBlk2MemAddrA[31:5]!=tReq2AxA[27:1]) && !tReq2MissSkipA)
 			begin
@@ -1837,10 +1878,13 @@ begin
 	tVolatileIxA	<= tNxtVolatileIxA;
 	tVolatileIxB	<= tNxtVolatileIxB;
 
+
 	if(!dcInHold)
 	begin
 		tVolatileInhCnt	<= tNxtVolatileInh;
 		tVolatileInhSet	<= 0;
+
+		tInPmode		<= tNxtInPmode;
 
 		tSrJQ			<= regInSr[31];
 		tRegInSr		<= regInSr;
@@ -1855,7 +1899,7 @@ begin
 		tReqOpm			<= tNxtReqOpm;
 		tReqInValA		<= tNxtReqInValA;
 		tReqInValB		<= tNxtReqInValB;
-		
+
 //		tUtlbBlkIx		<= tNxtReqAddr[11:8];
 		tUtlbBlkIx		<= tNxtUtlbBlkIx;
 

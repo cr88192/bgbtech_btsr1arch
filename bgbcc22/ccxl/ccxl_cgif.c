@@ -109,7 +109,9 @@ ccxl_status BGBCC_CCXL_EmitLabel(BGBCC_TransState *ctx, ccxl_label lbl)
 	if(ctx->cgif_no3ac)
 		return(0);
 
+	BGBCC_CCXL_StackPhiTemporaries(ctx);
 	BGBCC_CCXL_EmitMarkEndTrace(ctx);
+
 	op=BGBCC_CCXL_AllocVirtOp(ctx);
 	op->opn=CCXL_VOP_LABEL;
 	op->prd=ctx->curprd;
@@ -125,6 +127,8 @@ ccxl_status BGBCC_CCXL_EmitJump(BGBCC_TransState *ctx, ccxl_label lbl)
 
 	if(ctx->cgif_no3ac)
 		return(0);
+
+	BGBCC_CCXL_StackPhiTemporaries(ctx);
 
 	op=BGBCC_CCXL_AllocVirtOp(ctx);
 	op->opn=CCXL_VOP_JMP;
@@ -149,6 +153,9 @@ ccxl_status BGBCC_CCXL_EmitJumpRegZero(BGBCC_TransState *ctx,
 
 	if(BGBCC_CCXL_IsRegZzP(ctx, reg))
 		{ BGBCC_DBGBREAK }
+
+	BGBCC_CCXL_StackPhiTemporaries(ctx);
+	BGBCC_CCXL_EmitTempPhi(ctx, reg);
 
 	op=BGBCC_CCXL_AllocVirtOp(ctx);
 	op->opn=CCXL_VOP_JCMP_ZERO;
@@ -176,6 +183,10 @@ ccxl_status BGBCC_CCXL_EmitJumpRegCmpI(BGBCC_TransState *ctx,
 		{ BGBCC_DBGBREAK }
 	if(BGBCC_CCXL_IsRegZzP(ctx, treg))
 		{ BGBCC_DBGBREAK }
+
+	BGBCC_CCXL_StackPhiTemporaries(ctx);
+	BGBCC_CCXL_EmitTempPhi(ctx, sreg);
+	BGBCC_CCXL_EmitTempPhi(ctx, treg);
 
 	op=BGBCC_CCXL_AllocVirtOp(ctx);
 	op->opn=CCXL_VOP_JCMP;
@@ -298,6 +309,10 @@ ccxl_status BGBCC_CCXL_EmitCallOp(BGBCC_TransState *ctx,
 	if(BGBCC_CCXL_IsRegZzP(ctx, src))
 		{ BGBCC_DBGBREAK }
 
+//	BGBCC_CCXL_StackPhiTemporaries(ctx);
+	BGBCC_CCXL_StackPhiTemporariesCall(ctx);
+	BGBCC_CCXL_EmitTempPhi(ctx, src);
+
 	op=BGBCC_CCXL_AllocVirtOp(ctx);
 	op->opn=CCXL_VOP_CALL;
 	op->prd=ctx->curprd;
@@ -324,6 +339,9 @@ ccxl_status BGBCC_CCXL_EmitCallIntrinOp(BGBCC_TransState *ctx,
 
 	if(BGBCC_CCXL_IsRegZzP(ctx, src))
 		{ BGBCC_DBGBREAK }
+
+	BGBCC_CCXL_EmitTempPhi(ctx, src);
+	BGBCC_CCXL_EmitTempPhi(ctx, dst);
 
 	op=BGBCC_CCXL_AllocVirtOp(ctx);
 	op->opn=CCXL_VOP_CALL_INTRIN;
@@ -352,6 +370,11 @@ ccxl_status BGBCC_CCXL_EmitObjCallOp(BGBCC_TransState *ctx,
 
 	if(BGBCC_CCXL_IsRegZzP(ctx, src))
 		{ BGBCC_DBGBREAK }
+
+//	BGBCC_CCXL_StackPhiTemporaries(ctx);
+	BGBCC_CCXL_StackPhiTemporariesCall(ctx);
+	BGBCC_CCXL_EmitTempPhi(ctx, src);
+	BGBCC_CCXL_EmitTempPhi(ctx, obj);
 
 	op=BGBCC_CCXL_AllocVirtOp(ctx);
 	op->opn=CCXL_VOP_OBJCALL;
@@ -440,6 +463,9 @@ ccxl_status BGBCC_CCXL_EmitJmpTab(BGBCC_TransState *ctx,
 	if((ncv<1) || (ncv>1024))
 		{ BGBCC_DBGBREAK }
 
+	BGBCC_CCXL_StackPhiTemporaries(ctx);
+	BGBCC_CCXL_EmitTempPhi(ctx, src);
+
 	op=BGBCC_CCXL_AllocVirtOp(ctx);
 	op->opn=CCXL_VOP_JMPTAB;
 	op->type=type;
@@ -474,7 +500,7 @@ ccxl_status BGBCC_CCXL_EmitJmpTab(BGBCC_TransState *ctx,
 	}
 
 	BGBCC_CCXL_AddVirtOp(ctx, op);
-	BGBCC_CCXL_EmitMarkEndTrace(ctx);
+//	BGBCC_CCXL_EmitMarkEndTrace(ctx);
 	return(0);
 }
 
@@ -484,6 +510,8 @@ ccxl_status BGBCC_CCXL_EmitCallRetDefault(BGBCC_TransState *ctx)
 
 	if(ctx->cgif_no3ac)
 		return(0);
+
+//	BGBCC_CCXL_StackPhiTemporaries(ctx);
 
 	op=BGBCC_CCXL_AllocVirtOp(ctx);
 	op->opn=CCXL_VOP_RETDFL;
@@ -499,6 +527,8 @@ ccxl_status BGBCC_CCXL_EmitCallRetV(BGBCC_TransState *ctx)
 
 	if(ctx->cgif_no3ac)
 		return(0);
+
+//	BGBCC_CCXL_StackPhiTemporaries(ctx);
 
 	op=BGBCC_CCXL_AllocVirtOp(ctx);
 	op->opn=CCXL_VOP_RETV;
@@ -519,6 +549,9 @@ ccxl_status BGBCC_CCXL_EmitCallRetOp(BGBCC_TransState *ctx,
 	if(BGBCC_CCXL_IsRegZzP(ctx, src))
 		{ BGBCC_DBGBREAK }
 
+//	BGBCC_CCXL_StackPhiTemporaries(ctx);
+	BGBCC_CCXL_EmitTempPhi(ctx, src);
+
 	op=BGBCC_CCXL_AllocVirtOp(ctx);
 	op->opn=CCXL_VOP_RET;
 	op->prd=ctx->curprd;
@@ -526,6 +559,38 @@ ccxl_status BGBCC_CCXL_EmitCallRetOp(BGBCC_TransState *ctx,
 	op->srca=src;
 	BGBCC_CCXL_AddVirtOp(ctx, op);
 	BGBCC_CCXL_EmitMarkEndTrace(ctx);
+	return(0);
+}
+
+ccxl_status BGBCC_CCXL_EmitTempPhi(BGBCC_TransState *ctx,
+	ccxl_register src)
+{
+	BGBCC_CCXL_VirtOp *op;
+
+	return(0);
+
+	if(ctx->cgif_no3ac)
+		return(0);
+
+	if(BGBCC_CCXL_IsRegZzP(ctx, src))
+	{
+//		BGBCC_DBGBREAK
+		return(0);
+	}
+
+	if(!BGBCC_CCXL_IsRegTempP(ctx, src))
+		return(0);
+
+	if(ctx->s_vop==ctx->n_vop)
+		return(0);
+
+	op=BGBCC_CCXL_AllocVirtOp(ctx);
+	op->opn=CCXL_VOP_TEMP_PHI;
+//	op->prd=ctx->curprd;
+//	op->type=type;
+	op->srca=src;
+	BGBCC_CCXL_AddVirtOp(ctx, op);
+//	BGBCC_CCXL_EmitMarkEndTrace(ctx);
 	return(0);
 }
 
@@ -711,6 +776,10 @@ ccxl_status BGBCC_CCXL_EmitPredCmpOp(BGBCC_TransState *ctx,
 		{ BGBCC_DBGBREAK }
 //	if(BGBCC_CCXL_IsRegZzP(ctx, dst))
 //		{ BGBCC_DBGBREAK }
+
+	BGBCC_CCXL_StackPhiTemporaries(ctx);
+	BGBCC_CCXL_EmitTempPhi(ctx, srca);
+	BGBCC_CCXL_EmitTempPhi(ctx, srcb);
 
 	op=BGBCC_CCXL_AllocVirtOp(ctx);
 	op->opn=CCXL_VOP_PREDCMP;

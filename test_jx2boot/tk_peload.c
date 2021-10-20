@@ -956,6 +956,16 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 	sig_mz=tkfat_getWord(tbuf);
 	if(sig_mz!=0x4550)
 	{
+		if(	(tbuf[0]==0x7F) &&
+			(tbuf[1]=='E') &&
+			(tbuf[2]=='L') &&
+			(tbuf[3]=='F'))
+		{
+			tk_fseek(fd, 0, 0);
+			return(TKPE_LoadStaticELF(fd,
+				rbootptr, rbootgbr));
+		}
+	
 		if(sig_mz!=0x5A4D)
 		{
 			printf("TKPE: MZ Sig Fail\n");

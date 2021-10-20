@@ -105,6 +105,9 @@ int BGBCC_JX2_TryEmitOpRegLbl(BGBCC_JX2_Context *ctx,
 {
 	nmid=BGBCC_JX2_EmitRemapPseudoOp(ctx, nmid);
 
+	if(ctx->emit_riscv&1)
+		return(BGBCC_JX2RV_TryEmitOpRegLbl(ctx, nmid, lbl, reg));
+
 	if(
 		(nmid==BGBCC_SH_NMID_MOVB) ||
 		(nmid==BGBCC_SH_NMID_MOVW) ||
@@ -137,6 +140,9 @@ int BGBCC_JX2_TryEmitOpLblReg(BGBCC_JX2_Context *ctx,
 	int i, j, k;
 
 	nmid=BGBCC_JX2_EmitRemapPseudoOp(ctx, nmid);
+
+	if(ctx->emit_riscv&1)
+		return(BGBCC_JX2_TryEmitOpLblReg(ctx, nmid, lbl, reg));
 
 	if(
 		(nmid==BGBCC_SH_NMID_MOVB) ||
@@ -454,6 +460,17 @@ int BGBCC_JX2_TryEmitOpLblReg(BGBCC_JX2_Context *ctx,
 	return(0);
 }
 
+int BGBCC_JX2_TryEmitOpRegRegLbl(BGBCC_JX2_Context *ctx,
+	int nmid, int rm, int rn, int lbl)
+{
+	nmid=BGBCC_JX2_EmitRemapPseudoOp(ctx, nmid);
+
+	if(ctx->emit_riscv&1)
+		return(BGBCC_JX2RV_TryEmitOpRegRegLbl(ctx, nmid, rm, rn, lbl));
+
+	return(0);
+}
+
 int BGBCC_JX2_EmitOpLabel(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 {
 	if(!BGBCC_JX2_TryEmitOpLabel(ctx, nmid, lbl))
@@ -464,6 +481,9 @@ int BGBCC_JX2_EmitOpLabel(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 int BGBCC_JX2_TryEmitOpLabel(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 {
 	int opw1, opw2, opw3, opw4, rlty;
+
+	if(ctx->emit_riscv&1)
+		return(BGBCC_JX2RV_TryEmitOpLabel(ctx, nmid, lbl));
 
 	opw1=-1; opw2=-1; opw3=-1; opw4=-1; rlty=-1;
 	switch(nmid)
@@ -1183,8 +1203,9 @@ int BGBCC_JX2_EmitCheckAutoLabelNear8(
 
 		k=BGBCC_JX2_EmitGetOffs(ctx);
 
+		rngb=224;
 //		rngb=244;
-		rngb=248;
+//		rngb=248;
 //		rngb=252;
 		rngw=4080;
 		rngw16=65280;
@@ -1209,7 +1230,8 @@ int BGBCC_JX2_EmitCheckAutoLabelNear8(
 //			rngb=244-(szrng/2);
 //			rngb=248;
 //			rngb=224;
-			rngb=208;
+//			rngb=208;
+			rngb=128;
 			rngw=4080-(szrng/2);
 
 //			if(j<k)
@@ -1485,7 +1507,8 @@ int BGBCC_JX2_EmitCheckAutoLabelNearClass(
 	if((i>=0) && (ctx->lbl_sec[i]==ctx->sec))
 	{
 		j=ctx->lbl_ofs[i];
-		rngb=244;
+		rngb=224;
+//		rngb=244;
 //		rngb=252;
 		rngw=4080;
 //		rngw16=65280;

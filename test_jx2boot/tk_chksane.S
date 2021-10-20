@@ -11,6 +11,7 @@ This is assumed to be called prior to transferring control to C land.
 #include "tk_chksane_gfp.S"
 #include "tk_chksane_wex.S"
 #include "tk_chksane_xgpr.S"
+#include "tk_chksane_rvi.S"
 #endif
 
 #include "tk_chksane_mem.S"
@@ -724,6 +725,8 @@ X(tk_checksane_asm):
 	rts
 	.L1:
 	bsr .L3
+	nop
+	nop
 
 
 	mov	0x12345678, r4
@@ -757,6 +760,8 @@ X(tk_checksane_asm):
 	cmpq/eq #0xCDEF, r7
 	bf _checksane_fail_alu3
 	
+	mov .L7_1, r1
+	mov	r1, lr
 	mov .L6, r6
 	jmp r6
 	break
@@ -772,6 +777,17 @@ X(tk_checksane_asm):
 	break
 	break
 	.L7:
+	rtsu
+	break
+	.L7_1:
+	mov #1, r6
+	bra.l r6
+	break
+	break
+	bra .L7_2
+	break
+	break
+	.L7_2:
 
 //	bsr tk_checksane_mem_asm
 
@@ -987,6 +1003,8 @@ X(tk_checksane_asm):
 .ifarch has_xgpr
 	bsr X(tk_checksane_xgpr_asm)
 .endif
+
+	bsr X(tk_checksane_rvi_asm)
 
 #endif
 

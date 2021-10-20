@@ -414,6 +414,7 @@ char *BGBCC_JX2DA_RegToName(BGBCC_JX2_Context *ctx, int nmid)
 	case BGBCC_SH_REG_SSR:		sn="SSR";		break;	// 0x63
 	case BGBCC_SH_REG_SPC:		sn="SPC";		break;	// 0x64
 
+#if 0
 	case BGBCC_SH_REG_R0B:		sn="R0B";		break;	// 0x68
 	case BGBCC_SH_REG_R1B:		sn="R1B";		break;	// 0x69
 	case BGBCC_SH_REG_R2B:		sn="R2B";		break;	// 0x6A
@@ -422,6 +423,9 @@ char *BGBCC_JX2DA_RegToName(BGBCC_JX2_Context *ctx, int nmid)
 	case BGBCC_SH_REG_R5B:		sn="R5B";		break;	// 0x6D
 	case BGBCC_SH_REG_R6B:		sn="R6B";		break;	// 0x6E
 	case BGBCC_SH_REG_R7B:		sn="R7B";		break;	// 0x6F
+#endif
+
+	case BGBCC_SH_REG_SP:		sn="SP";		break;	// 0x72	//S
 
 /* 70-7F: Status Regs */
 	case BGBCC_SH_REG_MACH:		sn="DLR";		break;	// 0x70	//S

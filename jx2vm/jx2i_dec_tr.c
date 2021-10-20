@@ -817,6 +817,7 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 //			if(op->nmid!=BJX2_NMID_BRA)
 			if((op->nmid!=BJX2_NMID_BRA) &&
 				(op->nmid!=BJX2_NMID_RTS) &&
+				(op->nmid!=BJX2_NMID_RTSU) &&
 				(op->nmid!=BJX2_NMID_RTE) &&
 				(op->nmid!=BJX2_NMID_RET))
 				{ npc=pc; }

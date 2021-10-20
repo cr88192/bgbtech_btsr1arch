@@ -8,9 +8,9 @@ _checksane_gfp_fail:
 X(tk_checksane_gfp_asm):
 //	push lr
 
-	add		-8, sp
+	add		-48, sp
 	mov		lr, r1
-	mov.q	r1, (sp)
+	mov.q	r1, (sp, 40)
 
 
 	mov	#0x400921f9f01b866e, r4		//3.14159
@@ -195,6 +195,32 @@ X(tk_checksane_gfp_asm):
 	break?f
 
 #if 1
+	fmov.s	r21, (sp)
+	fmov.s	r21, (sp, 4)
+
+	fmov.s	(sp), r8
+	fmov.s	(sp, 4), r9
+
+	cmpqeq r8, r21
+	break?f
+
+	cmpqeq r9, r21
+	break?f
+#endif
+
+#if 1
+	mov		3, r2
+
+	fmov.s	r23, (sp, r2)
+	fmov.s	(sp, r2), r8
+
+	cmpqeq r8, r23
+	break?f
+	
+//	break
+#endif
+
+#if 1
 	fldci r22, r8
 	cmpqeq r8, r23
 //	bf _checksane_gfp_fail
@@ -224,6 +250,6 @@ X(tk_checksane_gfp_asm):
 //	pop lr
 //	rts
 
-	mov.q	(sp), r1
-	add		8, sp
+	mov.q	(sp, 40), r1
+	add		48, sp
 	jmp		r1

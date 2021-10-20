@@ -36,8 +36,8 @@
 #define BGBCC_SH_REG_R30		0x1E
 #define BGBCC_SH_REG_R31		0x1F
 
-#define BGBCC_SH_REG_BP			0x0E
-#define BGBCC_SH_REG_SP			0x0F
+// #define BGBCC_SH_REG_BP			0x0E
+// #define BGBCC_SH_REG_SP			0x0F
 
 /* 20-3F: GPR R32-R63, 32/64 */
 
@@ -121,13 +121,15 @@
 #define BGBCC_SH_REG_TBR		0x65	//placeholder
 
 #define BGBCC_SH_REG_R0B		0x68
-#define BGBCC_SH_REG_R1B		0x69
-#define BGBCC_SH_REG_R2B		0x6A
-#define BGBCC_SH_REG_R3B		0x6B
-#define BGBCC_SH_REG_R4B		0x6C
-#define BGBCC_SH_REG_R5B		0x6D
-#define BGBCC_SH_REG_R6B		0x6E
-#define BGBCC_SH_REG_R7B		0x6F
+// #define BGBCC_SH_REG_R1B		0x69
+// #define BGBCC_SH_REG_R2B		0x6A
+// #define BGBCC_SH_REG_R3B		0x6B
+// #define BGBCC_SH_REG_R4B		0x6C
+// #define BGBCC_SH_REG_R5B		0x6D
+// #define BGBCC_SH_REG_R6B		0x6E
+// #define BGBCC_SH_REG_R7B		0x6F
+
+#define BGBCC_SH_REG_SP			0x6F
 
 /* 70-7F: Status Regs */
 #define BGBCC_SH_REG_SR0		0x70
@@ -150,6 +152,9 @@
 #define BGBCC_SH_REG_KRR		0x7D
 
 #define BGBCC_SH_REG_DBR		0x7F
+
+#define BGBCC_SH_REG_LR			BGBCC_SH_REG_PR
+
 
 /* 80-9F: FPR DR0-DR15, 64 */
 #define BGBCC_SH_REG_DR0		0x80
@@ -838,6 +843,12 @@
 #define BGBCC_SH_NMID_PLDCEHL		0x01A4	//
 #define BGBCC_SH_NMID_PLDCEHH		0x01A5	//
 #define BGBCC_SH_NMID_FMOVH			0x01A6	//
+#define BGBCC_SH_NMID_MOVC			0x01A7	//
+
+#define BGBCC_SH_NMID_BRGTU			0x01A8	//
+#define BGBCC_SH_NMID_BRLEU			0x01A9	//
+#define BGBCC_SH_NMID_BRGEU			0x01AA	//
+#define BGBCC_SH_NMID_BRLTU			0x01AB	//
 
 
 
@@ -896,6 +907,8 @@
 #define BGBCC_SH_FMID_REGREGREGREG	0x32	//Rm, Ro, Rp, Rn
 #define BGBCC_SH_FMID_REGREGIMMREG	0x33	//Rm, Ro, Imm, Rn
 #define BGBCC_SH_FMID_REGREGREGIMM	0x34	//Rm, Ro, Rn, Imm
+
+#define BGBCC_SH_FMID_REGREGLBL		0x35	//Rm, Rn, <Lbl>
 
 #define BGBCC_SH_FMID_DREGST		0x36	//DRm, @Rn
 #define BGBCC_SH_FMID_DREGLD		0x37	//@Rm, DRn
@@ -1019,6 +1032,9 @@
 #define BGBCC_SH_RLC_ABS48_BJX		0x32	//Abs48, BYTE, FEjj_jjjj_FAjj_jjjj
 
 #define BGBCC_SH_RLC_RVA24			0x33	//RVA (24-bit)
+
+#define BGBCC_SH_RLC_RELW12_RVI		0x34	//RISC-V, 12-bit (BEQ/etc)
+#define BGBCC_SH_RLC_RELW20_RVI		0x35	//RISC-V, 20-bit (JAL)
 
 
 // #define BGBCC_SH_RLC_ABSW48A_BSR	0x20	//Absolute BYTE

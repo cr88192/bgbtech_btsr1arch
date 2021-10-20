@@ -68,7 +68,7 @@ output[ 1: 0]	icOutPcOK;		//set if we have a valid value.
 output[ 3: 0]	icOutPcStep;	//PC step (Normal Op)
 output[ 3: 0]	icOutPcSxo;		//Secure Execute
 input			icInPcHold;
-input			icInPcWxe;
+input[1:0]		icInPcWxe;
 
 input [47: 0]	dcInAddr;		//input PC address
 input [ 4: 0]	dcInOpm;		//input PC address
@@ -207,11 +207,19 @@ RbiMmuTlb	tlb(
 
 `endif
 
+
+wire[7:0]		regKrrHash;
+reg [7:0]		regKrrHashL;
+assign		regKrrHash = regInKrr[7:0]^regInKrr[15:8];
+
+
 wire[5:0]		dfInOpm;
 assign		dfInOpm		= { dcInOpm[4:3], 1'b0, dcInOpm[2:0] };
 
 wire		ifMemWait;
 wire[63:0]		ifOutExc;
+
+reg			ifMemWaitL;
 
 // `wire_tile		ifMemDataI;
 // wire[ 47:0]		ifMemAddrI;
@@ -236,7 +244,7 @@ RbiMemIcWxA		memIc(
 	icInPcHold,		icInPcWxe,
 	dfInOpm,		regInSr,
 	ifMemWait,		ifOutExc,
-	icOutPcSxo,
+	icOutPcSxo,		regKrrHashL,
 
 	ifMemAddrI,		ifMemAddrO,
 	ifMemDataI,		ifMemDataO,
@@ -274,6 +282,7 @@ RbiMemDcA		memDc(
 	dcInHold,		dfOutHold,
 	regInSr,		dfOutWait,
 	dfOutExc,		regInMmcr,
+	regKrrHashL,
 
 	dfMemAddrI,		dfMemAddrO,
 	dfMemDataI,		dfMemDataO,
@@ -412,6 +421,7 @@ begin
 	tDcOutHold	= dfOutHold;
 
 	tDcBusWait	= dfOutWait || ifMemWait;
+//	tDcBusWait	= dfOutWait || ifMemWait || ifMemWaitL;
 
 	if(reset)
 	begin
@@ -441,6 +451,10 @@ begin
 	tRegOutExc2		<= tRegOutExc;
 	tRegTraPc2		<= tRegTraPc;
 	tDcOutOK2		<= tDcOutOK;
+
+	ifMemWaitL		<= ifMemWait;
+
+	regKrrHashL		<= regKrrHash;
 
 `ifndef def_true
 // `ifdef def_true

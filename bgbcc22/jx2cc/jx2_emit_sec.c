@@ -962,8 +962,8 @@ int BGBCC_JX2_EmitStatWord(BGBCC_JX2_Context *ctx, int val)
 				return(0);
 			}
 
-			if(	(((val>>12)&0xE)==0x7)	||
-				(((val>>12)&0xE)==0x9)	)
+			if(	(((val>>12)&0xF)==0x7)	||
+				(((val>>12)&0xF)==0x9)	)
 			{
 				ctx->stat_opc_issfx=1;
 				return(0);
@@ -3190,6 +3190,12 @@ int BGBCC_JX2_EmitDWord(BGBCC_JX2_Context *ctx, u32 val)
 {
 	BGBCC_JX2_EmitDWordI(ctx, val);
 	BGBCC_JX2DA_EmitDWord(ctx, val);
+	return(0);
+}
+
+int BGBCC_JX2_EmitOpDWord(BGBCC_JX2_Context *ctx, u32 val)
+{
+	BGBCC_JX2_EmitDWordI(ctx, val);
 	return(0);
 }
 

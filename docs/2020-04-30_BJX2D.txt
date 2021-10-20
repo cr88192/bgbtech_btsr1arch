@@ -142,7 +142,7 @@ Control Registers:
 * C12 / STTB: System TTB.
 * C13 / KRR: MMU Keyring Register.
 * C14: Reserved
-* C15: Reserved
+* C15 / R15U: R15-Unmapped (RVX)
 * C16 / PC2: Program Counter (SMT)
 * C17 / LR2: Link Register (SMT)
 * C18 / SR2: Status Register (SMT)
@@ -197,7 +197,7 @@ SR Bits:
 * 8..15: U0..U7, Context Dependent
 ** May be used as a Predicate Stack.
 * 16..23: Reserved
-* 26: WX2, WEX Secondary
+* 26: WX2, WEX Secondary (RISC-V Enable)
 * 27: WXE, WEX Enable
 * 28: BL, Block Interrupts
 ** SMT1 (SR2 Specific)
@@ -437,26 +437,46 @@ During a TLB Miss Exception, the ISR is to fetch the relevant data from the Page
 
 The TLB will be loaded via the LDTLB instruction, which will load the 128 bit entry from the DHR:DLR pair.
 
-TLB Entry:
+TLB Entry (TLBE):
 * (127:112) = VUGID / ACLID
 * (111: 76) = Virtual Address Page
 * ( 75: 64) = KR Access
-* ( 63: 48) = Available / ASID
+* ( 63: 48) = ASID
 * ( 47: 12) = Physical Address Page
 * ( 11:  0) = Page Control bits
 
-XTLB Entry / LDXTLB (XMOV):
+XTLB Entry / LDXTLB (Possible):
 * (255:240) = VUGID / ACLID
 * (239:140) = Virtual Address Page
 * (139:128) = KR Access
-* (127:112) = Available / ASID
+* (127:112) = ASID
 * (111: 12) = Physical Address Page
 * ( 11:  0) = Page Control bits
+
+
+X2TLB Entry (High):
+* (127:112) = Reserved
+* (111: 76) = Virtual Address Page (High Bits)
+* ( 75: 64) = Reserved
+* ( 63: 48) = Reserved
+* ( 47: 12) = Physical Address Page (High Bits)
+* ( 11:  0) = Page Control bits
+
+X2TLB Entry (Low):
+* Same as Base TLB Entry
+
+X2TLB (Possible):
+* Two TLB Entries are used in a pair (Hi and Lo).
+* LDTLB first sends Hi; then Lo.
 
 
 VUGID:
 * (15:10) = VGID / VUID(Swap)
 * ( 9: 0) = VUID / VGID(Swap)
+
+ASID:
+* (15:10) = AGID (0=Shared, Global)
+* ( 9: 0) = APID (0=Shared, Group)
 
 KR Access:
 * (11): Other X
@@ -507,22 +527,28 @@ Page Control:
 ** Indicates Secure-Execute if NW is also Set and NX is Clear.
 * ( 2): PR.D, (Dirty)
 ** Set if page has been modified.
-* ( 1): PR.SH, Page Is Shared
-* ( 0): PR.V, Page Is Valid
+* ( 1): PR.V1, Page Is Valid (Mode)
+* ( 0): PR.V0, Page Is Valid (Mode)
 
-Size 0/1 (Base=4K):
+Valid 1/0:
+* 00: Not Valid
+* 01: Valid (Normal Page), Low Range (X2TLB)
+* 10: High-Range (X2TLB), Addr(95:48)
+* 11: Reserved
+
+Size 1/0 (Base=4K):
 * 00:  4K Page (Single Page)
 * 01: 2MB Page (512 Pages)
 * 10: 64K Page (16 Pages)
 * 11: -
 
-Size 0/1 (Base=64K):
+Size 1/0 (Base=64K):
 * 00: 64K Page (1 Page)
 * 01: 512M Page (8192 Pages)
 * 10: 64K Page (1 Page)
 * 11: -
 
-Size 0/1 (Base=16K):
+Size 1/0 (Base=16K):
 * 00: 16K Page (1 Page)
 * 01: 32M Page (2048 Pages)
 * 10: 64K Page (4 Pages)
@@ -613,6 +639,8 @@ TTB Bits:
 * (1:0): Will give the main page-table type (32/64 bit PTE).
 * (3:2): Will give the type of STTB table.
 * (7:4): Will give the nominal page size.
+* (47:12): Physical Page Address
+* (63:48): Process ASID (0 if ASID is unused)
 
 Nominal page size:
 * 0000: Use 4K pages (32/64-bit PTE)
@@ -1113,7 +1141,7 @@ Instruction Space
 
 ** 30z1  -
 
-** 3002  -
+** 3002  ZZOP						//Internal Op, UB
 ** 3012  RTSU						//PC=LR, Hint
 ** 3022  SYSCALL					//Throw(DLR)
 ** 3032  -
@@ -1714,15 +1742,15 @@ F0zz Instruction Block:
 ** F0nm_4Go1 ? XMOV.W	Rn, (Xm, Disp5)		//(XMOV)
 ** F0nm_4go2  -
 ** F0nm_4Go2 ? XMOV.L	Rn, (Xm, Disp5)		//(XMOV)
-** F0nm_4eo3  -
+** F0nm_4go3  MOV.C		Cn, (Rm, Ro)		//(MOVC)
 ** F0nm_4Go3 ? XMOV.Q	Rn, (Xm, Disp5)		//(XMOV)
 ** F0nm_4go4  MOV.X		Xn, (Rm, Ro)		//(MOVX2) Store Pair
 ** F0nm_4Go4 ? XMOV.B	Rn, (Xm, Ro)		//(XMOV)
 ** F0nm_4go5 ? XMOV.X	Xn, (Xm, Ro)		//(XMOV)
 ** F0nm_4Go5 ? XMOV.W	Rn, (Xm, Ro)		//(XMOV)
-** F0nm_4go6  -
+** F0nm_4go6 ? FMOV.S	Rn, (Rm, Ro)
 ** F0nm_4Go6 ? XMOV.L	Rn, (Xm, Ro)		//(XMOV)
-** F0nm_4go7  -
+** F0nm_4go7 ? FMOV.H	Rn, (Rm, Ro)
 ** F0nm_4Go7 ? XMOV.Q	Rn, (Xm, Ro)		//(XMOV)
 
 ** F0nm_4go8  MOV.X		(Rm, Disp5), Xn		//(MOVX2) Load Pair
@@ -1731,15 +1759,15 @@ F0zz Instruction Block:
 ** F0nm_4Go9 ? XMOV.W	(Xm, Disp5), Rn		//(XMOV)
 ** F0nm_4goA  -
 ** F0nm_4GoA ? XMOV.L	(Xm, Disp5), Rn		//(XMOV)
-** F0nm_4goB  -
+** F0nm_4goB  MOV.C		(Rm, Ro), Cn		//(MOVC)
 ** F0nm_4GoB ? XMOV.Q	(Xm, Disp5), Rn		//(XMOV)
 ** F0nm_4goC  MOV.X		(Rm, Ro), Xn		//(MOVX2) Load Pair
 ** F0nm_4GoC ? XMOV.B	(Xm, Ro), Rn		//(XMOV)
 ** F0nm_4goD ? XMOV.X	(Xm, Ro), Xn		//(XMOV)
 ** F0nm_4GoD ? XMOV.W	(Xm, Ro), Rn		//(XMOV)
-** F0nm_4goE  -
+** F0nm_4goE ? FMOV.S	(Rm, Ro), Rn
 ** F0nm_4GoE ? XMOV.L	(Xm, Ro), Rn		//(XMOV)
-** F0nm_4goF  -
+** F0nm_4goF ? FMOV.H	(Rm, Ro), Rn
 ** F0nm_4GoF ? XMOV.Q	(Xm, Ro), Rn		//(XMOV)
 
 * F0zz_5zzz
@@ -1835,14 +1863,14 @@ F1zz Instruction Block:
 ** F1nm_2Gdd  LEA.L		(Rm, disp9u), Rn
 ** F1nm_3gdd  MOV.Q		Rn, (Rm, disp9u)
 ** F1nm_3Gdd  LEA.Q		(Rm, disp9u), Rn
-** F1nm_4gdd  / (Old FMOV.S Store)
-** F1nm_4Gdd  / (Old FMOV.S Store, GPR)
-** F1nm_5gdd  / (Old FMOV.D Store)
-** F1nm_5Gdd  MOV.X		Rn, (Rm, disp9u)
-** F1nm_6gdd  /  (Old FMOV.S Load)
-** F1nm_6Gdd  /  (Old FMOV.S Load, GPR)
-** F1nm_7gdd  /  (Old FMOV.D Load)
-** F1nm_7Gdd  MOV.X		(Rm, disp9u), Rn
+** F1nm_4gdd  FMOV.S	Rn, (Rm, disp9u)	//(FMOV)
+** F1nm_4Gdd  FMOV.H	Rn, (Rm, disp9u)	//(FMOV)
+** F1nm_5gdd  MOV.C		Cn, (Rm, disp9u)	//(MOVC)
+** F1nm_5Gdd  MOV.X		Rn, (Rm, disp9u)	//(MOVX)
+** F1nm_6gdd  FMOV.S	(Rm, disp9u), Rn	//(FMOV)
+** F1nm_6Gdd  FMOV.H	(Rm, disp9u), Rn	//(FMOV)
+** F1nm_7gdd  MOV.C		(Rm, disp9u), Cn	//(MOVC)
+** F1nm_7Gdd  MOV.X		(Rm, disp9u), Rn	//(MOVX)
 ** F1nm_8gdd  MOV.B		(Rm, disp9u), Rn
 ** F1nm_8Gdd  MOVU.B	(Rm, disp9u), Rn
 ** F1nm_9gdd  MOV.W		(Rm, disp9u), Rn

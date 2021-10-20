@@ -666,6 +666,10 @@ begin
 					usrReject	= 1;
 				end
 
+				8'h02: begin
+					opNmid		= JX2_UCMD_NOP;
+					opFmid		= JX2_FMID_Z;
+				end
 				8'h12: begin
 					opNmid		= JX2_UCMD_JMP;
 					opFmid		= JX2_FMID_Z;
@@ -883,24 +887,28 @@ begin
 			11'h2z0: begin
 				opNmid		= JX2_UCMD_JMP;
 				opFmid		= JX2_FMID_REG;
-				opIty		= JX2_ITY_SL;
+//				opIty		= JX2_ITY_SL;
+				opIty		= JX2_ITY_SQ;
 			end
 			11'h2z1: begin
 				opNmid		= JX2_UCMD_JSR;
 				opFmid		= JX2_FMID_REG;
-				opIty		= JX2_ITY_SL;
+//				opIty		= JX2_ITY_SL;
+				opIty		= JX2_ITY_SQ;
 			end
 			11'h2z2: begin
 				opNmid		= JX2_UCMD_JMP;
 				opFmid		= JX2_FMID_REG;
 				opCcty		= JX2_IXC_CT;
-				opIty		= JX2_ITY_SL;
+//				opIty		= JX2_ITY_SL;
+				opIty		= JX2_ITY_SQ;
 			end
 			11'h2z3: begin
 				opNmid		= JX2_UCMD_JMP;
 				opFmid		= JX2_FMID_REG;
 				opCcty		= JX2_IXC_CF;
-				opIty		= JX2_ITY_SL;
+//				opIty		= JX2_ITY_SL;
+				opIty		= JX2_ITY_SQ;
 			end
 			11'h2z4: begin
 				opNmid		= JX2_UCMD_CONV_RR;
@@ -1722,6 +1730,8 @@ begin
 			XW: ZZR, Rn, DLR
 			SL: Rx, FixImm, Rx
 			SQ: Rn, FixImm, Rn
+
+			XL: Rx, FixImm, DLR
 		 */
 		JX2_FMID_REG: begin
 			opUIxt	= {opUCty, opUCmdIx[5:0]};
@@ -1743,11 +1753,22 @@ begin
 					opRegM	= opRegN_Xr;
 					opRegO	= JX2_GR_ZZR;
 				end
+
+`ifdef def_true
+				JX2_ITY_SQ: begin
+					opRegN	= JX2_GR_DLR;
+					opRegM	= opRegN_Xr;
+					opRegO	= JX2_GR_ZZR;
+				end
+`endif
+
+`ifndef def_true
 				JX2_ITY_SQ: begin
 					opRegN	= opRegN_Dfl;
 					opRegM	= opRegN_Dfl;
 					opRegO	= JX2_GR_ZZR;
 				end
+`endif
 
 				JX2_ITY_UB: begin
 					opRegN	= opRegN_Cr;
@@ -1760,6 +1781,8 @@ begin
 					opRegM	= JX2_GR_ZZR;
 					usrReject = 1;
 				end
+
+`ifndef def_true
 				JX2_ITY_UL: begin
 					opRegN	= opRegN_Sr;
 					opRegM	= JX2_GR_ZZR;
@@ -1770,6 +1793,7 @@ begin
 					opRegM	= JX2_GR_ZZR;
 					usrReject = 1;
 				end
+`endif
 
 				JX2_ITY_NB: begin
 					opRegN	= JX2_GR_ZZR;
@@ -1782,6 +1806,8 @@ begin
 					opRegM	= opRegN_ECr;
 					usrReject = 1;
 				end
+
+`ifndef def_true
 				JX2_ITY_NL: begin
 					opRegN	= JX2_GR_ZZR;
 					opRegM	= opRegN_Sr;
@@ -1792,6 +1818,7 @@ begin
 					opRegM	= opRegN_ESr;
 					usrReject = 1;
 				end
+`endif
 
 				JX2_ITY_XB: begin
 					opRegM	= JX2_GR_ZZR;
@@ -1824,6 +1851,7 @@ begin
 				end
 
 				default: begin
+					$display("DecOpBz: JX2_FMID_REG: Ity=%X", opIty);
 					opRegN	= opRegN_Xr;
 					opRegM	= JX2_GR_ZZR;
 				end

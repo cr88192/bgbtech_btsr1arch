@@ -162,6 +162,7 @@ begin
 `ifdef jx2_alu_wx
 	valCpuIdLo1[19] = 1;
 `endif
+
 `ifdef jx2_alu_xgpr
 	valCpuIdLo1[20] = 1;
 `endif
@@ -173,6 +174,10 @@ begin
 `endif
 `ifdef jx2_enable_convfp16
 	valCpuIdLo1[23] = 1;
+`endif
+
+`ifdef jx2_enable_riscv
+	valCpuIdLo1[24] = 1;
 `endif
 
 	tResLoA = arrCpuIdLo[index[2:0]];

@@ -506,6 +506,7 @@ X(I_FinishUpdate_ScanCopy):
 	CMP/GT	#0, R6
 	BF .done
 
+#if 0
 	.loop:
 	MOV.Q	(R4,    0), R20
 	MOV.Q	(R4,  640), R21
@@ -517,6 +518,26 @@ X(I_FinishUpdate_ScanCopy):
 	ADD		#8, R4			| MOV.Q		R23, (R5, 24)
 	ADD		#32, R5			| TEST		R6, R6
 	BF .loop
+#endif
+
+#if 1
+	SHLD	R6, -1, R6
+	.loop:
+							MOV.X	(R4,    0), R16
+							MOV.X	(R4,  640), R18
+							MOV.X	(R4, 1280), R20
+							MOV.X	(R4, 1920), R22
+							MOV.Q	R16, (R5,  0)
+							MOV.Q	R18, (R5,  8)
+							MOV.Q	R20, (R5, 16)
+							MOV.Q	R22, (R5, 24)
+							MOV.Q	R17, (R5, 32)
+							MOV.Q	R19, (R5, 40)
+	ADD		#-1, R6		|	MOV.Q	R21, (R5, 48)
+	ADD		#16, R4		|	MOV.Q	R23, (R5, 56)
+	ADD		#64, R5		|	TEST	R6, R6
+	BF .loop
+#endif
 
 	.done:
 	RTS

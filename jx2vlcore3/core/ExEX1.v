@@ -87,6 +87,7 @@ module ExEX1(
 	opBraFlush,
 	opPreBraPc,
 	opPreBra,
+	aluSrJcmpT,
 	
 	regOutDlr,	regInDlr,
 	regOutDhr,	regInDhr,
@@ -141,6 +142,7 @@ input			regFpuSrT;
 input			opBraFlush;
 input[47:0]		opPreBraPc;
 input[1:0]		opPreBra;
+input			aluSrJcmpT;
 
 parameter		isAltCore = 0;
 defparam		cpuid.isAltCore = isAltCore;
@@ -326,6 +328,11 @@ reg[16:0]	tValAguBraC1;
 
 reg[63:0]	tRegBraLr;
 reg[63:0]	tValAguBra;
+
+reg[15:0]	tValAguBraJCmpMi;
+reg[15:0]	tValAguBraJCmpLo;
+reg[47:0]	tValAguBraJCmp;
+
 // reg[47:0]	tValBra;
 reg[63:0]	tValBra;
 reg			tDoBra;
@@ -391,6 +398,14 @@ begin
 
 //	tValAguBra		= { UV16_00, regValPc[47:32], tValAgu[31:0] };
 //	tValAguBra		= { UV16_00, tValAgu };
+
+	tValAguBraJCmpMi = regValPc[31:16] + 1;
+	tValAguBraJCmpLo = { 1'b0, regValPc[15:1] } + { 1'b0, regValImm[14:0] };
+	tValAguBraJCmp = {
+		regValPc[47:32],
+		tValAguBraJCmpLo[15] ? tValAguBraJCmpMi : regValPc[31:16],
+		tValAguBraJCmpLo[14:0],
+		1'b0 };
 
 	tValAguBra		= { UV16_00, tValAgu[47:0] };
 	if(!tAguFlagJq)
@@ -682,7 +697,10 @@ begin
 				tDoBra		= 1;
 			end
 		end
+
 		JX2_UCMD_BSR: begin
+`ifndef jx2_enable_riscv
+// `ifdef def_true
 //			$display("EX: BSR: LR=%X PC2=%X", regValPc, tValAgu);
 //			tRegOutLr	= regValPc;
 			tRegOutLr	= tRegBraLr;
@@ -691,8 +709,21 @@ begin
 //				regInSr[27:26],
 //				regInSr[ 1: 0],
 //				regValPc };
-//			if(!opPreBra)
+`endif
 
+`ifdef jx2_enable_riscv
+			tValOutDfl		= tRegBraLr;
+			tDoOutDfl		= 1;
+
+//			if(regIdRm==JX2_GR_ZZR)
+			if(regIdRm==JX2_GR_DLR)
+			begin
+				tRegOutLr	= tRegBraLr;
+				tDoOutDfl	= 0;
+			end
+`endif
+
+//			if(!opPreBra)
 			if(opPreBra!=2'b01)
 			begin
 //				tValBra		= tValAguBra[47:0];
@@ -701,6 +732,7 @@ begin
 				tDoBra		= 1;
 			end
 		end
+
 		JX2_UCMD_JMP: begin
 //			tValBra		= regValRs[47:0];
 //			tValBra		= { tRegBraLr[63:48], regValRs[47:0] };
@@ -711,11 +743,14 @@ begin
 //			tDoBra		= !opPreBra;
 			tDoBra		= (opPreBra != 2'b01);
 
+`ifndef jx2_enable_riscv
+// `ifdef def_true
 			if(	(regIdRs==JX2_GR_LR) ||
 				(regIdRs==JX2_GR_DHR))
 			begin
 				tValBra[63:48] = regValRs[63:48];
 			end
+`endif
 
 `ifndef def_true
 //			if(regIdRs==JX2_GR_LR)
@@ -726,9 +761,36 @@ begin
 				tRegOutSr[15: 4] = regValRs[63:52];
 			end
 `endif
+
+`ifdef jx2_enable_riscv
+// `ifndef def_true
+			tValBra		= { regValPc[63:48], tValAgu[47:0] };
+
+			if(	(regIdRs==JX2_GR_LR) ||
+				(regIdRs==JX2_GR_DHR))
+			begin
+				tValBra[63:48] = regValRs[63:48];
+			end
+
+			if(regInSr[26])
+			begin
+				$display("EX: JMP: RVI PC=%X", tValBra);
+			end
+			
+			if(tValAgu[0])
+			begin
+				$display("EX: JMP: Inter-ISA %d PC=%X", regInSr[26], tValBra);
+				tRegOutSr[26]	= !regInSr[26];
+				tRegOutSr[27]	= tValAgu[1];
+				tValBra[1:0]	= 0;
+			end
+`endif
 		end
 		JX2_UCMD_JSR: begin
 //			$display("EX: JSR: LR=%X PC2=%X", regValRs, regValPc);
+
+`ifndef jx2_enable_riscv
+// `ifdef def_true
 //			tRegOutLr	= regValPc;
 			tRegOutLr	= tRegBraLr;
 //			tRegOutLr	= {
@@ -740,8 +802,48 @@ begin
 //			tValBra		= regValRs;
 			tValBra		= { regValPc[63:48], regValRs[47:0] };
 			tDoBra		= 1;
+`endif
+
+`ifdef jx2_enable_riscv
+// `ifndef def_true
+			tValBra		= { regValPc[63:48], tValAgu[47:0] };
+			tValOutDfl	= tRegBraLr;
+			tDoOutDfl	= 1;
+			tDoBra		= 1;
+
+//			if(regIdRm==JX2_GR_ZZR)
+			if(regIdRm==JX2_GR_DLR)
+			begin
+				tRegOutLr	= tRegBraLr;
+				tDoOutDfl	= 0;
+			end
+
+			if(	(regIdRs==JX2_GR_LR) ||
+				(regIdRs==JX2_GR_DHR))
+			begin
+				tValBra[63:48] = regValRs[63:48];
+			end
+
+			if(tValAgu[0])
+			begin
+				$display("EX: JSR: Inter-ISA %d PC=%X", regInSr[26], tValBra);
+				tRegOutSr[26]	= !regInSr[26];
+				tRegOutSr[27]	= tValAgu[1];
+				tValBra[1:0]	= 0;
+			end
+`endif
 		end
-		
+
+`ifdef jx2_alu_jcmp
+		JX2_UCMD_JCMP: begin
+			if(aluSrJcmpT)
+			begin
+				tValBra		= { tRegBraLr[63:48], tValAguBraJCmp[47:0] };
+				tDoBra		= 1;
+			end
+		end
+`endif
+
 		JX2_UCMD_MULW3: begin
 //			tHeldIdRn1	= regIdRm;			//
 			tRegHeld		= 1;
@@ -1298,6 +1400,21 @@ begin
 		tRegIdCn1	= JX2_CR_PC;
 //		tRegValCn1	= {UV16_00, tValBra};
 		tRegValCn1	= tValBra;
+		
+// `ifdef def_true
+`ifndef def_true
+// `ifdef VERILATOR
+		if(tValBra[31:0]==0)
+		begin
+			if(!tMsgLatch)
+				$display("EX1: Branch to Zero, PC=%X", regValPc);
+			tNextMsgLatch	= 1;
+			tExHold		= 1;
+			if(regInExc[15])
+				tExHold		= 0;
+		end
+`endif
+
 	end
 
 	if(opBraFlush)

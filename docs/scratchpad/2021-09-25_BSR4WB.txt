@@ -1,0 +1,48 @@
+BSR4W-B:
+* 64-bit ISA, Variable-Bundle VLIW.
+* Width will depend on implementation, though assuming 6 wide.
+
+Registers:
+* R0..R63: 64-bit
+** R0 / DLR: Stomp
+** R1 / DHR: Stomp
+** R2..R31: Scratch
+** R32..R59: Callee Preserve
+** R60: SP
+** R61: LR
+** R62: GBR
+** R63: PC
+* Control Regs
+** C0..C63
+** SR: Will contain several Predicate Flags
+* P1..P3: Predicate Registers
+** Contained as bits within SR.
+* Registers may be paired:
+** X0, X2, ...
+** Will represent 128-bit SIMD vectors.
+
+PC/LR:
+* Low 48 bits: Address
+* High 16 bits: Aliased with Predicate and Mode flags.
+
+
+Instructions will be 32-bit:
+* G: pppq-oooo nnnn-nnss ssss-tttt ttoo-oooo  //3R
+* H: pppq-oooo nnnn-nnss ssss-oooo oooo-oooo  //2R
+* I: pppq-oooo nnnn-nnss ssss-iiii iiii-oooo  //3RI (Imm8)
+* J: pppq-oooo nnnn-nnii iiii-iiii iioo-oooo  //2RI (Imm12)
+* K: pppq-oooo nnnn-nnoo iiii-iiii iiii-iiii  //2RI (Imm16)
+* L: pppq-oooo oooo-iiii iiii-iiii iiii-iiii  //Imm20
+* M: pppq-oooo iiii-iiii iiii-iiii iiii-iiii  //Imm24
+
+ppp (p/P):
+* 000: Imm24
+* 001: Jumbo
+* 010: Unconditional, Scalar
+* 011: Unconditional, Wide
+* 100: Predicate True, Scalar
+* 101: Predicate True, Wide
+* 110: Predicate False, Scalar
+* 111: Predicate False, Wide
+* p: q=0
+* P: q=1

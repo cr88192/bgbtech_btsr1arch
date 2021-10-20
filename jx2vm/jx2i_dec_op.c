@@ -300,11 +300,179 @@ int BJX2_DecodeOpcode_CheckTwoWord(BJX2_Context *ctx,
 }
 #endif
 
+int BJX2_DecodeOpcodePostFixup(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+#if 0
+	if(op->rm!=BJX2_RemapGPR(ctx, op->rm))
+		{ JX2_DBGBREAK }
+	if(op->rn!=BJX2_RemapGPR(ctx, op->rn))
+		{ JX2_DBGBREAK }
+	if(op->ro!=BJX2_RemapGPR(ctx, op->ro))
+		{ JX2_DBGBREAK }
+#endif
+
+	if((op->fl&BJX2_OPFL_REGXM) && (op->rm&1))
+	{
+		op->rm=(op->rm&0x1E)|0x20;
+//		if(		(op->rm== 0) || (op->rm==32) ||
+//				(op->rm==14) || (op->rm==46) ||
+//				(op->rm>=48))
+		if( (op->rm== 0) || (op->rm==14) )
+			{ op->Run=NULL; }
+//		op->Run=NULL;
+	}
+	if((op->fl&BJX2_OPFL_REGXN) && (op->rn&1))
+	{
+		op->rn=(op->rn&0x1E)|0x20;
+//		op->Run=NULL;
+//		if(		(op->rn== 0) || (op->rn==32) ||
+//				(op->rn==14) || (op->rn==46) ||
+//				(op->rn>=48))
+		if( (op->rn== 0) || (op->rn==14) )
+			{ op->Run=NULL; }
+	}
+	if((op->fl&BJX2_OPFL_REGXO) && (op->ro&1))
+	{
+		op->ro=(op->ro&0x1E)|0x20;
+//		op->Run=NULL;
+//		if(		(op->ro== 0) || (op->ro==32) ||
+//				(op->ro==14) || (op->ro==46) ||
+//				(op->ro>=48))
+		if( (op->ro== 0) || (op->ro==14) )
+			{ op->Run=NULL; }
+	}
+	
+	if(op->cyc==-1)
+	{
+//		op->cyc==1;
+		switch(op->nmid)
+		{
+		case BJX2_NMID_MOVB:
+		case BJX2_NMID_MOVW:
+		case BJX2_NMID_MOVL:
+		case BJX2_NMID_MOVQ:
+		case BJX2_NMID_MOVUB:
+		case BJX2_NMID_MOVUW:
+		case BJX2_NMID_MOVUL:
+		case BJX2_NMID_FMOVS:
+//		case BJX2_NMID_FMOVD:
+		case BJX2_NMID_FMOVH:
+		case BJX2_NMID_PUSH:
+		case BJX2_NMID_POP:
+		case BJX2_NMID_FPUSH:
+		case BJX2_NMID_FPOP:
+			op->cyc=1;
+//			op->cyc=2;
+//			op->cyc=3;
+//			op->cyc=4;
+//			op->cyc=6;
+			break;
+
+		case BJX2_NMID_ADD:
+		case BJX2_NMID_SUB:
+		case BJX2_NMID_ADC:
+		case BJX2_NMID_SBB:
+//			op->cyc=2;
+			op->cyc=1;
+			break;
+
+		case BJX2_NMID_CMPQEQ:
+		case BJX2_NMID_CMPQGT:
+		case BJX2_NMID_CMPQGE:
+		case BJX2_NMID_CMPQHI:
+		case BJX2_NMID_CMPQHS:
+			op->cyc=2;
+			break;
+
+		case BJX2_NMID_BRA:
+		case BJX2_NMID_BSR:
+			op->cyc=2;
+			break;
+
+		case BJX2_NMID_BT:
+		case BJX2_NMID_BF:
+			op->cyc=3;
+//			op->cyc=2;
+			break;
+		case BJX2_NMID_RTS:
+//			op->cyc=5;
+//			op->cyc=3;
+			op->cyc=2;
+			break;
+		case BJX2_NMID_RTSU:
+//			op->cyc=3;
+			op->cyc=2;
+			break;
+
+		case BJX2_NMID_FADD:
+		case BJX2_NMID_FSUB:
+		case BJX2_NMID_FMUL:
+			op->cyc=6;
+			break;
+		case BJX2_NMID_FDIV:
+			op->cyc=80;
+			break;
+
+		case BJX2_NMID_PADDF:
+		case BJX2_NMID_PSUBF:
+		case BJX2_NMID_PMULF:
+		case BJX2_NMID_PADDXD:
+		case BJX2_NMID_PSUBXD:
+		case BJX2_NMID_PMULXD:
+			op->cyc=8;
+			break;
+
+		case BJX2_NMID_PADDXF:
+		case BJX2_NMID_PSUBXF:
+		case BJX2_NMID_PMULXF:
+		case BJX2_NMID_PADDH:
+		case BJX2_NMID_PSUBH:
+		case BJX2_NMID_PMULH:
+			op->cyc=10;
+			break;
+
+		case BJX2_NMID_MULU:
+		case BJX2_NMID_MULS:
+			op->cyc=4;
+			break;
+		case BJX2_NMID_MULUL:
+		case BJX2_NMID_MULSL:
+			op->cyc=4;
+			break;
+
+		case BJX2_NMID_BLINT:
+		case BJX2_NMID_BLERP:
+			op->cyc=6;
+			break;
+		
+		default:
+			op->cyc=1;
+			break;
+		}
+	}
+	
+//	if(!op->Run)
+	if(!op->Run || !op->opn)
+	{
+		if(1)
+		{
+			op->nmid=BJX2_NMID_INV;
+			op->fmid=BJX2_FMID_Z;
+			op->Run=BJX2_Op_INVOP_None;
+			op->fl|=BJX2_OPFL_CTRLF;
+		}
+//		__debugbreak();
+	}
+
+	return(0);
+}
+
 int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 	BJX2_Opcode *op, bjx2_addr addr)
 {
 	int ret, fnm;
 	int rn_dfl, rm_dfl, rn2_dfl;
+	int cm_dfl, cn_dfl;
 	int opw, opw2, opw3;
 
 	opw =BJX2_MemGetWord(ctx, addr+0);
@@ -325,6 +493,18 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 	op->rm=BJX2_REG_ZZR;
 	op->ro=BJX2_REG_ZZR;
 	op->imm=0;
+	
+	if(ctx->regs[BJX2_REG_SR]&BJX2_FLAG_SR_RVE)
+	{
+		if((ctx->regs[BJX2_REG_SR]&BJX2_FLAG_SR_WXE) || ((opw&3)==3))
+		{
+			ret=BJX2_DecodeOpcode_DecRVI(ctx, op, addr, opw, opw2, 0);
+		}
+
+		BJX2_DecodeOpcodePostFixup(ctx, op);
+
+		return(ret);
+	}
 	
 #ifdef BJX2_FLIPSTNM
 	fnm=0;
@@ -350,6 +530,12 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 	rn2_dfl=BJX2_RemapGPR(ctx, rn2_dfl);
 	rn_dfl=BJX2_RemapGPR(ctx, rn_dfl);
 	rm_dfl=BJX2_RemapGPR(ctx, rm_dfl);
+
+//	cm_dfl=BJX2_REG_PC+((opw>>0)&15);
+//	cn_dfl=BJX2_REG_PC+((opw>>4)&15);
+
+	cm_dfl=BJX2_RemapCR(ctx, (opw>>0)&15);
+	cn_dfl=BJX2_RemapCR(ctx, (opw>>4)&15);
 
 	ret=0;
 	switch((opw>>12)&15)
@@ -646,14 +832,16 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 			break;
 		case 0xA:	/* 1Azz */
 //			op->rn+=BJX2_REG_PC;
-			op->rn=BJX2_REG_PC+(op->rn&15);
+//			op->rn=BJX2_REG_PC+(op->rn&15);
+			op->rn=cn_dfl;
 			op->nmid=BJX2_NMID_MOV;
 			op->fmid=BJX2_FMID_REGREG;
 			op->Run=BJX2_Op_MOV_RegReg;
 			break;
 		case 0xB:	/* 1Bzz */
 //			op->rm+=BJX2_REG_PC;
-			op->rm=BJX2_REG_PC+(op->rm&15);
+//			op->rm=BJX2_REG_PC+(op->rm&15);
+			op->rm=cm_dfl;
 			op->nmid=BJX2_NMID_MOV;
 			op->fmid=BJX2_FMID_REGREG;
 			op->Run=BJX2_Op_MOV_RegReg;
@@ -1498,6 +1686,33 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 				op->fmid=BJX2_FMID_REG;
 				op->Run=BJX2_Op_EXTSW_Reg;
 				break;
+
+#if 1
+			case 0xC:	/* 32zC */
+				op->nmid=BJX2_NMID_BRAL;
+				op->fmid=BJX2_FMID_PCREG;
+				op->Run=BJX2_Op_BRAL_PcReg;
+				op->fl|=BJX2_OPFL_CTRLF;
+				break;
+			case 0xD:	/* 32zD */
+				op->nmid=BJX2_NMID_BSRL;
+				op->fmid=BJX2_FMID_PCREG;
+				op->Run=BJX2_Op_BSRL_PcReg;
+				op->fl|=BJX2_OPFL_CTRLF;
+				break;
+			case 0xE:	/* 32zE */
+				op->nmid=BJX2_NMID_BTL;
+				op->fmid=BJX2_FMID_PCREG;
+				op->Run=BJX2_Op_BTL_PcReg;
+				op->fl|=BJX2_OPFL_CTRLF;
+				break;
+			case 0xF:	/* 32zF */
+				op->nmid=BJX2_NMID_BFL;
+				op->fmid=BJX2_FMID_PCREG;
+				op->Run=BJX2_Op_BFL_PcReg;
+				op->fl|=BJX2_OPFL_CTRLF;
+				break;
+#endif
 
 #if 0
 			case 0xC:	/* 32zC */
@@ -2478,14 +2693,16 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 #if 1
 		case 0x8:	/* 48zz */
 //			op->rn+=BJX2_REG_PC;
-			op->rn=BJX2_REG_PC+(op->rn&15);
+//			op->rn=BJX2_REG_PC+(op->rn&15);
+			op->rn=cn_dfl;
 			op->nmid=BJX2_NMID_MOV;
 			op->fmid=BJX2_FMID_REGREG;
 			op->Run=BJX2_Op_MOV_RegReg;
 			break;
 		case 0x9:	/* 49zz */
 //			op->rm+=BJX2_REG_PC;
-			op->rm=BJX2_REG_PC+(op->rm&15);
+//			op->rm=BJX2_REG_PC+(op->rm&15);
+			op->rm=cm_dfl;
 			op->nmid=BJX2_NMID_MOV;
 			op->fmid=BJX2_FMID_REGREG;
 			op->Run=BJX2_Op_MOV_RegReg;
@@ -3400,165 +3617,16 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 		break;
 	}
 	
+#if 1
 	if(op->rm!=BJX2_RemapGPR(ctx, op->rm))
 		{ JX2_DBGBREAK }
 	if(op->rn!=BJX2_RemapGPR(ctx, op->rn))
 		{ JX2_DBGBREAK }
 	if(op->ro!=BJX2_RemapGPR(ctx, op->ro))
 		{ JX2_DBGBREAK }
-	
-	if((op->fl&BJX2_OPFL_REGXM) && (op->rm&1))
-	{
-		op->rm=(op->rm&0x1E)|0x20;
-//		if(		(op->rm== 0) || (op->rm==32) ||
-//				(op->rm==14) || (op->rm==46) ||
-//				(op->rm>=48))
-		if( (op->rm== 0) || (op->rm==14) )
-			{ op->Run=NULL; }
-//		op->Run=NULL;
-	}
-	if((op->fl&BJX2_OPFL_REGXN) && (op->rn&1))
-	{
-		op->rn=(op->rn&0x1E)|0x20;
-//		op->Run=NULL;
-//		if(		(op->rn== 0) || (op->rn==32) ||
-//				(op->rn==14) || (op->rn==46) ||
-//				(op->rn>=48))
-		if( (op->rn== 0) || (op->rn==14) )
-			{ op->Run=NULL; }
-	}
-	if((op->fl&BJX2_OPFL_REGXO) && (op->ro&1))
-	{
-		op->ro=(op->ro&0x1E)|0x20;
-//		op->Run=NULL;
-//		if(		(op->ro== 0) || (op->ro==32) ||
-//				(op->ro==14) || (op->ro==46) ||
-//				(op->ro>=48))
-		if( (op->ro== 0) || (op->ro==14) )
-			{ op->Run=NULL; }
-	}
-	
-	if(op->cyc==-1)
-	{
-//		op->cyc==1;
-		switch(op->nmid)
-		{
-		case BJX2_NMID_MOVB:
-		case BJX2_NMID_MOVW:
-		case BJX2_NMID_MOVL:
-		case BJX2_NMID_MOVQ:
-		case BJX2_NMID_MOVUB:
-		case BJX2_NMID_MOVUW:
-		case BJX2_NMID_MOVUL:
-		case BJX2_NMID_FMOVS:
-//		case BJX2_NMID_FMOVD:
-		case BJX2_NMID_FMOVH:
-		case BJX2_NMID_PUSH:
-		case BJX2_NMID_POP:
-		case BJX2_NMID_FPUSH:
-		case BJX2_NMID_FPOP:
-			op->cyc=1;
-//			op->cyc=2;
-//			op->cyc=3;
-//			op->cyc=4;
-//			op->cyc=6;
-			break;
+#endif
 
-		case BJX2_NMID_ADD:
-		case BJX2_NMID_SUB:
-		case BJX2_NMID_ADC:
-		case BJX2_NMID_SBB:
-//			op->cyc=2;
-			op->cyc=1;
-			break;
-
-		case BJX2_NMID_CMPQEQ:
-		case BJX2_NMID_CMPQGT:
-		case BJX2_NMID_CMPQGE:
-		case BJX2_NMID_CMPQHI:
-		case BJX2_NMID_CMPQHS:
-			op->cyc=2;
-			break;
-
-		case BJX2_NMID_BRA:
-		case BJX2_NMID_BSR:
-			op->cyc=2;
-			break;
-
-		case BJX2_NMID_BT:
-		case BJX2_NMID_BF:
-			op->cyc=3;
-//			op->cyc=2;
-			break;
-		case BJX2_NMID_RTS:
-//			op->cyc=5;
-//			op->cyc=3;
-			op->cyc=2;
-			break;
-		case BJX2_NMID_RTSU:
-//			op->cyc=3;
-			op->cyc=2;
-			break;
-
-		case BJX2_NMID_FADD:
-		case BJX2_NMID_FSUB:
-		case BJX2_NMID_FMUL:
-			op->cyc=6;
-			break;
-		case BJX2_NMID_FDIV:
-			op->cyc=80;
-			break;
-
-		case BJX2_NMID_PADDF:
-		case BJX2_NMID_PSUBF:
-		case BJX2_NMID_PMULF:
-		case BJX2_NMID_PADDXD:
-		case BJX2_NMID_PSUBXD:
-		case BJX2_NMID_PMULXD:
-			op->cyc=8;
-			break;
-
-		case BJX2_NMID_PADDXF:
-		case BJX2_NMID_PSUBXF:
-		case BJX2_NMID_PMULXF:
-		case BJX2_NMID_PADDH:
-		case BJX2_NMID_PSUBH:
-		case BJX2_NMID_PMULH:
-			op->cyc=10;
-			break;
-
-		case BJX2_NMID_MULU:
-		case BJX2_NMID_MULS:
-			op->cyc=4;
-			break;
-		case BJX2_NMID_MULUL:
-		case BJX2_NMID_MULSL:
-			op->cyc=4;
-			break;
-
-		case BJX2_NMID_BLINT:
-		case BJX2_NMID_BLERP:
-			op->cyc=6;
-			break;
-		
-		default:
-			op->cyc=1;
-			break;
-		}
-	}
-	
-//	if(!op->Run)
-	if(!op->Run || !op->opn)
-	{
-		if(1)
-		{
-			op->nmid=BJX2_NMID_INV;
-			op->fmid=BJX2_FMID_Z;
-			op->Run=BJX2_Op_INVOP_None;
-			op->fl|=BJX2_OPFL_CTRLF;
-		}
-//		__debugbreak();
-	}
+	BJX2_DecodeOpcodePostFixup(ctx, op);
 	
 	return(ret);
 }

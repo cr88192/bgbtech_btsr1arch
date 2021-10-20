@@ -340,6 +340,7 @@ Pointer/Array Class Modifer:
 * y: transient ("__transient")
 * z: reserved
 
+* Ca: may_alias
 * Cb: reference ("&type")
 * Ce: event ("__event")
 * Cf: interrupt ("__interrupt")
@@ -361,6 +362,22 @@ Pointer/Array Class Modifer:
 * Di: dllimport
 
 * U{name};	//named flag
+
+=== Structure String ===
+
+Will consist of zero or more fields enclosed in curly braces.
+
+Each field will be of the form "{name}:{sig}".
+* A semi-colon may also be used as a seperator.
+* The name field will follow traditional identifier rules.
+** Allowed chars: 'A'..'Z', 'a'..'z', '0'..'9', '_', '$', '!'
+** UTF-8 and Overlong UTF-8 encodings may also be used.
+** Overlong UTF-8 encodings will be interpreted as escapes.
+
+So, for example:
+* struct foo_s { int a; int b; };
+Could be encoded as:
+* {a:i;b:i;}
 
 
 === IfArch String ===

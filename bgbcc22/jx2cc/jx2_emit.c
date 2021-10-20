@@ -224,6 +224,9 @@ int BGBCC_JX2_EmitCheckRegBaseGPR(BGBCC_JX2_Context *ctx, int reg)
 		return(1);
 	}
 
+	if(reg==BGBCC_SH_REG_SP)
+		return(1);
+
 	return(0);
 }
 
@@ -251,6 +254,9 @@ int BGBCC_JX2_EmitCheckRegAddrGPR(BGBCC_JX2_Context *ctx, int reg)
 			return(1);
 	}
 
+	if(reg==BGBCC_SH_REG_SP)
+		return(1);
+
 	return(0);
 }
 
@@ -261,6 +267,9 @@ int BGBCC_JX2_EmitCheckRegNonBaseGPR(BGBCC_JX2_Context *ctx, int reg)
 	if((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_RD0)
 		return(0);
 	if((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_RQ0)
+		return(0);
+
+	if(reg==BGBCC_SH_REG_SP)
 		return(0);
 
 	return(1);

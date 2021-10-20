@@ -426,10 +426,14 @@ begin
 `ifdef jx2_l1i_nohash
 
 //			tRegOutVal	= { UV40_00, 8'h03, regValRs[15:0] };
-			tRegOutVal	= { 16'hC000, 16'h0000, 16'h0003, regValRs[15:0] };
+//			tRegOutVal	= { 16'hC000, 16'h0000, 16'h0003, regValRs[15:0] };
+			tRegOutVal	= { 16'h0000, 16'hC000, 16'h0003, regValRs[15:0] };
 
 `else
 
+			tRegOutVal	= UV64_00;
+
+`ifndef def_true
 //			tRegOutVal	= { UV40_00, 8'h03, regValRs[15:0] };
 			tNxtReqAxA = regValRs[31:4];
 			tNxtReqAxB = { 16'h0003, 12'h000 };
@@ -451,6 +455,7 @@ begin
 `endif
 
 			tRegOutVal	= { UV40_00, 8'h03, tNxtReqIxA, tNxtReqAxA[0], 4'h0 };
+`endif
 
 `endif
 		end
@@ -459,10 +464,14 @@ begin
 `ifdef jx2_l1d_nohash
 
 //			tRegOutVal	= { UV40_00, 8'h01, regValRs[15:0] };
-			tRegOutVal	= { 16'hC000, 16'h0000, 16'h0001, regValRs[15:0] };
+//			tRegOutVal	= { 16'hC000, 16'h0000, 16'h0001, regValRs[15:0] };
+			tRegOutVal	= { 16'h0000, 16'hC000, 16'h0001, regValRs[15:0] };
 
 `else
 
+			tRegOutVal	= UV64_00;
+
+`ifndef def_true
 //			tRegOutVal	= { UV40_00, 8'h01, regValRs[15:0] };
 			tNxtReqAxA = regValRs[31:4];
 			tNxtReqAxB = { 16'h0001, 12'h000 };
@@ -484,6 +493,7 @@ begin
 `endif
 
 			tRegOutVal	= { UV40_00, 8'h01, tNxtReqIxA, tNxtReqAxA[0], 4'h0 };
+`endif
 
 `endif
 

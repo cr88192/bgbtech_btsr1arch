@@ -222,7 +222,8 @@ ccxl_status BGBCC_CCXL_RegisterAllocTemporaryInit(
 		ctx, bty, rtreg);
 	if(rt<0)return(rt);
 
-	if(BGBCC_CCXL_TypeValueObjectP(ctx, bty))
+//	if(BGBCC_CCXL_TypeValueObjectP(ctx, bty))
+	if(0)
 	{
 		st=BGBCC_CCXL_LookupStructureForType(ctx, bty);
 		if(st)
@@ -612,6 +613,8 @@ ccxl_status BGBCC_CCXL_LoadslotCacheCheck(
 	char *sn;
 	int sr, er;
 	int i;
+
+//	return(CCXL_STATUS_NO);
 
 	sr=ctx->loadslot_cache_srov;
 	er=ctx->loadslot_cache_erov;

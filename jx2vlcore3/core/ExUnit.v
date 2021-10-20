@@ -248,12 +248,12 @@ wire[3:0]		ifOutPcSxo;
 reg				ifValBraOk;
 reg				ifNxtValBraOk;
 
-wire			ifInPcWxe;
+wire[1:0]			ifInPcWxe;
 
 `ifdef jx2_enable_wex
-assign	ifInPcWxe = crOutSr[27];
+assign	ifInPcWxe = crOutSr[27:26];
 `else
-assign	ifInPcWxe = 1'b0;
+assign	ifInPcWxe = 2'b00;
 `endif
 
 assign	dbgOutPc	= ifLastPc;
@@ -433,6 +433,8 @@ DecOp	decOp(
 reg[47:0]		ex1ValBPc;
 reg[2:0]		ex1ValBraDir;
 
+wire[ 4:0]		ex1MemOpm;
+
 `ifdef jx2_enable_prebra
 wire[47:0]		id1PreBraPc;
 wire[1:0]		id1PreBra;
@@ -450,7 +452,7 @@ assign		id1BraPipelineR1 = 1'b1;
 assign		id1BraPipelineDbl = 1'b1;
 `endif
 
-reg[3:0]			id1BraPipelineLrL;
+reg[7:0]			id1BraPipelineLrL;
 
 DecPreBra	preBra(
 	clock,				reset,
@@ -459,7 +461,7 @@ DecPreBra	preBra(
 	gprValLr,			ifLastPc,
 	gprOutDlr,			gprOutDhr,
 	ex1ValBPc,			ex1ValBraDir,
-	id1BraPipelineLrL);
+	id1BraPipelineLrL,	ex1MemOpm);
 `else
 wire[1:0]		id1PreBra;
 assign			id1PreBra = 0;
@@ -991,7 +993,7 @@ wire[63:0]		ex1RegOutSr;
 reg[63:0]		ex1RegInSr;
 
 wire[47:0]		ex1MemAddr;
-wire[ 4:0]		ex1MemOpm;
+// wire[ 4:0]		ex1MemOpm;
 wire[63:0]		ex1MemDataOut;
 wire[63:0]		ex1MemDataOutB;
 
@@ -1000,6 +1002,8 @@ reg [ 7:0]		ex1RegInSchm;
 wire[15:0]		ex1TrapExc;
 
 wire[8:0]		ex1OpUCmd2;
+
+wire			ex1AluSrJcmpT;
 
 ExEX1	ex1(
 	clock,			reset,
@@ -1035,6 +1039,7 @@ ExEX1	ex1(
 	ex1BraFlush,
 //	ex1BraFlush || reset,
 	ex1PreBraPc,	ex1PreBra,
+	ex1AluSrJcmpT,
 	
 	ex1RegOutDlr,	ex1RegInDlr,
 	ex1RegOutDhr,	ex1RegInDhr,
@@ -1054,6 +1059,7 @@ wire[7:0]	exB1ValCarryD;
 // wire[65:0]	ex1ValAlu;
 wire[69:0]	ex1ValAlu;
 // wire		ex1AluSrT;
+
 ExALU	exAlu(
 	clock,				reset,
 	ex1RegValRs,		ex1RegValRt,		exB1RegValRs,
@@ -1063,7 +1069,7 @@ ExALU	exAlu(
 //	ex1ValAlu,			ex1AluSrT);
 //	ex1ValAlu[63:0],	ex1ValAlu[65:64]);
 	ex1ValAlu[63:0],	ex1ValAlu[69:64],
-	exB1ValCarryD);
+	exB1ValCarryD,		ex1AluSrJcmpT);
 
 // ExMul	ex1Mul(
 // ExMulB	ex1Mul(
@@ -1090,7 +1096,7 @@ wire[65:0]				ex1KrreHi;
 ExModKrrEnc	ex1KrrEnc(
 	clock,				reset,
 	ex1OpUCmd,			ex1OpUIxt,
-	exHold2,
+	exHold2,			ex1BraFlush,
 	ex1RegInDlr,		ex1RegInDhr,	crOutKrr,
 	ex1KrreLo,			ex1KrreHi);
 `else
@@ -1726,6 +1732,9 @@ reg[7:0]	tRegExcOfs;
 reg[63:0]	tDelayExc;
 reg[63:0]	tNxtDelayExc;
 
+reg[63:0]	tDelay2Exc;
+reg[63:0]	tNxtDelay2Exc;
+
 reg			tPreHold1;
 reg			tNxtPreHold1;
 reg			tLstPreHold1;
@@ -1760,6 +1769,8 @@ reg[63:0]		braInDhr;
 reg[47:0]		braInSp;
 reg[47:0]		braInSsp;
 reg				braIsIsr;
+
+reg[47:0]		braIsrSp;
 
 reg[47:0]		braNxtInSpc;
 reg[63:0]		braNxtInExsr;
@@ -2042,7 +2053,8 @@ begin
 	tDbgOutStatus4	= exHold1D;
 
 `ifdef jx2_use_ringbus
-	tDbgOutStatus5	= ifOutPcOK[1];
+//	tDbgOutStatus5	= ifOutPcOK[1];
+	tDbgOutStatus5	= ifOutPcOK[1] || (ifOutPcStep==0);
 	tDbgOutStatus6	= dcOutOK[1];
 	tDbgOutStatus7	= dcBusWait;
 	tDbgOutStatus8	= memOpm[7:0] != 0;
@@ -2272,17 +2284,60 @@ begin
 //		end
 //	endcase
 
+	tNxtDelay2Exc	= tDelay2Exc;
+
+	if(tDelay2Exc[15] && !tRegExc[15])
+	begin
+		tNxtRegExc		= tDelay2Exc;
+		tNxtDelay2Exc	= 0;
+	end
+
 //	if(tDelayExc[15])
 	if(tDelayExc[15] && !tRegExc[15])
-		tNxtRegExc = tDelayExc;
+	begin
+//		tNxtRegExc = tDelayExc;
+
+		if(tDelayExc[15:12]==4'h8)
+		begin
+			tNxtRegExc = tDelayExc;
+		end
+		else if(!crOutSr[28])
+		begin
+			if((tDelayExc[15:12]!=4'hC) || crOutSr[3])
+				tNxtRegExc = tDelayExc;
+		end
+	end
 
 //	if(memRegExc[15])
 	if(memRegExc[15] && !tRegExc[15])
 	begin
 //		$display("memRegExc: %X", memRegExc);
-		tNxtRegExc = memRegExc;
+//		tNxtRegExc = memRegExc;
+
+		if(memRegExc[15:12]==4'h8)
+		begin
+			tNxtRegExc = memRegExc;
+		end
+		else if(!crOutSr[28])
+		begin
+			if((memRegExc[15:12]!=4'hC) || crOutSr[3])
+				tNxtRegExc = memRegExc;
+		end
+	end
+	else if(memRegExc[15])
+	begin
+		if(memRegExc[15:12]==4'h8)
+		begin
+			tNxtDelay2Exc = memRegExc;
+		end
+		else if(!crOutSr[28])
+		begin
+			if((memRegExc[15:12]!=4'hC) || crOutSr[3])
+				tNxtDelay2Exc = memRegExc;
+		end
 	end
 
+`ifndef jx2_use_ringbus
 //	if(memBusExc[15] && (!opBraFlushMask[3]) &&
 //		!exHold1 && !exHold2 && (ex1MemOpm==0))
 //	if(memBusExc[15] && (!opBraFlushMask[0]) &&
@@ -2298,17 +2353,30 @@ begin
 	end
 	else if(memBusExc[15])
 	begin
-		$display("Missed IRQ Flush=%d H1=%d H2=%d SR.BL=%d SR=%X",
-			opBraFlushMask[0],
-			exHold1, exHold2, crOutSr[28], crOutSr);
+//		$display("Missed IRQ Flush=%d H1=%d H2=%d SR.BL=%d SR=%X",
+//			opBraFlushMask[0],
+//			exHold1, exHold2, crOutSr[28], crOutSr);
 	end
+`endif
 
 //	if(ex1TrapExc[15])
 	if(ex1TrapExc[15] && !tRegExc[15])
 		tNxtRegExc = { UV48_00, ex1TrapExc };
 
-	if(ex1KrreLo[65:64]==2'b11)
+//	if(ex1KrreLo[65:64]==2'b11)
+	if((ex1KrreLo[65:64]==2'b11) && !tRegExc[15])
+	begin
+		$display("ExUbit: Keyring Fault");
+
+		$display("EX1: PC0=%X PC2=%X D=%X-%X-%X-%X-%X-%X Op=%X-%X F=%d",
+			ex1ValBPc,	ex1RegValPc,
+			ex1IstrWord[15: 0], ex1IstrWord[31:16],
+			ex1IstrWord[47:32], ex1IstrWord[63:48],
+			ex1IstrWord[79:64], ex1IstrWord[95:80],
+			ex1OpUCmd, ex1OpUIxt, ex1BraFlush);
+
 		tNxtRegExc = { UV48_00, 16'h800D };
+	end
 
 	if(reset)
 	begin
@@ -2390,6 +2458,26 @@ begin
 
 	nxtBraFlushMask	= { 1'b0, opBraFlushMask[7:1] };
 
+`ifdef jx2_mem_l1inostall
+
+//	if(ifOutPcStep == 0)
+//	if(ex1ValBPc == ex1RegValPc)
+//		nxtBraFlushMask = opBraFlushMask;
+
+//	if(ex1IstrWord[15:0] == 16'h3002)
+//	if(id2IstrWord[15:0] == 16'h3002)
+//		nxtBraFlushMask = opBraFlushMask;
+
+//	if(id1IstrWord[15:0] == 16'h3002)
+//		nxtBraFlushMask[7:2] = opBraFlushMask[7:2];
+//		nxtBraFlushMask[7:3] = opBraFlushMask[7:3];
+
+//	if(ifOutPcStep == 0)
+//		nxtBraFlushMask[7:2] = opBraFlushMask[7:2];
+//		nxtBraFlushMask[7:1] = opBraFlushMask[7:1];
+
+`endif
+
 `ifdef jx2_enable_prebra
 // `ifndef def_true
 //	if(id1PreBra)
@@ -2411,6 +2499,7 @@ begin
 		nxtBraFlushMask[2] = 1;
 //		nxtBraFlushMask[3] = 1;
 `endif
+
 //		nxtBraFlushMask = 8'h0F;
 //		nxtBraFlushMask = JX2_BRA_FLUSHMSK;
 	end
@@ -2479,6 +2568,9 @@ begin
 //		nxtBraFlushMask = 8'h0F;
 		nxtBraFlushMask = JX2_BRA_FLUSHMSK;
 //		ex1ValBraDir[2]	= 1;
+
+//		if(ex1RegValCn1[19:12]!=ifLastPc[19:12])
+//			nxtBraFlushMask = JX2_BRA_FLUSHMSK_XTRA;
 
 		if(ex1BraFlush)
 		begin
@@ -2615,7 +2707,7 @@ begin
 	begin
 		if(tRegExc[15:10]==6'b111111)
 		begin
-//			$display("ExUnit: RTE, SPC=%X", crOutSpc);
+			$display("ExUnit: RTE, SPC=%X", crOutSpc);
 			tValNextBraPc	= crOutSpc;
 			nxtBraFlushMask = JX2_BRA_FLUSHMSK;
 
@@ -2682,6 +2774,8 @@ begin
 				crOutVbr[2:0] };
 			nxtBraFlushMask = JX2_BRA_FLUSHMSK;
 
+			braIsrSp	= ex1RegOutSp[47:0];
+
 			if(tRegExc[15:12]!=4'b1010)
 			begin
 
@@ -2711,6 +2805,7 @@ begin
 				crInTea			= { UV16_00, tRegExc[63:16] };
 				crInSr			= ex1RegOutSr;
 				crInSr[30:28]	= 3'b111;
+				crInSr[27:26]	= 2'b00;
 
 				crInLr			= crOutLr;
 //					gprInDlr		= gprOutDlr;
@@ -2724,6 +2819,7 @@ begin
 				braNxtInTea			=  { UV16_00, tRegExc[63:16] };
 				braNxtInSr			= ex1RegOutSr;
 				braNxtInSr[30:28]	= 3'b111;
+				braNxtInSr[27:26]	= 2'b00;
 				braNxtInLr			= crOutLr;
 //				braNxtInDlr			= ex1RegOutDlr;
 //				braNxtInDhr			= ex1RegOutDhr;
@@ -2742,6 +2838,7 @@ begin
 					crInLr			= ex3RegInLr;
 					gprInDlr		= gprOutDlr;
 					gprInDhr		= gprOutDhr;
+					braIsrSp		= gprOutSp[47:0];
 `endif
 
 `ifdef jx2_isr2stage
@@ -2750,6 +2847,7 @@ begin
 					braNxtInLr			= ex3RegInLr;
 					braNxtInDlr			= gprOutDlr;
 					braNxtInDhr			= gprOutDhr;
+					braIsrSp			= gprOutSp[47:0];
 `endif
 
 					ex3TrapFlush	= 1;
@@ -2770,6 +2868,7 @@ begin
 					crInLr			= ex2RegInLr;
 					gprInDlr		= gprOutDlr;
 					gprInDhr		= gprOutDhr;
+					braIsrSp		= gprOutSp[47:0];
 `endif
 
 `ifdef jx2_isr2stage
@@ -2778,6 +2877,7 @@ begin
 					braNxtInLr			= ex2RegInLr;
 					braNxtInDlr			= gprOutDlr;
 					braNxtInDhr			= gprOutDhr;
+					braIsrSp			= gprOutSp[47:0];
 `endif
 
 					ex2TrapFlush	= 1;
@@ -2797,6 +2897,8 @@ begin
 					crInLr			= crOutLr;
 					gprInDlr		= gprOutDlr;
 					gprInDhr		= gprOutDhr;
+//					braIsrSp		= gprOutSp;
+					braIsrSp		= ex2RegOutSp[47:0];
 `endif
 
 `ifdef jx2_isr2stage
@@ -2805,6 +2907,8 @@ begin
 					braNxtInLr			= crOutLr;
 					braNxtInDlr			= gprOutDlr;
 					braNxtInDhr			= gprOutDhr;
+//					braIsrSp			= gprOutSp;
+					braIsrSp			= ex2RegOutSp;
 `endif
 
 					ex1TrapFlush	= 1;
@@ -2820,13 +2924,17 @@ begin
 					crInSpc			= id2ValBPc;
 //					crInExsr[39:32]	= crOutSr[7:0];
 					crInExsr[39:32]	= ex2RegOutSr[7:0];
-					crInLr			= crOutLr;
+//					crInLr			= crOutLr;
+					crInLr			= ex1RegOutLr;
+					braIsrSp		= ex1RegOutSp[47:0];
 `endif
 
 `ifdef jx2_isr2stage
 					braNxtInSpc			= id2ValBPc;
 					braNxtInExsr[39:32]	= ex2RegOutSr[7:0];
-					braNxtInLr			= crOutLr;
+//					braNxtInLr			= crOutLr;
+					braNxtInLr			= ex1RegOutLr;
+					braIsrSp			= ex1RegOutSp[47:0];
 `endif
 
 				end
@@ -2849,13 +2957,17 @@ begin
 					crInSpc			= id1ValBPc;
 //					crInExsr[39:32]	= crOutSr[7:0];
 					crInExsr[39:32]	= ex2RegOutSr[7:0];
-					crInLr			= crOutLr;
+//					crInLr			= crOutLr;
+					crInLr			= ex1RegOutLr;
+					braIsrSp		= ex1RegOutSp[47:0];
 `endif
 
 `ifdef jx2_isr2stage
 					braNxtInSpc			= id1ValBPc;
 					braNxtInExsr[39:32]	= ex2RegOutSr[7:0];
-					braNxtInLr			= crOutLr;
+//					braNxtInLr			= crOutLr;
+					braNxtInLr			= ex1RegOutLr;
+					braIsrSp			= ex1RegOutSp[47:0];
 `endif
 				end
 				else
@@ -2874,8 +2986,11 @@ begin
 
 `ifndef jx2_isr2stage
 					crInSpc			= ifLastPc;
-					crInExsr[39:32]	= crOutSr[7:0];
+//					crInExsr[39:32]	= crOutSr[7:0];
+					crInExsr[39:32]	= ex2RegOutSr[7:0];
 //					crInLr			= crOutLr;
+					crInLr			= ex1RegOutLr;
+					braIsrSp		= ex1RegOutSp[47:0];
 
 //					tIsrBraPc			= tValNextBraPc;
 //					tIsrBraFlushMask	= nxtBraFlushMask;
@@ -2883,25 +2998,33 @@ begin
 
 `ifdef jx2_isr2stage
 					braNxtInSpc			= ifLastPc;
-					braNxtInExsr[39:32]	= crOutSr[7:0];
+//					braNxtInExsr[39:32]	= crOutSr[7:0];
+					braNxtInExsr[39:32]	= ex2RegOutSr[7:0];
+//					braNxtInLr			= crOutLr;
+					braNxtInLr			= ex1RegOutLr;
+					braIsrSp			= ex1RegOutSp[47:0];
 `endif
 
 `ifdef jx2_bra2stage
 					if(opBraFlushMask[4])
 					begin
+						$display("ISR In Branch %X", tIsrBraPc);
+
 `ifndef jx2_isr2stage
-						crInSpc = tIsrBraPc;
+//						crInSpc = tIsrBraPc;
 `else
-						braNxtInSpc		= tIsrBraPc;
+//						braNxtInSpc		= tIsrBraPc;
 `endif
 					end
 `else
 					if(tIsrBraFlushMask[3])
 					begin
+						$display("ISR In Branch %X", tIsrBraPc);
+
 `ifndef jx2_isr2stage
-						crInSpc = tIsrBraPc;
+//						crInSpc = tIsrBraPc;
 `else
-						braNxtInSpc		= tIsrBraPc;
+//						braNxtInSpc		= tIsrBraPc;
 `endif
 					end
 `endif
@@ -2925,11 +3048,13 @@ begin
 				if(!(crOutSr[29] && crOutSr[30]))
 				begin
 `ifndef jx2_isr2stage
-					crInSsp			= ex1RegOutSp[47:0];
+//					crInSsp			= ex1RegOutSp[47:0];
+					crInSsp			= braIsrSp[47:0];
 					gprInSp			= { UV16_00, crOutSsp };
 `else
+//					braNxtInSsp		= ex1RegOutSp[47:0];
+					braNxtInSsp		= braIsrSp[47:0];
 					braNxtInSp		= crOutSsp;
-					braNxtInSsp		= ex1RegOutSp[47:0];
 `endif
 				end
 
@@ -3174,6 +3299,7 @@ begin
 
 //	tRegExc			<= tNxtRegExc;
 	tDelayExc		<= tNxtDelayExc;
+	tDelay2Exc		<= tNxtDelay2Exc;
 
 	if(tNxtRegExc[15] && (tNxtRegExc[15:12] != 4'hC))
 	begin
@@ -3400,6 +3526,8 @@ begin
 //		id1BraPipelineLrL	<= id1BraPipelineLr;
 //		id1BraPipelineLrL	<= { id1BraPipelineR1, id1BraPipelineLr };
 		id1BraPipelineLrL	<= {
+			2'b00,
+			crOutSr[27:26],
 			1'b1,
 			id1BraPipelineDbl,
 			id1BraPipelineR1, id1BraPipelineLr };

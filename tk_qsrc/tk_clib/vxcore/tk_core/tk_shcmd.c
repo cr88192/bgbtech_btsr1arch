@@ -1089,6 +1089,7 @@ char *tksh_cifyemit(char *dst, char *str)
 void __tk_farcall(void *fptr, void *gbr, void *newstack, void *tbr);
 int TK_DestroyTaskInfo(void *tkptr);
 void TK_FlushCacheL1D();
+void TK_FlushCacheL1D_INVIC(void *ptr);
 
 int TKSH_TryLoad(char *img, char **args0)
 {
@@ -1433,6 +1434,7 @@ int TKSH_TryLoad(char *img, char **args0)
 			}
 		
 			TK_FlushCacheL1D();
+			TK_FlushCacheL1D_INVIC(NULL);
 
 //			__arch_gbr=bootgbr;
 //			bootptr();

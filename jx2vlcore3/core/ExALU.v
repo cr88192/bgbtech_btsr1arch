@@ -89,7 +89,8 @@ module ExALU(
 	regInSrST,
 	regOutVal,
 	regOutSrST,
-	regInCarryD
+	regInCarryD,
+	regOutJcmpT
 	);
 
 input			clock;
@@ -106,6 +107,7 @@ input[5:0]		regInSrST;
 output[63:0]	regOutVal;
 output[5:0]		regOutSrST;
 input[7:0]		regInCarryD;
+output			regOutJcmpT;
 
 wire			regInSrT;
 wire			regInSrS;
@@ -139,6 +141,9 @@ assign	regOutSrST = {
 	tRegOutSrQ2, tRegOutSrP2,
 	tRegOutSrS2, tRegOutSrT2
 	};
+
+reg			tRegOutJcmpT;
+assign		regOutJcmpT = tRegOutJcmpT;
 
 reg[63:0]	tRegOutVal;
 reg			tRegOutSrT;
@@ -871,6 +876,22 @@ begin
 
 `endif
 
+
+	tRegOutJcmpT = 0;
+
+`ifdef jx2_alu_jcmp
+	case(idUIxt[3:0])
+		4'h0: tRegOutJcmpT = tSub2ZF;				/* EQ */
+		4'h1: tRegOutJcmpT = !tSub2ZF;				/* NE */
+		4'h4: tRegOutJcmpT = (tSub2SF^tSub2VF);		/* LT */
+		4'h5: tRegOutJcmpT = !(tSub2SF^tSub2VF);	/* GE */
+		4'h6: tRegOutJcmpT = !tSub2CF;				/* B  */
+		4'h7: tRegOutJcmpT = tSub2CF;				/* HS */
+		default: tRegOutJcmpT = 0;					/* - */
+	endcase
+`endif
+
+
 	tResult1A=UV33_XX;
 	tResult2A=UV65_XX;
 	tResult1T=regInSrT;
@@ -1115,6 +1136,22 @@ begin
 			tResult1O=!tSub1WSF_D || tSub1WZF_D;
 
 		end
+
+		4'hB: begin		/* SLTxx */
+`ifdef jx2_enable_riscv
+//			tResult1T=tSub1CF && !tSub1ZF;
+
+			if(idUIxt[4])
+				tResult2T=!(tSub2CF && !tSub2ZF);
+			else
+				tResult2T=(tSub2SF^tSub2VF);
+
+			tResult1A= { UV32_00, tResult2T };
+			tResult2A= { UV64_00, tResult2T };
+`endif
+		end
+
+`ifndef def_true
 		4'hB: begin		/* NOR */
 //			tResult1A={1'b0, ~(regValRs[31: 0] | regValRt[31: 0])};
 //			tResult2A={1'b0, ~(regValRs[63:32] | regValRt[63:32]),
@@ -1127,6 +1164,7 @@ begin
 //			tResult1T=regInSrT;
 //			tResult2T=regInSrT;
 		end
+`endif
 
 		4'hC: begin		/* CMPEQ */
 //			tResult1A=UV33_XX;

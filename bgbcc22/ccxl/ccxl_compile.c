@@ -1081,6 +1081,7 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 	BCCX_Node *ni, *nc, *ns, *nb;
 	ccxl_label l0, l1, l2, l3;
 	ccxl_type bty, dty, sty, tty, lty, rty;
+	long long li, lj;
 	char *s0, *s1, *s2;
 	int sqn, sqon, oldlclst;
 	int i0, i1, i2, i3;
@@ -1413,6 +1414,50 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 				s1=BGBCC_CCXL_VarTypeString(ctx,
 					BCCX_FindTagCst(rn, &bgbcc_rcst_type, "type"));
 				BGBCC_CCXL_StackCastSigStore(ctx, s1, s0);
+				return;
+			}
+
+			if(BCCX_TagIsCstP(ln, &bgbcc_rcst_ref, "ref") &&
+				BCCX_TagIsCstP(rn, &bgbcc_rcst_int, "int"))
+			{
+				s0=BCCX_GetCst(rn, &bgbcc_rcst_tysuf, "tysuf");
+				li=BCCX_GetIntCst(rn, &bgbcc_rcst_value, "value");
+
+				s1=BCCX_GetCst(ln, &bgbcc_rcst_name, "name");
+				s1=BGBCC_CCXL_CompileRemapName(ctx, s1);
+
+				if(!s0)
+				{
+//					BGBCC_CCXL_StackPushConstInt(ctx, li);
+//					BGBCC_CCXL_PopStore(ctx, s1);
+					BGBCC_CCXL_ConstIntStore(ctx, li, s1);
+				}else
+				{
+					BGBCC_CCXL_CompileExpr(ctx, rn);
+					BGBCC_CCXL_PopStore(ctx, s1);
+				}
+
+//				BGBCC_CCXL_CompileExpr(ctx, rn);
+//				BGBCC_CCXL_CompileAssign(ctx, ln);
+				return;
+			}
+
+			if(BCCX_TagIsCstP(ln, &bgbcc_rcst_ref, "ref") &&
+				BCCX_TagIsCstP(rn, &bgbcc_rcst_ref, "ref"))
+			{
+				s0=BCCX_GetCst(rn, &bgbcc_rcst_name, "name");	
+				s0=BGBCC_CCXL_CompileRemapName(ctx, s0);
+//				BGBCC_CCXL_PushLoad(ctx, s0);
+
+				s1=BCCX_GetCst(ln, &bgbcc_rcst_name, "name");
+				s1=BGBCC_CCXL_CompileRemapName(ctx, s1);
+//				BGBCC_CCXL_PopStore(ctx, s1);
+
+				BGBCC_CCXL_MovLoadStore(ctx, s1, s0);
+//				BGBCC_CCXL_RefRefStore(ctx, s0, s1);
+
+//				BGBCC_CCXL_CompileExpr(ctx, rn);
+//				BGBCC_CCXL_CompileAssign(ctx, ln);
 				return;
 			}
 		}
@@ -2860,6 +2905,7 @@ int BGBCC_CCXL_VarTypeString_ModifierChar(BGBCC_TransState *ctx, s64 i)
 
 	case BGBCC_TYFL_RESTRICT:		c=('C'<<8)|'r'; break;
 	case BGBCC_TYFL_SYNCHRONIZED:	c=('C'<<8)|'s'; break;
+	case BGBCC_TYFL_MAYALIAS:		c=('C'<<8)|'a'; break;
 
 	case BGBCC_TYFL_VOLATILE:		c=('C'<<8)|'v'; break;
 
@@ -3623,6 +3669,9 @@ void BGBCC_CCXL_EmitVarFunc(BGBCC_TransState *ctx,
 			{ li|=BGBCC_TYFL_SYSCALL; }
 		if(BGBCC_CCXL_GetNodeAttribute(ctx, ty, "nocull"))
 			{ li|=BGBCC_TYFL_NOCULL; }
+
+		if(BGBCC_CCXL_GetNodeAttribute(ctx, ty, "may_alias"))
+			{ li|=BGBCC_TYFL_MAYALIAS; }
 
 		s3=BGBCC_CCXL_GetNodeAttributeStringOrRef(ctx, ty, "ifarch");
 		if(s3)

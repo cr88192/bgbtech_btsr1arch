@@ -530,7 +530,7 @@ __vnf_v3fx_dot:
 	FMUL		R18, R22, R6
 	FADD		R4, R5, R3
 	FADD		R3, R6, R2
-	BRA			R23
+	JMP			R23
 
 
 };

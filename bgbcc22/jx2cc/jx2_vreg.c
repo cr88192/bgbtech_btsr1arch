@@ -423,11 +423,19 @@ int BGBCC_JX2C_EmitLoadVRegReg(
 #if 0
 	if(BGBCC_CCXL_IsRegImmStringP(ctx, sreg))
 	{
+		BGBCC_JX2C_EmitTempLoadReg(ctx, sctx, sreg);
 		BGBCC_JX2C_EmitLoadFrameVRegReg(ctx, sctx, sreg, dreg);
 		return(1);
 	}
 #endif
-	
+
+	if(BGBCC_CCXL_IsRegImmIntP(ctx, sreg))
+	{
+		BGBCC_JX2C_EmitTempLoadReg(ctx, sctx, sreg);
+		BGBCC_JX2C_EmitLoadFrameVRegReg(ctx, sctx, sreg, dreg);
+		return(1);
+	}
+
 	creg=BGBCC_JX2C_EmitTryGetRegisterRead(ctx, sctx, sreg);
 	if((creg>=0) && (creg!=BGBCC_SH_REG_ZZR))
 	{
@@ -451,6 +459,7 @@ int BGBCC_JX2C_EmitLoadVRegReg(
 		return(1);
 	}
 
+	BGBCC_JX2C_EmitTempLoadReg(ctx, sctx, sreg);
 	BGBCC_JX2C_EmitLoadFrameVRegReg(ctx, sctx, sreg, dreg);
 	return(1);
 
@@ -542,6 +551,7 @@ int BGBCC_JX2C_EmitMovVRegVReg(
 			BGBCC_CCXL_IsRegArgP(ctx, dreg)))
 		{
 			tr0=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, rcls);
+			BGBCC_JX2C_EmitTempLoadReg(ctx, sctx, sreg);
 //			BGBCC_JX2C_EmitLoadFrameVRegByValReg
 			BGBCC_JX2C_EmitLoadFrameVRegByValReg(ctx, sctx, sreg, tr0);
 			BGBCC_JX2C_EmitStoreFrameVRegByValReg(ctx, sctx, dreg, tr0);

@@ -730,12 +730,25 @@ __PDPCLIB_API__ void *memset(void *s, int c, size_t n)
 
 		return (s);
 	}
-#else
+#endif
+
+#if 1
 
 	v=c; v|=(v<<8); v|=(v<<16);
 	ct=s; cte=s+n;
 
 #if 1
+	v1=(((unsigned long long)v)<<32)|((unsigned int)v);
+	cte0=cte-16;
+	while(ct<=cte0)
+	{
+		((unsigned long long *)ct)[0]=v1;
+		((unsigned long long *)ct)[1]=v1;
+		ct+=16;
+	}
+#endif
+
+#if 0
 //	cte0=s+(n&(~15));
 //	while(ct<cte0)
 //	while((ct+16)<=cte)
@@ -856,6 +869,7 @@ strlen:
 	
 strcmp:
 	MOV			0, R2
+#if 1
 	.L0:
 	MOV.Q		(R4), R6
 	MOV.Q		(R5), R7
@@ -865,6 +879,43 @@ strcmp:
 	BT			.L2
 	ADD			8, R4		|	ADD			8, R5
 	BRA			.L0
+#endif
+
+#if 0
+	.L0:
+	MOV.Q		(R4, 0), R16
+	MOV.Q		(R5, 0), R17
+	MOV.Q		(R4, 8), R18
+	MOV.Q		(R5, 8), R19
+
+	PSCHNE.B	R16, R17, R1
+	BT			.L1
+	PSCHEQ.B	R17, R2, R1
+	BT			.L2
+
+	PSCHNE.B	R18, R19, R1
+	BT			.L1B
+	PSCHEQ.B	R19, R2, R1
+	BT			.L2
+
+	ADD			16, R4		|	ADD			16, R5
+	BRA			.L0
+#endif
+
+#if 0
+	.L1B:
+	ADD			8, R4		|	ADD			8, R5
+	MOV			R19, R17
+
+	.L1:
+	PSCHEQ.B	R17, R2, R3
+	CMPGT		R3, R1
+	BT			.L2
+	ADD			R1, R4		|	ADD			R1, R5
+	MOV.B		(R4), R6
+	MOV.B		(R5), R7
+#endif
+
 
 #if 1
 	.L1:

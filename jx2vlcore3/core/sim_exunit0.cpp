@@ -2411,7 +2411,7 @@ int main(int argc, char **argv, char **env)
 			ctx->ttick_hk--;
 			if(ctx->ttick_hk<=0)
 			{
-				top->memBusExc=0xC001;
+//				top->memBusExc=0xC001;
 			
 //				printf("Clock IRQ\n");
 				ctx->ttick_hk=ctx->ttick_rst;

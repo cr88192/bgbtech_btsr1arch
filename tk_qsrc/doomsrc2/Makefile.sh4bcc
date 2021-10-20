@@ -88,10 +88,11 @@ SRCS=				\
 		info.c				\
 		sounds.c		\
 		\
-		r_draw_bjx2.S		\
-		\
-		tst_bs2a.bs		\
-		tst_cpp1a.cpp
+		r_draw_bjx2.S
+
+#		\
+#		tst_bs2a.bs		\
+#		tst_cpp1a.cpp
 
 all:	 doom_bjx2.exe
 

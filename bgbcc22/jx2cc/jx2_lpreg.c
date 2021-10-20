@@ -449,7 +449,10 @@ int BGBCC_JX2C_EmitGetLpRegister(
 		BGBCC_JX2C_EmitSaveFrameReg(ctx, sctx, (creg+0)&31);
 		BGBCC_JX2C_EmitSaveFrameReg(ctx, sctx, (creg+1)&31);
 		if(fl&2)
-			{ BGBCC_JX2C_EmitLoadFrameVRegReg(ctx, sctx, reg, creg); }
+		{
+			BGBCC_JX2C_EmitTempLoadReg(ctx, sctx, reg);
+			BGBCC_JX2C_EmitLoadFrameVRegReg(ctx, sctx, reg, creg);
+		}
 		return(creg);
 	}
 

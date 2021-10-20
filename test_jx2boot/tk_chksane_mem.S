@@ -97,21 +97,30 @@ X(tk_checksane_mem_asm):
 	.L4:
 
 	cmpq/eq r6, r7
-	bt _checksane_fail_mem
+//	bt _checksane_fail_mem
+	.L4_0: break?t
+
 	cmpq/eq r6, r9
-	bf _checksane_fail_mem
+//	bf _checksane_fail_mem
+	.L4_1: break?f
+
 	cmpq/eq r7, r8
-	bf _checksane_fail_mem
+//	bf _checksane_fail_mem
+	.L4_2: break?f
+
 	cmpq/eq r8, r10
-	bt _checksane_fail_mem
+//	bt _checksane_fail_mem
+	.L4_3: break?t
 
 	mov.q (sp, 0), r6
 	cmpq/eq r6, r10
-	bf _checksane_fail_mem
+//	bf _checksane_fail_mem
+	.L4_4: break?f
 
 	movd.l (sp, 0), r6
 	cmp/eq r6, r8
-	bf _checksane_fail_mem
+//	bf _checksane_fail_mem
+	.L4_5: break?f
 
 	.L5:
 
@@ -119,42 +128,55 @@ X(tk_checksane_mem_asm):
 	exts.w r8, r13
 	mov.b (sp, 0), r6
 	mov.w (sp, 0), r7
+
 	cmpq/eq r6, r12
-	bf _checksane_fail_mem
+//	bf _checksane_fail_mem
+	.L5_0: break?f
+
 	cmpq/eq r7, r13
-	bf _checksane_fail_mem
+//	bf _checksane_fail_mem
+	.L5_1: break?f
 
 	extu.b r8, r12
 	extu.w r8, r13
 	movu.b (sp, 0), r6
 	movu.w (sp, 0), r7
+
 	cmpq/eq r6, r12
-	bf _checksane_fail_mem
+//	bf _checksane_fail_mem
+	.L5_2: break?f
+
 	cmpq/eq r7, r13
-	bf _checksane_fail_mem
+//	bf _checksane_fail_mem
+	.L5_3: break?f
 
 	mov sp, r3
 	mov.l (sp, 4), r6
 	mov.l (r3, 4), r7
 
 	cmpq/eq r6, r7
-	bf _checksane_fail_mem
+//	bf _checksane_fail_mem
+	.L5_4: break?f
+
 	cmpq/eq r7, r11
-	bf _checksane_fail_mem
+//	bf _checksane_fail_mem
+	.L5_5: break?f
 
 	.L6:
 
 	mov.l r10, (sp, 12)
 	mov.q (sp, 8), r6
 	cmpq/eq r6, r14
-	bf _checksane_fail_mem
+//	bf _checksane_fail_mem
+	.L6_0: break?f
 
 //	mov	0xE87AD208, r8
 	mov	0xE87AD268, r11
 	lea.q (r8, 96), r6
 
 	cmpq/eq r6, r11
-	bf _checksane_fail_mem
+//	bf _checksane_fail_mem
+	.L6_1: break?f
 
 	bsr _checksane_ldrts_asm
 //	break

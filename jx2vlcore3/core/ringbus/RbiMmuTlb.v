@@ -84,7 +84,22 @@ reg[15:0]		tRegInSeq;		//
 reg[127:0]		tRegInData;		//output cache line
 reg[127:0]		tRegInLdtlb;	//input LDTLB
 
-`ifdef jx2_expand_tlb
+`ifdef jx2_tlbsz_1024
+
+reg[143:0]	tlbBlkA[1023:0];
+reg[143:0]	tlbBlkB[1023:0];
+reg[143:0]	tlbBlkC[1023:0];
+reg[143:0]	tlbBlkD[1023:0];
+
+reg[9:0]	tlbHixA;
+reg[9:0]	tlbHixSelA;
+reg[9:0]	tlbHixSelB;
+
+reg[9:0]	tlbHbIxA;
+
+`endif
+
+`ifdef jx2_tlbsz_256
 
 reg[143:0]	tlbBlkA[255:0];
 reg[143:0]	tlbBlkB[255:0];
@@ -94,12 +109,14 @@ reg[143:0]	tlbBlkD[255:0];
 reg[7:0]	tlbHixA;
 // reg[7:0]	tlbHixB;
 reg[7:0]	tlbHixSelA;
-// reg[7:0]	tlbHixSelB;
+reg[7:0]	tlbHixSelB;
 
 reg[7:0]	tlbHbIxA;
 // reg[7:0]	tlbHbIxB;
 
-`else
+`endif
+
+`ifdef jx2_tlbsz_64
 
 (* ram_style = "distributed" *)
 	reg[143:0]	tlbBlkA[63:0];
@@ -113,7 +130,7 @@ reg[7:0]	tlbHbIxA;
 reg[5:0]	tlbHixA;
 // reg[5:0]	tlbHixB;
 reg[5:0]	tlbHixSelA;
-// reg[5:0]	tlbHixSelB;
+reg[5:0]	tlbHixSelB;
 
 reg[5:0]	tlbHbIxA;
 // reg[5:0]	tlbHbIxB;
@@ -323,25 +340,80 @@ begin
 		regInAddrA		= regInLdtlb[111:64];
 	end
 
-`ifdef jx2_expand_tlb
-
+`ifdef jx2_tlbsz_1024
 	case({tlbMmuPg16K, tlbMmuPg64K})
 		2'b00: begin
-			tlbHixSelA={regInAddrA[15:12], regInAddrA[27:24]};
+//			tlbHixSelA={regInAddrA[15:12], regInAddrA[31:26]};
+			tlbHixSelA={
+				regInAddrA[15:14],	regInAddrA[25:24],
+				regInAddrA[27:26],	regInAddrA[13:12],
+				regInAddrA[31:30]};
 		end
 		2'b01: begin
-			tlbHixSelA=regInAddrA[31:24];
+//			tlbHixSelA=regInAddrA[31:22];
+			tlbHixSelA={
+				regInAddrA[23:22],	regInAddrA[25:24],
+				regInAddrA[27:26],	regInAddrA[29:28],
+				regInAddrA[31:30]};
 		end
 		2'b10: begin
-			tlbHixSelA={regInAddrA[15:14], regInAddrA[29:24]};
+//			tlbHixSelA={regInAddrA[15:14], regInAddrA[31:24]};
+			tlbHixSelA={
+				regInAddrA[15:14],	regInAddrA[25:24],
+				regInAddrA[27:26],	regInAddrA[29:28],
+				regInAddrA[31:30]};
 		end
 		2'b11: begin
-			tlbHixSelA=regInAddrA[31:24];
+//			tlbHixSelA=regInAddrA[31:22];
+			tlbHixSelA={
+				regInAddrA[23:22],	regInAddrA[25:24],
+				regInAddrA[27:26],	regInAddrA[29:28],
+				regInAddrA[31:30]};
+		end
+	endcase
+
+//	tlbHixSelB = {
+//		regInAddrA[20], regInAddrA[21],
+//		regInAddrA[22], regInAddrA[23],
+//		regInAddrA[24], regInAddrA[25],
+//		regInAddrA[28], regInAddrA[27],
+//		regInAddrA[28], regInAddrA[29]
+//		};
+	
+	tlbHixA = tlbHixSelA ^ regInAddrA[25:16];
+`endif
+
+`ifdef jx2_tlbsz_256
+	case({tlbMmuPg16K, tlbMmuPg64K})
+		2'b00: begin
+//			tlbHixSelA={regInAddrA[15:12], regInAddrA[27:24]};
+			tlbHixSelA={
+				regInAddrA[15:14],	regInAddrA[25:24],
+				regInAddrA[27:26],	regInAddrA[13:12] };
+		end
+		2'b01: begin
+//			tlbHixSelA=regInAddrA[31:24];
+			tlbHixSelA={
+				regInAddrA[23:22],	regInAddrA[25:24],
+				regInAddrA[27:26],	regInAddrA[29:28] };
+		end
+		2'b10: begin
+//			tlbHixSelA={regInAddrA[15:14], regInAddrA[29:24]};
+			tlbHixSelA={
+				regInAddrA[15:14],	regInAddrA[25:24],
+				regInAddrA[27:26],	regInAddrA[29:28] };
+		end
+		2'b11: begin
+//			tlbHixSelA=regInAddrA[31:24];
+			tlbHixSelA={
+				regInAddrA[23:22],	regInAddrA[25:24],
+				regInAddrA[27:26],	regInAddrA[29:28] };
 		end
 	endcase
 	tlbHixA = tlbHixSelA ^ regInAddrA[23:16];
+`endif
 
-`else
+`ifdef jx2_tlbsz_64
 	case({tlbMmuPg16K, tlbMmuPg64K})
 		2'b00: begin
 			tlbHixSelA={regInAddrA[15:12], regInAddrA[23:22]};
@@ -734,8 +806,8 @@ always @ (posedge clock)
 begin
 	if(!regInHold)
 	begin
-`ifdef def_true
-// `ifndef def_true
+// `ifdef def_true
+`ifndef def_true
 		tRegInAddr		<= regInAddr;
 		tRegInData		<= regInData;
 		tRegInLdtlb		<= regInLdtlb;

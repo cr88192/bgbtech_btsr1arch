@@ -37,7 +37,7 @@ module DecPreBra(
 	regValLr,	ifBraBPc,
 	regValDlr,	regValDhr,
 	exBraBPc,	exBraDir,
-	pipeHasLr);
+	pipeHasLr,	regMemOpm);
 
 input			clock;
 input			reset;
@@ -47,11 +47,12 @@ input[47:0]		istrBraPc;	//Branch Base PC
 input[63:0]		regValLr;	//Link Register
 input[63:0]		regValDlr;	//Link Register
 input[63:0]		regValDhr;	//Link Register
+input[4:0]		regMemOpm;	//OPM
 
 input[47:0]		ifBraBPc;	//Fetch Branch PC
 input[47:0]		exBraBPc;	//Fetch Base PC
 input[2:0]		exBraDir;
-input[3:0]		pipeHasLr;
+input[7:0]		pipeHasLr;
 
 output[47:0]	preBraPc;
 output[1:0]		preIsBra;
@@ -116,12 +117,26 @@ reg[5:0]	tPreExIxA;
 reg[5:0]	tHistBits;
 reg[5:0]	tHistBitsB;
 
+// `define		jx2_prebra_do_vtlb
+
+reg[5:0]	tVtlbIx;
+reg[17:0]	tVtlbArr[63:0];
+reg[17:0]	tVtlbStVal;
+reg[5:0]	tVtlbStIx;
+reg			tDoVtlbSt;
+
 always @*
 begin
 //	tPreBraPc	= UV48_XX;
 	tPreBraPc	= istrBraPc;
 	tPreBra		= 0;
 	tHistBitsB	= tHistBits;
+	
+`ifdef jx2_prebra_do_vtlb
+	tVtlbStIx	= regValDhr[19:14] ^ regValDhr[25:20];
+	tVtlbStVal	= regValDhr[31:14];
+	tDoVtlbSt	= 0;
+`endif
 	
 	tPreIfIx	= ifBraBPc[6:1]		^ tHistBits;
 	tPreIbIx	= istrBasePc[6:1]	^ tHistBits;
@@ -231,6 +246,15 @@ begin
 	tIsRtsR1		= 0;
 `endif
 
+	if(pipeHasLr[4])
+	begin
+		/* RISC-V */
+		tIsBraCc8	= 0;
+		tIsBraCc20	= 0;
+		tIsRtsu		= 0;
+		tIsRtsR1	= 0;
+	end
+
 //	tIsBra8		= 0;
 //	tIsBra20	= 0;
 //	tIsRtsu		= 0;
@@ -323,6 +347,10 @@ begin
 	end
 `endif
 
+//	if(tPreBraPc[19:12] != istrBraPc[19:12])
+//	if(tPreBraPc[21:14] != istrBraPc[21:14])
+//		tPreBra		= 0;
+
 	if(pipeHasLr[2])
 		tPreBra		= 0;
 
@@ -342,6 +370,14 @@ begin
 	tPreExIx			<= tPreExIxA;
 	tPreExDir			<= exBraDir;
 	tPreExBPc			<= exBraBPc;
+
+`ifdef jx2_prebra_do_vtlb
+	if(tDoVtlbSt)
+	begin
+		tVtlbArr[tVtlbStIx]		<= tVtlbStVal;
+	end
+`endif
+
 end
 
 endmodule

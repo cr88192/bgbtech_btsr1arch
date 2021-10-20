@@ -513,6 +513,7 @@ Index 1:
 * ( 21): PRED_S (Allow SR.S Predicates)
 * ( 22): FPU Lane 2 (Allow FPU ops in Lane 2)
 * ( 23): Conv FP16 (Packed FP8 and FP16 conversion Ops)
+* ( 24): RISC-V Mode
 
 Index 31:
 * Hardware Random Number
@@ -898,6 +899,17 @@ The MOVD instruction is now an alias for the EXTU.L instruction.
 
 Load or store a Byte to/from memory.
 The byte is sign extended to the size of the register.
+
+
+=== MOV.C ===
+
+* F0nm_4go3  MOV.C		Cn, (Rm, Ro)
+* F0nm_4goB  MOV.C		(Rm, Ro), Cn
+* F1nm_5gdd  MOV.C		Cn, (Rm, disp9u)
+* F1nm_7gdd  MOV.C		(Rm, disp9u), Cn
+
+Load or store a Control Register to/from memory.
+The behavior of this operation will be similar to a MOV.Q, just applying to control registers.
 
 
 === MOV.L ===

@@ -9,7 +9,7 @@ Keyring Encode/Decode Module
 module ExModKrrEnc(
 	clock,		reset,
 	opUCmd,		opUIxt,
-	exHold,
+	exHold,		exBraFlush,
 	regInDlr,	regInDhr,	regInKrr,
 	regOutDlrE,	regOutDhrE);
 
@@ -18,6 +18,7 @@ input			reset;
 input[8:0]		opUCmd;
 input[8:0]		opUIxt;
 input			exHold;
+input			exBraFlush;
 
 input[63:0]		regInDlr;
 input[63:0]		regInDhr;
@@ -157,7 +158,8 @@ begin
 //		tDecKrr[47:32] ^ tDecKrr[63:48];
 
 
-	if(opUCmd[5:0]==JX2_UCMD_OP_IXT)
+//	if(opUCmd[5:0]==JX2_UCMD_OP_IXT)
+	if((opUCmd[5:0]==JX2_UCMD_OP_IXT) && !exBraFlush)
 	begin
 		if(opUIxt[5:0]==JX2_UCIX_IXT_LDEKEY)
 		begin
@@ -179,7 +181,7 @@ begin
 		if(	(opUIxt[5:0]==JX2_UCIX_IXT_LDEENC) ||
 			(opUIxt[5:0]==JX2_UCIX_IXT_SVEKRR) )
 		begin
-			$display("ModKrrEnc: LDEENC / SVEKRR");
+			$display("ModKrrEnc: LDEENC / SVEKRR, %X-%X", opUCmd, opUIxt);
 
 //			tRegOutLo = { 2'b00, regInDlr ^ tCurKey };
 //			tRegOutHi = { 2'b00, 48'h0, tRegParityDlr ^ tCurKey[15:0] };

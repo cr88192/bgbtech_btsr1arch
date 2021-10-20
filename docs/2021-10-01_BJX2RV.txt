@@ -1,0 +1,275 @@
+BJX2 RISC-V Extension (RVI)
+* Adds RISC-V Decoding to BJX2
+* For now, will focus on RV64I and RV64IC
+** Will also support Zfinx / Zdinx
+* For now, will not support M or A extensions.
+** Though, MULW may be supported.
+
+SR(27:26):
+* 00: BJX2, WEX Disabled
+* 10: BJX2, WEX Enabled
+* 01: RISC-V, WEX Disabled (RV64IC)
+* 11: RISC-V, WEX Enabled (RV64I + WEX)
+
+Register Mapping:
+* X0 -> ZZR
+* X1 -> LR
+* X2 -> SP (R15 in BJX2)
+* X3 -> GBR
+* X4 -> TBR
+* X5 -> DHR (R1 in BJX2)
+* X6 -> R6
+* X7 -> R7
+* X8..X14 -> R8..R14
+* X15 -> R15U
+* X16..X31 -> R16..R31
+
+
+=== RISC-V + WEX Extension ===
+
+In RISC-V Mode with WEX Disabled, the two LSB bits will be interpreted as:
+* 00: Compressed 16-bit Encoding
+* 01: Compressed 16-bit Encoding
+* 10: Compressed 16-bit Encoding
+* 11: Normal 32-bit instruction
+
+In RISC-V Mode with WEX Enabled, the two LSB bits will be interpreted as:
+* 00: Reserved
+* 01: Reserved
+* 10: Wide-Execute 32-bit Instruction
+* 11: Scalar 32-bit instruction
+
+The 16-bit RVC ops will be Non-Encodable with WEX Enabled.
+
+The Wide-Execute Block will be equivalent to the Scalar / Normal Block, except:
+* JAL, JALR, Bxx, will be non-encodable.
+* The JAL and JALR blocks will be reinterpreted as Jumbo Encodings.
+
+Bundle rules will be similar to those in BJX2, in particular:
+* A maximum of 3 instruction words may be encoded;
+* LD/ST or Branches may only be allowed in Lane 1.
+* Lanes are reverse-numbered relative to instruction words.
+
+A Sequence like:
+ LUI	DispHi, Rs
+ LW		Rd, Rs, Disp12
+
+May be transformed into:
+ JUMBO20S DispHi1 | LW Rd, Rs, DispLo1
+
+Where the DispHi and Disp12 fields are reinterpreted as a 33-bit Jumbo Encoding. This conversion will elminitate the carry from the prefix.
+
+Jumbo20S:
+* iiiiiii-iiiii-iiiii-iii-00000-11-0s110  JUMBO20S	Imm20_SV
+** The 20-bit immediate will encode(31:12)
+** The S bit will encode the sign-extension (63:32).
+
+A pair of Jumbo prefixes may be used with an Imm12 instruction:
+* iiiiiii-iiiii-iiiii-iii-iiiii-11-0i110  JUMBO26V  Imm26_V
+* These will extend the immediate field to 64 bits.
+* The JUMBO26V form will only be encodable when two jumbo prefixes are used.
+* This form will only be allowed for ALU instructions.
+
+
+It is assumed that code will be transformed from RV64I form to WEX form via a program loader, rather than by requiring the compiler to be aware of WEX. However, the loader may need to infer the location of labels and may not wexify across any label (doing so has a high likelihood of breaking programs).
+
+Programs making use of compressed instructions are to be excluded from WEX conversion in this context.
+
+Encoding non RV64I instructions in a binary marked as RV64I will be undefined in this context.
+
+
+=== Addressing ===
+
+Addressing:
+* (47: 0): Linear Address
+* (63:48): Caches SR bits for LR
+** JALR with X1 or X5 will restore these bits.
+** Otherwise, the high 16 bits are ignored by JALR or LD/ST ops.
+
+As a divergence from the RISC-V spec, JALR where the LSB is set in the result will invoke special behavior:
+* 01: Jump back to BJX2 Mode.
+* 11: Jump back to BJX2 Mode, Enable WEX (Reserved).
+* The target for an Inter-ISA jump will require a 4-byte alignment.
+
+For BJX2 Cores with the RVI Extension, JMP or JSR with the LSB set will jump into RISC-V Mode. They may jump into either Scalar or WEX Mode.
+
+
+=== FPU ===
+
+The FPU will follow a variation of Zfinx/Zdinx rules:
+* FPU Operations will take place in GPRs.
+* The FDIV and FSQRT operations will be omitted.
+* Floating point Load/Store will be Omitted.
+* Denormal As Zero.
+* Single Ops will leave high bits in an Undefined state.
+
+FPU Rounding Modes:
+* 000: RNE (Round Nearest Even)
+* 001: RTZ (Round Towards Zero)
+* 010: RDN (Round Down)
+* 011: RUP (Round Up)
+
+
+=== Instruction Listing ===
+
+Immed Types:
+* Disp12_I: 12-bit displacement, sign extended, linear bits
+** For General ops, these are unscaled Byte displacements.
+* Imm12_I: 12-bit immeditate, sign extended, linear bits
+* Disp12_S: 12-bit displacement, sign extended, split bits
+** High field is (11:5), Low Field is (4:0)
+* Disp20_J: 20 bit displacement, sign extended, confetti bits
+** Field is divided up (Hi to Low): (20), (10:1), (11), (19:12)
+* Imm20_U: 20 bit high immediate, sign extended, linear bits
+** This will encode (31:12) as linear bits.
+** The low bits will be filled with zeroes.
+
+Listing:
+* iiiiiii-iiiii-mmmmm-000-nnnnn-00-000xx  LB	Rn, Rm, Disp12_I
+* iiiiiii-iiiii-mmmmm-001-nnnnn-00-000xx  LH	Rn, Rm, Disp12_I
+* iiiiiii-iiiii-mmmmm-010-nnnnn-00-000xx  LW	Rn, Rm, Disp12_I
+* iiiiiii-iiiii-mmmmm-011-nnnnn-00-000xx  LD	Rn, Rm, Disp12_I
+* iiiiiii-iiiii-mmmmm-100-nnnnn-00-000xx  LBU	Rn, Rm, Disp12_I
+* iiiiiii-iiiii-mmmmm-101-nnnnn-00-000xx  LHU	Rn, Rm, Disp12_I
+* iiiiiii-iiiii-mmmmm-110-nnnnn-00-000xx  LWU	Rn, Rm, Disp12_I
+* iiiiiii-iiiii-mmmmm-111-nnnnn-00-000xx  LX	Rn, Rm, Disp12_I
+
+* iiiiiii-ttttt-mmmmm-000-iiiii-01-000xx  SB	Rm, Disp12_S, Rt
+* iiiiiii-ttttt-mmmmm-001-iiiii-01-000xx  SH	Rm, Disp12_S, Rt
+* iiiiiii-ttttt-mmmmm-010-iiiii-01-000xx  SW	Rm, Disp12_S, Rt
+* iiiiiii-ttttt-mmmmm-011-iiiii-01-000xx  SD	Rm, Disp12_S, Rt
+* iiiiiii-ttttt-mmmmm-100-iiiii-01-000xx  SBU	Rm, Disp12_S, Rt
+* iiiiiii-ttttt-mmmmm-101-iiiii-01-000xx  SHU	Rm, Disp12_S, Rt
+* iiiiiii-ttttt-mmmmm-110-iiiii-01-000xx  SWU	Rm, Disp12_S, Rt
+* iiiiiii-ttttt-mmmmm-111-iiiii-01-000xx  SX	Rm, Disp12_S, Rt
+
+* zzzzzzz-ooooo-mmmmm-zzz-nnnnn-10-000xx  (MADD, Unsupported)
+
+* ddddddd-ttttt-sssss-000-ddddd-11-000xx  BEQ	Rs, Rt, Disp12_B
+* ddddddd-ttttt-sssss-001-ddddd-11-000xx  BNE	Rs, Rt, Disp12_B
+* ddddddd-ttttt-sssss-010-ddddd-11-000xx  -
+* ddddddd-ttttt-sssss-011-ddddd-11-000xx  -
+* ddddddd-ttttt-sssss-100-ddddd-11-000xx  BLT	Rs, Rt, Disp12_B
+* ddddddd-ttttt-sssss-101-ddddd-11-000xx  BGE	Rs, Rt, Disp12_B
+* ddddddd-ttttt-sssss-110-ddddd-11-000xx  BLTU	Rs, Rt, Disp12_B
+* ddddddd-ttttt-sssss-111-ddddd-11-000xx  BGEU	Rs, Rt, Disp12_B
+
+* iiiiiii-iiiii-mmmmm-zzz-nnnnn-00-001xx (FP LOAD, Unsupported)
+
+* iiiiiii-iiiii-mmmmm-zzz-nnnnn-01-001xx (FP STORE, Unsupported)
+
+* zzzzzzz-ooooo-mmmmm-zzz-nnnnn-10-001xx  (MSUB, Unsupported)
+
+* ddddddd-ddddd-mmmmm-000-nnnnn-11-001xx  JALR		Rn, Rm, Disp12_I
+
+* zzzzzzz-ooooo-mmmmm-zzz-nnnnn-00-010xx  (User)
+* zzzzzzz-ooooo-mmmmm-zzz-nnnnn-01-010xx  (User)
+* zzzzzzz-ooooo-mmmmm-zzz-nnnnn-10-010xx  (NMSUB, Unsupported)
+* zzzzzzz-ooooo-mmmmm-zzz-nnnnn-11-010xx  (Reserved)
+
+* zzzzzzz-ooooo-mmmmm-zzz-nnnnn-00-011xx  (Fence)
+* zzzzzzz-ooooo-mmmmm-zzz-nnnnn-01-011xx  (Atomic)
+* zzzzzzz-ooooo-mmmmm-zzz-nnnnn-10-011xx  (NMADD, Unsupported)
+* ddddddd-ddddd-ddddd-ddd-nnnnn-11-011xx  JAL		Rn, Disp20_J
+
+
+* iiiiiii-iiiii-mmmmm-000-nnnnn-00-100xx  ADDI		Rn, Rm, Imm12_I
+* 000000i-iiiii-mmmmm-001-nnnnn-00-100xx  SLLI		Rn, Rm, Imm12
+* iiiiiii-iiiii-mmmmm-010-nnnnn-00-100xx  SLTI		Rn, Rm, Imm12_I
+* iiiiiii-iiiii-mmmmm-011-nnnnn-00-100xx  SLTIU		Rn, Rm, Imm12_I
+* iiiiiii-iiiii-mmmmm-100-nnnnn-00-100xx  XORI		Rn, Rm, Imm12_I
+* 000000i-iiiii-mmmmm-101-nnnnn-00-100xx  SRLI		Rn, Rm, Imm12
+* 010000i-iiiii-mmmmm-101-nnnnn-00-100xx  SRAI		Rn, Rm, Imm12
+* iiiiiii-iiiii-mmmmm-110-nnnnn-00-100xx  ORI		Rn, Rm, Imm12_I
+* iiiiiii-iiiii-mmmmm-111-nnnnn-00-100xx  ANDI		Rn, Rm, Imm12_I
+
+* 0000000-ttttt-mmmmm-000-nnnnn-01-100xx  ADD		Rn, Rm, Rt
+* 0000001-ttttt-mmmmm-000-nnnnn-01-100xx  (MUL, Unsupported)
+* 0000000-ttttt-mmmmm-001-nnnnn-01-100xx  SLL		Rn, Rm, Rt
+* 0000000-ttttt-mmmmm-010-nnnnn-01-100xx  SLT		Rn, Rm, Rt
+* 0000000-ttttt-mmmmm-011-nnnnn-01-100xx  SLTU		Rn, Rm, Rt
+* 0000000-ttttt-mmmmm-100-nnnnn-01-100xx  XOR		Rn, Rm, Rt
+* 0000001-ttttt-mmmmm-100-nnnnn-01-100xx  (DIV, Unsupported)
+* 0000000-ttttt-mmmmm-101-nnnnn-01-100xx  SRL		Rn, Rm, Rt
+* 0100000-ttttt-mmmmm-101-nnnnn-01-100xx  SRA		Rn, Rm, Rt
+* 0000001-ttttt-mmmmm-101-nnnnn-01-100xx  (DUVU, Unsupported)
+* 0000000-ttttt-mmmmm-110-nnnnn-01-100xx  OR		Rn, Rm, Rt
+* 0000001-ttttt-mmmmm-110-nnnnn-01-100xx  (REM, Unsupported)
+* 0000000-ttttt-mmmmm-111-nnnnn-01-100xx  AND		Rn, Rm, Rt
+* 0000001-ttttt-mmmmm-111-nnnnn-01-100xx  (REMU, Unsupported)
+
+* 0000000-ttttt-mmmmm-rrr-nnnnn-10-100xx  FADD.S	Rm, Rn, Rt
+* 0000001-ttttt-mmmmm-rrr-nnnnn-10-100xx  FADD.D	Rm, Rn, Rt
+* 0000100-ttttt-mmmmm-rrr-nnnnn-10-100xx  FSUB.S	Rm, Rn, Rt
+* 0000101-ttttt-mmmmm-rrr-nnnnn-10-100xx  FSUB.D	Rm, Rn, Rt
+* 0001000-ttttt-mmmmm-rrr-nnnnn-10-100xx  FMUL.S	Rm, Rn, Rt
+* 0001001-ttttt-mmmmm-rrr-nnnnn-10-100xx  FMUL.D	Rm, Rn, Rt
+* 0001100-ttttt-mmmmm-rrr-nnnnn-10-100xx  (FDIV.S, Unsupported)
+* 0001101-ttttt-mmmmm-rrr-nnnnn-10-100xx  (FDIV.D, Unsupported)
+
+* 0100000-ttttt-00001-rrr-nnnnn-10-100xx  FCVT.SD	Rm, Rn, Rt
+* 0100001-ttttt-00000-rrr-nnnnn-10-100xx  FCVT.DS	Rm, Rn, Rt
+
+* 0101100-ttttt-mmmmm-rrr-nnnnn-10-100xx  (FSQRT.S, Unsupported)
+* 0101101-ttttt-mmmmm-rrr-nnnnn-10-100xx  (FSQRT.D, Unsupported)
+
+* 1010000-ttttt-mmmmm-000-nnnnn-10-100xx  FLE.S		Rm, Rn, Rt
+* 1010001-ttttt-mmmmm-000-nnnnn-10-100xx  FLE.D		Rm, Rn, Rt
+* 1010000-ttttt-mmmmm-001-nnnnn-10-100xx  FLT.S		Rm, Rn, Rt
+* 1010001-ttttt-mmmmm-001-nnnnn-10-100xx  FLT.D		Rm, Rn, Rt
+* 1010000-ttttt-mmmmm-010-nnnnn-10-100xx  FEQ.S		Rm, Rn, Rt
+* 1010001-ttttt-mmmmm-010-nnnnn-10-100xx  FEQ.D		Rm, Rn, Rt
+
+* 1100000-ttttt-00000-rrr-nnnnn-10-100xx  FCVT.WS	Rm, Rn, Rt
+* 1100001-ttttt-00000-rrr-nnnnn-10-100xx  FCVT.WD	Rm, Rn, Rt
+* 1100000-ttttt-00001-rrr-nnnnn-10-100xx  FCVT.WSU	Rm, Rn, Rt
+* 1100001-ttttt-00001-rrr-nnnnn-10-100xx  FCVT.WDU	Rm, Rn, Rt
+
+* 1101000-ttttt-00000-rrr-nnnnn-10-100xx  FCVT.SW	Rm, Rn, Rt
+* 1101001-ttttt-00000-rrr-nnnnn-10-100xx  FCVT.DW	Rm, Rn, Rt
+* 1101000-ttttt-00001-rrr-nnnnn-10-100xx  FCVT.SWU	Rm, Rn, Rt
+* 1101001-ttttt-00001-rrr-nnnnn-10-100xx  FCVT.DWU	Rm, Rn, Rt
+
+* ddddddd-ddddd-ddddd-ddd-nnnnn-11-100xx  (SYSTEM)
+
+* ddddddd-ddddd-ddddd-ddd-nnnnn-00-101xx  AUIPC		Rn, Disp20_U
+
+* iiiiiii-iiiii-iiiii-iii-nnnnn-01-101xx  LUI		Rn, Imm20_U
+
+* zzzzzzz-ooooo-mmmmm-zzz-nnnnn-10-101xx  (Reserved)
+* zzzzzzz-ooooo-mmmmm-zzz-nnnnn-11-101xx  (Reserved)
+
+* iiiiiii-iiiii-mmmmm-000-nnnnn-00-110xx  ADDIW		Rn, Rm, Imm12_I
+* 000000i-iiiii-mmmmm-001-nnnnn-00-110xx  SLLIW		Rn, Rm, Imm12
+* iiiiiii-iiiii-mmmmm-010-nnnnn-00-110xx  -
+* iiiiiii-iiiii-mmmmm-011-nnnnn-00-110xx  -
+* iiiiiii-iiiii-mmmmm-100-nnnnn-00-110xx  -
+* 000000i-iiiii-mmmmm-101-nnnnn-00-110xx  SRLIW		Rn, Rm, Imm12_I
+* 010000i-iiiii-mmmmm-101-nnnnn-00-110xx  SRAIW		Rn, Rm, Imm12_I
+* iiiiiii-iiiii-mmmmm-110-nnnnn-00-110xx  -
+* iiiiiii-iiiii-mmmmm-111-nnnnn-00-110xx  -
+
+* 0000000-ttttt-mmmmm-000-nnnnn-01-110xx  ADDW		Rn, Rm, Rt
+* 0100000-ttttt-mmmmm-000-nnnnn-01-110xx  SUBW		Rn, Rm, Rt
+* 0000001-ttttt-mmmmm-000-nnnnn-01-110xx  MULW		Rn, Rm, Rt
+* 0000000-ttttt-mmmmm-001-nnnnn-01-110xx  SLLW		Rn, Rm, Rt
+* 0000000-ttttt-mmmmm-010-nnnnn-01-110xx  -
+* 0000000-ttttt-mmmmm-011-nnnnn-01-110xx  -
+* 0000000-ttttt-mmmmm-100-nnnnn-01-110xx  -
+* 0000001-ttttt-mmmmm-100-nnnnn-01-110xx  (DIVW, Unsupported)
+* 0000000-ttttt-mmmmm-101-nnnnn-01-110xx  SRLW		Rn, Rm, Rt
+* 0100000-ttttt-mmmmm-101-nnnnn-01-110xx  SRAW		Rn, Rm, Rt
+* 0000001-ttttt-mmmmm-101-nnnnn-01-110xx  (DIVUW, Unsupported)
+* 0000000-ttttt-mmmmm-110-nnnnn-01-110xx  -
+* 0000001-ttttt-mmmmm-110-nnnnn-01-110xx  (REMW, Unsupported)
+* 0000000-ttttt-mmmmm-111-nnnnn-01-110xx  -
+* 0000001-ttttt-mmmmm-111-nnnnn-01-110xx  (REMUW, Unsupported)
+
+
+* zzzzzzz-ooooo-mmmmm-zzz-nnnnn-00-111xx  (48b, Unused)
+* zzzzzzz-ooooo-mmmmm-zzz-nnnnn-01-111xx  (64b, Unused)
+* zzzzzzz-ooooo-mmmmm-zzz-nnnnn-10-111xx  (48b, Unused)
+* zzzzzzz-ooooo-mmmmm-zzz-nnnnn-11-111xx  (80b, Unused)
+
+...
+

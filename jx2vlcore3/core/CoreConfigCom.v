@@ -4,6 +4,8 @@
 `define jx2_enable_mmu_acl		//Enable ACL Checks
 `define jx2_enable_ldekey		//Enable ACL Checks
 
+`define jx2_enable_riscv		//Enable RISC-V Decoder
+
 // `define jx2_cfg_75mhz
 
 // `define jx2_enable_gpr48		//Enable R32..R63 (SIMD)
@@ -118,3 +120,12 @@
 `define jx2_audio_leftonly		//Only left audio channel is used.
 // `define jx2_fmsyn_dyndcbias		//FM Synth: Dynamic DC Bias
 
+
+
+`ifdef jx2_enable_riscv
+
+`ifndef jx2_alu_jcmp
+`define jx2_alu_jcmp
+`endif
+
+`endif

@@ -63,22 +63,6 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_REG_R30	30
 #define BJX2_REG_R31	31
 
-// #define BJX2_REG_REMAP
-
-#ifndef BJX2_REG_REMAP
-#define BJX2_REG_DLR	0
-#define BJX2_REG_DHR	1
-#define BJX2_REG_SP		15
-#endif
-
-#ifdef BJX2_REG_REMAP
-#define BJX2_REG_DLR	32
-#define BJX2_REG_DHR	33
-#define BJX2_REG_SP		47
-#endif
-
-#define BJX2_REG_DR		BJX2_REG_DLR
-
 #define BJX2_REG_R32	32
 #define BJX2_REG_R33	33
 #define BJX2_REG_R34	34
@@ -112,6 +96,16 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_REG_R61	61
 #define BJX2_REG_R62	62
 #define BJX2_REG_R63	63
+
+
+#define BJX2_REG_REMAP
+
+#ifndef BJX2_REG_REMAP
+#define BJX2_REG_DLR	0
+#define BJX2_REG_DHR	1
+#define BJX2_REG_SP		15
+#endif
+
 
 
 #if 0
@@ -168,9 +162,39 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_REG_EXSR	75
 #define BJX2_REG_STTB	76
 #define BJX2_REG_KRR	77
-#define BJX2_REG_IMM	78
-#define BJX2_REG_ZZR	79
+// #define BJX2_REG_IMM	78
+// #define BJX2_REG_ZZR	79
+
+#define BJX2_REG_ZZR	95
+
 #endif
+
+#define BJX2_REG_PC2	80
+#define BJX2_REG_LR2	81
+#define BJX2_REG_SR2	82
+
+#define BJX2_REG_SPC2	84
+#define BJX2_REG_SSP2	85
+#define BJX2_REG_GBR2	86
+#define BJX2_REG_TBR2	87
+
+
+#ifdef BJX2_REG_REMAP
+
+#define BJX2_REG_R15A	79
+
+// #define BJX2_REG_DLR	88
+// #define BJX2_REG_DHR	89
+// #define BJX2_REG_SP		90
+
+#define BJX2_REG_DLR	96
+#define BJX2_REG_DHR	97
+#define BJX2_REG_SP		(96+15)
+
+#endif
+
+#define BJX2_REG_DR		BJX2_REG_DLR
+
 
 
 #if 0
@@ -542,6 +566,18 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_LDEKEY		0x10D		//
 #define BJX2_NMID_LDEENC		0x10E		//
 
+#define BJX2_NMID_BREQ			0x110		//
+#define BJX2_NMID_BRNE			0x111		//
+#define BJX2_NMID_BRLT			0x112		//
+#define BJX2_NMID_BRGE			0x113		//
+#define BJX2_NMID_BRBI			0x112		//
+#define BJX2_NMID_BRHE			0x113		//
+
+#define BJX2_NMID_BRAL			0x118		//
+#define BJX2_NMID_BSRL			0x119		//
+#define BJX2_NMID_BTL			0x11A		//
+#define BJX2_NMID_BFL			0x11B		//
+
 
 #define BJX2_FMID_NONE			0x00		//?
 #define BJX2_FMID_REG			0x01		//Rn
@@ -588,6 +624,21 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_FMID_GREGFREG		0x25		//Rm, FRn
 
 #define BJX2_FMID_CHAIN			0x27		//Chained Opcode
+
+#define BJX2_FMID_REGPCDISP		0x28		//Reg, (PC, disp)
+#define BJX2_FMID_REGREGPCDISP	0x29		//Reg, Reg, (PC, disp)
+#define BJX2_FMID_LDREGDISP1REG	0x2A		//(Rm, Disp1), Rn
+#define BJX2_FMID_REGSTREGDISP1	0x2B		//Rm, (Rn, Disp1)
+#define BJX2_FMID_LDREGDISP1	0x2C		//(Rn, Disp1)
+
+#define BJX2_FLAG_SR_T			0x00000001ULL
+#define BJX2_FLAG_SR_S			0x00000002ULL
+#define BJX2_FLAG_SR_RVE		0x04000000ULL
+#define BJX2_FLAG_SR_WXE		0x08000000ULL
+#define BJX2_FLAG_SR_BL			0x10000000ULL
+#define BJX2_FLAG_SR_RB			0x20000000ULL
+#define BJX2_FLAG_SR_MD			0x40000000ULL
+#define BJX2_FLAG_SR_JQ			0x80000000ULL
 
 #define BJX2_FLIPSTNM
 

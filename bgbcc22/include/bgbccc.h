@@ -306,6 +306,7 @@ extern "C" {
 #define BGBCC_TYFL_FENVACC			(1LL<<45)
 
 #define BGBCC_TYFL_RESTRICT			(1LL<<46)
+#define BGBCC_TYFL_MAYALIAS			(1LL<<47)
 
 
 #define BGBCC_TYFL_DFL_MASK			\
@@ -346,6 +347,7 @@ extern "C" {
 #define BGBCC_REGFL_HYBLEAFTINY		0x00008000		//Hybrid Tiny Leaf
 #define BGBCC_REGFL_NOSCRATCHDYN	0x00010000		//Can't dynamically alloc
 #define BGBCC_REGFL_IFACULL			0x00020000		//Culled via IfArch
+#define BGBCC_REGFL_TEMPLOAD		0x00040000		//Temp Loaded from Stack
 
 
 #define	BGBCC_MAXSTACKOBJ			0x080000	//maximum allowed stack frame

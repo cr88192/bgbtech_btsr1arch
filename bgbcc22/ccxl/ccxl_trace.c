@@ -109,9 +109,11 @@ int BGBCC_CCXL_AddVirtTr(BGBCC_TransState *ctx, BGBCC_CCXL_VirtTr *tr)
 
 int BGBCC_CCXL_EmitMarkEndTrace(BGBCC_TransState *ctx)
 {
+	BGBCC_CCXL_VirtOp *op1;
 	BGBCC_CCXL_VirtTr *tr;
-	int i, n;
+	int i, b, n, fn;
 
+	b=ctx->s_vop;
 	n=ctx->n_vop-ctx->s_vop;
 	if(!n)
 		return(-1);
@@ -126,6 +128,25 @@ int BGBCC_CCXL_EmitMarkEndTrace(BGBCC_TransState *ctx)
 	tr->b_ops=ctx->s_vop;
 	tr->n_ops=ctx->n_vop-tr->b_ops;
 	ctx->s_vop=ctx->n_vop;
+
+	fn=0;
+	for(i=0; i<n; i++)
+	{
+		op1=ctx->vop[b+i];
+		if(op1->opn==CCXL_VOP_TEMP_PHI)
+			continue;
+#if 0
+		if(op1->opn==CCXL_VOP_LABEL)
+			continue;
+		if(op1->opn==CCXL_VOP_DBGLN)
+			continue;
+		if(op1->opn==CCXL_VOP_DBGFN)
+			continue;
+#endif
+		fn++;
+	}
+	
+	tr->n_fops=fn;
 
 	i=BGBCC_CCXL_AddVirtTr(ctx, tr);
 	return(i);
@@ -349,6 +370,7 @@ s64 BGBCC_CCXL_DecodeFlagStr(BGBCC_TransState *ctx, char *str)
 			i=*s++;
 			switch(i)
 			{
+			case 'a':	fl|=BGBCC_TYFL_MAYALIAS;		break;
 			case 'b':	fl|=BGBCC_TYFL_BYREF;			break;
 			case 'e':	fl|=BGBCC_TYFL_EVENT;			break;
 			case 'f':	fl|=BGBCC_TYFL_INTERRUPT;		break;

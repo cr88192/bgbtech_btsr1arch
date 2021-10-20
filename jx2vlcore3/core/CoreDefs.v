@@ -647,6 +647,7 @@ parameter[4:0] JX2_FMID_IMM12N			= 5'h17;	//Ojjj	#imm12n, DLR
 
 parameter[4:0] JX2_FMID_LDDLRREG		= 5'h19;	//OOnO  (DLR), Rn
 parameter[4:0] JX2_FMID_LDREGDISPREG	= 5'h19;	//OOnm  (Rm, Disp), Rn
+parameter[4:0] JX2_FMID_REGSTREGDISP	= 5'h1A;	//OOnm  (Rm, Disp), Rn
 
 parameter[4:0] JX2_FMID_LDDI4SPREG		= 5'h1F;	//OOnj  (SP, disp4), Rn
 
@@ -655,7 +656,7 @@ parameter[4:0] JX2_FMID_REGSTDRREG		= JX2_FMID_LDDRREGREG;
 parameter[4:0] JX2_FMID_REGSTDRPC		= JX2_FMID_LDDRPCREG;
 
 parameter[4:0] JX2_FMID_REGSTDLR		= JX2_FMID_LDDLRREG;
-parameter[4:0] JX2_FMID_REGSTREGDISP	= JX2_FMID_LDREGDISPREG;
+// parameter[4:0] JX2_FMID_REGSTREGDISP	= JX2_FMID_LDREGDISPREG;
 parameter[4:0] JX2_FMID_REGSTDI4SP		= JX2_FMID_LDDI4SPREG;
 
 
@@ -710,6 +711,8 @@ parameter[5:0] JX2_UCMD_ALUW3		= 6'h28;		//ALU, Packed Word (3R)
 parameter[5:0] JX2_UCMD_BLINT		= 6'h29;		//Interpolator
 parameter[5:0] JX2_UCMD_ALUB3		= 6'h2A;		//ALU, Packed Byte (3R)
 
+parameter[5:0] JX2_UCMD_JCMP		= 6'h2B;		//Jump+Compare
+
 parameter[5:0] JX2_UCMD_BRA_NB		= 6'h2C;		//No Branch
 
 
@@ -724,7 +727,8 @@ parameter[5:0] JX2_UCIX_ALU_XOR		= 6'h27;		//ALU XOR
 parameter[5:0] JX2_UCIX_ALU_CMPQNE	= 6'h28;		//ALU CMPQNE
 parameter[5:0] JX2_UCIX_ALU_CMPQHS	= 6'h29;		//ALU CMPQHS
 parameter[5:0] JX2_UCIX_ALU_CMPQGE	= 6'h2A;		//ALU CMPQGE
-parameter[5:0] JX2_UCIX_ALU_NOR		= 6'h2B;		//ALU NOR
+// parameter[5:0] JX2_UCIX_ALU_NOR		= 6'h2B;		//ALU NOR
+// parameter[5:0] JX2_UCIX_ALU_SLT		= 6'h2B;		//ALU SLT
 parameter[5:0] JX2_UCIX_ALU_CMPQEQ	= 6'h2C;		//ALU Command
 parameter[5:0] JX2_UCIX_ALU_CMPQHI	= 6'h2D;		//ALU Command
 parameter[5:0] JX2_UCIX_ALU_CMPQGT	= 6'h2E;		//ALU Command
@@ -751,6 +755,11 @@ parameter[5:0] JX2_UCIX_ALU_CMPGE_S		= 6'h1A;		//ALU CMPGE
 parameter[5:0] JX2_UCIX_ALU_CMPEQ_S		= 6'h1C;		//ALU CMPEQ
 parameter[5:0] JX2_UCIX_ALU_CMPHI_S		= 6'h1D;		//ALU CMPHI
 parameter[5:0] JX2_UCIX_ALU_CMPGT_S		= 6'h1E;		//ALU CMPGT
+
+parameter[5:0] JX2_UCIX_ALU_SLTSL		= 6'h0B;		//ALU SLT
+parameter[5:0] JX2_UCIX_ALU_SLTUL		= 6'h1B;		//ALU SLT
+parameter[5:0] JX2_UCIX_ALU_SLTSQ		= 6'h2B;		//ALU SLT
+parameter[5:0] JX2_UCIX_ALU_SLTUQ		= 6'h3B;		//ALU SLT
 
 parameter[5:0] JX2_UCIX_ALU_TSTQ_S		= 6'h34;		//ALU Command
 parameter[5:0] JX2_UCIX_ALU_CMPQNE_S	= 6'h38;		//ALU CMPQNE
@@ -1057,6 +1066,15 @@ parameter[5:0] JX2_UCIX_BLINT_BILERP	= 6'h00;
 parameter[5:0] JX2_UCIX_BLINT_LERP		= 6'h01;
 
 
+parameter[5:0] JX2_UCIX_JCMP_QEQ		= 6'h10;
+parameter[5:0] JX2_UCIX_JCMP_QNE		= 6'h11;
+
+parameter[5:0] JX2_UCIX_JCMP_QLT		= 6'h14;
+parameter[5:0] JX2_UCIX_JCMP_QGE		= 6'h15;
+parameter[5:0] JX2_UCIX_JCMP_QBL		= 6'h16;
+parameter[5:0] JX2_UCIX_JCMP_QHS		= 6'h17;
+
+
 `ifdef jx2_mem_line32B
 
 parameter[255:0] UVTILE_XX		= UV256_XX;	//
@@ -1190,9 +1208,12 @@ parameter[63:0] JX2_L1D_FLUSHMSK	= UV64_FF;		//
 
 `ifdef jx2_bra2stage
 parameter[7:0] JX2_BRA_FLUSHMSK	= 8'h1F;		//
+// parameter[7:0] JX2_BRA_FLUSHMSK	= 8'h0F;		//
 `else
 parameter[7:0] JX2_BRA_FLUSHMSK	= 8'h0F;		//
 `endif
+
+// parameter[7:0] JX2_BRA_FLUSHMSK_XTRA	= 8'h3F;		//
 
 `include "ExModKrrKeys.v"
 

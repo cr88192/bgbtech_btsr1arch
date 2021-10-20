@@ -145,16 +145,23 @@ Example of a GBR reload (32 bit address space, Old):
  NOP4
  MOV R1, GBR
 
-Change:
-Example of a GBR reload (New, No Jumbo):
+Change (Old 2):
+Example of a GBR reload (No Jumbo):
  MOV.Q (GBR, 0), R18
  LDI #offs_pbo_base, R0		//(No Jumbo)
  MOV.Q (R18, DLR), R18
  MOV R18, GBR
  
-Example of a GBR reload (New, Jumbo):
+Example of a GBR reload (Jumbo):
  MOV.Q (GBR, 0), R18
  MOV.Q (R18, Disp33s), R18
+ MOV R18, GBR
+
+Change (New):
+ MOV.Q (GBR), R18
+ ( TBR12 Reloc / PEL4 Reloc 6 )
+ LDIZ #offs_pbo_base, R0
+ MOV.Q (R18, DLR), R18
  MOV R18, GBR
 
 

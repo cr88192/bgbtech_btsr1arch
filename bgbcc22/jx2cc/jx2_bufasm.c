@@ -750,6 +750,19 @@ int nmid;
 {"bt.l",	BGBCC_SH_NMID_BTL},
 {"bf.l",	BGBCC_SH_NMID_BFL},
 
+{"breq",	BGBCC_SH_NMID_BREQ},
+{"brne",	BGBCC_SH_NMID_BRNE},
+
+{"brlt",	BGBCC_SH_NMID_BRLT},
+{"brge",	BGBCC_SH_NMID_BRGE},
+{"brgt",	BGBCC_SH_NMID_BRGT},
+{"brle",	BGBCC_SH_NMID_BRLE},
+
+{"brltu",	BGBCC_SH_NMID_BRLTU},
+{"brgeu",	BGBCC_SH_NMID_BRGEU},
+{"brgtu",	BGBCC_SH_NMID_BRGTU},
+{"brleu",	BGBCC_SH_NMID_BRLEU},
+
 {"dmulu",	BGBCC_SH_NMID_MULUL},
 {"dmuls",	BGBCC_SH_NMID_MULSL},
 {"dmulu.l",	BGBCC_SH_NMID_MULUL},
@@ -886,6 +899,9 @@ int nmid;
 {"pop.x",	BGBCC_SH_NMID_POPX2},
 {"mov.x",	BGBCC_SH_NMID_MOVX2},
 {"movx",	BGBCC_SH_NMID_MOVX2},
+
+{"movc",	BGBCC_SH_NMID_MOVC},
+{"mov.c",	BGBCC_SH_NMID_MOVC},
 
 {"ldtlb",	BGBCC_SH_NMID_LDTLB},
 {"invic",	BGBCC_SH_NMID_INVIC},
@@ -1410,7 +1426,8 @@ int BGBCC_JX2A_TryAssembleOpcode(
 			nmid, arg0->breg, arg1->breg);
 		break;
 	case BGBCC_SH_FMID_REGIMM:
-		if(nmid==BGBCC_SH_NMID_MOV)
+//		if(nmid==BGBCC_SH_NMID_MOV)
+		if((nmid==BGBCC_SH_NMID_MOV) && !(ctx->emit_riscv&1))
 		{
 			if(	(arg1->breg==BGBCC_SH_REG_R0) ||
 				(arg1->breg==BGBCC_SH_REG_DLR))
@@ -1508,7 +1525,8 @@ int BGBCC_JX2A_TryAssembleOpcode(
 		rt=BGBCC_JX2_TryEmitOpAutoLabel(ctx, nmid, lbl);
 		break;
 	case BGBCC_SH_FMID_LBLREG:
-		if(nmid==BGBCC_SH_NMID_MOV)
+//		if(nmid==BGBCC_SH_NMID_MOV)
+		if((nmid==BGBCC_SH_NMID_MOV) && !(ctx->emit_riscv&1))
 		{
 			rt=BGBCC_JX2C_CheckEmitLoadFrameNameReg(
 				ctx->tctx, ctx, arg0->name, arg1->breg);
@@ -1521,7 +1539,8 @@ int BGBCC_JX2A_TryAssembleOpcode(
 		break;
 
 	case BGBCC_SH_FMID_REGLBL:
-		if(nmid==BGBCC_SH_NMID_MOV)
+//		if(nmid==BGBCC_SH_NMID_MOV)
+		if((nmid==BGBCC_SH_NMID_MOV) && !(ctx->emit_riscv&1))
 		{
 			rt=BGBCC_JX2C_CheckEmitStoreFrameNameReg(
 				ctx->tctx, ctx, arg1->name, arg0->breg);
@@ -1531,6 +1550,11 @@ int BGBCC_JX2A_TryAssembleOpcode(
 
 		lbl=BGBCC_JX2_GetNamedLabel(ctx, arg1->name);
 		rt=BGBCC_JX2_TryEmitOpRegLbl(ctx, nmid, lbl, arg0->breg);
+		break;
+
+	case BGBCC_SH_FMID_REGREGLBL:
+		lbl=BGBCC_JX2_GetNamedLabel(ctx, arg2->name);
+		rt=BGBCC_JX2_TryEmitOpRegRegLbl(ctx, nmid, arg0->breg, arg1->breg, lbl);
 		break;
 
 	default:
@@ -2269,6 +2293,46 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 			return(1);
 		}
 
+		if(!strcmp(tk0, "I.arch"))
+		{
+			cs2=cs1;
+			cs2=BGBCC_JX2A_ParseTokenAlt(cs2, &tk0);
+//			BGBCC_JX2_SetSectionName(ctx, tk0+1);
+
+			if(	!strcmp(tk0, "bjx2")	 ||
+				!strcmp(tk0, "bjx2a")	)
+			{
+				BGBCC_JX2_EmitBAlign(ctx, 4);
+				ctx->emit_riscv=0;
+			}
+
+			if(!strcmp(tk0, "riscv"))
+			{
+				BGBCC_JX2_EmitBAlign(ctx, 4);
+				ctx->emit_riscv=1;
+			}
+
+			*rcs=cs2;
+			return(1);
+		}
+
+		if(!strcmp(tk0, "I.riscv"))
+		{
+			BGBCC_JX2_EmitBAlign(ctx, 4);
+			ctx->emit_riscv=1;
+			*rcs=cs1;
+			return(1);
+		}
+
+		if(!strcmp(tk0, "I.endriscv") ||
+			!strcmp(tk0, "I.bjx2"))
+		{
+			BGBCC_JX2_EmitBAlign(ctx, 4);
+			ctx->emit_riscv=0;
+			*rcs=cs1;
+			return(1);
+		}
+
 		if(!strcmp(tk0, "I.text") ||
 			!strcmp(tk0, "I.data") ||
 			!strcmp(tk0, "I.bss"))
@@ -2560,6 +2624,7 @@ int BGBCC_JX2C_AssembleBuffer(
 	BGBCC_JX2_Context *sctx,
 	char *text)
 {
+	int oldar;
 	char *cs;
 
 	sctx->iflvl_f=0;
@@ -2567,9 +2632,15 @@ int BGBCC_JX2C_AssembleBuffer(
 
 	bgbcc_jx2a_lastlbl=NULL;
 
+	oldar=sctx->emit_riscv;
+	sctx->emit_riscv=0;
+
 	sctx->is_rawasm=1;
 	cs=text;
 	BGBCC_JX2A_ParseBuffer(sctx, &cs);
 	sctx->is_rawasm=0;
+
+	sctx->emit_riscv=oldar;
+
 	return(0);
 }

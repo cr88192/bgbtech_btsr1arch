@@ -196,6 +196,7 @@ byte csrv_skip;		//skip a CSRV operation
 byte use_emitqueue;	//use emit queue
 
 byte emit_isprobe;	//if we are simply probing an instruction
+byte emit_riscv;	//emit RISC-V instructions.
 
 byte test_lclalign;	//local alignment-sensitivity test
 byte use_padcross;	//use padding across cache lines
@@ -375,6 +376,10 @@ u32 sfreg_held;			//scratch registers live-held (multiple ops)
 
 int iflvl_t;			//number of branches in true set
 int iflvl_f;			//number of branches in false set
+
+byte	reg_stflag[512];
+byte	arg_stflag[512];
+byte	lcl_stflag[512];
 
 BGBCC_CMG_VarSpan **vspan;
 short *vspan_chn;

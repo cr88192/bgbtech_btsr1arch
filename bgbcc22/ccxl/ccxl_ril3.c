@@ -1590,6 +1590,26 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		BGBCC_CCXL_StackPushConstFloat128(ctx, li0, li1);
 		break;
 
+	case BGBCC_RIL3OP_STCONSTI:
+		li0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
+
+		if(((s32)li0)==li0)
+			{ BGBCC_CCXL_ConstIntStore(ctx, li0, s0); break; }
+		if(((u32)li0)==li0)
+			{ BGBCC_CCXL_ConstUIntStore(ctx, li0, s0); break; }
+
+		BGBCC_DBGBREAK
+		break;
+
+#if 0
+	case BGBCC_RIL3OP_STREFREF:
+		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s1=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		BGBCC_CCXL_RefRefStore(ctx, s0, s1);
+		break;
+#endif
+
 	case BGBCC_RIL3OP_POP:
 		BGBCC_CCXL_StackPop(ctx);
 		break;

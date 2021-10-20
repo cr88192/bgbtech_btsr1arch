@@ -32,13 +32,15 @@ int BGBCC_JX2C_EmitLdix_FillSzNmTy(
 	case CCXL_TY_SB:
 		sz=1; nm1=BGBCC_SH_NMID_MOVB; nm2=-1; break;
 	case CCXL_TY_UB:
-		sz=1; nm1=BGBCC_SH_NMID_MOVB; nm2=BGBCC_SH_NMID_EXTUB;
-		nm4=BGBCC_SH_NMID_MOVUB; break;
+		sz=1; nm1=BGBCC_SH_NMID_MOVUB; nm2=-1; break;
+//		sz=1; nm1=BGBCC_SH_NMID_MOVB; nm2=BGBCC_SH_NMID_EXTUB;
+//		nm4=BGBCC_SH_NMID_MOVUB; break;
 	case CCXL_TY_SS:
 		sz=2; nm1=BGBCC_SH_NMID_MOVW; nm2=-1; break;
 	case CCXL_TY_US:
-		sz=2; nm1=BGBCC_SH_NMID_MOVW; nm2=BGBCC_SH_NMID_EXTUW;
-		nm4=BGBCC_SH_NMID_MOVUW; break;
+		sz=2; nm1=BGBCC_SH_NMID_MOVUW; nm2=-1; break;
+//		sz=2; nm1=BGBCC_SH_NMID_MOVW; nm2=BGBCC_SH_NMID_EXTUW;
+//		nm4=BGBCC_SH_NMID_MOVUW; break;
 
 	case CCXL_TY_V:
 		sz=1; nm1=BGBCC_SH_NMID_MOVB; nm2=-1; break;
@@ -56,8 +58,9 @@ int BGBCC_JX2C_EmitLdix_FillSzNmTy(
 			sz=4; nm1=BGBCC_SH_NMID_MOVL; nm2=-1;
 			if(ty==CCXL_TY_UNL)
 			{
-				nm2=BGBCC_SH_NMID_EXTUL;
-				nm4=BGBCC_SH_NMID_MOVUL;
+				nm1=BGBCC_SH_NMID_MOVUL;
+//				nm2=BGBCC_SH_NMID_EXTUL;
+//				nm4=BGBCC_SH_NMID_MOVUL;
 			}
 			break;
 		}

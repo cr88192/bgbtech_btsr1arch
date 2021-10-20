@@ -94,6 +94,8 @@
 
 `define jx2_rbi_nobridge			//Ringbus: Bypass Bridge, join rings directly
 
+// `define jx2_mem_l1inostall			//L1 I$ does not stall pipeline
+
 
 
 // `ifndef def_true
@@ -113,7 +115,10 @@
 
 `endif
 
-`define jx2_expand_tlb		//Make TLB Bigger
+// `define jx2_expand_tlb		//Make TLB Bigger
+// `define jx2_tlbsz_1024		//Make TLB Bigger
+`define jx2_tlbsz_256		//Make TLB Bigger
+// `define jx2_tlbsz_64		//Make TLB Bigger
 
 // `define jx2_reduce_l1sz		//Make L1 smaller
 // `define jx2_reduce_l2sz		//Make L2 smaller

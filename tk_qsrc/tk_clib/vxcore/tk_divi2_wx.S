@@ -155,7 +155,8 @@ __udivsi3:
 	extu.l	r5
 	bra		__udivdi3
 #else
-	bra		__udivsi3_i
+//	bra		__udivsi3_i
+	bra		__udivsi3_tab
 #endif
 
 #endif
@@ -175,7 +176,10 @@ __sdivsi3:
 	xor r4, r6, r2		| xor r5, r7, r3
 	sub r2, r6, r4		| sub r3, r7, r5
 	xor r7, r6, r21
-	bsr __udivsi3_i
+
+//	bsr __udivsi3_i
+	bsr __udivsi3_tab
+
 	xor r2, r21, r3
 	sub r3, r21, r2
 

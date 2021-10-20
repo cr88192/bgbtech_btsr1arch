@@ -1100,9 +1100,10 @@ char *BJX2_DbgPrintNameForReg(BJX2_Context *ctx, int reg)
 	switch(reg)
 	{
 #ifdef BJX2_REG_REMAP
-	case BJX2_REG_R0:		s="R0";		break;
-	case BJX2_REG_R1:		s="R1";		break;
+	case BJX2_REG_R0:		s="R0U";	break;
+	case BJX2_REG_R1:		s="R1U";	break;
 #endif
+
 	case BJX2_REG_R2:		s="R2";		break;
 	case BJX2_REG_R3:		s="R3";		break;
 	case BJX2_REG_R4:		s="R4";		break;
@@ -1118,7 +1119,7 @@ char *BJX2_DbgPrintNameForReg(BJX2_Context *ctx, int reg)
 	case BJX2_REG_R14:		s="R14";	break;
 
 #ifdef BJX2_REG_REMAP
-	case BJX2_REG_R15:		s="R15";	break;
+	case BJX2_REG_R15:		s="R15U";	break;
 #endif
 
 	case BJX2_REG_R16:		s="R16";	break;
@@ -1138,10 +1139,8 @@ char *BJX2_DbgPrintNameForReg(BJX2_Context *ctx, int reg)
 	case BJX2_REG_R30:		s="R30";	break;
 	case BJX2_REG_R31:		s="R31";	break;
 
-#ifndef BJX2_REG_REMAP
 	case BJX2_REG_R32:		s="R32";	break;
 	case BJX2_REG_R33:		s="R33";	break;
-#endif
 	case BJX2_REG_R34:		s="R34";	break;
 	case BJX2_REG_R35:		s="R35";	break;
 	case BJX2_REG_R36:		s="R36";	break;
@@ -1155,10 +1154,7 @@ char *BJX2_DbgPrintNameForReg(BJX2_Context *ctx, int reg)
 	case BJX2_REG_R44:		s="R44";	break;
 	case BJX2_REG_R45:		s="R45";	break;
 	case BJX2_REG_R46:		s="R46";	break;
-
-#ifndef BJX2_REG_REMAP
 	case BJX2_REG_R47:		s="R47";	break;
-#endif
 
 #if 1
 	case BJX2_REG_R48:		s="R48";	break;
@@ -1182,6 +1178,9 @@ char *BJX2_DbgPrintNameForReg(BJX2_Context *ctx, int reg)
 	case BJX2_REG_DLR:		s="DLR";	break;
 	case BJX2_REG_DHR:		s="DHR";	break;
 	case BJX2_REG_SP:		s="SP";		break;
+	case BJX2_REG_R15A:		s="R15A";	break;
+
+	case BJX2_REG_ZZR:		s="ZZR";	break;
 
 	case BJX2_REG_PC:		s="PC";		break;
 	case BJX2_REG_LR:		s="LR";		break;
@@ -1429,6 +1428,12 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		msc=2;	break;
 	}
 
+	if(	(op->fmid==BJX2_FMID_LDREGDISP1REG) ||
+		(op->fmid==BJX2_FMID_REGSTREGDISP1)	)
+	{
+		msc=1;
+	}
+
 	op1=NULL;
 	nonl=0;
 
@@ -1500,6 +1505,7 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 			BJX2_DbgPrintNameForReg(ctx, op->rn));
 		break;
 	case BJX2_FMID_LDREGDISPREG:
+	case BJX2_FMID_LDREGDISP1REG:
 		if((op->rm==BJX2_REG_PC) || (op->rm==BJX2_REG_GBR))
 			msc=1;
 	
@@ -1519,6 +1525,7 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		}
 		break;
 	case BJX2_FMID_REGSTREGDISP:
+	case BJX2_FMID_REGSTREGDISP1:
 		if((op->rn==BJX2_REG_PC) || (op->rn==BJX2_REG_GBR))
 			msc=1;
 
@@ -1533,6 +1540,22 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		{
 			printf("%s, (%s, %lld)",
 				BJX2_DbgPrintNameForReg(ctx, op->rm),
+				BJX2_DbgPrintNameForReg(ctx, op->rn),
+				(op->imm*msc));
+		}
+		break;
+
+	case BJX2_FMID_LDREGDISP1:
+		msc=1;
+		if(	(((sbyte)op->imm)!=op->imm) &&
+			(((byte)op->imm)!=op->imm)	)
+		{
+			printf("(%s, 0x%llX)",
+				BJX2_DbgPrintNameForReg(ctx, op->rn),
+				(op->imm*msc));
+		}else
+		{
+			printf("(%s, %lld)",
 				BJX2_DbgPrintNameForReg(ctx, op->rn),
 				(op->imm*msc));
 		}
@@ -1702,7 +1725,36 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 			BJX2_DbgPrintNameForFReg(ctx, op->ro),
 			BJX2_DbgPrintNameForFReg(ctx, op->rn));
 		break;
-		
+	
+	case BJX2_FMID_REGPCDISP:
+		if(op->imm>256)
+		{
+			printf("%s, (0x%llX)",
+				BJX2_DbgPrintNameForReg(ctx, op->rn),
+				brpc+(op->imm*1));
+		}else
+		{
+			printf("%s, (PC, %lld)",
+				BJX2_DbgPrintNameForReg(ctx, op->rn),
+				(op->imm*1));
+		}
+		break;
+	case BJX2_FMID_REGREGPCDISP:
+		if(op->imm>256)
+		{
+			printf("%s, %s, (0x%llX)",
+				BJX2_DbgPrintNameForReg(ctx, op->rm),
+				BJX2_DbgPrintNameForReg(ctx, op->rn),
+				brpc+(op->imm*1));
+		}else
+		{
+			printf("%s, %s, (PC, %lld)",
+				BJX2_DbgPrintNameForReg(ctx, op->rm),
+				BJX2_DbgPrintNameForReg(ctx, op->rn),
+				(op->imm*1));
+		}
+		break;
+	
 	case BJX2_FMID_CHAIN:
 		op1=op->data;
 		BJX2_DbgPrintOp(ctx, op1, 4);

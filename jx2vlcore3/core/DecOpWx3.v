@@ -27,10 +27,13 @@ For scalar Ops, Lane 2/3 will hold:
 `include "DecOpHz.v"
 `endif
 
+`ifdef jx2_enable_riscv
+`include "DecOpRvI.v"
+`endif
+
 module DecOpWx3(
 	/* verilator lint_off UNUSED */
 	clock,		reset,
-//	istrWord,	srWxe,
 	istrWord,	regSr,		istrSxo,
 	idRegS,		idRegT,		idRegM,
 	idImmA,		idUCmdA,	idUIxtA,
@@ -49,11 +52,13 @@ input[63:0]		regSr;
 input[3:0]		istrSxo;	//source instruction word
 
 wire			srWxe;
+wire			srRiscv;
 wire			srUser;
 wire			srSxo;
 assign		srWxe	= regSr[27];
 assign		srUser	= !regSr[30];
 assign		srSxo	= istrSxo[0];
+assign		srRiscv	= (regSr[27:26] == 2'b01);
 
 wire[2:0]		srMod;
 assign		srMod = { regSr[29], srSxo, srUser };
@@ -234,6 +239,30 @@ DecOpFz	decOpFzA(
 	decOpFzA_idUCmd,		decOpFzA_idUIxt,
 	decOpFzA_idUFl
 	);
+
+`ifdef jx2_enable_riscv
+
+`wire_gpr		decOpRvA_idRegN;
+`wire_gpr		decOpRvA_idRegM;
+`wire_gpr		decOpRvA_idRegO;
+`wire_gpr		decOpRvA_idRegP;
+wire[32:0]		decOpRvA_idImm;
+wire[8:0]		decOpRvA_idUCmd;
+wire[8:0]		decOpRvA_idUIxt;
+wire[3:0]		decOpRvA_idUFl;
+
+DecOpRvI	decOpRvA(
+	clock,		reset,	srMod,
+	{ UV32_XX, istrWord[31: 0] },
+	{srRiscv, srWxe, 2'b00},		UV28_00,
+	decOpRvA_idRegN,		decOpRvA_idRegM,
+	decOpRvA_idRegO,		decOpRvA_idRegP,
+	decOpRvA_idImm,
+	decOpRvA_idUCmd,		decOpRvA_idUIxt,
+	decOpRvA_idUFl
+	);
+
+`endif
 
 `ifdef jx2_enable_ops48
 `wire_gpr		decOpFC_idRegN;
@@ -480,6 +509,25 @@ begin
 		end
 	endcase
 
+`ifdef jx2_enable_riscv
+	if(srRiscv)
+	begin
+		if(istrWord[1:0]==2'b11)
+		begin
+			opIsFxA = 1;		opIsFzA = 1;
+			opIsFCA = 0;		opIsDzA = 0;
+//			opIsDfA = istrWord[10];
+			opIsDfA = 0;
+		end
+		else
+		begin
+			opIsFxA = 0;		opIsFzA = 0;
+			opIsFCA = 0;		opIsDzA = 0;
+			opIsDfA = 0;
+		end
+	end
+`endif
+
 //	opIsWfA = opIsDfA && !opIsDzA && srWxe;
 //	opIsWfB = opIsDfB && !opIsDzB && srWxe;
 
@@ -716,6 +764,51 @@ begin
 			end
 			else
 			begin
+`ifdef jx2_enable_riscv
+
+				if(srRiscv)
+				begin
+					opRegAM0	= decOpRvA_idRegM;
+					opRegAO0	= decOpRvA_idRegO;
+					opRegAN0	= decOpRvA_idRegN;
+					opRegAP0	= decOpRvA_idRegP;
+					opImmA0		= decOpRvA_idImm;
+					opUCmdA0	= decOpRvA_idUCmd;
+					opUIxtA0	= decOpRvA_idUIxt;
+				end
+				else
+				begin
+					opRegAM0	= decOpFzA_idRegM;
+					opRegAO0	= decOpFzA_idRegO;
+					opRegAN0	= decOpFzA_idRegN;
+					opRegAP0	= decOpFzA_idRegP;
+					opImmA0		= decOpFzA_idImm;
+					opUCmdA0	= decOpFzA_idUCmd;
+					opUIxtA0	= decOpFzA_idUIxt;
+				end
+
+`else
+
+				opRegAM0	= decOpFzA_idRegM;
+				opRegAO0	= decOpFzA_idRegO;
+				opRegAN0	= decOpFzA_idRegN;
+				opRegAP0	= decOpFzA_idRegP;
+				opImmA0		= decOpFzA_idImm;
+				opUCmdA0	= decOpFzA_idUCmd;
+				opUIxtA0	= decOpFzA_idUIxt;
+
+`endif
+
+`ifdef def_true
+				opRegAM	= opRegAM0;
+				opRegAO	= opRegAO0;
+				opRegAN	= opRegAN0;
+				opImmA	= opImmA0;
+				opUCmdA	= opUCmdA0;
+				opUIxtA	= opUIxtA0;
+`endif
+
+`ifndef def_true
 				opRegAM	= decOpFzA_idRegM;
 				opRegAO	= decOpFzA_idRegO;
 				opRegAN	= decOpFzA_idRegN;
@@ -729,9 +822,11 @@ begin
 				opRegAP0	= decOpFzA_idRegP;
 				opUCmdA0	= decOpFzA_idUCmd;
 				opUIxtA0	= decOpFzA_idUIxt;
-				
+`endif
+
 				opRegBM	= JX2_GR_ZZR;
-				opRegBO	= decOpFzA_idRegN;
+//				opRegBO	= decOpFzA_idRegN;
+				opRegBO	= opRegAN0;
 				opRegBN	= JX2_GR_ZZR;
 				opImmB	= UV33_XX;
 				opUCmdB	= UV9_00;
@@ -739,7 +834,8 @@ begin
 				
 				opRegCM	= JX2_GR_ZZR;
 //				opRegCO	= decOpFzA_idRegN;
-				opRegCO	= decOpFzA_idRegP;
+//				opRegCO	= decOpFzA_idRegP;
+				opRegCO	= opRegAP0;
 				opRegCN	= JX2_GR_ZZR;
 				opImmC	= UV33_XX;
 				opUCmdC	= UV9_00;

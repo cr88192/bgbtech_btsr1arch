@@ -163,6 +163,8 @@ void BGBCC_CCXL_CompileBreak(BGBCC_TransState *ctx)
 	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_JMP);
 	BGBCC_CCXLR3_EmitArgLabel(ctx, l);
 
+	BGBCC_CCXL_StackPhiTemporaries(ctx);
+
 	BGBCC_CCXL_EmitJump(ctx, l);
 	BGBCC_CCXL_EmitMarkEndTrace(ctx);
 }
@@ -176,6 +178,8 @@ void BGBCC_CCXL_CompileContinue(BGBCC_TransState *ctx)
 
 	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_JMP);
 	BGBCC_CCXLR3_EmitArgLabel(ctx, l);
+
+	BGBCC_CCXL_StackPhiTemporaries(ctx);
 
 	BGBCC_CCXL_EmitJump(ctx, l);
 	BGBCC_CCXL_EmitMarkEndTrace(ctx);
@@ -192,7 +196,11 @@ void BGBCC_CCXL_CompileBreakFalse(BGBCC_TransState *ctx)
 	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_JMPF);
 	BGBCC_CCXLR3_EmitArgLabel(ctx, l);
 
+
 	BGBCC_CCXL_PopRegister(ctx, &reg);
+
+	BGBCC_CCXL_StackPhiTemporaries(ctx);
+
 	ty=BGBCC_CCXL_GetRegType(ctx, reg);
 	BGBCC_CCXL_EmitJumpRegZero(ctx, ty, CCXL_CMP_EQ, reg, l);
 	BGBCC_CCXL_RegisterCheckRelease(ctx, reg);
@@ -211,6 +219,9 @@ void BGBCC_CCXL_CompileBreakTrue(BGBCC_TransState *ctx)
 	BGBCC_CCXLR3_EmitArgLabel(ctx, l);
 
 	BGBCC_CCXL_PopRegister(ctx, &reg);
+
+	BGBCC_CCXL_StackPhiTemporaries(ctx);
+
 	ty=BGBCC_CCXL_GetRegType(ctx, reg);
 	BGBCC_CCXL_EmitJumpRegZero(ctx, ty, CCXL_CMP_NE, reg, l);
 	BGBCC_CCXL_RegisterCheckRelease(ctx, reg);
@@ -229,6 +240,9 @@ void BGBCC_CCXL_CompileContinueFalse(BGBCC_TransState *ctx)
 	BGBCC_CCXLR3_EmitArgLabel(ctx, l);
 
 	BGBCC_CCXL_PopRegister(ctx, &reg);
+
+	BGBCC_CCXL_StackPhiTemporaries(ctx);
+
 	ty=BGBCC_CCXL_GetRegType(ctx, reg);
 	BGBCC_CCXL_EmitJumpRegZero(ctx, ty, CCXL_CMP_EQ, reg, l);
 	BGBCC_CCXL_RegisterCheckRelease(ctx, reg);
@@ -247,6 +261,9 @@ void BGBCC_CCXL_CompileContinueTrue(BGBCC_TransState *ctx)
 	BGBCC_CCXLR3_EmitArgLabel(ctx, lbl);
 
 	BGBCC_CCXL_PopRegister(ctx, &reg);
+
+	BGBCC_CCXL_StackPhiTemporaries(ctx);
+
 	ty=BGBCC_CCXL_GetRegType(ctx, reg);
 	BGBCC_CCXL_EmitJumpRegZero(ctx, ty, CCXL_CMP_NE, reg, lbl);
 	BGBCC_CCXL_RegisterCheckRelease(ctx, reg);
@@ -262,6 +279,8 @@ void BGBCC_CCXL_CompileJmp(BGBCC_TransState *ctx, ccxl_label lbl)
 	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_JMP);
 	BGBCC_CCXLR3_EmitArgLabel(ctx, lbl);
 
+	BGBCC_CCXL_StackPhiTemporaries(ctx);
+
 	BGBCC_CCXL_EmitJump(ctx, lbl);
 	BGBCC_CCXL_EmitMarkEndTrace(ctx);
 }
@@ -275,6 +294,9 @@ void BGBCC_CCXL_CompileJmpFalse(BGBCC_TransState *ctx, ccxl_label lbl)
 	BGBCC_CCXLR3_EmitArgLabel(ctx, lbl);
 
 	BGBCC_CCXL_PopRegister(ctx, &reg);
+
+	BGBCC_CCXL_StackPhiTemporaries(ctx);
+
 	ty=BGBCC_CCXL_GetRegType(ctx, reg);
 	BGBCC_CCXL_EmitJumpRegZero(ctx, ty, CCXL_CMP_EQ, reg, lbl);
 	BGBCC_CCXL_RegisterCheckRelease(ctx, reg);
@@ -290,6 +312,9 @@ void BGBCC_CCXL_CompileJmpTrue(BGBCC_TransState *ctx, ccxl_label lbl)
 	BGBCC_CCXLR3_EmitArgLabel(ctx, lbl);
 
 	BGBCC_CCXL_PopRegister(ctx, &reg);
+
+	BGBCC_CCXL_StackPhiTemporaries(ctx);
+
 	ty=BGBCC_CCXL_GetRegType(ctx, reg);
 	BGBCC_CCXL_EmitJumpRegZero(ctx, ty, CCXL_CMP_NE, reg, lbl);
 	BGBCC_CCXL_RegisterCheckRelease(ctx, reg);
@@ -402,6 +427,8 @@ void BGBCC_CCXL_CompileJmpCond(BGBCC_TransState *ctx,
 	if(BGBCC_CCXL_TypeEqualP(ctx, dty, sty) &&
 		BGBCC_CCXL_TypeEqualP(ctx, dty, tty))
 	{
+		BGBCC_CCXL_StackPhiTemporaries(ctx);
+
 //		ty=BGBCC_CCXL_GetRegType(ctx, rega);
 		BGBCC_CCXL_EmitJumpRegCmp(ctx, dty, opr, rega, regb, lbl);
 		BGBCC_CCXL_RegisterCheckRelease(ctx, rega);
@@ -1173,6 +1200,8 @@ void BGBCC_CCXL_CompilePredCmp(BGBCC_TransState *ctx, char *op)
 	if(BGBCC_CCXL_TypeEqualP(ctx, dty, sty) &&
 		BGBCC_CCXL_TypeEqualP(ctx, dty, tty))
 	{
+		BGBCC_CCXL_StackPhiTemporaries(ctx);
+
 		BGBCC_CCXL_EmitPredCmpOp(ctx, dty, opr, rega, regb);
 		BGBCC_CCXL_RegisterCheckRelease(ctx, rega);
 		BGBCC_CCXL_RegisterCheckRelease(ctx, regb);

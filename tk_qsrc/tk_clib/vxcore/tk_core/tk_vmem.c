@@ -1601,7 +1601,7 @@ void tk_vmem_tlbmiss(u64 ttb, u64 tea)
 		return;
 	}
 	
-//	__debugbreak();
+	__debugbreak();
 	TK_VMem_VaPageInAddr(tea);
 }
 

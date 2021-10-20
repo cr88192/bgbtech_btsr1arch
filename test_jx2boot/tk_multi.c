@@ -23,5 +23,6 @@
 #include "tk_ramchk.c"
 
 #include "tk_peload.c"
+#include "tk_elfload.c"
 
 #include "tk_start.c"

@@ -34,10 +34,18 @@ int BJX2_RemapGPR(BJX2_Context *ctx, int reg)
 	return(reg);
 }
 
+int BJX2_RemapCR(BJX2_Context *ctx, int reg)
+{
+//	if(reg==15)
+//		return(BJX2_REG_R15);
+	return(BJX2_REG_PC+(reg&31));
+}
+
 int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2, u32 jbits)
 {
 	int rn_dfl, rm_dfl, ro_dfl;
+	int cm_dfl, cn_dfl;
 	int opw3, opw4;
 	int disp5, eq, eo;
 	int imm8u, imm8n;
@@ -97,6 +105,12 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 	if(jbits&0x40000000U)rn_dfl+=32;
 	if(jbits&0x20000000U)rm_dfl+=32;
 	if(jbits&0x10000000U)ro_dfl+=32;
+
+//	cm_dfl=BJX2_REG_PC+(rm_dfl&31);
+//	cn_dfl=BJX2_REG_PC+(rn_dfl&31);
+
+	cn_dfl=BJX2_RemapCR(ctx, rn_dfl);
+	cm_dfl=BJX2_RemapCR(ctx, rm_dfl);
 
 	rn_dfl=BJX2_RemapGPR(ctx, rn_dfl);
 	rm_dfl=BJX2_RemapGPR(ctx, rm_dfl);
@@ -1026,7 +1040,8 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 #endif
 			case 0xA:	/* F0eA_19nm */
 //				op->rn+=BJX2_REG_PC;
-				op->rn=BJX2_REG_PC+(op->rn&15);
+//				op->rn=BJX2_REG_PC+(op->rn&15);
+				op->rn=cn_dfl;
 				op->nmid=BJX2_NMID_MOV;
 				op->fmid=BJX2_FMID_REGREG;
 				op->Run=BJX2_Op_MOV_RegReg;
@@ -1044,7 +1059,8 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				break;
 			case 0xB:	/* F0eB_19nm */
 //				op->rm+=BJX2_REG_PC;
-				op->rm=BJX2_REG_PC+(op->rm&15);
+//				op->rm=BJX2_REG_PC+(op->rm&15);
+				op->rm=cm_dfl;
 				op->nmid=BJX2_NMID_MOV;
 				op->fmid=BJX2_FMID_REGREG;
 				op->Run=BJX2_Op_MOV_RegReg;

@@ -19,6 +19,9 @@ int BGBCC_JX2_TryEmitOpNone(BGBCC_JX2_Context *ctx, int nmid)
 {
 	int opw1, opw2, opw3, opw4;
 
+	if(ctx->emit_riscv&1)
+		return(BGBCC_JX2RV_TryEmitOpNone(ctx, nmid));
+
 	opw1=-1; opw2=-1;
 	opw3=-1; opw4=-1;
 	switch(nmid)
@@ -135,6 +138,9 @@ int BGBCC_JX2_TryEmitOpReg(BGBCC_JX2_Context *ctx, int nmid, int reg)
 	int opw1, opw2, opw3, reg2, ex, ex2, exw;
 	int i;
 
+	if(ctx->emit_riscv&1)
+		return(BGBCC_JX2RV_TryEmitOpReg(ctx, nmid, reg));
+
 #if 0
 	if(!(ctx->has_pushx2))
 	{
@@ -191,6 +197,13 @@ int BGBCC_JX2_TryEmitOpReg(BGBCC_JX2_Context *ctx, int nmid, int reg)
 //		opw1=0x3608|((reg&15)<<4); break;
 //		opw1=0x3100|((reg&15)<<4); break;
 		opw1=0x3100|((reg&15)<<4)|((reg&16)<<7); break;
+
+	case BGBCC_SH_NMID_BSRL:
+		if(!BGBCC_JX2_EmitCheckRegExtAddrGPR(ctx, reg))	break;
+		opw1=0x320D|((reg&15)<<4)|((reg&16)<<7); break;
+	case BGBCC_SH_NMID_BRAL:
+		if(!BGBCC_JX2_EmitCheckRegExtAddrGPR(ctx, reg))	break;
+		opw1=0x320C|((reg&15)<<4)|((reg&16)<<7); break;
 
 	case BGBCC_SH_NMID_INVIC:
 		if(ctx->is_fixed32 || ctx->op_is_wex2)
@@ -425,7 +438,7 @@ int BGBCC_JX2_TryEmitOpReg(BGBCC_JX2_Context *ctx, int nmid, int reg)
 #endif
 
 	case BGBCC_SH_NMID_JSR:
-	case BGBCC_SH_NMID_BSR:
+//	case BGBCC_SH_NMID_BSR:
 //		if(!BGBCC_JX2_EmitCheckRegAddrGPR(ctx, reg))	break;
 //		if(!BGBCC_JX2_EmitCheckRegExtAddrGPR(ctx, reg))	break;
 		if(!BGBCC_JX2_EmitCheckRegExtGPR(ctx, reg))	break;
@@ -437,7 +450,7 @@ int BGBCC_JX2_TryEmitOpReg(BGBCC_JX2_Context *ctx, int nmid, int reg)
 		break;
 
 	case BGBCC_SH_NMID_JMP:
-	case BGBCC_SH_NMID_BRA:
+//	case BGBCC_SH_NMID_BRA:
 //		if(!BGBCC_JX2_EmitCheckRegAddrGPR(ctx, reg))	break;
 //		if(!BGBCC_JX2_EmitCheckRegExtAddrGPR(ctx, reg))	break;
 		if(!BGBCC_JX2_EmitCheckRegExtGPR(ctx, reg))	break;
@@ -872,6 +885,15 @@ int BGBCC_JX2_TryEmitOpReg(BGBCC_JX2_Context *ctx, int nmid, int reg)
 //			opw2=0x3068; break;
 			opw2=0x3010; break;
 
+		case BGBCC_SH_NMID_BSRL:
+			opw1=0xF000|(reg&31);
+//			opw2=0x3069; break;
+			opw2=0x302D; break;
+		case BGBCC_SH_NMID_BRAL:
+			opw1=0xF000|(reg&31);
+//			opw2=0x3068; break;
+			opw2=0x302C; break;
+
 		case BGBCC_SH_NMID_BSR2F:
 			if(BGBCC_JX2_CheckPadAlign32(ctx))
 			{
@@ -1294,6 +1316,9 @@ int BGBCC_JX2_TryEmitOpImm(BGBCC_JX2_Context *ctx, int nmid, int imm)
 {
 	int opw1, opw2, odr;
 
+	if(ctx->emit_riscv&1)
+		return(BGBCC_JX2RV_TryEmitOpImm(ctx, nmid, imm));
+
 	opw1=-1; opw2=-1; odr=0;
 	switch(nmid)
 	{
@@ -1403,6 +1428,9 @@ int BGBCC_JX2_ProbeEmitOpMReg(BGBCC_JX2_Context *ctx, int nmid, int reg)
 int BGBCC_JX2_TryEmitOpMReg(BGBCC_JX2_Context *ctx, int nmid, int reg)
 {
 	int opw1, opw2, exw;
+
+	if(ctx->emit_riscv&1)
+		return(BGBCC_JX2RV_TryEmitOpReg(ctx, nmid, reg));
 
 	opw1=-1; opw2=-1;
 	switch(nmid)
@@ -1566,6 +1594,9 @@ int BGBCC_JX2_TryEmitOpRegReg(BGBCC_JX2_Context *ctx, int nmid, int rm, int rn)
 {
 	int opw1, opw2, ex, ex3r, exw;
 	int rm3, rn3;
+
+	if(ctx->emit_riscv&1)
+		return(BGBCC_JX2RV_TryEmitOpRegReg(ctx, nmid, rm, rn));
 
 	if(
 		(nmid==BGBCC_SH_NMID_ADDSL)	||
@@ -2866,6 +2897,9 @@ int BGBCC_JX2_TryEmitOpRegRegReg(
 	int opw1, opw2, opw3, opw4;
 	int i, ex, exw;
 
+	if(ctx->emit_riscv&1)
+		return(BGBCC_JX2RV_TryEmitOpRegRegReg(ctx, nmid, rs, rt, rn));
+
 	opw1=-1; opw2=-1; opw3=-1; opw4=-1;
 
 	switch(nmid)
@@ -3713,6 +3747,9 @@ int BGBCC_JX2_TryEmitOpImmReg(BGBCC_JX2_Context *ctx,
 	s64 imm1, imm1n;
 	int opw1, opw2, opw3, opw4, opw5, opw6, odr, ex, ex2, exw;
 	int i, j, k;
+
+	if(ctx->emit_riscv&1)
+		return(BGBCC_JX2RV_TryEmitOpImmReg(ctx, nmid, imm, reg));
 
 	if(	(nmid==BGBCC_SH_NMID_ADDSL) ||
 		(nmid==BGBCC_SH_NMID_ADDUL) )
@@ -5038,6 +5075,9 @@ int BGBCC_JX2_TryEmitOpRegImmReg(
 	int odr, imm_is12s;
 	int i;
 
+	if(ctx->emit_riscv&1)
+		return(BGBCC_JX2RV_TryEmitOpRegImmReg(ctx, nmid, rm, imm, rn));
+
 	if(nmid==BGBCC_SH_NMID_AND)
 	{
 		imm1=-1;
@@ -5952,6 +5992,9 @@ int BGBCC_JX2_TryEmitOpRegRegRegReg(
 	int opw1, opw2, opw3, opw4;
 	int i, ex, exw;
 
+	if(ctx->emit_riscv&1)
+		return(BGBCC_JX2RV_TryEmitOpRegRegRegReg(ctx, nmid, rs, rt, rp, rn));
+
 	opw1=-1; opw2=-1; opw3=-1; opw4=-1;
 
 	switch(nmid)
@@ -6073,6 +6116,8 @@ int BGBCC_JX2_TryEmitOpRegRegImmReg(
 	opw1=-1; opw2=-1; opw3=-1; opw4=-1;
 	odr=0;
 
+	if(ctx->emit_riscv&1)
+		return(BGBCC_JX2RV_TryEmitOpRegRegImmReg(ctx, nmid, rs, rt, imm, rn));
 
 	if(opw1>=0)
 	{

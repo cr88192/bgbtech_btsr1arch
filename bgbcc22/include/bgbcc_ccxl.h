@@ -474,6 +474,7 @@ Base, Q1..Q3:
 #define CCXL_VOP_CALL_INTRIN		0x2F		//call intrinsic function
 
 #define CCXL_VOP_ASMINLINE			0x30		//Inline ASM blob
+#define CCXL_VOP_TEMP_PHI			0x31		//Temporary Phi
 
 
 #define CCXL_VOPITY_NONE			0x00		//imm is not used
@@ -664,8 +665,9 @@ ccxl_value imm;
 };
 
 struct BGBCC_CCXL_VirtTr_s {
-int b_ops;			//first opcode
-int n_ops;			//num opcodes
+short b_ops;			//first opcode
+short n_ops;			//num opcodes
+short n_fops;			//number of 'functional' opcodes
 int trfl;			//trace flags
 };
 
