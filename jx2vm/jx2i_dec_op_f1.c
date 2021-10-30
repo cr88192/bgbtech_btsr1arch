@@ -130,6 +130,9 @@ int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
 	op->rm=rm_dfl;
 	op->imm=imm9us;
 
+	op->rp=BJX2_REG_ZZR;
+	op->rq=BJX2_REG_GBR_HI;
+
 	op->fl|=BJX2_OPFL_NOWEX;
 
 	ret=0;

@@ -178,7 +178,6 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_REG_GBR2	86
 #define BJX2_REG_TBR2	87
 
-
 #ifdef BJX2_REG_REMAP
 
 #define BJX2_REG_R15A	79
@@ -192,6 +191,16 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_REG_SP		(96+15)
 
 #endif
+
+#define BJX2_REG_PC_HI	98
+#define BJX2_REG_VBR_HI	99
+#define BJX2_REG_SPC_HI	100
+//#define BJX2_REG_SSP_HI	101
+#define BJX2_REG_GBR_HI	102
+// #define BJX2_REG_SP_HI	103
+// #define BJX2_REG_PC_HI	104
+// #define BJX2_REG_LR_HI	105
+
 
 #define BJX2_REG_DR		BJX2_REG_DLR
 
@@ -578,6 +587,11 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_BTL			0x11A		//
 #define BJX2_NMID_BFL			0x11B		//
 
+#define BJX2_NMID_CMPTAEQ		0x11C		//
+#define BJX2_NMID_CMPTAHI		0x11D		//
+#define BJX2_NMID_CMPTAHS		0x11E		//
+#define BJX2_NMID_CMPTTEQ		0x11F		//
+
 
 #define BJX2_FMID_NONE			0x00		//?
 #define BJX2_FMID_REG			0x01		//Rn
@@ -906,6 +920,9 @@ u64 mem_tlb_pr0_lo;
 u64 mem_tlb_pr1_hi;
 u64 mem_tlb_pr1_lo;
 
+u64 mem_ldtlb_hix;
+u64 mem_ldtlb_lox;
+
 bjx2_addr *map_addr;
 char **map_name;
 int map_n_ents;
@@ -928,6 +945,7 @@ u32 msgbuf_txepos;
 
 BJX2_MemSpan *(*MemSpanForAddr)(BJX2_Context *ctx, bjx2_addr addr);
 
+#if 0
 int (*MemGetByte)(BJX2_Context *ctx, bjx2_addr addr0);
 int (*MemGetWord)(BJX2_Context *ctx, bjx2_addr addr0);
 s32 (*MemGetDWord)(BJX2_Context *ctx, bjx2_addr addr0);
@@ -942,6 +960,37 @@ int (*MemSetXWord)(BJX2_Context *ctx, bjx2_addr addr0, u64 vlo, u64 vho);
 int (*MemSetTripwire)(BJX2_Context *ctx, bjx2_addr addr0, int val);
 int (*MemQueryTransit)(BJX2_Context *ctx,
 	bjx2_addr addr0, bjx2_addr addr1, int val);
+#endif
+
+#if 1
+int (*MemGetByte)(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addrh);
+int (*MemGetWord)(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addrh);
+s32 (*MemGetDWord)(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addrh);
+s64 (*MemGetQWord)(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addrh);
+int (*MemGetXWord)(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addrh, u64 *rvlo, u64 *rvhi);
+
+int (*MemSetByte)(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addrh, int val);
+int (*MemSetWord)(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addrh, int val);
+int (*MemSetDWord)(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addrh, s32 val);
+int (*MemSetQWord)(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addrh, s64 val);
+int (*MemSetXWord)(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addrh, u64 vlo, u64 vho);
+int (*MemSetTripwire)(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addrh, int val);
+
+int (*MemQueryTransit)(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addr1, bjx2_addr addrh, int val);
+#endif
+
 };
 
 struct BJX2_Opcode_s {
@@ -953,6 +1002,8 @@ byte fmid;		//Form ID
 byte rn;		//Dest Register
 byte rm;		//Source Register
 byte ro;		//Source Register
+byte rp;		//Source Register (4R)
+byte rq;		//Quadrant Register
 sbyte cyc;		//Clock Cycles
 u16 fl;			//Opcode Flags
 // s32 imm;		//Immediate

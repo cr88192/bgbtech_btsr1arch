@@ -25,8 +25,8 @@ module RbiMmuTlb(
 input			clock;			//clock
 input			reset;			//reset
 
-input[47:0]		regInAddr;		//input Address
-output[47:0]	regOutAddr;		//output Address
+`input_l1addr	regInAddr;		//input Address
+`output_l1addr	regOutAddr;		//output Address
 input[127:0]	regInData;		//input cache line
 output[127:0]	regOutData;		//output cache line
 input[15:0]		regInOpm;		//Operation Size/Type
@@ -44,10 +44,13 @@ input[63:0]		regInSR;		//Status Register
 
 input[127:0]	regInLdtlb;
 
+reg[127:0]		tRegInLdtlbHi;
+reg[127:0]		tNxtRegInLdtlbHi;
 
-reg[47:0]		tRegOutAddr;
-reg[47:0]		tRegOutAddr2;
-reg[47:0]		tRegOutAddr3;
+
+`reg_l1addr		tRegOutAddr;
+`reg_l1addr		tRegOutAddr2;
+`reg_l1addr		tRegOutAddr3;
 reg[127:0]		tRegOutData;		//output cache line
 reg[127:0]		tRegOutData2;		//output cache line
 reg[127:0]		tRegOutData3;		//output cache line
@@ -76,9 +79,9 @@ reg[63:0]		tRegOutTea2;
 assign		regOutExc = { tRegOutTea2[47:0], tRegOutExc2 };
 
 
-reg[47:0]		regInAddrA;		//input Address
+`reg_l1addr		regInAddrA;		//input Address
 
-reg[47:0]		tRegInAddr;	//input Address
+`reg_l1addr		tRegInAddr;	//input Address
 reg[15:0]		tRegInOpm;		//Operation Size/Type
 reg[15:0]		tRegInSeq;		//
 reg[127:0]		tRegInData;		//output cache line
@@ -169,6 +172,13 @@ reg			tlbHitB_Lo;
 reg			tlbHitC_Lo;
 reg			tlbHitD_Lo;
 
+reg			tlbHitB_HiX;
+reg			tlbHitD_HiX;
+reg			tlbHitB_MiX;
+reg			tlbHitD_MiX;
+reg			tlbHitB_LoX;
+reg			tlbHitD_LoX;
+
 reg			tlbHitA_LoH;
 reg			tlbHitB_LoH;
 reg			tlbHitC_LoH;
@@ -182,6 +192,9 @@ reg			tlbHitA;
 reg			tlbHitB;
 reg			tlbHitC;
 reg			tlbHitD;
+
+reg			tlbHitAX;
+reg			tlbHitCX;
 
 reg			tlbHitAB;
 reg			tlbHitCD;
@@ -202,17 +215,17 @@ reg			tlbLdtlbOK;
 reg			icPageReady;
 reg			icPageEq;
 
-reg[47:0]	tlbAddrAB;
-reg[47:0]	tlbAddrCD;
-reg[35:0]	tlbAccAB;
-reg[35:0]	tlbAccCD;
+`reg_l1addr	tlbAddrAB;
+`reg_l1addr	tlbAddrCD;
+reg[35:0]		tlbAccAB;
+reg[35:0]		tlbAccCD;
 
-reg[47:0]	tlbAddr;
-reg[35:0]	tlbAcc;
-reg[47:0]	tlbAddrB;
-reg[35:0]	tlbAccB;
-reg			tlbIs32b;
-reg			tlbIs48b;
+`reg_l1addr	tlbAddr;
+reg[35:0]		tlbAcc;
+`reg_l1addr	tlbAddrB;
+reg[35:0]		tlbAccB;
+reg				tlbIs32b;
+reg				tlbIs48b;
 
 reg[47:0]	aclEntryA;
 reg[47:0]	aclEntryB;
@@ -332,12 +345,17 @@ begin
 
 	tRegOutData		= tRegInData;
 
-	regInAddrA		= regInAddr[47:0];
+//	regInAddrA		= regInAddr[47:0];
+	regInAddrA		= regInAddr;
 
 	if(regInOpm[7:0]==JX2_RBI_OPM_LDTLB)
 	begin
+`ifdef jx2_enable_l1addr96
+		regInAddrA		= { UV48_00, regInLdtlb[111:64] };
+`else
 //		regInAddrA		= regInData[111:64];
 		regInAddrA		= regInLdtlb[111:64];
+`endif
 	end
 
 `ifdef jx2_tlbsz_1024
@@ -524,6 +542,22 @@ begin
 	tlbHitD_Lo = tlbHitD_LoH && (tlbHitD_LoL || tlbMmuPg16K);
 `endif
 
+`ifdef jx2_enable_l1addr96
+	tlbHitB_HiX = (tRegInAddr[47:32] == tlbHdatB[111:96]);
+	tlbHitD_HiX = (tRegInAddr[47:32] == tlbHdatD[111:96]);
+	tlbHitB_MiX = (tRegInAddr[31:16] == tlbHdatB[95:80]);
+	tlbHitD_MiX = (tRegInAddr[31:16] == tlbHdatD[95:80]);
+	tlbHitB_LoX = (tRegInAddr[63:48] == tlbHdatB[79:64]);
+	tlbHitD_LoX = (tRegInAddr[63:48] == tlbHdatD[79:64]);
+`else
+	tlbHitB_HiX = 1;
+	tlbHitD_HiX = 1;
+	tlbHitB_MiX = 1;
+	tlbHitD_MiX = 1;
+	tlbHitB_LoX = 1;
+	tlbHitD_LoX = 1;
+`endif
+
 	if(tlbIs32b)
 	begin
 		tlbHitA_Hi = 1;
@@ -531,6 +565,28 @@ begin
 		tlbHitC_Hi = 1;
 		tlbHitD_Hi = 1;
 	end
+
+`ifdef jx2_tlb_xtlbe
+	if(tlbHdatB[1:0]!=2'b10)
+	begin
+		tlbHitB_HiX = 1;
+		tlbHitB_MiX = 1;
+		tlbHitB_LoX = 1;
+	end
+	if(tlbHdatD[1:0]!=2'b10)
+	begin
+		tlbHitD_HiX = 1;
+		tlbHitD_MiX = 1;
+		tlbHitD_LoX = 1;
+	end
+`else
+	tlbHitB_HiX = 1;
+	tlbHitD_HiX = 1;
+	tlbHitB_MiX = 1;
+	tlbHitD_MiX = 1;
+	tlbHitB_LoX = 1;
+	tlbHitD_LoX = 1;
+`endif
 
 	if(tlbMmuPg64K)
 	begin
@@ -540,10 +596,32 @@ begin
 		tlbHitD_Lo = 1;
 	end
 	
+`ifdef jx2_tlb_xtlbe
+	tlbHitA =
+		tlbHitA_Hi && tlbHitA_Mi && tlbHitA_Lo &&
+		tlbHitB_HiX && tlbHitB_MiX && tlbHitB_LoX &&
+		(tlbHdatA[1:0] == 2'b01);
+	tlbHitB =
+		tlbHitB_Hi && tlbHitB_Mi && tlbHitB_Lo &&
+		(tlbHdatB[1:0] == 2'b01);
+	tlbHitC =
+		tlbHitC_Hi && tlbHitC_Mi && tlbHitC_Lo &&
+		tlbHitD_HiX && tlbHitD_MiX && tlbHitD_LoX &&
+		(tlbHdatC[1:0] == 2'b01);
+	tlbHitD =
+		tlbHitD_Hi && tlbHitD_Mi && tlbHitD_Lo &&
+		(tlbHdatD[1:0] == 2'b01);
+
+	tlbHitAX = tlbHitA && (tlbHdatB[1:0] == 2'b10);
+	tlbHitCX = tlbHitC && (tlbHdatD[1:0] == 2'b10);
+`else
 	tlbHitA = tlbHitA_Hi && tlbHitA_Mi && tlbHitA_Lo && tlbHdatA[0];
 	tlbHitB = tlbHitB_Hi && tlbHitB_Mi && tlbHitB_Lo && tlbHdatB[0];
 	tlbHitC = tlbHitC_Hi && tlbHitC_Mi && tlbHitC_Lo && tlbHdatC[0];
 	tlbHitD = tlbHitD_Hi && tlbHitD_Mi && tlbHitD_Lo && tlbHdatD[0];
+	tlbHitAX = 0;
+	tlbHitCX = 0;
+`endif
 
 	tlbHitAB = tlbHitA || tlbHitB;
 	tlbHitCD = tlbHitC || tlbHitD;
@@ -551,8 +629,16 @@ begin
 
 	tlbAddrAB[47:12] = tlbHitA ? tlbHdatA[47:12] : tlbHdatB[47:12];
 	tlbAddrCD[47:12] = tlbHitC ? tlbHdatC[47:12] : tlbHdatD[47:12];
-
+	
+`ifdef jx2_enable_l1addr96
+	tlbAddrAB[95:48] = tlbHitAX ? tlbHdatB[63:16] : UV48_00;
+	tlbAddrCD[95:48] = tlbHitCX ? tlbHdatD[63:16] : UV48_00;
+	tlbAddr[95:12] = tlbHitAB ? tlbAddrAB[95:12] : tlbAddrCD[95:12];
+`else
 	tlbAddr[47:12] = tlbHitAB ? tlbAddrAB[47:12] : tlbAddrCD[47:12];
+`endif
+
+//	tlbAddr[47:12] = tlbHitAB ? tlbAddrAB[47:12] : tlbAddrCD[47:12];
 	tlbAddr[11: 0] = tRegInAddr[11: 0];
 
 	if(!tlbMmuPg4K)
@@ -623,13 +709,18 @@ begin
 //				regInSR[63:32], regInSR[31:0]);
 
 //			tlbAddr		= 48'h010000;
+`ifdef jx2_enable_l1addr96
+			tlbAddr		= { 48'h00, 36'h010, tRegInAddr[11:0] };
+`else
 			tlbAddr		= { 36'h010, tRegInAddr[11:0] };
+`endif
 			tRegOutOpm[11:8] = 4'hF;
 		end
 	end
 	else
 	begin
-		tlbAddr		= tRegInAddr[47:0];
+//		tlbAddr		= tRegInAddr[47:0];
+		tlbAddr		= tRegInAddr;
 		if(tAddrIsPhys)
 			tlbAddr[47:44]	= 4'hC;
 		if(tAddrIsPhys && tAddrIsHi4G)
@@ -639,7 +730,7 @@ begin
 
 	tRegOutExc = 0;
 
-	tRegOutTea[47:0] = tRegInAddr;
+	tRegOutTea[47:0] = tRegInAddr[47:0];
 
 	if(tlbMmuEnable)
 	begin
@@ -737,22 +828,64 @@ begin
 		nxtAclEntryD	= aclEntryC;
 	end
 
+	tNxtRegInLdtlbHi	= tRegInLdtlbHi;
+
 	if(tRegInIsLDTLB)
 	begin
+`ifdef jx2_tlb_xtlbe
+		if(tRegInLdtlb[1:0]==2'b10)
+		begin
+			$display("MemTile-LDTLB Hi %X %X-%X",
+				tRegInAddr,
+				tRegInLdtlb[127:64],
+				regInLdtlb[ 63: 0]);
+
+			tNxtRegInLdtlbHi = tRegInLdtlb;
+		end
+		else if(tRegInLdtlbHi[1:0]==2'b10)
+		begin
+			$display("MemTile-LDTLB HiLo %X %X-%X",
+				tRegInAddr,
+				tRegInLdtlb[127:64],
+				regInLdtlb[ 63: 0]);
+			tlbDoLdtlb	= icPageReady;
+			tNxtRegInLdtlbHi[1:0] = 0;
+
+			tlbLdHdatA = { 8'h00, tTlbRov, tRegInLdtlb[127:0] };
+			tlbLdHdatB = { 8'h00, tTlbRov, tRegInLdtlbHi[127:0] };
+			tlbLdHdatC = tlbHdatA;
+			tlbLdHdatD = tlbHdatB;
+		end
+		else
+		begin
+			$display("MemTile-LDTLB %X %X-%X",
+				tRegInAddr,
+				tRegInLdtlb[127:64],
+				regInLdtlb[ 63: 0]);
+			tlbDoLdtlb	= icPageReady;
+			tNxtRegInLdtlbHi[1:0] = 0;
+
+			tlbLdHdatA = { 8'h00, tTlbRov, tRegInLdtlb[127:0] };
+			tlbLdHdatB = tlbHdatC;
+			tlbLdHdatC = tlbHdatA;
+			tlbLdHdatD = tlbHdatB;
+			
+			if(tlbHdatD[1:0]==2'b10)
+				tlbLdHdatB[1:0]=0;
+		end
+`else
 		$display("MemTile-LDTLB %X %X-%X",
 			tRegInAddr,
-//			tRegInData[127:64],
 			tRegInLdtlb[127:64],
-//			tRegInData[ 63: 0]);
 			regInLdtlb[ 63: 0]);
 		tlbDoLdtlb	= icPageReady;
+		tNxtRegInLdtlbHi[1:0] = 0;
 
-//		tlbLdHdatA = { 8'h00, tTlbRov, tRegInData[127:0] };
 		tlbLdHdatA = { 8'h00, tTlbRov, tRegInLdtlb[127:0] };
 		tlbLdHdatB = tlbHdatA;
 		tlbLdHdatC = tlbHdatB;
 		tlbLdHdatD = tlbHdatC;
-
+`endif
 	end
 	else
 	begin
@@ -811,6 +944,7 @@ begin
 		tRegInAddr		<= regInAddr;
 		tRegInData		<= regInData;
 		tRegInLdtlb		<= regInLdtlb;
+		tRegInLdtlbHi	<= tNxtRegInLdtlbHi;
 		if(!tlbMmuEnable)
 		begin
 			tRegOutAddr2	<= regInAddr;
@@ -871,6 +1005,8 @@ begin
 		tRegInLdtlb		<= regInLdtlb;
 		tRegInOpm		<= regInOpm;
 		tRegInSeq		<= regInSeq;
+
+		tRegInLdtlbHi	<= tNxtRegInLdtlbHi;
 `endif
 
 //		tRegOutAddr3	<= tRegOutAddr2;

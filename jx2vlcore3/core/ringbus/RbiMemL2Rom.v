@@ -30,18 +30,18 @@ input [ 15:0]	memSeqIn;		//operation sequence
 output[ 15:0]	memSeqOut;		//operation sequence
 input [ 15:0]	memOpmIn;		//memory operation mode
 output[ 15:0]	memOpmOut;		//memory operation mode
-input [ 47:0]	memAddrIn;		//memory input address
-output[ 47:0]	memAddrOut;		//memory output address
-input [127:0]	memDataIn;		//memory input data
-output[127:0]	memDataOut;		//memory output data
+`input_l2addr	memAddrIn;		//memory input address
+`output_l2addr	memAddrOut;		//memory output address
+`input_tile		memDataIn;		//memory input data
+`output_tile	memDataOut;		//memory output data
 
 input [  7:0]	unitNodeId;		//Who Are We?
 
 
 reg[ 15:0]		tMemSeqOut;			//operation sequence
 reg[ 15:0]		tMemOpmOut;			//memory operation mode
-reg[ 47:0]		tMemAddrOut;		//memory output address
-reg[127:0]		tMemDataOut;		//memory output data
+`reg_l2addr		tMemAddrOut;		//memory output address
+`reg_tile		tMemDataOut;		//memory output data
 assign		memSeqOut	= tMemSeqOut;
 assign		memOpmOut	= tMemOpmOut;
 assign		memAddrOut	= tMemAddrOut;
@@ -49,16 +49,16 @@ assign		memDataOut	= tMemDataOut;
 
 reg[ 15:0]		tMemSeqReq;			//operation sequence
 reg[ 15:0]		tMemOpmReq;			//memory operation mode
-reg[ 47:0]		tMemAddrReq;		//memory output address
-reg[127:0]		tMemDataReq;		//memory output data
+`reg_l2addr		tMemAddrReq;		//memory output address
+`reg_tile		tMemDataReq;		//memory output data
 reg				tMemDidResp;		//
 reg				tNxtMemDoResp;		//
 reg				tMemCcmdReq;
 
-reg[ 15:0]	mem2SeqIn;		//operation sequence
-reg[ 15:0]	mem2OpmIn;		//memory operation mode
-reg[ 47:0]	mem2AddrIn;		//memory input address
-reg[127:0]	mem2DataIn;		//memory input data
+reg[ 15:0]		mem2SeqIn;		//operation sequence
+reg[ 15:0]		mem2OpmIn;		//memory operation mode
+`reg_l2addr		mem2AddrIn;		//memory input address
+`reg_tile		mem2DataIn;		//memory input data
 
 
 `ifdef jx2_enable_rom48k

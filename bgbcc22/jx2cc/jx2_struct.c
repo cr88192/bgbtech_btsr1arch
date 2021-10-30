@@ -321,6 +321,23 @@ int BGBCC_JX2C_EmitLoadSlotVRegVRegImm(
 	BGBCC_JX2C_EmitLdix_FillSzNmTy(ctx, sctx, type,
 		&sz, &nm1, &nm2, &nm3, &nm4);
 
+//	if(BGBCC_CCXL_TypeHugePointerP(ctx, stype))
+	if(BGBCC_CCXL_IsRegQuadPointerP(ctx, sreg))
+	{
+		switch(nm1)
+		{
+			case BGBCC_SH_NMID_MOVB:	nm1=BGBCC_SH_NMID_XMOVB;	break;
+			case BGBCC_SH_NMID_MOVW:	nm1=BGBCC_SH_NMID_XMOVW;	break;
+			case BGBCC_SH_NMID_MOVL:	nm1=BGBCC_SH_NMID_XMOVL;	break;
+			case BGBCC_SH_NMID_MOVQ:	nm1=BGBCC_SH_NMID_XMOVQ;	break;
+			case BGBCC_SH_NMID_MOVUB:	nm1=BGBCC_SH_NMID_XMOVUB;	break;
+			case BGBCC_SH_NMID_MOVUW:	nm1=BGBCC_SH_NMID_XMOVUW;	break;
+			case BGBCC_SH_NMID_MOVUL:	nm1=BGBCC_SH_NMID_XMOVUL;	break;
+			case BGBCC_SH_NMID_MOVX2:	nm1=BGBCC_SH_NMID_XMOVX2;	break;
+			default:	break;
+		}
+	}
+
 	if(nm1>=0)
 	{
 		if(BGBCC_CCXL_RegisterIdentEqualP(ctx, dreg, sreg))
@@ -500,6 +517,22 @@ int BGBCC_JX2C_EmitStoreSlotVRegVRegImm(
 		nm2=BGBCC_SH_NMID_SHLR32;
 	if(nm2==BGBCC_SH_NMID_SHLL64)
 		nm2=BGBCC_SH_NMID_SHLR64;
+
+	if(BGBCC_CCXL_IsRegQuadPointerP(ctx, dreg))
+	{
+		switch(nm1)
+		{
+			case BGBCC_SH_NMID_MOVB:	nm1=BGBCC_SH_NMID_XMOVB;	break;
+			case BGBCC_SH_NMID_MOVW:	nm1=BGBCC_SH_NMID_XMOVW;	break;
+			case BGBCC_SH_NMID_MOVL:	nm1=BGBCC_SH_NMID_XMOVL;	break;
+			case BGBCC_SH_NMID_MOVQ:	nm1=BGBCC_SH_NMID_XMOVQ;	break;
+			case BGBCC_SH_NMID_MOVUB:	nm1=BGBCC_SH_NMID_XMOVUB;	break;
+			case BGBCC_SH_NMID_MOVUW:	nm1=BGBCC_SH_NMID_XMOVUW;	break;
+			case BGBCC_SH_NMID_MOVUL:	nm1=BGBCC_SH_NMID_XMOVUL;	break;
+			case BGBCC_SH_NMID_MOVX2:	nm1=BGBCC_SH_NMID_XMOVX2;	break;
+			default:	break;
+		}
+	}
 
 	if(nm1>=0)
 	{
@@ -707,6 +740,22 @@ int BGBCC_JX2C_EmitLoadSlotRegVRegImm(
 	BGBCC_JX2C_EmitLdix_FillSzNmTy(ctx, sctx, type,
 		&sz, &nm1, &nm2, &nm3, &nm4);
 
+	if(BGBCC_CCXL_IsRegQuadPointerP(ctx, sreg))
+	{
+		switch(nm1)
+		{
+			case BGBCC_SH_NMID_MOVB:	nm1=BGBCC_SH_NMID_XMOVB;	break;
+			case BGBCC_SH_NMID_MOVW:	nm1=BGBCC_SH_NMID_XMOVW;	break;
+			case BGBCC_SH_NMID_MOVL:	nm1=BGBCC_SH_NMID_XMOVL;	break;
+			case BGBCC_SH_NMID_MOVQ:	nm1=BGBCC_SH_NMID_XMOVQ;	break;
+			case BGBCC_SH_NMID_MOVUB:	nm1=BGBCC_SH_NMID_XMOVUB;	break;
+			case BGBCC_SH_NMID_MOVUW:	nm1=BGBCC_SH_NMID_XMOVUW;	break;
+			case BGBCC_SH_NMID_MOVUL:	nm1=BGBCC_SH_NMID_XMOVUL;	break;
+			case BGBCC_SH_NMID_MOVX2:	nm1=BGBCC_SH_NMID_XMOVX2;	break;
+			default:	break;
+		}
+	}
+
 	if(nm1>=0)
 	{
 		csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, sreg);
@@ -844,6 +893,22 @@ int BGBCC_JX2C_EmitStoreSlotVRegRegImm(
 		nm2=BGBCC_SH_NMID_SHLR32;
 	if(nm2==BGBCC_SH_NMID_SHLL64)
 		nm2=BGBCC_SH_NMID_SHLR64;
+
+	if(BGBCC_CCXL_IsRegQuadPointerP(ctx, dreg))
+	{
+		switch(nm1)
+		{
+			case BGBCC_SH_NMID_MOVB:	nm1=BGBCC_SH_NMID_XMOVB;	break;
+			case BGBCC_SH_NMID_MOVW:	nm1=BGBCC_SH_NMID_XMOVW;	break;
+			case BGBCC_SH_NMID_MOVL:	nm1=BGBCC_SH_NMID_XMOVL;	break;
+			case BGBCC_SH_NMID_MOVQ:	nm1=BGBCC_SH_NMID_XMOVQ;	break;
+			case BGBCC_SH_NMID_MOVUB:	nm1=BGBCC_SH_NMID_XMOVUB;	break;
+			case BGBCC_SH_NMID_MOVUW:	nm1=BGBCC_SH_NMID_XMOVUW;	break;
+			case BGBCC_SH_NMID_MOVUL:	nm1=BGBCC_SH_NMID_XMOVUL;	break;
+			case BGBCC_SH_NMID_MOVX2:	nm1=BGBCC_SH_NMID_XMOVX2;	break;
+			default:	break;
+		}
+	}
 
 	if(nm1>=0)
 	{

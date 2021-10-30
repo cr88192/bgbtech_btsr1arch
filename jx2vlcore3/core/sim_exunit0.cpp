@@ -873,7 +873,9 @@ void MemUpdateForBusRing()
 #if 1
 	top->memSeqIn=l2seq2;
 	top->memOpmIn=l2opm2;
-	top->memAddrIn=l2addr2;
+	top->memAddrInA[0]=l2addr2;
+	top->memAddrInA[1]=l2addr2>>32;
+	top->memAddrInA[2]=0;
 	top->memDataIn[0]=l2data2a;
 	top->memDataIn[1]=l2data2b;
 	top->memDataIn[2]=l2data2c;
@@ -883,7 +885,9 @@ void MemUpdateForBusRing()
 #if 0
 	top->memSeqIn=l2seq4;
 	top->memOpmIn=l2opm4;
-	top->memAddrIn=l2addr4;
+	top->memAddrInA[0]=l2addr4;
+	top->memAddrInA[1]=l2addr4>>32;
+	top->memAddrInA[2]=0;
 	top->memDataIn[0]=l2data4a;
 	top->memDataIn[1]=l2data4b;
 	top->memDataIn[2]=l2data4c;
@@ -922,7 +926,7 @@ void MemUpdateForBusRing()
 
 		l2seq1=top->memSeqOut;
 		l2opm1=top->memOpm;
-		l2addr1=top->memAddr;
+		l2addr1=top->memAddrA[0] | (((uint64_t)top->memAddrA[1])<<32);
 		l2data1a=top->memDataOut[0];
 		l2data1b=top->memDataOut[1];
 		l2data1c=top->memDataOut[2];
@@ -1404,8 +1408,8 @@ void MemUpdateForBus()
 
 	if(top->memOpm)
 	{
-		addr=top->memAddr;
-		addrb=top->memAddrB;
+		addr=top->memAddrA[0];
+		addrb=top->memAddrB[0];
 		top->memOK=0;
 		
 		is_rom	= (addr>=0x00000000) && (addr<=0x00007FFF);
@@ -1941,6 +1945,7 @@ int MemSetByte(int addr, int val)
 	return(i);
 }
 
+#if 0
 int CheckDebugSanityIS()
 {
 	uint32_t dpc;
@@ -1976,6 +1981,7 @@ int CheckDebugSanityIS()
 	
 	return(1);
 }
+#endif
 
 int MemSimUpdateCache(
 	uint32_t addr, uint64_t val1, uint64_t val2,
@@ -2062,6 +2068,7 @@ int MemSimUpdateCache(
 	return(1);
 }
 
+#if 0
 int CheckDebugSanityDS()
 {
 	uint32_t addr;
@@ -2091,6 +2098,7 @@ int CheckDebugSanityDS()
 	
 	return(1);
 }
+#endif
 
 int CheckDebugSanity()
 {
@@ -2128,7 +2136,7 @@ int main(int argc, char **argv, char **env)
 {
 	BJX2_Context *ctx;
 	FILE *fd;
-	uint64_t tot_bdl, lpc;
+	uint64_t tot_bdl, lpc, cpc;
 	int lclk, mhz;
 	int tt_start;
 	int ctick, ctick_rst;
@@ -2420,9 +2428,12 @@ int main(int argc, char **argv, char **env)
 		
 		jx2_ctx->tot_cyc=main_time>>1;
 
-		if(lpc!=top->dbgOutPc)
+//		cpc=top->dbgOutPc[0];
+		cpc=top->dbgOutPc;
+//		if(lpc!=top->dbgOutPc)
+		if(lpc!=cpc)
 		{
-			lpc=top->dbgOutPc;
+			lpc=cpc;
 			tot_bdl++;
 		}
 

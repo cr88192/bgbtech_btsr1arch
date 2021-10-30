@@ -1411,9 +1411,11 @@ int BJX2_MemTlbCheckAccess(BJX2_Context *ctx, int acc, int pgbits,
 	return(0);
 }
 
-bjx2_addr BJX2_MemTranslateTlb(BJX2_Context *ctx, bjx2_addr addr, int acc)
+bjx2_addr BJX2_MemTranslateTlbW(BJX2_Context *ctx,
+	bjx2_addr addr, bjx2_addr addrh, int acc)
 {
-	bjx2_addr addr1;
+	bjx2_addr addr1, addrh1;
+	u64 tlbhi3, tlblo3;
 	u64 tlbhi2, tlblo2;
 	u64 tlbhi0, tlblo0;
 	u64 tlbhi1, tlblo1;
@@ -1424,6 +1426,8 @@ bjx2_addr BJX2_MemTranslateTlb(BJX2_Context *ctx, bjx2_addr addr, int acc)
 		addr=(addr&0x0000FFFFFFFFFFFFULL);
 	else
 		addr=(addr&0x00000000FFFFFFFFULL);
+
+	addrh=(addrh&0x0000FFFFFFFFFFFFULL);
 
 
 	if(!(ctx->regs[BJX2_REG_MMCR]&1))
@@ -1500,12 +1504,35 @@ bjx2_addr BJX2_MemTranslateTlb(BJX2_Context *ctx, bjx2_addr addr, int acc)
 		{
 			tlbhi2=ctx->mem_tlb_hi[h*4+i];
 			tlblo2=ctx->mem_tlb_lo[h*4+i];
+
+			if(!(i&1))
+			{
+				tlbhi3=ctx->mem_tlb_hi[h*4+(i+1)];
+				tlblo3=ctx->mem_tlb_lo[h*4+(i+1)];
+				addrh1=addrh;
+				
+				if((tlblo3&3)!=2)
+				{
+					tlbhi3=0;
+					tlblo3=0;
+					addrh1=0;
+				}
+			}else
+			{
+				tlbhi3=0;
+				tlblo3=0;
+				addrh1=0;
+			}
 			
 			if(!(tlblo2&1))
 				continue;
 
-			if(	(tlbhi2&0x0000FFFFFFFFC000ULL) ==
-				(addr  &0x0000FFFFFFFFC000ULL))
+//			if(	(tlbhi2&0x0000FFFFFFFFC000ULL) ==
+//				(addr  &0x0000FFFFFFFFC000ULL))
+			if(	((tlbhi2&0x0000FFFFFFFFC000ULL) ==
+				(addr  &0x0000FFFFFFFFC000ULL)) &&
+				((tlbhi3&0x0000FFFFFFFFFFFFULL) ==
+				(addrh1&0x0000FFFFFFFFFFFFULL)))
 			{
 //				ctx->mem_tlb_pr0_hi=tlbhi2;
 //				ctx->mem_tlb_pr0_lo=tlblo2;
@@ -1520,7 +1547,7 @@ bjx2_addr BJX2_MemTranslateTlb(BJX2_Context *ctx, bjx2_addr addr, int acc)
 //					JX2_DBGBREAK
 				}
 
-#if 1
+#if 0
 				for(j=i; j>0; j--)
 				{
 					tlbhi1=ctx->mem_tlb_hi[h*4+(j-1)];
@@ -1571,7 +1598,7 @@ bjx2_addr BJX2_MemTranslateTlb(BJX2_Context *ctx, bjx2_addr addr, int acc)
 //					JX2_DBGBREAK
 				}
 
-#if 1
+#if 0
 				for(j=i; j>0; j--)
 				{
 					tlbhi1=ctx->mem_tlb_hi[h*4+(j-1)];
@@ -1614,7 +1641,7 @@ bjx2_addr BJX2_MemTranslateTlb(BJX2_Context *ctx, bjx2_addr addr, int acc)
 //				ctx->mem_tlb_pr1_lo=tlblo0;
 				addr1=(tlblo2&0x0000FFFFFFFFF000ULL)|(addr&0x00000FFFULL);
 
-#if 1
+#if 0
 				for(j=i; j>0; j--)
 				{
 					tlbhi1=ctx->mem_tlb_hi[h*4+(j-1)];
@@ -1721,13 +1748,19 @@ bjx2_addr BJX2_MemTranslateTlb(BJX2_Context *ctx, bjx2_addr addr, int acc)
 //	return(addr);
 }
 
-int BJX2_MemGetByte_Dfl(BJX2_Context *ctx, bjx2_addr addr0)
+bjx2_addr BJX2_MemTranslateTlb(BJX2_Context *ctx, bjx2_addr addr, int acc)
+{
+	return(BJX2_MemTranslateTlbW(ctx, addr,
+		ctx->regs[BJX2_REG_GBR_HI], acc));
+}
+
+int BJX2_MemGetByte_Dfl(BJX2_Context *ctx, bjx2_addr addr0, bjx2_addr addrh)
 {
 	BJX2_MemSpan *sp;
 	bjx2_addr addr;
 	int ra;
 
-	addr=BJX2_MemTranslateTlb(ctx, addr0, 1);
+	addr=BJX2_MemTranslateTlbW(ctx, addr0, addrh, 1);
 	if(ctx->status)
 		return(0);
 
@@ -1781,13 +1814,13 @@ int BJX2_MemGetByte_Dfl(BJX2_Context *ctx, bjx2_addr addr0)
 	return(sp->GetByte(ctx, sp, addr));
 }
 
-int BJX2_MemGetWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0)
+int BJX2_MemGetWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0, bjx2_addr addrh)
 {
 	BJX2_MemSpan *sp;
 	bjx2_addr addr;
 	int ra;
 
-	addr=BJX2_MemTranslateTlb(ctx, addr0, 1);
+	addr=BJX2_MemTranslateTlbW(ctx, addr0, addrh, 1);
 	if(ctx->status)
 		return(0);
 
@@ -1841,13 +1874,13 @@ int BJX2_MemGetWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0)
 	return(sp->GetWord(ctx, sp, addr));
 }
 
-s32 BJX2_MemGetDWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0)
+s32 BJX2_MemGetDWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0, bjx2_addr addrh)
 {
 	BJX2_MemSpan *sp;
 	bjx2_addr addr;
 	int ra;
 
-	addr=BJX2_MemTranslateTlb(ctx, addr0, 1);
+	addr=BJX2_MemTranslateTlbW(ctx, addr0, addrh, 1);
 	if(ctx->status)
 		return(0);
 
@@ -1901,14 +1934,14 @@ s32 BJX2_MemGetDWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0)
 	return(sp->GetDWord(ctx, sp, addr));
 }
 
-s64 BJX2_MemGetQWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0)
+s64 BJX2_MemGetQWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0, bjx2_addr addrh)
 {
 	BJX2_MemSpan *sp;
 	bjx2_addr addr;
 	s64 t;
 	int ra;
 
-	addr=BJX2_MemTranslateTlb(ctx, addr0, 1);
+	addr=BJX2_MemTranslateTlbW(ctx, addr0, addrh, 1);
 	if(ctx->status)
 		return(0);
 
@@ -1965,7 +1998,8 @@ s64 BJX2_MemGetQWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0)
 	return(t);
 }
 
-int BJX2_MemGetXWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0,
+int BJX2_MemGetXWord_Dfl(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addrh,
 	u64 *rvlo, u64 *rvhi)
 {
 	BJX2_MemSpan *sp;
@@ -1973,7 +2007,7 @@ int BJX2_MemGetXWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0,
 	s64 t;
 	int ra;
 
-	addr=BJX2_MemTranslateTlb(ctx, addr0, 1);
+	addr=BJX2_MemTranslateTlbW(ctx, addr0, addrh, 1);
 	if(ctx->status)
 		return(0);
 
@@ -2035,7 +2069,8 @@ int BJX2_MemGetXWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0,
 }
 
 
-int BJX2_MemGetByte_NoAT(BJX2_Context *ctx, bjx2_addr addr0)
+int BJX2_MemGetByte_NoAT(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addrh)
 {
 	BJX2_MemSpan *sp;
 	bjx2_addr addr;
@@ -2088,7 +2123,8 @@ int BJX2_MemGetByte_NoAT(BJX2_Context *ctx, bjx2_addr addr0)
 	return(sp->GetByte(ctx, sp, addr));
 }
 
-int BJX2_MemGetWord_NoAT(BJX2_Context *ctx, bjx2_addr addr0)
+int BJX2_MemGetWord_NoAT(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addrh)
 {
 	BJX2_MemSpan *sp;
 	bjx2_addr addr;
@@ -2141,7 +2177,8 @@ int BJX2_MemGetWord_NoAT(BJX2_Context *ctx, bjx2_addr addr0)
 	return(sp->GetWord(ctx, sp, addr));
 }
 
-s32 BJX2_MemGetDWord_NoAT(BJX2_Context *ctx, bjx2_addr addr0)
+s32 BJX2_MemGetDWord_NoAT(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addrh)
 {
 	BJX2_MemSpan *sp;
 	bjx2_addr addr;
@@ -2194,7 +2231,8 @@ s32 BJX2_MemGetDWord_NoAT(BJX2_Context *ctx, bjx2_addr addr0)
 	return(sp->GetDWord(ctx, sp, addr));
 }
 
-s64 BJX2_MemGetQWord_NoAT(BJX2_Context *ctx, bjx2_addr addr0)
+s64 BJX2_MemGetQWord_NoAT(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addrh)
 {
 	BJX2_MemSpan *sp;
 	bjx2_addr addr;
@@ -2255,13 +2293,14 @@ s64 BJX2_MemGetQWord_NoAT(BJX2_Context *ctx, bjx2_addr addr0)
 }
 
 
-int BJX2_MemSetByte_Dfl(BJX2_Context *ctx, bjx2_addr addr0, int val)
+int BJX2_MemSetByte_Dfl(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addrh, int val)
 {
 	BJX2_MemSpan *sp;
 	bjx2_addr addr;
 	int ra, ra4;
 
-	addr=BJX2_MemTranslateTlb(ctx, addr0, 2);
+	addr=BJX2_MemTranslateTlbW(ctx, addr0, addrh, 2);
 	if(ctx->status)
 		return(0);
 
@@ -2305,13 +2344,14 @@ int BJX2_MemSetByte_Dfl(BJX2_Context *ctx, bjx2_addr addr0, int val)
 	return(sp->SetByte(ctx, sp, addr, val));
 }
 
-int BJX2_MemSetWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0, int val)
+int BJX2_MemSetWord_Dfl(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addrh, int val)
 {
 	BJX2_MemSpan *sp;
 	bjx2_addr addr;
 	int ra, ra4;
 
-	addr=BJX2_MemTranslateTlb(ctx, addr0, 2);
+	addr=BJX2_MemTranslateTlbW(ctx, addr0, addrh, 2);
 	if(ctx->status)
 		return(0);
 
@@ -2365,13 +2405,14 @@ int BJX2_MemSetWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0, int val)
 	return(sp->SetWord(ctx, sp, addr, val));
 }
 
-int BJX2_MemSetDWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0, s32 val)
+int BJX2_MemSetDWord_Dfl(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addrh, s32 val)
 {
 	BJX2_MemSpan *sp;
 	bjx2_addr addr;
 	int ra, ra4;
 
-	addr=BJX2_MemTranslateTlb(ctx, addr0, 2);
+	addr=BJX2_MemTranslateTlbW(ctx, addr0, addrh, 2);
 	if(ctx->status)
 		return(0);
 
@@ -2425,13 +2466,14 @@ int BJX2_MemSetDWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0, s32 val)
 	return(sp->SetDWord(ctx, sp, addr, val));
 }
 
-int BJX2_MemSetQWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0, s64 val)
+int BJX2_MemSetQWord_Dfl(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addrh, s64 val)
 {
 	BJX2_MemSpan *sp;
 	bjx2_addr addr;
 	int ra, ra4;
 
-	addr=BJX2_MemTranslateTlb(ctx, addr0, 2);
+	addr=BJX2_MemTranslateTlbW(ctx, addr0, addrh, 2);
 	if(ctx->status)
 		return(0);
 
@@ -2488,14 +2530,15 @@ int BJX2_MemSetQWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0, s64 val)
 	return(0);
 }
 
-int BJX2_MemSetXWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0,
+int BJX2_MemSetXWord_Dfl(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addrh,
 	u64 vlo, u64 vhi)
 {
 	BJX2_MemSpan *sp;
 	bjx2_addr addr;
 	int ra, ra4;
 
-	addr=BJX2_MemTranslateTlb(ctx, addr0, 2);
+	addr=BJX2_MemTranslateTlbW(ctx, addr0, addrh, 2);
 	if(ctx->status)
 		return(0);
 
@@ -2556,7 +2599,8 @@ int BJX2_MemSetXWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0,
 }
 
 
-int BJX2_MemSetDWord_NoAT(BJX2_Context *ctx, bjx2_addr addr0, s32 val)
+int BJX2_MemSetDWord_NoAT(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addrh, s32 val)
 {
 	BJX2_MemSpan *sp;
 	bjx2_addr addr;
@@ -2603,7 +2647,8 @@ int BJX2_MemSetDWord_NoAT(BJX2_Context *ctx, bjx2_addr addr0, s32 val)
 	return(sp->SetDWord(ctx, sp, addr, val));
 }
 
-int BJX2_MemSetQWord_NoAT(BJX2_Context *ctx, bjx2_addr addr0, s64 val)
+int BJX2_MemSetQWord_NoAT(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addrh, s64 val)
 {
 	BJX2_MemSpan *sp;
 	bjx2_addr addr;
@@ -2654,13 +2699,14 @@ int BJX2_MemSetQWord_NoAT(BJX2_Context *ctx, bjx2_addr addr0, s64 val)
 }
 
 
-int BJX2_MemSetTripwire_Dfl(BJX2_Context *ctx, bjx2_addr addr0, int val)
+int BJX2_MemSetTripwire_Dfl(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addrh, int val)
 {
 	BJX2_MemSpan *sp;
 	bjx2_addr addr;
 	int ra;
 
-	addr=BJX2_MemTranslateTlb(ctx, addr0, 2);
+	addr=BJX2_MemTranslateTlbW(ctx, addr0, addrh, 2);
 	if(ctx->status)
 		return(0);
 
@@ -2704,14 +2750,14 @@ int BJX2_MemSetTripwire_Dfl(BJX2_Context *ctx, bjx2_addr addr0, int val)
 }
 
 int BJX2_MemQueryTransit_Dfl(BJX2_Context *ctx,
-	bjx2_addr addr0, bjx2_addr addr1, int val)
+	bjx2_addr addr0, bjx2_addr addr1, bjx2_addr addrh, int val)
 {
 	BJX2_MemSpan *sp;
 	bjx2_addr addr, addrb;
 	int ra;
 
-	addr=BJX2_MemTranslateTlb(ctx, addr0, 0);
-	addrb=BJX2_MemTranslateTlb(ctx, addr1, 0);
+	addr=BJX2_MemTranslateTlbW(ctx, addr0, addrh, 0);
+	addrb=BJX2_MemTranslateTlbW(ctx, addr1, addrh, 0);
 	if(ctx->status)
 		return(0);
 
@@ -2808,7 +2854,7 @@ int BJX2_MemGetByte(BJX2_Context *ctx, bjx2_addr addr0)
 //	if(ctx->MemGetByte)
 //		return(ctx->MemGetByte(ctx, addr0));
 //	ctx->MemGetByte=BJX2_MemGetByte_Dfl;
-	return(ctx->MemGetByte(ctx, addr0));
+	return(ctx->MemGetByte(ctx, addr0, ctx->regs[BJX2_REG_GBR_HI]));
 }
 
 int BJX2_MemGetWord(BJX2_Context *ctx, bjx2_addr addr0)
@@ -2816,7 +2862,7 @@ int BJX2_MemGetWord(BJX2_Context *ctx, bjx2_addr addr0)
 //	if(ctx->MemGetWord)
 //		return(ctx->MemGetWord(ctx, addr0));
 //	ctx->MemGetWord=BJX2_MemGetWord_Dfl;
-	return(ctx->MemGetWord(ctx, addr0));
+	return(ctx->MemGetWord(ctx, addr0, ctx->regs[BJX2_REG_GBR_HI]));
 }
 
 s32 BJX2_MemGetDWord(BJX2_Context *ctx, bjx2_addr addr0)
@@ -2824,7 +2870,7 @@ s32 BJX2_MemGetDWord(BJX2_Context *ctx, bjx2_addr addr0)
 //	if(ctx->MemGetDWord)
 //		return(ctx->MemGetDWord(ctx, addr0));
 //	ctx->MemGetDWord=BJX2_MemGetDWord_Dfl;
-	return(ctx->MemGetDWord(ctx, addr0));
+	return(ctx->MemGetDWord(ctx, addr0, ctx->regs[BJX2_REG_GBR_HI]));
 }
 
 s64 BJX2_MemGetQWord(BJX2_Context *ctx, bjx2_addr addr0)
@@ -2833,7 +2879,7 @@ s64 BJX2_MemGetQWord(BJX2_Context *ctx, bjx2_addr addr0)
 //	if(ctx->MemGetQWord)
 //		return(ctx->MemGetQWord(ctx, addr0));
 //	ctx->MemGetQWord=BJX2_MemGetQWord_Dfl;
-	v=ctx->MemGetQWord(ctx, addr0);
+	v=ctx->MemGetQWord(ctx, addr0, ctx->regs[BJX2_REG_GBR_HI]);
 	return(v);
 }
 
@@ -2841,7 +2887,7 @@ int BJX2_MemGetXWord(BJX2_Context *ctx, bjx2_addr addr0,
 	u64 *rvlo, u64 *rvhi)
 {
 	int v;
-	v=ctx->MemGetXWord(ctx, addr0, rvlo, rvhi);
+	v=ctx->MemGetXWord(ctx, addr0, ctx->regs[BJX2_REG_GBR_HI], rvlo, rvhi);
 	return(v);
 }
 
@@ -2850,7 +2896,7 @@ int BJX2_MemSetByte(BJX2_Context *ctx, bjx2_addr addr0, int val)
 //	if(ctx->MemSetByte)
 //		return(ctx->MemSetByte(ctx, addr0, val));
 //	ctx->MemSetByte=BJX2_MemSetByte_Dfl;
-	return(ctx->MemSetByte(ctx, addr0, val));
+	return(ctx->MemSetByte(ctx, addr0, ctx->regs[BJX2_REG_GBR_HI], val));
 }
 
 int BJX2_MemSetWord(BJX2_Context *ctx, bjx2_addr addr0, int val)
@@ -2858,7 +2904,7 @@ int BJX2_MemSetWord(BJX2_Context *ctx, bjx2_addr addr0, int val)
 //	if(ctx->MemSetWord)
 //		return(ctx->MemSetWord(ctx, addr0, val));
 //	ctx->MemSetWord=BJX2_MemSetWord_Dfl;
-	return(ctx->MemSetWord(ctx, addr0, val));
+	return(ctx->MemSetWord(ctx, addr0, ctx->regs[BJX2_REG_GBR_HI], val));
 }
 
 int BJX2_MemSetDWord(BJX2_Context *ctx, bjx2_addr addr0, s32 val)
@@ -2866,7 +2912,7 @@ int BJX2_MemSetDWord(BJX2_Context *ctx, bjx2_addr addr0, s32 val)
 //	if(ctx->MemSetDWord)
 //		return(ctx->MemSetDWord(ctx, addr0, val));
 //	ctx->MemSetDWord=BJX2_MemSetDWord_Dfl;
-	return(ctx->MemSetDWord(ctx, addr0, val));
+	return(ctx->MemSetDWord(ctx, addr0, ctx->regs[BJX2_REG_GBR_HI], val));
 }
 
 int BJX2_MemSetQWord(BJX2_Context *ctx, bjx2_addr addr0, s64 val)
@@ -2874,22 +2920,85 @@ int BJX2_MemSetQWord(BJX2_Context *ctx, bjx2_addr addr0, s64 val)
 //	if(ctx->MemSetQWord)
 //		return(ctx->MemSetQWord(ctx, addr0, val));
 //	ctx->MemSetQWord=BJX2_MemSetQWord_Dfl;
-	return(ctx->MemSetQWord(ctx, addr0, val));
+	return(ctx->MemSetQWord(ctx, addr0, ctx->regs[BJX2_REG_GBR_HI], val));
 }
 
 int BJX2_MemSetXWord(BJX2_Context *ctx, bjx2_addr addr0,
 	u64 vlo, u64 vhi)
 {
-	return(ctx->MemSetXWord(ctx, addr0, vlo, vhi));
+	return(ctx->MemSetXWord(ctx, addr0, ctx->regs[BJX2_REG_GBR_HI], vlo, vhi));
 }
 
 int BJX2_MemSetTrip(BJX2_Context *ctx, bjx2_addr addr0, int val)
 {
-	return(ctx->MemSetTripwire(ctx, addr0, val));
+	return(ctx->MemSetTripwire(ctx, addr0, ctx->regs[BJX2_REG_GBR_HI], val));
 }
 
 int BJX2_MemQueryTransit(BJX2_Context *ctx,
 	bjx2_addr addr0, bjx2_addr addr1, int val)
 {
-	return(ctx->MemQueryTransit(ctx, addr0, addr1, val));
+	return(ctx->MemQueryTransit(ctx, addr0, addr1,
+		ctx->regs[BJX2_REG_GBR_HI], val));
+}
+
+int BJX2_MemGetByteW(BJX2_Context *ctx, bjx2_addr addr0, bjx2_addr addrh)
+{
+	return(ctx->MemGetByte(ctx, addr0, addrh));
+}
+
+int BJX2_MemGetWordW(BJX2_Context *ctx, bjx2_addr addr0, bjx2_addr addrh)
+{
+	return(ctx->MemGetWord(ctx, addr0, addrh));
+}
+
+s32 BJX2_MemGetDWordW(BJX2_Context *ctx, bjx2_addr addr0, bjx2_addr addrh)
+{
+	return(ctx->MemGetDWord(ctx, addr0, addrh));
+}
+
+s64 BJX2_MemGetQWordW(BJX2_Context *ctx, bjx2_addr addr0, bjx2_addr addrh)
+{
+	s64 v;
+	v=ctx->MemGetQWord(ctx, addr0, addrh);
+	return(v);
+}
+
+int BJX2_MemGetXWordW(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addrh,
+	u64 *rvlo, u64 *rvhi)
+{
+	int v;
+	v=ctx->MemGetXWord(ctx, addr0, addrh, rvlo, rvhi);
+	return(v);
+}
+
+int BJX2_MemSetByteW(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addrh, int val)
+{
+	return(ctx->MemSetByte(ctx, addr0, addrh, val));
+}
+
+int BJX2_MemSetWordW(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addrh, int val)
+{
+	return(ctx->MemSetWord(ctx, addr0, addrh, val));
+}
+
+int BJX2_MemSetDWordW(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addrh, s32 val)
+{
+	return(ctx->MemSetDWord(ctx, addr0, addrh, val));
+}
+
+int BJX2_MemSetQWordW(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addrh, s64 val)
+{
+	return(ctx->MemSetQWord(ctx, addr0, addrh, val));
+}
+
+int BJX2_MemSetXWordW(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addrh,
+	u64 vlo, u64 vhi)
+{
+	return(ctx->MemSetXWord(ctx, addr0, addrh, vlo, vhi));
 }

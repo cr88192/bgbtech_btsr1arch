@@ -55,10 +55,10 @@ input [ 15:0]	memSeqIn;		//operation sequence
 output[ 15:0]	memSeqOut;		//operation sequence
 input [ 15:0]	memOpmIn;		//memory operation mode
 output[ 15:0]	memOpmOut;		//memory operation mode
-input [ 47:0]	memAddrIn;		//memory input address
-output[ 47:0]	memAddrOut;		//memory output address
-input [127:0]	memDataIn;		//memory input data
-output[127:0]	memDataOut;		//memory output data
+`input_l2addr	memAddrIn;		//memory input address
+`output_l2addr	memAddrOut;		//memory output address
+`input_tile		memDataIn;		//memory input data
+`output_tile	memDataOut;		//memory output data
 
 input [  7:0]	unitNodeId;		//Who Are We?
 
@@ -87,8 +87,8 @@ reg			tRegOutHoldL;
 
 reg[ 15:0]		tMemSeqOut;		//operation sequence
 reg[ 15:0]		tMemOpmOut;		//memory operation mode
-reg[ 47:0]		tMemAddrOut;		//memory output address
-reg[127:0]		tMemDataOut;		//memory output data
+`reg_l2addr	tMemAddrOut;		//memory output address
+`reg_tile		tMemDataOut;		//memory output data
 
 assign		memSeqOut = tMemSeqOut;
 assign		memOpmOut = tMemOpmOut;
@@ -367,14 +367,14 @@ reg				tMemArrFwB;
 
 reg[ 15:0]		tMemSeqReq;
 reg[ 15:0]		tMemOpmReq;
-reg[ 47:0]		tMemAddrReq;
-reg[127:0]		tMemDataReq;
+`reg_l2addr	tMemAddrReq;
+`reg_tile		tMemDataReq;
 reg				tMemReqSent;	//Request Was Sent
 
 reg[ 15:0]		tMemSeqReqL;
 reg[ 15:0]		tMemOpmReqL;
-reg[ 47:0]		tMemAddrReqL;
-reg[127:0]		tMemDataReqL;
+`reg_l2addr	tMemAddrReqL;
+`reg_tile		tMemDataReqL;
 
 reg				tMemReqStA;			//Store A
 reg				tMemReqStB;			//Store B
@@ -1217,9 +1217,9 @@ begin
 
 	tMemSeqReq		= UV16_00;
 	tMemOpmReq		= UV16_00;
-	tMemAddrReq		= UV48_00;
-//	tMemDataReq		= UV128_XX;
-	tMemDataReq		= UV128_00;
+	tMemAddrReq		= UVB2AT_00;
+//	tMemDataReq		= UVTILE_XX;
+	tMemDataReq		= UVTILE_00;
 	tNxtMemReqStA	= 0;
 	tNxtMemReqStB	= 0;
 	tNxtMemReqLdA	= 0;
@@ -1247,7 +1247,11 @@ begin
 		tMemSeqReq		= { unitNodeId, 4'b1000, tMemSeqRov };
 //		tMemOpmReq		= { UV8_00, JX2_RBI_OPM_LDX };
 		tMemOpmReq		= { UV8_00, JX2_RBI_OPM_PFX };
+`ifdef jx2_enable_l2addr96
+		tMemAddrReq		= { UV48_00, 20'hC0002, tReqAxC[23:1], 5'h00 };
+`else
 		tMemAddrReq		= { 20'hC0002, tReqAxC[23:1], 5'h00 };
+`endif
 		tNxtMemReqLdC	= 1;
 	end
 	else
@@ -1258,7 +1262,11 @@ begin
 		tMemSeqReq		= { unitNodeId, 4'b1100, tMemSeqRov };
 //		tMemOpmReq		= { UV8_00, JX2_RBI_OPM_LDX };
 		tMemOpmReq		= { UV8_00, JX2_RBI_OPM_PFX };
+`ifdef jx2_enable_l2addr96
+		tMemAddrReq		= { UV48_00, 20'hC0002, tReqAxC[23:1], 5'h10 };
+`else
 		tMemAddrReq		= { 20'hC0002, tReqAxC[23:1], 5'h10 };
+`endif
 		tNxtMemReqLdD	= 1;
 	end
 	else
@@ -1306,7 +1314,12 @@ begin
 			tMemSeqReq		= { unitNodeId, 4'b0000, tMemSeqRov };
 			tMemDataReq		= tBlkMemData2A;
 			tMemOpmReq		= { UV8_00, JX2_RBI_OPM_STX };
+`ifdef jx2_enable_l2addr96
+			tMemAddrReq		= { UV48_00, 20'hC0002,
+				tBlkMemAddr2A[27: 5], 5'h00 };
+`else
 			tMemAddrReq		= { 20'hC0002, tBlkMemAddr2A[27: 5], 5'h00 };
+`endif
 			tNxtMemReqStA	= 1;
 		end
 		else if(tReqDoMissB && tBlkIsDirtyB && !tMemReqStB)
@@ -1318,7 +1331,12 @@ begin
 			tMemSeqReq		= { unitNodeId, 4'b0100, tMemSeqRov };
 			tMemDataReq		= tBlkMemData2B;
 			tMemOpmReq		= { UV8_00, JX2_RBI_OPM_STX };
+`ifdef jx2_enable_l2addr96
+			tMemAddrReq		= { UV48_00, 20'hC0002,
+				tBlkMemAddr2B[27: 5], 5'h10 };
+`else
 			tMemAddrReq		= { 20'hC0002, tBlkMemAddr2B[27: 5], 5'h10 };
+`endif
 			tNxtMemReqStB	= 1;
 		end
 		else
@@ -1331,7 +1349,11 @@ begin
 			tMemSeqReq		= { unitNodeId, 4'b0000, tMemSeqRov };
 //			tMemDataReq		= tBlkMemData2A;
 			tMemOpmReq		= { UV8_00, JX2_RBI_OPM_LDX };
+`ifdef jx2_enable_l2addr96
+			tMemAddrReq		= { UV48_00, 20'hC0002, tReqAxA, 4'h00 };
+`else
 			tMemAddrReq		= { 20'hC0002, tReqAxA, 4'h00 };
+`endif
 
 			tNxtMemReqLdA = 1;
 		end
@@ -1345,7 +1367,11 @@ begin
 			tMemSeqReq		= { unitNodeId, 4'b0100, tMemSeqRov };
 //			tMemDataReq		= tBlkMemData2B;
 			tMemOpmReq		= { UV8_00, JX2_RBI_OPM_LDX };
+`ifdef jx2_enable_l2addr96
+			tMemAddrReq		= { UV48_00, 20'hC0002, tReqAxB, 4'h00 };
+`else
 			tMemAddrReq		= { 20'hC0002, tReqAxB, 4'h00 };
+`endif
 
 			tNxtMemReqLdB	= 1;
 		end

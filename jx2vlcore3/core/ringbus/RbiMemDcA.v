@@ -22,7 +22,7 @@ module RbiMemDcA(
 input			clock;
 input			reset;
 
-input [47: 0]	regInAddr;		//input address
+`input_vaddr	regInAddr;		//input address
 input [ 5: 0]	regInOpm;		//operation mode
 
 output[63: 0]	regOutValA;		//output data value (Low 128 / Lane A)
@@ -47,10 +47,10 @@ input [ 15:0]	memSeqIn;		//operation sequence
 output[ 15:0]	memSeqOut;		//operation sequence
 input [ 15:0]	memOpmIn;		//memory operation mode
 output[ 15:0]	memOpmOut;		//memory operation mode
-input [ 47:0]	memAddrIn;		//memory input address
-output[ 47:0]	memAddrOut;		//memory output address
-input [127:0]	memDataIn;		//memory input data
-output[127:0]	memDataOut;		//memory output data
+`input_l1addr	memAddrIn;		//memory input address
+`output_l1addr	memAddrOut;		//memory output address
+`input_tile		memDataIn;		//memory input data
+`output_tile	memDataOut;		//memory output data
 
 input [  7:0]	unitNodeId;		//Who Are We?
 
@@ -69,8 +69,8 @@ reg[63: 0]		tRegInSr;
 
 reg[ 15:0]		tMemSeqOut;		//operation sequence
 reg[ 15:0]		tMemOpmOut;		//memory operation mode
-reg[ 47:0]		tMemAddrOut;		//memory output address
-reg[127:0]		tMemDataOut;		//memory output data
+`reg_l1addr	tMemAddrOut;		//memory output address
+`reg_tile		tMemDataOut;		//memory output data
 
 assign		memSeqOut = tMemSeqOut;
 assign		memOpmOut = tMemOpmOut;
@@ -216,12 +216,15 @@ reg[  3:0]		tNxtFlushRov;
 reg[  3:0]		tFlushRovTlb;
 reg[  3:0]		tNxtFlushRovTlb;
 
-reg[ 47:0]		tNxtReqAddr;
+reg[47:0]		tNxtReqAddrHi;
+reg[47:0]		tReqAddrHi;
+
+reg[47:0]		tNxtReqAddr;
 `reg_l1d_ix		tNxtReqIxA;
 `reg_l1d_ix		tNxtReqIxB;
 reg[ 43:0]		tNxtReqAxA;
 reg[ 43:0]		tNxtReqAxB;
-reg[ 47:0]		tReqAddr;
+reg[47:0]		tReqAddr;
 `reg_l1d_ix		tReqIxA;
 `reg_l1d_ix		tReqIxB;
 reg[ 43:0]		tReqAxA;
@@ -233,6 +236,10 @@ reg[ 43:0]		tReqAxB;
 
 // reg[ 47:0]		tReqAddrUtlb;
 // reg				tReqAddrUtlbHit;
+
+reg[15:0]		tReqAxH;
+reg[15:0]		tNxtReqAxH;
+reg[15:0]		tReq2AxH;
 
 
 reg[  4:0]		tNxtReqBix;
@@ -331,8 +338,8 @@ reg[127:0]		tBlk2StoreDataA;
 reg[127:0]		tBlk2StoreDataB;
 reg[15:0]		tBlk2StoreDextA;
 reg[15:0]		tBlk2StoreDextB;
-reg[ 7:0]		tBlk2StoreChkA;
-reg[ 7:0]		tBlk2StoreChkB;
+// reg[ 7:0]		tBlk2StoreChkA;
+// reg[ 7:0]		tBlk2StoreChkB;
 
 reg[255:0]		tBlkExData0;
 reg[127:0]		tBlkExData1;
@@ -385,14 +392,14 @@ reg				tNxtMemMmioReady;
 
 reg[ 15:0]		tMemSeqReq;
 reg[ 15:0]		tMemOpmReq;
-reg[ 47:0]		tMemAddrReq;
-reg[127:0]		tMemDataReq;
+`reg_l1addr		tMemAddrReq;
+`reg_tile		tMemDataReq;
 reg				tMemReqSent;	//Request Was Sent
 
 reg[ 15:0]		tMemSeqReqL;
 reg[ 15:0]		tMemOpmReqL;
-reg[ 47:0]		tMemAddrReqL;
-reg[127:0]		tMemDataReqL;
+`reg_l1addr		tMemAddrReqL;
+`reg_tile		tMemDataReqL;
 
 reg				tMemReqStA;		//Store A
 reg				tMemReqStB;		//Store B
@@ -486,7 +493,12 @@ begin
 		tNxtReqAxA = regInAddr[47:4];
 		tNxtReqAxB = tNxtReqAxA + 1;
 	end
-	
+
+	tNxtReqAddrHi	= 0;
+`ifdef jx2_enable_vaddr96
+	tNxtReqAddrHi	= regInAddr[95:48];
+`endif
+
 	tNxtReqAddr		= regInAddr[47:0];
 	tNxtReqBix		= regInAddr[4:0];
 	tNxtReqOpm		= regInOpm;
@@ -495,6 +507,18 @@ begin
 	tNxtInPmode		= regInSr[31:28] ^ regKrrHash[3:0] ^ regKrrHash[7:4];
 
 	tNxtUtlbBlkIx	= regInAddr[15:12] ^ regInAddr[19:16];
+
+//	tNxtReqAxH		=
+//		tNxtReqAddrHi[15: 0] ^
+//		tNxtReqAddrHi[31:16] ^
+//		tNxtReqAddrHi[47:32] ;
+
+	tNxtReqAxH		=
+		tNxtReqAddrHi[15: 0] ^
+		{	tNxtReqAddrHi[23:16], tNxtReqAddrHi[31:24] } ^
+		{	tNxtReqAddrHi[35:32], tNxtReqAddrHi[39:36],
+			tNxtReqAddrHi[43:40], tNxtReqAddrHi[47:44] } ;
+
 
 `ifdef def_true
 
@@ -795,7 +819,8 @@ begin
 		tBlk2StoreDataA = tBlk2InsData[127:  0];
 		tBlk2StoreDataB = tBlk2InsData[255:128];
 	end
-	
+
+`ifndef def_true
 //	tBlk2StoreChkA		= tBlk2StoreAddrA[71:64] ^ tBlk2StoreAddrA[12:5];
 //	tBlk2StoreChkB		= tBlk2StoreAddrB[71:64] ^ tBlk2StoreAddrB[12:5];
 	tBlk2StoreChkA		= {
@@ -808,8 +833,12 @@ begin
 //	tBlk2StoreDextA		= { 8'h00, tBlk2StoreChkA };
 //	tBlk2StoreDextB		= { 8'h00, tBlk2StoreChkB };
 
-	tBlk2StoreDextA		= { 4'h0, tInPmode, tBlk2StoreChkA };
-	tBlk2StoreDextB		= { 4'h0, tInPmode, tBlk2StoreChkB };
+//	tBlk2StoreDextA		= { 4'h0, tInPmode, tBlk2StoreChkA };
+//	tBlk2StoreDextB		= { 4'h0, tInPmode, tBlk2StoreChkB };
+`endif
+
+	tBlk2StoreDextA		= tReq2AxH;
+	tBlk2StoreDextB		= tReq2AxH;
 
 `ifdef jx2_mem_l1d_fwstore
 // `ifdef def_true
@@ -922,8 +951,8 @@ begin
 	tReqReady2	= tReqReady && tReqReadyL;
 
 
-	tBlkMemChk2A	= tBlkMemDext2A[7:0];
-	tBlkMemChk2B	= tBlkMemDext2B[7:0];
+//	tBlkMemChk2A	= tBlkMemDext2A[7:0];
+//	tBlkMemChk2B	= tBlkMemDext2B[7:0];
 
 	tBlkIsDirtyA	= tBlkMemAddr2A[4];
 	tBlkIsDirtyB	= tBlkMemAddr2B[4];
@@ -942,6 +971,11 @@ begin
 
 	tReqFlushAddrA	= (tBlkMemAddr2A[71:68] != tFlushRov);
 	tReqFlushAddrB	= (tBlkMemAddr2B[71:68] != tFlushRov);
+
+	if(tBlkMemDext2A != tReqAxH)
+		tReqMissAddrA	= 1;
+	if(tBlkMemDext2B != tReqAxH)
+		tReqMissAddrB	= 1;
 
 `ifdef jx2_mem_l1d_utlb
 	tUtlbBlkFlush	= (tUtlbBlkAddr[7:4] != tFlushRovTlb);
@@ -1397,7 +1431,8 @@ begin
 				~(tArrMemAddrStA[71:68] ^ tArrMemAddrStA[8:5]),
 				 (tArrMemAddrStA[71:68] ^ tArrMemAddrStA[8:5]) };
 //			tArrMemDextStA	= { 8'h00, tArrMemChkStA };
-			tArrMemDextStA	= { 4'h0, tInPmode, tArrMemChkStA };
+//			tArrMemDextStA	= { 4'h0, tInPmode, tArrMemChkStA };
+			tArrMemDextStA	= tReqAxH;
 			tArrMemDoStA = 1;
 			tNxtMemRespLdA = 1;
 
@@ -1458,7 +1493,8 @@ begin
 				~(tArrMemAddrStB[71:68] ^ tArrMemAddrStB[8:5]),
 				 (tArrMemAddrStB[71:68] ^ tArrMemAddrStB[8:5]) };
 //			tArrMemDextStB	= { 8'h00, tArrMemChkStB };
-			tArrMemDextStB	= { 4'h0, tInPmode, tArrMemChkStB };
+//			tArrMemDextStB	= { 4'h0, tInPmode, tArrMemChkStB };
+			tArrMemDextStB	= tReqAxH;
 			tArrMemDoStB = 1;
 			tNxtMemRespLdB = 1;
 
@@ -1664,8 +1700,8 @@ begin
 
 	tMemSeqReq		= UV16_00;
 	tMemOpmReq		= UV16_00;
-	tMemAddrReq		= UV48_00;
-	tMemDataReq		= UV128_XX;
+	tMemAddrReq		= UVB1AT_00;
+	tMemDataReq		= UVTILE_XX;
 	tNxtMemReqStA	= 0;
 	tNxtMemReqStB	= 0;
 	tNxtMemReqLdA	= 0;
@@ -1696,7 +1732,11 @@ begin
 			tMemSeqReq		= { unitNodeId, 4'b1000, tMemSeqRov };
 			tMemDataReq		= { UV64_00, tReqInValA };
 //			tMemOpmReq		= { UV8_00, JX2_RBI_OPM_LDSQ };
+`ifdef jx2_enable_l1addr96
+			tMemAddrReq		= { tReqAddrHi, tReqAddr };
+`else
 			tMemAddrReq		= tReqAddr;
+`endif
 			tNxtMemReqLdM	= 1;
 
 			if(tReqIsCcmd)
@@ -1765,6 +1805,9 @@ begin
 			tMemDataReq		= tBlkMemData2A;
 			tMemOpmReq		= { UV8_00, JX2_RBI_OPM_STX };
 			tMemAddrReq		= {
+`ifdef jx2_enable_l1addr96
+				UV48_00,
+`endif
 				JX2_RBI_ADDRHI_PHYS,
 				tBlkMemAddr2A[67:48],
 				tBlkMemAddr2A[11: 5],
@@ -1781,6 +1824,9 @@ begin
 			tMemDataReq		= tBlkMemData2B;
 			tMemOpmReq		= { UV8_00, JX2_RBI_OPM_STX };
 			tMemAddrReq		= {
+`ifdef jx2_enable_l1addr96
+				UV48_00,
+`endif
 				JX2_RBI_ADDRHI_PHYS,
 				tBlkMemAddr2B[67:48],
 				tBlkMemAddr2B[11: 5],
@@ -1797,7 +1843,11 @@ begin
 			tMemSeqReq		= { unitNodeId, 4'b0000, tMemSeqRov };
 //			tMemDataReq		= tBlkMemData2A;
 			tMemOpmReq		= { UV8_00, JX2_RBI_OPM_LDX };
+`ifdef jx2_enable_l1addr96
+			tMemAddrReq		= { tReqAddrHi, tReqAxA, 4'h00 };
+`else
 			tMemAddrReq		= { tReqAxA, 4'h00 };
+`endif
 
 			if(tReqDoPfxA)
 				tMemOpmReq		= { UV8_00, JX2_RBI_OPM_PFX };
@@ -1807,7 +1857,11 @@ begin
 `ifdef jx2_mem_l1d_utlb
 			if(tReqUtlbHitAxA)
 			begin
+`ifdef jx2_enable_l1addr96
+				tMemAddrReq			= { UV48_00, tReqUtlbAxA, 4'h00 };
+`else
 				tMemAddrReq			= { tReqUtlbAxA, 4'h00 };
+`endif
 				tMemOpmReq[11:8]	= tReqUtlbAccA;
 			end
 `endif
@@ -1823,7 +1877,11 @@ begin
 			tMemSeqReq		= { unitNodeId, 4'b0100, tMemSeqRov };
 //			tMemDataReq		= tBlkMemData2B;
 			tMemOpmReq		= { UV8_00, JX2_RBI_OPM_LDX };
+`ifdef jx2_enable_l1addr96
+			tMemAddrReq		= { tReqAddrHi, tReqAxB, 4'h00 };
+`else
 			tMemAddrReq		= { tReqAxB, 4'h00 };
+`endif
 
 			if(tReqDoPfxB)
 				tMemOpmReq		= { UV8_00, JX2_RBI_OPM_PFX };
@@ -1833,7 +1891,11 @@ begin
 `ifdef jx2_mem_l1d_utlb
 			if(tReqUtlbHitAxB)
 			begin
+`ifdef jx2_enable_l1addr96
+				tMemAddrReq			= { UV48_00, tReqUtlbAxB, 4'h00 };
+`else
 				tMemAddrReq			= { tReqUtlbAxB, 4'h00 };
+`endif
 				tMemOpmReq[11:8]	= tReqUtlbAccB;
 			end
 `endif
@@ -1891,10 +1953,12 @@ begin
 	
 		/* EX1 -> EX2 */
 		tReqAddr		<= tNxtReqAddr;
+		tReqAddrHi		<= tNxtReqAddrHi;
 		tReqIxA			<= tNxtReqIxA;
 		tReqIxB			<= tNxtReqIxB;
 		tReqAxA			<= tNxtReqAxA;
 		tReqAxB			<= tNxtReqAxB;
+		tReqAxH			<= tNxtReqAxH;
 		tReqBix			<= tNxtReqBix;
 		tReqOpm			<= tNxtReqOpm;
 		tReqInValA		<= tNxtReqInValA;
@@ -1917,6 +1981,7 @@ begin
 		tReq2IxB		<= tReqIxB;
 		tReq2AxA		<= tReqAxA;
 		tReq2AxB		<= tReqAxB;
+		tReq2AxH		<= tReqAxH;
 		tReq2Opm		<= tReqOpm;
 		tReq2Bix		<= tReqBix;
 		tReq2Ready		<= tReqReady;

@@ -503,10 +503,23 @@ int BGBCC_JX2C_TypeGetRegClassPI(BGBCC_TransState *ctx, ccxl_type ty)
 			return(BGBCC_SH_REGCLS_AR_REF);
 		}
 
-		if(BGBCC_CCXL_TypeNearPointerP(ctx, ty))
-			{ return(BGBCC_SH_REGCLS_GR); }
-		if(BGBCC_CCXL_TypeFarPointerP(ctx, ty))
-			{ return(BGBCC_SH_REGCLS_QGR); }
+		if(ctx->arch_sizeof_ptr==8)
+		{
+			if(BGBCC_CCXL_TypeNearPointerP(ctx, ty))
+				{ return(BGBCC_SH_REGCLS_QGR); }
+			if(BGBCC_CCXL_TypeFarPointerP(ctx, ty))
+				{ return(BGBCC_SH_REGCLS_QGR2); }
+			if(BGBCC_CCXL_TypeHugePointerP(ctx, ty))
+				{ return(BGBCC_SH_REGCLS_QGR2); }
+		}else
+		{
+			if(BGBCC_CCXL_TypeNearPointerP(ctx, ty))
+				{ return(BGBCC_SH_REGCLS_GR); }
+			if(BGBCC_CCXL_TypeFarPointerP(ctx, ty))
+				{ return(BGBCC_SH_REGCLS_QGR); }
+			if(BGBCC_CCXL_TypeHugePointerP(ctx, ty))
+				{ return(BGBCC_SH_REGCLS_QGR2); }
+		}
 		
 		if(	BGBCC_CCXL_TypeRefArrayP(ctx, ty) ||
 			BGBCC_CCXL_TypeSquareArrayP(ctx, ty))

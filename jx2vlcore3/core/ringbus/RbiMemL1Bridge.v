@@ -32,19 +32,19 @@ input [ 15:0]	l1mSeqIn;		//operation sequence
 output[ 15:0]	l1mSeqOut;		//operation sequence
 input [ 15:0]	l1mOpmIn;		//memory operation mode
 output[ 15:0]	l1mOpmOut;		//memory operation mode
-input [ 47:0]	l1mAddrIn;		//memory input address
-output[ 47:0]	l1mAddrOut;		//memory output address
-input [127:0]	l1mDataIn;		//memory input data
-output[127:0]	l1mDataOut;		//memory output data
+`input_l1addr	l1mAddrIn;		//memory input address
+`output_l1addr	l1mAddrOut;		//memory output address
+`input_tile		l1mDataIn;		//memory input data
+`output_tile	l1mDataOut;		//memory output data
 
 input [ 15:0]	l2mSeqIn;		//operation sequence
 output[ 15:0]	l2mSeqOut;		//operation sequence
 input [ 15:0]	l2mOpmIn;		//memory operation mode
 output[ 15:0]	l2mOpmOut;		//memory operation mode
-input [ 47:0]	l2mAddrIn;		//memory input address
-output[ 47:0]	l2mAddrOut;		//memory output address
-input [127:0]	l2mDataIn;		//memory input data
-output[127:0]	l2mDataOut;		//memory output data
+`input_l2addr	l2mAddrIn;		//memory input address
+`output_l2addr	l2mAddrOut;		//memory output address
+`input_tile		l2mDataIn;		//memory input data
+`output_tile	l2mDataOut;		//memory output data
 
 input [  7:0]	unitNodeId;		//Who Are We?
 
@@ -52,13 +52,13 @@ input [  7:0]	unitNodeId;		//Who Are We?
 
 reg[ 15:0]		tL1mSeqOut;			//operation sequence
 reg[ 15:0]		tL1mOpmOut;			//memory operation mode
-reg[ 47:0]		tL1mAddrOut;		//memory output address
-reg[127:0]		tL1mDataOut;		//memory output data
+`reg_l1addr		tL1mAddrOut;		//memory output address
+`reg_tile		tL1mDataOut;		//memory output data
 
 reg[ 15:0]		tL2mSeqOut;			//operation sequence
 reg[ 15:0]		tL2mOpmOut;			//memory operation mode
-reg[ 47:0]		tL2mAddrOut;		//memory output address
-reg[127:0]		tL2mDataOut;		//memory output data
+`reg_l2addr		tL2mAddrOut;		//memory output address
+`reg_tile		tL2mDataOut;		//memory output data
 
 
 assign		l1mSeqOut	= tL1mSeqOut;
@@ -108,24 +108,24 @@ assign		l2mRingIsIrqBc = l2mRingIsIrq && (l2mDataIn[11:8] == 4'hF);
 
 reg[ 15:0]		tL1mSeqReq;			//operation sequence
 reg[ 15:0]		tL1mOpmReq;			//memory operation mode
-reg[ 47:0]		tL1mAddrReq;		//memory output address
+`reg_l1addr		tL1mAddrReq;		//memory output address
 reg[127:0]		tL1mDataReq;		//memory output data
 
 reg[ 15:0]		tL2mSeqReq;			//operation sequence
 reg[ 15:0]		tL2mOpmReq;			//memory operation mode
-reg[ 47:0]		tL2mAddrReq;		//memory output address
+`reg_l2addr		tL2mAddrReq;		//memory output address
 reg[127:0]		tL2mDataReq;		//memory output data
 
 `ifndef def_true
 
 reg[ 15:0]		tTlbSeqReqIn;			//operation sequence
 reg[ 15:0]		tTlbOpmReqIn;			//memory operation mode
-reg[ 47:0]		tTlbAddrReqIn;		//memory output address
+`reg_l1addr		tTlbAddrReqIn;		//memory output address
 reg[127:0]		tTlbDataReqIn;		//memory output data
 
 reg[ 15:0]		tTlbSeqReqOut;		//operation sequence
 reg[ 15:0]		tTlbOpmReqOut;		//memory operation mode
-reg[ 47:0]		tTlbAddrReqOut;		//memory output address
+`reg_l1addr		tTlbAddrReqOut;		//memory output address
 reg[127:0]		tTlbDataReqOut;		//memory output data
 
 wire			tlbRingIsIdle;
@@ -145,13 +145,22 @@ begin
 `ifdef jx2_rbi_nobridge
 		tL1mSeqOut  = l2mSeqIn;
 		tL1mOpmOut  = l2mOpmIn;
-		tL1mAddrOut = l2mAddrIn;
+//		tL1mAddrOut = l2mAddrIn;
 		tL1mDataOut = l2mDataIn;
 
 		tL2mSeqOut  = l1mSeqIn;
 		tL2mOpmOut  = l1mOpmIn;
-		tL2mAddrOut = l1mAddrIn;
+//		tL2mAddrOut = l1mAddrIn;
 		tL2mDataOut = l1mDataIn;
+
+`ifdef jx2_bus_mixaddr96
+		tL1mAddrOut = { UV48_00, l2mAddrIn };
+		tL2mAddrOut = l1mAddrIn[47:0];
+`else
+		tL1mAddrOut = l2mAddrIn;
+		tL2mAddrOut = l1mAddrIn;
+`endif
+
 `endif
 
 
@@ -163,12 +172,12 @@ begin
 
 	tL1mSeqReq		= UV16_00;
 	tL1mOpmReq		= UV16_00;
-	tL1mAddrReq		= UV48_00;
+	tL1mAddrReq		= UVB1AT_00;
 	tL1mDataReq		= UV128_XX;
 
 	tL2mSeqReq		= UV16_00;
 	tL2mOpmReq		= UV16_00;
-	tL2mAddrReq		= UV48_00;
+	tL2mAddrReq		= UVB2AT_00;
 	tL2mDataReq		= UV128_XX;
 
 	if(!l1mRingIsIdle && !l1mRingIsReq)
@@ -203,7 +212,11 @@ begin
 		tL1mSeqReq		= l2mSeqIn;
 		tL1mOpmReq		= l2mOpmIn;
 //		tL1mAddrReq		= { JX2_RBI_ADDRHI_PHYS, l2mAddrIn };
+`ifdef jx2_bus_mixaddr96
+		tL1mAddrReq		= { UV48_00, l2mAddrIn };
+`else
 		tL1mAddrReq		= l2mAddrIn;
+`endif
 		tL1mDataReq		= l2mDataIn;
 	end
 
@@ -212,7 +225,11 @@ begin
 		tL2mSeqReq		= l1mSeqIn;
 		tL2mOpmReq		= l1mOpmIn;
 //		tL2mAddrReq		= l1mAddrIn[31:0];
+`ifdef jx2_bus_mixaddr96
+		tL2mAddrReq		= l1mAddrIn[47:0];
+`else
 		tL2mAddrReq		= l1mAddrIn;
+`endif
 		tL2mDataReq		= l1mDataIn;
 	end
 

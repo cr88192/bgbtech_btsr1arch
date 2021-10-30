@@ -88,6 +88,9 @@ module ExEX1(
 	opPreBraPc,
 	opPreBra,
 	aluSrJcmpT,
+
+//	regValPcHi,		//PC High Bits
+//	regValGbrHi,	//GBR High Bits
 	
 	regOutDlr,	regInDlr,
 	regOutDhr,	regInDhr,
@@ -95,6 +98,12 @@ module ExEX1(
 	regOutLr,	regInLr,
 	regOutSr,	regInSr,
 	regOutSchm,	regInSchm,
+
+`ifdef jx2_enable_vaddr96
+	regOutPcHi,		regValPcHi,
+	regOutLrHi,		regValLrHi,
+	regOutGbrHi,	regValGbrHi,
+`endif
 	
 	memAddr,	memOpm,
 	memDataOut,	memDataOutB,
@@ -144,6 +153,16 @@ input[47:0]		opPreBraPc;
 input[1:0]		opPreBra;
 input			aluSrJcmpT;
 
+`ifdef jx2_enable_vaddr96
+input[47:0]		regValPcHi;
+input[47:0]		regValLrHi;
+input[47:0]		regValGbrHi;
+
+output[47:0]	regOutPcHi;
+output[47:0]	regOutLrHi;
+output[47:0]	regOutGbrHi;
+`endif
+
 parameter		isAltCore = 0;
 defparam		cpuid.isAltCore = isAltCore;
 
@@ -164,7 +183,8 @@ output[63:0]	regOutSr;
 output[7:0]		regOutSchm;
 input[7:0]		regInSchm;
 
-output[47:0]	memAddr;
+// output[47:0]	memAddr;
+`output_vaddr	memAddr;
 output[ 4:0]	memOpm;
 output[63:0]	memDataOut;
 output[63:0]	memDataOutB;
@@ -185,6 +205,16 @@ reg[63:0]		tRegOutSp;
 reg[63:0]		tRegOutLr;
 reg[63:0]		tRegOutSr;
 reg[7:0]		tRegOutSchm;
+
+`ifdef jx2_enable_vaddr96
+reg[47:0]		tRegOutPcHi;
+reg[47:0]		tRegOutLrHi;
+reg[47:0]		tRegOutGbrHi;
+
+assign		regOutPcHi	= tRegOutPcHi;
+assign		regOutLrHi	= tRegOutLrHi;
+assign		regOutGbrHi	= tRegOutGbrHi;
+`endif
 
 `reg_gpr		tHeldIdRn1;		//Destination ID (EX1)
 //reg[ 4:0]		tHeldIdCn1;		//Destination ID (CR, EX1)
@@ -207,7 +237,8 @@ assign	regOutSr	= tRegOutSr;
 assign	regOutSchm	= tRegOutSchm;
 assign	exTrapExc	= tExTrapExc;
 
-reg[47:0]		tMemAddr;
+// reg[47:0]	tMemAddr;
+`reg_vaddr		tMemAddr;
 reg[ 4:0]		tMemOpm;
 reg[63:0]		tMemDataOut;
 reg[63:0]		tMemDataOutB;
@@ -335,6 +366,7 @@ reg[47:0]	tValAguBraJCmp;
 
 // reg[47:0]	tValBra;
 reg[63:0]	tValBra;
+reg[63:0]	tValBraHi;
 reg			tDoBra;
 
 reg[63:0]	tValOutDfl;
@@ -349,6 +381,9 @@ reg[3:0]	tIfThenPP;
 reg[3:0]	tIfThenNN;
 reg[3:0]	tIfElsePP;
 reg[3:0]	tIfElseNN;
+
+reg			tXmovEnable;
+reg			tXmovAdd;
 
 reg tMsgLatch;
 reg tNextMsgLatch;
@@ -380,7 +415,43 @@ begin
 	tRegOutSr	= regInSr;
 	tRegOutSchm	= regInSchm;
 
+`ifdef jx2_enable_vaddr96
+	tRegOutPcHi		= regValPcHi;
+	tRegOutLrHi		= regValLrHi;
+	tRegOutGbrHi	= regValGbrHi;
+`endif
+
+	tXmovEnable		= regInSr[25] || regInSr[30];
+	tXmovAdd		= regInSr[24];
+
+`ifdef jx2_enable_vaddr96
+//	tMemAddr		= { regValXs[47:0], tValAgu };
+	tMemAddr		= { regValGbrHi[47:0], tValAgu };
+	
+//	if(regIdRs == JX2_GR_PC)
+//		tMemAddr[95:48] = regValPcHi[47:0];
+	
+//	if(opUIxt[7:6] == 2'b11)
+	if(	((opUIxt[8:6]==JX2_IUC_WA) ||
+		(opUIxt[8:6]==JX2_IUC_WXA)) && tXmovEnable)
+	begin
+		tMemAddr[95:48] = regValXs[47:0];
+	end
+
+`ifdef jx2_enable_vaddr96qadd	
+//	else if(tXmovAdd)
+	else if(tXmovAdd && regValRs[63:60]==4'b1111)
+	begin
+//		tMemAddr[63:48] = tMemAddr[63:48] + regValRs[63:48];
+		tMemAddr[   47] = 0;
+		tMemAddr[63:48] = regValGbrHi[15:0] + { 3'h0, regValRs[59:47] };
+	end
+`endif
+
+`else
 	tMemAddr		= tValAgu;
+`endif
+
 	tMemOpm			= UMEM_OPM_READY;
 	tMemDataOut		= regValRm;
 	tMemDataOutB	= regValRt;
@@ -475,7 +546,18 @@ begin
 //	tValBra			= tValAguBra[47:0];
 //	tValBra			= { tRegBraLr[63:48], tValAguBra[47:0] };
 	tValBra			= { regValPc[63:48], tValAguBra[47:0] };
+	tValBraHi		= { UV16_00, regValPcHi[47:0] };
 	tDoBra			= 0;
+
+`ifdef jx2_enable_vaddr96
+// `ifndef def_true
+	if(	((opUIxt[8:6]==JX2_IUC_WA) ||
+		(opUIxt[8:6]==JX2_IUC_WXA)) &&
+		tXmovEnable)
+	begin
+		tValBraHi[47:0] = regValXs[47:0];
+	end
+`endif
 
 	tTempBit0		= 1'bX;
 	tTempBit1		= 1'bX;
@@ -600,7 +682,7 @@ begin
 			tRegHeld		= 1;
 		end
 
-		JX2_UCMD_ALUCMP: begin
+		JX2_UCMD_ALUCMP, JX2_UCMD_ALUCMPW, JX2_UCMD_ALUCMPB: begin
 		end
 	
 		JX2_UCMD_CONV_RR: begin
@@ -704,6 +786,11 @@ begin
 //			$display("EX: BSR: LR=%X PC2=%X", regValPc, tValAgu);
 //			tRegOutLr	= regValPc;
 			tRegOutLr	= tRegBraLr;
+
+`ifdef jx2_enable_vaddr96
+//			tRegOutLrHi	= regValPcHi;
+`endif
+
 //			tRegOutLr	= {
 //				regInSr[15: 4],
 //				regInSr[27:26],
@@ -719,6 +806,9 @@ begin
 			if(regIdRm==JX2_GR_DLR)
 			begin
 				tRegOutLr	= tRegBraLr;
+`ifdef jx2_enable_vaddr96
+//				tRegOutLrHi	= regValPcHi;
+`endif
 				tDoOutDfl	= 0;
 			end
 `endif
@@ -793,6 +883,9 @@ begin
 // `ifdef def_true
 //			tRegOutLr	= regValPc;
 			tRegOutLr	= tRegBraLr;
+`ifdef jx2_enable_vaddr96
+//			tRegOutLrHi	= regValPcHi;
+`endif
 //			tRegOutLr	= {
 //				regInSr[15: 4],
 //				regInSr[27:26],
@@ -815,6 +908,9 @@ begin
 			if(regIdRm==JX2_GR_DLR)
 			begin
 				tRegOutLr	= tRegBraLr;
+`ifdef jx2_enable_vaddr96
+//				tRegOutLrHi	= regValPcHi;
+`endif
 				tDoOutDfl	= 0;
 			end
 
@@ -954,6 +1050,9 @@ begin
 //						tMemAddr	= { 16'h0000, 16'h0003, regValRm[15:0] };
 						tMemAddr	= { 16'hC000, 16'h0003, regValRm[15:0] };
 						tRegOutLr	= tRegBraLr;
+`ifdef jx2_enable_vaddr96
+//						tRegOutLrHi	= regValPcHi;
+`endif
 						tValBra		= { regValPc[63:48], tMemAddr };
 						tDoBra		= 1;
 					end
@@ -968,8 +1067,9 @@ begin
 						tDoBra		= 1;
 					end
 `else
-					tMemOpm		= UMEM_OPM_FLUSHIS;
-					tMemAddr	= regValRm[47:0];
+					tMemOpm			= UMEM_OPM_FLUSHIS;
+//					tMemAddr		= regValRm[47:0];
+					tMemAddr[47:0]	= regValRm[47:0];
 
 //					tValBra		= regValPc[47:0];
 					tValBra		= regValPc;
@@ -998,8 +1098,9 @@ begin
 						tMemAddr	= regValRm[47:0];
 					end
 `else
-					tMemOpm		= UMEM_OPM_FLUSHDS;
-					tMemAddr	= regValRm[47:0];
+					tMemOpm			= UMEM_OPM_FLUSHDS;
+//					tMemAddr		= regValRm[47:0];
+					tMemAddr[47:0]	= regValRm[47:0];
 `endif
 				end
 
@@ -1400,6 +1501,8 @@ begin
 		tRegIdCn1	= JX2_CR_PC;
 //		tRegValCn1	= {UV16_00, tValBra};
 		tRegValCn1	= tValBra;
+
+		tRegOutPcHi		= tValBraHi[47:0];
 		
 // `ifdef def_true
 `ifndef def_true

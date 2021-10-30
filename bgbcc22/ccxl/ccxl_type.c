@@ -2169,6 +2169,8 @@ int BGBCC_CCXL_TypeGetLogicalBaseSize(
 	
 	if(ctx->arch_sizeof_ptr)
 	{
+		if(BGBCC_CCXL_TypeQuadPointerP(ctx, ty))
+			return(16);
 		if(BGBCC_CCXL_TypePointerP(ctx, ty))
 			return(ctx->arch_sizeof_ptr);
 	}
@@ -2306,6 +2308,8 @@ int BGBCC_CCXL_TypeGetLogicalBaseAlign(
 	
 	if(ctx->arch_sizeof_ptr)
 	{
+		if(BGBCC_CCXL_TypeQuadPointerP(ctx, ty))
+			return(16);
 		if(BGBCC_CCXL_TypePointerP(ctx, ty))
 			return(ctx->arch_sizeof_ptr);
 	}
@@ -2378,6 +2382,9 @@ int BGBCC_CCXL_TypeGetLogicalSize(
 	
 	if(BGBCC_CCXL_TypePointerP(ctx, ty))
 	{
+		if(BGBCC_CCXL_TypeQuadPointerP(ctx, ty))
+			return(16);
+
 		if(ctx->arch_sizeof_ptr)
 			return(ctx->arch_sizeof_ptr);
 		return(-1);
@@ -3247,7 +3254,8 @@ int BGBCC_CCXL_TypeNearPointerP(
 	int pcls;
 	
 	pcls=BGBCC_CCXL_TypeGetPointerClass(ctx, sty);
-	return(pcls==CCXL_PCLS_NEAR);
+//	return(pcls==CCXL_PCLS_NEAR);
+	return((pcls&CCXL_PCLS_HGMASK)==CCXL_PCLS_NEAR);
 }
 
 int BGBCC_CCXL_TypeFarPointerP(
@@ -3256,7 +3264,28 @@ int BGBCC_CCXL_TypeFarPointerP(
 	int pcls;
 	
 	pcls=BGBCC_CCXL_TypeGetPointerClass(ctx, sty);
-	return(pcls==CCXL_PCLS_FAR);
+//	return(pcls==CCXL_PCLS_FAR);
+	return((pcls&CCXL_PCLS_HGMASK)==CCXL_PCLS_FAR);
+}
+
+int BGBCC_CCXL_TypeHugePointerP(
+	BGBCC_TransState *ctx, ccxl_type sty)
+{
+	int pcls;
+	
+	pcls=BGBCC_CCXL_TypeGetPointerClass(ctx, sty);
+//	return(pcls==CCXL_PCLS_FAR);
+	return((pcls&CCXL_PCLS_HGMASK)==CCXL_PCLS_HUGE);
+}
+
+int BGBCC_CCXL_TypeQuadPointerP(
+	BGBCC_TransState *ctx, ccxl_type sty)
+{
+	if(BGBCC_CCXL_TypeHugePointerP(ctx, sty))
+		return(1);
+	if(BGBCC_CCXL_TypeFarPointerP(ctx, sty))
+		return(1);
+	return(0);
 }
 
 int BGBCC_CCXL_TypeVolatilePointerP(
@@ -3265,7 +3294,7 @@ int BGBCC_CCXL_TypeVolatilePointerP(
 	int pcls;
 	
 	pcls=BGBCC_CCXL_TypeGetPointerClass(ctx, sty);
-	return(pcls==CCXL_PCLS_VOLATILE);
+	return((pcls&CCXL_PCLS_ALIASMASK)==CCXL_PCLS_VOLATILE);
 }
 
 int BGBCC_CCXL_TypeRestrictPointerP(
@@ -3274,7 +3303,16 @@ int BGBCC_CCXL_TypeRestrictPointerP(
 	int pcls;
 	
 	pcls=BGBCC_CCXL_TypeGetPointerClass(ctx, sty);
-	return(pcls==CCXL_PCLS_RESTRICT);
+	return((pcls&CCXL_PCLS_ALIASMASK)==CCXL_PCLS_RESTRICT);
+}
+
+int BGBCC_CCXL_TypeMayaliasPointerP(
+	BGBCC_TransState *ctx, ccxl_type sty)
+{
+	int pcls;
+	
+	pcls=BGBCC_CCXL_TypeGetPointerClass(ctx, sty);
+	return((pcls&CCXL_PCLS_ALIASMASK)==CCXL_PCLS_MAYALIAS);
 }
 
 int BGBCC_CCXL_TypeUnpackOverflow(
@@ -3535,19 +3573,20 @@ ccxl_status BGBCC_CCXL_TypeFromSig(
 	while(*s=='R')
 		{ rn++; s++; }
 
-	if((*s=='A') && (s[1]>='a') && (s[1]<='z'))
+	while((*s=='A') && (s[1]>='a') && (s[1]<='z'))
 	{
 		s++;
 		i=*s++;
 		switch(i)
 		{
-		case 'n': pcls=CCXL_PCLS_NEAR; break;
-		case 'f': pcls=CCXL_PCLS_FAR; break;
-		case 'p': pcls=CCXL_PCLS_PACKED; break;
-		case 'b': pcls=CCXL_PCLS_BIGEND; break;
-		case 'l': pcls=CCXL_PCLS_LTLEND; break;
-		case 'r': pcls=CCXL_PCLS_RESTRICT; break;
-		case 'v': pcls=CCXL_PCLS_VOLATILE; break;
+		case 'n': pcls|=CCXL_PCLS_NEAR; break;
+		case 'f': pcls|=CCXL_PCLS_FAR; break;
+		case 'p': pcls|=CCXL_PCLS_PACKED; break;
+		case 'b': pcls|=CCXL_PCLS_BIGEND; break;
+		case 'l': pcls|=CCXL_PCLS_LTLEND; break;
+		case 'r': pcls|=CCXL_PCLS_RESTRICT; break;
+		case 'v': pcls|=CCXL_PCLS_VOLATILE; break;
+		case 'a': pcls|=CCXL_PCLS_MAYALIAS; break;
 		default:
 			break;
 		}
@@ -5583,6 +5622,13 @@ ccxl_status BGBCC_CCXL_GetTypeBinaryDest(
 		{
 			if(opr==CCXL_BINOP_SUB)
 			{
+				if(	BGBCC_CCXL_TypeQuadPointerP(ctx, lty) ||
+					BGBCC_CCXL_TypeQuadPointerP(ctx, rty))
+				{
+					*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_I128);
+					return(CCXL_STATUS_YES);
+				}
+
 				if(ctx->arch_sizeof_ptr==8)
 				{
 					*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_L);
@@ -5853,12 +5899,19 @@ ccxl_status BGBCC_CCXL_GetTypeCompareBinaryDest(
 	ccxl_type lty, ccxl_type rty,
 	ccxl_type *rdty)
 {
+	ccxl_type bty;
+
 	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, lty) &&
 		BGBCC_CCXL_TypeArrayOrPointerP(ctx, rty))
 	{
-		*rdty=lty;
-		if(BGBCC_CCXL_TypeArrayP(ctx, lty))
-			{ BGBCC_CCXL_TypePointerType(ctx, lty, rdty); }
+		bty=lty;
+		if(	 BGBCC_CCXL_TypeQuadPointerP(ctx, rty) &&
+			!BGBCC_CCXL_TypeQuadPointerP(ctx, lty))
+				bty=rty;
+
+		*rdty=bty;
+		if(BGBCC_CCXL_TypeArrayP(ctx, bty))
+			{ BGBCC_CCXL_TypePointerType(ctx, bty, rdty); }
 		return(CCXL_STATUS_YES);
 	}
 

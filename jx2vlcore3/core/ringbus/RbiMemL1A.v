@@ -61,7 +61,7 @@ module RbiMemL1A(
 input			clock;
 input			reset;
 
-input [47: 0]	icInPcAddr;		//input PC address
+`input_vaddr	icInPcAddr;		//input PC address
 // output[63: 0]	icOutPcVal;		//output PC value
 output[95: 0]	icOutPcVal;		//output PC value
 output[ 1: 0]	icOutPcOK;		//set if we have a valid value.
@@ -70,7 +70,7 @@ output[ 3: 0]	icOutPcSxo;		//Secure Execute
 input			icInPcHold;
 input[1:0]		icInPcWxe;
 
-input [47: 0]	dcInAddr;		//input PC address
+`input_vaddr	dcInAddr;		//input PC address
 input [ 4: 0]	dcInOpm;		//input PC address
 output[63: 0]	dcOutVal;		//output data value
 input [63: 0]	dcInVal;		//input data value
@@ -97,8 +97,8 @@ input [ 15:0]	l2mSeqIn;		//operation sequence
 output[ 15:0]	l2mSeqOut;		//operation sequence
 input [ 15:0]	l2mOpmIn;		//memory operation mode
 output[ 15:0]	l2mOpmOut;		//memory operation mode
-input [ 47:0]	l2mAddrIn;		//memory input address
-output[ 47:0]	l2mAddrOut;		//memory output address
+`input_l2addr	l2mAddrIn;		//memory input address
+`output_l2addr	l2mAddrOut;		//memory output address
 `input_tile		l2mDataIn;		//memory input data
 `output_tile	l2mDataOut;		//memory output data
 
@@ -111,12 +111,12 @@ input [  7:0]	unitNodeId;		//Who Are We?
 // wire[15:0]		tBridgeSeqI;
 
 `reg_tile		tBridgeDataI;
-reg[47:0]		tBridgeAddrI;
+`reg_l1addr		tBridgeAddrI;
 reg[15:0]		tBridgeOpmI;
 reg[15:0]		tBridgeSeqI;
 
 `wire_tile		tBridgeDataO;
-wire[47:0]		tBridgeAddrO;
+`wire_l1addr	tBridgeAddrO;
 wire[15:0]		tBridgeOpmO;
 wire[15:0]		tBridgeSeqO;
 wire[ 7:0]		tBridgeNodeId;
@@ -139,8 +139,8 @@ RbiMemL1Bridge	l1bridge(
 	);
 
 
-reg[ 47:0]		tMemAddr;		//Memory address
-reg[ 47:0]		tMemAddrB;		//Memory address
+`reg_l1addr	tMemAddr;		//Memory address
+`reg_l1addr	tMemAddrB;		//Memory address
 reg[  4:0]		tMemOpm;		//Memory Operation
 
 `reg_tile		tMemDataOut;	//Memory Data Out
@@ -182,12 +182,12 @@ assign		tTlbInLdtlb = { regInDhr, regInDlr };
 // wire[15:0]		tTlbSeqI;
 
 `reg_tile		tTlbDataI;
-reg[47:0]		tTlbAddrI;
+`reg_l1addr		tTlbAddrI;
 reg[15:0]		tTlbOpmI;
 reg[15:0]		tTlbSeqI;
 
 `wire_tile		tTlbDataO;
-wire[47:0]		tTlbAddrO;
+`wire_l1addr	tTlbAddrO;
 wire[15:0]		tTlbOpmO;
 wire[15:0]		tTlbSeqO;
 
@@ -227,12 +227,12 @@ reg			ifMemWaitL;
 // wire[ 15:0]		ifMemSeqI;
 
 `reg_tile		ifMemDataI;
-reg[ 47:0]		ifMemAddrI;
+`reg_l1addr		ifMemAddrI;
 reg[ 15:0]		ifMemOpmI;
 reg[ 15:0]		ifMemSeqI;
 
 `wire_tile		ifMemDataO;
-wire[ 47:0]		ifMemAddrO;
+`wire_l1addr	ifMemAddrO;
 wire[ 15:0]		ifMemOpmO;
 wire[ 15:0]		ifMemSeqO;
 wire[  7:0]		ifMemNodeId;
@@ -264,12 +264,12 @@ wire[63:0]		dfOutExc;
 // wire[ 15:0]		dfMemSeqI;
 
 `reg_tile		dfMemDataI;
-reg[ 47:0]		dfMemAddrI;
+`reg_l1addr		dfMemAddrI;
 reg[ 15:0]		dfMemOpmI;
 reg[ 15:0]		dfMemSeqI;
 
 `wire_tile		dfMemDataO;
-wire[ 47:0]		dfMemAddrO;
+`wire_l1addr	dfMemAddrO;
 wire[ 15:0]		dfMemOpmO;
 wire[ 15:0]		dfMemSeqO;
 wire[  7:0]		dfMemNodeId;

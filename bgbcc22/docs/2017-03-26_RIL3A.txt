@@ -297,18 +297,18 @@ Typed signatures are encoded as strings, with characters indicating value types.
 * '({args}){ret}': Function Signature
 
 Pointer/Array Class Modifer:
-* 'Ab': Packed + Big Endian
-* 'Af': Far
-* 'Al': Packed + Little Endian
-
 * 'An': Near
+* 'Af': Far
+* 'Ah': Huge
+
 * 'Ap': Packed
-* 'Av': Volatile
+* 'Ab': Packed Big Endian
+* 'Al': Packed Little Endian
+
+* 'Aa': May Alias
 * 'Ar': Restrict
+* 'Av': Volatile
 * 'Aw': ? Wide
-
-
-
 
 
 === Flag String ===

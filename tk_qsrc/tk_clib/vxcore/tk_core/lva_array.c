@@ -184,6 +184,15 @@ LVA_TagArray *TKMM_LVA_NewTagArray(int n, int mt)
 tk_lva_object TKMM_LVA_WrapVarArray(LVA_TagArray *arr)
 {
 	u64 b;
+	
+	if((arr->size<4096) && (arr->base==0))
+	{
+		b=((long)(arr->data))&0x0000FFFFFFFFFFFFULL;
+		b|=(((long)(arr->size))<<48);
+		b|=2LL<<60;
+		return(tk_lva_object_frombits(b));
+	}
+	
 	b=((long)arr)&0x0000FFFFFFFFFFFFULL;
 	b|=12LL<<60;
 //	b|=((u64)tkmm_lvatyi_tagarray)<<48;
@@ -200,6 +209,16 @@ void *TKMM_LVA_GetArrayIndexPtr(tk_lva_object obj, int idx, int sc)
 	int bti;
 
 	obits=tk_lva_object_getbits(obj);
+
+	if((obits>>60)==2)
+	{
+		bsi=(obits>>48)&4095;
+		arrd=(byte *)(obits);
+		if(idx>=bsi)
+			{ __debugbreak(); }
+		return(arrd+(idx<<sc));
+	}
+
 	if((obits>>60)==12)
 	{
 		bsi=(obits>>48)&4095;

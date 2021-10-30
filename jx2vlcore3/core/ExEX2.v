@@ -308,7 +308,7 @@ begin
 			tDoOutDfl		= 1;
 		end
 
-		JX2_UCMD_ALUCMP: begin
+		JX2_UCMD_ALUCMP, JX2_UCMD_ALUCMPW, JX2_UCMD_ALUCMPB: begin
 			tDoAluSrT		= 1;
 		end
 

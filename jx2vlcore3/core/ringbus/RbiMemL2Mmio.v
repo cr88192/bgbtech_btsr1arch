@@ -24,10 +24,10 @@ input [ 15:0]	memSeqIn;		//operation sequence
 output[ 15:0]	memSeqOut;		//operation sequence
 input [ 15:0]	memOpmIn;		//memory operation mode
 output[ 15:0]	memOpmOut;		//memory operation mode
-input [ 47:0]	memAddrIn;		//memory input address
-output[ 47:0]	memAddrOut;		//memory output address
-input [127:0]	memDataIn;		//memory input data
-output[127:0]	memDataOut;		//memory output data
+`input_l2addr	memAddrIn;		//memory input address
+`output_l2addr	memAddrOut;		//memory output address
+`input_tile		memDataIn;		//memory input data
+`output_tile	memDataOut;		//memory output data
 
 input [  7:0]	unitNodeId;		//Who Are We?
 
@@ -41,25 +41,25 @@ input[63:0]		mmioExcIn;
 
 reg[ 15:0]		tMemSeqOut;		//operation sequence
 reg[ 15:0]		tMemOpmOut;		//memory operation mode
-reg[ 47:0]		tMemAddrOut;	//memory output address
-reg[127:0]		tMemDataOut;	//memory output data
+`reg_l2addr		tMemAddrOut;	//memory output address
+`reg_tile		tMemDataOut;	//memory output data
 
 reg[ 15:0]		tMemSeqReq;
 reg[ 15:0]		tMemOpmReq;
-reg[ 47:0]		tMemAddrReq;
-reg[127:0]		tMemDataReq;
+`reg_l2addr		tMemAddrReq;
+`reg_tile		tMemDataReq;
 reg				tMemReqRsM;
 reg				tNxtMemReqRsM;
 
 reg[15:0]		tReqSeq;
 reg[15:0]		tReqOpm;
-reg[47:0]		tReqAddr;
+`reg_l2addr		tReqAddr;
 reg[63:0]		tReqData;
 reg				tReqLive;
 
 reg[15:0]		tNxtReqSeq;
 reg[15:0]		tNxtReqOpm;
-reg[47:0]		tNxtReqAddr;
+`reg_l2addr		tNxtReqAddr;
 reg[63:0]		tNxtReqData;
 reg				tNxtReqLive;
 

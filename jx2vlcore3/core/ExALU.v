@@ -333,6 +333,17 @@ reg			tTst1WZF_B;
 reg			tTst1WZF_C;
 reg			tTst1WZF_D;
 
+reg			tSubAZF;
+reg			tSubACF;
+reg[12:0]	tSubAA0;
+reg[12:0]	tSubAA1;
+
+reg			tSubTZF;
+reg			tSubTHZF;
+reg			tSubTLZF;
+
+reg			tSubABZF;
+
 reg			tSub2ZF;
 reg			tSub2CF;
 reg			tSub2SF;
@@ -452,7 +463,39 @@ begin
 	tSub3A0 = { tSub2A0[32]?tSub2B1:tSub2B0, tSub2A0[31:0] };
 	tSub3A1 = { tSub2A1[32]?tSub2B1:tSub2B0, tSub2A1[31:0] };
 
-	tOpIsWx = (idUIxt[7:6] == 2'b11);
+`ifdef jx2_enable_cmptag
+
+	tSubAA1 = { 1'b0, regValRs[59:48] } + { 1'b0, ~regValRt[11: 0] } + 1;
+	tSubABZF	= regValRt[31:12]==0;
+
+	tSubTHZF	=
+		((regValRs[63:60]==regValRt[4:1]) && !regValRt[  0]) ||
+		((regValRs[63:61]==regValRt[4:2]) && (regValRt[1:0]==2'b01)) ||
+		((regValRs[63:62]==regValRt[4:3]) && (regValRt[2:0]==3'b011)) ||
+		((regValRs[63   ]==regValRt[4  ]) && (regValRt[2:0]==3'b111)) ;
+	tSubTLZF	=
+		((regValRs[ 3: 0]==regValRt[4:1]) && !regValRt[  0]) ||
+		((regValRs[ 2: 0]==regValRt[4:2]) && (regValRt[1:0]==2'b01)) ||
+		((regValRs[ 1: 0]==regValRt[4:3]) && (regValRt[2:0]==3'b011)) ||
+		((regValRs[ 0   ]==regValRt[4  ]) && (regValRt[2:0]==3'b111)) ;
+	tSubTZF	= regValRt[5] ? tSubTLZF : tSubTHZF;
+
+`else
+
+	tSubAA1		= 0;
+	tSubABZF	= 0;
+	tSubTZF		= 0;
+
+`endif
+
+
+//	tOpIsWx = (idUIxt[7:6] == 2'b11);
+	tOpIsWx =
+		(idUIxt[8:6] == JX2_IUC_WX) ||
+		(idUIxt[8:6] == JX2_IUC_WT) ||
+		(idUIxt[8:6] == JX2_IUC_WF) ||
+		(idUIxt[8:6] == JX2_IUC_WXA);
+
 
 `ifdef def_true
 	tAddCa1A0 = { tAdd1A0[16]?tAdd1B1[16]:tAdd1B0[16], tAdd1A0[16] };
@@ -558,6 +601,9 @@ begin
 	tSub1WSF_B	= tSub1B0[15];
 	tSub1WSF_C	= tSub1C0[15];
 	tSub1WSF_D	= tSub1D0[15];
+
+	tSubACF		= tSubAA1[12] && tSubABZF;
+	tSubAZF		= (tSubAA1[11:0]==0) && tSubABZF;
 
 //	tSub1ZF		= (tSub2A1[15:0]==0) && (tSub2A1[31:16]==0);
 //	tSub1BZF	= (tSub3A1[47:32]==0) && (tSub3A1[63:48]==0);
@@ -1115,6 +1161,8 @@ begin
 			tResult1Q=tSub1WCF_B;
 			tResult1R=tSub1WCF_C;
 			tResult1O=tSub1WCF_D;
+			
+			tResultb1T	= tSubACF;
 		end
 		4'hA: begin		/* CMPGE */
 //			tResult1A=UV33_XX;
@@ -1134,6 +1182,8 @@ begin
 			tResult1Q=!tSub1WSF_B || tSub1WZF_B;
 			tResult1R=!tSub1WSF_C || tSub1WZF_C;
 			tResult1O=!tSub1WSF_D || tSub1WZF_D;
+
+			tResultb1T	= tSubAZF;		//Array Equal
 
 		end
 
@@ -1260,6 +1310,7 @@ begin
 			tResult1R=tSub1WCF_C && !tSub1WZF_C;
 			tResult1O=tSub1WCF_D && !tSub1WZF_D;
 
+			tResultb1T	= tSubACF && !tSubAZF;
 		end
 		4'hE: begin		/* CMPGT */
 //			tResult1A=UV33_XX;
@@ -1289,6 +1340,8 @@ begin
 //			tResult1T=tSub1SxVF;
 //			tResult2T=tSub2SxVF;
 //			tResult1S=tSub1BSxVF;
+
+			tResultb1T	= tSubTZF;		//Tag Equal
 		end
 		4'hF: begin		/* CSELT */
 			tResult1A={1'b0, regInSrT ? regValRs[31: 0] : regValRt[31: 0] };
@@ -1362,7 +1415,9 @@ begin
 `endif
 
 `ifdef jx2_enable_gsv
-	if(idUCmd[5:0]==JX2_UCMD_ALUW3)
+//	if(idUCmd[5:0]==JX2_UCMD_ALUW3)
+	if(	(idUCmd[5:0]==JX2_UCMD_ALUW3) ||
+		(idUCmd[5:0]==JX2_UCMD_ALUCMPW))
 	begin
 //		tResult1A	= tResultu1A;
 //		tResult1B	= tResultu1B;
@@ -1373,7 +1428,9 @@ begin
 		tResult1T	= tResultw1T;
 	end
 
-	if(idUCmd[5:0]==JX2_UCMD_ALUB3)
+//	if(idUCmd[5:0]==JX2_UCMD_ALUB3)
+	if(	(idUCmd[5:0]==JX2_UCMD_ALUB3) ||
+		(idUCmd[5:0]==JX2_UCMD_ALUCMPB))
 	begin
 		tResult1A	= tResultb1W;
 		tResult2A	= tResultb2W;
@@ -1597,7 +1654,7 @@ begin
 			(idUCmd[5:0]==JX2_UCMD_ALUCMP)	||
 			(idUCmd[5:0]==JX2_UCMD_FCMP)	))
 		begin
-			tRegOutSrS = tResult2T;
+			tRegOutSrS = tResult1T;
 			tRegOutSrT = regInSrT;
 		end
 `endif

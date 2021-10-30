@@ -700,6 +700,17 @@ int nmid;
 {"lea.q",	BGBCC_SH_NMID_LEAQ},
 {"lea.p",	BGBCC_SH_NMID_LEAP},
 
+{"xmov.b",	BGBCC_SH_NMID_XMOVB},
+{"xmov.w",	BGBCC_SH_NMID_XMOVW},
+{"xmov.l",	BGBCC_SH_NMID_XMOVL},
+{"xmov.q",	BGBCC_SH_NMID_XMOVQ},
+{"xmov.p",	BGBCC_SH_NMID_XMOVP},
+
+{"xmovu.b",	BGBCC_SH_NMID_XMOVUB},
+{"xmovu.w",	BGBCC_SH_NMID_XMOVUW},
+{"xmovu.l",	BGBCC_SH_NMID_XMOVUL},
+{"xmov.x",	BGBCC_SH_NMID_XMOVX2},
+
 {"add",		BGBCC_SH_NMID_ADD},
 {"addc",	BGBCC_SH_NMID_ADDC},
 {"addv",	BGBCC_SH_NMID_ADDV},
@@ -729,6 +740,11 @@ int nmid;
 {"cmpqeq",	BGBCC_SH_NMID_CMPQEQ},
 {"cmpqge",	BGBCC_SH_NMID_CMPQGE},
 {"cmpqgt",	BGBCC_SH_NMID_CMPQGT},
+
+{"cmtteq",	BGBCC_SH_NMID_CMPTTEQ},
+{"cmtaeq",	BGBCC_SH_NMID_CMPTAEQ},
+{"cmtahi",	BGBCC_SH_NMID_CMPTAHI},
+{"cmtahs",	BGBCC_SH_NMID_CMPTAHS},
 
 {"jmp",		BGBCC_SH_NMID_JMP},
 {"jsr",		BGBCC_SH_NMID_JSR},

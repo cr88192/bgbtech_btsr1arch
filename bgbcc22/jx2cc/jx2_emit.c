@@ -605,6 +605,16 @@ int BGBCC_JX2_EmitOpCheckRepack(
 				((opw4<<1)&0x0400)|
 				((opw4>>1)&0x0200);
 		}
+
+		if((opw4&0xF008)==0x8000)
+		{
+			opw3=(opw3&0xFF00)|
+				((opw3<<4)&0x00F0)|
+				((opw3>>4)&0x000F);
+			opw4=(opw4&0xF9FF)|
+				((opw4<<1)&0x0400)|
+				((opw4>>1)&0x0200);
+		}
 #endif
 
 		opw3|=0x40000;

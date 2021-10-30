@@ -173,8 +173,9 @@ int BGBCC_JX2C_EmitLdix_FillSzNmTy(
 
 	if(BGBCC_CCXL_TypePointerP(ctx, type))
 	{
-//		if(sctx->is_addr64)
-		if(ctx->arch_sizeof_ptr==8)
+		if(BGBCC_CCXL_TypeQuadPointerP(ctx, type))
+			{ sz=16; nm1=BGBCC_SH_NMID_MOVX2; nm2=-1; }
+		else if(ctx->arch_sizeof_ptr==8)
 			{ sz=8; nm1=BGBCC_SH_NMID_MOVQ; nm2=-1; }
 		else if(sctx->is_addr64)
 		{
@@ -321,6 +322,22 @@ int BGBCC_JX2C_EmitLdixVRegVRegImm(
 
 	BGBCC_JX2C_EmitLdix_FillSzNmTy(ctx, sctx, type,
 		&sz, &nm1, &nm2, &nm3, &nm4);
+
+	if(BGBCC_CCXL_TypeQuadPointerP(ctx, stype))
+	{
+		switch(nm1)
+		{
+			case BGBCC_SH_NMID_MOVB:	nm1=BGBCC_SH_NMID_XMOVB;	break;
+			case BGBCC_SH_NMID_MOVW:	nm1=BGBCC_SH_NMID_XMOVW;	break;
+			case BGBCC_SH_NMID_MOVL:	nm1=BGBCC_SH_NMID_XMOVL;	break;
+			case BGBCC_SH_NMID_MOVQ:	nm1=BGBCC_SH_NMID_XMOVQ;	break;
+			case BGBCC_SH_NMID_MOVUB:	nm1=BGBCC_SH_NMID_XMOVUB;	break;
+			case BGBCC_SH_NMID_MOVUW:	nm1=BGBCC_SH_NMID_XMOVUW;	break;
+			case BGBCC_SH_NMID_MOVUL:	nm1=BGBCC_SH_NMID_XMOVUL;	break;
+			case BGBCC_SH_NMID_MOVX2:	nm1=BGBCC_SH_NMID_XMOVX2;	break;
+			default:	break;
+		}
+	}
 
 	sty=BGBCC_CCXL_GetRegType(ctx, sreg);
 	if(BGBCC_CCXL_TypeVec128P(ctx, sty))
@@ -556,6 +573,22 @@ int BGBCC_JX2C_EmitLdixVRegVRegVReg(
 	BGBCC_JX2C_EmitLdix_FillSzNmTy(ctx, sctx, type,
 		&sz, &nm1, &nm2, &nm3, &nm4);
 
+	if(BGBCC_CCXL_TypeQuadPointerP(ctx, stype))
+	{
+		switch(nm1)
+		{
+			case BGBCC_SH_NMID_MOVB:	nm1=BGBCC_SH_NMID_XMOVB;	break;
+			case BGBCC_SH_NMID_MOVW:	nm1=BGBCC_SH_NMID_XMOVW;	break;
+			case BGBCC_SH_NMID_MOVL:	nm1=BGBCC_SH_NMID_XMOVL;	break;
+			case BGBCC_SH_NMID_MOVQ:	nm1=BGBCC_SH_NMID_XMOVQ;	break;
+			case BGBCC_SH_NMID_MOVUB:	nm1=BGBCC_SH_NMID_XMOVUB;	break;
+			case BGBCC_SH_NMID_MOVUW:	nm1=BGBCC_SH_NMID_XMOVUW;	break;
+			case BGBCC_SH_NMID_MOVUL:	nm1=BGBCC_SH_NMID_XMOVUL;	break;
+			case BGBCC_SH_NMID_MOVX2:	nm1=BGBCC_SH_NMID_XMOVX2;	break;
+			default:	break;
+		}
+	}
+
 //	nm4=-1;
 
 	if(nm1>=0)
@@ -734,6 +767,22 @@ int BGBCC_JX2C_EmitLdixVRegVRegVRegImm(
 	BGBCC_JX2C_EmitLdix_FillSzNmTy(ctx, sctx, type,
 		&sz, &nm1, &nm2, &nm3, &nm4);
 
+	if(BGBCC_CCXL_TypeQuadPointerP(ctx, stype))
+	{
+		switch(nm1)
+		{
+			case BGBCC_SH_NMID_MOVB:	nm1=BGBCC_SH_NMID_XMOVB;	break;
+			case BGBCC_SH_NMID_MOVW:	nm1=BGBCC_SH_NMID_XMOVW;	break;
+			case BGBCC_SH_NMID_MOVL:	nm1=BGBCC_SH_NMID_XMOVL;	break;
+			case BGBCC_SH_NMID_MOVQ:	nm1=BGBCC_SH_NMID_XMOVQ;	break;
+			case BGBCC_SH_NMID_MOVUB:	nm1=BGBCC_SH_NMID_XMOVUB;	break;
+			case BGBCC_SH_NMID_MOVUW:	nm1=BGBCC_SH_NMID_XMOVUW;	break;
+			case BGBCC_SH_NMID_MOVUL:	nm1=BGBCC_SH_NMID_XMOVUL;	break;
+			case BGBCC_SH_NMID_MOVX2:	nm1=BGBCC_SH_NMID_XMOVX2;	break;
+			default:	break;
+		}
+	}
+
 	if(nm1>=0)
 	{
 //		if(BGBCC_CCXL_RegisterIdentEqualP(ctx, dreg, sreg) ||
@@ -894,6 +943,21 @@ int BGBCC_JX2C_EmitStixVRegVRegImm(
 	if(nm2==BGBCC_SH_NMID_SHLL64)
 		nm2=BGBCC_SH_NMID_SHLR64;
 
+	if(BGBCC_CCXL_TypeQuadPointerP(ctx, stype))
+	{
+		switch(nm1)
+		{
+			case BGBCC_SH_NMID_MOVB:	nm1=BGBCC_SH_NMID_XMOVB;	break;
+			case BGBCC_SH_NMID_MOVW:	nm1=BGBCC_SH_NMID_XMOVW;	break;
+			case BGBCC_SH_NMID_MOVL:	nm1=BGBCC_SH_NMID_XMOVL;	break;
+			case BGBCC_SH_NMID_MOVQ:	nm1=BGBCC_SH_NMID_XMOVQ;	break;
+			case BGBCC_SH_NMID_MOVUB:	nm1=BGBCC_SH_NMID_XMOVUB;	break;
+			case BGBCC_SH_NMID_MOVUW:	nm1=BGBCC_SH_NMID_XMOVUW;	break;
+			case BGBCC_SH_NMID_MOVUL:	nm1=BGBCC_SH_NMID_XMOVUL;	break;
+			case BGBCC_SH_NMID_MOVX2:	nm1=BGBCC_SH_NMID_XMOVX2;	break;
+			default:	break;
+		}
+	}
 
 	if(BGBCC_CCXL_TypeValueObjectP(ctx, type) ||
 		BGBCC_CCXL_TypeArrayP(ctx, type))
@@ -1083,6 +1147,22 @@ int BGBCC_JX2C_EmitStixVRegVRegVReg(
 	if(nm2==BGBCC_SH_NMID_SHLL64)
 		nm2=BGBCC_SH_NMID_SHLR64;
 
+	if(BGBCC_CCXL_TypeQuadPointerP(ctx, stype))
+	{
+		switch(nm1)
+		{
+			case BGBCC_SH_NMID_MOVB:	nm1=BGBCC_SH_NMID_XMOVB;	break;
+			case BGBCC_SH_NMID_MOVW:	nm1=BGBCC_SH_NMID_XMOVW;	break;
+			case BGBCC_SH_NMID_MOVL:	nm1=BGBCC_SH_NMID_XMOVL;	break;
+			case BGBCC_SH_NMID_MOVQ:	nm1=BGBCC_SH_NMID_XMOVQ;	break;
+			case BGBCC_SH_NMID_MOVUB:	nm1=BGBCC_SH_NMID_XMOVUB;	break;
+			case BGBCC_SH_NMID_MOVUW:	nm1=BGBCC_SH_NMID_XMOVUW;	break;
+			case BGBCC_SH_NMID_MOVUL:	nm1=BGBCC_SH_NMID_XMOVUL;	break;
+			case BGBCC_SH_NMID_MOVX2:	nm1=BGBCC_SH_NMID_XMOVX2;	break;
+			default:	break;
+		}
+	}
+
 	if(BGBCC_CCXL_TypeValueObjectP(ctx, type) ||
 		BGBCC_CCXL_TypeArrayP(ctx, type))
 	{
@@ -1238,6 +1318,22 @@ int BGBCC_JX2C_EmitStixVRegVRegVRegImm(
 		nm2=BGBCC_SH_NMID_SHLR32;
 	if(nm2==BGBCC_SH_NMID_SHLL64)
 		nm2=BGBCC_SH_NMID_SHLR64;
+
+	if(BGBCC_CCXL_TypeQuadPointerP(ctx, stype))
+	{
+		switch(nm1)
+		{
+			case BGBCC_SH_NMID_MOVB:	nm1=BGBCC_SH_NMID_XMOVB;	break;
+			case BGBCC_SH_NMID_MOVW:	nm1=BGBCC_SH_NMID_XMOVW;	break;
+			case BGBCC_SH_NMID_MOVL:	nm1=BGBCC_SH_NMID_XMOVL;	break;
+			case BGBCC_SH_NMID_MOVQ:	nm1=BGBCC_SH_NMID_XMOVQ;	break;
+			case BGBCC_SH_NMID_MOVUB:	nm1=BGBCC_SH_NMID_XMOVUB;	break;
+			case BGBCC_SH_NMID_MOVUW:	nm1=BGBCC_SH_NMID_XMOVUW;	break;
+			case BGBCC_SH_NMID_MOVUL:	nm1=BGBCC_SH_NMID_XMOVUL;	break;
+			case BGBCC_SH_NMID_MOVX2:	nm1=BGBCC_SH_NMID_XMOVX2;	break;
+			default:	break;
+		}
+	}
 
 
 #if 0

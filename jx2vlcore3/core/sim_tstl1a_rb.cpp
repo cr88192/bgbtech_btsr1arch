@@ -522,6 +522,12 @@ int main(int argc, char **argv, char **env)
 			v5=((top->icOutPcVal[2])>>16)&65535;
 			
 			stp1=1;
+
+			if((v0&0xF000)==0x7000)
+				stp1=2;
+			if((v0&0xF000)==0x9000)
+				stp1=2;
+
 			if((v0&0xE000)==0xE000)
 			{
 				stp1=2;
@@ -535,7 +541,7 @@ int main(int argc, char **argv, char **env)
 #endif
 
 // #ifdef HAS_WEX
-#if 1
+#if 0
 //				if(((v&0xFC00)==0xF400) || ((v&0xFF00)==0xF900))
 //				if((v0&0xFC00)==0xF400)
 				if(((v0&0xFC00)==0xF400) || ((v0&0xFC00)==0xFC00) ||
@@ -567,6 +573,29 @@ int main(int argc, char **argv, char **env)
 					}else
 					{
 						stp1=4;
+					}
+				}
+#endif
+
+#if 1
+				if((v0&0xFE00)==0xFE00)
+				{
+					if(((v2&0xFE00)==0xFE00) ||
+						((v2&0xFC00)==0xF400) || ((v2&0xFC00)==0xFC00) ||
+						((v2&0xFE00)==0xEA00) || ((v2&0xFE00)==0xEE00) ||
+						((v2&0xF800)==0x7800) || ((v2&0xF800)==0x9800)
+						)
+					{
+						stp1=6;
+					}else if(
+						((v2&0xE000)==0xE000) ||
+						((v2&0xF000)==0x7000) ||
+						((v2&0xF000)==0x9000))
+					{
+						stp1=4;
+					}else
+					{
+						stp1=3;
 					}
 				}
 #endif
@@ -689,7 +718,7 @@ int main(int argc, char **argv, char **env)
 				}
 			}
 
-			
+#if 0
 //			if(stp!=stp1)
 			if(stp!=(stp1*2))
 			{
@@ -697,6 +726,7 @@ int main(int argc, char **argv, char **env)
 				fail|=1;
 				break;
 			}
+#endif
 
 			n++;
 		}

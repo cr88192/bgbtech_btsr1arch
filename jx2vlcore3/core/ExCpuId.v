@@ -180,6 +180,17 @@ begin
 	valCpuIdLo1[24] = 1;
 `endif
 
+`ifdef jx2_enable_cmptag
+	valCpuIdLo1[25] = 1;
+`endif
+
+`ifdef jx2_enable_vaddr96
+	valCpuIdLo1[26] = 1;
+`endif
+`ifdef jx2_enable_vaddr96qadd
+	valCpuIdLo1[27] = 1;
+`endif
+
 	tResLoA = arrCpuIdLo[index[2:0]];
 	tResHiA = UV64_00;
 //	tResHiA = arrCpuIdHi[index[2:0]];

@@ -186,6 +186,17 @@ General:
 * Will reside within ".tlsvar"
 
 
+=== Extended Pointers ===
+
+Extended Pointers will use 128 bits of storage space and cover a logical 96 bit address space. These will be handled as register pairs.
+
+This space will consist of two 48 bit parts:
+* The lower 48 bits will be the local address;
+* The high 48 bits will represent the quadrant.
+
+Within this space, narrow pointers will be relative to the base quadrant of the program (GBR).
+
+
 === Fat Pointers ===
 
 In several cases, Fat Pointers will be used.
@@ -539,12 +550,15 @@ Current Scheme (4 bit MSB Tag):
 ** 18..1B: 48-bit (1024 spaces)
 ** 1C..1D: 32-bit (16M spaces)
 ** 1E..1F: Reserved
-* 001z: Reserved
+* 0010: BoundedArray (Offset=0)
+** Low 48: Array Base (Data Area)
+** High 12: Array Length
+* 0011: Reserved
 * 01zz: FixLong (62 bit)
 ** 62-bit, Twos Complement
 * 10zz: Flonum (62 bit)
 ** Double shifted right 2 bits.
-* 1100: TagArray
+* 1100: TagArray (Base Adjust)
 ** Low 48: Array Base Object
 ** High 12: Base Offset.
 * 1101: Vec2F (2x Float, 30 bits each)
@@ -553,6 +567,7 @@ Current Scheme (4 bit MSB Tag):
 * 1111: Raw Pointer
 ** Low 48: Address
 ** High 12: Reserved
+** (XMOV+Add): 60-bit Linear Address.
 
 The pointer value from the low 48 bits will be logically sign-extended to 64 bits if expressed as a machine pointer.
 

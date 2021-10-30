@@ -107,6 +107,8 @@ Registers (Baseline):
 * C0..C31, 64-bit.
 ** Control Registers.
 ** Not all of these necessarily exist.
+* C32..C63, 64-bit, XGPR+XMOV.
+** XMOV Control Registers
 * S0..S31, 64-bit.
 ** Reserved.
 
@@ -160,6 +162,27 @@ Control Registers:
 * C30: Reserved
 * C31: Reserved
 
+Control Registers (XMOV, Possible):
+* C32: Reserved
+* C33: Reserved
+* C34 / PCH: Program Counter (High Bits)
+* C35 / VBR_HI: Vector Base Register (High Bits)
+* C36 / SPC_HI: Saved PC (High Bits)
+* C37: Reserved
+* C38 / GBH: Global Base Register (High Bits)
+* C39: Reserved
+* C40: Reserved
+* C41: Reserved
+* C42: Reserved
+* C43: Reserved
+* C44: Reserved
+* C45: Reserved
+* C46: Reserved
+* C47: Reserved
+* C48: Reserved
+* ...
+* C63: Reserved
+
 Access to SPRs will depend on Mode:
 * C0: All Modes
 * C1: All Modes
@@ -197,6 +220,8 @@ SR Bits:
 * 8..15: U0..U7, Context Dependent
 ** May be used as a Predicate Stack.
 * 16..23: Reserved
+* 24: XMOV Copy / Add (0 = Copy, 1 = Add, Possible)
+* 25: XMOV User Enable (0 = Supervisor Only, 1 = User/Supervisor)
 * 26: WX2, WEX Secondary (RISC-V Enable)
 * 27: WXE, WEX Enable
 * 28: BL, Block Interrupts
@@ -219,6 +244,7 @@ For application-level code, misaligned access to memory is required to be suppor
 The JQ bit will effect the size of the address space:
 * JQ=0, Use a 32-bit address space.
 ** AGU will produce 32-bit zero-extended output.
+** (XMOV) Will behave as if high-order bits of the base are zero.
 * JQ=1, Use a 48-bit address space.
 ** AGU will produce 48-bit zero extended output.
 ** An implementation may produce 64-bit output.
@@ -445,7 +471,7 @@ TLB Entry (TLBE):
 * ( 47: 12) = Physical Address Page
 * ( 11:  0) = Page Control bits
 
-XTLB Entry / LDXTLB (Possible):
+XTLB Entry / LDXTLB (Drop):
 * (255:240) = VUGID / ACLID
 * (239:140) = Virtual Address Page
 * (139:128) = KR Access
@@ -453,13 +479,10 @@ XTLB Entry / LDXTLB (Possible):
 * (111: 12) = Physical Address Page
 * ( 11:  0) = Page Control bits
 
-
 X2TLB Entry (High):
 * (127:112) = Reserved
-* (111: 76) = Virtual Address Page (High Bits)
-* ( 75: 64) = Reserved
-* ( 63: 48) = Reserved
-* ( 47: 12) = Physical Address Page (High Bits)
+* (111: 64) = Virtual Address Page (High 48 Bits)
+* ( 63: 16) = Physical Address Page (High 48 Bits)
 * ( 11:  0) = Page Control bits
 
 X2TLB Entry (Low):
@@ -901,13 +924,37 @@ The Low Register (Even) will encode the low 48 bits of the address.
 ** Use of PC, GBR, or TBR as a base register.
 
 The High Register (Odd) will encode the high order bits of the address.
+* This high part will be referred to as a Quadrant (or Quad).
 
-The control registers which contain addresses will be similarly expanded, however the high-order part will only be accessible via MOVX encodings.
-* PC, LR, GBR, TBR, VBR, ... will be expanded.
+The control registers which contain addresses will be similarly expanded, however the high-order part may only be accessible via MOVX or XGPR encodings.
+* PC, GBR, VBR, ... will be expanded.
+* The high halves may also be mapped to C32..C63.
 
 Modifying a Control Register with a 64-bit instruction will only modify the low-order bits, with the high order bits being kept as-is.
 
-Accessing memory using a Non-XMOV encoding with a GPR as a base register will copy the high order bits of the address from GBR.
+Accessing memory using a Non-XMOV encoding with a GPR as a base register will copy the high order bits of the address from GBH. In effect, GBH will serve as a data quadrant.
+
+For Branches, PCH (PC Hi) will serve as a code quadrant.
+* Normal branches will only be within a single quadrant.
+* Wide branch operations may be used to branch into a different quadrant.
+* VBR_HI, SPC_HI
+
+
+There will be several addressing sub-modes:
+* XMOV Disabled, Only 32 or 48 bit addressing will be available.
+* Quadrant Copy
+** All bits from the Quadrant will be copied over directly.
+** This mode will only have the 32 or 48-bit base address.
+* Quadrant Add (Possible):
+** In 32-bit Mode, Functionally equivalent to Quadrant Copy.
+** In 48-bit Mode, Adds bits (59:47) from the base to (15:0) from the quadrant.
+** This in effect allows an expanded pseudo linear addressing mode for data access.
+** This is done if the high bits of the base are 1111.
+** Bit 47 of the generated address is set to 0.
+
+There will also be a flag to select between User/Supervisor and Supervisor Only.
+* In U/S Mode, Userland code is allowed to use XMOV ops.
+* In SVO Mode, Only supervisor mode may use XMOV ops.
 
 
 === Predicated Instructions ===
@@ -1445,8 +1492,11 @@ F0zz Instruction Block:
 *** F0nm_1gB8 SNIPEDC	Rm, Rn				//Calculate L1 D$ Snipe Address
 *** F0nm_1GB8 SNIPEIC	Rm, Rn				//Calculate L1 I$ Snipe Address
 
+*** F0nm_1gC8 CMPTAEQ	Rm, Rn				//(TTAG) Zx(Rn[59:48]) EQ Rm
 *** F0nm_1GC8 CMPXEQ	Rm, Rn				//(ALUX) Rn==Rm
+*** F0nm_1gD8 CMPTAHI	Rm, Rn				//(TTAG) Zx(Rn[59:48]) GT Rm
 *** F0nm_1GD8 CMPXHI	Rm, Rn				//(ALUX) Unsigned Rn GT Rm
+*** F0nm_1gE8 CMPTAHS	Rm, Rn				//(TTAG) Zx(Rn[59:48]) GE Rm
 *** F0nm_1GE8 CMPXGT	Rm, Rn				//(ALUX) Signed Rn GT Rm
 *** F0nm_1gF8 CONVFXI	Rm, Rn				//Convert Int64 -> Fixint
 *** F0nm_1GF8 CONVFLI	Rm, Rn				//Convert Binary64 -> Flonum
@@ -1471,6 +1521,7 @@ F0zz Instruction Block:
 *** F0nm_1gA9 MOV		Rm, Cn				//Cn=Rm
 *** F0nm_1GA9 SETTRAP	Rn, (Rm)			//(Opt/Dbg) Set Trap Mode
 *** F0nm_1gB9 MOV		Cm, Rn				//Rn=Cm
+*** F0nm_1GB9 CMPTTEQ	RmImm6u, Rn			//(TTAG) Compare Type-Tag
 *** F0nm_1eC9 CMP{Q}EQ	Rm, Rn				//Rn==Rm
 *** F0nm_1eD9 CMP{Q}HI	Rm, Rn				//Unsigned Rn GT Rm
 *** F0nm_1eE9 CMP{Q}GT	Rm, Rn				//Signed Rn GT Rm
@@ -1737,38 +1788,38 @@ F0zz Instruction Block:
 
 * F0nm_4eoz (Follows a similar pattern as F0nm_0zz0)
 ** F0nm_4go0  MOV.X		Xn, (Rm, Disp5)		//(MOVX2) Store Pair
-** F0nm_4Go0 ? XMOV.B	Rn, (Xm, Disp5)		//(XMOV)
-** F0nm_4go1 ? XMOV.X	Xn, (Xm, Disp5)		//(XMOV)
-** F0nm_4Go1 ? XMOV.W	Rn, (Xm, Disp5)		//(XMOV)
+** F0nm_4Go0  -
+** F0nm_4go1  -
+** F0nm_4Go1  -
 ** F0nm_4go2  -
-** F0nm_4Go2 ? XMOV.L	Rn, (Xm, Disp5)		//(XMOV)
-** F0nm_4go3  MOV.C		Cn, (Rm, Ro)		//(MOVC)
-** F0nm_4Go3 ? XMOV.Q	Rn, (Xm, Disp5)		//(XMOV)
+** F0nm_4Go2  -
+** F0nm_4go3  -
+** F0nm_4Go3  -
 ** F0nm_4go4  MOV.X		Xn, (Rm, Ro)		//(MOVX2) Store Pair
-** F0nm_4Go4 ? XMOV.B	Rn, (Xm, Ro)		//(XMOV)
-** F0nm_4go5 ? XMOV.X	Xn, (Xm, Ro)		//(XMOV)
-** F0nm_4Go5 ? XMOV.W	Rn, (Xm, Ro)		//(XMOV)
-** F0nm_4go6 ? FMOV.S	Rn, (Rm, Ro)
-** F0nm_4Go6 ? XMOV.L	Rn, (Xm, Ro)		//(XMOV)
-** F0nm_4go7 ? FMOV.H	Rn, (Rm, Ro)
-** F0nm_4Go7 ? XMOV.Q	Rn, (Xm, Ro)		//(XMOV)
+** F0nm_4Go4  MOV.C		Cn, (Rm, Ro)		//(MOVC)
+** F0nm_4go5  -
+** F0nm_4Go5  -
+** F0nm_4go6  FMOV.S	Rn, (Rm, Ro)
+** F0nm_4Go6  -
+** F0nm_4go7  FMOV.H	Rn, (Rm, Ro)
+** F0nm_4Go7  -
 
 ** F0nm_4go8  MOV.X		(Rm, Disp5), Xn		//(MOVX2) Load Pair
-** F0nm_4Go8 ? XMOV.B	(Xm, Disp5), Rn		//(XMOV)
-** F0nm_4go9 ? XMOV.X	(Xm, Disp5), Xn		//(XMOV)
-** F0nm_4Go9 ? XMOV.W	(Xm, Disp5), Rn		//(XMOV)
+** F0nm_4Go8  -
+** F0nm_4go9  -
+** F0nm_4Go9  -
 ** F0nm_4goA  -
-** F0nm_4GoA ? XMOV.L	(Xm, Disp5), Rn		//(XMOV)
-** F0nm_4goB  MOV.C		(Rm, Ro), Cn		//(MOVC)
-** F0nm_4GoB ? XMOV.Q	(Xm, Disp5), Rn		//(XMOV)
+** F0nm_4GoA  -
+** F0nm_4goB  -
+** F0nm_4GoB  -
 ** F0nm_4goC  MOV.X		(Rm, Ro), Xn		//(MOVX2) Load Pair
-** F0nm_4GoC ? XMOV.B	(Xm, Ro), Rn		//(XMOV)
-** F0nm_4goD ? XMOV.X	(Xm, Ro), Xn		//(XMOV)
-** F0nm_4GoD ? XMOV.W	(Xm, Ro), Rn		//(XMOV)
-** F0nm_4goE ? FMOV.S	(Rm, Ro), Rn
-** F0nm_4GoE ? XMOV.L	(Xm, Ro), Rn		//(XMOV)
-** F0nm_4goF ? FMOV.H	(Rm, Ro), Rn
-** F0nm_4GoF ? XMOV.Q	(Xm, Ro), Rn		//(XMOV)
+** F0nm_4GoC  MOV.C		(Rm, Ro), Cn		//(MOVC)
+** F0nm_4goD  -
+** F0nm_4GoD  -
+** F0nm_4goE  FMOV.S	(Rm, Ro), Rn
+** F0nm_4GoE  -
+** F0nm_4goF  FMOV.H	(Rm, Ro), Rn
+** F0nm_4GoF  -
 
 * F0zz_5zzz
 ** F0nm_5go0  CSELT		Rm, Ro, Rn			//Rn=SR.T?Rm:Ro
@@ -1836,7 +1887,41 @@ F0zz Instruction Block:
 *** ...
 *** F0nm_7ezF  (2R Block)
 
-* F0zz_8zzz
+* F0zz_8zzz (XMOV Block)
+** F0nm_8gd0  XMOV.B	Rn, (Xm, Disp5)		//
+** F0nm_8Gd0  -
+** F0nm_8gd1  XMOV.W	Rn, (Xm, Disp5)		//
+** F0nm_8Gd1  -
+** F0nm_8gd2  XMOV.L	Rn, (Xm, Disp5)		//
+** F0nm_8Gd2  -
+** F0nm_8gd3  XMOV.Q	Rn, (Xm, Disp5)		//
+** F0nm_8Gd3  XMOV.X	Xn, (Xm, Disp5)		//
+** F0nm_8go4  XMOV.B	Rn, (Xm, Ro)		//
+** F0nm_8Go4  -
+** F0nm_8go5  XMOV.W	Rn, (Xm, Ro)		//
+** F0nm_8Go5  -
+** F0nm_8go6  XMOV.L	Rn, (Xm, Ro)		//
+** F0nm_8Go6  -
+** F0nm_8go7  XMOV.Q	Rn, (Xm, Ro)		//
+** F0nm_8Go7  XMOV.X	Xn, (Xm, Ro)		//
+** F0nm_8gd8  XMOV.B	(Xm, Disp5), Rn		//
+** F0nm_8Gd8  XMOVU.B	(Xm, Disp5), Rn		//
+** F0nm_8gd9  XMOV.W	(Xm, Disp5), Rn		//
+** F0nm_8Gd9  XMOVU.W	(Xm, Disp5), Rn		//
+** F0nm_8gdA  XMOV.L	(Xm, Disp5), Rn		//
+** F0nm_8GdA  XMOVU.L	(Xm, Disp5), Rn		//
+** F0nm_8gdB  XMOV.Q	(Xm, Disp5), Rn		//
+** F0nm_8GdB  XMOV.X	(Xm, Disp5), Xn		//
+** F0nm_8goC  XMOV.B	(Xm, Ro), Rn		//
+** F0nm_8GoC  XMOVU.B	(Xm, Ro), Rn		//
+** F0nm_8goD  XMOV.W	(Xm, Ro), Rn		//
+** F0nm_8GoD  XMOVU.W	(Xm, Ro), Rn		//
+** F0nm_8goE  XMOV.L	(Xm, Ro), Rn		//
+** F0nm_8GoE  XMOVU.L	(Xm, Ro), Rn		//
+** F0nm_8goF  XMOV.Q	(Xm, Ro), Rn		//
+** F0nm_8GoF  XMOV.X	(Xm, Ro), Xn		//
+
+
 * F0ez_9zzz
 
 * F0dd_Addd
@@ -1935,7 +2020,7 @@ F2zz Instruction Block  (Imm9 Block):
 ** F2n1_Cfjj  LDIN{D}	Imm10n, Rn				//(PrWEX) Alt
 ** F2n2_Cfjj  LDISH		Imm8u, Rn				//(PrWEX) Rn=(Rn<<8)|Imm8
 *** Jumbo: LDISH32	Imm32, Rn
-*** Jumbo+(E.m==1): (E.q?BSR:BRA) Disp33s		//?
+*** / Jumbo+(E.m==1): (E.q?BSR:BRA) Disp33s		//?
 ** F2n3_Cfjj  LDIHI{Q}	Imm10u, Rn				//Load immed into High bits (31:22) or (63:54)
 ** F2n4_Cfjj  TST{Q}	Imm10u, Rn				//SR.T=!(Imm AND Rn)
 ** F2n5_Cfjj  TST{Q}	Imm10n, Rn				//SR.T=!(Imm AND Rn)

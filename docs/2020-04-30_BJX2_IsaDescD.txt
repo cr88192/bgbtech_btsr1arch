@@ -461,7 +461,33 @@ The values of the other bits are unchanged by this operation.
 This instruction is only allowed in Lane 1.
 
 
-=== CONVFXI / CONVFLI (?) ===
+=== CMPTAxx (TTAG) ===
+
+* F0nm_1gC8  CMPTAEQ	Rm, Rn			//(TTAG) Zx(Rn[59:48]) EQ Rm
+* F0nm_1gD8  CMPTAHI	Rm, Rn			//(TTAG) Zx(Rn[59:48]) HI Rm
+* F0nm_1gE8  CMPTAHS	Rm, Rn			//(TTAG) Zx(Rn[59:48]) HS Rm
+
+Compare the Tag Attribute Bits for the value in Rn against the reference value in Rm.
+
+The Tag Attribute will be compared as-if it had been zero-extended to 32 bits.
+
+
+=== CMPTTEQ (TTAG) ===
+
+* F0nm_1GB9  CMPTTEQ	RmImm6u, Rn		//(TTAG)
+
+Compare the Tag-Bits in the immediate with those in Rn:
+* 0zzzz0: Rn(63:60)==Imm(4:1)
+* 0zzz01: Rn(63:61)==Imm(4:2)
+* 0zz011: Rn(63:62)==Imm(4:3)
+* 0z0111: Rn(63   )==Imm(4  )
+* 1zzzz0: Rn( 3: 0)==Imm(4:1)
+* 1zzz01: Rn( 2: 0)==Imm(4:2)
+* 1zz011: Rn( 1: 0)==Imm(4:3)
+* 1z0111: Rn( 0   )==Imm(4  )
+
+
+=== CONVFXI / CONVFLI (TTAG) ===
 
 * F0nm_1gF8  CONVFXI	Rm, Rn				//Convert Int64 -> Fixint
 * F0nm_1GF8  CONVFLI	Rm, Rn				//Convert Binary64 -> Flonum
@@ -514,6 +540,9 @@ Index 1:
 * ( 22): FPU Lane 2 (Allow FPU ops in Lane 2)
 * ( 23): Conv FP16 (Packed FP8 and FP16 conversion Ops)
 * ( 24): RISC-V Mode
+* ( 25): TTAG (Type Tag)
+* ( 26): XMOV Addressing
+* ( 27): XMOV Quadrant Add
 
 Index 31:
 * Hardware Random Number

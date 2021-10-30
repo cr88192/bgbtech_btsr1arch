@@ -904,6 +904,7 @@ s64 BGBCP_DefTypeFlag(BGBCP_ParseState *ctx, char *tag)
 
 				if(!bgbcp_strcmp(tag, "__near"))i=BGBCC_TYFL_NEAR;
 				if(!bgbcp_strcmp(tag, "__far"))i=BGBCC_TYFL_FAR;
+				if(!bgbcp_strcmp(tag, "__huge"))i=BGBCC_TYFL_HUGE;
 
 //				if(!bgbcp_strcmp(tag, "__getter"))i=BGBCC_TYFL_GETTER;
 //				if(!bgbcp_strcmp(tag, "__setter"))i=BGBCC_TYFL_SETTER;
@@ -915,6 +916,7 @@ s64 BGBCP_DefTypeFlag(BGBCP_ParseState *ctx, char *tag)
 
 				if(!bgbcp_strcmp(tag, "_Near"))i=BGBCC_TYFL_NEAR;
 				if(!bgbcp_strcmp(tag, "_Far"))i=BGBCC_TYFL_FAR;
+				if(!bgbcp_strcmp(tag, "_Huge"))i=BGBCC_TYFL_HUGE;
 
 				if(!bgbcp_strcmp(tag, "_Thread_local"))
 					i=BGBCC_TYFL_THREAD;

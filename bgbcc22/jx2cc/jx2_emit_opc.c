@@ -2369,6 +2369,16 @@ int BGBCC_JX2_TryEmitOpRegReg(BGBCC_JX2_Context *ctx, int nmid, int rm, int rn)
 			opw1=0xF000|ex|((rn&15)<<0);
 			opw2=0x5C00|((rn&15)<<4)|((rm&15)<<0);			break;
 
+		case BGBCC_SH_NMID_CMPTAEQ:
+			opw1=0xF00C|ex;
+			opw2=0x1800|((rn&15)<<4)|((rm&15)<<0);			break;
+		case BGBCC_SH_NMID_CMPTAHI:
+			opw1=0xF00D|ex;
+			opw2=0x1800|((rn&15)<<4)|((rm&15)<<0);			break;
+		case BGBCC_SH_NMID_CMPTAHS:
+			opw1=0xF00D|ex;
+			opw2=0x1800|((rn&15)<<4)|((rm&15)<<0);			break;
+
 
 		case BGBCC_SH_NMID_MOVHD:
 			opw1=0xF008|ex;
@@ -4970,6 +4980,11 @@ int BGBCC_JX2_TryEmitOpImmReg(BGBCC_JX2_Context *ctx,
 			}
 			opw1=0xF007|(ex&0x0040); odr=1;
 			opw2=0x1900|((reg&15)<<4);
+			break;
+
+		case BGBCC_SH_NMID_CMPTTEQ:	
+			opw1=0xF08B|(ex&0x0040)|((imm<<0)&0x0030);
+			opw2=0x1900|((reg&15)<<4)|(imm&15);
 			break;
 
 		case BGBCC_SH_NMID_JLDI:

@@ -83,6 +83,14 @@ parameter[6:0] JX2_GR_R63		= 7'h3F;
 parameter[6:0] JX2_GR_DLR		= 7'h40;
 parameter[6:0] JX2_GR_DHR		= 7'h41;
 
+parameter[6:0] JX2_GR_VBR_HI	= 7'h43;
+parameter[6:0] JX2_GR_SPC_HI	= 7'h44;
+parameter[6:0] JX2_GR_SSP_HI	= 7'h45;
+parameter[6:0] JX2_GR_GBR_HI	= 7'h46;
+parameter[6:0] JX2_GR_SP_HI		= 7'h47;
+parameter[6:0] JX2_GR_PC_HI		= 7'h48;
+parameter[6:0] JX2_GR_LR_HI		= 7'h49;
+
 parameter[6:0] JX2_GR_R8IMMH	= 7'h4C;		//Shift Immed, High Part
 parameter[6:0] JX2_GR_R8IMML	= 7'h4D;		//Shift Immed, Low Part
 parameter[6:0] JX2_GR_JIMM		= 7'h4E;
@@ -90,6 +98,15 @@ parameter[6:0] JX2_GR_SP		= 7'h4F;
 
 parameter[6:0] JX2_GR_DLR2		= 7'h50;
 parameter[6:0] JX2_GR_DHR2		= 7'h51;
+
+parameter[6:0] JX2_GR_PC2_HI	= 7'h52;
+parameter[6:0] JX2_GR_VBR2_HI	= 7'h53;
+parameter[6:0] JX2_GR_SPC2_HI	= 7'h54;
+// parameter[6:0] JX2_GR_SSP2_HI	= 7'h55;
+parameter[6:0] JX2_GR_GBR2_HI	= 7'h56;
+// parameter[6:0] JX2_GR_SP2_HI	= 7'h57;
+// parameter[6:0] JX2_GR_PC2_HI	= 7'h58;
+// parameter[6:0] JX2_GR_LR2_HI	= 7'h59;
 
 parameter[6:0] JX2_GR_SP2		= 7'h5F;
 
@@ -282,6 +299,9 @@ parameter[2:0] JX2_IUC_SC	= 3'b000;	//Scalar
 parameter[2:0] JX2_IUC_WX	= 3'b001;	//Wide
 parameter[2:0] JX2_IUC_WT	= 3'b010;	//Wide+True
 parameter[2:0] JX2_IUC_WF	= 3'b011;	//Wide+False
+
+parameter[2:0] JX2_IUC_WA	= 3'b100;	//Wide-Address
+parameter[2:0] JX2_IUC_WXA	= 3'b101;	//Wide-Address
 
 parameter[  3:0] UV4_XX			= 4'hX;	//
 parameter[  4:0] UV5_XX			= 5'hXX;	//
@@ -573,17 +593,18 @@ REGREG, Fz
 
 	UB: Rm, Rn, Rn
 	UW: Rm, Rn, Rn
-	NB: Rn, Rm, Rn
-
 	UL: Rm, Cn, Cn
 	UQ: Cm, Rn, Rn
 
+	NB: Rn, Rm, Rn
 	NW: Sm, Sn, Sn
 	NL: Rm, Sn, Sn
 	NQ: Sm, Rn, Rn
 
 	XB: Rm, Ro, Rn
 	XW: Rm, Ro, Rn
+
+	XL: Rn, RmImm5u, Rn
 
 REGREG, Fz+Au (Rm, Ro, Rp, Rn)
 	SB: Rm, Ro, Rn, Rn
@@ -698,6 +719,7 @@ parameter[5:0] JX2_UCMD_BRA			= 6'h1C;		//
 parameter[5:0] JX2_UCMD_BSR			= 6'h1D;		//
 parameter[5:0] JX2_UCMD_JMP			= 6'h1E;		//
 parameter[5:0] JX2_UCMD_JSR			= 6'h1F;		//
+
 parameter[5:0] JX2_UCMD_MUL3		= 6'h20;		//Multiply
 parameter[5:0] JX2_UCMD_SHLLN		= 6'h21;		//Fixed Shifts
 parameter[5:0] JX2_UCMD_FPU3		= 6'h22;		//FPU 3R Ops
@@ -706,14 +728,15 @@ parameter[5:0] JX2_UCMD_FSTCX		= 6'h24;		//FPU Convert (FPR->GR)
 parameter[5:0] JX2_UCMD_FIXS		= 6'h25;		//FPU Unary Op (FPR)
 parameter[5:0] JX2_UCMD_FCMP		= 6'h26;		//FPU Compare
 parameter[5:0] JX2_UCMD_MULW3		= 6'h27;		//Multiply (Word)
-parameter[5:0] JX2_UCMD_ALUW3		= 6'h28;		//ALU, Packed Word (3R)
 
+parameter[5:0] JX2_UCMD_ALUW3		= 6'h28;		//ALU, Packed Word (3R)
 parameter[5:0] JX2_UCMD_BLINT		= 6'h29;		//Interpolator
 parameter[5:0] JX2_UCMD_ALUB3		= 6'h2A;		//ALU, Packed Byte (3R)
-
 parameter[5:0] JX2_UCMD_JCMP		= 6'h2B;		//Jump+Compare
-
 parameter[5:0] JX2_UCMD_BRA_NB		= 6'h2C;		//No Branch
+
+parameter[5:0] JX2_UCMD_ALUCMPW		= 6'h2D;		//ALU Cmp, Packed Word (3R)
+parameter[5:0] JX2_UCMD_ALUCMPB		= 6'h2E;		//ALU Cmp, Packed Byte (3R)
 
 
 parameter[5:0] JX2_UCIX_ALU_ADD		= 6'h20;		//ALU ADD
@@ -787,12 +810,12 @@ parameter[5:0] JX2_UCIX_ALU_PCSELT	= 6'h3F;		//Packed CSELT
 parameter[5:0] JX2_UCIX_ALUN_CLZ	= 6'h00;		//Count Leading Zeroes
 parameter[5:0] JX2_UCIX_ALUN_CTZ	= 6'h01;		//Count Trailing Zeroes
 parameter[5:0] JX2_UCIX_ALUN_BTRNS	= 6'h02;		//Transpose Bits
-parameter[5:0] JX2_UCIX_ALUN_PMORTL	= 6'h03;		//Transpose Bits
+parameter[5:0] JX2_UCIX_ALUN_PMORTL	= 6'h03;		//Morton-Shuffle Bits
 
 parameter[5:0] JX2_UCIX_ALUN_CLZQ	= 6'h20;		//Count Leading Zeroes (QW)
 parameter[5:0] JX2_UCIX_ALUN_CTZQ	= 6'h21;		//Count Trailing Zeroes (QW)
 parameter[5:0] JX2_UCIX_ALUN_BTRNSQ	= 6'h22;		//Transpose Bits (QW)
-parameter[5:0] JX2_UCIX_ALUN_PMORTQ	= 6'h23;		//Transpose Bits
+parameter[5:0] JX2_UCIX_ALUN_PMORTQ	= 6'h23;		//Morton-Shuffle Bits (QW)
 
 parameter[5:0] JX2_UCIX_ALUW_PADDW	= 6'h20;		//ALU ADD
 parameter[5:0] JX2_UCIX_ALUW_PSUBW	= 6'h21;		//ALU SUB
@@ -806,7 +829,11 @@ parameter[5:0] JX2_UCIX_ALUW_MOVLD	= 6'h26;		//ALU (Low DWords)
 parameter[5:0] JX2_UCIX_ALUW_MOVHD	= 6'h27;		//ALU (High DWords)
 
 parameter[5:0] JX2_UCIX_ALUW_PSRCHN	= 6'h18;		//Packed Search
+parameter[5:0] JX2_UCIX_ALUW_CMPAHS	= 6'h19;		//
+parameter[5:0] JX2_UCIX_ALUW_CMPAEQ	= 6'h1A;		//
 parameter[5:0] JX2_UCIX_ALUW_PSRCHE	= 6'h1C;		//Packed Search
+parameter[5:0] JX2_UCIX_ALUW_CMPAHI	= 6'h1D;		//
+parameter[5:0] JX2_UCIX_ALUW_CMPTEQ	= 6'h1E;		//
 
 parameter[5:0] JX2_UCIX_ALUW_PCSELT	= 6'h2F;		//Packed CSELT
 
@@ -1139,6 +1166,80 @@ parameter[127:0] UVDDRT_FF		= UV128_FF;	//
 `ifndef jx2_mem_line32B
 `define jx2_mem_line32to16		//Map 32B to 16B cache-lines
 `endif
+`endif
+
+`ifdef jx2_enable_vaddr96
+`define reg_vaddr			reg[95:0]
+`define wire_vaddr			wire[95:0]
+`define input_vaddr			input[95:0]
+`define output_vaddr		output[95:0]
+`else
+
+`ifdef jx2_enable_vaddr48
+`define reg_vaddr			reg[47:0]
+`define wire_vaddr			wire[47:0]
+`define input_vaddr			input[47:0]
+`define output_vaddr		output[47:0]
+`else
+`define reg_vaddr			reg[31:0]
+`define wire_vaddr			wire[31:0]
+`define input_vaddr			input[31:0]
+`define output_vaddr		output[31:0]
+`endif
+
+`endif
+
+`ifdef jx2_enable_l1addr96
+
+`define reg_l1addr			reg[95:0]
+`define wire_l1addr		wire[95:0]
+`define input_l1addr		input[95:0]
+`define output_l1addr		output[95:0]
+
+parameter[95:0] UVB1AT_XX		= UV96_XX;	//
+parameter[95:0] UVB1AT_00		= UV96_00;	//
+parameter[95:0] UVB1AT_FF		= UV96_FF;	//
+
+`else
+
+`define reg_l1addr			reg[47:0]
+`define wire_l1addr		wire[47:0]
+`define input_l1addr		input[47:0]
+`define output_l1addr		output[47:0]
+
+parameter[47:0] UVB1AT_XX		= UV48_XX;	//
+parameter[47:0] UVB1AT_00		= UV48_00;	//
+parameter[47:0] UVB1AT_FF		= UV48_FF;	//
+
+`endif
+
+
+`ifdef jx2_enable_l2addr96
+
+`define reg_l2addr			reg[95:0]
+`define wire_l2addr		wire[95:0]
+`define input_l2addr		input[95:0]
+`define output_l2addr		output[95:0]
+
+parameter[95:0] UVB2AT_XX		= UV96_XX;	//
+parameter[95:0] UVB2AT_00		= UV96_00;	//
+parameter[95:0] UVB2AT_FF		= UV96_FF;	//
+
+`else
+
+`ifdef jx2_enable_l1addr96
+`define jx2_bus_mixaddr96
+`endif
+
+`define reg_l2addr			reg[47:0]
+`define wire_l2addr		wire[47:0]
+`define input_l2addr		input[47:0]
+`define output_l2addr		output[47:0]
+
+parameter[47:0] UVB2AT_XX		= UV48_XX;	//
+parameter[47:0] UVB2AT_00		= UV48_00;	//
+parameter[47:0] UVB2AT_FF		= UV48_FF;	//
+
 `endif
 
 parameter[511:0] UVDDRW_XX		= UV512_XX;	//

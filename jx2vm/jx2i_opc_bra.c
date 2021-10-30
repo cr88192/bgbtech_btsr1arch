@@ -1233,6 +1233,13 @@ void BJX2_Op_LDTLB_None(BJX2_Context *ctx, BJX2_Opcode *op)
 	r1=ctx->regs[BJX2_REG_DHR];
 	addr=r1&0x0000FFFFFFFFF000ULL;
 
+	if((r0&3)==2)
+	{
+		ctx->mem_ldtlb_lox=r0;
+		ctx->mem_ldtlb_hix=r1;
+		return;
+	}
+
 	if(ctx->regs[BJX2_REG_MMCR]&16)
 	{
 		h=((addr>>24)&0x3F)^((addr>>16)&0xFF)^((addr>>8)&0xC0);
@@ -1258,6 +1265,28 @@ void BJX2_Op_LDTLB_None(BJX2_Context *ctx, BJX2_Opcode *op)
 //		h=((addr>>12)& 7)^((addr>>16)& 7);
 
 		h=((addr>>24)&0x0F)^((addr>>16)&0xFF)^((addr>>8)&0xF0);
+	}
+	
+	if(ctx->mem_ldtlb_lox)
+//	if(0)
+	{
+		r0=ctx->mem_tlb_lo[h*4+0];
+		r1=ctx->mem_tlb_hi[h*4+0];
+		r2=ctx->mem_tlb_lo[h*4+1];
+		r3=ctx->mem_tlb_hi[h*4+1];
+		ctx->mem_tlb_lo[h*4+2]=r0;
+		ctx->mem_tlb_hi[h*4+2]=r1;
+		ctx->mem_tlb_lo[h*4+3]=r2;
+		ctx->mem_tlb_hi[h*4+3]=r3;
+
+		ctx->mem_tlb_lo[h*4+0]=r0;
+		ctx->mem_tlb_hi[h*4+0]=r1;
+		ctx->mem_tlb_lo[h*4+1]=ctx->mem_ldtlb_lox;
+		ctx->mem_tlb_hi[h*4+1]=ctx->mem_ldtlb_hix;
+
+		ctx->mem_ldtlb_lox=0;
+		ctx->mem_ldtlb_hix=0;
+		return;
 	}
 
 	for(i=3; i>0; i--)

@@ -538,9 +538,9 @@ reg[63:0]		memBusExcIn;
 
 `wire_tile		memInData;
 `wire_tile		memOutData;
-wire[47:0]		memAddr;
-wire[47:0]		memAddrB;
-wire[47:0]		memAddrIn;
+`wire_l2addr	memAddr;
+`wire_l2addr	memAddrB;
+`wire_l2addr	memAddrIn;
 wire[15:0]		memOpm;
 wire[15:0]		memOpmIn;
 wire[15:0]		memSeq;
@@ -554,12 +554,13 @@ reg[7:0]		timers_A1;
 reg[7:0]		timers_A0;
 reg[7:0]		timers;
 
+// `wire_vaddr		dbgOutPc;
 wire[47:0]		dbgOutPc;
 wire[95:0]		dbgOutIstr;
 wire			dbgExHold1;
 wire			dbgExHold2;
 
-wire[47:0]		dbgDcInAddr;
+`wire_vaddr		dbgDcInAddr;
 wire[ 4:0]		dbgDcInOpm;
 wire[63:0]		dbgDcOutVal;
 wire[63:0]		dbgDcInVal;
@@ -577,25 +578,41 @@ wire			dbgOutStatus8;
 
 `wire_tile		mem1InData;
 `wire_tile		mem1OutData;
-wire[47:0]		mem1AddrA;
-wire[47:0]		mem1AddrB;
+`wire_l2addr	mem1AddrA;
+`wire_l2addr	mem1AddrB;
 wire[15:0]		mem1Opm;
 wire[1:0]		mem1OK;
 wire[63:0]		mem1BusExc;
 
-wire[47:0]		mem1AddrIn;
+`wire_l2addr	mem1AddrIn;
 wire[15:0]		mem1OpmIn;
 wire[15:0]		mem1SeqOut;
 wire[15:0]		mem1SeqIn;
 wire[7:0]		mem1NodeId;
 assign			mem1NodeId = 8'h04;
 
+wire[95:0]		mem1Addr;
+wire[95:0]		mem1AddrB;
+wire[95:0]		mem1AddrInA;
+wire[95:0]		mem1AddrInB;
+
+`ifdef jx2_enable_l2addr96
+assign	mem1Addr			= mem1AddrA;
+assign	mem1AddrInA			= mem1AddrIn;
+assign	mem1AddrInB			= 0;
+`else
+assign	mem1Addr			= mem1AddrA[47:0];
+assign	mem1AddrInA[47:0]	= mem1AddrIn;
+assign	mem1AddrInB			= 0;
+`endif
+
+// `wire_vaddr		dbg1OutPc;
 wire[47:0]		dbg1OutPc;
 wire[95:0]		dbg1OutIstr;
 wire			dbg1ExHold1;
 wire			dbg1ExHold2;
 
-wire[47:0]		dbg1DcInAddr;
+`wire_vaddr		dbg1DcInAddr;
 wire[ 4:0]		dbg1DcInOpm;
 wire[63:0]		dbg1DcOutVal;
 wire[63:0]		dbg1DcInVal;
@@ -619,7 +636,8 @@ ExUnit	cpu1(
 	mem1Opm,		mem1OK,
 	mem1BusExc,
 	
-	mem1AddrIn,		mem1OpmIn,
+	mem1AddrInA,	mem1AddrInB,
+	mem1OpmIn,
 	mem1SeqIn,		mem1SeqOut,
 	mem1NodeId,
 	
@@ -639,13 +657,13 @@ ExUnit	cpu1(
 
 `wire_tile		mem2InData;
 `wire_tile		mem2OutData;
-wire[47:0]		mem2AddrA;
-wire[47:0]		mem2AddrB;
+`wire_l2addr	mem2Addr;
+`wire_l2addr	mem2AddrB;
 wire[15:0]		mem2Opm;
 wire[1:0]		mem2OK;
 wire[63:0]		mem2BusExc;
 
-wire[47:0]		mem2AddrIn;
+`wire_l2addr	mem2AddrIn;
 wire[15:0]		mem2OpmIn;
 wire[15:0]		mem2SeqIn;
 wire[15:0]		mem2SeqOut;
@@ -653,12 +671,26 @@ wire[15:0]		mem2SeqOut;
 wire[7:0]		mem2NodeId;
 assign			mem2NodeId = 8'h08;
 
+wire[95:0]		mem2AddrA;
+wire[95:0]		mem2AddrB;
+wire[95:0]		mem2AddrInA;
+wire[95:0]		mem2AddrInB;
+
+`ifdef jx2_enable_l2addr96
+assign	mem2Addr		= mem2AddrA;
+assign	mem2AddrInA		= mem2AddrIn;
+`else
+assign	mem2Addr			= mem2AddrA[47:0];
+assign	mem2AddrInA[47:0]	= mem2AddrIn;
+`endif
+
+// `wire_vaddr		dbg2OutPc;
 wire[47:0]		dbg2OutPc;
 wire[95:0]		dbg2OutIstr;
 wire			dbg2ExHold1;
 wire			dbg2ExHold2;
 
-wire[47:0]		dbg2DcInAddr;
+`wire_vaddr		dbg2DcInAddr;
 wire[ 4:0]		dbg2DcInOpm;
 wire[63:0]		dbg2DcOutVal;
 wire[63:0]		dbg2DcInVal;
@@ -682,7 +714,8 @@ ExUnit	cpu2(
 	mem2Opm,		mem2OK,
 	mem2BusExc,
 
-	mem2AddrIn,		mem2OpmIn,
+	mem2AddrInA,	mem2AddrInB,
+	mem2OpmIn,
 	mem2SeqIn,		mem2SeqOut,
 	mem2NodeId,
 	
@@ -728,7 +761,8 @@ assign	mem2InData	= mem1OutData;
 assign	memOutData	= mem2OutData;
 
 assign	mem1AddrIn	= memAddrIn;
-assign	mem2AddrIn	= mem1AddrA;
+// assign	mem2AddrIn	= mem1AddrA;
+assign	mem2AddrIn	= mem1Addr;
 assign	memAddr		= mem2AddrA;
 
 assign	mem1SeqIn	= memSeqIn;
@@ -771,30 +805,47 @@ ExMemJoin	cpuJoin(
 
 `wire_tile		memInData;
 `wire_tile		memOutData;
-wire[47:0]		memAddr;
-wire[47:0]		memAddrB;
+`wire_l2addr	memAddr;
+// `wire_l2addr	memAddrB;
+
 wire[15:0]		memOpm;
 wire[1:0]		memOK;
 
 wire[15:0]		memSeq;
 wire[15:0]		memSeqIn;
-wire[47:0]		memAddrIn;
+`wire_l2addr	memAddrIn;
 wire[15:0]		memOpmIn;
 
 `wire_tile		mem1InData;
 `wire_tile		mem1OutData;
-wire[47:0]		mem1AddrA;
-wire[47:0]		mem1AddrB;
+`wire_l2addr	mem1Addr;
+// `wire_l2addr	mem1AddrB;
 wire[15:0]		mem1Opm;
 wire[1:0]		mem1OK;
 wire[63:0]		mem1BusExc;
 
-wire[47:0]		mem1AddrIn;
+`wire_l2addr	mem1AddrIn;
 wire[15:0]		mem1OpmIn;
 wire[15:0]		mem1SeqOut;
 wire[15:0]		mem1SeqIn;
 wire[ 7:0]		mem1NodeId;
 assign			mem1NodeId = 8'h04;
+
+wire[95:0]		mem1AddrA;
+wire[95:0]		mem1AddrB;
+wire[95:0]		mem1AddrInA;
+wire[95:0]		mem1AddrInB;
+
+`ifdef jx2_enable_l2addr96
+assign	mem1Addr			= mem1AddrA;
+assign	mem1AddrInA			= mem1AddrIn;
+assign	mem1AddrInB			= 0;
+`else
+assign	mem1Addr			= mem1AddrA[47:0];
+// assign	mem1AddrInA[47:0]	= mem1AddrIn;
+assign	mem1AddrInA			= { 48'hX, mem1AddrIn };
+assign	mem1AddrInB			= 0;
+`endif
 
 
 // reg[63:0]		memBusExcIn;
@@ -805,12 +856,13 @@ reg[7:0]		timers_A0;
 reg[7:0]		timers;
 
 
+// `wire_vaddr		dbgOutPc;
 wire[47:0]		dbgOutPc;
 wire[95:0]		dbgOutIstr;
 wire			dbgExHold1;
 wire			dbgExHold2;
 
-wire[47:0]		dbgDcInAddr;
+`wire_vaddr		dbgDcInAddr;
 wire[ 4:0]		dbgDcInOpm;
 wire[63:0]		dbgDcOutVal;
 wire[63:0]		dbgDcInVal;
@@ -834,7 +886,8 @@ ExUnit	cpu(
 	mem1Opm,		mem1OK,
 	mem1BusExc,
 
-	mem1AddrIn,		mem1OpmIn,
+	mem1AddrInA,	mem1AddrInB,
+	mem1OpmIn,
 	mem1SeqIn,		mem1SeqOut,
 	mem1NodeId,
 	
@@ -856,7 +909,8 @@ ExUnit	cpu(
 assign	mem1InData	= memInData;
 assign	memOutData	= mem1OutData;
 assign	mem1AddrIn	= memAddrIn;
-assign	memAddr		= mem1AddrA;
+// assign	memAddr		= mem1AddrA;
+assign	memAddr		= mem1Addr;
 
 assign	mem1SeqIn	= memSeqIn;
 assign	memSeq		= mem1SeqOut;
@@ -968,15 +1022,15 @@ wire[ 15:0]		mmiSeqIn;		//operation sequence
 wire[ 15:0]		mmiSeqOut;		//operation sequence
 wire[ 15:0]		mmiOpmIn;		//memory operation mode
 wire[ 15:0]		mmiOpmOut;		//memory operation mode
-wire[ 47:0]		mmiAddrIn;		//memory input address
-wire[ 47:0]		mmiAddrOut;		//memory output address
-wire[127:0]		mmiDataIn;		//memory input data
-wire[127:0]		mmiDataOut;		//memory output data
+`wire_l2addr	mmiAddrIn;		//memory input address
+`wire_l2addr	mmiAddrOut;		//memory output address
+`wire_tile		mmiDataIn;		//memory input data
+`wire_tile		mmiDataOut;		//memory output data
 
-wire[127:0]		l2aDataIn;
-wire[127:0]		l2aDataOut;
-wire[47:0]		l2aAddrIn;
-wire[47:0]		l2aAddrOut;
+`wire_tile		l2aDataIn;
+`wire_tile		l2aDataOut;
+`wire_l2addr	l2aAddrIn;
+`wire_l2addr	l2aAddrOut;
 wire[15:0]		l2aOpmIn;
 wire[15:0]		l2aOpmOut;
 wire[15:0]		l2aSeqIn;

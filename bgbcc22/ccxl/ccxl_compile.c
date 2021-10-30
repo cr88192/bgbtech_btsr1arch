@@ -3103,9 +3103,11 @@ char *BGBCC_CCXL_VarTypeString(BGBCC_TransState *ctx, BCCX_Node *ty)
 		
 		if(ind!=0)
 		{
-			if(li&BGBCC_TYFL_NEAR)
+			if(li&BGBCC_TYFL_HUGE)
+				{ *t++='A'; *t++='h'; }
+			else if(li&BGBCC_TYFL_NEAR)
 				{ *t++='A'; *t++='n'; }
-			if(li&BGBCC_TYFL_FAR)
+			else if(li&BGBCC_TYFL_FAR)
 				{ *t++='A'; *t++='f'; }
 
 			if(li&BGBCC_TYFL_LTLENDIAN)
@@ -3115,10 +3117,11 @@ char *BGBCC_CCXL_VarTypeString(BGBCC_TransState *ctx, BCCX_Node *ty)
 			else if(li&BGBCC_TYFL_PACKED)
 				{ *t++='A'; *t++='p'; }
 
-			if(li&BGBCC_TYFL_RESTRICT)
+			if(li&BGBCC_TYFL_MAYALIAS)
+				{ *t++='A'; *t++='a'; }
+			else if(li&BGBCC_TYFL_RESTRICT)
 				{ *t++='A'; *t++='r'; }
-
-			if(li&BGBCC_TYFL_VOLATILE)
+			else if(li&BGBCC_TYFL_VOLATILE)
 				{ *t++='A'; *t++='v'; }
 		}
 

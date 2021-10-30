@@ -32,8 +32,8 @@ input [ 15:0]	memSeqIn;		//operation sequence
 output[ 15:0]	memSeqOut;		//operation sequence
 input [ 15:0]	memOpmIn;		//memory operation mode
 output[ 15:0]	memOpmOut;		//memory operation mode
-input [ 47:0]	memAddrIn;		//memory input address
-output[ 47:0]	memAddrOut;		//memory output address
+`input_l2addr	memAddrIn;		//memory input address
+`output_l2addr	memAddrOut;		//memory output address
 `input_tile		memDataIn;		//memory input data
 `output_tile	memDataOut;		//memory output data
 
@@ -96,7 +96,7 @@ assign	ddrOpSqO		= tDdrMemOpSq;
 
 reg[ 15:0]		tMemSeqOut;			//operation sequence
 reg[ 15:0]		tMemOpmOut;			//memory operation mode
-reg[ 47:0]		tMemAddrOut;		//memory output address
+`reg_l2addr		tMemAddrOut;		//memory output address
 `reg_tile		tMemDataOut;		//memory output data
 assign		memSeqOut	= tMemSeqOut;
 assign		memOpmOut	= tMemOpmOut;
@@ -105,26 +105,26 @@ assign		memDataOut	= tMemDataOut;
 
 reg[ 15:0]		tMemSeqReq;			//operation sequence
 reg[ 15:0]		tMemOpmReq;			//memory operation mode
-reg[ 47:0]		tMemAddrReq;		//memory output address
+`reg_l2addr		tMemAddrReq;		//memory output address
 `reg_tile		tMemDataReq;		//memory output data
 reg				tMemDidResp;		//
 reg				tNxtMemDoResp;		//
 reg				tMemSkipReq;		//Skipped Request
 
-reg[ 15:0]	mem2SeqIn;		//
-reg[ 15:0]	mem2OpmIn;		//
-reg[ 47:0]	mem2AddrIn;		//
-`reg_tile	mem2DataIn;		//
+reg[ 15:0]		mem2SeqIn;		//
+reg[ 15:0]		mem2OpmIn;		//
+`reg_l2addr		mem2AddrIn;		//
+`reg_tile		mem2DataIn;		//
 
-reg[ 15:0]	mem3SeqIn;		//
-reg[ 15:0]	mem3OpmIn;		//
-reg[ 47:0]	mem3AddrIn;		//
-`reg_tile	mem3DataIn;		//
+reg[ 15:0]		mem3SeqIn;		//
+reg[ 15:0]		mem3OpmIn;		//
+`reg_l2addr		mem3AddrIn;		//
+`reg_tile		mem3DataIn;		//
 
-reg[ 15:0]	mem4SeqIn;		//
-reg[ 15:0]	mem4OpmIn;		//
-reg[ 47:0]	mem4AddrIn;		//
-`reg_tile	mem4DataIn;		//
+reg[ 15:0]		mem4SeqIn;		//
+reg[ 15:0]		mem4OpmIn;		//
+`reg_l2addr		mem4AddrIn;		//
+`reg_tile		mem4DataIn;		//
 
 
 `ifdef jx2_mem_l2sz_8192

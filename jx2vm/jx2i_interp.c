@@ -58,6 +58,12 @@ int BJX2_ContextPowerOnState(BJX2_Context *ctx)
 	ctx->regs[BJX2_REG_PC]=0;
 	ctx->regs[BJX2_REG_VBR]=0;
 	ctx->regs[BJX2_REG_SR]=0x40000000ULL;
+
+	ctx->regs[BJX2_REG_PC_HI]=0;
+	ctx->regs[BJX2_REG_GBR_HI]=0;
+	ctx->regs[BJX2_REG_VBR_HI]=0;
+	
+	return(0);
 }
 
 BJX2_Opcode *BJX2_ContextAllocOpcode(BJX2_Context *ctx)
@@ -506,9 +512,11 @@ int BJX2_FaultEnterRegs(BJX2_Context *ctx, int exsr)
 	}
 
 	va=ctx->regs[BJX2_REG_PC];
+	vb=ctx->regs[BJX2_REG_PC_HI];
 //	vb=ctx->regs[BJX2_REG_SPC];
 //	ctx->regs[BJX2_REG_PC]=vb;
 	ctx->regs[BJX2_REG_SPC]=va;
+	ctx->regs[BJX2_REG_SPC_HI]=vb;
 
 //	if((exsr&0xF000)!=0xE000)
 	if(1)
@@ -557,9 +565,14 @@ int BJX2_FaultExitRegs(BJX2_Context *ctx, int exsr)
 	}
 
 //	va=ctx->regs[BJX2_REG_PC];
-	vb=ctx->regs[BJX2_REG_SPC];
-	ctx->regs[BJX2_REG_PC]=vb;
+//	vb=ctx->regs[BJX2_REG_SPC];
+//	ctx->regs[BJX2_REG_PC]=vb;
 //	ctx->regs[BJX2_REG_SPC]=va;
+
+	va=ctx->regs[BJX2_REG_SPC];
+	vb=ctx->regs[BJX2_REG_SPC_HI];
+	ctx->regs[BJX2_REG_PC]=va;
+	ctx->regs[BJX2_REG_PC_HI]=vb;
 
 //	if((exsr&0xF000)!=0xE000)
 //	if(1)
@@ -595,7 +608,7 @@ int BJX2_FaultExitRegs(BJX2_Context *ctx, int exsr)
 
 int BJX2_FaultEnterInterrupt(BJX2_Context *ctx)
 {
-	u64 vbr, exsr, sr0, pc1;
+	u64 vbr, vbrh, exsr, sr0, pc1;
 	int i, j, k;
 
 	sr0=ctx->regs[BJX2_REG_SR];
@@ -611,6 +624,7 @@ int BJX2_FaultEnterInterrupt(BJX2_Context *ctx)
 
 	exsr=ctx->regs[BJX2_REG_EXSR];
 	vbr=ctx->regs[BJX2_REG_VBR];
+	vbrh=ctx->regs[BJX2_REG_VBR_HI];
 	if(!vbr && ((exsr&0xF000)!=0xC000))
 	{
 		printf("Fault Into ROM %X\n", (int)exsr);
@@ -667,6 +681,7 @@ int BJX2_FaultEnterInterrupt(BJX2_Context *ctx)
 	ctx->regs[BJX2_REG_SR]|=(1<<30);	//MD
 	
 	vbr=ctx->regs[BJX2_REG_VBR];
+	vbrh=ctx->regs[BJX2_REG_VBR_HI];
 	exsr=ctx->regs[BJX2_REG_EXSR];
 	if((exsr&0xF000)==0xE000)
 	{
@@ -684,6 +699,7 @@ int BJX2_FaultEnterInterrupt(BJX2_Context *ctx)
 		pc1=vbr+0x08;
 	}
 	ctx->regs[BJX2_REG_PC]=pc1;
+	ctx->regs[BJX2_REG_PC_HI]=vbrh;
 	ctx->trcur=NULL;
 
 	ctx->status=0;
@@ -1226,6 +1242,13 @@ char *BJX2_DbgPrintNameForReg(BJX2_Context *ctx, int reg)
 	case BJX2_REG_R23B:		s="R23B";	break;
 #endif
 
+	case BJX2_REG_PC_HI:	s="PCH";	break;
+//	case BJX2_REG_LR_HI:	s="LRH";	break;
+	case BJX2_REG_VBR_HI:	s="VBRH";	break;
+	case BJX2_REG_SPC_HI:	s="SPCH";	break;
+//	case BJX2_REG_SSP_HI:	s="SSPH";	break;
+	case BJX2_REG_GBR_HI:	s="GBH";	break;
+
 	default:				s="?";		break;
 	}
 	
@@ -1508,9 +1531,18 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 	case BJX2_FMID_LDREGDISP1REG:
 		if((op->rm==BJX2_REG_PC) || (op->rm==BJX2_REG_GBR))
 			msc=1;
-	
-		if(	(((sbyte)op->imm)!=op->imm) &&
-			(((byte)op->imm)!=op->imm)	)
+
+		if(		(op->rq!=BJX2_REG_GBR_HI)	&&
+				(op->rq!=BJX2_REG_PC_HI)	)
+		{
+			printf("(%s:%s, 0x%llX), %s",
+				BJX2_DbgPrintNameForReg(ctx, op->rq),
+				BJX2_DbgPrintNameForReg(ctx, op->rm),
+				(op->imm*msc),
+				BJX2_DbgPrintNameForReg(ctx, op->rn));
+		}else
+			if(	(((sbyte)op->imm)!=op->imm) &&
+				(((byte)op->imm)!=op->imm)	)
 		{
 			printf("(%s, 0x%llX), %s",
 				BJX2_DbgPrintNameForReg(ctx, op->rm),
@@ -1529,6 +1561,15 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		if((op->rn==BJX2_REG_PC) || (op->rn==BJX2_REG_GBR))
 			msc=1;
 
+		if(		(op->rq!=BJX2_REG_GBR_HI)	&&
+				(op->rq!=BJX2_REG_PC_HI)	)
+		{
+			printf("%s, (%s:%s, 0x%llX)",
+				BJX2_DbgPrintNameForReg(ctx, op->rm),
+				BJX2_DbgPrintNameForReg(ctx, op->rq),
+				BJX2_DbgPrintNameForReg(ctx, op->rn),
+				(op->imm*msc));
+		}else
 		if(	(((sbyte)op->imm)!=op->imm) &&
 			(((byte)op->imm)!=op->imm)	)
 		{
@@ -1684,6 +1725,17 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		break;
 
 	case BJX2_FMID_LDREG2REG:
+		if(		(op->rq!=BJX2_REG_GBR_HI)	&&
+				(op->rq!=BJX2_REG_PC_HI)	)
+		{
+			printf("(%s:%s, %s), %s",
+				BJX2_DbgPrintNameForReg(ctx, op->rq),
+				BJX2_DbgPrintNameForReg(ctx, op->rm),
+				BJX2_DbgPrintNameForReg(ctx, op->ro),
+				BJX2_DbgPrintNameForReg(ctx, op->rn));
+			break;
+		}
+
 		printf("(%s, %s), %s",
 			BJX2_DbgPrintNameForReg(ctx, op->rm),
 			BJX2_DbgPrintNameForReg(ctx, op->ro),
@@ -1691,6 +1743,17 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		break;
 		
 	case BJX2_FMID_REGSTREG2:
+		if(		(op->rq!=BJX2_REG_GBR_HI)	&&
+				(op->rq!=BJX2_REG_PC_HI)	)
+		{
+			printf("%s, (%s:%s, %s)",
+				BJX2_DbgPrintNameForReg(ctx, op->rm),
+				BJX2_DbgPrintNameForReg(ctx, op->rq),
+				BJX2_DbgPrintNameForReg(ctx, op->rn),
+				BJX2_DbgPrintNameForReg(ctx, op->ro));
+			break;
+		}
+
 		printf("%s, (%s, %s)",
 			BJX2_DbgPrintNameForReg(ctx, op->rm),
 			BJX2_DbgPrintNameForReg(ctx, op->rn),

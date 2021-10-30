@@ -29,9 +29,22 @@ module RegCR(
 	regOutTea,	regInTea,
 	regOutFpsr,	regInFpsr,
 
+`ifdef jx2_enable_vaddr96
+	regOutPcHi,		regInPcHi,
+	regOutLrHi,		regInLrHi,
+	regOutSpcHi,	regInSpcHi,
+`endif
+
 	regOutVbr,
 	regOutGbr,
 	regOutTbr,
+
+`ifdef jx2_enable_vaddr96
+	regOutVbrHi,
+	regOutGbrHi,
+//	regOutTbrHi,
+`endif
+
 	regOutMmcr,
 	regOutKrr
 	);
@@ -83,6 +96,21 @@ output[47:0]	regOutTbr;
 output[63:0]	regOutMmcr;
 output[63:0]	regOutKrr;
 
+`ifdef jx2_enable_vaddr96
+
+output[47:0]	regOutPcHi;
+input [47:0]	regInPcHi;
+output[47:0]	regOutLrHi;
+input [47:0]	regInLrHi;
+output[47:0]	regOutSpcHi;
+input [47:0]	regInSpcHi;
+
+output[47:0]	regOutVbrHi;
+output[47:0]	regOutGbrHi;
+// output[47:0]	regOutTbrHi;
+
+`endif
+
 reg[63:0]	crRegSr;
 reg[63:0]	crRegExsr;
 
@@ -101,6 +129,16 @@ reg[47:0]	crRegTtb;
 reg[63:0]	crRegMmcr;
 reg[47:0]	crRegSttb;
 reg[63:0]	crRegKrr;
+`endif
+
+`ifdef jx2_enable_vaddr96
+reg[47:0]	crRegPcHi;
+reg[47:0]	crRegLrHi;
+reg[47:0]	crRegSpcHi;
+
+reg[47:0]	crRegVbrHi;
+reg[47:0]	crRegGbrHi;
+// reg[47:0]	crRegTbrHi;
 `endif
 
 reg[63:0]	tRegValCm;
@@ -128,6 +166,19 @@ assign	regOutKrr	= crRegKrr;
 `else
 assign	regOutMmcr	= UV64_00;
 assign	regOutKrr	= UV64_00;
+`endif
+
+`ifdef jx2_enable_vaddr96
+
+assign	regOutPcHi	= crRegPcHi;
+assign	regOutLrHi	= crRegLrHi;
+
+assign	regOutSpcHi	= crRegSpcHi;
+
+assign	regOutVbrHi	= crRegVbrHi;
+assign	regOutGbrHi	= crRegGbrHi;
+// assign	regOutTbrHi	= crRegTbrHi;
+
 `endif
 
 reg[63:0]	tValCmA;
@@ -305,6 +356,13 @@ begin
 //		crRegSttb	<= UV48_00;
 `endif
 
+`ifdef jx2_enable_vaddr96
+		crRegPcHi		<= UV48_00;
+		crRegLrHi		<= UV48_00;
+		crRegGbrHi		<= UV48_00;
+		crRegVbrHi		<= UV48_00;
+`endif
+
 	end
 	else
 		if(!hold)
@@ -351,6 +409,16 @@ begin
 		crRegMmcr	<= (regIdCn2B==JX2_CR_MMCR) ? regValCn2B[63:0] : crRegMmcr;
 		crRegSttb	<= (regIdCn2B==JX2_CR_STTB) ? regValCn2B[47:0] : crRegSttb;
 		crRegKrr	<= (regIdCn2B==JX2_CR_KRR ) ? regValCn2B[63:0] : crRegKrr;
+`endif
+
+`ifdef jx2_enable_vaddr96
+		crRegPcHi	<= (regIdCn2B==JX2_GR_PC_HI ) ? regValCn2B_48b : crRegPcHi;
+//		crRegLrHi	<= (regIdCn2B==JX2_GR_LR_HI ) ? regValCn2B_48b : crRegLrHi;
+		crRegLrHi	<= 0;
+		crRegGbrHi	<= (regIdCn2B==JX2_GR_GBR_HI) ? regValCn2B_48b : crRegGbrHi;
+		crRegVbrHi	<= (regIdCn2B==JX2_GR_VBR_HI) ? regValCn2B_48b : crRegVbrHi;
+		crRegSpcHi	<= (regIdCn2B==JX2_GR_SPC_HI) ? regValCn2B_48b : crRegSpcHi;
+
 `endif
 
 	end

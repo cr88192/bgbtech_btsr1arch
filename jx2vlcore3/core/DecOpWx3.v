@@ -111,6 +111,11 @@ output[8:0]		idUIxtC;
 `reg_gpr		opRegXN;
 `reg_gpr		opRegXP;
 
+`reg_gpr		opRegXMv;
+`reg_gpr		opRegXOv;
+`reg_gpr		opRegXNv;
+`reg_gpr		opRegXPv;
+
 reg[32:0]		opImmA;
 reg[8:0]		opUCmdA;
 reg[8:0]		opUIxtA;
@@ -317,6 +322,8 @@ reg opIsDualLaneRn;	//Op uses both lanes (with Rn as 128b)
 reg opIsDualLaneRo;	//Op uses both lanes (with Ro as 128b)
 reg opDualLaneSw;	//Dual lane op but swap A / B regs.
 
+reg opIsBaseRm;		//Rm is a base register
+
 reg opIsFxB;
 reg opIsFzB;
 reg opIsFCB;
@@ -372,6 +379,48 @@ assign	tOpJBitsC		= 0;
 
 `endif
 
+`reg_gpr	opCmRemapRx[31:0];
+
+initial
+begin
+	opCmRemapRx[ 0]=JX2_GR_PC_HI;
+	opCmRemapRx[ 1]=JX2_GR_LR_HI;
+	opCmRemapRx[ 2]=JX2_GR_ZZR;
+	opCmRemapRx[ 3]=JX2_GR_VBR_HI;
+	opCmRemapRx[ 4]=JX2_GR_SPC_HI;
+	opCmRemapRx[ 5]=JX2_GR_SSP_HI;
+	opCmRemapRx[ 6]=JX2_GR_GBR_HI;
+	opCmRemapRx[ 7]=JX2_GR_ZZR;
+	opCmRemapRx[ 8]=JX2_GR_ZZR;
+	opCmRemapRx[ 9]=JX2_GR_ZZR;
+	opCmRemapRx[10]=JX2_GR_ZZR;
+	opCmRemapRx[11]=JX2_GR_ZZR;
+	opCmRemapRx[12]=JX2_GR_ZZR;
+	opCmRemapRx[13]=JX2_GR_ZZR;
+	opCmRemapRx[14]=JX2_GR_ZZR;
+	opCmRemapRx[15]=JX2_GR_SP_HI;
+
+	opCmRemapRx[16]=JX2_GR_PC2_HI;
+//	opCmRemapRx[17]=JX2_GR_LR2_HI;
+	opCmRemapRx[17]=JX2_GR_ZZR;
+	opCmRemapRx[18]=JX2_GR_ZZR;
+	opCmRemapRx[19]=JX2_GR_VBR2_HI;
+	opCmRemapRx[20]=JX2_GR_SPC2_HI;
+//	opCmRemapRx[21]=JX2_GR_SSP2_HI;
+	opCmRemapRx[21]=JX2_GR_ZZR;
+	opCmRemapRx[22]=JX2_GR_GBR2_HI;
+	opCmRemapRx[23]=JX2_GR_ZZR;
+	opCmRemapRx[24]=JX2_GR_ZZR;
+	opCmRemapRx[25]=JX2_GR_ZZR;
+	opCmRemapRx[26]=JX2_GR_ZZR;
+	opCmRemapRx[27]=JX2_GR_ZZR;
+	opCmRemapRx[28]=JX2_GR_ZZR;
+	opCmRemapRx[29]=JX2_GR_ZZR;
+	opCmRemapRx[30]=JX2_GR_ZZR;
+	opCmRemapRx[31]=JX2_GR_ZZR;
+//	opCmRemapRx[31]=JX2_GR_SP2_HI;
+end
+
 always @*
 begin
 
@@ -403,6 +452,7 @@ begin
 	opIsDualLaneRn	= 0;
 	opIsDualLaneRo	= 0;
 	opDualLaneSw	= 0;
+	opIsBaseRm		= 0;
 
 	casez(istrWord[15:10])
 `ifdef jx2_enable_xgpr
@@ -974,9 +1024,14 @@ begin
 
 `endif
 
+		if(opUCmdA0[5:1] == 5'h02)
+		begin
+			opIsBaseRm	= 1;
+		end
+
 `ifdef def_true
 // `ifndef def_true
-		if(opUIxtA0[8:6]==JX2_IUC_WX)
+		if((opUIxtA0[8:6]==JX2_IUC_WX) || (opUIxtA0[8:6]==JX2_IUC_WXA))
 		begin
 			opIsDualLane = 1;
 			opIsDualLaneRn	= 1;
@@ -1042,6 +1097,27 @@ begin
 	opRegXN	= { 1'b0, opRegAN0[0], opRegAN0[4:1], opDualLaneSw };
 	opRegXP	= { 1'b0, opRegAP0[0], opRegAP0[4:1], opDualLaneSw };
 	
+	opRegXMv = { opRegXM[6:1], !opRegXM[0] };
+	opRegXOv = { opRegXO[6:1], !opRegXO[0] };
+	opRegXNv = { opRegXN[6:1], !opRegXN[0] };
+	opRegXPv = { opRegXP[6:1], !opRegXP[0] };
+	
+	if(opRegAM0[6])
+	begin
+		opRegXM		= opRegAM0;
+		opRegXMv	= opCmRemapRx[opRegAM0[4:0]];
+	end
+	if(opRegAN0[6])
+	begin
+		opRegXN		= opRegAN0;
+		opRegXNv	= opCmRemapRx[opRegAN0[4:0]];
+	end
+	if(opRegAP0[6])
+	begin
+		opRegXP		= opRegAP0;
+		opRegXPv	= opCmRemapRx[opRegAP0[4:0]];
+	end
+	
 `else
 
 	opRegXM	= { opRegAM0[0], opRegAM0[4:1], opDualLaneSw };
@@ -1058,7 +1134,28 @@ begin
 //	opRegXM	= { opRegAM0[0]^(opRegAM0[4:1]==4'b0), opRegAM0[4:1], opDualLaneSw };
 //	opRegXO	= { opRegAO0[0]^(opRegAO0[4:1]==4'b0), opRegAO0[4:1], opDualLaneSw };
 //	opRegXN	= { opRegAN0[0]^(opRegAN0[4:1]==4'b0), opRegAN0[4:1], opDualLaneSw };
-	
+
+`ifdef jx2_enable_vaddr96
+// `ifndef def_true
+	if(opIsBaseRm)
+	begin
+		if(	(opUIxtA0[8:6]==JX2_IUC_WA) ||
+			(opUIxtA0[8:6]==JX2_IUC_WXA))
+//		if(1'b0)
+		begin
+			opRegAM = opRegXM;
+			opRegBM = opRegXMv;
+		end
+		else
+		begin
+//			opRegBM = JX2_GR_GBR_HI;
+//			if(opRegAM0 == JX2_GR_PC)
+//				opRegBM = JX2_GR_PC_HI;
+		end
+
+	end
+`endif
+
 	if(opIsDualLane)
 	begin
 		if(!opIsScalar)
@@ -1089,14 +1186,16 @@ begin
 		if(opIsDualLaneRn)
 		begin
 			opRegAN = opRegXN;
-			opRegBN	= opRegAN;
-			opRegBN[0] = !opRegAN[0];
+			opRegBN = opRegXNv;
+//			opRegBN	= opRegAN;
+//			opRegBN[0] = !opRegAN[0];
 
 			if(opIsScalar)
 			begin
 				opRegCO		= opRegXP;
-				opRegCM		= opRegCO;
-				opRegCM[0]	= !opRegCO[0];
+				opRegCM		= opRegXPv;
+//				opRegCM		= opRegCO;
+//				opRegCM[0]	= !opRegCO[0];
 			end
 		end
 
@@ -1104,13 +1203,15 @@ begin
 		if(opIsDualLaneRm)
 		begin
 			opRegAM = opRegXM;
-			opRegBM[0] = !opRegAM[0];
+			opRegBM = opRegXMv;
+//			opRegBM[0] = !opRegAM[0];
 		end
 
 		if(opIsDualLaneRo)
 		begin
 			opRegAO = opRegXO;
-			opRegBO[0] = !opRegAO[0];
+			opRegBO = opRegXOv;
+//			opRegBO[0] = !opRegAO[0];
 		end
 `endif
 

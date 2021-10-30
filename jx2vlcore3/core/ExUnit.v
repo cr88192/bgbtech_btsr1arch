@@ -71,12 +71,13 @@ module ExUnit(
 	reset,
 	timers,
 	
-	memAddr,		memAddrB,
+	memAddrA,		memAddrB,
 	memDataIn,		memDataOut,
 	memOpm,			memOK,
 	memBusExc,
 	
-	memAddrIn,		memOpmIn,
+	memAddrInA,		memAddrInB,
+	memOpmIn,
 	memSeqIn,		memSeqOut,
 	unitNodeId,
 	
@@ -100,9 +101,29 @@ input			clock;
 
 input[11:0]		timers;
 
-output[47:0]	memAddr;
-output[47:0]	memAddrB;
-input[47:0]		memAddrIn;
+// `output_l2addr		memAddr;
+// `output_l2addr		memAddrB;
+// `input_l2addr		memAddrIn;
+
+output[95:0]		memAddrA;
+output[95:0]		memAddrB;
+input[95:0]			memAddrInA;
+input[95:0]			memAddrInB;
+
+`wire_l2addr		memAddrOut;
+`wire_l2addr		memAddrIn;
+
+// assign			memAddrIn = { memAddrInB, memAddrInA };
+// assign			memAddrA = memAddrOut[47: 0];
+// assign			memAddrB = memAddrOut[95:48];
+
+`ifdef jx2_enable_l2addr96
+assign			memAddrIn = memAddrInA;
+assign			memAddrA = memAddrOut;
+`else
+assign			memAddrIn = memAddrInA[47:0];
+assign			memAddrA = { UV48_00, memAddrOut };
+`endif
 
 `input_tile		memDataIn;
 `output_tile	memDataOut;
@@ -120,6 +141,7 @@ input[7:0]		unitNodeId;
 	
 
 // output[31:0]	dbgOutPc;
+// `output_vaddr	dbgOutPc;
 output[47:0]	dbgOutPc;
 output[95:0]	dbgOutIstr;
 
@@ -127,7 +149,7 @@ output			dbgExHold1;
 output			dbgExHold2;
 
 // output[31:0]	dbgDcInAddr;
-output[47:0]	dbgDcInAddr;
+`output_vaddr	dbgDcInAddr;
 output[4:0]		dbgDcInOpm;
 output[63:0]	dbgDcOutVal;
 output[63:0]	dbgDcInVal;
@@ -237,6 +259,18 @@ reg [63:0]		crInSr;
 
 reg[47:0]		ifValPc;
 reg[47:0]		ifLastPc;
+reg[47:0]		ifValPcHi;
+
+// assign		ifValPcHi = crOutPcHi;
+
+`ifdef jx2_enable_vaddr96
+`wire_vaddr		ifValPcW = { ifValPcHi, ifValPc };
+`wire_vaddr		ifLastPcW = { ifValPcHi, ifLastPc };
+`else
+`wire_vaddr		ifValPcW = ifValPc;
+`wire_vaddr		ifLastPcW = ifLastPc;
+`endif
+
 // wire[63:0]	ifIstrWord;	//source instruction word
 wire[95:0]		ifIstrWord;	//source instruction word
 wire[1:0]		ifOutPcOK;
@@ -256,10 +290,11 @@ assign	ifInPcWxe = crOutSr[27:26];
 assign	ifInPcWxe = 2'b00;
 `endif
 
+// assign	dbgOutPc	= ifLastPcW;
 assign	dbgOutPc	= ifLastPc;
 assign	dbgOutIstr	= ifIstrWord;
 
-reg [47:0]		dcInAddr;
+`reg_vaddr		dcInAddr;
 reg [4:0]		dcInOpm;
 wire[63:0]		dcOutVal;
 reg [63:0]		dcInVal;
@@ -290,7 +325,7 @@ wire[63:0]		memRegTraPc;
 RbiMemL1A		memL1(
 	clock,			reset,
 
-	ifValPc,		ifIstrWord,
+	ifValPcW,		ifIstrWord,
 	ifOutPcOK,		ifOutPcStep,
 	ifInPcHold,		ifInPcWxe,
 	ifOutPcSxo,
@@ -307,7 +342,7 @@ RbiMemL1A		memL1(
 	memRegExc,		memRegTraPc,
 	dcInTraPc,		tDeadlockLatch,
 
-	memAddrIn,		memAddr,
+	memAddrIn,		memAddrOut,
 	memDataIn,		memDataOut,
 	memOpmIn,		memOpm,
 	memSeqIn,		memSeqOut,
@@ -858,6 +893,17 @@ wire[47:0]	crOutTbr;
 // wire[63:0]	crOutMmcr;
 // wire[63:0]	crOutKrr;
 
+wire[47:0]	crOutPcHi;
+reg [47:0]	crInPcHi;
+wire[47:0]	crOutLrHi;
+reg [47:0]	crInLrHi;
+wire[47:0]	crOutSpcHi;
+reg [47:0]	crInSpcHi;
+
+wire[47:0]	crOutVbrHi;
+wire[47:0]	crOutGbrHi;
+// wire[47:0]	crOutTbrHi;
+
 RegCR regCr(
 	clock,	reset,
 //	exHold2,
@@ -889,11 +935,25 @@ RegCR regCr(
 	crOutTea,	crInTea,
 	crOutFpsr,	crInFpsr,
 
+`ifdef jx2_enable_vaddr96
+	crOutPcHi,	crInPcHi,
+	crOutLrHi,	crInLrHi,
+	crOutSpcHi,	crInSpcHi,
+`endif
+
 	crOutVbr,
 	crOutGbr,
 	crOutTbr,
+
+`ifdef jx2_enable_vaddr96
+	crOutVbrHi,
+	crOutGbrHi,
+//	crOutTbrHi,
+`endif
+
 	crOutMmcr,
 	crOutKrr
+
 	);
 
 
@@ -937,6 +997,18 @@ reg[63:0]		ex2MemDataIn;
 reg[63:0]		ex2MemDataInB;
 reg[1:0]		ex2MemDataOK;
 
+
+// wire[47:0]		ex1RegPcHi;
+wire[47:0]		ex1RegLrHi;
+
+reg[47:0]		ex1RegPcHi;
+// reg[47:0]		ex1RegLrHi;
+reg[47:0]		ex1RegGbrHi;
+
+// assign		ex1RegPcHi = crOutPcHi;
+assign		ex1RegLrHi = crOutLrHi;
+
+// assign		ex1RegGbrHi = crOutGbrHi;
 
 // reg[31:0]		ex1ValBPc;
 
@@ -992,7 +1064,12 @@ reg[63:0]		ex1RegInLr;
 wire[63:0]		ex1RegOutSr;
 reg[63:0]		ex1RegInSr;
 
-wire[47:0]		ex1MemAddr;
+wire[47:0]		ex1OutPcHi;
+wire[47:0]		ex1OutLrHi;
+wire[47:0]		ex1OutGbrHi;
+
+// wire[47:0]		ex1MemAddr;
+`wire_vaddr		ex1MemAddr;
 // wire[ 4:0]		ex1MemOpm;
 wire[63:0]		ex1MemDataOut;
 wire[63:0]		ex1MemDataOutB;
@@ -1041,6 +1118,8 @@ ExEX1	ex1(
 	ex1PreBraPc,	ex1PreBra,
 	ex1AluSrJcmpT,
 	
+//	ifValPcHi,		ex1RegGbrHi,
+	
 	ex1RegOutDlr,	ex1RegInDlr,
 	ex1RegOutDhr,	ex1RegInDhr,
 	ex1RegOutSp,	ex1RegInSp,
@@ -1048,6 +1127,14 @@ ExEX1	ex1(
 	ex1RegOutLr,	ex1RegInLr,
 	ex1RegOutSr,	ex1RegInSr,
 	ex1RegOutSchm,	ex1RegInSchm,
+
+`ifdef jx2_enable_vaddr96
+//	ex1OutPcHi,		crOutPcHi,
+//	ex1OutLrHi,		crOutLrHi,
+	ex1OutPcHi,		ex1RegPcHi,
+	ex1OutLrHi,		ex1RegLrHi,
+	ex1OutGbrHi,	ex1RegGbrHi,
+`endif
 
 	ex1MemAddr,		ex1MemOpm,
 	ex1MemDataOut,	ex1MemDataOutB,
@@ -1712,11 +1799,14 @@ ExEXB3		exc3(
 reg[31:0]	tValStepPc;
 
 reg[47:0]	tValNextPc;
+reg[47:0]	tValNextPcHi;
 reg[47:0]	tOpNextPc;
 reg[47:0]	tIsrNextPc;
 
 reg[47:0]	tValBraPc;
+reg[47:0]	tValBraPcHi;
 reg[47:0]	tValNextBraPc;
+reg[47:0]	tValNextBraPcHi;
 reg[15:0]	tValBraSrT;
 reg[15:0]	tValNextBraSrT;
 reg[47:0]	tIsrBraPc;
@@ -1733,7 +1823,15 @@ reg[63:0]	tDelayExc;
 reg[63:0]	tNxtDelayExc;
 
 reg[63:0]	tDelay2Exc;
+reg[63:0]	tDelay3Exc;
+reg[63:0]	tDelay4Exc;
 reg[63:0]	tNxtDelay2Exc;
+reg[63:0]	tNxtDelay3Exc;
+reg[63:0]	tNxtDelay4Exc;
+
+reg			tDelay2ExcAdv;
+reg			tDelay3ExcAdv;
+reg			tDelay4ExcAdv;
 
 reg			tPreHold1;
 reg			tNxtPreHold1;
@@ -1823,9 +1921,16 @@ begin
 	crInSpc			= crOutSpc;
 	crInSsp			= crOutSsp;
 	crInTea			= crOutTea;
+
+	crInPcHi		= crOutPcHi;
+//	crInLrHi		= crOutLrHi;
+	crInLrHi		= ex1OutLrHi;
+	crInSpcHi		= crOutSpcHi;
+
 //	tValNextBraPc	= UV32_XX;
 //	tValNextBraPc	= UV32_00;
 	tValNextBraPc	= UV48_00;
+	tValNextBraPcHi	= UV48_00;
 //	tValNextBraSrT	= UV16_00;
 	tValNextBraSrT	= {
 		crOutSr[15: 4],
@@ -2285,11 +2390,61 @@ begin
 //	endcase
 
 	tNxtDelay2Exc	= tDelay2Exc;
+	tNxtDelay3Exc	= tDelay3Exc;
+	tNxtDelay4Exc	= tDelay4Exc;
+	
+	tDelay2ExcAdv	= 0;
+	tDelay3ExcAdv	= 0;
+//	tDelay4ExcAdv	= 0;
 
-	if(tDelay2Exc[15] && !tRegExc[15])
+	if((tDelay2Exc[15:12]==4'hA) && (tRegExc[15:12]==4'hA))
+	begin
+		if(tDelay2Exc[37:30]==tRegExc[37:30])
+		begin
+			tDelay2ExcAdv	= 1;
+			tDelay3ExcAdv	= 1;
+		end
+
+//		tNxtDelay2Exc	= tNxtDelay3Exc;
+//		tNxtDelay3Exc	= tNxtDelay4Exc;
+//		tNxtDelay4Exc	= 0;
+	end
+	else
+//	if(tDelay2Exc[15] && !tRegExc[15])
+	if(tDelay2Exc[15] && !tRegExc[15] && !crOutSr[28])
 	begin
 		tNxtRegExc		= tDelay2Exc;
-		tNxtDelay2Exc	= 0;
+		tDelay2ExcAdv	= 1;
+		tDelay3ExcAdv	= 1;
+
+//		tNxtDelay2Exc	= tNxtDelay3Exc;
+//		tNxtDelay3Exc	= tNxtDelay4Exc;
+//		tNxtDelay4Exc	= 0;
+	end
+	else	if(tDelay3Exc[15] && !tDelay2Exc[15])
+	begin
+		tDelay2ExcAdv	= 1;
+		tDelay3ExcAdv	= 1;
+
+//		tNxtDelay2Exc	= tNxtDelay3Exc;
+//		tNxtDelay3Exc	= tNxtDelay4Exc;
+//		tNxtDelay4Exc	= 0;
+	end
+	else	if(tDelay4Exc[15] && !tDelay3Exc[15])
+	begin
+		tDelay3ExcAdv	= 1;
+//		tNxtDelay3Exc	= tNxtDelay4Exc;
+//		tNxtDelay4Exc	= 0;
+	end
+	
+	if(tDelay2ExcAdv)
+	begin
+		tNxtDelay2Exc	= tNxtDelay3Exc;
+	end
+	if(tDelay3ExcAdv)
+	begin
+		tNxtDelay3Exc	= tNxtDelay4Exc;
+		tNxtDelay4Exc	= 0;
 	end
 
 //	if(tDelayExc[15])
@@ -2323,17 +2478,28 @@ begin
 			if((memRegExc[15:12]!=4'hC) || crOutSr[3])
 				tNxtRegExc = memRegExc;
 		end
+// `ifndef def_true
+`ifdef def_true
+		else
+		begin
+			if((memRegExc[15:12]!=4'hC) || crOutSr[3])
+				tNxtDelay4Exc = memRegExc;
+		end
+`endif
 	end
 	else if(memRegExc[15])
 	begin
 		if(memRegExc[15:12]==4'h8)
 		begin
-			tNxtDelay2Exc = memRegExc;
+//			tNxtDelay2Exc = memRegExc;
+			tNxtDelay4Exc = memRegExc;
 		end
-		else if(!crOutSr[28])
+//		else if(!crOutSr[28])
+		else
 		begin
 			if((memRegExc[15:12]!=4'hC) || crOutSr[3])
-				tNxtDelay2Exc = memRegExc;
+//				tNxtDelay2Exc = memRegExc;
+				tNxtDelay4Exc = memRegExc;
 		end
 	end
 
@@ -2419,6 +2585,11 @@ begin
 	begin
 //		tNxtRegExc = 0;
 		tNxtRegExc[15] = 0;
+
+		tNxtDelayExc[15] = 0;
+		tNxtDelay2Exc[15] = 0;
+		tNxtDelay3Exc[15] = 0;
+		tNxtDelay4Exc[15] = 0;
 	end
 
 	ifInPcHold	= exHold1;
@@ -2444,6 +2615,8 @@ begin
 //		tValAddPc0[3:0], 1'b0 };
 		tValAddPc0[5] ? tValPcAdd1 : ifLastPc[31:5],
 		tValAddPc0[4:0] };
+
+	tValNextPcHi	= crOutPcHi;
 
 	tOpNextPc		= tValNextPc;
 	/* Hold current PC if branching. */
@@ -2563,6 +2736,9 @@ begin
 //		tValNextPc = ex1RegValCn1[31:0];
 //		tValNextBraPc = ex1RegValCn1[31:0];
 		tValNextBraPc = ex1RegValCn1[47:0];
+`ifdef jx2_enable_vaddr96
+		tValNextBraPcHi = ex1OutPcHi[47:0];
+`endif
 		tValNextBraSrT = ex1RegValCn1[63:48];
 //		nxtBraFlushMask = 8'h07;
 //		nxtBraFlushMask = 8'h0F;
@@ -2709,6 +2885,7 @@ begin
 		begin
 			$display("ExUnit: RTE, SPC=%X", crOutSpc);
 			tValNextBraPc	= crOutSpc;
+			tValNextBraPcHi	= crOutSpcHi;
 			nxtBraFlushMask = JX2_BRA_FLUSHMSK;
 
 `ifndef jx2_isr2stage
@@ -2772,9 +2949,11 @@ begin
 				crOutVbr[47:8],
 				crOutVbr[7: 3]+tRegExcOfs[4:0],
 				crOutVbr[2:0] };
+			tValNextBraPcHi = crOutVbrHi;
 			nxtBraFlushMask = JX2_BRA_FLUSHMSK;
 
 			braIsrSp	= ex1RegOutSp[47:0];
+			crInSpcHi	= crOutPcHi;
 
 			if(tRegExc[15:12]!=4'b1010)
 			begin
@@ -3112,7 +3291,8 @@ begin
 	begin
 //		if(crOutSr[28])
 //			$display("Branch %X", tValNextBraPc);
-		tValNextPc = tValBraPc;
+		tValNextPc		= tValBraPc;
+		tValNextPcHi	= tValBraPcHi;
 
 `ifndef def_true
 		if(!braIsIsr)
@@ -3130,14 +3310,17 @@ begin
 	begin
 //		if(crOutSr[28])
 //			$display("Branch %X", tValNextBraPc);
-		tValNextPc = tValNextBraPc;
-		ifNxtValBraOk = 1;
+		tValNextPc		= tValNextBraPc;
+		tValNextPcHi	= tValNextBraPcHi;
+		ifNxtValBraOk	= 1;
 	end
 `endif
 
 	ifValPc			= tValNextPc;
+	ifValPcHi		= tValNextPcHi;
 
 	crInPc			= tValNextPc;
+	crInPcHi		= tValNextPcHi;
 //	crInSr			= ex1RegOutSr;
 //	crInLr			= ex1RegOutLr;
 
@@ -3300,6 +3483,8 @@ begin
 //	tRegExc			<= tNxtRegExc;
 	tDelayExc		<= tNxtDelayExc;
 	tDelay2Exc		<= tNxtDelay2Exc;
+	tDelay3Exc		<= tNxtDelay3Exc;
+	tDelay4Exc		<= tNxtDelay4Exc;
 
 	if(tNxtRegExc[15] && (tNxtRegExc[15:12] != 4'hC))
 	begin
@@ -3408,6 +3593,7 @@ begin
 
 `ifdef jx2_bra2stage
 		tValBraPc		<= tValNextBraPc;
+		tValBraPcHi		<= tValNextBraPcHi;
 		tValBraSrT		<= tValNextBraSrT;
 `endif
 
@@ -3623,6 +3809,12 @@ begin
 		ex1ValBPc		<= UV48_XX;
 		ex1IstrWord		<= UV32_XX;
 `endif
+
+		ex1RegPcHi		<= crOutPcHi;
+//		ex1RegLrHi		<= crOutLrHi;
+		ex1RegGbrHi		<= crOutGbrHi;
+
+// assign		ex1RegGbrHi = crOutGbrHi;
 
 //		ex1OpUCmd		<= id2IdUCmd;
 //		ex1OpUCmd		<= {

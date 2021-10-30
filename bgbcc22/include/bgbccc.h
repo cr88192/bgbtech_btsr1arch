@@ -299,6 +299,8 @@ extern "C" {
 #define BGBCC_TYFL_SYSCALL			(1LL<<39)
 #define BGBCC_TYFL_AUTO				(1LL<<40)
 
+#define BGBCC_TYFL_HUGE				(1LL<<41)
+
 #define BGBCC_TYFL_IFARCH			(1LL<<42)
 #define BGBCC_TYFL_IFNARCH			(1LL<<43)
 

@@ -492,6 +492,8 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 	op->rn=BJX2_REG_ZZR;
 	op->rm=BJX2_REG_ZZR;
 	op->ro=BJX2_REG_ZZR;
+	op->rp=BJX2_REG_ZZR;
+	op->rq=BJX2_REG_GBR_HI;
 	op->imm=0;
 	
 	if(ctx->regs[BJX2_REG_SR]&BJX2_FLAG_SR_RVE)

@@ -53,6 +53,8 @@
 
 `define jx2_use_ringbus			//Use Ring-Bus
 
+`define jx2_tlb_xtlbe			//Enable 256-bit compound TLBEs
+
 `define jx2_enable_ops16
 // `define jx2_enable_ops48
 
@@ -65,6 +67,8 @@
 `ifdef def_true
 
 // `define jx2_enable_blint			//Enable Bilinear Interpolator
+
+`define jx2_enable_cmptag			//Enable Tag Compare
 
 `define jx2_enable_btcutx			//UTXn Block Conversion Ops
 // `define jx2_enable_btcutx1			//UTX1 Block Conversion Op
@@ -94,7 +98,13 @@
 
 `define jx2_enable_wexjumbo				//Enable Jumbo-Load
 
+`define jx2_enable_vaddr96qadd			//Enable Quadrant Add
+
+`define jx2_enable_vaddr96				//Enable 96-bit virtual addresses
 `define jx2_enable_vaddr48				//Enable 48-bit virtual addresses
+
+`define jx2_enable_l1addr96			//Enable 96-bit bus addresses (L1)
+// `define jx2_enable_l2addr96			//Enable 96-bit bus addresses (L2)
 
 `define jx2_mem_l1dstall			//L1 D$ initiates stall directly
 
