@@ -91,6 +91,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	shctx->has_bra48=0;
 	shctx->has_xgpr=0;
 	shctx->has_fmovs=0;
+	shctx->has_fmovc=0;
 	
 //	shctx->no_fpu=1;
 	shctx->no_ext32=0;
@@ -145,6 +146,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 			shctx->has_simdx2=1;
 //			shctx->has_fmovs=1;
 			shctx->has_fmovs=3;
+			shctx->has_fmovc=1;
 		}
 #endif
 	}
@@ -269,6 +271,11 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		{ shctx->has_alux=0; }
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "nofpux"))
 		{ shctx->has_fpux=0; }
+
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "nofmovs"))
+		{ shctx->has_fmovs=0; }
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "nomovc"))
+		{ shctx->has_fmovc=0; }
 
 	if(shctx->has_pushx2 || shctx->has_simdx2)
 		shctx->abi_evenonly = 1;
