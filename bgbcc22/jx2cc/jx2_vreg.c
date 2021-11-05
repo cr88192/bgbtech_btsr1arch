@@ -649,6 +649,18 @@ int BGBCC_JX2C_EmitMovVRegVReg(
 		csreg=BGBCC_JX2C_EmitTryGetRegisterRead(ctx, sctx, sreg);
 		cdreg=BGBCC_JX2C_EmitTryGetRegisterWrite(ctx, sctx, dreg);
 
+		if(((csreg<0) || (csreg==BGBCC_SH_REG_ZZR)) &&
+			BGBCC_JX2C_CheckVRegMoreUsesInTraceP(ctx, sctx, sreg))
+		{
+			csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, sreg);
+		}
+
+		if(((cdreg<0) || (cdreg==BGBCC_SH_REG_ZZR)) &&
+			BGBCC_JX2C_CheckVRegMoreUsesInTraceP(ctx, sctx, dreg))
+		{
+			cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dreg);
+		}
+
 #if 1
 
 #if 0
@@ -1287,6 +1299,12 @@ int BGBCC_JX2C_EmitMovVRegImm(
 	int rcls;
 	
 	cdreg=BGBCC_JX2C_EmitTryGetRegisterWrite(ctx, sctx, dreg);
+
+	if(((cdreg<0) || (cdreg==BGBCC_SH_REG_ZZR)) &&
+		BGBCC_JX2C_CheckVRegMoreUsesInTraceP(ctx, sctx, dreg))
+	{
+		cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dreg);
+	}
 
 	if((cdreg>=0) && (cdreg!=BGBCC_SH_REG_ZZR))
 	{

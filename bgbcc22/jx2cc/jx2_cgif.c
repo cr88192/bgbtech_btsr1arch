@@ -92,6 +92,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	shctx->has_xgpr=0;
 	shctx->has_fmovs=0;
 	shctx->has_fmovc=0;
+	shctx->has_dmacl=0;
 	
 //	shctx->no_fpu=1;
 	shctx->no_ext32=0;
@@ -147,6 +148,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 //			shctx->has_fmovs=1;
 			shctx->has_fmovs=3;
 			shctx->has_fmovc=1;
+//			shctx->has_dmacl=1;
 		}
 #endif
 	}
@@ -181,8 +183,14 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "xgpr"))
 		{ shctx->has_xgpr=1; }
 
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "dmacl"))
+		{ shctx->has_dmacl=1; }
+
 //	ctx->arch_has_predops=0;
 	ctx->arch_has_predops=1;
+
+	ctx->arch_has_imac=0;
+	ctx->arch_has_fmac=0;
 
 	shctx->optmode=ctx->optmode;
 
@@ -199,6 +207,9 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		shctx->has_simdx2=1;
 
 		shctx->has_fmovs=3;
+
+		shctx->has_fmovc=1;
+//		shctx->has_dmacl=1;
 #endif
 	}
 
@@ -276,6 +287,12 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		{ shctx->has_fmovs=0; }
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "nomovc"))
 		{ shctx->has_fmovc=0; }
+
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "nodmacl"))
+		{ shctx->has_dmacl=0; }
+
+	ctx->arch_has_imac=shctx->has_dmacl;
+	ctx->arch_has_fmac=0;
 
 	if(shctx->has_pushx2 || shctx->has_simdx2)
 		shctx->abi_evenonly = 1;
@@ -982,6 +999,7 @@ ccxl_status BGBCC_JX2C_PrintVirtOp(BGBCC_TransState *ctx,
 			case CCXL_VOP_UNARY:			s0="UNARY"; break;
 			case CCXL_VOP_BINARY:			s0="BINARY"; break;
 			case CCXL_VOP_COMPARE:			s0="COMPARE"; break;
+			case CCXL_VOP_TRINARY:			s0="TRINARY"; break;
 			case CCXL_VOP_LDIXIMM:			s0="LDIXIMM"; break;
 			case CCXL_VOP_STIXIMM:			s0="STIXIMM"; break;
 			case CCXL_VOP_LDIX:				s0="LDIX"; break;
@@ -1292,6 +1310,10 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 	case CCXL_VOP_COMPARE:
 		BGBCC_JX2C_EmitCompareVRegVRegVReg(ctx, sctx, op->type,
 			op->dst, op->opr, op->srca, op->srcb);
+		break;
+	case CCXL_VOP_TRINARY:
+		BGBCC_JX2C_EmitTrinaryVRegVRegVRegVReg(ctx, sctx, op->type,
+			op->dst, op->opr, op->srca, op->srcb, op->srcc);
 		break;
 	case CCXL_VOP_LDIXIMM:
 		BGBCC_JX2C_EmitLdixVRegVRegImm(ctx, sctx, op->type, op->stype,

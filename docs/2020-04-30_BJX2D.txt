@@ -623,8 +623,9 @@ MMCR Bits:
 ** Enables the use of page-level translation via the TLB.
 ** If clear, direct physical addressing is used.
 ** Ignored if SR.RB is Set.
-* 0004: User-mode uses 48-bit addressing.
-* 0008: System-mode uses 48-bit addressing.
+* 0002: Enable 96-bit Virtual Addressing (If Supported)
+* 0004: User-mode uses 48-bit addressing (else, assume 32-bit).
+* 0008: System-mode uses 48-bit addressing (else, assume 32-bit).
 * 0030: Basic Page Size.
 ** 0: Use 4K as the Basic Page Size.
 ** 1: Use 64K as the Basic Page Size.
@@ -659,9 +660,11 @@ There will be a User Page Table (TTB) and a System Page Table (STTB).
 Whether STTD is used, and what page-table type is assumed, will depend on the low bits in TTB.
 
 TTB Bits:
-* (1:0): Will give the main page-table type (32/64 bit PTE).
-* (3:2): Will give the type of STTB table.
-* (7:4): Will give the nominal page size.
+* ( 1: 0): Will give the main page-table type (32/64 bit PTE).
+* ( 3: 2): Will give the type of STTB table.
+* ( 7: 4): Will give the nominal page size.
+* ( 9: 8): Quadrant Extra Levels
+* (11:10): Reserved
 * (47:12): Physical Page Address
 * (63:48): Process ASID (0 if ASID is unused)
 
@@ -681,6 +684,24 @@ Type of STTB table:
 * 11: Use Four-Level STTB.
 
 The STTB table will need to match the main page table in terms of nominal page size.
+
+Quadrant Extra Levels:
+* 0: Adds 0 Levels (NA,  2,  3,  4)
+* 1: Adds 4 Levels ( 5,  6,  7,  8)
+* 2: Adds 8 Levels ( 9, 10, 11, 12)
+* 3: Reserved
+
+
+The page table level will be defined as its distance from the final level.
+Level 0 will contain individual (leaf) pages, level 1 and above will refer to page directories, up to level N as a top-level directory (depending on the total height of the page table).
+
+Within the Page tables, the Size field will depend on its depth within the table.
+* 00: No Skip, Single Page (Level 0)
+* 01: Large Page (Level 1), Skip 1 level (Level > 1)
+* 10: Large Page (Level 0), Skip 2 levels (Level > 1)
+* 11: Large Page (Level 0), Skip 3 levels (Level > 1)
+
+Within skipped levels, the address bits are either 0, or the result of the page walk is returned as 0.
 
 
 ==== 4K Page Tables ====
@@ -1654,8 +1675,8 @@ F0zz Instruction Block:
 ** F0nm_2Go0  PADD.L	Rm, Ro, Rn			//(GSV) Packed ADD DWord
 ** F0nm_2go1  PSUB.W	Rm, Ro, Rn			//(GSV) Packed SUB Word
 ** F0nm_2Go1  PSUB.L	Rm, Ro, Rn			//(GSV) Packed SUB DWord
-** F0nm_2eo2 ? SHAR{Q}	Rm, Ro, Rn			//Shift Arithmetic Right
-** F0nm_2eo3 ? SHLR{Q}	Rm, Ro, Rn			//Shift Logical Right
+** F0nm_2eo2  SHAR{Q}	Rm, Ro, Rn			//Shift Arithmetic Right
+** F0nm_2eo3  SHLR{Q}	Rm, Ro, Rn			//Shift Logical Right
 
 ** F0nm_2go4  PCSELT.W	Rm, Ro, Rn			//(GSV) Packed CSELT (Word)
 ** F0nm_2Go4  PCSELT.L	Rm, Ro, Rn			//(GSV) Packed CSELT (DWord)
@@ -1857,10 +1878,14 @@ F0zz Instruction Block:
 ** F0nm_5GoF  MULU.W	Rm, Imm5u, Rn		//(MULW) Zx 16b Mul (16*16->32)
 
 * F0zz_6zzz
-** F0nm_6eo0  -
-** F0nm_6eo1  -
-** F0nm_6eo2  -
-** F0nm_6eo3  -
+** F0nm_6go0 ? MACS.L	Rm, Ro, Rn			//(DMAC) Rn=Sx(Rn+(Rm*Ro))
+** F0nm_6Go0 ? MACS.L	Rm, Imm5u, Rn		//(DMAC) Rn=Sx(Rn+(Rm*Imm))
+** F0nm_6go1 ? MACU.L	Rm, Ro, Rn			//(DMAC) Rn=Zx(Rn+(Rm*Ro))
+** F0nm_6Go1 ? MACU.L	Rm, Imm5u, Rn		//(DMAC) Rn=Zx(Rn+(Rm*Imm))
+** F0nm_6go2 ? DMACS.L	Rm, Ro, Rn			//(DMAC) Rn=Rn+(Rm*Ro)
+** F0nm_6Go2 ? DMACS.L	Rm, Imm5u, Rn		//(DMAC) Rn=Rn+(Rm*Imm)
+** F0nm_6go3 ? DMACU.L	Rm, Ro, Rn			//(DMAC) Rn=Rn+(Rm*Ro)
+** F0nm_6Go3 ? DMACU.L	Rm, Imm5u, Rn		//(DMAC) Rn=Rn+(Rm*Imm)
 ** F0nm_6eo4  -
 ** F0nm_6eo5  -
 ** F0nm_6eo6  -
@@ -1871,15 +1896,16 @@ F0zz Instruction Block:
 ** F0nm_6Go9 ? BLKUTX3L	Xm, Ro, Rn			//(RGBX) Extract Pixel, UTX3 LDR
 ** F0nm_6goA ? BLINTA	Rm, Ro, Rn			//(RGBX) Bilinear Interpolate (2p)
 ** F0nm_6GoA ? BLINT	Xm, Xo, Xn			//(RGBX) Bilinear Interpolate
-
-** F0nm_6eoB  -
-
+** F0nm_6goB  -
+** F0nm_6GoB  -
 ** F0nm_6goC ? BLKUAB1	Rm, Ro, Rn			//(UAB) Extract Sample
 ** F0nm_6GoC ? BLKUAB2	Rm, Ro, Rn			//(UAB) Extract Sample
-
 ** F0nm_6goD  FADDG		Rm, Ro, Rn			//(GFP) FADD (Dynamic Rounding)
+** F0nm_6GoD  -
 ** F0nm_6goE  FSUBG		Rm, Ro, Rn			//(GFP) FSUB (Dynamic Rounding)
+** F0nm_6GoE  -
 ** F0nm_6goF  FMULG		Rm, Ro, Rn			//(GFP) FMUL (Dynamic Rounding)
+** F0nm_6GoF  -
 
 
 * F0zz_7zzz
@@ -2012,8 +2038,8 @@ F2zz Instruction Block  (Imm9 Block):
 * F2nm_9qjj  PCONV		Rm, Imm8, Rn		//(GSVX) E.i=1, Packed Convert
 * F2nm_9Qjj  PCONVX		Rm, Imm8, Rn		//(GSVX) E.i=1, Packed Convert
 
-* F2nz_Aejj  -
-* F2nz_Bejj  -
+* F2nz_Aejj  (Imm10 Space)
+* F2nz_Bejj  (Imm10 Space)
 
 * F2nz_Cfjj
 ** F2n0_Cfjj  LDIZ{D}	Imm10u, Rn				//(PrWEX) Alt
@@ -2183,12 +2209,16 @@ The layout of the F8 block will thus be modified slighly with XGPR and two Imm24
 * FFjj_jjjj_FBjj_jjjj  JSR	Abs48				//Abs48 Call
 
 Alternative 2 (Hx, W0):
-* FFw0_00zz_F0nm_ZeoZ  "OP Rm, Ro, Rn"
-* FFw0_00ii_F0nm_ZeoZ  "OP Rm, Ro, Rn, Imm8"
+* FFw0_0vzz_F0nm_ZeoZ  "OP Rm, Ro, Rn"
+* FFw0_0vii_F0nm_ZeoZ  "OP Rm, Ro, Rn, Imm8"
+* FFw0_0Vii_F0nm_ZeoZ  "OP Rm, Imm9s, Ro, Rn"
+
 * FFw0_00ii_F1nm_Zeii  "OP (Rm, Disp17s), Rn"
 * FFw0_00ii_F2nm_Zeii  "OP Rm, Imm17, Rn"
 * FFw0_00ii_F2nZ_Zeii  "OP Imm18, Rn"
-* FFw0_00zz_E0nm_ZeoZ  "OP Rm, Ro, Rn" 
+
+* FFw0_0vzz_E0nm_ZeoZ  "OP Rm, Ro, Rn" 
+
 * FFw0_00ii_E1nm_Zeii  "OP (Rm, Disp17s), Rn" 
 * FFw0_00ii_E2nm_Zeii  "OP Rm, Imm17, Rn" 
 
@@ -2202,9 +2232,30 @@ Alternative 2 (Hx, W0):
 
 For instructions within the W0 encoding spaces, the 32-bits following the Jumbo Op64 prefix will represent the same encoding space as used by 32-bit ops. This is not necessarily true of operations in other encoding spaces.
 
+The w and v fields:
+* W: wnmi
+* V: wiii (3R / 3RI)
+* V: wssi (Ld / St)
+** ss=Scale
+
+The V.w flag will apply to 3R/3RI (Imm5u) encodings (V.w, E.q):
+* { 0, 0 }: 3R ( Rm, Ro, Rn, Rn )
+* { 1, 0 }: 4R ( Rm, Ro, Rp, Rn )
+* { 0, 1 }: 3R ( Rm, Imm17s, Rn, Rn )
+* { 1, 1 }: 4R ( Rm, Imm11s,  Ro, Rn )
+
+The V.w flag will apply to Ld/St:
+* 0: (Rm, Ro)		-> (Rm, Ro, Disp11u/0)
+* 0: (Rm, Disp5)	-> (Rm, Disp17s)
+* 1: (Rm, Ro)		-> (Rm, Ro*Sc, Disp9u/0)
+* 1: (Rm, Disp5)	-> (Rm, Disp17s*1)
+
+With both an index and displacement, the displacement field will be unscaled.
+Support for non-zero displacements will be an optional extension.
+
 
 Immediate values may be extended by 8 bits:
-* Imm5u becomes Imm14s
+* Imm5u becomes Imm11s / Imm17s
 * Imm9u becomes Imm17u or Imm18s
 * Imm9n becomes Imm17n
 * Imm10u becomes Imm18u or Imm19s
@@ -2230,6 +2281,17 @@ For Imm5, W.i will function as a sign bit:
 
 The W.w bit may be used to select the use of SR.S as a Predicate.
 For CMPxx ops within F2zz, W.m will select SR.S as the output bit.
+
+
+==== Op64 RiMOV ====
+
+The RiMOV Extension will be a special case of Op64, which will extend the capabilities of Load/Store instructions.
+
+This extension will provide:
+* Larger displacements via Op64 encodings.
+* Ability to use an encode the Scale explicitly for Loads/Stores.
+* Ability to use both an index register and displacement.
+** Unlike normal Load/Store operations, this displacement is unscaled.
 
 
 ==== Jumbo Op48 ====
@@ -2295,7 +2357,7 @@ While following a generic pattern:
 * FEzz_zzzz_Fzzz  (N/E)
 
 
-==== Op24 (Possible) ====
+=== Op24 (Possible/Drop) ===
 
 These are intended to only exist in microcontroller configurations.
 This encoding is mutually exclusive with Op32_XGPR.
@@ -2372,7 +2434,7 @@ Map:
 Bxx.B will be a byte-aligned branch op.
 
 
-==== Op32_XGPR (Possible) ====
+=== Op32_XGPR (Possible) ===
 
 The Op32_XGPR encoding space will use an encoding space which overlaps with Op24, and is as such mutually exclusive.
 
@@ -2434,7 +2496,7 @@ WEX2 Would be based around 32-bit instructions, where:
 Within a scalar implementation, F4zz..F7zz will be functionally equivalent to instructions in the F0zz..F3zz range. 
 
 
-==== WEX2 Profiles ====
+=== WEX2 Profiles ===
 
 Thoughts:
 * WEX2 may have "profiles".

@@ -940,7 +940,8 @@ begin
 			opRegP	= opRegN_Dfl;
 			opRegM	= JX2_GR_PC;
 			opRegO	= JX2_GR_IMM;
-			opUIxt	= {opUCty, opBty[1:0], 1'b1, opBty};
+//			opUIxt	= {opUCty, opBty[1:0], 1'b1, opBty};
+			opUIxt	= {opUCty, opBty[1:0], 1'b0, opBty};
 
 			case(opIty)
 			JX2_ITY_SB: begin

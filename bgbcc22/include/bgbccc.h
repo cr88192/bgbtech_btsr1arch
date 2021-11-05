@@ -792,6 +792,9 @@ byte arch_align_max;	//don't use alignments larger than this
 byte arch_align_objmin;	//minimum alignment for value-objects
 byte arch_has_predops;	//arch has predicated instructions
 
+byte arch_has_imac;		//arch has integer multiply-accumulate
+byte arch_has_fmac;		//arch has floating point multiply-accumulate
+
 byte opt_ptrcache;		//enable caching struct and pointer accesses.
 
 byte ril3_norec;

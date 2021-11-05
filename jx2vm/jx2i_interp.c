@@ -942,6 +942,11 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_MULSW:		s0="DMULS.W";	break;
 	case BJX2_NMID_MULUW:		s0="DMULU.W";	break;
 
+	case BJX2_NMID_MACSL:		s0="MACS.L";	break;
+	case BJX2_NMID_MACUL:		s0="MACU.L";	break;
+	case BJX2_NMID_DMACSL:		s0="DMACS.L";	break;
+	case BJX2_NMID_DMACUL:		s0="DMACU.L";	break;
+
 	case BJX2_NMID_WEXMD:		s0="WEXMD";		break;
 	case BJX2_NMID_SYSCALL:		s0="SYSCALL";	break;
 	case BJX2_NMID_INVIC:		s0="INVIC";		break;
@@ -1479,6 +1484,13 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 			BJX2_DbgPrintNameForReg(ctx, op->ro),
 			BJX2_DbgPrintNameForReg(ctx, op->rn));
 		break;
+	case BJX2_FMID_REGREGREGREG:
+		printf("%s, %s, %s, %s",
+			BJX2_DbgPrintNameForReg(ctx, op->rm),
+			BJX2_DbgPrintNameForReg(ctx, op->ro),
+			BJX2_DbgPrintNameForReg(ctx, op->rp),
+			BJX2_DbgPrintNameForReg(ctx, op->rn));
+		break;
 	case BJX2_FMID_Z:
 		break;
 	case BJX2_FMID_IMM:
@@ -1771,6 +1783,13 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		printf("%s, #%lld, %s",
 			BJX2_DbgPrintNameForReg(ctx, op->rm),
 			op->imm,
+			BJX2_DbgPrintNameForReg(ctx, op->rn));
+		break;
+	case BJX2_FMID_REGIMMREGREG:
+		printf("%s, #%lld, %s, %s",
+			BJX2_DbgPrintNameForReg(ctx, op->rm),
+			op->imm,
+			BJX2_DbgPrintNameForReg(ctx, op->ro),
 			BJX2_DbgPrintNameForReg(ctx, op->rn));
 		break;
 

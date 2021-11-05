@@ -592,6 +592,11 @@ ccxl_status BGBCC_CCXL_LoadslotCacheAdd(
 
 	if(ctx->opt_ptrcache==0)
 		return(CCXL_STATUS_NO);
+	
+	if(BGBCC_CCXL_IsRegVolatileP(ctx, sreg))
+		return(CCXL_STATUS_NO);
+	if(BGBCC_CCXL_IsRegVolatileP(ctx, dreg))
+		return(CCXL_STATUS_NO);
 
 	ireg.val=CCXL_REGID_REG_Z;
 
@@ -652,6 +657,13 @@ ccxl_status BGBCC_CCXL_LoadIndexCacheAdd(
 	if(ctx->opt_ptrcache==0)
 		return(CCXL_STATUS_NO);
 
+	if(BGBCC_CCXL_IsRegVolatileP(ctx, sreg))
+		return(CCXL_STATUS_NO);
+	if(BGBCC_CCXL_IsRegVolatileP(ctx, dreg))
+		return(CCXL_STATUS_NO);
+	if(BGBCC_CCXL_IsRegVolatileP(ctx, ireg))
+		return(CCXL_STATUS_NO);
+
 	erov=ctx->loadslot_cache_erov++;
 	ctx->loadslot_cache_dreg[erov]=dreg;
 	ctx->loadslot_cache_sreg[erov]=sreg;
@@ -679,6 +691,9 @@ ccxl_status BGBCC_CCXL_LoadIndexCacheCheck(
 		return(CCXL_STATUS_NO);
 
 	if(ctx->opt_ptrcache==0)
+		return(CCXL_STATUS_NO);
+
+	if(BGBCC_CCXL_IsRegVolatileP(ctx, sreg))
 		return(CCXL_STATUS_NO);
 
 	i=sr;

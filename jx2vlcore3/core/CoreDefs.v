@@ -933,8 +933,18 @@ parameter[5:0] JX2_UCIX_MUL3_PHMULU	= 6'h0B;		//Packed-High
 parameter[5:0] JX2_UCIX_MUL3_PHMULSA	= 6'h0C;		//Packed-Mul Add
 parameter[5:0] JX2_UCIX_MUL3_PHMULUA	= 6'h0D;		//Packed-Mul Add
 
-parameter[5:0] JX2_UCIX_MUL3_BLKUAB1	= 6'h1C;	//Get Sample, UAB1
-parameter[5:0] JX2_UCIX_MUL3_BLKUAB2	= 6'h1D;	//Get Sample, UAB2
+
+parameter[5:0] JX2_UCIX_MUL3_MAC3S	= 6'h10;		//
+parameter[5:0] JX2_UCIX_MUL3_MAC3U	= 6'h11;		//
+parameter[5:0] JX2_UCIX_MUL3_MACS	= 6'h12;		//
+parameter[5:0] JX2_UCIX_MUL3_MACU	= 6'h13;		//
+
+parameter[5:0] JX2_UCIX_MUL3_DMAC3S	= 6'h14;		//
+parameter[5:0] JX2_UCIX_MUL3_DMAC3U	= 6'h15;		//
+
+
+parameter[5:0] JX2_UCIX_MUL3_BLKUAB1	= 6'h2C;	//Get Sample, UAB1
+parameter[5:0] JX2_UCIX_MUL3_BLKUAB2	= 6'h2D;	//Get Sample, UAB2
 
 
 parameter[5:0] JX2_UCIX_LDI_LDIX	= 6'h00;		//

@@ -1376,10 +1376,10 @@ void BGBCC_CCXL_CompileForm(BGBCC_TransState *ctx, BCCX_Node *l)
 	byte *ips[64];
 	ccxl_label l0, l1, l2, l3;
 	ccxl_register sreg, treg;
-	ccxl_type bty, dty, sty, tty, lty, rty;
+	ccxl_type bty, dty, sty, tty, lty, rty, lty2, rty2;
 	BGBCC_CCXL_LiteralInfo *obj;
 	char *s, *s0, *s1, *s2, *s3;
-	BCCX_Node *c, *d, *t, *u, *v, *ln, *rn, *n;
+	BCCX_Node *c, *d, *t, *u, *v, *ln, *rn, *ln2, *rn2, *n;
 	int i0, i1, i2, i3;
 	int i, j, k;
 
@@ -2049,6 +2049,8 @@ void BGBCC_CCXL_CompileForm(BGBCC_TransState *ctx, BCCX_Node *l)
 
 		ln=BGBCC_CCXL_ReduceExpr(ctx, ln);
 		rn=BGBCC_CCXL_ReduceExpr(ctx, rn);
+		BGBCC_CCXL_InferExpr(ctx, ln, &lty);
+		BGBCC_CCXL_InferExpr(ctx, rn, &rty);
 		
 		if((ctx->lang==BGBCC_LANG_CPP) ||
 			(ctx->lang==BGBCC_LANG_BS2))
@@ -2072,6 +2074,72 @@ void BGBCC_CCXL_CompileForm(BGBCC_TransState *ctx, BCCX_Node *l)
 				}
 			}
 		}
+
+#if 1
+		if(	!strcmp(s0, "+") &&
+			!BGBCC_CCXL_CheckIsStaticLib(ctx) &&
+			BGBCC_CCXL_IsBinaryP(ctx, rn, "*"))
+		{
+			ln2=BCCX_FetchCst(rn, &bgbcc_rcst_left, "left");
+			rn2=BCCX_FetchCst(rn, &bgbcc_rcst_right, "right");
+			ln2=BGBCC_CCXL_ReduceExpr(ctx, ln2);
+			rn2=BGBCC_CCXL_ReduceExpr(ctx, rn2);
+			BGBCC_CCXL_InferExpr(ctx, ln2, &lty2);
+			BGBCC_CCXL_InferExpr(ctx, rn2, &rty2);
+
+			BGBCC_CCXL_GetTypeBinaryDest(ctx,
+				CCXL_BINOP_MUL, lty2, rty2, &bty);
+			BGBCC_CCXL_GetTypeBinaryDest(ctx,
+				CCXL_BINOP_ADD, lty, bty, &dty);
+
+			if(	(	BGBCC_CCXL_TypeSmallIntP(ctx, dty) &&
+					BGBCC_CCXL_TypeCompatibleP(ctx, dty, bty) &&
+					ctx->arch_has_imac	) ||
+				(	BGBCC_CCXL_TypeBaseRealP(ctx, dty) &&
+					BGBCC_CCXL_TypeCompatibleP(ctx, dty, bty) &&
+					ctx->arch_has_fmac	)	)
+			{
+				BGBCC_CCXL_CompileExpr(ctx, ln2);
+				BGBCC_CCXL_CompileExpr(ctx, rn2);
+				BGBCC_CCXL_CompileExpr(ctx, ln);
+				BGBCC_CCXL_StackTrinaryOp(ctx, "MAC");
+				return;
+			}
+		}
+#endif
+
+#if 1
+		if(	!strcmp(s0, "+") &&
+			!BGBCC_CCXL_CheckIsStaticLib(ctx) &&
+			BGBCC_CCXL_IsBinaryP(ctx, ln, "*"))
+		{
+			ln2=BCCX_FetchCst(ln, &bgbcc_rcst_left, "left");
+			rn2=BCCX_FetchCst(ln, &bgbcc_rcst_right, "right");
+			ln2=BGBCC_CCXL_ReduceExpr(ctx, ln2);
+			rn2=BGBCC_CCXL_ReduceExpr(ctx, rn2);
+			BGBCC_CCXL_InferExpr(ctx, ln2, &lty2);
+			BGBCC_CCXL_InferExpr(ctx, rn2, &rty2);
+
+			BGBCC_CCXL_GetTypeBinaryDest(ctx,
+				CCXL_BINOP_MUL, lty2, rty2, &bty);
+			BGBCC_CCXL_GetTypeBinaryDest(ctx,
+				CCXL_BINOP_ADD, rty, bty, &dty);
+
+			if(	(	BGBCC_CCXL_TypeSmallIntP(ctx, dty) &&
+					BGBCC_CCXL_TypeCompatibleP(ctx, dty, bty) &&
+					ctx->arch_has_imac	) ||
+				(	BGBCC_CCXL_TypeBaseRealP(ctx, dty) &&
+					BGBCC_CCXL_TypeCompatibleP(ctx, dty, bty) &&
+					ctx->arch_has_fmac	)	)
+			{
+				BGBCC_CCXL_CompileExpr(ctx, ln2);
+				BGBCC_CCXL_CompileExpr(ctx, rn2);
+				BGBCC_CCXL_CompileExpr(ctx, rn);
+				BGBCC_CCXL_StackTrinaryOp(ctx, "MAC");
+				return;
+			}
+		}
+#endif
 
 		BGBCC_CCXL_CompileExpr(ctx, ln);
 		BGBCC_CCXL_CompileExpr(ctx, rn);

@@ -1162,7 +1162,7 @@ ExALU	exAlu(
 // ExMulB	ex1Mul(
 ExMulC	ex1Mul(
 	clock,			reset,
-	ex1RegValRs,	ex1RegValRt,
+	ex1RegValRs,	ex1RegValRt,		ex1RegValRm,
 	ex1OpUCmd,		ex1OpUIxt,
 	exHold2,		ex1MulVal
 	);

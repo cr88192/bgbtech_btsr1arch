@@ -13,12 +13,14 @@ idUIxt:
 module ExAGUC(
 	regValRm,
 	regValRi,
+	regValImm,
 	idUIxt,
 	regOutAddr,
 	addrEnJq);
 
 input[47:0]		regValRm;
 input[47:0]		regValRi;
+input[15:0]		regValImm;
 input[8:0]		idUIxt;
 input			addrEnJq;
 
@@ -31,12 +33,19 @@ reg[47:0]	tRiSc2;
 reg[47:0]	tRiSc3;
 reg[47:0]	tRiSc;
 
+reg[15:0]	tRiDi;
+
 reg[47:0]	tAddrSc0;
 // reg[47:0]	tAddrSc1;
 // reg[47:0]	tAddrSc2;
 // reg[47:0]	tAddrSc3;
 
+`ifdef jx2_agu_ridisp
+reg[17:0]	tAddrSc0A;
+`else
 reg[16:0]	tAddrSc0A;
+`endif
+
 // reg[16:0]	tAddrSc1A;
 // reg[16:0]	tAddrSc2A;
 // reg[16:0]	tAddrSc3A;
@@ -95,12 +104,30 @@ begin
 		2'b11:	tRiSc=tRiSc3;
 	endcase
 
+	tRiDi = 0;
+
+	if(idUIxt[3])
+		tRiDi = regValImm;
+
+`ifdef jx2_agu_ridisp
+	tAddrSc0A  =
+		{ 2'b0, regValRm[15: 0] } +
+		{ 2'b0, tRiSc[15: 0] } +
+		{ 2'b0, tRiDi[15: 0] } ;
+`else
 	tAddrSc0A  = { 1'b0, regValRm[15: 0] } + { 1'b0, tRiSc[15: 0] };
+`endif
+
 	tAddrSc0B0 = { 1'b0, regValRm[31:16] } + { 1'b0, tRiSc[31:16] } + 0;
 	tAddrSc0B1 = { 1'b0, regValRm[31:16] } + { 1'b0, tRiSc[31:16] } + 1;
 	tAddrSc0C0 = { 1'b0, regValRm[47:32] } + { 1'b0, tRiSc[47:32] } + 0;
 	tAddrSc0C1 = { 1'b0, regValRm[47:32] } + { 1'b0, tRiSc[47:32] } + 1;
+
+`ifdef jx2_agu_ridisp
+	tAddrSc0B = (tAddrSc0A[17:16]!=0) ? tAddrSc0B1 : tAddrSc0B0;
+`else
 	tAddrSc0B = tAddrSc0A[16] ? tAddrSc0B1 : tAddrSc0B0;
+`endif
 
 	tCaVal0A = 0;
 	tCaVal0B = tAddrSc0A[16];

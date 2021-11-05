@@ -440,6 +440,13 @@ int BJX2_DecodeOpcodePostFixup(BJX2_Context *ctx, BJX2_Opcode *op)
 			op->cyc=4;
 			break;
 
+		case BJX2_NMID_MACUL:
+		case BJX2_NMID_MACSL:
+		case BJX2_NMID_DMACUL:
+		case BJX2_NMID_DMACSL:
+			op->cyc=4;
+			break;
+
 		case BJX2_NMID_BLINT:
 		case BJX2_NMID_BLERP:
 			op->cyc=6;

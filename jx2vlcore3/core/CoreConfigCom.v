@@ -6,6 +6,8 @@
 
 `define jx2_enable_riscv		//Enable RISC-V Decoder
 
+// `define jx2_agu_ridisp			//Enable RiDisp / ScMOV (Rm+Ro*Sc+Imm)
+
 // `define jx2_cfg_75mhz
 
 // `define jx2_enable_gpr48		//Enable R32..R63 (SIMD)
@@ -27,6 +29,8 @@
 `define	jx2_fpu_lane2			//Allow FPU from Lane 2
 
 `define jx2_enable_fmov
+
+// `define jx2_alu_dmac			//ALU Multiply-Accumulate
 
 // `define jx2_sprs_elrehr			//ELR/EHR/BP as special registers?
 `define jx2_bra2stage			//Use 2-stage branch initiation

@@ -592,6 +592,11 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_CMPTAHS		0x11E		//
 #define BJX2_NMID_CMPTTEQ		0x11F		//
 
+#define BJX2_NMID_MACSL			0x120		//
+#define BJX2_NMID_MACUL			0x121		//
+#define BJX2_NMID_DMACSL		0x122		//
+#define BJX2_NMID_DMACUL		0x123		//
+
 
 #define BJX2_FMID_NONE			0x00		//?
 #define BJX2_FMID_REG			0x01		//Rn
@@ -644,6 +649,9 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_FMID_LDREGDISP1REG	0x2A		//(Rm, Disp1), Rn
 #define BJX2_FMID_REGSTREGDISP1	0x2B		//Rm, (Rn, Disp1)
 #define BJX2_FMID_LDREGDISP1	0x2C		//(Rn, Disp1)
+
+#define BJX2_FMID_REGREGREGREG	0x2E		//Rm, Ro, Rp, Rn
+#define BJX2_FMID_REGIMMREGREG	0x2F		//Rm, Imm, Rp, Rn
 
 #define BJX2_FLAG_SR_T			0x00000001ULL
 #define BJX2_FLAG_SR_S			0x00000002ULL

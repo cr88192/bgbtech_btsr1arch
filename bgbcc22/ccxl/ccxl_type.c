@@ -625,6 +625,20 @@ bool BGBCC_CCXL_TypeRealP(
 	return(false);
 }
 
+bool BGBCC_CCXL_TypeBaseRealP(
+	BGBCC_TransState *ctx, ccxl_type ty)
+{
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
+		return(false);
+
+	if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_F)
+		return(true);
+	if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_D)
+		return(true);
+
+	return(false);
+}
+
 bool BGBCC_CCXL_TypeVariantP(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {

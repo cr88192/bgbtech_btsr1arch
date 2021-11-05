@@ -1472,6 +1472,17 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		BGBCC_CCXL_StackUnaryOp(ctx, s0);
 		break;
 
+	case BGBCC_RIL3OP_TRINOP:
+		i0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
+		switch(i0)
+		{
+		case CCXL_BINOP_MAC: s0="MAC"; break;
+		default: s0=NULL; BGBCC_DBGBREAK; break;
+		}
+		BGBCC_CCXL_StackTrinaryOp(ctx, s0);
+		break;
+
+
 	case BGBCC_RIL3OP_STBINOP:
 		i0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
 		s1=BGBCC_CCXLR3_ReadString(ctx, &cs);
@@ -1545,6 +1556,17 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		default: s0=NULL; BGBCC_DBGBREAK; break;
 		}
 		BGBCC_CCXL_StackUnaryOpStore(ctx, s0, s1);
+		break;
+
+	case BGBCC_RIL3OP_STTRINOP:
+		i0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
+		s1=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		switch(i0)
+		{
+		case CCXL_BINOP_MAC: s0="MAC"; break;
+		default: s0=NULL; BGBCC_DBGBREAK; break;
+		}
+		BGBCC_CCXL_StackTrinaryOpStore(ctx, s0, s1);
 		break;
 
 	case BGBCC_RIL3OP_LDCONSTV:

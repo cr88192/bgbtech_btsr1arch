@@ -405,6 +405,8 @@ Base, Q1..Q3:
 #define CCXL_BINOP_UDIV			0x0D
 #define CCXL_BINOP_CONS			0x0E	//Variant: (cons rn ln)
 
+#define CCXL_BINOP_MAC			0x10	//TrinOp
+
 #define CCXL_UNOP_MOV			0x00
 #define CCXL_UNOP_NEG			0x01
 #define CCXL_UNOP_NOT			0x02
@@ -482,6 +484,7 @@ Base, Q1..Q3:
 
 #define CCXL_VOP_ASMINLINE			0x30		//Inline ASM blob
 #define CCXL_VOP_TEMP_PHI			0x31		//Temporary Phi
+#define CCXL_VOP_TRINARY			0x32
 
 
 #define CCXL_VOPITY_NONE			0x00		//imm is not used

@@ -257,7 +257,9 @@ reg		tAguFlagJq;
 `ifdef jx2_enable_vaddr48
 wire[47:0]	tValAgu;
 // ExAGUB	exAgu(regValRs[47:0], regValRt[47:0], opUIxt, tValAgu, tAguFlagJq);
-ExAGUC	exAgu(regValRs[47:0], regValRt[47:0], opUIxt, tValAgu, tAguFlagJq);
+ExAGUC	exAgu(
+	regValRs[47:0], regValRt[47:0], regValImm[15:0],
+	opUIxt, tValAgu, tAguFlagJq);
 `else
 wire[47:0]	tValAgu;
 assign	tValAgu[47:32] = UV16_00;

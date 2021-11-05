@@ -2363,6 +2363,43 @@ int BGBCC_JX2C_CheckVRegLiveRange(
 #endif
 }
 
+int BGBCC_JX2C_CheckVRegMoreUsesInTraceP(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	ccxl_register reg)
+{
+	BGBCC_CCXL_RegisterInfo *obj;
+	BGBCC_CCXL_VirtTr *tr;
+	BGBCC_CCXL_VirtOp *vop, *vop1, *vop2;
+	int cvi, cvs, cve;
+//	int ps0, ps1, tr1, tr2, usewex;
+	int i, j, k;
+
+	obj=ctx->cur_func;
+	tr=ctx->cur_vtr;
+	cvi=sctx->tr_opnum;
+	
+	cvs=tr->b_ops;
+	cve=cvs+tr->n_ops;
+	
+	for(i=cvi+1; i<cve; i++)
+	{
+		vop=obj->vop[i];
+		
+		if(
+			BGBCC_CCXL_RegisterIdentEqualP(ctx, vop->dst, reg) ||
+			BGBCC_CCXL_RegisterIdentEqualP(ctx, vop->srca, reg) ||
+			BGBCC_CCXL_RegisterIdentEqualP(ctx, vop->srcb, reg) ||
+			BGBCC_CCXL_RegisterIdentEqualP(ctx, vop->srcc, reg) ||
+			BGBCC_CCXL_RegisterIdentEqualP(ctx, vop->srcd, reg)	)
+		{
+			return(1);
+		}
+	}
+	
+	return(0);
+}
+
 int BGBCC_JX2C_EmitReleaseRegister(
 	BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx,
@@ -2613,7 +2650,8 @@ int BGBCC_JX2C_EmitSyncRegisterIndex2(
 //		if(!rchk && ((sctx->regalc_dirty)&(1<<i)))
 		if(!rchk && ((sctx->regalc_dirty)&(1<<i)) &&
 			(	!(sctx->is_leaftiny&1) ||
-				BGBCC_CCXL_IsRegGlobalP(ctx, reg)))
+				BGBCC_CCXL_IsRegGlobalP(ctx, reg) ||
+				BGBCC_CCXL_IsRegVolatileP(ctx, reg)))
 		{
 			rchk=1;
 			BGBCC_JX2C_EmitStoreFrameVRegReg(ctx, sctx, reg, creg);
@@ -2625,8 +2663,9 @@ int BGBCC_JX2C_EmitSyncRegisterIndex2(
 
 	if(sfl&2)
 	{
-		if(BGBCC_CCXL_IsRegGlobalP(ctx, reg) ||
+		if(	BGBCC_CCXL_IsRegGlobalP(ctx, reg) ||
 			BGBCC_CCXL_IsRegThisIdxP(ctx, reg) ||
+			BGBCC_CCXL_IsRegVolatileP(ctx, reg) ||
 			(regfl&BGBCC_REGFL_ALIASPTR))
 		{
 			sctx->regalc_map[i].val=-1;

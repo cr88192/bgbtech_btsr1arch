@@ -1165,6 +1165,19 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 		}
 #endif
 
+		if(
+			(op->nmid==BJX2_NMID_MULS)		||
+			(op->nmid==BJX2_NMID_MULU)		||
+			(op->nmid==BJX2_NMID_MULSL)		||
+			(op->nmid==BJX2_NMID_MULUL)		||
+			(op->nmid==BJX2_NMID_MACSL)		||
+			(op->nmid==BJX2_NMID_MACUL)		||
+			(op->nmid==BJX2_NMID_DMACSL)	||
+			(op->nmid==BJX2_NMID_DMACUL)	)
+		{
+			op->cyc=ilo;
+		}
+
 #if 1
 		if(
 			(op->nmid==BJX2_NMID_ADD)		||

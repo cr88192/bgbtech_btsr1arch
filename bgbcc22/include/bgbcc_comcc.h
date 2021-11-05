@@ -174,6 +174,7 @@ byte has_bra48;		//has 24-bit opcodes
 byte has_xgpr;		//Has R32..R63
 byte has_fmovs;		//Has FMOV.S
 byte has_fmovc;		//Has MOV.C
+byte has_dmacl;		//Has MACx.L / DMACx.L
 
 byte abi_evenonly;	//Pass register pairs in Even Registers.
 

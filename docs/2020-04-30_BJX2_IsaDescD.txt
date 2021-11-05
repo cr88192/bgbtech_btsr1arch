@@ -542,7 +542,9 @@ Index 1:
 * ( 24): RISC-V Mode
 * ( 25): TTAG (Type Tag)
 * ( 26): XMOV Addressing
-* ( 27): XMOV Quadrant Add
+* ( 27): XMOV Quadrant Add Mode
+* ( 28): DMAC (Integer Multiply-Accumulate)
+* ( 29): Op64 RiMOV
 
 Index 31:
 * Hardware Random Number
@@ -887,6 +889,45 @@ In a Jumbo64 form, the 33-bit immediate will be interpreted as a 25 bit immediat
 This operation may be limited to Lane 1.
 
 
+=== MACx.L ===
+
+* F0nm_6go0  MACS.L		Rm, Ro, Rn		//(DMAC) Rn=Sx(Rn+(Rm*Ro))
+* F0nm_6Go0  MACS.L		Rm, Imm5u, Rn	//(DMAC) Rn=Sx(Rn+(Rm*Imm))
+* F0nm_6go1  MACU.L		Rm, Ro, Rn		//(DMAC) Rn=Zx(Rn+(Rm*Ro))
+* F0nm_6Go1  MACU.L		Rm, Imm5u, Rn	//(DMAC) Rn=Zx(Rn+(Rm*Imm))
+* F0nm_6go2  DMACS.L	Rm, Ro, Rn		//(DMAC) Rn=Rn+(Rm*Ro)
+* F0nm_6Go2  DMACS.L	Rm, Imm5u, Rn	//(DMAC) Rn=Rn+(Rm*Imm)
+* F0nm_6go3  DMACU.L	Rm, Ro, Rn		//(DMAC) Rn=Rn+(Rm*Ro)
+* F0nm_6Go3  DMACU.L	Rm, Imm5u, Rn	//(DMAC) Rn=Rn+(Rm*Imm)
+
+* FEii_iiii-F0nm_6Gi0  MACS.L	Rm, Imm29s, Rn		//(DMAC) Rn=Sx(Ro+(Rm*Imm))
+* FEii_iiii-F0nm_6Gi1  MACU.L	Rm, Imm29s, Rn		//(DMAC) Rn=Zx(Ro+(Rm*Imm))
+* FEii_iiii-F0nm_6Gi2  DMACS.L	Rm, Imm29s, Rn		//(DMAC) Rn=Ro+(Rm*Imm)
+* FEii_iiii-F0nm_6Gi3  DMACU.L	Rm, Imm29s, Rn		//(DMAC) Rn=Ro+(Rm*Imm)
+
+* FFw0_0Vpp-F0nm_6go0  MACS.L	Rm, Ro, Rp, Rn		//(DMAC) Rn=Sx(Rp+(Rm*Ro))
+* FFw0_0Vpp-F0nm_6go1  MACU.L	Rm, Ro, Rp, Rn		//(DMAC) Rn=Zx(Rp+(Rm*Ro))
+* FFw0_0Vpp-F0nm_6go2  DMACS.L	Rm, Ro, Rp, Rn		//(DMAC) Rn=Rp+(Rm*Ro)
+* FFw0_0Vpp-F0nm_6go3  DMACU.L	Rm, Ro, Rp, Rn		//(DMAC) Rn=Rp+(Rm*Ro)
+
+* FFw0_0vii-F0nm_6Go0  MACS.L	Rm, Imm17s, Rn		//(DMAC) Rn=Sx(Ro+(Rm*Imm))
+* FFw0_0vii-F0nm_6Go1  MACU.L	Rm, Imm17s, Rn		//(DMAC) Rn=Zx(Ro+(Rm*Imm))
+* FFw0_0vii-F0nm_6Go2  DMACS.L	Rm, Imm17s, Rn		//(DMAC) Rn=Ro+(Rm*Imm)
+* FFw0_0vii-F0nm_6Go3  DMACU.L	Rm, Imm17s, Rn		//(DMAC) Rn=Ro+(Rm*Imm)
+
+* FFw0_0Vii-F0nm_6Go0  MACS.L	Rm, Imm11s, Ro, Rn	//(DMAC) Rn=Sx(Ro+(Rm*Imm))
+* FFw0_0Vii-F0nm_6Go1  MACU.L	Rm, Imm11s, Ro, Rn	//(DMAC) Rn=Zx(Ro+(Rm*Imm))
+* FFw0_0Vii-F0nm_6Go2  DMACS.L	Rm, Imm11s, Ro, Rn	//(DMAC) Rn=Ro+(Rm*Imm)
+* FFw0_0Vii-F0nm_6Go3  DMACU.L	Rm, Imm11s, Ro, Rn	//(DMAC) Rn=Ro+(Rm*Imm)
+
+
+Multiply Accumulate.
+
+The MACS and MACU instructions will do a multiply-accumulate with a 32-bit result being size or zero extended to 64 bits.
+
+The DMACS and DMACU instructions will multiply two 32-bit quantities and accumulate using a 64-bit result.
+
+
 === MOV ===
 
 MOV, GPR
@@ -926,6 +967,19 @@ The MOVD instruction is now an alias for the EXTU.L instruction.
 * F1nm_0gdd  MOV.B		Rn, (Rm, disp9u)
 * F1nm_8gdd  MOV.B		(Rm, disp9u), Rn
 
+* F0nm_0go4  MOV.B		Rn, (Rm, Ro)		//Q=0	//(Rn==0): PC-Rel
+* F0nm_0goC  MOV.B		(Rm, Ro), Rn		//Q=0	//(Rm==0): PC-Rel
+
+* FEdd_dddd-F1nm_0gdd  MOV.B	Rn, (Rm, disp33s)			//(Jumbo)
+* FEdd_dddd-F1nm_8gdd  MOV.B	(Rm, disp33s), Rn			//(Jumbo)
+
+* FFw0_0vii-F0nm_0gi0  MOV.B	Rn, (Rm, Disp17s)			//(RiMOV)
+* FFw0_0vii-F0nm_0go4  MOV.B	Rn, (Rm, Ro, Disp11u)		//(RiMOV)
+* FFw0_0Vii-F0nm_0go4  MOV.B	Rn, (Rm, Ro*Sc, Disp9u)		//(RiMOV)
+* FFw0_0vii-F0nm_0gi8  MOV.B	(Rm, Disp17s), Rn			//(RiMOV)
+* FFw0_0vii-F0nm_0goC  MOV.B	(Rm, Ro, Disp11u), Rn		//(RiMOV)
+* FFw0_0Vii-F0nm_0goC  MOV.B	(Rm, Ro*Sc, Disp9u), Rn		//(RiMOV)
+
 Load or store a Byte to/from memory.
 The byte is sign extended to the size of the register.
 
@@ -936,6 +990,14 @@ The byte is sign extended to the size of the register.
 * F0nm_4goB  MOV.C		(Rm, Ro), Cn
 * F1nm_5gdd  MOV.C		Cn, (Rm, disp9u)
 * F1nm_7gdd  MOV.C		(Rm, disp9u), Cn
+
+* FEdd_dddd-F1nm_5gdd  MOV.C	Rn, (Rm, disp33s)			//(Jumbo)
+* FEdd_dddd-F1nm_7gdd  MOV.C	(Rm, disp33s), Rn			//(Jumbo)
+
+* FFw0_0vii-F0nm_4go3  MOV.C	Rn, (Rm, Ro, Disp11u)		//(RiMOV)
+* FFw0_0Vii-F0nm_4go3  MOV.C	Rn, (Rm, Ro*Sc, Disp9u)		//(RiMOV)
+* FFw0_0vii-F0nm_4goB  MOV.C	(Rm, Ro, Disp11u), Rn		//(RiMOV)
+* FFw0_0Vii-F0nm_4goB  MOV.C	(Rm, Ro*Sc, Disp9u), Rn		//(RiMOV)
 
 Load or store a Control Register to/from memory.
 The behavior of this operation will be similar to a MOV.Q, just applying to control registers.
@@ -955,6 +1017,18 @@ The behavior of this operation will be similar to a MOV.Q, just applying to cont
 * F0nm_0goE  MOV.L		(Rm, Ro), Rn		//(Rm==0): PC-Rel
 * F1nm_2gdd  MOV.L		Rn, (Rm, disp9u)
 * F1nm_Agdd  MOV.L		(Rm, disp9u), Rn
+
+* FEdd_dddd-F1nm_2gdd  MOV.L	Rn, (Rm, disp33s)			//(Jumbo)
+* FEdd_dddd-F1nm_Agdd  MOV.L	(Rm, disp33s), Rn			//(Jumbo)
+
+* FFw0_0vii-F0nm_0gi2  MOV.L	Rn, (Rm, Disp17s)			//(RiMOV)
+* FFw0_0Vii-F0nm_0gi2  MOV.L	Rn, (Rm, Disp17s*1)			//(RiMOV)
+* FFw0_0vii-F0nm_0go6  MOV.L	Rn, (Rm, Ro, Disp11u)		//(RiMOV)
+* FFw0_0Vii-F0nm_0go6  MOV.L	Rn, (Rm, Ro*Sc, Disp9u)		//(RiMOV)
+* FFw0_0vii-F0nm_0giA  MOV.L	(Rm, Disp17s), Rn			//(RiMOV)
+* FFw0_0Vii-F0nm_0giA  MOV.L	(Rm, Disp17s*1), Rn			//(RiMOV)
+* FFw0_0vii-F0nm_0goE  MOV.L	(Rm, Ro, Disp11u), Rn		//(RiMOV)
+* FFw0_0Vii-F0nm_0goE  MOV.L	(Rm, Ro*Sc, Disp9u), Rn		//(RiMOV)
 
 Load or store a DWord to/from memory.
 
@@ -978,6 +1052,18 @@ For example, F0-28 and F1-2 could both achieve a similar purpose, so don't need 
 * F1nm_3gdd  MOV.Q		Rn, (Rm, disp9u)
 * F1nm_Bgdd  MOV.Q		(Rm, disp9u), Rn
 
+* FEdd_dddd-F1nm_3gdd  MOV.Q	Rn, (Rm, disp33s)			//(Jumbo)
+* FEdd_dddd-F1nm_Bgdd  MOV.Q	(Rm, disp33s), Rn			//(Jumbo)
+
+* FFw0_0vii-F0nm_0gi3  MOV.Q	Rn, (Rm, Disp17s)			//(RiMOV)
+* FFw0_0Vii-F0nm_0gi3  MOV.Q	Rn, (Rm, Disp17s*1)			//(RiMOV)
+* FFw0_0vii-F0nm_0go7  MOV.Q	Rn, (Rm, Ro, Disp11u)		//(RiMOV)
+* FFw0_0Vii-F0nm_0go7  MOV.Q	Rn, (Rm, Ro*Sc, Disp9u)		//(RiMOV)
+* FFw0_0vii-F0nm_0giB  MOV.Q	(Rm, Disp17s), Rn			//(RiMOV)
+* FFw0_0Vii-F0nm_0giB  MOV.Q	(Rm, Disp17s*1), Rn			//(RiMOV)
+* FFw0_0vii-F0nm_0goF  MOV.Q	(Rm, Ro, Disp11u), Rn		//(RiMOV)
+* FFw0_0Vii-F0nm_0goF  MOV.Q	(Rm, Ro*Sc, Disp9u), Rn		//(RiMOV)
+
 Load or store a QWord to/from memory.
 
 
@@ -992,6 +1078,18 @@ Load or store a QWord to/from memory.
 * F1nm_1gdd  MOV.W		Rn, (Rm, disp9u)
 * F1nm_9gdd  MOV.W		(Rm, disp9u), Rn
 
+* FEdd_dddd-F1nm_1gdd  MOV.W	Rn, (Rm, disp33s)			//(Jumbo)
+* FEdd_dddd-F1nm_9gdd  MOV.W	(Rm, disp33s), Rn			//(Jumbo)
+
+* FFw0_0vii-F0nm_0gi1  MOV.W	Rn, (Rm, Disp17s)			//(RiMOV)
+* FFw0_0Vii-F0nm_0gi1  MOV.W	Rn, (Rm, Disp17s*1)			//(RiMOV)
+* FFw0_0vii-F0nm_0go5  MOV.W	Rn, (Rm, Ro, Disp11u)		//(RiMOV)
+* FFw0_0Vii-F0nm_0go5  MOV.W	Rn, (Rm, Ro*Sc, Disp9u)		//(RiMOV)
+* FFw0_0vii-F0nm_0gi9  MOV.W	(Rm, Disp17s), Rn			//(RiMOV)
+* FFw0_0Vii-F0nm_0gi9  MOV.W	(Rm, Disp17s*1), Rn			//(RiMOV)
+* FFw0_0vii-F0nm_0goD  MOV.W	(Rm, Ro, Disp11u), Rn		//(RiMOV)
+* FFw0_0Vii-F0nm_0goD  MOV.W	(Rm, Ro*Sc, Disp9u), Rn		//(RiMOV)
+
 Load or store a Word to/from memory.
 The Word value is sign extended to the size of the register.
 
@@ -1002,6 +1100,12 @@ The Word value is sign extended to the size of the register.
 * 52nm       MOVU.B	(Rm, DLR), Rn
 * F0nm_0GoC  MOVU.B	(Rm, Ro), Rn
 * F1nm_8Gdd  MOVU.B	(Rm, disp9u), Rn
+
+* FEdd_dddd-F1nm_8Gdd  MOVU.B	(Rm, disp33s), Rn			//(Jumbo)
+
+* FFw0_0vii-F0nm_0Gi8  MOVU.B	(Rm, Disp17s), Rn			//(RiMOV)
+* FFw0_0vii-F0nm_0GoC  MOVU.B	(Rm, Ro, Disp11u), Rn		//(RiMOV)
+* FFw0_0Vii-F0nm_0GoC  MOVU.B	(Rm, Ro*Sc, Disp9u), Rn		//(RiMOV)
 
 Load or store a Byte to/from memory.
 The byte is zero extended to the size of the register.
@@ -1016,6 +1120,13 @@ The byte is zero extended to the size of the register.
 * F0nm_0GoE  MOVU.L	(Rm, Ro), Rn
 * F1nm_AGdd  MOVU.L	(Rm, disp9u), Rn
 
+* FEdd_dddd-F1nm_AGdd  MOVU.L	(Rm, disp33s), Rn			//(Jumbo)
+
+* FFw0_0vii-F0nm_0GiA  MOVU.L	(Rm, Disp17s), Rn			//(RiMOV)
+* FFw0_0Vii-F0nm_0GiA  MOVU.L	(Rm, Disp17s*1), Rn			//(RiMOV)
+* FFw0_0vii-F0nm_0GoE  MOVU.L	(Rm, Ro, Disp11u), Rn		//(RiMOV)
+* FFw0_0Vii-F0nm_0GoE  MOVU.L	(Rm, Ro*Sc, Disp9u), Rn		//(RiMOV)
+
 Load or store a DWord to/from memory.
 The byte is zero extended to the size of the register.
 
@@ -1026,6 +1137,13 @@ The byte is zero extended to the size of the register.
 * 53nm       MOVU.W	(Rm, DLR), Rn
 * F0nm_0GoD  MOVU.W	(Rm, Ro), Rn
 * F1nm_9Gdd  MOVU.W	(Rm, disp9u), Rn
+
+* FEdd_dddd-F1nm_9Gdd  MOVU.W	(Rm, disp33s), Rn			//(Jumbo)
+
+* FFw0_0vii-F0nm_0Gi9  MOVU.W	(Rm, Disp17s), Rn			//(RiMOV)
+* FFw0_0Vii-F0nm_0Gi9  MOVU.W	(Rm, Disp17s*1), Rn			//(RiMOV)
+* FFw0_0vii-F0nm_0GoD  MOVU.W	(Rm, Ro, Disp11u), Rn		//(RiMOV)
+* FFw0_0Vii-F0nm_0GoD  MOVU.W	(Rm, Ro*Sc, Disp9u), Rn		//(RiMOV)
 
 Load or store a Word to/from memory.
 The word is zero extended to the size of the register.
@@ -1041,6 +1159,16 @@ The word is zero extended to the size of the register.
 * F0nm_4eoC  MOV.X		(Rm, Ro), Rn
 * F1nm_5Gdd  MOV.X		Rn, (Rm, disp9u)
 * F1nm_7Gdd  MOV.X		(Rm, disp9u), Rn
+
+* FEdd_dddd-F1nm_5gdd  MOV.X	Rn, (Rm, disp33s)			//(Jumbo)
+* FEdd_dddd-F1nm_7gdd  MOV.X	(Rm, disp33s), Rn			//(Jumbo)
+
+* FFw0_0vii-F0nm_4gi0  MOV.X	Rn, (Rm, Disp17s)			//(RiMOV)
+* FFw0_0vii-F0nm_4go4  MOV.X	Rn, (Rm, Ro, Disp11u)		//(RiMOV)
+* FFw0_0Vii-F0nm_4go4  MOV.X	Rn, (Rm, Ro*Sc, Disp9u)		//(RiMOV)
+* FFw0_0vii-F0nm_4gi8  MOV.X	(Rm, Disp17s), Rn			//(RiMOV)
+* FFw0_0vii-F0nm_4goC  MOV.X	(Rm, Ro, Disp11u), Rn		//(RiMOV)
+* FFw0_0Vii-F0nm_4goC  MOV.X	(Rm, Ro*Sc, Disp9u), Rn		//(RiMOV)
 
 Load or Store a 128-bit Register Pair.
 Register pair is Even/Odd, and the target memory address is required to have an 8 byte alignment.

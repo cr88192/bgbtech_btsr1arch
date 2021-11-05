@@ -733,6 +733,64 @@ ccxl_status BGBCC_CCXL_EmitBinaryOp(BGBCC_TransState *ctx,
 	return(0);
 }
 
+ccxl_status BGBCC_CCXL_EmitTrinaryOp(BGBCC_TransState *ctx,
+	ccxl_type type, int opr, ccxl_register dst,
+	ccxl_register srca, ccxl_register srcb, ccxl_register srcc)
+{
+	BGBCC_CCXL_VirtOp *op;
+
+	if(ctx->cgif_no3ac)
+		return(0);
+
+	if(BGBCC_CCXL_IsRegZzP(ctx, srca))
+		{ BGBCC_DBGBREAK }
+	if(BGBCC_CCXL_IsRegZzP(ctx, srcb))
+		{ BGBCC_DBGBREAK }
+	if(BGBCC_CCXL_IsRegZzP(ctx, srcc))
+		{ BGBCC_DBGBREAK }
+	if(BGBCC_CCXL_IsRegZzP(ctx, dst))
+		{ BGBCC_DBGBREAK }
+
+#if 0
+	if(BGBCC_CCXL_TypeSmallLongP(ctx, type) &&
+		!BGBCC_CCXL_IsRegImmIntP(ctx, srcb))
+	{
+		if(opr==CCXL_BINOP_DIV)
+			ctx->ccxl_tyc_seen|=BGBCC_TYCSEEN_IDIV_VAR;
+		if(opr==CCXL_BINOP_MOD)
+			ctx->ccxl_tyc_seen|=BGBCC_TYCSEEN_IMOD_VAR;
+		if(opr==CCXL_BINOP_SHL)
+			ctx->ccxl_tyc_seen|=BGBCC_TYCSEEN_ISHL_VAR;
+		if(opr==CCXL_BINOP_SHR)
+		{
+			if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
+				ctx->ccxl_tyc_seen|=BGBCC_TYCSEEN_ISHR_VAR;
+			else
+				ctx->ccxl_tyc_seen|=BGBCC_TYCSEEN_ISAR_VAR;
+		}
+		if(opr==CCXL_BINOP_SHRR)
+			ctx->ccxl_tyc_seen|=BGBCC_TYCSEEN_ISHR_VAR;
+	}
+	
+	if(BGBCC_CCXL_TypeFloatP(ctx, type))
+	{
+		ctx->ccxl_tyc_seen|=BGBCC_TYCSEEN_FLOAT_FPU;
+	}
+#endif
+
+	op=BGBCC_CCXL_AllocVirtOp(ctx);
+	op->opn=CCXL_VOP_TRINARY;
+	op->prd=ctx->curprd;
+	op->opr=opr;
+	op->type=type;
+	op->dst=dst;
+	op->srca=srca;
+	op->srcb=srcb;
+	op->srcc=srcc;
+	BGBCC_CCXL_AddVirtOp(ctx, op);
+	return(0);
+}
+
 ccxl_status BGBCC_CCXL_EmitCompareOp(BGBCC_TransState *ctx,
 	ccxl_type type, int opr, ccxl_register dst,
 	ccxl_register srca, ccxl_register srcb)

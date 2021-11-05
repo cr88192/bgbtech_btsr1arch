@@ -868,6 +868,11 @@
 #define BGBCC_SH_NMID_XMOVP			0x01A8	//XMOV.P
 #define BGBCC_SH_NMID_MOVC_DISP24	0x01A9	//MOV.C, explicit 24b displacement
 
+#define BGBCC_SH_NMID_MACSL			0x01AC	//
+#define BGBCC_SH_NMID_MACUL			0x01AD	//
+#define BGBCC_SH_NMID_DMACSL		0x01AE	//
+#define BGBCC_SH_NMID_DMACUL		0x01AF	//
+
 
 
 #define BGBCC_SH_FMID_REGREG		0x01	//Rm, Rn
@@ -938,6 +943,8 @@
 #define BGBCC_SH_FMID_DREGLDDISP	0x3D	//@(Rm+Disp), DRn
 #define BGBCC_SH_FMID_DREGSTRODISP	0x3E	//DRm, @(Rn,Ro,Disp)
 #define BGBCC_SH_FMID_DREGLDRODISP	0x3F	//@(Rm,Ro,Disp), DRn
+
+#define BGBCC_SH_FMID_REGIMMREGREG	0x40	//Rm, Imm, Rp, Rn
 
 
 #define BGBCC_SH_OPVTY_NONE			0x00	//None

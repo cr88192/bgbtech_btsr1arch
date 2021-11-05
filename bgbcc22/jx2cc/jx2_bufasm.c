@@ -145,12 +145,26 @@ char *BGBCC_JX2A_ParseTokenAlt(char *cs, char **rtok)
 }
 #endif
 
-int BGBCC_JX2A_GetRegId(char *str)
+int BGBCC_JX2A_GetRegId(BGBCC_JX2_Context *ctx, char *str)
 {
 	int i, t, t1, isdr;
 
 	switch(str[0])
 	{
+	case 'A':	case 'a':
+		if(ctx->emit_riscv&1)
+		{
+			t=BGBCC_SH_REG_R10;
+
+			if(!str[2])
+			{
+				if((str[1]>='0') && (str[1]<='7'))
+					{ return(t+(str[1]-'0')); }
+				break;
+			}
+		}
+		break;
+
 	case 'F':	case 'f':
 	case 'D':	case 'd':
 		if((str[1]=='R') || (str[1]=='r'))
@@ -199,6 +213,21 @@ int BGBCC_JX2A_GetRegId(char *str)
 			return(BGBCC_SH_REG_MACL);
 		if(!bgbcc_stricmp(str, "dhr"))
 			return(BGBCC_SH_REG_MACH);
+		break;
+
+	case 'M':	case 'm':
+		if(!bgbcc_stricmp(str, "mach"))
+			return(BGBCC_SH_REG_MACH);
+		if(!bgbcc_stricmp(str, "macl"))
+			return(BGBCC_SH_REG_MACL);
+		if(!bgbcc_stricmp(str, "mmcr"))
+			return(BGBCC_SH_REG_MMCR);
+		break;
+	case 'P':	case 'p':
+		if(!bgbcc_stricmp(str, "pr"))
+			return(BGBCC_SH_REG_PR);
+		if(!bgbcc_stricmp(str, "pc"))
+			return(BGBCC_SH_REG_PC);
 		break;
 
 	case 'R':	case 'r':
@@ -266,22 +295,38 @@ int BGBCC_JX2A_GetRegId(char *str)
 		}
 		break;
 
-	case 'M':	case 'm':
-		if(!bgbcc_stricmp(str, "mach"))
-			return(BGBCC_SH_REG_MACH);
-		if(!bgbcc_stricmp(str, "macl"))
-			return(BGBCC_SH_REG_MACL);
-		if(!bgbcc_stricmp(str, "mmcr"))
-			return(BGBCC_SH_REG_MMCR);
-		break;
-	case 'P':	case 'p':
-		if(!bgbcc_stricmp(str, "pr"))
-			return(BGBCC_SH_REG_PR);
-		if(!bgbcc_stricmp(str, "pc"))
-			return(BGBCC_SH_REG_PC);
-		break;
 
 	case 'X':	case 'x':
+		if(ctx->emit_riscv&1)
+		{
+			t=BGBCC_SH_REG_R0;
+
+			if(!str[2])
+			{
+				if((str[1]>='0') && (str[1]<='9'))
+					{ return(t+(str[1]-'0')); }
+				break;
+			}
+
+			if(!str[3])
+			{
+	//			if((str[1]>='0') && (str[1]<='9') &&
+	//				(str[2]>='0') && (str[2]<='9'))
+	//					{ return(t+(str[1]-'0')*10+(str[2]-'0')); }
+
+				if((str[1]>='0') && (str[1]<='9') &&
+					(str[2]>='0') && (str[2]<='9'))
+				{
+					i=((str[1]-'0')*10)+(str[2]-'0');
+					
+					if((i>=0) && (i<=31))
+						return(BGBCC_SH_REG_R0+i);
+					if((i>=32) && (i<=63))
+						return(BGBCC_SH_REG_R32+(i-32));
+				}
+			}
+		}
+
 		if((str[1]=='F') || (str[1]=='f') ||
 			(str[1]=='D') || (str[1]=='d'))
 		{
@@ -341,21 +386,32 @@ int BGBCC_JX2A_GetRegId(char *str)
 		}
 		break;
 
-	default:
+	case 'S':	case 's':
+		if(ctx->emit_riscv&1)
+		{
+			i=-1;
+
+			if((str[1]>='0') && (str[1]<='9'))
+				i=str[1]-0;
+			if((str[1]>='0') && (str[1]<='9') &&
+				(str[2]>='0') && (str[2]<='9'))
+			{
+				i=(str[1]-'0')*10+(str[2]-'0');
+			}
+			
+			if(i>=0)
+			{
+				if(i<2)
+					return(BGBCC_SH_REG_R8+i);
+				return(BGBCC_SH_REG_R18+(i-2));
+			}
+		}
+
 		if(!bgbcc_stricmp(str, "sp"))
 			return(BGBCC_SH_REG_SP);
 
 		if(!bgbcc_stricmp(str, "sr"))
 			return(BGBCC_SH_REG_SR);
-		if(!bgbcc_stricmp(str, "gbr"))
-			return(BGBCC_SH_REG_GBR);
-		if(!bgbcc_stricmp(str, "vbr"))
-			return(BGBCC_SH_REG_VBR);
-		if(!bgbcc_stricmp(str, "tbr"))
-			return(BGBCC_SH_REG_TBR);
-
-		if(!bgbcc_stricmp(str, "lr"))
-			return(BGBCC_SH_REG_PR);
 
 		if(!bgbcc_stricmp(str, "ssp"))
 			return(BGBCC_SH_REG_SGR);
@@ -364,16 +420,70 @@ int BGBCC_JX2A_GetRegId(char *str)
 		if(!bgbcc_stricmp(str, "spc"))
 			return(BGBCC_SH_REG_SPC);
 
+		if(!bgbcc_stricmp(str, "sttb"))
+			return(BGBCC_SH_REG_STTB);
+
+		break;
+
+	case 'T':	case 't':
+		if(ctx->emit_riscv&1)
+		{
+			i=-1;
+
+			if((str[1]>='0') && (str[1]<='9'))
+				i=str[1]-0;
+			if((str[1]>='0') && (str[1]<='9') &&
+				(str[2]>='0') && (str[2]<='9'))
+			{
+				i=(str[1]-'0')*10+(str[2]-'0');
+			}
+			
+			if(i>=0)
+			{
+				if(i<3)
+					return(BGBCC_SH_REG_R5+i);
+				return(BGBCC_SH_REG_R28+(i-3));
+			}
+
+			if(!bgbcc_stricmp(str, "tp"))
+				return(BGBCC_SH_REG_R4);
+		}
+
+		if(!bgbcc_stricmp(str, "tbr"))
+			return(BGBCC_SH_REG_TBR);
+
 		if(!bgbcc_stricmp(str, "ttb"))
 			return(BGBCC_SH_REG_TTB);
 		if(!bgbcc_stricmp(str, "tea"))
 			return(BGBCC_SH_REG_TEA);
 
+		break;
+
+
+	default:
+		if(ctx->emit_riscv&1)
+		{
+			if(!bgbcc_stricmp(str, "zero"))
+				return(BGBCC_SH_REG_R0);
+
+			if(!bgbcc_stricmp(str, "ra"))
+				return(BGBCC_SH_REG_R1);
+
+			if(!bgbcc_stricmp(str, "gp"))
+				return(BGBCC_SH_REG_R3);
+		}
+
+		if(!bgbcc_stricmp(str, "gbr"))
+			return(BGBCC_SH_REG_GBR);
+		if(!bgbcc_stricmp(str, "vbr"))
+			return(BGBCC_SH_REG_VBR);
+
+		if(!bgbcc_stricmp(str, "lr"))
+			return(BGBCC_SH_REG_PR);
+
 		if(!bgbcc_stricmp(str, "exsr"))
 			return(BGBCC_SH_REG_EXSR);
 
-		if(!bgbcc_stricmp(str, "sttb"))
-			return(BGBCC_SH_REG_STTB);
 		if(!bgbcc_stricmp(str, "krr"))
 			return(BGBCC_SH_REG_KRR);
 
@@ -486,7 +596,7 @@ int BGBCC_JX2A_ParseOperand(
 			if(*tk0=='I')
 			{
 				opv->ty=BGBCC_SH_OPVTY_DRREGD;
-				opv->breg=BGBCC_JX2A_GetRegId(tk0+1);
+				opv->breg=BGBCC_JX2A_GetRegId(ctx, tk0+1);
 				*rcs=cs1;
 				return(1);
 			}
@@ -540,7 +650,7 @@ int BGBCC_JX2A_ParseOperand(
 				if((*tk0=='|') && (*tk1=='I'))
 				{
 					opv->ty=BGBCC_SH_OPVTY_RDMEM;
-					opv->breg=BGBCC_JX2A_GetRegId(tk1+1);
+					opv->breg=BGBCC_JX2A_GetRegId(ctx, tk1+1);
 					opv->disp=bgbcc_atoi(tk0+1);
 					if(scale>0)
 						opv->disp*=scale;
@@ -553,7 +663,7 @@ int BGBCC_JX2A_ParseOperand(
 					if(!strcmp(tk1, "Ioffsetof"))
 					{
 						opv->ty=BGBCC_SH_OPVTY_RDMEM;
-						opv->breg=BGBCC_JX2A_GetRegId(tk0+1);
+						opv->breg=BGBCC_JX2A_GetRegId(ctx, tk0+1);
 //						opv->disp=bgbcc_atoi(tk1+1);
 						opv->disp=BGBCC_JX2A_ParseOperand_OffsetOf(
 							ctx, tk2+1, tk3+1);
@@ -568,8 +678,8 @@ int BGBCC_JX2A_ParseOperand(
 //					opv->ireg=BGBCC_JX2A_GetRegId(tk0+1);
 //					opv->breg=BGBCC_JX2A_GetRegId(tk1+1);
 
-					opv->breg=BGBCC_JX2A_GetRegId(tk0+1);
-					opv->ireg=BGBCC_JX2A_GetRegId(tk1+1);
+					opv->breg=BGBCC_JX2A_GetRegId(ctx, tk0+1);
+					opv->ireg=BGBCC_JX2A_GetRegId(ctx, tk1+1);
 					opv->sc=scale;
 
 					*rcs=cs;
@@ -578,7 +688,7 @@ int BGBCC_JX2A_ParseOperand(
 				if(*tk1=='|')
 				{
 					opv->ty=BGBCC_SH_OPVTY_RDMEM;
-					opv->breg=BGBCC_JX2A_GetRegId(tk0+1);
+					opv->breg=BGBCC_JX2A_GetRegId(ctx, tk0+1);
 					opv->disp=bgbcc_atoi(tk1+1);
 					if(scale>0)
 						opv->disp*=scale;
@@ -589,7 +699,7 @@ int BGBCC_JX2A_ParseOperand(
 			}
 
 			opv->ty=BGBCC_SH_OPVTY_DRREG;
-			opv->breg=BGBCC_JX2A_GetRegId(tk0+1);
+			opv->breg=BGBCC_JX2A_GetRegId(ctx, tk0+1);
 			if(*cs=='+')
 			{
 				cs++;
@@ -606,7 +716,7 @@ int BGBCC_JX2A_ParseOperand(
 		if(*tk0=='I')
 		{
 			opv->ty=BGBCC_SH_OPVTY_DRREG;
-			opv->breg=BGBCC_JX2A_GetRegId(tk0+1);
+			opv->breg=BGBCC_JX2A_GetRegId(ctx, tk0+1);
 			if(*cs1=='+')
 			{
 				cs1++;
@@ -635,7 +745,7 @@ int BGBCC_JX2A_ParseOperand(
 
 	if(*tk0=='I')
 	{
-		i=BGBCC_JX2A_GetRegId(tk0+1);
+		i=BGBCC_JX2A_GetRegId(ctx, tk0+1);
 		if(i>=0)
 		{
 			opv->ty=BGBCC_SH_OPVTY_REG;
@@ -1373,12 +1483,20 @@ int BGBCC_JX2A_LookupOpcodeFmid(
 				default: fm=0; break;
 				}
 				break;
-#if 0
+#if 1
 			case BGBCC_SH_OPVTY_IMM:
 				switch(arg2->ty)
 				{
 				case BGBCC_SH_OPVTY_REG:
-					fm=BGBCC_SH_FMID_REGIMMREG; break;
+					switch(arg3->ty)
+					{
+					case BGBCC_SH_OPVTY_REG:
+						fm=BGBCC_SH_FMID_REGIMMREGREG; break;
+//					case BGBCC_SH_OPVTY_IMM:
+//						fm=BGBCC_SH_FMID_REGREGREGIMM; break;
+					default: fm=0; break;
+					}
+					break;
 				default: fm=0; break;
 				}
 				break;
@@ -1483,6 +1601,11 @@ int BGBCC_JX2A_TryAssembleOpcode(
 	case BGBCC_SH_FMID_REGREGREGIMM:
 		rt=BGBCC_JX2_TryEmitOpRegRegImmReg(ctx,
 			nmid, arg0->breg, arg1->breg, arg3->disp, arg2->breg);
+		break;
+
+	case BGBCC_SH_FMID_REGIMMREGREG:
+		rt=BGBCC_JX2_TryEmitOpRegImmRegReg(ctx,
+			nmid, arg0->breg, arg1->disp, arg2->breg, arg3->breg);
 		break;
 
 	case BGBCC_SH_FMID_REGST:

@@ -191,6 +191,13 @@ begin
 	valCpuIdLo1[27] = 1;
 `endif
 
+`ifdef jx2_alu_dmac
+	valCpuIdLo1[28] = 1;
+`endif
+`ifdef jx2_agu_ridisp
+	valCpuIdLo1[29] = 1;
+`endif
+
 	tResLoA = arrCpuIdLo[index[2:0]];
 	tResHiA = UV64_00;
 //	tResHiA = arrCpuIdHi[index[2:0]];
