@@ -1,0 +1,4 @@
+void ReadWolfMap( int mapnum )
+{
+}
+
