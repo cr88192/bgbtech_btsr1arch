@@ -362,7 +362,8 @@ byte regalc_ltcnt[32];	//lifetime count (who to evict)
 byte regalc_utcnt[32];	//current use count (0=unused)
 u32 regalc_save;		//register has been saved and may hold a value
 u32 regalc_live;		//register is currently holding a value
-u32 regalc_dirty;
+u32 regalc_dirty;		//register is dirty
+u32 regalc_noval;		//register lacks backing value
 
 ccxl_register fregalc_map[32];
 byte fregalc_ltcnt[32];	//lifetime count (who to evict)

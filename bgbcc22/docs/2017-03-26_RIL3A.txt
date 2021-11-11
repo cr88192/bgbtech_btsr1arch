@@ -865,6 +865,56 @@ Opcodes (Executable Code)
 ** STRING sig;
 ** Make a new temporary object of a given type.
 
+* 0x74, EXCH ( A B -- B A )
+** Exchange stack items
+* 0x75, LDSLOTSIG
+** Load Slot, Signature
+* 0x76, OBJCALLP
+** Call Object, Return on stack
+* 0x77, OBJCALLPV
+** Call Object, Return Void
+* 0x78, STOBJCALLP
+** Call Object, Resturn Store
+* 0x79, OBJCALLN
+** Call Obj, Non-Virt, Ret Stack
+* 0x7A, OBJCALLNV
+** Call Obj, Non-Virt, Ret Void
+* 0x7B, STOBJCALLN
+** Call Obj, Non-Virt, Ret Store
+* 0x7C, SETPRED
+** Set Predicate Mode
+* 0x7D, PRCMP
+** Predicate Compare (A op B)
+* 0x7E, PRCMPT
+** Predicate Compare (A!=0)
+* 0x7F, PRCMPF
+** Predicate Compare (A==0)
+
+* 0x80, CALLN_INT
+* 0x81, LDCONSTCPX
+* 0x82, LDCONSTV2F
+* 0x83, LDCONSTV4F
+* 0x84, LDCONSTU8S
+** UTF-8 String Literal
+* 0x85, LDCONSTW4S
+** UTF-32 String Literal
+
+* 0x86, INLINEASM
+** Inline ASM blob
+* 0x87, LDAVSIG
+
+* 0x88, STCONSTI
+* 0x89, STCONSTL
+* 0x8A, STREFREF
+
+* 0x8C, TRINOP ( S T U -- V )
+** SVLI opr;
+** Trinary Operator
+* 0x8D, STTRINOP ( S T U -- )
+** SVLI opr;
+** STRING name;
+** Trinary Operator, Store result to Name
+
 
 === Global Objects ===
 

@@ -884,6 +884,18 @@ BCCX_Node *BGBCP_ModuleBuffer(char *name, char *modname, char *buf)
 	ctx->ppi_ctx=ppictx;
 	ppictx->ppi_upctx=ctx;
 	
+#ifdef BGBCC_BCCX2
+	for(i=0; i<256; i++)
+		{ ctx->struct_hash_ix[i]=-1; }
+	for(i=0; i<1024; i++)
+		{ ctx->type_hash_ix[i]=-1; }
+
+	for(i=0; i<256; i++)
+		{ ppictx->struct_hash_ix[i]=-1; }
+	for(i=0; i<1024; i++)
+		{ ppictx->type_hash_ix[i]=-1; }
+#endif
+
 	ppictx->lang=BGBCC_LANG_BS;
 
 	ctx->lang=lang;
@@ -965,6 +977,10 @@ BCCX_Node *BGBCP_ModuleBuffer(char *name, char *modname, char *buf)
 		n1=BGBCP_Toplevel(ctx, &s);
 	}
 
+#ifdef BGBCC_BCCX2
+	BCCX_MarkTreeZone(n1, BCCX_ZTY_MODULE);
+#endif
+
 	t1=clock();
 	dt=(1000.0*(t1-t0))/CLOCKS_PER_SEC;
 //	printf("Parse took %dms\n", dt);
@@ -995,8 +1011,15 @@ BCCX_Node *BGBCP_ModuleBuffer(char *name, char *modname, char *buf)
 	if(s)
 		BCCX_SetCst(n, &bgbcc_rcst_subarch, "subarch", s);
 
+#ifdef BGBCC_BCCX2
+	BCCX_MarkTreeZone(n, BCCX_ZTY_MODULE);
+
+	BCCX_ClearZoneLevel(BCCX_ZTY_REDUCE);
+#endif
+
 //	free(tbuf);
 
+#ifndef BGBCC_BCCX2
 	c=ctx->reduce_tmp;
 	ctx->reduce_tmp=NULL;
 	while(c)
@@ -1005,6 +1028,7 @@ BCCX_Node *BGBCP_ModuleBuffer(char *name, char *modname, char *buf)
 		BCCX_DeleteTree(c);
 		c=n1;
 	}
+#endif
 
 	bgbcc_free(ppictx);
 	bgbcc_free(ctx);

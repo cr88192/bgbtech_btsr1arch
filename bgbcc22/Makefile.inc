@@ -11,6 +11,8 @@ SRCS=\
 	\
 	mm/cc_tokord.c \
 	\
+	mm/cca_node.c \
+	mm/cca_print.c \
 	mm/ccx_node.c \
 	mm/ccx_print.c \
 	mm/ccx_parse.c \

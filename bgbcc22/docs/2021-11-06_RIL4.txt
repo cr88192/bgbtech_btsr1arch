@@ -1,0 +1,468 @@
+RIL4: Possible Redesigned RIL.
+* Will aim for a vaguely similar use-case to RIL3  but "improved".
+* Will redesign the storage of metadata objects.
+* Aim is to stop using strings for symbols.
+* Will leave it up to the front-end to resolve type conversions.
+** All operators required to be given matching types.
+** Bytecode will remain implicitly typed.
+
+
+=== Packaging ===
+
+Will use TLV Packaging.
+
+Words will be encoded in little-endian order, with structures being byte-aligned.
+
+TLV Chunks will begin with a 16-bit WORD  with LSB bits identifying the type:
+* zz00: WORD,TWOCC (16K)
+* zz01: DWORD,TWOCC (1GB)
+* zz10: DWORD,FOURCC (1GB)
+* z011: Small Tag (32B with a BYTE tag)
+** Tag is in bits (15:8)
+** Length is in bits (7:3)
+
+TWOCC tags will use case to identify Tag Type:
+* 'aa': Structure or Data
+** Contains a raw structure or other Non-TLV data.
+* 'AA': Compound Tag
+** Contains TLV tags.
+* A letter followed by a non-leter will behave as one of the above.
+
+Non-ASCII characters are not allowed in a TWOCC or FOURCC. A valid TWOCC or FOURCC will be padded as needed with spaces.
+
+A narrower tag may be promoted to a wider one by padding with zeroes.
+As such, the value range of the tag will be able to identify the type of the tag if it had been promoted from a narrower type.
+
+Tags will include the tag header in their length, thus the small BYTE tag is limited to 30 bytes of data. If this limit is exceeded, it will be promoted to a TWOCC.
+
+BYTE tags:
+* 00: Ignored
+* 01..7F: Context Dependent
+* 80: Long String Attribute
+* 81: Short String Attribute
+* 82: Integer Attribute
+
+An all-zeroes tag will be ignored, and may be used to align file structures.
+
+
+=== Global Table ===
+
+* FOURCC('GBLT')
+** Contains a list of global objects.
+** These will be identified by index, starting at 1.
+
+Each Global will have one of several tags:
+* 'GV': Global Variable
+* 'SV': Static Variable
+* 'FN': Function
+* ...
+
+And may contain various sub-tags:
+* 'A': Arguments (Function)
+* 'L': Locals (Function)
+* 'R': Temporaries (Function)
+
+* 'n': Name (String)
+* 'q': QName (String)
+* 's': Signature (String)
+* 'f': Flags (String)
+* 'v': Body Data (Depends on Signature)
+* 'V': Compound Data (Depends on Signature)
+
+* 'bc': Bytecode (Function)
+
+
+=== Type Signatures ===
+
+Types will be primarily identified with signature strings.
+* Notation will be reused from RIL3.
+
+
+=== Flag String ===
+
+Flags will be primarily identified with flag strings.
+* Notation will be reused from RIL3.
+
+
+=== Bytecode ===
+
+Bytecode will consist of a series of stack operations.
+* There will be a Value Stack and a Mark Stack.
+* The Value Stack will hold Values.
+* The Mark Stack will hold indices into the Value Stack.
+* Nothing may be on the stack during a jump or across a label.
+
+OpVLI (Opcodes):
+* 0x00000000..0x000000DF	xxxx-xxxx
+* 0x000000E0..0x00000FFF	1110-xxxx xxxx-xxxx
+* 0x00001000..0x0007FFFF	1111-0xxx xxxx-xxxx(x2)
+* 0x00080000..0x03FFFFFF	1111-10xx xxxx-xxxx(x3)
+* 0x04000000..0xFFFFFFFF	1111-1100 xxxx-xxxx(x4)
+
+UVLI (32-bit):
+* 0x00000000..0x0000007F	0xxx-xxxx
+* 0x00000080..0x00003FFF	10xx-xxxx xxxx-xxxx
+* 0x00004000..0x001FFFFF	110x-xxxx xxxx-xxxx xxxx-xxxx
+* 0x00200000..0x0FFFFFFF	1110-xxxx xxxx-xxxx xxxx-xxxx xxxx-xxxx
+* 0x10000000..0xFFFFFFFF	1111-0xxx xxxx-xxxx xxxx-xxxx xxxx-xxxx xxxx-xxxx
+
+UVLI (64-bit):
+* 0x0000000000000000..0x000000000000007F	0xxx-xxxx
+* 0x0000000000000080..0x0000000000003FFF	10xx-xxxx xxxx-xxxx
+* 0x0000000000004000..0x00000000001FFFFF	110x-xxxx xxxx-xxxx(x2)
+* 0x0000000000200000..0x000000000FFFFFFF	1110-xxxx xxxx-xxxx(x3)
+* 0x0000000010000000..0x00000007FFFFFFFF	1111-0xxx xxxx-xxxx(x4)
+* 0x0000008000000000..0x000003FFFFFFFFFF	1111-10xx xxxx-xxxx(x5)
+* 0x0000400000000000..0x0001FFFFFFFFFFFF	1111-110x xxxx-xxxx(x6)
+* 0x0020000000000000..0x00FFFFFFFFFFFFFF	1111-1110 xxxx-xxxx(x7)
+* 0x1000000000000000..0xFFFFFFFFFFFFFFFF	1111-1111 xxxx-xxxx(x8)
+
+Typically, 128-bit values or larger will be encoded as multiple 64-bit pieces.
+
+SVLI:
+* Encoded as UVLI but Folds sign into LSB
+* 0, -1, 1, -2, 2, ...
+
+FVLI:
+* Pair of SVLIs encoding a floating-point number.
+** SVLI exp;
+** SVLI frac;
+* value=frac*(2.0^exp)
+
+
+LABEL:
+* Encoded as a SVLI.
+* Represented as an ID number. 
+* The source and destination will have matching ID numbers.
+
+SYMBOL:
+* Encoded as UVLI, with a Rice(2) Coded Prefix in the low-order bits.
+* z-xxxx-00-0: Temporary Variable
+* z-xxxx-01-0: Function Argument
+* z-xxxx-10-0: Local Variable
+* z-xxxx-11-0: Global Variable
+
+* z-xxx-00-01: Int
+* z-xxx-01-01: Long
+* z-xxx-10-01: Float
+* z-xxx-11-01: Double
+
+* z-xx-00-011: String (String Table Offset)
+* z-xx-01-011: WString (String Table Offset)
+* z-xx-10-011: Literal
+* z-xx-11-011: Global Address
+
+
+==== Opcodes ====
+
+Opcodes (Executable Code)
+* 0x20  MARK ( -- Mark )
+** Mark a position on the stack (typically for function argument lists).
+* 0x21  LOAD ( -- Val )
+** SYMBOL name;
+** Load a variable onto the stack.
+* 0x22  STORE ( Val -- )
+** SYMBOL name;
+** Store top stack element into a named variable.
+* 0x23  CALLN ( Mark * -- RetVal )
+** SYMBOL name;
+** Call a named function.
+* 0x24  CALLP ( Mark * Ptr -- RetVal )
+** Call a function given as a pointer on the stack.
+* 0x25  LDIXC ( Arr -- Val )
+** SVLI idx;
+** Load a constant array index.
+* 0x26  STIXC ( Val Arr -- )
+** SVLI idx;
+** Store to a constant array index.
+* 0x27  LDIXAC ( Arr -- Addr )
+** SVLI idx;
+** Load address of a constant array index.
+* 0x28  LDIX ( Arr Idx -- Val )
+** Load an array index.
+* 0x29  STIX ( Val Arr Idx -- )
+** Store to an array index.
+* 0x2A  LDIXA ( Arr Idx -- Addr )
+** Load address of an array index.
+* 0x2B  DUP ( Val -- Val Val )
+** Duplicate item on top of stack.
+* 0x2C  DUPCLEAN ( Val -- Val Val )
+** Duplicate item on top of stack in expression which does not modify state.
+* 0x2D  RETV ( -- )
+** Return with no value given.
+* 0x2E  RET ( Val -- )
+** Return value in top stack item.
+* 0x2F  CASTBOOL ( Val -- Bool )
+** Cast an item to a boolean value.
+
+* 0x30  CASTSIG ( ValA -- ValB )
+** SYMBOL sig;
+** Cast a value to type given in signature.
+* 0x31  BINOP ( ValL ValR -- ValD )
+** SVLI opr;
+** Apply a binary operator.
+* 0x32  CMPOP ( ValL ValR -- Bool )
+** SVLI opr;
+** Apply a comparison operator.
+* 0x33  UNOP ( ValA -- ValB )
+** SVLI opr;
+** Apply a unary operator.
+* 0x34  STBINOP ( ValL ValR -- )
+** SVLI opr;
+** SYMBOL dstname;
+** Apply a binary operator and store result into variable.
+* 0x35  STCMPOP ( ValL ValR -- )
+** SVLI opr;
+** SYMBOL dstname;
+** Apply a comparison operator and store result into variable.
+* 0x36  LDUNOP ( -- )
+** SVLI opr;
+** SYMBOL name;
+** Apply a unary operator to a variable
+** (opr&15): Operator
+** (opr>>4): Operation Mode
+*** 0: Operator applied to variable, nothing loaded to stack.
+*** 1: Operator applied to variable, store updated value to stack.
+*** 2: Operator applied to variable, store prior value to stack.
+
+* 0x37  LDCONSTV ( -- Void )
+** Load a Void onto the stack.
+* 0x38  LDCONSTI ( -- Val )
+** SVLI value;
+** Load constant integer onto stack.
+* 0x39  LDCONSTL ( -- Val )
+** SVLI value;
+** Load constant long onto stack.
+* 0x3A  LDCONSTF ( -- Val )
+** FVLI value;
+** Load constant float onto stack.
+* 0x3B  LDCONSTD ( -- Val )
+** FVLI value;
+** Load constant double onto stack.
+* 0x3C  LDCONSTS ( -- Str )
+** STRING str;
+** Load string literal onto stack.
+* 0x3D  LDCONSTWS ( -- Str )
+** STRING str;
+** Load wide string literal onto stack.
+* 0x3E  LDCONSTXL ( -- Val )
+** SVLI value_lo;
+** SVLI value_hi;
+** Load constant int128 onto stack.
+* 0x3F  LDCONSTXF ( -- Val )
+** XFVLI value;
+** Load constant float128 onto stack.
+
+* 0x40  POP ( Val -- )
+** Pop (and discard) top value off of stack.
+* 0x41  LDA ( -- Addr )
+** SYMBOL name;
+** Load address of a variable.
+* 0x42  SIZEOFSG ( -- Sz )
+** SIGSTR sig;
+** Get sizeof a type signature.
+* 0x43  SIZEOFVAL ( Val -- Sz )
+** Get sizeof a value.
+* 0x44  OFFSETOF ( -- Offs )
+** SIGSTR sig;
+** SYMBOL name;
+** Get offset of a field.
+* 0x45  LOADSLOT ( Obj -- Val )
+** SYMBOL name;
+** Load a structure field.
+* 0x46  STORESLOT ( Val Obj -- )
+** SYMBOL name;
+** Store to a structure field.
+* 0x47  LOADSLOTA ( Obj -- Addr )
+** SYMBOL name;
+** Load address of a structure field.
+
+* 0x48  -
+* 0x49  -
+* 0x4A  -
+
+* 0x4B  LABEL ( -- )
+** LABEL lbl;
+** Identifies a label.
+* 0x4C  INITVAR ( -- )
+** SYMBOL name;
+** Initialize a variable.
+* 0x4D  INITVARVAL ( Val -- )
+** SYMBOL name;
+** Initialize a variable with a value.
+* 0x4E  STKFN ( -- )
+** STRING fname;
+** Indicates the source filename.
+* 0x4F  STKLN ( -- )
+** SVLI lnum;
+** Indicates the source line-number.
+
+* 0x50  JMP ( -- )
+** LABEL lbl;
+** Jump to a label.
+* 0x51  JCMP ( ValL ValR -- )
+** SVLI opr;
+** LABEL lbl;
+** Compare two values and jump if the condition is true.
+* 0x52  JMPT ( Bool -- )
+** LABEL lbl;
+** Jump to a label if true.
+* 0x53  JMPF ( Bool -- )
+** LABEL lbl;
+** Jump to a label if false.
+
+* 0x54  LITTYPESIG ( -- T )
+** SIGSTR sig;
+** Pushes an undefined value of a given type.
+* 0x55  VA_START ( Arg List -- )
+* 0x56  VA_END ( List -- )
+* 0x57  VA_ARG ( Type List -- Val )
+
+* 0x58  CALLNV ( Mark * -- )
+** SYMBOL name;
+** Call a named function.
+* 0x59  CALLPV ( Mark * Ptr -- )
+** Call a function given as a pointer on the stack.
+
+* 0x5A  DI_3AC
+** Temporarily disable 3AC output.
+** Operations following this will not generate executable code.
+** However, they will still update compile-time state as-if they were emitted.
+* 0x5B  EN_3AC
+** Enable 3AC output.
+** Note that these may nest, and output will remaine disabled until counts match.
+
+* 0x5C  MOVLDST
+** SYMBOL dname;
+** SYMBOL sname;
+** Move a value between a pair of named variables.
+
+* 0x5D  STUNOP ( Val -- )
+** SVLI opr;
+** SYMBOL name;
+** Apply a unary operator and store result in a variable.
+
+* 0x5E  STCALLN ( Mark * -- )
+** SYMBOL name;
+** SYMBOL dstname;
+** Call a named function, storing return value in dstname.
+* 0x5F  STCALLP ( Mark * Ptr -- )
+** SYMBOL dstname;
+** Call a function given as a pointer on the stack.
+** Stores return value in dstname.
+
+
+* 0x60  ADD ( A B -- A+B )
+* 0x61  SUB ( A B -- A-B )
+* 0x62  MUL ( A B -- A*B )
+* 0x63  AND ( A B -- A&B )
+* 0x64  OR  ( A B -- A|B )
+* 0x65  XOR ( A B -- A^B )
+* 0x66  SHL ( A B -- A<<B )
+* 0x67  SAR ( A B -- A>>B )
+
+* 0x68  STLDSLOT
+** SYMBOL fname;
+** SYMBOL dstname;
+** Load slot and store in dstname.
+
+* 0x69  STLDSLOTA
+** SYMBOL fname;
+** SYMBOL dstname;
+** Load slot address and store in dstname.
+
+* 0x6A  STLDIXC
+** SVLI idx;
+** SYMBOL dstname;
+** Load constant index and store in dstname.
+
+* 0x6B  STLDIXAC
+** SVLI idx;
+** SYMBOL dstname;
+** Load constant index address and store in dstname.
+
+* 0x6C  STLDIX
+** SYMBOL dstname;
+** Load index and store in dstname.
+
+* 0x6D  STLDIXA
+** SYMBOL dstname;
+** Load index address and store in dstname.
+
+* 0x6E  STCASTSIG
+** SYMBOL sig;
+** SYMBOL dstname;
+** Cast value to sig and store in dstname.
+
+* 0x6F  CSELCMP
+** SVLI opr;
+** Conditional Select Compare.
+*** 0..15: Compare two values.
+*** 16..31: Compare value with zero.
+
+* 0x70  DUPIX
+** Dup with Index
+* 0x71  DUPMIX
+** Dup with Index (relative to Mark)
+* 0x72  JMPTAB
+** Jump Table
+** SVLI nLbl;	//number of labels
+*** Greater than 0: Check range, branch to Default if out of range.
+*** Less than 0: Don't check range (value assumed to be in range).
+** LABEL dfl;	//default
+** For Each Label:
+*** SVLI val;	//case value
+*** LABEL lbl;	//target label
+* 0x73  MKTMPOBJ
+** SIGSTR sig;
+** Make a new temporary object of a given type.
+
+* 0x74  EXCH ( A B -- B A )
+** Exchange stack items
+* 0x75  LDSLOTSIG
+** Load Slot, Signature
+* 0x76  OBJCALLP
+** Call Object, Return on stack
+* 0x77  OBJCALLPV
+** Call Object, Return Void
+* 0x78  STOBJCALLP
+** Call Object, Resturn Store
+* 0x79  OBJCALLN
+** Call Obj, Non-Virt, Ret Stack
+* 0x7A  OBJCALLNV
+** Call Obj, Non-Virt, Ret Void
+* 0x7B  STOBJCALLN
+** Call Obj, Non-Virt, Ret Store
+* 0x7C  SETPRED
+** Set Predicate Mode
+* 0x7D  PRCMP
+** Predicate Compare (A op B)
+* 0x7E  PRCMPT
+** Predicate Compare (A!=0)
+* 0x7F  PRCMPF
+** Predicate Compare (A==0)
+
+* 0x80  CALLN_INT
+* 0x81  LDCONSTCPX
+* 0x82  LDCONSTV2F
+* 0x83  LDCONSTV4F
+* 0x84  LDCONSTU8S
+** UTF-8 String Literal
+* 0x85  LDCONSTW4S
+** UTF-32 String Literal
+
+* 0x86  INLINEASM
+** Inline ASM blob
+* 0x87  LDAVSIG
+
+* 0x88  STCONSTI
+* 0x89  STCONSTL
+* 0x8A  STREFREF
+
+* 0x8C  TRINOP ( S T U -- V )
+** SVLI opr;
+** Trinary Operator
+* 0x8D  STTRINOP ( S T U -- )
+** SVLI opr;
+** SYMBOL name;
+** Trinary Operator, Store result to Name

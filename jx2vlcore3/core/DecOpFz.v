@@ -3272,12 +3272,28 @@ begin
 				opFmid		= JX2_FMID_REGIMMREG;
 				opIty		= JX2_ITY_UW;
 				opUCmdIx	= JX2_UCIX_ALU_OR;
+				if(opExQ)
+				begin
+					opNmid		= JX2_UCMD_SHADQ3;
+					opUCmdIx	= JX2_UCIX_SHAD_SHADX3;
+					opFmid		= JX2_FMID_REGIMMREG;
+					opIty		= JX2_ITY_UW;
+					opUCty		= JX2_IUC_WX;
+				end
 			end
 			4'h7: begin		/* F2nm_7ejj */
 				opNmid		= JX2_UCMD_ALU3;
 				opFmid		= JX2_FMID_REGIMMREG;
 				opIty		= JX2_ITY_UW;
 				opUCmdIx	= JX2_UCIX_ALU_XOR;
+				if(opExQ)
+				begin
+					opNmid		= JX2_UCMD_SHLDQ3;
+					opUCmdIx	= JX2_UCIX_SHAD_SHLDX3;
+					opFmid		= JX2_FMID_REGIMMREG;
+					opIty		= JX2_ITY_UW;
+					opUCty		= JX2_IUC_WX;
+				end
 			end
 `endif
 

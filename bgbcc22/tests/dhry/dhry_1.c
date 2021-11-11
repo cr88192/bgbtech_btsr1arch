@@ -28,7 +28,7 @@ char            Ch_1_Glob,
 int             Arr_1_Glob [50];
 int             Arr_2_Glob [50] [50];
 
-extern char     *malloc ();
+// extern char     *malloc ();
 Enumeration     Func_1 ();
   /* forward declaration necessary since Enumeration may not simply be int */
 
@@ -135,7 +135,7 @@ main ()
   {
     int n;
 // #ifdef SH4
-#if 1
+#if 0
 	n=4000000;
 #else
 	n=300000000;

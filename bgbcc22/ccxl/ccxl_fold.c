@@ -14,7 +14,7 @@ void BGBCC_CCXL_DoExpressionLambdaFold(
 	char tb1[128], tb2[128];
 	char *s, *s0;
 	BCCX_Node *c, *t, *u, *v, *x, *n, *ln, *rn, *ls;
-	int i, j, k, bn, sqn, sqon, obn, oncap, onpos;
+	int i, j, k, bn, sqn, sqon, obn, oncap, onpos, ci, na;
 
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_ref, "ref"))
 	{
@@ -93,9 +93,11 @@ void BGBCC_CCXL_DoExpressionLambdaFold(
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_lambda, "lambda"))
 	{
 		t=BCCX_FindTagCst(l, &bgbcc_rcst_type, "type");
-		u=BCCX_FetchCst(l, &bgbcc_rcst_args, "args");
+//		u=BCCX_FetchCst(l, &bgbcc_rcst_args, "args");
+		u=BCCX_FindTagCst(l, &bgbcc_rcst_args, "args");
 		v=BCCX_FetchCst(l, &bgbcc_rcst_body, "body");
-		ls=BCCX_FetchCst(l, &bgbcc_rcst_list, "list");
+//		ls=BCCX_FetchCst(l, &bgbcc_rcst_list, "list");
+		ls=BCCX_FindTagCst(l, &bgbcc_rcst_list, "list");
 		i=BCCX_GetIntCst(l, &bgbcc_rcst_index, "index");
 		
 		sqn=i;
@@ -112,9 +114,14 @@ void BGBCC_CCXL_DoExpressionLambdaFold(
 		ctx->vlcl_stack[i]=sqn;
 		ctx->vlcl_stack_npos[i]=onpos;
 
-		c=ls;
-		while(c)
+//		c=ls;
+//		while(c)
+//		{
+		na=BCCX_GetNodeChildCount(ls);
+		for(ci=0; ci<na; ci++)
 		{
+			c=BCCX_GetNodeIndex(ls, ci);
+
 			if(BCCX_TagIsCstP(c, &bgbcc_rcst_assign, "assign"))
 			{
 				ln=BCCX_FetchCst(c, &bgbcc_rcst_left, "left");
@@ -129,7 +136,7 @@ void BGBCC_CCXL_DoExpressionLambdaFold(
 				ctx->lambda_captype[k]=x;
 			}
 
-			c=BCCX_Next(c);
+//			c=BCCX_Next(c);
 		}
 
 		BGBCC_CCXL_LambdaFoldAddArgs(ctx, u);
@@ -157,7 +164,7 @@ void BGBCC_CCXL_DoExpressionLambdaFold(
 			rn=BCCX_NewCst(&bgbcc_rcst_type, "type");
 			BCCX_SetCst(rn, &bgbcc_rcst_name, "name", "int");
 			BCCX_AddV(rn,
-				BCCX_NewCst1V(&bgbcc_rcst_size, "size", x));
+				BCCX_NewCst1(&bgbcc_rcst_size, "size", x));
 
 			x=BCCX_NewCst(&bgbcc_rcst_var, "var");
 			BCCX_SetCst(x, &bgbcc_rcst_name, "name", "__thunk");
@@ -183,7 +190,8 @@ void BGBCC_CCXL_DoExpressionLambdaFold(
 
 			BCCX_AddV(n, BCCX_NewCst1V(&bgbcc_rcst_body, "body", ln));
 
-			ctx->dynobj=BCCX_AddEnd2(ctx->dynobj, &(ctx->dynobj_e), n);
+//			ctx->dynobj=BCCX_AddEnd2(ctx->dynobj, &(ctx->dynobj_e), n);
+			ctx->dynobj_stk[ctx->dynobj_stkpos++]=n;
 
 			sprintf(tb1, "__lfn_%X/fn", sqn);
 			s0=bgbcc_strdup(tb1);
@@ -196,12 +204,14 @@ void BGBCC_CCXL_DoExpressionLambdaFold(
 		}
 		
 		n=BCCX_NewCst(&bgbcc_rcst_defun, "defun");
-		BCCX_AddV(n, BCCX_Clone(t));
-		BCCX_AddV(n, BCCX_NewCst1V(&bgbcc_rcst_args, "args", u));
+		BCCX_AddV(n, BCCX_CloneS(t));
+//		BCCX_AddV(n, BCCX_NewCst1(&bgbcc_rcst_args, "args", u));
+		BCCX_AddV(n, BCCX_CloneS(u));
 		BCCX_AddV(n, BCCX_NewCst1V(&bgbcc_rcst_body, "body", v));
 		BCCX_SetCst(n, &bgbcc_rcst_name, "name", s0);
 
-		ctx->dynobj=BCCX_AddEnd2(ctx->dynobj, &(ctx->dynobj_e), n);
+//		ctx->dynobj=BCCX_AddEnd2(ctx->dynobj, &(ctx->dynobj_e), n);
+		ctx->dynobj_stk[ctx->dynobj_stkpos++]=n;
 
 
 		ctx->do_lambda_capref=obn;
@@ -217,7 +227,7 @@ void BGBCC_CCXL_DoStatementLambdaFold(
 	BCCX_Node *c, *t, *u, *v, *x, *n, *ln, *rn;
 	char *s, *fnam;
 	double f, g;
-	int sqn, tkn, sqon, onpos;
+	int sqn, tkn, sqon, onpos, na, ci;
 	int i, j, lnum;
 
 	if(!l)return;
@@ -249,11 +259,15 @@ void BGBCC_CCXL_DoStatementLambdaFold(
 		ctx->vlcl_stack[i]=sqn;
 		ctx->vlcl_stack_npos[i]=onpos;
 
-		c=BCCX_Child(l);
-		while(c)
+//		c=BCCX_Child(l);
+//		while(c)
+//		{
+		na=BCCX_GetNodeChildCount(l);
+		for(ci=0; ci<na; ci++)
 		{
+			c=BCCX_GetNodeIndex(l, ci);
 			BGBCC_CCXL_DoStatementLambdaFold(ctx, c);
-			c=BCCX_Next(c);
+//			c=BCCX_Next(c);
 		}
 
 		ctx->vlcl_stackpos--;
@@ -297,14 +311,21 @@ void BGBCC_CCXL_DoStatementLambdaFold(
 
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_vars, "vars"))
 	{
-		c=BCCX_Child(l);
-		while(c)
+//		c=BCCX_Child(l);
+//		while(c)
+//		{
+
+		na=BCCX_GetNodeChildCount(l);
+		for(ci=0; ci<na; ci++)
 		{
+			c=BCCX_GetNodeIndex(l, ci);
+
 			if(BCCX_TagIsCstP(c, &bgbcc_rcst_proto, "proto"))
 			{
 				s=BCCX_GetCst(c, &bgbcc_rcst_name, "name");
 				t=BCCX_FindTagCst(c, &bgbcc_rcst_type, "type");
-				n=BCCX_FetchCst(c, &bgbcc_rcst_args, "args");
+//				n=BCCX_FetchCst(c, &bgbcc_rcst_args, "args");
+				n=BCCX_FindTagCst(c, &bgbcc_rcst_args, "args");
 
 //				BGBCC_CCXL_CompileProto(ctx, t, s, n);
 			}
@@ -326,7 +347,7 @@ void BGBCC_CCXL_DoStatementLambdaFold(
 //				BGBCC_CCXL_EmitTopVar(ctx, s, t, v);
 			}
 
-			c=BCCX_Next(c);
+//			c=BCCX_Next(c);
 		}
 		return;
 	}
@@ -342,11 +363,17 @@ void BGBCC_CCXL_LambdaFoldAddArgs(
 	char *s, *fnam;
 	double f, g;
 	int sqn, tkn, sqon, onpos;
-	int i, j, lnum;
+	int i, j, lnum, na, ci;
 
-	c=args;
-	while(c)
+//	c=args;
+//	while(c)
+//	{
+
+	na=BCCX_GetNodeChildCount(args);
+	for(ci=0; ci<na; ci++)
 	{
+		c=BCCX_GetNodeIndex(args, ci);
+
 		if(BCCX_TagIsCstP(c, &bgbcc_rcst_var, "var"))
 		{
 			s=BCCX_GetCst(c, &bgbcc_rcst_name, "name");
@@ -358,7 +385,7 @@ void BGBCC_CCXL_LambdaFoldAddArgs(
 			ctx->vlcn_types[i]=t;
 		}
 
-		c=BCCX_Next(c);
+//		c=BCCX_Next(c);
 	}
 
 	return;

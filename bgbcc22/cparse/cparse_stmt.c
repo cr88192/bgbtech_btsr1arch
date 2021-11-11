@@ -647,7 +647,7 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 
 			n=BCCX_NewCst2(&bgbcc_rcst_switch, "switch",
 				BCCX_NewCst1V(&bgbcc_rcst_cond, "cond", n1),
-				BCCX_NewCst1V(&bgbcc_rcst_body, "body", n2));
+				BCCX_NewCst1(&bgbcc_rcst_body, "body", n2));
 
 			*str=s;
 			return(n);
@@ -751,7 +751,7 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 				n1=BGBCP_Expression(ctx, &s);
 				n=BCCX_NewCst1(&bgbcc_rcst_pragma, "pragma", n1);
 
-				if(BCCX_TagIsP(n1, "funcall"))
+				if(BCCX_TagIsCstP(n1, &bgbcc_rcst_funcall, "funcall"))
 				{
 					s0=BCCX_GetCst(n1, &bgbcc_rcst_name, "name");
 					if(!strcmp(s0, "setlocale"))
@@ -817,7 +817,7 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 					{
 						s=BGBCP_Token(s, b, &ty); //'('
 						n1=BGBCP_FunArgs(ctx, &s);
-						n1=BCCX_NewCst1V(&bgbcc_rcst_args, "args", n1);
+						n1=BCCX_NewCst1(&bgbcc_rcst_args, "args", n1);
 					}
 
 					n2=BGBCP_BlockStatement2(ctx, &s);

@@ -548,11 +548,16 @@ typedef union {
 #define BGBCC_U64_LO32(a)	((a)&BGBCC_U64_LO32MASK)
 #define BGBCC_U64_HI32(a)	((((u64)(a))>>32)&BGBCC_U64_LO32MASK)
 
+#define BGBCC_BCCX2
 
 #include <bgbcc_endian.h>
 #include <bgbcc_thread.h>
 
+#ifdef BGBCC_BCCX2
+#include <bgbcc_ast2.h>
+#else
 #include <bgbcc_xml.h>
+#endif
 
 #ifdef BGBCC_BGBMETA
 #include <bgbcc_meta.h>
@@ -617,6 +622,9 @@ BCCX_Node *types;
 BCCX_Node *e_structs;
 BCCX_Node *e_types;
 
+// BCAST_Node *p3_structs;
+// BCAST_Node *p3_types;
+
 // BGBPP_Def *ppdef[256];
 BGBPP_Def *ppdef[BGBCC_PPDEF_SIZE];
 
@@ -629,8 +637,13 @@ BGBPP_PpiFrame *ppi_freeframe;
 byte ppi_break;
 BCCX_Node *ppi_retval;
 
+#ifdef BGBCC_BCCX2
+int struct_hash_ix[256];
+int type_hash_ix[1024];
+#else
 BCCX_Node *struct_hash[256];
 BCCX_Node *type_hash[1024];
+#endif
 
 BCCX_Node *reduce_tmp;
 
@@ -743,10 +756,18 @@ int uregstackpos;
 
 BCCX_Node *types;
 BCCX_Node *structs;
-BCCX_Node *struct_hash[256];
 
-BCCX_Node *dynobj;
-BCCX_Node *dynobj_e;
+#ifdef BGBCC_BCCX2
+int struct_hash_ix[256];
+#else
+BCCX_Node *struct_hash[256];
+#endif
+
+// BCCX_Node *dynobj;
+// BCCX_Node *dynobj_e;
+
+BCCX_Node *dynobj_stk[256];
+int dynobj_stkpos;
 
 
 BCCX_Node *static_init;

@@ -693,14 +693,14 @@ BCCX_Node *BGBCP_ExpressionLit(BGBCP_ParseState *ctx, char **str)
 			{
 				s=BGBCP_Token(s, b, &ty); //'('
 				n1=BGBCP_FunArgs(ctx, &s);
-				BCCX_Add(n, BCCX_NewCst1V(&bgbcc_rcst_args, "args", n1));
+				BCCX_Add(n, BCCX_NewCst1(&bgbcc_rcst_args, "args", n1));
 			}
 
 			if(!bgbcp_strcmp1(b, "["))
 			{
 				s=BGBCP_Token(s, b, &ty); //'['
 				n1=BGBCP_FunArgs(ctx, &s);
-				BCCX_Add(n, BCCX_NewCst1V(&bgbcc_rcst_size, "size", n1));
+				BCCX_Add(n, BCCX_NewCst1(&bgbcc_rcst_size, "size", n1));
 			}
 
 			*str=s;
@@ -842,7 +842,7 @@ BCCX_Node *BGBCP_ExpressionLit(BGBCP_ParseState *ctx, char **str)
 			if(n1)
 			{
 //				BCCX_Add(n, n1);
-				n1=BCCX_NewCst1V(&bgbcc_rcst_args, "args", n1);
+				n1=BCCX_NewCst1(&bgbcc_rcst_args, "args", n1);
 				BCCX_AddV(n, n1);
 
 			}
@@ -859,7 +859,7 @@ BCCX_Node *BGBCP_ExpressionLit(BGBCP_ParseState *ctx, char **str)
 
 			if(n4)
 			{
-				n4=BCCX_NewCst1V(&bgbcc_rcst_list, "list", n4);
+				n4=BCCX_NewCst1(&bgbcc_rcst_list, "list", n4);
 				BCCX_AddV(n, n4);
 			}
 
@@ -984,7 +984,7 @@ BCCX_Node *BGBCP_ExpressionLit(BGBCP_ParseState *ctx, char **str)
 				if(n1)
 				{
 	//				BCCX_Add(n, n1);
-					n1=BCCX_NewCst1V(&bgbcc_rcst_args, "args", n1);
+					n1=BCCX_NewCst1(&bgbcc_rcst_args, "args", n1);
 					BCCX_AddV(n, n1);
 
 				}
@@ -1001,7 +1001,7 @@ BCCX_Node *BGBCP_ExpressionLit(BGBCP_ParseState *ctx, char **str)
 
 				if(n4)
 				{
-					n4=BCCX_NewCst1V(&bgbcc_rcst_list, "list", n4);
+					n4=BCCX_NewCst1(&bgbcc_rcst_list, "list", n4);
 					BCCX_AddV(n, n4);
 				}
 
@@ -1294,13 +1294,13 @@ BCCX_Node *BGBCP_ExpressionPostfix(BGBCP_ParseState *ctx, char **str)
 #if 1
 		if(!bgbcp_strcmp1(b, "(") && (ty==BTK_BRACE))
 		{
-			if(BCCX_TagIsP(n, "objref"))
+			if(BCCX_TagIsCstP(n, &bgbcc_rcst_objref, "objref"))
 			{
 				s=BGBCP_Token(s, b, &ty); //'('
 				n1=BGBCP_FunArgs(ctx, &s);
 
-				BCCX_SetTag(n, "methodcall");
-				BCCX_AddV(n, BCCX_NewCst1V(&bgbcc_rcst_args, "args", n1));
+				BCCX_SetTagCst(n, &bgbcc_rcst_methodcall, "methodcall");
+				BCCX_AddV(n, BCCX_NewCst1(&bgbcc_rcst_args, "args", n1));
 				continue;
 			}
 
@@ -1312,18 +1312,18 @@ BCCX_Node *BGBCP_ExpressionPostfix(BGBCP_ParseState *ctx, char **str)
 				return(n);
 			}
 
-			if(BCCX_TagIsP(n, "ref"))
+			if(BCCX_TagIsCstP(n, &bgbcc_rcst_ref, "ref"))
 			{
 				s0=BCCX_GetCst(n, &bgbcc_rcst_name, "name");
 				if(BGBCP_FunctionNameIsIntrinsicP(ctx, s0))
 				{
 					n=BCCX_NewCst1(
 						&bgbcc_rcst_funcall_intrin, "funcall_intrin",
-						BCCX_NewCst1V(&bgbcc_rcst_args, "args", n1));
+						BCCX_NewCst1(&bgbcc_rcst_args, "args", n1));
 				}else
 				{
 					n=BCCX_NewCst1(&bgbcc_rcst_funcall, "funcall",
-						BCCX_NewCst1V(&bgbcc_rcst_args, "args", n1));
+						BCCX_NewCst1(&bgbcc_rcst_args, "args", n1));
 				}
 				BCCX_SetCst(n, &bgbcc_rcst_name, "name", s0);
 				continue;
@@ -1331,7 +1331,7 @@ BCCX_Node *BGBCP_ExpressionPostfix(BGBCP_ParseState *ctx, char **str)
 
 			n=BCCX_NewCst2(&bgbcc_rcst_funcall, "funcall",
 				BCCX_NewCst1V(&bgbcc_rcst_value, "value", n),
-				BCCX_NewCst1V(&bgbcc_rcst_args, "args", n1));
+				BCCX_NewCst1(&bgbcc_rcst_args, "args", n1));
 			continue;
 		}
 
@@ -1891,7 +1891,7 @@ BCCX_Node *BGBCP_ExpressionLop(BGBCP_ParseState *ctx, char **str)
 //			BCCX_NewCst1V(&bgbcc_rcst_right, "right", n1));
 
 #if 0
-		if(BCCX_TagIsP(n, "and"))
+		if(BCCX_TagIsCstP(n, &bgbcc_rcst_and, "and"))
 		{
 			BCCX_Add(n, BCCX_NewCst1V(&bgbcc_rcst_value, "value", n1));
 			continue;
@@ -1936,7 +1936,7 @@ BCCX_Node *BGBCP_ExpressionLop2(BGBCP_ParseState *ctx, char **str)
 //			BCCX_NewCst1V(&bgbcc_rcst_right, "right", n1));
 
 #if 0
-		if(BCCX_TagIsP(n, "or"))
+		if(BCCX_TagIsCstP(n, &bgbcc_rcst_or, "or"))
 		{
 			BCCX_Add(n, BCCX_NewCst1(&bgbcc_rcst_value, "value", n1));
 			continue;
@@ -2029,7 +2029,7 @@ BCCX_Node *BGBCP_ExpressionEquals(BGBCP_ParseState *ctx, char **str)
 		s=BGBCP_Token(s, b, &ty);
 
 #if 0
-		if(BCCX_TagIsP(n, "ref"))
+		if(BCCX_TagIsCstP(n, &bgbcc_rcst_ref, "ref"))
 		{
 			n1=BGBCP_ExpressionEquals(ctx, &s);
 			n2=n;
@@ -2044,27 +2044,28 @@ BCCX_Node *BGBCP_ExpressionEquals(BGBCP_ParseState *ctx, char **str)
 			continue;
 		}
 
-		if(BCCX_TagIsP(n, "objref") || BCCX_TagIsP(n, "getindex"))
+		if(	BCCX_TagIsCstP(n, &bgbcc_rcst_objref, "objref") ||
+			BCCX_TagIsCstP(n, &bgbcc_rcst_getindex, "getindex"))
 		{
-			if(BCCX_TagIsP(n, "objref"))
+			if(BCCX_TagIsCstP(n, &bgbcc_rcst_objref, "objref"))
 			{
 				n1=BGBCP_ExpressionEquals(ctx, &s);
 				if(t)n1=BGBCP_BinaryExpr(t,
 					BCCX_Clone(n), n1);
 
 				n2=BCCX_Find(n, "value");
-				BCCX_SetTag(n2, "object");
+				BCCX_SetTagCst(n2, &bgbcc_rcst_object, "object");
 
-				BCCX_SetTag(n, "objset");
+				BCCX_SetTagCst(n, &bgbcc_rcst_objset, "objset");
 				BCCX_AddV(n, BCCX_NewCst1V(&bgbcc_rcst_value, "value", n1));
 				continue;
 			}
-			if(BCCX_TagIsP(n, "getindex"))
+			if(BCCX_TagIsCstP(n, &bgbcc_rcst_getindex, "getindex"))
 			{
 				n1=BGBCP_ExpressionEquals(ctx, &s);
 				if(t)n1=BGBCP_BinaryExpr(t,
 					BCCX_Clone(n), n1);
-				BCCX_SetTag(n, "setindex");
+				BCCX_SetTagCst(n, &bgbcc_rcst_setindex, "setindex");
 				BCCX_Add(n, BCCX_NewCst1(&bgbcc_rcst_value, "value", n1));
 				continue;
 			}

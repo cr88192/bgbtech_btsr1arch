@@ -403,9 +403,16 @@ ccxl_type BGBCC_CCXL_GetRegType(
 		}
 	}else if(regty<CCXL_REGTY_THISIDX)
 	{
-
 		if(regty==CCXL_REGTY_IMM_LONG_LVT)
-			{ tty.val=CCXL_TY_L; return(tty); }
+		{
+			if((reg.val&CCXL_REGINT_STMASK)==CCXL_REGINT_ST_UL)
+				{ tty.val=CCXL_TY_UL; return(tty); }
+	
+			if((reg.val&CCXL_REGINT_STMASK)==CCXL_REGINT_ST_OF1)
+				{ tty.val=(reg.val>>32)&0xFFFF; return(tty); }
+
+			tty.val=CCXL_TY_L; return(tty);
+		}
 		if(regty==CCXL_REGTY_IMM_DOUBLE_LVT)
 			{ tty.val=CCXL_TY_D; return(tty); }
 
@@ -875,15 +882,26 @@ bool BGBCC_CCXL_IsRegImmUIntP(
 {
 	s64 li;
 
+#if 0
+	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_INT)
+	{
+		if((reg.val&CCXL_REGINT_STMASK)==CCXL_REGINT_ST_UI)
+			return(true);
+		return(false);
+	}
+#endif
+
+#if 1
 	if(	((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_INT) ||
 		((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_LONG) ||
 		((reg.val&CCXL_REGTY2_TYMASK)==CCXL_REGTY2_IMM_LONG) )
 	{
 		li=BGBCC_CCXL_GetRegImmLongValue(ctx, reg);
 		return(((u32)li)==li);
-
 //		return(true);
 	}
+#endif
+
 	return(false);
 }
 
@@ -913,6 +931,23 @@ bool BGBCC_CCXL_IsRegImmUnsignedP(
 
 		return(false);
 	}
+
+	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_LONG_LVT)
+	{
+		if((reg.val&CCXL_REGINT_STMASK)==CCXL_REGINT_ST_UI)
+		{
+			return(true);
+		}
+
+		if(
+			((reg.val&CCXL_REGINT_STMASK)==CCXL_REGINT_ST_UL) )
+		{
+			return(true);
+		}
+
+		return(false);
+	}
+
 	return(false);
 }
 
@@ -1638,6 +1673,10 @@ s64 BGBCC_CCXL_GetRegImmLongValue(
 			return((s32)(reg.val&CCXL_REGINT_MASK));
 		if((reg.val&CCXL_REGINT_STMASK)==CCXL_REGINT_ST_UI)
 			return((u32)(reg.val&CCXL_REGINT_MASK));
+		if((reg.val&CCXL_REGINT_STMASK)==CCXL_REGINT_ST_L)
+			return((s32)(reg.val&CCXL_REGINT_MASK));
+		if((reg.val&CCXL_REGINT_STMASK)==CCXL_REGINT_ST_UL)
+			return((u32)(reg.val&CCXL_REGINT_MASK));
 		return((int)(reg.val&CCXL_REGINT_MASK));
 	}
 
@@ -1893,7 +1932,8 @@ ccxl_status BGBCC_CCXL_GetRegForSmallIntValue(
 {
 	ccxl_register treg;
 	
-	if((stv>8) && ((stv&0xFFFF)==stv))
+//	if((stv>8) && ((stv&0xFFFF)==stv))
+	if((stv>=16) && ((stv&0xFFFF)==stv))
 	{
 		treg.val=(val&CCXL_REGINT_MASK)|CCXL_REGTY_IMM_INT|
 			CCXL_REGINT_ST_OF1|(((u64)stv)<<32);
@@ -1903,7 +1943,8 @@ ccxl_status BGBCC_CCXL_GetRegForSmallIntValue(
 	
 //	treg.val=(val&CCXL_REGINT_MASK)|CCXL_REGTY_IMM_INT;
 	treg.val=(val&CCXL_REGINT_MASK)|CCXL_REGTY_IMM_INT|
-		(((u64)(stv&15))<<44);
+//		(((u64)(stv&15))<<44);
+		(((u64)(stv&15))<<52);
 	*rreg=treg;
 	return(CCXL_STATUS_YES);
 }
@@ -1951,6 +1992,25 @@ ccxl_status BGBCC_CCXL_GetRegForUIntValue(
 	return(CCXL_STATUS_YES);
 
 //	return(BGBCC_CCXL_GetRegForLongValue(ctx, rreg, val));
+}
+
+ccxl_status BGBCC_CCXL_GetRegForULongValue(
+	BGBCC_TransState *ctx, ccxl_register *rreg, s64 val)
+{
+	ccxl_register treg;
+	int i, j, k;
+
+	if(((u32)val)==val)
+	{
+		treg.val=(val&CCXL_REGINT_MASK)|CCXL_REGTY_IMM_INT|CCXL_REGINT_ST_UL;
+		*rreg=treg;
+		return(CCXL_STATUS_YES);
+	}
+	
+	i=BGBCC_CCXL_IndexLitS64(ctx, val);
+	treg.val=(i&CCXL_REGINT_MASK)|CCXL_REGTY_IMM_LONG_LVT|CCXL_REGINT_ST_UL;
+	*rreg=treg;
+	return(CCXL_STATUS_YES);
 }
 
 ccxl_status BGBCC_CCXL_GetRegForFloatValue(

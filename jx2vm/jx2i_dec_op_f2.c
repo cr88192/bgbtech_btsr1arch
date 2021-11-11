@@ -274,9 +274,11 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 			}else
 				if(jbits)
 			{
-				op->nmid=BJX2_NMID_LDIL;
-				op->Run=BJX2_Op_MOV_ImmMidReg;
-				op->imm=imm10u;
+//				op->nmid=BJX2_NMID_LDIL;
+//				op->Run=BJX2_Op_MOV_ImmMidReg;
+//				op->imm=imm10u;
+
+				op->imm=imm10u<<16;
 			}
 
 			break;

@@ -443,7 +443,7 @@ BCCX_Node *BGBCP_DefName2(BGBCP_ParseState *ctx, char **str)
 		n1=BGBCP_FunVarsList(ctx, &s);
 
 		BCCX_SetTagCst(n, &bgbcc_rcst_iproto, "iproto");
-		BCCX_AddV(n, BCCX_NewCst1V(&bgbcc_rcst_args, "args", n1));
+		BCCX_AddV(n, BCCX_NewCst1(&bgbcc_rcst_args, "args", n1));
 
 		while(1)
 		{
@@ -470,7 +470,7 @@ BCCX_Node *BGBCP_VarDefinition(BGBCP_ParseState *ctx,
 	int ty, ty2, ind, ind1;
 	BCCX_Node *n, *n1, *n2, *n3, *n4;
 	BCCX_Node *nl, *nle;
-	int i, j;
+	int i, j, ci, na;
 
 	s=*str;
 
@@ -556,7 +556,7 @@ BCCX_Node *BGBCP_VarDefinition(BGBCP_ParseState *ctx,
 				ind+BCCX_GetIntCst(n1, &bgbcc_rcst_ind, "ind"));
 
 			BCCX_Add(n, BCCX_Clone(tn));
-			BCCX_AddV(n, BCCX_NewCst1V(&bgbcc_rcst_args, "args", n2));
+			BCCX_AddV(n, BCCX_NewCst1(&bgbcc_rcst_args, "args", n2));
 //			ctx->structs=BCCX_AddEnd(ctx->structs, n);
 			ctx->structs=BCCX_AddEnd2(ctx->structs, &ctx->e_structs, n);
 
@@ -587,7 +587,7 @@ BCCX_Node *BGBCP_VarDefinition(BGBCP_ParseState *ctx,
 
 //		n2=BCCX_Clone(n2);
 
-		BCCX_Add(n, BCCX_NewCst1V(&bgbcc_rcst_args, "args", n2));
+		BCCX_Add(n, BCCX_NewCst1(&bgbcc_rcst_args, "args", n2));
 
 		n2=BCCX_FindTagCst(n, &bgbcc_rcst_type, "type");
 		BCCX_SetCst(n2, &bgbcc_rcst_name, "name",
@@ -605,15 +605,18 @@ BCCX_Node *BGBCP_VarDefinition(BGBCP_ParseState *ctx,
 		}
 
 #if 1
-		n1=BCCX_Child(tn);
-		while(n1)
+		na=BCCX_GetNodeChildCount(tn);
+//		n1=BCCX_Child(tn);
+//		while(n1)
+		for(ci=0; ci<na; ci++)
 		{
+			n1=BCCX_GetNodeIndex(tn, ci);
 			if(BCCX_TagIsCstP(n1, &bgbcc_rcst_declspec, "declspec") ||
 				BCCX_TagIsCstP(n1, &bgbcc_rcst_attribute, "attribute"))
 					BCCX_Add(n2, BCCX_Clone(n1));
 			if(BCCX_TagIsCstP(n1, &bgbcc_rcst_arrayq, "arrayq"))
 					BCCX_Add(n2, BCCX_Clone(n1));
-			n1=BCCX_Next(n1);
+//			n1=BCCX_Next(n1);
 		}
 #endif
 
@@ -644,6 +647,23 @@ BCCX_Node *BGBCP_VarDefinition(BGBCP_ParseState *ctx,
 	{
 		nl=NULL; nle=NULL;
 
+#if 1
+		na=BCCX_GetNodeChildCount(n2);
+		for(ci=0; ci<na; ci++)
+		{
+			n3=BCCX_GetNodeIndex(n2, ci);
+			nl=BCCX_AddEnd2(nl, &nle, BCCX_Clone(n3));
+		}
+
+		na=BCCX_GetNodeChildCount(n1);
+		for(ci=0; ci<na; ci++)
+		{
+			n3=BCCX_GetNodeIndex(n1, ci);
+			nl=BCCX_AddEnd2(nl, &nle, BCCX_Clone(n3));
+		}
+#endif
+
+#if 0
 		n2=BCCX_Child(n2);
 		while(n2)
 		{
@@ -659,24 +679,36 @@ BCCX_Node *BGBCP_VarDefinition(BGBCP_ParseState *ctx,
 			nl=BCCX_AddEnd2(nl, &nle, BCCX_Clone(n2));
 			n2=BCCX_Next(n2);
 		}
+#endif
 
+#ifdef BGBCC_BCCX2
+		BCCX_Unlink2(n4, n1);
+		BCCX_AddV(n4, BCCX_NewCst1(&bgbcc_rcst_size, "size", nl));
+
+//		BCCX_SetNodeCst(n4, &bgbcc_rcst_size, "size", nl);
+#else
 		BCCX_Unlink(n1);
-		BCCX_AddV(n4, BCCX_NewCst1V(&bgbcc_rcst_size, "size", nl));
+		BCCX_AddV(n4, BCCX_NewCst1(&bgbcc_rcst_size, "size", nl));
+#endif
 	}else if(n2)
 	{
 		BCCX_Add(n4, BCCX_Clone(n2));
 	}
 
 #if 1
-	n1=BCCX_Child(tn);
-	while(n1)
+	na=BCCX_GetNodeChildCount(tn);
+	for(ci=0; ci<na; ci++)
 	{
+		n1=BCCX_GetNodeIndex(tn, ci);
+//	n1=BCCX_Child(tn);
+//	while(n1)
+//	{
 		if(BCCX_TagIsCstP(n1, &bgbcc_rcst_declspec, "declspec") ||
 			BCCX_TagIsCstP(n1, &bgbcc_rcst_attribute, "attribute"))
 				BCCX_Add(n4, BCCX_Clone(n1));
 		if(BCCX_TagIsCstP(n1, &bgbcc_rcst_arrayq, "arrayq"))
 				BCCX_Add(n4, BCCX_Clone(n1));
-		n1=BCCX_Next(n1);
+//		n1=BCCX_Next(n1);
 	}
 #endif
 

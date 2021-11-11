@@ -19,6 +19,7 @@
 #define BCCX_NTY_TRANS			4	//transforms into attribute
 
 typedef struct BCCX_Node_s BCCX_Node;
+typedef struct BCCX_NodeList_s		BCCX_NodeList;
 
 typedef union BCCX_AttrVal_u BCCX_AttrVal;
 

@@ -1366,7 +1366,16 @@ int BGBCC_JX2C_EmitOpNmidVRegVReg(
 			BGBCC_DBGBREAK
 		}
 	}
-	
+
+	if(BGBCC_CCXL_RegisterIdentEqualP(ctx, dreg, sreg))
+	{
+		cdreg=BGBCC_JX2C_EmitGetRegisterDirty(ctx, sctx, dreg);
+
+		BGBCC_JX2C_EmitOpRegReg(ctx, sctx, nmid, cdreg, cdreg);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
+		return(1);
+	}
+
 //	cdreg=BGBCC_JX2C_EmitTryGetRegisterWrite(ctx, sctx, dreg);
 //	csreg=BGBCC_JX2C_EmitTryGetRegisterRead(ctx, sctx, sreg);
 

@@ -1113,7 +1113,9 @@ int BGBCC_JX2_TryEmitOpRegStRegDisp(
 	int i, j, k;
 
 //	if(!disp)
-	if(!disp && (nmid!=BGBCC_SH_NMID_MOVX2))
+	if(!disp &&
+		(nmid!=BGBCC_SH_NMID_MOVX2) &&
+		(nmid!=BGBCC_SH_NMID_MOVC))
 	{
 		return(BGBCC_JX2_TryEmitOpRegStReg(ctx, nmid, rm, rn));
 	}

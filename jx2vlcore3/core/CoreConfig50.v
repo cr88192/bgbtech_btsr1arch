@@ -94,7 +94,7 @@
 
 `define jx2_rbi_nobridge			//Ringbus: Bypass Bridge, join rings directly
 
-`define jx2_mem_l1inostall			//L1 I$ does not stall pipeline
+// `define jx2_mem_l1inostall			//L1 I$ does not stall pipeline
 
 
 

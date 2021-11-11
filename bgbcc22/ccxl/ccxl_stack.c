@@ -4364,13 +4364,34 @@ ccxl_status BGBCC_CCXL_StackPushConstSmallInt(
 
 	BGBCC_CCXL_DebugPrintStackLLn(ctx, "PushConstI", __FILE__, __LINE__);
 
-	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_LDCONSTI);
+//	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_LDCONSTI);
+//	BGBCC_CCXLR3_EmitArgInt(ctx, val);
+
+	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_LDCONSTSMI);
 	BGBCC_CCXLR3_EmitArgInt(ctx, val);
+	BGBCC_CCXLR3_EmitArgInt(ctx, st);
 
 	BGBCC_CCXL_GetRegForSmallIntValue(ctx, &sreg, val, st);
 	BGBCC_CCXL_PushRegister(ctx, sreg);
 	return(CCXL_STATUS_YES);
 //	BGBCC_CCXL_StubError(ctx);
+}
+
+ccxl_status BGBCC_CCXL_StackPushConstSmallLong(
+	BGBCC_TransState *ctx, s64 val, int st)
+{
+	if(((st>=4) && (st<=7)) || (st==0) || (st==1))
+	{
+		return(BGBCC_CCXL_StackPushConstSmallInt(ctx, val, st));
+	}
+	
+	if(st==2)
+		{ return(BGBCC_CCXL_StackPushConstLong(ctx, val)); }
+	if(st==3)
+		{ return(BGBCC_CCXL_StackPushConstULong(ctx, val)); }
+
+	BGBCC_CCXL_StubError(ctx);
+	return(CCXL_STATUS_NO);
 }
 
 ccxl_status BGBCC_CCXL_StackPushConstInt(BGBCC_TransState *ctx, s32 val)
@@ -4409,8 +4430,12 @@ ccxl_status BGBCC_CCXL_StackPushConstUInt(BGBCC_TransState *ctx, u32 val)
 
 	BGBCC_CCXL_DebugPrintStackLLn(ctx, "PushConstI", __FILE__, __LINE__);
 
-	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_LDCONSTI);
+//	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_LDCONSTI);
+//	BGBCC_CCXLR3_EmitArgInt(ctx, val);
+
+	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_LDCONSTSMI);
 	BGBCC_CCXLR3_EmitArgInt(ctx, val);
+	BGBCC_CCXLR3_EmitArgInt(ctx, 1);
 
 	BGBCC_CCXL_GetRegForUIntValue(ctx, &sreg, val);
 	BGBCC_CCXL_PushRegister(ctx, sreg);
@@ -4421,6 +4446,8 @@ ccxl_status BGBCC_CCXL_StackPushConstUInt(BGBCC_TransState *ctx, u32 val)
 ccxl_status BGBCC_CCXL_StackPushConstLong(BGBCC_TransState *ctx, s64 val)
 {
 	ccxl_register sreg;
+	ccxl_type bty;
+	s64 li1;
 
 	BGBCC_CCXL_DebugPrintStackLLn(ctx, "PushConstL", __FILE__, __LINE__);
 
@@ -4428,10 +4455,74 @@ ccxl_status BGBCC_CCXL_StackPushConstLong(BGBCC_TransState *ctx, s64 val)
 	BGBCC_CCXLR3_EmitArgInt(ctx, val);
 
 	BGBCC_CCXL_GetRegForLongValue(ctx, &sreg, val);
+
+#if 1
+	li1=BGBCC_CCXL_GetRegImmLongValue(ctx, sreg);
+	if(li1!=val)
+		{ BGBCC_DBGBREAK }
+
+	bty=BGBCC_CCXL_GetRegType(ctx, sreg);
+	if(bty.val!=CCXL_TY_L)
+		{ BGBCC_DBGBREAK }
+#endif
+
 	BGBCC_CCXL_PushRegister(ctx, sreg);
 	return(CCXL_STATUS_YES);
 //	BGBCC_CCXL_StubError(ctx);
 }
+
+#if 1
+ccxl_status BGBCC_CCXL_StackPushConstULong(BGBCC_TransState *ctx, u64 val)
+{
+	ccxl_register sreg;
+	ccxl_type bty;
+	u64 li1;
+
+	BGBCC_CCXL_DebugPrintStackLLn(ctx, "PushConstUL", __FILE__, __LINE__);
+
+//	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_LDCONSTL);
+//	BGBCC_CCXLR3_EmitArgInt(ctx, val);
+
+	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_LDCONSTSMI);
+	BGBCC_CCXLR3_EmitArgInt(ctx, val);
+	BGBCC_CCXLR3_EmitArgInt(ctx, 3);
+	
+//	if(((s32)val)==val)
+	if(((u32)val)==val)
+	{
+		BGBCC_CCXL_GetRegForSmallIntValue(ctx, &sreg, val, 3);
+
+#if 1
+		li1=BGBCC_CCXL_GetRegImmLongValue(ctx, sreg);
+		if(li1!=val)
+			{ BGBCC_DBGBREAK }
+
+		bty=BGBCC_CCXL_GetRegType(ctx, sreg);
+		if(bty.val!=CCXL_TY_UL)
+			{ BGBCC_DBGBREAK }
+#endif
+
+		BGBCC_CCXL_PushRegister(ctx, sreg);
+		return(CCXL_STATUS_YES);
+	}
+
+	BGBCC_CCXL_GetRegForULongValue(ctx, &sreg, val);
+
+#if 1
+	li1=BGBCC_CCXL_GetRegImmLongValue(ctx, sreg);
+	if(li1!=val)
+		{ BGBCC_DBGBREAK }
+
+	bty=BGBCC_CCXL_GetRegType(ctx, sreg);
+	if(bty.val!=CCXL_TY_UL)
+		{ BGBCC_DBGBREAK }
+#endif
+
+	BGBCC_CCXL_PushRegister(ctx, sreg);
+	return(CCXL_STATUS_YES);
+//	BGBCC_CCXL_StubError(ctx);
+}
+#endif
 
 ccxl_status BGBCC_CCXL_StackPushConstInt128(
 	BGBCC_TransState *ctx, s64 val_lo, s64 val_hi)

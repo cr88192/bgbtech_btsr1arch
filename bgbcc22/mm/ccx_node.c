@@ -782,11 +782,12 @@ void BCCX_AddV(BCCX_Node *parent, BCCX_Node *child)
 	BCCX_Add(parent, child);
 }
 
-void BCCX_Add(BCCX_Node *parent, BCCX_Node *child)
+int BCCX_Add(BCCX_Node *parent, BCCX_Node *child)
 {
 	BCCX_Node *cur, *lst;
 
-	if(!child)return;
+	if(!child)
+		return(-1);
 
 	if(parent->magic!=BCCX_NODE_MAGIC)
 		{ BGBCC_DBGBREAK }
@@ -816,6 +817,7 @@ void BCCX_Add(BCCX_Node *parent, BCCX_Node *child)
 		lst=cur; cur=cur->next;
 	}
 	parent->down_end=lst;
+	return(0);
 }
 
 BCCX_Node *BCCX_AddEnd(BCCX_Node *lst, BCCX_Node *n)
@@ -1282,6 +1284,11 @@ BCCX_Node *BCCX_FetchCst(BCCX_Node *parent, bccx_cxstate *rcst, char *tag)
 	return(NULL);
 }
 
+BCCX_Node *BCCX_CloneS(BCCX_Node *n)
+{
+	return(BCCX_Clone(n));
+}
+
 BCCX_Node *BCCX_Clone(BCCX_Node *n)
 {
 	BCCX_Node *t, *t1, *c, *l;
@@ -1469,4 +1476,37 @@ void BCCX_CheckDeleteUnlinked(BCCX_Node *n)
 		BCCX_DeleteTree(n);
 		return;
 	}
+}
+
+int BCCX_GetNodeChildCount(BCCX_Node *node)
+{
+	BCCX_Node *n1;
+	int i;
+	
+	if(!node)
+		return(0);
+	
+	n1=BCCX_Child(node);
+	i=0;
+	while(n1)
+		{ n1=BCCX_Next(n1); i++; }
+	return(i);
+}
+
+BCCX_Node *BCCX_GetNodeIndex(BCCX_Node *n, int idx)
+{
+	BCCX_Node *n1;
+	int i;
+	
+	if(!n)
+		return(NULL);
+	
+	n1=BCCX_Child(n);
+	i=idx;
+	while(n1 && (i>0))
+	{
+		n1=BCCX_Next(n1);
+		i--;
+	}
+	return(n1);
 }

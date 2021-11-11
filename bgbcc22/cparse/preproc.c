@@ -1623,7 +1623,9 @@ void BGBPP_Directive(BGBCP_ParseState *ctx, char *str)
 			if(i<0)
 			{
 				BGBPP_Error(ctx, "#if pp-expr couldn't be evaluated\n");
+#ifndef BGBCC_BCCX2
 				BCCX_Print(exp);
+#endif
 				BGBCC_DBGBREAK
 			}
 

@@ -600,7 +600,7 @@ int BGBCC_CCXL_TryGetSizeofType(BGBCC_TransState *ctx, BCCX_Node *ty)
 	if(!ctx)return(-1);
 	if(!ty)return(-1);
 
-	i=BCCX_GetInt(ty, "ind");
+	i=BCCX_GetIntCst(ty, &bgbcc_rcst_ind, "ind");
 	if(i)
 	{
 //		if(BGBCC_IsEmitRil(ctx))

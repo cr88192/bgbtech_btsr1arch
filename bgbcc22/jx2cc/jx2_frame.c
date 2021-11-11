@@ -5370,6 +5370,9 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 	int epik, epix, epilbl, epij;
 	int i, j, k, fl, fl2;
 
+	ctx->cur_func=obj;
+	ctx->cur_vtr=NULL;
+
 	if(sctx->frm_offs_thisptr)
 	{
 		obj->regflags|=BGBCC_REGFL_NOTLEAFTINY;
@@ -6052,21 +6055,30 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 //			BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_PUSH, BGBCC_SH_REG_GBR);
 			k+=2;
 
-			BGBCC_JX2_EmitOpImmReg(sctx, BGBCC_SH_NMID_ADD,
-				-16, BGBCC_SH_REG_SP);
-			BGBCC_JX2_EmitOpRegStRegDisp(sctx, BGBCC_SH_NMID_MOVQ,
-				BGBCC_SH_REG_R1, BGBCC_SH_REG_SP, 0);
+			if(sctx->has_fmovc)
+			{
+				BGBCC_JX2_EmitOpImmReg(sctx, BGBCC_SH_NMID_ADD,
+					-8, BGBCC_SH_REG_SP);
+				BGBCC_JX2_EmitOpRegStRegDisp(sctx, BGBCC_SH_NMID_MOVC,
+					BGBCC_SH_REG_PR, BGBCC_SH_REG_SP, 0);
+			}else
+			{
+				BGBCC_JX2_EmitOpImmReg(sctx, BGBCC_SH_NMID_ADD,
+					-16, BGBCC_SH_REG_SP);
+				BGBCC_JX2_EmitOpRegStRegDisp(sctx, BGBCC_SH_NMID_MOVQ,
+					BGBCC_SH_REG_R1, BGBCC_SH_REG_SP, 0);
 
-			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_MOV,
-				BGBCC_SH_REG_PR, BGBCC_SH_REG_R1);
-			BGBCC_JX2_EmitOpRegStRegDisp(sctx, BGBCC_SH_NMID_MOVQ,
-				BGBCC_SH_REG_R1, BGBCC_SH_REG_SP, 8);
+				BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_MOV,
+					BGBCC_SH_REG_PR, BGBCC_SH_REG_R1);
+				BGBCC_JX2_EmitOpRegStRegDisp(sctx, BGBCC_SH_NMID_MOVQ,
+					BGBCC_SH_REG_R1, BGBCC_SH_REG_SP, 8);
 
-			BGBCC_JX2_EmitOpLdRegDispReg(sctx, BGBCC_SH_NMID_MOVQ,
-				BGBCC_SH_REG_SP, 0, BGBCC_SH_REG_R1);
+				BGBCC_JX2_EmitOpLdRegDispReg(sctx, BGBCC_SH_NMID_MOVQ,
+					BGBCC_SH_REG_SP, 0, BGBCC_SH_REG_R1);
 
-			BGBCC_JX2_EmitOpImmReg(sctx, BGBCC_SH_NMID_ADD,
-				8, BGBCC_SH_REG_SP);
+				BGBCC_JX2_EmitOpImmReg(sctx, BGBCC_SH_NMID_ADD,
+					8, BGBCC_SH_REG_SP);
+			}
 		}
 #endif
 
@@ -6149,6 +6161,10 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 	
 	sctx->frm_offs_save=sctx->frm_size-(k*4);
 
+	BGBCC_JX2_EmitOpImmReg(sctx, BGBCC_SH_NMID_ADD,
+		-sctx->frm_offs_save, BGBCC_SH_REG_SP);
+
+#if 0
 	p0=BGBCC_JX2_TryEmitOpImmReg(sctx, BGBCC_SH_NMID_ADD,
 		-sctx->frm_offs_save, BGBCC_SH_REG_SP);
 	if(p0<=0)
@@ -6172,6 +6188,7 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 #endif
 
 	}
+#endif
 
 #if 0
 	if(sctx->is_pic)

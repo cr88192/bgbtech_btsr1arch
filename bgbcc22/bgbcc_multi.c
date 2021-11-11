@@ -58,9 +58,19 @@
 
 #include "mm/cc_tokord.c"
 
+#ifdef BGBCC_BCCX2
+
+#include "mm/cca_node.c"
+#include "mm/cca_print.c"
+
+#else
+
 #include "mm/ccx_node.c"
 #include "mm/ccx_print.c"
 #include "mm/ccx_parse.c"
+
+#endif
+
 #include "mm/cc_float16.c"
 #include "mm/cc_malloc.c"
 // #include "mm/dytf_base.c"

@@ -822,6 +822,10 @@ bccx_cxstate bgbcc_rcst_switch;
 bccx_cxstate bgbcc_rcst_symbol;
 bccx_cxstate bgbcc_rcst_s_proto;
 
+bccx_cxstate bgbcc_rcst_Shnext;
+bccx_cxstate bgbcc_rcst_Slist;
+bccx_cxstate bgbcc_rcst_Stext;
+
 bccx_cxstate bgbcc_rcst_then;
 bccx_cxstate bgbcc_rcst_throw;
 bccx_cxstate bgbcc_rcst_tokens;

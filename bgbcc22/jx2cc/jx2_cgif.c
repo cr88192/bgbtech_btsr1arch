@@ -1471,6 +1471,11 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 		{
 			BGBCC_DBGBREAK
 		}
+
+		if(sctx->regalc_noval)
+		{
+			BGBCC_DBGBREAK
+		}
 	}
 
 #if 1

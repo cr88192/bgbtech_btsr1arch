@@ -1,7 +1,5 @@
 #include <bgbccc.h>
 
-// #include <bgbdy.h>
-
 char *BCCX_PrintText(char *s, char *t, int flag)
 {
 	int is;
@@ -40,57 +38,57 @@ char *BCCX_PrintText(char *s, char *t, int flag)
 
 int BCCX_SizeNodeAttr(BCCX_Node *node, int flag)
 {
-#if 0
-	cur=node->attr;
-	while(cur)
-	{
-//		if(!cur->var || !cur->val)
-		if(!cur->ivar || !cur->val)
-			{ cur=cur->next; continue; }
-//		if(cur->ns) i+=strlen(cur->ns)+1;
-//		i+=strlen(cur->var)+2;
-		i+=strlen(BCCX_StridxToString(cur->ivar))+2;
-		i+=strlen(cur->val)+2;
-		cur=cur->next;
-	}
-#endif
-
-	u16 *attr_n;
-	BCCX_AttrVal *attr_v;
+	u16 *attr_n, *an;
+	BCCX_AttrVal *attr_v, *av;
+	char *s0;
 	int sz;
 	int i, j, k;
 	
-	if(!node->mattr)
+//	if(!node->mattr)
+	if(!node->malvl)
 	{
 		attr_n=node->attr_n;
-		attr_v=node->attr_v;
+		attr_v=(BCCX_AttrVal *)(node->attr_v);
 	}else
 	{
-		attr_n=(u16 *)(node->attr_v[0].s);
-		attr_v=(BCCX_AttrVal *)(node->attr_v[1].s);
+		attr_n=NULL;
+		attr_v=NULL;
+//		attr_n=(u16 *)(node->attr_v[0].s);
+//		attr_v=(BCCX_AttrVal *)(node->attr_v[1].s);
 	}
 	
 	sz=0;
 	for(i=0; i<node->nattr; i++)
 	{
-		j=node->attr_n[i];
+		if(attr_n)
+		{
+			an=attr_n+i;
+			av=attr_v+i;
+		}else
+		{
+			BCCX_FetchAttrArrIx(node, i, &an, &av);
+		}
+	
+//		j=node->attr_n[i];
+		j=*an;
+
+		s0=BCCX_StridxToString(j);
+		if(*s0=='$')
+			continue;
+
 		if((j>>12)==BCCX_IVTY_STRING)
 		{
-//			sprintf(t, "%s=\"", BCCX_StridxToString(j));
-//			t+=strlen(t);
-//			t=BCCX_PrintText(t, node->attr_v[i].s);
-//			*t++='\"'; *t=0;
-			sz+=strlen(BCCX_StridxToString(j))+2;
-			sz+=strlen(attr_v[i].s)+2;
+			sz+=strlen(s0)+2;
+			sz+=strlen(av->s)+2;
 		}
 		if((j>>12)==BCCX_IVTY_INT)
 		{
-			sz+=strlen(BCCX_StridxToString(j))+2;
+			sz+=strlen(s0)+2;
 			sz+=16;
 		}
 		if((j>>12)==BCCX_IVTY_REAL)
 		{
-			sz+=strlen(BCCX_StridxToString(j))+2;
+			sz+=strlen(s0)+2;
 			sz+=16;
 		}
 	}
@@ -99,66 +97,58 @@ int BCCX_SizeNodeAttr(BCCX_Node *node, int flag)
 
 char *BCCX_PrintBufNodeAttr(BCCX_Node *node, char *buf, int flag)
 {
-#if 0
-	cur=node->attr;
-	while(cur)
-	{
-//		if(!cur->var || !cur->val)
-		if(!cur->ivar || !cur->val)
-			{ cur=cur->next; continue; }
-
-		*t++=' ';
-//		if(cur->ns) { sprintf(t, "%s:", node->ns); t+=strlen(t); }
-//		sprintf(t, "%s=\"", cur->var); t+=strlen(t);
-		sprintf(t, "%s=\"", BCCX_StridxToString(cur->ivar));
-		t+=strlen(t);
-		t=BCCX_PrintText(t, cur->val);
-		*t++='\"'; *t=0;
-		cur=cur->next;
-	}
-#endif
-
-	u16 *attr_n;
-	BCCX_AttrVal *attr_v;
-	char *t;
+	u16 *attr_n, *an;
+	BCCX_AttrVal *attr_v, *av;
+	char *t, *s0;
 	int i, j, k;
 	
-	if(!node->mattr)
+//	if(!node->mattr)
+	if(!node->malvl)
 	{
 		attr_n=node->attr_n;
-		attr_v=node->attr_v;
+		attr_v=(BCCX_AttrVal *)(node->attr_v);
 	}else
 	{
-		attr_n=(u16 *)(node->attr_v[0].s);
-		attr_v=(BCCX_AttrVal *)(node->attr_v[1].s);
+		attr_n=NULL;
+		attr_v=NULL;
 	}
 	
 	t=buf;
 	for(i=0; i<node->nattr; i++)
 	{
-		j=node->attr_n[i];
+		if(attr_n)
+		{
+			an=attr_n+i;
+			av=attr_v+i;
+		}else
+		{
+			BCCX_FetchAttrArrIx(node, i, &an, &av);
+		}
+
+		j=*an;
+
+		s0=BCCX_StridxToString(j);
+		if(*s0=='$')
+			continue;
+
 		if((j>>12)==BCCX_IVTY_STRING)
 		{
 			*t++=' ';
-			sprintf(t, "%s=\"", BCCX_StridxToString(j));
+			sprintf(t, "%s=\"", s0);
 			t+=strlen(t);
-			t=BCCX_PrintText(t, node->attr_v[i].s, flag);
+			t=BCCX_PrintText(t, av->s, flag);
 			*t++='\"'; *t=0;
 		}
 		if((j>>12)==BCCX_IVTY_INT)
 		{
 			*t++=' ';
-			sprintf(t, "%s=%lld",
-				BCCX_StridxToString(j),
-				node->attr_v[i].i);
+			sprintf(t, "%s=%lld", s0, av->i);
 			t+=strlen(t);
 		}
 		if((j>>12)==BCCX_IVTY_REAL)
 		{
 			*t++=' ';
-			sprintf(t, "%s=%f",
-				BCCX_StridxToString(j),
-				node->attr_v[i].f);
+			sprintf(t, "%s=%f", s0, av->f);
 			t+=strlen(t);
 		}
 	}
@@ -176,7 +166,8 @@ void BCCX_PrintBufSpecial(BCCX_Node *node, int ind,
 
 	tb=buf;
 
-	if(!strcmp(BCCX_Tag(node), "!CDATA"))
+//	if(!strcmp(BCCX_Tag(node), "!CDATA"))
+	if(!strcmp(BCCX_Tag(node), "$cdata"))
 	{
 		pb(ob, "<![CDATA[");
 //		pb(ob, node->text);
@@ -185,12 +176,13 @@ void BCCX_PrintBufSpecial(BCCX_Node *node, int ind,
 		return;
 	}
 
-	if(!strcmp(BCCX_Tag(node), "!BDATA"))
+//	if(!strcmp(BCCX_Tag(node), "!BDATA"))
+	if(!strcmp(BCCX_Tag(node), "$bdata"))
 	{
-		sz=BCCX_GetInt(node, "size");
+		sz=BCCX_GetIntCst(node, &bgbcc_rcst_size, "size");
 		
 //		s=node->text;
-		s=BCCX_Get(node, "$text");
+		s=BCCX_GetCst(node, &bgbcc_rcst_Stext, "$text");
 		t=tb;
 		if((ind<0) || ((ind+16+(sz*3))<76))
 		{
@@ -264,22 +256,6 @@ void BCCX_PrintBufSpecial(BCCX_Node *node, int ind,
 //	i+=strlen(node->text);
 	i+=strlen(BCCX_Get(node, "$text"));
 
-#if 0
-	cur=node->attr;
-	while(cur)
-	{
-//		if(!cur->var || !cur->val)
-		if(!cur->ivar || !cur->val)
-			{ cur=cur->next; continue; }
-//		if(cur->ns) i+=strlen(cur->ns)+1;
-//		i+=strlen(cur->var)+2;
-		i+=strlen(BCCX_StridxToString(cur->ivar))+2;
-		i+=strlen(cur->val)+2;
-		cur=cur->next;
-	}
-#endif
-//	BCCX_PrintNodeAttr(node, ind, pb);
-
 	if(i>=256)tb=malloc(8*i);
 
 
@@ -288,21 +264,14 @@ void BCCX_PrintBufSpecial(BCCX_Node *node, int ind,
 	for(i=0; i<ind; i++)*t++=' ';
 
 	*t++='<';
-//	if(node->ns) { sprintf(t, "%s:", node->ns); t+=strlen(t); }
-//	sprintf(t, "%s", node->tag); t+=strlen(t);
 	sprintf(t, "%s", BCCX_Tag(node)); t+=strlen(t);
 
 	*t++=' ';
-//	t=BCCX_PrintText(t, node->text);
 	t=BCCX_PrintText(t, BCCX_Get(node, "$text"), flag);
 
-	if(!node->down)
+//	if(!node->down)
+	if(1)
 	{
-//		*t++='/';
-
-//		if((*(node->tag))=='?')
-//			*t++='?';
-
 		*t++='>';
 		if(ind>=0)*t++='\n';
 		*t=0;
@@ -312,6 +281,7 @@ void BCCX_PrintBufSpecial(BCCX_Node *node, int ind,
 		return;
 	}
 
+#if 0
 	*t++='[';
 	if(ind>=0)*t++='\n';
 	*t=0;
@@ -322,7 +292,7 @@ void BCCX_PrintBufSpecial(BCCX_Node *node, int ind,
 	ncur=node->down;
 	while(ncur)
 	{
-		BCCX_PrintBuf(ncur, i, pb, ob, flag);
+		BCCX_PrintBuf(ncur, i, pb, ob);
 		ncur=ncur->next;
 	}
 
@@ -337,42 +307,57 @@ void BCCX_PrintBufSpecial(BCCX_Node *node, int ind,
 
 	if(tb!=buf)free(tb);
 	return;
+#endif
 }
 
 void BCCX_PrintBufNodeAttrNode(BCCX_Node *node, int ind,
 	void (*pb)(void *p, char *b), void *ob, int flag)
 {
 	char tb[256];
-	u16 *attr_n;
+	u16 *attr_n, *an;
 	BCCX_Node *ncur;
-	BCCX_AttrVal *attr_v;
-	char *t, *s0;
-	int i, j, k;
+	BCCX_AttrVal *attr_v, *av;
+	char *t, *s0, *s1;
+	int i, j, k, do_full;
 	
-	if(!node->mattr)
+//	if(!node->mattr)
+	if(!node->malvl)
 	{
 		attr_n=node->attr_n;
-		attr_v=node->attr_v;
+		attr_v=(BCCX_AttrVal *)(node->attr_v);
 	}else
 	{
-		attr_n=(u16 *)(node->attr_v[0].s);
-		attr_v=(BCCX_AttrVal *)(node->attr_v[1].s);
+		attr_n=NULL;
+		attr_v=NULL;
 	}
 	
 //	t=buf;
 	for(i=0; i<node->nattr; i++)
 	{
-		j=node->attr_n[i];
+		if(attr_n)
+		{
+			an=attr_n+i;
+			av=attr_v+i;
+		}else
+		{
+			BCCX_FetchAttrArrIx(node, i, &an, &av);
+		}
+	
+		j=*an;
 		if((j>>12)!=BCCX_IVTY_NODE)
+			continue;
+
+		if((j&4095)>=4088)
 			continue;
 
 		s0=BCCX_StridxToString(j);
 
-		if(!attr_v[i].p)
+		if(!av->p)
 		{
 			t=tb;
 			for(k=0; k<ind; k++)*t++=' ';
 			sprintf(t, "<%s/>", s0);
+//			sprintf(t, "%s={}", s0);
 			t+=strlen(t);
 			if(ind)*t++='\n';
 			*t=0;
@@ -380,61 +365,94 @@ void BCCX_PrintBufNodeAttrNode(BCCX_Node *node, int ind,
 			continue;
 		}
 
+		do_full=(flag&1);
+
+		ncur=av->p;
+
+		s1=BCCX_Tag(ncur);
+		if(*s1=='$')
+			do_full=1;
+
 		t=tb;
 		for(k=0; k<ind; k++)*t++=' ';
-		sprintf(t, "<%s>", s0);
+		if(do_full)
+		{
+			sprintf(t, "<%s>", s0);
+		}else
+		{
+			sprintf(t, "<%s", s0);
+	//		sprintf(t, "%s={", s0);
+		}
 		t+=strlen(t);
 		if(ind)*t++='\n';
 		*t=0;
 		pb(ob, tb);
 
 		k=(ind>0)?(ind+2):0;
-//		BCCX_PrintBuf(attr_v[i].p, k, pb, ob);
 
-		ncur=attr_v[i].p;
-		while(ncur)
-		{
-			BCCX_PrintBuf(ncur, k, pb, ob, flag);
-			ncur=ncur->next;
-		}
+//		ncur=attr_v[i].p;
+
+		BCCX_PrintBuf(ncur, k, pb, ob, flag);
+
+//		while(ncur)
+//		{
+//			BCCX_PrintBuf(ncur, k, pb, ob);
+//			ncur=ncur->next;
+//		}
 
 		t=tb;
 		for(k=0; k<ind; k++)*t++=' ';
-		sprintf(t, "</%s>", s0);
+		if(do_full)
+		{
+			sprintf(t, "</%s>", s0);
+		}else
+		{
+			*t++='/';
+			*t++='>';
+	//		*t++='}';
+			*t=0;
+		}
+
 		t+=strlen(t);
 		if(ind)*t++='\n';
 		*t=0;
 		pb(ob, tb);
-		
-//		if((j>>12)==BCCX_IVTY_REAL)
-//		{
-//			sprintf(t, "%s=%f",
-//				BCCX_StridxToString(j),
-//				node->attr_v[i].f);
-//			t+=strlen(t);
-//		}
 	}
 }
 
 int BCCX_CheckNodeAttrNode(BCCX_Node *node)
 {
-	u16 *attr_n;
-	BCCX_AttrVal *attr_v;
+	u16 *attr_n, *an;
+	BCCX_AttrVal *attr_v, *av;
 	int i, j, k;
 	
-	if(!node->mattr)
+//	if(!node->mattr)
+	if(!node->malvl)
 	{
 		attr_n=node->attr_n;
-		attr_v=node->attr_v;
+		attr_v=(BCCX_AttrVal *)(node->attr_v);
 	}else
 	{
-		attr_n=(u16 *)(node->attr_v[0].s);
-		attr_v=(BCCX_AttrVal *)(node->attr_v[1].s);
+		attr_n=NULL;
+		attr_v=NULL;
 	}
 	
 	for(i=0; i<node->nattr; i++)
 	{
-		j=node->attr_n[i];
+		if(attr_n)
+		{
+			an=attr_n+i;
+			av=attr_v+i;
+		}else
+		{
+			BCCX_FetchAttrArrIx(node, i, &an, &av);
+		}
+	
+		j=*an;
+
+		if((j&4095)>=4088)
+			continue;
+
 		if((j>>12)==BCCX_IVTY_NODE)
 			return(1);
 	}
@@ -446,29 +464,23 @@ void BCCX_PrintBuf(BCCX_Node *node, int ind,
 {
 	char buf[4096];
 	BCCX_Node *ncur;
-//	BCCX_Attr *cur;
-	char *tb, *t;
-	int i;
+	char *tb, *t, *s0;
+	int i, na, ci, do_full;
 
 	if(!node)
 	{
 		pb(ob, "<!--NULL-NODE-->");
-//		*(int *)-1=-1;
 		return;
 	}
 
-//	if(node->tag && node->text)
-//	if(node->itag && node->text)
 	if(node->itag && BCCX_Get(node, "$text"))
 	{
 		BCCX_PrintBufSpecial(node, ind, pb, ob, flag);
 		return;
 	}
 
-//	if(node->text)
 	if(BCCX_Get(node, "$text"))
 	{
-//		i=strlen(node->text);
 		i=strlen(BCCX_Get(node, "$text"));
 		if(ind>=0)i+=ind+8;
 
@@ -477,7 +489,9 @@ void BCCX_PrintBuf(BCCX_Node *node, int ind,
 
 		t=tb;
 		for(i=0; i<ind; i++)*t++=' ';
+//		*t++='\"';	*t++='\"';	*t++='\"';
 		t=BCCX_PrintText(t, BCCX_Get(node, "$text"), flag);
+//		*t++='\"';	*t++='\"';	*t++='\"';
 		if(ind>=0)*t++='\n';
 		*t=0;
 
@@ -487,7 +501,6 @@ void BCCX_PrintBuf(BCCX_Node *node, int ind,
 		return;
 	}
 
-//	if(!node->tag)
 	if(!node->itag)
 	{
 		pb(ob, "<!--BAD-NODE-->");
@@ -498,24 +511,7 @@ void BCCX_PrintBuf(BCCX_Node *node, int ind,
 
 	i=4;
 	if(ind>=0)i+=ind+8;
-//	if(node->ns)i+=strlen(node->ns)+1;
-//	i+=strlen(node->tag);
 	i+=strlen(BCCX_Tag(node));
-
-#if 0
-	cur=node->attr;
-	while(cur)
-	{
-//		if(!cur->var || !cur->val)
-		if(!cur->ivar || !cur->val)
-			{ cur=cur->next; continue; }
-//		if(cur->ns) i+=strlen(cur->ns)+1;
-//		i+=strlen(cur->var)+2;
-		i+=strlen(BCCX_StridxToString(cur->ivar))+2;
-		i+=strlen(cur->val)+2;
-		cur=cur->next;
-	}
-#endif
 
 	i+=BCCX_SizeNodeAttr(node, flag);
 
@@ -527,34 +523,19 @@ void BCCX_PrintBuf(BCCX_Node *node, int ind,
 	for(i=0; i<ind; i++)*t++=' ';
 
 	*t++='<';
-//	if(node->ns) { sprintf(t, "%s:", node->ns); t+=strlen(t); }
-//	sprintf(t, "%s", node->tag); t+=strlen(t);
 	sprintf(t, "%s", BCCX_Tag(node)); t+=strlen(t);
-
-#if 0
-	cur=node->attr;
-	while(cur)
-	{
-//		if(!cur->var || !cur->val)
-		if(!cur->ivar || !cur->val)
-			{ cur=cur->next; continue; }
-
-		*t++=' ';
-//		if(cur->ns) { sprintf(t, "%s:", node->ns); t+=strlen(t); }
-//		sprintf(t, "%s=\"", cur->var); t+=strlen(t);
-		sprintf(t, "%s=\"", BCCX_StridxToString(cur->ivar));
-		t+=strlen(t);
-		t=BCCX_PrintText(t, cur->val);
-		*t++='\"'; *t=0;
-		cur=cur->next;
-	}
-#endif
+//	*t++='{';
 
 	t=BCCX_PrintBufNodeAttr(node, t, flag);
 
-	if(!node->down && !BCCX_CheckNodeAttrNode(node))
+	na=BCCX_GetNodeChildCount(node);
+
+//	if(!node->down && !BCCX_CheckNodeAttrNode(node))
+	if((na<=0) && !BCCX_CheckNodeAttrNode(node))
+//	if(na<=0)
 	{
 		*t++='/'; *t++='>';
+//		*t++='}';
 		if(ind>=0)*t++='\n';
 		*t=0;
 
@@ -563,30 +544,53 @@ void BCCX_PrintBuf(BCCX_Node *node, int ind,
 		return;
 	}
 
-	*t++='>';
+	do_full=(flag&1);
+	for(ci=0; ci<na; ci++)
+	{
+		ncur=BCCX_GetNodeIndex(node, ci);
+		s0=BCCX_Tag(ncur);
+		if(*s0=='$')
+		{
+			do_full=1;
+			break;
+		}
+	}
+
+	if(do_full)
+	{
+		*t++='>';
+//		*t++=' ';
+	}
 	if(ind>=0)*t++='\n';
 	*t=0;
 
 	pb(ob, tb);
 
-	i=ind; if(i>=0)i+=2;
+	i=ind;
+	if(i>=0)i+=2;
 
 	BCCX_PrintBufNodeAttrNode(node, i, pb, ob, flag);
 
-	ncur=node->down;
-	while(ncur)
+	for(ci=0; ci<na; ci++)
 	{
+		ncur=BCCX_GetNodeIndex(node, ci);
 		BCCX_PrintBuf(ncur, i, pb, ob, flag);
-		ncur=ncur->next;
 	}
 
 	t=tb;
 	for(i=0; i<ind; i++)*t++=' ';
-	*t++='<'; *t++='/';
-//	if(node->ns) { sprintf(t, "%s:", node->ns); t+=strlen(t); }
-//	sprintf(t, "%s", node->tag); t+=strlen(t);
-	sprintf(t, "%s", BCCX_Tag(node)); t+=strlen(t);
-	*t++='>';
+	if(do_full)
+	{
+		*t++='<'; *t++='/';
+		sprintf(t, "%s", BCCX_Tag(node)); t+=strlen(t);
+		*t++='>';
+	}else
+	{
+		*t++='/';
+		*t++='>';
+	//	*t++='}';
+	}
+
 	if(ind>=0)*t++='\n';
 	*t=0;
 
@@ -596,16 +600,10 @@ void BCCX_PrintBuf(BCCX_Node *node, int ind,
 	return;
 }
 
-// void BCCX_PrintStrm(dysPrintStream strm, BCCX_Node *node)
-// {
-// 	BCCX_PrintBuf(node, strm->ind, strm->prints_f, strm->buf);
-// }
-
 static void bccx_print_fd(void *p, char *b)
 {
 	fputs(b, (FILE *)p);
 }
-
 
 static void bccx_print_str(void *p, char *b)
 {
@@ -622,14 +620,6 @@ void BCCX_DumpFD(FILE *fd, BCCX_Node *node)
 	{ BCCX_PrintBuf(node, -1, bccx_print_fd, fd, 1); }
 void BCCX_PrintFD(FILE *fd, BCCX_Node *node)
 	{ BCCX_PrintBuf(node, 0, bccx_print_fd, fd, 1); }
-
-// static void bccx_print_vf(void *p, char *b)
-//	{ vfwrite(b, 1, strlen(b), (VFILE *)p); }
-
-//void BCCX_DumpVF(void *fd, BCCX_Node *node)
-//	{ BCCX_PrintBuf(node, -1, bccx_print_vf, fd); }
-//void BCCX_PrintVF(void *fd, BCCX_Node *node)
-//	{ BCCX_PrintBuf(node, 0, bccx_print_vf, fd); }
 
 char *BCCX_DumpStr(char *buf, BCCX_Node *node)
 {

@@ -909,6 +909,8 @@ int BGBCC_LoadCMeta(char *name)
 #if 1
 	if(mod && bgbcc_dumpast)
 	{
+//#ifndef BGBCC_BCCX2
+#if 1
 		sprintf(tb1, "dump/%s_ast.txt", mod);
 		fd=fopen(tb1, "wt");
 		if(fd)
@@ -916,6 +918,7 @@ int BGBCC_LoadCMeta(char *name)
 			BCCX_PrintFD(fd, t);
 			fclose(fd);
 		}
+#endif
 
 #if 0
 		buf1=malloc(1<<24);
@@ -1050,6 +1053,7 @@ BCCX_Node *BGBCC_LoadCSourceAST(char *name)
 	if(!t)return(NULL);
 
 #if 1
+// #ifndef BGBCC_BCCX2
 	if(mod && bgbcc_dumpast)
 	{
 		sprintf(tb1, "dump/%s_ast.txt", mod);
@@ -1248,7 +1252,12 @@ int BGBCC_LoadCSourcesCCXL(
 		{
 			t0=clock();
 			BGBCC_CCXL_CompileModuleCTX(ctx, names[i], t);
+
+#ifdef BGBCC_BCCX2
+			BCCX_ClearZoneLevel(BCCX_ZTY_GLOBAL);
+#else
 			BCCX_DeleteTree(t);
+#endif
 
 			BGBCC_CCXL_CheckSanityGlobals(ctx);
 			BGBCC_CCXL_PrintTagWarn(ctx);
@@ -1263,6 +1272,7 @@ int BGBCC_LoadCSourcesCCXL(
 			if(ctx->n_error)
 				break;
 			
+#ifndef BGBCC_BCCX2
 			c=ctx->reduce_tmp;
 			ctx->reduce_tmp=NULL;
 			while(c)
@@ -1271,6 +1281,7 @@ int BGBCC_LoadCSourcesCCXL(
 				BCCX_DeleteTree(c);
 				c=n;
 			}
+#endif
 		}
 	}
 	
@@ -1293,7 +1304,9 @@ int BGBCC_LoadCSourcesCCXL(
 		t=asts_bsa[i];
 		t0=clock();
 		BGBCC_CCXL_CompileModuleCTX(ctx, asts_bsn[i], t);
+#ifndef BGBCC_BCCX2
 		BCCX_DeleteTree(t);
+#endif
 
 		BGBCC_CCXL_CheckSanityGlobals(ctx);
 
@@ -1306,6 +1319,7 @@ int BGBCC_LoadCSourcesCCXL(
 		bgbcc_msec_cc+=t2;
 		bgbcc_msec_tot++;
 		
+#ifndef BGBCC_BCCX2
 		c=ctx->reduce_tmp;
 		ctx->reduce_tmp=NULL;
 		while(c)
@@ -1314,7 +1328,12 @@ int BGBCC_LoadCSourcesCCXL(
 			BCCX_DeleteTree(c);
 			c=n;
 		}
+#endif
 	}
+
+#ifdef BGBCC_BCCX2
+	BCCX_ClearZoneLevel(BCCX_ZTY_GLOBAL);
+#endif
 
 	BGBCC_CCXL_PrintTagWarn(ctx);
 

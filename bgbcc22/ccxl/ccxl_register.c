@@ -446,8 +446,12 @@ ccxl_status BGBCC_CCXL_LoadslotCacheFlushStorePtr(
 	ccxl_type dty, bty, ssty;
 	int sr, er;
 	int i;
+
+	dty=BGBCC_CCXL_GetRegType(ctx, dreg);
 	
-	if(ctx->opt_ptrcache<2)
+//	if(ctx->opt_ptrcache<2)
+	if((ctx->opt_ptrcache<2) &&
+		!BGBCC_CCXL_TypeRestrictPointerP(ctx, dty))
 	{
 		BGBCC_CCXL_LoadslotCacheFlush(ctx);
 		return(CCXL_STATUS_YES);
@@ -461,6 +465,9 @@ ccxl_status BGBCC_CCXL_LoadslotCacheFlushStorePtr(
 		return(CCXL_STATUS_NO);
 
 	dty=BGBCC_CCXL_GetRegType(ctx, dreg);
+	if(BGBCC_CCXL_TypeRestrictPointerP(ctx, dty))
+		return(CCXL_STATUS_NO);
+
 //	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, dty))
 		BGBCC_CCXL_TypeDerefType(ctx, dty, &dty);
 
@@ -506,7 +513,11 @@ ccxl_status BGBCC_CCXL_LoadslotCacheFlushStoreSlot(
 	if(sr==er)
 		return(CCXL_STATUS_NO);
 
-	if(ctx->opt_ptrcache<2)
+	dty=BGBCC_CCXL_GetRegType(ctx, dreg);
+
+//	if(ctx->opt_ptrcache<2)
+	if((ctx->opt_ptrcache<2) &&
+		!BGBCC_CCXL_TypeRestrictPointerP(ctx, dty))
 	{
 		BGBCC_CCXL_LoadslotCacheFlush(ctx);
 		return(CCXL_STATUS_YES);

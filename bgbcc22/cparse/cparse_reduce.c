@@ -112,27 +112,27 @@ BCCX_Node *BGBCP_WrapRef(char *str)
 
 int BGBCP_IsIntP(BGBCP_ParseState *ctx, BCCX_Node *l)
 {
-	if(BCCX_TagIsP(l, "int"))return(1);
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_int, "int"))return(1);
 	return(0);
 }
 
 int BGBCP_IsRealP(BGBCP_ParseState *ctx, BCCX_Node *l)
 {
-	if(BCCX_TagIsP(l, "int"))return(1);
-	if(BCCX_TagIsP(l, "real"))return(1);
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_int, "int"))return(1);
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_real, "real"))return(1);
 	return(0);
 }
 
 int BGBCP_IsReal2P(BGBCP_ParseState *ctx, BCCX_Node *l)
 {
-//	if(BCCX_TagIsP(l, "int"))return(1);
-	if(BCCX_TagIsP(l, "real"))return(1);
+//	if(BCCX_TagIsCstP(l, &bgbcc_rcst_int, "int"))return(1);
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_real, "real"))return(1);
 	return(0);
 }
 
 int BGBCP_IsCharP(BGBCP_ParseState *ctx, BCCX_Node *l)
 {
-	if(BCCX_TagIsP(l, "charstring"))
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_charstring, "charstring"))
 		return(1);
 	return(0);
 }
@@ -140,7 +140,7 @@ int BGBCP_IsCharP(BGBCP_ParseState *ctx, BCCX_Node *l)
 BCCX_Node *BGBCP_Boolify(BGBCP_ParseState *ctx, BCCX_Node *l)
 {
 	BCCX_Node *t;
-	if(BCCX_TagIsP(l, "boolify"))
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_boolify, "boolify"))
 		return(l);
 	t=BCCX_NewCst1(&bgbcc_rcst_boolify, "boolify",
 		BCCX_NewCst1(&bgbcc_rcst_value, "value", l));
@@ -280,19 +280,19 @@ BCCX_Node *BGBCP_ReduceForm(BGBCP_ParseState *ctx,
 	BCCX_Node *c, *t, *v, *x, *ln, *rn;
 	char *s, *suf;
 	double f, g;
-	int i0, i1;
+	int i0, i1, na, ci;
 	s64 i, j;
 //	int i, j;
 
 	if(!l)return(l);
 
-	if(	(BCCX_TagIsP(l, "value")) ||
-		(BCCX_TagIsP(l, "left")) ||
-		(BCCX_TagIsP(l, "right")) ||
-		(BCCX_TagIsP(l, "cond")) ||
-		(BCCX_TagIsP(l, "then")) ||
-		(BCCX_TagIsP(l, "else")) ||
-		(BCCX_TagIsP(l, "body")))
+	if(	(BCCX_TagIsCstP(l, &bgbcc_rcst_value, "value")) ||
+		(BCCX_TagIsCstP(l, &bgbcc_rcst_left, "left")) ||
+		(BCCX_TagIsCstP(l, &bgbcc_rcst_right, "right")) ||
+		(BCCX_TagIsCstP(l, &bgbcc_rcst_cond, "cond")) ||
+		(BCCX_TagIsCstP(l, &bgbcc_rcst_then, "then")) ||
+		(BCCX_TagIsCstP(l, &bgbcc_rcst_else, "else")) ||
+		(BCCX_TagIsCstP(l, &bgbcc_rcst_body, "body")))
 	{
 		return(BGBCP_ReduceForm(ctx,
 			BCCX_Child(l), flag));
@@ -507,7 +507,7 @@ BCCX_Node *BGBCP_ReduceForm(BGBCP_ParseState *ctx,
 		return(x);
 	}
 
-	if(BCCX_TagIsP(l, "unary"))
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_unary, "unary"))
 	{
 		t=BGBCP_ReduceForm(ctx, BCCX_FetchCst(l, &bgbcc_rcst_value, "value"), flag);
 
@@ -574,7 +574,7 @@ BCCX_Node *BGBCP_ReduceForm(BGBCP_ParseState *ctx,
 		return(x);
 	}
 
-	if(BCCX_TagIsP(l, "binary"))
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_binary, "binary"))
 	{
 		ln=BCCX_FetchCst(l, &bgbcc_rcst_left, "left");
 		rn=BCCX_FetchCst(l, &bgbcc_rcst_right, "right");
@@ -769,8 +769,8 @@ BCCX_Node *BGBCP_ReduceForm(BGBCP_ParseState *ctx,
 
 		if(BGBCP_IsRealP(ctx, ln) && BGBCP_IsRealP(ctx, rn))
 		{
-			f=BCCX_GetFloat(ln, "value");
-			g=BCCX_GetFloat(rn, "value");
+			f=BCCX_GetFloatCst(ln, &bgbcc_rcst_value, "value");
+			g=BCCX_GetFloatCst(rn, &bgbcc_rcst_value, "value");
 
 			if(!bgbcp_strcmp2(s, "=="))
 			{
@@ -859,7 +859,7 @@ BCCX_Node *BGBCP_ReduceForm(BGBCP_ParseState *ctx,
 		return(x);
 	}
 
-	if(BCCX_TagIsP(l, "if"))
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_if, "if"))
 	{
 		t=BGBCP_ReduceForm(ctx,
 			BCCX_FetchCst(l, &bgbcc_rcst_cond, "cond"), flag);
@@ -890,8 +890,32 @@ BCCX_Node *BGBCP_ReduceForm(BGBCP_ParseState *ctx,
 		return(x);
 	}
 
-	if(BCCX_TagIsP(l, "begin"))
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_begin, "begin"))
 	{
+#if 1
+//		ln=BCCX_Child(l);
+
+		na=BCCX_GetNodeChildCount(l);
+		if(na<=0)
+			return(NULL);
+		
+		if(na==1)
+		{
+			t=BGBCP_ReduceForm(ctx, BCCX_Child(l), flag);
+			return(t);
+		}
+		
+		x=BCCX_NewCst(&bgbcc_rcst_begin, "begin");
+		for(ci=0; ci<na; ci++)
+		{
+			c=BCCX_GetNodeIndex(l, ci);
+			t=BGBCP_ReduceForm(ctx, c, flag);
+			BCCX_Add(x, t);
+		}
+		return(x);
+#endif
+
+#if 0
 		if(!BCCX_Child(l))
 		{
 			return(NULL);
@@ -912,9 +936,10 @@ BCCX_Node *BGBCP_ReduceForm(BGBCP_ParseState *ctx,
 			c=BCCX_Next(c);
 		}
 		return(x);
+#endif
 	}
 
-	if(BCCX_TagIsP(l, "ref"))
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_ref, "ref"))
 	{
 		if(!ctx)	//preprocessor
 		{
@@ -927,10 +952,10 @@ BCCX_Node *BGBCP_ReduceForm(BGBCP_ParseState *ctx,
 		if(t)
 			return(t);
 
-		return(BCCX_Clone(l));
+		return(BCCX_CloneS(l));
 	}
 
-	if(BCCX_TagIsP(l, "sizeof"))
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_sizeof, "sizeof"))
 	{
 		t=BCCX_FindTag(l, "type");
 		if(!t)
@@ -956,7 +981,7 @@ BCCX_Node *BGBCP_ReduceForm(BGBCP_ParseState *ctx,
 #endif
 	}
 
-	if(BCCX_TagIsP(l, "sizeof_expr"))
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_sizeof_expr, "sizeof_expr"))
 	{
 		t=BCCX_FetchCst(l, &bgbcc_rcst_value, "value");
 
@@ -966,7 +991,7 @@ BCCX_Node *BGBCP_ReduceForm(BGBCP_ParseState *ctx,
 				return(BGBCP_WrapInt(8));
 		}
 
-		if(BCCX_TagIsP(t, "ref"))
+		if(BCCX_TagIsCstP(t, &bgbcc_rcst_ref, "ref"))
 		{
 			s=BCCX_GetCst(t, &bgbcc_rcst_name, "name");
 
@@ -984,10 +1009,10 @@ BCCX_Node *BGBCP_ReduceForm(BGBCP_ParseState *ctx,
 #endif
 		}
 
-		if(BCCX_TagIsP(t, "loadindex"))
+		if(BCCX_TagIsCstP(t, &bgbcc_rcst_loadindex, "loadindex"))
 		{
 			t=BCCX_FetchCst(t, &bgbcc_rcst_array, "array");
-			if(BCCX_TagIsP(t, "ref"))
+			if(BCCX_TagIsCstP(t, &bgbcc_rcst_ref, "ref"))
 			{
 				s=BCCX_GetCst(t, &bgbcc_rcst_name, "name");
 
@@ -1003,7 +1028,7 @@ BCCX_Node *BGBCP_ReduceForm(BGBCP_ParseState *ctx,
 			}
 		}
 
-		if(BCCX_TagIsP(t, "string"))
+		if(BCCX_TagIsCstP(t, &bgbcc_rcst_string, "string"))
 		{
 			s=BCCX_GetCst(t, &bgbcc_rcst_value, "value");
 			if(s)
@@ -1035,7 +1060,7 @@ BCCX_Node *BGBCP_ReduceForm(BGBCP_ParseState *ctx,
 			return(t);
 	}
 
-	return(BCCX_Clone(l));
+	return(BCCX_CloneS(l));
 }
 
 int BGBCP_SetLine(BGBCP_ParseState *ctx, BCCX_Node *l,
@@ -1052,14 +1077,14 @@ BCCX_Node *BGBCP_ReduceStatementForm(BGBCP_ParseState *ctx,
 	BCCX_Node *c, *t, *v, *x, *ln, *rn;
 	char *s, *fnam;
 	double f, g;
-	int i, j, lnum;
+	int i, j, lnum, na, ci;
 
 	if(!l)return(l);
 
 	fnam=BCCX_GetCst(l, &bgbcc_rcst_fn, "fn");
 	lnum=BCCX_GetIntCst(l, &bgbcc_rcst_ln, "ln");
 
-	if(BCCX_TagIsP(l, "if"))
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_if, "if"))
 	{
 		t=BGBCP_ReduceForm(ctx,
 			BCCX_FetchCst(l, &bgbcc_rcst_cond, "cond"), flag);
@@ -1087,8 +1112,31 @@ BCCX_Node *BGBCP_ReduceStatementForm(BGBCP_ParseState *ctx,
 		return(x);
 	}
 
-	if(BCCX_TagIsP(l, "begin"))
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_begin, "begin"))
 	{
+#if 1
+//		ln=BCCX_Child(l);
+
+		na=BCCX_GetNodeChildCount(l);
+		if(na<=0)
+			return(NULL);
+		
+		if(na==1)
+		{
+			t=BGBCP_ReduceStatementForm(ctx, BCCX_Child(l), flag);
+			return(t);
+		}
+		
+		x=BCCX_NewCst(&bgbcc_rcst_begin, "begin");
+		for(ci=0; ci<na; ci++)
+		{
+			c=BCCX_GetNodeIndex(l, ci);
+			t=BGBCP_ReduceStatementForm(ctx, c, flag);
+			BCCX_Add(x, t);
+		}
+#endif
+
+#if 0
 		if(!BCCX_Child(l))
 		{
 			return(NULL);
@@ -1108,12 +1156,13 @@ BCCX_Node *BGBCP_ReduceStatementForm(BGBCP_ParseState *ctx,
 			BCCX_Add(x, t);
 			c=BCCX_Next(c);
 		}
+#endif
 
 		BGBCP_SetLine(ctx, x, fnam, lnum);
 		return(x);
 	}
 
-	if(BCCX_TagIsP(l, "while"))
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_while, "while"))
 	{
 		t=BGBCP_ReduceForm(ctx,
 			BCCX_FetchCst(l, &bgbcc_rcst_cond, "cond"), flag);
@@ -1135,7 +1184,7 @@ BCCX_Node *BGBCP_ReduceStatementForm(BGBCP_ParseState *ctx,
 		return(x);
 	}
 
-	if(BCCX_TagIsP(l, "do_while"))
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_do_while, "do_while"))
 	{
 		t=BGBCP_ReduceForm(ctx,
 			BCCX_FetchCst(l, &bgbcc_rcst_cond, "cond"), flag);
@@ -1159,7 +1208,7 @@ BCCX_Node *BGBCP_ReduceStatementForm(BGBCP_ParseState *ctx,
 		return(x);
 	}
 
-	if(BCCX_TagIsP(l, "for"))
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_for, "for"))
 	{
 		t=BGBCP_ReduceForm(ctx,
 			BCCX_FetchCst(l, &bgbcc_rcst_cond, "cond"), flag);
@@ -1199,11 +1248,13 @@ BCCX_Node *BGBCP_ReduceExpr(BGBCP_ParseState *ctx, BCCX_Node *l)
 	if(!l)return(NULL);
 	t=BGBCP_ReduceForm(ctx, l, 0);
 
+#ifndef BGBCC_BCCX2
 	if(t)
 	{
 		t->hnext=ctx->reduce_tmp;
 		ctx->reduce_tmp=t;
 	}
+#endif
 
 	return(t);
 }
@@ -1214,11 +1265,13 @@ BCCX_Node *BGBCP_ReduceStatement(BGBCP_ParseState *ctx, BCCX_Node *l)
 	if(!l)return(NULL);
 	t=BGBCP_ReduceStatementForm(ctx, l, 0);
 
+#ifndef BGBCC_BCCX2
 	if(t)
 	{
 		t->hnext=ctx->reduce_tmp;
 		ctx->reduce_tmp=t;
 	}
+#endif
 
 	return(t);
 }
@@ -1230,11 +1283,13 @@ BCCX_Node *BGBCP_ReduceExprConst(BGBCP_ParseState *ctx, BCCX_Node *l)
 	if(!l)return(NULL);
 	t=BGBCP_ReduceForm(ctx, l, 1);
 	
+#ifndef BGBCC_BCCX2
 	if(t)
 	{
 		t->hnext=ctx->reduce_tmp;
 		ctx->reduce_tmp=t;
 	}
+#endif
 
 	return(t);
 }

@@ -347,6 +347,10 @@
 
 /* Compiler and system dependent definitions: */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #ifndef TIME
 #define TIMES
 #endif

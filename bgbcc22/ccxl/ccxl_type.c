@@ -4193,6 +4193,7 @@ char *BGBCC_CCXL_TypeGetSig(
 			break;
 
 		default:
+			BGBCC_DBGBREAK
 			break;
 		}
 		*t++=0;

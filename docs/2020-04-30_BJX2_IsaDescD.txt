@@ -910,10 +910,10 @@ This operation may be limited to Lane 1.
 * FFw0_0Vpp-F0nm_6go2  DMACS.L	Rm, Ro, Rp, Rn		//(DMAC) Rn=Rp+(Rm*Ro)
 * FFw0_0Vpp-F0nm_6go3  DMACU.L	Rm, Ro, Rp, Rn		//(DMAC) Rn=Rp+(Rm*Ro)
 
-* FFw0_0vii-F0nm_6Go0  MACS.L	Rm, Imm17s, Rn		//(DMAC) Rn=Sx(Ro+(Rm*Imm))
-* FFw0_0vii-F0nm_6Go1  MACU.L	Rm, Imm17s, Rn		//(DMAC) Rn=Zx(Ro+(Rm*Imm))
-* FFw0_0vii-F0nm_6Go2  DMACS.L	Rm, Imm17s, Rn		//(DMAC) Rn=Ro+(Rm*Imm)
-* FFw0_0vii-F0nm_6Go3  DMACU.L	Rm, Imm17s, Rn		//(DMAC) Rn=Ro+(Rm*Imm)
+* FFw0_0vii-F0nm_6Go0  MACS.L	Rm, Imm17s, Rn		//(DMAC) Rn=Sx(Rn+(Rm*Imm))
+* FFw0_0vii-F0nm_6Go1  MACU.L	Rm, Imm17s, Rn		//(DMAC) Rn=Zx(Rn+(Rm*Imm))
+* FFw0_0vii-F0nm_6Go2  DMACS.L	Rm, Imm17s, Rn		//(DMAC) Rn=Rn+(Rm*Imm)
+* FFw0_0vii-F0nm_6Go3  DMACU.L	Rm, Imm17s, Rn		//(DMAC) Rn=Rn+(Rm*Imm)
 
 * FFw0_0Vii-F0nm_6Go0  MACS.L	Rm, Imm11s, Ro, Rn	//(DMAC) Rn=Sx(Ro+(Rm*Imm))
 * FFw0_0Vii-F0nm_6Go1  MACU.L	Rm, Imm11s, Ro, Rn	//(DMAC) Rn=Zx(Ro+(Rm*Imm))
@@ -923,7 +923,7 @@ This operation may be limited to Lane 1.
 
 Multiply Accumulate.
 
-The MACS and MACU instructions will do a multiply-accumulate with a 32-bit result being size or zero extended to 64 bits.
+The MACS and MACU instructions will do a multiply-accumulate with a 32-bit result being sign or zero extended to 64 bits.
 
 The DMACS and DMACU instructions will multiply two 32-bit quantities and accumulate using a 64-bit result.
 

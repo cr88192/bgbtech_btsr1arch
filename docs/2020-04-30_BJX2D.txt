@@ -1425,7 +1425,7 @@ Major Ranges
 * F6zz_zzzz (Repeat F2zz, WEX2 Hint)
 * F7zz_zzzz (Repeat F3zz, WEX2 Hint)
 * F8Xn_jjjj (Imm16 Instructions)
-* F9Xn_jjjj (Reserved)
+* F9nm_XeoX (Reserved, More 3R Space)
 * FAjj_jjjj (LDIZ Imm24, DLR)
 * FBjj_jjjj (LDIN Imm24, DLR)
 * FCzz_zzzz (Repeat F8zz, WEX2 Hint)
@@ -1948,10 +1948,10 @@ F0zz Instruction Block:
 ** F0nm_8GoF  XMOV.X	(Xm, Ro), Xn		//
 
 
-* F0ez_9zzz
+* F0nm_9eoZ  (3R Space)
 
-* F0dd_Addd
-* F0dd_Bddd
+* F0nm_AeoZ  (3R Space)
+* F0nm_BeoZ  (3R Space)
 
 * F0dd_Cddd  BRA	(PC, disp20s)		//Branch, +/- 1MB
 * F0dd_Dddd  BSR	(PC, disp20s)		//Call, +/- 1MB
@@ -2026,7 +2026,9 @@ F2zz Instruction Block  (Imm9 Block):
 * F2nm_4Gjj  ADDU.L		Rm, Imm9n, Rn		//ADD 32 ZX, One-Ext Imm
 * F2nm_5gjj  AND		Rm, Imm9u, Rn		//
 * F2nm_6gjj  OR			Rm, Imm9u, Rn		//
+* F2nm_6Gjj  SHADX		Xm, Imm8, Xn		//(ALUX)
 * F2nm_7gjj  XOR		Rm, Imm9u, Rn		//
+* F2nm_7Gjj  SHLDX		Xm, Imm8, Xn		//(ALUX)
 
 * F2nm_8pjj  SHAD		Rm, Imm8, Rn		//E.i=0
 * F2nm_8Pjj  SHAD.Q		Rm, Imm8, Rn		//E.i=0

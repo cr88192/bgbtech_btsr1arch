@@ -743,10 +743,10 @@ Return value is a cost heuristic.
  */
 int BGBCC_CCXL_InferBlockPredSafeP(BGBCC_TransState *ctx, BCCX_Node *l)
 {
-	BCCX_Node *c, *t, *ln, *rn;
+	BCCX_Node *c, *t, *n, *ln, *rn;
 	ccxl_type bty, dty, lty, rty;
 	char *s0;
-	int i0, i1, i2, i3;
+	int i0, i1, i2, i3, na, ci;
 	int i, j, k;
 
 	if(!ctx->arch_has_predops)
@@ -755,16 +755,21 @@ int BGBCC_CCXL_InferBlockPredSafeP(BGBCC_TransState *ctx, BCCX_Node *l)
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_begin, "begin"))
 	{
 		i=1; k=0;
-		c=BCCX_Child(l);
-		while(c)
+//		c=BCCX_Child(l);
+//		while(c)
+//		{
+		na=BCCX_GetNodeChildCount(l);
+		for(ci=0; ci<na; ci++)
 		{
+			c=BCCX_GetNodeIndex(l, ci);
+
 			if(k>3)
 				break;
 //			BGBCC_CCXL_CompileStatement(ctx, c);
 			j=BGBCC_CCXL_InferBlockPredSafeP(ctx, c);
 //			if(!j) { i=0; break; }
 			if(j<=0) { i=0; break; }
-			c=BCCX_Next(c);
+//			c=BCCX_Next(c);
 			i+=j;
 			k++;
 		}
@@ -868,16 +873,23 @@ int BGBCC_CCXL_InferBlockPredSafeP(BGBCC_TransState *ctx, BCCX_Node *l)
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_funcall_intrin, "funcall_intrin"))
 	{
 		i=2; k=0;
-		c=BCCX_FetchCst(l, &bgbcc_rcst_args, "args");
-		while(c)
+//		c=BCCX_FetchCst(l, &bgbcc_rcst_args, "args");
+		n=BCCX_FindTagCst(l, &bgbcc_rcst_args, "args");
+//		while(c)
+//		{
+
+		na=BCCX_GetNodeChildCount(n);
+		for(ci=0; ci<na; ci++)
 		{
+			c=BCCX_GetNodeIndex(n, ci);
+
 			if(k>3)
 				break;
 //			BGBCC_CCXL_CompileStatement(ctx, c);
 			j=BGBCC_CCXL_InferBlockPredSafeP(ctx, c);
 //			if(!j) { i=0; break; }
 			if(j<=0) { i=0; break; }
-			c=BCCX_Next(c);
+//			c=BCCX_Next(c);
 			i+=j;
 			k++;
 		}
@@ -992,20 +1004,25 @@ int BGBCC_CCXL_InferExprSimpleCmpP(BGBCC_TransState *ctx, BCCX_Node *l)
 
 int BGBCC_CCXL_InferBlockCapRef(BGBCC_TransState *ctx, BCCX_Node *l)
 {
-	BCCX_Node *c, *t, *ln, *rn;
+	BCCX_Node *c, *t, *n, *ln, *rn;
 	ccxl_type bty, dty, lty, rty;
 	char *s0;
-	int i0, i1, i2, i3;
+	int i0, i1, i2, i3, na, ci;
 	int i, j, k;
 
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_begin, "begin"))
 	{
 		i=1; k=0;
-		c=BCCX_Child(l);
-		while(c)
+//		c=BCCX_Child(l);
+//		while(c)
+//		{
+		na=BCCX_GetNodeChildCount(l);
+		for(ci=0; ci<na; ci++)
 		{
+			c=BCCX_GetNodeIndex(l, ci);
+
 			BGBCC_CCXL_InferBlockCapRef(ctx, c);
-			c=BCCX_Next(c);
+//			c=BCCX_Next(c);
 		}
 		return(i);
 	}
@@ -1054,12 +1071,18 @@ int BGBCC_CCXL_InferBlockCapRef(BGBCC_TransState *ctx, BCCX_Node *l)
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_funcall_intrin, "funcall_intrin"))
 	{
 		i=2; k=0;
-		c=BCCX_FetchCst(l, &bgbcc_rcst_args, "args");
-		while(c)
+//		c=BCCX_FetchCst(l, &bgbcc_rcst_args, "args");
+		n=BCCX_FindTagCst(l, &bgbcc_rcst_args, "args");
+//		while(c)
+//		{
+		na=BCCX_GetNodeChildCount(n);
+		for(ci=0; ci<na; ci++)
 		{
+			c=BCCX_GetNodeIndex(n, ci);
+
 //			j=BGBCC_CCXL_InferBlockPredSafeP(ctx, c);
 			BGBCC_CCXL_InferExpr(ctx, c, &lty);
-			c=BCCX_Next(c);
+//			c=BCCX_Next(c);
 		}
 		
 		return(i);
