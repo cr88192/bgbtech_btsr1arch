@@ -383,6 +383,7 @@ MemL1A		memL1(
 /* ID1 */
 
 wire[47:0]		gprValGbr;
+wire[47:0]		gprValTbr;
 wire[63:0]		gprValLr;
 wire[63:0]		gprValCm;
 
@@ -608,6 +609,7 @@ reg [32:0]		gprValImmB;
 reg [32:0]		gprValImmC;
 
 assign		gprValGbr = crOutGbr;
+assign		gprValTbr = crOutTbr;
 assign		gprValLr = crOutLr;
 assign		gprValCm = crValCm;
 
@@ -676,6 +678,7 @@ RegGPR_6R3W regGpr(
 
 	gprValPc,		//PC Value (Synthesized)
 	gprValGbr,		//GBR Value (CR)
+	gprValTbr,		//GBR Value (CR)
 	gprValImm,		//Immediate (Decode, A)
 	gprValImmB,		//Immediate (Decode, B)
 	gprValImmC,		//Immediate (Decode, C)
@@ -3950,7 +3953,15 @@ begin
 `endif
 
 //		crIdCm			<= idA1IdRegM[4:0];
+//		crIdCm			<= idA1IdRegM;
+
+`ifdef jx2_enable_movc
+		crIdCm			<=
+			(idA1IdUCmd[5:0] == JX2_UCMD_MOV_RM) ? 
+				idC1IdRegO : idA1IdRegM;
+`else
 		crIdCm			<= idA1IdRegM;
+`endif
 
 		gprValPc		<= id1ValPc;
 		id2PreBraPc		<= id1PreBraPc;

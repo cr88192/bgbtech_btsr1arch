@@ -28,7 +28,8 @@
 
 `define	jx2_fpu_lane2			//Allow FPU from Lane 2
 
-`define jx2_enable_fmov
+`define jx2_enable_fmov			//FPU Load/Store
+`define jx2_enable_movc			//MOV.C
 
 // `define jx2_alu_dmac			//ALU Multiply-Accumulate
 

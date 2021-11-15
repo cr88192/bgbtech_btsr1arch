@@ -774,6 +774,7 @@ begin
 	
 		JX2_UCMD_BRA: begin
 //			tDoMemOpm	= 5'b01011;		//Hack, Dummy Load (TLB)
+//			tDoMemOpm	= UMEM_OPM_RD_UW;	//Hack, Dummy Load (TLB)
 //			tDoMemOp	= 1;
 
 //			if(!opPreBra)
@@ -787,6 +788,7 @@ begin
 
 		JX2_UCMD_BSR: begin
 //			tDoMemOpm	= 5'b01011;		//Hack, Dummy Load (TLB)
+//			tDoMemOpm	= UMEM_OPM_RD_UW;	//Hack, Dummy Load (TLB)
 //			tDoMemOp	= 1;
 
 `ifndef jx2_enable_riscv
@@ -833,6 +835,7 @@ begin
 
 		JX2_UCMD_JMP: begin
 //			tDoMemOpm	= 5'b01011;		//Hack, Dummy Load (TLB)
+//			tDoMemOpm	= UMEM_OPM_RD_UW;	//Hack, Dummy Load (TLB)
 //			tDoMemOp	= 1;
 
 //			tValBra		= regValRs[47:0];
@@ -891,6 +894,7 @@ begin
 		end
 		JX2_UCMD_JSR: begin
 //			tDoMemOpm	= 5'b01011;		//Hack, Dummy Load (TLB)
+//			tDoMemOpm	= UMEM_OPM_RD_UW;	//Hack, Dummy Load (TLB)
 //			tDoMemOp	= 1;
 
 //			$display("EX: JSR: LR=%X PC2=%X", regValRs, regValPc);

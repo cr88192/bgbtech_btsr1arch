@@ -2509,6 +2509,11 @@ begin
 				opFmid	= JX2_FMID_REGSTREGDISP;
 				opBty	= JX2_BTY_UQ;
 				opIty	= JX2_ITY_UB;
+				if(opExQ)
+				begin
+					opBty	= JX2_BTY_SQ;
+					opIty	= JX2_ITY_UL;
+				end
 			end
 
 `ifndef def_true
@@ -2551,6 +2556,11 @@ begin
 				opFmid	= JX2_FMID_LDREGDISPREG;
 				opBty	= JX2_BTY_UQ;
 				opIty	= JX2_ITY_UB;
+				if(opExQ)
+				begin
+					opBty	= JX2_BTY_SQ;
+					opIty	= JX2_ITY_UL;
+				end
 			end
 
 `ifndef def_true
@@ -3164,29 +3174,10 @@ begin
 				opBty	= opExQ ? JX2_BTY_UB : JX2_BTY_SB;
 			end
 			4'h9: begin		/* F1nm_9edd */
-// `ifdef def_true
-`ifndef def_true
-//				if(opRegN_Dfl==JX2_GR_SP)
-				if((istrWord[7:0]==8'hF0) && !opExN)
-				begin
-					opNmid	= opExQ ? JX2_UCMD_BSR : JX2_UCMD_BRA;
-					opFmid	= JX2_FMID_PCDISP8;
-					opBty	= JX2_BTY_SW;
-					opIty	= JX2_ITY_UW;
-				end
-				else
-				begin
-					opNmid	= JX2_UCMD_MOV_MR;
-					opFmid	= JX2_FMID_LDREGDISPREG;
-					opIty	= JX2_ITY_SW;
-					opBty	= opExQ ? JX2_BTY_UW : JX2_BTY_SW;
-				end
-`else
 				opNmid	= JX2_UCMD_MOV_MR;
 				opFmid	= JX2_FMID_LDREGDISPREG;
 				opIty	= JX2_ITY_SW;
 				opBty	= opExQ ? JX2_BTY_UW : JX2_BTY_SW;
-`endif
 			end
 			4'hA: begin		/* F1nm_Aedd */
 				opNmid	= JX2_UCMD_MOV_MR;
@@ -4123,10 +4114,13 @@ begin
 			opRegP	= opRegN_Dfl;
 			opRegM	= opRegM_Dfl;
 
+`ifdef jx2_enable_movc
 			if(opIty==JX2_ITY_UL)
 			begin
 				opRegN	= opRegN_Cr;
+				opRegP	= opRegN_Cr;
 			end
+`endif
 
 			if(tRegRmIsRz)
 			begin
@@ -4151,11 +4145,13 @@ begin
 				opRegP	= opRegN_Dfl;
 				opImm	= opImm_disp11as;
 
+`ifdef jx2_enable_movc
 				if(opIty==JX2_ITY_UL)
 				begin
 					opRegN	= opRegN_Cr;
 					opRegP	= opRegN_Cr;
 				end
+`endif
 
 				if(tRegRmIsRz)
 				begin
