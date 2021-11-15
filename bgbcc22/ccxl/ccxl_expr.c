@@ -2233,12 +2233,13 @@ void BGBCC_CCXL_CompileForm(BGBCC_TransState *ctx, BCCX_Node *l)
 
 #if 0
 		if(
+			(opr>=0) &&
+			s1 &&
 			BGBCC_CCXL_TypeSgLongP(ctx, dty) &&
 //			BGBCC_CCXL_TypeSmallLongP(ctx, dty) &&
 			BGBCC_CCXL_TypeSmallLongP(ctx, lty) &&
 			BGBCC_CCXL_TypeSmallLongP(ctx, rty) &&
 			((lty.val!=dty.val) || (rty.val!=dty.val)) &&
-			(opr>=0) &&
 			(opr==CCXL_BINOP_ADD) &&
 			(opr!=CCXL_BINOP_SHL) &&
 			(opr!=CCXL_BINOP_SHR) &&

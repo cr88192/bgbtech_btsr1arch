@@ -365,7 +365,12 @@ begin
 
 	if(opIsJumboAu)
 	begin
-		opRegO_Df2[5]	= opExWN;
+//		opRegO_Df2[5]	= opExWN;
+
+		if(opExWN)
+		begin
+			opRegO_Df2[6:5]	= 2'b01;
+		end
 
 		opRegImm16 = JX2_GR_IMM;
 		opRegImm10 = opIsJumbo96 ? JX2_GR_JIMM : JX2_GR_IMM;
@@ -2354,6 +2359,19 @@ begin
 						opIty		= JX2_ITY_SB;
 					end
 
+					8'h3E: begin
+						opNmid		= JX2_UCMD_OP_IXS;
+						opUCmdIx	= JX2_UCIX_IXS_MOVST;
+						opFmid		= JX2_FMID_REG;
+						opIty		= JX2_ITY_SB;
+					end
+					8'h3F: begin
+						opNmid		= JX2_UCMD_OP_IXS;
+						opUCmdIx	= JX2_UCIX_IXS_MOVPQ;
+						opFmid		= JX2_FMID_REG;
+						opIty		= JX2_ITY_SB;
+					end
+
 					8'h68: begin
 						opNmid		= JX2_UCMD_OP_IXS;
 						opUCmdIx	= JX2_UCIX_IXS_TRAPB;
@@ -3635,6 +3653,21 @@ begin
 					opFmid		= JX2_FMID_IMM8REG;
 					opIty		= JX2_ITY_UW;
 					opUCmdIx	= JX2_UCIX_FPCX_SG;
+
+`ifdef jx2_enable_convfp16
+					if(opExWM || opExWI)
+					begin
+						opNmid		= JX2_UCMD_CONV2_RR;
+						opUCmdIx	= JX2_UCIX_CONV_FP16UPCK32L;
+					end
+					
+					if(opExWM)
+					begin
+						opUCmdIx	= opExWI ?
+							JX2_UCIX_CONV_RGB32UPCK64FU :
+							JX2_UCIX_CONV_RGB32UPCK64FS;
+					end
+`endif
 				end
 				else
 				begin

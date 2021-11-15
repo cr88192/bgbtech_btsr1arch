@@ -1781,6 +1781,9 @@ F0zz Instruction Block:
 *** F039_3en0  SHLR		Rn
 *** F03A_3en0  SHAR		Rn
 
+*** F03E_3en0  MOVST	Rn
+*** F03F_3en0  MOVPQ	Rn
+
 *** F068_3en0  TRAP		Rn
 *** F069_3en0  WEXMD	Imm5u
 *** F06A_3en0  CPUID	Imm5u
@@ -2228,6 +2231,10 @@ Alternative 2 (Hx, W0):
 
 * FFw0_iiii_F88n_iiii  FLDCF	Imm32u, Rn		//(Op64)
 * FFw0_iiii_F89n_iiii  FLDCF	Imm32u, Rk		//(Op64)
+** Wnmi=zz00: FLDCF
+** Wnmi=zz01: ? PLDCH (2x Binary16 to 2x Single)
+** Wnmi=zz10: ? PLDCM8SH (4x FP8S to 4x Binary16)
+** Wnmi=zz11: ? PLDCM8UH (4x FP8U to 4x Binary16)
 
 ** These extend the existing encoding space
 ** Relying on the base-op for predication and/or WEX.

@@ -517,7 +517,8 @@ begin
 		tNxtReqAddrHi[15: 0] ^
 		{	tNxtReqAddrHi[23:16], tNxtReqAddrHi[31:24] } ^
 		{	tNxtReqAddrHi[35:32], tNxtReqAddrHi[39:36],
-			tNxtReqAddrHi[43:40], tNxtReqAddrHi[47:44] } ;
+			tNxtReqAddrHi[43:40], tNxtReqAddrHi[47:44] } ^
+		{	4'h0, regInSr[31:28], regKrrHash[7:0] } ;
 
 
 `ifdef def_true
@@ -972,9 +973,11 @@ begin
 	tReqFlushAddrA	= (tBlkMemAddr2A[71:68] != tFlushRov);
 	tReqFlushAddrB	= (tBlkMemAddr2B[71:68] != tFlushRov);
 
-	if(tBlkMemDext2A != tReqAxH)
+//	if(tBlkMemDext2A != tReqAxH)
+	if((tBlkMemDext2A != tReqAxH) && !tTlbMissInh)
 		tReqMissAddrA	= 1;
-	if(tBlkMemDext2B != tReqAxH)
+//	if(tBlkMemDext2B != tReqAxH)
+	if((tBlkMemDext2B != tReqAxH) && !tTlbMissInh)
 		tReqMissAddrB	= 1;
 
 `ifdef jx2_mem_l1d_utlb

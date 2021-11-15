@@ -961,7 +961,7 @@ BCCX_Node *BGBCP_Definition(BGBCP_ParseState *ctx, char **str)
 
 				if(ntci)
 				{
-					n2=BCCX_NewCst1V(&bgbcc_rcst_super, "super", ntci);
+					n2=BCCX_NewCst1(&bgbcc_rcst_super, "super", ntci);
 					BCCX_AddV(n, n2);
 				}
 
@@ -989,7 +989,7 @@ BCCX_Node *BGBCP_Definition(BGBCP_ParseState *ctx, char **str)
 
 				if(ntci)
 				{
-					n2=BCCX_NewCst1V(&bgbcc_rcst_super, "super", ntci);
+					n2=BCCX_NewCst1(&bgbcc_rcst_super, "super", ntci);
 					BCCX_AddV(n, n2);
 				}
 

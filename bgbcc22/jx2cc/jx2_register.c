@@ -2658,6 +2658,7 @@ int BGBCC_JX2C_EmitSyncRegisterIndex2(
 //			BGBCC_CCXL_IsRegLocalP(ctx, reg)) &&
 //			!(regfl&BGBCC_REGFL_ALIASPTR))
 		{
+#if 1
 			if(!(regfl&BGBCC_REGFL_TEMPLOAD))
 				sctx->regalc_dirty&=~(1<<i);
 
@@ -2668,6 +2669,7 @@ int BGBCC_JX2C_EmitSyncRegisterIndex2(
 				sctx->regalc_dirty&=~(1<<i);
 //				return(0);
 			}
+#endif
 
 #if 0
 			j=reg.val&CCXL_REGID_BASEMASK;

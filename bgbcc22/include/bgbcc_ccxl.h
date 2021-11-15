@@ -281,6 +281,8 @@ Base, Q1..Q3:
 // #define CCXL_REGSP_NULL		0x030000100F000000ULL	//null
 #define CCXL_REGSP_NULL			0x0480100F00000000ULL	//null
 
+#define CCXL_REGSP_NULL_PVOID	0x0480100500000000ULL	//NULL / (void *)0
+
 #define CCXL_PFL_NEARPTR		0x0001	//near pointer
 #define CCXL_PFL_FARPTR			0x0002	//far pointer
 

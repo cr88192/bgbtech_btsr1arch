@@ -178,6 +178,8 @@ reg			tlbHitB_MiX;
 reg			tlbHitD_MiX;
 reg			tlbHitB_LoX;
 reg			tlbHitD_LoX;
+reg			tlbHitB_X;
+reg			tlbHitD_X;
 
 reg			tlbHitA_LoH;
 reg			tlbHitB_LoH;
@@ -543,12 +545,17 @@ begin
 `endif
 
 `ifdef jx2_enable_l1addr96
-	tlbHitB_HiX = (tRegInAddr[47:32] == tlbHdatB[111:96]);
-	tlbHitD_HiX = (tRegInAddr[47:32] == tlbHdatD[111:96]);
-	tlbHitB_MiX = (tRegInAddr[31:16] == tlbHdatB[95:80]);
-	tlbHitD_MiX = (tRegInAddr[31:16] == tlbHdatD[95:80]);
+	tlbHitB_HiX = (tRegInAddr[95:80] == tlbHdatB[111:96]);
+	tlbHitD_HiX = (tRegInAddr[95:80] == tlbHdatD[111:96]);
+	tlbHitB_MiX = (tRegInAddr[79:64] == tlbHdatB[95:80]);
+	tlbHitD_MiX = (tRegInAddr[79:64] == tlbHdatD[95:80]);
 	tlbHitB_LoX = (tRegInAddr[63:48] == tlbHdatB[79:64]);
 	tlbHitD_LoX = (tRegInAddr[63:48] == tlbHdatD[79:64]);
+
+	tlbHitB_X = (tlbHitB_HiX && tlbHitB_MiX && tlbHitB_LoX) || 
+		(tlbHdatB[1:0]!=2'b10) ;
+	tlbHitD_X = (tlbHitD_HiX && tlbHitD_MiX && tlbHitD_LoX) || 
+		(tlbHdatD[1:0]!=2'b10) ;
 `else
 	tlbHitB_HiX = 1;
 	tlbHitD_HiX = 1;
@@ -556,6 +563,8 @@ begin
 	tlbHitD_MiX = 1;
 	tlbHitB_LoX = 1;
 	tlbHitD_LoX = 1;
+	tlbHitB_X	= 1;
+	tlbHitD_X	= 1;
 `endif
 
 	if(tlbIs32b)
@@ -565,6 +574,8 @@ begin
 		tlbHitC_Hi = 1;
 		tlbHitD_Hi = 1;
 	end
+
+`ifndef def_true
 
 `ifdef jx2_tlb_xtlbe
 	if(tlbHdatB[1:0]!=2'b10)
@@ -587,6 +598,7 @@ begin
 	tlbHitB_LoX = 1;
 	tlbHitD_LoX = 1;
 `endif
+`endif
 
 	if(tlbMmuPg64K)
 	begin
@@ -599,15 +611,13 @@ begin
 `ifdef jx2_tlb_xtlbe
 	tlbHitA =
 		tlbHitA_Hi && tlbHitA_Mi && tlbHitA_Lo &&
-		tlbHitB_HiX && tlbHitB_MiX && tlbHitB_LoX &&
-		(tlbHdatA[1:0] == 2'b01);
+		tlbHitB_X && (tlbHdatA[1:0] == 2'b01);
 	tlbHitB =
 		tlbHitB_Hi && tlbHitB_Mi && tlbHitB_Lo &&
 		(tlbHdatB[1:0] == 2'b01);
 	tlbHitC =
 		tlbHitC_Hi && tlbHitC_Mi && tlbHitC_Lo &&
-		tlbHitD_HiX && tlbHitD_MiX && tlbHitD_LoX &&
-		(tlbHdatC[1:0] == 2'b01);
+		tlbHitD_X && (tlbHdatC[1:0] == 2'b01);
 	tlbHitD =
 		tlbHitD_Hi && tlbHitD_Mi && tlbHitD_Lo &&
 		(tlbHdatD[1:0] == 2'b01);
@@ -858,7 +868,7 @@ begin
 		end
 		else
 		begin
-			$display("MemTile-LDTLB %X %X-%X",
+			$display("MemTile-LDTLB Base %X %X-%X",
 				tRegInAddr,
 				tRegInLdtlb[127:64],
 				regInLdtlb[ 63: 0]);

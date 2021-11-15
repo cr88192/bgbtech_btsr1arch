@@ -1962,6 +1962,8 @@ The Imm5u value will encode the requested predicate (Single):
 * F0nm_1GDE  PLDCEHH	Rm, Rn		//(GSVF) Packed Ext-Half to Single (Hi)
 * F0nm_1gEE  PSTCH		Rm, Rn		//(GSVF) Packed Single to Half (2x)
 
+* FFw0_iiii_F88n_iiii  PLDCH	Imm32u, Rn		//(Wm=0, Wi=1) (GSVF,Op64)
+
 Convert between Packed Half and Packed Single.
 
 These operations will convert between Packed Half and the Packed Single format.
@@ -1991,6 +1993,9 @@ The PLDCEHL and PLDCEHH will support a 3x Extended-Half format.
 * F0nm_1G8E  PLDCM8UH	Rm, Rn		//(GSVF) RGB32UF Unpack to RGB64F
 * F0nm_1gAE  PSTCM8SH	Rm, Rn		//(GSVF) RGB32SF Pack from RGB64F
 * F0nm_1GAE  PSTCM8UH	Rm, Rn		//(GSVF) RGB32UF Pack from RGB64F
+
+** FFw0_iiii_F88n_iiii  PLDCM8SH	Imm32u, Rn	//(Wm=1, Wi=0) (GSVF,Op64)
+** FFw0_iiii_F88n_iiii  PLDCM8UH	Imm32u, Rn	//(Wm=1, Wi=1) (GSVF,Op64)
 
 These perform Packed Format Conversions for 8-bit microfloats.
 

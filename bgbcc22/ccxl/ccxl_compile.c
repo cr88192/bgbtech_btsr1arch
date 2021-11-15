@@ -1346,6 +1346,12 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 				if(!bgbcp_strcmp(s1, "false"))	i=1;
 			}
 
+			if((*s0=='_') || (*s1=='_'))
+			{
+				/* Pessimism: Something funky might be going on. */
+				i=1;
+			}
+
 			if(!i)
 			{
 				BGBCC_CCXL_MovLoadStore(ctx, s0, s1);
@@ -1420,7 +1426,8 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 		}
 #endif
 
-		if(BGBCC_CCXL_TypeCompatibleP(ctx, lty, rty) &&
+//		if(BGBCC_CCXL_TypeCompatibleP(ctx, lty, rty) &&
+		if(BGBCC_CCXL_TypeCompatibleArchP(ctx, lty, rty) &&
 			!BGBCC_CCXL_TypeVariantP(ctx, lty) &&
 			!BGBCC_CCXL_TypeVariantP(ctx, rty))
 		{
@@ -1515,11 +1522,15 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 				s1=BGBCC_CCXL_CompileRemapName(ctx, s1);
 //				BGBCC_CCXL_PopStore(ctx, s1);
 
-				BGBCC_CCXL_MovLoadStore(ctx, s1, s0);
-//				BGBCC_CCXL_RefRefStore(ctx, s0, s1);
+				if((*s1!='_') && (*s0!='_'))
+				{
+					BGBCC_CCXL_MovLoadStore(ctx, s1, s0);
+	//				BGBCC_CCXL_RefRefStore(ctx, s0, s1);
+					return;
+				}
 
-//				BGBCC_CCXL_CompileExpr(ctx, rn);
-//				BGBCC_CCXL_CompileAssign(ctx, ln);
+				BGBCC_CCXL_CompileExpr(ctx, rn);
+				BGBCC_CCXL_CompileAssign(ctx, ln);
 				return;
 			}
 		}

@@ -13,7 +13,7 @@
 // `define jx2_enable_gpr48		//Enable R32..R63 (SIMD)
 `define jx2_enable_xgpr		//Enable R32..R63 and XGPR ops
 
-`define jx2_enable_pred_s	//SR.S Predication
+// `define jx2_enable_pred_s	//SR.S Predication
 
 `define jx2_enable_rom48k	//Expand ROM to 48K
 // `define jx2_enable_sram16k	//Expand SRAM to 16K
@@ -142,4 +142,10 @@
 `define jx2_alu_jcmp
 `endif
 
+`endif
+
+`ifdef jx2_enable_vaddr96
+`ifndef jx2_tlb_xtlbe
+`define jx2_tlb_xtlbe
+`endif
 `endif

@@ -784,6 +784,18 @@ void BGBCC_CCXLR3_EmitArgTextBlob(
 	BGBCC_CCXLR3_EmitArgString(ctx, str);
 }
 
+void BGBCC_CCXLR3_EmitArgSymbol(
+	BGBCC_TransState *ctx, char *str)
+{
+	BGBCC_CCXLR3_EmitArgString(ctx, str);
+}
+
+void BGBCC_CCXLR3_EmitArgSigstr(
+	BGBCC_TransState *ctx, char *str)
+{
+	BGBCC_CCXLR3_EmitArgString(ctx, str);
+}
+
 void BGBCC_CCXLR3_BeginRecRIL(
 	BGBCC_TransState *ctx)
 {
@@ -1195,6 +1207,16 @@ ccxl_label BGBCC_CCXLR3_ReadLabel(BGBCC_TransState *ctx, byte **rcs)
 	return(lbl);
 }
 
+char *BGBCC_CCXLR3_ReadSymbol(BGBCC_TransState *ctx, byte **rcs)
+{
+	return(BGBCC_CCXLR3_ReadString(ctx, rcs));
+}
+
+char *BGBCC_CCXLR3_ReadSigstr(BGBCC_TransState *ctx, byte **rcs)
+{
+	return(BGBCC_CCXLR3_ReadString(ctx, rcs));
+}
+
 void BGBCC_CCXLR3_DecodeBufCmd(
 	BGBCC_TransState *ctx, byte **rcs)
 {
@@ -1312,64 +1334,64 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		BGBCC_CCXL_PushMark(ctx);
 		break;
 	case BGBCC_RIL3OP_LOAD:
-		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
 		BGBCC_CCXL_PushLoad(ctx, s0);
 		break;
 	case BGBCC_RIL3OP_STORE:
-		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
 		BGBCC_CCXL_PopStore(ctx, s0);
 		break;
 	case BGBCC_RIL3OP_MOVLDST:
-		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
-		s1=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
+		s1=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
 		BGBCC_CCXL_MovLoadStore(ctx, s0, s1);
 		break;
 
 	case BGBCC_RIL3OP_CALLN:
-		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
 		BGBCC_CCXL_StackCallName(ctx, s0, 0);
 		break;
 	case BGBCC_RIL3OP_CALLP:
 		BGBCC_CCXL_StackPopCall(ctx, 0);
 		break;
 	case BGBCC_RIL3OP_CALLNV:
-		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
 		BGBCC_CCXL_StackCallName(ctx, s0, 1);
 		break;
 	case BGBCC_RIL3OP_CALLPV:
 		BGBCC_CCXL_StackPopCall(ctx, 1);
 		break;
 	case BGBCC_RIL3OP_STCALLN:
-		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
-		s1=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
+		s1=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
 		BGBCC_CCXL_StackCallName2(ctx, s0, s1, 0);
 		break;
 	case BGBCC_RIL3OP_STCALLP:
-		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
 		BGBCC_CCXL_StackPopCall2(ctx, s0, 0);
 		break;
 
 	case BGBCC_RIL3OP_OBJCALLN:
-		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
 		BGBCC_CCXL_StackCallName(ctx, s0, 4);
 		break;
 	case BGBCC_RIL3OP_OBJCALLP:
 		BGBCC_CCXL_StackPopCall(ctx, 4);
 		break;
 	case BGBCC_RIL3OP_OBJCALLNV:
-		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
 		BGBCC_CCXL_StackCallName(ctx, s0, 5);
 		break;
 	case BGBCC_RIL3OP_OBJCALLPV:
 		BGBCC_CCXL_StackPopCall(ctx, 5);
 		break;
 	case BGBCC_RIL3OP_STOBJCALLN:
-		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
-		s1=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
+		s1=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
 		BGBCC_CCXL_StackCallName2(ctx, s0, s1, 4);
 		break;
 	case BGBCC_RIL3OP_STOBJCALLP:
-		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
 		BGBCC_CCXL_StackPopCall2(ctx, s0, 4);
 		break;
 
@@ -1410,7 +1432,7 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		BGBCC_CCXL_StackCastBool(ctx);
 		break;
 	case BGBCC_RIL3OP_CASTSIG:
-		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSigstr(ctx, &cs);
 		BGBCC_CCXL_StackCastSig(ctx, s0);
 		break;
 
@@ -1485,7 +1507,7 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 
 	case BGBCC_RIL3OP_STBINOP:
 		i0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
-		s1=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s1=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
 		switch(i0)
 		{
 		case CCXL_BINOP_ADD: s0="+"; break;
@@ -1511,7 +1533,7 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 
 	case BGBCC_RIL3OP_STCMPOP:
 		i0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
-		s1=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s1=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
 		switch(i0)
 		{
 		case CCXL_CMP_EQ: s0="=="; break;
@@ -1528,7 +1550,7 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		break;
 	case BGBCC_RIL3OP_LDUNOP:
 		i0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
-		s1=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s1=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
 		switch(i0&7)
 		{
 		case CCXL_UNOP_MOV: s0="+"; break;
@@ -1544,7 +1566,7 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		break;
 	case BGBCC_RIL3OP_STUNOP:
 		i0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
-		s1=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s1=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
 		switch(i0)
 		{
 		case CCXL_UNOP_MOV: s0="+"; break;
@@ -1560,7 +1582,7 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 
 	case BGBCC_RIL3OP_STTRINOP:
 		i0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
-		s1=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s1=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
 		switch(i0)
 		{
 		case CCXL_BINOP_MAC: s0="MAC"; break;
@@ -1631,7 +1653,7 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 
 	case BGBCC_RIL3OP_STCONSTI:
 		li0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
-		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
 
 		if(((s32)li0)==li0)
 			{ BGBCC_CCXL_ConstIntStore(ctx, li0, s0); break; }
@@ -1643,8 +1665,8 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 
 #if 0
 	case BGBCC_RIL3OP_STREFREF:
-		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
-		s1=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
+		s1=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
 		BGBCC_CCXL_RefRefStore(ctx, s0, s1);
 		break;
 #endif
@@ -1653,36 +1675,36 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		BGBCC_CCXL_StackPop(ctx);
 		break;
 	case BGBCC_RIL3OP_LDA:
-		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
 		BGBCC_CCXL_StackLoadAddr(ctx, s0);
 		break;
 	case BGBCC_RIL3OP_SIZEOFSG:
-		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSigstr(ctx, &cs);
 		BGBCC_CCXL_StackSizeofSig(ctx, s0);
 		break;
 	case BGBCC_RIL3OP_SIZEOFVAL:
 		BGBCC_CCXL_StackSizeofVal(ctx);
 		break;
 	case BGBCC_RIL3OP_OFFSETOF:
-		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
-		s1=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
+		s1=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
 		BGBCC_CCXL_StackOffsetof(ctx, s0, s1);
 		break;
 	case BGBCC_RIL3OP_LOADSLOT:
-		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
 		BGBCC_CCXL_StackLoadSlot(ctx, s0);
 		break;
 	case BGBCC_RIL3OP_STORESLOT:
-		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
 		BGBCC_CCXL_StackStoreSlot(ctx, s0);
 		break;
 	case BGBCC_RIL3OP_LOADSLOTA:
-		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
 		BGBCC_CCXL_StackLoadSlotAddr(ctx, s0);
 		break;
 
 	case BGBCC_RIL3OP_BEGINU:
-		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSigstr(ctx, &cs);
 		BGBCC_CCXL_StackBeginU(ctx, s0);
 		break;
 	case BGBCC_RIL3OP_ENDU:
@@ -1692,11 +1714,11 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		BGBCC_CCXL_StackSetU(ctx);
 		break;
 	case BGBCC_RIL3OP_INITVAR:
-		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
 		BGBCC_CCXL_StackInitVar(ctx, s0);
 		break;
 	case BGBCC_RIL3OP_INITVARVAL:
-		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
 		BGBCC_CCXL_StackInitVarValue(ctx, s0);
 		break;
 
@@ -1747,7 +1769,7 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		break;
 
 	case BGBCC_RIL3OP_LITTYPESIG:
-		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSigstr(ctx, &cs);
 		BGBCC_CCXL_StackLitTypeSig(ctx, s0);
 		break;
 	case BGBCC_RIL3OP_VA_START:
@@ -1777,37 +1799,37 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 	case BGBCC_RIL3OP_SAR:	BGBCC_CCXL_StackBinaryOp(ctx, ">>"); break;
 
 	case BGBCC_RIL3OP_STLDSLOT:
-		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
-		s1=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
+		s1=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
 		BGBCC_CCXL_StackLoadSlotStore(ctx, s0, s1);
 		break;
 	case BGBCC_RIL3OP_STLDSLOTA:
-		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
-		s1=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
+		s1=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
 		BGBCC_CCXL_StackLoadSlotAddrStore(ctx, s0, s1);
 		break;
 
 	case BGBCC_RIL3OP_STLDIXC:
 		i0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
-		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
 		BGBCC_CCXL_StackLoadIndexConstStore(ctx, i0, s0);
 		break;
 	case BGBCC_RIL3OP_STLDIXAC:
 		i0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
-		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
 //		BGBCC_CCXL_StackLoadIndexAddrConstStore(ctx, i0, s0);
 		break;
 	case BGBCC_RIL3OP_STLDIX:
-		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
 		BGBCC_CCXL_StackLoadIndexStore(ctx, s0);
 		break;
 	case BGBCC_RIL3OP_STLDIXA:
-		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
 //		BGBCC_CCXL_StackLoadIndexAddrStore(ctx, s0);
 		break;
 	case BGBCC_RIL3OP_STCASTSIG:
-		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
-		s1=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSigstr(ctx, &cs);
+		s1=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
 		BGBCC_CCXL_StackCastSigStore(ctx, s0, s1);
 		break;
 
@@ -1863,15 +1885,15 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		break;
 
 	case BGBCC_RIL3OP_MKTMPOBJ:
-		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSigstr(ctx, &cs);
 		BGBCC_CCXL_StackPushTempObj(ctx, s0);
 		break;
 	case BGBCC_RIL3OP_EXCH:
 		BGBCC_CCXL_StackExch(ctx);
 		break;
 	case BGBCC_RIL3OP_LDSLOTSIG:
-		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
-		s1=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
+		s1=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
 		BGBCC_CCXL_StackLoadSlotSig(ctx, s0, s1);
 		break;
 	
@@ -1932,8 +1954,8 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		break;
 
 	case BGBCC_RIL3OP_LDAVSIG:
-		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
-		s1=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
+		s1=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
 		BGBCC_CCXL_StackLoadAddrVSig(ctx, s0, s1);
 		break;
 

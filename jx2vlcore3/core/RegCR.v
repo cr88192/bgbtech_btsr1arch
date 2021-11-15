@@ -240,11 +240,11 @@ begin
 //	regIdCn2B	= { 1'b1, regIdCn3 };
 	regIdCn2B	= regIdCn3;
 	regValCn2B	= regValCn3;
-//	if(regEx3Flush)
-//	if(1'b0)
-//	begin
-//		regIdCn2B	= JX2_CR_ZZR;
-//	end
+
+	if(regEx3Flush)
+	begin
+		regIdCn2B	= JX2_CR_ZZR;
+	end
 
 `ifdef jx2_enable_vaddr48
 //	regValCn2B_48b	= regValCn2[47:0];

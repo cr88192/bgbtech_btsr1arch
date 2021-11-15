@@ -3911,7 +3911,8 @@ int BGBCC_CCXL_HandleMissingProto(BGBCC_TransState *ctx, char *name)
 	BGBCC_CCXL_BeginName(ctx, CCXL_CMD_PROTOTYPE, name);
 
 	BGBCC_CCXL_AttribStr(ctx, CCXL_ATTR_NAME, name);
-	BGBCC_CCXL_AttribStr(ctx, CCXL_ATTR_SIG, "(z)i");
+//	BGBCC_CCXL_AttribStr(ctx, CCXL_ATTR_SIG, "(z)i");
+	BGBCC_CCXL_AttribStr(ctx, CCXL_ATTR_SIG, "(z)l");
 //	BGBCC_CCXL_AttribStr(ctx, CCXL_ATTR_FLAGS, s2);
 
 	BGBCC_CCXL_Begin(ctx, CCXL_CMD_ARGS);

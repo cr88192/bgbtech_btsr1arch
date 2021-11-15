@@ -2213,7 +2213,9 @@ int main(int argc, char **argv, char **env)
 		(char *)"../../tk_ports/HticSrc/hticulz.wad");
 #endif
 
+#ifndef NOSWAP
 	JX2R_UseImageAddFileBuffer("swapfile.sys", (byte *)NULL, 384*(1<<20));
+#endif
 
 	Verilated::commandArgs(argc, argv);
 

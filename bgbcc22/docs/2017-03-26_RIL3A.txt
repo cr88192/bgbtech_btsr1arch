@@ -175,6 +175,11 @@ Opcode:
 Label:
 * Encoded as a SVLI. Represented as an ID number, where the source and destination will have matching ID numbers.
 
+Symbol:
+* Encoded as a string, but identifies a variable.
+
+Sigstr:
+* Encoded as a string, but encodes a type signature.
 
 === Expressions ===
 
@@ -537,7 +542,7 @@ Opcodes (Structural)
 ** Begin a structure.
 * 0x05, BEGINNAME
 ** SVLI tag;
-** STRING name;
+** SYMBOL name;
 ** Begin a named structure.
 * 0x06, MARKER
 ** SVLI tag;
@@ -581,7 +586,7 @@ Opcodes (Structural)
 ** STRING str;
 * 0x16, LITNAME
 ** SVLI tag;
-** STRING name;
+** SYMBOL name;
 * 0x17, LITDATA
 ** SVLI tag;
 ** DATABLOB data;
@@ -605,13 +610,13 @@ Opcodes (Executable Code)
 * 0x20, MARK ( -- Mark )
 ** Mark a position on the stack (typically for function argument lists).
 * 0x21, LOAD ( -- Val )
-** STRING name;
+** SYMBOL name;
 ** Load a variable onto the stack.
 * 0x22, STORE ( Val -- )
-** STRING name;
+** SYMBOL name;
 ** Store top stack element into a named variable.
 * 0x23, CALLN ( Mark * -- RetVal )
-** STRING name;
+** SYMBOL name;
 ** Call a named function.
 * 0x24, CALLP ( Mark * Ptr -- RetVal )
 ** Call a function given as a pointer on the stack.
@@ -642,7 +647,7 @@ Opcodes (Executable Code)
 ** Cast an item to a boolean value.
 
 * 0x30, CASTSIG ( ValA -- ValB )
-** STRING sig;
+** SIGSTR sig;
 ** Cast a value to type given in signature.
 * 0x31, BINOP ( ValL ValR -- ValD )
 ** SVLI opr;
@@ -655,15 +660,15 @@ Opcodes (Executable Code)
 ** Apply a unary operator.
 * 0x34, STBINOP ( ValL ValR -- )
 ** SVLI opr;
-** STRING dstname;
+** SYMBOL dstname;
 ** Apply a binary operator and store result into variable.
 * 0x35, STCMPOP ( ValL ValR -- )
 ** SVLI opr;
-** STRING dstname;
+** SYMBOL dstname;
 ** Apply a comparison operator and store result into variable.
-* 0x36, LDUNOP ( -- )
+* 0x36, LDUNOP ( -- ?Val )
 ** SVLI opr;
-** STRING name;
+** SYMBOL name;
 ** Apply a unary operator to a variable
 ** (opr&15): Operator
 ** (opr>>4): Operation Mode
@@ -702,29 +707,29 @@ Opcodes (Executable Code)
 * 0x40, POP ( Val -- )
 ** Pop (and discard) top value off of stack.
 * 0x41, LDA ( -- Addr )
-** STRING name;
+** SYMBOL name;
 ** Load address of a variable.
 * 0x42, SIZEOFSG ( -- Sz )
-** STRING sig;
+** SIGSTR sig;
 ** Get sizeof a type signature.
 * 0x43, SIZEOFVAL ( Val -- Sz )
 ** Get sizeof a value.
 * 0x44, OFFSETOF ( -- Offs )
-** STRING sig;
-** STRING name;
+** SIGSTR sig;
+** SYMBOL name;
 ** Get offset of a field.
 * 0x45, LOADSLOT ( Obj -- Val )
-** STRING name;
+** SYMBOL name;
 ** Load a structure field.
 * 0x46, STORESLOT ( Val Obj -- )
-** STRING name;
+** SYMBOL name;
 ** Store to a structure field.
 * 0x47, LOADSLOTA ( Obj -- Addr )
-** STRING name;
+** SYMBOL name;
 ** Load address of a structure field.
 * 0x48, BEGINU ( -- )
-** STRING sig;
-** Begin a union-expression of a given type.
+** SIGSTR sig;
+** Begin a union-expression of a given destination type.
 * 0x49, ENDU ( -- Val )
 ** End a union-expression (pushes output value).
 * 0x4A, SETU ( Val -- )
@@ -733,10 +738,10 @@ Opcodes (Executable Code)
 ** LABEL lbl;
 ** Identifies a label.
 * 0x4C, INITVAR ( -- )
-** STRING name;
+** SYMBOL name;
 ** Initialize a variable.
 * 0x4D, INITVARVAL ( Val -- )
-** STRING name;
+** SYMBOL name;
 ** Initialize a variable with a value.
 * 0x4E, STKFN ( -- )
 ** STRING fname;
@@ -760,14 +765,14 @@ Opcodes (Executable Code)
 ** Jump to a label if false.
 
 * 0x54, LITTYPESIG ( -- T )
-** STRING sig;
+** SIGSTR sig;
 ** Pushes an undefined value of a given type.
 * 0x55, VA_START ( Arg List -- )
 * 0x56, VA_END ( List -- )
 * 0x57, VA_ARG ( Type List -- Val )
 
 * 0x58, CALLNV ( Mark * -- )
-** STRING name;
+** SYMBOL name;
 ** Call a named function.
 * 0x59, CALLPV ( Mark * Ptr -- )
 ** Call a function given as a pointer on the stack.
@@ -775,27 +780,27 @@ Opcodes (Executable Code)
 * 0x5A, DI_3AC
 ** Temporarily disable 3AC output.
 ** Operations following this will not generate executable code.
-** However, they will still update compile-time state as-if they were emitted.
+** However, they will still update stack-machine state as-if they were emitted.
 * 0x5B, EN_3AC
 ** Enable 3AC output.
 ** Note that these may nest, and output will remaine disabled until counts match.
 
 * 0x5C, MOVLDST
-** STRING dname;
-** STRING sname;
+** SYMBOL dname;
+** SYMBOL sname;
 ** Move a value between a pair of named variables.
 
 * 0x5D, STUNOP ( Val -- )
 ** SVLI opr;
-** STRING name;
+** SYMBOL name;
 ** Apply a unary operator and store result in a variable.
 
 * 0x5E, STCALLN ( Mark * -- )
-** STRING name;
-** STRING dstname;
+** SYMBOL name;
+** SYMBOL dstname;
 ** Call a named function, storing return value in dstname.
 * 0x5F, STCALLP ( Mark * Ptr -- )
-** STRING dstname;
+** SYMBOL dstname;
 ** Call a function given as a pointer on the stack.
 ** Stores return value in dstname.
 
@@ -811,46 +816,48 @@ Opcodes (Executable Code)
 
 * 0x68, STLDSLOT
 ** STRING fname;
-** STRING dstname;
+** SYMBOL dstname;
 ** Load slot and store in dstname.
 
 * 0x69, STLDSLOTA
 ** STRING fname;
-** STRING dstname;
+** SYMBOL dstname;
 ** Load slot address and store in dstname.
 
 * 0x6A, STLDIXC
 ** SVLI idx;
-** STRING dstname;
+** SYMBOL dstname;
 ** Load constant index and store in dstname.
 
 * 0x6B, STLDIXAC
 ** SVLI idx;
-** STRING dstname;
+** SYMBOL dstname;
 ** Load constant index address and store in dstname.
 
 * 0x6C, STLDIX
-** STRING dstname;
+** SYMBOL dstname;
 ** Load index and store in dstname.
 
 * 0x6D, STLDIXA
-** STRING dstname;
+** SYMBOL dstname;
 ** Load index address and store in dstname.
 
 * 0x6E, STCASTSIG
-** STRING sig;
-** STRING dstname;
+** SIGSTR sig;
+** SYMBOL dstname;
 ** Cast value to sig and store in dstname.
 
-* 0x6F, CSELCMP
+* 0x6F, CSELCMP (U V S T -- D )
 ** SVLI opr;
-** Conditional Select Compare.
+** Conditional Select Compare ( U op V ? S : T ).
 *** 0..15: Compare two values.
 *** 16..31: Compare value with zero.
 
 * 0x70, DUPIX
+** SVLI index;
 ** Dup with Index
 * 0x71, DUPMIX
+** SVLI index;
 ** Dup with Index (relative to Mark)
 * 0x72, JMPTAB
 ** Jump Table
@@ -862,7 +869,7 @@ Opcodes (Executable Code)
 *** SVLI val;	//case value
 *** LABEL lbl;	//target label
 * 0x73, MKTMPOBJ
-** STRING sig;
+** SIGSTR sig;
 ** Make a new temporary object of a given type.
 
 * 0x74, EXCH ( A B -- B A )
@@ -882,37 +889,62 @@ Opcodes (Executable Code)
 * 0x7B, STOBJCALLN
 ** Call Obj, Non-Virt, Ret Store
 * 0x7C, SETPRED
+** SVLI mode;
 ** Set Predicate Mode
-* 0x7D, PRCMP
+* 0x7D, PRCMP ( A B --)
+** SVLI cmpop;
 ** Predicate Compare (A op B)
-* 0x7E, PRCMPT
+* 0x7E, PRCMPT ( A -- )
 ** Predicate Compare (A!=0)
-* 0x7F, PRCMPF
+* 0x7F, PRCMPF ( A -- )
 ** Predicate Compare (A==0)
 
 * 0x80, CALLN_INT
-* 0x81, LDCONSTCPX
-* 0x82, LDCONSTV2F
-* 0x83, LDCONSTV4F
-* 0x84, LDCONSTU8S
+* 0x81, LDCONSTCPX ( -- V )
+** FVLI f0;
+** FVLI f1;
+* 0x82, LDCONSTV2F ( -- V )
+** FVLI f0;
+** FVLI f1;
+** SVLI tag;
+* 0x83, LDCONSTV4F ( -- V )
+** FVLI f0;
+** FVLI f1;
+** FVLI f2;
+** FVLI f3;
+** SVLI tag;
+* 0x84, LDCONSTU8S ( -- S )
+** STRING str;
 ** UTF-8 String Literal
-* 0x85, LDCONSTW4S
+* 0x85, LDCONSTW4S ( -- S )
+** STRING str;
 ** UTF-32 String Literal
 
-* 0x86, INLINEASM
+* 0x86, INLINEASM ( -- )
+** STRING str;
 ** Inline ASM blob
 * 0x87, LDAVSIG
+** SYMBOL name;
+** SIGSTR sig;
 
 * 0x88, STCONSTI
+** SVLI val;
+** SYMBOL name;
+** Store constant integer to symbol.
 * 0x89, STCONSTL
+** SVLI val;
+** SYMBOL name;
+** Store constant long to symbol.
 * 0x8A, STREFREF
-
+** SYMBOL sname;
+** SYMBOL dname;
+** Move value from source to destination.
 * 0x8C, TRINOP ( S T U -- V )
 ** SVLI opr;
 ** Trinary Operator
 * 0x8D, STTRINOP ( S T U -- )
 ** SVLI opr;
-** STRING name;
+** SYMBOL name;
 ** Trinary Operator, Store result to Name
 
 

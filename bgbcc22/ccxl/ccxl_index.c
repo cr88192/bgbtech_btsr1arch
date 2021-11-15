@@ -457,6 +457,42 @@ void BGBCC_CCXL_CompileJmpCond(BGBCC_TransState *ctx,
 		regb2=regb;
 	}
 
+	if(	(rega2.val == regb2.val) &&
+		(	BGBCC_CCXL_TypeSmallInt128P(ctx, dty) ||
+			(	BGBCC_CCXL_TypeSmallFloat128P(ctx, dty) &&
+				BGBCC_CCXL_IsRegImmILFDP(ctx, regb) 	) ||
+			BGBCC_CCXL_TypePointerP(ctx, dty)	)
+		)
+	{
+		/*
+		 If comparing a value to itself, it is either equal or not equal.
+		 Though, this is not entirely true with floating point types,
+		 due mostly to NaN and similar.
+		 */
+	
+		if(	(opr==CCXL_CMP_EQ) ||
+			(opr==CCXL_CMP_LE) ||
+			(opr==CCXL_CMP_GE) )
+		{
+			BGBCC_CCXL_EmitJump(ctx, lbl);
+			BGBCC_CCXL_EmitMarkEndTrace(ctx);
+			BGBCC_CCXL_RegisterCheckRelease(ctx, rega2);
+			BGBCC_CCXL_RegisterCheckRelease(ctx, regb2);
+			return;
+		}
+
+		if(	(opr==CCXL_CMP_NE) ||
+			(opr==CCXL_CMP_GT) ||
+			(opr==CCXL_CMP_LT) )
+		{
+//			BGBCC_CCXL_EmitJump(ctx, lbl);
+//			BGBCC_CCXL_EmitMarkEndTrace(ctx);
+			BGBCC_CCXL_RegisterCheckRelease(ctx, rega2);
+			BGBCC_CCXL_RegisterCheckRelease(ctx, regb2);
+			return;
+		}
+	}
+
 	BGBCC_CCXL_EmitJumpRegCmp(ctx, dty, opr, rega2, regb2, lbl);
 	BGBCC_CCXL_RegisterCheckRelease(ctx, rega2);
 	BGBCC_CCXL_RegisterCheckRelease(ctx, regb2);

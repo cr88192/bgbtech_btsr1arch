@@ -323,6 +323,10 @@ parameter[ 32:0] UV33_XX		= 33'hXXXXXXXXX;	//
 parameter[ 35:0] UV36_XX		= 36'hXXXXXXXXX;	//
 parameter[ 43:0] UV44_XX		= 44'hXXXXXXX_XXXX;	//
 parameter[ 47:0] UV48_XX		= 48'hXXXXXXXX_XXXX;	//
+
+parameter[ 59:0] UV60_XX		= 60'hXXXXXXX_XXXXXXXX;	//
+parameter[ 61:0] UV62_XX		= 62'hXXXXXXXX_XXXXXXXX;	//
+
 parameter[ 63:0] UV64_XX		= 64'hXXXXXXXX_XXXXXXXX;	//
 parameter[ 64:0] UV65_XX		= 65'hX_XXXXXXXX_XXXXXXXX;	//
 parameter[ 65:0] UV66_XX		= 66'hX_XXXXXXXX_XXXXXXXX;	//
@@ -453,6 +457,12 @@ parameter[58:0] UV59_00			= 59'h00000000_00000000;	//
 parameter[58:0] UV59_FF			= 59'h07FFFFFF_FFFFFFFF;	//
 
 
+
+parameter[59:0] UV60_00			= 60'h0000000_00000000;	//
+parameter[59:0] UV60_FF			= 60'hFFFFFFF_FFFFFFFF;	//
+
+parameter[61:0] UV62_00			= 62'h00000000_00000000;	//
+parameter[61:0] UV62_FF			= 62'h3FFFFFFF_FFFFFFFF;	//
 
 parameter[62:0] UV63_00			= 63'h00000000_00000000;	//
 parameter[62:0] UV63_FF			= 63'h7FFFFFFF_FFFFFFFF;	//
@@ -1090,6 +1100,9 @@ parameter[5:0] JX2_UCIX_IXS_MOVT	= 6'h01;		//Copy SR.T to Reg
 parameter[5:0] JX2_UCIX_IXS_MOVNT	= 6'h02;		//Copy !SR.T to Reg
 parameter[5:0] JX2_UCIX_IXS_LDSRMSK	= 6'h03;		//?
 parameter[5:0] JX2_UCIX_IXS_TRAPB	= 6'h04;		//Trap
+
+parameter[5:0] JX2_UCIX_IXS_MOVST	= 6'h06;		//Copy SR.ST to Reg
+parameter[5:0] JX2_UCIX_IXS_MOVPQ	= 6'h07;		//Copy SR.PQRO to Reg
 
 parameter[5:0] JX2_UCIX_IXS_BLKUTX1		= 6'h08;		//Get pixel, UTX1
 parameter[5:0] JX2_UCIX_IXS_BLKUTX2		= 6'h09;		//Get pixel, UTX2

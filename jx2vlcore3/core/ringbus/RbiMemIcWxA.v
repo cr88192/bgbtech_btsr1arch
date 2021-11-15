@@ -269,8 +269,8 @@ reg[7:0]		tBlkPRov2B;
 
 reg[47:0]		tReqAddrHi;
 reg[47:0]		tNxtAddrHi;
-reg[15:0]		tReqAddrH;
-reg[15:0]		tNxtAddrH;
+reg[15:0]		tReqAxH;
+reg[15:0]		tNxtAxH;
 
 `ifdef jx2_enable_vaddr48
 reg[43:0]		tReqAddrA;
@@ -525,13 +525,25 @@ begin
 
 	tRegInPc	= regInPc;
 	tNxtAddrHi	= 0;
-	tNxtAddrH	= 0;
+	tNxtAxH	= 0;
 `ifdef jx2_enable_vaddr96
 	tNxtAddrHi	= regInPc[95:48];
-	tNxtAddrH	=
+//	tNxtAxH	=
+//		tNxtAddrHi[15: 0] ^
+//		tNxtAddrHi[31:16] ^
+//		tNxtAddrHi[47:32] ;
+
+	tNxtAxH		=
 		tNxtAddrHi[15: 0] ^
-		tNxtAddrHi[31:16] ^
-		tNxtAddrHi[47:32] ;
+		{	tNxtAddrHi[23:16], tNxtAddrHi[31:24] } ^
+		{	tNxtAddrHi[35:32], tNxtAddrHi[39:36],
+			tNxtAddrHi[43:40], tNxtAddrHi[47:44] } ^
+		{	4'h0, regInSr[31:28], regKrrHash[7:0] } ;
+`else
+
+	tNxtAxH		=
+		{	4'h0, regInSr[31:28], regKrrHash[7:0] } ;
+
 `endif
 
 	tInPcOpm	= icInPcOpm;
@@ -558,7 +570,7 @@ begin
 		tNxtAddrA	= tReqAddrA;
 		tNxtAddrB	= tReqAddrB;
 		tNxtAddrHi	= tReqAddrHi;
-		tNxtAddrH	= tReqAddrH;
+		tNxtAxH	= tReqAxH;
 	end
 
 `ifdef jx2_l1i_nohash
@@ -659,8 +671,8 @@ begin
 	tStBlkPRovA		= tFlushRov;
 	tStBlkPRovB		= tFlushRov;
 
-	tStBlkDextA		= tReqAddrH;
-	tStBlkDextB		= tReqAddrH;
+	tStBlkDextA		= tReqAxH;
+	tStBlkDextB		= tReqAxH;
 
 	tDoStBlkA		= 0;
 	tDoStBlkB		= 0;
@@ -706,8 +718,8 @@ begin
 			tFlushB = 1;
 		end
 
-// `ifndef def_true
-`ifdef def_true
+`ifndef def_true
+// `ifdef def_true
 		if(tBlkPFlA[7:4]!=tInPmode)
 		begin
 			if(tMemReqRtcnt == 0)
@@ -793,6 +805,11 @@ begin
 		(tBlkAddr2B[23:12] != tReqAddrB[23:12]) ||
 		(tBlkAddr2B[11: 0] != tReqAddrB[11: 0]) ;
 `endif
+
+	if((tBlkDext2A != tReqAxH) && !tTlbMissInh)
+		tMissAddrA = 1;
+	if((tBlkDext2B != tReqAxH) && !tTlbMissInh)
+		tMissAddrB = 1;
 
 	tMissA =
 		tMissAddrA ||
@@ -1417,7 +1434,7 @@ begin
 		tReqAddrA		<= tNxtAddrA;
 		tReqAddrB		<= tNxtAddrB;
 		tReqAddrHi		<= tNxtAddrHi;
-		tReqAddrH		<= tNxtAddrH;
+		tReqAxH		<= tNxtAxH;
 		tReqIxA			<= tNxtIxA;
 		tReqIxB			<= tNxtIxB;
 

@@ -4192,6 +4192,10 @@ char *BGBCC_CCXL_TypeGetSig(
 			*t++='0'+(i%10);
 			break;
 
+		case CCXL_TY_UNDEF_I:
+			*t++='l';
+			break;
+
 		default:
 			BGBCC_DBGBREAK
 			break;
@@ -4703,6 +4707,7 @@ int BGBCC_CCXL_TypeCompatibleArchP(
 	ccxl_type dty, ccxl_type sty)
 {
 	if(BGBCC_CCXL_TypeCompatibleFlP(ctx, dty, sty, 2))
+//	if(BGBCC_CCXL_TypeCompatibleFlP(ctx, dty, sty, 0))
 		return(1);
 	return(0);
 }
@@ -5268,6 +5273,16 @@ ccxl_status BGBCC_CCXL_GetTypeBinaryDest(
 		*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_L);
 		return(BGBCC_CCXL_TypeSupportsOperatorP(ctx, *rdty, opr)?
 			CCXL_STATUS_YES:CCXL_STATUS_NO);
+	}
+
+	if((lty.val==CCXL_TY_UNDEF_I) || (rty.val==CCXL_TY_UNDEF_I))
+	{
+		/*
+		 * Inference with incomplete types.
+		 */
+	
+		*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_UNDEF_I);
+		return(CCXL_STATUS_NO);
 	}
 
 	if(BGBCC_CCXL_TypeSmallIntP(ctx, lty))

@@ -3,6 +3,9 @@ int BGBCC_JX2C_NormalizeImmVRegInt(
 	BGBCC_JX2_Context *sctx,
 	ccxl_type type, ccxl_register *rtreg)
 {
+	return(BGBCC_CCXL_NormalizeImmVReg(ctx, type, *rtreg, rtreg));
+
+#if 0
 	ccxl_register treg, treg2;
 	double f;
 	s64 li;
@@ -13,6 +16,7 @@ int BGBCC_JX2C_NormalizeImmVRegInt(
 	if(BGBCC_CCXL_IsRegImmIntP(ctx, treg) ||
 		BGBCC_CCXL_IsRegImmUIntP(ctx, treg) ||
 		BGBCC_CCXL_IsRegImmLongP(ctx, treg) ||
+		BGBCC_CCXL_IsRegImmULongP(ctx, treg) ||
 		BGBCC_CCXL_IsRegImmFloatP(ctx, treg) ||
 		BGBCC_CCXL_IsRegImmDoubleP(ctx, treg))
 	{
@@ -109,6 +113,7 @@ int BGBCC_JX2C_NormalizeImmVRegInt(
 	}
 
 	return(0);
+#endif
 }
  
 int BGBCC_JX2C_EmitBinaryVRegVRegInt(

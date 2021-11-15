@@ -877,6 +877,35 @@ bool BGBCC_CCXL_IsRegImmLongP(
 	return(false);
 }
 
+bool BGBCC_CCXL_IsRegImmULongP(
+	BGBCC_TransState *ctx, ccxl_register reg)
+{
+	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_INT)
+	{
+//		if((reg.val&CCXL_REGINT_STMASK)==CCXL_REGINT_ST_L)
+//			return(true);
+		if((reg.val&CCXL_REGINT_STMASK)==CCXL_REGINT_ST_UL)
+			return(true);
+		return(false);
+	}
+
+//	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_LONG)
+//	{
+//		return(true);
+//	}
+
+	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_LONG_LVT)
+	{
+		if((reg.val&CCXL_REGINT_STMASK)==CCXL_REGINT_ST_UL)
+			return(true);
+		return(false);
+	}
+
+	if((reg.val&CCXL_REGTY2_TYMASK)==CCXL_REGTY2_IMM_LONG)
+		return(true);
+	return(false);
+}
+
 bool BGBCC_CCXL_IsRegImmUIntP(
 	BGBCC_TransState *ctx, ccxl_register reg)
 {

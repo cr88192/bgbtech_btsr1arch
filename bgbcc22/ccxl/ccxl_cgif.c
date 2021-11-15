@@ -56,6 +56,18 @@ ccxl_status BGBCC_CCXL_StackLn(BGBCC_TransState *ctx, int line)
 
 	ctx->lln=line;
 
+#if 1
+	if(ctx->n_vop>ctx->s_vop)
+	{
+		op=ctx->vop[ctx->n_vop-1];
+		if(op->opn==CCXL_VOP_DBGLN)
+		{
+			op->imm.si=line;
+			return(0);
+		}
+	}
+#endif
+
 	op=BGBCC_CCXL_AllocVirtOp(ctx);
 	op->opn=CCXL_VOP_DBGLN;
 	op->prd=ctx->curprd;

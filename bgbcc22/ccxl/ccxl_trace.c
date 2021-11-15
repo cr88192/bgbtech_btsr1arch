@@ -409,3 +409,142 @@ s64 BGBCC_CCXL_DecodeFlagStr(BGBCC_TransState *ctx, char *str)
 	}
 	return(fl);
 }
+
+
+int BGBCC_CCXL_NormalizeImmVReg(
+	BGBCC_TransState *ctx,
+	ccxl_type type, ccxl_register treg, ccxl_register *rtreg)
+{
+//	ccxl_register treg, treg2;
+	ccxl_register treg2;
+	double f;
+	s64 li;
+	int bty, dty, stv;
+
+//	treg=*rtreg;
+
+	*rtreg=treg;
+
+	if(BGBCC_CCXL_IsRegImmIntP(ctx, treg) ||
+		BGBCC_CCXL_IsRegImmUIntP(ctx, treg) ||
+		BGBCC_CCXL_IsRegImmLongP(ctx, treg) ||
+		BGBCC_CCXL_IsRegImmULongP(ctx, treg) ||
+		BGBCC_CCXL_IsRegImmFloatP(ctx, treg) ||
+		BGBCC_CCXL_IsRegImmDoubleP(ctx, treg))
+	{
+//		if(BGBCC_CCXL_TypeSmallSIntP(ctx, type))
+		if(BGBCC_CCXL_TypeSmallIntP(ctx, type))
+		{
+//			if(BGBCC_CCXL_IsRegImmIntP(ctx, treg))
+//				return(1);
+		
+			li=BGBCC_CCXL_GetRegImmLongValue(ctx, treg);
+			stv=0;
+
+			bty=BGBCC_CCXL_GetTypeBaseType(ctx, type);
+			switch(bty)
+			{
+			case CCXL_TY_SB:	li=(signed char)li;		stv=4; break;
+			case CCXL_TY_UB:	li=(unsigned char)li;		stv=5; break;
+			case CCXL_TY_SS:	li=(signed short)li;		stv=6; break;
+			case CCXL_TY_US:	li=(unsigned short)li;		stv=7; break;
+			case CCXL_TY_I:		li=(signed int)li;			stv=0; break;
+			case CCXL_TY_UI:	li=(unsigned int)li;		stv=1; break;
+			default:
+				break;
+			}
+			
+//			if(((s32)li)!=li)
+//				{ BGBCC_DBGBREAK }
+
+//			if(BGBCC_CCXL_TypeUnsignedP(ctx, dty))
+//			BGBCC_CCXL_GetRegForUIntValue(ctx, &treg2, li);
+
+//			BGBCC_CCXL_GetRegForIntValue(ctx, &treg2, li);
+			BGBCC_CCXL_GetRegForSmallIntValue(ctx, &treg2, li, stv);
+			*rtreg=treg2;
+			return(1);
+		}
+
+#if 0
+		if(BGBCC_CCXL_TypeSmallUIntP(ctx, type))
+		{
+//			if(BGBCC_CCXL_IsRegImmUIntP(ctx, treg))
+//				return(1);
+		
+			li=BGBCC_CCXL_GetRegImmLongValue(ctx, treg);
+			
+//			if(((u32)li)!=li)
+//			if((((u32)li)!=li) && (((s32)li)!=li))
+//				{ BGBCC_DBGBREAK }
+
+			bty=BGBCC_CCXL_GetTypeBaseType(ctx, type);
+			switch(bty)
+			{
+			case CCXL_TY_SB: li=(signed char)li; break;
+			case CCXL_TY_UB: li=(unsigned char)li; break;
+			case CCXL_TY_SS: li=(signed short)li; break;
+			case CCXL_TY_US: li=(unsigned short)li; break;
+			case CCXL_TY_I: li=(signed int)li; break;
+			case CCXL_TY_UI: li=(unsigned int)li; break;
+			default:
+				break;
+			}
+			
+			BGBCC_CCXL_GetRegForUIntValue(ctx, &treg2, li);
+			*rtreg=treg2;
+			return(1);
+		}
+#endif
+
+		if(BGBCC_CCXL_TypeSmallLongP(ctx, type))
+		{
+//			if(BGBCC_CCXL_IsRegImmLongP(ctx, treg))
+//				return(1);
+
+			li=BGBCC_CCXL_GetRegImmLongValue(ctx, treg);
+			if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
+				BGBCC_CCXL_GetRegForULongValue(ctx, &treg2, li);
+			else
+				BGBCC_CCXL_GetRegForLongValue(ctx, &treg2, li);
+			*rtreg=treg2;
+			return(1);
+		}
+
+		if(BGBCC_CCXL_TypeFloatP(ctx, type) ||
+			BGBCC_CCXL_TypeFloat16P(ctx, type))
+		{
+			if(BGBCC_CCXL_IsRegImmFloatP(ctx, treg))
+				return(1);
+
+			f=BGBCC_CCXL_GetRegImmDoubleValue(ctx, treg);
+			BGBCC_CCXL_GetRegForFloatValue(ctx, &treg2, f);
+			*rtreg=treg2;
+			return(1);
+		}
+
+		if(BGBCC_CCXL_TypeFloatP(ctx, type))
+		{
+			if(BGBCC_CCXL_IsRegImmFloatP(ctx, treg))
+				return(1);
+
+			f=BGBCC_CCXL_GetRegImmDoubleValue(ctx, treg);
+			BGBCC_CCXL_GetRegForFloatValue(ctx, &treg2, f);
+			*rtreg=treg2;
+			return(1);
+		}
+
+		if(BGBCC_CCXL_TypeDoubleP(ctx, type))
+		{
+			if(BGBCC_CCXL_IsRegImmDoubleP(ctx, treg))
+				return(1);
+
+			f=BGBCC_CCXL_GetRegImmDoubleValue(ctx, treg);
+			BGBCC_CCXL_GetRegForDoubleValue(ctx, &treg2, f);
+			*rtreg=treg2;
+			return(1);
+		}
+	}
+
+	return(0);
+}

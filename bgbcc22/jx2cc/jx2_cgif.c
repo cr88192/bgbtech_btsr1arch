@@ -147,7 +147,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 			shctx->has_simdx2=1;
 //			shctx->has_fmovs=1;
 			shctx->has_fmovs=3;
-			shctx->has_fmovc=1;
+//			shctx->has_fmovc=1;
 //			shctx->has_dmacl=1;
 		}
 #endif
@@ -157,6 +157,8 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		{ shctx->has_alux=1; }
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "fpux"))
 		{ shctx->has_fpux=1; }
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "movc"))
+		{ shctx->has_fmovc=1; }
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "wexify"))
 		{ shctx->no_wexify=0; }
@@ -208,7 +210,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 
 		shctx->has_fmovs=3;
 
-		shctx->has_fmovc=1;
+//		shctx->has_fmovc=1;
 //		shctx->has_dmacl=1;
 #endif
 	}
@@ -1556,7 +1558,9 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 
 //	if(tr->n_ops>10)
 //	if(tr->n_ops>5)
-	if(tr->n_fops>5)
+//	if(tr->n_fops>5)
+	if(tr->n_fops>4)
+//	if(tr->n_fops>3)
 //	if(tr->n_ops>4)
 //	if(tr->n_ops>3)
 	{
@@ -1571,6 +1575,7 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 
 //	if(tr->n_ops>2)
 	if(tr->n_fops>2)
+//	if(tr->n_fops>1)
 	{
 #if 1
 //		if((ctx->optmode==BGBCC_OPT_SPEED) && sctx->is_tr_leaf)

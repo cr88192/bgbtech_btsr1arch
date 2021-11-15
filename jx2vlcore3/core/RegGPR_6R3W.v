@@ -359,6 +359,13 @@ begin
 	end
 `endif
 
+//	if(gprEx1Flush)
+//		tRegEx1NoForward = 1;
+//	if(gprEx2Flush)
+//		tRegEx2NoForward = 1;
+//	if(gprEx3Flush)
+//		tRegEx3NoForward = 1;
+
 
 `ifdef jx2_enable_wexjumbo
 	tValJimm={

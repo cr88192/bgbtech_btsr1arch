@@ -296,9 +296,18 @@ ccxl_status BGBCC_CCXL_RegisterCheckRelease(
 
 	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_TEMP)
 	{
+//		BGBCC_CCXL_LoadslotCacheFlushReg(ctx, reg);
+	
 		i=(reg.val&CCXL_REGID_BASEMASK);
 		if((i<0) || (i>=256))
+		{
+			if(i==CCXL_REGID_BASEMASK)
+				return(CCXL_STATUS_NO);
+
+			BGBCC_CCXL_TagError(ctx,
+				CCXL_TERR_STATUS(CCXL_STATUS_ERR_CANTACQUIRE));
 			return(CCXL_STATUS_ERR_BADVALUE);
+		}
 		ri=ctx->cur_func->regs[i];
 		if(ri->ucnt && (ri->ucnt<255))
 			ri->ucnt--;
@@ -314,6 +323,8 @@ ccxl_status BGBCC_CCXL_RegisterCheckRelease(
 					{ BGBCC_CCXL_EmitDropObj(ctx, ri->type, reg, st); }
 			}
 		}
+
+//		BGBCC_CCXL_LoadslotCacheFlushReg(ctx, reg);
 
 //		ctx->cur_func->regs[i]=NULL;
 //		BGBCC_CCXL_FreeRegisterInfo(ctx, ri);
@@ -375,6 +386,29 @@ ccxl_status BGBCC_CCXL_RegisterCheckAcquire(
 		if(ri->ucnt<255)
 			ri->ucnt++;
 		return(CCXL_STATUS_YES);
+	}
+	
+	return(CCXL_STATUS_NO);
+//	return(CCXL_STATUS_ERR_CANTACQUIRE);
+}
+
+ccxl_status BGBCC_CCXL_RegisterIsTempFree(
+	BGBCC_TransState *ctx, ccxl_register reg)
+{
+	BGBCC_CCXL_RegisterInfo *ri;
+	int i;
+
+	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_TEMP)
+	{
+		i=(reg.val&CCXL_REGID_BASEMASK);
+		if((i<0) || (i>=256))
+			return(CCXL_STATUS_ERR_BADVALUE);
+		ri=ctx->cur_func->regs[i];
+//		if(ri->ucnt<255)
+//			ri->ucnt++;
+		if(ri->ucnt<=0)
+			return(CCXL_STATUS_YES);
+		return(CCXL_STATUS_NO);
 	}
 	
 	return(CCXL_STATUS_NO);

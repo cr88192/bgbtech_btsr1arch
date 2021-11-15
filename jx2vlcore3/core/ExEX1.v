@@ -773,6 +773,9 @@ begin
 		end
 	
 		JX2_UCMD_BRA: begin
+//			tDoMemOpm	= 5'b01011;		//Hack, Dummy Load (TLB)
+//			tDoMemOp	= 1;
+
 //			if(!opPreBra)
 			if(opPreBra!=2'b01)
 			begin
@@ -783,6 +786,9 @@ begin
 		end
 
 		JX2_UCMD_BSR: begin
+//			tDoMemOpm	= 5'b01011;		//Hack, Dummy Load (TLB)
+//			tDoMemOp	= 1;
+
 `ifndef jx2_enable_riscv
 // `ifdef def_true
 //			$display("EX: BSR: LR=%X PC2=%X", regValPc, tValAgu);
@@ -826,6 +832,9 @@ begin
 		end
 
 		JX2_UCMD_JMP: begin
+//			tDoMemOpm	= 5'b01011;		//Hack, Dummy Load (TLB)
+//			tDoMemOp	= 1;
+
 //			tValBra		= regValRs[47:0];
 //			tValBra		= { tRegBraLr[63:48], regValRs[47:0] };
 			tValBra		= { regValPc[63:48], regValRs[47:0] };
@@ -871,7 +880,9 @@ begin
 			
 			if(tValAgu[0])
 			begin
-				$display("EX: JMP: Inter-ISA %d PC=%X", regInSr[26], tValBra);
+				$display("EX: JMP: Inter-ISA RV=%d Ixt=%X Rs=%X Tgt-PC=%X",
+					regInSr[26], opUIxt,
+					regValRs, tValBra);
 				tRegOutSr[26]	= !regInSr[26];
 				tRegOutSr[27]	= tValAgu[1];
 				tValBra[1:0]	= 0;
@@ -879,6 +890,9 @@ begin
 `endif
 		end
 		JX2_UCMD_JSR: begin
+//			tDoMemOpm	= 5'b01011;		//Hack, Dummy Load (TLB)
+//			tDoMemOp	= 1;
+
 //			$display("EX: JSR: LR=%X PC2=%X", regValRs, regValPc);
 
 `ifndef jx2_enable_riscv
@@ -1034,6 +1048,15 @@ begin
 //					tRegIdRn1		= regIdRm;
 //					tRegValRn1		= {UV63_00, !regInSr[0]};
 					tValOutDfl		= {UV63_00, !regInSr[0]};
+					tDoOutDfl		= 1;
+				end
+
+				JX2_UCIX_IXS_MOVST: begin
+					tValOutDfl		= {UV62_00, regInSr[1:0]};
+					tDoOutDfl		= 1;
+				end
+				JX2_UCIX_IXS_MOVPQ: begin
+					tValOutDfl		= {UV60_00, regInSr[7:4]};
 					tDoOutDfl		= 1;
 				end
 

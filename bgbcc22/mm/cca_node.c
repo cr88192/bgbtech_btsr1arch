@@ -1059,10 +1059,21 @@ BCCX_Node *BCCX_AddEnd2(BCCX_Node *node, BCCX_Node **rne, BCCX_Node *child)
 int BCCX_Add(BCCX_Node *node, BCCX_Node *child)
 {
 	BCCX_Node *cur, *lst;
-	int ix;
+	int ix, na, ci;
 
 	if(!child)
 		return(-1);
+
+	if((child->itag&4095)==bccx_Slist)
+	{
+		na=BCCX_GetNodeChildCount(child);
+		for(ci=0; ci<na; ci++)
+		{
+			cur=BCCX_GetNodeIndex(child, ci);
+			BCCX_Add(node, cur);
+		}
+		return(0);
+	}
 
 	if(node->list)
 	{
@@ -1085,15 +1096,26 @@ int BCCX_Add(BCCX_Node *node, BCCX_Node *child)
 
 void BCCX_AddV(BCCX_Node *parent, BCCX_Node *child)
 {
-	BCCX_Node *ch1;
+	BCCX_Node *ch1, *cur;
 	u16 *an;
 	BCCX_AttrVal *av;
-	int i;
+	int i, na, ci;
 
 	if(!parent)
 		return;
 	if(!child)
 		return;
+
+	if((child->itag&4095)==bccx_Slist)
+	{
+		na=BCCX_GetNodeChildCount(child);
+		for(ci=0; ci<na; ci++)
+		{
+			cur=BCCX_GetNodeIndex(child, ci);
+			BCCX_Add(parent, cur);
+		}
+		return;
+	}
 
 //	if(parent->magic!=BCCX_NODE_MAGIC)
 //		{ BGBCC_DBGBREAK }

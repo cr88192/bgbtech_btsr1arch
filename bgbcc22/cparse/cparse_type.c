@@ -344,7 +344,7 @@ int BGBCP_HandleTypedef(BGBCP_ParseState *ctx, BCCX_Node *n)
 				BCCX_SetCst(n0, &bgbcc_rcst_name, "name", s2);
 
 				BCCX_Add(n0, BCCX_Clone(n3));
-				BCCX_AddV(n0, BCCX_NewCst1V(&bgbcc_rcst_args, "args", n2));
+				BCCX_AddV(n0, BCCX_NewCst1(&bgbcc_rcst_args, "args", n2));
 				ctx->structs=BCCX_AddEnd2(ctx->structs, &ctx->e_structs, n0);
 
 				n1=BCCX_NewCst(&bgbcc_rcst_type, "type");
@@ -521,7 +521,7 @@ BCCX_Node *BGBCP_GetStructJ(BGBCP_ParseState *ctx, char *name, int ty)
 		BCCX_SetIntCst(nt, &bgbcc_rcst_flags, "flags", 0);
 		BCCX_SetIntCst(nt, &bgbcc_rcst_ind, "ind", 0);
 
-		n1=BCCX_NewCst1V(&bgbcc_rcst_var, "var", nt);
+		n1=BCCX_NewCst1(&bgbcc_rcst_var, "var", nt);
 		BCCX_SetCst(n1, &bgbcc_rcst_name, "name", s1);
 
 #ifdef BGBCC_BCCX2
@@ -1325,7 +1325,7 @@ BCCX_Node *BGBCP_DefClassC(BGBCP_ParseState *ctx, char **str)
 		BCCX_SetIntCst(n, &bgbcc_rcst_ind, "ind", 0);
 
 		if(nl)BCCX_AddV(n,
-			BCCX_NewCst1V(&bgbcc_rcst_attributes, "attributes", nl));
+			BCCX_NewCst1(&bgbcc_rcst_attributes, "attributes", nl));
 
 		ctx->dfl_flags=dfl_fl;
 
@@ -1423,7 +1423,7 @@ BCCX_Node *BGBCP_DeclAttributeC(BGBCP_ParseState *ctx, char **str)
 					s=BGBCP_Token2(s, b2, &ty2, ctx->lang);	//'('
 					n2=BGBCP_FunArgs(ctx, &s);
 					n1=BCCX_NewCst1(&bgbcc_rcst_attr, "attr",
-						BCCX_NewCst1V(&bgbcc_rcst_args, "args", n2));
+						BCCX_NewCst1(&bgbcc_rcst_args, "args", n2));
 					BCCX_SetCst(n1, &bgbcc_rcst_name, "name", b);
 				}else
 				{
@@ -1473,7 +1473,7 @@ BCCX_Node *BGBCP_DeclAttributeC(BGBCP_ParseState *ctx, char **str)
 				s=BGBCP_Token2(s, b2, &ty2, ctx->lang);	//'('
 				n2=BGBCP_FunArgs(ctx, &s);
 				n1=BCCX_NewCst1(&bgbcc_rcst_attr, "attr",
-					BCCX_NewCst1V(&bgbcc_rcst_args, "args", n2));
+					BCCX_NewCst1(&bgbcc_rcst_args, "args", n2));
 				BCCX_SetCst(n1, &bgbcc_rcst_name, "name", b);
 			}else
 			{
@@ -1519,7 +1519,7 @@ BCCX_Node *BGBCP_DeclAttributeC(BGBCP_ParseState *ctx, char **str)
 				s=BGBCP_Token2(s, b2, &ty2, ctx->lang);	//'('
 				n2=BGBCP_FunArgs(ctx, &s);
 				n1=BCCX_NewCst1(&bgbcc_rcst_attr, "attr",
-					BCCX_NewCst1V(&bgbcc_rcst_args, "args", n2));
+					BCCX_NewCst1(&bgbcc_rcst_args, "args", n2));
 				BCCX_SetCst(n1, &bgbcc_rcst_name, "name", b);
 			}else
 			{
@@ -1564,7 +1564,7 @@ BCCX_Node *BGBCP_DeclAttributeC(BGBCP_ParseState *ctx, char **str)
 				s=BGBCP_Token2(s, b2, &ty2, ctx->lang);	//'('
 				n2=BGBCP_FunArgs(ctx, &s);
 				n1=BCCX_NewCst1(&bgbcc_rcst_attr, "attr",
-					BCCX_NewCst1V(&bgbcc_rcst_args, "args", n2));
+					BCCX_NewCst1(&bgbcc_rcst_args, "args", n2));
 				BCCX_SetCst(n1, &bgbcc_rcst_name, "name", b);
 			}else
 			{
@@ -1625,7 +1625,7 @@ BCCX_Node *BGBCP_DeclAttributeJ(BGBCP_ParseState *ctx, char **str)
 					s=BGBCP_Token2(s, b2, &ty2, ctx->lang);	//'('
 					n2=BGBCP_FunArgs(ctx, &s);
 					n1=BCCX_NewCst1(&bgbcc_rcst_attr, "attr",
-						BCCX_NewCst1V(&bgbcc_rcst_args, "args", n2));
+						BCCX_NewCst1(&bgbcc_rcst_args, "args", n2));
 					BCCX_SetCst(n1, &bgbcc_rcst_name, "name", b);
 				}else
 				{
@@ -2217,7 +2217,7 @@ BCCX_Node *BGBCP_DefClassJ(BGBCP_ParseState *ctx, char **str)
 
 //			n1=BGBCP_DefType(ctx, &s);
 			n1=BGBCP_DefExpectType(ctx, &s);
-			BCCX_AddV(n, BCCX_NewCst1V(&bgbcc_rcst_super, "super", n1));
+			BCCX_AddV(n, BCCX_NewCst1(&bgbcc_rcst_super, "super", n1));
 
 			BGBCP_Token2(s, b, &ty, ctx->lang);
 			n1=NULL;
@@ -2621,7 +2621,7 @@ BCCX_Node *BGBCP_DefTypeJ(BGBCP_ParseState *ctx, char **str)
 		}
 
 		n1=BGBCP_FunArgs(ctx, &s);
-		BCCX_AddV(n, BCCX_NewCst1V(&bgbcc_rcst_arrayq, "arrayq", n1));
+		BCCX_AddV(n, BCCX_NewCst1(&bgbcc_rcst_arrayq, "arrayq", n1));
 
 		BGBCP_Token2(s, b, &ty, ctx->lang);
 	}
