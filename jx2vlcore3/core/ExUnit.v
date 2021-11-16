@@ -3175,8 +3175,8 @@ begin
 				else
 `endif
 
-`ifndef def_true
-// `ifdef def_true
+// `ifndef def_true
+`ifdef def_true
 				if(!ex3BraFlush)
 				begin
 					$display("ISR from EX3");
@@ -3184,12 +3184,12 @@ begin
 `ifndef jx2_isr2stage
 					crInSpc			= ex3ValBPc;
 					crInExsr[39:32]	= ex3RegInLastSr;
-//					crInLr			= ex3RegInLr;
-					crInLr			= ex3RegValLr;
+					crInLr			= ex3RegInLr;
+//					crInLr			= ex3RegValLr;
 					gprInDlr		= gprOutDlr;
 					gprInDhr		= gprOutDhr;
-//					braIsrSp		= gprOutSp[47:0];
-					braIsrSp		= ex3RegValSp;
+					braIsrSp		= gprOutSp[47:0];
+//					braIsrSp		= ex3RegValSp;
 `endif
 
 `ifdef jx2_isr2stage
@@ -3216,12 +3216,12 @@ begin
 `ifndef jx2_isr2stage
 					crInSpc			= ex2ValBPc;
 					crInExsr[39:32]	= ex2RegInLastSr;
-//					crInLr			= ex2RegInLr;
-					crInLr			= ex2RegValLr;
+					crInLr			= ex2RegInLr;
+//					crInLr			= ex2RegValLr;
 					gprInDlr		= gprOutDlr;
 					gprInDhr		= gprOutDhr;
-//					braIsrSp		= gprOutSp[47:0];
-					braIsrSp		= ex2RegValSp;
+					braIsrSp		= gprOutSp[47:0];
+//					braIsrSp		= ex2RegValSp;
 `endif
 
 `ifdef jx2_isr2stage
