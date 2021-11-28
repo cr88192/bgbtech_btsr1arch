@@ -42,6 +42,7 @@ void I_ShutdownGraphics(void);
 
 // Takes full 8 bit values.
 void I_SetPalette (byte* palette);
+void I_SetPaletteIndex (int idx);
 
 void I_UpdateNoBlit (void);
 void I_FinishUpdate (void);
@@ -54,6 +55,7 @@ void I_ReadScreen (dt_scrpix *scr);
 void I_BeginRead (void);
 void I_EndRead (void);
 
+int __hint_use_egpr();
 
 
 #endif

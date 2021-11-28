@@ -3361,7 +3361,7 @@ int BGBCC_CCXL_TypeUnpackOverflow(
 
 //		else if(tpn)
 //			{ ovf.qn=tpn-12; ovf.pn=1; }
-		if(tpn!=CCXL_TY_PN4_A0B)
+		if((tpn!=CCXL_TY_PN4_A0B) && (tpn!=CCXL_TY_PN4_A0P1))
 		{
 			ovf.asz[0]=(ty.val&CCXL_TY_ARRMASK)>>CCXL_TY_ARRSHL;
 			ovf.an=ovf.asz[0]?1:0;
@@ -4193,7 +4193,8 @@ char *BGBCC_CCXL_TypeGetSig(
 			break;
 
 		case CCXL_TY_UNDEF_I:
-			*t++='l';
+//			*t++='l';
+			*t++='i';
 			break;
 
 		default:
@@ -4522,6 +4523,8 @@ int BGBCC_CCXL_TypeCompatibleFlP(
 			(dty.val==CCXL_TY_QUATF)	||
 			(dty.val==CCXL_TY_VEC4SI)	||
 			(dty.val==CCXL_TY_VEC4UI)	||
+			(dty.val==CCXL_TY_I128)		||
+			(dty.val==CCXL_TY_UI128)	||
 			(dty.val==CCXL_TY_DCOMPLEX)	||
 			(dty.val==CCXL_TY_DIMAG)	)
 		{
@@ -4533,6 +4536,8 @@ int BGBCC_CCXL_TypeCompatibleFlP(
 				(sty.val==CCXL_TY_QUATF)	||
 				(sty.val==CCXL_TY_VEC4SI)	||
 				(sty.val==CCXL_TY_VEC4UI)	||
+				(sty.val==CCXL_TY_I128)		||
+				(sty.val==CCXL_TY_UI128)	||
 				(sty.val==CCXL_TY_DCOMPLEX)	||
 				(sty.val==CCXL_TY_DIMAG)	)
 			{
@@ -4541,17 +4546,34 @@ int BGBCC_CCXL_TypeCompatibleFlP(
 		}
 	}
 
-	if(BGBCC_CCXL_TypePointerP(ctx, dty))
+	if(BGBCC_CCXL_TypePointerP(ctx, dty) &&
+		!BGBCC_CCXL_TypeQuadPointerP(ctx, dty))
 	{
+		if(BGBCC_CCXL_TypeQuadPointerP(ctx, sty))
+			return(0);
+
 		if(BGBCC_CCXL_TypePointerP(ctx, sty) ||
 			BGBCC_CCXL_TypeArrayP(ctx, sty))
 		{
-			return(1);
+			if(fl&3)
+				return(1);
+
+			BGBCC_CCXL_TypeDerefType(ctx, dty, &dty2);
+			BGBCC_CCXL_TypeDerefType(ctx, sty, &sty2);
+			
+			if(BGBCC_CCXL_TypeCompatibleP(ctx, dty2, sty2))
+				return(1);
+
+			return(0);
 		}
 	}
 
-	if(BGBCC_CCXL_TypeArrayP(ctx, dty))
+	if(BGBCC_CCXL_TypeArrayP(ctx, dty) &&
+		!BGBCC_CCXL_TypeQuadPointerP(ctx, dty))
 	{
+		if(BGBCC_CCXL_TypeQuadPointerP(ctx, sty))
+			return(0);
+
 		if(BGBCC_CCXL_TypeArrayP(ctx, sty))
 		{
 			BGBCC_CCXL_TypeDerefType(ctx, dty, &dty2);
@@ -4597,11 +4619,31 @@ int BGBCC_CCXL_TypeCompatibleFlP(
 
 		return(0);
 	}
+	
+	if(BGBCC_CCXL_TypeQuadPointerP(ctx, dty))
+	{
+		if(BGBCC_CCXL_TypeQuadPointerP(ctx, sty))
+			return(1);
+		if((fl&2) && BGBCC_CCXL_TypeSgInt128P(ctx, sty))
+			return(1);
+		return(0);
+	}
+	
+	if(BGBCC_CCXL_TypeSgInt128P(ctx, dty))
+	{
+		if(BGBCC_CCXL_TypeSgInt128P(ctx, sty))
+			return(1);
+		if((fl&2) && BGBCC_CCXL_TypeQuadPointerP(ctx, sty))
+			return(1);
+		return(0);
+	}
 
 	if((fl&2) && (ctx->arch_sizeof_ptr==2))
 	{
 		if(BGBCC_CCXL_TypePointerP(ctx, dty))
 		{
+			if(BGBCC_CCXL_TypeQuadPointerP(ctx, sty))
+				return(0);
 			if(BGBCC_CCXL_TypePointerP(ctx, sty) ||
 				BGBCC_CCXL_TypeArrayP(ctx, sty) ||
 				BGBCC_CCXL_TypeSmallShortP(ctx, sty))
@@ -4616,6 +4658,8 @@ int BGBCC_CCXL_TypeCompatibleFlP(
 			BGBCC_CCXL_TypeSgIntP(ctx, dty) ||
 			BGBCC_CCXL_TypeSgNLongP(ctx, dty))
 		{
+			if(BGBCC_CCXL_TypeQuadPointerP(ctx, sty))
+				return(0);
 			if(BGBCC_CCXL_TypePointerP(ctx, sty) ||
 				BGBCC_CCXL_TypeSmallShortP(ctx, sty))
 			{
@@ -4629,6 +4673,8 @@ int BGBCC_CCXL_TypeCompatibleFlP(
 	{
 		if(BGBCC_CCXL_TypePointerP(ctx, dty))
 		{
+			if(BGBCC_CCXL_TypeQuadPointerP(ctx, sty))
+				return(0);
 			if(BGBCC_CCXL_TypePointerP(ctx, sty) ||
 				BGBCC_CCXL_TypeArrayP(ctx, sty) ||
 				BGBCC_CCXL_TypeSmallIntP(ctx, sty) ||
@@ -4643,6 +4689,8 @@ int BGBCC_CCXL_TypeCompatibleFlP(
 		if(BGBCC_CCXL_TypeSgIntP(ctx, dty) ||
 			BGBCC_CCXL_TypeSgNLongP(ctx, dty))
 		{
+			if(BGBCC_CCXL_TypeQuadPointerP(ctx, sty))
+				return(0);
 			if(BGBCC_CCXL_TypePointerP(ctx, sty) ||
 //				BGBCC_CCXL_TypeArrayP(ctx, sty) ||
 				BGBCC_CCXL_TypeSmallIntP(ctx, sty))
@@ -4657,6 +4705,8 @@ int BGBCC_CCXL_TypeCompatibleFlP(
 	{
 		if(BGBCC_CCXL_TypePointerP(ctx, dty))
 		{
+			if(BGBCC_CCXL_TypeQuadPointerP(ctx, sty))
+				return(0);
 			if(BGBCC_CCXL_TypePointerP(ctx, sty) ||
 				BGBCC_CCXL_TypeArrayP(ctx, sty) ||
 				BGBCC_CCXL_TypeSgLongP(ctx, sty) ||
@@ -4670,6 +4720,8 @@ int BGBCC_CCXL_TypeCompatibleFlP(
 		if(BGBCC_CCXL_TypeSgLongP(ctx, dty) ||
 			BGBCC_CCXL_TypeSgNLongP(ctx, dty))
 		{
+			if(BGBCC_CCXL_TypeQuadPointerP(ctx, sty))
+				return(0);
 			if(BGBCC_CCXL_TypePointerP(ctx, sty))
 			{
 				return(1);
@@ -4681,6 +4733,8 @@ int BGBCC_CCXL_TypeCompatibleFlP(
 		if(BGBCC_CCXL_TypeSgLongP(ctx, dty) ||
 			BGBCC_CCXL_TypeSgNLongP(ctx, dty))
 		{
+			if(BGBCC_CCXL_TypeQuadPointerP(ctx, sty))
+				return(0);
 			if(BGBCC_CCXL_TypePointerP(ctx, sty) ||
 				BGBCC_CCXL_TypeSmallLongP(ctx, sty))
 			{
@@ -5321,8 +5375,8 @@ ccxl_status BGBCC_CCXL_GetTypeBinaryDest(
 
 		if(BGBCC_CCXL_TypeDoubleP(ctx, rty))
 		{
-//			*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_D);
-			*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_F);
+			*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_D);
+//			*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_F);
 
 			return(BGBCC_CCXL_TypeSupportsOperatorP(ctx, *rdty, opr)?
 				CCXL_STATUS_YES:CCXL_STATUS_NO);
@@ -5547,8 +5601,8 @@ ccxl_status BGBCC_CCXL_GetTypeBinaryDest(
 	{
 		if(BGBCC_CCXL_TypeSmallIntP(ctx, rty))
 		{
-//			*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_D);
-			*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_F);
+			*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_D);
+//			*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_F);
 			return(BGBCC_CCXL_TypeSupportsOperatorP(ctx, *rdty, opr)?
 				CCXL_STATUS_YES:CCXL_STATUS_NO);
 //			return(CCXL_STATUS_YES);
@@ -5556,8 +5610,8 @@ ccxl_status BGBCC_CCXL_GetTypeBinaryDest(
 
 		if(BGBCC_CCXL_TypeSmallLongP(ctx, rty))
 		{
-//			*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_D);
-			*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_F);
+			*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_D);
+//			*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_F);
 			return(BGBCC_CCXL_TypeSupportsOperatorP(ctx, *rdty, opr)?
 				CCXL_STATUS_YES:CCXL_STATUS_NO);
 //			return(CCXL_STATUS_YES);
@@ -5567,8 +5621,8 @@ ccxl_status BGBCC_CCXL_GetTypeBinaryDest(
 			BGBCC_CCXL_TypeFloat16P(ctx, rty) ||
 			BGBCC_CCXL_TypeBFloat16P(ctx, rty))
 		{
-//			*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_D);
-			*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_F);
+			*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_D);
+//			*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_F);
 
 			return(BGBCC_CCXL_TypeSupportsOperatorP(ctx, *rdty, opr)?
 				CCXL_STATUS_YES:CCXL_STATUS_NO);

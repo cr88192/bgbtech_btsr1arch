@@ -29,7 +29,10 @@
 
 #include "gfxdrv_keys.h"
 
+int GfxDev_Key_Event(int key, int down);
 
+int	Key_Event (int c, int dn);
+int FRGL_TimeMS();
 
 #ifdef __linux
 static struct termios old_termios;

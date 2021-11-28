@@ -1349,6 +1349,9 @@ int BGBCC_JX2C_EmitStoreFrameVRegByValReg(
 
 	if(BGBCC_CCXL_IsRegLocalP(ctx, sreg))
 	{
+		if(sctx->is_leaftiny&1)
+			{ BGBCC_DBGBREAK }
+	
 		j=sreg.val&CCXL_REGID_BASEMASK;
 		rcls=ctx->cur_func->locals[j]->regcls;
 		ctx->cur_func->locals[j]->regflags|=BGBCC_REGFL_ACCESSED;
@@ -1373,6 +1376,9 @@ int BGBCC_JX2C_EmitStoreFrameVRegByValReg(
 
 	if(BGBCC_CCXL_IsRegTempP(ctx, sreg))
 	{
+		if(sctx->is_leaftiny&1)
+			{ BGBCC_DBGBREAK }
+	
 		j=sreg.val&CCXL_REGID_BASEMASK;
 		rcls=ctx->cur_func->regs[j]->regcls;
 
@@ -1409,6 +1415,9 @@ int BGBCC_JX2C_EmitStoreFrameVRegByValReg(
 
 	if(BGBCC_CCXL_IsRegArgP(ctx, sreg))
 	{
+		if(sctx->is_leaftiny&1)
+			{ BGBCC_DBGBREAK }
+	
 		j=sreg.val&CCXL_REGID_BASEMASK;
 		rcls=ctx->cur_func->args[j]->regcls;
 
@@ -1453,6 +1462,9 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 
 	if(BGBCC_CCXL_IsRegLocalP(ctx, sreg))
 	{
+		if(sctx->is_leaftiny&1)
+			{ BGBCC_DBGBREAK }
+	
 		j=sreg.val&CCXL_REGID_BASEMASK;
 		ctx->cur_func->locals[j]->regflags|=BGBCC_REGFL_ACCESSED;
 
@@ -1590,6 +1602,9 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 
 	if(BGBCC_CCXL_IsRegTempP(ctx, sreg))
 	{
+		if(sctx->is_leaftiny&1)
+			{ BGBCC_DBGBREAK }
+	
 		j=sreg.val&CCXL_REGID_BASEMASK;
 		tty=ctx->cur_func->regs[j]->type;
 		if(	BGBCC_CCXL_TypeFloatP(ctx, tty) ||
@@ -1698,6 +1713,9 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 
 	if(BGBCC_CCXL_IsRegArgP(ctx, sreg))
 	{
+		if(sctx->is_leaftiny&1)
+			{ BGBCC_DBGBREAK }
+	
 		j=sreg.val&CCXL_REGID_BASEMASK;
 		tty=ctx->cur_func->args[j]->type;
 
@@ -2598,6 +2616,9 @@ int BGBCC_JX2C_EmitStoreFrameVRegReg(
 
 	if(BGBCC_CCXL_IsRegLocalP(ctx, dreg))
 	{
+		if(sctx->is_leaftiny&1)
+			{ BGBCC_DBGBREAK }
+	
 		j=dreg.val&CCXL_REGID_BASEMASK;
 		ctx->cur_func->locals[j]->regflags|=BGBCC_REGFL_ACCESSED;
 
@@ -2712,6 +2733,9 @@ int BGBCC_JX2C_EmitStoreFrameVRegReg(
 
 	if(BGBCC_CCXL_IsRegTempP(ctx, dreg))
 	{
+		if(sctx->is_leaftiny&1)
+			{ BGBCC_DBGBREAK }
+	
 		j=dreg.val&CCXL_REGID_BASEMASK;
 
 #if 1	//Debug: Deref pointers to check validity
@@ -2803,6 +2827,9 @@ int BGBCC_JX2C_EmitStoreFrameVRegReg(
 
 	if(BGBCC_CCXL_IsRegArgP(ctx, dreg))
 	{
+		if(sctx->is_leaftiny&1)
+			{ BGBCC_DBGBREAK }
+	
 		j=dreg.val&CCXL_REGID_BASEMASK;
 
 #if 1	//Debug: Deref pointers to check validity
@@ -4861,7 +4888,9 @@ int BGBCC_JX2C_CalcFrameEpiKey(BGBCC_TransState *ctx,
 	if(sctx->freg_save&0xFFFF00FF)		{ epilbl=0; epik=0; epix=0; }
 
 	/* Not enough registers saved */
-	if((epik&0x70)!=0x70)
+	if((epik&0x60)!=0x60)
+//	if((epik&0x70)!=0x70)
+//	if((epik&0x7C)!=0x7C)
 		{ epilbl=0; epik=0; epix=0; }
 //	if((epik&0x60)!=0x60)
 //		{ epilbl=0; epik=0; epix=0; }
@@ -7309,9 +7338,12 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 							BGBCC_SH_NMID_MOVC,
 							BGBCC_SH_REG_SP, (k-j)+0,
 							BGBCC_SH_REG_GBR);
-						BGBCC_JX2_EmitOpLdRegDispReg(sctx, BGBCC_SH_NMID_MOVC,
+//						BGBCC_JX2_EmitOpLdRegDispReg(sctx, BGBCC_SH_NMID_MOVC,
+//							BGBCC_SH_REG_SP, (k-j)+8,
+//							BGBCC_SH_REG_PR);
+						BGBCC_JX2_EmitOpLdRegDispReg(sctx, BGBCC_SH_NMID_MOVQ,
 							BGBCC_SH_REG_SP, (k-j)+8,
-							BGBCC_SH_REG_PR);
+							BGBCC_SH_REG_R1);
 					}else
 					{
 						BGBCC_JX2_EmitOpLdRegDispReg(sctx,
@@ -7331,7 +7363,9 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 
 				if(sctx->has_fmovc)
 				{
-					BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_RTS);
+//					BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_RTS);
+					BGBCC_JX2_EmitOpReg(sctx,
+						BGBCC_SH_NMID_JMP, BGBCC_SH_REG_R1);
 				}else
 				{
 					BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_MOV,
@@ -7346,7 +7380,8 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 				if(((k+8)!=sctx->frm_size) && !sctx->is_simpass)
 					{ BGBCC_DBGBREAK; }
 
-				if(sctx->has_fmovc)
+//				if(sctx->has_fmovc)
+				if(0)
 				{
 					BGBCC_JX2_EmitOpLdRegDispReg(sctx, BGBCC_SH_NMID_MOVC,
 						BGBCC_SH_REG_SP, (k-j),

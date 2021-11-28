@@ -102,9 +102,31 @@ int BJX2_DecodeOpcode_DecF8(BJX2_Context *ctx,
 
 		if(jbits&0x02000000U)
 		{
-			op->nmid=BJX2_NMID_FLDCF;
-			op->fmid=BJX2_FMID_IMMREG;
-			op->Run=BJX2_Op_FLDCF_ImmGReg;
+			switch((jbits>>20)&3)
+			{
+			case 0:
+				op->nmid=BJX2_NMID_FLDCF;
+				op->fmid=BJX2_FMID_IMMREG;
+				op->Run=BJX2_Op_FLDCF_ImmGReg;
+				break;
+			case 1:
+				op->nmid=BJX2_NMID_PLDCH;
+				op->fmid=BJX2_FMID_IMMREG;
+				op->Run=BJX2_Op_PLDCH_ImmReg;
+				break;
+			case 2:
+				op->nmid=BJX2_NMID_PLDCM8SH;
+				op->fmid=BJX2_FMID_IMMREG;
+				op->Run=BJX2_Op_PLDCM8SH_ImmReg;
+				break;
+			case 3:
+				op->nmid=BJX2_NMID_PLDCM8UH;
+				op->fmid=BJX2_FMID_IMMREG;
+				op->Run=BJX2_Op_PLDCM8UH_ImmReg;
+				break;
+			default:
+				break;
+			}
 		}
 
 		break;

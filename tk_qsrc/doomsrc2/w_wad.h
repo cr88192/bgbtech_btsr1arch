@@ -82,14 +82,25 @@ extern	void**		lumpcache;
 extern	lumpinfo_t*	lumpinfo;
 extern	int		numlumps;
 
+void w_strupr (char *s);
+void w_strupr_n (char *t, const char *s, int n);
+int w_chkaccess(const char *name);
+
 void    W_InitMultipleFiles (char** filenames);
 void    W_Reload (void);
 
+int W_HashIndexForName(char *s);
+
 int	W_CheckNumForName (const char* name);
+int W_CheckNumForNameBase (int base, const char* name);
+
 int	W_GetNumForName (const char* name);
+int W_GetNumForNameBase (int base, char *name);
 
 int	W_LumpLength (int lump);
 void    W_ReadLump (int lump, void *dest);
+
+int W_LumpHandle (int lump);
 
 int W_GetNumForCache (void *ptr);
 
@@ -102,6 +113,8 @@ void *W_CacheFlatNum(int flat, int tag);
 void *W_CachePatchNum(int lump, int tag);
 void *W_CachePatchName(const char *name, int tag);
 void *W_CacheFlatName(const char *name, int tag);
+
+void W_Profile (void);
 
 
 

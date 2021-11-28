@@ -296,8 +296,8 @@ int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
 		if(op->rn==BJX2_REG_DLR)
 			break;
 
-		if(eq)
-			break;
+//		if(eq)
+//			break;
 
 #if 1
 		op->nmid=BJX2_NMID_FMOVS;
@@ -376,8 +376,8 @@ int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
 			break;
 		}
 		
-		if(eq)
-			break;
+//		if(eq)
+//			break;
 
 #if 1
 		op->nmid=BJX2_NMID_FMOVS;

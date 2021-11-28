@@ -893,12 +893,12 @@ void FindResponseFile (void)
 		size = ftell(handle);
 		fseek (handle,0,SEEK_SET);
 		file = malloc (size);
-		fread (file,size,1,handle);
+		k = fread (file,size,1,handle);
 		fclose (handle);
 			
 		// KEEP ALL CMDLINE ARGS FOLLOWING @RESPONSEFILE ARG
 		for (index = 0,k = i+1; k < myargc; k++)
-		moreargs[index++] = myargv[k];
+			moreargs[index++] = myargv[k];
 			
 		firstargv = myargv[0];
 		myargv = malloc(sizeof(char *)*MAXARGVS);

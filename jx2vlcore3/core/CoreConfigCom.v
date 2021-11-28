@@ -28,8 +28,12 @@
 
 `define	jx2_fpu_lane2			//Allow FPU from Lane 2
 
+// `define	jx2_shadq_nolane3		//Disallow SHAD/SHLD from Lane 3
+
 `define jx2_enable_fmov			//FPU Load/Store
 `define jx2_enable_movc			//MOV.C
+`define jx2_enable_movclite		//MOV.C (Lite)
+`define jx2_enable_bitsel		//Bit Select
 
 // `define jx2_alu_dmac			//ALU Multiply-Accumulate
 
@@ -135,6 +139,8 @@
 `define jx2_audio_leftonly		//Only left audio channel is used.
 // `define jx2_fmsyn_dyndcbias		//FM Synth: Dynamic DC Bias
 
+
+// `define jx2_fbuf_hwsprite		//Enable Hardware Sprites
 
 
 `ifdef jx2_enable_riscv

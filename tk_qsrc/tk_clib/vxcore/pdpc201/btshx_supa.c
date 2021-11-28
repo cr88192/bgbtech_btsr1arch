@@ -389,13 +389,25 @@ u64 __umodsq(u64 a, u64 b)
 
 s64 __smodsq(s64 a, s64 b)
 {
+	s64 c, d;
+
+	c=__sdivsq(a, b);
+	d=c*b;
+	return(a-d);
+
+#if 0
 	if(b<0)
-		{ return(-__smodsq(a, -b)); }
+	{
+//		c=__sdivsq(a, -b)
+//		return(-__smodsq(a, -b));
+	}
 
 	if(a<0)
 		{ return(-__umodsq(-a, b)); }
 	else
 		{ return(__umodsq(a, b)); }
+#endif
+
 }
 #endif
 

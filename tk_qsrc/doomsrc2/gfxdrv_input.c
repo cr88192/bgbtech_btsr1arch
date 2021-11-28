@@ -1,3 +1,7 @@
+#if defined(linux) || defined(__EMSCRIPTEN__)
+#include <sys/time.h>
+#endif
+
 // #include "doomtype.h"
 #include "doomdata.h"
 

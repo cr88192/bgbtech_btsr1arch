@@ -187,8 +187,18 @@ int I_GetTimeMs (void)
 //	return(TK_GetTimeMs());
 }
 
+dt_scrpix *vid_scr_vtop;
+dt_scrpix *vid_scr_vbot;
+int			vid_scr_vlf;
+int			vid_scr_vrt;
+
 void I_StartFrame (void)
 {
+	vid_scr_vtop=screen+((0+viewwindowy)*BASEWIDTH);
+	vid_scr_vbot=screen+((viewheight+viewwindowy)*BASEWIDTH);
+	vid_scr_vlf=viewwindowx+0;
+	vid_scr_vrt=viewwindowx+scaledviewwidth;
+
 #if 0
 	static int frnum=0;
 
@@ -1856,6 +1866,10 @@ void R_CellMarkBox (int bx0, int bx1, int by0, int by1);
 void I_FinishUpdate_ScanCopy(u16 *ics, u32 *ict, int blkn);
 void I_FinishUpdate_ScanCopyVbl(u16 *ics, u32 *ict, int blkn, int vblend);
 
+void I_FinishUpdate_ScanCopyClear(
+	u16 *ics, u32 *ict, int blkn, int pad,
+	u64 cl1, u64 cl2);
+
 #define I_SCR_BMP128K
 
 static int i_lastframems;
@@ -1896,13 +1910,17 @@ void I_DrawFramerate()
 #endif
 }
 
+#define	I_MKRGB555(r, g, b)		(((r)<<10)|((g)<<5)|(b))
+
+extern byte	st_didsbar;
+
 void I_FinishUpdate (void)
 {
 	u32 *conbufa;
 	int bx, by, by2;
 
-//	u64 pxa, pxb, pxc, pxd;
-	register u64 pxa, pxb, pxc, pxd;
+	u64 pxa, pxb, pxc, pxd;
+//	register u64 pxa, pxb, pxc, pxd;
 	u64 colmask;
 	byte *ics;
 	u16 *ict16, *ics16, *ics16b;
@@ -1910,7 +1928,8 @@ void I_FinishUpdate (void)
 	u16 *icz16;
 	u32 *ict;
 	u32 bxa, bxb, bxc, bxd;
-	int pix, bn, brt;
+	boolean clearok;
+	int pix, bn, brt, vwidth;
 	int i, j, k;
 
 	__hint_use_egpr();
@@ -1950,6 +1969,22 @@ void I_FinishUpdate (void)
 	if(!ics16)
 		return;
 
+	vwidth	= vid_scr_vrt - vid_scr_vlf;
+
+//	bxa	=	0x5555;
+	bxa	=	I_MKRGB555(14, 14, 14);
+	bxa |=	bxa<<16;
+//	bxb	=	0xAAAA;
+	bxb	=	I_MKRGB555(16, 16, 16);
+	bxb |=	bxb<<16;
+	pxa		= (((u64)bxa)<<32) | bxb;
+	pxb		= (((u64)bxb)<<32) | bxa;
+
+	clearok = (vid_scr_vlf==0) && (st_didsbar==0);
+	
+	if(vid_frnum&3)
+		clearok = 0;
+
 // #if 1
 #ifdef I_SCR_BMP128K
 // #if 0
@@ -1967,10 +2002,35 @@ void I_FinishUpdate (void)
 		ict+=80*8;
 #endif
 
+// dt_scrpix *vid_scr_vtop;
+// dt_scrpix *vid_scr_vbot;
+// int			vid_scr_vlf;
+// int			vid_scr_vrt;
+
 #if 1
 		if(!vid_flashblend)
 		{
+			if((ics16>=vid_scr_vtop) && (ics16<vid_scr_vbot) &&
+				clearok)
+			{
+				I_FinishUpdate_ScanCopyClear(ics16, ict, 80, 0, pxa, pxb);
+			}else
+			{
+				I_FinishUpdate_ScanCopy(ics16, ict, 80);
+			}
+#if 0
 			I_FinishUpdate_ScanCopy(ics16, ict, 80);
+
+#if 1
+			if((ics16>=vid_scr_vtop) && (ics16<vid_scr_vbot))
+			{
+				memset(
+					ics16+(vid_frnum&3)*BASEWIDTH+vid_scr_vlf,
+					0x80, vwidth*2);
+			}
+#endif
+#endif
+
 			ict+=80*8;
 			ics16+=4*BASEWIDTH;
 			continue;

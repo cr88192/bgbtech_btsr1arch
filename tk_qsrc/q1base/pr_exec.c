@@ -309,6 +309,9 @@ int PR_EnterFunction (dfunction_t *f)
 {
 	int		i, j, c, o;
 
+	if(!strcmp(f->s_name, "T_MissileTouch"))
+		pr_trace=true;
+
 	pr_stack[pr_depth].s = pr_xstatement;
 	pr_stack[pr_depth].f = pr_xfunction;	
 	pr_depth++;
@@ -358,7 +361,8 @@ int PR_LeaveFunction (void)
 		PR_RunError ("PR_ExecuteProgram: locals stack underflow\n");
 
 	for (i=0 ; i < c ; i++)
-		((int *)pr_globals)[pr_xfunction->parm_start + i] = localstack[localstack_used+i];
+		((int *)pr_globals)[pr_xfunction->parm_start + i] =
+			localstack[localstack_used+i];
 
 // up stack
 	pr_depth--;
@@ -409,6 +413,7 @@ void PR_ExecuteProgram (func_t fnum)
 
 	runaway = 100000;
 	pr_trace = false;
+//	pr_trace = true;
 
 // make a stack frame
 	exitdepth = pr_depth;
@@ -524,12 +529,12 @@ while (1)
 	
 	case OP_BITAND:
 //		tk_puts("PR_ExecuteProgram: OP_BITAND_F\n");
-		c->_float = (int)a->_float & (int)b->_float;
+		c->_float = (int)(a->_float) & (int)(b->_float);
 		break;
 	
 	case OP_BITOR:
 //		tk_puts("PR_ExecuteProgram: OP_BITOR_F\n");
-		c->_float = (int)a->_float | (int)b->_float;
+		c->_float = (int)(a->_float) | (int)(b->_float);
 		break;
 	
 		

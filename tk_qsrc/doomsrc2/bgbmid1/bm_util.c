@@ -224,7 +224,7 @@ static int bgbmid_ftell_i(void *fd)
 static int bgbmid_feof_i(void *fd)
 	{ return(feof((FILE *)fd)); }
 static int bgbmid_fgets_i(void *buf, int sz, void *fd)
-	{ fgets(buf, sz, (FILE *)fd); return(0); }
+	{ char *s=fgets(buf, sz, (FILE *)fd); return(0); }
 
 BMID_API void bgbmid_file_init()
 {

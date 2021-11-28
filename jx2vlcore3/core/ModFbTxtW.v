@@ -80,6 +80,24 @@ reg[7:0]	tPixCellMaxY;			//
 reg[7:0]	tNextPixCellMaxX;		//
 reg[7:0]	tNextPixCellMaxY;		//
 
+reg[11:0]	tPixRawUsPosX;
+reg[11:0]	tPixRawUsPosY;
+
+reg[11:0]	tNxtPixRawPosX;
+reg[11:0]	tNxtPixRawPosY;
+reg[11:0]	tPixRawPosX;
+reg[11:0]	tPixRawPosY;
+
+reg[11:0]	tNxtPixRelPosX;
+reg[11:0]	tNxtPixRelPosY;
+reg[11:0]	tPixRelPosX;
+reg[11:0]	tPixRelPosY;
+
+reg[11:0]	tPixRawMaxX;
+reg[11:0]	tPixRawMaxY;
+reg[11:0]	tNxtPixRawMaxX;
+reg[11:0]	tNxtPixRawMaxY;
+
 reg[7:0]	tCellCursorX;		//cursor cell X
 reg[7:0]	tCellCursorY;		//cursor cell Y
 reg			tDoCellCursor;		//draw blinking cursor
@@ -128,6 +146,111 @@ reg[15:0]	tFontGlyphV_C;
 reg[63:0]	tPixelData31;
 reg[63:0]	tPixelData32A;
 reg[ 7:0]	tPixelData32B;
+
+`ifdef jx2_fbuf_hwsprite
+
+reg[127:0]	tSprCtrlArr[63:0];
+reg[127:0]	tSprCtrl;
+
+reg[127:0]	tStSprCtrl;
+reg[5:0]	tStSprIdx;
+reg			tDoStSpr;
+
+reg[5:0]	tNxtSprRov;
+reg[5:0]	tSprRov;
+reg			tReqSprAdv;
+reg			tDoSprAdv;
+
+reg[127:0]	tSpr0Ctrl;
+reg[127:0]	tSpr0Data;
+reg[127:0]	tSpr1Ctrl;
+reg[127:0]	tSpr1Data;
+reg[127:0]	tSpr2Ctrl;
+reg[127:0]	tSpr2Data;
+reg[127:0]	tSpr3Ctrl;
+reg[127:0]	tSpr3Data;
+
+reg[127:0]	tSpr4Ctrl;
+reg[127:0]	tSpr4Data;
+reg[127:0]	tNxtSpr4Data;
+
+// wire[14:0]	tSpr0ColorA	= tSpr0Ctrl[46:32];
+// wire[14:0]	tSpr0ColorB	= tSpr0Ctrl[61:47];
+// wire[15:0]	tSpr0Glyph	= tSpr0Ctrl[15: 0];
+wire[11:0]	tSpr0PosX	= tSpr0Ctrl[75:64];
+wire[11:0]	tSpr0PosY	= tSpr0Ctrl[87:76];
+
+// wire[14:0]	tSpr1ColorA	= tSpr1Ctrl[46:32];
+// wire[14:0]	tSpr1ColorB	= tSpr1Ctrl[61:47];
+// wire[15:0]	tSpr1Glyph	= tSpr1Ctrl[15: 0];
+// wire[11:0]	tSpr1PosX	= tSpr1Ctrl[75:64];
+// wire[11:0]	tSpr1PosY	= tSpr1Ctrl[87:76];
+
+// wire[14:0]	tSpr2ColorA	= tSpr2Ctrl[46:32];
+// wire[14:0]	tSpr2ColorB	= tSpr2Ctrl[61:47];
+// wire[15:0]	tSpr2Glyph	= tSpr2Ctrl[15: 0];
+// wire[11:0]	tSpr2PosX	= tSpr2Ctrl[75:64];
+// wire[11:0]	tSpr2PosY	= tSpr2Ctrl[87:76];
+
+// wire[14:0]	tSpr3ColorA	= tSpr3Ctrl[46:32];
+// wire[14:0]	tSpr3ColorB	= tSpr3Ctrl[61:47];
+// wire[15:0]	tSpr3Glyph	= tSpr3Ctrl[15: 0];
+// wire[11:0]	tSpr3PosX	= tSpr3Ctrl[75:64];
+// wire[11:0]	tSpr3PosY	= tSpr3Ctrl[87:76];
+
+wire[15:0]	tSpr4GlyphA	= { 4'h0, tSpr4Ctrl[11: 0] };
+wire[15:0]	tSpr4GlyphB	= { 4'h0, tSpr4Ctrl[23:12] };
+
+reg			tDoSpr4Glyph;
+reg			tDoSpr4GlyphB;
+reg			tDoSpr4GlyphC;
+reg			tDoSpr4GlyphD;
+reg			tDoSpr4GlyphE;
+
+reg			tDoSpr4GlyphBit;
+reg			tDoSpr4GlyphBitL;
+
+reg[1:0]	tSprDrawBit;
+reg[1:0]	tNxtSprDrawBit;
+
+// wire[127:0]	tSprCurCtrl		= tDoSpr4GlyphBit ? tSpr1Ctrl : tSpr0Ctrl;
+// wire[127:0]	tSprCurData		= tDoSpr4GlyphBit ? tSpr1Data : tSpr0Data;
+
+wire[127:0]	tNxtSprCurCtrl		=
+	tSprDrawBit[1] ? 
+		(tSprDrawBit[0] ? tSpr3Ctrl : tSpr2Ctrl) :
+		(tSprDrawBit[0] ? tSpr1Ctrl : tSpr0Ctrl) ;
+wire[127:0]	tNxtSprCurData		=
+	tSprDrawBit[1] ? 
+		(tSprDrawBit[0] ? tSpr3Data : tSpr2Data) :
+		(tSprDrawBit[0] ? tSpr1Data : tSpr0Data) ;
+
+reg[127:0]	tSprCurCtrl;
+reg[127:0]	tSprCurData;
+reg[11:0]	tSprCurRelX;
+reg[11:0]	tSprCurRelY;
+
+wire[63:0]	tSprCurDataSel	= tSprCurData[ 63: 0];
+wire[63:0]	tSprCurDataMsk	= tSprCurData[127:64];
+
+wire[14:0]	tSprCurColorA	= tSprCurCtrl[46:32];
+wire[14:0]	tSprCurColorB	= tSprCurCtrl[61:47];
+// wire[15:0]	tSprCurGlyph	= tSprCurCtrl[15: 0];
+wire[11:0]	tSprCurPosX		= tSprCurCtrl[75:64];
+wire[11:0]	tSprCurPosY		= tSprCurCtrl[87:76];
+
+// wire[11:0]	tSprCurRelX		= tSprCurPosX - tPixRelPosX;
+// wire[11:0]	tSprCurRelY		= tSprCurPosY - tPixRelPosY;
+
+wire[11:0]	tNxtSprCurRelX		= tNxtSprCurCtrl[75:64] - tPixRelPosX;
+wire[11:0]	tNxtSprCurRelY		= tNxtSprCurCtrl[87:76] - tPixRelPosY;
+
+reg			tSprCurSelBit;
+reg			tSprCurMskBit;
+reg[15:0]	tSprCurSelClr;
+reg[15:0]	tSprCurSelClrL;
+
+`endif
 
 reg[5:0]	tClrA;
 reg[5:0]	tClrB;
@@ -257,6 +380,9 @@ reg		tNextCellIsOddB;
 reg		tCellLimitX;
 reg		tCellLimitY;
 
+reg		tPixRawLimitX;
+reg		tPixRawLimitY;
+
 assign	pixCellIx = tPixCellIx_B;
 // assign	pixCellIx = tPixCellIx_C;
 assign	fontGlyph = tFontGlyph;
@@ -326,7 +452,8 @@ begin
 	useCol80	= tCtrlRegVal[0];
 	useHalfCell	= tCtrlRegVal[1];
 	useRow50	= tCtrlRegVal[2];
-	useHorz800	= tCtrlRegVal[3];
+//	useHorz800	= tCtrlRegVal[3];
+	useHorz800	= tCtrlRegVal[3] && !tCtrlRegVal[9];
 	
 	tScrMode	= tCtrlRegVal[7:4];
 	useColPow2	= tCtrlRegVal[8];
@@ -352,6 +479,14 @@ begin
 	tNextPixCellMaxX	= 80;
 //	tNextPixCellMaxY	= 27;
 	tNextPixCellMaxY	= 25;
+
+	tNxtPixRawMaxX		= 640;
+	tNxtPixRawMaxY		= 400;
+
+	tNxtPixRawPosX		= tPixRawUsPosX;
+	tNxtPixRawPosY		= tPixRawUsPosY;
+	tNxtPixRelPosX		= tPixPosX_Z;
+	tNxtPixRelPosY		= tPixPosY_Z;
 
 	/* Z Stage */
 	if(useColPow2)
@@ -383,23 +518,35 @@ begin
 	else
 		if(useRow50)
 	begin
+		tNxtPixRawMaxY		= 400;
 		tNextPixCellMaxY	= 50;
 		if(useVert480)
+		begin
+			tNxtPixRawMaxY		= 480;
 			tNextPixCellMaxY	= 60;
+		end
 	end
 	else
 	begin
+		tNxtPixRawMaxY		= 200;
 		tNextPixCellMaxY	= 25;
 		if(useVert480)
+		begin
+			tNxtPixRawMaxY		= 240;
 			tNextPixCellMaxY	= 30;
+		end
 	end
 
 	if(useRow50)
 	begin
+		tNxtPixRawPosY	= tPixRawUsPosY[11:0];
+		tNxtPixRelPosY	= tPixPosY_Z[11:0];
 		tPixCellY[6:0]	= tPixPosY_Z[9:3];
 	end
 		else
 	begin
+		tNxtPixRawPosY	= { 1'b0, tPixRawUsPosY[11:1] };
+		tNxtPixRelPosY	= { 1'b0, tPixPosY_Z[11:1] };
 		tPixCellY[6:0]	= { tPixPosY_Z[9], tPixPosY_Z[9:4] };
 	end
 
@@ -407,12 +554,16 @@ begin
 	begin
 		if(useCol80 && !useHalfCell)
 		begin
-			tPixCellX[6:0] = tPixPosX_Z[9:3];
+			tNxtPixRawPosX		= tPixRawUsPosX[11:0];
+			tNxtPixRelPosX		= tPixPosX_Z[11:0];
+			tPixCellX[6:0]		= tPixPosX_Z[9:3];
 			tNextPixCellMaxX	= 128;
 		end
 		else
 		begin
-			tPixCellX[5:0] = tPixPosX_Z[9:4];
+			tNxtPixRawPosX		= { 1'b0, tPixRawUsPosX[11:1] };
+			tNxtPixRelPosX		= { 1'b0, tPixPosX_Z[11:1] };
+			tPixCellX[5:0]		= tPixPosX_Z[9:4];
 			tNextPixCellMaxX	= 64;
 		end
 
@@ -420,19 +571,37 @@ begin
 	else
 		if(useCol80)
 	begin
+		tNxtPixRawPosX	= tPixRawUsPosX[11:0];
+		tNxtPixRelPosX	= tPixPosX_Z[11:0];
+
 		tPixCellX[6:0] = tPixPosX_Z[9:3];
 		if(useHorz800)
+		begin
+			tNxtPixRawMaxX		= 800;
 			tNextPixCellMaxX	= 100;
+		end
 		else
+		begin
+			tNxtPixRawMaxX		= 640;
 			tNextPixCellMaxX	= 80;
+		end
 	end
 	else
 	begin
+		tNxtPixRawPosX	= { 1'b0, tPixRawUsPosX[11:1] };
+		tNxtPixRelPosX	= { 1'b0, tPixPosX_Z[11:1] };
+
 		tPixCellX[5:0] = tPixPosX_Z[9:4];
 		if(useHorz800)
+		begin
+			tNxtPixRawMaxX		= 400;
 			tNextPixCellMaxX	= 50;
+		end
 		else
+		begin
+			tNxtPixRawMaxX		= 320;
 			tNextPixCellMaxX	= 40;
+		end
 	end
 
 	if(useQtrCell)
@@ -465,6 +634,9 @@ begin
 //	tCellLimitY		= (tPixCellY[5:0] >= tPixCellMaxY) || tPixCellY[6];
 	tCellLimitY		= (tPixCellY[7:0] >= tPixCellMaxY) || tPixCellY[8];
 	tCellLimitX		= tPixCellX[7:0] >= tPixCellMaxX;
+	
+	tPixRawLimitX	= tPixRawPosX > tPixRawMaxX;
+	tPixRawLimitY	= tPixRawPosY > tPixRawMaxY;
 	
 	tDoCellCursor =
 		(tPixCellX[7:0] == tCellCursorX) &&
@@ -522,6 +694,57 @@ begin
 	begin
 		tCellData0 = cellData;
 	end
+
+`ifdef jx2_fbuf_hwsprite
+
+	tStSprCtrl = 0;
+	tStSprIdx = 0;
+	tDoStSpr = 0;
+
+	if(	tCellLimitY &&
+		(cellData[31:30]==2'b00) &&
+		(cellData[63:62]==2'b10))
+	begin
+		tStSprCtrl = cellData[127:0];
+		tStSprIdx = cellData[93:88];
+		tDoStSpr = 1;
+	end
+
+	tNxtSprRov	= tSprRov;
+	tDoSprAdv	= 0;
+	tReqSprAdv	= 0;
+	
+	if(tPixRawLimitY)
+	begin
+		if(tSprRov != 4)
+			tReqSprAdv	= 1;
+	end
+	else
+	begin
+		if(tPixRelPosY >= (tSpr0PosY+8))
+			tReqSprAdv	= 1;
+
+		if((tSpr0Ctrl[63:62]!=2'b10) || (tSpr0Ctrl[31:30]!=2'b00))
+			tReqSprAdv	= 1;
+	end
+		
+	if(tReqSprAdv)
+	begin
+		if(	tDoSpr4GlyphB && tDoSpr4GlyphC &&
+			tDoSpr4GlyphD && tDoSpr4GlyphE)
+		begin
+			tNxtSprRov	= tSprRov + 1;
+			tDoSprAdv	= 1;
+		end
+		else
+			if((tSpr4Ctrl[63:62]!=2'b10) || (tSpr4Ctrl[31:30]!=2'b00))
+		begin
+			tNxtSprRov	= tSprRov + 1;
+			tDoSprAdv	= 1;
+		end
+	end
+
+`endif
 
 //	if(tPixCellIx_B >= 2000)
 //		tCellData = 0;
@@ -608,6 +831,18 @@ begin
 	tClrYuvB[4:0]=5'h10+(tClrRgbB[ 3: 0]-tClrRgbB[ 7: 4]);
 
 	tFontData_A = fontData;
+
+`ifdef jx2_fbuf_hwsprite
+	tNxtSpr4Data	= tSpr4Data;
+
+	if(tDoSpr4GlyphC)
+	begin
+		if(tDoSpr4GlyphBitL)
+			tNxtSpr4Data[ 63: 0]	= fontData;
+		else
+			tNxtSpr4Data[127:64]	= fontData;
+	end
+`endif
 
 	tFontGlyphY_A = tCellData[127:64];
 	tFontGlyphU_A = tCellData[63:48];
@@ -1075,6 +1310,25 @@ begin
 		tFontGlyph = { 10'b0000001111, tPixClrBmYv8_C[7:2] };
 	end
 
+`ifdef jx2_fbuf_hwsprite
+
+	tDoSpr4Glyph		= 0;
+	tDoSpr4GlyphBit		= !tDoSpr4GlyphBitL;
+
+	if(tPixRawLimitX)
+	begin
+		tFontGlyph		= tDoSpr4GlyphBitL ? tSpr4GlyphB : tSpr4GlyphA;
+
+//		tFontGlyph		= tSpr4Glyph;
+//		tFontGlyph[0]	= tSpr4Glyph[0] ^ tDoSpr4GlyphBitL;
+		tDoSpr4Glyph	= 1;
+	end
+	
+	if(tDoSprAdv)
+		tDoSpr4Glyph	= 0;
+
+`endif
+
 
 	/* Stage D */
 
@@ -1141,6 +1395,33 @@ begin
 //		tPixCu=128;
 	end
 
+`ifdef jx2_fbuf_hwsprite
+	tNxtSprDrawBit	= tSprDrawBit + 1;
+
+	tSprCurSelBit	= tSprCurDataSel[ { tSprCurRelY[2:0], tSprCurRelY[2:0] } ];
+	tSprCurMskBit	= tSprCurDataMsk[ { tSprCurRelY[2:0], tSprCurRelY[2:0] } ];
+
+	tSprCurSelClr	= (tSprDrawBit != 0) ? tSprCurSelClrL : 0;
+	
+	if((tSprCurRelX[11:3]==0) && (tSprCurRelY[11:3]==0) && tSprCurMskBit)
+	begin
+		tSprCurSelClr	= {
+			1'b1,
+			tSprCurSelBit ?
+				tSprCurColorA :
+				tSprCurColorB
+			};
+	end
+
+	if(tSprCurSelClrL[15])
+	begin
+		tPixCy		= { tSprCurSelClrL[ 9: 4], tSprCurSelClrL[ 9: 8] };
+		tPixCu		= { tSprCurSelClrL[ 4: 0], tSprCurSelClrL[ 4: 2] };
+		tPixCv		= { tSprCurSelClrL[14:10], tSprCurSelClrL[14:12] };
+		tPixAux[0]	= 1;
+	end
+`endif
+
 //	tPixAux[1]	= (tPixCellGx_C != tPixCellGx_B);
 	tPixAux[1]	= (tPixCellGx_D != tPixCellGx_C);
 //	tPixAux[1]	= (tPixCellGx_E != tPixCellGx_D);
@@ -1192,8 +1473,26 @@ begin
 	tPixCv2			<= tPixCv;
 	tPixAux2		<= tPixAux;
 
-	tPixPosX_Z		<= pixPosX;
-	tPixPosY_Z		<= pixPosY;
+//	tPixPosX_Z		<= pixPosX;
+//	tPixPosY_Z		<= pixPosY;
+
+	tPixRawUsPosX	<= pixPosX;
+	tPixRawUsPosY	<= pixPosY;
+	tPixRawPosX		<= tNxtPixRawPosX;
+	tPixRawPosY		<= tNxtPixRawPosY;
+	tPixRelPosX		<= tNxtPixRelPosX;
+	tPixRelPosY		<= tNxtPixRelPosY;
+
+	tPixRawMaxX		<= tNxtPixRawMaxX;
+	tPixRawMaxY		<= tNxtPixRawMaxY;
+
+
+	tPixPosX_Z		<= pixPosX + {
+		tCtrlRegVal[55] ? 4'hF : 4'h0,
+		tCtrlRegVal[55:48] };
+	tPixPosY_Z		<= pixPosY + {
+		tCtrlRegVal[63] ? 4'hF : 4'h0,
+		tCtrlRegVal[63:56] };
 
 	tCtrlRegVal		<= ctrlRegVal;
 
@@ -1284,6 +1583,49 @@ begin
 	tClrYuvA_C			<= tClrYuvA_B;
 	tClrYuvB_C			<= tClrYuvB_B;
 	tClrYuvC_D			<= tClrYuvC_C;
+
+`ifdef jx2_fbuf_hwsprite
+	if(tDoStSpr)
+	begin
+		tSprCtrlArr[tStSprIdx]	<= tStSprCtrl;
+	end
+
+	tSprRov		<= tNxtSprRov;
+	tSprCtrl	<= tSprCtrlArr[tSprRov];
+
+	if(tDoSprAdv)
+	begin
+		tSpr0Ctrl	<= tSpr1Ctrl;
+		tSpr0Data	<= tSpr1Data;
+		tSpr1Ctrl	<= tSpr2Ctrl;
+		tSpr1Data	<= tSpr2Data;
+		tSpr2Ctrl	<= tSpr3Ctrl;
+		tSpr2Data	<= tSpr3Data;
+		tSpr3Ctrl	<= tSpr4Ctrl;
+		tSpr3Data	<= tSpr4Data;
+
+		tSpr4Ctrl	<= tSprCtrl;
+//		tSpr4Data	<= tSpr1Data;
+		tSprRov		<= tNxtSprRov;
+	end
+
+	tDoSpr4GlyphB		<= tDoSpr4Glyph;
+	tDoSpr4GlyphC		<= tDoSpr4GlyphB;
+	tDoSpr4GlyphD		<= tDoSpr4GlyphC;
+	tDoSpr4GlyphE		<= tDoSpr4GlyphD;
+	tDoSpr4GlyphBitL	<= tDoSpr4GlyphBit;
+
+	tSpr4Data		<= tNxtSpr4Data;
+
+	tSprCurSelClrL	<= tSprCurSelClr;
+	tSprDrawBit		<= tNxtSprDrawBit;
+
+	tSprCurCtrl		<= tNxtSprCurCtrl;
+	tSprCurData		<= tNxtSprCurData;
+	tSprCurRelX		<= tNxtSprCurRelX;
+	tSprCurRelY		<= tNxtSprCurRelY;
+
+`endif
 
 end
 

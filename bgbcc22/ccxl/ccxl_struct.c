@@ -790,6 +790,11 @@ ccxl_status BGBCC_CCXL_GetSigMinMaxSize(
 	int sz, al, na, ret;
 	int i, j, k;
 
+	sza[0]=0;
+	sza[1]=0;
+	ala[0]=0;
+	ala[1]=0;
+
 	ret=0;
 	switch(*sig)
 	{

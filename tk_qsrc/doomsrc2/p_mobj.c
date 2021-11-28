@@ -307,7 +307,8 @@ void P_ZMovement (mobj_t* mo)
 		// Note (id):
 		//  somebody left this after the setting momz to 0,
 		//  kinda useless there.
-		if (mo->flags & MF_SKULLFLY)
+//		if (mo->flags & MF_SKULLFLY)
+		if(0)  //BGB: Switch to old Doom behavior.
 		{
 			// the skull slammed into something
 			mo->momz = -mo->momz;
@@ -328,6 +329,12 @@ void P_ZMovement (mobj_t* mo)
 			mo->momz = 0;
 		}
 		mo->z = mo->floorz;
+
+		if (mo->flags & MF_SKULLFLY)  //BGB: Switch to old Doom behavior.
+		{
+			// the skull slammed into something
+			mo->momz = -mo->momz;
+		}
 
 		if ( (mo->flags & MF_MISSILE)
 			 && !(mo->flags & MF_NOCLIP) )

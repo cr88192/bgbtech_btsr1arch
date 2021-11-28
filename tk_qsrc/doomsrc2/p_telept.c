@@ -179,6 +179,7 @@ EV_Teleport
 				return 0;
 			
 			thing->z = thing->floorz;  //fixme: not needed?
+
 			if (thing->player)
 				thing->player->viewz = thing->z+thing->player->viewheight;
 			

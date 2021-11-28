@@ -142,6 +142,11 @@ R_PointToDist
 ( fixed_t	x,
   fixed_t	y );
 
+fixed_t
+R_PointToDist2
+( fixed_t	x,
+  fixed_t	y );
+
 
 fixed_t R_ScaleFromGlobalAngle (angle_t visangle);
 

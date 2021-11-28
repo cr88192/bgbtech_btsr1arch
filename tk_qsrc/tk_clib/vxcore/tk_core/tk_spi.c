@@ -371,6 +371,10 @@ int TKSPI_SendCmd(int cmd, u32 arg)
 			break;
 		n--;
 	}
+
+	if(res==0xFF)
+		__debugbreak();
+
 //	printf("TKSPI_SendCmd: Result=%02X\n", res);
 	return(res);
 }

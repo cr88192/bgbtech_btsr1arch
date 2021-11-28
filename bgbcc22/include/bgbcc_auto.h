@@ -1217,6 +1217,7 @@ BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_CloneRegisterInfo(BGBCC_TransState *ctx, BGB
 ccxl_status BGBCC_CCXL_RegisterAllocTemporary(BGBCC_TransState *ctx, ccxl_type bty, ccxl_register *rtreg);
 ccxl_status BGBCC_CCXL_RegisterAllocTemporaryLLn(BGBCC_TransState *ctx, ccxl_type bty, ccxl_register *rtreg, char *fn, int ln);
 ccxl_status BGBCC_CCXL_RegisterAllocTemporaryInit(BGBCC_TransState *ctx, ccxl_type bty, ccxl_register *rtreg);
+ccxl_status BGBCC_CCXL_RegisterAllocTemporaryInit2(BGBCC_TransState *ctx, ccxl_type bty, ccxl_register *rtreg, int fl);
 ccxl_status BGBCC_CCXL_RegisterAllocTemporaryInt(BGBCC_TransState *ctx, ccxl_register *rtreg);
 ccxl_status BGBCC_CCXL_RegisterAllocTemporaryLong(BGBCC_TransState *ctx, ccxl_register *rtreg);
 ccxl_status BGBCC_CCXL_RegisterAllocTemporaryFloat(BGBCC_TransState *ctx, ccxl_register *rtreg);
@@ -3123,6 +3124,8 @@ int BGBCC_JX2C_EmitJCmpVRegVRegQLong(BGBCC_TransState *ctx, BGBCC_JX2_Context *s
 int BGBCC_JX2C_EmitJCmpVRegZeroQLong(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, int cmp, int lbl);
 int BGBCC_JX2C_EmitPredCmpVRegVRegQLong(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp);
 int BGBCC_JX2C_EmitPredCmpVRegZeroQLong(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, int cmp);
+int BGBCC_JX2C_EmitCSeltSelectVRegVRegVRegQLong(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg);
+int BGBCC_JX2C_EmitCSeltCompareVRegVRegQLong(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, int cmp, ccxl_register sreg, ccxl_register treg);
 //AHSRC:jx2cc/jx2_lvarith.c
 int BGBCC_JX2C_EmitBinaryVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
 int BGBCC_JX2C_EmitBinaryVRegVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
@@ -3301,6 +3304,7 @@ int BGBCC_JX2_CheckCanSwapOps32(BGBCC_JX2_Context *sctx, int opw1, int opw2, int
 int BGBCC_JX2_CheckOps32ValidWexSuffix(BGBCC_JX2_Context *sctx, int opw1, int opw2);
 int BGBCC_JX2_CheckOps32ValidWexSuffix3W(BGBCC_JX2_Context *sctx, int opw1, int opw2);
 int BGBCC_JX2_CheckOps32ValidWexSuffixFl(BGBCC_JX2_Context *sctx, int opw1, int opw2, int fl);
+int BGBCC_JX2_CheckOps32ValidWexPrefix3W(BGBCC_JX2_Context *sctx, int opw1, int opw2);
 int BGBCC_JX2_CheckOps32ValidWexPrefix(BGBCC_JX2_Context *sctx, int opw1, int opw2);
 ccxl_status BGBCC_JX2_AdjustWexifyOp(BGBCC_JX2_Context *sctx, int *ropw1, int *ropw2);
 int BGBCC_JX2_InferInterlockCost(BGBCC_JX2_Context *sctx, int opw1, int opw2, int opw3, int opw4, int opw5, int opw6, int opw7, int opw8);

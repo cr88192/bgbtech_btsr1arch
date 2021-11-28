@@ -178,6 +178,9 @@ byte has_dmacl;		//Has MACx.L / DMACx.L
 
 byte abi_evenonly;	//Pass register pairs in Even Registers.
 
+byte do_shuffle;
+
+
 byte rov_sreg;		//rover for scratch registers
 byte rov_rshuf;		//rover for register shuffle
 
@@ -315,6 +318,13 @@ byte stat_opc_issfx;
 
 int stat_opc_7xx;
 int stat_opc_9xx;
+
+int stat_const_maskhit;
+int stat_const_maskjumbo;
+int stat_const_masktot;
+
+int stat_const_jumbo64;
+int stat_const_jumbo96;
 
 
 int sim_voffs;		//est' offset between real PC and sim PC

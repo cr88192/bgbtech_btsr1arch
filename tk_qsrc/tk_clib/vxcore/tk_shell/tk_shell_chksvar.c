@@ -186,6 +186,8 @@ int tk_shell_chksane_var()
 	p1 = __var(int x, int y):int { return(x+y); };
 	p2 = __var(int x, int y):int { return(x+y+k); };
 
+//	__debugbreak();
+
 //	p3 = [=](int x, int y)->int { return(x+y); };
 	p3 = [w=j*k](int x, int y)->int { return(x+y+k+w); };
 

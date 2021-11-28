@@ -1361,6 +1361,44 @@ void tk_putc(int val);
 int tk_puts(char *msg);
 void I_FinishUpdate_ScanCopy(u16 *ics, u32 *ict, int blkn);
 
+static int i_lastframems;
+
+void I_DrawFramerate()
+{
+	char tb[16];
+	int t0, dt, fps;
+	
+	t0=I_GetTimeMs();
+	dt=t0-i_lastframems;
+	i_lastframems=t0;
+
+//	dt=100;
+
+	if((dt<=0) || (dt>=1000))
+		return;
+	
+//	dt=100;
+	
+	fps=1000/dt;
+
+//	__debugbreak();
+
+//	HU_DrawDecNum(320-12, 2, fps, 2);
+
+#if 1
+//	tb[0]='0'+((fps/100)%10);
+//	tb[1]='0'+((fps/ 10)%10);
+//	tb[2]='0'+((fps    )%10);
+//	tb[3]=0;
+
+	tb[0]='0'+((fps/ 10)%10);
+	tb[1]='0'+((fps    )%10);
+	tb[2]=0;
+	
+	Draw_String(320-22, 2, tb);
+#endif
+}
+
 int vid_frnum;
 
 void	VID_Update (vrect_t *rects)
@@ -1376,6 +1414,8 @@ void	VID_Update (vrect_t *rects)
 	u32 bxa, bxb, bxc, bxd;
 	int pix, bn;
 	int i, j, k;
+
+	I_DrawFramerate();
 
 //	conbufa=(u32 *)0xA00A0000;
 	conbufa=(u32 *)0xF00A0000;

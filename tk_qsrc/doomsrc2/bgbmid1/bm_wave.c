@@ -18,6 +18,11 @@ BMID_API byte *BGBMID_LoadWAV(char *name,
 	int chan, rate, bits, slen;
 	int i, j;
 
+	chan=0;
+	rate=0;
+	bits=0;
+	slen=0;
+
 	fd=bgbmid_fopen(name, "rb");
 
 	if(!fd)
@@ -26,7 +31,7 @@ BMID_API byte *BGBMID_LoadWAV(char *name,
 		return(NULL);
 	}
 
-	tag=0; len=0; rsrc=0;
+	slen=0; tag=0; len=0; rsrc=0;
 	for(i=0; i<4; i++)tag+=bgbmid_fgetc(fd)<<(i*8);
 	for(i=0; i<4; i++)len+=bgbmid_fgetc(fd)<<(i*8);
 	for(i=0; i<4; i++)rsrc+=bgbmid_fgetc(fd)<<(i*8);

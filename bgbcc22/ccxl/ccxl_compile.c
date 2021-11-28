@@ -191,6 +191,9 @@ void BGBCC_CCXL_PrintTagWarn(BGBCC_TransState *ctx)
 	int lfn, lln, tag, pix, pcn;
 	int i, j, k;
 
+	stra[0]=NULL;
+	stra[1]=NULL;
+
 	for(i=0; i<ctx->tagw_n_warn; i++)
 	{
 		lfn=ctx->tagw_lfn[i];
@@ -1032,6 +1035,8 @@ void BGBCC_CCXL_CompileInitVar(BGBCC_TransState *ctx,
 			na=1;
 			if((s0[1]>='0') && (s0[1]<='9'))
 				na=s0[1]-'0';
+
+			s1=NULL;
 			
 			switch(na)
 			{

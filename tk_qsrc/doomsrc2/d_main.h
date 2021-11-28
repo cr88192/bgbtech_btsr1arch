@@ -62,4 +62,10 @@ void D_PageDrawer (void);
 void D_AdvanceDemo (void);
 void D_StartTitle (void);
 
+void D_UpdateSound (void);
+
+void I_SubmitSound2(int extra);
+
+int __int_clamp(int val, int min, int max);
+
 #endif

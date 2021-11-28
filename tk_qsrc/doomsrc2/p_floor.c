@@ -471,6 +471,9 @@ EV_BuildStairs
     fixed_t		stairsize;
     fixed_t		speed;
 
+	speed = 0;
+	stairsize = 0;
+
     secnum = -1;
     rtn = 0;
     while ((secnum = P_FindSectorFromLineTag(line,secnum)) >= 0)

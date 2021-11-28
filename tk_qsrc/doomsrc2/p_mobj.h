@@ -291,6 +291,13 @@ typedef struct mobj_s
 mobj_t	*EV_FindMObjForTid(int tid);
 mobj_t	*EV_FindMObjForTid2(void **rptr, int tid);
 
+int R_ThingIsPolyObjP (mobj_t* thing);
+void	R_FlushPolyObj();
+
+int R_BlkMapCheckOversizeP (int x, int y);
+
+int EV_CountMObjForTid(int type, int tid);
+
 #endif
 //-----------------------------------------------------------------------------
 //

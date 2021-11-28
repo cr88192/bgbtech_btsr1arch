@@ -121,7 +121,8 @@ main ()
 #if 1
 	n=4000000;
 #else
-	n=300000000;
+//	n=300000000;
+	n=30000000;
 //    scanf ("%d", &n);
 #endif
     Number_Of_Runs = n;

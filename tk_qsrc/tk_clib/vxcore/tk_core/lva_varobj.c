@@ -611,6 +611,7 @@ u64 TKMM_LVA_VarObjFetchKeyR(LVA_VarObject *obj, int key,
 	return(1);
 }
 
+__declspec(nocull)
 u64 TKMM_LVA_VarObjFetchKey(LVA_VarObject *obj, int key)
 {
 	LVA_VarObject *dsarr[256];
@@ -700,6 +701,7 @@ int TKMM_LVA_VarObjTrySetKeyR(LVA_VarObject *obj, int key, u64 val,
 	return(0);
 }
 
+__declspec(nocull)
 int TKMM_LVA_VarObjSetKey(LVA_VarObject *obj, int key, u64 val)
 {
 	LVA_VarObject *dsarr[256];

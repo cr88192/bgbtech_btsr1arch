@@ -789,12 +789,8 @@ void sanity_glColor4f(float red, float green, float blue, float alpha)
 
 #include "tk_shell_chksvar.c"
 
-int tk_shell_chksane()
+int tk_shell_chksane_arith()
 {
-	long long tba[32];
-	long long tbb[32];
-	char *tb, *ts, *tb1;
-
 	int				*pi, *pj;
 	long long		*pli, *plj;
 	unsigned int	*pui, *puj;
@@ -802,9 +798,60 @@ int tk_shell_chksane()
 	long long		li, lj, lk, ll;
 	unsigned int	ui, uj, uk, ul;
 	int				i, j, k, l;
-	
+
 	pi=&i;
 	pj=&j;
+
+	pui=&ui;
+	puj=&uj;
+
+	*pi=123456;
+	*pj=56789;
+	*pui=123456;
+	*puj=56789;
+
+	lk=i*j;
+	ll=ui*uj;
+
+	if(lk!=0xFFFFFFFFA1E27F40LL)
+		__debugbreak();
+	if(ll!=0x0000000A1E27F40ULL)
+		__debugbreak();
+
+	lk=i*uj;
+	ll=ui*j;
+	if(ll!=0x0000000A1E27F40ULL)
+		__debugbreak();
+	if(ll!=0x0000000A1E27F40ULL)
+		__debugbreak();
+
+	lk=i*56789;
+	ll=ui*56789;
+
+	if(lk!=0xFFFFFFFFA1E27F40LL)
+		__debugbreak();
+	if(ll!=0x0000000A1E27F40ULL)
+		__debugbreak();
+
+	*pi=123456;
+	*pj=6789;
+	k=i*j;
+	l=i*(-j);
+
+	if(k!= 838142784)
+		__debugbreak();
+	if(l!=-838142784)
+		__debugbreak();
+		
+	if(((byte)i)!=0x40)
+		__debugbreak();
+	if(((byte)j)!=0x85)
+		__debugbreak();
+
+	if(((s16)i)!=-7616)
+		__debugbreak();
+	if(((u16)i)!=0xE240)
+		__debugbreak();
 	
 	*pi=123456;
 	*pj=10;
@@ -824,9 +871,109 @@ int tk_shell_chksane()
 	if(l!=456)
 		__debugbreak();
 
+	*pj=-1000;
+	k=i/j;
+	l=i%j;
+	if(k!=-123)
+		__debugbreak();
+	if(l!=456)
+		__debugbreak();
+
+	*pi=-123456;
+	*pj=1000;
+	k=i/j;
+	l=i%j;
+	if(k!=-123)
+		__debugbreak();
+	if(l!=-456)
+		__debugbreak();
+
+	k=i/256;
+	l=i%256;
+	if(k!=-482)
+		__debugbreak();
+	if(l!=-64)
+		__debugbreak();
+
+ 	*pi=-30873;
+	k=i/251;
+	l=i%251;
+	if(k!=-123)
+		__debugbreak();
+	if(l!=0)
+		__debugbreak();
+
+ 	*pi=-30880;
+	k=i/251;
+	l=i%251;
+	if(k!=-123)
+		__debugbreak();
+	if(l!=-7)
+		__debugbreak();
+
 	pli=&li;
 	plj=&lj;
+
+
+	*pli=123456;
+	*plj=10;
+	lk=li/lj;
+	ll=li%lj;
 	
+	if(lk!=12345)
+		__debugbreak();
+	if(ll!=6)
+		__debugbreak();
+
+	*plj=1000;
+	lk=li/lj;
+	ll=li%lj;
+	if(lk!=123)
+		__debugbreak();
+	if(ll!=456)
+		__debugbreak();
+
+	*plj=-1000;
+	lk=li/lj;
+	ll=li%lj;
+	if(lk!=-123)
+		__debugbreak();
+	if(ll!=456)
+		__debugbreak();
+
+	*pli=-123456;
+	*plj=1000;
+	lk=li/lj;
+	ll=li%lj;
+	if(lk!=-123)
+		__debugbreak();
+	if(ll!=-456)
+		__debugbreak();
+
+	lk=li/256;
+	ll=li%256;
+	if(lk!=-482)
+		__debugbreak();
+	if(ll!=-64)
+		__debugbreak();
+
+ 	*pli=-30873;
+	lk=li/251;
+	ll=li%251;
+	if(lk!=-123)
+		__debugbreak();
+	if(ll!=0)
+		__debugbreak();
+
+ 	*pli=-30880;
+	lk=li/251;
+	ll=li%251;
+	if(lk!=-123)
+		__debugbreak();
+	if(ll!=-7)
+		__debugbreak();
+
+
 	*pli=0x123456789ABCDEFLL;
 	*plj=0xDECAFLL;
 	lk=li/lj;
@@ -861,6 +1008,14 @@ int tk_shell_chksane()
 		__debugbreak();
 	if(ll!=0x0000AACBE20355C2LL)
 		__debugbreak();
+}
+
+int tk_shell_chksane_memset()
+{
+	long long tba[32];
+	long long tbb[32];
+	char *tb, *ts, *tb1;
+	int			i, j, k, l;
 
 #if 0
 	tb=(char *)tba;
@@ -965,6 +1120,53 @@ int tk_shell_chksane()
 		}
 	}
 #endif
+}
+
+int tk_shell_chksane_addr()
+{
+	TK_WadZBlock	*pwz0, *pwz1;
+	TK_Wad4Lump		*pwl0, *pwl1;
+	int i, j, k;
+	
+	pwz0=&k;
+	pwl0=&k;
+	j=251;
+	pwz1=pwz0+j;
+	pwl1=pwl0+j;
+	k=pwz1-pwz0;
+	
+	if(k!=j)
+		__debugbreak();
+
+	k=pwl1-pwl0;
+
+	if(k!=j)
+		__debugbreak();
+
+#if 1
+	j=65521;
+	pwz1=pwz0+j;
+	pwl1=pwl0+j;
+	k=pwz1-pwz0;
+	
+	if(k!=j)
+		__debugbreak();
+
+	k=pwl1-pwl0;
+
+	if(k!=j)
+		__debugbreak();
+#endif
+}
+
+int tk_shell_chksane()
+{
+	unsigned int	ui;
+	int			i, j, k, l;
+
+	tk_shell_chksane_arith();
+
+	tk_shell_chksane_memset();
 
 	Sys_CheckSanityB();
 
@@ -972,6 +1174,8 @@ int tk_shell_chksane()
 	tk_shell_chksane_simd();
 	
 	Sys_CheckSanityC();
+
+	tk_shell_chksane_addr();
 
 	tk_printf("CS B5\n");
 

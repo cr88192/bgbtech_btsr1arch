@@ -1142,6 +1142,8 @@ void ST_diffDraw(void)
     ST_drawWidgets(false);
 }
 
+byte	st_didsbar;
+
 void ST_Drawer (boolean fullscreen, boolean refresh)
 {
   
@@ -1151,8 +1153,16 @@ void ST_Drawer (boolean fullscreen, boolean refresh)
     // Do red-/gold-shifts from damage/items
     ST_doPaletteStuff();
 
+//	st_didsbar = false;
+	if(st_didsbar>0)
+		st_didsbar--;
+
     // If just after ST_Start(), refresh all
-    if (st_firsttime) ST_doRefresh();
+    if (st_firsttime)
+    {
+		ST_doRefresh();
+		st_didsbar = 8;
+	}
     // Otherwise, update as little as possible
     else ST_diffDraw();
 

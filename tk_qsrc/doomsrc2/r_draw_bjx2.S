@@ -496,6 +496,64 @@ X(R_DrawSpanLow):
 #endif
 
 
+#if 1
+.global X(I_FinishUpdate_ScanCopyClear)
+
+X(I_FinishUpdate_ScanCopyClear):
+
+	CMP/GT	#0, R6
+	BF .done
+
+	MOV		R20, R2
+	MOV		R21, R3
+
+#if 1
+	SHLD	R6, -1, R6
+	.loop:
+							MOV.X	(R4,    0), R16
+							MOV.X	(R4,  640), R18
+							MOV.X	(R4, 1280), R20
+							MOV.X	(R4, 1920), R22
+							MOV.Q	R16, (R5,  0)
+							MOV.Q	R17, (R5, 32)
+	MOV		R2, R16		|	MOV.Q	R18, (R5,  8)
+	MOV		R2, R17		|	MOV.Q	R19, (R5, 40)
+							MOV.X	R16, (R4,    0)
+							MOV.X	R16, (R4,  640)
+	MOV		R3, R18		|	MOV.Q	R20, (R5, 16)
+	MOV		R3, R19		|	MOV.Q	R22, (R5, 24)
+							MOV.X	R18, (R4, 1280)
+							MOV.X	R18, (R4, 1920)
+	ADD		#-1, R6		|	MOV.Q	R21, (R5, 48)
+	ADD		#16, R4		|	MOV.Q	R23, (R5, 56)
+	ADD		#64, R5		|	TEST	R6, R6
+	BF .loop
+#endif
+
+#if 0
+	.loop:
+	MOV.Q	(R4,    0), R16
+	MOV.Q	(R4,  640), R17
+	MOV.Q	(R4, 1280), R18
+	MOV.Q	(R4, 1920), R19
+
+	MOV.Q	R20, (R4,    0)
+	MOV.Q	R20, (R4,  640)
+	MOV.Q	R21, (R4, 1280)
+	MOV.Q	R21, (R4, 1920)
+
+	MOV.Q	R16, (R5,  0)
+	MOV.Q	R17, (R5,  8)
+	ADD		#-1, R6			| MOV.Q		R18, (R5, 16)
+	ADD		#8, R4			| MOV.Q		R19, (R5, 24)
+	ADD		#32, R5			| TEST		R6, R6
+	BF .loop
+#endif
+
+	.done:
+	RTS
+
+#endif
 
 
 #if 1

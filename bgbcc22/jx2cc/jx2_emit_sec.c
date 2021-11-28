@@ -2605,7 +2605,7 @@ int BGBCC_JX2_EmitGetStrtabLabelUTF2ASCIIB(
 		
 		if(j<128)
 		{
-			*t++=k;
+			*t++=j;
 			continue;
 		}
 		

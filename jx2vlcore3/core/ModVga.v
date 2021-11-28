@@ -382,7 +382,8 @@ begin
 	tHsync1024	= 0;
 	tVsync768	= 0;
 	
-	if(ctrlRegVal[8])
+//	if(ctrlRegVal[8])
+	if(ctrlRegVal[8] && !ctrlRegVal[9])
 	begin
 		tHsync1024	= 1;
 //		tVsync768	= 1;
@@ -391,7 +392,7 @@ begin
 		else
 			tScanNextRowLim = 547;
 	end
-	else if(ctrlRegVal[3])
+	else if(ctrlRegVal[3] && !ctrlRegVal[9])
 	begin
 		tHsync800	= 1;
 		tVsync600	= 1;
@@ -400,7 +401,8 @@ begin
 	else
 	begin
 //		tScanNextRowLim = 525;
-		if(ctrlRegVal[9])
+//		if(ctrlRegVal[9])
+		if(ctrlRegVal[9] && !ctrlRegVal[3])
 			tScanNextRowLim = 525;
 		else
 			tScanNextRowLim = 449;

@@ -29,6 +29,8 @@ static const char
 rcsid[] = "$Id: r_data.c,v 1.4 1997/02/03 16:47:55 b1 Exp $";
 
 #include "i_system.h"
+#include "i_video.h"
+
 #include "z_zone.h"
 
 #include "m_swap.h"
@@ -1602,7 +1604,7 @@ void R_InitColormaps (void)
 	byte *tbuf;
 	lighttable_t *tcol;
 	int	lump, length, blen, hdl, lump1, hdl1;
-	int i, j, k, l;
+	int i, j, k, l, n;
 
 	pal = W_CacheLumpName ("PLAYPAL", PU_CACHE);
 	I_SetPalette (pal);
@@ -1645,7 +1647,13 @@ void R_InitColormaps (void)
 		colormaps[i] = d_8to16table[tbuf[i]];
 	}
 
+	n=length/256;
+
 	for(i=0; i<64; i++)
+		cmap_luma[i] = 0;
+
+//	for(i=0; i<64; i++)
+	for(i=0; i<n; i++)
 	{
 		l = 0;
 		for(j=0; j<256; j++)

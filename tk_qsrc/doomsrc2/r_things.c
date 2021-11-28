@@ -551,17 +551,23 @@ R_DrawVisSprite
 
 	dc_colormap = vis->colormap;
 
-	k = (dc_colormap - colormaps)>>8;
-	l = cmap_luma[k];
-	l = l << 8;
-
-	if(l < 0x0000) l = 0x0000;
-	if(l > 0xFFFF) l = 0xFFFF;
-	dc_color = (((u64)l)<<0) | (((u64)l)<<16) |
-		(((u64)l)<<32) | 0xFFFF000000000000ULL;
-	if(k==32)
+	if(dc_colormap)
 	{
-		dc_color = 0xFFFFAAAA55551111ULL;
+		k = (dc_colormap - colormaps)>>8;
+		l = cmap_luma[k];
+		l = l << 8;
+
+		if(l < 0x0000) l = 0x0000;
+		if(l > 0xFFFF) l = 0xFFFF;
+		dc_color = (((u64)l)<<0) | (((u64)l)<<16) |
+			(((u64)l)<<32) | 0xFFFF000000000000ULL;
+		if(k==32)
+		{
+			dc_color = 0xFFFFAAAA55551111ULL;
+		}
+	}else
+	{
+		dc_color = 0x3FFFAAAA55551111ULL;
 	}
 
 	if (!dc_colormap)
@@ -1066,6 +1072,7 @@ void R_SortVisSprites (void)
 	vissprite_t		unsorted;
 	fixed_t		bestscale;
 
+	best = NULL;
 	count = vissprite_p - vissprites;
 	
 	unsorted.next = unsorted.prev = &unsorted;
@@ -1094,8 +1101,8 @@ void R_SortVisSprites (void)
 		{
 			if (ds->scale < bestscale)
 			{
-			bestscale = ds->scale;
-			best = ds;
+				bestscale = ds->scale;
+				best = ds;
 			}
 		}
 		best->next->prev = best->prev;

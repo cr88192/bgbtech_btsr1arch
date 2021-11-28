@@ -587,9 +587,9 @@ int TK_Wad4_GetLinkPBase(TK_WadImage *img,
 	cs=bpath;
 	while(*cs && (cs!=ppath))
 		{ *ct++=*cs++; }
-	while((ct>tb) && (*(ct-1)=='/'))	ct--;
-	while((ct>tb) && (*(ct-1)!='/'))	ct--;
-	while((ct>tb) && (*(ct-1)=='/'))	ct--;
+	while((ct>bpath) && (*(ct-1)=='/'))	ct--;
+	while((ct>bpath) && (*(ct-1)!='/'))	ct--;
+	while((ct>bpath) && (*(ct-1)=='/'))	ct--;
 	*ct++=0;
 	return(ct-obuf);
 }

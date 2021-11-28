@@ -1133,7 +1133,9 @@ int BGBPP_ExpandBinary(char *larg, char *op, char *rarg, char *dst)
 	float f, g, h;
 	int i, j, k;
 
-	f=atof(larg); g=atof(rarg); i=0;
+	f=atof(larg); g=atof(rarg);
+	i=0;	h=0;
+
 	if(!strcmp(op, "+")) { h=f+g; i=1; }
 	if(!strcmp(op, "-")) { h=f-g; i=1; }
 	if(!strcmp(op, "*")) { h=f*g; i=1; }

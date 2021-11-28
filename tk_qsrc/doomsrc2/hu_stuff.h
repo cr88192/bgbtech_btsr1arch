@@ -58,6 +58,8 @@ void HU_Drawer(void);
 char HU_dequeueChatChar(void);
 void HU_Erase(void);
 
+int HU_DrawDecNum(int xo, int yo, int val, int w);
+
 
 #endif
 //-----------------------------------------------------------------------------

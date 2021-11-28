@@ -84,6 +84,8 @@ byte* I_ZoneBase (int*	size)
 }
 
 
+int FRGL_TimeMS();
+
 
 //
 // I_GetTime

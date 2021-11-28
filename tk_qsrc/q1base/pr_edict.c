@@ -303,7 +303,7 @@ char *PR_ValueString (etype_t type, eval_t *val)
 	
 	type &= ~DEF_SAVEGLOBAL;
 	
-	tk_printf("PR_ValueString: %d\n", type);
+//	tk_printf("PR_ValueString: %d\n", type);
 
 	switch (type)
 	{

@@ -2857,6 +2857,15 @@ begin
 			end
 `endif
 
+`ifdef jx2_enable_bitsel
+			16'h6zzB: begin		/* F0nm_6eoB */
+				opNmid		= JX2_UCMD_ALUB3;
+				opFmid		= JX2_FMID_REGREG;
+				opIty		= JX2_ITY_SB;
+				opUCmdIx	= JX2_UCIX_ALUB_BITSEL;
+			end
+`endif
+
 			16'h6zzC: begin		/* F0nm_6eoC */
 				if(opExQ)
 				begin

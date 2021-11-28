@@ -720,6 +720,24 @@ begin
 // `ifdef def_true
 `ifdef jx2_enable_movc
 
+`ifdef jx2_enable_movclite
+
+`ifdef jx2_enable_vaddr48
+//		JX2_GR_PC:	tValRyA={ UV16_00, regValPc[47:1],
+//			regValPc[0] & tEnablePcLsb };
+		JX2_GR_GBR:	tValRyA={ UV16_00, regValGbr };
+//		JX2_GR_TBR:	tValRyA={ UV16_00, regValTbr };
+		JX2_GR_LR:	tValRyA= regValLr;
+`else
+//		JX2_GR_PC:	tValRyA={ UV32_00, regValPc[31:1],
+//			regValPc[0] & tEnablePcLsb };
+		JX2_GR_GBR:	tValRyA={ UV32_00, regValGbr[31:0] };
+//		JX2_GR_TBR:	tValRyA={ UV32_00, regValTbr[31:0] };
+		JX2_GR_LR:	tValRyA={ UV32_00, regValLr[31:0] };
+`endif
+
+`else
+
 `ifdef jx2_enable_vaddr48
 		JX2_GR_PC:	tValRyA={ UV16_00, regValPc[47:1],
 			regValPc[0] & tEnablePcLsb };
@@ -739,6 +757,8 @@ begin
 		JX2_GR_TTB, JX2_GR_TEA, JX2_GR_MMCR,
 		JX2_GR_EXSR, JX2_GR_STTB, JX2_GR_KRR:
 			tValRyA = regValCm;
+`endif
+
 `endif
 
 `endif

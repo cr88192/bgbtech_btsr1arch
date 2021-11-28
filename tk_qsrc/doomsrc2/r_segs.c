@@ -255,6 +255,8 @@ void R_RenderSegLoop (void)
 
 	//texturecolumn = 0;				// shut up compiler warning
 
+	texturecolumn = 0;
+
 //	tz = ds_p->tz1;
 	
 	dc_isspr = 0;

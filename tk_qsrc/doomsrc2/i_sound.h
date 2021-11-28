@@ -113,6 +113,8 @@ void I_StopSong(int handle);
 // See above (register), then think backwards
 void I_UnRegisterSong(int handle);
 
+void I_MusicFineTick(void);
+
 
 
 #endif

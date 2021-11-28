@@ -648,6 +648,8 @@ void S_ChangeMusic(
 	musicinfo_t*	music;
 	char		namebuf[9];
 
+	music = NULL;
+
 	if ( (musicnum <= mus_None)
 	 || (musicnum >= NUMMUSIC) )
 	{

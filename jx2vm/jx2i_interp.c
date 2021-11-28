@@ -819,6 +819,9 @@ int BJX2_DbgAddrAccessTrap(BJX2_Context *ctx,
 	int bsz;
 	char *s0, *s1;
 
+	if(ctx->no_memcost)
+		return(0);
+
 //	if(ctx->use_jit)
 	if(ctx->use_jit || !(ctx->dbg_data_start))
 		return(0);
@@ -977,6 +980,14 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_FABS:		s0="FABS";		break;
 	case BJX2_NMID_FLDCFH:		s0="FLDCFH";	break;
 	case BJX2_NMID_FSTCFH:		s0="FSTCFH";	break;
+
+	case BJX2_NMID_PLDCH:		s0="PLDCH";		break;
+	case BJX2_NMID_PSTCH:		s0="PSTCH";		break;
+
+	case BJX2_NMID_PLDCM8SH:	s0="PLDCM8SH";	break;
+	case BJX2_NMID_PSTCM8SH:	s0="PSTCM8SH";	break;
+	case BJX2_NMID_PLDCM8UH:	s0="PLDCM8UH";	break;
+	case BJX2_NMID_PSTCM8UH:	s0="PSTCM8UH";	break;
 
 	case BJX2_NMID_INV:			s0="Invalid";	break;
 	case BJX2_NMID_MOVUL:		s0="MOVU.L";	break;

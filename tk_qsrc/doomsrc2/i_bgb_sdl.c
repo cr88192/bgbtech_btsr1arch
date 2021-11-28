@@ -4,16 +4,26 @@
 #include "i_net.h"
 #include "v_video.h"
 
+#include "d_main.h"
+#include "r_draw.h"
+#include "hu_stuff.h"
+
 #include "gfxdrv_keys.h"
 
 // #include "bgbmid/bgbmid.h"
 
-typedef unsigned short u16;
-typedef signed short s16;
-typedef unsigned int u32;
-typedef signed int s32;
+//typedef unsigned short u16;
+//typedef signed short s16;
+//typedef unsigned int u32;
+//typedef signed int s32;
 
 // int	mb_used = 6;
+
+void GfxDrv_EndDrawing(void);
+int GfxDrv_Start();
+void GfxDrv_BeginDrawing();
+void GfxDrv_EndDrawing(void);
+int GfxDrv_PrepareFramebuf();
 
 long long __smullq(int a, int b)
 {

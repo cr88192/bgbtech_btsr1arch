@@ -24,6 +24,8 @@
 #ifndef __P_LOCAL__
 #define __P_LOCAL__
 
+#include "r_defs.h"
+
 #ifndef __R_LOCAL__
 #include "r_local.h"
 #endif
@@ -274,6 +276,32 @@ P_DamageMobj
   mobj_t*	inflictor,
   mobj_t*	source,
   int		damage );
+
+
+boolean
+P_AcsUseSpecialLine
+( mobj_t*	thing,
+	line_t*	line,
+	int		side );
+
+void
+P_AcsShootSpecialLine
+( mobj_t*	thing,
+	line_t*	line );
+
+void
+P_AcsCrossSpecialLine
+( int		linenum,
+	int		side,
+	mobj_t*	thing );
+
+void P_SetupAcsImage(byte *data, int sz);
+
+void P_AcsDoSpecialCmd(
+	int sp, int arg1, int arg2, int arg3, int arg4, int arg5);
+
+int P_SetupRemapThingType(int type);
+
 
 
 //

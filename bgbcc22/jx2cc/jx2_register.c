@@ -2661,7 +2661,14 @@ int BGBCC_JX2C_EmitSyncRegisterIndex2(
 #if 1
 			if(!(regfl&BGBCC_REGFL_TEMPLOAD))
 				sctx->regalc_dirty&=~(1<<i);
+#endif
 
+#if 1
+			if(sctx->is_leaftiny&1)
+				sctx->regalc_dirty&=~(1<<i);
+#endif
+
+#if 1
 			if(	(sctx->regalc_dirty&(1<<i)) &&
 				!BGBCC_JX2C_CheckVRegLiveRange(ctx, sctx, reg))
 			{

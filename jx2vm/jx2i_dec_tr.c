@@ -26,6 +26,9 @@
 void BJX2_MemSimTraceIS(BJX2_Context *ctx, BJX2_Trace *tr)
 {
 	int i;
+
+	if(ctx->no_memcost)
+		return;
 	
 	for(i=0; i<tr->n_ops; i++)
 		BJX2_MemSimAddrL1I(ctx, tr->ops[i]->pc);

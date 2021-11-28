@@ -68,6 +68,7 @@ __asm {
 TK_VMem_GetPageTableEntry:
 
 	MOV		16777215, R1
+//	BREAK
 	MOV		511, R2
 	MOV		2047, R3
 	SHLD.Q	R4, -14, R5

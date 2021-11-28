@@ -79,6 +79,16 @@ void I_SoundDelTimer( void );
 #endif
 
 
+int SoundDev_Init();
+int SoundDev_DeInit();
+int SoundDev_GetDMAPos();
+void SoundDev_Submit();
+
+int SoundDev_WriteStereoSamples(short *buffer, int cnt);
+int SoundDev_WriteStereoSamples2(
+	short *buffer, int cnt, int ovcnt);
+
+
 // A quick hack to establish a protocol between
 // synchronous mix buffer updates and asynchronous
 // audio writes. Probably redundant with gametic.
@@ -91,7 +101,8 @@ static int flag = 0;
 
 
 // Needed for calling the actual sound output.
-#define SAMPLECOUNT		512
+#define SAMPLECOUNT		256
+// #define SAMPLECOUNT		512
 #define NUM_CHANNELS		8
 // It is 2 for 16bit, and 2 for two channels.
 #define BUFMUL									4
@@ -893,7 +904,7 @@ I_SubmitSound2(int extra)
 //	n=SAMPLECOUNT*1.451247;
 	n=(SAMPLECOUNT*1486)>>10;
 
-	curms=FRGL_TimeMS();
+	curms=I_GetTimeMs();
 	dt=curms-lastms;
 	lastms=curms;
 	
@@ -902,6 +913,9 @@ I_SubmitSound2(int extra)
 	ns=dt*16;
 	if(ns<0)ns=0;
 	if(ns>n)ns=n;
+
+	if(ns<=0)
+		return;
 
 #ifndef __BGBCC
 	I_MusicGetAdvanceSamples(mixbuf_mus, ns, SAMPLECOUNT*1.5);
@@ -996,7 +1010,7 @@ void I_ShutdownSound(void)
 #endif
 	
 	// Cleaning up -releasing the DSP device.
-	close ( audio_fd );
+//	close ( audio_fd );
 #endif
 
 	// Done.
@@ -1005,7 +1019,9 @@ void I_ShutdownSound(void)
 
 
 
-static int i_initsound_init = 0;
+// static int i_initsound_init = 0;
+
+int i_sound_init=0;
 
 
 void
@@ -1016,9 +1032,9 @@ I_InitSound()
 	
 	int i;
 	
-	if(i_initsound_init)
+	if(i_sound_init)
 		return;
-	i_initsound_init=1;
+	i_sound_init=1;
 		
 	fprintf( stderr, "I_InitSound: ");
 		

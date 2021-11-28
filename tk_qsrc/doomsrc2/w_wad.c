@@ -909,6 +909,9 @@ int W_DecodeBufferRP2(
 	cs=ibuf; cse=ibuf+ibsz;
 	ct=obuf;
 	pl=0; pd=0;
+	l = 0;
+	d = 0;
+	rl = 0;
 	
 	while(1)
 	{

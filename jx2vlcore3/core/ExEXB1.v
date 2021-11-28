@@ -322,10 +322,19 @@ begin
 //		JX2_UCMD_SHADQ3, JX2_UCMD_SHLDQ3:
 		JX2_UCMD_SHAD3:
 		begin
+// `ifdef jx2_shadq_nolane3
+`ifndef def_true
+			if(idLane!=2)
+			begin
+				tValOutDfl		= tValShad64;
+				tDoOutDfl		= 1;
+			end
+`else
 //			tRegIdRn1	= regIdRm;
 //			tRegValRn1	= tValShad64;
 			tValOutDfl		= tValShad64;
 			tDoOutDfl		= 1;
+`endif
 		end
 
 `else

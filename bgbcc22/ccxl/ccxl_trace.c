@@ -418,7 +418,9 @@ int BGBCC_CCXL_NormalizeImmVReg(
 //	ccxl_register treg, treg2;
 	ccxl_register treg2;
 	double f;
-	s64 li;
+	float bf;
+	s64 li, lj;
+	u32 ui;
 	int bty, dty, stv;
 
 //	treg=*rtreg;
@@ -511,14 +513,19 @@ int BGBCC_CCXL_NormalizeImmVReg(
 			return(1);
 		}
 
-		if(BGBCC_CCXL_TypeFloatP(ctx, type) ||
+		if(	BGBCC_CCXL_TypeBFloat16P(ctx, type) ||
 			BGBCC_CCXL_TypeFloat16P(ctx, type))
 		{
 			if(BGBCC_CCXL_IsRegImmFloatP(ctx, treg))
 				return(1);
 
-			f=BGBCC_CCXL_GetRegImmDoubleValue(ctx, treg);
-			BGBCC_CCXL_GetRegForFloatValue(ctx, &treg2, f);
+			bf=BGBCC_CCXL_GetRegImmDoubleValue(ctx, treg);
+
+			memcpy(&ui, &bf, 4);
+			ui=((ui+4096)>>13)<<13;
+			memcpy(&bf, &ui, 4);
+
+			BGBCC_CCXL_GetRegForFloatValue(ctx, &treg2, bf);
 			*rtreg=treg2;
 			return(1);
 		}
@@ -528,8 +535,13 @@ int BGBCC_CCXL_NormalizeImmVReg(
 			if(BGBCC_CCXL_IsRegImmFloatP(ctx, treg))
 				return(1);
 
-			f=BGBCC_CCXL_GetRegImmDoubleValue(ctx, treg);
-			BGBCC_CCXL_GetRegForFloatValue(ctx, &treg2, f);
+			bf=BGBCC_CCXL_GetRegImmDoubleValue(ctx, treg);
+
+//			memcpy(&ui, &bf, 4);
+//			ui=((ui+4)>>3)<<3;
+//			memcpy(&bf, &ui, 4);
+
+			BGBCC_CCXL_GetRegForFloatValue(ctx, &treg2, bf);
 			*rtreg=treg2;
 			return(1);
 		}
@@ -541,6 +553,46 @@ int BGBCC_CCXL_NormalizeImmVReg(
 
 			f=BGBCC_CCXL_GetRegImmDoubleValue(ctx, treg);
 			BGBCC_CCXL_GetRegForDoubleValue(ctx, &treg2, f);
+			*rtreg=treg2;
+			return(1);
+		}
+
+		if(	BGBCC_CCXL_TypePointerP(ctx, type) &&
+			!BGBCC_CCXL_TypeQuadPointerP(ctx, type))
+		{
+			if(ctx->arch_sizeof_ptr==8)
+			{
+				li=BGBCC_CCXL_GetRegImmLongValue(ctx, treg);
+				BGBCC_CCXL_GetRegForLongValue(ctx, &treg2, li);
+				*rtreg=treg2;
+				return(1);
+			}
+
+			if(ctx->arch_sizeof_ptr==4)
+			{
+				li=BGBCC_CCXL_GetRegImmLongValue(ctx, treg);
+				BGBCC_CCXL_GetRegForUIntValue(ctx, &treg2, li);
+				*rtreg=treg2;
+				return(1);
+			}
+		}
+		
+		if(BGBCC_CCXL_TypeQuadPointerP(ctx, type))
+		{
+			li=BGBCC_CCXL_GetRegImmLongValue(ctx, treg);
+			lj=0;
+			BGBCC_CCXL_GetRegForInt128Value(ctx, &treg2, li, lj);
+			*rtreg=treg2;
+			return(1);
+		}
+
+		if(BGBCC_CCXL_TypeSgInt128P(ctx, type))
+		{
+			li=BGBCC_CCXL_GetRegImmLongValue(ctx, treg);
+			lj=li>>63;
+			if(BGBCC_CCXL_IsRegImmULongP(ctx, treg))
+				lj=0;
+			BGBCC_CCXL_GetRegForInt128Value(ctx, &treg2, li, lj);
 			*rtreg=treg2;
 			return(1);
 		}

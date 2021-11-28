@@ -128,27 +128,27 @@ P_RecursiveSound
 	
     for (i=0 ;i<sec->linecount ; i++)
     {
-	check = sec->lines[i];
-	if (! (check->flags & ML_TWOSIDED) )
-	    continue;
-	
-	P_LineOpening (check);
+		check = sec->lines[i];
+		if (! (check->flags & ML_TWOSIDED) )
+			continue;
+		
+		P_LineOpening (check);
 
-	if (openrange <= 0)
-	    continue;	// closed door
-	
-	if ( sides[ check->sidenum[0] ].sector == sec)
-	    other = sides[ check->sidenum[1] ] .sector;
-	else
-	    other = sides[ check->sidenum[0] ].sector;
-	
-	if (check->flags & ML_SOUNDBLOCK)
-	{
-	    if (!soundblocks)
-		P_RecursiveSound (other, 1);
-	}
-	else
-	    P_RecursiveSound (other, soundblocks);
+		if (openrange <= 0)
+			continue;	// closed door
+		
+		if ( sides[ check->sidenum[0] ].sector == sec)
+			other = sides[ check->sidenum[1] ] .sector;
+		else
+			other = sides[ check->sidenum[0] ].sector;
+		
+		if (check->flags & ML_SOUNDBLOCK)
+		{
+			if (!soundblocks)
+			P_RecursiveSound (other, 1);
+		}
+		else
+			P_RecursiveSound (other, soundblocks);
     }
 }
 
@@ -221,22 +221,22 @@ boolean P_CheckMissileRange (mobj_t* actor)
 			     actor->y-actor->target->y) - 64*FRACUNIT;
     
     if (!actor->info->meleestate)
-	dist -= 128*FRACUNIT;	// no melee attack, so fire more
+		dist -= 128*FRACUNIT;	// no melee attack, so fire more
 
     dist >>= 16;
 
     if (actor->type == MT_VILE)
     {
-	if (dist > 14*64)	
-	    return false;	// too far away
+		if (dist > 14*64)	
+			return false;	// too far away
     }
 	
 
     if (actor->type == MT_UNDEAD)
     {
-	if (dist < 196)	
-	    return false;	// close for fist attack
-	dist >>= 1;
+		if (dist < 196)	
+			return false;	// close for fist attack
+		dist >>= 1;
     }
 	
 
@@ -244,17 +244,17 @@ boolean P_CheckMissileRange (mobj_t* actor)
 	|| actor->type == MT_SPIDER
 	|| actor->type == MT_SKULL)
     {
-	dist >>= 1;
+		dist >>= 1;
     }
     
     if (dist > 200)
-	dist = 200;
+		dist = 200;
 		
     if (actor->type == MT_CYBORG && dist > 160)
-	dist = 160;
+		dist = 160;
 		
     if (P_Random () < dist)
-	return false;
+		return false;
 		
     return true;
 }
@@ -388,11 +388,11 @@ void P_NewChaseDir (mobj_t*	actor)
     deltay = actor->target->y - actor->y;
 
     if (deltax>10*FRACUNIT)
-	d[1]= DI_EAST;
+		d[1]= DI_EAST;
     else if (deltax<-10*FRACUNIT)
-	d[1]= DI_WEST;
+		d[1]= DI_WEST;
     else
-	d[1]=DI_NODIR;
+		d[1]=DI_NODIR;
 
     if (deltay<-10*FRACUNIT)
 		d[2]= DI_SOUTH;
@@ -420,75 +420,75 @@ void P_NewChaseDir (mobj_t*	actor)
     }
 
     if (d[1]==turnaround)
-	d[1]=DI_NODIR;
+		d[1]=DI_NODIR;
     if (d[2]==turnaround)
-	d[2]=DI_NODIR;
+		d[2]=DI_NODIR;
 	
     if (d[1]!=DI_NODIR)
     {
-	actor->movedir = d[1];
-	if (P_TryWalk(actor))
-	{
-	    // either moved forward or attacked
-	    return;
-	}
+		actor->movedir = d[1];
+		if (P_TryWalk(actor))
+		{
+			// either moved forward or attacked
+			return;
+		}
     }
 
     if (d[2]!=DI_NODIR)
     {
-	actor->movedir =d[2];
+		actor->movedir =d[2];
 
-	if (P_TryWalk(actor))
-	    return;
+		if (P_TryWalk(actor))
+			return;
     }
 
     // there is no direct path to the player,
     // so pick another direction.
     if (olddir!=DI_NODIR)
     {
-	actor->movedir =olddir;
+		actor->movedir =olddir;
 
-	if (P_TryWalk(actor))
-	    return;
+		if (P_TryWalk(actor))
+			return;
     }
 
     // randomly determine direction of search
     if (P_Random()&1) 	
     {
-	for ( tdir=DI_EAST;
-	      tdir<=DI_SOUTHEAST;
-	      tdir++ )
-	{
-	    if (tdir!=turnaround)
-	    {
-		actor->movedir =tdir;
-		
-		if ( P_TryWalk(actor) )
-		    return;
-	    }
-	}
+		for ( tdir=DI_EAST;
+			  tdir<=DI_SOUTHEAST;
+			  tdir++ )
+		{
+			if (tdir!=turnaround)
+			{
+			actor->movedir =tdir;
+			
+			if ( P_TryWalk(actor) )
+				return;
+			}
+		}
     }
     else
     {
-	for ( tdir=DI_SOUTHEAST;
-	      tdir != (DI_EAST-1);
-	      tdir-- )
-	{
-	    if (tdir!=turnaround)
-	    {
-		actor->movedir =tdir;
-		
-		if ( P_TryWalk(actor) )
-		    return;
-	    }
-	}
+		for ( tdir=DI_SOUTHEAST;
+			  tdir != (DI_EAST-1);
+			  tdir-- )
+		{
+			if (tdir!=turnaround)
+			{
+			actor->movedir =tdir;
+			
+			if ( P_TryWalk(actor) )
+				return;
+			}
+		}
     }
 
     if (turnaround !=  DI_NODIR)
     {
-	actor->movedir =turnaround;
-	if ( P_TryWalk(actor) )
-	    return;
+		actor->movedir =turnaround;
+		if ( P_TryWalk(actor) )
+			return;
     }
 
     actor->movedir = DI_NODIR;	// can not move
@@ -529,47 +529,49 @@ P_LookForPlayers
 	
     for ( ; ; actor->lastlook = (actor->lastlook+1)&3 )
     {
-	if (!playeringame[actor->lastlook])
-	{
-		if(!n--)break;
-	    continue;
-	}
-			
-	if (c++ == 2
-	    || actor->lastlook == stop)
-	{
-	    // done looking
-	    return false;	
-	}
-	
-	player = &players[actor->lastlook];
-
-	if (player->health <= 0)
-	    continue;		// dead
-
-	if (!P_CheckSight (actor, player->mo))
-	    continue;		// out of sight
-			
-	if (!allaround)
-	{
-	    an = R_PointToAngle2 (actor->x,
-				  actor->y, 
-				  player->mo->x,
-				  player->mo->y)
-		- actor->angle;
-	    
-	    if (an > ANG90 && an < ANG270)
-	    {
-		dist = P_AproxDistance (player->mo->x - actor->x,
-					player->mo->y - actor->y);
-		// if real close, react anyway
-		if (dist > MELEERANGE)
-		    continue;	// behind back
-	    }
-	}
+		if (!playeringame[actor->lastlook])
+		{
+			if(!n--)break;
+			continue;
+		}
+				
+		if (c++ == 2
+			|| actor->lastlook == stop)
+		{
+			// done looking
+			return false;	
+		}
 		
-	actor->target = player->mo;
-	return true;
+		player = &players[actor->lastlook];
+
+		if (player->health <= 0)
+			continue;		// dead
+
+		if (!P_CheckSight (actor, player->mo))
+			continue;		// out of sight
+				
+		if (!allaround)
+		{
+			an = R_PointToAngle2 (
+					actor->x,
+					actor->y, 
+					player->mo->x,
+					player->mo->y)
+				- actor->angle;
+			
+			if (an > ANG90 && an < ANG270)
+			{
+				dist = P_AproxDistance (
+					player->mo->x - actor->x,
+					player->mo->y - actor->y);
+				// if real close, react anyway
+				if (dist > MELEERANGE)
+					continue;	// behind back
+			}
+		}
+			
+		actor->target = player->mo;
+		return true;
     }
 
     return false;

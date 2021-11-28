@@ -4,23 +4,26 @@
 #
 # $Log:$
 #
-# CC=gcc
-CC=clang
 
-CFLAGS=-I. -g
+CC=gcc
+# CC=clang
+
+CFLAGS=-I. -g -O3
 # CFLAGS=/I. /Os
 LDFLAGS=
-LIBS=-ldl -lm -lSDL
+LIBS=-ldl -lm -lSDL -Wuninitialized
+
+# -Wmaybe-uninitialized
 
 #		i_net.c			\
 
 # not too sophisticated dependency
-SRCS=				\
-		gfxdrv_sdl.c	\
-		gfxdrv_input.c	\
-		sound_ems.c	\
+SRCS=						\
+		gfxdrv_sdl.c		\
+		gfxdrv_input.c		\
+		sound_ems.c			\
 		bgbmid1/bgbmid.c	\
-		i_bgb_mus.c		\
+		i_bgb_mus.c			\
 		\
 		doomdef.c		\
 		doomstat.c		\
@@ -28,22 +31,22 @@ SRCS=				\
 		i_bgb_sdl.c		\
 		i_system.c		\
 		i_sound.c		\
-		tables.c			\
+		tables.c		\
 		f_finale.c		\
 		f_wipe.c 		\
-		d_main.c			\
+		d_main.c		\
 		d_net.c			\
 		d_items.c		\
-		g_game.c			\
-		m_menu.c			\
-		m_misc.c			\
+		g_game.c		\
+		m_menu.c		\
+		m_misc.c		\
 		m_argv.c  		\
-		m_bbox.c			\
+		m_bbox.c		\
 		m_fixed.c		\
-		m_swap.c			\
+		m_swap.c		\
 		m_cheat.c		\
 		m_random.c		\
-		am_map.c			\
+		am_map.c		\
 		p_acspec.c		\
 		p_ceilng.c		\
 		p_doors.c		\
@@ -54,35 +57,35 @@ SRCS=				\
 		p_map.c			\
 		p_maputl.c		\
 		p_plats.c		\
-		p_pspr.c			\
+		p_pspr.c		\
 		p_setup.c		\
 		p_sight.c		\
-		p_spec.c			\
+		p_spec.c		\
 		p_switch.c		\
-		p_mobj.c			\
+		p_mobj.c		\
 		p_telept.c		\
-		p_tick.c			\
+		p_tick.c		\
 		p_saveg.c		\
-		p_user.c			\
+		p_user.c		\
 		r_bsp.c			\
-		r_data.c			\
-		r_draw.c			\
-		r_main.c			\
+		r_data.c		\
+		r_draw.c		\
+		r_main.c		\
 		r_plane.c		\
 		r_polyobj.c		\
-		r_segs.c			\
+		r_segs.c		\
 		r_sky.c			\
 		r_things.c		\
 		w_wad.c			\
 		wi_stuff.c		\
 		v_video.c		\
-		st_lib.c			\
+		st_lib.c		\
 		st_stuff.c		\
 		hu_stuff.c		\
-		hu_lib.c			\
+		hu_lib.c		\
 		s_sound.c		\
-		z_zone.c			\
-		info.c				\
+		z_zone.c		\
+		info.c			\
 		sounds.c
 
 all:	 doom_t.elf

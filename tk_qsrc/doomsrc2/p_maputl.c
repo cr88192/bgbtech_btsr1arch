@@ -115,6 +115,9 @@ P_BoxOnLineSide
 	int		p1;
 	int		p2;
 	
+	p1 = 0;
+	p2 = 0;
+	
 	switch (ld->slopetype)
 	{
 	  case ST_HORIZONTAL:
@@ -149,7 +152,7 @@ P_BoxOnLineSide
 	}
 
 	if (p1 == p2)
-	return p1;
+		return p1;
 	return -1;
 }
 

@@ -847,6 +847,8 @@ parameter[5:0] JX2_UCIX_ALUW_CMPTEQ	= 6'h1E;		//
 
 parameter[5:0] JX2_UCIX_ALUW_PCSELT	= 6'h2F;		//Packed CSELT
 
+parameter[5:0] JX2_UCIX_ALUB_BITSEL	= 6'h2F;		//Bit Select
+
 parameter[5:0] JX2_UCIX_ALUW_PTST	= 6'h34;		//ALU Command
 parameter[5:0] JX2_UCIX_ALUW_PCMPNE	= 6'h38;		//ALU Command
 parameter[5:0] JX2_UCIX_ALUW_PCMPHS	= 6'h39;		//ALU Command

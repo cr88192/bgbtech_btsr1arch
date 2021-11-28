@@ -4,7 +4,7 @@ PATH := $(BUILD):$(PATH)
 TK_CFL=-DARCH_SH4 -DARCH_SH4LE -O3
 # TK_LDFL= $TK_CFL
 
-TK_LDFL64= -L. -lvxcore64 -fwex3w -fwexj
+TK_LDFL64= -L. -lvxcore64 -fwex3w -fwexj -fptropt0
 # TK_LDFL64= -L. -lvxcore64 -fwex3w -fwexj -fwexify
 # TK_LDFL64= -L. -lvxcore64 -fwex3w -fwexj -fnomovx -fnowexify
 # TK_LDFL64= -L. -lvxcore64 -fwexj

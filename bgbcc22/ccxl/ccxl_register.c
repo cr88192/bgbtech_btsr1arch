@@ -96,7 +96,8 @@ ccxl_status BGBCC_CCXL_RegisterAllocTemporaryLLn(
 		{
 			if((BGBCC_CCXL_TypeValueObjectP(ctx, bty) ||
 				BGBCC_CCXL_TypeValueObjectP(ctx, ri->type)) &&
-				!BGBCC_CCXL_TypeEqualP(ctx, bty, ri->type))
+//				!BGBCC_CCXL_TypeEqualP(ctx, bty, ri->type))
+				!BGBCC_CCXL_TypeCompatibleArchP(ctx, bty, ri->type))
 					continue;
 
 			bi=j;
@@ -152,7 +153,8 @@ ccxl_status BGBCC_CCXL_RegisterAllocTemporaryLLn(
 		{
 			if((BGBCC_CCXL_TypeValueObjectP(ctx, bty) ||
 				BGBCC_CCXL_TypeValueObjectP(ctx, ri->type)) &&
-				!BGBCC_CCXL_TypeEqualP(ctx, bty, ri->type))
+//				!BGBCC_CCXL_TypeEqualP(ctx, bty, ri->type))
+				!BGBCC_CCXL_TypeCompatibleArchP(ctx, bty, ri->type))
 					continue;
 
 			bi=i;
@@ -161,7 +163,8 @@ ccxl_status BGBCC_CCXL_RegisterAllocTemporaryLLn(
 #if 0
 			if((BGBCC_CCXL_TypeValueObjectP(ctx, bty) ||
 				BGBCC_CCXL_TypeValueObjectP(ctx, ri->type)) &&
-				!BGBCC_CCXL_TypeEqualP(ctx, bty, ri->type))
+//				!BGBCC_CCXL_TypeEqualP(ctx, bty, ri->type))
+				!BGBCC_CCXL_TypeCompatibleArchP(ctx, bty, ri->type))
 					continue;
 		
 			ri->cseq++;
@@ -213,6 +216,12 @@ ccxl_status BGBCC_CCXL_RegisterAllocTemporaryLLn(
 ccxl_status BGBCC_CCXL_RegisterAllocTemporaryInit(
 	BGBCC_TransState *ctx, ccxl_type bty, ccxl_register *rtreg)
 {
+	return(BGBCC_CCXL_RegisterAllocTemporaryInit2(ctx, bty, rtreg, 0));
+}
+
+ccxl_status BGBCC_CCXL_RegisterAllocTemporaryInit2(
+	BGBCC_TransState *ctx, ccxl_type bty, ccxl_register *rtreg, int fl)
+{
 	BGBCC_CCXL_RegisterInfo *ri;
 	BGBCC_CCXL_LiteralInfo *st;
 	ccxl_status rt;
@@ -222,8 +231,8 @@ ccxl_status BGBCC_CCXL_RegisterAllocTemporaryInit(
 		ctx, bty, rtreg);
 	if(rt<0)return(rt);
 
-//	if(BGBCC_CCXL_TypeValueObjectP(ctx, bty))
-	if(0)
+	if(BGBCC_CCXL_TypeValueObjectP(ctx, bty) && (fl&1))
+//	if(0)
 	{
 		st=BGBCC_CCXL_LookupStructureForType(ctx, bty);
 		if(st)

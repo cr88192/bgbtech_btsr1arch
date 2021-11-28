@@ -158,7 +158,7 @@ BMID_API int BGBMID_DecVLI(byte **rcs)
 	cs=*rcs;
 	i=*cs++; j=0;
 	while(i&0x80) { j=(j<<7)|(i&0x7F); i=*cs++; }
-	j=(j<<7)|i&0x7F;
+	j=(j<<7)|(i&0x7F);
 	*rcs=cs;
 	return(j);
 }
@@ -439,12 +439,12 @@ BMID_API int BGBMID_Midi2Ascii(char *buf, byte *strm, int sz, int nticks)
 			{
 			case 0xF0:
 				cs+=2;
-				while(!(cs[0]&0x80))*cs++;
-				if(*cs==0xF7)*cs++;
+				while(!(cs[0]&0x80))cs++;
+				if(*cs==0xF7)cs++;
 				break;
-			case 0xF1: case 0xF3: *cs+=2; break;
-			case 0xF2: *cs+=2; break;
-			default: *cs++; break;
+			case 0xF1: case 0xF3: cs+=2; break;
+			case 0xF2: cs+=2; break;
+			default: cs++; break;
 			}
 			ltag=-1;
 			continue;

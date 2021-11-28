@@ -1636,7 +1636,8 @@ int BGBCC_CCXL_GetRegImmIntValue(
 		v=BGBCC_CCXL_GetRegImmLongValue(ctx, reg);
 		if(((s32)v)!=v)
 		{
-			BGBCC_DBGBREAK
+			BGBCC_CCXL_Warn(ctx, "Constant truncation from Long to Int\n");
+//			BGBCC_DBGBREAK
 		}
 		
 		return(v);
@@ -1648,7 +1649,19 @@ int BGBCC_CCXL_GetRegImmIntValue(
 //		{ return(BGBCC_CCXL_GetRegImmDoubleValue(ctx, reg)); }
 
 	if((reg.val&CCXL_REGTY2_TYMASK)==CCXL_REGTY2_IMM_DOUBLE)
-		{ return(BGBCC_CCXL_GetRegImmDoubleValue(ctx, reg)); }
+	{
+		dv=BGBCC_CCXL_GetRegImmDoubleValue(ctx, reg);
+		if(((s32)dv)!=dv)
+		{
+			BGBCC_CCXL_Warn(ctx, "Constant truncation from Real to Int\n");
+//			BGBCC_DBGBREAK
+		}
+		
+		return((s32)dv);
+
+//		BGBCC_DBGBREAK
+//		return(BGBCC_CCXL_GetRegImmDoubleValue(ctx, reg));
+	}
 
 	if(((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_FLOAT) ||
 		((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_DOUBLE) ||
@@ -1658,7 +1671,8 @@ int BGBCC_CCXL_GetRegImmIntValue(
 		dv=BGBCC_CCXL_GetRegImmDoubleValue(ctx, reg);
 		if(((s32)dv)!=dv)
 		{
-			BGBCC_DBGBREAK
+			BGBCC_CCXL_Warn(ctx, "Constant truncation from Real to Int\n");
+//			BGBCC_DBGBREAK
 		}
 		
 		return((s32)dv);
@@ -1691,6 +1705,7 @@ int BGBCC_CCXL_GetRegImmIntValue(
 s64 BGBCC_CCXL_GetRegImmLongValue(
 	BGBCC_TransState *ctx, ccxl_register reg)
 {
+	double dv;
 	int i;
 	s64 v;
 
@@ -1718,11 +1733,47 @@ s64 BGBCC_CCXL_GetRegImmLongValue(
 	}
 
 	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_FLOAT)
-		{ return(BGBCC_CCXL_GetRegImmDoubleValue(ctx, reg)); }
+	{
+		dv=BGBCC_CCXL_GetRegImmDoubleValue(ctx, reg);
+		if(((s64)dv)!=dv)
+		{
+			BGBCC_CCXL_Warn(ctx, "Constant truncation from Real to Long\n");
+//			BGBCC_DBGBREAK
+		}
+		
+		return((s64)dv);
+
+//		BGBCC_DBGBREAK
+//		return(BGBCC_CCXL_GetRegImmDoubleValue(ctx, reg));
+	}
 	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_DOUBLE)
-		{ return(BGBCC_CCXL_GetRegImmDoubleValue(ctx, reg)); }
+	{
+		dv=BGBCC_CCXL_GetRegImmDoubleValue(ctx, reg);
+		if(((s64)dv)!=dv)
+		{
+			BGBCC_CCXL_Warn(ctx, "Constant truncation from Real to Long\n");
+//			BGBCC_DBGBREAK
+		}
+		
+		return((s64)dv);
+
+//		BGBCC_DBGBREAK
+//		return(BGBCC_CCXL_GetRegImmDoubleValue(ctx, reg));
+	}
 	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_DOUBLE_LVT)
-		{ return(BGBCC_CCXL_GetRegImmDoubleValue(ctx, reg)); }
+	{
+		dv=BGBCC_CCXL_GetRegImmDoubleValue(ctx, reg);
+		if(((s64)dv)!=dv)
+		{
+			BGBCC_CCXL_Warn(ctx, "Constant truncation from Real to Long\n");
+//			BGBCC_DBGBREAK
+		}
+		
+		return((s64)dv);
+
+//		BGBCC_DBGBREAK
+//		return(BGBCC_CCXL_GetRegImmDoubleValue(ctx, reg));
+	}
 
 	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_LONG_LVT)
 	{
@@ -1740,7 +1791,18 @@ s64 BGBCC_CCXL_GetRegImmLongValue(
 	}
 
 	if((reg.val&CCXL_REGTY2_TYMASK)==CCXL_REGTY2_IMM_DOUBLE)
-		{ return(BGBCC_CCXL_GetRegImmDoubleValue(ctx, reg)); }
+	{
+		dv=BGBCC_CCXL_GetRegImmDoubleValue(ctx, reg);
+		if(((s64)dv)!=dv)
+		{
+			BGBCC_CCXL_Warn(ctx, "Constant truncation from Real to Long\n");
+//			BGBCC_DBGBREAK
+		}
+		
+		return((s64)dv);
+
+//		return(BGBCC_CCXL_GetRegImmDoubleValue(ctx, reg));
+	}
 
 	__debugbreak();
 

@@ -139,6 +139,12 @@ void D_QuitNetGame (void);
 //? how many ticks to run?
 void TryRunTics (void);
 
+int NetDivTicdup(int x);
+
+void D_UpdateSound (void);
+
+void I_MusicFineTick(void);
+
 
 #endif
 

@@ -99,8 +99,13 @@ X(tk_checksane_wex_asm):
 	mov #0xCDEF, r5
 	mov #0xFFFFFFFFFFFFCDEF, r6
 
-	shad r1, 16, r20	| shld r0, 16, r16		| shld r1, 16, r17
-	shad r20, -16, r21	| shld r16, -16, r18	| shld r17, -16, r19
+//	shad r1, 16, r20	| shld r0, 16, r16		| shld r1, 16, r17
+//	shad r20, -16, r21	| shld r16, -16, r18	| shld r17, -16, r19
+
+	shad r1, 16, r20
+	shad r20, -16, r21
+	shld r0, 16, r16	| shld r1, 16, r17
+	shld r16, -16, r18	| shld r17, -16, r19
 
 	cmpeq r18, r4
 	break?f
@@ -113,7 +118,9 @@ X(tk_checksane_wex_asm):
 	mov #0x091A2B3C, r4
 	mov #0x44D5E6F7, r5
 
-	shad.q r1, -1, r18	| shld.q r0, -1, r16	| shld.q r1, -1, r17
+//	shad.q r1, -1, r18	| shld.q r0, -1, r16	| shld.q r1, -1, r17
+	shad.q r1, -1, r18
+	shld.q r0, -1, r16	| shld.q r1, -1, r17
 
 	cmpeq r18, r5
 	break?f

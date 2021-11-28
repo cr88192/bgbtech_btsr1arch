@@ -54,6 +54,7 @@ extern	byte	gammatable[5][256];
 extern	int	usegamma;
 
 
+int __hint_use_egpr();
 
 // Allocates buffer screens, call before R_Init.
 void V_Init (void);
@@ -112,6 +113,15 @@ V_DrawBlockCmap
   int		height,
   byte*		src,
   dt_scrpix	*cmap);
+
+void
+V_DrawBlockScr
+( int		x,
+  int		y,
+  int		scrn,
+  int		width,
+  int		height,
+  dt_scrpix*	src ) ;
 
 // Reads a linear block of pixels into the view buffer.
 void

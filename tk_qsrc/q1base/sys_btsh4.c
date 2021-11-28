@@ -221,6 +221,13 @@ double Sys_FloatTime (void)
 	return t;
 }
 
+int I_GetTimeMs (void)
+{
+	int t;
+	t = TK_GetTimeMs();
+	return(t);
+}
+
 char *Sys_ConsoleInput (void)
 {
 	return NULL;

@@ -605,8 +605,8 @@ BMID_API BGBMID_Patch *BGBMID_LoadPatchGUS(char *name)
 
 	printf("Load Patch %s\n", name);
 
-	sprintf(tb, "%s.pat", name);
-	fd=bgbmid_fopen(tb, "rb");
+	sprintf((char *)tb, "%s.pat", name);
+	fd=bgbmid_fopen((char *)tb, "rb");
 	if(!fd)return(NULL);
 
 	bgbmid_fread(tb, 1, 239, fd);

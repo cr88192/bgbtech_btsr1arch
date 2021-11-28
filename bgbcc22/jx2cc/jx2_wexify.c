@@ -1069,6 +1069,17 @@ int BGBCC_JX2_CheckOps32ValidWexSuffixFl(
 			}
 		}
 
+		if((opw2&0xF000)==0x6000)
+		{
+			if((opw2&0x000C)==0x0000)
+				return(0);
+			if((opw2&0x080C)==0x0808)
+				return(0);
+			if((opw2&0x080C)==0x080C)
+				return(0);
+			return(1);
+		}
+
 		return(1);
 	}
 
@@ -1107,6 +1118,12 @@ int BGBCC_JX2_CheckOps32ValidWexSuffixFl(
 			}
 		}
 
+		if((opw2&0xE800)==0x6800)
+		{
+			/* 128-bit ALUX ops. */
+			return(0);
+		}
+
 		return(1);
 	}
 
@@ -1115,6 +1132,56 @@ int BGBCC_JX2_CheckOps32ValidWexSuffixFl(
 		return(1);
 
 	return(0);
+}
+
+int BGBCC_JX2_CheckOps32ValidWexPrefix3W(
+	BGBCC_JX2_Context *sctx, int opw1, int opw2)
+{
+	int ret;
+	
+	ret = BGBCC_JX2_CheckOps32ValidWexPrefix(sctx, opw1, opw2);
+	if(ret <= 0)
+		return(ret);
+
+	if(	((opw1&0xEF00)==0xE000) ||
+		((opw1&0xF000)==0x7000))
+	{
+		if((opw2&0xF0EF)==0x106C)
+		{
+			/* Disallow shift in Lane 3 */
+			return(0);
+		}
+
+		if((opw2&0xF00E)==0x2002)
+		{
+			/* Disallow shift in Lane 3 */
+			return(0);
+		}
+
+		if((opw2&0xF000)==0x3000)
+		{
+			/* Disallow misc in Lane 3 */
+			return(0);
+		}
+
+		if((opw2&0xF00E)==0x5004)
+		{
+			/* Disallow shift in Lane 3 */
+			return(0);
+		}
+	}
+
+	if(	((opw1&0xEF00)==0xE200) ||
+		((opw1&0xF100)==0x9000))
+	{
+		if((opw2&0xE000)==0x8000)
+		{
+			/* Disallow shift in Lane 3 */
+			return(0);
+		}
+	}
+
+	return(1);
 }
 
 int BGBCC_JX2_CheckOps32ValidWexPrefix(
@@ -1252,6 +1319,11 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix(
 				break;
 			}
 			break;
+
+		case 0x6:
+			ret=0;
+			break;
+
 		default:
 			break;
 		}
@@ -2048,8 +2120,8 @@ ccxl_status BGBCC_JX2_CheckWexify_DoSwaps(
 		}
 
 #if 1
-		if(	BGBCC_JX2_CheckOps32ValidWexPrefix(sctx, opw1, opw2) &&
-			BGBCC_JX2_CheckOps32ValidWexPrefix(sctx, opw3, opw4) &&
+		if(	BGBCC_JX2_CheckOps32ValidWexPrefix3W(sctx, opw1, opw2) &&
+			BGBCC_JX2_CheckOps32ValidWexPrefix  (sctx, opw3, opw4) &&
 			BGBCC_JX2_CheckOps32ValidWexSuffix3W(sctx, opw5, opw6) &&
 			!BGBCC_JX2_CheckOps32SequenceOnly(sctx,
 				opw1, opw2, opw3, opw4) &&
@@ -2301,8 +2373,8 @@ ccxl_status BGBCC_JX2_CheckWexify_DoBundle(
 #endif
 
 #if 1
-		if(	BGBCC_JX2_CheckOps32ValidWexPrefix(sctx, opw1, opw2) &&
-			BGBCC_JX2_CheckOps32ValidWexPrefix(sctx, opw3, opw4) &&
+		if(	BGBCC_JX2_CheckOps32ValidWexPrefix3W(sctx, opw1, opw2) &&
+			BGBCC_JX2_CheckOps32ValidWexPrefix  (sctx, opw3, opw4) &&
 			BGBCC_JX2_CheckOps32ValidWexSuffix3W(sctx, opw5, opw6) &&
 			!BGBCC_JX2_CheckOps32SequenceOnly(sctx,
 				opw1, opw2, opw3, opw4) &&
@@ -2627,8 +2699,8 @@ ccxl_status BGBCC_JX2_CheckWexify(
 			{ cp+=4; continue; }
 
 #if 1
-		if(	BGBCC_JX2_CheckOps32ValidWexPrefix(sctx, opw1, opw2) &&
-			BGBCC_JX2_CheckOps32ValidWexPrefix(sctx, opw3, opw4) &&
+		if(	BGBCC_JX2_CheckOps32ValidWexPrefix3W(sctx, opw1, opw2) &&
+			BGBCC_JX2_CheckOps32ValidWexPrefix  (sctx, opw3, opw4) &&
 			BGBCC_JX2_CheckOps32ValidWexSuffix3W(sctx, opw5, opw6) &&
 			!BGBCC_JX2_CheckOps32SequenceOnly(sctx,
 				opw1, opw2, opw3, opw4) &&

@@ -93,7 +93,10 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	shctx->has_fmovs=0;
 	shctx->has_fmovc=0;
 	shctx->has_dmacl=0;
-	
+
+	shctx->do_shuffle=0;
+//	shctx->do_shuffle=1;
+
 //	shctx->no_fpu=1;
 	shctx->no_ext32=0;
 //	shctx->fpu_soft=1;
@@ -124,8 +127,11 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	if(ctx->optmode==BGBCC_OPT_SIZE)
 		shctx->use_wexmd=0;
 
-	if(BGBCC_CCXL_CheckForOptStr(ctx, "nowex"))
-		shctx->use_wexmd=0;
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "shuffle"))
+		shctx->do_shuffle=1;
+
+//	if(BGBCC_CCXL_CheckForOptStr(ctx, "nowex"))
+//		shctx->use_wexmd=0;
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "wex2w"))
 		shctx->use_wexmd=1;
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "wex3w"))
@@ -271,6 +277,9 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	}
 
 
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "nowex"))
+		shctx->use_wexmd=0;
+
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "nomovx"))
 		shctx->has_pushx2=0;
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "nosimdx"))
@@ -292,6 +301,9 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "nodmacl"))
 		{ shctx->has_dmacl=0; }
+
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "noshuffle"))
+		shctx->do_shuffle=0;
 
 	ctx->arch_has_imac=shctx->has_dmacl;
 	ctx->arch_has_fmac=0;
@@ -3999,8 +4011,10 @@ ccxl_status BGBCC_JX2C_BuildStruct(BGBCC_TransState *ctx,
 				
 		for(i=0; i<nif; i++)
 		{
-			k=vif_lbl[k];
-			fi=vif_vmi[k];
+//			k=vif_lbl[k];
+//			fi=vif_vmi[k];
+			k=vif_lbl[i];
+			fi=vif_vmi[i];
 
 			BGBCC_JX2_EmitLoadRegLabelRel24(sctx, BGBCC_SH_REG_R7, k);
 			BGBCC_JX2C_EmitStoreBRegOfsReg(ctx, sctx,
@@ -4025,8 +4039,10 @@ ccxl_status BGBCC_JX2C_BuildStruct(BGBCC_TransState *ctx,
 
 		for(i=0; i<nif; i++)
 		{
-			k=vif_lbl[k];
-			fi=vif_vmi[k];
+//			k=vif_lbl[k];
+//			fi=vif_vmi[k];
+			k=vif_lbl[i];
+			fi=vif_vmi[i];
 
 			BGBCC_JX2_EmitLoadRegLabelRel24(sctx, BGBCC_SH_REG_R7, k);
 			BGBCC_JX2C_EmitStoreBRegOfsReg(ctx, sctx,
@@ -5716,29 +5732,55 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	for(i=0; i<shufgbl; i++)
 		shufarr[i]=i;
 
-#if 0
-	for(i=0; i<shufgbl; i++)
+	if(sctx->do_shuffle)
 	{
-		j=(((int)(h>>32))&0x0FFFFFFF)%(shufgbl);
-		h=h*65521+13;
-		k=shufarr[i];
-		shufarr[i]=shufarr[j];
-		shufarr[j]=k;
-	}
+#if 1
+		for(i=1; i<shufgbl; i++)
+		{
+			j=(((int)(h>>32))&0x0FFFFFFF)%(shufgbl);
+			h=h*65521+13;
+			while(!j)
+			{
+				j=(((int)(h>>32))&0x0FFFFFFF)%(shufgbl);
+				h=h*65521+13;
+			}
+			k=shufarr[i];
+			shufarr[i]=shufarr[j];
+			shufarr[j]=k;
+		}
 #endif
 
-	/* Sort globals by use-count. */
-	for(i=1; i<shufgbl; i++)
-	{
-		for(j=i+1; j<shufgbl; j++)
+		/* Sort globals by use-count. */
+		for(i=1; i<shufgbl; i++)
 		{
-			obj1=ctx->reg_globals[shufarr[i]];
-			obj2=ctx->reg_globals[shufarr[j]];
-			if(obj2->gblrefcnt>obj1->gblrefcnt)
+			for(j=i+1; j<shufgbl; j++)
 			{
-				k=shufarr[i];
-				shufarr[i]=shufarr[j];
-				shufarr[j]=k;
+				obj1=ctx->reg_globals[shufarr[i]];
+				obj2=ctx->reg_globals[shufarr[j]];
+				if((obj2->gblrefcnt>obj1->gblrefcnt) &&
+					(((obj2->gblrefcnt+1.0)/(obj1->gblrefcnt+1.0))>1.25))
+				{
+					k=shufarr[i];
+					shufarr[i]=shufarr[j];
+					shufarr[j]=k;
+				}
+			}
+		}
+	}else
+	{
+		/* Sort globals by use-count. */
+		for(i=1; i<shufgbl; i++)
+		{
+			for(j=i+1; j<shufgbl; j++)
+			{
+				obj1=ctx->reg_globals[shufarr[i]];
+				obj2=ctx->reg_globals[shufarr[j]];
+				if(obj2->gblrefcnt>obj1->gblrefcnt)
+				{
+					k=shufarr[i];
+					shufarr[i]=shufarr[j];
+					shufarr[j]=k;
+				}
 			}
 		}
 	}
@@ -6065,6 +6107,11 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	
 	if(sctx->stat_opc_tot>0)
 	{
+		printf("Tot Op16=%d Op32=%d OpX32=%d\n",
+			sctx->stat_opc_base16,
+			sctx->stat_opc_ext8a,
+			sctx->stat_opc_7xx+sctx->stat_opc_9xx);
+	
 		k=sctx->stat_opc_tot;
 //		printf("16=%.2f%% 8A=%.2f%% 8E=%.2f%% CE=%.2f%% "
 //				"CC0=%.2f%% CC3=%.2f%%\n",
@@ -6310,6 +6357,14 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	}
 	printf("\n");
 #endif
+
+	printf("Masks: Hit=%d Jumbo=%d Tot=%d, Tot_J64=%d Tot_J96=%d\n",
+		sctx->stat_const_maskhit,
+		sctx->stat_const_maskjumbo,
+		sctx->stat_const_masktot,
+		sctx->stat_const_jumbo64,
+		sctx->stat_const_jumbo96
+		);
 
 	if(sctx->lvt16_n_idx>0)
 	{

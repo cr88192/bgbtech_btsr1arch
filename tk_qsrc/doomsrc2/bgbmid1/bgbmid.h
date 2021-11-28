@@ -419,6 +419,9 @@ BMID_API void BGBMID_Controller4fv(BGBMID_Context *ctx,
 
 BMID_API int BGBMID_TryDecVLI(byte **rcs, byte *ce);
 
+BMID_API void BGBMID_SetFmRegisterData(BGBMID_Context *ctx,
+	int prgn, int idx, u32 val);
+
 #ifdef __cplusplus
 }
 #endif

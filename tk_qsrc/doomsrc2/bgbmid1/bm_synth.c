@@ -2,6 +2,14 @@
 
 u32 bgbmid_fmsyn_regdat[256][16];
 
+BMID_API int BGBMID_NoteOff(BGBMID_Context *ctx,
+	int chan, int note, int vel);
+
+BMID_API int BGBMID_ProgramChange(BGBMID_Context *ctx, int chan, int num);
+
+BMID_API int BGBMID_ChannelMapValidate(BGBMID_Context *ctx, int chan);
+
+
 BMID_API void BGBMID_SetFmRegisterData(BGBMID_Context *ctx,
 	int prgn, int idx, u32 val)
 {
@@ -145,6 +153,7 @@ float bgbmid_funcgen(float th, int fn)
 	int i, j, k;
 	
 	th2=th*(1.0/M_PI);
+	v=0;
 	
 	switch(fn)
 	{
@@ -1991,9 +2000,6 @@ BMID_API int BGBMID_DoSynth(BGBMID_Context *ctx)
 	return(i);
 }
 
-BMID_API int BGBMID_SynthSamples(BGBMID_Context *ctx, short *buf, int len)
-	{ return(BGBMID_SynthSamples2(ctx, buf, len, len)); }
-
 BMID_API int BGBMID_SynthSamples2(
 	BGBMID_Context *ctx, short *buf, int len, int ovlen)
 {
@@ -2057,3 +2063,6 @@ BMID_API int BGBMID_SynthSamples2(
 
 	return(len);
 }
+
+BMID_API int BGBMID_SynthSamples(BGBMID_Context *ctx, short *buf, int len)
+	{ return(BGBMID_SynthSamples2(ctx, buf, len, len)); }

@@ -42,6 +42,10 @@ PF IF ID1 ID2 EX1 EX2 EX3 WB
 `include "ExEX3.v"
 `ifdef jx2_enable_wex
 `include "ExEXB3.v"
+
+`include "ExEXC1.v"
+`include "ExEXC2.v"
+`include "ExEXC3.v"
 `endif
 
 `ifdef jx2_enable_prebra
@@ -1168,7 +1172,8 @@ wire[69:0]	ex1ValAlu;
 
 ExALU	exAlu(
 	clock,				reset,
-	ex1RegValRs,		ex1RegValRt,		exB1RegValRs,
+	ex1RegValRs,		ex1RegValRt,	
+	exB1RegValRs,		ex1RegValRm,
 	ex1OpUCmd,			ex1OpUIxt,
 //	exHold2,			ex1RegInSr[1:0],
 	exHold2,			{ ex1RegInSr[7:4], ex1RegInSr[1:0] },
@@ -1679,7 +1684,7 @@ wire[63:0]		exC1RegValRn1;		//Destination Value (EX1)
 reg[32:0]		exC1RegValImm;		//Immediate (Decode)
 wire[8:0]		exC1OpUCmd2;
 
-ExEXB1	exc1(
+ExEXC1	exc1(
 	clock,			reset,
 	exC1OpUCmd,		exC1OpUIxt,
 	exC1Hold,		exC1OpUCmd2,
@@ -1748,7 +1753,7 @@ reg[32:0]		exC2RegValImm;		//Immediate (Decode)
 reg[65:0]		exC2RegAluRes;		//Arithmetic Result
 reg[63:0]		exC2RegMulWRes;		//Word Multiply Result
 
-ExEXB2		exc2(
+ExEXC2		exc2(
 	clock,		reset,
 	exC2OpUCmd,	exC2OpUIxt,
 	exC2Hold,
@@ -1790,7 +1795,7 @@ reg[32:0]		exC3RegValImm;		//Immediate (Decode)
 reg[65:0]		exC3RegAluRes;		//Arithmetic Result
 reg[63:0]		exC3RegMulWRes;		//Word Multiply Result
 
-ExEXB3		exc3(
+ExEXC3		exc3(
 	clock,		reset,
 	exC3OpUCmd,	exB3OpUIxt,
 	exC3Hold,
@@ -3956,9 +3961,15 @@ begin
 //		crIdCm			<= idA1IdRegM;
 
 `ifdef jx2_enable_movc
+
+`ifndef jx2_enable_movclite
 		crIdCm			<=
 			(idA1IdUCmd[5:0] == JX2_UCMD_MOV_RM) ? 
 				idC1IdRegO : idA1IdRegM;
+`else
+		crIdCm			<= idA1IdRegM;
+`endif
+
 `else
 		crIdCm			<= idA1IdRegM;
 `endif

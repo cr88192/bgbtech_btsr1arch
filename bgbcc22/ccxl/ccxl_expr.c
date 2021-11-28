@@ -2858,6 +2858,9 @@ void BGBCC_CCXL_CompileExprT(BGBCC_TransState *ctx, BCCX_Node *l)
 		if(!strcmp(s0, "V4SI"))i=CCXL_REGVEC_TY_V4SI;
 		if(!strcmp(s0, "V4UI"))i=CCXL_REGVEC_TY_V4UI;
 
+		if(!strcmp(s0, "V3SF"))i=CCXL_REGVEC_TY_V3H;
+		if(!strcmp(s0, "V4SF"))i=CCXL_REGVEC_TY_V4H;
+
 		BGBCC_CCXL_StackPushConstVec4F(ctx, g0, g1, g2, g3, i);
 		return;
 	}
@@ -2991,6 +2994,7 @@ void BGBCC_CCXL_CompileExprAsTypeSig(BGBCC_TransState *ctx,
 			case CCXL_TY_VEC3FX:	vty=CCXL_REGVEC_TY_V3FX;	break;
 			case CCXL_TY_VEC4F:		vty=CCXL_REGVEC_TY_V4F;		break;
 			case CCXL_TY_VEC4H:		vty=CCXL_REGVEC_TY_V4H;		break;
+			case CCXL_TY_VEC3H:		vty=CCXL_REGVEC_TY_V3H;		break;
 			case CCXL_TY_QUATF:		vty=CCXL_REGVEC_TY_QUATF;	break;
 			case CCXL_TY_VEC2D:		vty=CCXL_REGVEC_TY_V2D;		break;
 			case CCXL_TY_FCOMPLEX:	vty=CCXL_REGVEC_TY_FCPX;	break;
@@ -3012,6 +3016,7 @@ void BGBCC_CCXL_CompileExprAsTypeSig(BGBCC_TransState *ctx,
 			case CCXL_TY_VEC3FX:	vfn="__v3fx_float3";		break;
 			case CCXL_TY_VEC4F:		vfn="__v4f_float4";			break;
 			case CCXL_TY_VEC4H:		vfn="__v4h_float4";			break;
+			case CCXL_TY_VEC3H:		vfn="__v4h_float4";			break;
 			case CCXL_TY_QUATF:		vfn="__vqf_float4";			break;
 			case CCXL_TY_VEC2D:		vfn="__v2d_double2";		break;
 			case CCXL_TY_FCOMPLEX:	vfn="__c2f_float2";			break;
@@ -3048,6 +3053,9 @@ void BGBCC_CCXL_CompileExprAsTypeSig(BGBCC_TransState *ctx,
 			{
 				BGBCC_DBGBREAK
 			}
+
+			for(i=0; i<4; i++)
+				afv[i]=0;
 			
 			for(i=0; i<na; i++)
 			{
@@ -3087,6 +3095,7 @@ void BGBCC_CCXL_CompileExprAsTypeSig(BGBCC_TransState *ctx,
 
 	BGBCC_CCXL_InferExpr(ctx, l, &sty);
 
+#if 1
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_int, "int"))
 	{
 		li=BCCX_GetIntCst(l, &bgbcc_rcst_value, "value");
@@ -3110,6 +3119,14 @@ void BGBCC_CCXL_CompileExprAsTypeSig(BGBCC_TransState *ctx,
 			BGBCC_CCXL_StackPushConstLong(ctx, li);
 			return;
 		}
+
+#if 1
+		if((*sig=='y') || ((*sig=='m') && (ctx->arch_sizeof_long==8)))
+		{
+			BGBCC_CCXL_StackPushConstULong(ctx, li);
+			return;
+		}
+#endif
 
 		if((*sig=='c') || (*sig=='a'))
 		{
@@ -3136,16 +3153,8 @@ void BGBCC_CCXL_CompileExprAsTypeSig(BGBCC_TransState *ctx,
 			BGBCC_CCXL_StackPushConstSmallInt(ctx, li, 7);
 			return;
 		}
-
-#if 1
-		if((*sig=='y') || ((*sig=='m') && (ctx->arch_sizeof_long==8)))
-		{
-			BGBCC_CCXL_StackPushConstULong(ctx, li);
-			return;
-		}
-#endif
 	}
-
+#endif
 
 	BGBCC_CCXL_CompileExpr(ctx, l);
 //	BGBCC_CCXL_StackCastSig(ctx, sig);

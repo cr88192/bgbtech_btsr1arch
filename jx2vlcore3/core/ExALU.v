@@ -83,6 +83,7 @@ module ExALU(
 	regValRs,
 	regValRt,
 	regValXs,
+	regValRp,
 	idUCmd,
 	idUIxt,
 	exHold,
@@ -99,6 +100,7 @@ input			reset;
 input[63:0]		regValRs;
 input[63:0]		regValRt;
 input[63:0]		regValXs;
+input[63:0]		regValRp;
 input[8:0]		idUCmd;
 input[8:0]		idUIxt;
 input			exHold;
@@ -1353,6 +1355,13 @@ begin
 				regInSrR ? regValRs[47:32] : regValRt[47:32],
 				regInSrQ ? regValRs[31:16] : regValRt[31:16],
 				regInSrP ? regValRs[15: 0] : regValRt[15: 0] };
+
+`ifdef jx2_enable_bitsel
+			tResultb2W = { 1'b0,
+				(regValRs &   regValRt ) |
+				(regValRp & (~regValRt))
+				};
+`endif
 		end
 	endcase
 

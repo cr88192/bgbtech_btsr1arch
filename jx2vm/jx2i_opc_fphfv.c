@@ -1580,10 +1580,13 @@ void BJX2_Op_PLDCH_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	u64	vs, vt, vn;
 
 	vs=ctx->regs[op->rm];
-	jx2_upvec_hf(tv0, vs);
 	
-	BJX2_PtrSetFloat(&v0, tv0[0]);
-	BJX2_PtrSetFloat(&v1, tv0[1]);
+	v0=BJX2_CvtHalfToFloat(vs>> 0);
+	v1=BJX2_CvtHalfToFloat(vs>>16);
+	
+//	jx2_upvec_hf(tv0, vs);
+//	BJX2_PtrSetFloat(&v0, tv0[0]);
+//	BJX2_PtrSetFloat(&v1, tv0[1]);
 	
 	vn=(((u64)v1)<<32)|v0;
 	ctx->regs[op->rn]=vn;
@@ -1599,16 +1602,38 @@ void BJX2_Op_PLDCHH_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	u64	vs, vt, vn;
 
 	vs=ctx->regs[op->rm];
-	jx2_upvec_hf(tv0, vs);
-	
-	BJX2_PtrSetFloat(&v0, tv0[2]);
-	BJX2_PtrSetFloat(&v1, tv0[3]);
+
+	v0=BJX2_CvtHalfToFloat(vs>> 0);
+	v1=BJX2_CvtHalfToFloat(vs>>16);
+
+//	jx2_upvec_hf(tv0, vs);
+//	BJX2_PtrSetFloat(&v0, tv0[2]);
+//	BJX2_PtrSetFloat(&v1, tv0[3]);
 	
 	vn=(((u64)v1)<<32)|v0;
 	ctx->regs[op->rn]=vn;
 	
 //	vn=jx2_mkvec_hf(tv2[0], tv2[1], tv2[2], tv2[3]);
 //	ctx->regs[op->rn]=vn;
+}
+
+void BJX2_Op_PLDCH_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	float tv0[4], tv1[4], tv2[4];
+	u32 v0, v1;
+	u64	vs, vt, vn;
+
+	vs=op->imm;
+
+//	jx2_upvec_hf(tv0, vs);
+//	BJX2_PtrSetFloat(&v0, tv0[0]);
+//	BJX2_PtrSetFloat(&v1, tv0[1]);
+
+	v0=BJX2_CvtHalfToFloat(vs>> 0);
+	v1=BJX2_CvtHalfToFloat(vs>>16);
+
+	vn=(((u64)v1)<<32)|v0;
+	ctx->regs[op->rn]=vn;
 }
 
 void BJX2_Op_PLDCEHL_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
@@ -1618,11 +1643,14 @@ void BJX2_Op_PLDCEHL_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	u64	vs, vt, vn;
 
 	vs=ctx->regs[op->rm];
-	jx2_upvec_hf(tv0, vs);
-	
-	BJX2_PtrSetFloat(&v0, tv0[0]);
-	BJX2_PtrSetFloat(&v1, tv0[1]);
-	
+
+//	jx2_upvec_hf(tv0, vs);
+//	BJX2_PtrSetFloat(&v0, tv0[0]);
+//	BJX2_PtrSetFloat(&v1, tv0[1]);
+
+	v0=BJX2_CvtHalfToFloat(vs>> 0);
+	v1=BJX2_CvtHalfToFloat(vs>>16);
+
 	v0|=((vs>>(48+0))&0x1F)<<8;
 	v1|=((vs>>(48+5))&0x1F)<<8;
 	
@@ -1640,10 +1668,13 @@ void BJX2_Op_PLDCEHH_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	u64	vs, vt, vn;
 
 	vs=ctx->regs[op->rm];
-	jx2_upvec_hf(tv0, vs);
-	
-	BJX2_PtrSetFloat(&v0, tv0[2]);
-	BJX2_PtrSetFloat(&v1, tv0[3]);
+
+//	jx2_upvec_hf(tv0, vs);
+//	BJX2_PtrSetFloat(&v0, tv0[2]);
+//	BJX2_PtrSetFloat(&v1, tv0[3]);
+
+	v0=BJX2_CvtHalfToFloat(vs>> 0);
+	v1=BJX2_CvtHalfToFloat(vs>>16);
 
 	v0|=((vs>>(48+10))&0x1F)<<8;
 //	v1|=((vs>>(48+5))&0x1F)<<8;
@@ -1664,7 +1695,6 @@ void BJX2_Op_PLDCHX_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 	vs=ctx->regs[op->rm];
 	jx2_upvec_hf(tv0, vs);
-	
 	BJX2_PtrSetFloat(&v0, tv0[0]);
 	BJX2_PtrSetFloat(&v1, tv0[1]);
 	BJX2_PtrSetFloat(&v2, tv0[2]);
@@ -1826,3 +1856,29 @@ void BJX2_Op_PSTCM8SH_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=vn;
 }
 
+
+void BJX2_Op_PLDCM8UH_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u16 v0, v1, v2, v3;
+	u64	vs, vn;
+	vs=op->imm;
+	v0=bjx2_ldm8uh((vs    )&255);
+	v1=bjx2_ldm8uh((vs>> 8)&255);
+	v2=bjx2_ldm8uh((vs>>16)&255);
+	v3=bjx2_ldm8uh((vs>>24)&255);
+	vn=(((u64)v3)<<48)|(((u64)v2)<<32)|(((u64)v1)<<16)|v0;
+	ctx->regs[op->rn]=vn;
+}
+
+void BJX2_Op_PLDCM8SH_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u16 v0, v1, v2, v3;
+	u64	vs, vn;
+	vs=op->imm;
+	v0=bjx2_ldm8sh((vs    )&255);
+	v1=bjx2_ldm8sh((vs>> 8)&255);
+	v2=bjx2_ldm8sh((vs>>16)&255);
+	v3=bjx2_ldm8sh((vs>>24)&255);
+	vn=(((u64)v3)<<48)|(((u64)v2)<<32)|(((u64)v1)<<16)|v0;
+	ctx->regs[op->rn]=vn;
+}

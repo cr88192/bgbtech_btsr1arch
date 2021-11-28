@@ -368,9 +368,22 @@ int BGBCC_CCXL_InferExpr(BGBCC_TransState *ctx,
 		s0=BCCX_GetCst(l, &bgbcc_rcst_name, "name");
 		if(s0)
 		{
-			i0=BGBCC_CCXL_TryLookupAsRegister(ctx, s0, &treg, false);
+			i0=-1;
+		
+			for(j=ctx->vlcl_stackpos-1; j>=0; j--)
+			{
+				sprintf(tb1, "%s!%d", s0, ctx->vlcl_stack[j]);
+				i0=BGBCC_CCXL_TryLookupAsRegister(ctx, tb1, &treg, false);
+				if(i0>0)
+					break;
+			}
+
+			if(i0<=0)
+				i0=BGBCC_CCXL_TryLookupAsRegister(ctx, s0, &treg, false);
+
 			if(i0<=0)
 			{
+				*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_UNDEF_I);
 				return(0);
 			}
 			tty=BGBCC_CCXL_GetRegReturnType(ctx, treg);
@@ -378,6 +391,7 @@ int BGBCC_CCXL_InferExpr(BGBCC_TransState *ctx,
 			return(1);
 		}
 		
+		*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_UNDEF_I);
 		return(0);
 	}
 
@@ -513,6 +527,130 @@ int BGBCC_CCXL_InferExpr(BGBCC_TransState *ctx,
 		*rdty=BGBCC_CCXL_MakeTypeVTy(ctx, CCXL_VTY_PVOID);
 		return(0);
 	}
+
+//	if(BCCX_TagIsCstP(l, &bgbcc_rcst_object, "object"))
+	if(	BCCX_TagIsCstP(l, &bgbcc_rcst_object, "object") ||
+		BCCX_TagIsCstP(l, &bgbcc_rcst_jnew, "jnew"))
+	{
+		t=BCCX_FindTagCst(l, &bgbcc_rcst_type, "type");
+
+		if(t)
+		{
+			s0=BGBCC_CCXL_VarTypeString(ctx, t);
+			if(!s0)
+				return(0);
+		}else
+		{
+			s0="r";
+		}
+
+		BGBCC_CCXL_TypeFromSig(ctx, &dty, s0);
+		*rdty=dty;
+		return(1);
+	}
+
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_vec4, "vec4"))
+	{
+		s0=BCCX_GetCst(l, &bgbcc_rcst_tysuf, "tysuf");
+		i=-1;
+
+		if(!strcmp(s0, "V3F"))i=CCXL_TY_VEC3F;
+		if(!strcmp(s0, "V4F"))i=CCXL_TY_VEC4F;
+		if(!strcmp(s0, "QF"))i=CCXL_TY_QUATF;
+
+		if(!strcmp(s0, "V3FX"))i=CCXL_TY_VEC3FX;
+		if(!strcmp(s0, "V3FQ"))i=CCXL_TY_VEC3FQ;
+
+		if(!strcmp(s0, "V4SW"))i=CCXL_TY_VEC4SW;
+		if(!strcmp(s0, "V4UW"))i=CCXL_TY_VEC4UW;
+		if(!strcmp(s0, "V4SI"))i=CCXL_TY_VEC4SI;
+		if(!strcmp(s0, "V4UI"))i=CCXL_TY_VEC4UI;
+
+		if(!strcmp(s0, "V3SF"))i=CCXL_TY_VEC3H;
+		if(!strcmp(s0, "V4SF"))i=CCXL_TY_VEC4H;
+
+		if(i>=0)
+		{
+			*rdty=BGBCC_CCXL_MakeTypeID(ctx, i);
+			return(1);
+		}
+	}
+
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_array, "array"))
+	{
+		s0=BCCX_GetCst(l, &bgbcc_rcst_tysuf, "tysuf");
+
+		if(!s0)
+		{
+			*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_VARIANT);
+			return(1);
+		}
+		
+		s1=NULL;
+		
+		if(!bgbcc_stricmp(s0, "SB"))	s1="Qa";
+		if(!bgbcc_stricmp(s0, "B"))		s1="Qa";
+		if(!bgbcc_stricmp(s0, "SC"))	s1="Qc";
+		if(!bgbcc_stricmp(s0, "D"))		s1="Qd";
+		if(!bgbcc_stricmp(s0, "F"))		s1="Qf";
+		if(!bgbcc_stricmp(s0, "G"))		s1="Qg";
+		if(!bgbcc_stricmp(s0, "UB"))	s1="Qh";
+		if(!bgbcc_stricmp(s0, "SI"))	s1="Qi";
+		if(!bgbcc_stricmp(s0, "UI"))	s1="Qj";
+		if(!bgbcc_stricmp(s0, "SF"))	s1="Qk";
+		if(!bgbcc_stricmp(s0, "HF"))	s1="Qk";
+		if(!bgbcc_stricmp(s0, "L"))		s1="Qx";
+		if(!bgbcc_stricmp(s0, "UL"))	s1="Qy";
+		if(!bgbcc_stricmp(s0, "LX"))	s1="Qn";
+		if(!bgbcc_stricmp(s0, "ULX"))	s1="Qo";
+		if(!bgbcc_stricmp(s0, "V"))		s1="Qr";
+		if(!bgbcc_stricmp(s0, "SS"))	s1="Qs";
+		if(!bgbcc_stricmp(s0, "US"))	s1="Qt";
+		if(!bgbcc_stricmp(s0, "W"))		s1="Qw";
+
+		BGBCC_CCXL_TypeFromSig(ctx, &dty, s1);
+		*rdty=dty;
+		return(1);
+	}
+
+#if 1
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_methodcall, "methodcall"))
+	{
+		t=BCCX_FetchCst(l, &bgbcc_rcst_value, "value");
+		t=BGBCC_CCXL_ReduceExpr(ctx, t);
+
+		i0=BGBCC_CCXL_InferExpr(ctx, t, &tty);
+		if(!i0)
+			return(0);
+
+		s0=BCCX_GetCst(l, &bgbcc_rcst_name, "name");
+
+		st=BGBCC_CCXL_LookupStructureForType(ctx, tty);
+
+		if(st && BGBCC_CCXL_LookupStructFieldType(ctx, st, s0, &bty)>0)
+		{
+			*rdty=BGBCC_CCXL_GetTypeReturnType(ctx, bty);
+			return(1);
+		}
+
+		if(BGBCC_CCXL_TypeVariantP(ctx, tty))
+		{
+			*rdty=tty;
+			return(1);
+		}
+
+		return(0);
+
+//		BGBCC_CCXL_CompileExpr(ctx, );
+//		s0=BCCX_GetCst(l, &bgbcc_rcst_name, "name");
+//		BGBCC_CCXL_StackLoadSlot(ctx, s0);
+//		return;
+	}
+#endif
+
+	s0=BCCX_Tag(l);
+
+//	BGBCC_DBGBREAK
 
 //	*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_I);
 	return(0);
