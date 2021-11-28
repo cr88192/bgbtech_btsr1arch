@@ -13,14 +13,29 @@ reg[7:0]	tExpC;
 reg[9:0]	tFraC;
 reg			tSgn;
 
+reg			tExpIsZero;
+reg			tExpIsNaN;
+
 always @*
 begin
+	tExpIsZero = (valI[14:10]==5'h00);
+	tExpIsNaN  = (valI[14:10]==5'h1F);
+
 	tSgn = valI[15];
-	tExpC = { valI[14]?3'b000:3'b111, valI[14:10] };
+	tExpC = {
+		valI[14],
+		((valI[14] || tExpIsZero) && !tExpIsNaN) ?
+			3'b000 : 3'b111,
+		valI[13:10] };
 	tFraC = valI[9:0];
-	if(valI[14:10]==5'h00)
+
+//	if(valI[14:10]==5'h00)
 //	if((valI[14:10]==5'h00) || valE[5])
-		tExpC=0;
+//	if(valI[14:10]==5'h00)
+//		tExpC=0;
+//	if(valI[14:10]==5'h1F)
+//		tExpC=255;
+
 //	tValO = { tSgn, tExpC, tFraC, 13'h0 };
 	tValO = { tSgn, tExpC, tFraC, valE[4:0], 8'h0 };
 end

@@ -300,10 +300,16 @@ begin
 		end
 
 		JX2_UCMD_ALU3, JX2_UCMD_UNARY, JX2_UCMD_ALUW3,
-		JX2_UCMD_CONV2_RR, JX2_UCMD_ALUB3: begin
+//		JX2_UCMD_CONV2_RR,
+		JX2_UCMD_ALUB3: begin
 //			tRegIdRn2		= regIdRm;			//
 //			tRegValRn2		= regValAluRes[63:0];		//
 			tDoAluSrT		= 1;
+			tValOutDfl		= regValAluRes[63:0];
+			tDoOutDfl		= 1;
+		end
+
+		JX2_UCMD_CONV2_RR: begin
 			tValOutDfl		= regValAluRes[63:0];
 			tDoOutDfl		= 1;
 		end
