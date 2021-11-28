@@ -39,6 +39,11 @@ Control Register 0 Bits:
 * 11: Cell Width 3
 * (15:12): Colorspace Modifier
 
+* (39:32): Cursor X
+* (47:40): Cursor Y
+* (55:48): Scroll Adjust X
+* (63:56): Scroll Adjust Y
+
 Basic Display Resolution
 * (DR3, DR2, DR1)
 ** 000: / 640x480 / 640x400
@@ -46,6 +51,8 @@ Basic Display Resolution
 ** 001: 800x600
 ** 010: 1024x768
 ** 100: 640x480
+** 110: 640x480 (64x32 or 128x64)
+** 111: 640x400 (64x32 or 128x64)
 
 Cell Width
 * (CW3, CW2, CW1)
@@ -162,6 +169,22 @@ For 6-bit color endpoints:
 For 9-bit color endpoints:
 * Colors are encoded as rrrgggbbb
 * Each 3-bit value maps to one of: 0, 36, 73, 110, 146, 182, 219, 255
+
+=== Cell Mode 0.2 (Sprite Cell) ===
+
+* (255:128): Ignored
+* (127:96): Reserved
+* (95:88): Sprite ID
+* (87:76): Sprite Y
+* (75:64): Sprite X
+* (63:62): Cell Mode B (CellModeB, 2)
+* (61:47): Color B (RGB555)
+* (46:32): Color A (RGB555)
+* (31:30): Cell Mode (CellMode, 0)
+* (29:24): Sprite Attrib
+* (23:12): Sprite Glyph (B) / Mask
+* (11: 0): Sprite Glyph (A) / Color Select
+
 
 
 === Cell Mode 2 (Graphical Cells, Change) ===

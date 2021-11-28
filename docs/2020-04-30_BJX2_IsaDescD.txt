@@ -1324,7 +1324,7 @@ This operation is only valid in Lane 1.
 
 === ROTL ===
 
-* F034_3en0  ROTL		Rn
+* F034_3en0 ? ROTL		Rn
 
 Rn=(Rn SHL 1)|(Rn SHR 31)
 
@@ -1335,7 +1335,7 @@ This operation is only valid in Lane 1.
 
 === ROTR ===
 
-* F035_3en0  ROTR		Rn
+* F035_3en0 ? ROTR		Rn
 
 Rn=(Rn SHR 1)|(Rn SHL 31)
 
@@ -1347,7 +1347,7 @@ This operation is only valid in Lane 1.
 === ROTL (3R) ===
 
 * F0nm_3go2  ROTL.Q		Rm, Ro, Rn		//(ALU) Rotate Left (64b)
-* F0nm_3go6  ROTL.L		Rm, Ro, Rn		//(ALUX) Rotate Left (32b)
+* F0nm_3go6  ROTL.L		Rm, Ro, Rn		//(ALU) Rotate Left (32b)
 * F0nm_3Go6  ROTLX		Xm, Ro, Xn		//(ALUX) Rotate Left (128b)
 
 Rotate the value in Rn left by Ro.
@@ -1460,6 +1460,8 @@ The Shift Value will behave as if it were a sign-extended byte. Positive values 
 
 For SHAD, the shift will be 32-bit modular.
 
+This is allowed in Lanes 1 and 2, Support in Lane 3 is Optional.
+
 
 === SHADQ ===
 
@@ -1473,6 +1475,8 @@ Operates on a 64-bit value.
 The Shift Value will behave as if it were a sign-extended byte. Positive values will encode left-shifts whereas negative values will encode right shifts.
 
 For SHADQ, the shift will be 64-bit modular.
+
+This is allowed in Lanes 1 and 2, Support in Lane 3 is Optional.
 
 
 === SHADX ===
@@ -1499,6 +1503,8 @@ The Shift Value will behave as if it were a sign-extended byte. Positive values 
 
 For SHLD, the shift will be 32-bit modular.
 
+This is allowed in Lanes 1 and 2, Support in Lane 3 is Optional.
+
 
 === SHLDQ ===
 
@@ -1512,6 +1518,8 @@ Operates on a 64-bit value.
 The Shift Value will behave as if it were a sign-extended byte. Positive values will encode left-shifts whereas negative values will encode right shifts.
 
 For SHLD.Q, the shift will be 64-bit modular.
+
+This is allowed in Lanes 1 and 2, Support in Lane 3 is Optional.
 
 
 === SHLDX ===
@@ -1537,6 +1545,8 @@ Positive values will correspond to a right shift, whereas negative values will b
 
 For SHAR, the shift will be 32-bit modular.
 
+This is allowed in Lanes 1 and 2, Support in Lane 3 is Optional.
+
 
 === SHARQ ===
 
@@ -1551,6 +1561,8 @@ The Shift Value will behave as if it were a sign-extended byte. Positive values 
 Positive values will correspond to a right shift, whereas negative values will be undefined. The immediate form will be encoded by inverting the sign.
 
 For SHADQ, the shift will be 64-bit modular.
+
+This is allowed in Lanes 1 and 2, Support in Lane 3 is Optional.
 
 
 === SHARX ===
@@ -1578,6 +1590,8 @@ Positive values will correspond to a right shift, whereas negative values will b
 
 For SHLR, the shift will be 32-bit modular.
 
+This is allowed in Lanes 1 and 2, Support in Lane 3 is Optional.
+
 
 === SHLRQ ===
 
@@ -1590,6 +1604,8 @@ Operates on a 64-bit value.
 Positive values will correspond to a right shift, whereas negative values will be undefined. The immediate form will be encoded by inverting the sign.
 
 For SHLRQ, the shift will be 64-bit modular.
+
+This is allowed in Lanes 1 and 2, Support in Lane 3 is Optional.
 
 
 === SHLRX ===

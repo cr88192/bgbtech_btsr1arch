@@ -402,9 +402,9 @@ SystemCalls:
 
 Base Physical Memory Map (32-bit):
 * 00000000 .. 00007FFF: Boot ROM
-* 00008000 .. 0000BFFF: (Reserved)
+* 00008000 .. 0000BFFF: Extended Boot ROM (Optional)
 * 0000C000 .. 0000DFFF: Boot SRAM
-* 0000E000 .. 0000FFFF: Reserved
+* 0000E000 .. 0000FFFF: Extended Boot SRAM (Optional)
 * 00010000 .. 000FFFFF: Reserved
 * 00100000 .. 00FFFFFF: Reserved
 * 01000000 .. 7FFFFFFF: DRAM
@@ -453,6 +453,8 @@ If more DRAM exists than fits into the low 2GB, then addresses above the 4GB mar
 Change:
 * If JQ is Set, the MMIO range at 0000Fzzzzzzz will be disabled. In this case, the entire 47 bit userland will behave as a contiguous address range.
 * The 44-bit Expanded MMIO range will only be enabled if JQ is Set.
+
+If XMOV is supported, the quadrant bits will be used regardless of the JQ setting, however, operation in 32-bit mode will behave as-if Bits (47:32) were set to zero.
 
 
 === MMU ===
@@ -1773,13 +1775,13 @@ F0zz Instruction Block:
 *** F02F_3en0  BF.L		(PC, Rn)	//Branch, DWord Scale
 
 *** F033_3en0  MOVNT	Rn
-*** F034_3en0  ROTL		Rn
-*** F035_3en0  ROTR		Rn
+*** F034_3en0 ? ROTL		Rn
+*** F035_3en0 ? ROTR		Rn
 *** F036_3en0  ROTCL	Rn
 *** F037_3en0  ROTCR	Rn
-*** F038_3en0  SHLL		Rn
-*** F039_3en0  SHLR		Rn
-*** F03A_3en0  SHAR		Rn
+*** F038_3en0 ? SHLL		Rn
+*** F039_3en0 ? SHLR		Rn
+*** F03A_3en0 ? SHAR		Rn
 
 *** F03E_3en0  MOVST	Rn
 *** F03F_3en0  MOVPQ	Rn
@@ -1802,7 +1804,7 @@ F0zz Instruction Block:
 ** F0nm_3Go4  SHADX		Xm, Ro, Xn		//(ALUX) Shift Arithmetic (128b)
 ** F0nm_3go5  -
 ** F0nm_3Go5  SHLDX		Xm, Ro, Xn		//(ALUX) Shift Logical (128b)
-** F0nm_3go6  ROTL.L	Rm, Ro, Rn		//(ALUX) Rotate Left (32b)
+** F0nm_3go6  ROTL.L	Rm, Ro, Rn		//(ALU) Rotate Left (32b)
 ** F0nm_3Go6  ROTLX		Xm, Ro, Xn		//(ALUX) Rotate Left (128b)
 ** F0nm_3ez7  SWxP.x	Rm, Rn			//(GSV) SWAP and SWCP
 
@@ -1812,7 +1814,7 @@ F0zz Instruction Block:
 
 * F0nm_4eoz (Follows a similar pattern as F0nm_0zz0)
 ** F0nm_4go0  MOV.X		Xn, (Rm, Disp5)		//(MOVX2) Store Pair
-** F0nm_4Go0  -
+** F0nm_4Go0  MOV.C		Cn, (Rm, Disp5)		//(MOVC)
 ** F0nm_4go1  -
 ** F0nm_4Go1  -
 ** F0nm_4go2  -
@@ -1829,7 +1831,7 @@ F0zz Instruction Block:
 ** F0nm_4Go7  -
 
 ** F0nm_4go8  MOV.X		(Rm, Disp5), Xn		//(MOVX2) Load Pair
-** F0nm_4Go8  -
+** F0nm_4Go8  MOV.C		(Rm, Disp5), Cn		//(MOVC)
 ** F0nm_4go9  -
 ** F0nm_4Go9  -
 ** F0nm_4goA  -
@@ -1899,7 +1901,7 @@ F0zz Instruction Block:
 ** F0nm_6Go9 ? BLKUTX3L	Xm, Ro, Rn			//(RGBX) Extract Pixel, UTX3 LDR
 ** F0nm_6goA ? BLINTA	Rm, Ro, Rn			//(RGBX) Bilinear Interpolate (2p)
 ** F0nm_6GoA ? BLINT	Xm, Xo, Xn			//(RGBX) Bilinear Interpolate
-** F0nm_6goB  -
+** F0nm_6goB ? BITSEL	Rm, Ro, Rn			//(?) Rn = (Rm & Ro) | (Rn & ~Ro)
 ** F0nm_6GoB  -
 ** F0nm_6goC ? BLKUAB1	Rm, Ro, Rn			//(UAB) Extract Sample
 ** F0nm_6GoC ? BLKUAB2	Rm, Ro, Rn			//(UAB) Extract Sample
@@ -1951,7 +1953,7 @@ F0zz Instruction Block:
 ** F0nm_8GoF  XMOV.X	(Xm, Ro), Xn		//
 
 
-* F0nm_9eoZ  (3R Space)
+* F0nm_9eoZ  (3R Space / Dedicated FPU)
 
 * F0nm_AeoZ  (3R Space)
 * F0nm_BeoZ  (3R Space)
