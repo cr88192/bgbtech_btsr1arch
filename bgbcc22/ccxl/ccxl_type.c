@@ -413,6 +413,11 @@ bool BGBCC_CCXL_TypeUnsignedLongP(
 
 	if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_UL)
 		return(true);
+
+	if((BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_UNL) &&
+		(ctx->arch_sizeof_long==8))
+			return(true);
+
 	return(false);
 }
 
@@ -4246,12 +4251,60 @@ ccxl_type BGBCC_CCXL_TypeWrapBasicType(int ty)
 	return(tty);
 }
 
+/* Values are compatible as per the abstract model.
+ * Allows implicit promotion to int.
+ * Distinguishes conversions which may be equivalent on the target.
+ */
 int BGBCC_CCXL_TypeCompatibleP(
 	BGBCC_TransState *ctx,
 	ccxl_type dty, ccxl_type sty)
 {
 	return(BGBCC_CCXL_TypeCompatibleFlP(ctx, dty, sty, 0));
 }
+
+/* Values are compatible on the target. */
+int BGBCC_CCXL_TypeCompatibleArchP(
+	BGBCC_TransState *ctx,
+	ccxl_type dty, ccxl_type sty)
+{
+	if(BGBCC_CCXL_TypeCompatibleFlP(ctx, dty, sty, 2))
+//	if(BGBCC_CCXL_TypeCompatibleFlP(ctx, dty, sty, 0))
+		return(1);
+	return(0);
+}
+
+/* Values are compatible, ignoring sign-extension. */
+int BGBCC_CCXL_TypeCompatibleValueExtP(
+	BGBCC_TransState *ctx,
+	ccxl_type dty, ccxl_type sty)
+{
+	return(BGBCC_CCXL_TypeCompatibleFlP(ctx, dty, sty, 3));
+}
+
+/* True if two values are type-format compatible.
+ */
+int BGBCC_CCXL_TypeCompatibleFormatP(
+	BGBCC_TransState *ctx,
+	ccxl_type dty, ccxl_type sty)
+{
+	return(BGBCC_CCXL_TypeCompatibleFlP(ctx, dty, sty, 6));
+}
+
+/* True if two values can share the same type of storage.
+ * Glosses over specifics about actual type being held there.
+ */
+int BGBCC_CCXL_TypeCompatibleStorageP(
+	BGBCC_TransState *ctx,
+	ccxl_type dty, ccxl_type sty)
+{
+	return(BGBCC_CCXL_TypeCompatibleFlP(ctx, dty, sty, 7));
+}
+
+/*
+ 1 &= Ignore Value-Type Differences (Eg: Sign Conversion)
+ 2 &= Ignore Difference if equivalent on target.
+ 4 &= Ignore differences for FP/Vector conversion.
+ */
 
 int BGBCC_CCXL_TypeCompatibleFlP(
 	BGBCC_TransState *ctx,
@@ -4597,7 +4650,11 @@ int BGBCC_CCXL_TypeCompatibleFlP(
 	{
 		if(BGBCC_CCXL_TypeVarRefP(ctx, sty))
 		{
-			return(1);
+			if(fl&1)
+				return(1);
+			if(BGBCC_CCXL_TypeEqualP(ctx, dty, sty))
+				return(1);
+			return(0);
 		}
 	}
 
@@ -4612,7 +4669,8 @@ int BGBCC_CCXL_TypeCompatibleFlP(
 
 		if(BGBCC_CCXL_TypeVarRefP(ctx, dty))
 		{
-			if(fl&3)
+//			if(fl&3)
+			if(fl&1)
 				return(1);
 			return(0);
 		}
@@ -4753,16 +4811,6 @@ int BGBCC_CCXL_TypeCompatibleFlP(
 	}
 #endif
 
-	return(0);
-}
-
-int BGBCC_CCXL_TypeCompatibleArchP(
-	BGBCC_TransState *ctx,
-	ccxl_type dty, ccxl_type sty)
-{
-	if(BGBCC_CCXL_TypeCompatibleFlP(ctx, dty, sty, 2))
-//	if(BGBCC_CCXL_TypeCompatibleFlP(ctx, dty, sty, 0))
-		return(1);
 	return(0);
 }
 
@@ -5201,6 +5249,15 @@ ccxl_status BGBCC_CCXL_GetTypeBinaryDest(
 		dtyb=-1;
 	}
 
+	if((opr==CCXL_BINOP_SHL) || (opr==CCXL_BINOP_SHR))
+	{
+		if(BGBCC_CCXL_TypeSmallInt128P(ctx, lty))
+		{
+			*rdty=lty;
+			return(BGBCC_CCXL_TypeSupportsOperatorP(ctx, *rdty, opr)?
+				CCXL_STATUS_YES:CCXL_STATUS_NO);
+		}
+	}
 
 //	if(BGBCC_CCXL_TypeSmallIntP(ctx, lty) &&
 //		BGBCC_CCXL_TypeSmallIntP(ctx, rty))
@@ -5329,16 +5386,6 @@ ccxl_status BGBCC_CCXL_GetTypeBinaryDest(
 			CCXL_STATUS_YES:CCXL_STATUS_NO);
 	}
 
-	if((lty.val==CCXL_TY_UNDEF_I) || (rty.val==CCXL_TY_UNDEF_I))
-	{
-		/*
-		 * Inference with incomplete types.
-		 */
-	
-		*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_UNDEF_I);
-		return(CCXL_STATUS_NO);
-	}
-
 	if(BGBCC_CCXL_TypeSmallIntP(ctx, lty))
 	{
 		if(BGBCC_CCXL_TypeSmallIntP(ctx, rty))
@@ -5431,6 +5478,21 @@ ccxl_status BGBCC_CCXL_GetTypeBinaryDest(
 		BGBCC_CCXL_TagError(ctx,
 			CCXL_TERR_STATUS(CCXL_STATUS_ERR_UNHANDLEDTYPE));
 		return(CCXL_STATUS_ERR_UNHANDLEDTYPE);
+	}
+
+	if(	BGBCC_CCXL_TypeSmallDoubleP(ctx, lty) &&
+		BGBCC_CCXL_TypeSmallDoubleP(ctx, rty) &&
+		(	BGBCC_CCXL_TypeRealP(ctx, lty) ||
+			BGBCC_CCXL_TypeRealP(ctx, rty) )	)
+	{
+		if(	(opr==CCXL_BINOP_AND) ||
+			(opr==CCXL_BINOP_OR)  ||
+			(opr==CCXL_BINOP_XOR) )
+		{
+			/* HACK: TypeScript or similar. */
+			*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_L);
+			return(CCXL_STATUS_YES);
+		}
 	}
 
 	if(BGBCC_CCXL_TypeSmallLongP(ctx, lty))
@@ -5972,6 +6034,16 @@ ccxl_status BGBCC_CCXL_GetTypeBinaryDest(
 		}
 	}
 
+	if((lty.val==CCXL_TY_UNDEF_I) || (rty.val==CCXL_TY_UNDEF_I))
+	{
+		/*
+		 * Inference with incomplete types.
+		 */
+
+		*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_UNDEF_I);
+		return(CCXL_STATUS_NO);
+	}
+
 	*rdty=lty;
 	BGBCC_CCXL_TagError(ctx,
 		CCXL_TERR_STATUS(CCXL_STATUS_ERR_UNHANDLEDTYPE));
@@ -6023,14 +6095,16 @@ ccxl_status BGBCC_CCXL_GetTypeCompareBinaryDest(
 	}
 
 	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, lty) &&
-		BGBCC_CCXL_TypeSmallIntP(ctx, rty))
+//		BGBCC_CCXL_TypeSmallIntP(ctx, rty))
+		BGBCC_CCXL_TypeSmallLongP(ctx, rty))
 	{
 		*rdty=lty;
 		return(CCXL_STATUS_YES);
 	}
 
 	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, rty) &&
-		BGBCC_CCXL_TypeSmallIntP(ctx, lty))
+//		BGBCC_CCXL_TypeSmallIntP(ctx, lty))
+		BGBCC_CCXL_TypeSmallLongP(ctx, lty))
 	{
 		*rdty=rty;
 		return(CCXL_STATUS_YES);

@@ -87,6 +87,7 @@ char *__plist;
 
 int __start_early();
 int __start_late();
+int __start_first();
 
 
 __PDPCLIB_API__ int CTYP __start()

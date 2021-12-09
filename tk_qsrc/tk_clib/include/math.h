@@ -57,6 +57,11 @@
 #define M_SQRT1_2	0.70710678118654752440084436210485
 #endif
 
+int		isinf(double x);
+int		isnan(double x);
+int		isnormal(double x);
+int		isfinite(double x);
+int		fpclassify(double x);
 
 double ceil(double x);
 double fabs(double x);
@@ -80,6 +85,10 @@ double tanh(double x);
 double exp(double x);
 double log(double x);
 double log10(double x);
+
+double acosh(double x);
+double asinh(double x);
+double atanh(double x);
 
 float ceilf(float x);
 float fabsf(float x);

@@ -419,7 +419,7 @@ int BGBCC_CCXL_NormalizeImmVReg(
 	ccxl_register treg2;
 	double f;
 	float bf;
-	s64 li, lj;
+	s64 li, lj, li0;
 	u32 ui;
 	int bty, dty, stv;
 
@@ -443,6 +443,8 @@ int BGBCC_CCXL_NormalizeImmVReg(
 			li=BGBCC_CCXL_GetRegImmLongValue(ctx, treg);
 			stv=0;
 
+			li0=li;
+
 			bty=BGBCC_CCXL_GetTypeBaseType(ctx, type);
 			switch(bty)
 			{
@@ -454,6 +456,11 @@ int BGBCC_CCXL_NormalizeImmVReg(
 			case CCXL_TY_UI:	li=(unsigned int)li;		stv=1; break;
 			default:
 				break;
+			}
+			
+			if((li0!=li) && (li0!=((s32)li)) && (((s32)li0)!=li))
+			{
+				BGBCC_CCXL_Warn(ctx, "Constant Conversion, Loss of Range\n");
 			}
 			
 //			if(((s32)li)!=li)

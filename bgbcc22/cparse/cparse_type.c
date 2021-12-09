@@ -601,6 +601,7 @@ static char *bgbcp_basetypes_c[]={
 
 "__object",
 "__string",
+"__number",
 
 "__fixnum",
 "__flonum",

@@ -1721,7 +1721,11 @@ s64 BGBCC_CCXL_GetRegImmLongValue(
 			return((s32)(reg.val&CCXL_REGINT_MASK));
 		if((reg.val&CCXL_REGINT_STMASK)==CCXL_REGINT_ST_UL)
 			return((u32)(reg.val&CCXL_REGINT_MASK));
-		return((int)(reg.val&CCXL_REGINT_MASK));
+
+		if((reg.val&CCXL_REGINT_STOFPMASK)==CCXL_REGINT_ST_OF_PTR)
+			return((u32)(reg.val&CCXL_REGINT_MASK));
+
+		return((s32)(reg.val&CCXL_REGINT_MASK));
 	}
 
 	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_LONG)

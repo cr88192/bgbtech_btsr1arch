@@ -33,6 +33,11 @@ rwadlump_t *tk_rwad_dir;
 u32 *tk_rwad_types;
 u16 *tk_rwad_hash;
 
+int TKPE_DecodeBufferRP2(
+	byte *ibuf, byte *obuf, int ibsz, int obsz);
+byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz);
+
+
 void TK_RWad_Init()
 {
 	if(tk_rwad_head)

@@ -246,6 +246,7 @@ char *BGBCC_CCXL_CompileRemapName(BGBCC_TransState *ctx,
 	if(	(ctx->lang==BGBCC_LANG_CPP)	||
 		(ctx->lang==BGBCC_LANG_CS)	||
 		(ctx->lang==BGBCC_LANG_BS2)	||
+		(ctx->lang==BGBCC_LANG_BS)	||
 		(ctx->lang==BGBCC_LANG_JAVA)	)
 	{
 		if(!bgbcp_strcmp(name, "this"))
@@ -257,6 +258,7 @@ char *BGBCC_CCXL_CompileRemapName(BGBCC_TransState *ctx,
 
 	if(	(ctx->lang==BGBCC_LANG_CS)	||
 		(ctx->lang==BGBCC_LANG_BS2)	||
+		(ctx->lang==BGBCC_LANG_BS)	||
 		(ctx->lang==BGBCC_LANG_JAVA)	)
 	{
 		if(!bgbcp_strcmp(name, "null"))
@@ -266,6 +268,7 @@ char *BGBCC_CCXL_CompileRemapName(BGBCC_TransState *ctx,
 	}
 	
 	if(	(ctx->lang==BGBCC_LANG_BS2)	||
+		(ctx->lang==BGBCC_LANG_BS)	||
 		(ctx->lang==BGBCC_LANG_JAVA)	)
 	{
 		if(!bgbcp_strcmp(name, "super"))
@@ -705,7 +708,8 @@ void BGBCC_CCXL_CompileMethodcall(BGBCC_TransState *ctx, BCCX_Node *l)
 
 	if(BGBCC_CCXL_TypeVarObjP(ctx, sty))
 	{
-		if(ctx->lang==BGBCC_LANG_BS2)
+		if(	(ctx->lang==BGBCC_LANG_BS2) ||
+			(ctx->lang==BGBCC_LANG_BS)	)
 		{
 			if(!strcmp(s0, "toString"))
 			{
@@ -792,7 +796,8 @@ int BGBCC_CCXL_CheckCompileObjGet(BGBCC_TransState *ctx,
 
 	if(BGBCC_CCXL_TypeVarObjP(ctx, sty))
 	{
-		if(ctx->lang==BGBCC_LANG_BS2)
+		if(	(ctx->lang==BGBCC_LANG_BS2) ||
+			(ctx->lang==BGBCC_LANG_BS)	)
 		{
 			if(!strcmp(name, "toString"))
 			{
@@ -818,7 +823,8 @@ int BGBCC_CCXL_CheckCompileObjGet(BGBCC_TransState *ctx,
 	
 	if(BGBCC_CCXL_TypeRefArrayP(ctx, sty))
 	{
-		if((!strcmp(name, "length") && (ctx->lang==BGBCC_LANG_BS2)) ||
+		if(	(!strcmp(name, "length") && (ctx->lang==BGBCC_LANG_BS2)) ||
+			(!strcmp(name, "length") && (ctx->lang==BGBCC_LANG_BS)) ||
 			(!strcmp(name, "Length") && (ctx->lang==BGBCC_LANG_CS)))
 		{
 			BGBCC_CCXL_PushMark(ctx);
@@ -840,7 +846,8 @@ int BGBCC_CCXL_CheckCompileObjGet(BGBCC_TransState *ctx,
 
 	if(BGBCC_CCXL_TypeRefStringP(ctx, sty))
 	{
-		if((!strcmp(name, "length") && (ctx->lang==BGBCC_LANG_BS2)) ||
+		if(	(!strcmp(name, "length") && (ctx->lang==BGBCC_LANG_BS2)) ||
+			(!strcmp(name, "length") && (ctx->lang==BGBCC_LANG_BS)) ||
 			(!strcmp(name, "Length") && (ctx->lang==BGBCC_LANG_CS)))
 		{
 			BGBCC_CCXL_PushMark(ctx);
@@ -849,7 +856,8 @@ int BGBCC_CCXL_CheckCompileObjGet(BGBCC_TransState *ctx,
 			return(1);
 		}
 
-		if(ctx->lang==BGBCC_LANG_BS2)
+		if(	(ctx->lang==BGBCC_LANG_BS2) ||
+			(ctx->lang==BGBCC_LANG_BS))
 		{
 			s0=NULL;
 			if(!strcmp(name, "toInt"))
@@ -2087,7 +2095,8 @@ void BGBCC_CCXL_CompileForm(BGBCC_TransState *ctx, BCCX_Node *l)
 		s0=BCCX_GetCst(l, &bgbcc_rcst_op, "op");
 
 		if((ctx->lang==BGBCC_LANG_CPP) ||
-			(ctx->lang==BGBCC_LANG_BS2))
+			(ctx->lang==BGBCC_LANG_BS2) ||
+			(ctx->lang==BGBCC_LANG_BS)	)
 		{
 			i0=BGBCC_CCXL_InferExpr(ctx, ln, &lty);
 			
@@ -2124,7 +2133,8 @@ void BGBCC_CCXL_CompileForm(BGBCC_TransState *ctx, BCCX_Node *l)
 		BGBCC_CCXL_InferExpr(ctx, rn, &rty);
 		
 		if((ctx->lang==BGBCC_LANG_CPP) ||
-			(ctx->lang==BGBCC_LANG_BS2))
+			(ctx->lang==BGBCC_LANG_BS2) ||
+			(ctx->lang==BGBCC_LANG_BS)	)
 		{
 			i0=BGBCC_CCXL_InferExpr(ctx, ln, &lty);
 			i1=BGBCC_CCXL_InferExpr(ctx, rn, &rty);
@@ -3151,6 +3161,18 @@ void BGBCC_CCXL_CompileExprAsTypeSig(BGBCC_TransState *ctx,
 		{
 			li=(unsigned short)li;
 			BGBCC_CCXL_StackPushConstSmallInt(ctx, li, 7);
+			return;
+		}
+
+		if(*sig=='f')
+		{
+			BGBCC_CCXL_StackPushConstFloat(ctx, li);
+			return;
+		}
+
+		if(*sig=='d')
+		{
+			BGBCC_CCXL_StackPushConstDouble(ctx, li);
 			return;
 		}
 	}

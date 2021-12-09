@@ -1343,6 +1343,7 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 			if(	(ctx->lang==BGBCC_LANG_CPP)	||
 				(ctx->lang==BGBCC_LANG_CS)	||
 				(ctx->lang==BGBCC_LANG_BS2)	||
+				(ctx->lang==BGBCC_LANG_BS)	||
 				(ctx->lang==BGBCC_LANG_JAVA)	)
 			{
 				if(!bgbcp_strcmp(s1, "this"))	i=1;
@@ -2383,7 +2384,9 @@ char *BGBCC_CCXL_VarTypeString_FlattenName(BGBCC_TransState *ctx,
 			if(!strcmp(s, "string"))
 				{ *t++='C'; *t++='s'; }
 
-		}else if(lang==BGBCC_LANG_BS2)
+		}else if(
+			(lang==BGBCC_LANG_BS2) ||
+			(lang==BGBCC_LANG_BS)	)
 		{
 			if(!strcmp(s, "char"))*t++='w';
 			if(!strcmp(s, "object"))
@@ -2416,6 +2419,8 @@ char *BGBCC_CCXL_VarTypeString_FlattenName(BGBCC_TransState *ctx,
 
 			if(!strcmp(s, "variant"))*t++='r';
 			if(!strcmp(s, "var"))*t++='r';
+
+			if(!strcmp(s, "number"))*t++='d';
 
 		}else if(lang==BGBCC_LANG_CS)
 		{
@@ -2585,6 +2590,9 @@ char *BGBCC_CCXL_VarTypeString_FlattenName(BGBCC_TransState *ctx,
 			{ *t++='G'; *t++='x'; }
 		if(!strcmp(s, "flonum"))
 			{ *t++='G'; *t++='y'; }
+
+		if(!strcmp(s, "number"))
+			{ *t++='d'; }
 
 		if(!strncmp(s, "bitint_", 7))
 		{
@@ -2925,8 +2933,13 @@ char *BGBCC_CCXL_VarTypeString_FlattenName(BGBCC_TransState *ctx,
 //		sprintf(t, "U%s;", s);
 //		t+=strlen(t);
 
-		if(	(lang==BGBCC_LANG_CS) ||
-			(lang==BGBCC_LANG_BS2))
+		if(lang==BGBCC_LANG_BS)
+		{
+			*t++='r';
+			*t=0;
+		}else
+			if(	(lang==BGBCC_LANG_CS) ||
+				(lang==BGBCC_LANG_BS2))
 		{
 //			*t++='r';
 			*t++='C';
@@ -3753,7 +3766,14 @@ char *BGBCC_CCXL_VarMangleName(BGBCC_TransState *ctx,
 	{
 		return(name);
 	}
-	
+
+	if(!BGBCC_CCXL_NameIsQName(ctx, name) && (*sig=='('))
+	{
+		if(	(ctx->lang==BGBCC_LANG_BS)	||
+			(ctx->lang==BGBCC_LANG_BS2)	)
+				return(name);
+	}
+
 //	sprintf(tb, "%s%s", name, sig);
 	
 	t=BGBCC_StrPrintRawStr(tb, name);
@@ -3856,10 +3876,19 @@ void BGBCC_CCXL_EmitVar(BGBCC_TransState *ctx,
 		return;
 	}
 
-	s=BGBCC_CCXL_VarImageTypeString(ctx, ty);
 	s1=name;
-	s2=BGBCC_CCXL_VarTypeFlagsString(ctx, ty);
-	li=BCCX_GetIntCst(ty, &bgbcc_rcst_flags, "flags");
+
+	if(ty)
+	{
+		s=BGBCC_CCXL_VarImageTypeString(ctx, ty);
+		s2=BGBCC_CCXL_VarTypeFlagsString(ctx, ty);
+		li=BCCX_GetIntCst(ty, &bgbcc_rcst_flags, "flags");
+	}else
+	{
+		s="r";
+		s2="";
+		li=0;
+	}
 
 	if(!s)s="v";
 
@@ -3895,10 +3924,19 @@ void BGBCC_CCXL_EmitVarArg(BGBCC_TransState *ctx,
 		return;
 	}
 
-	s=BGBCC_CCXL_VarImageTypeStringNoA0(ctx, ty);
 	s1=name;
-	s2=BGBCC_CCXL_VarTypeFlagsString(ctx, ty);
-	li=BCCX_GetIntCst(ty, &bgbcc_rcst_flags, "flags");
+
+	if(ty)
+	{
+		s=BGBCC_CCXL_VarImageTypeStringNoA0(ctx, ty);
+		s2=BGBCC_CCXL_VarTypeFlagsString(ctx, ty);
+		li=BCCX_GetIntCst(ty, &bgbcc_rcst_flags, "flags");
+	}else
+	{
+		s="r";
+		s2="";
+		li=0;
+	}
 
 	if(!s)s="v";
 
@@ -3935,12 +3973,20 @@ void BGBCC_CCXL_EmitVar2(BGBCC_TransState *ctx,
 		return;
 	}
 
-	s=BGBCC_CCXL_VarImageTypeString(ctx, ty);
+	if(ty)
+	{
+		s=BGBCC_CCXL_VarImageTypeString(ctx, ty);
+		li=BCCX_GetIntCst(ty, &bgbcc_rcst_flags, "flags");
+	}else
+	{
+		s="r";
+		li=0;
+	}
+
 	s1=name;
 
 	if(!s)s="v";
 
-	li=BCCX_GetIntCst(ty, &bgbcc_rcst_flags, "flags");
 	if(!s1)s1="_";
 
 	if(li&BGBCC_TYFL_EXTERN)
@@ -4938,6 +4984,9 @@ char *BGBCC_CCXL_VarSigProto(BGBCC_TransState *ctx,
 //			s=BGBCC_CCXL_VarImageTypeString(ctx, n);
 			s=BGBCC_CCXL_VarImageTypeStringNoA0(ctx, n);
 			if(s) { strcpy(t, s); t+=strlen(t); }
+		}else
+		{
+			*t++='r';
 		}
 
 //		c=BCCX_Next(c);
@@ -5410,7 +5459,8 @@ void BGBCC_CCXL_CompileEnum(BGBCC_TransState *ctx, BCCX_Node *l)
 	}
 
 	if((ctx->lang==BGBCC_LANG_CS) ||
-		(ctx->lang==BGBCC_LANG_BS2))
+		(ctx->lang==BGBCC_LANG_BS2) ||
+		(ctx->lang==BGBCC_LANG_BS))
 	{
 		BGBCC_CCXL_BeginName(ctx, CCXL_CMD_ENUMDEF, s);
 	

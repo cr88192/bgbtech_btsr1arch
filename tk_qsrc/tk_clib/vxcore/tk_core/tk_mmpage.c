@@ -18,6 +18,7 @@ int tkmm_pagerov;
 #define BOOTPARM_MAGIC3		FOURCC('M', 'R', 'A', 'P')
 #define BOOTPARM_MAGIC4		FOURCC('T', 'O', 'O', 'B')
 
+
 struct BootParm_s {
 u32 magic1;		//00
 u32 magic2;		//04
@@ -46,12 +47,20 @@ struct BootParm_s *bootparm;
 int	tkmm_ramkib;
 int	tkmm_rampage;
 
+
+int TKMM_MMList_Init(void);
+int TKMM_MMList_Free(void *ptr);
+void *TKMM_MMList_MallocCat(int sz, int cat);
+void *TKMM_MMList_MallocURo(int sz);
+void *TKMM_MMList_Malloc(int sz);
+
+
 int TKMM_InitBootParm()
 {
 	u32 *css, *cse, *cs;
 	
-	css=(u32 *)0x0000C000U;
-	cse=(u32 *)0x0000DFFCU;
+	css=(u32 *)0x0000C000UL;
+	cse=(u32 *)0x0000DFFCUL;
 	
 	bootparm=&t_bootparm;
 	

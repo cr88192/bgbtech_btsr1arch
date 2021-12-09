@@ -326,7 +326,7 @@ void BGBCC_CCXL_ConvImm(BGBCC_TransState *ctx,
 {
 	double f;
 	float bf;
-	s64 li, lj;
+	s64 li, lj, li0;
 	u32 ui;
 	int i;
 
@@ -341,6 +341,17 @@ void BGBCC_CCXL_ConvImm(BGBCC_TransState *ctx,
 	if(BGBCC_CCXL_TypeSmallUIntP(ctx, dty))
 	{
 		li=BGBCC_CCXL_GetRegImmLongValue(ctx, sreg);
+
+		li0=li;
+		li=(u32)li;
+
+//		if(li0!=li)
+		if((li0!=li) && (li0!=((s32)li)))
+		{
+			BGBCC_CCXL_Warn(ctx, "Constant Conversion, Loss of Range\n");
+		}
+			
+
 //		BGBCC_CCXL_GetRegForLongValue(ctx, rdreg, li);
 		BGBCC_CCXL_GetRegForUIntValue(ctx, rdreg, li);
 		return;
@@ -493,8 +504,10 @@ void BGBCC_CCXL_CompileJmpCond(BGBCC_TransState *ctx,
 
 //	if(BGBCC_CCXL_TypeEqualP(ctx, dty, sty) &&
 //		BGBCC_CCXL_TypeEqualP(ctx, dty, tty))
-	if(	BGBCC_CCXL_TypeCompatibleArchP(ctx, dty, sty) &&
-		BGBCC_CCXL_TypeCompatibleArchP(ctx, dty, tty))
+//	if(	BGBCC_CCXL_TypeCompatibleArchP(ctx, dty, sty) &&
+//		BGBCC_CCXL_TypeCompatibleArchP(ctx, dty, tty))
+	if(	BGBCC_CCXL_TypeCompatibleValueExtP(ctx, dty, sty) &&
+		BGBCC_CCXL_TypeCompatibleValueExtP(ctx, dty, tty))
 	{
 		BGBCC_CCXL_StackPhiTemporaries(ctx);
 
@@ -507,7 +520,8 @@ void BGBCC_CCXL_CompileJmpCond(BGBCC_TransState *ctx,
 	}
 
 //	if(!BGBCC_CCXL_TypeEqualP(ctx, dty, sty))
-	if(!BGBCC_CCXL_TypeCompatibleArchP(ctx, dty, sty))
+//	if(!BGBCC_CCXL_TypeCompatibleArchP(ctx, dty, sty))
+	if(!BGBCC_CCXL_TypeCompatibleValueExtP(ctx, dty, sty))
 	{
 		BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &rega2);
 		BGBCC_CCXL_EmitConv(ctx, dty, sty, rega2, rega);
@@ -518,7 +532,8 @@ void BGBCC_CCXL_CompileJmpCond(BGBCC_TransState *ctx,
 	}
 
 //	if(!BGBCC_CCXL_TypeEqualP(ctx, dty, tty))
-	if(!BGBCC_CCXL_TypeCompatibleArchP(ctx, dty, tty))
+//	if(!BGBCC_CCXL_TypeCompatibleArchP(ctx, dty, tty))
+	if(!BGBCC_CCXL_TypeCompatibleValueExtP(ctx, dty, tty))
 	{
 		BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &regb2);
 		BGBCC_CCXL_EmitConv(ctx, dty, tty, regb2, regb);

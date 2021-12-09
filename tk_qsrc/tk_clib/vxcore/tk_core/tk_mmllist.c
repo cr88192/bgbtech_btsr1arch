@@ -23,6 +23,7 @@ byte *tkmm_mmlist_brkbuf_c[8];
 byte *tkmm_mmlist_brkend_c[8];
 byte *tkmm_mmlist_brkpos_c[8];
 
+int tk_mprotect(void *addr, size_t len, int prot);
 
 void __setmemtrap(void *ptr, int mode);
 
@@ -158,13 +159,13 @@ void TKMM_MMList_MProtectCat(byte *ptr, int sz, int cat)
 	{
 		tk_mprotect((u64)ptr, sz,
 			TKMM_PROT_READ|TKMM_PROT_WRITE);
-		return(0);
+		return;
 	}
 	if(cat==4)
 	{
 		tk_mprotect((u64)ptr, sz,
 			TKMM_PROT_READ|TKMM_PROT_WRITE|TKMM_PROT_EXEC);
-		return(0);
+		return;
 	}
 	return;
 #else

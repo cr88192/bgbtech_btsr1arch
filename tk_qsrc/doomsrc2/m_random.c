@@ -58,13 +58,15 @@ int	prndindex = 0;
 int P_Random (void)
 {
     prndindex = (prndindex+1)&0xff;
-    return rndtable[prndindex];
+//    return rndtable[prndindex];
+    return(rndtable[prndindex]&255);
 }
 
 int M_Random (void)
 {
     rndindex = (rndindex+1)&0xff;
-    return rndtable[rndindex];
+//    return rndtable[rndindex];
+    return(rndtable[rndindex]&255);
 }
 
 void M_ClearRandom (void)

@@ -2085,6 +2085,120 @@ int BGBCC_JX2_ConstConvFloatToHalf(u32 v, u16 *rv)
 	return(ret);
 }
 
+int BGBCC_JX2_ConstConvHalfToFP8S(u16 v, byte *rv)
+{
+	int sg, exp, fra, ret, v1;
+
+	if(!v)
+	{
+		*rv=0;
+		return(1);
+	}
+	
+	ret=1;
+	sg=(v>>15)&1;
+	exp=(v>>10)&31;
+	fra=v&0x3FF;
+	
+	exp=(exp-15)+7;
+	if(exp<=0)
+	{
+		*rv=0;
+		return(0);
+	}
+	
+	if(exp>15)
+		return(-1);
+	
+	if((fra&0x380)!=fra)
+		ret=0;
+	fra=(fra>>7);
+	
+	v1=(sg<<7)|(exp<<3)|fra;
+	*rv=v1;
+	return(ret);
+}
+
+int BGBCC_JX2_ConstConvHalfToFP8U(u16 v, byte *rv)
+{
+	int sg, exp, fra, ret, v1;
+
+	if(!v)
+	{
+		*rv=0;
+		return(1);
+	}
+	
+	ret=1;
+	sg=(v>>15)&1;
+	exp=(v>>10)&31;
+	fra=v&0x3FF;
+	
+	if(sg)
+	{
+		*rv=0;
+		return(-1);
+	}
+	
+	exp=(exp-15)+7;
+	if(exp<=0)
+	{
+		*rv=0;
+		return(0);
+	}
+	
+	if(exp>15)
+		return(-1);
+	
+	if((fra&0x3C0)!=fra)
+		ret=0;
+	fra=(fra>>6);
+	
+	v1=(exp<<4)|fra;
+	*rv=v1;
+	return(ret);
+}
+
+int BGBCC_JX2_ConstConvV4HToV4FP8S(u64 v, u32 *rv)
+{
+	byte tv[4];
+	u32 v1;
+	int rt;
+	
+	rt=BGBCC_JX2_ConstConvHalfToFP8S(v>>0, tv+0);
+	if(rt<=0)return(-1);
+	rt=BGBCC_JX2_ConstConvHalfToFP8S(v>>16, tv+1);
+	if(rt<=0)return(-1);
+	rt=BGBCC_JX2_ConstConvHalfToFP8S(v>>32, tv+2);
+	if(rt<=0)return(-1);
+	rt=BGBCC_JX2_ConstConvHalfToFP8S(v>>48, tv+3);
+	if(rt<=0)return(-1);
+	
+	v1=(tv[3]<<24)|(tv[2]<<16)|(tv[1]<<8)|(tv[0]<<0);
+	*rv=v1;
+	return(1);
+}
+
+int BGBCC_JX2_ConstConvV4HToV4FP8U(u64 v, u32 *rv)
+{
+	byte tv[4];
+	u32 v1;
+	int rt;
+	
+	rt=BGBCC_JX2_ConstConvHalfToFP8U(v>>0, tv+0);
+	if(rt<=0)return(-1);
+	rt=BGBCC_JX2_ConstConvHalfToFP8U(v>>16, tv+1);
+	if(rt<=0)return(-1);
+	rt=BGBCC_JX2_ConstConvHalfToFP8U(v>>32, tv+2);
+	if(rt<=0)return(-1);
+	rt=BGBCC_JX2_ConstConvHalfToFP8U(v>>48, tv+3);
+	if(rt<=0)return(-1);
+	
+	v1=(tv[3]<<24)|(tv[2]<<16)|(tv[1]<<8)|(tv[0]<<0);
+	*rv=v1;
+	return(1);
+}
+
 int BGBCC_JX2_ConstIsFull64(BGBCC_JX2_Context *ctx, s64 v)
 {
 	if(v==((s64)((s32)v)))
@@ -2104,7 +2218,7 @@ int BGBCC_JX2_ConstIsFull64(BGBCC_JX2_Context *ctx, s64 v)
 int BGBCC_JX2_EmitLoadRegImm64P(
 	BGBCC_JX2_Context *ctx, int reg, s64 imm)
 {
-	u32 imm_f32;
+	u32 imm_f32, imm1_f32, imm2_f32;
 	u16 imm_f16, imm1_f16, imm2_f16, imm3_f16, imm4_f16;
 	s32 lo, hi;
 	s64 imm_fh, imm1;
@@ -2600,6 +2714,39 @@ int BGBCC_JX2_EmitLoadRegImm64P(
 					opw4=0x0000|(imm2_f16&0xFFFF);
 				}
 #endif
+
+#if 1
+				rt1=BGBCC_JX2_ConstConvV4HToV4FP8S(imm, &imm1_f32);
+				rt2=BGBCC_JX2_ConstConvV4HToV4FP8U(imm, &imm2_f32);
+
+				if((opw1<0) && ctx->has_simdx2 && (rt1>0))
+				{
+					if(msk_hi>=0)
+						{ ctx->stat_const_maskjumbo++; }
+
+					if(!ctx->is_simpass)
+						{ ctx->stat_const_jumbo64++; }
+
+					opw1=0xFF20;
+					opw2=0x0000|((imm1_f32>>16)&0xFFFF);
+					opw3=0xF880|(reg&31);
+					opw4=0x0000|((imm1_f32>> 0)&0xFFFF);
+				}
+
+				if((opw1<0) && ctx->has_simdx2 && (rt2>0))
+				{
+					if(msk_hi>=0)
+						{ ctx->stat_const_maskjumbo++; }
+					if(!ctx->is_simpass)
+						{ ctx->stat_const_jumbo64++; }
+
+					opw1=0xFF30;
+					opw2=0x0000|((imm2_f32>>16)&0xFFFF);
+					opw3=0xF880|(reg&31);
+					opw4=0x0000|((imm2_f32>> 0)&0xFFFF);
+				}
+#endif
+
 			}
 #endif
 

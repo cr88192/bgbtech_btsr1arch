@@ -23,14 +23,16 @@ begin
 	if(hasSgn[0])
 	begin
 		tSgn = valI[7];
-		tExpC = { valI[6], !valI[5], valI[5:3] };
+//		tExpC = { valI[6], !valI[5], valI[5:3] };
+		tExpC = { valI[6], !valI[6], valI[5:3] };
 		tFraC = { valI[2:0], 1'b0 };
 	end
 	else
 	begin
 		tSgn = 0;
 //		tExpC = { !valI[7], valI[7:4] };
-		tExpC = { valI[7], !valI[6], valI[6:4] };
+//		tExpC = { valI[7], !valI[6], valI[6:4] };
+		tExpC = { valI[7], !valI[7], valI[6:4] };
 		tFraC = valI[3:0];
 	end
 

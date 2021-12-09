@@ -2143,10 +2143,14 @@ BCCX_Node *BGBCC_CCXL_ReduceForm(BGBCC_TransState *ctx,
 		}
 #endif
 
-		if(BGBCC_CCXL_IsIntP(ctx, ln))
+#if 1
+		if(BGBCC_CCXL_IsIntP(ctx, ln) &&
+			BGBCC_CCXL_InferExprCleanP(ctx, rn))
 		{
 			i=BCCX_GetIntCst(ln, &bgbcc_rcst_value, "value");
-			if(i==0)
+			suf=BCCX_GetCst(ln, &bgbcc_rcst_tysuf, "tysuf");
+
+			if((i==0) && !suf)
 			{
 				if(	!bgbcp_strcmp1(s, "+") ||
 					!bgbcp_strcmp1(s, "|") ||
@@ -2162,16 +2166,22 @@ BCCX_Node *BGBCC_CCXL_ReduceForm(BGBCC_TransState *ctx,
 					!bgbcp_strcmp1(s, "<<") ||
 					!bgbcp_strcmp1(s, ">>"))
 				{
-					return(BGBCC_CCXL_WrapInt(0));
+//					if(BGBCC_CCXL_InferExprCleanP(ctx, rn)&1)
+//					return(BGBCC_CCXL_WrapInt(0));
+					return(BGBCC_CCXL_WrapIntSuf(0, suf));
 				}
 			}
 		}
+#endif
 
 #if 1
-		if(BGBCC_CCXL_IsIntP(ctx, rn))
+		if(BGBCC_CCXL_IsIntP(ctx, rn) &&
+			BGBCC_CCXL_InferExprCleanP(ctx, ln))
 		{
 			i=BCCX_GetIntCst(rn, &bgbcc_rcst_value, "value");
-			if(i==0)
+			suf=BCCX_GetCst(rn, &bgbcc_rcst_tysuf, "tysuf");
+
+			if((i==0) && !suf)
 			{
 				if(	!bgbcp_strcmp1(s, "+") ||
 					!bgbcp_strcmp1(s, "-") ||
@@ -2188,7 +2198,9 @@ BCCX_Node *BGBCC_CCXL_ReduceForm(BGBCC_TransState *ctx,
 					!bgbcp_strcmp1(s, "/") ||
 					!bgbcp_strcmp1(s, "%") )
 				{
-					return(BGBCC_CCXL_WrapInt(0));
+//					if(BGBCC_CCXL_InferExprCleanP(ctx, ln)&1)
+//					return(BGBCC_CCXL_WrapInt(0));
+					return(BGBCC_CCXL_WrapIntSuf(0, suf));
 				}
 			}
 		}

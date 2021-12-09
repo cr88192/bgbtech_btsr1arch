@@ -16,6 +16,8 @@ short dma_buffer[BUFFER_SIZE];
 
 int dma_pos;
 
+void SNDDMA_Submit(void);
+
 void	SoundDev_WriteStereoSamples(short *mixbuf, int nsamp)
 {
 	SoundDev_WriteStereoSamples2(mixbuf, nsamp, nsamp*2);
@@ -498,7 +500,7 @@ void SNDDMA_Submit(void)
 	
 //	snd_dmabuf=(u32 *)0xA0080000;
 //	snd_dmabuf=(u32 *)0xF0080000;
-	snd_dmabuf=(u32 *)0xF0090000;
+	snd_dmabuf=(u32 *)0xF0090000UL;
 
 	b=olddma;
 	n=dma-b;
@@ -528,7 +530,7 @@ void SNDDMA_Submit(void)
 //	((u32 *)0xF009F000)[0]=0x002B;
 //	((u32 *)0xF009F000)[0]=0x002A;
 //	((u32 *)0xF009F000)[0]=0x0028;
-	((u32 *)0xF009F000)[0]=0x0029;
+	((u32 *)0xF009F000UL)[0]=0x0029;
 //	for(i=0; i<n; i+=2)
 //	for(i=0; i<n; i+=4)
 	for(i=0; i<n1; i+=4)

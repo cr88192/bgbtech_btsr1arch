@@ -35,6 +35,8 @@ SRCS=\
 	ccxl/ccxl_register.c \
 	ccxl/ccxl_ril3.c \
 	ccxl/ccxl_stack.c \
+	ccxl/ccxl_stack_bin.c \
+	ccxl/ccxl_stack_un.c \
 	ccxl/ccxl_struct.c \
 	ccxl/ccxl_trace.c \
 	ccxl/ccxl_type.c \

@@ -59,6 +59,7 @@ BCCX_Node *BGBCP_FunArgsFlag(BGBCP_ParseState *ctx, char **str, int flag)
 
 		if(	(ctx->lang==BGBCC_LANG_CS) ||
 			(ctx->lang==BGBCC_LANG_BS2) ||
+			(ctx->lang==BGBCC_LANG_BS) ||
 			(flag&1))
 		{
 			if((ty==BTK_NAME) && !BGBCP_CheckTokenKeyword(ctx, b))
@@ -331,6 +332,8 @@ fourcc BGBCP_LangForName(char *name)
 			lang=BGBCC_LANG_BS;
 		if(!bgbcp_strcmp(s, ".bs2"))
 			lang=BGBCC_LANG_BS2;
+		if(!bgbcp_strcmp(s, ".ts"))
+			lang=BGBCC_LANG_BS;
 
 		if(!bgbcp_strcmp(s, ".s"))
 			lang=BGBCC_LANG_ASM;
@@ -355,6 +358,7 @@ fourcc BGBCP_LangForName(char *name)
 		if(!bgbcp_strcmp(s, ".JS"))lang=BGBCC_LANG_BS;
 		if(!bgbcp_strcmp(s, ".ES"))lang=BGBCC_LANG_BS;
 		if(!bgbcp_strcmp(s, ".BS2"))lang=BGBCC_LANG_BS2;
+		if(!bgbcp_strcmp(s, ".TS"))lang=BGBCC_LANG_BS;
 
 		if(!bgbcp_strcmp(s, ".S"))
 			lang=BGBCC_LANG_ASM;

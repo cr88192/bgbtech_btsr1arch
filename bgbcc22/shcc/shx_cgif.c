@@ -692,6 +692,15 @@ ccxl_status BGBCC_SHXC_PrintVirtOp(BGBCC_TransState *ctx,
 			case CCXL_VOP_VA_ARG:			s0="VA_ARG"; break;
 			case CCXL_VOP_CSELCMP:			s0="CSELCMP"; break;
 			case CCXL_VOP_CSELCMP_Z:		s0="CSELCMP_Z"; break;
+			case CCXL_VOP_JMPTAB:			s0="JMPTAB"; break;
+			case CCXL_VOP_OBJCALL:			s0="OBJCALL"; break;
+			case CCXL_VOP_PREDCMP:			s0="PREDCMP"; break;
+			case CCXL_VOP_PREDCMP_Z:		s0="PREDCMP_Z"; break;
+			case CCXL_VOP_PREDSYNC:			s0="PREDSYNC"; break;
+			case CCXL_VOP_CALL_INTRIN:		s0="CALL_INTRIN"; break;
+			case CCXL_VOP_ASMINLINE:		s0="ASMINLINE"; break;
+			case CCXL_VOP_TEMP_PHI:			s0="TEMP_PHI"; break;
+			case CCXL_VOP_TRINARY:			s0="TRINARY"; break;
 		}
 
 		if(s0)

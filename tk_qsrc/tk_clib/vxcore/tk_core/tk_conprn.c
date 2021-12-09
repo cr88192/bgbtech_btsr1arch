@@ -60,7 +60,7 @@ void tk_con_init()
 	if(!tk_con)
 	{
 		tk_con=&tk_con_bss;
-		tk_con->buf=(u32 *)0xF00A0000;
+		tk_con->buf=(u32 *)0xF00A0000UL;
 		tk_con->x=0;
 		tk_con->y=0;
 		tk_con->ena=1;
@@ -73,9 +73,9 @@ void tk_con_init()
 		tk_con->text_attr=tk_con->text_attr_dfl;
 	}
 
-//	((u32 *)0xF00BFF00)[0]=0x0015;		//320x200x16bpp
-//	((u32 *)0xF00BFF00)[0]=0x0005;		//
-	((u32 *)0xF00BFF00)[0]=0x0001;		//
+//	((u32 *)0xF00BFF00UL)[0]=0x0015;		//320x200x16bpp
+//	((u32 *)0xF00BFF00UL)[0]=0x0005;		//
+	((u32 *)0xF00BFF00UL)[0]=0x0001;		//
 	
 	if(tk_iskernel())
 	{
@@ -116,7 +116,7 @@ void TK_Con_UpdateHwCursor()
 {
 	u32 py;
 	py=((tk_con->y)<<8)|(tk_con->x);
-	((u32 *)0xF00BFF00)[1]=py;		//move hardware cursor
+	((u32 *)0xF00BFF00UL)[1]=py;		//move hardware cursor
 }
 
 void TK_Con_SetCursorPos(int x, int y)
@@ -152,7 +152,7 @@ void tk_con_chkreset()
 		tk_con_clear();
 //		((u32 *)0xF009F000)[0]=0x0029;
 //		((u32 *)0xF009F000)[0]=0x0000;
-		((u32 *)0xF00BFF00)[0]=0x0001;		//
+		((u32 *)0xF00BFF00UL)[0]=0x0001;		//
 		TK_Con_SetCursorPos(0, 0);
 	}
 }

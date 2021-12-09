@@ -63,6 +63,18 @@ int SNDDMA_GetDevDMAPos(void)
 {
 //	int *sreg;
 //	int idma;
+	return(wbufrov);
+
+	int idma;
+	idma=((u32 *)0xF009F000)[8];
+//	return(idma&8191);
+	return(idma);
+}
+
+int SNDDMA_GetDevDMAPos2(void)
+{
+//	int *sreg;
+//	int idma;
 //	return(wbufrov);
 
 	int idma;
@@ -118,7 +130,7 @@ void SNDDMA_Submit(void)
 {
 	static int olddma;
 	short *buf;
-	int dma, idma, tdma;
+	int dma, idma, idma2, tdma;
 	int lv, rv;
 	int s0, s1, s2, s3;
 	int b, n, d, b1, n1, d1;
@@ -129,6 +141,15 @@ void SNDDMA_Submit(void)
 
 	dma=SNDDMA_GetDMAPos();
 	idma=SNDDMA_GetDevDMAPos();
+	idma2=SNDDMA_GetDevDMAPos2();
+
+	n=dma-olddma;
+	if((idma<idma2) && ((idma+n)>idma2))
+	{
+		idma=idma2;
+		wbufrov=idma2;
+	}
+
 //	tdma=idma+500;
 //	tdma=(idma+1024)&8191;
 //	tdma=(idma+0)&8191;

@@ -1,8 +1,10 @@
 // byte *btesh2_gfxcon_framebuf;
 // int btesh2_gfxcon_fb_dirty;
 
-u16 tsampbuf[32768];
+u16 tsampbuf[32768+16384];
 int tsamplen;
+int tsamprovs;
+int tsamprove;
 
 u32 *conbufa;
 
@@ -177,7 +179,7 @@ int I_TimeMS()
 int main(int argc, char *argv[])
 {
 	BGBBTJ_AVI_Context *ctx;
-	int tt, ltt, dt;
+	int tt, ltt, dt, audt;
 //	u32 *screen, *ct;
 //	u16 *fbuf, *cs, *act;
 	u16 *fbuf;
@@ -192,31 +194,42 @@ int main(int argc, char *argv[])
 //	ctx=BGBBTJ_AVI_LoadAVI("BadApple_CV6.avi");
 //	ctx=BGBBTJ_AVI_LoadAVI("Heist_CV0.avi");
 	ctx=BGBBTJ_AVI_LoadAVI("TestOut_CV0.avi");
+//	ctx=BGBBTJ_AVI_LoadAVI("TestOut_CV1_5B.avi");
 
 	xs=ctx->bmihead->biWidth;
 	ys=ctx->bmihead->biHeight;
 
 	memset(tsampbuf, 0, 16384*2);
+
+	tsamprovs=0;
+//	tsamprove=512;
+	tsamprove=2048;
+//	tsamprove=4096;
+
+	SoundDev_WriteStereoSamples(tsampbuf, 256);
 //	SoundDev_WriteStereoSamples(tsampbuf, 2048);
 //	SoundDev_WriteStereoSamples2(tsampbuf, 1024, 1024);
 
+	audt=0;
 	tt=I_TimeMS();
 	ltt=tt;
 	while(!gfxdrv_kill)
 	{
 		tt=I_TimeMS();
 		dt=tt-ltt;
-		ltt=tt;
+//		ltt=tt;
 
 		if(!dt)
+//		if(dt<4)
 		{
 			continue;
 		}
+
+		ltt=tt;
 		
 //		dt*=2;
 
 		fbuf=BGBBTJ_AVI_FrameRawClrs(ctx, dt*1000, BGBBTJ_JPG_RGB555);
-
 		
 		if((ctx->wavefmt->nSamplesPerSec)==16000)
 //		if(0)
@@ -229,9 +242,37 @@ int main(int argc, char *argv[])
 			{
 //				printf("%d\n", l);
 			}
+
+			if((tsamprove<tsamprovs) && ((tsamprove+l)>tsamprovs))
+			{
+				printf("PV_Main: Audio Skip Adjust A\n");
+				tsamprove=(tsamprove+(2*l))&16383;
+			}
+
+
+#if 0
+			j=tsamprove*2;
+			for(i=0; i<l; i++)
+			{
+				tsampbuf[j+0]=ctx->sampbuf[i*2+0];
+				tsampbuf[j+1]=ctx->sampbuf[i*2+1];
+				j=(j+2)&32767;
+			}
+			tsamprove=j/2;
+#endif
+
+			memcpy(tsampbuf+(tsamprove*2), ctx->sampbuf, l*4);
 			
-			memcpy(tsampbuf, ctx->sampbuf, l*4);
-			tsamplen=l;
+			j=tsamprove+l;
+			if(j>16384)
+			{
+				k=j-16384;
+				memcpy(tsampbuf, ctx->sampbuf+(l-k)*2, k*4);
+			}
+			tsamprove=j&16383;
+
+//			memcpy(tsampbuf, ctx->sampbuf, l*4);
+//			tsamplen=l;
 
 #if 0
 			for(i=0; i<l; i++)
@@ -249,21 +290,66 @@ int main(int argc, char *argv[])
 	//		l=(k*astep)>>8;
 			l=(k*16000)/(ctx->wavefmt->nSamplesPerSec);
 
+			if((tsamprove<tsamprovs) && ((tsamprove+l)>tsamprovs))
+			{
+				printf("PV_Main: Audio Skip Adjust B\n");
+				tsamprove=(tsamprove+(2*l))&16383;
+			}
+
+			j=tsamprove*2;
 			afrac=0;
 			for(i=0; i<l; i++)
 			{
-				j=i*2;
+//				j=i*2;
 				k=(afrac>>8)*2;
 				afrac+=astep;
 				tsampbuf[j+0]=ctx->sampbuf[k+0];
 				tsampbuf[j+1]=ctx->sampbuf[k+1];
+				j=(j+2)&32767;
 			}
+			tsamprove=j>>1;
 			tsamplen=l;
 		}
 
 //		SoundDev_WriteStereoSamples(ctx->sampbuf, l);
 		
 		ctx->esampbuf=ctx->sampbuf;
+
+#if 0
+		j=tsamprovs;
+		l=dt*16;
+		if(l>0)
+		{
+//			SoundDev_WriteStereoSamples2(tsampbuf+(j*2), l, l*2);
+			SoundDev_WriteStereoSamples(tsampbuf+(j*2), l);
+			SoundDev_Submit();
+			tsamprovs=(j+l)&16383;
+		}
+#endif
+
+#if 1
+		audt+=dt;
+		while(audt>16)
+		{
+			l=16*16;
+			audt-=16;
+		
+			j=tsamprovs;
+			if(	(tsamprovs<tsamprove) &&
+				((j+2*l)>=tsamprove))
+			{
+				printf("PV_Main: Audio Skip Adjust C\n");
+				tsamprove=(tsamprove+4*l)&16383;
+			}
+			
+			SoundDev_WriteStereoSamples2(tsampbuf+(j*2), l, l*2);
+//			SoundDev_WriteStereoSamples(tsampbuf+(j*2), l);
+			SoundDev_Submit();
+			tsamprovs=(j+l)&16383;
+		}
+#endif
+
+#if 0
 		if(l>0)
 		{
 			SoundDev_WriteStereoSamples(tsampbuf, l);
@@ -271,6 +357,7 @@ int main(int argc, char *argv[])
 	//		SoundDev_WriteStereoSamples2(tsampbuf, l*2, l*2);
 			SoundDev_Submit();
 		}
+#endif
 
 
 //		if(!(ctx->flags&1) && !tsamplen)

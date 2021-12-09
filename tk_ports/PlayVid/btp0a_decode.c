@@ -19,14 +19,17 @@ Block, 64-bit:
 #define		BTPIC_FOURCC(a, b, c, d)	((a)|((b)<<8)|((c)<<16)|((d)<<24))
 
 #define		BTPIC_TCC_IX	BTPIC_TWOCC('I', 'X')
-#define		BTPIC_TCC_PX	BTPIC_TWOCC('I', 'X')
+#define		BTPIC_TCC_PX	BTPIC_TWOCC('P', 'X')
 #define		BTPIC_TCC_IZ	BTPIC_TWOCC('I', 'Z')
-#define		BTPIC_TCC_PZ	BTPIC_TWOCC('I', 'Z')
+#define		BTPIC_TCC_PZ	BTPIC_TWOCC('P', 'Z')
 #define		BTPIC_TCC_HX	BTPIC_TWOCC('H', 'X')
 #define		BTPIC_TCC_PT	BTPIC_TWOCC('P', 'T')
 
 #define		BTPIC_TCC_Z3	BTPIC_TWOCC('Z', '3')
 #define		BTPIC_TCC_Z4	BTPIC_TWOCC('Z', '4')
+#define		BTPIC_TCC_Z5	BTPIC_TWOCC('Z', '5')
+#define		BTPIC_TCC_Z6	BTPIC_TWOCC('Z', '6')
+#define		BTPIC_TCC_Z7	BTPIC_TWOCC('Z', '7')
 
 #if 0
 

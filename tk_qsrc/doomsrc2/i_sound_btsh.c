@@ -120,6 +120,11 @@ int*		channelrightvol_lookup[NUM_CHANNELS];
 int			channelleftvol[NUM_CHANNELS];
 int			channelrightvol[NUM_CHANNELS];
 
+int		__int_mulsw(int a, int b);
+void SNDDMA_Submit(void);
+void	SoundDev_Submit();
+void	SoundDev_WriteStereoSamples(short *mixbuf, int nsamp);
+void	SoundDev_WriteStereoSamples2(short *mixbuf, int nsamp, int nsamp2);
 
 //
 // This function loads the sound data from the WAD lump,
@@ -867,6 +872,7 @@ void I_UpdateSound( void )
 void	SoundDev_WriteStereoSamples(short *mixbuf, int nsamp);
 
 void I_MusicSubmit(void);
+void I_SubmitSound2(int extra);
 
 static int iss_curms, iss_lastms;
 

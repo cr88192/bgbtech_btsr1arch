@@ -1,5 +1,16 @@
 #include <sys/mman.h>
 
+int tk_mlock(void *addr, size_t len);
+int tk_munlock(void *addr, size_t len);
+int tk_mlockall(int flags);
+int tk_munlockall(void);
+
+void *tk_mmap(void *addr, size_t len, int prot, int flags,
+	int fd, off_t offs);
+int tk_munmap(void *addr, size_t len);
+int tk_msync(void *addr, size_t len, int flags);
+int tk_mprotect(void *addr, size_t len, int prot);
+
 int		mlock(const void *addr, size_t len)
 	{ return(tk_mlock(addr, len)); }
 int		munlock(const void *addr, size_t len)

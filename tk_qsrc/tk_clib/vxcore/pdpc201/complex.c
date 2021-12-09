@@ -1,3 +1,5 @@
+#include <complex.h>
+
 #ifndef M_PI
 #define M_PI 3.1415926535897932384626433832795
 #endif
@@ -50,7 +52,7 @@ double _Complex	casin(double _Complex a)
 {
 	if(a.i==0.0)
 		return(asin(a.r));
-	return(1.0I*clog(csqrt(1.0-a*a)-(a*1.0I)));
+	return(1.0i*clog(csqrt(1.0-a*a)-(a*1.0i)));
 }
 
 double _Complex	cacos(double _Complex a)
@@ -77,8 +79,8 @@ double _Complex	catan(double _Complex a)
 	double _Complex az;
 	if(a.i==0.0)
 		return(atan(a.r));
-	az=a*1.0I;
-	return(0.5I*clog((1.0+az)/(1.0-az)));
+	az=a*1.0i;
+	return(0.5i*clog((1.0+az)/(1.0-az)));
 }
 
 double _Complex	catanh(double _Complex a)
@@ -101,16 +103,16 @@ double _Complex	cexp(double _Complex a)
 	ex=exp(a.r);
 	cy=cos(a.i);
 	sy=sin(a.i);
-//	return((ex*cy)+((ex*sy)*1I));
+//	return((ex*cy)+((ex*sy)*1i));
 	return( (_Complex double) {ex*cy, ex*sy} );
 }
 
 double _Complex	clog(double _Complex a)
-//	{ return(log(a.r)+(carg(a)*1I)); }
+//	{ return(log(a.r)+(carg(a)*1i)); }
 	{ return( (_Complex double) {log(a.r), atan2(a.i, a.r)} ); }
 
 double _Complex	conj(double _Complex a)
-//	{ return(a.r-(a.i*1I)); }
+//	{ return(a.r-(a.i*1i)); }
 	{ return( (_Complex double) {a.r, -a.i} ); }
 
 double _Complex	cpow(double _Complex a, double _Complex b)
@@ -196,7 +198,7 @@ double _Complex	csqrt(double _Complex a)
 		g=sqrt(r);
 		d=0.0;
 	}
-//	return(g+(d*1I));
+//	return(g+(d*1i));
 	return( (_Complex double) {g, d} );
 }
 

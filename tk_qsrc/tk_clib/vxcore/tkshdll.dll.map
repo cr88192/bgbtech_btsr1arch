@@ -100,7 +100,9 @@
 00011CC8 T _realloc_fptr
 00011CD0 T _msize_fptr
 00011CD8 T __envptr
-00011CE0 T handlers
+00011CE0 T bs2_chksane3/__temp_fidcache__x
+00011CE2 T bs2_chksane3/__temp_fidcache__y
+00011CE4 T handlers
 00011D20 T TU3DC7433B/__isbufR
 00011F22 T __data_end
 00011F40 T __userExit

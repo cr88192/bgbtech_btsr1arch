@@ -4,6 +4,11 @@
 #include "i_net.h"
 #include "v_video.h"
 
+#include "d_main.h"
+#include "r_draw.h"
+#include "hu_stuff.h"
+#include "m_bbox.h"
+
 #include <stdarg.h>
 
 #ifndef BASEWIDTH
@@ -20,6 +25,9 @@ typedef signed int s32;
 int	mb_used = 20;
 
 dt_scrpix	*screen;
+
+void IN_Init (void);
+void D_PostEvent (event_t* ev);
 
 
 void I_InitNetwork (void)
@@ -1207,7 +1215,7 @@ void	VID_ConGfx_EncBlock16P(u16 *src, u16 *lsrc, u32 *rdsta, u32 *rdstb)
 
 int TK_EncBlock16Q(u16 *src, u16 *lsrc, u32 *rdst);
 
-#if 1
+#if 0
 int VID_ConGfx_EncBlock16Q(u16 *src, u16 *lsrc, u32 *rdst)
 {
 	u16 *cs1, *cs2;
@@ -1242,7 +1250,7 @@ int VID_ConGfx_EncBlock16Q(u16 *src, u16 *lsrc, u32 *rdst)
 /*
 Higher Quality Sub-Block Encoder
  */
-#if 1
+#if 0
 int		VID_ConGfx_EncBlock16HP(u16 *src, u16 *lsrc, u32 *rdsta, u32 *rdstb)
 {
 //	u16 tpxb[16];
@@ -1465,7 +1473,7 @@ int		VID_ConGfx_EncBlock16HP(u16 *src, u16 *lsrc, u32 *rdsta, u32 *rdstb)
 Higher Quality Block Encoder
  */
 
-#if 1
+#if 0
 int VID_ConGfx_EncBlock16HQ(u16 *src, u16 *lsrc, u32 *rdst)
 {
 	u16 *cs1, *cs2;
@@ -1944,21 +1952,21 @@ void I_FinishUpdate (void)
 //		dirtybox[2],	dirtybox[3],
 //		dirtybox[1],	dirtybox[0]);
 
-//	conbufa=(u32 *)0xA00A0000;
-	conbufa=(u32 *)0xF00A0000;
+//	conbufa=(u32 *)0xA00A0000UL;
+	conbufa=(u32 *)0xF00A0000UL;
 
 //	((u32 *)0xF00BFF00)[8]=vid_frnum;
 //	vid_frnum++;
 
 #ifdef I_SCR_BMP128K
 //	((u32 *)0xF00BFF00)[0]=0x0015;		//320x200x16bpp, YUV655
-	((u32 *)0xF00BFF00)[0]=0x0095;		//320x200x16bpp, RGB555
+	((u32 *)0xF00BFF00UL)[0]=0x0095;		//320x200x16bpp, RGB555
 
 //	((u32 *)0xF00BFF00)[0]=0x0025;		//320x200x16bpp
 //	((u32 *)0xF00BFF00)[0]=0x0005;		//320x200x16bpp
 //	((u32 *)0xF00BFF00)[0]=0x0010;		//320x200x16bpp
 #else
-	((u32 *)0xF00BFF00)[0]=0x0000;		//320x200
+	((u32 *)0xF00BFF00UL)[0]=0x0000;		//320x200
 #endif
 
 //	ics16=(u16 *)screens[0];
@@ -2196,7 +2204,7 @@ void I_FinishUpdate (void)
 //	ict[0]=vid_frnum;
 //	conbufa[8100]=vid_frnum;
 
-	((u32 *)0xF00BFF00)[8]=vid_frnum;
+	((u32 *)0xF00BFF00UL)[8]=vid_frnum;
 	vid_frnum++;
 	
 //	if(i_scrflash)

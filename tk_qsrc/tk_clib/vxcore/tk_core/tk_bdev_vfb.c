@@ -94,7 +94,7 @@ TK_FILE *tk_bdvfb_fopen(TK_MOUNT *mnt, char *name, char *mode)
 
 	fd->udata0=mnt;
 	fd->udata1=bdi;
-	fd->udata2=0xF00A0000;
+	fd->udata2=0xF00A0000UL;
 	fd->ofs=0;
 //	fd->size=bdi->lba_sz<<9;
 	fd->size=1<<17;

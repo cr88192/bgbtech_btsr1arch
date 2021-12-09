@@ -805,6 +805,39 @@ int tk_shell_chksane_arith()
 	pui=&ui;
 	puj=&uj;
 
+	*pi=0x7FFFFFFDU;
+	*pj=7;
+
+	*pui=0xFFFFFFFBU;
+	*puj=7;
+
+	lk=i/j;
+	ll=ui/uj;
+
+	if(lk!=0x0000000012492491LL)
+		__debugbreak();
+	if(ll!=0x0000000024924923ULL)
+		__debugbreak();
+
+	lk=i/7;
+	ll=ui/7;
+
+	if(lk!=0x0000000012492491LL)
+		__debugbreak();
+	if(ll!=0x0000000024924923ULL)
+		__debugbreak();
+
+	if(lk==0xFFFFFFFF12492491LL)
+		__debugbreak();
+
+	*pi=0x80000003U;
+	lk=i/7;
+
+	if(lk!=0xFFFFFFFFEDB6DB6FLL)
+		__debugbreak();
+	if(lk==0xEDB6DB6FU)
+		__debugbreak();
+
 	*pi=123456;
 	*pj=56789;
 	*pui=123456;

@@ -743,10 +743,10 @@ WI_drawTime
 	}
 }
 
+void WI_unloadData(void);
 
 void WI_End(void)
 {
-	void WI_unloadData(void);
 	WI_unloadData();
 }
 

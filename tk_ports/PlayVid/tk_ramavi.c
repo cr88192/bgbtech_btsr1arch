@@ -232,6 +232,7 @@ int BGBBTJ_VidCodecCTX_EndDecompress(BGBBTJ_VidCodecCTX *ctx)
 #include "tk_codec_cram.c"
 #include "tk_codec_bt4b.c"
 #include "tk_codec_bt5a.c"
+#include "tk_codec_bt5b.c"
 
 int BGBBTJ_Codec_Init()
 {
@@ -245,6 +246,7 @@ int BGBBTJ_Codec_Init()
 	BGBBTJ_CodecCRAM_Init();
 	BGBBTJ_CodecBT4B_Init();
 	BGBBTJ_CodecBT5A_Init();
+	BGBBTJ_CodecBT5B_Init();
 
 	return(1);
 }
@@ -454,25 +456,49 @@ int BGBBTJ_CodecVFW_Init()
 	return(0);
 }
 
+TK_FILE		*riff_cache_fd;
+byte		*riff_cache_fbuf;
+int			riff_cache_szbuf;
+
+#if 0
 int RIFF_ReadInt32(TK_FILE *fd)
 {
+	byte tb[4];
 	int i;
 
-	i=tk_fgetc(fd);
-	i+=tk_fgetc(fd)<<8;
-	i+=tk_fgetc(fd)<<16;
-	i+=tk_fgetc(fd)<<24;
+	tk_fread(tb, 1, 4, fd);
+	i=*(int *)tb;
+
+//	i=tk_fgetc(fd);
+//	i+=tk_fgetc(fd)<<8;
+//	i+=tk_fgetc(fd)<<16;
+//	i+=tk_fgetc(fd)<<24;
 
 	return(i);
 }
+#endif
 
 int RIFF_ReadChunkInfo(TK_FILE *fd, int ofs, int *id, int *sz, int *lid)
 {
-	tk_fseek(fd, ofs, 0);
+	byte tb[12];
 
-	if(id)*id=RIFF_ReadInt32(fd);
-	if(sz)*sz=RIFF_ReadInt32(fd);
-	if(lid)*lid=RIFF_ReadInt32(fd);
+//	tk_fseek(fd, ofs, 0);
+//	if(id)*id=RIFF_ReadInt32(fd);
+//	if(sz)*sz=RIFF_ReadInt32(fd);
+//	if(lid)*lid=RIFF_ReadInt32(fd);
+
+	if(riff_cache_fd==fd)
+	{
+		memcpy(tb, riff_cache_fbuf+ofs, 12);
+	}else
+	{
+		tk_fseek(fd, ofs, 0);
+		tk_fread(tb, 1, 12, fd);
+	}
+
+	if(id)*id=*(int *)(tb+0);
+	if(sz)*sz=*(int *)(tb+4);
+	if(lid)*lid=*(int *)(tb+8);
 
 	return(0);
 }
@@ -515,8 +541,15 @@ void *RIFF_ReadInChunk(TK_FILE *fd, int ofs, int *size)
 	if(size)*size=sz;
 
 	buf=malloc(sz+1024);
-	tk_fseek(fd, ofs+8, 0);
-	tk_fread(buf, 1, sz+1024, fd);
+
+	if(riff_cache_fd==fd)
+	{
+		memcpy(buf, riff_cache_fbuf+ofs+8, sz);
+	}else
+	{
+		tk_fseek(fd, ofs+8, 0);
+		tk_fread(buf, 1, sz+1024, fd);
+	}
 
 	return(buf);
 }
@@ -573,9 +606,15 @@ int RIFF_ReadInChunkTBuf(TK_FILE *fd, int ofs, void **rbuf, int *rbsz)
 		printf("RIFF_ReadInChunkTBuf: Malloc OK %p %d\n", buf, sz1);
 	}
 
-	tk_fseek(fd, ofs+8, 0);
-	tk_fread(buf, 1, sz, fd);
-//	tk_fread(buf, 1, sz+256, fd);
+	if(riff_cache_fd==fd)
+	{
+		memcpy(buf, riff_cache_fbuf+ofs+8, sz);
+	}else
+	{
+		tk_fseek(fd, ofs+8, 0);
+		tk_fread(buf, 1, sz, fd);
+	//	tk_fread(buf, 1, sz+256, fd);
+	}
 
 //	printf("RIFF_ReadInChunkTBuf: Lump %p %0.4s %d\n",
 //		buf, (char *)(&cc1), sz);
@@ -782,7 +821,7 @@ int BGBBTJ_AVI_GetMonoSamplesRate(BGBBTJ_AVI_Context *ctx,
 
 BGBBTJ_AVI_Context *BGBBTJ_AVI_LoadAVI(char *name)
 {
-	int cc1, cc2, sz;
+	int cc1, cc2, sz, sz0, sz1;
 	int i, j, w, h;
 	BGBBTJ_AVI_Context *ctx;
 	BGBBTJ_BITMAPINFOHEADER *inhead, *outhead;
@@ -803,6 +842,36 @@ BGBBTJ_AVI_Context *BGBBTJ_AVI_LoadAVI(char *name)
 	{
 		printf("AVI: Not AVI\n");
 		return(NULL);
+	}
+
+	if(sz<(1<<25))
+	{
+		printf("AVI: Begin Bulk Load\n");
+	
+		if(riff_cache_fbuf &&
+			((sz+8)>riff_cache_szbuf))
+		{
+			free(riff_cache_fbuf);
+			riff_cache_fbuf=NULL;
+		}
+
+		riff_cache_fd=ctx->fd;
+
+		if(!riff_cache_fbuf)
+		{
+			sz0=sz+8;
+			sz1=1<<20;
+			while(sz1<sz0)
+				sz1=sz1+(sz1>>1);
+		
+			riff_cache_fbuf=malloc(sz1);
+			riff_cache_szbuf=sz1;
+		}
+
+		tk_fseek(ctx->fd, 0, 0);
+		tk_fread(riff_cache_fbuf, 1, sz+8, ctx->fd);
+
+		printf("AVI: End Bulk Load\n");
 	}
 
 	ctx->ofs_hdrl=RIFF_FindSubChunk(ctx->fd, 0,

@@ -86,15 +86,15 @@ __lva_flonump:
 __lva_conv_toi32:
 	SHLD.Q	R4, -62, R5
 	CMPEQ	1, R5
-	BT		.I
+	BT		.LI
 	CMPEQ	2, R5
-	BT		.F
+	BT		.LF
 
-	.I:
+	.LI:
 	EXTS.L	R4, R2
 	RTS
 
-	.F:
+	.LF:
 	SHLD.Q	R4, 2, R6
 	FSTCI	R6, R2
 	RTS
@@ -102,16 +102,16 @@ __lva_conv_toi32:
 __lva_conv_toi64:
 	SHLD.Q	R4, -62, R5
 	CMPEQ	1, R5
-	BT		.I
+	BT		.LI
 	CMPEQ	2, R5
-	BT		.F
+	BT		.LF
 
-	.I:
+	.LI:
 	SHAD.Q	R4, 2, R2
 	SHAD.Q	R2, -2, R2
 	RTS
 
-	.F:
+	.LF:
 	SHLD.Q	R4, 2, R6
 	FSTCI	R6, R2
 	RTS
@@ -120,17 +120,17 @@ __lva_conv_tof32:
 __lva_conv_tof64:
 	SHLD.Q	R4, -62, R5
 	CMPEQ	1, R5
-	BT		.I
+	BT		.LI
 	CMPEQ	2, R5
-	BT		.F
+	BT		.LF
 
-	.I:
+	.LI:
 	SHAD.Q	R4, 2, R6
 	SHAD.Q	R6, -2, R6
 	FLDCI	R6, R2
 	RTS
 
-	.F:
+	.LF:
 	SHLD.Q	R4, 2, R2
 	RTS
 
@@ -727,11 +727,42 @@ __lva_and:
 	SHLD.Q		R6, -60, R7
 	CMPEQ		0x3, R7
 	BT			.II
+	CMPEQ		0x6, R7
+	BT			.IF
+	CMPEQ		0x9, R7
+	BT			.FI
+	CMPEQ		0xC, R7
+	BT			.FF
 
 	BRA		__lva_and_gen
-	
+
 	.II:
 	AND		R4, R5, R2
+	RTS
+
+	.IF:
+	SHLD.Q	R4, 2, R4
+	SHLD.Q	R5, 2, R5
+	SHAD.Q	R5, -2, R5
+	FSTCI	R4, R4
+	BRA		.II2
+
+	.FI:
+	SHLD.Q	R4, 2, R4
+	SHAD.Q	R4, -2, R4
+	SHLD.Q	R5, 2, R5
+	FSTCI	R5, R5
+	BRA		.II2
+
+	.FF:
+	SHLD.Q	R4, 2, R4
+	SHLD.Q	R5, 2, R5
+	FSTCI	R4, R4
+	FSTCI	R5, R5
+
+	.II2:
+	AND		R4, R5, R2
+	CONVFXI	R2, R2
 	RTS
 
 __lva_or:
@@ -740,11 +771,42 @@ __lva_or:
 	SHLD.Q		R6, -60, R7
 	CMPEQ		0x3, R7
 	BT			.II
+	CMPEQ		0x6, R7
+	BT			.IF
+	CMPEQ		0x9, R7
+	BT			.FI
+	CMPEQ		0xC, R7
+	BT			.FF
 
 	BRA		__lva_or_gen
 	
 	.II:
 	OR		R4, R5, R2
+	RTS
+
+	.IF:
+	SHLD.Q	R4, 2, R4
+	SHLD.Q	R5, 2, R5
+	SHAD.Q	R5, -2, R5
+	FSTCI	R4, R4
+	BRA		.II2
+
+	.FI:
+	SHLD.Q	R4, 2, R4
+	SHAD.Q	R4, -2, R4
+	SHLD.Q	R5, 2, R5
+	FSTCI	R5, R5
+	BRA		.II2
+
+	.FF:
+	SHLD.Q	R4, 2, R4
+	SHLD.Q	R5, 2, R5
+	FSTCI	R4, R4
+	FSTCI	R5, R5
+
+	.II2:
+	OR		R4, R5, R2
+	CONVFXI	R2, R2
 	RTS
 
 __lva_xor:
@@ -753,6 +815,12 @@ __lva_xor:
 	SHLD.Q		R6, -60, R7
 	CMPEQ		0x3, R7
 	BT			.II
+	CMPEQ		0x6, R7
+	BT			.IF
+	CMPEQ		0x9, R7
+	BT			.FI
+	CMPEQ		0xC, R7
+	BT			.FF
 
 	BRA		__lva_xor_gen
 	
@@ -763,12 +831,43 @@ __lva_xor:
 //	OR		R17, R2
 	RTS
 
+	.IF:
+	SHLD.Q	R4, 2, R4
+	SHLD.Q	R5, 2, R5
+	SHAD.Q	R5, -2, R5
+	FSTCI	R4, R4
+	BRA		.II2
+
+	.FI:
+	SHLD.Q	R4, 2, R4
+	SHAD.Q	R4, -2, R4
+	SHLD.Q	R5, 2, R5
+	FSTCI	R5, R5
+	BRA		.II2
+
+	.FF:
+	SHLD.Q	R4, 2, R4
+	SHLD.Q	R5, 2, R5
+	FSTCI	R4, R4
+	FSTCI	R5, R5
+
+	.II2:
+	XOR		R4, R5, R2
+	CONVFXI	R2, R2
+	RTS
+
 __lva_shl:
 	MOVHHD		R4, R5, R6
 	PMORT.Q		R6, R6
 	SHLD.Q		R6, -60, R7
 	CMPEQ		0x3, R7
 	BT			.II
+	CMPEQ		0x6, R7
+	BT			.IF
+	CMPEQ		0x9, R7
+	BT			.FI
+	CMPEQ		0xC, R7
+	BT			.FF
 
 	BRA		__lva_shl_gen
 	
@@ -781,6 +880,30 @@ __lva_shl:
 //	AND		R16, R2
 //	OR		R17, R2
 	RTS
+	.IF:
+	SHLD.Q	R4, 2, R4
+	SHLD.Q	R5, 2, R5
+	SHAD.Q	R5, -2, R5
+	FSTCI	R4, R4
+	BRA		.II2
+
+	.FI:
+	SHLD.Q	R4, 2, R4
+	SHAD.Q	R4, -2, R4
+	SHLD.Q	R5, 2, R5
+	FSTCI	R5, R5
+	BRA		.II2
+
+	.FF:
+	SHLD.Q	R4, 2, R4
+	SHLD.Q	R5, 2, R5
+	FSTCI	R4, R4
+	FSTCI	R5, R5
+
+	.II2:
+	SHAD.Q	R4, R5, R2
+	CONVFXI	R2, R2
+	RTS
 
 __lva_shr:
 	MOVHHD		R4, R5, R6
@@ -788,6 +911,12 @@ __lva_shr:
 	SHLD.Q		R6, -60, R7
 	CMPEQ		0x3, R7
 	BT			.II
+	CMPEQ		0x6, R7
+	BT			.IF
+	CMPEQ		0x9, R7
+	BT			.FI
+	CMPEQ		0xC, R7
+	BT			.FF
 
 	BRA		__lva_shr_gen
 	
@@ -802,16 +931,42 @@ __lva_shr:
 //	OR		R17, R2
 	RTS
 
+	.IF:
+	SHLD.Q	R4, 2, R4
+	SHLD.Q	R5, 2, R5
+	SHAD.Q	R5, -2, R5
+	FSTCI	R4, R4
+	BRA		.II2
+
+	.FI:
+	SHLD.Q	R4, 2, R4
+	SHAD.Q	R4, -2, R4
+	SHLD.Q	R5, 2, R5
+	FSTCI	R5, R5
+	BRA		.II2
+
+	.FF:
+	SHLD.Q	R4, 2, R4
+	SHLD.Q	R5, 2, R5
+	FSTCI	R4, R4
+	FSTCI	R5, R5
+
+	.II2:
+	NEG		R5, R5
+	SHAD.Q	R4, R5, R2
+	CONVFXI	R2, R2
+	RTS
+
 __lva_neg:
 	SHLD.Q	R4, -62, R5
 	CMPEQ	1, R5
-	BT		.I
+	BT		.LI
 	CMPEQ	2, R5
-	BT		.F
+	BT		.LF
 
 	BRA		__lva_neg_gen
 
-	.I:
+	.LI:
 //	MOV		0xC000_0000_0000_0000, R3
 //	MOV		0x4000_0000_0000_0000, R17
 //	NOT		R3, R16
@@ -821,7 +976,7 @@ __lva_neg:
 //	OR		R17, R2
 	RTS
 
-	.F:
+	.LF:
 	MOV		0x2000_0000_0000_0000, R3
 	XOR		R4, R3, R2
 	RTS
@@ -829,19 +984,19 @@ __lva_neg:
 __lva_not:
 	SHLD.Q	R4, -62, R5
 	CMPEQ	1, R5
-	BT		.I
+	BT		.LI
 //	CMPEQ	2, R5
-//	BT		.F
+//	BT		.LF
 
 	BRA		__lva_not_gen
 
-	.I:
+	.LI:
 	MOV		0xC000_0000_0000_0000, R3
 	NOT		R4, R2
 	XOR		R3, R2
 	RTS
 
-//	.F:
+//	.LF:
 //	MOV		0x2000_0000_0000_0000, R3
 //	XOR		R4, R3, R2
 //	RTS
@@ -940,18 +1095,18 @@ __lva_cmp_gt:
 __lva_inc:
 	SHLD.Q	R4, -62, R5
 	CMPEQ	1, R5
-	BT		.I
+	BT		.LI
 	CMPEQ	2, R5
-	BT		.F
+	BT		.LF
 
 	BRA		__lva_inc_gen
 
-	.I:
+	.LI:
 	ADD		R4, 1, R2
 	CONVFXI	R2, R2
 	RTS
 
-	.F:
+	.LF:
 	SHLD.Q	R4, 2, R4
 	MOV		0x3FF0_0000_0000_0000, R5
 	FADD	R4, R5, R2
@@ -961,18 +1116,18 @@ __lva_inc:
 __lva_dec:
 	SHLD.Q	R4, -62, R5
 	CMPEQ	1, R5
-	BT		.I
+	BT		.LI
 	CMPEQ	2, R5
-	BT		.F
+	BT		.LF
 
 	BRA		__lva_dec_gen
 
-	.I:
+	.LI:
 	ADD		R4, -1, R2
 	CONVFXI	R2, R2
 	RTS
 
-	.F:
+	.LF:
 	SHLD.Q	R4, 2, R4
 	MOV		0x3FF0_0000_0000_0000, R5
 	FSUB	R4, R5, R2
@@ -1465,7 +1620,8 @@ void __lva_storeindex(tk_lva_variant obj, int idx, tk_lva_variant val)
 	tg4=(objv>>60)&15;
 	if(tg4==12)
 	{
-		return(__lvo_storeindex_var(obj, idx, val));
+		__lvo_storeindex_var(obj, idx, val);
+		return;
 	}
 
 	tg12=(objv>>48)&4095;
@@ -1473,7 +1629,8 @@ void __lva_storeindex(tk_lva_variant obj, int idx, tk_lva_variant val)
 	{
 		if(tg12==tkmm_lvatyi_tagarray)
 		{
-			return(__lvo_storeindex_var(obj, idx, val));
+			__lvo_storeindex_var(obj, idx, val);
+			return;
 		}
 	}
 }

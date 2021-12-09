@@ -121,6 +121,9 @@ SRCS_ASM_DLL = \
 SRCS_BS2 = \
 	tk_bs2/bscore_io.bs
 
+SRCS_TKSH_BS2 = \
+		tk_shell/tk_chkvar.bs
+
 SRCS_TKSH = \
 		tk_shell/tk_shell.c
 
@@ -165,11 +168,13 @@ libdl.bjx2.ril: $(SRCS_CLIB) $(SRCS_ASM) $(SRCS_BS2) $(SRCS_ASM_2)
 libcdll.bjx2.ril: $(SRCS_CLIB) $(SRCS_ASM_DLL)
 	$(CC) -o libcdll.bjx2.ril libcdll_multi.c $(SRCS_ASM_DLL) $(COPTS64)
 
-tkshell.sys: $(SRCS_TKSH)
-	$(CC) -o tkshell.sys tkshell_multi.c $(COPTS64) $(TK_LDFL64)
+tkshell.sys: $(SRCS_TKSH) $(SRCS_TKSH_BS2)
+	$(CC) -o tkshell.sys tkshell_multi.c  $(SRCS_TKSH_BS2) \
+		$(COPTS64) $(TK_LDFL64)
 
-tkshdll.dll: $(SRCS_TKSH)
-	$(CC) -o tkshdll.dll tkshdll_multi.c $(COPTS64) $(TK_LDFL64_DLL)
+tkshdll.dll: $(SRCS_TKSH) $(SRCS_TKSH_BS2)
+	$(CC) -o tkshdll.dll tkshdll_multi.c $(SRCS_TKSH_BS2) \
+		$(COPTS64) $(TK_LDFL64_DLL)
 
 FORCE:
 

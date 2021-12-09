@@ -1,0 +1,24 @@
+function bs2_chksane1(x, y)
+{
+	return(x+y);
+}
+
+function bs2_chksane2(x:number, y:number):number
+{
+	return(x+y);
+}
+
+function bs2_chksane3()
+{
+	var a1, o1;
+	
+	a1=[1,2,3];
+
+	if(a1[2]!=3)
+		__debugbreak();
+		
+	o1={x:3, y:4};
+
+	if((o1.x+o1.y)!=7)
+		__debugbreak();
+}

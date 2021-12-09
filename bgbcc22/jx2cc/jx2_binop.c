@@ -511,7 +511,16 @@ int BGBCC_JX2C_EmitBinaryVRegVRegInt(
 				n1=((1LL<<32)-1);
 			else
 				n1=((1LL<<31)-1);
-			n2=n1-(2*j);
+			
+			n2=((n1/j)*j)+10;
+			if(n2<n1)
+			{
+				n1=n2;
+				n2=n1-20;
+			}else
+			{
+				n2=n1-(2*j);
+			}
 			
 			for(nv=n1; nv>n2; nv--)
 			{
@@ -525,6 +534,9 @@ int BGBCC_JX2C_EmitBinaryVRegVRegInt(
 				}
 			}
 #endif
+
+//			if(!BGBCC_CCXL_TypeUnsignedP(ctx, type))
+//				rcp=0;
 
 			if(rcp>0)
 			{

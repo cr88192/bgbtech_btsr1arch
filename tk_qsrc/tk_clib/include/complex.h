@@ -2,10 +2,11 @@
 #define _COMPLEX_H_
 
 #define complex			_Complex
-#define imaginary		_Imaginary
 
-#define _Complex_I		1I
-#define _Imaginary_I	1I
+#define _Complex_I		1i
+
+// #define imaginary		_Imaginary
+// #define _Imaginary_I	1i
 
 #define I				_Complex_I
 

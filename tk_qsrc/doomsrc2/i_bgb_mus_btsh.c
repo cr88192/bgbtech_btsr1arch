@@ -131,9 +131,9 @@ int SMus_Init()
 	}
 #endif
 
-//	smus_regs=(u32 *)0xA0081800;
-//	smus_regs=(u32 *)0xF0081800;
-	smus_regs=(u32 *)0xF008C000;
+//	smus_regs=(u32 *)0xA0081800UL;
+//	smus_regs=(u32 *)0xF0081800UL;
+	smus_regs=(u32 *)0xF008C000UL;
 	
 	for(i=0; i<128; i++)
 	{

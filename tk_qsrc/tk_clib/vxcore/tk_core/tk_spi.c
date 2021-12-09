@@ -133,9 +133,9 @@ int TKSPI_ReadData(byte *buf, u32 len)
 	count=(1<<20);
 	while(count>0)
 	{
-		rv=TKSPI_XchByte(0xFF);
+//		rv=TKSPI_XchByte(0xFF);
 
-#if 0
+#if 1
 		P_SPI_DATA=0xFF;
 		P_SPI_CTRL=tkspi_ctl_status|SPICTRL_XMIT;
 		v=P_SPI_CTRL;

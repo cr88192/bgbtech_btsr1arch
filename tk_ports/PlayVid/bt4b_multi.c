@@ -14,7 +14,10 @@
 #include "bt4b_bitread.c"
 #include "bt4b_decode.c"
 
+#include "tkulzd.c"
+
 #include "btp0a_decode.c"
+#include "bt5b_decode.c"
 
 #include "snd_btac1c.c"
 

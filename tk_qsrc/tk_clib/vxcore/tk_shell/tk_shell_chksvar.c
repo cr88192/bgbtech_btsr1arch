@@ -94,6 +94,9 @@ struct TkChkSane_Foo_DlgTst2_s {
 	__delegate struct TkChkSane_Foo_DlgTst1_s *s1;
 };
 
+__var bs2_chksane1(__var x, __var y);
+__var bs2_chksane3();
+
 int tk_shell_chksane_var()
 {
 	__class TkChkSane_Foo fobj;
@@ -212,6 +215,10 @@ int tk_shell_chksane_var()
 	if(j!=7)
 		__debugbreak();
 
+	j=bs2_chksane1(3, 4);
+
+	if(j!=7)
+		__debugbreak();
 
 	li=TK_GetRandom();
 	lj=TK_GetRandom();
@@ -285,6 +292,8 @@ int tk_shell_chksane_int128()
 	sv2=sv0*sv0;
 	if(sv2!=sv1)
 		__debugbreak();
+	
+	bs2_chksane3();
 	
 //	__debugbreak();
 }

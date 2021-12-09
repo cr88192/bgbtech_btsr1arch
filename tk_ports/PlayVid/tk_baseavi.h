@@ -62,6 +62,7 @@
 #define RIFF_TAG_bt1h	RIFF_MAKETAG('b','t','1','h')
 #define RIFF_TAG_bt4b	RIFF_MAKETAG('b','t','4','b')
 #define RIFF_TAG_bt5a	RIFF_MAKETAG('b','t','5','a')
+#define RIFF_TAG_bt5b	RIFF_MAKETAG('b','t','5','b')
 
 #define RIFF_TAG_THEO	RIFF_MAKETAG('T','H','E','O')
 #define RIFF_TAG_theo	RIFF_MAKETAG('t','h','e','o')

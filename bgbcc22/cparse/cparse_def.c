@@ -28,7 +28,7 @@ BCCX_Node *BGBCP_DummyVar(BGBCP_ParseState *ctx, BCCX_Node *tn)
 BCCX_Node *BGBCP_VarsList(BGBCP_ParseState *ctx, char **str, BCCX_Node *tn)
 {
 	char b[256], b2[256];
-	char *s;
+	char *s, *s1;
 	int ty, ty2;
 	BCCX_Node *n, *n1, *lst, *lste;
 
@@ -39,27 +39,80 @@ BCCX_Node *BGBCP_VarsList(BGBCP_ParseState *ctx, char **str, BCCX_Node *tn)
 
 	while(1)
 	{
-		BGBCP_Token2(s, b, &ty, ctx->lang);
+		s1=BGBCP_Token2(s, b, &ty, ctx->lang);
 		if(!bgbcp_strcmp1(b, ";") && (ty==BTK_SEPERATOR))
 		{
 			s=BGBCP_Token2(s, b, &ty, ctx->lang);
 			break;
 		}
 
-		n=BGBCP_VarDefinition(ctx, &s, tn);
+		n=NULL;
 
-		BGBCP_Token2(s, b, &ty, ctx->lang);
-		if(!bgbcp_strcmp1(b, "=") && (ty==BTK_OPERATOR))
+		if(	(ctx->lang==BGBCC_LANG_BS2) ||
+			(ctx->lang==BGBCC_LANG_BS)	)
 		{
-			s=BGBCP_Token2(s, b, &ty, ctx->lang);
-			n1=BGBCP_Expression(ctx, &s);
-			BCCX_AddV(n, BCCX_NewCst1V(&bgbcc_rcst_value, "value", n1));
+			BGBCP_Token2(s1, b2, &ty2, ctx->lang);
 
-			BGBCP_Token2(s, b, &ty, ctx->lang);
+			if((ty==BTK_NAME) && (
+				!bgbcp_strcmp(b2, ":") ||
+				!bgbcp_strcmp(b2, ",") ||
+				!bgbcp_strcmp(b2, "=") )		)
+			{
+				s=s1;
+
+				n=BCCX_NewCst(&bgbcc_rcst_var, "var");
+				BCCX_SetCst(n, &bgbcc_rcst_name, "name", b);
+
+				s1=BGBCP_Token2(s, b, &ty, ctx->lang);
+				if(!bgbcp_strcmp1(b, ":") && (ty==BTK_SEPERATOR))
+				{
+					s=s1;
+					n1=BGBCP_DefExpectType(ctx, &s);
+					BCCX_Add(n, n1);
+
+					s1=BGBCP_Token2(s, b, &ty, ctx->lang);
+				}else
+				{
+					BCCX_Add(n, tn);
+				}
+
+#if 0
+				if(!bgbcp_strcmp1(b, "=") && (ty==BTK_OPERATOR))
+				{
+					s=s1;
+//					s=BGBCP_Token2(s, b, &ty, ctx->lang);
+					n1=BGBCP_Expression(ctx, &s);
+					BCCX_AddV(n, BCCX_NewCst1V(&bgbcc_rcst_value, "value", n1));
+
+					BGBCP_Token2(s, b, &ty, ctx->lang);
+				}
+
+//				lst=BCCX_AddEnd(lst, n);
+				lst=BCCX_AddEnd2(lst, &lste, n);
+#endif
+			}
 		}
 
-//		lst=BCCX_AddEnd(lst, n);
-		lst=BCCX_AddEnd2(lst, &lste, n);
+		if(!n)
+		{
+			n=BGBCP_VarDefinition(ctx, &s, tn);
+		}
+
+		if(n)
+		{
+			BGBCP_Token2(s, b, &ty, ctx->lang);
+			if(!bgbcp_strcmp1(b, "=") && (ty==BTK_OPERATOR))
+			{
+				s=BGBCP_Token2(s, b, &ty, ctx->lang);
+				n1=BGBCP_Expression(ctx, &s);
+				BCCX_AddV(n, BCCX_NewCst1V(&bgbcc_rcst_value, "value", n1));
+
+				BGBCP_Token2(s, b, &ty, ctx->lang);
+			}
+
+	//		lst=BCCX_AddEnd(lst, n);
+			lst=BCCX_AddEnd2(lst, &lste, n);
+		}
 
 		s=BGBCP_Token2(s, b, &ty, ctx->lang);
 		if(!bgbcp_strcmp1(b, ";") && (ty==BTK_SEPERATOR))
@@ -132,8 +185,33 @@ BCCX_Node *BGBCP_FunVarsList(BGBCP_ParseState *ctx, char **str)
 
 
 		n=BGBCP_ArgDefinition(ctx, &s);
-//		lst=BCCX_AddEnd(lst, n);
-		lst=BCCX_AddEnd2(lst, &lste, n);
+		if(n)
+		{
+//			lst=BCCX_AddEnd(lst, n);
+			lst=BCCX_AddEnd2(lst, &lste, n);
+		}else if(
+			(ctx->lang==BGBCC_LANG_BS2) ||
+			(ctx->lang==BGBCC_LANG_BS)	)
+		{
+			if(ty==BTK_NAME)
+			{
+				s=s1;
+
+				n=BCCX_NewCst(&bgbcc_rcst_var, "var");
+				BCCX_SetCst(n, &bgbcc_rcst_name, "name", b);
+
+				s1=BGBCP_Token2(s, b, &ty, ctx->lang);
+				if(!bgbcp_strcmp1(b, ":") && (ty==BTK_SEPERATOR))
+				{
+					s=s1;
+					n1=BGBCP_DefExpectType(ctx, &s);
+					BCCX_Add(n, n1);
+				}
+
+//				lst=BCCX_AddEnd(lst, n);
+				lst=BCCX_AddEnd2(lst, &lste, n);
+			}
+		}
 
 		BGBCP_Token2(s, b, &ty, ctx->lang);
 
@@ -464,7 +542,7 @@ BCCX_Node *BGBCP_VarDefinition(BGBCP_ParseState *ctx,
 	char **str, BCCX_Node *tn)
 {
 	char b[256], b2[256];
-	char *s, *s2;
+	char *s, *s1, *s2;
 	char *fn, *tdn;
 	s64 fl, fl1;
 	int ty, ty2, ind, ind1;
@@ -524,6 +602,17 @@ BCCX_Node *BGBCP_VarDefinition(BGBCP_ParseState *ctx,
 	{
 		s=BGBCP_Token2(s, b, &ty, ctx->lang);	//(
 		n2=BGBCP_FunVarsList(ctx, &s);
+
+		if(	(ctx->lang==BGBCC_LANG_BS)	||
+			(ctx->lang==BGBCC_LANG_BS2)	)
+		{
+			s1=BGBCP_Token2(s, b, &ty, ctx->lang);	//(
+			if(!bgbcp_strcmp1(b, ":") && (ty==BTK_SEPERATOR))
+			{
+				s=s1;
+				tn=BGBCP_DefExpectType(ctx, &s);
+			}
+		}
 
 		if(BCCX_TagIsCstP(n1, &bgbcc_rcst_fproto, "fproto"))
 		{
@@ -801,9 +890,9 @@ BCCX_Node *BGBCP_ArgDefinition2(BGBCP_ParseState *ctx, char **str)
 BCCX_Node *BGBCP_Definition(BGBCP_ParseState *ctx, char **str)
 {
 	char b[256];
-	char *s, *s2;
+	char *s, *s1, *s2;
 	BCCX_Node *n, *n1, *n2, *ntl, *ntci;
-	s64 li;
+	s64 li, lfi;
 	int tk0, tk1, tk2;
 	int i, ty, ofenv;
 
@@ -858,6 +947,123 @@ BCCX_Node *BGBCP_Definition(BGBCP_ParseState *ctx, char **str)
 
 //	printf("\n");
 //	printf("DEF %p %s\n", s, s);
+
+	if(	(ctx->lang==BGBCC_LANG_BS)	||
+		(ctx->lang==BGBCC_LANG_BS2)	)
+	{
+//		s1=BGBCP_Token(s, b, &ty);
+
+		s1=s;
+		ntl=NULL;
+
+		lfi=0;
+		while(1)
+		{
+			s2=BGBCP_Token(s1, b, &ty);
+
+			n1=BGBCP_DeclAttributeC(ctx, &s1);
+			if(n1)
+			{
+				ntl=BCCX_AddEnd(ntl, n1);
+				continue;
+			}
+
+			li=BGBCP_DefTypeFlag(ctx, b);
+			if(!li)
+				break;
+			lfi|=li;
+			s1=s2;
+		}
+
+		s2=BGBCP_Token(s1, b, &ty);
+
+		if((ty==BTK_NAME) && !bgbcp_strcmp(b, "function"))
+		{
+//			s1=BGBCP_Token(s, b, &ty);
+
+//			s2=s1;
+
+//			n=NULL;
+			n=BCCX_NewCst(&bgbcc_rcst_type, "type");
+			BCCX_SetCst(n, &bgbcc_rcst_name, "name", "variant");
+			BCCX_SetIntCst(n, &bgbcc_rcst_flags, "flags", lfi);
+
+			if(ntl)BCCX_AddV(n,
+				BCCX_NewCst1(&bgbcc_rcst_attributes, "attributes", ntl));
+
+			n1=BGBCP_VarDefinition(ctx, &s2, n);
+			if(BCCX_TagIsCstP(n1, &bgbcc_rcst_proto, "proto"))
+			{
+				ntl=NULL;
+				ntci=NULL;
+
+				BGBCP_Token(s2, b, &ty);
+
+	//			BGBCP_Token(s2, b, &ty);
+//				if(!bgbcp_strcmp1(b, "{"))
+				if(bgbcp_strcmp1(b, ";"))
+				{
+					BCCX_CheckDeleteUnlinked(n);
+
+					n=BCCX_Clone(n1);
+					BCCX_CheckDeleteUnlinked(n1);
+
+					ofenv=ctx->fenv_access;
+					i=ctx->in_func_body;
+					ctx->in_func_body=1;
+					ctx->fenv_access=0;
+					tk0=BGBCP_GetTokenCount();
+					n1=BGBCP_BlockStatement2(ctx, &s2);
+					tk1=BGBCP_GetTokenCount();
+					ctx->in_func_body=i;
+					
+					if(ctx->fenv_access)
+					{
+						n2=BCCX_FindTagCst(n, &bgbcc_rcst_type, "type");
+						li=BCCX_GetIntCst(n2, &bgbcc_rcst_flags, "flags");
+						li|=BGBCC_TYFL_FENVACC;
+						BCCX_SetIntCst(n2, &bgbcc_rcst_flags, "flags", li);
+					}
+					
+					ctx->fenv_access=ofenv;
+
+					BCCX_SetTagCst(n, &bgbcc_rcst_defun, "defun");
+					BCCX_AddV(n, BCCX_NewCst1V(&bgbcc_rcst_body, "body", n1));
+
+					if(ntl)BCCX_Add(n, ntl);
+
+					if(ntci)
+					{
+						n2=BCCX_NewCst1(&bgbcc_rcst_super, "super", ntci);
+						BCCX_AddV(n, n2);
+					}
+
+					tk2=tk1-tk0;
+					if(tk2>0)
+						BCCX_SetIntCst(n, &bgbcc_rcst_tokens, "tokens", tk2);
+
+					*str=s2;
+					return(n);
+				}
+
+				BCCX_CheckDeleteUnlinked(n);
+
+				n=BCCX_Clone(n1);
+				BCCX_CheckDeleteUnlinked(n1);
+
+				BCCX_SetTagCst(n, &bgbcc_rcst_defun, "defun");
+
+				n1=BCCX_NewCst(&bgbcc_rcst_null_statement, "null_statement");
+				BCCX_AddV(n, BCCX_NewCst1V(&bgbcc_rcst_body, "body", n1));
+
+				if(ntl)BCCX_Add(n, ntl);
+
+				*str=s2;
+				return(n);
+			}
+		}
+	}
+
 
 	n=BGBCP_DefType(ctx, &s);
 	if(n)

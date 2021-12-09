@@ -107,6 +107,8 @@
 #include "ccxl/ccxl_register.c"
 #include "ccxl/ccxl_ril3.c"
 #include "ccxl/ccxl_stack.c"
+#include "ccxl/ccxl_stack_bin.c"
+#include "ccxl/ccxl_stack_un.c"
 #include "ccxl/ccxl_struct.c"
 #include "ccxl/ccxl_trace.c"
 #include "ccxl/ccxl_type.c"

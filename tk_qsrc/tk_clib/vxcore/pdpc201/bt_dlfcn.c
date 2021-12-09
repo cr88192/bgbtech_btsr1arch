@@ -22,5 +22,5 @@ void *dlsym(void *handle, const char *symbol)
 
 void dlclose(void *handle)
 {
-	return(TK_DlSymA(handle, NULL, 7));
+	TK_DlSymA(handle, NULL, 7);
 }
