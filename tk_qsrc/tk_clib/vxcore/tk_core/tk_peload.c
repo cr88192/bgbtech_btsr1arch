@@ -50,13 +50,13 @@ byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz)
 		
 //		ld=tkfat_getWord(cs);
 		ld=*(u16 *)cs;
+		cs+=2;
 		if(!ld)
 		{
 			if(ll==5)
 				continue;
 			break;
 		}
-		cs+=2;
 //		ll=(tg&15)+4;
 		if(ll==19)
 		{
@@ -563,7 +563,8 @@ byte *TKPE_UnpackBuffer(byte *ct, byte *ibuf, int isz, int cmp)
 	int rsz;
 
 // #ifdef __BJX2__
-#if 1
+// #if 1
+#if 0
 	if(cmp==6)
 	{
 		return(TKPE_UnpackL6(ct, ibuf, isz));

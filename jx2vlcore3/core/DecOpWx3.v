@@ -384,11 +384,13 @@ assign	tOpJBitsC		= 0;
 initial
 begin
 	opCmRemapRx[ 0]=JX2_GR_PC_HI;
-	opCmRemapRx[ 1]=JX2_GR_LR_HI;
+//	opCmRemapRx[ 1]=JX2_GR_LR_HI;
+	opCmRemapRx[ 1]=JX2_GR_ZZR;
 	opCmRemapRx[ 2]=JX2_GR_ZZR;
 	opCmRemapRx[ 3]=JX2_GR_VBR_HI;
 	opCmRemapRx[ 4]=JX2_GR_SPC_HI;
-	opCmRemapRx[ 5]=JX2_GR_SSP_HI;
+//	opCmRemapRx[ 5]=JX2_GR_SSP_HI;
+	opCmRemapRx[ 5]=JX2_GR_ZZR;
 	opCmRemapRx[ 6]=JX2_GR_GBR_HI;
 	opCmRemapRx[ 7]=JX2_GR_ZZR;
 	opCmRemapRx[ 8]=JX2_GR_ZZR;
@@ -398,13 +400,15 @@ begin
 	opCmRemapRx[12]=JX2_GR_ZZR;
 	opCmRemapRx[13]=JX2_GR_ZZR;
 	opCmRemapRx[14]=JX2_GR_ZZR;
-	opCmRemapRx[15]=JX2_GR_SP_HI;
+	opCmRemapRx[15]=JX2_GR_ZZR;
+//	opCmRemapRx[15]=JX2_GR_SP_HI;
 
 	opCmRemapRx[16]=JX2_GR_PC2_HI;
 //	opCmRemapRx[17]=JX2_GR_LR2_HI;
 	opCmRemapRx[17]=JX2_GR_ZZR;
 	opCmRemapRx[18]=JX2_GR_ZZR;
-	opCmRemapRx[19]=JX2_GR_VBR2_HI;
+//	opCmRemapRx[19]=JX2_GR_VBR2_HI;
+	opCmRemapRx[19]=JX2_GR_ZZR;
 	opCmRemapRx[20]=JX2_GR_SPC2_HI;
 //	opCmRemapRx[21]=JX2_GR_SSP2_HI;
 	opCmRemapRx[21]=JX2_GR_ZZR;

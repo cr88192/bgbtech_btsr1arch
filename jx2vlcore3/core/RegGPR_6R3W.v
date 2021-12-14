@@ -469,7 +469,7 @@ begin
 `ifdef jx2_gprs_mergecm
 		JX2_GR_SR, JX2_GR_VBR, JX2_GR_SPC, JX2_GR_SSP,
 		JX2_GR_TTB, JX2_GR_TEA, JX2_GR_MMCR,
-		JX2_GR_EXSR, JX2_GR_STTB, JX2_GR_KRR:
+		JX2_GR_EXSR, JX2_GR_STTB, JX2_GR_KRR, JX2_GR_TEAH:
 			tValRsA = regValCm;
 `endif
 
@@ -755,7 +755,7 @@ begin
 `ifdef jx2_gprs_mergecm
 		JX2_GR_SR, JX2_GR_VBR, JX2_GR_SPC, JX2_GR_SSP,
 		JX2_GR_TTB, JX2_GR_TEA, JX2_GR_MMCR,
-		JX2_GR_EXSR, JX2_GR_STTB, JX2_GR_KRR:
+		JX2_GR_EXSR, JX2_GR_STTB, JX2_GR_KRR, JX2_GR_TEAH:
 			tValRyA = regValCm;
 `endif
 

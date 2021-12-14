@@ -2469,8 +2469,8 @@ ccxl_status BGBCC_CCXL_StackCastSig(BGBCC_TransState *ctx, char *sig)
 #endif
 
 #if 1
-//	if(BGBCC_CCXL_TypeCompatibleArchP(ctx, dty, sty) &&
-	if(BGBCC_CCXL_TypeCompatibleFormatP(ctx, dty, sty) &&
+	if(BGBCC_CCXL_TypeCompatibleArchP(ctx, dty, sty) &&
+//	if(BGBCC_CCXL_TypeCompatibleFormatP(ctx, dty, sty) &&
 //	if(BGBCC_CCXL_TypeCompatibleP(ctx, dty, sty) &&
 		(BGBCC_CCXL_GetRegAsType(ctx, sreg, dty, &dreg)>0))
 	{

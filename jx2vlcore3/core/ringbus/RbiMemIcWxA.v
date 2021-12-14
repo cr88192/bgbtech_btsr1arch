@@ -39,7 +39,7 @@ input [63: 0]	regInSr;
 input [ 7: 0]	regKrrHash;
 
 output			icMemWait;
-output[63: 0]	regOutExc;
+output[127: 0]	regOutExc;
 
 input [ 15:0]	memSeqIn;		//operation sequence
 output[ 15:0]	memSeqOut;		//operation sequence
@@ -69,8 +69,8 @@ assign	regOutPcSxo		= tRegOutPcSxo;
 reg			tMemWait;
 assign	icMemWait = tMemWait;
 
-reg[63: 0]	tRegOutExc;
-reg[63: 0]	tRegOutExc2;
+reg[127: 0]	tRegOutExc;
+reg[127: 0]	tRegOutExc2;
 assign	regOutExc = tRegOutExc2;
 
 reg[ 15:0]		tMemSeqOut;		//operation sequence
@@ -736,7 +736,9 @@ begin
 
 	end
 
-	tRegOutExc[63:16] = tInAddr[47:0];
+	tRegOutExc[ 63:16] = tInAddr[47:0];
+	tRegOutExc[111:64] = tReqAddrHi[47:0];
+
 //	if(tBlkFlagA[2] && !tBlkFlagA[3] && !tInAddr[4])
 	if(	(tBlkFlagA[2] && !tBlkFlagA[3] && !tInAddr[4])	||
 		(tBlkFlagB[2] && !tBlkFlagB[3] &&  tInAddr[4])	)

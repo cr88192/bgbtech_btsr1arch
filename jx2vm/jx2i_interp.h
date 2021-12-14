@@ -172,7 +172,7 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_REG_PC2	80
 #define BJX2_REG_LR2	81
 #define BJX2_REG_SR2	82
-
+#define BJX2_REG_TEAH	83
 #define BJX2_REG_SPC2	84
 #define BJX2_REG_SSP2	85
 #define BJX2_REG_GBR2	86

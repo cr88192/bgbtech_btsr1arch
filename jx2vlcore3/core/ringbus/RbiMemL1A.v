@@ -88,7 +88,7 @@ input[63:0]		regInMmcr;
 input[63:0]		regInKrr;
 input[63:0]		regInSr;
 
-output[63:0]	regOutExc;
+output[127:0]	regOutExc;
 output[63:0]	regTraPc;
 input [63:0]	dcInTraPc;		//input PC
 input			deadlockLatch;	//CPU Is Deadlocked
@@ -145,8 +145,8 @@ reg[  4:0]		tMemOpm;		//Memory Operation
 
 `reg_tile		tMemDataOut;	//Memory Data Out
 
-reg[63:0]		tRegOutExc;
-reg[63:0]		tRegOutExc2;
+reg[127:0]		tRegOutExc;
+reg[127:0]		tRegOutExc2;
 
 reg[63:0]		tRegTraPc;
 reg[63:0]		tRegTraPc2;
@@ -154,7 +154,7 @@ reg[63:0]		tRegTraPc2;
 wire[5:0]		tMemAccNoRwx;
 
 
-wire[63:0]		tTlbExc;
+wire[127:0]		tTlbExc;
 
 
 assign	regOutExc	= tRegOutExc2;
@@ -216,8 +216,8 @@ assign		regKrrHash = regInKrr[7:0]^regInKrr[15:8];
 wire[5:0]		dfInOpm;
 assign		dfInOpm		= { dcInOpm[4:3], 1'b0, dcInOpm[2:0] };
 
-wire		ifMemWait;
-wire[63:0]		ifOutExc;
+wire			ifMemWait;
+wire[127:0]		ifOutExc;
 
 reg			ifMemWaitL;
 
@@ -256,7 +256,7 @@ RbiMemIcWxA		memIc(
 
 wire			dfOutHold;
 wire			dfOutWait;
-wire[63:0]		dfOutExc;
+wire[127:0]		dfOutExc;
 
 // `wire_tile		dfMemDataI;
 // wire[ 47:0]		dfMemAddrI;
@@ -408,7 +408,7 @@ end
 always @*
 begin
 	tNxtMsgLatch	= 0;
-	tRegOutExc	= UV64_00;
+	tRegOutExc	= UV128_00;
 	tRegTraPc	= UV64_00;
 
 //	tDcOutOK	= dfOutOK[1:0];

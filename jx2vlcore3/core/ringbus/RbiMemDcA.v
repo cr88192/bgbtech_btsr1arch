@@ -37,7 +37,7 @@ output			regOutWait;
 
 input [63: 0]	regInSr;
 input [63: 0]	regInMmcr;
-output[63: 0]	regOutExc;
+output[127: 0]	regOutExc;
 
 input[7:0]		regKrrHash;
 
@@ -60,8 +60,8 @@ reg[63: 0]	tRegOutValB;
 assign	regOutValA = tRegOutValA;
 assign	regOutValB = tRegOutValB;
 
-reg[63: 0]	tRegOutExc;
-reg[63: 0]	tRegOutExc2;
+reg[127: 0]	tRegOutExc;
+reg[127: 0]	tRegOutExc2;
 assign	regOutExc = tRegOutExc2;
 
 reg[63: 0]		tRegInSr;
@@ -1072,7 +1072,8 @@ begin
 `endif
 	end
 
-	tRegOutExc[63:16] = tReqAddr[47:0];
+	tRegOutExc[ 63:16] = tReqAddr[47:0];
+	tRegOutExc[111:64] = tReqAddrHi[47:0];
 
 	if(!tBlkMemAddr2A[3] && !tBlkMemAddr2B[3])
 	begin
@@ -1733,7 +1734,8 @@ begin
 		
 			tNxtMemSeqRov	= tMemSeqRov + 1;
 			tMemSeqReq		= { unitNodeId, 4'b1000, tMemSeqRov };
-			tMemDataReq		= { UV64_00, tReqInValA };
+//			tMemDataReq		= { UV64_00, tReqInValA };
+			tMemDataReq		= { tReqInValB, tReqInValA };
 //			tMemOpmReq		= { UV8_00, JX2_RBI_OPM_LDSQ };
 `ifdef jx2_enable_l1addr96
 			tMemAddrReq		= { tReqAddrHi, tReqAddr };

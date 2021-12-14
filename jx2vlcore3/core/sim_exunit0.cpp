@@ -2411,8 +2411,8 @@ int main(int argc, char **argv, char **env)
 				membus_256bit=1;
 		}
 
-		if(top->clock)
-			top->memBusExc=0x0000;
+//		if(top->clock)
+//			top->memBusExc=0x0000;
 		
 		if(top->clock && (lclk!=top->clock))
 		{

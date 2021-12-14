@@ -116,7 +116,7 @@ input			reset;
 input[8:0]		opUCmd;
 input[8:0]		opUIxt;
 output[1:0]		exHold;
-output[15:0]	exTrapExc;
+output[127:0]	exTrapExc;
 
 input[11:0]		timers;
 output[8:0]		opUCmdOut;
@@ -220,7 +220,7 @@ assign		regOutGbrHi	= tRegOutGbrHi;
 //reg[ 4:0]		tHeldIdCn1;		//Destination ID (CR, EX1)
 `reg_gpr		tHeldIdCn1;		//Destination ID (CR, EX1)
 
-reg[15:0]		tExTrapExc;
+reg[127:0]		tExTrapExc;
 
 assign	regIdRn1	= tRegIdRn1;		//Destination ID (EX1)
 assign	regValRn1	= tRegValRn1;		//Destination Value (EX1)
@@ -1217,10 +1217,10 @@ begin
 
 				JX2_UCIX_IXT_RTE: begin
 //					$display("EX1: RTE, PC=%X", regValPc);
-					tExTrapExc = 16'hFF00;
+					tExTrapExc = { UV112_00, 16'hFF00 };
 				end
 				JX2_UCIX_IXT_TRAPA: begin
-					tExTrapExc = { 12'hC08, regIdRm[3:0] };
+					tExTrapExc = { UV112_00, 12'hC08, regIdRm[3:0] };
 				end
 
 				JX2_UCIX_IXT_CPUID: begin
@@ -1244,7 +1244,7 @@ begin
 				end
 
 				JX2_UCIX_IXT_SYSE: begin
-					tExTrapExc = { 4'hE, regInDlr[11:0] };
+					tExTrapExc = { UV112_00, 4'hE, regInDlr[11:0] };
 				end
 				
 				JX2_UCIX_IXT_LDTLB: begin

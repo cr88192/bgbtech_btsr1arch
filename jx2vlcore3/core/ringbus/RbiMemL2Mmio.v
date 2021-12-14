@@ -241,7 +241,8 @@ begin
 		end
 	end
 
-`ifndef def_true
+// `ifndef def_true
+`ifdef def_true
 	if(memRingIsIdle && tRingDoExc && !tNxtMemReqRsM)
 	begin
 		tMemSeqReq		= 0;

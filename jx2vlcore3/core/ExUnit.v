@@ -139,7 +139,7 @@ output[15:0]	memSeqOut;
 input[15:0]		memSeqIn;
 
 input[1:0]		memOK;
-input[63:0]		memBusExc;
+input[127:0]	memBusExc;
 
 input[7:0]		unitNodeId;
 	
@@ -321,7 +321,7 @@ assign	dbgDcOutVal	= dcOutVal;
 assign	dbgDcInVal	= dcInVal;
 assign	dbgDcOutOK	= dcOutOK;
 
-wire[63:0]		memRegExc;
+wire[127:0]		memRegExc;
 wire[63:0]		memRegTraPc;
 
 `ifdef jx2_use_ringbus
@@ -892,6 +892,8 @@ wire[47:0]	crOutSsp;
 reg [47:0]	crInSsp;
 wire[63:0]	crOutTea;
 reg [63:0]	crInTea;
+wire[63:0]	crOutTeaHi;
+reg [63:0]	crInTeaHi;
 
 wire[15:0]	crOutFpsr;
 // reg [15:0]	crInFpsr;
@@ -943,6 +945,7 @@ RegCR regCr(
 	crOutSpc,	crInSpc,
 	crOutSsp,	crInSsp,
 	crOutTea,	crInTea,
+	crOutTeaHi,	crInTeaHi,
 	crOutFpsr,	crInFpsr,
 
 `ifdef jx2_enable_vaddr96
@@ -984,8 +987,8 @@ reg[63:0]		ex3RegValLr;		//LR Value (Capture)
 
 reg[63:0]		ex2RegInSr;
 
-reg[63:0]		tNxtRegExc;
-reg[63:0]		tRegExc;
+reg[127:0]		tNxtRegExc;
+reg[127:0]		tRegExc;
 
 
 wire[63:0]		ex1MulVal;
@@ -1099,7 +1102,7 @@ wire[63:0]		ex1MemDataOutB;
 
 wire[ 7:0]		ex1RegOutSchm;
 reg [ 7:0]		ex1RegInSchm;
-wire[15:0]		ex1TrapExc;
+wire[127:0]		ex1TrapExc;
 
 wire[8:0]		ex1OpUCmd2;
 
@@ -1161,7 +1164,7 @@ ExEX1	ex1(
 
 	ex1MemAddr,		ex1MemOpm,
 	ex1MemDataOut,	ex1MemDataOutB,
-	ex2MemDataOK,	tRegExc
+	ex2MemDataOK,	tRegExc[63:0]
 	);
 
 wire[7:0]	exB1ValCarryD;
@@ -1881,15 +1884,15 @@ reg[7:0]	tIsrBraFlushMask;
 // reg[63:0]	tRegExc;
 reg[7:0]	tRegExcOfs;
 
-reg[63:0]	tDelayExc;
-reg[63:0]	tNxtDelayExc;
+reg[127:0]	tDelayExc;
+reg[127:0]	tNxtDelayExc;
 
-reg[63:0]	tDelay2Exc;
-reg[63:0]	tDelay3Exc;
-reg[63:0]	tDelay4Exc;
-reg[63:0]	tNxtDelay2Exc;
-reg[63:0]	tNxtDelay3Exc;
-reg[63:0]	tNxtDelay4Exc;
+reg[127:0]	tDelay2Exc;
+reg[127:0]	tDelay3Exc;
+reg[127:0]	tDelay4Exc;
+reg[127:0]	tNxtDelay2Exc;
+reg[127:0]	tNxtDelay3Exc;
+reg[127:0]	tNxtDelay4Exc;
 
 reg			tDelay2ExcAdv;
 reg			tDelay3ExcAdv;
@@ -1922,6 +1925,7 @@ reg[26:0]	tValPcAdd1;
 reg[47:0]		braInSpc;
 reg[63:0]		braInExsr;
 reg[63:0]		braInTea;
+reg[63:0]		braInTeaHi;
 reg[63:0]		braInSr;
 reg[63:0]		braInLr;
 reg[63:0]		braInDlr;
@@ -1935,6 +1939,7 @@ reg[47:0]		braIsrSp;
 reg[47:0]		braNxtInSpc;
 reg[63:0]		braNxtInExsr;
 reg[63:0]		braNxtInTea;
+reg[63:0]		braNxtInTeaHi;
 reg[63:0]		braNxtInSr;
 reg[63:0]		braNxtInLr;
 reg[63:0]		braNxtInDlr;
@@ -2002,6 +2007,7 @@ begin
 	crInSpc			= crOutSpc;
 	crInSsp			= crOutSsp;
 	crInTea			= crOutTea;
+	crInTeaHi		= crOutTeaHi;
 
 	crInPcHi		= crOutPcHi;
 //	crInLrHi		= crOutLrHi;
@@ -2613,7 +2619,7 @@ begin
 
 //	if(ex1TrapExc[15])
 	if(ex1TrapExc[15] && !tRegExc[15])
-		tNxtRegExc = { UV48_00, ex1TrapExc };
+		tNxtRegExc = ex1TrapExc;
 
 //	if(ex1KrreLo[65:64]==2'b11)
 	if((ex1KrreLo[65:64]==2'b11) && !tRegExc[15])
@@ -2627,7 +2633,7 @@ begin
 			ex1IstrWord[79:64], ex1IstrWord[95:80],
 			ex1OpUCmd, ex1OpUIxt, ex1BraFlush);
 
-		tNxtRegExc = { UV48_00, 16'h800D };
+		tNxtRegExc = { UV64_00, UV48_00, 16'h800D };
 	end
 
 	if(reset)
@@ -2897,6 +2903,7 @@ begin
 	braNxtInSpc		= crOutSpc;
 	braNxtInExsr	= crOutExsr;
 	braNxtInTea		= crOutTea;
+	braNxtInTeaHi	= crOutTeaHi;
 	braNxtInSr		= ex1RegOutSr;
 	braNxtInLr		= ex1RegOutLr;
 	braNxtInDlr		= ex1RegOutDlr;
@@ -2911,6 +2918,7 @@ begin
 		braNxtInSpc		= braInSpc;
 		braNxtInExsr	= braInExsr;
 		braNxtInTea		= braInTea;
+		braNxtInTeaHi	= braInTeaHi;
 		braNxtInSr		= braInSr;
 		braNxtInLr		= braInLr;
 		braNxtInDlr		= braInDlr;
@@ -3097,6 +3105,7 @@ begin
 				crInExsr		= { crOutSr[31:8], ex2RegOutSr[7:0],
 					UV16_00, tRegExc[15:0] };
 				crInTea			= { UV16_00, tRegExc[63:16] };
+				crInTeaHi		= { tRegExc[127:64] };
 				crInSr			= ex1RegOutSr;
 				crInSr[30:28]	= 3'b111;
 				crInSr[27:26]	= 2'b00;
@@ -3111,6 +3120,7 @@ begin
 					crOutSr[31:8], ex2RegOutSr[7:0],
 					UV16_00, tRegExc[15:0] };
 				braNxtInTea			=  { UV16_00, tRegExc[63:16] };
+				braNxtInTeaHi		=  { tRegExc[127:64] };
 				braNxtInSr			= ex1RegOutSr;
 				braNxtInSr[30:28]	= 3'b111;
 				braNxtInSr[27:26]	= 2'b00;
@@ -3467,6 +3477,7 @@ begin
 		crInSpc		= braInSpc;
 		crInExsr	= braInExsr;
 		crInTea		= braInTea;
+		crInTeaHi	= braInTeaHi;
 		crInSr		= braInSr;
 		crInLr		= braInLr;
 		gprInDlr	= braInDlr;
@@ -3483,6 +3494,7 @@ begin
 		crInSpc		= braNxtInSpc;
 		crInExsr	= braNxtInExsr;
 		crInTea		= braNxtInTea;
+		crInTeaHi	= braNxtInTeaHi;
 		crInSr		= braNxtInSr;
 		crInLr		= braNxtInLr;
 		gprInDlr	= braNxtInDlr;
@@ -3580,8 +3592,15 @@ begin
 	crValCn1		= ex1RegValRn1;
 	crIdCn2			= ex2RegIdRn2;
 	crValCn2		= ex2RegValRn2;
+
+`ifdef jx2_enable_movc
 	crIdCn3			= ex3RegIdRn3;
 	crValCn3		= ex3RegValRn3;
+`else
+	crIdCn3			= ex3RegIdRn2;
+	crValCn3		= ex3RegValRn2;
+`endif
+
 `endif
 
 	gprEx1Flush = ex1BraFlush || ex1TrapFlush;
@@ -3713,6 +3732,7 @@ begin
 	braInSpc		<= braNxtInSpc;
 	braInExsr		<= braNxtInExsr;
 	braInTea		<= braNxtInTea;
+	braInTeaHi		<= braNxtInTeaHi;
 	braInSr			<= braNxtInSr;
 	braInLr			<= braNxtInLr;
 	braInDlr		<= braNxtInDlr;
@@ -3810,6 +3830,7 @@ begin
 		braInSpc		<= braNxtInSpc;
 		braInExsr		<= braNxtInExsr;
 		braInTea		<= braNxtInTea;
+		braInTeaHi		<= braNxtInTeaHi;
 		braInSr			<= braNxtInSr;
 		braInLr			<= braNxtInLr;
 		braInDlr		<= braNxtInDlr;

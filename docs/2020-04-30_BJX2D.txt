@@ -148,7 +148,7 @@ Control Registers:
 * C16 / PC2: Program Counter (SMT)
 * C17 / LR2: Link Register (SMT)
 * C18 / SR2: Status Register (SMT)
-* C19: Reserved
+* C19 / TEAH: Translation Effective Address (High Bits)
 * C20 / SPC2: Saved PC (SMT)
 * C21 / SSP2: Saved SP (SMT)
 * C22 / GBR2: Global Base Register (SMT)
@@ -373,6 +373,7 @@ On interrupt Entry:
 * The status code for the interrupt will be loaded into EXSR.
 ** Set SR.BL, SR.MD, and SR.RB
 * TEA will be set to the Fault Address (if relevant for the interrupt).
+* TEAH will be set to the High Fault Address (if relevant for the interrupt).
 * EXSR will be set to the exception code in the low 16 bits.
 ** The high 32 bits will hold the saved bits from SR.
 ** The remaining 16 bits may be used by the handler mechanism.

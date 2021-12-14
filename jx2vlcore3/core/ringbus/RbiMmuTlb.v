@@ -35,7 +35,7 @@ input[15:0]		regInSeq;		//Operation Size/Type
 output[15:0]	regOutSeq;		//Operation Size/Type
 input[7:0]		unitNodeId;		//Node ID
 
-output[63:0]	regOutExc;		//Exception EXC+TEA
+output[127:0]	regOutExc;		//Exception EXC+TEA
 input			regInHold;		//Hold Pipeline
 
 input[63:0]		regInMMCR;		//MMU Control Register
@@ -75,8 +75,10 @@ reg[15:0]		tRegOutExc;
 reg[15:0]		tRegOutExc2;
 reg[63:0]		tRegOutTea;
 reg[63:0]		tRegOutTea2;
+reg[63:0]		tRegOutTeaHi;
+reg[63:0]		tRegOutTeaHi2;
 
-assign		regOutExc = { tRegOutTea2[47:0], tRegOutExc2 };
+assign		regOutExc = { tRegOutTeaHi2[63:0], tRegOutTea2[47:0], tRegOutExc2 };
 
 
 `reg_l1addr		regInAddrA;		//input Address
@@ -330,6 +332,7 @@ always @*
 begin
 	tlbDoLdtlb		= 0;
 	tRegOutTea		= UV64_00;
+	tRegOutTeaHi	= UV64_00;
 	tlbAcc			= UV36_00;
 	tNxtTlbRov		= tTlbRov;
 
@@ -740,7 +743,10 @@ begin
 
 	tRegOutExc = 0;
 
-	tRegOutTea[47:0] = tRegInAddr[47:0];
+	tRegOutTea[47:0]	= tRegInAddr[47:0];
+`ifdef jx2_tlb_xtlbe
+	tRegOutTeaHi[47:0]	= tRegInAddr[95:48];
+`endif
 
 	if(tlbMmuEnable)
 	begin
@@ -808,9 +814,11 @@ begin
 			(regInData[11:8]==4'h0) ||
 			(regInData[11:8]==4'hF))
 		begin
-			tRegOutTea[47:0] = regInData[63:16];
+			tRegOutTea  [47:0] = regInData[ 63:16];
+			tRegOutTeaHi[63:0] = regInData[127:64];
 			tRegOutExc	= regInData[15:0];
-			tRegOutOpm	= UV16_00;
+			if(regInData[11:8]!=4'hF)
+				tRegOutOpm	= UV16_00;
 		end
 	end
 
@@ -1026,6 +1034,7 @@ begin
 
 		tRegOutExc2		<= tRegOutExc;
 		tRegOutTea2		<= tRegOutTea;
+		tRegOutTeaHi2	<= tRegOutTeaHi;
 
 //		tRegInAddr		<= regInAddr;
 //		tRegInData		<= regInData;

@@ -93,6 +93,9 @@ Somewhere in the image will be the WAD4 Directory.
 ** 2: Merged / Packed File (Small File)
 ** 3: RP2 Compressed
 ** 4: LZ4 Compressed
+** 6: ULZ (Possible)
+** 8: Deflate (Possible)
+** 9: Deflate64 (Possible)
 * chain:
 ** Link DirEnts together via their hash chain.
 ** Holds the index number of the next entry in the directory.

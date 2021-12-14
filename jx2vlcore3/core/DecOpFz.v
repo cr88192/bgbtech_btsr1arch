@@ -2377,6 +2377,8 @@ begin
 						opUCmdIx	= JX2_UCIX_IXS_TRAPB;
 						opFmid		= JX2_FMID_REG;
 						opIty		= JX2_ITY_SB;
+						if(opExQ)
+							opUCty		= JX2_IUC_WX;
 						usrReject	= 1;
 					end
 

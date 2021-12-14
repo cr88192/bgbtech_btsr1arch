@@ -1228,6 +1228,7 @@ char *BJX2_DbgPrintNameForReg(BJX2_Context *ctx, int reg)
 	case BJX2_REG_EXSR:		s="EXSR";	break;
 	case BJX2_REG_KRR:		s="KRR";	break;
 
+	case BJX2_REG_TEAH:		s="TEAH";	break;
 
 #if 0
 	case BJX2_REG_R0B:		s="R0B";	break;

@@ -3839,6 +3839,8 @@ void BGBCC_CCXL_EmitVarFunc(BGBCC_TransState *ctx,
 
 		if(BGBCC_CCXL_GetNodeAttribute(ctx, ty, "may_alias"))
 			{ li|=BGBCC_TYFL_MAYALIAS; }
+		if(BGBCC_CCXL_GetNodeAttribute(ctx, ty, "__may_alias__"))
+			{ li|=BGBCC_TYFL_MAYALIAS; }
 
 		s3=BGBCC_CCXL_GetNodeAttributeStringOrRef(ctx, ty, "ifarch");
 		if(s3)

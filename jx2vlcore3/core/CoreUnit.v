@@ -582,7 +582,7 @@ wire			dbgOutStatus8;
 `wire_l2addr	mem1AddrB;
 wire[15:0]		mem1Opm;
 wire[1:0]		mem1OK;
-wire[63:0]		mem1BusExc;
+wire[127:0]		mem1BusExc;
 
 `wire_l2addr	mem1AddrIn;
 wire[15:0]		mem1OpmIn;
@@ -661,7 +661,7 @@ ExUnit	cpu1(
 `wire_l2addr	mem2AddrB;
 wire[15:0]		mem2Opm;
 wire[1:0]		mem2OK;
-wire[63:0]		mem2BusExc;
+wire[127:0]		mem2BusExc;
 
 `wire_l2addr	mem2AddrIn;
 wire[15:0]		mem2OpmIn;
@@ -822,7 +822,7 @@ wire[15:0]		memOpmIn;
 // `wire_l2addr	mem1AddrB;
 wire[15:0]		mem1Opm;
 wire[1:0]		mem1OK;
-wire[63:0]		mem1BusExc;
+wire[127:0]		mem1BusExc;
 
 `wire_l2addr	mem1AddrIn;
 wire[15:0]		mem1OpmIn;

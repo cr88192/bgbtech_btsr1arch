@@ -103,6 +103,9 @@ IRQ:
   Data(7:0): Exception Number
   Seq(15:10): Core ID (First Seen)
     If a broadcast message gets back here, drop request.
+  Data( 63:16): Addr(47: 0) / TEA
+  Data(111:64): Addr(95:48) / TEAH
+  Data(127:112): Extra Tag / Route Bits
 
 Swap:
 

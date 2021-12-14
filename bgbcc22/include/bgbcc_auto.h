@@ -3047,7 +3047,7 @@ int BGBCC_JX2C_ResetFpscrLocal(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
 int BGBCC_JX2C_ResetFpscrDefaults(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
 int BGBCC_JX2C_ResetFpscrUnknown(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx);
 //AHSRC:jx2cc/jx2_frame.c
-int BGBCC_JX2C_EmitLoadFrameOfsReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int ofs, int dreg);
+int BGBCC_JX2C_EmitLoadFrameOfsReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int ofs, int dreg);
 int BGBCC_JX2C_EmitStoreFrameOfsReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int ofs, int dreg);
 int BGBCC_JX2C_EmitLdaFrameOfsReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int ofs, int dreg);
 int BGBCC_JX2C_EmitStoreStackOfsReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int ofs, int dreg);
@@ -3066,6 +3066,7 @@ int BGBCC_JX2C_GetVRegGotIndex(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, c
 int BGBCC_JX2C_GetGblNameGotIndex(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, char *name);
 int BGBCC_JX2C_GetGblNameLabel(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, char *name);
 int BGBCC_JX2C_EmitLoadGblNameReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, char *name, int dreg);
+int BGBCC_JX2C_EmitLoadFrameNmidForVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg);
 int BGBCC_JX2C_EmitLoadFrameVRegByValReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg, int dreg);
 int BGBCC_JX2C_EmitStoreFrameVRegByValReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg, int dreg);
 int BGBCC_JX2C_EmitLoadFrameVRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg, int dreg);

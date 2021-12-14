@@ -31,8 +31,8 @@
 // `define	jx2_shadq_nolane3		//Disallow SHAD/SHLD from Lane 3
 
 `define jx2_enable_fmov			//FPU Load/Store
-`define jx2_enable_movc			//MOV.C
-`define jx2_enable_movclite		//MOV.C (Lite)
+// `define jx2_enable_movc			//MOV.C
+// `define jx2_enable_movclite		//MOV.C (Lite)
 `define jx2_enable_bitsel		//Bit Select
 
 // `define jx2_alu_dmac			//ALU Multiply-Accumulate
@@ -107,7 +107,7 @@
 
 `define jx2_enable_wexjumbo				//Enable Jumbo-Load
 
-`define jx2_enable_vaddr96qadd			//Enable Quadrant Add
+// `define jx2_enable_vaddr96qadd			//Enable Quadrant Add
 
 `define jx2_enable_vaddr96				//Enable 96-bit virtual addresses
 `define jx2_enable_vaddr48				//Enable 48-bit virtual addresses

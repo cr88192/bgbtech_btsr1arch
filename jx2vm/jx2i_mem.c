@@ -154,6 +154,7 @@ int BJX2_MemRamCb_GetFaultXW(BJX2_Context *ctx,
 	{
 		ctx->regs[BJX2_REG_PC]=ctx->trapc;
 		ctx->regs[BJX2_REG_TEA]=addr;
+		ctx->regs[BJX2_REG_TEAH]=ctx->regs[BJX2_REG_GBR_HI];
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INV_MWR);
 	}else
 	{
@@ -169,6 +170,7 @@ int BJX2_MemRamCb_SetFault(BJX2_Context *ctx,
 	{
 		ctx->regs[BJX2_REG_PC]=ctx->trapc;
 		ctx->regs[BJX2_REG_TEA]=addr;
+		ctx->regs[BJX2_REG_TEAH]=ctx->regs[BJX2_REG_GBR_HI];
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INV_MWR);
 	}else
 	{
@@ -184,6 +186,7 @@ int BJX2_MemRamCb_SetFaultQW(BJX2_Context *ctx,
 	{
 		ctx->regs[BJX2_REG_PC]=ctx->trapc;
 		ctx->regs[BJX2_REG_TEA]=addr;
+		ctx->regs[BJX2_REG_TEAH]=ctx->regs[BJX2_REG_GBR_HI];
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INV_MWR);
 	}else
 	{
@@ -199,6 +202,7 @@ int BJX2_MemRamCb_SetFaultXW(BJX2_Context *ctx,
 	{
 		ctx->regs[BJX2_REG_PC]=ctx->trapc;
 		ctx->regs[BJX2_REG_TEA]=addr;
+		ctx->regs[BJX2_REG_TEAH]=ctx->regs[BJX2_REG_GBR_HI];
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INV_MWR);
 	}else
 	{
@@ -1666,6 +1670,7 @@ bjx2_addr BJX2_MemTranslateTlbW(BJX2_Context *ctx,
 		ctx->tot_cnt_tlbmiss++;
 		ctx->regs[BJX2_REG_PC]=ctx->trapc;
 		ctx->regs[BJX2_REG_TEA]=addr;
+		ctx->regs[BJX2_REG_TEAH]=addrh;
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_TLBMISS);
 	}else
 	{
@@ -1737,6 +1742,7 @@ bjx2_addr BJX2_MemTranslateTlbW(BJX2_Context *ctx,
 	{
 		ctx->regs[BJX2_REG_PC]=ctx->trapc;
 		ctx->regs[BJX2_REG_TEA]=addr;
+		ctx->regs[BJX2_REG_TEAH]=addrh;
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_TLBMISS);
 	}else
 	{
@@ -1786,6 +1792,7 @@ int BJX2_MemGetByte_Dfl(BJX2_Context *ctx, bjx2_addr addr0, bjx2_addr addrh)
 		{
 			ctx->regs[BJX2_REG_PC]=ctx->trapc;
 			ctx->regs[BJX2_REG_TEA]=addr;
+			ctx->regs[BJX2_REG_TEAH]=addrh;
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		}else
 		{
@@ -1848,6 +1855,7 @@ int BJX2_MemGetWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0, bjx2_addr addrh)
 		{
 			ctx->regs[BJX2_REG_PC]=ctx->trapc;
 			ctx->regs[BJX2_REG_TEA]=addr;
+			ctx->regs[BJX2_REG_TEAH]=addrh;
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		}else
 		{
@@ -1910,6 +1918,7 @@ s32 BJX2_MemGetDWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0, bjx2_addr addrh)
 		{
 			ctx->regs[BJX2_REG_PC]=ctx->trapc;
 			ctx->regs[BJX2_REG_TEA]=addr;
+			ctx->regs[BJX2_REG_TEAH]=addrh;
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		}else
 		{
@@ -1973,6 +1982,7 @@ s64 BJX2_MemGetQWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0, bjx2_addr addrh)
 		{
 			ctx->regs[BJX2_REG_PC]=ctx->trapc;
 			ctx->regs[BJX2_REG_TEA]=addr;
+			ctx->regs[BJX2_REG_TEAH]=addrh;
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		}else
 		{
@@ -2043,6 +2053,7 @@ int BJX2_MemGetXWord_Dfl(BJX2_Context *ctx,
 		{
 			ctx->regs[BJX2_REG_PC]=ctx->trapc;
 			ctx->regs[BJX2_REG_TEA]=addr;
+			ctx->regs[BJX2_REG_TEAH]=addrh;
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		}else
 		{
@@ -2107,6 +2118,7 @@ int BJX2_MemGetByte_NoAT(BJX2_Context *ctx,
 		{
 			ctx->regs[BJX2_REG_PC]=ctx->trapc;
 			ctx->regs[BJX2_REG_TEA]=addr;
+			ctx->regs[BJX2_REG_TEAH]=addrh;
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		}else
 		{
@@ -2161,6 +2173,7 @@ int BJX2_MemGetWord_NoAT(BJX2_Context *ctx,
 		{
 			ctx->regs[BJX2_REG_PC]=ctx->trapc;
 			ctx->regs[BJX2_REG_TEA]=addr;
+			ctx->regs[BJX2_REG_TEAH]=addrh;
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		}else
 		{
@@ -2215,6 +2228,7 @@ s32 BJX2_MemGetDWord_NoAT(BJX2_Context *ctx,
 		{
 			ctx->regs[BJX2_REG_PC]=ctx->trapc;
 			ctx->regs[BJX2_REG_TEA]=addr;
+			ctx->regs[BJX2_REG_TEAH]=addrh;
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		}else
 		{
@@ -2271,6 +2285,7 @@ s64 BJX2_MemGetQWord_NoAT(BJX2_Context *ctx,
 		{
 			ctx->regs[BJX2_REG_PC]=ctx->trapc;
 			ctx->regs[BJX2_REG_TEA]=addr;
+			ctx->regs[BJX2_REG_TEAH]=addrh;
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		}else
 		{
@@ -2342,6 +2357,7 @@ int BJX2_MemSetByte_Dfl(BJX2_Context *ctx,
 		{
 			ctx->regs[BJX2_REG_PC]=ctx->trapc;
 			ctx->regs[BJX2_REG_TEA]=addr;
+			ctx->regs[BJX2_REG_TEAH]=addrh;
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		}else
 		{
@@ -2395,6 +2411,7 @@ int BJX2_MemSetWord_Dfl(BJX2_Context *ctx,
 		{
 			ctx->regs[BJX2_REG_PC]=ctx->trapc;
 			ctx->regs[BJX2_REG_TEA]=addr;
+			ctx->regs[BJX2_REG_TEAH]=addrh;
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		}else
 		{
@@ -2458,6 +2475,7 @@ int BJX2_MemSetDWord_Dfl(BJX2_Context *ctx,
 		{
 			ctx->regs[BJX2_REG_PC]=ctx->trapc;
 			ctx->regs[BJX2_REG_TEA]=addr;
+			ctx->regs[BJX2_REG_TEAH]=addrh;
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		}else
 		{
@@ -2521,6 +2539,7 @@ int BJX2_MemSetQWord_Dfl(BJX2_Context *ctx,
 		{
 			ctx->regs[BJX2_REG_PC]=ctx->trapc;
 			ctx->regs[BJX2_REG_TEA]=addr;
+			ctx->regs[BJX2_REG_TEAH]=addrh;
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		}else
 		{
@@ -2589,6 +2608,7 @@ int BJX2_MemSetXWord_Dfl(BJX2_Context *ctx,
 		{
 			ctx->regs[BJX2_REG_PC]=ctx->trapc;
 			ctx->regs[BJX2_REG_TEA]=addr;
+			ctx->regs[BJX2_REG_TEAH]=addrh;
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		}else
 		{
@@ -2648,6 +2668,7 @@ int BJX2_MemSetDWord_NoAT(BJX2_Context *ctx,
 		{
 			ctx->regs[BJX2_REG_PC]=ctx->trapc;
 			ctx->regs[BJX2_REG_TEA]=addr;
+			ctx->regs[BJX2_REG_TEAH]=addrh;
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		}else
 		{
@@ -2697,6 +2718,7 @@ int BJX2_MemSetQWord_NoAT(BJX2_Context *ctx,
 		{
 			ctx->regs[BJX2_REG_PC]=ctx->trapc;
 			ctx->regs[BJX2_REG_TEA]=addr;
+			ctx->regs[BJX2_REG_TEAH]=addrh;
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		}else
 		{
@@ -2755,6 +2777,7 @@ int BJX2_MemSetTripwire_Dfl(BJX2_Context *ctx,
 		{
 			ctx->regs[BJX2_REG_PC]=ctx->trapc;
 			ctx->regs[BJX2_REG_TEA]=addr;
+			ctx->regs[BJX2_REG_TEAH]=addrh;
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		}else
 		{
@@ -2813,6 +2836,7 @@ int BJX2_MemQueryTransit_Dfl(BJX2_Context *ctx,
 		{
 			ctx->regs[BJX2_REG_PC]=ctx->trapc;
 			ctx->regs[BJX2_REG_TEA]=addr;
+			ctx->regs[BJX2_REG_TEAH]=addrh;
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
 		}else
 		{

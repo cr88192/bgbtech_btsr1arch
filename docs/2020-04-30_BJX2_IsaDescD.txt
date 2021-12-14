@@ -1745,7 +1745,8 @@ These instructions will be specific to certain modes.
 
 * 36j3       TRAP	Imm4u
 * 36n8       TRAP	Rn
-* F068_3en0  TRAP	Rn
+* F068_3gn0  TRAP	Rn
+* F068_3Gn0  TRAP	Xn
 
 Generate an Interrupt.
 
@@ -2407,9 +2408,19 @@ In the Op64 case, the Imm8 may encode a rounding mode:
 * 03: Round toward -Inf
 * 04: Round, ULP+2, Inexact Status
 
+* 08: Round to Nearest (Single)
+* 09: Truncate Towards Zero (Single).
+* 0A: Round toward +Inf (Single)
+* 0B: Round toward -Inf (Single)
+
 In rounding mode 4, the ULP will be moved upwards by 2 bits.
 The low 2 bits of inputs and results will be treated as an inexact status.
 If these bits hold 0, the result is exact, otherwise the result is inexact. This state will be sticky.
+
+Behavior of the Single Modes may depend on implementation:
+* May be equivalent to the basic modes (if unsupported).
+* May round as-if the value were single precision.
+* May serve as a hint to use a faster but less precise FPU.
 
 
 === FCMPEQ (GFP) ===

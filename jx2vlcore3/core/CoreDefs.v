@@ -83,13 +83,14 @@ parameter[6:0] JX2_GR_R63		= 7'h3F;
 parameter[6:0] JX2_GR_DLR		= 7'h40;
 parameter[6:0] JX2_GR_DHR		= 7'h41;
 
+parameter[6:0] JX2_GR_PC_HI		= 7'h42;
 parameter[6:0] JX2_GR_VBR_HI	= 7'h43;
 parameter[6:0] JX2_GR_SPC_HI	= 7'h44;
-parameter[6:0] JX2_GR_SSP_HI	= 7'h45;
+// parameter[6:0] JX2_GR_SSP_HI	= 7'h45;
 parameter[6:0] JX2_GR_GBR_HI	= 7'h46;
-parameter[6:0] JX2_GR_SP_HI		= 7'h47;
-parameter[6:0] JX2_GR_PC_HI		= 7'h48;
-parameter[6:0] JX2_GR_LR_HI		= 7'h49;
+// parameter[6:0] JX2_GR_SP_HI		= 7'h47;
+// parameter[6:0] JX2_GR_PC_HI		= 7'h48;
+// parameter[6:0] JX2_GR_LR_HI		= 7'h49;
 
 parameter[6:0] JX2_GR_R8IMMH	= 7'h4C;		//Shift Immed, High Part
 parameter[6:0] JX2_GR_R8IMML	= 7'h4D;		//Shift Immed, Low Part
@@ -100,7 +101,7 @@ parameter[6:0] JX2_GR_DLR2		= 7'h50;
 parameter[6:0] JX2_GR_DHR2		= 7'h51;
 
 parameter[6:0] JX2_GR_PC2_HI	= 7'h52;
-parameter[6:0] JX2_GR_VBR2_HI	= 7'h53;
+// parameter[6:0] JX2_GR_VBR2_HI	= 7'h53;
 parameter[6:0] JX2_GR_SPC2_HI	= 7'h54;
 // parameter[6:0] JX2_GR_SSP2_HI	= 7'h55;
 parameter[6:0] JX2_GR_GBR2_HI	= 7'h56;
@@ -128,7 +129,7 @@ parameter[6:0] JX2_GR_KRR		= 7'h6D;
 parameter[6:0] JX2_GR_PC2		= 7'h70;
 parameter[6:0] JX2_GR_LR2		= 7'h71;
 parameter[6:0] JX2_GR_SR2		= 7'h72;
-
+parameter[6:0] JX2_GR_TEAH		= 7'h73;
 parameter[6:0] JX2_GR_SPC2		= 7'h74;
 parameter[6:0] JX2_GR_SSP2		= 7'h75;
 parameter[6:0] JX2_GR_GBR2		= 7'h76;
@@ -153,6 +154,8 @@ parameter[6:0] JX2_CR_MMCR		= 7'h6A;
 parameter[6:0] JX2_CR_EXSR		= 7'h6B;
 parameter[6:0] JX2_CR_STTB		= 7'h6C;
 parameter[6:0] JX2_CR_KRR		= 7'h6D;
+
+parameter[6:0] JX2_CR_TEAH		= 7'h73;
 
 parameter[6:0] JX2_CR_IMM		= 7'h7E;
 parameter[6:0] JX2_CR_ZZR		= 7'h7F;
@@ -481,6 +484,9 @@ parameter[79:0] UV80_FF			= { UV16_FF, UV64_FF };	//
 
 parameter[95:0] UV96_00			= { UV32_00, UV64_00 };	//
 parameter[95:0] UV96_FF			= { UV32_FF, UV64_FF };	//
+
+parameter[111:0] UV112_00		= { UV48_00, UV64_00 };	//
+parameter[111:0] UV112_FF		= { UV48_FF, UV64_FF };	//
 
 parameter[127:0] UV128_00		= { UV64_00, UV64_00 };	//
 parameter[127:0] UV128_FF		= { UV64_FF, UV64_FF };	//
