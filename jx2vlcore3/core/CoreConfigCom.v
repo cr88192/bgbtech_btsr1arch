@@ -1,6 +1,8 @@
 `define jx2_enable_mmu
 `define jx2_enable_fpu
 
+// `define jx2_mc_enable_fpu
+
 `define jx2_enable_mmu_acl		//Enable ACL Checks
 `define jx2_enable_ldekey		//Enable ACL Checks
 

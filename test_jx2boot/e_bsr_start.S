@@ -19,6 +19,8 @@
 .extern X(__bss_start)
 .extern X(_end)
 
+.fix32_on
+
 // start:
 _start:
 //	mov STACK_BASE, sp
@@ -31,11 +33,12 @@ _start:
 	mov r1, mmcr
 //	mov r1, sr
 
-	bsr tk_checksane_asm
-
 	cpuid #1
 	test #15, r0
 	bf _iscore2
+
+
+	bsr tk_checksane_asm
 
 	bsr copy_data
 
@@ -71,6 +74,9 @@ _iscore2:
 	nop
 	bra .L0
 
+.fix32_off
+
+
 #if 0
 	mov #999999, r2
 	.L0:
@@ -90,6 +96,9 @@ _iscore2:
 	jmp		r3
 #endif
 
+.fix32_on
+.align 16
+
 core2_isr_table:
 	bra8b _iscore2
 	bra8b _iscore2__isr
@@ -102,6 +111,8 @@ _iscore2__isr:
 	and		r7, r4, r6
 	cmpeq	0x80AA, r6
 	bt		_iscore2__isr_boot
+	cmpeq	0xB000, r6
+	bt		_iscore2__isr_boot
 	rte
 	nop
 _iscore2__isr_boot:
@@ -110,6 +121,8 @@ _iscore2__isr_boot:
 	test	r2, r2
 	bt		_iscore2
 	jmp		r2
+
+.fix32_off
 
 zero_bss:
 	mov __bss_start, r2

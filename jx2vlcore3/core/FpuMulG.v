@@ -17,6 +17,9 @@ ExOp(3):
 
  */
 
+`ifndef HAS_FPUMULG
+`define HAS_FPUMULG
+
 `include "CoreDefs.v"
 // `include "ExCsAdd90F.v"
 `include "ExCsAdd90C.v"
@@ -54,6 +57,7 @@ reg[63:0]		tRegValRoLo;
 reg[63:0]		tRegValRoHi;
 assign	regValRoLo	= tRegValRoLo;
 assign	regValRoHi	= tRegValRoHi;
+assign	regExOK		= 0;
 
 reg				tSgnA1;
 reg				tSgnB1;
@@ -340,3 +344,5 @@ begin
 end
 
 endmodule
+
+`endif

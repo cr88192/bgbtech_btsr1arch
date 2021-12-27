@@ -2989,8 +2989,10 @@ int BGBCC_JX2_EmitBAlign(BGBCC_JX2_Context *ctx, int al)
 
 			while(j>0)
 			{
-				BGBCC_JX2_EmitWordI(ctx, 0xF003);
-				BGBCC_JX2_EmitWordI(ctx, 0x3000);
+//				BGBCC_JX2_EmitWordI(ctx, 0xF003);
+//				BGBCC_JX2_EmitWordI(ctx, 0x3000);
+				BGBCC_JX2_EmitWordI(ctx, 0xF000);
+				BGBCC_JX2_EmitWordI(ctx, 0x3030);
 				j-=4;
 			}
 		}else

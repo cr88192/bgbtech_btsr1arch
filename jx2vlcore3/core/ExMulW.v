@@ -2,6 +2,9 @@
 MULx.W
  */
 
+`ifndef HAS_EXMULW
+`define HAS_EXMULW
+
 `ifndef def_true
 `include "ModDsp48.v"
 `endif
@@ -186,3 +189,5 @@ begin
 end
 
 endmodule
+
+`endif

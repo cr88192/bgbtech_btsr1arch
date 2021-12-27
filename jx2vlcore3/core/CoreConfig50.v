@@ -9,6 +9,8 @@
 
 // `define jx2_enable_dualcore			//Enable Second Core
 
+// `define jx2_enable_minicore			//Enable Second/Third Mini Core
+
 // `define jx2_agu_bra32				//Use 32-bit branches
 // `define jx2_agu_bra48				//Enable 48-bit branches
 
@@ -54,7 +56,7 @@
 `define jx2_mem_l1d_fwstore			//Store Forwarding
 `define jx2_mem_l1d_fwarray			//Block Array Forwarding
 
-`define jx2_mem_l1d_utlb			//Micro TLB
+// `define jx2_mem_l1d_utlb			//Micro TLB
 
 // `define jx2_mem_fulldpx				//Full Duplex Mode
 // `define jx2_mem_fulldpx_syncb	//Full Duplex, Sync L2 AddrB
@@ -70,6 +72,9 @@
 // `define jx2_mem_l1isz_256			//L1 I$ is 256 entries
 // `define jx2_mem_l1isz_128		//L1 I$ is 128 entries
 // `define jx2_mem_l1isz_64			//L1 I$ is 64 entries
+
+`define jx2_mem_l1mdsz_64			//L1 D$ is 64 entries
+`define jx2_mem_l1misz_64			//L1 I$ is 64 entries
 
 // `define jx2_expand_l2sz			//Make L2 Bigger
 

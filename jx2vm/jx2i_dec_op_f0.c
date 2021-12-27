@@ -2740,6 +2740,21 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				break;
 #endif
 
+			case 0x69:	/* 36z9 */
+				op->nmid=BJX2_NMID_WEXMD;
+				op->fmid=BJX2_FMID_IMM;
+				op->Run=BJX2_Op_WEXMD_Imm;
+				op->imm=op->rn;
+				ctx->v_wexmd=op->imm;
+				break;
+
+			case 0x6A:	/* 36zA */
+				op->nmid=BJX2_NMID_CPUID;
+				op->fmid=BJX2_FMID_IMM;
+				op->Run=BJX2_Op_CPUID_Imm;
+				op->imm=op->rn;
+				break;
+
 			case 0x6F:	/* 36zF */
 				op->nmid=BJX2_NMID_MOVT;
 				op->fmid=BJX2_FMID_REG;

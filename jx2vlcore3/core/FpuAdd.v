@@ -13,6 +13,9 @@ ExOp:
 	4: Ro=F2I(Rn)
 */
 
+`ifndef HAS_FPUADD
+`define HAS_FPUADD
+
 `include "CoreDefs.v"
 
 `include "ExCsAdd64C.v"
@@ -460,3 +463,5 @@ begin
 end
 
 endmodule
+
+`endif

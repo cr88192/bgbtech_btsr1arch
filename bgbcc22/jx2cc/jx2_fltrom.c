@@ -224,6 +224,7 @@ ccxl_status BGBCC_JX2C_FlattenImageROM(BGBCC_TransState *ctx,
 //		bgbcc_setu16en(ct+4, en, 0xD000|(va_strt>> 0)&255);
 //		bgbcc_setu16en(ct+6, en, 0x3200);
 
+#if 0
 		i=(va_strt-8)/2;
 //		bgbcc_setu16en(ct+0, en, 0xA000|(i>>20)&4095);
 //		bgbcc_setu16en(ct+2, en, 0x2600|(i>>12)& 255);
@@ -235,11 +236,38 @@ ccxl_status BGBCC_JX2C_FlattenImageROM(BGBCC_TransState *ctx,
 		bgbcc_setu16en(ct+4, en, 0x2600|((i>> 0)& 255));
 //		bgbcc_setu16en(ct+6, en, 0x3002);
 		bgbcc_setu16en(ct+6, en, 0x3100);
+#endif
+
+#if 1
+		i=(va_strt-4)/2;
+		bgbcc_setu16en(ct+0, en, 0xF000|((i>>12)& 255));
+		bgbcc_setu16en(ct+2, en, 0xC000|((i>> 0)&4095));
+		bgbcc_setu16en(ct+4, en, 0xF000);
+		bgbcc_setu16en(ct+6, en, 0x3030);
+#endif
+
 
 #if 1
 		ct+=8;
 		for(i=1; i<8; i++)
 		{
+#if 1
+			j=(va_isr[i]-((i+1)*8-4))/2;
+			bgbcc_setu16en(ct+0, en, 0xF000|((j>>12)& 255));
+			bgbcc_setu16en(ct+2, en, 0xC000|((j>> 0)&4095));
+			bgbcc_setu16en(ct+4, en, 0xF000);
+			bgbcc_setu16en(ct+6, en, 0x3030);
+#endif
+
+#if 0
+			j=(va_isr[i]-((i+1)*8))/2;
+			bgbcc_setu16en(ct+0, en, 0xF000);
+			bgbcc_setu16en(ct+2, en, 0x3000);
+			bgbcc_setu16en(ct+4, en, 0xF000|((j>>12)& 255));
+			bgbcc_setu16en(ct+6, en, 0xC000|((j>> 0)&4095));
+#endif
+
+#if 0
 			j=(va_isr[i]-((i+1)*8))/2;
 //			bgbcc_setu16en(ct+0, en, 0xA000|(j>>20)&4095);
 //			bgbcc_setu16en(ct+2, en, 0x2600|(j>>12)& 255);
@@ -250,6 +278,7 @@ ccxl_status BGBCC_JX2C_FlattenImageROM(BGBCC_TransState *ctx,
 			bgbcc_setu16en(ct+4, en, 0x2600|((j>> 0)& 255));
 //			bgbcc_setu16en(ct+6, en, 0x3002);
 			bgbcc_setu16en(ct+6, en, 0x3100);
+#endif
 
 			ct+=8;
 		}

@@ -49,6 +49,8 @@ X(tk_checksane_mem_asm):
 
 #ifndef JX2UC
 
+.ifarch bjx2_movx
+
 	.L0:
 
 	mov.x	(sp, 32), r16
@@ -84,6 +86,8 @@ X(tk_checksane_mem_asm):
 	break?f
 	cmpqeq	r7, r11
 	break?f
+
+.endif
 
 #endif
 

@@ -1220,6 +1220,11 @@ parameter[127:0] UVDDRT_FF		= UV128_FF;	//
 
 `endif
 
+`define reg_mvaddr			reg[47:0]
+`define wire_mvaddr			wire[47:0]
+`define input_mvaddr		input[47:0]
+`define output_mvaddr		output[47:0]
+
 `ifdef jx2_enable_l1addr96
 
 `define reg_l1addr			reg[95:0]
@@ -1243,6 +1248,15 @@ parameter[47:0] UVB1AT_00		= UV48_00;	//
 parameter[47:0] UVB1AT_FF		= UV48_FF;	//
 
 `endif
+
+`define reg_l1maddr			reg[47:0]
+`define wire_l1maddr		wire[47:0]
+`define input_l1maddr		input[47:0]
+`define output_l1maddr		output[47:0]
+
+parameter[47:0] UVB1MAT_XX		= UV48_XX;	//
+parameter[47:0] UVB1MAT_00		= UV48_00;	//
+parameter[47:0] UVB1MAT_FF		= UV48_FF;	//
 
 
 `ifdef jx2_enable_l2addr96

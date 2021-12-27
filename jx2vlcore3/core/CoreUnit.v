@@ -63,6 +63,10 @@ MMIO Space:
 
 `include "ExUnit.v"
 
+`ifdef jx2_enable_minicore
+`include "minicore/McExUnit.v"
+`endif
+
 `ifdef jx2_use_ringbus
 `include "ringbus/RbiMemL2A.v"
 `else
@@ -836,6 +840,50 @@ wire[95:0]		mem1AddrB;
 wire[95:0]		mem1AddrInA;
 wire[95:0]		mem1AddrInB;
 
+
+`wire_tile		mem3InData;
+`wire_tile		mem3OutData;
+`wire_l2addr	mem3Addr;
+wire[15:0]		mem3Opm;
+wire[1:0]		mem3OK;
+wire[127:0]		mem3BusExc;
+
+`wire_l2addr	mem3AddrIn;
+wire[15:0]		mem3OpmIn;
+wire[15:0]		mem3SeqOut;
+wire[15:0]		mem3SeqIn;
+wire[ 7:0]		mem3NodeId;
+assign			mem3NodeId = 8'h0C;
+
+wire[95:0]		mem3AddrA;
+wire[95:0]		mem3AddrB;
+wire[95:0]		mem3AddrInA;
+wire[95:0]		mem3AddrInB;
+
+
+wire[47:0]		dbg3OutPc;
+wire[95:0]		dbg3OutIstr;
+wire			dbg3ExHold1;
+wire			dbg3ExHold2;
+
+`wire_mvaddr	dbg3DcInAddr;
+wire[ 4:0]		dbg3DcInOpm;
+wire[63:0]		dbg3DcOutVal;
+wire[63:0]		dbg3DcInVal;
+wire[ 1:0]		dbg3DcOutOK;
+
+wire			dbg3OutStatus1;
+wire			dbg3OutStatus2;
+wire			dbg3OutStatus3;
+wire			dbg3OutStatus4;
+wire			dbg3OutStatus5;
+wire			dbg3OutStatus6;
+wire			dbg3OutStatus7;
+wire			dbg3OutStatus8;
+
+
+
+
 `ifdef jx2_enable_l2addr96
 assign	mem1Addr			= mem1AddrA;
 assign	mem1AddrInA			= mem1AddrIn;
@@ -906,10 +954,62 @@ ExUnit	cpu(
 
 `ifdef jx2_use_ringbus
 
+`ifdef jx2_enable_minicore
+
+`ifdef jx2_enable_l2addr96
+assign	mem3Addr			= mem3AddrA;
+assign	mem3AddrInA			= mem3AddrIn;
+assign	mem3AddrInB			= 0;
+`else
+assign	mem3Addr			= mem3AddrA[47:0];
+assign	mem3AddrInA			= { 48'hX, mem3AddrIn };
+assign	mem3AddrInB			= 0;
+`endif
+
+McExUnit	cpu_m1(
+	clock_cpu, 		reset2_cpu,
+	{ 4'h2, timers },
+
+	mem3AddrInA,	mem3AddrA,
+	mem3InData,		mem3OutData,
+	mem3OpmIn,		mem3Opm,
+	mem3SeqIn,		mem3SeqOut,
+	mem3NodeId,
+	
+	dbg3OutPc,		dbg3OutIstr,
+	dbg3ExHold1,	dbg3ExHold2,
+	
+	dbg3DcInAddr,	dbg3DcInOpm,
+	dbg3DcOutVal,	dbg3DcInVal,
+	dbg3DcOutOK,
+
+	dbg3OutStatus1,	dbg3OutStatus2,
+	dbg3OutStatus3,	dbg3OutStatus4,
+	dbg3OutStatus5,	dbg3OutStatus6,
+	dbg3OutStatus7,	dbg3OutStatus8
+	);
+
+assign	mem1InData	= memInData;
+assign	mem3InData	= mem1OutData;
+assign	memOutData	= mem3OutData;
+
+assign	mem1AddrIn	= memAddrIn;
+assign	mem3AddrIn	= mem1Addr;
+assign	memAddr		= mem3Addr;
+
+assign	mem1SeqIn	= memSeqIn;
+assign	mem3SeqIn	= mem1SeqOut;
+assign	memSeq		= mem3SeqOut;
+
+assign	mem1OpmIn	= memOpmIn;
+assign	mem3OpmIn	= mem1Opm;
+assign	memOpm		= mem3Opm;
+
+`else
+
 assign	mem1InData	= memInData;
 assign	memOutData	= mem1OutData;
 assign	mem1AddrIn	= memAddrIn;
-// assign	memAddr		= mem1AddrA;
 assign	memAddr		= mem1Addr;
 
 assign	mem1SeqIn	= memSeqIn;
@@ -917,8 +1017,11 @@ assign	memSeq		= mem1SeqOut;
 
 assign	mem1OpmIn	= memOpmIn;
 assign	memOpm		= mem1Opm;
-assign	mem1OK		= 0;
 
+`endif
+
+
+assign	mem1OK		= 0;
 assign	mem1BusExc	= 0;
 
 `else

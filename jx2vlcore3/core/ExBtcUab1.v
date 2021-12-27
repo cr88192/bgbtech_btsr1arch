@@ -1,3 +1,6 @@
+`ifndef HAS_EXBTCUAB1
+`define HAS_EXBTCUAB1
+
 `include "ExBtcUabUf8.v"
 
 module ExBtcUab1(
@@ -174,3 +177,5 @@ begin
 	tUfE3		<= tIdxI2[1] ? tUfE2B : (~tUfE2B);
 end
 endmodule
+
+`endif

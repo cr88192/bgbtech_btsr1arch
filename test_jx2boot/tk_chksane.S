@@ -184,6 +184,24 @@ X(tk_checksane_asm):
 	break?f
 	nop
 
+	cmp/ge #0, r12
+	break?f
+	nop
+
+	cmp/gt #0, r12
+	break?t
+	nop
+
+	cmp/ge #0, r12
+	neg?f	r12, r12
+	break?f
+	nop
+
+	cmp/gt #0, r12
+	neg?f	r12, r12
+	break?t
+	nop
+
 	.L0A6:
 	tst		r12, r12
 //	nop
@@ -759,7 +777,8 @@ X(tk_checksane_asm):
 	bf _checksane_fail_alu3
 	cmpq/eq #0xCDEF, r7
 	bf _checksane_fail_alu3
-	
+
+.ifnarch bjx2_fix32
 	mov .L7_1, r1
 	mov	r1, lr
 	mov .L6, r6
@@ -788,6 +807,7 @@ X(tk_checksane_asm):
 	break
 	break
 	.L7_2:
+.endif
 
 //	bsr tk_checksane_mem_asm
 
@@ -961,10 +981,14 @@ X(tk_checksane_asm):
 	mov		#0x12345678, r4
 	mov		#0x5678ABCD, r5
 	mov		#0x123456789ABCDEF0, r6
+.ifnarch bjx2_fix32
 	jldi	#0x123456789ABCDEF0, r7
+.endif
 //	break
 	mov.l tk_checksane_const, r8
 	mov.l tk_checksane_const2, r9
+
+//	break
 
 	.L9_0:
 
@@ -988,9 +1012,11 @@ X(tk_checksane_asm):
 
 	.L9_3:
 
+.ifnarch bjx2_fix32
 	cmpqeq r6, r7
 //	bf _checksane_fail_alu4
 	break?f
+.endif
 
 	bsr X(tk_checksane_mem_asm)
 
@@ -998,10 +1024,16 @@ X(tk_checksane_asm):
 
 	bsr X(tk_checksane_gfp_asm)
 
+.ifnarch bjx2_fix32
+
 	bsr X(tk_checksane_wex_asm)
 
 .ifarch has_xgpr
 	bsr X(tk_checksane_xgpr_asm)
+.endif
+
+//	bsr X(tk_checksane_rvi_asm)
+
 .endif
 
 	bsr X(tk_checksane_rvi_asm)

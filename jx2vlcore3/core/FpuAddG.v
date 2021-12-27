@@ -27,6 +27,9 @@ ExOp(3): LD
 	1: Long Double
 */
 
+`ifndef HAS_FPUADDG
+`define HAS_FPUADDG
+
 `include "CoreDefs.v"
 
 `include "ExCsAdd90C.v"
@@ -482,3 +485,5 @@ begin
 end
 
 endmodule
+
+`endif

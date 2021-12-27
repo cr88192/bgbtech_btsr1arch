@@ -1,3 +1,6 @@
+`ifndef HAS_EXCPUID
+`define HAS_EXCPUID
+
 module ExCpuId(
 	/* verilator lint_off UNUSED */
 	clock,	reset,
@@ -299,3 +302,5 @@ begin
 end
 
 endmodule
+
+`endif

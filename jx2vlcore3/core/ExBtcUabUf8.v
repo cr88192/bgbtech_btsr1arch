@@ -1,3 +1,6 @@
+`ifndef HAS_EXBTCUABUF8
+`define HAS_EXBTCUABUF8
+
 module ExBtcUabUf8(
 	clock,	reset,
 	valI,	valO);
@@ -28,3 +31,5 @@ begin
 end
 
 endmodule
+
+`endif

@@ -1,0 +1,8 @@
+MiniCore will be a smaller version of a BJX2 core implementing the Fix32 subset.
+It is intended to be used alongside a bigger core.
+
+Features:
+* Will use the Ringbus
+* Single Wide, Scalar Core (no WEX)
+* Will have TLB with a 48 bit address space.
+* FPU is Optional.

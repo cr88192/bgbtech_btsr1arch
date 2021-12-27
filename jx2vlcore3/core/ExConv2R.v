@@ -4,6 +4,9 @@ Do Simple MOV+Conv style operation.
 
  */
 
+`ifndef HAS_EXCONV2R
+`define HAS_EXCONV2R
+
 // `include "ExOpClz.v"
 
 `ifndef jx2_do_convfp16_alu
@@ -505,3 +508,5 @@ begin
 end
 
 endmodule
+
+`endif

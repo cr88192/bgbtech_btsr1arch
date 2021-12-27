@@ -6,6 +6,47 @@
  * RQn: The full 64 bit register is used.
  */
 
+static int bgbcc_rvi_remapbasetab[32] = {
+	 5,  1,  6,  7,  10, 11, 12, 13, 
+	20, 21, 22, 23,  18, 19,  8,  2,
+	28, 29, 30, 31,  14, 15, 16, 17,
+	 0,  0,  0,  9,  24, 25, 26, 27
+};
+
+static int bgbcc_rvi_remap_jx2rv[2048];
+static int bgbcc_rvi_remap_rv2jx[2048];
+static int bgbcc_rvi_remap_init=0;
+
+int BGBCC_JX2C_InitRemaps(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx)
+{
+	int i, j, k;
+
+	if(bgbcc_rvi_remap_init)
+		return(0);
+	bgbcc_rvi_remap_init=1;
+	
+	for(i=0; i<2048; i++)
+	{
+		bgbcc_rvi_remap_jx2rv[i]=0;
+		bgbcc_rvi_remap_rv2jx[i]=0;
+	}
+}
+
+
+
+int BGBCC_JX2C_RemapRegJx2Rv(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	int reg)
+{
+	int reg1;
+	
+	reg1=reg;
+	return(reg1);
+}
+
 int BGBCC_JX2C_ScratchCheckRegFree(
 	BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx,

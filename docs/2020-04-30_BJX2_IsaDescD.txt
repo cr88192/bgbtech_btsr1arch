@@ -674,6 +674,52 @@ Passing -2 to INVDC will trigger an L2 Flush. Note that getting something writte
 
 The INVTLB instruction will flush the TLB. This would be done as part of changing the active page tables.
 
+=== JCMPxx ===
+
+* F1zz_Czzz
+** F1nm_Cpdd ? JTSTT	Rm, Rn, disp8s	//(JCMP)
+** F1nm_CPdd ? JTSTQT	Rm, Rn, disp8s	//(JCMP)
+** F1nm_Cqdd ? JTSTF	Rm, Rn, disp8s	//(JCMP)
+** F1nm_CQdd ? JTSTQF	Rm, Rn, disp8s	//(JCMP)
+* F1zz_Dzzz
+** F1nm_Dpdd ? JCMPGT	Rm, Rn, disp8s	//(JCMP)
+** F1nm_DPdd ? JCMPQGT	Rm, Rn, disp8s	//(JCMP)
+** F1nm_Dqdd ? JCMPLE	Rm, Rn, disp8s	//(JCMP)
+** F1nm_DQdd ? JCMPQLE	Rm, Rn, disp8s	//(JCMP)
+* F1zz_Ezzz
+** F1nm_Epdd ? JCMPHI	Rm, Rn, disp8s	//(JCMP)
+** F1nm_EPdd ? JCMPQHI	Rm, Rn, disp8s	//(JCMP)
+** F1nm_Eqdd ? JCMPLS	Rm, Rn, disp8s	//(JCMP)
+** F1nm_EQdd ? JCMPQLS	Rm, Rn, disp8s	//(JCMP)
+* F1zz_Fzzz
+** F1nm_Fpdd ? JCMPEQ	Rm, Rn, disp8s	//(JCMP)
+** F1nm_FPdd ? JCMPQEQ	Rm, Rn, disp8s	//(JCMP)
+** F1nm_Fqdd ? JCMPNE	Rm, Rn, disp8s	//(JCMP)
+** F1nm_FQdd ? JCMPQNE	Rm, Rn, disp8s	//(JCMP)
+
+Compare (Rn op Rm) and branch based on the result.
+This operation will only be present if JCMP is present.
+
+
+=== JCMPZxx ===
+
+* F2n6_Dfjj  JCMPZ{Q}xx		Rn, Disp8s	//(JCMP)
+* F2n7_Dfjj  JCMPZ{Q}xx		Rn, Disp8s	//(JCMP)
+
+Compare (Rn op 0) and branch based on the result.
+
+The (Rm(0),Em,Ei) bits will encode the operator:
+* 000: EQ (Rn==0)
+* 001: NE (Rn!=0)
+* 010: LE (Rn<=0), Signed
+* 011: GT (Rn> 0), Signed
+* 100: LT (Rn< 0), Signed
+* 101: GE (Rn>=0), Signed
+* 110: -
+* 111: -
+
+This operation will only be present if JCMP is present.
+
 
 === LDACL ===
 

@@ -19,6 +19,10 @@ NoRwx:
     0=NR (No Read)
 
  */
+ 
+`ifndef HAS_RBIMMUCHKACC
+`define HAS_RBIMMUCHKACC
+
 module RbiMmuChkAcc(
 	clock, reset,
 	regInHold,
@@ -345,3 +349,5 @@ begin
 end
 
 endmodule
+
+`endif

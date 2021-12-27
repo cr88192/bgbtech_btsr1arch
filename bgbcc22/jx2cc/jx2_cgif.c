@@ -506,7 +506,7 @@ int BGBCC_JX2C_TypeGetRegClassP(BGBCC_TransState *ctx, ccxl_type ty)
 
 	if(ty.val<0)
 	{
-		__debugbreak();
+		{ BGBCC_DBGBREAK }
 	}
 
 //	if(ty.val<65536)
@@ -571,7 +571,7 @@ int BGBCC_JX2C_TypeGetRegClassPI(BGBCC_TransState *ctx, ccxl_type ty)
 			if(ctx->arch_sizeof_ptr==8)
 				return(BGBCC_SH_REGCLS_QGR);
 			
-//			__debugbreak();
+//			{ BGBCC_DBGBREAK }
 			return(BGBCC_SH_REGCLS_GR);
 		}
 	}
@@ -1179,6 +1179,9 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 	sctx->sreg_live=sctx->sreg_held;
 	sctx->sfreg_live=sctx->sfreg_held;
 	BGBCC_JX2_EmitCheckFlushIndexImm(sctx);
+
+	if(sctx->is_fixed32 && !BGBCC_JX2_CheckPadAlign32(sctx))
+		{ BGBCC_DBGBREAK }
 
 	switch(op->opn)
 	{
@@ -2126,7 +2129,7 @@ ccxl_status BGBCC_JX2C_BuildFunction(BGBCC_TransState *ctx,
 		sctx->dfl_dq=2;
 	}
 
-//	__debugbreak();
+//	{ BGBCC_DBGBREAK }
 
 //	for(np=0; np<6; np++)
 	for(np=0; np<4; np++)
@@ -4163,7 +4166,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 						ctx->fnidx_str[b1>>16], (u16)b1);
 				}
 			}
-//			__debugbreak();
+//			{ BGBCC_DBGBREAK }
 			continue;
 		}
 
@@ -4177,18 +4180,18 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			val=sctx->sec_lva[sctx->lbl_sec[j]]+sctx->lbl_ofs[j];
 
 			if((ctl<=imgbase) || (ctl>(imgbase+0x1000000)))
-				__debugbreak();
+				{ BGBCC_DBGBREAK }
 			if(
 //					(sctx->lbl_ofs[j]<0) ||
 					(sctx->lbl_ofs[j] > sctx->sec_lsz[sctx->lbl_sec[j]]))
-				__debugbreak();
+				{ BGBCC_DBGBREAK }
 		}
 
 		ctr=imgbase+sctx->sec_rva[sctx->rlc_sec[i]]+sctx->rlc_ofs[i];
 		var=sctx->sec_lva[sctx->rlc_sec[i]]+sctx->rlc_ofs[i];
 
 		if((ctr<=imgbase) || (ctr>(imgbase+0x1000000)))
-			__debugbreak();
+			{ BGBCC_DBGBREAK }
 
 //		d=ctl-ctr;
 		d=val-var;
@@ -4212,14 +4215,14 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			b=bgbcc_gets8en(ctr, en);
 			d1=b+(d-1);
 			if(((sbyte)d1)!=d1)
-				__debugbreak();
+				{ BGBCC_DBGBREAK }
 			bgbcc_sets8en(ctr, en, d1);
 			break;
 		case BGBCC_SH_RLC_REL16:
 			b=bgbcc_gets16en(ctr, en);
 			d1=b+(d-2);
 			if(((s16)d1)!=d1)
-				__debugbreak();
+				{ BGBCC_DBGBREAK }
 			bgbcc_sets16en(ctr, en, d1);
 			break;
 		case BGBCC_SH_RLC_REL32:
@@ -4265,7 +4268,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 //			d1=b1+(d-4);
 			d1=b1+((d-4)>>1);
 			if((((s32)(d1<<20))>>20)!=d1)
-				__debugbreak();
+				{ BGBCC_DBGBREAK }
 			bgbcc_jx2cc_setu16en(ctr, en, (b&0xF000)|(d1&0x0FFF));
 			break;
 		case BGBCC_SH_RLC_RELW8:
@@ -4274,7 +4277,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 //			d1=b1+(d-4);
 			d1=b1+((d-4)>>1);
 			if((((s32)(d1<<24))>>24)!=d1)
-				__debugbreak();
+				{ BGBCC_DBGBREAK }
 			bgbcc_jx2cc_setu16en(ctr, en, (b&0xFF00)|(d1&0x00FF));
 			break;
 		case BGBCC_SH_RLC_RELW12L:
@@ -4284,7 +4287,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			d1=b1+((d-2)>>2);
 //			if(((d1<<20)>>20)!=d1)
 			if((d1&4095)!=d1)
-				__debugbreak();
+				{ BGBCC_DBGBREAK }
 			bgbcc_jx2cc_setu16en(ctr, en, (b&0xF000)|(d1&0x0FFF));
 			break;
 		case BGBCC_SH_RLC_RELW8L:
@@ -4294,7 +4297,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			d1=b1+((d-2)>>2);
 //			if(((d1<<24)>>24)!=d1)
 			if((d1&255)!=d1)
-				__debugbreak();
+				{ BGBCC_DBGBREAK }
 			bgbcc_jx2cc_setu16en(ctr, en, (b&0xFF00)|(d1&0x00FF));
 			break;
 
@@ -4308,7 +4311,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 
 			d1=b1+((d-4)>>1);
 			if((((s32)(d1<<16))>>16)!=d1)
-				__debugbreak();
+				{ BGBCC_DBGBREAK }
 				
 			if(((((s32)(d1<<24))>>24)==d1) &&
 				((w1&0xFF00)!=0x8300))
@@ -4331,10 +4334,13 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 
 			d1=b1+((d-4)>>1);
 			if((((s32)(d1<<12))>>12)!=d1)
-				__debugbreak();
+				{ BGBCC_DBGBREAK }
 
 			if((((s32)(d1<<24))>>24)==d1)
 				sctx->stat_ovlbl8++;
+			
+			if((d1&1) && sctx->is_fixed32)
+				{ BGBCC_DBGBREAK }
 
 			w0=(w0&0xFF00)|((d1>>12)&0x00FF);
 			w1=(w1&0xF000)|((d1    )&0x0FFF);
@@ -4355,12 +4361,12 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			if((w0&0xFE00)==0xFA00)
 			{
 				if((((s32)(d1<<7))>>7)!=d1)
-					__debugbreak();
+					{ BGBCC_DBGBREAK }
 				w0=(w0&0xFE00)|((d1>>16)&0x01FF);
 			}else
 			{
 				if((((s32)(d1<<8))>>8)!=d1)
-					__debugbreak();
+					{ BGBCC_DBGBREAK }
 				w0=(w0&0xFF00)|((d1>>16)&0x00FF);
 			}
 			w1=d1&0xFFFF;
@@ -4380,16 +4386,16 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			if((w0&0xFE00)==0xFA00)
 			{
 				if((((s32)(d1<<7))>>7)!=d1)
-					__debugbreak();
+					{ BGBCC_DBGBREAK }
 				w0=(w0&0xFE00)|((d1>>16)&0x01FF);
 			}else
 			{
 				if((((s32)(d1<<8))>>8)!=d1)
-					__debugbreak();
+					{ BGBCC_DBGBREAK }
 				w0=(w0&0xFF00)|((d1>>16)&0x00FF);
 			}
 //			if((((s32)(d1<<8))>>8)!=d1)
-//				__debugbreak();
+//				{ BGBCC_DBGBREAK }
 //			w0=(w0&0xFF00)|((d1>>16)&0x00FF);
 			w1=d1&0xFFFF;
 			bgbcc_jx2cc_setu16en(ctr+0, en, w0);
@@ -4409,12 +4415,12 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			if((w0&0xFE00)==0xFA00)
 			{
 				if((((s32)(d1<<7))>>7)!=d1)
-					__debugbreak();
+					{ BGBCC_DBGBREAK }
 				w0=(w0&0xFE00)|((d1>>16)&0x01FF);
 			}else
 			{
 				if((((s32)(d1<<8))>>8)!=d1)
-					__debugbreak();
+					{ BGBCC_DBGBREAK }
 				w0=(w0&0xFF00)|((d1>>16)&0x00FF);
 			}
 			w1=d1&0xFFFF;
@@ -4433,7 +4439,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 
 			d1=b1+(d-3);
 			if((((s32)(d1<<20))>>20)!=d1)
-				__debugbreak();
+				{ BGBCC_DBGBREAK }
 				
 //			if(((((s32)(d1<<24))>>24)==d1) &&
 //				((w1&0xFF00)!=0x8300))
@@ -4655,7 +4661,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			{
 				BGBCC_CCXL_Error(ctx, "Symbol Out of Range\n");
 				break;
-//				__debugbreak();
+//				{ BGBCC_DBGBREAK }
 			}
 			if((w0&0xFE00)==0x2400)
 				w0=(w0&0xFE00)|(d1&0x01FF);
@@ -4673,7 +4679,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			{
 				BGBCC_CCXL_Error(ctx, "Symbol Out of Range\n");
 				break;
-//				__debugbreak();
+//				{ BGBCC_DBGBREAK }
 			}
 			bgbcc_jx2cc_setu16en(ctr, en, (b&0xF000)|(d1&0x0FFF));
 			break;
@@ -4685,7 +4691,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			b1=((s32)(b<<16))>>16;
 			d1=b1+((d-4)>>1);
 //			if((((s32)(d1<<16))>>16)!=d1)
-//				__debugbreak();
+//				{ BGBCC_DBGBREAK }
 			if((((s32)(d1<<24))>>24)==d1)
 					sctx->stat_ovlbl8++;
 			if((w0&0xFE00)==0x2400)
@@ -4694,7 +4700,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 				{
 					BGBCC_CCXL_Error(ctx, "Symbol Out of Range\n");
 					break;
-//					__debugbreak();
+//					{ BGBCC_DBGBREAK }
 				}
 				w0=(w0&0xFE00)|((d1>>8)&0x01FF);
 				w1=(w1&0xFF00)|((d1   )&0x00FF);
@@ -4702,7 +4708,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			else if((w1&0xFE00)==0x2400)
 			{
 				if((((s32)(d1<<15))>>15)!=d1)
-					__debugbreak();
+					{ BGBCC_DBGBREAK }
 				w0=(w0&0xFF00)|((d1>>8)&0x00FF);
 				w1=(w1&0xFE00)|((d1   )&0x00FF)|
 					((d1>>16)&0x0100);
@@ -4710,7 +4716,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			else
 			{
 				if((((s32)(d1<<16))>>16)!=d1)
-					__debugbreak();
+					{ BGBCC_DBGBREAK }
 				w0=(w0&0xFF00)|((d1>>8)&0x00FF);
 				w1=(w1&0xFF00)|((d1   )&0x00FF);
 			}
@@ -4726,14 +4732,14 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			b1=((s32)(b<<16))>>16;
 			d1=b1+(d-4);
 //			if((((s32)(d1<<16))>>16)!=d1)
-//				__debugbreak();
+//				{ BGBCC_DBGBREAK }
 			if((w0&0xFE00)==0x2400)
 			{
 				if((((s32)(d1<<15))>>15)!=d1)
 				{
 					BGBCC_CCXL_Error(ctx, "Symbol Out of Range\n");
 					break;
-//					__debugbreak();
+//					{ BGBCC_DBGBREAK }
 				}
 				w0=(w0&0xFE00)|((d1>>8)&0x01FF);
 				w1=(w1&0xFF00)|((d1   )&0x00FF);
@@ -4742,7 +4748,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 				if((w1&0xFE00)==0x2400)
 			{
 				if((((s32)(d1<<15))>>15)!=d1)
-					__debugbreak();
+					{ BGBCC_DBGBREAK }
 				w0=(w0&0xFF00)|((d1>>8)&0x00FF);
 				w1=(w1&0xFE00)|((d1   )&0x00FF)|
 					((d1>>16)&0x0100);
@@ -4753,7 +4759,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 				{
 					BGBCC_CCXL_Error(ctx, "Symbol Out of Range\n");
 					break;
-//					__debugbreak();
+//					{ BGBCC_DBGBREAK }
 				}
 				w0=(w0&0xFF00)|((d1>>8)&0x00FF);
 				w1=(w1&0xFF00)|((d1   )&0x00FF);
@@ -4773,7 +4779,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			{
 				BGBCC_CCXL_Error(ctx, "Symbol Out of Range\n");
 				break;
-//				__debugbreak();
+//				{ BGBCC_DBGBREAK }
 			}
 			if((((s32)(d1<<24))>>24)==d1)
 					sctx->stat_ovlbl8++;
@@ -4796,7 +4802,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			{
 				BGBCC_CCXL_Error(ctx, "Symbol Out of Range\n");
 				break;
-//				__debugbreak();
+//				{ BGBCC_DBGBREAK }
 			}
 			if((((s32)(d1<<24))>>24)==d1)
 					sctx->stat_ovlbl8++;
@@ -4817,7 +4823,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			{
 				BGBCC_CCXL_Error(ctx, "Symbol Out of Range\n");
 				break;
-//				__debugbreak();
+//				{ BGBCC_DBGBREAK }
 			}
 			if((((s32)(d1<<24))>>24)==d1)
 					sctx->stat_ovlbl8++;
@@ -4844,7 +4850,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			{
 				BGBCC_CCXL_Error(ctx, "Symbol Out of Range\n");
 				break;
-//				__debugbreak();
+//				{ BGBCC_DBGBREAK }
 			}
 			if((w0&0xFE00)==0x2400)
 				w0=(w0&0xFE00)|((d1>>16)&0x01FF);
@@ -4866,7 +4872,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			b1=(s32)b;
 			d1=b1+(d-8);
 			if(((s32)d1)!=d1)
-				__debugbreak();
+				{ BGBCC_DBGBREAK }
 			if((w0&0xFE00)==0x2400)
 				w0=(w0&0xFE00)|((d1>>32)&0x01FF);
 			else
@@ -4889,7 +4895,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			b1=((s32)(b<<8))>>8;
 			d1=b1+((d-6)>>1);
 			if((((s32)(d1<<8))>>8)!=d1)
-				__debugbreak();
+				{ BGBCC_DBGBREAK }
 			if((((s32)(d1<<24))>>24)==d1)
 					sctx->stat_ovlbl8++;
 			w0=(w0&0xE000)|((d1>>12)&0x1FFF);
@@ -4909,7 +4915,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			b1=(s32)b;
 			d1=b1+((d-8)>>1);
 //			if((((s32)(d1<<8))>>8)!=d1)
-//				__debugbreak();
+//				{ BGBCC_DBGBREAK }
 			if((((s32)(d1<<24))>>24)==d1)
 					sctx->stat_ovlbl8++;
 			w0=(w0&0xE000)|((d1>>20)&0x1FFF);
@@ -4930,7 +4936,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			b1=((s32)(b<<8))>>8;
 			d1=b1+(d-6);
 			if((((s32)(d1<<8))>>8)!=d1)
-				__debugbreak();
+				{ BGBCC_DBGBREAK }
 			if((((s32)(d1<<24))>>24)==d1)
 					sctx->stat_ovlbl8++;
 			w0=(w0&0xE000)|((d1>>12)&0x1FFF);
@@ -4950,7 +4956,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			b1=(s32)b;
 			d1=b1+(d-8);
 //			if((((s32)(d1<<8))>>8)!=d1)
-//				__debugbreak();
+//				{ BGBCC_DBGBREAK }
 			if((((s32)(d1<<24))>>24)==d1)
 					sctx->stat_ovlbl8++;
 			w0=(w0&0xE000)|((d1>>20)&0x1FFF);
@@ -4971,7 +4977,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			b1=val;
 			d1=b+b1;
 			if((d1&0xFFFF)!=d1)
-				__debugbreak();
+				{ BGBCC_DBGBREAK }
 			w0=(w0&0xFF00)|((d1>>8)&0x00FF);
 			w1=(w1&0xFF00)|((d1   )&0x00FF);
 			bgbcc_jx2cc_setu16en(ctr+0, en, w0);
@@ -4987,7 +4993,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			b1=val;
 			d1=b+b1;
 			if((d1&0xFFFFFF)!=d1)
-				__debugbreak();
+				{ BGBCC_DBGBREAK }
 			w0=(w0&0xFF00)|((d1>>16)&0x00FF);
 			w1=(w1&0xFF00)|((d1>> 8)&0x00FF);
 			w2=(w2&0xFF00)|((d1    )&0x00FF);
@@ -5023,7 +5029,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			b1=val;
 			d1=b+b1;
 			if((d1&0xFFFF)!=d1)
-				__debugbreak();
+				{ BGBCC_DBGBREAK }
 			w0=(w0&0xF000)|((d1>>4)&0x0FFF);
 			w1=(w1&0xFFF0)|((d1   )&0x000F);
 			bgbcc_jx2cc_setu16en(ctr+0, en, w0);
@@ -5038,7 +5044,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			b1=val;
 			d1=b+b1;
 			if((d1&0xFFFFFF)!=d1)
-				__debugbreak();
+				{ BGBCC_DBGBREAK }
 			w0=(w0&0xF000)|((d1>>12)&0x0FFF);
 			w1=(w1&0xFF00)|((d1>> 4)&0x00FF);
 			w2=(w2&0xFFF0)|((d1    )&0x000F);
@@ -5056,7 +5062,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			b1=val;
 			d1=b+b1;
 //			if((d1&0xFFFFFF)!=d1)
-//				__debugbreak();
+//				{ BGBCC_DBGBREAK }
 			w0=(w0&0xF000)|((d1>>20)&0x0FFF);
 			w1=(w1&0xFF00)|((d1>>12)&0x00FF);
 			w2=(w2&0xFF00)|((d1>> 4)&0x00FF);
@@ -5112,7 +5118,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 //			d1=b1+((d-4)>>1);
 			d1=b1+(d-4);
 			if((((s32)(d1<<12))>>12)!=d1)
-				__debugbreak();
+				{ BGBCC_DBGBREAK }
 
 //			if((((s32)(d1<<24))>>24)==d1)
 //				sctx->stat_ovlbl8++;
@@ -5141,7 +5147,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 
 			d1=b1+(d-4);
 			if((((s32)(d1<<19))>>19)!=d1)
-				__debugbreak();
+				{ BGBCC_DBGBREAK }
 
 			w0=	(w0&0xF07F) |
 				((d1<< 7)&0x0F00) |
@@ -5158,7 +5164,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			BGBCC_CCXL_StubError(ctx);
 //			BGBCC_DBGBREAK
 			break;
-//			__debugbreak();
+//			{ BGBCC_DBGBREAK }
 		}
 	}
 	

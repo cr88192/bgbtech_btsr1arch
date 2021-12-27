@@ -1,3 +1,5 @@
+`ifndef HAS_FPUMUL
+`define HAS_FPUMUL
 
 `include "CoreDefs.v"
 `include "ExCsAdd64F.v"
@@ -310,3 +312,5 @@ begin
 end
 
 endmodule
+
+`endif

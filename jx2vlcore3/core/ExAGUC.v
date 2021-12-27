@@ -10,6 +10,9 @@ idUIxt:
 
  */
 
+`ifndef HAS_EXAGUC
+`define HAS_EXAGUC
+
 module ExAGUC(
 	regValRm,
 	regValRi,
@@ -145,3 +148,5 @@ begin
 end
 
 endmodule
+
+`endif

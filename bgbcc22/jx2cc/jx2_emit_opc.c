@@ -206,13 +206,13 @@ int BGBCC_JX2_TryEmitOpReg(BGBCC_JX2_Context *ctx, int nmid, int reg)
 		opw1=0x320C|((reg&15)<<4)|((reg&16)<<7); break;
 
 	case BGBCC_SH_NMID_INVIC:
-		if(ctx->is_fixed32 || ctx->op_is_wex2)
-			break;
+//		if(ctx->is_fixed32 || ctx->op_is_wex2)
+//			break;
 		if(!BGBCC_JX2_EmitCheckRegExtGPR(ctx, reg))	break;
 		opw1=0x310C|((reg&15)<<4)|((reg&16)<<7); break;
 	case BGBCC_SH_NMID_INVDC:
-		if(ctx->is_fixed32 || ctx->op_is_wex2)
-			break;
+//		if(ctx->is_fixed32 || ctx->op_is_wex2)
+//			break;
 		if(!BGBCC_JX2_EmitCheckRegExtGPR(ctx, reg))	break;
 		opw1=0x310D|((reg&15)<<4)|((reg&16)<<7); break;
 

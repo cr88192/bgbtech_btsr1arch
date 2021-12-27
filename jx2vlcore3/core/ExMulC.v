@@ -1,3 +1,6 @@
+`ifndef HAS_EXMULC
+`define HAS_EXMULC
+
 `include "ExCsAdd64F.v"
 
 `ifdef jx2_enable_btcuab1
@@ -228,3 +231,5 @@ begin
 end
 
 endmodule
+
+`endif

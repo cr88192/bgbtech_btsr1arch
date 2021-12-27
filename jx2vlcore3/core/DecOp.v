@@ -44,8 +44,8 @@ input[63:0]		istrWordL;	//Last Instruction Words
 `output_gpr		idRegO;
 output[32:0]	idImm;
 output[32:0]	idImmB;
-output[7:0]		idUCmd;
-output[7:0]		idUIxt;
+output[8:0]		idUCmd;
+output[8:0]		idUIxt;
 
 
 `reg_gpr		opRegN;
@@ -180,6 +180,21 @@ begin
 `endif
 
 	casez(istrWord[15:10])
+`ifdef def_true
+		6'b1110zz: begin	//E0..EF
+			opIsFx = 1;		opIsFz = 1;
+			opIsFC = 0;		opIsDz = 1;
+			opIsDf = istrWord[10];
+		end
+
+		6'b1111zz: begin	//F0..FF
+			opIsFx = 1;		opIsFz = 1;
+			opIsFC = 0;		opIsDz = 0;
+			opIsDf = istrWord[10];
+		end
+`endif
+
+`ifndef def_true
 		6'b11100z: begin	//E0..E7
 			opIsFx = 1;		opIsFz = 1;
 			opIsFC = 0;		opIsDz = 1;
@@ -215,6 +230,7 @@ begin
 //			opIsDf = 0;
 			opIsDf = istrWord[9];
 		end
+`endif
 
 		default: begin
 			opIsFx = 0;		opIsFz = 0;
@@ -272,11 +288,11 @@ begin
 	
 	if(opIsDz)
 	begin
-//		opUIxt[7:6]=opIsDf?JX2_IXC_CF:JX2_IXC_CT;
-		opUCmd[7:6]=opIsDf?JX2_IXC_CF:JX2_IXC_CT;
+//		opUIxt[8:6]=opIsDf?JX2_IXC_CF:JX2_IXC_CT;
+		opUCmd[8:6]=opIsDf?JX2_IXC_CF:JX2_IXC_CT;
 	end
 
-	if(opUIxt[7:6]==JX2_IUC_WX)
+	if(opUIxt[8:6]==JX2_IUC_WX)
 	begin
 		$display("DecOp: WX_Bad %X-%X-%X",
 			istrWord[15:0], istrWord[31:16], istrWord[47:32]);

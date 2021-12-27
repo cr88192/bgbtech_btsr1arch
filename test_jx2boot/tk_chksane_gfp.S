@@ -194,7 +194,10 @@ X(tk_checksane_gfp_asm):
 	.A1_7:
 	break?f
 
+
 #if 1
+
+.ifarch bjx2_fmovs
 	fmov.s	r21, (sp)
 	fmov.s	r21, (sp, 4)
 
@@ -206,9 +209,13 @@ X(tk_checksane_gfp_asm):
 
 	cmpqeq r9, r21
 	break?f
+.endif
+
 #endif
 
 #if 1
+
+.ifarch bjx2_fmovs
 	mov		3, r2
 
 	fmov.s	r23, (sp, r2)
@@ -218,7 +225,10 @@ X(tk_checksane_gfp_asm):
 	break?f
 	
 //	break
+.endif
+
 #endif
+
 
 #if 1
 	fldci r22, r8

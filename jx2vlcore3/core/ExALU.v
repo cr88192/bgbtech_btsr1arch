@@ -931,6 +931,8 @@ begin
 	case(idUIxt[3:0])
 		4'h0: tRegOutJcmpT = tSub2ZF;				/* EQ */
 		4'h1: tRegOutJcmpT = !tSub2ZF;				/* NE */
+		4'h2: tRegOutJcmpT = tSub2ZF || (tSub2SF^tSub2VF); /* LE */
+		4'h3: tRegOutJcmpT = !tSub2ZF && !(tSub2SF^tSub2VF); /* GT */
 		4'h4: tRegOutJcmpT = (tSub2SF^tSub2VF);		/* LT */
 		4'h5: tRegOutJcmpT = !(tSub2SF^tSub2VF);	/* GE */
 		4'h6: tRegOutJcmpT = !tSub2CF;				/* B  */

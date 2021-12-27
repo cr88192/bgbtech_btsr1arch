@@ -3201,6 +3201,8 @@ u32 BGBCC_JX2C_CalculateImagePel4Checksum(byte *buf, int size, int en);
 u32 BGBCC_JX2C_CalculateImagePel4BChecksum(byte *buf, int size, int en);
 ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,byte *obuf, int *rosz, fourcc imgfmt);
 //AHSRC:jx2cc/jx2_register.c
+int BGBCC_JX2C_InitRemaps(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
+int BGBCC_JX2C_RemapRegJx2Rv(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
 int BGBCC_JX2C_ScratchCheckRegFree(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
 int BGBCC_JX2C_ScratchSafeStompReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
 int BGBCC_JX2C_ScratchStompReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);

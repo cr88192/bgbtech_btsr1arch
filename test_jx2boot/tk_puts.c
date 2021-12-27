@@ -258,6 +258,8 @@ void print_decimal(int val)
 	if(k<0)
 		{ k=-k; s=1; }
 	
+//	__debugbreak();
+	
 	t=tb;
 	if(!k)*t++='0';	
 	while(k>0)

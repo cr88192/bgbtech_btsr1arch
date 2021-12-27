@@ -312,8 +312,9 @@ EXSR Codes:
 * Bits 15..12:
 ** 0x8: General Fault
 ** 0xA: MMU/TLB
+** 0xB: Inter-Processor Hard Interrupt
 ** 0xC: IRQ or Software Interrupt
-** 0xD: Software Interrupt
+** 0xD: Software Interrupt / Inter-Processor Soft Interrupt
 ** 0xE: Syscall
 ** 0xF: Processor Internal
 * General Faults:
@@ -343,6 +344,8 @@ EXSR Codes:
 ** 0xA000: General Fault
 ** 0xA001: TLB Miss
 ** 0xA002: TLB ACL Check
+* Inter-Processor Hard:
+** 0xB000: Core Boot To Address.
 * Syscall
 ** 0xEnxx: System Call, xxx gives the SysCall ID (12 bits).
 * Bits (11:8) will be used for inter-core routing.
@@ -1753,8 +1756,6 @@ F0zz Instruction Block:
 *** F019_3en0  /
 *** F01A_3en0  /
 *** F01B_3en0  /
-*** F01C_3en0  /
-*** F01D_3en0  /
 
 *** F01C_3en0  INVIC	Rn
 *** F01D_3en0  INVDC	Rn
@@ -2076,8 +2077,8 @@ F2zz Instruction Block  (Imm9 Block):
 ** F2n3_Dfjj  MUL{S/U}.W	Imm10n, Rn			//Rn=Rn*Imm10n
 ** F2n4_Dfjj ? LDIROZ{Q}	Imm10u, Rn			//Load + ROTL
 ** F2n5_Dfjj ? LDIRON{Q}	Imm10n, Rn			//Load + ROTL
-** F2n6_Dfjj  -
-** F2n7_Dfjj  -
+** F2n6_Dfjj ? JCMPZ{Q}xx	Rn, Disp8s			//(JCMP) JCmp (Rn xx 0)
+** F2n7_Dfjj ? JCMPZ{Q}xx	Rn, Disp8s			//(JCMP) JCmp (Rn xx 0)
 * F2nz_Efjj
 * F2nz_Ffjj
 

@@ -30,6 +30,9 @@ State Machine 2:
 
 */
 
+`ifndef HAS_DECPREBRA
+`define HAS_DECPREBRA
+
 module DecPreBra(
 	clock,		reset,
 	istrWord,	istrBasePc,	istrBraPc,
@@ -381,3 +384,5 @@ begin
 end
 
 endmodule
+
+`endif
