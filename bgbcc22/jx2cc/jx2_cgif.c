@@ -1180,7 +1180,7 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 	sctx->sfreg_live=sctx->sfreg_held;
 	BGBCC_JX2_EmitCheckFlushIndexImm(sctx);
 
-	if(sctx->is_fixed32 && !BGBCC_JX2_CheckPadAlign32(sctx))
+	if((sctx->is_fixed32&1) && !BGBCC_JX2_CheckPadAlign32(sctx))
 		{ BGBCC_DBGBREAK }
 
 	switch(op->opn)
@@ -4339,7 +4339,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			if((((s32)(d1<<24))>>24)==d1)
 				sctx->stat_ovlbl8++;
 			
-			if((d1&1) && sctx->is_fixed32)
+			if((d1&1) && (sctx->is_fixed32&1))
 				{ BGBCC_DBGBREAK }
 
 			w0=(w0&0xFF00)|((d1>>12)&0x00FF);

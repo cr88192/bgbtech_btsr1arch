@@ -1,0 +1,74 @@
+Another Binary XML Encoding
+* Aim to be relatively cheap to encode/decode.
+* Aim to be relatively compact.
+* May use an additional LZ stage (such as RP2) applied externally.
+* May also be used to encode Object and Array graphs
+** The use and interpretation of the contents will depend on context.
+
+Tag Name MRU:
+* Keep a list of the last 32 names
+* Used for tag and attribute names
+* Encoding a name from the MRU moves it forward.
+** 0: Most recent value, no change to MRU
+** 1..15: Swap N with N-1
+** 16..31: Rotate MRU, Swap Old N with new N0.
+* If a new name is added, the MRU will rotate.
+** Last place entry falls off the end.
+
+String MRU:
+* Behaves the same as the Tag MRU
+* Holds literal text Strings.
+* String literals longer than 255 bytes will not be added to the MRU.
+
+Will use command bytes, with the high 3 bits as a command:
+* 000, Single Byte Command
+* 001, Start Tag (Raw Name)
+* 010, Attribute (Raw Name)
+* 011, String / Text
+* 100, Numeric Literal Value
+* 101, Start Tag (MRU)
+* 110, Attribute (MRU)
+* 111, String / Text (MRU)
+
+Byte Commands (Low 5 bits give command):
+* 0: End Of Data
+* 1: End of Tag
+* 2: Object
+* 3: Array
+
+Strings / Names:
+* 0..27: String between 0 and 27 bytes.
+* 28: Byte Follows String between 0 and 255 bytes.
+* 29: Word Follows, String between 0 and 65535 bytes.
+* 30: Reserved
+* 31: Reserved
+
+String literals will nominally be stored in M-UTF-8 form. They will be stored in terms of raw bytes, without a NUL terminator (the existence of a NUL terminator will be implicit).
+
+
+Numeric Literal Value:
+* 0..15: Small Integer Value (-8 .. 7)
+* 16..23: Integer Literal (1..8 Bytes)
+* 24: Double Literal, as FP8S (S.E4.M3)
+* 25: Double Literal, as Binary16
+* 26..31: Double Literal (3..8 Bytes)
+
+
+Integer literals will be stored in twos complement form and sign extended up to 64 bits.
+
+Double literals will be stored in a truncated form, retaining only the high order bits. The low order bits will be filled in with zeroes.
+
+Both integer and double literals will be stored in little-endian order.
+
+
+Strings or Literals will primarily appear as attributes.
+
+If a literal appears where a Node is expected, it will be interpreted as a standalone node. String literals as text nodes, numberic literals as standalone number notes (conceptually, these will map to text nodes containing the numeric value).
+
+
+Object:
+* Will be encoded solely as attributes.
+
+Array:
+* Contents will consist of objects or literals.
+
