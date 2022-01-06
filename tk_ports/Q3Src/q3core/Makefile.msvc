@@ -1,0 +1,44 @@
+BUILD=.
+MKSUF=.msvc
+LIBSUF=.lib
+DLLSUF=.dll
+EXESUF=.exe
+OBJSUF=.obj
+DLLPF=
+
+CC_OUTEXE=cl /Fe
+CC_OUTDLL=cl /LD /Fe
+CC_OUTOBJ=cl /c /Fo
+
+CFLAGS=/I. /Iinclude /I../include /Zi /DGLQUAKE /DWIN32 \
+	 /D_WINDOWS /DQUAKE /DBOTLIB	
+	 #	/O2
+DLL_CFLAGS=$(CFLAGS)
+# LDFLAGS=gdi32.lib opengl32.lib user32.lib \
+#	comdlg32.lib winmm.lib ws2_32.lib wsock32.lib \
+#	../libbsde.lib ../libvecmath.lib ../libbsgen.lib \
+#	../libbgbmid.lib ../libtrem.lib /Z7
+
+LDFLAGS=gdi32.lib opengl32.lib user32.lib \
+	comdlg32.lib winmm.lib ws2_32.lib wsock32.lib \
+	advapi32.lib ole32.lib /Zi
+
+ARCH=x64
+
+DLL_LDFLAGS=$(LDFLAGS)
+
+UI_DLL_LDFLAGS=$(LDFLAGS) \
+	/DWIN32 /D_WINDOWS /D_MBCS /D_USRDLL /DUI_EXPORTS
+
+GAME_DLL_LDFLAGS=$(LDFLAGS) \
+	/DWIN32 /D_WINDOWS /DBUILDING_REF_GL /DDEBUG /DGLOBALRANK /DQAGAME
+
+CGAME_DLL_LDFLAGS=$(LDFLAGS) \
+	/DWIN32 /D_WINDOWS /DBUILDING_REF_GL /DDEBUG /DGLOBALRANK /DCGAME
+
+TKRA_LDFLAGS=$(LDFLAGS) \
+	/DUSE_TKRA
+
+include Makefile.inc
+
+QUAKE3_OS_SRCS = $(QUAKE3_WIN_SRCS)
