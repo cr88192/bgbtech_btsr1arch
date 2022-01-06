@@ -217,6 +217,11 @@ void S_Init (void)
 	snd_initialized = true;
 
 	S_Startup ();
+	
+	if(!shm)
+	{
+		return;
+	}
 
 	tk_printf("S_Init: A2\n");
 

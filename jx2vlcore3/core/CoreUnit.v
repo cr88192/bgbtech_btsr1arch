@@ -151,6 +151,9 @@ module CoreUnit(
 	seg_outCharBit,
 	seg_outSegBit,
 
+	aud_mic_clk,
+	aud_mic_data,
+
 	dbg_exHold1,
 	dbg_exHold2,
 	dbg_outStatus1,
@@ -247,6 +250,12 @@ output			aud_mono_out;
 output			aud_mono_ena;
 output[7:0]		seg_outCharBit;
 output[7:0]		seg_outSegBit;
+
+output			aud_mic_clk;
+input			aud_mic_data;
+reg				tAudMicData;
+reg				tAudMicData1;
+reg				tAudMicClk;
 
 output			dbg_exHold1;
 output			dbg_exHold2;
@@ -453,6 +462,10 @@ MmiModClkp		clkp(
 	timer1kHz,
 	timer256Hz,
 	timerNPat);
+
+// assign aud_mic_clk = timer1MHz;
+assign aud_mic_clk = tAudMicClk;
+
 
 `wire_ddrtile	ddrMemDataIn;
 `wire_ddrtile	ddrMemDataOut;
@@ -1147,7 +1160,7 @@ RbiMemL2A	l2a(
 	l2aDataIn,		l2aDataOut,
 	l2aOpmIn,		l2aOpmOut,
 	l2aSeqIn,		l2aSeqOut,
-	l2aNodeId,
+	l2aNodeId,		timers,
 
 	ddrMemAddr,		ddrMemAddrB,
 	ddrMemOpm,
@@ -1314,6 +1327,8 @@ assign	fmMmioOK		= 0;
 
 `endif
 
+reg			tSbitX;
+
 wire		timerNoise_NS0;
 reg			timerNoise_S0;
 wire		timerNoise_NS1;
@@ -1328,7 +1343,7 @@ assign		timerNoise_NS1 = (sdc_di ^ sdc_do);
 // assign		timerNoise_NS2 = dbg_exHold1 ^ audPwmOut2;
 assign		timerNoise_NS2 =
 	dbg_exHold1 ^ audPwmOut2 ^ clock_halfMhz ^
-	timerNPat;
+	timerNPat ^ tAudMicData ^ tSbitX;
 assign		timerNoise_NS3 =
 	memAddr[1] ^ memAddr[2] ^ memAddr[3] ^
 	memAddr[5] ^ memAddr[7] ^ memAddr[11];
@@ -1634,6 +1649,10 @@ always @(posedge clock_mmio)
 begin
 //	$display("Clock Edge");
 
+	tAudMicData1	<= aud_mic_data;
+	tAudMicData		<= tAudMicData1;
+	tAudMicClk		<= timer1MHz;
+
 	clock_halfMhz	<= !clock_halfMhz;
 	timer1kHzL		<= timer1kHz;
 	
@@ -1705,6 +1724,46 @@ begin
 	end
 `endif
 
+end
+
+reg[5:0] tSbitX1A;
+reg[5:0] tSbitX1B;
+reg[5:0] tSbitX1C;
+reg[5:0] tSbitX1D;
+reg[5:0] tSbitX1E;
+reg[5:0] tSbitX1F;
+reg[5:0] tSbitX1G;
+reg[5:0] tSbitX1H;
+
+reg[5:0] tSbitX1I;
+reg[5:0] tSbitX1J;
+reg[5:0] tSbitX1K;
+
+always @(posedge clock_75)
+begin
+//	tSbitX1A <= !tSbitX1D;
+	tSbitX1A <= ~ { tSbitX1D[0], tSbitX1D[5:1] };
+	tSbitX1C <= tSbitX1B;
+	tSbitX1E <= tSbitX1D;
+	tSbitX1G <= tSbitX1F;
+end
+
+always @(posedge clock_100)
+begin
+	tSbitX1B <= tSbitX1A;
+	tSbitX1D <= tSbitX1C;
+end
+
+always @(posedge clock_50)
+begin
+	tSbitX1F	<= tSbitX1E;
+	tSbitX1H	<= tSbitX1G;
+
+	tSbitX1I	<= tSbitX1H;
+	tSbitX1J	<= tSbitX1I;
+	tSbitX1K	<= tSbitX1J;
+//	tSbitX		<= tSbitX1K;
+	tSbitX		<= tSbitX1K[0] ^ tSbitX1K[1] ^ tSbitX1K[2] ^ tSbitX1K[4];
 end
 
 

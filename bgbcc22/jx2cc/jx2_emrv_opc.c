@@ -340,57 +340,55 @@ int BGBCC_JX2RV_TryEmitOpRegRegLbl(BGBCC_JX2_Context *ctx,
 	switch(nmid)
 	{
 	case BGBCC_SH_NMID_BREQ:
+	case BGBCC_SH_NMID_BREQL:
 //		opw1=0x00000063|((rn&31)<<15)|((rm&31)<<20);
 		opw1=0x00000063|((rn&31)<<15)|((rm&31)<<20);
 		rlty=BGBCC_SH_RLC_RELW12_RVI;
 		break;
 	case BGBCC_SH_NMID_BRNE:
+	case BGBCC_SH_NMID_BRNEL:
 //		opw1=0xFE001EE3|((rn&31)<<15)|((rm&31)<<20);
 		opw1=0x00001063|((rn&31)<<15)|((rm&31)<<20);
 		rlty=BGBCC_SH_RLC_RELW12_RVI;
 		break;
 
 	case BGBCC_SH_NMID_BRLT:
-//		opw1=0xFE004EE3|((rn&31)<<15)|((rm&31)<<20);
+	case BGBCC_SH_NMID_BRLTL:
 		opw1=0x00004063|((rn&31)<<15)|((rm&31)<<20);
 		rlty=BGBCC_SH_RLC_RELW12_RVI;
 		break;
 	case BGBCC_SH_NMID_BRGE:
-//		opw1=0xFE005EE3|((rn&31)<<15)|((rm&31)<<20);
+	case BGBCC_SH_NMID_BRGEL:
 		opw1=0x00005063|((rn&31)<<15)|((rm&31)<<20);
 		rlty=BGBCC_SH_RLC_RELW12_RVI;
 		break;
 
 	case BGBCC_SH_NMID_BRGT:
-//		opw1=0xFE004EE3|((rm&31)<<15)|((rn&31)<<20);
-		opw1=0x00004063|((rn&31)<<15)|((rm&31)<<20);
+	case BGBCC_SH_NMID_BRGTL:
+		opw1=0x00004063|((rm&31)<<15)|((rn&31)<<20);
 		rlty=BGBCC_SH_RLC_RELW12_RVI;
 		break;
 	case BGBCC_SH_NMID_BRLE:
-//		opw1=0xFE005EE3|((rm&31)<<15)|((rn&31)<<20);
-		opw1=0x00005063|((rn&31)<<15)|((rm&31)<<20);
+	case BGBCC_SH_NMID_BRLEL:
+		opw1=0x00005063|((rm&31)<<15)|((rn&31)<<20);
 		rlty=BGBCC_SH_RLC_RELW12_RVI;
 		break;
 
 	case BGBCC_SH_NMID_BRLTU:
-//		opw1=0xFE006EE3|((rn&31)<<15)|((rm&31)<<20);
 		opw1=0x00006063|((rn&31)<<15)|((rm&31)<<20);
 		rlty=BGBCC_SH_RLC_RELW12_RVI;
 		break;
 	case BGBCC_SH_NMID_BRGEU:
-//		opw1=0xFE007EE3|((rn&31)<<15)|((rm&31)<<20);
 		opw1=0x00007063|((rn&31)<<15)|((rm&31)<<20);
 		rlty=BGBCC_SH_RLC_RELW12_RVI;
 		break;
 
 	case BGBCC_SH_NMID_BRGTU:
-//		opw1=0xFE006EE3|((rm&31)<<15)|((rn&31)<<20);
-		opw1=0x00006063|((rn&31)<<15)|((rm&31)<<20);
+		opw1=0x00006063|((rm&31)<<15)|((rn&31)<<20);
 		rlty=BGBCC_SH_RLC_RELW12_RVI;
 		break;
 	case BGBCC_SH_NMID_BRLEU:
-//		opw1=0xFE007EE3|((rm&31)<<15)|((rn&31)<<20);
-		opw1=0x00007063|((rn&31)<<15)|((rm&31)<<20);
+		opw1=0x00007063|((rm&31)<<15)|((rn&31)<<20);
 		rlty=BGBCC_SH_RLC_RELW12_RVI;
 		break;
 	}

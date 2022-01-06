@@ -309,8 +309,8 @@ int PR_EnterFunction (dfunction_t *f)
 {
 	int		i, j, c, o;
 
-	if(!strcmp(f->s_name, "T_MissileTouch"))
-		pr_trace=true;
+//	if(!strcmp(f->s_name, "T_MissileTouch"))
+//		pr_trace=true;
 
 	pr_stack[pr_depth].s = pr_xstatement;
 	pr_stack[pr_depth].f = pr_xfunction;	

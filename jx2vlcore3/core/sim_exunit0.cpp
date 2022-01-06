@@ -847,7 +847,7 @@ static int			l2m_hash_miss[8];
 
 void MemUpdateForBusRing()
 {
-
+	static uint64_t	rng;
 	static uint64_t	l2addr1, l2addr2;
 	static uint32_t	l2seq1, l2seq2;
 	static uint32_t	l2opm1, l2opm2;
@@ -869,6 +869,10 @@ void MemUpdateForBusRing()
 	int		i, j, k;
 
 	top->unitNodeId = 0x04;
+	
+	rng=(rng*0x0000FEDCBA987654ULL)+
+		(((l2addr2>>4)+l2data2a)&65535);
+	l2opm2^=((rng>>48)&0x8000);
 
 #if 1
 	top->memSeqIn=l2seq2;

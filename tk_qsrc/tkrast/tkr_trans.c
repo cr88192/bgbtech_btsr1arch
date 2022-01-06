@@ -1576,9 +1576,23 @@ int TKRA_TransformProjectTriangle(
 //		if(f3 < (4*4*3))
 ///		if(f3 < (3*3*3))
 //		if(f3 < (2*2*3))
-		if(f3 < (3*3))
-//		if(f3 < (4*3))
+//		if(f3 < (3*3))
+		if(f3 < (4*3))
 		{
+#if 1
+			if(	(f0<0.75) | (f1<0.75) | (f2<0.75)	)
+			{
+				ctx->stat_reject_tris++;
+	//			ctx->stat_micro_tris++;
+				if(wasfrag&1)
+					ctx->stat_microfrag_tris++;
+				else
+					ctx->stat_microbase_tris++;
+
+				continue;
+			}
+#endif
+
 //			ctx->stat_reject_tris++;
 //			ctx->stat_micro_tris++;
 //			if(wasfrag&1)
@@ -1587,7 +1601,8 @@ int TKRA_TransformProjectTriangle(
 //				ctx->stat_microbase_tris++;
 
 //			if(f3 < (0.5*3))
-			if(f3 < (0.75*3))
+//			if(f3 < (0.75*3))
+			if(f3 < (1*3))
 			{
 				ctx->stat_microbase_tris++;
 				continue;				
@@ -1675,7 +1690,7 @@ int TKRA_TransformProjectTriangle(
 #endif
 		}
 
-#if 0
+#if 1
 		if((f0<1) | (f1<1) | (f2<1))
 		{
 			ctx->stat_reject_tris++;
@@ -1694,8 +1709,8 @@ int TKRA_TransformProjectTriangle(
 
 #if 1
 //		f4=(72*72*3);
-		f4=(64*64*3);
-//		f4=(48*48*3);
+//		f4=(64*64*3);
+		f4=(48*48*3);
 //		if(ecfl)
 //			f4=(32*32*3);
 

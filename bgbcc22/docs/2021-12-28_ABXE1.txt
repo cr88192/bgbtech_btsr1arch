@@ -32,7 +32,8 @@ Will use command bytes, with the high 3 bits as a command:
 
 Byte Commands (Low 5 bits give command):
 * 0: End Of Data
-* 1: End of Tag
+** Not allowed within the body of the encoded object graph.
+* 1: End of Node/Object/Array
 * 2: Object
 * 3: Array
 

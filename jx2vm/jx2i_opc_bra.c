@@ -1538,3 +1538,28 @@ void BJX2_Op_BRHE_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVOP);
 	}
 }
+
+void BJX2_Op_BRTSTT_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	if(!(ctx->regs[op->rm]&ctx->regs[op->rn]))
+	{
+		ctx->regs[BJX2_REG_PC]=(op->pc2)+(op->imm*2);
+		ctx->tr_rnxt=ctx->tr_rjmp;
+
+		if((op->pc2>0x10000) && (ctx->regs[BJX2_REG_PC]<0x10000))
+			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVOP);
+	}
+}
+
+void BJX2_Op_BRTSTF_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	if( (ctx->regs[op->rm]&ctx->regs[op->rn]))
+	{
+		ctx->regs[BJX2_REG_PC]=(op->pc2)+(op->imm*2);
+		ctx->tr_rnxt=ctx->tr_rjmp;
+
+		if((op->pc2>0x10000) && (ctx->regs[BJX2_REG_PC]<0x10000))
+			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVOP);
+	}
+}
+

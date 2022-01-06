@@ -1506,7 +1506,10 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 	if(BGBCC_CCXL_IsRegLocalP(ctx, sreg))
 	{
 		if(sctx->is_leaftiny&1)
-			{ BGBCC_DBGBREAK }
+		{
+//			BGBCC_DBGBREAK
+			return(-1);
+		}
 	
 		j=sreg.val&CCXL_REGID_BASEMASK;
 		ctx->cur_func->locals[j]->regflags|=BGBCC_REGFL_ACCESSED;
@@ -1650,7 +1653,10 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 	if(BGBCC_CCXL_IsRegTempP(ctx, sreg))
 	{
 		if(sctx->is_leaftiny&1)
-			{ BGBCC_DBGBREAK }
+		{
+//			BGBCC_DBGBREAK
+			return(-1);
+		}
 	
 		j=sreg.val&CCXL_REGID_BASEMASK;
 		tty=ctx->cur_func->regs[j]->type;
@@ -1763,7 +1769,10 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 	if(BGBCC_CCXL_IsRegArgP(ctx, sreg))
 	{
 		if(sctx->is_leaftiny&1)
-			{ BGBCC_DBGBREAK }
+		{
+//			BGBCC_DBGBREAK
+			return(-1);
+		}
 	
 		j=sreg.val&CCXL_REGID_BASEMASK;
 		tty=ctx->cur_func->args[j]->type;

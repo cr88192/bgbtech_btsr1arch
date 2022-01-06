@@ -1902,16 +1902,18 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 			oldlclst=ctx->loop_localstate;
 			ctx->loop_localstate&=~BGBCC_LOOPFL_MASK;
 
-//			ctx->loop_localstate|=BGBCC_LOOPFL_CONTINUE;
+			ctx->loop_localstate|=BGBCC_LOOPFL_CONTINUE;
 
-			BGBCC_CCXL_CompileJCF(ctx, t, l2);
+//			BGBCC_CCXL_CompileJCF(ctx, t, l2);
+			BGBCC_CCXL_CompileJmp(ctx, l3);
+
 			BGBCC_CCXL_EmitLabel(ctx, l1);
 
 			BGBCC_CCXL_CompileStatement(ctx,
 				BCCX_FetchCst(l, &bgbcc_rcst_body, "body"));
 			k=ctx->loop_localstate;
 
-			if(k&BGBCC_LOOPFL_CONTINUE)
+//			if(k&BGBCC_LOOPFL_CONTINUE)
 				BGBCC_CCXL_EmitLabel(ctx, l3);
 
 			BGBCC_CCXL_CompileJCT(ctx, t, l1);

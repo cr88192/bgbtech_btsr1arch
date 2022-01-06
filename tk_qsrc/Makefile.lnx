@@ -28,10 +28,10 @@ TK_CFL=-Os
 TK_LDFL= $(TK_CFL) -lm
 
 # BASE_CFLAGS=-Dstricmp=strcasecmp
-BASE_CFLAGS=
+BASE_CFLAGS = -g
 
 CFLAGS=$(TK_CFL) $(BASE_CFLAGS)
-LDFLAGS=$(TK_LDFL) -lm
+LDFLAGS=$(TK_LDFL) -lm -lSDL
 
 all: targets
 
@@ -102,11 +102,14 @@ SQUAKE_SRCS = \
 	q1base/cd_null.c \
 	q1base/in_null.c \
 	q1base/sys_linux.c \
-	q1base/vid_null.c \
+	q1base/vid_sdl.c \
 	q1base/snd_dma.c \
 	q1base/snd_mem.c \
 	q1base/snd_mix.c \
-	q1base/snd_linux.c \
+	q1base/snd_linux.c	\
+	\
+	q1base/gfxdrv_input.c		\
+	q1base/gfxdrv_sdl.c
 
 SKIP_SRCS=\
 	q1base/d_fill.c \

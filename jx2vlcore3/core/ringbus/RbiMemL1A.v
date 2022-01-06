@@ -56,10 +56,12 @@ module RbiMemL1A(
 	l2mOpmIn,		l2mOpmOut,
 	l2mSeqIn,		l2mSeqOut,
 
-	unitNodeId	);
+	unitNodeId,		timers);
 
 input			clock;
 input			reset;
+
+input[11:0]		timers;
 
 `input_vaddr	icInPcAddr;		//input PC address
 // output[63: 0]	icOutPcVal;		//output PC value
@@ -104,6 +106,24 @@ output[ 15:0]	l2mOpmOut;		//memory operation mode
 
 input [  7:0]	unitNodeId;		//Who Are We?
 
+
+reg[15:0]	tRngA;
+reg[15:0]	tRngB;
+reg[15:0]	tNxtRngA;
+reg[15:0]	tNxtRngB;
+reg			tRngBitA;
+reg			tRngBitB;
+reg			tRngBitAL;
+reg			tRngBitBL;
+reg			tRngNoiseA;
+reg			tRngNoiseA1;
+reg			tRngNoiseA2;
+reg			tRngNoiseA3;
+reg			tRngNoiseA4;
+
+reg[15:0]	tNxtRngN;
+reg[15:0]	tRngN;
+reg[15:0]	tRngN2;
 
 // `wire_tile		tBridgeDataI;
 // wire[47:0]		tBridgeAddrI;
@@ -282,7 +302,7 @@ RbiMemDcA		memDc(
 	dcInHold,		dfOutHold,
 	regInSr,		dfOutWait,
 	dfOutExc,		regInMmcr,
-	regKrrHashL,
+	regKrrHashL,	tRngN2,
 
 	dfMemAddrI,		dfMemAddrO,
 	dfMemDataI,		dfMemDataO,
@@ -423,6 +443,25 @@ begin
 	tDcBusWait	= dfOutWait || ifMemWait;
 //	tDcBusWait	= dfOutWait || ifMemWait || ifMemWaitL;
 
+`ifndef def_true
+	tRngBitA	=
+		tRngA[1] ^ tRngA[3] ^
+		tRngA[5] ^ tRngA[7] ^
+		tRngNoiseA ^ tRngBitBL ^ 1;
+	tRngBitB	=
+		tRngB[1] ^ tRngB[3] ^
+		tRngB[5] ^ tRngB[7] ^
+		tRngNoiseA ^ tRngBitAL ^ 1;
+
+//	tNxtRngA	= { tRngBitA, tRngA[15:1] };
+	tNxtRngA	= { tRngA[14:0], tRngBitA };
+	tNxtRngB	= { tRngBitB, tRngB[15:1] };
+	
+	tNxtRngN	= tRngA + tRngB;
+`endif
+
+	tNxtRngN	= 0;
+
 	if(reset)
 	begin
 		tDcOutHold	= 0;
@@ -455,6 +494,25 @@ begin
 	ifMemWaitL		<= ifMemWait;
 
 	regKrrHashL		<= regKrrHash;
+
+	tRngA			<= tNxtRngA;
+	tRngB			<= tNxtRngB;
+	tRngBitAL		<= tRngBitA;
+	tRngBitBL		<= tRngBitB;
+//	tRngNoiseA4		<= timers[0];
+
+	tRngNoiseA4		<=
+		l2mOpmIn[15] ^
+		l2mAddrIn[4] ^ l2mAddrIn[7] ^
+		l2mDataIn[0] ^ l2mDataIn[8];
+
+	tRngNoiseA3		<= tRngNoiseA4;
+	tRngNoiseA2		<= tRngNoiseA3;
+	tRngNoiseA1		<= tRngNoiseA2;
+	tRngNoiseA		<= tRngNoiseA1;
+
+	tRngN			<= tNxtRngN;
+	tRngN2			<= tRngN;
 
 `ifndef def_true
 // `ifdef def_true

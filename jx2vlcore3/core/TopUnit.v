@@ -29,6 +29,10 @@ module TopUnit(
 	seg_outCharBit,
 	seg_outSegBit,
 
+	aud_mic_clk,
+	aud_mic_data,
+	aud_mic_lr,
+
 	dbg_exHold1,
 	dbg_exHold2,
 	dbg_outStatus1,
@@ -165,6 +169,11 @@ output			aud_mono_en;
 output[7:0]		seg_outCharBit;
 output[7:0]		seg_outSegBit;
 
+output			aud_mic_clk;
+input			aud_mic_data;
+output			aud_mic_lr;
+assign	aud_mic_lr = 1'b0;
+
 output			dbg_exHold1;
 output			dbg_exHold2;
 
@@ -272,6 +281,8 @@ CoreUnit core(
 	aud_mono_out1,	aud_mono_ena1,
 	seg_outCharBit,
 	seg_outSegBit,
+
+	aud_mic_clk,	aud_mic_data,
 
 	dbg_exHold1,
 	dbg_exHold2,

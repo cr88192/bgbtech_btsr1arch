@@ -172,6 +172,27 @@ tk_shell_chksane_simd_asm:
 	CMPQEQ		R19, R7
 	BREAK?F
 
+#if 1
+	MOV		0x3456789abcdef012, R6
+	MOV		0xb456789a3cdef012, R7
+	
+	BREQ	R6, R6, .J0L0
+	BREAK
+	.J0L0:
+
+	BRNE	R6, R7, .J0L1
+	BREAK
+	.J0L1:
+
+	BRGT	R7, R6, .J0L2
+	BREAK
+	.J0L2:
+
+	BRGE	R6, R6, .J0L3
+	BREAK
+	.J0L3:
+	
+#endif
 
 	MOV			R16, GBR
 

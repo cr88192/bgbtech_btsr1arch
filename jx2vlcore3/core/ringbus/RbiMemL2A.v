@@ -17,7 +17,7 @@ module RbiMemL2A(
 	memDataIn,		memDataOut,
 	memOpmIn,		memOpmOut,
 	memSeqIn,		memSeqOut,
-	unitNodeId,
+	unitNodeId,		timers,
 
 	ddrMemAddr,		ddrMemAddrB,
 	ddrMemOpm,
@@ -43,6 +43,7 @@ output[ 15:0]	memOpmOut;		//memory operation mode
 `output_tile	memDataOut;		//memory output data
 
 input [  7:0]	unitNodeId;		//Who Are We?
+input [  7:0]	timers;			//Timer Signals
 
 `input_ddrtile	ddrMemDataIn;
 `output_ddrtile	ddrMemDataOut;
@@ -201,6 +202,8 @@ begin
 	tL2mOpmIn	= memOpmIn;
 	tL2mAddrIn	= memAddrIn;
 	tL2mDataIn	= memDataIn;
+	
+	tL2mOpmIn[15] = timers[0];
 
 	if(memOpmIn[11])
 		$display("L2A: TLB Missed A O=%X A=%X", memOpmIn, memAddrIn);

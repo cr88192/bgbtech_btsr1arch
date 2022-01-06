@@ -349,6 +349,11 @@ begin
 //			tRegValRn2	= regValMulRes[63:0];		//
 			tRegHeld	= 1;
 		end
+
+`ifdef jx2_alu_jcmp
+		JX2_UCMD_JCMP: begin
+		end
+`endif
 		
 		JX2_UCMD_MULW3: begin
 //			tRegIdRn2	= regIdRm;			//

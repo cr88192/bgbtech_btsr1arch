@@ -261,6 +261,8 @@ wire[63:0]		crOutKrr;
 wire[63:0]		crOutSr;
 reg [63:0]		crInSr;
 
+reg[11:0]		ex1Timers;
+
 reg[47:0]		ifValPc;
 reg[47:0]		ifLastPc;
 reg[47:0]		ifValPcHi;
@@ -350,7 +352,7 @@ RbiMemL1A		memL1(
 	memDataIn,		memDataOut,
 	memOpmIn,		memOpm,
 	memSeqIn,		memSeqOut,
-	unitNodeId
+	unitNodeId,		ex1Timers
 	);
 
 assign		memAddrB = 0;
@@ -1047,7 +1049,7 @@ reg[1:0]		ex1PreBra;
 reg[95:0]		ex1IstrWord;	//source instruction word
 reg				ex1BraFlush;
 reg				ex1TrapFlush;
-reg[11:0]		ex1Timers;
+// reg[11:0]		ex1Timers;
 
 `reg_gpr		ex1RegIdRs;		//Source A, ALU / Base
 `reg_gpr		ex1RegIdRt;		//Source B, ALU / Index
@@ -4092,7 +4094,8 @@ begin
 		ex1RegValImm	<= gprValImm;
 		ex1BraFlush		<= nxtBraFlushMask[0];
 		
-		ex1Timers		<= timers[11:0];
+//		ex1Timers		<= timers[11:0];
+		ex1Timers		<= { timers[11:1], memOpmIn[15] };
 
 `ifdef jx2_enable_wex
 		ex1OpUCmd		<= idA2IdUCmd;

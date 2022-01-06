@@ -9,7 +9,7 @@ module RbiMemDcA(
 	dcInHold,		regOutHold,
 	regInSr,		regOutWait,
 	regOutExc,		regInMmcr,
-	regKrrHash,
+	regKrrHash,		regRng,
 
 	memAddrIn,		memAddrOut,
 	memDataIn,		memDataOut,
@@ -39,7 +39,8 @@ input [63: 0]	regInSr;
 input [63: 0]	regInMmcr;
 output[127: 0]	regOutExc;
 
-input[7:0]		regKrrHash;
+input[ 7:0]		regKrrHash;
+input[15:0]		regRng;
 
 
 
@@ -65,6 +66,8 @@ reg[127: 0]	tRegOutExc2;
 assign	regOutExc = tRegOutExc2;
 
 reg[63: 0]		tRegInSr;
+
+reg[63: 0]		tRegRng1;
 
 
 reg[ 15:0]		tMemSeqOut;		//operation sequence
@@ -212,6 +215,9 @@ reg[ 43:0]		tReqSeqVa;
 
 reg[  3:0]		tFlushRov;
 reg[  3:0]		tNxtFlushRov;
+
+reg[ 63:0]		tFlushRng;
+reg[ 63:0]		tNxtFlushRng;
 
 reg[  3:0]		tFlushRovTlb;
 reg[  3:0]		tNxtFlushRovTlb;
@@ -513,12 +519,28 @@ begin
 //		tNxtReqAddrHi[31:16] ^
 //		tNxtReqAddrHi[47:32] ;
 
+// `ifndef def_true
+`ifdef def_true
 	tNxtReqAxH		=
 		tNxtReqAddrHi[15: 0] ^
 		{	tNxtReqAddrHi[23:16], tNxtReqAddrHi[31:24] } ^
 		{	tNxtReqAddrHi[35:32], tNxtReqAddrHi[39:36],
 			tNxtReqAddrHi[43:40], tNxtReqAddrHi[47:44] } ^
 		{	4'h0, regInSr[31:28], regKrrHash[7:0] } ;
+`endif
+
+// `ifdef def_true
+`ifndef def_true
+	tNxtReqAxH		=
+		(tNxtReqAddrHi[15: 0] + tFlushRng[15:0]) ^
+		({	tNxtReqAddrHi[23:16], tNxtReqAddrHi[31:24] } +
+			tFlushRng[31:16]) ^
+		({	tNxtReqAddrHi[35:32], tNxtReqAddrHi[39:36],
+			tNxtReqAddrHi[43:40], tNxtReqAddrHi[47:44] } +
+			tFlushRng[47:32]) ^
+		({	4'h0, regInSr[31:28], regKrrHash[7:0] } +
+			tFlushRng[63:48]) ;
+`endif
 
 
 `ifdef def_true
@@ -605,6 +627,7 @@ always @*
 begin
 	tNxtTlbMissInh		= tTlbMissInh;
 	tNxtFlushRov		= tFlushRov;
+	tNxtFlushRng		= tFlushRng;
 	tNxtFlushRovTlb		= tFlushRovTlb;
 	tNxtDoFlush			= 0;
 	tNxtDoFlushTlb		= 0;
@@ -638,6 +661,7 @@ begin
 	begin
 		$display("L1 D$ DoFlush rov=%X", tFlushRov);
 		tNxtFlushRov = tFlushRov + 1;
+		tNxtFlushRng = tRegRng1;
 	end
 
 	if(tDoFlushTlb && !tDoFlushTlbL)
@@ -1945,6 +1969,8 @@ begin
 	tVolatileIxA	<= tNxtVolatileIxA;
 	tVolatileIxB	<= tNxtVolatileIxB;
 
+	tRegRng1		<= { tRegRng1[47:0], regRng };
+
 
 	if(!dcInHold)
 	begin
@@ -2018,6 +2044,7 @@ begin
 	end
 
 	tFlushRov		<= tNxtFlushRov;
+	tFlushRng		<= tNxtFlushRng;
 	tFlushRovTlb	<= tNxtFlushRovTlb;
 
 	tReqReadyL		<= tReqReady;

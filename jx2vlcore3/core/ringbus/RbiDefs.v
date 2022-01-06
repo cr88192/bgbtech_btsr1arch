@@ -43,7 +43,7 @@ Operation Category:
   11: Message/Interrupt
 
 Access Status Bits(Request/Response):
-  (7): Reserved
+  (7): Noise Bit (Random)
   (6): Prefetch Hit/Miss (L2 Response)
   (5): Reserved
   (4): No User (Supervisor Only)

@@ -889,6 +889,34 @@ int nmid;
 {"brgtu",	BGBCC_SH_NMID_BRGTU},
 {"brleu",	BGBCC_SH_NMID_BRLEU},
 
+#if 0
+{"jcmpeq",	BGBCC_SH_NMID_BREQL},
+{"jcmpne",	BGBCC_SH_NMID_BRNEL},
+
+{"jcmplt",	BGBCC_SH_NMID_BRLTL},
+{"jcmpge",	BGBCC_SH_NMID_BRGEL},
+{"jcmpgt",	BGBCC_SH_NMID_BRGTL},
+{"jcmple",	BGBCC_SH_NMID_BRLEL},
+
+{"jcmpltu",		BGBCC_SH_NMID_BRLTU},
+{"jcmpgeu",		BGBCC_SH_NMID_BRGEU},
+{"jcmpgtu",		BGBCC_SH_NMID_BRGTU},
+{"jcmpleu",		BGBCC_SH_NMID_BRLEU},
+
+{"jcmpqeq",		BGBCC_SH_NMID_BREQ},
+{"jcmpqne",		BGBCC_SH_NMID_BRNE},
+
+{"jcmpqlt",		BGBCC_SH_NMID_BRLT},
+{"jcmpqge",		BGBCC_SH_NMID_BRGE},
+{"jcmpqgt",		BGBCC_SH_NMID_BRGT},
+{"jcmpqle",		BGBCC_SH_NMID_BRLE},
+
+{"jcmpqltu",	BGBCC_SH_NMID_BRLTU},
+{"jcmpqgeu",	BGBCC_SH_NMID_BRGEU},
+{"jcmpqgtu",	BGBCC_SH_NMID_BRGTU},
+{"jcmpqleu",	BGBCC_SH_NMID_BRLEU},
+#endif
+
 {"dmulu",	BGBCC_SH_NMID_MULUL},
 {"dmuls",	BGBCC_SH_NMID_MULSL},
 {"dmulu.l",	BGBCC_SH_NMID_MULUL},
@@ -1434,6 +1462,8 @@ int BGBCC_JX2A_LookupOpcodeFmid(
 				{
 				case BGBCC_SH_OPVTY_REG:
 					fm=BGBCC_SH_FMID_REGREGREG; break;
+				case BGBCC_SH_OPVTY_NAME:
+					fm=BGBCC_SH_FMID_REGREGLBL; break;
 				}
 				break;
 			case BGBCC_SH_OPVTY_IMM:
@@ -1693,7 +1723,8 @@ int BGBCC_JX2A_TryAssembleOpcode(
 
 	case BGBCC_SH_FMID_REGREGLBL:
 		lbl=BGBCC_JX2_GetNamedLabel(ctx, arg2->name);
-		rt=BGBCC_JX2_TryEmitOpRegRegLbl(ctx, nmid, arg0->breg, arg1->breg, lbl);
+		rt=BGBCC_JX2_TryEmitOpRegRegLbl(ctx, nmid,
+			arg0->breg, arg1->breg, lbl);
 		break;
 
 	default:

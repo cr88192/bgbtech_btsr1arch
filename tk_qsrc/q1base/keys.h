@@ -26,6 +26,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define	K_ESCAPE		27
 #define	K_SPACE			32
 
+#define	K_ESC			27
+
 // normal keys should be passed as lowercased ascii
 
 #define	K_BACKSPACE		127
@@ -114,6 +116,20 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define K_MWHEELUP		239
 #define K_MWHEELDOWN	240
+
+#define	K_SKM_F1		0x0100
+#define	K_SKM_F2		0x0200
+#define	K_SKM_F3		0x0300
+#define	K_SKM_F4		0x0400
+#define	K_SKM_F5		0x0500
+#define	K_SKM_F6		0x0600
+#define	K_SKM_F7		0x0700
+#define	K_SKM_F8		0x0800
+#define	K_SKM_F9		0x0900
+#define	K_SKM_F10		0x0A00
+#define	K_SKM_F11		0x0B00
+#define	K_SKM_F12		0x0C00
+#define	K_SKM_ESC		0x0D00
 
 
 

@@ -285,6 +285,11 @@ begin
 		JX2_UCMD_FCMP: begin
 		end
 
+`ifdef jx2_alu_jcmp
+		JX2_UCMD_JCMP: begin
+		end
+`endif
+
 		JX2_UCMD_MULW3: begin
 		end
 

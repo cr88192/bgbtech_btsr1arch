@@ -34,10 +34,16 @@ reg[31:0]	tNxtRngA;
 reg[31:0]	tNxtRngB;
 reg			tRngBitA;
 reg			tRngBitB;
+reg			tRngBitC;
+reg			tRngBitD;
 reg			tRngBitAL;
 reg			tRngBitBL;
+reg			tRngBitCL;
+reg			tRngBitDL;
 reg			tRngNoiseA1;
 reg			tRngNoiseA2;
+reg			tRngNoiseA3;
+reg			tRngNoiseA4;
 reg			tRngNoiseA;
 
 
@@ -214,8 +220,21 @@ begin
 		tRngB[5] ^ tRngB[7] ^
 		tRngNoiseA ^ tRngBitAL ^ 1;
 
-	tNxtRngA	= { tRngBitA, tRngA[31:1] };
-	tNxtRngB	= { tRngBitB, tRngB[31:1] };
+	tRngBitC	=
+		tRngA[17] ^ tRngA[19] ^
+		tRngA[21] ^ tRngA[23] ^
+		tRngNoiseA ^ tRngBitDL ^ 1;
+	tRngBitD	=
+		tRngB[17] ^ tRngB[19] ^
+		tRngB[21] ^ tRngB[23] ^
+		tRngNoiseA ^ tRngBitCL ^ 1;
+
+//	tNxtRngA	= { tRngBitA, tRngA[31:1] };
+//	tNxtRngB	= { tRngBitB, tRngB[31:1] };
+
+	tNxtRngA	= { tRngA[30:16], tRngA[15]^tRngBitC, tRngA[14:0], tRngBitA };
+//	tNxtRngB	= { tRngB[30:16], tRngB[15]^tRngBitD, tRngB[14:0], tRngBitB };
+	tNxtRngB	= { tRngBitB, tRngB[31:17], tRngB[16]^tRngBitD, tRngB[15:1] };
 
 	tResHi = tResHiA;
 
@@ -295,10 +314,14 @@ begin
 	tRngB			<= tNxtRngB;
 	tRngBitAL		<= tRngBitA;
 	tRngBitBL		<= tRngBitB;
+	tRngBitCL		<= tRngBitC;
+	tRngBitDL		<= tRngBitD;
 
 	tRngNoiseA1		<= timers[0];
 	tRngNoiseA2		<= tRngNoiseA1;
-	tRngNoiseA		<= tRngNoiseA2 ^ tRngNoiseA1;
+	tRngNoiseA3		<= tRngNoiseA2;
+	tRngNoiseA4		<= tRngNoiseA3;
+	tRngNoiseA		<= tRngNoiseA4 ^ tRngNoiseA3;
 end
 
 endmodule
