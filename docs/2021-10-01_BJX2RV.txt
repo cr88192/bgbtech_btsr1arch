@@ -88,10 +88,15 @@ Addressing:
 
 As a divergence from the RISC-V spec, JALR where the LSB is set in the result will invoke special behavior:
 * 01: Jump back to BJX2 Mode.
-* 11: Jump back to BJX2 Mode, Enable WEX (Reserved).
+* 11: / Jump back to BJX2 Mode, Enable WEX (Reserved).
+* 11: Jump to Mode as given in bits (51:50).
 * The target for an Inter-ISA jump will require a 4-byte alignment.
 
 For BJX2 Cores with the RVI Extension, JMP or JSR with the LSB set will jump into RISC-V Mode. They may jump into either Scalar or WEX Mode.
+* 01: Jump into RISC-V Mode.
+* 11: Jump to Mode as given in bits (51:50).
+
+With both low-order bits set, the mode bits will be restored similar to what happens with a jump via the link register.
 
 
 === FPU ===

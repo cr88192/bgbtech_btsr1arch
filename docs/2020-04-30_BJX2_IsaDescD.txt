@@ -700,6 +700,12 @@ The INVTLB instruction will flush the TLB. This would be done as part of changin
 Compare (Rn op Rm) and branch based on the result.
 This operation will only be present if JCMP is present.
 
+Note that LT and GE comparisons may be created by switching the arguments.
+Alternately 
+
+TSTT will perform a logical AND, and Branch if the result is Zero.
+TSTF will perform a logical AND, and Branch if the result is Not Zero.
+
 
 === JCMPZxx ===
 
