@@ -1116,6 +1116,21 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_LDEKEY:		s0="LDEKEY";	break;
 	case BJX2_NMID_LDEENC:		s0="LDEENC";	break;
 
+	case BJX2_NMID_BREQ:		s0="BREQ";		break;
+	case BJX2_NMID_BRNE:		s0="BRNE";		break;
+	case BJX2_NMID_BRLT:		s0="BRLT";		break;
+	case BJX2_NMID_BRGE:		s0="BRGE";		break;
+	case BJX2_NMID_BRBI:		s0="BRLTU";		break;
+	case BJX2_NMID_BRHE:		s0="BRGEU";		break;
+
+	case BJX2_NMID_BRTSTT:		s0="BRTSTT";	break;
+	case BJX2_NMID_BRTSTF:		s0="BRTSTF";	break;
+
+//	case BJX2_NMID_BRAL:		s0="BRA.L";		break;
+//	case BJX2_NMID_BSRL:		s0="BSR.L";		break;
+	case BJX2_NMID_BTL:			s0="BT.L";		break;
+	case BJX2_NMID_BFL:			s0="BF.L";		break;
+
 	default:
 		sprintf(tb, "?NM%02X", nmid);
 		s0=tb;

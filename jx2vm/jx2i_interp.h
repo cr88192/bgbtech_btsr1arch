@@ -579,11 +579,10 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_BRNE			0x111		//
 #define BJX2_NMID_BRLT			0x112		//
 #define BJX2_NMID_BRGE			0x113		//
-#define BJX2_NMID_BRBI			0x112		//
-#define BJX2_NMID_BRHE			0x113		//
-
-#define BJX2_NMID_BRTSTT		0x114		//
-#define BJX2_NMID_BRTSTF		0x115		//
+#define BJX2_NMID_BRBI			0x114		//
+#define BJX2_NMID_BRHE			0x115		//
+#define BJX2_NMID_BRTSTT		0x116		//
+#define BJX2_NMID_BRTSTF		0x117		//
 
 #define BJX2_NMID_BRAL			0x118		//
 #define BJX2_NMID_BSRL			0x119		//
