@@ -1181,6 +1181,14 @@ begin
 		opImmB	= opImmA;
 		opUCmdB	= opUCmdA;
 		opUIxtB	= opUIxtA;
+		
+		if(!opIsScalar)
+		begin
+			if(decOpFzA_idUFl[1])
+			begin
+				opImmB	= { UV17_00, opImmA[31:16] };
+			end
+		end
 
 		if(!opIsDualLaneRn)
 		begin

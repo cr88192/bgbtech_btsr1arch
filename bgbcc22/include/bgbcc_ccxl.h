@@ -72,6 +72,8 @@
 #define CCXL_TY_VARSYMBOL		0x3D		//
 #define CCXL_TY_VARARR			0x3E		//
 
+#define CCXL_TY_BOOLEAN			0x3F		//
+
 
 #define CCXL_TY_BIGINT			0x40		//large boxed integer
 #define CCXL_TY_FIXNUM			0x41		//large boxed integer

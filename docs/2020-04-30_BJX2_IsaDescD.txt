@@ -1232,6 +1232,27 @@ As with other MOV.x ops, encodings using PC or GBR as a base will use a byte sca
 The results of trying to load or store using a misaligned address are undefined.
 
 
+=== MOVTT (TTAG) ===
+
+* F0nm_3go1            MOVTT	Rm, Ri, Rn		//(TTAG) Set High 16
+* F0nm_3Go1            MOVTT	Rm, Imm5u, Rn	//(TTAG) Set Type-Tag
+* FFw0_0Vii_F0nm_3Gi1  MOVTT	Rm, Imm17s, Rn	//(TTAG) Set High 16
+* FFw0_iiii_F84n_iiii  XMOVTT	Imm32u, Xn		//(TTAG+XGPR) WMI==11
+
+In the 3R form, this copies the low 48 bits from Rm, and the high 16 from Ri.
+
+In the 3RI Imm5u form, the tag is twiddled:
+* zzzz0: Rn(63:60)=Imm(4:1)
+* zzz01: Rn(63:61)=Imm(4:2)
+* zz011: Rn(63:62)=Imm(4:3)
+* z0111: Rn(63   )=Imm(4  )
+
+With the 3RI form, all other bits are copied unchanged from Rm.
+
+
+XMOVTT will load the 32-bit immediate into the high 16 bits of each target register, with the low half into the low register and the high half into the high register. The remaining 96 bits are kept unchanged.
+
+
 === MULx (3R) ===
 
 * 5Anm       MULS	Rm, DLR, Rn
@@ -1896,7 +1917,38 @@ If WEX is disabled, any WEX sequences encountered will be treated as if they wer
 
 These are XMOV Load/Store Ops.
 
-If XMOV is supported, it will allow expanding the logical address space up to 112 bits with a 64-bit sign-extended displacement.
+If XMOV is supported, it will allow expanding the logical address space up to 96 bits with a 33-bit sign-extended displacement.
+
+The 96-bit address will be composed from the low 48 bits of each register in the pair. The remaining upper 16 bits of each register will be used as tag bits.
+
+Note that the XMOV instruction may enforce Bounds Checks depending on the high-order bits of the pointer.
+
+Tagged Object Pointer
+* Bits (127:112)=Ignored
+* Bits (111: 64)=Address(95:48)
+* Bits ( 63: 60)=Tag (0000)
+* Bits ( 59: 48)=Object Tag (Ignored)
+* Bits ( 47:  0)=Address(47:0)
+
+Bounded Array (Extended)
+* Bits (127:112)=ArrayBound(27:12)
+* Bits (111: 64)=Address(95:48)
+* Bits ( 63: 60)=Tag (0010)
+* Bits ( 59: 48)=ArrayBound(11:0)
+* Bits ( 47:  0)=Address(47:0)
+
+Double Bounded Array (Extended)
+* Bits (127:124)=Element Size
+* Bits (123:112)=Array Lower Bound
+* Bits (111: 64)=Address(95:48)
+* Bits ( 63: 60)=Tag (0011)
+* Bits ( 59: 48)=Array Upper Bound
+* Bits ( 47:  0)=Address(47:0)
+
+The Tag 0001 will be defined here as a non-pointer, and trying to access memory through it will raise a fault if bounds checks are supported and enabled.
+
+Other tags here will be reserved for future extension.
+
 
 
 === XOR ===

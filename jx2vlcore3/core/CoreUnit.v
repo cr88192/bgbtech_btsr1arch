@@ -1726,6 +1726,7 @@ begin
 
 end
 
+`ifndef def_true
 reg[5:0] tSbitX1A;
 reg[5:0] tSbitX1B;
 reg[5:0] tSbitX1C;
@@ -1765,6 +1766,15 @@ begin
 //	tSbitX		<= tSbitX1K;
 	tSbitX		<= tSbitX1K[0] ^ tSbitX1K[1] ^ tSbitX1K[2] ^ tSbitX1K[4];
 end
+
+`else
+
+always @(posedge clock_50)
+begin
+	tSbitX		<= 0;
+end
+
+`endif
 
 
 endmodule

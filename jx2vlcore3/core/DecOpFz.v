@@ -129,7 +129,9 @@ reg		opIsJumboAu;
 reg		opIsJumbo96;
 reg		opIsImm9;
 reg		opIsImm4R;
+reg		opIsImmSplit;
 
+reg		opExWQ;
 reg		opExWN;
 reg		opExWM;
 reg		opExWI;
@@ -223,6 +225,7 @@ begin
 	opExI		= istrWord[24];
 
 	opIsXGpr	= 0;
+	opExWQ		= 0;
 	opExWN		= 0;
 	opExWM		= 0;
 	opExWI		= 0;
@@ -256,6 +259,7 @@ begin
 
 	if(opIsJumboAu)
 	begin
+		opExWQ		= istrJBits[23];
 		opExWN		= istrJBits[22];
 		opExWM		= istrJBits[21];
 		opExWI		= istrJBits[20];
@@ -1043,6 +1047,17 @@ begin
 
 			16'h1zz8: begin	/* F0nm_1ez8 */
 				case(istrWord[23:20])
+					4'hA: begin		/* F0nm_1eA8 */
+						opNmid		= JX2_UCMD_ALUW3;
+						opUCmdIx	= JX2_UCIX_ALUW_MOVTA16;
+						opFmid		= JX2_FMID_REGIMMREG;
+						opIty		= JX2_ITY_SB;
+						if(opExQ)
+						begin
+							opUCty		= JX2_IUC_WX;
+						end
+					end
+
 					4'hB: begin
 						if(opExQ)
 							opUCmdIx	= JX2_UCIX_CONV_SNIPEIC;
@@ -2440,6 +2455,19 @@ begin
 				endcase
 			end
 
+			16'h3zz1: begin		/* F0nm_3eo1 */
+				opNmid		= JX2_UCMD_ALUW3;
+				opUCmdIx	= JX2_UCIX_ALUW_MOVTA16;
+				opFmid		= JX2_FMID_REGREG;
+				opIty		= JX2_ITY_SW;
+				if(opExQ && !opIsJumbo)
+//				if((opExQ && !opIsJumboAu) ||
+//					(opIsJumboAu && opIsImm4R && !opExQ))
+				begin
+					opUCmdIx	= JX2_UCIX_ALUW_MOVTA5U;
+				end
+			end
+
 			16'h3zz2: begin		/* F0nm_3eo2 */
 				opNmid		= JX2_UCMD_SHADQ3;
 				if(opExQ)
@@ -2925,8 +2953,14 @@ begin
 
 
 			16'h8zz0: begin		/* F0nm_8eo0 */
-				opNmid	= JX2_UCMD_MOV_RM;
-				opFmid	= JX2_FMID_REGSTREGDISP;
+				if(opExQ)
+				begin
+					opNmid	= JX2_UCMD_LEA_MR;
+					opFmid	= JX2_FMID_LDREGDISPREG;
+				end else begin
+					opNmid	= JX2_UCMD_MOV_RM;
+					opFmid	= JX2_FMID_REGSTREGDISP;
+				end
 				opBty	= JX2_BTY_SB;
 				opIty	= JX2_ITY_UB;
 				opUCty	= JX2_IUC_WA;
@@ -2954,8 +2988,14 @@ begin
 			end
 
 			16'h8zz4: begin		/* F0nm_8eo4 */
-				opNmid	= JX2_UCMD_MOV_RM;
-				opFmid	= JX2_FMID_REGSTDRREG;
+				if(opExQ)
+				begin
+					opNmid	= JX2_UCMD_LEA_MR;
+					opFmid	= JX2_FMID_LDDRREGREG;
+				end else begin
+					opNmid	= JX2_UCMD_MOV_RM;
+					opFmid	= JX2_FMID_REGSTDRREG;
+				end
 				opBty	= JX2_BTY_SB;
 				opIty	= JX2_ITY_UB;
 				opUCty	= JX2_IUC_WA;
@@ -3659,10 +3699,31 @@ begin
 				end
 			end
 			3'b010: begin
-				opNmid		= JX2_UCMD_ALU3;
-				opFmid		= JX2_FMID_IMM8REG;
-				opIty		= JX2_ITY_SB;
-				opUCmdIx	= JX2_UCIX_ALU_ADD;
+				if(opIsJumboAu && (opExWM || opExWI))
+				begin
+					if(opExWM)
+					begin
+						opNmid		= JX2_UCMD_ALUW3;
+						opUCmdIx	= JX2_UCIX_ALUW_MOVTA16;
+						opFmid		= JX2_FMID_IMM8REG;
+						opIty		= JX2_ITY_SB;
+						opUCty		= JX2_IUC_WX;
+					end
+					else
+					begin
+						opNmid		= JX2_UCMD_ALUW3;
+						opUCmdIx	= JX2_UCIX_ALUW_MOVLD;
+						opFmid		= JX2_FMID_IMM8REG;
+						opIty		= JX2_ITY_SB;
+					end
+				end
+				else
+				begin
+					opNmid		= JX2_UCMD_ALU3;
+					opFmid		= JX2_FMID_IMM8REG;
+					opIty		= JX2_ITY_SB;
+					opUCmdIx	= JX2_UCIX_ALU_ADD;
+				end
 			end
 			3'b011: begin
 				if(opIsJumbo96)
@@ -3897,6 +3958,7 @@ begin
 			SB: Rm, Ro, Rn
 			SW: Rm, Q?Imm5u:Ro, Rn
 			SL: Rm, Q?Imm5n:Ro, Rn
+			/ SQ: Q?Imm5n:Ro, Rm, Rn
 
 			UB: Rm, Rn, Rn
 			UW: Rm, Rn, Rn
@@ -3984,6 +4046,19 @@ begin
 					end
 				end
 
+`ifndef def_true
+				JX2_ITY_SQ: begin
+					opImm	= opImm_imm5u;
+					if(opExQ)
+					begin
+						opRegM	= JX2_GR_IMM;
+						opRegO	= opRegM_Dfl;
+						opRegP	= opRegN_Dfl;
+						if(opIsImm4R)
+							opRegP	= opRegO_Dfl;
+					end
+				end
+`endif
 
 				JX2_ITY_UL: begin
 					opRegM	= opRegM_Dfl;
@@ -4059,7 +4134,7 @@ begin
 
 			case(opIty)
 				JX2_ITY_SB: begin
-//					opImm	= opImm_imm9u;
+					opImm	= 0;
 				end
 				JX2_ITY_SW: begin
 					opImm	= opImm_imm9s;
@@ -4282,6 +4357,10 @@ begin
 			opUIxt	= { opUCty, opUCmdIx };
 			opUFl		= 0;
 			opIsImm9	= 0;
+			opIsImmSplit	= 0;
+			
+			if(opUCty == JX2_IUC_WX)
+				opIsImmSplit = (opExWM && opExWI);
 
 //			opRegM	= JX2_GR_IMM;
 			opRegM	= opRegImm16;
@@ -4403,6 +4482,7 @@ begin
 			endcase
 			
 			opUFl[0]	= opIsImm9;
+			opUFl[1]	= opIsImmSplit;
 		end
 
 `ifndef def_true

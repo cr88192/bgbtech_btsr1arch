@@ -153,7 +153,7 @@ void TKMM_LVA_StrEncodeLengthRev(byte *dst, int len, int tag)
 char *TKMM_LVA_StrdupPfx(char *str, byte pfx)
 {
 	char *c, *s1;
-	int h, l;
+	int h, l, l1;
 	
 	h=TKMM_LVA_HashName(str);
 	h=(h>>16)&255;
@@ -168,6 +168,7 @@ char *TKMM_LVA_StrdupPfx(char *str, byte pfx)
 	}
 
 	l=strlen(str);
+	l1=(l+15)&(~15);
 
 	if(l>512)
 	{
@@ -189,7 +190,8 @@ char *TKMM_LVA_StrdupPfx(char *str, byte pfx)
 		tk_lva_strbuf_pos=tk_lva_strbuf_buf;
 	}
 	
-	if((tk_lva_strbuf_pos+l+24)>=tk_lva_strbuf_end)
+//	if((tk_lva_strbuf_pos+l+24)>=tk_lva_strbuf_end)
+	if((tk_lva_strbuf_pos+l1+16)>=tk_lva_strbuf_end)
 	{
 		tk_lva_strbuf_buf=TKMM_MMList_Malloc(4096);
 		tk_lva_strbuf_end=tk_lva_strbuf_buf+4096;
@@ -197,7 +199,8 @@ char *TKMM_LVA_StrdupPfx(char *str, byte pfx)
 	}
 
 	c=tk_lva_strbuf_pos;
-	tk_lva_strbuf_pos=c+l+24;
+//	tk_lva_strbuf_pos=c+l+24;
+	tk_lva_strbuf_pos=c+l1+16;
 	s1=(char *)(((char **)c)+2);
 	strcpy(s1, str);
 //	*(s1-1)=pfx;
@@ -216,7 +219,7 @@ char *TKMM_LVA_Strdup(char *str)
 u16 *TKMM_LVA_StrdupU16(u16 *str)
 {
 	char *c, *s1;
-	int h, l;
+	int h, l, l1;
 	
 	h=TKMM_LVA_HashNameU16(str);
 	h=(h>>16)&255;
@@ -231,6 +234,7 @@ u16 *TKMM_LVA_StrdupU16(u16 *str)
 	}
 
 	l=strlen(str);
+	l1=(l+15)&(~15);
 
 	if(l>512)
 	{
@@ -253,15 +257,17 @@ u16 *TKMM_LVA_StrdupU16(u16 *str)
 		tk_lva_strbuf_pos=tk_lva_strbuf_buf;
 	}
 	
-	if((tk_lva_strbuf_pos+(l*2)+24)>=tk_lva_strbuf_end)
+//	if((tk_lva_strbuf_pos+(l*2)+24)>=tk_lva_strbuf_end)
+	if((tk_lva_strbuf_pos+(l1*2)+16)>=tk_lva_strbuf_end)
 	{
 		tk_lva_strbuf_buf=TKMM_MMList_Malloc(4096);
 		tk_lva_strbuf_end=tk_lva_strbuf_buf+4096;
 		tk_lva_strbuf_pos=tk_lva_strbuf_buf;
 	}
-
+	
 	c=tk_lva_strbuf_pos;
-	tk_lva_strbuf_pos=c+(l*2)+24;
+//	tk_lva_strbuf_pos=c+(l*2)+24;
+	tk_lva_strbuf_pos=c+(l1*2)+16;
 	s1=(char *)(((char **)c)+2);
 	TKMM_LVA_StrcpyU16((u16 *)s1, str);
 //	*(s1-1)='w';

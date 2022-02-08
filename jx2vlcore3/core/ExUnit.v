@@ -1110,6 +1110,8 @@ wire[8:0]		ex1OpUCmd2;
 
 wire			ex1AluSrJcmpT;
 
+wire[63:0]		ex1AguOutXLea;		//XLEA Output
+
 ExEX1	ex1(
 	clock,			reset,
 	ex1OpUCmd,		ex1OpUIxt,
@@ -1118,7 +1120,7 @@ ExEX1	ex1(
 
 	ex1RegIdRs,		ex1RegIdRt,		ex1RegIdRm,
 	ex1RegValRs,	ex1RegValRt,	ex1RegValRm,
-	exB1RegValRs,
+	exB1RegValRs,	ex1AguOutXLea,
 	
 //	ex1RegValFRs,	ex1RegValFRt,
 	ex1RegValCRm,
@@ -1528,6 +1530,9 @@ wire[63:0]		exB1RegValRn1;		//Destination Value (EX1)
 
 wire[8:0]		exB1OpUCmd2;
 
+wire[63:0]		exB1AguXLea;		//XLEA Output
+assign		exB1AguXLea = ex1AguOutXLea;
+
 ExEXB1	exb1(
 	clock,			reset,
 	exB1OpUCmd,		exB1OpUIxt,
@@ -1536,7 +1541,7 @@ ExEXB1	exb1(
 	exB1RegIdRs,	exB1RegIdRt,
 	exB1RegIdRm,	exB1RegValRs,
 	exB1RegValRt,	exB1RegValRm,
-	ex1RegValRs,
+	ex1RegValRs,	exB1AguXLea,
 
 	exB1RegIdRn1,	exB1RegValRn1,
 	exB1HldIdRn1,

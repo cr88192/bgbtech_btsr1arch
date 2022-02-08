@@ -844,14 +844,15 @@ parameter[5:0] JX2_UCIX_ALUW_PSHUFW	= 6'h25;		//ALU PSHUF.W
 parameter[5:0] JX2_UCIX_ALUW_MOVLD	= 6'h26;		//ALU (Low DWords)
 parameter[5:0] JX2_UCIX_ALUW_MOVHD	= 6'h27;		//ALU (High DWords)
 
-parameter[5:0] JX2_UCIX_ALUW_PSRCHN	= 6'h18;		//Packed Search
-parameter[5:0] JX2_UCIX_ALUW_CMPAHS	= 6'h19;		//
-parameter[5:0] JX2_UCIX_ALUW_CMPAEQ	= 6'h1A;		//
-parameter[5:0] JX2_UCIX_ALUW_PSRCHE	= 6'h1C;		//Packed Search
-parameter[5:0] JX2_UCIX_ALUW_CMPAHI	= 6'h1D;		//
-parameter[5:0] JX2_UCIX_ALUW_CMPTEQ	= 6'h1E;		//
-
-parameter[5:0] JX2_UCIX_ALUW_PCSELT	= 6'h2F;		//Packed CSELT
+parameter[5:0] JX2_UCIX_ALUW_PSRCHN		= 6'h18;		//Packed Search
+parameter[5:0] JX2_UCIX_ALUW_CMPAHS		= 6'h19;		//
+parameter[5:0] JX2_UCIX_ALUW_CMPAEQ		= 6'h1A;		//
+parameter[5:0] JX2_UCIX_ALUW_MOVTA5U	= 6'h2A;		//
+parameter[5:0] JX2_UCIX_ALUW_MOVTA16	= 6'h2B;		//
+parameter[5:0] JX2_UCIX_ALUW_PSRCHE		= 6'h1C;		//Packed Search
+parameter[5:0] JX2_UCIX_ALUW_CMPAHI		= 6'h1D;		//
+parameter[5:0] JX2_UCIX_ALUW_CMPTEQ		= 6'h1E;		//
+parameter[5:0] JX2_UCIX_ALUW_PCSELT		= 6'h2F;		//Packed CSELT
 
 parameter[5:0] JX2_UCIX_ALUB_BITSEL	= 6'h2F;		//Bit Select
 

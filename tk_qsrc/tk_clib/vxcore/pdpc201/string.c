@@ -152,7 +152,8 @@ __PDPCLIB_API__ char *strncpy(char *s1, const char *s2, size_t n)
 #undef strcat
 #endif
 
-#ifndef __BJX2__
+// #ifndef __BJX2__
+#if !defined(__BJX2__) || defined(__ADDR_X96__)
 // #if 1
 
 __PDPCLIB_API__ char *strcat(char *s1, const char *s2)
@@ -255,7 +256,8 @@ __PDPCLIB_API__ int memcmp(const void *s1, const void *s2, size_t n)
 #undef strcmp
 #endif
 
-#if 0
+// #if 0
+#if !defined(__BJX2__) || defined(__ADDR_X96__)
 // #if 1
 __PDPCLIB_API__ int strcmp(const char *s1, const char *s2)
 {
@@ -369,7 +371,8 @@ __PDPCLIB_API__ int strcoll(const char *s1, const char *s2)
 #undef strncmp
 #endif
 
-#ifndef __BJX2__
+// #ifndef __BJX2__
+#if !defined(__BJX2__) || defined(__ADDR_X96__)
 // #if 1
 __PDPCLIB_API__ int strncmp(const char *s1, const char *s2, size_t n)
 {
@@ -595,7 +598,8 @@ __PDPCLIB_API__ void *memset(void *s, int c, size_t n)
 }
 #endif
 
-#ifdef __BJX2__
+// #ifdef __BJX2__
+#if defined(__BJX2__) && !defined(__ADDR_X96__)
 // #if 0
 void memset_movx(void *s, int c, size_t n);
 
@@ -653,10 +657,20 @@ memset_movx:
 __PDPCLIB_API__ void *memset(void *s, int c, size_t n)
 {
 	unsigned char *ct, *cte, *cte0;
+#if defined(__ADDR_X96__)
+	__int128 xv1;
+#endif
 	unsigned long long v1;
 	int v, a, n1;
 
-#ifdef __BJX2__
+#if defined(__ADDR_X96__)
+	xv1 = (__int128)s;
+	if(xv1!=(long)xv1)
+		__debugbreak();
+#endif
+
+//#ifdef __BJX2__
+#if defined(__BJX2__) && !defined(__ADDR_X96__)
 // #if 0
 //	v=((int)s)|n;
 	a=(int)(((long)s)|n);
@@ -736,6 +750,12 @@ __PDPCLIB_API__ void *memset(void *s, int c, size_t n)
 
 	v=c; v|=(v<<8); v|=(v<<16);
 	ct=s; cte=s+n;
+
+#if defined(__ADDR_X96__)
+	xv1 = (__int128)cte;
+	if(xv1!=(long)xv1)
+		__debugbreak();
+#endif
 
 #if 1
 	v1=(((unsigned long long)v)<<32)|((unsigned int)v);
@@ -843,7 +863,8 @@ __PDPCLIB_API__ char *strerror(int errnum)
 }
 
 
-#ifdef __BJX2__
+// #ifdef __BJX2__
+#if defined(__BJX2__) && !defined(__ADDR_X96__)
 // #if 0
 
 __PDPCLIB_API__ size_t strlen(const char *s);
@@ -1024,7 +1045,8 @@ strcat:
 
 #endif
 
-#ifndef __BJX2__
+// #ifndef __BJX2__
+#if !defined(__BJX2__) || defined(__ADDR_X96__)
 // #if 1
 
 #ifdef strlen

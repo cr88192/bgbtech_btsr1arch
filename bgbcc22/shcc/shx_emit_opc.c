@@ -197,8 +197,10 @@ int BGBCC_SHX_EmitCheckRegExt4(BGBCC_SHX_Context *ctx, int reg)
 
 	if((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_DR16)
 		return(1);
-	if((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_XF0)
+	if((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_FR16)
 		return(1);
+//	if((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_XF0)
+//		return(1);
 
 	return(0);
 }
@@ -408,7 +410,9 @@ int BGBCC_SHX_EmitCheckRegExtFPR(BGBCC_SHX_Context *ctx, int reg)
 	if((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_DR0)
 		return(1);
 
-	if((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_XF0)
+//	if((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_XF0)
+//		return(1);
+	if((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_FR16)
 		return(1);
 	if((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_DR16)
 		return(1);

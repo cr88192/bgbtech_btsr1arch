@@ -108,7 +108,7 @@ void BJX2_Op_MOVUL_LdRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 void BJX2_Op_SETTRIP_RegStReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	ctx->trapc=op->pc;
-	BJX2_MemSetTrip(ctx, ctx->regs[op->rn], ctx->regs[op->rm]);
+//	BJX2_MemSetTrip(ctx, ctx->regs[op->rn], ctx->regs[op->rm]);
 }
 
 

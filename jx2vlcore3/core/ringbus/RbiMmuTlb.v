@@ -19,7 +19,8 @@ module RbiMmuTlb(
 	regInSeq,		regOutSeq,
 	unitNodeId,		regInLdtlb,
 	regOutExc,		regInHold,
-	regInMMCR,		regInKRR,		regInSR
+	regInMMCR,		regInKRR,
+	regInSR,		regInExecAcl
 	);
 
 input			clock;			//clock
@@ -43,6 +44,7 @@ input[63:0]		regInKRR;		//Keyring Register
 input[63:0]		regInSR;		//Status Register
 
 input[127:0]	regInLdtlb;
+input[15:0]		regInExecAcl;
 
 reg[127:0]		tRegInLdtlbHi;
 reg[127:0]		tNxtRegInLdtlbHi;
@@ -310,6 +312,9 @@ assign		regInIsSTIO = (regInOpm[7:4]==4'hA);
 assign		regInIsMMIO = (regInIsLDIO || regInIsSTIO) && !regInIsNzX;
 assign		regInIsReqIO = regInIsLDIO || regInIsSTIO;
 
+wire[63:0]	tRegInKRR;
+assign	tRegInKRR = ((regInExecAcl!=0) && (regInKRR[15:0]!=0)) ?
+	{ regInKRR[47:0], regInExecAcl } : regInKRR;
 
 reg		tRegInIsBounce;
 
@@ -319,7 +324,8 @@ RbiMmuChkAcc tlbChkAcc(
 	clock,	reset,
 	regInHold,
 	regInMMCR,
-	regInKRR,
+//	regInKRR,
+	tRegInKRR,
 	regInSR,
 	regInOpm[7:0],
 	tlbAcc,
@@ -746,6 +752,8 @@ begin
 	tRegOutTea[47:0]	= tRegInAddr[47:0];
 `ifdef jx2_tlb_xtlbe
 	tRegOutTeaHi[47:0]	= tRegInAddr[95:48];
+`else
+	tRegOutTeaHi[47:0]	= 0;
 `endif
 
 	if(tlbMmuEnable)
@@ -755,7 +763,22 @@ begin
 			if(tTlbExc[15])
 			begin
 				tRegOutExc = tTlbExc;
+
+				if(tTlbExc[3:0]==4'h2)
+				begin
+					tRegOutTea[15: 0]	= tlbAcc  [31:16];
+					tRegOutTea[31:16]	= tRegInKRR[15: 0];
+				end
 			end
+			else
+			begin
+				if(tlbAcc[6:4]==3'b110)
+				begin
+					tRegOutExc[15:12]	= 4'h7;
+					tRegOutTeaHi[63:48]	= tlbAcc[31:16];
+				end
+			end
+
 		end
 	end
 	

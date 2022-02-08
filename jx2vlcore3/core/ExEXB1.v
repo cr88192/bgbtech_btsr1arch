@@ -42,6 +42,7 @@ module ExEXB1(
 	regValRm,		//Source C Value
 
 	regValXs,		//Source A, 128-bit
+	regValXLea,		//XLEA Output
 
 	regIdRn1,		//Destination ID (EX1)
 	regValRn1,		//Destination Value (EX1)
@@ -71,6 +72,7 @@ input[63:0]		regValRt;		//Source B Value
 input[63:0]		regValRm;		//Source C Value
 
 input[63:0]		regValXs;		//Source C Value
+input[63:0]		regValXLea;
 
 `output_gpr		regIdRn1;		//Destination ID (EX1)
 output[63:0]	regValRn1;		//Destination Value (EX1)
@@ -222,6 +224,14 @@ begin
 		JX2_UCMD_LEA_MR: begin
 //			tSlotUSup		= 0;
 			tSlotUSup		= 1;
+
+			if(	(opUIxt[8:6]==JX2_IUC_WX) ||
+				(opUIxt[8:6]==JX2_IUC_WXA))
+			begin
+				tRegIdRn1	= regIdRm;
+				tRegValRn1	= regValXLea;
+				tSlotUSup	= 0;
+			end
 		end
 
 		JX2_UCMD_MOV_RM: begin

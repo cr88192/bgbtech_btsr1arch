@@ -1126,10 +1126,44 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_BRTSTT:		s0="BRTSTT";	break;
 	case BJX2_NMID_BRTSTF:		s0="BRTSTF";	break;
 
-//	case BJX2_NMID_BRAL:		s0="BRA.L";		break;
-//	case BJX2_NMID_BSRL:		s0="BSR.L";		break;
+	case BJX2_NMID_BRAL:		s0="BRA.L";		break;
+	case BJX2_NMID_BSRL:		s0="BSR.L";		break;
 	case BJX2_NMID_BTL:			s0="BT.L";		break;
 	case BJX2_NMID_BFL:			s0="BF.L";		break;
+
+	case BJX2_NMID_FADDX:		s0="FADDX";		break;
+	case BJX2_NMID_FSUBX:		s0="FSUBX";		break;
+	case BJX2_NMID_FMULX:		s0="FMULX";		break;
+	case BJX2_NMID_PCONV:		s0="PCONV";		break;
+	case BJX2_NMID_FCMPXEQ:		s0="FCMPXEQ";	break;
+	case BJX2_NMID_FCMPXGT:		s0="FCMPXGT";	break;
+//	case BJX2_NMID_PSCHEQW:		s0="PSCHEQW";	break;
+//	case BJX2_NMID_PSCHNEW:		s0="PSCHNEW";	break;
+	case BJX2_NMID_JADD:		s0="JADD";		break;
+	case BJX2_NMID_CMPXEQ:		s0="CMPXEQ";	break;
+	case BJX2_NMID_CMPXGT:		s0="CMPXGT";	break;
+	case BJX2_NMID_CMPXHI:		s0="CMPXHI";	break;
+
+	case BJX2_NMID_ADDX:		s0="ADDX";		break;
+	case BJX2_NMID_SUBX:		s0="SUBX";		break;
+	case BJX2_NMID_ADCX:		s0="ADCX";		break;
+	case BJX2_NMID_SBBX:		s0="SBBX";		break;
+	case BJX2_NMID_ROTLX:		s0="ROTLX";		break;
+	case BJX2_NMID_ANDX:		s0="ANDX";		break;
+	case BJX2_NMID_ORX:			s0="ORX";		break;
+	case BJX2_NMID_XORX:		s0="XORX";		break;
+	case BJX2_NMID_SHADX:		s0="SHADX";		break;
+	case BJX2_NMID_SHLDX:		s0="SHLDX";		break;
+	case BJX2_NMID_SHARX:		s0="SHARX";		break;
+	case BJX2_NMID_SHLRX:		s0="SHLRX";		break;
+
+	case BJX2_NMID_XLEAB:		s0="XLEA.B";	break;
+	case BJX2_NMID_XLEAW:		s0="XLEA.W";	break;
+	case BJX2_NMID_XLEAL:		s0="XLEA.L";	break;
+	case BJX2_NMID_XLEAQ:		s0="XLEA.Q";	break;
+
+	case BJX2_NMID_MOVTT:		s0="MOVTT";		break;
+	case BJX2_NMID_XMOVTT:		s0="XMOVTT";	break;
 
 	default:
 		sprintf(tb, "?NM%02X", nmid);

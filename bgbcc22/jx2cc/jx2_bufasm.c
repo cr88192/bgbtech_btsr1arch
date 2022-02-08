@@ -257,7 +257,8 @@ int BGBCC_JX2A_GetRegId(BGBCC_JX2_Context *ctx, char *str)
 					if((i>=0) && (i<=31))
 						return(t+i);
 					if((i>=32) && (i<=63))
-						return(BGBCC_SH_REG_R32+(i-32));
+						return(t+i);
+//						return(BGBCC_SH_REG_R32+(i-32));
 				}
 			
 //				if((str[2]>='0') && (str[2]<='9') &&
@@ -290,7 +291,8 @@ int BGBCC_JX2A_GetRegId(BGBCC_JX2_Context *ctx, char *str)
 				if((i>=0) && (i<=31))
 					return(BGBCC_SH_REG_R0+i);
 				if((i>=32) && (i<=63))
-					return(BGBCC_SH_REG_R32+(i-32));
+					return(BGBCC_SH_REG_R0+i);
+//					return(BGBCC_SH_REG_R32+(i-32));
 			}
 		}
 		break;
@@ -821,6 +823,11 @@ int nmid;
 {"xmovu.l",	BGBCC_SH_NMID_XMOVUL},
 {"xmov.x",	BGBCC_SH_NMID_XMOVX2},
 
+{"xlea.b",	BGBCC_SH_NMID_XLEAB},
+{"xlea.w",	BGBCC_SH_NMID_XLEAW},
+{"xlea.l",	BGBCC_SH_NMID_XLEAL},
+{"xlea.q",	BGBCC_SH_NMID_XLEAQ},
+
 {"add",		BGBCC_SH_NMID_ADD},
 {"addc",	BGBCC_SH_NMID_ADDC},
 {"addv",	BGBCC_SH_NMID_ADDV},
@@ -1052,7 +1059,7 @@ int nmid;
 {"push.x",	BGBCC_SH_NMID_PUSHX2},
 {"pop.x",	BGBCC_SH_NMID_POPX2},
 {"mov.x",	BGBCC_SH_NMID_MOVX2},
-{"movx",	BGBCC_SH_NMID_MOVX2},
+{"movx",	BGBCC_SH_NMID_XMOV},
 
 {"movc",	BGBCC_SH_NMID_MOVC},
 {"mov.c",	BGBCC_SH_NMID_MOVC},
@@ -1158,6 +1165,11 @@ int nmid;
 {"convfli",		BGBCC_SH_NMID_CONVFLI},
 {"snipe.dc",	BGBCC_SH_NMID_SNIPEDC},
 {"snipe.ic",	BGBCC_SH_NMID_SNIPEIC},
+
+{"movtt",		BGBCC_SH_NMID_MOVTT},
+{"xmovtt",		BGBCC_SH_NMID_XMOVTT},
+{"movzt",		BGBCC_SH_NMID_MOVZT},
+{"xmovzt",		BGBCC_SH_NMID_XMOVZT},
 
 
 {"pscheq.w",	BGBCC_SH_NMID_PSCHEQW},
@@ -1887,7 +1899,10 @@ int BGBCC_JX2A_ParseCheckFeature(BGBCC_JX2_Context *ctx, char *sym)
 	if(!bgbcc_stricmp(sym, "has_bra48"))
 		return(ctx->has_bra48);
 	if(!bgbcc_stricmp(sym, "has_xgpr"))
-		return(ctx->has_xgpr);
+		return((ctx->has_xgpr&1)!=0);
+
+	if(!bgbcc_stricmp(sym, "abi_is_xgpr"))
+		return((ctx->has_xgpr&2)!=0);
 
 	if(!bgbcc_stricmp(sym, "has_fmovs"))
 		return((ctx->has_fmovs&1)!=0);

@@ -991,6 +991,71 @@ void BJX2_Op_BF_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 	}
 }
 
+
+#if 1
+void BJX2_Op_BRAX_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 lr, sr;
+	
+//	if(op->rn==BJX2_REG_DHR)
+	if(0)
+	{
+		sr=ctx->regs[BJX2_REG_SR];
+		lr=ctx->regs[BJX2_REG_DHR];
+		sr&=0xFFFFFFFFF3FF000CULL;
+		sr|=(lr>>48)&0xFFF3;
+		sr|=((lr>>48)&0x000C)<<24;
+		ctx->regs[BJX2_REG_SR]=sr;
+	}
+
+
+//	ctx->regs[BJX2_REG_PC]=ctx->regs[op->rn];
+	ctx->regs[BJX2_REG_PC]=ctx->regs[op->rn+0]&0x0000FFFFFFFFFFFFULL;
+	ctx->regs[BJX2_REG_PC_HI]=ctx->regs[op->rn+1]&0x0000FFFFFFFFFFFFULL;
+	ctx->tr_rnxt=NULL;
+	
+//	if(!ctx->regs[BJX2_REG_PC])
+//	if((op->pc2>0x10000) && (ctx->regs[BJX2_REG_PC]<0x10000))
+//		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVOP);
+}
+
+void BJX2_Op_BSRX_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 lr, sr, pc1, pc1h;
+	
+	sr=ctx->regs[BJX2_REG_SR];
+	lr=op->pc2&0x0000FFFFFFFFFFFFULL;
+	lr|=((u64)((sr&0xFFF3)|((sr>>24)&0x000C)))<<48;
+
+	pc1=ctx->regs[op->rn+0]&0x0000FFFFFFFFFFFFULL;
+	pc1h=ctx->regs[op->rn+1]&0x0000FFFFFFFFFFFFULL;
+
+	if(pc1&1)
+	{
+		sr^=BJX2_FLAG_SR_RVE;
+		sr&=~BJX2_FLAG_SR_WXE;
+		if(pc1&2)
+			sr|=BJX2_FLAG_SR_WXE;
+		ctx->regs[BJX2_REG_SR]=sr;
+		pc1&=~3;
+	}
+
+//	ctx->regs[BJX2_REG_LR]=op->pc2;
+	ctx->regs[BJX2_REG_LR]=lr;
+//	ctx->regs[BJX2_REG_PC]=ctx->regs[op->rn];
+	ctx->regs[BJX2_REG_PC]=pc1;
+	ctx->regs[BJX2_REG_PC_HI]=pc1h;
+	ctx->tr_rnxt=NULL;
+
+//	if(!ctx->regs[BJX2_REG_PC])
+//	if((op->pc2>0x10000) && (ctx->regs[BJX2_REG_PC]<0x10000))
+//		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVOP);
+//	if(!ctx->regs[BJX2_REG_LR])
+//		{ JX2_DBGBREAK }
+}
+#endif
+
+
 void BJX2_Op_BRA_RegDisp1(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	u64 lr, sr, pc1;

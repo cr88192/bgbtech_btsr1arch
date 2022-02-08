@@ -103,6 +103,7 @@ reg			tAclKrrMatchB;
 reg			tAclKrrMatchC;
 reg			tAclKrrMatchD;
 
+reg			tAclUse;
 reg			tAclUseA;
 reg			tAclUseB;
 reg			tAclUseC;
@@ -176,6 +177,7 @@ begin
 	tAclTlbMatchC = (aclEntryC[15:0] == tTlbInAcc[31:16]);
 	tAclTlbMatchD = (aclEntryD[15:0] == tTlbInAcc[31:16]);
 
+	tAclUse = 0;
 	tAclUseA = 0;
 	tAclUseB = 0;
 	tAclUseC = 0;
@@ -204,21 +206,25 @@ begin
 		begin
 			tVugid		= aclEntryA[31:16];
 			tAccMode	= aclEntryA[43:32];
+			tAclUse		= 1;
 		end
 		else if(tAclUseB && (aclEntryB[34:32]!=0))
 		begin
 			tVugid		= aclEntryB[31:16];
 			tAccMode	= aclEntryB[43:32];
+			tAclUse		= 1;
 		end
 		else if(tAclUseC && (aclEntryC[34:32]!=0))
 		begin
 			tVugid		= aclEntryC[31:16];
 			tAccMode	= aclEntryC[43:32];
+			tAclUse		= 1;
 		end
 		else if(tAclUseD && (aclEntryD[34:32]!=0))
 		begin
 			tVugid		= aclEntryD[31:16];
 			tAccMode	= aclEntryD[43:32];
+			tAclUse		= 1;
 		end
 	end
 
@@ -281,12 +287,38 @@ begin
 			end
 //			3'b010: begin
 			2'b10: begin
-				tAccOutExc	= 16'hA002;
+				if(tAclUse)
+				begin
+					if(!tKrrAccFl[2])
+						tRegOutNoRwx[2] = 1;
+					if(!tKrrAccFl[1])
+						tRegOutNoRwx[1] = 1;
+					if(!tKrrAccFl[0])
+						tRegOutNoRwx[0] = 1;
+				end
+				else
+				begin
+					tAccOutExc	= 16'hA002;
+				end
 			end
 //			3'b011: begin
 			2'b11: begin
-				if(!tKrrGrpEq)
+				if(tAclUse || tKrrGrpEq)
+				begin
+					if(!tKrrAccFl[2])
+						tRegOutNoRwx[2] = 1;
+					if(!tKrrAccFl[1])
+						tRegOutNoRwx[1] = 1;
+					if(!tKrrAccFl[0])
+						tRegOutNoRwx[0] = 1;
+				end
+				else
+				begin
 					tAccOutExc	= 16'hA002;
+				end
+
+//				if(!tKrrGrpEq)
+//					tAccOutExc	= 16'hA002;
 
 //				if(tRegInOpm[5] && !tKrrAccFl[1])
 //					tAccOutExc	= 16'hA002;

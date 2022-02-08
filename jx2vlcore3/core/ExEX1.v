@@ -68,6 +68,7 @@ module ExEX1(
 	regValRm,		//Source C Value
 
 	regValXs,		//Source A, 128-bit
+	regOutXLea,		//XLEA Output
 
 //	regValFRs,		//Source A Value (FPR)
 //	regValFRt,		//Source B Value (FPR)
@@ -129,6 +130,7 @@ input[63:0]		regValRt;		//Source B Value
 input[63:0]		regValRm;		//Source C Value
 
 input[63:0]		regValXs;		//Source C Value
+output[63:0]	regOutXLea;
 
 // input[63:0]		regValFRs;		//Source A Value (FPR)
 // input[63:0]		regValFRt;		//Source B Value (FPR)
@@ -254,15 +256,42 @@ assign	exHold		= { tRegHeld, tExHold };
 
 reg		tAguFlagJq;
 
+wire		tXmovEnable;
+wire		tXmovAdd;
+wire		tXmovIsWxa;
+wire		tXmovIsBx;
+
+assign		tXmovIsBx = regValRs[63:61]==3'b001;
+
+wire[33:0]	tRegBoundX;
+
+assign	tRegBoundX = {
+	tXmovIsWxa, tXmovIsBx,
+	regValRs[63:60], regValXs[63:48], regValRs[59:48] };
+
 `ifdef jx2_enable_vaddr48
 wire[47:0]	tValAgu;
-// ExAGUB	exAgu(regValRs[47:0], regValRt[47:0], opUIxt, tValAgu, tAguFlagJq);
+wire		tValAguOob;
+wire[15:0]	tAguXLeaTag;
+
+// ExAGUB	exAgu(regValRs[47:0], regValRt[47:0],
+//	opUIxt, tValAgu, tAguFlagJq);
 ExAGUC	exAgu(
-	regValRs[47:0], regValRt[47:0], regValImm[15:0],
-	opUIxt, tValAgu, tAguFlagJq);
+	regValRs[47:0],		regValRt[47:0],
+	regValImm[15:0],	regValXs[47:0],
+	opUCmd,				opUIxt,
+	tValAgu,			tAguFlagJq,
+	tRegBoundX,			tValAguOob,
+	regOutXLea,			tAguXLeaTag);
 `else
 wire[47:0]	tValAgu;
-assign	tValAgu[47:32] = UV16_00;
+wire		tValAguOob;
+wire[15:0]	tAguXLeaTag;
+
+assign	tValAgu[47:32]	= UV16_00;
+assign	tValAguOob		= 0;
+assign	tAguXLeaTag		= 0;
+
 ExAGU	exAgu(regValRs[31:0], regValRt[31:0], opUIxt, tValAgu[31:0]);
 `endif
 
@@ -384,8 +413,11 @@ reg[3:0]	tIfThenNN;
 reg[3:0]	tIfElsePP;
 reg[3:0]	tIfElseNN;
 
-reg			tXmovEnable;
-reg			tXmovAdd;
+assign	tXmovEnable		= regInSr[25] || regInSr[30];
+assign	tXmovAdd		= regInSr[24];
+assign	tXmovIsWxa		= (	((opUIxt[8:6]==JX2_IUC_WA) ||
+		(opUIxt[8:6]==JX2_IUC_WXA)) && tXmovEnable);
+
 
 reg tMsgLatch;
 reg tNextMsgLatch;
@@ -423,8 +455,8 @@ begin
 	tRegOutGbrHi	= regValGbrHi;
 `endif
 
-	tXmovEnable		= regInSr[25] || regInSr[30];
-	tXmovAdd		= regInSr[24];
+//	tXmovEnable		= regInSr[25] || regInSr[30];
+//	tXmovAdd		= regInSr[24];
 
 `ifdef jx2_enable_vaddr96
 //	tMemAddr		= { regValXs[47:0], tValAgu };
@@ -625,7 +657,8 @@ begin
 		JX2_UCMD_LEA_MR: begin
 //			tRegIdRn1	= regIdRm;
 //			tRegValRn1	= { UV16_00, tValAgu };
-			tValOutDfl		= { UV16_00, tValAgu };
+//			tValOutDfl		= { UV16_00, tValAgu };
+			tValOutDfl		= { tAguXLeaTag, tValAgu };
 			tDoOutDfl		= 1;
 		end
 		JX2_UCMD_MOV_RM: begin
@@ -1528,6 +1561,9 @@ begin
 		if(memDataOK == UMEM_OK_HOLD)
 			tExHold		= 1;
 `endif
+
+		if(tValAguOob)
+			tExTrapExc = { UV112_00, 16'h800F };
 	end
 	
 	if(tDoDelayCycle)

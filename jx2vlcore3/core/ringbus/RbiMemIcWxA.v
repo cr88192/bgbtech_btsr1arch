@@ -14,6 +14,7 @@ module RbiMemIcWxA(
 	icInPcOpm,		regInSr,
 	icMemWait,		regOutExc,
 	regOutPcSxo,	regKrrHash,
+	tlbExc,			icExecAcl,
 
 	memAddrIn,		memAddrOut,
 	memDataIn,		memDataOut,
@@ -37,6 +38,9 @@ input[5:0]		icInPcOpm;		//OPM (Used for cache-control)
 
 input [63: 0]	regInSr;
 input [ 7: 0]	regKrrHash;
+input [127:0]	tlbExc;
+
+output[15:0]	icExecAcl;
 
 output			icMemWait;
 output[127: 0]	regOutExc;
@@ -69,6 +73,9 @@ assign	regOutPcSxo		= tRegOutPcSxo;
 reg			tMemWait;
 assign	icMemWait = tMemWait;
 
+reg[15:0]		tIcExecAcl;
+assign		icExecAcl = tIcExecAcl;
+
 reg[127: 0]	tRegOutExc;
 reg[127: 0]	tRegOutExc2;
 assign	regOutExc = tRegOutExc2;
@@ -86,40 +93,42 @@ assign		memDataOut = tMemDataOut;
 wire		icInPcWxe;
 assign		icInPcWxe = icInPcWxm[1];
 
+`define	jx2_mem_l1i_regicdata	reg[143:0]
+`define	jx2_mem_l1i_regicaddr	reg[ 71:0]
 
 `ifdef jx2_mem_l1isz_512
-reg[143:0]		icCaMemA[511:0];		//Local L1 tile memory (Even)
-reg[143:0]		icCaMemB[511:0];		//Local L1 tile memory (Odd)
-reg[143:0]		icCaMemC[511:0];		//Local L1 tile memory (Even)
-reg[143:0]		icCaMemD[511:0];		//Local L1 tile memory (Odd)
+`jx2_mem_l1i_regicdata		icCaMemA[511:0];	//Local L1 tile memory (Even)
+`jx2_mem_l1i_regicdata		icCaMemB[511:0];	//Local L1 tile memory (Odd)
+`jx2_mem_l1i_regicdata		icCaMemC[511:0];	//Local L1 tile memory (Even)
+`jx2_mem_l1i_regicdata		icCaMemD[511:0];	//Local L1 tile memory (Odd)
 
-reg[71:0]		icCaAddrA[511:0];	//Local L1 tile address
-reg[71:0]		icCaAddrB[511:0];	//Local L1 tile address
-reg[71:0]		icCaAddrC[511:0];	//Local L1 tile address
-reg[71:0]		icCaAddrD[511:0];	//Local L1 tile address
+`jx2_mem_l1i_regicaddr		icCaAddrA[511:0];	//Local L1 tile address
+`jx2_mem_l1i_regicaddr		icCaAddrB[511:0];	//Local L1 tile address
+`jx2_mem_l1i_regicaddr		icCaAddrC[511:0];	//Local L1 tile address
+`jx2_mem_l1i_regicaddr		icCaAddrD[511:0];	//Local L1 tile address
 `endif
 
 `ifdef jx2_mem_l1isz_256
-reg[143:0]		icCaMemA[255:0];		//Local L1 tile memory (Even)
-reg[143:0]		icCaMemB[255:0];		//Local L1 tile memory (Odd)
-reg[143:0]		icCaMemC[255:0];		//Local L1 tile memory (Even)
-reg[143:0]		icCaMemD[255:0];		//Local L1 tile memory (Odd)
+`jx2_mem_l1i_regicdata		icCaMemA[255:0];	//Local L1 tile memory (Even)
+`jx2_mem_l1i_regicdata		icCaMemB[255:0];	//Local L1 tile memory (Odd)
+`jx2_mem_l1i_regicdata		icCaMemC[255:0];	//Local L1 tile memory (Even)
+`jx2_mem_l1i_regicdata		icCaMemD[255:0];	//Local L1 tile memory (Odd)
 
-reg[71:0]		icCaAddrA[255:0];	//Local L1 tile address
-reg[71:0]		icCaAddrB[255:0];	//Local L1 tile address
-reg[71:0]		icCaAddrC[255:0];	//Local L1 tile address
-reg[71:0]		icCaAddrD[255:0];	//Local L1 tile address
+`jx2_mem_l1i_regicaddr		icCaAddrA[255:0];	//Local L1 tile address
+`jx2_mem_l1i_regicaddr		icCaAddrB[255:0];	//Local L1 tile address
+`jx2_mem_l1i_regicaddr		icCaAddrC[255:0];	//Local L1 tile address
+`jx2_mem_l1i_regicaddr		icCaAddrD[255:0];	//Local L1 tile address
 `endif
 
 `ifdef jx2_mem_l1isz_128
 (* ram_style = "distributed" *)
-reg[143:0]		icCaMemA[127:0];		//Local L1 tile memory (Even)
+`jx2_mem_l1i_regicdata		icCaMemA[127:0];	//Local L1 tile memory (Even)
 (* ram_style = "distributed" *)
-reg[143:0]		icCaMemB[127:0];		//Local L1 tile memory (Odd)
+`jx2_mem_l1i_regicdata		icCaMemB[127:0];	//Local L1 tile memory (Odd)
 (* ram_style = "distributed" *)
-reg[143:0]		icCaMemC[127:0];		//Local L1 tile memory (Even)
+`jx2_mem_l1i_regicdata		icCaMemC[127:0];	//Local L1 tile memory (Even)
 (* ram_style = "distributed" *)
-reg[143:0]		icCaMemD[127:0];		//Local L1 tile memory (Odd)
+`jx2_mem_l1i_regicdata		icCaMemD[127:0];	//Local L1 tile memory (Odd)
 
 (* ram_style = "distributed" *)
 	`reg_vaddr		icCaAddrA[127:0];	//Local L1 tile address
@@ -138,22 +147,22 @@ reg[143:0]		icCaMemD[127:0];		//Local L1 tile memory (Odd)
 
 `ifdef jx2_mem_l1isz_64
 (* ram_style = "distributed" *)
-reg[143:0]		icCaMemA[63:0];		//Local L1 tile memory (Even)
+`jx2_mem_l1i_regicdata		icCaMemA[63:0];		//Local L1 tile memory (Even)
 (* ram_style = "distributed" *)
-reg[143:0]		icCaMemB[63:0];		//Local L1 tile memory (Odd)
+`jx2_mem_l1i_regicdata		icCaMemB[63:0];		//Local L1 tile memory (Odd)
 (* ram_style = "distributed" *)
-reg[143:0]		icCaMemC[63:0];		//Local L1 tile memory (Even)
+`jx2_mem_l1i_regicdata		icCaMemC[63:0];		//Local L1 tile memory (Even)
 (* ram_style = "distributed" *)
-reg[143:0]		icCaMemD[63:0];		//Local L1 tile memory (Odd)
+`jx2_mem_l1i_regicdata		icCaMemD[63:0];		//Local L1 tile memory (Odd)
 
 (* ram_style = "distributed" *)
-	reg[71:0]		icCaAddrA[63:0];	//Local L1 tile address
+`jx2_mem_l1i_regicaddr		icCaAddrA[63:0];	//Local L1 tile address
 (* ram_style = "distributed" *)
-	reg[71:0]		icCaAddrB[63:0];	//Local L1 tile address
+`jx2_mem_l1i_regicaddr		icCaAddrB[63:0];	//Local L1 tile address
 (* ram_style = "distributed" *)
-	reg[71:0]		icCaAddrC[63:0];	//Local L1 tile address
+`jx2_mem_l1i_regicaddr		icCaAddrC[63:0];	//Local L1 tile address
 (* ram_style = "distributed" *)
-	reg[71:0]		icCaAddrD[63:0];	//Local L1 tile address
+`jx2_mem_l1i_regicaddr		icCaAddrD[63:0];	//Local L1 tile address
 
 `endif
 
@@ -499,6 +508,8 @@ reg[5:0]		tStBlkIxA;
 reg[5:0]		tStBlkIxB;
 `endif
 
+reg[127:0]		tStickyTlbExc;
+reg[127:0]		tNxtStickyTlbExc;
 
 always @*
 begin
@@ -508,6 +519,10 @@ begin
 	tRegOutExc			= 0;
 	tNxtMsgLatch		= 0;
 	tNxtMsgLatchTmiss	= 0;
+	
+	tNxtStickyTlbExc	= tStickyTlbExc;
+	if(tlbExc[15:12]==4'h7)
+		tNxtStickyTlbExc	= tlbExc;
 
 //	if(tMemNoRwx[5])
 //		tNxtTlbMissInh = 1;
@@ -736,6 +751,9 @@ begin
 
 	end
 
+//	tIcExecAcl = tBlkPFlA;
+	tIcExecAcl = tBlkPFlB;
+
 	tRegOutExc[ 63:16] = tInAddr[47:0];
 	tRegOutExc[111:64] = tReqAddrHi[47:0];
 
@@ -759,7 +777,8 @@ begin
 		tFlushB = 1;
 `endif
 
-`ifdef def_true
+// `ifdef def_true
+`ifndef def_true
 	if((~(tBlkPFlA[2:0])) != tFlushRov[2:0])
 	begin
 		if(tMemReqRtcnt == 0)
@@ -1141,11 +1160,15 @@ begin
 		tStBlkAddrA		= tReqAddrA[43:0];
 `endif
 
-//		tStBlkPFlA		= 0;
-		tStBlkPFlA		= { 8'h00, tInPmode, ~(tFlushRov[3:0]) };
+		tStBlkPFlA		= 0;
+//		tStBlkPFlA		= { 8'h00, tInPmode, ~(tFlushRov[3:0]) };
 		tStBlkPRovA		= tFlushRov;
 		tStBlkDataA		= memDataIn;
 		tStBlkFlagA		= memOpmIn[3:0];
+
+		if(tStickyTlbExc[15:12]==4'h7)
+//			tStBlkPFlA[15:8]=tStickyTlbExc[119:112];
+			tStBlkPFlA[15:0]=tStickyTlbExc[127:112];
 
 		tDoStBlkA		= 1;
 
@@ -1180,12 +1203,16 @@ begin
 		tStBlkAddrB		= tReqAddrB[43:0];
 `endif
 
-//		tStBlkPFlB		= 0;
-		tStBlkPFlB		= { 8'h00, tInPmode, ~(tFlushRov[3:0]) };
+		tStBlkPFlB		= 0;
+//		tStBlkPFlB		= { 8'h00, tInPmode, ~(tFlushRov[3:0]) };
 		tStBlkPRovB		= tFlushRov;
 		tStBlkDataB		= memDataIn;
 		tStBlkFlagB		= memOpmIn[3:0];
 		tDoStBlkB		= 1;
+
+		if(tStickyTlbExc[15:12]==4'h7)
+//			tStBlkPFlB[15:8]=tStickyTlbExc[119:112];
+			tStBlkPFlB[15:0]=tStickyTlbExc[127:112];
 
 //		if(memOpmIn[3:2]==2'b11)
 //		begin
@@ -1360,6 +1387,9 @@ begin
 	if(reset)
 		tRegOutHold = 0;
 
+	if(!tRegOutHold)
+		tNxtStickyTlbExc[15:12]=0;
+
 `ifdef jx2_mem_l1inostall
 //	if(tRegOutHold)
 	if(tRegOutHold || (tInAddrNl[15:0]!=tInAddr[15:0]))
@@ -1424,6 +1454,8 @@ begin
 	tMemReqRtcnt	<= tNxtMemReqRtcnt;
 
 	tInAddrNl		<= tRegInPc;
+
+	tStickyTlbExc	<= tNxtStickyTlbExc;
 
 	/* Stage A */
 `ifdef jx2_mem_l1inostall

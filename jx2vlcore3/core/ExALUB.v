@@ -515,8 +515,19 @@ begin
 		4'h9: begin		/* CMPHS */
 		end
 		4'hA: begin		/* CMPGE */
+
+			tResult2W = { 1'b0, regValRs[63:0] };
+			casez(regValRt[4:0])
+				5'bzzzz0: tResult2W[63:60]=regValRt[4:1];
+				5'bzzz01: tResult2W[63:61]=regValRt[4:2];
+				5'bzz011: tResult2W[63:62]=regValRt[4:3];
+				5'bz0111: tResult2W[63   ]=regValRt[4];
+				default: begin end
+			endcase
 		end
 		4'hB: begin		/* NOR */
+//			tResult2W = { 1'b0, regValRs[63:48], regValRt[47:0] };
+			tResult2W = { 1'b0, regValRt[63:48], regValRs[47:0] };
 		end
 
 		4'hC: begin		/* CMPEQ */

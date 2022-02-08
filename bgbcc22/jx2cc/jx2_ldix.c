@@ -2462,7 +2462,38 @@ int BGBCC_JX2C_EmitLeaBRegIRegScReg(
 		cbo-=1;
 	if((dreg==ireg) && (bs!=2))
 		shl=-1;
-		
+
+	if(	BGBCC_JX2C_EmitRegIsExtLpReg(ctx, sctx, breg) ||
+		BGBCC_JX2C_EmitRegIsExtLpReg(ctx, sctx, dreg))
+	{
+		if(	!BGBCC_JX2C_EmitRegIsExtLpReg(ctx, sctx, breg) ||
+			!BGBCC_JX2C_EmitRegIsExtLpReg(ctx, sctx, dreg))
+		{
+			BGBCC_DBGBREAK
+		}
+		if(bs!=2)
+			shl=-1;
+
+		if((shl>=0) && (bs==2) && (cbo<=cmo))
+		{
+			treg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
+			BGBCC_JX2_EmitOpRegImmReg(sctx,
+				BGBCC_SH_NMID_SHAD, ireg, shl, treg);
+			BGBCC_JX2_EmitOpLdReg2Reg(sctx,
+				BGBCC_SH_NMID_XLEAB, breg, treg, dreg);
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, treg);
+			return(1);
+		}
+
+		treg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
+		BGBCC_JX2_EmitOpRegImmReg(sctx,
+			BGBCC_SH_NMID_MULL, ireg, sc, treg);
+		BGBCC_JX2_EmitOpLdReg2Reg(sctx,
+			BGBCC_SH_NMID_XLEAB, breg, treg, dreg);
+		BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, treg);
+		return(1);
+	}
+
 //	if(bs!=2)		//Debug
 //		shl=-1;
 

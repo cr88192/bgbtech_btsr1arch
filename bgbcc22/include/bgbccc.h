@@ -472,6 +472,8 @@ extern "C" {
 #define BGBCC_ARCH_BJX2_JX2E	BGBCC_FOURCC('J', 'X', '2', 'E')	//VL, Lite
 #define BGBCC_ARCH_BJX2_JX2F	BGBCC_FOURCC('J', 'X', '2', 'F')	//VL, Lite
 
+#define BGBCC_ARCH_BJX2_JX2G	BGBCC_FOURCC('J', 'X', '2', 'G')	//96b
+
 
 //output formats.
 //format specifics depend on target.

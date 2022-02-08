@@ -14,6 +14,8 @@ TK_LDFL64= -L. -lvxcore64 -fwex3w -fwexj -fptropt0
 
 TK_LDFL64_DLL= -L. -lcdll -fwex3w -fwexj -fptropt0
 
+TK_LDFL96= -L. -lvxcore96 -fwex3w -fwexj -fptropt0
+
 TOOLPATH=
 
 CC=$(TOOLPATH)bgbcc
@@ -23,6 +25,8 @@ AS=$(TOOLPATH)bgbcc
 COPTS= -g -c -O2 -Iinclude -I. -Itk_core $(TK_CFL) -Zz
 # COPTS64= -g -c -O2 -Iinclude -I. -Itk_core $(TK_CFL) -DARCH_BJX1_64 -mBJX2F -Zz
 COPTS64= -g -c -O2 -Iinclude -I. -Itk_core $(TK_CFL) -DARCH_BJX1_64 -mBJX2 -Zz
+
+COPTS96= -g -c -O2 -Iinclude -I. -Itk_core $(TK_CFL) -DARCH_BJX1_64 -mBJX2G -Zz
 
 SRCS_CLIB = \
 	pdpc201/stdio.c \
@@ -46,6 +50,7 @@ SRCS_CLIB = \
 	pdpc201/btshx_softfpu.c \
 	pdpc201/btshx_fpusup.c \
 	pdpc201/btshx_lva.c \
+	pdpc201/btshx_lvax.c \
 	pdpc201/btshx_xli.c \
 	pdpc201/btshx_xlf.c \
 	pdpc201/btshx_vnf.c \
@@ -138,10 +143,11 @@ libs2: FORCE
 #	cp pdpc201/*.ril		$(BUILD)
 #	cp pdpc201/crt0.o	$(BUILD)
 
-libs: libs2 libvxcore.ril libvxcore64.ril libvxcore_bjx2.ril \
+libs: libs2 libvxcore.ril libvxcore64.ril libvxcore96.ril \
+	libvxcore_bjx2.ril \
 	libc.bjx2.ril libm.bjx2.ril libdl.bjx2.ril libcdll.bjx2.ril
 
-bins: tkshell.sys tkshdll.dll
+bins: tkshell.sys tkshdll.dll tkshell96.sys
 
 apps: bins FORCE
 #	make -C pdpc201 -f Makefile.vx86 apps
@@ -152,6 +158,9 @@ libvxcore.ril: $(SRCS_CLIB) $(SRCS_ASM) $(SRCS_BS2) $(SRCS_ASM_2)
 
 libvxcore64.ril: $(SRCS_CLIB) $(SRCS_ASM) $(SRCS_BS2) $(SRCS_ASM_2)
 	$(CC) -o libvxcore64.ril vxcore_multi.c $(SRCS_ASM) $(SRCS_BS2) $(COPTS64)
+
+libvxcore96.ril: $(SRCS_CLIB) $(SRCS_ASM) $(SRCS_BS2) $(SRCS_ASM_2)
+	$(CC) -o libvxcore96.ril vxcore_multi.c $(SRCS_ASM) $(SRCS_BS2) $(COPTS96)
 
 libvxcore_bjx2.ril: $(SRCS_CLIB) $(SRCS_ASM) $(SRCS_BS2) $(SRCS_ASM_2)
 	$(CC) -o libvxcore_bjx2.ril vxcore_multi.c $(SRCS_ASM) $(SRCS_BS2) $(COPTS64)
@@ -171,6 +180,10 @@ libcdll.bjx2.ril: $(SRCS_CLIB) $(SRCS_ASM_DLL)
 tkshell.sys: $(SRCS_TKSH) $(SRCS_TKSH_BS2)
 	$(CC) -o tkshell.sys tkshell_multi.c  $(SRCS_TKSH_BS2) \
 		$(COPTS64) $(TK_LDFL64)
+
+tkshell96.sys: $(SRCS_TKSH) $(SRCS_TKSH_BS2)
+	$(CC) -o tkshell96.sys tkshell_multi.c  $(SRCS_TKSH_BS2) \
+		$(COPTS96) $(TK_LDFL96)
 
 tkshdll.dll: $(SRCS_TKSH) $(SRCS_TKSH_BS2)
 	$(CC) -o tkshdll.dll tkshdll_multi.c $(SRCS_TKSH_BS2) \

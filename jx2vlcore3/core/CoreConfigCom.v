@@ -10,6 +10,8 @@
 
 // `define jx2_agu_ridisp			//Enable RiDisp / ScMOV (Rm+Ro*Sc+Imm)
 
+`define jx2_agu_ribound			//Enable AGU Bounds Checks
+
 // `define jx2_cfg_75mhz
 
 // `define jx2_enable_gpr48		//Enable R32..R63 (SIMD)

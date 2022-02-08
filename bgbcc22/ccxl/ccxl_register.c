@@ -101,6 +101,12 @@ ccxl_status BGBCC_CCXL_RegisterAllocTemporaryLLn(
 				!BGBCC_CCXL_TypeCompatibleStorageP(ctx, bty, ri->type))
 					continue;
 
+			if(!BGBCC_CCXL_TypeEqualP(ctx, bty, ri->type))
+			{
+				if(!BGBCC_CCXL_TypeCompatibleStorageP(ctx, bty, ri->type))
+					continue;
+			}
+
 			bi=j;
 			break;
 		}
@@ -158,6 +164,12 @@ ccxl_status BGBCC_CCXL_RegisterAllocTemporaryLLn(
 //				!BGBCC_CCXL_TypeCompatibleArchP(ctx, bty, ri->type))
 				!BGBCC_CCXL_TypeCompatibleStorageP(ctx, bty, ri->type))
 					continue;
+
+			if(!BGBCC_CCXL_TypeEqualP(ctx, bty, ri->type))
+			{
+				if(!BGBCC_CCXL_TypeCompatibleStorageP(ctx, bty, ri->type))
+					continue;
+			}
 
 			bi=i;
 			break;

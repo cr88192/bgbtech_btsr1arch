@@ -17,17 +17,32 @@ module ExAGUC(
 	regValRm,
 	regValRi,
 	regValImm,
+	regValXm,
+	idUCmd,
 	idUIxt,
 	regOutAddr,
-	addrEnJq);
+	addrEnJq,
+	regBoundX,
+	regOutIsOob,
+	regOutXLeaHi,
+	regOutXLeaTag
+	);
 
 input[47:0]		regValRm;
 input[47:0]		regValRi;
 input[15:0]		regValImm;
+input[47:0]		regValXm;
+
+input[8:0]		idUCmd;
 input[8:0]		idUIxt;
 input			addrEnJq;
+input[33:0]		regBoundX;
 
 output[47:0]	regOutAddr;
+output			regOutIsOob;
+
+output[63:0]	regOutXLeaHi;
+output[15:0]	regOutXLeaTag;
 
 reg[47:0]	tRegValRi;
 reg[47:0]	tRiSc0;
@@ -85,9 +100,32 @@ reg			tCaVal0A;
 reg			tCaVal0B;
 reg			tCaVal0C;
 
+reg			tBndOob;
+reg			tBndOor;
+
 reg[47:0]	tAddr;
+reg			tRegOutIsOob;
+reg			tIsStore;
+reg			tIsConst;
+
+reg[27:0]	tBoundUp;
+reg[27:0]	tBoundDn;
+reg[27:0]	tBoundUp1;
+reg[27:0]	tBoundDn1;
+
+reg[63:0]	tRegOutXLeaHi;
+reg[15:0]	tRegOutXLeaTag;
+assign	regOutXLeaHi = tRegOutXLeaHi;
+assign	regOutXLeaTag = tRegOutXLeaTag;
 
 assign		regOutAddr = tAddr;
+assign		regOutIsOob = tRegOutIsOob;
+
+reg[11:0]	tRegBoundAdj;
+reg[12:0]	tRegBoundSum;
+reg[19:0]	tRegBndAdjAddP;
+reg			tRegBndAdjC0;
+
 
 always @*
 begin
@@ -106,6 +144,124 @@ begin
 		2'b10:	tRiSc=tRiSc2;
 		2'b11:	tRiSc=tRiSc3;
 	endcase
+
+	tRegOutXLeaHi	= { regBoundX[27:12], regValXm };
+	tRegOutXLeaTag	= 0;
+	tRegBoundAdj	= 0;
+
+`ifdef jx2_agu_ribound
+
+	tRegOutIsOob	= 0;
+	tIsConst		= 0;
+	tIsStore = (idUCmd[5:0] == JX2_UCMD_MOV_RM);
+
+	tBoundUp	= regBoundX[27:0];
+	tBoundDn	= 0;
+	tBndOor		= 0;
+	
+	tRegBndAdjAddP	= (regValRm[19:0] + tRiSc[19:0]) ^
+		(regValRm[19:0] ^ tRiSc[19:0]);
+	
+	if(regBoundX[28])
+	begin
+		case(regBoundX[26:24])
+			3'b000: tRegBoundAdj = tRiSc[15: 4] +
+				{ 11'h0, tRegBndAdjAddP[4] };
+			3'b001: tRegBoundAdj = tRiSc[17: 6] +
+				{ 11'h0, tRegBndAdjAddP[6] };
+			3'b010: tRegBoundAdj = tRiSc[19: 8] +
+				{ 11'h0, tRegBndAdjAddP[8] };
+			3'b011: tRegBoundAdj = tRiSc[21:10] +
+				{ 11'h0, tRegBndAdjAddP[10] };
+			3'b100: tRegBoundAdj = tRiSc[23:12] +
+				{ 11'h0, tRegBndAdjAddP[12] };
+			3'b101: tRegBoundAdj = tRiSc[25:14] +
+				{ 11'h0, tRegBndAdjAddP[14] };
+			3'b110: tRegBoundAdj = tRiSc[27:16] +
+				{ 11'h0, tRegBndAdjAddP[16] };
+			3'b111: tRegBoundAdj = tRiSc[29:18] +
+				{ 11'h0, tRegBndAdjAddP[18] };
+		endcase
+
+		if(regBoundX[24])
+		begin
+			tBoundUp1 = { 14'h0000,  regBoundX[11: 0], 2'b0 };
+			tBoundDn1 = { 14'h3FFF, ~regBoundX[23:12], 2'b0 };
+		end
+		else
+		begin
+			tBoundUp1 = { 16'h0000,  regBoundX[11: 0] };
+			tBoundDn1 = { 16'hFFFF, ~regBoundX[23:12] };
+		end
+
+		tRegBoundSum =
+			{ 1'b0, regBoundX[11: 0] } +
+			{ 1'b0, regBoundX[23:12] };
+		tBndOor		= tRegBoundSum[12];
+
+
+		tIsConst = regBoundX[27];
+	
+		case(regBoundX[26:25])
+			2'b00: begin
+				tBoundUp = tBoundUp1;
+				tBoundDn = tBoundDn1;
+			end
+			2'b01: begin
+				tBoundUp = { tBoundUp1[23:0], 4'h0 };
+				tBoundDn = { tBoundDn1[23:0], 4'h0 };
+			end
+			2'b10: begin
+				tBoundUp = { tBoundUp1[19:0], 8'h0 };
+				tBoundDn = { tBoundDn1[19:0], 8'h0 };
+			end
+			2'b11: begin
+				tBoundUp = { tBoundUp1[15:0], 12'h0 };
+				tBoundDn = { tBoundDn1[15:0], 12'h0 };
+			end
+		endcase
+	end
+
+//	tBndOob =
+//		(tRiSc[47:32]!=0) ||
+//		(tRiSc[31:4]>=regBoundX[27:0]);
+
+	tBndOob =
+		(	!tRiSc[47] &&
+			((tRiSc[47:32]!=0) ||
+			(tRiSc[31:4]>=tBoundUp[27:0]))) ||
+		(	tRiSc[47] &&
+			((tRiSc[47:32]!=16'hFFFF) ||
+			(tRiSc[31:4]<=tBoundDn[27:0]))) ||
+		(tIsConst && tIsStore);
+
+	if(regBoundX[31:28]==4'h1)
+		tBndOob = 1;
+
+//	tBndOob =
+//		(tRegValRi[47:28]!=0) ||
+//		(tRegValRi[27:0]>=regBoundX[27:0]);
+
+	tRegOutIsOob = (tBndOob || tBndOor) && (regBoundX[33:32]==2'b11);
+
+	if(regBoundX[33:32]==2'b11)
+	begin
+		tRegOutXLeaTag[15:12]=regBoundX[31:28];
+		tRegOutXLeaTag[11: 0]=regBoundX[11: 0]-tRegBoundAdj;
+		tRegOutXLeaHi [63:60]=regBoundX[27:24];
+		tRegOutXLeaHi [59:48]=regBoundX[23:12]+tRegBoundAdj;
+		if(tBndOob || tBndOor)
+		begin
+			/* If OOB, Invalidate Pointer */
+			tRegOutXLeaTag[15:8]=8'h1F;
+		end
+	end
+
+`else
+
+	tRegOutIsOob = 0;
+
+`endif
 
 	tRiDi = 0;
 

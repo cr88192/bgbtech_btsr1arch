@@ -67,6 +67,27 @@ Strings or Literals will primarily appear as attributes.
 If a literal appears where a Node is expected, it will be interpreted as a standalone node. String literals as text nodes, numberic literals as standalone number notes (conceptually, these will map to text nodes containing the numeric value).
 
 
+When used for XML, the ABXE format will be constrained to XML structure rules. 
+It is undefined what will happen for encoding data which significantly deviates from this.
+
+Node:
+* Start Tag
+* AttributeList
+* NodeList
+* EndOfNode
+
+Attribute:
+* Attribute Tag
+* String | Number
+
+AttributeList:
+* Will consist of zero or more Attributes.
+
+NodeList:
+* Will consist of zero or more Nodes.
+* May also contain Strings or Numeric Literals
+
+
 Object:
 * Will be encoded solely as attributes.
 

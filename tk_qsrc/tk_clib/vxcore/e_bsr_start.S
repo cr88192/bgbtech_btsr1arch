@@ -14,7 +14,9 @@
 .section .data
 
 .balign 8
-__tk_saved_vbr: .quad 0 
+__tk_saved_vbr:
+	.quad 0 
+	.quad 0 
 
 .section .text
 .align 2
@@ -218,6 +220,7 @@ isr_table:
 X(tk_getsavedvbr):
 	mov		__tk_saved_vbr, r3
 	mov.q	@r3, r2
+	mov		0, r3
 //	mov.q	__tk_saved_vbr, r2
 
 //	tstq	r2, r2
@@ -932,8 +935,13 @@ X(__setj):
 
 .global X(__va64_arg_i)
 X(__va64_arg_i):
-	mov.l @(r4, 96), r2
+//	mov.l @(r4, 96), r2
+	mov.l @(r4, 128), r2
+.ifarch abi_is_xgpr
+	mov #128, r3
+.else
 	mov #64, r3
+.endif
 	cmp/gt r2, r3
 	bf __va64_arg_i.L0
 	
@@ -941,15 +949,18 @@ X(__va64_arg_i):
 	add r4, r3
 	mov.q @r3, r6
 	add #8, r2
-	mov.l  r2, @(r4, 96)
+//	mov.l  r2, @(r4, 96)
+	mov.l  r2, @(r4, 128)
 	mov r6, r2
 	rts
 	nop
 
 __va64_arg_i.L0:
-	mov.q @(r4, 112), r3
+//	mov.q @(r4, 112), r3
+	mov.q @(r4, 144), r3
 	mov.l @r3+, r6
-	mov.q  r3, @(r4, 112)
+//	mov.q  r3, @(r4, 112)
+	mov.q  r3, @(r4, 144)
 	mov r6, r2
 //	break
 	rts
@@ -957,8 +968,13 @@ __va64_arg_i.L0:
 
 .global X(__va64_arg_l)
 X(__va64_arg_l):
-	mov.l @(r4, 96), r2
+//	mov.l @(r4, 96), r2
+	mov.l @(r4, 128), r2
+.ifarch abi_is_xgpr
+	mov #128, r3
+.else
 	mov #64, r3
+.endif
 	cmp/gt r2, r3
 	bf __va64_arg_l.L0	
 
@@ -966,28 +982,36 @@ X(__va64_arg_l):
 	add r4, r3
 	mov.q @r3, r6
 	add #8, r2
-	mov.l  r2, @(r4, 96)
+//	mov.l  r2, @(r4, 96)
+	mov.l  r2, @(r4, 128)
 	mov r6, r2
 	rts
 	nop
 __va64_arg_l.L0:
-	mov.q @(r4, 112), r3
+//	mov.q @(r4, 112), r3
+	mov.q @(r4, 144), r3
 	add #7, r3
 	and #-8, r3
 	mov.q @r3+, r6
-	mov.q  r3, @(r4, 112)
+//	mov.q  r3, @(r4, 112)
+	mov.q  r3, @(r4, 144)
 	mov r6, r2
 	rts
 	nop
 
 .global X(__va64_arg_x)
 X(__va64_arg_x):
-	mov.l @(r4, 96), r2
+//	mov.l @(r4, 96), r2
+	mov.l @(r4, 128), r2
 .ifarch abi_evenonly
 	test	#8, r2
 	add?f	#8, r2
 .endif
+.ifarch abi_is_xgpr
+	mov		#120, r3
+.else
 	mov		#56, r3
+.endif
 	cmp/gt	r2, r3
 	bf		__va64_arg_x.L0
 	mov		r2, r3
@@ -999,18 +1023,21 @@ X(__va64_arg_x):
 	mov.q	@(r3, 0), r6
 	mov.q	@(r3, 8), r7
 	add		#16, r2
-	mov.l	r2, @(r4, 96)
+//	mov.l	r2, @(r4, 96)
+	mov.l	r2, @(r4, 128)
 	mov		r6, r2
 	mov		r7, r3
 	rts
 	nop
 __va64_arg_x.L0:
-	mov.q @(r4, 112), r3
+//	mov.q @(r4, 112), r3
+	mov.q @(r4, 144), r3
 	add #7, r3
 	and #-8, r3
 	mov.q @r3+, r6
 	mov.q @r3+, r7
-	mov.q  r3, @(r4, 112)
+//	mov.q  r3, @(r4, 112)
+	mov.q  r3, @(r4, 144)
 	mov r6, r2
 	mov r7, r3
 	rts
@@ -1087,6 +1114,92 @@ X(__sthf16):
 
 .endif
 #endif
+
+.ifarch abi_is_xgpr
+
+.global X(__memcpy32)
+X(__memcpy32):
+	mov		0, r18
+	shad	r20, -2, r19
+	.L0:
+	xmov.l	(r6, r18), r2
+	xmov.l	r2, (r4, r18)
+	add		1, r18
+	cmp/gt	r18, r19
+	bt .L0
+	rts
+
+.global X(__memcpy64)
+X(__memcpy64):
+	mov		0, r18
+	shad	r20, -3, r19
+	.L0:
+	xmov.q	(r6, r18), r2
+	xmov.q	r2, (r4, r18)
+	add		1, r18
+	cmp/gt	r18, r19
+	bt .L0
+	rts
+
+.global X(__memcpy128)
+X(__memcpy128):
+	mov		0, r18
+	shad	r20, -3, r19
+	.L0:
+	add		r18, 1, r21
+	xmov.q	(r6, r18), r2
+	xmov.q	(r6, r21), r3
+	xmov.q	r2, (r4, r18)
+	xmov.q	r3, (r4, r21)
+	add		2, r18
+	cmp/gt	r18, r19
+	bt .L0
+	rts
+
+.global X(memcpy)
+X(memcpy):
+	or		r4, r6, r3
+	or		r3, r20, r3
+	test	7, r3
+	bt		__memcpy128
+
+	mov		0, r18
+	shad	r20, -3, r19
+	.L0:
+	xmov.q	(r6, r18), r2
+	xmov.q	r2, (r4, r18)
+	add		1, r18
+	cmp/gt	r18, r19
+	bt .L0
+
+	and		r20, 7, r3
+	test	r3, r3
+	bt		.end
+	
+	shad	r18, 3, r18
+	xlea.b	(r6, r18), r6
+	xlea.b	(r4, r18), r4
+
+	mov		0, r18
+	.L1:
+	xmov.b	(r6, r18), r2
+	xmov.b	r2, (r4, r18)
+	add		1, r18
+	cmp/gt	r18, r3
+	bt .L1
+
+	.end:
+	rts
+
+.global X(memcpy_movx)
+X(memcpy_movx):
+	or		r4, r6, r3
+	or		r3, r20, r3
+	test	7, r3
+	bt		__memcpy128
+	bra		memcpy
+
+.else
 
 .global X(__memcpy32)
 X(__memcpy32):
@@ -1337,6 +1450,9 @@ X(memcpy):
 	mov.b?t		r2, (r4)
 #endif
 	rtsu
+
+
+.endif
 
 
 .global X(sleep_0)

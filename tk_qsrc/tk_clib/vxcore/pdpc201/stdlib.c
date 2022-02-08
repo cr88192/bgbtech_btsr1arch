@@ -132,7 +132,9 @@ __PDPCLIB_API__ void **_getmsizeptr(void)
 	{ return(&_msize_fptr); }
 
 // #ifdef __BJX2__
-#if defined(__BJX2__) && !defined(__TK_CLIB_DLLSTUB__)
+// #if defined(__BJX2__) && !defined(__TK_CLIB_DLLSTUB__)
+#if defined(__BJX2__) && !defined(__TK_CLIB_DLLSTUB__) && \
+	!defined(__ADDR_X96__)
 // #if 0
 
 __PDPCLIB_API__ void *malloc(size_t size);
@@ -170,6 +172,11 @@ realloc:
 };
 
 #else
+
+#ifndef		stdio_doinit
+#define		stdio_doinit()
+#endif
+
 
 __PDPCLIB_API__ void *malloc(size_t size)
 {
@@ -593,6 +600,81 @@ __PDPCLIB_API__ unsigned long int strtoul(
 	return (x);
 }
 
+__PDPCLIB_API__ unsigned long long int strtoull(
+	const char *nptr, char **endptr, int base)
+{
+	unsigned long long x = 0;
+	int undecided = 0;
+
+	if (base == 0)
+	{
+		undecided = 1;
+	}
+	while (isspace((unsigned char)*nptr))
+	{
+		nptr++;
+	}
+	while (1)
+	{
+		if (isdigit((unsigned char)*nptr))
+		{
+			if (base == 0)
+			{
+				if (*nptr == '0')
+				{
+					base = 8;
+				}
+				else
+				{
+					base = 10;
+					undecided = 0;
+				}
+			}
+			x = x * base + (*nptr - '0');
+			nptr++;
+		}
+		else if (isalpha((unsigned char)*nptr))
+		{
+			if ((*nptr == 'X') || (*nptr == 'x'))
+			{
+				if ((base == 0) || ((base == 8) && undecided))
+				{
+					base = 16;
+					undecided = 0;
+					nptr++;
+				}
+				else if (base == 16)
+				{
+					/* hex values are allowed to have an optional 0x */
+					nptr++;
+				}
+				else
+				{
+					break;
+				}
+			}
+			else if (base <= 10)
+			{
+				break;
+			}
+			else
+			{
+				x = x * base + (toupper((unsigned char)*nptr) - 'A') + 10;
+				nptr++;
+			}
+		}
+		else
+		{
+			break;
+		}
+	}
+	if (endptr != NULL)
+	{
+		*endptr = (char *)nptr;
+	}
+	return (x);
+}
+
 __PDPCLIB_API__ long int strtol(const char *nptr, char **endptr, int base)
 {
 	unsigned long y;
@@ -620,6 +702,38 @@ __PDPCLIB_API__ long int strtol(const char *nptr, char **endptr, int base)
 	else
 	{
 		x = (long)y;
+	}
+	return (x);
+}
+
+__PDPCLIB_API__ long long int strtoll(
+	const char *nptr, char **endptr, int base)
+{
+	unsigned long long y;
+	long long x;
+	int neg = 0;
+
+	while (isspace((unsigned char)*nptr))
+	{
+		nptr++;
+	}
+	if (*nptr == '-')
+	{
+		neg = 1;
+		nptr++;
+	}
+	else if (*nptr == '+')
+	{
+		nptr++;
+	}
+	y = strtoull(nptr, endptr, base);
+	if (neg)
+	{
+		x = (long long)-y;
+	}
+	else
+	{
+		x = (long long)y;
 	}
 	return (x);
 }
@@ -919,6 +1033,7 @@ __PDPCLIB_API__ size_t wcstombs(char *s, const wchar_t *pwcs, size_t n)
 #endif
 
 #ifdef __BJX2__
+// #if defined(__BJX2__) && !defined(__ADDR_X96__)
 // #if 0
 
 __PDPCLIB_API__ int abs(int j);

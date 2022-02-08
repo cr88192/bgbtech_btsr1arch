@@ -454,7 +454,7 @@ The relocations are given as 16 bit numbers:
 *** Initial: TLS Index, Resolved to TBR-relative address of TLS Variable
 ** 10: Fixup a 64-bit address (Abs64).
 ** 11: Set Tripwire
-** 12: Reserved
+** 12: Fixup a 96-bit address (Abs96), Stored as 128 bits.
 ** 13: Reserved
 ** 14: Reserved
 ** 15: Reserved

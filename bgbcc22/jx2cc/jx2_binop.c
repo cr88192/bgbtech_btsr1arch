@@ -2852,7 +2852,10 @@ int BGBCC_JX2C_EmitCsrvVReg(
 
 //			BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, BGBCC_SH_REG_R3);
 			if(ctx->arch_sizeof_ptr==8)
-				BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, BGBCC_SH_REG_RQ2);
+			{
+				BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx,
+					dreg, BGBCC_SH_REG_RQ2);
+			}
 			else
 				BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, BGBCC_SH_REG_R2);
 //			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, BGBCC_SH_REG_RQ3);
@@ -2949,6 +2952,15 @@ int BGBCC_JX2C_EmitCsrvVReg(
 		BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, BGBCC_SH_REG_RQ2);
 		BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, BGBCC_SH_REG_RQ2);
 		BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, BGBCC_SH_REG_RQ2);
+		return(1);
+	}
+
+	if(BGBCC_CCXL_TypeQuadPointerP(ctx, type))
+	{
+		BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, BGBCC_SH_REG_LR2);
+		BGBCC_JX2C_EmitStoreVRegByValReg(ctx, sctx,
+			dreg, BGBCC_SH_REG_LR2);
+		BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, BGBCC_SH_REG_LR2);
 		return(1);
 	}
 
@@ -3077,6 +3089,7 @@ int BGBCC_JX2C_EmitCsrvVReg(
 		return(1);
 	}
 
+#if 0
 	if(rcls==BGBCC_SH_REGCLS_VO_GR2)
 	{
 //		BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, BGBCC_SH_REG_LR0);
@@ -3092,6 +3105,7 @@ int BGBCC_JX2C_EmitCsrvVReg(
 		BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, BGBCC_SH_REG_LR2);
 		return(1);
 	}
+#endif
 
 	if(rcls==BGBCC_SH_REGCLS_VO_QGR)
 	{
@@ -4451,7 +4465,8 @@ int BGBCC_JX2C_EmitCallFcnVReg(
 
 	treg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, fcn);
 	
-	if(BGBCC_JX2C_EmitRegIsLpReg(ctx, sctx, treg))
+	if(BGBCC_JX2C_EmitRegIsLpReg(ctx, sctx, treg) &&
+		!(sctx->has_xgpr&2))
 	{
 		/* If calling a register pair, assume thiscall. */
 		tr0=BGBCC_SH_REG_R0+(treg&31);
@@ -4487,8 +4502,16 @@ int BGBCC_JX2C_EmitCallFcnVReg(
 
 //	BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_NOP);	//Debug
 	
-	i=BGBCC_JX2C_EmitOpReg(ctx, sctx,
-		BGBCC_SH_NMID_JSR, tr0);
+	if(BGBCC_JX2C_EmitRegIsExtLpReg(ctx, sctx, tr0))
+	{
+		i=BGBCC_JX2C_EmitOpReg(ctx, sctx,
+			BGBCC_SH_NMID_XJSR, tr0);
+	}else
+	{
+		i=BGBCC_JX2C_EmitOpReg(ctx, sctx,
+			BGBCC_SH_NMID_JSR, tr0);
+	}
+
 	BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, fcn);
 	return(i);
 
@@ -4554,16 +4577,28 @@ int BGBCC_JX2C_EmitCallName(
 #if 1
 	lv0=sctx->sreg_live;
 
-	sctx->sreg_live&=~1;
-	BGBCC_JX2C_EmitLoadGblNameReg(ctx, sctx,
-		name, BGBCC_SH_REG_R3);
-//	sctx->sreg_live|=1;
-	i=BGBCC_JX2C_EmitOpReg(ctx, sctx,
-		BGBCC_SH_NMID_JSR, BGBCC_SH_REG_R3);
-//	BGBCC_JX2C_EmitOpNone(ctx, sctx,
-//		BGBCC_SH_NMID_NOP);
+	if(sctx->has_xgpr&2)
+	{
+//		sctx->sreg_live&=~1;
+		sctx->sreg_live&=~(1ULL<<2);
+		BGBCC_JX2C_EmitLoadGblNameReg(ctx, sctx,
+			name, BGBCC_SH_REG_LR18);
+		i=BGBCC_JX2C_EmitOpReg(ctx, sctx,
+			BGBCC_SH_NMID_JSR, BGBCC_SH_REG_LR18);
+	}else
+	{
+		sctx->sreg_live&=~1;
+		BGBCC_JX2C_EmitLoadGblNameReg(ctx, sctx,
+			name, BGBCC_SH_REG_R3);
+	//	sctx->sreg_live|=1;
+		i=BGBCC_JX2C_EmitOpReg(ctx, sctx,
+			BGBCC_SH_NMID_JSR, BGBCC_SH_REG_R3);
+	//	BGBCC_JX2C_EmitOpNone(ctx, sctx,
+	//		BGBCC_SH_NMID_NOP);
+	}
 
-	sctx->sreg_live|=lv0&1;
+//	sctx->sreg_live|=lv0&1;
+	sctx->sreg_live|=lv0&(1ULL<<2);
 
 //	BGBCC_JX2C_ResetModeDqUnknown(ctx, sctx);
 
@@ -4730,6 +4765,18 @@ int BGBCC_JX2C_EmitCallVReg(
 						treg, BGBCC_SH_REG_RD20+(ni-4));
 					ni++;
 					continue;
+				}else if((ni<12) && (sctx->has_xgpr&2))
+				{
+					BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx,
+						treg, BGBCC_SH_REG_RD36+(ni-4));
+					ni++;
+					continue;
+				}else if((ni<16) && (sctx->has_xgpr&2))
+				{
+					BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx,
+						treg, BGBCC_SH_REG_RD52+(ni-4));
+					ni++;
+					continue;
 				}else
 				{
 					tr0=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 
@@ -4780,6 +4827,18 @@ int BGBCC_JX2C_EmitCallVReg(
 				{
 					BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx,
 						treg, BGBCC_SH_REG_RQ20+(ni-4));
+					ni++;
+					continue;
+				}else if((ni<12) && (sctx->has_xgpr&2))
+				{
+					BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx,
+						treg, BGBCC_SH_REG_RQ36+(ni-4));
+					ni++;
+					continue;
+				}else if((ni<16) && (sctx->has_xgpr&2))
+				{
+					BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx,
+						treg, BGBCC_SH_REG_RQ52+(ni-4));
 					ni++;
 					continue;
 				}else
@@ -4857,6 +4916,18 @@ int BGBCC_JX2C_EmitCallVReg(
 						treg, BGBCC_SH_REG_RD20+(ni-4));
 					ni++;
 					continue;
+				}else if((ni<12) && (sctx->has_xgpr&2))
+				{
+					BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx,
+						treg, BGBCC_SH_REG_RD36+(ni-4));
+					ni++;
+					continue;
+				}else if((ni<16) && (sctx->has_xgpr&2))
+				{
+					BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx,
+						treg, BGBCC_SH_REG_RD52+(ni-4));
+					ni++;
+					continue;
 				}else
 				{
 					tr0=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 
@@ -4900,6 +4971,18 @@ int BGBCC_JX2C_EmitCallVReg(
 			{
 				BGBCC_JX2C_EmitLoadFrameVRegByValReg(ctx, sctx,
 					treg, BGBCC_SH_REG_RQ20+(ni-4));
+				ni++;
+				continue;
+			}else if((ni<12) && (sctx->has_xgpr&2))
+			{
+				BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx,
+					treg, BGBCC_SH_REG_RQ36+(ni-4));
+				ni++;
+				continue;
+			}else if((ni<16) && (sctx->has_xgpr&2))
+			{
+				BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx,
+					treg, BGBCC_SH_REG_RQ52+(ni-4));
 				ni++;
 				continue;
 			}else
@@ -4946,7 +5029,9 @@ int BGBCC_JX2C_EmitCallVReg(
 
 //		if(rcls==BGBCC_SH_REGCLS_VO_QGR2)
 		if((rcls==BGBCC_SH_REGCLS_VO_QGR2) ||
-			(rcls==BGBCC_SH_REGCLS_QGR2))
+			(rcls==BGBCC_SH_REGCLS_QGR2) ||
+			(rcls==BGBCC_SH_REGCLS_VO_REF2) ||
+			(rcls==BGBCC_SH_REGCLS_AR_REF2) )
 		{
 			if(sctx->abi_evenonly)
 				ni=(ni+1)&(~1);
@@ -4975,6 +5060,18 @@ int BGBCC_JX2C_EmitCallVReg(
 			{
 				BGBCC_JX2C_EmitLoadFrameVRegByValReg(ctx, sctx,
 					treg, BGBCC_SH_REG_LR20+(ni-4));
+				ni+=2;
+				continue;
+			}else if((ni<11) && (sctx->has_xgpr&2))
+			{
+				BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx,
+					treg, BGBCC_SH_REG_LR19+(ni-4));
+				ni+=2;
+				continue;
+			}else if((ni<15) && (sctx->has_xgpr&2))
+			{
+				BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx,
+					treg, BGBCC_SH_REG_LR27+(ni-4));
 				ni+=2;
 				continue;
 			}else
@@ -5065,7 +5162,7 @@ int BGBCC_JX2C_EmitCallVReg(
 
 	if(fname && BGBCC_JX2C_EmitCallBuiltin(ctx, sctx, fname))
 	{
-		sctx->sreg_live&=~0x00F000F0;
+		sctx->sreg_live&=~0x00F00F00F000F0ULL;
 //		sctx->sfreg_live&=~0x0FF0;
 		sctx->sfreg_live&=~0x00F0;
 		return(1);
@@ -5076,20 +5173,35 @@ int BGBCC_JX2C_EmitCallVReg(
 
 	if(!BGBCC_CCXL_IsRegZzP(ctx, thisobj))
 	{
-		sctx->sreg_live|=0x08;
-		BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx,
-			thisobj, BGBCC_SH_REG_RQ3);
+		if(sctx->has_xgpr&2)
+		{
+			sctx->sreg_live|=3ULL<<18;
+			BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx,
+				thisobj, BGBCC_SH_REG_LR18);
+		}else
+		{
+			sctx->sreg_live|=0x08;
+			BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx,
+				thisobj, BGBCC_SH_REG_RQ3);
+		}
 	}
 
 	BGBCC_JX2C_EmitCallFcnVReg(ctx, sctx, fcn);
 
-	sctx->sreg_live&=~0x00F000F8;
+//	sctx->sreg_live&=~0x00F00F00F000F8ULL;
+	sctx->sreg_live&=~0x00F00F00FC00F8ULL;
 //	sctx->sfreg_live&=~0x0FF0;
 	sctx->sfreg_live&=~0x00F0;
 
 	if(retrcls==BGBCC_SH_REGCLS_VO_REF)
 	{
-		BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, BGBCC_SH_REG_R2);
+		if(sctx->has_xgpr&2)
+		{
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, BGBCC_SH_REG_LR2);
+		}else
+		{
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, BGBCC_SH_REG_R2);
+		}
 	}
 
 	return(1);

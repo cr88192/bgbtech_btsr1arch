@@ -528,7 +528,7 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_SUBX			0xE1		//
 #define BJX2_NMID_ADCX			0xE2		//
 #define BJX2_NMID_SBBX			0xE3		//
-#define BJX2_NMID_ROTLX			0xE8		//
+#define BJX2_NMID_ROTLX			0xE4		//
 #define BJX2_NMID_ANDX			0xE5		//
 #define BJX2_NMID_ORX			0xE6		//
 #define BJX2_NMID_XORX			0xE7		//
@@ -566,7 +566,6 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_CONVFLI		0x105		//
 #define BJX2_NMID_SNIPEDC		0x106		//
 #define BJX2_NMID_SNIPEIC		0x107		//
-
 #define BJX2_NMID_SXENTR		0x108		//
 #define BJX2_NMID_SUENTR		0x109		//
 #define BJX2_NMID_SVEKRR		0x10A		//
@@ -583,12 +582,10 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_BRHE			0x115		//
 #define BJX2_NMID_BRTSTT		0x116		//
 #define BJX2_NMID_BRTSTF		0x117		//
-
 #define BJX2_NMID_BRAL			0x118		//
 #define BJX2_NMID_BSRL			0x119		//
 #define BJX2_NMID_BTL			0x11A		//
 #define BJX2_NMID_BFL			0x11B		//
-
 #define BJX2_NMID_CMPTAEQ		0x11C		//
 #define BJX2_NMID_CMPTAHI		0x11D		//
 #define BJX2_NMID_CMPTAHS		0x11E		//
@@ -598,6 +595,19 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_MACUL			0x121		//
 #define BJX2_NMID_DMACSL		0x122		//
 #define BJX2_NMID_DMACUL		0x123		//
+#define BJX2_NMID_XLEAB			0x124		//
+#define BJX2_NMID_XLEAW			0x125		//
+#define BJX2_NMID_XLEAL			0x126		//
+#define BJX2_NMID_XLEAQ			0x127		//
+
+#define BJX2_NMID_BRAX			0x128		//
+#define BJX2_NMID_BSRX			0x129		//
+#define BJX2_NMID_BTX			0x12A		//
+#define BJX2_NMID_BFX			0x12B		//
+
+#define BJX2_NMID_MOVTT			0x12C		//
+#define BJX2_NMID_XMOVTT		0x12D		//
+
 
 
 #define BJX2_FMID_NONE			0x00		//?

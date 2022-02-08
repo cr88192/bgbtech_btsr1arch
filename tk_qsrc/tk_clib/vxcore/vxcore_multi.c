@@ -79,6 +79,8 @@
 #include "pdpc201/btshx_vnf.c"
 #include "pdpc201/btshx_alloca.c"
 
+#include "pdpc201/btshx_lvax.c"
+
 #include "pdpc201/bt_mman.c"
 #include "pdpc201/bt_readdir.c"
 #include "pdpc201/bt_dlfcn.c"

@@ -442,7 +442,8 @@ int TKMM_LVA_TryObjSetFieldVar(LVA_ObjectBasic *obj, char *name, u64 val)
 	return(1);
 }
 
-#ifdef __BJX2__
+// #ifdef __BJX2__
+#if defined(__BJX2__) && !defined(__ADDR_X96__)
 u64 TKMM_LVA_VarObjFetchKeyA(LVA_VarObject *obj, int key);
 u64 TKMM_LVA_VarObjSetKeyA(LVA_VarObject *obj, int key, u64 val);
 
@@ -799,7 +800,8 @@ int TKMM_LVA_VarObjSetKey(LVA_VarObject *obj, int key, u64 val)
 	return(1);
 }
 
-#ifdef __BJX2__
+// #ifdef __BJX2__
+#if defined(__BJX2__) && !defined(__ADDR_X96__)
 #define LVO_GETSLOT_CST_GEN	__lvo_getslot_cstgen
 #define LVO_SETSLOT_CST_GEN	__lvo_setslot_cstgen
 __declspec(nocull) __variant
@@ -838,7 +840,8 @@ __object __lvo_emptyobject(void)
 	return(__object_frombits(v));
 }
 
-#ifdef __BJX2__
+// #ifdef __BJX2__
+#if defined(__BJX2__) && !defined(__ADDR_X96__)
 // #define LVO_GETSLOT_CST_GEN	__lvo_getslot_cstgen
 // #define LVO_SETSLOT_CST_GEN	__lvo_setslot_cstgen
 
@@ -914,7 +917,8 @@ __declspec(nocull) __variant
 				key=TKMM_LVA_VarObjKeyForSymbol(name);
 				*rfid=key;
 			}
-#ifdef __BJX2__
+//#ifdef __BJX2__
+#if defined(__BJX2__) && !defined(__ADDR_X96__)
 			v=TKMM_LVA_VarObjFetchKeyA(ov, key);
 #else
 			v=TKMM_LVA_VarObjFetchKey(ov, key);
@@ -978,7 +982,8 @@ __declspec(nocull) void
 				key=TKMM_LVA_VarObjKeyForSymbol(name);
 				*rfid=key;
 			}
-#ifdef __BJX2__
+//#ifdef __BJX2__
+#if defined(__BJX2__) && !defined(__ADDR_X96__)
 			TKMM_LVA_VarObjSetKeyA(ov, key, valv);
 #else
 			TKMM_LVA_VarObjSetKey(ov, key, valv);

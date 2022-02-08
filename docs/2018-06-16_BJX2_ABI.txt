@@ -33,13 +33,14 @@ Pointer types will normally be 64-bit, but a sub-ABI will exist with 32-bit poin
 
 == Basic ABI ==
 
-Basic C ABI:
+Basic C ABI (32/64 bit):
 * R2..R7, R16..R23: Scratch
 * R8..R14: Callee Preserved
 * R15: Stack Pointer
 * R2/R3: Return Value
-* R2: Struct Return Address
-* R3: Owning 'this' Object (C++ and BS2)
+* R2: Struct Return Address (R3:R2 in 128-bit ABI)
+* R3: Owning 'this' Object (C++ and BS2, N/A 128-bit ABI)
+** R19:R18: Owning 'this' Object (128-bit ABI)
 * R4..R7, R20..R23: Register Arguments
 ** Structures are passed in 1 or 2 registers if they fit.
 ** Otherwise, structures are passed by reference.
@@ -55,6 +56,23 @@ Basic C ABI:
 ** The use of TBR is outside the scope of the basic C ABI.
 
 Note that R16..R19 may be stomped during prolog and epilog sequences.
+
+
+Basic C ABI (128 bit):
+* R2..R7, R16..R23: Scratch
+* R8..R14: Callee Preserved
+* R15: Stack Pointer
+* R3:R2: Return Value, Struct Return Address
+* R19:R18: Owning 'this' Object (128-bit ABI)
+* R4..R7, R20..R23, R36..R39, R52..R55: Register Arguments
+** Structures are passed in 1 or 2 registers if they fit.
+** Otherwise, structures are passed by reference (2 registers).
+** Float and Double arguments will be passed in GPRs.
+* R0/DLR: Volatile/Scratch
+* R1/DHR: Volatile/Scratch
+* GBR_HI, GBR: Callee Preserve
+** PBO Sub-ABI: GBR will be the base address for ".data" and ".bss".
+* TBR: System
 
 Extended Rn / Xn Registers:
 * R32..R39 | X32..X38: Scratch
@@ -120,6 +138,13 @@ Is basically the same as the 64-bit ABI, except that 'long' and pointer values a
 Tagged Pointer types will remain as 64 bit.
 
 PE/COFF binaries using this mode are to be encoded as PE32, whereas those using the 64-bit ABI will be PE32+.
+
+
+=== 128-bit Extended ABI ===
+
+This will be an ABI variant where the default pointer size is widened to 128 bits.
+
+Tagged Pointer types will widen to 128 bits.
 
 
 === PBO Sub ABI ===
@@ -542,7 +567,20 @@ Object and Variant will use the same representation, but will differ in their se
 Will be a 64-bit tagged type.
 Specifics will depend to some extent on the runtime.
 
-Current Scheme (4 bit MSB Tag):
+Tagged Reference (General)
+* Bits ( 63: 60)=Tag
+* Bits ( 59: 48)=ObjectTag / Attribute
+* Bits ( 47:  0)=Address(47:0)
+
+Tagged Reference (Extended)
+* Bits (127:112)=ObjectTag / Attribute
+* Bits (111: 64)=Address(95:48)
+* Bits ( 63: 60)=Tag
+* Bits ( 59: 48)=ObjectTag / Attribute
+* Bits ( 47:  0)=Address(47:0)
+
+
+Basic Scheme (4 bit MSB Tag, 64-bit format):
 * 0000: Object Pointer / Tagged Object
 * 0001: Sub-Spaces
 ** This is subdivied into various spaces between 32 and 56 bits.
@@ -561,7 +599,7 @@ Current Scheme (4 bit MSB Tag):
 * 1100: TagArray (Base Adjust)
 ** Low 48: Array Base Object
 ** High 12: Base Offset.
-* 1101: Vec2F (2x Float, 30 bits each)
+* 1101: Tag Packed Vector
 * 1110: TypeTag Pointer
 ** High 12: Element Type
 * 1111: Raw Pointer
@@ -571,6 +609,30 @@ Current Scheme (4 bit MSB Tag):
 
 The pointer value from the low 48 bits will be logically sign-extended to 64 bits if expressed as a machine pointer.
 
+
+Basic Scheme (4 bit Tag, 128-bit format):
+* 0000: Object Pointer / Tagged Object
+* 0001: Sub-Spaces
+** This is subdivied into various spaces between 32 and 56 bits.
+** 10..17: 120-bit (8 spaces)
+*** 10: Reserved
+*** 11: Reserved
+*** 12: Vec3 (3x Float40)
+*** 13: Vec4 (4x Float30)
+** 18..1B: 112-bit (1024 spaces)
+** 1C..1D:  96-bit (16M spaces)
+** 1E: 64-bit (256T spaces)
+** 1F: Reserved
+* 0010: BoundedArray
+* 0011: DoubleBoundArray
+* 0100: Fixnum (124 bit, Sign Extend, Flipped)
+* 0101: Flonum (124 bit, Float128, Flipped)
+* 011x: Reserved
+* 10xx: Reserved
+* 1100: TagArray (Base Adjust)
+* 1101: Reserved
+* 1110: Reserved
+* 1111: Reserved
 
 Fat Variant:
 * Will be 128 bit, with the low 64 bits as in a normal variant.
@@ -586,6 +648,13 @@ If a Fat Pointer or Fat Variant type is coerced into a narrow variant (and can't
 Tagged Object
 * Low 48=Address
 * High 12=ObjectTag
+
+Tagged Object (Extended)
+* Bits (127:112)=Reserved
+* Bits (111: 64)=Address(95:48)
+* Bits ( 63: 60)=Tag
+* Bits ( 59: 48)=ObjectType
+* Bits ( 47:  0)=Address(47:0)
 
 
 The Object Type Tag (ObjectTag) will be an index into a table which exists at runtime, and as such most of its index values will not be fixed. Instead, object types will be identified via a name.
@@ -692,3 +761,74 @@ Typed Tag Pointers are not to be used for normal object types.
 
 Note that C++ style classes coerced over to "object" or "variant" will instead be expressed via a Tagged Object.
 
+
+=== Tag Packed Vector ===
+
+Packed Vector (Vec3F):
+  (63:60): Tag (E)
+  (59:58): Sub-Tag1 (00=Vec2F, 01=Vec3F, 1x=Fixed Point)
+  (57:54): Y (Mantissa Extension)
+  (53:48): X (Mantissa Extension)
+  (47:32): Z (S.E5.M10)
+  (31:16): Y (S.E5.M10 + M5)
+  (15: 0): X (S.E5.M10 + M5)
+
+Packed Vector (Vec2F):
+  (63:60): Tag (E)
+  (59:58): Sub-Tag1
+  (57:56): Sub-Tag2 / Shift Select (fixed point)
+  (55:28): Y (S.E8.M19)
+  (27: 0): X (S.E8.M19)
+
+
+=== Bounded Array ===
+
+Bounded Array
+* Bits ( 63: 60)=Tag (0010)
+* Bits ( 59: 48)=Array Bound
+* Bits ( 47:  0)=Address
+
+Bounded Array (Extended)
+* Bits (127:112)=ArrayBound(27:12)
+* Bits (111: 64)=Address(95:48)
+* Bits ( 63: 60)=Tag (0010)
+* Bits ( 59: 48)=ArrayBound(11:0)
+* Bits ( 47:  0)=Address(47:0)
+
+
+In the Extended form, the Bound will be given in 16-byte units.
+* The array will also require a 16-byte alignment.
+* This will have a maximum size of 4GB
+
+
+Double Bounded Array (Extended, Alternate)
+* Bits (127:124)=Element Size
+* Bits (123:112)=Array Lower Bound
+* Bits (111: 64)=Address(95:48)
+* Bits ( 63: 60)=Tag (0011)
+* Bits ( 59: 48)=Array Upper Bound
+* Bits ( 47:  0)=Address(47:0)
+
+Element Sizes / Array Size Limit:
+* 0= 16B /  64K
+* 1= 64B / 256K
+* 2=256B /   1M
+* 3=  1K /   4M
+* 4=  4K /   1M
+* 5= 16K /  64M
+* 6= 64K / 256M
+* 7=256K /   1G
+* 8= 16B /  64K (Const Flag)
+* 9= 64B / 256K (Const Flag)
+* A=256B /   1M (Const Flag)
+* B=  1K /   4M (Const Flag)
+* C=  4K /   1M (Const Flag)
+* D= 16K /  64M (Const Flag)
+* E= 64K / 256M (Const Flag)
+* F=256K /   1G (Const Flag)
+
+
+Bounded arrays with a const-flag status should not be written to.
+The CPU may be allowed to fault if storing to an address with this flag set.
+
+Bounded Arrays will have an implicit No-Execute Status.

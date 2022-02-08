@@ -216,8 +216,15 @@ int BGBCC_JX2_TryEmitOpLblReg(BGBCC_JX2_Context *ctx,
 				rlty=BGBCC_SH_RLC_PBO24_BJX;
 				opw1=0xFA00;
 				opw2=0x0000;
-				opw3=0xF080|((reg&16)<<2);
-				opw4=0x0401|((reg&15)<<4);
+				if(reg&32)
+				{
+					opw3=0x47001|((reg&15)<<4)|((reg&32)<<5);
+					opw4=0x50804|((reg&16)<<6);
+				}else
+				{
+					opw3=0xF080|((reg&16)<<2);
+					opw4=0x0401|((reg&15)<<4);
+				}
 				break;
 			}
 #endif
@@ -227,8 +234,15 @@ int BGBCC_JX2_TryEmitOpLblReg(BGBCC_JX2_Context *ctx,
 			opw2=0xFFFC;
 //			opw3=0xF000|((reg&16)<<2);
 //			opw4=0x4C00|((reg&15)<<4);
-			opw3=0xF080|((reg&16)<<2);
-			opw4=0x0400|((reg&15)<<4);
+			if(reg&32)
+			{
+				opw3=0x47000|((reg&15)<<4)|((reg&32)<<5);
+				opw4=0x50804|((reg&16)<<6);
+			}else
+			{
+				opw3=0xF080|((reg&16)<<2);
+				opw4=0x0400|((reg&15)<<4);
+			}
 			break;
 		}
 

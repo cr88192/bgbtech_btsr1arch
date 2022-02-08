@@ -294,7 +294,8 @@ ccxl_status BGBCC_CCXL_EmitMov(BGBCC_TransState *ctx,
 	BGBCC_CCXL_TypeArrayP(ctx, sty);
 	BGBCC_CCXL_TypeArrayP(ctx, type);
 	
-	if(!BGBCC_CCXL_TypeCompatibleArchP(ctx, dty, sty) &&
+//	if(!BGBCC_CCXL_TypeCompatibleArchP(ctx, dty, sty) &&
+	if(!BGBCC_CCXL_TypeCompatibleStorageP(ctx, dty, sty) &&
 		!(BGBCC_CCXL_TypePointerP(ctx, dty) &&
 			BGBCC_CCXL_TypeValueObjectP(ctx, sty)) &&
 		!(BGBCC_CCXL_TypeRealP(ctx, dty) &&

@@ -28,6 +28,7 @@ Several ISA Profiles may exist:
 * D: Lite + Fix32 + SoftFPU
 * E: Lite + SoftFPU
 * F: Lite + GFP
+* G: Full Features, 96-bit address space.
 
 The compiler is not to use features which are absent in a given profile, and will not assume the presence of features marked as optional unless specified as part of the current pofile.
 
@@ -502,6 +503,8 @@ X2TLB (Possible):
 VUGID:
 * (15:10) = VGID / VUID(Swap)
 * ( 9: 0) = VUID / VGID(Swap)
+* May be interpreted as a PID or ACLID.
+** In these cases, VUGID is treated as a single 16-bit unit.
 
 ASID:
 * (15:10) = AGID (0=Shared, Global)
@@ -511,12 +514,12 @@ KR Access:
 * (11): Other X
 * (10): Other W
 * ( 9): Other R
-* ( 8): Group X
-* ( 7): Group W
-* ( 6): Group R
-* ( 5): User X
-* ( 4): User W
-* ( 3): User R
+* ( 8): Group X (VUGID Check Only)
+* ( 7): Group W (VUGID Check Only)
+* ( 6): Group R (VUGID Check Only)
+* ( 5): User X (VUGID Check Only)
+* ( 4): User W (VUGID Check Only)
+* ( 3): User R (VUGID Check Only)
 * ( 2): VUGID Mode 2
 * ( 1): VUGID Mode 1
 * ( 0): VUGID Mode 0
@@ -526,13 +529,17 @@ If Keyring Check is Enabled, VUGID Mode will have several modes:
 * 001: Perform VUGID Check, Access Check is Pass or Fail (Access Fault).
 * 010: Always Generate ACL Check Exception (on ACL Miss)
 * 011: Perform VUGID Check, Generate ACL Check if no keys match (ACL Miss).
-* 100: Reserved
+* 100: Possible, Restricted Execute Mode
 * 101: Same as in 001, But swap the UID and GID fields.
-* 110: Reserved
+* 110: Same as in 010, Grant Privledge on Execute.
 * 111: Same as in 011, But swap the UID and GID fields.
 
 If Keyring Check is Disabled, VUGID access checks are ignored (Always Pass).
 * Only the normal page access checks are used.
+
+When executing code within a Privledge on Execute page, the MMU is to behave as if the VUGID for the currently executing page were present within KRR. This may replace whatever is the last entry in the register. Note that the KRR must also grant Execute to this page when interpreting the VUGID as an ACLID.
+
+The Restricted Execute mode would operate as-if the KRR contained only the VUGID from the page being executed.
 
 
 Page Control:
@@ -939,7 +946,7 @@ Note that interleaving the jumbo prefixes violates the equivalence between seque
 === XMOV (Possible) ===
 
 Possible Extension, Extended Address Space
-* Will extend the address space to 96 or 112 bits.
+* Will extend the address space to 96 bits.
 * Addresses in the extended space will be encoded as pairs.
 * Note that only the low 48 bits are necessarily linear.
 ** The high 48 may represent a sparse and non-linear space.
@@ -1516,6 +1523,8 @@ F0zz Instruction Block:
 ** F0nm_1Go7  XORX		Xm, Xo, Xn			//(ALUX) Xn=Xm^Xo
 
 ** F0nm_1ez8
+*** F0nm_1gA8 MOVZT		Rm, Rn				//MOV, Zero Tag
+*** F0nm_1GA8 XMOVZT	Xm, Xn				//XMOV, Zero Tag
 *** F0nm_1gB8 SNIPEDC	Rm, Rn				//Calculate L1 D$ Snipe Address
 *** F0nm_1GB8 SNIPEIC	Rm, Rn				//Calculate L1 I$ Snipe Address
 
@@ -1797,7 +1806,8 @@ F0zz Instruction Block:
 *** F082_3en0  /
 *** F083_3en0  /
 
-** F0nm_3eo1  -
+** F0nm_3go1  MOVTT		Rm, Ri, Rn		//(TTAG) High 16 bits from Rn
+** F0nm_3Go1  MOVTT		Rm, Imm5u, Rn	//(TTAG) Set Type-Tag
 ** F0nm_3go2  ROTLQ		Rm, Ro, Rn		//(ALU) Rotate Left (64b)
 ** F0nm_3Go2  SHARX		Xm, Ro, Xn		//(ALUX) Shift Arithmetic (128b)
 ** F0nm_3go3  ROTRQ		Rm, Ro, Rn		//(ALU) Rotate Right (64b)
@@ -1922,7 +1932,7 @@ F0zz Instruction Block:
 
 * F0zz_8zzz (XMOV Block)
 ** F0nm_8gd0  XMOV.B	Rn, (Xm, Disp5)		//
-** F0nm_8Gd0  -
+** F0nm_8Gd0  ? XLEA.B	(Xm, Disp5), Xn		//
 ** F0nm_8gd1  XMOV.W	Rn, (Xm, Disp5)		//
 ** F0nm_8Gd1  -
 ** F0nm_8gd2  XMOV.L	Rn, (Xm, Disp5)		//
@@ -1930,7 +1940,7 @@ F0zz Instruction Block:
 ** F0nm_8gd3  XMOV.Q	Rn, (Xm, Disp5)		//
 ** F0nm_8Gd3  XMOV.X	Xn, (Xm, Disp5)		//
 ** F0nm_8go4  XMOV.B	Rn, (Xm, Ro)		//
-** F0nm_8Go4  -
+** F0nm_8Go4  ? XLEA.B	(Xm, Ro), Xn		//
 ** F0nm_8go5  XMOV.W	Rn, (Xm, Ro)		//
 ** F0nm_8Go5  -
 ** F0nm_8go6  XMOV.L	Rn, (Xm, Ro)		//
@@ -2221,6 +2231,7 @@ Alternative 2 (Hx, W0):
 * FFw0_0vzz_F0nm_ZeoZ  "OP Rm, Ro, Rn"
 * FFw0_0vii_F0nm_ZeoZ  "OP Rm, Ro, Rn, Imm8"
 * FFw0_0Vii_F0nm_ZeoZ  "OP Rm, Imm9s, Ro, Rn"
+* FFw0_0Vii_F0nm_ZGiZ  "OP Rm, Imm17s, Rn"		//Imm5u
 
 * FFw0_00ii_F1nm_Zeii  "OP (Rm, Disp17s), Rn"
 * FFw0_00ii_F2nm_Zeii  "OP Rm, Imm17, Rn"
@@ -2232,6 +2243,13 @@ Alternative 2 (Hx, W0):
 * FFw0_00ii_E2nm_Zeii  "OP Rm, Imm17, Rn" 
 
 * FFw0_iiii_F8Zn_iiii  "OP Imm33s, Rn"
+
+* FFw0_iiii_F84n_iiii  ADD	Imm33s, Rn		//(Op64)
+* FFw0_iiii_F85n_iiii  ADD	Imm33s, Rk		//(Op64)
+** Wnmi=zz00: ADD
+** Wnmi=zz01: MOVLD		//Load Imm32 into high 32-bits of dest.
+** Wnmi=zz10: ?
+** Wnmi=zz11: XMOVTT	//Split Imm32 into high 16-bits of target 
 
 * FFw0_iiii_F88n_iiii  FLDCF	Imm32u, Rn		//(Op64)
 * FFw0_iiii_F89n_iiii  FLDCF	Imm32u, Rk		//(Op64)

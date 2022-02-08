@@ -1560,7 +1560,7 @@ void BJX2_Op_CMPXGT_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 		isgta=0;
 	if((va.hi&0x7FFFFFFFFFFFFFFFULL) == (vb.hi&0x7FFFFFFFFFFFFFFFULL))
 	{
-		if(va.lo<vb.lo)
+		if(va.lo<=vb.lo)
 			isgta=0;
 	}
 
@@ -1593,7 +1593,7 @@ void BJX2_Op_CMPXHI_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 		isgta=0;
 	if(va.hi == vb.hi)
 	{
-		if(va.lo<vb.lo)
+		if(va.lo<=vb.lo)
 			isgta=0;
 	}
 

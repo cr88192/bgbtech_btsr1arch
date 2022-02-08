@@ -83,7 +83,20 @@ int BJX2_DecodeOpcode_DecF8(BJX2_Context *ctx,
 		op->nmid=BJX2_NMID_ADD;
 		op->fmid=BJX2_FMID_IMMREG;
 		op->Run=BJX2_Op_ADD_ImmReg;
+
+		if(jbits&0x02000000U)
+		{
+			switch((jbits>>20)&3)
+			{
+			case 0: break;
+			case 3:
+				op->nmid=BJX2_NMID_XMOVTT;
+				op->Run=BJX2_Op_XMOVTT_ImmReg;
+				break;
+			}
+		}
 		break;
+
 	case 0x6:	case 0x7:
 		op->imm=imm16u;
 		op->rn=rn_i16;

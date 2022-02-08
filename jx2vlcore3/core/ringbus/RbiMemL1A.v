@@ -175,6 +175,7 @@ wire[5:0]		tMemAccNoRwx;
 
 
 wire[127:0]		tTlbExc;
+wire[15:0]		tIcExecAcl;
 
 
 assign	regOutExc	= tRegOutExc2;
@@ -223,7 +224,7 @@ RbiMmuTlb	tlb(
 //	tTlbExc,		dcInHold,
 	tTlbExc,		1'b0,
 	regInMmcr,		regInKrr,
-	regInSr);
+	regInSr,		tIcExecAcl);
 
 `endif
 
@@ -265,6 +266,7 @@ RbiMemIcWxA		memIc(
 	dfInOpm,		regInSr,
 	ifMemWait,		ifOutExc,
 	icOutPcSxo,		regKrrHashL,
+	tTlbExc,		tIcExecAcl,
 
 	ifMemAddrI,		ifMemAddrO,
 	ifMemDataI,		ifMemDataO,
@@ -442,6 +444,11 @@ begin
 
 	tDcBusWait	= dfOutWait || ifMemWait;
 //	tDcBusWait	= dfOutWait || ifMemWait || ifMemWaitL;
+
+	tRngBitA	= 0;
+	tRngBitB	= 0;
+	tNxtRngA	= 0;
+	tNxtRngB	= 0;
 
 `ifndef def_true
 	tRngBitA	=

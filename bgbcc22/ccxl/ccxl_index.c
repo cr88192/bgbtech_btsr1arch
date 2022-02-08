@@ -324,10 +324,12 @@ void BGBCC_CCXL_CompileJmpTrue(BGBCC_TransState *ctx, ccxl_label lbl)
 void BGBCC_CCXL_ConvImm(BGBCC_TransState *ctx,
 	ccxl_type dty, ccxl_type sty, ccxl_register sreg, ccxl_register *rdreg)
 {
+	ccxl_register treg2;
 	double f;
 	float bf;
 	s64 li, lj, li0;
 	u32 ui;
+	int bty, stv;
 	int i;
 
 //	if(BGBCC_CCXL_TypeSmallIntP(ctx, dty))
@@ -366,6 +368,28 @@ void BGBCC_CCXL_ConvImm(BGBCC_TransState *ctx,
 		else
 			BGBCC_CCXL_GetRegForLongValue(ctx, rdreg, li);
 		return;
+	}
+
+	if(BGBCC_CCXL_TypeSgNLongP(ctx, dty))
+	{
+		if(ctx->arch_sizeof_long==8)
+		{
+			li=BGBCC_CCXL_GetRegImmLongValue(ctx, sreg);
+			if(BGBCC_CCXL_TypeUnsignedP(ctx, dty))
+				BGBCC_CCXL_GetRegForULongValue(ctx, rdreg, li);
+			else
+				BGBCC_CCXL_GetRegForLongValue(ctx, rdreg, li);
+			return;
+		}else
+			if(ctx->arch_sizeof_long==4)
+		{
+			li=BGBCC_CCXL_GetRegImmLongValue(ctx, sreg);
+			if(BGBCC_CCXL_TypeUnsignedP(ctx, dty))
+				BGBCC_CCXL_GetRegForUIntValue(ctx, rdreg, li);
+			else
+				BGBCC_CCXL_GetRegForIntValue(ctx, rdreg, li);
+			return;
+		}
 	}
 
 	if(BGBCC_CCXL_TypeSgInt128P(ctx, dty))
@@ -418,6 +442,45 @@ void BGBCC_CCXL_ConvImm(BGBCC_TransState *ctx,
 		memcpy(&bf, &ui, 4);
 		BGBCC_CCXL_GetRegForFloatValue(ctx, rdreg, bf);
 		return;
+	}
+
+	if(	BGBCC_CCXL_TypePointerP(ctx, dty) &&
+		!BGBCC_CCXL_TypeQuadPointerP(ctx, dty) &&
+		BGBCC_CCXL_IsRegImmILP(ctx, sreg))
+	{
+		if(ctx->arch_sizeof_ptr==8)
+		{
+			li=BGBCC_CCXL_GetRegImmLongValue(ctx, sreg);
+			BGBCC_CCXL_GetRegForLongValue(ctx, &treg2, li);
+			*rdreg=treg2;
+			return;
+		}
+
+		if(ctx->arch_sizeof_ptr==4)
+		{
+			li=BGBCC_CCXL_GetRegImmLongValue(ctx, sreg);
+			BGBCC_CCXL_GetRegForUIntValue(ctx, &treg2, li);
+			*rdreg=treg2;
+			return;
+		}
+	}
+	
+	if(BGBCC_CCXL_TypeQuadPointerP(ctx, dty))
+	{
+		if(BGBCC_CCXL_IsRegImmInt128P(ctx, sreg))
+		{
+			*rdreg=sreg;
+			return;
+		}
+
+		if(BGBCC_CCXL_IsRegImmILP(ctx, sreg))
+		{
+			li=BGBCC_CCXL_GetRegImmLongValue(ctx, sreg);
+			lj=0;
+			BGBCC_CCXL_GetRegForInt128Value(ctx, &treg2, li, lj);
+			*rdreg=treg2;
+			return;
+		}
 	}
 
 	*rdreg=sreg;

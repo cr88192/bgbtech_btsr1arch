@@ -273,21 +273,21 @@ u16		arch_pad_op16;		//padding ".text" for 16-bit pads
 byte	arch_pad_op8;		//padding ".text" for 8-bit pads
 u16		arch_pecoff_mach;
 
-u32		arch_gprmask_scra;		//arch scratch registers
-u32		arch_gprmask_save;		//arch preserve registers
+u64		arch_gprmask_scra;		//arch scratch registers
+u64		arch_gprmask_save;		//arch preserve registers
 
-u32		arch_fprmask_scra;		//arch scratch FPRs
-u32		arch_fprmask_save;		//arch preserve FPRs
+u64		arch_fprmask_scra;		//arch scratch FPRs
+u64		arch_fprmask_save;		//arch preserve FPRs
 
 // byte reg_idx[BGBCC_SH_MAX_CACHEVAR];
 // byte reg_reg[BGBCC_SH_MAX_CACHEVAR];
 // int reg_live;
 // int reg_resv;
-u32 reg_save;
+u64 reg_save;
 // int reg_dirty;
-u32 freg_save;
-u32 reg_vsave;
-u32 freg_vsave;
+u64 freg_save;
+u64 reg_vsave;
+u64 freg_vsave;
 
 int cnt_set_fp32;
 int cnt_set_fp64;
@@ -360,6 +360,7 @@ int jitfl;
 const short *jcachereg;
 const short *qcachereg;
 const short *pcachereg;
+const short *lcachereg;
 
 const short *fcachereg;
 const short *dcachereg;
@@ -367,25 +368,26 @@ const short *dcachereg;
 
 byte reg_pszx[64];		//register sign/zero extension
 
-ccxl_register regalc_map[32];
-byte regalc_ltcnt[32];	//lifetime count (who to evict)
-byte regalc_utcnt[32];	//current use count (0=unused)
-u32 regalc_save;		//register has been saved and may hold a value
-u32 regalc_live;		//register is currently holding a value
-u32 regalc_dirty;		//register is dirty
-u32 regalc_noval;		//register lacks backing value
+ccxl_register regalc_map[64];
+short regalc_ltcnt[64];	//lifetime count (who to evict)
+short regalc_utcnt[64];	//current use count (0=unused)
+u64 regalc_save;		//register has been saved and may hold a value
+u64 regalc_live;		//register is currently holding a value
+u64 regalc_dirty;		//register is dirty
+u64 regalc_noval;		//register lacks backing value
+u64 regalc_pair;		//register is paired
 
-ccxl_register fregalc_map[32];
-byte fregalc_ltcnt[32];	//lifetime count (who to evict)
-byte fregalc_utcnt[32];	//current use count (0=unused)
-u16 fregalc_save;		//register has been saved and may hold a value
-u16 fregalc_live;		//register is currently holding a value
-u16 fregalc_dirty;
+ccxl_register fregalc_map[64];
+short fregalc_ltcnt[64];	//lifetime count (who to evict)
+short fregalc_utcnt[64];	//current use count (0=unused)
+u64 fregalc_save;		//register has been saved and may hold a value
+u64 fregalc_live;		//register is currently holding a value
+u64 fregalc_dirty;
 
-u32 sreg_live;			//scratch registers live (per 3AC operation)
-u32 sreg_held;			//scratch registers live-held (multiple ops)
-u32 sfreg_live;			//scratch registers live (per 3AC operation)
-u32 sfreg_held;			//scratch registers live-held (multiple ops)
+u64 sreg_live;			//scratch registers live (per 3AC operation)
+u64 sreg_held;			//scratch registers live-held (multiple ops)
+u64 sfreg_live;			//scratch registers live (per 3AC operation)
+u64 sfreg_held;			//scratch registers live-held (multiple ops)
 
 int iflvl_t;			//number of branches in true set
 int iflvl_f;			//number of branches in false set
@@ -462,11 +464,11 @@ int genlabel_limit;
 int t_genlabel_srcpos[4096];
 
 /* Epilog Caching */
-int epihash_key[1024];
+u64 epihash_key[1024];
 int epihash_lbl[1024];
 
 /* Prolog Caching */
-int eprhash_key[1024];
+u64 eprhash_key[1024];
 int eprhash_lbl[1024];
 
 
@@ -505,8 +507,8 @@ sc!=0: memory reference
 struct BGBCC_CMG_OpcodeArg_s {
 byte ty;		//operand type
 byte sc;		//scale for Reg/RM forms (1,2,3,4 for mem-ref)
-byte ireg;		//index for Reg/RM forms
-byte breg;		//base for Reg/RM forms, or register
+s16 ireg;		//index for Reg/RM forms
+s16 breg;		//base for Reg/RM forms, or register
 s64 disp;		//displacement for Reg/RM forms, or immed
 int lbl;		//label
 char *name;		//name
@@ -541,10 +543,10 @@ struct BGBCC_CMG_EmitQueueOp_s {
 BGBCC_CMG_EmitQueueOp *next;
 u16 nmid;
 byte fmid;
-byte rn;		//Rn
-byte rm;		//Rm or Rs
-byte ro;		//Ro or Rt
-int imm;
+s16 rn;		//Rn
+s16 rm;		//Rm or Rs
+s16 ro;		//Ro or Rt
+s64 imm;
 int lbl;
 };
 

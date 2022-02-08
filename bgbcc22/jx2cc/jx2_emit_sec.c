@@ -1030,7 +1030,7 @@ int BGBCC_JX2_EmitStatWord(BGBCC_JX2_Context *ctx, int val)
 	BGBCC_JX2_UpdatePszxWord(ctx, val);
 	
 	ctx->opcnt_hi8[(val>>8)&255]++;
-	if((val>>12)==3)
+	if(((val>>12)&0xF)==3)
 	{
 //		i=(((val>>8)&15)<<4)|(val&15);
 		i=(((val>>8)&7)<<4)|(val&15);
@@ -1083,6 +1083,15 @@ int BGBCC_JX2_EmitStatWord(BGBCC_JX2_Context *ctx, int val)
 
 	}
 	
+	if(	(((val>>12)&0xF)==0x7)	||
+		(((val>>12)&0xF)==0x9)	)
+	{
+		ctx->stat_opc_ext8a++;
+		ctx->stat_opc_issfx=1;
+		return(0);
+	}
+
+
 	if(ctx->is_fixed32)
 		{ BGBCC_DBGBREAK }
 
@@ -3300,6 +3309,60 @@ int BGBCC_JX2_EmitQWordAbs64Disp(BGBCC_JX2_Context *ctx, int lbl, int disp)
 
 	BGBCC_JX2_EmitRelocTy(ctx, lbl, BGBCC_SH_RLC_ABS64);
 	BGBCC_JX2_EmitQWordI(ctx, disp);
+	BGBCC_JX2DA_EmitQWordAbsDisp(ctx, lbl, disp);
+	return(0);
+}
+
+
+int BGBCC_JX2_EmitQWordAbs96(BGBCC_JX2_Context *ctx, int lbl)
+{
+	if((lbl&CCXL_LBL_SPMASK)==CCXL_LBL_ABS16UP)
+	{
+		BGBCC_JX2_EmitQWordI(ctx, ((u16)lbl)*8);
+		BGBCC_JX2_EmitQWordI(ctx, 0);
+		return(0);
+	}
+	if((lbl&CCXL_LBL_SPMASK)==CCXL_LBL_ABS16NP)
+	{
+//		BGBCC_JX2_EmitQWordI(ctx, ((-1<<16)|((u16)lbl))*8);
+		BGBCC_JX2_EmitQWordI(ctx, ((-(1<<16))|((u16)lbl))*8);
+		BGBCC_JX2_EmitQWordI(ctx, 0);
+		return(0);
+	}
+	if((lbl&CCXL_LBL_SPMASK)==CCXL_LBL_ABS16S)
+	{
+		BGBCC_JX2_EmitQWordI(ctx, ((s16)lbl));
+		BGBCC_JX2_EmitQWordI(ctx, 0);
+		return(0);
+	}
+
+	BGBCC_JX2_EmitRelocTy(ctx, lbl, BGBCC_SH_RLC_ABS96);
+	BGBCC_JX2_EmitQWordI(ctx, 0);
+	BGBCC_JX2_EmitQWordI(ctx, 0);
+	BGBCC_JX2DA_EmitQWordAbs(ctx, lbl);
+	return(0);
+}
+
+int BGBCC_JX2_EmitQWordAbs96Tag16(BGBCC_JX2_Context *ctx, int lbl, int tag)
+{
+	BGBCC_JX2_EmitRelocTy(ctx, lbl, BGBCC_SH_RLC_ABS96);
+	BGBCC_JX2_EmitQWordI(ctx, ((u64)tag)<<48);
+	BGBCC_JX2_EmitQWordI(ctx, 0);
+	BGBCC_JX2DA_EmitQWordAbs(ctx, lbl);
+	return(0);
+}
+
+int BGBCC_JX2_EmitQWordAbs96Disp(BGBCC_JX2_Context *ctx, int lbl, int disp)
+{
+	if(!disp)
+	{
+		BGBCC_JX2_EmitQWordAbs96(ctx, lbl);
+		return(0);
+	}
+
+	BGBCC_JX2_EmitRelocTy(ctx, lbl, BGBCC_SH_RLC_ABS96);
+	BGBCC_JX2_EmitQWordI(ctx, disp);
+	BGBCC_JX2_EmitQWordI(ctx, 0);
 	BGBCC_JX2DA_EmitQWordAbsDisp(ctx, lbl, disp);
 	return(0);
 }

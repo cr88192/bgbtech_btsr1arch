@@ -663,6 +663,16 @@ bool BGBCC_CCXL_TypeVariantP(
 	return(false);
 }
 
+bool BGBCC_CCXL_TypeQuadVariantP(
+	BGBCC_TransState *ctx, ccxl_type ty)
+{
+	if(!BGBCC_CCXL_TypeVariantP(ctx, ty))
+		return(false);
+	if(ctx->arch_sizeof_ptr==16)
+		return(true);
+	return(false);
+}
+
 bool BGBCC_CCXL_TypeVarObjP(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
@@ -715,6 +725,26 @@ bool BGBCC_CCXL_TypeVarRefP(
 		return(true);
 	}
 
+	return(false);
+}
+
+bool BGBCC_CCXL_TypeQuadVarObjP(
+	BGBCC_TransState *ctx, ccxl_type ty)
+{
+	if(!BGBCC_CCXL_TypeVarObjP(ctx, ty))
+		return(false);
+	if(ctx->arch_sizeof_ptr==16)
+		return(true);
+	return(false);
+}
+
+bool BGBCC_CCXL_TypeQuadVarRefP(
+	BGBCC_TransState *ctx, ccxl_type ty)
+{
+	if(!BGBCC_CCXL_TypeVarRefP(ctx, ty))
+		return(false);
+	if(ctx->arch_sizeof_ptr==16)
+		return(true);
 	return(false);
 }
 
@@ -2166,7 +2196,10 @@ int BGBCC_CCXL_TypeGetLogicalBaseSize(
 	case CCXL_TY_VAROBJECT:
 	case CCXL_TY_FIXNUM:
 	case CCXL_TY_FLONUM:
+		if(ctx->arch_sizeof_ptr==16)
+			{ sz=16; break; }
 		sz=8; break;
+
 	case CCXL_TY_VALIST:
 //		sz=64; break;
 		sz=ctx->arch_sizeof_valist;
@@ -2306,6 +2339,14 @@ int BGBCC_CCXL_TypeGetLogicalBaseAlign(
 	case CCXL_TY_VARIANT:
 	case CCXL_TY_VARSTRING:
 	case CCXL_TY_VAROBJECT:
+		if(ctx->arch_sizeof_ptr==16)
+		{
+			sz=16; nsz=ctx->arch_align_max;
+			if(nsz && (sz>nsz))
+				sz=nsz;
+			break;
+		}
+
 		sz=8; nsz=ctx->arch_align_max;
 		if(nsz && (sz>nsz))
 			sz=nsz;
@@ -2491,6 +2532,17 @@ int BGBCC_CCXL_TypeGetLogicalAlign(
 		BGBCC_CCXL_TypeDerefType(ctx, ty, &tty);
 		al=BGBCC_CCXL_TypeGetLogicalAlign(ctx, tty);
 		return(al);
+	}
+
+	if(BGBCC_CCXL_TypePointerP(ctx, ty))
+	{
+		if(BGBCC_CCXL_TypeQuadPointerP(ctx, ty))
+			return(16);
+
+		if(ctx->arch_sizeof_ptr)
+			return(ctx->arch_sizeof_ptr);
+
+		return(-1);
 	}
 	
 	if(BGBCC_CCXL_TypeObjectP(ctx, ty))
@@ -3272,6 +3324,9 @@ int BGBCC_CCXL_TypeNearPointerP(
 {
 	int pcls;
 	
+	if(!BGBCC_CCXL_TypeArrayOrPointerP(ctx, sty))
+		return(0);
+
 	pcls=BGBCC_CCXL_TypeGetPointerClass(ctx, sty);
 //	return(pcls==CCXL_PCLS_NEAR);
 	return((pcls&CCXL_PCLS_HGMASK)==CCXL_PCLS_NEAR);
@@ -3282,6 +3337,9 @@ int BGBCC_CCXL_TypeFarPointerP(
 {
 	int pcls;
 	
+	if(!BGBCC_CCXL_TypeArrayOrPointerP(ctx, sty))
+		return(0);
+
 	pcls=BGBCC_CCXL_TypeGetPointerClass(ctx, sty);
 //	return(pcls==CCXL_PCLS_FAR);
 	return((pcls&CCXL_PCLS_HGMASK)==CCXL_PCLS_FAR);
@@ -3292,6 +3350,9 @@ int BGBCC_CCXL_TypeHugePointerP(
 {
 	int pcls;
 	
+	if(!BGBCC_CCXL_TypeArrayOrPointerP(ctx, sty))
+		return(0);
+
 	pcls=BGBCC_CCXL_TypeGetPointerClass(ctx, sty);
 //	return(pcls==CCXL_PCLS_FAR);
 	return((pcls&CCXL_PCLS_HGMASK)==CCXL_PCLS_HUGE);
@@ -3300,6 +3361,17 @@ int BGBCC_CCXL_TypeHugePointerP(
 int BGBCC_CCXL_TypeQuadPointerP(
 	BGBCC_TransState *ctx, ccxl_type sty)
 {
+	if(	!BGBCC_CCXL_TypeArrayOrPointerP(ctx, sty) &&
+		!BGBCC_CCXL_TypeFunctionP(ctx, sty))
+		return(0);
+
+	if(ctx->arch_sizeof_ptr==16)
+	{
+		if(BGBCC_CCXL_TypeNearPointerP(ctx, sty))
+			return(0);
+		return(1);
+	}
+
 	if(BGBCC_CCXL_TypeHugePointerP(ctx, sty))
 		return(1);
 	if(BGBCC_CCXL_TypeFarPointerP(ctx, sty))
@@ -3312,6 +3384,9 @@ int BGBCC_CCXL_TypeVolatilePointerP(
 {
 	int pcls;
 	
+	if(!BGBCC_CCXL_TypeArrayOrPointerP(ctx, sty))
+		return(0);
+
 	pcls=BGBCC_CCXL_TypeGetPointerClass(ctx, sty);
 	return((pcls&CCXL_PCLS_ALIASMASK)==CCXL_PCLS_VOLATILE);
 }
@@ -3321,6 +3396,9 @@ int BGBCC_CCXL_TypeRestrictPointerP(
 {
 	int pcls;
 	
+	if(!BGBCC_CCXL_TypeArrayOrPointerP(ctx, sty))
+		return(0);
+
 	pcls=BGBCC_CCXL_TypeGetPointerClass(ctx, sty);
 	return((pcls&CCXL_PCLS_ALIASMASK)==CCXL_PCLS_RESTRICT);
 }
@@ -3330,6 +3408,9 @@ int BGBCC_CCXL_TypeMayaliasPointerP(
 {
 	int pcls;
 	
+	if(!BGBCC_CCXL_TypeArrayOrPointerP(ctx, sty))
+		return(0);
+
 	pcls=BGBCC_CCXL_TypeGetPointerClass(ctx, sty);
 	return((pcls&CCXL_PCLS_ALIASMASK)==CCXL_PCLS_MAYALIAS);
 }
@@ -3707,6 +3788,8 @@ ccxl_status BGBCC_CCXL_TypeFromSig(
 	case 'o': bty=CCXL_TY_UI128; break;
 	case 'p':
 		bty=CCXL_TY_NL;
+		if(ctx->arch_sizeof_ptr==16)
+			bty=CCXL_TY_I128;
 		if(ctx->arch_sizeof_ptr==8)
 			bty=CCXL_TY_L;
 		if(ctx->arch_sizeof_ptr==4)
@@ -4394,7 +4477,7 @@ int BGBCC_CCXL_TypeCompatibleFlP(
 
 	if(BGBCC_CCXL_TypeSgNLongP(ctx, dty))
 	{
-		if(BGBCC_CCXL_TypeSgNLongP(ctx, dty))
+		if(BGBCC_CCXL_TypeSgNLongP(ctx, sty))
 			return(1);
 		
 		if(!BGBCC_IsEmitRil(ctx))
@@ -4667,7 +4750,7 @@ int BGBCC_CCXL_TypeCompatibleFlP(
 			return(0);
 		}
 
-		if(BGBCC_CCXL_TypeVarRefP(ctx, dty))
+		if(BGBCC_CCXL_TypeVarRefP(ctx, sty))
 		{
 //			if(fl&3)
 			if(fl&1)
@@ -4759,6 +4842,7 @@ int BGBCC_CCXL_TypeCompatibleFlP(
 #endif
 	}
 
+//	if((fl&2) && (ctx->arch_sizeof_ptr==8))
 	if((fl&2) && (ctx->arch_sizeof_ptr==8))
 	{
 		if(BGBCC_CCXL_TypePointerP(ctx, dty))
@@ -5778,6 +5862,12 @@ ccxl_status BGBCC_CCXL_GetTypeBinaryDest(
 				if(ctx->arch_sizeof_ptr==8)
 				{
 					*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_L);
+					return(CCXL_STATUS_YES);
+				}
+
+				if(ctx->arch_sizeof_ptr==16)
+				{
+					*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_I128);
 					return(CCXL_STATUS_YES);
 				}
 
